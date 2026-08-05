@@ -1,0 +1,7 @@
+interface:
+  display_name: "Simple Light Mode"
+  short_description: "Create presentations with the Simple Light Mode template"
+  icon_large: "./assets/preview.png"
+  default_prompt: "Create a new presentation with this template."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,45 @@
+{
+  "apps": "./.app.json",
+  "author": {
+    "email": "support@supabase.io",
+    "name": "Supabase",
+    "url": "https://supabase.com"
+  },
+  "description": "Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time logs for debugging, create and apply database migrations, and manage development branches through natural language.",
+  "homepage": "https://supabase.com",
+  "interface": {
+    "brandColor": "#3ECE8E",
+    "brandColorDark": "#3ECE8E",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "category": "Developer Tools",
+    "defaultPrompt": [
+      "Use Supabase to set up Auth and protected routes for my app.",
+      "Review my Supabase schema and RLS policies for security issues.",
+      "Optimize my Postgres queries and indexes using Supabase best practices."
+    ],
+    "developerName": "Supabase",
+    "displayName": "Supabase",
+    "logo": "./assets/logo.png",
+    "longDescription": "Official Supabase plugin for Codex. Includes agent skills for Supabase development and Postgres best practices, plus MCP server integration for managing your Supabase projects directly from Codex.",
+    "privacyPolicyURL": "https://supabase.com/privacy",
+    "shortDescription": "Manage and query databases",
+    "supportURL": "https://supabase.com/support",
+    "termsOfServiceURL": "https://supabase.com/terms",
+    "websiteURL": "https://supabase.com"
+  },
+  "keywords": [
+    "supabase",
+    "postgres",
+    "database",
+    "backend",
+    "mcp"
+  ],
+  "license": "MIT",
+  "name": "supabase",
+  "repository": "https://github.com/supabase-community/supabase-plugin",
+  "skills": "./skills/",
+  "version": "1.0.0"
+}

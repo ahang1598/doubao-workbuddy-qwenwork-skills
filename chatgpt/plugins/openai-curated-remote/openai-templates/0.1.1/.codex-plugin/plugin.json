@@ -1,0 +1,45 @@
+{
+  "name": "openai-templates",
+  "version": "0.1.1",
+  "description": "OpenAI default document, presentation, and spreadsheet templates.",
+  "author": {
+    "name": "OpenAI",
+    "email": "support@openai.com",
+    "url": "https://openai.com/"
+  },
+  "homepage": "https://github.com/openai/oai-maintained-plugins/tree/main/plugins/openai-templates",
+  "repository": "https://github.com/openai/oai-maintained-plugins/tree/main/plugins/openai-templates",
+  "license": "Proprietary",
+  "keywords": [
+    "artifact",
+    "template",
+    "document",
+    "presentation",
+    "spreadsheet"
+  ],
+  "skills": "./skills/",
+  "apps": "./.app.json",
+  "interface": {
+    "displayName": "Default templates",
+    "shortDescription": "Default templates for documents, spreadsheets, and presentations",
+    "longDescription": "Create documents, presentations, and spreadsheets from OpenAI-provided reference templates.",
+    "developerName": "OpenAI",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Create a document using the Minimal Letterhead template",
+      "Create an Analytics Dashboard spreadsheet using the Analytics Dashboard template",
+      "Create a planning presentation with the Team Alignment template"
+    ],
+    "brandColor": "#10A37F",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "screenshots": []
+  }
+}

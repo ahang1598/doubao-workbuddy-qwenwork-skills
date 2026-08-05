@@ -1,0 +1,71 @@
+{
+  "id": "codex-grid-layout-library",
+  "artifactSpecVersion": "alpha",
+  "packageVersion": "v1",
+  "version": "v1",
+  "name": "Codex Grid Layout Library",
+  "description": "Design presentation-native decks with a monochrome 26-layout system spanning covers, agendas, image splits, evidence tables, process sequences, charts, and metric grids.",
+  "kind": "presentation",
+  "target": "pptx",
+  "supportedTargets": [
+    "pptx"
+  ],
+  "guidance": "./ARTIFACT.md",
+  "prompt": "./presentation.md",
+  "sharedPrompt": "../prompts/common.md",
+  "assetRoot": "../../assets/builtin_templates/codex-grid-layout-library",
+  "tokens": "../../assets/builtin_templates/codex-grid-layout-library/design_tokens.json",
+  "content": "../../assets/builtin_templates/codex-grid-layout-library/content.json",
+  "assets": "../../assets/builtin_templates/codex-grid-layout-library/assets/index.json",
+  "scripts": "../scripts/index.json",
+  "owner": "stocker@openai.com",
+  "visibility": "private",
+  "tags": [
+    "presentation",
+    "layout-library",
+    "monochrome",
+    "grid",
+    "artifact-tool",
+    "compose",
+    "no-jsx"
+  ],
+  "accentColors": {
+    "accent1": "#000000",
+    "accent2": "#555555",
+    "accent3": "#B8BCC4",
+    "accent4": "#EDEDED",
+    "accent5": "#FF6B35",
+    "accent6": "#FFFFFF"
+  },
+  "typography": {
+    "headline": "Helvetica Neue",
+    "body": "Helvetica Neue",
+    "label": "Helvetica Neue"
+  },
+  "tone": {
+    "density": "sparse to dense",
+    "voice": "direct, editorial, and evidence-led"
+  },
+  "previewImage": "../../assets/builtin_templates/codex-grid-layout-library/assets/previews/slide-01.png",
+  "assetArchive": {
+    "kind": "presentation-layout-library",
+    "root": "codex-grid-layout-library",
+    "slideCount": 26
+  },
+  "upload": {
+    "officeBytesRetained": false
+  },
+  "privacy": {
+    "sourceRetained": false,
+    "originalFilenameStored": false
+  },
+  "distillation": {
+    "method": "granola_walnut",
+    "sourceAnalyzed": true,
+    "signals": [
+      "walnut.pptx",
+      "artifact-tool.compose-no-jsx",
+      "all-slide-render-qa"
+    ]
+  }
+}

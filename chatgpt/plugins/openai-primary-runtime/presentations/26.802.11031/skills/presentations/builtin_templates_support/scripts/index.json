@@ -1,0 +1,27 @@
+{
+  "scriptsVersion": "1",
+  "items": [
+    {
+      "id": "create-presentation",
+      "label": "Create a presentation from a layout library",
+      "path": "./create-presentation.mjs",
+      "language": "javascript",
+      "kind": "validation",
+      "target": "oai.artifact-tool.compose-no-jsx",
+      "description": "Materialize all exact layouts from any compatible static layout-library asset root.",
+      "arguments": [
+        "<layout-library-asset-root>",
+        "<output-pptx>"
+      ]
+    },
+    {
+      "id": "reconstruct-artifact-tool",
+      "label": "Re-export the shared reconstruction helper",
+      "path": "./reconstruct-artifact-tool.mjs",
+      "language": "javascript",
+      "kind": "validation",
+      "target": "oai.artifact-tool.compose-no-jsx",
+      "description": "Compatibility re-export for the shared layout-library runner."
+    }
+  ]
+}

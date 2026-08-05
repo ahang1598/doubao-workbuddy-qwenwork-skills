@@ -1,0 +1,52 @@
+{
+  "name": "sites",
+  "version": "0.1.33",
+  "description": "Build and deploy websites with Sites. Use of Sites is subject to the ChatGPT Sites Terms (https://openai.com/policies/chatgpt-sites-terms/), and you are responsible for your website content.",
+  "author": {
+    "name": "OpenAI",
+    "email": "support@openai.com",
+    "url": "https://openai.com/"
+  },
+  "homepage": "https://openai.com/",
+  "license": "Proprietary",
+  "keywords": [
+    "build",
+    "deploy",
+    "sites",
+    "website",
+    "landing page",
+    "portfolio",
+    "dashboard",
+    "KPI dashboard",
+    "portal",
+    "tracker",
+    "hub",
+    "internal tool",
+    "games"
+  ],
+  "skills": "./skills/",
+  "apps": "./.app.json",
+  "interface": {
+    "displayName": "Sites",
+    "shortDescription": "Build and deploy websites with Sites",
+    "longDescription": "Build, save, deploy, and inspect websites such as landing pages, portfolios, dashboards, portals, trackers, hubs, games, and internal tools with Sites. Use of Sites is subject to the ChatGPT Sites Terms (https://openai.com/policies/chatgpt-sites-terms/), and you are responsible for your website content.",
+    "developerName": "OpenAI",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/chatgpt-sites-terms/",
+    "defaultPrompt": [
+      "Build a new-hire portal for my company",
+      "Create a daily sudoku game with a leaderboard",
+      "Build a dashboard to track customer support trends"
+    ],
+    "brandColor": "#0C79D8",
+    "logo": "./assets/logo.svg",
+    "composerIcon": "./assets/icon.svg",
+    "screenshots": []
+  }
+}

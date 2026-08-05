@@ -1,0 +1,7 @@
+interface:
+  display_name: "Design Report"
+  short_description: "Create documents with the Design Report template"
+  icon_large: "./assets/preview.png"
+  default_prompt: "Create a new document with this template."
+policy:
+  allow_implicit_invocation: false

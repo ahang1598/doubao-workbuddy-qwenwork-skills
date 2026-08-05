@@ -168,6 +168,29 @@ PLATFORMS: dict[str, PlatformSpec] = {
             ),
         ),
     ),
+    "chatgpt": PlatformSpec(
+        name="chatgpt",
+        title="ChatGPT",
+        root="chatgpt",
+        readme="README-chatgpt.md",
+        task_name="ChatgptSkillsDailySync",
+        sources=(
+            SourceSpec(
+                name="skills",
+                title="System Skills",
+                source=Path("/mnt/c/Users/15805/.codex/skills/.system"),
+                target="skills",
+                item_kind="skill",
+            ),
+            SourceSpec(
+                name="plugins",
+                title="Plugin Cache",
+                source=Path("/mnt/c/Users/15805/.codex/plugins/cache"),
+                target="plugins",
+                item_kind="plugin cache",
+            ),
+        ),
+    ),
 }
 
 
@@ -253,6 +276,10 @@ def item_name(rel: str) -> str:
     parts = PurePosixPath(rel).parts
     if len(parts) <= 1:
         return parts[0] if parts else "(root)"
+    if parts[0] == "plugins" and len(parts) > 3 and parts[3] == ".codex-remote-plugin-install.json":
+        return f"{parts[0]}/{parts[1]}/{parts[2]}"
+    if parts[0] == "plugins" and len(parts) > 3:
+        return f"{parts[0]}/{parts[1]}/{parts[2]}/{parts[3]}"
     if parts[0] == "official_experts" and len(parts) > 2:
         return f"{parts[0]}/{parts[1]}/{parts[2]}"
     if parts[0] == "cb_teams_experts" and len(parts) > 2 and parts[1] == "plugins":
@@ -437,12 +464,32 @@ def escape_cell(text: str) -> str:
     return str(text).replace("\\", "\\\\").replace("|", "\\|").replace("\n", " ")
 
 
+def chatgpt_plugin_entries(target: Path, source: SourceSpec):
+    entries = []
+    manifests = sorted(target.glob("*/*/*/.codex-plugin/plugin.json"))
+    for manifest in manifests:
+        item = manifest.parents[1]
+        rel_dir = item.relative_to(target).as_posix()
+        parts = PurePosixPath(rel_dir).parts
+        fallback_name = parts[1] if len(parts) > 1 else item.name
+        name, description, category = metadata_for_item(item, fallback_name)
+        file_count = sum(1 for p in item.rglob("*") if p.is_file())
+        provider = parts[0] if parts else source.item_kind
+        version = parts[2] if len(parts) > 2 else item.name
+        entries.append((name, rel_dir, category or provider, file_count, f"{description} Version: {version}."))
+    return entries
+
+
 def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[str, tuple[str, str]]):
     target = path_from_rel(platform_root, source.target)
     if source.source_is_file:
         return []
     if not target.exists():
         return []
+    if source.name == "plugins" and (target / "openai-bundled").exists():
+        entries = chatgpt_plugin_entries(target, source)
+        if entries:
+            return entries
     entries = []
     for item in sorted((p for p in target.iterdir() if p.is_dir()), key=lambda p: p.name):
         name, description, category = metadata_for_item(item, item.name)
@@ -683,8 +730,9 @@ def write_root_readme(repo_root: Path) -> None:
 | Doubao | `doubao/` | [README-doubao.md](README-doubao.md) |
 | WorkBuddy | `workbuddy/` | [README-workbuddy.md](README-workbuddy.md) |
 | QwenWork | `qwenwork/` | [README-qwenwork.md](README-qwenwork.md) |
+| ChatGPT | `chatgpt/` | [README-chatgpt.md](README-chatgpt.md) |
 
-每个平台目录内都有独立的 `change-logs/` 和 `archive/deleted/`。定时任务每天 18:00 分别运行，三个平台的同步范围互不重叠。
+每个平台目录内都有独立的 `change-logs/` 和 `archive/deleted/`。定时任务每天 18:00 分别运行，各平台的同步范围互不重叠。
 """,
         encoding="utf-8",
     )

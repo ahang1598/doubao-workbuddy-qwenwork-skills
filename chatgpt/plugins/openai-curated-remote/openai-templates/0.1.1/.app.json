@@ -1,0 +1,8 @@
+{
+  "apps": {
+    "default_templates": {
+      "id": "connector_openai_default_templates",
+      "required": true
+    }
+  }
+}

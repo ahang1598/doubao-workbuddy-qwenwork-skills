@@ -1,0 +1,50 @@
+{
+  "name": "visualize",
+  "version": "1.0.16",
+  "description": "Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex.",
+  "author": {
+    "name": "OpenAI"
+  },
+  "homepage": "https://openai.com/",
+  "license": "Proprietary",
+  "keywords": [
+    "visualize",
+    "data visualization",
+    "chart",
+    "map",
+    "diagram",
+    "simulation",
+    "3d model",
+    "interactive",
+    "dashboard",
+    "data explorer",
+    "ui preview"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Visualize",
+    "shortDescription": "Turn ideas and data into interactive visuals",
+    "longDescription": "Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in your conversation. Filter data, select details, compare scenarios, and adjust inputs to see how the result changes.",
+    "developerName": "OpenAI",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "composerIcon": "./assets/visualize.svg",
+    "logo": "./assets/visualize.svg",
+    "logoDark": "./assets/visualize-dark.svg",
+    "defaultPrompt": [
+      "Turn this dataset into an interactive explorer with filters and selectable details",
+      "Show how a spinning gyroscope works in an adjustable 3D simulation",
+      "Visualize this database schema as an interactive relationship graph"
+    ],
+    "brandColor": "#0169CC",
+    "screenshots": []
+  },
+  "bundledContentVariant": "live-disabled"
+}

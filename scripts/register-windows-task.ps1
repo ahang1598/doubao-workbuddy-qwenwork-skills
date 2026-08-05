@@ -52,3 +52,4 @@ function Register-PlatformTask {
 Register-PlatformTask -TaskName "DoubaoSkillsDailySync" -Platform "doubao" -LogName "doubao-sync.log"
 Register-PlatformTask -TaskName "WorkbuddySkillsDailySync" -Platform "workbuddy" -LogName "workbuddy-sync.log"
 Register-PlatformTask -TaskName "QwenworkSkillsDailySync" -Platform "qwenwork" -LogName "qwenwork-sync.log"
+Register-PlatformTask -TaskName "ChatgptSkillsDailySync" -Platform "chatgpt" -LogName "chatgpt-sync.log"

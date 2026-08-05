@@ -1,0 +1,96 @@
+{
+  "artifactSpecVersion": {
+    "$type": "string",
+    "$value": "alpha"
+  },
+  "kind": {
+    "$type": "string",
+    "$value": "presentation"
+  },
+  "name": {
+    "$type": "string",
+    "$value": "Codex Grid"
+  },
+  "themeColors": {
+    "$type": "object",
+    "$value": {
+      "canvas": {
+        "name": "Canvas",
+        "color": "#FFFFFF",
+        "type": "boxBackground"
+      },
+      "ink": {
+        "name": "Primary ink",
+        "color": "#000000",
+        "type": "textColor"
+      },
+      "panel": {
+        "name": "Pale gray panel",
+        "color": "#EDEDED",
+        "type": "boxBackground"
+      },
+      "rule": {
+        "name": "Thin rule",
+        "color": "#B8BCC4",
+        "type": "ruleColor"
+      },
+      "accent": {
+        "name": "Light blue accent",
+        "color": "#6DCBF4",
+        "type": "highlightColor"
+      },
+      "accentStrong": {
+        "name": "Blue accent",
+        "color": "#3D8DFF",
+        "type": "highlightColor"
+      }
+    }
+  },
+  "fontFamilies": {
+    "$type": "object",
+    "$value": {
+      "headline": "Helvetica Neue, Arial, sans-serif",
+      "body": "Helvetica Neue, Arial, sans-serif",
+      "medium": "Helvetica Neue, Arial, sans-serif"
+    }
+  },
+  "typography": {
+    "$type": "object",
+    "$value": {
+      "mediumTreatment": {
+        "typeface": "Helvetica Neue",
+        "bold": true,
+        "fallback": "Arial, sans-serif"
+      }
+    }
+  },
+  "layout": {
+    "$type": "layout",
+    "$value": {
+      "unit": "px",
+      "slideSize": {
+        "width": 1280,
+        "height": 720
+      }
+    }
+  },
+  "charts": {
+    "$type": "object",
+    "$value": {
+      "seriesColors": [
+        "#6DCBF4",
+        "#3D8DFF",
+        "#D0EDFA"
+      ],
+      "gridlines": "minimal"
+    }
+  },
+  "validation": {
+    "$type": "object",
+    "$value": {
+      "slideCount": 26,
+      "exactReconstructionModules": 26,
+      "finalRender": "all-slide montage"
+    }
+  }
+}

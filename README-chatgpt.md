@@ -1,0 +1,54 @@
+# ChatGPT Skills And Experts
+
+本文件由 `scripts/sync_platform.py --platform chatgpt` 自动生成，整理 `chatgpt/` 下同步的技能、专家团和插件索引。
+
+## 同步概览
+
+- 平台目录：`chatgpt/`
+- 定时任务：`ChatgptSkillsDailySync`，每天 18:00 运行
+- 当前索引条目数：20
+- 当前索引文件数：1119
+- 最近变更：[2026-08-05-232542](chatgpt/change-logs/2026-08-05-232542.md) - ChatGPT 本次同步新增 1125 个文件、修改 0 个文件、删除 0 个文件。 新增条目：plugins/openai-bundled/browser/26.727.51351, plugins/openai-bundled/computer-use/26.727.51351, plugins/openai-bundled/sites/0.1.3...
+
+## 数据来源
+
+- `skills` <= `/mnt/c/Users/15805/.codex/skills/.system`
+- `plugins` <= `/mnt/c/Users/15805/.codex/plugins/cache`
+
+## 分类索引
+
+### System Skills
+
+| Name | Directory | Category | Files | Description |
+| --- | --- | --- | ---: | --- |
+| imagegen | `chatgpt/skills/imagegen` | skill | 12 | Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-n... |
+| openai-docs | `chatgpt/skills/openai-docs` | skill | 12 | Use when the user asks how to build with OpenAI products or APIs, asks about Codex itself or choosing Codex surfaces, needs up-to-date official documentation with citations, help choosing the latest model for a use ca... |
+| plugin-creator | `chatgpt/skills/plugin-creator` | skill | 10 | Create and scaffold plugin directories for Codex with a required `.codex-plugin/plugin.json`, optional plugin folders/files, valid manifest defaults, and personal-marketplace entries by default. Use when Codex needs t... |
+| review-agent | `chatgpt/skills/review-agent` | skill | 2 | Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted changes, a base-branch diff, a commit, or custom review i... |
+| skill-creator | `chatgpt/skills/skill-creator` | skill | 9 | Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integ... |
+| skill-installer | `chatgpt/skills/skill-installer` | skill | 8 | Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private... |
+
+### Plugin Cache
+
+| Name | Directory | Category | Files | Description |
+| --- | --- | --- | ---: | --- |
+| browser | `chatgpt/plugins/openai-bundled/browser/26.727.51351` | openai-bundled | 377 | Browser / browser-use plugin Aliases: @browser, @browser-use, browser-use, Browser, in-app browser. Use Browser, the ChatGPT in-app browser, when the user asks to open, inspect, navigate, test, click, type, or screens... Version: 26.727.51351. |
+| computer-use | `chatgpt/plugins/openai-bundled/computer-use/26.727.51351` | openai-bundled | 7 | Control desktop apps on Windows from ChatGPT through Computer Use. Version: 26.727.51351. |
+| sites | `chatgpt/plugins/openai-bundled/sites/0.1.33` | openai-bundled | 45 | Build and deploy websites with Sites. Use of Sites is subject to the ChatGPT Sites Terms (https://openai.com/policies/chatgpt-sites-terms/), and you are responsible for your website content. Version: 0.1.33. |
+| visualize | `chatgpt/plugins/openai-bundled/visualize/1.0.16` | openai-bundled | 8 | Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex. Version: 1.0.16. |
+| data-analytics | `chatgpt/plugins/openai-curated-remote/data-analytics/0.2.8-13ceeea1f599` | openai-curated-remote | 201 | Answer product and business questions with data Version: 0.2.8-13ceeea1f599. |
+| github | `chatgpt/plugins/openai-curated-remote/github/0.1.8-2841cf9749ae` | openai-curated-remote | 26 | Inspect repositories, triage pull requests and issues, debug CI, and publish changes through a hybrid GitHub connector and CLI workflow. Version: 0.1.8-2841cf9749ae. |
+| openai-templates | `chatgpt/plugins/openai-curated-remote/openai-templates/0.1.1` | openai-curated-remote | 106 | OpenAI default document, presentation, and spreadsheet templates. Version: 0.1.1. |
+| slack | `chatgpt/plugins/openai-curated-remote/slack/0.1.6` | openai-curated-remote | 10 | Work with Slack using the configured Slack integration. Version: 0.1.6. |
+| supabase | `chatgpt/plugins/openai-curated-remote/supabase/1.0.0` | openai-curated-remote | 47 | Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time lo... Version: 1.0.0. |
+| documents | `chatgpt/plugins/openai-primary-runtime/documents/26.802.11031` | openai-primary-runtime | 82 | Create and edit document artifacts in Codex, including Word files and Google Docs. Version: 26.802.11031. |
+| pdf | `chatgpt/plugins/openai-primary-runtime/pdf/26.802.11031` | openai-primary-runtime | 8 | Read, create, inspect, render, and verify PDF files in Codex. Version: 26.802.11031. |
+| presentations | `chatgpt/plugins/openai-primary-runtime/presentations/26.802.11031` | openai-primary-runtime | 117 | Create, edit, render, verify, and export presentation slide decks. Use when Codex needs to build or modify a deck, slidedeck, presentation deck, slide deck, slides, PowerPoint, Google Slides, PPT, PPTX, .ppt, or .pptx... Version: 26.802.11031. |
+| spreadsheets | `chatgpt/plugins/openai-primary-runtime/spreadsheets/26.802.11031` | openai-primary-runtime | 27 | Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.802.11031. |
+| template-creator | `chatgpt/plugins/openai-primary-runtime/template-creator/26.802.11031` | openai-primary-runtime | 5 | Create and update personal templates from files, ImageGen or Product Design images, emails, and Slack messages. Version: 26.802.11031. |
+
+## 最近变更
+
+| Date | Change Log | Summary |
+| --- | --- | --- |
+| 2026-08-05-232542 | [2026-08-05-232542](chatgpt/change-logs/2026-08-05-232542.md) | ChatGPT 本次同步新增 1125 个文件、修改 0 个文件、删除 0 个文件。 新增条目：plugins/openai-bundled/browser/26.727.51351, plugins/openai-bundled/computer-use/26.727.51351, plugins/openai-bundled/sites/0.1.3... |

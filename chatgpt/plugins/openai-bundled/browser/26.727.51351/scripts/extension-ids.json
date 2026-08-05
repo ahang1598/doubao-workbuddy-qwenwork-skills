@@ -1,0 +1,180 @@
+{
+  "browserExtensions": [
+    {
+      "browserFamily": "chrome",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg"
+      ],
+      "browserIconAssetPath": "assets/google-chrome.png",
+      "storeExtensionId": "hehggadaopoacecdllhhajmbjkdcmajg",
+      "storeUrl": "https://chromewebstore.google.com/detail/codex/hehggadaopoacecdllhhajmbjkdcmajg"
+    },
+    {
+      "browserFamily": "edge",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg"
+      ],
+      "browserIconAssetPath": "assets/microsoft-edge.svg",
+      "storeExtensionId": "hehggadaopoacecdllhhajmbjkdcmajg",
+      "storeUrl": "https://chromewebstore.google.com/detail/codex/hehggadaopoacecdllhhajmbjkdcmajg"
+    }
+  ],
+  "extensionIds": [
+    "hehggadaopoacecdllhhajmbjkdcmajg"
+  ],
+  "extensionHostName": "com.openai.codexextension",
+  "windowsNativeMessaging": {
+    "manifestDirectory": "AppData/Local/OpenAI/extension",
+    "registryRoot": "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts"
+  },
+  "browserDiagnostics": [
+    {
+      "browserFamily": "chrome",
+      "displayName": "Google Chrome",
+      "shortDisplayName": "Chrome",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg"
+      ],
+      "extensionManagementUrl": "chrome://extensions",
+      "storeUrl": "https://chromewebstore.google.com/detail/codex/hehggadaopoacecdllhhajmbjkdcmajg",
+      "linux": {
+        "commands": [
+          "google-chrome",
+          "google-chrome-stable",
+          "chromium",
+          "chromium-browser",
+          "google-chrome-beta",
+          "google-chrome-unstable",
+          "google-chrome-for-testing"
+        ],
+        "configHomeEnvironmentVariables": [
+          "CHROME_CONFIG_HOME",
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/google-chrome/NativeMessagingHosts",
+          ".config/chromium/NativeMessagingHosts",
+          ".config/google-chrome-beta/NativeMessagingHosts",
+          ".config/google-chrome-unstable/NativeMessagingHosts",
+          ".config/google-chrome-for-testing/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "chrome"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "google-chrome"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Google Chrome.app"
+        ],
+        "bundleId": "com.google.Chrome",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/Google/Chrome/NativeMessagingHosts",
+          "Library/Application Support/Chromium/NativeMessagingHosts",
+          "Library/Application Support/Google/ChromeForTesting/NativeMessagingHosts",
+          "Library/Application Support/Google/Chrome for Testing/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Google Chrome",
+          "Google Chrome Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "Google",
+          "Chrome"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "chrome.exe",
+          "chrome"
+        ],
+        "installPathSegments": [
+          "Google",
+          "Chrome",
+          "Application",
+          "chrome.exe"
+        ],
+        "processNames": [
+          "chrome.exe"
+        ],
+        "userDataDirectorySegments": [
+          "Google",
+          "Chrome",
+          "User Data"
+        ]
+      }
+    },
+    {
+      "browserFamily": "edge",
+      "displayName": "Microsoft Edge",
+      "shortDisplayName": "Edge",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg"
+      ],
+      "extensionManagementUrl": "edge://extensions",
+      "storeUrl": "https://chromewebstore.google.com/detail/codex/hehggadaopoacecdllhhajmbjkdcmajg",
+      "linux": {
+        "commands": [
+          "microsoft-edge",
+          "microsoft-edge-stable"
+        ],
+        "configHomeEnvironmentVariables": [
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/microsoft-edge/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "msedge"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "microsoft-edge"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Microsoft Edge.app"
+        ],
+        "bundleId": "com.microsoft.edgemac",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/Microsoft Edge/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Microsoft Edge",
+          "Microsoft Edge Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "Microsoft Edge"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "msedge.exe",
+          "msedge"
+        ],
+        "installPathSegments": [
+          "Microsoft",
+          "Edge",
+          "Application",
+          "msedge.exe"
+        ],
+        "processNames": [
+          "msedge.exe"
+        ],
+        "userDataDirectorySegments": [
+          "Microsoft",
+          "Edge",
+          "User Data"
+        ]
+      }
+    }
+  ]
+}

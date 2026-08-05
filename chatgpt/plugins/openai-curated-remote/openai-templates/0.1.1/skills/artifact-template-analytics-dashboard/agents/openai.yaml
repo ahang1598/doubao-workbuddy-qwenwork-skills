@@ -1,0 +1,7 @@
+interface:
+  display_name: "Analytics Dashboard"
+  short_description: "Create spreadsheets with the Analytics Dashboard template"
+  icon_large: "./assets/preview.png"
+  default_prompt: "Create a new spreadsheet with this template."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,38 @@
+{
+  "summary": "Build clean light-mode presentations with white canvases, black typography, pale-gray panels, thin rules, and light-blue chart accents.",
+  "sections": [
+    "Covers and closing slides",
+    "Narrative and two-column content",
+    "Processes and metrics",
+    "Tables and charts"
+  ],
+  "components": {
+    "layoutCount": 26,
+    "archetypeCounts": {
+      "chart": 3,
+      "cover": 1,
+      "data-table": 4,
+      "metrics": 2,
+      "process": 11,
+      "two-column": 5
+    }
+  },
+  "sourcePolicy": {
+    "uploadedFileStored": false,
+    "originalFilenameStored": false,
+    "officeBytesStored": false
+  },
+  "presentation": {
+    "title": "Codex Grid Layout Library",
+    "slideCount": 26,
+    "archetypes": {
+      "chart": 3,
+      "cover": 1,
+      "data-table": 4,
+      "metrics": 2,
+      "process": 11,
+      "two-column": 5
+    },
+    "silhouettePolicy": "Choose by templateUse, layoutFamily, slots, and density budget; vary adjacent slide silhouettes."
+  }
+}
