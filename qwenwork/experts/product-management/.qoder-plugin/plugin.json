@@ -1,0 +1,35 @@
+{
+  "name": "product-management",
+  "displayName": "产品管理",
+  "version": "1.1.1",
+  "description": "产品经理全流程工具箱，覆盖PRD撰写、用户故事拆解、竞品分析、需求优先级排序、用户反馈分析、产品指标复盘、路线图更新和产品脑暴八大核心场景。每个技能内置行业方法论、条件分支和输出模板，产出可直接交付。连接文档平台可将PRD和报告直接写入团队知识库，连接表格工具可读写需求池和反馈数据，连接任务工具可将拆解结果自动创建为待办任务，连接项目管理工具可自动同步迭代状态。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "keywords": [
+    "产品",
+    "PRD",
+    "用户故事",
+    "竞品分析",
+    "需求管理",
+    "用户反馈",
+    "优先级排序",
+    "产品经理",
+    "需求文档",
+    "指标复盘",
+    "路线图",
+    "脑暴",
+    "数据分析",
+    "迭代管理"
+  ],
+  "displayNameEn": "Product Management",
+  "descriptionEn": "An end-to-end product management toolkit covering eight core workflows: PRD writing, user story breakdown, competitive analysis, requirement prioritization, user feedback analysis, product metrics review, roadmap updates, and product brainstorming. Each skill includes built-in methodologies, conditional branching, and output templates for delivery-ready results. Connect a docs platform to push PRDs and reports straight into your team wiki, connect a spreadsheet tool to read/write requirement backlogs and feedback data, connect a task tracker to auto-create actionable to-dos from breakdowns, or connect a project management tool to sync iteration status automatically.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_L1W6gUdJ",
+    "version": "1.1.1",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925306500
+  }
+}

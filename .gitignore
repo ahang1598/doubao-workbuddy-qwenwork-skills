@@ -1,3 +1,5 @@
 logs/
 .sync.lock
+.sync-*.lock
+.git-sync.lock
 scripts/__pycache__/

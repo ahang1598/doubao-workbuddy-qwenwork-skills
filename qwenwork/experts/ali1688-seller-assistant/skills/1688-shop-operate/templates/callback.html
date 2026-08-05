@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1688 OAuth 授权</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh; background: #f8f9fa;
+}
+
+.card {
+  background: #fff; border-radius: 1rem; padding: 2.5rem 2rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,.06); max-width: 520px; width: 92%;
+}
+
+/* ── 品牌 Header ── */
+.brand { text-align: center; margin-bottom: 2rem; }
+.brand-name { font-size: 1.25rem; font-weight: 700; color: #333; }
+.brand-name span { color: #FF6A00; }
+
+/* ── 三步进度条 ── */
+.steps {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 2rem; position: relative;
+}
+.steps::before {
+  content: ''; position: absolute; top: 18px; left: 15%; right: 15%;
+  height: 2px; background: #e5e7eb;
+}
+.step {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; z-index: 1; flex: 1;
+}
+.step-circle {
+  width: 36px; height: 36px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 0.875rem;
+  font-weight: 600; background: #e5e7eb; color: #9ca3af;
+  transition: all 0.3s ease;
+}
+.step.active .step-circle { background: #FF6A00; color: #fff; }
+.step.done .step-circle { background: #16a34a; color: #fff; }
+.step.error .step-circle { background: #dc2626; color: #fff; }
+.step-label {
+  margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af;
+  text-align: center; transition: color 0.3s;
+}
+.step.active .step-label, .step.done .step-label { color: #333; }
+
+/* ── 内容区 ── */
+.content { text-align: center; min-height: 140px; }
+.status-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.status-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: #333; }
+.status-desc { color: #666; line-height: 1.6; font-size: 0.9rem; }
+
+/* ── Loading Spinner ── */
+.spinner {
+  width: 48px; height: 48px; border: 4px solid #e5e7eb;
+  border-top-color: #FF6A00; border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 成功结果 ── */
+.result-info {
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem;
+  padding: 1rem; margin-top: 1rem; text-align: left;
+}
+.result-row {
+  display: flex; justify-content: space-between; padding: 0.25rem 0;
+  font-size: 0.85rem;
+}
+.result-key { color: #666; }
+.result-value { color: #333; font-weight: 500; font-family: monospace; }
+
+/* ── 错误结果 ── */
+.error-info {
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem;
+  padding: 1rem; margin-top: 1rem; text-align: left;
+}
+.error-code {
+  font-family: monospace; background: #fee2e2; color: #991b1b;
+  padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem;
+}
+
+/* ── 按钮 ── */
+.btn {
+  display: inline-block; margin-top: 1rem; padding: 0.6rem 1.5rem;
+  border: none; border-radius: 0.5rem; font-size: 0.9rem;
+  cursor: pointer; text-decoration: none; transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: #FF6A00; color: #fff; }
+
+/* ── Footer ── */
+.footer {
+  text-align: center; margin-top: 1.5rem; padding-top: 1rem;
+  border-top: 1px solid #f0f0f0; font-size: 0.7rem; color: #bbb;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- 品牌 -->
+  <div class="brand">
+    <div class="brand-name"><span>1688</span> OAuth 授权</div>
+  </div>
+
+  <!-- 三步进度 -->
+  <div class="steps">
+    <div class="step done" id="step1">
+      <div class="step-circle">&#10003;</div>
+      <div class="step-label">接收授权码</div>
+    </div>
+    <div class="step active" id="step2">
+      <div class="step-circle">2</div>
+      <div class="step-label">交换令牌</div>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-circle">3</div>
+      <div class="step-label">完成</div>
+    </div>
+  </div>
+
+  <!-- 动态内容 -->
+  <div class="content" id="content">
+    <div class="spinner"></div>
+    <div class="status-title">正在交换令牌...</div>
+    <div class="status-desc">正在与授权服务器通信，请稍候</div>
+  </div>
+
+  <div class="footer">此页面仅运行在您的本地设备上 (localhost)</div>
+</div>
+
+<script>
+(function() {
+  const AUTH_CODE = "{{AUTH_CODE}}";
+  const SERVER_PORT = "{{SERVER_PORT}}";
+  const API_BASE = "http://localhost:" + SERVER_PORT;
+
+  const step2 = document.getElementById("step2");
+  const step3 = document.getElementById("step3");
+  const content = document.getElementById("content");
+
+  async function exchangeToken() {
+    try {
+      const resp = await fetch(API_BASE + "/api/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: AUTH_CODE }),
+      });
+
+      const data = await resp.json();
+
+      if (data.success) {
+        showSuccess(data);
+      } else {
+        showError(data.error || "UNKNOWN", data.error_description || "Token 交换失败");
+      }
+    } catch (err) {
+      showError("NETWORK_ERROR", "无法连接到本地授权服务: " + err.message);
+    }
+  }
+
+  function showSuccess(data) {
+    step2.className = "step done";
+    step2.querySelector(".step-circle").innerHTML = "&#10003;";
+    step3.className = "step done";
+    step3.querySelector(".step-circle").innerHTML = "&#10003;";
+
+    const scope = data.scope || "-";
+    const expiresMin = Math.round((data.expires_in || 0) / 60);
+
+    content.innerHTML =
+      '<div class="status-icon" style="color:#16a34a">&#10004;</div>' +
+      '<div class="status-title" style="color:#16a34a">授权成功！</div>' +
+      '<div class="status-desc">您可以关闭此页面返回 AI 助手继续操作。</div>';
+
+    // 通知服务器可以关闭
+    fetch(API_BASE + "/api/shutdown", { method: "POST" }).catch(function() {});
+  }
+
+  function showError(code, description) {
+    step2.className = "step error";
+    step2.querySelector(".step-circle").innerHTML = "&#10008;";
+    step3.className = "step";
+
+    var suggestion = getSuggestion(code, description);
+
+    content.innerHTML =
+      '<div class="status-icon" style="color:#dc2626">&#10008;</div>' +
+      '<div class="status-title" style="color:#dc2626">授权失败</div>' +
+      '<div class="status-desc">' + escapeHtml(description) + '</div>' +
+      '<div class="error-info">' +
+        '<div class="result-row"><span class="result-key">建议</span><span class="result-value">' + escapeHtml(suggestion) + '</span></div>' +
+      '</div>';
+
+    // 通知服务器可以关闭，避免 CLI 一直等待
+    fetch(API_BASE + "/api/shutdown", { method: "POST" }).catch(function() {});
+  }
+
+  function getSuggestion(code, description) {
+    var lowerCode = (code || "").toLowerCase();
+    var lowerDesc = (description || "").toLowerCase();
+
+    if (lowerCode === "invalid_grant") {
+      if (lowerDesc.indexOf("用户id") !== -1 && lowerDesc.indexOf("不一致") !== -1) {
+        return "当前登录账号与配置的 AK 所属账号不一致，请重新登录 AK 所属账号后再试";
+      }
+      if (lowerDesc.indexOf("过期") !== -1 || lowerDesc.indexOf("expired") !== -1) {
+        return "授权码已过期，请关闭此页面后重新发起授权";
+      }
+      if (lowerDesc.indexOf("已使用") !== -1 || lowerDesc.indexOf("already been used") !== -1) {
+        return "授权码已被使用，请关闭此页面后重新发起授权";
+      }
+      return "授权凭证无效，请关闭此页面后重新发起授权";
+    }
+
+    return "请关闭此页面后重新发起授权";
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  // 页面加载后自动发起 Token 交换
+  exchangeToken();
+})();
+</script>
+</body>
+</html>

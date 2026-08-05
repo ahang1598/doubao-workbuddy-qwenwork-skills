@@ -1,0 +1,29 @@
+{
+  "name": "corporate-legal",
+  "displayName": "企业法务",
+  "version": "1.1.2",
+  "description": "企业综合法务助手：起草法律文书（律师函/起诉状/答辩状/代理词）、生成公司决议及章程修正案（2024新《公司法》）、类案检索与胜率预判、多领域合规审查（个保/广告/资质/数据安全/跨境合规）、企业背景调查与量化风险评级、法律风险矩阵评估、法务日报/周报自动生成、电子签流程发起。独立运行覆盖全流程，连接北大法宝、旷湖企业信息、DocuSign、Gmail等服务后自动增强。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "skills": [
+    "./skills/合规审查",
+    "./skills/企业背景调查",
+    "./skills/风险评估",
+    "./skills/公司决议",
+    "./skills/查案例",
+    "./skills/法律文书",
+    "./skills/法务日报",
+    "./skills/电子签发起"
+  ],
+  "displayNameEn": "Corporate Legal",
+  "descriptionEn": "Comprehensive corporate legal assistant: draft legal documents (demand letters, complaints, defense statements, legal opinions), generate corporate resolutions and articles of association amendments (2024 PRC Company Law), search and analyze similar cases with outcome prediction, conduct multi-domain compliance reviews (privacy/advertising/licensing/data security/cross-border including GDPR/CCPA/PIPL), perform company background checks with quantified risk ratings, build legal risk matrices, auto-generate legal daily/weekly briefings, and initiate e-signature workflows. Fully functional standalone; connects to PKULaw, Kuanghu Enterprise Data, DocuSign, Gmail, and more for enhanced capabilities.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_SV5a8etE",
+    "version": "1.1.2",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925302921
+  }
+}

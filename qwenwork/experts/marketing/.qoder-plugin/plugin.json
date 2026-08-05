@@ -1,0 +1,37 @@
+{
+  "name": "marketing",
+  "displayName": "市场营销",
+  "version": "1.1.1",
+  "description": "市场营销全场景工具，覆盖营销文案、广告合规、竞品追踪、活动策划、社媒热点追踪、SEO优化、营销效果分析和品牌调性审查八大场景。独立可用，连接文档协作/数据表格/竞品情报/设计工具/待办工具 MCP 后能力增强。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "keywords": [
+    "市场",
+    "营销",
+    "文案",
+    "广告合规",
+    "竞品",
+    "社媒",
+    "SEO",
+    "小红书",
+    "公众号",
+    "活动策划",
+    "热点追踪",
+    "ROI",
+    "投放效果",
+    "品牌审查",
+    "品牌调性",
+    "转化分析"
+  ],
+  "displayNameEn": "Marketing",
+  "descriptionEn": "Full-spectrum marketing toolkit covering copywriting, ad compliance, competitive tracking, campaign planning, social media trends, SEO optimization, marketing performance analysis, and brand voice review. Works standalone; connecting document collaboration, spreadsheet, competitive intelligence, design, or task management MCP tools unlocks enhanced capabilities.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_UQRkqeAU",
+    "version": "1.1.1",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925309508
+  }
+}

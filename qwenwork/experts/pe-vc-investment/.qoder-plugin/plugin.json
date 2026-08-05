@@ -1,0 +1,27 @@
+{
+  "name": "pe-vc-investment",
+  "displayName": "股权投资",
+  "version": "1.1.2",
+  "description": "PE/VC股权投资全流程工具，覆盖项目筛选、尽调清单、条款审查、投决备忘录、收益测算和退出分析六大场景。适用于投资经理、投资总监、合伙人。触发词：看BP、筛项目、尽调清单、审条款、投决备忘录、测收益、退出分析、算IRR。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "skills": [
+    "./skills/筛项目",
+    "./skills/尽调清单",
+    "./skills/审条款",
+    "./skills/投决备忘录",
+    "./skills/测收益",
+    "./skills/退出分析"
+  ],
+  "displayNameEn": "Private Equity",
+  "descriptionEn": "End-to-end PE/VC toolkit covering deal screening, due diligence checklists, term sheet review, investment committee memos, return modeling, and exit analysis. Built for investment managers, managing directors, and partners. Trigger phrases: review BP, screen deals, DD checklist, review terms, IC memo, model returns, exit analysis, calculate IRR.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_frPhfEfd",
+    "version": "1.1.2",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925311709
+  }
+}

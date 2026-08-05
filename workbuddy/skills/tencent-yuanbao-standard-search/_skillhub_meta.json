@@ -1,0 +1,22 @@
+{
+  "name": "元宝搜索标准版",
+  "installedAt": 1783579007093,
+  "source": "marketplace",
+  "version": "1.0.1",
+  "skillId": "skill_2053085047000309760",
+  "examples_zh": [
+    "帮我搜索一下最近的AI行业新闻",
+    "查一下今天的黄金价格",
+    "在知乎上搜索关于大模型微调的文章"
+  ],
+  "examples_en": [
+    "Search for the latest AI industry news",
+    "Look up today's gold price",
+    "Search articles about LLM fine-tuning on GitHub"
+  ],
+  "description_zh": "元宝搜索标准版skill以互联网全网公开资源为基础，叠加腾讯优质内容生态，结合元宝APP联网搜索应用实践，从数据收录到智能检索召回，全链路构建AI友好搜索引擎。",
+  "description_en": "Real-time web search via TencentCloud WSA API with keyword, site & time filters",
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/tencent-yuanbao-standard-search.svg",
+  "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\tencent-yuanbao-standard-search\\_icon.svg",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/tencent-yuanbao-standard-search.svg"
+}

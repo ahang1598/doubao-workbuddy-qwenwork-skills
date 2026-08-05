@@ -1,0 +1,74 @@
+{
+  "$schema": "../../../chain-protocol.md#semantic-rules-v1",
+  "version": "0.5.2",
+  "description": "SparkDesign token 别名规则表。键为 SparkDesign 标准 token 名，值为常见的等价项目命名数组。/extract Step 5 语义匹配的证据链 A。",
+  "maintenance": "团队发现规则表漏了常用别名时，直接 PR 到本文件。SKILL.md 不内嵌别名，避免与本文件 drift。",
+
+  "color.background.default": [
+    "bg-default", "background", "bg", "page-bg", "body-bg"
+  ],
+  "color.background.elevated": [
+    "surface-1", "surface", "card-bg", "panel-bg", "elevated-bg", "raised-bg"
+  ],
+  "color.background.muted": [
+    "bg-muted", "muted-bg", "subtle-bg", "secondary-bg"
+  ],
+  "color.text.primary": [
+    "text-default", "text-primary", "fg-primary", "foreground", "text", "text-base"
+  ],
+  "color.text.secondary": [
+    "text-secondary", "text-muted", "fg-muted", "muted-foreground", "text-subtle"
+  ],
+  "color.text.disabled": [
+    "text-disabled", "fg-disabled", "disabled-text"
+  ],
+  "color.border.default": [
+    "border", "border-default", "divider", "rule"
+  ],
+  "color.border.subtle": [
+    "border-subtle", "border-muted", "divider-subtle"
+  ],
+  "color.brand.primary": [
+    "primary", "brand", "brand-primary", "accent"
+  ],
+  "color.semantic.success": [
+    "success", "green", "positive", "ok"
+  ],
+  "color.semantic.warning": [
+    "warning", "yellow", "caution", "warn"
+  ],
+  "color.semantic.error": [
+    "error", "danger", "red", "destructive", "negative"
+  ],
+  "color.semantic.info": [
+    "info", "blue", "informational"
+  ],
+
+  "spacing.xs": ["space-1", "spacing-xs", "gap-1", "padding-xs"],
+  "spacing.sm": ["space-2", "spacing-sm", "gap-2", "padding-sm"],
+  "spacing.md": ["space-4", "spacing-md", "spacing-medium", "gap-base", "padding-md"],
+  "spacing.lg": ["space-6", "spacing-lg", "gap-lg", "padding-lg"],
+  "spacing.xl": ["space-8", "spacing-xl", "gap-xl", "padding-xl"],
+
+  "radius.sm": ["radius-sm", "rounded-sm", "border-radius-small"],
+  "radius.md": ["radius-md", "rounded", "border-radius-base", "radius-default"],
+  "radius.lg": ["radius-lg", "rounded-lg", "border-radius-large"],
+  "radius.full": ["radius-full", "rounded-full", "border-radius-pill", "pill"],
+
+  "shadow.elevation.1": ["shadow-sm", "card-shadow", "subtle-shadow", "shadow-low"],
+  "shadow.elevation.2": ["shadow-md", "shadow", "panel-shadow", "shadow-mid"],
+  "shadow.elevation.3": ["shadow-lg", "dropdown-shadow", "modal-shadow", "shadow-high"],
+  "shadow.elevation.4": ["shadow-xl", "shadow-2xl", "shadow-overlay", "shadow-top"],
+
+  "typography.body.md": ["body", "text-base", "body-default", "font-body"],
+  "typography.body.sm": ["body-sm", "text-sm", "small", "caption"],
+  "typography.heading.h1": ["h1", "heading-1", "title-xl", "display-lg"],
+  "typography.heading.h2": ["h2", "heading-2", "title-lg"],
+  "typography.heading.h3": ["h3", "heading-3", "title-md"],
+
+  "motion.duration.fast": ["duration-fast", "duration-150", "transition-fast"],
+  "motion.duration.base": ["duration-base", "duration-300", "transition-default"],
+  "motion.duration.slow": ["duration-slow", "duration-500", "transition-slow"],
+  "motion.easing.standard": ["ease-standard", "ease-in-out", "ease-default"],
+  "motion.easing.spring": ["ease-spring", "spring", "bounce"]
+}

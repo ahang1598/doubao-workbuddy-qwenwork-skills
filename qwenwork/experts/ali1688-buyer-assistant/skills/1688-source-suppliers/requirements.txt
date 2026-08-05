@@ -1,0 +1,2 @@
+# No third-party runtime dependencies.
+# API calls and authentication are handled by the ali1688-buyer MCP connector.

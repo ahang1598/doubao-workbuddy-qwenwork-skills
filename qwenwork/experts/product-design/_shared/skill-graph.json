@@ -1,0 +1,895 @@
+{
+  "version": "0.5.8-draft",
+  "comment": "单一来源：28 Skill 的依赖图 + 每个 Skill 的「下一步优先建议」。dashboard / next-skill 共同消费此文件。validate-chain.py 三向对账 SKILL.md frontmatter ↔ skill-graph.json ↔ dashboard SKILLS 数组。",
+  "fields_spec": {
+    "id": "Skill 英文 ID（kebab-case），与 SKILL.md frontmatter name_en 一致",
+    "name_zh": "中文名（与 SKILL.md frontmatter name 一致）",
+    "phase": "1-5 阶段编号",
+    "anchor": "是否为关键锚点（⭐ 设计师核心交付物 + Brief 链式锚点）",
+    "reads": "完整 reads 数组（与 SKILL.md frontmatter 一致，用于 dashboard 渲染上游线）",
+    "required": "next-skill 算法判定『ready』的最小必要前置（默认 = reads；为大 reads Skill 显式收窄）",
+    "next_hint": "本 Skill 完成后的语境化优先建议：preferred=优先下游 Skill 列表，reason=1-2 句理由，alternatives=备选项"
+  },
+  "skills": [
+    {
+      "id": "frame",
+      "name_zh": "问题框定",
+      "phase": 1,
+      "anchor": false,
+      "reads": [],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "brief"
+        ],
+        "reason": "Frame 已收敛出方向，直接进 Brief 一页纸把目标/用户/策略落定。",
+        "alternatives": [
+          {
+            "id": "probe",
+            "reason": "想先用研验证假设"
+          },
+          {
+            "id": "bench",
+            "reason": "想先看竞品参考"
+          }
+        ],
+        "emoji": "🎯"
+      }
+    },
+    {
+      "id": "scope",
+      "name_zh": "读需求",
+      "phase": 1,
+      "anchor": false,
+      "reads": [],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "brief"
+        ],
+        "reason": "PRD 已拆解出设计目标与约束，进 Brief 把它收敛成可执行简报。",
+        "alternatives": [
+          {
+            "id": "audit",
+            "reason": "改版项目想先做现状走查"
+          }
+        ],
+        "emoji": "📋"
+      }
+    },
+    {
+      "id": "audit",
+      "name_zh": "启发评估",
+      "phase": 1,
+      "anchor": false,
+      "reads": [
+        "frame",
+        "scope"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "brief"
+        ],
+        "reason": "走查 findings 已就位，进 Brief 锚定本次改版的策略与边界。",
+        "alternatives": [
+          {
+            "id": "stories",
+            "reason": "想直接把 finding 转成修复型故事"
+          }
+        ],
+        "emoji": "🔍"
+      }
+    },
+    {
+      "id": "probe",
+      "name_zh": "用户研究",
+      "phase": 1,
+      "anchor": false,
+      "reads": [
+        "frame",
+        "scope"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "brief"
+        ],
+        "reason": "JTBD / persona / 情感曲线已沉淀，进 Brief 把洞察转策略最直接。",
+        "alternatives": [
+          {
+            "id": "journey",
+            "reason": "想直接画用户旅程把痛点可视化"
+          }
+        ],
+        "emoji": "👥"
+      }
+    },
+    {
+      "id": "bench",
+      "name_zh": "竞品拆解",
+      "phase": 1,
+      "anchor": false,
+      "reads": [
+        "frame",
+        "scope"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "brief"
+        ],
+        "reason": "竞品启发已转化为差异化策略候选，进 Brief 收敛。",
+        "alternatives": [
+          {
+            "id": "probe",
+            "reason": "想用研验证竞品做法在自家用户身上是否成立"
+          }
+        ],
+        "emoji": "🔬"
+      }
+    },
+    {
+      "id": "signal",
+      "name_zh": "工单分析",
+      "phase": 1,
+      "anchor": false,
+      "reads": [
+        "frame",
+        "scope",
+        "probe"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "brief"
+        ],
+        "reason": "高频痛点 + affected_pages 已锁定，进 Brief 锚定本次改版的优先级。",
+        "alternatives": [
+          {
+            "id": "journey",
+            "reason": "想把工单证据并入旅程地图"
+          }
+        ],
+        "emoji": "📞"
+      }
+    },
+    {
+      "id": "brief",
+      "name_zh": "设计简报",
+      "phase": 2,
+      "anchor": true,
+      "reads": [
+        "frame",
+        "scope",
+        "audit"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "journey"
+        ],
+        "reason": "用户视角可视化（含情感曲线 + dropout-risk 标注）通常是 Brief 之后最有价值的一步——把抽象策略变成可视的体验断点。",
+        "alternatives": [
+          {
+            "id": "stories",
+            "reason": "想直接做工程拆解走结构化路径"
+          },
+          {
+            "id": "pitch",
+            "reason": "需要先对齐决策者再执行"
+          },
+          {
+            "id": "sitemap",
+            "reason": "已确定走 IA 优先路径"
+          }
+        ],
+        "emoji": "🎨"
+      }
+    },
+    {
+      "id": "journey",
+      "name_zh": "用户旅程",
+      "phase": 2,
+      "anchor": true,
+      "reads": [
+        "frame",
+        "scope",
+        "audit",
+        "probe",
+        "signal",
+        "brief"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "stories"
+        ],
+        "reason": "旅程断点 + 情感低谷已识别，进 Stories 把每个触点拆成可执行用户故事。",
+        "alternatives": [
+          {
+            "id": "sitemap",
+            "reason": "想先搭 IA 骨架再回头做故事"
+          },
+          {
+            "id": "flow-web",
+            "reason": "项目较紧、想直接进页面级设计"
+          }
+        ],
+        "emoji": "📋"
+      }
+    },
+    {
+      "id": "stories",
+      "name_zh": "用户故事",
+      "phase": 2,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "frame",
+        "scope",
+        "audit",
+        "journey"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "sitemap"
+        ],
+        "reason": "故事 + 设计触点已就绪，搭 IA 骨架把故事映射到页面节点。",
+        "alternatives": [
+          {
+            "id": "flow-web",
+            "reason": "已有 IA 草稿、想直接进页面级 Web 设计"
+          },
+          {
+            "id": "flow-mobile",
+            "reason": "Mobile 优先项目"
+          },
+          {
+            "id": "prd",
+            "reason": "想直接生成工程交付 PRD"
+          }
+        ],
+        "emoji": "🏗️"
+      }
+    },
+    {
+      "id": "sitemap",
+      "name_zh": "站点地图",
+      "phase": 2,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "frame",
+        "scope",
+        "stories"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "flow-web"
+        ],
+        "reason": "IA 骨架就绪，直接进 Web 端页面级 Flow 设计。",
+        "alternatives": [
+          {
+            "id": "flow-mobile",
+            "reason": "Mobile 优先项目"
+          },
+          {
+            "id": "edge",
+            "reason": "想先盘点异常态覆盖度"
+          },
+          {
+            "id": "chart",
+            "reason": "项目以数据展示为主可先做图表规格"
+          }
+        ],
+        "emoji": "🏗️"
+      }
+    },
+    {
+      "id": "board",
+      "name_zh": "视觉情绪板",
+      "phase": 2,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "journey",
+        "stories"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "flow-web"
+        ],
+        "reason": "design-tokens 已固化，进入 Web 页面设计直接消费 color + component。",
+        "alternatives": [
+          {
+            "id": "flow-mobile",
+            "reason": "Mobile 优先项目"
+          },
+          {
+            "id": "motion-plan",
+            "reason": "用 typography + style_keywords 推 Personality archetype"
+          },
+          {
+            "id": "chart",
+            "reason": "项目以数据展示为主，先沉淀图表配色规格"
+          },
+          {
+            "id": "poster",
+            "reason": "品牌视觉已固化，直接出营销海报 / Banner 物料"
+          }
+        ],
+        "emoji": "🎨"
+      }
+    },
+    {
+      "id": "avatar",
+      "name_zh": "数字人头像",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "flow-web"
+        ],
+        "reason": "IP / 头像主视觉就位，回到主流程把头像嵌入页面 Flow。",
+        "alternatives": [
+          {
+            "id": "flow-mobile",
+            "reason": "头像出现在 Mobile 客服 / 主屏"
+          },
+          {
+            "id": "pitch",
+            "reason": "把主视觉装进决策者汇报"
+          },
+          {
+            "id": "poster",
+            "reason": "IP 形象就位，做带 IP 的活动海报"
+          }
+        ],
+        "emoji": "🎭"
+      }
+    },
+    {
+      "id": "poster",
+      "name_zh": "营销海报",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "board"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "pitch"
+        ],
+        "reason": "海报主视觉已就位，进 Pitch 把营销物料装进决策者汇报。",
+        "alternatives": [
+          {
+            "id": "flow-web",
+            "reason": "把海报嵌入营销落地页"
+          },
+          {
+            "id": "retro",
+            "reason": "营销活动结束后复盘效果"
+          }
+        ],
+        "emoji": "🖼️"
+      }
+    },
+    {
+      "id": "flow-web",
+      "name_zh": "Web页面设计",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "sitemap",
+        "stories",
+        "board"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "check"
+        ],
+        "reason": "页面级设计完成立刻自检（路由可达性 / 死代码 / token 消费 / Brief 一致性），防止下游 QA 翻车。",
+        "alternatives": [
+          {
+            "id": "edge",
+            "reason": "先补全异常态覆盖"
+          },
+          {
+            "id": "flow-mobile",
+            "reason": "继续做 Mobile 端对应 Flow"
+          },
+          {
+            "id": "chart",
+            "reason": "页面含数据展示需补图表规格"
+          }
+        ],
+        "emoji": "🔍"
+      }
+    },
+    {
+      "id": "flow-mobile",
+      "name_zh": "mobile页面设计",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "sitemap",
+        "stories",
+        "board"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "check"
+        ],
+        "reason": "Mobile 页面完成立刻自检，提前抓出适配 / 触达 / 状态覆盖问题。",
+        "alternatives": [
+          {
+            "id": "edge",
+            "reason": "补全异常态（Mobile 异常更多）"
+          },
+          {
+            "id": "flow-web",
+            "reason": "继续做 Web 端对应 Flow"
+          }
+        ],
+        "emoji": "🔍"
+      }
+    },
+    {
+      "id": "chart",
+      "name_zh": "数据可视化",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "sitemap",
+        "flow-web",
+        "flow-mobile",
+        "board"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "flow-web"
+        ],
+        "reason": "图表规格已就绪，回主流程把图表组件嵌回页面 Flow。",
+        "alternatives": [
+          {
+            "id": "edge",
+            "reason": "图表的空 / 加载 / 错态需要单独覆盖"
+          },
+          {
+            "id": "check",
+            "reason": "页面 + 图表完整后整体自检"
+          }
+        ],
+        "emoji": "📊"
+      }
+    },
+    {
+      "id": "edge",
+      "name_zh": "异常态",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "sitemap",
+        "stories",
+        "flow-web",
+        "flow-mobile"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "check"
+        ],
+        "reason": "异常态补完后整体自检，确保新增状态没破坏主流程一致性。",
+        "alternatives": [
+          {
+            "id": "qa",
+            "reason": "进入交付侧验收"
+          }
+        ],
+        "emoji": "🔍"
+      }
+    },
+    {
+      "id": "pitch",
+      "name_zh": "设计提案",
+      "phase": 3,
+      "anchor": true,
+      "reads": [
+        "frame",
+        "scope",
+        "audit",
+        "brief",
+        "stories",
+        "sitemap",
+        "flow-web",
+        "flow-mobile",
+        "check",
+        "qa",
+        "edge"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "prd"
+        ],
+        "reason": "提案对齐决策后进 PRD 把方案落到工程交付文档。",
+        "alternatives": [
+          {
+            "id": "flow-web",
+            "reason": "提案获批后开始 / 继续执行页面设计"
+          },
+          {
+            "id": "metric",
+            "reason": "提案 asks 含数据度量，先定指标体系"
+          },
+          {
+            "id": "retro",
+            "reason": "项目阶段性结束做复盘"
+          }
+        ],
+        "emoji": "💼"
+      }
+    },
+    {
+      "id": "motion-plan",
+      "name_zh": "动效规划",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "flow-web",
+        "flow-mobile",
+        "avatar",
+        "board"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "motion-apply"
+        ],
+        "reason": "动效规范已定（Personality + duration palette + element specs），直接进动效开发把规范落到代码。",
+        "alternatives": [
+          {
+            "id": "check",
+            "reason": "规范层先与团队对齐再实施"
+          },
+          {
+            "id": "pitch",
+            "reason": "把动效调性作为提案的「体验差异化」论据"
+          }
+        ],
+        "emoji": "🎬"
+      }
+    },
+    {
+      "id": "motion-apply",
+      "name_zh": "动效开发",
+      "phase": 3,
+      "anchor": false,
+      "reads": [
+        "motion-plan",
+        "flow-web",
+        "flow-mobile",
+        "brief"
+      ],
+      "required": [
+        "motion-plan"
+      ],
+      "next_hint": {
+        "preferred": [
+          "check"
+        ],
+        "reason": "动效已接入代码，进设计走查做动效合规验收（实施是否守住 Personality）。",
+        "alternatives": [
+          {
+            "id": "qa",
+            "reason": "动效就是本期最后一项交付，直接进 QA 还原度验收"
+          },
+          {
+            "id": "prd",
+            "reason": "把动效组件清单 + peer deps 增加情况写入工程交付文档"
+          }
+        ],
+        "emoji": "✨"
+      }
+    },
+    {
+      "id": "check",
+      "name_zh": "设计走查",
+      "phase": 4,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "flow-web",
+        "flow-mobile",
+        "sitemap",
+        "stories"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "qa"
+        ],
+        "reason": "自检发现的 Blocker 已修，进 QA 做交付前还原度验收。",
+        "alternatives": [
+          {
+            "id": "edge",
+            "reason": "走查发现状态覆盖不全"
+          },
+          {
+            "id": "access",
+            "reason": "走查触发了 WCAG 合规需要专项核查"
+          }
+        ],
+        "emoji": "✅"
+      }
+    },
+    {
+      "id": "test",
+      "name_zh": "可用性测试",
+      "phase": 4,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "flow-web",
+        "flow-mobile",
+        "sitemap",
+        "stories"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "metric"
+        ],
+        "reason": "可用性测试结果直接转可观测指标，进 Metric 把『测试发现的瓶颈』变成『上线后可追踪』。",
+        "alternatives": [
+          {
+            "id": "retro",
+            "reason": "项目结束直接做复盘"
+          }
+        ],
+        "emoji": "🧪"
+      }
+    },
+    {
+      "id": "access",
+      "name_zh": "无障碍检查",
+      "phase": 4,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "flow-web",
+        "flow-mobile",
+        "sitemap",
+        "stories",
+        "check"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "qa"
+        ],
+        "reason": "WCAG 合规已确认，进 QA 做交付前整体还原度验收。",
+        "alternatives": [
+          {
+            "id": "check",
+            "reason": "回到全局走查做整体一致性核查"
+          }
+        ],
+        "emoji": "♿"
+      }
+    },
+    {
+      "id": "metric",
+      "name_zh": "设计度量",
+      "phase": 4,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "stories",
+        "frame",
+        "sitemap",
+        "flow-web",
+        "flow-mobile",
+        "pitch",
+        "qa"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "prd"
+        ],
+        "reason": "NSM + 埋点清单已定，进 PRD 把度量蓝图写入 Section 4 让工程一并交付。",
+        "alternatives": [
+          {
+            "id": "retro",
+            "reason": "上线后用 Metric 蓝图做复盘"
+          }
+        ],
+        "emoji": "📈"
+      }
+    },
+    {
+      "id": "qa",
+      "name_zh": "设计验收",
+      "phase": 5,
+      "anchor": false,
+      "reads": [
+        "brief",
+        "flow-web",
+        "flow-mobile",
+        "check",
+        "sitemap",
+        "stories"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [
+          "retro"
+        ],
+        "reason": "验收通过 = 项目阶段性结束，进 Retro 沉淀经验。",
+        "alternatives": [
+          {
+            "id": "metric",
+            "reason": "上线前最后定一次跟踪指标"
+          },
+          {
+            "id": "prd",
+            "reason": "把验收发现的 deviation 回写 PRD constraints"
+          }
+        ],
+        "emoji": "🔁"
+      }
+    },
+    {
+      "id": "prd",
+      "name_zh": "写PRD",
+      "phase": 5,
+      "anchor": true,
+      "reads": [
+        "brief",
+        "frame",
+        "scope",
+        "stories",
+        "sitemap",
+        "journey",
+        "flow-web",
+        "flow-mobile",
+        "check",
+        "chart",
+        "motion-plan"
+      ],
+      "required": [
+        "brief",
+        "stories"
+      ],
+      "next_hint": {
+        "preferred": [
+          "extract"
+        ],
+        "reason": "PRD 已交付工程，进 Extract 把设计 token 抽出来给工程实现侧消费，让代码与设计稿对齐。",
+        "alternatives": [
+          {
+            "id": "qa",
+            "reason": "等工程实现后做还原度验收"
+          },
+          {
+            "id": "metric",
+            "reason": "PRD Section 4 想用 Metric 蓝图替代 Brief 简版"
+          }
+        ],
+        "emoji": "📄"
+      }
+    },
+    {
+      "id": "extract",
+      "name_zh": "设计提取",
+      "phase": 5,
+      "anchor": false,
+      "reads": [
+        "check",
+        "flow-web",
+        "flow-mobile",
+        "qa",
+        "board"
+      ],
+      "required": [],
+      "next_hint": {
+        "preferred": [
+          "retro"
+        ],
+        "reason": "Tokens / design language 已落地，进 Retro 做闭环复盘把工具链产出的发现并入经验沉淀。",
+        "alternatives": [
+          {
+            "id": "qa",
+            "reason": "用 Extract 的 SparkDesign diff 做实现侧二次核查"
+          }
+        ],
+        "emoji": "🔧"
+      }
+    },
+    {
+      "id": "retro",
+      "name_zh": "设计复盘",
+      "phase": 5,
+      "anchor": true,
+      "reads": [
+        "frame",
+        "scope",
+        "audit",
+        "probe",
+        "bench",
+        "signal",
+        "brief",
+        "stories",
+        "journey",
+        "sitemap",
+        "flow-web",
+        "flow-mobile",
+        "check",
+        "access",
+        "qa",
+        "edge",
+        "pitch",
+        "metric",
+        "prd"
+      ],
+      "required": [
+        "brief"
+      ],
+      "next_hint": {
+        "preferred": [],
+        "reason": "本项目链路已闭环。可考虑：归档 spark-output/ 到项目仓库 / 把 Retro 摘要复制到团队 wiki / 开启下一个项目（清空 spark-output/context/）。",
+        "alternatives": [],
+        "emoji": "🔁"
+      }
+    }
+  ]
+}

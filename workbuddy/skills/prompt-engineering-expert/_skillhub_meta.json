@@ -1,0 +1,20 @@
+{
+  "name": "提示词工程专家",
+  "installedAt": 1783579023050,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2053083323789344768",
+  "examples_zh": [
+    "帮我优化这个 AI 助手的 system prompt",
+    "怎么写一个让 AI 严格按格式输出的提示词",
+    "我的提示词效果不稳定，帮我分析一下问题"
+  ],
+  "examples_en": [
+    "Help me optimize this system prompt for my AI assistant",
+    "How do I write a prompt that makes the AI output in a strict format?",
+    "My prompt results are inconsistent — help me diagnose the issue"
+  ],
+  "description_zh": "提示词工程专家：编写、分析、优化提示词和 AI 指令，覆盖最佳实践与高级技巧",
+  "description_en": "Expert prompt engineering: write, analyze and optimize prompts and AI agent instructions",
+  "iconSource": "letter:auto"
+}

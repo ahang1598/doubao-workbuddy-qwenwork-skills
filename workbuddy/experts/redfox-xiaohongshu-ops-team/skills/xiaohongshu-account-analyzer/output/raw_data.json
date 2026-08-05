@@ -1,0 +1,3189 @@
+{
+  "code": 2000,
+  "data": [
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/68e61d7a88fd7b85e2ee8cc6.jpg?imageView2/2/w/360/format/webp",
+      "collected": 199,
+      "desc": "用户出价-酒店抢单\n【酒店】限时免费入驻\n【独家城市服务商】招募中...\n“合作、咨询、入驻“@房叮咚",
+      "fans": 170,
+      "fansGender": {},
+      "gmtCreate": "2026-07-06 22:13:49",
+      "interactiveCountThirty": null,
+      "level": null,
+      "liked": 352,
+      "nickname": "房叮咚-论市面",
+      "noteCountThirty": null,
+      "recentIndex": null,
+      "redId": "6898178515",
+      "similarAccounts": [
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31lh98ubh5m6g5pl0nvkp3qoocavkmio?imageView2/2/w/360/format/webp",
+          "collected": 336,
+          "fans": 131,
+          "fansGender": {
+            "male_ratio": 0.1445,
+            "female_ratio": 0.8554999999999999
+          },
+          "interactiveCountThirty": 2,
+          "level": 0,
+          "liked": 395,
+          "nickname": "小柚妈勇闯新加坡",
+          "noteCountThirty": 2,
+          "recentIndex": 0.0,
+          "redId": "95246004048",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 117,
+          "url": "https://www.xiaohongshu.com/user/profile/66a0bfe9000000002401eb18",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31kaqmrtvigd05oor4aooviuo9r8saog?imageView2/2/w/80/format/jpg",
+          "collected": null,
+          "fans": 184,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "兑水海风柠檬汁zz",
+          "noteCountThirty": null,
+          "recentIndex": 0.0,
+          "redId": "3878859842",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 52,
+          "url": "https://www.xiaohongshu.com/user/profile/631b22b1000000002303cbd8",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31qpr699p7o0g5pqh39fn3am7pdrli4o?imageView2/2/w/80/format/jpg",
+          "collected": null,
+          "fans": 147,
+          "fansGender": {
+            "male_ratio": 0.16808333333333333,
+            "female_ratio": 0.8319166666666667
+          },
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "🌈柒月会更好",
+          "noteCountThirty": null,
+          "recentIndex": 0.0,
+          "redId": "95622850742",
+          "topAges": "18-24",
+          "topProvinces": "广东",
+          "totalWork": 32,
+          "url": "https://www.xiaohongshu.com/user/profile/67511a5f000000001c01aac7",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/54771294-e163-3ea9-9d06-871fde187a3c?imageView2/2/w/80/format/jpg",
+          "collected": null,
+          "fans": 187,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "黄昏后后",
+          "noteCountThirty": null,
+          "recentIndex": 0.0,
+          "redId": "49580590762",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": null,
+          "url": "https://www.xiaohongshu.com/user/profile/65dd660e000000000d027956",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/60c18411dbd3f3965acc7f24.jpg?imageView2/2/w/360/format/webp",
+          "collected": 739,
+          "fans": 193,
+          "fansGender": {
+            "male_ratio": 0.12616666666666665,
+            "female_ratio": 0.8738333333333332
+          },
+          "interactiveCountThirty": 0,
+          "level": 0,
+          "liked": 1462,
+          "nickname": "今天又没瘦",
+          "noteCountThirty": 0,
+          "recentIndex": null,
+          "redId": "LB2218909665",
+          "topAges": "18-24",
+          "topProvinces": "广东",
+          "totalWork": 14,
+          "url": "https://www.xiaohongshu.com/user/profile/5a9278634eacab066e3cdf30",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo30tpcjq6s4q605n3paj442srf3eqf25o?imageView2/2/w/80/format/jpg",
+          "collected": 939,
+          "fans": 194,
+          "fansGender": {
+            "male_ratio": 0.1309318181818182,
+            "female_ratio": 0.8690681818181818
+          },
+          "interactiveCountThirty": 0,
+          "level": null,
+          "liked": 1351,
+          "nickname": "家有小皮孩",
+          "noteCountThirty": 0,
+          "recentIndex": null,
+          "redId": "558761859",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 54,
+          "url": "https://www.xiaohongshu.com/user/profile/5c7954c8000000001001736f",
+          "userAttribute": "素人"
+        }
+      ],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": 84,
+      "url": "https://www.xiaohongshu.com/user/profile/64756b27000000001c02a3ef",
+      "userAttribute": "素人",
+      "works": []
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31ricgeri2a005puh8grjjredfjkh340?imageView2/2/w/80/format/jpg",
+      "collected": null,
+      "desc": "用户出价-酒店抢单\n【酒店】限时免费入驻\n【独家城市服务商】招募中...\n“合作、咨询、入驻“@房叮咚",
+      "fans": 31,
+      "fansGender": {},
+      "gmtCreate": "2026-04-17 18:40:30",
+      "interactiveCountThirty": null,
+      "level": null,
+      "liked": null,
+      "nickname": "房叮咚～布丁",
+      "noteCountThirty": null,
+      "recentIndex": 0.0,
+      "redId": "26757183623",
+      "similarAccounts": [
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320cmnpe05i5g5qbg6traml69ddi9ir0?imageView2/2/w/360/format/webp",
+          "collected": 56,
+          "fans": 32,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 399,
+          "nickname": "📚在职研茉莉学姐",
+          "noteCountThirty": null,
+          "recentIndex": 363.7,
+          "redId": "63536425448",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 49,
+          "url": "https://www.xiaohongshu.com/user/profile/69703776000000002a0354c9",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31b17qg9f6q005od310o8co6485jdaao?imageView2/2/w/360/format/webp",
+          "collected": 61,
+          "fans": 35,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 167,
+          "nickname": "a外卖运营策划师～李建",
+          "noteCountThirty": null,
+          "recentIndex": 268.69,
+          "redId": "49985055157",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 29,
+          "url": "https://www.xiaohongshu.com/user/profile/61a3083000000000210260c4",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31esgj5m0me6g5nn6v53gbirnsaoqkco?imageView2/2/w/120/format/webp",
+          "collected": null,
+          "fans": 35,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "jun⚡",
+          "noteCountThirty": null,
+          "recentIndex": 115.99,
+          "redId": "783218926",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 45,
+          "url": "https://www.xiaohongshu.com/user/profile/5ee6f947000000000101cb77",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo321pss76bno5g46eboj0sfo8nu33aih0?imageView2/2/w/360/format/webp",
+          "collected": 7,
+          "fans": 26,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 17,
+          "nickname": "蓉蓉解忧馆",
+          "noteCountThirty": null,
+          "recentIndex": 80.3,
+          "redId": "153166513",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 7,
+          "url": "https://www.xiaohongshu.com/user/profile/56d941c784edcd3b1463e117",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31emhin1p5i6g5poi2ncne7300okvslo?imageView2/2/w/360/format/webp",
+          "collected": 114,
+          "fans": 31,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 116,
+          "nickname": "中国制造网平台推广啊斌",
+          "noteCountThirty": null,
+          "recentIndex": 66.94,
+          "redId": "26289464038",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 60,
+          "url": "https://www.xiaohongshu.com/user/profile/671215d9000000001d031c60",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31687tp841a5g5ovspnm43pcjecckr70?imageView2/2/w/80/format/jpg",
+          "collected": 15,
+          "fans": 40,
+          "fansGender": {
+            "male_ratio": 0.04333333333333333,
+            "female_ratio": 0.9566666666666668
+          },
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 108,
+          "nickname": "儿童时代",
+          "noteCountThirty": null,
+          "recentIndex": 40.95,
+          "redId": "2277529435",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 42,
+          "url": "https://www.xiaohongshu.com/user/profile/63fccdec000000001001e593",
+          "userAttribute": "素人"
+        }
+      ],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": null,
+      "url": "https://www.xiaohongshu.com/user/profile/67d14437000000000e01edcd",
+      "userAttribute": "素人",
+      "works": [
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g34o3226t8elv6u105puh8grjjredm2g4cdo?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-04 19:26:59",
+          "desc": null,
+          "id": "6a48ee0300000000070239b8",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "就改了个退房时间，居然火遍全网、评论区一片叫好！这件小事戳中了多少人——也暴露了",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a48ee0300000000070239b8"
+        }
+      ]
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": null,
+      "collected": 3594,
+      "desc": "今年目标：\n让1亿用户花小钱住好房！\n让10万家酒店天天客房爆满！",
+      "fans": 5164,
+      "fansGender": {
+        "male_ratio": 0.08891666666666667,
+        "female_ratio": 0.9110833333333334
+      },
+      "gmtCreate": "2026-06-09 20:56:02",
+      "interactiveCountThirty": 1194,
+      "level": null,
+      "liked": 5858,
+      "nickname": "房叮咚",
+      "noteCountThirty": 80,
+      "recentIndex": 120.13,
+      "redId": "fdd10124",
+      "similarAccounts": [
+        {
+          "avatar": null,
+          "collected": 8960,
+          "fans": 4240,
+          "fansGender": {
+            "male_ratio": 0.143125,
+            "female_ratio": 0.856875
+          },
+          "interactiveCountThirty": 8201,
+          "level": null,
+          "liked": 7835,
+          "nickname": "绘漫私享旅行日记",
+          "noteCountThirty": 51,
+          "recentIndex": 607.79,
+          "redId": "42294413144",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 162,
+          "url": "https://www.xiaohongshu.com/user/profile/68627f4c000000001b01abaf",
+          "userAttribute": "企业"
+        },
+        {
+          "avatar": null,
+          "collected": 5688,
+          "fans": 5358,
+          "fansGender": {
+            "male_ratio": 0.1391666666666667,
+            "female_ratio": 0.8608333333333333
+          },
+          "interactiveCountThirty": 345,
+          "level": 0,
+          "liked": 9192,
+          "nickname": "阿凯缇娅酒店",
+          "noteCountThirty": 7,
+          "recentIndex": 430.2,
+          "redId": "4296153953",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 466,
+          "url": "https://www.xiaohongshu.com/user/profile/60c9b7490000000001002da3",
+          "userAttribute": "企业"
+        },
+        {
+          "avatar": null,
+          "collected": 2324,
+          "fans": 5050,
+          "fansGender": {
+            "male_ratio": 0.16064583333333335,
+            "female_ratio": 0.8393541666666667
+          },
+          "interactiveCountThirty": 6520,
+          "level": null,
+          "liked": 3209,
+          "nickname": "筱希丨行客",
+          "noteCountThirty": 68,
+          "recentIndex": 416.81,
+          "redId": "115433716",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 59,
+          "url": "https://www.xiaohongshu.com/user/profile/5997ba0b5e87e7229a3cf3d5",
+          "userAttribute": "企业"
+        },
+        {
+          "avatar": null,
+          "collected": 11958,
+          "fans": 4650,
+          "fansGender": {
+            "male_ratio": 0.08116666666666666,
+            "female_ratio": 0.9188333333333334
+          },
+          "interactiveCountThirty": 760,
+          "level": 0,
+          "liked": 14644,
+          "nickname": "大理本然空间",
+          "noteCountThirty": 130,
+          "recentIndex": 399.52,
+          "redId": "27760012273",
+          "topAges": "<18",
+          "topProvinces": "山东",
+          "totalWork": 991,
+          "url": "https://www.xiaohongshu.com/user/profile/662a5137000000000303230c",
+          "userAttribute": "企业"
+        },
+        {
+          "avatar": null,
+          "collected": 682,
+          "fans": 5532,
+          "fansGender": {
+            "male_ratio": 0.16675,
+            "female_ratio": 0.83325
+          },
+          "interactiveCountThirty": 3662,
+          "level": null,
+          "liked": 3455,
+          "nickname": "雅加达JHL宝石酒店",
+          "noteCountThirty": 14,
+          "recentIndex": 397.0,
+          "redId": "94340376828",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 26,
+          "url": "https://www.xiaohongshu.com/user/profile/68fbc1ac0000000037033f19",
+          "userAttribute": "企业"
+        },
+        {
+          "avatar": null,
+          "collected": 4710,
+          "fans": 4850,
+          "fansGender": {
+            "male_ratio": 0.12426984126984127,
+            "female_ratio": 0.8757301587301587
+          },
+          "interactiveCountThirty": 582,
+          "level": 4,
+          "liked": 7320,
+          "nickname": "上海苏宁宝丽嘉酒店",
+          "noteCountThirty": 4,
+          "recentIndex": 381.16,
+          "redId": "434410315",
+          "topAges": "25-34",
+          "topProvinces": "广东",
+          "totalWork": 276,
+          "url": "https://www.xiaohongshu.com/user/profile/5ca0cb49000000001701ab12",
+          "userAttribute": "企业"
+        }
+      ],
+      "topAges": "25-34",
+      "topProvinces": "广东",
+      "totalWork": 463,
+      "url": "https://www.xiaohongshu.com/user/profile/67ab97cb000000000e011b78",
+      "userAttribute": "企业",
+      "works": [
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i14.xhscdn.com/spectrum/1040g0k032334c9qk70005ptbiv5ji6rovdcpteg?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=50a3b0b9f1ed604f834eb187a8aa5050&t=6a65f632&origin=0",
+          "createTime": "2026-07-26 19:35:03",
+          "desc": "每天倒下400家酒店！谁在背后“杀”掉了你的生意？#房叮咚  #酒店人  #商业模式  #酒店",
+          "id": "6a65d49b000000000101e79f",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a65d49b000000000101e79f"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/d1e6695b-1465-5f5b-0990-ada5367d0644?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-25 12:00:47",
+          "desc": null,
+          "id": "6a6434ef000000000100e6ba",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": null,
+          "workUrl": "https://www.xiaohongshu.com/explore/6a6434ef000000000100e6ba"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i14.xhscdn.com/spectrum/1040g0k0323087a9n70005ptbiv5ji6ro252jpa8?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=440e34fcba0de9b7e3d8196abf4c5d4d&t=6a62e78d&origin=0",
+          "createTime": "2026-07-24 12:01:06",
+          "desc": "酒店花钱买了更好的展示位，结果把自己的价格优势买没了——这个死循环，困住了无数老板 #酒店  #酒旅新赛道  #商业模式  #房叮咚",
+          "id": "6a62e382000000001101207c",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a62e382000000001101207c"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g0k0322vbgvsdn0005ptbiv5ji6ro8iaaog0?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-23 19:10:09",
+          "desc": null,
+          "id": "6a61f691000000000f014f8a",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "回到最原始的问题：客人为什么住店？不是为了那张床，是为了\"这个晚上有地方待\"#房",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a61f691000000000f014f8a"
+        },
+        {
+          "collectedCount": 1,
+          "cover": "https://sns-na-i27.xhscdn.com/spectrum/1040g34o322tubkk16u105ptbiv5ji6ronh7e99o?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=1&sc=V_PRV&sign=e298acb13a78625fb5d3f80098a8d059&t=6a60b978&origin=0",
+          "createTime": "2026-07-22 16:54:02",
+          "desc": "每晚12点，40万间酒店房准时“死亡”，全行业假装没看见 #酒店经营真相  #闲置资源变现  #商业底层逻辑  #房叮咚",
+          "id": "6a60852a0000000022018bb3",
+          "interactiveCount": 2,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a60852a0000000022018bb3"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g0k0322shcfr66s005ptbiv5ji6ro79hmdb8?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-21 14:38:19",
+          "desc": null,
+          "id": "6a5f13db000000001101947c",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "上岛游客翻了一倍多，住宿人数只涨了不到10%——普陀山守着人山人海，却留不住过夜",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5f13db000000001101947c"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g34o322s9f0ii720g5ptbiv5ji6rocdtsao0?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-21 10:01:02",
+          "desc": null,
+          "id": "6a5ed2de000000000f00716d",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "住满24小时再退房，听着是消费者赢了一回——可这笔账，最后可能还是我们自己买单#",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5ed2de000000000f00716d"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/aa9afe63-bd91-a5f2-679f-e6ae4283f464?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-20 15:05:57",
+          "desc": null,
+          "id": "6a5dc8d5000000000f017fdd",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": null,
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5dc8d5000000000f017fdd"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g0k0322r84dmtn0005ptbiv5ji6ropktmjcg?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-20 14:37:37",
+          "desc": null,
+          "id": "6a5dc231000000000f029919",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "过去两年五星级摘牌数创历史新高——最扎心的是，越来越多是酒店自己主动摘的#五星级",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5dc231000000000f029919"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i6.xhscdn.com/spectrum/1040g0k0322pvpevn6s005ptbiv5ji6roha3jqng?imageView2/2/w/608/format/heif/q/56|imageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=d45869f9f9fc87c1fe0c64f7f396fa00&t=6a5cc309&origin=0",
+          "createTime": "2026-07-19 19:00:56",
+          "desc": "半夜房间突然断电，打给前台才知道：你正住着的这家酒店，几小时前倒闭了 #行业危机  #酒旅新赛道  #商业模式   #房叮咚",
+          "id": "6a5c777f000000001d020fa7",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5c777f000000001d020fa7"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i6.xhscdn.com/spectrum/1040g0k0322ptt4eh72005ptbiv5ji6ro690fcg8?imageView2/2/w/608/format/heif/q/56|imageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=62d1bf4416a01cb9da25b9337345e0ac&t=6a5c7258&origin=0",
+          "createTime": "2026-07-19 14:00:06",
+          "desc": "住到一半，酒店突然倒闭了——半夜被断电叫醒，一问才知道整个店没了  #行业寒冬  #酒旅新赛道  #商业模式  #房叮咚",
+          "id": "6a5c67e6000000000f00948c",
+          "interactiveCount": 1,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5c67e6000000000f00948c"
+        },
+        {
+          "collectedCount": 1,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g34o322om3o21mu105ptbiv5ji6rohbh8pb0?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-18 20:01:22",
+          "desc": "供给多了、大家学会了同质化、游客又没钱了——大理民宿撞上了一个三头绞杀的死结#大理民宿  #供给过剩  #商业模式  #房叮咚",
+          "id": "6a5b225b000000001c01338a",
+          "interactiveCount": 5,
+          "likedCount": 3,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5b225b000000001c01338a"
+        },
+        {
+          "collectedCount": 1,
+          "cover": "https://sns-na-i14.xhscdn.com/spectrum/1040g0k0322om0jnt6u0g5ptbiv5ji6roop3s568?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=1&sc=V_PRV&sign=29a7e2df9947bb240b605d04c48d0828&t=6a5bab54&origin=0",
+          "createTime": "2026-07-18 19:01:00",
+          "desc": "大理7000家民宿\"旺季不旺\"：是过剩，还是我们太穷？#大理民宿  消费降级  #商业模式  #房叮咚",
+          "id": "6a5b2198000000000c016b78",
+          "interactiveCount": 2,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5b2198000000000c016b78"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g34o322og46rtmu105ptbiv5ji6ro83k6tbg?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-18 11:26:36",
+          "desc": "大理民宿遇冷，传统旅游业真的正在失宠吗？#大理民宿  #酒旅行业  #商业模式  #房叮咚",
+          "id": "6a5af26c0000000010024d45",
+          "interactiveCount": 5,
+          "likedCount": 5,
+          "sharedCount": 2,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5af26c0000000010024d45"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g34o322ni92uk74105ptbiv5ji6roub2465o?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-17 22:00:19",
+          "desc": "大理 10 万张床位空一半！暑期旺季卷到 50 块一晚   #大理民宿  #民宿空房  #民宿经营  #房叮咚",
+          "id": "6a59fcb3000000000e0370e7",
+          "interactiveCount": 12,
+          "likedCount": 9,
+          "sharedCount": 1,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a59fcb3000000000e0370e7"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g0k0322ni6bfk74005ptbiv5ji6roltmojg8?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-17 21:00:39",
+          "desc": "暑期最旺的日子，15 套民宿只住出去 1 间  #房叮咚   #民宿经营困境   #入住率   #盘活空房 ",
+          "id": "6a59fc22000000001c0124af",
+          "interactiveCount": 6,
+          "likedCount": 6,
+          "sharedCount": 3,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a59fc22000000001c0124af"
+        },
+        {
+          "collectedCount": 1,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g34o322njbipe70805ptbiv5ji6rohmctk4g?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-17 18:46:02",
+          "desc": "跟团游订单暴跌一半！酒店老板别不当回事，你的稳定客源正在消失  #暑期旅游   #酒旅行业   #商业模式   #房叮咚 ",
+          "id": "6a5a05ac000000001d020e4a",
+          "interactiveCount": 12,
+          "likedCount": 5,
+          "sharedCount": 1,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5a05ac000000001d020e4a"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g34o322ngh7fjn2205ptbiv5ji6ro83pi180?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-17 16:58:55",
+          "desc": "退房押金迟迟不到账——这个投诉年年上热搜，背后暴露的是酒旅行业一个没人愿意解决的结构性漏洞#押金退款   #行业痛点   #商业模式   #房叮咚 ",
+          "id": "6a59eecf00000000060106c7",
+          "interactiveCount": 3,
+          "likedCount": 3,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a59eecf00000000060106c7"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g0k0322n6nolims005ptbiv5ji6ro2dhq2fo?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-17 11:41:55",
+          "desc": "别人都在关店，它却10城12店逆势开张——开业第6天就满房，这家酒店做对了什么#逆势开店   #存量改造   #酒旅行业   #房叮咚 ",
+          "id": "6a59a483000000000f009c07",
+          "interactiveCount": 3,
+          "likedCount": 3,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a59a483000000000f009c07"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.net/spectrum/1040g0k0322m9mliv6s005ptbiv5ji6rolq3fo78?imageView2/2/w/1080/format/webp",
+          "createTime": "2026-07-16 22:00:20",
+          "desc": "那家你出差常住的经济型酒店，可能正在被行业悄悄\"劝退\" #经济型酒店   #酒旅行业   #消费降级   #房叮咚 ",
+          "id": "6a58b09e000000000f00b1ad",
+          "interactiveCount": 1,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a58b09e000000000f00b1ad"
+        }
+      ]
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31vs0l8h02s0g5pm04me7ec0acgobko0?imageView2/2/w/360/format/webp",
+      "collected": 27,
+      "desc": "用户出价-酒店抢单\n【酒店】限时免费入驻.\n【独家城市服务商】招募中..\n“合作、咨询、入驻”请私我@房叮咚",
+      "fans": 41,
+      "fansGender": {},
+      "gmtCreate": "2026-06-24 21:16:02",
+      "interactiveCountThirty": null,
+      "level": null,
+      "liked": 43,
+      "nickname": "房叮咚-透内幕",
+      "noteCountThirty": null,
+      "recentIndex": 0.0,
+      "redId": "95638576250",
+      "similarAccounts": [
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320cmnpe05i5g5qbg6traml69ddi9ir0?imageView2/2/w/360/format/webp",
+          "collected": 56,
+          "fans": 32,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 399,
+          "nickname": "📚在职研茉莉学姐",
+          "noteCountThirty": null,
+          "recentIndex": 363.7,
+          "redId": "63536425448",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 49,
+          "url": "https://www.xiaohongshu.com/user/profile/69703776000000002a0354c9",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31b17qg9f6q005od310o8co6485jdaao?imageView2/2/w/360/format/webp",
+          "collected": 61,
+          "fans": 35,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 167,
+          "nickname": "a外卖运营策划师～李建",
+          "noteCountThirty": null,
+          "recentIndex": 268.69,
+          "redId": "49985055157",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 29,
+          "url": "https://www.xiaohongshu.com/user/profile/61a3083000000000210260c4",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31esgj5m0me6g5nn6v53gbirnsaoqkco?imageView2/2/w/120/format/webp",
+          "collected": null,
+          "fans": 35,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "jun⚡",
+          "noteCountThirty": null,
+          "recentIndex": 115.99,
+          "redId": "783218926",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 45,
+          "url": "https://www.xiaohongshu.com/user/profile/5ee6f947000000000101cb77",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31emhin1p5i6g5poi2ncne7300okvslo?imageView2/2/w/360/format/webp",
+          "collected": 114,
+          "fans": 31,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 116,
+          "nickname": "中国制造网平台推广啊斌",
+          "noteCountThirty": null,
+          "recentIndex": 66.94,
+          "redId": "26289464038",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 60,
+          "url": "https://www.xiaohongshu.com/user/profile/671215d9000000001d031c60",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo322gvphd9nu5g5np1jnl08ufjcv02hm8?imageView2/2/w/360/format/webp",
+          "collected": 105,
+          "fans": 44,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 412,
+          "nickname": "TechToolZhang",
+          "noteCountThirty": null,
+          "recentIndex": 41.98,
+          "redId": "880147561",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 6,
+          "url": "https://www.xiaohongshu.com/user/profile/5f219dea00000000010079f3",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31c6ghrkk0c005n0lremh9fksd4ubkag?imageView2/2/w/120/format/webp",
+          "collected": null,
+          "fans": 43,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "迪",
+          "noteCountThirty": null,
+          "recentIndex": 41.73,
+          "redId": "382257099",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 18,
+          "url": "https://www.xiaohongshu.com/user/profile/5c15dbad000000000500be9c",
+          "userAttribute": "素人"
+        }
+      ],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": 43,
+      "url": "https://www.xiaohongshu.com/user/profile/66c0259c000000001d03300a",
+      "userAttribute": "素人",
+      "works": [
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-i14-ae.rednotecdn.com/spectrum/1040g0k0322c0hc0p6s005pm04me7ec0ahpc39mg?imageView2/2/w/576/format/webp/q/87%7CimageMogr2/strip&redImage/frame/0&ap=1&sc=V_PRV&sign=d64d6238b3a949589268d24e66561566&t=6a521931&src=A",
+          "createTime": "2026-07-08 19:00:43",
+          "desc": "一份番茄炒蛋敢卖500多，凭什么？这道\"天价家常菜\"吵翻全网——它戳破了定价里一个最扎心的真相#房叮咚  #天价菜  #定价真相  #酒店定价",
+          "id": "6a4e2ddb000000001700bdf9",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a4e2ddb000000001700bdf9"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-bd.xhscdn.com/spectrum/1040g34o3220gkhii748g5pm04me7ec0athg7rq8?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-06-29 20:17:22",
+          "desc": "别人打烊它开门，海底捞、麦当劳靠\"深夜生意\"闷声赚翻！这套赚钱逻辑，藏着酒店空房的活路\n#房叮咚  #商业思维  #酒店空房  #增量市场",
+          "id": "6a42625200000000210096e2",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a42625200000000210096e2"
+        }
+      ]
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo3203ornuc486g5po4p7r7e0v1jcia3ao?imageView2/2/w/360/format/webp",
+      "collected": 8,
+      "desc": "用户出价-酒店抢单\n【酒店】限时免费入驻...\n【独家城市服务商】招募中...\n“合作、咨询、合作”请丝@房叮咚",
+      "fans": 3,
+      "fansGender": {},
+      "gmtCreate": "2026-06-24 18:15:54",
+      "interactiveCountThirty": null,
+      "level": null,
+      "liked": 18,
+      "nickname": "房叮咚-看市场",
+      "noteCountThirty": null,
+      "recentIndex": 0.0,
+      "redId": "26216120762",
+      "similarAccounts": [
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31mk1nloml80g42e608db2uiofknh1h8?imageView2/2/w/120/format/webp",
+          "collected": 0,
+          "fans": 3,
+          "fansGender": {
+            "male_ratio": 0.08116666666666666,
+            "female_ratio": 0.9188333333333334
+          },
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 0,
+          "nickname": "08",
+          "noteCountThirty": null,
+          "recentIndex": 15.29,
+          "redId": "8",
+          "topAges": "<18",
+          "topProvinces": "山东",
+          "totalWork": 0,
+          "url": "https://www.xiaohongshu.com/user/profile/56471ab1b7ba226a75a47a58",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320ngvqjalm6g5qgl2u20g301dt3fho0?imageView2/2/w/120/format/webp",
+          "collected": null,
+          "fans": 3,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "醒醒的小世界",
+          "noteCountThirty": null,
+          "recentIndex": 15.29,
+          "redId": "27714618113",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 3,
+          "url": "https://www.xiaohongshu.com/user/profile/6a1517840000000002000c01",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo32185p69b7a005nhjgfog95d13geula8?imageView2/2/w/360/format/webp",
+          "collected": 1,
+          "fans": 2,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 7,
+          "nickname": "趣师傅（食pho版）",
+          "noteCountThirty": null,
+          "recentIndex": 12.12,
+          "redId": "487259882",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 2,
+          "url": "https://www.xiaohongshu.com/user/profile/5e3383f100000000010095a1",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31j6jhm4qio704a0ahqdgcful3enc360?imageView2/2/w/360/format/webp",
+          "collected": 3774,
+          "fans": 1854,
+          "fansGender": {
+            "male_ratio": 0.11617100371747212,
+            "female_ratio": 0.8838289962825278
+          },
+          "interactiveCountThirty": 0,
+          "level": 0,
+          "liked": 6502,
+          "nickname": "雅量进度条",
+          "noteCountThirty": 1,
+          "recentIndex": 0.0,
+          "redId": "TF_20130415",
+          "topAges": "18-24",
+          "topProvinces": "广东",
+          "totalWork": 21,
+          "url": "https://www.xiaohongshu.com/user/profile/5a34db0611be1067970b3fd5",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31upmpsd33m6g5qbqpnv92bv6j3c6k1g?imageView2/2/w/360/format/webp",
+          "collected": null,
+          "fans": 64,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "LLLainey",
+          "noteCountThirty": null,
+          "recentIndex": 0.0,
+          "redId": "lainey_cam",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": null,
+          "url": "https://www.xiaohongshu.com/user/profile/697acdfe0000000024012fe6",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31m48gb4468005q5k8s46bl396domh3g?imageView2/2/w/80/format/jpg",
+          "collected": null,
+          "fans": 7,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "撸铁撸铁撸铁",
+          "noteCountThirty": null,
+          "recentIndex": 0.0,
+          "redId": "26841986349",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 34,
+          "url": "https://www.xiaohongshu.com/user/profile/68b44708000000001901d469",
+          "userAttribute": "素人"
+        }
+      ],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": 43,
+      "url": "https://www.xiaohongshu.com/user/profile/6704c9f6000000001d0303e1",
+      "userAttribute": "素人",
+      "works": []
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31vs0dlq7ii6g5pv7jke3i1h1im48g68?imageView2/2/w/360/format/webp",
+      "collected": 4,
+      "desc": "用户出价-酒店抢单\n【酒店】限时免费入驻.\n【独家城市服务商】招募中..\n“合作、咨询、入驻”请私我@房叮咚",
+      "fans": 11,
+      "fansGender": {},
+      "gmtCreate": "2026-06-22 20:22:31",
+      "interactiveCountThirty": 8,
+      "level": null,
+      "liked": 16,
+      "nickname": "房叮咚-漫步者",
+      "noteCountThirty": 14,
+      "recentIndex": 0.0,
+      "redId": "26783460930",
+      "similarAccounts": [
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31u5n85cb1u005q4cu9ea5dc93psnf2g?imageView2/2/w/120/format/webp",
+          "collected": 6,
+          "fans": 7,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 41,
+          "nickname": "虾姐的职场显微镜🔬",
+          "noteCountThirty": null,
+          "recentIndex": 206.71,
+          "redId": "26899521916",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 21,
+          "url": "https://www.xiaohongshu.com/user/profile/688cf25c000000002802b589",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31o4m6ica06e05q7uusatt1oqi4rrr80?imageView2/2/w/80/format/jpg",
+          "collected": 8,
+          "fans": 14,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 90,
+          "nickname": "彦祖干饭了",
+          "noteCountThirty": null,
+          "recentIndex": 29.86,
+          "redId": "27405353434",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 7,
+          "url": "https://www.xiaohongshu.com/user/profile/68fef715000000003702871a",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320jfdli3lm6g5qefhf7csnot87jnvig?imageView2/2/w/360/format/webp",
+          "collected": null,
+          "fans": 12,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "HerUPUP",
+          "noteCountThirty": null,
+          "recentIndex": 28.29,
+          "redId": "49911597943",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": null,
+          "url": "https://www.xiaohongshu.com/user/profile/69cf8bce0000000033025f1d",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320hsi25tme0g5qbiorbduc0p2ve8l50?imageView2/2/w/360/format/webp",
+          "collected": null,
+          "fans": 9,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "青甘巴士产品经理小左",
+          "noteCountThirty": null,
+          "recentIndex": 25.39,
+          "redId": "49382753750",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": null,
+          "url": "https://www.xiaohongshu.com/user/profile/6972c6d60000000037033019",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo321u0e06jn0105ntp2j5g80htgpamfvo?imageView2/2/w/80/format/jpg",
+          "collected": 18,
+          "fans": 9,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 43,
+          "nickname": "动感光波sce",
+          "noteCountThirty": null,
+          "recentIndex": 25.39,
+          "redId": "1086646647",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 5,
+          "url": "https://www.xiaohongshu.com/user/profile/5fb914cb000000000100023d",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31v7g732fiq6g5na2cick06l33lfv10o?imageView2/2/w/80/format/jpg",
+          "collected": 14,
+          "fans": 7,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 136,
+          "nickname": "红毛大鹅",
+          "noteCountThirty": null,
+          "recentIndex": 22.93,
+          "redId": "456175608",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 5,
+          "url": "https://www.xiaohongshu.com/user/profile/5d4264990000000010001aa3",
+          "userAttribute": "素人"
+        }
+      ],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": 81,
+      "url": "https://www.xiaohongshu.com/user/profile/67e79d1c000000000e010621",
+      "userAttribute": "素人",
+      "works": [
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i14.xhscdn.com/spectrum/1040g0k03232qfvonmu005pv7jke3i1h1i3p33hg?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=3c8b283130a58c6fbb11e665866319c2&t=6a65bfb3&origin=0",
+          "createTime": "2026-07-26 16:00:26",
+          "desc": "订房平台被罚超51亿，我却高兴不起来——买单的可能是你我 #反垄断罚单  #消费者权益  #房叮咚",
+          "id": "6a6583a7000000000101ccd4",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a6583a7000000000101ccd4"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i27.xhscdn.com/spectrum/1040g34o3231r2qsg6s105pv7jke3i1h1nsgg3l8?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=1&sc=V_PRV&sign=b88354af817402f2ff24e8f4ce65a806&t=6a661931&origin=0",
+          "createTime": "2026-07-25 20:01:35",
+          "desc": "做决定的人越来越年轻了！他们不打电话、不看星级、不信广告——只信自己谈成的#房叮咚  #决策代际更替  #年轻人只信自己掌控的  #盘活空房",
+          "id": "6a64820f0000000001030a3d",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a64820f0000000001030a3d"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-qc.xhscdn.com/spectrum/1040g34o3230gc85p72105pv7jke3i1h1ua07qeg?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-24 20:01:20",
+          "desc": "你公开降价，客人第一反应不是\"划算\",是\"是不是有问题\"！你降的是自己的口碑#房叮咚  #价格是信号  #降价自毁认知  #盘活空房",
+          "id": "6a632451000000000f032153",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a632451000000000f032153"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-qc.xhscdn.com/spectrum/1040g34o32307s12d740g5pv7jke3i1h1o8ngsvg?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-24 11:41:12",
+          "desc": "餐厅有今日特价，电影院有早场半价，超市有临期折扣——为什么酒店门口，从来没有\"今晚特价\"？#酒店运营 #酒旅新赛道  #商业模式  #房叮咚",
+          "id": "6a62ded8000000000f01eb26",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a62ded8000000000f01eb26"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i27.xhscdn.com/spectrum/1040g0k0322v6eabvmu005pv7jke3i1h12fcb46o?imageView2/2/w/576/format/heif/q/58|imageMogr2/strip&redImage/frame/0/enhance/4&ap=1&sc=V_PRV&sign=18652df225398b9ca3b8b75c7904ca5e&t=6a637611&origin=0",
+          "createTime": "2026-07-23 20:01:39",
+          "desc": "平台锁死库存，酒店空房等死——暑期最肥的肉，被中间商叼走了 #暑期亲子游  #酒店库存被锁  #空房变现  #房叮咚",
+          "id": "6a61cca8000000000f01f62f",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a61cca8000000000f01f62f"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i14.xhscdn.com/spectrum/1040g34o322v8bm8jn4105pv7jke3i1h1fq6lveo?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=6ed36ba5ad73572385acad986f9639e3&t=6a61e64d&origin=0",
+          "createTime": "2026-07-23 17:18:35",
+          "desc": "订房价格战彻底终结！传统订房玩法全面失效！#酒旅新规  #房叮咚  #闲置客房盘活  #轻资产创业",
+          "id": "6a61dc6b000000001101cb3f",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a61dc6b000000001101cb3f"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.com/spectrum/1040g34o322v877gsms105pv7jke3i1h15i6chro?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-23 17:14:32",
+          "desc": "\"免费流量\"是这行最贵的谎言！你没花钱，可你花掉了最不该花的东西#房叮咚  #免费最贵  #时间才是成本  #盘活空房",
+          "id": "6a61db78000000001003c812",
+          "interactiveCount": 1,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a61db78000000001003c812"
+        },
+        {
+          "collectedCount": 1,
+          "cover": "https://sns-na-i11.xhscdn.com/spectrum/1040g0k0322u133shn2005pv7jke3i1h1jcsvs30?imageView2/2/w/576/format/heif/q/58|imageMogr2/strip&redImage/frame/0/enhance/4&ap=1&sc=V_PRV&sign=3afa92f892165193094016a9eebcc665&t=6a632ff8&origin=0",
+          "createTime": "2026-07-22 18:29:59",
+          "desc": "最可怕的不是给你差评的客人，是那批默默住完、再也不来、什么都不说的人#房叮咚  #沉默的流失  #看不见的黑洞  #盘活空房",
+          "id": "6a609ba7000000000f01e1ae",
+          "interactiveCount": 1,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a609ba7000000000f01e1ae"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-qc.xhscdn.com/spectrum/1040g0k0322sotps872005pv7jke3i1h16iok0io?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-21 21:00:41",
+          "desc": "旅游城市酒店暴利时代结束！细水长流才赚钱#旅游城市酒店  #酒店暴利褪去  #酒店稳盈利  #房叮咚  #城市服务商",
+          "id": "6a5f52060000000011004e4e",
+          "interactiveCount": 1,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5f52060000000011004e4e"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.com/spectrum/1040g0k0322rg5aeg6s005pv7jke3i1h1nq4fc80?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-20 23:00:08",
+          "desc": "所有酒旅代理注意！现在全行业内卷至死，唯一稳赚不赔、门槛极低的蓝海赛道就在眼前！ #2026酒旅存量竞争  #低门槛轻资产赛道  #房叮咚",
+          "id": "6a5e038c0000000011019885",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5e038c0000000011019885"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.com/spectrum/1040g34o322rfo9426s105pv7jke3i1h1k6k2958?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-20 19:03:01",
+          "desc": "旅游越火，旅行社倒得越快——因为游客学会了它的所有本事，除了最值钱的那一样 #议价权  #酒旅新赛道  #商业模式  #房叮咚",
+          "id": "6a5e00650000000011018c6a",
+          "interactiveCount": 2,
+          "likedCount": 2,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5e00650000000011018c6a"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i6.xhscdn.com/spectrum/1040g0k0322rd30gd74005pv7jke3i1h1ls828s0?imageView2/2/w/608/format/heif/q/56|imageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=264d2543132600a1a4d947fab4ed78f0&t=6a5df622&origin=0",
+          "createTime": "2026-07-20 17:29:53",
+          "desc": "酒店人，你是不是也动过转行的念头？先别急着走——有些话，我想掏心窝子跟你聊聊 #房叮咚  #酒店人  #转行  #滴滴订房",
+          "id": "6a5dea91000000001003c833",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5dea91000000001003c833"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i14.xhscdn.com/spectrum/1040g34o322q4ke8f70105pv7jke3i1h1mgvgrco?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=1750215279cca0fbc125d91bf972c792&t=6a5cdedb&origin=0",
+          "createTime": "2026-07-19 21:00:31",
+          "desc": "媒体天天报五星级酒店的死活，可全国42万家酒店里，99%都是没人关心的小店#酒店行业  #酒旅新赛道  #商业模式  #房叮咚",
+          "id": "6a5c9f6b0000000014007210",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5c9f6b0000000014007210"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-bd.xhscdn.com/spectrum/1040g34o322nl28p5720g5pv7jke3i1h1s366rd8?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-17 22:00:21",
+          "desc": "酒旅彻底内卷至死？红海内部藏全新蓝海！不靠厮杀，盘活空房稳赚长线#酒旅蓝海风口  #商业模式破局  #行业新机遇  #房叮咚",
+          "id": "6a5a1357000000001f01f137",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5a1357000000001f01f137"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-bd.xhscdn.com/spectrum/1040g0k0322nj8v8v72005pv7jke3i1h1u7dtr0o?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-17 20:35:03",
+          "desc": "反直觉！你店里利润率最高的，不是高价房，是那些你一直嫌便宜的低价单#房叮咚  #纯利润单  #利润率真相  #盘活空房",
+          "id": "6a5a048b000000001c010625",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5a048b000000001c010625"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i27.xhscdn.com/spectrum/1040g34o322mcfou7700g5pv7jke3i1h16lu9a4g?imageView2/2/w/576/format/heif/q/58%7CimageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=d2aadad49e81322ef8f2de10c4d4ff7f&t=6a592ea7&origin=0",
+          "createTime": "2026-07-16 23:00:09",
+          "desc": "最恐怖的不是抽佣，是算法把你扒得一干二净 #房叮咚  #算法压榨  #商业模式  #酒旅新赛道",
+          "id": "6a58c6c2000000001302dd57",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a58c6c2000000001302dd57"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i4.xhscdn.com/spectrum/1040g0k0322mcf3hp70005pv7jke3i1h1986c5io?imageView2/2/w/576/format/heif/q/58|imageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=5f27a2bff24e7f0b991ccccb37403fae&t=6a58e8bc&origin=0",
+          "createTime": "2026-07-16 21:00:43",
+          "desc": "暑期酒店虚假繁荣：忙死忙活全给平台打工 #房叮咚  #旺季陷阱  #商业模式  #酒旅新赛道",
+          "id": "6a58c694000000001f01f78d",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a58c694000000001f01f78d"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "https://sns-na-i4.xhscdn.com/spectrum/1040g0k0322mc0gtfmu005pv7jke3i1h147oj5lg?imageView2/2/w/576/format/heif/q/58|imageMogr2/strip&redImage/frame/0/enhance/4&ap=22&sc=LF_PRV&sign=bdb3de2f909bd803370137cfae870e06&t=6a58e8bc&origin=0",
+          "createTime": "2026-07-16 21:00:42",
+          "desc": "酒店深夜潜规则：十二点后价格直接砍半 #房叮咚   #酒店尾单  #商业模式  #信息差",
+          "id": "6a58c2ea000000000f0111f4",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a58c2ea000000000f0111f4"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-hw.xhscdn.com/spectrum/1040g0k0322l1r8j570005pv7jke3i1h1hoq18j8?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-15 19:06:13",
+          "desc": "",
+          "id": "6a5769a50000000006022876",
+          "interactiveCount": 1,
+          "likedCount": 1,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a5769a50000000006022876"
+        },
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-img-bd.xhscdn.com/spectrum/1040g0k0322igufqp6s005pv7jke3i1h1tltpjq8?imageView2/2/w/360/format/jpg/q/75",
+          "createTime": "2026-07-13 19:57:35",
+          "desc": "一晚的房卖不过一杯咖啡！价格战杀到70块，全行业一起赔本#房叮咚  #价格战  #民宿倒闭  #不砸价盘",
+          "id": "6a54d2af0000000016026530",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a54d2af0000000016026530"
+        }
+      ]
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31ncdavnhl8605q40j7l6sfjmcn3jqdg?imageView2/2/w/360/format/webp",
+      "collected": null,
+      "desc": "用户出价-酒店抢单\n【酒店】限时免费入驻\n【独家城市服务商】招募中...\n“合作、咨询、入驻“@房叮咚",
+      "fans": 7,
+      "fansGender": {},
+      "gmtCreate": "2026-04-02 16:03:14",
+      "interactiveCountThirty": null,
+      "level": null,
+      "liked": null,
+      "nickname": "房叮咚阿镇",
+      "noteCountThirty": null,
+      "recentIndex": 0.0,
+      "redId": "95501316488",
+      "similarAccounts": [
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31u5n85cb1u005q4cu9ea5dc93psnf2g?imageView2/2/w/120/format/webp",
+          "collected": 6,
+          "fans": 7,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 41,
+          "nickname": "虾姐的职场显微镜🔬",
+          "noteCountThirty": null,
+          "recentIndex": 206.71,
+          "redId": "26899521916",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 21,
+          "url": "https://www.xiaohongshu.com/user/profile/688cf25c000000002802b589",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320hsi25tme0g5qbiorbduc0p2ve8l50?imageView2/2/w/360/format/webp",
+          "collected": null,
+          "fans": 9,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "青甘巴士产品经理小左",
+          "noteCountThirty": null,
+          "recentIndex": 25.39,
+          "redId": "49382753750",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": null,
+          "url": "https://www.xiaohongshu.com/user/profile/6972c6d60000000037033019",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo321u0e06jn0105ntp2j5g80htgpamfvo?imageView2/2/w/80/format/jpg",
+          "collected": 18,
+          "fans": 9,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 43,
+          "nickname": "动感光波sce",
+          "noteCountThirty": null,
+          "recentIndex": 25.39,
+          "redId": "1086646647",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 5,
+          "url": "https://www.xiaohongshu.com/user/profile/5fb914cb000000000100023d",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31v7g732fiq6g5na2cick06l33lfv10o?imageView2/2/w/80/format/jpg",
+          "collected": 14,
+          "fans": 7,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 136,
+          "nickname": "红毛大鹅",
+          "noteCountThirty": null,
+          "recentIndex": 22.93,
+          "redId": "456175608",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 5,
+          "url": "https://www.xiaohongshu.com/user/profile/5d4264990000000010001aa3",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31u54lr0o2q6g5ofen9noc34btmrnk7g?imageView2/2/w/360/format/webp",
+          "collected": 20,
+          "fans": 5,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": 0,
+          "liked": 81,
+          "nickname": "FM116",
+          "noteCountThirty": null,
+          "recentIndex": 19.76,
+          "redId": "1679893716",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 6,
+          "url": "https://www.xiaohongshu.com/user/profile/61eeba6f0000000021020c8b",
+          "userAttribute": "素人"
+        },
+        {
+          "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo32040mqr13q005q56esmmcbleaiedn90?imageView2/2/w/120/format/webp",
+          "collected": null,
+          "fans": 5,
+          "fansGender": {},
+          "interactiveCountThirty": null,
+          "level": null,
+          "liked": null,
+          "nickname": "穿戴甲打卡",
+          "noteCountThirty": null,
+          "recentIndex": 19.76,
+          "redId": "18991473560",
+          "topAges": null,
+          "topProvinces": null,
+          "totalWork": 10,
+          "url": "https://www.xiaohongshu.com/user/profile/68a6772d0000000019022eae",
+          "userAttribute": "素人"
+        }
+      ],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": null,
+      "url": "https://www.xiaohongshu.com/user/profile/688099ea000000001b023e76",
+      "userAttribute": "素人",
+      "works": [
+        {
+          "collectedCount": 0,
+          "cover": "http://sns-webpic-qc.xhscdn.com/202607041853/af75174ff70231c3ac4485086b6770aa/spectrum/1040g0k03222vue7v6s005q40j7l6sfjmqf0889g!nd_dft_wlteh_webp_3",
+          "createTime": "2026-07-01 18:26:46",
+          "desc": "外卖对你透明，是因为你是它要讨好的上帝；订房对你不透明，是因为你是它要拿捏的库存#滴滴订房  #房叮咚  #透明取决于你的地位  #从被拿捏的库存到说了算的一方",
+          "id": "6a44eb66000000001c027d35",
+          "interactiveCount": 0,
+          "likedCount": 0,
+          "sharedCount": 0,
+          "title": "",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a44eb66000000001c027d35"
+        }
+      ]
+    },
+    {
+      "accountAvgList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "362.61"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "117.75"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "3.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "71.65"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "16.73"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "120.30"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "41604.23"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "16201.18"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "6.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "483.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "245.56"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "3797.60"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "148994.22"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "398278.10"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "428.73"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "4371187.20"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1295796.82"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "7.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "33700.54"
+        }
+      ],
+      "accountExcellentList": [
+        {
+          "fansType": "0-5K",
+          "name": "总点赞数中位数",
+          "value": "31087.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "总收藏数中位数",
+          "value": "7368.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "近30天作品互动量中位数",
+          "value": "38878.00"
+        },
+        {
+          "fansType": "0-5K",
+          "name": "作品总数中位数",
+          "value": "23.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "作品总数中位数",
+          "value": "136.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总点赞数中位数",
+          "value": "329082.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "总收藏数中位数",
+          "value": "82391.50"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天发作品数中位数",
+          "value": "24.00"
+        },
+        {
+          "fansType": "5K-5w",
+          "name": "近30天作品互动量中位数",
+          "value": "124263.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "作品总数中位数",
+          "value": "284.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天作品互动量中位数",
+          "value": "254721.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "近30天发作品数中位数",
+          "value": "19.00"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总收藏数中位数",
+          "value": "481938.50"
+        },
+        {
+          "fansType": "5w-50w",
+          "name": "总点赞数中位数",
+          "value": "2381874.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "作品总数中位数",
+          "value": "485.50"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总点赞数中位数",
+          "value": "7763569.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "总收藏数中位数",
+          "value": "1654083.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天发作品数中位数",
+          "value": "12.00"
+        },
+        {
+          "fansType": ">50w",
+          "name": "近30天作品互动量中位数",
+          "value": "251250.50"
+        }
+      ],
+      "avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo3226d371rnurg5p3mo333ov4dmjqigug?imageView2/2/w/120/format/webp",
+      "collected": null,
+      "desc": null,
+      "fans": 94,
+      "fansGender": {},
+      "gmtCreate": "2026-07-09 20:08:25",
+      "interactiveCountThirty": null,
+      "level": null,
+      "liked": null,
+      "nickname": "房叮咚-业态剖析",
+      "noteCountThirty": null,
+      "recentIndex": null,
+      "redId": "2223997255",
+      "similarAccounts": [],
+      "topAges": null,
+      "topProvinces": null,
+      "totalWork": 68,
+      "url": "https://www.xiaohongshu.com/user/profile/6476c0c6000000000f007c8d",
+      "userAttribute": "素人",
+      "works": [
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g0k0322maapkjn2005p3mo333ov4dbs9ua9g?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-16 18:40:31",
+          "desc": null,
+          "id": "6a58b51f000000000f0121b1",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "央视曝光：\"3分钟到海边\"实际打车4公里！那些天花乱坠的噱头，专门用来锁你的钱#",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a58b51f000000000f0121b1"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g34o322jor55m74105p3mo333ov4dcf2j2q0?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-14 19:12:25",
+          "desc": null,
+          "id": "6a561999000000001702b754",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "闭店宣言火了：\"旺季价上不去，淡季天天空房赔钱\"——两头挨打，熬出心脏病 #房叮",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a561999000000001702b754"
+        },
+        {
+          "collectedCount": null,
+          "cover": "https://sns-webpic.xhscdn.com/spectrum/1040g0k0322eh2i5fn4005p3mo333ov4d2ksmvng?imageView2/2/w/540/format/jpg",
+          "createTime": "2026-07-10 17:30:49",
+          "desc": null,
+          "id": "6a50bbc9000000001702bcc9",
+          "interactiveCount": null,
+          "likedCount": null,
+          "sharedCount": null,
+          "title": "今晚12点，全国超过40万间酒店房间将同时\"死亡\"#房叮咚 #酒店人 #商业模式",
+          "workUrl": "https://www.xiaohongshu.com/explore/6a50bbc9000000001702bcc9"
+        }
+      ]
+    }
+  ],
+  "msg": "成功"
+}

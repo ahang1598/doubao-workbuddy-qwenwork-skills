@@ -1,0 +1,179 @@
+examples:
+  - id: md-to-docx
+    title:
+      zh: Markdown 转 Word
+      en: Markdown to Word
+    description:
+      zh: 将一份撰写好的 Markdown 渲染为高质量的 .docx 文档（含中文排版默认值）
+      en: Render a polished Markdown file into a high-quality .docx document with proper CJK typography defaults
+    prompt:
+      zh: |-
+        请把这份 Markdown 内容转成 Word 文档：
+
+        Markdown 文件：{{Markdown 文件路径}}
+        输出路径：{{output.docx}}
+
+        要求：
+        1. 保留标题层级、列表、表格、引用和代码块
+        2. 应用中文（CJK）排版默认值：宋体正文、黑体标题、合理行距和段距
+        3. 自动生成目录（pandoc 可用时；Node fallback 不生成 TOC）
+        4. 图片按 Markdown 中的相对路径正确嵌入
+        5. 输出前调用 doctor.py 自检产物合法性
+
+        请使用 scripts/md_to_docx 流水线完成转换，并打印最终文件路径。
+      en: |-
+        Please convert this Markdown into a Word document:
+
+        Markdown file: {{Markdown file path}}
+        Output path: {{output.docx}}
+
+        Requirements:
+        1. Preserve heading levels, lists, tables, blockquotes, and code blocks
+        2. Apply Chinese (CJK) typography defaults: SimSun body, SimHei headings, sensible line/paragraph spacing
+        3. Auto-generate a table of contents (when pandoc is available; Node fallback does not emit TOC)
+        4. Embed images using the relative paths in the Markdown
+        5. Run doctor.py to self-validate the output before returning
+
+        Please run the scripts/md_to_docx pipeline and print the final file path.
+  - id: fill-template
+    title:
+      zh: 套模板生成 Word
+      en: Fill Word Template
+    description:
+      zh: 用结构化数据填充含占位符（{{token}} 或 reference-doc）的 Word 模板
+      en: Fill a Word template (with {{token}} placeholders or reference-doc style) using structured data
+    prompt:
+      zh: |-
+        请用数据填充这份 Word 模板：
+
+        模板文件：{{模板 .docx 路径}}
+        数据来源：{{JSON 数据或表格数据}}
+        输出路径：{{output.docx}}
+
+        要求：
+        1. 替换所有 {{token}} 占位符（包括段落、表格单元格、页眉页脚）
+        2. 保留模板原有的字体、段落和列表样式
+        3. 表格行可根据数据数组动态扩展
+        4. 缺失字段以空字符串占位并在日志中记录
+        5. 通过 scripts/fill_template.py 安全完成模板解压与重组
+
+        请输出填充后的文档路径与替换统计。
+      en: |-
+        Please fill this Word template with the provided data:
+
+        Template file: {{Template .docx path}}
+        Data source: {{JSON data or table data}}
+        Output path: {{output.docx}}
+
+        Requirements:
+        1. Replace every {{token}} placeholder (in paragraphs, table cells, headers/footers)
+        2. Preserve the template's original fonts, paragraph, and list styles
+        3. Dynamically expand table rows from array data
+        4. Replace missing fields with an empty string and log them
+        5. Use scripts/fill_template.py for safe template unpack/repack
+
+        Output the resulting file path and a substitution report.
+  - id: extract-content
+    title:
+      zh: 提取文档内容
+      en: Extract Document Content
+    description:
+      zh: 从 Word 文档中提取纯文本、标题层级、表格和图片描述
+      en: Extract plain text, heading hierarchy, tables, and image descriptions from a Word document
+    prompt:
+      zh: |-
+        请分析这份 Word 文档并提取结构化内容：
+
+        文档路径：{{文档 .docx 路径}}
+
+        需要提取：
+        1. 完整纯文本内容
+        2. 标题层级树（H1/H2/H3 …）
+        3. 所有表格（含行列数据）
+        4. 图片清单及替代文字
+        5. 整体大纲与字数统计
+
+        输出格式：JSON。
+      en: |-
+        Please analyze this Word document and extract structured content:
+
+        Document path: {{.docx path}}
+
+        Extract:
+        1. Full plain text
+        2. Heading hierarchy tree (H1/H2/H3 …)
+        3. All tables (rows and cells)
+        4. Image manifest and alt text
+        5. Overall outline and word count
+
+        Output format: JSON.
+  - id: ooxml-patch
+    title:
+      zh: OOXML 修订标记与批注
+      en: OOXML Tracked Changes & Comments
+    description:
+      zh: 通过底层 OOXML 修补在 Word 文档中插入修订标记或批注
+      en: Use low-level OOXML patching to inject tracked changes or comments into a Word document
+    prompt:
+      zh: |-
+        请在这份 Word 文档中加入修订标记 / 批注：
+
+        源文档：{{源 .docx 路径}}
+        变更需求：
+        - {{需要追踪的修改清单，例如：第2段第3句改写}}
+        - {{需要批注的位置与内容}}
+
+        要求：
+        1. 通过 scripts/office/unpack.py 解包，针对 word/document.xml 做最小化 XML 修补
+        2. 修订标记使用 <w:ins>/<w:del>，作者与时间戳从参数读取
+        3. 批注使用 word/comments.xml，并在正文挂接 <w:commentReference>
+        4. 用 scripts/office/validate.py 校验 schema 合法性
+        5. 通过 scripts/office/pack.py 重新打包并输出最终文档
+
+        请打印每一处变更摘要。
+      en: |-
+        Please add tracked changes / comments to this Word document:
+
+        Source document: {{Source .docx path}}
+        Change set:
+        - {{List of tracked edits, e.g. rewrite paragraph 2 sentence 3}}
+        - {{Locations and contents of comments}}
+
+        Requirements:
+        1. Unpack via scripts/office/unpack.py and patch word/document.xml minimally
+        2. Use <w:ins>/<w:del> for tracked changes; read author/timestamp from args
+        3. Use word/comments.xml for comments, anchored by <w:commentReference>
+        4. Validate schema via scripts/office/validate.py
+        5. Repack via scripts/office/pack.py and emit the final document
+
+        Print a summary of every applied change.
+  - id: convert-to-pdf
+    title:
+      zh: Word 转 PDF
+      en: Convert Word to PDF
+    description:
+      zh: 将 .docx 文档转换为 PDF 以便分享或归档（依赖 LibreOffice）
+      en: Convert .docx documents to PDF for sharing or archiving (requires LibreOffice)
+    prompt:
+      zh: |-
+        请将此 Word 文档转换为 PDF：
+
+        源文档：{{源 .docx 路径}}
+        输出路径：{{output.pdf}}
+
+        要求：
+        1. 先运行 doctor.py 确认 LibreOffice 可用
+        2. 使用 soffice --headless --convert-to pdf 执行转换
+        3. 尽量保持格式和分页不变
+        4. 输出 PDF 文件路径
+      en: |-
+        Please convert this Word document to PDF:
+
+        Source: {{Source .docx path}}
+        Output: {{output.pdf}}
+
+        Requirements:
+        1. Run doctor.py first to confirm LibreOffice is available
+        2. Use soffice --headless --convert-to pdf for the conversion
+        3. Preserve layout and pagination as much as possible
+        4. Print the resulting PDF file path

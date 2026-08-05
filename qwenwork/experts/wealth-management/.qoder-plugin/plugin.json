@@ -1,0 +1,27 @@
+{
+  "name": "wealth-management",
+  "displayName": "财富管理",
+  "version": "1.1.2",
+  "description": "财富管理全场景工具，覆盖市场速览、资产配置、基金分析、客户报告、理财规划和税务筹划六大场景。面向理财经理、私行客户经理、基金研究员和家族办公室，提供从市场动态跟踪、客户画像分析到配置落地、定期报告的完整工作流。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "skills": [
+    "./skills/市场速览",
+    "./skills/资产配置",
+    "./skills/基金分析",
+    "./skills/客户报告",
+    "./skills/理财规划",
+    "./skills/税务筹划"
+  ],
+  "displayNameEn": "Wealth Management",
+  "descriptionEn": "Full-spectrum wealth management toolkit covering market snapshots, asset allocation, fund analysis, client reporting, financial planning, and tax planning. Built for relationship managers, private bankers, fund researchers, and family offices -- from market monitoring and client profiling to allocation execution and periodic reporting.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_6xyj3asc",
+    "version": "1.1.2",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925308798
+  }
+}

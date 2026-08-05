@@ -1,0 +1,141 @@
+examples:
+  - id: create-code-review-skill
+    title:
+      zh: 创建代码审查技能
+      en: Create Code Review Skill
+    description:
+      zh: 创建一个遵循团队标准的代码审查技能
+      en: Create a code review skill that follows team standards
+    prompt:
+      zh: |-
+        帮我创建一个代码审查技能。
+
+        技能要求：
+        - 名称：code-review
+        - 用途：审查 Pull Request 的代码质量和安全性
+        - 审查重点：
+          1. 代码正确性和边界情况处理
+          2. 安全漏洞（SQL 注入、XSS 等）
+          3. 代码可读性和可维护性
+          4. 测试覆盖率
+        - 反馈格式分为：Critical（必须修复）、Suggestion（建议改进）、Nice to have（可选优化）
+
+        请按照 SKILL.md 规范创建完整的技能文件。
+      en: |-
+        Help me create a code review skill.
+
+        Skill requirements:
+        - Name: code-review
+        - Purpose: Review Pull Request code quality and security
+        - Review focus:
+          1. Code correctness and edge case handling
+          2. Security vulnerabilities (SQL injection, XSS, etc.)
+          3. Code readability and maintainability
+          4. Test coverage
+        - Feedback format: Critical (must fix), Suggestion (consider improving), Nice to have (optional enhancement)
+
+        Please create the complete skill files following the SKILL.md specification.
+  - id: create-commit-message-skill
+    title:
+      zh: 创建 Git 提交消息技能
+      en: Create Git Commit Message Skill
+    description:
+      zh: 创建一个根据 git diff 生成规范提交消息的技能
+      en: Create a skill that generates conventional commit messages from git diffs
+    prompt:
+      zh: |-
+        帮我创建一个 Git 提交消息生成技能。
+
+        技能要求：
+        - 名称：commit-message
+        - 用途：分析 git diff 并生成符合 Conventional Commits 规范的提交消息
+        - 提交消息格式：type(scope): description
+        - 支持的 type：feat, fix, docs, style, refactor, test, chore
+        - 要求：
+          1. 自动从 diff 中推断变更类型和范围
+          2. 生成简洁且有描述性的提交消息
+          3. 如果变更较大，生成包含 body 的多行消息
+
+        请创建完整的技能文件。
+      en: |-
+        Help me create a Git commit message generation skill.
+
+        Skill requirements:
+        - Name: commit-message
+        - Purpose: Analyze git diffs and generate Conventional Commits compliant messages
+        - Commit message format: type(scope): description
+        - Supported types: feat, fix, docs, style, refactor, test, chore
+        - Requirements:
+          1. Automatically infer change type and scope from diff
+          2. Generate concise and descriptive commit messages
+          3. For large changes, generate multi-line messages with body
+
+        Please create the complete skill files.
+  - id: create-document-processing-skill
+    title:
+      zh: 创建文档处理技能
+      en: Create Document Processing Skill
+    description:
+      zh: 创建一个带有工具脚本的文档处理技能
+      en: Create a document processing skill with utility scripts
+    prompt:
+      zh: |-
+        帮我创建一个 PDF 文档处理技能。
+
+        技能要求：
+        - 名称：pdf-processor
+        - 用途：提取 PDF 文本、填写表单、合并拆分文档
+        - 核心功能：
+          1. 文本提取（支持多栏布局）
+          2. 表格数据结构化提取
+          3. 表单字段识别和填写
+          4. 文档合并和拆分
+        - 技术要求：
+          - 使用 pdfplumber 库进行文本提取
+          - 包含实用工具脚本（analyze_form.py, validate.py）
+          - 支持渐进式信息披露（主文件 + 参考文档）
+
+        请创建完整的技能目录结构，包括 SKILL.md、参考文档和工具脚本。
+      en: |-
+        Help me create a PDF document processing skill.
+
+        Skill requirements:
+        - Name: pdf-processor
+        - Purpose: Extract PDF text, fill forms, merge and split documents
+        - Core features:
+          1. Text extraction (supporting multi-column layouts)
+          2. Structured table data extraction
+          3. Form field identification and filling
+          4. Document merging and splitting
+        - Technical requirements:
+          - Use pdfplumber library for text extraction
+          - Include utility scripts (analyze_form.py, validate.py)
+          - Support progressive disclosure (main file + reference docs)
+
+        Please create the complete skill directory structure, including SKILL.md, reference docs, and utility scripts.
+  - id: create-skill-from-conversation
+    title:
+      zh: 从对话中提炼技能
+      en: Extract Skill from Conversation
+    description:
+      zh: 基于之前的对话内容，将工作流程提炼为可复用的技能
+      en: Distill a reusable skill from previous conversation workflows
+    prompt:
+      zh: |-
+        基于我们之前讨论的工作流程，帮我创建一个可复用的技能。
+
+        请：
+        1. 回顾之前对话中涉及的工作流程和最佳实践
+        2. 提炼出核心步骤和关键知识
+        3. 设计合适的技能名称和描述
+        4. 创建结构化的 SKILL.md 文件
+        5. 确保技能描述准确，便于后续自动匹配和触发
+      en: |-
+        Based on the workflow we discussed earlier, help me create a reusable skill.
+
+        Please:
+        1. Review the workflows and best practices from our previous conversation
+        2. Distill the core steps and key knowledge
+        3. Design an appropriate skill name and description
+        4. Create a structured SKILL.md file
+        5. Ensure the skill description is accurate for automatic matching and triggering

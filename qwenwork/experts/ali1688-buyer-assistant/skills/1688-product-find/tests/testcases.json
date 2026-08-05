@@ -1,0 +1,87 @@
+[
+  {
+    "id": "TC001",
+    "name": "基础文本搜索",
+    "input": "我要买打印纸",
+    "expected": {
+      "tool": "text_search",
+      "query_contains": ["打印纸"],
+      "limit": 10,
+      "assertions": [
+        "正确触发 text_search",
+        "query 包含核心关键词'打印纸'",
+        "返回商品数 ≤ limit",
+        "每个商品含标题/价格/链接",
+        "数据来自 API 真实返回，不编造"
+      ]
+    }
+  },
+  {
+    "id": "TC002",
+    "name": "排序意图保留",
+    "input": "卖得最好的蓝牙耳机有哪些",
+    "expected": {
+      "tool": "text_search",
+      "query_contains": ["蓝牙耳机", "销量"],
+      "limit": 10,
+      "assertions": [
+        "正确触发 text_search",
+        "query 保留排序意图：'卖得最好' → 包含'销量排序'或'销量'",
+        "返回商品数 = 10（默认 limit）",
+        "每个商品含标题/价格/链接",
+        "不编造数据，所有展示数据可在 tool_response 中找到来源"
+      ]
+    }
+  },
+  {
+    "id": "TC003",
+    "name": "多条件搜索（价格+排序+数量）",
+    "input": "找10款夏季连衣裙，价格50-100元，按销量排序",
+    "expected": {
+      "tool": "text_search",
+      "query_contains": ["夏季连衣裙", "价格50-100元", "销量排序"],
+      "limit": 10,
+      "assertions": [
+        "正确触发 text_search",
+        "query 完整保留：商品描述 + 价格筛选 + 排序条件",
+        "--limit 正确设为 10",
+        "返回商品数 ≤ 10",
+        "数据真实，所有价格来自 API 返回"
+      ]
+    }
+  },
+  {
+    "id": "TC004",
+    "name": "数量与价格约束（非默认 limit）",
+    "input": "找15个10块钱以下的发圈，从便宜到贵排",
+    "expected": {
+      "tool": "text_search",
+      "query_contains": ["发圈", "价格10元以下", "价格从低到高"],
+      "limit": 15,
+      "assertions": [
+        "正确触发 text_search",
+        "query 完整保留：商品描述 + 价格约束 + 排序方向",
+        "--limit 正确设为 15（用户说'找15个'）",
+        "返回商品数 ≤ 15",
+        "全部价格 < 10元"
+      ]
+    }
+  },
+  {
+    "id": "TC005",
+    "name": "大数量请求（超出 API 上限）",
+    "input": "找100个20-80元的夏季女装连衣裙，按销量从高到低排",
+    "expected": {
+      "tool": "text_search",
+      "query_contains": ["夏季女装连衣裙", "价格20-80元", "销量从高到低"],
+      "limit": 100,
+      "assertions": [
+        "正确触发 text_search",
+        "query 完整保留全部意图",
+        "--limit 正确设为 100",
+        "返回商品数 ≤ 100（API 单次上限约30-40条，实际返回数小于请求数属正常）",
+        "数据真实，不编造"
+      ]
+    }
+  }
+]

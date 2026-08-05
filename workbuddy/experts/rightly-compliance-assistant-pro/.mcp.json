@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "rightly": {
+      "url": "https://rightly.tds.qq.com/mcpapi/v1/rightly_mcp",
+      "headers": {
+        "Authorization": "Bearer {YOUR_TOKEN}]"
+      },
+      "disabled": false
+    }
+  }
+}

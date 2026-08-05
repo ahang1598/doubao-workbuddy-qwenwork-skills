@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ali1688-seller": {
+      "type": "streamable-http",
+      "url": "https://mcp.1688.com/mcp/qoderwork-seller",
+      "oauthBaseUrl": "https://member.1688.com"
+    }
+  }
+}

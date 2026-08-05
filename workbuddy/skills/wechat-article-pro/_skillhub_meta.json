@@ -1,0 +1,20 @@
+{
+  "name": "微信公众号文章发布",
+  "installedAt": 1783579036891,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2054902471873105920",
+  "examples_zh": [
+    "围绕'AI对就业的影响'写一篇公众号长文，搜热点+生成封面+发草稿",
+    "帮我写一篇 5000 字的公众号文章，用刘润风格分析当前消费趋势",
+    "选个最近的科技热点，写成深度文章发到我公众号草稿箱"
+  ],
+  "examples_en": [
+    "Write a long-form WeChat article on AI's impact on jobs with hot-topic search and cover image",
+    "Draft a 5000-word WeChat article in Liu Run's style on consumer trends",
+    "Pick a recent tech topic and publish a deep-dive article to my WeChat drafts"
+  ],
+  "description_zh": "公众号长文写作+AI封面+自动发草稿（刘润风格、3000-5000字）",
+  "description_en": "WeChat Official Account long-form writing with AI cover & auto-publish to drafts",
+  "iconSource": "letter:auto"
+}

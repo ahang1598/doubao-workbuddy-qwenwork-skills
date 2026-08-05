@@ -1,0 +1,45 @@
+{
+  "name": "investment-banking",
+  "displayName": "投行业务",
+  "version": "1.1.2",
+  "description": "投行全业务AI助手，覆盖IPO招股书起草、并购重组报告书、债券募集说明书、交易所问询回复、路演推介材料和财务建模六大核心场景。自动适配科创板/创业板/主板/北交所及交易所/银行间市场的差异化监管要求，内置注册制信披格式准则和合规检查。支持永续债、绿色债券、ABS等创新品种，以及SOTP分部估值和情景分析。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "keywords": [
+    "金融",
+    "投行",
+    "IPO",
+    "招股书",
+    "并购",
+    "重大资产重组",
+    "债券",
+    "募集说明书",
+    "问询回复",
+    "路演",
+    "财务建模",
+    "DCF",
+    "注册制",
+    "绿色债券",
+    "永续债",
+    "SOTP"
+  ],
+  "skills": [
+    "./skills/招股书",
+    "./skills/并购方案",
+    "./skills/债券募集",
+    "./skills/财务建模",
+    "./skills/路演材料",
+    "./skills/问询回复"
+  ],
+  "displayNameEn": "Investment Banking",
+  "descriptionEn": "AI-powered investment banking assistant covering six core workflows: IPO prospectus drafting, M&A advisory reports, bond offering memoranda, regulatory response to exchange inquiries, roadshow materials, and financial modeling. Automatically adapts to board-specific disclosure requirements (STAR Market / ChiNext / Main Board / BSE) and market-specific rules (exchange / interbank). Built-in registration-based IPO disclosure format guidelines and compliance checks. Supports perpetual bonds, green bonds, ABS, and other innovative products, as well as SOTP valuation and scenario analysis.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_dlL8cT0n",
+    "version": "1.1.2",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925314192
+  }
+}

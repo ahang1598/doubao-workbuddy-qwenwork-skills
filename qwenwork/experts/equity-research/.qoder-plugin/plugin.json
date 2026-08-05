@@ -1,0 +1,44 @@
+{
+  "name": "equity-research",
+  "displayName": "投研分析",
+  "version": "1.1.2",
+  "description": "券商/基金投研全流程工具，覆盖深度报告、行业研究、年报解读、业绩快评、调研纪要、晨会纪要、研报摘要和可比公司分析八大场景。支持连接金融数据MCP自动拉取财务/行情数据，也可纯手动输入使用。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "keywords": [
+    "金融",
+    "投研",
+    "研报",
+    "行业研究",
+    "年报",
+    "调研",
+    "晨会",
+    "业绩快评",
+    "估值",
+    "券商",
+    "深度报告",
+    "可比公司",
+    "估值对比"
+  ],
+  "skills": [
+    "./skills/深度报告",
+    "./skills/行业研究",
+    "./skills/读年报",
+    "./skills/业绩快评",
+    "./skills/调研纪要",
+    "./skills/晨会纪要",
+    "./skills/研报摘要",
+    "./skills/可比公司分析"
+  ],
+  "displayNameEn": "Equity Research",
+  "descriptionEn": "End-to-end equity research toolkit for sell-side and buy-side analysts, covering deep-dive reports, industry research, annual report analysis, earnings reviews, field research notes, morning briefings, research digests, and comparable company analysis. Connects to financial-data MCPs for automated data retrieval, or works entirely with manual inputs.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_5f6vOHUd",
+    "version": "1.1.2",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925301363
+  }
+}

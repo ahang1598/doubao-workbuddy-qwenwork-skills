@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书每日爆款笔记 - 化妆美容</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .page-wrap {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 12px 12px 24px;
+        }
+
+        .export-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 8px 0 10px;
+        }
+        .btn-export-pdf, .btn-export-img {
+            background: #fff;
+            color: #ff2442;
+            border: 1.5px solid #ff2442;
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-export-pdf:hover, .btn-export-img:hover { background: #fff5f6; }
+
+        .pdf-content { background: transparent; }
+
+        .header-wrap {
+            background: linear-gradient(135deg, #ff2442 0%, #ff6b81 100%);
+            border-radius: 12px;
+            padding: 20px 16px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .header-wrap h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .header-meta {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .category-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.25);
+            border-radius: 10px;
+            padding: 2px 10px;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        .note-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .note-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #f0f0f0;
+        }
+        .note-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .note-card.top1 { border-left: 3px solid #ff2442; }
+        .note-card.top2 { border-left: 3px solid #ff6b81; }
+        .note-card.top3 { border-left: 3px solid #ffb3c1; }
+
+        .note-row1 {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .rank-num {
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #999;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .note-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .note-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .note-title a {
+            color: #333;
+            text-decoration: none;
+        }
+        .note-title a:hover {
+            color: #ff2442;
+        }
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #999;
+        }
+        .author-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .author-name {
+            color: #666;
+        }
+        .fans-count {
+            color: #999;
+        }
+
+        .note-row2 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding-left: 48px;
+            /* 48px = rank-num宽度36px + margin-right 12px，与头像边界对齐 */
+        }
+        .data-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+        }
+        .data-label {
+            color: #999;
+        }
+        .data-value {
+            color: #333;
+            font-weight: 600;
+        }
+        .data-add {
+            color: #ff2442;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #bbb;
+            margin-top: 16px;
+            padding: 10px 0;
+        }
+
+        @media (max-width: 600px) {
+            .page-wrap { padding: 8px 8px 20px; }
+            .header-wrap { padding: 16px 12px; }
+            .header-wrap h1 { font-size: 20px; }
+            .note-card { padding: 12px; }
+            .note-title { font-size: 15px; }
+            .rank-num { min-width: 32px; height: 32px; font-size: 16px; }
+            .note-row2 { gap: 10px; padding-left: 44px; margin-top: 8px; }
+            .data-item { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrap">
+    <div class="export-bar">
+        <button class="btn-export-img" onclick="exportImage()">导出图片</button>
+        <button class="btn-export-pdf" onclick="exportPdf()">导出 PDF</button>
+    </div>
+
+    <div class="pdf-content" id="pdfContent">
+        <div class="header-wrap">
+            <h1>📱 小红书每日爆款笔记<span class="category-badge">化妆美容</span></h1>
+            <div class="header-meta">更新时间：2026-07-29 19:00</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;">*每日爆款笔记指笔记发后第3天比第2天涨的数据由高到低Top50*</div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-num" id="totalCount">--</div>
+                    <div class="stat-label">笔记总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="maxInteractive">--</div>
+                    <div class="stat-label">最高互动</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="avgInteractive">--</div>
+                    <div class="stat-label">平均互动</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="note-list" id="noteList"></div>
+
+        <div class="footer-note">数据来源：小红书平台 · 化妆美容 · 当日热门笔记排行</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    function bindCardClick() {
+        var cards = document.querySelectorAll('.note-card[data-href]');
+        cards.forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('a, button')) return;
+                var url = this.getAttribute('data-href');
+                if (url && url !== '#') window.open(url, '_blank');
+            });
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindCardClick);
+    } else {
+        bindCardClick();
+    }
+})();
+
+(function() {
+    var RAW = [
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1400",
+      "addCommentCount": "245",
+      "addInteractiveount": "3w+",
+      "addLikeCount": "3w+",
+      "addShareCount": "2208",
+      "collectedCount": "1716",
+      "interactiveCount": "3w+",
+      "useCommentCount": "301",
+      "useLikeCount": "3w+",
+      "useShareCount": "2554"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235hr4klms005o6ph90o5bkbe3jvm4g?imageView2/2/w/1080/format/webp",
+    "desc": "#军训好物howto #学生党护肤 #军训 #油痘肌护肤 #闭口粉刺 #去闭口 #红肿痘 #痘印 #黑头 #闭口 ",
+    "fans": "24w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a684fe7000000001101d73e",
+    "publicTime": "2026-07-28 14:44:55",
+    "title": "😬新生：要是我军训完回宿舍是这样就好了…",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo316iirv0c0q6g5o6ph90o5bkbgc2ij4o?imageView2%2F2%2Fw%2F540%2Fformat%2Fwebp&sign=ddb943d235196172c9399b3d0f95e9bc&t=6a57bf40",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/60d98a41000000002002ae8b",
+    "userName": "浣颜"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "6547",
+      "addCommentCount": "673",
+      "addInteractiveount": "2w+",
+      "addLikeCount": "1w+",
+      "addShareCount": "480",
+      "collectedCount": "7727",
+      "interactiveCount": "3w+",
+      "useCommentCount": "1264",
+      "useLikeCount": "2w+",
+      "useShareCount": "574"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083236198k802005ommunijhgvqsjt2uh0?imageView2/2/w/1080/format/webp",
+    "desc": "#夏天 #夏季好物分享 #好物分享#购物分享#降温神器 #夏日好物 #爱用好物",
+    "fans": "30w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68d083000000001302da64",
+    "publicTime": "2026-07-28 23:53:39",
+    "title": "热怒症人的过夏好物",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320sgm9n8na005ommunijhgvqr60a3vo?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/62d6f5e5000000000e00c3fa",
+    "userName": "凑活活"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "168",
+      "addCommentCount": "25",
+      "addInteractiveount": "1w+",
+      "addLikeCount": "1w+",
+      "addShareCount": "22",
+      "collectedCount": "1385",
+      "interactiveCount": "16w+",
+      "useCommentCount": "330",
+      "useLikeCount": "16w+",
+      "useShareCount": "236"
+    },
+    "coverUrl": "https://sns-na-i27.xhscdn.com/1040g2sg32359rbeg7ak05pq9sh6n33thkmsdmv0?imageView2/2/w/576/format/webp",
+    "desc": "#一种很新的旅行记录方式 #美貌野心家 #妆个新人设 #变妆看我的 #夏日美妆howto #好视频扶持计划 #没事儿也化妆 #方圆脸 #化妆就是玩儿 #自然光下的妆感",
+    "fans": "918",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a680e35000000001002a6a4",
+    "publicTime": "2026-07-28 10:04:37",
+    "title": "论光线对美貌的影响有多大",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31vt7vv8fig6g5pq9sh6n33thqjoqke0?imageView2/2/w/120/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/6749e44d000000001c018fb1",
+    "userName": "樱桃🍒女侠"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "693",
+      "addCommentCount": "164",
+      "addInteractiveount": "1w+",
+      "addLikeCount": "1w+",
+      "addShareCount": "103",
+      "collectedCount": "701",
+      "interactiveCount": "1w+",
+      "useCommentCount": "193",
+      "useLikeCount": "1w+",
+      "useShareCount": "104"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/spectrum/1040g0k03235mjqnvn2005nf0vbc08a9t9nth420?imageView2/2/w/1080/format/webp",
+    "desc": "#老钱妈咪  #理想型  #治愈  #CPB钻光精华水 #CPB超导钻光瓶 #嘭弹夏日水光派对",
+    "fans": "94w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6875ec000000001c00e3f8",
+    "publicTime": "2026-07-28 17:27:08",
+    "title": "妈咪这几个岛都有不同功能哦 你想去哪个",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31sot37ktl6005nf0vbc08a9t2tpavs8?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5de0fad8000000000100293d",
+    "userName": "Bacardiiiiiiii"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "530",
+      "addCommentCount": "103",
+      "addInteractiveount": "1w+",
+      "addLikeCount": "1w+",
+      "addShareCount": "122",
+      "collectedCount": "952",
+      "interactiveCount": "2w+",
+      "useCommentCount": "222",
+      "useLikeCount": "2w+",
+      "useShareCount": "264"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/spectrum/1040g34o3235q1r7in0105ovn2d93q6i71ub6apg?imageView2/2/w/1080/format/webp",
+    "desc": "#回家的诱惑 #林品如 #艾莉 #恨海情天 #小红书佳片向导",
+    "fans": "59w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6895e2000000000401ecbb",
+    "publicTime": "2026-07-28 19:43:30",
+    "title": "爱的恨的都是你但也知道你多辛苦不想你放弃",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31e1i17ik0k6g5ovn2d93q6i7m6p6qng?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/63f71352000000000f011a47",
+    "userName": "飞天小娱警"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1209",
+      "addCommentCount": "78",
+      "addInteractiveount": "1w+",
+      "addLikeCount": "1w+",
+      "addShareCount": "152",
+      "collectedCount": "1223",
+      "interactiveCount": "1w+",
+      "useCommentCount": "93",
+      "useLikeCount": "1w+",
+      "useShareCount": "152"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235claq6g20g5ne7fp0g8gl8gsib03o?imageView2/2/w/1080/format/webp",
+    "desc": "章娴静化妆教程｜柯静从校园到婚纱！！！\n#章娴静  #柯婷  #柯静  #UODO  #花知晓  #Gracebabi  #稚优泉   #木柯诗   #拼多多百亿补贴  #化妆教程 ",
+    "fans": "66w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6832a5000000000101fcec",
+    "publicTime": "2026-07-28 12:40:05",
+    "title": "章娴静化妆教程｜柯静从校园到婚纱！！！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31lcfu22e58e05ne7fp0g8gl84h7i34g?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5dc77e4100000000010042a8",
+    "userName": "云知笑"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1974",
+      "addCommentCount": "-237",
+      "addInteractiveount": "1w+",
+      "addLikeCount": "9801",
+      "addShareCount": "136",
+      "collectedCount": "1w+",
+      "interactiveCount": "13w+",
+      "useCommentCount": "144",
+      "useLikeCount": "11w+",
+      "useShareCount": "1632"
+    },
+    "coverUrl": "https://sns-img-qc.xhscdn.com/1040g0083235tue437o005pq5lir33aqepgb0etg?imageView2/2/w/360/format/jpg/q/75",
+    "desc": "高考后第一次化妆拿妹妹练手be able #平价好物  #化妆品 #妹妹爆改 #反差",
+    "fans": "2w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68b1df0000000009035ed9",
+    "publicTime": "2026-07-28 21:42:55",
+    "title": "",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31alnna7r721g5pq5lir33aqegd9doq0?imageView2%2F2%2Fw%2F540%2Fformat%2Fwebp&sign=c20ead1ea9b91e14f56129497da80c28&t=6a6a2acf",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/6745acb6000000000c01ab4e",
+    "userName": "小猫小鱼"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "3728",
+      "addCommentCount": "189",
+      "addInteractiveount": "9367",
+      "addLikeCount": "5450",
+      "addShareCount": "345",
+      "collectedCount": "4599",
+      "interactiveCount": "1w+",
+      "useCommentCount": "502",
+      "useLikeCount": "6811",
+      "useShareCount": "412"
+    },
+    "coverUrl": "https://sns-na-i27.xhscdn.com/1040g0083234u9ag17a0044e5231pj9rsrfvpjng?imageView2/2/w/1080/format/webp",
+    "desc": "我长痘8年，市面上祛痘产品全都试过，没吃EVA，纯靠翻烂各种文献，调整饮食习惯和科学护肤彻底不长痘了，几年前一篇不长痘经验贴帮几万人找到原因不再长痘，直到今天都能收到感谢，这篇是更全的经验总结，一篇教你把一系列引起长痘的因素全遏制，痘痘自己就不长了[抓狂R]\n\t\n▶️饮食内调部分\n1.戒糖戒奶戒精米面，这几样常吃的拉高IGF-1后皮脂腺跟不要钱一样往外冒油，长痘的燃料就是这么来的\n2.多吃蔬菜，主食换成粗粮玉米紫薯这些低GI的，血糖稳了雄激素就稳，出油长痘自然就少\n3.偶尔馋甜食高糖高碳水，配一杯无糖苹果醋水，让血糖别一下子飙那么猛，胰岛素不用加班，对痘痘刺激就小\n4.每天喝2升水，水喝够代谢废物才排得出去皮肤才会变好，强推绿茶水绿茶多酚扑火，喝一阵脸真的没那么油\n5.内调复合VB、锌、D3和高EPA鱼油我都说烂了，Omega-3自带天然扑火，VB锌能减产油脂减少爆痘，D3能优化皮肤系统和抗菌肽，十个痘肌八个去查D3都偏低\n\t\n▶️改掉导致长痘的坏习惯\n1.洗脸别信什么一天洗两次伤屏障，油痘肌不洗才要命，睡一晚出的油加白天氧化的脏东西，够cc丙酸杆菌在你脸上开自助餐，早上温和氨基酸APG洁面，晚上水杨酸洁面把多余油脂垃圾洗干净，顺带疏通毛孔堵塞减少长痘\n2.针清/挤痘这俩习惯戒了，你不是在清理是在把炎症细菌往真皮层压，后面留的痘印痘坑毛孔比痘还难搞\n3.不勤换枕套/没事爱摸脸/手机屏幕不消毒/爱戴口罩/睡眠不够8h雄激素狂飙冒油爆痘，别看这些不起眼，但就不勤换枕套这点，就有很多痘肌和我说改了后真不长痘了\n\t\n▶️反复长痘的真相\n科学上导致长痘的关键原因有四个：毛囊角化异常堵住要疏通、皮脂过度分泌要控油、好坏菌群打架微生态失衡要平衡、以及引爆的火苗反应要扑火，但很多人只盯着祛痘，可你有没有想过长痘要做的不是祛痘，而是要把一系列引起痘痘相关因素遏制，痘痘自然会下去不再反复长\n\t\n但市面上能完全覆盖上述通路的产品少的可怜，得买一堆才能满足需求，我翻了一圈，一瓶全兼顾相对专业的牌子还不贵的，就一个国外的丝塔芙家今年新上的净痘精华，其中的CLEACNE技术能全部覆盖：核心是棕榈酰五肽-4平衡菌群，抑制cc丙酸杆菌、同时保护\n▶️痘肌祛痘护肤流程\n▶️日常预防长痘方法\n字数超限剩下的看图片……\n#祛痘#痘痘#痘肌护肤#丝塔芙净痘精华#油痘肌精华",
+    "fans": "62w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6760b80000000006012487",
+    "publicTime": "2026-07-28 20:16:21",
+    "title": "我为什么不长痘了！写完这篇会失业！！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31gl2j12f3s0044e5231pj9rs4r02240?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5673c399b8ce1a326dc0a77c",
+    "userName": "周白白（不准乱买版"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "963",
+      "addCommentCount": "109",
+      "addInteractiveount": "8820",
+      "addLikeCount": "7748",
+      "addShareCount": "65",
+      "collectedCount": "1104",
+      "interactiveCount": "9499",
+      "useCommentCount": "193",
+      "useLikeCount": "8202",
+      "useShareCount": "77"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg322tj0i8tg2eg5pb0a7vgl3d6mdc75n0?imageView2/2/w/1080/format/webp",
+    "desc": "-\n之前拍的顶美特效5000多万人看，我偷偷研究了一下为什么那么好看！主要是皮肤看起来超级饱满紧致！\n-\n最近走秀也经常被姐妹们夸，我皮肤原相机也有光泽不松垮；背后偷偷用了全新的雅诗兰黛黑神话面霜，修护抗老两手抓，皮肤越养越饱满，轮廓也越来越紧致！\n\t\n#好物 #种草 #雅诗兰黛白金黑神话面霜#雅诗兰黛黑神话面霜#抗老面霜",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a607b3100000000110157d7",
+    "publicTime": "2026-07-28 18:03:28",
+    "title": "五千万人都想知道的顶美特效背后的秘密🤫",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/5f4cf5ed13779f00017affc3.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5269d3fbb4c4d60ea2717f96",
+    "userName": "深夜徐老师"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "197",
+      "addCommentCount": "157",
+      "addInteractiveount": "7261",
+      "addLikeCount": "6907",
+      "addShareCount": "310",
+      "collectedCount": "2420",
+      "interactiveCount": "8w+",
+      "useCommentCount": "2688",
+      "useLikeCount": "8w+",
+      "useShareCount": "5005"
+    },
+    "coverUrl": "https://sns-na-i14.xhscdn.com/1040g2sg3234s2rjj70e05ne94sh09co5gbm7cd8?imageView2/2/w/576/format/webp",
+    "desc": "#旅行#生活\n来源: ins:mrjomaryee",
+    "fans": "60",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a679d0c0000000022018288",
+    "publicTime": "2026-07-28 02:01:48",
+    "title": "总是这样，点解！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31u4jpv1jhs005ne94sh09co5fptuj5o?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5dc92722000000000100b305",
+    "userName": "Miranda"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1825",
+      "addCommentCount": "185",
+      "addInteractiveount": "6977",
+      "addLikeCount": "4967",
+      "addShareCount": "170",
+      "collectedCount": "2520",
+      "interactiveCount": "1w+",
+      "useCommentCount": "289",
+      "useLikeCount": "7338",
+      "useShareCount": "234"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/spectrum/1040g0k03236qjquo6s005ne0t34g8hggv5mo8tg?imageView2/2/w/1080/format/webp",
+    "desc": "15块9的洗面奶、39块9还送乳液的防晒、59块的水杨酸精华……大娘选品还是太有实力了！\n但便宜只是第一关：配方到底行不行？敏感肌能不能用？防晒洗不洗得掉？好不好买、会不会买到假货？都得一起看。\n护肤不一定要追贵成分，便宜也不等于闭眼买。\n#功效护肤 #油痘肌 #护肤分享 #平价好物 #学生党 #洗面奶 #防晒 #刷酸 #祛痘 #大学生",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68c4500000000001032429",
+    "publicTime": "2026-07-28 23:01:36",
+    "title": "55块8买三件护肤品？",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/6486ee532aa52ff9c54baf6a.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5dc0e8c90000000001004610",
+    "userName": "骆王宇"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "2299",
+      "addCommentCount": "4",
+      "addInteractiveount": "5748",
+      "addLikeCount": "3445",
+      "addShareCount": "59",
+      "collectedCount": "2349",
+      "interactiveCount": "5862",
+      "useCommentCount": "5",
+      "useLikeCount": "3508",
+      "useShareCount": "59"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg322sdbhscnue05peka09he31t29ugdqg?imageView2/2/w/1080/format/webp",
+    "desc": "#好视频扶持计划#7月我的护肤思路\n#变美 #小颗粒 #眼下小颗粒 #脸上小颗粒 #护肤内行人 #毛周角化 #皮肤问题 #护肤经验分享 #皮肤细腻光滑 #毛孔粗大",
+    "fans": "22w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a687dd3000000000100d7a9",
+    "publicTime": "2026-07-28 18:00:51",
+    "title": "眼下这种密密麻麻的小颗粒……到底是啥❓",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo319artr724u0g5peka09he31t6mh7rgg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/65d450130000000005030c3d",
+    "userName": "复旦博士甜甜"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1622",
+      "addCommentCount": "36",
+      "addInteractiveount": "5683",
+      "addLikeCount": "4025",
+      "addShareCount": "133",
+      "collectedCount": "4729",
+      "interactiveCount": "1w+",
+      "useCommentCount": "167",
+      "useLikeCount": "1w+",
+      "useShareCount": "299"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235gdqdt74005qerndtcko2j126iv58?imageView2/2/w/1080/format/webp",
+    "desc": "#拼xx#冷门好物#葡萄香皂#葡萄硬糖#固体香薰#干皮#185大帅哥",
+    "fans": "1488",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a685f400000000022019700",
+    "publicTime": "2026-07-28 15:50:24",
+    "title": "外面的世界已经发展成这样了吗。。",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo3235gdmvpmu005qerndtcko2jf2m9blg?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/69dbbb7a0000000032026053",
+    "userName": "鱼鱼的护肤日记"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "2059",
+      "addCommentCount": "54",
+      "addInteractiveount": "5168",
+      "addLikeCount": "3055",
+      "addShareCount": "188",
+      "collectedCount": "3613",
+      "interactiveCount": "9565",
+      "useCommentCount": "134",
+      "useLikeCount": "5818",
+      "useShareCount": "311"
+    },
+    "coverUrl": "https://sns-na-i27.xhscdn.com/1040g2sg3235nittb6us049mckb2l2tne7fiq9j0?imageView2/2/w/576/format/webp",
+    "desc": "我开智了#化妆vlog #妆容分享 #化妆前后 #我要学化妆 #我的人生妆容出现了",
+    "fans": "17w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a687f88000000000f005d4e",
+    "publicTime": "2026-07-28 18:08:08",
+    "title": "化妆开智最快捷径就是找个会化妆的人给你化",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo321m4nak1720049mckb2l2tneaq7mibg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/596ec5516a6a69521f2076ee",
+    "userName": "悲伤的小菜"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "2378",
+      "addCommentCount": "15",
+      "addInteractiveount": "5002",
+      "addLikeCount": "2609",
+      "addShareCount": "323",
+      "collectedCount": "3371",
+      "interactiveCount": "7288",
+      "useCommentCount": "36",
+      "useLikeCount": "3881",
+      "useShareCount": "451"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235q77ohnke04a2iqgbm6d8uho036qo?imageView2/2/w/1080/format/webp",
+    "desc": "#樱禾 #美甲 #好气色 #樱禾新品",
+    "fans": "37w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6899ad000000000101e489",
+    "publicTime": "2026-07-28 19:59:41",
+    "title": "真的有被这副手美哭",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/6721e8da9816211ff003a5aa.jpg?imageView2/2/w/80/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5a9397634eacab132d2e351e",
+    "userName": "樱禾nail"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "849",
+      "addCommentCount": "85",
+      "addInteractiveount": "4773",
+      "addLikeCount": "3839",
+      "addShareCount": "27",
+      "collectedCount": "956",
+      "interactiveCount": "5277",
+      "useCommentCount": "279",
+      "useLikeCount": "4042",
+      "useShareCount": "47"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3234tuhqanoe05n7t8o5kagqdn31abpo?imageView2/2/w/1080/format/webp",
+    "desc": "#兰蔻声色限定唇膏 #兰蔻274 #夏日美妆howto #口红分享 #兰蔻小蛮腰菁纯丝绒雾面唇膏",
+    "fans": "49w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a682dbf000000000301e0c2",
+    "publicTime": "2026-07-28 12:19:11",
+    "title": "完全无法拒绝的𝒕𝒚𝒑𝒆",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo30r3kajp31g0g5n7t8o5kagqd4nunf4o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5cfd460b000000001101434d",
+    "userName": "我叫卜娜娜"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1621",
+      "addCommentCount": "25",
+      "addInteractiveount": "4383",
+      "addLikeCount": "2737",
+      "addShareCount": "83",
+      "collectedCount": "4615",
+      "interactiveCount": "1w+",
+      "useCommentCount": "160",
+      "useLikeCount": "8030",
+      "useShareCount": "222"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.com/spectrum/1040g34o3235hml6v72804a5plq5v9d087t5132o?imageView2/2/w/360/format/jpg/q/75",
+    "desc": "15分钟画完立刻🉑假装是浓颜大美女的妆。。100%不翻车技巧传授中。。\n#美貌野心家#混血妆#轻欧美风#化妆过程 #妆教 #混血感韩妆 #亚裔韩妆 #浓颜妆",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6850e1000000000a0386b6",
+    "publicTime": "2026-07-28 17:02:01",
+    "title": "",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/608d644793653185f95811b3.jpg?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5b0e4bf4e8ac2b5a9230b408",
+    "userName": "一一只是黑猫"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "2027",
+      "addCommentCount": "34",
+      "addInteractiveount": "4311",
+      "addLikeCount": "2250",
+      "addShareCount": "72",
+      "collectedCount": "5374",
+      "interactiveCount": "1w+",
+      "useCommentCount": "74",
+      "useLikeCount": "6074",
+      "useShareCount": "202"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235kfbq87ke05pc98d483ohu8l7ijlo?imageView2/2/w/1080/format/webp",
+    "desc": "#妆教经验howto #没事儿也化妆 #新手化妆教程 #亚裔妆 #美式韩妆就是氛围感的神 #韩系妆容分享",
+    "fans": "3w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6864d300000000090345df",
+    "publicTime": "2026-07-28 16:14:11",
+    "title": "没有比这个更出片的妆！韩系➕亚裔🩵老好学了",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo3235huhfnnk005pc98d483ohu531rj0o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/65894348000000002001e23e",
+    "userName": "黒加仑"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "296",
+      "addCommentCount": "21",
+      "addInteractiveount": "4295",
+      "addLikeCount": "3978",
+      "addShareCount": "31",
+      "collectedCount": "565",
+      "interactiveCount": "8670",
+      "useCommentCount": "90",
+      "useLikeCount": "8015",
+      "useShareCount": "51"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3231jlo8d7ul05p4tga9k8dgqbvaj73o?imageView2/2/w/1080/format/webp",
+    "desc": "#变妆 #妆前妆后 #美妆 #寻影tiny3 #换头了换头了 #氛围感",
+    "fans": "68w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a644726000000001f01c380",
+    "publicTime": "2026-07-28 18:35:26",
+    "title": "别滑走嘛老婆🥹为老婆发的",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo316u5vj13k6005p4tga9k8dgqiag9aog?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/649d8293000000001100361a",
+    "userName": "阿仔啊阿崽"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "214",
+      "addCommentCount": "33",
+      "addInteractiveount": "4218",
+      "addLikeCount": "3971",
+      "addShareCount": "43",
+      "collectedCount": "238",
+      "interactiveCount": "4407",
+      "useCommentCount": "41",
+      "useLikeCount": "4128",
+      "useShareCount": "46"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235v7jbcms00490046i3oloie384hu0?imageView2/2/w/1080/format/webp",
+    "desc": "#vlog #沉浸式社交 #策展人 #我的日常 #卡诗新品 #卡诗粉钻发膜 #卡诗釉光玫瑰系列",
+    "fans": "66w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68bfed000000002201a29b",
+    "publicTime": "2026-07-28 23:32:55",
+    "title": "Susan’s Vlog｜Omakase·家庭晚餐·画廊冥想",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/5d7e4ab2ff9a19000110ba31.jpg?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/585f243c6a6a6975e96d5712",
+    "userName": "Susan苏"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1663",
+      "addCommentCount": "29",
+      "addInteractiveount": "4026",
+      "addLikeCount": "2334",
+      "addShareCount": "70",
+      "collectedCount": "1868",
+      "interactiveCount": "4637",
+      "useCommentCount": "46",
+      "useLikeCount": "2723",
+      "useShareCount": "80"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235pjv5c02005no8g8ngbs9n2pp5sag?imageView2/2/w/1080/format/webp",
+    "desc": "#淡颜 #美貌野心家 #没事儿也化妆 #化妆就是玩 #我的跟练日记",
+    "fans": "8w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a688f26000000000101e308",
+    "publicTime": "2026-07-28 19:14:46",
+    "title": "妆教！淡人美貌最大化之贵气裸棕妆",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo321494mjrna005no8g8ngbs9ns8do48o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5f08822f000000000101f137",
+    "userName": "月亮涨潮时"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "646",
+      "addCommentCount": "1040",
+      "addInteractiveount": "3942",
+      "addLikeCount": "2256",
+      "addShareCount": "19",
+      "collectedCount": "1917",
+      "interactiveCount": "1w+",
+      "useCommentCount": "3505",
+      "useLikeCount": "5854",
+      "useShareCount": "70"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235d69qd6ueg48v06vd571p4p11d48g?imageView2/2/w/1080/format/webp",
+    "desc": "【本期视频无合作 谢谢大家的支持！爱你们❤️】\n\t\n#宠粉 #吃吃宝盒 #宠粉福利#宠粉不被定义#宠粉抽奖",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a682b7a0000000011006a6d",
+    "publicTime": "2026-07-28 18:00:40",
+    "title": "8月限定宝盒！见着有份！多到给不完啊啊啊啊！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/5ebcb99d145cb300017fe1b9.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/584d1a5350c4b4449b988724",
+    "userName": "吃吃阿吃"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1857",
+      "addCommentCount": "25",
+      "addInteractiveount": "3934",
+      "addLikeCount": "2052",
+      "addShareCount": "148",
+      "collectedCount": "4737",
+      "interactiveCount": "1w+",
+      "useCommentCount": "141",
+      "useLikeCount": "5484",
+      "useShareCount": "402"
+    },
+    "coverUrl": "https://sns-img-qc.xhscdn.com/1040g2sg3235kq8c4n4e05nt98hv080ikh8a7fk0?imageView2/2/w/360/format/jpg/q/75",
+    "desc": "#妆教经验howto #深唇浅唇 #深唇打底",
+    "fans": "20w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6867b1000000000f030f08",
+    "publicTime": "2026-07-28 17:08:03",
+    "title": "深唇秒变浅唇",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/603d185d81d888069082f6bc.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5fa9447e0000000001000254",
+    "userName": "一碗粥耶"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1228",
+      "addCommentCount": "33",
+      "addInteractiveount": "3915",
+      "addLikeCount": "2654",
+      "addShareCount": "75",
+      "collectedCount": "2332",
+      "interactiveCount": "6908",
+      "useCommentCount": "59",
+      "useLikeCount": "4517",
+      "useShareCount": "177"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235eis8o7km05nhnvv3g8hie7eo0u9o?imageView2/2/w/1080/format/webp",
+    "desc": "#美妆邪修howto #cos妆教 #cos妆 #成男妆 #修容教程",
+    "fans": "3w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a683475000000000401e7f1",
+    "publicTime": "2026-07-28 18:22:46",
+    "title": "邪修瘦脸 扇形定位大法",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31ub13hv32i005nhnvv3g8hied9mm89o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5e37ffc7000000000100464e",
+    "userName": "舟粥"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "2108",
+      "addCommentCount": "54",
+      "addInteractiveount": "3901",
+      "addLikeCount": "1739",
+      "addShareCount": "474",
+      "collectedCount": "1w+",
+      "interactiveCount": "2w+",
+      "useCommentCount": "757",
+      "useLikeCount": "1w+",
+      "useShareCount": "3049"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235ovtbag20049lnhgdrnd1rop7ublg?imageView2/2/w/1080/format/webp",
+    "desc": "#韩系彩妆 #韩女爱用 #彩妆 #韩国购物 #逛街 #化妆#韩女 #韩国 #韩国旅行 #韩国逛街",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a688a15000000001d00f782",
+    "publicTime": "2026-07-28 18:53:09",
+    "title": "去小韩别再只逛olvy了！韩女真正爱用在这里！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31t61ossols0g49lnhgdrnd1ra28b4qo?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/59631bbb6a6a69700bdeb43b",
+    "userName": "Rika_花花"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1388",
+      "addCommentCount": "203",
+      "addInteractiveount": "3760",
+      "addLikeCount": "2169",
+      "addShareCount": "55",
+      "collectedCount": "2319",
+      "interactiveCount": "6180",
+      "useCommentCount": "265",
+      "useLikeCount": "3596",
+      "useShareCount": "133"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/notes_pre_post/1040g3k83235d17ih7a9g5ngtodl08uos2m9pae8?imageView2/2/w/1080/format/webp",
+    "desc": "超级好用！随便混个什么vc粉然后涂就可以，没几天那种暗沉的色差也会白净好多，抠痘痘留下的印子也基本淡了……而且我换别的都没什么效果但这个就很好使，安利给好多朋友至今0人不发出感叹[笑哭R]",
+    "fans": "4w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a51297b0000000008000542",
+    "publicTime": "2026-07-28 10:01:57",
+    "title": "强推一个韩国的肘黑漂白剂",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31bsiu9o2h0005ngtodl08uosa294vg0?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5e1dc36a0000000001007b1c",
+    "userName": "小查饿了"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "816",
+      "addCommentCount": "95",
+      "addInteractiveount": "3726",
+      "addLikeCount": "2815",
+      "addShareCount": "36",
+      "collectedCount": "1076",
+      "interactiveCount": "5025",
+      "useCommentCount": "249",
+      "useLikeCount": "3700",
+      "useShareCount": "48"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235qvttomu004bs6mlnqievjui8th5g?imageView2/2/w/1080/format/webp",
+    "desc": "一百昏！全部一百昏！！！！！！！！\n又舒服又省心还不挑人！！！！\n这套产品套在谁身上都能美得随意高级！\n#爱用物分享 #彩妆 #淡人 #妆越淡人越美 #夏日美妆howto #修丽可AGE精华 #修丽可age精华 #混油皮粉底液 #香水 #眼妆",
+    "fans": "41w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a689cb2000000001101d8e1",
+    "publicTime": "2026-07-28 20:41:06",
+    "title": "轻裸高级感！以后夏天通勤按这个标准来",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo30tjipfr3ku004bs6mlnqievjjp7adl8?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5bf36fa94a12e50001dd3bf3",
+    "userName": "Gattinatian甜甜"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1369",
+      "addCommentCount": "-2",
+      "addInteractiveount": "3721",
+      "addLikeCount": "2354",
+      "addShareCount": "3",
+      "collectedCount": "1679",
+      "interactiveCount": "4732",
+      "useCommentCount": "104",
+      "useLikeCount": "2949",
+      "useShareCount": "11"
+    },
+    "coverUrl": "https://sns-na-i14.xhscdn.com/1040g0083235e261b7u604bl9i36bt87bq504rgo?imageView2/2/w/576/format/webp",
+    "desc": "以前熬完夜，脸黄得像隔夜茶。\n直到挖到这款Biodance胶原蛋白水凝胶面膜——无膜布设计，34克精华凝固而成的水凝胶面膜，敷着过夜不粘枕头。早起揭下来，毛孔细了，皮肤软到忍不住一直摸。底妆服帖到像长在脸上。\n#熬夜党必备 #睡眠面膜 #水光肌 #职场日常 #护肤分享#职场vlog#biodance #拜欧丹斯#biodance面膜#oliveyoung",
+    "fans": "44w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a684143000000000c015602",
+    "publicTime": "2026-07-28 17:16:26",
+    "title": "熬大夜不垮脸？我承认，这次真靠“作弊”了",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31v68fb7liq5g4bl9i36bt87bl2ack0o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5bd54cbe8bcbda00012fa0eb",
+    "userName": "是小西"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "920",
+      "addCommentCount": "253",
+      "addInteractiveount": "3689",
+      "addLikeCount": "2516",
+      "addShareCount": "56",
+      "collectedCount": "1979",
+      "interactiveCount": "7991",
+      "useCommentCount": "838",
+      "useLikeCount": "5174",
+      "useShareCount": "123"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235rgbfeg2004a1kclohhnmmehlg2k8?imageView2/2/w/1080/format/webp",
+    "desc": "23min无粉感底妆超详细跟练版来也！\n逢人被夸、毫无粉感、仿若妈生的又持久又有光泽的绝美底妆2.0详细版跟练来也！\n#底妆教程 #我的跟练日记 #新手化妆 #底妆 #YSL夜皇后调皮水 #妆前 ",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68a99e000000000f012a4f",
+    "publicTime": "2026-07-28 21:07:42",
+    "title": "23min无粉感底妆超详细跟练版来也！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/659e5479b6e9a5a883534142.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5a8c311811be106644deded6",
+    "userName": "蒲言延"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1373",
+      "addCommentCount": "75",
+      "addInteractiveount": "3615",
+      "addLikeCount": "2167",
+      "addShareCount": "8",
+      "collectedCount": "1397",
+      "interactiveCount": "3690",
+      "useCommentCount": "75",
+      "useLikeCount": "2218",
+      "useShareCount": "8"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235rdrj47a805pjd9110u4ijjo3peq0?imageView2/2/w/1080/format/webp",
+    "desc": "#变白变美 #美白 #牛奶肌大作战 #提亮 #皮肤白到发亮发光 #白成一道光 #美白提亮 #变白 #变美逆袭howto #由内而外白出来",
+    "fans": "33w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68c3dd000000000e037596",
+    "publicTime": "2026-07-28 22:59:41",
+    "title": "面部高阶美白｜弯道超车指南｜诡秘收藏不亏",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31s73vkhjls0g4bgjd8v12qm2hgq918o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5bc7fe117b4bb00001ed6ac2",
+    "userName": "苏格拉迪"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1120",
+      "addCommentCount": "9",
+      "addInteractiveount": "3610",
+      "addLikeCount": "2481",
+      "addShareCount": "62",
+      "collectedCount": "2457",
+      "interactiveCount": "7706",
+      "useCommentCount": "21",
+      "useLikeCount": "5228",
+      "useShareCount": "122"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235pib8c02e04a3n9lpcer5cud0ldcg?imageView2/2/w/1080/format/webp",
+    "desc": "#没事儿也化妆 #新手化妆技巧 #妆教经验howto #全包眼线 #网感妆容 #美妆教程",
+    "fans": "17w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6893a7000000001d0204e0",
+    "publicTime": "2026-07-28 19:33:59",
+    "title": "古早千金感全包眼线妆容‼️3分钟超详细妆教",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/66c57fc09816211ff001a8cb.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5aaf32c74eacab0d8a376cac",
+    "userName": "鸡腿圆圆子"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1537",
+      "addCommentCount": "47",
+      "addInteractiveount": "3597",
+      "addLikeCount": "2013",
+      "addShareCount": "57",
+      "collectedCount": "6471",
+      "interactiveCount": "1w+",
+      "useCommentCount": "282",
+      "useLikeCount": "9514",
+      "useShareCount": "292"
+    },
+    "coverUrl": "https://sns-na-i11.xhscdn.com/1040g0083235eb1tj7k005nu1510g9e4iaverhuo?imageView2/2/w/576/format/webp",
+    "desc": "#长中庭 #如何让眼睛变有神 #高眼位  #入门眼妆",
+    "fans": "40w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68338c000000000c016da5",
+    "publicTime": "2026-07-28 12:43:56",
+    "title": "长中庭+高眼位的眼妆画法不要再停留在1.0了",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/616d83e3236426dbd685da74.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5fc12841000000000100b892",
+    "userName": "伤心猪头"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "258",
+      "addCommentCount": "85",
+      "addInteractiveount": "3564",
+      "addLikeCount": "3221",
+      "addShareCount": "46",
+      "collectedCount": "552",
+      "interactiveCount": "7973",
+      "useCommentCount": "517",
+      "useLikeCount": "6904",
+      "useShareCount": "102"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235q9pis72005nhh1j2g8o5gokhhu9g?imageView2/2/w/1080/format/webp",
+    "desc": "#好视频扶持计划 #定格2000s #fyp #美貌野心家 #去见我担怎么妆 #艾薇儿 #Avril #仿妆 #仿妆不仿人 #没事儿也化妆 @美妆薯 @时尚薯",
+    "fans": "37w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68987500000000220188a4",
+    "publicTime": "2026-07-28 19:54:29",
+    "title": "一千多万人看过的后续来了  艾薇儿？仿！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo320sa9hs774005nhh1j2g8o5gorgkr98?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5e310cc500000000010060b0",
+    "userName": "無語公主"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "1040",
+      "addCommentCount": "68",
+      "addInteractiveount": "3475",
+      "addLikeCount": "2367",
+      "addShareCount": "280",
+      "collectedCount": "1292",
+      "interactiveCount": "4150",
+      "useCommentCount": "77",
+      "useLikeCount": "2781",
+      "useShareCount": "310"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235m12finu705pjmaiqhotb1ausbct8?imageView2/2/w/1080/format/webp",
+    "desc": "#军训好物howto #内容过于真实 #开学带这些 #军训",
+    "fans": "25w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6870f6000000001400602b",
+    "publicTime": "2026-07-28 17:05:58",
+    "title": "这些军训好物，谁用谁知道！！！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo3214ttk087a005pjmaiqhotb138udqv0?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/667654b50000000007007561",
+    "userName": "好事花生(打工版"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "437",
+      "addCommentCount": "267",
+      "addInteractiveount": "3473",
+      "addLikeCount": "2769",
+      "addShareCount": "20",
+      "collectedCount": "675",
+      "interactiveCount": "6052",
+      "useCommentCount": "606",
+      "useLikeCount": "4771",
+      "useShareCount": "28"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235v072f7k0048bdt0ogbm7iic6uk2o?imageView2/2/w/1080/format/webp",
+    "desc": "#妆前妆后 #鼻贴用法 #鼻贴教程 #缩鼻翼",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68baa0000000000402bd89",
+    "publicTime": "2026-07-28 22:20:16",
+    "title": "一招解决大鼻子",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo30qp7o31ogo0048bdt0ogbm7ikquu60g?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5729710582ec3907eba2d8f2",
+    "userName": "初九"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "499",
+      "addCommentCount": "33",
+      "addInteractiveount": "3364",
+      "addLikeCount": "2832",
+      "addShareCount": "42",
+      "collectedCount": "730",
+      "interactiveCount": "5210",
+      "useCommentCount": "59",
+      "useLikeCount": "4421",
+      "useShareCount": "65"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083234te1ahno004a7mjc5eeguvne1lu5g?imageView2/2/w/1080/format/webp",
+    "desc": "#内容过于真实 #妆容精致度 #氛围感 #测评 #妆容分享#变妆看我的 #清透感",
+    "fans": "7w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a684a920000000014005155",
+    "publicTime": "2026-07-28 16:52:06",
+    "title": "当我尝试猫系异瞳…会得到？",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo30tkn1e3b4k004a7mjc5eeguvc5bpbvg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5b5f0ae7e8ac2b172bfa43df",
+    "userName": "Gloria洛洛"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "874",
+      "addCommentCount": "3",
+      "addInteractiveount": "3355",
+      "addLikeCount": "2478",
+      "addShareCount": "1",
+      "collectedCount": "1007",
+      "interactiveCount": "3967",
+      "useCommentCount": "89",
+      "useLikeCount": "2871",
+      "useShareCount": "9"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083230fhr4v7o005nb4tgrg8ojn85lks18?imageView2/2/w/1080/format/webp",
+    "desc": "#全新第六代赫莲娜绿宝瓶精华 #赫莲娜绿宝瓶精华 #赫莲娜黑绷带 #全新黑绷带50面霜 #抗老 #修护 #好用的精华 #精华分享 #精华推荐",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6320c8000000001400595f",
+    "publicTime": "2026-07-28 17:01:32",
+    "title": "先绿后黑，抗老翻倍？修护抗老界教科书来了！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31epu5t0vma105nb4tgrg8ojnm7e43o0?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5d64ec370000000001006277",
+    "userName": "是你们的康康"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "861",
+      "addCommentCount": "32",
+      "addInteractiveount": "3173",
+      "addLikeCount": "2280",
+      "addShareCount": "4",
+      "collectedCount": "1877",
+      "interactiveCount": "6321",
+      "useCommentCount": "82",
+      "useLikeCount": "4362",
+      "useShareCount": "11"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235cm054na0g4110i56rr8mmobivf6o?imageView2/2/w/1080/format/webp",
+    "desc": "#夏日美妆howto #抗初老howto #护肤经验howto #vlog #购物开箱 无限回购的变美清单 #爱用物分享 #变美新思路 #种草视频",
+    "fans": "62w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6824c1000000001c00cd7f",
+    "publicTime": "2026-07-28 11:40:49",
+    "title": "30➕精致中女｜美美礼盒Sharing💝🎁",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo317f263u946004110i56rr8mm7f934u0?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/55bb4dbda75c951f62b0a2d6",
+    "userName": "小宇小宇yola"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "771",
+      "addCommentCount": "19",
+      "addInteractiveount": "3067",
+      "addLikeCount": "2277",
+      "addShareCount": "0",
+      "collectedCount": "910",
+      "interactiveCount": "3909",
+      "useCommentCount": "32",
+      "useLikeCount": "2967",
+      "useShareCount": "4"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235k9saon0eg4bgh2q2hv84v5ufrueg?imageView2/2/w/1080/format/webp",
+    "desc": "连轴转的工作真的太费眼了！强光+盯屏一整天，眼睛又干又酸快扛不住。\n随身带着分场景护理CP，日常舒缓、深层修护都拿捏，温和干净还便携，滴完瞬间回血，全程清清爽爽。\n认真搞事业也要好好爱自己，职场打工人直接抄作业～\n#打工人日常 #出差好物 #职场状态感 #主持人日常 #高效工作指南#瑞珠滴眼液#瑞珠cp#中英双语主持人",
+    "fans": "42w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a686aa6000000000f015a07",
+    "publicTime": "2026-07-28 16:39:02",
+    "title": "主持人+博主打工日记｜状态在线的秘密✨",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/6165a798b0020d62da91493b.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5bc7451fe1ce05000147a09f",
+    "userName": "洪雪莹 Sydia"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "182",
+      "addCommentCount": "34",
+      "addInteractiveount": "3021",
+      "addLikeCount": "2805",
+      "addShareCount": "23",
+      "collectedCount": "326",
+      "interactiveCount": "6188",
+      "useCommentCount": "261",
+      "useLikeCount": "5601",
+      "useShareCount": "58"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235rn7tpn2e05oji3gl8clqnfcq8c18?imageView2/2/w/1080/format/webp",
+    "desc": "#气凝胶 #开箱 #婠婠 #测评",
+    "fans": "98w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a689fed000000001101e5f6",
+    "publicTime": "2026-07-28 20:26:21",
+    "title": "谁投稿的气凝胶…",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo30ttdgii150005oji3gl8clqnnq51ms0?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/62721c2a0000000021025757",
+    "userName": "婠婠🎀"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "872",
+      "addCommentCount": "61",
+      "addInteractiveount": "2865",
+      "addLikeCount": "1932",
+      "addShareCount": "51",
+      "collectedCount": "954",
+      "interactiveCount": "3204",
+      "useCommentCount": "108",
+      "useLikeCount": "2142",
+      "useShareCount": "55"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235net61no004a1gnaltd0merkon6q8?imageView2/2/w/1080/format/webp",
+    "desc": "敏皮早衰？do脸不自由？那就先脱个敏吧！\n#海蓝之谜浓修瓶精华  #浓修我的100种焦躁  #海蓝之谜精华  #海蓝之谜新品  #精华推荐   #半岛大超炮  #半岛高定抗衰  #美自深层愈见新生  #维韧  #饱满  #淡纹  #紧致  #海蓝之谜浓修膏  #抗老精华  #修护精华  #敏感肌精华 ",
+    "fans": "60w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a687d0f000000000c01724d",
+    "publicTime": "2026-07-28 20:52:29",
+    "title": "敏皮早衰？do脸不自由？那就先脱个敏吧！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/5d5698ed1d314d0001fd1bf9.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5a87abd6e8ac2b3ca6ab82ce",
+    "userName": "林果然"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "297",
+      "addCommentCount": "59",
+      "addInteractiveount": "2809",
+      "addLikeCount": "2453",
+      "addShareCount": "31",
+      "collectedCount": "363",
+      "interactiveCount": "4001",
+      "useCommentCount": "125",
+      "useLikeCount": "3513",
+      "useShareCount": "32"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235o38c1nk004adj2fvd40gqhidalng?imageView2/2/w/1080/format/webp",
+    "desc": "#口红试色#原相机口红试色#夏日美妆howto#全新阿玛尼传奇红管#阿玛尼100#口红分享#colorme#今日妆容#大牌口红",
+    "fans": "56w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a68826100000000010302c1",
+    "publicTime": "2026-07-28 18:20:17",
+    "title": "当我换到了心仪的口红:",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31sgciha5ls0g4adj2fvd40gq8rm9ebo?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5b717ed26b58b779ecea021a",
+    "userName": "高原"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "791",
+      "addCommentCount": "21",
+      "addInteractiveount": "2632",
+      "addLikeCount": "1820",
+      "addShareCount": "18",
+      "collectedCount": "1066",
+      "interactiveCount": "3641",
+      "useCommentCount": "94",
+      "useLikeCount": "2481",
+      "useShareCount": "41"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235kitt9g20048gnqtjutn3iku9io8o?imageView2/2/w/1080/format/webp",
+    "desc": "请收下！化妆室跟练版 姐妹们速学～\n这个妆太女神了啊啊啊 韩系清透➕泰式骨相\n#变妆看我的 #千金妆 #泰妆 #上镜妆 #没事儿也化妆 #韩泰妆 #泰妆 #韩式妆容",
+    "fans": "100w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6865cf000000000401df39",
+    "publicTime": "2026-07-28 16:18:23",
+    "title": "韩系泰妆！高智浓颜+贵气感 果然反差出奇迹",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/62b343d82ae42a2de41e270f.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5763e7ee6a6a691228d3dc72",
+    "userName": "曾鹿儿"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "856",
+      "addCommentCount": "0",
+      "addInteractiveount": "2588",
+      "addLikeCount": "1732",
+      "addShareCount": "1",
+      "collectedCount": "862",
+      "interactiveCount": "2610",
+      "useCommentCount": "6",
+      "useLikeCount": "1742",
+      "useShareCount": "1"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/notes_pre_post/1040g3k83234pcj0d7abg5oaqh7rgjamtbln3gqg?imageView2/2/w/1080/format/webp",
+    "desc": "这年头反复在说“熬夜”“熬夜”🉑老化的锅全在熬夜背吗？工作生活压力大、肌底深层支撑力不足等等都会让脸蛋子干瘪！一瘪才显垮！面部疲态尽显！！！\n.\n一般补的胶原仅仅停留在表层，皮肤深层根本下不去。但娇韵诗弹簧水这种皮肤能“喝”的液态胶原能补到肌肤底层去，还有促进胶原吸收率的本事，所以建议大家护肤第一☝步牢牢认准弹簧水！\n·\n里面的粗糙帽果和袋鼠花精萃，额外还复配红海藻×红参精萃这种温和焕新角质层、能够促进胶原吸收的成分，只要坚持用，皮肤肉眼可见的紧致柔嫩~\n.\n建议大家以“敷”代“擦”，湿敷弹簧水💆‍♀️平时我习惯洗完脸马上就敷！让脸从班味十足的垮态里脱离出来，回归紧紧嫩嫩的元气状态。每一滴液态胶原都是恢复皮肤弹力、支撑力的关键🔑不需要层层糊墙式护肤，第二天醒来脸轮廓还是紧紧的，摸起来柔嫩水感，一戳还有弹性~弹簧水流动性特别强，水感精华质地，滋润好吸收，大夏天的敷完皮肤也完全不黏腻~\n.\n我是真心喜欢娇韵诗这股子“把事情做在前头“的劲，弹簧水作为护肤第一☝步既帮皮肤打好细腻嫩滑的基础，又能深层增强皮肤紧致度🔒紧锁胶原不流失。爱熬夜、工作压力大，尤其是从前抗老面临无功无过窘境的人，弹簧水就是咱的专属对策卡👊routine里面加一步，抗老那就是质的飞跃！\n#娇韵诗#娇韵诗弹簧水#抗老分龄精华水#娇韵诗分龄精华水#抗老 #紧致 #饱满 #精华水 #护肤 #我的护肤日常",
+    "fans": "61w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a67876c000000000f01184b",
+    "publicTime": "2026-07-28 19:24:48",
+    "title": "怎么胶原蛋白不背锅？",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/6305d2acc1d6589fe18c51c0.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/615a89f7000000000201aadd",
+    "userName": "闹闹Nao"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "334",
+      "addCommentCount": "110",
+      "addInteractiveount": "2571",
+      "addLikeCount": "2127",
+      "addShareCount": "252",
+      "collectedCount": "1232",
+      "interactiveCount": "1w+",
+      "useCommentCount": "515",
+      "useLikeCount": "8430",
+      "useShareCount": "1141"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg323520dtrn0dg5poa74l7eb1vdedfkg0?imageView2/2/w/1080/format/webp",
+    "desc": "",
+    "fans": "3w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a67cd2600000000110152dc",
+    "publicTime": "2026-07-28 05:27:02",
+    "title": "蜥蜴的世界，尾巴越有力量越受青睐",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31visncch3m6g5poa74l7eb1vf7datd8?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/670a392a000000001d032c3f",
+    "userName": "文希解说"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "883",
+      "addCommentCount": "54",
+      "addInteractiveount": "2532",
+      "addLikeCount": "1595",
+      "addShareCount": "4",
+      "collectedCount": "1048",
+      "interactiveCount": "3178",
+      "useCommentCount": "118",
+      "useLikeCount": "2012",
+      "useShareCount": "5"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235bgn5i7u5g4bh9pgo4rhln1bate9g?imageView2/2/w/1080/format/webp",
+    "desc": "✅经常美美后的姐妹，真的要重视恢复期的护肤。\n俗话说3分做，7分养，很有道理，修护比项目本身更重要！\n🤔之前认真做项目，却因为恢复期没养护好，\n脸又敏又暗沉，太吃亏了。\n现在做完我都会好好修护，皮肤恢复速度快超多，状态也稳定很多。\n👍🏻认真做好美美后的护肤，效果真的直接翻倍！\n宝子们，快跟着视频抄作业吧～\n#biodance #睡眠⾯膜 #韩国⾯膜 #oliveyoung #维稳修护  #变美新思路 #护肤 #项⽬后修护 #护肤保养 #do脸修护 #拜欧丹斯 #biodance面膜",
+    "fans": "42w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a681d880000000001032e90",
+    "publicTime": "2026-07-28 17:37:39",
+    "title": "听劝！美美后不好好护肤，等于钱白花～",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/66715291de7240a9cfc54fbd.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/5bc9f04d40d48b0001f9c6b7",
+    "userName": "Yara颜颜"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "623",
+      "addCommentCount": "12",
+      "addInteractiveount": "2504",
+      "addLikeCount": "1869",
+      "addShareCount": "3",
+      "collectedCount": "881",
+      "interactiveCount": "3750",
+      "useCommentCount": "114",
+      "useLikeCount": "2755",
+      "useShareCount": "6"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235nh5pog2e05o7qr6ng9fj312amrro?imageView2/2/w/1080/format/webp",
+    "desc": "我发现进入正向循环，好像真的没那么难\n不用刻意自律，透支身体🏃🏻‍♀️‍➡️\n只需要把生活的习惯都改成“适合自己的”\n-\n这套逻辑我把它放在健身，工作还有护肤上\n兰蔻菁纯MD凝时精华 就是我最近的心头好\n它是根据肌肤的生物年龄和不同状态做分龄定制✅\n从源头让皮肤自己争气，维持年轻好状态🥂\n-\n最后希望大家都能不盲目逐流\n用自己喜欢的方式去生活，感受正向的美好\n#兰蔻菁纯MD补剂精华#兰蔻菁纯MD精华#兰蔻MD精华#抗老精华#凝时精华#我的护肤适用主义  #女性力量 #女性成长",
+    "fans": "35w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6881dd0000000001003f04",
+    "publicTime": "2026-07-28 18:39:47",
+    "title": "Girl Boss|不迎合的人生，我替你试过啦！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31i3maldg7c005o7qr6ng9fj3d058tfo?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/60fad9af000000000100be63",
+    "userName": "MioMio"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "115",
+      "addCommentCount": "21",
+      "addInteractiveount": "2465",
+      "addLikeCount": "2329",
+      "addShareCount": "10",
+      "collectedCount": "235",
+      "interactiveCount": "4179",
+      "useCommentCount": "105",
+      "useLikeCount": "3839",
+      "useShareCount": "24"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083235aug10nk0g5p0dk0mqabs3gb8e5l8?imageView2/2/w/1080/format/webp",
+    "desc": "因为本人已经在户外和美黑仓的紫外线下被晒成了小麦色！！幸好还有这支防晒护着，才没被继续晒黑晒伤…#防晒#测评#防晒测评#科颜氏胶原盾防晒",
+    "fans": "38w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a687756000000000301fd81",
+    "publicTime": "2026-07-28 18:00:39",
+    "title": "这把测完，再也不说自己是橄榄皮了…",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo3203upgti2i005p0dk0mqabs34lb9t2o?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/640da02d0000000029012f83",
+    "userName": "玛丽莲V露"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "560",
+      "addCommentCount": "265",
+      "addInteractiveount": "2456",
+      "addLikeCount": "1631",
+      "addShareCount": "218",
+      "collectedCount": "886",
+      "interactiveCount": "4013",
+      "useCommentCount": "405",
+      "useLikeCount": "2722",
+      "useShareCount": "293"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g2sg3235ovqgrg2005p04ab1459vdlhd2nig?imageView2/2/w/1080/format/webp",
+    "desc": "每个月的某个上午，我会干劲十足地拎着垃圾袋满屋子转悠，扔掉没用的杂物。\n#极简主义 #断舍离 #极简 #简单生活 #精简生活 #开始循环极简生活 #长期主义#长期主义 #和极简生活在一起",
+    "fans": "2954",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a688a49000000000e036f53",
+    "publicTime": "2026-07-28 18:54:01",
+    "title": "极简主义大神在此",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31un16mkk2a0g5p04ab1459vd3ckued8?imageView2/2/w/540/format/webp",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/640452c2000000001002a7ed",
+    "userName": "海苔真脆"
+  },
+  {
+    "anaAdd": {
+      "addCollectedCunt": "418",
+      "addCommentCount": "26",
+      "addInteractiveount": "2388",
+      "addLikeCount": "1944",
+      "addShareCount": "18",
+      "collectedCount": "852",
+      "interactiveCount": "5372",
+      "useCommentCount": "44",
+      "useLikeCount": "4476",
+      "useShareCount": "36"
+    },
+    "coverUrl": "https://sns-img-hw.xhscdn.net/1040g0083234j1srt7a0g5o1jqp6gbrh3tjm6idg?imageView2/2/w/1080/format/webp",
+    "desc": "#亚裔妆 #第二代兰蔻持妆粉底液 #妆出大人感",
+    "fans": "7w+",
+    "photoJumpUrl": "https://www.xiaohongshu.com/explore/6a6756340000000013025be1",
+    "publicTime": "2026-07-28 17:00:05",
+    "title": "亚裔妆咋画没味？4个焚决技巧！",
+    "userHeadUrl": "https://sns-avatar-qc.xhscdn.com/avatar/670bdbcd68c7f3d94e447b1c.jpg?imageView2/2/w/120/format/jpg",
+    "userJumpUrl": "https://www.xiaohongshu.com/user/profile/6033d64d000000000101ee23",
+    "userName": "这不麦吉克么"
+  }
+];
+
+    var totalCount = RAW.length;
+    var maxInteractive = 0, sumInteractive = 0;
+
+    function parseInteractive(val) {
+        if (typeof val === 'string') {
+            if (val.indexOf('w') !== -1 || val.indexOf('W') !== -1) {
+                return parseFloat(val) * 10000;
+            } else if (val.indexOf('亿') !== -1) {
+                return parseFloat(val) * 100000000;
+            }
+            return parseFloat(val) || 0;
+        }
+        return val || 0;
+    }
+
+    function fmtNum(val) {
+        if (typeof val === 'string') {
+            if (val.indexOf('w') !== -1 || val.indexOf('W') !== -1 || val.indexOf('亿') !== -1) {
+                return val;
+            }
+        }
+        var n = parseInt(val) || 0;
+        if (n >= 10000) {
+            return (n / 10000).toFixed(1) + 'w';
+        }
+        return n.toString();
+    }
+
+    for (var i = 0; i < RAW.length; i++) {
+        var interactive = parseInteractive(RAW[i].interactiveCount);
+        if (interactive > maxInteractive) maxInteractive = interactive;
+        sumInteractive += interactive;
+    }
+    var avgInteractive = totalCount > 0 ? sumInteractive / totalCount : 0;
+
+    document.getElementById('totalCount').textContent = totalCount;
+    document.getElementById('maxInteractive').textContent = fmtNum(maxInteractive);
+    document.getElementById('avgInteractive').textContent = fmtNum(Math.round(avgInteractive));
+
+    var html = '';
+    for (var i = 0; i < RAW.length && i < 50; i++) {
+        var d = RAW[i];
+        var rank = i + 1;
+        var cardCls = 'note-card';
+
+        if (rank === 1) cardCls += ' top1';
+        else if (rank === 2) cardCls += ' top2';
+        else if (rank === 3) cardCls += ' top3';
+
+        var noteUrl = (d.photoJumpUrl || '#').replace(/ /g, '%20');
+        var avatar = d.userHeadUrl || '';
+        var userName = (d.userName || '--').replace(/ /g, '');
+        var userUrl = (d.userJumpUrl || '#').replace(/ /g, '%20');
+        var fans = (d.fans || '').replace(/ /g, '');
+        var title = (d.title || '--').replace(/ /g, '');
+
+        var interactive = (d.interactiveCount || '0').replace(/ /g, '');
+        var addInteractive = (d.addInteractiveount || '0').replace(/ /g, '');
+        var likeCount = (d.useLikeCount || '0').replace(/ /g, '');
+        var addLikeCount = (d.addLikeCount || '0').replace(/ /g, '');
+        var commentCount = (d.useCommentCount || '0').replace(/ /g, '');
+        var addCommentCount = (d.addCommentCount || '0').replace(/ /g, '');
+        var collected = (d.collectedCount || '0').replace(/ /g, '');
+        var addCollected = (d.addCollectedCunt || '0').replace(/ /g, '');
+        var shareCount = (d.useShareCount || '0').replace(/ /g, '');
+        var addShareCount = (d.addShareCount || '0').replace(/ /g, '');
+
+        var rankHtml = '';
+        if (rank === 1) {
+            rankHtml = '<div class="rank-num">🥇</div>';
+        } else if (rank === 2) {
+            rankHtml = '<div class="rank-num">🥈</div>';
+        } else if (rank === 3) {
+            rankHtml = '<div class="rank-num">🥉</div>';
+        } else {
+            rankHtml = '<div class="rank-num">' + rank + '</div>';
+        }
+
+        html += '<div class="' + cardCls + '" data-href="' + noteUrl + '">'
+            + '<div class="note-row1">'
+            + rankHtml
+            + '<div class="note-info">'
+            + '<div class="note-title"><a href="' + noteUrl + '" target="_blank" onclick="event.stopPropagation()">' + title + '</a></div>'
+            + '<div class="author-info">'
+            + (avatar ? '<img class="author-avatar" src="' + avatar + '" onerror="this.style.display=\'none\'">' : '')
+            + '<span class="author-name">' + (userUrl && userUrl !== '#' ? '<a href="' + userUrl + '" target="_blank" onclick="event.stopPropagation()">' + userName + '</a>' : userName) + '</span>'
+            + (fans ? '<span class="fans-count">·' + fans + '粉丝</span>' : '')
+            + '</div>'
+            + '</div>'
+            + '</div>'
+            + '<div class="note-row2">'
+            + '<div class="data-item"><span class="data-label">互动</span><span class="data-value">' + fmtNum(interactive) + '</span><span class="data-add">↑' + fmtNum(addInteractive) + '</span></div>'
+            + '<div class="data-item"><span class="data-label">点赞</span><span class="data-value">' + fmtNum(likeCount) + '</span><span class="data-add">↑' + fmtNum(addLikeCount) + '</span></div>'
+            + '<div class="data-item"><span class="data-label">评论</span><span class="data-value">' + fmtNum(commentCount) + '</span><span class="data-add">↑' + fmtNum(addCommentCount) + '</span></div>'
+            + '<div class="data-item"><span class="data-label">收藏</span><span class="data-value">' + fmtNum(collected) + '</span><span class="data-add">↑' + fmtNum(addCollected) + '</span></div>'
+            + '<div class="data-item"><span class="data-label">分享</span><span class="data-value">' + fmtNum(shareCount) + '</span><span class="data-add">↑' + fmtNum(addShareCount) + '</span></div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    document.getElementById('noteList').innerHTML = html;
+})();
+
+function exportImage() {
+    var btn = document.querySelector('.btn-export-img');
+    btn.textContent = '生成中...';
+    btn.style.pointerEvents = 'none';
+
+    var target = document.getElementById('pdfContent');
+
+    html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f5f5f5',
+        logging: false,
+        windowWidth: target.scrollWidth,
+        windowHeight: target.scrollHeight
+    }).then(function(canvas) {
+        var link = document.createElement('a');
+        link.download = 'xhs_weekly_' + new Date().toISOString().slice(0,10) + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        btn.textContent = '导出图片';
+        btn.style.pointerEvents = '';
+    }).catch(function(err) {
+        alert('图片生成失败：' + err.message);
+        btn.textContent = '导出图片';
+        btn.style.pointerEvents = '';
+    });
+}
+
+function exportPdf() {
+    var btn = document.querySelector('.btn-export-pdf');
+    btn.textContent = '生成中...';
+    btn.style.pointerEvents = 'none';
+
+    var target = document.getElementById('pdfContent');
+
+    html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f5f5f5',
+        logging: false,
+        windowWidth: target.scrollWidth,
+        windowHeight: target.scrollHeight
+    }).then(function(canvas) {
+        var imgData = canvas.toDataURL('image/png', 1.0);
+
+        // 使用横向 A4 纸
+        var pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+        var pdfW = pdf.internal.pageSize.getWidth();
+        var pdfH = pdf.internal.pageSize.getHeight();
+        var margin = 8;
+        var contentW = pdfW - margin * 2;
+        var contentH = pdfH - margin * 2;
+
+        // 计算图片尺寸以适应横向 A4
+        var imgW = contentW;
+        var imgH = (canvas.height * imgW) / canvas.width;
+
+        // 如果高度仍然超过页面高度，按高度缩放
+        if (imgH > contentH) {
+            imgH = contentH;
+            imgW = (canvas.width * imgH) / canvas.height;
+        }
+
+        // 居中显示
+        var imgX = (pdfW - imgW) / 2;
+        var imgY = (pdfH - imgH) / 2;
+
+        // 所有内容在一页中
+        pdf.addImage(imgData, 'PNG', imgX, imgY, imgW, imgH);
+
+        var now = new Date();
+        var dateStr = now.getFullYear() +
+            String(now.getMonth()+1).padStart(2,'0') +
+            String(now.getDate()).padStart(2,'0') +
+            '_' +
+            String(now.getHours()).padStart(2,'0') +
+            String(now.getMinutes()).padStart(2,'0');
+
+        pdf.save('xhs_weekly_' + dateStr + '.pdf');
+
+        btn.textContent = '导出 PDF';
+        btn.style.pointerEvents = '';
+    }).catch(function(err) {
+        alert('PDF 生成失败：' + err.message);
+        btn.textContent = '导出 PDF';
+        btn.style.pointerEvents = '';
+    });
+}
+</script>
+
+</body>
+</html>

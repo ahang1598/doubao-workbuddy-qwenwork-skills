@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<!--
+  SparkSkillsHub · 链路面板模板（dashboard-template.html）
+  ===========================================================
+  本模板由 SparkSkillsHub 套件分发，被各 Skill 在 chain-protocol §2.1 Step 6
+  调用，用以生成 `spark-output/dashboard.html`——项目的链路全景视图。
+
+  使用方式（详见 chain-protocol §九）：
+    1. 读取本模板原文
+    2. 扫描项目目录 `spark-output/context/*.json`，构造 STATE 对象
+    3. 将本文件中唯一占位符 `/*__SPARK_STATE_INJECT__*/null` 替换为 STATE JSON
+    4. 写入 `spark-output/dashboard.html`（覆盖式）
+
+  STATE 形态：
+    {
+      "project": "项目名",               // 必填；面板标题
+      "description": "项目简述",         // 选填；显示在 tagline 上方
+      "generated_at": "ISO8601",         // 必填；面板更新时间
+      "contexts": {
+        "<skill-name>": {
+          "done": true,
+          "summary": "≤ 80 字摘要",     // 选填；点击节点显示
+          "fields": { ... }              // 选填；context JSON 摘要字段
+        },
+        ...只列出 done=true 的 skill；未列出 = 未完成
+      }
+    }
+
+  ⛔ 修改本模板时请注意：
+    - 不要触碰 SKILLS / PHASES 静态定义（与 chain-protocol §5 一致，需同步升级）
+    - 单一注入点：`/*__SPARK_STATE_INJECT__*/null` 必须保持原样以便正则替换
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SparkSkillsHub 链路面板</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --border-strong: #d6d3d1;
+    --ink: #1c1917;
+    --ink-2: #57534e;
+    --ink-3: #a8a29e;
+    --done: #10b981;
+    --done-bg: #ecfdf5;
+    --next: #f97316;
+    --next-bg: #fff7ed;
+    --locked: #d6d3d1;
+    --locked-bg: #f5f5f4;
+    --star: #eab308;
+    --link: #2563eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; padding: 32px 40px 80px; }
+
+  header { max-width: 1280px; margin: 0 auto 28px; }
+  .crumb { font-size: 12px; color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .tagline { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+  .tagline .proj-desc { color: var(--ink); font-weight: 500; }
+  .spark { color: var(--next); font-weight: 600; }
+
+  .stat-row { margin-top: 24px; display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center; padding: 20px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .stat-big { display: flex; align-items: baseline; gap: 4px; font-variant-numeric: tabular-nums; }
+  .stat-num { font-size: 56px; font-weight: 700; color: var(--ink); line-height: 1; letter-spacing: -0.03em; }
+  .stat-total { font-size: 22px; color: var(--ink-3); font-weight: 500; }
+  .stat-label { font-size: 12px; color: var(--ink-3); margin-top: 4px; letter-spacing: 0.05em; }
+  .stat-side { display: flex; flex-direction: column; gap: 10px; }
+  .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--done) 0%, var(--next) 100%); border-radius: 4px; transition: width 0.6s ease; }
+  .phase-mini { display: flex; gap: 16px; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+  .phase-mini span strong { color: var(--ink); font-weight: 600; }
+  .phase-mini .dot { color: var(--ink-3); }
+
+  main { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+
+  .chain { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .phase { margin-bottom: 24px; }
+  .phase:last-child { margin-bottom: 0; }
+  .phase-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
+  .phase-num { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: 0.1em; }
+  .phase-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .phase-en { font-size: 12px; color: var(--ink-3); font-style: italic; }
+  .phase-meta { margin-left: auto; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  .nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .node { position: relative; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--locked-bg); cursor: pointer; transition: all 0.15s ease; min-height: 70px; display: flex; flex-direction: column; gap: 4px; }
+  .node:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .node.done { background: var(--done-bg); border-color: #6ee7b7; }
+  .node.next { background: var(--next-bg); border-color: #fdba74; box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08); }
+  .node.locked { opacity: 0.55; cursor: not-allowed; }
+  .node.locked:hover { transform: none; border-color: var(--border); }
+
+  .node-top { display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--locked); flex-shrink: 0; }
+  .node.done .status-dot { background: var(--done); }
+  .node.next .status-dot { background: var(--next); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0); } }
+
+  .node-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .node-star { color: var(--star); font-size: 12px; }
+  .node-slash { font-size: 11px; color: var(--ink-3); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .node-hint { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+  .node.done .node-hint { color: var(--done); }
+  .node.next .node-hint { color: var(--next); font-weight: 500; }
+
+  .side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 32px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .card-title .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--next-bg); color: var(--next); font-weight: 500; }
+
+  .next-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+  .next-group-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .next-group-title.continue { color: var(--next); }
+  .next-group-title.also { color: var(--ink-3); margin-top: 14px; }
+  .next-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.15s ease; }
+  .next-item:hover { border-color: var(--next); background: var(--next-bg); }
+  .next-slash { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: var(--next); font-weight: 600; }
+  .next-desc { font-size: 12px; color: var(--ink-2); margin-top: 3px; line-height: 1.4; }
+  .next-reads { font-size: 10px; color: var(--ink-3); margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--ink-2); }
+  .legend-row { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .detail-overlay { position: fixed; inset: 0; background: rgba(28, 25, 23, 0.4); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .detail-overlay.open { display: flex; }
+  .detail { background: var(--surface); border-radius: 14px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 28px; }
+  .detail-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .detail-title { font-size: 18px; font-weight: 600; }
+  .detail-slash { font-size: 13px; color: var(--ink-3); font-family: ui-monospace, "SF Mono", Menlo, monospace; margin-top: 2px; }
+  .detail-close { background: none; border: none; cursor: pointer; color: var(--ink-3); font-size: 22px; padding: 0 4px; }
+  .detail-close:hover { color: var(--ink); }
+  .detail-status { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 500; margin-bottom: 16px; }
+  .detail-status.done { background: var(--done-bg); color: var(--done); }
+  .detail-status.next { background: var(--next-bg); color: var(--next); }
+  .detail-status.locked { background: var(--locked-bg); color: var(--ink-3); }
+  .detail-section { margin-bottom: 14px; }
+  .detail-label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .detail-content { font-size: 13px; color: var(--ink); line-height: 1.55; }
+  .detail-list { padding-left: 18px; }
+  .detail-list li { margin-bottom: 3px; }
+  .detail-deps { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dep-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--locked-bg); color: var(--ink-2); font-family: ui-monospace, monospace; }
+  .dep-tag.met { background: var(--done-bg); color: var(--done); }
+  .dep-tag.miss { background: #fef2f2; color: #dc2626; }
+
+  footer { max-width: 1280px; margin: 32px auto 0; font-size: 11px; color: var(--ink-3); text-align: center; }
+  footer code { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="crumb">SPARK SKILLS HUB · 项目设计链路</div>
+  <h1 id="proj-name">—</h1>
+  <div class="tagline">
+    <span class="proj-desc" id="proj-desc"></span>
+    从需求探索到工程交付，<span class="spark" id="skill-total-tag">28 个设计 Skill</span> 串成的完整链路。建议按需走完，链上每个产物会自动喂给下游 Skill——你不必重复填写项目背景。
+  </div>
+
+  <div class="stat-row">
+    <div>
+      <div class="stat-big">
+        <span class="stat-num" id="stat-num">0</span>
+        <span class="stat-total" id="stat-total">/ 28</span>
+      </div>
+      <div class="stat-label">SKILL 已完成 · <span id="stat-pct">0%</span></div>
+    </div>
+    <div class="stat-side">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="phase-mini" id="phase-mini"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="chain" id="chain"></div>
+
+  <aside class="side">
+    <div class="card">
+      <div class="card-title">下一步建议 <span class="badge" id="next-count">0</span></div>
+      <div id="next-continue"></div>
+      <div id="next-also"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">图例</div>
+      <div class="legend">
+        <div class="legend-row"><span class="legend-dot" style="background:var(--done)"></span>已完成 — 产物已写盘，下游可用</div>
+        <div class="legend-row"><span class="legend-dot" style="background:var(--next)"></span>现在可以做 — 建议从这里继续</div>
+        <div class="legend-row"><span class="legend-dot" style="background:var(--locked)"></span>暂不能做 — 需要先完成上游 Skill</div>
+        <div class="legend-row" style="margin-top:6px;color:var(--ink-3)">⭐ = 设计师对外核心交付物</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">链路存储</div>
+      <div style="font-size:12px;color:var(--ink-2);line-height:1.6">
+        <div style="font-family:ui-monospace,monospace;color:var(--ink-3);margin-bottom:4px">spark-output/</div>
+        <div style="padding-left:14px;font-family:ui-monospace,monospace">
+          ├── context/ <span style="color:var(--ink-3)">(<span id="ctx-count">0</span> 文件)</span><br>
+          ├── output/ <span style="color:var(--ink-3)">(HTML 产物)</span><br>
+          └── dashboard.html <span style="color:var(--ink-3)">(本面板)</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="detail-overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail" id="detail"></div>
+</div>
+
+<footer>
+  由 SparkSkillsHub 链路面板生成 · 数据源 <code>spark-output/context/*.json</code> · 更新于 <span id="updated-at">—</span>
+</footer>
+
+<script>
+// ===========================================================
+// STATE 注入点（chain-protocol §九 Step 6 由各 Skill 替换）
+// ===========================================================
+const STATE = /*__SPARK_STATE_INJECT__*/null;
+
+// 默认空状态兜底（模板未被注入时仍可预览结构）
+const EFFECTIVE_STATE = STATE || {
+  project: "（项目名待生成）",
+  description: "",
+  generated_at: new Date().toISOString(),
+  contexts: {}
+};
+
+// ===========================================================
+// SKILLS / PHASES 静态定义（与 chain-protocol §5 链路全景图一致）
+// 升级协议版本时需同步更新本表
+// 各 phase 内的顺序 = 拓扑顺序（按 reads 依赖），与"下一步推荐"算法对齐
+// v0.5.5：补齐 4 个新 Skill（chart / avatar / test / extract），修正 phase-2 顺序（brief→journey→stories→sitemap）
+// v0.5.5：修正 audit.reads ([probe,signal,bench] → [frame,scope]) 与 brief.reads (移除 journey)，与 SKILL.md frontmatter 一致
+// ===========================================================
+const SKILLS = [
+  // ── 01 探索（入口三选一：scope/frame/audit，深挖三件套：probe/bench/signal）
+  { id: "scope", zh: "读需求", slash: "scope", phase: 1, reads: [], desc: "拆解 PRD，提炼设计目标" },
+  { id: "frame", zh: "问题框定", slash: "frame", phase: 1, reads: [], desc: "JTBD + 机会点（无 PRD 入口）" },
+  { id: "audit", zh: "启发评估", slash: "audit", phase: 1, reads: ["frame","scope"], desc: "现有产品体验走查" },
+  { id: "probe", zh: "用户研究", slash: "probe", phase: 1, reads: ["frame","scope"], desc: "5-8 人深挖访谈" },
+  { id: "bench", zh: "竞品拆解", slash: "bench", phase: 1, reads: ["frame","scope"], desc: "单竞品三维深拆" },
+  { id: "signal", zh: "工单分析", slash: "signal", phase: 1, reads: ["frame","scope","probe"], desc: "大样本高频痛点" },
+  // ── 02 定义（拓扑顺序：brief → journey → stories → sitemap）
+  { id: "brief", zh: "设计简报", slash: "brief", phase: 2, reads: ["frame","scope","audit"], desc: "一页纸对齐（含 HTML）", star: true },
+  { id: "journey", zh: "用户旅程", slash: "journey", phase: 2, reads: ["frame","scope","audit","probe","signal","brief"], desc: "断点 + 情感曲线（含 HTML）", star: true },
+  { id: "stories", zh: "用户故事", slash: "stories", phase: 2, reads: ["brief","frame","scope","audit","journey"], desc: "拆解为可执行用户故事" },
+  { id: "sitemap", zh: "站点地图", slash: "sitemap", phase: 2, reads: ["brief","frame","scope","stories"], desc: "IA 骨架 + 页面层级" },
+  { id: "board", zh: "视觉情绪板", slash: "board", phase: 2, reads: ["brief","journey","stories"], desc: "3-4 套色彩方案 + design-tokens.json 起点" },
+  // ── 03 设计（拓扑顺序：avatar → flow-web/mobile → chart → edge → pitch）
+  { id: "avatar", zh: "数字人头像", slash: "avatar", phase: 3, reads: ["brief"], desc: "数字人 / 品牌 IP / mascot（2 风格 × 2 主体 + 正脸锁定）" },
+  { id: "poster", zh: "营销海报", slash: "poster", phase: 3, reads: ["brief","board"], desc: "营销主题 → 背景小样 → Pillow 合成文字 → PNG" },
+  { id: "flow-web", zh: "Web 页面设计", slash: "flow-web", phase: 3, reads: ["brief","sitemap","stories","board"], desc: "Web 端流程 + 组件调用" },
+  { id: "flow-mobile", zh: "移动端设计", slash: "flow-mobile", phase: 3, reads: ["brief","sitemap","stories","board"], desc: "Mobile 端流程" },
+  { id: "chart", zh: "数据可视化", slash: "chart", phase: 3, reads: ["brief","sitemap","flow-web","flow-mobile","board"], desc: "图表选型 + AntV mock 预览 + 工程库推荐" },
+  { id: "edge", zh: "异常态", slash: "edge", phase: 3, reads: ["brief","sitemap","stories","flow-web","flow-mobile"], desc: "空状态 / 错误 / 加载" },
+  { id: "pitch", zh: "设计提案", slash: "pitch", phase: 3, reads: ["frame","scope","audit","brief","stories","sitemap","flow-web","flow-mobile","check","qa","edge"], desc: "向上汇报叙事", star: true },
+  { id: "motion-plan", zh: "动效规划", slash: "motion-plan", phase: 3, reads: ["brief","flow-web","flow-mobile","avatar","board"], desc: "动效调性 + 元素级规范（Disney 12 原则）" },
+  { id: "motion-apply", zh: "动效开发", slash: "motion-apply", phase: 3, reads: ["motion-plan","flow-web","flow-mobile","brief"], desc: "React Bits / CSS 落地（场景感知 prop 调优）" },
+  // ── 04 验证（拓扑顺序：check → test → access → metric）
+  { id: "check", zh: "设计走查", slash: "check", phase: 4, reads: ["brief","flow-web","flow-mobile","sitemap","stories"], desc: "Review Checklist 自检" },
+  { id: "test", zh: "可用性测试", slash: "test", phase: 4, reads: ["brief","flow-web","flow-mobile","sitemap","stories"], desc: "Nielsen 0-4 + 任务量化基线" },
+  { id: "access", zh: "无障碍检查", slash: "access", phase: 4, reads: ["brief","flow-web","flow-mobile","sitemap","stories","check"], desc: "WCAG 2.1 AA/AAA" },
+  { id: "metric", zh: "设计度量", slash: "metric", phase: 4, reads: ["brief","stories","frame","sitemap","flow-web","flow-mobile","pitch","qa"], desc: "跟踪指标定义" },
+  // ── 05 交付（拓扑顺序：qa → prd → extract → retro）
+  { id: "qa", zh: "设计验收", slash: "qa", phase: 5, reads: ["brief","flow-web","flow-mobile","check","sitemap","stories"], desc: "前端还原度走查" },
+  { id: "prd", zh: "写PRD", slash: "prd", phase: 5, reads: ["brief","frame","scope","stories","sitemap","journey","flow-web","flow-mobile","check","chart","motion-plan"], desc: "8 段式工程 PRD", star: true },
+  { id: "extract", zh: "设计提取", slash: "extract", phase: 5, reads: ["flow-web","flow-mobile","qa","check","board"], desc: "三模式 token 抽取 + 语义级 SparkDesign Diff" },
+  { id: "retro", zh: "设计复盘", slash: "retro", phase: 5, reads: ["frame","scope","audit","probe","bench","signal","brief","stories","journey","sitemap","flow-web","flow-mobile","check","access","qa","edge","pitch","metric","prd"], desc: "全链路终端闭环（读全 19 个上游）" }
+];
+
+const PHASES = {
+  1: { num: "01", zh: "探索", en: "Explore" },
+  2: { num: "02", zh: "定义", en: "Define" },
+  3: { num: "03", zh: "设计", en: "Design" },
+  4: { num: "04", zh: "验证", en: "Validate" },
+  5: { num: "05", zh: "交付", en: "Deliver" }
+};
+
+const ctxOf = id => EFFECTIVE_STATE.contexts[id];
+
+function getNodeStatus(skill) {
+  if (ctxOf(skill.id)?.done) return "done";
+  if (skill.reads.length === 0) return "next";
+  const someMet = skill.reads.some(r => ctxOf(r)?.done);
+  return someMet ? "next" : "locked";
+}
+
+function getDepsStatus(skill) {
+  return skill.reads.map(r => ({ name: r, met: !!ctxOf(r)?.done }));
+}
+
+function renderHeader() {
+  document.getElementById("proj-name").textContent = EFFECTIVE_STATE.project || "—";
+  document.title = `${EFFECTIVE_STATE.project || "—"} · SparkSkillsHub 链路面板`;
+  const descEl = document.getElementById("proj-desc");
+  if (EFFECTIVE_STATE.description) {
+    descEl.textContent = EFFECTIVE_STATE.description + "。";
+  } else {
+    descEl.style.display = "none";
+  }
+  const ts = EFFECTIVE_STATE.generated_at ? new Date(EFFECTIVE_STATE.generated_at) : new Date();
+  document.getElementById("updated-at").textContent = ts.toLocaleString("zh-CN", { hour12: false });
+  document.getElementById("skill-total-tag").textContent = SKILLS.length + " 个设计 Skill";
+}
+
+function renderChain() {
+  const chain = document.getElementById("chain");
+  chain.innerHTML = "";
+  let doneCount = 0;
+
+  for (const phaseNum of [1, 2, 3, 4, 5]) {
+    const phase = PHASES[phaseNum];
+    const phaseSkills = SKILLS.filter(s => s.phase === phaseNum);
+    const phaseDone = phaseSkills.filter(s => ctxOf(s.id)?.done).length;
+    doneCount += phaseDone;
+
+    const phaseEl = document.createElement("div");
+    phaseEl.className = "phase";
+    phaseEl.innerHTML = `
+      <div class="phase-head">
+        <span class="phase-num">${phase.num}</span>
+        <span class="phase-name">${phase.zh}</span>
+        <span class="phase-en">${phase.en}</span>
+        <span class="phase-meta">${phaseDone} / ${phaseSkills.length}</span>
+      </div>
+      <div class="nodes" id="nodes-${phaseNum}"></div>
+    `;
+    chain.appendChild(phaseEl);
+
+    const nodesEl = phaseEl.querySelector(`#nodes-${phaseNum}`);
+    for (const skill of phaseSkills) {
+      const status = getNodeStatus(skill);
+      const node = document.createElement("div");
+      node.className = `node ${status}`;
+      node.onclick = () => openDetail(skill);
+      let hint;
+      if (status === "done") {
+        hint = "✓ 已完成";
+      } else if (status === "next") {
+        hint = "→ 现在可以做";
+      } else {
+        const missing = skill.reads
+          .filter(r => !ctxOf(r)?.done)
+          .map(r => SKILLS.find(s => s.id === r))
+          .filter(Boolean);
+        if (missing.length === 0) hint = "暂未启动";
+        else if (missing.length === 1) hint = `先做 /${missing[0].slash}`;
+        else if (missing.length === 2) hint = `先做 /${missing[0].slash}、/${missing[1].slash}`;
+        else hint = `先做 /${missing[0].slash} 等 ${missing.length} 个`;
+      }
+      node.innerHTML = `
+        <div class="node-top">
+          <span class="status-dot"></span>
+          <span class="node-name">${skill.zh}${skill.star ? ' <span class="node-star">⭐</span>' : ''}</span>
+        </div>
+        <div class="node-slash">/${skill.slash}</div>
+        <div class="node-hint">${hint}</div>
+      `;
+      nodesEl.appendChild(node);
+    }
+  }
+
+  const pct = Math.round(doneCount / SKILLS.length * 100);
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("stat-num").textContent = doneCount;
+  document.getElementById("stat-total").textContent = `/ ${SKILLS.length}`;
+  document.getElementById("stat-pct").textContent = pct + "%";
+  document.getElementById("ctx-count").textContent = doneCount;
+
+  const phaseMini = document.getElementById("phase-mini");
+  phaseMini.innerHTML = [1, 2, 3, 4, 5].map(p => {
+    const all = SKILLS.filter(s => s.phase === p);
+    const done = all.filter(s => ctxOf(s.id)?.done).length;
+    return `<span>${PHASES[p].num} ${PHASES[p].zh} <strong>${done}/${all.length}</strong></span>`;
+  }).join('<span class="dot">·</span>');
+}
+
+function renderNextSteps() {
+  const sortFn = (a, b) => {
+    if (a.star && !b.star) return -1;
+    if (!a.star && b.star) return 1;
+    return a.reads.length - b.reads.length;
+  };
+
+  const eligible = SKILLS
+    .filter(s => !ctxOf(s.id)?.done)
+    .filter(s => s.reads.length === 0 || s.reads.every(r => ctxOf(r)?.done));
+
+  const hasDone = SKILLS.some(s => ctxOf(s.id)?.done);
+
+  let continueGroup, alsoGroup;
+  if (!hasDone) {
+    continueGroup = eligible.sort(sortFn).slice(0, 4);
+    alsoGroup = [];
+  } else {
+    continueGroup = eligible.filter(s => s.reads.length > 0).sort(sortFn).slice(0, 3);
+    alsoGroup = eligible.filter(s => s.reads.length === 0).sort(sortFn).slice(0, 3);
+  }
+
+  document.getElementById("next-count").textContent = continueGroup.length;
+
+  const contEl = document.getElementById("next-continue");
+  const alsoEl = document.getElementById("next-also");
+  contEl.innerHTML = "";
+  alsoEl.innerHTML = "";
+
+  if (continueGroup.length === 0 && alsoGroup.length === 0) {
+    contEl.innerHTML = '<div style="font-size:12px;color:var(--ink-3);padding:8px">暂无完全就绪的节点。点链路图中的灰色节点查看缺哪个上游。</div>';
+    return;
+  }
+
+  if (continueGroup.length) {
+    if (alsoGroup.length) contEl.innerHTML = '<div class="next-group-title continue">继续推进</div>';
+    const list = document.createElement("div");
+    list.className = "next-list";
+    for (const skill of continueGroup) list.appendChild(makeNextItem(skill));
+    contEl.appendChild(list);
+  }
+
+  if (alsoGroup.length) {
+    alsoEl.innerHTML = '<div class="next-group-title also">也可以做</div>';
+    const list = document.createElement("div");
+    list.className = "next-list";
+    for (const skill of alsoGroup) list.appendChild(makeNextItem(skill));
+    alsoEl.appendChild(list);
+  }
+}
+
+function makeNextItem(skill) {
+  const item = document.createElement("div");
+  item.className = "next-item";
+  item.onclick = () => openDetail(skill);
+  const readsTxt = skill.reads.length ? `reads: ${skill.reads.slice(0, 4).join(", ")}${skill.reads.length > 4 ? "…" : ""}` : "无前置依赖";
+  item.innerHTML = `
+    <div class="next-slash">/${skill.slash}${skill.star ? ' ⭐' : ''}</div>
+    <div class="next-desc">${skill.zh} — ${skill.desc}</div>
+    <div class="next-reads">${readsTxt}</div>
+  `;
+  return item;
+}
+
+function openDetail(skill) {
+  const ctx = ctxOf(skill.id);
+  const status = getNodeStatus(skill);
+  const deps = getDepsStatus(skill);
+  const statusLabel = status === "done" ? "已完成" : status === "next" ? "现在可以做" : "暂不能做";
+
+  let fieldsHtml = "";
+  if (ctx?.fields) {
+    fieldsHtml = '<div class="detail-section"><div class="detail-label">Context 字段摘要</div><div class="detail-content">';
+    for (const [k, v] of Object.entries(ctx.fields)) {
+      let valHtml;
+      if (Array.isArray(v)) valHtml = `<ul class="detail-list">${v.map(x => `<li>${typeof x === 'object' ? JSON.stringify(x) : x}</li>`).join("")}</ul>`;
+      else if (typeof v === 'object' && v !== null) valHtml = `<code style="font-size:11px;color:var(--ink-2)">${JSON.stringify(v)}</code>`;
+      else valHtml = `<span>${v}</span>`;
+      fieldsHtml += `<div style="margin-bottom:8px"><strong style="font-size:12px;color:var(--ink-2)">${k}</strong><div>${valHtml}</div></div>`;
+    }
+    fieldsHtml += '</div></div>';
+  }
+
+  let depsHtml = "";
+  if (deps.length) {
+    depsHtml = `<div class="detail-section"><div class="detail-label">上游依赖</div><div class="detail-deps">${
+      deps.map(d => `<span class="dep-tag ${d.met ? 'met' : 'miss'}">${d.met ? '✓' : '✗'} ${d.name}</span>`).join("")
+    }</div></div>`;
+  }
+
+  const summaryHtml = ctx?.summary ? `<div class="detail-section"><div class="detail-label">摘要</div><div class="detail-content">${ctx.summary}</div></div>` : "";
+
+  const actionHtml = status !== "done"
+    ? `<div style="margin-top:20px;padding:14px;background:var(--next-bg);border-radius:8px;border:1px solid #fdba74"><div style="font-size:12px;color:var(--ink-2);margin-bottom:6px">在 QoderWork 聊天中执行：</div><code style="font-size:14px;color:var(--next);font-weight:600">/${skill.slash}</code></div>`
+    : "";
+
+  document.getElementById("detail").innerHTML = `
+    <div class="detail-head">
+      <div>
+        <div class="detail-title">${skill.zh}${skill.star ? ' <span style="color:var(--star)">⭐</span>' : ''}</div>
+        <div class="detail-slash">/${skill.slash} · Phase ${PHASES[skill.phase].num} ${PHASES[skill.phase].zh}</div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">×</button>
+    </div>
+    <span class="detail-status ${status}">${statusLabel}</span>
+    <div class="detail-section"><div class="detail-label">说明</div><div class="detail-content">${skill.desc}</div></div>
+    ${summaryHtml}
+    ${depsHtml}
+    ${fieldsHtml}
+    ${actionHtml}
+  `;
+  document.getElementById("detail-overlay").classList.add("open");
+}
+
+function closeDetail() {
+  document.getElementById("detail-overlay").classList.remove("open");
+}
+
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
+
+renderHeader();
+renderChain();
+renderNextSteps();
+</script>
+</body>
+</html>

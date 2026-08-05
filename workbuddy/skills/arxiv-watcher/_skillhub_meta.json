@@ -1,0 +1,22 @@
+{
+  "name": "ArXiv论文追踪",
+  "installedAt": 1783578894670,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2053081360459321344",
+  "examples_zh": [
+    "搜索ArXiv上最新的大语言模型论文",
+    "今天有哪些关于Agent的新论文",
+    "追踪ArXiv上关于RAG的最新研究"
+  ],
+  "examples_en": [
+    "Search for latest LLM papers on ArXiv",
+    "What new agent-related papers came out today?",
+    "Track latest RAG research on ArXiv"
+  ],
+  "description_zh": "搜索和总结 ArXiv 最新研究论文",
+  "description_en": "Search and summarize the latest research papers from ArXiv",
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-watcher.svg",
+  "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\arxiv-watcher\\_icon.svg",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-watcher.svg"
+}

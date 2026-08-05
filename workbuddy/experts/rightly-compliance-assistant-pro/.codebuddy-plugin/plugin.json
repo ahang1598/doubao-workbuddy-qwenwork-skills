@@ -1,0 +1,94 @@
+{
+  "name": "rightly-compliance-assistant-pro",
+  "version": "1.0.0",
+  "description": "Professional edition of an AI-powered mobile app privacy compliance expert team for policy interpretation, violation analysis and remediation guidance",
+  "author": {
+    "name": "PandoraEx Team",
+    "email": "pandoraex@tencent.com"
+  },
+  "dependencies": {
+    "mcpServers": "./.mcp.json"
+  },
+  "agents": [
+    "./agents/compliance-team-lead.md",
+    "./agents/policy-interpreter.md",
+    "./agents/compliance-solution.md",
+    "./agents/code-compliance-analyst.md"
+  ],
+  "skills": [
+    "./skills/violation-mapping",
+    "./skills/case-solution",
+    "./skills/code-analysis",
+    "./skills/official-test-reports",
+    "./skills/rightly-remediation-guides"
+  ],
+  "expertType": "team",
+  "agentName": "compliance-team-lead",
+  "teamInfo": {
+    "leadAgent": "compliance-team-lead",
+    "memberAgents": [
+      "policy-interpreter",
+      "compliance-solution",
+      "code-compliance-analyst"
+    ]
+  },
+  "displayName": {
+    "en": "Rightly Compliance Assistant Pro",
+    "zh": "Rightly 合规辅助专业版"
+  },
+  "profession": {
+    "en": "Rightly Compliance Assistant Pro",
+    "zh": "Rightly 合规辅助专业版"
+  },
+  "tags": [
+    { "en": "Privacy Compliance", "zh": "隐私合规" },
+    { "en": "App Security", "zh": "应用安全" },
+    { "en": "Policy Interpretation", "zh": "政策解读" }
+  ],
+  "displayDescription": {
+    "en": "Professional privacy compliance team: interpret policies and notices, analyze violation details and use Rightly platform data to deliver actionable remediation plans.",
+    "zh": "隐私合规专家团，解读政策与通报条目，分析违规详情，结合专业版 Rightly 数据输出整改方案。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "zh": "某条目（如：违规收集个人信息）通常是由于 APP 什么行为、什么模块触发的",
+    "en": "Which app behaviors and modules typically trigger a given violation (e.g. illegal collection of personal info)?"
+  },
+  "quickPrompts": [
+    { "en": "Which app behaviors and modules typically trigger a given violation (e.g. illegal collection of personal info)?", "zh": "某条目（如：违规收集个人信息）通常是由于 APP 什么行为、什么模块触发的" },
+    { "en": "Analyze this compliance violation stack trace and give a solution", "zh": "帮我分析这个合规违规的调用堆栈，给出解决方案" },
+    { "en": "Check the Rightly platform compliance data for my product (productId=appid) and analyze the risks", "zh": "帮我查看产品（productId=appid）的Rightly合规平台数据结果，分析存在哪些风险" }
+  ],
+  "plugin": "rightly-compliance-assistant-pro",
+  "members": [
+    {
+      "id": "compliance-team-lead",
+      "name": { "en": "CompliBot", "zh": "合规卫士" },
+      "profession": { "en": "Chief Compliance Strategist", "zh": "首席合规策略官" },
+      "avatar": "avatars/compliance-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "policy-interpreter",
+      "name": { "en": "PolicyBot", "zh": "政策通" },
+      "profession": { "en": "Compliance Policy Analyst", "zh": "合规政策分析师" },
+      "avatar": "avatars/policy-interpreter.png",
+      "role": "member"
+    },
+    {
+      "id": "compliance-solution",
+      "name": { "en": "FixBot", "zh": "整改师" },
+      "profession": { "en": "Compliance Remediation Engineer", "zh": "合规整改工程师" },
+      "avatar": "avatars/compliance-solution.png",
+      "role": "member"
+    },
+    {
+      "id": "code-compliance-analyst",
+      "name": { "en": "CodeGuard", "zh": "码审官" },
+      "profession": { "en": "Code Compliance Analyst", "zh": "代码合规分析师" },
+      "avatar": "avatars/code-compliance-analyst.png",
+      "role": "member"
+    }
+  ]
+}

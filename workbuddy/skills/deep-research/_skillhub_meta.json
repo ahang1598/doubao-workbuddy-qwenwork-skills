@@ -1,0 +1,20 @@
+{
+  "name": "Deep Research",
+  "installedAt": 1783579047120,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2053082035566706688",
+  "examples_zh": [
+    "调研 AI Agent 2025 最新进展",
+    "对比主流前端框架的技术特点",
+    "分析竞品产品功能差异"
+  ],
+  "examples_en": [
+    "Research AI Agent 2025 developments",
+    "Compare mainstream frontend frameworks",
+    "Analyze competitor product features"
+  ],
+  "description_zh": "结构化深度调研工作流，支持大纲生成、并行搜索、报告输出",
+  "description_en": "Structured deep research workflow: outline, parallel search, report generation",
+  "iconSource": "letter:auto"
+}

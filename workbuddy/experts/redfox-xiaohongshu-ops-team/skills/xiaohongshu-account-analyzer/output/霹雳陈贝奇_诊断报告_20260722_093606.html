@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>霹雳陈贝奇-账号诊断报告</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F5F5F5; color: #333; line-height:1.6; }
+.container { max-width:800px; margin:0 auto; padding:16px; }
+.card { background:#fff; border-radius:12px; padding:20px; margin-bottom:14px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.header { text-align:center; padding:24px 0 12px; }
+.header h1 { font-size:22px; font-weight:700; color:#222; }
+.header .score { font-size:48px; font-weight:800; color:#FF2442; margin:8px 0; }
+.header .score-label { font-size:14px; color:#999; }
+.header .data-time { font-size:12px; color:#bbb; margin-top:4px; }
+
+.score-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+.score-table th { background:#FFF0F2; color:#FF2442; font-weight:600; padding:8px 10px; text-align:left; border-bottom:1px solid #FFE4E8; }
+.score-table td { padding:7px 10px; border-bottom:1px solid #F5F5F5; }
+.score-table tr:last-child td { border-bottom:none; }
+.score-table .score-val { font-weight:700; color:#FF2442; }
+.score-table .max-val { color:#999; font-size:12px; }
+.score-table .reason { color:#666; font-size:12px; }
+
+.section-title { font-size:16px; font-weight:700; margin:18px 0 10px; padding-bottom:6px; border-bottom:2px solid #FF2442; color:#222; }
+.section-title .icon { margin-right:6px; }
+.sub-title { font-size:14px; font-weight:600; color:#444; margin:12px 0 6px; }
+
+.info-row { display:flex; align-items:baseline; margin:4px 0; font-size:13px; }
+.info-row .label { color:#999; min-width:90px; flex-shrink:0; }
+.info-row .value { color:#333; font-weight:500; }
+
+.benchmark-text { background:#FAFAFA; border-radius:8px; padding:10px 14px; margin:8px 0; font-size:13px; line-height:1.8; }
+.benchmark-text .level-icon { font-weight:700; }
+.benchmark-table { width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+.benchmark-table th { background:#F8F8F8; padding:6px 10px; text-align:left; border:1px solid #EEE; font-weight:600; }
+.benchmark-table td { padding:6px 10px; border:1px solid #EEE; }
+
+.tag { display:inline-block; background:#FFF0F2; color:#FF2442; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:500; margin:2px; }
+.advantage-box { background:#FFFBF0; border-left:3px solid #FAAD14; padding:10px 14px; margin:8px 0; border-radius:0 8px 8px 0; font-size:13px; }
+.advantage-box .point { margin:4px 0; }
+
+.viral-table { width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+.viral-table th { background:#FFF7E6; color:#D48806; padding:6px 10px; text-align:left; border:1px solid #FFE7BA; }
+.viral-table td { padding:6px 10px; border:1px solid #FFE7BA; }
+.viral-warning { color:#FF4D4F; font-weight:600; font-size:13px; }
+
+.needs-table { width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+.needs-table th { background:#F0F5FF; color:#2F54EB; padding:6px 10px; text-align:left; border:1px solid #D6E4FF; }
+.needs-table td { padding:6px 10px; border:1px solid #D6E4FF; }
+
+.action-box { background:#FFF7F0; border-radius:10px; padding:16px; margin:10px 0; }
+.action-box .action-title { font-weight:700; font-size:14px; color:#FF2442; margin-bottom:8px; }
+.action-box .problem-item { background:#FFF0F0; border-radius:6px; padding:8px 12px; margin:4px 0; font-size:13px; color:#FF4D4F; }
+.action-box .action-step { margin:4px 0; font-size:13px; padding-left:20px; text-indent:-20px; }
+.action-box .success-metric { background:#F6FFED; border-radius:6px; padding:8px 12px; margin:8px 0; font-size:13px; }
+.action-box .fallback { background:#FFF2F0; border-radius:6px; padding:8px 12px; margin:8px 0; font-size:13px; color:#FF4D4F; }
+
+.discovery-box { background:#F0F5FF; border-left:3px solid #2F54EB; padding:10px 14px; margin:8px 0; border-radius:0 8px 8px 0; font-size:13px; }
+
+.goal-table { width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+.goal-table th { background:#F6FFED; color:#52C41A; padding:6px 10px; text-align:left; border:1px solid #D9F7BE; }
+.goal-table td { padding:6px 10px; border:1px solid #D9F7BE; }
+.goal-table .current { color:#999; }
+.goal-table .target { color:#52C41A; font-weight:600; }
+
+.learn-table { width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+.learn-table th { background:#F9F0FF; color:#722ED1; padding:6px 10px; text-align:left; border:1px solid #EFDBFF; }
+.learn-table td { padding:6px 10px; border:1px solid #EFDBFF; }
+
+.similar-card { display:inline-flex; align-items:center; background:#FAFAFA; border-radius:8px; padding:10px; margin:6px; width:calc(50% - 16px); }
+.similar-card img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
+.similar-card .info .name { font-weight:600; font-size:13px; }
+.similar-card .info .fans { font-size:11px; color:#999; }
+
+.conclusion-text { font-size:13px; line-height:1.8; color:#555; }
+.conclusion-text .highlight { color:#FF2442; font-weight:600; }
+.section-divider { border:none; border-top:2px dashed #EEE; margin:18px 0; }
+
+.lifecycle-box { background:#F0F5FF; border-radius:8px; padding:12px 16px; margin:8px 0; }
+.lifecycle-box .stage { font-weight:700; color:#2F54EB; font-size:14px; }
+.lifecycle-box .chain { font-size:12px; color:#666; margin:6px 0; line-height:1.6; }
+.lifecycle-box .turning-point { font-size:12px; color:#555; margin:4px 0; }
+
+.pros-cons { margin:10px 0; font-size:13px; }
+.pros-cons .item { margin:4px 0; padding:6px 10px; border-radius:6px; }
+.pros-cons .pros { background:#F6FFED; }
+.pros-cons .cons { background:#FFF2F0; }
+
+.export-btn { position:fixed; top:16px; right:16px; background:linear-gradient(135deg,#FF2442,#FF6B81); color:#fff; border:none; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(255,36,66,0.3); z-index:1000; transition:all 0.3s; }
+.export-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(255,36,66,0.4); }
+.export-btn:disabled { background:#ccc; cursor:not-allowed; transform:none; box-shadow:none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- 头部 -->
+<div class="card header">
+  <h1>霹雳陈贝奇-账号诊断报告</h1>
+  <div class="score">61</div>
+  <div class="score-label">综合评分 / 100</div>
+  <div class="data-time">数据获取时间：2026-07-22 09:34:52</div>
+</div>
+
+<!-- 评分表 -->
+<div class="card">
+  <table class="score-table">
+    <tr><th>维度</th><th>得分</th><th>满分</th><th>评分原因简述</th></tr>
+    <tr><td>账号定位</td><td class="score-val">8</td><td class="max-val">10</td><td class="reason">简介专业度极高，多重身份背书清晰，赛道垂直</td></tr>
+    <tr><td>粉丝画像与需求</td><td class="score-val">10</td><td class="max-val">15</td><td class="reason">画像清晰，收藏率54.8%远超同类，粉丝付费意愿强</td></tr>
+    <tr><td>选题体系</td><td class="score-val">9</td><td class="max-val">15</td><td class="reason">近期作品展现旅行+商业思维独特融合，但样本不足</td></tr>
+    <tr><td>封面风格</td><td class="score-val">6</td><td class="max-val">10</td><td class="reason">仅1篇作品可分析，封面实拍风格明确但样本量不足</td></tr>
+    <tr><td>爆文能力</td><td class="score-val">8</td><td class="max-val">15</td><td class="reason">近30天仅1篇23次互动，爆文能力暂时休眠</td></tr>
+    <tr><td>互动规模</td><td class="score-val">12</td><td class="max-val">20</td><td class="reason">总收藏9.1w+超优秀值，近30天互动23远低于中位数</td></tr>
+    <tr><td>更新产能</td><td class="score-val">8</td><td class="max-val">15</td><td class="reason">近30天仅发1篇，周均0.2篇，远低于中位数6篇</td></tr>
+  </table>
+</div>
+
+<!-- 综合诊断结论 -->
+<div class="card">
+  <div class="section-title"><span class="icon">📋</span>综合诊断结论</div>
+  <div class="conclusion-text">霹雳陈贝奇是一位深耕品牌策略×身心健康×治愈旅行赛道的女性成长类博主，英企资深品牌策略+携程签约旅行家+全美TOP商学院背景构成了强专业背书。目标用户为25-34岁关注身心成长和生活品质的女性。账号处于衰退期——拥有16.6w+总点赞和9.1w+总收藏的辉煌历史（429篇作品），但近30天仅发布1篇作品、获得23次互动。核心问题不是内容能力不足，而是产能断崖式下降导致账号活跃度骤降。</div>
+  <div class="pros-cons">
+    <div class="item pros"><strong>可借鉴的优点：</strong>1. 收藏率54.8%（同赛道中位数参考约39%），说明历史内容的实用价值极高；2. 近期作品将旅行体验与商业思维嫁接（从卖甘蔗到卖场景→从看场景到买体验），选题角度独特且有人格辨识度</div>
+    <div class="item cons"><strong>可成长的地方：</strong>1. 近30天更新量仅1篇（中位数6篇、优秀值24篇），产能恢复是当务之急；2. 近30天互动量23（中位数483.5、优秀值12.4w+），单篇互动率仅0.19%，需找到破圈选题</div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- 账号定位 -->
+<div class="card">
+  <div class="section-title"><span class="icon">🎯</span>账号定位 | 8分/10</div>
+  <div class="info-row"><span class="label">TA是谁：</span><span class="value">英企品牌策略人 × 身心健康领域创作者 × 携程签约环球旅行家，以专业女性的成长陪伴为核心身份</span></div>
+  <div class="info-row"><span class="label">心智占位：</span><span class="value">有国际视野的中国女性成长博主——在用户心智中占据专业+有品位+能共情的位置</span></div>
+  <div class="info-row"><span class="label">核心身份：</span><span class="value">英企资深品牌策略人</span></div>
+  <div class="info-row"><span class="label">价值观锚点：</span><span class="value">身心平衡、女性独立成长、品质生活不是奢侈而是自我投资</span></div>
+  <div class="info-row"><span class="label">吸引力类型：</span><span class="value">导师 + 探索者</span></div>
+  <div class="advantage-box">
+    <div class="sub-title">差异化优势</div>
+    <div class="point">赛道痛点：大多数旅行博主只做去哪玩+怎么拍，缺少商业视角和认知升级</div>
+    <div class="point">你的优势：英企品牌策略人的商业分析框架+旅行体验=用商业思维看世界的独家视角（如近期作品将古兰尼牧场拆解为文旅变现三步走）</div>
+    
+    <div class="point" style="color:#FAAD14; font-weight:600;">可强化："将品牌策略×旅行打造为固定栏目，如贝奇商业游记，让每次旅行都自带一个商业拆解，形成不可替代的内容壁垒"</div>
+    
+  </div>
+</div>
+
+<!-- 粉丝画像与需求 -->
+<div class="card">
+  <div class="section-title"><span class="icon">👥</span>粉丝画像与需求 | 10分/15</div>
+  <div class="info-row"><span class="label">粉丝构成：</span><span class="value">1.2w+粉丝 | 女性68.3% | 25-34岁占比最高 | 江苏/广东/浙江 TOP3</span></div>
+  <div class="sub-title">核心需求反推</div>
+  <table class="needs-table">
+    <tr><th>画像特征</th><th>推断需求</th><th>内容匹配度</th></tr>
+    <tr><td>25-34岁职场女性（江苏/广东为主）</td><td>职场瓶颈期寻找成长方向和情绪支撑</td><td>高（品牌策略+女性成长定位精准匹配）</td></tr>
+    <tr><td>女性占比68%，关注身心健康</td><td>身心健康实操方法（不是鸡汤而是可落地的方案）</td><td>高（NASM营养教练+品酒师资质提供专业支撑）</td></tr>
+    <tr><td>一二线城市、有消费力</td><td>品质旅行目的地参考+深度体验攻略</td><td>高（携程签约旅行家+夏威夷深度游记已验证）</td></tr>
+  </table>
+</div>
+
+<!-- 选题体系 -->
+<div class="card">
+  <div class="section-title"><span class="icon">📝</span>选题体系 | 9分/15</div>
+  <div class="info-row"><span class="label">选题方向：</span><span class="value">从近期作品看，聚焦旅行见闻×商业思维×个人成长三合一赛道。作品《穿越现实版侏罗纪》（互动23）采用场景体验→商业拆解→人生感悟三层结构，选题角度不落俗套</span></div>
+  <div class="info-row"><span class="label">表达风格：</span><span class="value">理性分析+故事讲述的组合——先用123结构化框架拆解商业逻辑，再用个人经历做情感连接（从古兰尼牧场回来我忽然想通）</span></div>
+  <div class="info-row"><span class="label">叙事手法：</span><span class="value">体验代入→认知升级——带读者走进场景，再拉回到思维层面。这种边走边想的叙事让旅行内容不止于好玩，而是有认知增量</span></div>
+  <div class="info-row"><span class="label">人格一致性：</span><span class="value">高。即使只有1篇近期作品，也能清晰感受到品牌策略人的旅行视角这一稳定人格。429篇历史作品进一步验证了人格输出的稳定性</span></div>
+</div>
+
+<!-- 封面风格 -->
+<div class="card">
+  <div class="section-title"><span class="icon">🎨</span>封面风格 | 6分/10</div>
+  <div class="info-row"><span class="label">视觉特征：</span><span class="value">实拍风景为主，夏威夷牧场的自然场景具有视觉冲击力。封面色彩饱和度高（热带绿植+蓝天），符合旅行赛道的视觉期待</span></div>
+  <div class="info-row"><span class="label">信息层级：</span><span class="value">标题使用emoji+感叹号制造吸引力，侏罗纪作为关键词锚点精准吸引好奇心</span></div>
+  <div class="info-row"><span class="label">一致性：</span><span class="value">仅1篇样本无法判断风格统一度。建议恢复更新后建立固定的视觉识别系统（统一品牌色+字体+封面结构）</span></div>
+</div>
+
+<!-- 爆文能力 -->
+
+<div class="card">
+  <div class="section-title"><span class="icon">🔥</span>爆文能力 | 8分/15</div>
+  <div class="info-row"><span class="label">爆文率：</span><span class="value">0%（0篇）</span></div>
+  <div class="info-row"><span class="label">爆文标准：</span><span class="value">尾部KOL互动>5000</span></div>
+  <div class="sub-title">爆文特征分析</div>
+  <div class="info-row"><span class="label">标题：</span><span class="value">近期作品标题使用场景反差+情绪词结构（穿越现实版侏罗纪），方向正确但传播力不足</span></div>
+  <div class="info-row"><span class="label">内容：</span><span class="value">正文信息密度极高（商业拆解+个人感悟+彩蛋推荐），但篇幅过长（约800字+），可能影响完读率</span></div>
+  <div class="info-row"><span class="label">情绪：</span><span class="value">先体验后升华——仿佛一切不真实→不必否定原本的自己，但升华部分偏抽象，缺乏具体可执行的动作</span></div>
+  <div class="info-row"><span class="label">爆文列表：</span><span class="value">暂无爆文</span></div>
+  <div class="info-row"><span class="label">非爆文平均互动：</span><span class="value">23</span></div>
+  <div class="info-row"><span class="label">爆文放大倍数：</span><span class="value viral-warning">倍 → </span></div>
+</div>
+
+
+<!-- 互动规模 -->
+<div class="card">
+  <div class="section-title"><span class="icon">💬</span>互动规模 | 12分/20</div>
+  <div class="info-row"><span class="label">近30天互动量：</span><span class="value">23 | 尾部KOL | 官方等级：铜冠薯</span></div>
+  <div class="info-row"><span class="label">互动率：</span><span class="value">0.2% = 近30天作品互动量 / 粉丝数 * 100%</span></div>
+  <div class="info-row"><span class="label">收藏率：</span><span class="value">54.8% = 总收藏数 / 总点赞数 * 100%</span></div>
+  <div class="info-row"><span class="label">互动结构：</span><span class="value">点赞65.2% | 收藏17.4%</span></div>
+  <div class="info-row"><span class="label">类型判断：</span><span class="value">实用价值型——历史收藏率54.8%远超同类，粉丝收藏学习的意愿远强于点赞共鸣。近期作品分享占比39.1%异常高，暗示内容有值得转给朋友看的推荐属性</span></div>
+  <div class="sub-title">水平衡量</div>
+  <table class="benchmark-table">
+    <tr><th>指标</th><th>当前值</th><th>等级</th><th>中位数参考</th><th>优秀值参考</th></tr>
+    <tr><td>近30天互动量</td><td>23</td><td>待提升</td><td>483.5</td><td>124,263</td></tr>
+    <tr><td>总收藏数</td><td>9.1w+</td><td>优秀</td><td>1.6w+</td><td>8.2w+</td></tr>
+  </table>
+</div>
+
+<!-- 更新产能 -->
+<div class="card">
+  <div class="section-title"><span class="icon">🚀</span>更新产能 | 8分/15</div>
+  <div class="info-row"><span class="label">近30天：</span><span class="value">1篇 | 周均0.2篇</span></div>
+  <div class="info-row"><span class="label">频率分析：</span><span class="value">近30天仅发布1篇（6月24日），属于断更状态。但该作品内容深度极高（800字+正文、三层结构、多维度标签），说明博主倾向于低频高质路线。历史429篇作品说明长期产出能力强，当前问题是产能断崖而非能力不足</span></div>
+  <div class="sub-title">水平衡量</div>
+  <table class="benchmark-table">
+    <tr><th>指标</th><th>当前值</th><th>等级</th><th>中位数参考</th><th>优秀值参考</th></tr>
+    <tr><td>周均发布</td><td>0.2篇</td><td>待提升</td><td>1.4篇</td><td>5.6篇</td></tr>
+  </table>
+</div>
+
+<hr class="section-divider">
+
+<!-- 行动处方 -->
+<div class="card">
+  <div class="section-title"><span class="icon">🎯</span>行动处方</div>
+  <div class="action-box">
+    <div class="action-title">问题归因：</div>
+    <div class="problem-item">更新产能 - 周均发布（0.2篇，中位数1.4篇，差距86%）</div>
+    <div class="problem-item">互动规模 - 近30天互动量（23，中位数483.5，差距95%）</div>
+    <div style="font-size:13px; font-weight:600; margin:6px 0;">具体动作：</div>
+    <div class="action-step">1. 3周恢复计划：第1周发2篇回归向内容（如消失的1个月我去了哪里），重新激活推荐算法；第2-3周恢复到每周2-3篇的节奏，选题锁定贝奇商业游记方向</div>
+    <div class="action-step">2. 缩短正文+增加互动钩子：近期作品正文800字+偏长，建议控制在300-400字，结尾增加明确的互动引导（如你旅行时遇到过什么商业灵感？评论区聊聊），将高分享率转化为评论区活跃度</div>
+    <div class="action-step">3. 利用54.8%收藏率变现：策划系列可收藏清单（如品牌人的夏威夷3日行程），同时开通小红书商品橱窗（旅行好物/书籍推荐），将高收藏率直接转化为收入</div>
+  </div>
+
+  <div class="sub-title">反常识发现</div>
+  <div class="discovery-box">
+    <div>1. 分享率39.1%是常规水平的3倍——这篇内容的转发给朋友意愿极高，说明内容有社交货币属性。但点赞和收藏偏低，建议缩短正文+增加互动钩子，让想转发的用户也愿意在评论区表达</div>
+    <div>2. 429篇作品×54.8%收藏率=约5万被收藏的内容资产——这些历史内容在搜索流量中持续产生长尾价值。恢复更新时可在评论区/正文中自引历史爆文，把老流量导入新内容</div>
+  </div>
+</div>
+
+<!-- 相似账号 -->
+
+<div class="card">
+  <div class="section-title"><span class="icon">🔍</span>相似账号推荐</div>
+  <div class="similar-card-row" style="padding:12px 0;border-bottom:1px solid #f0f0f0;"><div style="margin-bottom:6px;"><strong><a href="https://www.xiaohongshu.com/user/profile/5ee65b5900000000010076bd" target="_blank" style="color:#1890ff;text-decoration:none;font-weight:500;">老子不是老子</a></strong> | 粉丝：9998 | 总互动：43.9w+</div><div style="font-size:13px;color:#666;margin-bottom:4px;"><strong>推荐理由：</strong>仅19篇作品撬动43.9w+总互动，单篇效率极高——你429篇才16.6w赞，TA 19篇就40.6w</div><div style="font-size:13px;color:#666;margin-bottom:4px;"><strong>发文特点：</strong>月更6篇，近30天互动36.1w+，内容精准命中平台推荐算法</div><div style="font-size:13px;color:#666;"><strong>可学之处：</strong>控制发文数量、专注高传播选题，用爆款率而非发文量驱动增长</div></div>
+<div class="similar-card-row" style="padding:12px 0;border-bottom:1px solid #f0f0f0;"><div style="margin-bottom:6px;"><strong><a href="https://www.xiaohongshu.com/user/profile/680f80fd000000000e010f5d" target="_blank" style="color:#1890ff;text-decoration:none;font-weight:500;">文静一点</a></strong> | 粉丝：15446 | 总互动：17.1w+</div><div style="font-size:13px;color:#666;margin-bottom:4px;"><strong>推荐理由：</strong>仅40篇作品达到17w+互动，收藏率28.9%，和你一样属于高收藏型博主</div><div style="font-size:13px;color:#666;margin-bottom:4px;"><strong>发文特点：</strong>月更20篇，近30天互动12.4w+，内容产出稳定且爆发力强</div><div style="font-size:13px;color:#666;"><strong>可学之处：</strong>保持稳定更新节奏（周4-5篇），同时追求单篇质量而非数量</div></div>
+<div class="similar-card-row" style="padding:12px 0;border-bottom:1px solid #f0f0f0;"><div style="margin-bottom:6px;"><strong><a href="https://www.xiaohongshu.com/user/profile/60ee6854000000000101cb87" target="_blank" style="color:#1890ff;text-decoration:none;font-weight:500;">秋望望</a></strong> | 粉丝：13805 | 总互动：24.5w+</div><div style="font-size:13px;color:#666;margin-bottom:4px;"><strong>推荐理由：</strong>228篇作品、月更46篇的高产能模式，用量积累粉丝信任</div><div style="font-size:13px;color:#666;margin-bottom:4px;"><strong>发文特点：</strong>高频输出+选题覆盖广，近30天互动9.8w+，高频更新有效维持粉丝活跃</div><div style="font-size:13px;color:#666;"><strong>可学之处：</strong>恢复更新初期可采用密集发布策略（日更1周），快速重建算法推荐权重</div></div>
+</div>
+
+
+</div>
+
+<!-- 悬浮导出按钮 -->
+<button id="exportBtn" class="export-btn" onclick="exportImage()">导出图片</button>
+
+</div>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script>
+function exportImage() {
+  var btn = document.getElementById('exportBtn');
+  btn.innerText = '生成中...';
+  btn.disabled = true;
+  
+  var container = document.querySelector('.container');
+  
+  html2canvas(container, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#F5F5F5',
+    scrollX: 0,
+    scrollY: 0
+  }).then(function(canvas) {
+    var link = document.createElement('a');
+    link.download = '霹雳陈贝奇-账号诊断报告.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    btn.innerText = '导出图片';
+    btn.disabled = false;
+  }).catch(function(err) {
+    alert('导出失败，请重试');
+    btn.innerText = '导出图片';
+    btn.disabled = false;
+  });
+}
+</script>
+</body>
+</html>

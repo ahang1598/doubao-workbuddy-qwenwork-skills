@@ -1,0 +1,273 @@
+examples:
+  - id: extract-text
+    title:
+      zh: 提取文本内容
+      en: Extract Text Content
+    description:
+      zh: 从 PDF 文件中准确提取文本和结构化信息
+      en: Accurately extract text and structured information from PDF files
+    prompt:
+      zh: |-
+        请帮我从这个 PDF 文件中提取内容：
+
+        文件路径：{{PDF文件路径}}
+
+        提取要求：
+        1. 完整文本提取：
+           - 保留原文本顺序和段落结构
+           - 处理多栏布局的文本流
+           - 识别和提取标题层级
+        2. 结构化信息：
+           - 目录/索引信息
+           - 页眉页脚内容
+           - 页码和章节信息
+        3. 特殊内容：
+           - 表格数据的结构化提取
+           - 图片的描述性文字
+           - 链接和引用信息
+        4. 输出格式：
+           - 纯文本版本
+           - 结构化的 JSON 格式
+           - Markdown 格式（保持层次结构）
+
+        请提供多种格式的提取结果。
+      en: |-
+        Please help me extract content from this PDF file:
+
+        File path: {{PDF file path}}
+
+        Extraction requirements:
+        1. Complete text extraction:
+           - Preserve original text order and paragraph structure
+           - Handle text flow in multi-column layouts
+           - Identify and extract heading hierarchies
+        2. Structured information:
+           - Table of contents/index information
+           - Header and footer content
+           - Page numbers and chapter information
+        3. Special content:
+           - Structured extraction of table data
+           - Descriptive text for images
+           - Link and citation information
+        4. Output formats:
+           - Plain text version
+           - Structured JSON format
+           - Markdown format (preserving hierarchy)
+
+        Please provide extraction results in multiple formats.
+  - id: merge-split
+    title:
+      zh: 合并分割PDF
+      en: Merge and Split PDF
+    description:
+      zh: 合并多个PDF文件或将PDF分割成多个部分
+      en: Merge multiple PDF files or split PDF into multiple parts
+    prompt:
+      zh: |-
+        我需要处理这些 PDF 文件：
+
+        操作类型：{{合并/分割}}
+
+        如果是合并：
+        文件列表：
+        1. {{第一个PDF文件路径}}
+        2. {{第二个PDF文件路径}}
+        3. {{第三个PDF文件路径}}
+
+        合并要求：
+        - 按指定顺序合并
+        - 保持原有页面质量和格式
+        - 添加书签结构（可选）
+        - 生成目录页（可选）
+
+        如果是分割：
+        源文件：{{源PDF文件路径}}
+        分割方式：
+        - 按页码范围分割：{{起始页}}-{{结束页}}
+        - 按章节自动分割
+        - 按书签结构分割
+        - 每N页分割一次
+
+        输出要求：
+        - 保持原始质量
+        - 文件命名规范
+        - 添加页码信息
+
+        请执行相应操作并提供处理后的文件。
+      en: |-
+        I need to process these PDF files:
+
+        Operation type: {{Merge/Split}}
+
+        If merging:
+        File list:
+        1. {{First PDF file path}}
+        2. {{Second PDF file path}}
+        3. {{Third PDF file path}}
+
+        Merge requirements:
+        - Merge in specified order
+        - Maintain original page quality and formatting
+        - Add bookmark structure (optional)
+        - Generate table of contents page (optional)
+
+        If splitting:
+        Source file: {{Source PDF file path}}
+        Split method:
+        - Split by page range: {{Start page}}-{{End page}}
+        - Split by chapters automatically
+        - Split by bookmark structure
+        - Split every N pages
+
+        Output requirements:
+        - Maintain original quality
+        - Standardized file naming
+        - Add page number information
+
+        Please execute the corresponding operation and provide the processed files.
+  - id: form-processing
+    title:
+      zh: 表单处理
+      en: Form Processing
+    description:
+      zh: 处理PDF表单：填写、提取数据、验证等
+      en: "Process PDF forms: filling, data extraction, validation, etc."
+    prompt:
+      zh: |-
+        请帮我处理这个 PDF 表单文件：
+
+        表单文件：{{PDF表单文件路径}}
+
+        操作类型：{{填写表单/提取数据/验证表单}}
+
+        如果是填写表单：
+        数据来源：{{JSON数据或键值对}}
+        字段映射：
+        - 姓名 -> {{name_field}}
+        - 日期 -> {{date_field}}
+        - 金额 -> {{amount_field}}
+        - 选择项 -> {{choice_field}}
+
+        填写要求：
+        - 准确填入所有必填字段
+        - 保持原有表单格式
+        - 添加数字签名（如果需要）
+        - 验证数据有效性
+
+        如果是提取数据：
+        - 提取所有已填写的字段值
+        - 识别表单结构和字段类型
+        - 验证数据完整性
+        - 输出结构化数据
+
+        如果是验证表单：
+        - 检查必填字段是否完整
+        - 验证数据格式是否正确
+        - 检查逻辑关系
+        - 生成验证报告
+
+        请根据指定操作类型执行相应处理。
+      en: |-
+        Please help me process this PDF form file:
+
+        Form file: {{PDF form file path}}
+
+        Operation type: {{Fill form/Extract data/Validate form}}
+
+        If filling form:
+        Data source: {{JSON data or key-value pairs}}
+        Field mapping:
+        - Name -> {{name_field}}
+        - Date -> {{date_field}}
+        - Amount -> {{amount_field}}
+        - Choice -> {{choice_field}}
+
+        Filling requirements:
+        - Accurately fill all required fields
+        - Maintain original form formatting
+        - Add digital signature (if needed)
+        - Validate data validity
+
+        If extracting data:
+        - Extract all filled field values
+        - Identify form structure and field types
+        - Validate data completeness
+        - Output structured data
+
+        If validating form:
+        - Check if required fields are complete
+        - Validate data format correctness
+        - Check logical relationships
+        - Generate validation report
+
+        Please execute corresponding processing based on specified operation type.
+  - id: watermark-security
+    title:
+      zh: 水印和安全处理
+      en: Watermark and Security Processing
+    description:
+      zh: 添加水印、密码保护和权限控制
+      en: Add watermarks, password protection and permission control
+    prompt:
+      zh: |-
+        请帮我为这个 PDF 文件添加安全保护：
+
+        源文件：{{源PDF文件路径}}
+
+        安全措施：
+        1. 水印添加：
+           - 文本水印：{{公司名称}} - {{机密等级}}
+           - 图片水印：{{logo文件路径}}
+           - 水印位置：页面中心/对角线/平铺
+           - 透明度设置：{{透明度百分比}}
+        2. 密码保护：
+           - 打开密码：{{open_password}}
+           - 编辑密码：{{edit_password}}
+           - 密码强度要求
+        3. 权限控制：
+           - 禁止打印
+           - 禁止复制文本
+           - 禁止编辑内容
+           - 限制页面提取
+        4. 其他安全选项：
+           - 数字签名
+           - 文档加密算法
+           - 访问日志记录
+
+        输出要求：
+        - 保持文档原始质量
+        - 确保安全措施有效
+        - 提供安全设置说明
+
+        请实施相应的安全保护措施。
+      en: |-
+        Please help me add security protection to this PDF file:
+
+        Source file: {{Source PDF file path}}
+
+        Security measures:
+        1. Watermark addition:
+           - Text watermark: {{Company Name}} - {{Confidentiality Level}}
+           - Image watermark: {{logo file path}}
+           - Watermark position: Center/Diagonal/Tile
+           - Transparency setting: {{transparency percentage}}
+        2. Password protection:
+           - Open password: {{open_password}}
+           - Edit password: {{edit_password}}
+           - Password strength requirements
+        3. Permission control:
+           - Disable printing
+           - Disable text copying
+           - Disable content editing
+           - Restrict page extraction
+        4. Other security options:
+           - Digital signature
+           - Document encryption algorithm
+           - Access log recording
+
+        Output requirements:
+        - Maintain original document quality
+        - Ensure security measures are effective
+        - Provide security settings documentation
+
+        Please implement corresponding security protection measures.

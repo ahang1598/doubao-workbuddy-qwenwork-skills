@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>@@@PAGE_TITLE_ESC@@@</title>
+  <style>
+    :root {
+      --bg: #f2f2f7;
+      --card: #ffffff;
+      --text: #1c1c1e;
+      --secondary: #8e8e93;
+      --accent: #007aff;
+      --accent-soft: rgba(0, 122, 255, 0.12);
+      --border: #e5e5ea;
+      --radius: 12px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 100px;
+    }
+    header {
+      padding: 20px 16px 8px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 6px 0;
+    }
+    header .sub {
+      font-size: 0.875rem;
+      color: var(--secondary);
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 8px 12px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 2px solid transparent;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+    .card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .card .thumb {
+      aspect-ratio: 4 / 3;
+      background: #e8e8ed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .card .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card .body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .card .title {
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.4em;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .price { font-size: 0.95rem; font-weight: 600; color: #ff3b30; }
+    .supplier { font-size: 0.7rem; color: var(--secondary); max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sim { font-size: 0.7rem; color: var(--accent); }
+    .tags {
+      font-size: 0.65rem;
+      color: var(--secondary);
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .actions button.detail {
+      flex: 1;
+      text-align: center;
+      font-size: 0.78rem;
+      padding: 7px 8px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .actions button.detail:hover { opacity: 0.92; }
+    .cb-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--secondary);
+      user-select: none;
+    }
+    .dock {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 100;
+    }
+    .dock .info { font-size: 0.9rem; margin-right: auto; }
+    .dock button {
+      font-size: 0.85rem;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .dock .secondary { background: var(--bg); color: var(--text); }
+    .dock .primary { background: var(--accent); color: #fff; }
+    .empty { text-align: center; padding: 40px; color: var(--secondary); }
+
+    /* ── 抽屉（Drawer）── */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(90vw, 520px);
+      background: var(--card);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer-overlay.open .drawer {
+      transform: translateX(0);
+    }
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .drawer-header .drawer-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      margin-right: 12px;
+    }
+    .drawer-header button {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--secondary);
+      padding: 4px 8px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+    .drawer-header button:hover { background: var(--bg); }
+    .drawer iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
+    .drawer .drawer-loading {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--secondary);
+      font-size: 0.9rem;
+    }
+    .drawer .drawer-open-external {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .drawer .drawer-open-external a {
+      font-size: 0.82rem;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .drawer .drawer-open-external a:hover { text-decoration: underline; }
+  </style>
+  <script src="https://o.alicdn.com/upkg-solution/mini-od-entry/index.js" crossorigin="anonymous" defer=""></script>
+</head>
+<body>
+  <header>
+    <h1>@@@PAGE_TITLE_ESC@@@</h1>
+    @@@SUBTITLE_BLOCK@@@
+  </header>
+  <div id="grid" class="grid"></div>
+
+  <div class="dock" id="dock" style="display:none">
+    <span class="info" id="selInfo">已选 0 件</span>
+    <button type="button" class="secondary" id="btnAll">全选</button>
+    <button type="button" class="secondary" id="btnNone">取消全选</button>
+    <!-- <button type="button" class="primary" id="btnCopy">我要下单</button> -->
+  </div>
+
+  <!-- 详情抽屉 -->
+  <div class="drawer-overlay" id="drawerOverlay">
+    <div class="drawer" id="drawer">
+      <div class="drawer-header">
+        <span class="drawer-title" id="drawerTitle">商品详情</span>
+        <button type="button" id="drawerClose" title="关闭">✕</button>
+      </div>
+      <div class="drawer-loading" id="drawerLoading">加载中…</div>
+      <iframe id="drawerFrame" style="display:none" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
+      <div class="drawer-open-external">
+        <a id="drawerExtLink" href="#" target="_blank" rel="noopener">↗ 在新窗口打开</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const PRODUCTS = @@@DATA_JS@@@;
+    const grid = document.getElementById('grid');
+    const dock = document.getElementById('dock');
+    const selInfo = document.getElementById('selInfo');
+    const selected = new Set();
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function render() {
+      if (!PRODUCTS.length) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1">暂无商品</div>';
+        return;
+      }
+      grid.innerHTML = PRODUCTS.map(function(p, i) {
+        const sel = selected.has(p.index);
+        const img = p.image_url
+          ? '<img loading="lazy" src="' + esc(p.image_url) + '" alt="" />'
+          : '<span style="color:#8e8e93;font-size:0.85rem">无图</span>';
+        const tags = (p.tags && p.tags.length) ? esc(p.tags.join(' · ')) : '';
+        const sim = p.similarity_str ? '<span class="sim">相似 ' + esc(p.similarity_str) + '</span>' : '';
+        return (
+          '<article class="card' + (sel ? ' selected' : '') + '" data-idx="' + p.index + '" role="button" tabindex="0">' +
+            '<div class="thumb">' + img + '</div>' +
+            '<div class="body">' +
+              '<div class="title">' + esc(p.title) + '</div>' +
+              '<div class="row">' +
+                '<span class="price">' + esc(p.price_str) + '</span>' +
+                '<span class="supplier" title="' + esc(p.supplier) + '">' + esc(p.supplier) + '</span>' +
+              '</div>' +
+              (sim ? '<div class="row">' + sim + '</div>' : '') +
+              (tags ? '<div class="tags">' + tags + '</div>' : '') +
+              '<div class="actions">' +
+                '<button class="detail" data-url="' + esc(p.detail_url) + '" data-pid="' + esc(p.product_id) + '" data-stop="1">打开详情</button>' +
+                '<label class="cb-wrap" data-stop="1" style="display:none"><input type="checkbox" data-stop="1" ' + (sel ? 'checked' : '') + ' /> 加入候选</label>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
+      }).join('');
+
+      grid.querySelectorAll('.card').forEach(function(card) {
+        card.addEventListener('click', onCardClick);
+        card.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(parseInt(card.dataset.idx, 10)); }
+        });
+      });
+      grid.querySelectorAll('[data-stop="1"]').forEach(function(el) {
+        el.addEventListener('click', function(e) { e.stopPropagation(); });
+      });
+      grid.querySelectorAll('.card input[type=checkbox]').forEach(function(cb) {
+        cb.addEventListener('change', function(e) {
+          const idx = parseInt(e.target.closest('.card').dataset.idx, 10);
+          if (e.target.checked) selected.add(idx); else selected.delete(idx);
+          sync();
+        });
+      });
+      grid.querySelectorAll('.actions button.detail').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var pid = btn.dataset.pid;
+          if (pid && window.openMiniOD) {
+            destroyMiniOD();
+            setTimeout(function() { window.openMiniOD(pid); }, 100);
+          }
+        });
+      });
+      updateDock();
+    }
+
+    /* ── miniOD 生命周期管理 ── */
+    function isMiniODOpen() {
+      return !!document.querySelector(
+        'mini-od-viewback, mini-od-mask, mini-od-panel, [class*="mini-od"], [id*="mini-od"], [id*="miniOd"]'
+      );
+    }
+
+    function destroyMiniOD() {
+      // 移除 mini-od-entry 库动态创建的所有自定义元素与遮罩
+      document.querySelectorAll(
+        'mini-od-viewback, mini-od-mask, mini-od-panel, [class*="mini-od"], [id*="mini-od"], [id*="miniOd"]'
+      ).forEach(function(el) {
+        try { el.remove(); } catch(e) {}
+      });
+      // 清理可能残留的 body 样式锁定
+      document.body.style.overflow = '';
+    }
+
+    // 点击商品卡片外区域时自动关闭 miniOD 弹框
+    document.addEventListener('click', function(e) {
+      if (!isMiniODOpen()) return;
+      // 如果点击发生在 miniOD 弹框内部，不关闭
+      if (e.target.closest(
+        'mini-od-viewback, mini-od-mask, mini-od-panel, [class*="mini-od"], [id*="mini-od"], [id*="miniOd"]'
+      )) return;
+      // 如果点击发生在“打开详情”按钮上，不关闭（由按钮自己的逻辑处理）
+      if (e.target.closest('button.detail')) return;
+      destroyMiniOD();
+    });
+
+    function toggle(idx) {
+      if (selected.has(idx)) selected.delete(idx); else selected.add(idx);
+      sync();
+    }
+
+    function onCardClick(e) {
+      if (e.target.closest('[data-stop="1"]')) return;
+      const card = e.target.closest('.card');
+      if (!card) return;
+      toggle(parseInt(card.dataset.idx, 10));
+    }
+
+    function sync() {
+      grid.querySelectorAll('.card').forEach(function(card) {
+        const idx = parseInt(card.dataset.idx, 10);
+        const on = selected.has(idx);
+        card.classList.toggle('selected', on);
+        const cb = card.querySelector('input[type=checkbox]');
+        if (cb) cb.checked = on;
+      });
+      updateDock();
+    }
+
+    function updateDock() {
+      const n = selected.size;
+      selInfo.textContent = '已选 ' + n + ' 件';
+      dock.style.display = PRODUCTS.length ? 'flex' : 'none';
+    }
+
+    document.getElementById('btnAll').addEventListener('click', function() {
+      PRODUCTS.forEach(function(p) { selected.add(p.index); });
+      sync();
+    });
+    document.getElementById('btnNone').addEventListener('click', function() {
+      selected.clear();
+      sync();
+    });
+    var btnCopy = document.getElementById('btnCopy');
+    if (btnCopy) {
+      btnCopy.addEventListener('click', async function() {
+        const lines = PRODUCTS.filter(function(p) { return selected.has(p.index) && p.detail_url; }).map(function(p) { return p.detail_url; });
+        const text = lines.join('\n');
+        try {
+          await navigator.clipboard.writeText(text);
+          alert('已复制 ' + lines.length + ' 条链接');
+        } catch (err) {
+          prompt('请手动复制：', text);
+        }
+      });
+    }
+
+    /* ── 抽屉控制 ── */
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const drawerFrame = document.getElementById('drawerFrame');
+    const drawerLoading = document.getElementById('drawerLoading');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const drawerExtLink = document.getElementById('drawerExtLink');
+
+    function openDrawer(url, title) {
+      drawerTitle.textContent = title || '商品详情';
+      drawerExtLink.href = url;
+      drawerFrame.style.display = 'none';
+      drawerLoading.style.display = 'flex';
+      drawerFrame.src = url;
+      drawerFrame.onload = function() {
+        drawerLoading.style.display = 'none';
+        drawerFrame.style.display = 'block';
+      };
+      drawerOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+      drawerOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+      setTimeout(function() {
+        drawerFrame.src = 'about:blank';
+        drawerFrame.style.display = 'none';
+        drawerLoading.style.display = 'flex';
+      }, 300);
+    }
+
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', function(e) {
+      if (e.target === drawerOverlay) closeDrawer();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && drawerOverlay.classList.contains('open')) closeDrawer();
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

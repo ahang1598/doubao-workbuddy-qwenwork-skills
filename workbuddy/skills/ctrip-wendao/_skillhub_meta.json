@@ -1,0 +1,22 @@
+{
+  "name": "携程问道",
+  "installedAt": 1783579152887,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2053081515326210048",
+  "examples_zh": [
+    "帮我查一下明天北京到上海的高铁票",
+    "推荐三里屯附近性价比高的酒店",
+    "五一去日本玩7天，帮我规划行程"
+  ],
+  "examples_en": [
+    "Find train tickets from Beijing to Shanghai for tomorrow",
+    "Recommend hotels near Sanlitun with good value",
+    "Plan a 7-day trip to Japan for May Day holiday"
+  ],
+  "description_zh": "携程智能旅行助手，支持酒店机票预订、行程规划与旅游攻略",
+  "description_en": "Ctrip travel assistant for hotel/flight booking, itinerary planning & travel guides",
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/ctrip-wendao.png",
+  "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\ctrip-wendao\\_icon.png",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/ctrip-wendao.png"
+}

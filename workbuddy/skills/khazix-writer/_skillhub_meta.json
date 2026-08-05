@@ -1,0 +1,20 @@
+{
+  "name": "卡兹克公众号写作",
+  "installedAt": 1783579103319,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2053082248175816704",
+  "examples_zh": [
+    "把我这段关于\"AI时代个人成长\"的口述素材，写成卡兹克风格的公众号长文",
+    "根据这份产品复盘，写一篇真诚、有个人观察的公众号文章，不要做成短视频文案",
+    "用卡兹克的数字生活视角，写一篇关于独立开发者如何与AI协作的长文"
+  ],
+  "examples_en": [
+    "Turn my notes on personal growth in the AI era into a WeChat long-form article in Khazix's authentic voice",
+    "Write a sincere WeChat article from this product retrospective with personal observations, not a short social post",
+    "Draft a long-form piece from Khazix's digital-life perspective about indie developers collaborating with AI"
+  ],
+  "description_zh": "卡兹克风格的公众号长文写作，真诚有温度的AI内容创作",
+  "description_en": "WeChat long-form writing in Khazix's authentic, personal voice",
+  "iconSource": "letter:auto"
+}

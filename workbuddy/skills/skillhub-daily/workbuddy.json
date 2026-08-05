@@ -1,0 +1,7 @@
+{
+  "version": "6.2.0",
+  "display_name": "SkillHub 每日推荐",
+  "display_name_en": "SkillHub Daily Recommendations",
+  "description_zh": "基于 SkillHub (skillhub.cn) 全站数据，每日扫描 Top100 热门 Skill 与 7 大分类各 Top20（共 240 个），结合用户工作痛点精准推荐高价值 Skill。支持常规对话触发与 Cron 定时任务双模式，简报可推送至 IMA 知识库、飞书云文档、Obsidian 或本地存储。",
+  "description_en": "Daily scan of SkillHub (skillhub.cn) Top 100 + Top 20 in each of 7 categories (240 Skills total), delivering personalized high-value Skill recommendations based on user pain points. Supports both conversational triggers and Cron scheduled tasks, with briefings pushable to IMA KB, Feishu docs, Obsidian, or local storage."
+}

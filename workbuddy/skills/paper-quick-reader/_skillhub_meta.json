@@ -1,0 +1,20 @@
+{
+  "name": "论文速读",
+  "installedAt": 1783578917827,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2057443697088589824",
+  "examples_zh": [
+    "帮我速读这篇论文，抓核心观点",
+    "这两篇论文的方法有什么区别",
+    "第5页提到的数据集是怎么构造的"
+  ],
+  "examples_en": [
+    "Quick-read this paper and extract the core findings",
+    "Compare the methods of these two papers",
+    "How was the dataset on page 5 constructed"
+  ],
+  "description_zh": "输入论文PDF，秒出核心观点/方法/结论摘要，支持三档深度和多篇对比分析",
+  "description_en": "Input a paper PDF for instant core insights, methods & conclusions summary, with three depth modes and multi-paper comparison",
+  "iconSource": "letter:auto"
+}

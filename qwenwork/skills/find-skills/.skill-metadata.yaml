@@ -1,0 +1,189 @@
+examples:
+  - id: web-development
+    title:
+      zh: Web开发技能查找
+      en: Web Development Skill Discovery
+    description:
+      zh: 查找Web开发相关的实用技能包
+      en: Find useful skill packages for web development
+    prompt:
+      zh: |-
+        我正在开发一个React应用，需要一些提升开发效率的技能。
+
+        具体需求：
+        - React性能优化相关技能
+        - 代码质量检查和最佳实践
+        - 测试自动化工具
+        - 部署和CI/CD相关技能
+
+        请帮我：
+        1. 搜索相关的技能包
+        2. 推荐最受欢迎和实用的选项
+        3. 提供安装指导
+        4. 解释每个技能的主要功能
+      en: |-
+        I'm developing a React application and need some skills to improve development efficiency.
+
+        Specific needs:
+        - React performance optimization related skills
+        - Code quality checking and best practices
+        - Test automation tools
+        - Deployment and CI/CD related skills
+
+        Please help me:
+        1. Search for relevant skill packages
+        2. Recommend the most popular and practical options
+        3. Provide installation guidance
+        4. Explain the main functions of each skill
+  - id: devops-automation
+    title:
+      zh: DevOps自动化技能
+      en: DevOps Automation Skills
+    description:
+      zh: 查找DevOps和基础设施自动化相关技能
+      en: Find DevOps and infrastructure automation related skills
+    prompt:
+      zh: |-
+        我需要为团队建立完整的CI/CD流水线。
+
+        技术栈：
+        - 前端：React/Vue应用
+        - 后端：Node.js微服务
+        - 部署：Docker + Kubernetes
+        - 云平台：AWS/GCP/Azure
+
+        需要的技能类型：
+        - Docker镜像构建优化
+        - Kubernetes部署管理
+        - 云资源自动化配置
+        - 监控和日志收集
+        - 安全合规检查
+
+        请帮我：
+        1. 查找完整的DevOps工具链技能
+        2. 推荐按阶段分类的技能组合
+        3. 提供安装和配置建议
+        4. 说明集成使用方法
+      en: |-
+        I need to establish a complete CI/CD pipeline for the team.
+
+        Tech stack:
+        - Frontend: React/Vue applications
+        - Backend: Node.js microservices
+        - Deployment: Docker + Kubernetes
+        - Cloud platform: AWS/GCP/Azure
+
+        Required skill types:
+        - Docker image build optimization
+        - Kubernetes deployment management
+        - Cloud resource automated configuration
+        - Monitoring and log collection
+        - Security compliance checking
+
+        Please help me:
+        1. Find complete DevOps toolchain skills
+        2. Recommend stage-based skill combinations
+        3. Provide installation and configuration suggestions
+        4. Explain integration usage methods
+  - id: documentation
+    title:
+      zh: 文档和知识管理技能
+      en: Documentation and Knowledge Management Skills
+    description:
+      zh: 查找文档编写和知识管理相关技能
+      en: Find documentation writing and knowledge management related skills
+    prompt:
+      zh: |-
+        我们团队需要改善技术文档的质量和维护效率。
+
+        文档类型：
+        - API接口文档
+        - 用户使用手册
+        - 开发规范文档
+        - 项目README文件
+        - 变更日志维护
+
+        具体需求：
+        - 自动生成API文档
+        - 文档版本管理和协作
+        - 多语言文档支持
+        - 文档质量检查工具
+        - 知识库建设方案
+
+        请帮我：
+        1. 搜索文档相关的优质技能
+        2. 推荐适合我们团队的组合
+        3. 提供实施建议和最佳实践
+        4. 说明长期维护方案
+      en: |-
+        Our team needs to improve the quality and maintenance efficiency of technical documentation.
+
+        Document types:
+        - API interface documentation
+        - User manuals
+        - Development specification documents
+        - Project README files
+        - Change log maintenance
+
+        Specific needs:
+        - Automatic API documentation generation
+        - Document version management and collaboration
+        - Multi-language document support
+        - Document quality checking tools
+        - Knowledge base construction solutions
+
+        Please help me:
+        1. Search for high-quality documentation-related skills
+        2. Recommend combinations suitable for our team
+        3. Provide implementation suggestions and best practices
+        4. Explain long-term maintenance solutions
+  - id: code-quality
+    title:
+      zh: 代码质量和审查技能
+      en: Code Quality and Review Skills
+    description:
+      zh: 查找代码质量提升和代码审查相关技能
+      en: Find code quality improvement and code review related skills
+    prompt:
+      zh: |-
+        我们希望提升团队的代码质量和审查效率。
+
+        关注重点：
+        - 代码规范和风格统一
+        - 潜在bug和安全漏洞检测
+        - 性能优化建议
+        - 代码复杂度分析
+        - 测试覆盖率提升
+
+        团队现状：
+        - 多种编程语言混合使用
+        - 分布式团队协作开发
+        - 代码审查流程需要优化
+        - 新人入职培训需求
+
+        请帮我：
+        1. 查找代码质量相关的综合技能包
+        2. 推荐适合多语言环境的工具
+        3. 设计渐进式的质量提升方案
+        4. 提供团队培训和实施建议
+      en: |-
+        We want to improve team code quality and review efficiency.
+
+        Focus areas:
+        - Code standards and style consistency
+        - Potential bug and security vulnerability detection
+        - Performance optimization suggestions
+        - Code complexity analysis
+        - Test coverage improvement
+
+        Team situation:
+        - Mixed use of multiple programming languages
+        - Distributed team collaborative development
+        - Code review process needs optimization
+        - New hire onboarding training needs
+
+        Please help me:
+        1. Find comprehensive skill packages related to code quality
+        2. Recommend tools suitable for multi-language environments
+        3. Design progressive quality improvement solutions
+        4. Provide team training and implementation suggestions

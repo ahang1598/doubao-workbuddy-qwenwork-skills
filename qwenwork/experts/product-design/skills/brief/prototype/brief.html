@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Brief — 购物车流程改版</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=EB+Garamond:wght@400;500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="brief-themes.css">
+  <style></style>
+</head>
+<body data-theme="chalk" data-ratio="16-9" data-scale="md">
+
+  <div class="brief" id="brief-canvas">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title-wrap">
+          <p class="topbar-title" spellcheck="false">购物车流程改版</p>
+          <button class="topbar-title-edit" type="button" aria-label="编辑标题" title="编辑标题（刷新后恢复默认）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          </button>
+        </div>
+        <div class="topbar-meta-wrap">
+          <p class="topbar-meta" spellcheck="false">产品迭代 · 2026-04-29</p>
+          <button class="topbar-meta-edit" type="button" aria-label="编辑元信息" title="编辑元信息（刷新后恢复默认）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="topbar-brand">DESIGN BRIEF</p>
+    </div>
+
+    <div class="cards-grid">
+    <div class="card m-context">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        业务背景 <span>Business Context</span></p>
+      <p class="hint">当前业务处于什么阶段，触发本次设计的原因</p>
+      <p>平台处于<strong>成熟期</strong>，GMV 增速趋缓，战略重心转向存量用户的转化效率提升。近三季度监控数据显示，购物车放弃率持续高于行业均值 <span class="num">12</span> 个百分点，结算环节为最主要流失节点。本次设计由 Q2 增长专项驱动，聚焦购物车至支付完成的核心转化路径。</p>
+    </div>
+
+    <!-- 业务目标 -->
+    <div class="card m-goal">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        业务目标 <span>Business Goal</span></p>
+      <p class="hint">要推动哪些可量化的业务结果</p>
+      <ul class="list">
+        <li>购物车转化率 <span class="num">45%</span> → <strong class="num">58%</strong></li>
+        <li>结算页跳出率下降 <strong class="num">20%</strong></li>
+        <li>支付成功率提升 <strong class="num">8%</strong></li>
+        <li>流程类客诉占比下降 <strong class="num">30%</strong></li>
+      </ul>
+    </div>
+
+    <!-- 用户 -->
+    <div class="card m-user">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        用户 <span>User</span></p>
+      <p class="hint">主要受众是谁，核心使用场景</p>
+      <ul class="list">
+        <li><span class="num">25–40</span> 岁城市女性</li>
+        <li>移动端为主，碎片时间下单</li>
+        <li>月均购物 <span class="num">3</span> 次以上</li>
+        <li>对繁琐流程容忍度低</li>
+      </ul>
+    </div>
+
+    <!-- 设计策略 -->
+    <div class="card m-strategy">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        设计策略 <span>Design Strategy</span></p>
+      <p class="hint">从哪些维度切入，用什么方法应对目标</p>
+      <div class="s-grid">
+        <div class="s-item">
+          <b>信息架构 IA</b>
+          <p class="thesis">核心操作提至首屏，减少结算路径层级。</p>
+          <ul class="tactics">
+            <li>结算入口上移到首屏</li>
+            <li>精简冗余跳转层级</li>
+            <li>分类重组贴近心智</li>
+          </ul>
+          <p class="rationale">对应 B2 跳出率↓20%；用户低容忍繁琐</p>
+        </div>
+        <div class="s-item">
+          <b>交互设计</b>
+          <p class="thesis">结算压缩到 <span class="num">3</span> 步，错误校验前置。</p>
+          <ul class="tactics">
+            <li>地址 / 支付合并一屏</li>
+            <li>字段实时校验提示</li>
+            <li>进度条常驻顶部</li>
+          </ul>
+          <p class="rationale">对应 B1 转化 45%→58%</p>
+        </div>
+        <div class="s-item">
+          <b>情感化设计</b>
+          <p class="thesis">支付完成正向动效，加购即时反馈。</p>
+          <ul class="tactics">
+            <li>支付成功动效 + 音效</li>
+            <li>加购浮层确认态</li>
+            <li>异常态温和提示</li>
+          </ul>
+          <p class="rationale">对应 B4 客诉↓30%</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设计标准 -->
+    <div class="card m-criteria">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        设计标准 <span>Design Criteria</span></p>
+      <p class="hint">体验维度的判断依据</p>
+      <ul class="list">
+        <li><span class="tag" data-kind="quant">定量</span><span class="text">结算步骤 ≤ <span class="num">3</span> 步</span></li>
+        <li><span class="tag" data-kind="quant">定量</span><span class="text">任务完成率 &gt; <span class="num">88%</span></span></li>
+        <li><span class="tag" data-kind="qual">定性</span><span class="text">流程感知清晰</span></li>
+        <li><span class="tag" data-kind="qual">定性</span><span class="text">无明显操作卡点</span></li>
+      </ul>
+    </div>
+
+    <!-- 边界约束 -->
+    <div class="card m-constraints">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        边界约束 <span>Constraints</span></p>
+      <p class="hint">时间、技术、资源等硬性限制</p>
+      <ul class="list">
+        <li><span class="num">8</span> 周内上线，不可延期</li>
+        <li>支付模块不可改动（第三方接入）</li>
+        <li>须遵守现有 Design System v2.3</li>
+        <li>设计资源：<span class="num">2</span> 名设计师</li>
+      </ul>
+    </div>
+
+    <!-- 不做什么 -->
+    <div class="card m-scope">
+      <p class="label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        不做什么 <span>Out of Scope</span></p>
+      <p class="hint">本次明确排除的内容，防止范围蔓延</p>
+      <ul class="list">
+        <li>商品详情页不纳入本次改版</li>
+        <li>会员积分体系不重设计</li>
+        <li>PC 端不覆盖，移动端优先</li>
+        <li>推荐算法逻辑不调整</li>
+      </ul>
+    </div>
+
+    </div><!-- /.cards-grid -->
+
+  </div>
+
+  <!-- ── Toolbar ── -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="toolbar-label">主题</span>
+      <select id="themeSelect" class="theme-select">
+        <option value="chalk">Chalk</option>
+        <option value="parchment">Parchment</option>
+        <option value="script">Script</option>
+        <option value="noir">Noir</option>
+        <option value="frame">Frame</option>
+        <option value="onyx">Onyx</option>
+        <option value="stone">Stone</option>
+        <option value="slate">Slate</option>
+        <option value="terminal">Terminal</option>
+      </select>
+      <input type="color" id="accentPicker" class="accent-picker" title="自定义主题色" value="#f54e00">
+      <div class="toolbar-divider"></div>
+      <span class="toolbar-label">布局</span>
+      <div class="ratio-group">
+        <button class="ratio-btn active" data-ratio="16-9" title="横版 · 适合 Keynote / 幻灯片">横版</button>
+        <button class="ratio-btn" data-ratio="4-3" title="竖版 · 适合 A4 / 文档">竖版</button>
+        <button class="ratio-btn" data-ratio="1-1" title="方版 · 适合社媒分享">方版</button>
+      </div>
+      <div class="toolbar-divider"></div>
+      <span class="toolbar-label">字号</span>
+      <div class="scale-group">
+        <button class="scale-btn" data-scale="sm">小</button>
+        <button class="scale-btn active" data-scale="md">中</button>
+        <button class="scale-btn" data-scale="lg">大</button>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-ghost" onclick="window.print()">打印 / PDF</button>
+      <button class="btn btn-primary" id="exportBtn">导出 PNG</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4/dist/index.js"></script>
+  <script>
+    // ── Theme switching ──
+    const themeSelect  = document.getElementById('themeSelect');
+    const accentPicker = document.getElementById('accentPicker');
+
+    const themeAccents = {
+      chalk: '#f54e00', parchment: '#cc785c', script: '#2bb5a0',
+      noir: '#b8a882',  frame: '#767d88',     onyx: '#36f4a4',
+      stone: '#6b6b6b', slate: '#533afd',     terminal: '#ffffff',
+    };
+
+    // Initialize accent picker to match the body's current data-theme
+    accentPicker.value = themeAccents[document.body.dataset.theme] || '#000000';
+
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      document.body.style.removeProperty('--accent');
+      themeSelect.value = theme;
+      accentPicker.value = themeAccents[theme] || '#000000';
+      fitCards();
+    }
+
+    themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
+
+    accentPicker.addEventListener('input', () => {
+      document.body.style.setProperty('--accent', accentPicker.value);
+    });
+
+    // ── Ratio switching ──
+    const ratioBtns = document.querySelectorAll('.ratio-btn');
+
+    function setRatio(ratio) {
+      document.body.setAttribute('data-ratio', ratio);
+      ratioBtns.forEach(b => b.classList.toggle('active', b.dataset.ratio === ratio));
+      fitCards();
+    }
+
+    ratioBtns.forEach(btn => btn.addEventListener('click', () => setRatio(btn.dataset.ratio)));
+
+    // ── Scale switching (小 / 中 / 大) ──
+    const scaleBtns = document.querySelectorAll('.scale-btn');
+    function setScale(scale) {
+      document.body.setAttribute('data-scale', scale);
+      scaleBtns.forEach(b => b.classList.toggle('active', b.dataset.scale === scale));
+      fitCards();
+    }
+    scaleBtns.forEach(btn => btn.addEventListener('click', () => setScale(btn.dataset.scale)));
+
+    // ── Auto-fit card content ──
+    // 职责：
+    //   1. 字号兜底：若某卡片内容溢出（scrollHeight > clientHeight），
+    //      对其 list / 策略三段式 / 正文 p 逐级降字号，直至无溢出或触达 MIN_FONT = 9px
+    //   2. 每次主题 / 布局 / 字号切换后都复位 inline font-size，再重新检测
+    // 注：不再对画布强制 min-height = width × h/w（避免"虚假比例锁定"）。
+    //     画布宽度固定 1280px，高度完全跟内容；data-ratio 仅影响 grid 模板（横版 / 竖版 / 方版）。
+    const MIN_FONT = 9;
+    const MAX_STEP = 18;
+    const FIT_SELECTOR = '.list, .list li, .s-item .thesis, .s-item .tactics li, .s-item .rationale, p:not(.label):not(.hint)';
+
+    function fitCards() {
+      // 1. 复位所有内联字号 + 清理历史 min-height（兼容旧缓存）
+      const brief = document.getElementById('brief-canvas');
+      if (brief) brief.style.minHeight = '';
+      document.querySelectorAll('.card').forEach(card => {
+        card.querySelectorAll(FIT_SELECTOR).forEach(el => { el.style.fontSize = ''; });
+      });
+
+      // 2. 等布局沉淀后做溢出检测 + 字号兜底
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.card').forEach(card => {
+          const targets = card.querySelectorAll(FIT_SELECTOR);
+          if (!targets.length) return;
+          let step = 0;
+          // 每轮同步缩 0.5px，所有目标一起缩，保持视觉比例
+          while (card.scrollHeight > card.clientHeight + 1 && step < MAX_STEP) {
+            let anyShrunk = false;
+            targets.forEach(el => {
+              const cur = parseFloat(getComputedStyle(el).fontSize);
+              if (cur > MIN_FONT) {
+                el.style.fontSize = Math.max(MIN_FONT, cur - 0.5) + 'px';
+                anyShrunk = true;
+              }
+            });
+            if (!anyShrunk) break;
+            step++;
+          }
+        });
+      });
+    }
+
+    // Run after fonts & layout settle
+    if (document.readyState === 'complete') {
+      fitCards();
+    } else {
+      window.addEventListener('load', fitCards);
+    }
+
+    // Re-run on resize (aspect-ratio canvas changes height)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(fitCards, 120);
+    });
+
+    // ── 标题 / 元信息 可编辑（hover 显示编辑 icon → 点击进入编辑态；刷新恢复 AI 默认值） ──
+    (() => {
+      // Firefox 不支持 plaintext-only，自动回落到 true
+      const editMode = (() => {
+        const d = document.createElement('div');
+        d.setAttribute('contenteditable', 'plaintext-only');
+        return d.contentEditable === 'plaintext-only' ? 'plaintext-only' : 'true';
+      })();
+
+      function bindEditable(wrapSelector, targetSelector, btnSelector) {
+        const wrap   = document.querySelector(wrapSelector);
+        const target = wrap && wrap.querySelector(targetSelector);
+        const btn    = wrap && wrap.querySelector(btnSelector);
+        if (!wrap || !target || !btn) return;
+
+        const defaultText = target.textContent.trim();
+
+        function enterEdit() {
+          if (wrap.classList.contains('is-editing')) return;
+          wrap.classList.add('is-editing');
+          target.setAttribute('contenteditable', editMode);
+          target.focus();
+          const range = document.createRange();
+          range.selectNodeContents(target);
+          range.collapse(false);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+
+        function exitEdit() {
+          if (!wrap.classList.contains('is-editing')) return;
+          const v = target.textContent.replace(/\s+/g, ' ').trim();
+          target.textContent = v || defaultText;
+          target.removeAttribute('contenteditable');
+          wrap.classList.remove('is-editing');
+          fitCards();
+        }
+
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          enterEdit();
+        });
+
+        target.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            target.blur();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            target.textContent = defaultText;
+            target.blur();
+          }
+        });
+
+        target.addEventListener('paste', (e) => {
+          if (editMode === 'plaintext-only') return;
+          e.preventDefault();
+          const text = (e.clipboardData || window.clipboardData)
+            .getData('text').replace(/\s+/g, ' ').trim();
+          document.execCommand('insertText', false, text);
+        });
+
+        target.addEventListener('blur', exitEdit);
+      }
+
+      bindEditable('.topbar-title-wrap', '.topbar-title', '.topbar-title-edit');
+      bindEditable('.topbar-meta-wrap',  '.topbar-meta',  '.topbar-meta-edit');
+    })();
+
+    // ── Export PNG ──
+    let exporting = false;
+    const exportBtn = document.getElementById('exportBtn');
+
+    // 检测是否运行在 iframe 里（qoderwork 预览态、Notion embed 等）
+    // 此类宿主 iframe 的 sandbox 通常缺 allow-downloads，脚本触发的 <a>.click()
+    // 会被静默阻断；同源策略异常也视为 iframe（conservative 策略）
+    function isInIframe() {
+      try { return window.top !== window.self; } catch (e) { return true; }
+    }
+
+    // 独立浏览器：一键下载
+    function directDownload(objectUrl, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = objectUrl;
+      link.rel = 'noopener';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // iframe 预览态：浮层 + 点图下载（唯一实测可靠路径）
+    // 实测结论：qoderwork 预览 iframe 的 sandbox 同时拦截了 <a>.click()、
+    //         clipboard.write、window.open，所以下载按钮 / 剪贴板 / 新窗口三条路径
+    //         全部无效。唯一能存下图片的方式是用户在图片上的直接手势：
+    //         • Mac: Option + 点击 = 触发浏览器强制下载弹窗
+    //         • Windows: 右键 → 图片另存为
+    //         不管这两条路径能不能走，浮层都必须给用户一条一定能成的退路：
+    //         「在系统浏览器中打开此 HTML」——这是最强推荐。
+    // 技术要点：预览图 `src` 必须是 base64 data URL（非 blob URL），sandbox 下才
+    //           能被右键菜单/Option 点击正常处理。
+    function showExportModal(blob, objectUrl, filename) {
+      const prev = document.querySelector('.export-modal');
+      if (prev) prev.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'export-modal';
+      modal.innerHTML = `
+        <div class="export-modal-backdrop"></div>
+        <div class="export-modal-card" role="dialog" aria-label="导出结果">
+          <div class="export-modal-header">
+            <span class="export-modal-title">导出 PNG · 已生成</span>
+            <button class="export-modal-close" type="button" aria-label="关闭">×</button>
+          </div>
+          <div class="export-modal-preview">
+            <a class="export-preview-link" download>
+              <img alt="Design Brief 预览（点击 / 右键保存）" />
+            </a>
+          </div>
+          <p class="export-modal-hint">
+            <strong>强烈推荐：在系统浏览器（Chrome / Safari / Edge）中打开此 HTML</strong>，点击"导出 PNG"可直接一键保存，无需任何额外操作。
+            <br><br>
+            若必须在此预览态导出，请在上方预览图上：
+            <br>
+            • <strong>Mac</strong>：<strong>Option + 点击</strong> → 触发下载弹窗
+            <br>
+            • <strong>Windows</strong>：<strong>右键 → 图片另存为…</strong>
+          </p>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const previewImg = modal.querySelector('.export-modal-preview img');
+      const previewLink = modal.querySelector('.export-preview-link');
+
+      // 先用 objectUrl 兜底显示，再异步切换成 data URL 以解锁 sandbox 下右键另存 / Option + 点击
+      previewImg.src = objectUrl;
+      previewLink.href = objectUrl;
+      previewLink.setAttribute('download', filename);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result; // data:image/png;base64,...
+        if (typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
+          previewImg.src = dataUrl;
+          previewLink.href = dataUrl;
+        }
+      };
+      reader.onerror = () => { /* 保留 objectUrl 兜底 */ };
+      try { reader.readAsDataURL(blob); } catch (e) { /* 保留 objectUrl 兜底 */ }
+
+      function close() {
+        modal.remove();
+        // 延迟释放 object URL，给用户点图下载留足够时间
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 8000);
+        document.removeEventListener('keydown', onEsc);
+      }
+      function onEsc(e) { if (e.key === 'Escape') close(); }
+      modal.querySelector('.export-modal-close').addEventListener('click', close);
+      modal.querySelector('.export-modal-backdrop').addEventListener('click', close);
+      document.addEventListener('keydown', onEsc);
+    }
+
+    exportBtn.addEventListener('click', async () => {
+      if (exporting) return;
+      // 导出前收起编辑态/焦点，保证 PNG 干净
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      // 标记导出态：让编辑按钮在快照里不占布局，避免 wrap 压缩导致文字折行
+      document.body.classList.add('is-exporting');
+      exporting = true;
+      exportBtn.disabled = true;
+      exportBtn.textContent = '生成中…';
+
+      try {
+        const el = document.getElementById('brief-canvas');
+        // 使用 modern-screenshot domToBlob（支持 color-mix() 等现代 CSS）：
+        //   - data URL 在 file:// 与 iframe 下会被浏览器阻断下载
+        //   - Blob URL 在独立浏览器里走 <a>.click() 一键下载
+        //   - 在 iframe（qoderwork 预览态）里走 showExportModal 提供多路径兜底
+        // backgroundColor 取页面背景而非透明，避免暗色主题变透明。
+        const pageBg = getComputedStyle(document.body).backgroundColor || '#ffffff';
+        const blob = await modernScreenshot.domToBlob(el, {
+          scale: 2,
+          backgroundColor: pageBg,
+          style: { transform: 'none' },
+          type: 'image/png'
+        });
+        const objectUrl = URL.createObjectURL(blob);
+        const filename = `brief-${document.body.dataset.theme || 'default'}.png`;
+
+        if (isInIframe()) {
+          // 预览态：弹浮层，用户手势选择保存方式
+          showExportModal(blob, objectUrl, filename);
+          exportBtn.textContent = '请在浮层点图保存 →';
+        } else {
+          // 独立浏览器：一键下载
+          directDownload(objectUrl, filename);
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+          exportBtn.textContent = '已保存 ✓';
+        }
+      } catch (err) {
+        console.error('[brief] export failed:', err);
+        exportBtn.textContent = '导出失败';
+      } finally {
+        // 恢复编辑按钮占位
+        document.body.classList.remove('is-exporting');
+        exportBtn.disabled = false;
+        setTimeout(() => {
+          exportBtn.textContent = '导出 PNG';
+          exporting = false;
+        }, 3000);
+      }
+    });
+  </script>
+
+</body>
+</html>

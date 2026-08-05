@@ -1,0 +1,88 @@
+{
+  "name": "qwenwork-cn-litigation",
+  "displayName": "中国民商事诉讼工具箱",
+  "version": "1.0.0",
+  "description": "Full-lifecycle Chinese civil & commercial litigation toolkit for legal counsel and attorneys. 20 skills across four layers: routing (hub + onboarding interview + quick-config editor), document drafting (complaint, defense, evidence catalog, cross-examination, trial outline, closing argument, procedural documents covering 8 families and 40+ filings), analytical work (visualization, fact analysis, element-based attack/defense analysis, property investigation, legal research report, new-law interpretation), and case management (full-lifecycle case manager with deadline computation, three-tier case review, litigation knowledge base with semantic retrieval). Output gate: mandatory legal-citation verification before delivery. Platform-agnostic MCP backends (LAW/BIZ/PARSE/SEARCH capability slots with multi-vendor failover), Markdown-first output, matter-level config isolation, four-tier source traceability, and automatic attorney/in-house counsel mode switching. Users can freely mount knowledge bases (qmind/DingTalk Docs/Feishu Docs) and extend with ecosystem connectors.",
+  "descriptionZh": "面向执业律师与公司法务的中国民商事诉讼全流程工具箱。20项技能：路由层（诉讼套件中枢/冷启动访谈/自定义）→ 文书生成（主诉诉状/被诉答辩状/证据目录/质证意见/庭审提纲/代理词/程序性文书系列八大家族）→ 辅助工作（诉讼可视化/案件事实梳理/要件攻防分析/财产线索调查/法律研究报告/新法解读）→ 案件管理（案件管家/案件复盘/诉讼知识库）+ 法律核验输出闸门。轻量骨架设计，MCP后端平台无关+多供应商灾备、md优先输出、案件级配置隔离、四级溯源标签、律师/法务双模式自动切换。用户可自由挂载知识库与生态扩展。",
+  "author": {
+    "name": "游初 (You Chu)"
+  },
+  "category": "legal",
+  "tags": [
+    "诉讼",
+    "litigation",
+    "民商事",
+    "civil-procedure",
+    "请求权基础",
+    "要件攻防分析"
+  ],
+  "skills": [
+    "./skills/诉讼套件中枢",
+    "./skills/冷启动访谈",
+    "./skills/诉讼可视化",
+    "./skills/案件事实梳理",
+    "./skills/要件攻防分析",
+    "./skills/财产线索调查",
+    "./skills/法律研究报告",
+    "./skills/新法解读",
+    "./skills/主诉诉状",
+    "./skills/被诉答辩状",
+    "./skills/证据目录",
+    "./skills/质证意见",
+    "./skills/庭审提纲",
+    "./skills/代理词",
+    "./skills/程序性文书系列",
+    "./skills/案件管家",
+    "./skills/案件复盘",
+    "./skills/诉讼知识库",
+    "./skills/法律核验",
+    "./skills/自定义"
+  ],
+  "mcpDependencies": {
+    "optional": [
+      {
+        "name": "法律检索后端（元典 / 北大法宝，供应商可插拔 + 多供应商灾备）",
+        "purpose": "法条检索·法规检索·法条/法规详情·语义检索·案例检索·案例详情·引用核验（LAW.* 能力槽）。按能力名调用，运行时 qw_mcp_list 探测映射，能力映射见 qoder.md「外部能力后端」；配多家时自动灾备",
+        "degradation": "全部不可用时标注 [L4-法条待验证]，附待校验清单"
+      },
+      {
+        "name": "工商信息后端（企查查 / 天眼查 / 启信宝等同类，按实际功能自适配）",
+        "purpose": "企业主体核验、财产线索调查（BIZ.* 能力槽）。能力映射见 qoder.md「外部能力后端」",
+        "degradation": "WebSearch降级搜索公开信息"
+      },
+      {
+        "name": "全网搜索",
+        "purpose": "财产线索补充调查",
+        "degradation": "WebFetch降级"
+      },
+      {
+        "name": "文档解析后端（MinerU / 阿里云百炼文档转Markdown / markdownify / 自部署同类，多后端可选 + 灾备）",
+        "purpose": "输入侧前门：将上传的 PDF/图片/Word/PPT 解析为结构化 Markdown（PARSE.to_markdown 能力）。首选后端记于 qoder.md「外部能力后端」，多个则询问用户优先用哪个并支持运行时灾备",
+        "degradation": "按降级链回退：其他已连接后端 → 内置 pypdf（纯文字 PDF）→ fitz 视觉降级（标[视觉降级-待人工复核]）→ 内置 Read；全部失败则停下报告，绝不臆造文档内容"
+      },
+      {
+        "name": "Markdown→Word 转换后端（DOCX.md_to_docx，可选）",
+        "purpose": "输出侧：法律核验放行后将 Markdown 文书渲染为 .docx Word 文件，preset=legal 套用法院提交格式。首选后端记于 qoder.md「Word 转换/首选后端」字段",
+        "degradation": "首选不可用 → 仅交付 Markdown 并提示用户在本机手动转换"
+      },
+      {
+        "name": "协作平台后端（COLLAB.*，钉钉 dws / 飞书 lark-cli / 同类 OA，平台无关）",
+        "purpose": "案件管家台账存储（COLLAB.sheet_*）、知识库团队协作（COLLAB.doc_*）、通讯录（COLLAB.contact_*）、日历（COLLAB.calendar_*）、邮箱（COLLAB.mail_*）。skill内部只用能力槽名，运行时探测已连接平台并映射",
+        "degradation": "全部不可用时降级为本地 JSON+Markdown 零依赖运行；提醒退化为对话内展示或 IM 推送"
+      },
+      {
+        "name": "qmind 云端知识库",
+        "purpose": "诉讼知识库三板块（办案笔记/工作笔记/法律知识库）的语义检索与RAG问答",
+        "degradation": "降级到协作平台文档（COLLAB.doc_*）；均不可用则仅依赖对话内上下文"
+      }
+    ]
+  },
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "qoder-for-cn-litigation",
+    "version": "1.0.0",
+    "contentUpdatedAt": 1782777600000,
+    "installedAt": 1785925313665
+  }
+}

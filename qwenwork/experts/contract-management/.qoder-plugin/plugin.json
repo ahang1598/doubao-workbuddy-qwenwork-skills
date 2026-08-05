@@ -1,0 +1,19 @@
+{
+  "name": "contract-management",
+  "displayName": "合同管理",
+  "version": "1.1.1",
+  "description": "合同全生命周期管理：审查合同风险（红黄绿分级）、起草合同初稿（Word输出）、两版合同红线对比、NDA快速分诊、法条速查、合同台账到期提醒。基于《民法典》合同编及配套司法解释，覆盖企业常见合同场景，支持北大法宝实时法条检索增强。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "displayNameEn": "Contract Management",
+  "descriptionEn": "Full-lifecycle contract management: review contract risks (red/yellow/green grading), draft contract first drafts (Word output), redline comparison of two contract versions, rapid NDA triage, legal provision lookup, and contract expiry tracking with reminders. Built on the Civil Code of the PRC (Contract Book) and supporting judicial interpretations, covering common enterprise contract scenarios with PKU Law real-time legal retrieval enhancement.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_XqxvUMA0",
+    "version": "1.1.1",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925302242
+  }
+}

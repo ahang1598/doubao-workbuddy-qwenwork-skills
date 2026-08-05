@@ -1,0 +1,185 @@
+examples:
+  - id: create-spreadsheet
+    title:
+      zh: 创建电子表格
+      en: Create Spreadsheet
+    description:
+      zh: 创建包含数据分析和图表的新 Excel 文件
+      en: Create a new Excel file containing data analysis and charts
+    prompt:
+      zh: |-
+        请帮我创建一个专业的 Excel 电子表格，用于分析销售数据：
+
+        数据内容：
+        - 月份：1-12月的销售数据
+        - 产品类别：A、B、C三类产品
+        - 销售额：每月各类产品的销售额
+        - 成本：对应的成本数据
+        - 利润：自动计算（销售额-成本）
+
+        要求：
+        1. 创建多个工作表：原始数据、汇总统计、图表分析
+        2. 使用公式自动计算总计、平均值、增长率
+        3. 创建柱状图、折线图展示趋势
+        4. 应用条件格式突出显示关键数据
+        5. 添加数据验证确保输入正确
+
+        请生成完整的 Excel 文件。
+      en: |-
+        Please help me create a professional Excel spreadsheet for sales data analysis:
+
+        Data content:
+        - Months: Sales data for 1-12 months
+        - Product categories: Three product types A, B, C
+        - Sales revenue: Monthly sales revenue for each product type
+        - Costs: Corresponding cost data
+        - Profit: Automatically calculated (revenue - cost)
+
+        Requirements:
+        1. Create multiple worksheets: raw data, summary statistics, chart analysis
+        2. Use formulas to automatically calculate totals, averages, growth rates
+        3. Create bar charts and line charts to show trends
+        4. Apply conditional formatting to highlight key data
+        5. Add data validation to ensure correct input
+
+        Please generate the complete Excel file.
+  - id: data-analysis
+    title:
+      zh: 数据分析
+      en: Data Analysis
+    description:
+      zh: 对现有 Excel 文件进行深入数据分析和处理
+      en: Perform in-depth data analysis and processing on existing Excel files
+    prompt:
+      zh: |-
+        请帮我分析这个 Excel 文件中的数据：
+
+        文件路径：{{Excel文件路径}}
+
+        分析要求：
+        1. 数据清洗：去除重复项、处理空值、统一格式
+        2. 统计分析：
+           - 计算各列的基本统计量（均值、中位数、标准差等）
+           - 识别异常值和离群点
+           - 分析数据分布特征
+        3. 趋势分析：识别数据变化趋势和周期性
+        4. 相关性分析：找出变量间的相关关系
+        5. 生成分析报告：包含关键发现和可视化图表
+
+        输出：修改后的 Excel 文件 + 分析报告（Markdown格式）
+      en: |-
+        Please help me analyze the data in this Excel file:
+
+        File path: {{Excel file path}}
+
+        Analysis requirements:
+        1. Data cleaning: Remove duplicates, handle null values, standardize formats
+        2. Statistical analysis:
+           - Calculate basic statistics for each column (mean, median, standard deviation, etc.)
+           - Identify outliers and anomalies
+           - Analyze data distribution characteristics
+        3. Trend analysis: Identify data change trends and periodicity
+        4. Correlation analysis: Find correlations between variables
+        5. Generate analysis report: Include key findings and visual charts
+
+        Output: Modified Excel file + Analysis report (Markdown format)
+  - id: pivot-table
+    title:
+      zh: 数据透视表
+      en: Pivot Table
+    description:
+      zh: 创建和优化数据透视表进行多维度数据分析
+      en: Create and optimize pivot tables for multi-dimensional data analysis
+    prompt:
+      zh: |-
+        我需要为这个销售数据创建数据透视表：
+
+        数据源：{{销售数据Excel文件}}
+        分析维度：
+        - 按地区分析销售额
+        - 按产品类别分析利润
+        - 按时间段分析趋势
+        - 按销售人员分析业绩
+
+        具体要求：
+        1. 创建多个数据透视表，每个关注不同的分析角度
+        2. 添加计算字段（如利润率、同比增长率）
+        3. 创建切片器便于交互式筛选
+        4. 设计仪表板视图整合关键指标
+        5. 应用合适的数字格式和样式
+
+        请构建完整的分析工作簿。
+      en: |-
+        I need to create pivot tables for this sales data:
+
+        Data source: {{Sales data Excel file}}
+        Analysis dimensions:
+        - Analyze sales by region
+        - Analyze profit by product category
+        - Analyze trends by time period
+        - Analyze performance by salesperson
+
+        Specific requirements:
+        1. Create multiple pivot tables, each focusing on different analysis angles
+        2. Add calculated fields (such as profit margin, year-over-year growth rate)
+        3. Create slicers for interactive filtering
+        4. Design dashboard view integrating key metrics
+        5. Apply appropriate number formatting and styling
+
+        Please build a complete analysis workbook.
+  - id: formula-automation
+    title:
+      zh: 公式自动化
+      en: Formula Automation
+    description:
+      zh: 批量应用复杂公式和函数自动化处理数据
+      en: Batch apply complex formulas and functions to automate data processing
+    prompt:
+      zh: |-
+        请帮我在这个财务报表中设置自动化计算：
+
+        工作簿：{{财务数据.xlsx}}
+
+        需要实现的自动化功能：
+        1. 财务比率计算：
+           - 流动比率 = 流动资产 / 流动负债
+           - 资产负债率 = 总负债 / 总资产
+           - 净利润率 = 净利润 / 营业收入
+        2. 时间序列分析：
+           - 月度环比增长率
+           - 年度同比增长率
+           - 移动平均值计算
+        3. 条件逻辑处理：
+           - 根据数值范围自动分级
+           - 异常值标记和预警
+           - 动态评分系统
+        4. 数据查找和引用：
+           - VLOOKUP/HLOOKUP 查找关联数据
+           - INDEX+MATCH 组合查询
+           - INDIRECT 动态引用
+
+        要求：所有公式应具有良好的可读性和可维护性。
+      en: |-
+        Please help me set up automated calculations in this financial statement:
+
+        Workbook: {{Financial data.xlsx}}
+
+        Automated functions to implement:
+        1. Financial ratio calculations:
+           - Current ratio = Current assets / Current liabilities
+           - Debt-to-assets ratio = Total liabilities / Total assets
+           - Net profit margin = Net profit / Operating revenue
+        2. Time series analysis:
+           - Monthly sequential growth rate
+           - Annual year-over-year growth rate
+           - Moving average calculation
+        3. Conditional logic processing:
+           - Automatic grading based on numerical ranges
+           - Outlier marking and alerts
+           - Dynamic scoring system
+        4. Data lookup and reference:
+           - VLOOKUP/HLOOKUP for associated data lookup
+           - INDEX+MATCH combination query
+           - INDIRECT dynamic reference
+
+        Requirement: All formulas should have good readability and maintainability.

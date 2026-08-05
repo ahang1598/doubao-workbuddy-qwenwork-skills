@@ -1,0 +1,22 @@
+{
+  "name": "ArXiv论文精读",
+  "installedAt": 1783569202596,
+  "source": "marketplace",
+  "version": "1.0.4",
+  "skillId": "skill_2053081352472563712",
+  "examples_zh": [
+    "深度阅读 arxiv.org/abs/2303.08774 这篇论文",
+    "帮我精读并总结这篇ArXiv论文",
+    "对这篇LLM论文做分类和阅读笔记"
+  ],
+  "examples_en": [
+    "Deep read the paper at arxiv.org/abs/2303.08774",
+    "Summarize and annotate this ArXiv paper",
+    "Classify and take notes on this LLM paper"
+  ],
+  "description_zh": "基于 LLM 的 ArXiv 论文分类与深度阅读工具",
+  "description_en": "LLM-based ArXiv paper classification and in-depth reading tool",
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-reader.svg",
+  "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\arxiv-reader\\_icon.svg",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-reader.svg"
+}

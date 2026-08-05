@@ -1,0 +1,19 @@
+{
+  "name": "consulting-delivery",
+  "displayName": "咨询交付",
+  "version": "1.1.1",
+  "description": "管理咨询全流程工具，覆盖桌面调研、访谈纪要、方案框架、报告撰写、标杆对比、项目周报和CEO汇报七大场景。独立可用，连接文档协作平台后可将产出自动发布至钉钉文档、飞书文档、Notion或Google Docs。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "displayNameEn": "Consulting Delivery",
+  "descriptionEn": "Full-cycle management consulting toolkit covering seven core scenarios: desk research, interview notes, framework design, report writing, benchmarking, weekly status reports, and executive briefings. Works independently; connecting a document collaboration platform enables automatic publishing to Notion.",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_Gv6FynlZ",
+    "version": "1.1.1",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925304321
+  }
+}

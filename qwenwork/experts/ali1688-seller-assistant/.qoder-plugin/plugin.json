@@ -1,0 +1,35 @@
+{
+  "name": "ali1688-seller-assistant",
+  "displayName": "1688商家助手",
+  "version": "1.0.0",
+  "description": "从店铺诊断到商品运营，为1688商家提供一站式经营支持，帮助商家看清数据、优化商品、提升转化。",
+  "author": {
+    "name": "1688",
+    "url": "https://clawhub.1688.com/"
+  },
+  "keywords": [
+    "1688",
+    "商家",
+    "店铺诊断",
+    "商品运营",
+    "发品",
+    "标题优化",
+    "主图优化",
+    "上下架"
+  ],
+  "displayNameEn": "1688 Seller Assistant",
+  "descriptionEn": "One-stop support for 1688 merchants, from shop diagnosis to product operations, helping sellers read data clearly, optimize listings, and boost conversion.",
+  "homepage": "https://clawhub.1688.com/",
+  "skills": [
+    "./skills/1688-product-manage",
+    "./skills/1688-shop-operate"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "ali1688-seller-assistant",
+    "version": "1.0.0",
+    "contentUpdatedAt": 1782777600000,
+    "installedAt": 1785925319592
+  }
+}

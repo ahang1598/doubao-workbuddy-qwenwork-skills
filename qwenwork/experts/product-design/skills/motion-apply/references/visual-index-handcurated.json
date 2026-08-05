@@ -1,0 +1,791 @@
+{
+  "_comment": "Hand-curated AI-value-add fields: tone / scene / one-line visual / mass-culture analogy. Survives across crawls. Merged into visual-index.md by crawl_catalog.py. Scene values: landing (showcase pages only), dashboard (functional UI ok), both (adapts to either). Visual ≤ 12 chars CN. Analogy must be a recognizable brand / movie / product reference, NOT generic descriptors.",
+
+  "_section_text_animations": "──── Text Animations (23) ────",
+  "split-text": {
+    "tone": "dramatic",
+    "scene": "landing",
+    "visual": "字符切碎从下抛上",
+    "analogy": "苹果发布会逐字弹出"
+  },
+  "blur-text": {
+    "tone": "restrained",
+    "scene": "both",
+    "visual": "模糊→对焦逐词浮入",
+    "analogy": "电影开场片名定格"
+  },
+  "circular-text": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "文字绕圆环旋转",
+    "analogy": "印章/徽章环形文字"
+  },
+  "text-type": {
+    "tone": "informational",
+    "scene": "both",
+    "visual": "光标打字机逐字输入",
+    "analogy": "终端命令行回显"
+  },
+  "shuffle": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "字符洗牌定格成词",
+    "analogy": "老虎机滚轮停止"
+  },
+  "shiny-text": {
+    "tone": "subtle",
+    "scene": "both",
+    "visual": "高光从左到右扫过",
+    "analogy": "PS 图层光效扫过"
+  },
+  "text-pressure": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "鼠标靠近字符变粗",
+    "analogy": "可变字体随触感变粗"
+  },
+  "curved-loop": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "文字沿曲线循环滑动",
+    "analogy": "时尚网站环绕标语"
+  },
+  "fuzzy-text": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "字符边缘抖动失焦",
+    "analogy": "复古电视雪花信号"
+  },
+  "gradient-text": {
+    "tone": "decorative",
+    "scene": "both",
+    "visual": "渐变色填充并流转",
+    "analogy": "Stripe 标题渐变"
+  },
+  "falling-text": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "字符受重力坠落堆叠",
+    "analogy": "俄罗斯方块字母版"
+  },
+  "text-cursor": {
+    "tone": "minimal",
+    "scene": "landing",
+    "visual": "文字尾随鼠标拖动",
+    "analogy": "Cursor IDE 标语跟随"
+  },
+  "decrypted-text": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "乱码翻滚定格成正文",
+    "analogy": "黑客帝国数据流"
+  },
+  "true-focus": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "聚焦框扫过依次锁词",
+    "analogy": "相机自动对焦框移动"
+  },
+  "scroll-float": {
+    "tone": "balanced",
+    "scene": "landing",
+    "visual": "随滚动逐字漂浮入场",
+    "analogy": "Awwwards 站滚动揭示"
+  },
+  "scroll-reveal": {
+    "tone": "balanced",
+    "scene": "landing",
+    "visual": "随滚动逐段揭示",
+    "analogy": "故事卷轴展开"
+  },
+  "ascii-text": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "字符渲染为 ASCII 艺术",
+    "analogy": "BBS 时代字符画"
+  },
+  "scrambled-text": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "鼠标悬停字符乱码刷",
+    "analogy": "Mr. Robot 解密效果"
+  },
+  "rotating-text": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "词组循环切换上滚",
+    "analogy": "Linear 首页产品名循环"
+  },
+  "glitch-text": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "文字 RGB 错位抖动",
+    "analogy": "Cyberpunk 2077 标题"
+  },
+  "scroll-velocity": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "横向跑马灯随滚动加速",
+    "analogy": "新闻台底栏字幕"
+  },
+  "variable-proximity": {
+    "tone": "polished",
+    "scene": "landing",
+    "visual": "字重随鼠标距离变化",
+    "analogy": "Variable Font 演示页"
+  },
+  "count-up": {
+    "tone": "informational",
+    "scene": "both",
+    "visual": "数字快速滚动到目标",
+    "analogy": "仪表盘 KPI 起跳"
+  },
+
+  "_section_animations": "──── Animations (29) ────",
+  "animated-content": {
+    "tone": "balanced",
+    "scene": "both",
+    "visual": "内容包裹器入场过渡",
+    "analogy": "通用 reveal-on-mount"
+  },
+  "fade-content": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "内容淡入淡出",
+    "analogy": "PowerPoint 渐隐切换"
+  },
+  "electric-border": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "边框电流环绕流转",
+    "analogy": "霓虹灯管闪烁"
+  },
+  "orbit-images": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "图片绕椭圆轨道旋转",
+    "analogy": "太阳系行星图示"
+  },
+  "pixel-transition": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "像素方块切换内容",
+    "analogy": "8-bit 游戏过场转场"
+  },
+  "glare-hover": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "鼠标悬停高光斜扫",
+    "analogy": "实体卡片在光下倾斜"
+  },
+  "antigravity": {
+    "tone": "ethereal",
+    "scene": "landing",
+    "visual": "粒子受磁场反重力浮动",
+    "analogy": "宇宙尘埃零重力悬浮"
+  },
+  "logo-loop": {
+    "tone": "informational",
+    "scene": "both",
+    "visual": "logo 横向无限滚动",
+    "analogy": "客户 logo 走马灯"
+  },
+  "target-cursor": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "鼠标变靶心十字准星",
+    "analogy": "FPS 游戏瞄准镜"
+  },
+  "magic-rings": {
+    "tone": "ethereal",
+    "scene": "landing",
+    "visual": "同心圆环外扩散开",
+    "analogy": "声呐脉冲扩散"
+  },
+  "laser-flow": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "激光束流动伴随衰减",
+    "analogy": "TRON 光带飞驰"
+  },
+  "magnet-lines": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "磁力线条围绕鼠标弯曲",
+    "analogy": "磁铁吸附铁屑分布"
+  },
+  "ghost-cursor": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "鬼影鼠标延迟跟随",
+    "analogy": "童年扯不下的影子"
+  },
+  "gradual-blur": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "顶/底渐进模糊蒙版",
+    "analogy": "iOS 状态栏模糊"
+  },
+  "click-spark": {
+    "tone": "playful",
+    "scene": "both",
+    "visual": "点击迸发星形火花",
+    "analogy": "Mac 点击波纹效果"
+  },
+  "magnet": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "元素被鼠标磁吸偏移",
+    "analogy": "Awwwards 按钮吸附"
+  },
+  "sticker-peel": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "贴纸随鼠标卷边掀起",
+    "analogy": "撕开真实贴纸的物理"
+  },
+  "pixel-trail": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "像素拖尾跟随鼠标",
+    "analogy": "复古游戏鼠标尾迹"
+  },
+  "cubes": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "立方体阵列旋转翻面",
+    "analogy": "Rubik's 魔方阵列"
+  },
+  "metallic-paint": {
+    "tone": "luxe",
+    "scene": "landing",
+    "visual": "金属漆面光泽流转",
+    "analogy": "汽车广告金属反光"
+  },
+  "noise": {
+    "tone": "subtle",
+    "scene": "both",
+    "visual": "颗粒噪点底纹动态",
+    "analogy": "胶片颗粒质感"
+  },
+  "shape-blur": {
+    "tone": "ethereal",
+    "scene": "landing",
+    "visual": "模糊形状缓慢漂浮",
+    "analogy": "Apple 发布会背景胶质"
+  },
+  "crosshair": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "准星十字跟随鼠标",
+    "analogy": "射击游戏 HUD"
+  },
+  "image-trail": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "图片随鼠标拖出残影",
+    "analogy": "时尚摄影动态展示"
+  },
+  "ribbons": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "彩色丝带飘舞跟随",
+    "analogy": "庆典彩带飞舞"
+  },
+  "splash-cursor": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "鼠标拖出流体涟漪",
+    "analogy": "水面滴入墨滴"
+  },
+  "meta-balls": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "球体粘合融化合并",
+    "analogy": "熔岩灯液体球"
+  },
+  "blob-cursor": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "鼠标变软糖弹性形变",
+    "analogy": "Linear 网站果冻光标"
+  },
+  "star-border": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "边框星辰流光循环",
+    "analogy": "魔法卡牌发光边框"
+  },
+
+  "_section_components": "──── Components (36) ────",
+  "animated-list": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "列表项依次入场",
+    "analogy": "Notion 数据库行加载"
+  },
+  "scroll-stack": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "滚动时卡片叠堆缩放",
+    "analogy": "Apple 网站滚动段落叠"
+  },
+  "bubble-menu": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "气泡环绕主按钮弹出",
+    "analogy": "iOS 长按弹出菜单"
+  },
+  "magic-bento": {
+    "tone": "polished",
+    "scene": "landing",
+    "visual": "卡片网格悬浮联动光效",
+    "analogy": "Apple 官网 Bento 区"
+  },
+  "circular-gallery": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "图片绕圆环旋转滚动",
+    "analogy": "唱片机转盘"
+  },
+  "reflective-card": {
+    "tone": "luxe",
+    "scene": "landing",
+    "visual": "卡片倾斜反光材质",
+    "analogy": "全息收藏卡反射"
+  },
+  "card-nav": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "卡片式横向导航",
+    "analogy": "Stripe 文档侧栏卡片"
+  },
+  "stack": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "卡片堆叠拖动切换",
+    "analogy": "Tinder 滑卡操作"
+  },
+  "fluid-glass": {
+    "tone": "luxe",
+    "scene": "landing",
+    "visual": "玻璃面板流体折射",
+    "analogy": "iOS 26 Liquid Glass"
+  },
+  "pill-nav": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "胶囊形 tab 滑动指示",
+    "analogy": "iOS Segmented Control"
+  },
+  "tilted-card": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "鼠标悬停 3D 倾斜",
+    "analogy": "实体卡片在掌心翻转"
+  },
+  "masonry": {
+    "tone": "showcase",
+    "scene": "both",
+    "visual": "瀑布流不等高布局",
+    "analogy": "Pinterest 图墙"
+  },
+  "glass-surface": {
+    "tone": "luxe",
+    "scene": "both",
+    "visual": "玻璃磨砂面板背景",
+    "analogy": "macOS 控制中心"
+  },
+  "dome-gallery": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "图片穹顶球面环绕",
+    "analogy": "Vision Pro 沉浸式空间"
+  },
+  "chroma-grid": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "彩色滤镜网格悬停亮",
+    "analogy": "色彩选择器调色板"
+  },
+  "folder": {
+    "tone": "playful",
+    "scene": "both",
+    "visual": "文件夹打开露内容",
+    "analogy": "macOS Finder 文件夹"
+  },
+  "staggered-menu": {
+    "tone": "polished",
+    "scene": "landing",
+    "visual": "菜单项错落依次展开",
+    "analogy": "Awwwards 全屏菜单"
+  },
+  "model-viewer": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "3D 模型可拖动旋转",
+    "analogy": "Apple 网站 3D 产品图"
+  },
+  "lanyard": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "挂绳卡片物理摆动",
+    "analogy": "门禁工牌真实甩动"
+  },
+  "profile-card": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "个人资料卡悬停动态",
+    "analogy": "X/Twitter 用户卡"
+  },
+  "dock": {
+    "tone": "iconic",
+    "scene": "both",
+    "visual": "图标随悬停放大",
+    "analogy": "macOS Dock 栏"
+  },
+  "gooey-nav": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "选中态液态粘连过渡",
+    "analogy": "Material Design 流体"
+  },
+  "pixel-card": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "像素风卡片悬停闪",
+    "analogy": "FC 红白机界面"
+  },
+  "carousel": {
+    "tone": "informational",
+    "scene": "both",
+    "visual": "轮播切换内嵌指示器",
+    "analogy": "电商首页 Banner 轮播"
+  },
+  "spotlight-card": {
+    "tone": "polished",
+    "scene": "both",
+    "visual": "鼠标位置射出光斑",
+    "analogy": "聚光灯下的展品"
+  },
+  "border-glow": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "边框发光循环流动",
+    "analogy": "Vercel 卡片悬停光边"
+  },
+  "flying-posters": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "海报横向飞过堆叠",
+    "analogy": "电影院预告海报飘过"
+  },
+  "card-swap": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "卡片堆叠循环切换",
+    "analogy": "扑克切牌动画"
+  },
+  "glass-icons": {
+    "tone": "luxe",
+    "scene": "both",
+    "visual": "图标玻璃质感悬浮",
+    "analogy": "iOS 透明图标"
+  },
+  "decay-card": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "卡片悬停产生噪点衰变",
+    "analogy": "胶片老化撕裂质感"
+  },
+  "flowing-menu": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "菜单项悬停流体涌入",
+    "analogy": "墨水滴入水池扩散"
+  },
+  "elastic-slider": {
+    "tone": "playful",
+    "scene": "both",
+    "visual": "滑块拖动有橡皮筋形变",
+    "analogy": "iOS 音量滑块橡皮"
+  },
+  "counter": {
+    "tone": "informational",
+    "scene": "both",
+    "visual": "数字滚轮上下切换",
+    "analogy": "机场翻牌时钟"
+  },
+  "infinite-menu": {
+    "tone": "showcase",
+    "scene": "landing",
+    "visual": "球面菜单无限旋转",
+    "analogy": "Apollo 图标球"
+  },
+  "stepper": {
+    "tone": "informational",
+    "scene": "both",
+    "visual": "分步进度带动画过渡",
+    "analogy": "结账流程指示器"
+  },
+  "bounce-cards": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "卡片落地弹跳归位",
+    "analogy": "塔罗牌摔在桌上"
+  },
+
+  "_section_backgrounds": "──── Backgrounds (42) ────",
+  "liquid-ether": {
+    "tone": "dreamy",
+    "scene": "landing",
+    "visual": "液态颜料缓慢交融",
+    "analogy": "墨滴落入水中"
+  },
+  "prism": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "棱镜光散射成色谱",
+    "analogy": "Pink Floyd 唱片封面"
+  },
+  "dark-veil": {
+    "tone": "ethereal",
+    "scene": "landing",
+    "visual": "暗色幕布波动",
+    "analogy": "夜空织物缓慢起伏"
+  },
+  "light-pillar": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "光柱垂直发散",
+    "analogy": "演唱会顶光柱"
+  },
+  "silk": {
+    "tone": "luxe",
+    "scene": "landing",
+    "visual": "丝绸光影波浪流动",
+    "analogy": "高档化妆品广告背景"
+  },
+  "floating-lines": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "线条无序漂浮",
+    "analogy": "线稿建筑透视图"
+  },
+  "light-rays": {
+    "tone": "ethereal",
+    "scene": "landing",
+    "visual": "光线放射状散开",
+    "analogy": "晨间云隙耶稣光"
+  },
+  "pixel-blast": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "像素方块爆炸扩散",
+    "analogy": "复古游戏过关效果"
+  },
+  "color-bends": {
+    "tone": "dreamy",
+    "scene": "landing",
+    "visual": "色彩弯折交错流动",
+    "analogy": "极光在天空翻折"
+  },
+  "evil-eye": {
+    "tone": "dreamy",
+    "scene": "landing",
+    "visual": "瞳孔状色环旋转",
+    "analogy": "土耳其蓝眼护身符"
+  },
+  "line-waves": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "横向波浪线流动",
+    "analogy": "示波器音波图"
+  },
+  "radar": {
+    "tone": "techy",
+    "scene": "both",
+    "visual": "圆形扫描线辐射旋转",
+    "analogy": "雷达屏扫描"
+  },
+  "soft-aurora": {
+    "tone": "ethereal",
+    "scene": "both",
+    "visual": "柔和极光漫射",
+    "analogy": "Nordic 夜空轻极光"
+  },
+  "aurora": {
+    "tone": "ethereal",
+    "scene": "landing",
+    "visual": "极光色带在背景起伏",
+    "analogy": "Vercel 首页背景极光"
+  },
+  "plasma": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "等离子流体翻滚色块",
+    "analogy": "WinAmp 经典 visualizer"
+  },
+  "plasma-wave": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "等离子波纹横向推进",
+    "analogy": "WinAmp 频谱波形"
+  },
+  "particles": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "粒子点阵漂浮连线",
+    "analogy": "tsParticles 经典背景"
+  },
+  "gradient-blinds": {
+    "tone": "decorative",
+    "scene": "landing",
+    "visual": "渐变百叶窗交替变色",
+    "analogy": "霓虹灯条交替亮"
+  },
+  "grainient": {
+    "tone": "luxe",
+    "scene": "both",
+    "visual": "颗粒质感渐变色块",
+    "analogy": "Stripe 招聘页颗粒渐变"
+  },
+  "grid-scan": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "网格扫描线纵向移动",
+    "analogy": "Tron 数字扫描"
+  },
+  "beams": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "光束放射状切割画面",
+    "analogy": "夜店激光束"
+  },
+  "pixel-snow": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "像素雪花飘落",
+    "analogy": "复古圣诞游戏雪景"
+  },
+  "lightning": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "闪电随机劈下",
+    "analogy": "暴风雨中闪电"
+  },
+  "prismatic-burst": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "棱镜状光线爆发",
+    "analogy": "超新星光芒迸发"
+  },
+  "galaxy": {
+    "tone": "dreamy",
+    "scene": "landing",
+    "visual": "星系旋臂粒子缓转",
+    "analogy": "哈勃望远镜深空照"
+  },
+  "dither": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "颗粒抖动黑白噪点",
+    "analogy": "Game Boy 屏幕灰阶"
+  },
+  "faulty-terminal": {
+    "tone": "edgy",
+    "scene": "landing",
+    "visual": "故障终端字符闪烁",
+    "analogy": "异形电影旧 CRT 显示"
+  },
+  "ripple-grid": {
+    "tone": "techy",
+    "scene": "both",
+    "visual": "网格随波纹起伏",
+    "analogy": "水面石子涟漪格点"
+  },
+  "dot-field": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "点阵场随交互密度变",
+    "analogy": "夜空繁星密度图"
+  },
+  "dot-grid": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "点阵网格随光标涟漪",
+    "analogy": "扫描仪光斑"
+  },
+  "threads": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "细线交织成网图案",
+    "analogy": "蜘蛛网光影投射"
+  },
+  "hyperspeed": {
+    "tone": "intense",
+    "scene": "landing",
+    "visual": "灯光高速隧道穿梭",
+    "analogy": "千年隼跃迁"
+  },
+  "iridescence": {
+    "tone": "luxe",
+    "scene": "landing",
+    "visual": "全息珠光渐变流动",
+    "analogy": "全息卡片倾斜反光"
+  },
+  "waves": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "正弦波浪线条流动",
+    "analogy": "水面波纹示意图"
+  },
+  "grid-distortion": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "网格随鼠标扭曲变形",
+    "analogy": "WebGL shader demo"
+  },
+  "ballpit": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "球池物理碰撞翻滚",
+    "analogy": "麦当劳儿童球池"
+  },
+  "orb": {
+    "tone": "ethereal",
+    "scene": "both",
+    "visual": "中心光球缓慢呼吸",
+    "analogy": "Apple Siri 光球"
+  },
+  "letter-glitch": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "字符背景持续翻滚",
+    "analogy": "终端启动加载界面"
+  },
+  "grid-motion": {
+    "tone": "techy",
+    "scene": "landing",
+    "visual": "网格图片随鼠标平移",
+    "analogy": "Awwwards 项目图墙"
+  },
+  "shape-grid": {
+    "tone": "minimal",
+    "scene": "both",
+    "visual": "形状网格规律变换",
+    "analogy": "瑞士设计风格底纹"
+  },
+  "liquid-chrome": {
+    "tone": "luxe",
+    "scene": "landing",
+    "visual": "液态铬金属流动反光",
+    "analogy": "Y2K 液态金属审美"
+  },
+  "balatro": {
+    "tone": "playful",
+    "scene": "landing",
+    "visual": "迷幻色块旋转推拉",
+    "analogy": "肥皂泡彩虹反射"
+  }
+}

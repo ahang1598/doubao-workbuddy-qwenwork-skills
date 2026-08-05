@@ -1,0 +1,39 @@
+{
+  "name": "corporate-finance-tax",
+  "displayName": "企业财税",
+  "version": "1.1.1",
+  "description": "企业财务和税务管理工具，覆盖财务分析、记账凭证、预算分析、增值税管理、汇算清缴、内部审计、财务报表编制和月结管理九大场景。适用于会计记账、税务申报、财务诊断、预算管控、合规审计、报表编制和月末关账。触发词：\"财务分析\"、\"杜邦分析\"、\"做凭证\"、\"记账\"、\"会计分录\"、\"增值税\"、\"税负率\"、\"进销项\"、\"汇算清缴\"、\"纳税调整\"、\"税前扣除\"、\"预算差异\"、\"预实对比\"、\"内部审计\"、\"审计底稿\"、\"内控评价\"、\"SOX审计\"、\"编制报表\"、\"资产负债表\"、\"利润表\"、\"现金流量表\"、\"月结\"、\"关账\"、\"对账\"。",
+  "author": {
+    "name": "QwenWork"
+  },
+  "keywords": [
+    "财务",
+    "税务",
+    "会计",
+    "凭证",
+    "增值税",
+    "汇算清缴",
+    "审计",
+    "杜邦分析",
+    "预算",
+    "纳税调整",
+    "进销项",
+    "内控",
+    "SOX",
+    "IFRS",
+    "财务报表",
+    "月结",
+    "关账",
+    "对账"
+  ],
+  "displayNameEn": "Corporate Finance & Tax",
+  "descriptionEn": "Corporate finance and tax management toolkit covering financial analysis, journal entries, budget analysis, VAT management, annual CIT settlement, internal audit, financial statement preparation, and month-end closing. Suited for bookkeeping, tax filing, financial diagnostics, budget control, compliance auditing, statement preparation, and period-end closing. Trigger words: \"financial analysis\", \"DuPont analysis\", \"journal entry\", \"bookkeeping\", \"accounting entry\", \"VAT\", \"tax burden rate\", \"input/output VAT\", \"annual CIT settlement\", \"tax adjustment\", \"pre-tax deduction\", \"budget variance\", \"budget vs actual\", \"internal audit\", \"audit working papers\", \"internal control evaluation\", \"SOX audit\", \"prepare statements\", \"balance sheet\", \"income statement\", \"cash flow statement\", \"month-end closing\", \"book closing\", \"reconciliation\".",
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_rO4Qs7qe",
+    "version": "1.1.1",
+    "contentUpdatedAt": 0,
+    "installedAt": 1785925305263
+  }
+}

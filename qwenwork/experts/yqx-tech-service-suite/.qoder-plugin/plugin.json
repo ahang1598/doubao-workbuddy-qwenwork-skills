@@ -1,0 +1,45 @@
+{
+  "name": "yqx-tech-service-suite",
+  "displayName": "科技服务顾问",
+  "version": "1.1.0",
+  "description": "A full-chain technology service toolkit bridging demand and supply in a closed loop. The demand side covers tech demand mining, results search & matching, value assessment, deal plan generation, full-lifecycle project follow-up, and policy & funding matching. The supply side covers product opportunity discovery, product definition & planning, technical solution demonstration, prototype validation, mass production planning, commercialization strategy, and fundraising preparation. Supports auto-enhancement via integration with platforms such as Yiqixin and Zheqi Home, with automatic access to eight major categories of sci-tech service resources nationwide, or can be used with manual input only.",
+  "descriptionZh": "科技服务全流程工具，贯通从需求和供给两端流程闭环。需求端覆盖技术需求挖掘、成果搜索匹配、价值评估、对接方案生成、项目全周期跟进和政策资金匹配；供给端覆盖产品机会发现、产品定义规划、技术论证、原型验证、量产规划、商业化策略和融资准备。可支持连接益企新、浙企之家等服务后自动增强，自动链接全国科技金融、综合科技咨询、企业孵化、知识产权、研发设计、技术转移转化、检验检测、信息技术和知识产权等八大领域科技服务资源，也可纯手动输入使用。",
+  "author": {
+    "name": "QwenWork",
+    "url": "https://docs.qoder.com"
+  },
+  "category": "engineering",
+  "tags": [
+    "tech-transfer",
+    "product-development",
+    "ip-valuation",
+    "deal-making",
+    "policy-matching",
+    "pipeline-management",
+    "go-to-market",
+    "fundraising"
+  ],
+  "skills": [
+    "./skills/技术需求挖掘",
+    "./skills/成果搜索与匹配",
+    "./skills/技术价值评估",
+    "./skills/对接方案生成",
+    "./skills/项目跟进管理",
+    "./skills/政策与资金匹配",
+    "./skills/产品机会发现",
+    "./skills/产品定义与规划",
+    "./skills/技术方案论证",
+    "./skills/原型验证规划",
+    "./skills/设计验证与量产规划",
+    "./skills/商业化策略",
+    "./skills/融资准备"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "yqx-tech-service-suite",
+    "version": "1.1.0",
+    "contentUpdatedAt": 1782777600000,
+    "installedAt": 1785925311141
+  }
+}

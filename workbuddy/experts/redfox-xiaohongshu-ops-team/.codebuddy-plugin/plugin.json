@@ -1,0 +1,73 @@
+{
+  "name": "redfox-xiaohongshu-ops-team",
+  "version": "1.0.0",
+  "description": "Full-funnel Xiaohongshu operations team: trend discovery, note creation, account diagnosis, asset download — 15 core skills.",
+  "author": {
+    "name": "RedFox",
+    "email": ""
+  },
+  "agents": [
+    "./agents/redfox-xhs-he.md",
+    "./agents/redfox-xhs-sou.md",
+    "./agents/redfox-xhs-bi.md",
+    "./agents/redfox-xhs-zhen.md",
+    "./agents/redfox-xhs-cai.md"
+  ],
+  "skills": [
+    "./skills/xiaohongshu-top-account",
+    "./skills/xiaohongshu-dailytop",
+    "./skills/xiaohongshu-lowtop",
+    "./skills/xiaohongshu-search",
+    "./skills/xiaohongshu-crawler",
+    "./skills/xiaohongshu-similar-account",
+    "./skills/xiaohongshu-write",
+    "./skills/xiaohongshu-rewrite",
+    "./skills/xiaohongshu-title-score",
+    "./skills/xiaohongshu-cover",
+    "./skills/xiaohongshu-prohibited-word",
+    "./skills/xiaohongshu-account-analyzer",
+    "./skills/xiaohongshu-video-downloader"
+  ],
+  "expertType": "team",
+  "agentName": "redfox-xhs-he",
+  "teamInfo": {
+    "leadAgent": "redfox-xhs-he",
+    "memberAgents": ["redfox-xhs-sou","redfox-xhs-bi","redfox-xhs-zhen","redfox-xhs-cai"]
+  },
+  "displayName": {
+    "en": "Xiaohongshu Growth Expert Team",
+    "zh": "小红书增长专家团"
+  },
+  "profession": {
+    "en": "Xiaohongshu Growth Expert Team",
+    "zh": "小红书增长专家团"
+  },
+  "displayDescription": {
+    "zh": "一支专注小红书增长的多角色团队：从爆款灵感到笔记创作、账号诊断、素材下载，覆盖运营全链路。",
+    "en": "A multi-role Xiaohongshu growth expert team: from viral inspiration to note creation, account diagnosis and asset download — full-funnel coverage."
+  },
+  "avatar": "avatars/redfox-xhs-he.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "追踪最新美妆热门和低粉爆款笔记 TOP50 并分析趋势",
+    "en": "Track the latest beauty viral hits and low-follower breakout notes TOP50 and analyze trends"
+  },
+  "plugin": "redfox-xiaohongshu-ops-team",
+  "tags": [
+    {"en":"Xiaohongshu Ops","zh":"小红书运营"},
+    {"en":"Viral Content","zh":"爆款内容创作"},
+    {"en":"Account Growth","zh":"账号增长诊断"}
+  ],
+  "quickPrompts": [
+    {"zh":"追踪最新美妆热门和低粉爆款笔记 TOP50 并分析趋势","en":"Track the latest beauty viral hits and low-follower breakout notes TOP50 and analyze trends"},
+    {"zh":"基于爆款生成可直接发布的小红书笔记","en":"Generate a publish-ready XHS note"},
+    {"zh":"帮我诊断小红书账号并给优化建议","en":"Diagnose my XHS account"}
+  ],
+  "members": [
+    {"id":"redfox-xhs-he","name":{"zh":"贺红狐","en":"He Hongfu"},"profession":{"zh":"小红书增长操盘手","en":"Growth Operator"},"avatar":"avatars/redfox-xhs-he.png","role":"lead"},
+    {"id":"redfox-xhs-sou","name":{"zh":"搜狐川","en":"Sou Huchuan"},"profession":{"zh":"内容灵感猎手","en":"Content Inspiration Scout"},"avatar":"avatars/redfox-xhs-sou.png","role":"member"},
+    {"id":"redfox-xhs-bi","name":{"zh":"笔狐生","en":"Bi Husheng"},"profession":{"zh":"内容创作师","en":"Content Creator"},"avatar":"avatars/redfox-xhs-bi.png","role":"member"},
+    {"id":"redfox-xhs-zhen","name":{"zh":"诊狐康","en":"Zhen Fukang"},"profession":{"zh":"账号诊断师","en":"Account Diagnostician"},"avatar":"avatars/redfox-xhs-zhen.png","role":"member"},
+    {"id":"redfox-xhs-cai","name":{"zh":"采狐生","en":"Cai Husheng"},"profession":{"zh":"素材下载专员","en":"Asset Downloader"},"avatar":"avatars/redfox-xhs-cai.png","role":"member"}
+  ]
+}
