@@ -14,6 +14,12 @@
 
 - `skills` <= `/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
 
+## 导航文件
+
+各同步目录根部的 `SUMMARY.md` 提供按用途分组的场景导航，便于快速定位：
+
+- [Skills](doubao/skills/SUMMARY.md) — `skills/` 功能导航
+
 ## 分类索引
 
 ### Skills

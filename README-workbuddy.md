@@ -19,6 +19,16 @@
 - `cb_teams_experts/plugins_analysis_company_analysis.md` <= `/mnt/c/Users/15805/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins_analysis_company_analysis.md`
 - `skills` <= `/mnt/c/Users/15805/.workbuddy/skills`
 
+## 导航文件
+
+各同步目录根部的 `SUMMARY.md` 提供按用途分组的场景导航，便于快速定位：
+
+- [Marketplace Experts](workbuddy/experts/SUMMARY.md) — `experts/` 功能导航
+- [Official Experts / External Plugins](workbuddy/official_experts/external_plugins/SUMMARY.md) — `official_experts/external_plugins/` 功能导航
+- [Official Experts / Plugins](workbuddy/official_experts/plugins/SUMMARY.md) — `official_experts/plugins/` 功能导航
+- [CB Teams Experts](workbuddy/cb_teams_experts/plugins/SUMMARY.md) — `cb_teams_experts/plugins/` 功能导航
+- [Skills](workbuddy/skills/SUMMARY.md) — `skills/` 功能导航
+
 ## 分类索引
 
 ### Marketplace Experts

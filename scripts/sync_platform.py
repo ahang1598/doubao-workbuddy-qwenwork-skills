@@ -27,6 +27,83 @@ except ImportError:  # pragma: no cover
 
 DEFAULT_TIMEZONE = "Asia/Shanghai"
 
+# Name of the generated navigation file written at each sync target root.
+SUMMARY_FILENAME = "SUMMARY.md"
+
+# Ordered scenario catalog. Each value is a tuple of substrings (matched
+# case-insensitively against an item's name, description and keywords). An item
+# may match several scenarios; the first match becomes its primary category in
+# the full table. Items matching nothing fall back to "其他".
+#
+# Ordering matters: more specific domains come first so an item's primary
+# category reflects its true purpose (e.g. a document plugin is "文档/表格/PPT"
+# rather than "代码开发", even though its description mentions Codex).
+SCENARIOS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("金融研究", (
+        "finance", "financial", "stock", "equity", "earnings", "investment",
+        "valuation", "dcf", "lbo", "trading", "trade", "hedge", "wealth",
+        "broker", "券商", "财报", "股票", "估值", "投资", "交易",
+        "金融", "证券", "市值", "资本",
+    )),
+    ("投资银行/私募", (
+        "investment-banking", "private-equity", "pe-vc", "m&a", "ma ",
+        "投行", "私募", "融资", "募资", "并购",
+    )),
+    ("数据分析", (
+        "data-analytics", "data-analysis", "analytics", "excel", "sql",
+        "dashboard", "报表", "数据", "etl", "查询", "仪表",
+    )),
+    ("文档/表格/PPT", (
+        "docx", "pdf", "xlsx", "pptx", "spreadsheet", "word",
+        "document", "报告", "文档", "合同", "会议纪要", "表格",
+        "word 文档", "markdown",
+    )),
+    ("设计可视化", (
+        "design", "visual", "canvas", "ui ", "ux ", "creative-design",
+        "visualization", "chart", "diagram", "presentation",
+        "幻灯片", "海报", "图表", "可视化", "设计", "icons",
+    )),
+    ("研究/调研", (
+        "research", "deep-research", "arxiv", "paper", "调研", "研究",
+        "academic", "文献", "论文", "智库",
+    )),
+    ("营销/内容运营", (
+        "marketing", "content", "seo", "social", "newmedia", "新媒体",
+        "小红书", "wechat", "公众号", "社媒", "运营", "推广", "增长",
+        "monetization", "distribution",
+    )),
+    ("协作/办公", (
+        "lark", "feishu", "飞书", "slack", "project", "okr", "task",
+        "approval", "calendar", "协作", "办公", "考勤", "审批",
+        "minutes", "standup", "wiki", "drive", "mail",
+    )),
+    ("法务/合规", (
+        "legal", "contract", "compliance", "tax", "法务", "合同", "合规",
+        "税务", "审计", "发票", "invoice",
+    )),
+    ("医疗", (
+        "medical", "clinical", "医学", "临床", "病历", "诊断",
+    )),
+    ("教育/考试", (
+        "gaokao", "ncre", "ket", "高考", "考试", "教学", "课程", "课件",
+    )),
+    ("代码开发", (
+        "coding", "code-", "code ", "codebase", "code review", "code review",
+        "develop", "sdk", "backend", "frontend", "webapp", "web-app",
+        "typescript", "javascript", "dockerfile", "refactor", "review-agent",
+        "scaffolding", "lsp", "cicd", "ci/cd", "github", "gitlab",
+        "codebuddy", "programming", "compiler", "debug",
+    )),
+    ("通用工具/平台", (
+        "identity", "cron", "scheduler", "record", "skill-creator",
+        "plugin-creator", "skill-installer", "browser", "computer-use",
+        "sites", "template", "通用", "工具", "平台", "skillhub",
+        "imagegen", "openai-docs",
+    )),
+)
+
+FALLBACK_SCENARIO = "其他"
+
 
 @dataclass(frozen=True)
 class SourceSpec:
@@ -242,6 +319,11 @@ def file_hash(path: Path) -> str:
     return digest.hexdigest()
 
 
+def protected_summary_rel(source: SourceSpec) -> str:
+    """The repo-relative path of the generated SUMMARY.md for ``source``."""
+    return rel_join(source.target, SUMMARY_FILENAME)
+
+
 def list_source_files(source: SourceSpec) -> dict[str, Path]:
     if not source.source.exists():
         raise FileNotFoundError(f"source does not exist: {source.source}")
@@ -251,10 +333,19 @@ def list_source_files(source: SourceSpec) -> dict[str, Path]:
         return {source.target: source.source}
     if not source.source.is_dir():
         raise NotADirectoryError(f"source is not a directory: {source.source}")
+    generated_rel = SUMMARY_FILENAME  # the SUMMARY.md that would sit at the source root
     files: dict[str, Path] = {}
     for path in source.source.rglob("*"):
         if path.is_file():
             rel = path.relative_to(source.source).as_posix()
+            if not source.source_is_file and rel == generated_rel:
+                # A SUMMARY.md at the source root would collide with our
+                # generated navigation file; skip it to avoid overwriting.
+                print(
+                    f"WARNING: skipping source-root {SUMMARY_FILENAME} at "
+                    f"{source.source} to protect the generated navigation file."
+                )
+                continue
             files[rel_join(source.target, rel)] = path
     return files
 
@@ -265,10 +356,15 @@ def list_target_files(platform_root: Path, source: SourceSpec) -> dict[str, Path
         return {}
     if source.source_is_file:
         return {source.target: target} if target.is_file() else {}
+    protected = protected_summary_rel(source)
     files: dict[str, Path] = {}
     for path in target.rglob("*"):
         if path.is_file():
-            files[path.relative_to(platform_root).as_posix()] = path
+            rel = path.relative_to(platform_root).as_posix()
+            if rel == protected:
+                # Generated navigation file — never treat as a tracked target.
+                continue
+            files[rel] = path
     return files
 
 
@@ -413,7 +509,13 @@ def read_readme_summary(item_dir: Path) -> str:
     return ""
 
 
-def metadata_for_item(item_dir: Path, fallback_name: str) -> tuple[str, str, str]:
+def metadata_for_item(item_dir: Path, fallback_name: str) -> tuple[str, str, str, str]:
+    """Return ``(name, description, category, keywords)`` for an item dir.
+
+    ``keywords`` is a flattened string drawn from the plugin manifest's
+    ``keywords`` field when present; classification also folds the name and
+    description in, so an empty string here is acceptable for SKILL.md items.
+    """
     plugin_paths = [
         item_dir / ".codebuddy-plugin" / "plugin.json",
         item_dir / ".qoder-plugin" / "plugin.json",
@@ -431,18 +533,52 @@ def metadata_for_item(item_dir: Path, fallback_name: str) -> tuple[str, str, str
                 or read_readme_summary(item_dir)
             )
             category = localized(data.get("category")) or data.get("categoryId") or data.get("expertType") or ""
-            return str(name), one_line(str(description)), str(category)
+            keywords = extract_keywords(
+                name, description, data.get("keywords") or data.get("tags")
+            )
+            return str(name), one_line(str(description)), str(category), keywords
 
     skill_md = item_dir / "SKILL.md"
     if skill_md.exists():
         front = parse_front_matter(read_text(skill_md))
-        return (
-            front.get("name") or fallback_name,
-            one_line(front.get("description") or read_readme_summary(item_dir)),
-            "",
-        )
+        name = front.get("name") or fallback_name
+        description = one_line(front.get("description") or read_readme_summary(item_dir))
+        return name, description, "", extract_keywords(name, description, None)
 
-    return fallback_name, one_line(read_readme_summary(item_dir) or "No description found."), ""
+    description = one_line(read_readme_summary(item_dir) or "No description found.")
+    return fallback_name, description, "", extract_keywords(fallback_name, description, None)
+
+
+def extract_keywords(name: str, description: str, raw_keywords) -> str:
+    """Best-effort keyword string for classification and display.
+
+    Prefers explicit manifest ``keywords``/``tags``; otherwise falls back to
+    the item name. The description is intentionally NOT folded in here (it is
+    passed separately to :func:`classify_item`), so the displayed keyword
+    column stays concise.
+    """
+    parts: list[str] = []
+    if isinstance(raw_keywords, list):
+        parts.extend(localized(k) for k in raw_keywords if localized(k))
+    elif isinstance(raw_keywords, str) and raw_keywords.strip():
+        parts.append(raw_keywords.strip())
+    if name:
+        parts.append(str(name))
+    return one_line(" ".join(parts), 200)
+
+
+def classify_item(name: str, description: str, keywords: str) -> list[str]:
+    """Return the ordered list of scenario labels an item matches. The first
+    entry is its primary category for the full directory table. Falls back to
+    ``FALLBACK_SCENARIO`` when nothing matches."""
+    haystack = f"{name} {description} {keywords}".lower()
+    matched: list[str] = []
+    for label, rules in SCENARIOS:
+        for token in rules:
+            if token.lower() in haystack:
+                matched.append(label)
+                break
+    return matched or [FALLBACK_SCENARIO]
 
 
 def parse_cb_teams_analysis(path: Path) -> dict[str, tuple[str, str]]:
@@ -465,6 +601,12 @@ def escape_cell(text: str) -> str:
 
 
 def chatgpt_plugin_entries(target: Path, source: SourceSpec):
+    """Entries for the nested ChatGPT plugin cache.
+
+    Returns 6-tuples ``(name, directory, category, file_count, description,
+    keywords)``. ``directory`` is the concrete versioned plugin path such as
+    ``openai-bundled/browser/26.727.51351`` rather than the top-level cache dir.
+    """
     entries = []
     manifests = sorted(target.glob("*/*/*/.codex-plugin/plugin.json"))
     for manifest in manifests:
@@ -472,15 +614,24 @@ def chatgpt_plugin_entries(target: Path, source: SourceSpec):
         rel_dir = item.relative_to(target).as_posix()
         parts = PurePosixPath(rel_dir).parts
         fallback_name = parts[1] if len(parts) > 1 else item.name
-        name, description, category = metadata_for_item(item, fallback_name)
+        name, description, category, keywords = metadata_for_item(item, fallback_name)
         file_count = sum(1 for p in item.rglob("*") if p.is_file())
         provider = parts[0] if parts else source.item_kind
         version = parts[2] if len(parts) > 2 else item.name
-        entries.append((name, rel_dir, category or provider, file_count, f"{description} Version: {version}."))
+        entries.append((
+            name,
+            rel_dir,
+            category or provider,
+            file_count,
+            f"{description} Version: {version}.",
+            keywords,
+        ))
     return entries
 
 
 def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[str, tuple[str, str]]):
+    """Entries for a directory source as 6-tuples
+    ``(name, directory, category, file_count, description, keywords)``."""
     target = path_from_rel(platform_root, source.target)
     if source.source_is_file:
         return []
@@ -492,14 +643,15 @@ def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[st
             return entries
     entries = []
     for item in sorted((p for p in target.iterdir() if p.is_dir()), key=lambda p: p.name):
-        name, description, category = metadata_for_item(item, item.name)
+        name, description, category, keywords = metadata_for_item(item, item.name)
         if source.name == "cb_teams_experts":
             override = cb_analysis.get(item.name)
             if override:
                 category = override[0] or category
                 description = override[1] or description
+                keywords = extract_keywords(name, description, override[1])
         file_count = sum(1 for p in item.rglob("*") if p.is_file())
-        entries.append((name, item.name, category or source.item_kind, file_count, description))
+        entries.append((name, item.name, category or source.item_kind, file_count, description, keywords))
     return entries
 
 
@@ -623,6 +775,7 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
         platform_root / "cb_teams_experts" / "plugins_analysis_company_analysis.md"
     )
     sections: list[str] = []
+    nav_lines: list[str] = []
     total_items = 0
     total_files = 0
     for source in platform.sources:
@@ -634,7 +787,7 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
             continue
         total_items += len(entries)
         rows = ["| Name | Directory | Category | Files | Description |", "| --- | --- | --- | ---: | --- |"]
-        for name, directory, category, file_count, description in entries:
+        for name, directory, category, file_count, description, _keywords in entries:
             total_files += file_count
             target_dir = rel_join(platform.root, source.target, directory)
             rows.append(
@@ -642,6 +795,11 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
                 f"{escape_cell(category)} | {file_count} | {escape_cell(description)} |"
             )
         sections.append(f"### {source.title}\n\n" + "\n".join(rows) + "\n")
+        if not source.source_is_file:
+            summary_rel = rel_join(platform.root, source.target, SUMMARY_FILENAME)
+            nav_lines.append(
+                f"- [{source.title}]({summary_rel}) — `{source.target}/` 功能导航"
+            )
 
     if logs:
         log_rows = ["| Date | Change Log | Summary |", "| --- | --- | --- |"]
@@ -654,6 +812,7 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
     source_lines = "\n".join(
         f"- `{source.target}` <= `{source.source}`" for source in platform.sources
     )
+    nav_block = "\n".join(nav_lines) if nav_lines else "暂无。"
 
     return f"""# {platform.title} Skills And Experts
 
@@ -671,6 +830,12 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
 
 {source_lines}
 
+## 导航文件
+
+各同步目录根部的 `{SUMMARY_FILENAME}` 提供按用途分组的场景导航，便于快速定位：
+
+{nav_block}
+
 ## 分类索引
 
 {chr(10).join(sections)}
@@ -683,6 +848,107 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
 def write_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | None) -> Path:
     path = repo_root / platform.readme
     path.write_text(render_readme(platform, repo_root, latest_log), encoding="utf-8")
+    return path
+
+
+def render_summary(
+    platform: PlatformSpec,
+    repo_root: Path,
+    source: SourceSpec,
+    entries: list[tuple],
+    timestamp: datetime,
+) -> str:
+    """Render the 3-section navigation file for one source directory.
+
+    ``entries`` are the 6-tuples produced by :func:`source_entries`.
+    Layout: 概览 (overview) -> 场景导航 (scenario navigation, multi-scenario)
+    -> 完整目录表 (full directory table with primary scenario as 类型).
+    """
+    total_files = sum(entry[3] for entry in entries)
+    target_dir_rel = rel_join(platform.root, source.target)
+    stamp = timestamp.strftime("%Y-%m-%d %H:%M:%S %z")
+
+    # ---- Overview ----
+    overview_lines = [
+        f"- 目录：`{target_dir_rel}/`",
+        f"- 来源：`{source.source}`",
+        f"- 条目数：{len(entries)}",
+        f"- 文件数：{total_files}",
+        f"- 最近同步：{stamp}",
+    ]
+    if source.name == "cb_teams_experts":
+        overview_lines.append(
+            "- 原始分析报告：[plugins_analysis_company_analysis.md]"
+            "(../plugins_analysis_company_analysis.md)"
+        )
+
+    # ---- Scenario navigation (multi-scenario) ----
+    # Map each entry to its matched scenario list; primary = first.
+    entry_scenarios: list[tuple[tuple, list[str]]] = []
+    for entry in entries:
+        name, _directory, _category, _file_count, description, keywords = entry
+        entry_scenarios.append((entry, classify_item(name, description, keywords)))
+
+    ordered_labels = [label for label, _ in SCENARIOS] + [FALLBACK_SCENARIO]
+    scenario_blocks: list[str] = []
+    for label in ordered_labels:
+        members = [
+            (entry, scenarios)
+            for entry, scenarios in entry_scenarios
+            if label in scenarios
+        ]
+        if not members:
+            continue
+        lines = [f"### {label}"]
+        for (name, _directory, _category, _file_count, description, _kw), _scen in members:
+            lines.append(f"- **{escape_cell(name)}** — {escape_cell(description)}")
+        scenario_blocks.append("\n".join(lines))
+    scenario_section = "\n\n".join(scenario_blocks) if scenario_blocks else "暂无条目。"
+
+    # ---- Full directory table ----
+    rows = ["| 名称 | 目录 | 类型 | 关键词 | 文件数 | 说明 |", "| --- | --- | --- | --- | ---: | --- |"]
+    for entry, scenarios in entry_scenarios:
+        name, directory, _category, file_count, description, keywords = entry
+        primary = scenarios[0]
+        full_dir = rel_join(platform.root, source.target, directory)
+        rows.append(
+            f"| {escape_cell(name)} | `{escape_cell(full_dir)}` | "
+            f"{escape_cell(primary)} | {escape_cell(keywords)} | {file_count} | "
+            f"{escape_cell(description)} |"
+        )
+    full_table = "\n".join(rows)
+
+    return f"""# {platform.title} / {source.title} 功能导航
+
+本文件由 `scripts/sync_platform.py --platform {platform.name}` 自动生成，是 `{target_dir_rel}/` 下条目的使用导航。平台总索引见 [{platform.readme}](../../{platform.readme})。
+
+## 概览
+
+{chr(10).join(overview_lines)}
+
+## 场景导航（按用途）
+
+{scenario_section}
+
+## 完整目录表
+
+{full_table}
+"""
+
+
+def write_summary_file(
+    platform: PlatformSpec,
+    repo_root: Path,
+    source: SourceSpec,
+    entries: list[tuple],
+    timestamp: datetime,
+) -> Path | None:
+    if source.source_is_file or not entries:
+        return None
+    target_dir = path_from_rel(repo_root / platform.root, source.target)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    path = target_dir / SUMMARY_FILENAME
+    path.write_text(render_summary(platform, repo_root, source, entries, timestamp), encoding="utf-8")
     return path
 
 
@@ -776,6 +1042,17 @@ def sync_platform(args: argparse.Namespace) -> int:
         (platform_root / "change-logs").mkdir(parents=True, exist_ok=True)
         write_readme(platform, repo_root, latest_log)
         write_root_readme(repo_root)
+        # Generate per-source navigation files (SUMMARY.md). Regenerated on
+        # every run that reaches the docs step; a pure refresh writes no
+        # change-log entry, matching the documented assumptions.
+        cb_analysis = parse_cb_teams_analysis(
+            platform_root / "cb_teams_experts" / "plugins_analysis_company_analysis.md"
+        )
+        for source in platform.sources:
+            entries = source_entries(platform_root, source, cb_analysis)
+            if source.source_is_file or not entries:
+                continue
+            write_summary_file(platform, repo_root, source, entries, timestamp)
         if args.commit or args.push:
             commit_and_maybe_push(repo_root, platform, timestamp, args.push)
         return 0

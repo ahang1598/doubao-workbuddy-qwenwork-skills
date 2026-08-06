@@ -15,6 +15,13 @@
 - `experts` <= `/mnt/c/Users/15805/.qwenworkcn/plugins`
 - `skills` <= `/mnt/c/Users/15805/.qwenworkcn/skills`
 
+## 导航文件
+
+各同步目录根部的 `SUMMARY.md` 提供按用途分组的场景导航，便于快速定位：
+
+- [Experts](qwenwork/experts/SUMMARY.md) — `experts/` 功能导航
+- [Skills](qwenwork/skills/SUMMARY.md) — `skills/` 功能导航
+
 ## 分类索引
 
 ### Experts

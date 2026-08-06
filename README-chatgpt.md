@@ -6,14 +6,21 @@
 
 - 平台目录：`chatgpt/`
 - 定时任务：`ChatgptSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：20
-- 当前索引文件数：1119
-- 最近变更：[2026-08-05-232542](chatgpt/change-logs/2026-08-05-232542.md) - ChatGPT 本次同步新增 1125 个文件、修改 0 个文件、删除 0 个文件。 新增条目：plugins/openai-bundled/browser/26.727.51351, plugins/openai-bundled/computer-use/26.727.51351, plugins/openai-bundled/sites/0.1.3...
+- 当前索引条目数：19
+- 当前索引文件数：970
+- 最近变更：[2026-08-06-110921](chatgpt/change-logs/2026-08-06-110921.md) - ChatGPT 本次同步新增 3 个文件、修改 0 个文件、删除 152 个文件。 新增条目：plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def, plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc8...
 
 ## 数据来源
 
 - `skills` <= `/mnt/c/Users/15805/.codex/skills/.system`
 - `plugins` <= `/mnt/c/Users/15805/.codex/plugins/cache`
+
+## 导航文件
+
+各同步目录根部的 `SUMMARY.md` 提供按用途分组的场景导航，便于快速定位：
+
+- [System Skills](chatgpt/skills/SUMMARY.md) — `skills/` 功能导航
+- [Plugin Cache](chatgpt/plugins/SUMMARY.md) — `plugins/` 功能导航
 
 ## 分类索引
 
@@ -34,11 +41,10 @@
 | --- | --- | --- | ---: | --- |
 | browser | `chatgpt/plugins/openai-bundled/browser/26.727.51351` | openai-bundled | 377 | Browser / browser-use plugin Aliases: @browser, @browser-use, browser-use, Browser, in-app browser. Use Browser, the ChatGPT in-app browser, when the user asks to open, inspect, navigate, test, click, type, or screens... Version: 26.727.51351. |
 | computer-use | `chatgpt/plugins/openai-bundled/computer-use/26.727.51351` | openai-bundled | 7 | Control desktop apps on Windows from ChatGPT through Computer Use. Version: 26.727.51351. |
-| sites | `chatgpt/plugins/openai-bundled/sites/0.1.33` | openai-bundled | 45 | Build and deploy websites with Sites. Use of Sites is subject to the ChatGPT Sites Terms (https://openai.com/policies/chatgpt-sites-terms/), and you are responsible for your website content. Version: 0.1.33. |
 | visualize | `chatgpt/plugins/openai-bundled/visualize/1.0.16` | openai-bundled | 8 | Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex. Version: 1.0.16. |
+| app-698be8fbe10481919ab1df169cc86def | `chatgpt/plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def/3.0.0` | openai-curated-remote | 2 | Resume enables ChatGPT to analyze, improve, and generate professional, ATS-friendly resumes. Upload a PDF or DOCX resume to identify key gaps, strengthen experience bullets, and refine impact with targeted suggestions... Version: 3.0.0. |
 | data-analytics | `chatgpt/plugins/openai-curated-remote/data-analytics/0.2.8-13ceeea1f599` | openai-curated-remote | 201 | Answer product and business questions with data Version: 0.2.8-13ceeea1f599. |
 | github | `chatgpt/plugins/openai-curated-remote/github/0.1.8-2841cf9749ae` | openai-curated-remote | 26 | Inspect repositories, triage pull requests and issues, debug CI, and publish changes through a hybrid GitHub connector and CLI workflow. Version: 0.1.8-2841cf9749ae. |
-| openai-templates | `chatgpt/plugins/openai-curated-remote/openai-templates/0.1.1` | openai-curated-remote | 106 | OpenAI default document, presentation, and spreadsheet templates. Version: 0.1.1. |
 | slack | `chatgpt/plugins/openai-curated-remote/slack/0.1.6` | openai-curated-remote | 10 | Work with Slack using the configured Slack integration. Version: 0.1.6. |
 | supabase | `chatgpt/plugins/openai-curated-remote/supabase/1.0.0` | openai-curated-remote | 47 | Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time lo... Version: 1.0.0. |
 | documents | `chatgpt/plugins/openai-primary-runtime/documents/26.802.11031` | openai-primary-runtime | 82 | Create and edit document artifacts in Codex, including Word files and Google Docs. Version: 26.802.11031. |
@@ -51,4 +57,5 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-06-110921 | [2026-08-06-110921](chatgpt/change-logs/2026-08-06-110921.md) | ChatGPT 本次同步新增 3 个文件、修改 0 个文件、删除 152 个文件。 新增条目：plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def, plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc8... |
 | 2026-08-05-232542 | [2026-08-05-232542](chatgpt/change-logs/2026-08-05-232542.md) | ChatGPT 本次同步新增 1125 个文件、修改 0 个文件、删除 0 个文件。 新增条目：plugins/openai-bundled/browser/26.727.51351, plugins/openai-bundled/computer-use/26.727.51351, plugins/openai-bundled/sites/0.1.3... |

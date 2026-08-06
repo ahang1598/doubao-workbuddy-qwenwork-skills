@@ -1,0 +1,21 @@
+{
+  "apps": "./.app.json",
+  "author": {
+    "name": "jobright.ai"
+  },
+  "description": "Resume enables ChatGPT to analyze, improve, and generate professional, ATS-friendly resumes. Upload a PDF or DOCX resume to identify key gaps, strengthen experience bullets, and refine impact with targeted suggestions. Resume then turns those improvements into a clean, structured, and downloadable PDF resume optimized for readability and applicant tracking systems — all within the ChatGPT conversation, without starting from scratch.",
+  "interface": {
+    "capabilities": [],
+    "category": "Productivity",
+    "defaultPrompt": null,
+    "developerName": "jobright.ai",
+    "displayName": "Resume Builder",
+    "longDescription": "Resume enables ChatGPT to analyze, improve, and generate professional, ATS-friendly resumes. Upload a PDF or DOCX resume to identify key gaps, strengthen experience bullets, and refine impact with targeted suggestions. Resume then turns those improvements into a clean, structured, and downloadable PDF resume optimized for readability and applicant tracking systems — all within the ChatGPT conversation, without starting from scratch.",
+    "privacyPolicyURL": "https://jobright.ai/legal/privacy",
+    "shortDescription": "Analyze, refine your resume",
+    "termsOfServiceURL": "https://jobright.ai/legal/service",
+    "websiteURL": "https://jobright.ai"
+  },
+  "name": "app-698be8fbe10481919ab1df169cc86def",
+  "version": "3.0.0"
+}
