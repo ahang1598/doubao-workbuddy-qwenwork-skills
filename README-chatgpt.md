@@ -8,7 +8,7 @@
 - 定时任务：`ChatgptSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：19
 - 当前索引文件数：970
-- 最近变更：[2026-08-06-110921](chatgpt/change-logs/2026-08-06-110921.md) - ChatGPT 本次同步新增 3 个文件、修改 0 个文件、删除 152 个文件。 新增条目：plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def, plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc8...
+- 最近变更：[2026-08-07-084720](chatgpt/change-logs/2026-08-07-084720.md) - ChatGPT 本次同步新增 239 个文件、修改 0 个文件、删除 239 个文件。 新增条目：plugins/openai-primary-runtime/documents/26.805.11740, plugins/openai-primary-runtime/pdf/26.805.11740, plugins/openai-primary-r...
 
 ## 数据来源
 
@@ -47,15 +47,16 @@
 | github | `chatgpt/plugins/openai-curated-remote/github/0.1.8-2841cf9749ae` | openai-curated-remote | 26 | Inspect repositories, triage pull requests and issues, debug CI, and publish changes through a hybrid GitHub connector and CLI workflow. Version: 0.1.8-2841cf9749ae. |
 | slack | `chatgpt/plugins/openai-curated-remote/slack/0.1.6` | openai-curated-remote | 10 | Work with Slack using the configured Slack integration. Version: 0.1.6. |
 | supabase | `chatgpt/plugins/openai-curated-remote/supabase/1.0.0` | openai-curated-remote | 47 | Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time lo... Version: 1.0.0. |
-| documents | `chatgpt/plugins/openai-primary-runtime/documents/26.802.11031` | openai-primary-runtime | 82 | Create and edit document artifacts in Codex, including Word files and Google Docs. Version: 26.802.11031. |
-| pdf | `chatgpt/plugins/openai-primary-runtime/pdf/26.802.11031` | openai-primary-runtime | 8 | Read, create, inspect, render, and verify PDF files in Codex. Version: 26.802.11031. |
-| presentations | `chatgpt/plugins/openai-primary-runtime/presentations/26.802.11031` | openai-primary-runtime | 117 | Create, edit, render, verify, and export presentation slide decks. Use when Codex needs to build or modify a deck, slidedeck, presentation deck, slide deck, slides, PowerPoint, Google Slides, PPT, PPTX, .ppt, or .pptx... Version: 26.802.11031. |
-| spreadsheets | `chatgpt/plugins/openai-primary-runtime/spreadsheets/26.802.11031` | openai-primary-runtime | 27 | Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.802.11031. |
-| template-creator | `chatgpt/plugins/openai-primary-runtime/template-creator/26.802.11031` | openai-primary-runtime | 5 | Create and update personal templates from files, ImageGen or Product Design images, emails, and Slack messages. Version: 26.802.11031. |
+| documents | `chatgpt/plugins/openai-primary-runtime/documents/26.805.11740` | openai-primary-runtime | 82 | Create and edit document artifacts in Codex, including Word files and Google Docs. Version: 26.805.11740. |
+| pdf | `chatgpt/plugins/openai-primary-runtime/pdf/26.805.11740` | openai-primary-runtime | 8 | Read, create, inspect, render, and verify PDF files in Codex. Version: 26.805.11740. |
+| presentations | `chatgpt/plugins/openai-primary-runtime/presentations/26.805.11740` | openai-primary-runtime | 117 | Create, edit, render, verify, and export presentation slide decks. Use when Codex needs to build or modify a deck, slidedeck, presentation deck, slide deck, slides, PowerPoint, Google Slides, PPT, PPTX, .ppt, or .pptx... Version: 26.805.11740. |
+| spreadsheets | `chatgpt/plugins/openai-primary-runtime/spreadsheets/26.805.11740` | openai-primary-runtime | 27 | Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.805.11740. |
+| template-creator | `chatgpt/plugins/openai-primary-runtime/template-creator/26.805.11740` | openai-primary-runtime | 5 | Create and update personal templates from files, ImageGen or Product Design images, emails, and Slack messages. Version: 26.805.11740. |
 
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-07-084720 | [2026-08-07-084720](chatgpt/change-logs/2026-08-07-084720.md) | ChatGPT 本次同步新增 239 个文件、修改 0 个文件、删除 239 个文件。 新增条目：plugins/openai-primary-runtime/documents/26.805.11740, plugins/openai-primary-runtime/pdf/26.805.11740, plugins/openai-primary-r... |
 | 2026-08-06-110921 | [2026-08-06-110921](chatgpt/change-logs/2026-08-06-110921.md) | ChatGPT 本次同步新增 3 个文件、修改 0 个文件、删除 152 个文件。 新增条目：plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def, plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc8... |
 | 2026-08-05-232542 | [2026-08-05-232542](chatgpt/change-logs/2026-08-05-232542.md) | ChatGPT 本次同步新增 1125 个文件、修改 0 个文件、删除 0 个文件。 新增条目：plugins/openai-bundled/browser/26.727.51351, plugins/openai-bundled/computer-use/26.727.51351, plugins/openai-bundled/sites/0.1.3... |

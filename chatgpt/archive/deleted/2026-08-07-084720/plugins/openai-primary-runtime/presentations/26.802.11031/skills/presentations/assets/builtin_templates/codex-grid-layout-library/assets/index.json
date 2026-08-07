@@ -1,0 +1,136 @@
+{
+  "schema": "openai.artifact-tool.preview-index/v1",
+  "montage": "previews/layout-library.png",
+  "previews": [
+    {
+      "slideNumber": 1,
+      "path": "previews/slide-01.png",
+      "module": "../artifact-tool-compose/slide-01.mjs"
+    },
+    {
+      "slideNumber": 2,
+      "path": "previews/slide-02.png",
+      "module": "../artifact-tool-compose/slide-02.mjs"
+    },
+    {
+      "slideNumber": 3,
+      "path": "previews/slide-03.png",
+      "module": "../artifact-tool-compose/slide-03.mjs"
+    },
+    {
+      "slideNumber": 4,
+      "path": "previews/slide-04.png",
+      "module": "../artifact-tool-compose/slide-04.mjs"
+    },
+    {
+      "slideNumber": 5,
+      "path": "previews/slide-05.png",
+      "module": "../artifact-tool-compose/slide-05.mjs"
+    },
+    {
+      "slideNumber": 6,
+      "path": "previews/slide-06.png",
+      "module": "../artifact-tool-compose/slide-06.mjs"
+    },
+    {
+      "slideNumber": 7,
+      "path": "previews/slide-07.png",
+      "module": "../artifact-tool-compose/slide-07.mjs"
+    },
+    {
+      "slideNumber": 8,
+      "path": "previews/slide-08.png",
+      "module": "../artifact-tool-compose/slide-08.mjs"
+    },
+    {
+      "slideNumber": 9,
+      "path": "previews/slide-09.png",
+      "module": "../artifact-tool-compose/slide-09.mjs"
+    },
+    {
+      "slideNumber": 10,
+      "path": "previews/slide-10.png",
+      "module": "../artifact-tool-compose/slide-10.mjs"
+    },
+    {
+      "slideNumber": 11,
+      "path": "previews/slide-11.png",
+      "module": "../artifact-tool-compose/slide-11.mjs"
+    },
+    {
+      "slideNumber": 12,
+      "path": "previews/slide-12.png",
+      "module": "../artifact-tool-compose/slide-12.mjs"
+    },
+    {
+      "slideNumber": 13,
+      "path": "previews/slide-13.png",
+      "module": "../artifact-tool-compose/slide-13.mjs"
+    },
+    {
+      "slideNumber": 14,
+      "path": "previews/slide-14.png",
+      "module": "../artifact-tool-compose/slide-14.mjs"
+    },
+    {
+      "slideNumber": 15,
+      "path": "previews/slide-15.png",
+      "module": "../artifact-tool-compose/slide-15.mjs"
+    },
+    {
+      "slideNumber": 16,
+      "path": "previews/slide-16.png",
+      "module": "../artifact-tool-compose/slide-16.mjs"
+    },
+    {
+      "slideNumber": 17,
+      "path": "previews/slide-17.png",
+      "module": "../artifact-tool-compose/slide-17.mjs"
+    },
+    {
+      "slideNumber": 18,
+      "path": "previews/slide-18.png",
+      "module": "../artifact-tool-compose/slide-18.mjs"
+    },
+    {
+      "slideNumber": 19,
+      "path": "previews/slide-19.png",
+      "module": "../artifact-tool-compose/slide-19.mjs"
+    },
+    {
+      "slideNumber": 20,
+      "path": "previews/slide-20.png",
+      "module": "../artifact-tool-compose/slide-20.mjs"
+    },
+    {
+      "slideNumber": 21,
+      "path": "previews/slide-21.png",
+      "module": "../artifact-tool-compose/slide-21.mjs"
+    },
+    {
+      "slideNumber": 22,
+      "path": "previews/slide-22.png",
+      "module": "../artifact-tool-compose/slide-22.mjs"
+    },
+    {
+      "slideNumber": 23,
+      "path": "previews/slide-23.png",
+      "module": "../artifact-tool-compose/slide-23.mjs"
+    },
+    {
+      "slideNumber": 24,
+      "path": "previews/slide-24.png",
+      "module": "../artifact-tool-compose/slide-24.mjs"
+    },
+    {
+      "slideNumber": 25,
+      "path": "previews/slide-25.png",
+      "module": "../artifact-tool-compose/slide-25.mjs"
+    },
+    {
+      "slideNumber": 26,
+      "path": "previews/slide-26.png",
+      "module": "../artifact-tool-compose/slide-26.mjs"
+    }
+  ]
+}

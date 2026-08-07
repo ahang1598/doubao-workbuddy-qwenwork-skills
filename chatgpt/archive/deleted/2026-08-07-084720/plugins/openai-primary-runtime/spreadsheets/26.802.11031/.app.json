@@ -1,0 +1,7 @@
+{
+  "apps": {
+    "connected_documents": {
+      "id": "connector_openai_codex_document_control"
+    }
+  }
+}
