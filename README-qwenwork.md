@@ -7,8 +7,8 @@
 - 平台目录：`qwenwork/`
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：25
-- 当前索引文件数：891
-- 最近变更：[2026-08-05-231200](qwenwork/change-logs/2026-08-05-231200.md) - QwenWork 本次同步新增 891 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/ali1688-buyer-assistant, experts/ali1688-seller-assistant, experts/consulting-delivery, experts/contract-management, expe...
+- 当前索引文件数：1291
+- 最近变更：[2026-08-08-180003](qwenwork/change-logs/2026-08-08-180003.md) - QwenWork 本次同步新增 401 个文件、修改 20 个文件、删除 1 个文件。 受影响范围：skills/create-skill, skills/dws。
 
 ## 数据来源
 
@@ -48,9 +48,9 @@
 
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
-| create-skill | `qwenwork/skills/create-skill` | skill | 2 | Guides users through creating effective Agent Skills for QwenWork. Use when the user wants to create, write, or author a new skill, or asks about skill structure, best practices, or SKILL.md format. |
+| create-skill | `qwenwork/skills/create-skill` | skill | 3 | Guides users through creating effective Agent Skills for QwenWork. Use when the user wants to create, write, or author a new skill, or asks about skill structure, best practices, or SKILL.md format. |
 | docx | `qwenwork/skills/docx` | skill | 61 | Comprehensive Word (.docx) skill: create, read, edit, and manipulate Word documents end-to-end. Covers turning Markdown or structured text into polished Word output, filling reusable templates ({{token}} or reference-... |
-| dws | `qwenwork/skills/dws` | skill | 149 | 管理钉钉产品能力(AI表格/AI搜问/日历/通讯录/群聊与机器人/待办/审批/考勤/日志/DING消息/开放平台文档/钉钉文档/钉钉云盘/AI听记/邮箱/在线电子表格/知识库等)。当用户需要操作表格数据、管理日程会议、模糊找人/查谁负责某事项、查询通讯录、管理群聊、机器人发消息、创建待办、提交审批、查看考勤、提交日报周报（钉钉日志模版）、读写钉钉文档、上传下载云盘文件、查询听记纪要、收发邮件、读写在线电子表格(axls)、管理钉钉... |
+| dws | `qwenwork/skills/dws` | skill | 548 | 管理钉钉产品能力(AI表格/AI搜问/日历/通讯录/群聊与机器人/待办/审批/考勤/日志/DING消息/开放平台文档/钉钉文档/钉钉云盘/原生Markdown文件/AI听记/邮箱/在线电子表格/知识库等)。当用户需要操作表格数据、管理日程会议、模糊找人/查谁负责某事项、查询通讯录、管理群聊、机器人发消息、创建待办、提交审批、查看考勤、提交日报周报（钉钉日志模版）、读写钉钉文档、上传下载云盘文件、读取或修改原生.md文件、查询听记纪... |
 | find-skills | `qwenwork/skills/find-skills` | skill | 4 | Do NOT invoke this skill as a routine first step. Do NOT invoke when any installed skill (see the available skills list) can handle the task, or when general capabilities (writing, coding, analysis, translation, web s... |
 | media-generation | `qwenwork/skills/media-generation` | skill | 1 | Generate videos or music as asynchronous media artifacts. Use this skill when the user asks for text-to-video, image-to-video, first-and-last-frame video, multi-reference-image video, music, a song, a soundtrack, or b... |
 | pdf | `qwenwork/skills/pdf` | skill | 13 | Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, addin... |
@@ -63,4 +63,5 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-08-180003 | [2026-08-08-180003](qwenwork/change-logs/2026-08-08-180003.md) | QwenWork 本次同步新增 401 个文件、修改 20 个文件、删除 1 个文件。 受影响范围：skills/create-skill, skills/dws。 |
 | 2026-08-05-231200 | [2026-08-05-231200](qwenwork/change-logs/2026-08-05-231200.md) | QwenWork 本次同步新增 891 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/ali1688-buyer-assistant, experts/ali1688-seller-assistant, experts/consulting-delivery, experts/contract-management, expe... |

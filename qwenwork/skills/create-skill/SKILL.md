@@ -1,6 +1,6 @@
 ---
 name: create-skill
-version: 1.0.1
+version: 1.1.0
 description: Guides users through creating effective Agent Skills for QwenWork. Use when the user wants to create, write, or author a new skill, or asks about skill structure, best practices, or SKILL.md format.
 description_zh: 引导用户为 QwenWork 创建有效的 Agent 技能。当用户想要创建、编写或制作新技能，或询问技能结构、最佳实践或 SKILL.md 格式时使用。
 ---
@@ -45,6 +45,7 @@ Skills are stored as directories containing a `SKILL.md` file:
 ```
 skill-name/
 ├── SKILL.md              # Required - main instructions
+├── .skill-metadata.yaml  # Required - recommended queries shown in the UI
 ├── reference.md          # Optional - detailed documentation
 ├── examples.md           # Optional - usage examples
 └── scripts/              # Optional - utility scripts
@@ -92,6 +93,65 @@ Concrete examples of using this skill.
 |-------|--------------|---------|
 | `name` | Max 64 chars, lowercase letters/numbers/hyphens only | Unique identifier for the skill |
 | `description` | Max 1024 chars, non-empty | Helps agent decide when to apply the skill |
+
+---
+
+## Recommended Queries (.skill-metadata.yaml)
+
+Every skill you create must also ship a `.skill-metadata.yaml` file next to `SKILL.md` (note the leading dot). QwenWork reads it when the user clicks **Use** on the skill card and prefills the recommended query into the input box. Without this file the product falls back to a generic query that carries none of the skill's context.
+
+Generate the queries from the skill description, and provide **both Chinese and English** for every field:
+
+```yaml
+examples:
+  - id: kebab-case-id
+    title:
+      zh: 中文标题
+      en: English Title
+    description:
+      zh: 一句话说明这个 query 适用的场景
+      en: One line describing when this query applies
+    prompt:
+      zh: |-
+        多行中文 query
+      en: |-
+        Multi-line English query
+```
+
+**Write one concrete query per major capability the skill has - normally 2 to 5 examples.** Each `prompt` is the text a user would actually type, with `{{placeholder}}` slots only for what the user must supply: file paths, output path, target format, business parameters. The built-in `pdf`, `docx`, and `xlsx` skills each ship 4-5 examples; read `~/.qwenworkcn/skills/pdf/.skill-metadata.yaml` for a worked example.
+
+A PDF toolkit skill, for instance, gets one example per capability - `extract-text`, `extract-tables`, `fill-form`, `merge-split` - each written out like this:
+
+```yaml
+  - id: extract-text
+    title:
+      zh: 提取文本内容
+      en: Extract Text Content
+    description:
+      zh: 从 PDF 中提取正文，支持多栏排版
+      en: Extract body text from a PDF, including multi-column layouts
+    prompt:
+      zh: |-
+        请从这份 PDF 中提取文本：
+
+        PDF 文件：{{PDF 文件路径}}
+        页码范围：{{可选，如 1-10}}
+
+        请保留多栏排版的阅读顺序，并把结果写入 {{输出文件路径}}。
+      en: |-
+        Please extract the text from this PDF:
+
+        PDF file: {{PDF file path}}
+        Page range: {{optional, e.g. 1-10}}
+
+        Preserve reading order for multi-column layouts and write the result to {{output file path}}.
+```
+
+**The only exception** is a skill that takes no user-supplied input at all: a guidance skill that shapes behaviour across unrelated tasks, or a theme or skin skill. Those ship the single default query instead. Test it honestly - if you can write even one sentence a user would type to point this skill at their own file or target, the exception does not apply.
+
+Do not reach for the default query because a skill has many capabilities. Many capabilities means **more examples, not a vaguer one**. Shipping the default query for a skill that has real tasks wastes the file: the user sees the same generic text as a skill with no metadata at all.
+
+For the full format, placeholder rules, and the exact default query text, see [metadata-reference.md](metadata-reference.md).
 
 ---
 
@@ -409,8 +469,9 @@ If you have access to the AskUserQuestion tool, use it for efficient structured 
 
 1. Create the directory structure
 2. Write the SKILL.md file with frontmatter
-3. Create any supporting reference files
-4. Create any utility scripts if needed
+3. Write the `.skill-metadata.yaml` file with one bilingual query per major capability
+4. Create any supporting reference files
+5. Create any utility scripts if needed
 
 ### Phase 4: Verification
 
@@ -418,7 +479,8 @@ If you have access to the AskUserQuestion tool, use it for efficient structured 
 2. Check that the description is specific and includes trigger terms
 3. Ensure consistent terminology throughout
 4. Verify all file references are one level deep
-5. Test that the skill can be discovered and applied
+5. Verify `.skill-metadata.yaml` parses as YAML and every field has both `zh` and `en`
+6. Test that the skill can be discovered and applied
 
 ---
 
@@ -430,6 +492,7 @@ Here's a complete example of a well-structured skill:
 ```
 code-review/
 ├── SKILL.md
+├── .skill-metadata.yaml
 ├── STANDARDS.md
 └── examples.md
 ```
@@ -493,6 +556,9 @@ Before finalizing a skill, verify:
 - [ ] Progressive disclosure used appropriately
 - [ ] Workflows have clear steps
 - [ ] No time-sensitive information
+- [ ] `.skill-metadata.yaml` ships alongside SKILL.md with `zh` and `en` for every field
+- [ ] One concrete query per major capability, with placeholders only where the user must supply information
+- [ ] The default query is used only for skills that take no user input at all
 
 ### If Including Scripts
 - [ ] Scripts solve problems rather than punt
