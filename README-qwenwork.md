@@ -8,7 +8,7 @@
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：25
 - 当前索引文件数：1291
-- 最近变更：[2026-08-09-180003](qwenwork/change-logs/2026-08-09-180003.md) - QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。
+- 最近变更：[2026-08-10-160206](qwenwork/change-logs/2026-08-10-160206.md) - QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。
 
 ## 数据来源
 
@@ -63,6 +63,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-10-160206 | [2026-08-10-160206](qwenwork/change-logs/2026-08-10-160206.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。 |
 | 2026-08-09-180003 | [2026-08-09-180003](qwenwork/change-logs/2026-08-09-180003.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。 |
 | 2026-08-08-180003 | [2026-08-08-180003](qwenwork/change-logs/2026-08-08-180003.md) | QwenWork 本次同步新增 401 个文件、修改 20 个文件、删除 1 个文件。 受影响范围：skills/create-skill, skills/dws。 |
 | 2026-08-05-231200 | [2026-08-05-231200](qwenwork/change-logs/2026-08-05-231200.md) | QwenWork 本次同步新增 891 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/ali1688-buyer-assistant, experts/ali1688-seller-assistant, experts/consulting-delivery, experts/contract-management, expe... |
