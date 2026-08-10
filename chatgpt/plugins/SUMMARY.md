@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/.codex/plugins/cache`
 - 条目数：13
 - 文件数：919
-- 最近同步：2026-08-10 16:02:32 +0800
+- 最近同步：2026-08-10 16:10:00 +0800
 
 ## 场景导航（按用途）
 
@@ -16,7 +16,6 @@
 - **visualize** — Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex. Version: 1.0.20.
 - **data-analytics** — Answer product and business questions with data Version: 0.2.8-13ceeea1f599.
 - **supabase** — Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time lo... Version: 1.0.0.
-- **spreadsheets** — Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.805.11740.
 
 ### 文档/表格/PPT
 - **app-698be8fbe10481919ab1df169cc86def** — Resume enables ChatGPT to analyze, improve, and generate professional, ATS-friendly resumes. Upload a PDF or DOCX resume to identify key gaps, strengthen experience bullets, and refine impact with targeted suggestions... Version: 3.0.0.
@@ -28,14 +27,10 @@
 
 ### 设计可视化
 - **visualize** — Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex. Version: 1.0.20.
-- **supabase** — Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time lo... Version: 1.0.0.
-- **presentations** — Create, edit, render, verify, and export presentation slide decks. Use when Codex needs to build or modify a deck, slidedeck, presentation deck, slide deck, slides, PowerPoint, Google Slides, PPT, PPTX, .ppt, or .pptx... Version: 26.805.11740.
-- **spreadsheets** — Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.805.11740.
 - **template-creator** — Create and update personal templates from files, ImageGen or Product Design images, emails, and Slack messages. Version: 26.805.11740.
 
 ### 协作/办公
 - **slack** — Work with Slack using the configured Slack integration. Version: 0.1.6.
-- **supabase** — Manage Supabase projects directly through ChatGPT. Execute SQL queries on PostgreSQL databases, design and modify table schemas, deploy serverless edge functions, and configure user authentication. Access real-time lo... Version: 1.0.0.
 - **template-creator** — Create and update personal templates from files, ImageGen or Product Design images, emails, and Slack messages. Version: 26.805.11740.
 
 ### 教育/考试
@@ -65,5 +60,5 @@
 | documents | `chatgpt/plugins/openai-primary-runtime/documents/26.805.11740` | 文档/表格/PPT | doc docs document documents word google docs google doc memo write writing docx artifacts documents | 82 | Create and edit document artifacts in Codex, including Word files and Google Docs. Version: 26.805.11740. |
 | pdf | `chatgpt/plugins/openai-primary-runtime/pdf/26.805.11740` | 文档/表格/PPT | pdf pdfs document documents report render review extract extraction pypdf pdfplumber reportlab pdf | 8 | Read, create, inspect, render, and verify PDF files in Codex. Version: 26.805.11740. |
 | presentations | `chatgpt/plugins/openai-primary-runtime/presentations/26.805.11740` | 文档/表格/PPT | slides slide deck slidedeck presentation presentations google slides powerpoint ppt pptx presentations | 117 | Create, edit, render, verify, and export presentation slide decks. Use when Codex needs to build or modify a deck, slidedeck, presentation deck, slide deck, slides, PowerPoint, Google Slides, PPT, PPTX, .ppt, or .pptx... Version: 26.805.11740. |
-| spreadsheets | `chatgpt/plugins/openai-primary-runtime/spreadsheets/26.805.11740` | 数据分析 | sheet sheets google sheet google sheets spreadsheet spreadsheets excel microsoft excel excel add-in chatgpt add-in for excel open workbook connected excel session csv xlsx xls workbook spreadsheets | 27 | Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.805.11740. |
+| spreadsheets | `chatgpt/plugins/openai-primary-runtime/spreadsheets/26.805.11740` | 文档/表格/PPT | sheet sheets google sheet google sheets spreadsheet spreadsheets excel microsoft excel excel add-in chatgpt add-in for excel open workbook connected excel session csv xlsx xls workbook spreadsheets | 27 | Create, edit, analyze, visualize, render, and export spreadsheets, Microsoft Excel or Google Sheets-ready workbooks in Codex. Version: 26.805.11740. |
 | template-creator | `chatgpt/plugins/openai-primary-runtime/template-creator/26.805.11740` | 文档/表格/PPT | artifact template document presentation spreadsheet image imagegen product design email slack template-creator | 5 | Create and update personal templates from files, ImageGen or Product Design images, emails, and Slack messages. Version: 26.805.11740. |

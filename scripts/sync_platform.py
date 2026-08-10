@@ -42,44 +42,50 @@ SCENARIOS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("金融研究", (
         "finance", "financial", "stock", "equity", "earnings", "investment",
         "valuation", "dcf", "lbo", "trading", "trade", "hedge", "wealth",
-        "broker", "券商", "财报", "股票", "估值", "投资", "交易",
-        "金融", "证券", "市值", "资本",
+        "broker", "券商", "财报", "股票", "估值", "投资",
+        "金融", "证券", "市值", "资本", "盘面",
     )),
     ("投资银行/私募", (
         "investment-banking", "private-equity", "pe-vc", "m&a", "ma ",
         "投行", "私募", "融资", "募资", "并购",
     )),
     ("数据分析", (
-        "data-analytics", "data-analysis", "analytics", "excel", "sql",
-        "dashboard", "报表", "数据", "etl", "查询", "仪表",
+        # Keep this scenario precise: bare "数据"/"查询"/"excel" are too
+        # generic (they appear in almost every skill description). Match on
+        # analytics-specific terms and tooling instead.
+        "data-analytics", "data-analysis", "analytics", "sql", "dashboard",
+        "etl", "数据可视化", "数据建模", "数据探索", "仪表盘", "数据看板",
+        "数据科学", "data science", "data pipeline", "bi ", "business intelligence",
     )),
     ("文档/表格/PPT", (
-        "docx", "pdf", "xlsx", "pptx", "spreadsheet", "word",
-        "document", "报告", "文档", "合同", "会议纪要", "表格",
-        "word 文档", "markdown",
+        "docx", "pdf", "xlsx", "pptx", "spreadsheet", "word文档", "word 文档",
+        "google docs", "google doc", "google sheets", "powerpoint",
+        "会议纪要", "表格", "文档生成", "word 报告", "word文件",
     )),
     ("设计可视化", (
-        "design", "visual", "canvas", "ui ", "ux ", "creative-design",
-        "visualization", "chart", "diagram", "presentation",
-        "幻灯片", "海报", "图表", "可视化", "设计", "icons",
+        "creative-design", "visualization", "海报", "图表", "可视化", "设计",
+        "imagegen", "图像生成", "主视觉", "banner", "海报设计", "视觉设计",
+        "echarts", "data viz", "信息图",
     )),
     ("研究/调研", (
-        "research", "deep-research", "arxiv", "paper", "调研", "研究",
-        "academic", "文献", "论文", "智库",
+        "research", "deep-research", "arxiv", "调研", "深度研究", "研究报告",
+        "academic", "文献", "论文", "智库", "学术研究", "literature review",
     )),
     ("营销/内容运营", (
-        "marketing", "content", "seo", "social", "newmedia", "新媒体",
-        "小红书", "wechat", "公众号", "社媒", "运营", "推广", "增长",
-        "monetization", "distribution",
+        "marketing", "seo", "newmedia", "新媒体", "小红书", "公众号",
+        "社媒", "运营", "推广", "增长", "monetization", "distribution",
+        "oceanengine", "巨量", "广告投放", "内容营销", "营销活动",
+        "cross-border", "跨境电商", "电商", "商品", "带货", "直播",
     )),
     ("协作/办公", (
-        "lark", "feishu", "飞书", "slack", "project", "okr", "task",
-        "approval", "calendar", "协作", "办公", "考勤", "审批",
-        "minutes", "standup", "wiki", "drive", "mail",
+        # Lark/Feishu/Slack ecosystems plus concrete collaboration nouns.
+        # Avoid generic "task"/"note"/"wiki"/"project" which match too broadly.
+        "lark-", "feishu", "飞书", "slack", "考勤", "审批", "okr",
+        "日程", "会议纪要", "站会", "standup", "minutes", "协作平台",
     )),
     ("法务/合规", (
         "legal", "contract", "compliance", "tax", "法务", "合同", "合规",
-        "税务", "审计", "发票", "invoice",
+        "税务", "审计", "发票", "invoice", "专利", "patent",
     )),
     ("医疗", (
         "medical", "clinical", "医学", "临床", "病历", "诊断",
@@ -88,17 +94,19 @@ SCENARIOS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "gaokao", "ncre", "ket", "高考", "考试", "教学", "课程", "课件",
     )),
     ("代码开发", (
-        "coding", "code-", "code ", "codebase", "code review", "code review",
+        "coding", "code-", "code ", "codebase", "code review",
         "develop", "sdk", "backend", "frontend", "webapp", "web-app",
         "typescript", "javascript", "dockerfile", "refactor", "review-agent",
         "scaffolding", "lsp", "cicd", "ci/cd", "github", "gitlab",
-        "codebuddy", "programming", "compiler", "debug",
+        "codebuddy", "programming", "compiler", "debug", "app-builder",
+        "product-qa", "产品qa",
     )),
     ("通用工具/平台", (
         "identity", "cron", "scheduler", "record", "skill-creator",
         "plugin-creator", "skill-installer", "browser", "computer-use",
         "sites", "template", "通用", "工具", "平台", "skillhub",
-        "imagegen", "openai-docs",
+        "openai-docs", "cron-scheduler", "录音", "video-extract", "视频提取",
+        "audio", "语音合成", "tts", "pc-optimizer", "系统优化",
     )),
 )
 
