@@ -147,3 +147,5 @@ lark-cli sheets +sparkline-delete --url "..." --sheet-id "$SID" --group-id "grpA
   - `+sparkline-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：写操作输出"将要 POST/PATCH/DELETE 的 sparkline group 请求模板"。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+sparkline-list --group-id <id>` 查看 `config` / `sparklines`。
+
+===== 全文完（共 151 行）=====

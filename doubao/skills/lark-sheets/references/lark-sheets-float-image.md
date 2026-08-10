@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 165 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Float Image
 
 > **选浮动图还是单元格图？只看一条**：这张图是不是**属于某条记录、要随那行一起排序 / 筛选 / 增删**？
@@ -100,6 +102,8 @@ _公共四件套 · 系统：`--yes`、`--dry-run`_
 
 公共四件套：所有 shortcut 顶部排列 `--url` / `--spreadsheet-token` / `--sheet-id` / `--sheet-name`（XOR）。浮动图片是 sheet 级对象——和单元格内嵌图片不同（后者走 `+cells-set`）。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+float-image-list`
 
 ```bash
@@ -157,3 +161,5 @@ lark-cli sheets +float-image-delete --url "..." --sheet-id "$SID" --float-image-
 - `Validate`：XOR 公共四件套；`+float-image-create` 要求 `--image` / `--image-token` / `--image-uri` **恰好给一个**，`--position-row/col` 与 `--size-width/height` 必填且为合法整数；传 `--image` 时还会校验路径安全（绝对路径 / 越出工作目录会被拒，`--dry-run` 同样拦）。`+float-image-update` 必须 `--float-image-id`，并和 create 一样必填 `--image-name` / `--position-{row,col}` / `--size-{width,height}`（缺任一核心字段本地直接报错，不会静默发 0）；图片源 `--image-token` / `--image-uri` 可省（省略保留原图），给则二选一；`+float-image-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：写操作输出"将要 POST/PATCH/DELETE 的 float_image 请求模板"；传 `--image` 时会多打印一步本地图片上传（`POST /open-apis/drive/v1/medias/upload_all`，`parent_type=sheet_image`）。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+float-image-list --float-image-id <id>` 比对新位置 / 尺寸。
+
+===== 全文完（共 165 行）=====

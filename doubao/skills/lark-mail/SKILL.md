@@ -79,12 +79,6 @@ metadata:
 2. 展示："将删除 N 封邮件（发件人 spam@x.com，主题：…），确认？"
 3. 用户确认后 → `+message-trash --message-ids ... --yes`
 
-## 身份选择：使用 user 身份
-
-邮箱是用户的个人资源，统一以 user 身份访问其邮箱。user UAT 由 agent 平台注入（凭证未就绪时由 agent 平台补开 mail 域 token）。
-
-读取类与写操作（发送、回复、转发、草稿编辑等）都走 user 身份。
-
 ## 典型工作流
 
 1. **确认身份** — 首次操作邮箱前先调用 `lark-cli mail user_mailboxes profile --params '{"user_mailbox_id":"me"}'` 获取当前用户的真实邮箱地址（`primary_email_address`），不要通过系统用户名猜测。后续判断"发件人是否为用户本人"时以此地址为准。

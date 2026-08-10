@@ -1,0 +1,13 @@
+interface:
+  display_name: "医学证据持续监控"
+  short_description: "多源追踪医学资讯、指南监管与研究进展，每期生成新飞书报告"
+  default_prompt: |
+    使用 $doubao-medical-literature-monitoring。论文检索先并行使用 general_search 和 scholar_search：General 做宽主题、重点概念及按需 site 限定，Scholar 必须传 publish_start_date 与 publish_end_date。首批完成后，无论数量是否已足，都尽量并行尝试 PubMed、Europe PMC MED、Crossref 三个结构化 URL；Crossref 请求 container-title 和 abstract。单个入口失败直接跳过，不循环重试。只有正式发表研究仍不足时才追加预印本，预印本不是每期必跑项。
+
+    General 资讯发现同时做中文和英文查询：中文使用 YYYY年M月，英文使用 Month YYYY，跨月分别查。按主题从检索参考的信源表选择中外信源，每条查询只追加一个信源名。来源范围偏好和建议信源用于检索加权、补充与排序，不是白名单、硬准入或逐站完成清单。
+
+    检索结果先保留在当前上下文，全部检索、去重和筛选结束后只写一次可读 UTF-8 report-data.json；不要创建 evidence-ledger.json、batch-*.json 或嵌套转义的 JSON 字符串。搜索完成后不要逐篇 web.fetch 确认日期、补摘要或补刊名；只处理少量冲突候选。PubMed、Europe PMC、Crossref 是来源而不是期刊，journal_name 只取结果真实返回的字段。metadata_only 只留在候选中，不能生成空条目。
+
+    合并所有通道后坚持论文宁缺勿滥：预警/疑似掠夺性、期刊身份或同行评议不透明、明显低质量的候选不进入报告；OA 本身不是排除理由。General 命中研究报道时提取题名、DOI/PMID、作者或试验名，反查论文 URL；研究条目的 source_url 指向论文/数据库/DOI 页，报道页只作 discovery_source_url。影响因子或分区可选，只有可靠结果明确返回且带年份和口径时才写，没有就省略。每个 report_item 有非空 support_excerpt、body_blocks 和 HTTP(S) 来源；建议在首次写 report-data.json 时带上 category：资讯=news，共识/指南/监管=guideline，论文/预印本/临床研究=research，漏填时渲染器可从编号或类型推断。直接按 SKILL.md 固定命令生成 SVG，不要先查看脚本帮助或报错后逐条补 category。XML 固定使用 <whiteboard type="svg" path="@overview.svg"></whiteboard> 读取本地画板，不上传 SVG、不用 <img>。每个标题本身都链接自己的 source_url；画板卡片显示 display_id + 具体中文 short_label，底部矩阵逐字显示 original_title 和真实来源。
+
+    飞书文档只创建一次；成功后用 scope=full 回读同一文档一次，只确认正文非空、主要章节和入选标题存在。正文各条资讯、共识监管和研究尽量沿用画板同一 display_id 便于图文定位，但不要校验标号格式、连续性或逐项一致性，不因标号差异重建文档。首期不建任务；最终回答给出本期摘要和报告链接后自然邀请订阅，可适度使用 1–3 个 emoji，并包含“需要订阅推送吗？”和“确认创建”。根据领域更新速度和首期有效进展密度，在每周一次、每两周一次、每月一次中生成默认频率；近 7 天不足而扩到近 30 天才形成有效报告时优先每两周一次，扩到近 90 天或仍稀疏时优先每月一次，用户明确频率优先。邀请用户进一步明确重点子领域、技术路线、人群或进展类型。确认后只维护一个任务，每期创建新报告。定时运行时先读取 references/dedup-and-medical-delta.md；上一期报告和 seen_source_keys 可用时用于减少重复，缺失时不阻塞报告或任务更新。

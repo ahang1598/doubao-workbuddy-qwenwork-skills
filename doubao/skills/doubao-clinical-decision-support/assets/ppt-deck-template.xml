@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <presentation xmlns="http://www.larkoffice.com/sml/2.0" width="960" height="540">
+  <!-- 全文公式上标使用 Unicode 上标字符（如 ²、³、⁻¹），不得使用 sup 标签；不得使用 ref 标签或其转义形式。阅读标记默认不展示；仅确实阅读全文的重要论文可标注“已阅读全文”。 -->
   <title>{{病例主题}}循证医学决策支持汇报</title>
 
   <slide id="cover">
@@ -29,13 +30,13 @@
         <border color="rgb(16,185,129)" width="2"/>
       </shape>
       <shape type="text" topLeftX="86" topLeftY="126" width="790" height="52">
-        <content textType="headline"><p><strong><span color="rgb(6,95,70)" fontSize="24">{{总体判断：推荐方向、确定性、适用边界}}</span></strong></p></content>
+        <content textType="headline"><p><strong><span color="rgb(6,95,70)" fontSize="24">{{总结：直接回答用户问题并说明确定性}}</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="230" width="258" height="180">
         <fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.10)" width="1"/>
       </shape>
       <shape type="text" topLeftX="82" topLeftY="254" width="214" height="118">
-        <content textType="body"><p><strong><span color="rgb(14,116,144)" fontSize="18">关键依据 1</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{G1/R1 来源、期刊/级别、核心结果}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(14,116,144)" fontSize="18">关键依据 1</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{可读文献简称、期刊/级别、核心结果}}</span></p></content>
       </shape>
       <shape type="rect" topLeftX="351" topLeftY="230" width="258" height="180">
         <fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.10)" width="1"/>
@@ -50,7 +51,7 @@
         <content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">关键风险</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{禁忌、缺失信息或需监测事项}}</span></p></content>
       </shape>
       <shape type="text" topLeftX="60" topLeftY="486" width="840" height="24">
-        <content textType="caption"><p><span color="rgb(100,116,139)" fontSize="11">核心证据链接和完整参考文献表格见末页；完整检索记录作为附件或附录交付。</span></p></content>
+        <content textType="caption"><p><span color="rgb(100,116,139)" fontSize="11">核心证据链接和完整参考文献表格见末页。</span></p></content>
       </shape>
     </data>
   </slide>
@@ -59,7 +60,7 @@
     <style><fill><fillColor color="rgb(255,255,255)"/></fill></style>
     <data>
       <shape type="text" topLeftX="60" topLeftY="34" width="760" height="48">
-        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">病例信息与可检索问题</span></strong></p></content>
+        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">病例信息梳理与临床问题</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="110" width="400" height="330">
         <fill><fillColor color="rgb(239,246,255)"/></fill><border color="rgb(147,197,253)" width="1"/>
@@ -117,7 +118,7 @@
       <shape type="text" topLeftX="374" topLeftY="228" width="212" height="126">
         <content textType="body">
           <p><strong><span color="rgb(15,118,110)" fontSize="17">证据回答</span></strong></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{指南/研究/安全来源如何回答当前问题；可引用 [G1]、[R1] 或研究简称}}</span></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{指南/研究/安全来源如何回答当前问题；直接引用可点击指南名或研究简称}}</span></p>
         </content>
       </shape>
       <shape type="rect" topLeftX="640" topLeftY="205" width="260" height="190">
@@ -125,13 +126,34 @@
       </shape>
       <shape type="text" topLeftX="664" topLeftY="228" width="212" height="126">
         <content textType="body">
-          <p><strong><span color="rgb(146,64,14)" fontSize="17">下一步判断</span></strong></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{哪些缺失信息、风险、禁忌或院内条件会改变判断；下一步确认事项}}</span></p>
+          <p><strong><span color="rgb(146,64,14)" fontSize="17">病例化回答</span></strong></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{在当前信息下如何回答用户问题，哪些路径倾向优先、可作备选或暂不支持}}</span></p>
         </content>
       </shape>
       <shape type="text" topLeftX="60" topLeftY="424" width="840" height="52">
         <content textType="body">
-          <p><span color="rgb(51,65,85)" fontSize="12">可引用证据：</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="12">[G1] {{指南/共识简称}}</span></a><span color="rgb(51,65,85)" fontSize="12">；</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="12">[R1] {{关键研究简称}}</span></a><span color="rgb(100,116,139)" fontSize="12">。编号用于连接后文核心证据解读。</span></p>
+          <p><span color="rgb(51,65,85)" fontSize="12">可引用证据：</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="12">{{指南/共识简称}}</span></a><span color="rgb(51,65,85)" fontSize="12">；</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="12">{{关键研究简称}}</span></a><span color="rgb(100,116,139)" fontSize="12">。简称用于连接后文核心证据解读。</span></p>
+        </content>
+      </shape>
+    </data>
+  </slide>
+
+  <slide id="risk-next-step">
+    <style><fill><fillColor color="rgb(255,255,255)"/></fill></style>
+    <data>
+      <shape type="text" topLeftX="60" topLeftY="34" width="760" height="48">
+        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">风险、安全性与临床管理要点</span></strong></p></content>
+      </shape>
+      <shape type="rect" topLeftX="60" topLeftY="112" width="250" height="250"><fill><fillColor color="rgb(254,242,242)"/></fill><border color="rgb(248,113,113)" width="1"/></shape>
+      <shape type="text" topLeftX="84" topLeftY="138" width="200" height="168"><content textType="body"><p><strong><span color="rgb(153,27,27)" fontSize="18">🚨 重要风险/禁忌</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{需避免、排除或优先确认的因素}}</span></p></content></shape>
+      <shape type="rect" topLeftX="355" topLeftY="112" width="250" height="250"><fill><fillColor color="rgb(255,251,235)"/></fill><border color="rgb(245,158,11)" width="1"/></shape>
+      <shape type="text" topLeftX="379" topLeftY="138" width="200" height="168"><content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">⚠️ 监测与复评</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{结合病例选择需要监测或复评的项目与条件}}</span></p></content></shape>
+      <shape type="rect" topLeftX="650" topLeftY="112" width="250" height="250"><fill><fillColor color="rgb(236,253,245)"/></fill><border color="rgb(52,211,153)" width="1"/></shape>
+      <shape type="text" topLeftX="674" topLeftY="138" width="200" height="168"><content textType="body"><p><strong><span color="rgb(6,95,70)" fontSize="18">🛡️ 风险控制与协作</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{主管团队、专科/MDT、药师或检验影像协作，以及升级处置条件}}</span></p></content></shape>
+      <shape type="text" topLeftX="60" topLeftY="390" width="840" height="90">
+        <content textType="body">
+          <p><strong><span color="rgb(15,23,42)" fontSize="16">临床管理概括：</span></strong><span color="rgb(51,65,85)" fontSize="14">{{在当前信息下的条件性管理方向与主要边界}}</span></p>
+          <p><strong><span color="rgb(146,64,14)" fontSize="16">可能改变判断的关键信息：</span></strong><span color="rgb(51,65,85)" fontSize="14">{{按需说明缺失信息，以及补齐后会改变的判断或管理方向；无实质内容时删除本行}}</span></p>
         </content>
       </shape>
     </data>
@@ -141,7 +163,7 @@
     <style><fill><fillColor color="rgb(248,250,252)"/></fill></style>
     <data>
       <shape type="text" topLeftX="60" topLeftY="34" width="780" height="48">
-        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">检索覆盖与文献台账</span></strong></p></content>
+        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">检索覆盖</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="106" width="190" height="120">
         <fill><fillColor color="rgb(239,246,255)"/></fill><border color="rgb(96,165,250)" width="1"/>
@@ -173,7 +195,7 @@
       <shape type="text" topLeftX="86" topLeftY="292" width="790" height="82">
         <content textType="body">
           <p><strong><span color="rgb(15,23,42)" fontSize="16">检索记录检查点：</span></strong><span color="rgb(51,65,85)" fontSize="14">{{总记录数；核心纳入/辅助/排除/待核验数量}}</span></p>
-          <p><span color="rgb(100,116,139)" fontSize="13">检索批次：{{S1 指南；S2 关键研究；S3 安全来源；S4 本土证据}}。本页展示检索覆盖、纳入概况与证据边界。</span></p>
+          <p><span color="rgb(100,116,139)" fontSize="13">检索批次：{{批次 1 指南；批次 2 关键研究；批次 3 安全来源；批次 4 本土证据}}。本页展示检索覆盖、纳入概况与证据边界。</span></p>
         </content>
       </shape>
       <shape type="text" topLeftX="60" topLeftY="470" width="840" height="26">
@@ -186,7 +208,7 @@
     <style><fill><fillColor color="rgb(248,250,252)"/></fill></style>
     <data>
       <shape type="text" topLeftX="60" topLeftY="34" width="760" height="48">
-        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">证据关系图</span></strong></p></content>
+        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">证据关系思维导图</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="360" topLeftY="104" width="240" height="58">
         <fill><fillColor color="rgb(219,234,254)"/></fill>
@@ -201,21 +223,21 @@
         <border color="rgb(124,58,237)" width="1"/>
       </shape>
       <shape type="text" topLeftX="88" topLeftY="234" width="154" height="32">
-        <content><p textAlign="center"><strong><span color="rgb(91,33,182)" fontSize="14">G1 指南/共识</span></strong></p></content>
+        <content><p textAlign="center"><strong><span color="rgb(91,33,182)" fontSize="14">{{指南/共识简称}}</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="385" topLeftY="220" width="190" height="62">
         <fill><fillColor color="rgb(236,253,245)"/></fill>
         <border color="rgb(16,185,129)" width="1"/>
       </shape>
       <shape type="text" topLeftX="403" topLeftY="234" width="154" height="32">
-        <content><p textAlign="center"><strong><span color="rgb(6,95,70)" fontSize="14">R1 关键研究</span></strong></p></content>
+        <content><p textAlign="center"><strong><span color="rgb(6,95,70)" fontSize="14">{{关键研究简称}}</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="700" topLeftY="220" width="190" height="62">
         <fill><fillColor color="rgb(254,242,242)"/></fill>
         <border color="rgb(239,68,68)" width="1"/>
       </shape>
       <shape type="text" topLeftX="718" topLeftY="234" width="154" height="32">
-        <content><p textAlign="center"><strong><span color="rgb(153,27,27)" fontSize="14">S1 安全/监管</span></strong></p></content>
+        <content><p textAlign="center"><strong><span color="rgb(153,27,27)" fontSize="14">{{安全/监管来源简称}}</span></strong></p></content>
       </shape>
 
       <shape type="rect" topLeftX="360" topLeftY="355" width="240" height="62">
@@ -295,7 +317,7 @@
         <border color="rgb(22,163,74)" width="2"/>
       </shape>
       <shape type="text" topLeftX="672" topLeftY="259" width="196" height="30">
-        <content><p textAlign="center"><strong><span color="rgb(22,101,52)" fontSize="14">倾向支持医生讨论</span></strong></p></content>
+        <content><p textAlign="center"><strong><span color="rgb(22,101,52)" fontSize="14">可纳入临床方案讨论</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="650" topLeftY="335" width="240" height="58">
         <fill><fillColor color="rgb(254,242,242)"/></fill>
@@ -351,11 +373,11 @@
       <shape type="text" topLeftX="460" topLeftY="120" width="120" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">级别</span></strong></p></content></shape>
       <shape type="text" topLeftX="600" topLeftY="120" width="260" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">与本病例的关系</span></strong></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="165" width="840" height="62"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="180" width="760" height="28"><content><p><span color="rgb(51,65,85)" fontSize="13">G1：</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{指南名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构/年份}} | {{A/B/推荐等级}} | {{适配性和推荐内容}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="180" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{指南名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构/年份}} | {{A/B/推荐等级}} | {{适配性和推荐内容}}</span></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="237" width="840" height="62"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="252" width="760" height="28"><content><p><span color="rgb(51,65,85)" fontSize="13">R1：</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{研究名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{期刊}} | {{RCT/队列/系统综述}} | {{核心结果和外推边界}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="252" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{研究名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{期刊}} | {{RCT/队列/系统综述}} | {{核心结果和外推边界}}</span></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="309" width="840" height="62"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="324" width="760" height="28"><content><p><span color="rgb(51,65,85)" fontSize="13">S1：</span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{说明书/监管/安全来源}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构}} | {{A/B}} | {{禁忌、监测或剂量边界}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="324" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{说明书/监管/安全来源}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构}} | {{A/B}} | {{禁忌、监测或剂量边界}}</span></p></content></shape>
       <shape type="text" topLeftX="60" topLeftY="470" width="840" height="36">
         <content textType="caption"><p><span color="rgb(100,116,139)" fontSize="11">每条证据名本身优先做成可点击链接；备注和末页链接只作为补充。分区/IF 未核验时标注未核验。</span></p></content>
       </shape>
@@ -372,19 +394,19 @@
         <fill><fillColor color="rgb(239,246,255)"/></fill><border color="rgb(96,165,250)" width="1"/>
       </shape>
       <shape type="text" topLeftX="84" topLeftY="128" width="212" height="220">
-        <content textType="body"><p><strong><span color="rgb(30,64,175)" fontSize="18">R1 {{研究名}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{设计、入排标准、样本量}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{主要终点和效应量}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(30,64,175)" fontSize="18">{{研究名}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{设计、入排标准、样本量}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{主要终点、效应量与关键结论}}</span></p></content>
       </shape>
       <shape type="rect" topLeftX="350" topLeftY="104" width="260" height="310">
         <fill><fillColor color="rgb(236,253,245)"/></fill><border color="rgb(52,211,153)" width="1"/>
       </shape>
       <shape type="text" topLeftX="374" topLeftY="128" width="212" height="220">
-        <content textType="body"><p><strong><span color="rgb(6,95,70)" fontSize="18">R2 {{研究名}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{疗效、安全性、亚组}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{与本病例的匹配度}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(6,95,70)" fontSize="18">{{研究简称}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{研究设计与主要终点}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{疗效、安全性、亚组与关键结论}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{与本病例的匹配度}}</span></p></content>
       </shape>
       <shape type="rect" topLeftX="640" topLeftY="104" width="260" height="310">
         <fill><fillColor color="rgb(255,251,235)"/></fill><border color="rgb(245,158,11)" width="1"/>
       </shape>
       <shape type="text" topLeftX="664" topLeftY="128" width="212" height="220">
-        <content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">R3 {{研究/综述}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{一致性或冲突点}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{局限性和外推边界}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">{{研究或综述简称}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{研究设计、一致性或冲突点与关键结论}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{局限性和外推边界}}</span></p></content>
       </shape>
       <shape type="text" topLeftX="60" topLeftY="456" width="840" height="36">
         <content textType="caption"><p><span color="rgb(100,116,139)" fontSize="11">证据较多时，本页可拆为 2 页：肾脏/疗效结局一页，安全性/特殊人群一页。</span></p></content>
@@ -405,9 +427,9 @@
       <shape type="text" topLeftX="590" topLeftY="119" width="150" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">主要风险</span></strong></p></content></shape>
       <shape type="text" topLeftX="750" topLeftY="119" width="120" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">适配性</span></strong></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="168" width="840" height="68"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="185" width="780" height="24"><content><p><span color="rgb(51,65,85)" fontSize="13">方案 A：{{干预/检查路径}} | {{G1/R1}} | {{获益}} | {{风险}} | {{优先/可选/谨慎}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="185" width="780" height="24"><content><p><span color="rgb(51,65,85)" fontSize="13">方案 A：{{干预/检查路径}} | {{指南/研究简称}} | {{获益}} | {{风险}} | {{优先/可选/谨慎}}</span></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="250" width="840" height="68"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="267" width="780" height="24"><content><p><span color="rgb(51,65,85)" fontSize="13">方案 B：{{替代方案}} | {{G2/R2}} | {{获益}} | {{风险}} | {{适配性}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="267" width="780" height="24"><content><p><span color="rgb(51,65,85)" fontSize="13">方案 B：{{替代方案}} | {{指南/研究简称}} | {{获益}} | {{风险}} | {{适配性}}</span></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="332" width="840" height="68"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
       <shape type="text" topLeftX="86" topLeftY="349" width="780" height="24"><content><p><span color="rgb(51,65,85)" fontSize="13">暂不推荐/需补充：{{不支持方案或缺失信息}} | {{原因与下一步确认}}</span></p></content></shape>
       <shape type="text" topLeftX="60" topLeftY="454" width="840" height="40">
@@ -416,42 +438,24 @@
     </data>
   </slide>
 
-  <slide id="risk-next-step">
-    <style><fill><fillColor color="rgb(255,255,255)"/></fill></style>
-    <data>
-      <shape type="text" topLeftX="60" topLeftY="34" width="760" height="48">
-        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">风险、安全性与下一步</span></strong></p></content>
-      </shape>
-      <shape type="rect" topLeftX="60" topLeftY="112" width="250" height="250"><fill><fillColor color="rgb(254,242,242)"/></fill><border color="rgb(248,113,113)" width="1"/></shape>
-      <shape type="text" topLeftX="84" topLeftY="138" width="200" height="168"><content textType="body"><p><strong><span color="rgb(153,27,27)" fontSize="18">高风险/禁忌</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{需避免或需紧急确认的因素}}</span></p></content></shape>
-      <shape type="rect" topLeftX="355" topLeftY="112" width="250" height="250"><fill><fillColor color="rgb(255,251,235)"/></fill><border color="rgb(245,158,11)" width="1"/></shape>
-      <shape type="text" topLeftX="379" topLeftY="138" width="200" height="168"><content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">监测/复评</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{检验、症状、影像、随访时间点}}</span></p></content></shape>
-      <shape type="rect" topLeftX="650" topLeftY="112" width="250" height="250"><fill><fillColor color="rgb(236,253,245)"/></fill><border color="rgb(52,211,153)" width="1"/></shape>
-      <shape type="text" topLeftX="674" topLeftY="138" width="200" height="168"><content textType="body"><p><strong><span color="rgb(6,95,70)" fontSize="18">建议讨论路径</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{主管医生/MDT/药师/患者沟通}}</span></p></content></shape>
-      <shape type="text" topLeftX="60" topLeftY="410" width="840" height="58">
-        <content textType="body"><p><strong><span color="rgb(15,23,42)" fontSize="17">一句话落地：</span></strong><span color="rgb(51,65,85)" fontSize="15">{{在当前信息下的条件性下一步做法}}</span></p></content>
-      </shape>
-    </data>
-  </slide>
-
   <slide id="references">
     <style><fill><fillColor color="rgb(248,250,252)"/></fill></style>
     <data>
       <shape type="text" topLeftX="60" topLeftY="34" width="760" height="48">
-        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">参考文献（标题｜来源｜链接）</span></strong></p></content>
+        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">参考文献（标题｜来源｜类型｜年份｜链接）</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="110" width="840" height="250"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.10)" width="1"/></shape>
       <shape type="text" topLeftX="90" topLeftY="138" width="780" height="170">
         <content textType="body">
-          <p><strong><span color="rgb(15,23,42)" fontSize="13">标题</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">来源</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">链接</span></strong></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{指南/共识标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构/年份；来源级别}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">原文/摘要</span></a></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{研究标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{期刊/年份；研究类型/来源级别}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">原文/摘要</span></a></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{安全/监管来源标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构/年份；来源级别}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">原文/摘要</span></a></p>
+          <p><strong><span color="rgb(15,23,42)" fontSize="13">标题</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">来源</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">类型</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">年份</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">链接</span></strong></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{指南/共识标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构}} | {{指南/共识}} | {{年份}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{研究标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{期刊}} | {{RCT/系统综述/队列}} | {{年份}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{安全/监管来源标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构}} | {{说明书/安全监管}} | {{年份}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
         </content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="392" width="840" height="68"><fill><fillColor color="rgb(239,246,255)"/></fill><border color="rgb(147,197,253)" width="1"/></shape>
       <shape type="text" topLeftX="90" topLeftY="410" width="780" height="36">
-        <content textType="caption"><p><span color="rgb(30,64,175)" fontSize="12">完整检索记录作为附件或附录交付。</span></p></content>
+        <content textType="caption"><p><span color="rgb(30,64,175)" fontSize="12">更多来源按相同五列格式续页展示，并保留可点击来源入口。</span></p></content>
       </shape>
     </data>
   </slide>

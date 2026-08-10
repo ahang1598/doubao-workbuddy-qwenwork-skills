@@ -75,3 +75,5 @@
 | `formatted_value` 可能隐藏错误 | 某些条件格式 / 自定义数字格式会把 `#DIV/0!` 显示成空白。后端直接读 cell `error_kind`，不依赖 `formatted_value`，绕开此类被遮蔽。 |
 | 把 `partial` 当 `success` | `partial` 仅表示**已扫描部分**无错误，剩余区域未知。必须续扫直到 `has_more=false` 且 `status='success'` 才能算通过。 |
 | 编译失败 vs 运行时错误 | 同一份报告里 `compile_errors[]` 与 `error_summary` 并存。语义层先解决 `compile_errors[]`、再做运行时自检。 |
+
+===== 全文完（共 79 行）=====

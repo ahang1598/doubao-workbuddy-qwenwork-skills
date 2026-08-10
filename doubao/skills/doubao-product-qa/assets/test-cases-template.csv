@@ -1,0 +1,1 @@
+case_id,module,title,priority,type,preconditions,steps,test_data,expected_result,requirement_ids,risk_mechanism_ids,release_blocking_reason,automation_candidate,execution_mode,assigned_to,manual_reason,evidence_expected,status,notes

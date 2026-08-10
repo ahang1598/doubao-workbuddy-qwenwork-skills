@@ -51,6 +51,7 @@ lark-cli wiki +member-add \
 
 ## Notes
 
+- **`opendepartmentid` (department) adds** run under the user identity; pass the resolved `open_department_id` as `--member-id`.
 - **App member uses `--member-type=appid`.** The corresponding `--member-id` is the app ID, commonly formatted as `cli_xxx`.
 - Resolve `--member-id` **before** calling: `lark-cli contact +search-user` for users, `lark-cli im +chat-search` for groups, `lark-cli api POST /open-apis/contact/v3/departments/search` for departments. Do not call `+member-add` first and reverse-engineer the type from the error.
 - The role switch (`admin` ⇄ `member`) is not a single update — call [`+member-remove`](lark-wiki-member-remove.md) for the old role first, then `+member-add` with the new one.

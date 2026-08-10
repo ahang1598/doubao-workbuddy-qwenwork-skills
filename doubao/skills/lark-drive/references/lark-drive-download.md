@@ -9,7 +9,7 @@
 # 下载到指定路径
 lark-cli drive +download --file-token boxbc_xxx --output ./report.pdf
 
-# 只提供 token，默认保存为当前目录下同名文件
+# 只提供 token，默认保存到当前目录
 lark-cli drive +download --file-token boxbc_xxx
 ```
 
@@ -22,6 +22,10 @@ https://xxx.feishu.cn/drive/file/boxbc_xxx
                                   ^^^^^^^^^
                                   file_token
 ```
+
+## 排障
+
+- 如果返回 `HTTP 403`，可以使用 [lark-drive-preview](lark-drive-preview.md) 下载源文件产物。
 
 ## 参考
 

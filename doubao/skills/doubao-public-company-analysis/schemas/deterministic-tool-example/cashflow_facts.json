@@ -1,0 +1,8 @@
+{
+  "fcf_definition": {
+    "name": "analyst conventional free cash flow",
+    "kind": "analyst_conventional",
+    "formula": "operating_cash_flow - cash_capex",
+    "source": "example cash-flow statement and capital-expenditure note"
+  }
+}

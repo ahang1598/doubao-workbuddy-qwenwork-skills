@@ -1,0 +1,81 @@
+<title>{{主题}}医学进展跟踪报告｜{{YYYY-MM-DD}}</title>
+
+<h1>本周总结</h1>
+<!-- 使用无序列表覆盖正文中大多数值得提及的进展。内容多时可写 5-8 点；每点说具体变化，不要只写抽象判断。 -->
+<callout background-color="light-blue">
+  <p><b>本期观察：</b>{{一句话概括本期变化格局。}}</p>
+  <ul>
+    <li><p>{{具体进展 1；关键短语可加粗。}}</p></li>
+    <li><p>{{具体进展 2。}}</p></li>
+    <li><p>{{继续增加，直到覆盖正文中大多数重要进展；删除所有占位提示。}}</p></li>
+  </ul>
+</callout>
+
+<h1>本期进展总览</h1>
+<!--
+必须把本注释替换成真实 whiteboard，不能保留注释后直接创建文档：
+1) 完成全部检索、筛选和去重后，只写一次最终 report-data.json。不要创建 evidence-ledger.json、batch-*.json 或逐批快照；metadata_only 或缺少 support_excerpt/body_blocks 的候选不能进入 report_items；
+2) report-data.json 同时提供 3-4 条具体、自洽、可独立阅读的核心观察，并提供 key_observations、summary_points 和 inspiration_items。key_observations 可直接使用字符串数组，需要保留证据映射时也可使用 text + supporting_display_ids 对象。建议每条 report_item 带 category：资讯=news，共识/指南/监管=guideline，论文/预印本/临床研究=research；漏填时脚本会从编号或类型推断。条目还应提供 display_id、short_label、逐字原题 original_title、可点击 source_url、真实来源字段、support_level=snippet|abstract|official_full、support_excerpt 和正文 body_blocks；正文引号优先使用中文全角引号“”，不要另抄一份 items/summary；
+3) 每个 report_item 的标题本身都必须写成 <a href="{{source_url}}">...</a>，包括资讯、研究/预印本、共识/指南和监管；只在段末放来源链接不合格；
+4) 运行渲染脚本，参数为 input=report-data.json、output=overview.svg；脚本只接受 report_items，不能再传旧 items 清单；
+5) 直接在本位置写入 <whiteboard type="svg" path="@overview.svg"></whiteboard>，由文档工具读取同工作目录的本地 SVG；不要读取完整 SVG 内联，不要上传 SVG、生成公网 URL 或改用 <img>；
+6) 三张分类卡标题与脚本保持一致：最新医学资讯、共识、指南与监管、研究进展；分类卡显示 display_id 与 short_label，画板底部“本期全部条目”显示同一 display_id 对应的 original_title 与真实来源。下面正文标题尽量沿用同一 display_id 便于图文定位，但不做标号格式、连续性或逐项一致性校验。
+-->
+<whiteboard type="svg" path="@overview.svg"></whiteboard>
+
+<h1>最新医学资讯</h1>
+<!--
+一个事件只放在一个最合适的正文板块；指南/监管或研究事件不要在资讯章重复。
+不要固定使用“发生了什么/为什么值得关注/证据边界”。可自由使用段落、短列表、小表、callout 或补充图表。
+	每一条资讯的标题都必须用 <a href="{{source_url}}"> 包裹，直链该条合格来源；只写纯文本标题或仅在段末写“来源”均不合格。标题可带易读的类型序号，但方括号和连字符两侧空格不是交付门禁。紧随标题以灰字标注可在该页核对的 delta_date、来源机构和资讯类型。媒体门户、自媒体、社交平台和企业转述页默认标为二次报道；source_identity=secondary 时标题或灰字类型必须逐字出现“二次报道”，“会议报道/展会报道/规范解读/监管获批报道”单独出现不算。搜索摘要出现“将/拟/预计/预告”时强制 source_identity=preview，标题以“会前预告：”开头，灰字类型写“会前预告（二次信息）”，正文保持未来时。只有发布机构/会议/监管机关自己的原始页面才可标为原创或官方动作。网页日期、来源、被报道对象与本期报道动作清楚时，即使底层原日期无法核验也可保留，但必须写“底层动作原日期：未核验”；显示具体底层日期时必须同时给可点击 URL、PMID、DOI 或官方文号/注册号。相同旧事件的重复转载只保留一条代表性资讯。
+篇幅服从 support_level：snippet 通常写 1-2 个紧凑段落，official_full 可写 2-4 个；只交代 support_excerpt 可见的主体、事件背景、具体变化和来源成熟度。保留来源时态和事实边界：“将/拟/预计/预告”不能改写成已经举行或完成；不得补来源没有的会议议题、数字、终点或实施细节。
+-->
+<h2>【{{display_id，例如 资讯-08}}】 <a href="{{source_url}}">{{资讯标题}}</a></h2>
+<p><span text-color="gray">发布日期：{{YYYY-MM-DD}} ｜ 来源：{{发布机构、原创媒体或二次报道媒体}} ｜ 类型：{{会议/访谈/机构发布/专业报道/二次报道/会前预告}}{{二次报道另加“｜ 所涉底层动作原日期：YYYY-MM-DD ｜ 底层来源：可点击链接或稳定标识”；原始题录/官方页不可得时写“底层动作原日期：未核验”}}</span></p>
+<p>{{围绕这条资讯最值得医生了解的事实、背景、影响或不确定性自由组织；不要只写一句。}}</p>
+<p>{{有第二条资讯时继续添加可点击小节；没有则删除本提示。}}</p>
+
+<h1>共识、指南与监管进展</h1>
+<!-- 根据本期材料自由分组；可用浅色 callout 或小表突出真正影响实践的变化，但不要机械套三段式。 -->
+<h2>【{{display_id，例如 共识-09/指南-09/监管-09}}】 <a href="{{guideline_or_regulatory_url}}">{{共识、指南或监管更新标题}}</a></h2>
+<p><span text-color="gray">发布日期：{{YYYY-MM-DD}} ｜ 发布机构：{{官方机构}} ｜ {{版本、文件号或监管编号；没有则省略}}</span></p>
+<p>{{自由说明新版内容、适用范围、监管动作、实践影响、与既往版本的变化或尚不确定之处；只有指南/监管原始动作日期在范围内时才在本章编号。二次报道旧指南或旧监管动作只能进入资讯章，并明确报道日期与底层动作原日期。}}</p>
+
+<h1>研究进展</h1>
+<!--
+按本期主题自然拆分，例如临床研究、诊断/生物标志物、治疗、安全性、机制、真实世界。
+每篇研究可使用段落、列表、对比表或关系图；不要强制“主要发现/本期增量/局限”等固定标签。
+-->
+<h2>{{研究主题}}</h2>
+<!-- 每一条研究/预印本标题都必须用 <a href="{{source_url}}"> 包裹并可点击；只写纯文本标题或仅在段末放来源链接均不合格。 -->
+<h3>【{{display_id，例如 研究-01/预印本-02}}】 <a href="{{source_url}}">{{研究题名或研究简称}}</a></h3>
+	<!-- 日期必填。journal_name 只能逐字取自本次检索结果的 journalTitle/fullJournalName/container-title 等真实期刊字段；非空时用“期刊：真实期刊名”。没有期刊字段时按 record_source 用“来源：PubMed/Europe PMC/Crossref/其他数据库”；预印本按 preprint_platform 用“平台：真实预印本平台”。任何数据库名都不是期刊，绝不能写进期刊字段；不得猜刊名或为补刊名逐篇回读。PMID/DOI 有则追加、没有则省略。影响因子或分区只有可靠来源明确返回且带年份/口径时才追加；没有就省略。经资讯报道发现的论文，研究标题必须链接对应论文/数据库/DOI 落地页，不能链接报道页。预印本在正文醒目标注“未经同行评议”。 -->
+	<p><span text-color="gray">发表日期：{{YYYY-MM-DD}} ｜ {{journal_name 非空则写“期刊：真实期刊名”；否则按 record_source 写“来源：PubMed/Europe PMC/Crossref/其他数据库”；预印本写“平台：平台名”}}{{ ｜ PMID/DOI 可得时再追加}}{{ ｜ 影响因子或分区可得时写一个，并附年份与口径}}</span></p>
+<p>{{按 support_level 控制篇幅并逐段原样写入 report-data.json 的 body_blocks；snippet 只覆盖 support_excerpt 可见事实，abstract/official_full 才可展开对象、设计、结果和限制；保留关键阴性/无差异结果。}}</p>
+
+<h1>灵感启发</h1>
+<callout background-color="light-yellow">
+  <p><b>{{启发 1 的短标题}}</b></p>
+  <p>{{结合已知偏好、重点标注话题和本期证据提出一个值得继续研究/验证的问题；清楚标为启发而非证据结论。没有指南/监管依据时，不使用“建议、应、可用于、可考虑、优先、进入某路径、减少检查”等临床行动措辞。}}</p>
+</callout>
+<callout background-color="light-blue">
+  <p><b>{{启发 2 的短标题}}</b></p>
+  <p>{{每个启发独立成块；继续引用本期可见证据，不编造用户经历或偏好。}}</p>
+</callout>
+<callout background-color="light-green">
+  <p><b>{{启发 3 的短标题；没有则删除整个 callout}}</b></p>
+  <p>{{需要更多启发时继续新增独立浅色 callout，不要把多条挤在一个块里。}}</p>
+</callout>
+
+<h1>继续跟踪</h1>
+<callout background-color="light-blue">
+  <p>🔔 我可以定期帮你跟踪「{{关注主题领域}}」的最新研究、指南监管与医学资讯，并推送新的进展报告。需要订阅推送吗？</p>
+</callout>
+<table>
+  <tr><th background-color="light-blue">项目</th><th background-color="light-blue">当前设置</th></tr>
+  <tr><td><b>关注主题领域</b></td><td>{{已从用户原话推断；缺失时写“待确认”}}</td></tr>
+  <tr><td><b>重点标注话题</b></td><td>{{根据首次需求预填；并邀请用户进一步明确子领域、技术路线、人群或进展类型}}</td></tr>
+  <tr><td><b>更新频率</b></td><td>{{用户已指定则沿用；否则根据领域更新速度和首期有效进展密度，在每周一次、每两周一次、每月一次中给出默认建议。近 7 天不足、扩大到近 30 天才形成有效报告时优先每两周一次；扩大到近 90 天或仍稀疏时优先每月一次。具体推送时间缺失时写“推送时间待确认”}}</td></tr>
+  <tr><td><b>来源范围偏好</b></td><td>{{学术研究、指南/共识、监管、注册、会议、专业资讯等；缺失时写“待确认”}}</td></tr>
+</table>
+<p>我已经根据该领域特点和本次检索结果生成以上默认配置。如无调整，回复 <b>确认创建</b> 即可；也可以进一步告诉我最想重点关注的子领域、技术路线、人群或进展类型，或修改频率与来源。</p>

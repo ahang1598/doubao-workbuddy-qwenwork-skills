@@ -1,0 +1,4 @@
+interface:
+  display_name: "豆包商品内容"
+  short_description: "商品标题、详情文案和静态商品图"
+  default_prompt: "使用 $doubao-product-content 生成或优化商品标题、详情文案和商品页静态图片，并在混合需求中先按 near-miss 规则分流。"

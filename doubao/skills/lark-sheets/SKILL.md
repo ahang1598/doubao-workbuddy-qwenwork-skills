@@ -1,12 +1,13 @@
 ---
 name: lark-sheets
-version: 3.0.2
+version: 3.1.1
 description: "表格全场景处理：本地 Excel/CSV 与在线表格（飞书、doubao.com 的 /sheets/ 链接）的创建、读写、分析、计算、建模、语义处理、可视化与美化。**只要用户输入包含表格类附件——上传 .xlsx/.xls/.csv 文件，或给出 feishu/doubao.com 的 /sheets/ 链接或 token——必须加载本技能。** 此外，用户口述数据要整理成表，或要求计算/统计/建模/预测/透视/可视化/美化/公式等任何表格操作时，也加载本技能。一切与 Excel/表格相关的任务都必须加载。本技能不负责获取外部信息，如需补充数据须先通过其他途径获得。"
 metadata:
   requires:
     bins: ["lark-cli", "python3"]
   cliHelp: "lark-cli sheets --help"
 ---
+> ⚠️ **先读完再动手**：本文档共 451 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
 
 # 表格全场景处理技能（lark-sheets）
 
@@ -29,7 +30,7 @@ metadata:
 
 | 输入信号 | 来源判定 | 走哪套引擎 |
 | --- | --- | --- |
-| 用户上传 `.xlsx` / `.xls` / `.csv` 文件 | 本地 Excel/CSV | Excel 引擎；需飞书产物见 0.2 |
+| 用户上传 `.xlsx` / `.xls` / `.csv` 文件 | 本地 Excel/CSV | Excel 引擎；默认导入为飞书表格交付，见 0.2 |
 | 用户给出飞书 / doubao 的 `/sheets/` 链接或 token | 飞书在线表格 | 飞书引擎（「三」） |
 | 用户口述 / 粘贴数据，无文件 | 待结构化 | 先结构化，再按产物载体（0.2）选引擎 |
 | 无数据 | 信息不足 | 向用户询问，或先用其它工具获取数据 |
@@ -40,7 +41,7 @@ metadata:
 
 > **核心策略，优先级高于其它交付说明。**
 
-- **默认载体 = 飞书在线表格**。当用户需要一个表格产物时（哪怕用户说“做个 Excel”“整理成表格”“给我个表”），**默认产出飞书在线表格**，方便在线预览、协作和编辑。
+- **默认载体 = 飞书在线表格**。当用户需要一个表格产物时（哪怕用户说“做个 Excel”“整理成表格”“给我个表”“需要打印”，“需要导出成excel”），**默认产出飞书在线表格**，方便在线预览、协作和编辑。
 - **唯一的例外（产出本地文件）**：用户**直接明确禁止**使用飞书表格
 - 上述例外之外，一律以飞书在线表格交付。
 
@@ -67,20 +68,25 @@ lark-cli sheets +workbook-import --file "/home/user/.../file.xlsx"
 - 导入成功后，调用 NotifyHuman 工具把飞书在线表格链接提供给用户。
 - 仅产出无格式 `.csv` 且用户明确只要本地文件时，直接生成即可，无需导入。
 
-### 0.3 三条实现路径
+### 0.3 必须走 lark-cli 的能力面（Must-CLI List）
 
-根据「输入来源 × 产物载体」选择路径：
+以下 **4 组能力面** 属于两类之一：
+**(a)** Python 本地根本做不了对等功能（openpyxl或本地python代码里没有该功能）；
+**(b)** 本地能写进 xlsx，但 `+workbook-import` 导入飞书时会发生 **有损兼容**（丢失、退化、语义变形）——例如透视表变成死表、插入到单元格的图片变成浮动图片等。
 
-| 场景 | 实现路径 |
-| --- | --- |
-| 默认飞书产物，从零创建 / 口述数据整理 | 默认用飞书引擎（`lark-cli sheets`，见「三」）**一步到位**：`+workbook-create --sheets`（typed）建表 + `--styles` 美化，**不经 `.xlsx`**。仅当涉及「重数据加工」（定义见表下，**纯结构化整理 + 美化不算**）才先用 Python 算完，再用 `+table-put --sheets` 把结果写回飞书（pandas DataFrame 一行打成 `--sheets` 的 typed JSON，见 [`scripts/sheets_df.py`](scripts/sheets_df.py)） |
-| 默认飞书产物，但输入是本地 Excel | 默认先用 `+workbook-import --file ./file.xlsx` 把本地 Excel 导入为飞书在线表格，再用飞书引擎（「三」）就地操作，保留原格式、避免本地往返。仅当涉及「重数据加工」才先用 Python 读文件算完，再用 `+table-put --sheets` 写回飞书 |
-| 默认飞书产物，输入已是飞书表格 | 全程用飞书引擎（「三」）就地操作 |
-| 用户明确禁止飞书表格 | 用 Excel 引擎（Python）产出本地文件，按「四」的质量规范交付，**不导入飞书** |
+**只要交付物需要触发下列任一能力面，一律先 `+workbook-import`（有附件）或 `+workbook-create`（无附件），之后全程用 `lark-cli sheets` 就地做，禁止走"本地 python 代码生成 / 修改 `.xlsx` → import"这条路径**。
 
-> **「重数据加工」判定——看操作性质，不看数据量**：只有多表 merge / join、回归 / 聚类等统计建模、大规模脏数据清洗（去重、字段拆分合并、异常修复等）这类**计算**才算。此时先用 Python（pandas / numpy / scikit-learn）算完，再用 `+table-put --sheets`（pandas DataFrame 经 [`scripts/sheets_df.py`](scripts/sheets_df.py) 打成 typed JSON，列类型 / `number_format` 一并透传）写回飞书，**不经 `.xlsx`**。
->
-> 反过来，**把搜索 / 口述 / 已有的数据排进表格并美化（表头样式、边框、列宽、配色、公式、图表 / 透视表 / 条件格式）不算重数据加工**，哪怕有几十组、上千行也一样——一律用飞书引擎一步到位（`+workbook-create --sheets` + `--styles`，见 `references/lark-sheets-visual-standards.md`），**不要因为「数据多 / 想加样式」就转去 Python 生成 `.xlsx` 再导入**。用飞书引擎一步到位时无需经 openpyxl / `.xlsx`。但若实际走了「生成 `.xlsx` 再 `lark-cli sheets +workbook-import` 导入」这条路（无论是重数据加工路径、还是用户给的既有 `.xlsx` 资产），那张 `.xlsx` 仍须满足「四」的质量规范（含财务场景），因为导入后的飞书表格质量取决于源 `.xlsx`。
+| # | 能力面 | 触发关键词 / 判定信号 | 具体 lark-cli shortcut | Python 兜底为何不行 |
+|---|--------|--------------------|----------------------|----------------------|
+| 1 | **透视表**（含中位数汇总、计算字段-汇总层、计算字段-自定义 formula、排版重复项 4 个子选项） | 透视表 / 数据透视 / 分组汇总 / 交叉分析 / 按 X 统计 Y / 中位数汇总 / 计算字段 / 重复项标签 | `+pivot-create` / `+pivot-update` / `+pivot-delete` / `+pivot-list`（子选项挂在 `--properties`：`values[].summarize_by="median"` / `calculated_fields[].summarize_by ∈ {sum, custom}` / `repeat_row_labels: true`） | `pandas.pivot_table + df.to_excel` 出的是**死表**：源数据变了不重算、无拖字段/折叠交互；硬手写 xlsx `pivotTableDefinition` XML 导入飞书也不兼容 |
+| 2 | **单元格中插入图片**（图随所在行排序 / 筛选 / 复制粘贴走） | 证件照 / 凭证图 / 每行配图 / 商品图片列 / 图片作为单元格值 | `+cells-set-image`（首选，`--range` 必须单 cell + `--image` 本地路径），或 `+cells-set` 的 `--cells` 里走 `rich_text` + `type: "embed-image"` | `openpyxl.drawing.image.Image + ws.add_image` 写的是**浮动图**（floating drawing），导入飞书被识别成浮动图对象——行排序 / 筛选时不会跟着走 |
+| 3 | **图表**（柱 / 条 / 折线 / 面积 / 饼 / 雷达 / 散点 / 组合；面积图 area 是子类型） | 数据可视化 / 图表 / 趋势图 / 对比图 / 占比图 / 面积图 / 内嵌图表 | `+chart-create` / `+chart-update` / `+chart-delete` / `+chart-list`；面积图挂 `snapshot.plotArea.plot.type="area"` | matplotlib / seaborn 生成的 PNG 是**静态图片**，无法随源数据更新，且飞书里失去交互能力；openpyxl chart 导入飞书**有损兼容** |
+| 4 | **迷你图 sparkline**（含胜负图 win_loss / count 子类型） | 迷你图 / sparkline / 单元格内趋势线 / 胜负图 / count 迷你图 | `+sparkline-create` / `+sparkline-update` / `+sparkline-delete` / `+sparkline-list`；胜负子类型走 `config.type="win_loss"`（Excel 的 count / 胜负 = 飞书 `win_loss`） | 文本字符（▁▂▃▅▇）拼接、`SPARKLINE()` 公式、matplotlib PNG 都是死东西；openpyxl 没有 SparklineGroup 公开 API，硬写底层 XML 导入飞书也不识别 |
+
+**强调一次**：
+1. 无论是公式、条件格式还是其他重要的内容，在交付之前最终表格之前，你都 **需要使用 `cells-get` 抽检一部分内容**，当存在错误时，请修正错误后再重新交付最终表格。
+2. **交付必调 NotifyHuman**：默认交付飞书在线表格链接，只要涉及飞书表格产物，无论 URL 是新生成还是已有的，都**必须调用 NotifyHuman 工具**交付产物给用户；用户明确要本地文件时交付 `.xlsx` / `.csv`；仅产出无格式 `.csv` 且用户明确只要本地文件时，直接生成即可，无需导入。
+3. **附件相关**：附件下载后先 `ls -la`+`file` 验字节数与魔数；<1KB、魔数不符或 file 报 JSON/HTML 即为下载失败——**先重试**（curl 记得加 `-L` 跟随重定向，或换 wget），仍失败则用 `+workbook-import` 兜底走飞书导入服务。原件未成功读入前，**禁止 openpyxl 从零重建"同款"表**，尽量在原表上修改或将原表上传到飞书文档进行修改；也**禁止凭记忆 / WebFetch 片段脑补数据**，不得交付伪造榜单或汇总。
 
 **新建参数纪律（先按 `--help` 校准，避免凭直觉传参）**：
 - 新建在线表格用 `+workbook-create --title "<在线表格名称>"`，不是 `--name`；`--name` 只用于 `+workbook-import` 的导入后文档名。
@@ -98,16 +104,19 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 
 识别场景后，**读取对应 reference 文件**，按其指导执行。下表的 reference 已按「飞书引擎（lark-sheets-*）」与「Excel 引擎 / 引擎无关方法学（guide-* / ref-* / template-*）」标注；具体走哪套引擎由 0.2 的产物载体与输入来源决定。
 
+**基础创建与编辑**：涉及 python 生成`.xlsx` 读取 `references/ref-xlsx-workflow.md`，涉及格式、美化、报表、模板或打印展示时再读取 `references/ref-excel-visual-standards.md`。直接操作飞书在线表格读取 `references/lark-sheets-write-cells.md`，涉及样式时再读取 `references/lark-sheets-visual-standards.md`；
+
 ### 场景分派表
 
 | 场景 | 典型信号词 / 意图 | 引擎 & 读取的 reference |
 |------|----------------|-----------------|
-| **表格创建与整理** | “做个表”、“整理成表格/Excel”、“生成报表”、“做个模板”、“整理一下格式” | 默认飞书：「三」+ `references/lark-sheets-write-cells.md` / `references/lark-sheets-visual-standards.md`；若产物为 `.xlsx`：`references/ref-xlsx-workflow.md`（含行高/列宽/截断默认规则） |
 | **文本语义处理** | “提炼要点”、“归类”、“贴标签”、“标准化文本”、“语义抽取”、“分类观点”、“汇总文字” | `references/guide-semantic-analysis.md`（方法学引擎无关；Excel 用 Python，飞书用 lark-cli 读写） |
-| **数据洞察 / 数值计算 / 量化建模 / 数据挖掘** | “分析一下/有什么发现/给出洞察”、“计算/统计/求和/公式”、“建模/预测/排名打分/优化”、“挖掘/聚类/关联/找规律” | 按「二、通用执行流程」执行；表格读写按载体选引擎（飞书=「三」，Excel=「四」+ `references/ref-xlsx-workflow.md`）；分析报告输出模板见 `references/template-report.md` |
+| **数据洞察 / 数值计算 / 量化建模 / 数据挖掘** | “分析一下/有什么发现/给出洞察”、“计算/统计/求和/公式”、“建模/预测/排名打分/优化”、“挖掘/聚类/关联/找规律” | 按「二、通用执行流程」执行；表格读写按载体选引擎（飞书=「三」，Excel=`references/ref-xlsx-workflow.md`）；分析报告输出模板见 `references/template-report.md` |
 | **数据透视表** | “透视表/数据透视表/pivot”、“交叉分析/多维汇总”、“按 X 统计 Y 并对比”、“分组对比” | 飞书原生：`references/lark-sheets-pivot-table.md`（Excel 输入先按 0.2 导入飞书，再 `+pivot-create` 建原生透视表，交付在线链接） |
 | **公式迁移 / 飞书公式生成** | “把 Excel 公式改写成飞书公式”、“ARRAYFORMULA”、“数组函数”、“INDEX/OFFSET/MAP/LAMBDA” | 飞书：`references/lark-sheets-formula-translation.md` |
 | **财务 / 金融建模、报表与财务数据整理**（叠加层） | “财务模型”、“估值/DCF/LBO/Comps”、“三张报表/IS/BS/CFS”、“财务预测”、“预算/Variance”、“Sensitivity/情景分析”、“投行/PE/Equity Research/FP&A/咨询场景”；**也包括“把某公司财务数据整理成表/Excel”“整理营收成本利润现金流估值”以及“以财务数据为输入做推算（如从成本反推算力/产能/单位经济）”** | **无论产物是飞书还是 Python 生成的 `.xlsx`，无论任务看起来是“专业建模”还是“只是数据整理/推算”，都必须先读 `references/ref-financial-modeling-standards.md` 并遵守**（引擎无关的财务操作+视觉规范，叠加于上述场景之上） |
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 
 > **多场景叠加**：若任务横跨多个场景，按主诉求选主场景，次要场景的相关说明也可参考对应 reference 文件。
@@ -120,7 +129,7 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 
 ## 二、通用执行流程
 
-以下流程适用于所有场景，**引擎无关**——只给通用概述；具体的读写命令、飞书侧的**编辑准则**与**执行要点**（读取路径 / 原生工具优先 / 易漏陷阱）由对应引擎章节提供（「三」飞书 / 「四」Excel）。**飞书任务动手前先过「三」的「飞书表格编辑准则」**，本节不与之重复展开。
+以下流程适用于所有场景，**引擎无关**——只给通用概述；具体读写命令与执行细节由对应 reference 提供，飞书侧的**编辑准则**与**执行要点**见「三」。**飞书任务动手前先过「三」的「飞书表格编辑准则」**，本节不与之重复展开。
 
 ### 2.0 基本原则
 
@@ -143,7 +152,7 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 1. **运行结构预检**了解数据概况（预检只为了解数据，具体执行仍需读取完整内容）：
    - **Excel 文件**：`python scripts/inspect_workbook.py <文件路径>`；若 openpyxl / pandas 等本地库都打不开（文件损坏 / 加密 / 老式 `.xls` / 非标准结构），**不要改用解压 xlsx 直读 XML、手写底层解析等本地绕路**——一律用 `+workbook-import --file <本地路径>` 导入为飞书在线表格，再走飞书引擎（「三」）读取处理
    - **CSV 文件**：用 `pd.read_csv(..., nrows=15)` 预览，注意编码（优先尝试 utf-8-sig、gbk、gb18030）
-   - **飞书表格**：先 `lark-cli sheets +workbook-info` 拿子表清单与元数据，再 `+cells-get` / `+csv-get` 预览数据与结构（合并/行高列宽见 `+sheet-info`）。详见 `references/lark-sheets-read-data.md`。
+   - **飞书表格**：优先运行 `python scripts/lark_inspect_workbook.py --url "<表格URL>"` 做只读预检，拿子表清单、布局、预览和 `current_region`；多块表 / 汇总块 / 备注块先用 `scripts/lark_detect_subtables.py` 识别候选 range；批量写入、公式/计算、排序/筛选、去重/lookup、透视/图表/汇总、整表语义或表头不确定时，再用 `scripts/lark_profile_table.py` 对目标区域画像。也可以直接调用 `+workbook-info` / `+sheet-info` / `+csv-get` / `+cells-get` 做等价读取。详见 `references/lark-sheets-read-data.md`。
 2. **评估数据规模**，决定执行策略：
    - **小数据**（行数 ≤ 1000，文件 ≤ 5MB）：一次性加载处理
    - **大数据**（行数 > 1000 或文件 > 5MB）：分批策略（分 sheet / 分行批处理 / 流式读取 / 列裁剪）
@@ -163,21 +172,29 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 
 读取场景分派表（「一」）中对应的 reference 文件，按其工作流程执行任务。
 
-### 2.5 交付
+### 2.5 专业格式与视觉规范
+
+专业格式用于降低阅读成本、提高产物质量，不是默认装饰动作，避免过度使用斑马纹/交替行颜色等装饰。用户明确的格式要求与既有模板样式优先；只使用能够表达层级、数据类型、状态或对比关系的必要格式。
+
+- **Excel**：`.xlsx` 涉及格式、美化、报表、模板、汇报或打印展示时，读取 `references/ref-excel-visual-standards.md`。
+- **飞书表格**：涉及上述场景时时，读取 `references/lark-sheets-visual-standards.md`。
+- **财务数据**：无论产物载体，均叠加读取 `references/ref-financial-modeling-standards.md`；财务规范优先于通用视觉规范。
+- **无需主动美化**：仅计算、补值、临时明细或原始数据导出时，通常只保证必要的数字格式、列宽与基本可读性。
+- **最低验收**：无截字、`####`、异常溢出或对象遮挡；数字、日期、百分比和标识符格式正确；图表具有清晰的中文标题、坐标轴与必要图例。
+
+### 2.6 交付
 
 - **改动策略匹配诉求**：默认可在必要范围内修改；若用户要求“只改指定位置/保留原表”，则通过新建 sheet/复制 sheet/另存等方式实现
 - **公式在交付表**：计算结果用公式写在最终交付的表格位置，不在临时表/中间 sheet 计算后回填数值
 - **公式零错误（生成 `.xlsx` 时强制）**：只要本流程生成了 `.xlsx`（无论作为最终交付物，还是先生成再 `lark-cli sheets +workbook-import` 导入飞书的中间产物），**交付前必须运行 `python scripts/formula_verify.py <文件路径>` 重算校验，确保 0 公式错误**（`#REF!` / `#DIV/0!` / `#VALUE!` / `#N/A` / `#NAME?` / `#NUM!` / `#NULL!`）。有任何报错先定位修复（常见原因：引用错列/错 sheet、`$` 锁定写错、除数为空、查找未命中、函数名拼错），修好后重新校验，直到归零再交付/导入。不要把带报错的表交付，也不要把带报错的 `.xlsx` 导入飞书。
-- **载体按 0.2**：默认交付飞书在线表格链接，只要涉及飞书表格产物，无论 URL 是新生成还是已有的，都必须调用 NotifyHuman 工具交付产物给用户；用户明确要本地文件时交付 `.xlsx` / `.csv`
+- **载体按 0.2**：默认交付飞书在线表格链接，只要涉及飞书表格产物，无论 URL 是新生成还是已有的，都必须调用 NotifyHuman 工具交付产物给用户
 - **结论优先于过程**：最终交付聚焦用户需要的结论和建议，过滤中间过程
-- **格式专业**：图表须有中文标题/坐标轴/图例；新建表格的行高/列宽须自适应（Excel 见「四」，飞书见 `references/lark-sheets-visual-standards.md`）
-- **不主动做外部搜索补全**：信息不足时先向用户确认
 
-### 2.6 信息合理性校验（生成/推断信息时必做）
+### 2.7 信息合理性校验（生成/推断信息时必做）
 
 当任务需要“生成信息/补全缺失值/把口述信息整理成表/输出结论建议/构造示例数据”时，交付前必须做合理性校验：
 
-1. **单位合理**：液体优先体积（ml/L），非液体优先质量（g/kg）；货币/数量/百分比/温度单位一致；表头写清单位（如 `Revenue (¥)`、`Weight (g)`）。
+1. **单位合理**：货币/数量/百分比/温度单位一致；表头写清单位（如 `Revenue (¥)`、`Weight (g)`）。
 2. **取值范围**：时间/时长/数量一般不为负；百分比一般在 `[0,1]` 或 `[0%,100%]`，异常值判断是否格式混淆并统一。
 3. **日期时间一致**：结束时间不得早于开始时间；跨天需显式说明或拆分。
 
@@ -204,6 +221,8 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 | 透视表 pivot | `--pivot-table-id` | 迷你图（按组） | `--group-id` |
 | 浮动图片 | `--float-image-id` | | |
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### 飞书表格编辑准则（动手前必守，所有编辑类任务一律生效）
 
 下列准则横切所有飞书表格任务，**动手前先过一遍**——即使你是被索引直接路由进某个工具参考也一律生效。每条只给一句话纲要，展开与边界见括注的 reference。
@@ -218,7 +237,7 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 8. **拆成可验证 checklist**：落地前把指令拆成所有"独立可验证子要点"，逐点 `assert` 全过才交付（多维排序每维一点、多目标每目标一点、范围类核起 / 末 / 边界）；只做第一个要点属违规。
 9. **全量处理前置断言条数**：翻译 / 打标 / 批量公式落地等逐条任务，先把预期条数硬编码再 `assert actual == expected`，禁止输出"已完成前 N 条，剩余继续"的半成品。
 
-> 上述准则的实操展开——读取路径、原生工具优先级、脚本配合、易漏陷阱——见下方「执行要点」节；端到端工作流为：了解结构（`+workbook-info`）→ 读数据 → 理解语义 → 原生工具优先 → 写入 → 回读验证。
+> 上述准则的实操展开——读取路径、原生工具优先级、脚本配合、易漏陷阱——见下方「执行要点」节；端到端工作流为：了解结构（优先 `scripts/lark_inspect_workbook.py` / `+workbook-info`）→ 读数据 → 理解语义 → 原生工具优先 → 写入 → 回读验证。
 
 ### 场景 → 命令速查（拿不准命令名先查这里，别按直觉拼）
 
@@ -265,8 +284,8 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 
 | 用户需求 | 读取路径 |
 |---|---|
-| "完善 / 补齐 / 填空 / 修正所有 XX"、分析 / 清洗 / 大数据 | 原生优先（公式 / `+pivot` / `+filter`）；表达不了再分批 `+csv-get` 导出 + 脚本处理 + 分批回写（默认覆盖所有对应数据行，不以用户选区为准） |
-| "查一下 / 看看 / 统计 / 汇总"等只读 | `+csv-get` 读到上下文 |
+| "完善 / 补齐 / 填空 / 修正所有 XX"、分析 / 清洗 / 大数据 / 公式 / 排序 / 筛选 / 去重 / lookup / 透视 / 图表 / 批量写入 | 优先用 `scripts/lark_profile_table.py` 确认目标区域与字段画像，再原生优先（公式 / `+pivot` / `+filter`）；表达不了再分批 `+csv-get` 导出 + 脚本处理 + 分批回写（默认覆盖所有对应数据行，不以用户选区为准） |
+| "查一下 / 看看 / 统计 / 汇总"等只读 | 小表直接 `+csv-get` 读到上下文；大表先用 `+workbook-info` 和小窗口 `+csv-get` 确认 sheet / 列边界 / 起始区域，再对未截断窗口运行 `scripts/lark_detect_subtables.py` / `scripts/lark_profile_table.py`；多块表按窗口推进并交叉核对 |
 | 需要公式 / 样式 / 批注 | `+cells-get` |
 | 续写 / 扩展已有内容 | `+csv-get` 看结构 + `+cells-get` 读源区样式 + `+sheet-info --include row_heights,merges`（见准则 5） |
 
@@ -288,6 +307,7 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 #### 用脚本配合 CLI 时
 
 - **只读 stdout**：CLI 数据走 stdout、诊断走 stderr；解析 JSON 别 `2>&1`（警告混入会解析失败），用管道或单独重定向 stdout。
+- **读表理解优先用 `scripts/lark_*.py`**：`lark_inspect_workbook.py` / `lark_detect_subtables.py` / `lark_profile_table.py` 是只读脚本，用来把在线表格整理成结构摘要。它们不替代写入类 shortcut；确认目标区域后，写入仍按对应 reference 执行。
 - **喂 CLI 的 CSV / JSON 用 UTF-8 无 BOM**；临时文件放系统临时目录、勿落项目目录。
 - **命令失败先读 stderr 再调整**，别原样重发。
 - **回写纯单元格值**：剥离 `值(V-Align: bottom)` 这类"值(样式)"串与残留引号再写；排序优先 `+range-sort` 原生工具，别"读出本地排完再整列写回"。
@@ -297,13 +317,15 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 - **`+dim-insert` 不继承行高**：只继承值 / 公式 / 边框，新行回落默认高度截断长文本；插行填长文本前读相邻行 `row_height`，用 `+batch-update` 合 `+rows-resize` 补齐。
 - **公式容错**：日期 / 查找 / 数值转换公式用 `IFERROR` 包裹；写完读结果列首末各 5 行查 `#VALUE!` / `#REF!` / `#DIV/0!`，然后继续跑 `+formula-verify` 直到 `status='success'`；同一方案试错上限 3 次。
 - **循环引用**：聚合公式引用范围不能含目标 cell 自身或其传递依赖。
-- **隐藏行列**：`+csv-get` 默认含隐藏行列；设 `--skip-hidden=true` 只看可见，但返回行序号与实际行号不再对应。
+- **隐藏行列**：`+csv-get` 默认含隐藏行列；设 `--skip-hidden=true` 只看可见，返回的真实行号可能跳空。禁止按返回数组下标推导行号，必须使用 `annotated_csv` 的 `[row=N]` 或 `row_indices`。
 - **跨 sheet 对象**：图表 / 条件格式 / 透视表 / 浮动图片可能分布在多个子表，操作前先 `+workbook-info` 掌握全局。
 - **NLP 任务分批**：语义理解 / 翻译 / 改写 / 分类等用 NLP 处理（代码只做分批 / 行号映射 / 写回）；数据量大必须分批（通常 30 行 / 批），每批处理完即时写回，单批生成通常 ≤ 300 行，多批用 `+batch-update`。
 
 ### References
 
 本 skill 的 reference 分两组：先读**通用方法与规范**（横切所有任务的样式、公式规则，不含具体 shortcut），它们规定了"怎么做对"；再按操作对象进入**工具参考**查具体 shortcut 与调用细节。编辑类任务务必先过一遍通用方法与规范，连同上方「飞书表格编辑准则」对所有工具参考一律生效。
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 #### 通用方法与规范（先读，横切所有任务，不含具体 shortcut）
 
@@ -312,6 +334,7 @@ lark-cli sheets +workbook-create --name "<在线表格名称>"
 | [飞书表格样式与配色规范](references/lark-sheets-visual-standards.md) | 飞书表格样式与配色规范：表头/数据区/汇总行的颜色、字号、对齐、边框、数字格式等取值标准，以及从零新建表格的版式美化、新增汇总行、追加行列继承原表风格、已有区域美化等典型场景的决策流程与样式要点。工具调用参数细节请参考对应的 lark-sheets-write-cells / lark-sheets-range-operations / lark-sheets-batch-update。条件格式（高亮、标红、数据条、色阶）请使用 lark-sheets-conditional-format。 |
 | [飞书表格公式生成规则](references/lark-sheets-formula-translation.md) | Excel 公式到飞书表格公式的迁移与生成规则。核心目标不是保留 Excel 原语法，而是按飞书表格可执行规则重写公式，并在结果上尽量对齐 Excel。当用户要求把 Excel 公式改写成飞书表格公式，或需要生成飞书公式（尤其涉及 ARRAYFORMULA、原生数组函数、INDEX/OFFSET、MAP/LAMBDA、日期差、多层范围结果与二次展开）时使用。本文只负责把公式写对，落表后的强制收尾请接 `lark-sheets-formula-verify`。 |
 | [金融/财务建模与财务数据整理规范](references/ref-financial-modeling-standards.md) | **引擎无关**的金融/财务/估值建模专业结构与视觉规范，**飞书在线表格与 Python/openpyxl 生成的 `.xlsx` 同样适用**：DCF / LBO / Comps / Precedent、三张财务报表、预算与 Variance Analysis、Sensitivity / Scenario、FP&A 等，**以及“把财务数据整理成表/Excel”“以财务为输入的推算”等看似“只是数据整理”的任务**。覆盖科目分类、三表勾稽、Assumptions / Calc / Sensitivity 拆分、年份横向布局、假设颜色编码、财务数字格式、Sensitivity 禁色阶等（含 Python 代码示例）。与通用视觉规范冲突时以本文为准；用户明确样式或既有模板优先。**做任何财务性质表格前必读必守。** |
+| [Excel 可视化规范](references/ref-excel-visual-standards.md) | Excel 文件的通用格式与美化规范。生成或编辑 `.xlsx` 且涉及格式、美化、报表、模板或打印展示时读取；仅适用于 Excel，飞书在线表格使用上方飞书表格规范。 |
 
 #### 按对象的工具参考（含 shortcut）
 
@@ -404,76 +427,13 @@ lark-cli sheets +cells-set --url "..." --sheet-name "Sheet1" --range "A1:B2" --c
 
 **参数含特殊字符（`!` / 引号 / 空格 / 非 ASCII）时，用单引号包裹该参数即可，不要起手 `set +H` 之类的 shell 开关来防转义。** `set +H`（关 bash history expansion）在 `sh` / `dash` 下是非法选项（`set: Illegal option -H`）、会让整条命令直接失败；而单引号挡得住 `!` 的 history expansion（否则报 `event not found`），对 bash 与 `sh` / `dash` 一致安全。参数本身含单引号、或 payload 较大时，按上文走 stdin。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 **`@file` 接绝对路径会被拒，且被拒后不要照报错提示做。** `@file` 出于安全只接受 cwd 下的相对路径，传 cwd 之外的绝对路径会被拒。此时报错会建议"先 cd 到目标目录，或改用相对路径"——**两条都不要照做**：cd 过去、或把临时文件写进用户项目目录，都会污染工作目录。正解是改用 stdin（`--<flag> - < 文件`）。
 
 ---
 
-## 四、Excel（.xlsx）输出质量规范（Python 引擎）
-
-**只要本流程中生成了 `.xlsx` 文件，本部分就适用——不论该 `.xlsx` 是最终交付物，还是先生成再 `lark-cli sheets +workbook-import` 导入飞书的中间产物。** 具体包括两种情况：
-
-1. 用户明确要本地 `.xlsx` / 禁止飞书（见 0.2），`.xlsx` 即最终交付物；
-2. 最终产物是飞书在线表格，但实现路径是「先用 Python(openpyxl) 生成 `.xlsx`，再 `lark-cli sheets +workbook-import` 导入飞书」——因为导入后的飞书表格质量完全取决于源 `.xlsx`，所以**在 `.xlsx` 阶段就必须达到本部分标准**，不能指望导入后再补。
-
-> 注：按 0.3，飞书产物**优先**用飞书引擎一步到位（`+workbook-create --sheets` + `--styles`），无需经 `.xlsx`；但只要实际走了「生成 `.xlsx` 再导入」这条路（如重数据加工、或既有 `.xlsx` 资产），该 `.xlsx` 就要满足本部分规范。
-
-所有输出 Excel 必须满足以下标准（含格式、行高/列宽/截断、公式重算与验证）。详细技术工作流参见 `references/ref-xlsx-workflow.md`。
-
-### 基础规范
-
-| 项目 | 要求 |
-|------|------|
-| **字体** | 全文使用统一专业字体（如 Arial、宋体），不同区域字体一致 |
-| **公式错误** | 交付前避免出现公式错误（`#REF!` `#DIV/0!` `#VALUE!` `#N/A` `#NAME?`），用 `scripts/formula_verify.py` 检查 |
-| **现有模板** | 修改已有文件时，精确匹配其格式、样式和规范；现有模板约定优先于本规范 |
-| **公式 vs 硬编码** | 计算结果必须写成 Excel 公式（如 `=SUM(B2:B9)`），**不得**在 Python 中算好再硬编码写入单元格 |
-
-### 列宽行高自适应规范
-
-生成或修改 Excel 表格时，列宽和行高必须根据内容自适应，确保表格不拥挤、不浪费空间。
-
-**列宽**：扫描该列所有单元格，取最长内容的显示宽度（中文字符按 2 宽度）+ padding 3 字符。下限 8、上限 40。超过上限的列启用 `wrap_text=True` 自动换行。
-
-**行高**：表头行 30、普通数据行 20、汇总行 26、含换行单元格的行 36。
-
-**内边距**：通过列宽 padding（+3）和行标签列 `Alignment(indent=1)` 提供呼吸空间。
-
-上述列宽/行高规则**适用于所有新建 Sheet 和表格区域**；可用 `scripts/format_range.py` 批量应用，单元格排版细节（行高/列宽/截断）见 `references/ref-xlsx-workflow.md`。修改用户现有模板时保持原有行高列宽不变（除非用户要求调整）。
-
-### 样式与图表脚本（优先使用）
-
-涉及单元格批量样式（字体/底色/边框/数值格式/条件格式）或图表生成时，**优先调用以下 CLI 脚本**，避免重复手写 openpyxl 代码：
-
-| 脚本 | 用途 | 典型用法 |
-|------|------|---------|
-| `scripts/format_range.py` | 批量格式化范围（含条件格式、合并） | `python scripts/format_range.py <file> <sheet> A1:E1 --bold --bg-color FFFF00 --align center` |
-| `scripts/create_chart.py` | 在 sheet 创建 bar/line/pie/scatter/area 图表 | `python scripts/create_chart.py <file> <锚点sheet> 'Data!A1:E6' bar G2 --title '季度销售'` |
-
-两个脚本输出 JSON，失败时 `status: error`。详细参数见脚本 `--help`。条件格式参数走 JSON 串：`--cond-format '{"type":"color_scale","params":{...}}'`，支持 `color_scale / data_bar / icon_set / formula / cell_is`。
-
-### ref-xlsx-workflow.md 中的进阶能力索引
-
-下列场景出现时，**直接跳到** `references/ref-xlsx-workflow.md` 对应小节，不要从零写代码：
-
-| 场景信号 | 跳到的小节 |
-|---------|-----------|
-| “复制这块/把 A 表的格式搬到 B 表/保留样式复制” | “范围复制（含样式）” |
-| “把这一段清掉/删除并上移/重置区域格式” | “范围清空与重置” |
-| 写公式前想拦住语法错/避免不安全函数 | “公式写入前自检” — 与 `formula_verify.py` 形成事前+事后闭环 |
-| 用户上传表里有下拉框/限制输入/打开报错“内容存在问题” | “读取数据验证规则（下拉框 / 输入限制）” |
-| “把这块做成可筛选的表/带表头排序/Excel Table” | “标准 Excel Table（ListObject）” |
-
-### 财务/金融场景（Excel 产物）
-
-> ⚠️ **产物为 `.xlsx` 时，`references/ref-financial-modeling-standards.md` 同样必读必守，不是飞书专属。** 该规范是引擎无关的财务呈现/逻辑规范，其 Python(openpyxl) 代码示例就是为 `.xlsx` 产物准备的。**只要表里是财务数据——哪怕任务被描述成“把某公司财务数据整理成 Excel”“以财务为输入做推算”——都要先读它再写代码。** 不要以“只是 openpyxl 生成数据表、不是可交互模型”为由跳过。
-
-用 Python 生成 `.xlsx` 时，在「四」通用规范基础上，**完整套用** `ref-financial-modeling-standards.md` 的财务逻辑与视觉规范（科目标准分类、三表勾稽、颜色编码：蓝=输入/黑=公式/绿=跨表引用/红=外链、数字格式：货币/零值显示 `-`/负数括号/倍数 `0.0x`、单位与来源标注、Assumptions/Calc/Sensitivity 多 sheet 拆分、年份横向布局、合计边框、Sensitivity 禁色阶/数据条等）。简单的财务数据整理表按该文件「按任务裁剪」取最小规则集（颜色/数字格式/单位/合计边框），但不可一条不用。
-
-**优先级**：用户指令 / 用户模板样式 > `ref-financial-modeling-standards.md`（金融行业惯例）> 本文档通用规范。与通用视觉规范冲突时以金融规范为准（典型冲突：财务模型禁斑马纹、Sensitivity 禁条件格式/色阶/数据条、年份列须紧凑等宽、不加竖线、主题色仅黑白+蓝/绿）。
-
----
-
-## 五、References 与脚本总览
+## 四、References 与脚本总览
 
 引擎无关 / Excel 引擎 reference：
 
@@ -482,7 +442,10 @@ lark-cli sheets +cells-set --url "..." --sheet-name "Sheet1" --range "A1:B2" --c
 | `references/guide-semantic-analysis.md` | 引擎无关 | 文本语义抽取/归类/标准化/汇总方法学 |
 | `references/template-report.md` | 引擎无关 | 数据分析报告输出模板 |
 | `references/ref-xlsx-workflow.md` | Excel | Excel 创建/编辑/公式重算/范围复制/数据验证等技术工作流 |
+| `references/ref-excel-visual-standards.md` | Excel | Excel 通用格式、美化、图表与打印展示的视觉输出规范 |
 
 飞书引擎 reference（17 个）见「三、References」表，那里有更详的选用说明；完整文件清单以 `references/` 目录为准。
 
-脚本（`scripts/`）按引擎分别标注：飞书引擎用 `sheets_df.py`（DataFrame → `--sheets` typed payload，含 `df_to_sheet`）；Excel 引擎用 `inspect_workbook.py`（结构预检）、`preview_excel_rows.py`（多行表头预览）、`formula_verify.py`（公式重算与校验）、`format_range.py`（批量样式/条件格式）、`create_chart.py`（图表）、`_excel_utils.py` / `lo_runtime.py`（内部工具）。
+脚本（`scripts/`）按引擎分别标注：飞书引擎用 `lark_inspect_workbook.py`（在线表格结构预检）、`lark_detect_subtables.py`（候选子表块识别）、`lark_profile_table.py`（表头 / 数据范围 / 字段类型画像）、`sheets_df.py`（DataFrame → `--sheets` typed payload，含 `df_to_sheet`）；Excel 引擎用 `inspect_workbook.py`（结构预检）、`preview_excel_rows.py`（多行表头预览）、`formula_verify.py`（公式重算与校验）、`format_range.py`（批量样式/条件格式）、`_excel_utils.py` / `lo_runtime.py`（内部工具）。
+
+===== 全文完（共 451 行）=====

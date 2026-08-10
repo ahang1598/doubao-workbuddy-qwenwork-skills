@@ -1,0 +1,106 @@
+{
+  "schema_version": "3.1",
+  "meta": {
+    "company": "示例饮料股份有限公司",
+    "issuer_aliases": ["示例饮料股份有限公司", "DEMO.SH"],
+    "valuation_date": "2026-06-30",
+    "information_cutoff_date": "2026-06-30",
+    "model_purpose": "illustrative"
+  },
+  "securities": [
+    {
+      "security_id": "DEMO.SH",
+      "exchange": "SSE",
+      "baseline_evidence_id": "EV-BASE",
+      "search_id": "SEARCH-DEMO"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-BASE",
+      "security_id": "DEMO.SH",
+      "role": "baseline_share_disclosure",
+      "authority_tier": "primary",
+      "url": "https://www.sse.com.cn/disclosure/illustrative-demo-baseline",
+      "published_date": "2026-04-15",
+      "local_file": "evidence/baseline.html",
+      "text_file": "evidence/baseline.txt",
+      "sha256": "404009fe56338b867f1b25dbf8002e344d62775bf0722d09d87bc4c90f601e90",
+      "text_sha256": "725bd7ee6265c5b2b2cbcf8426a35f841a63caf5cfd88166a9cd6c6852cca325"
+    },
+    {
+      "evidence_id": "EV-SEARCH",
+      "security_id": "DEMO.SH",
+      "role": "corporate_action_search_result",
+      "authority_tier": "primary",
+      "url": "https://www.sse.com.cn/disclosure/illustrative-demo-search",
+      "published_date": "2026-06-30",
+      "local_file": "evidence/search-result.html",
+      "text_file": "evidence/search-result.txt",
+      "sha256": "7a4d311b1c8bc1376e81f78984396bf3f8bf821e98e580f110196d5bd047802d",
+      "text_sha256": "361bd30150f454c28217be3083c4126d113083eeb49f2ac435bee4f8d6cba7cd"
+    },
+    {
+      "evidence_id": "EV-ACT-001",
+      "security_id": "DEMO.SH",
+      "role": "corporate_action_announcement",
+      "authority_tier": "primary",
+      "url": "https://www.sse.com.cn/disclosure/illustrative-demo-action",
+      "published_date": "2026-05-10",
+      "local_file": "evidence/action.html",
+      "text_file": "evidence/action.txt",
+      "sha256": "cb3685e0025fe288f2004d5d48aec4bae11713d95bb0df35746a8ef09e8ab7d8",
+      "text_sha256": "5e8487b924bc4eb3b4de2a704458f1743131e17380a784d2b349b009774891b2"
+    }
+  ],
+  "searches": [
+    {
+      "search_id": "SEARCH-DEMO",
+      "security_id": "DEMO.SH",
+      "baseline_date": "2026-03-31",
+      "search_start_date": "2026-03-31",
+      "search_end_date": "2026-06-30",
+      "official_entry_url": "https://www.sse.com.cn/disclosure/listedinfo/announcement/",
+      "queries": ["DEMO.SH 权益分派", "DEMO.SH 股本变动", "DEMO.SH 回购 注销 转增"],
+      "result_evidence_ids": ["EV-SEARCH"],
+      "discovered_action_ids": ["ACT-001"],
+      "completed": true,
+      "coverage_gaps": []
+    }
+  ],
+  "share_bridge": {
+    "security_classes": [
+      {
+        "security_id": "DEMO.SH",
+        "baseline_date": "2026-03-31",
+        "baseline_shares": 100000000,
+        "baseline_evidence_id": "EV-BASE",
+        "actions": [
+          {
+            "action_id": "ACT-001",
+            "action_type": "capitalisation",
+            "announcement_date": "2026-05-10",
+            "effective_date": "2026-05-18",
+            "change_shares": 30000000,
+            "evidence_id": "EV-ACT-001"
+          }
+        ],
+        "valuation_date": "2026-06-30",
+        "valuation_date_shares": 130000000
+      }
+    ]
+  },
+  "price_share_basis_reviews": [
+    {
+      "action_id": "ACT-001",
+      "unadjusted_price_confirmed": true,
+      "post_action_shares_confirmed": true,
+      "historical_eps_basis_confirmed": true,
+      "evidence_ids": ["EV-ACT-001"]
+    }
+  ],
+  "issue_clearance": {
+    "contradictions": [],
+    "blocking_issues": []
+  }
+}

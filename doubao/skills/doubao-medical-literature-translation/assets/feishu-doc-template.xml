@@ -1,0 +1,23 @@
+<!-- 替换全部占位符；界面标签和翻译标识使用目标语言。英文译文使用 English Translation/Translation。 -->
+<title>{{translated_title}} — {{translation_label}}</title>
+<callout background-color="light-green">
+  <!-- 范围只能按 coverage ledger 填写；门槛 B 只检查写入返回值，不得声称飞书正文已回读验证。 -->
+  <p><b>{{scope_label}}</b>{{verified_scope}}</p>
+  <!-- 默认排除参考文献时，不创建参考文献标题、处理说明或条目；只有用户明确要求纳入时，才在实际范围中说明并把真实条目放入正文。 -->
+  <p><b>{{source_label}}</b>{{source_entry}}</p>
+</callout>
+
+<h1>{{translation_heading}}</h1>
+<!-- 按来源顺序放入用户要求的全部译文；参考文献默认不写入。用户明确要求纳入时才按策略追加真实条目。不要新增摘要、解读或 AI 评价。 -->
+<!-- 在 translation_in_source_order 内按 output-and-qa.md 使用真实标题、短段落、列表、表格和多个自然分布的语义 callout。重要结论/主要发现默认用 📌 + light-blue，只有原文明示正向或有利时才用 light-green；安全性风险/警示/关键限制可用 ⚠️ + light-yellow，只有原文明示严重或高危时才用 🚨 + light-red。callout 优先直接包裹对应完整译文，不删减、不重复、不改变来源顺序，不使用 type 属性。最终写入前删除本注释。 -->
+{{translation_in_source_order}}
+
+<!-- 没有需统一术语、歧义或待确认项时，删除以下标题、表格和列表。 -->
+<h1>{{terminology_and_confirmation_heading}}</h1>
+<table>
+  <tr><th background-color="light-blue">{{source_term_label}}</th><th background-color="light-blue">{{translation_term_label}}</th><th background-color="light-blue">{{note_label}}</th></tr>
+  <tr><td>{{source_term}}</td><td>{{chosen_translation}}</td><td>{{source_bounded_note}}</td></tr>
+</table>
+<ul>
+  <li><p>{{confirmation_item}}</p></li>
+</ul>

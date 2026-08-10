@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 342 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Chart
 
 ## 真对象硬约束
@@ -98,6 +100,8 @@
 - ❌ `{row: 0, col: "W"}` — col=22 越界
 - ✅ `{row: 42, col: "A"}` — 放数据下方
 - ✅ 先 `+dim-insert --position V --count 6`（在 V 列前插 6 列，即 U 列之后），再放图到 `{row: 0, col: "V"}`
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ## Shortcuts
 
@@ -222,6 +226,8 @@ lark-cli sheets +chart-create --url "..." --sheet-name "Sheet1" --properties - <
 JSON
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 **数据与表头分离（必须用 `detached` + `nameRef`）**：
 
 场景：周度销量明细表，真实表头在第 1 行（A1=周次、C1=订单量、D1=退款量），数据按 B 列"店铺"分段；用户只要"3 号店"那一段（第 11–17 行）。
@@ -323,6 +329,8 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
   --chart-id "chrXXX" --yes
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### Validate / DryRun / Execute 约束
 
 - `Validate`：XOR 公共四件套；`+chart-create` / `+chart-update` 的 `--properties` 必须能解析为合法 JSON；`+chart-delete`（high-risk-write）校验 `--yes` 或 `--dry-run` 至少一个。
@@ -330,3 +338,5 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
 - `Execute`：写操作执行后不自动回读；如需确认，自行调用 `+chart-list` 比对结果。
 
 > `+chart-create` / `+chart-update` 是 write 级别，按需可用 `--dry-run` 预览，不要求 `--yes`。只有 `+chart-delete`（high-risk-write）必须 `--yes`。
+
+===== 全文完（共 342 行）=====

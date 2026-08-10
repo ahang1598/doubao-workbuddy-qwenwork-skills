@@ -1,0 +1,4 @@
+matplotlib>=3.7
+# python-docx 只有运行 make_docx.py（可选的 Word 导出）时才需要，
+# normalize_report.py / make_display_markdown.py / finalize_report.py 都只依赖标准库。
+python-docx>=1.1

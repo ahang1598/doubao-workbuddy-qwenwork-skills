@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event-impact-analysis/schemas/intake.schema.json",
+  "title": "event-impact-analysis Intake",
+  "type": "object",
+  "required": [
+    "task_id",
+    "skill",
+    "mode",
+    "as_of",
+    "jurisdiction_or_market",
+    "inputs"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skill": {
+      "const": "event-impact-analysis"
+    },
+    "mode": {
+      "enum": [
+        "传导模式",
+        "路径模式",
+        "快速判断"
+      ]
+    },
+    "as_of": {
+      "type": "string",
+      "minLength": 1
+    },
+    "jurisdiction_or_market": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_context": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "description": "按成功契约冻结的业务输入",
+      "properties": {
+        "event": {
+          "type": "string",
+          "minLength": 1
+        },
+        "affected_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline": {
+          "type": "object"
+        },
+        "focus_question": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "event",
+        "affected_scope"
+      ],
+      "additionalProperties": true
+    },
+    "requested_artifacts": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "report.md",
+          "facts.json",
+          "report-display.md",
+          "report-capabilities.json",
+          "report-manifest.json"
+        ]
+      }
+    }
+  },
+  "additionalProperties": true,
+  "x-required-business-inputs": [
+    "事件描述或原文",
+    "事件状态",
+    "关注公司、行业或市场",
+    "分析截止时间",
+    "司法辖区",
+    "事件前市场基线"
+  ]
+}

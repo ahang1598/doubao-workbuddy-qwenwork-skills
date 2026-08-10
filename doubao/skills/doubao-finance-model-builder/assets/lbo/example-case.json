@@ -1,0 +1,90 @@
+{
+  "company": {
+    "name": "结构验证示例公司",
+    "ticker": "DEMO",
+    "market": "US",
+    "currency": "USD"
+  },
+  "as_of_date": "2026-07-16",
+  "entry": {
+    "equity_purchase_price": 1000,
+    "debt_to_refinance": 300,
+    "cash_acquired": 80,
+    "target_cash_used": 40,
+    "minimum_cash": 30,
+    "minority_interest": 0,
+    "preferred_stock": 0,
+    "other_debt_like": 0,
+    "preferred_stock_to_repay": 0,
+    "other_debt_like_to_repay": 0,
+    "transaction_fees": 20,
+    "financing_fees": 10,
+    "management_rollover": 50,
+    "entry_ebitda": 160
+  },
+  "debt_tranches": [
+    {
+      "name": "Term Loan",
+      "opening_balance": 600,
+      "cash_interest_rate": 0.08,
+      "pik_rate": 0,
+      "mandatory_amortization_rate": 0.01,
+      "cash_sweep_priority": 2,
+      "is_revolver": false,
+      "commitment": 0,
+      "maturity_year": 7
+    },
+    {
+      "name": "Revolver",
+      "opening_balance": 0,
+      "cash_interest_rate": 0.09,
+      "pik_rate": 0,
+      "mandatory_amortization_rate": 0,
+      "cash_sweep_priority": 1,
+      "is_revolver": true,
+      "commitment": 100,
+      "maturity_year": 5
+    }
+  ],
+  "years": [
+    {"year": 1, "ebitda": 168, "cash_taxes": 19, "capex": 29, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0},
+    {"year": 2, "ebitda": 176.4, "cash_taxes": 20, "capex": 30, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0},
+    {"year": 3, "ebitda": 185.22, "cash_taxes": 21, "capex": 31, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0},
+    {"year": 4, "ebitda": 194.481, "cash_taxes": 22, "capex": 32, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0},
+    {"year": 5, "ebitda": 204.20505, "cash_taxes": 23, "capex": 33, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0},
+    {"year": 6, "ebitda": 214.4153025, "cash_taxes": 24, "capex": 34, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0},
+    {"year": 7, "ebitda": 225.136067625, "cash_taxes": 25, "capex": 35, "change_nwc": 5, "other_cash_costs": 0, "follow_on_equity": 0, "sponsor_distribution": 0}
+  ],
+  "exit": {
+    "years": [3, 4, 5, 6, 7],
+    "multiples": [7.0, 7.625, 8.5],
+    "exit_fee_rate": 0.01,
+    "exit_debt_like_adjustments": 0,
+    "sponsor_ownership": null
+  },
+  "target_irrs": [0.2, 0.25, 0.3],
+  "assumption_ledger": {
+    "ebitda_growth": "基准情景按5%年增长，仅用于结构测试",
+    "depreciation_amortization": "未单独建模，现金税作为显式输入",
+    "depreciation_tax_shield": "不另行计算，避免与现金税重复",
+    "capex": "逐年显式输入",
+    "working_capital": "逐年显式输入",
+    "cash_taxes": "逐年显式输入",
+    "refinancing": "到期债务不自动再融资，流动性缺口保留"
+  },
+  "provenance": {
+    "sources": [
+      {
+        "source_id": "SRC-DEMO",
+        "title": "结构测试数据，不代表真实公司",
+        "date": "2026-07-16"
+      }
+    ],
+    "field_sources": {
+      "entry": ["SRC-DEMO"],
+      "operating_case": ["SRC-DEMO"],
+      "debt_terms": ["SRC-DEMO"],
+      "exit": ["SRC-DEMO"]
+    }
+  }
+}

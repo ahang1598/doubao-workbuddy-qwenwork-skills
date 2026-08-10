@@ -1,0 +1,76 @@
+{
+  "version": "doubao-finance-model-builder",
+  "chunk_lines": 100,
+  "completion_marker_template": "<!-- END OF FILE: {basename} -->",
+  "always": [
+    "SKILL.md",
+    "references/model-and-artifact-controls.md",
+    "references/source-tool-priority.md"
+  ],
+  "formal_modeling": [
+    "references/execution-plan-schema.md",
+    "references/data-source-disclosure.md",
+    "references/latest-announcement-sweep.md",
+    "references/delivery-package-contract.md"
+  ],
+  "market_value": [
+    "references/equity-evidence-acquisition.md"
+  ],
+  "workflows": {
+    "three_statements": {
+      "required": [
+        "references/workflow-three-statements.md",
+        "references/three-statements-methodology.md",
+        "references/three-statements-model-spec.md",
+        "references/three-statements-sector-drivers.md",
+        "references/three-statements-market-data-sources.md"
+      ],
+      "conditional": []
+    },
+    "dcf": {
+      "required": [
+        "references/workflow-dcf.md",
+        "references/dcf-finance-search-and-sources.md",
+        "references/dcf-methodology.md",
+        "references/dcf-forecast-framework.md",
+        "references/dcf-wacc-and-terminal-value.md",
+        "references/dcf-accounting-normalization.md",
+        "references/dcf-input-schema.md",
+        "references/dcf-output-schema.md",
+        "references/dcf-terminology-zh.md",
+        "references/dcf-delivery-audit-schema.md"
+      ],
+      "conditional": []
+    },
+    "lbo": {
+      "required": [
+        "references/workflow-lbo.md",
+        "references/lbo-sector-gates.md",
+        "references/lbo-data-source-policy.md",
+        "references/lbo-accounting-normalization.md",
+        "references/lbo-calculation-rules.md",
+        "references/lbo-output-schema.md",
+        "references/lbo-chinese-output-style.md"
+      ],
+      "conditional": [
+        "references/lbo-market-a-share.md",
+        "references/lbo-market-hong-kong.md",
+        "references/lbo-market-us.md"
+      ]
+    },
+    "comps": {
+      "required": [
+        "references/workflow-comps.md",
+        "references/comps-finance-search-and-data.md",
+        "references/comps-industry-and-stage-routing.md",
+        "references/comps-peer-selection.md",
+        "references/comps-normalization-and-valuation.md",
+        "references/comps-output-modes.md"
+      ],
+      "conditional": [
+        "references/comps-industry-biotech.md",
+        "references/comps-report-schema.md"
+      ]
+    }
+  }
+}

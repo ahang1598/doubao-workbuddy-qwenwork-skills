@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 510 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # 金融/财务建模与财务数据整理规范
 
 ## 定位与优先级
@@ -36,10 +38,9 @@
 
 | 通用规范 | 财务模型规范 |
 | --- | --- |
-| 数据行较多时可使用斑马纹 | 财务模型默认禁止斑马纹，避免干扰小计/合计识别 |
 | 可用数据条、色阶强化可视化 | Sensitivity 禁止色阶、数据条和图标集 |
 | 列宽按内容自适应 | 年份列必须紧凑等宽；标签列才加宽 |
-| 可用柔和竖线分隔区域 | 普通财务模型禁止竖线；Sensitivity 矩阵浅灰细框是唯一例外 |
+| 通用规范已减少竖线，仅在必要结构中使用边框 | 财务模型进一步禁止年份列竖线；Sensitivity 矩阵浅灰细框是唯一例外 |
 
 ## 按任务裁剪
 
@@ -100,6 +101,8 @@ Revenue
 = Net Income
   Net Income Margin % / EPS
 ```
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 Balance Sheet 必须有 `Total Assets`、`Total Liabilities`、`Total Equity`、`Total Liabilities & Equity` 和 `Check: Total Assets - Total L&E = 0`。
 
@@ -211,6 +214,8 @@ ws['F9'] = '=F8/$B$12'                  # GPU 数量 = 总算力成本 / 单卡�
 ws['F9'].font = black_font
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 横向拉公式时必须正确使用 `$`：
 
 | 被引用内容 | 正确模式 | 说明 |
@@ -321,6 +326,8 @@ section_header(ws, 6, 2, 14, '说明 / 信息区',         bg=LIGHT_BG, font=bla
 | 估值倍数 | `0.0" x"` |
 | 人数/股数 | `#,##0` |
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 零值显示为 `-`，负数使用括号法 `(123)`。如采用窄货币符号列，符号列单独放 `$` / `¥`，数值列不再带货币符号。
 
 ```python
@@ -424,6 +431,8 @@ Sensitivity 必须极简、对称、可读。
 3. 所有结果格使用同一 `number_format`。
 4. 标题下方用灰色斜体说明输出指标。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ```python
 HEADER_BG, BASELINE_BG = 'CFE3F1', 'FFF2CC'    # 轴表头用浅蓝 light_bg；baseline 浅黄
 thin_gray = Side(style='thin', color='BFBFBF')
@@ -497,3 +506,5 @@ Sensitivity 额外检查：
 - **本地 `.xlsx`（Python 引擎）**：用 openpyxl 实现颜色、数字格式、边框、列宽、网格线、勾稽校验（见上方各 Python 示例）；批量样式可用 `scripts/format_range.py`，公式校验用 `scripts/formula_verify.py`。所有颜色用不带 `#` 的 6 位 hex（如 `'0000FF'`）。
 - **飞书在线表格**：写值/公式/样式按 `lark-sheets-write-cells`，多区域用 `lark-sheets-batch-update`，列宽行高用 `lark-sheets-range-operations` / `lark-sheets-sheet-structure`，跨 sheet 公式按 `lark-sheets-formula-translation` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
 - 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后只做必要的链接/预览处理。
+
+===== 全文完（共 510 行）=====

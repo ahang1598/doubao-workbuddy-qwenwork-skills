@@ -102,7 +102,7 @@ dry-run 会展示两步调用链：
 
 ## 权限说明
 
-当前 shortcut 声明的权限为 `wiki:space:write_only` 和 `wiki:space:read`。前者用于发起删除请求，后者用于轮询同一命令内的异步任务状态；如果本地 token 缺失任一权限，CLI 会直接提示，需由 agent 平台为当前用户补开 `wiki:space:write_only`、`wiki:space:read` scope。
+当前 shortcut 声明的权限为 `wiki:space:write_only` 和 `wiki:space:read`。前者用于发起删除请求，后者用于轮询同一命令内的异步任务状态；如果本地 token 缺失任一权限，需由 agent 平台为当前用户补开 `wiki:space:write_only` 和 `wiki:space:read` scope。
 
 异步超时后的 `lark-cli drive +task_result --scenario wiki_delete_space --task-id <TASK_ID>` 只需 `wiki:space:read`（纯读任务状态）。
 

@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "case_type": "company-analysis-seed-finance",
+    "as_of": "2026-01-01",
+    "market_or_jurisdiction": "示例",
+    "mode": "快速判断",
+    "task_id": "example-001"
+  },
+  "claims": [
+    {
+      "claim_id": "example_fact",
+      "statement": "示例事实，仅用于结构测试",
+      "claim_type": "fact",
+      "period": "2025",
+      "value": 100,
+      "unit": "示例单位",
+      "currency": "",
+      "source": "示例一手来源",
+      "source_date": "2026-01-01",
+      "url": "https://example.com/source",
+      "confidence": "high",
+      "calculation": "",
+      "input_claims": [],
+      "source_type": "regulatory_filing"
+    },
+    {
+      "claim_id": "example_inference",
+      "statement": "示例推断，仅用于结构测试",
+      "claim_type": "inference",
+      "period": "2025",
+      "value": null,
+      "unit": "",
+      "currency": "",
+      "source": "",
+      "source_date": "",
+      "url": "",
+      "confidence": "low",
+      "calculation": "",
+      "input_claims": [
+        "example_fact"
+      ]
+    }
+  ],
+  "assumptions": [
+    "示例假设"
+  ],
+  "data_gaps": [
+    {
+      "missing": "示例缺口",
+      "impact": "会降低相关结论的置信度"
+    }
+  ],
+  "payload": {
+    "company": "示例公司",
+    "business_model": "示例",
+    "financial_periods": [
+      "2025"
+    ],
+    "valuation_inputs": {},
+    "thesis": [],
+    "risks": []
+  }
+}

@@ -12,8 +12,6 @@ Phase files are references for this workflow, not independent skills. Do not rou
 
 ## Required Context
 
-Before running this workflow, treat every move / create / permission change as a write operation that needs explicit user confirmation; for permission or scope errors, guide the user using the `console_url` in the error response.
-
 Load other skills / references progressively:
 
 - Wiki / personal library target: [`../../lark-wiki/SKILL.md`](../../lark-wiki/SKILL.md)
@@ -202,7 +200,7 @@ Never request permission automatically, never batch permission requests, and nev
 ## Transition Rules
 
 1. If `PARSE_SCOPE` cannot determine the target range, ask only for target range clarification and stop.
-2. If auth or API scope is missing, guide the user using the `console_url` in the error response and stop.
+2. If auth or API scope is missing, guide the user to resolve it and stop.
 3. If resource access permission is missing, follow `Permission Request Gate`.
 4. If the user asks to inspect more pages, stay in `PLAN_GENERATION` and update `display_page_state`.
 5. If the user declines execution in `EXEC_CONFIRM`, output the saved plan summary and move to `DONE`.

@@ -3,7 +3,7 @@
 ## 何时读取
 
 - 用户要修改文档公开权限，尤其是 `drive permission.public patch` 返回 `91009` / `91010` / `91011` / `91012`。
-- 用户要给文档、文件、文件夹、Wiki 或 slides 增加协作者权限。
+- 用户要给文档、文件、文件夹、Wiki 或 slides 增加协作者权限，或把访问权限授予当前应用（bot）自身。
 - 用户遇到 `permission denied`，但错误表现更像租户对外分享、安全策略或密级拦截，而不是普通 scope 缺失。
 
 如果用户只是想向文档 owner 申请访问权限，优先使用 [`lark-drive-apply-permission.md`](lark-drive-apply-permission.md)。
@@ -35,12 +35,12 @@
 
 ## 授权用户访问文档
 
-需要把文档权限授予某个用户时，调用 `lark-cli drive permission.members create`，用 `member_type=openid`、`member_id=<目标用户 open_id>` 授权：
+需要把文档权限授予某个用户时，调用 `lark-cli drive permission.members create`，用 `member_type=openid`、`member_id=<用户 open_id>` 授权。
 
 ```bash
 lark-cli drive permission.members create \
   --params '{"token":"<doc_token>","type":"<resource_type>"}' \
-  --data '{"member_type":"openid","member_id":"<user_open_id>","perm":"view","type":"user"}'
+  --data '{"member_type":"openid","member_id":"<open_id>","perm":"view","type":"user"}'
 ```
 
 `<resource_type>` 可选值：`doc`、`docx`、`sheet`、`bitable`、`file`、`folder`、`wiki`、`slides`。

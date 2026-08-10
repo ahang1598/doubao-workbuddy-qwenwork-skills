@@ -5,6 +5,7 @@
 
 ## 快速决策
 - 用户要在 Drive 里上传、创建、读取、局部 patch 或覆盖更新**原生 `.md` 文件**（不是导入成 docx），切到 [`lark-markdown`](../../lark-markdown/SKILL.md)。
+- 用户在修改/重写/更新已有普通文件时，优先使用覆盖上传方式，而不是直接上传一个新文件。
 
 ## 命令
 
@@ -42,6 +43,8 @@ lark-cli schema drive.files.upload_prepare
 ```
 
 > [!IMPORTANT]
+> 如果这次调用传了 `--file-token`，表示是在**覆盖已有文件**，CLI **不会**额外修改该文件权限。
+>
 > **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认。
 
 > [!TIP]

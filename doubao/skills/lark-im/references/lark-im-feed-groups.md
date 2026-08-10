@@ -38,7 +38,7 @@ The two `*-item` shortcuts resolve `chat_name` via a follow-up `chats/batch_quer
 
 - `feed_group_id` is the feed-group identifier returned by `create`, typically formatted as `ofg_xxx`. It is an opaque string — the group's stable ID.
 - `feed_id` is the identifier of one feed card inside a group. In v1 only the `chat` feed card type is supported (see `feed_card_type` below), so `feed_id` is currently a chat ID such as `oc_xxx`.
-- All `feed.groups.*` methods require `user_access_token` and run as the authorized user.
+- All `feed.groups.*` methods require `user_access_token`. Run with `--as user`; bot/tenant tokens are rejected.
 - Read APIs (`batch_query`, `list`, `batch_query_item`, `list_item`) return **two parallel lists**: a live list (`groups[]` or `items[]`) and a soft-deleted list (`deleted_groups[]` or `deleted_items[]`). Consumers tracking incremental sync should consume both.
 - Time-range fields (`start_time`, `end_time`, `update_time`) are Unix timestamps **in milliseconds**, encoded as decimal strings (e.g. `1767196800000`).
 - Rule-based feed groups (`type=rule`) auto-populate from the rules declared in `feed_group_creator.rules`. Normal feed groups (`type=normal`) are managed explicitly via `batch_add_item` / `batch_remove_item`.
@@ -442,7 +442,7 @@ The three read methods are shortcut-only:
 - [`+feed-group-list`](lark-im-feed-group-list.md) — `im:feed_group_v1:read`
 - [`+feed-group-list-item`](lark-im-feed-group-list-item.md) / [`+feed-group-query-item`](lark-im-feed-group-query-item.md) — `im:feed_group_v1:read` **plus** `im:chat:read` (they always resolve `chat_name`)
 
-If a required scope is missing, the CLI surfaces a hint naming the needed scope (e.g. `im:feed_group_v1:write`); have the agent platform grant the current user that scope.
+If a required scope is missing, the agent platform must grant the corresponding scope (e.g. `im:feed_group_v1:write`) for the current user.
 
 ## References
 

@@ -128,3 +128,5 @@ lark-cli sheets +filter-delete --url "..." --sheet-id "$SID" --yes
 - `Validate`：XOR 公共四件套；`+filter-create` 校验 `--range` 至少 2 行（表头 + 至少 1 行数据）；`+filter-update` 必须先 `+filter-list` 确认目标存在；`+filter-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：输出"将要 POST/PATCH/DELETE 的 filter 请求模板"。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+filter-list` 查看当前筛选条件 + 已过滤行数。
+
+===== 全文完（共 132 行）=====

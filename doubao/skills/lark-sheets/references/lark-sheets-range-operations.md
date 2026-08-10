@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 305 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Range Operations
 
 ## 结构性操作影响面预检（清除 / 合并 / 排序 / 移动前必做）
@@ -99,6 +101,8 @@
 ### `+cells-clear`
 
 _公共四件套 · 系统：`--yes`、`--dry-run`_
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -203,6 +207,8 @@ _列 → 宽度 map_
 
 _排序条件列表（仅 sort 操作）_
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 **数组项**（类型 object）：
 - `column` (string) — 排序依据的列字母（如 "C"、"D"），必须在 range 范围内
 - `ascending` (boolean) — 是否升序排序
@@ -295,3 +301,5 @@ lark-cli sheets +range-sort --url "..." --sheet-id "$SID" --range "A1:E100" --ha
 - `Validate`：XOR 公共四件套；`+cells-clear` 强制 `--yes` 或 `--dry-run`；`+range-*` 校验源 / 目标 range 在同一 spreadsheet；`+range-sort` 的 `--sort-keys` 必须合法 JSON 数组且 col 都在 `--range` 内；`+rows-resize` / `+cols-resize` 两种形态二选一——统一形态必须给 `--range` 且至少给 `--height`/`--width` 或 `--type` 之一（`--type standard`/`auto` 不能与像素 flag 同给，`--type pixel` 共存 OK），map 形态（`--heights`/`--widths`）不能与 `--range`/`--height`/`--width`/`--type` 混用，map 键必须与命令维度一致（行数字 / 列字母）、不得重复，值为正整数像素或模式字符串；列宽 < 20px 拒绝（疑似 Excel 字符单位）；`+cols-resize` 不接受 `auto`（列宽不支持自适应）。map 形态在 `+batch-update` 子操作里不可用（它本身就是原子批量）。
 - `DryRun`：所有写操作输出"将要 PATCH 的 range + 受影响 cell 数估算"。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+cells-get --range <影响范围>` 抽样比对。
+
+===== 全文完（共 305 行）=====

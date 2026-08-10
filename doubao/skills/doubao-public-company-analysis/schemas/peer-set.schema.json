@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "company-analysis/schemas/peer-set.schema.json",
+  "title": "company-analysis peer-set.schema.json",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "target",
+    "core_peers",
+    "as_of",
+    "comparison_period"
+  ],
+  "properties": {
+    "target": {
+      "type": "string"
+    },
+    "core_peers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reference_peers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "as_of": {
+      "type": "string"
+    },
+    "comparison_period": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "inclusion_exclusion_reasons": {
+      "type": "object"
+    }
+  }
+}

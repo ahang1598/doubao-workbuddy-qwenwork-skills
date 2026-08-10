@@ -1,0 +1,35 @@
+{
+  "$schema": "doubao-book-writer-source-policy-v1",
+  "version": "1.1.0",
+  "provider": "doubao-google-search",
+  "implementedInPackage": false,
+  "preWritingRequiredFor": [
+    "create",
+    "rewrite"
+  ],
+  "initialSearchMinDirections": 3,
+  "requireGapReview": true,
+  "requireFollowUpSearchWhenGapsExist": true,
+  "useWhen": [
+    "time-sensitive-facts",
+    "external-cases",
+    "citation-verification",
+    "source-discovery"
+  ],
+  "evidenceTargets": [
+    "sources.md",
+    "sources/"
+  ],
+  "sourceRecordRequiredFields": [
+    "url",
+    "date",
+    "conclusion",
+    "targetChapter"
+  ],
+  "offlineFallback": {
+    "requireDisclosure": true,
+    "requireUserMaterialsUsed": true
+  },
+  "onUnavailable": "disclose-and-continue-with-user-materials",
+  "forbidFabricatedSources": true
+}

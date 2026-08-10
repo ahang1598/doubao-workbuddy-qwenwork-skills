@@ -1,0 +1,78 @@
+{
+  "prompt_requirements": [
+    "volume",
+    "unit_revenue",
+    "capacity_utilization",
+    "unit_cost",
+    "capex",
+    "reverse_dcf"
+  ],
+  "drivers": {
+    "volume": {
+      "cells": ["经营预测!C5:I6"],
+      "downstream_outputs": ["DCF估值!D26"]
+    },
+    "unit_revenue": {
+      "cells": ["经营预测!C9:I10"],
+      "downstream_outputs": ["DCF估值!D26"]
+    },
+    "capacity_utilization": {
+      "cells": ["经营预测!C12:I12"],
+      "downstream_outputs": ["DCF估值!D26"]
+    },
+    "unit_cost": {
+      "cells": ["经营预测!C15:I16"],
+      "downstream_outputs": ["DCF估值!D26"]
+    },
+    "capex": {
+      "cells": ["经营预测!C22:I22"],
+      "downstream_outputs": ["DCF估值!D26"]
+    },
+    "reverse_dcf": {
+      "cells": ["反向DCF!C11"],
+      "downstream_outputs": ["反向DCF!C12"]
+    }
+  },
+  "scenario_mappings": [
+    {
+      "id": "summary.base_per_share",
+      "display": "执行摘要!D7",
+      "source": "DCF估值!D26",
+      "scale": 1,
+      "tolerance": 0.01
+    }
+  ],
+  "formula_ranges": [
+    {
+      "id": "operating.derived",
+      "range": "经营预测!C17:I24",
+      "minimum_ratio": 0.8
+    }
+  ],
+  "identities": [
+    {
+      "id": "shares.total",
+      "type": "sum",
+      "total": "股本与市值桥!E5",
+      "components": ["股本与市值桥!C5", "股本与市值桥!D5"],
+      "tolerance": 0.000001
+    },
+    {
+      "id": "equity.per_share",
+      "type": "per_share",
+      "equity_value": "DCF估值!D22",
+      "shares": "DCF估值!D25",
+      "per_share": "DCF估值!D26",
+      "scale": 1,
+      "tolerance": 0.01
+    }
+  ],
+  "reverse_dcf": {
+    "solved_variable": "反向DCF!C11",
+    "market_value": "反向DCF!C4",
+    "recalculated_value": "反向DCF!C12",
+    "tolerance": 0.01,
+    "formula_required": true
+  },
+  "model_check_cells": ["模型检查!D5:D20"]
+}

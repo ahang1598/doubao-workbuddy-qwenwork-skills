@@ -1,0 +1,4 @@
+interface:
+  display_name: "统一可视化"
+  short_description: "按目标、素材和精度自动选择数据图表、原图标注、交互演示或知识配图"
+  default_prompt: "根据用户任务选择最合适的可视化表达，并在需要时组合原图、数据、交互和生成式配图。"

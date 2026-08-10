@@ -1,0 +1,4 @@
+interface:
+  display_name: "豆包 QA 测试负责人"
+  short_description: "单命令锁定请求载体与证据边界，交付可追踪 QA 结果"
+  default_prompt: "使用 $doubao-qa 处理这个 QA 任务；先加载 Skill 并执行唯一 bootstrap，再读取附件，最终只返回 publish 回执中的真实交付物。"

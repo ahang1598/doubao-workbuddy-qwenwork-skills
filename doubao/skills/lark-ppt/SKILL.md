@@ -19,33 +19,52 @@ description: 创建令人惊艳的 PPT 演示文稿。当用户要求制作、�
 | `presentation_id` | string | 否 | PPT 的 presentation_id。首次创建新 PPT 时可为空；向已有 PPT 追加页面时传已有的 presentation_id |
 | `presentation_name` | string | 否 | PPT 标题。创建新 PPT 时建议传入明确标题；追加到已有 PPT 时可按需传入 |
 | `insert_before` | string | 否 | 在指定 slide_id 前插入新页面；为空时默认追加到 PPT 末尾 |
-| `content` | string | **是** | 新增 PPT 页面的内容，必须是 XML 字符串，格式见下方 |
+| `content` | string | **是** | 新增 PPT 页面的内容，必须是 XML 字符串，格式见下方|
 | `lang` | string | 否 | content 的内容格式。固定填 `xml` 即可 |
+| `reference_image_url` | string | 否 | 必须来自上文图片工具的真实返回结果；不得猜测、拼接、改写或自行生成图片 URL |
 
 **content XML 格式：**
 
+**无模板时**
 ```xml
 <slides>
     <slide>
-        <prompt>该页生成描述</prompt>
+        <prompt><![CDATA[该页生成描述]]></prompt>
+    </slide>
+</slides>
+```
+**有模板时**
+```xml
+<slides>
+    <slide>
+        <template_id>模板ID</template_id>
+        <template_slide_id>模板页面ID</template_slide_id>
+        <prompt><![CDATA[该页生成描述，该页生成描述，严格沿用模板结构，只替换模板中的内容。]]></prompt>
     </slide>
 </slides>
 ```
 
-每个 `<slide>` 表示一页新增幻灯片，至少应包含 `<prompt>`。请在 prompt 中尽可能详细描述该页的主题、版式、文案、图表、配色、字体、图片使用及其他设计要求。
+- 每个 `<slide>` 表示一页新增幻灯片，至少应包含 `<prompt>`。请在 prompt 中尽可能详细描述该页的主题、版式、文案、图表、配色、字体、图片使用及其他设计要求。
+- 当 slide 中包含 `template_id` 和 `template_slide_id` 时，必须严格继承模板页的布局和视觉样式，只允许向模板已有内容槽位填入或替换内容，不得重新设计页面。
 
 **使用建议和约束：**
 
 1. ppt_write 工具支持生成文字、形状、常见图表、表格、图标、图片等 PPT 元素，并支持常用的 PPT 样式调整操作（位置大小变换、倒影阴影等）
-2. 默认 PPT 尺寸是 960 x 540 px
-3. 不要默认使用深蓝、科技蓝、米黄色为主色或者背景色
-4. 可用字体：
+2. 只有用户明确提供pptx文件的情况下才能使用 template_id 和 template_page_id；
+- **模板填充模式**：当 slide 中包含 `template_id` 和 `template_slide_id` 时，必须严格继承模板页的布局和视觉样式，只允许向模板已有内容槽位填入或替换内容，不得重新设计页面。
+- 禁止在 `<prompt>` 中编造图片地址；`reference_image_url` 必须直接使用图片工具返回的原始 URL
+- 如果没有可用图片 URL：
+   - 不得生成图片占位链接；
+   - 可以保留模板原图
+3. 默认 PPT 尺寸是 960 x 540 px
+4. 不要默认使用深蓝、科技蓝、米黄色为主色或者背景色
+5. 可用字体：
    - 中文：思源黑体、思源宋体、黑体、宋体、楷体
    - 拉丁：Poppins、Montserrat、Roboto、Lato、Inter、Raleway、Open Sans、Playfair Display、Merriweather、Oswald、Bebas Neue、DM Sans、Work Sans、Nunito、Quicksand
    - 其他语言：源ノ角ゴシック、본고딕、Nanum Gothic
    - 系统字体：Arial、Calibri、Times New Roman、Georgia
    - **限制**：除非用户明确要求，否则仅可使用上述字体
-5. 素材使用（如有）：
+6. 素材使用（如有）：
    - 不需要使用 图片工具 返回的图标，也不需要给 ppt_write 图标素材
    - 不是所有页面都需要图片素材，你应该挑选高质量的素材，宁缺毋滥
    - 对于论文、研究报告、商业应用等场景，只建议使用真实图片或者图表，不建议用抽象素材
@@ -53,12 +72,12 @@ description: 创建令人惊艳的 PPT 演示文稿。当用户要求制作、�
    - 当某一页没有素材链接时，不要占位，你应该根据上文内容提供更合适的文本内容，而不是素材占位
    - 素材应该和布局结合，例如只有 2 个有效素材时，不要设计三列布局
    - 所有的素材链接只能来自于上文，不要捏造任何链接，不要使用占位图库
-6. 布局及内容：
+7. 布局及内容：
    - 规划统一的视觉风格，包括配色、字体、布局
    - 为普通页面指定精确的设计参数（px级别），确保多页一致
    - 提供完整、详细的内容信息，不要遗漏关键数据
    - 布局和素材需要紧密结合，不能设计 2x2 布局时，只提供 3 张图片
-7. 用户没有明确要求页数时，默认生成 15 页以上的 PPT（根据用户任务复杂度酌情增加）；用户指定页数或提供分页稿时，以用户要求为准
+8. 用户没有明确要求页数时，默认生成 15 页以上的 PPT（根据用户任务复杂度酌情增加）；用户指定页数或提供分页稿时，以用户要求为准
 
 ---
 
@@ -118,19 +137,41 @@ description: 创建令人惊艳的 PPT 演示文稿。当用户要求制作、�
 | `presentation_id` | string | **是** | PPT 项目的唯一 ID |
 | `slide_ids` | array | **是** | 列表每一项是要读取的每页 PPT 的 slide_id |
 
+### extract_ppt_template
+> 读取用户上传的pptx文件的页面详情与截图。
+
+**参数：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | string | **是** | 用户上传的原始 PPTX 模板文件名 |
+| `url` | string | **是** | 与 name 对应的 PPTX 文件完整下载 URL |
+
+**使用约束：**
+- 仅在以下场景调用：
+  - 仅当用户明确提供 PPTX 文件，并希望基于其版式或视觉风格生成、续写、修改或重设计 PPT 时调用
+  - 需要分析的pptx模版存在 `template_id` 时
+- 当 PPT 只有 `canvas_id` 而没有 `template_id` 时，**不可**使用此工具
+
 ---
 
 ## 工作模式
 
 ### PPT 生成
 
-1. 结合用户提供的附件，理解用户需求（主题、风格、页数、场景等）
+1. 结合用户提供的模版、附件等，理解用户需求（主题、风格、页数、场景等）
 2. 用户指令优先：用户明确表明不需要搜索或者图片时，跳过 搜索工具 或 图片工具
 3. 当用户提出的概念、产品、实体、人物等超过你知识范围外的时候，不要妄下错误的结论，应该通过 搜索工具 检索后再做进一步判断
 4. 若需要外部信息或者解析附件内容 → 搜索工具 检索
 5. 若需要图片素材 → 图片工具 获取
-6. 规划整体视觉风格（配色、字体、布局）
-7. ppt_write 生成所有页面
+6. 当用户上传pptx文件要求参考其作为模板→ 调用extract_ppt_template
+7. 当用户上传pptx文件要求修改其中部分或全部内容→ 调用extract_ppt_template
+- 读取模板页面、页面截图、模板 ID、模板页面 ID 和可用内容槽位。
+- 根据每页内容类型和容量，选择匹配的模板页面。
+- 禁止在 `<prompt>` 中编造图片地址，`reference_image_url` 必须直接使用图片工具返回的原始 URL
+- 当 name/url 缺失、URL 无法解析、PPTX 解析失败、模板 ID/页面详情/预览图缺失或预览图下载失败时，返回错误 ToolResult，不要静默跳过或返回部分页面；应修正文件名或 URL。
+8. 规划整体视觉风格（配色、字体、布局）
+9. ppt_write 生成所有页面
 
 ### PPT 修改和优化
 
@@ -146,6 +187,7 @@ description: 创建令人惊艳的 PPT 演示文稿。当用户要求制作、�
 | 页面合并 | 确认合并后内容和插入位置 → ppt_write（指定 insert_before）→ ppt_delete 旧页 |
 | 需要补充外部信息 | 规划 TODO → 搜索工具 → 完成后执行对应编辑流程 |
 | 需要获取新的图片 | 规划 TODO → 图片工具 → 完成后执行对应编辑流程 |
+| 用户上传新的pptx作为模版 | 规划 TODO → extract_ppt_template 读取模版 → 不指定 canvas_id，调用 PPTWrite 生成新的 PPT |
 
 ### PPT 大纲生成
 

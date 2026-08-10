@@ -1,0 +1,13 @@
+{
+  "name": "qa-supertest-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --reporter=default --reporter=junit --outputFile.junit=artifacts/junit.xml"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "supertest": "^7.1.1",
+    "vitest": "^3.2.0"
+  }
+}

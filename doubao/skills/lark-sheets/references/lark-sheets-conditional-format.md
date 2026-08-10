@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 187 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Conditional Format
 
 ## 真对象硬约束 + 触发词清单
@@ -101,6 +103,8 @@ _公共四件套 · 系统：`--dry-run`_
 | `--rule-type` | string | required | 条件格式规则类型；优先级高于 `--properties` 中同名字段（可选值：`duplicateValues` / `uniqueValues` / `cellIs` / `containsText` / `timePeriod` / `containsBlanks` / `notContainsBlanks` / `dataBar` / `colorScale` / `rank` / `aboveAverage` / `expression` / `iconSet`） |
 | `--ranges` | string + File + Stdin（简单 JSON） | required | 应用条件格式的 A1 范围 JSON 数组（如 `["A1:A100","C2:C50"]`）；优先级高于 `--properties` 中同名字段 |
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+cond-format-update`
 
 _公共四件套 · 系统：`--dry-run`_
@@ -179,3 +183,5 @@ lark-cli sheets +cond-format-delete --url "..." --sheet-id "$SID" --rule-id "$RU
 - `Validate`：XOR 公共四件套；`--rule-type` / `--ranges` 必填；`--properties` 必须能解析为合法 JSON；按 `--rule-type` 检查必填子字段（`cellIs` 需 `attrs.operator` + `attrs.value`、`expression` 需 `attrs.formula`、`colorScale` 需 `min/mid/max` 配色等）；`+cond-format-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：写操作输出"将要 POST/PATCH/DELETE 的 conditional_format 请求模板"。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+cond-format-list --rule-id <id>` 比对规则 / 范围 / 样式。
+
+===== 全文完（共 187 行）=====

@@ -1,6 +1,6 @@
 # im +chat-update
 
-Update a group's name or description with user identity (UAT).
+Update a group's name or description. Supports both **TAT (bot)** and **UAT (user)** identity.
 
 This skill maps to the shortcut: `lark-cli im +chat-update` (internally calls `PUT /open-apis/im/v1/chats/:chat_id`).
 
@@ -62,13 +62,9 @@ lark-cli im +chat-update --chat-id oc_xxx \
 | `--name exceeds the maximum of 60 characters` | Group name too long | Shorten the name to 60 characters or fewer |
 | `--description exceeds the maximum of 100 characters` | Group description too long | Shorten the description to 100 characters or fewer |
 | `at least one field must be specified to update` | No update field was provided | Specify at least one field to update |
-| Permission denied (99991679) | Missing `im:chat:update` permission | Have the agent platform grant the current user the `im:chat:update` scope |
-| Non-owner/admin cannot update (232016/232002/232017) | The current user is not the owner/admin of the group | Only the group owner or an admin can update; confirm the authorized user has that role |
+| Permission denied (99991679) | Missing `im:chat:update` permission | Have the agent platform grant the `im:chat:update` scope for the current user |
+| Non-owner/admin cannot update (232016/232002/232017) | Current identity is not the owner/admin | The current user must be the group owner or an admin to update; have the agent platform provision the owner's credentials |
 | Not in the group (232011) | The current user is not a member of the group | Join the group first, then retry |
-
-## AI Usage Guidance
-
-Updating a group's name or description requires the authorized user to be the group owner or an admin. If ownership is unclear, query the group first and confirm `owner_id`. See [Group Chat Identity Rules](lark-im-chat-identity.md) for how to infer the owner and what the authorized user can change.
 
 ## References
 

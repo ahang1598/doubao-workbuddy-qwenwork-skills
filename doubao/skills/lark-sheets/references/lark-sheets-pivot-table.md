@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 177 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Pivot Table
 
 ## 真对象硬约束
@@ -109,6 +111,8 @@ _创建/更新的透视表属性_
 - `calculated_fields` (array<object>?) — 计算字段列表 each: { name: string, formula: string, summarize_by?: enum }
 - `collapse` (object?) — 行字段展开/折叠状态：字段名 -> 要折叠的项目列表
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ## Examples
 
 公共四件套：所有 shortcut 顶部排列 `--url` / `--spreadsheet-token` / `--sheet-id` / `--sheet-name`，其中 `--sheet-id` / `--sheet-name` 在 `+pivot-update` / `+pivot-delete` / `+pivot-list` 上是公共四件套语义（定位透视表所在 sheet，XOR 必传一个）。
@@ -169,3 +173,5 @@ lark-cli sheets +pivot-delete --url "..." --sheet-id "$SID" --pivot-table-id "$P
 - `Execute`：写后不自动回读；如需确认，自行调用 `+pivot-list --pivot-table-id <id>` 并用 `+csv-get` 抽样读透视产物核对输出尺寸 + 总计行位置。
 
 > ⚠️ pivot 输出包含总计 / 小计行；后续 chart 引用 pivot 时，`snapshot.data.refs` 必须排除这些行（见 `lark-sheets-chart` 的「⚠️ chart 数据源引用 pivot 时必须排除总计行」段）。
+
+===== 全文完（共 177 行）=====

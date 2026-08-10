@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "company-analysis/schemas/intake.schema.json",
+  "title": "company-analysis Intake",
+  "type": "object",
+  "required": [
+    "task_id",
+    "skill",
+    "mode",
+    "as_of",
+    "jurisdiction_or_market",
+    "inputs"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skill": {
+      "const": "company-analysis"
+    },
+    "mode": {
+      "enum": [
+        "快速判断",
+        "完整研究",
+        "聚焦分析"
+      ]
+    },
+    "as_of": {
+      "type": "string",
+      "minLength": 1
+    },
+    "jurisdiction_or_market": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_context": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "description": "按成功契约冻结的业务输入",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "analysis_focus": {
+          "type": "string",
+          "minLength": 1
+        },
+        "financial_periods": {
+          "type": "array",
+          "minItems": 1
+        },
+        "valuation_context": {
+          "type": "object"
+        },
+        "focus_question": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": true
+    },
+    "requested_artifacts": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "report.md",
+          "facts.json",
+          "report-display.md",
+          "report-capabilities.json",
+          "report-manifest.json"
+        ]
+      }
+    }
+  },
+  "additionalProperties": true,
+  "x-required-business-inputs": [
+    "公司名称或证券代码",
+    "交易所或市场",
+    "分析截止日",
+    "用户关注点或模式"
+  ]
+}

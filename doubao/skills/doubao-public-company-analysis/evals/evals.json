@@ -1,0 +1,413 @@
+[
+  {
+    "id": "company-analysis-01",
+    "type": "positive",
+    "prompt": "分析星海能源的商业模式、竞争优势、财务质量和估值，重点关注海外扩张风险。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-02",
+    "type": "positive",
+    "prompt": "基于我上传的三年年报和模型，写一份某上市公司的基本面研究。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-03",
+    "type": "positive",
+    "prompt": "比较一家公司与三家主要竞争对手，并形成投资观点。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-04",
+    "type": "positive",
+    "prompt": "公司利润增长但经营现金流下降，帮我做完整公司分析。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-05",
+    "type": "positive",
+    "prompt": "请分析一家港股公司的业务、财务、估值和主要风险。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-06",
+    "type": "edge",
+    "prompt": "只给了公司简称，存在多家同名公司。",
+    "expected": "应识别信息缺口，澄清或降级，不伪造数据",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_ask",
+        "value": true
+      },
+      {
+        "type": "must_not_include",
+        "value": "伪造数据"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-07",
+    "type": "edge",
+    "prompt": "用户要求估值，但没有最新价格、预测或财务数据。",
+    "expected": "应识别信息缺口，澄清或降级，不伪造数据",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_ask",
+        "value": true
+      },
+      {
+        "type": "must_not_include",
+        "value": "伪造数据"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-08",
+    "type": "edge",
+    "prompt": "用户提供的财报数字互相冲突。",
+    "expected": "应识别信息缺口，澄清或降级，不伪造数据",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_ask",
+        "value": true
+      },
+      {
+        "type": "must_not_include",
+        "value": "伪造数据"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-09",
+    "type": "negative",
+    "prompt": "帮我筛选十只低估值高增长股票。",
+    "expected": "不应触发；指出正确的相邻任务或安全边界",
+    "assertions": [
+      {
+        "type": "route_not_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "must_stop_after_route",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-10",
+    "type": "negative",
+    "prompt": "某公司被监管调查，这件事对行业和竞争对手有什么影响？",
+    "expected": "不应触发；指出正确的相邻任务或安全边界",
+    "assertions": [
+      {
+        "type": "route_not_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "must_stop_after_route",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-p1-generic-01",
+    "type": "edge",
+    "prompt": "截至2026-06-30，分析虚构上市公司澄明器件（交易所与代码已确认）。现有一手材料缺少可比公司同口径数据和完整估值输入，但包含最近年报、最新季报及现金流量表。请给最小可用公司分析，不要因为局部缺口停止。",
+    "expected": "应局部降级而非整体拒答，交付类型驱动、同行阻断、财务桥、degraded估值、最强反方和可观察证伪",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "company-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": [
+          "核心判断",
+          "财务桥",
+          "degraded",
+          "最强反方",
+          "证伪"
+        ]
+      },
+      {
+        "type": "must_not_include",
+        "value": "无法继续分析"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "company-analysis-p2-generic-cashflow-01",
+    "type": "edge",
+    "prompt": "截至给定日期分析虚构上市公司远岚设备。公司年报、最新中报和现金流量表可访问，管理层另披露 adjusted FCF，且客户融资现金流口径不同；实时价格暂不可得。请分析现金质量和估值边界。",
+    "expected": "先完成可得一手核心证据，不因价格缺失全局降级；从现金流量表桥接常规与公司调整后FCF，估值保持同一时点并局部degraded。",
+    "assertions": [
+      {"type": "route_to", "value": "company-analysis"},
+      {"type": "must_include", "value": ["现金流量表", "adjusted FCF", "客户融资", "degraded", "证伪"]},
+      {"type": "must_not_include", "value": ["经营利润+非现金", "目标价"]},
+      {"type": "numeric_claim_requires_inline_source", "value": true},
+      {"type": "prioritize_first_party_sources", "value": true}
+    ]
+  },
+  {
+    "id": "company-analysis-p2-generic-content-01",
+    "type": "edge",
+    "prompt": "分析虚构上市公司云汐内容平台的利润率机制。现有材料只能确认其存在按使用量结算的内容分成，缺少精确费率和同行数值。",
+    "expected": "不虚构费率；解释可变内容成本机制，给具名可比口径或阻断、最强反方和可观察证伪。",
+    "assertions": [
+      {"type": "route_to", "value": "company-analysis"},
+      {"type": "must_include", "value": ["可变", "可比", "最强反方", "证伪"]},
+      {"type": "must_not_include", "value": ["固定成本摊薄", "精确费率"]},
+      {"type": "no_unresolved_fact_binding", "value": true}
+    ]
+  }
+]

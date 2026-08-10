@@ -1,0 +1,20 @@
+{
+  "name": "qa-mobile-automation-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "iOS、Android 与微信小程序自动化连接冒烟及真实业务流",
+  "scripts": {
+    "appium:server": "appium",
+    "appium:preflight": "node appium-preflight.cjs",
+    "appium:run": "node run-with-appium.cjs",
+    "smoke:appium": "node appium-smoke.cjs",
+    "business:appium": "node business-flow.cjs",
+    "business:fallline": "node fallline-analysis-flow.cjs",
+    "smoke:miniprogram": "node miniprogram-smoke.cjs"
+  },
+  "devDependencies": {
+    "appium": "^3.0.0",
+    "miniprogram-automator": "^0.12.1",
+    "webdriverio": "^9.0.0"
+  }
+}

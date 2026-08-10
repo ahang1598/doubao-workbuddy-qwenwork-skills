@@ -1,6 +1,6 @@
 # im +chat-create
 
-Create a group chat with user identity (`--as user`). You can specify the group name, description, members (users/bots), owner, chat type (private/public), and group mode. Set `--chat-mode topic` to create a topic chat.
+Create a group chat as the current user. You can specify the group name, description, members (users/bots), owner, chat type (private/public), and group mode. Set `--chat-mode topic` to create a topic chat.
 
 This skill maps to the shortcut: `lark-cli im +chat-create` (internally calls `POST /open-apis/im/v1/chats`).
 
@@ -33,7 +33,7 @@ lark-cli im +chat-create --name "My Group" --users "ou_aaa" --bots "cli_aaa"
 # JSON output
 lark-cli im +chat-create --name "My Group" --format json
 
-# Create a group and invite users
+# Create a group and invite members
 lark-cli im +chat-create --name "My Group" --users "ou_aaa,ou_bbb"
 
 # Preview the request without creating anything
@@ -51,6 +51,7 @@ lark-cli im +chat-create --name "My Group" --dry-run
 | `--owner <open_id>` | No | Format `ou_xxx` | Owner open_id (defaults to the authorized user) |
 | `--type <type>` | No | `private` (default) or `public` | Group type. Default to `private`; pass `public` only when the user explicitly asks for a discoverable/public group. |
 | `--chat-mode <mode>` | No | `group` (default) or `topic` | Group mode; `topic` creates a topic chat (not the same as `group_message_type=thread`). When the user asks for a topic chat, pass `topic` explicitly — do not rely on the default. |
+| `--set-bot-manager` | No | - | Set the creating bot as a group manager |
 | `--format json` | No | - | Output as JSON |
 | `--dry-run` | No | - | Preview the request without executing it |
 
@@ -58,13 +59,13 @@ lark-cli im +chat-create --name "My Group" --dry-run
 
 ## AI Usage Guidance
 
-You can create the group and invite members in one step:
+The authorized user creates the group and can invite members in one step:
 
 ```bash
 lark-cli im +chat-create --name "<group name>" --users "ou_aaa,ou_bbb"
 ```
 
-The authorized user is automatically the group creator and member. To resolve a member's open_id from a name or email, run `lark-cli contact +search-user --query "<name or email>"` first.
+The authorized user is automatically the group creator and member.
 
 ## Output Fields
 
@@ -105,7 +106,7 @@ lark-cli im +messages-send --chat-id "$CHAT_ID" --text "Welcome, everyone!"
 
 | Symptom | Root Cause | Solution |
 |---------|---------|---------|
-| Permission denied (99991672) | The app does not have `im:chat:create_by_user` permission enabled | Enable the required permission for the app in the Open Platform console |
+| Permission denied (99991672) | The app does not have `im:chat:create` (bot) or `im:chat:create_by_user` (user) permission enabled | Enable the required permission for the app in the Open Platform console |
 | `--name is required for public groups and must be at least 2 characters` | A public group was created without a name or with a name shorter than 2 characters | Provide a name with at least 2 characters |
 | `--name exceeds the maximum of 60 characters` | The group name is too long | Shorten the name to 60 characters or fewer |
 | `--description exceeds the maximum of 100 characters` | The group description is too long | Shorten the description to 100 characters or fewer |
@@ -114,7 +115,7 @@ lark-cli im +messages-send --chat-id "$CHAT_ID" --text "Welcome, everyone!"
 | `invalid user id: expected open_id (ou_xxx)` | Invalid user ID format | Use the `ou_xxx` format for users |
 | `invalid bot id: expected app ID (cli_xxx)` | Invalid bot ID format | Use the `cli_xxx` format for bots |
 | `invalid --owner: expected open_id (ou_xxx)` | Invalid owner ID format | Use the `ou_xxx` format for the owner |
-| `cannot invite user` (232043) | A target user is not reachable by the authorized user | Verify the target users are visible to the authorized user; add reachable members and report the rest |
+| `invisible to user` (232043) | The current user and a target user are mutually invisible | Ensure the target users are visible to the current user, or add them after the group is created |
 
 ## References
 

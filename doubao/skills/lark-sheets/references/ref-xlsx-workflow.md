@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 456 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Excel 文件技术工作流（xlsx workflow）
 
 本文件覆盖 Excel 文件的创建、编辑、公式重算与验证的完整技术流程。
@@ -75,7 +77,6 @@ def write_formula_to_merged(ws, cell_range, formula):
 
 ```python
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
 
 wb = Workbook()
 ws = wb.active
@@ -83,125 +84,38 @@ ws = wb.active
 ws['A1'] = '标题'
 ws['B2'] = '=SUM(B3:B10)'   # 写公式，不写硬编码计算值
 
-ws['A1'].font = Font(bold=True, color='FF0000')
-ws['A1'].fill = PatternFill('solid', start_color='FFFF00')
-ws['A1'].alignment = Alignment(horizontal='center')
-ws.column_dimensions['A'].width = 20
+# 视觉样式与列宽按 ref-excel-visual-standards.md 处理；技术示例不另设默认配色。
 
 wb.save('output.xlsx')
 ```
 
 ### 标准 Excel Table（ListObject）
 
-把数据范围注册为原生 Excel Table，自带筛选/排序/条带样式，且后续公式可用结构化引用（`=表名[列名]`）：
+把数据范围注册为原生 Excel Table，自带筛选/排序，且后续公式可用结构化引用（`=表名[列名]`）。条带样式默认关闭；仅在用户明确要求或源表已有同类样式时开启：
 
 ```python
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
 tbl = Table(displayName="销售明细", ref="A1:F100")  # 必须包含表头行
 tbl.tableStyleInfo = TableStyleInfo(
-    name="TableStyleMedium9",   # Light/Medium/Dark + 编号，可在 Excel 中预览
-    showRowStripes=True,
+    name="TableStyleLight9",    # 轻量样式；具体视觉取值见 ref-excel-visual-standards.md
+    showRowStripes=False,
     showColumnStripes=False,
 )
 ws.add_table(tbl)
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 注意：`displayName` 在工作簿内必须唯一；`ref` 必须是矩形区域且第一行为表头。
 
-## 单元格设置（行高 / 列宽 / 截断）
+## 单元格排版（行高 / 列宽 / 换行）
 
-如果你是在**新建 sheet 或新建表格区域**输出结果，且用户未指定行高/列宽等细节，可以按表格形态做统一排版；如果你是在修改用户现有模板且用户未要求“整理格式/统一行高列宽”，则应保持原有行高列宽与对齐方式不变。
+本技术工作流不另设视觉默认值。只要新建或重新排版 `.xlsx` 区域，先读取 `ref-excel-visual-standards.md`，使用其中的 `auto_fit_columns()` 和相关规则统一处理显示宽度、列宽上限、换行与行高。
 
-### 规则（默认）
-
-- 多行多列（行 > 1 且列 > 1）：行高 50，列宽 80，截断
-- 单列表格（列 = 1）：列宽 150，截断
-- 单行表格（行 = 1）：行高 50，截断
-
-### 截断含义
-
-- 不换行：`wrap_text=False`
-- 对超长字符串做字符截断并加省略号，避免溢出影响阅读
-
-```python
-from __future__ import annotations
-
-from typing import Optional, Tuple
-
-from openpyxl.styles import Alignment
-from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.worksheet import Worksheet
-
-
-def _used_range(ws: Worksheet) -> Tuple[int, int]:
-    max_row = 0
-    max_col = 0
-    for row in ws.iter_rows(values_only=False):
-        for cell in row:
-            if cell.value is None:
-                continue
-            max_row = max(max_row, cell.row)
-            max_col = max(max_col, cell.column)
-    return max_row, max_col
-
-
-def _truncate_text(value: object, max_chars: int) -> object:
-    if not isinstance(value, str):
-        return value
-    s = value.strip()
-    if len(s) <= max_chars:
-        return value
-    if max_chars <= 1:
-        return "…"
-    return s[: max_chars - 1] + "…"
-
-
-def _col_width_chars(ws: Worksheet, col_index: int, default_width: int = 10) -> int:
-    letter = get_column_letter(col_index)
-    width = ws.column_dimensions[letter].width
-    if width is None:
-        return default_width
-    try:
-        return max(1, int(round(float(width))))
-    except (TypeError, ValueError):
-        return default_width
-
-
-def apply_table_cell_settings(
-    ws: Worksheet,
-    *,
-    target_range: Optional[Tuple[int, int]] = None,
-) -> None:
-    max_row, max_col = target_range or _used_range(ws)
-    if max_row <= 0 or max_col <= 0:
-        return
-
-    set_row_height = (max_row == 1) or (max_row > 1 and max_col > 1)
-    set_col_width = (max_col == 1) or (max_row > 1 and max_col > 1)
-
-    row_height = 50
-    col_width = 150 if max_col == 1 else 80
-
-    align = Alignment(wrap_text=False, vertical="center")
-
-    if set_col_width:
-        for c in range(1, max_col + 1):
-            ws.column_dimensions[get_column_letter(c)].width = col_width
-
-    if set_row_height:
-        for r in range(1, max_row + 1):
-            ws.row_dimensions[r].height = row_height
-
-    for r in range(1, max_row + 1):
-        for c in range(1, max_col + 1):
-            cell = ws.cell(row=r, column=c)
-            if cell.value is None:
-                continue
-            max_chars = col_width if set_col_width else _col_width_chars(ws, c)
-            cell.value = _truncate_text(cell.value, max_chars)
-            cell.alignment = align
-```
+- 新建 sheet 或新建表格区域：按实际内容计算列宽；中文和全角字符按 2 个字符估算；超出上限时换行，不修改单元格原始文本。
+- 修改已有模板：除非用户明确要求整理格式，否则保留原有行高、列宽、隐藏状态和对齐方式，只调整新增或确实显示不全的目标区域。
+- 禁止为了版面整齐而截断、改写或追加省略号到原始单元格值；视觉问题通过列宽、换行和必要的行高调整解决。
 
 ## 编辑已有 Excel 文件
 
@@ -294,6 +208,8 @@ def safe_set_formula(ws, cell, formula):
 ## 公式重算（必做步骤）
 
 openpyxl 写入的公式只是字符串，单元格中没有计算值。**凡包含公式的交付文件必须执行重算**：
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ```bash
 python scripts/formula_verify.py output.xlsx
@@ -403,6 +319,8 @@ ws.delete_cols(3, 1)   # 从第3列开始删除1列
 ws.column_dimensions['C'].hidden = True  # 隐藏C列
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### pandas 行列操作
 
 ```python
@@ -428,7 +346,6 @@ df = df.reset_index(drop=True)
 ```python
 import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.styles import Alignment
 
 def process_excel(input_file, output_file):
     df = pd.read_excel(input_file)
@@ -437,41 +354,38 @@ def process_excel(input_file, output_file):
     df = df.drop(columns=cols_to_drop)
     if "收入" in df.columns and "成本" in df.columns:
         df["利润"] = df["收入"] - df["成本"]
-        df["利润率"] = (df["利润"] / df["收入"] * 100).round(2)
+        df["利润率"] = (df["利润"] / df["收入"]).round(4)
     df.to_excel(output_file, index=False)
 
     wb = load_workbook(output_file)
     ws = wb.active
-    for col in ws.columns:
-        lengths = []
-        needs_wrap = False
-        for cell in col[:501]:
-            s = str(cell.value or "")
-            if len(s) > 40:
-                needs_wrap = True
-            lengths.append(min(len(s), 100))
-        lengths.sort()
-        p95 = lengths[int(0.95 * (len(lengths) - 1))] if lengths else 0
-        width = max(8, min(p95 + 2, 40))
-        col_letter = col[0].column_letter
-        ws.column_dimensions[col_letter].width = width
-        if needs_wrap:
-            for cell in col[1:501]:
-                cell.alignment = Alignment(wrap_text=True)
+    if "利润率" in df.columns:
+        rate_col = df.columns.get_loc("利润率") + 1
+        for row in range(2, ws.max_row + 1):
+            ws.cell(row=row, column=rate_col).number_format = "0.00%"
+
+    # 新建区域的列宽、换行与行高按 ref-excel-visual-standards.md 中
+    # auto_fit_columns() 的统一规则处理，不在技术工作流中重复定义视觉参数。
     wb.save(output_file)
 ```
 
 ### 范围清空与重置
 
-仅清 value 不够时（残留底色/数值格式会污染后续输出），用以下函数把范围彻底重置：
+默认只清内容并保留样式；只有用户明确要求“重置格式”时才清除样式。将两种动作拆开，避免普通清空误删字体、边框、填充、数字格式和对齐：
 
 ```python
 from openpyxl.styles import Alignment, Border, Font, PatternFill
 from openpyxl.utils.cell import range_boundaries
 
-def reset_range(ws, range_str: str, *, shift: str | None = None):
-    """清空 value + 重置 Font/Border/Fill/number_format/alignment。
-    shift='up' 上移整行；shift='left' 左移整列；None 仅清内容。"""
+def clear_values(ws, range_str: str):
+    """仅清内容，保留样式和结构。"""
+    sc, sr, ec, er = range_boundaries(range_str)
+    for r in range(sr, er + 1):
+        for c in range(sc, ec + 1):
+            ws.cell(row=r, column=c).value = None
+
+def reset_range(ws, range_str: str):
+    """仅在用户明确要求重置格式时，清空内容并重置目标范围样式。"""
     sc, sr, ec, er = range_boundaries(range_str)
     for r in range(sr, er + 1):
         for c in range(sc, ec + 1):
@@ -482,13 +396,9 @@ def reset_range(ws, range_str: str, *, shift: str | None = None):
             cell.fill = PatternFill()
             cell.number_format = "General"
             cell.alignment = Alignment()
-    if shift == "up":
-        ws.delete_rows(sr, er - sr + 1)
-    elif shift == "left":
-        ws.delete_cols(sc, ec - sc + 1)
 ```
 
-`shift='up'/'left'` 相当于 Excel 的「删除并上移/左移」，常用于剔除整段空行/空列。
+需要删除并上移/左移时，显式调用 `ws.delete_rows(...)` / `ws.delete_cols(...)`，不要把结构删除混入普通清空函数。
 
 ---
 
@@ -528,6 +438,8 @@ def get_cell_validation(filepath: str, sheet_name: str, cell_address: str) -> di
     return {"cell": cell_address, "has_validation": False}
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 常见数据验证类型：
 
 | `type` | 含义 | `formula1` / `formula2` 示例 |
@@ -540,3 +452,5 @@ def get_cell_validation(filepath: str, sheet_name: str, cell_address: str) -> di
 | `custom` | 自定义公式 | `=AND(A1>0,A1<100)` |
 
 写入时若违反规则会出现 `Excel 已发现"file.xlsx"中的部分内容存在问题`。修改前先调用 `get_cell_validation` 拿到 `allowed_values`，再决定是直接使用合法值还是先 `ws.data_validations.dataValidation.remove(dv)` 移除规则。
+
+===== 全文完（共 456 行）=====

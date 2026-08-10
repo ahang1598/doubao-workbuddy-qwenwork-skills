@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Company Analysis P1/P2 Minimum Deliverable",
+  "type": "object",
+  "required": [
+    "identity",
+    "answer",
+    "capabilities",
+    "evidence_slots",
+    "claims",
+    "calculations",
+    "company_type",
+    "competition",
+    "financial_quality",
+    "valuation",
+    "bear_case",
+    "unknowns",
+    "sources"
+  ],
+  "properties": {
+    "contract_version": {"enum": ["P1", "P2"]},
+    "identity": {
+      "type": "object",
+      "required": ["company", "ticker", "exchange", "as_of", "latest_fy", "latest_reported_period", "freeze_point_checked"],
+      "properties": {
+        "company": {"type": "string", "minLength": 1},
+        "ticker": {"type": "string", "minLength": 1},
+        "exchange": {"type": "string", "minLength": 1},
+        "as_of": {"type": "string", "minLength": 1},
+        "latest_fy": {"type": "string", "minLength": 1},
+        "latest_reported_period": {"type": "string", "minLength": 1},
+        "freeze_point_checked": {"const": true}
+      }
+    },
+    "answer": {
+      "type": "object",
+      "required": ["core_judgment", "confidence", "largest_uncertainty"],
+      "properties": {
+        "core_judgment": {"type": "string", "minLength": 1},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "largest_uncertainty": {"type": "string", "minLength": 1}
+      }
+    },
+    "capabilities": {"type": "object"},
+    "evidence_slots": {"type": "array", "minItems": 8, "maxItems": 15},
+    "claims": {"type": "array", "minItems": 1},
+    "calculations": {"type": "array"},
+    "company_type": {
+      "type": "object",
+      "required": ["type", "required_metrics", "covered_metrics"],
+      "properties": {
+        "type": {"type": "string", "minLength": 1},
+        "required_metrics": {"type": "array", "minItems": 1},
+        "covered_metrics": {"type": "array"},
+        "content_rights_cost_mechanism": {
+          "type": "object",
+          "properties": {
+            "variable_components": {"type": "array"},
+            "minimum_guarantees": {"type": "array"},
+            "fixed_components": {"type": "array"},
+            "assumes_fixed_cost_dilution": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "competition": {
+      "type": "object",
+      "required": ["named_peers", "comparability_notes", "blocked_reason"],
+      "properties": {
+        "named_peers": {"type": "array"},
+        "comparability_notes": {"type": "array"},
+        "blocked_reason": {"type": "string"}
+      }
+    },
+    "financial_quality": {
+      "type": "object",
+      "required": ["bridge", "conclusion"],
+      "properties": {
+        "bridge": {"type": "array", "minItems": 1},
+        "conclusion": {"type": "string", "minLength": 1},
+        "cashflow_basis": {
+          "type": "object",
+          "properties": {
+            "statement_cfo_claim_id": {"type": "string", "minLength": 1},
+            "cash_capex_claim_ids": {"type": "array", "minItems": 1},
+            "conventional_fcf_definition": {"type": "string", "minLength": 1},
+            "company_adjusted_fcf_name": {"type": ["string", "null"]},
+            "adjusted_to_statutory_bridge": {"type": "array"},
+            "statutory_total_cash_claim_id": {"type": ["string", "null"]},
+            "customer_financing_scope": {"type": "string", "minLength": 1},
+            "unreconciled_difference": {"type": ["number", "null"]}
+          }
+        }
+      }
+    },
+    "valuation": {
+      "type": "object",
+      "required": ["mode", "as_of", "method", "implied_assumptions", "blocked_inputs"],
+      "properties": {
+        "mode": {"enum": ["full", "degraded", "blocked"]},
+        "as_of": {"type": "string"},
+        "method": {"type": "string"},
+        "implied_assumptions": {"type": "array"},
+        "blocked_inputs": {"type": "array"},
+        "input_as_of_consistent": {"type": "boolean"},
+        "market_inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "as_of"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "as_of": {"type": "string", "minLength": 1},
+              "value": {},
+              "source_id": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "bear_case": {
+      "type": "object",
+      "required": ["strongest_counterargument", "falsification_signals"],
+      "properties": {
+        "strongest_counterargument": {"type": "string", "minLength": 1},
+        "falsification_signals": {"type": "array", "minItems": 3}
+      }
+    },
+    "unknowns": {"type": "array"},
+    "sources": {"type": "array", "minItems": 1}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"contract_version": {"const": "P2"}},
+        "required": ["contract_version"]
+      },
+      "then": {
+        "properties": {
+          "financial_quality": {"required": ["bridge", "conclusion", "cashflow_basis"]},
+          "valuation": {"required": ["mode", "as_of", "method", "implied_assumptions", "blocked_inputs", "input_as_of_consistent", "market_inputs"]}
+        }
+      }
+    }
+  ]
+}

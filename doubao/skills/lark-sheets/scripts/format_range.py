@@ -10,8 +10,9 @@
 """
 import argparse
 import json
+from copy import copy
 
-from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protection, Side
+from openpyxl.styles import Color, PatternFill, Protection, Side
 from openpyxl.formatting.rule import (
     CellIsRule,
     ColorScaleRule,
@@ -65,10 +66,11 @@ def main():
     p.add_argument("--bg-color")
     p.add_argument("--border-style", choices=["thin", "medium", "thick", "dashed", "dotted", "double"])
     p.add_argument("--border-color")
+    p.add_argument("--border-sides", help="要修改的边，逗号分隔：top,bottom,left,right；使用 --border-style 时必填")
     # 数值与对齐
     p.add_argument("--number-format")
     p.add_argument("--align", choices=["left", "center", "right", "justify"])
-    p.add_argument("--vertical", choices=["top", "center", "bottom"], default="center")
+    p.add_argument("--vertical", choices=["top", "center", "bottom"])
     p.add_argument("--wrap", action="store_true")
     # 合并
     p.add_argument("--merge", action="store_true")
@@ -89,29 +91,28 @@ def main():
     except ValueError as e:
         emit_error(str(e))
 
-    font_kwargs = {"bold": args.bold, "italic": args.italic, "underline": "single" if args.underline else None}
-    if args.font_size:
-        font_kwargs["size"] = args.font_size
-    if args.font_name:
-        font_kwargs["name"] = args.font_name
-    if args.font_color:
-        font_kwargs["color"] = Color(rgb=_normalize_color(args.font_color))
-    font = Font(**font_kwargs)
+    font_requested = any((args.bold, args.italic, args.underline, args.font_size, args.font_color, args.font_name))
 
     fill = None
     if args.bg_color:
         c = _normalize_color(args.bg_color)
         fill = PatternFill(start_color=c, end_color=c, fill_type="solid")
 
-    border = None
+    border_side = None
+    border_sides = []
     if args.border_style:
+        if not args.border_sides:
+            emit_error("--border-sides is required with --border-style; choose from top,bottom,left,right")
+        border_sides = [part.strip().lower() for part in args.border_sides.split(",") if part.strip()]
+        invalid_sides = sorted(set(border_sides) - {"top", "bottom", "left", "right"})
+        if invalid_sides:
+            emit_error(f"Invalid --border-sides: {','.join(invalid_sides)}")
         bc = _normalize_color(args.border_color or "000000")
-        side = Side(style=args.border_style, color=Color(rgb=bc))
-        border = Border(left=side, right=side, top=side, bottom=side)
+        border_side = Side(style=args.border_style, color=Color(rgb=bc))
+    elif args.border_sides:
+        emit_error("--border-sides requires --border-style")
 
-    align = None
-    if args.align or args.wrap or args.vertical:
-        align = Alignment(horizontal=args.align, vertical=args.vertical, wrap_text=args.wrap)
+    alignment_requested = any((args.align, args.wrap, args.vertical))
 
     protect = None
     if args.protection:
@@ -120,16 +121,54 @@ def main():
         except Exception as e:
             emit_error(f"Invalid --protection JSON: {e}")
 
+    merge_requested = args.merge and (er > sr or ec > sc)
+    merge_value = None
+    if merge_requested:
+        non_empty = [
+            ws.cell(row=r, column=c).value
+            for r in range(sr, er + 1)
+            for c in range(sc, ec + 1)
+            if ws.cell(row=r, column=c).value not in (None, "")
+        ]
+        distinct = {(type(value).__name__, repr(value)) for value in non_empty}
+        if len(distinct) > 1:
+            emit_error("Refusing to merge: target range contains different non-empty values")
+        merge_value = non_empty[0] if non_empty else None
+
     for r in range(sr, er + 1):
         for c in range(sc, ec + 1):
             cell = ws.cell(row=r, column=c)
-            cell.font = font
+            if font_requested:
+                font = copy(cell.font)
+                if args.bold:
+                    font.bold = True
+                if args.italic:
+                    font.italic = True
+                if args.underline:
+                    font.underline = "single"
+                if args.font_size:
+                    font.size = args.font_size
+                if args.font_name:
+                    font.name = args.font_name
+                if args.font_color:
+                    font.color = Color(rgb=_normalize_color(args.font_color))
+                cell.font = font
             if fill is not None:
                 cell.fill = fill
-            if border is not None:
+            if border_side is not None:
+                border = copy(cell.border)
+                for side_name in border_sides:
+                    setattr(border, side_name, border_side)
                 cell.border = border
-            if align is not None:
-                cell.alignment = align
+            if alignment_requested:
+                alignment = copy(cell.alignment)
+                if args.align:
+                    alignment.horizontal = args.align
+                if args.vertical:
+                    alignment.vertical = args.vertical
+                if args.wrap:
+                    alignment.wrap_text = True
+                cell.alignment = alignment
             if protect is not None:
                 cell.protection = protect
             if args.number_format:
@@ -139,7 +178,14 @@ def main():
         args.start if ":" in args.start else f"{args.start}:{args.end}"
     )
 
-    if args.merge and (er > sr or ec > sc):
+    if merge_requested:
+        anchor = ws.cell(row=sr, column=sc)
+        if anchor.value in (None, "") and merge_value is not None:
+            anchor.value = merge_value
+        for r in range(sr, er + 1):
+            for c in range(sc, ec + 1):
+                if (r, c) != (sr, sc):
+                    ws.cell(row=r, column=c).value = None
         ws.merge_cells(start_row=sr, start_column=sc, end_row=er, end_column=ec)
 
     if args.cond_format:
@@ -159,12 +205,12 @@ def main():
         "status": "success",
         "range": range_str,
         "sheet": args.sheet,
-        "merged": bool(args.merge and (er > sr or ec > sc)),
+        "merged": bool(merge_requested),
         "applied": {
-            "font": bool(args.bold or args.italic or args.underline or args.font_size or args.font_color or args.font_name),
+            "font": bool(font_requested),
             "fill": fill is not None,
-            "border": border is not None,
-            "align": align is not None,
+            "border": border_side is not None,
+            "align": alignment_requested,
             "number_format": bool(args.number_format),
             "conditional_format": bool(args.cond_format),
         },

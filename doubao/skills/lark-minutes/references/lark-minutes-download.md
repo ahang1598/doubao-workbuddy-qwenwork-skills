@@ -119,7 +119,7 @@ API 限流 5 次/秒，批量下载时需注意控制频率。
 | 妙记尚未准备好 | 2091003 | 转写未完成 | 等待转写完成后重试 |
 | 资源已删除 | 2091004 | 妙记已被删除 | 确认妙记文件仍然存在 |
 | 权限不足 | 2091005 | 无阅读权限 | 检查是否有该妙记的访问权限 |
-| `missing required scope(s)` | — | 应用缺少权限 | 让 agent 平台为当前用户补开 `minutes:minutes.media:export` scope |
+| `missing required scope(s)` | — | 缺少权限 | 让 agent 平台为当前用户补开 `minutes:minutes.media:export` scope |
 
 ## 提示
 

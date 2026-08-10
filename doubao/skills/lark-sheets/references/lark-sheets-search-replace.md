@@ -109,3 +109,5 @@ lark-cli sheets +cells-replace --url "https://example.feishu.cn/sheets/shtXXX" \
 - `Validate`：XOR 公共四件套；`--find` 非空；正则模式下 `--find` 必须是合法正则。
 - `DryRun`：`+cells-search` 输出请求模板；`+cells-replace` 额外返回预估替换数（`would_replace_count`）。
 - `Execute`：写后不自动回读；如需确认，自行用 `+cells-search` 复查旧值是否已不再命中。
+
+===== 全文完（共 113 行）=====

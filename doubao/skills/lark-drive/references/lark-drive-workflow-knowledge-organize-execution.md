@@ -190,7 +190,7 @@ Template:
 
 | Failure / Blocker | Agent MUST Do | Agent MUST NOT Do |
 |-------------------|---------------|-------------------|
-| Missing API scope | Guide the user using the `console_url` in the error response and stop | Do not retry the same command repeatedly |
+| Missing API scope | Handle the permission error and stop | Do not retry the same command repeatedly |
 | Resource access denied | Stop and follow the main workflow `Permission Request Gate` | Do not request permission automatically or in batch |
 | Target path cannot resolve to token | Mark affected plan item failed or `needs_review=true` | Do not execute move with a path string |
 | Target path has same-name ambiguity | Read existing children if possible; otherwise mark `needs_review=true` | Do not create duplicate target blindly |

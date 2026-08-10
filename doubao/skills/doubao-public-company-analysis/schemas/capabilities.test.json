@@ -1,0 +1,37 @@
+{
+  "can_assess_business": {
+    "allowed": true,
+    "missing": []
+  },
+  "can_assess_competition": {
+    "allowed": false,
+    "missing": [
+      "payload.competition"
+    ]
+  },
+  "can_assess_financial_quality": {
+    "allowed": false,
+    "missing": [
+      "payload.financial_bridge"
+    ]
+  },
+  "can_compare_peers": {
+    "allowed": false,
+    "missing": [
+      "payload.competition"
+    ]
+  },
+  "can_value": {
+    "allowed": false,
+    "missing": [
+      "payload.valuation_inputs"
+    ]
+  },
+  "can_state_investment_view": {
+    "allowed": false,
+    "missing": [
+      "payload.thesis",
+      "payload.risks"
+    ]
+  }
+}

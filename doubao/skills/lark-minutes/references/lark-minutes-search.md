@@ -83,12 +83,12 @@ lark-cli minutes +search --query "预算复盘" --format json
 
 ### 2. 仅支持 user 身份
 
-该接口仅支持 `user` 身份，由 agent 平台注入 UAT，并具备 `minutes:minutes.search:read` 权限。
+该接口仅支持 `user` 身份，由 agent 平台注入 UAT，并需具备 `minutes:minutes.search:read` 权限。
 
 ### 3. `me` 表示当前用户
 
 在 `--owner-ids` 和 `--participant-ids` 中可使用 `me`，表示当前登录用户。该值会在本地解析为当前用户的 `open_id`，无需手动先查询自己的用户 ID。
-若 CLI 无法解析出当前用户的 `open_id`（凭证未就绪），则应先由 agent 平台补齐用户凭证，再重新执行搜索。
+若 CLI 无法解析出当前用户的 `open_id`，则应先由 agent 平台补齐用户凭证，再重新执行搜索。
 
 ### 4. 自然语言中的“参与的妙记”默认按并集理解
 
@@ -180,9 +180,9 @@ lark-cli minutes +detail --minute-tokens <minute_token> --summary
 | ---------------------- | ----------------------------------------------------- | -------------------------------------------- |
 | 命令直接报错，要求提供过滤条件        | 没有传入 `--query`、时间范围或任何过滤 ID                           | 至少补充一个过滤条件后重试                                |
 | 时间参数校验失败               | `--start` 或 `--end` 格式不合法                             | 改用 ISO 8601 或 `YYYY-MM-DD`                   |
-| `owner-ids` 校验失败       | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或在用户凭证就绪后再传 `me` |
-| `participant-ids` 校验失败 | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或在用户凭证就绪后再传 `me` |
-| 权限不足                   | 未授权 `minutes:minutes.search:read`                     | 让 agent 平台为当前用户补开该 scope                  |
+| `owner-ids` 校验失败       | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或先由 agent 平台补齐用户凭证后再传 `me` |
+| `participant-ids` 校验失败 | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或先由 agent 平台补齐用户凭证后再传 `me` |
+| 权限不足                   | 未授权 `minutes:minutes.search:read`                     | 让 agent 平台为当前用户补开 `minutes:minutes.search:read` scope |
 
 ## 提示
 

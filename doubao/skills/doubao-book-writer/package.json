@@ -1,0 +1,10 @@
+{
+  "name": "doubao-book-writer",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "豆包办公工作空间非虚构长文档写作 Skill",
+  "engines": {
+    "node": ">=22"
+  }
+}

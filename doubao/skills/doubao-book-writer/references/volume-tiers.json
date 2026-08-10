@@ -1,0 +1,43 @@
+{
+  "$schema": "doubao-book-writer-volume-tiers-v1",
+  "version": "1.1.0",
+  "description": "长文规模分档的机器真源：同时约束计划字数、章节数量和成稿字符体量，由运行脚本解析，不依赖某个具体题材。",
+  "skillWritingStrategy": {
+    "comment": "pickWritingStrategyTier 取目标字数档与计划章节档中的较高等级，避免单维度低估工作量。",
+    "selectionRule": "max(target-word-tier, planned-chapter-tier)",
+    "byTargetWords": {
+      "S_max": 50000,
+      "M_max": 500000,
+      "L_max": 2000000
+    },
+    "byPlannedChapters": {
+      "S_max": 10,
+      "M_max": 50,
+      "L_max": 150
+    },
+    "policyByTier": {
+      "S": "全稿逐项复核",
+      "M": "Panorama → Deep",
+      "L": "Panorama + 风险章节复核",
+      "XL": "按卷或目录拆批执行"
+    }
+  },
+  "volumeCharacterThresholds": {
+    "comment": "按书稿 Markdown 的非空白字符总量分档；该体量用于批次和分卷决策，不替代用户的目标字数要求。",
+    "M_min": 50000,
+    "L_min": 500000,
+    "XL_min": 2000000
+  },
+  "volumeSplitTargetCharsPerVolume": {
+    "comment": "分卷时的目标字符量，允许在章节边界附近自然浮动。",
+    "M": 80000,
+    "L": 150000,
+    "XL": 300000
+  },
+  "manuscriptMagnitude": {
+    "comment": "正文体量提示；最终策略仍需叠加章节数和当前阶段风险。",
+    "M1": { "maxWords": 50000, "mapsToSkillTierHint": "S" },
+    "M2": { "minWords": 50000, "maxWords": 100000, "mapsToSkillTierHint": "M" },
+    "M3": { "minWords": 100000, "mapsToSkillTierHint": "L 或 XL", "note": "还要结合章节数量与 M3-QC 门禁判断" }
+  }
+}

@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 208 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Batch Update
 
 ## 写入边界 + 回读校验
@@ -97,6 +99,8 @@ _公共：URL/token（无 sheet 定位） · 系统：`--yes`、`--dry-run`_
 ### `+cells-batch-clear`
 
 _公共：URL/token（无 sheet 定位） · 系统：`--yes`、`--dry-run`_
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -198,3 +202,7 @@ lark-cli sheets +cells-batch-clear --url "..." \
 - `Validate`：`+batch-update` 的 `--operations` 必须合法 JSON，且为非空数组；逐个子操作 `shortcut` / `input` 字段必填校验；**禁止嵌套 `+batch-update`**。`+cells-batch-set-style` 的 `--ranges` 必须 JSON 数组、每项带 sheet 前缀；样式 flag 至少一个非空（或带 `--border-styles`）。`+cells-batch-clear` 的 `--ranges` 同样必须 JSON 数组、每项带 sheet 前缀，`high-risk-write` 强制 `--yes` 或 `--dry-run`（`--scope` 默认 `content`）。
 - `DryRun`：按顺序输出每个子操作的目标 API + 请求 body 模板；首个失败则整批 fail-fast（不实际执行任何后续）。
 - `Execute`：按声明顺序串行执行；任一子操作失败立即中断并回滚到该子操作前状态（具体回滚能力取决于子操作类型，沿用 `+batch-update` 的语义）。
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
+===== 全文完（共 208 行）=====

@@ -19,7 +19,7 @@ lark-cli wiki +node-create \
   --parent-node-token <PARENT_NODE_TOKEN> \
   --title "迭代记录"
 
-# 显式指定创建到个人知识库（仅 user 身份；bot 不支持 `--space-id my_library`）
+# 显式指定创建到个人知识库（my_library 为当前用户的个人资源）
 lark-cli wiki +node-create \
   --space-id my_library \
   --title "学习笔记"
@@ -62,7 +62,7 @@ lark-cli wiki +node-create \
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
-| `--space-id` | 否 | 目标知识空间 ID；可传特殊值 `my_library` 表示个人知识库 |
+| `--space-id` | 否 | 目标知识空间 ID；可传特殊值 `my_library` 表示当前用户的个人知识库 |
 | `--parent-node-token` | 否 | 父知识库节点 token；传入后会在该节点下创建新节点 |
 | `--title` | 否 | 节点标题 |
 | `--node-type` | 否 | 节点类型，默认 `origin`；可选值：`origin`、`shortcut` |
@@ -72,7 +72,7 @@ lark-cli wiki +node-create \
 ## 空间解析规则
 
 - **优先级**：`--space-id` > `--parent-node-token` > `my_library`
-- **显式 space**：传了 `--space-id` 时，shortcut 会直接使用该空间；如果该值是 `my_library`，会先调用 `GET /open-apis/wiki/v2/spaces/my_library` 解析成真实 `space_id`
+- **显式 space**：传了 `--space-id` 时，shortcut 会直接使用该空间；如果该值是 `my_library`，则仅 `user` 身份可用，并会先调用 `GET /open-apis/wiki/v2/spaces/my_library` 解析成真实 `space_id`
 - **父节点推断**：未传 `--space-id` 但传了 `--parent-node-token` 时，会先调用 `GET /open-apis/wiki/v2/spaces/get_node` 获取父节点，再读取其 `space_id`
 - **个人知识库回退**：如果 `--space-id` 和 `--parent-node-token` 都没传，会自动解析 `my_library`
 
@@ -86,7 +86,7 @@ lark-cli wiki +node-create \
 
 - 如果同时传了 `--space-id` 和 `--parent-node-token`，shortcut 会校验父节点所属空间是否与 `--space-id` 一致
 - 如果两者解析出的空间不一致，命令会直接返回验证错误，而不会继续创建
-- 对于 `my_library`，也会先解析出真实 `space_id` 后再做这层校验
+- 对于 `my_library`，`user` 身份下也会先解析出真实 `space_id` 后再做这层校验
 
 ## 行为说明
 

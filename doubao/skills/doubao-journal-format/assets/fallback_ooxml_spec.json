@@ -1,0 +1,3324 @@
+{
+  "version": "1.0",
+  "source": "fallback_samples_skill5.119",
+  "variants": {
+    "zh_single": {
+      "roles": {
+        "title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"32\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "32"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading1": {
+          "style_name": "Fallback Heading 1",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"28\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "28"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading2": {
+          "style_name": "Fallback Heading 2",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"180\" ns0:after=\"60\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "180",
+                "after": "60",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading3": {
+          "style_name": "Fallback Heading 3",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "body": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "420"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "figure_caption": {
+          "style_name": "Fallback Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "table_caption": {
+          "style_name": "Fallback Table Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "equation": {
+          "style_name": "Fallback Equation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"60\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "60",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "references_heading": {
+          "style_name": "Fallback Reference Heading",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "reference_item": {
+          "style_name": "Fallback Reference",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:hanging=\"283\" ns0:left=\"283\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "hanging": "283",
+                "left": "283"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"32\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "32"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "420"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "citation_format": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "420"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        }
+      },
+      "tables": {
+        "three_line": {
+          "tblPr_xml": "<ns0:tblPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tblW ns0:type=\"auto\" ns0:w=\"0\" /><ns0:jc ns0:val=\"center\" /><ns0:tblLook ns0:firstColumn=\"1\" ns0:firstRow=\"1\" ns0:lastColumn=\"0\" ns0:lastRow=\"0\" ns0:noHBand=\"0\" ns0:noVBand=\"1\" ns0:val=\"04A0\" /><ns0:tblBorders><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:left ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tblBorders></ns0:tblPr>",
+          "header_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2268\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"8\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "body_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2268\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "footer_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2268\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /></ns0:tcBorders></ns0:tcPr>",
+          "header_rows_default": 1,
+          "summary": "cell-level top/header-bottom/footer-bottom borders; no vertical/internal grid lines; thin separators between multi-row header levels",
+          "multi_header_separator": true,
+          "header_separator_border": {
+            "val": "single",
+            "sz": "6",
+            "space": "0",
+            "color": "000000"
+          }
+        }
+      },
+      "equation": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:pStyle ns0:val=\"FallbackEquation\" /><ns0:tabs><ns0:tab ns0:pos=\"4536\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"9072\" ns0:val=\"right\" /></ns0:tabs></ns0:pPr>",
+        "tabs_xml": "<ns0:tabs xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tab ns0:pos=\"4536\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"9072\" ns0:val=\"right\" /></ns0:tabs>",
+        "summary": {
+          "pPr": {
+            "jc": {},
+            "spacing": {},
+            "ind": {},
+            "tabs": [
+              {
+                "pos": "4536",
+                "val": "center"
+              },
+              {
+                "pos": "9072",
+                "val": "right"
+              }
+            ]
+          },
+          "rPr": {
+            "rFonts": {},
+            "sz": {},
+            "bold": null,
+            "italic": null
+          }
+        },
+        "note": "Tab positions are sample values only; formatter recomputes center/right tabs from active section or column width."
+      },
+      "sections": {
+        "sectPr_xml": [
+          "<ns0:sectPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" ns0:rsidR=\"00FC693F\" ns0:rsidRPr=\"0006063C\" ns0:rsidSect=\"00034616\"><ns0:headerReference ns0:type=\"default\" ns1:id=\"rId9\" /><ns0:footerReference ns0:type=\"default\" ns1:id=\"rId10\" /><ns0:pgSz ns0:w=\"11906\" ns0:h=\"16838\" /><ns0:pgMar ns0:top=\"1417\" ns0:right=\"1417\" ns0:bottom=\"1417\" ns0:left=\"1417\" ns0:header=\"737\" ns0:footer=\"850\" ns0:gutter=\"0\" /><ns0:cols ns0:space=\"720\" /><ns0:docGrid ns0:linePitch=\"360\" /></ns0:sectPr>"
+        ],
+        "column_counts": [
+          "1"
+        ]
+      },
+      "caption_policy": {
+        "bilingual_when_front_matter_bilingual": true,
+        "order": "zh_caption_paragraph_then_en_translation_paragraph",
+        "same_paragraph_newline_allowed": false
+      },
+      "docDefaults": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:spacing ns0:after=\"200\" ns0:line=\"276\" ns0:lineRule=\"auto\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:asciiTheme=\"minorHAnsi\" ns0:eastAsiaTheme=\"minorEastAsia\" ns0:hAnsiTheme=\"minorHAnsi\" ns0:cstheme=\"minorBidi\" /><ns0:sz ns0:val=\"22\" /><ns0:szCs ns0:val=\"22\" /><ns0:lang ns0:val=\"en-US\" ns0:eastAsia=\"en-US\" ns0:bidi=\"ar-SA\" /></ns0:rPr>"
+      },
+      "normal": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>"
+      }
+    },
+    "zh_double": {
+      "roles": {
+        "title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"32\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "32"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading1": {
+          "style_name": "Fallback Heading 1",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"28\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "28"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading2": {
+          "style_name": "Fallback Heading 2",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"180\" ns0:after=\"60\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "180",
+                "after": "60",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading3": {
+          "style_name": "Fallback Heading 3",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "body": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "420"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "figure_caption": {
+          "style_name": "Fallback Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "table_caption": {
+          "style_name": "Fallback Table Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "equation": {
+          "style_name": "Fallback Equation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"60\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "60",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "references_heading": {
+          "style_name": "Fallback Reference Heading",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "reference_item": {
+          "style_name": "Fallback Reference",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:hanging=\"283\" ns0:left=\"283\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "hanging": "283",
+                "left": "283"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"黑体\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"32\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "黑体"
+              },
+              "sz": {
+                "val": "32"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"288\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "288",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "420"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "citation_format": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "360",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "420"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "宋体"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        }
+      },
+      "tables": {
+        "three_line": {
+          "tblPr_xml": "<ns0:tblPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tblW ns0:type=\"auto\" ns0:w=\"0\" /><ns0:jc ns0:val=\"center\" /><ns0:tblLook ns0:firstColumn=\"1\" ns0:firstRow=\"1\" ns0:lastColumn=\"0\" ns0:lastRow=\"0\" ns0:noHBand=\"0\" ns0:noVBand=\"1\" ns0:val=\"04A0\" /><ns0:tblBorders><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:left ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tblBorders></ns0:tblPr>",
+          "header_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2409\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"8\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "body_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2409\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "footer_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2409\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /></ns0:tcBorders></ns0:tcPr>",
+          "header_rows_default": 1,
+          "summary": "cell-level top/header-bottom/footer-bottom borders; no vertical/internal grid lines; thin separators between multi-row header levels",
+          "multi_header_separator": true,
+          "header_separator_border": {
+            "val": "single",
+            "sz": "6",
+            "space": "0",
+            "color": "000000"
+          }
+        }
+      },
+      "equation": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:pStyle ns0:val=\"FallbackEquation\" /><ns0:tabs><ns0:tab ns0:pos=\"2303\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"4606\" ns0:val=\"right\" /></ns0:tabs></ns0:pPr>",
+        "tabs_xml": "<ns0:tabs xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tab ns0:pos=\"2303\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"4606\" ns0:val=\"right\" /></ns0:tabs>",
+        "summary": {
+          "pPr": {
+            "jc": {},
+            "spacing": {},
+            "ind": {},
+            "tabs": [
+              {
+                "pos": "2303",
+                "val": "center"
+              },
+              {
+                "pos": "4606",
+                "val": "right"
+              }
+            ]
+          },
+          "rPr": {
+            "rFonts": {},
+            "sz": {},
+            "bold": null,
+            "italic": null
+          }
+        },
+        "note": "Tab positions are sample values only; formatter recomputes center/right tabs from active section or column width."
+      },
+      "sections": {
+        "sectPr_xml": [
+          "<ns0:sectPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><ns0:headerReference ns0:type=\"default\" ns1:id=\"rId9\" /><ns0:footerReference ns0:type=\"default\" ns1:id=\"rId10\" /><ns0:pgSz ns0:w=\"11906\" ns0:h=\"16838\" /><ns0:pgMar ns0:top=\"1247\" ns0:right=\"1134\" ns0:bottom=\"1247\" ns0:left=\"1134\" ns0:header=\"737\" ns0:footer=\"850\" ns0:gutter=\"0\" /><ns0:cols ns0:space=\"720\" /><ns0:docGrid ns0:linePitch=\"360\" /></ns0:sectPr>",
+          "<ns0:sectPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" ns0:rsidR=\"00FC693F\" ns0:rsidRPr=\"0006063C\" ns0:rsidSect=\"00034616\"><ns0:type ns0:val=\"continuous\" /><ns0:pgSz ns0:w=\"11906\" ns0:h=\"16838\" /><ns0:pgMar ns0:top=\"1247\" ns0:right=\"1134\" ns0:bottom=\"1247\" ns0:left=\"1134\" ns0:header=\"737\" ns0:footer=\"850\" ns0:gutter=\"0\" /><ns0:cols ns0:space=\"420\" ns0:num=\"2\" /><ns0:docGrid ns0:linePitch=\"360\" /></ns0:sectPr>"
+        ],
+        "column_counts": [
+          "1",
+          "2"
+        ]
+      },
+      "caption_policy": {
+        "bilingual_when_front_matter_bilingual": true,
+        "order": "zh_caption_paragraph_then_en_translation_paragraph",
+        "same_paragraph_newline_allowed": false
+      },
+      "docDefaults": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:spacing ns0:after=\"200\" ns0:line=\"276\" ns0:lineRule=\"auto\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:asciiTheme=\"minorHAnsi\" ns0:eastAsiaTheme=\"minorEastAsia\" ns0:hAnsiTheme=\"minorHAnsi\" ns0:cstheme=\"minorBidi\" /><ns0:sz ns0:val=\"22\" /><ns0:szCs ns0:val=\"22\" /><ns0:lang ns0:val=\"en-US\" ns0:eastAsia=\"en-US\" ns0:bidi=\"ar-SA\" /></ns0:rPr>"
+      },
+      "normal": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"360\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"420\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"宋体\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /></ns0:rPr>"
+      }
+    },
+    "en_single": {
+      "roles": {
+        "title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"32\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "32"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading1": {
+          "style_name": "Fallback Heading 1",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"180\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"28\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "180",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "28"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading2": {
+          "style_name": "Fallback Heading 2",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading3": {
+          "style_name": "Fallback Heading 3",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"60\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"22\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "22"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "body": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "figure_caption": {
+          "style_name": "Fallback Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "table_caption": {
+          "style_name": "Fallback Table Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "equation": {
+          "style_name": "Fallback Equation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "references_heading": {
+          "style_name": "Fallback Reference Heading",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"180\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "180",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "reference_item": {
+          "style_name": "Fallback Reference",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:hanging=\"283\" ns0:left=\"283\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "hanging": "283",
+                "left": "283"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"32\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "32"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "citation_format": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        }
+      },
+      "tables": {
+        "three_line": {
+          "tblPr_xml": "<ns0:tblPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tblW ns0:type=\"auto\" ns0:w=\"0\" /><ns0:jc ns0:val=\"center\" /><ns0:tblLook ns0:firstColumn=\"1\" ns0:firstRow=\"1\" ns0:lastColumn=\"0\" ns0:lastRow=\"0\" ns0:noHBand=\"0\" ns0:noVBand=\"1\" ns0:val=\"04A0\" /><ns0:tblBorders><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:left ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tblBorders></ns0:tblPr>",
+          "header_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2268\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"8\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "body_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2268\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "footer_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2268\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /></ns0:tcBorders></ns0:tcPr>",
+          "header_rows_default": 1,
+          "summary": "cell-level top/header-bottom/footer-bottom borders; no vertical/internal grid lines; thin separators between multi-row header levels",
+          "multi_header_separator": true,
+          "header_separator_border": {
+            "val": "single",
+            "sz": "6",
+            "space": "0",
+            "color": "000000"
+          }
+        }
+      },
+      "equation": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:pStyle ns0:val=\"FallbackEquation\" /><ns0:tabs><ns0:tab ns0:pos=\"4536\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"9072\" ns0:val=\"right\" /></ns0:tabs></ns0:pPr>",
+        "tabs_xml": "<ns0:tabs xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tab ns0:pos=\"4536\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"9072\" ns0:val=\"right\" /></ns0:tabs>",
+        "summary": {
+          "pPr": {
+            "jc": {},
+            "spacing": {},
+            "ind": {},
+            "tabs": [
+              {
+                "pos": "4536",
+                "val": "center"
+              },
+              {
+                "pos": "9072",
+                "val": "right"
+              }
+            ]
+          },
+          "rPr": {
+            "rFonts": {},
+            "sz": {},
+            "bold": null,
+            "italic": null
+          }
+        },
+        "note": "Tab positions are sample values only; formatter recomputes center/right tabs from active section or column width."
+      },
+      "sections": {
+        "sectPr_xml": [
+          "<ns0:sectPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" ns0:rsidR=\"00FC693F\" ns0:rsidRPr=\"0006063C\" ns0:rsidSect=\"00034616\"><ns0:headerReference ns0:type=\"default\" ns1:id=\"rId9\" /><ns0:footerReference ns0:type=\"default\" ns1:id=\"rId10\" /><ns0:pgSz ns0:w=\"11906\" ns0:h=\"16838\" /><ns0:pgMar ns0:top=\"1417\" ns0:right=\"1417\" ns0:bottom=\"1417\" ns0:left=\"1417\" ns0:header=\"737\" ns0:footer=\"850\" ns0:gutter=\"0\" /><ns0:cols ns0:space=\"720\" /><ns0:docGrid ns0:linePitch=\"360\" /></ns0:sectPr>"
+        ],
+        "column_counts": [
+          "1"
+        ]
+      },
+      "caption_policy": {
+        "bilingual_when_front_matter_bilingual": false,
+        "order": "english_caption_only_unless_template_requires_bilingual"
+      },
+      "docDefaults": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:spacing ns0:after=\"200\" ns0:line=\"276\" ns0:lineRule=\"auto\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:asciiTheme=\"minorHAnsi\" ns0:eastAsiaTheme=\"minorEastAsia\" ns0:hAnsiTheme=\"minorHAnsi\" ns0:cstheme=\"minorBidi\" /><ns0:sz ns0:val=\"22\" /><ns0:szCs ns0:val=\"22\" /><ns0:lang ns0:val=\"en-US\" ns0:eastAsia=\"en-US\" ns0:bidi=\"ar-SA\" /></ns0:rPr>"
+      },
+      "normal": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>"
+      }
+    },
+    "en_double": {
+      "roles": {
+        "title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"36\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "36"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"22\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "22"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading1": {
+          "style_name": "Fallback Heading 1",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"180\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"24\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "180",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "24"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading2": {
+          "style_name": "Fallback Heading 2",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"22\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "22"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "heading3": {
+          "style_name": "Fallback Heading 3",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"60\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "body": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "figure_caption": {
+          "style_name": "Fallback Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "table_caption": {
+          "style_name": "Fallback Table Caption",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"120\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "120",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "equation": {
+          "style_name": "Fallback Equation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"60\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "60",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "references_heading": {
+          "style_name": "Fallback Reference Heading",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"180\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "180",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "reference_item": {
+          "style_name": "Fallback Reference",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:hanging=\"283\" ns0:left=\"283\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "hanging": "283",
+                "left": "283"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_title": {
+          "style_name": "Fallback Title",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext /><ns0:spacing ns0:before=\"240\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"36\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "240",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "36"
+              },
+              "bold": {},
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_author": {
+          "style_name": "Fallback Author",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"22\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "22"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_affiliation": {
+          "style_name": "Fallback Affiliation",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:jc ns0:val=\"center\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"18\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "center"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {},
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "18"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_abstract": {
+          "style_name": "Fallback Abstract",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"60\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "60",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "english_keywords": {
+          "style_name": "Fallback Keywords",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"120\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"left\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"21\" /><ns0:szCs ns0:val=\"21\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "left"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "120",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "21"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        },
+        "citation_format": {
+          "style_name": "Fallback Body",
+          "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+          "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>",
+          "summary": {
+            "pPr": {
+              "jc": {
+                "val": "both"
+              },
+              "spacing": {
+                "before": "0",
+                "after": "0",
+                "line": "240",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLine": "0"
+              },
+              "tabs": []
+            },
+            "rPr": {
+              "rFonts": {
+                "ascii": "Times New Roman",
+                "hAnsi": "Times New Roman",
+                "eastAsia": "SimSun"
+              },
+              "sz": {
+                "val": "20"
+              },
+              "bold": {
+                "val": "0"
+              },
+              "italic": {
+                "val": "0"
+              }
+            }
+          }
+        }
+      },
+      "tables": {
+        "three_line": {
+          "tblPr_xml": "<ns0:tblPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tblW ns0:type=\"auto\" ns0:w=\"0\" /><ns0:jc ns0:val=\"center\" /><ns0:tblLook ns0:firstColumn=\"1\" ns0:firstRow=\"1\" ns0:lastColumn=\"0\" ns0:lastRow=\"0\" ns0:noHBand=\"0\" ns0:noVBand=\"1\" ns0:val=\"04A0\" /><ns0:tblBorders><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:left ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tblBorders></ns0:tblPr>",
+          "header_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2438\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:top ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"8\" ns0:space=\"0\" ns0:color=\"000000\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "body_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2438\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"none\" /></ns0:tcBorders></ns0:tcPr>",
+          "footer_tcPr_xml": "<ns0:tcPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tcW ns0:type=\"dxa\" ns0:w=\"2438\" /><ns0:vAlign ns0:val=\"center\" /><ns0:tcBorders><ns0:left ns0:val=\"none\" /><ns0:right ns0:val=\"none\" /><ns0:insideH ns0:val=\"none\" /><ns0:insideV ns0:val=\"none\" /><ns0:top ns0:val=\"none\" /><ns0:bottom ns0:val=\"single\" ns0:sz=\"12\" ns0:space=\"0\" ns0:color=\"000000\" /></ns0:tcBorders></ns0:tcPr>",
+          "header_rows_default": 1,
+          "summary": "cell-level top/header-bottom/footer-bottom borders; no vertical/internal grid lines; thin separators between multi-row header levels",
+          "multi_header_separator": true,
+          "header_separator_border": {
+            "val": "single",
+            "sz": "6",
+            "space": "0",
+            "color": "000000"
+          }
+        }
+      },
+      "equation": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:pStyle ns0:val=\"FallbackEquation\" /><ns0:tabs><ns0:tab ns0:pos=\"2331\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"4663\" ns0:val=\"right\" /></ns0:tabs></ns0:pPr>",
+        "tabs_xml": "<ns0:tabs xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:tab ns0:pos=\"2331\" ns0:val=\"center\" /><ns0:tab ns0:pos=\"4663\" ns0:val=\"right\" /></ns0:tabs>",
+        "summary": {
+          "pPr": {
+            "jc": {},
+            "spacing": {},
+            "ind": {},
+            "tabs": [
+              {
+                "pos": "2331",
+                "val": "center"
+              },
+              {
+                "pos": "4663",
+                "val": "right"
+              }
+            ]
+          },
+          "rPr": {
+            "rFonts": {},
+            "sz": {},
+            "bold": null,
+            "italic": null
+          }
+        },
+        "note": "Tab positions are sample values only; formatter recomputes center/right tabs from active section or column width."
+      },
+      "sections": {
+        "sectPr_xml": [
+          "<ns0:sectPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:ns1=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><ns0:headerReference ns0:type=\"default\" ns1:id=\"rId9\" /><ns0:footerReference ns0:type=\"default\" ns1:id=\"rId10\" /><ns0:pgSz ns0:w=\"11906\" ns0:h=\"16838\" /><ns0:pgMar ns0:top=\"1077\" ns0:right=\"1077\" ns0:bottom=\"1247\" ns0:left=\"1077\" ns0:header=\"737\" ns0:footer=\"850\" ns0:gutter=\"0\" /><ns0:cols ns0:space=\"720\" /><ns0:docGrid ns0:linePitch=\"360\" /></ns0:sectPr>",
+          "<ns0:sectPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" ns0:rsidR=\"00FC693F\" ns0:rsidRPr=\"0006063C\" ns0:rsidSect=\"00034616\"><ns0:type ns0:val=\"continuous\" /><ns0:pgSz ns0:w=\"11906\" ns0:h=\"16838\" /><ns0:pgMar ns0:top=\"1077\" ns0:right=\"1077\" ns0:bottom=\"1247\" ns0:left=\"1077\" ns0:header=\"737\" ns0:footer=\"850\" ns0:gutter=\"0\" /><ns0:cols ns0:space=\"360\" ns0:num=\"2\" /><ns0:docGrid ns0:linePitch=\"360\" /></ns0:sectPr>"
+        ],
+        "column_counts": [
+          "1",
+          "2"
+        ]
+      },
+      "caption_policy": {
+        "bilingual_when_front_matter_bilingual": false,
+        "order": "english_caption_only_unless_template_requires_bilingual"
+      },
+      "docDefaults": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:spacing ns0:after=\"200\" ns0:line=\"276\" ns0:lineRule=\"auto\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:asciiTheme=\"minorHAnsi\" ns0:eastAsiaTheme=\"minorEastAsia\" ns0:hAnsiTheme=\"minorHAnsi\" ns0:cstheme=\"minorBidi\" /><ns0:sz ns0:val=\"22\" /><ns0:szCs ns0:val=\"22\" /><ns0:lang ns0:val=\"en-US\" ns0:eastAsia=\"en-US\" ns0:bidi=\"ar-SA\" /></ns0:rPr>"
+      },
+      "normal": {
+        "pPr_xml": "<ns0:pPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:keepNext ns0:val=\"0\" /><ns0:spacing ns0:before=\"0\" ns0:after=\"0\" ns0:line=\"240\" ns0:lineRule=\"auto\" /><ns0:ind ns0:firstLine=\"0\" /><ns0:jc ns0:val=\"both\" /></ns0:pPr>",
+        "rPr_xml": "<ns0:rPr xmlns:ns0=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><ns0:rFonts ns0:ascii=\"Times New Roman\" ns0:hAnsi=\"Times New Roman\" ns0:eastAsia=\"SimSun\" /><ns0:b ns0:val=\"0\" /><ns0:i ns0:val=\"0\" /><ns0:sz ns0:val=\"20\" /></ns0:rPr>"
+      }
+    }
+  }
+}

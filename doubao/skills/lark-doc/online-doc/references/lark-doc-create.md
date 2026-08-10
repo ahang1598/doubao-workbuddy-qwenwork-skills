@@ -15,10 +15,10 @@
 
 ```bash
 # 创建 XML 文档（默认格式，推荐）
-lark-cli docs +create --api-version v2 --content '<title>项目计划</title><h1>目标</h1><p>记录本周重点。</p>'
+lark-cli docs +create --content '<title>项目计划</title><h1>目标</h1><p>记录本周重点。</p>'
 
 # 仅当用户明确要求导入 Markdown 时才使用；文档标题用 --title，正文标题按内容自然组织
-lark-cli docs +create --api-version v2 --doc-format markdown --title "项目计划" --content $'## 目标\n\n- 明确重点\n- 记录待办'
+lark-cli docs +create --doc-format markdown --title "项目计划" --content $'## 目标\n\n- 明确重点\n- 记录待办'
 ```
 
 ## 返回值

@@ -1,0 +1,26 @@
+{
+  "period": "FY2025",
+  "currency": "CNY",
+  "current": {
+    "revenue": 120,
+    "gross_profit": 48,
+    "operating_income": 18,
+    "net_income": 12,
+    "operating_cash_flow": 16,
+    "capex": 5
+  },
+  "previous": {
+    "revenue": 100
+  },
+  "valuation": {
+    "dcf": {
+      "projected_fcf": [
+        12,
+        14,
+        16
+      ],
+      "discount_rate": 0.1,
+      "terminal_growth": 0.03
+    }
+  }
+}

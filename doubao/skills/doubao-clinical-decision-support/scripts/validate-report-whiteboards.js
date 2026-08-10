@@ -5,7 +5,7 @@ const fs = require("fs");
 const usage = `Usage:
   node scripts/validate-report-whiteboards.js [--attachments none|present] <report.xml>
 
-Checks report XML/Markdown/PPT XML for forbidden superscript/footnote-style markup, source-link risks in evidence chapters, invalid citation-style components, visible internal tool names, attachment-state hallucinations, reference table shape/link coverage, no visible local CSV absolute paths in document bodies, and <whiteboard type="mermaid"> blocks with XML/HTML fragments or Mermaid syntax patterns that commonly make Feishu whiteboard parsing fail. If an evidence chapter is flagged, review that chapter and add clickable links to every cited guideline, consensus, paper, trial, drug label, or regulator source.`;
+Checks report XML/Markdown/PPT XML for duplicate title tags, unsupported callout type attributes, forbidden superscript/footnote-style markup, forbidden ref tags, source-link risks in evidence chapters, invalid citation-style components, visible internal tool names, attachment-state hallucinations, reference table shape/link coverage, missing Mermaid whiteboards, Mermaid source exposed as code blocks, and <whiteboard type="mermaid"> blocks with syntax patterns that commonly make Feishu whiteboard parsing fail. If an evidence chapter is flagged, review that chapter and add clickable links to every cited guideline, consensus, paper, trial, drug label, or regulator source.`;
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(usage);
@@ -56,16 +56,20 @@ const invalidLightColorPattern = /\b(?:fill|stroke|color|background(?:-color)?)\
 const invalidHexPattern = /\b(?:fill|stroke|color|background(?:-color)?)\s*:\s*#(?![0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{3})?\b)[A-Za-z0-9_-]+/i;
 const escapedHtmlBreakPattern = /&lt;\s*br\b/i;
 const markdownFencePattern = /```/;
+const literalBackslashNewlinePattern = /\\n/;
+const codeBlockTagPattern = /<(?:pre|code|codeblock|code-block)\b/i;
+const rawMermaidDeclarationPattern = /(?:^|\r?\n)\s*(?:graph|flowchart)\s+(?:TD|TB|BT|RL|LR)\b/im;
 const forbiddenSupPattern = /(?:<\/?sup\b[^>]*>|&lt;\s*\/?\s*sup\b[^&]*(?:&gt;)?|\bsuperscript\b|vertical-align\s*:\s*super)/i;
-const visibleTemplateInstructionPattern = /本节目标|图表要求|正文来源写法|正文引用必须|正文引用格式示例|仅\s*`?attachment_state=present`?\s*时|生成\s*docx\s*时|不得把研究名写成无链接小标题|不得把指南\/共识名写成无链接小标题|除非用户明确要求特定参考文献格式|每轮检索结果必须先写入\s*CSV|G\/R\/S\s*节点必须来自\s*CSV|不要用空\s*CSV|不得写成直接医嘱/;
+const forbiddenRefTagPattern = /(?:<\/?ref\b[^>]*>|&(?:amp;)*lt;\s*\/?\s*ref\b[^&]*(?:&(?:amp;)*gt;)?|&(?:amp;)*#0*60;\s*\/?\s*ref\b[^&]*(?:&(?:amp;)*#0*62;)?|&(?:amp;)*#x0*3c;\s*\/?\s*ref\b[^&]*(?:&(?:amp;)*#x0*3e;)?)/i;
+const titleTagPattern = /<title\b[^>]*>[\s\S]*?<\/title>/gi;
+const unsupportedCalloutTypePattern = /<callout\b[^>]*\btype\s*=\s*["'][^"']*["'][^>]*>/gi;
+const visibleTemplateInstructionPattern = /本节目标|图表要求|正文来源写法|正文引用必须|正文引用格式示例|仅\s*`?attachment_state=present`?\s*时|生成\s*docx\s*时|不得把研究名写成无链接小标题|不得把指南\/共识名写成无链接小标题|除非用户明确要求特定参考文献格式|不得写成直接医嘱/;
 const citationComponentPattern = /<cite\b[^>]*\btype=["']citation["'][^>]*>[\s\S]*?<\/cite>/gi;
 const forbiddenVisibleToolPattern = /\b(?:medical_search|scholar_search|general_search|web\.fetch|WebFetch|lark-doc|lark-ppt|tool|search_context)\b|<t[hd][^>]*>\s*(?:tool|query|search_context)\s*<\/t[hd]>|\|\s*(?:tool|query|search_context)\s*\||检索工具|工具返回|harness\s*过程/gi;
 const unresolvedPlaceholderPattern = /\{\{[^}]+\}\}/;
 const httpUrlPattern = /https?:\/\/[^\s<>"')\]}，。；、]+/i;
 const clickableEvidenceLinkPattern = /(?:<a\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>[\s\S]*?<\/a>|<bookmark\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>|\]\(https?:\/\/[^)]+\))/i;
 const clickableEvidenceLinkGlobalPattern = /(?:<a\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>[\s\S]*?<\/a>|<bookmark\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>|\]\(https?:\/\/[^)]+\))/gi;
-const visibleBareCsvPathPattern = /(?:^|[\s:：>])\/(?:Users|home|var|tmp|Volumes)\/[^\s<>)]+\.csv\b/i;
-const visibleCsvPathAnchorTextPattern = /(?:<a\b[^>]*>[^<]*\/[^<]*\.csv\s*<\/a>|\[[^\]\n]*\/[^\]\n]*\.csv\]\((?:file:\/\/)?\/[^)]+\.csv\))/i;
 const noAttachmentForbiddenPatterns = [
   { pattern: /上传资料与质量|上传资料质量与病例提取|上传报告|上传附件|上传资料[:：]/i, label: "claims uploaded material was analyzed" },
   { pattern: /影像\/报告关键提取|报告关键提取|从报告提取|从上传报告提取|从真实附件读取/i, label: "claims extraction from an uploaded report" },
@@ -83,15 +87,14 @@ function plainText(value) {
 }
 
 function stripXmlComments(value) {
-  return value.replace(/<!--[\s\S]*?-->/g, " ");
+  return value.replace(/<!--[\s\S]*?-->/g, (match) => match.replace(/[^\r\n]/g, " "));
 }
 
 function referenceStartIndex(content) {
   const startPatterns = [
     /<h1[^>]*>[^<]*(?:完整)?参考文献[^<]*<\/h1>/i,
-    /<h2[^>]*>[^<]*(?:核心证据|辅助参考|仅摘要)[^<]*<\/h2>/i,
+    /<h2[^>]*>[^<]*(?:核心证据|辅助参考)[^<]*<\/h2>/i,
     /^\s*#{1,3}\s*(?:十[、.]\s*)?(?:完整)?参考文献\b/im,
-    /参考文献与台账/i,
   ];
   let start = -1;
   for (const pattern of startPatterns) {
@@ -138,6 +141,15 @@ function headingSection(content, headingPattern) {
 
 function stripMermaidWhiteboards(content) {
   return content.replace(mermaidWhiteboardBlockPattern, " ");
+}
+
+function hasHeading(content, headingPattern) {
+  const xmlHeadings = [...content.matchAll(/<h[1-6]\b[^>]*>[\s\S]*?<\/h[1-6]>/gi)];
+  if (xmlHeadings.some((match) => headingPattern.test(plainText(match[0])))) {
+    return true;
+  }
+  const markdownHeadings = [...content.matchAll(/^\s*#{1,6}\s+(.+)$/gim)];
+  return markdownHeadings.some((match) => headingPattern.test(plainText(match[1])));
 }
 
 function countClickableEvidenceLinks(content) {
@@ -196,9 +208,7 @@ function referenceItems(section) {
       }
     }
   });
-  return items
-    .map((item) => item.trim())
-    .filter((item) => item && !/literature_log_csv_path|完整文献检索台账 CSV|本地文献台账/.test(item));
+  return items.map((item) => item.trim()).filter(Boolean);
 }
 
 function tableBlocks(section) {
@@ -283,12 +293,12 @@ function validateReferenceSection(content, section) {
   const invalidReferenceHeaderBlocks = blocks
     .map((block, index) => ({ index, cells: tableHeaderCells(block) }))
     .filter(({ cells }) => {
-      if (cells.length !== 3) return true;
+      if (cells.length !== 5) return true;
       const headers = cells.join("|");
-      return !/标题/.test(headers) || !/来源/.test(headers) || !/链接/.test(headers);
+      return !/标题/.test(headers) || !/来源/.test(headers) || !/类型/.test(headers) || !/年份/.test(headers) || !/链接/.test(headers);
     });
   if (invalidReferenceHeaderBlocks.length > 0) {
-    problems.push("final reference tables must use exactly three columns: 标题 | 来源 | 链接, unless the user explicitly requested a citation style");
+    problems.push("final reference tables must use exactly five columns: 标题 | 来源 | 类型 | 年份 | 链接, unless the user explicitly requested a citation style");
     invalidReferenceHeaderBlocks.slice(0, 5).forEach(({ index, cells }) => {
       problems.push(`reference table ${index + 1} headers: ${cells.join(" | ") || "none"}`);
     });
@@ -304,14 +314,6 @@ function validateReferenceSection(content, section) {
   const dataRows = blocks.flatMap(tableDataRows);
   if (blocks.length > 0 && dataRows.length === 0) {
     problems.push("reference tables must contain at least one data row");
-  }
-
-  if (visibleBareCsvPathPattern.test(section) || visibleCsvPathAnchorTextPattern.test(section)) {
-    problems.push("reference section must not expose local CSV absolute paths; attach the CSV after creating the Feishu document and keep local CSV paths out of both the document body and final reply");
-  }
-
-  if (/CSV\s*(?:可见版|台账)|文献检索\s*CSV\s*可见版/i.test(content)) {
-    problems.push("do not create a separate CSV visible ledger section; attach the CSV file after document creation instead of expanding it in the document body");
   }
 
   return problems;
@@ -347,10 +349,51 @@ let failures = 0;
 let count = 0;
 let match;
 const visibleXml = stripXmlComments(xml);
+const visibleOutsideWhiteboards = stripMermaidWhiteboards(visibleXml);
+const expectedDiagramWhiteboards = [
+  { label: "clinical decision logic diagram", pattern: /决策逻辑图/ },
+].filter(({ pattern }) => hasHeading(visibleXml, pattern));
+const actualDiagramWhiteboardCount = [...visibleXml.matchAll(whiteboardPattern)].length;
+
+if (expectedDiagramWhiteboards.length > actualDiagramWhiteboardCount) {
+  failures += 1;
+  console.error(`Report has ${expectedDiagramWhiteboards.length} Mermaid diagram heading(s) but only ${actualDiagramWhiteboardCount} <whiteboard type="mermaid"> block(s). Keep each diagram inside its whiteboard container; do not replace it with a code block.`);
+  expectedDiagramWhiteboards.forEach(({ label }) => console.error(`  - expected whiteboard for ${label}`));
+}
+
+const exposedFenceMatch = markdownFencePattern.exec(visibleOutsideWhiteboards);
+const exposedCodeBlockMatch = codeBlockTagPattern.exec(visibleOutsideWhiteboards);
+const exposedRawMermaidMatch = rawMermaidDeclarationPattern.exec(visibleOutsideWhiteboards);
+if (exposedFenceMatch || exposedCodeBlockMatch || exposedRawMermaidMatch) {
+  failures += 1;
+  const reason = exposedFenceMatch
+    ? "Markdown code fence"
+    : exposedCodeBlockMatch
+      ? "code block tag"
+      : "raw Mermaid declaration";
+  console.error(`Report exposes diagram/XML source outside a Mermaid whiteboard (${reason}); use <whiteboard type="mermaid"> or a reader-facing table/list fallback.`);
+}
+
+const titleTags = [...visibleXml.matchAll(titleTagPattern)];
+if (titleTags.length > 1) {
+  failures += 1;
+  console.error(`Report contains ${titleTags.length} <title> tags; keep exactly one title source. When XML contains <title>, do not also pass --title to lark-cli docs +create.`);
+}
+
+const unsupportedCalloutTypes = [...visibleXml.matchAll(unsupportedCalloutTypePattern)];
+if (unsupportedCalloutTypes.length > 0) {
+  failures += 1;
+  console.error(`Report contains ${unsupportedCalloutTypes.length} <callout> tag(s) with unsupported type attributes; use <callout emoji="x" background-color="light-yellow"> and do not add type.`);
+}
 
 if (forbiddenSupPattern.test(xml)) {
   failures += 1;
-  console.error("Report contains a superscript-style tag or escaped superscript markup; use inline source links, evidence_id text, and the reference table instead.");
+  console.error("Report contains a superscript-style tag or escaped superscript markup; use inline linked source names and the reference table instead.");
+}
+
+if (forbiddenRefTagPattern.test(xml)) {
+  failures += 1;
+  console.error("Report contains a raw or escaped ref tag; replace it with a clickable source name, an allowed citation component, or the reference table.");
 }
 
 const visibleInstructionMatch = visibleTemplateInstructionPattern.exec(visibleXml);
@@ -436,16 +479,21 @@ if (!looksLikeSlides && references) {
   }
 }
 
-while ((match = whiteboardPattern.exec(xml)) !== null) {
+while ((match = whiteboardPattern.exec(visibleXml)) !== null) {
   count += 1;
   const fullBlock = match[0];
   const content = match[1];
   const blockLine = lineNumberAt(match.index);
   const firstLine = firstMeaningfulLine(content);
+  const isMindmap = /^mindmap\b/.test(firstLine || "");
+
+  if (isMindmap) {
+    continue;
+  }
 
   const problems = [];
   if (!firstLine || !diagramHeaderPattern.test(firstLine)) {
-    problems.push("first non-empty line should be a Mermaid diagram declaration such as graph TD or flowchart TD");
+    problems.push("first non-empty line should be a Mermaid diagram declaration such as mindmap or flowchart TD");
   }
   if (xmlTagPattern.test(content)) {
     problems.push("whiteboard Mermaid content contains raw XML/HTML tags; remove <br/>, <span>, <b>, etc. and keep labels plain text");
@@ -462,6 +510,9 @@ while ((match = whiteboardPattern.exec(xml)) !== null) {
   if (markdownFencePattern.test(fullBlock)) {
     problems.push("whiteboard blocks must not contain Markdown code fences");
   }
+  if (literalBackslashNewlinePattern.test(content)) {
+    problems.push("whiteboard Mermaid labels contain literal \\n text; use short single-line labels or split the content into separate nodes");
+  }
 
   if (problems.length > 0) {
     failures += 1;
@@ -476,8 +527,8 @@ if (failures > 0) {
 }
 
 if (count === 0) {
-  console.log("Report XML validation passed: no forbidden superscript/footnote-style markup; no Mermaid whiteboard blocks found.");
+  console.log("Report XML validation passed: no forbidden superscript/footnote-style markup or ref tags; no Mermaid whiteboard blocks found.");
   process.exit(0);
 }
 
-console.log(`Report XML validation passed: no forbidden superscript/footnote-style markup; ${count} Mermaid whiteboard block(s) checked.`);
+console.log(`Report XML validation passed: no forbidden superscript/footnote-style markup or ref tags; ${count} Mermaid whiteboard block(s) checked.`);

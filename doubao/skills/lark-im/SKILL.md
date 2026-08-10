@@ -33,13 +33,9 @@ Chat (oc_xxx)
 
 ## Important Notes
 
-### Identity
-
-All calls run as the authorized end user (user identity, `user_access_token`). Permissions depend on both the app scopes and that user's own access to the target chat/message/resource.
-
 ### Sender Name Resolution
 
-When fetching messages (`+chat-messages-list`, `+threads-messages-list`, `+messages-mget`, `+messages-search`), the CLI shows a display name on every message sender:
+When fetching messages (`+chat-messages-list`, `+threads-messages-list`, `+messages-mget`, `+messages-search`), the CLI shows a display name for message senders:
 
 - **Server-provided name**: the read APIs return `sender_name` (plus the full-i18n `sender_i18n_names` map) on each message `sender`; the CLI surfaces it as the sender's `name` for users and bots alike. No name lookup and no extra permission are needed — **no contact scope** and no `application:bot.basic_info:read`.
 - **Fallback to id**: when the server does not provide a name, the sender is shown by its id and the command still exits 0. There is no contact-directory fallback.
@@ -100,20 +96,20 @@ Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。
 | Shortcut | 说明 |
 |----------|------|
 | [`+chat-create`](references/lark-im-chat-create.md) | Create a group chat or topic chat; user; --chat-mode group|topic; private/public; invites users/bots; optionally sets bot manager |
-| [`+chat-list`](references/lark-im-chat-list.md) | List chats the current user is a member of; defaults to groups; pass --types=p2p,group to include p2p single chats; user; supports sorting, pagination, --exclude-muted |
-| [`+chat-members-list`](references/lark-im-chat-members-list.md) | List members of a chat; returns separate users[] / bots[] buckets; user; --member-types filters which kinds to return; --page-all pagination; surfaces truncations[] when the server caps a bucket |
-| [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range/sort/pagination |
-| [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, pagination, and --exclude-muted (user identity only) |
+| [`+chat-list`](references/lark-im-chat-list.md) | List chats the current user is a member of; defaults to groups; pass --types=p2p,group to include p2p single chats (user-only); user; supports sorting, auto-pagination, --exclude-muted (user-only) |
+| [`+chat-members-list`](references/lark-im-chat-members-list.md) | List members of a chat; returns separate users[] / bots[] buckets; callable as user; --member-types filters which kinds to return; --page-all pagination; surfaces truncations[] when the server caps a bucket |
+| [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range, --order asc/desc sorting, auto-pagination |
+| [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, auto-pagination, and --exclude-muted (user identity only) |
 | [`+chat-update`](references/lark-im-chat-update.md) | Update group chat name or description; user; updates a chat's name or description |
 | [`+messages-mget`](references/lark-im-messages-mget.md) | Batch get messages by IDs; user; fetches up to 50 om_ message IDs, formats sender names, expands thread replies |
 | [`+messages-reply`](references/lark-im-messages-reply.md) | Reply to a message (supports thread replies); user; supports text/markdown/post/media replies, reply-in-thread, idempotency key |
 | [`+messages-resources-download`](references/lark-im-messages-resources-download.md) | Download images/files from a message; user; supports automatic chunked download for large files (8MB chunks), auto-detects file extension from Content-Type |
 | [`+messages-search`](references/lark-im-messages-search.md) | Search messages across chats (supports keyword, sender, time range filters) with user identity; user-only; filters by chat/sender/attachment/time, supports auto-pagination via `--page-all` / `--page-limit`, enriches results via batched mget and chats batch_query |
 | [`+messages-send`](references/lark-im-messages-send.md) | Send a message to a chat or direct message; user; sends to chat-id or user-id with text/markdown/post/media, supports idempotency key |
-| [`+threads-messages-list`](references/lark-im-threads-messages-list.md) | List messages in a thread; user; accepts om_/omt_ input, resolves message IDs to thread_id, supports sort/pagination |
+| [`+threads-messages-list`](references/lark-im-threads-messages-list.md) | List messages in a thread; user; accepts om_/omt_ input, resolves message IDs to thread_id, supports --order asc/desc sorting, auto-pagination |
 | [`+flag-create`](references/lark-im-flag-create.md) | Create a bookmark on a message; user-only; defaults to message-layer flag; use --flag-type feed for feed-layer flag (item_type auto-detected from chat mode) |
 | [`+flag-cancel`](references/lark-im-flag-cancel.md) | Cancel (remove) a bookmark. When no --flag-type is given, best-effort double-cancel: removes message layer and (when chat_type is determinable) feed layer |
-| [`+flag-list`](references/lark-im-flag-list.md) | List bookmarks; user-only; auto-enriches feed-type thread entries with message content; supports `--page-all` auto-pagination |
+| [`+flag-list`](references/lark-im-flag-list.md) | List bookmarks; user-only; auto-enriches feed-type thread entries with message content; `--page-all` is capped by `--page-limit` (default 20, max 1000), and `has_more=true` means the result is incomplete |
 | [`+feed-shortcut-create`](references/lark-im-feed-shortcut-create.md) | Add chats to the user's feed shortcuts; user-only; oc_xxx chat IDs only; batch up to 10 per call; `--head`/`--tail` controls insertion order; partial failures return an `ok:false` ledger |
 | [`+feed-shortcut-remove`](references/lark-im-feed-shortcut-remove.md) | Remove chats from the user's feed shortcuts; user-only; batch up to 10 per call; removing an absent shortcut is idempotent success; real per-item failures return an `ok:false` ledger |
 | [`+feed-shortcut-list`](references/lark-im-feed-shortcut-list.md) | List one page of the user's feed shortcuts; user-only; omit `--page-token` for the first page; default output enriches CHAT entries under `detail`; pass `--no-detail` to skip the extra lookup and `im:chat:read` scope |
@@ -132,15 +128,15 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
 ### chats
 
-  - `create` — 创建群。优先使用 `+chat-create` shortcut。
+  - `create` — 创建群。
   - `get` — 获取群信息。Identity: supports `user` only; the caller must be in the target chat to get full details, and must belong to the same tenant for internal chats.
   - `link` — 获取群分享链接。Identity: supports `user` only; the caller must be in the target chat, must be an owner or admin when chat sharing is restricted to owners/admins, and must belong to the same tenant for internal chats.
   - `update` — 更新群信息。Identity: supports `user` only.
 
 ### chat.members
 
-  - `create` — 将用户或机器人拉入群聊。Identity: `user`; the caller must be in the target chat; for internal chats the operator must belong to the same tenant; if only owners/admins can add members, the caller must be an owner/admin.
-  - `delete` — 将用户或机器人移出群聊。Identity: `user`; only the group owner or admin can remove others; max 50 users or 5 bots per request.
+  - `create` — 将用户或机器人拉入群聊。Identity: supports `user` only; the caller must be in the target chat; for internal chats the operator must belong to the same tenant; if only owners/admins can add members, the caller must be an owner/admin.
+  - `delete` — 将用户或机器人移出群聊。Identity: supports `user` only; only the group owner, admin, or chat creator can remove others; max 50 members per request.
 
 ### chat.user_setting
 
@@ -161,17 +157,17 @@ lark-cli im <resource> <method> [flags] # 调用 API
 ### chat.moderation
 
   - `get` — 获取群成员发言权限。Identity: supports `user` only; the caller must be in the target chat and belong to the same tenant.
-  - `update` — 更新群发言权限。Identity: `user`; only the group owner can update; the caller must be in the chat.
+  - `update` — 更新群发言权限。Identity: supports `user` only; only the group owner can update; the caller must be in the chat.
 
 ### messages
 
-  - `delete` — 撤回消息。Identity: `user`; the caller can recall their own messages, and a group owner/admin can recall others' group messages.
-  - `forward` — 转发消息。Identity: `user`.
-  - `merge_forward` — 合并转发消息。Not available under user identity.
-  - `read_users` — 查询消息已读信息。Not available under user identity.
-  - `urgent_app` — 发送应用内加急。Not available under user identity.
-  - `urgent_phone` — 发送电话加急。Not available under user identity.
-  - `urgent_sms` — 发送短信加急。Not available under user identity.
+  - `delete` — 撤回消息。Identity: supports `user` only; a user can recall their own messages, and a group owner or admin can recall others' group messages.
+  - `forward` — 转发消息。Identity: supports `user` only.
+  - `merge_forward` — 合并转发消息。
+  - `read_users` — 查询消息已读信息。
+  - `urgent_app` — 发送应用内加急。
+  - `urgent_phone` — 发送电话加急。
+  - `urgent_sms` — 发送短信加急。
 
 ### reactions
 
@@ -186,7 +182,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
 ### images
 
-  - `create` — 上传图片。Not available under user identity.
+  - `create` — 上传图片。
 
 ### pins
 

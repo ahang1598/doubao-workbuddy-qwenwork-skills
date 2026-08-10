@@ -24,10 +24,10 @@ metadata:
 
 ## 前置条件
 
-仅支持 **user 身份**，user UAT 由 agent 平台注入。本工作流需要以下 domain token，由 agent 平台为当前用户补开：
+仅支持 **user 身份**，由 agent 平台注入 UAT。需要以下 domain token：
 
-- `vc`：基础（查询 + 纪要）
-- `drive`：读取纪要文档正文、生成文档时额外需要
+- 基础（查询+纪要）：`vc`
+- 含读取纪要文档正文、生成文档：`vc,drive`
 
 ## 工作流
 

@@ -27,6 +27,9 @@ lark-cli im +chat-messages-list --chat-id oc_xxx --order asc --page-size 20
 # Pagination
 lark-cli im +chat-messages-list --chat-id oc_xxx --page-token "xxx"
 
+# Fetch multiple pages automatically, up to 10 pages by default
+lark-cli im +chat-messages-list --chat-id oc_xxx --page-all
+
 # JSON output
 lark-cli im +chat-messages-list --chat-id oc_xxx --format json
 ```
@@ -41,7 +44,9 @@ lark-cli im +chat-messages-list --chat-id oc_xxx --format json
 | `--end <time>` | No | End time (ISO 8601 or date only) |
 | `--order <order>` | No | Sort order: `asc` / `desc` (default `desc`) |
 | `--page-size <n>` | No | Page size (default 50, max 50) |
-| `--page-token <token>` | No | Pagination token |
+| `--page-token <token>` | No | Starting cursor, normally returned by a previous response |
+| `--page-all` | No | Automatically fetch and merge subsequent pages; capped by `--page-limit` |
+| `--page-limit <n>` | No | Maximum pages fetched by `--page-all` (default 10, range 1-1000) |
 | `--no-reactions` | No | Skip auto-fetching the `reactions` block |
 | `--download-resources` | No | Download message resources (image/file/audio/video/media + post-embedded, excluding stickers) into `./lark-im-resources/` and attach a `resources` block. Off by default; no extra requests when omitted |
 
@@ -104,11 +109,13 @@ Each message contains:
 
 ## Pagination (`has_more` / `page_token`)
 
-`im +chat-messages-list` returns `has_more` and `page_token` when more data is available. Use `--page-token` to continue:
+By default, `im +chat-messages-list` fetches one page. It returns `has_more` and `page_token` when more data is available. Use `--page-token` to continue:
 
 ```bash
 lark-cli im +chat-messages-list --chat-id oc_xxx --page-token <PAGE_TOKEN>
 ```
+
+With `--page-all`, `--page-token` sets the starting cursor. If `meta.pagination.complete=false`, resume from `meta.pagination.next_token` or raise `--page-limit`.
 
 You can also fall back to the generic API:
 
@@ -123,7 +130,7 @@ lark-cli api GET /open-apis/im/v1/messages \
 |---------|---------|---------|
 | `specify --chat-id <chat_id> or --user-id <open_id>` | Neither `--chat-id` nor `--user-id` was provided | You must provide exactly one |
 | `--chat-id and --user-id cannot be specified together` | Both parameters were provided | Use only one |
-| `P2P chat not found for this user` | `--user-id` was used but no p2p chat exists between the current user and that user | Confirm the target direct-message relationship exists |
+| `P2P chat not found for this user` | `--user-id` was used but no p2p chat exists for the current user and that user | Confirm the target direct-message relationship exists for the current user |
 | `--start: invalid time format` | Invalid time format | Use ISO 8601 or date-only format such as `2026-03-10` |
 | Permission denied | Message read permissions are missing | Ensure the app has `im:message:readonly` and `im:chat:read` enabled |
 

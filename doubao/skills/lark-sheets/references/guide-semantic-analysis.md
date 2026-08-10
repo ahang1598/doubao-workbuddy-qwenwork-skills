@@ -99,3 +99,5 @@
 ## 参考
 
 - 推荐的分析报告输出模版：`references/template-report.md`
+
+===== 全文完（共 103 行）=====

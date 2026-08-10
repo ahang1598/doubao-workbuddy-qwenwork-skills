@@ -91,3 +91,5 @@ lark-cli sheets +history-revert --url "https://sample.feishu.cn/sheets/SHTxxxxxx
 # 查询某次回滚的当前状态（进行中 / 成功 / 失败）
 lark-cli sheets +history-revert-status --url "https://sample.feishu.cn/sheets/SHTxxxxxx" --transaction-id "<transaction-id-from-history-revert>"
 ```
+
+===== 全文完（共 95 行）=====

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "all_case_ids": ["TC-EXAMPLE-001", "TC-EXAMPLE-002"],
+  "mappings": [
+    {
+      "id": "MAP-EXAMPLE-001",
+      "path_globs": ["src/routes/**", "src/api/orders.*"],
+      "routes": ["/orders/:id"],
+      "api_operations": ["getOrder", "cancelOrder"],
+      "data_models": ["Order"],
+      "direct_case_ids": ["TC-EXAMPLE-001"],
+      "upstream_case_ids": [],
+      "downstream_case_ids": ["TC-EXAMPLE-002"],
+      "shared_case_ids": []
+    }
+  ],
+  "failure_history": [
+    {"case_id": "TC-EXAMPLE-002", "status": "flaky", "last_failure": "2026-01-01"}
+  ]
+}

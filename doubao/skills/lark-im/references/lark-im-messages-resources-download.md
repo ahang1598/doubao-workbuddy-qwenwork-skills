@@ -30,6 +30,7 @@ lark-cli im +messages-resources-download --message-id om_xxx --file-key img_v3_x
 | `--file-key <key>` | Yes | Resource key (`img_xxx` or `file_xxx`) |
 | `--type <type>` | Yes | Resource type: `image` or `file` |
 | `--output <path>` | No | Output path (relative paths only; `..` traversal is not allowed). When omitted, the server's original filename from `Content-Disposition` is used if available; otherwise defaults to `file_key`. File extension is automatically inferred from `Content-Disposition` or `Content-Type` if not provided |
+| `--as <identity>` | No | Identity type: `user` (default) or `bot` |
 | `--dry-run` | No | Print the request only, do not execute it |
 
 ## Large File Download (Auto Chunking)
@@ -78,7 +79,7 @@ lark-cli im +messages-resources-download --message-id om_xxx --file-key img_v3_x
 |---------|---------|---------|
 | Download failed | `file_key` does not match the `message_id` | Make sure the `file_key` came from that message's content |
 | Hit error code 234002 or 14005 | No permission, **not** missing API scope | no access to this chat or file was deleted — do not retry, return the error to the user |
-| Permission denied | `im:message:readonly` is not authorized | Have the agent platform grant the current user the `im:message:readonly` scope |
+| Permission denied | `im:message:readonly` is not authorized | Have the agent platform grant the `im:message:readonly` scope for the current user |
 | File size mismatch | Chunked download integrity check failed | Network instability during download; retry the command |
 | Content-Range error | Server returned invalid range header | Transient API issue; retry the command |
 

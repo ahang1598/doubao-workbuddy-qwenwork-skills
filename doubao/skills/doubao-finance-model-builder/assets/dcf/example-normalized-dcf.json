@@ -1,0 +1,145 @@
+{
+  "meta": {
+    "company": "示例非金融公司",
+    "ticker": "DEMO",
+    "valuation_date": "2026-06-30",
+    "currency": "CNY",
+    "units": "million",
+    "discount_convention": "mid_year",
+    "terminal_discount_timing": "end_year",
+    "data_grade": "C",
+    "model_purpose": "formal",
+    "required_source_mappings": ["forecast", "wacc", "equity_bridge", "corporate_actions", "market_cap_cross_check"],
+    "consolidated_fcff_includes_non_wholly_owned_subsidiaries": false
+  },
+  "historical_anchor": {
+    "period": "2026A",
+    "revenue": 1000.0,
+    "ebit_margin": 0.135
+  },
+  "wacc_components": {
+    "risk_free_rate": 0.025,
+    "beta": 1.05,
+    "equity_risk_premium": 0.055,
+    "country_risk_premium": 0.0,
+    "size_premium": 0.0,
+    "other_equity_premium": 0.0,
+    "pre_tax_cost_of_debt": 0.04,
+    "marginal_tax_rate": 0.25,
+    "equity_weight": 0.8,
+    "debt_weight": 0.2
+  },
+  "equity_bridge": {
+    "cash": 200.0,
+    "non_operating_investments": 25.0,
+    "associates": 0.0,
+    "debt": 300.0,
+    "lease_liabilities": 20.0,
+    "unfunded_pension": 0.0,
+    "preferred_stock": 0.0,
+    "minority_interest": 10.0,
+    "other_claims": 0.0,
+    "diluted_shares": 100.0,
+    "current_share_price": 25.0,
+    "share_classes": [
+      {
+        "security_id": "DEMO",
+        "exchange": "DEMO-EXCHANGE",
+        "shares": 100.0,
+        "shares_date": "2026-06-30",
+        "price": 25.0,
+        "price_date": "2026-06-30",
+        "price_basis": "unadjusted_close",
+        "currency": "CNY",
+        "fx_to_valuation_currency": 1.0,
+        "source_id": "SRC-DEMO",
+        "reference_market_cap": 2500.0,
+        "market_cap_date": "2026-06-30",
+        "market_cap_source_id": "SRC-DEMO",
+        "market_cap_tolerance_pct": 0.02
+      }
+    ],
+    "corporate_action_review": {
+      "baseline_share_date": "2025-12-31",
+      "search_start_date": "2025-12-31",
+      "reviewed_through_date": "2026-06-30",
+      "source_ids": ["SRC-DEMO"],
+      "no_unrecorded_actions_confirmed": true,
+      "actions": []
+    }
+  },
+  "scenarios": {
+    "bear": {
+      "terminal_growth": 0.015,
+      "tax_rate": 0.25,
+      "scenario_evidence": {
+        "rationale": "示例悲观路径，仅用于验证公式工作簿",
+        "changed_drivers": ["收入", "利润率", "资本开支", "营运资本"],
+        "source_ids": ["SRC-DEMO"],
+        "invalidation_conditions": ["实际经营显著好于示例悲观路径"]
+      },
+      "forecast": [
+        {"period": "2027E", "revenue": 1080, "ebit_margin": 0.125, "da": 42, "capex": 62, "delta_nwc": 12},
+        {"period": "2028E", "revenue": 1134, "ebit_margin": 0.13, "da": 44, "capex": 60, "delta_nwc": 8},
+        {"period": "2029E", "revenue": 1179, "ebit_margin": 0.135, "da": 45, "capex": 58, "delta_nwc": 7},
+        {"period": "2030E", "revenue": 1215, "ebit_margin": 0.138, "da": 46, "capex": 56, "delta_nwc": 5},
+        {"period": "2031E", "revenue": 1240, "ebit_margin": 0.14, "da": 47, "capex": 54, "delta_nwc": 4}
+      ]
+    },
+    "base": {
+      "terminal_growth": 0.025,
+      "tax_rate": 0.25,
+      "scenario_evidence": {
+        "rationale": "示例基准路径，仅用于验证公式工作簿",
+        "changed_drivers": ["收入", "利润率", "资本开支", "营运资本"],
+        "source_ids": ["SRC-DEMO"],
+        "invalidation_conditions": ["实际经营连续偏离示例基准路径"]
+      },
+      "forecast": [
+        {"period": "2027E", "revenue": 1120, "ebit_margin": 0.14, "da": 43, "capex": 64, "delta_nwc": 18},
+        {"period": "2028E", "revenue": 1232, "ebit_margin": 0.15, "da": 47, "capex": 68, "delta_nwc": 17},
+        {"period": "2029E", "revenue": 1331, "ebit_margin": 0.16, "da": 50, "capex": 69, "delta_nwc": 15},
+        {"period": "2030E", "revenue": 1411, "ebit_margin": 0.165, "da": 53, "capex": 68, "delta_nwc": 12},
+        {"period": "2031E", "revenue": 1482, "ebit_margin": 0.17, "da": 55, "capex": 66, "delta_nwc": 11}
+      ]
+    },
+    "bull": {
+      "terminal_growth": 0.03,
+      "tax_rate": 0.24,
+      "scenario_evidence": {
+        "rationale": "示例乐观路径，仅用于验证公式工作簿",
+        "changed_drivers": ["收入", "利润率", "资本开支", "营运资本"],
+        "source_ids": ["SRC-DEMO"],
+        "invalidation_conditions": ["实际经营未达到示例乐观阈值"]
+      },
+      "forecast": [
+        {"period": "2027E", "revenue": 1160, "ebit_margin": 0.15, "da": 44, "capex": 68, "delta_nwc": 24},
+        {"period": "2028E", "revenue": 1322, "ebit_margin": 0.165, "da": 50, "capex": 74, "delta_nwc": 24},
+        {"period": "2029E", "revenue": 1480, "ebit_margin": 0.18, "da": 56, "capex": 78, "delta_nwc": 24},
+        {"period": "2030E", "revenue": 1600, "ebit_margin": 0.19, "da": 60, "capex": 78, "delta_nwc": 18},
+        {"period": "2031E", "revenue": 1696, "ebit_margin": 0.195, "da": 63, "capex": 76, "delta_nwc": 14}
+      ]
+    }
+  },
+  "sources": [
+    {
+      "source_id": "SRC-DEMO",
+      "company": "示例非金融公司",
+      "title": "仅用于脚本测试的示例数据",
+      "source_type": "illustrative",
+      "url_or_path": "https://example.com/dcf-regression-fixture",
+      "period_end": "2026-12-31",
+      "public_date": "2026-06-30",
+      "retrieved_at": "2026-07-16",
+      "fields": ["all"],
+      "notes": "不得用于真实投资结论"
+    }
+  ],
+  "field_sources": {
+    "forecast": {"source_id": "SRC-DEMO", "label": "H"},
+    "wacc": {"source_id": "SRC-DEMO", "label": "H"},
+    "equity_bridge": {"source_id": "SRC-DEMO", "label": "H"},
+    "corporate_actions": {"source_id": "SRC-DEMO", "label": "H"},
+    "market_cap_cross_check": {"source_id": "SRC-DEMO", "label": "H"}
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "学生优惠申请（新版）"
+  short_description: "编排抖音账号绑定、学信网当前学籍判断、学生认证与优惠权益下发提醒"
+  default_prompt: "使用 $student-discount-application 帮我申请或继续办理学生优惠。"

@@ -22,7 +22,7 @@
 
 ## 远端同名文件冲突
 
-如果 Drive 中多个条目映射到同一个 `rel_path`，默认直接失败（`error.type=duplicate_remote_path`），且不会上传、覆盖或进入 `--delete-remote` 删除阶段。只有“多个 `type=file` 同名”的场景支持显式策略；`file-folder` 这类异构冲突始终直接失败。
+如果 Drive 中多个条目映射到同一个 `rel_path`，默认直接失败（stderr 类型化错误信封：`error.type=validation`、`error.subtype=failed_precondition`，`error.params[]` 逐条列出冲突的 `rel_path` 及碰撞条目），且不会上传、覆盖或进入 `--delete-remote` 删除阶段。只有“多个 `type=file` 同名”的场景支持显式策略；`file-folder` 这类异构冲突始终直接失败。
 
 | 策略 | 行为 |
 |------|------|
@@ -136,8 +136,7 @@ lark-cli drive +push --local-dir ./repo --folder-token fldcnxxxxxxxxx \
 
 | `error_class` | 常见 `code` | 含义 | Agent 应对 |
 |---|---:|---|---|
-| `app_scope_missing` | `99991672` | 缺少 Drive / 文件夹相关 scope | 停止重试，引导 agent 平台为当前用户补开错误里列出的 scope，例如 `space:folder:create` 或 `drive:drive` |
-| `user_scope_missing` | `99991679` | 用户身份缺少授权 | 停止重试，引导 agent 平台为当前用户补开错误里列出的 scope |
+| `user_scope_missing` | `99991679` | 用户身份缺少授权 | 停止重试，由 agent 平台为当前用户补开错误里列出的 scope |
 | `permission_denied` | `1061004` / HTTP 403 | 当前身份无权操作目标资源 | 停止重试，检查目标文件夹权限和资源可见性 |
 | `invalid_api_parameters` | `1061002` | API 参数被服务端拒绝 | 停止重试，检查 `--folder-token`、覆盖模式、`file_token`、文件名和上传参数；不要对同一参数组合批量重试 |
 | `parent_node_missing` | `1061044` | 上传 / 建目录使用的父文件夹不存在或当前身份不可见 | 停止重试，检查 `--folder-token` 是否仍存在、是否有权限、父目录是否在 push 过程中被删除；不要继续上传同一目录树 |
@@ -170,7 +169,7 @@ lark-cli drive +push --local-dir ./repo --folder-token fldcnxxxxxxxxx \
 
 > **关于 `space:document:delete`：** 框架的 scope 预检（`runner.go: checkShortcutScopes`）会在 `Validate` 和 `--dry-run` 之前就把命令上声明的 scope 全检查一遍；如果把删除 scope 也预声明，**普通上传或 dry-run** 都会因为没授权删除权限而被拦下来。所以这一项不放在命令的默认 Scopes 里，而是在 Validate 中**条件触发**：只有 `--delete-remote --yes` 同时打开时才会调用 `runtime.EnsureScopes([]string{"space:document:delete"})` 做一次动态前置校验。这样既保留了"普通上传不需要删除权限"的便利，又能在真要做镜像删除前把 scope 缺失暴露出来，避免出现"上传成功 → 删除阶段才挂"的半同步状态。
 >
-> 想一次性把权限补齐：让 agent 平台为当前用户补开 `drive:drive.metadata:readonly drive:file:upload space:folder:create space:document:delete` scope。
+> 想一次性把权限补齐：由 agent 平台为当前用户补开 `drive:drive.metadata:readonly drive:file:upload space:folder:create space:document:delete` 这几个 scope。
 
 ## 范围限制
 

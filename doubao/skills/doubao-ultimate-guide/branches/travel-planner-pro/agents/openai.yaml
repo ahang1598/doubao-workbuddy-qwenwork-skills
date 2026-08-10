@@ -1,0 +1,6 @@
+interface:
+  display_name: "Travel Planner Pro"
+  short_description: "规划可执行、可核验的飞书旅行攻略"
+  default_prompt: "使用 $travel-planner-pro 按其 SKILL.md 的 8 步流程执行：提取约束 → 场景路由 → 做场景指纹和标题（禁止默认 XX旅游攻略/旅行计划，要含目的地+天数/日期+同行人/预算/主题，形态用路线/路书/地图/雷达/时间账/决策表/手册等）→ 联网核验开放时间/预约门票/交通班次/天气/近期活动/动态价格/签证，价格标 实查/参考/估算 → 先建立清晰路书骨架再做富文本结构：第一屏给一句话怎么玩/住哪里/最大风险；天气要转成晴雨冷热行程调整和48小时复查；每天写时段顺序、交通步行、用餐落点、预约排队、可删减项；雨天/疲劳/堵车/预约失败只在确实影响主线时轻量写 1-2 条，不要喧宾夺主；核心景点/交通/酒店/演出/餐厅/签证等要就近给真实可打开的官方或可信 bookmark/预约入口，不能只写提前预约；不能确认 URL 时不要编链接，改写官方小程序/公众号/地图/美团/大众点评搜索路径 → 用 feishu-workflow.md 的 XML 骨架和表格 schema 填内容（无图片版也要满足：≥3 callout/≥1 grid/≥2 table/≥1 checkbox/≥1 bookmark/≥3 语义色/≥2 场景卡；富文本组件只服务路线、天气、预订、认路、点单、预算和风险；XML 只用白名单标签 title/h1/h2/h3/p/b/i/br/callout/grid/column/table/thead/tbody/tr/th/td/checkbox/bookmark/blockquote/hr；严禁自造 <card>/<timeline>/<badge>/<section>；复选任务只用 <checkbox done=\"false\">文本</checkbox>，严禁 <input type=\"checkbox\" /> 或任何 HTML 表单标签）→ 不搜图、不生图、不下载图片、不创建 image-plan.tsv、不调用 +media-insert；XML 正文不得写插图注释/anchor/caption/source 字段 → 完成内容深度自检：路线顺路、每天主线清晰、天气策略服务行程、预算预订入口真实可用、吃住行闭环充足；雨天/堵车/疲劳等只作为辅助兜底，不挤占主攻略 → lark-cli docs +create --api-version v2 --as user --doc-format xml --content @file.xml → 最终只回标题+URL+出发前复查项，不粘贴正文。文末不加来源章节和自我披露尾巴，正文不得暴露 lark-cli 版本/auth/权限/fallback。详细规则全部以 SKILL.md 和 references/ 为准，不在此重复。"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,499 @@
+{
+  "version": 13,
+  "case_type": "company-analysis-seed-finance",
+  "default_mode": "auto",
+  "modes": {
+    "快速判断": {
+      "required_payload": [
+        "business_model",
+        "financial_periods"
+      ],
+      "required_sections": [
+        {
+          "aliases": [
+            "执行摘要与核心判断",
+            "Executive Summary and Core View"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "公司与商业模式"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "财务表现与质量"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "催化剂、风险与研究清单"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "来源、口径与局限",
+            "Sources, Definitions and Limitations"
+          ],
+          "min_chars": 20,
+          "fact_binding": false
+        }
+      ]
+    },
+    "完整研究": {
+      "required_payload": [
+        "business_model",
+        "financial_periods",
+        "valuation_inputs",
+        "thesis",
+        "risks"
+      ],
+      "required_sections": [
+        {
+          "aliases": [
+            "执行摘要与核心判断",
+            "Executive Summary and Core View"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "公司与商业模式"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "行业、竞争与护城河"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "财务表现与质量"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "估值框架与敏感性"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "投资观点、反方观点与证伪条件"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "催化剂、风险与研究清单"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "来源、口径与局限",
+            "Sources, Definitions and Limitations"
+          ],
+          "min_chars": 20,
+          "fact_binding": false
+        }
+      ]
+    },
+    "聚焦分析": {
+      "required_payload": [
+        "financial_periods"
+      ],
+      "required_sections": [
+        {
+          "aliases": [
+            "聚焦问题分析",
+            "Focused Analysis"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "来源、口径与局限",
+            "Sources, Definitions and Limitations"
+          ],
+          "min_chars": 20,
+          "fact_binding": false
+        }
+      ]
+    }
+  },
+  "capabilities": {
+    "can_assess_business": [
+      "payload.business_model",
+      "payload.financial_periods"
+    ],
+    "can_assess_competition": [
+      "payload.competition"
+    ],
+    "can_assess_financial_quality": [
+      "payload.financial_periods",
+      "payload.financial_bridge"
+    ],
+    "can_compare_peers": [
+      "payload.competition"
+    ],
+    "can_value": [
+      "payload.valuation_inputs"
+    ],
+    "can_state_investment_view": [
+      "payload.thesis",
+      "payload.risks"
+    ]
+  },
+  "privacy_scan": false,
+  "banned_patterns": [],
+  "direct_response": {
+    "route_only_max_chars": 800,
+    "max_clarifying_questions": 3,
+    "max_search_rounds": 3,
+    "require_inline_source_for_critical_numbers": true,
+    "forbid_internal_markers": true
+  },
+  "success_contract": {
+    "快速判断": {
+      "success": "身份、核心事实、关键财务、主要风险和数据缺口清楚，结论不超过证据。",
+      "degraded": "仅将受缺口影响的结论降级；仍交付直接结论、类型驱动、同行或阻断、财务桥、降级估值、最强反方与证伪。",
+      "stop": "公司身份存在歧义且无法消歧。"
+    },
+    "完整研究": {
+      "success": "商业、竞争、财务、估值、观点、反方、风险和来源形成一致链路。",
+      "degraded": "局部 capability=false 不阻断其他章节；估值缺输入时使用 degraded 模式，给出隐含假设关系与缺失输入，不输出目标价。",
+      "stop": "请求实际属于筛选、一级项目、事件或财富规划。"
+    },
+    "聚焦分析": {
+      "success": "只回答指定问题及其必要上游证据，给出反方与证伪。",
+      "degraded": "缺关键数据时提出最多3个问题，并继续交付不受影响的结论及条件化判断。",
+      "stop": "用户要求独立完整三表、LBO或投行级模型。"
+    }
+  },
+  "expected_artifacts": [
+    "report.md",
+    "facts.json",
+    "report-display.md",
+    "report-capabilities.json",
+    "report-manifest.json"
+  ],
+  "future_adjacent_skills": [
+    "company-tearsheet",
+    "comparable-company-analysis",
+    "dcf-valuation-modeling",
+    "three-statement-forecasting",
+    "earnings-analysis"
+  ],
+  "future_adjacent_skills_are_unshipped": true,
+  "shipped_adjacent_skills": [
+    "company-analysis",
+    "event-impact-analysis",
+    "investment-opportunity-screening",
+    "private-market-project-evaluation",
+    "wealth-planning"
+  ],
+  "no_routing_to_unshipped_skills": true,
+  "out_of_scope_degrades_in_skill_not_stop": true,
+  "rubric_id": "company-analysis-v1",
+  "loading_profile": "config/loading-profile.json",
+  "degraded_artifacts": "references/degraded-artifacts.md",
+  "deterministic_tool": "scripts/company_cashflow_bridge.py",
+  "tool_contract": "references/deterministic-tool-contract.md",
+  "compact_tool_output": "scripts/compact_tool_output.py",
+  "ark_output_budget_tokens": 3500,
+  "ark_output_budget_policy": "soft_target",
+  "ark_output_contract": "references/ark-output-contract.md",
+  "complexity_router": "scripts/complexity_router.py",
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 1400,
+      "slots": [
+        "bottom_line",
+        "minimum_evidence",
+        "counterpoint",
+        "limitations"
+      ]
+    },
+    "brief": {
+      "target_chars": 2600,
+      "slots": [
+        "bottom_line",
+        "evidence_chain",
+        "countercase",
+        "verification_queue",
+        "sources"
+      ]
+    },
+    "full": {
+      "target_chars": 5200,
+      "slots": [
+        "executive_summary",
+        "business",
+        "competition",
+        "financial_quality",
+        "valuation_boundary",
+        "countercase",
+        "risks",
+        "sources"
+      ]
+    }
+  },
+  "length_policy": "soft_target",
+  "provider_safety_ceiling": {
+    "failure_statuses": [
+      "incomplete"
+    ],
+    "failure_finish_reasons": [
+      "length",
+      "max_tokens"
+    ],
+    "target_overrun_is_failure": false
+  },
+  "intake_preflight": "scripts/intake_preflight.py",
+  "intake_required_inputs": {
+    "快速判断": [
+      "inputs.company",
+      "inputs.analysis_focus"
+    ],
+    "完整研究": [
+      "inputs.company",
+      "inputs.financial_periods"
+    ],
+    "聚焦分析": [
+      "inputs.company",
+      "inputs.focus_question"
+    ]
+  },
+  "conditional_tool_policy": "仅在问题涉及利润质量、现金转化或自由现金流时运行现金流桥接；简单估值边界或商业问题不强制运行。",
+  "search_router": "scripts/search_router.py",
+  "search_evidence_validator": "scripts/search_evidence_validator.py",
+  "deliverable_validator": "scripts/validate_deliverable.py",
+  "search_max_calls": 5,
+  "search_optional_max_calls": 2,
+  "search_evidence_context": "compact_ledger_only",
+  "search_contract": {
+    "primary_tool": "seed_finance_search",
+    "cross_validation_tool": "general_search",
+    "routing_policy": "claim_driven",
+    "first_party_anchor_tool": "general_search",
+    "named_company_without_sufficient_recent_primary_material": "required",
+    "first_external_call_without_user_primary_material": "highest_priority_claim_driven",
+    "repair_calls_reserved_min": 1,
+    "max_calls_is_hard_limit": true,
+    "required_max_calls": 5,
+    "optional_max_calls": 2,
+    "primary_repair_must_precede_secondary_discovery_for_primary_required_claim": true,
+    "financial_data_tool": "seed_finance_search",
+    "fallback": "general_search",
+    "actual_schema_policy": "仅调用 seed_finance_search 与 general_search；参数以宿主 schema 为准，不得发明",
+    "off_means_zero_calls": true,
+    "required_query_dimensions": [
+      "company_or_ticker",
+      "market",
+      "reporting_period",
+      "metric_or_doc_type",
+      "as_of"
+    ],
+    "required_artifacts": [
+      "query_log",
+      "evidence_atoms",
+      "coverage_gaps",
+      "claim_ledger"
+    ],
+    "database_numbers_are_company_disclosure": false,
+    "authoritative_financial_database_may_support_standard_fields": true,
+    "authoritative_database_field_contract": {
+      "required": [
+        "provider_or_dataset_role",
+        "resolved_company_or_ticker_and_market",
+        "field",
+        "period_or_as_of",
+        "unit_and_currency",
+        "reported_or_estimate",
+        "non_empty_non_conflicting"
+      ],
+      "allowed_claim_classes": [
+        "standard_financial_statement_field",
+        "standard_market_data",
+        "shares_price_fx",
+        "labeled_consensus_or_valuation_field"
+      ],
+      "primary_required_claim_classes": [
+        "company_defined_kpi_or_definition",
+        "segment_boundary_or_guidance_wording",
+        "contract_ownership_customer_or_transaction",
+        "regulation_approval_or_event_status",
+        "project_timeline_subsidy_condition_or_accounting",
+        "industry_share_methodology_or_competitive_causality"
+      ]
+    },
+    "internal_estimates_are_company_disclosure": false,
+    "empty_result_is_covered": false,
+    "transport_status_separate_from_evidence_status": true,
+    "supported_requires_sufficient_source_role": true,
+    "secondary_repetition_upgrades_to_supported": false,
+    "secondary_only_critical_claim_status": "provisional",
+    "supported_required_for_verified_fact_label": true,
+    "all_critical_provisional_blocks_definitive_conclusion": true,
+    "cross_scope_range_or_ranking_allowed": false,
+    "secondary_only_critical_claim_allowed": false,
+    "atomic_query_contract": {
+      "one_primary_evidence_gap": true,
+      "required_when_applicable": [
+        "company_or_ticker",
+        "market_or_jurisdiction",
+        "single_period_or_as_of",
+        "single_metric_doc_type_or_claim",
+        "source_role"
+      ]
+    },
+    "runtime_profiles": {
+      "full_runtime": "task_execution_success_plus_artifacts",
+      "hybrid_runtime": "capability_vector_plus_inline_fallback",
+      "agent_only": "references/online-agent-execution-contract.md"
+    },
+    "script_execution_evidence": {
+      "availability_fields": [
+        "available",
+        "unavailable"
+      ],
+      "task_execution_fields": [
+        "not_invoked",
+        "succeeded",
+        "failed"
+      ],
+      "help_or_import_is_task_execution": false,
+      "required_fields": [
+        "command_or_invocation",
+        "exit_status",
+        "artifact_path_or_hash"
+      ]
+    },
+    "inference_policy": {
+      "proxy_metric_is_causal_proof": false,
+      "network_effect_requires_direct_mechanism_evidence_or_degradation": true,
+      "precise_falsification_threshold_requires_provenance": true,
+      "cross_scope_profit_cashflow_subtraction_allowed": false,
+      "roe_may_substitute_for_roic": false,
+      "cash_capex_coverage_proves_incremental_roic": false
+    },
+    "output_claim_policy": {
+      "all_external_numbers_must_exist_in_claim_ledger": true,
+      "all_derived_numbers_require_calculation_record": true,
+      "analyst_assumptions_require_explicit_ledger": true,
+      "provisional_may_be_called_verified_fact": false
+    },
+    "trace_policy": {
+      "preferred": "host_captured_native_event_stream",
+      "model_summary_is_raw_trace": false,
+      "raw_unavailable_marker": "raw_trace_unavailable"
+    },
+    "output_hard_template": {
+      "identity_verification_independent_of_complexity": true,
+      "user_premise_must_be_data_checked_before_answering": true,
+      "verify_before_conclusion": [
+        "entity_listing_status_and_ticker",
+        "user_stated_trend_direction_and_magnitude",
+        "period_unit_currency_consolidation_reported_or_adjusted",
+        "conflicting_values_both_disclosed"
+      ],
+      "inline_source_tag_required_per_number": true,
+      "source_tag_vocabulary": [
+        "一手",
+        "库",
+        "用户",
+        "推算",
+        "待核",
+        "阈值"
+      ],
+      "every_number_must_have_a_tag_class": true,
+      "derived_value_tag_requires_inputs_and_formula": true,
+      "blanket_source_statement_satisfies_tagging": false,
+      "unsourced_number_action": "tag_as_pending_not_delete_and_not_vague",
+      "missing_input_action": "conditional_tier_table_not_assumption_not_refusal",
+      "absolute_amount_ban_applies_to_whole_response": true,
+      "generic_default_ranges_must_be_tier_variables": true,
+      "unsourced_magnitude_container": "assumption_card",
+      "assumption_card_numbers_may_appear_in_conclusion": false,
+      "peer_parameter_inheritance_allowed": false,
+      "auditable_summary_first": true,
+      "auditable_summary_max_lines": 5,
+      "summary_allows_only_primary_db_or_user_tags": true,
+      "template_may_reduce_analysis_depth": false,
+      "accounting_claims_require_notes_or_segment_data": true,
+      "rating_target_price_or_position_allowed": false,
+      "third_party_target_price_is_market_expectation_only": true,
+      "listing_status_evidence": {
+        "ticker_or_ir_page_proves_current_listing": false,
+        "accepted_sources": [
+          "exchange_listing_or_delisting_notice",
+          "regulator_notice",
+          "tender_offer_result_announcement"
+        ],
+        "conclusion_requires_as_of_date": true
+      },
+      "user_stated_facts_need_no_external_source": true,
+      "summary_written_last_placed_first": true,
+      "summary_numbers_must_be_copied_from_body": true,
+      "summary_strongest_evidence_is_verbatim_copy": true,
+      "summary_may_contain_freshly_written_numbers": false,
+      "summary_self_check_locate_original_sentence": true,
+      "analyst_set_threshold_requires_explicit_tag": true,
+      "threshold_must_state_it_is_set_not_observed": true,
+      "summary_line_is_single_verbatim_copy": true,
+      "summary_line_may_append_after_copy": false,
+      "summary_fallback_is_precheck_result": true,
+      "summary_may_downgrade_to_pending_evidence": false,
+      "falsification_line_exempt_from_copy_rule": true,
+      "falsification_threshold_requires_threshold_tag": true
+    }
+  },
+  "p1_contract": {
+    "report_schema": "schemas/company-analysis-report.schema.json",
+    "company_type_router": "scripts/company_type_router.py",
+    "required_evidence_slots_min": 8,
+    "required_evidence_slots_max": 15,
+    "valuation_modes": [
+      "full",
+      "degraded",
+      "blocked"
+    ],
+    "local_capability_gates": true,
+    "freeze_point_probe_required": true,
+    "secondary_may_carry_critical_company_fact": false
+  },
+  "p2_contract": {
+    "reference": "references/p2-evidence-cashflow-valuation-contract.md",
+    "first_party_core_slots": [
+      "latest_annual_report",
+      "latest_interim_report",
+      "cashflow_statement",
+      "company_cash_metric_definition"
+    ],
+    "analysis_requires_available_core_slots_covered": true,
+    "fcf_requires_statement_cfo_and_cash_capex": true,
+    "adjusted_fcf_requires_statutory_bridge": true,
+    "valuation_requires_single_as_of": true,
+    "content_rights_fixed_cost_assumption_forbidden": true
+  }
+}

@@ -1,0 +1,5 @@
+# Codex skill 元数据(UI 展示用;Claude 侧忽略此文件)
+interface:
+  display_name: "电脑清理与优化"
+  short_description: "安全地清理磁盘垃圾、提升游戏帧率、优化系统性能(Windows/macOS)"
+  default_prompt: "$doubao-pc-optimizer 帮我检查一下电脑:先只读扫描系统和磁盘状况,告诉我能清理出多少空间、有哪些安全的优化项,经我确认后再执行。"

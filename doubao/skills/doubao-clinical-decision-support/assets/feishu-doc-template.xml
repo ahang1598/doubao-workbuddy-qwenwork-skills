@@ -1,91 +1,82 @@
-<!--
-SPLIT_WRITE_PLAN:
-1) 先生成并校验完整 XML 草稿。
-2) 写入飞书时拆成 3 个 section：
-   section-1 = 标题 + 一 总结论 + 二 病例与临床问题 + 三 临床问题分析和解答
-   section-2 = 四 证据关系与决策逻辑 + 五 指南与共识证据 + 六 关键研究证据
-   section-3 = 七 风险安全下一步 + 八 检索策略与证据覆盖 + 九 完整参考文献（含链接） + 十 免责声明
-3) 先创建 section-1，再 append/insert section-2 和 section-3；不要把三段拆成三个文档。
--->
 <title>{{病例主题}}循证医学决策支持报告</title>
 
 <h1>一、总结论</h1>
-<!-- 生成约束：第一章要结论先行，优先用无序列表分点呈现；可用加粗、浅黄/浅绿 callout、表格单元底色或语义色突出重点；不要强制做成表格。不要把本注释写入正文。 -->
 <callout emoji="🩺" background-color="light-green">
-  <p><b>总体判断：</b>{{用 2-4 句话直接回答医生问题，说明推荐方向、证据确定性、适用边界和最重要风险；涉及文献/指南/说明书的判断应直接引用可点击来源}}</p>
-  <ul>
-    <li><p><b>核心结论：</b>{{用一句话说明当前更倾向的临床判断或讨论方向。}}</p></li>
-    <li><p><b>关键依据：</b>{{最能支撑结论的 2-3 条指南、关键研究或安全来源，例如 <a href="{{url}}">{{指南/研究/说明书名}}</a>（{{期刊/来源}}，{{来源级别/证据级别}}）。}}</p></li>
-    <li><p><b>适用边界：</b>{{说明本结论适用于哪些病例条件、疾病阶段、检查结果或安全前提。}}</p></li>
-  </ul>
+  <p><b>总结：</b>{{直接回答用户提出的问题，说明当前答案及其确定性；涉及文献、指南或说明书时直接引用可点击来源。}}</p>
+  <p><b>关键依据：</b>{{按需概括最能支撑回答的病例信息、指南、研究或安全来源；数量由问题决定。}}</p>
 </callout>
 <callout emoji="⚠️" background-color="light-yellow">
-  <p><b>需要特别注意：</b>{{最重要的不确定性、禁忌/风险、需补充的信息或需要 MDT/专科讨论的条件。关键阈值、风险词或限制条件可适度加粗。}}</p>
-</callout>
-<callout emoji="🔎" background-color="light-blue">
-  <p><b>证据边界：</b>{{说明本结论主要适用于哪些人群、疾病阶段和临床场景；若证据不足、指南冲突或仅能读到摘要，直接说明。}}</p>
+  <p><b>注意事项：</b>{{按需说明与当前问题直接相关的不确定性、禁忌/风险、需补充信息或 MDT/专科讨论条件，以及回答适用的人群、疾病阶段、临床场景、安全前提和证据限制；没有实质内容时删除本块。}}</p>
 </callout>
 
-<h1>二、病例与临床问题</h1>
-<table>
-  <tr><th background-color="light-blue">维度</th><th background-color="light-blue">当前信息</th><th background-color="light-blue">对决策的影响</th></tr>
-  <tr><td>临床场景</td><td>{{门诊/急诊/住院/围手术期等}}</td><td>{{影响}}</td></tr>
-  <tr><td>核心问题</td><td>{{PICOTS/PECO 或诊断问题}}</td><td>{{影响}}</td></tr>
-  <tr><td>用户提供病例信息/证据资料</td><td>{{用户文字中提供的症状、检验、影像报告文字、病理、基因、评分等}}</td><td>{{对病例分层、诊断路径、证据适配或安全判断的影响}}</td></tr>
-  <tr><td>安全因素</td><td>{{肝肾功能、合并症、当前用药、特殊人群}}</td><td>{{影响}}</td></tr>
-  <tr><td>关键缺失信息</td><td>{{需补充/建议补充}}</td><td background-color="light-yellow">{{影响}}</td></tr>
-</table>
-
-<!-- 生成约束：仅 attachment_state=present 时插入以下表格；attachment_state=none 时删除本段和表格，不要把本注释写入正文。 -->
-<h2>2.1 上传资料质量与病例提取</h2>
-<table>
-  <tr><th background-color="light-blue">资料</th><th background-color="light-blue">日期</th><th background-color="light-blue">质量</th><th background-color="light-blue">关键提取信息</th><th background-color="light-blue">对决策的影响</th><th background-color="light-blue">局限性</th></tr>
-  <tr><td>{{真实上传资料类型}}</td><td>{{日期}}</td><td>{{可用于分析/部分可用/不可可靠解读}}</td><td>{{从真实附件读取的关键发现}}</td><td>{{影响}}</td><td>{{局限}}</td></tr>
-</table>
+<h1>二、病例信息梳理与临床问题</h1>
 
 <h1>三、临床问题分析和解答</h1>
-<!-- 生成约束：第三章用于设身处地帮助医生回答当前问题。先给“问题总结”，随后按实际问题自由组织自然段、短列表、必要 callout 或小标题；不要固定成 3.1/3.2/3.3 模板，也不要写成“证据与病例匹配程度”。可引用后文 evidence_id 或简称；若写具体文献名，文献名必须可点击。不要把本注释写入正文。 -->
-<callout emoji="🎯" background-color="light-green">
-  <p><b>问题总结：</b>{{先用 2-4 句话回答医生真正关心的问题：当前要判断的是诊断、鉴别、检查路径、用药/治疗选择、安全性还是预后；结合已有病例信息，目前更倾向怎样理解和处理；确定性与关键前提是什么。可引用 [G1]、[R1] 或 <a href="{{url}}">{{关键文献名}}</a>。}}</p>
-</callout>
-<p>{{围绕医生原始提问自由展开分析：可以拆成 1-3 个临床子问题，也可以按诊断/鉴别、检查路径、治疗或用药选择、安全边界、下一步行动来组织；必须结合病例信息、证据方向、现实约束和不确定性，直接回答“现在该如何理解/讨论/推进”。无真实附件时只基于用户文字，不声称读取上传报告。}}</p>
-<callout emoji="⚠️" background-color="light-yellow">
-  <p><b>可能改变判断的关键信息：</b>{{列出 3-6 个最可能改变结论或安全判断的缺失信息、阈值或临床条件。}}</p>
-</callout>
+<p>{{围绕用户原始问题自由展开分析，可按需要拆分临床子问题；结合病例信息、证据方向、现实约束和不确定性，直接回答用户提出的诊断、鉴别、检查路径、用药/治疗选择、安全性或预后问题，并在涉及外部证据时主动引用相关可点击资料链接。无真实附件时只基于用户文字，不声称读取上传报告。}}</p>
 
-<h1>四、证据关系与决策逻辑</h1>
-<!-- 生成约束：本节按病例和证据现场生成 Mermaid 白板图，不要照抄固定示例。复杂问题通常插入证据关系图和决策逻辑图；证据节点来自 CSV 或病例结构，链接放在正文或图下注释表。不要把本注释写入正文。 -->
-<h2>4.1 证据关系图</h2>
-<!-- 在此插入围绕本病例和核心证据生成的 Mermaid 证据关系白板图。 -->
+<h1>四、{{根据用户问题生成的风险、安全性或临床管理标题}}</h1>
+<p>{{结合病例和用户问题自由组织本章内容；说明相关风险或临床管理方向及其病例依据，必要时引用可点击指南、说明书、论文或监管来源。}}</p>
+
+<h1>五、证据关系与决策逻辑</h1>
+<h2>5.1 证据关系思维导图</h2>
+<whiteboard type="mermaid">
+mindmap
+  root(({{当前临床问题或病例判断}}))
+    病例线索
+      {{具体病例证据一}}
+        {{该病例证据产生的结论}}
+      {{具体病例证据二}}
+        {{该病例证据产生的结论}}
+    指南与共识
+      {{可读指南或共识简称}}
+        {{该指南证据产生的病例化结论}}
+      {{另一指南或共识简称}}
+        {{该指南证据产生的病例化结论}}
+    关键研究
+      {{可读研究简称}}
+        {{该研究证据产生的病例化结论}}
+      {{另一可读研究简称}}
+        {{该研究证据产生的病例化结论}}
+    安全边界
+      {{说明书阈值或患者风险证据}}
+        {{该安全证据产生的限制或监测结论}}
+      {{关键缺失信息}}
+        {{补齐前能够得出的条件性结论}}
+    综合判断
+      {{整合后的主要证据方向}}
+        {{当前倾向及适用前提}}
+      {{备选证据方向}}
+        {{备选路径及触发条件}}
+</whiteboard>
 <table>
-  <tr><th background-color="light-blue">evidence_id</th><th background-color="light-blue">图中节点</th><th background-color="light-blue">来源链接</th><th background-color="light-blue">期刊/来源</th><th background-color="light-blue">来源级别</th><th background-color="light-blue">阅读状态</th></tr>
-  <tr><td>{{G1/R1/S1}}</td><td>{{图中显示名称}}</td><td><a href="{{url}}">{{标题}}</a></td><td>{{期刊/机构}}</td><td>{{A/B/C/未核验}}</td><td>{{全文/指南正文/摘要}}</td></tr>
+  <tr><th background-color="light-blue">图中简称</th><th background-color="light-blue">标题</th><th background-color="light-blue">来源链接</th><th background-color="light-blue">期刊/来源</th><th background-color="light-blue">来源级别</th></tr>
+  <tr><td>{{KDIGO 2024/DAPA-CKD 等可读简称}}</td><td>{{完整标题}}</td><td><a href="{{url}}">{{link_label}}</a></td><td>{{期刊/机构}}</td><td>{{A/B/C/未核验}}</td></tr>
 </table>
-<h2>4.2 决策逻辑图</h2>
-<!-- 在此插入结合本病例实际状况、关键缺失项和安全条件生成的 Mermaid 决策逻辑白板图。 -->
+<h2>5.2 决策逻辑图</h2>
+<whiteboard type="mermaid">
+flowchart TD
+    {{替换为结合本病例实际状况、关键缺失项和安全条件生成的纯 Mermaid 节点与连线；不要保留占位符，不要加入代码围栏、HTML/XML 标签或反斜杠 n}}
+</whiteboard>
 
-<h1>五、指南与共识证据</h1>
-<!-- 生成约束：本节每条指南/共识首次出现时，名称本身必须是可点击链接并标注机构/期刊、年份和来源级别。不要把本注释写入正文。 -->
-<h2>5.1 中国指南/本土共识</h2>
-<p><b>来源：</b><a href="{{url}}">{{中国指南或本土共识名}}</a>（{{机构/期刊，年份；A/B/C 级来源}}）。{{与当前病例直接相关的推荐或证据等级}}</p>
-<h2>5.2 国际指南/共识</h2>
-<p><b>来源：</b><a href="{{url}}">{{国际指南或共识名}}</a>（{{机构/期刊，年份；A/B/C 级来源}}）。{{与当前病例直接相关的推荐或限制}}</p>
+<h1>六、指南与共识证据</h1>
+<h2>6.1 中国指南/本土共识</h2>
+<p><a href="{{url}}">{{中国指南或本土共识名}}</a>（{{机构/期刊，年份；A/B/C 级来源}}）。{{与当前病例和问题情况直接相关的指南片段、推荐或限制，可列举推荐内容、病例适配性、原文表述}}</p>
+<h2>6.2 国际指南/共识</h2>
+<p><a href="{{url}}">{{国际指南或共识名}}</a>（{{机构/期刊，年份；A/B/C 级来源}}）。{{与当前病例直接相关的指南片段、推荐或限制，可列举推荐内容、病例适配性、原文表述}}</p>
 <table>
   <tr><th background-color="light-blue">指南/共识</th><th background-color="light-blue">机构/年份</th><th background-color="light-blue">来源级别</th><th background-color="light-blue">推荐内容</th><th background-color="light-blue">推荐强度/证据等级</th><th background-color="light-blue">病例适配性</th><th background-color="light-blue">原文定位</th></tr>
   <tr><td><a href="{{url}}">{{指南名}}</a></td><td>{{机构/年份}}</td><td>{{A/B/C}}</td><td>{{推荐内容}}</td><td>{{等级}}</td><td>{{适配性}}</td><td>{{章节/页码/推荐编号}}</td></tr>
 </table>
 
-<h1>六、关键研究证据</h1>
-<!-- 生成约束：关键研究首次出现时，研究名必须为可点击链接并标注期刊、来源级别/研究类型、分区/IF 核验状态；不要把本注释写入正文。 -->
-<h2>6.1 核心研究逐条解读</h2>
-<p><b>来源：</b><a href="{{url}}">{{研究名或论文标题}}</a>（{{期刊名}}，{{来源级别}}/{{研究类型与证据级别}}）。{{研究设计、关键结果、病例适配性和局限性，控制在 2-4 句}}</p>
+<h1>七、关键研究证据</h1>
+<h2>7.1 核心研究逐条解读</h2>
+<p><a href="{{url}}">{{研究名或论文标题}}</a>（{{期刊名}}，{{年份}}，{{来源级别}}/{{研究类型与证据级别}}）。{{研究设计、关键结果、关键结论、病例适配性和局限性；内容较多时可按需使用无序列表，提高表达清晰度}}</p>
 <table>
   <tr>
     <th background-color="light-blue">研究/文献</th>
     <th background-color="light-blue">期刊/来源</th>
     <th background-color="light-blue">来源级别</th>
     <th background-color="light-blue">年份</th>
-    <th background-color="light-blue">阅读状态</th>
     <th background-color="light-blue">关键结果/片段定位</th>
     <th background-color="light-blue">病例适配性</th>
     <th background-color="light-blue">局限性</th>
@@ -95,17 +86,10 @@ SPLIT_WRITE_PLAN:
     <td>{{NEJM/Kidney International/期刊名}}</td>
     <td background-color="light-green">{{A 级/高质量 RCT/未核验分区}}</td>
     <td>{{年份}}</td>
-    <td>{{全文/指南正文/摘要}}</td>
     <td>{{页码/章节/结果}}</td>
     <td>{{适配性}}</td>
     <td>{{局限性}}</td>
   </tr>
-</table>
-
-<h1>七、风险、安全性与下一步</h1>
-<table>
-  <tr><th background-color="light-blue">风险/问题</th><th background-color="light-blue">等级</th><th background-color="light-blue">依据</th><th background-color="light-blue">建议讨论点</th></tr>
-  <tr><td>{{禁忌、相互作用、特殊人群、肝肾功能、感染/出血/血栓风险}}</td><td background-color="light-orange">{{等级，按风险可改为 light-yellow/light-orange/light-red}}</td><td><a href="{{url}}">{{指南/说明书/监管来源}}</a>（{{来源级别}}）；{{病例依据}}</td><td>{{需补充资料、MDT/专科讨论、患者沟通重点}}</td></tr>
 </table>
 
 <h1>八、检索策略与证据覆盖</h1>
@@ -114,21 +98,20 @@ SPLIT_WRITE_PLAN:
 </callout>
 
 <h1>九、完整参考文献（含链接）</h1>
-<!-- 生成约束：本节只使用“标题｜来源｜链接”三列表格；完整 CSV 作为文档末尾附件交付，不展开为正文表格。不要把本注释写入正文。 -->
 <h2>9.1 核心证据</h2>
 <table>
-  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">链接</th></tr>
-  <tr><td>{{标题或研究名}}</td><td>{{来源/期刊，年份；A/B/C；全文/指南正文}}</td><td><a href="{{url}}">原文/摘要</a></td></tr>
+  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">链接</th></tr>
+  <tr><td>{{标题或研究名}}</td><td>{{来源/期刊}}</td><td>{{指南/RCT/系统综述等}}</td><td>{{年份}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
 </table>
-<h2>9.2 辅助参考/仅摘要</h2>
+<h2>9.2 辅助参考</h2>
 <table>
-  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">链接</th></tr>
-  <tr><td>{{标题}}</td><td>{{来源/期刊，年份；仅摘要/辅助参考}}</td><td><a href="{{url}}">原文/摘要</a></td></tr>
+  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">链接</th></tr>
+  <tr><td>{{标题}}</td><td>{{来源/期刊}}</td><td>{{辅助参考类型}}</td><td>{{年份}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
 </table>
 <h2>9.3 排除/待核验记录</h2>
 <table>
-  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">链接</th></tr>
-  <tr><td>{{标题}}</td><td>{{来源/期刊，年份；排除/待核验，原因简写}}</td><td><a href="{{url}}">原文/摘要</a></td></tr>
+  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">链接</th></tr>
+  <tr><td>{{标题}}</td><td>{{来源/期刊}}</td><td>{{排除/待核验；原因简写}}</td><td>{{年份}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
 </table>
 
 <h1>十、免责声明</h1>

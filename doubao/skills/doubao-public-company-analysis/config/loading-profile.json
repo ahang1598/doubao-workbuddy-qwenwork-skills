@@ -1,0 +1,190 @@
+{
+  "version": 14,
+  "initial_files": [
+    "SKILL.md"
+  ],
+  "mode_references": {
+    "快速判断": [
+      "seed-finance-search-routing.md",
+      "online-agent-execution-contract.md",
+      "p1-execution-contract.md",
+      "p2-evidence-cashflow-valuation-contract.md",
+      "workflow.md",
+      "financial-quality.md"
+    ],
+    "完整研究": [
+      "seed-finance-search-routing.md",
+      "online-agent-execution-contract.md",
+      "p1-execution-contract.md",
+      "p2-evidence-cashflow-valuation-contract.md",
+      "analysis-framework.md",
+      "output-structure.md"
+    ],
+    "聚焦分析": [
+      "seed-finance-search-routing.md",
+      "online-agent-execution-contract.md",
+      "p1-execution-contract.md",
+      "p2-evidence-cashflow-valuation-contract.md",
+      "financial-quality.md",
+      "output-structure.md"
+    ]
+  },
+  "output_token_budget": {
+    "快速判断": 1200,
+    "完整研究": 3200,
+    "聚焦分析": 1800
+  },
+  "search": {
+    "default": "auto",
+    "route_only": "off",
+    "closed_fixture": "off",
+    "freeze_object_before_search": true,
+    "router": "scripts/search_router.py",
+    "evidence_validator": "scripts/search_evidence_validator.py",
+    "max_calls": 5,
+    "optional_max_calls": 2,
+    "tool_order": [
+      "seed_finance_search",
+      "general_search"
+    ],
+    "fallback_tool_order": [
+      "general_search"
+    ],
+    "actual_schema_policy": "仅调用 seed_finance_search 与 general_search；参数以宿主 schema 为准，不得发明",
+    "routing_policy": "claim_driven_seed_for_standard_finance_general_for_primary_specific_claims",
+    "authoritative_financial_database_standard_fields_may_be_supported": true,
+    "off_means_zero_calls": true,
+    "source_order": [
+      "regulator_filing",
+      "company_ir",
+      "official_transcript",
+      "reputable_secondary"
+    ],
+    "query_stages": [
+      "identity_period_and_first_party_anchor",
+      "professional_financial_fields",
+      "company_type_and_competition",
+      "claim_specific_repair"
+    ],
+    "evidence_context": "compact_ledger_only",
+    "required_search_artifacts": [
+      "query_log",
+      "evidence_atoms",
+      "coverage_gaps",
+      "claim_ledger"
+    ],
+    "query_required_dimensions": [
+      "company_or_ticker",
+      "market",
+      "reporting_period",
+      "metric_or_doc_type",
+      "as_of"
+    ],
+    "database_numbers_are_company_disclosure": false
+  },
+  "runtime_profiles": {
+    "full_runtime": {
+      "scripts_available": true,
+      "validation": "deterministic_scripts",
+      "requires_task_execution_success": true,
+      "requires_task_artifacts": true,
+      "help_or_import_counts_as_execution": false
+    },
+    "hybrid_runtime": {
+      "scripts_available": "partial",
+      "capability_probe": [
+        "router",
+        "evidence_validator",
+        "calculator",
+        "finalizer"
+      ],
+      "validation": "executed_scripts_plus_inline_fallback",
+      "may_claim_unexecuted_scripts_ran": false,
+      "requires_per_script_availability_and_task_execution": true
+    },
+    "agent_only": {
+      "scripts_available": false,
+      "validation": "references/online-agent-execution-contract.md#10-无脚本内联自检",
+      "may_claim_scripts_ran": false,
+      "global_degrade_because_scripts_unavailable": false
+    }
+  },
+  "tool_context": {
+    "full_output": "write_to_workdir",
+    "model_input": "compact_summary_only",
+    "include": [
+      "core_results",
+      "exceptions",
+      "unknowns",
+      "hard_gates"
+    ]
+  },
+  "ark_output_budget_tokens": 3500,
+  "ark_output_budget_policy": "soft_target",
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 1400,
+      "slots": [
+        "bottom_line",
+        "minimum_evidence",
+        "counterpoint",
+        "limitations"
+      ]
+    },
+    "brief": {
+      "target_chars": 2600,
+      "slots": [
+        "bottom_line",
+        "evidence_chain",
+        "countercase",
+        "verification_queue",
+        "sources"
+      ]
+    },
+    "full": {
+      "target_chars": 5200,
+      "slots": [
+        "executive_summary",
+        "business",
+        "competition",
+        "financial_quality",
+        "valuation_full_degraded_or_blocked",
+        "countercase",
+        "risks",
+        "sources"
+      ]
+    }
+  },
+  "length_policy": "soft_target",
+  "provider_safety_ceiling": {
+    "failure_statuses": [
+      "incomplete"
+    ],
+    "failure_finish_reasons": [
+      "length",
+      "max_tokens"
+    ],
+    "target_overrun_is_failure": false
+  },
+  "complexity_router": "scripts/complexity_router.py",
+  "p1": {
+    "required_reference": "references/p1-execution-contract.md",
+    "company_type_router": "scripts/company_type_router.py",
+    "report_schema": "schemas/company-analysis-report.schema.json",
+    "evidence_slots": {
+      "min": 8,
+      "max": 15
+    }
+  },
+  "p2": {
+    "first_party_core_slots": [
+      "latest_annual_report",
+      "latest_interim_report",
+      "cashflow_statement",
+      "company_cash_metric_definition"
+    ],
+    "company_cash_metric_definition_required_when_used": true,
+    "valuation_single_as_of": true,
+    "content_rights_cost_mechanism_required": true
+  }
+}

@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 589 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Write Cells
 
 ## 写入边界 + 回读校验（编辑类任务必做）
@@ -102,6 +104,8 @@ Step 2: `+cells-set` — range="A2", cells 含 value + cell_styles + border_styl
 ```
 这比在 99 个单元格中都重复写样式 JSON 高效得多。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 💡 **样式更新是「部分合并」，不是整体覆盖**：`+cells-set-style` / `+cells-batch-set-style`（以及 `+cells-set` 的 `cell_styles` / `border_styles`）只改你**显式传入**的样式属性，未传的属性保留原值。两个实用推论：
 - **可分层叠加**：对同一区域先刷字体色、再单独刷背景色、再单独刷边框，后一步不会清掉前一步——美化已有区域时无需一次带齐所有字段，可拆成多次窄调用。
 - **`border_styles` 按边合并**：只传 `{"top":{...}}` 只更新上边框，`bottom` / `left` / `right` 保留原状；不必为了「只改一条边」而把四边全部重传。（例外见上方「新增行的边框/样式禁止用 `{}` 跳过」：**全新行**底子里没有边框，仍需把要显示的边都显式传出。）
@@ -203,6 +207,8 @@ lark-cli sheets +dropdown-set \
   --range A2:A100 \
   --options '["待开始","进行中","已完成","已取消"]'
 ```
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 **`--options` 模式 — 指定颜色**（4 个选项配 3 个颜色，第 4 个按色板补）：
 
@@ -307,6 +313,8 @@ _公共四件套 · 系统：`--dry-run`_
 | `--multiple` | bool | optional | 启用多选；默认 `false` |
 | `--highlight` | bool | optional | 下拉胶囊背景色高亮开关。**不传 = 开**（按内置 10 色色板循环上色）；`--highlight=false` 关闭得到纯白下拉。配色用 `--colors` 覆盖。 |
 | `--source-range` | string | xor | listFromRange 模式的下拉源 range，A1 表示法 + sheet 前缀（如 `'Sheet1'!T1:T3`）。映射到 server `data_validation.range`，搭配 server `data_validation.type='listFromRange'` 自动生效。跟 `--options` 二选一：传 `--options` 走 inline 列表（type=list），传本 flag 走 range 引用（type=listFromRange）。`--colors` 长度规则不变（≤ 源 range 单元格数），`--highlight` / `--multiple` 行为相同。当 `--highlight` 开启且 source 覆盖单元格数超过 2000 时，服务端会将该下拉判为 option-error（这是不支持的组合）；CLI 会向 stderr 输出 warning。如需取消，传 `--highlight=false`。 |
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ### `+csv-put`
 
@@ -418,6 +426,8 @@ lark-cli sheets +cells-set --spreadsheet-token shtXXX --sheet-id "$SID" \
   --range "C2:C10" --cells @rich-cells.json
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 `--cells` 富格式见 `## Schemas` 段（cells 元素含 value / formula / cell_styles / border_styles / data_validation / multiple_values / note / rich_text）；值 / 公式 / 样式 / 批注 / 嵌入图片可同一次写入混合提交。
 
 > 中间想跳过的 cell 用空对象 `{}` 占位（底层语义为"保留原值不变"），`--cells` 维度仍须与 `--range` 完全一致。例：`--range A1:A5 --cells '[[{"value":1}],[{}],[{}],[{}],[{"value":5}]]'` 只写 A1 和 A5。
@@ -519,6 +529,8 @@ lark-cli sheets +table-put --spreadsheet-token "<token>" --sheets @payload.json
 
 pandas 的 `df.to_json(orient="split", date_format="iso")` 一步完成所有清洗（NaN→null、Timestamp→ISO 字符串、numpy 标量→原生数字），把 dtypes 拼上即可。本 skill 把这段 5 行 helper 打包成可 import 的 [`scripts/sheets_df.py`](../scripts/sheets_df.py)（含 `df_to_sheet` 和 `sheet_to_df`，写入 / 读回成对）：
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ```python
 from sheets_df import df_to_sheet
 
@@ -573,3 +585,5 @@ lark-cli sheets +table-put --url "<表URL>" \
 - `Validate`：XOR 公共四件套；`+cells-set` 的 `--cells` 必须能解析为 JSON 二维矩阵且行列数与 `--range` 完全一致；`+cells-set-style` 的样式 flag 至少一个非空（或带 `--border-styles`）；`+cells-set-image` 的 `--range` 必须是单 cell（起止 cell 相同）；`+csv-put` 的 `--csv` 必须能按 RFC 4180 解析；`+table-put` 给了 `--styles` 则按子表名 / 顺序 / 数量与 `--sheets.sheets` 对齐校验；防爆参数上限校验。
 - `DryRun`：输出目标 range + 推断尺寸 + 是否覆盖非空 cell 警告，零网络副作用。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+cells-get --range <写入区域> --include value,formula` 抽样核对。
+
+===== 全文完（共 589 行）=====

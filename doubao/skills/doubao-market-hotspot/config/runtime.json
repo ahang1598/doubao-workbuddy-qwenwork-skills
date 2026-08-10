@@ -1,0 +1,421 @@
+{
+  "version": 12,
+  "case_type": "event-impact-analysis",
+  "default_mode": "auto",
+  "modes": {
+    "传导模式": {
+      "required_payload": [
+        "event_status",
+        "baseline",
+        "channels",
+        "exposures"
+      ],
+      "required_sections": [
+        {
+          "aliases": [
+            "事件状态与市场基线"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "相对预期的新变化"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "事件到公司/行业的传导链"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "直接、二阶和高阶影响"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "财务、估值、仓位与资金影响"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "Priced in 与待验证事项"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "监控触发、证伪条件与研究队列"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "底线判断与研究行动姿态"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        }
+      ]
+    },
+    "路径模式": {
+      "required_payload": [
+        "event_status",
+        "baseline",
+        "scenarios"
+      ],
+      "required_sections": [
+        {
+          "aliases": [
+            "事件状态与市场基线"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "相对预期的新变化"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "Priced in 与待验证事项"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "Base/Upside/Downside 情景"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "监控触发、证伪条件与研究队列"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "底线判断与研究行动姿态"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        }
+      ]
+    },
+    "快速判断": {
+      "required_payload": [
+        "event_status",
+        "channels"
+      ],
+      "required_sections": [
+        {
+          "aliases": [
+            "事件状态与市场基线"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "相对预期的新变化"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "事件到公司/行业的传导链"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "监控触发、证伪条件与研究队列"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        },
+        {
+          "aliases": [
+            "底线判断与研究行动姿态"
+          ],
+          "min_chars": 20,
+          "fact_binding": true
+        }
+      ]
+    }
+  },
+  "capabilities": {
+    "can_analyze_event": [
+      "payload.event_status",
+      "payload.baseline",
+      "payload.channels"
+    ],
+    "can_quantify_event": [
+      "payload.event_status",
+      "payload.scenarios"
+    ]
+  },
+  "privacy_scan": false,
+  "banned_patterns": [],
+  "direct_response": {
+    "route_only_max_chars": 800,
+    "max_clarifying_questions": 3,
+    "max_search_rounds": 3,
+    "require_inline_source_for_critical_numbers": true,
+    "forbid_internal_markers": true
+  },
+  "success_contract": {
+    "传导模式": {
+      "success": "事件到渠道、变量、业务、财务和估值的链路完整，直接与高阶影响分开。",
+      "degraded": "无市场基线时只分析机制和待验证事项。",
+      "stop": "事件无法确认且用户要求定量收益。"
+    },
+    "路径模式": {
+      "success": "条件、时间、审批、失败路径、终值、priced-in和监控完整。",
+      "degraded": "缺当前值、终值或时间时不计算期望收益。",
+      "stop": "请求实际是完整公司基本面或交易执行。"
+    },
+    "快速判断": {
+      "success": "事件状态、主传导、受影响对象、确认和证伪信号清楚。",
+      "degraded": "传闻只作定性线索。",
+      "stop": "没有具体事件。"
+    }
+  },
+  "expected_artifacts": [
+    "report.md",
+    "facts.json",
+    "report-display.md",
+    "report-capabilities.json",
+    "report-manifest.json"
+  ],
+  "future_adjacent_skills": [
+    "event-path-modeling",
+    "catalyst-calendar",
+    "macro-strategy",
+    "earnings-event-analysis",
+    "regulatory-timeline-analysis"
+  ],
+  "future_adjacent_skills_are_unshipped": true,
+  "shipped_adjacent_skills": [
+    "company-analysis",
+    "event-impact-analysis",
+    "investment-opportunity-screening",
+    "private-market-project-evaluation",
+    "wealth-planning"
+  ],
+  "no_routing_to_unshipped_skills": true,
+  "out_of_scope_degrades_in_skill_not_stop": true,
+  "rubric_id": "event-impact-analysis-v1",
+  "loading_profile": "config/loading-profile.json",
+  "degraded_artifacts": "references/degraded-artifacts.md",
+  "deterministic_tool": "scripts/event_claim_engine.py",
+  "tool_contract": "references/deterministic-tool-contract.md",
+  "compact_tool_output": "scripts/compact_tool_output.py",
+  "ark_output_budget_tokens": 3500,
+  "ark_output_budget_policy": "soft_target",
+  "ark_output_contract": "references/ark-output-contract.md",
+  "complexity_router": "scripts/complexity_router.py",
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 1400,
+      "slots": [
+        "bottom_line",
+        "causal_chain",
+        "winners_losers_or_unknown",
+        "conditions"
+      ]
+    },
+    "brief": {
+      "target_chars": 2800,
+      "slots": [
+        "event_status",
+        "mechanisms",
+        "impact_matrix",
+        "financial_mapping",
+        "countercase",
+        "monitoring"
+      ]
+    },
+    "full": {
+      "target_chars": 5400,
+      "slots": [
+        "event_status",
+        "mechanism_decomposition",
+        "transmission",
+        "impact_matrix",
+        "financial_mapping",
+        "priced_in_boundary",
+        "scenarios",
+        "countercase",
+        "monitoring",
+        "sources"
+      ]
+    }
+  },
+  "length_policy": "soft_target",
+  "provider_safety_ceiling": {
+    "failure_statuses": [
+      "incomplete"
+    ],
+    "failure_finish_reasons": [
+      "length",
+      "max_tokens"
+    ],
+    "target_overrun_is_failure": false
+  },
+  "intake_preflight": "scripts/intake_preflight.py",
+  "intake_required_inputs": {
+    "传导模式": [
+      "inputs.event",
+      "inputs.affected_scope",
+      "inputs.event_status"
+    ],
+    "路径模式": [
+      "inputs.event",
+      "inputs.affected_scope",
+      "inputs.baseline"
+    ],
+    "快速判断": [
+      "inputs.event",
+      "inputs.affected_scope"
+    ]
+  },
+  "conditional_tool_policy": "开放事件先核验事件与法规状态；专用证据工具只在输入Schema匹配时运行，不将closed-fixture字段用于真实事件。",
+  "search_router": "scripts/search_router.py",
+  "search_evidence_validator": "scripts/search_evidence_validator.py",
+  "event_runtime_guard": "scripts/event_runtime_guard.py",
+  "deliverable_validator": "scripts/validate_deliverable.py",
+  "search_max_calls": 4,
+  "search_evidence_context": "compact_ledger_only",
+  "seed_finance_search": {
+    "reference": "references/seed-finance-search-routing.md",
+    "schema_policy": "use_host_actual_schema_do_not_invent_parameters",
+    "official_general_first": [
+      "event_original",
+      "regulatory_status",
+      "jurisdiction",
+      "effective_date"
+    ],
+    "allowed_scope": [
+      "market_price",
+      "curve",
+      "volume",
+      "consensus",
+      "company_financial_exposure",
+      "institutional_view",
+      "priced_in_baseline"
+    ],
+    "fallback": "general_search",
+    "library_result_is_primary": false,
+    "missing_pre_event_baseline": {
+      "can_assess_priced_in": false,
+      "degradation_scope": "priced_in_only"
+    },
+    "ledger_fields": [
+      "tool",
+      "query",
+      "asof",
+      "source",
+      "period",
+      "unit",
+      "currency",
+      "reported-vs-estimate"
+    ]
+  },
+  "search_contract": {
+    "routing_policy": "official_event_identity_then_seed_market",
+    "max_calls": 4,
+    "optional_max_calls": 3,
+    "max_calls_is_hard_limit": true,
+    "repair_calls_reserved_min": 1,
+    "event_identity_status_requires_primary_general_search": true,
+    "authoritative_financial_database_may_support_market_and_standard_exposure_fields": true,
+    "seed_is_event_primary_source": false,
+    "missing_pre_event_baseline_degrades_priced_in_only": true,
+    "transport_status_separate_from_evidence_status": true,
+    "secondary_repetition_upgrades_to_supported": false,
+    "secondary_only_critical_claim_status": "provisional",
+    "script_execution_evidence": {
+      "help_or_import_is_task_execution": false,
+      "requires_exit_status_and_artifact": true
+    },
+    "runtime_profiles": {
+      "full_runtime": "task_execution_success_plus_artifacts",
+      "hybrid_runtime": "executed_scripts_plus_inline_fallback",
+      "agent_only": "references/online-agent-execution-contract.md"
+    },
+    "trace_policy": {
+      "preferred": "host_captured_native_event_stream",
+      "model_summary_is_raw_trace": false,
+      "raw_unavailable_marker": "raw_trace_unavailable"
+    },
+    "output_claim_policy": {
+      "all_external_numbers_must_exist_in_claim_ledger": true,
+      "scenarios_require_calculation_and_assumption_records": true,
+      "provisional_event_identity_blocks_quantification": true
+    },
+    "output_hard_template": {
+      "identity_verification_independent_of_complexity": true,
+      "verify_before_conclusion": [
+        "entity_listing_status_and_ticker",
+        "rule_published_by_issuing_authority_and_effective_date",
+        "period_unit_currency_as_of",
+        "conflicting_values_both_disclosed"
+      ],
+      "inline_source_tag_required_per_number": true,
+      "source_tag_vocabulary": [
+        "一手",
+        "库",
+        "用户",
+        "推算",
+        "待核",
+        "阈值"
+      ],
+      "blanket_source_statement_satisfies_tagging": false,
+      "unsourced_number_action": "tag_as_pending_not_delete_and_not_vague",
+      "missing_input_action": "conditional_tier_table_not_assumption_not_refusal",
+      "unsourced_magnitude_container": "assumption_card",
+      "assumption_card_numbers_may_appear_in_conclusion": false,
+      "precedent_parameter_inheritance_allowed": false,
+      "auditable_summary_first": true,
+      "auditable_summary_max_lines": 5,
+      "template_may_reduce_analysis_depth": false,
+      "summary_written_last_placed_first": true,
+      "summary_numbers_must_be_copied_from_body": true,
+      "summary_strongest_evidence_is_verbatim_copy": true,
+      "summary_may_contain_freshly_written_numbers": false,
+      "summary_self_check_locate_original_sentence": true,
+      "every_number_must_have_a_tag_class": true,
+      "user_stated_facts_need_no_external_source": true,
+      "derived_value_tag_requires_inputs_and_formula": true,
+      "analyst_set_threshold_requires_explicit_tag": true,
+      "threshold_must_state_it_is_set_not_observed": true,
+      "summary_line_is_single_verbatim_copy": true,
+      "summary_line_may_append_after_copy": false,
+      "summary_fallback_is_precheck_result": true,
+      "summary_may_downgrade_to_pending_evidence": false,
+      "falsification_line_exempt_from_copy_rule": true,
+      "falsification_threshold_requires_threshold_tag": true
+    }
+  }
+}

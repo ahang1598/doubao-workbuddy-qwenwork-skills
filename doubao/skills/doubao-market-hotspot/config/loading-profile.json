@@ -1,0 +1,157 @@
+{
+  "version": 11,
+  "initial_files": [
+    "SKILL.md"
+  ],
+  "mode_references": {
+    "传导模式": [
+      "seed-finance-search-routing.md",
+      "online-agent-execution-contract.md",
+      "transmission-framework.md",
+      "priced-in-evidence.md"
+    ],
+    "路径模式": [
+      "seed-finance-search-routing.md",
+      "online-agent-execution-contract.md",
+      "event-path.md",
+      "scenario-math.md"
+    ],
+    "快速判断": [
+      "seed-finance-search-routing.md",
+      "online-agent-execution-contract.md",
+      "event-taxonomy.md",
+      "monitoring-framework.md"
+    ]
+  },
+  "output_token_budget": {
+    "传导模式": 2800,
+    "路径模式": 2600,
+    "快速判断": 1200
+  },
+  "search": {
+    "default": "auto",
+    "route_only": "off",
+    "closed_fixture": "off",
+    "freeze_object_before_search": true,
+    "router": "scripts/search_router.py",
+    "evidence_validator": "scripts/search_evidence_validator.py",
+    "max_calls": 4,
+    "tool_order": [
+      "general_search",
+      "seed_finance_search"
+    ],
+    "source_order": [
+      "law_or_regulation",
+      "issuing_authority",
+      "implementing_authority",
+      "industry_primary",
+      "reputable_secondary"
+    ],
+    "query_stages": [
+      "original_event_and_status",
+      "consolidated_rules",
+      "implementation_details",
+      "affected_entities_and_conflicts"
+    ],
+    "evidence_context": "compact_ledger_only",
+    "seed_finance_reference": "references/seed-finance-search-routing.md",
+    "official_general_first": true,
+    "seed_finance_scope": [
+      "market_price",
+      "curve",
+      "volume",
+      "consensus",
+      "company_financial_exposure",
+      "institutional_view",
+      "priced_in_baseline"
+    ],
+    "fallback": "general_search",
+    "ledger_fields": [
+      "tool",
+      "query",
+      "asof",
+      "source",
+      "period",
+      "unit",
+      "currency",
+      "reported-vs-estimate"
+    ]
+  },
+  "runtime_profiles": {
+    "full_runtime": {
+      "requires_task_execution_success": true,
+      "requires_task_artifacts": true,
+      "help_or_import_counts_as_execution": false
+    },
+    "hybrid_runtime": {
+      "validation": "executed_scripts_plus_inline_fallback",
+      "may_claim_unexecuted_scripts_ran": false
+    },
+    "agent_only": {
+      "validation": "references/online-agent-execution-contract.md",
+      "may_claim_scripts_ran": false,
+      "global_degrade_because_scripts_unavailable": false
+    }
+  },
+  "tool_context": {
+    "full_output": "write_to_workdir",
+    "model_input": "compact_summary_only",
+    "include": [
+      "core_results",
+      "exceptions",
+      "unknowns",
+      "hard_gates"
+    ]
+  },
+  "ark_output_budget_tokens": 3500,
+  "ark_output_budget_policy": "soft_target",
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 1400,
+      "slots": [
+        "bottom_line",
+        "causal_chain",
+        "winners_losers_or_unknown",
+        "conditions"
+      ]
+    },
+    "brief": {
+      "target_chars": 2800,
+      "slots": [
+        "event_status",
+        "mechanisms",
+        "impact_matrix",
+        "financial_mapping",
+        "countercase",
+        "monitoring"
+      ]
+    },
+    "full": {
+      "target_chars": 5400,
+      "slots": [
+        "event_status",
+        "mechanism_decomposition",
+        "transmission",
+        "impact_matrix",
+        "financial_mapping",
+        "priced_in_boundary",
+        "scenarios",
+        "countercase",
+        "monitoring",
+        "sources"
+      ]
+    }
+  },
+  "length_policy": "soft_target",
+  "provider_safety_ceiling": {
+    "failure_statuses": [
+      "incomplete"
+    ],
+    "failure_finish_reasons": [
+      "length",
+      "max_tokens"
+    ],
+    "target_overrun_is_failure": false
+  },
+  "complexity_router": "scripts/complexity_router.py"
+}

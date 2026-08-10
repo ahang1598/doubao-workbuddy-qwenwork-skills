@@ -1,0 +1,384 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/qa-product-testing/qa-run.schema.json",
+  "title": "QA Run Canonical Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "revision",
+    "profile",
+    "test_intent",
+    "execution_level",
+    "request_contract",
+    "phase_receipts",
+    "input",
+    "environment",
+    "requirements",
+    "risk_mechanisms",
+    "open_questions",
+    "change_ledger",
+    "observed_surfaces",
+    "cases",
+    "acceptance_checks",
+    "executions",
+    "evidence",
+    "bugs",
+    "risks",
+    "coverage",
+    "release_decision",
+    "delivery_manifest",
+    "test_data"
+  ],
+  "properties": {
+    "schema_version": {"const": 2},
+    "run_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "profile": {"enum": ["smoke", "plan", "execution", "full", "mobile", "hotfix", "bug"]},
+    "test_intent": {"enum": ["one_off_ui", "repeatable_ui", "non_ui_validation"]},
+    "execution_level": {"enum": ["full_automation", "partial_validation", "exploratory", "blocked"]},
+    "request_contract": {
+      "type": "object",
+      "required": ["request_summary", "request_hash", "task_mode", "scope", "evidence_policy", "delivery"],
+      "properties": {
+        "request_summary": {"type": "string", "minLength": 1},
+        "request_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "task_mode": {
+          "enum": [
+            "lightweight_answer", "plan", "execution_review", "web_execution",
+            "api_execution", "bug", "hotfix", "multi_round"
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "required": ["included_source_ids", "excluded_source_ids", "included_rounds", "excluded_rounds"],
+          "properties": {
+            "included_source_ids": {"type": "array", "items": {"type": "string"}},
+            "excluded_source_ids": {"type": "array", "items": {"type": "string"}},
+            "included_rounds": {"type": "array", "items": {"type": "string"}},
+            "excluded_rounds": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "evidence_policy": {
+          "type": "object",
+          "required": ["allow_new_execution", "allow_precheck_bug_promotion", "required_bug_evidence_level"],
+          "properties": {
+            "allow_new_execution": {"type": "boolean"},
+            "allow_precheck_bug_promotion": {"const": false},
+            "required_bug_evidence_level": {"const": "L2_observation"}
+          }
+        },
+        "delivery": {
+          "type": "object",
+          "required": [
+            "artifact_required", "format", "carrier", "filenames",
+            "artifacts", "required_sections", "section_order", "must_surface_to_user"
+          ],
+          "properties": {
+            "artifact_required": {"type": "boolean"},
+            "format": {
+              "enum": [
+                "inline_markdown", "markdown", "csv", "json", "docx", "xlsx", "pptx", "pdf",
+                "lark_doc", "lark_sheets", "lark_base", "lark_ppt", "multi"
+              ]
+            },
+            "carrier": {
+              "enum": [
+                "inline", "local", "office_file",
+                "lark_doc", "lark_sheets", "lark_base", "lark_ppt", "multi"
+              ]
+            },
+            "filenames": {"type": "array", "items": {"type": "string"}},
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["format", "carrier", "filename"],
+                "properties": {
+                  "format": {
+                    "enum": [
+                      "markdown", "csv", "json", "docx", "xlsx", "pptx", "pdf",
+                      "lark_doc", "lark_sheets", "lark_base", "lark_ppt"
+                    ]
+                  },
+                  "carrier": {
+                    "enum": [
+                      "local", "office_file", "lark_doc", "lark_sheets", "lark_base", "lark_ppt"
+                    ]
+                  },
+                  "filename": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "required_sections": {"type": "array", "items": {"type": "string"}},
+            "section_order": {"type": "array", "items": {"type": "string"}},
+            "must_surface_to_user": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "phase_receipts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage", "revision", "state", "checked_at", "source_fingerprint"],
+        "properties": {
+          "stage": {"enum": ["baseline", "design", "execution", "change", "release"]},
+          "revision": {"type": "integer", "minimum": 1},
+          "state": {"enum": ["CLOSED", "DISCLOSE"]},
+          "checked_at": {"type": "string"},
+          "source_fingerprint": {"type": "string"}
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["summary", "sources", "assumptions", "conflicts", "artifacts"],
+      "properties": {
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "locator", "access_status", "completeness_checked"],
+            "properties": {
+              "id": {"type": "string", "pattern": "^SRC-[0-9]{3,}$"},
+              "access_status": {"enum": ["read", "blocked", "not_applicable"]},
+              "completeness_checked": {"type": "boolean"},
+              "item_count": {"type": "integer", "minimum": 0},
+              "reviewed_item_count": {"type": "integer", "minimum": 0}
+            }
+          }
+        }
+      }
+    },
+    "environment": {"type": "object"},
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "summary", "source", "risk"],
+        "properties": {
+          "behavior": {"type": "object"},
+          "impact_scope": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "risk_mechanisms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "failure_mode", "business_impact", "oracle", "requirement_ids", "case_ids", "priority", "status"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^RM-[A-Za-z0-9_-]+-[0-9]{3}$"},
+          "priority": {"enum": ["P0", "P1", "P2", "P3"]},
+          "status": {"enum": ["identified", "designed", "verified", "failed", "blocked", "accepted", "not_applicable"]}
+        }
+      }
+    },
+    "open_questions": {"type": "array"},
+    "change_ledger": {"type": "array"},
+    "observed_surfaces": {"type": "array", "items": {"type": "object", "required": ["surface_id", "page", "control_or_claim", "functional_check", "source"]}},
+    "selected_path": {"type": "string"},
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "module", "title", "priority", "type", "steps", "test_data", "expected_result", "requirement_ids", "risk_mechanism_ids"],
+        "properties": {
+          "priority": {"enum": ["P0", "P1", "P2", "P3"]},
+          "risk_mechanism_ids": {"type": "array", "items": {"type": "string"}},
+          "release_blocking_reason": {"type": "string"},
+          "state_oracle": {
+            "type": "object",
+            "properties": {
+              "intermediate": {"type": "string"},
+              "terminal": {"type": "string"},
+              "technical_outcome": {"type": "string"},
+              "side_effect": {"type": "string"}
+            }
+          },
+          "execution_mode": {"enum": ["automated", "manual", "hybrid"]},
+          "assigned_to": {"type": "string"},
+          "manual_reason": {"type": "string"},
+          "evidence_expected": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "acceptance_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "type", "case_ids", "blocking", "notes"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^AC-[A-Za-z0-9_-]+-[0-9]{3}$"},
+          "type": {
+            "enum": [
+              "core_flow",
+              "exception",
+              "permission_security",
+              "compatibility",
+              "data_consistency",
+              "analytics",
+              "performance",
+              "defect_blocker",
+              "release_config"
+            ]
+          },
+          "case_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "blocking": {"type": "boolean"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "executions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "case_id", "status", "execution_level"],
+        "properties": {
+          "status": {
+            "enum": [
+              "passed", "failed", "pending_confirmation", "blocked", "skipped", "infra_error"
+            ]
+          },
+          "validation_scope": {"enum": ["precheck", "exploratory", "formal"]},
+          "execution_method": {"enum": ["automated", "manual"]},
+          "operator": {"type": "string"},
+          "actual_result": {"type": "string"},
+          "started_at": {"type": "string"},
+          "finished_at": {"type": "string"},
+          "tester_notes": {"type": "string"},
+          "attempt": {"type": "integer", "minimum": 1},
+          "retest_of": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "description", "level", "validation_scope"],
+        "properties": {
+          "level": {
+            "enum": ["L0_claim", "L1_document", "L2_observation", "L3_reproducible", "L4_formal"]
+          },
+          "validation_scope": {"enum": ["precheck", "exploratory", "formal"]}
+        }
+      }
+    },
+    "bugs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "module",
+          "status",
+          "severity",
+          "severity_basis",
+          "priority",
+          "category",
+          "environment",
+          "preconditions",
+          "steps",
+          "actual_result",
+          "expected_result",
+          "reproducibility",
+          "repro_attempts",
+          "first_failure_preserved",
+          "evidence_grade",
+          "evidence_ids",
+          "impact",
+          "analysis",
+          "workaround",
+          "related_ids"
+        ],
+        "properties": {
+          "severity": {"enum": ["S1", "S2", "S3", "S4"]},
+          "priority": {"enum": ["P0", "P1", "P2", "P3"]},
+          "status": {"enum": ["open", "in_progress", "fixed", "pending_retest", "closed", "rejected", "deferred"]},
+          "independent_failure_signature": {"type": "string", "minLength": 1},
+          "analysis": {
+            "type": "object",
+            "required": ["classification", "trigger_hypothesis", "change_correlation", "blast_radius", "confidence"],
+            "properties": {
+              "confidence": {"enum": ["high", "medium", "low", "unknown"]}
+            }
+          }
+        }
+      }
+    },
+    "bug_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "case_id", "title", "status", "first_execution_id", "first_failure_preserved"],
+        "properties": {
+          "id": {"type": "string"},
+          "case_id": {"type": "string"},
+          "title": {"type": "string"},
+          "status": {"enum": ["pending_reproduction", "reproduced", "retest_passed_needs_triage", "needs_triage", "promoted", "closed", "rejected"]},
+          "first_execution_id": {"type": "string"},
+          "latest_execution_id": {"type": "string"},
+          "first_failure_preserved": {"const": true}
+        }
+      }
+    },
+    "risks": {"type": "array", "items": {"type": "object", "required": ["id", "title", "priority", "description"]}},
+    "coverage": {"type": "object"},
+    "release_decision": {"type": "object", "required": ["decision", "rationale"]},
+    "delivery_manifest": {
+      "type": "object",
+      "required": ["source_revision", "outputs"],
+      "properties": {
+        "source_revision": {"type": "integer", "minimum": 1},
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "purpose", "carrier", "format", "filename", "locator", "source_revision",
+              "status", "validated", "readback_receipt"
+            ],
+            "properties": {
+              "carrier": {
+                "enum": [
+                  "inline", "local", "office_file",
+                  "lark_doc", "lark_sheets", "lark_base", "lark_ppt", "multi"
+                ]
+              },
+              "format": {
+                "enum": [
+                  "inline_markdown", "markdown", "csv", "json", "docx", "xlsx", "pptx", "pdf",
+                  "lark_doc", "lark_sheets", "lark_base", "lark_ppt", "multi"
+                ]
+              },
+              "status": {"enum": ["planned", "created", "validated", "failed", "local_fallback", "stale"]},
+              "validated": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "test_data": {"type": "object", "required": ["writes_allowed", "accounts", "created_records", "cleanup"]},
+    "blockers": {"type": "array"},
+    "manual_handoff": {
+      "type": "object",
+      "required": ["required", "status"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "status": {"enum": ["not_required", "pending", "in_progress", "completed", "blocked"]},
+        "reason": {"type": "string"},
+        "target_platform": {"type": "string"},
+        "operator": {"type": "string"},
+        "prerequisites": {"type": "array", "items": {"type": "string"}},
+        "case_ids": {"type": "array", "items": {"type": "string"}},
+        "evidence_requirements": {"type": "array", "items": {"type": "string"}},
+        "result_submission": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "devices": {"type": "object"}
+  },
+  "additionalProperties": true
+}

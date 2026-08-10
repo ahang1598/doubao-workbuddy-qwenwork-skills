@@ -1,0 +1,14 @@
+entity,period,metric,value,currency,unit,source_locator
+ExampleCo,FY2025,net_profit,100,CNY,million,example
+ExampleCo,FY2025,depreciation_amortization,20,CNY,million,example
+ExampleCo,FY2025,share_based_compensation,5,CNY,million,example
+ExampleCo,FY2025,disposal_gain,-2,CNY,million,example
+ExampleCo,FY2025,inventory_write_down,1,CNY,million,example
+ExampleCo,FY2025,accounts_receivable_change,-15,CNY,million,example
+ExampleCo,FY2025,inventory_change,-8,CNY,million,example
+ExampleCo,FY2025,accounts_payable_change,10,CNY,million,example
+ExampleCo,FY2025,contract_liabilities_change,4,CNY,million,example
+ExampleCo,FY2025,other_operating_items_change,5,CNY,million,example
+ExampleCo,FY2025,operating_cash_flow,120,CNY,million,example
+ExampleCo,FY2025,capex,30,CNY,million,example
+ExampleCo,FY2025,free_cash_flow,90,CNY,million,example

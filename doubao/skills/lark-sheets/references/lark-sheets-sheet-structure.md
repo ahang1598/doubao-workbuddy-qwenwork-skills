@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 220 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Sheet Structure
 
 ## 结构性操作影响面预检（插入 / 删除行列前必做）
@@ -100,6 +102,8 @@ _公共四件套 · 系统：`--dry-run`_
 
 _公共四件套 · 系统：`--dry-run`_
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `--range` | string | required | 要取消隐藏的行/列闭区间；行如 `3:7`，列如 `C:F` |
@@ -201,6 +205,8 @@ lark-cli sheets +dim-move --url "..." --sheet-id "$SID" --source-range "C:F" --t
 lark-cli sheets +dim-freeze --url "..." --sheet-id "$SID" --dimension row --count 1
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+dim-group` / `+dim-ungroup`（大纲）
 
 > 仅当用户明确说"行分组 / 列分组 / 大纲 / outline"时触发；按字段做数据分组用 `+pivot-create`。
@@ -210,3 +216,5 @@ lark-cli sheets +dim-freeze --url "..." --sheet-id "$SID" --dimension row --coun
 - `Validate`：XOR 公共四件套；`--range` / `--source-range` 必须是合法 A1 闭区间（行用数字、列用字母，不可混用）；`+dim-insert` 的 `--count` > 0；`+dim-move` 的 `--target` 必须与 `--source-range` 同维度（行 vs 列）；`+dim-delete` 强制 `--yes` 或 `--dry-run`；`+rows-resize` / `+cols-resize` 的统一形态（`--range` + `--height`/`--width` 或 `--type`）与 map 形态（`--heights`/`--widths`）二选一、不可混用；详见 `lark-sheets-range-operations.md`。
 - `DryRun`：写操作输出"将要 PATCH 的目标范围 + 目标参数"。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+sheet-info --include row_heights,col_widths,hidden_rows,hidden_cols,groups,frozen` 查看受影响的范围。
+
+===== 全文完（共 220 行）=====

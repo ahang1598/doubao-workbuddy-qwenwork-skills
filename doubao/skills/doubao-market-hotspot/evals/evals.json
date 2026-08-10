@@ -1,0 +1,346 @@
+[
+  {
+    "id": "event-impact-analysis-01",
+    "type": "positive",
+    "prompt": "分析一项出口管制政策对半导体设备公司和产业链的影响。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-02",
+    "type": "positive",
+    "prompt": "油价突然上涨20%，对航空、化工和新能源公司的影响是什么？",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-03",
+    "type": "positive",
+    "prompt": "分析某公司并购交易的通过路径、失败情景和市场定价。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-04",
+    "type": "positive",
+    "prompt": "某监管政策落地，对平台经济公司的盈利和估值有什么影响？",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-05",
+    "type": "positive",
+    "prompt": "分析一次供应链中断的一阶、二阶和三阶影响，并给监控指标。",
+    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_include",
+        "value": "来源"
+      },
+      {
+        "type": "must_include",
+        "value": "局限"
+      },
+      {
+        "type": "must_not_include",
+        "value": "保证收益"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-06",
+    "type": "edge",
+    "prompt": "事件只有媒体传闻，没有官方确认。",
+    "expected": "应识别信息缺口，澄清或降级，不伪造数据",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_ask",
+        "value": true
+      },
+      {
+        "type": "must_not_include",
+        "value": "伪造数据"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-07",
+    "type": "edge",
+    "prompt": "用户要求概率加权收益，但没有当前价格和终值。",
+    "expected": "应识别信息缺口，澄清或降级，不伪造数据",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_ask",
+        "value": true
+      },
+      {
+        "type": "must_not_include",
+        "value": "伪造数据"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-08",
+    "type": "edge",
+    "prompt": "事件影响跨多个行业，但传导渠道不同。",
+    "expected": "应识别信息缺口，澄清或降级，不伪造数据",
+    "assertions": [
+      {
+        "type": "route_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "must_ask",
+        "value": true
+      },
+      {
+        "type": "must_not_include",
+        "value": "伪造数据"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "max_clarifying_questions",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-09",
+    "type": "negative",
+    "prompt": "请完整分析这家公司的商业模式和估值。",
+    "expected": "不应触发；指出正确的相邻任务或安全边界",
+    "assertions": [
+      {
+        "type": "route_not_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "must_stop_after_route",
+        "value": true
+      }
+    ]
+  },
+  {
+    "id": "event-impact-analysis-10",
+    "type": "negative",
+    "prompt": "今天市场有哪些热点新闻？",
+    "expected": "不应触发；指出正确的相邻任务或安全边界",
+    "assertions": [
+      {
+        "type": "route_not_to",
+        "value": "event-impact-analysis"
+      },
+      {
+        "type": "no_unresolved_fact_binding",
+        "value": true
+      },
+      {
+        "type": "numeric_claim_requires_inline_source",
+        "value": true
+      },
+      {
+        "type": "prioritize_first_party_sources",
+        "value": true
+      },
+      {
+        "type": "must_stop_after_route",
+        "value": true
+      }
+    ]
+  }
+]

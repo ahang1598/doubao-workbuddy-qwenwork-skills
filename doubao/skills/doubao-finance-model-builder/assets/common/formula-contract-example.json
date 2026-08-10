@@ -1,0 +1,34 @@
+{
+  "workflow": "dcf",
+  "fields": {
+    "cost_of_equity": {
+      "kind": "formula",
+      "unit": "percent",
+      "formula_template": "={risk_free_rate}+{beta}*{equity_risk_premium}+{other_premium}",
+      "required_dependencies": ["risk_free_rate", "beta", "equity_risk_premium"],
+      "allowed_dependencies": ["risk_free_rate", "beta", "equity_risk_premium", "other_premium"],
+      "forbidden_dependencies": ["cost_of_equity"],
+      "allow_text_references": false
+    },
+    "wacc": {
+      "kind": "output_formula",
+      "unit": "percent",
+      "formula_template": "={equity_weight}*{cost_of_equity}+{debt_weight}*{after_tax_cost_of_debt}",
+      "required_dependencies": ["equity_weight", "cost_of_equity", "debt_weight", "after_tax_cost_of_debt"],
+      "allowed_dependencies": ["equity_weight", "cost_of_equity", "debt_weight", "after_tax_cost_of_debt"],
+      "forbidden_dependencies": ["wacc"],
+      "allow_text_references": false
+    }
+  },
+  "cell_map": {
+    "risk_free_rate": "估值假设!C4",
+    "beta": "估值假设!C5",
+    "equity_risk_premium": "估值假设!C6",
+    "other_premium": "估值假设!C9",
+    "cost_of_equity": "估值假设!C10",
+    "after_tax_cost_of_debt": "估值假设!C12",
+    "equity_weight": "估值假设!C13",
+    "debt_weight": "估值假设!C14",
+    "wacc": "估值假设!C15"
+  }
+}

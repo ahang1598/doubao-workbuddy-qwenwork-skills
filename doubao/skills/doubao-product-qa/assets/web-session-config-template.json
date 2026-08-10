@@ -1,0 +1,15 @@
+{
+  "project_dir": ".",
+  "base_url": "http://127.0.0.1:3000",
+  "readiness_url": "http://127.0.0.1:3000/health",
+  "readiness_statuses": [200],
+  "readiness_timeout_seconds": 60,
+  "start_command": ["npm", "run", "dev"],
+  "test_command": ["npx", "playwright", "test", "--trace", "on-first-retry"],
+  "runner_kind": "playwright",
+  "test_timeout_seconds": 1800,
+  "expected_exit_codes": [0],
+  "case_id": "TC-WEB-001",
+  "execution_id": "EXE-WEB-001",
+  "env": {}
+}

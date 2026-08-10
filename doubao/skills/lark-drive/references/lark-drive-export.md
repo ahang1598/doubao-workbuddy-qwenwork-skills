@@ -142,7 +142,7 @@ lark-cli drive +export \
 |--------|------|----------|
 | `1069914` | token 非法或 token/type 不匹配；常见原因是把 Wiki node token 当作底层 `docx` / `sheet` / `bitable` token 使用，没有传 `--doc-type wiki` | 优先改用 `--url <Wiki URL>`；只有裸 Wiki token 时，用 `--token <WIKI_NODE_TOKEN> --doc-type wiki`。不确定 token 类型时，先用 `lark-cli drive +inspect --url <TOKEN> --type wiki` 检查是否能解包为 Wiki node；如果不是 Wiki token，再检查 token 来源、`--doc-type` 是否与实际资源类型一致 |
 | `1069902` | 没有当前导出任务所需权限 | 不要直接重试同一命令；先确认当前 `--as` 身份是否能访问该文档、是否有下载/导出权限，以及文档是否受分享、密级或租户策略限制。需要补权限时，让文档 owner 或管理员授权后再执行 |
-| `99991679` | 缺少 OpenAPI scope | 按错误 envelope 中的 `missing_scopes` / `required_scope` / `hint` 补齐授权；常见方式是让 agent 平台为当前用户补开 `<缺失 scope>` scope。补 scope 前不要反复重试导出命令 |
+| `99991679` | 缺少 OpenAPI scope | 按错误 envelope 中的 `missing_scopes` / `required_scope` / `hint` 补齐授权；常见方式是让 agent 平台为当前用户补开缺失的 scope。补 scope 前不要反复重试导出命令 |
 
 ## 推荐续跑方式
 

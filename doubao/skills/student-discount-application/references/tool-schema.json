@@ -1,0 +1,292 @@
+{
+  "_note": "This file is a Skill reference document describing the full tool contract (inputSchema + outputSchema + annotations). It is NOT the MCP Hub registration schema (which uses the standard `parameters` field, no `outputSchema`). For MCP Hub registration, use a separate schema that follows the standard MCP tool definition format.",
+  "name": "student_discount_run_application_step",
+  "title": "查询并推进学生优惠申请",
+  "description": "查询并幂等推进当前登录用户的学生优惠申请。此文件描述工具提供方的完整 Schema；模型运行时只能读取 content 和 errorMsg，structuredContent 及其字段不可见。Skill 按 content 中的稳定文案锚点路由，非空 errorMsg 作为错误优先信号。工具无业务入参，只接受空对象 {}；UID 由运行时注入。STUDENT_AUTH_REQUIRED 状态下 content 文本中附带认证二维码 CDN 链接（模型以 markdown 图片形式渲染），DOUYIN_BIND_REQUIRED 状态下文本中包含绑定按钮指引。structuredContent 仅供工具实现、适配层和排障参考。",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": true,
+    "x_why_additionalProperties_true": "与 annotations.openWorldHint=true 对齐；MCP 适配层可在不破坏契约向后兼容的前提下追加运行时字段。Skill 侧仍只消费 content 与 errorMsg。",
+    "properties": {
+      "errorCode": {
+        "type": "integer",
+        "enum": [
+          0,
+          40001,
+          51001,
+          51002,
+          51003,
+          51004
+        ],
+        "description": "0 表示成功获得业务状态（isError=false，data 中含 statusCode）；40001 为运行时 UID 缺失（REQUEST_CONTEXT 阶段）；51001 为抖音绑定状态查询失败（DOUYIN_BINDING 阶段）；51002 为学生认证状态查询失败（STUDENT_AUTH 阶段）；51003 为学生认证二维码生成失败（STUDENT_AUTH 阶段）；51004 为学生优惠权益下发失败（BENEFIT_GRANT 阶段）。"
+      },
+      "errorType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          null,
+          "UID_CONTEXT_MISSING",
+          "DOUYIN_BIND_QUERY_FAILED",
+          "STUDENT_AUTH_QUERY_FAILED",
+          "STUDENT_AUTH_QR_CREATE_FAILED",
+          "BENEFIT_GRANT_FAILED"
+        ],
+        "description": "大写下划线错误常量；成功时为 null。"
+      },
+      "errorMsg": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "说明失败节点、当前影响和原因；成功时为空字符串。不得包含堆栈、内部主机名、凭据或上游原始错误全文。"
+      },
+      "errorStage": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          null,
+          "REQUEST_CONTEXT",
+          "DOUYIN_BINDING",
+          "STUDENT_AUTH",
+          "BENEFIT_GRANT"
+        ],
+        "description": "失败发生的稳定节点；成功时为 null。REQUEST_CONTEXT=运行时身份校验阶段；DOUYIN_BINDING=抖音绑定状态查询阶段；STUDENT_AUTH=学生认证查询或二维码生成阶段；BENEFIT_GRANT=权益下发阶段。"
+      },
+      "paramPath": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 128,
+        "description": "参数错误对应的字段路径，例如 uid；非参数错误和成功时为 null。"
+      },
+      "retryable": {
+        "type": "boolean",
+        "description": "是否允许在不修改调用参数的情况下重试；成功时为 false。"
+      },
+      "retryAfterSec": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 3600,
+        "description": "允许重试时建议等待的秒数；无需等待或不可重试时为 null。"
+      },
+      "suggestedFix": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 500,
+        "description": "模型下一步应执行的具体动作；成功时为 null。"
+      },
+      "instance": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 128,
+        "description": "可关联内部观测日志的安全错误 ID；不得使用 trace、主机名或资源归属信息；成功时为 null。"
+      },
+      "safeToShowUser": {
+        "type": "boolean",
+        "description": "errorMsg 是否已经过脱敏、可原样展示给终端用户；默认 false。"
+      },
+      "studentDiscountData": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "x_why_additionalProperties_true": "studentDiscountData 对象内字段当前模型不可见（仅消费 content + errorMsg）；保留 true 以便工具侧按 openWorldHint 追加排障字段。required 字段列表仍是最小稳定集。",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "const": "2.1",
+                "description": "结构化业务结果版本。"
+              },
+              "statusCode": {
+                "type": "string",
+                "enum": [
+                  "DOUYIN_BIND_REQUIRED",
+                  "STUDENT_AUTH_REQUIRED",
+                  "STUDENT_AUTH_PENDING",
+                  "BENEFIT_GRANT_PENDING",
+                  "STUDENT_NOT_ELIGIBLE",
+                  "BENEFIT_GRANTED",
+                  "BENEFIT_ALREADY_GRANTED",
+                  "BENEFIT_RECEIVED_BY_OTHER_ACCOUNT",
+                  "ACTIVITY_EXPIRED",
+                  "ACTIVITY_NOT_STARTED"
+                ],
+                "description": "本次查询得到的唯一业务状态。业务状态不是工具执行错误。"
+              },
+              "requiredUserAction": {
+                "type": "string",
+                "enum": [
+                  "BIND_DOUYIN",
+                  "COMPLETE_STUDENT_AUTH",
+                  "WAIT_AND_RECHECK",
+                  "NONE"
+                ],
+                "description": "Skill 下一步需要编排的用户动作。"
+              },
+              "nextCheckAfterSec": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 3600,
+                "description": "业务状态需要重新查询时建议等待的秒数；无需重查时为 null。"
+              },
+              "quickReplies": {
+                "type": "array",
+                "maxItems": 1,
+                "description": "仅 DOUYIN_BIND_REQUIRED 供客户端交互层返回一个绑定控件；其他成功状态均为空数组。该字段不进入模型上下文，模型不得依赖或提及。",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                      "description": "语义化按钮标识。"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 30,
+                      "description": "客户端展示的绑定控件文字；不进入模型上下文。"
+                    },
+                    "actionType": {
+                      "type": "string",
+                      "const": "OPEN_URL",
+                      "description": "固定为 OPEN_URL，由客户端打开 schemaPayload 中的 deeplink URI。"
+                    },
+                    "schemaPayload": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^doubao://",
+                      "maxLength": 2048,
+                      "description": "服务端生成、仅供客户端消费的豆包 deeplink URI；不进入模型上下文。"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "text",
+                    "actionType",
+                    "schemaPayload"
+                  ]
+                }
+              },
+              "bindingActionExpiresAt": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "description": "客户端绑定交互失效时间；没有绑定交互时为 null。该字段不进入模型上下文。"
+              },
+              "hasStudentAuthQrCode": {
+                "type": "boolean",
+                "description": "content 文本中是否包含可展示的学生认证二维码 CDN 链接（以反引号包裹的 URL 形式出现，模型以 markdown 图片渲染）。"
+              },
+              "qrCodeExpiresAt": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "description": "学生认证二维码失效时间；没有二维码时为 null。失效后应重新调用本工具获取。"
+              },
+              "benefit": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "description": "正式权益名称。"
+                      },
+                      "validFrom": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "权益生效时间；上游未提供时为 null。"
+                      },
+                      "validUntil": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "权益失效时间；长期有效或上游未提供时为 null。"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "validFrom",
+                      "validUntil"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "BENEFIT_GRANTED 和 BENEFIT_ALREADY_GRANTED 返回权益信息；其他状态为 null。"
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "statusCode",
+              "requiredUserAction",
+              "nextCheckAfterSec",
+              "quickReplies",
+              "bindingActionExpiresAt",
+              "hasStudentAuthQrCode",
+              "qrCodeExpiresAt",
+              "benefit"
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "成功时为稳定的业务状态对象；工具执行错误时为 null。"
+      }
+    },
+    "required": [
+      "errorCode",
+      "errorType",
+      "errorMsg",
+      "errorStage",
+      "paramPath",
+      "retryable",
+      "retryAfterSec",
+      "suggestedFix",
+      "instance",
+      "safeToShowUser",
+      "studentDiscountData"
+    ]
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}

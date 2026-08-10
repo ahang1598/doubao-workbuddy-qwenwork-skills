@@ -1,0 +1,15 @@
+{
+  "name": "qa-web-a11y",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report artifacts/playwright-report"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.0",
+    "axe-core": "^4.10.2",
+    "typescript": "^5.8.0"
+  }
+}

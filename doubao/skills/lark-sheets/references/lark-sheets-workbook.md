@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 432 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Workbook
 
 ## Sheet 结构变更保守化（编辑类任务必做）
@@ -102,6 +104,8 @@ _公共四件套 · 系统：`--dry-run`_
 | `--index` | int | required | 目标位置（0-based） |
 | `--source-index` | int | optional | 源位置（0-based）；standalone 调用时可选，未传时由 CLI runtime 根据 `--sheet-id` / `--sheet-name` 当前在工作簿中的 index 自动派生。但在 `+batch-update` 内不可省（须显式传）——batch 中途无法发起结构查询自动派生 |
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+sheet-copy`
 
 _公共四件套 · 系统：`--dry-run`_
@@ -201,6 +205,8 @@ _一个或多个子表的 typed 数据，每个数组元素写入一张子表；
 - `col_sizes` (array<object>?) — 列宽操作数组；range 使用列范围如 A:C，type 为 pixel/standard，pixel 需要 size each: { range: string, size?: number, type: enum }
 - `name` (string) — 子表名
 - `row_sizes` (array<object>?) — 行高操作数组；range 使用行范围如 1:3，type 为 pixel/standard/auto，pixel 需要 size each: { range: string, size?: number, type: enum }
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ## Examples
 
@@ -315,6 +321,8 @@ lark-cli sheets +workbook-create --title "经营看板" --sheets '{
   }'
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 > ⚠️ **`+workbook-create` 是把内存里的数据写成新表；要把已有的本地 Excel/CSV 文件原样导入成新表，用 `+workbook-import`**（见下），不要先在本地读出文件再 `+workbook-create` 重灌。
 
 ### `+workbook-import`
@@ -418,3 +426,7 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 - `Validate`：XOR 公共四件套；`+sheet-create` 校验 `--title` 非空、`--row-count` ≤ 50000、`--col-count` ≤ 200；`+sheet-delete` 必须 `--yes` 或 `--dry-run`；`+workbook-create` 的 `--sheets` 与 `--values` **互斥**，给了 `--sheets` 则按 typed 协议校验 payload（其余约束同 `+table-put`）。
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
 - `Execute`：写操作不自动回读；如需确认目标 sheet 的新状态，自行调用 `+workbook-info`。
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
+===== 全文完（共 432 行）=====

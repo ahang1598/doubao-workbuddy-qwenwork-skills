@@ -1,3 +1,5 @@
+> ⚠️ **先读完再动手**：本文档共 143 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+
 # Lark Sheet Filter View
 
 ## 概念回顾
@@ -99,6 +101,8 @@ lark-cli sheets +filter-view-list --url "..." --sheet-id "$SID"
 lark-cli sheets +filter-view-list --url "..." --sheet-id "$SID" --view-id vAbcde1234
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+filter-view-create`
 
 `--range`（必填）/ `--view-name`（可选）是独立 flag；`rules` 走 `--properties`：
@@ -135,3 +139,5 @@ lark-cli sheets +filter-view-create --url "..." --sheet-id "$SID" \
 - `Validate`：XOR 公共四件套；`+filter-view-create` 校验 `--range` 起始行为表头（第一行）；`+filter-view-update` 必须先 `+filter-view-list` 确认 view 存在，`--properties` 必传（整组覆盖式）；`+filter-view-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：输出"将要 POST/PATCH/DELETE 的 view 请求模板"，零网络副作用；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符。
 - `Execute`：写后不自动回读；如需确认，自行调用 `+filter-view-list --view-id <new>` 比对当前 range + rules。
+
+===== 全文完（共 143 行）=====

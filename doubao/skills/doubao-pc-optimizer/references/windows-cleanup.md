@@ -1,0 +1,61 @@
+# Windows 磁盘清理参考
+
+目标:安全释放磁盘空间(通常是C盘)。用户的典型诉求是"只删垃圾,保留系统文件和我的所有个人资料"。本文件定义什么能删、什么不能删、怎么删。
+
+## 标准流程
+
+1. **扫描**(L0):跑 `scripts/win_scan.ps1`,得到磁盘占用、各清理项可释放空间预估
+2. **出方案**:按下面白名单列出将清理的项目和预估大小,标注风险
+3. **确认后清理**(L1):优先用 `scripts/win_clean.ps1`(支持 `-DryRun` 先预演)
+4. **汇报**:前后空间对比;若释放仍不足,进入"进阶方案"
+
+## 清理白名单(L1,可再生的缓存/临时文件)
+
+| 位置 | 内容 | 典型大小 | 注意 |
+|------|------|---------|------|
+| `%TEMP%`、`C:\Windows\Temp` | 临时文件 | 1-10GB | 正在被占用的文件删不掉,跳过即可(`-ErrorAction SilentlyContinue`),不要强杀进程来删 |
+| `C:\Windows\SoftwareDistribution\Download` | Windows 更新缓存 | 1-5GB | 先记录 wuauserv 原状态再 `Stop-Service`,删完**只在原来运行时**才 `Start-Service`,不改变系统原有状态 |
+| 回收站 | 已删除文件 | 不定 | **默认不清空**(这是用户误删文件的唯一自助恢复渠道):扫描时报告大小,方案中单独列出并注明不可恢复,用户明确提到或单项确认后才用 `Clear-RecycleBin -Force`(脚本需显式传 `-IncludeRecycleBin`);"清理垃圾"类笼统授权不包含它 |
+| `%LocalAppData%\Microsoft\Windows\Explorer\thumbcache_*` | 缩略图缓存 | <1GB | 会自动重建 |
+| `C:\Windows\Prefetch` | 预读取 | <1GB | 收益很小,清了会让近期程序首次启动略慢,可选项 |
+| 浏览器缓存(Chrome/Edge: `%LocalAppData%\...\Cache*`) | 网页缓存 | 1-8GB | 只删 Cache/Code Cache 目录;**绝不碰** Login Data、History、Bookmarks、Cookies 等同目录文件;多配置用户要枚举 `Default` 和 `Profile *` 目录(win_clean.ps1 已处理);浏览器运行中会删失败,提示用户关闭后再清 |
+| `C:\Windows\Logs\*`、`%ProgramData%\Microsoft\Windows\WER`、`%SystemRoot%\Minidump`、`C:\Windows\MEMORY.DMP` | 系统日志/错误报告/蓝屏转储 | 可达数GB(MEMORY.DMP 单个就能有几个GB) | **默认清理**——对普通用户这些只占地方没有用处。唯一例外:用户本次对话正在让你排查蓝屏/故障,此时转储是证据,排查完再删 |
+| `%LocalAppData%\NVIDIA\DXCache`、`GLCache`,`%LocalAppData%\D3DSCache` | 着色器缓存 | 1-4GB | 会重建;重建期间游戏首次加载卡顿属正常,提前告知 |
+| 各下载工具/网盘/视频App的缓存目录(如夸克 videoCache、微信文件缓存) | 应用缓存 | 可达数十GB | 微信/QQ 的"文件"目录含用户接收的文件,属个人资料,**只报告不删**;纯 cache 目录可清 |
+
+## 系统工具(比手删更安全,优先考虑)
+
+- `cleanmgr /sagerun:n`:先 `cleanmgr /sageset:n` 配置(有界面,需用户配合),或直接引导用户用"存储感知"(设置→系统→存储)
+- `Dism /Online /Cleanup-Image /StartComponentCleanup`(不带 /ResetBase):清理组件存储中被取代的旧版本,安全,耗时 5-20 分钟
+- 存储感知(Storage Sense):适合让用户开启后长期自动维护,一次设置解决"过阵子又满了"
+
+## 清理黑名单(看起来像垃圾但不能删)
+
+- `C:\Windows\WinSxS`:组件存储,手动删除任何内容都可能导致系统损坏,只能通过上面的 DISM 命令清理
+- `C:\Windows\Installer`:卸载/修复程序依赖,删了以后软件无法卸载或更新
+- `hiberfil.sys`、`pagefile.sys`、`swapfile.sys`:休眠/虚拟内存文件。休眠文件可在用户确认不用休眠功能后用 `powercfg /h off` 关闭(L2,可逆),**不要直接删文件**
+- `C:\ProgramData` 整体、`%AppData%\Roaming` 整体:含软件配置和用户数据,只能清其中明确的 cache 子目录
+- 桌面/文档/下载/图片/视频里的任何文件:哪怕名字叫"新建文件夹(2)"或者是 3 年前的安装包。大文件扫描结果只**报告**给用户(路径+大小+最后修改时间),让用户自己决定
+- `C:\Windows.old`:回退旧系统版本的唯一途径,常占 10-30GB,很诱人但属**不可逆单独确认项**(见 SKILL.md 特别规则)——默认不删;用户单项确认后通过 cleanmgr"以前的 Windows 安装"或 设置→存储→临时文件 删除,**不要** `rd /s /q` 强删
+- 别人教程里的 `del /s /q C:\*.tmp` 这类全盘通配删除:会误伤程序运行中的文件
+
+## 进阶方案(白名单清完仍不够时)
+
+按对用户的影响从小到大排序,均需逐项征得同意:
+
+1. **大文件/大目录报告**(L0):`win_scan.ps1 -BigFiles` 列出用户目录下 >500MB 的文件和一级目录大小排行,用户自己删
+2. **卸载不用的软件**(L2):列出已安装软件+占用(`Get-ItemProperty HKLM:\...\Uninstall\*` 读取,不要用 Win32_Product——它会触发所有 MSI 重新配置),引导用户在"设置→应用"里卸载;不要替用户决定什么是"流氓软件"
+3. **软件搬家到D盘**:Steam/Epic 游戏用平台自带的"移动安装位置"功能最安全;普通已安装软件**不建议**直接剪切粘贴(注册表路径会失效),建议卸载重装到D盘;用户坚持时说明风险
+4. **删除旧的系统还原点/卷影副本**(L2-**不可逆**,需单独强确认):还原点常悄悄占用 5-20GB。先用 `vssadmin list shadowstorage` 报告占用量。注意:与其他 L2 操作不同,**删掉的还原点无法恢复**,不在"可回滚"承诺范围内——因此即使用户此前说过"直接执行",此项也必须单独提出、说明不可逆性、拿到本项的明确同意后才能做,绝不自动执行。**默认只删旧的、保留最新一个**:`vssadmin delete shadows /for=C: /oldest`(可多次执行,逐个删最旧)。用户明确要求全删才用 `/all`,并再次告知代价:失去全部系统回滚能力(如果本次会话稍后要做 L2 优化,新还原点会在那时重新创建)
+5. **关闭休眠**(L2):`powercfg /h off` 释放约等于内存大小的空间;台式机影响小,笔记本会失去休眠功能,说明后再做(撤销:`powercfg /h on`)
+6. **压缩系统盘 / OneDrive 按需文件**:视情况建议
+
+## 汇报模板
+
+```
+✅ 清理完成
+- 释放空间:X.X GB(C盘剩余 XX GB → XX GB)
+- 清理明细:临时文件 X GB、更新缓存 X GB、回收站 X GB、浏览器缓存 X GB
+- 未动的内容:你的所有个人文件、已安装软件、系统文件
+- 建议:[如"发现 D:\xxx 有 12GB 的旧视频文件,是否需要我列出来供你筛选"]
+```

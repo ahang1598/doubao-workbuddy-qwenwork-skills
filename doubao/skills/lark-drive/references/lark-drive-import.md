@@ -111,6 +111,9 @@ lark-cli drive +import --file ./README.md --type docx --dry-run
 > - `.pptx` 文件**只能**导入为 `slides`
 > - 例如：`.csv` 文件不能导入为 `docx`，`.md` 文件不能导入为 `sheet`
 
+> [!IMPORTANT]
+> **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认。
+
 ### 文件大小限制
 
 除扩展名与目标类型匹配外，`drive +import` 还会在本地上传前校验格式级大小限制：

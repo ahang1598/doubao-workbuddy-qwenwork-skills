@@ -103,3 +103,5 @@ lark-cli sheets +changeset-get --spreadsheet-token shtXXX --start-revision 120 -
 - `Validate` 阶段只做 XOR 检查（`--url` / `--spreadsheet-token` 二选一）与版本上限校验（`--start-revision ≥ 1`，传了 `--end-revision` 时 `end ≥ start` 且 `end - start + 1 ≤ 20`）；**禁止**联网。
 - `DryRun` 输出请求模板，不实际拉取 changeset。
 - `Execute` 阶段才发起 changeset 查询；省略 `--end-revision` 时由服务端解析为最新 revision。
+
+===== 全文完（共 107 行）=====

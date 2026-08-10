@@ -1,0 +1,106 @@
+{
+  "schema_version": "3.1",
+  "meta": {
+    "task_id": "demo-dcf-20260630",
+    "company": "示例非金融公司",
+    "valuation_date": "2026-06-30",
+    "information_cutoff_date": "2026-06-30",
+    "currency": "CNY",
+    "units": "million",
+    "model_purpose": "formal"
+  },
+  "workflows": ["dcf"],
+  "deliverables": {
+    "hero": "dcf-formula-model.xlsx",
+    "support": [
+      "normalized-dcf.json",
+      "calculated-dcf.json",
+      "calculation-validation.json",
+      "delivery-validation.json",
+      "equity-evidence.json",
+      "equity-evidence-validation.json",
+      "artifact-audit.json"
+      ,"model-contract.json"
+      ,"model-audit.json"
+      ,"data-source-ledger.json"
+      ,"assumption-evidence-matrix.json"
+      ,"announcement-sweep.json"
+      ,"announcement-sweep-validation.json"
+    ]
+  },
+  "evidence": {
+    "source_ids": ["SRC-REPORT", "SRC-FORECAST", "SRC-WACC", "SRC-PRICE", "SRC-CORP"],
+    "required_topics": ["latest_announcements", "historicals", "forecast", "wacc", "equity_bridge", "share_count", "market_price", "corporate_actions"],
+    "conflict_resolution_required": true
+  },
+  "equity_evidence_plan": {
+    "manifest_file": "equity-evidence.json",
+    "validation_file": "equity-evidence-validation.json",
+    "evidence_directory": "evidence",
+    "validator": "scripts/common/validate_equity_evidence.py",
+    "acquire_before_bridge": true,
+    "must_pass_before_model": true,
+    "local_primary_files_required": true,
+    "official_search_result_required": true,
+    "market_cap_reverse_check_required": true
+  },
+  "module_plans": {
+    "dcf": {
+      "input_file": "normalized-dcf.json",
+      "calculated_file": "calculated-dcf.json",
+      "workbook_file": "dcf-formula-model.xlsx",
+      "validation_file": "delivery-validation.json",
+      "forecast_driver_level": "segment",
+      "material_driver_threshold": 0.1,
+      "scenarios": {
+        "bear": {
+          "rationale": "需求恢复晚于基准且价格压力延续",
+          "changed_drivers": ["分部收入增速", "EBIT利润率", "资本开支", "营运资本"],
+          "source_ids": ["SRC-REPORT", "SRC-FORECAST"],
+          "invalidation_conditions": ["订单或价格连续两个报告期好于悲观路径"]
+        },
+        "base": {
+          "rationale": "结合历史周期、已披露产能和订单形成中枢路径",
+          "changed_drivers": ["分部收入增速", "EBIT利润率", "资本开支", "营运资本"],
+          "source_ids": ["SRC-REPORT", "SRC-FORECAST"],
+          "invalidation_conditions": ["收入或利润率连续两个报告期偏离计划区间"]
+        },
+        "bull": {
+          "rationale": "新产能爬坡快于基准且产品组合改善",
+          "changed_drivers": ["分部收入增速", "EBIT利润率", "资本开支", "营运资本"],
+          "source_ids": ["SRC-REPORT", "SRC-FORECAST"],
+          "invalidation_conditions": ["利用率和高毛利产品占比未达到乐观阈值"]
+        }
+      },
+      "wacc": {
+        "basis": "current_actual",
+        "current_actual_de_ratio": 0.2,
+        "adopted_de_ratio": 0.2,
+        "rationale": "采用估值日实际市场价值资本结构"
+      },
+      "terminal_value": {
+        "method": "perpetual_growth",
+        "explicit_years": 5,
+        "cross_check": "exit_multiple",
+        "point_value_share_limit": 0.9
+      }
+    }
+  },
+  "quality_gates": [
+    "latest_announcement_sweep",
+    "source_mapping",
+    "local_primary_equity_evidence",
+    "corporate_actions",
+    "market_cap_reverse_check",
+    "formula_errors",
+    "cross_artifact_consistency",
+    "unified_model_audit",
+    "direct_artifact_audit",
+    "artifact_hash_lock"
+  ],
+  "result_policy": {
+    "allowed_statuses": ["PASS", "INCOMPLETE", "FAIL"],
+    "conclusion_requires_pass": true,
+    "point_value_terminal_share_limit": 0.9
+  }
+}

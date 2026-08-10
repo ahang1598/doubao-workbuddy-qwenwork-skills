@@ -1,0 +1,33 @@
+{
+  "version": "1.1.0",
+  "capability_mapping": {
+    "financial_structured_search": {
+      "tool": "seed_finance_search",
+      "description": "金融结构化数据检索。用于股票基础信息、证券代码、市场和板块、行业分类、概念标签和股票池、行情、历史股价、市值、估值、财务指标、财务报表、公告和 F10、股东股权、指数成分、机构预测等工具实际支持的金融字段。"
+    },
+    "general_public_search": {
+      "tool": "general_search",
+      "description": "通用公开信息检索。用于公司官网、交易所和监管资料、政策文件、行业协会、产品业务、客户订单、合作关系、商业化和量产进度、产业链、白皮书、新闻事件、权威媒体、券商和研究机构公开观点等非结构化公开信息。"
+    }
+  },
+  "principles": [
+    "使用 seed_finance_search 获取行情、财务、成分股和筛选结果等结构化金融数据。",
+    "使用 general_search 获取业务验证、政策、产业链、官网、新闻和公开研究资料。",
+    "优先采用公开公告、公司报告、交易所或监管披露、官方统计数据作为一手证据。",
+    "券商研报用于观点或预测参考，不等同于公司事实。",
+    "证据优先级依据底层原始来源判断，不因工具名称本身永久高低排序。",
+    "结构化数据工具不可用时，降级使用可验证公开信源，并降低结论强度。"
+  ],
+  "tool_roles": {
+    "scope_context": "使用 seed_finance_search 获取行业/板块/概念指数表现、成分股分布、估值分位、资金流、成交和财务分布；使用 general_search 获取政策、行业协会/官方统计、券商行业研报、权威媒体、产业链结构、市场规模、增速、供需、价格、渗透率和国产化率。",
+    "whole_market_screening": "优先使用 seed_finance_search 查找符合过滤条件、策略、标签、排序规则或事件条件的股票。",
+    "single_stock_structured_data": "优先使用 seed_finance_search 获取一个或多个已知证券的行情、估值、财务、公司概况、风险事件、股东和公告数据。",
+    "public_search": "优先使用 general_search 检索官方发布、公司官网、券商研报、媒体背景、政策和行业资料。",
+    "document_retrieval": "优先使用 general_search 检索公开文件；若 seed_finance_search 返回公告或 F10 原文入口，也可结合使用。"
+  },
+  "fallback": {
+    "if_seed_finance_search_missing": "说明金融结构化检索工具当前不可用或未返回完整结果；可使用 general_search 检索财报、交易所公告、公司投资者关系材料和权威金融网站；不得猜测财务指标、行情或估值。",
+    "if_general_search_missing": "说明通用公开信息检索当前不可用或未返回充分材料；可继续使用 seed_finance_search 完成股票池构建、财务筛选、估值比较、行情比较、初步行业和概念召回；不得将概念标签直接升级为核心受益结论。",
+    "if_sources_conflict": "核对统计口径、时间点、报告期、币种、是否原始来源；保留冲突说明；避免对不可比数值做简单平均。"
+  }
+}

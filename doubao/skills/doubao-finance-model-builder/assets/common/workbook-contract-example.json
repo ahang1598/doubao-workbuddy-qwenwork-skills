@@ -1,0 +1,26 @@
+{
+  "workflow": "dcf",
+  "required_sheets": ["DCF估值", "模型检查"],
+  "formula_ranges": [
+    {"sheet": "DCF估值", "range": "B15:B29", "label": "估值桥"}
+  ],
+  "key_outputs": [
+    {
+      "sheet": "DCF估值",
+      "cell": "B28",
+      "expected": 25.1,
+      "tolerance": 0.000001,
+      "require_formula": true
+    }
+  ],
+  "check_status": {
+    "sheet": "模型检查",
+    "cell": "B3",
+    "pass_value": "PASS",
+    "require_formula": true
+  },
+  "formula_policy": {
+    "forbidden_functions": ["WEBSERVICE", "RTD"],
+    "warn_functions": ["INDIRECT", "OFFSET"]
+  }
+}

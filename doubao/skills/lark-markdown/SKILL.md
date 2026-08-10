@@ -12,8 +12,8 @@ metadata:
 
 ## 快速决策
 
-- 身份：Markdown 文件属于用户云空间资源，统一使用 `--as user`，user UAT 由 agent 平台注入。
-- `markdown +create` / `+overwrite` 失败时，先判断是不是权限问题：常见原因是用户授权不足或用户 ACL；按错误响应中的提示引导用户解决，不要盲目重试。
+- 身份：Markdown 文件通常属于用户云空间资源，仅支持 user 身份，由 agent 平台注入 UAT。
+- `markdown +create` / `+overwrite` 失败时，先判断是不是权限问题：常见的是用户授权或用户 ACL。
 
 - 用户要**上传、创建一个原生 `.md` 文件**，使用 `lark-cli markdown +create`
 - 用户要**比较原生 `.md` 文件的历史版本差异**，或比较远端 Markdown 与本地草稿，使用 `lark-cli markdown +diff`

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event-impact-analysis/schemas/baseline.schema.json",
+  "title": "event-impact-analysis baseline.schema.json",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "event_status",
+    "event_as_of",
+    "market_as_of",
+    "jurisdiction",
+    "baseline"
+  ],
+  "properties": {
+    "event_status": {
+      "enum": [
+        "confirmed",
+        "unconfirmed",
+        "rumor",
+        "reversed"
+      ]
+    },
+    "event_as_of": {
+      "type": "string"
+    },
+    "market_as_of": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "jurisdiction": {
+      "type": "string"
+    },
+    "event_source": {
+      "type": "string"
+    },
+    "baseline": {
+      "type": "object"
+    },
+    "market_context": {
+      "type": "object"
+    }
+  }
+}

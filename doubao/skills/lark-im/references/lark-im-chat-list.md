@@ -21,7 +21,10 @@ lark-cli im +chat-list --page-size 50
 # Pagination
 lark-cli im +chat-list --page-token "xxx"
 
-# Drop muted chats
+# Fetch multiple pages automatically, up to 10 pages by default
+lark-cli im +chat-list --page-all
+
+# Drop muted chats (user identity only)
 lark-cli im +chat-list --exclude-muted
 
 # JSON output
@@ -30,14 +33,14 @@ lark-cli im +chat-list --format json
 # Preview the request without executing it
 lark-cli im +chat-list --dry-run
 
-# Include p2p single chats — comma form
-lark-cli im +chat-list --types p2p,group
+# Include p2p single chats (user identity only) — comma form
+lark-cli im +chat-list --as user --types p2p,group
 
 # Same, using repeat flag instead of CSV
-lark-cli im +chat-list --types p2p --types group
+lark-cli im +chat-list --as user --types p2p --types group
 
-# Only p2p single chats
-lark-cli im +chat-list --types p2p
+# Only p2p single chats (user identity only)
+lark-cli im +chat-list --as user --types p2p
 ```
 
 ## Parameters
@@ -45,13 +48,17 @@ lark-cli im +chat-list --types p2p
 | Parameter | Required | Limits | Description |
 |------|------|------|------|
 | `--user-id-type <type>` | No | `open_id` (default), `union_id`, `user_id` | ID type used for `owner_id` in the response |
-| `--types <strings>` | No | `group`, `p2p` (comma-separated or repeated) | Chat types to include. Omitted = groups only (backward compatible). |
+| `--types <strings>` | No | `group`, `p2p` (comma-separated or repeated) | Chat types to include. Omitted = groups only (backward compatible). Pass `p2p` to also include p2p single chats |
 | `--sort <field>` | No | `create_time` (default, ascending), `active_time` (descending) | Result ordering |
 | `--page-size <n>` | No | 1-100, default 20 | Number of results per page |
-| `--page-token <token>` | No | - | Pagination token from the previous response |
+| `--page-token <token>` | No | - | Starting cursor, normally returned by a previous response |
+| `--page-all` | No | - | Automatically fetch and merge subsequent pages; capped by `--page-limit` |
+| `--page-limit <n>` | No | 1-1000, default 10 | Maximum pages fetched by `--page-all` |
 | `--exclude-muted` | No | - | Drop chats the current user has muted (do-not-disturb); see "Filtering muted chats" below |
 | `--format json` | No | - | Output as JSON |
 | `--dry-run` | No | - | Preview the request without executing it |
+
+With `--page-all`, `--page-token` sets the starting cursor. If `meta.pagination.complete=false`, resume from `meta.pagination.next_token` or raise `--page-limit`.
 
 ## Output Fields
 
@@ -71,11 +78,11 @@ lark-cli im +chat-list --types p2p
 
 Default behavior lists groups only — same as before this feature. To include p2p, pass `--types`:
 
-| User intent | Call |
-|---|---|
-| "list my groups" / 我的群 / 我加入了哪些群 | (default, omit `--types`) |
-| "list my p2p chats" / 我的单聊 / 我跟谁有 1v1 | `--types p2p` |
-| "all my chats" / 全部聊天 / 所有会话 (ambiguous) | `--types p2p,group` |
+| User intent | Call | Identity |
+|---|---|---|
+| "list my groups" / 我的群 / 我加入了哪些群 | (default, omit `--types`) | user |
+| "list my p2p chats" / 我的单聊 / 我跟谁有 1v1 | `--types p2p` | **user only** |
+| "all my chats" / 全部聊天 / 所有会话 (ambiguous) | `--types p2p,group` | **user only** |
 
 For p2p rows in the response: `name` is the peer's display name, `owner_id` follows group semantics, `chat_mode = "p2p"`, and `p2p_target_type` / `p2p_target_id` identify the peer.
 
@@ -129,5 +136,6 @@ done
 
 | Symptom | Root Cause | Solution |
 |---------|---------|---------|
-| `--page-size must be an integer between 1 and 100` | page-size is out of range or not an integer | Use an integer between 1 and 100 |
-| Permission denied (99991679) | The current user is not authorized for `im:chat:read` | Have the agent platform grant the current user the `im:chat:read` scope |
+| `invalid --page-size 101: must be between 1 and 100` | page-size is out of range | Use an integer between 1 and 100 |
+| Permission denied (99991672) | The bot app does not have `im:chat:read` TAT permission enabled | Enable the permission for the app in the Open Platform console |
+| Permission denied (99991679) | UAT is not authorized for `im:chat:read` | Have the agent platform grant the `im:chat:read` scope for the current user |

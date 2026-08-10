@@ -1,0 +1,12 @@
+{
+  "can_analyze_event": {
+    "allowed": true,
+    "missing": []
+  },
+  "can_quantify_event": {
+    "allowed": false,
+    "missing": [
+      "payload.scenarios"
+    ]
+  }
+}
