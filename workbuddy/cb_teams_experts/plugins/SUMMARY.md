@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins`
 - 条目数：31
 - 文件数：1684
-- 最近同步：2026-08-10 16:07:06 +0800
+- 最近同步：2026-08-10 17:03:19 +0800
 - 原始分析报告：[plugins_analysis_company_analysis.md](../plugins_analysis_company_analysis.md)
 
 ## 场景导航（按用途）

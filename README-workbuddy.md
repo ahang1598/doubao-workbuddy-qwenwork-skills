@@ -8,7 +8,7 @@
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：303
 - 当前索引文件数：8431
-- 最近变更：[2026-08-09-180003](workbuddy/change-logs/2026-08-09-180003.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。
+- 最近变更：[2026-08-10-170319](workbuddy/change-logs/2026-08-10-170319.md) - WorkBuddy 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/.disable_to_model_invocation_migration.json。 受影响范围：skills/.disable_to_model_invocation_migration.json。
 
 ## 数据来源
 
@@ -363,5 +363,6 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-10-170319 | [2026-08-10-170319](workbuddy/change-logs/2026-08-10-170319.md) | WorkBuddy 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/.disable_to_model_invocation_migration.json。 受影响范围：skills/.disable_to_model_invocation_migration.json。 |
 | 2026-08-09-180003 | [2026-08-09-180003](workbuddy/change-logs/2026-08-09-180003.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。 |
 | 2026-08-05-230159 | [2026-08-05-230159](workbuddy/change-logs/2026-08-05-230159.md) | WorkBuddy 本次同步新增 8434 个文件、修改 0 个文件、删除 0 个文件。 新增条目：cb_teams_experts/a-share-analysis, cb_teams_experts/agent-sdk-dev, cb_teams_experts/ai-hedge-fund, cb_teams_experts/ardot-desig... |

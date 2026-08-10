@@ -687,6 +687,33 @@ def recent_logs(repo_root: Path, change_logs_dir: Path, limit: int = 20):
     return rows
 
 
+def last_sync_time(change_logs_dir: Path, timezone_name: str, fallback: str) -> str:
+    """Return the timestamp string of the most recent real sync, parsed from
+    the latest change-log filename (``YYYY-MM-DD-HHMMSS`` in local time) and
+    re-formatted exactly like a real-sync stamp (``%Y-%m-%d %H:%M:%S %z``).
+
+    Used as the SUMMARY "最近同步" value on no-source-change runs so the file
+    stays byte-identical to disk and a no-op run writes nothing. Falls back to
+    ``fallback`` when there are no parseable logs yet."""
+    if not change_logs_dir.exists():
+        return fallback
+    logs = sorted(change_logs_dir.glob("*.md"), reverse=True)
+    if not logs:
+        return fallback
+    stem = logs[0].stem  # e.g. 2026-08-10-160232
+    match = re.match(r"^(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})$", stem)
+    if not match:
+        return fallback
+    y, mo, d, h, mi, s = (int(g) for g in match.groups())
+    tz = ZoneInfo(timezone_name) if ZoneInfo is not None else None
+    try:
+        naive = datetime(y, mo, d, h, mi, s)
+        aware = naive.replace(tzinfo=tz) if tz is not None else naive.astimezone()
+        return aware.strftime("%Y-%m-%d %H:%M:%S %z")
+    except ValueError:
+        return fallback
+
+
 def summarize_changes(platform: PlatformSpec, changes: ChangeSet) -> list[str]:
     lines = [
         f"{platform.title} 本次同步新增 {len(changes.added)} 个文件、修改 {len(changes.modified)} 个文件、删除 {len(changes.deleted)} 个文件。"
@@ -853,10 +880,10 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
 """
 
 
-def write_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | None) -> Path:
+def write_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | None) -> tuple[Path, bool]:
     path = repo_root / platform.readme
-    path.write_text(render_readme(platform, repo_root, latest_log), encoding="utf-8")
-    return path
+    changed = write_if_changed(path, render_readme(platform, repo_root, latest_log))
+    return path, changed
 
 
 def render_summary(
@@ -864,17 +891,21 @@ def render_summary(
     repo_root: Path,
     source: SourceSpec,
     entries: list[tuple],
-    timestamp: datetime,
+    sync_time: str,
 ) -> str:
     """Render the 3-section navigation file for one source directory.
 
-    ``entries`` are the 6-tuples produced by :func:`source_entries`.
+    ``entries`` are the 6-tuples produced by :func:`source_entries``.
+    ``sync_time`` is the pre-formatted "最近同步" timestamp string; on a
+    no-source-change run it is the last *real* sync time (read from the latest
+    change-log) rather than "now", so the file stays byte-identical and a no-op
+    run produces no diff.
     Layout: 概览 (overview) -> 场景导航 (scenario navigation, multi-scenario)
     -> 完整目录表 (full directory table with primary scenario as 类型).
     """
     total_files = sum(entry[3] for entry in entries)
     target_dir_rel = rel_join(platform.root, source.target)
-    stamp = timestamp.strftime("%Y-%m-%d %H:%M:%S %z")
+    stamp = sync_time
 
     # ---- Overview ----
     overview_lines = [
@@ -949,15 +980,35 @@ def write_summary_file(
     repo_root: Path,
     source: SourceSpec,
     entries: list[tuple],
-    timestamp: datetime,
-) -> Path | None:
+    sync_time: str,
+) -> tuple[Path, bool] | None:
+    """Write the SUMMARY.md for one source only when its content changed.
+
+    Returns ``(path, changed)`` where ``changed`` is True when the file was
+    rewritten. Returns ``None`` for file sources or empty entry sets."""
     if source.source_is_file or not entries:
         return None
     target_dir = path_from_rel(repo_root / platform.root, source.target)
     target_dir.mkdir(parents=True, exist_ok=True)
     path = target_dir / SUMMARY_FILENAME
-    path.write_text(render_summary(platform, repo_root, source, entries, timestamp), encoding="utf-8")
-    return path
+    changed = write_if_changed(path, render_summary(platform, repo_root, source, entries, sync_time))
+    return path, changed
+
+
+def write_if_changed(path: Path, content: str) -> bool:
+    """Write ``content`` to ``path`` only when it differs from the current
+    file. Returns True when the file was (re)written, False when it was already
+    up to date. This keeps no-op runs from touching mtimes or creating empty
+    git diffs."""
+    try:
+        existing = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        existing = None
+    if existing == content:
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return True
 
 
 def run_git(repo_root: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
@@ -992,9 +1043,10 @@ def commit_and_maybe_push(repo_root: Path, platform: PlatformSpec, timestamp: da
         git_lock.close()
 
 
-def write_root_readme(repo_root: Path) -> None:
+def write_root_readme(repo_root: Path) -> bool:
     path = repo_root / "README.md"
-    path.write_text(
+    return write_if_changed(
+        path,
         """# AI Skills And Experts Archive
 
 本仓库按平台同步本机 AI 工具的 skills、experts 和插件市场内容。
@@ -1008,7 +1060,6 @@ def write_root_readme(repo_root: Path) -> None:
 
 每个平台目录内都有独立的 `change-logs/` 和 `archive/deleted/`。定时任务每天 18:00 分别运行，各平台的同步范围互不重叠。
 """,
-        encoding="utf-8",
     )
 
 
@@ -1043,16 +1094,31 @@ def sync_platform(args: argparse.Namespace) -> int:
                 archive_deleted(platform_root, archive_root, changes.deleted)
             latest_log = write_change_log(platform, repo_root, timestamp, changes, archive_root)
         elif not args.refresh_docs:
-            print(f"{platform.name}: no source changes; docs were left untouched")
+            # Daily cron path: no source changes, no manual doc refresh.
+            # Skip README/SUMMARY regeneration and commit/push entirely so a
+            # no-op run produces no git activity.
+            print(f"{platform.name}: no source changes; skipped SUMMARY/README + commit/push")
             return 0
 
         (platform_root / "archive" / "deleted").mkdir(parents=True, exist_ok=True)
         (platform_root / "change-logs").mkdir(parents=True, exist_ok=True)
-        write_readme(platform, repo_root, latest_log)
-        write_root_readme(repo_root)
-        # Generate per-source navigation files (SUMMARY.md). Regenerated on
-        # every run that reaches the docs step; a pure refresh writes no
-        # change-log entry, matching the documented assumptions.
+
+        # "最近同步" time for generated docs. On a real sync this is "now";
+        # on a no-source-change run it is the last *real* sync time (from the
+        # latest change-log) so the SUMMARY content stays byte-identical and a
+        # no-op run writes nothing.
+        now_stamp = timestamp.strftime("%Y-%m-%d %H:%M:%S %z")
+        if changes.has_changes:
+            sync_time = now_stamp
+        else:
+            sync_time = last_sync_time(platform_root / "change-logs", args.timezone, now_stamp)
+
+        # Regenerate docs, but only write files whose content actually changed.
+        # On a no-change --refresh-docs run this touches nothing on disk.
+        docs_changed = False
+        _readme_path, readme_changed = write_readme(platform, repo_root, latest_log)
+        docs_changed = docs_changed or readme_changed
+        docs_changed = write_root_readme(repo_root) or docs_changed
         cb_analysis = parse_cb_teams_analysis(
             platform_root / "cb_teams_experts" / "plugins_analysis_company_analysis.md"
         )
@@ -1060,7 +1126,15 @@ def sync_platform(args: argparse.Namespace) -> int:
             entries = source_entries(platform_root, source, cb_analysis)
             if source.source_is_file or not entries:
                 continue
-            write_summary_file(platform, repo_root, source, entries, timestamp)
+            result = write_summary_file(platform, repo_root, source, entries, sync_time)
+            if result and result[1]:
+                docs_changed = True
+
+        if not changes.has_changes and not docs_changed:
+            # Reached here via --refresh-docs with no source changes, and every
+            # generated doc was byte-identical to disk. Nothing to commit.
+            print(f"{platform.name}: no source changes; SUMMARY/README already up to date, skipped commit/push")
+            return 0
         if args.commit or args.push:
             commit_and_maybe_push(repo_root, platform, timestamp, args.push)
         return 0
