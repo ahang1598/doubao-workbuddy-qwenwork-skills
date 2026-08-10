@@ -1,0 +1,420 @@
+{
+  "browserExtensions": [
+    {
+      "browserFamily": "chrome",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "browserIconAssetPath": "assets/google-chrome.png",
+      "storeExtensionId": "hehggadaopoacecdllhhajmbjkdcmajg",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg"
+    },
+    {
+      "browserFamily": "edge",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "browserIconAssetPath": "assets/microsoft-edge.svg",
+      "storeExtensionId": "odlomjlbamekndcpllcnffbgeohgkmjh",
+      "storeUrl": "https://microsoftedge.microsoft.com/addons/detail/odlomjlbamekndcpllcnffbgeohgkmjh"
+    },
+    {
+      "browserFamily": "brave",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "browserIconAssetPath": "assets/brave.svg",
+      "storeExtensionId": "hehggadaopoacecdllhhajmbjkdcmajg",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg"
+    },
+    {
+      "browserFamily": "opera",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "browserIconAssetPath": "assets/opera.svg",
+      "storeExtensionId": "hehggadaopoacecdllhhajmbjkdcmajg",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg"
+    },
+    {
+      "browserFamily": "vivaldi",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "browserIconAssetPath": "assets/vivaldi.svg",
+      "storeExtensionId": "hehggadaopoacecdllhhajmbjkdcmajg",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg"
+    }
+  ],
+  "extensionIds": [
+    "hehggadaopoacecdllhhajmbjkdcmajg",
+    "odlomjlbamekndcpllcnffbgeohgkmjh"
+  ],
+  "extensionHostName": "com.openai.codexextension",
+  "windowsNativeMessaging": {
+    "manifestDirectory": "AppData/Local/OpenAI/extension",
+    "registryRoot": "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts"
+  },
+  "browserDiagnostics": [
+    {
+      "browserFamily": "chrome",
+      "displayName": "Google Chrome",
+      "shortDisplayName": "Chrome",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "extensionManagementUrl": "chrome://extensions",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg",
+      "linux": {
+        "commands": [
+          "google-chrome",
+          "google-chrome-stable",
+          "chromium",
+          "chromium-browser",
+          "google-chrome-beta",
+          "google-chrome-unstable",
+          "google-chrome-for-testing"
+        ],
+        "configHomeEnvironmentVariables": [
+          "CHROME_CONFIG_HOME",
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/google-chrome/NativeMessagingHosts",
+          ".config/chromium/NativeMessagingHosts",
+          ".config/google-chrome-beta/NativeMessagingHosts",
+          ".config/google-chrome-unstable/NativeMessagingHosts",
+          ".config/google-chrome-for-testing/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "chrome"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "google-chrome"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Google Chrome.app"
+        ],
+        "bundleId": "com.google.Chrome",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/Google/Chrome/NativeMessagingHosts",
+          "Library/Application Support/Chromium/NativeMessagingHosts",
+          "Library/Application Support/Google/ChromeForTesting/NativeMessagingHosts",
+          "Library/Application Support/Google/Chrome for Testing/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Google Chrome",
+          "Google Chrome Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "Google",
+          "Chrome"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "chrome.exe",
+          "chrome"
+        ],
+        "installPathSegments": [
+          "Google",
+          "Chrome",
+          "Application",
+          "chrome.exe"
+        ],
+        "processNames": [
+          "chrome.exe"
+        ],
+        "userDataDirectorySegments": [
+          "Google",
+          "Chrome",
+          "User Data"
+        ]
+      }
+    },
+    {
+      "browserFamily": "edge",
+      "displayName": "Microsoft Edge",
+      "shortDisplayName": "Edge",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "extensionManagementUrl": "edge://extensions",
+      "storeUrl": "https://microsoftedge.microsoft.com/addons/detail/odlomjlbamekndcpllcnffbgeohgkmjh",
+      "linux": {
+        "commands": [
+          "microsoft-edge",
+          "microsoft-edge-stable"
+        ],
+        "configHomeEnvironmentVariables": [
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/microsoft-edge/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "msedge"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "microsoft-edge"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Microsoft Edge.app"
+        ],
+        "bundleId": "com.microsoft.edgemac",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/Microsoft Edge/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Microsoft Edge",
+          "Microsoft Edge Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "Microsoft Edge"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "msedge.exe",
+          "msedge"
+        ],
+        "installPathSegments": [
+          "Microsoft",
+          "Edge",
+          "Application",
+          "msedge.exe"
+        ],
+        "processNames": [
+          "msedge.exe"
+        ],
+        "userDataDirectorySegments": [
+          "Microsoft",
+          "Edge",
+          "User Data"
+        ]
+      }
+    },
+    {
+      "browserFamily": "brave",
+      "displayName": "Brave",
+      "shortDisplayName": "Brave",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "extensionManagementUrl": "brave://extensions",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg",
+      "linux": {
+        "commands": [
+          "brave-browser",
+          "brave-browser-stable",
+          "brave"
+        ],
+        "configHomeEnvironmentVariables": [
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/BraveSoftware/Brave-Browser/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "brave",
+          "brave-browser"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "BraveSoftware",
+          "Brave-Browser"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Brave Browser.app"
+        ],
+        "bundleId": "com.brave.Browser",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Brave Browser",
+          "Brave Browser Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "BraveSoftware",
+          "Brave-Browser"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "brave.exe",
+          "brave",
+          "brave-browser"
+        ],
+        "installPathSegments": [
+          "BraveSoftware",
+          "Brave-Browser",
+          "Application",
+          "brave.exe"
+        ],
+        "processNames": [
+          "brave.exe"
+        ],
+        "userDataDirectorySegments": [
+          "BraveSoftware",
+          "Brave-Browser",
+          "User Data"
+        ]
+      }
+    },
+    {
+      "browserFamily": "opera",
+      "displayName": "Opera",
+      "shortDisplayName": "Opera",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "extensionManagementUrl": "opera://extensions",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg",
+      "linux": {
+        "commands": [
+          "opera",
+          "opera-stable"
+        ],
+        "configHomeEnvironmentVariables": [
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/opera/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "opera"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "opera"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Opera.app"
+        ],
+        "bundleId": "com.operasoftware.Opera",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/com.operasoftware.Opera/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Opera",
+          "Opera Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "com.operasoftware.Opera"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "opera.exe",
+          "opera"
+        ],
+        "installPathSegments": [
+          "Opera",
+          "opera.exe"
+        ],
+        "processNames": [
+          "opera.exe"
+        ],
+        "userDataDirectorySegments": [
+          "Opera Software",
+          "Opera Stable"
+        ]
+      }
+    },
+    {
+      "browserFamily": "vivaldi",
+      "displayName": "Vivaldi",
+      "shortDisplayName": "Vivaldi",
+      "extensionIds": [
+        "hehggadaopoacecdllhhajmbjkdcmajg",
+        "odlomjlbamekndcpllcnffbgeohgkmjh"
+      ],
+      "extensionManagementUrl": "vivaldi://extensions",
+      "storeUrl": "https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg",
+      "linux": {
+        "commands": [
+          "vivaldi",
+          "vivaldi-stable"
+        ],
+        "configHomeEnvironmentVariables": [
+          "XDG_CONFIG_HOME"
+        ],
+        "nativeMessagingManifestDirectories": [
+          ".config/vivaldi/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "vivaldi",
+          "vivaldi-bin"
+        ],
+        "userDataDirectorySegments": [
+          ".config",
+          "vivaldi"
+        ]
+      },
+      "macos": {
+        "applicationNames": [
+          "Vivaldi.app"
+        ],
+        "bundleId": "com.vivaldi.Vivaldi",
+        "nativeMessagingManifestDirectories": [
+          "Library/Application Support/Vivaldi/NativeMessagingHosts"
+        ],
+        "processNames": [
+          "Vivaldi",
+          "Vivaldi Helper"
+        ],
+        "userDataDirectorySegments": [
+          "Library",
+          "Application Support",
+          "Vivaldi"
+        ]
+      },
+      "windows": {
+        "commandNames": [
+          "vivaldi.exe",
+          "vivaldi"
+        ],
+        "installPathSegments": [
+          "Vivaldi",
+          "Application",
+          "vivaldi.exe"
+        ],
+        "processNames": [
+          "vivaldi.exe"
+        ],
+        "userDataDirectorySegments": [
+          "Vivaldi",
+          "User Data"
+        ]
+      }
+    }
+  ]
+}

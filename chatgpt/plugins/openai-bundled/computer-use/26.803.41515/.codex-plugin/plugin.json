@@ -1,0 +1,45 @@
+{
+  "name": "computer-use",
+  "version": "26.803.41515",
+  "description": "Control desktop apps on Windows from ChatGPT through Computer Use.",
+  "author": {
+    "name": "OpenAI",
+    "email": "support@openai.com",
+    "url": "https://openai.com/"
+  },
+  "homepage": "https://github.com/openai/openai/tree/master/project/cua/sky_js/plugin",
+  "repository": "https://github.com/openai/openai/tree/master/project/cua/sky_js/plugin",
+  "license": "Proprietary",
+  "keywords": [
+    "computer-use",
+    "desktop-control",
+    "windows",
+    "automation",
+    "node-repl",
+    "accessibility"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Computer Use",
+    "shortDescription": "Control Windows apps from ChatGPT",
+    "longDescription": "Windows Computer Use lets ChatGPT use any app on your computer, including your web browsers and files you allow it to access. It may take screenshots or page content while working. You stay in control: you choose which apps to allow ChatGPT to access, you can stop actions at any time, and control whether we use screenshots for training.",
+    "developerName": "OpenAI",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "logo": "./assets/app-icon.png",
+    "defaultPrompt": [
+      "Play a playlist to help me lock in",
+      "Build and run the project I already have open in Visual Studio",
+      "Open Notepad and turn these bullets into a clean draft"
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}

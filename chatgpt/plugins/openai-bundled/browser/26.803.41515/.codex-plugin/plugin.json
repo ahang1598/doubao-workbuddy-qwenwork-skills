@@ -1,0 +1,42 @@
+{
+  "name": "browser",
+  "version": "26.803.41515",
+  "description": "Browser / browser-use plugin\n\nAliases: @browser, @browser-use, browser-use, Browser, in-app browser.\n\nUse Browser, the ChatGPT in-app browser, when the user asks to open, inspect, navigate, test, click, type, or screenshot local web targets such as localhost, 127.0.0.1, ::1, file:// URLs, or the current in-app browser tab.\n\nAfter significant frontend changes to a local app, use Browser to open the relevant local target when it is known or obvious, unless the user asks for another browser tool.\n\nFor requests like \"open localhost:3000\" or \"open to localhost:4000\", navigate the in-app browser to http://localhost:3000 or http://localhost:4000.\n\nDo not satisfy explicit @browser or @browser-use requests with macOS `open`, shell commands, or generic web browsing unless the user asks for another browser tool or approves a fallback.",
+  "author": {
+    "name": "OpenAI"
+  },
+  "homepage": "https://github.com/openai/openai/tree/master/lib/browser_use/plugin",
+  "repository": "https://github.com/openai/openai/tree/master/lib/browser_use/plugin",
+  "license": "Proprietary",
+  "keywords": [
+    "browser",
+    "automation",
+    "chrome",
+    "iab",
+    "node-repl",
+    "browser-client"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Browser",
+    "shortDescription": "Control the in-app browser with ChatGPT",
+    "longDescription": "Browser lets ChatGPT open and control the in-app browser, mainly for local development pages and files. Use it to navigate, inspect, click, type, and take screenshots while testing pages inside ChatGPT.",
+    "developerName": "OpenAI",
+    "category": "Engineering",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Test my checkout flow on localhost"
+    ],
+    "brandColor": "#013B7B",
+    "composerIcon": "./assets/composer-icon.png",
+    "logo": "./assets/browser.png",
+    "screenshots": []
+  }
+}

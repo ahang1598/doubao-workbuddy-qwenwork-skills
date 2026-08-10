@@ -7,8 +7,8 @@
 - 平台目录：`chatgpt/`
 - 定时任务：`ChatgptSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：19
-- 当前索引文件数：970
-- 最近变更：[2026-08-07-084720](chatgpt/change-logs/2026-08-07-084720.md) - ChatGPT 本次同步新增 239 个文件、修改 0 个文件、删除 239 个文件。 新增条目：plugins/openai-primary-runtime/documents/26.805.11740, plugins/openai-primary-runtime/pdf/26.805.11740, plugins/openai-primary-r...
+- 当前索引文件数：977
+- 最近变更：[2026-08-10-160232](chatgpt/change-logs/2026-08-10-160232.md) - ChatGPT 本次同步新增 399 个文件、修改 6 个文件、删除 392 个文件。 新增条目：plugins/openai-bundled/browser/26.803.41515, plugins/openai-bundled/computer-use/26.803.41515, plugins/openai-bundled/visualize/...
 
 ## 数据来源
 
@@ -29,7 +29,7 @@
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
 | imagegen | `chatgpt/skills/imagegen` | skill | 12 | Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-n... |
-| openai-docs | `chatgpt/skills/openai-docs` | skill | 12 | Use when the user asks how to build with OpenAI products or APIs, asks about Codex itself or choosing Codex surfaces, needs up-to-date official documentation with citations, help choosing the latest model for a use ca... |
+| openai-docs | `chatgpt/skills/openai-docs` | skill | 17 | Use for Codex models/pricing, scheduled tasks, skills, settings, setup, troubleshooting, customization, automations, and self-knowledge—including 'you,' 'your,' 'this app,' or 'this coding agent' when they refer to Co... |
 | plugin-creator | `chatgpt/skills/plugin-creator` | skill | 10 | Create and scaffold plugin directories for Codex with a required `.codex-plugin/plugin.json`, optional plugin folders/files, valid manifest defaults, and personal-marketplace entries by default. Use when Codex needs t... |
 | review-agent | `chatgpt/skills/review-agent` | skill | 2 | Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted changes, a base-branch diff, a commit, or custom review i... |
 | skill-creator | `chatgpt/skills/skill-creator` | skill | 9 | Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integ... |
@@ -39,9 +39,9 @@
 
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
-| browser | `chatgpt/plugins/openai-bundled/browser/26.727.51351` | openai-bundled | 377 | Browser / browser-use plugin Aliases: @browser, @browser-use, browser-use, Browser, in-app browser. Use Browser, the ChatGPT in-app browser, when the user asks to open, inspect, navigate, test, click, type, or screens... Version: 26.727.51351. |
-| computer-use | `chatgpt/plugins/openai-bundled/computer-use/26.727.51351` | openai-bundled | 7 | Control desktop apps on Windows from ChatGPT through Computer Use. Version: 26.727.51351. |
-| visualize | `chatgpt/plugins/openai-bundled/visualize/1.0.16` | openai-bundled | 8 | Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex. Version: 1.0.16. |
+| browser | `chatgpt/plugins/openai-bundled/browser/26.803.41515` | openai-bundled | 380 | Browser / browser-use plugin Aliases: @browser, @browser-use, browser-use, Browser, in-app browser. Use Browser, the ChatGPT in-app browser, when the user asks to open, inspect, navigate, test, click, type, or screens... Version: 26.803.41515. |
+| computer-use | `chatgpt/plugins/openai-bundled/computer-use/26.803.41515` | openai-bundled | 6 | Control desktop apps on Windows from ChatGPT through Computer Use. Version: 26.803.41515. |
+| visualize | `chatgpt/plugins/openai-bundled/visualize/1.0.20` | openai-bundled | 8 | Create interactive charts, maps, diagrams, simulations, 3D models, data explorers, and UI previews directly in Codex. Version: 1.0.20. |
 | app-698be8fbe10481919ab1df169cc86def | `chatgpt/plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def/3.0.0` | openai-curated-remote | 2 | Resume enables ChatGPT to analyze, improve, and generate professional, ATS-friendly resumes. Upload a PDF or DOCX resume to identify key gaps, strengthen experience bullets, and refine impact with targeted suggestions... Version: 3.0.0. |
 | data-analytics | `chatgpt/plugins/openai-curated-remote/data-analytics/0.2.8-13ceeea1f599` | openai-curated-remote | 201 | Answer product and business questions with data Version: 0.2.8-13ceeea1f599. |
 | github | `chatgpt/plugins/openai-curated-remote/github/0.1.8-2841cf9749ae` | openai-curated-remote | 26 | Inspect repositories, triage pull requests and issues, debug CI, and publish changes through a hybrid GitHub connector and CLI workflow. Version: 0.1.8-2841cf9749ae. |
@@ -57,6 +57,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-10-160232 | [2026-08-10-160232](chatgpt/change-logs/2026-08-10-160232.md) | ChatGPT 本次同步新增 399 个文件、修改 6 个文件、删除 392 个文件。 新增条目：plugins/openai-bundled/browser/26.803.41515, plugins/openai-bundled/computer-use/26.803.41515, plugins/openai-bundled/visualize/... |
 | 2026-08-07-084720 | [2026-08-07-084720](chatgpt/change-logs/2026-08-07-084720.md) | ChatGPT 本次同步新增 239 个文件、修改 0 个文件、删除 239 个文件。 新增条目：plugins/openai-primary-runtime/documents/26.805.11740, plugins/openai-primary-runtime/pdf/26.805.11740, plugins/openai-primary-r... |
 | 2026-08-06-110921 | [2026-08-06-110921](chatgpt/change-logs/2026-08-06-110921.md) | ChatGPT 本次同步新增 3 个文件、修改 0 个文件、删除 152 个文件。 新增条目：plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc86def, plugins/openai-curated-remote/app-698be8fbe10481919ab1df169cc8... |
 | 2026-08-05-232542 | [2026-08-05-232542](chatgpt/change-logs/2026-08-05-232542.md) | ChatGPT 本次同步新增 1125 个文件、修改 0 个文件、删除 0 个文件。 新增条目：plugins/openai-bundled/browser/26.727.51351, plugins/openai-bundled/computer-use/26.727.51351, plugins/openai-bundled/sites/0.1.3... |
