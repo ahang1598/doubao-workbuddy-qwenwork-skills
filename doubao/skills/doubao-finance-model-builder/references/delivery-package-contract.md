@@ -12,7 +12,7 @@
 - 模块标准化输入 JSON；
 - 模块确定性计算输出 JSON；
 - 计算验证 JSON；
-- 三表、DCF、LBO或可比公司正式任务的公式工作簿；LBO与可比公司默认只交付一个用户可见Excel，主要报告只能在用户明确要求时作为辅助交付物；
+- 三表、DCF、LBO或可比公司正式任务的公式工作簿；LBO与可比公司默认只生成一个用户可见的表格产物，主要报告只能在用户明确要求时作为辅助交付物；
 - `delivery-audit.json` 与交付验证 JSON；所有工作流另须生成 `artifact-audit.json`，公式工作簿同时生成`workbook-inspect.json`并由直接审计器重新打开检查，报告与确定性计算哈希绑定；
 - `run-record.json`：阶段、状态、警告、硬失败和脚本版本；
 - `artifact-manifest.json`：文件角色、大小和 SHA-256；
@@ -23,10 +23,11 @@
 - `formula-semantic-audit.json`：错引、文本引用、循环依赖、单位和公式合约审计。
 - `model-audit.json`：统一模型审计结果，绑定最终工作簿哈希；不得以工作簿内手填PASS替代。
 - `quality/`：按`references/model-and-artifact-controls.md`生成G0至G5、统一质量报告、结论发布决定和哈希清单。
+- `lark-sheet-delivery.json`：记录实际导入的最终工作簿相对路径与SHA-256、`lark-cli sheets +workbook-import` 执行状态、飞书在线表格链接、可访问性验证和 `NotifyHuman` 通知状态；导入或通知未完成时保留 `INCOMPLETE` 及原始错误。
 
 ## 主要交付物
 
-三表、DCF、LBO和可比公司正式任务只能以公式工作簿作为默认主要交付物。LBO与可比公司默认用户交付面收敛为一个Excel，结论、方法、来源、风险和审计说明写入工作簿；执行计划、JSON、日志和来源台账仅作为机器复核附件。只有用户明确要求额外格式时才附独立报告，且不取消工作簿义务。
+三表、DCF、LBO和可比公司正式任务只能以通过审计的公式工作簿作为模型计算、质量审计和在线导入的唯一正式源文件。LBO与可比公司默认用户交付面收敛为一个表格产物，结论、方法、来源、风险和审计说明写入工作簿；执行计划、JSON、日志和来源台账仅作为机器复核附件。只有用户明确要求额外格式时才附独立报告，且不取消工作簿义务。最终用户交付入口必须是将该最终 `.xlsx` 通过 `lark-cli sheets +workbook-import` 导入得到的飞书在线表格链接。
 
 ## 统一质量结果
 
@@ -53,6 +54,7 @@ python3 scripts/quality/run_quality_gates.py \
 ## 打包检查
 
 - 文件真实存在，大小非零，哈希可复算；
+- 最终回答中声称已生成或已交付的每个产物，均已按回答时的确切路径重新检查为普通文件且大小非零；不得把计划路径、示例模板、命令文本或清单中的预期记录当作产物存在证据；
 - 清单路径使用交付包内相对路径；
 - 主要交付物状态与交付验证一致；
 - 最新公告增量检索覆盖至信息截止日，所有发现项已处置且验证为 `PASS`；
@@ -62,5 +64,6 @@ python3 scripts/quality/run_quality_gates.py \
 - `cell-lineage.json` 引用的工作表和单元格真实存在；
 - 所有用户可见工作表完成视觉检查。
 - G0至G5全部为`PASS`，`release-decision.json.conclusion_allowed=true`；否则不得在报告或最终回答中显示被压制的估值和回报结论。
+- `lark-sheet-delivery.json` 中的源工作簿哈希与 `artifact-manifest.json` 一致，导入、链接可访问性和 `NotifyHuman` 通知均为 `PASS`；否则整体交付状态为 `INCOMPLETE`，不得声称在线表格已交付。
 
 <!-- END OF FILE: delivery-package-contract.md -->

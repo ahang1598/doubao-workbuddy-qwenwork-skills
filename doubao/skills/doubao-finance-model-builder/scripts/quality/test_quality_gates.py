@@ -60,6 +60,16 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
         self.assertFalse(result["release_decision"]["conclusion_allowed"])
         self.assertIn("target_price", result["release_decision"]["suppressed_outputs"])
 
+    def test_incomplete_external_skill_reading_blocks_g0_and_release(self) -> None:
+        root = self.make_root()
+        self.complete_dcf(root)
+        self.write_result(root, "reading-integrity.json", status="INCOMPLETE")
+        result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
+        self.assertEqual(result["report"]["gates"]["G0"], "INCOMPLETE")
+        self.assertEqual(result["report"]["overall_status"], "INCOMPLETE")
+        self.assertFalse(result["release_decision"]["conclusion_allowed"])
+        self.assertIn("model_complete", result["release_decision"]["suppressed_outputs"])
+
     def test_missing_unified_model_audit_blocks_release(self) -> None:
         root = self.make_root()
         self.complete_dcf(root)
@@ -90,6 +100,37 @@ class ConsolidatedQualityGateTests(unittest.TestCase):
         (root / "report.md").write_text("report")
         result = MODULE.run(root, {"dcf"}, "report.md", root / "quality")
         self.assertEqual(result["report"]["overall_status"], "FAIL")
+
+    def test_zero_byte_workbook_is_not_a_deliverable(self) -> None:
+        root = self.make_root()
+        self.complete_dcf(root)
+        (root / "model.xlsx").write_bytes(b"")
+        result = MODULE.run(root, {"dcf"}, "model.xlsx", root / "quality")
+        self.assertEqual(result["report"]["gates"]["G5"], "FAIL")
+        self.assertFalse(result["release_decision"]["conclusion_allowed"])
+        self.assertEqual(result["gates"][5]["checks"][1]["errors"], ["主要交付工作簿大小为0，不构成已生成的产物"])
+
+    def test_missing_lbo_workbook_cannot_be_claimed_as_delivered(self) -> None:
+        root = self.make_root()
+        hero_hash = MODULE.file_sha256(root / "model.xlsx")
+        for name in (
+            "reading-integrity.json",
+            "execution-plan-validation.json",
+            "announcement-sweep-validation.json",
+            "source-validation.json",
+            "model-contract-validation.json",
+            "lbo-validation.json",
+            "cross-artifact-parity.json",
+        ):
+            self.write_result(root, name)
+        for name in ("model-audit.json", "formula-semantic-audit.json", "artifact-audit.json", "visual-audit.json"):
+            self.write_result(root, name, hero_hash=hero_hash)
+        (root / "model.xlsx").unlink()
+        result = MODULE.run(root, {"lbo"}, "model.xlsx", root / "quality")
+        self.assertEqual(result["report"]["gates"]["G5"], "FAIL")
+        self.assertFalse(result["release_decision"]["conclusion_allowed"])
+        self.assertIn("model_complete", result["release_decision"]["suppressed_outputs"])
+        self.assertEqual(result["gates"][5]["checks"][1]["errors"], ["主要交付工作簿不存在"])
 
     def test_dcf_requires_equity_evidence(self) -> None:
         root = self.make_root()

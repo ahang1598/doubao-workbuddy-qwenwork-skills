@@ -147,9 +147,11 @@ python3 scripts/quality/run_quality_gates.py \
 
 输出`g0-task.json`至`g5-delivery.json`、`quality-report.json`、`release-decision.json`和`artifact-manifest.json`。`release-decision.json`是目标价、估值区间、推荐倍数、上涨下跌空间、MOIC、IRR和“模型完成”的唯一发布权限来源；仅G0至G5全部`PASS`且`conclusion_allowed=true`时允许发布。
 
-## 可选报告与打包
+## 在线表格交付、可选报告与打包
 
-LBO和可比公司默认只交付一个用户可见Excel。只有用户明确要求独立Markdown或飞书报告时才运行渲染器；报告必须写入`CALCULATED_SHA256:<确定性计算文件SHA-256>`并通过：
+G0至G5通过后，只将与 `artifact-manifest.json` 哈希一致的最终 `.xlsx` 通过 `lark-cli sheets +workbook-import` 导入为飞书在线表格。取得有效且可访问的链接后，调用 `NotifyHuman` 向用户提供链接，并将源文件哈希、导入、链接可访问性和通知状态记录到 `lark-sheet-delivery.json`。任一环节失败时将交付状态保持为 `INCOMPLETE`。
+
+LBO和可比公司默认只生成一个用户可见的表格产物。只有用户明确要求独立Markdown或飞书报告时才运行渲染器；本处的飞书报告不包括强制交付的飞书在线表格。报告必须写入`CALCULATED_SHA256:<确定性计算文件SHA-256>`并通过：
 
 ```bash
 python3 scripts/common/audit_report_artifact.py \

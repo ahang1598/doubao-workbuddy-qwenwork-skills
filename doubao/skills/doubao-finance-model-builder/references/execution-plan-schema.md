@@ -64,7 +64,7 @@
 - `valuation_date`：估值或分析基准日。
 - `information_cutoff_date`：允许进入模型的信息截止日，不得晚于估值日。
 - `model_purpose`：`formal` 或 `illustrative`。正式模型不得使用未说明占位值。
-- `deliverables.hero`：用户主要交付物；`support` 只列审计和复算附件。
+- `deliverables.hero`：模型计算、质量审计和飞书在线表格导入的唯一正式 `.xlsx` 源文件；`support` 只列审计和复算附件。用户的默认交付入口为该文件经 `lark-cli sheets +workbook-import` 导入后的飞书在线表格链接。
 - `evidence.source_ids`：计划引用的来源编号全集，必须唯一。
 - `data-source-ledger.json`：在标准化输入和预测前记录逐字段来源披露。
 - `assumption-evidence-matrix.json`：在模型计算前连接历史数据、业务驱动、预测逻辑和模型参数。

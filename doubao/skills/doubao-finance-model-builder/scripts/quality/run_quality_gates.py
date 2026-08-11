@@ -118,7 +118,9 @@ def result_names_for_calculation(workflows: set[str]) -> list[tuple[str, list[st
 def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     hero = safe_path(root, hero_relative)
     hero_exists = hero.is_file()
-    hero_hash = file_sha256(hero) if hero_exists else None
+    hero_bytes = hero.stat().st_size if hero_exists else 0
+    hero_nonempty = hero_exists and hero_bytes > 0
+    hero_hash = file_sha256(hero) if hero_nonempty else None
 
     g0 = aggregate(
         "G0",
@@ -174,6 +176,16 @@ def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[li
                 "warnings": [],
             }
         )
+    elif not hero_nonempty:
+        delivery_checks.append(
+            {
+                "check_id": "g5.hero",
+                "status": "FAIL",
+                "required": True,
+                "errors": ["主要交付工作簿大小为0，不构成已生成的产物"],
+                "warnings": [],
+            }
+        )
     elif hero.suffix.lower() != ".xlsx":
         delivery_checks.append(
             {
@@ -207,7 +219,7 @@ def build_gates(root: Path, workflows: set[str], hero_relative: str) -> tuple[li
         "hero": {
             "path": hero_relative,
             "exists": hero_exists,
-            "bytes": hero.stat().st_size if hero_exists else 0,
+            "bytes": hero_bytes,
             "sha256": hero_hash,
         },
     }

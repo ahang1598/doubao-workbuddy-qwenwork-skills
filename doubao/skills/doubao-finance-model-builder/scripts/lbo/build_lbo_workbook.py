@@ -10,6 +10,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from openpyxl import load_workbook
 from openpyxl.styles import Alignment
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -761,6 +762,13 @@ def main() -> int:
         args.workbook,
         args.contract,
     )
+    for path, label in ((args.workbook, "LBO工作簿"), (args.contract, "LBO工作簿合约")):
+        if not path.is_file():
+            raise RuntimeError(f"{label}未生成：{path}")
+        if path.stat().st_size <= 0:
+            raise RuntimeError(f"{label}大小为0：{path}")
+    workbook = load_workbook(args.workbook, read_only=True, data_only=False)
+    workbook.close()
     return 0
 
 

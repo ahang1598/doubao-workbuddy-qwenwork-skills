@@ -7,8 +7,8 @@
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
 - 条目数：96
-- 文件数：2178
-- 最近同步：2026-08-10 16:06:17 +0800
+- 文件数：2179
+- 最近同步：2026-08-11 18:00:03 +0800
 
 ## 场景导航（按用途）
 
@@ -251,7 +251,7 @@
 | doubao-earnings-analysis | `doubao/skills/doubao-earnings-analysis` | 金融研究 | doubao-earnings-analysis | 23 | 上市公司财报/季报/年报/业绩的深度因果分析，覆盖A股、港股、美股和中概股。用于解读财报表现、亮点/风险、收入利润等指标变动、超预期或低于预期原因，以及针对毛利率、现金流、费用率等具体变量的归因问题。不用于纯股价、估值、评级、目标价、非财报新闻或未锚定具体公司报告期的宏观行业讨论。 |
 | doubao-ecommerce-compliance-tax-logistics | `doubao/skills/doubao-ecommerce-compliance-tax-logistics` | 营销/内容运营 | doubao-ecommerce-compliance-tax-logistics | 12 | Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod... |
 | doubao-ecommerce-proposal | `doubao/skills/doubao-ecommerce-proposal` | 营销/内容运营 | doubao-ecommerce-proposal | 5 | 电商活动策划专家。用于生成、改写、优化完整电商活动策划方案，并默认交付一份已经本地落地、可用浏览器打开验证的 HTML 网页版方案。覆盖淘宝/天猫、抖音电商、京东、得物、拼多多、小红书、Amazon、TikTok Shop、Shopee、Lazada、eBay、Shopify/独立站等平台的节点大促、店铺活动、平台活动、直播间活动、品类活动、品牌日、上新、清仓、会员复购、内容种草到成交、站内外联动与跨境电商活动。若用户只要商品标题... |
-| doubao-finance-model-builder | `doubao/skills/doubao-finance-model-builder` | 金融研究 | doubao-finance-model-builder | 115 | 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。 |
+| doubao-finance-model-builder | `doubao/skills/doubao-finance-model-builder` | 金融研究 | doubao-finance-model-builder | 116 | 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。 |
 | doubao-finance-sector | `doubao/skills/doubao-finance-sector` | 金融研究 | doubao-finance-sector | 36 | 对板块/概念/主题/题材的短期市场热度做专业、可证伪的深度分。触发场景：当用户问某板块/概念/题材现在热不热、能不能追、为什么走强或降温、持续性如何、成交主要活跃在哪些方向、内部谁强谁弱，或要求生成对应飞书文档时触发。不适用场景：行业长期趋势、单股行情、公司基本面/财报、大盘/宏观等话题，不触发本skill。 |
 | doubao-game-designer | `doubao/skills/doubao-game-designer` | 设计可视化 | doubao-game-designer | 74 | 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。 |
 | doubao-headlines-calendar | `doubao/skills/doubao-headlines-calendar` | 营销/内容运营 | doubao-headlines-calendar | 8 | 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用... |

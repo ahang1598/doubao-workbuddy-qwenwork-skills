@@ -102,7 +102,7 @@
 
 使用条件化语言。信息不足时给出区间、置信度和待核验清单，不生成伪精确结论。
 
-按`references/delivery-package-contract.md`保存主要公式工作簿、结构化输入、计算结果、验证结果、运行记录和文件清单。默认只把工作簿作为用户可见交付物；审计附件不得覆盖或手填IRR、MOIC和回报归因。
+按`references/delivery-package-contract.md`保存主要公式工作簿、结构化输入、计算结果、验证结果、运行记录和文件清单。默认只生成一个用户可见的表格产物，并将审计通过的最终 `.xlsx` 导入为飞书在线表格交付；审计附件不得覆盖或手填IRR、MOIC和回报归因。
 
 只有用户明确要求独立Markdown或飞书报告时，才可在工作簿通过审计后运行可选渲染器和报告审计：
 
@@ -111,7 +111,7 @@ python3 scripts/lbo/render_lbo_report.py result.json --output report.md --exit-y
 python3 scripts/common/audit_report_artifact.py report.md result.json --workflow lbo --output artifact-audit.json
 ```
 
-正式任务必须生成公式工作簿，并将其作为唯一默认用户交付物。工作簿至少包含封面、交易摘要、交易与融资假设、假设依据、历史数据与口径、Sources & Uses、经营预测、分层债务、现金与利息、退出回报、投资人现金流、MOIC/IRR/XIRR、回报归因、情景与敏感性、目标回报反推、风险与失效条件、模型检查和数据来源。关键历史值和交易、经营、融资及退出假设分别关联来源编号与假设编号。先建立公式语义合约与冻结布局，覆盖Sources & Uses、债务滚动、现金、利息、退出股权价值、MOIC、XIRR、回报归因和敏感性；保存后运行语义审计及`scripts/common/audit_formula_workbook.py --recalculate required`。任一关键依赖、单位、中间节点、直接产物审计或最终哈希复核失败时，不得输出回报结论。
+正式任务必须生成公式工作簿，并将其作为唯一正式模型、审计和导入源文件；默认用户交付入口为由该文件导入的飞书在线表格。工作簿至少包含封面、交易摘要、交易与融资假设、假设依据、历史数据与口径、Sources & Uses、经营预测、分层债务、现金与利息、退出回报、投资人现金流、MOIC/IRR/XIRR、回报归因、情景与敏感性、目标回报反推、风险与失效条件、模型检查和数据来源。关键历史值和交易、经营、融资及退出假设分别关联来源编号与假设编号。先建立公式语义合约与冻结布局，覆盖Sources & Uses、债务滚动、现金、利息、退出股权价值、MOIC、XIRR、回报归因和敏感性；保存后运行语义审计及`scripts/common/audit_formula_workbook.py --recalculate required`。任一关键依赖、单位、中间节点、直接产物审计或最终哈希复核失败时，不得输出回报结论。
 
 不得由语言模型自行拼装LBO工作簿。完成`lbo_engine.py`确定性计算后，必须从同一标准化case运行固定生成器和专属审计器：
 
@@ -121,6 +121,10 @@ python3 scripts/lbo/audit_lbo_workbook.py lbo-model.xlsx lbo-workbook-contract.j
 ```
 
 生成器固定物化Sources & Uses、逐年经营现金流、分层债务期初/利息/PIK/强制摊还/现金扫款/期末余额、退出企业价值与股权桥、MOIC/IRR及模型检查。专属审计器读取生成时冻结且绑定工作簿SHA-256的完整公式单元格清单；任一必需单元格变成静态值、公式失去输入或计算链引用、工作表缺失或哈希变化均为`FAIL`。不得缩小、重写或用模型自报的`formula_ranges`替代该固定清单。
+
+运行生成器命令后，必须立即以文件系统重新解析命令中指定的工作簿路径，并确认：进程退出码为0、该路径是真实存在的普通文件、文件大小大于0、文件后缀为`.xlsx`、工作簿可由OpenPyXL重新打开，且该确切路径与哈希已进入`artifact-manifest.json`。不得根据“已运行生成脚本”、预计输出路径、示例模板存在或文本中出现文件名就推断产物已生成。
+
+最终回答前必须再次检查最终LBO `.xlsx` 的实际文件、非零大小、SHA-256、`artifact-manifest.json`、`artifact-audit.json=PASS`、G5和飞书导入凭证。任一项缺失、路径指向不存在的文件或状态非`PASS`时，只能明确说“LBO工作簿未生成”或“LBO工作簿未交付”，并报告缺失项与修复动作。禁止使用“已生成”“已完成”“已交付”“下载Excel”“查看工作簿”或提供不存在的本地链接。
 
 `assets/lbo/`提供一套可直接复测的参考资产：
 
