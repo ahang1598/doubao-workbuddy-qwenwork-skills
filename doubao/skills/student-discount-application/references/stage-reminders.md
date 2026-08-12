@@ -1,5 +1,29 @@
 # 阶段提醒文案
 
+## 目录
+
+- [学信网流程结果](#学信网流程结果)
+  - [没有查到结果](#没有查到结果)
+  - [查到有效结果](#查到有效结果)
+  - [查到无效结果](#查到无效结果)
+  - [输出顺序](#输出顺序)
+- [业务状态](#业务状态)
+  - [`PLATFORM_NOT_SUPPORTED`](#platform_not_supported)
+  - [`DOUYIN_BIND_REQUIRED`](#douyin_bind_required)
+  - [`STUDENT_AUTH_REQUIRED`](#student_auth_required)
+  - [`STUDENT_NOT_ELIGIBLE`](#student_not_eligible)
+  - [`BENEFIT_GRANTED`](#benefit_granted)
+  - [`BENEFIT_ALREADY_GRANTED`](#benefit_already_granted)
+  - [`BENEFIT_RECEIVED_BY_OTHER_ACCOUNT`](#benefit_received_by_other_account)
+  - [`ACTIVITY_EXPIRED`](#activity_expired)
+  - [`ACTIVITY_NOT_STARTED`](#activity_not_started)
+- [错误状态](#错误状态)
+  - [查询失败，可重试](#查询失败可重试)
+  - [学生认证二维码生成失败](#学生认证二维码生成失败)
+  - [运行时身份缺失](#运行时身份缺失)
+  - [响应不完整](#响应不完整)
+  - [兜底降级：手动认证入口](#兜底降级手动认证入口)
+
 在每次调用 `student_discount_run_application_step` 后，先按 `content` 和 `errorMsg` 完成路由，再按本表生成面向用户的回复。保持语义不变；业务阶段文案只使用工具可见返回替换 `{秒数}` 和 `{benefitName}`；仅当 `content` 明确同时给出 `{validFrom}` 和 `{validUntil}` 两端时间时才保留有效期句子。学信网结果文案只使用内嵌核验实际返回且允许展示的字段。
 
 不要暴露状态码、错误码、协议字段或内部实现。不要把工具的模型提示文本逐字转发给用户（例如不要原样输出"请引导用户点击"、"请提示用户扫描"、"请将该链接以二维码图片形式展示"等指令性措辞，应转化为自然的对用户语气）。
@@ -95,26 +119,6 @@
 2. 在阶段文案之后空一行，用 markdown 图片格式展示，alt 文本固定为"学生认证二维码"；
 3. 只使用本次或强制续调返回的最新链接，不缓存、不复用、不猜测上一轮的旧链接；
 4. 若本轮刚执行过学信网流程，必须先展示学信网结果和阶段文案，再展示二维码图片。
-
-### `STUDENT_AUTH_PENDING`
-
-适用阶段：用户完成手机端操作后，服务端尚未得到最终学生认证结果。
-
-提醒文案：
-
-> 学生认证结果仍在处理中，请稍候约 {秒数} 秒。我会再查询一次；你无需重复扫码或重新提交认证。
-
-不要展示或重复引用旧二维码链接。按 `content` 中可见秒数等待；没有数字时等待约 5 秒，最多自动调用一次。
-
-### `BENEFIT_GRANT_PENDING`
-
-适用阶段：已确认学生身份，正在下发优惠权益。
-
-提醒文案：
-
-> 学生认证已完成，正在为你下发学生优惠权益，请稍候约 {秒数} 秒。我会再确认一次领取结果，你无需重新认证。
-
-按 `content` 中可见秒数等待；没有数字时等待约 5 秒，最多自动调用一次。此时不要宣称权益已经到账。
 
 ### `STUDENT_NOT_ELIGIBLE`
 

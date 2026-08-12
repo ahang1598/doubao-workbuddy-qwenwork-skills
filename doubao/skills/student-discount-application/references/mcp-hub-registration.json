@@ -1,0 +1,18 @@
+{
+  "name": "student_discount_run_application_step",
+  "title": "办理豆包专业版学生优惠申请",
+  "description": "办理豆包专业版学生优惠申请：每次以空对象调用，从运行时读取当前登录用户身份，重新查询抖音账号绑定状态和学生认证状态；必要时返回抖音绑定入口或学生认证二维码（CDN 图片链接）；在绑定和认证均满足且活动有效期内时，幂等下发学生优惠权益。仅当用户明确提出申请、继续办理或查询申请状态时调用；单纯咨询优惠折扣、活动规则或诉求不明确时不调用，否则会产生不必要的下游查询压力。约束：1) 不接受任何业务参数（UID、租户等由运行时注入）；2) STUDENT_AUTH_REQUIRED 路由下 content 文本中会内嵌以 https://aka.doubaocdn.com/ 开头的认证二维码图片链接，配套 Skill 约定提取后以 markdown 图片 `![学生认证二维码](<URL>)` 形式展示；不采用 MCP 原生 `type: image` content 元素的原因是端上 markdown 图片渲染的兼容性更稳定、覆盖更全，当前平台对 MCP image 类型的上屏展示链路对用户可见性不足；若未来平台 image 上屏能力成熟，可切换为原生 image 类型而不影响业务逻辑；3) DOUYIN_BIND_REQUIRED 路由下 content 中包含绑定按钮文案；4) 权益下发为幂等操作（重复调用不重复扣费或重复发放），但属于有外部副作用的写入，非纯读；5) 非 PC 端会直接命中 PLATFORM_NOT_SUPPORTED 终态；6) 顶层 CallToolResult 返回字段集合恒为固定三部分：content（MCP content 数组，阶段文案+可能的二维码 URL）、isError（boolean）、structuredContent（对象，errorCode:int/errorMsg:string 为必填稳定字段，errorStage/statusCode/retryable:boolean/retryAfterSec:int|null 为可选字段且无值时以 null 返回而非省略整个字段），成功或任何阶段下顶层字段集合都不漂移；7) 任何 isError=true 场景下 structuredContent.errorMsg 必须覆盖错误四要素：失败阶段或字段名、正在执行的动作、失败原因、下一步建议（含修复方向或重试策略）；retryable=true 时明确提示等待秒数，retryable=false 时明确给出替代路径或不要重试的指令。典型成功返回包含 8 种业务阶段之一（PLATFORM_NOT_SUPPORTED / DOUYIN_BIND_REQUIRED / STUDENT_AUTH_REQUIRED / STUDENT_NOT_ELIGIBLE / BENEFIT_GRANTED / BENEFIT_ALREADY_GRANTED / BENEFIT_RECEIVED_BY_OTHER_ACCOUNT / ACTIVITY_EXPIRED / ACTIVITY_NOT_STARTED），errorMsg 为空且 errorCode=0；典型失败返回 isError=true、errorCode 为 5 位非零数字且按类别分段（40001 运行时上下文 / 51001-51004 四类上游依赖查询或生成失败），errorMsg 非空并含四要素，content 中同时含可识别的错误锚点（如绑定状态查询失败、二维码生成失败等）+ 可能的降级等待秒数提示文本。",
+  "strict": true,
+  "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}

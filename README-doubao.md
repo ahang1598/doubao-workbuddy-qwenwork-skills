@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：96
-- 当前索引文件数：2179
-- 最近变更：[2026-08-11-180003](doubao/change-logs/2026-08-11-180003.md) - Doubao 本次同步新增 1 个文件、修改 19 个文件、删除 0 个文件。 受影响范围：skills/doubao-academic-researcher, skills/doubao-finance-model-builder, skills/doubao-identity。
+- 当前索引文件数：2194
+- 最近变更：[2026-08-12-180003](doubao/change-logs/2026-08-12-180003.md) - Doubao 本次同步新增 17 个文件、修改 12 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/student-discount-application。
 
 ## 数据来源
 
@@ -38,7 +38,7 @@
 | doubao-contract-amendment | `doubao/skills/doubao-contract-amendment` | skill | 2 | 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。 |
 | doubao-contract-drafting | `doubao/skills/doubao-contract-drafting` | skill | 24 | 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。 |
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | skill | 4 | doubao-contract-reviewer 是面向大众用户的合同审查 Skill，适合在豆包/豆包 Turbo 中审查各类合同。用户上传合同或询问“帮我审合同、合同有没有问题、这份合同能不能签、合同风险、合同把关、legal review”时必须使用。本 Skill 强制输出比裸跑更有用的结构化审查：先判断我方立场，再按交易模块识别风险，区分“必改风险 / 可争取优化项 / 形式完善项”，并给出可直接替换或补充的修改文本。适... |
-| doubao-creative-design | `doubao/skills/doubao-creative-design` | skill | 8 | 当用户要求生成、编辑、改图、修图、重绘、文生图、图生图、扩图、换背景、换风格、局部替换、参考图衍生、系列延展或多比例适配商业创意图片时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式... |
+| doubao-creative-design | `doubao/skills/doubao-creative-design` | skill | 18 | 当用户要求从零生成、设计商业/社交媒体创意图片，或做系列延展、多比例适配时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式推导图、工程图纸、多资产视觉系统等图片设计场景。 |
 | doubao-creative-drama | `doubao/skills/doubao-creative-drama` | skill | 6 | 当用户提出短篇短剧、动画短片、微电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等**单集 5-10 分钟以内**的短篇制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"写个短剧剧本"、"画个分镜"、"搞个人设/场景资产"、"出个关键帧"、"写图生视频提示词/Seedance提示词"等表达时调用。适用于需要按"规划-剧本-分镜-资产-关键帧-视频生成"推进完整视频生产流程的短篇场景。**不承接几十集连续... |
 | doubao-creative-video | `doubao/skills/doubao-creative-video` | skill | 4 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、产品广告、商品广告、UGC口播/带货/信息流视频、marketing/TVC风格广告、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带 ref/参考素材的视频生成。禁止用于短剧创作、剧情脚本、分集剧情、角色扮演故事或影视叙事创作；此类需求应调用 doubao-creative-drama。仅当用户明确要求把短剧/剧情素材改造成普... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | skill | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
@@ -121,12 +121,13 @@
 | seed-audio | `doubao/skills/seed-audio` | skill | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色） |
 | seedance-25 | `doubao/skills/seedance-25` | skill | 1 | 使用seedance2.5模型生成视频,使用 Seedance 2.5 按用户原始提示词生成视频，禁止改写提示词或切换模型，并在生成前补齐时长、比例和检索所得的必要信息后向用户确认原样透传提示词、不润色视频 prompt、不要改写后生成，或显式调用本 Skill 时使用。 |
 | skill-creator-for-work | `doubao/skills/skill-creator-for-work` | skill | 6 | 创建有效 Skill 的指南。当用户想要创建新的 Skill，或更新现有 Skill，以便通过专门知识、工作流程或工具集成来扩展 AI Agent 能力时，应使用此 Skill。 |
-| student-discount-application | `doubao/skills/student-discount-application` | skill | 8 | 仅当用户明确提出豆包专业版学生优惠办理类诉求，方可加载本 Skill 并调用student_discount_run_application_step依次执行全流程；若用户仅咨询学生优惠资讯、咨询其他优惠、诉求模糊无法判定、未提出办理申请，一律禁止加载 Skill 与调用该工具，严格区分目标权益，杜绝一切误触发。 |
+| student-discount-application | `doubao/skills/student-discount-application` | skill | 13 | 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。 |
 
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-12-180003 | [2026-08-12-180003](doubao/change-logs/2026-08-12-180003.md) | Doubao 本次同步新增 17 个文件、修改 12 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/student-discount-application。 |
 | 2026-08-11-180003 | [2026-08-11-180003](doubao/change-logs/2026-08-11-180003.md) | Doubao 本次同步新增 1 个文件、修改 19 个文件、删除 0 个文件。 受影响范围：skills/doubao-academic-researcher, skills/doubao-finance-model-builder, skills/doubao-identity。 |
 | 2026-08-10-155148 | [2026-08-10-155148](doubao/change-logs/2026-08-10-155148.md) | Doubao 本次同步新增 1543 个文件、修改 214 个文件、删除 39 个文件。 新增条目：skills/doubao-announcement-analysis, skills/doubao-book-writer, skills/doubao-compliance-assessment-public, skills/doubao-contr... |
 | 2026-07-23-203625 | [2026-07-23-203625](doubao/change-logs/2026-07-23-203625.md) | 本次同步新增 65 个文件、修改 0 个文件、删除 0 个文件。 新增 skill：doubao-academic-researcher, doubao-clinical-decision-support, doubao-industry-analysis, doubao-medical-literature-search。 受影响范围：doubao-... |

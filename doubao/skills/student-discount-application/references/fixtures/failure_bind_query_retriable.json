@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "fixture_type": "failure",
+    "scenario": "DOUYIN_BIND_QUERY_FAILED：抖音账号绑定状态查询失败，可重试，content 含降级秒数 5 秒锚点；errorCode=51001（对应 tool-contract.md 附录映射）",
+    "expected_skill_route": "DOUYIN_BIND_QUERY_FAILED",
+    "expect_retry": true,
+    "expect_retry_after_sec": 5
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "抖音账号绑定状态查询失败，当前绑定状态未知，请稍后重试。建议等待约 5 秒后重新查询。"
+    }
+  ],
+  "isError": true,
+  "structuredContent": {
+    "errorCode": 51001,
+    "errorMsg": "失败阶段：抖音账号绑定状态查询（DOUYIN_BINDING）；执行动作：读取当前登录用户的抖音绑定状态以判断是否允许继续申请学生优惠；失败原因：上游绑定状态服务调用超时；下一步建议：retryable=true，等待 retryAfterSec=5 秒后自动重试 1 次，若重试后仍失败，SKILL 侧兜底降级为展示手动认证页面链接并结束本轮。",
+    "errorStage": "DOUYIN_BINDING",
+    "statusCode": "ERROR",
+    "retryable": true,
+    "retryAfterSec": 5
+  }
+}

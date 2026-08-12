@@ -39,8 +39,6 @@
 
 ## 后续路由
 
-- `STUDENT_AUTH_PENDING`：说明结果处理中，不重复展示旧二维码链接。
-- `BENEFIT_GRANT_PENDING`：说明认证已完成、权益正在发放；不要要求重新认证。
 - `STUDENT_NOT_ELIGIBLE`：按固定阶段文案告知未满足活动资格并结束。
 - `BENEFIT_GRANTED` / `BENEFIT_ALREADY_GRANTED`：使用 `content` 可见的权益称谓；有效期不可见时省略。
 - `errorMsg` 非空或命中错误锚点：按错误路由处理；工具错误不等于用户认证失败。学信网流程刚执行过的前提下，即使本次路由进入错误分支，仍须**先展示本节学信网结果文案，再输出错误固定文案**（详见 stage-reminders.md 学信网流程结果章节的强制输出顺序要求），学信网结果不允许因后续工具错误被省略。

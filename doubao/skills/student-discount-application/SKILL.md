@@ -1,150 +1,132 @@
 ---
 name: student-discount-application
-description: 仅当用户明确提出豆包专业版学生优惠办理类诉求，方可加载本 Skill 并调用student_discount_run_application_step依次执行全流程；若用户仅咨询学生优惠资讯、咨询其他优惠、诉求模糊无法判定、未提出办理申请，一律禁止加载 Skill 与调用该工具，严格区分目标权益，杜绝一切误触发。
+description: 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。
 ---
+
+> **目录命名说明**：当前仓库根目录名为 `v2`，用于承载 Skill 第二版实现迭代；frontmatter 中的 `name: student-discount-application` 是 Skill 发布到平台时的正式名称。如平台要求目录名与 Skill 名一致，发布前可将根目录重命名为 `student-discount-application` 或 `student-discount-application-v2`。
 
 # 学生优惠申请
 
-仅调用 `student_discount_run_application_step` 查询并幂等推进当前登录用户的申请。模型运行时只能读取工具返回的 `content` 和 `errorMsg`；其他字段（包括 `structuredContent`、`isError`、`statusCode`、`errorType` 等）不可见，不用于校验或路由。
+办理用户的豆包专业版学生优惠申请。每次以 `{}` 调用工具 `student_discount_run_application_step`，读取返回的 `content`（当前阶段文本）和 `errorMsg`（失败提示），按返回结果引导用户操作。
 
-每次工具返回后先完整读取[内容路由表](references/content-routing.md)；需要理解模型可见返回面时读取[工具契约](references/tool-contract.md)；[工具 Schema](references/tool-schema.json)仅供工具实现和排障参考，不用于运行时路由；生成用户回复时读取[阶段提醒文案](references/stage-reminders.md)，严格以模型可见的 `content` 和 `errorMsg` 填充固定文案；命中 `STUDENT_AUTH_REQUIRED` 路由时，同时读取[学生认证交互](references/student-auth-workflow.md)和[学信网当前有效学籍核验](references/chsi-enrollment-verification.md)。
+工具返回后请先查阅对应的参考文件：
 
-## 随附参考文件定位
+- [内容路由表](references/content-routing.md)：根据 `content` 文本确定当前处于哪一阶段；
+- [阶段提醒文案](references/stage-reminders.md)：根据阶段生成对用户的回复；
+- [学生认证交互](references/student-auth-workflow.md) + [学信网当前有效学籍核验](references/chsi-enrollment-verification.md)：命中「需要学生认证」阶段时执行。
 
-学信网子流程文件固定路径为 `references/chsi-enrollment-verification.md`，位于 `references/` 目录下。直接读取该路径；不将该文件作为独立 Skill。
+## 操作规则
 
-## 强制边界
-
-1. 只调用 `student_discount_run_application_step` 作为学生优惠业务工具。仅在命中 `STUDENT_AUTH_REQUIRED` 且当前办理历史尚未执行过学信网流程时，额外执行一次内嵌的[学信网当前有效学籍核验](references/chsi-enrollment-verification.md)。
-2. 始终以空对象 `{}` 调用，不传 UID、认证结果、流程状态、租户、会话或鉴权信息。
-3. 不向用户询问 UID。UID 和幂等键由运行时注入。
-4. 不读取、等待或假设 `structuredContent`、`isError`、`statusCode`、`errorType`、`errorStage`、`retryable`、`retryAfterSec`、`suggestedFix`、权益对象、quickReplies、deep link 或二维码失效时间可见。
-5. 只按 `content` 中的稳定锚点生成内部路由标签；`errorMsg` 非空时优先进入错误分支。不要用自由语义推断补造一个未命中的业务状态。
-6. 不推测或重建客户端绑定交互 deep link、二维码 URL 以外的图片地址、Base64 图片、权益正式名称或有效期。
-7. 不收集、输入或复述账号、密码、短信验证码、身份证号、人脸信息等认证数据。
-8. 未命中 `BENEFIT_GRANTED` 或 `BENEFIT_ALREADY_GRANTED` 前，不宣称权益领取成功。
-9. 学信网流程每个用户发起的办理周期最多执行一次；无论结果如何都必须在 `finally` 中再次以 `{}` 调用统一工具，并先展示一次学信网结果，再展示新工具结果对应的阶段文案。
+1. **工具调用方式**：始终以空对象 `{}` 调用 `student_discount_run_application_step`，不需要传入任何信息。
+2. **唯一业务工具**：办理全程只使用上述工具。只有首次进入 `STUDENT_AUTH_REQUIRED` 阶段时，额外执行一次内嵌的[学信网当前有效学籍核验](references/chsi-enrollment-verification.md)。
+3. **读取返回**：只看 `content`（阶段文本）和 `errorMsg`（失败提示）。
+4. **路由判断**：严格按照 `content` 中的稳定文字匹配阶段；`errorMsg` 不为空时按错误处理。不要凭感觉脑补未明确出现的状态。
+5. **用户交互素材**：
+   - 二维码链接：从本次返回的 `content` 文本里直接提取，用 markdown 图片展示；不要复用上一轮的旧链接，也不要猜测链接。
+   - 抖音绑定按钮名称：只用 `content` 里明确出现的文案，不编造按钮或链接。
+   - 权益名称和有效期：只采用 `content` 里明确写出的内容；没写就不展示，不猜测。
+6. **敏感信息**：不要向用户询问或复述账号、密码、短信验证码、身份证号、人脸信息等认证数据。
+7. **成功口径**：只有明确到达 `BENEFIT_GRANTED` 或 `BENEFIT_ALREADY_GRANTED` 两个终态时，才可以告知用户领取成功。
+8. **学信网流程**：每个办理周期最多执行一次。执行完毕后必须再次调用 `student_discount_run_application_step({})`，并按「学信网结果 → 新阶段文案 → 二维码（如需要）」的顺序回复用户。
+9. **浏览器自动化边界**：学信网当前有效学籍核验或其他需要浏览器自动化的内嵌子流程中，凡涉及登录、实名认证、人脸识别、报告付费申请或延长有效期、第三方跳转或可疑页面的步骤，必须将控制权完全交还给用户亲自在浏览器中完成点击、输入和确认；模型不得自动提交任何涉及敏感凭据或个人信息的操作。若出现付费提示、第三方非官方页面或其他异常情况，立即终止子流程并返回 NO_RESULT，回到主 Skill 强制续调统一工具。
 
 ## 执行流程
 
-1. 确认用户意图是开始申请、继续办理或查询申请状态。
-2. 以 `{}` 调用 `student_discount_run_application_step`。
-3. 读取 `errorMsg`；将 `content` 中所有非空文本合并为 `visibleText`。
-4. 按[内容路由表](references/content-routing.md)分类：
-   - `errorMsg` 非空，或 `visibleText` 命中错误锚点：进入错误路由；
-   - `errorMsg` 为空且 `visibleText` 只命中一个成功锚点：进入对应成功路由；
-   - 未命中、同时命中多个互斥路由，或 `STUDENT_AUTH_REQUIRED` 但文本中缺少二维码 URL：以 `{}` 重查一次；仍无法识别则停止。
-5. 按[阶段提醒文案](references/stage-reminders.md)输出当前路由的固定文案。不要把工具的模型提示文本或 `errorMsg` 原样转发给用户。
-6. 命中 `STUDENT_AUTH_REQUIRED` 时，按"学信网子流程"决定先执行学信网还是从文本中提取二维码链接并展示。
-7. 用户完成外部绑定或认证操作后，再以 `{}` 调用工具确认最新状态。
+1. 确认用户要开始申请、继续办理或查询申请状态。
+2. 调用 `student_discount_run_application_step({})`。
+3. 读取返回：
+   - `content`：合并其中所有文字得到 `visibleText`；
+   - `errorMsg`：判断是否出错。
+4. 对照[内容路由表](references/content-routing.md)判定阶段：
+   - `errorMsg` 不为空，或 `visibleText` 包含错误相关表述 → 按错误处理；
+   - `errorMsg` 为空，且 `visibleText` 只匹配到一种正常业务阶段 → 按该阶段处理；
+   - 匹配不到、同时匹配多个互相矛盾的阶段、或 `STUDENT_AUTH_REQUIRED` 但 `content` 里没有二维码链接 → 再调用一次工具查询；仍然无法确定就停止。
+5. 按照[阶段提醒文案](references/stage-reminders.md)生成回复。不要把工具给模型的操作提示（如「请引导用户…」）直接转发给用户；要用自然的用户语气表达。
+6. 命中 `STUDENT_AUTH_REQUIRED` 时：根据学信网流程决定先做学信网核验还是直接展示二维码。
+7. 判断是否结束流程。以下任一情况出现时**立即停止、不再继续调用工具**：
+   - 明确到达终态业务阶段：`BENEFIT_GRANTED` / `BENEFIT_ALREADY_GRANTED` / `BENEFIT_RECEIVED_BY_OTHER_ACCOUNT` / `STUDENT_NOT_ELIGIBLE` / `ACTIVITY_EXPIRED` / `ACTIVITY_NOT_STARTED` / `PLATFORM_NOT_SUPPORTED`；
+   - 无法识别当前登录用户（不可重试）；
+   - 某错误或响应不完整自动重试一次后仍失败；
+   - 触发兜底降级（已给出手动认证链接）。
+8. 未结束时，等待用户告知外部操作完成（如「绑定好了」「认证完了」），或按约定秒数自动等待后，回到第 2 步重新调用工具查询最新状态。注意：用户完成学生认证本身不算流程结束，必须继续确认权益是否成功下发。
 
-## 模型可见响应校验
+## 返回结果完整性检查
 
-响应校验只检查以下三项：
+调用工具后，只需要确认以下几点：
 
-- `content` 可读，且至少包含一段非空文本；
-- `errorMsg` 可读；成功时为空，错误时通常非空；
-- `STUDENT_AUTH_REQUIRED` 路由在需要展示二维码时，`content` 文本中必须包含形如 `https://aka.doubaocdn.com/...` 的二维码图片链接（通常以反引号包裹）。
+- `content` 里有实际内容（不是空白）；
+- `errorMsg` 可以读到；
+- 进入 `STUDENT_AUTH_REQUIRED` 且需要展示二维码时，`content` 文本中包含二维码图片链接（以 `https://aka.doubaocdn.com/` 开头的 URL）。
 
-不依赖客户端绑定控件、结构化状态、错误码、权益对象、quickReplies 或二维码失效时间判断响应完整性。
+判断优先级：只要 `errorMsg` 不为空，就按错误处理（即使 `content` 里出现成功字样）。如果 `errorMsg` 为空但 `content` 明确写了失败，也按错误处理。重新查询一次后仍然不完整或阶段冲突，回复「响应不完整」固定文案并停止。
 
-若 `errorMsg` 非空，即使文本同时出现成功措辞也按错误处理，不宣称成功。若 `errorMsg` 为空但文本命中明确错误锚点，也按错误处理。重查一次后仍缺少文本、仍路由冲突或二维码链接缺失时，使用阶段提醒文案中的"响应不完整"并停止。
+## 业务阶段与对应动作
 
-## 成功状态路由
+根据 `content` 文本匹配到阶段后，按下面的动作执行。路由名直接对应工具返回的英文阶段标签，来源于文本锚点匹配。
 
-下表中的标签是 Skill 根据文本锚点生成的内部标签，不是从隐藏字段读取的值。
+| 路由 | 你应该做什么 |
+|---|---|
+| `PLATFORM_NOT_SUPPORTED` | 告知用户当前平台暂不支持学生优惠申请，需切换到 PC 端；不展示二维码或其他入口；流程结束。 |
+| `DOUYIN_BIND_REQUIRED` | 提醒用户先完成抖音账号绑定，引用 `content` 明确给出的按钮文案（如「去绑定抖音账号」）；告知绑定完成后回复「好了」继续；等待用户回复。 |
+| `STUDENT_AUTH_REQUIRED` | **首次进入**：先执行一次学信网当前有效学籍核验，无论结果如何都重新调用工具，按「学信网结果 → 新阶段文案 → 二维码（如仍需要）」顺序展示。**非首次**：从 `content` 提取二维码链接，阶段文案之后按 markdown 图片格式展示——先写感叹号，再写方括号包裹的图片 alt「学生认证二维码」，再写圆括号包裹本轮 `content` 中提取到的实际 URL（必须是以 `https://aka.doubaocdn.com/` 开头的新地址）。圆括号内不要写任何字面占位字符串，必须填入实际提取到的链接；告知用户扫码完成手机端认证，回来回复「好了」继续。 |
+| `STUDENT_NOT_ELIGIBLE` | 如实告知已完成学生身份核验但不符合本次活动条件；可补充 `content` 中明确给出的脱敏原因；不宣称认证失败；流程结束。 |
+| `BENEFIT_GRANTED` | 恭喜用户 +「2.5 倍学生专属额度」说明 + 38 元专业版引导链接；明确告知权益已到账；流程结束。 |
+| `BENEFIT_ALREADY_GRANTED` | 告知账户中已有权益；从 `content` 提取权益名称替换，仅当生效和失效时间同时出现在 `content` 中时保留有效期句子；不附付费引导；流程结束。 |
+| `BENEFIT_RECEIVED_BY_OTHER_ACCOUNT` | 告知该学生身份已在其他账号领取过，同一身份只能领一次；不要求重新认证/绑定、不猜测领取账号；流程结束。 |
+| `ACTIVITY_EXPIRED` | 告知本次学生优惠活动已结束；不推测重新开放时间；流程结束。 |
+| `ACTIVITY_NOT_STARTED` | 告知本次学生优惠活动尚未开始；不推测具体开始时间；流程结束。 |
 
-| 内部路由 | `content` 稳定语义 | 编排动作 |
+### 等待与自动重查规则
+
+| 场景 | 等待秒数来源 | 自动重查次数上限 |
 |---|---|---|
-| `PLATFORM_NOT_SUPPORTED` | 该平台暂不支持 | 告知用户当前平台不支持、需切换至 PC 端，本次流程结束 |
-| `DOUYIN_BIND_REQUIRED` | 当前账号尚未绑定抖音账号 | 提醒完成绑定，等待用户返回 |
-| `STUDENT_AUTH_REQUIRED` | 抖音账号已绑定，但尚未完成学生认证 | 首次先执行学信网子流程；之后从文本提取二维码链接并以 markdown 图片展示 |
-| `STUDENT_AUTH_PENDING` | 学生认证结果仍在处理中 | 不展示旧二维码链接，等待后最多重查一次 |
-| `BENEFIT_GRANT_PENDING` | 学生优惠权益正在发放中 | 不要求重新认证，等待后最多重查一次 |
-| `STUDENT_NOT_ELIGIBLE` | 已完成学生身份核验但不符合活动条件 | 如实告知并结束 |
-| `BENEFIT_GRANTED` | 学生身份已验证且权益已成功下发 | 告知领取成功并结束 |
-| `BENEFIT_ALREADY_GRANTED` | 当前账号已经领取过学生优惠权益且无需重复申请 | 告知已领取并结束 |
-| `BENEFIT_RECEIVED_BY_OTHER_ACCOUNT` | 学生身份已在其他账号领取过 | 如实告知，不要求重新认证或重新绑定，结束 |
-| `ACTIVITY_EXPIRED` | 本次学生优惠活动已结束 | 告知活动已结束，不推测新活动时间，结束 |
-| `ACTIVITY_NOT_STARTED` | 本次学生优惠活动尚未开始 | 告知活动未开始，不推测开始时间，结束 |
+| 响应无法识别、阶段冲突、缺少二维码链接 | — | 合计最多 **1 次** |
+| 工具执行错误（见错误处理表） | 读 `content` 中秒数，未写时用错误表的降级秒数 | 合计最多 **1 次** |
+| 学信网流程刚执行完毕后的「强制续调」 | 不等待，立即续调 1 次；续调后若响应仍不完整或阶段冲突，可再独立重查 1 次 | 这 2 次与上述普通重查互不占用 |
 
-### 等待秒数与重试额度
+### 权益文案替换规则
 
-- 先从 `visibleText` 中读取明确出现的"等待/稍候 N 秒"。仅 `STUDENT_AUTH_PENDING` 或 `BENEFIT_GRANT_PENDING` 未显示数字时，使用 5 秒作为 Skill 本地重查间隔，并在固定文案中填写"约 5 秒"；这不是服务端建议时间。
-- 常规自动重查额度：同一轮因业务等待、响应无法识别或工具错误自动重查合计最多 **1 次**。
-- 学信网子流程独立额度：学信网流程结束后的 `finally` 强制续调 **1 次**，以及该续调结果因路由冲突/响应不完整再重查 **1 次**，这 2 次与常规额度相互独立，不计入常规 1 次限额。学信网后若仍需重查，才开始消耗常规额度。
+- `BENEFIT_GRANTED`：使用固定庆祝文案 +「2.5 倍学生专属额度」+ 38 元专业版引导链接（详见阶段提醒文案）。
+- `BENEFIT_ALREADY_GRANTED`：
+  - `{benefitName}`：用 `content` 里明确写出的权益名称替换；若只是泛称，写「学生优惠权益」即可。
+  - 有效期句子：只有 `content` 里同时明确出现生效时间和失效时间两端时，才保留整句；任一端没写就整句省略，不要猜测日期。
 
-### 权益信息固定文案与降级
+## 学信网子流程
 
-- `BENEFIT_GRANTED`：固定庆祝文案 + 2.5 倍额度说明 + 38 元专业版付费引导链接（详见 stage-reminders.md）；
-- `BENEFIT_ALREADY_GRANTED`：文案中的占位符按以下规则替换：
-  - `{benefitName}`：`content` 中明确出现的权益名称；若只有泛称，使用"学生优惠权益"，不要声称这是正式权益名；
-  - `{validFrom}` / `{validUntil}`：仅当 `content` 明确同时出现生效和失效时间时才保留；两端时间有任意一端不可见时，省略固定文案中整句"有效期：… 至 …"。不要猜测日期。
+只在**首次进入 `STUDENT_AUTH_REQUIRED` 且本轮办理还没有做过学信网核验**时执行一次。**交互细节、首次判定、输出顺序全部以 [学生认证交互](references/student-auth-workflow.md) 为准**，以下是执行骨架：
 
-注：占位符命名与工具 schema 字段名保持一致，但替换只基于 `content` 可见文本，不依赖隐藏的 structuredContent。
-
-## 学信网子流程（摘要，权威实现见 student-auth-workflow.md）
-
-仅当内部路由为 `STUDENT_AUTH_REQUIRED` 且当前办理历史没有启动过学信网核验时执行一次。以下是高层骨架；**用户交互细节、首次/非首次判定、输出顺序、finally 强制续调、错误分支下的学信网结果展示顺序，全部以 [学生认证交互](references/student-auth-workflow.md) 为权威实现规范**。
-
-骨架：
-
-1. 直接读取[学信网当前有效学籍核验](references/chsi-enrollment-verification.md)。
-2. 启动前标记本次办理已执行过学信网流程，不展示或缓存本次旧二维码链接。
-3. 完整执行一次核验并将结果归一为 `NO_RESULT` / `VALID_RESULT` / `INVALID_RESULT`。
-4. 不把学信网结果、学生 ID、验证码、报告编号或流程状态写入统一工具参数。
-5. 无论子流程成功/失败/取消/中断/无结果，都在 `finally` 中以 `{}` 再调统一工具。
-6. 对新响应重新执行 `content + errorMsg` 路由；**无论新路由进入成功还是错误分支，都必须先展示一次学信网结果文案，再展示新阶段或错误固定文案**（学信网结果不允许因后续工具错误被省略）。
-7. 不因学信网结果为 `false` 或 `unknown` 直接得出活动资格结论；同一办理周期内决不重复执行学信网核验。
-
-```text
-if route == STUDENT_AUTH_REQUIRED:
-  if 当前办理历史中没有执行过学信网流程:
-    标记为已执行；不展示当前旧二维码链接
-    try:   chsiOutcome = 执行一次学信网当前有效学籍核验并归一结果
-    finally:  nextResult = student_discount_run_application_step({})
-    nextRoute = 按 nextResult.content 和 nextResult.errorMsg 重新分类
-    # 强制输出顺序：学信网结果 → 新阶段/错误文案 → （若仍需二维码）新二维码链接
-    先展示 chsiOutcome；再展示 nextRoute 的固定阶段文案或错误文案
-    if nextRoute == STUDENT_AUTH_REQUIRED:
-      从 nextResult.content 文本中提取二维码URL
-      最后以 markdown 图片格式展示：![学生认证二维码](<URL>)
-  else:
-    从当前 content 文本中提取二维码URL
-    展示固定阶段文案 + markdown图片；等待用户完成认证
-```
+1. 读取并执行[学信网当前有效学籍核验](references/chsi-enrollment-verification.md)。
+2. 执行前记住：本轮已做过学信网，后续不再重复。不要展示当前返回中的旧二维码链接。
+3. 核验结果归为三种之一：有有效学籍 / 无有效学籍 / 没查到结果。
+4. 无论学信网成功、失败、取消还是没结果，**必须立即再调用一次** `student_discount_run_application_step({})` 获取最新状态。
+5. 对新返回的结果重新判断阶段。回复用户时**严格按以下顺序**，任何情况下都不能省略学信网结果：
+   1. 先展示学信网结果文案（有/无/没查到）；
+   2. 再展示新阶段或错误的固定文案；
+   3. 如果新阶段仍是 `STUDENT_AUTH_REQUIRED`，最后才展示从本次新返回 `content` 中提取的二维码图片。
+6. 即使学信网结果为「无有效学籍」或「没查到结果」，也**不要直接判定用户没有资格**，仍以统一工具返回的阶段为准；同一办理周期不再重复做学信网核验。
 
 ## 交互素材
 
-- `DOUYIN_BIND_REQUIRED`：绑定交互由客户端处理。若 `content` 明确给出按钮文案（如"去绑定抖音账号"），可在固定文案中引用该按钮名称；不要猜测或编造其他按钮名、链接或 deep link。
-- `STUDENT_AUTH_REQUIRED`：从 `content` 文本中提取二维码图片 URL（工具通常以反引号包裹 CDN 链接），在阶段文案后以 markdown 图片格式 `![学生认证二维码](<URL>)` 展示；不缓存或复用旧链接，不把链接直接展示给用户，不读取 quickReplies 中的 action schema。
-- 无可见失效时间时不要自行判断二维码是否过期；用户反馈失效或链接不可用时，重新调用工具获取最新内容。
+- **抖音绑定入口**：只用 `content` 中明确给出的按钮文案（常见为「去绑定抖音账号」）；不要编造其他名称、链接或入口。
+- **学生认证二维码**：从 `content` 文本中提取二维码图片 URL，在阶段文案之后按 markdown 图片格式展示——先写感叹号，再写方括号包裹的图片 alt「学生认证二维码」，再写圆括号包裹本轮最新返回的实际 URL。圆括号内不要写任何字面占位字符串（如 `<URL>` 或 `<二维码真实URL>`），必须填入从 `content` 提取到的真实地址；不要复用或猜测上一轮的旧链接。
+- 如果用户说二维码失效或扫不了，重新调用工具获取最新内容。
 
-## 错误与重试
+## 错误处理
 
-1. 先按[内容路由表](references/content-routing.md)匹配错误。不要依赖不可见的错误码、错误类型或重试字段。
-2. `errorMsg` 只用于确认工具执行失败和辅助匹配，不原样展示给用户。
-3. 只有匹配到明确允许重试的错误路由时，按 `content` 中可见秒数等待后以 `{}` 自动重试一次；没有可见秒数时使用路由表中的固定降级秒数。
-4. UID 上下文缺失：停止且不重试，不向用户索要 UID 或其他内部身份标识。
-5. 抖音绑定状态查询失败：不要展示绑定入口，不猜测绑定状态。
-6. 学生认证查询失败：不要表述为用户认证失败，不要求重新认证或重复扫码。
-7. 二维码生成失败：不要展示旧二维码链接，不猜测或编造图片地址。
-8. 权益发放失败：学生认证已经完成，但权益未确认到账；不要要求重新认证，也不要宣称领取成功。
-9. 未匹配到已知错误锚点的非空 `errorMsg`：走 DEFAULT 路由，使用"响应不完整"固定文案，1 秒自动重试一次；重试仍失败则停止。
-10. 不展示堆栈、内部主机名、凭据、UID、trace ID、上游原始报文或完整 PII。
-11. **兜底降级**：自动重试一次后仍失败（含二维码生成失败、查询失败、响应不完整），或用户明确表达挫败/无法继续（如"失败了""不行""搞不定""还是不行""扫码没用"），按[阶段提醒文案](references/stage-reminders.md)中的"兜底降级：手动认证入口"给出固定链接，结束本轮流程。正常流程中不主动推送该链接。
+对照[内容路由表](references/content-routing.md)匹配错误类型。`errorMsg` 只用于判断工具是否失败，**不要原样展示给用户**。下表列出遇到各类错误时应该怎么做：
 
-## 结束条件
+| 错误 | 识别文字（出现在 `content` 或 `errorMsg`） | 是否自动重试 | 等待秒数 | 处理动作 |
+|---|---|---|---|---|
+| 无法识别当前登录用户 | 「运行时身份上下文不完整」或「缺少必要字段」 | 否 | — | 回复「当前调用环境暂时无法识别登录用户…」固定文案；不向用户索要任何身份信息；直接结束。 |
+| 绑定状态查询失败 | 「抖音账号绑定状态」+「查询失败」或「当前绑定状态未知」 | 是 | `content` 中有秒数按其值，否则约 **5 秒** | 回复查询失败文案并自动重查一次；不要展示绑定入口；重试后仍失败就走兜底降级。 |
+| 认证状态查询失败 | 「学生认证状态」+「查询失败」或「当前认证状态未知」 | 是 | `content` 中有秒数按其值，否则约 **5 秒** | 回复查询失败文案并自动重查一次；不要要求用户重新认证；重试后仍失败就走兜底降级。 |
+| 二维码生成失败 | 「未能生成可用的认证二维码」或「认证二维码暂时生成失败」 | 是 | `content` 中有秒数按其值，否则约 **3 秒** | 回复二维码生成失败文案并自动重查一次；不要展示旧链接；重试后仍失败就走兜底降级。 |
+| 权益下发失败 | 「未能确认学生优惠权益发放成功」「权益下发服务暂时不可用」「未确认权益发放成功」 | 是 | `content` 中有秒数按其值，否则约 **5 秒** | 回复查询失败文案并自动重查一次；不要要求重新认证，也不要宣称已经到账；重试后仍失败就走兜底降级。 |
+| 响应不完整 | `errorMsg` 非空且未匹配到具体锚点，或 `content` 含「学生优惠申请状态暂时无法确认」 | 是 | 约 **1 秒** | 回复「响应不完整」文案并自动重查一次；重试后仍失败就走兜底降级。 |
 
-只在以下情况结束：
+**兜底降级（手动认证入口）**：满足以下任一条件时，给出[阶段提醒文案](references/stage-reminders.md)中的手动认证链接并结束本轮流程——
 
-- `BENEFIT_GRANTED`；
-- `BENEFIT_ALREADY_GRANTED`；
-- `BENEFIT_RECEIVED_BY_OTHER_ACCOUNT`；
-- `STUDENT_NOT_ELIGIBLE`；
-- `ACTIVITY_EXPIRED`；
-- `ACTIVITY_NOT_STARTED`；
-- UID 上下文缺失（不可重试）；
-- 自动重试一次后仍失败或响应无法识别。
+1. 同一错误自动重试一次后仍然失败；
+2. 用户明确表达挫败（如「失败了」「不行」「搞不定」「还是不行」「扫码没用」「二维码扫不了」）。
 
-学生认证完成本身不是申请完成；必须继续确认权益状态。
+正常流程中不要主动推送这个链接。结束前不要展示内部错误信息。

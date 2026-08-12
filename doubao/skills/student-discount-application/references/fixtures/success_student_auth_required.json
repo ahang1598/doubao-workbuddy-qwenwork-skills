@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "fixture_type": "success",
+    "scenario": "STUDENT_AUTH_REQUIRED：抖音已绑定、尚未完成学生认证，返回含二维码 CDN 链接",
+    "expected_skill_route": "STUDENT_AUTH_REQUIRED"
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "抖音账号已绑定，但尚未完成学生认证。请使用手机扫描下方学生认证二维码，并在打开的页面中亲自完成学生认证；如果页面要求先完成实名认证，请按页面指引继续。认证二维码图片链接：`https://aka.doubaocdn.com/s/abc123def456_student_auth_qr.png`。认证完成后请回到豆包告诉我「好了」，我会继续为你确认优惠权益发放状态。请引导用户扫描该二维码完成认证。"
+    }
+  ],
+  "isError": false,
+  "structuredContent": {
+    "errorCode": 0,
+    "errorMsg": "",
+    "statusCode": "STUDENT_AUTH_REQUIRED",
+    "retryable": false,
+    "retryAfterSec": null
+  }
+}

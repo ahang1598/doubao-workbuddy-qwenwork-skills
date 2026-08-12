@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "fixture_type": "success",
+    "scenario": "BENEFIT_GRANTED：学生认证完成，权益已成功下发到账终态",
+    "expected_skill_route": "BENEFIT_GRANTED"
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "学生身份已验证通过，学生优惠权益已成功下发到账。当前账户已享有学生专属额度优惠，恭喜完成学生优惠申请全流程。请告知用户权益已到账，并按固定文案补充 2.5 倍学生专属额度说明与 38 元专业版引导链接。"
+    }
+  ],
+  "isError": false,
+  "structuredContent": {
+    "errorCode": 0,
+    "errorMsg": "",
+    "statusCode": "BENEFIT_GRANTED",
+    "retryable": false,
+    "retryAfterSec": null
+  }
+}

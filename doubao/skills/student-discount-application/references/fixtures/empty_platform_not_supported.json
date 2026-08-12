@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "fixture_type": "success_empty",
+    "scenario": "PLATFORM_NOT_SUPPORTED：非 PC 端命中平台门禁，仅返回纯文本提示，无按钮无二维码",
+    "expected_skill_route": "PLATFORM_NOT_SUPPORTED"
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "该平台暂不支持学生优惠申请操作，请切换至 PC 端后再试。"
+    }
+  ],
+  "isError": false,
+  "structuredContent": {
+    "errorCode": 0,
+    "errorMsg": "",
+    "statusCode": "PLATFORM_NOT_SUPPORTED",
+    "retryable": false,
+    "retryAfterSec": null
+  }
+}

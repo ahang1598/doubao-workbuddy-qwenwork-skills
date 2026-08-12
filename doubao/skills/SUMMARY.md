@@ -7,8 +7,8 @@
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
 - 条目数：96
-- 文件数：2179
-- 最近同步：2026-08-11 18:00:03 +0800
+- 文件数：2194
+- 最近同步：2026-08-12 18:00:03 +0800
 
 ## 场景导航（按用途）
 
@@ -56,7 +56,7 @@
 - **lark-workflow-meeting-summary** — 会议纪要整理工作流：汇总指定时间范围内的会议纪要并生成结构化报告。当用户需要整理会议纪要、生成会议周报、回顾一段时间内的会议内容时使用。
 
 ### 设计可视化
-- **doubao-creative-design** — 当用户要求生成、编辑、改图、修图、重绘、文生图、图生图、扩图、换背景、换风格、局部替换、参考图衍生、系列延展或多比例适配商业创意图片时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式...
+- **doubao-creative-design** — 当用户要求从零生成、设计商业/社交媒体创意图片，或做系列延展、多比例适配时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式推导图、工程图纸、多资产视觉系统等图片设计场景。
 - **doubao-game-designer** — 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。
 - **doubao-marketing-material-review** — 营销素材审核。当用户上传待审核的广告宣传语、营销海报、社交媒体推广文案、直播话术等营销素材时，从虚假宣传、夸大宣传、绝对化用语、比较广告、引证数据真实准确性、价格违规、有奖营销、知识产权、风险行业违规宣传（如金融、医疗、三品一械、教育等特殊监管行业）、数据对外披露、不当承诺或表达等维度开展全面审查与风险扫描，对违规点归类、逐条分析判断并直接给出修改建议。当用户提到"营销素材审核""广告文案合规审查""宣传语合规""看看这段宣传/文...
 - **doubao-medical-literature-interpretation** — 医学文献解读 Skill，仅面向医学领域文献资料。面向医生、护士、研究者和医学生，对指定医学论文、指南的 PDF、网页、摘要、段落、表格或图片进行总结、问答、内容与图表解读、方法学和局限评价。未主动选择本 Skill 时，明确要求总结、回答文章问题、不要文档或仅提供短内容，在聊天中充分回答；只说“解读/介绍”、主动选择本 Skill，或要求深入、完整解读时生成飞书完整报告。PPT 直接使用 lark-ppt；多篇检索改用医学文献检...
@@ -87,7 +87,7 @@
 
 ### 营销/内容运营
 - **browser-task** — 浏览器自动化任务处理技能。仅在以下情况使用：1) 其他 skill/工具（搜索、API、数据接口等）都无法满足需求，需要通过真实浏览器 GUI 兜底执行；2) 任务必须在具体网站完成登录 / 授权 / 账号内动作（点赞 / 收藏 / 评论 / 发布 / 加购）；3) 命中白名单网站（淘宝/天猫、微博、小红书）的站内检索 / 互动 / 发布需求。当用户仅需要信息检索、文本生成、代码或数据处理时，不要使用本 skill。
-- **doubao-creative-design** — 当用户要求生成、编辑、改图、修图、重绘、文生图、图生图、扩图、换背景、换风格、局部替换、参考图衍生、系列延展或多比例适配商业创意图片时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式...
+- **doubao-creative-design** — 当用户要求从零生成、设计商业/社交媒体创意图片，或做系列延展、多比例适配时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式推导图、工程图纸、多资产视觉系统等图片设计场景。
 - **doubao-creative-video** — 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、产品广告、商品广告、UGC口播/带货/信息流视频、marketing/TVC风格广告、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带 ref/参考素材的视频生成。禁止用于短剧创作、剧情脚本、分集剧情、角色扮演故事或影视叙事创作；此类需求应调用 doubao-creative-drama。仅当用户明确要求把短剧/剧情素材改造成普...
 - **doubao-cross-border-growth-content** — Evidence-grounded cross-border ecommerce content operations for short-video and livestream scripts, UGC or creator briefs, multilingual captions, localized content angles, image/video briefs, content calendars, hook m...
 - **doubao-ecommerce-compliance-tax-logistics** — Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod...
@@ -179,7 +179,7 @@
 - **doubao-ultimate-guide** — 统一攻略创作总控 Skill：根据用户需求路由到旅游攻略、健身攻略、美食烹饪教程、游戏攻略四个分支，默认先创建飞书/Lark 文档容器，再读取对应分支 Skill 生成内容并写入同一个文档。适用于旅行行程、训练健身、菜谱烹饪、游戏实战攻略等中文攻略类创作；不适用于泛资讯、商业分析、医疗诊断、金融投资、法律意见、纯文案包装、无明确攻略目标或不安全/违规请求。
 
 ### 教育/考试
-- **doubao-creative-design** — 当用户要求生成、编辑、改图、修图、重绘、文生图、图生图、扩图、换背景、换风格、局部替换、参考图衍生、系列延展或多比例适配商业创意图片时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式...
+- **doubao-creative-design** — 当用户要求从零生成、设计商业/社交媒体创意图片，或做系列延展、多比例适配时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式推导图、工程图纸、多资产视觉系统等图片设计场景。
 - **doubao-creative-video** — 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、产品广告、商品广告、UGC口播/带货/信息流视频、marketing/TVC风格广告、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带 ref/参考素材的视频生成。禁止用于短剧创作、剧情脚本、分集剧情、角色扮演故事或影视叙事创作；此类需求应调用 doubao-creative-drama。仅当用户明确要求把短剧/剧情素材改造成普...
 - **doubao-ecommerce-compliance-tax-logistics** — Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod...
 - **doubao-journal-format** — 用于对学术论文类 Word/DOCX 文档进行期刊、学校、会议或课程要求的格式排版与修复。当用户需要把论文原稿套用.docx 模板或明确格式规则、或提到论文排版、期刊投稿格式、学位论文格式、会议论文模板、时使用；如果同一请求同时包含论文 Word 排版和任何非排版任务，必须先停止并询问用户选择“只做格式排版”还是“作为复合任务拆分处理”，在用户明确选择前不得执行排版。不用于论文写作、润色、降重、翻译、代写、文献检索、补引用、验证引...
@@ -213,7 +213,6 @@
 - **lark-project** — 飞书项目（Meego/Meegle）操作工具。支持查询和管理工作项、节点流转、视图查询、个人待办、排期统计等功能。 Use when user needs to work with Feishu/Lark Meego project management — including querying work items, creating/updating work items, completing workflow nodes,...
 - **seed-audio** — 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色）
 - **skill-creator-for-work** — 创建有效 Skill 的指南。当用户想要创建新的 Skill，或更新现有 Skill，以便通过专门知识、工作流程或工具集成来扩展 AI Agent 能力时，应使用此 Skill。
-- **student-discount-application** — 仅当用户明确提出豆包专业版学生优惠办理类诉求，方可加载本 Skill 并调用student_discount_run_application_step依次执行全流程；若用户仅咨询学生优惠资讯、咨询其他优惠、诉求模糊无法判定、未提出办理申请，一律禁止加载 Skill 与调用该工具，严格区分目标权益，杜绝一切误触发。
 
 ### 其他
 - **doubao-book-writer** — 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。
@@ -221,6 +220,7 @@
 - **doubao-customer-service** — >-
 - **doubao-human-signal** — 去除或避免文本中的 AI 味。用于用户强制调用本 Skill，或写作/改写时提到“不要有 AI 味”“不要太假”“真情实感”“有人感”，或对已有文本/上一轮输出反馈“太像 AI”“太空泛”“太模板”“太官方”“不像我说的”等场景。
 - **seedance-25** — 使用seedance2.5模型生成视频,使用 Seedance 2.5 按用户原始提示词生成视频，禁止改写提示词或切换模型，并在生成前补齐时长、比例和检索所得的必要信息后向用户确认原样透传提示词、不润色视频 prompt、不要改写后生成，或显式调用本 Skill 时使用。
+- **student-discount-application** — 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。
 
 ## 完整目录表
 
@@ -238,7 +238,7 @@
 | doubao-contract-amendment | `doubao/skills/doubao-contract-amendment` | 协作/办公 | doubao-contract-amendment | 2 | 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。 |
 | doubao-contract-drafting | `doubao/skills/doubao-contract-drafting` | 法务/合规 | doubao-contract-drafting | 24 | 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。 |
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | 法务/合规 | doubao-contract-reviewer | 4 | doubao-contract-reviewer 是面向大众用户的合同审查 Skill，适合在豆包/豆包 Turbo 中审查各类合同。用户上传合同或询问“帮我审合同、合同有没有问题、这份合同能不能签、合同风险、合同把关、legal review”时必须使用。本 Skill 强制输出比裸跑更有用的结构化审查：先判断我方立场，再按交易模块识别风险，区分“必改风险 / 可争取优化项 / 形式完善项”，并给出可直接替换或补充的修改文本。适... |
-| doubao-creative-design | `doubao/skills/doubao-creative-design` | 设计可视化 | doubao-creative-design | 8 | 当用户要求生成、编辑、改图、修图、重绘、文生图、图生图、扩图、换背景、换风格、局部替换、参考图衍生、系列延展或多比例适配商业创意图片时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式... |
+| doubao-creative-design | `doubao/skills/doubao-creative-design` | 设计可视化 | doubao-creative-design | 18 | 当用户要求从零生成、设计商业/社交媒体创意图片，或做系列延展、多比例适配时使用；触发任务包括做图、出图、生成图片、设计海报、主视觉/KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图表、科学结构图、公式推导图、工程图纸、多资产视觉系统等图片设计场景。 |
 | doubao-creative-drama | `doubao/skills/doubao-creative-drama` | 投资银行/私募 | doubao-creative-drama | 6 | 当用户提出短篇短剧、动画短片、微电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等**单集 5-10 分钟以内**的短篇制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"写个短剧剧本"、"画个分镜"、"搞个人设/场景资产"、"出个关键帧"、"写图生视频提示词/Seedance提示词"等表达时调用。适用于需要按"规划-剧本-分镜-资产-关键帧-视频生成"推进完整视频生产流程的短篇场景。**不承接几十集连续... |
 | doubao-creative-video | `doubao/skills/doubao-creative-video` | 营销/内容运营 | doubao-creative-video | 4 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、产品广告、商品广告、UGC口播/带货/信息流视频、marketing/TVC风格广告、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带 ref/参考素材的视频生成。禁止用于短剧创作、剧情脚本、分集剧情、角色扮演故事或影视叙事创作；此类需求应调用 doubao-creative-drama。仅当用户明确要求把短剧/剧情素材改造成普... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | 其他 | doubao-critical-reading-companion | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
@@ -321,4 +321,4 @@
 | seed-audio | `doubao/skills/seed-audio` | 通用工具/平台 | seed-audio | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色） |
 | seedance-25 | `doubao/skills/seedance-25` | 其他 | seedance-25 | 1 | 使用seedance2.5模型生成视频,使用 Seedance 2.5 按用户原始提示词生成视频，禁止改写提示词或切换模型，并在生成前补齐时长、比例和检索所得的必要信息后向用户确认原样透传提示词、不润色视频 prompt、不要改写后生成，或显式调用本 Skill 时使用。 |
 | skill-creator-for-work | `doubao/skills/skill-creator-for-work` | 通用工具/平台 | skill-creator-for-work | 6 | 创建有效 Skill 的指南。当用户想要创建新的 Skill，或更新现有 Skill，以便通过专门知识、工作流程或工具集成来扩展 AI Agent 能力时，应使用此 Skill。 |
-| student-discount-application | `doubao/skills/student-discount-application` | 通用工具/平台 | student-discount-application | 8 | 仅当用户明确提出豆包专业版学生优惠办理类诉求，方可加载本 Skill 并调用student_discount_run_application_step依次执行全流程；若用户仅咨询学生优惠资讯、咨询其他优惠、诉求模糊无法判定、未提出办理申请，一律禁止加载 Skill 与调用该工具，严格区分目标权益，杜绝一切误触发。 |
+| student-discount-application | `doubao/skills/student-discount-application` | 其他 | student-discount-application | 13 | 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。 |
