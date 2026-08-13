@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/cb_teams_experts/plugins/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins`
-- 条目数：31
-- 文件数：1684
-- 最近同步：2026-08-11 18:00:03 +0800
+- 条目数：30
+- 文件数：1449
+- 最近同步：2026-08-13 18:00:02 +0800
 - 原始分析报告：[plugins_analysis_company_analysis.md](../plugins_analysis_company_analysis.md)
 
 ## 场景导航（按用途）
@@ -30,9 +30,6 @@
 - **design-to-code** — Figma 设计转代码
 - **investment-banking** — 投资银行（M&A、融资）
 - **private-equity** — 私募股权投资
-
-### 数据分析
-- **data-analysis** — Excel/数据分析
 
 ### 文档/表格/PPT
 - **ppt-implement** — PowerPoint 实现
@@ -83,11 +80,10 @@
 | ardot-design-generator | `workbuddy/cb_teams_experts/plugins/ardot-design-generator` | 设计可视化 | ardot design slide ui web mobile app high-quality presentation mcp ardot-design-generator | 30 | Ardot设计工具：在Ardot中生成高质量设计稿，移动端UI，网站页面，web应用，幻灯片等设计稿 |
 | codebuddy-chat-web | `workbuddy/cb_teams_experts/plugins/codebuddy-chat-web` | 代码开发 | Web 聊天应用 codebuddy-chat-web | 42 | Web 聊天应用 |
 | data | `workbuddy/cb_teams_experts/plugins/data` | 通用工具/平台 | 数据分析平台 data | 16 | 数据分析平台 |
-| data-analysis | `workbuddy/cb_teams_experts/plugins/data-analysis` | 数据分析 | Excel/数据分析 data-analysis | 58 | Excel/数据分析 |
 | deep-research | `workbuddy/cb_teams_experts/plugins/deep-research` | 研究/调研 | 深度研究框架 deep-research | 6 | 深度研究框架 |
 | design-to-code | `workbuddy/cb_teams_experts/plugins/design-to-code` | 投资银行/私募 | Figma 设计转代码 design-to-code | 15 | Figma 设计转代码 |
 | dockerfile-gen | `workbuddy/cb_teams_experts/plugins/dockerfile-gen` | 代码开发 | Dockerfile 生成 dockerfile-gen | 2 | Dockerfile 生成 |
-| document-skills | `workbuddy/cb_teams_experts/plugins/document-skills` | 其他 | 文档处理 document-skills | 253 | 文档处理 |
+| document-skills | `workbuddy/cb_teams_experts/plugins/document-skills` | 其他 | 文档处理 document-skills | 76 | 文档处理 |
 | equity-research | `workbuddy/cb_teams_experts/plugins/equity-research` | 金融研究 | 股票研究 equity-research | 22 | 股票研究 |
 | executing-marketing-campaigns | `workbuddy/cb_teams_experts/plugins/executing-marketing-campaigns` | 营销/内容运营 | 营销活动管理 executing-marketing-campaigns | 15 | 营销活动管理 |
 | finance | `workbuddy/cb_teams_experts/plugins/finance` | 金融研究 | 财务与会计 finance | 13 | 财务与会计 |

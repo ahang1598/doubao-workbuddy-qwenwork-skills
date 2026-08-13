@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：304
-- 当前索引文件数：8485
-- 最近变更：[2026-08-11-180003](workbuddy/change-logs/2026-08-11-180003.md) - WorkBuddy 本次同步新增 54 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/mvp-dev-expert-team。 受影响范围：experts/mvp-dev-expert-team。
+- 当前索引条目数：307
+- 当前索引文件数：8262
+- 最近变更：[2026-08-13-180002](workbuddy/change-logs/2026-08-13-180002.md) - WorkBuddy 本次同步新增 13 个文件、修改 4 个文件、删除 235 个文件。 新增条目：skills/paper-reader, skills/paper-reader.zip, skills/paper-rebuttal, skills/paper-reviewer, skills/research-lineage-map。 移除条目已归...
 
 ## 数据来源
 
@@ -317,11 +317,10 @@
 | ardot-design-generator | `workbuddy/cb_teams_experts/plugins/ardot-design-generator` | team expert | 30 | Ardot设计工具：在Ardot中生成高质量设计稿，移动端UI，网站页面，web应用，幻灯片等设计稿 |
 | codebuddy-chat-web | `workbuddy/cb_teams_experts/plugins/codebuddy-chat-web` | 技术开发工具 | 42 | Web 聊天应用 |
 | data | `workbuddy/cb_teams_experts/plugins/data` | 金融和商业分析 | 16 | 数据分析平台 |
-| data-analysis | `workbuddy/cb_teams_experts/plugins/data-analysis` | 金融和商业分析 | 58 | Excel/数据分析 |
 | deep-research | `workbuddy/cb_teams_experts/plugins/deep-research` | 金融和商业分析 | 6 | 深度研究框架 |
 | design-to-code | `workbuddy/cb_teams_experts/plugins/design-to-code` | 技术开发工具 | 15 | Figma 设计转代码 |
 | dockerfile-gen | `workbuddy/cb_teams_experts/plugins/dockerfile-gen` | 技术开发工具 | 2 | Dockerfile 生成 |
-| document-skills | `workbuddy/cb_teams_experts/plugins/document-skills` | 文件处理和通用工具 | 253 | 文档处理 |
+| document-skills | `workbuddy/cb_teams_experts/plugins/document-skills` | 文件处理和通用工具 | 76 | 文档处理 |
 | equity-research | `workbuddy/cb_teams_experts/plugins/equity-research` | 金融和商业分析 | 22 | 股票研究 |
 | executing-marketing-campaigns | `workbuddy/cb_teams_experts/plugins/executing-marketing-campaigns` | 营销和内部运营 | 15 | 营销活动管理 |
 | finance | `workbuddy/cb_teams_experts/plugins/finance` | 金融和商业分析 | 13 | 财务与会计 |
@@ -355,7 +354,11 @@
 | humanizer | `workbuddy/skills/humanizer` | skill | 3 | Remove signs of AI-generated writing from text. Use when editing or reviewing text to make it sound more natural and human-written. Detects and fixes patterns including: inflated symbolism, promotional language, super... |
 | khazix-writer | `workbuddy/skills/khazix-writer` | skill | 4 | \|- |
 | paper-quick-reader | `workbuddy/skills/paper-quick-reader` | skill | 31 | AI 论文速读 Skill：三档深度（裸读 / 引导 / 精读）+ 页码级 Provenance 防幻觉 + 多篇对比。 触发词：论文速读、读这篇论文、抓核心观点、论文对比、多篇对比、与我研究方向的关联、 第几页提到 X、这篇论文的数据集怎么构造的、论文精读、 paper summary、summarize this paper、compare these papers、literature skim、extract method... |
+| paper-reader | `workbuddy/skills/paper-reader` | skill | 1 | 基于论文文本的通用读论文助手。用户提供论文文本（文件路径或直接粘贴），解答各类读论文需求——总结、精读、内容问答、概念解释、批判性分析等，并将结果以 Markdown 写入当前工作目录。触发词：读论文、论文总结、精读这篇论文、帮我分析这篇论文、这篇论文讲了什么、论文问答、论文笔记。输入为纯文本/Markdown 论文内容；不做论文检索下载、不做扫描件 OCR、不做论文写作降重。 |
+| paper-rebuttal | `workbuddy/skills/paper-rebuttal` | skill | 4 | 以论文作者身份完成学术审稿 rebuttal 全流程。当用户提供审稿意见（reviewer comments / reviews / meta-review）和论文文件（PDF/LaTeX/DOCX/Markdown），需要分析审稿意见、判断是否需要修改论文、修改论文并撰写给审稿人的逐条回复（rebuttal / response letter / author response）时使用。触发词包括：rebuttal、审稿意见回复... |
+| paper-reviewer | `workbuddy/skills/paper-reviewer` | skill | 3 | 专业学术论文审稿 skill。以领域专家视角对学术论文（本地 PDF、arXiv ID/URL、粘贴文本）进行系统评审，自动识别论文学科与贡献类型并切换对应领域专家标准，输出顶会 OpenReview 风格（NeurIPS/ICLR/ICML）的标准 review 意见：Summary、Strengths、Weaknesses、Questions to Authors、Overall Score (1-10)、Confidence... |
 | prompt-engineering-expert | `workbuddy/skills/prompt-engineering-expert` | skill | 12 | Advanced expert in prompt engineering, custom instructions design, and prompt optimization for AI agents |
+| research-lineage-map | `workbuddy/skills/research-lineage-map` | skill | 4 | 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点... |
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | skill | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | skill | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
 | wechat-article-pro | `workbuddy/skills/wechat-article-pro` | skill | 2 | 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签 |
@@ -364,6 +367,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-13-180002 | [2026-08-13-180002](workbuddy/change-logs/2026-08-13-180002.md) | WorkBuddy 本次同步新增 13 个文件、修改 4 个文件、删除 235 个文件。 新增条目：skills/paper-reader, skills/paper-reader.zip, skills/paper-rebuttal, skills/paper-reviewer, skills/research-lineage-map。 移除条目已归... |
 | 2026-08-11-180003 | [2026-08-11-180003](workbuddy/change-logs/2026-08-11-180003.md) | WorkBuddy 本次同步新增 54 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/mvp-dev-expert-team。 受影响范围：experts/mvp-dev-expert-team。 |
 | 2026-08-10-170319 | [2026-08-10-170319](workbuddy/change-logs/2026-08-10-170319.md) | WorkBuddy 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/.disable_to_model_invocation_migration.json。 受影响范围：skills/.disable_to_model_invocation_migration.json。 |
 | 2026-08-09-180003 | [2026-08-09-180003](workbuddy/change-logs/2026-08-09-180003.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。 |
