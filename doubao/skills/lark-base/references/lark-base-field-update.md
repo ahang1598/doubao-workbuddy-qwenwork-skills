@@ -1,5 +1,7 @@
 # base +field-update
 
+> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+
 更新一个已有字段。
 
 ## 推荐命令
@@ -97,6 +99,7 @@ PUT /open-apis/base/v3/bases/:base_token/tables/:table_id/fields/:field_id
 - 如果返回 `field_get_recommended:true` 或 `next_step:"field_get"`，按提示读回字段；`auto_number` 更新后还应抽样读记录值确认编号已按新规则生成。
 
 ## 工作流
+
 
 1. 建议先用 `+field-get` 拉现状，再做最小化修改。
 2. `formula/lookup` 类型更新前先阅读对应指南。

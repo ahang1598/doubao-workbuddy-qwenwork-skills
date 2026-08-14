@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Lark Technologies Pte. Ltd.
+# SPDX-License-Identifier: MIT
 """Detect occupied subtable regions in a Lark sheet."""
 
 from __future__ import annotations
@@ -30,6 +32,18 @@ ROW_PREFIX_RE = re.compile(r"^\[row=(\d+)\]\s?(.*)$")
 MAX_EXTERNAL_MERGE_ANCHOR_CHECKS = 10
 
 
+def _inside_quoted_field(lines: list[str]) -> bool:
+    """True when the accumulated record has an unterminated quoted field.
+
+    RFC 4180 escapes a literal quote by doubling it, so both halves of a `""`
+    pair count and parity still tracks whether a field is left open. A record
+    that is still open must swallow the next physical line verbatim — even one
+    that looks like a `[row=N]` prefix, because inside quotes that text is
+    ordinary cell content, not a new record.
+    """
+    return sum(line.count('"') for line in lines) % 2 == 1
+
+
 @dataclass
 class CsvGrid:
     row_numbers: list[int]
@@ -57,12 +71,17 @@ def parse_annotated_csv(
     row_numbers_inferred = False
     has_authoritative_rows = isinstance(row_indices, list) and len(row_indices) > 0
 
-    if any(ROW_PREFIX_RE.match(line) for line in lines):
+    first_meaningful = next((line for line in lines if line.strip()), "")
+    if ROW_PREFIX_RE.match(first_meaningful):
         records = []
         current_lines: list[str] | None = None
         current_row_number: int | None = None
         for line in lines:
             match = ROW_PREFIX_RE.match(line)
+            if match and current_lines is not None and _inside_quoted_field(current_lines):
+                # Prefix-looking text inside an open quoted field is content.
+                current_lines.append(line)
+                continue
             if match:
                 if current_lines is not None and current_row_number is not None:
                     records.append("\n".join(current_lines))
@@ -74,6 +93,24 @@ def parse_annotated_csv(
         if current_lines is not None and current_row_number is not None:
             records.append("\n".join(current_lines))
             row_numbers.append(current_row_number)
+
+        # Cross-check against the row numbers the server itself reported.
+        # _inside_quoted_field decides whether a "[row=N]" line starts a new
+        # record or is content inside an open quoted field; when the payload's
+        # quoting is malformed (a lone unescaped quote in a cell), that call
+        # goes the wrong way and every following line is swallowed into the
+        # previous cell — the rows simply vanish, and everything downstream
+        # (data_range, last data row, column profiles) is quietly computed from
+        # a short grid. row_indices is authoritative and already in hand, so
+        # refuse rather than profile a grid that does not match it.
+        if has_authoritative_rows and row_numbers != [int(r) for r in row_indices]:
+            raise ValueError(
+                "annotated_csv did not parse into the rows the server reported "
+                f"(parsed {len(row_numbers)} rows {row_numbers[:5]}…, expected "
+                f"{len(row_indices)} rows {list(row_indices)[:5]}…) — most likely "
+                "an unbalanced quote in a cell. Re-read a narrower --range, or use "
+                "+cells-get for this region instead of the CSV path."
+            )
 
         for record in records:
             parsed = next(csv.reader([record]))
@@ -94,6 +131,8 @@ def parse_annotated_csv(
                 try:
                     row_num = int(row_indices[offset])
                 except (TypeError, ValueError):
+                    # Non-numeric row index: leave row_num as None so the
+                    # inferred fallback numbering below takes over.
                     pass
             if row_num is None:
                 row_numbers_inferred = True
@@ -111,7 +150,7 @@ def parse_annotated_csv(
 
     for row in values:
         row.extend([""] * (len(col_letters) - len(row)))
-    inferred = bool(values) and not any(ROW_PREFIX_RE.match(line) for line in lines) and (
+    inferred = bool(values) and not ROW_PREFIX_RE.match(first_meaningful) and (
         row_numbers_inferred or not has_authoritative_rows
     )
     return CsvGrid(
@@ -224,6 +263,7 @@ def _raw_components(
     occupied: set[tuple[int, int]],
     *,
     adjacent_rows: dict[int, set[int]] | None = None,
+    adjacent_cols: dict[int, set[int]] | None = None,
 ) -> list[Component]:
     remaining = set(occupied)
     components = []
@@ -235,7 +275,11 @@ def _raw_components(
             row, col = queue.popleft()
             vertical_rows = adjacent_rows.get(row, set()) if adjacent_rows else {row - 1, row + 1}
             neighbors = [(neighbor_row, col) for neighbor_row in vertical_rows]
-            neighbors.extend(((row, col - 1), (row, col + 1)))
+            # Columns get the same treatment as rows: with --skip-hidden the
+            # returned columns can be non-consecutive (A, C when B is hidden),
+            # so col±1 would split visually adjacent data into two components.
+            horizontal_cols = adjacent_cols.get(col, set()) if adjacent_cols else {col - 1, col + 1}
+            neighbors.extend((row, neighbor_col) for neighbor_col in horizontal_cols)
             for neighbor in neighbors:
                 if neighbor in remaining:
                     remaining.remove(neighbor)
@@ -473,7 +517,7 @@ def detect_subtables(args) -> tuple[dict[str, Any], list[str]]:
             )
             if _has_value(anchor_grid):
                 confirmed_external_merges.add(merge_ref)
-        except LarkCliError as exc:
+        except (LarkCliError, ValueError) as exc:
             warnings.append(f"could not confirm merge anchor {anchor}: {exc}")
     occupied = build_occupancy(
         grid,
@@ -481,12 +525,22 @@ def detect_subtables(args) -> tuple[dict[str, Any], list[str]]:
         confirmed_external_merges=confirmed_external_merges,
     )
     adjacent_rows = None
+    adjacent_cols = None
     if args.skip_hidden:
         adjacent_rows = {}
         for previous, current in zip(grid.row_numbers, grid.row_numbers[1:]):
             adjacent_rows.setdefault(previous, set()).add(current)
             adjacent_rows.setdefault(current, set()).add(previous)
-    raw_components = _raw_components(occupied, adjacent_rows=adjacent_rows)
+        col_numbers = [col_to_index(col) for col in grid.col_letters]
+        adjacent_cols = {}
+        for previous, current in zip(col_numbers, col_numbers[1:]):
+            adjacent_cols.setdefault(previous, set()).add(current)
+            adjacent_cols.setdefault(current, set()).add(previous)
+    raw_components = _raw_components(
+        occupied,
+        adjacent_rows=adjacent_rows,
+        adjacent_cols=adjacent_cols,
+    )
     if len(raw_components) > args.max_merge_components:
         warnings.append(
             f"skipped gap-based component merging for {len(raw_components)} components "

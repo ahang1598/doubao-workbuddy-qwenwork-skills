@@ -1,7 +1,7 @@
 ---
 name: lark-vc
 version: 1.0.0
-description: "飞书视频会议：搜索历史会议记录、查询会议纪要（总结/待办/章节/逐字稿）、查询参会人快照。当用户查询已结束的会议、获取会议产物（纪要/妙记）、查看参会人时使用；查询未来日程走 lark-calendar。本技能不覆盖会中实时能力（Agent 真实入会/离会、会中实时事件）。"
+description: "飞书视频会议：查询进行中的会议列表（含会议 ID）、读取会中实时内容（发言、聊天、共享等）、发送会中消息，以及搜索历史会议、查询会议纪要（总结/待办/章节/逐字稿）和参会人快照。本技能不覆盖 Agent 真实入会/离会；查询未来日程走 lark-calendar。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -18,7 +18,7 @@ metadata:
 
 ## 身份
 
-所有 vc 命令使用 `--as user`。
+本 skill 统一以 `--as user` 身份运行，由 agent 平台注入 UAT。所有命令（`+search`、`+detail`、`+recording`、`meeting get`、`+meeting-list-active`、`+meeting-events`、`+meeting-message-send`）均使用同一 user 身份。
 
 ```bash
 # BAD — 查昨天的会议用 calendar，会漏掉即时会议
@@ -35,6 +35,9 @@ lark-cli vc +search --query "站会" --start <start_time> --end <end_time>
 | [`+search`](references/lark-vc-search.md) | 搜索历史会议记录（需至关键词、时间范围、组织者、参与者、会议室少一个筛选条件） |
 | [`+detail`](references/lark-vc-detail.md) | 通过 meeting-ids 获取会议详情，包括 note_id 和 minute_token |
 | [`+recording`](references/lark-vc-recording.md) | 通过 meeting-ids 或 calendar-event-ids 查询 minute_token |
+| [`+meeting-list-active`](references/lark-vc-meeting-list-active.md) | 查询当前身份可见的进行中会议并获取 `meeting_id` |
+| [`+meeting-events`](references/lark-vc-meeting-events.md) | 读取当前身份可见的会中事件 |
+| [`+meeting-message-send`](references/lark-vc-meeting-message-send.md) | 发送会中文本或 reaction |
 
 - 使用任何 Shortcut 前，必须先读其对应 reference 文档。
 
@@ -45,6 +48,8 @@ lark-cli vc +search --query "站会" --start <start_time> --end <end_time>
 | 查"昨天的会议""上周的会""已结束的会议" | 本 skill（`+search`，含即时会议） |
 | 查日历/日程或未来时间的会议 | [lark-calendar](../lark-calendar/SKILL.md) |
 | 查"今天有哪些会议" | `vc +search`（已结束）+ lark-calendar（未开始），合并展示 |
+| 查询进行中的会议、会中事件或发送会中消息 | 本 skill 的 `+meeting-list-active` / `+meeting-events` / `+meeting-message-send` |
+| 用户询问会议内容，但未提供 `meeting_id`，也未明确指向已结束会议 | 先用 `+meeting-list-active` 查询进行中的会议；无结果时，再用 `+search` 查询当天最近结束的会议；仍无结果时询问会议时间、主题或会议号，不自行扩大时间范围 |
 | 只按自然语言标题查"xx 纪要的逐字稿 / 原始记录 / 谁说了什么" | 先到 [lark-drive](../lark-drive/SKILL.md) / [lark-doc](../lark-doc/SKILL.md)；仅在已拿到 `note_id` / `vc-node-id` 后再到 [lark-note](../lark-note/SKILL.md) |
 | 妙记信息/时长/封面/链接 | 先走 `vc +detail` 或 `vc +recording` 获取 `minute_token`，再用 [lark-minutes](../lark-minutes/SKILL.md) 的 `minutes get` |
 | 本地音视频文件转纪要/逐字稿 | 先走 [lark-minutes](../lark-minutes/SKILL.md) 上传，再用 `minutes +detail --minute-tokens` |
@@ -138,6 +143,7 @@ lark-cli vc meeting get --params '{"meeting_id":"<meeting_id>","with_participant
 |---------|---------|--------|
 | 参会人快照（谁参加过、何时入/离会，任意时点）| `vc meeting get --with-participants` | 本 skill |
 | 已结束会议的发言内容 | 优先：`vc +detail` 取 `note_id` 再 `note +detail` 取 `verbatim_doc_token` 后 `docs +fetch`；备选：`vc +detail` 取 `minute_token` 再 `minutes +detail --transcript` | [lark-note](../lark-note/SKILL.md) / [lark-minutes](../lark-minutes/SKILL.md) |
+| **进行中会议**的实时事件流（转写、聊天、共享、会中加入/离开）| `vc +meeting-events` | 本 skill |
 
 ## 资源关系
 
@@ -167,6 +173,7 @@ Meeting (视频会议)
 > - 已有 `doc_token` 且目标是读正文 → [lark-doc](../lark-doc/SKILL.md)。
 > - 只有自然语言纪要标题 → 文档搜索 / Docx 正文读取；有显式 `vc-node-id` 才进入 [lark-note](../lark-note/SKILL.md)。
 > - 从日程出发（只有 `event_id`）→ 先走 [`calendar +meeting`](../lark-calendar/references/lark-calendar-meeting.md) 拿到 `meeting_id` 或 `meeting_note`，再按上述路径继续。
+> - 跨到 lark-minutes / lark-note / lark-doc 时沿用 `--as user` 身份即可。
 
 ## API Resources
 

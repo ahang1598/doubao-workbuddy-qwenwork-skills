@@ -243,7 +243,7 @@ Derive categories from the current `resource_items` and partial-read evidence:
 
 | Failure / Blocker | Agent MUST Do | Agent MUST NOT Do |
 |-------------------|---------------|-------------------|
-| Missing API scope | Handle the permission error and stop | Do not retry the same command repeatedly |
+| Missing API scope | Guide the user to resolve the missing scope and stop | Do not retry the same command repeatedly |
 | Resource access denied | Stop and follow the main workflow `Permission Request Gate` | Do not request permission automatically or in batch |
 | Partial document read fails for a low-confidence item | Mark item `needs_review=true`, record reason, and route to manual confirmation target | Do not classify by guessing |
 | Item remains ambiguous after partial read | Mark `needs_review=true` and route to manual confirmation target | Do not invent classification |

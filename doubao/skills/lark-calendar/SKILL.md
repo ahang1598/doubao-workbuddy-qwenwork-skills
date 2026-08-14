@@ -12,6 +12,12 @@ metadata:
 
 **CRITICAL — 凡涉及预约日程/会议室、调整时间或查询/搜索会议室，第一步 MUST 读 [`references/lark-calendar-schedule-meeting.md`](references/lark-calendar-schedule-meeting.md)。仅编辑字段（改标题/描述）或增删参会人（不涉及时间和会议室）时可跳过，直接读 [`references/lark-calendar-update.md`](references/lark-calendar-update.md)。**
 
+## 身份
+
+日程操作统一以登录用户身份运行（`--as user`，默认）。
+
+**对话人称映射**：「我」= 登录用户；作为字段取值的人称（参会人、会议 owner 等）不参与身份判定。
+
 ## Shortcuts
 
 | Shortcut | 说明 |
@@ -174,7 +180,7 @@ lark-cli contact +search-user --query <query> --as user
 lark-cli im +chat-search --query <query> --as user
 ```
 
-> 搜索用户接口使用 `user` 身份；搜到的 `ou_` open_id 用于日程参与人操作（如添加日程参与人）。
+> 搜索用户/群统一使用 `--as user`。**解析不到或类型不明确时，向用户澄清该参会人类型，不要靠名字形态硬猜类型。**
 
 ## 不在本 skill 范围
 

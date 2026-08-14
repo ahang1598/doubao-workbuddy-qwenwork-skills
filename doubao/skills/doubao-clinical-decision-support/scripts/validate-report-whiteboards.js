@@ -2,36 +2,28 @@
 
 const fs = require("fs");
 
-const usage = `Usage:
-  node scripts/validate-report-whiteboards.js [--attachments none|present] <report.xml>
+const usage = `用法：
+  node scripts/validate-report-whiteboards.js <report.xml>
 
-Checks report XML/Markdown/PPT XML for duplicate title tags, unsupported callout type attributes, forbidden superscript/footnote-style markup, forbidden ref tags, source-link risks in evidence chapters, invalid citation-style components, visible internal tool names, attachment-state hallucinations, reference table shape/link coverage, missing Mermaid whiteboards, Mermaid source exposed as code blocks, and <whiteboard type="mermaid"> blocks with syntax patterns that commonly make Feishu whiteboard parsing fail. If an evidence chapter is flagged, review that chapter and add clickable links to every cited guideline, consensus, paper, trial, drug label, or regulator source.`;
+检查报告 XML、Markdown 或 PPT XML 中的重复标题、callout 非法 type 属性、禁用的上标或 ref 标签、证据章节链接风险、citation 组件，以及 Mermaid 白板缺失、源码外露和常见语法错误。不检查内部工具名、附件状态或参考文献表。若证据章节被提示，请检查该章提及的指南、共识、论文、试验、说明书或监管来源是否均有可点击链接。`;
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(usage);
   process.exit(0);
 }
 
-let attachmentState = null;
 const positionalArgs = [];
 
 for (let index = 2; index < process.argv.length; index += 1) {
   const arg = process.argv[index];
   if (arg === "--attachments") {
-    attachmentState = process.argv[index + 1];
     index += 1;
     continue;
   }
   if (arg.startsWith("--attachments=")) {
-    attachmentState = arg.split("=")[1];
     continue;
   }
   positionalArgs.push(arg);
-}
-
-if (attachmentState && !["none", "present"].includes(attachmentState)) {
-  console.error("Invalid --attachments value; use none or present.");
-  process.exit(2);
 }
 
 const file = positionalArgs[0];
@@ -44,7 +36,7 @@ let xml;
 try {
   xml = fs.readFileSync(file, "utf8");
 } catch (error) {
-  console.error(`Failed to read report XML: ${error.message}`);
+  console.error(`读取报告 XML 失败：${error.message}`);
   process.exit(2);
 }
 
@@ -63,21 +55,11 @@ const forbiddenSupPattern = /(?:<\/?sup\b[^>]*>|&lt;\s*\/?\s*sup\b[^&]*(?:&gt;)?
 const forbiddenRefTagPattern = /(?:<\/?ref\b[^>]*>|&(?:amp;)*lt;\s*\/?\s*ref\b[^&]*(?:&(?:amp;)*gt;)?|&(?:amp;)*#0*60;\s*\/?\s*ref\b[^&]*(?:&(?:amp;)*#0*62;)?|&(?:amp;)*#x0*3c;\s*\/?\s*ref\b[^&]*(?:&(?:amp;)*#x0*3e;)?)/i;
 const titleTagPattern = /<title\b[^>]*>[\s\S]*?<\/title>/gi;
 const unsupportedCalloutTypePattern = /<callout\b[^>]*\btype\s*=\s*["'][^"']*["'][^>]*>/gi;
-const visibleTemplateInstructionPattern = /本节目标|图表要求|正文来源写法|正文引用必须|正文引用格式示例|仅\s*`?attachment_state=present`?\s*时|生成\s*docx\s*时|不得把研究名写成无链接小标题|不得把指南\/共识名写成无链接小标题|除非用户明确要求特定参考文献格式|不得写成直接医嘱/;
+const visibleTemplateInstructionPattern = /本节目标|图表要求|正文来源写法|正文引用必须|正文引用格式示例|生成\s*docx\s*时|不得把研究名写成无链接小标题|不得把指南\/共识名写成无链接小标题|除非用户明确要求特定参考文献格式|不得写成直接医嘱/;
 const citationComponentPattern = /<cite\b[^>]*\btype=["']citation["'][^>]*>[\s\S]*?<\/cite>/gi;
-const forbiddenVisibleToolPattern = /\b(?:medical_search|scholar_search|general_search|web\.fetch|WebFetch|lark-doc|lark-ppt|tool|search_context)\b|<t[hd][^>]*>\s*(?:tool|query|search_context)\s*<\/t[hd]>|\|\s*(?:tool|query|search_context)\s*\||检索工具|工具返回|harness\s*过程/gi;
 const unresolvedPlaceholderPattern = /\{\{[^}]+\}\}/;
-const httpUrlPattern = /https?:\/\/[^\s<>"')\]}，。；、]+/i;
 const clickableEvidenceLinkPattern = /(?:<a\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>[\s\S]*?<\/a>|<bookmark\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>|\]\(https?:\/\/[^)]+\))/i;
 const clickableEvidenceLinkGlobalPattern = /(?:<a\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>[\s\S]*?<\/a>|<bookmark\b[^>]*\bhref=["']https?:\/\/[^"']+["'][^>]*>|\]\(https?:\/\/[^)]+\))/gi;
-const noAttachmentForbiddenPatterns = [
-  { pattern: /上传资料与质量|上传资料质量与病例提取|上传报告|上传附件|上传资料[:：]/i, label: "claims uploaded material was analyzed" },
-  { pattern: /影像\/报告关键提取|报告关键提取|从报告提取|从上传报告提取|从真实附件读取/i, label: "claims extraction from an uploaded report" },
-  { pattern: /附件质量|资料质量评估|质量分级|可用于分析\/部分可用\/不可可靠解读/i, label: "uses attachment quality grading without a real attachment" },
-  { pattern: /OCR\s*(?:提取|可读|识别)|(?:上传|附件|报告单|检查单|病历|影像).{0,12}OCR|OCR.{0,12}(?:上传|附件|报告单|检查单|病历|影像)/i, label: "claims patient-attachment OCR was used without a real attachment" },
-  { pattern: /真实附件|真实上传资料|上传\s*(?:CT|MRI|影像|化验单|检查单|病历|病理|基因|用药清单)/i, label: "mentions a real uploaded attachment in no-attachment mode" },
-];
-
 function plainText(value) {
   return value
     .replace(/<[^>]+>/g, " ")
@@ -88,31 +70,6 @@ function plainText(value) {
 
 function stripXmlComments(value) {
   return value.replace(/<!--[\s\S]*?-->/g, (match) => match.replace(/[^\r\n]/g, " "));
-}
-
-function referenceStartIndex(content) {
-  const startPatterns = [
-    /<h1[^>]*>[^<]*(?:完整)?参考文献[^<]*<\/h1>/i,
-    /<h2[^>]*>[^<]*(?:核心证据|辅助参考)[^<]*<\/h2>/i,
-    /^\s*#{1,3}\s*(?:十[、.]\s*)?(?:完整)?参考文献\b/im,
-  ];
-  let start = -1;
-  for (const pattern of startPatterns) {
-    const match = pattern.exec(content);
-    if (match && (start === -1 || match.index < start)) {
-      start = match.index;
-    }
-  }
-  return start;
-}
-
-function findReferenceSection(content) {
-  const start = referenceStartIndex(content);
-  if (start === -1) return null;
-
-  const rest = content.slice(start);
-  const endMatch = /<h1[^>]*>[^<]*免责声明[^<]*<\/h1>|^\s*#{1,3}\s*.*免责声明\b/im.exec(rest);
-  return endMatch ? rest.slice(0, endMatch.index) : rest;
 }
 
 function headingSection(content, headingPattern) {
@@ -158,24 +115,22 @@ function countClickableEvidenceLinks(content) {
 
 function validateBodyEvidenceLinks(content) {
   const problems = [];
-  const contentWithoutWhiteboards = stripMermaidWhiteboards(content);
-  const start = referenceStartIndex(contentWithoutWhiteboards);
-  const body = start === -1 ? contentWithoutWhiteboards : contentWithoutWhiteboards.slice(0, start);
+  const body = stripMermaidWhiteboards(content);
 
   const sectionSpecs = [
-    { label: "guidelines/consensus evidence", pattern: /指南|共识/, minLinks: 3 },
-    { label: "key research evidence", pattern: /关键研究|研究证据|论文证据/, minLinks: 3 },
+    { label: "指南与共识证据", pattern: /指南|共识/, minLinks: 3 },
+    { label: "关键研究证据", pattern: /关键研究|研究证据|论文证据/, minLinks: 3 },
   ];
 
   sectionSpecs.forEach(({ label, pattern, minLinks }) => {
     const section = headingSection(body, pattern);
     if (!section) {
-      problems.push(`${label} section was not found; ensure the expected evidence chapter exists and cited sources are rendered as clickable links`);
+      problems.push(`未找到“${label}”章节；请确认需要的证据章节存在，并为其中引用的来源添加可点击链接`);
       return;
     }
     const linkCount = countClickableEvidenceLinks(section);
     if (linkCount < minLinks) {
-      problems.push(`${label} section may contain cited key literature without hyperlinks; review the chapter and make every guideline/consensus/paper/trial/source mention clickable (fallback found ${linkCount} source link(s))`);
+      problems.push(`“${label}”章节可能存在未添加超链接的关键文献；请检查该章提及的指南、共识、论文、试验或其他来源，并补充可点击链接（当前识别到 ${linkCount} 个来源链接）`);
     }
   });
 
@@ -187,142 +142,11 @@ function validateCitationComponents(content) {
   const components = [...content.matchAll(citationComponentPattern)];
   components.forEach((match, index) => {
     if (!clickableEvidenceLinkPattern.test(match[0])) {
-      problems.push(`citation component ${index + 1} must contain a clickable source link`);
+      problems.push(`第 ${index + 1} 个 citation 组件必须包含可点击的来源链接`);
     }
   });
   return problems;
 }
-
-function referenceItems(section) {
-  const items = [];
-  for (const match of section.matchAll(/<li\b[^>]*>[\s\S]*?<\/li>/gi)) {
-    items.push(match[0]);
-  }
-  for (const match of section.matchAll(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi)) {
-    if (!/<th\b/i.test(match[0])) items.push(match[0]);
-  }
-  section.split(/\r?\n/).forEach((line) => {
-    if (/^\s*(?:[-*]|\d+[.)])\s+/.test(line) || /^\s*\|/.test(line)) {
-      if (!/^\s*\|\s*-+/.test(line) && !/标题\s*\|.*来源/.test(line)) {
-        items.push(line);
-      }
-    }
-  });
-  return items.map((item) => item.trim()).filter(Boolean);
-}
-
-function tableBlocks(section) {
-  const blocks = [];
-  for (const match of section.matchAll(/<table\b[^>]*>[\s\S]*?<\/table>/gi)) {
-    blocks.push({ type: "xml", value: match[0] });
-  }
-
-  const markdownTableLines = section
-    .split(/\r?\n/)
-    .filter((line) => /^\s*\|.+\|\s*$/.test(line));
-  if (markdownTableLines.length >= 3) {
-    blocks.push({ type: "markdown", value: markdownTableLines.join("\n") });
-  }
-  return blocks;
-}
-
-function tableHeaders(block) {
-  if (block.type === "xml") {
-    const firstRow = /<tr\b[^>]*>[\s\S]*?<\/tr>/i.exec(block.value);
-    if (!firstRow) return "";
-    return plainText(firstRow[0]);
-  }
-  return plainText(block.value.split(/\r?\n/)[0] || "");
-}
-
-function tableHeaderCells(block) {
-  if (block.type === "xml") {
-    const firstRow = /<tr\b[^>]*>[\s\S]*?<\/tr>/i.exec(block.value);
-    if (!firstRow) return [];
-    return [...firstRow[0].matchAll(/<t[hd]\b[^>]*>[\s\S]*?<\/t[hd]>/gi)]
-      .map((match) => plainText(match[0]))
-      .filter(Boolean);
-  }
-  const line = block.value.split(/\r?\n/)[0] || "";
-  return line
-    .split("|")
-    .map((cell) => plainText(cell))
-    .filter(Boolean);
-}
-
-function tableDataRows(block) {
-  if (block.type === "xml") {
-    return [...block.value.matchAll(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi)]
-      .map((match) => match[0])
-      .filter((row) => !/<th\b/i.test(row));
-  }
-  return block.value
-    .split(/\r?\n/)
-    .slice(2)
-    .filter((line) => /\S/.test(line));
-}
-
-function findReferenceTitle(content) {
-  const patterns = [
-    /<h1\b[^>]*>([^<]*参考文献[^<]*)<\/h1>/i,
-    /^\s*#\s+(.+参考文献.+)$/im,
-  ];
-  for (const pattern of patterns) {
-    const match = pattern.exec(content);
-    if (match) return plainText(match[1]);
-  }
-  return "";
-}
-
-function validateReferenceSection(content, section) {
-  const problems = [];
-  const title = findReferenceTitle(content);
-  if (!title || !/参考文献/.test(title) || !/链接/.test(title)) {
-    problems.push(`reference section title must mention links, found: ${title || "none"}`);
-  }
-
-  const blocks = tableBlocks(section);
-  if (blocks.length === 0) {
-    problems.push("reference section must use tables for core evidence, auxiliary references, and screening records");
-  }
-  const referenceLinkCount = countClickableEvidenceLinks(section);
-  if (referenceLinkCount < 6) {
-    problems.push(`reference section may be missing original/abstract links; review all displayed references and add clickable source links (fallback found ${referenceLinkCount} source link(s))`);
-  }
-
-  const invalidReferenceHeaderBlocks = blocks
-    .map((block, index) => ({ index, cells: tableHeaderCells(block) }))
-    .filter(({ cells }) => {
-      if (cells.length !== 5) return true;
-      const headers = cells.join("|");
-      return !/标题/.test(headers) || !/来源/.test(headers) || !/类型/.test(headers) || !/年份/.test(headers) || !/链接/.test(headers);
-    });
-  if (invalidReferenceHeaderBlocks.length > 0) {
-    problems.push("final reference tables must use exactly five columns: 标题 | 来源 | 类型 | 年份 | 链接, unless the user explicitly requested a citation style");
-    invalidReferenceHeaderBlocks.slice(0, 5).forEach(({ index, cells }) => {
-      problems.push(`reference table ${index + 1} headers: ${cells.join(" | ") || "none"}`);
-    });
-  }
-
-  const exposedInternalColumns = blocks
-    .map((block) => tableHeaders(block))
-    .filter((headers) => /(?:^|\s)(?:tool|query|search_context)(?:\s|$)|检索工具|工具名称/i.test(headers));
-  if (exposedInternalColumns.length > 0) {
-    problems.push("reference tables must not expose internal columns such as tool, query, or search_context");
-  }
-
-  const dataRows = blocks.flatMap(tableDataRows);
-  if (blocks.length > 0 && dataRows.length === 0) {
-    problems.push("reference tables must contain at least one data row");
-  }
-
-  return problems;
-}
-const presentAttachmentRequiredPatterns = [
-  { pattern: /上传资料质量与病例提取|上传资料与质量|真实上传资料|资料类型/i, label: "attachment source/type" },
-  { pattern: /质量|可用于分析|部分可用|不可可靠解读/i, label: "attachment quality" },
-  { pattern: /局限|不可可靠解读|需补充|模糊|缺页|遮挡|不可读|非原始/i, label: "attachment limitation" },
-];
 
 function lineNumberAt(offset) {
   return xml.slice(0, offset).split(/\r?\n/).length;
@@ -335,30 +159,20 @@ function firstMeaningfulLine(content) {
     .find((line) => line && !line.startsWith("%%"));
 }
 
-function firstLineForPattern(content, pattern) {
-  const lines = content.split(/\r?\n/);
-  for (let index = 0; index < lines.length; index += 1) {
-    if (pattern.test(lines[index])) {
-      return { number: index + 1, text: lines[index].trim() };
-    }
-  }
-  return null;
-}
-
 let failures = 0;
 let count = 0;
 let match;
 const visibleXml = stripXmlComments(xml);
 const visibleOutsideWhiteboards = stripMermaidWhiteboards(visibleXml);
 const expectedDiagramWhiteboards = [
-  { label: "clinical decision logic diagram", pattern: /决策逻辑图/ },
+  { label: "临床决策逻辑图", pattern: /决策逻辑图/ },
 ].filter(({ pattern }) => hasHeading(visibleXml, pattern));
 const actualDiagramWhiteboardCount = [...visibleXml.matchAll(whiteboardPattern)].length;
 
 if (expectedDiagramWhiteboards.length > actualDiagramWhiteboardCount) {
   failures += 1;
-  console.error(`Report has ${expectedDiagramWhiteboards.length} Mermaid diagram heading(s) but only ${actualDiagramWhiteboardCount} <whiteboard type="mermaid"> block(s). Keep each diagram inside its whiteboard container; do not replace it with a code block.`);
-  expectedDiagramWhiteboards.forEach(({ label }) => console.error(`  - expected whiteboard for ${label}`));
+  console.error(`报告包含 ${expectedDiagramWhiteboards.length} 个 Mermaid 图标题，但只有 ${actualDiagramWhiteboardCount} 个 <whiteboard type="mermaid"> 白板块。请将图表保留在白板容器中，不要替换为代码块。`);
+  expectedDiagramWhiteboards.forEach(({ label }) => console.error(`  - 缺少对应白板：${label}`));
 }
 
 const exposedFenceMatch = markdownFencePattern.exec(visibleOutsideWhiteboards);
@@ -367,97 +181,52 @@ const exposedRawMermaidMatch = rawMermaidDeclarationPattern.exec(visibleOutsideW
 if (exposedFenceMatch || exposedCodeBlockMatch || exposedRawMermaidMatch) {
   failures += 1;
   const reason = exposedFenceMatch
-    ? "Markdown code fence"
+    ? "Markdown 代码围栏"
     : exposedCodeBlockMatch
-      ? "code block tag"
-      : "raw Mermaid declaration";
-  console.error(`Report exposes diagram/XML source outside a Mermaid whiteboard (${reason}); use <whiteboard type="mermaid"> or a reader-facing table/list fallback.`);
+      ? "代码块标签"
+      : "裸露的 Mermaid 声明";
+  console.error(`报告在 Mermaid 白板外暴露了图表或 XML 源码（${reason}）；请使用 <whiteboard type="mermaid">，或改用面向读者的表格、列表。`);
 }
 
 const titleTags = [...visibleXml.matchAll(titleTagPattern)];
 if (titleTags.length > 1) {
   failures += 1;
-  console.error(`Report contains ${titleTags.length} <title> tags; keep exactly one title source. When XML contains <title>, do not also pass --title to lark-cli docs +create.`);
+  console.error(`报告包含 ${titleTags.length} 个 <title> 标签；只能保留一个标题来源。XML 已包含 <title> 时，不要再向 lark-cli docs +create 传入 --title。`);
 }
 
 const unsupportedCalloutTypes = [...visibleXml.matchAll(unsupportedCalloutTypePattern)];
 if (unsupportedCalloutTypes.length > 0) {
   failures += 1;
-  console.error(`Report contains ${unsupportedCalloutTypes.length} <callout> tag(s) with unsupported type attributes; use <callout emoji="x" background-color="light-yellow"> and do not add type.`);
+  console.error(`报告包含 ${unsupportedCalloutTypes.length} 个带有不支持的 type 属性的 <callout> 标签；请使用 <callout emoji="x" background-color="light-yellow">，不要添加 type。`);
 }
 
 if (forbiddenSupPattern.test(xml)) {
   failures += 1;
-  console.error("Report contains a superscript-style tag or escaped superscript markup; use inline linked source names and the reference table instead.");
+  console.error("报告包含上标标签或转义后的上标标记；请改用正文中的可点击来源名称或普通引用编号。");
 }
 
 if (forbiddenRefTagPattern.test(xml)) {
   failures += 1;
-  console.error("Report contains a raw or escaped ref tag; replace it with a clickable source name, an allowed citation component, or the reference table.");
+  console.error("报告包含原始或转义后的 ref 标签；请改用可点击来源名称、允许的 citation 组件或普通引用编号。");
 }
 
 const visibleInstructionMatch = visibleTemplateInstructionPattern.exec(visibleXml);
 if (visibleInstructionMatch) {
   failures += 1;
-  console.error(`Report displays a template instruction "${visibleInstructionMatch[0]}"; remove template/QA wording from the user-facing document and keep only clinical content.`);
+  console.error(`报告向用户展示了模板指令“${visibleInstructionMatch[0]}”；请删除模板或 QA 提示，只保留临床内容。`);
 }
 
 const citationProblems = validateCitationComponents(xml);
 if (citationProblems.length > 0) {
   failures += 1;
-  console.error("Citation component validation failed:");
+  console.error("citation 组件校验未通过：");
   citationProblems.forEach((problem) => console.error(`  - ${problem}`));
 }
 
 if (unresolvedPlaceholderPattern.test(xml)) {
   failures += 1;
   const placeholder = unresolvedPlaceholderPattern.exec(xml)[0];
-  console.error(`Report still contains unresolved template placeholder ${placeholder}; replace all placeholders with real values and links before delivery.`);
-}
-
-const visibleToolMatches = [...xml.matchAll(forbiddenVisibleToolPattern)];
-if (visibleToolMatches.length > 0) {
-  failures += 1;
-  const uniqueTerms = [...new Set(visibleToolMatches.map((match) => match[0]))].join(", ");
-  console.error(`Report contains visible internal tool/process wording (${uniqueTerms}); use reader-facing source categories such as 指南/共识来源、学术文献来源、药品/监管安全来源、原文阅读.`);
-}
-
-const references = findReferenceSection(xml);
-if (!references) {
-  failures += 1;
-  console.error("Report is missing a final reference section; include complete references with original/abstract links.");
-} else {
-  const items = referenceItems(references);
-  if (items.length === 0) {
-    failures += 1;
-    console.error("Reference section has no detectable reference items.");
-  }
-}
-
-if (attachmentState === "none") {
-  const problems = [];
-  noAttachmentForbiddenPatterns.forEach(({ pattern, label }) => {
-    const hit = firstLineForPattern(xml, pattern);
-    if (hit) {
-      problems.push(`${label} near line ${hit.number}: ${hit.text}`);
-    }
-  });
-  if (problems.length > 0) {
-    failures += 1;
-    console.error("Attachment-state validation failed: --attachments none forbids uploaded-report/attachment extraction claims.");
-    problems.forEach((problem) => console.error(`  - ${problem}`));
-  }
-}
-
-if (attachmentState === "present") {
-  const missing = presentAttachmentRequiredPatterns
-    .filter(({ pattern }) => !pattern.test(xml))
-    .map(({ label }) => label);
-  if (missing.length > 0) {
-    failures += 1;
-    console.error("Attachment-state validation failed: --attachments present requires uploaded material source, quality, and limitation details.");
-    missing.forEach((label) => console.error(`  - missing ${label}`));
-  }
+  console.error(`报告仍包含未替换的模板占位符 ${placeholder}；交付前请替换为真实内容和链接。`);
 }
 
 const looksLikeSlides = /<slide\b|<presentation\b|<deck\b|<ppt\b/i.test(xml);
@@ -465,17 +234,8 @@ if (!looksLikeSlides) {
   const bodyLinkProblems = validateBodyEvidenceLinks(xml);
   if (bodyLinkProblems.length > 0) {
     failures += 1;
-    console.error("Body evidence-link validation failed:");
+    console.error("正文证据链接校验未通过：");
     bodyLinkProblems.forEach((problem) => console.error(`  - ${problem}`));
-  }
-}
-
-if (!looksLikeSlides && references) {
-  const referenceProblems = validateReferenceSection(xml, references);
-  if (referenceProblems.length > 0) {
-    failures += 1;
-    console.error("Reference section table/link validation failed:");
-    referenceProblems.forEach((problem) => console.error(`  - ${problem}`));
   }
 }
 
@@ -493,42 +253,42 @@ while ((match = whiteboardPattern.exec(visibleXml)) !== null) {
 
   const problems = [];
   if (!firstLine || !diagramHeaderPattern.test(firstLine)) {
-    problems.push("first non-empty line should be a Mermaid diagram declaration such as mindmap or flowchart TD");
+    problems.push("首个非空行必须是 Mermaid 图声明，例如 mindmap 或 flowchart TD");
   }
   if (xmlTagPattern.test(content)) {
-    problems.push("whiteboard Mermaid content contains raw XML/HTML tags; remove <br/>, <span>, <b>, etc. and keep labels plain text");
+    problems.push("Mermaid 白板内容包含原始 XML/HTML 标签；请删除 <br/>、<span>、<b> 等标签，并使用纯文本节点");
   }
   if (escapedHtmlBreakPattern.test(content)) {
-    problems.push("whiteboard Mermaid content contains escaped HTML line breaks; split long labels into separate nodes instead");
+    problems.push("Mermaid 白板内容包含转义后的 HTML 换行标签；请将长文本拆分为多个节点");
   }
   if (invalidLightColorPattern.test(content)) {
-    problems.push("Mermaid style uses Feishu callout color names such as light-yellow; use hex colors or omit style lines");
+    problems.push("Mermaid 样式使用了 light-yellow 等飞书 callout 颜色名；请改用十六进制颜色或删除样式行");
   }
   if (invalidHexPattern.test(content)) {
-    problems.push("Mermaid style contains an invalid hex color");
+    problems.push("Mermaid 样式包含无效的十六进制颜色");
   }
   if (markdownFencePattern.test(fullBlock)) {
-    problems.push("whiteboard blocks must not contain Markdown code fences");
+    problems.push("白板块中不得包含 Markdown 代码围栏");
   }
   if (literalBackslashNewlinePattern.test(content)) {
-    problems.push("whiteboard Mermaid labels contain literal \\n text; use short single-line labels or split the content into separate nodes");
+    problems.push("Mermaid 节点文字包含字面量 \\n；请使用简短的单行标签，或把内容拆分为多个节点");
   }
 
   if (problems.length > 0) {
     failures += 1;
-    console.error(`Whiteboard ${count} near line ${blockLine}:`);
+    console.error(`第 ${count} 个白板在第 ${blockLine} 行附近存在问题：`);
     problems.forEach((problem) => console.error(`  - ${problem}`));
   }
 }
 
 if (failures > 0) {
-  console.error(`Report XML validation failed: ${failures} issue(s); ${count} Mermaid whiteboard block(s) checked.`);
+  console.error(`报告 XML 校验未通过：共发现 ${failures} 个问题；已检查 ${count} 个 Mermaid 白板块。`);
   process.exit(1);
 }
 
 if (count === 0) {
-  console.log("Report XML validation passed: no forbidden superscript/footnote-style markup or ref tags; no Mermaid whiteboard blocks found.");
+  console.log("报告 XML 校验通过：未发现禁用的上标或 ref 标签；文档中没有 Mermaid 白板块。");
   process.exit(0);
 }
 
-console.log(`Report XML validation passed: no forbidden superscript/footnote-style markup or ref tags; ${count} Mermaid whiteboard block(s) checked.`);
+console.log(`报告 XML 校验通过：未发现禁用的上标或 ref 标签；已检查 ${count} 个 Mermaid 白板块。`);

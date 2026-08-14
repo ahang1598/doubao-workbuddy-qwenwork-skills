@@ -1,4 +1,4 @@
-> ⚠️ **先读完再动手**：本文档共 342 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+> ⚠️ **先读完再动手**：本文档共 343 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
 
 # Lark Sheet Chart
 
@@ -29,7 +29,7 @@
 
 **多图表需求**：当用户同时提到多种分析（如"统计占比 + 对比数量"），必须创建多个图表，每个对应一种类型，不要只做一个。
 
-**`--properties` 结构锚点（构造前必读）**：`--properties` 顶层只有 `position` / `offset` / `size` / `snapshot` 四个字段，**没有**顶层 `data`，也没有再嵌一层 `properties`。图表数据配置全部挂在 `snapshot.data` 下——下文及示例里出现的 `refs` / `headerMode` / `dim1` / `dim2` / `nameRef` 一律指 `snapshot.data.refs` / `snapshot.data.headerMode` / `snapshot.data.dim1` / `snapshot.data.dim2`（及其下的 `serie.nameRef` / `series[].nameRef`）；样式 / 堆叠 / 数据标签等在 `snapshot.plotArea` 下。完整结构以 `lark-cli sheets +chart-create --print-schema --flag-name properties` 为准。
+**`--properties` 结构锚点（构造前必读）**：`--properties` 顶层只有 `position` / `offset` / `size` / `snapshot` 四个字段，**没有**顶层 `data`，也没有再嵌一层 `properties`。图表数据配置全部挂在 `snapshot.data` 下——下文及示例里出现的 `refs` / `headerMode` / `dim1` / `dim2` / `nameRef` 一律指 `snapshot.data.refs` / `snapshot.data.headerMode` / `snapshot.data.dim1` / `snapshot.data.dim2`（及其下的 `serie.nameRef` / `series[].nameRef`）；样式 / 堆叠 / 数据标签等在 `snapshot.plotArea` 下。**构造起点优先用 `lark-cli sheets +chart-create --print-example <column|bar|line|area|pie|scatter|radar|combo>` 拿最小可用模板改参**（本地即时返回）；查深层字段用点分路径切片 `--print-schema --flag-name properties.snapshot.plotArea.axes`，别整篇 dump 翻页。完整结构以 `--print-schema --flag-name properties` 为准。
 
 **常见配置错误（必须注意）**：
 - **图表类型选择错误**：用户说"堆积柱形图/百分比堆积"时，应在 `properties.snapshot.plotArea.plot.extra.stack` 中配置堆叠；百分比堆叠需在该 stack 下设置 `percentage: true`。用户说"占比/比例"时，优先考虑饼图或百分比堆积图。注意区分 `column`（柱形图，纵向）与 `bar`（条形图，横向）是两个不同的 type 取值，"对比/各 XX" 类纵向柱默认用 `column`
@@ -129,6 +129,7 @@ _公共四件套 · 系统：`--dry-run`_
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `--properties` | string + File + Stdin（复合 JSON） | required | 图表完整配置 JSON。顶层字段为 `position` / `offset` / `size` / `snapshot`（无顶层 `data`，也无再嵌一层 `properties`）；图表数据配置在 `snapshot.data` 下（含 `refs` / `headerMode` / `dim1` / `dim2`）；必须至少含 `snapshot.data.dim1.serie.index` 或 `dim2.series[].index` 之一，否则 server 拒。结构嵌套深，完整结构跑 `--print-schema --flag-name properties` |
+| `--print-example` | string | optional | 打印指定图表类型的最小可用 `--properties` 模板后直接退出（`area` / `bar` / `column` / `combo` / `line` / `pie` / `radar` / `scatter`）。纯本地执行，不需要 locator flag、不发网络请求；传入未知类型时列出全部可用类型 |
 
 ### `+chart-update`
 
@@ -202,6 +203,8 @@ lark-cli sheets +chart-create --url "..." --sheet-name "Sheet1" --properties @ch
 
 饼图比 column / bar 更复杂：`sectors` 是 object，里面再包一个**单数** `sector` 数组——CLI 不替你 normalize，写错路径会被 server schema 直接拒。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ```bash
 lark-cli sheets +chart-create --url "..." --sheet-name "Sheet1" --properties - <<'JSON'
 {
@@ -225,8 +228,6 @@ lark-cli sheets +chart-create --url "..." --sheet-name "Sheet1" --properties - <
 }
 JSON
 ```
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 **数据与表头分离（必须用 `detached` + `nameRef`）**：
 
@@ -304,6 +305,8 @@ JSON
 2. 在拿到的 snapshot 上**局部**修改要改的字段，其余保持不变
 3. 把**完整 snapshot** 整个回写到 `--properties.snapshot`
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ```bash
 lark-cli sheets +chart-update --url "..." --sheet-id "$SID" --chart-id "chrXXX" \
   --properties '{
@@ -329,8 +332,6 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
   --chart-id "chrXXX" --yes
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ### Validate / DryRun / Execute 约束
 
 - `Validate`：XOR 公共四件套；`+chart-create` / `+chart-update` 的 `--properties` 必须能解析为合法 JSON；`+chart-delete`（high-risk-write）校验 `--yes` 或 `--dry-run` 至少一个。
@@ -339,4 +340,4 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
 
 > `+chart-create` / `+chart-update` 是 write 级别，按需可用 `--dry-run` 预览，不要求 `--yes`。只有 `+chart-delete`（high-risk-write）必须 `--yes`。
 
-===== 全文完（共 342 行）=====
+===== 全文完（共 343 行）=====

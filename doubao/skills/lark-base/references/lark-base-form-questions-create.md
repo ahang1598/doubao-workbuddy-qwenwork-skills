@@ -1,5 +1,7 @@
 # base +form-questions-create
 
+> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+
 向多维表格表单/问卷中批量添加问题。
 
 ## 命令
@@ -63,6 +65,7 @@ lark-cli base +form-questions-create \
 | `--form-id <id>` | 是 | 表单 ID |
 | `--questions <json>` | 是 | 问题 JSON 数组，最多 10 个（见下方格式） |
 | `--format` | 否 | 输出格式：json（默认）\| pretty \| table \| ndjson \| csv |
+| `--as` | 否 | 身份：user（默认）\| bot |
 | `--dry-run` | 否 | 预览 API 调用，不执行 |
 
 ## `--questions` 格式
@@ -145,3 +148,4 @@ lark-cli base +form-questions-create \
 
 - [lark-base](../SKILL.md) — 多维表格全部命令
 - [lark-base-filter-condition.md](lark-base-filter-condition.md) — `visible_rule` / `filter` 条件结构公共协议
+- [lark-shared](../../lark-shared/SKILL.md) — 认证和全局参数

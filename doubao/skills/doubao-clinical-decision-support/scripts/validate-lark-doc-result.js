@@ -4,7 +4,7 @@ const fs = require("fs");
 
 function usage() {
   console.error(
-    "Usage: node scripts/validate-lark-doc-result.js [--operation create|update|media-insert|fetch] <result.json|->",
+    "用法：node scripts/validate-lark-doc-result.js [--operation create|update|media-insert|fetch] <result.json|->",
   );
 }
 
@@ -26,7 +26,7 @@ for (let index = 2; index < process.argv.length; index += 1) {
 
 const allowedOperations = ["create", "update", "media-insert", "fetch"];
 if (operation && !allowedOperations.includes(operation)) {
-  console.error(`Unsupported operation ${JSON.stringify(operation)}.`);
+  console.error(`不支持的操作：${JSON.stringify(operation)}。`);
   usage();
   process.exit(2);
 }
@@ -41,7 +41,7 @@ let raw;
 try {
   raw = inputPath === "-" ? fs.readFileSync(0, "utf8") : fs.readFileSync(inputPath, "utf8");
 } catch (error) {
-  console.error(`Failed to read result: ${error.message}`);
+  console.error(`读取结果失败：${error.message}`);
   process.exit(2);
 }
 
@@ -49,7 +49,7 @@ let outer;
 try {
   outer = JSON.parse(raw);
 } catch (error) {
-  console.error(`Result is not valid JSON: ${error.message}`);
+  console.error(`结果不是有效的 JSON：${error.message}`);
   process.exit(2);
 }
 
@@ -64,28 +64,28 @@ if (
   typeof payload.stdout === "string"
 ) {
   if (payload.interrupted === true) {
-    problems.push("runner reports interrupted=true");
+    problems.push("运行器返回 interrupted=true，任务已中断");
   }
   if (typeof payload.stderr === "string" && payload.stderr.trim() !== "") {
-    problems.push(`runner stderr is not empty: ${payload.stderr.trim()}`);
+    problems.push(`运行器的 stderr 不为空：${payload.stderr.trim()}`);
   }
   try {
     payload = JSON.parse(payload.stdout);
   } catch (error) {
-    problems.push(`runner stdout is not valid lark-cli JSON: ${error.message}`);
+    problems.push(`运行器 stdout 不是有效的 lark-cli JSON：${error.message}`);
   }
 }
 
 if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
-  problems.push("lark-cli payload must be a JSON object");
+  problems.push("lark-cli 返回内容必须是 JSON 对象");
 } else {
   if (payload.ok !== true) {
-    problems.push(`top-level ok must be true, got ${JSON.stringify(payload.ok)}`);
+    problems.push(`顶层 ok 必须为 true，当前值为 ${JSON.stringify(payload.ok)}`);
   }
 
   const result = payload.data && payload.data.result;
   if (result !== undefined && result !== "success") {
-    problems.push(`data.result must be success when present, got ${JSON.stringify(result)}`);
+    problems.push(`存在 data.result 时，其值必须为 success，当前值为 ${JSON.stringify(result)}`);
   }
 
   const warnings = [];
@@ -96,15 +96,15 @@ if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
   addWarnings(payload.warnings);
   if (payload.data) addWarnings(payload.data.warnings);
   if (warnings.length > 0) {
-    problems.push(`warnings must be empty: ${warnings.map(String).join(" | ")}`);
+    problems.push(`warnings 必须为空：${warnings.map(String).join(" | ")}`);
   }
 
   const data = payload.data && typeof payload.data === "object" ? payload.data : {};
   const document = data.document && typeof data.document === "object" ? data.document : {};
 
   if (operation === "create") {
-    if (!document.document_id) problems.push("create must return data.document.document_id");
-    if (!document.url) problems.push("create must return data.document.url");
+    if (!document.document_id) problems.push("create 操作必须返回 data.document.document_id");
+    if (!document.url) problems.push("create 操作必须返回 data.document.url");
 
     const permissionGrant = data.permission_grant || document.permission_grant;
     if (
@@ -113,18 +113,18 @@ if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
       permissionGrant.status !== "granted"
     ) {
       problems.push(
-        `permission_grant.status must be granted when present, got ${JSON.stringify(permissionGrant.status)}`,
+        `存在 permission_grant.status 时，其值必须为 granted，当前值为 ${JSON.stringify(permissionGrant.status)}`,
       );
     }
   }
 
   if (operation === "update") {
     if (data.result !== "success") {
-      problems.push(`update requires data.result=success, got ${JSON.stringify(data.result)}`);
+      problems.push(`update 操作要求 data.result=success，当前值为 ${JSON.stringify(data.result)}`);
     }
     if (!(Number.isFinite(data.updated_blocks_count) && data.updated_blocks_count > 0)) {
       problems.push(
-        `update requires updated_blocks_count > 0, got ${JSON.stringify(data.updated_blocks_count)}`,
+        `update 操作要求 updated_blocks_count > 0，当前值为 ${JSON.stringify(data.updated_blocks_count)}`,
       );
     }
   }
@@ -139,21 +139,21 @@ if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
       data.file_name ||
       document.file_name ||
       (data.file && (data.file.file_name || data.file.name));
-    if (!blockId) problems.push("media-insert must return an attachment block_id");
+    if (!blockId) problems.push("media-insert 操作必须返回附件 block_id");
     if (!fileToken && !fileName) {
-      problems.push("media-insert must return a file token or file name");
+      problems.push("media-insert 操作必须返回文件 token 或文件名");
     }
   }
 
   if (operation === "fetch") {
     if (typeof document.content !== "string" || document.content.trim() === "") {
-      problems.push("fetch must return non-empty data.document.content");
+      problems.push("fetch 操作必须返回非空的 data.document.content");
     }
   }
 }
 
 if (problems.length > 0) {
-  console.error("Lark document operation did not pass the delivery gate:");
+  console.error("飞书文档操作未通过交付校验：");
   for (const problem of problems) console.error(`- ${problem}`);
   process.exit(1);
 }
@@ -167,7 +167,7 @@ console.log(
       ok: payload.ok,
       result: result === undefined ? null : result,
       warnings: 0,
-      note: "Command result passed. Document content still requires a fetch/read-back check.",
+      note: "命令结果校验通过；仍需通过 fetch 回读并检查文档正文。",
     },
     null,
     2,

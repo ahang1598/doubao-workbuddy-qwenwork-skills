@@ -141,4 +141,3 @@ tip: read full content: single message use mail +message --mailbox 'shared@examp
 ## 参考
 
 - [lark-mail](../SKILL.md) — 邮箱域总览
-- [lark-mail-watch](lark-mail-watch.md) — 实时监听新邮件

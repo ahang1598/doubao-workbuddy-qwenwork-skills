@@ -10,7 +10,7 @@ metadata:
 
 # note (v1)
 
-身份：仅使用 `--as user`，由 agent 平台注入 UAT。
+身份：`+detail` 和 `+transcript` 均以 `--as user` 身份运行。
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../lark-vc/references/vc-domain-boundaries.md`](../lark-vc/references/vc-domain-boundaries.md)**，不读将导致命令使用、会议产物决策、领域边界职责判断错误：
 > 1. 了解日历 & VC、会议产物 & 文档的关联关系和职责划分
@@ -36,10 +36,10 @@ Note 域只接受显式 `note_id`：用户直接提供，或 `docs +fetch` 返�
 
 | `note +detail` 结果 | 用户要逐字稿 / 原始记录时 |
 |------|---------------|
-| `normal` + `verbatim_doc_token` 非空 | `docs +fetch --doc <verbatim_doc_token>` |
+| `normal` + `verbatim_doc_token` 非空 | `docs +fetch --doc <verbatim_doc_token>`（沿用 `+detail` 用的身份） |
 | `unknown` + `verbatim_doc_token` 非空 | 先按独立文档处理；不要猜成 unified |
 | `unknown` + 无逐字稿 token | 停止重试并说明无法确定逐字稿入口 |
-| `unified` | `note +transcript --note-id <note_id>` |
+| `unified` | `note +transcript --note-id <note_id>`（仅支持 `--as user`） |
 
 判别键是 `note_display_type`，不是 `verbatim_doc_token` 是否为空：unified 纪要也可能返回非空 `verbatim_doc_token`。
 
@@ -84,11 +84,11 @@ Note 域只接受显式 `note_id`：用户直接提供，或 `docs +fetch` 返�
 
 ```bash
 # 1. 从会议获取 note_id
-lark-cli vc +detail --meeting-ids <meeting_id>
+lark-cli vc +detail --meeting-ids <meeting_id> --as user
 
 # 2. 用 note_id 拿文档 Token
-lark-cli note +detail --note-id <note_id>
+lark-cli note +detail --note-id <note_id> --as user
 
 # 3. 读取纪要文档内容
-lark-cli docs +fetch --doc <note_doc_token> --doc-format markdown
+lark-cli docs +fetch --doc <note_doc_token> --doc-format markdown --as user
 ```

@@ -10,14 +10,14 @@ metadata:
 
 ## 选哪个命令
 
-本 skill 统一以 user 身份运行,按下表选命令:
+统一以 user 身份运行,按下表选命令:
 
 | 想做什么 | 命令 |
 |---|---|
 | 按姓名 / 邮箱搜员工拿 open_id | [`+search-user`](references/lark-contact-search-user.md) |
 | 按关键词搜索当前用户可见的机器人 / 智能体 | [`+search-bot`](references/lark-contact-search-bot.md) |
-| 已知 open_id 取他人资料 | `+search-user --user-ids <id>` |
-| 查看自己 | [`+get-user`](references/lark-contact-get-user.md) 或 `+search-user --user-ids me` |
+| 已知 open_id 取他人资料 | `+search-user --user-ids <id>` 或 [`+get-user --user-id <id>`](references/lark-contact-get-user.md) |
+| 查看自己 | `+get-user` 或 `+search-user --user-ids me` |
 | 查同事的个人状态 / 签名 | `user_profiles batch_query` |
 
 已知 open_id 只是想发消息 / 排日程,不必经过 contact —— 直接 [`lark-im`](../lark-im/SKILL.md) / [`lark-calendar`](../lark-calendar/SKILL.md)。
@@ -59,7 +59,7 @@ lark-cli contact +search-bot --queries '会议助手,日报助手,审批助手' 
 
 ## 注意事项
 
-- **41050 / Permission denied** 受当前身份的可见范围限制(三条命令都可能遇到)。让管理员调整可见范围。
+- **41050 / Permission denied** 受当前身份的可见范围限制(三条命令都可能遇到),按错误响应引导用户解决。
 - **跨租户用户**(`is_cross_tenant=true`)多数业务字段为空字符串,这是飞书可见性规则,下游做空值兜底。
 - **ID 类型**:`+get-user` 可通过 `--user-id-type` 使用 `open_id`、`union_id` 或 `user_id`;`+search-user` 使用用户 open_id;`+search-bot` 不支持按 ID 查询,它按关键词搜索并返回机器人 open_id。
 

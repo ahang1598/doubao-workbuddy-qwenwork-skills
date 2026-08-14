@@ -33,14 +33,14 @@ lark-cli im +chat-list --format json
 # Preview the request without executing it
 lark-cli im +chat-list --dry-run
 
-# Include p2p single chats (user identity only) — comma form
-lark-cli im +chat-list --as user --types p2p,group
+# Include p2p single chats — comma form
+lark-cli im +chat-list --types p2p,group
 
 # Same, using repeat flag instead of CSV
-lark-cli im +chat-list --as user --types p2p --types group
+lark-cli im +chat-list --types p2p --types group
 
-# Only p2p single chats (user identity only)
-lark-cli im +chat-list --as user --types p2p
+# Only p2p single chats
+lark-cli im +chat-list --types p2p
 ```
 
 ## Parameters
@@ -48,7 +48,7 @@ lark-cli im +chat-list --as user --types p2p
 | Parameter | Required | Limits | Description |
 |------|------|------|------|
 | `--user-id-type <type>` | No | `open_id` (default), `union_id`, `user_id` | ID type used for `owner_id` in the response |
-| `--types <strings>` | No | `group`, `p2p` (comma-separated or repeated) | Chat types to include. Omitted = groups only (backward compatible). Pass `p2p` to also include p2p single chats |
+| `--types <strings>` | No | `group`, `p2p` (comma-separated or repeated) | Chat types to include. Omitted = groups only (backward compatible). |
 | `--sort <field>` | No | `create_time` (default, ascending), `active_time` (descending) | Result ordering |
 | `--page-size <n>` | No | 1-100, default 20 | Number of results per page |
 | `--page-token <token>` | No | - | Starting cursor, normally returned by a previous response |
@@ -137,5 +137,4 @@ done
 | Symptom | Root Cause | Solution |
 |---------|---------|---------|
 | `invalid --page-size 101: must be between 1 and 100` | page-size is out of range | Use an integer between 1 and 100 |
-| Permission denied (99991672) | The bot app does not have `im:chat:read` TAT permission enabled | Enable the permission for the app in the Open Platform console |
 | Permission denied (99991679) | UAT is not authorized for `im:chat:read` | Have the agent platform grant the `im:chat:read` scope for the current user |

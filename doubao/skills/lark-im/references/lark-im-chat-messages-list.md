@@ -130,7 +130,7 @@ lark-cli api GET /open-apis/im/v1/messages \
 |---------|---------|---------|
 | `specify --chat-id <chat_id> or --user-id <open_id>` | Neither `--chat-id` nor `--user-id` was provided | You must provide exactly one |
 | `--chat-id and --user-id cannot be specified together` | Both parameters were provided | Use only one |
-| `P2P chat not found for this user` | `--user-id` was used but no p2p chat exists for the current user and that user | Confirm the target direct-message relationship exists for the current user |
+| `P2P chat not found for this user` | `--user-id` was used but no p2p chat exists for the current identity and that user | Confirm the target direct-message relationship exists for the current identity |
 | `--start: invalid time format` | Invalid time format | Use ISO 8601 or date-only format such as `2026-03-10` |
 | Permission denied | Message read permissions are missing | Ensure the app has `im:message:readonly` and `im:chat:read` enabled |
 

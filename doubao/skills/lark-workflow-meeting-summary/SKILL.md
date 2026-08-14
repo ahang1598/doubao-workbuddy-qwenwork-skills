@@ -24,10 +24,7 @@ metadata:
 
 ## 前置条件
 
-仅支持 **user 身份**，由 agent 平台注入 UAT。需要以下 domain token：
-
-- 基础（查询+纪要）：`vc`
-- 含读取纪要文档正文、生成文档：`vc,drive`
+仅支持 **user 身份**。所需 `vc` 域 token（读取纪要文档正文、生成文档时另需 `drive` 域）由 agent 平台注入。
 
 ## 工作流
 

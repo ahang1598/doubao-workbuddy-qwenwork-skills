@@ -1,5 +1,7 @@
 # base +field-create
 
+> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+
 创建一个字段。
 
 ## Agent 最小工作流
@@ -89,6 +91,7 @@ POST /open-apis/base/v3/bases/:base_token/tables/:table_id/fields
 - 如果返回 `field_get_recommended:true` 或 `next_step:"field_get"`，按 `verification_hint` 读回字段；`formula`、`lookup`、`link`、`auto_number` 等计算、关联或生成型字段更适合读回确认服务端最终结构。
 
 ## 工作流
+
 
 1. formula / lookup 字段必须先阅读对应指南；没读之前不要直接创建。
 2. 创建简单字段时，优先相信命令返回；只有用户要求精确核对额外属性，或返回建议读回时，才继续执行 `+field-get`。

@@ -1,0 +1,34 @@
+{
+  "stage": "literature-scout",
+  "read_gate": "pass",
+  "candidate_pool_count": 1,
+  "candidate_pool_done": "yes",
+  "authenticity_checked": "pass",
+  "quality_checked": "pass",
+  "verification_report_path": "literature-verification/offline-pass-report.json",
+  "code_trace_present": "yes",
+  "code_trace_run_id": "offline-pass-example",
+  "core_literature": [
+    {
+      "id": "offline-pass-source",
+      "title": "Offline validator source",
+      "first_author": "Example",
+      "year": 2024,
+      "doi": "10.0000/offline-example",
+      "url": "https://doi.org/10.0000/offline-example",
+      "container_title": "Example Journal",
+      "read_status": "abstract_checked",
+      "source_quality": "A",
+      "authority_signal": "jcr_quartile:Q1",
+      "quality_basis": "jcr_quartile:Q1; impact_factor:10.0",
+      "authenticity_status": "verified",
+      "title_author_match": "pass",
+      "doi_match": "pass",
+      "reverification_required": "no",
+      "reverification_triggers": []
+    }
+  ],
+  "rejected_literature": [],
+  "ready_for_synthesis": "yes",
+  "failures": []
+}

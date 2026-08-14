@@ -1,5 +1,7 @@
 # base +form-submit
 
+> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+
 通过表单分享链接填写并提交多维表格表单。仅支持分享模式（share_token），支持填写普通字段值和上传本地文件作为附件。
 
 > **⚠️ 高风险写操作（high-risk-write）：** 本命令会向表单写入并提交数据，属于高风险写操作，必须额外传递 `--yes` 进行确认，否则会返回 `confirmation_required` 错误并退出。当用户明确要求提交且目标表单无歧义时，直接附加 `--yes`，无需再次询问。
@@ -52,6 +54,13 @@ lark-cli base +form-submit \
   }' \
   --yes
 
+# 使用应用身份（bot）
+lark-cli base +form-submit \
+  --share-token <share_token> \
+  --json '{"fields":{...}}' \
+  --as bot \
+  --yes
+
 # 预览 API 调用（不实际执行，dry-run 无需 --yes）
 lark-cli base +form-submit \
   --share-token <share_token> \
@@ -68,6 +77,7 @@ lark-cli base +form-submit \
 | `--json <json>` | 是 | JSON 对象，包含 `"fields"`（普通字段值）和 `"attachments"`（附件上传），详见下方说明 |
 | `--yes` | 是 | 确认高风险写操作。本命令为 high-risk-write，不带 `--yes` 会返回 `confirmation_required` |
 | `--format` | 否 | 输出格式：json（默认）\| pretty \| table \| ndjson \| csv |
+| `--as` | 否 | 身份：user（默认）\| bot |
 | `--dry-run` | 否 | 预览 API 调用，不执行 |
 
 ### --json 结构说明
@@ -166,3 +176,4 @@ lark-cli base +form-submit \
 ## 参考
 
 - [lark-base](../SKILL.md) — 多维表格全部命令
+- [lark-shared](../../lark-shared/SKILL.md) — 认证和全局参数

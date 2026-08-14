@@ -1,4 +1,4 @@
-> ⚠️ **先读完再动手**：本文档共 432 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+> ⚠️ **先读完再动手**：本文档共 433 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
 
 # Lark Sheet Workbook
 
@@ -201,10 +201,11 @@ _一个或多个子表的 typed 数据，每个数组元素写入一张子表；
 
 **数组项**（类型 object）：
 - `cell_merges` (array<object>?) — 单元格合并操作数组；range 使用 A1 单元格范围，merge_type 默认 all each: { merge_type?: enum, range: string }
-- `cell_styles` (array<object>?) — 单元格样式操作数组；每项用 A1 单元格 range 指定范围，字段名与 +cells-set-style 对齐 each: { background_color?: string, border_styles?: object, font_color?: string, font_family?: string, font_line?: enum, …共 13 项 }
-- `col_sizes` (array<object>?) — 列宽操作数组；range 使用列范围如 A:C，type 为 pixel/standard，pixel 需要 size each: { range: string, size?: number, type: enum }
+- `cell_styles` (array<object>?) — 单元格样式操作数组；每项用 A1 单元格 range 指定范围，字段名与 +cells-set-style 对齐 each: { background_color?: string, border?: object, border_styles?: object, font_color?: string, font_family?: string, …共 14 项 }
+- `col_sizes` (array<object>?) — 列宽操作数组；range 使用列范围如 A:C，给 size（px）即像素列宽（type 可省略）；type 为 standard 时不带 size each: { range: string, size?: number, type?: enum }
+- `freeze` (object?) — 冻结行列：rows = 冻结前 N 行，cols = 冻结前 N 列（0 或省略 = 该维度不冻结） { cols?: integer, rows?: integer }
 - `name` (string) — 子表名
-- `row_sizes` (array<object>?) — 行高操作数组；range 使用行范围如 1:3，type 为 pixel/standard/auto，pixel 需要 size each: { range: string, size?: number, type: enum }
+- `row_sizes` (array<object>?) — 行高操作数组；range 使用行范围如 1:3，给 size（px）即像素行高（type 可省略）；type 为 standard/auto 时不带 size each: { range: string, size?: number, type?: enum }
 
 > ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
@@ -429,4 +430,4 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 
 > ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
-===== 全文完（共 432 行）=====
+===== 全文完（共 433 行）=====

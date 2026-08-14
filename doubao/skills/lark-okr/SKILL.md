@@ -10,7 +10,7 @@ metadata:
 
 # okr (v2)
 
-**身份**：OKR 操作使用 `--as user`（查看当前用户/上下级的 OKR）。
+**身份**：OKR 操作统一使用 `--as user`。
 
 ## 快速决策
 

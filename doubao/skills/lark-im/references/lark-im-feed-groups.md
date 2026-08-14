@@ -442,7 +442,7 @@ The three read methods are shortcut-only:
 - [`+feed-group-list`](lark-im-feed-group-list.md) — `im:feed_group_v1:read`
 - [`+feed-group-list-item`](lark-im-feed-group-list-item.md) / [`+feed-group-query-item`](lark-im-feed-group-query-item.md) — `im:feed_group_v1:read` **plus** `im:chat:read` (they always resolve `chat_name`)
 
-If a required scope is missing, the agent platform must grant the corresponding scope (e.g. `im:feed_group_v1:write`) for the current user.
+If a required scope is missing, the CLI surfaces a `missing_scope` hint; the agent platform then grants the required scope for the current user.
 
 ## References
 

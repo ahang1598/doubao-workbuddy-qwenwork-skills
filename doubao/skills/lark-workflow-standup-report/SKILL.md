@@ -19,7 +19,7 @@ metadata:
 
 ## 前置条件
 
-仅支持 **user 身份**，由 agent 平台注入 UAT。需要 `calendar,task` domain token。
+仅支持 **user 身份**。所需 `calendar`、`task` 域 token 由 agent 平台注入。
 
 ## 工作流
 

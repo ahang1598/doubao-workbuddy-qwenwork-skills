@@ -1,0 +1,48 @@
+{
+  "citation_thresholds": {
+    "highly_cited": 500,
+    "classic_min_age_years": 10
+  },
+  "venues": [
+    {
+      "name": "Nature",
+      "type": "journal",
+      "issn": ["0028-0836", "1476-4687"],
+      "jcr_quartile": "Q1",
+      "cas_zone": "1",
+      "impact_factor": 50.5,
+      "is_top_venue": true,
+      "evidence_url": "https://www.nature.com/nature/"
+    },
+    {
+      "name": "ACM CHI Conference on Human Factors in Computing Systems",
+      "type": "conference",
+      "aliases": ["CHI", "Conference on Human Factors in Computing Systems"],
+      "is_top_venue": true,
+      "evidence_url": "https://chi.acm.org/"
+    }
+  ],
+  "authority_domains": [
+    "who.int",
+    "oecd.org",
+    "unesco.org",
+    "worldbank.org",
+    "imf.org",
+    "un.org",
+    "nih.gov",
+    "cdc.gov",
+    "nasa.gov",
+    "nsf.gov",
+    "europa.eu"
+  ],
+  "seminar_official_domains": [
+    "edu",
+    "ac.uk",
+    "ac.jp",
+    "ac.cn",
+    "acm.org",
+    "ieee.org",
+    "aps.org",
+    "aera.net"
+  ]
+}

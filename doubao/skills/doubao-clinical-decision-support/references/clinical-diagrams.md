@@ -123,4 +123,4 @@ flowchart TD
 - 图表回答了明确临床问题，且所有证据节点来自已纳入证据。
 - 思维导图没有混入严格决策顺序，流程图的分支条件清楚。
 - 风险、禁忌和证据不足醒目但克制；来源按 `output-and-qa.md` 可追溯。
-- 已生成报告 XML 时运行 `scripts/validate-report-whiteboards.js --attachments none|present <report.xml>`；未通过则修复白板或使用等信息量的降级图，不保留裸源码。
+- 已生成报告 XML 时运行 `scripts/validate-report-whiteboards.js <report.xml>`；未通过则修复白板或使用等信息量的降级图，不保留裸源码。

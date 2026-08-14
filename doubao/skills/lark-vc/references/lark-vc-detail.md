@@ -1,7 +1,7 @@
 
 # vc +detail
 
-通过会议 ID 获取会议详情，包括基本信息、关联的纪要 ID（`note_id`）和妙记 Token（`minute_token`）。只读。
+通过会议 ID 获取会议详情，包括基本信息、关联的纪要 ID（`note_id`）和妙记 Token（`minute_token`）。只读，使用 `--as user` 身份。
 
 ## 命令
 
@@ -38,7 +38,7 @@ lark-cli note +detail --note-id <note_id>
 # 3. 用 minute_token 获取妙记产物
 # ⚠️ 必须显式指定 --summary / --todo / --chapter / --keyword / --transcript 中至少一个 flag，
 # 不传任何 flag 则不会返回任何产物内容。
-lark-cli minutes +detail --minute-tokens <minute_token> --todo --transcript
+lark-cli minutes +detail --minute-tokens obcnxxxxxxxxxxxxxxxxxxxx --todo --transcript
 ```
 
 > **路由建议**：当用户未明确指定使用妙记时，**优先**走 `note +detail` 链路（纪要文档信息更完整、含逐字稿原文），仅在 `note_id` 为空或用户要求妙记产物时才走 `minutes +detail`。

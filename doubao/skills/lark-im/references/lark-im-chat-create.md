@@ -1,10 +1,10 @@
 # im +chat-create
 
-Create a group chat as the current user. You can specify the group name, description, members (users/bots), owner, chat type (private/public), and group mode. Set `--chat-mode topic` to create a topic chat.
+Create a group chat with user identity (`--as user`). You can specify the group name, description, members (users/bots), owner, chat type (private/public), and group mode. Set `--chat-mode topic` to create a topic chat.
 
 This skill maps to the shortcut: `lark-cli im +chat-create` (internally calls `POST /open-apis/im/v1/chats`).
 
-- Requires the `im:chat:create_by_user` scope.
+- `--as user` requires the `im:chat:create_by_user` scope.
 
 ## Commands
 
@@ -33,7 +33,7 @@ lark-cli im +chat-create --name "My Group" --users "ou_aaa" --bots "cli_aaa"
 # JSON output
 lark-cli im +chat-create --name "My Group" --format json
 
-# Create a group and invite members
+# Create a group and invite a user
 lark-cli im +chat-create --name "My Group" --users "ou_aaa,ou_bbb"
 
 # Preview the request without creating anything
@@ -51,21 +51,21 @@ lark-cli im +chat-create --name "My Group" --dry-run
 | `--owner <open_id>` | No | Format `ou_xxx` | Owner open_id (defaults to the authorized user) |
 | `--type <type>` | No | `private` (default) or `public` | Group type. Default to `private`; pass `public` only when the user explicitly asks for a discoverable/public group. |
 | `--chat-mode <mode>` | No | `group` (default) or `topic` | Group mode; `topic` creates a topic chat (not the same as `group_message_type=thread`). When the user asks for a topic chat, pass `topic` explicitly — do not rely on the default. |
-| `--set-bot-manager` | No | - | Set the creating bot as a group manager |
 | `--format json` | No | - | Output as JSON |
+| `--as <identity>` | No | `user` | Identity type |
 | `--dry-run` | No | - | Preview the request without executing it |
 
 > **`--chat-mode topic` vs "normal group with topic-message mode"**: `--chat-mode topic` here creates a 话题群 — the entire group is a topic chat. This is different from "normal group (`chat_mode=group`) + topic-message mode (`group_message_type=thread`)". This CLI exposes only `chat_mode`; `group_message_type` is intentionally not surfaced.
 
 ## AI Usage Guidance
 
-The authorized user creates the group and can invite members in one step:
+Create the group and invite members in one step:
 
 ```bash
 lark-cli im +chat-create --name "<group name>" --users "ou_aaa,ou_bbb"
 ```
 
-The authorized user is automatically the group creator and member.
+The authorized user is automatically the group creator and member. If some members cannot be reached, `succeed_type=1` semantics apply on member-management flows: reachable users are added and unreachable ones are returned in `invalid_id_list` instead of failing the whole request — check `invalid_id_list` and report which members could not be added.
 
 ## Output Fields
 
@@ -115,7 +115,7 @@ lark-cli im +messages-send --chat-id "$CHAT_ID" --text "Welcome, everyone!"
 | `invalid user id: expected open_id (ou_xxx)` | Invalid user ID format | Use the `ou_xxx` format for users |
 | `invalid bot id: expected app ID (cli_xxx)` | Invalid bot ID format | Use the `cli_xxx` format for bots |
 | `invalid --owner: expected open_id (ou_xxx)` | Invalid owner ID format | Use the `ou_xxx` format for the owner |
-| `invisible to user` (232043) | The current user and a target user are mutually invisible | Ensure the target users are visible to the current user, or add them after the group is created |
+| `bot is invisible to user` (232043) | A target member is mutually invisible to the caller | Add such members later via a member-management flow after the group is created |
 
 ## References
 

@@ -13,7 +13,7 @@
 1. 按 [`lark-drive-create-folder.md`](lark-drive-create-folder.md) 创建 Drive 文件夹。
 2. 按 [`lark-drive-move.md`](lark-drive-move.md) 执行 Drive 移动。
 3. 按 [`../../lark-wiki/references/lark-wiki-node-create.md`](../../lark-wiki/references/lark-wiki-node-create.md) 创建 Wiki 节点。
-5. 按 [`../../lark-wiki/references/lark-wiki-move.md`](../../lark-wiki/references/lark-wiki-move.md) 执行 Wiki 移动和 Drive 文档移动到 Wiki。
+4. 按 [`../../lark-wiki/references/lark-wiki-move.md`](../../lark-wiki/references/lark-wiki-move.md) 执行 Wiki 移动和 Drive 文档移动到 Wiki。
 6. 按 [`../../lark-wiki/references/lark-wiki-move-to-drive.md`](../../lark-wiki/references/lark-wiki-move-to-drive.md) 将 Wiki 节点移出到 Drive 文件夹。
 7. 按 [`lark-drive-delete.md`](lark-drive-delete.md) 删除本次 workflow 新建的 Drive 文件夹。
 8. 按 [`../../lark-wiki/references/lark-wiki-node-delete.md`](../../lark-wiki/references/lark-wiki-node-delete.md) 删除本次 workflow 新建的 Wiki 节点。

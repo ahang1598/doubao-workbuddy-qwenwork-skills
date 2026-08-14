@@ -1,7 +1,6 @@
 
 # vc +recording
 
-
 通过 meeting_id 或 calendar_event_id 查询对应的 minute_token。这是 VC 域和 Minutes 域之间的桥梁命令。只读操作。
 
 > **边界提醒：** 如果用户明确要的是"妙记信息""妙记详情""妙记链接""minute_token""标题""时长""owner"这类妙记元信息，先用本命令拿到 `minute_token`，再调用 `minutes minutes get`。不要直接切到 `minutes +detail`；`minutes +detail` 只用于纪要内容和逐字稿。
@@ -40,9 +39,9 @@ lark-cli vc +recording --meeting-ids 69xxxxxxxxxxxxx28 --dry-run
 
 每次只能指定一种输入方式。同时传入会报错。
 
-### 2. 仅支持 user 身份
+### 2. 身份支持
 
-该命令仅支持 `user` 身份，由 agent 平台注入 UAT。user token 只能查自己有权限的录制。
+`--meeting-ids` 和 `--calendar-event-ids` 两种模式都使用 `--as user` 身份，只能查询当前用户有权限的录制。拿到的 `minute_token` 下一步传给 `minutes minutes get` / `minutes +detail` / `minutes +download` 时沿用 `--as user` 身份即可。
 
 ### 3. 批量上限
 
@@ -81,7 +80,7 @@ lark-cli vc +recording --meeting-ids 69xxxxxxxxxxxxx28 --dry-run
 lark-cli vc +recording --meeting-ids xxx
 
 # 第 2 步：使用上一步返回的 minute_token 下载妙记文件
-lark-cli minutes +download --minute-tokens <minute_token>
+lark-cli minutes +download --minute-tokens obcnxxxxxxxxxxxxxxxxxxxx
 ```
 
 ### 场景 2：知道 meeting_id，想查询妙记基础信息
@@ -136,7 +135,7 @@ lark-cli minutes +download --minute-tokens <minute_token>
 | `no recording available` | 该会议无录制或录制未完成 | 确认会议已结束且开启了录制 |
 | `121005 no permission` | 无权查看该会议录制 | 确认是会议参与者或有录制权限 |
 | `124002 recording generating` | 录制文件仍在生成中 | 等待录制完成后重试 |
-| `missing required scope(s)` | 权限不足 | 让 agent 平台为当前用户补开相应 scope |
+| `missing required scope(s)` | 权限不足 | 让 agent 平台为当前用户补开缺失的 scope 后重试 |
 
 ## 提示
 

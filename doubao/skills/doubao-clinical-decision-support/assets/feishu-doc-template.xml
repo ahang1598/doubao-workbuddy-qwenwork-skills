@@ -49,8 +49,8 @@ mindmap
         {{备选路径及触发条件}}
 </whiteboard>
 <table>
-  <tr><th background-color="light-blue">图中简称</th><th background-color="light-blue">标题</th><th background-color="light-blue">来源链接</th><th background-color="light-blue">期刊/来源</th><th background-color="light-blue">来源级别</th></tr>
-  <tr><td>{{KDIGO 2024/DAPA-CKD 等可读简称}}</td><td>{{完整标题}}</td><td><a href="{{url}}">{{link_label}}</a></td><td>{{期刊/机构}}</td><td>{{A/B/C/未核验}}</td></tr>
+  <tr><th background-color="light-blue">图中简称</th><th background-color="light-blue">标题</th><th background-color="light-blue">来源链接</th><th background-color="light-blue">期刊/来源</th><th background-color="light-blue">证据级别</th><th background-color="light-blue">期刊级别（2025）</th></tr>
+  <tr><td>{{KDIGO 2024/DAPA-CKD 等可读简称}}</td><td>{{完整标题}}</td><td><a href="{{url}}">{{link_label}}</a></td><td>{{期刊/机构}}</td><td>{{研究填 Oxford CEBM 2009 级别；指南/共识填“不适用”；研究设计信息不足时填“暂未分级”}}</td><td>{{论文匹配成功时填中科院分区/北大核心；否则留空}}</td></tr>
 </table>
 <h2>5.2 决策逻辑图</h2>
 <whiteboard type="mermaid">
@@ -60,22 +60,23 @@ flowchart TD
 
 <h1>六、指南与共识证据</h1>
 <h2>6.1 中国指南/本土共识</h2>
-<p><a href="{{url}}">{{中国指南或本土共识名}}</a>（{{机构/期刊，年份；A/B/C 级来源}}）。{{与当前病例和问题情况直接相关的指南片段、推荐或限制，可列举推荐内容、病例适配性、原文表述}}</p>
+<p><a href="{{url}}">{{中国指南或本土共识名}}</a>（{{机构/期刊，年份；原指南分级体系和等级（如有）}}）。{{与当前病例和问题情况直接相关的指南片段、推荐或限制，可列举推荐内容、病例适配性、原文表述}}</p>
 <h2>6.2 国际指南/共识</h2>
-<p><a href="{{url}}">{{国际指南或共识名}}</a>（{{机构/期刊，年份；A/B/C 级来源}}）。{{与当前病例直接相关的指南片段、推荐或限制，可列举推荐内容、病例适配性、原文表述}}</p>
+<p><a href="{{url}}">{{国际指南或共识名}}</a>（{{机构/期刊，年份；原指南分级体系和等级（如有）}}）。{{与当前病例直接相关的指南片段、推荐或限制，可列举推荐内容、病例适配性、原文表述}}</p>
 <table>
-  <tr><th background-color="light-blue">指南/共识</th><th background-color="light-blue">机构/年份</th><th background-color="light-blue">来源级别</th><th background-color="light-blue">推荐内容</th><th background-color="light-blue">推荐强度/证据等级</th><th background-color="light-blue">病例适配性</th><th background-color="light-blue">原文定位</th></tr>
-  <tr><td><a href="{{url}}">{{指南名}}</a></td><td>{{机构/年份}}</td><td>{{A/B/C}}</td><td>{{推荐内容}}</td><td>{{等级}}</td><td>{{适配性}}</td><td>{{章节/页码/推荐编号}}</td></tr>
+  <tr><th background-color="light-blue">指南/共识</th><th background-color="light-blue">机构/年份</th><th background-color="light-blue">推荐内容</th><th background-color="light-blue">原指南推荐等级</th><th background-color="light-blue">病例适配性</th><th background-color="light-blue">原文定位</th></tr>
+  <tr><td><a href="{{url}}">{{指南名}}</a></td><td>{{机构/年份}}</td><td>{{推荐内容}}</td><td>{{原文体系和等级；整份指南无单一等级时填“按具体推荐条文”}}</td><td>{{适配性}}</td><td>{{章节/页码/推荐编号}}</td></tr>
 </table>
 
 <h1>七、关键研究证据</h1>
 <h2>7.1 核心研究逐条解读</h2>
-<p><a href="{{url}}">{{研究名或论文标题}}</a>（{{期刊名}}，{{年份}}，{{来源级别}}/{{研究类型与证据级别}}）。{{研究设计、关键结果、关键结论、病例适配性和局限性；内容较多时可按需使用无序列表，提高表达清晰度}}</p>
+<p><a href="{{url}}">{{研究名或论文标题}}</a>（{{期刊名}}，{{年份}}，{{研究类型}}；Oxford CEBM 2009：{{1a-5；研究设计信息不足时填“暂未分级”}}；{{journal_rank_2025 非空时显示“期刊级别：中科院分区/北大核心”，为空则省略该字段}}）。{{研究设计、关键结果、关键结论、病例适配性和局限性；内容较多时可按需使用无序列表，提高表达清晰度}}</p>
 <table>
   <tr>
     <th background-color="light-blue">研究/文献</th>
     <th background-color="light-blue">期刊/来源</th>
-    <th background-color="light-blue">来源级别</th>
+    <th background-color="light-blue">证据级别（Oxford 2009）</th>
+    <th background-color="light-blue">期刊级别（2025）</th>
     <th background-color="light-blue">年份</th>
     <th background-color="light-blue">关键结果/片段定位</th>
     <th background-color="light-blue">病例适配性</th>
@@ -84,7 +85,8 @@ flowchart TD
   <tr>
     <td><a href="{{url}}">{{标题或研究名}}</a></td>
     <td>{{NEJM/Kidney International/期刊名}}</td>
-    <td background-color="light-green">{{A 级/高质量 RCT/未核验分区}}</td>
+    <td background-color="light-green">{{1a/1b/2a/2b/2c/3a/3b/4/5；研究设计信息不足时填“暂未分级”}}</td>
+    <td>{{匹配成功时填中科院分区/北大核心；未匹配时留空}}</td>
     <td>{{年份}}</td>
     <td>{{页码/章节/结果}}</td>
     <td>{{适配性}}</td>
@@ -100,19 +102,21 @@ flowchart TD
 <h1>九、完整参考文献（含链接）</h1>
 <h2>9.1 核心证据</h2>
 <table>
-  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">链接</th></tr>
-  <tr><td>{{标题或研究名}}</td><td>{{来源/期刊}}</td><td>{{指南/RCT/系统综述等}}</td><td>{{年份}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
+  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">期刊分区</th><th background-color="light-blue">链接</th></tr>
+  <tr><td>{{标题或研究名}}</td><td>{{来源/期刊}}</td><td>{{指南/RCT/系统综述等}}</td><td>{{年份}}</td><td>{{journal_rank_2025 非空时填中科院分区/北大核心；否则留空}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
 </table>
 <h2>9.2 辅助参考</h2>
 <table>
-  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">链接</th></tr>
-  <tr><td>{{标题}}</td><td>{{来源/期刊}}</td><td>{{辅助参考类型}}</td><td>{{年份}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
+  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">期刊分区</th><th background-color="light-blue">链接</th></tr>
+  <tr><td>{{标题}}</td><td>{{来源/期刊}}</td><td>{{辅助参考类型}}</td><td>{{年份}}</td><td>{{journal_rank_2025 非空时填中科院分区/北大核心；否则留空}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
 </table>
 <h2>9.3 排除/待核验记录</h2>
 <table>
-  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">链接</th></tr>
-  <tr><td>{{标题}}</td><td>{{来源/期刊}}</td><td>{{排除/待核验；原因简写}}</td><td>{{年份}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
+  <tr><th background-color="light-blue">标题</th><th background-color="light-blue">来源</th><th background-color="light-blue">类型</th><th background-color="light-blue">年份</th><th background-color="light-blue">期刊分区</th><th background-color="light-blue">链接</th></tr>
+  <tr><td>{{标题}}</td><td>{{来源/期刊}}</td><td>{{排除/待核验；原因简写}}</td><td>{{年份}}</td><td>{{journal_rank_2025 非空时填中科院分区/北大核心；否则留空}}</td><td><a href="{{url}}">{{link_label}}</a></td></tr>
 </table>
+
+<p><b>证据与期刊级别说明：</b>本文对研究证据采用英国牛津大学循证医学中心 2009 证据等级（1a-5）与推荐意见（A-D）。指南或共识的 Oxford 证据级别标注为“不适用”，其原文分级体系和推荐等级在对应条文中保留。研究设计信息不足时标注“暂未分级”。期刊级别参考 2025 中科院分区/北大核心索引，仅表示发表载体，未匹配时不显示。参见 <a href="https://www.cebm.ox.ac.uk/resources/levels-of-evidence/oxford-centre-for-evidence-based-medicine-levels-of-evidence-march-2009">Oxford CEBM 2009 Levels of Evidence</a>。</p>
 
 <h1>十、免责声明</h1>
 <p>本报告为 AI 辅助生成的循证证据整理和临床决策讨论材料，仅供医生和临床团队参考，不替代医生面诊、主管医生医嘱、院内诊疗规范、MDT 讨论或患者知情同意。若患者病情急剧变化或出现危急情况，应立即按现场医疗流程处理。</p>

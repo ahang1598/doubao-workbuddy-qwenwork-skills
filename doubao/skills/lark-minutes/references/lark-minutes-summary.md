@@ -111,7 +111,7 @@ lark-cli minutes +summary --minute-token obcnxxxxxxxxxxxxxxxxxxxx --summary @sum
 |---------|--------|---------|---------|
 | 总结展示为原始 Markdown 文本 | — | 总结含链接、四级标题等妙记端无法渲染的语法 | 改用标题（#～###）、加粗、列表等可展示格式；接口不会因此报错 |
 | 参数无效 | — | `minute_token` 缺失或格式错误 | 检查 token 是否完整 |
-| 权限不足 | — | 缺少 `minutes:minutes:update` | 让 agent 平台为当前用户补开 `minutes:minutes:update` scope |
+| 权限不足 | — | 缺少 `minutes:minutes:update` | 由 agent 平台为当前用户补开 `minutes:minutes:update` scope |
 
 ## 参考
 

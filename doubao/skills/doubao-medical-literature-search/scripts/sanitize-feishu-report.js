@@ -3,10 +3,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const usage = `Usage:
+const usage = `用法：
   node scripts/sanitize-feishu-report.js <report.xml> [output.xml]
 
-Removes raw, escaped, double-escaped, numeric-entity, or full-width HTML superscript tags from Feishu report XML while keeping their text. Also removes legacy visible template-instruction callouts. Citation components are not modified. If output.xml is omitted, the input file is updated in place.`;
+清除飞书报告 XML 中原始、转义、双重转义、数字实体或全角形式的 HTML 上标标签，同时保留标签内文字；并移除旧版可见模板指令 callout。不会修改 citation 组件。省略 output.xml 时将直接更新输入文件。`;
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(usage);
@@ -25,7 +25,7 @@ let xml;
 try {
   xml = fs.readFileSync(input, "utf8");
 } catch (error) {
-  console.error(`Failed to read report XML: ${error.message}`);
+  console.error(`读取报告 XML 失败：${error.message}`);
   process.exit(2);
 }
 
@@ -54,7 +54,7 @@ superscriptTagPatterns.forEach((pattern) => {
 sanitized = sanitized.replace(visibleInstructionCalloutPattern, "");
 
 if (residualSuperscriptPattern.test(sanitized) || superscriptStylePattern.test(sanitized)) {
-  console.error("Superscript markup remains after sanitization; remove the residual HTML/CSS superscript form before delivery. Citation components may remain unchanged.");
+  console.error("清理后仍存在上标标记；交付前请删除残留的 HTML/CSS 上标形式。citation 组件可以保持不变。");
   process.exit(1);
 }
 
@@ -62,8 +62,8 @@ try {
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, sanitized, "utf8");
 } catch (error) {
-  console.error(`Failed to write sanitized report XML: ${error.message}`);
+  console.error(`写入清理后的报告 XML 失败：${error.message}`);
   process.exit(2);
 }
 
-console.log(`Sanitized report XML written: ${output}; removed ${supMatches} superscript tag(s) and ${instructionMatches} visible template-instruction callout(s).`);
+console.log(`已写入清理后的报告 XML：${output}；共移除 ${supMatches} 个上标标签和 ${instructionMatches} 个可见模板指令 callout。`);

@@ -23,16 +23,18 @@ Trace 出现 `unknown command` 或 `unknown flag` 时立即停止该分支，不
 
 ## 2. 使用真实的 lark-doc 规则
 
-当前平台 `lark-doc/online-doc` 使用 v2。所有 `docs +create`、`docs +fetch`、`docs +update` 必须显式传 `--api-version v2`。执行前由 `lark-doc` 读取创建、XML、style、fetch 和 update 对应 reference；语法或参数冲突时，以平台 `lark-doc` 为准。
+当前平台 `lark-doc/online-doc` 使用 v2。所有 `docs +create`、`docs +fetch`、`docs +update` 必须显式传 `--api-version v2`。`docs +fetch --scope` 必须逐字从 `full`、`outline`、`range`、`keyword`、`section` 中选择，不得凭记忆生成别名：完整交付回读固定使用 `full`，只取目录和 block ID 固定使用 `outline`，已知目标时才使用 `range`、`keyword` 或 `section`。命令失败时读取结果中的 `validation`、`allowed` 等结构化错误字段，按任务目标改用 `full` 或 `outline` 后重试一次。执行前由 `lark-doc` 读取创建、XML、style、fetch 和 update 对应 reference；语法或参数冲突时，以平台 `lark-doc` 为准。
+
+完整回读示例：`lark-cli docs +fetch --api-version v2 --doc "<doc-url-or-token>" --scope full`。目录或 block ID 的简要读取示例：`lark-cli docs +fetch --api-version v2 --doc "<doc-url-or-token>" --scope outline 2>&1 | head -80`，这是合法命令。若返回内容实际出现 `validation: invalid value ... allowed: ...`，表示本次 fetch 未执行；必须按 `allowed` 列表修正参数后再调用，不能继续内容验收或声称回读成功。
 
 ## 3. 本地报告预检
 
-1. 先生成一份完整报告 XML；对本次将写入飞书的同一文件依次运行 `node scripts/sanitize-feishu-report.js <report.xml>` 和 `node scripts/validate-report-whiteboards.js <report.xml>`，两者退出码均为 0 才能继续。不得用目测或“等价检查”替代；修复后必须重跑。
-2. 允许 citation 引用组件；禁止原始、转义、双重转义、数字实体或样式化 HTML 上标。
+1. 先生成一份完整报告 XML；对本次将写入飞书的同一文件依次运行 `node scripts/sanitize-feishu-report.js <report.xml>` 和 `node scripts/validate-report-whiteboards.js <report.xml>`，两者退出码均为 0 才能继续。`sanitize-feishu-report.js` 接收 XML 路径作为第一个位置参数，正确形式为 `node scripts/sanitize-feishu-report.js /path/to/report.xml`；不要添加 `--xml`。不得用目测或“等价检查”替代；修复后必须重跑。
+2. 允许 citation 引用组件；禁止原始、转义、双重转义、数字实体或样式化 HTML 上标，也禁止 `<ref>` 标签及其转义形式。
 3. XML 已含 `<title>` 时不得再传 `--title`；标题只能有一个来源。
 4. `<callout>` 不得使用平台 XML schema 未支持的 `type` 属性。
 5. `--content @file` 只使用当前工作目录下的相对路径；不得传绝对 `@file`，也不要使用 `--content "$(cat file)"`。
-6. 写入和回读结果必须保留完整 JSON，不用 `head`、`tail` 截断。
+6. `outline` 简要读取可使用 `2>&1 | head -80` 控制展示长度，不得仅凭管道或 `head` 判定失败；但必须检查已返回内容，出现 `validation`、`allowed`、`error` 等真实错误语义时按失败处理。完整交付验收仍使用 `scope=full`，并保留足以核对正文、结构和写入状态的结果。
 
 ## 4. 写入策略：整篇一次创建优先
 

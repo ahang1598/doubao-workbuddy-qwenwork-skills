@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <presentation xmlns="http://www.larkoffice.com/sml/2.0" width="960" height="540">
-  <!-- 生成约束：文献写入内部 CSV 时按行顺序生成 citation_number；PPT 正文、关系图、时间线和参考文献直接复用同一 [n]，不按页或图另行规划或重排。用户明确限定只查指南、共识或其他证据类型时，删除范围外页面并调整页序，不补充范围外文献。audience_mode=patient 时解释必要术语，以用户问题和证据边界为主；除非用户明确要求，不生成研究方向、课题建议、证据空白或无关风险页面。医学资讯跟踪任务按时间窗、日期、发布主体、对应原始证据、证据状态和增量意义灵活规划页面，无独立价值的标准页面或图表可省略；少量纳入的 arXiv、medRxiv 或 bioRxiv 预印本必须标明“预印本/未同行评议”。全文公式上标使用 Unicode 上标字符（如 ²、³、⁻¹），不得使用 sup 标签。阅读状态默认不展示，仅确实阅读全文的重要论文可标注“已阅读全文”。不要把本注释写入可见页面。 -->
+  <!-- 生成约束：文献写入内部 CSV 时按行顺序生成 citation_number；PPT 正文、关系图、时间线和参考文献直接复用同一 [n]，不按页或图另行规划或重排。用户明确限定只查指南、共识或其他证据类型时，删除范围外页面并调整页序，不补充范围外文献。audience_mode=patient 时解释必要术语，以用户问题和证据边界为主；除非用户明确要求，不生成研究方向、课题建议、证据空白或无关风险页面。医学资讯跟踪任务按时间窗、日期、发布主体、对应原始证据、证据状态和增量意义灵活规划页面，无独立价值的标准页面或图表可省略；少量纳入的 arXiv、medRxiv 或 bioRxiv 预印本必须标明“预印本/未同行评议”。全文公式上标使用 Unicode 上标字符（如 ²、³、⁻¹），不得使用 sup 标签；不得使用 ref 标签或其转义形式。阅读状态默认不展示，仅确实阅读全文的重要论文可标注“已阅读全文”。不要把本注释写入可见页面。 -->
   <title>{{主题}}医学文献循证检索分析汇报</title>
 
   <slide id="cover">
@@ -34,7 +34,7 @@
       <shape type="rect" topLeftX="60" topLeftY="230" width="258" height="170"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgb(203,213,225)" width="1"/></shape>
       <shape type="text" topLeftX="82" topLeftY="252" width="214" height="112"><content><p><strong><span color="rgb(14,116,144)" fontSize="17">指南/共识</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">[{{citation_number}}] {{指南简称与推荐方向}}</span></p></content></shape>
       <shape type="rect" topLeftX="351" topLeftY="230" width="258" height="170"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgb(203,213,225)" width="1"/></shape>
-      <shape type="text" topLeftX="373" topLeftY="252" width="214" height="112"><content><p><strong><span color="rgb(22,101,52)" fontSize="17">关键研究</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">[{{citation_number}}] {{研究简称与核心发现}}</span></p></content></shape>
+      <shape type="text" topLeftX="373" topLeftY="252" width="214" height="112"><content><p><strong><span color="rgb(22,101,52)" fontSize="17">关键研究</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">[{{citation_number}}] {{研究简称与核心发现}}</span></p><p><span color="rgb(71,85,105)" fontSize="11">{{期刊/年份}} | Oxford {{1a-5；研究设计信息不足时填“暂未分级”}} | {{journal_rank_2025 非空时显示期刊级别，为空则省略}}</span></p></content></shape>
       <shape type="rect" topLeftX="642" topLeftY="230" width="258" height="170"><fill><fillColor color="rgb(255,251,235)"/></fill><border color="rgb(245,158,11)" width="1"/></shape>
       <shape type="text" topLeftX="664" topLeftY="252" width="214" height="112"><content><p><strong><span color="rgb(146,64,14)" fontSize="17">证据边界</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{证据局限；仅 professional 模式且任务需要时补充研究空白}}</span></p></content></shape>
     </data>
@@ -151,14 +151,14 @@
   <slide id="references">
     <style><fill><fillColor color="rgb(255,255,255)"/></fill></style>
     <data>
-      <shape type="text" topLeftX="60" topLeftY="34" width="820" height="48"><content><p><strong><span color="rgb(15,23,42)" fontSize="28">参考文献（标题｜来源｜类型｜年份｜链接）</span></strong></p></content></shape>
+      <shape type="text" topLeftX="60" topLeftY="34" width="820" height="48"><content><p><strong><span color="rgb(15,23,42)" fontSize="28">参考文献（标题｜来源｜类型｜年份｜期刊分区｜链接）</span></strong></p></content></shape>
       <shape type="text" topLeftX="70" topLeftY="110" width="820" height="330">
         <content>
           <p><strong><span fontSize="17">核心证据</span></strong></p>
-          <p><strong><span fontSize="13">标题</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">来源</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">类型</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">年份</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">链接</span></strong></p>
-          <p><span fontSize="13">[{{citation_number}}] {{标题}}</span><span fontSize="13"> | {{来源/期刊}} | {{指南/系统综述/RCT/队列等}} | {{年份}} | </span><a href="{{url}}"><span fontSize="13">{{link_label}}</span></a></p>
-          <p><span fontSize="13">{{标题}}</span><span fontSize="13"> | {{来源/期刊}} | {{最新进展/辅助参考}} | {{年份}} | </span><a href="{{url}}"><span fontSize="13">{{link_label}}</span></a></p>
-          <p><span fontSize="13">本页列出核心证据和辅助参考的可点击来源入口。</span></p>
+          <p><strong><span fontSize="13">标题</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">来源</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">类型</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">年份</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">期刊分区</span></strong><span fontSize="13"> | </span><strong><span fontSize="13">链接</span></strong></p>
+          <p><span fontSize="13">[{{citation_number}}] {{标题}}</span><span fontSize="13"> | {{来源/期刊}} | {{指南/系统综述/RCT/队列等}} | {{年份}} | {{journal_rank_2025 非空时填中科院分区/北大核心；否则留空}} | </span><a href="{{url}}"><span fontSize="13">{{link_label}}</span></a></p>
+          <p><span fontSize="13">{{标题}}</span><span fontSize="13"> | {{来源/期刊}} | {{最新进展/辅助参考}} | {{年份}} | {{journal_rank_2025 非空时填中科院分区/北大核心；否则留空}} | </span><a href="{{url}}"><span fontSize="13">{{link_label}}</span></a></p>
+          <p><span fontSize="12">研究证据分级采用 Oxford CEBM 2009（1a-5；推荐意见 A-D）；指南/共识的 Oxford 证据级别为“不适用”，原指南等级保留原体系。依据： </span><a href="https://www.cebm.ox.ac.uk/resources/levels-of-evidence/oxford-centre-for-evidence-based-medicine-levels-of-evidence-march-2009"><span fontSize="12">Oxford CEBM 2009</span></a><span fontSize="12">。期刊级别参考 2025 中科院分区/北大核心索引，仅展示明确命中结果，且不替代证据质量评价。</span></p>
         </content>
       </shape>
     </data>

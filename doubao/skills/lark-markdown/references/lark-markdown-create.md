@@ -86,14 +86,11 @@ lark-cli markdown +create \
 }
 ```
 
-> [!IMPORTANT]
-> **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认。
-
 ## 失败处理
 
 - `not_found` / `1061044`：父目录或 wiki 节点不存在，或 token 类型放错参数。修正 `--folder-token` / `--wiki-token` 后再试，不要重复提交同一参数。
 - `quota_exceeded` / `1061101`：目标存储空间配额已满。释放空间、换父目录/节点或请管理员扩容后再试。
-- `permission_denied` / `missing_scope`：检查用户授权和目标目录/节点 ACL。
+- `permission_denied` / `missing_scope`：`--as user` 看用户授权和目标 ACL。
 - `rate_limit`：停止立即重试，使用退避。
 - `server_error` / `233523001`：可以稍后有限重试；若重复出现，保留 `log_id` / request id 给服务端排查。
 

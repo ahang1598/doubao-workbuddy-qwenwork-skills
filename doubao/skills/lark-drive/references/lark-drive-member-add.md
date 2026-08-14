@@ -58,8 +58,9 @@ lark-cli drive +member-add \
 
 ## 行为说明
 
-- **部门协作者**：`--member-type=opendepartmentid` 用于添加部门协作者。
-- **通知**：传 `--need-notification` 可向被添加成员发送通知。
+- **身份支持**：`--as user`。
+- **部门协作者**：`--member-type=opendepartmentid` 必须配合 `--as user`。
+- **通知**：`--need-notification` 仅 `--as user` 时有效。
 - **批量约束**：批量请求共享同一 `--member-type`、`--perm` 和 `--perm-type`；混合用户/群组/部门的场景需拆分为多次调用。
 - **Wiki 空间 ID**：`--member-type=wikispaceid` 时必须同时传 `--member-kind`，否则 API 会缺少必填的 body `type` 字段。`wiki_space_member` 对应知识库成员角色；若知识库已将成员拆分为可阅读/可编辑成员组，改用 `wiki_space_viewer` 或 `wiki_space_editor`。
 - **ID 解析**：优先用 `open_id` + `--member-type openid`；仅在无法解析 `open_id` 时使用 `email`。群组优先用 `openchat`，部门用 `opendepartmentid`。

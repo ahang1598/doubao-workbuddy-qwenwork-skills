@@ -57,7 +57,7 @@ JSON 输出原样透传 API 的 `data` ：
 
 ## 行为说明
 
-- **身份支持**：以 user 身份运行；缺 scope 或目标权限时按统一 permission 错误路径处理。
+- **身份支持**：`--as user`；缺 scope 或目标权限时按统一 permission 错误路径处理。
 - **接口 scope**：查询成员列表需要 `docs:permission.member:retrieve`。
 - **fields 默认**：不传 `--fields` 时按官方 API 默认，不请求姓名、头像、外部标签等附加字段；需要时显式指定。
 - **字段级权限**：`--fields` 只控制请求哪些附加字段，不保证服务端一定返回。请求用户的 `name` / `avatar` 时，应用还需开通 `contact:user.base:readonly`（“获取用户基本信息”；已具备官方兼容的历史通讯录权限也可满足要求）。

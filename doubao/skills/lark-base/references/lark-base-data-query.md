@@ -1,7 +1,7 @@
 
 # Base data-query DSL SSOT
 
-> **入口指南**: [lark-base-data-query-guide.md](lark-base-data-query-guide.md)
+> **入口指南**: [lark-base-data-query-guide.md](lark-base-data-query-guide.md) | **前置条件**: 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
 
 本文档是 `+data-query` JSON DSL 的单一事实来源（SSOT），用于说明完整字段、操作符、限制、返回和错误恢复。常用 fewshot 与命令选择先读 [lark-base-data-query-guide.md](lark-base-data-query-guide.md)。
 
@@ -375,7 +375,7 @@ CLI 输出标准信封 `{ok, identity, data}`（失败时为 `{ok:false, identit
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `ok` | bool | 是否成功 |
-| `identity` | string | 执行身份：`user` |
+| `identity` | string | 执行身份：`user` / `bot` |
 | `data.main_data` | []object | 查询结果数组，每个元素为一行数据（成功时） |
 | `error` | object | 失败时的 typed 错误，含 `type` / `subtype` / `code` / `message` / `hint` / `log_id` |
 
@@ -455,6 +455,7 @@ CLI 输出标准信封 `{ok, identity, data}`（失败时为 `{ok:false, identit
 ## 参考
 
 - [lark-base](../SKILL.md) — 多维表格全部命令
+- [lark-shared](../../lark-shared/SKILL.md) — 认证和全局参数
 - [lark-base-data-analysis-sop.md](lark-base-data-analysis-sop.md) — 查询范围、选路、下推、分页、`+record-list` / `+record-search` 回查和关系查询 SOP
 - [lark-base-cell-value.md](lark-base-cell-value.md) — CellValue 格式规范
 - [lark-base-field-json.md](lark-base-field-json.md) — 字段类型与 JSON 结构

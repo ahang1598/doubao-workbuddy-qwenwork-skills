@@ -1,7 +1,7 @@
 
 # minutes +detail
 
-通过 `minute_token` 查询妙记详情，按需获取 AI 产物（总结/待办/章节/逐字稿/关键词）。只读。
+通过 `minute_token` 查询妙记详情，按需获取 AI 产物（总结/待办/章节/逐字稿/关键词）。只读，以 `--as user` 身份运行。
 
 > `--summary` / `--todo` / `--chapter` / `--keyword` / `--transcript` 至少一个；不传任何产物 flag 时只返回基础信息（如 `title`），AI 产物字段都不会出现。一次性获取所有产物：`--summary --todo --chapter --keyword --transcript`。
 
@@ -50,13 +50,13 @@ lark-cli minutes +detail --minute-tokens obcxxx --transcript --overwrite --outpu
 
 ```bash
 # 1. 取妙记关联的 note_id，没有关联会议纪要则为空
-lark-cli minutes +detail --minute-tokens <minute_token>
+lark-cli minutes +detail --minute-tokens obcnxxxxxxxxxxxxxxxxxxxx --as user
 
 # 2. 用 note_id 拿 note_doc_token / verbatim_doc_token / shared_doc_tokens
-lark-cli note +detail --note-id <note_id>
+lark-cli note +detail --note-id <note_id> --as user
 
 # 3. 读纪要 / 逐字稿正文
-lark-cli docs +fetch --api-version v2 --doc <note_doc_token> --doc-format markdown
+lark-cli docs +fetch --api-version v2 --doc <note_doc_token> --doc-format markdown --as user
 ```
 
 > `minute_token` 不要直接传给 `note +detail`：必须先用本命令拿到 `note_id` 再调用 `note +detail`。

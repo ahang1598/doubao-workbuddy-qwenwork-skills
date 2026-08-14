@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Lark Technologies Pte. Ltd.
+# SPDX-License-Identifier: MIT
 """Profile a candidate table range in a Lark sheet."""
 
 from __future__ import annotations
@@ -272,6 +274,7 @@ def _risk_warnings(
     possible_multi_row_header: bool,
     header_row_not_first: bool,
     data_range_has_gaps: bool,
+    data_range_has_col_gaps: bool,
     hidden_rows: list[int],
     hidden_columns: list[str],
 ) -> list[str]:
@@ -295,11 +298,36 @@ def _risk_warnings(
         warnings.add("header_row_not_first")
     if data_range_has_gaps:
         warnings.add("data_range_has_gaps")
+    if data_range_has_col_gaps:
+        warnings.add("data_range_has_col_gaps")
     if hidden_rows:
         warnings.add("hidden_rows_in_range")
     if hidden_columns:
         warnings.add("hidden_columns_in_range")
     return sorted(warnings)
+
+
+def _col_segments(col_letters: list[str]) -> list[list[str]]:
+    """Group column letters into contiguous runs of real column indices.
+
+    With --skip-hidden the returned columns can be non-consecutive (A, C when B
+    is hidden). Reporting a single data_range across that gap would let a caller
+    write the hidden-column-free data back as if it were contiguous, shifting
+    every value right of the gap.
+    """
+    if not col_letters:
+        return []
+    indices = [col_to_index(col) for col in col_letters]
+    segments = []
+    start = previous = indices[0]
+    for current in indices[1:]:
+        if current == previous + 1:
+            previous = current
+            continue
+        segments.append([index_to_col(start), index_to_col(previous)])
+        start = previous = current
+    segments.append([index_to_col(start), index_to_col(previous)])
+    return segments
 
 
 def _row_segments(row_numbers: list[int]) -> list[list[int]]:
@@ -317,19 +345,45 @@ def _row_segments(row_numbers: list[int]) -> list[list[int]]:
     return segments
 
 
-def _write_hints(grid: CsvGrid, *, header_row: int | None, data_start: int, bounds) -> dict[str, Any]:
+def _write_hints(
+    grid: CsvGrid,
+    *,
+    header_row: int | None,
+    data_start: int,
+    bounds,
+    hidden_columns: list[str] | None = None,
+    skip_hidden: bool = False,
+) -> dict[str, Any]:
     last_non_empty_col = None
     for idx, col in enumerate(grid.col_letters):
         if any(idx < len(row) and row[idx].strip() for row in grid.values):
             last_non_empty_col = col_to_index(col)
     safe_col_num = (last_non_empty_col + 1) if last_non_empty_col else bounds.start_col
+    # Step over hidden columns. Under --skip-hidden they are absent from the
+    # grid entirely, so "one past the last visible column" can land ON a hidden
+    # column that holds data — and when the hidden columns sit at the right edge
+    # there is no gap in the returned letters either, so data_range_has_col_gaps
+    # stays silent too. Appending there would overwrite data nobody can see.
+    hidden_indices = {col_to_index(col) for col in (hidden_columns or [])}
+    skipped_hidden: list[str] = []
+    while safe_col_num in hidden_indices:
+        skipped_hidden.append(index_to_col(safe_col_num))
+        safe_col_num += 1
     safe_col = index_to_col(safe_col_num)
-    return {
+    hints = {
         "last_non_empty_col": index_to_col(last_non_empty_col) if last_non_empty_col else None,
-        "safe_append_col": safe_col,
-        "safe_append_header_cell": f"{safe_col}{header_row}" if header_row else None,
-        "safe_append_data_start_cell": f"{safe_col}{data_start}",
     }
+    if not (skip_hidden and hidden_columns is None):
+        hints.update(
+            {
+                "safe_append_col": safe_col,
+                "safe_append_header_cell": f"{safe_col}{header_row}" if header_row else None,
+                "safe_append_data_start_cell": f"{safe_col}{data_start}",
+            }
+        )
+    if skipped_hidden:
+        hints["skipped_hidden_cols"] = skipped_hidden
+    return hints
 
 
 def profile_grid(
@@ -339,6 +393,7 @@ def profile_grid(
     skip_hidden: bool = False,
     hidden_rows: list[int] | None = None,
     hidden_columns: list[str] | None = None,
+    all_hidden_columns: list[str] | None = None,
     header_scan_rows: int = 20,
 ) -> dict[str, Any]:
     max_row = max(grid.row_numbers, default=1)
@@ -367,6 +422,8 @@ def profile_grid(
         data_row_numbers[0] != data_start or len(data_row_segments) > 1
     )
     data_rows = len(data_row_numbers)
+    data_col_segments = _col_segments(grid.col_letters)
+    data_range_has_col_gaps = len(data_col_segments) > 1
     hidden_rows = hidden_rows or []
     hidden_columns = hidden_columns or []
     possible_multi_row_header = _possible_multi_row_header(grid, header_row)
@@ -379,6 +436,7 @@ def profile_grid(
             "data_range": data_range,
             "data_rows": data_rows,
             "data_row_segments": data_row_segments,
+            "data_col_segments": data_col_segments,
             "column_count": len(columns),
             "special_rows_count": len(specials),
         },
@@ -386,6 +444,7 @@ def profile_grid(
         "header_row": header_row,
         "data_range": data_range,
         "data_row_segments": data_row_segments,
+        "data_col_segments": data_col_segments,
         "columns": columns,
         "field_map": _field_map(columns),
         "risk_warnings": _risk_warnings(
@@ -396,6 +455,7 @@ def profile_grid(
             possible_multi_row_header=possible_multi_row_header,
             header_row_not_first=header_row_not_first,
             data_range_has_gaps=data_range_has_gaps,
+            data_range_has_col_gaps=data_range_has_col_gaps,
             hidden_rows=hidden_rows,
             hidden_columns=hidden_columns,
         ),
@@ -404,7 +464,14 @@ def profile_grid(
             "hidden_rows_in_range": hidden_rows,
             "hidden_columns_in_range": hidden_columns,
         },
-        "write_hints": _write_hints(grid, header_row=header_row, data_start=data_start, bounds=bounds),
+        "write_hints": _write_hints(
+            grid,
+            header_row=header_row,
+            data_start=data_start,
+            bounds=bounds,
+            hidden_columns=all_hidden_columns,
+            skip_hidden=skip_hidden,
+        ),
         "special_rows": specials,
     }
 
@@ -436,6 +503,27 @@ def _hidden_rows_and_columns(grid: CsvGrid, layout: dict[str, Any]) -> tuple[lis
     rows = sorted(row for row in grid.row_numbers if row in hidden_row_indexes)
     columns = [col for col in grid.col_letters if col.upper() in hidden_column_letters]
     return rows, columns
+
+
+def _all_hidden_columns(layout: dict[str, Any]) -> list[str]:
+    """Every hidden column on the sheet, not just those inside the grid.
+
+    _hidden_rows_and_columns intersects with the returned grid, which is the
+    right scope for the "there are hidden rows/columns in what you read"
+    warnings. The append hint needs the opposite: the columns that are NOT in
+    the grid precisely because they are hidden.
+    """
+    letters: list[str] = []
+    raw = layout.get("hidden_cols") or layout.get("hidden_columns") or []
+    for value in raw if isinstance(raw, list) else []:
+        if isinstance(value, str) and value.isalpha():
+            letters.append(value.upper())
+            continue
+        try:
+            letters.append(index_to_col(int(value) + 1))
+        except (TypeError, ValueError):
+            continue
+    return letters
 
 
 def profile_table(args) -> tuple[dict[str, Any], list[str]]:
@@ -472,28 +560,36 @@ def profile_table(args) -> tuple[dict[str, Any], list[str]]:
         warnings.append("CSV row numbers were inferred from the requested range")
     hidden_rows: list[int] = []
     hidden_columns: list[str] = []
-    if not args.skip_hidden:
-        try:
-            layout = envelope_data(
-                run_sheets(
-                    "+sheet-info",
-                    url=args.url,
-                    spreadsheet_token=args.spreadsheet_token,
-                    sheet_id=args.sheet_id,
-                    sheet_name=args.sheet_name,
-                    flags={"include": "hidden_rows,hidden_cols"},
-                    timeout=args.timeout,
-                )
+    all_hidden_columns: list[str] | None = None
+    # Fetched in BOTH modes. Under --skip-hidden the hidden rows/columns are
+    # absent from the grid, so hidden_rows/hidden_columns (which are scoped to
+    # what the grid contains) come back empty and no warning fires — but the
+    # write hints still need to know where the hidden columns are, or
+    # safe_append_col can point at one that holds data. all_hidden_columns is
+    # the unscoped list used for exactly that.
+    try:
+        layout = envelope_data(
+            run_sheets(
+                "+sheet-info",
+                url=args.url,
+                spreadsheet_token=args.spreadsheet_token,
+                sheet_id=args.sheet_id,
+                sheet_name=args.sheet_name,
+                flags={"include": "hidden_rows,hidden_cols"},
+                timeout=args.timeout,
             )
-            hidden_rows, hidden_columns = _hidden_rows_and_columns(grid, layout)
-        except LarkCliError as exc:
-            warnings.append(f"hidden row/column detection unavailable: {exc}")
+        )
+        hidden_rows, hidden_columns = _hidden_rows_and_columns(grid, layout)
+        all_hidden_columns = _all_hidden_columns(layout)
+    except LarkCliError as exc:
+        warnings.append(f"hidden row/column detection unavailable: {exc}")
     return profile_grid(
         grid,
         source_range,
         skip_hidden=args.skip_hidden,
         hidden_rows=hidden_rows,
         hidden_columns=hidden_columns,
+        all_hidden_columns=all_hidden_columns,
         header_scan_rows=args.header_scan_rows,
     ), warnings
 

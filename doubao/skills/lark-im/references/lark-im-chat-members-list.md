@@ -43,7 +43,7 @@ lark-cli im +chat-members-list --chat-id oc_xxx --dry-run
 | `--format json` | No | - | Output as JSON |
 | `--dry-run` | No | - | Preview the request without executing it |
 
-> The caller must be in the target chat, and must belong to the same tenant for internal chats.
+> Supports `--as user` (default). The caller must be in the target chat, and must belong to the same tenant for internal chats.
 
 ## Output Fields
 
@@ -81,4 +81,4 @@ A truncated result is *not* fixable by paging further — it is a server-side ca
 | `--chat-id is required` | `--chat-id` omitted |   | Provide the `oc_xxx` chat ID |
 | `invalid --page-size 101: must be between 1 and 100` | out of range |   | Use 1-100 |
 | `--member-types contains invalid value` | value other than `user`/`bot` |   | Use `user`, `bot`, or both |
-| Permission denied | missing `im:chat.members:read` |   | Bot: enable the scope in the console. User: have the agent platform grant the `im:chat.members:read` scope. |
+| Permission denied | missing `im:chat.members:read` |   | Have the agent platform grant the `im:chat.members:read` scope for the current user |

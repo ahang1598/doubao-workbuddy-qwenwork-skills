@@ -13,7 +13,7 @@
 1. 按 [`lark-drive-inspect.md`](lark-drive-inspect.md) 处理 URL / token 解析。
 2. 使用 `drive metas batch_query` 补齐 Drive 资源 owner、标题和 URL。
 3. 必要时使用 `drive permission.members auth` 读取权限信号；该接口不提供 `full_access` / 移动权限的直接判定，不能把 `manage_public` 等同为可移动。
-5. 按 [`../../lark-wiki/references/lark-wiki-node-get.md`](../../lark-wiki/references/lark-wiki-node-get.md) 处理 Wiki 节点解析。
+4. 按 [`../../lark-wiki/references/lark-wiki-node-get.md`](../../lark-wiki/references/lark-wiki-node-get.md) 处理 Wiki 节点解析。
 6. 按 [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md) 读取文档内容。
 7. 需要验证 Sheet 内容时，按 [`../../lark-sheets/SKILL.md`](../../lark-sheets/SKILL.md) 执行。
 

@@ -36,7 +36,7 @@
         <fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.10)" width="1"/>
       </shape>
       <shape type="text" topLeftX="82" topLeftY="254" width="214" height="118">
-        <content textType="body"><p><strong><span color="rgb(14,116,144)" fontSize="18">关键依据 1</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{可读文献简称、期刊/级别、核心结果}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(14,116,144)" fontSize="18">关键依据 1</span></strong></p><p><span color="rgb(51,65,85)" fontSize="14">{{可读文献简称、期刊/年份、Oxford 证据级别、命中时的期刊级别、核心结果}}</span></p></content>
       </shape>
       <shape type="rect" topLeftX="351" topLeftY="230" width="258" height="180">
         <fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.10)" width="1"/>
@@ -370,14 +370,14 @@
       <shape type="rect" topLeftX="60" topLeftY="105" width="840" height="54"><fill><fillColor color="rgb(14,116,144)"/></fill></shape>
       <shape type="text" topLeftX="86" topLeftY="120" width="190" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">证据</span></strong></p></content></shape>
       <shape type="text" topLeftX="292" topLeftY="120" width="150" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">期刊/来源</span></strong></p></content></shape>
-      <shape type="text" topLeftX="460" topLeftY="120" width="120" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">级别</span></strong></p></content></shape>
+      <shape type="text" topLeftX="460" topLeftY="120" width="120" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">证据级别</span></strong></p></content></shape>
       <shape type="text" topLeftX="600" topLeftY="120" width="260" height="28"><content><p><strong><span color="rgb(255,255,255)" fontSize="14">与本病例的关系</span></strong></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="165" width="840" height="62"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="180" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{指南名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构/年份}} | {{A/B/推荐等级}} | {{适配性和推荐内容}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="180" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{指南名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构/年份}} | {{原指南分级（如有）}} | {{适配性和推荐内容}}</span></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="237" width="840" height="62"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="252" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{研究名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{期刊}} | {{RCT/队列/系统综述}} | {{核心结果和外推边界}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="252" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{研究名}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{期刊/年份}} | {{研究类型}} | Oxford {{1a-5；研究设计信息不足时填“暂未分级”}} | {{journal_rank_2025 非空时显示“期刊级别：中科院分区/北大核心”，为空则省略该字段}} | {{核心结果和外推边界}}</span></p></content></shape>
       <shape type="rect" topLeftX="60" topLeftY="309" width="840" height="62"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.08)" width="1"/></shape>
-      <shape type="text" topLeftX="86" topLeftY="324" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{说明书/监管/安全来源}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构}} | {{A/B}} | {{禁忌、监测或剂量边界}}</span></p></content></shape>
+      <shape type="text" topLeftX="86" topLeftY="324" width="760" height="28"><content><p><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{说明书/监管/安全来源}}</span></a><span color="rgb(51,65,85)" fontSize="13"> | {{机构}} | {{权威来源类型}} | {{禁忌、监测或剂量边界}}</span></p></content></shape>
       <shape type="text" topLeftX="60" topLeftY="470" width="840" height="36">
         <content textType="caption"><p><span color="rgb(100,116,139)" fontSize="11">每条证据名本身优先做成可点击链接；备注和末页链接只作为补充。分区/IF 未核验时标注未核验。</span></p></content>
       </shape>
@@ -394,19 +394,19 @@
         <fill><fillColor color="rgb(239,246,255)"/></fill><border color="rgb(96,165,250)" width="1"/>
       </shape>
       <shape type="text" topLeftX="84" topLeftY="128" width="212" height="220">
-        <content textType="body"><p><strong><span color="rgb(30,64,175)" fontSize="18">{{研究名}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{设计、入排标准、样本量}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{主要终点、效应量与关键结论}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(30,64,175)" fontSize="18">{{研究名}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/研究类型；Oxford 1a-5；期刊级别命中时追加}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{设计、入排标准、样本量}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{主要终点、效应量与关键结论}}</span></p></content>
       </shape>
       <shape type="rect" topLeftX="350" topLeftY="104" width="260" height="310">
         <fill><fillColor color="rgb(236,253,245)"/></fill><border color="rgb(52,211,153)" width="1"/>
       </shape>
       <shape type="text" topLeftX="374" topLeftY="128" width="212" height="220">
-        <content textType="body"><p><strong><span color="rgb(6,95,70)" fontSize="18">{{研究简称}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{研究设计与主要终点}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{疗效、安全性、亚组与关键结论}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{与本病例的匹配度}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(6,95,70)" fontSize="18">{{研究简称}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/研究类型；Oxford 1a-5；期刊级别命中时追加}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{研究设计与主要终点}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{疗效、安全性、亚组与关键结论}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{与本病例的匹配度}}</span></p></content>
       </shape>
       <shape type="rect" topLeftX="640" topLeftY="104" width="260" height="310">
         <fill><fillColor color="rgb(255,251,235)"/></fill><border color="rgb(245,158,11)" width="1"/>
       </shape>
       <shape type="text" topLeftX="664" topLeftY="128" width="212" height="220">
-        <content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">{{研究或综述简称}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/来源级别}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{研究设计、一致性或冲突点与关键结论}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{局限性和外推边界}}</span></p></content>
+        <content textType="body"><p><strong><span color="rgb(146,64,14)" fontSize="18">{{研究或综述简称}}</span></strong></p><p><span color="rgb(51,65,85)" fontSize="13">{{期刊/年份/研究类型；Oxford 1a-5；期刊级别命中时追加}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{研究设计、一致性或冲突点与关键结论}}</span></p><p><span color="rgb(51,65,85)" fontSize="13">{{局限性和外推边界}}</span></p></content>
       </shape>
       <shape type="text" topLeftX="60" topLeftY="456" width="840" height="36">
         <content textType="caption"><p><span color="rgb(100,116,139)" fontSize="11">证据较多时，本页可拆为 2 页：肾脏/疗效结局一页，安全性/特殊人群一页。</span></p></content>
@@ -442,20 +442,20 @@
     <style><fill><fillColor color="rgb(248,250,252)"/></fill></style>
     <data>
       <shape type="text" topLeftX="60" topLeftY="34" width="760" height="48">
-        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">参考文献（标题｜来源｜类型｜年份｜链接）</span></strong></p></content>
+        <content><p><strong><span color="rgb(15,23,42)" fontSize="28">参考文献（标题｜来源｜类型｜年份｜期刊分区｜链接）</span></strong></p></content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="110" width="840" height="250"><fill><fillColor color="rgb(255,255,255)"/></fill><border color="rgba(15,23,42,0.10)" width="1"/></shape>
       <shape type="text" topLeftX="90" topLeftY="138" width="780" height="170">
         <content textType="body">
-          <p><strong><span color="rgb(15,23,42)" fontSize="13">标题</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">来源</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">类型</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">年份</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">链接</span></strong></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{指南/共识标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构}} | {{指南/共识}} | {{年份}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{研究标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{期刊}} | {{RCT/系统综述/队列}} | {{年份}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
-          <p><span color="rgb(51,65,85)" fontSize="13">{{安全/监管来源标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构}} | {{说明书/安全监管}} | {{年份}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
+          <p><strong><span color="rgb(15,23,42)" fontSize="13">标题</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">来源</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">类型</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">年份</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">期刊分区</span></strong><span color="rgb(100,116,139)" fontSize="13"> | </span><strong><span color="rgb(15,23,42)" fontSize="13">链接</span></strong></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{指南/共识标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构}} | {{指南/共识}} | {{年份}} |  | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{研究标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{期刊}} | {{RCT/系统综述/队列}} | {{年份}} | {{journal_rank_2025 非空时填中科院分区/北大核心；否则留空}} | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
+          <p><span color="rgb(51,65,85)" fontSize="13">{{安全/监管来源标题}}</span><span color="rgb(100,116,139)" fontSize="13"> | {{机构}} | {{说明书/安全监管}} | {{年份}} |  | </span><a href="{{url}}"><span color="rgb(37,99,235)" fontSize="13">{{link_label}}</span></a></p>
         </content>
       </shape>
       <shape type="rect" topLeftX="60" topLeftY="392" width="840" height="68"><fill><fillColor color="rgb(239,246,255)"/></fill><border color="rgb(147,197,253)" width="1"/></shape>
       <shape type="text" topLeftX="90" topLeftY="410" width="780" height="36">
-        <content textType="caption"><p><span color="rgb(30,64,175)" fontSize="12">更多来源按相同五列格式续页展示，并保留可点击来源入口。</span></p></content>
+        <content textType="caption"><p><span color="rgb(30,64,175)" fontSize="12">研究证据分级采用 Oxford CEBM 2009（1a-5；推荐意见 A-D）；指南/共识的 Oxford 证据级别为“不适用”，原指南等级保留原体系。期刊级别参考 2025 中科院分区/北大核心索引，未匹配时不显示。依据： </span><a href="https://www.cebm.ox.ac.uk/resources/levels-of-evidence/oxford-centre-for-evidence-based-medicine-levels-of-evidence-march-2009"><span color="rgb(37,99,235)" fontSize="12">Oxford CEBM 2009</span></a></p></content>
       </shape>
     </data>
   </slide>

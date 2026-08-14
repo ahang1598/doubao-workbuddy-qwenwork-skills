@@ -133,8 +133,6 @@ lark-cli im +messages-send --user-id ou_xxx --msg-type interactive --content '<c
 
 > 纯 `open_url` 跳转按钮在客户端本地跳转，不回调服务端。
 
-如需处理回调（监听事件、读取字段、更新卡片），见 `../lark-im-card-action-reply.md`。
-
 ---
 
 ## Step 6：用户反馈修正（按需进入）
@@ -176,5 +174,4 @@ lark-cli im +messages-send --user-id ou_xxx --msg-type interactive --content '<c
 - [ ] Step 2：读 schema.md + 组件明细 + 「好看的标准 P0–P7」
 - [ ] Step 3：构造 JSON → 过 P0–P7 硬 Gate（P0+P1–P3 阻断），不过先修
 - [ ] Step 4：发送，失败按常见失败表排查重试（≤3 次）；仍失败则降级 Card 1.0 重构发送
-- [ ] Step 5：若有交互，参考 ../lark-im-card-action-reply.md
 - [ ] Step 6：用户提出修改意见时，定位组件→最小改动→原地更新或重发

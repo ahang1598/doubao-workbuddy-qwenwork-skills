@@ -1,5 +1,7 @@
 # base +view-set-filter
 
+> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+
 更新视图筛选配置。
 
 ## 1. filter 结构

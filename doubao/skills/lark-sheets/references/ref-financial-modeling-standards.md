@@ -504,7 +504,7 @@ Sensitivity 额外检查：
 本规范的逻辑与视觉要求与引擎无关；具体写值/公式/样式时按产物载体选实现方式：
 
 - **本地 `.xlsx`（Python 引擎）**：用 openpyxl 实现颜色、数字格式、边框、列宽、网格线、勾稽校验（见上方各 Python 示例）；批量样式可用 `scripts/format_range.py`，公式校验用 `scripts/formula_verify.py`。所有颜色用不带 `#` 的 6 位 hex（如 `'0000FF'`）。
-- **飞书在线表格**：写值/公式/样式按 `lark-sheets-write-cells`，多区域用 `lark-sheets-batch-update`，列宽行高用 `lark-sheets-range-operations` / `lark-sheets-sheet-structure`，跨 sheet 公式按 `lark-sheets-formula-translation` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
+- **飞书在线表格**：写值/公式按 `lark-sheets-write-cells`；样式、合并、列宽行高、冻结的任意组合**一次** `lark-sheets-styles-put` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `lark-sheets-batch-update`；跨 sheet 公式按 `lark-sheets-formula-translation` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
 - 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后只做必要的链接/预览处理。
 
 ===== 全文完（共 510 行）=====

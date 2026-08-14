@@ -18,7 +18,7 @@ metadata:
 
 ## 身份
 
-所有 minutes 命令默认使用 `--as user`。
+所有 minutes 命令统一以 `--as user` 身份运行。
 
 ## Shortcuts
 
@@ -29,7 +29,7 @@ metadata:
 | [`+download`](references/lark-minutes-download.md) | 下载妙记音视频媒体文件 |
 | [`+upload`](references/lark-minutes-upload.md) | 上传 file_token 生成妙记 |
 | [`+update`](references/lark-minutes-update.md) | 更新妙记标题 |
-| `+apply-permission` | 申请妙记查看或编辑权限 |
+| [`+apply-permission`](references/lark-minutes-apply-permission.md) | 申请妙记查看或编辑权限 |
 | [`+speaker-replace`](references/lark-minutes-speaker-replace.md) | 替换妙记逐字稿中的说话人（须先 `lark-cli api GET .../speakerlist` 取 `speaker_id`） |
 | `+word-replace` | 批量替换逐字稿关键词（详见 `lark-cli minutes +word-replace --help`） |
 | [`+summary`](references/lark-minutes-summary.md) | 替换妙记 AI 总结全文 |
@@ -76,17 +76,19 @@ metadata:
 
 ### 3. 申请妙记权限
 
-遇到妙记没有查看或编辑权限时，引导用户申请对应权限；只有用户明确要申请时，才调用 `minutes +apply-permission`。
+遇到妙记没有查看或编辑权限时，引导用户申请对应权限；只有用户明确要申请时，才调用 `minutes +apply-permission`。使用前必读 [`+apply-permission` reference](references/lark-minutes-apply-permission.md)（write 操作，含权限语义）。
 
 只有当用户明确要求"申请查看权限"、"申请编辑权限"、"帮我申请这条妙记权限"时，才调用：
 
 ```bash
-lark-cli minutes +apply-permission --minute-token <token> --perm view|edit
+lark-cli minutes +apply-permission --minute-token <token> --perm view|edit --as user
 ```
 
 这是向妙记所有者发起权限申请，不代表立即获得权限。
 
-**安全约束**：遇到无权限错误时，不要自动调用 `+apply-permission`；先把无权限事实告知用户，只有用户明确要求申请权限时才发起申请。
+**安全约束**：
+- 遇到无权限错误时，不要自动调用 `+apply-permission`；先把无权限事实告知用户，只有用户明确要求申请权限时才发起申请。
+- **禁止**用切换身份的方式绕过资源权限。
 
 ### 4. 上传音视频文件生成妙记（并可继续获取纪要 / 逐字稿）
 
@@ -132,7 +134,7 @@ lark-cli minutes +todo --minute-token <token> --as user --todos '[
 
 **更新 / 删除前**：先用 `minutes +detail --minute-tokens <token> --todo` 读取 `todos[].todo_id`（按 `content` 匹配目标条目；列表顺序不保证稳定，**不要**用"第 2 条"代替 `todo_id`）。
 
-**无编辑权限**：若 CLI 返回 `error.subtype=permission_denied`，表示对**这条妙记**没有编辑权，应请所有者授权（这是资源权限问题，不通过补 scope 解决）。
+**无编辑权限**：若 CLI 返回 `error.subtype=permission_denied`，表示对**这条妙记**没有编辑权，应请所有者授权；这不是 scope 问题。
 
 **逐字稿关键词替换无命中**：`minutes +word-replace` 时，若 CLI 返回 `error.subtype=not_found`，表示传入的 `source_word` 在该妙记逐字稿中**一个都没匹配到**，未做任何替换。这是**参数问题不是权限问题**：先用 `minutes +detail --minute-tokens <token> --transcript` 读取当前逐字稿，核对 `source_word` 的精确写法与大小写后重试。
 

@@ -1,7 +1,7 @@
 # minutes +search
 
 
-搜索妙记列表，支持关键词、所有者、参与者以及时间范围等多条件过滤。所有者与参与者都支持传入多个 open\_id，也支持传入 `me` 表示当前用户。只读操作，不修改任何妙记数据。
+搜索妙记列表，支持关键词、所有者、参与者以及时间范围等多条件过滤。以 user 身份运行；所有者与参与者都支持传入多个 open\_id，也支持传入 `me` 表示当前用户。只读操作，不修改任何妙记数据。
 
 本 skill 对应 shortcut：`lark-cli minutes +search`（调用 `POST /open-apis/minutes/v1/minutes/search`）。
 
@@ -81,14 +81,14 @@ lark-cli minutes +search --query "预算复盘" --format json
 
 所有参数均可选，但必须至少提供一个过滤条件：`--query`、`--owner-ids`、`--participant-ids`、`--start` 或 `--end`。
 
-### 2. 仅支持 user 身份
+### 2. 身份与权限
 
-该接口仅支持 `user` 身份，由 agent 平台注入 UAT，并需具备 `minutes:minutes.search:read` 权限。
+该接口以 `--as user` 身份运行，需要具备 `minutes:minutes.search:read` 权限；凭证或 scope 未就绪时由 agent 平台为当前用户补开。
 
 ### 3. `me` 表示当前用户
 
-在 `--owner-ids` 和 `--participant-ids` 中可使用 `me`，表示当前登录用户。该值会在本地解析为当前用户的 `open_id`，无需手动先查询自己的用户 ID。
-若 CLI 无法解析出当前用户的 `open_id`，则应先由 agent 平台补齐用户凭证，再重新执行搜索。
+在 `--owner-ids` 和 `--participant-ids` 中可使用 `me`，表示当前登录用户。该值会在本地解析为当前用户的 `open_id`，无需手动先查询自己的用户 ID。如需指定其他用户，请直接传 `ou_` open_id。
+若 CLI 无法解析出当前用户的 `open_id`（例如凭证未就绪），应由 agent 平台补齐用户凭证后再重新执行搜索。
 
 ### 4. 自然语言中的“参与的妙记”默认按并集理解
 
@@ -180,9 +180,9 @@ lark-cli minutes +detail --minute-tokens <minute_token> --summary
 | ---------------------- | ----------------------------------------------------- | -------------------------------------------- |
 | 命令直接报错，要求提供过滤条件        | 没有传入 `--query`、时间范围或任何过滤 ID                           | 至少补充一个过滤条件后重试                                |
 | 时间参数校验失败               | `--start` 或 `--end` 格式不合法                             | 改用 ISO 8601 或 `YYYY-MM-DD`                   |
-| `owner-ids` 校验失败       | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或先由 agent 平台补齐用户凭证后再传 `me` |
-| `participant-ids` 校验失败 | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或先由 agent 平台补齐用户凭证后再传 `me` |
-| 权限不足                   | 未授权 `minutes:minutes.search:read`                     | 让 agent 平台为当前用户补开 `minutes:minutes.search:read` scope |
+| `owner-ids` 校验失败       | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或由 agent 平台补齐用户凭证后再传 `me` |
+| `participant-ids` 校验失败 | 传入的不是 open\_id，且也不是 `me`；或传了 `me` 但当前用户 open\_id 不可解析 | 改为 `ou_` 开头的用户 ID，或由 agent 平台补齐用户凭证后再传 `me` |
+| 权限不足                   | 未授权 `minutes:minutes.search:read`                     | 由 agent 平台为当前用户补开 `minutes:minutes.search:read` scope |
 
 ## 提示
 
@@ -199,4 +199,3 @@ lark-cli minutes +detail --minute-tokens <minute_token> --summary
 - [lark-minutes](../SKILL.md) -- 妙记相关命令
 - [lark-minutes-detail](lark-minutes-detail.md) -- 基于 `minute_token` 获取逐字稿、总结、待办、章节等产物
 - [lark-vc](../../lark-vc/SKILL.md) -- 视频会议全部命令
-

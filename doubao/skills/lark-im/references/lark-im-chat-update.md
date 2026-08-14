@@ -63,8 +63,12 @@ lark-cli im +chat-update --chat-id oc_xxx \
 | `--description exceeds the maximum of 100 characters` | Group description too long | Shorten the description to 100 characters or fewer |
 | `at least one field must be specified to update` | No update field was provided | Specify at least one field to update |
 | Permission denied (99991679) | Missing `im:chat:update` permission | Have the agent platform grant the `im:chat:update` scope for the current user |
-| Non-owner/admin cannot update (232016/232002/232017) | Current identity is not the owner/admin | The current user must be the group owner or an admin to update; have the agent platform provision the owner's credentials |
-| Not in the group (232011) | The current user is not a member of the group | Join the group first, then retry |
+| Non-owner/admin cannot update (232016/232002/232017) | The current user is not the owner/admin | Perform the update as the group owner or an admin |
+| Not in the group (232011) | The current user is not a member of the group | Join the group first, then retry as a member |
+
+## AI Usage Guidance
+
+Updating a group's name or description requires owner or admin privileges. If the update fails with a permission error, confirm the current user is the group owner or an admin; query the group first and check `owner_id` when ownership is unclear.
 
 ## References
 

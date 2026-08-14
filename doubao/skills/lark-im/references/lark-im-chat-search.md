@@ -125,9 +125,7 @@ lark-cli im +messages-send --chat-id "$CHAT_ID" --text "Today's progress update"
 | `--query and --member-ids cannot both be empty` | Both were omitted | Provide at least `--query` or `--member-ids` |
 | Empty results | No visible chats matched the keyword or filters | Relax the keyword or filters and try again |
 | `invalid --page-size 101: must be between 1 and 100` | page-size is out of range | Use an integer between 1 and 100 |
-| Permission denied (99991672) | The bot app does not have `im:chat:read` TAT permission enabled | Enable the permission for the app in the Open Platform console |
-| Permission denied (99991679) with `--as user` | UAT is not authorized for `im:chat:read` | Have the agent platform grant the `im:chat:read` scope for the current user |
-| `Bot ability is not activated` (232025) | The app does not have bot capability enabled | Enable bot capability in the Open Platform console |
+| Permission denied (99991679) | UAT is not authorized for `im:chat:read` | Have the agent platform grant the `im:chat:read` scope for the current user |
 
 ## AI Usage Guidance
 

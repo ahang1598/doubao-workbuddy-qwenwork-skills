@@ -43,6 +43,6 @@ JSON 输出中的 `data.permission_public` 是目标当前的权限设置；服�
 
 ## 行为说明
 
-- **身份支持**：以 user 身份运行。
+- **身份支持**：`--as user`。
 - **所需 scope**：`docs:permission.setting:read`。
 - **单目标读取**：命令只读取 `--token` 指向资源自身的权限设置；`--type folder` 不会递归读取子资源。

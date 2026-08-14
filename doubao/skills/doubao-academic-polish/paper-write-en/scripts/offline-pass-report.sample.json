@@ -1,0 +1,28 @@
+{
+  "summary": {
+    "total_references": 1,
+    "authenticity_verified": 1,
+    "quality_credentialed": 1,
+    "needs_reverification": 0,
+    "core_literature_ready": 1,
+    "ready_for_synthesis": "yes"
+  },
+  "results": [
+    {
+      "id": "offline-pass-source",
+      "authenticity": {
+        "status": "verified"
+      }
+    }
+  ],
+  "code_trace": {
+    "run_id": "offline-pass-example",
+    "started_at": "2026-07-16T00:00:00Z",
+    "completed_at": "2026-07-16T00:00:01Z",
+    "tool_version": "1.0.0",
+    "python_version": "3.x",
+    "input_sha256": "offline-example-sha256",
+    "api_calls": [],
+    "attempts": []
+  }
+}

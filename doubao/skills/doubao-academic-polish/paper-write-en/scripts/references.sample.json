@@ -1,0 +1,22 @@
+{
+  "references": [
+    {
+      "id": "example-doi-title-check",
+      "title": "Attention is all you need",
+      "first_author": "Vaswani",
+      "doi": "10.48550/arXiv.1706.03762",
+      "year": 2017,
+      "url": "https://arxiv.org/abs/1706.03762",
+      "container_title": "Advances in Neural Information Processing Systems",
+      "source_type": "conference_paper",
+      "key_fragments": ["scaled dot-product attention", "multi-head attention"],
+      "quoted_claims": [
+        {
+          "id": "q1",
+          "quote": "The Transformer allows for significantly more parallelization",
+          "context": "abstract_or_fulltext"
+        }
+      ]
+    }
+  ]
+}

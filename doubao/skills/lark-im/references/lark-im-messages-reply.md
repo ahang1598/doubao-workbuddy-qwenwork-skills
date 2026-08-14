@@ -1,6 +1,6 @@
 # im +messages-reply
 
-Reply to a specific message as the current user. Also supports thread replies.
+Reply to a specific message with user identity (`--as user`). Also supports thread replies.
 
 This skill maps to the shortcut: `lark-cli im +messages-reply` (internally calls `POST /open-apis/im/v1/messages/:message_id/reply`).
 
@@ -256,13 +256,13 @@ Card content is **not** normalized — use the card-native `<at>` syntax inside 
 - When using `--content`, you are responsible for making the JSON structure match the effective `msg_type`
 - `--reply-in-thread` adds `reply_in_thread=true` to the API request
 - `--reply-in-thread` is mainly meaningful in chats that support thread replies
-- `--image`/`--file`/`--video`/`--audio`/`--video-cover` support existing keys, URLs, and cwd-relative local file paths; the shortcut uploads local paths and URLs first, then sends the reply
+- `--image`/`--file`/`--video`/`--audio`/`--video-cover` support existing keys, URLs, and cwd-relative local file paths; the shortcut uploads local paths and URLs first, then sends the reply; both the upload and send steps use the user access token (UAT)
 - If the provided media value starts with `img_` or `file_`, it is treated as an existing key and used directly
 - `--markdown` always sends `msg_type=post`
 - If you explicitly set `--msg-type` and it conflicts with the chosen content flag, validation fails
 - When using `--video`, `--video-cover` is required as the video cover
 - `--dry-run` uses placeholder image keys for remote Markdown images and placeholder media keys for local uploads
 - Failures return error codes and messages
-- The reply uses a user access token (UAT) and requires the `im:message.send_as_user` and `im:message` scopes; the reply is sent as the authorized end user
+- `--as user` uses a user access token (UAT) and requires the `im:message.send_as_user` and `im:message` scopes; the reply is sent as the authorized end user
 - When using `--markdown` with images, pre-uploading via `images.create` to obtain an `image_key` is recommended for reliability; remote URLs may be auto-resolved at runtime, but if download/upload fails the image is removed with a warning; local paths are not supported
 - **Interactive cards are gated:** you MUST read and follow the [`card/lark-im-card-create.md`](card/lark-im-card-create.md) workflow to produce the card JSON *before* replying. Do not hand-write or copy a card payload — the JSON given to `--msg-type interactive --content` must be the workflow's output. This applies every time, with no exception

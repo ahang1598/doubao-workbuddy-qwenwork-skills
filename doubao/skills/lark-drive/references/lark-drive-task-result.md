@@ -289,7 +289,7 @@ lark-cli drive +task_result \
   --task-id <COMPLETE_TASK_ID>
 ```
 
-> **调用上下文和 ID 都要保持原样**：续跑的 `--as user` 身份必须与初始移动一致；`task_id` 可能包含多个连字符，不要拆分或截断。`wiki +move-to-drive` 返回的 `next_command` 会保留身份。
+> **调用上下文和 ID 都要保持原样**：续跑的 `--profile` 与 `--as` 必须与初始移动一致；`task_id` 可能包含多个连字符，不要拆分或截断。`wiki +move-to-drive` 返回的 `next_command` 会保留 profile 与身份。
 
 ### 配合 wiki +delete-space 使用
 
@@ -313,6 +313,9 @@ lark-cli drive +export --token <SOURCE_DOC_TOKEN> --doc-type docx --file-extensi
 
 # 2. 继续查询导出结果
 lark-cli drive +task_result --scenario export --ticket <EXPORT_TICKET> --file-token <SOURCE_DOC_TOKEN>
+
+# 如果返回 rate_limit / 99991400：至少等待 1 分钟后重试同一条 +task_result；
+# 若仍限频，以 1 分钟为起点继续指数退避。
 
 # 3. 拿到 file_token 后下载
 lark-cli drive +export-download --file-token <EXPORTED_FILE_TOKEN>

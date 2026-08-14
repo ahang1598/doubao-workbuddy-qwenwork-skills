@@ -132,17 +132,22 @@ lark-cli drive +push --local-dir ./repo --folder-token fldcnxxxxxxxxx \
 
 `+push` 的失败项带结构化字段，agent 必须优先读 `items[].error_class` / `phase` / `code`，不要只看自然语言 `error` 文本。`summary.aborted=true` 表示命令已经遇到终止性错误并停止后续批处理；这时**不要原样重试**，先修复根因。
 
+`retryable=true` 只表示修复根因或等待后可以再次尝试，不表示应该立即、无限重放整个 push；重试时采用有上限的指数退避和抖动。
+
 常见终止性错误：
 
 | `error_class` | 常见 `code` | 含义 | Agent 应对 |
 |---|---:|---|---|
-| `user_scope_missing` | `99991679` | 用户身份缺少授权 | 停止重试，由 agent 平台为当前用户补开错误里列出的 scope |
+| `app_scope_missing` | `99991672` | 缺少 Drive / 文件夹相关 scope | 停止重试，让 agent 平台补开错误里列出的权限，例如 `space:folder:create` 或 `drive:drive` |
+| `user_scope_missing` | `99991679` | 用户身份缺少授权 | 停止重试，让 agent 平台为当前用户补开错误里列出的 scope |
 | `permission_denied` | `1061004` / HTTP 403 | 当前身份无权操作目标资源 | 停止重试，检查目标文件夹权限和资源可见性 |
 | `invalid_api_parameters` | `1061002` | API 参数被服务端拒绝 | 停止重试，检查 `--folder-token`、覆盖模式、`file_token`、文件名和上传参数；不要对同一参数组合批量重试 |
 | `parent_node_missing` | `1061044` | 上传 / 建目录使用的父文件夹不存在或当前身份不可见 | 停止重试，检查 `--folder-token` 是否仍存在、是否有权限、父目录是否在 push 过程中被删除；不要继续上传同一目录树 |
 | `parent_sibling_limit` | `1062507` | 目标父文件夹单层子节点数量超过上限 | 停止重试，清理目标目录、换一个 `--folder-token`，或把上传内容拆到多个子目录 |
+| `quota_exceeded` | `1061101` / `1061061` | 租户或当前用户的 Drive 容量配额已满 | 停止重试，释放容量、调整目标位置或扩容后再执行 push |
 | `rate_limited` | `99991400` | 触发频控 | 停止当前批次，退避后再重试 |
-| `server_error` | `1061001` / `2200` | Drive 服务端异常 | 停止当前批次，稍后重试；保留 `log_id` 便于排查 |
+| `conflict` | `1061045` | 同一目标发生资源竞争 | 停止当前批次，避免并发操作同一目标；退避后有限重试 |
+| `server_error` | `1663` / `1061001` / `2200` / HTTP 5xx | Drive 服务端或网关异常 | 停止当前批次，稍后有限重试 |
 
 非终止但需要解释的状态：
 
@@ -169,7 +174,7 @@ lark-cli drive +push --local-dir ./repo --folder-token fldcnxxxxxxxxx \
 
 > **关于 `space:document:delete`：** 框架的 scope 预检（`runner.go: checkShortcutScopes`）会在 `Validate` 和 `--dry-run` 之前就把命令上声明的 scope 全检查一遍；如果把删除 scope 也预声明，**普通上传或 dry-run** 都会因为没授权删除权限而被拦下来。所以这一项不放在命令的默认 Scopes 里，而是在 Validate 中**条件触发**：只有 `--delete-remote --yes` 同时打开时才会调用 `runtime.EnsureScopes([]string{"space:document:delete"})` 做一次动态前置校验。这样既保留了"普通上传不需要删除权限"的便利，又能在真要做镜像删除前把 scope 缺失暴露出来，避免出现"上传成功 → 删除阶段才挂"的半同步状态。
 >
-> 想一次性把权限补齐：由 agent 平台为当前用户补开 `drive:drive.metadata:readonly drive:file:upload space:folder:create space:document:delete` 这几个 scope。
+> 想一次性把权限补齐：让 agent 平台为当前用户补开 `drive:drive.metadata:readonly drive:file:upload space:folder:create space:document:delete` 这几条 scope。
 
 ## 范围限制
 

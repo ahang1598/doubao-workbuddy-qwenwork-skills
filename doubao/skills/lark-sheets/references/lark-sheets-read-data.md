@@ -1,4 +1,4 @@
-> ⚠️ **先读完再动手**：本文档共 304 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+> ⚠️ **先读完再动手**：本文档共 319 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
 
 # Lark Sheet Read Data
 
@@ -24,7 +24,7 @@
 | 读取目的 | 用这个 shortcut | 数据去向 | 说明 |
 |---------|----------------|---------|------|
 | 快速查看纯值数据、批量处理 | `+csv-get` | 对话上下文 | 返回 CSV 文本（每行带 `[row=N]` 前缀）；大表请按 `--range` 行窗口分批读（截断时看 `has_more`） |
-| 按列类型结构化读出（喂 DataFrame / round-trip 回 `+table-put`） | `+table-get` | 对话上下文 | 返回 typed 协议（`columns:[列名]` + `data` + `dtypes`/`formats` + `range`），输出形状对齐 pandas split；可一行 `pd.DataFrame(sheet["data"], columns=sheet["columns"]).astype(sheet["dtypes"])` 还原 DataFrame，或直接 round-trip 回 `+table-put`。不带 `--range` 时读**完整 used range**（跨过表中部空行 / 空列），每个子表回传实际读取范围 `range` 供完整性校验。注意这与下文 `current_region` "遇表中部空行截断"不矛盾：`+table-get` 读的是子表物理 used range（飞书记录的已用矩形，含中间空行），`current_region` 是从锚点连通扩展、遇整行空行就断 |
+| 按列类型结构化读出（喂 DataFrame / round-trip 回 `+table-put`） | `+table-get` | 对话上下文 | 返回 typed 协议（`columns:[列名]` + `data` + `dtypes`/`formats` + `range`），输出形状对齐 pandas split；可一行 `pd.DataFrame(sheet["data"], columns=sheet["columns"]).astype(sheet["dtypes"])` 还原 DataFrame，或直接 round-trip 回 `+table-put`。不带 `--range` 时读**完整 used range**（跨过表中部空行 / 空列），每个子表回传实际读取范围 `range` 供完整性校验；被 `max_chars` 裁掉时该子表还会带 `truncated: true` 与 `truncation_warning`，**先看这两个字段再用数据**。注意这与下文 `current_region` "遇表中部空行截断"不矛盾：`+table-get` 读的是子表物理 used range（飞书记录的已用矩形，含中间空行），`current_region` 是从锚点连通扩展、遇整行空行就断 |
 | 查看公式、样式、批注、数据验证 | `+cells-get` | 对话上下文 | 返回单元格完整信息，token 开销较大 |
 | 查看某区域的下拉框（数据验证）选项 | `+dropdown-get` | 对话上下文 | 返回该 A1 范围已配置的下拉列表选项 |
 
@@ -36,7 +36,7 @@
 
 ## 读表理解脚本（Agent 优先入口）
 
-当目标是"先理解表格内容 / 结构 / 子表边界"，优先使用 `scripts/lark_*.py` 这组只读脚本，再决定是否直接调用上述 shortcut。脚本是默认捷径，不是唯一入口：如果任务很小，或需要公式 / 样式 / 批注 / 精确原始值等脚本未覆盖的信息，可以直接用 CLI 做等价或更精细读取。
+当目标是"先理解表格内容 / 结构 / 子表边界"，且本地存在 `scripts/lark_*.py`（只随仓库版 skill 分发，二进制内嵌版不含 `scripts/`），可优先用这组只读脚本，再决定是否直接调用上述 shortcut。脚本是可选捷径，不是必经入口——脚本不可用时直接按下表右列的 CLI 等价路径执行：如果任务很小，或需要公式 / 样式 / 批注 / 精确原始值等脚本未覆盖的信息，可以直接用 CLI 做等价或更精细读取。
 
 | 脚本 | 底层 shortcut | 适用场景 |
 | --- | --- | --- |
@@ -93,9 +93,15 @@ detect 最多确认 10 个跨窗口合并锚点；超限会在 `warnings` 中说
 | `possible_multi_row_header` | 补读表头上下各 1-2 行；必要时 `+sheet-info --include merges` 核对跨列合并。 |
 | `hidden_rows_in_range` / `hidden_columns_in_range` | 写入前用 `+sheet-info --include hidden_rows,hidden_cols` 确认是覆盖还是跳过隐藏内容。 |
 | `data_range_has_gaps` | 不按连续 `data_range` 写；用 `summary.data_row_segments` 对每个实际读取行段单独读写。 |
-- `write_hints.safe_append_col` 只是候选追加列，不代表绝对安全。新增列或覆盖区域前，必须用 `+csv-get` / `+cells-get` / `+sheet-info` 核对该列为空、没有隐藏列/公式/样式/对象依赖，且符合用户要求的落点。
+| `data_range_has_col_gaps` | 返回的列不连续（`--skip-hidden` 跳过了隐藏列）；不要把 `data_range` 当连续列区写回，按 `summary.data_col_segments` 分列段处理，否则缺口右侧的值会整体错位。 |
+
+- `write_hints.safe_append_col` 只是候选追加列，不代表绝对安全。新增列或覆盖区域前，必须用 `+csv-get` / `+cells-get` / `+sheet-info` 核对该列为空、没有隐藏列/公式/样式/对象依赖，且符合用户要求的落点。该字段已自动跳过隐藏列（跳过的列名列在 `write_hints.skipped_hidden_cols`）——注意 `--skip-hidden` 下隐藏列根本不出现在返回网格里，若它们正好都贴在数据右边缘，`data_range_has_col_gaps` 也不会告警，所以这层跳过是唯一的保护，别绕过它自己按「最后一列 +1」推落点。
 
 ⚠️ **大数据优先落盘、别灌进上下文**：`+csv-get` / `+cells-get` 都受调用方 Bash / 终端的单命令 stdout 输出上限约束（常见默认约 30000 字符，超过会被截断或转存为文件）。纯值分析优先用 `+csv-get` 按 `--range` 行窗口（`A1:Z500` / `A501:Z1000` …）分批重定向到文件 + 本地脚本处理 + `+csv-put` 分批回写；若确实要让结果直接进上下文又不想触发转存，给任一命令把 `--max-chars`（默认 500000）调小到略低于该上限（如 `25000`），CLI 改为优雅截断 + `has_more` 分页。
+
+> **落盘不等于读全**：`--output-path` 只是把上限从 stdout 口径放宽到有界的 2000 万字符（读取链路非流式，该上限是内存保护），不是无限。stdout 回执带 `complete` 字段——`complete:false` 时另有 `truncated` 与提示，文件里只有半截数据；多子表读取还会给 `unread_sheets` 列出预算耗尽前没读到的子表。**拿到回执先看 `complete`，不要默认整表已落全。**
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 **`+csv-get` 返回值核心设计**：
 - `annotated_csv` — **CSV 数据唯一入口**。每一逻辑行前加 `[row=N] ` 前缀（N = 真实表格行号）。任何需要行号的下游操作（合并、写入、清空、格式化、插入/删除、条件格式、筛选、图表/透视表范围、搜索替换等），**行号一律直接从 `[row=N]` 读取**。若需要纯 CSV（如喂给本地脚本做解析），去前缀即可：`line.replace(/^\[row=\d+\] /, '')`。
@@ -103,12 +109,11 @@ detect 最多确认 10 个跨窗口合并锚点；超限会在 `warnings` 中说
 - `row_indices` — 程序化引用的备用数组。LLM 推理请用 `annotated_csv` 的前缀，不要查这个数组里的 index（把行号当数值用容易心算出错）。
 - `current_region` — 从请求范围扩展到被空行空列包围的连续数据区域（等价于 Excel Ctrl+Shift+*），适合先读少量行探表头。⚠️ 它**遇表中部整行空行 / 整列空列就截断**，可能小于真实数据范围（漏掉空行之后的行）；**不能**直接当整表末行用，判断整表是否读全要拿 `+workbook-info` 的物理 `row_count` / `column_count` 当上界交叉核对（见下方「按 row_count 盲读空行」与「确定数据范围的正确流程」）。
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 注意：
 
 - `+csv-get` 和 `+cells-get` 支持分页/截断，注意检查 `has_more` / `truncated` 标志；两者在处理返回数据之前都必须先读 `warning_message`（上游 schema 要求先读它再用其它字段，内含定位与截断续读提示），`+cells-get` 还要用每个 range 的 `actual_range` / `row_indices` / `col_indices` 判断真实位置
 - 隐藏行列默认包含在返回结果中（`--skip-hidden=false`），如需只看可见数据设为 `true`。读取原语本身不标注哪些行列被隐藏：若要识别隐藏区间（以决定是否过滤、或如何解读混入的隐藏数据），用 `+sheet-info --include hidden_rows,hidden_cols` 取隐藏行列集合，再结合 `+csv-get` / `+cells-get` 返回的 `row_indices` / `col_indices` 判断每行 / 每列是否隐藏
+- 要判断单元格内容是否被行高列宽挤到显示不全（排版检查、调整行高列宽前），给 `+cells-get` 加 `--include truncation`：会按字号 / 自动换行 / 行高列宽估算并返回被截断单元格的 `isRowTruncated` / `isColTruncated`（未返回视为未截断）。有额外计算开销，仅需要时才开
 
 **常见配置错误（必须注意）**：
 - **全量读取导致上下文溢出**：不要对大表（数百行以上）直接用 `+csv-get` 或 `+cells-get` 读取全部数据到上下文。大表场景必须分批读取：用 `--range` 切行窗口逐块读（`+csv-get` / `+cells-get` 单次返回量由 `--max-chars` 自动兜底，截断时返回 `has_more`）；过大时考虑导出到本地文件后用脚本处理再分批回写
@@ -164,8 +169,9 @@ _公共四件套 · 系统：`--dry-run`_
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `--range` | string | required | A1 范围，如 `A1:F10`（不带 sheet 前缀；用 `--sheet-id` / `--sheet-name` 指定 sheet） |
-| `--include` | string_slice | optional | 要返回的信息类别，逗号分隔多个（可选值：`value` / `formula` / `style` / `comment` / `data_validation`） |
-| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆）。大数据通常宜重定向落盘做分析；仅当要让结果直接进上下文、又不触发文件转存时才调小（如 25000），以 has_more 分页 |
+| `--include` | string_slice | optional | 要返回的信息类别，逗号分隔多个。`truncation` 会额外按行高列宽 / 字号 / 自动换行估算每个单元格是否被截断显示，返回 `isRowTruncated` / `isColTruncated`（有额外计算开销，仅排版检查 / 调整行高列宽前才开）（可选值：`value` / `formula` / `style` / `comment` / `data_validation` / `truncation`） |
+| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆）。要整表无截断直接用 --output-path 落盘（上限自动放宽到 2000 万字符——读取链路非流式，此上限是内存保护；更大就显式给 --max-chars）；仅当要让结果直接进上下文、又不落盘时才调小（如 25000），按 has_more 分页。 传 0 表示「不自设上限」，等价于不传（仍是 500000 / 落盘时 2000 万），不会退回底层工具那个更小的默认截断。 |
+| `--output-path` | string | optional | 把完整读取结果写入本地路径（如 `./out.json`），文件内容为 data 载荷的 JSON；stdout 只回一个含 output_path/字节数的确认信息。**一旦设置，字符上限自动放宽到有界的 2000 万字符**（覆盖 --max-chars 默认），并非无限——读取链路非流式，该上限是内存保护；显式 --max-chars 优先。stdout 回执带 `complete` 字段（命中上限时另有 `truncated` 与提示），据此判断文件是否完整，不要默认整表已落全。省略时按常规把结果打到 stdout。 |
 | `--skip-hidden` | bool | optional | 跳过隐藏行列，默认 `false` |
 
 ### `+dropdown-get`
@@ -182,8 +188,9 @@ _公共四件套 · 系统：`--dry-run`_
 
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `--range` | string | required | A1 范围，如 `A1:F30`（不带 sheet 前缀；用 `--sheet-id` / `--sheet-name` 指定 sheet） |
-| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆）。大数据通常宜重定向落盘做分析；仅当要让结果直接进上下文、又不触发文件转存时才调小（如 25000），以 has_more 分页 |
+| `--range` | string | optional | A1 范围，如 `A1:F30`（不带 sheet 前缀；用 `--sheet-id` / `--sheet-name` 指定 sheet）。**可省略：缺省读取整个子表**（按表格实际边界裁剪，返回的 actual_range 标注实际读取范围）；大表配合 --max-chars / --output-path 控制体量 |
+| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆）。要整表无截断直接用 --output-path 落盘（上限自动放宽到 2000 万字符——读取链路非流式，此上限是内存保护；更大就显式给 --max-chars）；仅当要让结果直接进上下文、又不落盘时才调小（如 25000），按 has_more 分页。 传 0 表示「不自设上限」，等价于不传（仍是 500000 / 落盘时 2000 万），不会退回底层工具那个更小的默认截断。 |
+| `--output-path` | string | optional | 把完整读取结果写入本地路径（如 `./out.json`），文件内容为 data 载荷的 JSON；stdout 只回一个含 output_path/字节数的确认信息。**一旦设置，字符上限自动放宽到有界的 2000 万字符**（覆盖 --max-chars 默认），并非无限——读取链路非流式，该上限是内存保护；显式 --max-chars 优先。stdout 回执带 `complete` 字段（命中上限时另有 `truncated` 与提示），据此判断文件是否完整，不要默认整表已落全。⚠️ 落盘的是 data 载荷的 **JSON**（`+csv-get` 也一样，CSV 文本是 JSON 里的一个字段），不是直接可用的 .csv 文件；要纯 CSV 文件请把 stdout 重定向到文件。 省略时按常规把结果打到 stdout。 |
 | `--include-row-prefix` | bool | optional | 是否在每行前加 `[row=N]` 前缀，默认 `true` |
 | `--skip-hidden` | bool | optional | 跳过隐藏行列，默认 `false` |
 
@@ -196,7 +203,11 @@ _公共：URL/token（无 sheet 定位） · 系统：`--dry-run`_
 | `--sheet-id` | string | optional | 只读该子表（按 id）；省略则读所有子表 |
 | `--sheet-name` | string | optional | 只读该子表（按名）；省略则读所有子表 |
 | `--range` | string | optional | 读取的 A1 范围；省略则读每个子表的完整 used range（会跨过表中部的整行空行 / 整列空列，不会被截断） |
+| `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆）。底层工具即使不传也有约 50000 的默认截断，故此处显式发送以放宽；要整表读取请用 --output-path 落盘（上限自动放宽到有界的 2000 万字符，非无限；回执 complete 字段说明是否完整）。 传 0 表示「不自设上限」，等价于不传（仍是 500000 / 落盘时 2000 万），不会退回底层工具那个更小的默认截断。 |
+| `--output-path` | string | optional | 把完整读取结果写入本地路径（如 `./out.json`），文件内容为 data 载荷的 JSON；stdout 只回一个含 output_path/字节数的确认信息。**一旦设置，字符上限自动放宽到有界的 2000 万字符**（覆盖 --max-chars 默认），并非无限——读取链路非流式，该上限是内存保护；显式 --max-chars 优先。stdout 回执带 `complete` 字段（命中上限时另有 `truncated` 与提示），据此判断文件是否完整，不要默认整表已落全。省略时按常规把结果打到 stdout。 |
 | `--no-header` | bool | optional | 把第一行当数据而非表头（列名取 col1/col2 …） |
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ## Examples
 
@@ -206,14 +217,16 @@ _公共：URL/token（无 sheet 定位） · 系统：`--dry-run`_
 
 示例：
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ```bash
 # 简单读（sheet 定位必填：--sheet-name 或 --sheet-id 必给一个；range 的 Sheet1! 前缀不能替代它）
 lark-cli sheets +csv-get --url "https://example.feishu.cn/sheets/shtXXX" --sheet-name "Sheet1" --range "A1:F30"
 
 # 用 sheet-name 模糊定位（运行时框架会先解析到 sheet-id）
 lark-cli sheets +csv-get --spreadsheet-token shtXXX --sheet-name "销售明细" --range "A1:F30"
+
+# 全量读：省略 --range 即读整个子表（按实际边界裁剪，返回 actual_range 标注实读范围），
+# 无需先 +workbook-info 探行列再拼 range；大表配合 --max-chars / --output-path
+lark-cli sheets +csv-get --spreadsheet-token shtXXX --sheet-name "销售明细"
 ```
 
 输出契约（envelope.data）：
@@ -301,4 +314,6 @@ subprocess.run(["lark-cli","sheets","+table-put","--url",URL,"--sheets","-"],
 - `DryRun` 输出请求模板：`--sheet-name` 在 dry-run 输出里生成为 `<resolve:销售明细>` 占位符，不实际解析。
 - `Execute` 阶段才进行 sheet-name → sheet-id 解析与 API 调用。
 
-===== 全文完（共 304 行）=====
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
+===== 全文完（共 319 行）=====

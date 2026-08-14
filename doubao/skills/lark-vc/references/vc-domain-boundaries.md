@@ -63,7 +63,6 @@
 >   - **两类都存在、用户明确指定了其中一类**（如"看妙记的逐字稿""用妙记总结"）→ **语义指向哪个就走哪个链路，不要自作主张改道**。
 >   - **两类都存在、用户未指定** → **默认用智能纪要及其逐字稿**（智能纪要及逐字稿会后自动授权给参会人，访问门槛更低；妙记含原始录制视频、不自动授权，需申请）。
 
-
 #### 逐字稿与文字记录的格式
 
 智能纪要的逐字稿（`normal` 纪要的 `verbatim_doc_token` 文档、`unified` 纪要的 `note +transcript` 输出）和妙记的文字记录（Transcript）都记录了用户原始对话内容，格式一致：
@@ -99,6 +98,8 @@ lark-cli vc +search --start "<YYYY-MM-DD>" --end "<YYYY-MM-DD>" --format json
 
 #### Step 2: 根据 meeting_id 查询产物
 
+> **身份**：本域全部命令（`vc +detail`、`note +detail`、`minutes +detail`、`docs +fetch`）统一以 `--as user` 身份运行。
+
 ##### 获取会议产物
 
 当用户提供 `meeting_id` 并需要会议产物时，先用 `vc +detail` 拿到 `note_id` 和 `minute_token`：
@@ -111,7 +112,7 @@ lark-cli vc +detail --meeting-ids '<meeting_id1>,<meeting_id2>'
 
 **优先路径：通过 `note_id` 获取纪要产物**
 
-如果用户未明确要求使用妙记，且返回了 `note_id`，**优先**使用 `note +detail` 获取纪要文档的 token 信息：
+如果用户未明确要求使用妙记，且返回了 `note_id`，**优先**使用 `note +detail` 获取纪要文档的 token 信息（沿用上一步的 `--as`）：
 
 ```bash
 lark-cli note +detail --note-id <note_id>

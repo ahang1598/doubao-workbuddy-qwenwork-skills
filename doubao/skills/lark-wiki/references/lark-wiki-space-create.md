@@ -35,7 +35,7 @@ There is no `url` field — the create API does not return one.
 
 ## Notes
 
-- Only the user identity is supported; this command declares `AuthTypes: ["user"]`.
+- Only `--as user` is supported; this command declares `AuthTypes: ["user"]`.
 - `--dry-run` previews the `POST /open-apis/wiki/v2/spaces` request (and surfaces the blank-name validation error early).
 
 ## Required Scope

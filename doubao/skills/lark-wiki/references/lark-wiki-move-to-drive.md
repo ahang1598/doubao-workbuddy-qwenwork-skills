@@ -54,7 +54,7 @@ shortcut 会按以下协议执行：
 - 仍在处理中时返回 `ready=false`、`timed_out=true`、完整 `task_id` 和 `next_command`；超时不代表任务失败。
 - 任务进入失败态时返回结构化错误。
 - `task_id` 是服务端签名的 opaque ID，可能包含多个连字符；必须原样保存，不能自行切分。
-- 续跑必须保持和初始移动相同的 `--as user` 身份，否则可能收到权限错误；shortcut 返回的 `next_command` 会保留身份。
+- 续跑必须保持和初始移动相同的 `--profile` 与 `--as user` 身份，否则可能收到权限错误；shortcut 返回的 `next_command` 会保留两者。
 
 手动续跑命令：
 
