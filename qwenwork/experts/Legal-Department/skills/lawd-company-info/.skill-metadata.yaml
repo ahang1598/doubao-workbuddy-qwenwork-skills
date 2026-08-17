@@ -1,0 +1,37 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "快速查企业"
+      en: "Quick company check"
+    description:
+      zh: "一页速查卡，快速判断企业是否靠谱、能否合作"
+      en: "One-page quick card on whether a company is reliable to work with"
+    prompt:
+      zh: |-
+        帮我查一下「{{企业名称}}」这家公司怎么样，靠不靠谱，能不能合作。
+      en: |-
+        Check {{company name}} for me: is this company reliable, and is it safe to work with?
+  - id: ex-2
+    title:
+      zh: "企业尽调报告"
+      en: "Due diligence report"
+    description:
+      zh: "出具企业尽调预检报告"
+      en: "Produce a company due-diligence report"
+    prompt:
+      zh: |-
+        请对「{{企业名称}}」出一份企业公开信息尽调预检报告。
+      en: |-
+        Produce a public-information due-diligence report on {{company name}}.
+  - id: ex-3
+    title:
+      zh: "专项查股东股权"
+      en: "Shareholder & equity lookup"
+    description:
+      zh: "单维度查询企业的股东与股权结构"
+      en: "Single-dimension lookup of shareholders and equity structure"
+    prompt:
+      zh: |-
+        只查「{{企业名称}}」的股东和股权结构，包括股东名册、实际控制人与对外投资情况。
+      en: |-
+        Look up only the shareholders and equity structure of {{company name}}, including the shareholder register, actual controller and outbound investments.

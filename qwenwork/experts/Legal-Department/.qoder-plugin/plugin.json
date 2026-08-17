@@ -1,0 +1,55 @@
+{
+  "name": "lawyer-casework",
+  "displayName": "律师办案大管家",
+  "displayNameEn": "Lawyer Casework Head Butler",
+  "description": "面向执业律师的民商事诉讼办案助手，23 项能力覆盖接案→检索→分析→证据→文书→庭审→执行→结案。带办案中枢统一入口与流水线编排、5 分钟冷启动建立个人办案画像、案件管家管台账与诉讼期限。三大特点：①权威数据逐条核验——法规、案例、企业工商检索在用户于数据连接中启用相应连接器后，运行时按能力语义自动发现并多家灾备、逐条核验可溯源；未连接时套件仍可运行并按能力矩阵降级，其中法条与案例等权威引用拒绝降级、宁可停下也不编造；②规范 Word 可交法院——起诉状、答辩状、代理词、上诉状、证据清单、质证意见、强制执行申请书按法院提交格式排版，交付前必过法条案例验真闸门；③钉钉原生工作流——案件台账、期限提醒可落在钉钉侧，材料文字化由外部前置能力完成。期限计算由脚本完成而非模型心算，规则待验真时显著标注，明确风险或节假日表缺失时停止给出确定结论。",
+  "descriptionEn": "Full-lifecycle civil and commercial litigation assistant for practicing attorneys in China. 23 skills span intake, retrieval, analysis, evidence, drafting, hearings, enforcement and closing. A casework hub routes work, onboarding builds a personal practice profile, and the case manager tracks matters and deadlines. Retrieval connectors are discovered by capability with bounded retry and fallback; citations are verified rather than fabricated. Court-format Word deliverables pass applicable validation gates before delivery. Material text extraction is an external prerequisite. Deadline estimates use a script, clearly mark rules awaiting verification, and stop when a known-risk rule or required holiday calendar is unavailable.",
+  "version": "0.01",
+  "author": {
+    "name": "千问办公"
+  },
+  "category": "legal",
+  "keywords": [
+    "律师",
+    "诉讼",
+    "民商事",
+    "法律文书",
+    "类案检索",
+    "证据",
+    "诉讼期限",
+    "案件管理"
+  ],
+  "skills": [
+    "./skills/lawd-casework-hub",
+    "./skills/lawd-onboarding-interview",
+    "./skills/lawd-intake-checklist",
+    "./skills/lawd-lawyer-quotation-generator",
+    "./skills/lawd-regulation-retrieval",
+    "./skills/lawd-case-retrieval",
+    "./skills/lawd-analysis-report",
+    "./skills/lawd-complaint-analyzer",
+    "./skills/lawd-litigation-risk",
+    "./skills/lawd-company-info",
+    "./skills/lawd-civil-evidence-enhanced",
+    "./skills/lawd-evidence-list-generator",
+    "./skills/lawd-evidence-timeline-generator",
+    "./skills/lawd-civil-complaint",
+    "./skills/lawd-defense-statement-draft",
+    "./skills/lawd-cross-examination-opinion-generator",
+    "./skills/lawd-civlit-pleading-brief",
+    "./skills/lawd-civil-appeal-petition-generator",
+    "./skills/lawd-civlit-enforcement-application",
+    "./skills/lawd-civlit-preparation",
+    "./skills/lawd-civlit-judge-simulation",
+    "./skills/lawd-legal-citation-verifier",
+    "./skills/lawd-case-manager"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_Ilp41xXI",
+    "version": "0.01",
+    "contentUpdatedAt": 0,
+    "installedAt": 1786929706242
+  }
+}

@@ -1,0 +1,85 @@
+examples:
+  - id: complaint-risk-analysis
+    title:
+      zh: "起诉状风险分析"
+      en: "Complaint risk analysis"
+    description:
+      zh: "以被告视角逐项评估诉请风险并生成防御行动清单"
+      en: "Assess claim risks from the defendant's view and build a defense checklist"
+    prompt:
+      zh: |-
+        我们收到了原告的起诉状，请从被告及应诉方视角逐项评估诉请风险：
+
+        起诉状：{{起诉状文件}}
+
+        需要：
+        1. 每项诉请的风险等级与原告主张的薄弱点
+        2. 原告证据的脆弱点与可抗辩空间
+        3. 可立即着手的防御行动清单
+      en: |-
+        We just received the plaintiff's complaint. From the defendant's perspective, assess the risk of each claim:
+
+        Complaint: {{complaint file}}
+
+        I need:
+        1. Risk level and weaknesses of each claim
+        2. Vulnerabilities in the plaintiff's evidence and available defenses
+        3. A defense action checklist we can start on right away
+  - id: dispute-focus-full
+    title:
+      zh: "争议焦点分析（完整版）"
+      en: "Dispute focus report (full)"
+    description:
+      zh: "拆解法律要件、归纳争点并做攻防推演，输出完整报告"
+      en: "Break down legal elements, map dispute focuses, and simulate courtroom arguments"
+    prompt:
+      zh: |-
+        请把本案的争议焦点和攻防路线梳理出来，交付完整版争议焦点分析报告：
+
+        案件材料：{{起诉状、答辩状、证据材料等}}
+
+        要求：
+        1. 逐项拆解请求权基础与法律要件
+        2. 归纳核心争议焦点并排定优先级
+        3. 对核心焦点做攻防推演
+      en: |-
+        Map out the dispute focuses and the attack-defense roadmap of this case, and deliver the full-length dispute focus report:
+
+        Case materials: {{complaint, statement of defense, evidence, etc.}}
+
+        Requirements:
+        1. Break down the claim basis and legal elements item by item
+        2. Summarize the core dispute focuses and prioritize them
+        3. Simulate the arguments on the core focuses
+  - id: dispute-focus-simplified
+    title:
+      zh: "争议焦点速览（简易版）"
+      en: "Dispute focus brief"
+    description:
+      zh: "以叙述体快速归纳本案核心争议"
+      en: "A concise narrative summary of the case's core disputes"
+    prompt:
+      zh: |-
+        请简要梳理本案的核心争议，交付简易版争议焦点分析报告。
+
+        案件材料：{{起诉状、答辩状或双方主张}}
+      en: |-
+        Briefly sort out the core disputes of this case and deliver the simplified dispute focus report.
+
+        Case materials: {{complaint, statement of defense, or the parties' positions}}
+  - id: risk-plus-focus
+    title:
+      zh: "风险评估+争点攻防"
+      en: "Risk review plus dispute focus"
+    description:
+      zh: "先评估起诉状风险，再归纳争点与攻防，两份报告连做"
+      en: "Assess complaint risks first, then build the dispute-focus and attack-defense map"
+    prompt:
+      zh: |-
+        请分两步连做：先从被告视角逐项评估这份起诉状的风险，再在此基础上归纳本案争议焦点与攻防路线。
+
+        案件材料：{{起诉状及已有材料}}
+      en: |-
+        Please do this in two connected steps: first assess the risks of this complaint from the defendant's perspective, then on that basis summarize the dispute focuses and the attack-defense roadmap.
+
+        Case materials: {{complaint and any existing materials}}

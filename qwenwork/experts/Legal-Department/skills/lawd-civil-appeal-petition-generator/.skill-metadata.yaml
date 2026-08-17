@@ -1,0 +1,63 @@
+examples:
+  - id: draft-from-judgment
+    title:
+      zh: "起草上诉状"
+      en: "Draft an appeal"
+    description:
+      zh: "根据一审判决书起草民事上诉状"
+      en: "Draft a civil appeal petition from a first-instance judgment"
+    prompt:
+      zh: |-
+        请根据「{{一审判决书}}」帮我起草民事上诉状，提炼上诉请求与理由。
+      en: |-
+        Draft a civil appeal petition from {{the first-instance judgment}}, extracting the appeal requests and grounds.
+  - id: optimize-existing-draft
+    title:
+      zh: "优化上诉状草稿"
+      en: "Polish a draft"
+    description:
+      zh: "优化已有上诉状草稿的结构、请求与理由"
+      en: "Improve the structure, requests and reasoning of an existing appeal draft"
+    prompt:
+      zh: |-
+        这是我已有的民事上诉状草稿「{{上诉状草稿}}」，一审判决书为「{{一审判决书}}」。
+        请帮我优化结构、上诉请求与上诉理由：
+        1. 上诉请求逐项对应一审判决主文，改判内容具体可执行
+        2. 上诉理由聚焦原审裁判在事实认定、证据采信、法律适用或程序处理上的错误
+      en: |-
+        Here is my draft civil appeal petition {{appeal draft}} and the first-instance judgment {{the judgment}}.
+        Please improve its structure, appeal requests and grounds:
+        1. Align each request with an item of the judgment's operative part, with specific and enforceable reliefs
+        2. Focus the grounds on the first-instance errors in fact-finding, evidence assessment, application of law or procedure
+  - id: hypothetical-judgment-prep
+    title:
+      zh: "假设判决预案"
+      en: "Hypothetical prep"
+    description:
+      zh: "基于假设的一审判决结果预先起草上诉状"
+      en: "Prepare an appeal petition against a hypothetical first-instance outcome"
+    prompt:
+      zh: |-
+        一审判决尚未作出，请假设「{{假设的一审判决结果}}」，帮我预先起草民事上诉状。
+        要求：
+        1. 所有假设内容标注【假设】，不编造裁判说理，改用保守表述
+        2. 先与我确认不服哪几项、改判方向与金额范围
+        3. 文首注明正式使用前须以真实判决书替换【假设】内容
+      en: |-
+        The first-instance judgment has not been issued yet. Assuming {{hypothetical judgment outcome}}, please prepare a civil appeal petition in advance.
+        Requirements:
+        1. Mark all hypothetical content with [Hypothetical]; do not fabricate the court's reasoning, use cautious expressions instead
+        2. Confirm with me first which items I contest, the direction of reversal and the amount range
+        3. Note at the top that all [Hypothetical] content must be replaced with the real judgment before official use
+  - id: new-evidence-risk-check
+    title:
+      zh: "二审新证据梳理"
+      en: "New evidence review"
+    description:
+      zh: "梳理二审拟提交的新证据并提示上诉风险"
+      en: "Organize new evidence for the second instance and flag appeal risks"
+    prompt:
+      zh: |-
+        我准备在二审提交新证据「{{新证据材料}}」。请帮我逐项列明证据名称、来源、证明目的、一审未提交的原因及其与改判请求的关系，并提示上诉期限、新证据采纳条件与改判请求的证据基础等风险。
+      en: |-
+        I plan to submit new evidence {{new evidence materials}} in the second instance. Please list for each item its name, source, purpose of proof, the reason it was not submitted at first instance, and its relation to the reversal request, and flag risks on the appeal deadline, admissibility of new evidence on appeal, and the evidentiary basis of my requests.

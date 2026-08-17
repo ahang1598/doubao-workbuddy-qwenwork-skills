@@ -1,0 +1,55 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "模拟裁判报告"
+      en: "Judge simulation"
+    description:
+      zh: "从裁判者视角预判案件"
+      en: "Simulate the judge's perspective"
+    prompt:
+      zh: |-
+        请对「{{案件}}」出一份模拟裁判报告，预判裁判结果与理由。
+      en: |-
+        Produce a simulated judicial ruling report for {{case}}.
+  - id: ex-2
+    title:
+      zh: "胜诉概率预判"
+      en: "Win probability forecast"
+    description:
+      zh: "从法官视角预判胜诉概率与裁判走向"
+      en: "Forecast win probability and ruling outcome from a judge's view"
+    prompt:
+      zh: |-
+        我是本案{{我方诉讼地位}}，案件材料：{{案件材料}}。
+        请从法官视角预判本案裁判结果：胜诉概率（完全胜诉/部分胜诉/败诉）、各项诉讼请求的支持度与金额预测，并说明影响判决走向的关键因素。
+      en: |-
+        I am the {{our litigation position}} in this case. Case materials: {{case materials}}.
+        From a judge's perspective, forecast the ruling outcome: probability of prevailing (full win / partial win / loss), likely support for each claim and the amounts, and the key factors that drive the judgment.
+  - id: ex-3
+    title:
+      zh: "案件弱点识别"
+      en: "Weakness identification"
+    description:
+      zh: "从裁判者视角识别案件弱点并给出补强建议"
+      en: "Spot case weaknesses from the adjudicator's view with reinforcement advice"
+    prompt:
+      zh: |-
+        请以裁判者视角审查本案材料：{{案件材料}}。
+        按致命、重要、一般三个等级识别我方弱点，给出证据补强与论证补强建议，并预判对方庭审可能的攻击点及应对策略。
+      en: |-
+        Review the case materials from the adjudicator's perspective: {{case materials}}.
+        Identify our weaknesses at three levels (fatal, major, general), suggest how to reinforce evidence and arguments, and anticipate the opponent's likely courtroom attacks with counter-strategies.
+  - id: ex-4
+    title:
+      zh: "庭审推演准备"
+      en: "Hearing rehearsal prep"
+    description:
+      zh: "预判法官庭审发问并推演辩论交锋"
+      en: "Anticipate bench questions and rehearse courtroom debate"
+    prompt:
+      zh: |-
+        我方{{我方诉讼地位}}，请基于{{案件材料}}做庭审推演：
+        预判法官可能围绕程序、事实查明、证据审查与法律适用的发问并给出建议回答；针对各争议焦点推演三轮辩论交锋；同时评估调解和解的可行性与底线方案。
+      en: |-
+        We are the {{our litigation position}}. Based on {{case materials}}, please rehearse the hearing:
+        Anticipate the judge's questions on procedure, fact-finding, evidence review and application of law, with suggested answers; simulate three rounds of debate on each disputed issue; and assess the feasibility of mediation or settlement, including our bottom-line position.

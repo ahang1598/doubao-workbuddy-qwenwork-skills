@@ -1,0 +1,13 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "建立办案画像"
+      en: "Build profile"
+    description:
+      zh: "5 分钟初始化个人办案画像"
+      en: "Initialize your casework profile in 5 minutes"
+    prompt:
+      zh: |-
+        请帮我做一次冷启动访谈，建立我的办案画像。
+      en: |-
+        Run the onboarding interview to build my casework profile.

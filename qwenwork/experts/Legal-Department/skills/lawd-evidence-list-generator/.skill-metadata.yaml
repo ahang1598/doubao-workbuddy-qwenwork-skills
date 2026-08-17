@@ -1,0 +1,13 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "生成证据清单"
+      en: "Generate evidence list"
+    description:
+      zh: "生成可提交法院的证据清单"
+      en: "Generate a court-ready evidence list"
+    prompt:
+      zh: |-
+        请根据「{{证据材料}}」生成可提交法院的证据清单（名称、页码、证明对象）。
+      en: |-
+        Generate a court-ready evidence list from {{evidence materials}}.

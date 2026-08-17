@@ -1,0 +1,13 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "案件建档"
+      en: "Open a case file"
+    description:
+      zh: "新案建档并计算诉讼期限"
+      en: "Open a case file and compute deadlines"
+    prompt:
+      zh: |-
+        请帮我给「{{新案件}}」建档，并计算答辩期、举证期等关键期限。
+      en: |-
+        Open a case file for {{new case}} and compute key procedural deadlines.

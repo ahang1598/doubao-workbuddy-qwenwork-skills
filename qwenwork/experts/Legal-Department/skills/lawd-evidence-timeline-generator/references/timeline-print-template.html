@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{CASE_NAME} - 证据时间线</title>
+<style>
+
+/* ============================================================
+   打印设置
+   ============================================================ */
+@page {
+  size: A4 portrait;
+  margin: 15mm 18mm 15mm 18mm;
+}
+/* 切换 A3：在调用时可动态注入 size: A3 portrait; */
+
+@media print {
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .page-break { page-break-before: always; }
+  .timeline-event { page-break-inside: avoid; }
+  .month-group  { page-break-inside: avoid; }
+}
+
+/* ============================================================
+   基础样式
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', Arial, sans-serif;
+  font-size: 11pt;
+  color: #1a1a1a;
+  background: #f5f5f5;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   页面容器（A4 居中预览）
+   ============================================================ */
+.page-container {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 16px auto;
+  background: #fff;
+  padding: 15mm 18mm 15mm 18mm;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+}
+
+@media print {
+  .page-container {
+    width: auto;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+}
+
+/* ============================================================
+   文档标题区
+   ============================================================ */
+.doc-header {
+  border-bottom: 2.5px solid #1a365d;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.doc-title {
+  font-size: 17pt;
+  font-weight: 700;
+  color: #1a365d;
+  letter-spacing: 1px;
+}
+
+.doc-subtitle {
+  font-size: 10.5pt;
+  color: #555;
+  margin-top: 3px;
+}
+
+.doc-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.doc-meta-right {
+  font-size: 9.5pt;
+  color: #888;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   图例
+   ============================================================ */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 18px;
+  padding: 7px 12px;
+  background: #f8f9fc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 9pt;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #444;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   时间线主体
+   ============================================================ */
+.timeline {
+  position: relative;
+}
+
+/* 左侧垂直线（从第一个 dot 到最后一个 dot 中间） */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 88px;               /* 对齐 dot 中心 */
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, #cbd5e0 0%, #a0aec0 50%, #cbd5e0 100%);
+}
+
+/* ============================================================
+   月份分组
+   ============================================================ */
+.month-group {
+  margin-bottom: 4px;
+}
+
+.month-label {
+  display: inline-block;
+  font-size: 9pt;
+  font-weight: 700;
+  color: #fff;
+  background: #2d3748;
+  padding: 2px 10px;
+  border-radius: 2px;
+  margin-left: 98px;          /* 推到时间线轴右侧 */
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   单条事件行
+   ============================================================ */
+.timeline-event {
+  display: grid;
+  grid-template-columns: 80px 18px 1fr;
+  align-items: flex-start;
+  gap: 0 8px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+/* 日期列 */
+.event-date {
+  text-align: right;
+  font-size: 9.5pt;
+  font-weight: 600;
+  color: #2d3748;
+  padding-top: 3px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 圆点列 */
+.event-dot-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.event-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px currentColor;
+  flex-shrink: 0;
+  z-index: 1;
+  background: currentColor;
+}
+
+/* 事件卡片 */
+.event-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 3.5px solid currentColor;
+  border-radius: 3px;
+  padding: 5px 10px;
+  position: relative;
+}
+
+.event-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.event-name {
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: #1a202c;
+  line-height: 1.4;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 3px;
+}
+
+.event-badge {
+  font-size: 8.5pt;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.event-badge-label {
+  color: #888;
+  font-size: 8pt;
+}
+
+.event-amount {
+  font-size: 9pt;
+  font-weight: 700;
+  color: #c05621;
+  margin-top: 2px;
+}
+
+.event-summary {
+  font-size: 9pt;
+  color: #2d3748;
+  line-height: 1.55;
+  margin-top: 5px;
+  padding: 4px 8px;
+  background: #f7fafc;
+  border-left: 2.5px solid currentColor;
+  border-radius: 0 3px 3px 0;
+  opacity: 0.9;
+}
+
+.event-note {
+  font-size: 8.5pt;
+  color: #718096;
+  font-style: italic;
+  margin-top: 3px;
+}
+
+/* ============================================================
+   事件类型颜色定义
+   ============================================================ */
+
+/* 前期准备 — 蓝灰 */
+.type-preparation { color: #4a6fa5; }
+
+/* 合同签署 — 深蓝 */
+.type-contract    { color: #2b6cb0; }
+
+/* 付款/资金 — 绿色 */
+.type-payment     { color: #276749; }
+
+/* 违约/逾期 — 红色 */
+.type-breach      { color: #c53030; }
+
+/* 通知/函件 — 橙色 */
+.type-notice      { color: #c05621; }
+
+/* 诉讼准备 — 紫色 */
+.type-litigation  { color: #553c9a; }
+
+/* 约定节点/截止日 — 黄褐 */
+.type-deadline    { color: #975a16; }
+
+/* 默认 */
+.type-default     { color: #4a5568; }
+
+/* ============================================================
+   页脚
+   ============================================================ */
+.doc-footer {
+  margin-top: 24px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 8.5pt;
+  color: #a0aec0;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ============================================================
+   工具栏（打印时隐藏）
+   ============================================================ */
+.toolbar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+}
+
+.toolbar-btn {
+  background: #1a365d;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10pt;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: background 0.2s;
+}
+
+.toolbar-btn:hover { background: #2a4a7f; }
+
+.toolbar-btn.secondary {
+  background: #fff;
+  color: #1a365d;
+  border: 1.5px solid #1a365d;
+}
+
+.toolbar-btn.secondary:hover { background: #ebf0f8; }
+
+@media print {
+  .toolbar { display: none; }
+}
+
+/* ============================================================
+   A3 模式覆盖（通过 body 类名切换）
+   ============================================================ */
+body.size-a3 .page-container {
+  width: 297mm;
+  min-height: 420mm;
+}
+
+@media print {
+  body.size-a3 { }
+}
+
+/* A3 时调整页面设置 */
+body.size-a3 .page-size-indicator::after { content: ' (A3)'; }
+
+</style>
+</head>
+<body>
+
+<!-- 工具栏 -->
+<div class="toolbar no-print">
+  <button class="toolbar-btn" onclick="window.print()">🖨 打印 / 存为 PDF</button>
+  <button class="toolbar-btn secondary" onclick="togglePageSize()">切换 A3 / A4</button>
+</div>
+
+<!-- 页面容器 -->
+<div class="page-container">
+
+  <!-- 文档标题 -->
+  <div class="doc-header">
+    <div class="doc-meta">
+      <div>
+        <div class="doc-title">{CASE_NAME}</div>
+        <div class="doc-subtitle">证据材料时间线 <span class="page-size-indicator"></span></div>
+      </div>
+      <div class="doc-meta-right">生成日期：{GENERATED_DATE}</div>
+    </div>
+  </div>
+
+  <!-- 图例 -->
+  <div class="legend no-print">
+    <span style="font-weight:600;color:#555;margin-right:4px;">事件类型：</span>
+    <span class="legend-item"><span class="legend-dot type-preparation" style="background:#4a6fa5"></span>前期准备</span>
+    <span class="legend-item"><span class="legend-dot type-contract" style="background:#2b6cb0"></span>合同签署</span>
+    <span class="legend-item"><span class="legend-dot type-payment" style="background:#276749"></span>付款/资金</span>
+    <span class="legend-item"><span class="legend-dot type-breach" style="background:#c53030"></span>违约/逾期</span>
+    <span class="legend-item"><span class="legend-dot type-notice" style="background:#c05621"></span>通知/函件</span>
+    <span class="legend-item"><span class="legend-dot type-deadline" style="background:#975a16"></span>约定节点</span>
+    <span class="legend-item"><span class="legend-dot type-litigation" style="background:#553c9a"></span>诉讼准备</span>
+  </div>
+
+  <!-- 时间线主体 -->
+  <div class="timeline">
+    {TIMELINE_HTML}
+  </div>
+
+  <!-- 页脚 -->
+  <div class="doc-footer">
+    <span>{CASE_NAME} · 证据时间线</span>
+    <span>共 {TOTAL_EVENTS} 项事件 · {GENERATED_DATE}</span>
+  </div>
+
+</div>
+
+<script>
+function togglePageSize() {
+  document.body.classList.toggle('size-a3');
+  // 同时修改 @page size
+  var existing = document.getElementById('dynamic-page-style');
+  if (!existing) {
+    existing = document.createElement('style');
+    existing.id = 'dynamic-page-style';
+    document.head.appendChild(existing);
+  }
+  if (document.body.classList.contains('size-a3')) {
+    existing.textContent = '@page { size: A3 portrait; margin: 15mm 18mm; }';
+  } else {
+    existing.textContent = '@page { size: A4 portrait; margin: 15mm 18mm; }';
+  }
+}
+</script>
+
+</body>
+</html>

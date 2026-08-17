@@ -1,0 +1,13 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "法条案例验真"
+      en: "Verify citations"
+    description:
+      zh: "核验文书中法条与案例引用"
+      en: "Verify statute and case citations"
+    prompt:
+      zh: |-
+        请核验这份「{{文书}}」中的法条与案例引用是否真实、现行有效。
+      en: |-
+        Verify that the statute and case citations in {{the document}} are real and current.

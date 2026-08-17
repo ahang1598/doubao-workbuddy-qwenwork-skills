@@ -1,0 +1,127 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "执行文书全套"
+      en: "Full Enforcement Package"
+    description:
+      zh: "凭生效判决+财产线索生成申请书与计算明细全套"
+      en: "Generate the full application package from an effective judgment and property leads"
+    prompt:
+      zh: |-
+        请根据生效法律文书和财产线索材料生成强制执行申请书与计算明细：
+
+        生效法律文书：{{判决书/裁定书/调解书文件}}
+        财产线索材料：{{财产线索文件（可选）}}
+
+        要求：
+        1. 先判定执行依据类型，确定管辖法院与所需附件
+        2. 计算执行标的（含迟延履行期间加倍利息），计算过程完整可复核
+        3. 对财产线索分类，并一并生成财产保全申请书
+      en: |-
+        Please generate the enforcement application and calculation sheet from my effective legal document and property leads:
+
+        Effective legal document: {{judgment/ruling/mediation document file}}
+        Property leads: {{property lead files (optional)}}
+
+        Requirements:
+        1. Identify the enforcement basis type first to determine the competent court and required attachments
+        2. Calculate the enforcement amount (including doubled deferred-performance interest) with a fully checkable process
+        3. Classify the property leads and also generate the property preservation application
+  - id: ex-2
+    title:
+      zh: "仲裁裁决/公证债权文书执行"
+      en: "Arbitral Award / Notarized Debt Enforcement"
+    description:
+      zh: "以仲裁裁决书、公证债权文书或支付令为执行依据申请执行"
+      en: "File for enforcement based on an arbitral award, a notarized debt document, or a payment order"
+    prompt:
+      zh: |-
+        我要以这份{{仲裁裁决书/公证债权文书/支付令}}申请强制执行：
+
+        执行依据文件：{{执行依据文件}}
+
+        要求：
+        1. 判定管辖法院与所需附件（如送达证明/执行证书）
+        2. 计算执行标的并生成全套申请文书
+      en: |-
+        I want to apply for enforcement based on this {{arbitral award / notarized debt document / payment order}}:
+
+        Enforcement basis file: {{enforcement basis file}}
+
+        Requirements:
+        1. Identify the competent court and required attachments (e.g., proof of service / enforcement certificate)
+        2. Calculate the enforcement amount and generate the full application package
+  - id: ex-3
+    title:
+      zh: "迟延履行利息计算"
+      en: "Deferred Interest Calculation"
+    description:
+      zh: "计算执行标的与迟延履行期间加倍利息"
+      en: "Compute the enforcement amount with doubled deferred-performance interest"
+    prompt:
+      zh: |-
+        请计算本案执行标的与迟延履行利息：
+
+        生效法律文书：{{生效法律文书文件}}
+        已付金额（如有）：{{部分履行情况（可选）}}
+
+        要求：
+        1. 一般债务利息与加倍部分债务利息分开计算，利率/天数/本金拆分透明、可人工验算
+        2. 如有部分履行，按先息后本规则分段扣减
+      en: |-
+        Please calculate the enforcement amount and deferred-performance interest for this case:
+
+        Effective legal document: {{effective legal document file}}
+        Amount already paid (if any): {{partial payment details (optional)}}
+
+        Requirements:
+        1. Compute ordinary interest and the doubled portion separately, with transparent rates, days, and principal breakdowns
+        2. If there has been partial performance, deduct it in stages under the "interest first, principal second" rule
+  - id: ex-4
+    title:
+      zh: "财产线索分类"
+      en: "Classify Property Leads"
+    description:
+      zh: "整理并分类被执行人财产线索"
+      en: "Organize and classify the respondent's property leads"
+    prompt:
+      zh: |-
+        请整理并分类被执行人的这些财产线索：
+
+        财产线索材料：{{财产线索文件}}
+
+        要求：
+        1. 按银行账户/不动产/车辆/股权/应收账款/其他六类归类
+        2. 每条线索注明信息来源；多个被执行人的按被执行人分组
+      en: |-
+        Please organize and classify these property leads of the party subject to enforcement:
+
+        Property lead materials: {{property lead files}}
+
+        Requirements:
+        1. Group into six categories: bank accounts / real estate / vehicles / equity / accounts receivable / other
+        2. Annotate the information source of each lead; if there are multiple respondents, group leads by respondent
+  - id: ex-5
+    title:
+      zh: "假设场景模拟生成"
+      en: "Hypothetical Scenario Draft"
+    description:
+      zh: "无真实执行依据时按假设判项生成预览文书"
+      en: "Preview documents based on a hypothetical ruling when no real enforcement basis exists"
+    prompt:
+      zh: |-
+        还没有生效法律文书，请按假设场景模式生成预览：
+
+        假设判项内容：{{假设的本金、利率、履行期限等判项要点}}
+
+        要求：
+        1. 只输出 Markdown 预览版，不生成正式 Word 文书
+        2. 所有假设数据明显标注，文首标注【假设场景·非正式文书】
+      en: |-
+        There is no effective legal document yet. Please generate a preview in hypothetical-scenario mode:
+
+        Hypothetical ruling content: {{hypothetical ruling points such as principal, interest rate, and performance deadline}}
+
+        Requirements:
+        1. Output a Markdown preview only; do not generate a formal Word document
+        2. Clearly mark all hypothetical data and label the document as [Hypothetical Scenario - Not a Formal Document]

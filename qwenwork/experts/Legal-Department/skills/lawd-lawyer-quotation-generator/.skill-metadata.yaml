@@ -1,0 +1,61 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "生成报价方案"
+      en: "Generate a quotation"
+    description:
+      zh: "为标准案件生成含服务内容的报价方案"
+      en: "Generate a quotation with service scope for a standard case"
+    prompt:
+      zh: |-
+        请为「{{案件类型/标的}}」生成一份法律服务报价方案（含服务内容与报价）。
+      en: |-
+        Generate a legal service quotation (including service scope and pricing) for {{case type / amount}}.
+  - id: ex-2
+    title:
+      zh: "高端案件报价"
+      en: "Premium case quotation"
+    description:
+      zh: "为高端/复杂案件生成含服务内容、团队与价格的报价方案"
+      en: "Generate a quotation with services, team and pricing for a premium/complex case"
+    prompt:
+      zh: |-
+        我要为一个「{{案件类型}}」案件报价，案件复杂且与客户首次合作，需要全面展示律所实力。请生成包含服务内容、团队介绍和价格方案的报价方案，收费模式偏好：{{收费模式}}。
+      en: |-
+        I need to quote for a {{case type}} case. It is complex and our first cooperation with the client, so please showcase the firm's strength with a comprehensive quotation including service scope, team introduction and pricing plan. Preferred billing model: {{billing model}}.
+  - id: ex-3
+    title:
+      zh: "再审案件报价"
+      en: "Retrial case quotation"
+    description:
+      zh: "为再审/疑难案件生成突出团队专业性的报价方案"
+      en: "Generate a quotation highlighting team expertise for a retrial or difficult case"
+    prompt:
+      zh: |-
+        我们有一个「{{案件类型}}」案件处于{{诉讼阶段}}阶段，难度较大，需要突出团队专业性。请生成包含团队介绍、律师简历和费用报价的报价方案。
+      en: |-
+        We have a difficult {{case type}} case at the {{litigation stage}} stage and need to highlight the team's expertise. Please generate a quotation with a team introduction, lawyer resumes and a fee proposal.
+  - id: ex-4
+    title:
+      zh: "引用法规报价"
+      en: "Regulation-based quotation"
+    description:
+      zh: "生成引用收费法规标准、增强说服力的报价方案"
+      en: "Generate a quotation citing fee regulation standards for credibility"
+    prompt:
+      zh: |-
+        请为「{{案件类型/标的金额}}」生成一份报价方案，引用相关律师服务收费规定，将收费方案与法规依据一并呈现，增强报价说服力。
+      en: |-
+        Generate a quotation for {{case type / disputed amount}}. Cite the relevant lawyer service fee regulations and present the fee proposal together with the regulatory basis to strengthen credibility.
+  - id: ex-5
+    title:
+      zh: "多方案对比报价"
+      en: "Multi-plan comparison"
+    description:
+      zh: "为同一案件生成不同收费模式的多方案对比报价"
+      en: "Generate a quotation comparing multiple billing models for the same case"
+    prompt:
+      zh: |-
+        请为「{{案件类型}}」生成一份多方案对比报价，提供不同收费模式的多个方案（如分阶段固定收费、基础代理费+风险代理费），供客户选择。
+      en: |-
+        Generate a multi-plan comparison quotation for {{case type}}, offering plans with different billing models (such as staged fixed fees and base fee plus contingency fee) for the client to choose from.

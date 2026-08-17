@@ -6,9 +6,9 @@
 
 - 平台目录：`qwenwork/`
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：25
-- 当前索引文件数：1291
-- 最近变更：[2026-08-10-160206](qwenwork/change-logs/2026-08-10-160206.md) - QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。
+- 当前索引条目数：28
+- 当前索引文件数：1659
+- 最近变更：[2026-08-17-180001](qwenwork/change-logs/2026-08-17-180001.md) - QwenWork 本次同步新增 368 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/Legal-Department, skills/qw-pages, skills/qw-pages-supabase。 受影响范围：experts/Legal-Department, skills/qw-pages, skills/qw-p...
 
 ## 数据来源
 
@@ -28,6 +28,7 @@
 
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
+| 律师办案大管家 | `qwenwork/experts/Legal-Department` | legal | 366 | 面向执业律师的民商事诉讼办案助手，23 项能力覆盖接案→检索→分析→证据→文书→庭审→执行→结案。带办案中枢统一入口与流水线编排、5 分钟冷启动建立个人办案画像、案件管家管台账与诉讼期限。三大特点：①权威数据逐条核验——法规、案例、企业工商检索在用户于数据连接中启用相应连接器后，运行时按能力语义自动发现并多家灾备、逐条核验可溯源；未连接时套件仍可运行并按能力矩阵降级，其中法条与案例等权威引用拒绝降级、宁可停下也不编造；②规范 Wo... |
 | 1688买家助手 | `qwenwork/experts/ali1688-buyer-assistant` | expert | 86 | 为1688买家提供选品找货、找商找厂、询盘寻源、分销铺货、88生意通等一站式采购服务和交易解决方案，让采购决策和生意经营更快、更准、更省心。 |
 | 1688商家助手 | `qwenwork/experts/ali1688-seller-assistant` | expert | 113 | 从店铺诊断到商品运营，为1688商家提供一站式经营支持，帮助商家看清数据、优化商品、提升转化。 |
 | 咨询交付 | `qwenwork/experts/consulting-delivery` | expert | 12 | 管理咨询全流程工具，覆盖桌面调研、访谈纪要、方案框架、报告撰写、标杆对比、项目周报和CEO汇报七大场景。独立可用，连接文档协作平台后可将产出自动发布至钉钉文档、飞书文档、Notion或Google Docs。 |
@@ -56,6 +57,8 @@
 | pdf | `qwenwork/skills/pdf` | skill | 13 | Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, addin... |
 | plugin-creator | `qwenwork/skills/plugin-creator` | skill | 1 | Create, customize, or modify QwenWork / QwenWorkCN expert plugins. Use when the user wants to create a new plugin, customize an existing plugin, or edit a plugin's skills/commands. |
 | pptx | `qwenwork/skills/pptx` | skill | 56 | Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (ev... |
+| qw-pages | `qwenwork/skills/qw-pages` | skill | 1 | Publish static or dynamic HTML, websites, and web applications through QW Pages. Use when the user asks to publish, deploy, or make a webpage live. Combine with qw-pages-supabase only when the webpage needs persistent... |
+| qw-pages-supabase | `qwenwork/skills/qw-pages-supabase` | skill | 1 | Prepare Supabase-compatible persistent storage for a dynamic QW Page. Use with qw-pages when a webpage needs database tables, server-side persistence, Supabase access, or database-backed APIs. |
 | qwenwork-guidance | `qwenwork/skills/qwenwork-guidance` | skill | 7 | Routing guide for the built-in QwenWork Connector tools (mcp__qw-builtin__qw_query / mcp__qw-builtin__qw_action). Load ONLY right before calling them to view or manage QwenWork's OWN tasks/sessions or app configuratio... |
 | xlsx | `qwenwork/skills/xlsx` | skill | 53 | Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, comp... |
 
@@ -63,6 +66,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-17-180001 | [2026-08-17-180001](qwenwork/change-logs/2026-08-17-180001.md) | QwenWork 本次同步新增 368 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/Legal-Department, skills/qw-pages, skills/qw-pages-supabase。 受影响范围：experts/Legal-Department, skills/qw-pages, skills/qw-p... |
 | 2026-08-10-160206 | [2026-08-10-160206](qwenwork/change-logs/2026-08-10-160206.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。 |
 | 2026-08-09-180003 | [2026-08-09-180003](qwenwork/change-logs/2026-08-09-180003.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/dws。 |
 | 2026-08-08-180003 | [2026-08-08-180003](qwenwork/change-logs/2026-08-08-180003.md) | QwenWork 本次同步新增 401 个文件、修改 20 个文件、删除 1 个文件。 受影响范围：skills/create-skill, skills/dws。 |

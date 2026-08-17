@@ -1,0 +1,25 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "检索法条"
+      en: "Retrieve statutes"
+    description:
+      zh: "按法律问题检索法律法规条文"
+      en: "Retrieve statutes and regulations for a legal issue"
+    prompt:
+      zh: |-
+        请帮我检索与「{{法律问题或关键词}}」相关的法律法规条文，逐条给出条文内容与适用要点。
+      en: |-
+        Retrieve statutes and regulations related to {{legal issue}}, with text and application notes for each article.
+  - id: ex-2
+    title:
+      zh: "法规要点总结"
+      en: "Summarize a regulation"
+    description:
+      zh: "总结某部法规的核心要点"
+      en: "Summarize key points of a regulation"
+    prompt:
+      zh: |-
+        请总结《{{法规名称}}》的核心要点、适用情形与最新修订情况。
+      en: |-
+        Summarize the key points, applicable scenarios and latest amendments of {{regulation name}}.

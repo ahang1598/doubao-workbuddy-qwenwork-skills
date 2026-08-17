@@ -1,0 +1,13 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "办案导览"
+      en: "Casework guide"
+    description:
+      zh: "不知道该用哪个技能时从这里开始"
+      en: "Start here when unsure which skill to use"
+    prompt:
+      zh: |-
+        我有个「{{案件/需求}}」，请告诉我该从哪一步开始、用哪个技能。
+      en: |-
+        I have {{a case / request}}. Tell me which step to start with and which skill to use.

@@ -1,0 +1,59 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "起草答辩状"
+      en: "Draft a defense"
+    description:
+      zh: "根据起诉状起草答辩状"
+      en: "Draft a defense from a complaint"
+    prompt:
+      zh: |-
+        请根据这份「{{起诉状}}」帮我起草答辩状，逐项回应诉讼请求。
+      en: |-
+        Draft a defense responding to each claim based on {{the complaint}}.
+  - id: ex-2
+    title:
+      zh: "案情描述起草"
+      en: "Draft from description"
+    description:
+      zh: "根据自然语言案情描述自动识别案由并生成答辩状"
+      en: "Identify the cause of action from a natural-language case description and draft a defense"
+    prompt:
+      zh: |-
+        我收到起诉状需要应诉，请根据下面的案情识别案由，并生成逐项回应原告诉请的答辩状：
+
+        原告诉请：{{原告诉讼请求}}
+        我方立场：{{被告的事实与主张}}
+      en: |-
+        I received a complaint and need to respond. Identify the cause of action from the case information below and generate a defense responding to each claim:
+
+        Plaintiff's claims: {{plaintiff's claims}}
+        Our position: {{defendant's facts and position}}
+  - id: ex-3
+    title:
+      zh: "要素式答辩状"
+      en: "Element-style defense"
+    description:
+      zh: "起草答辩状并按法院表格格式附加输出要素式答辩状"
+      en: "Draft a defense and additionally provide an element-style version following the court's tabular format"
+    prompt:
+      zh: |-
+        请根据所附「{{起诉状}}」起草答辩状，逐项回应诉讼请求，并按法院表格格式附加输出要素式答辩状。
+      en: |-
+        Draft a defense from the attached {{complaint}}, responding to each claim, and additionally provide an element-style defense following the court's tabular format.
+  - id: ex-4
+    title:
+      zh: "复用分析结果"
+      en: "Reuse prior analysis"
+    description:
+      zh: "复用争点分析、证据链等结构化输出直接生成答辩状"
+      en: "Generate a defense directly from structured outputs such as an issue analysis or evidence mapping"
+    prompt:
+      zh: |-
+        本案已完成争点分析和证据梳理，请直接复用以下结构化结果生成答辩状，逐项回应原告诉请：
+
+        结构化分析结果：{{争点分析、证据策略或论证链条结果}}
+      en: |-
+        I have completed the issue analysis and evidence organization for this case. Reuse the structured results below to generate a defense responding to each claim:
+
+        Structured analysis results: {{issue analysis, evidence strategy, or argument-chain results}}
