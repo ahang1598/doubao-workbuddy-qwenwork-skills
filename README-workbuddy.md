@@ -8,7 +8,7 @@
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：307
 - 当前索引文件数：8262
-- 最近变更：[2026-08-13-180002](workbuddy/change-logs/2026-08-13-180002.md) - WorkBuddy 本次同步新增 13 个文件、修改 4 个文件、删除 235 个文件。 新增条目：skills/paper-reader, skills/paper-reader.zip, skills/paper-rebuttal, skills/paper-reviewer, skills/research-lineage-map。 移除条目已归...
+- 最近变更：[2026-08-20-180002](workbuddy/change-logs/2026-08-20-180002.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。
 
 ## 数据来源
 
@@ -367,6 +367,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-20-180002 | [2026-08-20-180002](workbuddy/change-logs/2026-08-20-180002.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。 |
 | 2026-08-13-180002 | [2026-08-13-180002](workbuddy/change-logs/2026-08-13-180002.md) | WorkBuddy 本次同步新增 13 个文件、修改 4 个文件、删除 235 个文件。 新增条目：skills/paper-reader, skills/paper-reader.zip, skills/paper-rebuttal, skills/paper-reviewer, skills/research-lineage-map。 移除条目已归... |
 | 2026-08-11-180003 | [2026-08-11-180003](workbuddy/change-logs/2026-08-11-180003.md) | WorkBuddy 本次同步新增 54 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/mvp-dev-expert-team。 受影响范围：experts/mvp-dev-expert-team。 |
 | 2026-08-10-170319 | [2026-08-10-170319](workbuddy/change-logs/2026-08-10-170319.md) | WorkBuddy 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/.disable_to_model_invocation_migration.json。 受影响范围：skills/.disable_to_model_invocation_migration.json。 |
