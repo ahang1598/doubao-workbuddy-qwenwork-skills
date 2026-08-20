@@ -1,145 +1,205 @@
 # 编辑已有幻灯片
 
-用户已经有一份内容、要在它基础上改时走这里。输入形态很多——飞书 Slides 链接/token、PPTX 文件、附带的文档或图片素材，或者只有一句话要求——但**执行顺序只有一条**。
+用户已有一份原稿、要在其基础上修改时走这里。原稿可能是当前轮上传的 PPTX、上一轮生成结果或飞书 Slides 链接；是否属于编辑任务看有没有需要保留和修改的原稿。
 
-想拿这份东西当**模板**、照着它的版式做一份新 deck，不走本文，走 [`template-editing.md`](template-editing.md)。
+用户若只沿用原稿版式制作全新内容，转 [`template-editing.md`](template-editing.md)；未提供新模板的扩写、压缩和合并仍走编辑链路。用户提供新模板并要求按其调整或统一风格时，也转 `template-editing`：新模板作为目标文档和视觉来源，原稿作为内容来源，当前轮或前轮用户要求作为制作目标。只有用户明确要求保留原稿链接、仅借用新模板的配色、字体或局部元素时，才继续走编辑链路。
 
-## 执行顺序
+## 总体流程
 
 ```text
-第 1 步 理解现状        归一到一份在线 Slides → 读附件 → 回读这份 deck → 复核路由
-第 2 步 定位要改哪里     产出 slide_id + block_id，以及每处要改成什么
-第 3 步 备齐素材        照第 2 步的缺口去找、去加工（按需）
-第 4 步 选操作并改       选命令 → 写 XML → 写入前 lint → 写入
-第 5 步 回读校验并交付   必须用 NotifyHuman 交付最终幻灯片链接
+理解原稿和附件 → 拆解目标/约束/验收 → 锁定变更范围 → 准备素材
+→ 结构 → 内容 → 图表/图片 → 排版 → 全局样式 → 回读验收 → 交付
 ```
 
-**素材一定排在定位之后。** 缺哪张图、缺哪个口径的数据，是第 2 步的产出而不是它的前提——"把市场份额那页的数据换成 2025 的"，得先看过那页现在是什么图表、什么指标、几个系列，才知道要搜什么；没理解现状就去搜索生图，多半白做。
+用户已指定页面或对象时，只修改指定范围；未指定位置且要求全局优化时，扫描整稿并自主选择最需要改进的页面和内容。“更精美”“更多图表”“图片少一点”等全局要求不能只改一页示例，但也不能改写用户未要求变化的内容，避免指令外的变更。
 
-所有输入都从第 1 步进，区别只在第 1 步里多做什么：
+## 1. 理解原稿和材料
 
-| 用户给的 | 第 1 步里多做什么 |
-|----------|-------------------|
-| 飞书 Slides 链接 +「改某处」 | 无，直接回读 |
-| PPTX +「改一下」 | 先导入成在线 Slides，之后只动这一份 |
-| 链接 + 文档附件（「把这份材料的内容加进去」） | 完整解析附件，它往往直接决定要动哪几页 |
-| 链接 + 图片（「把这张图放进去」） | 记下这张图和它的原图比例，加工上传留到第 3 步 |
+后续只认一个作为交付对象的 `xml_presentation_id`。先识别主原稿，并在主原稿上修改。
 
-## 第 1 步 · 理解现状
+| 输入 | 处理 |
+|---|---|
+| 当前轮 PPTX + 编辑要求 | PPTX 是主原稿，导入后原地编辑 |
+| 上一轮结果或 Slides 链接 | 重新实时读取该在线 Slides |
+| 上一轮原稿 + 当前轮新模板 + 按模板调整/统一风格 | 转 template-editing；新模板承载结果，原稿提供内容 |
+| 两份 PPT 合并 | 确定主原稿与内容来源，再做页面映射 |
+| PPT + DOCX/PDF/XLSX/图片 | PPT 是主原稿，其余是事实、数据、素材或品牌规范（如 Logo、标准色和指定字体） |
 
-这一步要同时摸清两件事：**用户手上有什么材料**，以及**这份 deck 现在长什么样**。两者都清楚了才谈得上改哪里。
 
-### 1.1 归一到一份在线 Slides
+### 1.1 归一到在线 Slides
 
-后续所有步骤都只认一个 `xml_presentation_id`，先把输入收敛成它。
+**主原稿 PPTX**：导入成在线 Slides，导入结果就是之后编辑和交付的对象，不再回头动本地文件。
 
-**PPTX 文件**：导入成在线 Slides，导入结果就是之后编辑和交付的对象，不再回头动本地文件。
+> 主原稿或参考模板是 PPTX 时，拿到文件后第一步必须通过 lark-cli drive +import 导入在线 Slides。禁止先使用 python-pptx、解压 PPTX、LibreOffice、本地渲染或其他方式解析内容。导入完成后，只通过服务端 XML、xml_inspect.py 和页面截图理解原稿。导入失败时先排查导入问题，不得静默切换为本地解析后继续编辑。
 
 ```bash
 lark-cli drive +import --file "<deck.pptx>" --type slides --json
+# 未就绪时执行响应里的 next_command，或：
+lark-cli drive +task_result --scenario import --ticket <TICKET>
 ```
+导入时可加 `--name` 指定名称，或加 `--folder-token` 指定目标文件夹。
 
-可加 `--name` / `--folder-token`。返回未就绪时执行响应里的 `next_command`，或跑 `drive +task_result --scenario import --ticket <TICKET>`。
+**参考风格/模板 PPTX**：也必须单独导入成在线 Slides，并转 [`template-editing.md`](template-editing.md)；不使用 python 解包本地文件、看缩略图或凭印象学习风格。导入就绪后实时保存全文 XML、生成摘要并截图查看；再按页面角色读取候选页 raw XML，定位可复用页面和 block。
+
+在线参考 Slides 同样实时 `+xml-get`，`/wiki/` 链接先解析真实 `obj_token`。参考稿保持只读；后续写入和交付仍只使用主原稿的 `xml_presentation_id`。
 
 **飞书 Slides 链接/token**：路径里的 token 直接就是 `xml_presentation_id`，不用转换。
 
 **`/wiki/` 链接**：不能直接当 presentation ID 用，先解析真实 `obj_token`，见 SKILL.md「四、核心概念」。
 
-拿到 ID 和链接后，**用 NotifyHuman 发开工通知**。
+### 1.2 判断附件角色
 
-### 1.2 读附件（用户给了材料时）
+不要把所有附件笼统当“素材”：
 
-做法与新建流程完全一致，细节见 SKILL.md `Step 3 · 收集素材`。
+- 参考风格/模板 PPT：必须先导入成在线Slides，结合截图、摘要和候选页 raw XML，提取页面类型、栅格、配色、字体、背景、装饰语言、层级和可复用组件；记录来源 `slide_id`、`block_id`、坐标及结构限制。复用必须从来源页或组件的原始 XML 出发，不能只看截图近似重画；写入主稿前替换内容、按目标 presentation 重新上传媒体并 lint，不替换主稿内容和事实来源。
 
-- 附件是本次任务**优先级最高**的事实来源，高于联网搜索和你的先验知识。
-- 只跑 `paragraphs` / `pdftotext` 会丢掉图表：docx 必须再跑 `doc.tables` + `doc.inline_shapes` + `unzip word/media/`，pdf 必须再跑 `fitz.get_images` + `fitz.find_tables` + `page.get_pixmap`。
-- 附件里提取的图片和表格**禁止裁剪**，只能缩放，`width:height` 必须对齐原图比例。
-- 用户直接给了图片时，这里只需记下它和它的原图比例，去底色和上传留到第 3 步。
+- 待合并 PPT：建立来源页到目标结构的映射，检查内容覆盖。
+- DOCX/PDF/XLSX：作为优先级最高的事实来源；XLSX 要确认工作表、字段、单位、时间范围和真实末行。
+- 图片：区分页面图片、背景图和 Logo，记录身份与原始比例。
 
-没读完附件就不要进第 2 步——附件内容往往直接决定了要动的范围。
+附件读取见 SKILL.md `Step 3 · 收集素材`。DOCX 不能只读段落，还要读 `doc.tables`、`doc.inline_shapes` 和 `unzip word/media/`；PDF 不能只跑 `pdftotext`，还要跑 `fitz.get_images`、`fitz.find_tables` 和 `page.get_pixmap`。附件提取的图片/表格禁止裁剪，只按原比例缩放。没读完会影响范围判断的附件，不进入第 2 步。
 
-### 1.3 回读这份 deck
+### 1.3 实时回读原稿
 
-**必须现在从服务端实时读**，不要用上一轮或历史会话存到本地的 XML——用户可能在此期间手动改过，旧文件里的 `slide_id` / `block_id`、以及上一轮记下的 `revision_id` 可能都已失效，据此改写会覆盖用户改动或报 3350001 / 3350002。
+必须从服务端重新读取，禁止复用上一轮本地 XML、`slide_id`、`block_id` 或 `revision_id`；用户可能已手改，旧状态会覆盖新改动或报 3350001/3350002。
 
-读法按范围选，别一上来就把整份 XML 塞进上下文。
-
-**已经知道改哪一页**（用户提供了具体页面）：直接单页读，最省。返回里带这一页的 `block_id` 和 `revision_id`。
+明确只改某页时直接单页读，响应会带该页的 `block_id` 和 `revision_id`：
 
 ```bash
 PID="xml_presentation_id"; SID="slide_id"
-
-lark-cli slides xml_presentation.slide get \
-  --params "{\"xml_presentation_id\":\"$PID\",\"slide_id\":\"$SID\"}"
+lark-cli slides +xml-get --presentation "$PID" --slide-id "$SID" --json
 ```
 
-**还不知道改哪一页，或改动会牵扯多页**：用 [`+xml-get`](../cli/lark-slides-xml-presentations-get.md) 回读全文，先看摘要再按需取页。
+目标未指定、牵涉多页或属于全局要求时，先读全文摘要再取页：
 
 ```bash
 # 1. 回读全文到本地（--output 必填）
-PID="xml_presentation_id"
 mkdir -p .lark-slides
-lark-cli slides +xml-get --presentation "$PID" --output .lark-slides/current.xml --json
+lark-cli slides +xml-get --presentation "$PID" \
+  --output .lark-slides/current.xml --json
 
-# 2. 先看摘要：页数、页序、每页 slide_id、元素统计和正文预览
-#    摘要模式可加 --output 落盘，不占上下文；summary.warnings 必看
+# 2. 看页数、页序、slide_id、元素统计、正文预览；summary.warnings 必读
+#    摘要模式可加 --output 落盘，避免占用上下文
 python3 scripts/xml_inspect.py --input .lark-slides/current.xml
 
-# 3. 再按需取目标页的完整 raw XML（可一次传多个 slide_id）
-python3 scripts/xml_inspect.py --input .lark-slides/current.xml --slide-id "<sid-1>" "<sid-2>"
+# 3. 按需取一个或多个目标页的完整 raw XML
+python3 scripts/xml_inspect.py --input .lark-slides/current.xml \
+  --slide-id "<sid-1>" "<sid-2>"
 
-# 4. 要把某页落成文件（后面拼块跑 lint 时会用到）：raw 模式输出的是 JSON，
-#    XML 在 .slides[].raw_xml 字段里，用 jq 取出来；raw 模式不接受 --output
-SID="<上一步摘要里选定的 slide_id>"
+# 4. raw 模式返回 JSON，XML 在 .slides[].raw_xml；raw 模式不接受 --output
+SID="<摘要中选定的 slide_id>"
 python3 scripts/xml_inspect.py --input .lark-slides/current.xml --slide-id "$SID" \
   | jq -r '.slides[0].raw_xml' > ".lark-slides/page-$SID.xml"
 ```
 
-回读出来的 XML 文件里**没有 `revision_id`**：它只在 CLI 响应中（`+xml-get --json` 的返回，或单页读的 `data.revision_id`），所以 `xml_inspect` 摘要里的 `presentation.revision_id` 对这类文件恒为 `null`。第 4 步「选操作并改」要加乐观锁的话，从 `+xml-get` 的 JSON 响应里取，或改走单页读。
+从根 `<presentation>` 记录真实 `width`、`height` 和方向。XML 文件里没有 `revision_id`；它只在 `+xml-get --json` 响应或单页读取的 `data.revision_id` 中，所以 `xml_inspect` 摘要里的 `presentation.revision_id` 恒为 `null`。
 
-摘要的 `summary.warnings` 要当回事，两类直接影响后面怎么改：
+必须处理 `summary.warnings`：
 
-- **`<undefined>` 元素**（多见于 PPTX 导入的 deck，服务端用它占位视频/音频等不支持的类型）：**它不能写回**，带着它提交会返回 3350001。含 `<undefined>` 的页不要走整页重建，改用 `+replace-slide` 块级替换绕开那个块；确实必须重建整页时，先告知用户这页的视频/音频会丢。
-- **重复 id**：`block_replace` 按 `block_id` 定位，撞车的若正好是目标块就无法唯一命中，这页改走整页重建。撞车的是 `slide_id` 时整页重建也不通——`+replace-pages` 同样按 `slide_id` 定位，`xml_inspect --slide-id` 会直接报无法唯一定位、连这页 XML 都取不出来，只能先告知用户。
+- `<undefined>` 多为导入的音视频等不支持块，不能写回；含它的页优先块级替换。整页重建会报 3350001，删除该块又会丢音视频，必须先告知用户。
+- 目标 `block_id` 重复时不能唯一替换，改走整页重建；`slide_id` 重复时整页替换和按 ID 取页也不可用，只能先告知用户。
 
-不管走哪条，解析 XML 都必须用 XML 解析器，命名空间从根元素实际读取，不要硬编码，否则匹配不到元素。
+解析 XML 必须使用解析器，并从根元素读取真实命名空间，禁止硬编码。
 
-版式和视觉效果光看 XML 判断不了时，用 [`+screenshot`](../cli/lark-slides-screenshot.md) 截目标页看真实渲染（怎么读截图见 [`validation-visual.md`](validation-visual.md)）。
+### 1.4 建立基线并复核路由
 
-### 1.4 复核路由：这真的是"在原稿上改"吗
+XML 摘要负责结构和文字，截图负责真实视觉。局部任务只截图目标页及必须联动的同页对象；全局任务覆盖封面、目录、章节页、内容页、数据页、结束页及异常页。
 
-进本文时的路由只能靠用户措辞判断，看过 deck 之后信息才够。出现下面任一情况，说明它其实是**模板任务**——就此打住，转 [`template-editing.md`](template-editing.md) 从头走，不要继续往第 2 步走：
+```bash
+# 单页传一个 --slide-id；多页重复该参数，单次最多 10 页
+lark-cli slides +screenshot \
+  --presentation "$PID" \
+  --slide-id "$SID_1" \
+  --slide-id "$SID_2" \
+  --output-dir .lark-slides/screenshots
+```
 
-- 现有页基本是占位内容（示例文案、样例数据、"标题占位"这类），和用户要放的内容没有对应关系。
-- 用户要的是"照这个版式做我的一套内容"，而不是修订现在这套内容。
-- 目标页数远多于现有页数，需要大量复制版式页来承载新内容。
+记录页数/页序、章节、主要文本和数据、图片/图表分布、字体/配色/对齐。内容保护任务保存文本与数据快照；“更多/更少”任务记录修改前数量或覆盖页面。
 
-判断标准是**产出物**：交回一份改过的原稿走本文，产出一份内容全新、只沿用版式的 deck 走 template-editing。反过来，如果你是从 template-editing 转过来、发现只是改几处文字或换张图，就从本文第 2 步接着做。
+按产出物复核路由：保留原稿主题和主要内容就继续编辑；内容基本全新、只留版式才转 template-editing。页数变化不是路由依据。
 
-## 第 2 步 · 定位要改哪里
+## 2. 拆解要求、修改边界和验收条件
 
-产出两样东西：一组明确的 **`slide_id` + `block_id`**，和**每处要改成什么**。两样都有了才算定位完成，缺一样都不要往下走。
+| 维度 | 需要明确 |
+|---|---|
+| 目标与范围 | 结构/内容/视觉/图片/图表/模板；全局/章节/页面/对象/待诊断 |
+| 必须修改 | 用户逐项要求的可观察结果 |
+| 必须保留 | 页面、文字、数字、结论、图片、结构、页数或链接 |
+| 允许的连带调整 | 为完成目标所必需的同页移动、缩放、换色或重排 |
+| 禁止修改 | 指定范围外页面/对象，以及用户未授权变化的内容 |
+| 事实来源 | 附件 > 原稿 > 用户事实 > 可信搜索 > 通用知识 |
+| 验收条件 | 每个要求完成后可观察、可比较的结果 |
 
-- **用户直接指定了位置**（"第 3 页的标题"）：仍要在回读结果里核对一遍——页码只能当展示信息，实际下手必须按 `slide_id`；用户说的页码可能和当前页序对不上。
-- **用户只给了目标**（"把市场份额那页的数据换成 2025 的"）：用摘要里的 `text_preview` 找到相关页，再取该页 raw XML 确认具体是哪个块，以及它现在的形态——是 `<chart>` 还是 `<table>`，几个系列、什么指标口径。这些决定了第 3 步要去找什么。
-- `block_id` 是回读 XML 里每个块的 3 位 short id（如 `<shape id="bUn" ...>`）；配套的 `revision_id` 不在 XML 里，走单页读时从响应的 `data.revision_id` 取。
-- 改动会波及邻居时（挪坐标、加元素、文字变长），把同页相关块一并列进来，别只盯着目标块。
+含“和、并且、同时、以及”等连接词的复合请求，必须拆成独立、可验收的子要求，不允许用一个完成项代替另一个。例如“丰富一下，加点例子和图片”至少拆为内容深化、补充案例、增加图片；显式要求的图片、图表、目录、翻译等都必须分别进入修改清单和验收条件。
 
-顺带把**素材缺口**列出来：哪几处要新图、哪几处要新数据、哪些能直接从附件里取。这份清单就是第 3 步的输入。
+保护性表达按硬约束执行：“内容不改”禁止改文字、数字和结论；“变化不要太大”保留主题、观点和关键事实；“以表格为准”用 Excel 修正冲突数据；“页数不变”不能靠增删页解决拥挤。
 
-## 第 3 步 · 备齐素材
+用户明确要求“背景风格更换”时，按**整体背景替换**理解，不得降级为在旧背景上添加几个图标、线条或装饰。“更多、更丰富、少一点”必须与基线比较并覆盖多个页面，不能只处理一个页面。
 
-只做第 2 步列出来的缺口，没有缺口就跳过。做法对齐 SKILL.md。
+## 3. 确定修改范围
 
-- **找**（SKILL.md `Step 3`）：缺数据先联网搜、不得编造；真实实体（人物、产品、logo、地标）用搜图工具；插画和示意图用生图工具。改数据时要沿用原页的指标口径和单位，不要换一套算法导致前后页对不上。
-- **加工与上传**（SKILL.md `Step 6 · 图片处理`）：顺序是取到本地 → 去底色 → 上传，一步都不能省。**禁止 http(s) 外链**，渲染端不代理外链图，写进去通常不显示；带底色的图用 PIL 的 `floodfill` 抠掉纯色底，黑白灰底必抠、抠完效果差就回退用原图；最后 `+media-upload` 拿 `file_token`。
-- `<img src>` 只能填 `file_token`。
+形成页面级清单，不要求另建计划文件：
 
-下载幻灯片中的图片 `file_token` 使用 `lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<file>"`。
+```text
+slide_id/当前页序｜当前问题｜修改动作｜必须保留｜素材/来源｜验收方式
+```
 
-## 第 4 步 · 选操作并改
+- 用户指定页码时仍从实时回读核对页序，实际按 `slide_id` 操作；指定对象后取 raw XML 确认对象类型、`block_id`、坐标和邻居。`block_id` 是回读 XML 中块的 3 位 short id，如 `<shape id="bUn" ...>`。
+- 用户只描述内容目标时，先用摘要 `text_preview` 找候选页，再读 raw XML 确认是 `<chart>`、`<table>` 还是其它块，以及系列数、指标口径和单位；这些信息决定素材缺口和修改方式。
+- 视觉目标检查配色、层级、字体、对齐、留白、密度、重复版式、裁剪和跨页一致性。
+- 内容深化检查缺少依据/案例/解释的页面、重复内容、附件可补充信息和新增后的承载空间。
+- 图表目标扫描对比、占比、趋势、阶段、流程和关系型内容；无真实数据不得制造假图表。
+- 图片目标统计分布和视觉占比，区分信息图片与装饰图片；显式要求增加图片时，修改清单不能没有图片项，每项写明目标页、图片角色、附件/搜图/生图来源策略、布局变化和验收方式。新增后必须重排，删减后必须修复留白。
+- 背景目标先识别旧背景块及其覆盖页面，再按封面、章节、内容、结束等页面角色规划同一风格的背景或变体；清单写明旧背景如何移除/替换、新背景来源、文字安全区和可读性处理。
+- 全局格式先识别页面类型和“正文/标题/页眉”等语义对象，禁止无差别修改所有文本。
+- 重新制作某页时必须明确文字动作：“重新撰写/重新写某主题”必须产出新文案；“重新排版/美化”才默认保留文字。不能只换排版冒充内容重写。
 
-### 选操作
+压缩、扩展、合并、拆页、删章节或加目录时，先建立：
+
+```text
+原页面/章节 → 核心内容 → 新页面/章节 → 保留/合并/精简/扩写/删除
+```
+
+页数达标不代表完成；每个核心观点、事实和必要案例都要有去向，目录和章节编号同步更新。
+
+## 4. 准备素材
+
+只准备修改清单确认的缺口；但用户显式提出图片、图表、案例、数据等要求时，对应缺口不得为空。若内容确实不适合承载或来源不可用，必须说明原因，不能静默跳过。
+
+缺数据先查附件再联网，沿用原指标口径、单位和时间范围，禁止编造。真实人物、产品、Logo、地标等必须调用搜图工具获取真实图片；插画、示意图、主视觉或缺少合适真实图片时调用生图工具。搜到素材不算完成：必须下载或生成到本地、完成必要处理和上传、写入目标页并重排布局；只搜索案例或图片，不算完成“增加图片”。
+
+具象风格背景必须准备图片素材：涉及真实场景或实体时优先搜图；漫画、手绘、插画等非真实风格优先生图。生成背景按画布比例制作，不带文字，为标题和正文预留低细节区域，需考虑已有内容，不与已有元素发生重叠遮挡；按页面角色准备少量一致的变体，避免整稿机械重复。背景图保留完整背景，不去底色。
+
+普通配图流程固定为获取本地文件 → 去底色 → `+media-upload`，一步都不能省；禁止 http(s) 外链，`<img src>` 只能填 `file_token`。带底色的图用 PIL `floodfill` 抠纯色底，黑白灰底必抠；抠完效果差则回退原图。**明确作为全画布背景使用的图片保留背景，不执行去底色。** 下载原稿图片：
+
+```bash
+lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<file>"
+```
+
+## 5. 按场景执行
+
+复合任务默认按“结构 → 内容 → 图表/图片 → 排版 → 全局样式”执行。结构变更或 `+replace-pages` 后立即重新回读页序和 `slide_id`，禁止继续使用旧 ID。
+
+| 场景 | 执行规则 |
+|---|---|
+| 精确局部修改 | 只修改指定页/对象，优先块级；如果文字变长或新增图片会挤压周围内容，只同时调整该页中受影响的元素。范围外不改动 |
+| 全局格式 | 按页面类型和语义对象覆盖全部适用页，处理特殊页例外；不改用户未授权变化的内容 |
+| 只排版不改内容 | 用基线锁定文字、数字和数据；只移动、缩放和改样式，完成后前后比较 |
+| 清空内容留模板 | 删除所有用户内容文字，不擅自补占位文案；保留背景、装饰和可复用版式，回读确认无残留正文 |
+| 压缩/扩展/拆合页 | 先内容覆盖表，再改结构；扩写不靠空泛段落凑页；同步目录和引用 |
+| 内容改写/翻译 | 区分润色、重写、丰富、精简、翻译；专名、事实和数据不丢；无来源不造数据 |
+| 重新制作指定页 | 根据需求确定执行文字重写或视觉重构；用户要求重新撰写时必须生成新文案，只要求重新排版时才锁定原文字 |
+| 调整布局/增加图片/美化 | 先盘点内容与阅读顺序，再分配区域并重排；不得把图片直接叠在现有内容上，也不得靠盲目缩小字号硬塞。空间不足时换布局或减少非必要装饰，只有用户允许时才能拆页 |
+| 图片 | 选择图片 → 确定角色 → 重构布局 → 检查渲染；背景处理可读性，替换核对对象身份；水印图改用有权的干净来源，不直接抹除权属标记 |
+| 背景换风格 | 识别并移除/替换旧背景 → 搜图或生图 → 放到底层 → 调整前景对比度和安全区；不得保留旧背景再叠少量装饰冒充换背景 |
+| 图表/图示 | 对比用柱/条，趋势用线，占比用饼/环，阶段用时间轴，流程用流程图；保留单位、标签和来源 |
+| 竖版转横版/更换画布方向 | 当前 lark-cli 不支持修改已有演示文稿的画布宽高。用户要求竖版转横版或更换画布方向时，需要新建目标横版 Slides，以原稿作为内容和视觉来源，将页面内容逐页迁移到新文档。每页写入前按目标画布进行 lint 校验， 确保不引入尺寸适配问题，完成后截图检查。 |
+| 明确只参考模板 | 转 template-editing.md |
+
+
+## 6. 选择 XML 操作并写入
+
+### 6.1 选操作
 
 | 需求 | 用什么 | 理由 |
 |------|--------|------|
@@ -149,90 +209,85 @@ python3 scripts/xml_inspect.py --input .lark-slides/current.xml --slide-id "$SID
 | **删除某个元素** | [`+replace-pages`](../cli/lark-slides-replace-pages.md) 整页重建 | 块级只有 `block_replace` / `block_insert`，**没有删除块的动作**，删元素只能重写整页 |
 | **跨页统一改某个属性**（整份换字体、换配色等全局改写） | [`+replace-pages`](../cli/lark-slides-replace-pages.md) 整页重建 | 没有字段级 patch，逐块 `block_replace` 代价高；把受影响的页整页重建更省事 |
 | 多页版式重建、整页坐标重排 | [`+replace-pages`](../cli/lark-slides-replace-pages.md) | 原 presentation 内批量重建，不生成新链接 |
-| 追加新页 | [`xml_presentation.slide create`](../cli/lark-slides-xml-presentation-slide-create.md)，插到某页前用 `before_slide_id` | `before_slide_id` **只能放进 `--data`**，写进 `--params` 会被静默忽略、新页跑到末尾 |
-| **删除整页** | [`xml_presentation.slide delete`](../cli/lark-slides-xml-presentation-slide-delete.md) | **不可逆**，删前先确认这页确实不要了；一份 deck 至少得留一页 |
+| 追加新页 | [`+add-slide`](../cli/lark-slides-add-slide.md)，插到某页前加 `--before-slide-id` | 省略 `--before-slide-id` 就是追加到末尾 |
+| **删除整页** | [`+delete-slide`](../cli/lark-slides-delete-slide.md) | **不可逆**（可走 `+history-revert` 回滚），删前先确认这页确实不要了；一份 deck 至少得留一页 |
 
-以上都是在**原 presentation 上原地更新**，不要用 `+create` 新建一份覆盖——那会产生新链接，交付的就不是用户手上那份了。
+所有操作原地更新主 presentation，不要用 `+create` 另建链接。没有字段级 patch、删除块或 `str_replace`：即使只改坐标也要替换整个块；`+replace-pages` 会刷新被替换页的 `slide_id`。
 
-> **没有字段级 patch，也没有删除块 / `str_replace` 动作**：即便只改一个 `topLeftX`，也要把整块的新 XML 写出来做 `block_replace`；要删元素或跨页统一改属性，只能走 `+replace-pages` 整页重建。`+replace-pages` 会刷新被替换页的 `slide_id`（原链接和页序不变）。
+### 6.2 XML 与 lint
 
-### 写 XML 的规矩
+动手前必读 [`xml-schema-quick-ref.md`](../xml/xml-schema-quick-ref.md)。不要编 ID；转义 `& < >`；禁用 emoji，语义图标使用 IconPark；新增页补 `<note>`，整页重建保留原 `<note>`。除非用户要求换风格，新元素复用原稿字体、层级、配色、留白和对齐轴。
 
-动手前**必读** [`xml-schema-quick-ref.md`](../xml/xml-schema-quick-ref.md)。其余和新建流程一致（SKILL.md `Step 7`）：元素不要自己编 `id`；`&` `<` `>` 必须转义；**全篇禁用 emoji**，语义图标一律用 IconPark `<icon>`；新增整页要补 `<note>` 讲稿。整页重建（`+replace-pages` 或 delete + create）还要把原页 `<note>` 一并带进新 XML，否则讲稿会丢，而且 lint 和回读都不会提醒。
-
-**改前先 lint**：块片段不能直接喂 lint，它只认 `<presentation>` / `<slide>` 根，裸 `<shape>` 会被拒。把改好的块拼回第 1 步读到的那一页 `<slide>` 里，对拼出来的整页跑 `python3 scripts/xml_lint.py --input <整页文件>`，`error_count=0` 才能写入——这样才查得出它和周边既有元素的重叠。
-
-**但设计决策和新建不同：不要另选设计系统。** 新增或改写的元素一律跟随这份 deck 已有的配色、字体、字号层级、留白和对齐轴，从第 1 步回读的 XML 里读出现有取值再复用。
-
-### 改
+块片段不能直接 lint。把修改块拼回完整 `<slide>` 后运行：
 
 ```bash
-SID="slide_id"
+python3 scripts/xml_lint.py --input <整页文件>
+```
 
-lark-cli slides +replace-slide \
-  --presentation "$PID" --slide-id "$SID" \
+原则上非豁免 error 必须为 0 才写入。若导入原稿的真实画布宽或高超过 960×540，先记录根 `<presentation>` 的实际宽高；优先用真实宽高包装单页后 lint。若单页 lint 因回退到 960×540 而产生 `shape_out_of_canvas`、`img_out_of_canvas`、`table_out_of_canvas` 或 `chart_out_of_canvas`，且元素仍位于真实画布内，可标记 `canvas_size_mismatch` 后放行，不得为清除假越界生硬缩小元素。重叠、遮挡、文本溢出以及真正超出实际画布的问题仍必须修复。用户明确要求转换画布时按目标画布校验，不适用此豁免。
+
+修改底色、文字颜色、字号、边框、线条粗细或布局后，必须对该页完整 XML 重新 lint；写入后立即回读并截图。截图检查文字/图标/线条与底色的对比度、相邻色块是否粘连、边框是否过粗抢占视觉、异常换行、文本溢出、重叠和裁切。只通过 lint 不能证明视觉合格。
+
+
+### 6.3 块级替换与加图
+
+```bash
+lark-cli slides +replace-slide --presentation "$PID" --slide-id "$SID" \
   --parts '[{"action":"block_replace","block_id":"bUn","replacement":"<shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>新标题</p></content></shape>"}]'
 ```
 
-- `block_replace` 的 `replacement` 根 `id`、以及 `<shape>` 缺失的 `<content/>`，都由 CLI 自动补，手写 XML 不用自己加。参数和 parts 字段详见 [`+replace-slide`](../cli/lark-slides-replace-slide.md)。
-- **写前加锁（可选）**：并发或多步编辑时，把第 1 步**从 CLI 响应里**取到的 `revision_id`（回读的 XML 文件里没有这个值）用 `--revision-id` 传给写操作做乐观锁；不确定就用默认 `-1`（基于最新版）。传超过当前版本的号会返回 3350002。
-- 写失败或结果不明确时，不要假设那一步没有副作用，先回读确认真实状态再重试，错误码见 [`error-handling.md`](error-handling.md)。
+CLI 会补 replacement 根 `id` 和缺失的 `<content/>`，不要手写。并发/多步编辑可从读取响应取 `revision_id` 传 `--revision-id`；XML 文件里没有它，默认 `-1` 基于最新版，传入超过当前版本的值会报 3350002。写入结果不明确时先回读再重试，见 [`error-handling.md`](error-handling.md)。
 
-**给已有页加图**：先读现有元素坐标挑空白区，空间不够就在同一批 `--parts` 里先移动或缩小现有块再插图。**图片可以裁剪或缩放大小来适配 PPT 的排版布局，不要溢出画布**；**附件中提取的图片/表格不允许做裁剪**，但可以缩放大小来适配你选择的 PPT 的排版布局；`<img>` 的 `width:height` 对齐原图比例就不会裁剪，只会缩放大小；对不上会自动裁剪，且默认从中心裁掉多余部分，可用 `<crop>` 的 `anchor` 指定保留哪一侧。**同一张图片不要在多页重复使用**，补充素材或重新排版，Logo、统一装饰除外。
+给已有页加图时先读坐标；空间不足就在同一 `--parts` 中移动/缩小邻居后插入。需要把背景或底纹放到前景块之后时，用 `insert_before_block_id` 插到页面第一个前景块之前；无法可靠控制层级时改走整页重建。附件提取图片/表格只按原比例缩放，`<img>` 的 `width:height` 对齐原图比例时只缩放、不裁剪；普通图框比例不同时默认中心裁剪，可用 `<crop>` 的 `anchor` 指定保留侧，但不能切主体。同一普通配图不跨页重复，Logo/统一装饰除外。
 
 ```bash
-# $TOKEN 来自第 3 步的 +media-upload
-TOKEN=$(lark-cli slides +media-upload \
-  --file ./pic.png --presentation "$PID" --jq '.data.file_token')
-
-lark-cli slides +replace-slide \
-  --presentation "$PID" --slide-id "$SID" \
+TOKEN=$(lark-cli slides +media-upload --file ./pic.png \
+  --presentation "$PID" --jq '.data.file_token')
+lark-cli slides +replace-slide --presentation "$PID" --slide-id "$SID" \
   --parts "$(jq -n --arg t "$TOKEN" \
     '[{action:"block_insert",insertion:("<img src=\""+$t+"\" topLeftX=\"500\" topLeftY=\"100\" width=\"200\" height=\"150\"/>")}]')"
 ```
 
-**整页重建**：`+replace-pages` 不吃 `--parts`，要的是 `pages.json`——每项一个 `slide_id` 加这一页完整的新 `<slide>`。这里的 content 本身就是整页，直接对它跑 lint，不用像块级替换那样先拼回原页。实跑前先 `--dry-run` 看替换计划，`--continue-on-error` 等参数见 [`+replace-pages`](../cli/lark-slides-replace-pages.md)。
+### 6.4 整页重建与增删页
 
-**重建前先确认这页没有 `<undefined>`**（第 1 步摘要的 warnings 里会列出来）。它只能被导出、不能被写入，原样提交会 3350001，删掉它则意味着丢掉用户的视频/音频——两条路都得先跟用户说明，或者退回块级替换。
+`+replace-pages` 要完整 `<slide>`，不接受 `--parts`。先确认页面没有 `<undefined>`，并对整页 lint；批量失败控制参数如 `--continue-on-error` 见 [`+replace-pages`](../cli/lark-slides-replace-pages.md)：
 
 ```bash
-# page-01.xml 是这一页改好的完整 <slide>，已 lint 通过
-jq -n --arg sid "$SID" --rawfile c page-01.xml '[{slide_id:$sid,content:$c}]' > pages.json
-
+jq -n --arg sid "$SID" --rawfile c page-01.xml \
+  '[{slide_id:$sid,content:$c}]' > pages.json
 lark-cli slides +replace-pages --presentation "$PID" --pages @pages.json --dry-run
 lark-cli slides +replace-pages --presentation "$PID" --pages @pages.json
 ```
 
-**加页与删页**：`before_slide_id` 要和 `slide` 同级放进 `--data`（省掉它就是追加到末尾）。
+**加页与删页**：`--before-slide-id` 指定插入位置，省掉就是追加到末尾。
 
 ```bash
-# new-page.xml 是新页完整的 <slide>，含 <note> 讲稿
-lark-cli slides xml_presentation.slide create \
-  --params "{\"xml_presentation_id\":\"$PID\"}" \
-  --data "$(jq -n --rawfile c new-page.xml --arg before "$SID" \
-    '{slide:{content:$c},before_slide_id:$before}')"
-
-lark-cli slides xml_presentation.slide delete \
-  --params "{\"xml_presentation_id\":\"$PID\",\"slide_id\":\"$SID\"}"
+lark-cli slides +add-slide  \
+  --presentation "$PID" \
+  --slide @new-page.xml \
+  --before-slide-id "$SID"
+lark-cli slides +delete-slide --presentation "$PID" --slide-id "$SID"
 ```
 
-## 第 5 步 · 回读校验并交付
+## 7. 回读验收并交付
 
-改完必须回读，完整清单见 [`validation-xml.md`](validation-xml.md)。
+必须使用最新回读结果，逐项完成五层验收：
 
-1. `+xml-get` 重新回读全文（不能复用第 1 步的文件，它已经过期了）。
-2. 对回读全文重跑 `xml_lint.py`，`error_count` 必须为 0 新增（之前就有的可以不处理）。改动波及的邻居元素、以及服务端对提交 XML 的规整，只有这一次查得出。
-3. 逐页核对：目标元素确实变成了预期内容，页数和页序没被意外改动，周边结构没被破坏。
-4. 改动较大的页用 `slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 核对真实渲染（见 [`validation-visual.md`](validation-visual.md)）。
-5. **用 NotifyHuman 交付最终幻灯片链接**，回复里附上简短验证记录。编辑任务同样必须交付链接。
+1. **范围**：目标范围内要求全部完成；范围外页面和对象无计划外变化；允许的连带调整没有越界。
+2. **任务要求**：页数/时长、目录、字号/颜色/Logo覆盖、翻译范围、指定文字/图片/图表、更多/更少相对基线全部满足；复合请求逐项验收，不支持项明确说明。显式要求增加图片时，核对目标页已实际新增图片并完成布局调整；只有搜索记录、没有页面落图，判定为未完成。
+3. **内容结构**：内容保护任务前后文字、数字、数据和结论一致；要求重写时确实生成符合主题的新文案，不能只换排版；附件驱动任务核对字段、数字、单位和时间范围；检查页序、章节、目录和引用。
+4. **XML**：重新 `+xml-get`，对最新全文跑 `xml_lint.py`，不得引入新错误；逐页确认目标元素和服务端规整后的结构。见 [`validation-xml.md`](validation-xml.md)。
+5. **视觉**：所有视觉变化页都截图；全局风格、画布方向转换任务检查全部页面；检查溢出、异常换行、遮挡、裁切、清晰度、对齐、留白、层级、字号、边框粗细、对比度和一致性。背景换风格还要确认旧背景无残留、新背景实际覆盖目标页；只增加装饰元素判定为未完成。无法完成必要截图时不得声称视觉验收完成。见 [`validation-visual.md`](validation-visual.md)。
+
+全部通过后用 present_files 交付最终链接，并简述主要修改、实际范围、页数/关键约束、和明确未支持项。
 
 ## 相关文档
 
 - [lark-slides-replace-slide.md](../cli/lark-slides-replace-slide.md) — `+replace-slide` 命令、parts 字段、合法根元素、报错（编辑主命令，细节都在这）
 - [lark-slides-replace-pages.md](../cli/lark-slides-replace-pages.md) — 多页整页重建
 - [lark-slides-xml-presentation-slide-get.md](../cli/lark-slides-xml-presentation-slide-get.md) — 单页读取
-- [lark-slides-xml-presentation-slide-create.md](../cli/lark-slides-xml-presentation-slide-create.md) — 追加/插入新页（`before_slide_id` 定位）
-- [lark-slides-xml-presentation-slide-delete.md](../cli/lark-slides-xml-presentation-slide-delete.md) — 删除整页（不可逆）
+- [lark-slides-add-slide.md](../cli/lark-slides-add-slide.md) — 追加/插入新页（`--before-slide-id` 定位）
+- [lark-slides-delete-slide.md](../cli/lark-slides-delete-slide.md) — 删除整页（不可逆）
 - [lark-slides-xml-presentations-get.md](../cli/lark-slides-xml-presentations-get.md) — `+xml-get` 回读全文到本地文件
 - [lark-slides-media-upload.md](../cli/lark-slides-media-upload.md) — 上传图片拿 `file_token`
 - [lark-slides-screenshot.md](../cli/lark-slides-screenshot.md) — `+screenshot` 页面截图

@@ -45,7 +45,7 @@ lark-cli slides +media-upload --file ./pic.png --presentation $PRES_ID --dry-run
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
-| `--file` | 是 | 本地图片路径，**必须是 CWD 内的相对路径**（如 `./pic.png`）。**最大 20 MB**（slides upload API 不支持分片上传） |
+| `--file` | 是 | 本地图片路径，**必须是 CWD 内的相对路径**（如 `./pic.png`）。**最大 20 MB**（slides upload API 不支持分片上传）。**仅支持 png / jpeg / gif / bmp / tiff / webp** |
 | `--presentation` | 是 | `xml_presentation_id`、`/slides/<token>` URL，或 `/wiki/<token>` URL |
 
 > [!IMPORTANT]
@@ -62,16 +62,18 @@ TOKEN=$(lark-cli slides +media-upload \
   --presentation $PRES_ID \
   --jq '.data.file_token')
 
-# 2) 用 file_token 创建带图新页（用 jq --arg 注入 token 并组装 --data，不要手工转义内联 XML）
-lark-cli slides xml_presentation.slide create \
-  --params "{\"xml_presentation_id\":\"$PRES_ID\"}" \
-  --data "$(jq -n --arg tok "$TOKEN" \
-    '{slide:{content:("<slide xmlns=\"https://www.larkoffice.com/sml/2.0\"><data><img src=\""+$tok+"\" topLeftX=\"100\" topLeftY=\"100\" width=\"320\" height=\"180\"/></data></slide>")}}')"
+# 2) 把 file_token 写进这一页 XML，存成文件后用 --slide @file 提交
+cat > page-01.xml <<XML
+<slide xmlns="https://www.larkoffice.com/sml/2.0"><data>
+  <img src="$TOKEN" topLeftX="100" topLeftY="100" width="320" height="180"/>
+</data></slide>
+XML
+lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
 ### 新建带图幻灯片
 
-统一走两步：先 `+create` 建空白幻灯片，再对每张图 `+media-upload` 拿 `file_token`，最后 `xml_presentation.slide create` 把 token 写进 `<img src>`——与上面「给已有幻灯片加带图新页」同一套流程，只是幻灯片是新建的空白 deck。
+统一走两步：先 `+create` 建空白幻灯片，再对每张图 `+media-upload` 拿 `file_token`，最后 `+add-slide` 把 token 写进 `<img src>`——与上面「给已有幻灯片加带图新页」同一套流程，只是幻灯片是新建的空白 deck。
 
 > `+create --slides` 的 `@<本地路径>` 占位符可一步上传+替换，但**不作为默认路径**（一步法已不推荐）；如需了解见 [+create 文档](lark-slides-create.md#本地图片path-占位符)。
 
@@ -121,4 +123,4 @@ lark-cli slides +replace-slide \
 
 - [+create](lark-slides-create.md) — 新建幻灯片（两步创建第一步：建空白 deck）
 - [+replace-slide](lark-slides-replace-slide.md) — 给已有页加图 / 换图（`block_insert` / `block_replace`）
-- [xml_presentation.slide create](lark-slides-xml-presentation-slide-create.md) — 创建 slide 页面（拿到 file_token 后塞进 XML）
+- [slides +add-slide](lark-slides-add-slide.md) — 逐页添加幻灯片页面（拿到 file_token 后塞进 XML）

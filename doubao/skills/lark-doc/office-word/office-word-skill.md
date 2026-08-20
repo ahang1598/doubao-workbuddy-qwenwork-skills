@@ -19,11 +19,11 @@
 2. **读取子技能**：用 Read 工具读取对应子技能的 SKILL 文件
 3. **按子技能执行**：完全按子技能中的工作流处理用户请求
 
-若未命中上述路由（如通用 Word/PDF 的解析、转换、保格式编辑或从零生成），则不进子技能，直接用 §5 脚本配合下方通用格式与交付规范处理。
+若未命中上述路由（如通用 Word 的解析、转换、保格式编辑或从零生成），则不进子技能，直接用 §5 脚本配合下方通用格式与交付规范处理。
 
 ## 1. 产物交付规则
 
-- 脚本生成的本地文件（.docx/.pdf 等）落盘后，必须在回复中明确给出文件的完整路径，并说明产物已生成及如何打开；不要假设用户能看到工具调用过程中的中间产物。
+- 脚本生成的本地文件（.docx 等）落盘后，必须在回复中明确给出文件的完整路径，并说明产物已生成及如何打开；不要假设用户能看到工具调用过程中的中间产物。
 - 若用户需要把产物放到飞书云空间（在线查看、分享、协作），不要止步于本地文件：切到 [`lark-drive`](../../lark-drive/SKILL.md) 上传，或导入为在线文档。
 - 最终交付物的位置和打开方式要在回复正文里说清楚，避免只描述内容而不给文件。
 
@@ -133,7 +133,7 @@ uv run skills/lark-doc/office-word/scripts/create_docx.py content.json output.do
 ## 7. 交付物类型锁定
 
 - 用户要 Word 就交付 `docx` 或明确可导出的格式，不得只给大纲或用 markdown 伪装
-- `ppt/pptx`、网页/HTML、在线表格/Base 等非 Word/PDF 交付物不在本 Skill 范围：切到对应能力（PPT → [`lark-slides`](../../lark-slides/SKILL.md)，在线表格/Base → [`lark-sheets`](../../lark-sheets/SKILL.md) / [`lark-base`](../../lark-base/SKILL.md)），不要在本 Skill 内用 markdown 等伪造这些格式
+- `ppt/pptx`、网页/HTML、在线表格/Base 等非 Word 交付物不在本 Skill 范围：切到对应能力（PPT → [`lark-slides`](../../lark-slides/SKILL.md)，在线表格/Base → [`lark-sheets`](../../lark-sheets/SKILL.md) / [`lark-base`](../../lark-base/SKILL.md)），不要在本 Skill 内用 markdown 等伪造这些格式
 - 功能清单锁定：若用户要求可折叠/展开、可切换、可筛选等交互能力，必须列入交付清单并在最终产物里逐项验收；做不到时提前说明限制与替代方案
 
 ## 子技能目录

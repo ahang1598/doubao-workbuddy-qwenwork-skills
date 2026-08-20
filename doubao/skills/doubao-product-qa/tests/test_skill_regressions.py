@@ -210,7 +210,7 @@ class SkillRegressionTests(unittest.TestCase):
 
         取证：旧流程 publish 返回 OPEN 后，模型直接绕开控制器连发 5 次宿主工具，
         产出两张重复卡片。所以这里查行为不查措辞：
-        产物齐全 → 必须放行并给出唯一一条上屏调用；产物缺失 → 才允许阻断。
+        产物齐全 → 必须放行并给出唯一一份结构化交付清单；产物缺失 → 才允许阻断。
         """
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -246,11 +246,15 @@ class SkillRegressionTests(unittest.TestCase):
             ], text=True, capture_output=True, check=False)
             self.assertEqual(ready.returncode, 0, ready.stdout + ready.stderr)
             self.assertIn("DELIVERY_LOCK=CLOSED", ready.stdout)
-            # 唯一一条上屏调用，且只出现一次 —— 重复卡片在结构上不可能发生
-            calls = [line for line in ready.stdout.splitlines() if line.strip().startswith("NotifyHuman")]
-            self.assertEqual(len(calls), 1, ready.stdout)
-            self.assertEqual(calls[0].count("attachment_source"), 1, calls[0])
-            self.assertIn("不要重复", ready.stdout)
+            # 唯一一份结构化清单，且每项 locator 只出现一次
+            items_lines = [line for line in ready.stdout.splitlines() if line.startswith("DELIVERY_ITEMS=")]
+            self.assertEqual(len(items_lines), 1, ready.stdout)
+            items = json.loads(items_lines[0].split("=", 1)[1])
+            self.assertEqual(len(items), 1, items)
+            self.assertEqual(set(items[0]), {"name", "locator"})
+            self.assertTrue(items[0]["locator"])
+            self.assertEqual(len({item["locator"] for item in items}), len(items))
+            self.assertIn("不要重复交付", ready.stdout)
 
     def test_gate_blocks_only_wrong_output_not_incomplete_canonical(self) -> None:
         """门只拦“会让用户拿到错东西”的问题；canonical 完整度不阻断。

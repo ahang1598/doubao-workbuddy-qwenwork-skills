@@ -23,7 +23,7 @@ lark-cli slides +screenshot \
 | 表格列宽不合理 | 调整 `colgroup` 中 `col` 的 `width` 值 |
 | 整体风格不统一 | 封面页和结尾页用同一背景，内容页保持一致的配色和字号体系 |
 | 图表没有显示 | 检查 `chartPlotArea` 和 `chartData` 是否都包含，`dim1` / `dim2` 数据数量是否匹配 |
-| 图片不显示 / `<img src>` 仍是 `@path` | `@` 占位符只在 `+create --slides` 中替换；直接调 `xml_presentation.slide.create` 必须先用 `+media-upload` 拿 `file_token` |
+| 图片不显示 / `<img src>` 仍是 `@path` | `@` 占位符由 `+create` 和 `+add-slide` 替换 |
 | 新插入的 `<img>` 挡住原有元素 | `slide.get` 读原页，对照已有块坐标挑空白位置；空间不够就在同一批 `--parts` 里先移动/缩小现有块再插图 |
 | 渐变背景变成白色 | 渐变必须用 `rgba()` 格式 + 百分比停靠点，如 `linear-gradient(135deg,rgba(30,60,114,1) 0%,rgba(59,130,246,1) 100%)` |
 

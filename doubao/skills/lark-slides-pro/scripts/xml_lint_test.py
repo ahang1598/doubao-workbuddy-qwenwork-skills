@@ -1362,7 +1362,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                 <shape id="auto-fit-spaced" type="text" topLeftX="300" topLeftY="40" width="227" height="96">
                   <content textType="sub-headline" fontSize="32" fontFamily="思源黑体" bold="true" autoFit="shape-auto-fit"><p>autofix      87% </p></content>
                 </shape>
-                <shape id="no-wrap-label" type="text" topLeftX="300" topLeftY="160" width="136" height="90">
+                <shape id="no-wrap-label" type="text" topLeftX="300" topLeftY="160" width="160" height="90">
                   <content fontSize="30" fontFamily="黑体" wrap="false"><p>Docs 99%</p></content>
                 </shape>
                 <shape id="comfortable" type="text" topLeftX="600" topLeftY="40" width="300" height="60">
@@ -1532,28 +1532,6 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         ]
         self.assertEqual(overflow_issues, [])
 
-    def test_lint_xml_allows_short_metric_text_with_separators_as_single_line(self) -> None:
-        result = xml_lint.lint_xml(
-            """
-            <slide xmlns="https://www.larkoffice.com/sml/2.0">
-              <data>
-                <shape id="metric" type="text" topLeftX="80" topLeftY="80" width="150" height="50">
-                  <content textType="title" fontSize="36" autoFit="no-auto-fit"><p>4.16万亿</p></content>
-                </shape>
-                <shape id="table-number" type="text" topLeftX="80" topLeftY="160" width="25" height="20">
-                  <content fontSize="10" textAlign="center" autoFit="no-auto-fit"><p>1,380</p></content>
-                </shape>
-              </data>
-            </slide>
-            """
-        )
-        overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
-        ]
-        self.assertEqual(overflow_issues, [])
-
     def test_lint_xml_reports_labeled_short_metric_when_it_wraps(self) -> None:
         result = xml_lint.lint_xml(
             """
@@ -1711,27 +1689,28 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         ]
         self.assertEqual(len(overflow), 1)
 
-    def test_lint_xml_reports_numeric_symbol_metric_near_font_wrap_boundary(self) -> None:
-        for font_family in ("Arial", "Verdana", "Garamond", "Cambria"):
-            with self.subTest(font_family=font_family):
-                result = xml_lint.lint_xml(
-                    f"""
-                    <slide xmlns="http://www.larkoffice.com/sml/2.0">
-                      <data>
-                        <shape id="metric" type="text" topLeftX="80" topLeftY="80" width="113" height="80">
-                          <content fontSize="44" fontFamily="{font_family}"><p>60%+</p></content>
-                        </shape>
-                      </data>
-                    </slide>
-                    """
-                )
-                overflow = [
-                    issue for issue in result["slides"][0]["errors"]
-                    if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["metric"]
-                ]
-                self.assertEqual(len(overflow), 1)
-                self.assertEqual(overflow[0]["overflow_axis"], "width")
-                self.assertLess(overflow[0]["estimated_width"], overflow[0]["available_width"])
+    def test_lint_xml_reports_range_percent_metric_wrapping_its_box(self) -> None:
+        # A range percentage "10-20%" packs wide punctuation between numbers. With the short-metric
+        # whitelist removed and those glyphs measured at their real advance, it must surface as a width
+        # overflow error (slides I9dd p24: bvd, whose note records "10-20% 被迫换行导致溢出文本框").
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="http://www.larkoffice.com/sml/2.0">
+              <data>
+                <shape id="bvd" type="text" topLeftX="720" topLeftY="190" width="140" height="60">
+                  <content textType="title" fontSize="42" fontFamily="思源黑体" bold="true"><p>10-20%</p></content>
+                </shape>
+              </data>
+            </slide>
+            """
+        )
+        overflow = [
+            issue for issue in result["slides"][0]["errors"]
+            if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["bvd"]
+        ]
+        self.assertEqual(len(overflow), 1)
+        self.assertEqual(overflow[0]["overflow_axis"], "width")
+        self.assertGreater(overflow[0]["estimated_width"], overflow[0]["available_width"])
 
     def test_lint_xml_marginal_overflow_label_reported_once_as_error(self) -> None:
         # A short "Slides 87%" label sized so its wrapped two lines graze the box on both axes. Height
@@ -2340,6 +2319,79 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertEqual(issue["overflow_axis"], "height")
         self.assertIn('wrap="true" autoFit="normal-auto-fit"', issue["message"])
 
+    def test_lint_xml_reclassifies_long_title_passive_wrap_as_width_not_height(self) -> None:
+        # A long section title with no hard line break is authored to stay on one line, but its box is
+        # too narrow so it passively wraps to 2 lines and inflates its height. Even though it exceeds
+        # the short-label char cap, the defect is width: raising shape.height just leaves the two lines
+        # overlapping, so it must be reported on the width axis with a widen/shrink-font hint, never as
+        # a height overflow suggesting wrap="true"/increase height.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="http://www.larkoffice.com/sml/2.0">
+              <data>
+                <shape id="section-title" type="text" topLeftX="60" topLeftY="120" width="360" height="40">
+                  <content textType="title" fontSize="24" fontFamily="思源黑体" bold="true"><p>两者定位截然不同：WorkBuddy是执行型智能体，豆包是全能助手加任务模式</p></content>
+                </shape>
+              </data>
+            </slide>
+            """
+        )
+        overflow_issues = [
+            issue for issue in result["slides"][0]["issues"]
+            if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["section-title"]
+        ]
+        self.assertEqual(len(overflow_issues), 1)
+        issue = overflow_issues[0]
+        self.assertEqual(issue["overflow_axis"], "width")
+        self.assertRegex(issue["hint"], r"widen shape\.width|reduce the font size")
+        self.assertNotIn('wrap="true"', issue["message"])
+
+    def test_lint_xml_flags_title_width_wrap_even_when_height_fits_both_lines(self) -> None:
+        # A long headline whose single line is wider than its box passively wraps to 2 lines. Here the
+        # box is tall enough to absorb both lines, so the vertical overflow check stays silent -- yet the
+        # title was authored for one line, so the wrap is still a defect. detect_text_may_wrap_shapes
+        # must catch it on the width axis regardless of height (slides I9dd p25: the same title with a
+        # height that fits 2 lines was a false negative until titles bypassed the short-label char cap).
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="http://www.larkoffice.com/sml/2.0">
+              <data>
+                <shape id="tall-title" type="text" topLeftX="98" topLeftY="33" width="762.45" height="66">
+                  <content textType="headline" fontSize="22" fontFamily="思源黑体" bold="true"><p>两者定位截然不同：WorkBuddy是"执行型智能体"，豆包是"全能助手+任务模式</p></content>
+                </shape>
+              </data>
+            </slide>
+            """
+        )
+        overflow_issues = [
+            issue for issue in result["slides"][0]["issues"]
+            if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["tall-title"]
+        ]
+        self.assertEqual(len(overflow_issues), 1)
+        issue = overflow_issues[0]
+        self.assertEqual(issue["overflow_axis"], "width")
+        self.assertGreater(issue["width_ratio"], 1.0)
+        self.assertEqual(issue["level"], "error")
+
+    def test_lint_xml_does_not_flag_title_that_fits_its_box_width(self) -> None:
+        # A title-like run that comfortably fits its box must not be a false positive.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="http://www.larkoffice.com/sml/2.0">
+              <data>
+                <shape id="fits-title" type="text" topLeftX="30" topLeftY="30" width="900" height="40">
+                  <content textType="headline" fontSize="22" fontFamily="思源黑体" bold="true"><p>两者定位不同</p></content>
+                </shape>
+              </data>
+            </slide>
+            """
+        )
+        overflow_issues = [
+            issue for issue in result["slides"][0]["issues"]
+            if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["fits-title"]
+        ]
+        self.assertEqual(overflow_issues, [])
+
     def test_strip_xml_paragraphs_preserves_br_as_hard_line_break(self) -> None:
         self.assertEqual(
             xml_lint.strip_xml_paragraphs("<p>第一行<br/>第二行<br />第三行</p>"),
@@ -2501,7 +2553,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             ],
         )
 
-    def test_lint_xml_ignores_line_out_of_canvas(self) -> None:
+    def test_lint_xml_reports_line_out_of_canvas(self) -> None:
         result = xml_lint.lint_xml(
             """
             <slide xmlns="https://www.larkoffice.com/sml/2.0">
@@ -2515,8 +2567,11 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        self.assertEqual(result["summary"]["error_count"], 0)
-        self.assertEqual(result["slides"][0]["issues"], [])
+        self.assertEqual(result["summary"]["error_count"], 1)
+        issue = result["slides"][0]["issues"][0]
+        self.assertEqual(issue["code"], "line_out_of_canvas")
+        self.assertEqual(issue["elements"], ["connector"])
+        self.assertEqual(issue["overflow"], {"left": 0, "top": 0, "right": 20, "bottom": 0})
 
     def test_lint_xml_reports_horizontal_line_crossing_headline_glyphs(self) -> None:
         result = xml_lint.lint_xml(
@@ -2772,7 +2827,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertEqual(issues_by_element["rotated-image"]["code"], "img_out_of_canvas")
         self.assertEqual(issues_by_element["rotated-image"]["overflow"], {"left": 0, "top": 0, "right": 40, "bottom": 0})
 
-    def test_detect_elements_out_of_canvas_limits_detection_to_whitelist(self) -> None:
+    def test_detect_elements_out_of_canvas_reports_every_element_kind(self) -> None:
         issues = xml_lint.detect_elements_out_of_canvas(
             [
                 {"id": "table", "kind": "table", "x": 95, "y": 0, "width": 10, "height": 10, "rotation": 45},
@@ -2808,6 +2863,56 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     "height": 10,
                     "rotation": 0,
                 },
+                {
+                    "id": "icon",
+                    "kind": "icon",
+                    "type": "icon",
+                    "x": 95,
+                    "y": 0,
+                    "width": 10,
+                    "height": 10,
+                    "rotation": 0,
+                },
+                {
+                    "id": "polyline",
+                    "kind": "polyline",
+                    "type": "polyline",
+                    "x": 95,
+                    "y": 0,
+                    "width": 10,
+                    "height": 10,
+                    "rotation": 0,
+                },
+                {
+                    "id": "line",
+                    "kind": "line",
+                    "type": "line",
+                    "x": 95,
+                    "y": 0,
+                    "width": 10,
+                    "height": 10,
+                    "rotation": 0,
+                },
+                {
+                    "id": "whiteboard",
+                    "kind": "whiteboard",
+                    "type": "whiteboard",
+                    "x": 95,
+                    "y": 0,
+                    "width": 10,
+                    "height": 10,
+                    "rotation": 0,
+                },
+                {
+                    "id": "embed",
+                    "kind": "embed",
+                    "type": "embed",
+                    "x": 95,
+                    "y": 0,
+                    "width": 10,
+                    "height": 10,
+                    "rotation": 0,
+                },
             ],
             100,
             100,
@@ -2815,7 +2920,19 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
 
         self.assertEqual(
             [issue["elements"] for issue in issues],
-            [["table"], ["chart"], ["text"], ["rect"], ["image"]],
+            [
+                ["table"],
+                ["chart"],
+                ["text"],
+                ["rect"],
+                ["image"],
+                ["ellipse"],
+                ["icon"],
+                ["polyline"],
+                ["line"],
+                ["whiteboard"],
+                ["embed"],
+            ],
         )
         self.assertEqual(issues[-1]["bbox"], {"x": 95, "y": 0, "width": 10, "height": 10})
 
@@ -4624,6 +4741,25 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         narrow_digit = xml_lint.estimate_character_width("8", 60, font_family="Arial")
         self.assertGreater(wide_digit, narrow_digit)
 
+    def test_estimate_character_width_gives_wide_symbols_their_own_advance(self) -> None:
+        # "%" and a handful of common symbols (@ & $ ¥ £ # + = < > ~) render much wider than the generic
+        # punct coefficient (0.50em), so measuring them at that coefficient under-reports the line and
+        # hides real wraps (slides I9dd p24). Each must carry a per-glyph advance strictly wider than a
+        # narrow mark like ".", so the fix lives in the estimator, not a shape classifier.
+        narrow = xml_lint.estimate_character_width(".", 100, font_family="思源黑体")
+        for symbol in "%@&$¥£#+=<>~":
+            with self.subTest(symbol=symbol):
+                advance = xml_lint.estimate_character_width(symbol, 100, font_family="思源黑体")
+                self.assertGreater(advance, narrow)
+        # We only raise coefficients, never lower them: narrower marks keep the punct baseline so a
+        # smaller estimate can never mask a wrap (the gate prefers false positives over missed overflow).
+        for symbol in "*/":
+            with self.subTest(symbol=symbol):
+                self.assertEqual(
+                    xml_lint.estimate_character_width(symbol, 100, font_family="思源黑体"),
+                    narrow,
+                )
+
 
     def test_lint_xml_reports_vertical_text_image_overlap_as_warning(self) -> None:
         result = xml_lint.lint_xml(
@@ -5026,7 +5162,7 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             "id": "sparse_container_content",
         })
         self.assertEqual(issue["measurement"]["container_area"], 151700)
-        self.assertEqual(issue["measurement"]["content_coverage_ratio"], 0.035)
+        self.assertEqual(issue["measurement"]["content_coverage_ratio"], 0.036)
         self.assertEqual(issue["elements"], ["trend-card", "trend-title", "trend-copy"])
         self.assertEqual(issue["element_ids"], ["trend-card", "trend-title", "trend-copy"])
         self.assertEqual(

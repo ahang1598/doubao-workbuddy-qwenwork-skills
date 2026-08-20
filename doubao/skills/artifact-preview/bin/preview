@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""preview — render workspace artifacts (PDF/PPTX/DOCX/XLSX/HTML/...)
+into text + per-page PNG screenshots + collage JPEGs that the model can
+consume via ``Read``.
+
+Usage:
+    preview render <file>            # render and emit JSON summary
+    preview info <hash|dir|file>     # dump cached manifest as JSON
+    preview list                     # list cached previews
+    preview clean [<hash> | --all]   # remove cached previews
+
+All subcommands print structured JSON to stdout. Output of ``render``
+points at ``manifest.json``, ``text.md``, ``thumb.jpg`` and ``collages/``,
+which the model then reads with the ``Read`` tool to inspect.
+
+Hub layout (verifier-hub-style):
+    bin/preview          ← this entry point
+    lib/cli.py           ← argparse subcommands
+    lib/dispatch.py      ← detect_kind + render dispatcher
+    lib/render/          ← pure rendering primitives (lazy_import deps)
+"""
+from __future__ import annotations
+
+import os
+import sys
+
+# The contract is "one JSON object on stdout", written with
+# ensure_ascii=False so the original Unicode survives. On Windows a piped
+# stdout defaults to the legacy ANSI code page (cp936 on a zh-CN host), and
+# any character outside it — a rare hanzi, an emoji — makes the write raise
+# UnicodeEncodeError and kills the tool. Force UTF-8 before anything can
+# write; on POSIX the streams are already UTF-8 so this is a no-op.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        if _stream.encoding and _stream.encoding.lower().replace("-", "") != "utf8":
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
+# Make ``lib/*`` importable when invoked via the absolute hub path
+# (/home/user/.../workspace/.skills/artifact-preview/bin/preview).
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_HUB_ROOT = os.path.dirname(_HERE)
+if _HUB_ROOT not in sys.path:
+    sys.path.insert(0, _HUB_ROOT)
+
+from lib.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -2,7 +2,7 @@
 
 创建一个新的飞书幻灯片演示文稿。
 
-- **标准做法：统一两步创建**——先用 `+create`（不带 `--slides`）建**空白幻灯片**，再用 `xml_presentation.slide create` 逐页添加，每次只提交一个 `<slide>`。
+- **标准做法：统一两步创建**——先用 `+create`（不带 `--slide` / `--slides`）建**空白幻灯片**，再用 [`+add-slide`](lark-slides-add-slide.md) 逐页添加，每次只提交一个 `<slide>`。
 - 禁止：从完整 `<presentation>` XML 解析、拆分、重序列化后再生成提交 payload；提交源直接就是单页 `<slide>` XML。
 - `--slides` 一步加页仍受支持（下文有说明），但**不再作为默认路径**：复杂 XML 直接塞命令行时，中文、引号、特殊字符容易发生 shell 转义或截断，统一走两步更稳。
 
@@ -40,16 +40,16 @@ lark-cli slides +create --title "项目汇报" \
 
 - **`xml_presentation_id`**（string）：演示文稿的唯一标识符，后续添加页面时需要此 ID
 - **`title`**（string）：演示文稿标题
-- **`url`**（string，重要）：演示文稿的在线链接。NotifyHuman 工具只接受 `url`，缺这个字段就无法交付
+- **`url`**（string，重要）：演示文稿的在线链接。present_files 工具只接受 `url`，缺这个字段就无法交付
 - **`revision_id`**（integer）：演示文稿版本号
 - **`slide_ids`**（string[]，可选）：仅传 `--slides` 时返回，成功添加的页面 ID 列表
 - **`slides_added`**（integer，可选）：仅传 `--slides` 时返回，成功添加的页面数量
 - **`images_uploaded`**（integer，可选）：仅 `--slides` 中含 `@<本地路径>` 占位符时返回，已上传的去重后图片数量
 
 > [!IMPORTANT]
-> 不传 `--slides` 时，`slides +create` 只创建一个**不含任何页面（0 页）**的空演示文稿——不会自带任何默认页或空白页（回读时 `<presentation>` 里没有 `<slide>`）。创建后需要使用 `xml_presentation.slide create` 逐页添加 slide 内容。
+> 不传 `--slide` / `--slides` 时，`slides +create` 只创建一个**不含任何页面（0 页）**的空演示文稿——不会自带任何默认页或空白页（回读时 `<presentation>` 里没有 `<slide>`）。创建后需要使用 `slides +add-slide` 逐页添加 slide 内容。
 >
-> 传了 `--slides` 时，CLI 先创建空白演示文稿，再逐页调用 `xml_presentation.slide create` 添加页面。如果某一页添加失败，CLI 会停止并报错，已创建的演示文稿和已添加的页面会保留。
+> 传了 `--slide` / `--slides` 时，CLI 先创建空白演示文稿，再逐页添加页面。如果某一页添加失败，CLI 会停止并报错，已创建的演示文稿和已添加的页面会保留。
 >
 > **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认。
 
@@ -58,7 +58,10 @@ lark-cli slides +create --title "项目汇报" \
 | 参数 | 必填 | 说明 |
 |------|------|------|
 | `--title` | 否 | 演示文稿标题（不传则默认 "Untitled"） |
-| `--slides` | 否 | slide 内容 JSON 数组，每个元素是一个 `<slide>` XML 字符串（最多 10 个；超过 10 页请先用 `+create` 创建空白幻灯片，再用 `xml_presentation.slide create` 逐页添加） |
+| `--slide` | 否 | 一页 `<slide>` XML，或 `@路径`；可重复，最多 10 次，出现顺序即页序 |
+| `--slides` | 否 | 页面 XML 的 JSON 字符串数组，最多 10 个；支持 `@文件` 和 `-`（stdin） |
+
+两者二选一，同时传会报错。超过 10 页：先用 `+create` 建空白幻灯片，再用 [`+add-slide`](lark-slides-add-slide.md) 逐页添加。
 
 ## `--slides` 参数格式
 
@@ -102,29 +105,25 @@ lark-cli slides +create --title "图测试" --slides '[
 TOKEN=$(lark-cli slides +media-upload \
   --file ./pic.png --presentation $PRES_ID --jq '.data.file_token')
 
-# 2) 用返回的 file_token 创建带图新页（jq --arg 注入 token 组装 --data，不要手工转义内联 XML）
-lark-cli slides xml_presentation.slide create \
-  --params "{\"xml_presentation_id\":\"$PRES_ID\"}" \
-  --data "$(jq -n --arg tok "$TOKEN" \
-    '{slide:{content:("<slide xmlns=\"https://www.larkoffice.com/sml/2.0\"><data><img src=\""+$tok+"\" topLeftX=\"100\" topLeftY=\"100\" width=\"200\" height=\"200\"/></data></slide>")}}')"
+# 2) 把 file_token 写进这一页 XML，存成文件后用 --slide @file 提交
+cat > page-01.xml <<XML
+<slide xmlns="https://www.larkoffice.com/sml/2.0"><data>
+  <img src="$TOKEN" topLeftX="100" topLeftY="100" width="200" height="200"/>
+</data></slide>
+XML
+lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
 ## 创建后续步骤
 
-如果没有使用 `--slides`，`slides +create` 返回的 `xml_presentation_id` 用于后续操作：
+不带页面参数创建时，`slides +create` 返回的 `xml_presentation_id` 用于后续操作：
 
 ```bash
 # 第 1 步：创建空白幻灯片
 PRES_ID=$(lark-cli slides +create --title "项目汇报" --jq '.data.xml_presentation_id')
 
 # 第 2 步：添加页面（使用返回的 xml_presentation_id）
-lark-cli slides xml_presentation.slide create \
-  --params "{\"xml_presentation_id\":\"$PRES_ID\"}" \
-  --data '{
-    "slide": {
-      "content": "<slide xmlns=\"https://www.larkoffice.com/sml/2.0\">...</slide>"
-    }
-  }'
+lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
 ## 常见错误
@@ -136,5 +135,5 @@ lark-cli slides xml_presentation.slide create \
 
 ## 相关命令
 
-- [xml_presentation.slide create](lark-slides-xml-presentation-slide-create.md) — 添加幻灯片页面
+- [slides +add-slide](lark-slides-add-slide.md) — 逐页添加幻灯片页面
 - [slides +xml-get](lark-slides-xml-presentations-get.md) — 读取幻灯片内容并保存到本地文件

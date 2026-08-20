@@ -1,10 +1,18 @@
-> ⚠️ **先读完再动手**：本文档共 343 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+> ⚠️ **强制前置条件**：本文档共 351 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Chart
 
 ## 真对象硬约束
 
 当用户要求"画个图 / 数据可视化 / 趋势图 / 对比图 / 占比图"时，**必须**通过 `+chart-{create|update|delete}` 创建真实的图表对象。**禁止**用本地脚本调 matplotlib / seaborn 生成图片再插入到表格代替——静态图片无法随源数据更新，且失去交互能力。判断标准：交付后 `+chart-list` 必须能返回该对象。
+
+可视化基于已有表时，原数据 sheet 默认只读：清洗、TopN、分组汇总和图表数据源放到新 summary sheet；图表引用 summary sheet 的真实区域。不要为了做图拆合并、改日期文本或覆盖原 sheet，也不要交付 HTML / 截图 / 静态图片当作图表。
+
+## 图片图表 → 真图表迁移（"把截图 / 贴图换成真图表"类任务）
+
+- 建好真图表后**必须删除被替换的原浮动图片**，并用 `+float-image-list` 复核残留为 0——原图残留等于任务未完成。
+- 用户要求"配色 / 样式与原图一致"而原图内容无法获取时，不得静默跳过：按数据语义给出专业配色，并在交付说明中声明配色为近似、未能读取原图。
+- 用户诉求含多张图（如"每天一张 + 一张汇总"）时逐条枚举交付，禁止合并降级成一张。
 
 ## 使用场景
 
@@ -32,7 +40,7 @@
 **`--properties` 结构锚点（构造前必读）**：`--properties` 顶层只有 `position` / `offset` / `size` / `snapshot` 四个字段，**没有**顶层 `data`，也没有再嵌一层 `properties`。图表数据配置全部挂在 `snapshot.data` 下——下文及示例里出现的 `refs` / `headerMode` / `dim1` / `dim2` / `nameRef` 一律指 `snapshot.data.refs` / `snapshot.data.headerMode` / `snapshot.data.dim1` / `snapshot.data.dim2`（及其下的 `serie.nameRef` / `series[].nameRef`）；样式 / 堆叠 / 数据标签等在 `snapshot.plotArea` 下。**构造起点优先用 `lark-cli sheets +chart-create --print-example <column|bar|line|area|pie|scatter|radar|combo>` 拿最小可用模板改参**（本地即时返回）；查深层字段用点分路径切片 `--print-schema --flag-name properties.snapshot.plotArea.axes`，别整篇 dump 翻页。完整结构以 `--print-schema --flag-name properties` 为准。
 
 **常见配置错误（必须注意）**：
-- **图表类型选择错误**：用户说"堆积柱形图/百分比堆积"时，应在 `properties.snapshot.plotArea.plot.extra.stack` 中配置堆叠；百分比堆叠需在该 stack 下设置 `percentage: true`。用户说"占比/比例"时，优先考虑饼图或百分比堆积图。注意区分 `column`（柱形图，纵向）与 `bar`（条形图，横向）是两个不同的 type 取值，"对比/各 XX" 类纵向柱默认用 `column`
+- **图表类型选择错误**：用户说"堆积柱形图/百分比堆积"时，应在 `properties.snapshot.plotArea.plot.extra.stack` 中配置堆叠；百分比堆叠需在该 stack 下设置 `percentage: true`。用户说"占比/比例"时，优先考虑饼图或百分比堆积图。注意区分 `column`（柱形图，纵向）与 `bar`（条形图，横向）是两个不同的 type 取值，"对比/各 XX" 类纵向柱默认用 `column`；面积图原生支持 `snapshot.plotArea.plot.type="area"`，别因速查表没列就判"不支持"
 - **数据标签开关**：`plotArea.plot.labels` 对象的**存在性即开关**——
   - 用户需要看到具体数值/类别时：传入 `labels` 并配置 `value` / `category` / `series` / `percentage` 等显示位。
   - 用户明确说"不要数据标签 / 关掉标签"时：**整个 `labels` 字段省略**。不要用 `labels: { value: false, category: false, series: false }` 这种"全部置 false"的写法关闭——只要传了 `labels`，系统就会显示数据标签（且默认兜底显示 value）。
@@ -94,14 +102,14 @@
    - **优先**放数据下方空区：`position = {row: data_end_row + 2, col: "A"}`；
    - 否则先调 `+dim-insert`（`lark-sheets-sheet-structure`）扩行/列，再 create。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ⚠️ **图表落点禁止压在已有数据矩形内**——必须落在数据区**右侧或下方的空白**，否则图表浮层会遮挡原始数据被判失败（反例：折线图落在数据区中间，遮挡了下方原始数据）。
 
 **示例**：21 列 sheet 放 600×400 图 → `needCols=6, needRows=15`
 - ❌ `{row: 0, col: "W"}` — col=22 越界
 - ✅ `{row: 42, col: "A"}` — 放数据下方
 - ✅ 先 `+dim-insert --position V --count 6`（在 V 列前插 6 列，即 U 列之后），再放图到 `{row: 0, col: "V"}`
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ## Shortcuts
 
@@ -199,11 +207,11 @@ JSON
 lark-cli sheets +chart-create --url "..." --sheet-name "Sheet1" --properties @chart-config.json
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 **饼图专属示例**（`sectors` 必须嵌在 `plotArea.plot.series[i].sectors.sector[]`，且 `sector[].index` 1-based）：
 
 饼图比 column / bar 更复杂：`sectors` 是 object，里面再包一个**单数** `sector` 数组——CLI 不替你 normalize，写错路径会被 server schema 直接拒。
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ```bash
 lark-cli sheets +chart-create --url "..." --sheet-name "Sheet1" --properties - <<'JSON'
@@ -301,11 +309,11 @@ JSON
 
 **Update 三步法**（缺一步会丢字段）：
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 1. `+chart-list --chart-id <id>` 拿到完整 snapshot
 2. 在拿到的 snapshot 上**局部**修改要改的字段，其余保持不变
 3. 把**完整 snapshot** 整个回写到 `--properties.snapshot`
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ```bash
 lark-cli sheets +chart-update --url "..." --sheet-id "$SID" --chart-id "chrXXX" \
@@ -340,4 +348,4 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
 
 > `+chart-create` / `+chart-update` 是 write 级别，按需可用 `--dry-run` 预览，不要求 `--yes`。只有 `+chart-delete`（high-risk-write）必须 `--yes`。
 
-===== 全文完（共 343 行）=====
+===== 全文完（共 351 行）=====

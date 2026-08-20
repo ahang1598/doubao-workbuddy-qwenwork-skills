@@ -54,22 +54,65 @@ DEFAULT_TABLE_ROW_HEIGHT = 37
 DEFAULT_TEXT_LINE_SPACING_MULTIPLE = 1.5
 TEXT_WRAP_WIDTH_TOLERANCE_PX = 1.0
 TEXT_HEIGHT_OVERFLOW_TOLERANCE_PX = 0.5
-SINGLE_LINE_METRIC_WIDTH_RATIO = 1.18
 CENTERED_SHORT_LABEL_WIDTH_RATIO = 1.12
 HEADLINE_NEAR_FIT_WIDTH_RATIO = 1.04
-NUMERIC_SYMBOL_WRAP_RISK_RATIO = 0.95
 # A single-hard-line text run whose estimated visual width reaches this fraction of its content box
 # is at risk of wrapping on the real (Skia) renderer. The width estimator can under-report by ~10%
 # for short bold/latin runs, so we flag well below 100% to guarantee no real wrap escapes -- the
 # team's release gate for these decks prefers false positives over any missed wrap.
 TEXT_WIDTH_WRAP_RISK_RATIO = 0.85
 # Only short single-line labels/metrics are candidates for the width-wrap rule; longer runs are
-# prose meant to wrap. 16 matches is_short_metric_text's compact-length cap.
+# prose meant to wrap.
 SHORT_LABEL_WRAP_MAX_CHARS = 16
 # "%" is classified half-width by Unicode (Na) but its glyph advance is close to an em in common UI
 # fonts (Arial 0.889, PingFang ~0.85). Measuring it at the generic punct coefficient under-reports
 # every percentage metric and hides real wraps/overflows (slides p3: bhU).
 PERCENT_SIGN_WIDTH_RATIO = 0.85
+# The generic punct coefficient (0.50em) fits narrow marks (. , : ; ! etc.) but a handful of common
+# symbols render much wider, so measuring them at 0.50 under-reports the line and hides real wraps --
+# the same defect "%" had before its own coefficient. These are all Unicode Na/ambiguous marks that
+# fall through to the punct branch, so a per-glyph advance table (nearest common sans/PingFang values)
+# is the physically correct fix, rather than teaching a shape classifier one more layout. We only
+# raise coefficients here, never lower them (e.g. "*" "/" render narrower than 0.50): a slightly high
+# estimate at worst yields a benign false positive, while lowering one risks a missed wrap, and this
+# gate prefers false positives over any missed overflow.
+WIDE_SYMBOL_WIDTH_RATIOS: dict[str, float] = {
+    "@": 1.0,
+    "&": 0.67,
+    "$": 0.56,
+    "¥": 0.56,
+    "£": 0.56,
+    "¢": 0.56,
+    "#": 0.56,
+    "~": 0.58,
+    "+": 0.58,
+    "=": 0.58,
+    "<": 0.58,
+    ">": 0.58,
+}
+# The category coefficients below are a per-category average, so the widest Latin letters (m w M W)
+# get measured far too narrow: a lowercase "m" advances ~0.87em and "W" ~0.95em in common fonts, not
+# the 0.51-0.62em the lower/upper averages assume. Averaging them in under-reports any run built from
+# these glyphs, so a big-type run like "70mm" fits the estimate yet wraps on the real renderer (slides
+# I9dd p27: bLN "70mm" in a 200px box). Same fix and same guardrails as WIDE_SYMBOL_WIDTH_RATIOS: a
+# per-glyph advance (wide end of common sans/serif metrics) applied before the category branch, only
+# ever raising the estimate -- a slightly high advance is a benign false positive, while the category
+# average risks a missed wrap, and this gate prefers false positives over any missed overflow.
+WIDE_LETTER_WIDTH_RATIOS: dict[str, float] = {
+    "m": 0.90,
+    "w": 0.78,
+    "M": 0.90,
+    "W": 0.98,
+    "G": 0.78,
+    "O": 0.78,
+    "Q": 0.78,
+    "C": 0.72,
+    "D": 0.72,
+    "H": 0.72,
+    "N": 0.72,
+    "R": 0.72,
+    "U": 0.72,
+}
 # A repeated-text pair is only treated as an intentional shadow/duplicate overlay (and suppressed)
 # when their glyph boxes are at least this coincident. Below it, two separately-placed labels that
 # merely share the same text are a genuine collision and must still be reported.
@@ -1783,11 +1826,23 @@ def estimate_character_width(
         return font_size * bold_multiplier
     # "%" is half-width by Unicode class (Na) but renders nearly full-width (~0.85em in Arial/PingFang):
     # the generic punct coefficient under-measures every percentage metric, so a "Docs 99%Docs 99%..."
-    # run wraps to more lines than estimated and its overflow is missed (slides p3: bhU).
+    # run wraps to more lines than estimated and its overflow is missed (slides p3: bhU). A handful of
+    # other common symbols (@ & $ ¥ £ # + = < > ~) share this under-measurement, so they carry their own
+    # per-glyph advance instead of the generic punct coefficient (see WIDE_SYMBOL_WIDTH_RATIOS).
     if character == "%":
         return font_size * PERCENT_SIGN_WIDTH_RATIO * bold_multiplier
+    wide_ratio = WIDE_SYMBOL_WIDTH_RATIOS.get(character)
+    if wide_ratio is not None:
+        return font_size * wide_ratio * bold_multiplier
     category = classify_font_family(font_family)
     coeffs = _FONT_CATEGORY_MULTIPLIERS[category]
+    # The widest Latin letters take a per-glyph advance instead of the category average, but only when
+    # it is wider (the wide-sans tier already advances its glyphs generously), so this override can only
+    # raise the estimate -- see WIDE_LETTER_WIDTH_RATIOS.
+    wide_letter_ratio = WIDE_LETTER_WIDTH_RATIOS.get(character)
+    if wide_letter_ratio is not None:
+        category_ratio = coeffs["upper"] if character.isupper() else coeffs["lower"]
+        return font_size * max(wide_letter_ratio, category_ratio) * bold_multiplier
     if character.isupper():
         return font_size * coeffs["upper"] * bold_multiplier
     if character.islower():
@@ -1931,28 +1986,6 @@ def has_explicit_height_auto_fit(element: dict[str, Any]) -> bool:
     return element.get("autoFit") in {"normal-auto-fit", "shape-auto-fit"}
 
 
-def is_short_metric_text(text: str) -> bool:
-    compact = re.sub(r"\s+", "", text)
-    if not compact or len(compact) > 16 or re.search(r"\d", compact) is None:
-        return False
-    if re.fullmatch(r"[+\-–—]?[0-9,.，]+[\u4e00-\u9fffA-Za-z]{1,4}", compact):
-        return True
-    if re.search(r"[,.，+\-–—/%％]", compact) is None:
-        return False
-    return re.fullmatch(r"[+\-–—]?[0-9A-Za-z,.，/%％\-–—\u4e00-\u9fff]+", compact) is not None
-
-
-def is_labeled_short_metric_text(text: str) -> bool:
-    """Return whether a short metric contains a separate label before its value."""
-    return is_short_metric_text(text) and re.search(r"[A-Za-z]+\s+[+\-–—]?\d", text) is not None
-
-
-def is_short_percent_symbol_metric_text(text: str) -> bool:
-    """Return whether a compact percentage metric is made only of digits and symbols."""
-    compact = re.sub(r"\s+", "", text)
-    return re.fullmatch(r"[+\-–—]?[0-9,.，]+[%％][+\-–—]?", compact) is not None
-
-
 def is_single_line_visual_candidate(
     element: dict[str, Any],
     paragraph: dict[str, Any] | None,
@@ -1962,9 +1995,6 @@ def is_single_line_visual_candidate(
 ) -> bool:
     if "\n" in text or logical_width <= effective_width:
         return False
-    if is_short_metric_text(text) and not is_labeled_short_metric_text(text):
-        return logical_width <= effective_width * SINGLE_LINE_METRIC_WIDTH_RATIO
-
     text_align = (paragraph or {}).get("textAlign") or element.get("textAlign")
     compact_len = len(re.sub(r"\s+", "", text))
     if text_align == "center" and compact_len <= 32:
@@ -2167,7 +2197,12 @@ def short_line_passive_wrap_width(
         return None
     # Prose is expected to wrap; this reclassification only targets short labels/metrics that were
     # meant to stay on one line, mirroring detect_text_may_wrap_shapes' SHORT_LABEL_WRAP_MAX_CHARS gate.
-    if len(re.sub(r"\s+", "", element["text"])) > SHORT_LABEL_WRAP_MAX_CHARS:
+    # Titles/headlines are authored for one line regardless of length, so their passive wrap is a width
+    # defect too: raising shape.height just leaves two overlapping lines, and the fix is to widen the
+    # box or shrink the font. They therefore bypass the short-label char cap (slides: a long section
+    # title wrapped and was wrongly told to increase its height).
+    is_title_like = element.get("textType") in {"title", "headline", "sub-headline"}
+    if not is_title_like and len(re.sub(r"\s+", "", element["text"])) > SHORT_LABEL_WRAP_MAX_CHARS:
         return None
     # It only counts as passive wrapping if the single logical line actually wrapped.
     if block["line_count"] < 2:
@@ -2392,7 +2427,18 @@ def detect_text_may_wrap_shapes(
             continue
         # Long prose is expected to wrap; this rule targets short labels/metrics
         # (e.g. "Slides 87%", "autofix 87%") that were meant to stay on one line.
-        if len(re.sub(r"\s+", "", element["text"])) > SHORT_LABEL_WRAP_MAX_CHARS:
+        # Titles/headlines are the exception: they are authored for a single line regardless of length,
+        # so a long one that passively wraps is still a defect and must be admitted past the short-label
+        # cap. We scope this to {title, headline} to match the near-fit whitelist in
+        # is_single_line_visual_candidate: the long-title path below relies on that near-fit calibration
+        # to avoid false positives, so admitting a textType it does not protect (sub-headline) would let
+        # a near-fit sub-headline that renders on one line be flagged. Short title-like runs stay on the
+        # shared metric/latin/cjk threshold path below; only the newly admitted long titles take the
+        # wrap-simulation path.
+        is_title_like = element.get("textType") in {"title", "headline"}
+        compact_len = len(re.sub(r"\s+", "", element["text"]))
+        is_long_title = is_title_like and compact_len > SHORT_LABEL_WRAP_MAX_CHARS
+        if not is_title_like and compact_len > SHORT_LABEL_WRAP_MAX_CHARS:
             continue
 
         # Measure with internal spaces preserved: Skia renders "autofix      87%" at full
@@ -2408,24 +2454,28 @@ def detect_text_may_wrap_shapes(
         )
         available_width = max(element["width"] - element.get("paddingLeft", 0) - element.get("paddingRight", 0), 1)
         effective_width = available_width + text_wrap_width_tolerance()
-        # Plain numeric metrics with CJK units or separators ("4.16万亿", "1,380") render on one
-        # line despite width jitter, so the codebase tolerates them up to
-        # SINGLE_LINE_METRIC_WIDTH_RATIO. Compact percentage-symbol metrics ("60%+") sit on a
-        # tighter font-dependent boundary: some common fonts wrap the operator even when the static
-        # estimate lands just under the box width, so use a conservative risk band for that subset.
-        # Latin/labeled runs ("Docs 99%", "Slides 87%") are where the width estimator under-reports,
-        # so flag them from the aggressive risk band. Pure CJK breaks per glyph and is estimated
-        # accurately, so it only wraps once it genuinely exceeds the box.
-        if is_short_percent_symbol_metric_text(raw_line):
-            threshold = available_width * NUMERIC_SYMBOL_WRAP_RISK_RATIO
-        elif is_short_metric_text(raw_line) and not is_labeled_short_metric_text(raw_line):
-            threshold = available_width * SINGLE_LINE_METRIC_WIDTH_RATIO
-        elif re.search(r"[A-Za-z]", raw_line):
-            threshold = available_width * TEXT_WIDTH_WRAP_RISK_RATIO
+        if is_long_title:
+            # Decide by the real wrap simulation (estimate_text_block_height), not a width-ratio band.
+            # estimate_text_line_count_for_text applies is_single_line_visual_candidate first, so a title
+            # whose estimated width lands within HEADLINE_NEAR_FIT_WIDTH_RATIO (~1.04) of the box is
+            # treated as one line and NOT flagged -- that band absorbs the estimator's known over-report
+            # on titles, so those render on one line and are not defects. Only a title that reflows to
+            # >=2 lines past that near-fit band is flagged. This catches a passive title wrap regardless
+            # of whether the box is tall enough to absorb the extra line (slides I9dd p25); the vertical
+            # check alone would miss the tall-box case.
+            block = estimate_text_block_height(element)
+            if block is None or block["line_count"] < 2:
+                continue
         else:
-            threshold = effective_width
-        if visual_width <= threshold:
-            continue
+            # Latin/labeled runs ("Docs 99%", "Slides 87%") are where the width estimator under-reports,
+            # so flag them from the aggressive risk band. Pure CJK breaks per glyph and is estimated
+            # accurately, so it only wraps once it genuinely exceeds the box.
+            if re.search(r"[A-Za-z]", raw_line):
+                threshold = available_width * TEXT_WIDTH_WRAP_RISK_RATIO
+            else:
+                threshold = effective_width
+            if visual_width <= threshold:
+                continue
 
         ratio = visual_width / available_width
         message = (
@@ -2925,12 +2975,10 @@ def detect_elements_out_of_canvas(
     elements: list[dict[str, Any]], slide_width: int | float, slide_height: int | float
 ) -> list[dict[str, Any]]:
     issues: list[dict[str, Any]] = []
-    for element in (
-        element
-        for element in elements
-        if element["kind"] in {"img", "table", "chart"}
-        or (element["kind"] == "shape" and element["type"] in {"rect", "text"})
-    ):
+    # Every drawable element has a canvas-space bbox at this point. Keep this
+    # deny-list-free so newly supported element kinds cannot silently escape
+    # the page-boundary check.
+    for element in elements:
         bbox = element_canvas_bbox(element)
         overflow = {
             "left": max(-bbox["x"], 0),

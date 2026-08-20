@@ -15,17 +15,18 @@ metadata:
 
 ## 权威经验
 1. 你有充足的时间完成一个高质量的幻灯片，**必须对所有页面执行静态校验**，不要以加快进度、提高效率为由减少工作或打乱流程，质量永远比速度重要。
-2. **开工通知和成稿交付都必须 NotifyHuman**。
+2. **开工通知和成稿交付都必须调用 present_files 工具 **。
 3. **技能中的所有文档都必须完整读完，尾部有重要信息，不要中途截断**。可以分多次读，或把 Read 工具的 `limit` 参数设为 16K 确保一次读全。
 4. 牢记幻灯片 URL 和关键 ID（`xml_presentation_id`、`slide_id`、`revision_id`、`file_token`、`block_id`、`obj_token`）。
 5. 牢记每一页幻灯片的真实完成状态，不要混淆「已落本地 XML 文件」、「已通过静态校验」、「已写入飞书幻灯片」、「已回读且全文校验通过」。素材同理，区分「已取到本地」、「已去底色（或确认无需抠 / 已回退原图）」、「已上传拿到 `file_token`」。
 6. 牢记选定的设计系统，选定后视觉与版式应全程遵守，不能违背。
-7. 当用户要求无损复述历史上下文时，必须明确列出上面要求牢记的内容，并在复述末尾原样附上这句提醒（写给接手这段上下文的下一个执行者）：**【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个动作或 TodoWrite 中的第一个 Todo 必须是重新 Read lark-slides-pro skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或下载任何附件，也不要直接阅读其他的 MD 文档**。
+7. **平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`，**在阅读完本 SKILL后，必须先完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
+8. 当用户要求无损复述历史上下文时，必须明确列出上面要求牢记的内容，并在复述末尾原样附上这句提醒（写给接手这段上下文的下一个执行者）：**【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read lark-slides-pro skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行xml相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read lark-slides-pro 下的 SKILL.md 再继续，不得跳过。**。
 
 
 ## 一、场景路由
 
-先判断任务类型，再进入对应分支。无论改动是大是小、命令是否熟悉，无论此前是否用过类似命令、做过类似任务，无论之前是否读过对应分支的 MD 文档，**必须重新 Read 对应分支的 MD 文档之后才能动手**。
+先判断任务类型，再进入对应分支。无论改动是大是小、命令是否熟悉，无论此前是否用过类似命令、做过类似任务，无论之前是否读过对应分支的 MD 文档，**必须重新 Read 对应分支的 MD 文档之后才能动手**。**特别是多轮对话中用户对前轮已有 PPT 的任何修改/追加/删除追问，都属于"编辑已有幻灯片"场景，本次动手前必须先完整 Read references/workflow/slides-editing.md，不得凭上一轮记忆直接改 XML**。
 
 
 | 任务                                                 | 对应分支（必读）                                                                                    |
@@ -63,7 +64,7 @@ metadata:
 
 按选定的设计系统决定素材需求，本步负责**确定要哪些素材、并把它们找齐**（联网搜索、搜图、生图都在这里做完）。
 
-- **阅读用户附件（重要性与权威性都最高）**：用户上传/提供的一切材料都是本次任务的第一手事实来源，优先级高于联网搜索和你的先验知识。用户附件里有很多关键信息藏在图/表/公式里，只跑 `paragraphs` / `pdftotext` 会丢掉它们；如果之前读取附件时只获得了文本信息或没有读取附件，那你必须再一次解析附件内容获得更多相关信息，docx 必须再跑 `doc.tables` + `doc.inline_shapes` + `unzip word/media/`，pdf 必须再跑 `fitz.get_images` + `fitz.find_tables` 来获得一些附件中的图片/表格信息或使用 `page.get_pixmap` 来获得 pdf 中的截图，附件中的图片/表格插入 PPT 时，必须保留原图表的所有信息，**绝对不允许做裁剪，但是可以缩放大小来适配 PPT 的排版布局**；与其它来源冲突时以用户附件为准。**在创建 PPT 前，你必须完整阅读附件中嵌入的文字/图片/表格等信息才能创建**。
+- **阅读用户附件（重要性与权威性都最高）**：用户上传/提供的一切材料都是本次任务的第一手事实来源，优先级高于联网搜索和你的先验知识。用户附件里有很多关键信息藏在图/表/公式里，只跑 `paragraphs` / `pdftotext` 会丢掉它们；如果之前读取附件时只获得了文本信息或没有读取附件，那你必须再一次解析附件内容获得更多相关信息，docx 必须再跑 `doc.tables` + `doc.inline_shapes` + `unzip word/media/`，pdf 必须再跑 `fitz.get_images` + `fitz.find_tables` 来获得一些附件中的图片/表格信息或使用 `page.get_pixmap` 来获得 pdf 中的截图，附件中的图片/表格插入 PPT 时，必须保留原图表的所有信息，**绝对不允许做裁剪，但是可以缩放大小来适配 PPT 的排版布局**；与其它来源冲突时以用户附件为准。**在创建 PPT 前，你必须完整阅读附件中嵌入的文字/图片/表格等信息才能创建**。（本条仅适用于作为内容或素材来源的 DOCX、PDF、XLSX、图片等辅助附件。作为主原稿或模板的 PPTX/Slides 必须先导入或读取在线 Slides，再通过服务端 XML 和截图分析，不做本地 PPTX 解析。）
 - **联网搜索**：补齐主题相关的真实数据、事实、案例；不得编造，缺失就标注占位/假设/待补，并标注来源。用户给的是完整文档或逐页大纲、且没说能否扩写时，默认联网搜索扩充素材与案例，除非用户明确要求不扩写。
 - **搜图工具**：真实实体（人物、产品、logo、地标等）对应的图片必须用搜图工具获取。搜图时每次少搜一些（工具默认返回 6 张，可把数量设为 4 张），避免一次拉取过多。
 - **生图工具**：插画、封面主视觉、示意图、以及缺真实图时的兜底图用生图工具生成。用于背景或封面的图不应带文字，生成后检查，出现文字必须重做。
@@ -91,15 +92,19 @@ metadata:
 
 1. **读语法**：生成任何 XML 前必读 [`xml/xml-schema-quick-ref.md`](references/xml/xml-schema-quick-ref.md)，篇幅较长，务必完整读完；画图表另照抄 [`xml/slides_chart_demo.xml`](references/xml/slides_chart_demo.xml)；用图标先用 `python3 scripts/iconpark_tool.py search --query "<关键词>"` 检索（见 [`xml/iconpark.md`](references/xml/iconpark.md)）。
 2. **建空白幻灯片（两步创建·第一步）**：先 `slides +create --title <幻灯片标题>`（不带 `--slides`）建一份空白幻灯片（见 [`cli/lark-slides-create.md`](references/cli/lark-slides-create.md)），**必须从工具返回结果中拿到并记下 `xml_presentation_id` 和 `url`**。Step 6 上传图片、Step 7 写入、Step 8 回读要用 `xml_presentation_id`，Step 5 通知、Step 8 交付要用幻灯片链接 `url`，缺失任何一个都需要重建空白幻灯片。
-3. **开工通知**：用 NotifyHuman 工具把上一步拿到的 `url` 发给用户，并在回复里附上简短说明。这个链接和 Step 8 交付用的是同一个地址，但两次都必须发，不能省掉任何一次：这里是开工通知，Step 8 才是成稿交付。
+3. **开工通知**：用 present_files 工具把上一步拿到的 `url` 发给用户，并在回复里附上简短说明。这个链接和 Step 8 交付用的是同一个地址，但两次都必须发，不能省掉任何一次：这里是开工通知，Step 8 才是成稿交付。
 
-NotifyHuman 提交的链接会变成一张可点击的产物卡片，你需要直接回复向用户说明**PPT 已经开始制作，可以点击卡片，关注进度**，为了确保用户看到，**开工通知务必放到 `<think>` 外输出**（`<think>` 中的内容在展示的时候会被折叠）。这个能边做边看进度的体验非常棒，所以通知环节非常关键，一定要让用户感受到。
+present_files 提交的链接会变成一张可点击的产物卡片，你需要直接回复向用户说明**PPT 已经开始制作，可以点击卡片，关注进度**，为了确保用户看到，**开工通知务必放到 `<think>` 外输出**（`<think>` 中的内容在展示的时候会被折叠）。这个能边做边看进度的体验非常棒，所以通知环节非常关键，一定要让用户感受到。
 
 ### Step 6 · 图片处理
 
 本次要用的图片统一在这一步落地成 `file_token`：**取到本地 → 图片去底色 → 上传**。图片裁剪在 Step 7 中用 `<img>` 的 `<crop>` 实现，不需要在本步处理。
 
 1. **取到本地**：禁止 http(s) 外链，飞书 slides 渲染端不会代理外链图，外链 `src` 在幻灯片里通常不显示；网图必须先 `wget` 下载到 CWD 内，生图/搜图工具的产物同样先落成 CWD 内的文件。
+从已有 Slides 复用图片时，从实时回读 XML 的 `<img src>` 获取 `file_token`，再下载到本地：
+```bash
+lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<file>"
+```
 2. **图片去底色**：带底色的图片盖在有色背景上会让整页设计垮掉。对 Step 3 收集到的图片素材，用 Python PIL 的 `ImageDraw.floodfill()` 抠掉纯色底（图片编辑工具做不了抠图，只能走 PIL），**黑白灰底色的图片必须抠**，渐变底和复杂背景直接跳过不要硬抠；结果另存为新的 PNG（不覆盖原图、不可存 JPG）；**抠完逐张检查，确认背景透明、主体边缘无残留色块、主体内部无误抠，如果抠后效果差回退使用原图**。
 3. **上传拿 `file_token`**：把本次要用的图片逐个 `+media-upload --file <图片路径> --presentation <id>` 上传，**拿到各自的 `file_token`**（见 [`cli/lark-slides-media-upload.md`](references/cli/lark-slides-media-upload.md)）。
 
@@ -113,15 +118,15 @@ NotifyHuman 提交的链接会变成一张可点击的产物卡片，你需要�
 3. **素材兜底**：主视觉优先用真实素材，绝不留空白图框。缺图先用搜图工具或生图工具补这一页要用的图，补不到或不可用就用生图工具生成替代的近似图或抽象图，生图也不可用才用 `<shape>`+`<line>` 画结构图。数据类可视化缺真实数据时不要编造数字，优先换成不依赖数据的表达（结构图、要点卡片、定性对比），确需图表占位才用原生 `<chart>` 并标注「模拟数据，仅占位，待替换真实数据」。
 4. **演讲者备注**：需要在每页 `<slide>` 的 `<note>` 中提供 3–5 句可直接照读的讲稿。
 5. **静态校验（必做·至关重要）**：这一页 XML 存成本地文件，跑 `python3 scripts/xml_lint.py --input <文件>`（`--input` 必填，不带参数会报错，见 [`workflow/validation-xml.md`](references/workflow/validation-xml.md)），`error_count` 必须为 0 才能写入。这里只校验这一页的本地文件，写入后针对全文的回读校验在 Step 8。每条 issue 自带 `message`（含实测数值）和 `hint`（具体修法），照着改即可，元素位置看 `elements`。lint 报出的问题绝大多数是真实缺陷、应直接修复；个别你确信是有意设计（如刻意层叠营造设计感）、疑似误报的，留到写入后用 `+screenshot` 核对（见 Step 8），确认无碍可保留并在验证记录说明。
-6. **写入幻灯片（两步创建·第二步）**：完成静态校验后，用 `xml_presentation.slide create` 把这一页 `<slide>` 提交（见 [`cli/lark-slides-xml-presentation-slide-create.md`](references/cli/lark-slides-xml-presentation-slide-create.md)）至已创建的幻灯片中（Step 5 记录的 `xml_presentation_id`）。**记下返回的 `slide_id`**：它是这一页的唯一关联键，Step 8 截图和修复都按它定位。写入命令与 `--data` 的组装写法见本步末尾的示例。
-7. **失败排障**：`invalid param`、创建失败、空白页、3350001 等报错按 [`workflow/error-handling.md`](references/workflow/error-handling.md) 处理，不假设原操作原子成功，中途某页失败先回读确认状态再修复或追加。**追加/插入页面** 同样用 `slide create`，插到某页前用 `before_slide_id`，它**只能放进 `--data`**——写进 `--params` 会被当成未知 query 参数静默忽略，接口照样返回成功，新页却跑到了末尾。
+6. **写入幻灯片（两步创建·第二步）**：完成静态校验后，用 `slides +add-slide` 把这一页 `<slide>` 提交（见 [`cli/lark-slides-add-slide.md`](references/cli/lark-slides-add-slide.md)）至已创建的幻灯片中（Step 5 记录的 `xml_presentation_id`）。**记下返回的 `slide_id`**：它是这一页的唯一关联键，Step 8 截图和修复都按它定位。写入命令见本步末尾的示例。
+7. **失败排障**：`invalid param`、创建失败、空白页、3350001 等报错按 [`workflow/error-handling.md`](references/workflow/error-handling.md) 处理，不假设原操作原子成功，中途某页失败先回读确认状态再修复或追加。**追加/插入页面**同样用 `+add-slide`，插到某页前加 `--before-slide-id <slide_id>`，不传就是追加到末尾。
 
-**写入命令与 `--data` 组装（关键）**：把每页 XML 存成文件，用 `jq --rawfile`/`--arg` 组装，不要把 XML 内联进命令行（中文/引号/特殊字符易被 shell 转义或截断）。例：
+**写入命令（关键）**：把每页 XML 存成文件，用 `--slide @<文件>` 传入，不要把 XML 内联进命令行（中文/引号/特殊字符易被 shell 转义或截断）。例：
 
 ```bash
-lark-cli slides xml_presentation.slide create \
-  --params '{"xml_presentation_id":"<id>"}' \
-  --data "$(jq -n --rawfile c slide-01.xml '{slide:{content:$c}}')"
+lark-cli slides +add-slide \
+  --presentation "<xml_presentation_id>" \
+  --slide @slide-01.xml
 ```
 
 
@@ -129,11 +134,11 @@ lark-cli slides xml_presentation.slide create \
 
 核对实际页数、页面顺序、关键元素，完整校验清单见 [`workflow/validation-xml.md`](references/workflow/validation-xml.md)。
 
-1. **回读全文**：`slides +xml-get --presentation <xml_presentation_id> --output <CWD 内相对路径>`，`--output` 必填。
+1. **回读全文**：`slides +xml-get --presentation <xml_presentation_id> --output <CWD 内相对路径>`，必须使用 `--output`。
 2. **解析回读结果**：必须先用 XML 解析器解析，不要用正则或字符串切分；命名空间从根元素实际读取，不要硬编码或猜测，否则匹配不到元素。
 3. **对全文重跑静态校验**：`python3 scripts/xml_lint.py --input <回读文件>`，`error_count` 必须为 0。Step 7 逐页都干净不等于全文干净——服务端会规整提交的 XML，且 `id` 跨页撞车这类问题只有全文才查得出。疑似 lint 误报的页用 `slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 核对真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 10 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
-4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+replace-pages`（见 [`cli/lark-slides-replace-pages.md`](references/cli/lark-slides-replace-pages.md)），或 `slide.delete` 旧页 + `slide.create` 新页。改完重新回读、重新校验。
-5. **成稿交付**：用 NotifyHuman 工具把最终幻灯片链接明确交付给用户，并在回复里附上简短说明和验证记录；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。
+4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+replace-pages`（见 [`cli/lark-slides-replace-pages.md`](references/cli/lark-slides-replace-pages.md)），或 `+delete-slide` 删旧页（见 [`cli/lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)）+ `+add-slide` 建新页。改完重新回读、重新校验。
+5. **成稿交付**：用 present_files 工具把最终幻灯片链接明确交付给用户，并在回复里附上制作介绍；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。
 
 
 ## 三、参考文档地图
@@ -171,12 +176,15 @@ lark-cli slides xml_presentation.slide create \
 | 文档                                                                                            | 何时读                                |
 | --------------------------------------------------------------------------------------------- | ---------------------------------- |
 | [`lark-slides-create.md`](references/cli/lark-slides-create.md)                               | `+create` 创建幻灯片（两步创建第一步：建空白幻灯片）    |
+| [`lark-slides-add-slide.md`](references/cli/lark-slides-add-slide.md)                         | `+add-slide` 逐页追加/插入单页（两步创建第二步）    |
 | [`lark-slides-xml-presentations-get.md`](references/cli/lark-slides-xml-presentations-get.md) | `+xml-get` 回读全文 XML                |
 | [`lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)                 | `+replace-slide` 块级替换/插入           |
 | [`lark-slides-replace-pages.md`](references/cli/lark-slides-replace-pages.md)                 | `+replace-pages` 多页整页重建            |
+| [`lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)                   | `+delete-slide` 按 `slide_id` 删除单页  |
 | [`lark-slides-media-upload.md`](references/cli/lark-slides-media-upload.md)                   | `+media-upload` 上传图片拿 `file_token` |
 | [`lark-slides-screenshot.md`](references/cli/lark-slides-screenshot.md)                       | `+screenshot` 截图                   |
-| `lark-slides-xml-presentation-slide-create.md` / `-get.md` / `-delete.md` / `-replace.md`     | 单页原生 API（无 shortcut 覆盖时用）          |
+| [`lark-slides-history.md`](references/cli/lark-slides-history.md)                             | `+history-list` / `+history-revert` / `+history-revert-status` 查看与回滚历史版本 |
+| `lark-slides-xml-presentation-slide-get.md` / `-replace.md`                                   | 单页原生 API（无 shortcut 覆盖时用）          |
 
 
 

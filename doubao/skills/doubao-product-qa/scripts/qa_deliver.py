@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""交付适配层：把"产物写完了"变成"用户屏幕上有一张能点开的卡片"。
+"""交付适配层：把“产物写完了”变成可由当前环境交付的结构化清单。
 
 为什么单独一层（取证结论）：
 - 旧流程的终点是 `publish` 返回 DELIVERY_LOCK=CLOSED，然后让执行者"把 locator 发给用户"。
-  但在豆包宿主里，**在文本里写一个路径不会产生任何卡片**。实测四条 trace：
-  一条完全没有卡片（artifacts.products=[]），两条各盲试 4 次 NotifyHuman，其中一条产出两张重复卡。
-- 宿主工具 NotifyHuman / FileBatchUpload 不能被子进程调用，所以本脚本不"代发"，
-  而是把**唯一一条、参数已拼好的上屏调用**印出来。执行者只需照抄，不需要判断。
+  但仅在文本里写一个路径不保证用户能访问产物，重复尝试交付还可能生成重复卡片。
+- 宿主交付能力不能被子进程直接调用，所以本脚本不“代发”，而是打印唯一一份
+  结构化交付清单；执行者使用当前环境支持且用户可访问的方式完成实际交付。
 
 三条硬性质：
 1. 幂等：一次调用覆盖全部产物，只发一张卡片列表 → 结构上不可能出现重复卡。
@@ -158,27 +157,24 @@ def create_lark_sheet(binary: str, title: str, source: Path) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# 上屏指令生成
+# 交付清单生成
 # ---------------------------------------------------------------------------
 
-def surface_instruction(outputs: list[dict[str, Any]]) -> list[str]:
-    """生成唯一一条 NotifyHuman 调用。
+def delivery_instruction(outputs: list[dict[str, Any]]) -> list[str]:
+    """生成唯一一份工具无关的结构化交付清单。
 
-    宿主事实（按 trace 实证，勿凭印象改）：
-    - NotifyHuman 接受 attachments 数组，一次可挂多个产物 → 一次调用即可，不要分次。
-    - attachment_source 接受本地绝对路径，会直接生成可点开的卡片；
-      **不需要**先跑 FileBatchUpload，也不要为了"保险"重复调用——重复即重复卡片。
-    - attachment_source 接受 http(s) 链接（飞书文档/表格 URL）。
+    清单同时支持本地绝对路径和 http(s) 在线载体 URL。每项产物只列一次，
+    由执行者根据当前环境选择实际交付方式，不得猜测或改写 locator。
     """
-    attachments = [
-        {"attachment_name": item["name"], "attachment_source": item["locator"]}
+    items = [
+        {"name": item["name"], "locator": item["locator"]}
         for item in outputs
         if item.get("locator")
     ]
-    payload = json.dumps(attachments, ensure_ascii=False)
+    payload = json.dumps(items, ensure_ascii=False)
     return [
-        "上屏（只调用这一次，不要重复、不要额外 FileBatchUpload）：",
-        f"  NotifyHuman  attachments={payload}",
+        "交付清单（请一次性提供全部产物，不要重复交付）：",
+        f"DELIVERY_ITEMS={payload}",
     ]
 
 
@@ -314,7 +310,7 @@ def deliver(qa_run: Path, disclose: list[str]) -> int:
         return 1
 
     print()
-    for line in surface_instruction(outputs):
+    for line in delivery_instruction(outputs):
         print(line)
 
     notes = problems + list(disclose)
@@ -327,12 +323,12 @@ def deliver(qa_run: Path, disclose: list[str]) -> int:
     print()
     print("QA_FLOW_STATE=DELIVERED" if not notes else "QA_FLOW_STATE=DELIVERED_WITH_DISCLOSURE")
     print("DELIVERY_LOCK=CLOSED")
-    print("NEXT=按上面那一条 NotifyHuman 调用上屏，然后写最终回复")
+    print("NEXT=使用当前环境支持且用户可访问的方式，一次性提供上述全部产物，然后写最终回复")
     return 0
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="QA 交付适配层：校验产物、创建在线载体、生成唯一上屏调用")
+    parser = argparse.ArgumentParser(description="QA 交付适配层：校验产物、创建在线载体、生成唯一结构化交付清单")
     parser.add_argument("qa_run", type=Path)
     parser.add_argument("--disclose", action="append", default=[], help="需要在最终回复中披露的未解决项")
     args = parser.parse_args()

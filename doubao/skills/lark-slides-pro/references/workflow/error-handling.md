@@ -9,12 +9,12 @@
 
 遇到 `invalid param`、某一页创建失败、页面空白或布局错乱时，按顺序排查；其中第 2–4 项也是创建或替换前应先自检的点：
 
-1. **保住现场**：记录 `xml_presentation_id`，不要假设失败就代表什么都没创建；先用 `slides +xml-get --output <CWD 内相对路径>` 回读到本地文件（`--output` 必填），确认已有哪些页写入、问题出在哪一页。
+1. **保住现场**：记录 `xml_presentation_id`，不要假设失败就代表什么都没创建；先用 `slides +xml-get --output <CWD 内相对路径>` 回读到本地文件（必须使用 `--output`），确认已有哪些页写入、问题出在哪一页。
 2. **未转义字符**（`invalid param` / 3350001 最常见原因）：正文和标题里的 `&`、`<`、`>` 不能裸写（`Q&A -> Q&amp;A`，`<` / `>` 写成 `&lt;` / `&gt;`）；属性值里的裸 `&` 也要写成 `&amp;`（如 URL `a=1&b=2 -> a=1&amp;b=2`）。
 3. **结构与引号**：标签闭合、属性引号安全（XML 属性、shell 引号、JSON 包装之间不互相打断）；`<slide>` 下只放 `<style>`、`<data>`、`<note>`，文本都在 `<content>` 内。
-4. **图片路径**：`<img src="@...">` 只在 `+create --slides` 的支持链路里自动上传并替换；直接调 `xml_presentation.slide.create` 必须先用 `+media-upload` 拿到 `file_token`。
-5. **疑似 shell 截断**：用 `--slides '[...]'` 且内容缺失或异常时，切换两步创建——先 `slides +create`，再用 `xml_presentation.slide.create` 逐页添加。
-6. **修复并复验**：局部问题用 `+replace-slide` 块级修正；整页结构要重做时用 `slide.delete` 旧页 + `slide.create` 新页。修复后重新回读或截图确认。
+4. **图片路径**：`<img src="@...">` 占位符由 `+create` 和 `+add-slide` 处理，会自动上传并替换成 `file_token`。
+5. **疑似 shell 截断**：用 `--slides '[...]'` 且内容缺失或异常时，切换两步创建——先 `slides +create`，再用 `slides +add-slide --slide @<文件>` 逐页添加。
+6. **修复并复验**：局部问题用 `+replace-slide` 块级修正；整页结构要重做时用 `+delete-slide` 删旧页 + `+add-slide` 建新页。修复后重新回读或截图确认。
 
 ## 常见错误码
 
@@ -37,4 +37,5 @@
 
 - 图片上传、`@path` 占位符、`file_token`：见 [lark-slides-media-upload.md](../cli/lark-slides-media-upload.md) 和 [lark-slides-create.md](../cli/lark-slides-create.md)。
 - 块级替换、`block_id`、3350001 replace 细节：见 [lark-slides-replace-slide.md](../cli/lark-slides-replace-slide.md)。
-- 原生 `slide.create` 包装、`before_slide_id` 和 jq 模板：见 [lark-slides-xml-presentation-slide-create.md](../cli/lark-slides-xml-presentation-slide-create.md)。
+- 追加/插入单页、`--before-slide-id` 和 `--slide @file`：见 [lark-slides-add-slide.md](../cli/lark-slides-add-slide.md)。
+- 删除单页：见 [lark-slides-delete-slide.md](../cli/lark-slides-delete-slide.md)。

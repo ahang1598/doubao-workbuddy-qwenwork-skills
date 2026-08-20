@@ -7,8 +7,8 @@ at runtime and applies an LD_PRELOAD shim if needed.
 import os
 import socket
 import subprocess
-import tempfile
 from pathlib import Path
+from typing import List
 
 
 def get_soffice_env() -> dict:
@@ -22,12 +22,14 @@ def get_soffice_env() -> dict:
     return env
 
 
-def run_soffice(args: list[str], **kwargs) -> subprocess.CompletedProcess:
+def run_soffice(args: List[str], **kwargs) -> subprocess.CompletedProcess:
     env = get_soffice_env()
     return subprocess.run(["soffice"] + args, env=env, **kwargs)
 
 
-_SHIM_SO = Path(tempfile.gettempdir()) / "lo_socket_shim.so"
+_SHIM_DIR = Path.home() / ".cache" / "sheet-skill-spec" / "lo-shim"
+_SHIM_SO = _SHIM_DIR / "lo_socket_shim.so"
+_SHIM_SRC = _SHIM_DIR / "lo_socket_shim.c"
 
 
 def _needs_shim() -> bool:
@@ -39,18 +41,43 @@ def _needs_shim() -> bool:
         return True
 
 
+def _owned_private_file(path: Path) -> bool:
+    try:
+        stat = path.stat()
+        return stat.st_uid == os.getuid() and (stat.st_mode & 0o077) == 0
+    except OSError:
+        return False
+
+
 def _ensure_shim() -> Path:
+    _SHIM_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(_SHIM_DIR, 0o700)
     if _SHIM_SO.exists():
+        if not _owned_private_file(_SHIM_SO):
+            raise RuntimeError(f"Refusing untrusted LibreOffice shim: {_SHIM_SO}")
         return _SHIM_SO
 
-    src = Path(tempfile.gettempdir()) / "lo_socket_shim.c"
-    src.write_text(_SHIM_SOURCE)
-    subprocess.run(
-        ["gcc", "-shared", "-fPIC", "-o", str(_SHIM_SO), str(src), "-ldl"],
-        check=True,
-        capture_output=True,
-    )
-    src.unlink()
+    # 源文件与临时 .so 都用 PID 唯一名：并发首次初始化时各进程独立编译，
+    # finally 只清理自己的文件——共享固定名源文件会被先完成的进程删掉，
+    # 让其它进程的 gcc 读不到源（12 并发实测 11 个 CalledProcessError）。
+    # 最终 os.replace 原子发布，多进程各自编译同一份源，结果一致。
+    tmp_src = _SHIM_DIR / f"lo_socket_shim.{os.getpid()}.tmp.c"
+    tmp_src.write_text(_SHIM_SOURCE)
+    os.chmod(tmp_src, 0o600)
+    tmp_so = _SHIM_DIR / f"lo_socket_shim.{os.getpid()}.tmp.so"
+    try:
+        subprocess.run(
+            ["gcc", "-shared", "-fPIC", "-o", str(tmp_so), str(tmp_src), "-ldl"],
+            check=True,
+            capture_output=True,
+        )
+        os.chmod(tmp_so, 0o700)
+        os.replace(tmp_so, _SHIM_SO)
+        if not _owned_private_file(_SHIM_SO):
+            raise RuntimeError(f"LibreOffice shim permissions are unsafe: {_SHIM_SO}")
+    finally:
+        tmp_src.unlink(missing_ok=True)
+        tmp_so.unlink(missing_ok=True)
     return _SHIM_SO
 
 

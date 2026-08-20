@@ -1,0 +1,57 @@
+# verifier-hub -- Python dependencies
+#
+# NOTE (Windows): this file is intentionally ASCII-only. pip on a zh-CN
+# Windows host decodes requirements files with the ANSI code page (GBK),
+# so a single non-ASCII comment makes `pip install -r requirements.txt`
+# die with UnicodeDecodeError before it reads any dependency line.
+# Keep every comment below plain ASCII.
+#
+# superskill installs this hub with `wget <url>.zip && unzip -d <dir>`.
+# It does NOT run `pip install`. These packages must already be present in the
+# rollout VM image, or be installed by hand into a private directory:
+#
+#   pip install --target "$HOME/.verifier-pylibs" <pkg>
+#   export PYTHONPATH="$HOME/.verifier-pylibs:$PYTHONPATH"
+#
+# On Windows / PowerShell use instead:
+#
+#   python -m pip install --user -r requirements.txt
+#
+# A plain `pip install` fails in the sandbox: the venv site-packages is not
+# writable and the user site lacks sys.path precedence.
+#
+# A missing package never crashes the CLI -- the affected subcommand returns
+# {"ok": false, "error": {"code": "DEP_MISSING", ...}} with that command in msg.
+
+# xlsx family
+openpyxl>=3.0
+
+# docx family
+python-docx>=0.8
+
+# pptx family
+python-pptx>=0.6
+
+# questionnaire mode (run_verifiers.py spec files)
+PyYAML>=5.0
+
+# pdf family + `file extract-text` on PDFs + `docx page-count --method soffice`.
+# Any ONE of the three is enough; they are tried in this order and the chosen
+# one is reported in the result's `backend` field. pymupdf is listed first
+# because it is the reader already present in the rollout VM image.
+pymupdf>=1.22
+# pdfplumber>=0.10   # optional alternative
+# pypdf>=3.0         # optional alternative
+
+# -- System dependencies (optional) ----------------------------------------
+#
+# LibreOffice -- only for `docx page-count --method soffice`, which gives an
+# exact page count. Without it `--method auto` falls back to an XML heuristic
+# and records the reason in `soffice_fallback_reason`.
+#   Debian/Ubuntu:  apt install libreoffice
+#   macOS:          brew install --cask libreoffice
+#   Windows:        winget install --id TheDocumentFoundation.LibreOffice -e
+# The binary is looked up on PATH and at the standard install locations for the
+# platform; `--soffice <path>` overrides both. On Windows soffice.com is tried
+# before soffice.exe, because the .exe is a launcher that returns before the
+# conversion has been written to disk.

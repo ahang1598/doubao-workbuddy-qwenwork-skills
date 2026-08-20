@@ -149,7 +149,7 @@ python3 scripts/quality/run_quality_gates.py \
 
 ## 在线表格交付、可选报告与打包
 
-G0至G5通过后，只将与 `artifact-manifest.json` 哈希一致的最终 `.xlsx` 通过 `lark-cli sheets +workbook-import` 导入为飞书在线表格。取得有效且可访问的链接后，调用 `NotifyHuman` 向用户提供链接，并将源文件哈希、导入、链接可访问性和通知状态记录到 `lark-sheet-delivery.json`。任一环节失败时将交付状态保持为 `INCOMPLETE`。
+G0至G5通过后，只将与 `artifact-manifest.json` 哈希一致的最终 `.xlsx` 通过 `lark-cli sheets +workbook-import` 导入为飞书在线表格。取得有效且可访问的链接后，调用当前环境可用的交付工具向用户实际提供链接，并将源文件哈希、导入状态、链接可访问性、实际工具名称、交付状态和交付验证结果记录到 `lark-sheet-delivery.json`。不得因当前环境缺少某个特定名称的工具就跳过交付；应使用环境实际提供的等效交付能力。不存在任何可用交付工具、工具调用失败或用户无法获得有效链接时，将交付状态保持为 `INCOMPLETE`。
 
 LBO和可比公司默认只生成一个用户可见的表格产物。只有用户明确要求独立Markdown或飞书报告时才运行渲染器；本处的飞书报告不包括强制交付的飞书在线表格。报告必须写入`CALCULATED_SHA256:<确定性计算文件SHA-256>`并通过：
 

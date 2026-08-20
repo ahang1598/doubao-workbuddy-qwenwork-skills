@@ -23,7 +23,7 @@
 - `formula-semantic-audit.json`：错引、文本引用、循环依赖、单位和公式合约审计。
 - `model-audit.json`：统一模型审计结果，绑定最终工作簿哈希；不得以工作簿内手填PASS替代。
 - `quality/`：按`references/model-and-artifact-controls.md`生成G0至G5、统一质量报告、结论发布决定和哈希清单。
-- `lark-sheet-delivery.json`：记录实际导入的最终工作簿相对路径与SHA-256、`lark-cli sheets +workbook-import` 执行状态、飞书在线表格链接、可访问性验证和 `NotifyHuman` 通知状态；导入或通知未完成时保留 `INCOMPLETE` 及原始错误。
+- `lark-sheet-delivery.json`：记录实际导入的最终工作簿相对路径与SHA-256、`lark-cli sheets +workbook-import` 执行状态、飞书在线表格链接、可访问性验证、实际使用的交付工具名称、交付状态和交付验证结果；导入或交付未完成时保留 `INCOMPLETE` 及原始错误。
 
 ## 主要交付物
 
@@ -64,6 +64,6 @@ python3 scripts/quality/run_quality_gates.py \
 - `cell-lineage.json` 引用的工作表和单元格真实存在；
 - 所有用户可见工作表完成视觉检查。
 - G0至G5全部为`PASS`，`release-decision.json.conclusion_allowed=true`；否则不得在报告或最终回答中显示被压制的估值和回报结论。
-- `lark-sheet-delivery.json` 中的源工作簿哈希与 `artifact-manifest.json` 一致，导入、链接可访问性和 `NotifyHuman` 通知均为 `PASS`；否则整体交付状态为 `INCOMPLETE`，不得声称在线表格已交付。
+- `lark-sheet-delivery.json` 中的源工作簿哈希与 `artifact-manifest.json` 一致，导入状态、链接可访问性、交付工具执行状态和交付验证均为 `PASS`；否则整体交付状态为 `INCOMPLETE`，不得声称在线表格已交付。
 
 <!-- END OF FILE: delivery-package-contract.md -->

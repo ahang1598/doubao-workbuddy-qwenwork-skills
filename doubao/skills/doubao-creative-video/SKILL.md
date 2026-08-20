@@ -259,10 +259,10 @@ Corporate/企业宣传商务视频必须包含完整旁白台词，并放入确�
 
 - 严格使用用户确认过的参数，除非目标视频工具要求格式归一化。
 - 需要作为旁白/台词生成的文本内容，是否以正确的格式书写。
-- 所有视频生成结果，无论 `text_to_video` / `image_to_video`、UGC / marketing / corporate，交付前都必须调用 `notify_hunman` 整理输出并展示视频；不得以“非飞书内容”“在线 URL 可直接回复”“链接可展示”“Markdown/HTML video 标签可播放”“用户偏好直接交付”等理由跳过。
-- `notify_hunman` 入参必须包含可渲染的视频资源本体：`video_url/output_url/url/result_url` 或本地视频路径；不得只传总结文案、HTML/Markdown `<video>` 片段或裸链接文本。
-- 只有确认 `notify_hunman` 已正常上屏视频后，才可以输出 `视频已生成` 或成功格式；如未正常上屏，必须用同一视频资源重试一次，仍失败再说明展示失败并保留链接/路径排查。
-- 成功格式不得把 `video_url`、HTML/Markdown `<video>` 或裸链接作为主要交付；链接/路径仅可在 `notify_hunman` 上屏失败后的排查说明中保留。
+- 所有视频生成结果，无论 `text_to_video` / `image_to_video`、UGC / marketing / corporate，交付前都必须调用交付工具整理输出并展示视频；不得以“非飞书内容”“在线 URL 可直接回复”“链接可展示”“Markdown/HTML video 标签可播放”“用户偏好直接交付”等理由跳过。
+- 交付入参必须包含可渲染的视频资源本体：`video_url/output_url/url/result_url` 或本地视频路径；不得只传总结文案、HTML/Markdown `<video>` 片段或裸链接文本。
+- 只有确认交付工具已正常上屏视频后，才可以输出 `视频已生成` 或成功格式；如未正常上屏，必须用同一视频资源重试一次，仍失败再说明展示失败并保留链接/路径排查。
+- 成功格式不得把 `video_url`、HTML/Markdown `<video>` 或裸链接作为主要交付；链接/路径仅可在交付工具上屏失败后的排查说明中保留。
 - 如果视频工具有时长、比例、素材、口播或其他限制，先解释需要调整的地方，并让用户重新确认调整后的参数。
 - 无论参数是否齐全，生成前都必须完成一次澄清确认；UGC/marketing/corporate ref 不得以“默认直接出片”为由跳过确认。
 - 默认不要生成分镜图片、关键帧图或首帧图；用户未明确要求图片时，UGC/marketing/corporate 只输出分镜表并继续视频流程。

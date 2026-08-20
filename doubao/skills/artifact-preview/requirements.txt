@@ -1,0 +1,91 @@
+# artifact-preview hub -- Python + system dependencies
+#
+# NOTE (Windows): this file is intentionally ASCII-only. pip on a zh-CN
+# Windows host decodes requirements files with the ANSI code page (GBK),
+# so a single non-ASCII comment makes `pip install -r requirements.txt`
+# die with UnicodeDecodeError before it reads any dependency line.
+# Keep every comment below plain ASCII.
+#
+# HOW INSTALLATION WORKS
+#
+#   superskill installs hubs via `wget <url>.zip && unzip -d <dir>`. It does
+#   NOT run `pip install`. These packages must already be present in the
+#   rollout VM image, or be installed by hand into a private directory:
+#
+#     pip install --target "$HOME/.artifact-preview-pylibs" <pkg>
+#     export PYTHONPATH="$HOME/.artifact-preview-pylibs:$PYTHONPATH"
+#
+#   A plain `pip install` fails in the sandbox: the venv site-packages is not
+#   writable and the user site lacks sys.path precedence.
+#
+#   A missing Python package or system binary never crashes the CLI. The
+#   affected format degrades to text, `ok` stays true, and the reason lands in
+#   `result.warnings`.
+#
+# -- Quick install (development / new VM) ------------------------------
+#   pip install -r requirements.txt
+#   apt-get install -y libreoffice chromium-browser  # PPTX + HTML screenshots
+#
+# -- Quick install (Windows / PowerShell) ------------------------------
+#   python -m pip install --user -r requirements.txt
+#   winget install --id TheDocumentFoundation.LibreOffice -e   # PPTX screenshots
+#   HTML screenshots reuse the Edge or Chrome that Windows already has; the
+#   binary is auto-detected under %ProgramFiles% / %LOCALAPPDATA%.
+#
+# -- Versions verified in the rollout VM (Ubuntu 22.04, Python 3.10) ---
+#   PyMuPDF 1.28   Pillow 11   python-pptx 1.0   python-docx 1.2
+#   openpyxl 3.1   LibreOffice 7.4 headless      Chromium 135
+# ----------------------------------------------------------------------
+
+# -- Python packages ---------------------------------------------------
+
+# Core image manipulation: collage, thumbnail, letterbox.
+# Used by: lib/render/collage.py, lib/collage.py, lib/image.py
+Pillow>=9.0,<13.0
+
+# PDF text extraction + per-page PNG screenshots (no external binary needed).
+# Used by: lib/render/pdf.py  (import fitz)
+PyMuPDF>=1.22,<2.0
+
+# PPTX text extraction (slide titles + body text).
+# Screenshots require LibreOffice -- see system deps below.
+# Used by: lib/render/pptx.py  (from pptx import Presentation)
+python-pptx>=0.6.21,<2.0
+
+# DOCX text + table dump.
+# Used by: lib/render/docx.py  (import docx)
+python-docx>=0.8.11,<2.0
+
+# XLSX cell dump (all sheets).
+# Used by: lib/render/xlsx.py  (import openpyxl)
+openpyxl>=3.1,<4.0
+
+# HTML screenshots are now driven via the system Chromium-family browser CLI
+# (no Playwright dependency). The sandbox image cannot install Playwright's
+# bundled Chromium because `python -m playwright install` is blocked by the
+# sandbox security profile. See `lib/render/html.py` for the verified flag
+# set used to drive headless Chromium directly.
+
+# -- System / binary dependencies --------------------------------------
+#
+# LibreOffice (headless)       -> PPTX -> PDF -> PNG rendering pipeline
+#   Ubuntu/Debian:  apt-get install -y libreoffice
+#   macOS:          brew install --cask libreoffice
+#   Windows:        winget install --id TheDocumentFoundation.LibreOffice -e
+#   Binary checked: PATH lookup plus the standard install locations for the
+#                   platform; --soffice / $ARTIFACT_PREVIEW_SOFFICE override.
+#                   On Windows soffice.com is tried before soffice.exe, because
+#                   the .exe is a launcher that returns before the conversion
+#                   has been written to disk.
+#   Without it:     PPTX collages are skipped; text extraction still works.
+#
+# Chromium-family browser      -> HTML page screenshots
+#   Ubuntu/Debian:  apt-get install -y chromium-browser
+#   Windows:        the preinstalled Microsoft Edge is enough; Chrome and
+#                   Chromium are detected too.
+#   Binaries checked on PATH: chromium-browser, chromium, google-chrome,
+#                   chrome, msedge; plus the per-platform install locations.
+#   Without any of them: HTML render returns text-only (no screenshots).
+#
+# Python >= 3.10 required (dataclasses / type-union syntax from 3.10+ is used
+#   in lib/render/types.py)

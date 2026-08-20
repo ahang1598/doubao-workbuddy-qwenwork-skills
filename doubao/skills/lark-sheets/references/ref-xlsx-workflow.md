@@ -1,4 +1,4 @@
-> ⚠️ **先读完再动手**：本文档共 456 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+> ⚠️ **强制前置条件**：本文档共 531 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
 
 # Excel 文件技术工作流（xlsx workflow）
 
@@ -203,23 +203,27 @@ def safe_set_formula(ws, cell, formula):
     ws[cell] = formula
 ```
 
-**双重校验闭环**：写入时套用上文 `safe_set_formula` 函数（需自行纳入脚本，事前） → 保存后跑独立脚本 `formula_verify.py`（事后）。两道关卡基本能消灭所有公式错误。
+**公式检查建议**：写入时套用上文 `safe_set_formula` 函数（需自行纳入脚本，事前）；保存后可跑独立脚本 `formula_verify.py`（事后）定位真实公式错误。发现 `#REF!` / `#NAME?` 等确定性错误先修；静态值嫌疑、样式类 WARN 不进入反复修复循环。
 
-## 公式重算（必做步骤）
+## 公式重算（推荐诊断）
 
-openpyxl 写入的公式只是字符串，单元格中没有计算值。**凡包含公式的交付文件必须执行重算**：
+openpyxl 写入的公式只是字符串，单元格中没有计算值。包含公式的交付文件建议执行一次重算，确认没有真实错误值：
 
 > ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ```bash
 python scripts/formula_verify.py output.xlsx
-# 或指定超时（默认30秒）
+# 或指定超时（默认 30 秒；保留旧 positional timeout）
 python scripts/formula_verify.py output.xlsx 60
+# 历史 / 外部静态数据 sheet 显式降 WARN（逗号分隔、sheet 名精确匹配）
+python scripts/formula_verify.py output.xlsx 60 --static-source-sheets "Comment History Snapshot,External Snapshot"
 ```
 
 依赖：需要安装 LibreOffice（`soffice` 命令可用）。脚本首次运行时会自动配置宏。
 
 **LibreOffice 不可用时的降级行为**：若 `soffice` 未安装，脚本自动降级——跳过重算，仅扫描文件中已有的公式错误值，返回 `status: "skipped_no_libreoffice"` 并附带警告。此时公式单元格不含计算值，交付文件需告知用户在 Excel 中手动刷新（`Ctrl+Alt+F9`）。
+
+需要图表时用 openpyxl 建**原生 chart 对象**并绑定单元格区域作数据源（不要贴图片或只在回复里描述）；交付前重新打开文件确认 `ws._charts` 非空——回复里声称有图而产物里没有，等于该项未交付。
 
 ### formula_verify.py 输出解读
 
@@ -233,11 +237,29 @@ python scripts/formula_verify.py output.xlsx 60
       "count": 2,
       "locations": ["Sheet1!B5", "Sheet1!C10"]
     }
+  },
+  "hardcode": {               // 硬编码嫌疑扫描
+    "status": "clean",        // 或 "suspected"
+    "total_suspects": 0,
+    "high_confidence": 0,
+    "details": []             // 命中的 sheet / 行列表头 / 静态数值个数
+  },
+  "invariants": {             // 公式不变量抽查（诊断信号，不阻断交付）
+    "status": "ok",           // 或 "warn"（存在 mismatched）/ "skipped"
+    "supported": 1,
+    "mismatched": 0,
+    "categories": {}          // arithmetic / tieout / sensitivity 三类明细
   }
 }
 ```
 
-`status` 为 `errors_found` 时，按 `error_summary` 中的位置逐一修复，再重新执行重算直到 `status` 为 `success`。
+`status` 为 `errors_found` 时，按 `error_summary` 中的位置逐一修复；修不完的错误在交付说明中列出。
+
+`hardcode.status` 为 `suspected` 时，脚本会在 stderr 列出「表头表明是推导值、但整行/整列没有一个公式」的区域。这是诊断信号：能用公式表达且成本可控时改写；若属于历史快照 / 外部静态数据 / 公式表达困难，交付说明写明静态值原因即可。`--static-source-sheets "<sheet1>,<sheet2>"` 可用于点名这些来源，使命令输出更干净。
+
+`invariants` 是三类公式不变量的抽查结果：`arithmetic`（行内四则 / 区间聚合公式重算对比）、`tieout`（资产负债表勾稽：资产总计 = 负债合计 + 权益合计，只认带「总计 / total」字样的标签行）、`sensitivity`（敏感性分析表数值单调性）。`mismatched > 0` 时对照 `categories.*.samples` 里的 sheet / 预期值 / 实际值核对公式区间；确认无误或属于刻意设计的，在交付说明记录即可，不进入反复修复循环。
+
+**大表扫描上限**：硬编码扫描的表头 / 列画像取每 sheet 前 2000 行；「整表是否存在公式」单独做全表短路扫描，上限 50 万格——超限且仍未见公式时不会升级为 high（避免大表误判「整表无公式」），此时 hardcode 结论按抽样解读，公式存在性以你对表的实际了解为准。
 
 ## 公式验证检查清单
 
@@ -247,6 +269,7 @@ python scripts/formula_verify.py output.xlsx 60
 - [ ] **列号映射**：Excel 列从 1 开始，DataFrame 从 0 开始；列 64 = BL，不是 BK
 - [ ] **行号偏移**：Excel 行从 1 开始；DataFrame 第 5 行 = Excel 第 6 行（含表头）
 - [ ] **NaN 处理**：除法前用 `pd.notna()` 检查分母
+- [ ] **空输入判空**：公式引用的输入列可能为空时先判空返回空（空格参与算术按 0 计，产出看似正常的错值且无错误码）
 - [ ] **跨 sheet 引用**：格式为 `Sheet1!A1`
 - [ ] **避免循环引用**：检查公式依赖链
 
@@ -291,6 +314,8 @@ def excel_time_to_readable(excel_time: Union[float, int, str], date1904: bool = 
     return (target_date + time_obj).strftime("%Y-%m-%d %H:%M:%S")
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 **时间段拆分**：遇到 `09:00-18:00` 格式时，先拆分为开始/结束两列再计算时长：
 
 ```python
@@ -319,8 +344,6 @@ ws.delete_cols(3, 1)   # 从第3列开始删除1列
 ws.column_dimensions['C'].hidden = True  # 隐藏C列
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ### pandas 行列操作
 
 ```python
@@ -345,29 +368,83 @@ df = df.reset_index(drop=True)
 
 ```python
 import pandas as pd
+from copy import copy
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 
 def process_excel(input_file, output_file):
     df = pd.read_excel(input_file)
     df = df.dropna(thresh=len(df.columns) * 0.5)
     cols_to_drop = [col for col in df.columns if "Unnamed" in str(col)]
     df = df.drop(columns=cols_to_drop)
-    if "收入" in df.columns and "成本" in df.columns:
-        df["利润"] = df["收入"] - df["成本"]
-        df["利润率"] = (df["利润"] / df["收入"]).round(4)
     df.to_excel(output_file, index=False)
 
     wb = load_workbook(output_file)
-    ws = wb.active
-    if "利润率" in df.columns:
-        rate_col = df.columns.get_loc("利润率") + 1
+    ws = wb.worksheets[0]
+    # 派生列（利润 / 利润率）写公式而非静态值——源数据变更后联动重算（公式优先原则）
+    if "收入" in df.columns and "成本" in df.columns:
+        rev_i = df.columns.get_loc("收入") + 1
+        cost_i = df.columns.get_loc("成本") + 1
+        rev, cost = get_column_letter(rev_i), get_column_letter(cost_i)
+        # 复用已有的同名派生列位置，不存在才在末尾追加，避免生成重复列
+        headers = [c.value for c in ws[1]]
+        def col_of(name):
+            if name not in headers:
+                headers.append(name)
+                ws.cell(row=1, column=len(headers), value=name)
+            return headers.index(name) + 1
+        # ⚠️ df.to_excel 重写整个文件，原表样式不会带过来（output 里全是默认样式），
+        # 样式模板必须回到**原文件**取；且清洗已删行删列，行列号会位移，
+        # 只能按表头名定位原成本列、取表头格 + 首个数据格当模板统一刷——原表有奇偶条纹等
+        # 逐行差异样式时会被拉平（删行后无可靠行映射），这是 pandas 往返路径的固有限制。
+        # （需要保留原表全部样式的编辑任务，应改用 openpyxl 原地修改，不走 pandas 往返。）
+        def clone_style(dst, src):
+            dst.font, dst.fill = copy(src.font), copy(src.fill)
+            dst.border, dst.alignment = copy(src.border), copy(src.alignment)
+            dst.number_format = src.number_format
+        p_col, r_col = col_of("利润"), col_of("利润率")
+        p, r = get_column_letter(p_col), get_column_letter(r_col)
+        # 样式来源与 pd.read_excel 的数据来源必须是同一张 sheet：
+        # read_excel 默认读第一个 sheet，这里同样取 worksheets[0]，不能用 .active
+        # （active 是文件保存时的活动 sheet，可能不是第一张）
+        src_ws = load_workbook(input_file).worksheets[0]
+        src_hdr = [c.value for c in src_ws[1]]
+        # 样式模板按「已有列优先」选：原表已有同名派生列 → 恢复它自己的样式 / 列宽 /
+        # 数字格式（最小改动，不许拿成本列样式覆盖人家专门设计过的列）；
+        # 原表没有该列（真正新建）→ 才用相邻成本列当模板
+        def tpl_col(name):
+            if name in src_hdr:
+                return src_hdr.index(name) + 1
+            if "成本" in src_hdr:
+                return src_hdr.index("成本") + 1
+            return None
+        dat_tpls = {}
+        for name, cidx, letter in (("利润", p_col, p), ("利润率", r_col, r)):
+            si = tpl_col(name)
+            if si is None:
+                continue
+            dat_tpls[cidx] = src_ws.cell(row=2, column=si)
+            clone_style(ws.cell(row=1, column=cidx), src_ws.cell(row=1, column=si))
+            w = src_ws.column_dimensions[get_column_letter(si)].width
+            if w:
+                ws.column_dimensions[letter].width = w
         for row in range(2, ws.max_row + 1):
-            ws.cell(row=row, column=rate_col).number_format = "0.00%"
+            pc, rc = ws.cell(row=row, column=p_col), ws.cell(row=row, column=r_col)
+            if p_col in dat_tpls:
+                clone_style(pc, dat_tpls[p_col])
+            if r_col in dat_tpls:
+                clone_style(rc, dat_tpls[r_col])
+            pc.value = f"={rev}{row}-{cost}{row}"
+            rc.value = f'=IF({rev}{row}=0,"",{p}{row}/{rev}{row})'
+            if "利润率" not in src_hdr:
+                rc.number_format = "0.00%"  # 新建列才设默认百分比；已有列保留原格式
 
     # 新建区域的列宽、换行与行高按 ref-excel-visual-standards.md 中
     # auto_fit_columns() 的统一规则处理，不在技术工作流中重复定义视觉参数。
     wb.save(output_file)
 ```
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ### 范围清空与重置
 
@@ -438,8 +515,6 @@ def get_cell_validation(filepath: str, sheet_name: str, cell_address: str) -> di
     return {"cell": cell_address, "has_validation": False}
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 常见数据验证类型：
 
 | `type` | 含义 | `formula1` / `formula2` 示例 |
@@ -453,4 +528,4 @@ def get_cell_validation(filepath: str, sheet_name: str, cell_address: str) -> di
 
 写入时若违反规则会出现 `Excel 已发现"file.xlsx"中的部分内容存在问题`。修改前先调用 `get_cell_validation` 拿到 `allowed_values`，再决定是直接使用合法值还是先 `ws.data_validations.dataValidation.remove(dv)` 移除规则。
 
-===== 全文完（共 456 行）=====
+===== 全文完（共 531 行）=====

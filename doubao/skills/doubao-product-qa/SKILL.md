@@ -146,18 +146,19 @@ python3 <skill>/scripts/qa_flow.py complete qa-results/<feature>/qa-run.json --s
 
 正文里不得出现 `qa-run.json`、renderer、revision、profile、脚本名或过程旁白——读者要的是业务结论。
 
-**调用上屏工具之前必须运行这一条**，它是唯一交付口：
+**向用户交付产物之前必须运行这一条**，它是唯一交付准备入口：
 
 ```bash
 python3 <skill>/scripts/qa_deliver.py qa-results/<feature>/qa-run.json
 ```
 
-这一条命令会：校验产物存在/非空/章节齐全 → 需要在线载体时自己调 lark-cli 创建并真实回读 → 打印**唯一一条上屏调用**。
+这一条命令会：校验产物存在/非空/章节齐全 → 需要在线载体时创建并真实回读 → 打印**唯一一份结构化交付清单**。
 
-按它打印的那条 `NotifyHuman` 调用上屏，参数已经拼好，直接照抄：
+按脚本打印的 `DELIVERY_ITEMS` 清单完成交付：
 
-- **只调用一次**，一次挂全部产物。重复调用 = 重复卡片。
-- **不要**额外跑 `FileBatchUpload`；本地绝对路径 `NotifyHuman` 直接就能生成可点开的卡片。
+- 使用当前环境支持且用户可访问的方式，一次性提供清单中的全部产物。
+- 每项产物只交付一次，不得重复生成附件、卡片或链接。
+- 必须使用清单中的真实 `locator`，不得自行猜测、改写或编造路径。
 - 输出里的「本轮披露」段必须原样写进最终回复。
 
 只有 `DELIVERY_LOCK=CLOSED` 才算交付完成。`DELIVER_BLOCKED` 只有一个原因——盘上没有产物可发，生成文件后重跑同一条命令。

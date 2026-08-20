@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+"""verifier — deterministic artifact verifier CLI for agentic judges.
+
+Usage:
+    verifier <family> <subcmd> [args...]
+    verifier --help                 # list families
+    verifier <family> --help        # list subcommands in <family>
+    verifier <family> <subcmd> --help
+
+Output: a single JSON object on stdout.  Schema:
+
+    {"ok": true,  "tool": "<family>.<sub>", "result": {...}, "evidence": {...}}
+    {"ok": false, "tool": "<family>.<sub>", "error": {"code": "...", "msg": "..."}}
+
+This holds for every invocation that names a subcommand, including bad
+arguments and unknown families — those return an error envelope with code
+BAD_ARGS.  ``--help`` is the one exception: it prints usage text, as expected
+of a CLI.
+
+Per-family modules live in lib/<family>.py and are loaded **lazily** —
+``verifier xlsx ...`` does NOT pay the cost of importing a PDF reader, etc.
+"""
+from __future__ import annotations
+
+import argparse
+import importlib
+import os
+import sys
+from typing import Any
+
+# The contract is "one JSON object on stdout", written with
+# ensure_ascii=False so the original Unicode survives. On Windows a piped
+# stdout defaults to the legacy ANSI code page (cp936 on a zh-CN host), and
+# any character outside it — a rare hanzi, an emoji — makes the write raise
+# UnicodeEncodeError and kills the tool. Force UTF-8 before anything can
+# write; on POSIX the streams are already UTF-8 so this is a no-op.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        if _stream.encoding and _stream.encoding.lower().replace("-", "") != "utf8":
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
+# Make ``lib/*`` importable when invoked via the absolute hub path
+# (/home/user/.../workspace/skills/verifier-hub/bin/verifier).
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_HUB_ROOT = os.path.dirname(_HERE)
+if _HUB_ROOT not in sys.path:
+    sys.path.insert(0, _HUB_ROOT)
+
+from lib import _common  # noqa: E402
+
+
+# Family name → module name under ``lib/``.  Order is preserved for ``--help`` output.
+FAMILIES: dict[str, str] = {
+    "file":    "lib.file_io",
+    "xlsx":    "lib.xlsx",
+    "docx":    "lib.docx",
+    "pdf":     "lib.pdf",
+    "pptx":    "lib.pptx",
+    "text":    "lib.text",
+    "archive": "lib.archive",
+    "rubric":  "lib.rubric",
+}
+
+FAMILY_HELP: dict[str, str] = {
+    "file":    "Generic file ops: list/validate/extract-text/count.",
+    "xlsx":    "Excel workbook inspection: sheets, cells, formulas, styles, column format.",
+    "docx":    "Word document inspection: outline, sections, tables, revisions, page-count, images.",
+    "pdf":     "PDF inspection: pages (with orientation), text dump, CJK font check, count-images.",
+    "pptx":    "PowerPoint slide-deck inspection: list-slides, slide-text, find-slide, count-images.",
+    "text":    "Text/markdown checks: must-contain, count-matches, lang-ratio, list-items, date-extract.",
+    "archive": "ZIP archive inspection: zip-list, zip-check-entries.",
+    "rubric":  "High-level DSL primitives that wrap the lower families for one-shot rubric checks.",
+}
+
+
+def _make_parser() -> argparse.ArgumentParser:
+    """Build the top-level parser only — family parsers are loaded on demand."""
+    parser = argparse.ArgumentParser(
+        prog="verifier",
+        description=(
+            "Deterministic artifact verifier CLI for agentic judges. "
+            "Each subcommand prints one JSON object to stdout."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Family help:\n"
+            + "\n".join(f"  {name:<8s}  {FAMILY_HELP[name]}" for name in FAMILIES)
+            + "\n\nExamples:\n"
+            "  verifier file artifact-list /home/user/.../workspace/artifacts/\n"
+            "  verifier xlsx get-value foo.xlsx --sheet Summary --cell C5\n"
+            "  verifier docx outline contract.docx\n"
+            "  verifier docx page-count report.docx --max-pages 1\n"
+            "  verifier pdf pages plot.pdf --expect-orientation landscape\n"
+            "  verifier pptx find-slide deck.pptx --regex '^Executive Summary'\n"
+            "  verifier archive zip-check-entries bundle.zip --expected master.wav guitars.wav\n"
+            "  verifier text must-contain --file report.md --terms 竞争 毛利率 --mode all\n"
+            "  verifier rubric check-section-exists contract.docx --heading-regex '区位优势' --min-chars 80\n"
+        ),
+    )
+    sub = parser.add_subparsers(dest="family", metavar="<family>")
+    sub.required = False  # ``verifier --help`` should not error out
+
+    for fam in FAMILIES:
+        # Lightweight stub so ``verifier --help`` lists families without triggering imports.
+        sub.add_parser(fam, add_help=False, help=FAMILY_HELP[fam])
+
+    return parser
+
+
+def _load_family(fam: str) -> Any:
+    """Lazy-import lib/<fam>.py.  Returns the module object."""
+    mod_name = FAMILIES[fam]
+    return importlib.import_module(mod_name)
+
+
+def _build_family_parser(fam: str) -> argparse.ArgumentParser:
+    """Return a *real* argparse parser for one family, with all its subcommands."""
+    mod = _load_family(fam)
+    parser = _common.JsonArgumentParser(
+        prog=f"verifier {fam}",
+        description=FAMILY_HELP[fam],
+    )
+    # parser_class propagates the JSON error behaviour to every subcommand
+    # parser the family registers.
+    sub = parser.add_subparsers(dest="subcmd", metavar="<subcmd>",
+                                parser_class=_common.JsonArgumentParser)
+    sub.required = True
+    if not hasattr(mod, "register"):
+        raise _common.VerifierError(
+            _common.ErrCode.INTERNAL,
+            f"family module {mod.__name__} missing required register(subparsers) function",
+        )
+    mod.register(sub)
+    return parser
+
+
+def _dispatch(argv: list[str]) -> int:
+    if not argv or argv[0] in ("-h", "--help"):
+        _make_parser().print_help()
+        return 0
+
+    fam = argv[0]
+    if fam not in FAMILIES:
+        return _common.emit(_common.err(
+            "verifier", _common.ErrCode.BAD_ARGS,
+            f"unknown family {fam!r}; valid families: {list(FAMILIES)}"))
+
+    family_argv = argv[1:]
+    try:
+        parser = _build_family_parser(fam)
+    except _common.VerifierError as e:
+        return _common.emit(_common.err(f"{fam}.<unloaded>", e.code, e.msg))
+    except Exception as e:
+        return _common.emit(
+            _common.err(f"{fam}.<unloaded>", _common.ErrCode.INTERNAL,
+                        f"failed to load family {fam!r}: {type(e).__name__}: {e}")
+        )
+
+    if not family_argv or family_argv[0] in ("-h", "--help"):
+        parser.print_help()
+        return 0
+
+    # A bad / missing argument must still produce one JSON object on stdout,
+    # so BAD_ARGS is reported with the subcommand name when we know it.
+    try:
+        args = parser.parse_args(family_argv)
+    except _common.VerifierError as e:
+        guess = family_argv[0] if not family_argv[0].startswith("-") else "<unparsed>"
+        return _common.emit(_common.err(f"{fam}.{guess}", e.code, e.msg))
+
+    sub = args.subcmd
+    tool_name = f"{fam}.{sub}"
+    fn_name = "cmd_" + sub.replace("-", "_")
+    mod = _load_family(fam)
+    fn = getattr(mod, fn_name, None)
+    if fn is None:
+        return _common.emit(
+            _common.err(tool_name, _common.ErrCode.INTERNAL,
+                        f"subcommand handler {fn_name!r} not found in {mod.__name__}")
+        )
+
+    try:
+        result = fn(args)
+        if isinstance(result, dict) and "ok" in result and "tool" in result:
+            # Subcommand already returned a fully-formed envelope.
+            return _common.emit(result)
+        # Otherwise, treat the dict as the ``result`` payload.
+        if isinstance(result, dict):
+            evidence = result.pop("_evidence", None)
+            return _common.emit(_common.ok(tool_name, result, evidence=evidence))
+        return _common.emit(_common.ok(tool_name, result))
+    except _common.VerifierError as e:
+        return _common.emit(_common.err(tool_name, e.code, e.msg))
+    except Exception as e:
+        return _common.emit(
+            _common.err(tool_name, _common.ErrCode.INTERNAL,
+                        f"{type(e).__name__}: {e}")
+        )
+
+
+def main() -> None:
+    sys.exit(_dispatch(sys.argv[1:]))
+
+
+if __name__ == "__main__":
+    main()

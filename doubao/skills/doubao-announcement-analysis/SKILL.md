@@ -111,4 +111,4 @@ python3 scripts/finalize_report.py <源稿路径> <facts.json路径> --display-o
 15. **文末溯源清单与免责声明不可省略**：单条深度解读源稿写完时必须已经包含 `references/data-grading-and-citation.md` 第六节格式的"数据来源"骨架和第七节的免责声明固定文字（**不要**再附「未获取清单」），`scripts/finalize_report.py` 只把编号列表填进这个骨架，不生成免责声明文字，模型不能等脚本"自动补全"；批量摘要至少手工附简版免责声明。
 16. **执行必须走阶段化流程，不得跳步**：单条深度解读必须先创建 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录和恢复入口文件，再按 `references/delivery-pipeline.md` 第二节的阶段顺序（检索 → 写事实表 → 写源稿 → finalize（门禁1+门禁2）→ 创建飞书文档 → 对话输出）执行；不允许分析想清楚后直接跳到写最终回复、绕开事实表和门禁。
 17. **最终回复固定三段式，不暴露内部实现细节**：固定风险提示语 → display markdown 正文全文 → 飞书文档链接，顺序不可变、不可省略；不得在回复中展示中间文件列表、"已生成哪些文件"之类的交付清单或生成过程播报，也不得在回复正文里出现 `facts.json`、`finalize_report`、`playbook`、`Tier 1/2/3`、工作目录名等内部文件/脚本/分类名，除非用户明确要求查看这些内容——`scripts/lint_report.py` 会机械拦截常见的内部术语泄露，但不能完全替代自查。完整契约见 `references/delivery-pipeline.md`。
-18. **飞书文档创建失败不能连带整体失败**：优先用当前环境内置的飞书文档创建能力，没有则降级用 `lark-cli` + `lark-doc` 技能，通过 `NotifyHuman` 交付 URL；创建失败时如实告知原因，固定风险提示语和 display markdown 正文依然要完整交付。
+18. **飞书文档创建失败不能连带整体失败**：优先用当前环境内置的飞书文档创建能力，没有则降级用 `lark-cli` + `lark-doc` 技能；文档创建成功后，应以当前运行环境支持且用户可访问的方式提供在线 URL；创建失败时如实告知原因，固定风险提示语和 display markdown 正文依然要完整交付。

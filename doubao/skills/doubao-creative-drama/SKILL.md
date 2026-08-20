@@ -165,7 +165,6 @@ planner -> scriptwriter -> storyboard -> assets -> frame -> prompt
 - 应使用 I2I / I2V 的任务未因工具调用失败而擅自降级为 T2I / T2V；如失败，建议已重试对应工具或明确说明失败原因。
 - **【强制】单批生成视频数量不超过 2 个**。
 - 资产和视频的输出遵循"即时输出"原则，生成一个返回一个，不建议囤积。
-- **【强制】所有视频生成结果**，无论 `text_to_video` / `image_to_video`、UGC / marketing / corporate，交付前**必须调用 `notify_human` 整理输出并展示视频**；不得以"非飞书内容""在线 URL 可直接回复""链接可展示""Markdown/HTML video 标签可播放""用户偏好直接交付"等理由跳过。
-- **【强制】`notify_human` 入参必须包含可渲染的视频资源本体**：`video_url/output_url/url/result_url` 或本地视频路径；不得只传总结文案、HTML/Markdown `<video>` 片段或裸链接文本。
-- **【强制】只有确认 `notify_human` 已正常上屏视频后，才可以输出 `视频已生成` 或成功格式**；如未正常上屏，必须用同一视频资源重试一次，仍失败再说明展示失败并保留链接/路径排查。
-- 若宿主环境的实际工具名是 `notify_hunman`（历史拼写），按宿主侧实际工具名调用，本文件文档统一采用 `notify_human` 作为说明。
+- **【强制】所有视频生成结果**，无论 `text_to_video` / `image_to_video`、UGC / marketing / corporate，交付前**必须调用交付工具整理输出并展示视频**；不得以"非飞书内容""在线 URL 可直接回复""链接可展示""Markdown/HTML video 标签可播放""用户偏好直接交付"等理由跳过。
+- **【强制】交付入参必须包含可渲染的视频资源本体**：`video_url/output_url/url/result_url` 或本地视频路径；不得只传总结文案、HTML/Markdown `<video>` 片段或裸链接文本。
+- **【强制】只有确认交付工具已正常上屏视频后，才可以输出 `视频已生成` 或成功格式**；如未正常上屏，必须用同一视频资源重试一次，仍失败再说明展示失败并保留链接/路径排查。

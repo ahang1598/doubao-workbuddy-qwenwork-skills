@@ -1,4 +1,4 @@
-> ⚠️ **先读完再动手**：本文档共 305 行，单次 Read 读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。本技能所有文档（含 references）末行均有此标记。
+> ⚠️ **强制前置条件**：本文档共 305 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Range Operations
 
@@ -56,7 +56,7 @@
 5. **新增合并时数据保护**：合并前确认目标区域只有左上角有数据，其余单元格为空，否则合并会导致非左上角的数据丢失。
 6. **批量取消合并一次调用即可**：当一个范围（整列 `A:A`、整行 `3:3`、矩形 `A1:D100`）内存在多个合并区域，直接调一次 `+cells-unmerge` 传入这个大范围，会一次性取消该范围内所有合并区域；**不要**为每个合并区域单独调用 unmerge，也不要用 `+batch-update` 拆成多次 unmerge。
 
-**⚠️ 多区域合并不要逐个调用**：对**多个**不同区域执行 `+cells-merge` 时，写成一份 `+styles-put --styles` 的 `cell_merges` 一次交付（合并与样式 / 行高列宽 / 冻结同属一份声明式规格，见 `lark-sheets-styles-put`）；只有当合并夹在**跨类型、有顺序依赖**的操作链里（如插列 → 合并 → 写表头）才用 `+batch-update`（fail-fast、不回滚，入参格式见 `lark-sheets-batch-update`）。行高列宽同理**不需要** `+batch-update`：多行 / 多列不同尺寸直接用 `+rows-resize --heights` / `+cols-resize --widths` 的 map 形态，一次调用完成。
+**⚠️ 多区域合并不要逐个调用**：对**多个**不同区域执行 `+cells-merge` 时，写成一份 `+styles-put --styles` 的 `cell_merges` 一次交付（合并与样式 / 行高列宽 / 冻结同属一份声明式规格，见 `lark-sheets-styles-put`）；只有当合并夹在**跨类型、有顺序依赖**的操作链里（如插列 → 合并 → 写表头）才用 `+batch-update`（fail-fast，失败处置与入参格式见 `lark-sheets-batch-update`）。行高列宽同理**不需要** `+batch-update`：多行 / 多列不同尺寸直接用 `+rows-resize --heights` / `+cols-resize --widths` 的 map 形态，一次调用完成。
 
 **唯一例外**：`+cells-unmerge` 原生支持传一个大 range 一次性取消其中所有合并区域，应直接单次调用，**不要**拆进 `+batch-update`。
 

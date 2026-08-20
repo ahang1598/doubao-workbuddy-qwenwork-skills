@@ -331,7 +331,7 @@
 **注意事项**
 
 - 图片元素是 `<img>`，不是 `<image>`；`img` 使用 `topLeftX` / `topLeftY`，不是 `x` / `y`。
-- 本地图片统一走 `+media-upload`：先 `slides +media-upload --file ./pic.png --presentation $PID` 拿 `file_token`，再把 token 写进 `xml_presentation.slide create` 的 `<img src>`；新建和给已有幻灯片加页都一样。
+- 本地图片统一走 `+media-upload`：先 `slides +media-upload --file ./pic.png --presentation $PID` 拿 `file_token`，再把 token 写进 `+add-slide` 提交那一页的 `<img src>`；新建和给已有幻灯片加页都一样。
 - **圆形头像必须 `width == height`**：`<crop type="ellipse">` 是在 `width`×`height` 外接矩形里画椭圆，宽高不等得到的是椭圆不是正圆。
 - `<crop>` 的 `presetHandlers` 与 `<shape>` 同义（px 半径，超出夹紧）；圆形头像加描边直接在 `<img>` 里写 `<border>`。
 - **人像图别用默认的居中裁剪**：`width:height` 和原图比例对不上时，居中裁剪会从上下（或左右）各裁掉一半多余部分，人物头顶最容易被切掉。竖构图人像放进横框时写 `<crop anchor="top"/>` 保住头部；最稳的做法仍是让 `width:height` 对齐原图比例，压根不触发裁剪。

@@ -88,7 +88,7 @@ lark-cli slides +replace-pages \
 
 ## 使用建议
 
-1. 大幅改写前先 `slides +xml-get --output <CWD 内相对路径>` 保存当前 XML（`--output` 必填），并记录要替换页面的 `slide_id`。
+1. 大幅改写前先 `slides +xml-get --output <CWD 内相对路径>` 保存当前 XML（必须使用 `--output`），并记录要替换页面的 `slide_id`。
 2. 生成只含 `slide_id` 的 `pages.json` 后先跑 `--dry-run` 或 `--validate-only`。
 3. 默认不要开 `--continue-on-error`，除非能接受部分页面已替换。
 4. 替换后再回读全文 XML 核对页序、视觉和文本没有破损（需要时可选截图检查）。
