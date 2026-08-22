@@ -1,54 +1,93 @@
 ---
 name: lark-doc
-description: "Lark Doc 文档统一入口：处理在线 Docx/Wiki 与本地 Word 文档任务。在线文档 URL/token、读取、创建、编辑、总结等任务路由到 online-doc；本地 .docx/.doc 文件、明确要求 Word 交付或格式保留处理的任务路由到 office-word。不处理 Sheet、Slide、Excel、PowerPoint、Base 表内操作。"
+description: "文档全场景处理：本地 Office Word（.docx/.doc）与在线文档（飞书、doubao.com 的 `/docs`、`/docx`、`/wiki` 链接）的阅读、创建和编辑。当任务涉及本地 Word 或在线 Doc/Wiki 时使用。不处理 PDF、Sheet、Slide、Excel、PowerPoint、Base 表内操作。"
 ---
 
-# Lark Doc 路由
+# 文档任务总入口
 
-本 Skill 是 `lark-doc` 的顶层入口，只负责判断资源类型和用户目标，然后读取对应内部模块执行。不要在顶层直接调用 `lark-cli`、处理 Word 文件、编辑 XML，或一次性读取所有 references。
-
-## 路由规则
-
-| 用户信号 | 读取模块 | 说明 |
-|---|---|---|
-| 飞书在线文档 URL、`/docx/`、`/wiki/`、docx/wiki token | `online-doc/lark-doc-skill.md` | URL/token 是可定位操作对象，优先级最高 |
-| 读取、创建、编辑、总结在线文档；处理在线文档图片、附件、封面、画板引用 | `online-doc/lark-doc-skill.md` | 由在线文档模块决定是否继续切到外部 Sheet/Base/Drive/Whiteboard 能力 |
-| 用户上传 Word 文件，或给出可访问的本地 `.docx` / `.doc` 路径 | `office-word/office-word-skill.md` | 真实本地 Word 文件对象优先于泛泛的在线文档描述 |
-| 明确要求交付 Word 文件，或要求 Word 解析、生成、格式保留编辑 | `office-word/office-word-skill.md` | 关注本地强格式交付物 |
+先识别用户要操作的对象和最终交付载体，再读取对应模块。顶层只负责在线/本地路由和跨载体编排。**禁止**读取本文件后直接处理文档，更不要预读两条路径的全部资料，**务必**根据要求读取相应的内容之后再进行文档处理。
 
 ## 路由顺序
 
-1. 如果用户明确要操作 Sheet/电子表格/Excel、Slide/幻灯片/PowerPoint、Base/多维表格内部数据，不要留在本 Skill，切到对应能力。
-2. 如果用户给出飞书在线文档 URL、`/docx/`、`/wiki/` 或 docx/wiki token，必须读取 `online-doc/lark-doc-skill.md`。不要因为同一句里出现“Word”“本地文件”等描述就改走 `office-word`。
-3. 如果用户上传 Word 文件、给出可访问的本地 `.docx` / `.doc` 路径、明确要求交付 Word 文件，或任务核心是 Word 格式保留与生成，读取 `office-word/office-word-skill.md`。
-4. 如果用户没有给出资源，只是要求“写一份文档”“创建文档”“整理成文档”，默认按在线文档处理，读取 `online-doc/lark-doc-skill.md`。
-5. 在线文档导出或整理成本地 Word：先用 `online-doc` 读取源内容，再用 `office-word` 生成目标文件。
-6. 本地 Word 转在线文档：先用 `office-word` 提取或整理本地内容，再用 `online-doc` 创建目标文档。
-7. 在线文档中引用、描述或嵌入了 Word 文件时，仍先用 `online-doc` 读取在线文档，确认真实资源和用户要改的对象。
-8. 在线与离线信号冲突时，以可定位对象为准：在线 URL/token 优先于自然语言文件类型描述；真实本地 Word 路径或上传的 Word 文件优先于泛泛提到“在线文档”。仍无法判断时，只问一个澄清问题。
+严格按以下顺序判断：
 
-## 示例
+1. 确定操作对象。
+2. 确定最终交付载体。
+3. 根据源对象与交付载体选择一个模块，或按顺序串联两个模块。
 
-- `帮我把 ./proposal.docx 改成正式公文格式` → 读取 `office-word/office-word-skill.md`，因为可操作对象是本地 Word 文件。
-- `写一份会议纪要并生成 Word` → 读取 `office-word/office-word-skill.md`，因为用户明确要求 Word 交付。
-- `整理一份项目复盘文档` → 读取 `online-doc/lark-doc-skill.md`，因为没有本地文件和强格式交付要求，默认在线文档。
+### 1. 确定操作对象
 
-## 执行规则
+- 可定位的飞书或豆包 Doc/Wiki URL 属于在线文档。
+- 本地路径、上传的 `.docx`、`.doc`，以及用户明确点名的 Word 模板属于本地文件。
+- 同时存在在线文档和本地文件时，两者都可以是源对象；不要强行二选一。
 
-- 读取内部模块后，完全遵循该模块的前置条件、参考文件读取规则、脚本使用规则和安全规则。
-- 解析相对路径时，以当前已读取的 `SKILL*.md` 所在目录为基准。
-- 只读取当前任务需要的模块、子技能和参考文件；不要预读无关 references。
-- 进入 `office-word` 后，由 `office-word` 按其内部规则继续分发到具体子技能。
-- 进入 `online-doc` 后，如文档内容包含 Sheet、Base、评论、权限、画板等边界能力，按 `online-doc` 的规则切到对应能力；顶层不自行处理这些对象。
-- 在线文档默认优先做精准局部更新，不轻易全文覆盖。
-- 本地 Word 文档默认优先保留用户原始格式，除非用户明确要求重排版或重建文档。
+### 2. 确定最终交付载体
 
-## 范围
+用户明确要求在线文档或本地 Word 时，以用户要求为准。用户指定的模板用法、编辑对象和输出格式高于体裁默认值。
 
-本 Skill 只处理 Doc 文档方向的顶层路由：在线 Docx/Wiki、本地 Word，以及依赖强格式交付的文档场景。
+只有用户未指定交付载体时，才使用下表推导默认载体并读取对应模块：
+
+| 体裁 | 默认交付载体 | 必读模块 | 典型场景 |
+|---|---|---|---|
+| 学术教研与基础教育教学 | Word | [`office-word/office-word-skill.md`](office-word/office-word-skill.md) | 学习计划、备考路径、复习讲义、试卷与讲评、教案、公开课、教学设计、课程材料、论文写作与指导 |
+| 政务公文与党建 | Word | [`office-word/office-word-skill.md`](office-word/office-word-skill.md) | 请示、报告、通知、函、纪要、党建材料、党课、整改、政务调研 |
+| 商务与项目合同 | Word | [`office-word/office-word-skill.md`](office-word/office-word-skill.md) | 采购、服务、合作、买卖、租赁、承揽、补充协议、履约约定 |
+| 专业领域文书 | Word | [`office-word/office-word-skill.md`](office-word/office-word-skill.md) | 专利、司法文书及其他法定法律文书、招投标、报价、简历 |
+| 媒体与传播 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 微信公众号推文、小红书图文笔记、邮件、短视频口播稿、短视频分镜脚本、平台标题、封面文案和标题库 |
+| 创意写作 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 网文、小说、故事、同人、剧本、互动叙事、故事大纲 |
+| 品牌营销 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 营销策划、品牌认知、产品上市、内容种草、活动战役、增长转化、客户经营、渠道动销与整合营销 |
+| 生活应用与攻略 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 旅行计划、旅行路书、城市或景点攻略、健身计划、减脂计划、生活指南 |
+| 分析报告与决策支持 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 基于表格、数据、调研材料、多个附件或可核验来源形成详细分析、研究、比较、诊断或建议 |
+| 企业与职场文书 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 制度、工作总结、正式汇报、项目提案、岗位说明、培训材料、会议纪要（非政务党建类） |
+| 无法判断 | 在线文档 | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | 没有明确载体要求，且无法匹配以上体裁 |
+
+> ⚠️ 体裁只用于推导默认交付载体，不改变源对象。用户提供本地材料但默认交付在线文档时，仍先通过 Office Word 理解源材料，再进入 Online Doc；用户提供在线材料但默认交付 Word 时，仍先读取在线源，再进入 Office Word。
+
+### 3. 选择并串联模块
+
+| 源对象与目标                             | 必读模块 | 执行顺序 |
+|------------------------------------|---|---|
+| 创建、读取、总结或编辑在线 Doc/Wiki             | [`online-doc/lark-doc-skill.md`](online-doc/lark-doc-skill.md) | Online Doc               |
+| 读取本地 Word，或编辑本地 Word 的内容、结构与格式 | [`office-word/office-word-skill.md`](office-word/office-word-skill.md) | Office Word              |
+| 使用 Word 模板，或明确交付 Word      | [`office-word/office-word-skill.md`](office-word/office-word-skill.md) | Office Word              |
+| 飞书文档转本地 Word                   | 两个模块 | Online Doc → Office Word |
+| 本地 Word 转飞书文档                  | 两个模块 | Office Word → Online Doc |
+
+> ⚠️ **禁止**仅凭一句话里出现"Word"、"在线"等字样判断路由。以真实操作对象和明确交付要求为准。例如，用户提供飞书 URL 并要求导出 Word 时，必须先读在线源，再生成本地文件；用户提供 Word 作为资料并要求写飞书文档时，Word 是内容来源，不是最终载体。
+
+## 附件
+
+用户提供的一切材料都是本次任务的第一手事实来源，如果之前没有读取附件，那你必须解析附件内容获得更多相关信息。
+- **Word 类型文件**：通过 [`office-word/office-word-skill.md`](office-word/office-word-skill.md) 读取内容
+- **非Word 类型文件**：优先通过查找相关 skills 或者工具来获取完整的信息，若没有相关 skill 、工具可以使用代码能力来获取相关信息。
+
+## 冲突与歧义
+
+- 同时出现在线 URL 和本地文件时，不强行二选一；根据源对象与交付载体决定是否串联两个模块。
+- 在线 URL 优先确定“在线源对象”，真实本地路径或上传文件优先确定“本地源对象”；两者都可能同时成立。
+- 用户明确指定的输出格式、模板用法和编辑对象高于默认规则。
+- 只有在无法确定操作对象或交付载体、且不同选择会实质改变结果时，才问一个澄清问题。
+
+## 执行边界
+
+- 读取当前任务需要的模块后，遵循该模块的工作流、前置条件、参考文件和校验要求。
+- 相对路径始终以包含该链接的 Markdown 文件所在目录为基准。
+- 只加载当前分支需要的 reference；不要为了“熟悉 Skill”一次性读取全部文件。
+- 顶层不复制下层的命令、领域写作规则、模板规则或校验步骤；这些规则由命中的模块负责。
+- 若下层模块要求继续路由到 Sheet、Base、Drive、Whiteboard、评论或权限能力，按下层规则执行。
+- 用户可见内容默认使用用户当前语言；文件名、命令、接口字段和内部路由名可保留原文。
+
+## 快速判例
+
+- “把这个飞书 Wiki 改成项目复盘” → Online Doc。
+- “把 `proposal.docx` 改成正式公文格式” → Office Word。
+- “根据 `meeting-notes.docx` 写一份在线汇报” → 按需读取 Office Word，最后进入 Online Doc。
+- “把这个飞书文档导出成 Word” → Online Doc，再进入 Office Word。
+- “整理一份项目复盘文档” → 默认 Online Doc。
 
 ## 不在本 Skill 范围
 
-- Sheet/电子表格/Excel 的数据读取、编辑、公式、图表、批量写入 → [`lark-sheets`](../lark-sheets/SKILL.md)
-- Base/多维表格的表内数据、字段、视图、统计、自动化 → [`lark-base`](../lark-base/SKILL.md)
-- Slide/幻灯片/PowerPoint 的创建、编辑、页面内容操作 → [`lark-slides`](../lark-slides/SKILL.md)
+- Sheet、Excel 表内数据操作 → 表格处理能力
+- Base、多维表格内部操作 → 多维表格处理能力
+- Slide、PowerPoint 页面操作 → 幻灯片处理能力
+> ⚠️ 如果用户要求需要交付的产物除了文档还包括其他内容，请完成本流程后继续完成对应产物的工作

@@ -36,6 +36,7 @@ lark-cli docs +create --doc-format markdown --content "@./draft.md"
 - **`document.new_blocks`**：本次操作新增的 block 列表（如画板）。`block_id` 可用于 `docs +update` 的 `--block-id` 做精确编辑；`block_token` 是资源块（如画板）的 token，可交给 `lark-whiteboard` 等 skill 继续操作。
 - **`warnings`**：服务端返回的警告列表；`ok=true` 时也要检查，按提示确认是否存在降级或未完全处理的内容。
 - **`tips`**：服务端返回的后续处理建议；为空表示没有额外建议，非空本身不表示创建失败。
+- **`permission_grant`**：文档创建成功后，CLI 会尝试为当前 CLI 用户授予新文档的 `full_access`；`status` 为 `granted` 表示授权成功，`skipped` 表示没有可用的当前用户 `open_id`（由 agent 平台补齐用户凭证后再授权），`failed` 表示文档已创建但授权失败。`perm` 固定为 `full_access`，失败或跳过时按 `message` / `hint` 处理。**自动授权不等于 owner 转移；用户要求转移 owner 时必须单独确认。**
 
 ## 参数
 

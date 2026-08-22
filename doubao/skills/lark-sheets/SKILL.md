@@ -1,7 +1,7 @@
 ---
 name: lark-sheets
 version: 3.1.5
-description: "表格全场景处理：本地 Excel/CSV 与在线表格（飞书、doubao.com 的 /sheets/ 链接）的创建、读写、分析、计算、建模、语义处理、可视化与美化。**只要用户输入包含表格类附件——上传 .xlsx/.xls/.csv 文件，或给出 feishu/doubao.com 的 /sheets/ 链接或 token——必须加载本技能。** 此外，用户口述数据要整理成表，或要求计算/统计/建模/预测/透视/可视化/美化/公式等任何表格操作时，也加载本技能。一切与 Excel/表格相关的任务都必须加载。本技能不负责获取外部信息，如需补充数据须先通过其他途径获得。"
+description: "表格全场景（本地 Excel/CSV 与飞书/doubao 在线表格）：创建、读写、分析、计算、建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。"
 metadata:
   requires:
     bins: ["lark-cli", "python3"]

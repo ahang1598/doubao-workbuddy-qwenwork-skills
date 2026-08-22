@@ -19,7 +19,7 @@ lark-cli wiki +node-create \
   --parent-node-token <PARENT_NODE_TOKEN> \
   --title "迭代记录"
 
-# 显式指定创建到个人知识库（仅 user 身份；bot 不支持 `--space-id my_library`）
+# 显式指定创建到个人知识库
 lark-cli wiki +node-create \
   --space-id my_library \
   --title "学习笔记"
@@ -54,8 +54,16 @@ lark-cli wiki +node-create \
 - `obj_type`：节点关联对象类型
 - `node_type`：节点类型
 - `title`：节点标题
+- `permission_grant`（可选）：说明是否已自动为当前 CLI 用户授予可管理权限
 
 > [!IMPORTANT]
+> 创建成功后，CLI 自动授权：尝试为当前 CLI 用户授予该知识库节点的 `full_access`（可管理权限），结果里会额外返回 `permission_grant` 字段，明确说明授权结果：
+> - `status = granted`：当前 CLI 用户已获得该知识库节点的可管理权限
+> - `status = skipped`：本地没有可用的当前用户 `open_id`，因此不会自动授权
+> - `status = failed`：节点已创建成功，但自动授权用户失败；会带上失败原因，可稍后重试
+>
+> `permission_grant.perm = full_access` 表示该资源已授予“可管理权限”
+>
 > **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认。
 
 ## 参数
@@ -113,6 +121,7 @@ lark-cli wiki +node-create \
   - 仅传 `--parent-node-token`：会展示“查询父节点 -> 创建节点”两步调用
   - 同时需要 `my_library` 和父节点时：会展示三步调用链
 - **输出结果**：成功后会返回 `resolved_space_id`、`resolved_by`、`node_token`、`obj_token`、`obj_type`、`node_type`、`title` 等字段，便于后续继续操作
+- **结构限制**：返回 `131003` 表示触发了知识空间总节点数、目录深度或单个父节点直属子节点数等结构限制。这不是瞬时错误，禁止使用相同参数重试。根据上游错误信息选择更浅或其他父节点、重新组织现有节点，或清理/改用其他知识空间；不要在无法确认具体限制时盲目增加中间层级。
 
 ## 推荐场景
 

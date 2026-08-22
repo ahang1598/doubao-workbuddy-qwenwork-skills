@@ -89,15 +89,18 @@ Key limits:
 
 Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。有 Shortcut 的操作优先使用。
 
+> **Pro 私有路由**：仅当上下文出现固定标注 `合并转发消息 ID: <copied_id>，共 <message_count> 条` 时提取 `copied_id`。同一上下文可按出现顺序收集 1～10 个 ID，并按[私有命令说明](references/lark-im-shared-message-mget.md)调用 `im +shared-message-mget --message-ids ...`；普通数字或 `om_` Message ID 不触发。默认只读取消息快照；用户明确需要话题回复、reaction 或二进制资源时，分别增加 `--include-thread-replies`、`--include-reactions` 或 `--download-resources`，多个需求可组合启用。
+
 | Shortcut | 说明 |
 |----------|------|
-| [`+chat-create`](references/lark-im-chat-create.md) | Create a group chat or topic chat; user; --chat-mode group|topic; private/public; invites users/bots; optionally sets bot manager |
+| [`+chat-create`](references/lark-im-chat-create.md) | Create a group chat or topic chat; user; --chat-mode group|topic; private/public; invites users/bots |
 | [`+chat-list`](references/lark-im-chat-list.md) | List chats the current user is a member of; defaults to groups; pass --types=p2p,group to include p2p single chats; user; supports sorting, auto-pagination, --exclude-muted |
 | [`+chat-members-list`](references/lark-im-chat-members-list.md) | List members of a chat; returns separate users[] / bots[] buckets; callable as user; --member-types filters which kinds to return; --page-all pagination; surfaces truncations[] when the server caps a bucket |
 | [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range, --order asc/desc sorting, auto-pagination |
 | [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, auto-pagination, and --exclude-muted (user identity only) |
 | [`+chat-update`](references/lark-im-chat-update.md) | Update group chat name or description; user; updates a chat's name or description |
 | [`+messages-mget`](references/lark-im-messages-mget.md) | Batch get messages by IDs; user; fetches up to 50 om_ message IDs, formats sender names, expands thread replies |
+| [`+shared-message-mget`](references/lark-im-shared-message-mget.md) | Pro 私有；读取 1～10 个 Copied Message 快照；内部按输入顺序逐 ID 发起 singleton 请求，顶层以字符串 `copied_id` 严格映射；可选 thread / reaction / resource download best-effort 增强 |
 | [`+messages-reply`](references/lark-im-messages-reply.md) | Reply to a message (supports thread replies); user; supports text/markdown/post/media replies, reply-in-thread, idempotency key |
 | [`+messages-resources-download`](references/lark-im-messages-resources-download.md) | Download an image or file attached to a message; user |
 | [`+messages-search`](references/lark-im-messages-search.md) | Search messages across chats (supports keyword, sender, time range filters) with user identity; filters by chat/sender/attachment/time, supports auto-pagination via `--page-all` / `--page-limit`, enriches results via batched mget and chats batch_query |
@@ -178,7 +181,11 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
 ### images
 
-  - `create` — 上传图片。
+  - `create` — 上传图片。Identity: supports `user` only; user identity requires `im:resource` scope on the UAT.
+
+### files
+
+  - `create` — 上传文件。Identity: supports `user` only; user identity requires `im:resource` scope on the UAT.
 
 ### pins
 
@@ -226,6 +233,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
 | `reactions.list` | `im:message.reactions:read` |
 | `threads.forward` | `im:message` |
 | `images.create` | `im:resource` |
+| `files.create` | `im:resource` |
 | `pins.create` | `im:message.pins:write_only` |
 | `pins.delete` | `im:message.pins:write_only` |
 | `pins.list` | `im:message.pins:read` |
