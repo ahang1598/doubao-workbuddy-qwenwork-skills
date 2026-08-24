@@ -1,0 +1,4 @@
+interface:
+  display_name: "PDF"
+  short_description: "Create, inspect, render, and transform PDF documents"
+  default_prompt: "Use $pdf to create or work with a PDF document."

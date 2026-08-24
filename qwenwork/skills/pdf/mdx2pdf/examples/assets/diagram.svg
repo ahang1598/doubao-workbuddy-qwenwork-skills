@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
+  <rect width="480" height="300" fill="#f4f3f0"/>
+  <rect x="12" y="12" width="456" height="276" rx="8" fill="none" stroke="#3d3d39" stroke-width="2"/>
+  <circle cx="120" cy="150" r="60" fill="#f27348" opacity="0.85"/>
+  <circle cx="240" cy="150" r="60" fill="#7a4f9c" opacity="0.7"/>
+  <circle cx="360" cy="150" r="60" fill="#3a7a44" opacity="0.7"/>
+  <text x="240" y="40" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="#3d3d39" text-anchor="middle">Test Diagram</text>
+  <text x="240" y="270" font-family="JetBrains Mono, monospace" font-size="11" fill="#56534e" text-anchor="middle">480 × 300 SVG · MuleRun palette</text>
+</svg>

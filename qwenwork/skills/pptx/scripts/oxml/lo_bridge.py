@@ -39,11 +39,21 @@ def launch_soffice(args: Iterable[str], **kwargs) -> subprocess.CompletedProcess
     args = list(args)
     with contextlib.ExitStack() as stack:
         if not any(str(a).startswith("-env:UserInstallation") for a in args):
-            profile = stack.enter_context(
-                tempfile.TemporaryDirectory(prefix="lo_profile_", ignore_cleanup_errors=True)
-            )
+            profile = stack.enter_context(_temporary_profile())
             args = [f"-env:UserInstallation={Path(profile).as_uri()}"] + args
         return subprocess.run(["soffice"] + args, env=soffice_env(), **kwargs)
+
+
+def _temporary_profile():
+    """Create a LibreOffice profile on Python 3.9 and newer runtimes."""
+
+    try:
+        return tempfile.TemporaryDirectory(
+            prefix="lo_profile_", ignore_cleanup_errors=True
+        )
+    except TypeError:
+        # Python 3.9 does not expose ignore_cleanup_errors yet.
+        return tempfile.TemporaryDirectory(prefix="lo_profile_")
 
 
 

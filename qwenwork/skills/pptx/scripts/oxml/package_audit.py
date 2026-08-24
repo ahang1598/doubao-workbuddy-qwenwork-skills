@@ -13,6 +13,8 @@ Auto-repair fixes:
 - Missing xml:space="preserve" on w:t elements with whitespace
 """
 
+from __future__ import annotations
+
 import argparse
 import sys
 import tempfile
@@ -110,35 +112,35 @@ def _unpack_if_needed(path: Path):
 
 
 def _auditors_for(family, unpacked_dir, original_file, args):
-    match family:
-        case "docx":
-            auditors = [
-                WordAuditor(unpacked_dir, original_file, verbose=args.verbose),
-            ]
-            if args.author is not None:
-                auditors.append(
-                    RedlineAuditor(unpacked_dir, original_file, verbose=args.verbose)
-                )
-            elif original_file and _has_redlines(unpacked_dir):
-                print(
-                    "Note: this document has tracked changes; they were not "
-                    "checked against the original (pass --author to check)."
-                )
-            return auditors
-        case "pptx":
-            return [
-                DeckAuditor(unpacked_dir, original_file, verbose=args.verbose),
-            ]
-        case "xlsx":
-            exts = ", ".join(k for k, v in sorted(PACKAGE_FAMILIES.items()) if v == "xlsx")
-            print(
-                f"No XSD schema validation is performed for xlsx-family files ({exts}). "
-                "For formula-error checking, use scripts/recalc.py instead."
+    if family == "docx":
+        auditors = [
+            WordAuditor(unpacked_dir, original_file, verbose=args.verbose),
+        ]
+        if args.author is not None:
+            auditors.append(
+                RedlineAuditor(unpacked_dir, original_file, verbose=args.verbose)
             )
-            sys.exit(0)
-        case _:
-            print(f"Error: Validation not supported for file type {family}")
-            sys.exit(1)
+        elif original_file and _has_redlines(unpacked_dir):
+            print(
+                "Note: this document has tracked changes; they were not "
+                "checked against the original (pass --author to check)."
+            )
+        return auditors
+    if family == "pptx":
+        return [
+            DeckAuditor(unpacked_dir, original_file, verbose=args.verbose),
+        ]
+    if family == "xlsx":
+        exts = ", ".join(
+            key for key, value in sorted(PACKAGE_FAMILIES.items()) if value == "xlsx"
+        )
+        print(
+            f"No XSD schema validation is performed for xlsx-family files ({exts}). "
+            "For formula-error checking, use scripts/recalc.py instead."
+        )
+        sys.exit(0)
+    print(f"Error: Validation not supported for file type {family}")
+    sys.exit(1)
 
 
 def main():

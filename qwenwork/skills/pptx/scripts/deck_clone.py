@@ -24,6 +24,8 @@ A duplicated slide still holds the source's content: edit ppt/slides/slideN.xml
 (printed on success) to change it. To list layouts: ls <dir>/ppt/slideLayouts/
 """
 
+from __future__ import annotations
+
 import argparse
 import re
 import shutil

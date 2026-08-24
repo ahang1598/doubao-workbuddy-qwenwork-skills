@@ -6,6 +6,8 @@ command-line entry points -- lean on this module rather than duplicating the
 OPC part-name arithmetic.
 """
 
+from __future__ import annotations
+
 import os
 import posixpath
 import re

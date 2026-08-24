@@ -6,6 +6,7 @@ Hidden slides are shown with a placeholder pattern.
 
 Usage:
     python contact_sheet.py input.pptx [output_prefix] [--cols N]
+        [--tile-width PX] [--max-slides-per-grid N] [--slides LIST]
 
 Examples:
     python contact_sheet.py presentation.pptx
@@ -13,10 +14,21 @@ Examples:
 
     python contact_sheet.py template.pptx grid --cols 4
     # Creates: grid.jpg (or grid-1.jpg, grid-2.jpg for large decks)
+
+    python contact_sheet.py presentation.pptx qa-overview --cols 3 \
+        --tile-width 640 --max-slides-per-grid 6
+    # Creates two readable 3x2 overview grids for a 12-slide deck.
+
+    python contact_sheet.py presentation.pptx qa-detail --slides 1,5,7,8
+    # Creates a grid containing only the selected slide positions.
 """
 
+from __future__ import annotations
+
 import argparse
+import json
 import posixpath
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -27,6 +39,8 @@ import defusedxml.minidom
 from defusedxml import ElementTree
 from PIL import Image, ImageDraw, ImageFont
 
+from _render_slides import render_pages_with_fallback
+from _execution_route import BackendUnavailable
 from oxml.kit import REL_SLIDE, resolve_part
 from oxml.lo_bridge import launch_soffice
 
@@ -34,11 +48,14 @@ from oxml.lo_bridge import launch_soffice
 TILE_WIDTH = 300
 RENDER_DPI = 100
 MAX_COLS = 6
+MIN_TILE_WIDTH = 160
+MAX_TILE_WIDTH = 1200
 DEFAULT_COLS = 3
 JPEG_QUALITY = 95
 PADDING = 20
 BORDER_WIDTH = 2
 FONT_SIZE_RATIO = 0.10
+MAX_LABEL_FONT_SIZE = 36
 LABEL_PADDING_RATIO = 0.4
 
 
@@ -59,12 +76,47 @@ def main():
         default=DEFAULT_COLS,
         help=f"Number of columns (default: {DEFAULT_COLS}, max: {MAX_COLS})",
     )
+    parser.add_argument(
+        "--tile-width",
+        type=int,
+        default=TILE_WIDTH,
+        help=(
+            f"Thumbnail width in pixels (default: {TILE_WIDTH}, "
+            f"range: {MIN_TILE_WIDTH}-{MAX_TILE_WIDTH})"
+        ),
+    )
+    parser.add_argument(
+        "--max-slides-per-grid",
+        type=int,
+        default=None,
+        help=(
+            "Maximum slides per output grid. By default each grid uses "
+            "cols * (cols + 1) slides."
+        ),
+    )
+    parser.add_argument(
+        "--slides",
+        default=None,
+        help="Comma-separated 1-based slide positions to include (for example: 1,5,7-9)",
+    )
 
     args = parser.parse_args()
 
     cols = min(args.cols, MAX_COLS)
+    if cols < 1:
+        parser.error("--cols must be at least 1")
     if args.cols > MAX_COLS:
         print(f"Warning: Columns limited to {MAX_COLS}")
+    if not MIN_TILE_WIDTH <= args.tile_width <= MAX_TILE_WIDTH:
+        parser.error(
+            f"--tile-width must be between {MIN_TILE_WIDTH} and {MAX_TILE_WIDTH}"
+        )
+    if args.max_slides_per_grid is not None and args.max_slides_per_grid < 1:
+        parser.error("--max-slides-per-grid must be at least 1")
+    try:
+        selected_slides = parse_slide_selection(args.slides)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     input_path = Path(args.input)
     if not input_path.exists() or input_path.suffix.lower() != ".pptx":
@@ -78,23 +130,119 @@ def main():
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-            visible_images = render_pages(input_path, temp_path)
+            visible_count = sum(1 for info in slide_info if not info["hidden"])
+            expected_page_counts = frozenset({visible_count, len(slide_info)})
+            visible_images = render_pages(
+                input_path, temp_path, expected_page_counts=expected_page_counts,
+            )
 
             if not visible_images and not any(s["hidden"] for s in slide_info):
                 print("Error: No slides found", file=sys.stderr)
                 sys.exit(1)
 
             slides = assemble_slides(slide_info, visible_images, temp_path)
+            slides = select_slides(slides, selected_slides)
+            if not slides:
+                parser.error("--slides did not select any slide")
 
-            grid_files = build_grids(slides, cols, TILE_WIDTH, output_path)
+            grid_files = build_grids(
+                slides,
+                cols,
+                args.tile_width,
+                output_path,
+                max_slides_per_grid=args.max_slides_per_grid,
+            )
 
             print(f"Created {len(grid_files)} grid(s):")
             for grid_file in grid_files:
                 print(f"  {grid_file}")
 
+    except BackendUnavailable as e:
+        if e.code == "NO_EXECUTION_BACKEND_AVAILABLE":
+            _emit_dependency_hint()
+            sys.exit(3)
+        print(f"Error: {e.code}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+def parse_slide_selection(value: str | None) -> tuple[int, ...] | None:
+    """Parse a compact 1-based slide selection while preserving caller order."""
+
+    if value is None:
+        return None
+    selected: list[int] = []
+    seen: set[int] = set()
+    for token in value.split(","):
+        token = token.strip()
+        if not token:
+            raise ValueError("--slides contains an empty item")
+        if "-" in token:
+            start_text, end_text = token.split("-", 1)
+            if not start_text.isdigit() or not end_text.isdigit():
+                raise ValueError("--slides accepts only positive positions and ranges")
+            start, end = int(start_text), int(end_text)
+            if start < 1 or end < start:
+                raise ValueError("--slides ranges must be positive and ascending")
+            values = range(start, end + 1)
+        else:
+            if not token.isdigit() or int(token) < 1:
+                raise ValueError("--slides accepts only positive positions and ranges")
+            values = (int(token),)
+        for item in values:
+            if item not in seen:
+                selected.append(item)
+                seen.add(item)
+    return tuple(selected)
+
+
+def select_slides(
+    slides: list[tuple[Path, str]], selected: tuple[int, ...] | None,
+) -> list[tuple[Path, str]]:
+    """Select 1-based slide positions after rendering keeps labels stable."""
+
+    if selected is None:
+        return slides
+    missing = [position for position in selected if position > len(slides)]
+    if missing:
+        raise ValueError(
+            "selected slide position(s) exceed the deck length: "
+            + ", ".join(str(position) for position in missing)
+        )
+    return [slides[position - 1] for position in selected]
+
+
+def _emit_dependency_hint() -> None:
+    missing = [tool for tool in ("soffice", "pdftoppm") if shutil.which(tool) is None]
+    install = {
+        "soffice": {
+            "macos": "brew install --cask libreoffice",
+            "debian": "apt-get install -y libreoffice",
+        },
+        "pdftoppm": {
+            "macos": "brew install poppler",
+            "debian": "apt-get install -y poppler-utils",
+        },
+    }
+    print(
+        json.dumps(
+            {
+                "ok": False,
+                "reason": "missing_dependencies",
+                "missing": missing,
+                "install": {name: install[name] for name in missing},
+                "recovery": (
+                    "Cloud rendering is unavailable. Install only these fixed "
+                    "dependencies in the task/workspace when rendering is required, "
+                    "then retry."
+                ),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 def _slide_hidden(zf: zipfile.ZipFile, part: str) -> bool:
@@ -150,7 +298,7 @@ def assemble_slides(
 
     if not rendered_hidden and visible_count != len(visible_images):
         raise ValueError(
-            f"LibreOffice rendered {len(visible_images)} page(s) for {visible_count} "
+            f"renderer produced {len(visible_images)} page(s) for {visible_count} "
             f"visible slide(s) of {len(slide_info)}; thumbnails would be mislabeled"
         )
 
@@ -186,7 +334,7 @@ def make_hidden_tile(size: tuple[int, int]) -> Image.Image:
     return img
 
 
-def render_pages(pptx_path: Path, temp_dir: Path) -> list[Path]:
+def _render_pages_local(pptx_path: Path, temp_dir: Path) -> list[Path]:
     pdf_path = temp_dir / f"{pptx_path.stem}.pdf"
 
     result = launch_soffice(
@@ -216,13 +364,32 @@ def render_pages(pptx_path: Path, temp_dir: Path) -> list[Path]:
     return sorted(temp_dir.glob("slide-*.jpg"))
 
 
+def render_pages(
+    pptx_path: Path,
+    temp_dir: Path,
+    *,
+    expected_page_counts: frozenset[int] | None = None,
+) -> list[Path]:
+    """Render through cloud capabilities first, then the unchanged local path."""
+
+    return render_pages_with_fallback(
+        pptx_path,
+        temp_dir,
+        dpi=RENDER_DPI,
+        local_renderer=_render_pages_local,
+        expected_page_counts=expected_page_counts,
+    )
+
+
 def build_grids(
     slides: list[tuple[Path, str]],
     cols: int,
     width: int,
     output_path: Path,
+    *,
+    max_slides_per_grid: int | None = None,
 ) -> list[str]:
-    max_per_grid = cols * (cols + 1)
+    max_per_grid = max_slides_per_grid or cols * (cols + 1)
     grid_files = []
 
     for chunk_idx, start_idx in enumerate(range(0, len(slides), max_per_grid)):
@@ -250,7 +417,7 @@ def build_grid(
     cols: int,
     width: int,
 ) -> Image.Image:
-    font_size = int(width * FONT_SIZE_RATIO)
+    font_size = min(int(width * FONT_SIZE_RATIO), MAX_LABEL_FONT_SIZE)
     label_padding = int(font_size * LABEL_PADDING_RATIO)
 
     with Image.open(slides[0][0]) as img:

@@ -1,0 +1,88 @@
+# pdf-pro dependencies
+#
+# REFERENCE MANIFEST — NOT an install script.
+# `pip install -r requirements.txt` is NOT the intended entrypoint.
+#
+# Each script imports only what it actually needs and raises an
+# ImportError with the exact `pip install` command. The agent installs
+# the wheel for the current route only — never a blanket install.
+# See the install table in SKILL.md.
+#
+# Version numbers below are the verified minimums. Use them when you
+# do install a single wheel for a route, e.g.
+#     pip install 'pypdf>=4.0.0'
+#
+# ============================================================================
+# Dependency map (script → wheels it imports)
+# ============================================================================
+# analyze_pdf.py              pypdf
+# extract_content.py          pypdf, pdfplumber
+# extract_tables.py           pdfplumber               (+ pandas, openpyxl for --format xlsx)
+# extract_images.py           pypdf, Pillow
+# extract_form_structure.py   pdfplumber
+# inspect_form.py             pypdf
+# fill_form.py                pypdf
+# fill_form_overlay.py        pypdf, reportlab
+# check_bounding_boxes.py     (stdlib only)
+# convert_pdf_to_images.py    pypdfium2, Pillow
+# markdown_to_pdf.py          markdown-it-py, reportlab, pygments, beautifulsoup4, lxml
+# html_to_pdf.py              beautifulsoup4, lxml, markdown-it-py
+# latex_to_pdf.py             (tectonic system binary)
+# batch_ops.py                pypdf
+# crop_compose.py             pypdfium2, Pillow
+# secure_pdf.py               pypdf
+# optimize_pdf.py             pypdf, Pillow            (+ pymupdf for --rasterize-fallback)
+# validate_pdf.py             pypdf
+# ocr_pipeline.py             pymupdf, rapidocr-onnxruntime (<2.0), numpy   (opt-in)
+# ============================================================================
+
+# Core PDF manipulation
+# pypdf>=4.0.0
+# pypdfium2>=4.0.0
+
+# PDF generation (default backend — pure Python, no browser)
+# reportlab>=4.0.0
+
+# Markdown parsing for markdown_to_pdf.py
+# markdown-it-py>=3.0.0
+
+# HTML parsing for html_to_pdf.py
+# beautifulsoup4>=4.12.0
+# lxml>=5.0.0
+
+# Syntax highlighting for code blocks
+# pygments>=2.16.0
+
+# Image processing
+# Pillow>=10.0.0
+
+# Table extraction
+# pdfplumber>=0.10.0
+
+# --- Optional: xlsx output for extract_tables.py ---
+# pandas>=2.0.0
+# openpyxl>=3.1.0
+
+# --- Optional: opt-in OCR (ocr_pipeline.py) ---
+# Pin rapidocr to 1.x: ocr_pipeline.py reaches into engine.text_detector.preprocess_op
+# to cap detector input at 960px long side (cuts peak RSS ~40%). The 2.x line
+# refactored this internal structure; on 2.x the cap silently stops applying
+# and dense scans can spike to ~2.8 GB per page.
+# pymupdf>=1.25.0
+# rapidocr-onnxruntime>=1.4.0,<2.0
+# numpy>=1.24.0
+
+# --- Optional: deskew support for ocr_pipeline.py ---
+# deskew>=1.6.0
+
+# ============================================================================
+# Heavy / forbidden installs
+# ============================================================================
+# tectonic         — system binary. brew/cargo/conda install. NEVER install
+#                    MacTeX / BasicTeX / texlive — multi-GB, will time out.
+# poppler          — not used. pypdfium2 replaces pdf2image.
+# ImageMagick      — not used. Pillow crops replace `magick -crop`.
+# Chromium         — NOT a pdf-pro dependency. The desktop app's bundled
+#                    Chromium is only used by mdx2pdf (a separate tool).
+# playwright       — removed. The md/html → PDF backend no longer launches
+#                    a headless browser.

@@ -1,0 +1,5 @@
+defusedxml
+lxml
+markitdown[pptx]
+Pillow
+python-pptx

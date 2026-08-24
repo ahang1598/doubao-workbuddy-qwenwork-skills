@@ -1,0 +1,115 @@
+---
+title: Kitchen Sink Demo
+---
+
+# Kitchen Sink
+
+This document exercises every supported feature including MDX components.
+
+<Callout type="note" title="Heads up">
+This file is `.mdx` — Markdown plus inline React/JSX components.
+</Callout>
+
+## Paragraphs & emphasis
+
+Lorem **ipsum dolor** sit *amet*, ~~consectetur~~ adipiscing elit. Inline `code()` is here.
+Auto-linked: https://example.com — and a [labelled link](https://anthropic.com).
+
+## Lists
+
+- First item
+- Second item
+  - Nested
+  - More nesting
+    - Deep
+- Third
+
+1. Ordered one
+2. Ordered two
+3. Ordered three
+
+### Task list
+
+- [x] Done
+- [ ] Pending
+- [x] Also done
+
+### Definition list
+
+Term 1
+:   Definition 1
+
+Term 2
+:   Definition 2a
+:   Definition 2b
+
+## Blockquote
+
+> "Design is not just what it looks like and feels like. Design is how it works."
+>
+> — Steve Jobs
+
+## Tables
+
+| Feature        | Status | Notes                      |
+| -------------- | :----: | -------------------------- |
+| Headings       |   ✓    | h1–h6                      |
+| Code (Shiki)   |   ✓    | qwenwork theme            |
+| Math (KaTeX)   |   ✓    | server-side rendered       |
+| Mermaid        |   ✓    | rendered as SVG in browser |
+| CJK            |   ✓    | Noto Sans SC / JP fallback |
+
+## Code blocks
+
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True, slots=True)
+class Point:
+    x: float
+    y: float
+
+    def distance(self, other: "Point") -> float:
+        return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
+```
+
+```typescript
+interface User { id: string; name: string }
+const greet = (u: User) => `Hello, ${u.name}!`;
+```
+
+## Math
+
+The Euler identity is $e^{i\pi} + 1 = 0$, and the Gaussian integral:
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+
+## Mermaid
+
+<Mermaid>{`flowchart LR
+  A[Markdown] --> B{Parser}
+  B --> C[HTML]
+  C --> D[Chromium]
+  D --> E[(PDF)]`}</Mermaid>
+
+## MDX components
+
+<Callout type="warning">
+Callouts come in four flavours: note, tip, warning, and danger.
+</Callout>
+
+<Callout type="danger" title="Stop">
+This colour stops the reader cold.
+</Callout>
+
+## CJK
+
+简体中文：写作和排版都应当优雅。
+日本語：タイポグラフィは読みやすさを大切にします。
+한국어: 디자인은 사용자를 위한 것이다.
+
+---
+
+End of document.

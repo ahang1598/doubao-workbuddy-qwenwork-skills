@@ -1,0 +1,104 @@
+---
+title: QwenWork Quarterly Deep Research
+author: QwenWork Research
+date: 2026-06-09
+---
+
+<Cover
+  eyebrow="Quarterly Report"
+  title="The Future of Knowledge Work"
+  subtitle="How automation, augmentation, and artistry will reshape the next decade"
+  author="QwenWork Research"
+  date="June 2026"
+/>
+
+## Table of contents
+
+<TOC depth={3} />
+
+## Executive summary
+
+This report synthesizes findings from over 200 sources on the evolution of
+knowledge work in 2026. We examine three forces — **automation**,
+**augmentation**, and **artistry** — and how organizations can balance them.
+
+<Callout type="tip" title="Headline">
+Teams that pair generative tooling with deliberate craft outperform those that
+rely on either alone by **34%** on time-to-impact metrics.
+</Callout>
+
+## 1. Methodology
+
+We surveyed 1,248 knowledge workers across 17 industries between March and May 2026.
+Quantitative responses were normalised to a 0–10 scale and aggregated by domain<Cite id="survey-2026" />.
+
+| Domain        | Respondents | Adoption Index |
+| ------------- | ----------: | -------------: |
+| Engineering   |         412 |            8.2 |
+| Design        |         186 |            7.4 |
+| Operations    |         301 |            6.1 |
+| Research      |         149 |            8.9 |
+| Marketing     |         200 |            6.8 |
+
+## 2. Quantitative findings
+
+The headline metric — productivity per knowledge hour — is modelled as:
+
+$$
+P = \alpha \cdot T \cdot \log(1 + \beta A)
+$$
+
+where $T$ is uninterrupted thinking time, $A$ is assistive-tool usage, and the
+coefficients $\alpha, \beta$ vary by domain.
+
+```python
+def productivity(T: float, A: float, alpha: float, beta: float) -> float:
+    """Estimate hourly knowledge output."""
+    import math
+    return alpha * T * math.log1p(beta * A)
+```
+
+<Callout type="warning" title="Limitations">
+Self-reported data tends to overstate productive hours by ~12%. We applied a
+flat correction; domain-specific debiasing remains an open question<Cite id="self-report-bias" />.
+</Callout>
+
+## 3. Workflow architecture
+
+<Mermaid>{`flowchart LR
+  Q[Question] --> R[Research]
+  R --> S[Synthesis]
+  S --> D[Draft]
+  D --> V{Verify}
+  V -->|pass| P[Publish]
+  V -->|fail| R`}</Mermaid>
+
+## 4. Recommendations
+
+1. Reserve **deep work** blocks of at least 90 minutes daily.
+2. Invest in **verification** workflows, not just generation.
+3. Cultivate **taste**: judgement is the bottleneck, not throughput.
+
+### 4.1 多语言协作
+
+跨文化团队应当统一术语词汇表，使用机器辅助翻译时保留原文以供审阅。
+チーム内で用語集を共有することが重要です。
+
+<PageBreak />
+
+## Appendix A — Glossary
+
+Deep Work
+:   Sustained, distraction-free cognition on a single problem.
+
+Augmentation
+:   Tooling that increases the throughput of skilled humans without replacing judgement.
+
+<Bibliography entries={{
+  "survey-2026": <>QwenWork Research, <em>2026 Knowledge Work Survey</em> (June 2026).</>,
+  "self-report-bias": <>Anders, K. <em>Self-Reported Productivity: A Decade of Drift</em>, J. Org. Sci., 2025.</>,
+}} />
+
+---
+
+*Generated with `md2pdf` — Markdown/MDX to elegant PDF.*

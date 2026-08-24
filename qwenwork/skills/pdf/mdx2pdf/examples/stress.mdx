@@ -1,0 +1,57 @@
+---
+title: Multi-Landscape & Long Content Stress Test
+---
+
+# Multi-landscape stress
+
+Three landscape sections back to back, a code block that overflows two pages,
+a long blockquote, no headings between explicit landscape sections.
+
+## Inline-emphasis run
+
+A paragraph with **bold** and _italic_ and `inline code` and a [hyperlink](https://example.com).
+
+## A very long monospaced run
+
+```text
+01: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+02: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+03: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+04: DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+05: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+06: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+07: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+08: HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+09: IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+10: JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ
+```
+
+## Three landscape sections in a row
+
+<Landscape caption="Landscape 1: tiny content">
+**One word.**
+</Landscape>
+
+<Landscape caption="Landscape 2: a small table">
+
+| A | B |
+|---|---|
+| 1 | 2 |
+
+</Landscape>
+
+<Landscape caption="Landscape 3: a small mermaid">
+<Mermaid>{`flowchart LR; A --> B --> C`}</Mermaid>
+</Landscape>
+
+## Long blockquote
+
+> Paragraph one of a multi-paragraph quote. Lorem ipsum dolor sit amet,
+> consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
+> et dolore magna aliqua.
+>
+> Paragraph two. Ut enim ad minim veniam, quis nostrud exercitation
+> ullamco laboris nisi ut aliquip ex ea commodo consequat.
+>
+> Paragraph three. Duis aute irure dolor in reprehenderit in voluptate
+> velit esse cillum dolore eu fugiat nulla pariatur.

@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+*.pyo
+.DS_Store
+.env
+.git
+.gitignore
+evals
+test_workspace
+tests
+*.tmp
+*.log

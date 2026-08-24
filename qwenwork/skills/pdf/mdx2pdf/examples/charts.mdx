@@ -1,0 +1,121 @@
+---
+title: Charts Showcase
+---
+
+# Charts
+
+Built-in chart components rendered as inline SVG. Server-side rendered
+(no JS waterfall at PDF time), styled with the qwenwork palette.
+
+## Bar — single series
+
+<BarChart
+  data={[
+    { name: 'Engineering', value: 412 },
+    { name: 'Design',      value: 186 },
+    { name: 'Operations',  value: 301 },
+    { name: 'Research',    value: 149 },
+    { name: 'Marketing',   value: 200 },
+  ]}
+  caption="Survey respondents by domain (n = 1,248)"
+/>
+
+## Bar — multi-series, grouped
+
+<BarChart
+  data={[
+    { quarter: 'Q1 2025', sales: 120, refunds: 18 },
+    { quarter: 'Q2 2025', sales: 145, refunds: 22 },
+    { quarter: 'Q3 2025', sales: 168, refunds: 15 },
+    { quarter: 'Q4 2025', sales: 192, refunds: 28 },
+    { quarter: 'Q1 2026', sales: 215, refunds: 19 },
+  ]}
+  xKey="quarter"
+  caption="Sales vs refunds by quarter (USD ‘000)"
+/>
+
+## Bar — stacked
+
+<BarChart
+  data={[
+    { region: 'AMER', new: 40, expansion: 22, churn: 8 },
+    { region: 'EMEA', new: 35, expansion: 18, churn: 6 },
+    { region: 'APAC', new: 52, expansion: 28, churn: 12 },
+  ]}
+  xKey="region"
+  stacked
+  caption="ARR movements by region (USD M)"
+/>
+
+## Bar — horizontal
+
+<BarChart
+  data={[
+    { name: 'Atlas',   spend: 120 },
+    { name: 'Bramble', spend: 85 },
+    { name: 'Cinder',  spend: 210 },
+    { name: 'Dune',    spend: 88 },
+    { name: 'Ember',   spend: 60 },
+  ]}
+  series={['spend']}
+  horizontal
+  height={260}
+  caption="Project spend (USD ‘000)"
+/>
+
+## Pie
+
+<PieChart
+  data={[
+    { name: 'Subscriptions', value: 64 },
+    { name: 'Services',      value: 22 },
+    { name: 'Marketplace',   value: 10 },
+    { name: 'Other',         value: 4 },
+  ]}
+  caption="Revenue mix"
+/>
+
+## Donut
+
+<PieChart
+  data={[
+    { name: 'Free',   value: 5_400 },
+    { name: 'Plus',   value: 1_280 },
+    { name: 'Pro',    value: 420 },
+    { name: 'Enterprise', value: 95 },
+  ]}
+  donut
+  caption="Subscribers by plan tier"
+/>
+
+## Line
+
+<LineChart
+  data={[
+    { month: 'Jan', revenue: 32, costs: 28 },
+    { month: 'Feb', revenue: 45, costs: 31 },
+    { month: 'Mar', revenue: 38, costs: 33 },
+    { month: 'Apr', revenue: 52, costs: 35 },
+    { month: 'May', revenue: 61, costs: 38 },
+    { month: 'Jun', revenue: 58, costs: 39 },
+  ]}
+  xKey="month"
+  smooth
+  caption="Revenue vs costs, H1 2026 (USD ‘000)"
+/>
+
+## Area — stacked
+
+<AreaChart
+  data={[
+    { week: 'W1', web: 1.2, ios: 0.8, android: 0.5 },
+    { week: 'W2', web: 1.5, ios: 1.0, android: 0.6 },
+    { week: 'W3', web: 1.8, ios: 1.3, android: 0.8 },
+    { week: 'W4', web: 2.1, ios: 1.6, android: 1.0 },
+    { week: 'W5', web: 2.4, ios: 1.9, android: 1.2 },
+    { week: 'W6', web: 2.7, ios: 2.2, android: 1.4 },
+  ]}
+  xKey="week"
+  stacked
+  caption="Active users by platform (millions)"
+/>
