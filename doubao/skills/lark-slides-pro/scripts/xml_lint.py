@@ -839,6 +839,193 @@ def validate_iconpark_icon_types(root: ET.Element) -> list[dict[str, Any]]:
     return issues
 
 
+def field_declares_numeric_value(field: ET.Element) -> bool:
+    """True when a <chartField> supplies a series that can drive the value (vertical) axis.
+
+    Prefer the author's declared valueType="number" (schema slides_xml_schema_definition.xml): that is
+    the field's stated contract, so trust it even if the sample text is empty or unusual. Fall back to
+    inspecting the text as a numeric CSV when valueType is absent (older/hand-authored markup). ET.text
+    is the author's original run and excludes the server-readback <chartParsedValues> child echoes.
+    """
+    value_type = (field.attrib.get("valueType") or "").strip().lower()
+    if value_type == "number":
+        return True
+    if value_type == "string":
+        return False
+    return is_numeric_value_csv(field.text or "")
+
+
+def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
+    """Flag chart nodes whose value rendering will break: no numeric series for the value axis,
+    a data label with nothing to show, or a number-format code that uses template placeholders
+    instead of a real format code.
+
+    Three checks share one AST walk over the chart subtree:
+
+    - <chartData> whose dim1/dim2 carry no numeric series. The value (vertical) axis scales
+      numbers, so at least one <chartField> across <dim1>/<dim2> must supply a numeric series
+      (valueType="number", or a pure number+comma CSV like "52,48,55,68"). A category-only
+      chartData leaves the axis with nothing to plot and renders abnormally.
+    - a <chartLabels> whose category, value and percentage toggles are all false. At least one
+      must be on (value defaults to true) or the data label renders empty.
+    - a `format` attribute (on chartLabels/chartTooltip/chartLabel) that contains "{" or "}".
+      `format` is an Excel-style number-format code (e.g. 0%, #,##0.00, 0万); template
+      placeholders like "{value}bp" borrowed from other chart libraries are emitted verbatim.
+
+    Mirrors validate_iconpark_icon_types' AST walk, and mirrors extract_source_id_elements' indexed
+    xml_path scheme (slide[N]/data/chart[k]/...) plus the chart id so a fix agent can locate the
+    exact node -- top-level issues carry no slide_number from the caller, so we embed the locators in
+    the issue's own target/path here.
+    """
+    root_name = xml_local_name(root.tag)
+    if root_name == "slide":
+        numbered_slides = [(1, root)]
+    elif root_name == "presentation":
+        numbered_slides = list(
+            enumerate(
+                (child for child in root if xml_local_name(child.tag) == "slide"), start=1
+            )
+        )
+    else:
+        return []
+
+    issues: list[dict[str, Any]] = []
+
+    def visit(
+        element: ET.Element,
+        ancestors: list[str],
+        path: str,
+        chart: ET.Element | None,
+        chart_path: str | None,
+    ) -> None:
+        if should_skip_sxsd_subtree(element, ancestors):
+            return
+        tag_name = xml_local_name(element.tag)
+        owner_chart = element if tag_name == "chart" else chart
+        owner_chart_path = path if tag_name == "chart" else chart_path
+        if tag_name == "chartData":
+            fields = [
+                field
+                for child in element
+                if xml_local_name(child.tag) in {"dim1", "dim2"}
+                for field in child
+                if xml_local_name(field.tag) == "chartField"
+            ]
+            if fields and not any(field_declares_numeric_value(field) for field in fields):
+                chart_id = owner_chart.attrib.get("id") if owner_chart is not None else None
+                chart_path_value = owner_chart_path or path
+                locator = chart_id or chart_path_value
+                issues.append(
+                    {
+                        "level": "error",
+                        "code": "chart_missing_numeric_dimension",
+                        "tag": "chartData",
+                        "path": path,
+                        "target": {
+                            **({"chart_id": chart_id} if chart_id else {}),
+                            "chart_xml_path": chart_path_value,
+                            "chartData_xml_path": path,
+                        },
+                        "message": (
+                            f"chart {locator} has no numeric dimension: neither dim1 nor dim2 supplies "
+                            "a numeric series (valueType=\"number\" or a pure number+comma CSV) to "
+                            "render the value axis"
+                        ),
+                        "hint": (
+                            f"Locate the chart via target.chart_xml_path ({chart_path_value}). Give dim1 "
+                            'or dim2 a <chartField valueType="number"> whose value is digits joined by '
+                            'English commas (e.g. "52,48,55,68"). A category-only chartData leaves the '
+                            "value axis with nothing to scale and it renders abnormally."
+                        ),
+                    }
+                )
+        if tag_name == "chartLabels" and owner_chart is not None:
+            # category/value/percentage are the three "what to show" toggles; at least one must be
+            # on or the label renders empty. Defaults per schema: value=true, other two false, so an
+            # untouched <chartLabels> is fine -- only an explicit value="false" without turning on
+            # category/percentage produces a blank label.
+            def label_toggle(name: str, default: bool) -> bool:
+                raw = element.attrib.get(name)
+                return default if raw is None else raw in {"true", "1", "yes"}
+
+            if not (
+                label_toggle("value", True)
+                or label_toggle("category", False)
+                or label_toggle("percentage", False)
+            ):
+                chart_id = owner_chart.attrib.get("id")
+                chart_path_value = owner_chart_path or path
+                locator = chart_id or chart_path_value
+                issues.append(
+                    {
+                        "level": "error",
+                        "code": "chart_labels_nothing_to_show",
+                        "tag": "chartLabels",
+                        "path": path,
+                        "target": {
+                            **({"chart_id": chart_id} if chart_id else {}),
+                            "chart_xml_path": chart_path_value,
+                            "element_xml_path": path,
+                        },
+                        "message": (
+                            f"chart {locator} has a <chartLabels> with category, value and percentage "
+                            "all false, so the data label renders empty"
+                        ),
+                        "hint": (
+                            f"Locate the element via target.element_xml_path ({path}). Set at least one "
+                            'of value="true", category="true" or percentage="true" (value defaults to '
+                            "true, so usually just drop the explicit value=\"false\")."
+                        ),
+                    }
+                )
+        if owner_chart is not None and "format" in element.attrib:
+            fmt = element.attrib.get("format", "")
+            if "{" in fmt or "}" in fmt:
+                chart_id = owner_chart.attrib.get("id")
+                chart_path_value = owner_chart_path or path
+                locator = chart_id or chart_path_value
+                issues.append(
+                    {
+                        "level": "error",
+                        "code": "chart_invalid_format_code",
+                        "tag": tag_name,
+                        "path": path,
+                        "target": {
+                            **({"chart_id": chart_id} if chart_id else {}),
+                            "chart_xml_path": chart_path_value,
+                            "element_xml_path": path,
+                            "format": fmt,
+                        },
+                        "message": (
+                            f'chart {locator} has an invalid format="{fmt}" on <{tag_name}>: `format` '
+                            "is an Excel-style number-format code and does not expand template "
+                            'placeholders like "{value}", so the braces render verbatim'
+                        ),
+                        "hint": (
+                            f"Locate the element via target.element_xml_path ({path}). Replace the "
+                            "placeholder with a real number-format code such as 0, 0.00, 0%, #,##0.00, "
+                            'or 0万. Unit suffixes belong in the code itself (append literal text), not '
+                            'as a "{value}" placeholder.'
+                        ),
+                    }
+                )
+        child_counts: dict[str, int] = {}
+        for child in element:
+            kind = xml_local_name(child.tag)
+            child_counts[kind] = child_counts.get(kind, 0) + 1
+            child_path = (
+                f"{path}/data"
+                if tag_name == "slide" and kind == "data"
+                else f"{path}/{kind}[{child_counts[kind]}]"
+            )
+            visit(child, [*ancestors, tag_name], child_path, owner_chart, owner_chart_path)
+
+    for slide_number, slide_root in numbered_slides:
+        visit(slide_root, [], f"slide[{slide_number}]", None, None)
+
+    return issues
+
+
 def extract_error_context(xml: str, line: int | None, column: int | None, radius: int = 40) -> str | None:
     if line is None or column is None:
         return None
@@ -1336,6 +1523,27 @@ def detect_chart_text_occlusions(elements: list[dict[str, Any]]) -> list[dict[st
                 "hint": "Move the text shape off the chart plot area; a free shape on top of the chart occludes its axis labels, legend, and data labels.",
             })
     return issues
+
+
+def is_numeric_value_csv(text: str) -> bool:
+    """True when text is a pure numeric CSV -- the axis series that renders the value (vertical) axis.
+
+    A value axis scales numbers, so the driving dimension must be digits joined by English commas
+    (e.g. "52,48,55,68" or "0.55,0.42"). Category labels like "Q1,Q2" or "1月,2月" are not numeric and
+    cannot drive the axis. Every comma-separated cell must parse as a number for the field to qualify.
+    """
+    stripped = text.strip()
+    if not stripped:
+        return False
+    cells = [cell.strip() for cell in stripped.split(",")]
+    if any(cell == "" for cell in cells):
+        return False
+    for cell in cells:
+        try:
+            float(cell)
+        except ValueError:
+            return False
+    return True
 
 
 def is_line_like_shape(element: dict[str, Any]) -> bool:
@@ -3880,6 +4088,10 @@ RULE_METADATA: dict[str, dict[str, Any]] = {
         "name": "element_ids_are_unique",
         "comparison": "duplicate_count == 0",
     },
+    "chart_missing_numeric_dimension": {
+        "name": "chart_data_has_numeric_value_dimension",
+        "comparison": "numeric_dimension_count >= 1",
+    },
 }
 
 
@@ -4160,6 +4372,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
     root_name = xml_local_name(root.tag)
     sxsd_issues = validate_sxsd_document(xml, root)
     iconpark_issues = validate_iconpark_icon_types(root)
+    chart_dimension_issues = validate_chart_value_semantics(root)
     top_level_issues = [
         normalize_issue(issue, None, {})
         for issue in [
@@ -4170,6 +4383,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
                 if not is_slide_scoped_sxsd_issue(issue, root_name)
             ],
             *iconpark_issues,
+            *chart_dimension_issues,
         ]
     ]
     if any(issue["level"] == "error" for issue in top_level_issues):

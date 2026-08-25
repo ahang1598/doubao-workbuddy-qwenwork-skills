@@ -15,6 +15,11 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from lxml import etree as LET
+except ImportError:  # pragma: no cover - exercised only in stripped runtimes.
+    LET = None
+
 
 SML_NAMESPACE_SUFFIX = "/sml/2.0"
 PREVIEW_LENGTH = 240
@@ -170,10 +175,44 @@ def build_summary(
     }
 
 
-def select_slides(
-    slides: list[ET.Element], requested_ids: list[str]
-) -> list[tuple[int, str, ET.Element]]:
-    matches: dict[str, list[tuple[int, ET.Element]]] = {slide_id: [] for slide_id in requested_ids}
+def lxml_namespace_of(tag: str) -> str:
+    if not tag.startswith("{") or "}" not in tag:
+        return ""
+    return tag[1:].split("}", 1)[0]
+
+
+def parse_raw_document(input_path: Path) -> tuple[Any, str, str, list[Any]]:
+    if LET is None:
+        raise ValueError("raw XML 模式需要 lxml；请安装 lxml ")
+    try:
+        parser = LET.XMLParser(remove_blank_text=False, recover=False)
+        root = LET.parse(str(input_path), parser).getroot()
+    except (OSError, LET.XMLSyntaxError) as error:
+        raise ValueError(f"无法解析 XML：{error}") from error
+
+    namespace = lxml_namespace_of(root.tag)
+    if not namespace or not namespace.endswith(SML_NAMESPACE_SUFFIX):
+        raise ValueError(
+            "根元素没有有效的 SML 2.0 namespace；必须从 XML 根元素读取 namespace，"
+            "不能自行猜测 http 或 https"
+        )
+
+    root_name = LET.QName(root).localname
+    if root_name == "presentation":
+        slides = root.xpath("./*[local-name()='slide']")
+    elif root_name == "slide":
+        slides = [root]
+    else:
+        raise ValueError(f"不支持的根元素：{root_name!r}，预期 presentation 或 slide")
+    if not slides:
+        raise ValueError("XML 中没有找到根级 <slide>；请确认回读文件和 namespace 是否正确")
+    return root, root_name, namespace, slides
+
+
+def select_raw_slides(
+    slides: list[Any], requested_ids: list[str]
+) -> list[tuple[int, str, Any]]:
+    matches: dict[str, list[tuple[int, Any]]] = {slide_id: [] for slide_id in requested_ids}
     for index, slide in enumerate(slides, 1):
         if (slide_id := slide.get("id")) in matches:
             matches[slide_id].append((index, slide))
@@ -189,32 +228,22 @@ def select_slides(
     if ambiguous:
         raise ValueError(f"以下 slide_id 在 XML 中重复，无法唯一定位：{ambiguous}")
 
-    selected = []
-    for slide_id in requested_ids:
-        index, slide = matches[slide_id][0]
-        selected.append((index, slide_id, slide))
-    return selected
+    return [
+        (matches[slide_id][0][0], slide_id, matches[slide_id][0][1])
+        for slide_id in requested_ids
+    ]
 
 
-def build_raw_slides(
-    input_path: Path,
-    root: ET.Element,
-    root_name: str,
-    namespace: str,
-    slides: list[ET.Element],
-    requested_ids: list[str],
-) -> dict[str, Any]:
-    selected = select_slides(slides, requested_ids)
-    ET.register_namespace("", namespace)
+def build_raw_slides_lxml(input_path: Path, requested_ids: list[str]) -> dict[str, Any]:
+    root, root_name, namespace, slides = parse_raw_document(input_path)
+    selected = select_raw_slides(slides, requested_ids)
     entries = []
     for index, slide_id, slide in selected:
         entries.append(
             {
                 "index": index,
                 "slide_id": slide_id,
-                "raw_xml": ET.tostring(
-                    slide, encoding="unicode", short_empty_elements=True
-                ),
+                "raw_xml": LET.tostring(slide, encoding="unicode"),
             }
         )
     return {
@@ -228,7 +257,17 @@ def build_raw_slides(
             "raw_xml": True,
             "output_slide_count": len(entries),
         },
-        "presentation": presentation_info(root, root_name, namespace, slides),
+        "presentation": {
+            "root": root_name,
+            "namespace": namespace,
+            "presentation_id": root.get("id") if root_name == "presentation" else None,
+            "revision_id": root.get("revision_id") or root.get("revisionId"),
+            "title": None,
+            "width": root.get("width"),
+            "height": root.get("height"),
+            "slide_count": len(slides),
+            "slide_ids": [slide.get("id") for slide in slides],
+        },
         "slides": entries,
     }
 
@@ -255,17 +294,10 @@ def main() -> int:
     try:
         if requested_ids and args.output:
             raise ValueError("raw XML 模式直接写到标准输出，不使用 --output")
-        root, root_name, namespace, slides = parse_document(args.input)
         if requested_ids:
-            report = build_raw_slides(
-                args.input,
-                root,
-                root_name,
-                namespace,
-                slides,
-                requested_ids,
-            )
+            report = build_raw_slides_lxml(args.input, requested_ids)
         else:
+            root, root_name, namespace, slides = parse_document(args.input)
             report = build_summary(args.input, root, root_name, namespace, slides)
     except (ValueError, OSError) as error:
         print(f"xml_inspect: error: {error}", file=sys.stderr)

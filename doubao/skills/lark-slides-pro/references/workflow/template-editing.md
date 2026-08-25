@@ -104,7 +104,7 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/xml_inspect.py" --input "$WORK_DIR/sourc
 
 | 目标页 | 页面类别/任务 | 来源 slide/block | 制作/写入方式 | 计划改动与必须保留 | authoring XML | 状态/最终 ID |
 |---|---|---|---|---|---|---|
-| 2 | 关键页：5 章目录 | `<agenda_id>` / 整页 | 整页派生 / `+replace-pages` | 改标题；删第 6 组；五组重排；其余 block 保留 | `$WORK_DIR/authoring/slide-02.xml` | `planned` / `-` |
+| 2 | 关键页：5 章目录 | `<agenda_id>` / 整页 | 整页派生 / `+update-slide` | 改标题；删第 6 组；五组重排；其余 block 保留 | `$WORK_DIR/authoring/slide-02.xml` | `planned` / `-` |
 | 5 | 内容页：7 步流程 | `<content_id>` / 壳层 blocks | 壳层+主体重构 / `+add-slide` | 保留壳层；主体改为 7 步时间轴；旧正文和占位符残留=0 | `$WORK_DIR/authoring/slide-05.xml` | `planned` / `-` |
 
 目录项、章节页和页内导航必须与 page-plan 的章节集合、名称和顺序一致。“计划改动”写清修改、删除、新增和必须保留的 block；没有写入计划的关键页来源 block 均为只读。用户明确要求保留的模板页也作为目标页记录；表外页面不进入终稿。
@@ -116,7 +116,7 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/xml_inspect.py" --input "$WORK_DIR/sourc
 3. **内容页壳层加主体重构**：只有主体结构确实不匹配时使用；page-plan 必须写明具体原因，如“两栏无法承载 7 步时间轴”。仍从完整 raw XML 开始，原样保留计划列出的背景、Logo、标题区、导航、页眉页脚、固定装饰、字体、配色、裁切和对齐轴，只在明确主体区域内增删或重排。不得从空白 XML 开始。
 4. **组件重组兜底**：模板没有可用同角色关键页或内容页壳层时，才从已检查来源复制完整组件 XML；没有可用组件时才继承设计参数。不得仅参考截图近似重画。
 
-块级改写使用 `slides +replace-slide` 的 `block_replace` / `block_insert`；它不能替换整页或删除 block。完整页面使用 `slides +replace-pages` 或 `slides +add-slide`（插入位置用 `--before-slide-id`）。
+块级改写使用 `slides +replace-slide` 的 `block_replace` / `block_insert`；它不能替换整页或删除 block。整页覆盖已有页面用 `slides +update-slide`（`slide_id` 和页序不变），新增页面用 `slides +add-slide`（插入位置用 `--before-slide-id`）。
 
 每个目标页只能有一个最终 ID：块级改写沿用原 `slide_id`；整页替换和创建必须将响应中的新 ID 写回 page-plan。实际写入命令必须与规划一致；确需改路径时，先更新并重新读取该行。
 
@@ -177,7 +177,7 @@ jq -e -s '
 
 ### 4. 写入、回读与状态
 
-本地准备和 lint 可批量完成，在线写入仍按页顺序执行并保存响应。连续调用 `+add-slide` 时每次都必须检查 `.ok == true` 并取得新 ID，禁止无条件打印成功；任一失败立即停止并回读。`+replace-pages` 也不是原子事务。
+本地准备和 lint 可批量完成，在线写入仍按页顺序执行并保存响应。连续调用 `+add-slide` 时每次都必须检查 `.ok == true` 并取得新 ID，禁止无条件打印成功；任一失败立即停止并回读。`+update-slide` 逐页写入，同样不是跨页原子事务。
 
 块级改写后立即单页回读；创建或整页替换可在本批响应全部成功后统一 `+xml-get`。核对内容、来源元素、壳层、位置、裁切、层级、页序和最新 ID，将状态更新为 `written`、`verified`；本批回读结果统一 lint。文字、图片、几何或层级变化后截图该页实际查看。
 
@@ -186,7 +186,7 @@ jq -e -s '
 
 ### 页面集合清理/删除模板页、无效页
 
-全部目标页为 `verified` 后、终稿截图前，回读全文取得当前全部 ID；从 page-plan 取得终稿 ID 和页序，两者做差得到待删除页。`+delete-slide` 一次只能删除一页，可用 `for` 循环逐页删除，但任一失败必须立即停止并回读；删除前查看 help，按要求传 `--yes`。删除后只有页数、ID 和页序与 page-plan 完全一致才进入终稿 review。
+全部目标页为 `verified` 后、终稿截图前，回读全文取得当前全部 ID；从 page-plan 取得终稿 ID 和页序，两者做差得到待删除页。`+delete-slide` 一次只能删除一页，可用 `for` 循环逐页删除，但任一失败必须立即停止并回读。删除后只有页数、ID 和页序与 page-plan 完全一致才进入终稿 review。
 
 ### 终稿全页视觉 review
 

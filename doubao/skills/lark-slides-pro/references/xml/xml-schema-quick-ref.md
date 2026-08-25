@@ -172,19 +172,22 @@
 - `<a>`
 - `<shadow>`
 - `<outline>`
+- `<formula>`
 
 **注意事项**
 
 - **内联样式只能挂在 `<span>` 上**：`<strong>`、`<em>`、`<u>`、`<del>` 不接受任何样式属性（给它们写 `color` / `fontSize` 等会触发 `sxsd_unsupported_attr`）。要给局部文字上色、改字号/字体，用 `<span>`——它支持 `color`、`backgroundColor`、`fontSize`、`fontFamily`、`bold`、`italic`、`underline`、`strikethrough`。例如把"加粗且变色"写成 `<span bold="true" color="rgba(37,99,235,1)">重点</span>`，不要写成 `<strong color="...">`。
+- **任何数学/物理/化学公式等表达式一律用 `<formula>`，禁止退化成纯文本或 Unicode 上下标**：只要表达式里出现上下标、根号、分式、积分、求和、极限、矩阵、希腊字母、向量箭头等符号（例如 `E=mc^2`、`x^2+y^2=r^2`、`∫f(x)dx`、`α_i`、`\sum_{i=1}^n`），需要写成 Latex 形式的字符 `<formula><latex><![CDATA[…]]></latex></formula>`，不允许写成 `E=mc^2`、`x²+y²=r²`、`∫f(x)dx` 这类纯文本或 Unicode 近似。LaTeX 源码放在 CDATA 里，无需再对反斜杠做 XML 转义。页面标题、副标题、导读句、正文段落、列表项、坐标/图例标签、里凡是出现公式表达式的，都要写成 `<formula>`。
 
 **示例**
 
 ```xml
 <content textType="body" textAlign="left" fontSize="16">
   <p>正文内容 <strong>加粗</strong> <em>斜体</em> <a href="https://example.com">链接</a></p>
+  <p>令 <formula><latex>表达式1</latex></formula> 代入 <formula><latex>表达式2</latex></formula> 的泰勒展开，分离实部虚部即可推得。</p>
   <ul>
-    <li><p>列表项 1</p></li>
-    <li><p>列表项 2</p></li>
+    <li><p>列表项 1<formula><latex>表达式1</latex></formula></p></li>
+    <li><p>列表项 2<formula><latex>表达式2</latex></formula></p></li>
   </ul>
 </content>
 ```
@@ -448,6 +451,10 @@
 - 漏斗、金字塔、象限、矩阵、关系网络图等非原生图表改用 `<shape>`+`<line>` 组合模拟。关系网络图用小圆点（`<shape type="ellipse">`）作节点、旁边配 `<shape type="text">` 标注文字（不要放到节点里），节点之间用 `<line>` 连线。
 - 环形图不是独立类型：它就是 `<chartPlot type="pie">` 再给 `<chartSectors>` 设 `innerRadius`（如 `innerRadius="0.55"`）挖空中心得到的——**没有 `type="doughnut"` 或 `donut` 这种类型**，画环图照抄范例里「环形图 · Donut」那页即可。
 - 隐藏 `<chart>` 的图例只能通过不写或删除 `<chartLegend>` 实现，`<chartLegend>` 不支持 `position="none"`（`position` 只有 `top` / `bottom` / `left` / `right`）。
+- `<chartLabel>`（单数，放 `<chartAxis>` 内）是坐标轴刻度标签；`<chartLabels>`（复数，放 `<chartPlot>` 全局或 `<chartSeries>` 单系列内）是数据标签，在柱 / 点 / 扇区上直接显示数值（常用属性 `position` / `value` / `category` / `percentage` / `format`）。两者别写反。`category` / `value` / `percentage` 至少一项为 `true`（默认仅 `value`）；`format` 用 Excel 数字格式码，如 `0`、`0%`、`#,##0.00`；单位要写进 `format` 时，格式码里的字面文本用双引号包（如 `0"bp"`），但直接写进 XML 属性会和属性外层双引号冲突、破坏 XML，必须改用单引号包属性值 `format='0"bp"'`，或把内层引号转义成 `format="0&quot;bp&quot;"`。
+- `<chartLabels>` 的 `position` 按图表类型选：折线 / 散点用 `auto`（别用 `right`，会压线或出框）；柱状用 `top` 或 `inside`；饼 / 环用 `outside`。
+- **标注图表上某个关键数据点 / 节点**（如折线的阶段性低点、反弹点），不要用 `<shape type="text">` 浮在绘图区上——文字盒会压到图表区，必触发 `bbox_overlap`。正确做法：优先在图表外的右侧 / 下方文字区用文字描述该节点，或给该系列开 `<chartLabels>` 只显示数值；确需就地标注时给 `<chart>` 预留上 / 下方专用标注带（缩小 chart 高度腾出空间），标注文字放在 chart 边界之外。
+- `<chartColorTheme>` 只接受纯色 `<color value="rgb(...)"/>` / `rgba(...)`，**不支持渐变**（`linear-gradient` 等只对 `<shape>` 的 `<fill>` 有效）。想要渐变视觉的柱 / 面，用 `<shape>`+`<fill linear-gradient>` 自绘，或接受纯色。
 - 详细用法见 [slides_xml_schema_definition.xml](slides_xml_schema_definition.xml)。
 
 ## 颜色与样式

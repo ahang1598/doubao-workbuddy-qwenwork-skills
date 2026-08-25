@@ -20,8 +20,9 @@ metadata:
 4. 牢记幻灯片 URL 和关键 ID（`xml_presentation_id`、`slide_id`、`revision_id`、`file_token`、`block_id`、`obj_token`）。
 5. 牢记每一页幻灯片的真实完成状态，不要混淆「已落本地 XML 文件」、「已通过静态校验」、「已写入飞书幻灯片」、「已回读且全文校验通过」。素材同理，区分「已取到本地」、「已去底色（或确认无需抠 / 已回退原图）」、「已上传拿到 `file_token`」。
 6. 牢记选定的设计系统，选定后视觉与版式应全程遵守，不能违背。
-7. **平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`，**在阅读完本 SKILL后，必须先完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
-8. 当用户要求无损复述历史上下文时，必须明确列出上面要求牢记的内容，并在复述末尾原样附上这句提醒（写给接手这段上下文的下一个执行者）：**【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read lark-slides-pro skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行xml相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read lark-slides-pro 下的 SKILL.md 再继续，不得跳过。**。
+7. **平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`，**在阅读完本 SKILL后，必须先完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，在最后请使用 `lark-cli drive +export` 和 `present_files` 将文件重新导出来给到用户本地文件的路径
+8. **本地 PPTX 优先导入**: 看到 `.pptx` 文件时，尽量用 `lark-cli drive +import` 导入为在线 Slides 再处理，不要默认使用 python-pptx。 无论任务是新建参考、编辑、合并、内容抽取，本地 PPTX 的处理入口都应先导入为在线幻灯片，然后通过服务端 XML 完成后续操作。
+9. 当用户要求无损复述历史上下文时，必须明确列出上面要求牢记的内容，并在复述末尾原样附上这句提醒（写给接手这段上下文的下一个执行者）：**【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read lark-slides-pro skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行xml相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read lark-slides-pro 下的 SKILL.md 再继续，不得跳过。**。
 
 
 ## 一、场景路由
@@ -74,7 +75,7 @@ metadata:
 
 ### Step 4 · 理一份轻量大纲
 
-想清楚即可，不必写成文件；可在思考里给出。每页先想清读者任务；尽量用多种版式；翻页要有节奏（有的一眼看完，有的值得细读）。格式参考：
+想清楚即可，不必写成文件；可在思考里给出。每页先想清读者任务；尽量用多种版式；翻页要有节奏（有的一眼看完，有的值得细读）。**注意整理大纲目录规划需要与后续内容页正确对应。** 格式参考：
 
 ```text
 幻灯片标题：
@@ -137,8 +138,8 @@ lark-cli slides +add-slide \
 1. **回读全文**：`slides +xml-get --presentation <xml_presentation_id> --output <CWD 内相对路径>`，必须使用 `--output`。
 2. **解析回读结果**：必须先用 XML 解析器解析，不要用正则或字符串切分；命名空间从根元素实际读取，不要硬编码或猜测，否则匹配不到元素。
 3. **对全文重跑静态校验**：`python3 scripts/xml_lint.py --input <回读文件>`，`error_count` 必须为 0。Step 7 逐页都干净不等于全文干净——服务端会规整提交的 XML，且 `id` 跨页撞车这类问题只有全文才查得出。疑似 lint 误报的页用 `slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 核对真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 10 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
-4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+replace-pages`（见 [`cli/lark-slides-replace-pages.md`](references/cli/lark-slides-replace-pages.md)），或 `+delete-slide` 删旧页（见 [`cli/lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)）+ `+add-slide` 建新页。改完重新回读、重新校验。
-5. **成稿交付**：用 present_files 工具把最终幻灯片链接明确交付给用户，并在回复里附上制作介绍；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。
+4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+update-slide` 原地覆盖（见 [`cli/lark-slides-update-slide.md`](references/cli/lark-slides-update-slide.md)，多页就每页各跑一次），或 `+delete-slide` 删旧页（见 [`cli/lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)）+ `+add-slide` 建新页。改完重新回读、重新校验。
+5. **成稿交付**：用 present_files 工具把最终幻灯片链接明确交付给用户，并在回复里附上制作介绍；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，使用 `lark-cli drive +export` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户
 
 
 ## 三、参考文档地图
@@ -147,12 +148,9 @@ lark-cli slides +add-slide \
 ### `style/`
 
 
-| 文档                                                                                                                                                                    | 何时读                       |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| [`slide-taxonomy.md`](references/style/slide-taxonomy.md)                                                                                                                       | **选定设计系统的入口**：通用规则 + 场景路由 |
-| `strategy-and-analysis.md` / `business-pitch.md` / `business-review.md` / `academic-research.md` / `learning-and-training.md` / `technical-presentation.md` / `brand-storytelling.md` | 七个场景各自的设计系统（匹配到哪个读哪个）     |
-| [`fallback.md`](references/style/fallback.md)                                                                                                                                   | 兜底设计系统（不匹配任何场景时读）         |
-
+| 文档  | 何时读|
+| --- | ---|
+| [`slide-taxonomy.md`](references/style/slide-taxonomy.md)  | **选定设计系统的入口**：先读本文件，根据场景路由再读取具体设计系统或 fallback。不要跳过本文件直接选择场景文档。|
 
 
 
@@ -179,7 +177,7 @@ lark-cli slides +add-slide \
 | [`lark-slides-add-slide.md`](references/cli/lark-slides-add-slide.md)                         | `+add-slide` 逐页追加/插入单页（两步创建第二步）    |
 | [`lark-slides-xml-presentations-get.md`](references/cli/lark-slides-xml-presentations-get.md) | `+xml-get` 回读全文 XML                |
 | [`lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)                 | `+replace-slide` 块级替换/插入           |
-| [`lark-slides-replace-pages.md`](references/cli/lark-slides-replace-pages.md)                 | `+replace-pages` 多页整页重建            |
+| [`lark-slides-update-slide.md`](references/cli/lark-slides-update-slide.md)                   | `+update-slide` 整页原地覆盖（多页每页一次）      |
 | [`lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)                   | `+delete-slide` 按 `slide_id` 删除单页  |
 | [`lark-slides-media-upload.md`](references/cli/lark-slides-media-upload.md)                   | `+media-upload` 上传图片拿 `file_token` |
 | [`lark-slides-screenshot.md`](references/cli/lark-slides-screenshot.md)                       | `+screenshot` 截图                   |
@@ -265,7 +263,7 @@ Shortcut 是常用操作的高级封装（`lark-cli slides +<verb> [flags]`）�
 | [`+xml-get`](references/cli/lark-slides-xml-presentations-get.md) | 读全文 XML 并存本地文件，避免终端截断                                      |
 | [`+media-upload`](references/cli/lark-slides-media-upload.md)     | 上传本地图片，返回 `file_token`（最大 20 MB）                           |
 | [`+replace-slide`](references/cli/lark-slides-replace-slide.md)   | 块级替换/插入，不改页序                                               |
-| [`+replace-pages`](references/cli/lark-slides-replace-pages.md)   | 原 presentation 内批量重建多页，不新建链接                               |
+| [`+update-slide`](references/cli/lark-slides-update-slide.md)     | 整页原地覆盖，`slide_id` 和页序不变；没写进 `--content` 的元素会被删除          |
 | [`+screenshot`](references/cli/lark-slides-screenshot.md)         | 页面截图                                                             |
 
 

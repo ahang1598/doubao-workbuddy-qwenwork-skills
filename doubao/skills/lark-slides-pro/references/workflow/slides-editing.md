@@ -178,7 +178,7 @@ lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<f
 
 ## 5. 按场景执行
 
-复合任务默认按“结构 → 内容 → 图表/图片 → 排版 → 全局样式”执行。结构变更或 `+replace-pages` 后立即重新回读页序和 `slide_id`，禁止继续使用旧 ID。
+复合任务默认按“结构 → 内容 → 图表/图片 → 排版 → 全局样式”执行。结构变更（加页、删页）后立即重新回读页序和 `slide_id`，禁止继续使用旧 ID。
 
 | 场景 | 执行规则 |
 |---|---|
@@ -206,13 +206,13 @@ lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<f
 | 换某个块的整体内容（改标题、换图、挪坐标、改字号） | [`+replace-slide`](../cli/lark-slides-replace-slide.md) 的 `block_replace` | 精准替换单块，`slide_id` 和页序不变 |
 | 只加 1~N 个元素、不动现有布局 | `+replace-slide` 的 `block_insert` | 新增不覆盖，可选 `insert_before_block_id` 定位 |
 | 一次动多个块（如换标题 + 加图） | 单次 `--parts` 里拼多条，`block_replace` / `block_insert` 混用 | 整批原子事务，任一失败整批不生效 |
-| **删除某个元素** | [`+replace-pages`](../cli/lark-slides-replace-pages.md) 整页重建 | 块级只有 `block_replace` / `block_insert`，**没有删除块的动作**，删元素只能重写整页 |
-| **跨页统一改某个属性**（整份换字体、换配色等全局改写） | [`+replace-pages`](../cli/lark-slides-replace-pages.md) 整页重建 | 没有字段级 patch，逐块 `block_replace` 代价高；把受影响的页整页重建更省事 |
-| 多页版式重建、整页坐标重排 | [`+replace-pages`](../cli/lark-slides-replace-pages.md) | 原 presentation 内批量重建，不生成新链接 |
+| **删除某个元素** | [`+update-slide`](../cli/lark-slides-update-slide.md) 整页覆盖 | 块级只有 `block_replace` / `block_insert`，**没有删除块的动作**；整页覆盖时没写进 `--content` 的元素即被删除 |
+| **跨页统一改某个属性**（整份换字体、换配色等全局改写） | [`+update-slide`](../cli/lark-slides-update-slide.md)（每页一次） | 没有字段级 patch，逐块 `block_replace` 代价高；把受影响的页逐页整页覆盖更省事 |
+| 多页版式重建、整页坐标重排 | [`+update-slide`](../cli/lark-slides-update-slide.md)（每页一次） | 原地整页覆盖，`slide_id` 和页序不变，不生成新链接 |
 | 追加新页 | [`+add-slide`](../cli/lark-slides-add-slide.md)，插到某页前加 `--before-slide-id` | 省略 `--before-slide-id` 就是追加到末尾 |
 | **删除整页** | [`+delete-slide`](../cli/lark-slides-delete-slide.md) | **不可逆**（可走 `+history-revert` 回滚），删前先确认这页确实不要了；一份 deck 至少得留一页 |
 
-所有操作原地更新主 presentation，不要用 `+create` 另建链接。没有字段级 patch、删除块或 `str_replace`：即使只改坐标也要替换整个块；`+replace-pages` 会刷新被替换页的 `slide_id`。
+所有操作原地更新主 presentation，不要用 `+create` 另建链接。没有字段级 patch、删除块或 `str_replace`：即使只改坐标也要替换整个块；`+update-slide` 原地覆盖整页，`slide_id` 和页序都不变，但没写进 `--content` 的元素会被删除。
 
 ### 6.2 XML 与 lint
 
@@ -248,15 +248,14 @@ lark-cli slides +replace-slide --presentation "$PID" --slide-id "$SID" \
     '[{action:"block_insert",insertion:("<img src=\""+$t+"\" topLeftX=\"500\" topLeftY=\"100\" width=\"200\" height=\"150\"/>")}]')"
 ```
 
-### 6.4 整页重建与增删页
+### 6.4 整页覆盖与增删页
 
-`+replace-pages` 要完整 `<slide>`，不接受 `--parts`。先确认页面没有 `<undefined>`，并对整页 lint；批量失败控制参数如 `--continue-on-error` 见 [`+replace-pages`](../cli/lark-slides-replace-pages.md)：
+`+update-slide` 要完整 `<slide>`，不接受 `--parts`；一次一页，多页就每页各跑一次。content 本身就是整页，直接对它 lint，不用像块级替换那样先拼回原页。先确认页面没有 `<undefined>`，参数见 [`+update-slide`](../cli/lark-slides-update-slide.md)：
 
 ```bash
-jq -n --arg sid "$SID" --rawfile c page-01.xml \
-  '[{slide_id:$sid,content:$c}]' > pages.json
-lark-cli slides +replace-pages --presentation "$PID" --pages @pages.json --dry-run
-lark-cli slides +replace-pages --presentation "$PID" --pages @pages.json
+# page-01.xml 是这一页改好的完整 <slide>，已 lint 通过
+lark-cli slides +update-slide --presentation "$PID" --slide-id "$SID" --content @page-01.xml --dry-run
+lark-cli slides +update-slide --presentation "$PID" --slide-id "$SID" --content @page-01.xml
 ```
 
 **加页与删页**：`--before-slide-id` 指定插入位置，省掉就是追加到末尾。
@@ -284,7 +283,7 @@ lark-cli slides +delete-slide --presentation "$PID" --slide-id "$SID"
 ## 相关文档
 
 - [lark-slides-replace-slide.md](../cli/lark-slides-replace-slide.md) — `+replace-slide` 命令、parts 字段、合法根元素、报错（编辑主命令，细节都在这）
-- [lark-slides-replace-pages.md](../cli/lark-slides-replace-pages.md) — 多页整页重建
+- [lark-slides-update-slide.md](../cli/lark-slides-update-slide.md) — 整页原地覆盖（多页就每页各跑一次）
 - [lark-slides-xml-presentation-slide-get.md](../cli/lark-slides-xml-presentation-slide-get.md) — 单页读取
 - [lark-slides-add-slide.md](../cli/lark-slides-add-slide.md) — 追加/插入新页（`--before-slide-id` 定位）
 - [lark-slides-delete-slide.md](../cli/lark-slides-delete-slide.md) — 删除整页（不可逆）

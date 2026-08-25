@@ -954,6 +954,307 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         )
         self.assertTrue(all(issue["code"] == "sxsd_unsupported_attr" for issue in slide_issues))
 
+    def test_lint_xml_accepts_chart_with_numeric_value_dimension(self) -> None:
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea><chartPlot type="column"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="季度">Q1,Q2,Q3,Q4</chartField></dim1>
+                    <dim2><chartField name="营收">52,48,55,68</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 0)
+
+    def test_lint_xml_rejects_chart_without_numeric_value_dimension(self) -> None:
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea><chartPlot type="column"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="季度">Q1,Q2,Q3,Q4</chartField></dim1>
+                    <dim2><chartField name="渠道">直营,分销,线上,其他</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 1)
+        issue = result["issues"][0]
+        self.assertEqual(issue["code"], "chart_missing_numeric_dimension")
+        self.assertEqual(issue["tag"], "chartData")
+        self.assertEqual(issue["path"], "slide[1]/data/chart[1]/chartData[1]")
+        self.assertEqual(
+            issue["target"]["chart_xml_path"], "slide[1]/data/chart[1]"
+        )
+
+    def test_lint_xml_chart_dimension_issue_carries_slide_and_chart_locators(self) -> None:
+        # Two bad charts on slide 1 plus one on slide 2 must each be independently locatable.
+        result = xml_lint.lint_xml(
+            """
+            <presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">
+              <slide><data>
+                <chart id="chart_a" topLeftX="10" topLeftY="10" width="300" height="160">
+                  <chartPlotArea><chartPlot type="column"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="a">Q1,Q2</chartField></dim1>
+                    <dim2><chartField name="b">x,y</chartField></dim2>
+                  </chartData>
+                </chart>
+                <chart topLeftX="400" topLeftY="10" width="300" height="160">
+                  <chartPlotArea><chartPlot type="pie"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="c">直营,分销</chartField></dim1>
+                    <dim2><chartField name="d">高,低</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data></slide>
+              <slide><data>
+                <chart topLeftX="10" topLeftY="10" width="300" height="160">
+                  <chartPlotArea><chartPlot type="bar"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="e">A,B</chartField></dim1>
+                    <dim2><chartField name="f">C,D</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data></slide>
+            </presentation>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 3)
+        paths = [issue["target"]["chart_xml_path"] for issue in result["issues"]]
+        self.assertEqual(
+            paths,
+            [
+                "slide[1]/data/chart[1]",
+                "slide[1]/data/chart[2]",
+                "slide[2]/data/chart[1]",
+            ],
+        )
+        self.assertEqual(result["issues"][0]["target"]["chart_id"], "chart_a")
+
+    def test_lint_xml_chart_dimension_trusts_declared_value_type(self) -> None:
+        # valueType="number" satisfies the axis regardless of sample text; both "string" fails even
+        # when the text looks numeric, because the author declared it categorical.
+        numeric_declared = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea><chartPlot type="column"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="x" valueType="string">Q1,Q2</chartField></dim1>
+                    <dim2><chartField name="y" valueType="number">52,48</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+        self.assertEqual(numeric_declared["summary"]["error_count"], 0)
+
+        both_string = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea><chartPlot type="column"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="x" valueType="string">1,2</chartField></dim1>
+                    <dim2><chartField name="y" valueType="string">3,4</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+        self.assertEqual(both_string["summary"]["error_count"], 1)
+        self.assertEqual(
+            both_string["issues"][0]["code"], "chart_missing_numeric_dimension"
+        )
+
+    def test_lint_xml_accepts_chart_numeric_category_dimension(self) -> None:
+        # dim1 numeric (years), dim2 labels: the numeric dim1 still drives the value axis.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea><chartPlot type="bar"/></chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="年份">2021,2022,2023</chartField></dim1>
+                    <dim2><chartField name="标签">高,中,低</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 0)
+
+    def test_lint_xml_chart_numeric_dimension_ignores_parsed_values_echo(self) -> None:
+        # Readback echoes each value into <chartParsedValues>; the numeric test must read only the
+        # author's original run, so a category-only chart still fails despite numeric-looking echoes.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea><chartPlot type="column"/></chartPlotArea>
+                  <chartData>
+                    <dim1>
+                      <chartField name="季度">Q1,Q2<chartParsedValues>1</chartParsedValues></chartField>
+                    </dim1>
+                    <dim2>
+                      <chartField name="渠道">直营,分销<chartParsedValues>2</chartParsedValues></chartField>
+                    </dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 1)
+        self.assertEqual(
+            result["issues"][0]["code"], "chart_missing_numeric_dimension"
+        )
+
+    def test_lint_xml_rejects_chart_format_template_placeholder(self) -> None:
+        # `format` is an Excel-style number-format code; a "{value}bp" placeholder borrowed from
+        # other chart libraries renders its braces verbatim, so each occurrence must be flagged.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart id="chart_bp" topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea>
+                    <chartPlot type="column">
+                      <chartLabels value="true" format="{value}bp"/>
+                    </chartPlot>
+                    <chartAxes>
+                      <chartAxis type="y" position="left">
+                        <chartLabel fontSize="9" format="{value}bp"/>
+                      </chartAxis>
+                    </chartAxes>
+                  </chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="季度">Q1,Q2,Q3,Q4</chartField></dim1>
+                    <dim2><chartField name="利差" valueType="number">16,14,12,10</chartField></dim2>
+                  </chartData>
+                  <chartTooltip format="{value}bp"/>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 3)
+        codes = {issue["code"] for issue in result["issues"]}
+        self.assertEqual(codes, {"chart_invalid_format_code"})
+        tags = sorted(issue["tag"] for issue in result["issues"])
+        self.assertEqual(tags, ["chartLabel", "chartLabels", "chartTooltip"])
+        for issue in result["issues"]:
+            self.assertEqual(issue["target"]["chart_id"], "chart_bp")
+            self.assertEqual(issue["target"]["chart_xml_path"], "slide[1]/data/chart[1]")
+            self.assertEqual(issue["target"]["format"], "{value}bp")
+
+    def test_lint_xml_accepts_chart_excel_style_format_code(self) -> None:
+        # Real number-format codes (0, 0%, #,##0.00) carry no braces and must pass untouched.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea>
+                    <chartPlot type="column">
+                      <chartLabels value="true" format="0"/>
+                    </chartPlot>
+                    <chartAxes>
+                      <chartAxis type="y" position="left">
+                        <chartLabel fontSize="9" format="#,##0.00"/>
+                      </chartAxis>
+                    </chartAxes>
+                  </chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="季度">Q1,Q2,Q3,Q4</chartField></dim1>
+                    <dim2><chartField name="利差" valueType="number">16,14,12,10</chartField></dim2>
+                  </chartData>
+                  <chartTooltip format="0.00%"/>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 0)
+
+    def test_lint_xml_rejects_chart_labels_with_nothing_to_show(self) -> None:
+        # value/category/percentage all false leaves the data label empty; value defaults to true,
+        # so this only trips when value is explicitly turned off without enabling the other two.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart id="chart_blank" topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea>
+                    <chartPlot type="column">
+                      <chartLabels value="false"/>
+                    </chartPlot>
+                  </chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="季度">Q1,Q2,Q3,Q4</chartField></dim1>
+                    <dim2><chartField name="利差" valueType="number">16,14,12,10</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 1)
+        issue = result["issues"][0]
+        self.assertEqual(issue["code"], "chart_labels_nothing_to_show")
+        self.assertEqual(issue["target"]["chart_id"], "chart_blank")
+        self.assertEqual(issue["target"]["chart_xml_path"], "slide[1]/data/chart[1]")
+
+    def test_lint_xml_accepts_chart_labels_with_category_only(self) -> None:
+        # value explicitly off but category on still has content to render, so it must pass.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <chart topLeftX="80" topLeftY="80" width="300" height="160">
+                  <chartPlotArea>
+                    <chartPlot type="column">
+                      <chartLabels value="false" category="true"/>
+                    </chartPlot>
+                  </chartPlotArea>
+                  <chartData>
+                    <dim1><chartField name="季度">Q1,Q2,Q3,Q4</chartField></dim1>
+                    <dim2><chartField name="利差" valueType="number">16,14,12,10</chartField></dim2>
+                  </chartData>
+                </chart>
+              </data>
+            </slide>
+            """
+        )
+
+        self.assertEqual(result["summary"]["error_count"], 0)
+
     def test_lint_xml_reports_gradient_shorthand_attrs_on_fill_color(self) -> None:
         result = xml_lint.lint_xml(
             """

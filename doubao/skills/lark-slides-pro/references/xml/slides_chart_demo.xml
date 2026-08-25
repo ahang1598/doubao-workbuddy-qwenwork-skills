@@ -298,6 +298,8 @@
         <chartPlotArea>
           <chartPlot type="column">
             <chartExtra/>
+            <!-- 数据标签：柱顶直接显示数值；灰色不抢主色。column 的 position 可选 outside / center / top / bottom -->
+            <chartLabels position="outside" value="true" fontSize="9" color="rgba(89, 89, 89, 1)"/>
           </chartPlot>
           <chartAxes>
             <chartAxis type="x">
@@ -522,6 +524,8 @@
         <chartPlotArea>
           <chartPlot type="line">
             <chartExtra/>
+            <!-- 数据标签：折线各数据点旁显示数值；灰色不抢主色 -->
+            <chartLabels position="auto" value="true" fontSize="9" color="rgba(89, 89, 89, 1)"/>
           </chartPlot>
           <chartAxes>
             <chartAxis type="x">

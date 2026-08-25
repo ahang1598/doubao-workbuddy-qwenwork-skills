@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：103
-- 当前索引文件数：2314
-- 最近变更：[2026-08-22-165330](doubao/change-logs/2026-08-22-165330.md) - Doubao 本次同步新增 85 个文件、修改 21 个文件、删除 74 个文件。 新增条目：skills/byted-mediakit-audio, skills/byted-mediakit-editing, skills/byted-mediakit-image, skills/byted-mediakit-shared, skills/byte...
+- 当前索引条目数：104
+- 当前索引文件数：2317
+- 最近变更：[2026-08-25-205036](doubao/change-logs/2026-08-25-205036.md) - Doubao 本次同步新增 4 个文件、修改 11 个文件、删除 1 个文件。 新增条目：skills/doubao-enterprise-search。 受影响范围：skills/doubao-enterprise-search, skills/lark-doc, skills/lark-slides-pro。
 
 ## 数据来源
 
@@ -59,6 +59,7 @@
 | doubao-earnings-analysis | `doubao/skills/doubao-earnings-analysis` | skill | 23 | 上市公司财报/季报/年报/业绩的深度因果分析，覆盖A股、港股、美股和中概股。用于解读财报表现、亮点/风险、收入利润等指标变动、超预期或低于预期原因，以及针对毛利率、现金流、费用率等具体变量的归因问题。不用于纯股价、估值、评级、目标价、非财报新闻或未锚定具体公司报告期的宏观行业讨论。 |
 | doubao-ecommerce-compliance-tax-logistics | `doubao/skills/doubao-ecommerce-compliance-tax-logistics` | skill | 12 | Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod... |
 | doubao-ecommerce-proposal | `doubao/skills/doubao-ecommerce-proposal` | skill | 5 | 电商活动策划专家。用于生成、改写、优化完整电商活动策划方案，并默认交付一份已经本地落地、可用浏览器打开验证的 HTML 网页版方案。覆盖淘宝/天猫、抖音电商、京东、得物、拼多多、小红书、Amazon、TikTok Shop、Shopee、Lazada、eBay、Shopify/独立站等平台的节点大促、店铺活动、平台活动、直播间活动、品类活动、品牌日、上新、清仓、会员复购、内容种草到成交、站内外联动与跨境电商活动。若用户只要商品标题... |
+| doubao-enterprise-search | `doubao/skills/doubao-enterprise-search` | skill | 1 | 判断是否调用 `enterprise_agentic_search` 工具前，必须先完整读取 `doubao-enterprise-search` skill。适用场景包括：用户显式使用 /doubao-enterprise-search；问题明确或高度可能依赖企业内部资料、内部口径、内部系统、业务背景、历史讨论、协作记录、制度流程、员工权益、差旅报销，或内部产品、项目、客户、业务数据及非飞书通讯录 ID/UID/账号/标识；用户... |
 | doubao-finance-model-builder | `doubao/skills/doubao-finance-model-builder` | skill | 116 | 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。 |
 | doubao-game-designer | `doubao/skills/doubao-game-designer` | skill | 74 | 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。 |
 | doubao-headlines-calendar | `doubao/skills/doubao-headlines-calendar` | skill | 8 | 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用... |
@@ -106,7 +107,7 @@
 | lark-base | `doubao/skills/lark-base` | skill | 27 | 飞书多维表格（Base）：基于需求搭建系统和应用，或把已有数据、零散信息结构化，搭建成可持续记录、收集、整理、关联、协作、统计、提醒和流转的数据工具与管理系统。适用于个人、组织、企业的日常记录、清单登记、资料库、报名问卷、进度跟踪及项目/客户/订单/库存等系统和应用的生成需求；用户想把信息记下来、管起来、统计查看、持续更新或自动处理时使用，或提及 Base/多维表格/bitable、提供 Base 链接时使用；已有 Base 的查... |
 | lark-calendar | `doubao/skills/lark-calendar` | skill | 11 | 飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-vc）、待办任务（走 lark-task） |
 | lark-contact | `doubao/skills/lark-contact` | skill | 4 | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。 |
-| lark-doc | `doubao/skills/lark-doc` | skill | 61 | 文档全场景处理：本地 Office Word（.docx/.doc）与在线文档（飞书、doubao.com 的 `/docs`、`/docx`、`/wiki` 链接）的阅读、创建和编辑。当任务涉及本地 Word 或在线 Doc/Wiki 时使用。不处理 PDF、Sheet、Slide、Excel、PowerPoint、Base 表内操作。 |
+| lark-doc | `doubao/skills/lark-doc` | skill | 62 | 文档全场景处理：本地 Office Word（.docx/.doc）与在线文档（飞书、doubao.com 的 `/docs`、`/docx`、`/wiki` 链接）的阅读、创建和编辑。当任务涉及本地 Word 或在线 Doc/Wiki 时使用。不处理 PDF、Sheet、Slide、Excel、PowerPoint、Base 表内操作。 |
 | lark-drive | `doubao/skills/lark-drive` | skill | 61 | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入。用户需要整理云盘目录、处理云空间资源 URL/token、判断链接类型/真实 token/标题，或导入 Word/Markdown/Excel/CSV/PPTX/.base 为 docx/sheet/bitab... |
 | lark-im | `doubao/skills/lark-im` | skill | 58 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。 |
 | lark-mail | `doubao/skills/lark-mail` | skill | 33 | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks. |
@@ -116,7 +117,7 @@
 | lark-okr | `doubao/skills/lark-okr` | skill | 19 | 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估 |
 | lark-openapi-explorer | `doubao/skills/lark-openapi-explorer` | skill | 1 | 飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。 |
 | lark-sheets | `doubao/skills/lark-sheets` | skill | 39 | 表格全场景（本地 Excel/CSV 与飞书/doubao 在线表格）：创建、读写、分析、计算、建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
-| lark-slides-pro | `doubao/skills/lark-slides-pro` | skill | 38 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| lark-slides-pro | `doubao/skills/lark-slides-pro` | skill | 39 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | lark-task | `doubao/skills/lark-task` | skill | 18 | 飞书任务：管理任务、清单和任务智能体。创建待办任务、查看和更新任务状态、拆分子任务、组织任务清单、分配协作成员、上传任务附件、注册或注销任务智能体、更新任务智能体的主页数据、写入智能体任务记录。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理项目清单或给他人分配任务、为任务上传附件文件、注册注销任务智能体、更新智能体主页数据、写入任务记录时使用。 |
 | lark-vc | `doubao/skills/lark-vc` | skill | 8 | 飞书视频会议：查询进行中的会议列表（含会议 ID）、读取会中实时内容（发言、聊天、共享等）、发送会中消息，以及搜索历史会议、查询会议纪要（总结/待办/章节/逐字稿）和参会人快照。本技能不覆盖 Agent 真实入会/离会；查询未来日程走 lark-calendar |
 | lark-whiteboard | `doubao/skills/lark-whiteboard` | skill | 31 | 飞书画板：查询和编辑飞书云文档中的画板。支持导出画板为预览图片、导出原始节点结构、使用多种格式更新画板内容。 当用户需要查看画板内容、导出画板图片、编辑画板时使用此 skill。不负责：飞书云文档内容编辑（lark-doc）、文档内嵌电子表格/Base（lark-sheets / lark-base）。 |
@@ -134,6 +135,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-25-205036 | [2026-08-25-205036](doubao/change-logs/2026-08-25-205036.md) | Doubao 本次同步新增 4 个文件、修改 11 个文件、删除 1 个文件。 新增条目：skills/doubao-enterprise-search。 受影响范围：skills/doubao-enterprise-search, skills/lark-doc, skills/lark-slides-pro。 |
 | 2026-08-22-165330 | [2026-08-22-165330](doubao/change-logs/2026-08-22-165330.md) | Doubao 本次同步新增 85 个文件、修改 21 个文件、删除 74 个文件。 新增条目：skills/byted-mediakit-audio, skills/byted-mediakit-editing, skills/byted-mediakit-image, skills/byted-mediakit-shared, skills/byte... |
 | 2026-08-20-180002 | [2026-08-20-180002](doubao/change-logs/2026-08-20-180002.md) | Doubao 本次同步新增 63 个文件、修改 67 个文件、删除 2 个文件。 新增条目：skills/artifact-preview, skills/browser-use-automation, skills/verifier-hub。 受影响范围：skills/artifact-preview, skills/browser-use-auto... |
 | 2026-08-14-222038 | [2026-08-14-222038](doubao/change-logs/2026-08-14-222038.md) | Doubao 本次同步新增 132 个文件、修改 162 个文件、删除 84 个文件。 新增条目：skills/computer-use, skills/lark-slides-pro。 移除条目已归档：skills/doubao-finance-sector, skills/lark-ppt。 受影响范围：skills/computer-use, s... |
