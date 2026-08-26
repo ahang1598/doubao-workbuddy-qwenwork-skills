@@ -7,8 +7,8 @@
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
 - 条目数：104
-- 文件数：2317
-- 最近同步：2026-08-25 20:50:36 +0800
+- 文件数：2328
+- 最近同步：2026-08-26 18:00:01 +0800
 
 ## 场景导航（按用途）
 
@@ -151,6 +151,7 @@
 - **doubao-dpa-drafter** — DPA数据处理协议专业起草；当用户需要起草数据处理协议、DPA协议、数据委托处理协议、数据共同处理协议或数据对外提供协议时使用。仅做数据合规类协议起草，通用商务合同或非数据类合同请改用对应 skill
 - **doubao-ecommerce-compliance-tax-logistics** — Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod...
 - **doubao-finance-model-builder** — 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。
+- **doubao-identity** — 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）时，必须先调用Skill，并按其中官方口径回答，不得仅...
 - **doubao-marketing-material-review** — 营销素材审核。当用户上传待审核的广告宣传语、营销海报、社交媒体推广文案、直播话术等营销素材时，从虚假宣传、夸大宣传、绝对化用语、比较广告、引证数据真实准确性、价格违规、有奖营销、知识产权、风险行业违规宣传（如金融、医疗、三品一械、教育等特殊监管行业）、数据对外披露、不当承诺或表达等维度开展全面审查与风险扫描，对违规点归类、逐条分析判断并直接给出修改建议。当用户提到"营销素材审核""广告文案合规审查""宣传语合规""看看这段宣传/文...
 - **doubao-patent-drafting** — 用户要求基于技术交底书撰写或修改中国发明、实用新型专利申请文件，或者审查已有权利要求书时使用。典型触发包括“专利撰写”“专利申请”“技术交底书”“权利要求”“说明书”“实用新型”“发明专利”。专利检索、FTO/侵权分析、无效宣告、审查意见答复、商标或著作权是相邻业务：用户只提这些时不适用本流程；与撰写需求混在一起提出时，撰写照常进行，但最终回复必须对其中每一项其他诉求逐一说明处理情况——漏掉任何一项，这次交付就是不完整的。
 - **doubao-personal-info-audit** — 开展中国个人信息保护合规审计、审计触发判断、证据登记与证明力评价、事实和不确定性分析、数据分类、处理活动盘点、法律角色和处理情形识别、适用规则检索、上下位法与配套规范衔接、26模块107子项评价、风险与整改设计，并生成可追溯的Word审计报告和Excel底稿。用于个人信息保护法、网络数据安全、App/SDK、敏感个人信息、未成年人、人脸识别、自动化决策、AI、委托共享、数据出境、监管检查准备及整改复核任务。
@@ -201,7 +202,7 @@
 - **doubao-ecommerce-proposal** — 电商活动策划专家。用于生成、改写、优化完整电商活动策划方案，并默认交付一份已经本地落地、可用浏览器打开验证的 HTML 网页版方案。覆盖淘宝/天猫、抖音电商、京东、得物、拼多多、小红书、Amazon、TikTok Shop、Shopee、Lazada、eBay、Shopify/独立站等平台的节点大促、店铺活动、平台活动、直播间活动、品类活动、品牌日、上新、清仓、会员复购、内容种草到成交、站内外联动与跨境电商活动。若用户只要商品标题...
 - **doubao-enterprise-search** — 判断是否调用 `enterprise_agentic_search` 工具前，必须先完整读取 `doubao-enterprise-search` skill。适用场景包括：用户显式使用 /doubao-enterprise-search；问题明确或高度可能依赖企业内部资料、内部口径、内部系统、业务背景、历史讨论、协作记录、制度流程、员工权益、差旅报销，或内部产品、项目、客户、业务数据及非飞书通讯录 ID/UID/账号/标识；用户...
 - **doubao-headlines-calendar** — 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用...
-- **doubao-identity** — 用于回答与豆包产品本身相关的问答，覆盖豆包会员/专业版、隐私安全、记忆功能的知识问答场景，不用于通用创作、翻译、代码、竞品对比或查询用户个人账户/订单/额度数据。
+- **doubao-identity** — 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）时，必须先调用Skill，并按其中官方口径回答，不得仅...
 - **doubao-multiplatform-rewrite** — 基于用户提供的已有素材（母稿、文章、新闻稿、活动稿、产品稿、报告摘要、访谈素材、口播稿、散乱素材等），改写成可发布的多平台分发版本，标准场景为≥2个平台，有素材的单平台改写也可支持，覆盖微信公众号、短视频脚本、微博等平台。当用户提到"一稿多发""多平台分发""内容矩阵""跨平台改写""同一内容发多个平台""分发执行包"，或提供母稿并说"适合不同平台""不同平台都能发""平台化处理""适合平台传播""改成某平台版"时触发。不适用场景...
 - **doubao-pc-optimizer** — 用户需要清理磁盘垃圾、释放空间、处理电脑卡顿或开机慢、优化 Windows/macOS 性能、提升游戏帧率、生成安全清理脚本，或提到 C 盘满、磁盘空间不足、掉帧、运行慢时使用。
 - **doubao-product-selection** — 电商选品与品类机会分析技能。根据商家的预算、目标平台、货源优势，按"市场需求×竞争度×利润空间×季节性×复购率"五维打分，输出3-5个候选品类及切入建议。适用于新手不知道卖什么、老商家想拓新品类、想判断某个品值不值得进货的场景。
@@ -240,7 +241,7 @@
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | 设计可视化 | doubao-academic-polish | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
 | doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | 研究/调研 | doubao-academic-researcher | 21 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
 | doubao-announcement-analysis | `doubao/skills/doubao-announcement-analysis` | 金融研究 | doubao-announcement-analysis | 27 | 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告... |
-| doubao-app-builder | `doubao/skills/doubao-app-builder` | 数据分析 | doubao-app-builder | 1 | 统一处理网页应用的生成、编辑，以及围绕已生成产物的问答。既负责把自然语言需求端到端转成可运行、可预览、可交付的网页应用产物，也负责在用户追问产物时基于真实产物作答。当用户要生成网站、H5、网页应用、管理后台、数据看板时使用。当用户要编辑已有网页应用、做功能新增、页面调整或 Bug 修复时使用。当用户提供 PRD、文档、截图或素材包并要求产出可预览网页应用时使用。当用户针对已生成的网页应用，要求总结或解读网页内容、查看或分析源码、解... |
+| doubao-app-builder | `doubao/skills/doubao-app-builder` | 数据分析 | doubao-app-builder | 12 | 统一处理网页应用的生成、编辑，以及围绕已生成产物的问答。既负责把自然语言需求端到端转成可运行、可预览、可交付的网页应用产物，也负责在用户追问产物时基于真实产物作答。当用户要生成网站、H5、网页应用、管理后台、数据看板时使用。当用户要编辑已有网页应用、做功能新增、页面调整或 Bug 修复时使用。当用户提供 PRD、文档、截图或素材包并要求产出可预览网页应用时使用。当用户针对已生成的网页应用，要求总结或解读网页内容、查看或分析源码、解... |
 | doubao-book-writer | `doubao/skills/doubao-book-writer` | 其他 | doubao-book-writer | 72 | 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。 |
 | doubao-clinical-decision-support | `doubao/skills/doubao-clinical-decision-support` | 研究/调研 | doubao-clinical-decision-support | 17 | 循证医学临床辅助决策 Skill。用户需要分析临床问题，解释临床表现，提供循证医学判断时使用，用于针对临床问题，结合病例资料，查阅指南和文献等循证依据，进行科学回答与诊疗决策，进行诊断鉴别、检查路径、用药安全、治疗比较、预后和风险分析。医学文献检索调研改用 doubao-medical-literature-search，单纯报告解读改用 doubao-medical-report，其他医学文献分析场景使用 doubao-medi... |
 | doubao-compliance-assessment-public | `doubao/skills/doubao-compliance-assessment-public` | 法务/合规 | doubao-compliance-assessment-public | 28 | 基于公开法律来源开展交互式合规评估并生成可审阅报告。用户要求评估业务法律风险、审阅 PRD、判断监管红线或生成合规报告时使用。 |
@@ -265,7 +266,7 @@
 | doubao-game-designer | `doubao/skills/doubao-game-designer` | 设计可视化 | doubao-game-designer | 74 | 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。 |
 | doubao-headlines-calendar | `doubao/skills/doubao-headlines-calendar` | 营销/内容运营 | doubao-headlines-calendar | 8 | 跨平台内容生成、改写、评估和A/B测试标题，并结合账号定位、受众、产能和节点规划可执行的周度或月度内容选题日历。用于爆款标题、多平台标题适配、标题优化、标题拆解、A/B标题、周选题、月度排期、栏目规划、热点日历和新媒体内容策划；不用于直接写完整文章、小说、脚本、PPT或其他成品。能力范围外或多意图任务先说明边界并提供可转化、分模块交付方案。除非用户明确指定其他格式，必须实际创建、写入并校验飞书/Lark文档后返回可访问链接；不得用... |
 | doubao-human-signal | `doubao/skills/doubao-human-signal` | 其他 | doubao-human-signal | 13 | 去除或避免文本中的 AI 味。用于用户强制调用本 Skill，或写作/改写时提到“不要有 AI 味”“不要太假”“真情实感”“有人感”，或对已有文本/上一轮输出反馈“太像 AI”“太空泛”“太模板”“太官方”“不像我说的”等场景。 |
-| doubao-identity | `doubao/skills/doubao-identity` | 通用工具/平台 | doubao-identity | 6 | 用于回答与豆包产品本身相关的问答，覆盖豆包会员/专业版、隐私安全、记忆功能的知识问答场景，不用于通用创作、翻译、代码、竞品对比或查询用户个人账户/订单/额度数据。 |
+| doubao-identity | `doubao/skills/doubao-identity` | 法务/合规 | doubao-identity | 6 | 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）时，必须先调用Skill，并按其中官方口径回答，不得仅... |
 | doubao-industry-analysis | `doubao/skills/doubao-industry-analysis` | 金融研究 | doubao-industry-analysis | 15 | 针对某一行业（半导体、新能源、医药、消费等）的中长期基本面与产业研究，覆盖行业定义与规模、产业链与竞争格局、政策与驱动力、景气周期、趋势研判与三情景、盈利质量与落地建议。先想清楚这篇报告要证明什么判断（判断主线），再用三级数据分级取证、按固定五大板块写透，最终交付一份可直接用于战略规划、投资决策与商业化落地的飞书深度报告。对于一句话能答的问题，不要凭训练记忆或随手搜索口头作答，一律走本 Skill 的结构化多源论证。不触发并转其他... |
 | doubao-journal-format | `doubao/skills/doubao-journal-format` | 文档/表格/PPT | doubao-journal-format | 14 | 用于对学术论文类 Word/DOCX 文档进行期刊、学校、会议或课程要求的格式排版与修复。当用户需要把论文原稿套用.docx 模板或明确格式规则、或提到论文排版、期刊投稿格式、学位论文格式、会议论文模板、时使用；如果同一请求同时包含论文 Word 排版和任何非排版任务，必须先停止并询问用户选择“只做格式排版”还是“作为复合任务拆分处理”，在用户明确选择前不得执行排版。不用于论文写作、润色、降重、翻译、代写、文献检索、补引用、验证引... |
 | doubao-listing-localization | `doubao/skills/doubao-listing-localization` | 营销/内容运营 | doubao-listing-localization | 10 | Cross-border ecommerce Listing and Product Optimization for Amazon, TEMU, Walmart Marketplace, TikTok Shop, Shopify, AliExpress, Etsy, Google Shopping, Shopee, Lazada, Ozon, and other marketplace or independent-store... |

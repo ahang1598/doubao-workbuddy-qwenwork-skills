@@ -1,6 +1,6 @@
 ---
 name: doubao-identity
-description: 用于回答与豆包产品本身相关的问答，覆盖豆包会员/专业版、隐私安全、记忆功能的知识问答场景，不用于通用创作、翻译、代码、竞品对比或查询用户个人账户/订单/额度数据。
+description: 当用户询问豆包工作、豆包专业版、豆包会员与付费服务（包含权益、充值、退款、发票、订阅、连续包月/包年比较、学生优惠、录音转写、创作额度等）、平台规则与隐私安全（使用条款、隐私政策、内容安全、客服投诉、聊天记录存储/删除/恢复、数据是否用于训练、个人数据、定位、IP）、记忆功能（用途、可记录内容、查询/删除/清空、开关及生效规则）或记忆认知（为什么记得、知道、忘记、记错个人信息）时，必须先调用Skill，并按其中官方口径回答，不得仅凭模型记忆推测或以联网搜索替代。与上述主题无关的普通知识问答、闲聊和其他任务不调用。
 
 ---
 
@@ -11,6 +11,7 @@ description: 用于回答与豆包产品本身相关的问答，覆盖豆包会�
 
 使用该 Skill 当用户询问：
 - 豆包会员等级、权益、付费、充值、退款、发票、订阅等会员问题。
+- 豆包工作（工作任务模式、豆包工作客户端、技能/连接器/工作伙伴、定时任务、本地电脑/云电脑等）相关问题。
 - 使用条款、隐私政策、内容规范、安全规则、客服与投诉渠道相关问题。
 - 记忆功能、记忆管理、个人数据、定位、IP、拒绝用于模型训练、保密、聊天记录存储/删除/恢复等隐私与数据处理问题。
 - 其他无法明确分类但与豆包产品本身相关的问题。
@@ -23,7 +24,7 @@ description: 用于回答与豆包产品本身相关的问答，覆盖豆包会�
 ## 核心流程
 
 1. **识别是否触发**：判断问题是否属于豆包产品本身相关问答。若只是普通任务且没有询问豆包产品说明，不触发本 Skill。
-2. **选择内置正文摘录**：先读取 `references/doubao-official-content.md` 索引，再按问题主题读取对应正文文件：专业版套餐/定价/额度/开通/购买读取 `references/doubao-pro-membership-plans.md`；退款/发票/异常/账号/投诉/能力边界读取 `references/doubao-pro-membership-support.md`；隐私/数据/聊天记录/IP/定位读取 `references/doubao-privacy-data.md`；记忆功能读取 `references/doubao-memory.md`。这些文件均标明来源 URL，并作为本 Skill 的主查询资料。
+2. **选择内置正文摘录**：先读取 `references/doubao-official-content.md` 索引，再按问题主题读取对应正文文件：专业版/豆包订阅套餐/定价/额度/开通/购买、豆包工作相关问题读取 `references/doubao-pro-membership-plans.md`；退款/发票/异常/账号/投诉/能力边界读取 `references/doubao-pro-membership-support.md`；隐私/数据/聊天记录/IP/定位读取 `references/doubao-privacy-data.md`；记忆功能读取 `references/doubao-memory.md`。这些文件均标明来源 URL，并作为本 Skill 的主查询资料。
 3. **以官方内容为准**：回答前校验依据来自内置摘录；若同时看到其他来源内容，只有在不与官方内容冲突时才可作为辅助线索，最终结论以官方内容为准。
 4. **按原意回答**：严格依据官方内容原文和含义回复，不自行修改、补充或引用文档未提及的内容；可以用简洁自然语言组织，但不得改变限制、路径、权益或规则含义。
 5. **处理未覆盖问题**：若内置摘录和来源 URL 均未覆盖用户问题，明确回复“该问题暂无官方说明”，并引导用户通过官方客服渠道咨询，不提供通用猜测。
@@ -65,8 +66,8 @@ description: 用于回答与豆包产品本身相关的问答，覆盖豆包会�
 ## 参考文件
 
 - `references/doubao-official-content.md`：官方网页正文摘录索引，处理豆包产品本身相关问题时先读取。
-- `references/doubao-pro-membership-plans.md`：豆包专业版套餐、定价、额度、开通与购买等正文摘录。
-- `references/doubao-pro-membership-support.md`：豆包专业版退款财务、购买后异常、账号管理、投诉类问题和能力边界等正文摘录。
+- `references/doubao-pro-membership-plans.md`：豆包专业版/豆包订阅套餐、定价、额度、开通与购买、豆包工作等正文摘录。
+- `references/doubao-pro-membership-support.md`：豆包专业版/豆包订阅退款财务、购买后异常、账号管理、投诉类问题和能力边界等正文摘录。
 - `references/doubao-privacy-data.md`：豆包隐私保护与数据安全相关正文摘录。
 - `references/doubao-memory.md`：豆包记忆功能相关正文摘录。
 
