@@ -143,50 +143,56 @@
 
 ```echarts
 {
-  backgroundColor: 'transparent',
+  backgroundColor: "transparent",
   title: {
-    text: '季度收入趋势（示例）',
-    left: 'center',
-    textStyle: { color: '#1A1B1C', fontSize: 15, fontWeight: 600 }
+    text: "季度收入趋势（示例）",
+    left: "center",
+    textStyle: { color: "#1A1B1C", fontSize: 15, fontWeight: 600 },
   },
   tooltip: {
-    trigger: 'axis',
-    triggerOn: 'click',
-    renderMode: 'richText',
+    trigger: "axis",
+    triggerOn: "click",
+    renderMode: "richText",
     confine: true,
     textStyle: { fontSize: 10, lineHeight: 14 },
-    padding: [6, 8]
+    padding: [6, 8],
   },
   legend: {
-    top: 28,
+    top: 36,
     itemWidth: 14,
     itemHeight: 8,
-    textStyle: { color: '#6B7280', fontSize: 11 }
+    textStyle: { color: "#6B7280", fontSize: 11 },
   },
-  grid: { left: 44, right: 18, top: 64, bottom: 32, containLabel: true },
+  grid: {
+    left: 32,
+    right: 54,
+    top: 84,
+    bottom: 32,
+    containLabel: true,
+  },
   xAxis: {
-    type: 'category',
-    name: '季度',
-    data: ['Q1', 'Q2', 'Q3', 'Q4'],
-    axisLabel: { color: '#555', fontSize: 11, hideOverlap: true }
+    type: "category",
+    name: "季度",
+    data: ["Q1", "Q2", "Q3", "Q4"],
+    axisLabel: { color: "#555", fontSize: 11, hideOverlap: true },
   },
   yAxis: {
-    type: 'value',
-    name: '收入（万元）',
-    axisLabel: { color: '#555', fontSize: 11 }
+    type: "value",
+    name: "收入（万元）",
+    axisLabel: { color: "#555", fontSize: 11 },
   },
   series: [
     {
-      name: '收入',
-      type: 'line',
+      name: "收入",
+      type: "line",
       smooth: true,
       data: [320, 410, 380, 520],
-      itemStyle: { color: '#8BC8EA' },
-      lineStyle: { color: '#8BC8EA', width: 2 },
-      areaStyle: { color: 'rgba(139, 200, 234, 0.18)' },
-      labelLayout: { hideOverlap: true }
-    }
-  ]
+      itemStyle: { color: "#8BC8EA" },
+      lineStyle: { color: "#8BC8EA", width: 2 },
+      areaStyle: { color: "rgba(139, 200, 234, 0.18)" },
+      labelLayout: { hideOverlap: true },
+    },
+  ],
 }
 ```
 
@@ -194,36 +200,100 @@
 
 ```echarts
 {
-  backgroundColor: 'transparent',
+  backgroundColor: "transparent",
   title: {
-    text: '渠道占比（示例）',
-    left: 'center',
-    textStyle: { color: '#1A1B1C', fontSize: 15, fontWeight: 600 }
+    text: "渠道占比（示例）",
+    left: "center",
+    textStyle: { color: "#1A1B1C", fontSize: 15, fontWeight: 600 },
   },
   tooltip: {
-    trigger: 'item',
-    triggerOn: 'click',
-    renderMode: 'richText',
+    trigger: "item",
+    triggerOn: "click",
+    renderMode: "richText",
     confine: true,
     textStyle: { fontSize: 10, lineHeight: 14 },
-    padding: [6, 8]
+    padding: [6, 8],
   },
-  legend: { bottom: 0, type: 'scroll', itemWidth: 14, itemHeight: 8, textStyle: { color: '#6B7280', fontSize: 11 } },
+  legend: {
+    bottom: 0,
+    type: "scroll",
+    itemWidth: 14,
+    itemHeight: 8,
+    textStyle: { color: "#6B7280", fontSize: 11 },
+  },
   series: [
     {
-      name: '渠道',
-      type: 'pie',
-      radius: ['42%', '68%'],
-      center: ['50%', '46%'],
+      name: "渠道",
+      type: "pie",
+      radius: ["42%", "68%"],
+      center: ["50%", "50%"],
       avoidLabelOverlap: true,
-      label: { formatter: '{b}: {d}%', color: '#555', fontSize: 11 },
+      label: { formatter: "{b}: {d}%", color: "#555", fontSize: 11 },
       data: [
-        { value: 42, name: '自然流量' },
-        { value: 28, name: '搜索' },
-        { value: 18, name: '推荐' },
-        { value: 12, name: '广告' }
-      ]
-    }
-  ]
+        { value: 42, name: "自然流量" },
+        { value: 28, name: "搜索" },
+        { value: 18, name: "推荐" },
+        { value: 12, name: "广告" },
+      ],
+    },
+  ],
+}
+```
+
+**带subtext的图：**
+
+```echarts
+{
+  backgroundColor: "transparent",
+  title: {
+    text: "季度收入趋势（示例）",
+    subtext: "2016-2024 营收（亿元） | 数据来源：公开报道与第三方估算",
+    left: "center",
+    textStyle: { color: "#1A1B1C", fontSize: 15, fontWeight: 600 },
+  },
+  tooltip: {
+    trigger: "axis",
+    triggerOn: "click",
+    renderMode: "richText",
+    confine: true,
+    textStyle: { fontSize: 10, lineHeight: 14 },
+    padding: [6, 8],
+  },
+  legend: {
+    top: 60,
+    itemWidth: 14,
+    itemHeight: 8,
+    textStyle: { color: "#6B7280", fontSize: 11 },
+  },
+  grid: {
+    left: 32,
+    right: 54,
+    top: 100,
+    bottom: 32,
+    containLabel: true,
+  },
+  xAxis: {
+    type: "category",
+    name: "季度",
+    data: ["Q1", "Q2", "Q3", "Q4"],
+    axisLabel: { color: "#555", fontSize: 11, hideOverlap: true },
+  },
+  yAxis: {
+    type: "value",
+    name: "收入（万元）",
+    axisLabel: { color: "#555", fontSize: 11 },
+  },
+  series: [
+    {
+      name: "收入",
+      type: "line",
+      smooth: true,
+      data: [320, 410, 380, 520],
+      itemStyle: { color: "#8BC8EA" },
+      lineStyle: { color: "#8BC8EA", width: 2 },
+      areaStyle: { color: "rgba(139, 200, 234, 0.18)" },
+      labelLayout: { hideOverlap: true },
+    },
+  ],
 }
 ```

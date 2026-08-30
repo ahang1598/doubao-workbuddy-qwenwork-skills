@@ -43,4 +43,3 @@
 
 - 可嵌套除 `form`/`table` 外的所有组件，包括嵌套自身（列表项常见写法）。
 - 若容器内有交互组件（如内部 `button`），优先响应该子组件的交互，容器级 `behaviors` 不会触发。
-- 回调来源：`card.action.trigger`，`action.tag` 取决于内部触发的具体组件；容器本身被点击时 `action.value` 即容器 `behaviors.value`。

@@ -1,20 +1,24 @@
 ---
 name: lark-sheets
-version: 3.1.5
+version: 3.1.6
 description: "表格全场景（本地 Excel/CSV 与飞书/doubao 在线表格）：创建、读写、分析、计算、建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。"
 metadata:
   requires:
     bins: ["lark-cli", "python3"]
   cliHelp: "lark-cli sheets --help"
 ---
-> ⚠️ **强制前置条件**：本文档共 292 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 296 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
+
+> ⚠️ **平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`，**在阅读完本 SKILL后，无论后续是否执行lark-cli操作都必须先完整 Read [`references/ref-windows-compat.md`](references/ref-windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
+
 
 # 表格全场景处理技能（lark-sheets）
 
 一套场景方法论、两套执行引擎：上传的本地 `.xlsx` / `.xls` / `.csv` 走 **Excel 引擎**（Python `pandas` / `openpyxl` + `scripts/`）读入，交付仍按下方「产物载体」转在线；在线表格与 doubao.com 的 `/sheets/` 链接走 **飞书引擎**（`lark-cli sheets`，详见「三」），按路径模式和 token 判定、**不看域名**。两者经 `+workbook-import` 打通。
 
-当用户预期要表格产物时（哪怕用户说“做个 Excel”“整理成表格”“给我个表”“原表格/原文件”），默认必须交付飞书在线表格，方便在线预览、协作和编辑。都需要按以下执行来交付表格/Excel产物：
+当用户预期要表格产物时（哪怕用户说“做个 Excel”“整理成表格”“给我个表”“原表格/原文件”），默认必须交付**经过检查的**飞书在线表格，方便在线预览、协作和编辑。都需要按以下执行来交付表格/Excel产物：
    - 调用 `lark-cli sheets +workbook-import` 将本地 Excel 文件（.xlsx）导入为飞书在线表格；
+   - 在使用交付工具交付给用户飞书表格 URL 之前，必须执行`scripts/lark_sheet_selfcheck.py "<url>"` 对飞书表格进行检查，然后核对检查结果并修复。在调用交付工具交付给用户之前，确保脚本输出的检查结果符合预期。禁止把自检发现的差异、公式计算逻辑错误、合计对不上等问题以"注意"、"差异说明"、"请您核对"等形式仅写在回复文字里而不处理产物本身；发现的每一处差异必须在产物内闭环 —— 追查到具体错源并改正。
    - 注意：只要本轮实际执行了对飞书类内容（文档/表格/多维表格等）或豆包文档/豆包表格的写入、编辑或更新操作，必须调用交付工具交付产物 URL（宿主未提供交付工具时，在回复正文直接给出 URL，不可跳过交付）。典型场景包括但不限于：
      - 用户提供/引用一个文件，要求将其内容写入或同步到飞书文档/表格（飞书文档/表格就是豆包文档/表格）
      - 用户引用聊天记录/搜索结果/附件内容，要求据此更新飞书文档
@@ -108,9 +112,9 @@ metadata:
 13. **表外数据要交代依据**：填入表内 / 附件 / 用户输入都取不到的外部数据（标准值、行情、法规参数等）时，交付说明写清**取值依据、单位口径与不确定项**；来自常识推算就写明"推算、未经核验"，**不得伪造来源出处**。
 14. **缺失值不编造**：源数据 / 附件内本应存在的**事实数据**查不到或无法确定时一律留空 + 备注（“暂未发布 / 未知 / 待核实”），不用推算值 / 估算值充数（表外参数按上条）；原表已示范缺失值写法就照抄该约定。
 
-> 实操展开（读取路径、原生工具优先级、脚本配合、易漏陷阱）见下方「执行要点」节。端到端工作流：了解结构（优先 `scripts/lark_inspect_workbook.py` / `+workbook-info`）→ 读数据 → 理解语义 → 原生工具优先 → 写入 → 回读验证。
-
 > ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
+> 实操展开（读取路径、原生工具优先级、脚本配合、易漏陷阱）见下方「执行要点」节。端到端工作流：了解结构（优先 `scripts/lark_inspect_workbook.py` / `+workbook-info`）→ 读数据 → 理解语义 → 原生工具优先 → 写入 → 回读验证。
 
 ### 场景 → 命令速查（拿不准命令名先查这里，别按直觉拼）
 
@@ -138,7 +142,7 @@ metadata:
 | 写公式 / 富写入（样式 · 批注 · 图片 · 富文本），或需精确矩形定位的值 | `+cells-set`（单区域 `--range`+`--cells`；**散布多处 / 跨表用 `--writes` 一次批量交付**，每项自带 sheet_name；批注 / 图片 / 富文本只能用它；公式落表后可用 `+formula-verify` 诊断） | `lark-sheets-write-cells` | — |
 | 只改样式、值 / 公式不动 | `+cells-set-style`（单区域小改）；多区域 / 整表美化收尾一次 `+styles-put` 交付（见 `lark-sheets-styles-put`） | `lark-sheets-write-cells` | `+cells-set --copy-to-range` 刷样式——它连**值**一起复制，会把整个区域的值覆盖成锚点格的值；拼 `+batch-update` 的 `--operations` 做美化 |
 | **已有**表美化收尾（样式 / 边框 / 合并 / 行高列宽 / 冻结的任意组合，单表或多表） | `+styles-put --styles '{"styles":[{"name":…,"cell_styles":[…],"cell_merges":[…],"row_sizes":[…],"col_sizes":[…],"freeze":{…}}]}'`（一份规格一次交付，词汇同 `+table-put --styles`） | `lark-sheets-styles-put` | 拼 `+batch-update` 的 `--operations` 子操作数组做美化、逐区域多次 `+cells-set-style` |
-| 画图表 / 可视化（柱 / 折线 / 饼 / 条 / 散点 / 组合…） | `+chart-create`（先 `+chart-create --print-example <类型>` 本地拿最小可用 `--properties` 模板——类型取 column / bar / line / pie / combo 等，改 refs / index 即可用） | `lark-sheets-chart` | matplotlib / 本地画图再贴图（原生图表可交互、随数据更新） |
+| 画图表 / 可视化（柱 / 折线 / 饼 / 条 / 散点 / 组合…） | 普通单图用 `+chart-create-basic`，多图用扁平输入的 `+batch-chart-create`；已有图的数据源用 `+chart-data-update`、常用配置用 `+chart-config-update`；只有语义 shortcut 无法表达的单系列 / 单数据点 / 高级字段才用 `+chart-create` / `+chart-update`，并只提交必要的局部 properties。多图先断言目标数量，图片迁移成真图表后必须删除并复查原浮动图片 | `lark-sheets-chart` | matplotlib / 本地画图再贴图（原生图表可交互、随数据更新） |
 | 分组汇总 / 透视 | `+pivot-create`（默认不传落点 flag → 自动新建子表，零覆盖） | `lark-sheets-pivot-table` | 用 SUMIF / 本地脚本拼一张假透视表 |
 | 排序（按列升 / 降序） | `+range-sort`（原生整行原子移动，值 / 样式 / 空值随行走） | `lark-sheets-range-operations` | 本地排完再整块 `+cells-set` 回写——`cells-set` 写空值**不覆盖**目标格（保留原值），会残留旧值，且样式不随行移动 |
 | 筛选 / 只看符合条件的行（仅行级不裁列；"只保留某几列 / 筛出来另存一张表"→ 不走这里，另建结果 sheet 物化行与列、原表原样保留） | `+filter-create` | `lark-sheets-filter` | pandas filter 后覆盖写回（会毁原数据；要保存多份筛选状态用 `+filter-view-create`） |
@@ -287,6 +291,6 @@ JSON
 
 飞书引擎 reference：按对象操作该读哪份，见「三」的「场景 → 命令速查」表的「动手前读」列；方法与规范类见开头「0、方法与规范类 References」表。完整文件清单以 `references/` 目录为准。
 
-脚本（`scripts/`）按引擎分别标注：飞书引擎用 `lark_inspect_workbook.py`（在线表格结构预检）、`lark_detect_subtables.py`（候选子表块识别）、`lark_profile_table.py`（表头 / 数据范围 / 字段类型画像）、`sheets_df.py`（DataFrame → `--sheets` typed payload，含 `df_to_sheet`）；Excel 引擎用 `inspect_workbook.py`（结构预检）、`preview_excel_rows.py`（多行表头预览）、`formula_verify.py`（公式重算与诊断）、`format_range.py`（批量样式/条件格式）、`_excel_utils.py` / `lo_runtime.py`（内部工具）。
+脚本（`scripts/`）按引擎分别标注：飞书引擎用 `lark_inspect_workbook.py`（在线表格结构预检）、`lark_detect_subtables.py`（候选子表块识别）、`lark_profile_table.py`（表头 / 数据范围 / 字段类型画像）、`lark_chart_layout_check.py`（图表重叠 / 遮挡内容 / 越界交付检查）、`sheets_df.py`（DataFrame → `--sheets` typed payload，含 `df_to_sheet`）；Excel 引擎用 `inspect_workbook.py`（结构预检）、`preview_excel_rows.py`（多行表头预览）、`formula_verify.py`（公式重算与诊断）、`format_range.py`（批量样式/条件格式）、`_excel_utils.py` / `lo_runtime.py`（内部工具）。
 
-===== 全文完（共 292 行）=====
+===== 全文完（共 296 行）=====

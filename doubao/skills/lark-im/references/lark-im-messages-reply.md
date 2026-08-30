@@ -1,7 +1,5 @@
 # im +messages-reply
 
-Reply to a specific message with user identity (`--as user`). Also supports thread replies.
-
 This skill maps to the shortcut: `lark-cli im +messages-reply` (internally calls `POST /open-apis/im/v1/messages/:message_id/reply`).
 
 ## Safety Constraints
@@ -10,10 +8,11 @@ Replies sent by this tool are visible to other people. Before calling it, you **
 
 1. Which message to reply to
 2. The reply content
+3. Which identity to use (user)
 
 **Do not** send a reply without explicit user approval.
 
-The reply is sent as the authorized end user and requires the `im:message.send_as_user` and `im:message` scopes.
+When using `--as user`, the reply is sent as the authorized end user and requires the `im:message.send_as_user` and `im:message` scopes.
 
 ## Choose The Right Content Flag
 
@@ -116,6 +115,7 @@ lark-cli im +messages-reply --message-id om_xxx --text "Received"
 # Equivalent manual JSON
 lark-cli im +messages-reply --message-id om_xxx --content '{"text":"Received"}'
 
+# Reply as a bot
 # Reply with preserved multi-line text
 lark-cli im +messages-reply --message-id om_xxx --text $'Line 1\nLine 2\n  indented line'
 
@@ -179,6 +179,7 @@ lark-cli im +messages-reply --message-id om_xxx --msg-type interactive --content
 | `--video <path\|url\|key>` | One content option | Cwd-relative local video path, URL, or `file_key` (`file_xxx`); **must be used together with `--video-cover`**                                                                                |
 | `--video-cover <path\|url\|key>` | **Required with `--video`** | Cwd-relative local cover image path, URL, or `image_key` (`img_xxx`)                                                                                                                          |
 | `--audio <path\|url\|key>` | One content option | Voice-message audio key, URL, or cwd-relative local path. Local paths and URLs must be Opus (`.opus` or Ogg Opus `.ogg`) |
+| `--attachment <key>` | One content option | Repeatable bare file/folder key (`file_xxx`); merges into the post message's attachment zone. Requires a post message (`--markdown` or `--msg-type post`). Name/size/mime/is_folder are filled by the server from file service metadata, not taken from the client. Use this instead of `--file` when the file should render inside a rich-text message's attachment area |
 | `--reply-in-thread` | No | Reply inside the thread. The reply appears in the target message's thread instead of the main chat stream                                                                                     |
 | `--idempotency-key <key>` | No | Idempotency key, max 50 characters; the same key sends only one reply within 1 hour                                                                                                          |
 | `--as <identity>` | No | Identity type: `bot` or `user` (default `bot`)                                                                                                                                                |
@@ -198,6 +199,7 @@ lark-cli im +messages-reply --message-id om_xxx --msg-type interactive --content
 - Using `--content` without making the JSON match the effective `--msg-type`.
 - Explicitly setting `--msg-type` to something that conflicts with `--text`, `--markdown`, or media flags.
 - Mixing `--text`, `--markdown`, or `--content` with media flags in one command.
+- Using `--attachment` with `--text` or a media flag. The attachment zone only exists on `post` messages — pair `--attachment` with `--markdown` or `--msg-type post`.
 
 ## Return Value
 
@@ -256,7 +258,6 @@ Card content is **not** normalized — use the card-native `<at>` syntax inside 
 - When using `--content`, you are responsible for making the JSON structure match the effective `msg_type`
 - `--reply-in-thread` adds `reply_in_thread=true` to the API request
 - `--reply-in-thread` is mainly meaningful in chats that support thread replies
-- `--image`/`--file`/`--video`/`--audio`/`--video-cover` support existing keys, URLs, and cwd-relative local file paths; the shortcut uploads local paths and URLs first, then sends the reply; both the upload and send steps use the user access token (UAT)
 - If the provided media value starts with `img_` or `file_`, it is treated as an existing key and used directly
 - `--markdown` always sends `msg_type=post`
 - If you explicitly set `--msg-type` and it conflicts with the chosen content flag, validation fails

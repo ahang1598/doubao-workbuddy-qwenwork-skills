@@ -1,7 +1,5 @@
 # im +messages-send
 
-Send a message to a group chat or a direct message conversation with user identity (`--as user`).
-
 This skill maps to the shortcut: `lark-cli im +messages-send` (internally calls `POST /open-apis/im/v1/messages`).
 
 ## Safety Constraints
@@ -10,10 +8,11 @@ Messages sent by this tool are visible to other people. Before calling it, you *
 
 1. The recipient (which person or which group)
 2. The message content
+3. The sending identity (user)
 
 **Do not** send messages without explicit user approval.
 
-The message is sent as the authorized end user and requires the `im:message.send_as_user` and `im:message` scopes.
+When using `--as user`, the message is sent as the authorized end user and requires the `im:message.send_as_user` and `im:message` scopes.
 
 ## Choose The Right Content Flag
 
@@ -29,6 +28,7 @@ The message is sent as the authorized end user and requires the `im:message.send
 | Send plain text exactly as written | `--text` | Preserves literal text; no Markdown conversion |
 | Precisely control the final payload | `--content` | You provide the exact JSON for `text` / `post` / `interactive` / `share_*` / media payloads |
 | Send image / file / video / audio | `--image` / `--file` / `--video` / `--audio` | Shortcut uploads URLs, or cwd-relative local files automatically |
+| Attach files/folders to a post message's attachment zone | `--attachment` | Repeatable, as bare `file_key` (`file_xxx`); merges into the post content's `files` array. Requires a post message (`--markdown` or `--msg-type post`). Name/metadata are filled by the server, not the client |
 
 ### `--text` vs `--markdown`
 
@@ -185,12 +185,13 @@ lark-cli im +messages-send --chat-id oc_xxx --msg-type interactive --content '<c
 | `--video <path\|url\|key>` | One content option | Cwd-relative local video path, URL, or `file_key` (`file_xxx`). Local paths and URLs are uploaded automatically. **Must be paired with `--video-cover`**                                      |
 | `--video-cover <path\|url\|key>` | **Required with `--video`** | Cwd-relative local cover image path, URL, or `image_key` (`img_xxx`). Local paths and URLs are uploaded automatically                                                                         |
 | `--audio <path\|url\|key>` | One content option | Voice-message audio key, URL, or cwd-relative local path. Local paths and URLs must be Opus (`.opus` or Ogg Opus `.ogg`) |
+| `--attachment <key>` | One content option | Repeatable bare file/folder key (`file_xxx`); merges into the post message's attachment zone. Requires a post message (`--markdown` or `--msg-type post`). Name/size/mime/is_folder are filled by the server from file service metadata, not taken from the client. Use this instead of `--file` when the file should render inside a rich-text message's attachment area |
 | `--msg-type <type>` | No | Message type (default `text`). If you use `--text` / `--markdown` / media flags, the effective type is inferred automatically. Explicitly setting a conflicting `--msg-type` fails validation |
 | `--idempotency-key <key>` | No | Idempotency key, max 50 characters; the same key sends only one message within 1 hour                                                                                                        |
 | `--as <identity>` | No | Identity type: `bot` or `user` (default `bot`)                                                                                                                                                |
 | `--dry-run` | No | Print the request only, do not execute it                                                                                                                                                     |
 
-> **Mutual exclusivity rule:** `--text`, `--markdown`, `--content`, and `--image`/`--file`/`--video`/`--audio` cannot be used together. Media flags are also mutually exclusive with each other.
+> **Mutual exclusivity rule:** `--text`, `--markdown`, `--content`, and `--image`/`--file`/`--video`/`--audio` cannot be used together. Media flags are also mutually exclusive with each other. `--attachment` cannot be combined with a `--content` that already contains a `files` array (the attachment zone is declared either via `--content` or via `--attachment`, not both).
 >
 > **Video cover rule:** `--video` **must** be accompanied by `--video-cover`. Omitting `--video-cover` when using `--video` will fail validation. `--video-cover` cannot be used without `--video`.
 
@@ -210,7 +211,7 @@ lark-cli im +messages-send --chat-id oc_xxx --msg-type interactive --content '<c
 | `msg_type` | Example `content` |
 |----------|-------------|
 | `text` | `{"text":"Hello <at user_id=\"ou_xxx\">name</at>"}` |
-| `post` | `{"zh_cn":{"title":"Title","content":[[{"tag":"text","text":"Body"}]]}}` |
+| `post` | `{"zh_cn":{"title":"Title","content":[[{"tag":"text","text":"Body"}]]},"files":[{"key":"file_xxx"}]}` — the top-level `files` array is the attachment zone; each entry carries a file/folder `key` (name/metadata are backfilled by the server from file service metadata — a client-supplied `name` has no effect) |
 | `image` | `{"image_key":"img_xxx"}` |
 | `file` | `{"file_key":"file_xxx"}` |
 | `audio` | `{"file_key":"file_xxx"}` |
@@ -219,7 +220,7 @@ lark-cli im +messages-send --chat-id oc_xxx --msg-type interactive --content '<c
 | `share_user` | `{"user_id":"ou_xxx"}` |
 | `interactive` | Card JSON — **MUST** be produced by the [`card/lark-im-card-create.md`](card/lark-im-card-create.md) workflow. Read it before writing any card; never hand-craft the JSON here |
 
-> **`post` vs `interactive`:** `post` is a static rich-text message (title, paragraphs, @mentions, links, inline images) — content is fixed once sent. `interactive` is a card with structured layout and UI components (buttons, forms, selects, date pickers, charts) — content can be updated after sending. Use `post` for read-only content; use `interactive` when the message needs structured layout or dynamic updates.
+> **`post` vs `interactive`:** `post` is a static rich-text message (title, paragraphs, @mentions, links, inline images) — content is fixed once sent. `interactive` is a card with structured layout and UI components (buttons, forms, selects, date pickers, charts) — content can be updated after sending and supports user-action callbacks. Use `post` for read-only content; use `interactive` when the message needs user interaction or dynamic updates.
 
 ## Return Value
 
@@ -258,7 +259,6 @@ Card content is **not** normalized — use the card-native `<at>` syntax inside 
 - `--chat-id` and `--user-id` are mutually exclusive; you must provide exactly one
 - `--content` must be valid JSON
 - When using `--content`, you are responsible for making the JSON structure match the effective `msg_type`
-- `--image`/`--file`/`--video`/`--audio` support existing keys, URLs, and cwd-relative local file paths; the shortcut uploads local paths and URLs first, then sends the message; both the upload and send steps use the user access token (UAT)
 - If the provided media value starts with `img_` or `file_`, it is treated as an existing key and used directly
 - `--markdown` always sends `msg_type=post`, even if you do not explicitly set `--msg-type post`
 - If you explicitly set `--msg-type` and it conflicts with the chosen content flag, validation fails
@@ -266,5 +266,6 @@ Card content is **not** normalized — use the card-native `<at>` syntax inside 
 - `--dry-run` uses placeholder image keys for remote Markdown images and placeholder media keys for local uploads
 - Failures return an error code and message
 - `--as user` uses a user access token (UAT) and requires the `im:message.send_as_user` and `im:message` scopes; the message is sent as the authorized end user
+- When sending as a bot, the app must already be in the target group or already have a direct-message relationship with the target user
 - When using `--markdown` with images, pre-uploading via `images.create` to obtain an `image_key` is recommended for reliability; remote URLs may be auto-resolved at runtime, but if download/upload fails the image is removed with a warning; local paths are not supported
 - **Interactive cards are gated:** you MUST read and follow the [`card/lark-im-card-create.md`](card/lark-im-card-create.md) workflow to produce the card JSON *before* sending. Do not hand-write or copy a card payload — the JSON given to `--msg-type interactive --content` must be the workflow's output. This applies every time, with no exception

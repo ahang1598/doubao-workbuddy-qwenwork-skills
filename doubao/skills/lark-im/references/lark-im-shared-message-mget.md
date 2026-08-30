@@ -90,7 +90,7 @@ lark-cli im +shared-message-mget \
 {
   "messages": [{
     "copied_id": "7670391590610799816",
-    "chat_id": "31",
+    "chat_id": "oc_a0553eda9014c201e6969b478895c230",
     "resources": [
       {
         "message_id": "7670391590610799816",
@@ -114,7 +114,6 @@ lark-cli im +shared-message-mget \
 
 ## 错误语义
 
-- bot identity 或缺少可用 user credential/scope 时拒绝执行，不 fallback。
 - 任一 ID 不存在或不可见、任一主请求失败、任一响应包含 0 个或多个根、空/重复节点 ID、孤儿、环、非法时间戳、未知类型、历史 `unsupport` / `doubao` 类型或空 `shared` ID 都会整批失败，不返回部分树。
 - 未登记 OAPI 业务错误沿用 `api/unknown`，保留原始 code、message 和可用 log_id；网络、超时、解码或响应合同错误 fail closed，不补拉其它 API。
 - 可选 thread/reaction 的普通失败按上述 best-effort 标签降级；单资源 scope、路径、接口、响应、下载或落盘失败只在该资源写 `error=true`，不暴露错误详情，也不影响其它资源和主快照。资源数或字节预算耗尽时写固定截断标记并停止后续下载；`context.Canceled` / `context.DeadlineExceeded` 和最终 16 MiB 输出超限仍立即终止命令。

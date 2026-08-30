@@ -68,7 +68,7 @@ lark-cli docs +script --command parse --content "@./document.xml" --presentation
 
 | 参数 | 用法 |
 |-|-|
-| `--as user|bot` | 选择身份。 |
+| `--as user` | 使用用户身份。 |
 | `--dry-run` | 只返回执行计划，不联网、解析或写文件。 |
 | `--format` | 输出格式：`json|pretty|table|ndjson|csv`；模型使用默认的 `json`。 |
 | `--json` | `--format json` 的别名。 |

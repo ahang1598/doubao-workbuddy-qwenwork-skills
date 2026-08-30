@@ -33,11 +33,16 @@ Chat (oc_xxx)
 
 ## Important Notes
 
+### AppLink and Share Links
+
+Prefer CLI-returned links: use `chat_app_link` to open joined conversations, `message_app_link` to open messages, and `share_link` to invite others to groups. If manually building a joined-conversation AppLink, use `https://<applink_host>/client/chat/open?openChatId=<oc_xxx>`, never `chatId=<oc_xxx>` or `lark://...chat_id=<oc_xxx>`.
+
+
 ### Sender Name Resolution
 
-When fetching messages (`+chat-messages-list`, `+threads-messages-list`, `+messages-mget`, `+messages-search`), the CLI shows a display name for each message sender:
+When fetching messages (`+chat-messages-list`, `+threads-messages-list`, `+messages-mget`, `+messages-search`), the CLI shows a display name for message senders:
 
-- **Server-provided name**: the read APIs return `sender_name` (plus the full-i18n `sender_i18n_names` map) on each message `sender`; the CLI surfaces it as the sender's `name` for users and bots alike. No name lookup and no extra permission are needed — **no contact scope** and no `application:bot.basic_info:read`.
+- **Server-provided name**: the read APIs return `sender_name` (plus the full-i18n `sender_i18n_names` map) on each message `sender`; the CLI surfaces it as the sender's `name` for message senders. No name lookup and no extra permission are needed — **no contact scope** and no `application:bot.basic_info:read`.
 - **Fallback to id**: when the server does not provide a name, the sender is shown by its id and the command still exits 0. There is no contact-directory fallback.
 
 The raw `sender_name` is not duplicated in output (its value is in `name`); the full `sender_i18n_names` map (all locales) is preserved for consumers that need a specific language, alongside an optional `open_bot_id` (`ou_`) for bot senders aligned with the message-receive event channel. System messages (`msg_type: system`) have no sender name — that is normal, not an error.
@@ -93,14 +98,16 @@ Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。
 
 | Shortcut | 说明 |
 |----------|------|
-| [`+chat-create`](references/lark-im-chat-create.md) | Create a group chat or topic chat; user; --chat-mode group|topic; private/public; invites users/bots |
-| [`+chat-list`](references/lark-im-chat-list.md) | List chats the current user is a member of; defaults to groups; pass --types=p2p,group to include p2p single chats; user; supports sorting, auto-pagination, --exclude-muted |
-| [`+chat-members-list`](references/lark-im-chat-members-list.md) | List members of a chat; returns separate users[] / bots[] buckets; callable as user; --member-types filters which kinds to return; --page-all pagination; surfaces truncations[] when the server caps a bucket |
+| [`+chat-create`](references/lark-im-chat-create.md) | Create a group chat or topic chat; user; --chat-mode group|topic; private/public; invites users |
+| [`+chat-list`](references/lark-im-chat-list.md) | List chats the current user is a member of; defaults to groups; pass --types=p2p,group to include p2p single chats (user-only); user; supports sorting, auto-pagination, --exclude-muted (user-only) |
+| [`+chat-members-list`](references/lark-im-chat-members-list.md) | List members of a chat; returns separate users[] buckets; callable as user; --member-types filters which kinds to return; --page-all pagination; surfaces truncations[] when the server caps a bucket |
 | [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range, --order asc/desc sorting, auto-pagination |
 | [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, auto-pagination, and --exclude-muted (user identity only) |
 | [`+chat-update`](references/lark-im-chat-update.md) | Update group chat name or description; user; updates a chat's name or description |
+| [`+message-read-users`](references/lark-im-message-read-status.md) | List users who read one message; user; identity-specific scopes; supports bounded auto-pagination |
 | [`+messages-mget`](references/lark-im-messages-mget.md) | Batch get messages by IDs; user; fetches up to 50 om_ message IDs, formats sender names, expands thread replies |
 | [`+shared-message-mget`](references/lark-im-shared-message-mget.md) | Pro 私有；读取 1～10 个 Copied Message 快照；内部按输入顺序逐 ID 发起 singleton 请求，顶层以字符串 `copied_id` 严格映射；可选 thread / reaction / resource download best-effort 增强 |
+| [`+messages-read-status`](references/lark-im-message-read-status.md) | Batch query whether the current user read 1–50 messages; user-only; returns readable items and invalid message IDs |
 | [`+messages-reply`](references/lark-im-messages-reply.md) | Reply to a message (supports thread replies); user; supports text/markdown/post/media replies, reply-in-thread, idempotency key |
 | [`+messages-resources-download`](references/lark-im-messages-resources-download.md) | Download an image or file attached to a message; user |
 | [`+messages-search`](references/lark-im-messages-search.md) | Search messages across chats (supports keyword, sender, time range filters) with user identity; filters by chat/sender/attachment/time, supports auto-pagination via `--page-all` / `--page-limit`, enriches results via batched mget and chats batch_query |
@@ -127,15 +134,11 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
 ### chats
 
-  - `create` — 创建群。
   - `get` — 获取群信息。Identity: supports `user` only; the caller must be in the target chat to get full details, and must belong to the same tenant for internal chats.
   - `link` — 获取群分享链接。Identity: supports `user` only; the caller must be in the target chat, must be an owner or admin when chat sharing is restricted to owners/admins, and must belong to the same tenant for internal chats.
   - `update` — 更新群信息。Identity: supports `user` only.
 
 ### chat.members
-
-  - `create` — 将用户或机器人拉入群聊。Identity: supports `user` only; the caller must be in the target chat; for internal chats the operator must belong to the same tenant; if only owners/admins can add members, the caller must be an owner/admin.
-  - `delete` — 将用户或机器人移出群聊。Identity: supports `user` only; only the group owner or an admin can remove others; max 50 users or 5 bots per request.
 
 ### chat.user_setting
 
@@ -150,24 +153,16 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
 ### chat.managers
 
-  - `add_managers` — 指定群管理员。Identity: supports `user` only; only the group owner can add managers; max 10 managers per chat (20 for super-large chats), and at most 5 bots per request.
-  - `delete_managers` — 删除群管理员。Identity: supports `user` only; only the group owner can remove managers; max 50 users or 5 bots per request.
+  - `add_managers` — 指定群管理员。Identity: supports `user` only; only the group owner can add managers; max 10 managers per chat (20 for super-large chats), and at most 50 users per request.
+  - `delete_managers` — 删除群管理员。Identity: supports `user` only; only the group owner can remove managers; max 50 users or 50 users per request.
 
 ### chat.moderation
 
   - `get` — 获取群成员发言权限。Identity: supports `user` only; the caller must be in the target chat and belong to the same tenant.
-  - `update` — 更新群发言权限。Identity: supports `user` only; only the group owner can update; the caller must be in the chat.
-
 ### messages
 
-  - `delete` — 撤回消息。Identity: supports `user` only; to revoke another user's group message, the caller must be the owner, an admin, or the creator.
+  - `read_status` — 批量查询当前用户对消息的已读状态。Identity: `user` only (`user_access_token`); accepts up to 50 message IDs and returns readable items plus invalid message IDs.[Must-read](references/lark-im-message-read-status.md)
   - `forward` — 转发消息。Identity: supports `user` only.
-  - `merge_forward` — 合并转发消息。
-  - `read_users` — 查询消息已读信息。
-  - `urgent_app` — 发送应用内加急。
-  - `urgent_phone` — 发送电话加急。
-  - `urgent_sms` — 发送短信加急。
-
 ### reactions
 
   - `batch_query` — 批量获取消息表情。Identity: supports `user` only.[Must-read](references/lark-im-reactions.md)
@@ -220,10 +215,13 @@ lark-cli im <resource> <method> [flags] # 调用 API
 | `chat.managers.delete_managers` | `im:chat.managers:write_only` |
 | `chat.moderation.get` | `im:chat.moderation:read` |
 | `chat.moderation.update` | `im:chat:moderation:write_only` |
+| `+messages-read-status` | user: `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
+| `+message-read-users` | user: `im:message:readonly` (recommended), `im:message`, `im:message:basic`, or `im:message:get_as_user`; bot: `im:message:readonly` |
+| `messages.read_status` | `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
 | `messages.delete` | `im:message:recall` |
 | `messages.forward` | `im:message` |
 | `messages.merge_forward` | `im:message` |
-| `messages.read_users` | `im:message:readonly` |
+| `messages.read_users` | user: `im:message:readonly` (recommended), `im:message`, `im:message:basic`, or `im:message:get_as_user`; bot: `im:message:readonly` |
 | `messages.urgent_app` | `im:message.urgent` |
 | `messages.urgent_phone` | `im:message.urgent:phone` |
 | `messages.urgent_sms` | `im:message.urgent:sms` |

@@ -18,6 +18,7 @@ lark-cli im +messages-resources-download --message-id om_xxx --file-key file_v3_
 # Specify the output path
 lark-cli im +messages-resources-download --message-id om_xxx --file-key img_v3_xxx --type image --output ./photo.png
 
+# Download as a bot
 # Preview the request without executing it
 lark-cli im +messages-resources-download --message-id om_xxx --file-key img_v3_xxx --type image --dry-run
 ```
@@ -73,7 +74,6 @@ lark-cli im +messages-resources-download --message-id om_xxx --file-key img_v3_x
 | Symptom | Root Cause | Solution |
 |---------|---------|---------|
 | Resource does not match the message | `file_key` and `message_id` came from different messages | Read the message again and use its matching identifiers |
-| Permission denied | `im:message:readonly` is not authorized | Have the agent platform grant the `im:message:readonly` scope for the current user |
 | Attachment unavailable | The message or resource is deleted, hidden, restricted, or inaccessible to the caller | Do not retry unchanged; report the exact CLI error |
 | Retryable network error | The transfer did not complete | Retry the same command |
 

@@ -1,6 +1,6 @@
 # im +chat-members-list
 
-List the members of a chat. Users and bots are returned in **separate buckets** — `users[]` and `bots[]` — with per-bucket totals (`user_total` / `bot_total`). Use `--member-types` to return only one kind.
+List the members of a chat. Users and bots are returned in **separate buckets** — `users[]` and `users[]` — with per-bucket totals (`user_total` / `bot_total`). Use `--member-types` to return only one kind.
 
 This skill maps to the shortcut: `lark-cli im +chat-members-list` (internally calls `GET /open-apis/im/v1/chats/{chat_id}/members/list`).
 
@@ -43,8 +43,6 @@ lark-cli im +chat-members-list --chat-id oc_xxx --dry-run
 | `--format json` | No | - | Output as JSON |
 | `--dry-run` | No | - | Preview the request without executing it |
 
-> Supports `--as user` (default). The caller must be in the target chat, and must belong to the same tenant for internal chats.
-
 ## Output Fields
 
 | Field | Description |
@@ -72,7 +70,7 @@ A truncated result is *not* fixable by paging further — it is a server-side ca
 - `--page-all` sleeps `--page-delay` ms (default 200) between pages to avoid hammering the API when a tenant has no server-side member cap and the list spans many pages. Set `--page-delay 0` to disable.
 - `--page-all` stops at `--page-limit` pages (default 10). When it stops early, `has_more` stays `true` so you know the result is incomplete; re-run with `--page-limit 0` for everything.
 - `--page-token` and `--page-all` together: automatic pagination starts at the supplied cursor and continues until exhaustion or `--page-limit`.
-- Across pages, `users[]` and `bots[]` are concatenated; `truncations` / `has_more` / `page_token` come from the last page fetched.
+- Across pages, `users[]` and `users[]` are concatenated; `truncations` / `has_more` / `page_token` come from the last page fetched.
 
 ## Common Errors and Troubleshooting
 
@@ -81,4 +79,4 @@ A truncated result is *not* fixable by paging further — it is a server-side ca
 | `--chat-id is required` | `--chat-id` omitted |   | Provide the `oc_xxx` chat ID |
 | `invalid --page-size 101: must be between 1 and 100` | out of range |   | Use 1-100 |
 | `--member-types contains invalid value` | value other than `user`/`bot` |   | Use `user`, `bot`, or both |
-| Permission denied | missing `im:chat.members:read` |   | Have the agent platform grant the `im:chat.members:read` scope for the current user |
+| Permission denied | missing `im:chat.members:read` |   | Bot: enable the scope in the console. User: agent platform grant `im:chat.members:read` |

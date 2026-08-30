@@ -1,6 +1,6 @@
 # im +chat-search
 
-Search the list of group chats visible to the current user, including chats the user belongs to and public chats visible to them. Supports keyword matching on chat names and member names, including pinyin and prefix fuzzy search.
+Search the list of group chats visible to a user, including chats the user belongs to and public chats visible to them. Supports keyword matching on chat names and member names, including pinyin and prefix fuzzy search.
 
 This skill maps to the shortcut: `lark-cli im +chat-search` (internally calls `POST /open-apis/im/v2/chats/search`).
 
@@ -56,7 +56,6 @@ lark-cli im +chat-search --query "project" --dry-run
 | `--page-token <token>` | No | - | Starting cursor, normally returned by a previous response |
 | `--page-all` | No | - | Automatically fetch and merge subsequent pages; capped by `--page-limit` |
 | `--page-limit <n>` | No | 1-1000, default 10 | Maximum pages fetched by `--page-all` |
-| `--exclude-muted` | No | - | Drop chats the current user has muted (do-not-disturb); see "Filtering muted chats" below |
 | `--format json` | No | - | Output as JSON |
 | `--dry-run` | No | - | Preview the request without executing it |
 
@@ -76,8 +75,6 @@ With `--page-all`, `--page-token` sets the starting cursor. If `meta.pagination.
 | `chat_status` | Chat status (`normal` / `dissolved` / `dissolved_save`) |
 
 ## Filtering muted chats
-
-`--exclude-muted` drops chats the current user has set to do-not-disturb. After the search call, the CLI batches the page's chat_ids through `POST /open-apis/im/v1/chat_user_setting/batch_get_mute_status` and filters client-side.
 
 When the flag is set, the JSON envelope gains a `filter` sub-object (absent otherwise, so existing consumers are unaffected); `fetched_count == returned_count + filtered_count` always holds:
 
@@ -125,7 +122,9 @@ lark-cli im +messages-send --chat-id "$CHAT_ID" --text "Today's progress update"
 | `--query and --member-ids cannot both be empty` | Both were omitted | Provide at least `--query` or `--member-ids` |
 | Empty results | No visible chats matched the keyword or filters | Relax the keyword or filters and try again |
 | `invalid --page-size 101: must be between 1 and 100` | page-size is out of range | Use an integer between 1 and 100 |
-| Permission denied (99991679) | UAT is not authorized for `im:chat:read` | Have the agent platform grant the `im:chat:read` scope for the current user |
+| Permission denied (99991672) | The bot app does not have `im:chat:read` TAT permission enabled | Enable the permission for the app in the Open Platform console |
+| Permission denied (99991679) with `--as user` | UAT is not authorized for `im:chat:read` | Ask the agent platform to grant `im:chat:read` |
+| `Bot ability is not activated` (232025) | The app does not have bot capability enabled | Enable bot capability in the Open Platform console |
 
 ## AI Usage Guidance
 

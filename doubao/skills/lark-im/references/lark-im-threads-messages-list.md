@@ -29,6 +29,7 @@ lark-cli im +threads-messages-list --thread omt_xxx --format pretty
 lark-cli im +threads-messages-list --thread omt_xxx --format table
 lark-cli im +threads-messages-list --thread omt_xxx --format csv
 
+# View as a bot
 # Preview the request without executing it
 lark-cli im +threads-messages-list --thread omt_xxx --dry-run
 ```

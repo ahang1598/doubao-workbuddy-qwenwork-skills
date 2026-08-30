@@ -117,8 +117,6 @@ lark-cli im +messages-send --user-id ou_xxx --msg-type interactive --content '<c
 
 ## Step 5：交互回调（可选）
 
-若卡片含**会回调服务端的交互组件**，则**支持**监听 `card.action.trigger` 回调（是否监听由实际需求决定，非必须）：
-
 **需显式配置 `behaviors: [{type:"callback"}]` 才会回调：**
 - `button`（带 callback behavior）
 - `checker` —— 未配置 behaviors 时仅本地勾选生效，不触发服务端回调
@@ -174,4 +172,5 @@ lark-cli im +messages-send --user-id ou_xxx --msg-type interactive --content '<c
 - [ ] Step 2：读 schema.md + 组件明细 + 「好看的标准 P0–P7」
 - [ ] Step 3：构造 JSON → 过 P0–P7 硬 Gate（P0+P1–P3 阻断），不过先修
 - [ ] Step 4：发送，失败按常见失败表排查重试（≤3 次）；仍失败则降级 Card 1.0 重构发送
+- [ ] Step 5：若有交互，确保卡片行为在当前运行环境中可用
 - [ ] Step 6：用户提出修改意见时，定位组件→最小改动→原地更新或重发

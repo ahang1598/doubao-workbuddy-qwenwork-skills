@@ -33,4 +33,3 @@
 
 - 可嵌套在 form / collapsible_panel / 循环容器 / interactive_container / column_set 内。
 - 多按钮时务必给每个 `options[].value`，否则回调无法区分点了哪个。
-- 点击触发 `card.action.trigger`，回传 `action.tag = "overflow"` + `action.option`。

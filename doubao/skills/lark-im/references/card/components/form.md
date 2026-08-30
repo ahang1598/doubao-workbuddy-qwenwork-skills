@@ -48,4 +48,3 @@
 - `form` 不支持嵌套 `table` 和 `form`；且 `form` 本身只能放卡片根节点下，不能被其他组件嵌套。
 - form 内所有交互组件的 `name` 必须填且全局唯一，否则提交失败。
 - 表单内必须包含一个 `form_action_type: submit` 的按钮。
-- 回调来源：`card.action.trigger` 中 `action.tag="button"` + `action.form_value`（按组件 `name` 映射各字段值）。

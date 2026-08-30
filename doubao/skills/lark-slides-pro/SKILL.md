@@ -106,7 +106,7 @@ present_files 提交的链接会变成一张可点击的产物卡片，你需要
 ```bash
 lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<file>"
 ```
-2. **图片去底色**：带底色的图片盖在有色背景上会让整页设计垮掉。对 Step 3 收集到的图片素材，用 Python PIL 的 `ImageDraw.floodfill()` 抠掉纯色底（图片编辑工具做不了抠图，只能走 PIL），**黑白灰底色的图片必须抠**，渐变底和复杂背景直接跳过不要硬抠；结果另存为新的 PNG（不覆盖原图、不可存 JPG）；**抠完逐张检查，确认背景透明、主体边缘无残留色块、主体内部无误抠，如果抠后效果差回退使用原图**。
+2. **图片去底色**：带底色的图片盖在有色背景上会让整页设计垮掉。对 Step 3 收集到的图片素材，调用去底色工具前完运行 `mediakit-cli image remove-image-background --help` 与 `mediakit-cli image remove-image-background --schema` 获取命令的输入输出说明，注意该命令里的boolean 参数--need-crop-background 必须写成 --need-crop-background=true / --need-crop-background=false，--image-url 参数可以接受搜索到的图片URL，直接使用即可；未完成上述读取和检查前禁止直接调用。**黑白灰底色的图片必须抠**，渐变底和复杂背景直接跳过不要硬抠；命令成功后立即下载返回的 `image_url`，另存为新的 PNG（不覆盖原图、不可存 JPG）；无需去底色、跳过处理或抠图效果差时，使用原图作为最终素材；**抠完逐张检查，确认背景透明、主体边缘无残留色块、主体内部无误抠，如果抠后效果差回退使用原图**。
 3. **上传拿 `file_token`**：把本次要用的图片逐个 `+media-upload --file <图片路径> --presentation <id>` 上传，**拿到各自的 `file_token`**（见 [`cli/lark-slides-media-upload.md`](references/cli/lark-slides-media-upload.md)）。
 
 

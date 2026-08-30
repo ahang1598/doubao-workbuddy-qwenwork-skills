@@ -170,8 +170,8 @@ slide_id/当前页序｜当前问题｜修改动作｜必须保留｜素材/来�
 
 具象风格背景必须准备图片素材：涉及真实场景或实体时优先搜图；漫画、手绘、插画等非真实风格优先生图。生成背景按画布比例制作，不带文字，为标题和正文预留低细节区域，需考虑已有内容，不与已有元素发生重叠遮挡；按页面角色准备少量一致的变体，避免整稿机械重复。背景图保留完整背景，不去底色。
 
-普通配图流程固定为获取本地文件 → 去底色 → `+media-upload`，一步都不能省；禁止 http(s) 外链，`<img src>` 只能填 `file_token`。带底色的图用 PIL `floodfill` 抠纯色底，黑白灰底必抠；抠完效果差则回退原图。**明确作为全画布背景使用的图片保留背景，不执行去底色。** 下载原稿图片：
-
+普通配图流程固定为获取本地文件 → 去底色 → `+media-upload`，一步都不能省；禁止 http(s) 外链，`<img src>` 只能填 `file_token`。带底色的图使用去底色工具（运行 `mediakit-cli image remove-image-background --help` 与 `mediakit-cli image remove-image-background --schema` 获取命令的输入输出说明，注意该命令里的boolean 参数--need-crop-background 必须写成 --need-crop-background=true / --need-crop-background=false，--image-url 参数可以接受搜索到的图片URL；未完成上述读取和检查前禁止直接调用）抠纯色底，黑白灰底必抠；抠完效果差则回退原图。**明确作为全画布背景使用的图片保留背景，不执行去底色。** 
+下载原稿图片：
 ```bash
 lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<file>"
 ```

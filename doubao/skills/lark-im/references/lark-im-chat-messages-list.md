@@ -39,7 +39,6 @@ lark-cli im +chat-messages-list --chat-id oc_xxx --format json
 | Parameter | Required | Description |
 |------|------|------|
 | `--chat-id <id>` | One of two | Specify the conversation by its chat_id directly (e.g., group chat `oc_xxx`) |
-| `--user-id <id>` | One of two | Specify a DM conversation by the other user's open_id (`ou_xxx`); p2p chat_id is resolved automatically |
 | `--start <time>` | No | Start time (ISO 8601 or date only) |
 | `--end <time>` | No | End time (ISO 8601 or date only) |
 | `--order <order>` | No | Sort order: `asc` / `desc` (default `desc`) |
@@ -144,11 +143,11 @@ lark-cli api GET /open-apis/im/v1/messages \
    ```
    **Do not use `im chats search` or `+chat-list` — always use the `+chat-search` shortcut.**
 2. **Prefer `--chat-id` when available:** if the chat_id is already known, use it directly to avoid extra API calls.
-3. **For direct messages:** use `--user-id` to resolve the p2p chat automatically instead of looking it up manually.
 4. **For time ranges:** both ISO 8601 and date-only inputs are supported. Date-only is usually simpler.
 5. **For full content:** table output truncates content. Use `--format json` when you need the complete message body.
 6. **For sender info:** the command already resolves sender names, so you do not need a separate lookup.
-
+   ```bash
+   ```
 ## References
 
 - [lark-im](../SKILL.md) - all IM commands

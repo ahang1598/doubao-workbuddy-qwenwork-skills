@@ -1,6 +1,6 @@
 # T2A
 
-***使用 tools: `text_to_audio`***
+***使用 tools: `text_to_audio_plus`***
 
 用一段自然语言描述直接生成目标音频。描述可以是人声台词、环境声、音效、背景音乐，或它们的复合场景。
 
@@ -8,7 +8,7 @@
 
 ## 调用
 
-`text_to_audio` 必填 `prompt`，可选 `duration`：
+`text_to_audio_plus` 必填 `prompt`，可选 `duration`：
 
 - `prompt`：用户的音频描述本体（去掉「给我生成一段音频」之类的意图前缀后的内容），原样传入。
 - `duration`（可选，integer，1~120）：生成目标音频的时长，单位秒。**不推荐默认使用**——仅当用户直接说明要生成多少秒的音频时才设置此字段；用户未明确指定时长时不要传 `duration`，交由模型自行决定时长。

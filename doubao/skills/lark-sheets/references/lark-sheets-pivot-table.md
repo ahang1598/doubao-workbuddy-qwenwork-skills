@@ -164,7 +164,7 @@ lark-cli sheets +pivot-create --url "..." \
 ### `+pivot-delete`
 
 ```bash
-lark-cli sheets +pivot-delete --url "..." --sheet-id "$SID" --pivot-table-id "$PID" --yes
+lark-cli sheets +pivot-delete --url "..." --sheet-id "$SHEET_ID" --pivot-table-id "$PIVOT_TABLE_ID" --yes
 ```
 
 ### Validate / DryRun / Execute 约束

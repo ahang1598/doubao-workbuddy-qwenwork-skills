@@ -4,8 +4,6 @@ Fetch message details in batch. Given a list of message IDs, this returns the fu
 
 By default the response also carries a `reactions` block (counts + details from `im.reactions.batch_query`) on every message that has reactions, and `update_time` on messages that were actually edited. Replies inside `thread_replies` participate in the same batched enrichment. Pass `--no-reactions` to skip the extra round-trip. Pass `--download-resources` to additionally download message resources (image/file/audio/video/media + post-embedded, excluding stickers) into `./lark-im-resources/` and attach a `resources` block — off by default, no extra requests when omitted. See [message enrichment](lark-im-message-enrichment.md) for the full contract.
 
-> **Runs with `--as user` (default).**
-
 This skill maps to the shortcut: `lark-cli im +messages-mget` (internally calls `GET /open-apis/im/v1/messages/mget`).
 
 ## Commands
@@ -48,6 +46,14 @@ Each message contains:
 | `create_time` | Creation time |
 | `sender` | Sender information (includes `name`) |
 | `content` | Message content |
+
+For `post` messages, the attachment zone (top-level `files` array) is rendered as trailing lines in `content`, one per attachment:
+
+- `<file key="file_xxx" name="report.pdf"/>` — a file with a display name (same tag style as a standalone `file` message)
+- `<file key="file_xxx"/>` — a file with an empty display name (the server always backfills names, so this branch is rare but valid on the wire)
+- `<folder key="file_xxx" name="assets"/>` — a folder (`is_folder: true`, same tag style as a standalone `folder` message)
+
+Use `--format json` to see the full content without table truncation — note the content is the rendered text (including the `<file>`/`<folder>` lines above), not the raw post JSON. Attachment file keys rendered in the tags are eligible for [`+messages-resources-download`](lark-im-messages-resources-download.md) via `--download-resources`.
 
 ## Usage Scenarios
 

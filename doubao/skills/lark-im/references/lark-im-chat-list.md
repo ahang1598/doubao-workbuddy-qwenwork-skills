@@ -1,9 +1,5 @@
 # im +chat-list
 
-List chats the current user is a member of. **Not a search API — there is no `--query` parameter; the call always returns the full member list, paginated.** For keyword-based lookup (e.g. find a group by name or by member), use [`+chat-search`](lark-im-chat-search.md) instead.
-
-**Defaults to groups only**; pass `--types=p2p,group` (or `--types p2p --types group`) to also include p2p single chats. Supports pagination, sort order, and muted-chat filtering.
-
 This skill maps to the shortcut: `lark-cli im +chat-list` (internally calls `GET /open-apis/im/v1/chats`).
 
 ## Commands
@@ -33,14 +29,14 @@ lark-cli im +chat-list --format json
 # Preview the request without executing it
 lark-cli im +chat-list --dry-run
 
-# Include p2p single chats — comma form
-lark-cli im +chat-list --types p2p,group
+# Include p2p single chats (user identity only) — comma form
+lark-cli im +chat-list --as user --types p2p,group
 
 # Same, using repeat flag instead of CSV
-lark-cli im +chat-list --types p2p --types group
+lark-cli im +chat-list --as user --types p2p --types group
 
-# Only p2p single chats
-lark-cli im +chat-list --types p2p
+# Only p2p single chats (user identity only)
+lark-cli im +chat-list --as user --types p2p
 ```
 
 ## Parameters
@@ -48,13 +44,11 @@ lark-cli im +chat-list --types p2p
 | Parameter | Required | Limits | Description |
 |------|------|------|------|
 | `--user-id-type <type>` | No | `open_id` (default), `union_id`, `user_id` | ID type used for `owner_id` in the response |
-| `--types <strings>` | No | `group`, `p2p` (comma-separated or repeated) | Chat types to include. Omitted = groups only (backward compatible). |
 | `--sort <field>` | No | `create_time` (default, ascending), `active_time` (descending) | Result ordering |
 | `--page-size <n>` | No | 1-100, default 20 | Number of results per page |
 | `--page-token <token>` | No | - | Starting cursor, normally returned by a previous response |
 | `--page-all` | No | - | Automatically fetch and merge subsequent pages; capped by `--page-limit` |
 | `--page-limit <n>` | No | 1-1000, default 10 | Maximum pages fetched by `--page-all` |
-| `--exclude-muted` | No | - | Drop chats the current user has muted (do-not-disturb); see "Filtering muted chats" below |
 | `--format json` | No | - | Output as JSON |
 | `--dry-run` | No | - | Preview the request without executing it |
 
@@ -86,9 +80,19 @@ Default behavior lists groups only — same as before this feature. To include p
 
 For p2p rows in the response: `name` is the peer's display name, `owner_id` follows group semantics, `chat_mode = "p2p"`, and `p2p_target_type` / `p2p_target_id` identify the peer.
 
-## Filtering muted chats
+    - **stdout JSON**: a top-level `notices` array gains a structured entry:
+      ```json
+      {
+        "chats": [...],
+        "notices": [
+        ]
+      }
+      ```
+    - The `filter` slot stays scoped to `--exclude-muted`; `notices` is a separate top-level key, so the two never collide and no priority is needed when both fire.
+    - DryRun emits the same stderr warning so a previewed request truthfully reflects what Execute will send (parity with `shortcuts/drive/drive_search.go`).
+To include p2p single chats, switch to user identity: `--as user --types=p2p,group`.
 
-`--exclude-muted` drops chats the current user has set to do-not-disturb. After the list call, the CLI batches the page's chat_ids through `POST /open-apis/im/v1/chat_user_setting/batch_get_mute_status` and filters client-side.
+## Filtering muted chats
 
 When the flag is set, the JSON envelope gains a `filter` sub-object (absent otherwise, so existing consumers are unaffected); `fetched_count == returned_count + filtered_count` always holds:
 
@@ -137,4 +141,6 @@ done
 | Symptom | Root Cause | Solution |
 |---------|---------|---------|
 | `invalid --page-size 101: must be between 1 and 100` | page-size is out of range | Use an integer between 1 and 100 |
-| Permission denied (99991679) | UAT is not authorized for `im:chat:read` | Have the agent platform grant the `im:chat:read` scope for the current user |
+| Permission denied (99991672) | The bot app does not have `im:chat:read` TAT permission enabled | Enable the permission for the app in the Open Platform console |
+| Permission denied (99991679) with `--as user` | UAT is not authorized for `im:chat:read` | Ask the agent platform to grant `im:chat:read` |
+| `Bot ability is not activated` (232025) | The app does not have bot capability enabled | Enable bot capability in the Open Platform console |

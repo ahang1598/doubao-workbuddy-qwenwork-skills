@@ -8,7 +8,6 @@ Adds one or more chats to the **current user's** feed shortcuts — equivalent t
 
 - Only **CHAT-type** shortcuts are exposed by the OpenAPI gateway right now (`feed_card_id` must be an `oc_xxx` open_chat_id).
 - Batch up to **10 chat IDs per call**; pass more by issuing multiple calls.
-- Currently only supports **user identity** (`--as user`).
 - If you only know a group name, resolve its `oc_xxx` first with `im +chat-search` or `im +chat-list`.
 
 ## Commands
@@ -85,8 +84,6 @@ Example:
 ## Permissions
 
 - Required scope: `im:feed.shortcut:write`
-- Only available with user identity (`--as user`).
-
 ## Note
 
 - The shortcut list is **per user**: the call adds shortcuts for the currently authenticated user only.

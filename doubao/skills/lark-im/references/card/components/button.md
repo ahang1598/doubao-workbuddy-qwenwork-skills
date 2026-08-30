@@ -60,4 +60,3 @@
 - 可嵌套在 column_set / form / collapsible_panel / 循环容器 / interactive_container 内。
 - 2.0 已废弃 `action` 交互模块，按钮直接放 `elements`，用间距控制排列。
 - 旧式 `url`/`value` 顶层字段是 1.0 写法；2.0 一律用 `behaviors`。
-- 点击触发 `card.action.trigger`，回传 `action.tag="button"` + `action.value`（即 callback 的 value）。

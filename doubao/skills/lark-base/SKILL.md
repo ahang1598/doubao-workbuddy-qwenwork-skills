@@ -1,7 +1,7 @@
 ---
 name: lark-base
-version: 1.2.5
-description: "飞书多维表格（Base）：基于需求搭建系统和应用，或把已有数据、零散信息结构化，搭建成可持续记录、收集、整理、关联、协作、统计、提醒和流转的数据工具与管理系统。适用于个人、组织、企业的日常记录、清单登记、资料库、报名问卷、进度跟踪及项目/客户/订单/库存等系统和应用的生成需求；用户想把信息记下来、管起来、统计查看、持续更新或自动处理时使用，或提及 Base/多维表格/bitable、提供 Base 链接时使用；已有 Base 的查询、编辑和分析同样使用。"
+version: 1.3.1
+description: 飞书多维表格用于搭建台账、清单、资料库、问卷、登记表、收集表、项目管理、客户管理、订单管理、库存管理、进度跟踪等表格、看板和系统；支持使用数据表格、问卷、仪表盘等工具对数据进行收集、记录、整理、关联、统计、提醒、审批和自动化流转。适用于个人、团队和企业将零散信息结构化，生成可持续维护的数据管理工具。用户想记录信息、管理业务、跟踪进度、维护客户订单库存、统计分析或自动处理流程时使用；提及多维表格、Base、bitable，或提供多维表格链接时使用；支持已有多维表格的查询、编辑和分析，以及公开模板中心的分类、列表与搜索。
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -24,8 +24,13 @@ metadata:
 
 - 用户输入 URL 或分享链接：先运行 lark-cli base +url-resolve --url "<url>" --as user，用返回的 base_token 和相关 ID 继续后续命令。
 - 用户输入 Base 标题、关键词或不确定名称：先运行 lark-cli base +title-resolve --title "<keyword>" --as user；--title 传入标题中的短关键词，不超过 30 个字符；过长标题先取最有区分度的短关键词；多候选时先让用户消歧，不要猜。
+- 用户要求列出已有 Base 候选，且需要按最近访问、owner、创建人、时间或类型筛选/排序：转 `lark-cli drive +search --doc-types bitable --as user`。最近访问使用 `lark-cli drive +search --doc-types bitable --sort open_time --opened-since 3m --page-size 20 --as user`；只列我拥有的加 `--mine`，只列我创建的加 `--created-by-me`。从候选项拿到 URL 或 token 后，再用 `+url-resolve` 或 `+base-get` 进入 Base 业务命令。
 - 文档嵌入 Base 标签：直接读取 <bitable> / <base_refer> 的 token 作为 --base-token，table-id 作为 --table-id，view-id 作为 --view-id；孤立 raw token 不走 +url-resolve。
 - 仍无法定位且用户不是要新建 Base 时，先反问用户要操作哪一个 Base；用户要新建时才用 +base-create。
+
+### Base 模板中心
+
+模板中心是公开的 Base 模板库，不是用户云空间里的已有 Base。用户想用现成模板创建新 Base，且没有指向已有对象的锚点（没有 Base URL、没有“我的/最近访问的表”、没有具体已存在的 Base 名）时，先读 [lark-base-template-center.md](references/lark-base-template-center.md)：`+template-categories` 列出公开模板分类，`+template-list` 按分类列出模板，`+template-search` 按业务关键词搜索模板；选定后用 `+base-copy` 复制为用户自己的 Base。
 
 ## 快速路由
 
@@ -33,32 +38,33 @@ metadata:
 |-|-|-|
 | 查 Base 本体 | +base-get | 用返回确认 Base 名称、owner、权限和可继续操作的 token |
 | 创建/复制 Base | +base-create / +base-copy | 新建时强烈推荐用 --table-name + --fields 同时配置新 Base 里唯一一个初始数据表的 name 和 schema；写入后报告新 Base 标识和 permission_grant |
+| 浏览/搜索公开模板 | +template-categories / +template-list / +template-search | 先读 [lark-base-template-center.md](references/lark-base-template-center.md)；模板中心不是用户云空间搜索，选中模板后用 +base-copy 创建 Base |
 | 查看 Base 内资源目录 | +base-block-list | 想先了解一个 Base 里有哪些 table/docx/dashboard/workflow/folder 时优先用它；返回 ID 关系和 fewshot 看 --help |
 | 管理 Base 内资源目录 | +base-block-create/move/rename/delete | 创建或整理 Base 直接管理的 folder/table/docx/dashboard/workflow；资源内容继续用对应命令 |
 | 管理数据表 | +table-list/get/create/update/delete | 处理 table 的列出、详情、创建、重命名和删除 |
 | 列/查/删字段 | +field-list/get/delete/search-options | 写入前用 list/get 确认字段类型、选项、ID；删除前确认目标字段 |
-| 创建/更新字段 | +field-create / +field-update | 必读 [lark-base-field-json.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-json.md)；公式读 [formula-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/formula-field-guide.md)；lookup 读 [lookup-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lookup-field-guide.md)；命令细节读 [lark-base-field-create.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-create.md) / [lark-base-field-update.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-update.md) |
-| 读记录明细 | +record-get / +record-list / +record-search | 涉及筛选、排序、Top/Bottom N、聚合、多表关联、全局结论时读 [lark-base-data-analysis-sop.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-analysis-sop.md) |
-| 写记录 | +record-upsert / +record-batch-create / +record-batch-update | 必读 [lark-base-record-upsert.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-upsert.md) / [lark-base-record-batch-create.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-batch-create.md) / [lark-base-record-batch-update.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-batch-update.md) 和 [lark-base-cell-value.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-cell-value.md) |
+| 创建/更新字段 | +field-create / +field-update | 必读 [lark-base-field-json.md](references/lark-base-field-json.md)；公式读 [formula-field-guide.md](references/formula-field-guide.md)；lookup 读 [lookup-field-guide.md](references/lookup-field-guide.md)；命令细节读 [lark-base-field-create.md](references/lark-base-field-create.md) / [lark-base-field-update.md](references/lark-base-field-update.md) |
+| 读记录明细 | +record-get / +record-list / +record-search | 涉及筛选、排序、Top/Bottom N、聚合、多表关联、全局结论时读 [lark-base-data-analysis-sop.md](references/lark-base-data-analysis-sop.md) |
+| 写记录 | +record-upsert / +record-batch-create / +record-batch-update | 必读 [lark-base-record-upsert.md](references/lark-base-record-upsert.md) / [lark-base-record-batch-create.md](references/lark-base-record-batch-create.md) / [lark-base-record-batch-update.md](references/lark-base-record-batch-update.md) 和 [lark-base-cell-value.md](references/lark-base-cell-value.md) |
 | 附件字段 | +record-upload-attachment / +record-download-attachment / +record-remove-attachment | 附件不要伪造成普通 CellValue；上传走本地文件，下载/删除按 file token 或字段定位 |
-| 删除记录 / 分享记录链接 / 历史 | +record-delete / +record-share-link-create / +record-history-list | 删除前确认 record；分享链接最多 100 条；历史读 [lark-base-record-history-list.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-history-list.md)，只查单条记录，不做整表审计 |
-| 管理视图 | +view-\* | +view-set-filter 读 [lark-base-view-set-filter.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-view-set-filter.md)；其余配置先 get 现状，再按返回结构更新 |
-| 一次性聚合统计 | +data-query | 必读 [lark-base-data-analysis-sop.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-analysis-sop.md) 和入口 [lark-base-data-query-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-query-guide.md)；完整 DSL 再读 [lark-base-data-query.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-query.md) |
-| 公式字段 | +field-create/update --json '{"type":"formula",...}' | 必读 [formula-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/formula-field-guide.md)，读后再加隐藏确认 flag --i-have-read-guide |
-| Lookup 字段 | +field-create/update --json '{"type":"lookup",...}' | 必读 [lookup-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lookup-field-guide.md)，读后再加隐藏确认 flag --i-have-read-guide |
-| 表单提交 | +form-submit | 先读 [lark-base-form-detail.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-detail.md) 获取题目、filter 和附件所需 base_token；提交 JSON 读 [lark-base-form-submit.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-submit.md) |
-| 表单题目创建/更新 | +form-questions-create / +form-questions-update | 读 [lark-base-form-questions-create.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-questions-create.md) / [lark-base-form-questions-update.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-questions-update.md) |
-| 其他表单管理 | +form-list/get/detail/create/update/delete / +form-questions-list/delete | +form-detail 读 [lark-base-form-detail.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-detail.md)；删除前确认目标表单 |
-| 仪表盘与组件 | +dashboard-\* / +dashboard-block-\* | 提到图表/看板/block 时先读 [lark-base-dashboard.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-dashboard.md)；组件 data_config 读 [dashboard-block-data-config.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/dashboard-block-data-config.md)；读取图表计算结果用 +dashboard-block-get-data |
-| Workflow | +workflow-\* | 创建/更新或理解 steps 时读入口 [lark-base-workflow-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-workflow-guide.md) 和 steps JSON SSOT [lark-base-workflow-schema.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-workflow-schema.md)；list/get/enable/disable 只处理 workflow ID 与启停状态 |
-| 高级权限与角色 | +advperm-\* / +role-\* | 角色操作先读入口 [lark-base-role-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-role-guide.md)；角色 create/update 或解读完整配置再读权限 JSON SSOT [role-config.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/role-config.md)；系统角色不可删除；关闭高级权限会影响自定义角色 |
+| 删除记录 / 分享记录链接 / 历史 | +record-delete / +record-share-link-create / +record-history-list | 删除前确认 record；分享链接最多 100 条；历史读 [lark-base-record-history-list.md](references/lark-base-record-history-list.md)，只查单条记录，不做整表审计 |
+| 管理视图 | +view-\* | +view-set-filter 读 [lark-base-view-set-filter.md](references/lark-base-view-set-filter.md)；其余配置先 get 现状，再按返回结构更新 |
+| 一次性聚合统计 | +data-query | 必读 [lark-base-data-analysis-sop.md](references/lark-base-data-analysis-sop.md) 和入口 [lark-base-data-query-guide.md](references/lark-base-data-query-guide.md)；完整 DSL 再读 [lark-base-data-query.md](references/lark-base-data-query.md) |
+| 公式字段 | +field-create/update --json '{"type":"formula",...}' | 必读 [formula-field-guide.md](references/formula-field-guide.md)，读后再加隐藏确认 flag --i-have-read-guide |
+| Lookup 字段 | +field-create/update --json '{"type":"lookup",...}' | 必读 [lookup-field-guide.md](references/lookup-field-guide.md)，读后再加隐藏确认 flag --i-have-read-guide |
+| 表单提交 | +form-submit | 先读 [lark-base-form-detail.md](references/lark-base-form-detail.md) 获取题目、filter 和附件所需 base_token；提交 JSON 读 [lark-base-form-submit.md](references/lark-base-form-submit.md) |
+| 表单题目创建/更新 | +form-questions-create / +form-questions-update | 读 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md) / [lark-base-form-questions-update.md](references/lark-base-form-questions-update.md)；复用已有字段时传 `use_existing_field:true` + `field_id` |
+| 其他表单管理 | +form-list/get/detail/create/update/delete / +form-questions-list/delete / +form-share-get/update | +form-detail 读 [lark-base-form-detail.md](references/lark-base-form-detail.md)；删除题目默认连带删除底层字段，只移出表单时必须传 `--keep-field`；分享更新前先读取现状 |
+| 仪表盘与组件 | +dashboard-\* / +dashboard-block-\* / +dashboard-share-get/update | 提到图表/看板/block 时先读 [lark-base-dashboard.md](references/lark-base-dashboard.md)；组件 data_config 读 [dashboard-block-data-config.md](references/dashboard-block-data-config.md)；读取图表计算结果用 +dashboard-block-get-data；分享更新前先读取现状 |
+| Workflow | +workflow-\* | 创建/更新或理解 steps 时读入口 [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md) 和 steps JSON SSOT [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)；list/get/enable/disable 只处理 workflow ID 与启停状态 |
+| 高级权限与角色 | +advperm-\* / +role-\* | 角色操作先读入口 [lark-base-role-guide.md](references/lark-base-role-guide.md)；构造或修改权限 JSON 时读 [lark-base-permission-rules.md](references/lark-base-permission-rules.md)；角色 create/update 或解读完整配置再读权限 JSON SSOT [role-config.md](references/role-config.md)；系统角色不可删除；关闭高级权限会影响自定义角色 |
 
 ## Base 心智模型
 
 - Base 曾用名 Bitable；返回字段、错误或旧文档里的 bitable 多为历史兼容，不代表应改走裸 API 或另一套命令。
 - +base-block-list 是查看一个 Base 内资源目录的新入口：它列出这个 Base 直接管理的 folder/table/docx/dashboard/workflow，适合先判断 Base 里有什么，再决定走 table、dashboard、workflow 或 docx 命令。
 - base-block 只负责资源目录管理，包括创建资源、移动到 folder、重命名和删除；具体资源内容仍走 table/dashboard/workflow 命令。
-- 新建 Base 时，强烈推荐一次性执行 lark-cli base +base-create --name "<base>" --table-name "<table>" --fields '<field-json-array>'，同时配置新 Base 里唯一一个初始数据表的 name 和 schema；使用 --fields 前先读 [lark-base-field-json.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-json.md) 或复用 +field-create 的字段 JSON 形状，不要猜字段属性。
+- 新建 Base 时，强烈推荐一次性执行 lark-cli base +base-create --name "<base>" --table-name "<table>" --fields '<field-json-array>'，同时配置新 Base 里唯一一个初始数据表的 name 和 schema；使用 --fields 前先读 [lark-base-field-json.md](references/lark-base-field-json.md) 或复用 +field-create 的字段 JSON 形状，不要猜字段属性。
 - +base-create 不传 --table-name 和 --fields 时，会创建一个默认 schema 的初始数据表。
 - 表、字段、视图、workflow、dashboard block 的名称和 ID 必须来自真实返回，不要凭用户口述猜。
 - 存储字段可写；系统字段、formula、lookup 只读；附件字段走专用 attachment 命令。
@@ -77,7 +83,7 @@ metadata:
 
 ## 查询与统计规则
 
-涉及查询、统计或判断结论时，先阅读 [lark-base-data-analysis-sop.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-analysis-sop.md)，并遵守：
+涉及查询、统计或判断结论时，先阅读 [lark-base-data-analysis-sop.md](references/lark-base-data-analysis-sop.md)，并遵守：
 
 1. +record-list 的默认页、固定 --limit 和本地 jq 只能证明已读取范围内的事实，不能直接支撑全局最值、全量计数、Top/Bottom N、异常识别或分组结论。
 2. 能由 Base 表达的筛选、排序、投影、聚合、分组和限制，应在 Base 云端查询能力中执行；不要先拉原始记录到本地上下文再手工筛选排序。
@@ -91,7 +97,7 @@ metadata:
 
 - 写记录前先读字段结构；只写存储字段。系统字段、附件字段、formula、lookup 不作为普通记录写入目标。
 - 附件上传、下载、删除走专用 +record-\*-attachment 命令。
-- 写字段前先读 [lark-base-field-json.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-json.md)；涉及 formula / lookup 时必须读 [formula-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/formula-field-guide.md) / [lookup-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lookup-field-guide.md)。
+- 写字段前先读 [lark-base-field-json.md](references/lark-base-field-json.md)；涉及 formula / lookup 时必须读 [formula-field-guide.md](references/formula-field-guide.md) / [lookup-field-guide.md](references/lookup-field-guide.md)。
 - 表名、字段名、视图名、workflow 配置中的名称必须来自真实返回；跨表场景还要读取目标表结构。
 - 删除、角色更新、字段更新等高风险操作遵循 CLI 的 confirmation gate；目标不明确时先用 get/list 消歧。
 - 批量写入单批最多 200 条；连续写同一表时串行执行，遇到 1254291 按短暂等待后重试处理。
@@ -103,14 +109,19 @@ metadata:
 
 - +form-submit 前必须先跑 +form-detail，读取 questions[].type、required、filter 和附件场景需要的 base_token；不要填写被 filter 隐藏的问题。
 - 表单附件不要写进 fields，放在 --json.attachments；提交附件时必须同时传表单所属 Base 的 --base-token。
+- `+form-questions-create` 有两种形态：新建字段题目传 `title` + `type`；复用已有字段题目传 `use_existing_field:true` + `field_id`。复用字段只把已有字段加入表单，不创建字段，也不改变已有记录数据；不要携带 `type`、`style`、`options` 等字段定义属性。
+- 创建题目前先执行 `+form-questions-list`。目标标题已存在时，除非用户明确要求同名独立问题，否则使用 `+form-questions-update` 修改，不要先创建同名问题再删除旧问题。
+- `+form-questions-delete` 是高风险写操作：默认删除承载题目的底层 Field 及该字段所有记录数据；只想把题目移出表单并保留字段/数据时必须传 `--keep-field`。保留字段后可用 `+form-questions-create --questions '[{"use_existing_field":true,"field_id":"<field_id>"}]'` 加回表单。
+- 管理表单分享使用 `+form-share-get` / `+form-share-update` 管理启停、访问范围和匿名/登录要求；对应字段为 `enabled`、`access_scope`、`allow_anonymous`、`require_login`。更新前先读取现状，每次只修改一个字段，布尔值显式传 `true` 或 `false`。
 - +view-set-filter 是唯一保留的 view reference；sort/group/card/timebar/visible-fields 这类配置先用对应 get 命令读现状，保留未修改字段，只替换用户要求变更的配置。
 - 视图适合持久化、共享和 UI 复用；一次性筛选/排序可先用 +record-list / +record-search 的 filter/sort 验证结果，再按需要沉淀为持久视图。
 
 ## Dashboard / Workflow / Role
 
-- Dashboard 的复杂点是 block 的 data_config，不是 list/get/create/delete 命令参数。创建或更新 block 前先读 [dashboard-block-data-config.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/dashboard-block-data-config.md)，组件必须串行创建；+dashboard-arrange 是服务端智能布局，只在用户明确要求重排/美化时执行。+dashboard-block-get-data 读取图表最终计算结果，不返回 block 名称、类型、布局或 data_config；需要元数据先用 +dashboard-block-get。
-- Workflow 的复杂点是 steps 结构。创建、更新或解释完整 workflow 时读入口 [lark-base-workflow-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-workflow-guide.md) 和 steps JSON SSOT [lark-base-workflow-schema.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-workflow-schema.md)；enable/disable/list 只需确认 workflow ID、当前启停状态和用户意图。
-- Role 的复杂点是权限 JSON。角色操作先读入口 [lark-base-role-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-role-guide.md)；+role-create 只支持自定义角色；+role-update 是 delta merge；角色 create/update 或解读完整配置时读权限 JSON SSOT [role-config.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/role-config.md)。+role-delete 只适用于自定义角色，系统角色不可删除；删除角色和关闭高级权限前必须确认目标和影响。
+- Dashboard 的复杂点是 block 的 data_config，不是 list/get/create/delete 命令参数。创建或更新 block 前先读 [dashboard-block-data-config.md](references/dashboard-block-data-config.md)，组件必须串行创建；+dashboard-arrange 是服务端智能布局，只在用户明确要求重排/美化时执行。+dashboard-block-get-data 读取图表最终计算结果，不返回 block 名称、类型、布局或 data_config；需要元数据先用 +dashboard-block-get。
+- 管理 Dashboard 分享使用 `+dashboard-share-get` / `+dashboard-share-update` 管理启停、访问范围和返回源 Base 入口；对应字段为 `enabled`、`access_scope`、`show_source`。更新前先读取现状，每次只修改一个字段，显式 `false` 必须保留。
+- Workflow 的复杂点是 steps 结构。创建、更新或解释完整 workflow 时读入口 [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md) 和 steps JSON SSOT [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)；enable/disable/list 只需确认 workflow ID、当前启停状态和用户意图。
+- Role 的复杂点是权限 JSON。角色操作先读入口 [lark-base-role-guide.md](references/lark-base-role-guide.md)；构造或修改权限 JSON 时读 [lark-base-permission-rules.md](references/lark-base-permission-rules.md)；+role-create 只支持自定义角色；+role-update 是 delta merge；角色 create/update 或解读完整配置时读权限 JSON SSOT [role-config.md](references/role-config.md)。+role-delete 只适用于自定义角色，系统角色不可删除；删除角色和关闭高级权限前必须确认目标和影响。
 
 ## 常见恢复
 
@@ -119,9 +130,9 @@ metadata:
 | param baseToken is invalid / base_token invalid | 检查是否把 wiki token、workspace token 或完整 URL 当成了 --base-token；按入口规则重新获取真实 base_token |
 | not found 且输入来自 Wiki 链接 | 优先检查是否把 wiki token 当成 base token，不要立刻改走裸 API |
 | 1254045 字段名不存在 | 重新 +field-list，使用真实字段名或字段 ID；注意空格、大小写和跨表字段 |
-| 1254015 字段值类型不匹配 | 先 +field-list，再按 [lark-base-cell-value.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-cell-value.md) 构造 CellValue |
+| 1254015 字段值类型不匹配 | 先 +field-list，再按 [lark-base-cell-value.md](references/lark-base-cell-value.md) 构造 CellValue |
 | 日期 / 人员 / 超链接字段报格式错误 | 日期用 YYYY-MM-DD HH:mm:ss；人员用 [{ "id": "ou_xxx" }]；超链接用 URL 或 markdown link 字符串 |
-| formula / lookup 创建失败 | 先读 [formula-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/formula-field-guide.md) / [lookup-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lookup-field-guide.md)，再按 guide 重建请求 |
+| formula / lookup 创建失败 | 先读 [formula-field-guide.md](references/formula-field-guide.md) / [lookup-field-guide.md](references/lookup-field-guide.md)，再按 guide 重建请求 |
 | ignored_fields / READONLY | 移除只读字段，只写存储字段 |
 | 1254104 | 批量超过 200，分批调用 |
 | 1254291 | 并发写冲突，串行写入并在批次间短暂等待 |
@@ -129,15 +140,16 @@ metadata:
 
 ## 保留 Reference
 
-- [lark-base-data-analysis-sop.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-analysis-sop.md)：查询/统计/全局结论的选路 SOP
-- [lark-base-data-query-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-query-guide.md) / [lark-base-data-query.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-data-query.md)：聚合查询入口 fewshot 与 DSL SSOT
-- [lark-base-cell-value.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-cell-value.md)：记录 CellValue 构造
-- [lark-base-field-json.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-json.md)：字段 JSON 构造
-- [formula-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/formula-field-guide.md) / [lookup-field-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lookup-field-guide.md)：公式与 lookup 字段
-- [lark-base-field-create.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-create.md) / [lark-base-field-update.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-field-update.md)：字段创建/更新命令级补充
-- [lark-base-record-upsert.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-upsert.md) / [lark-base-record-batch-create.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-batch-create.md) / [lark-base-record-batch-update.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-batch-update.md) / [lark-base-record-history-list.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-record-history-list.md)：记录写入 JSON 与历史返回解释
-- [lark-base-view-set-filter.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-view-set-filter.md)：视图筛选 JSON
-- [lark-base-form-detail.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-detail.md) / [lark-base-form-submit.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-submit.md) / [lark-base-form-questions-create.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-questions-create.md) / [lark-base-form-questions-update.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-form-questions-update.md)：表单详情、提交和复杂 JSON
-- [lark-base-dashboard.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-dashboard.md) / [dashboard-block-data-config.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/dashboard-block-data-config.md) / [lark-base-dashboard-block-get-data.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-dashboard-block-get-data.md)：仪表盘、组件配置与图表结果协议
-- [lark-base-workflow-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-workflow-guide.md) / [lark-base-workflow-schema.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-workflow-schema.md)：workflow 入口与 steps JSON SSOT
-- [lark-base-role-guide.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/lark-base-role-guide.md) / [role-config.md](https://bytedance.larkoffice.com/file/M0GVbO9s5o21lhxWWogcEAEhn6u/references/role-config.md)：角色入口与权限 JSON SSOT
+- [lark-base-data-analysis-sop.md](references/lark-base-data-analysis-sop.md)：查询/统计/全局结论的选路 SOP
+- [lark-base-data-query-guide.md](references/lark-base-data-query-guide.md) / [lark-base-data-query.md](references/lark-base-data-query.md)：聚合查询入口 fewshot 与 DSL SSOT
+- [lark-base-cell-value.md](references/lark-base-cell-value.md)：记录 CellValue 构造
+- [lark-base-field-json.md](references/lark-base-field-json.md)：字段 JSON 构造
+- [formula-field-guide.md](references/formula-field-guide.md) / [lookup-field-guide.md](references/lookup-field-guide.md)：公式与 lookup 字段
+- [lark-base-field-create.md](references/lark-base-field-create.md) / [lark-base-field-update.md](references/lark-base-field-update.md)：字段创建/更新命令级补充
+- [lark-base-record-upsert.md](references/lark-base-record-upsert.md) / [lark-base-record-batch-create.md](references/lark-base-record-batch-create.md) / [lark-base-record-batch-update.md](references/lark-base-record-batch-update.md) / [lark-base-record-history-list.md](references/lark-base-record-history-list.md)：记录写入 JSON 与历史返回解释
+- [lark-base-view-set-filter.md](references/lark-base-view-set-filter.md)：视图筛选 JSON
+- [lark-base-form-detail.md](references/lark-base-form-detail.md) / [lark-base-form-submit.md](references/lark-base-form-submit.md) / [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md) / [lark-base-form-questions-update.md](references/lark-base-form-questions-update.md)：表单详情、提交和复杂 JSON
+- [lark-base-template-center.md](references/lark-base-template-center.md)：公开模板中心分类、列表、搜索与基于模板复制 Base 的流程
+- [lark-base-dashboard.md](references/lark-base-dashboard.md) / [dashboard-block-data-config.md](references/dashboard-block-data-config.md) / [lark-base-dashboard-block-get-data.md](references/lark-base-dashboard-block-get-data.md)：仪表盘、组件配置与图表结果协议
+- [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md) / [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)：workflow 入口与 steps JSON SSOT
+- [lark-base-role-guide.md](references/lark-base-role-guide.md) / [lark-base-permission-rules.md](references/lark-base-permission-rules.md) / [role-config.md](references/role-config.md)：角色入口与权限 JSON SSOT
