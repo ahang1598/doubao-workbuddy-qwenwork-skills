@@ -1,0 +1,11 @@
+interface:
+  display_name: "Amazon榜单机会发现"
+  short_description: "浏览Amazon热销榜类目树和榜单，结合ASIN、销量、竞品与关键词数据发现榜单机会。"
+  default_prompt: "使用 $proboost-amazon-ranking-scout 请查看Amazon美国站宠物用品热销榜，筛选5个候选ASIN，并用销量、竞品和关键词做二次验证。"
+dependencies:
+  tools:
+    - type: mcp
+      value: proboost-Amazon-mcp
+      description: 优先连接Proboost Amazon MCP；不可用时可按SKILL.md使用用户材料离线降级。
+policy:
+  allow_implicit_invocation: true

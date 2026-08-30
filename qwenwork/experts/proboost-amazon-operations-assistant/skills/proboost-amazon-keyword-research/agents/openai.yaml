@@ -1,0 +1,11 @@
+interface:
+  display_name: "Amazon关键词研究"
+  short_description: "挖掘Amazon关键词并分析搜索趋势、ABA排名、月度表现和Google趋势，形成分层关键词清单。"
+  default_prompt: "使用 $proboost-amazon-keyword-research 请研究Amazon美国站portable blender相关关键词，按核心词、长尾词和场景词分层，并分析趋势。"
+dependencies:
+  tools:
+    - type: mcp
+      value: proboost-Amazon-mcp
+      description: 优先连接Proboost Amazon MCP；不可用时可按SKILL.md使用用户材料离线降级。
+policy:
+  allow_implicit_invocation: true

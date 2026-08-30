@@ -1,0 +1,46 @@
+{
+  "name": "cn-family-law-expert-suite",
+  "displayName": "婚姻家事法律专家",
+  "displayNameEn": "Family Law Expert",
+  "description": "面向中国大陆婚姻家事法律工作的端到端专家套件，覆盖分轮访谈、事实证据账本、财产债务与子女方案、现行法规和类案检索、婚前及婚内财产协议、离婚协议、同居协议、分家析产协议、成年意定监护协议、正式文档生成与法律质检。正式法律成果须经中国大陆执业律师实质复核批准。",
+  "descriptionEn": "An end-to-end expert suite for Mainland China family-law work, covering staged intake, fact and evidence ledgers, asset, debt and parenting analysis, current-law and case research, six configurable agreement workflows, formal document generation, and legal quality control. Formal legal deliverables require substantive review and approval by a qualified Mainland China lawyer.",
+  "skills": [
+    "./skills/cn-family-law-orchestrator",
+    "./skills/cn-family-matter-intake",
+    "./skills/cn-family-legal-consultation",
+    "./skills/cn-family-document-evidence",
+    "./skills/cn-family-asset-ledger",
+    "./skills/cn-family-debt-ledger",
+    "./skills/cn-family-child-parenting-plan",
+    "./skills/cn-family-statute-research",
+    "./skills/cn-family-case-research",
+    "./skills/cn-prenuptial-property-agreement",
+    "./skills/cn-marital-property-agreement",
+    "./skills/cn-divorce-agreement",
+    "./skills/cn-cohabitation-agreement",
+    "./skills/cn-family-property-partition",
+    "./skills/cn-adult-voluntary-guardianship-agreement",
+    "./skills/cn-family-deliverable-builder",
+    "./skills/cn-family-agreement-quality-gate"
+  ],
+  "version": "1.2.1",
+  "author": {
+    "name": "婚姻家事法律专家项目"
+  },
+  "keywords": [
+    "中国大陆法律",
+    "婚姻家事",
+    "离婚协议",
+    "财产约定",
+    "子女抚养",
+    "意定监护"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_ExOaIYPj",
+    "version": "1.2.1",
+    "contentUpdatedAt": 1787748567045,
+    "installedAt": 1788093839926
+  }
+}

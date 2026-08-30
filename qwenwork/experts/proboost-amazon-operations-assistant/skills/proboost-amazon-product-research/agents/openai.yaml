@@ -1,0 +1,11 @@
+interface:
+  display_name: "Amazon产品机会筛选"
+  short_description: "结合Amazon选品、竞品、销量、评论和BSR预测数据筛选产品机会，输出候选、证据与风险。"
+  default_prompt: "使用 $proboost-amazon-product-research 请在Amazon美国站筛选便携榨汁杯相关产品机会，并结合竞品、销量和评论给出3个候选方向。"
+dependencies:
+  tools:
+    - type: mcp
+      value: proboost-Amazon-mcp
+      description: 优先连接Proboost Amazon MCP；不可用时可按SKILL.md使用用户材料离线降级。
+policy:
+  allow_implicit_invocation: true

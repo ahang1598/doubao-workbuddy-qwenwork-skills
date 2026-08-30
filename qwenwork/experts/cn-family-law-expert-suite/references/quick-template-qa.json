@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "verified_at": "2026-08-26",
+  "build_seconds_for_all_six": 0.183,
+  "structural_validation_seconds_for_all_six": 0.11,
+  "render_seconds_for_all_six_parallel": 3.4,
+  "rendered_pages_total": 30,
+  "qwen_runtime_validation": "OOXML structure and text extraction only; LibreOffice is not required or invoked",
+  "checks": [
+    "DOCX package integrity",
+    "Chinese font rendering",
+    "no visible overlap or clipping",
+    "placeholder visibility",
+    "headers, footers, pagination and signature pages"
+  ],
+  "templates": [
+    {
+      "skill": "cn-adult-voluntary-guardianship-agreement",
+      "pages": 5,
+      "sha256": "1e76b3819ba149fbb51dad6ad917544df947a1e19604662b8856ef95cc71f92d"
+    },
+    {
+      "skill": "cn-cohabitation-agreement",
+      "pages": 5,
+      "sha256": "cc4767728e6e5e0da87666a7af5af97e6f272ca573a96d585c12eadf5842461e"
+    },
+    {
+      "skill": "cn-divorce-agreement",
+      "pages": 6,
+      "sha256": "d2bd0830ed3492707973dc7845e7968e00d025c366bf0523c2783e8b0f1768c2"
+    },
+    {
+      "skill": "cn-family-property-partition",
+      "pages": 4,
+      "sha256": "81383db29d7f6df1fbb54ae3f5da6a69ddd51eb76730d15dbf9896e15b04cd46"
+    },
+    {
+      "skill": "cn-marital-property-agreement",
+      "pages": 5,
+      "sha256": "ff1428e3d9d41ae1f1a0aa05701807d9c219decc6e71cf6e1d12347f161ac9eb"
+    },
+    {
+      "skill": "cn-prenuptial-property-agreement",
+      "pages": 5,
+      "sha256": "4fd02db11e8a8fc86b75f2c5136238a19e2608bb3fbfca02ed59a37b77f28a0b"
+    }
+  ]
+}

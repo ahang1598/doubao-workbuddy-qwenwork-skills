@@ -1,0 +1,33 @@
+{
+  "name": "amap-site-selection",
+  "displayName": "选址顾问",
+  "displayNameEn": "Site Selection Advisor",
+  "description": "面向连锁品牌拓展与个体创业者的门店选址专家能力包。基于高德问店五维选址模型（客群聚集、潜客匹配、同行竞争、交通便利、商业成熟），覆盖商圈推荐、点位评估、多点位对比、立项报告四类完整任务。",
+  "descriptionEn": "A role-level AI toolkit for store site selection. Built on Amap's five-dimension model (footfall, prospect match, competition, accessibility, commercial maturity), covering trade-area recommendation, single-site evaluation, multi-site comparison and feasibility reporting.",
+  "version": "1.0.0",
+  "author": {
+    "name": "高德问店"
+  },
+  "keywords": [
+    "开店选址",
+    "商圈推荐",
+    "点位评估",
+    "选址对比",
+    "立项报告",
+    "五维选址分析"
+  ],
+  "skills": [
+    "./skills/area-recommend",
+    "./skills/site-evaluate",
+    "./skills/site-compare",
+    "./skills/feasibility-report"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_5XgPh3RP",
+    "version": "1.0.0",
+    "contentUpdatedAt": 1787800708700,
+    "installedAt": 1788093838903
+  }
+}

@@ -1,0 +1,7 @@
+# 钉钉听记归档脚本（scripts/wukong_minutes_to_md.py）目前只用 Python 标准库
+# 未来如需新依赖,加到本文件,格式: <package>>=<version>
+#
+# 依赖说明:
+#   - argparse, json, os, re, subprocess, sys, time   标准库
+#   - datetime, pathlib, typing                        标准库
+#   - 外部工具: dws CLI 在 /Users/gxd/.real/.bin/dws/bin/dws（由悟空平台提供,不在 pip 范围）

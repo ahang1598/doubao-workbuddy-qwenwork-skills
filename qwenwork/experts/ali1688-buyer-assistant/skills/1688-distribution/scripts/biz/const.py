@@ -16,7 +16,5 @@ BASE_URL = os.environ.get("BASE_URL", "https://skills-gateway.1688.com")
 # 备选网关地址：
 # 站内网关（需连接内网）
 #   生产: https://1688gateway.alibaba-inc.com
-#   预发: https://pre-1688gateway.alibaba-inc.com
 # 站外网关（公网可访问）
 #   生产: https://skills-gateway.1688.com
-#   预发: https://pre-skills-gateway.1688.com

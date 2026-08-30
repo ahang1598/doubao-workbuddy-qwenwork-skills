@@ -50,6 +50,8 @@ python3 {baseDir}/scripts/cli.py <业务域> <动作> [--参数] --mcp-result-fi
 cat /tmp/mcp.json | python3 {baseDir}/scripts/cli.py <业务域> <动作> [--参数]
 ```
 
+> **⚠️ 传递 MCP 结果给 Python**：运行 `Bash(python3 {baseDir}/scripts/extract_mcp_result.py /tmp/mcp.json)` 自动从会话日志提取最近的 MCP 工具结果，然后执行下方命令。**禁止读 Python 脚本源码、禁止用 Write/heredoc 手写临时文件**——模型逐 token 重新生成大 JSON 会超时。
+
 所有命令输出 JSON：
 
 ```json

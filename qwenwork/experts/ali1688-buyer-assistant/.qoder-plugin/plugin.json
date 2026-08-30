@@ -1,8 +1,8 @@
 {
   "name": "ali1688-buyer-assistant",
   "displayName": "1688买家助手",
-  "version": "1.0.0",
-  "description": "为1688买家提供选品找货、找商找厂、询盘寻源、分销铺货、88生意通等一站式采购服务和交易解决方案，让采购决策和生意经营更快、更准、更省心。",
+  "version": "1.1.0",
+  "description": "为1688买家提供选品找货、找商找厂、询盘寻源、分销铺货、88生意通等一站式采购服务，并新增UTP交易闭环（搜索→加购→下单→支付端内完成），让采购决策和生意经营更快、更准、更省心。",
   "author": {
     "name": "1688",
     "url": "https://clawhub.1688.com/"
@@ -16,24 +16,49 @@
     "供应商",
     "询盘",
     "分销",
-    "88生意通"
+    "88生意通",
+    "utp",
+    "购物",
+    "下单",
+    "支付"
   ],
   "displayNameEn": "1688 Buyer Assistant",
-  "descriptionEn": "One-stop procurement and 88 Bizlink solutions for 1688 buyers, covering product sourcing, supplier discovery, RFQ inquiry, distribution listing, and offline B2B transaction workflows.",
+  "descriptionEn": "One-stop procurement and 88 Bizlink solutions for 1688 buyers, covering product sourcing, supplier discovery, RFQ inquiry, distribution listing, offline B2B transactions, plus UTP full-chain shopping (search, cart, checkout and payment in one conversation).",
   "homepage": "https://clawhub.1688.com/",
   "skills": [
     "./skills/1688-product-find",
     "./skills/1688-source-suppliers",
     "./skills/1688-sourcing-inquiry",
     "./skills/1688-distribution",
-    "./skills/1688-syt"
+    "./skills/1688-syt",
+    "./skills/utp-shopping"
+  ],
+  "connectors": [
+    {
+      "id": "ali1688-buyer",
+      "name": "1688买家连接器",
+      "category": "交易",
+      "required": false
+    },
+    {
+      "id": "utp-shopping-connector",
+      "name": "UTP Connector (macOS)",
+      "category": "交易",
+      "required": false
+    },
+    {
+      "id": "utp-shopping-connector-win",
+      "name": "UTP Connector (Windows)",
+      "category": "交易",
+      "required": false
+    }
   ],
   "qoderMarket": {
     "source": "apphub",
     "extensionType": "plugin",
-    "pluginId": "ali1688-buyer-assistant",
-    "version": "1.0.0",
-    "contentUpdatedAt": 1782777600000,
-    "installedAt": 1785925315739
+    "pluginId": "official_e8vVvD8b",
+    "version": "1.1.0",
+    "contentUpdatedAt": 0,
+    "installedAt": 1788093837181
   }
 }

@@ -1,0 +1,89 @@
+# 内容雷达配置示例 (走 mcp-autocli)
+# 首次引导默认会自动生成一份类似配置；你后续可以按需修改。
+#
+# 关键约定：
+# - platforms.name 使用 mcp-autocli 的英文 key（xiaohongshu / bilibili / douyin /
+#   weibo / twitter / youtube / instagram / hackernews / lobsters / devto /
+#   stackoverflow / arxiv / hf / wikipedia）
+# - rss_feeds 用 read_url 抓 XML
+# - follow_list 走 mcp-autocli 的 user_timeline / following_feed；部分平台组合
+#   暂不支持（见 follow_list 注释），配了会被跳过并在区块 0 标注
+
+# --- 你是谁 ---
+topic: "AI 工具"
+role: "AI 工具效率实测博主"
+style: "先对比，再推荐；讲人话，给步骤，帮用户快速判断值不值得用"
+
+# --- 你想覆盖哪些平台（platforms.name 用 mcp-autocli 英文 key）---
+platforms:
+  - name: "xiaohongshu"
+    weight: 1.5
+    enabled: true
+  - name: "bilibili"
+    weight: 1.2
+  - name: "douyin"
+    weight: 1.0
+  - name: "weibo"
+    weight: 0.8
+  - name: "twitter"
+    weight: 1.3
+  - name: "youtube"
+    weight: 1.1
+  - name: "instagram"
+    weight: 1.0
+  - name: "hackernews"
+    weight: 1.2
+  - name: "devto"
+    weight: 1.0
+
+# --- 你想搜什么（中文，用于国内平台 xiaohongshu/bilibili/douyin/weibo）---
+keywords_cn:
+  - "AI 工具"
+  - "AI 工作流"
+  - "Claude Code 教程"
+
+# --- 你想搜什么（英文，用于海外平台 hackernews/lobsters/devto/.../twitter/youtube）---
+keywords:
+  - "AI tools"
+  - "AI workflow"
+  - "Claude Code"
+
+scope: "AI 工具、AI 工作流和实战案例"
+
+# --- 如何排序（4 维权重之和必须 = 100）---
+scoring:
+  信息差: 30
+  受众匹配: 30
+  可操作性: 20
+  时效性: 20
+
+# --- 可选：高级用户微调 ---
+advanced:
+  # 单平台采集失败的最大允许数（超过则提示用户检查环境）
+  max_platform_failures: 3
+  # search 调用的 limit_per_platform 默认值
+  search_limit: 20
+
+# --- 可选：RSS 订阅源（用 read_url 抓 XML，标 🟡 二手）---
+rss_feeds:
+  - "https://www.anthropic.com/feed"
+  - "https://openai.com/news/rss.xml"
+
+# --- 可选：关注列表 ---
+# 三类配置形态：
+#   1. 指定 user_id 列表 → 调 user_timeline 逐个拉
+#      支持平台：bilibili / xiaohongshu / douyin
+#      user_id 格式：bilibili = 数字 UID；xiaohongshu = 24 字符 hex profile id；douyin = sec_uid
+#   2. 指定 username 列表 → 调 platform_action(instagram, user) 逐个拉
+#      支持平台：instagram
+#   3. 特殊值 "self" → 调 following_feed 拉自己关注圈的整体时间线
+#      支持平台：bilibili / twitter
+# 不支持的组合（如 follow_list.weibo / follow_list.youtube）配了会被跳过并在区块 0 标注。
+follow_list:
+  bilibili:
+    - "12345678"        # 某 UP 主的数字 UID
+  twitter: "self"       # 拉自己 Twitter 关注圈
+  xiaohongshu:
+    - "5d0a1b2c3d4e5f6789012345"  # 某创作者的 profile id
+  instagram:
+    - "openai"          # Instagram username（不需要 @）

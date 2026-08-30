@@ -1,0 +1,11 @@
+interface:
+  display_name: "Amazon流量结构分析"
+  short_description: "分析Amazon ASIN的流量来源、关键词排名、流量词、扩展词和关联Listing，输出流量结构与优化线索。"
+  default_prompt: "使用 $proboost-amazon-traffic-analysis 请分析这个Amazon美国站ASIN的流量来源、核心流量词、关键词排名和关联Listing。"
+dependencies:
+  tools:
+    - type: mcp
+      value: proboost-Amazon-mcp
+      description: 优先连接Proboost Amazon MCP；不可用时可按SKILL.md使用用户材料离线降级。
+policy:
+  allow_implicit_invocation: true

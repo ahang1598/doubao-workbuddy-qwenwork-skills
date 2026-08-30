@@ -1,0 +1,23 @@
+[project]
+name = "content-breakdown"
+version = "1.0.0"
+description = "从抖音视频和小红书笔记提取内容（字幕、转录、图片、正文）"
+requires-python = ">=3.10"
+
+dependencies = [
+    "requests>=2.28.0",
+    "imageio-ffmpeg>=0.4.9",   # ffmpeg 内置二进制，用于音频提取
+    "websocket-client>=1.6.0", # 小红书 CDP 浏览器连接（extract-xhs 命令需要）
+]
+
+[project.optional-dependencies]
+whisper = [
+    "openai-whisper>=20231117",  # Whisper 本地转录（必剪 ASR 失败时兜底）
+]
+
+[project.scripts]
+content-breakdown = "cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -43,6 +43,8 @@ python3 {baseDir}/cli.py ali_1688_source_suppliers --query "供应商关键字" 
 cat /tmp/source_suppliers.json | python3 {baseDir}/cli.py ali_1688_source_suppliers -q "供应商关键字"
 ```
 
+> **⚠️ 传递 MCP 结果给 Python**：运行 `Bash(python3 {baseDir}/extract_mcp_result.py /tmp/source_suppliers.json)` 自动从会话日志提取最近的 MCP 工具结果，然后执行下方命令。**禁止读 Python 脚本源码、禁止用 Write/heredoc 手写临时文件**——模型逐 token 重新生成大 JSON 会超时。
+
 所有命令输出 JSON：
 
 ```json

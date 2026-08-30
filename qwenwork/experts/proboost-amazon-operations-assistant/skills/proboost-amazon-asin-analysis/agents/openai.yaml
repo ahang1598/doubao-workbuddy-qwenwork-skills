@@ -1,0 +1,11 @@
+interface:
+  display_name: "Amazon ASIN综合诊断"
+  short_description: "综合诊断Amazon ASIN的商品、销量、评论、竞品、关键词和流量结构，输出问题清单与改进顺序。"
+  default_prompt: "使用 $proboost-amazon-asin-analysis 请综合诊断这个Amazon美国站ASIN，覆盖销量、评论、竞品、关键词和流量，并给出问题优先级。"
+dependencies:
+  tools:
+    - type: mcp
+      value: proboost-Amazon-mcp
+      description: 优先连接Proboost Amazon MCP；不可用时可按SKILL.md使用用户材料离线降级。
+policy:
+  allow_implicit_invocation: true

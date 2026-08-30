@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "钉钉听记": {
+      "type": "guided-setup",
+      "_setup": {
+        "url": "https://aihub.dingtalk.com/#/mcp",
+        "description": "1. Open [DingTalk AI Hub](https://aihub.dingtalk.com/#/mcp)\n2. Find **DingTalk 听记 (Meeting Notes) MCP**\n3. Click to generate your personal configuration\n4. Copy the JSON and paste it into the input box below",
+        "descriptionZh": "1. 打开[钉钉 AI 能力中心](https://aihub.dingtalk.com/#/mcp)\n2. 找到 **钉钉听记 MCP**\n3. 点击生成个人专属配置\n4. 复制 JSON 配置并粘贴到下方输入框"
+      }
+    },
+    "钉钉文档": {
+      "type": "guided-setup",
+      "_setup": {
+        "url": "https://aihub.dingtalk.com/#/mcp",
+        "description": "1. Open [DingTalk AI Hub](https://aihub.dingtalk.com/#/mcp)\n2. Find **DingTalk Documents MCP**\n3. Click to generate your personal configuration\n4. Copy the JSON and paste it into the input box below",
+        "descriptionZh": "1. 打开[钉钉 AI 能力中心](https://aihub.dingtalk.com/#/mcp)\n2. 找到 **钉钉文档 MCP**\n3. 点击生成个人专属配置\n4. 复制 JSON 配置并粘贴到下方输入框"
+      }
+    },
+    "钉钉待办": {
+      "type": "guided-setup",
+      "_setup": {
+        "url": "https://aihub.dingtalk.com/#/mcp",
+        "description": "1. Open [DingTalk AI Hub](https://aihub.dingtalk.com/#/mcp)\n2. Find **DingTalk Todo MCP**\n3. Click to generate your personal configuration\n4. Copy the JSON and paste it into the input box below",
+        "descriptionZh": "1. 打开[钉钉 AI 能力中心](https://aihub.dingtalk.com/#/mcp)\n2. 找到 **钉钉待办 MCP**\n3. 点击生成个人专属配置\n4. 复制 JSON 配置并粘贴到下方输入框"
+      }
+    }
+  }
+}

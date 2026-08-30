@@ -4,6 +4,30 @@
       "type": "streamable-http",
       "url": "https://mcp.1688.com/mcp/qoderwork-buyer",
       "oauthBaseUrl": "https://member.1688.com"
+    },
+    "utp-shopping-connector": {
+      "type": "stdio",
+      "command": "/bin/sh",
+      "args": [
+        "-c",
+        "chmod +x ./bin/utp >/dev/null 2>&1; xattr -d com.apple.quarantine ./bin/utp >/dev/null 2>&1; exec ./bin/utp mcp serve"
+      ],
+      "_displayName": "UTP Connector (macOS)",
+      "_displayName_zh": "UTP交易闭环（macOS）",
+      "_displayDescription": "1688交易闭环：搜索→加购→下单→支付。macOS 请启用本条。",
+      "_displayDescription_zh": "1688交易闭环：搜索→加购→下单→支付。macOS 请启用本条。"
+    },
+    "utp-shopping-connector-win": {
+      "type": "stdio",
+      "command": ".\\bin\\utp.exe",
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "_displayName": "UTP Connector (Windows)",
+      "_displayName_zh": "UTP交易闭环（Windows）",
+      "_displayDescription": "1688交易闭环：搜索→加购→下单→支付。Windows 请启用本条。",
+      "_displayDescription_zh": "1688交易闭环：搜索→加购→下单→支付。Windows 请启用本条。"
     }
   }
 }

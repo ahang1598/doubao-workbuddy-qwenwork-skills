@@ -1,0 +1,39 @@
+{
+  "name": "content-creation-suite",
+  "displayName": "内容创作专家",
+  "displayNameEn": "Content Creation Expert",
+  "description": "面向自媒体、内容创作者与市场运营的全流程内容创作工具箱，覆盖选题发现→爆款拆解→知识沉淀→风格学习→图文创作→视频编导→口播脚本→图片生成→智能排版→跨平台发布的完整创作链路。",
+  "descriptionEn": "An end-to-end content creation toolkit that covers the full lifecycle: topic discovery, breakdown of viral content, knowledge accumulation, style learning, writing, video directing, video scripting, image generation, layout optimization and cross-platform publishing.",
+  "version": "1.0.0",
+  "author": {
+    "name": "内容创作团队"
+  },
+  "keywords": [
+    "内容创作",
+    "自媒体",
+    "短视频",
+    "文案",
+    "社媒",
+    "AIGC"
+  ],
+  "skills": [
+    "./skills/content-radar",
+    "./skills/content-breakdown",
+    "./skills/knowledge-butler",
+    "./skills/writing-style",
+    "./skills/musea-smart-writer",
+    "./skills/video-director",
+    "./skills/video-script-generator",
+    "./skills/musea-content-visualizer",
+    "./skills/smart-compose",
+    "./skills/post-pilot"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_u5RJfCoB",
+    "version": "1.0.0",
+    "contentUpdatedAt": 1787821124328,
+    "installedAt": 1788093846575
+  }
+}

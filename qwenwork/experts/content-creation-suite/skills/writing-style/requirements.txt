@@ -1,0 +1,9 @@
+charset-normalizer==3.4.7
+pillow==12.2.0
+reportlab==4.4.10
+pdfplumber>=0.11.0
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+websocket-client>=1.6.0
+requests>=2.31.0

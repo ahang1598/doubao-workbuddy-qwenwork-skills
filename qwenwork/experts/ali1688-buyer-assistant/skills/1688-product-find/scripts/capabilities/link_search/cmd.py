@@ -17,7 +17,7 @@ from mcp_postprocess import build_search_result, format_search_output, load_json
 def main():
     parser = argparse.ArgumentParser(description="链接搜索 - 处理 MCP find_product 返回结果")
     parser.add_argument("--url", "-u", required=True, help="商品链接或商品 ID")
-    parser.add_argument("--image", "-i", default="", help="从 offer_query_for_trade 或用户输入得到的主图 URL")
+    parser.add_argument("--image", "-i", default="", help="从 WebFetch 或用户输入得到的主图 URL")
     parser.add_argument("--mcp-result-file", help="MCP find_product 原始 JSON 文件；不传则从 stdin 读取")
     args = parser.parse_args()
 

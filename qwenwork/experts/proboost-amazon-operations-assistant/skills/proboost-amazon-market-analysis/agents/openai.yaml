@@ -1,0 +1,11 @@
+interface:
+  display_name: "Amazon类目市场分析"
+  short_description: "分析Amazon类目规模、价格、商品、卖家、品牌、上架时间和评分结构，输出市场格局与进入风险。"
+  default_prompt: "使用 $proboost-amazon-market-analysis 请分析Amazon美国站宠物饮水机类目的市场规模、价格带、品牌集中度、上架时长和评分结构。"
+dependencies:
+  tools:
+    - type: mcp
+      value: proboost-Amazon-mcp
+      description: 优先连接Proboost Amazon MCP；不可用时可按SKILL.md使用用户材料离线降级。
+policy:
+  allow_implicit_invocation: true

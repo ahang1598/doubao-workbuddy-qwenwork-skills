@@ -1,0 +1,15 @@
+# 历史与古风题材 — 案例索引（13 个）
+
+- **例 44** 古风历史题材图 — Generate avatars of various emperors from the Ming Dynasty b… #avatars #names #古风 [L1-13]
+- **例 167** 大唐玄武门之变的朋友圈 — [中文] 玄武门之变的朋友圈  [English] WeChat Moments of the Xuanwu Gate … #朋友圈 #玄武门 #之变 [L14-30]
+- **例 176** 苏轼被贬首日朋友圈曝光 — [中文] 苏轼被贬第一天小红书截图  [English] Su Shi's first day of exile Xia… #截图 #朋友圈 #苏轼 [L31-47]
+- **例 184** 杜甫朋友圈吐槽茅屋被掀翻 — [中文] 杜甫发朋友圈吐槽房顶被风刮没了  [English] Du Fu posting on WeChat Mome… #朋友圈 #杜甫 #吐槽 [L48-64]
+- **例 185** 武则天发微博自拍太魔性了 — [中文] 武则天自拍登记发微博  [English] Wu Zetian taking a selfie, regist… #微博 #武则天 #发微 [L65-81]
+- **例 226** 古风明朝帝王群像长卷 — [中文] 根据上传图片的风格，生成明朝各个皇帝的头像，头像下面有他们的谥号和名字  [English] Based on… #人像 #明朝 #头像 [L82-98]
+- **例 234** 朱元璋登基后的推特主页 — [中文] 创建一个明朝朱元璋登基之后的X帖子页面  [English] Create an X post page of… #推特 #朱元璋 #登基 [L99-115]
+- **例 267** 宋朝文人的赛博朋友圈 — [中文] "宋朝人的朋友圈"/"SONG DYNASTY SOCIAL MEDIA FEED"，古今穿越幽默融合界面设计… #花卉 #图标 #朋友圈 [L116-132]
+- **例 268** 威化岛回军前夕李成桂动态 — [中文] 태조 이성계의 X  페이지(위화도 회군을 벌이기 직전- 최영 장군과 서로 디스하는 내용이 담긴 게시… #汽车 #威化 #回军 [L133-149]
+- **例 292** 明朝登基宝玉的推文页面 — [中文] 创建一个宝玉（查阅 https://x.com/dotey 这个推主的主页及部分推文）穿越到明朝，登基之后依据… #推特 #明朝 #登基 [L150-164]
+- **例 293** 皇宫深处的御用快递驿站 — [中文] 生成一张古代皇宫 × 快递驿站  [English] Generate an ancient imperial… #直播 #皇宫 #快递 [L165-178]
+- **例 294** 大师级真迹复刻 — [中文] 帮我生成xxxx真迹图片  [English] Help me generate xxxx authentic… #真迹 #xxxx #大师级 [L179-192]
+- **例 295** 复古传统老黄历二零二六年四月十八 — [中文] 生成一张2026年4月18日的老黄历  [English] Generate an old almanac f… #复古 #老黄历 #2026 [L193-206]

@@ -60,7 +60,7 @@ def _usage(commands: dict[str, str]) -> None:
     lines = [
         "**1688-product-find 后处理 CLI 用法**",
         "",
-        "先调用 MCP 工具 `find_product` / `offer_query_for_trade`，再将 MCP 返回 JSON 传给本 CLI：",
+        "先调用 MCP 工具 `find_product`，再将 MCP 返回 JSON 传给本 CLI：",
         "",
         "```",
     ]

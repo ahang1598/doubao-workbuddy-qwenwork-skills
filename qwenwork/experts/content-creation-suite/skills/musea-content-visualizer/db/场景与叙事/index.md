@@ -1,0 +1,16 @@
+# 场景与叙事 — 案例索引（14 个）
+
+- **例 29** 电影感叙事场景图 — Using REFERENCE_0, transform the subject's appearance to a t… #电影感 #暗调 #black [L1-13]
+- **例 97** 综合应用场景图 — Create a high-quality Japanese webinar thumbnail. 16:9 wides… #日系 #封面 #综合 [L14-26]
+- **例 108** 综合应用场景图 — A beautiful internet celebrity is live-streaming a game. #游戏 #直播 #综合 [L27-39]
+- **例 109** 综合应用场景图 — A beautiful internet celebrity is live-streaming a game. #游戏 #直播 #综合 [L40-52]
+- **例 145** 综合应用场景图 — A Taobao product detail page for T-800 robot, displaying: fr… #机器人 #product #robot [L53-65]
+- **例 146** 综合应用场景图 — A Taobao product detail page for T-800 robot, displaying: fr… #机器人 #product #robot [L66-78]
+- **例 147** 综合应用场景图 — A Taobao product detail page for T-800 robot, displaying: fr… #机器人 #product #robot [L79-91]
+- **例 148** 综合应用场景图 — A Taobao product detail page for T-800 robot, displaying: fr… #机器人 #product #robot [L92-102]
+- **例 149** 综合应用场景图 — create a minecraft skin inspired by my look #综合 #应用 #minecraft [L103-112]
+- **例 150** 清冷佳人夜市烧烤三刀流 — [中文] 一个有着清冷孤傲气质的绝美佳人，精致的面部特征，一张冷酷且精致的高级时装面容，长发，以及优雅苗条的身材；烧烤“… #暗调 #猫 #烧烤 [L113-126]
+- **例 151** 千禧年日系校园喜剧场景 — [中文] 2000 年代面向中学生的日剧喜剧场景  [English] 2000s Japanese TV drama … #日系 #喜剧 #千禧年 [L127-140]
+- **例 152** 智能动画分镜生成器 — [中文] 生成一张动画分镜生成器  [English] Generate an animation storyboard… #动画 #分镜 #生成器 [L141-154]
+- **例 153** 鸟群织就的梦幻高定时装秀 — [中文] 一个充满趣味的高级时装T台场景，主角是一位自信的女性，正走在奢华时装秀的T台上，身穿一件完全由鸟类制成的非凡高… #T台 #时装秀 #高级 [L155-168]
+- **例 154** 烬甲猎鹰者与燃翼神禽 — [中文] 一幅充满奇幻色彩的电影场景：一位英姿飒爽的女战士兼猎鹰师，身着饱经战火洗礼、饰以闪耀余烬纹理的皮甲，漫步于幽暗… #猎鹰 #奇幻 #色彩 [L169-182]

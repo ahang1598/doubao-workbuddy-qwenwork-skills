@@ -6,11 +6,10 @@
 
 ## MCP 调用
 
-1. 1688 链接或纯数字 ID：提取 `offerId`。
-2. 调用 `offer_query_for_trade(offerId=...)` 获取 `image`。
-3. 调用 `find_product(imageUrl=image, pageSize=10, scoreLevel="high", tags="4306497")`。
+1. 1688 链接或纯数字 ID：用 WebFetch 抓取商品页面（`https://detail.1688.com/offer/{offerId}.html`），从 HTML 中提取主图 URL（`cbu01.alicdn.com` 域名的 `<img>` 标签）。
+2. 调用 `find_product(imageUrl=主图URL, pageSize=10, scoreLevel="high", tags="4306497")`。
 
-淘宝/天猫链接不能自动提取主图时，引导用户提供图片 URL 后调用 `find_product`。
+淘宝/天猫链接无法自动提取主图时，引导用户提供图片 URL 后调用 `find_product`。
 
 ## Python 后处理
 

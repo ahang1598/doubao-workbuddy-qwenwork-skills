@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "name": "cn-family-law-expert-suite",
+  "version": "1.2.1",
+  "jurisdiction": "中国大陆",
+  "legal_baseline_date": "2026-08-26",
+  "implemented_skills": [
+    "cn-family-law-orchestrator",
+    "cn-family-matter-intake",
+    "cn-family-legal-consultation",
+    "cn-family-document-evidence",
+    "cn-family-asset-ledger",
+    "cn-family-debt-ledger",
+    "cn-family-child-parenting-plan",
+    "cn-family-statute-research",
+    "cn-family-case-research",
+    "cn-prenuptial-property-agreement",
+    "cn-marital-property-agreement",
+    "cn-divorce-agreement",
+    "cn-cohabitation-agreement",
+    "cn-family-property-partition",
+    "cn-adult-voluntary-guardianship-agreement",
+    "cn-family-deliverable-builder",
+    "cn-family-agreement-quality-gate"
+  ],
+  "mandatory_final_review": "中国大陆执业律师实质复核批准",
+  "connector_policy": "首版不声明强制连接器；仅使用用户本次授权的文件和平台可用能力"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "proboost-amazon-operations-assistant",
+  "displayName": "亚马逊运营助手",
+  "displayNameEn": "Amazon Operations Assistant",
+  "version": "1.0.0",
+  "description": "使用OpenBoost数据，覆盖Amazon类目研究、选品、榜单机会、关键词、流量结构和ASIN诊断，输出可复查的机会清单与行动建议。",
+  "descriptionEn": "Using OpenBoost data, analyze Amazon categories, product opportunities, rankings, keywords, traffic structure and ASIN performance with traceable recommendations.",
+  "author": "Proboost",
+  "keywords": [
+    "Amazon",
+    "亚马逊运营",
+    "选品",
+    "关键词",
+    "市场分析",
+    "ASIN诊断"
+  ],
+  "skills": [
+    "./skills/proboost-amazon-asin-analysis",
+    "./skills/proboost-amazon-keyword-research",
+    "./skills/proboost-amazon-market-analysis",
+    "./skills/proboost-amazon-product-research",
+    "./skills/proboost-amazon-ranking-scout",
+    "./skills/proboost-amazon-traffic-analysis"
+  ],
+  "qoderMarket": {
+    "source": "apphub",
+    "extensionType": "plugin",
+    "pluginId": "official_xJpxLbvT",
+    "version": "1.0.0",
+    "contentUpdatedAt": 1787821227914,
+    "installedAt": 1788093842629
+  }
+}
