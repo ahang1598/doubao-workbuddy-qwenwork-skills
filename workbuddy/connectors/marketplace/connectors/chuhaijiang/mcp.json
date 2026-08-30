@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "chuhaijiang": {
+      "type": "streamableHttp",
+      "url": "https://mcp.gateway.chuhaijiang.com/mcp/oauth",
+      "timeout": 30000
+    }
+  }
+}

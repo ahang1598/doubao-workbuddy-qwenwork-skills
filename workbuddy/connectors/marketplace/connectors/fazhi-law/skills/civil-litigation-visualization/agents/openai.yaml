@@ -1,0 +1,4 @@
+interface:
+  display_name: "民事诉讼可视化"
+  short_description: "将民商事诉讼案件材料整理为清晰的文字说明与关键可视化图表图片"
+  default_prompt: "使用 $civil-litigation-visualization 梳理这份案件材料，最多选择3个视觉单元，按逻辑顺序在对话中交错展示文字、成功渲染的内联图片及图后解读；默认不要输出源码或 HTML 报告。"

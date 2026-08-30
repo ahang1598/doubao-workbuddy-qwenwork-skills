@@ -1,0 +1,17 @@
+{
+    "preAuth": "cli",
+    "mcpServers": {
+        "ai-hive": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@infimind-next/ai-hive-mcp@latest"
+            ],
+            "runtime": {
+                "type": "node",
+                "version": ">=20.19.0"
+            }
+        }
+    }
+}

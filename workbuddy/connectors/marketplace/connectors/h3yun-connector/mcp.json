@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "h3yun-connector": {
+            "url": "https://${H3YUN_API_BASE_URL}/v1/agent/mcp",
+            "type": "streamableHttp",
+            "headers": {
+                "Authorization": "Bearer ${H3YUN_TOKEN}"
+            },
+            "timeout": 30000
+        }
+    }
+}

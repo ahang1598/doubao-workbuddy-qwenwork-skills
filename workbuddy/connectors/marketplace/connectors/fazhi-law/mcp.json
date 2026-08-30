@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "fazhi-law": {
+      "type": "streamableHttp",
+      "url": "https://bizveris.kuaicha365.com/law_agent/mcp?source=workbuddy",
+      "headers": {
+        "open-authorization": "Bearer ${FAZHI_API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

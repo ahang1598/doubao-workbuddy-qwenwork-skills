@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="56 23 313 341" role="img" aria-labelledby="title desc">
+  <title id="title">BioBuddy Icon — DNA Helix + Protein Ribbons (Clean B, No Antibody)</title>
+  <desc id="desc">BioBuddy mark: a forward-moving capital B (skewed -7°) with a DNA double-helix stem carrying four evenly-spaced base-pair rungs, interlaced protein-folding ribbons (upper and lower bulges in blue/cyan gradients), and a green ligand at upper-right. The B icon is the clean version without any antibody iconography embedded.</desc>
+  <defs>
+    <radialGradient id="ambBlue" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5AA9FF" stop-opacity="0.5"/>
+      <stop offset="0.55" stop-color="#4A90F0" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#4A90F0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambCyan" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#00E0D8" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#00C9C8" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#00C9C8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambGreen" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#3CE0B0" stop-opacity="0.5"/>
+      <stop offset="0.55" stop-color="#20D6A2" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#20D6A2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dnaDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B4FA0"/>
+      <stop offset="0.5" stop-color="#071D49"/>
+      <stop offset="1" stop-color="#050E2C"/>
+    </linearGradient>
+    <linearGradient id="dnaCyan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5CF4EA"/>
+      <stop offset="0.5" stop-color="#00C9C8"/>
+      <stop offset="1" stop-color="#009A9D"/>
+    </linearGradient>
+    <linearGradient id="ribbonBlue" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5FB0FF"/>
+      <stop offset="0.55" stop-color="#006EFF"/>
+      <stop offset="1" stop-color="#00B7D9"/>
+    </linearGradient>
+    <linearGradient id="ribbonDark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2E72E8"/>
+      <stop offset="0.55" stop-color="#0052D9"/>
+      <stop offset="1" stop-color="#00A0B8"/>
+    </linearGradient>
+    <linearGradient id="rung" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#006EFF"/>
+      <stop offset="1" stop-color="#00C9C8"/>
+    </linearGradient>
+    <radialGradient id="gem" cx="0.35" cy="0.3" r="0.85">
+      <stop offset="0" stop-color="#C2FFE9"/>
+      <stop offset="0.45" stop-color="#35D8A9"/>
+      <stop offset="1" stop-color="#0C9A70"/>
+    </radialGradient>
+  </defs>
+  <circle cx="240" cy="150" r="130" fill="url(#ambBlue)"/>
+  <circle cx="170" cy="220" r="115" fill="url(#ambCyan)"/>
+  <circle cx="290" cy="130" r="75" fill="url(#ambGreen)"/>
+
+<g transform="translate(37 43) skewX(-7) scale(0.78)">
+    <!-- 深蓝链（底层） -->
+    <path d="M96.50 63.00C95.98 78.22 114.19 93.44 134.50 108.67C154.81 123.89 173.02 139.11 172.50 154.33C173.02 169.56 154.81 184.78 134.50 200.00C114.19 215.22 95.98 230.44 96.50 245.67C95.98 260.89 114.19 276.11 134.50 291.33C154.81 306.56 173.02 321.78 172.50 337.00" fill="none" stroke="#071D49" stroke-opacity="0.14" stroke-width="52" stroke-linecap="round"/>
+    <path d="M96.50 63.00C95.98 78.22 114.19 93.44 134.50 108.67C154.81 123.89 173.02 139.11 172.50 154.33C173.02 169.56 154.81 184.78 134.50 200.00C114.19 215.22 95.98 230.44 96.50 245.67C95.98 260.89 114.19 276.11 134.50 291.33C154.81 306.56 173.02 321.78 172.50 337.00" fill="none" stroke="url(#dnaDark)" stroke-width="26" stroke-linecap="round"/>
+    <path d="M96.50 63.00C95.98 78.22 114.19 93.44 134.50 108.67C154.81 123.89 173.02 139.11 172.50 154.33C173.02 169.56 154.81 184.78 134.50 200.00C114.19 215.22 95.98 230.44 96.50 245.67C95.98 260.89 114.19 276.11 134.50 291.33C154.81 306.56 173.02 321.78 172.50 337.00" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- 青链（中层） -->
+    <path d="M172.50 63.00C173.02 78.22 154.81 93.44 134.50 108.67C114.19 123.89 95.98 139.11 96.50 154.33C95.98 169.56 114.19 184.78 134.50 200.00C154.81 215.22 173.02 230.44 172.50 245.67C173.02 260.89 154.81 276.11 134.50 291.33C114.19 306.56 95.98 321.78 96.50 337.00" fill="none" stroke="#00C9C8" stroke-opacity="0.16" stroke-width="46" stroke-linecap="round"/>
+    <path d="M172.50 63.00C173.02 78.22 154.81 93.44 134.50 108.67C114.19 123.89 95.98 139.11 96.50 154.33C95.98 169.56 114.19 184.78 134.50 200.00C154.81 215.22 173.02 230.44 172.50 245.67C173.02 260.89 154.81 276.11 134.50 291.33C114.19 306.56 95.98 321.78 96.50 337.00" fill="none" stroke="url(#dnaCyan)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M172.50 63.00C173.02 78.22 154.81 93.44 134.50 108.67C114.19 123.89 95.98 139.11 96.50 154.33C95.98 169.56 114.19 184.78 134.50 200.00C154.81 215.22 173.02 230.44 172.50 245.67C173.02 260.89 154.81 276.11 134.50 291.33C114.19 306.56 95.98 321.78 96.50 337.00" fill="none" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="4.5" stroke-linecap="round"/>
+
+    <!-- 深蓝覆盖段（交叉点2，深蓝在前） -->
+    <path d="M153.25 185.00C141.89 195.00 127.11 205.00 115.75 215.00" fill="none" stroke="url(#dnaDark)" stroke-width="27" stroke-linecap="round"/>
+    <path d="M153.25 185.00C141.89 195.00 127.11 205.00 115.75 215.00" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- 碱基横杠：4 根，白色底衬 + 渐变主体，端点核苷酸珠 -->
+    <g fill="none" stroke-linecap="round">
+      <g stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="16">
+        <path d="M107.78 86L161.22 86"/>
+        <path d="M172.49 155L96.51 155"/>
+        <path d="M96.51 245L172.49 245"/>
+        <path d="M162.13 315L106.87 315"/>
+      </g>
+      <g stroke="url(#rung)" stroke-width="10">
+        <path d="M107.78 86L161.22 86"/>
+        <path d="M172.49 155L96.51 155"/>
+        <path d="M96.51 245L172.49 245"/>
+        <path d="M162.13 315L106.87 315"/>
+      </g>
+    </g>
+    <g>
+      <circle cx="107.78" cy="86" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="161.22" cy="86" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="172.49" cy="155" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="96.51" cy="155" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="96.51" cy="245" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="172.49" cy="245" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="162.13" cy="315" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+      <circle cx="106.87" cy="315" r="7" fill="#00C9C8" stroke="#FFFFFF" stroke-width="2.5"/>
+    </g>
+
+    <!-- 上鼓包蛋白丝带 -->
+    <path d="M139 74C241 35 347 62 347 144C347 205 290 225 170 215" fill="none" stroke="#006EFF" stroke-opacity="0.15" stroke-width="94" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M139 74C241 35 347 62 347 144C347 205 290 225 170 215" fill="none" stroke="url(#ribbonBlue)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M139 74C241 35 347 62 347 144C347 205 290 225 170 215" fill="none" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- 下鼓包蛋白丝带 -->
+    <path d="M122 185C260 172 369 219 369 284C369 356 252 380 139 329" fill="none" stroke="#0052D9" stroke-opacity="0.15" stroke-width="94" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M122 185C260 172 369 219 369 284C369 356 252 380 139 329" fill="none" stroke="url(#ribbonDark)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M122 185C260 172 369 219 369 284C369 356 252 380 139 329" fill="none" stroke="#FFFFFF" stroke-opacity="0.13" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- 小青色辅线 -->
+    <path d="M200 180C245 170 290 178 315 202" fill="none" stroke="url(#dnaCyan)" stroke-width="14" stroke-linecap="round"/>
+
+    <circle cx="345" cy="104" r="30" fill="#20D6A2" opacity="0.25"/>
+    <circle cx="345" cy="104" r="18" fill="url(#gem)"/>
+    <circle cx="340" cy="98" r="5" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+</svg>

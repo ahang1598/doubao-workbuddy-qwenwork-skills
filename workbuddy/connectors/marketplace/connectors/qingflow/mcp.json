@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "qingflow": {
+      "type": "streamableHttp",
+      "url": "https://mcp.qingflow.com/mcp",
+      "timeout": 30000,
+      "disabled": false
+    }
+  }
+}

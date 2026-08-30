@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "polymas-workbuddy-pre": {
+      "type": "streamableHttp",
+      "url": "https://pre-agent-assistant.polymas.com/ai-agent/api/workbuddy/mcp/server",
+      "timeout": 30000
+    }
+  }
+}

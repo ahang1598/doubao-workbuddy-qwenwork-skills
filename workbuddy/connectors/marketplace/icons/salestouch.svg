@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">SalesTouch</title>
+  <desc id="desc">A blue SalesTouch business operations mark</desc>
+  <defs>
+    <linearGradient id="bg" x1="18" y1="12" x2="112" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F7BFF"/>
+      <stop offset="1" stop-color="#123C9F"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="116" height="116" rx="30" fill="url(#bg)"/>
+  <path d="M34 42c0-9 7-16 16-16h42v14H51c-2 0-4 2-4 4s2 4 4 4h24c12 0 22 10 22 22S87 92 75 92H34V78h40c5 0 9-4 9-9s-4-9-9-9H50c-9 0-16-7-16-18Z" fill="#fff"/>
+  <path d="M44 102h40" stroke="#7DE2C1" stroke-width="8" stroke-linecap="round"/>
+</svg>

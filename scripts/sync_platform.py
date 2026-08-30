@@ -228,6 +228,21 @@ PLATFORMS: dict[str, PlatformSpec] = {
                 target="skills",
                 item_kind="skill",
             ),
+            SourceSpec(
+                name="connectors_marketplace",
+                title="Connectors / Marketplace",
+                source=Path("/mnt/c/Users/15805/.workbuddy/connectors-marketplace"),
+                target="connectors/marketplace",
+                item_kind="connector",
+            ),
+            SourceSpec(
+                name="connectors_default",
+                title="Connectors / Default MCP Config",
+                source=Path("/mnt/c/Users/15805/.workbuddy/connectors/default/mcp.json"),
+                target="connectors/default/mcp.json",
+                item_kind="connector config",
+                source_is_file=True,
+            ),
         ),
     ),
     "qwenwork": PlatformSpec(
@@ -388,6 +403,12 @@ def item_name(rel: str) -> str:
         return f"{parts[0]}/{parts[1]}/{parts[2]}"
     if parts[0] == "cb_teams_experts" and len(parts) > 2 and parts[1] == "plugins":
         return f"{parts[0]}/{parts[2]}"
+    if parts[0] == "connectors" and parts[1] == "marketplace" and len(parts) > 3:
+        # Group change logs per connector; icons and the manifest index as one
+        # bucket each so a refresh does not list 150 separate icon rows.
+        if parts[2] in {"icons", ".codebuddy-connector"}:
+            return f"{parts[0]}/{parts[1]}/{parts[2]}"
+        return "/".join(parts[:4])
     return f"{parts[0]}/{parts[1]}"
 
 
@@ -546,8 +567,13 @@ def metadata_for_item(item_dir: Path, fallback_name: str) -> tuple[str, str, str
             )
             return str(name), one_line(str(description)), str(category), keywords
 
-    skill_md = item_dir / "SKILL.md"
-    if skill_md.exists():
+    # Connectors and bundled plugin layouts keep their SKILL.md one level
+    # deeper (e.g. <connector>/skills/SKILL.md), so probe both locations.
+    skill_md = next(
+        (p for p in (item_dir / "SKILL.md", item_dir / "skills" / "SKILL.md") if p.exists()),
+        None,
+    )
+    if skill_md is not None:
         front = parse_front_matter(read_text(skill_md))
         name = front.get("name") or fallback_name
         description = one_line(front.get("description") or read_readme_summary(item_dir))
@@ -637,6 +663,54 @@ def chatgpt_plugin_entries(target: Path, source: SourceSpec):
     return entries
 
 
+def connector_marketplace_entries(target: Path, source: SourceSpec):
+    """Entries for the WorkBuddy connectors marketplace.
+
+    The marketplace root syncs ``connectors/`` (one dir per connector),
+    ``icons/`` and the ``.codebuddy-connector/connectors.json`` manifest. The
+    index enumerates the inner ``connectors/*`` dirs and prefers the manifest's
+    per-connector metadata (id/name/description_zh/type), falling back to each
+    item's ``skills/SKILL.md`` front matter.
+    """
+    manifest = load_json(target / ".codebuddy-connector" / "connectors.json")
+    meta_by_id: dict[str, dict] = {}
+    for conn in manifest.get("connectors", []) or []:
+        if isinstance(conn, dict) and conn.get("id"):
+            meta_by_id[str(conn["id"])] = conn
+
+    entries = []
+    items_root = target / "connectors"
+    for item in sorted((p for p in items_root.iterdir() if p.is_dir()), key=lambda p: p.name):
+        meta = meta_by_id.get(item.name, {})
+        name = (
+            str(meta.get("name") or meta.get("name_en") or item.name)
+            if meta
+            else item.name
+        )
+        description = ""
+        category = ""
+        if meta:
+            description = one_line(str(meta.get("description_zh") or meta.get("description") or meta.get("description_en") or ""))
+            category = str(meta.get("type") or "")
+            version = meta.get("version")
+            if version:
+                description = one_line(f"{description} Version: {version}.")
+        if not description:
+            _fb_name, fb_desc, _fb_cat, _fb_kw = metadata_for_item(item, item.name)
+            description = fb_desc
+        keywords = extract_keywords(f"{name} {meta.get('name_en', '') or item.name}", description, None)
+        file_count = sum(1 for p in item.rglob("*") if p.is_file())
+        entries.append((
+            name,
+            f"connectors/{item.name}",
+            category or source.item_kind,
+            file_count,
+            description,
+            keywords,
+        ))
+    return entries
+
+
 def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[str, tuple[str, str]]):
     """Entries for a directory source as 6-tuples
     ``(name, directory, category, file_count, description, keywords)``."""
@@ -647,6 +721,10 @@ def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[st
         return []
     if source.name == "plugins" and (target / "openai-bundled").exists():
         entries = chatgpt_plugin_entries(target, source)
+        if entries:
+            return entries
+    if source.name == "connectors_marketplace" and (target / "connectors").is_dir():
+        entries = connector_marketplace_entries(target, source)
         if entries:
             return entries
     entries = []

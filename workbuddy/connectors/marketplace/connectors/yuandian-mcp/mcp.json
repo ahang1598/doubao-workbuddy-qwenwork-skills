@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "yuandian_mcp": {
+      "type": "streamableHttp",
+      "url": "https://open.chineselaw.com/mcp",
+      "timeout": 600
+    }
+  }
+}

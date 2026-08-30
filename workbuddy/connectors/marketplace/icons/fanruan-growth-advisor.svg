@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <style>
+    .ring { stroke: #27272A; }
+    .core { fill: #18181B; }
+    .accent { fill: #3F3F46; }
+    @media (prefers-color-scheme: dark) {
+      .ring { stroke: #52525B; }
+      .core { fill: #71717A; }
+      .accent { fill: #A1A1AA; }
+    }
+  </style>
+  <circle class="ring" cx="16" cy="16" r="15" stroke-width="2" fill="none"/>
+  <circle class="core" cx="16" cy="16" r="6"/>
+  <circle class="accent" cx="26.3" cy="7.3" r="2.5"/>
+</svg>

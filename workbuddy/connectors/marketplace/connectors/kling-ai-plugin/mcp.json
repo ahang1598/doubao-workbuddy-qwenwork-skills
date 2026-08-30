@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "kling-ai-plugin": {
+      "type": "http",
+      "url": "https://klingai.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

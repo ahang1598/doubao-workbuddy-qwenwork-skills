@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "connector:camscanner-mcp": {
+      "type": "streamableHttp",
+      "url": "https://ai-tools.camscanner.com/mcp",
+      "timeout": 120000
+    }
+  }
+}

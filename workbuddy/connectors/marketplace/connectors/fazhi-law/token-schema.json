@@ -1,0 +1,22 @@
+{
+  "title": "同花顺法律AI助手 MCP 配置",
+  "title_en": "RoyalFlush Legal AI Assistant MCP Configuration",
+  "description": "请输入从同花顺法律AI助手平台获取的 API Key。凭证仅保存在您的本机，由 WorkBuddy 在连接同花顺法律AI助手 MCP 时注入请求头；WorkBuddy 云端不存储、不接收该凭证。",
+  "description_en": "Enter the API Key obtained from the RoyalFlush Legal AI Assistant platform. The credential is stored only on your device and injected into the request header when WorkBuddy connects to the RoyalFlush Legal AI Assistant MCP; the WorkBuddy cloud does not store or receive it.",
+  "docUrl": "https://open.kuaicha365.com/lawskills/",
+  "docLabel": "获取同花顺法律AI助手 API Key",
+  "docLabel_en": "Get a RoyalFlush Legal AI Assistant API Key",
+  "fields": [
+    {
+      "key": "FAZHI_API_KEY",
+      "label": "同花顺法律AI助手 API Key",
+      "label_en": "RoyalFlush Legal AI Assistant API Key",
+      "type": "password",
+      "required": true,
+      "placeholder": "请粘贴从同花顺法律AI助手平台获取的 API Key",
+      "placeholder_en": "Paste the API Key obtained from the RoyalFlush Legal AI Assistant platform",
+      "description": "用于访问同花顺法律AI助手服务。若密钥失效，请在同花顺法律AI助手平台重新生成后更新此字段。",
+      "description_en": "Used to access RoyalFlush Legal AI Assistant services. If the key expires, generate a new key on the RoyalFlush Legal AI Assistant platform and update this field."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "fbs-connector": {
+      "type": "streamableHttp",
+      "url": "https://api2.u3w.com/fbs-mcp/mcp",
+      "staticHeaders": {
+        "X-FBS-Connector-Source": "fbs-connector",
+        "X-FBS-Connector-Version": "1.2.9",
+        "X-FBS-Connector-Package-Version": "26.8.20",
+        "X-Request-Source": "workbuddy"
+      },
+      "disabledTools": [
+        "lebao_drop"
+      ],
+      "timeout": 60000
+    }
+  }
+}

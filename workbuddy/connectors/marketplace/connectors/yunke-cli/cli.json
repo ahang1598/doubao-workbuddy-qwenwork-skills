@@ -1,0 +1,36 @@
+{
+  "init": {
+    "darwin": "npm install -g @yunkeai/omni-cli",
+    "linux": "npm install -g @yunkeai/omni-cli",
+    "win32": "npm install -g @yunkeai/omni-cli"
+  },
+  "runtime": { "type": "node", "version": "^22.0.0" },
+  "npmRegistry": "https://registry.npmmirror.com",
+  "auth": {
+    "darwin": "omni-cli yunke-crm.auth.login-web",
+    "linux": "omni-cli yunke-crm.auth.login-web",
+    "win32": "omni-cli.cmd yunke-crm.auth.login-web"
+  },
+  "authWaitForExit": true,
+  "status": {
+    "darwin": "omni-cli yunke-crm.auth.status",
+    "linux": "omni-cli yunke-crm.auth.status",
+    "win32": "omni-cli.cmd yunke-crm.auth.status"
+  },
+  "statusMatch": "Logged in as",
+  "unAuth": {
+    "darwin": "omni-cli yunke-crm.auth.logout",
+    "linux": "omni-cli yunke-crm.auth.logout",
+    "win32": "omni-cli.cmd yunke-crm.auth.logout"
+  },
+  "authUrlDomain": "crm.yunkecn.com",
+  "versionCheck": {
+    "command": {
+      "darwin": "omni-cli --version",
+      "linux": "omni-cli --version",
+      "win32": "omni-cli.cmd --version"
+    },
+    "minVersion": "1.4.1",
+    "versionPattern": "(\\d+\\.\\d+\\.\\d+)"
+  }
+}

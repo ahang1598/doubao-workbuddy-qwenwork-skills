@@ -1,0 +1,6 @@
+interface:
+  display_name: "TextIn xParse"
+  short_description: "Parse, search, and navigate PDFs, images, and Office documents"
+  icon_small: "./assets/logo.png"
+  icon_large: "./assets/logo.png"
+  default_prompt: "Use $xparse-parse to parse or navigate this document and return only the requested content with relevant evidence."

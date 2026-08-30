@@ -1,0 +1,31 @@
+<svg width="256" height="256" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="topRibbon" x1="257" y1="210" x2="758" y2="408" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3529FF"/>
+      <stop offset="0.52" stop-color="#6E52FF"/>
+      <stop offset="1" stop-color="#B395FF"/>
+    </linearGradient>
+    <linearGradient id="upperSide" x1="392" y1="264" x2="266" y2="374" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#725DFF"/>
+      <stop offset="1" stop-color="#3428FF"/>
+    </linearGradient>
+    <linearGradient id="middleRibbon" x1="284" y1="506" x2="763" y2="632" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3328FF"/>
+      <stop offset="0.56" stop-color="#765DFF"/>
+      <stop offset="1" stop-color="#B99AFF"/>
+    </linearGradient>
+    <linearGradient id="lowerSide" x1="398" y1="474" x2="260" y2="792" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4A35FF"/>
+      <stop offset="1" stop-color="#3428FF"/>
+    </linearGradient>
+    <linearGradient id="cyanRibbon" x1="403" y1="854" x2="746" y2="689" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#45B8F3"/>
+      <stop offset="1" stop-color="#42B4F0"/>
+    </linearGradient>
+  </defs>
+  <path d="M256 216L400 278V418L286 366C268 358 256 340 256 320V216Z" fill="url(#upperSide)"/>
+  <path d="M256 216L386 158C407 149 432 149 455 159L735 285C755 294 768 314 768 336V418C768 440 756 459 737 470L630 516V376L256 216Z" fill="url(#topRibbon)"/>
+  <path d="M400 730L604 644L768 712L400 870V730Z" fill="url(#cyanRibbon)"/>
+  <path d="M286 467L400 418V870L286 817C268 809 256 791 256 770V517C256 496 268 476 286 467Z" fill="url(#lowerSide)"/>
+  <path d="M400 418L735 568C755 577 768 597 768 620V712L400 556V418Z" fill="url(#middleRibbon)"/>
+</svg>

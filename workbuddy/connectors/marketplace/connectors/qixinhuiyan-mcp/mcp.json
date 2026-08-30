@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "qixin": {
+      "type": "streamableHttp",
+      "url": "https://mcp.qixin.com/mcp"
+    }
+  }
+}

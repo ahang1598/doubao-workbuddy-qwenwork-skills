@@ -1,0 +1,50 @@
+{
+  "runtime": {
+    "type": "node",
+    "version": ">=18"
+  },
+  "init": {
+    "darwin": "env -u NODE_OPTIONS npm install --global --registry=https://registry.npmmirror.com xparse-cli@latest && env -u NODE_OPTIONS xparse-cli --profile workbuddy config set base_url https://api.textin.com",
+    "linux": "env -u NODE_OPTIONS npm install --global --registry=https://registry.npmmirror.com xparse-cli@latest && env -u NODE_OPTIONS xparse-cli --profile workbuddy config set base_url https://api.textin.com",
+    "win32": "set \"NODE_OPTIONS=\" && npm.cmd install --global --registry=https://registry.npmmirror.com xparse-cli@latest && xparse-cli.cmd --profile workbuddy config set base_url https://api.textin.com"
+  },
+  "auth": {
+    "darwin": "env -u NODE_OPTIONS xparse-cli --profile workbuddy auth device --open-browser=always --output=jsonl",
+    "linux": "env -u NODE_OPTIONS xparse-cli --profile workbuddy auth device --open-browser=always --output=jsonl",
+    "win32": "set \"NODE_OPTIONS=\" && xparse-cli.cmd --profile workbuddy auth device --open-browser=always --output=jsonl"
+  },
+  "unAuth": {
+    "darwin": "env -u NODE_OPTIONS xparse-cli --profile workbuddy auth logout --method oauth",
+    "linux": "env -u NODE_OPTIONS xparse-cli --profile workbuddy auth logout --method oauth",
+    "win32": "set \"NODE_OPTIONS=\" && xparse-cli.cmd --profile workbuddy auth logout --method oauth"
+  },
+  "status": {
+    "darwin": "env -u NODE_OPTIONS xparse-cli --profile workbuddy auth status --output=json",
+    "linux": "env -u NODE_OPTIONS xparse-cli --profile workbuddy auth status --output=json",
+    "win32": "set \"NODE_OPTIONS=\" && xparse-cli.cmd --profile workbuddy auth status --output=json"
+  },
+  "statusMatchJson": {
+    "logged_in": "true",
+    "method": "oauth"
+  },
+  "authUrlDomain": "api.textin.com",
+  "env": {
+    "XPARSE_OAUTH_CLIENT_ID": "cli_textin_xparse_workbuddy",
+    "XPARSE_BASE_URL": "https://api.textin.com"
+  },
+  "versionCheck": {
+    "command": {
+      "darwin": "env -u NODE_OPTIONS xparse-cli version",
+      "linux": "env -u NODE_OPTIONS xparse-cli version",
+      "win32": "set \"NODE_OPTIONS=\" && xparse-cli.cmd version"
+    },
+    "minVersion": "2.3.0",
+    "versionPattern": "xparse-cli version v?(\\d+\\.\\d+\\.\\d+)"
+  },
+  "authDeviceFlow": {
+    "uriPattern": "\"verification_uri_complete\"\\s*:\\s*\"(https?://[^\"]+)\"",
+    "codePattern": "\"user_code\"\\s*:\\s*\"([A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4})\"",
+    "defaultExpiresInSeconds": 240,
+    "codeEmbeddedInUri": true
+  }
+}

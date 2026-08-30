@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "tyc-mcp": {
+      "url": "https://mcp.tianyancha.com/v1",
+      "type": "streamableHttp",
+      "timeout": 600000
+    }
+  }
+}

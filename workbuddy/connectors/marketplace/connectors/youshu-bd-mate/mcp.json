@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "youshu-bd-mate": {
+            "type": "streamableHttp",
+            "url": "https://open.yscredit.com/ys-mcp/report",
+            "timeout": 30000
+        }
+    }
+}
