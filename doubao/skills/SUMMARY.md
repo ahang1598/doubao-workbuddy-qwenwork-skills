@@ -6,13 +6,14 @@
 
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
-- 条目数：102
-- 文件数：2324
-- 最近同步：2026-08-30 20:40:31 +0800
+- 条目数：105
+- 文件数：2327
+- 最近同步：2026-08-31 18:00:02 +0800
 
 ## 场景导航（按用途）
 
 ### 金融研究
+- **datapro-search** — Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v...
 - **doubao-announcement-analysis** — 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告...
 - **doubao-daily-stock** — 用于单一上市股票的个股日报，解释涨跌和异动原因，梳理行情、资金流、新闻公告、板块联动、技术面、预期与风险。适用于“某股今天为什么涨跌”“做个日报”“近期表现”“资金面和消息面”等问题；默认先输出结构完整、观点深入的对话版分析，并询问是否写入飞书文档；不用于长期商业模式/护城河、财报业绩、行业/板块、多股主题、一级市场或大盘事件解读。
 - **doubao-earnings-analysis** — 上市公司财报/季报/年报/业绩的深度因果分析，覆盖A股、港股、美股和中概股。用于解读财报表现、亮点/风险、收入利润等指标变动、超预期或低于预期原因，以及针对毛利率、现金流、费用率等具体变量的归因问题。不用于纯股价、估值、评级、目标价、非财报新闻或未锚定具体公司报告期的宏观行业讨论。
@@ -67,6 +68,7 @@
 - **seedream-50** — 当用户明确要求使用“5.0”“5.0 Pro”“5.0pro”“Seedream 5.0 Pro”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0 Pro 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_pro" 调用实际图片工具。
 
 ### 研究/调研
+- **datapro-search** — Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v...
 - **doubao-academic-evaluator** — 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。
 - **doubao-academic-polish** — 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur...
 - **doubao-academic-researcher** — 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言...
@@ -191,6 +193,7 @@
 - **byted-mediakit-shared** — MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video；仅说明媒体类型而未说明处理目标时先澄清。不承担具体能力参数说明。
 - **byted-mediakit-video** — 面向视频文件或其中音轨的智能处理、媒资理解和画质治理目标，适用于视频内容分析、剧情与高光理解、从视频提取字幕、语音转字幕、字幕识别与擦除、视频增强、人像或绿幕抠像、媒资探测、场景切分和画面文字识别。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、从视频提取字幕、语音转字幕、视频字幕识别或擦除、视频媒资探测或抠像，但具体能力不确定，可先加载本 Skill 探索；若只说有视频而未说明业务目标，应先澄清。明确要把字幕或图...
 - **computer-use** — 用于操作本地电脑 GUI、浏览器原生界面或真实本地浏览器状态，包括桌面应用、系统设置、弹窗、安装器、文件选择器、专业软件、远程桌面，以及软件下载安装、更新、卸载和首次启动验证。
+- **datapro-search** — Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v...
 - **doubao-academic-researcher** — 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言...
 - **doubao-creative-video** — 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、产品广告、商品广告、UGC口播/带货/信息流视频、marketing/TVC风格广告、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带 ref/参考素材的视频生成。禁止用于短剧创作、剧情脚本、分集剧情、角色扮演故事或影视叙事创作；此类需求应调用 doubao-creative-drama。仅当用户明确要求把短剧/剧情素材改造成普...
 - **doubao-cron-scheduler** — 创建、查看、更新或删除定时任务：一次性提醒、周期任务、后台监控、多轮编辑已有任务、登录态/权限敏感任务。用于用户要求提醒我、稍后检查、持续关注、每天/每周/每小时运行、创建定时任务/提醒/监控、修改/暂停/删除刚才或已有定时任务。
@@ -212,6 +215,7 @@
 
 ### 其他
 - **artifact-preview** — >-
+- **baidu-netdisk** — Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the...
 - **byted-mediakit-image** — 面向单张图片的视觉处理、质量优化、内容理解与 AI 编辑目标，适用于图像增强、文字或图标擦除、画质评估、文字识别以及背景移除。若对象和目标族已明确属于图片增强、图片理解或图片生成式编辑，但具体做法不确定，可先加载本 Skill 探索；若只说有图片而未说明业务目标，应先澄清。把多张图片做成视频或给视频叠图应路由到 editing；视频理解、视频增强或视频字幕擦除应路由到 video。
 - **doubao-book-writer** — 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。
 - **doubao-critical-reading-companion** — 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。
@@ -219,6 +223,7 @@
 - **doubao-human-signal** — 去除或避免文本中的 AI 味。用于用户强制调用本 Skill，或写作/改写时提到“不要有 AI 味”“不要太假”“真情实感”“有人感”，或对已有文本/上一轮输出反馈“太像 AI”“太空泛”“太模板”“太官方”“不像我说的”等场景。
 - **seedance-25** — 使用seedance2.5模型生成视频,使用 Seedance 2.5 按用户原始提示词生成视频，禁止改写提示词或切换模型，并在生成前补齐时长、比例和检索所得的必要信息后向用户确认原样透传提示词、不润色视频 prompt、不要改写后生成，或显式调用本 Skill 时使用。
 - **student-discount-application** — 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。
+- **tencent-docs-operations** — Use when the user invokes $tencent-docs-operations, mentions Tencent Docs Operations, or requests supported Tencent Docs Operations operations.
 - **verifier-hub** — >-
 
 ## 完整目录表
@@ -226,6 +231,7 @@
 | 名称 | 目录 | 类型 | 关键词 | 文件数 | 说明 |
 | --- | --- | --- | --- | ---: | --- |
 | artifact-preview | `doubao/skills/artifact-preview` | 其他 | artifact-preview | 30 | >- |
+| baidu-netdisk | `doubao/skills/baidu-netdisk` | 其他 | baidu-netdisk | 1 | Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the... |
 | browser-use-automation | `doubao/skills/browser-use-automation` | 通用工具/平台 | browser-use-automation | 10 | Control websites exclusively through the CNGC Browser Use stack: `computer_use_tool` with `plane=\\"bu\\"` and `seed_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI... |
 | byted-mediakit-audio | `doubao/skills/byted-mediakit-audio` | 通用工具/平台 | byted-mediakit-audio | 4 | 面向音频文件或视频中的音轨，处理音频媒资信息探测以及人声与背景声分离等目标。若对象和目标族已明确属于音频媒资探测或音轨分离，但具体做法不确定，可先加载本 Skill 探索；若只说有音频而未说明业务目标，应先澄清。音频裁剪、拼接、调速、淡入淡出、混音、从视频提取音轨或音视频合流等编辑合成诉求应路由到 editing；字幕生成、提取字幕、语音转字幕、视频理解、视频增强等应路由到 video。 |
 | byted-mediakit-editing | `doubao/skills/byted-mediakit-editing` | 通用工具/平台 | byted-mediakit-editing | 19 | 面向音频、视频或图片素材组成成片的编辑制作目标，适用于素材裁剪与拼接、速度和音量调整、转场、画面翻转、图片叠加、字幕压制、音视频提取与合流、音频混合、淡入淡出以及图转视频等操作。若对象和目标族已明确是对现有素材做剪辑、合成、叠加或混合，但具体做法不确定，可先加载本 Skill 探索；若只给出媒体类型而未说明要剪、合、叠、调还是分析，应先澄清。图像增强、抠图、OCR 或图像擦除应路由到 image；视频画质增强、内容理解、从视频提取... |
@@ -233,6 +239,7 @@
 | byted-mediakit-shared | `doubao/skills/byted-mediakit-shared` | 通用工具/平台 | byted-mediakit-shared | 3 | MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video；仅说明媒体类型而未说明处理目标时先澄清。不承担具体能力参数说明。 |
 | byted-mediakit-video | `doubao/skills/byted-mediakit-video` | 通用工具/平台 | byted-mediakit-video | 18 | 面向视频文件或其中音轨的智能处理、媒资理解和画质治理目标，适用于视频内容分析、剧情与高光理解、从视频提取字幕、语音转字幕、字幕识别与擦除、视频增强、人像或绿幕抠像、媒资探测、场景切分和画面文字识别。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、从视频提取字幕、语音转字幕、视频字幕识别或擦除、视频媒资探测或抠像，但具体能力不确定，可先加载本 Skill 探索；若只说有视频而未说明业务目标，应先澄清。明确要把字幕或图... |
 | computer-use | `doubao/skills/computer-use` | 通用工具/平台 | computer-use | 1 | 用于操作本地电脑 GUI、浏览器原生界面或真实本地浏览器状态，包括桌面应用、系统设置、弹窗、安装器、文件选择器、专业软件、远程桌面，以及软件下载安装、更新、卸载和首次启动验证。 |
+| datapro-search | `doubao/skills/datapro-search` | 金融研究 | datapro-search | 1 | Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v... |
 | doubao-academic-evaluator | `doubao/skills/doubao-academic-evaluator` | 研究/调研 | doubao-academic-evaluator | 8 | 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。 |
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | 设计可视化 | doubao-academic-polish | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
 | doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | 研究/调研 | doubao-academic-researcher | 21 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
@@ -326,4 +333,5 @@
 | seedream-50 | `doubao/skills/seedream-50` | 设计可视化 | seedream-50 | 1 | 当用户明确要求使用“5.0”“5.0 Pro”“5.0pro”“Seedream 5.0 Pro”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0 Pro 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_pro" 调用实际图片工具。 |
 | skill-creator-for-work | `doubao/skills/skill-creator-for-work` | 通用工具/平台 | skill-creator-for-work | 6 | 创建有效 Skill 的指南。当用户想要创建新的 Skill，或更新现有 Skill，以便通过专门知识、工作流程或工具集成来扩展 AI Agent 能力时，应使用此 Skill。 |
 | student-discount-application | `doubao/skills/student-discount-application` | 其他 | student-discount-application | 13 | 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。 |
+| tencent-docs-operations | `doubao/skills/tencent-docs-operations` | 其他 | tencent-docs-operations | 1 | Use when the user invokes $tencent-docs-operations, mentions Tencent Docs Operations, or requests supported Tencent Docs Operations operations. |
 | verifier-hub | `doubao/skills/verifier-hub` | 其他 | verifier-hub | 18 | >- |

@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：102
-- 当前索引文件数：2324
-- 最近变更：[2026-08-30-204031](doubao/change-logs/2026-08-30-204031.md) - Doubao 本次同步新增 33 个文件、修改 57 个文件、删除 37 个文件。 新增条目：skills/lark-meeting, skills/seedream-50。 移除条目已归档：skills/browser-task, skills/lark-minutes, skills/lark-note, skills/lark-vc。 受影响范围...
+- 当前索引条目数：105
+- 当前索引文件数：2327
+- 最近变更：[2026-08-31-180002](doubao/change-logs/2026-08-31-180002.md) - Doubao 本次同步新增 3 个文件、修改 6 个文件、删除 0 个文件。 新增条目：skills/baidu-netdisk, skills/datapro-search, skills/tencent-docs-operations。 受影响范围：skills/baidu-netdisk, skills/datapro-search, skill...
 
 ## 数据来源
 
@@ -27,6 +27,7 @@
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
 | artifact-preview | `doubao/skills/artifact-preview` | skill | 30 | >- |
+| baidu-netdisk | `doubao/skills/baidu-netdisk` | skill | 1 | Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the... |
 | browser-use-automation | `doubao/skills/browser-use-automation` | skill | 10 | Control websites exclusively through the CNGC Browser Use stack: `computer_use_tool` with `plane=\\"bu\\"` and `seed_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI... |
 | byted-mediakit-audio | `doubao/skills/byted-mediakit-audio` | skill | 4 | 面向音频文件或视频中的音轨，处理音频媒资信息探测以及人声与背景声分离等目标。若对象和目标族已明确属于音频媒资探测或音轨分离，但具体做法不确定，可先加载本 Skill 探索；若只说有音频而未说明业务目标，应先澄清。音频裁剪、拼接、调速、淡入淡出、混音、从视频提取音轨或音视频合流等编辑合成诉求应路由到 editing；字幕生成、提取字幕、语音转字幕、视频理解、视频增强等应路由到 video。 |
 | byted-mediakit-editing | `doubao/skills/byted-mediakit-editing` | skill | 19 | 面向音频、视频或图片素材组成成片的编辑制作目标，适用于素材裁剪与拼接、速度和音量调整、转场、画面翻转、图片叠加、字幕压制、音视频提取与合流、音频混合、淡入淡出以及图转视频等操作。若对象和目标族已明确是对现有素材做剪辑、合成、叠加或混合，但具体做法不确定，可先加载本 Skill 探索；若只给出媒体类型而未说明要剪、合、叠、调还是分析，应先澄清。图像增强、抠图、OCR 或图像擦除应路由到 image；视频画质增强、内容理解、从视频提取... |
@@ -34,6 +35,7 @@
 | byted-mediakit-shared | `doubao/skills/byted-mediakit-shared` | skill | 3 | MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video；仅说明媒体类型而未说明处理目标时先澄清。不承担具体能力参数说明。 |
 | byted-mediakit-video | `doubao/skills/byted-mediakit-video` | skill | 18 | 面向视频文件或其中音轨的智能处理、媒资理解和画质治理目标，适用于视频内容分析、剧情与高光理解、从视频提取字幕、语音转字幕、字幕识别与擦除、视频增强、人像或绿幕抠像、媒资探测、场景切分和画面文字识别。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、从视频提取字幕、语音转字幕、视频字幕识别或擦除、视频媒资探测或抠像，但具体能力不确定，可先加载本 Skill 探索；若只说有视频而未说明业务目标，应先澄清。明确要把字幕或图... |
 | computer-use | `doubao/skills/computer-use` | skill | 1 | 用于操作本地电脑 GUI、浏览器原生界面或真实本地浏览器状态，包括桌面应用、系统设置、弹窗、安装器、文件选择器、专业软件、远程桌面，以及软件下载安装、更新、卸载和首次启动验证。 |
+| datapro-search | `doubao/skills/datapro-search` | skill | 1 | Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v... |
 | doubao-academic-evaluator | `doubao/skills/doubao-academic-evaluator` | skill | 8 | 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。 |
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | skill | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
 | doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | skill | 21 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
@@ -127,12 +129,14 @@
 | seedream-50 | `doubao/skills/seedream-50` | skill | 1 | 当用户明确要求使用“5.0”“5.0 Pro”“5.0pro”“Seedream 5.0 Pro”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0 Pro 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_pro" 调用实际图片工具。 |
 | skill-creator-for-work | `doubao/skills/skill-creator-for-work` | skill | 6 | 创建有效 Skill 的指南。当用户想要创建新的 Skill，或更新现有 Skill，以便通过专门知识、工作流程或工具集成来扩展 AI Agent 能力时，应使用此 Skill。 |
 | student-discount-application | `doubao/skills/student-discount-application` | skill | 13 | 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。 |
+| tencent-docs-operations | `doubao/skills/tencent-docs-operations` | skill | 1 | Use when the user invokes $tencent-docs-operations, mentions Tencent Docs Operations, or requests supported Tencent Docs Operations operations. |
 | verifier-hub | `doubao/skills/verifier-hub` | skill | 18 | >- |
 
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-08-31-180002 | [2026-08-31-180002](doubao/change-logs/2026-08-31-180002.md) | Doubao 本次同步新增 3 个文件、修改 6 个文件、删除 0 个文件。 新增条目：skills/baidu-netdisk, skills/datapro-search, skills/tencent-docs-operations。 受影响范围：skills/baidu-netdisk, skills/datapro-search, skill... |
 | 2026-08-30-204031 | [2026-08-30-204031](doubao/change-logs/2026-08-30-204031.md) | Doubao 本次同步新增 33 个文件、修改 57 个文件、删除 37 个文件。 新增条目：skills/lark-meeting, skills/seedream-50。 移除条目已归档：skills/browser-task, skills/lark-minutes, skills/lark-note, skills/lark-vc。 受影响范围... |
 | 2026-08-26-180001 | [2026-08-26-180001](doubao/change-logs/2026-08-26-180001.md) | Doubao 本次同步新增 11 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/doubao-app-builder, skills/doubao-identity, skills/lark-slides-pro。 |
 | 2026-08-25-205036 | [2026-08-25-205036](doubao/change-logs/2026-08-25-205036.md) | Doubao 本次同步新增 4 个文件、修改 11 个文件、删除 1 个文件。 新增条目：skills/doubao-enterprise-search。 受影响范围：skills/doubao-enterprise-search, skills/lark-doc, skills/lark-slides-pro。 |
