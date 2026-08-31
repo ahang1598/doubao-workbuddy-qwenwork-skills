@@ -13,6 +13,9 @@ generation, web search, maps, weather, finance, media metadata, developer
 APIs, and news. Use these MCP tools directly — do not call any HTTP endpoint
 yourself; the connector already handles authentication.
 
+> **Requires WorkBuddy 4.23.0+** (streamableHttp MCP type). If the connector
+> shows as unavailable, tell the user to upgrade WorkBuddy.
+
 ## Available Tools
 
 ### GetAccountOverview
@@ -53,7 +56,7 @@ geocoding tool first).
 | page | integer | - | 页码，从 1 开始，默认 1 |
 | page_size | integer | - | 每页数量 (1-100)，默认 20 |
 | keyword | string | - | 按名称/描述关键词过滤 |
-| sort | string | - | 排序方式 |
+| sort | string | - | 排序方式：`hot`（热度，默认）/ `new`（最新）/ `name`（名称） |
 
 Use when the user wants to browse or search tools by name/category rather
 than describe a task.
@@ -127,16 +130,46 @@ success/failure signal, not a fixed field inside the payload:
 AgentEarth-native lookups, as opposed to `ExecuteTool` passthrough results)
 do use `error_no == 0` as their own success signal.
 
+## Fault Tolerance & Degradation
+
+- **MCP connection timeout or server unreachable**: If a tool call times out
+  or the MCP server appears unreachable, tell the user the AgentEarth service
+  may be temporarily unavailable and suggest retrying later. Do not attempt
+  to construct HTTP requests yourself.
+- **Empty results from `RecommendTools`/`ListTools`**: If no tools match the
+  query, broaden the search by rephrasing the task description, removing
+  overly specific constraints, or trying different keywords. If still no
+  results, inform the user that AgentEarth may not cover this particular use
+  case.
+- **`isError: true` from `ExecuteTool`**: Read the error detail in
+  `<tool_output>`, correct `params` accordingly, and retry. If the issue
+  persists, fall back to another candidate from `RecommendTools`.
+
+## When NOT to Use AgentEarth
+
+- **Real-time or latency-critical applications** where sub-second freshness
+  is required — AgentEarth tools are API-based and subject to upstream
+  provider latency.
+- **Tasks requiring guaranteed data persistence** — AgentEarth tools are
+  read-only data retrieval and generation services, not storage systems.
+- **Sensitive internal data queries** — do not route internal/private data
+  through third-party API tools.
+
 ## Credentials
 
 The AgentEarth API key is injected by WorkBuddy from the connector's Token
 form (`token-schema.json`) directly into the MCP connection — this skill
 never sees or handles it. Do not ask the user to paste an API key in chat.
+
+If the user has never used AgentEarth before and the connector is not yet
+configured, guide them to the WorkBuddy Connector page to add the AgentEarth
+connector and enter their API key there.
+
 If the connector shows as disconnected or a call fails with an auth error,
 tell the user to (re)connect AgentEarth from the WorkBuddy Connector page.
 
 If the user needs a new or replacement AgentEarth API key (lost, revoked, or
-first-time setup), point them to `https://agentearth.ai/r/8oo9zmDn` — sign in, then open the
+first-time setup), point them to `https://agentearth.ai` — sign in, then open the
 avatar menu in the top-right corner and go to **API Keys** — then have them
 paste it into the WorkBuddy Connector's Token form, never into the chat.
 

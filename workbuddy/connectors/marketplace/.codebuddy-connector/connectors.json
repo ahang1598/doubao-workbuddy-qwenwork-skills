@@ -641,56 +641,6 @@
       ]
     },
     {
-      "id": "ctrip-wendao",
-      "name": "携程问道",
-      "name_en": "Ctrip Wendao",
-      "description": "Get travel planning and guides via Ctrip Wendao API. Supports hotel search, flight query, attraction recommendations, itinerary planning, and dining tips.",
-      "description_zh": "通过携程问道 API 获取旅行规划与攻略。支持酒店查询、机票搜索、景点推荐、行程规划、美食住宿攻略。",
-      "description_en": "Get travel planning and guides via Ctrip Wendao API. Supports hotel search, flight query, attraction recommendations, itinerary planning, and dining tips.",
-      "source": "ctrip-wendao",
-      "type": "skill-only",
-      "auth_mode": "token",
-      "minWorkbuddyVersion": "4.24.0",
-      "examples_zh": [
-        "帮我规划一个三天两夜的三亚旅行",
-        "查一下下周五从北京到上海的机票",
-        "推荐杭州西湖附近性价比高的酒店",
-        "成都有哪些必打卡的美食和景点",
-        "暑假带孩子去日本玩一周，帮我做个攻略"
-      ],
-      "examples_en": [
-        "Plan a 3-day trip to Sanya",
-        "Search flights from Beijing to Shanghai next Friday",
-        "Recommend budget-friendly hotels near West Lake, Hangzhou",
-        "What are must-visit food spots and attractions in Chengdu",
-        "Plan a one-week family trip to Japan for summer vacation"
-      ]
-    },
-    {
-      "id": "netease-mail",
-      "name": "网易邮箱",
-      "name_en": "NetEase Mail",
-      "description": "Connect to email via IMAP/SMTP. Supports sending, receiving, searching, and downloading attachments for 163, 126, yeah.net and other standard IMAP/SMTP email providers.",
-      "description_zh": "通过 IMAP/SMTP 连接邮箱，支持收发邮件、搜索、附件下载。支持 163、126、yeah.net 等网易邮箱及其他标准 IMAP/SMTP 邮箱。",
-      "description_en": "Connect to email via IMAP/SMTP. Supports sending, receiving, searching, and downloading attachments for 163, 126, yeah.net and other standard IMAP/SMTP email providers.",
-      "source": "netease-mail",
-      "type": "skill-only",
-      "auth_mode": "token",
-      "minWorkbuddyVersion": "4.24.0",
-      "examples_zh": [
-        "帮我发一封邮件给 colleague@company.com，主题是周报，正文写本周完成了3个任务",
-        "查看我最近2小时的收件箱有没有新邮件",
-        "搜索最近一周主题包含「发票」的邮件",
-        "下载 UID 12345 这封邮件的附件到 Downloads 目录"
-      ],
-      "examples_en": [
-        "Send an email to colleague@company.com with subject 'Weekly Report' and body about 3 completed tasks",
-        "Check my inbox for new emails in the last 2 hours",
-        "Search for emails with 'invoice' in the subject from the past week",
-        "Download attachments from email UID 12345 to Downloads folder"
-      ]
-    },
-    {
       "id": "baidu-netdisk",
       "name": "百度网盘",
       "name_en": "Baidu Netdisk",
@@ -3723,21 +3673,21 @@
       "name": "云帐房",
       "name_zh": "云帐房",
       "name_en": "Yunzhangfang",
-      "description": "Connects to Yunzhangfang finance and tax services: tax filing, tax inspection, and policy consultation skills install on demand via guided setup; for invoicing, use the Yunzhangfang AI Invoicing connector.",
-      "description_zh": "连接云帐房财税服务：报税、查税、政策咨询等业务技能按引导安装即用；开票请使用「云帐房AI开票」连接器。",
-      "description_en": "Connects to Yunzhangfang finance and tax services: tax filing, tax inspection, and policy consultation skills install on demand via guided setup; for invoicing, use the Yunzhangfang AI Invoicing connector.",
+      "description": "One sentence handles your invoicing, tax filing, and policy clarification—saving not just money, but also peace of mind.",
+      "description_zh": "一句话把票开了、税报了、政策理清了，省的是钱，更是心。",
+      "description_en": "One sentence handles your invoicing, tax filing, and policy clarification—saving not just money, but also peace of mind.",
       "source": "yzf-general-mcp-server",
       "type": "mcp",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "examples_zh": [
+        "帮我开专票给云帐房网络科技有限公司，开票项目是软件服务费，含税金额 12000 元",
         "麻烦帮我处理下本期个税申报事项",
-        "帮我检查下本期有没有遗漏的申报事项",
-        "帮我看看当前企业能享受哪些增值税税收优惠"
+        "帮我检查下本期是否有遗漏的申报事项，企业名称/税号：xxx"
       ],
       "examples_en": [
+        "Create a special VAT invoice for Yunzhangfang Network Technology Co., Ltd., invoice item software service fee, tax-included amount 12000 CNY",
         "Please help me handle the individual income tax declaration for this period.",
-        "Please check if there are any omitted filings for this period.",
-        "Help me find out which VAT tax incentives my company can enjoy."
+        "Please check if there are any omitted filings on this period’s tax return. Enterprise name / tax ID: xxx."
       ],
       "visible_in": [
         "internal",
@@ -4084,12 +4034,13 @@
       "id": "agent-earth",
       "name": "AgentEarth",
       "name_en": "AgentEarth",
-      "description": "AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用，无需自己维护账号与 Key，价格优惠，调用成功率 99%+，是 AI助手数据需求的最佳选择。",
-      "description_zh": "AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用，无需自己维护账号与 Key，价格优惠，调用成功率 99%+，是 AI助手数据需求的最佳选择。",
-      "description_en": "AgentEarth is the unified platform for AI assistants to access 1,400+ expert-grade APIs worldwide — real-time finance, e-commerce & social data, AI image/video generation, academic papers & patents, maps and travel, and more. Connect once, call everything in natural language, no accounts or API keys to manage. Discounted pricing and a 99%+ success rate make it the best fit for your AI assistant's data needs.",
+      "description": "AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。",
+      "description_zh": "AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。",
+      "description_en": "AgentEarth is the unified platform for AI assistants to access 1,400+ expert-grade APIs worldwide — real-time finance, e-commerce & social data, AI image/video generation, academic papers & patents, maps and travel, and more. Connect once and call everything in natural language.",
       "source": "agent-earth",
       "type": "mcp",
       "auth_mode": "token",
+      "version": "1.0.0",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "使用 AgentEarth 查询当前比特币价格",
@@ -4233,6 +4184,36 @@
         "Please check the reconciliation information for [Customer Name] during [Time Range], and send the PDF statement to me",
         "I have a customer purchase order. Please extract the customer, items, and quantities to create a sales order",
         "I've uploaded a product list. Please help me bulk-create these products and import them into the system"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "jinshouzhi",
+      "name": "金手指·AI广告投放",
+      "name_zh": "金手指·AI广告投放",
+      "name_en": "Goldfinger · AI Ad Launch",
+      "description": "Tencent Ads execution platform in WorkBuddy: query data, write briefs, open launch links, and light optimizations.",
+      "description_zh": "WorkBuddy 里的腾讯广告投放执行台：查数据、写需求单、生成投放深链、轻量调优。",
+      "description_en": "Tencent Ads execution platform in WorkBuddy: query data, write briefs, open launch links, and light optimizations.",
+      "source": "jinshouzhi",
+      "type": "mcp",
+      "minWorkbuddyVersion": "5.5.0",
+      "examples_zh": [
+        "列出我名下的所有投放项目",
+        "查看某项目最近 7 天的消耗和 ROI",
+        "策略确认后打开金手指投放主台",
+        "把已上线项目的日预算调到 500 元"
+      ],
+      "examples_en": [
+        "List all my ad projects",
+        "Show spend and ROI for a project in the last 7 days",
+        "Open Goldfinger launch console after strategy is confirmed",
+        "Set daily budget to 500 CNY for a live project"
       ],
       "visible_in": [
         "internal",
@@ -4492,6 +4473,40 @@
         "iOA",
         "cloudhosted",
         "selfhosted"
+      ]
+    },
+    {
+      "id": "databuddy",
+      "name": "DataBuddy",
+      "name_zh": "DataBuddy",
+      "name_en": "DataBuddy",
+      "description": "Use DataBuddy capabilities on WorkBuddy.",
+      "description_zh": "连接 DataBuddy 数据知识库，让 AI 基于企业真实数据作答——问数、报告、异动归因、预测、相关性等分析更可信，并可生成实时更新的仪表盘。",
+      "description_en": "Ground AI in your enterprise data via DataBuddy — data Q&A, reporting, root-cause analysis, forecasting, correlation analysis, and live dashboards..",
+      "source": "databuddy",
+      "type": "cli",
+      "minWorkbuddyVersion": "5.0.0",
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ],
+      "examples_zh": [
+        "统计上个月 GMV 是多少，环比涨跌多少？",
+        "帮我生成一份各门店经营数据报告",
+        "检测近 90 天交易笔数是否存在异常波动",
+        "分析某车型订单转化率下降的归因维度",
+        "预测未来 30 天游戏买量转化与 ROI 走势",
+        "基于订单数据知识库，搭建一个订单销售运营看板"
+      ],
+      "examples_en": [
+        "Query last month's GMV and its month-over-month change?",
+        "Generate an operations data report for each store",
+        "Detect whether order transaction counts have any anomalies over the past 90 days",
+        "Analyze the attribution dimensions behind the drop in a certain model's order conversion rate",
+        "Forecast the next 30 days' trend of game user-acquisition conversion and ROI",
+        "Build an order sales operations dashboard based on the order data knowledge base"
       ]
     }
   ]
