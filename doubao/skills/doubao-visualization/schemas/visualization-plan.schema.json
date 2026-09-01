@@ -1,9 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Doubao Visualize Plan",
+  "title": "Doubao Visualization Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["should_visualize", "goals", "assets", "user_image_policy", "presentations", "required_files", "required_files_loaded", "facts_status", "reason"],
+  "required": [
+    "should_visualize",
+    "goals",
+    "assets",
+    "user_image_policy",
+    "presentations",
+    "html_svg_behavior",
+    "required_files",
+    "required_files_loaded",
+    "facts_status",
+    "reason"
+  ],
   "properties": {
     "should_visualize": {"type": "boolean"},
     "goals": {
@@ -12,18 +23,34 @@
       "maxItems": 2,
       "uniqueItems": true,
       "items": {
-        "enum": ["data_analysis", "knowledge_explanation", "visual_evidence", "dynamic_exploration"]
+        "enum": [
+          "data_analysis",
+          "knowledge_explanation",
+          "visual_evidence",
+          "dynamic_exploration"
+        ]
       }
     },
     "assets": {
       "type": "array",
+      "minItems": 1,
       "uniqueItems": true,
       "items": {
-        "enum": ["structured_data", "user_image", "text_context", "verified_sources", "none"]
+        "enum": [
+          "structured_data",
+          "user_image",
+          "text_context",
+          "verified_sources",
+          "none"
+        ]
       }
     },
     "user_image_policy": {
-      "enum": ["not_applicable", "preserve", "reference"]
+      "enum": [
+        "not_applicable",
+        "preserve",
+        "observe_for_schematic"
+      ]
     },
     "presentations": {
       "type": "array",
@@ -31,8 +58,20 @@
       "maxItems": 2,
       "uniqueItems": true,
       "items": {
-        "enum": ["echarts", "static_image_overlay", "interactive_html", "generated_illustration", "text_only"]
+        "enum": [
+          "echarts",
+          "static_image_overlay",
+          "html_svg",
+          "text_only"
+        ]
       }
+    },
+    "html_svg_behavior": {
+      "enum": [
+        "not_applicable",
+        "static",
+        "interactive"
+      ]
     },
     "required_files": {
       "type": "array",
@@ -43,30 +82,226 @@
         "pattern": "^(references|examples)/[a-z0-9-]+\\.md$"
       }
     },
-    "required_files_loaded": {"type": "boolean"},
+    "required_files_loaded": {"const": true},
     "facts_status": {
-      "enum": ["user_provided", "verified", "example_declared", "insufficient"]
+      "enum": [
+        "user_provided",
+        "verified",
+        "example_declared",
+        "insufficient"
+      ]
     },
-    "reason": {"type": "string", "minLength": 1, "maxLength": 240}
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    }
   },
   "allOf": [
     {
-      "if": {"properties": {"assets": {"contains": {"const": "user_image"}}}, "required": ["assets"]},
-      "then": {"properties": {"user_image_policy": {"enum": ["preserve", "reference"]}}},
-      "else": {"properties": {"user_image_policy": {"const": "not_applicable"}}}
-    },
-    {
-      "if": {"properties": {"presentations": {"contains": {"const": "static_image_overlay"}}}, "required": ["presentations"]},
+      "if": {
+        "properties": {
+          "assets": {"contains": {"const": "none"}}
+        },
+        "required": ["assets"]
+      },
       "then": {
         "properties": {
-          "assets": {"contains": {"const": "user_image"}},
-          "user_image_policy": {"const": "preserve"}
+          "assets": {"maxItems": 1},
+          "user_image_policy": {"const": "not_applicable"}
         }
       }
     },
     {
-      "if": {"properties": {"presentations": {"contains": {"const": "text_only"}}}, "required": ["presentations"]},
-      "then": {"properties": {"presentations": {"maxItems": 1}}}
+      "if": {
+        "properties": {
+          "assets": {"contains": {"const": "user_image"}}
+        },
+        "required": ["assets"]
+      },
+      "then": {
+        "properties": {
+          "user_image_policy": {
+            "enum": ["preserve", "observe_for_schematic"]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "user_image_policy": {"const": "not_applicable"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "user_image_policy": {"const": "observe_for_schematic"}
+        },
+        "required": ["user_image_policy"]
+      },
+      "then": {
+        "properties": {
+          "assets": {"contains": {"const": "user_image"}},
+          "presentations": {"contains": {"const": "html_svg"}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "should_visualize": {"const": false}
+        },
+        "required": ["should_visualize"]
+      },
+      "then": {
+        "properties": {
+          "presentations": {"const": ["text_only"]},
+          "html_svg_behavior": {"const": "not_applicable"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "presentations": {"contains": {"const": "text_only"}}
+        },
+        "required": ["presentations"]
+      },
+      "then": {
+        "properties": {
+          "presentations": {"maxItems": 1},
+          "html_svg_behavior": {"const": "not_applicable"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "presentations": {"contains": {"const": "echarts"}}
+        },
+        "required": ["presentations"]
+      },
+      "then": {
+        "properties": {
+          "required_files": {
+            "allOf": [
+              {"contains": {"const": "references/mode-echarts.md"}},
+              {"contains": {"const": "references/echarts-option-spec.md"}},
+              {"contains": {"const": "references/shared-quality.md"}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "presentations": {
+            "contains": {"const": "static_image_overlay"}
+          }
+        },
+        "required": ["presentations"]
+      },
+      "then": {
+        "properties": {
+          "assets": {"contains": {"const": "user_image"}},
+          "user_image_policy": {"const": "preserve"},
+          "required_files": {
+            "allOf": [
+              {"contains": {"const": "references/mode-image-overlay.md"}},
+              {
+                "contains": {
+                  "const": "references/image-overlay-process-spec.md"
+                }
+              },
+              {
+                "contains": {
+                  "const": "references/image-overlay-authoring-spec.md"
+                }
+              },
+              {"contains": {"const": "references/shared-quality.md"}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "presentations": {"contains": {"const": "html_svg"}}
+        },
+        "required": ["presentations"]
+      },
+      "then": {
+        "properties": {
+          "html_svg_behavior": {
+            "enum": ["static", "interactive"]
+          },
+          "required_files": {
+            "allOf": [
+              {"contains": {"const": "references/mode-html-svg.md"}},
+              {
+                "contains": {
+                  "const": "references/renderer-trigger-design.md"
+                }
+              },
+              {
+                "contains": {
+                  "const": "references/renderer-output-mobile.md"
+                }
+              },
+              {"contains": {"const": "references/shared-quality.md"}}
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "html_svg_behavior": {"const": "not_applicable"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "html_svg_behavior": {"const": "interactive"}
+        },
+        "required": ["html_svg_behavior"]
+      },
+      "then": {
+        "properties": {
+          "presentations": {"contains": {"const": "html_svg"}},
+          "required_files": {
+            "allOf": [
+              {
+                "contains": {
+                  "const": "references/renderer-stability-math.md"
+                }
+              },
+              {
+                "contains": {
+                  "const": "references/renderer-interaction-geometry.md"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "presentations": {"minItems": 2}
+        },
+        "required": ["presentations"]
+      },
+      "then": {
+        "properties": {
+          "required_files": {
+            "contains": {"const": "references/composition.md"}
+          }
+        }
+      }
     }
   ]
 }

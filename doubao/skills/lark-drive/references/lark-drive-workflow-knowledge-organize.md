@@ -16,7 +16,7 @@ Load other skills / references progressively:
 
 - Wiki / personal library target: [`../../lark-wiki/SKILL.md`](../../lark-wiki/SKILL.md)
 - Content read required: [`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) and [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md)
-- Sheet down-drill required: [`../../lark-sheets/SKILL.md`](../../lark-sheets/SKILL.md)
+- Sheet down-drill required: [`../../sheet/SKILL.md`](../../sheet/SKILL.md)
 - Base down-drill required: [`../../lark-base/SKILL.md`](../../lark-base/SKILL.md)
 
 ## Agent Contract
@@ -167,7 +167,7 @@ Use only command families allowed for the current state. Detailed syntax belongs
 |-------|--------------------------|---------|
 | `PARSE_SCOPE` | `drive +inspect`, `wiki +node-get`, `wiki +space-list`, `wiki spaces get`, `drive +search` | Resolve target scope |
 | `INVENTORY` | `wiki +node-list`, `drive files list` (schema path: `drive.files.list`), `drive metas batch_query` | Recursively list and enrich resources |
-| `CONTENT_READ` | `docs +fetch`, plus `lark-sheets` / `lark-base` when conditionally required | Partial content read for low-confidence items |
+| `CONTENT_READ` | `docs +fetch`, plus `sheet` / `lark-base` when conditionally required | Partial content read for low-confidence items |
 | `ISSUE_ANALYSIS` | No write commands | Analyze `resource_items` only |
 | `RULE_GENERATION` | No write commands | Generate classification rules and target tree |
 | `PLAN_GENERATION` | No write commands | Generate internal plan and user-facing pages |
@@ -225,5 +225,5 @@ Never request permission automatically, never batch permission requests, and nev
 - [lark-wiki-node-delete](../../lark-wiki/references/lark-wiki-node-delete.md)
 - [lark-doc](../../lark-doc/SKILL.md)
 - [lark-doc-fetch](../../lark-doc/references/lark-doc-fetch.md)
-- [lark-sheets](../../lark-sheets/SKILL.md)
+- [sheet](../../sheet/SKILL.md)
 - [lark-base](../../lark-base/SKILL.md)

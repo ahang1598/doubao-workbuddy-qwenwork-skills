@@ -3,7 +3,7 @@ name: lark-whiteboard
 version: 1.0.0
 description: >
   飞书画板：查询和编辑飞书云文档中的画板。支持导出画板为预览图片、导出原始节点结构、使用多种格式更新画板内容。
-  当用户需要查看画板内容、导出画板图片、编辑画板时使用此 skill。不负责：飞书云文档内容编辑（lark-doc）、文档内嵌电子表格/Base（lark-sheets / lark-base）。
+  当用户需要查看画板内容、导出画板图片、编辑画板时使用此 skill。不负责：飞书云文档内容编辑（lark-doc）、文档内嵌电子表格/Base（sheet / lark-base）。
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -50,4 +50,4 @@ metadata:
 ## 不在本 skill 范围
 - 文档内容编辑 → lark-doc [lark-doc](../lark-doc/SKILL.md)
 - 在文档中创建画板 → [lark-doc-whiteboard.md](../lark-doc/references/lark-doc-whiteboard.md)
-- 表格 / Base 操作 → [lark-sheets](../lark-sheets/SKILL.md) / [lark-base](../lark-base/SKILL.md)
+- 表格 / Base 操作 → [sheet](../sheet/SKILL.md) / [lark-base](../lark-base/SKILL.md)

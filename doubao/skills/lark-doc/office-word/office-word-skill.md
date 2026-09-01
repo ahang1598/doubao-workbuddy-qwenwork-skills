@@ -2,7 +2,7 @@
 
 本模块是 `lark-doc` 路由到本地 Word 后的执行入口。上层已经根据用户输入和交付要求决定进入 Office Word；这里不重新判断在线或本地。先识别每个输入的用途，再进入读取、新建或编辑链路。上游内容只有带有完整读取范围和源定位证据时才可直接复用；上游摘要不能替代附件原文。
 
-> ⚠️ **先读完再动手**：本文档共 228 行，单次 Read 可能读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。
+> ⚠️ **先读完再动手**：本文档共 232 行，单次 Read 可能读不完；没见到末行「全文完」标记＝没读完，必须调整 offset 续读直到该标记。
 
 ## 权威经验
 
@@ -19,13 +19,16 @@
 | --- | --- | --- |
 | 读取 Word | [二、读取 Word](#二读取-word) | 可以获取 Word 的内容和结构信息 |
 | 新建 Word | [三、新建 Word](#三新建-word) | 用户提供模板新建以及无模板新建 |
-| 修改 DOCX | [`docx-editing.md`](references/workflows/docx-editing.md) | 用户要求修改所提供 DOCX 并交回修改稿 |
+| 修改 DOCX| [`docx-editing.md`](references/workflows/docx-editing.md) | 用户要求修改所提供 DOCX 并交回修改稿 |
+| 修改 DOCX（本地打开）| [`local-docx-editing.md`](references/workflows/local-docx-editing.md) | 用户要求修改宿主已打开的本地 DOCX，回写目标为原路径 |
+
 
 路由时应注意：
-- 只要用户的修改意图能唯一指向所提供的 DOCX，并希望交回该文档的修改稿，就进入`docx-editing.md`；不要因用户没有说“本地路径”或“在原文件上修改”而默认重建。
+- **本地打开判定**：`<system-reminder>` 中同时出现 `<information>` 声明该路径 + `<type>lark_doc</type>` + `<file_path>` 为本地 `.docx` 绝对路径时命中「本地打开」，走 `local-docx-editing.md`；缺一即不适用，走 `docx-editing.md`。
+- 只要用户的修改意图能唯一指向所提供的 DOCX，并希望交回该文档的修改稿，就进入上述两个编辑流程之一；不要因用户没有说“本地路径”或“在原文件上修改”而默认重建。
 - 用户明确要求新建、把附件作为模板填入一套新内容、仅把附件作为格式参考，或需要重写绝大多数主体内容时，进入`三、新建 Word`。
 - 多个 DOCX 无法唯一确定目标，或“修改原稿”和“按其另建”会导致实质不同的交付物时，先澄清；其余小歧义按保守、少改动的方向处理。
-- 用户要局部修改旧版 `.doc` 时，先取得经过结构和全页视觉比对的 `.docx` baseline，再进入`docx-editing.md`；只有无法可靠转换或用户要求重建时才进入新建。
+- 用户要局部修改旧版 `.doc` 时，先取得经过结构和全页视觉比对的 `.docx` baseline，再按上述判定进入对应编辑流程；只有无法可靠转换或用户要求重建时才进入新建。
 - 同一任务可以先读取多个 Word 输入，再进入一个新建或编辑 workflow。多个交付物分别路由并使用独立临时子目录；各自所需的证据、计划及 `SOURCE_DOCX/TARGET_DOCX` 不得跨交付物共用。
 
 ### 附件前置处理
@@ -223,6 +226,7 @@
 ### [`workflows`](references/workflows)
 | 文档 | 何时读 |
 |---|---|
-| `docx-editing.md` | 保留原稿内容主体的 DOCX 修改，包括局部内容或结构修改，以及范围明确的格式统一 |
+| `docx-editing.md` | 非本地打开场景（附件或云端路径提供 DOCX）下，保留原稿内容主体的 DOCX 修改，包括局部内容或结构修改，以及范围明确的格式统一 |
+| `local-docx-editing.md` | 本地打开场景（宿主中已打开的本地 DOCX，system-reminder 含 `<file_path>` + `<type>lark_doc</type>`）下的 DOCX 修改；合并了 `docx-editing.md` 全流程与本地路径锁定、读取重试及交付回复约束 |
 
-===== 全文完（共 228 行）=====
+===== 全文完（共 232 行）=====

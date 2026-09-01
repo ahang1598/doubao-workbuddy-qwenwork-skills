@@ -15,7 +15,7 @@
 3. 必要时使用 `drive permission.members auth` 读取权限信号；该接口不提供 `full_access` / 移动权限的直接判定，不能把 `manage_public` 等同为可移动。
 4. 按 [`../../lark-wiki/references/lark-wiki-node-get.md`](../../lark-wiki/references/lark-wiki-node-get.md) 处理 Wiki 节点解析。
 6. 按 [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md) 读取文档内容。
-7. 需要验证 Sheet 内容时，按 [`../../lark-sheets/SKILL.md`](../../lark-sheets/SKILL.md) 执行。
+7. 需要验证 Sheet 内容时，按 [`../../sheet/SKILL.md`](../../sheet/SKILL.md) 执行。
 
 ## 进入解析与验证阶段前校验
 

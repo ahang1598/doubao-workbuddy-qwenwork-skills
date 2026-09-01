@@ -1,7 +1,7 @@
 ---
 name: lark-wiki
 version: 1.0.3
-description: "飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。不负责：上传文件到知识库节点下（走 lark-drive）、编辑文档/表格/Base 内容（走 lark-doc / lark-sheets / lark-base）。"
+description: "飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。不负责：上传文件到知识库节点下（走 lark-drive）、编辑文档/表格/Base 内容（走 lark-doc / sheet / lark-base）。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -106,5 +106,5 @@ lark-cli wiki <resource> <method> [flags]  # 调用 API
 - 上传文件到知识库节点下 → [`lark-drive`](../lark-drive/SKILL.md)（`drive +upload --wiki-token`）
 - 下载 Wiki 节点对应的文件（底层 `obj_type` 为 `file`）→ [`lark-drive`](../lark-drive/SKILL.md)：`drive +download --wiki-token <node_token>` 或 `drive +download --url <wiki_url>`（CLI 会先把 Wiki 节点解析到底层文件再下载）；底层是 `docx`/`sheet`/`bitable`/`slides` 等在线文档时改用 `drive +export`
 - 编辑文档正文内容 → [`lark-doc`](../lark-doc/SKILL.md)
-- 表格 / 多维表格数据操作 → [`lark-sheets`](../lark-sheets/SKILL.md) / [`lark-base`](../lark-base/SKILL.md)
+- 表格 / 多维表格数据操作 → [`sheet`](../sheet/SKILL.md) / [`lark-base`](../lark-base/SKILL.md)
 - 按名称搜索文档 / Wiki / 表格文件、评论与权限管理 → [`lark-drive`](../lark-drive/SKILL.md)

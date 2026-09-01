@@ -1,4 +1,4 @@
 interface:
   display_name: "统一可视化"
-  short_description: "按目标、素材和精度自动选择数据图表、原图标注、交互演示或知识配图"
-  default_prompt: "根据用户任务选择最合适的可视化表达，并在需要时组合原图、数据、交互和生成式配图。"
+  short_description: "按精度和结构选择数据图表、HTML/SVG 图解、原图标注或交互演示"
+  default_prompt: "根据用户任务选择可复核的确定性可视化；知识结构优先用静态 HTML/SVG，只有操作或变化能增加理解时才启用交互。"

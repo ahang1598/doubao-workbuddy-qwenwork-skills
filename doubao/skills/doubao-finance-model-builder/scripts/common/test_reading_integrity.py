@@ -18,9 +18,9 @@ SPEC.loader.exec_module(MODULE)
 
 def external_entry(path: str) -> dict:
     return {
-        "name": "lark-sheets",
+        "name": "sheet",
         "path": path,
-        "resolved_path": f"/installed/lark-sheets/{path}",
+        "resolved_path": f"/installed/sheet/{path}",
         "total_lines": 150,
         "chunks_read": [[1, 100], [101, 150]],
         "end_marker_found": False,
@@ -52,7 +52,7 @@ class ReadingIntegrityTests(unittest.TestCase):
             [external_entry("references/ref-financial-modeling-standards")]
         )
         self.assertEqual(result["status"], "INCOMPLETE")
-        self.assertTrue(any("lark-sheets/SKILL.md" in item for item in result["errors"]))
+        self.assertTrue(any("sheet/SKILL.md" in item for item in result["errors"]))
 
     def test_missing_financial_standard_blocks_g0_input(self) -> None:
         result = self.validate([external_entry("SKILL.md")])

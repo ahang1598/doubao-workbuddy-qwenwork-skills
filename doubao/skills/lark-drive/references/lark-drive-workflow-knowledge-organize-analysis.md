@@ -10,7 +10,7 @@ Before executing rules in this file:
 
 1. `resource_items` MUST already exist from [`lark-drive-workflow-knowledge-organize-discovery.md`](lark-drive-workflow-knowledge-organize-discovery.md).
 2. For document partial reads, follow [`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) and [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md).
-3. For sheet / bitable down-drill, follow [`../../lark-sheets/SKILL.md`](../../lark-sheets/SKILL.md) or [`../../lark-base/SKILL.md`](../../lark-base/SKILL.md) only when title and path are insufficient.
+3. For sheet / bitable down-drill, follow [`../../sheet/SKILL.md`](../../sheet/SKILL.md) or [`../../lark-base/SKILL.md`](../../lark-base/SKILL.md) only when title and path are insufficient.
 
 ## State: CONTENT_READ
 
@@ -21,7 +21,7 @@ MUST:
 1. Build `low_confidence_items`.
 2. Apply `Low-Confidence Partial Read`.
 3. Read only supported docs through `lark-doc-fetch`.
-4. Switch to `lark-sheets` / `lark-base` only when sheet / bitable title and path are insufficient.
+4. Switch to `sheet` / `lark-base` only when sheet / bitable title and path are insufficient.
 5. Record read evidence for classification.
 6. Continue reading low-confidence resources in internal batches until all supported low-confidence resources in the current inventory are processed or a blocker occurs.
 7. Apply `Analysis Progress Reporting`.

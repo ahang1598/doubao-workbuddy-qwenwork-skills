@@ -51,7 +51,7 @@ mediakit-cli video enhance-video-generative \
 | `result.resolution` | string | 否 | Cloud 终态 | result.resolution 是输出视频的分辨率。 |
 | `result.video_url` | string | 否 | Cloud 终态 | result.video_url 是增强后的视频文件地址；未设置 media_output_destination 时，result.video_url 返回有效期为 24 小时的 HTTPS 临时下载链接，需要及时下载保存；设置 media_output_destination 后，result.video_url 返回 vod://<空间名>/<媒资ID> 或 tos://<桶名>/<对象Key> 的存储地址。 |
 
-Cloud 调用成功后读取 `task_id`，再查询终态结果：
+Cloud 调用成功后读取 `task_id`，再查询终态结果。生成式增强耗时常超过单次 query-task 的 9 分钟轮询上限；若返回 `status: running` 且命令正常退出，属预期行为，用同一 `task_id` 继续 `--poll-complete`。
 
 ```bash
 mediakit-cli shared query-task --task-id <task_id> --poll-complete

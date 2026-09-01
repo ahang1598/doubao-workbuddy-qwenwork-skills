@@ -16,6 +16,14 @@
 - 生命周期：同步
 - 返回方式：直接返回 Cloud 业务结果。
 
+### 使用指南
+
+- `image_url` 有宽高与体积限制：长边不得超过 3840 px，短边不得超过 2160 px，单张文件大小不得超过 10 MB。为避免超限导致调用失败，提交 OCR 前可先用本域能力做前置探测与治理：
+  1. 用 `probe-image-metadata`（默认 `info_type=metadata`）探测宽高与文件大小，判断是否可能超限；
+  2. 若宽高超限，先用 `resize-image` 等比缩放到合规尺寸；详见 [resize-image.md](resize-image.md)；
+  3. 若体积超限，先用 `compress-image` 压缩到 10 MB 以内；详见 [compress-image.md](compress-image.md)；
+  4. 将预处理返回的 `image_url` 再作为本工具的 `--image-url` 输入。探测详见 [probe-image-metadata.md](probe-image-metadata.md)。
+
 ### 参数
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |

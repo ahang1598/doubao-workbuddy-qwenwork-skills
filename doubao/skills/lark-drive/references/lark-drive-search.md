@@ -10,7 +10,7 @@
 - 自动处理 `my_edit_time` / `my_comment_time` 的小时级聚合（服务端存储粒度）：亚小时输入会向整点 snap，并在 stderr 打出提示
 - `--created-by-me` 一键从当前登录用户的 open_id 填 `original_creator_ids`，匹配“我最初创建的”；`--mine` 仍填 `creator_ids`，匹配 owner / 文档归属人
 
-> **资源发现入口统一**：`drive +search` 同样返回 `SHEET` / `Base` / `FOLDER` 等全部云空间（云盘/云存储）对象，不只是文档 / Wiki。用户说"找一个表格"、"找报表"、"最近打开的表格"时，也从这里开始；定位后再切到对应业务 skill（如 `lark-sheets`）做对象内部操作。
+> **资源发现入口统一**：`drive +search` 同样返回 `SHEET` / `Base` / `FOLDER` 等全部云空间（云盘/云存储）对象，不只是文档 / Wiki。用户说"找一个表格"、"找报表"、"最近打开的表格"时，也从这里开始；定位后再切到对应业务 skill（如 `sheet`）做对象内部操作。
 
 > **身份边界**：`--mine` / `--created-by-me` 依赖当前登录用户 open_id 自动填充过滤条件；如果无法解析当前用户 open_id，请改用显式 `--creator-ids` / `--original-creator-ids`。
 

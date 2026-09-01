@@ -28,7 +28,7 @@
 
 ```bash
 mediakit-cli editing add-subtitle-to-video \
-  --video-url <video_url>
+ --video-url <video_url>
 ```
 
 仅使用用户真实输入替换占位符；可选 flag 遵守参数填写规则，不得编造 URL、文件、枚举或业务参数。
@@ -44,7 +44,7 @@ mediakit-cli editing add-subtitle-to-video \
 | `queue_id` | `--queue-id` | string | 否 | - | - | 任务提交的目标队列 ID。如不传，默认使用系统自动创建的队列 ID。可将不同业务或优先级的任务提交到不同队列，以实现按队列对应的项目分账。队列可创建和管理，系统会自动为队列分配队列 ID。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
 | `subtitle_font_color` | `--subtitle-font-color` | string | 否 | "#FFFFFFFF" | - | subtitle_font_color 非必填，字幕字体颜色采用 RGBA 格式，默认 #FFFFFFFF，表示不透明白色。 |
 | `subtitle_font_size` | `--subtitle-font-size` | integer | 否 | 50 | 最小值: 1 | subtitle_font_size 非必填，字幕字体大小单位为 px，默认 50 px。字号不得超过所选位置预设的最大渲染高度，即视频原始高度 × height 百分比（例如 height 为 10% 时，最大字号为视频高度的 10%）；同时单行字数 × 字号不得超过所选位置预设的 width（视频原始宽度 × width 百分比，例如 80%）。 |
-| `subtitle_font_type` | `--subtitle-font-type` | string | 否 | "sy_black" | 枚举: ["sy_black","pm_zhengdao","zhanku_kuaile"] | subtitle_font_type 非必填，支持 sy_black（思源黑体，经典无衬线黑体，端正百搭，正文首选）；支持 pm_zhengdao（庞门正道标题体，粗壮有力，适合大标题或封面）；支持 zhanku_kuaile（站酷快乐体，圆润活泼并带手写感，适合轻松搞笑的 Vlog 氛围）；默认 sy_black，即思源黑体。豆包版不支持 ali_puhui（阿里巴巴普惠体），请勿选择。 |
+| `subtitle_font_type` | `--subtitle-font-type` | string | 否 | "sy_black" | 枚举: ["sy_black","pm_zhengdao","zhanku_kuaile"] | subtitle_font_type 非必填，支持 sy_black（思源黑体，经典无衬线黑体，端正百搭，正文首选）；支持 pm_zhengdao（庞门正道标题体，粗壮有力，适合大标题或封面）；支持 zhanku_kuaile（站酷快乐体，圆润活泼并带手写感，适合轻松搞笑的 Vlog 氛围）；默认 sy_black，即思源黑体。 |
 | `subtitle_pos_preset` | `--subtitle-pos-preset` | string | 否 | "bottom_center" | 枚举: ["bottom_center","top_center","center","lower_third"] | subtitle_pos_preset 非必填，通过预设值快速将字幕放到画面常用位置；支持 bottom_center（底部居中，默认，推荐横屏使用）、top_center（顶部居中）、center（画面正中央）、lower_third（偏下三分之一处，推荐竖屏使用）。用户未指定位置时：横屏使用 bottom_center，竖屏使用 lower_third。各预设对应的字幕渲染区域为：top_center 为 width 80%、height 10%、pos_x 10%、pos_y 5%；center 为 width 80%、height 15%、pos_x 10%、pos_y 42.5%；lower_third 为 width 80%、height 10%、pos_x 10%、pos_y 70%；bottom_center 为 width 80%、height 10%、pos_x 10%、pos_y 85%。其中 height 为相对视频原始高度的字体渲染最大高度，width 为相对视频原始宽度的字幕区域最大宽度。若当前没有视频宽高信息，可先探测视频元信息获取宽高后再选择位置与字号。若成片用于短视频或漫剧平台，设置位置前应向用户确认，并避开对应平台的操作栏、进度条和互动控件，避免字幕被遮挡。 |
 | `subtitle_url` | `--subtitle-url` | string | 否 | - | - | subtitle_url 非必填，用于提供字幕文件 URL，仅支持公网可访问的 HTTP/HTTPS URL，支持 SRT、VTT、ASS 等常见字幕格式；subtitle_url 与 subtitles 同时存在时，优先使用 subtitle_url 的内容。 |
 | `subtitles` | `--subtitles` | array<object> | 否 | - | 最少项数: 0 | subtitles 非必填，是由多个字幕对象组成的字幕内容列表；每个对象包含字幕文本、开始时间和结束时间。 |

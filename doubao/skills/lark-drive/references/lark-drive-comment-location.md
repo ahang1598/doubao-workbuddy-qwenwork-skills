@@ -151,7 +151,7 @@ lark-cli docs +fetch --doc '<doc_token_or_url>' --detail with-ids
 
 - `parent_token` 常见格式是 `<spreadsheet_token>_<sheet_id>`；也可能在 `relation.relation` 中看到 `subToken` 为 `3-<spreadsheet_token>`。
 - 评论接口通常只把 `positionInfo.blockID` 指到文档里的 `<sheet>` block，内部 sheet 的 `positionInfo` 可能为空。
-- 如果 `quote` 是 `C3`、`A1` 这类单元格坐标，可拆出 `spreadsheet_token` / `sheet_id` 后用 `lark-sheets` 读取该单元格确认：
+- 如果 `quote` 是 `C3`、`A1` 这类单元格坐标，可拆出 `spreadsheet_token` / `sheet_id` 后用 `sheet` 读取该单元格确认：
 
 ```bash
 lark-cli sheets +read \

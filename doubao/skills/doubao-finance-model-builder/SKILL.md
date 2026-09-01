@@ -16,7 +16,7 @@ description: 对 A 股、港股和美股上市公司执行中文、可审计且�
 5. 所有必读文件均为 `READ_COMPLETE` 后，才能创建执行计划、检索数据、运行脚本或开始建模。工具不支持行号、offset 或分页，或无法确认文件末尾时，停止并报告读取阻断；不得凭部分内容继续。
 6. 组合任务取各工作流必读集合的并集，只读取一次并在台账中复用完成状态。条件性资料仅在适用时加入必读集合。
 
-任务涉及 Excel、`.xlsx`、Sheet、电子表格或公式工作簿时，必须将外部 `lark-sheets/SKILL.md` 加入必读集合；金融或财务场景同时将 `lark-sheets/references/ref-financial-modeling-standards` 加入必读集合。对两者按同样的分段和连续覆盖规则完整读取；外部文件有末尾标记时记录 `end_marker_found=true`，没有末尾标记时必须通过工具确认已达EOF并记录 `eof_confirmed=true`。在 `reading-ledger.json` 中以 `external_skills` 记录实际解析路径、必读引用与状态。二者均为 `READ_COMPLETE` 后才能创建执行计划、运行工作簿生成脚本或开始建模；未安装、无法定位或未完整读取时停止并报告读取阻断，不得凭本 skill 内容推测外部规范。
+任务涉及 Excel、`.xlsx`、Sheet、电子表格或公式工作簿时，必须将外部 `sheet/SKILL.md` 加入必读集合；金融或财务场景同时将 `sheet/references/ref-financial-modeling-standards` 加入必读集合。对两者按同样的分段和连续覆盖规则完整读取；外部文件有末尾标记时记录 `end_marker_found=true`，没有末尾标记时必须通过工具确认已达EOF并记录 `eof_confirmed=true`。在 `reading-ledger.json` 中以 `external_skills` 记录实际解析路径、必读引用与状态。二者均为 `READ_COMPLETE` 后才能创建执行计划、运行工作簿生成脚本或开始建模；未安装、无法定位或未完整读取时停止并报告读取阻断，不得凭本 skill 内容推测外部规范。
 
 `reading-ledger.json` 的最小结构：
 
@@ -34,9 +34,9 @@ description: 对 A 股、港股和美股上市公司执行中文、可审计且�
   ],
   "external_skills": [
     {
-      "name": "lark-sheets",
+      "name": "sheet",
       "path": "SKILL.md",
-      "resolved_path": "/actual/installed/path/lark-sheets/SKILL.md",
+      "resolved_path": "/actual/installed/path/sheet/SKILL.md",
       "total_lines": 150,
       "chunks_read": [[1, 100], [101, 150]],
       "end_marker_found": false,
@@ -44,9 +44,9 @@ description: 对 A 股、港股和美股上市公司执行中文、可审计且�
       "status": "READ_COMPLETE"
     },
     {
-      "name": "lark-sheets",
+      "name": "sheet",
       "path": "references/ref-financial-modeling-standards",
-      "resolved_path": "/actual/installed/path/lark-sheets/references/ref-financial-modeling-standards",
+      "resolved_path": "/actual/installed/path/sheet/references/ref-financial-modeling-standards",
       "total_lines": 120,
       "chunks_read": [[1, 100], [101, 120]],
       "end_marker_found": false,
@@ -115,7 +115,7 @@ description: 对 A 股、港股和美股上市公司执行中文、可审计且�
 7. 建立`assumption-evidence-matrix.json`，把重大假设连接到历史序列、业务驱动、外部证据、预测逻辑、相对历史趋势解释和失效条件。DCF逐项披露无风险利率、Beta、股权风险溢价、债务成本、税率、资本结构和永续增长率的依据。
 8. 冻结字段映射、模型驱动、情景依据和交付物。区分公开事实、外部估计、分析调整、自主假设和模型推导；不得使用估值日后才公开的信息。
 9. 使用工作流指定脚本完成标准化、计算和验证，不用语言模型口算或手填第二套关键结果。未知必需输入保持空白或 `NA`；只有模块合约明确为“不适用”的可选项才写显式 0。
-10. 三表、DCF、LBO和可比公司正式任务均强制生成中文、可编辑、公式驱动的 `.xlsx`，并将该工作簿作为模型计算、质量审计和在线导入的唯一正式源文件。生成前必须按强制读取完整性协议完整读取 `lark-sheets/SKILL.md`，并完整读取、遵循 `lark-sheets/references/ref-financial-modeling-standards`，以生成符合专业金融财务规范的表格。LBO与可比公司默认只生成一个用户可见的表格产物：结论摘要、方法口径、数据来源、风险失效条件和模型检查必须内嵌同一工作簿，不得默认生成或交付Markdown、飞书文档或第二份报告；只有用户明确要求独立报告时才可附加，且不得形成第二套计算或替代该工作簿。本条的“飞书文档”不包括第15条强制交付的飞书在线表格。只解释方法且不输出预测、估值、倍数或回报的非正式问答可不生成工作簿。加载可用的电子表格能力并运行 `scripts/common/detect_workbook_engines.py`。统一使用OpenPyXL和公共公式语义编译器生成工作簿；不得因环境差异而临时拼接坐标公式。
+10. 三表、DCF、LBO和可比公司正式任务均强制生成中文、可编辑、公式驱动的 `.xlsx`，并将该工作簿作为模型计算、质量审计和在线导入的唯一正式源文件。生成前必须按强制读取完整性协议完整读取 `sheet/SKILL.md`，并完整读取、遵循 `sheet/references/ref-financial-modeling-standards`，以生成符合专业金融财务规范的表格。LBO与可比公司默认只生成一个用户可见的表格产物：结论摘要、方法口径、数据来源、风险失效条件和模型检查必须内嵌同一工作簿，不得默认生成或交付Markdown、飞书文档或第二份报告；只有用户明确要求独立报告时才可附加，且不得形成第二套计算或替代该工作簿。本条的“飞书文档”不包括第15条强制交付的飞书在线表格。只解释方法且不输出预测、估值、倍数或回报的非正式问答可不生成工作簿。加载可用的电子表格能力并运行 `scripts/common/detect_workbook_engines.py`。统一使用OpenPyXL和公共公式语义编译器生成工作簿；不得因环境差异而临时拼接坐标公式。
 11. 生成工作簿前按`references/model-and-artifact-controls.md`建立`model-contract.json`、`formula-contract.json`、`cell-map.json`和布局锁，冻结prompt驱动、关键公式路径、场景、覆盖区域、单位恒等式、反向DCF和检查单元格；禁止语言模型直接手写关键A1坐标公式。
 12. 工作簿必须包含“数据来源”“历史数据与口径”“假设依据”和“模型检查”，关键输入通过来源编号或假设编号连接披露台账。保存后关闭并重新打开，以LibreOffice隔离重算并回读，然后只通过统一入口`scripts/quality/audit_model.py`检查prompt覆盖、公式穿透、场景错位、单位倍率、多证券恒等式、反向DCF残差及静态PASS；再运行现有结构、公式语义、直接产物和视觉审计。
 13. 按`references/model-and-artifact-controls.md`把原子检查整合为G0至G5。运行`scripts/quality/run_quality_gates.py`生成阶段结果、`quality-report.json`、`release-decision.json`和`artifact-manifest.json`；缺少机器结果不得手填PASS。

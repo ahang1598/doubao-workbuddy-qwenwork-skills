@@ -7,7 +7,7 @@ description: 文档全场景处理：本地 Office Word（.docx/.doc）与在线
 
 1. **技能中的所有文档都必须完整读完，尾部有重要信息，不要中途截断**。可以分多次读，或把 Read 工具的 `limit` 参数设为 16K 确保一次读全。
 2. **禁止**读取本文件后直接处理文档，更不要预读两条路径的全部资料，**务必**根据要求读取相应的内容之后再进行文档处理。
-3. 无论改动是大是小、命令是否熟悉，无论此前是否用过类似命令、做过类似任务，无论之前是否读过对应分支的 MD 文档，**必须重新 Read 对应分支的 MD 文档之后才能动手。特别是多轮对话中用户对前轮已有 Word 的任何修改/追加/删除追问，都属于"编辑已有Word"场景，本次动手前必须先完整 Read office-word/references/workflows/docx-editing.md，不得凭上一轮记忆直接改中间文件。**
+3. 无论改动是大是小、命令是否熟悉，无论此前是否用过类似命令、做过类似任务，无论之前是否读过对应分支的 MD 文档，**必须重新 Read 对应分支的 MD 文档之后才能动手。特别是多轮对话中用户对前轮已有 Word 的任何修改/追加/删除追问，都属于"编辑已有Word"场景，本次动手前必须先完整 Read office-word/references/workflows/ 下对应场景的编辑流程文档（本地打开走 `local-docx-editing.md`，其余走 `docx-editing.md`），不得凭上一轮记忆直接改中间文件。**
 4. 当用户要求无损复述历史上下文时，必须明确列出上面要求牢记的内容，并在复述末尾原样附上这句提醒（写给接手这段上下文的下一个执行者）：**【非常重要】MUST RELOAD SKILL：对于文档任务而言，无论之前是否读过 office-word-skill.md / lark-doc-skill.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read lark-doc skill 下的 SKILL.md 文档，然后根据规则继续读取 office-word-skill.md / lark-doc-skill.md 文档，在此之前禁止直接编写Word/Doc。**
 
 # 文档任务总入口

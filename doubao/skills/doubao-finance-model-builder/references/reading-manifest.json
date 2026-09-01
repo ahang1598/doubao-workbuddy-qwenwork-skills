@@ -19,11 +19,11 @@
   "external_required": {
     "financial_spreadsheet": [
       {
-        "skill": "lark-sheets",
+        "skill": "sheet",
         "path": "SKILL.md"
       },
       {
-        "skill": "lark-sheets",
+        "skill": "sheet",
         "path": "references/ref-financial-modeling-standards"
       }
     ]

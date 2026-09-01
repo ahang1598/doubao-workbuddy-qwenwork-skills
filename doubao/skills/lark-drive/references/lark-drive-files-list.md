@@ -11,7 +11,7 @@
 | 验证移动 / 创建后的实际位置 | 使用 | 读取目标目录直接子项，再按需递归验证 |
 | 根据关键词、标题、时间、owner 找资源 | 不使用 | 优先用 `drive +search` |
 | 读取 Docx 正文内容 | 不使用 | 用 `docs +fetch` |
-| 读取 Sheet / Base 内部数据 | 不使用 | 切到 `lark-sheets` / `lark-base` |
+| 读取 Sheet / Base 内部数据 | 不使用 | 切到 `sheet` / `lark-base` |
 
 ## 标准命令模板
 
