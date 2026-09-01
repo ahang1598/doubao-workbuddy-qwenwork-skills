@@ -15,44 +15,39 @@ $ExePath = Join-Path $WoscliHome "woscli.exe"
 Write-Host "==> Installing woscli to $WoscliHome"
 New-Item -ItemType Directory -Force -Path $WoscliHome | Out-Null
 
-# WorkBuddy re-runs this install on EVERY connect (its isCliInstalled probe runs
-# `where <absolute-path>`, which always fails on Windows). Re-downloading the binary
-# every time is therefore both wasteful and fragile: overwriting woscli.exe fails with
-# a sharing violation whenever ANY woscli process is running - most notably an
-# in-flight `woscli login`, which legitimately stays alive for minutes waiting for the
-# user to authorize. That turns every subsequent connect into a hard install failure.
-# So: keep an existing binary, and only fetch when it is actually missing.
-# Set WOSCLI_FORCE_INSTALL=1 to force a fresh download.
-$needDownload = -not (Test-Path $ExePath)
-if ($env:WOSCLI_FORCE_INSTALL -eq '1') { $needDownload = $true }
+# 每次都重新下载并覆盖（不再"存在即跳过"）。WorkBuddy 在 needsUpgrade 时会
+# 自动触发 runInstall，必须保证此处能真正把二进制升级到满足 minVersion 的版本，
+# 否则会陷入"需升级 -> 重装但不升级 -> 复检仍过低 -> 连接失败"的死循环。
+#
+# 覆盖前先终止所有 woscli 进程，释放文件锁；若仍被占用，覆盖静默失败并保留
+# 现有二进制（不让安装流程中断）。首装（exe 不存在）时覆盖失败才视为致命错误。
+$running = Get-Process -Name "woscli" -ErrorAction SilentlyContinue
+if ($running) {
+    Write-Host "==> Stopping running woscli process(es) to release the binary..."
+    $running | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 500
+}
 
-if ($needDownload) {
-  Write-Host "==> Downloading woscli..."
-  # -UseBasicParsing is REQUIRED: WorkBuddy runs this in non-interactive PowerShell,
-  # where the default HTML parser (Internet Explorer) is unavailable and would abort.
-  $tmpPath = "$ExePath.new"
-  Invoke-WebRequest -Uri $ExeUrl -OutFile $tmpPath -UseBasicParsing
-  $ActualSha256 = (Get-FileHash -LiteralPath $tmpPath -Algorithm SHA256).Hash.ToLowerInvariant()
-  if ($ActualSha256 -ne $ExpectedSha256) {
+Write-Host "==> Downloading woscli..."
+# -UseBasicParsing is REQUIRED: WorkBuddy runs this in non-interactive PowerShell,
+# where the default HTML parser (Internet Explorer) is unavailable and would abort.
+$tmpPath = "$ExePath.new"
+Invoke-WebRequest -Uri $ExeUrl -OutFile $tmpPath -UseBasicParsing
+$ActualSha256 = (Get-FileHash -LiteralPath $tmpPath -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($ActualSha256 -ne $ExpectedSha256) {
     Remove-Item $tmpPath -Force -ErrorAction SilentlyContinue
     throw "checksum mismatch for downloaded woscli ($arch)"
-  }
-  # Replacing a held binary raises a sharing violation. Fall back to keeping the
-  # existing binary rather than failing the whole install.
-  try {
+}
+# 覆盖现有二进制；若仍被占用，静默失败并保留现有二进制，不让安装流程中断。
+try {
     Move-Item -Path $tmpPath -Destination $ExePath -Force -ErrorAction Stop
     Write-Host "==> Installed: $ExePath"
-  } catch {
+} catch {
     Remove-Item $tmpPath -Force -ErrorAction SilentlyContinue
-    if (Test-Path $ExePath) {
-      Write-Host "    (could not replace $ExePath - file in use; keeping existing binary)"
-    } else {
-      Write-Host "==> ERROR: failed to install woscli to $ExePath"
-      exit 1
+    if (-not (Test-Path $ExePath)) {
+        Write-Host "==> ERROR: failed to install woscli to $ExePath"
+        exit 1
     }
-  }
-} else {
-  Write-Host "==> woscli already present at $ExePath, skipping download"
 }
 
 # Persist to the user PATH (applies to all NEW terminals / processes)

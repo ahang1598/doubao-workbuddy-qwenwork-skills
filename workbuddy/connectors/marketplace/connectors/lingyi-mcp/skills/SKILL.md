@@ -1,7 +1,7 @@
 ---
 name: lingyi-mcp
 description: 零一运营 MCP。用 open_lingyi_skill 按 slug 打开对应 Skill 的 MCP App 表单。
-version: 1.2.0
+version: 1.4.0
 author: 零一运营
 ---
 

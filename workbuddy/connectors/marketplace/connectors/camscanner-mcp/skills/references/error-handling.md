@@ -19,7 +19,7 @@
 |----------|------|------|
 | `file size exceeds the maximum limit` | 文件超过大小限制 | 告知用户压缩文件或拆分 |
 | `unsupported file type` | 不支持的文件格式 | 告知用户支持的格式列表 |
-| `file_id not found` | file_id 已过期（通常 24h） | 重新 upload_file |
+| `file_id not found` | file_id 已过期（通常 24h） | 重新上传文件 |
 | `invalid enhance_mode` | 增强模式值不合法 | 检查 mode 是否在 1-10 范围内 |
 | `too many files` | 超过合并上限 | 分批处理（每批 ≤100） |
 | `PKCE verification failed` | OAuth 认证流程异常 | 提示用户断开并重新连接 |

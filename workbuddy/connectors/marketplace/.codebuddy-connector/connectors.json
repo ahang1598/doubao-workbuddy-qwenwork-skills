@@ -1693,28 +1693,28 @@
     },
     {
       "id": "wind-finance",
-      "name": "Wind 金融数据",
-      "name_zh": "Wind 金融数据",
-      "name_en": "Wind Financial Data",
-      "description": "Wind data for stocks, funds, indices, bonds, news, and macroeconomics.",
-      "description_zh": "通过自然语言查询股票、基金、指数、债券、公告、财经新闻和宏观经济数据。",
-      "description_en": "Wind data for stocks, funds, indices, bonds, news, and macroeconomics.",
+      "name": "Wind Alice 万得金融数据",
+      "name_zh": "Wind Alice 万得金融数据",
+      "name_en": "Wind Alice Wind Financial Data",
+      "description": "Unlock the full breadth of Wind financial data and tools, covering equities, funds, bonds, commodities, indices, and economic data across more than 60 countries and regions worldwide, including Mainland China, Hong Kong, and the United States, as well as Wind financial models and toolsets. Turn WorkBuddy into a financial analysis expert—a professional agent with multidimensional capabilities in data drill-down, investment research and analysis, risk-informed decision-making, and more.",
+      "description_zh": "全量开放万得（Wind）金融数据与工具能力，覆盖沪深港美等全球60多个国家地区的股票、基金、债券、商品、指数、经济数据与万得金融模型与工具集。让WorkBuddy变身金融分析专家，成为具备数据穿透、投研分析、风险决策等多维金融能力的专业智能体。",
+      "description_en": "Unlock the full breadth of Wind financial data and tools, covering equities, funds, bonds, commodities, indices, and economic data across more than 60 countries and regions worldwide, including Mainland China, Hong Kong, and the United States, as well as Wind financial models and toolsets. Turn WorkBuddy into a financial analysis expert—a professional agent with multidimensional capabilities in data drill-down, investment research and analysis, risk-informed decision-making, and more.",
       "source": "wind-finance",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
-        "筛选沪深市场市值超过500亿且连续5日上涨的股票",
-        "查询贵州茅台2024年ROE、营业收入和净利润",
-        "查询沪深300最近20日的MACD和涨跌幅",
-        "查询中国GDP最近10期数据"
+        "京东方A近3年营收、净利润和ROE表现怎么样？",
+        "恒生科技指数ETF今年涨了多少，现在估值贵不贵？",
+        "永赢科技智选最新重仓哪些股票，持仓集中度高不高？",
+        "结合近24个月CPI、PPI、PMI、社零和固定资产投资，判断当前经济处于什么阶段，哪些资产和行业更受益？"
       ],
       "examples_en": [
-        "Screen A-share stocks with market capitalization above 50 billion RMB and five consecutive rising days",
-        "Show Kweichow Moutai 2024 ROE, revenue, and net profit",
-        "Show CSI 300 MACD and price changes over the last 20 days",
-        "Show the latest 10 observations of China GDP"
+        "How have NVIDIA's revenue, net income, and ROE changed over the past three years?",
+        "How has the U.S. 10-year Treasury yield moved over the past month, and what does it imply for stocks and bonds?",
+        "What is the S&P 500's current P/E versus its five-year historical range?",
+        "Based on the past 24 months of CPI, PPI, PMI, retail sales, and industrial production, what stage of the U.S. economic cycle are we in, and which assets and sectors could benefit most?"
       ],
       "visible_in": [
         "internal",
@@ -1752,26 +1752,6 @@
         "iOA",
         "cloudhosted",
         "selfhosted"
-      ]
-    },
-    {
-      "id": "textin-xparse-ai",
-      "name": "TextIn xParse·智能文档解析",
-      "name_en": "TextIn xParse · Intelligent Document Parsing",
-      "description": "Parse PDFs, images, Word, Excel, PowerPoint, scanned documents, and more into Markdown or structured JSON from the command line. Preserve document hierarchies and complex table structures for high-accuracy, high-performance document processing. Parse up to 1,000 pages free each day.",
-      "description_zh": "通过命令行将文件（PDF、图片、Word、Excel、PPT、扫描件等）解析为 Markdown 或结构化 JSON，可还原文档目录结构和复杂表格结构，适用于高精度高性能要求的文档处理任务，每日免费1000页。",
-      "description_en": "Parse PDFs, images, Word, Excel, PowerPoint, scanned documents, and more into Markdown or structured JSON from the command line. Preserve document hierarchies and complex table structures for high-accuracy, high-performance document processing. Parse up to 1,000 pages free each day.",
-      "source": "textin-xparse-ai",
-      "type": "cli",
-      "minWorkbuddyVersion": "5.0.0",
-      "examples_zh": [
-        "解析并总结这份 PDF 的核心内容：https://web-api.textin.com/image/download?filename=4249da45f6e946d2afd8380d59.pdf"
-      ],
-      "examples_en": [
-        "Parse this PDF and summarize its key points: https://web-api.textin.com/image/download?filename=4249da45f6e946d2afd8380d59.pdf"
-      ],
-      "visible_in": [
-        "external"
       ]
     },
     {
@@ -2482,9 +2462,9 @@
       "name": "Kling AI",
       "name_zh": "可灵 AI",
       "name_en": "Kling AI",
-      "description": "Turn every idea into a striking image or video. Kling AI (Kling / 可灵AI) is an AI image generation and AI video generation connector for creators, designers, video producers, ecommerce sellers, advertising, marketing, and brand teams. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, reference-image creation, and single- or multi-shot video. Create posters, illustrations, portraits, product images, ecommerce hero images, Listing images, product detail graphics, ad creatives, product showcase videos, marketing clips, ecommerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation tasks, track progress, query task status, and retrieve final images or videos. If you are searching for competitor tools, similar AI generators, or alternatives to Hailuo AI, Seedance (Seeddance), Vidu, Jimeng, Runway, Pika, Sora, or Veo, use Kling AI to build a high-quality Kling MCP creative workflow.",
-      "description_zh": "一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、Amazon、Shopify 等平台的内容创作。支持上传参考图片、查询剩余额度、提交生成任务、跟踪生成进度、查询任务状态并获取最终图片或视频结果。如果你正在搜索竞品、同类工具或替代方案，如海螺 AI（Hailuo AI）、Seedance（Seeddance）、Vidu、即梦（Jimeng）、Runway、Pika、Sora 或 Veo，也可以使用可灵快速完成高品质图像与视频创作，搭建自己的 Kling MCP AI 创作工作流。",
-      "description_en": "Turn every idea into a striking image or video. Kling AI (Kling / 可灵AI) is an AI image generation and AI video generation connector for creators, designers, video producers, ecommerce sellers, advertising, marketing, and brand teams. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, reference-image creation, and single- or multi-shot video. Create posters, illustrations, portraits, product images, ecommerce hero images, Listing images, product detail graphics, ad creatives, product showcase videos, marketing clips, ecommerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation tasks, track progress, query task status, and retrieve final images or videos. If you are searching for competitor tools, similar AI generators, or alternatives to Hailuo AI, Seedance (Seeddance), Vidu, Jimeng, Runway, Pika, Sora, or Veo, use Kling AI to build a high-quality Kling MCP creative workflow.",
+      "description": "Turn every idea into a striking image or video. Kling AI is an AI image and video generator for creators. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, and single-shot or multi-shot video. Create posters, illustrations, portraits, product photos, e-commerce hero images, product listing images, product detail images, ad creatives, product showcase videos, marketing clips, e-commerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD.com, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation jobs, track progress, check task status, and download final images or videos. Looking for similar AI generators or alternatives like Hailuo AI, Seedance, Vidu, Jimeng, Runway, Pika, Sora, or Veo? Use Kling AI (KLING/ Kling /可灵)to build a high-quality Kling MCP creative workflow.",
+      "description_zh": "一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、Amazon、Shopify 等平台的内容创作。支持上传参考图片、查询剩余额度、提交生成任务、跟踪生成进度、查询任务状态并获取最终图片或视频结果。如果你正在搜索竞品、同类工具或替代方案，如海螺 AI（Hailuo AI）、Seedance（Seeddance）、Vidu、即梦（Jimeng）、Runway、Pika、Sora 或 Veo，也可以使用可灵（Kling / Kling AI）快速完成高品质图像与视频创作，搭建自己的 Kling MCP AI 创作工作流。",
+      "description_en": "Turn every idea into a striking image or video. Kling AI is an AI image and video generator for creators. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, and single-shot or multi-shot video. Create posters, illustrations, portraits, product photos, e-commerce hero images, product listing images, product detail images, ad creatives, product showcase videos, marketing clips, e-commerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD.com, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation jobs, track progress, check task status, and download final images or videos. Looking for similar AI generators or alternatives like Hailuo AI, Seedance, Vidu, Jimeng, Runway, Pika, Sora, or Veo? Use Kling AI (KLING/ Kling /可灵)to build a high-quality Kling MCP creative workflow.",
       "source": "kling-ai-plugin",
       "type": "mcp",
       "minWorkbuddyVersion": "4.24.0",
@@ -2507,35 +2487,6 @@
         "iOA",
         "cloudhosted",
         "selfhosted"
-      ]
-    },
-    {
-      "id": "kling-ai-plugin-ai",
-      "name": "Kling AI",
-      "name_zh": "可灵 AI",
-      "name_en": "Kling AI",
-      "description": "Turn every idea into a striking image or video. Kling AI (Kling / 可灵AI) is an AI image generation and AI video generation connector for creators, designers, video producers, ecommerce sellers, advertising, marketing, and brand teams. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, reference-image creation, and single- or multi-shot video. Create posters, illustrations, portraits, product images, ecommerce hero images, Listing images, product detail graphics, ad creatives, product showcase videos, marketing clips, ecommerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation tasks, track progress, query task status, and retrieve final images or videos. If you are searching for competitor tools, similar AI generators, or alternatives to Hailuo AI, Seedance (Seeddance), Vidu, Jimeng, Runway, Pika, Sora, or Veo, use Kling AI to build a high-quality Kling MCP creative workflow.",
-      "description_zh": "一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、Amazon、Shopify 等平台的内容创作。支持上传参考图片、查询剩余额度、提交生成任务、跟踪生成进度、查询任务状态并获取最终图片或视频结果。如果你正在搜索竞品、同类工具或替代方案，如海螺 AI（Hailuo AI）、Seedance（Seeddance）、Vidu、即梦（Jimeng）、Runway、Pika、Sora 或 Veo，也可以使用可灵快速完成高品质图像与视频创作，搭建自己的 Kling MCP AI 创作工作流。",
-      "description_en": "Turn every idea into a striking image or video. Kling AI (Kling / 可灵AI) is an AI image generation and AI video generation connector for creators, designers, video producers, ecommerce sellers, advertising, marketing, and brand teams. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, reference-image creation, and single- or multi-shot video. Create posters, illustrations, portraits, product images, ecommerce hero images, Listing images, product detail graphics, ad creatives, product showcase videos, marketing clips, ecommerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation tasks, track progress, query task status, and retrieve final images or videos. If you are searching for competitor tools, similar AI generators, or alternatives to Hailuo AI, Seedance (Seeddance), Vidu, Jimeng, Runway, Pika, Sora, or Veo, use Kling AI to build a high-quality Kling MCP creative workflow.",
-      "source": "kling-ai-plugin-ai",
-      "type": "mcp",
-      "minWorkbuddyVersion": "4.24.0",
-      "examples_zh": [
-        "使用可灵AI画一只坐在霓虹屋顶上的赛博朋克风格猫",
-        "使用可灵AI画一只身穿复古宇航服的小熊猫，漂浮在空间站舷窗前，地球蓝光映亮面部，细节丰富，电影级质感",
-        "使用可灵AI制作一段 5 秒电影感视频：机甲战士从高空重砸地面，冲击波瞬间震开碎石与尘雾，镜头快速推近，充满力量感",
-        "使用可灵AI制作一条 15 秒运动鞋营销短片：街头开场抓住注意力，三秒切出产品特写与穿着动态，结尾落在鞋身细节特写",
-        "使用可灵AI绘制一幅古风武侠人物，身着白衣，手持长剑，立于山巅之上，云雾缭绕，夕阳余晖映照，画面唯美，细节精致"
-      ],
-      "examples_en": [
-        "Use Kling AI to create a cyberpunk-style cat sitting on a neon-lit rooftop.",
-        "Use Kling AI to paint a red panda in a vintage spacesuit, floating in front of a space station window with the Earth's blue glow illuminating its face, rich in detail, with a cinematic quality.",
-        "Use Kling AI to generate a 5‑second cinematic video: a mech warrior slams down from height onto the ground, sending out a shockwave that instantly blasts apart rubble and dust, with the camera rapidly pushing in for a powerful impact.",
-        "Use Kling AI to produce a 15‑second sport shoe marketing clip: open with an urban street scene to grab attention, cut to a product close‑up and dynamic wearing shots within three seconds, and end with a detailed close‑up of the shoe's upper.",
-        "Use Kling AI to paint a traditional Chinese martial arts figure in white robes, holding a long sword, standing on a mountain peak surrounded by mist and clouds, with the golden glow of sunset, beautifully composed and finely detailed."
-      ],
-      "visible_in": [
-        "external"
       ]
     },
     {
@@ -3384,24 +3335,24 @@
       "id": "uupt",
       "name": "UU跑腿",
       "name_en": "UU Delivery",
-      "description": "Same-city delivery and on-site help via the UU open-platform CLI. Price, create, track, and cancel delivery or on-site help orders.",
-      "description_zh": "通过自然语言使用 UU跑腿：同城配送与帮帮服务，支持询价、下单、查单、取消和跑男追踪",
-      "description_en": "Use natural language to price, create, track, and cancel UU same-city delivery or on-site help orders.",
+      "description": "Same-city delivery, on-site help, and coupon claiming via the UU open-platform CLI.",
+      "description_zh": "通过自然语言使用 UU跑腿：同城配送与帮帮服务，支持询价、下单、查单、取消、跑男追踪和领取优惠券",
+      "description_en": "Use natural language to price, create, track, and cancel UU same-city delivery or on-site help orders, and claim coupons.",
       "source": "uupt",
       "type": "cli",
-      "version": "1.0.3",
-      "minWorkbuddyVersion": "4.22.0",
+      "version": "1.1.0",
+      "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "帮我从郑州市金水区花园路送到二七区德化街，电话 13800138000",
         "帮我去郑州人民医院陪诊挂号，电话 13900001111",
         "查一下订单 UU123456789 现在送到哪了",
-        "取消订单 UU123456789，原因是地址填错了"
+        "帮我领一下UU跑腿的优惠券"
       ],
       "examples_en": [
         "Send a package from Huayuan Road, Jinshui District to Dehua Street, Erqi District in Zhengzhou, phone 13800138000",
         "Book an on-site hospital companion at Zhengzhou People's Hospital, phone 13900001111",
         "Where is order UU123456789 right now?",
-        "Cancel order UU123456789 because the address is wrong"
+        "Claim UU Delivery coupons for me"
       ],
       "visible_in": [
         "internal",
@@ -3419,6 +3370,7 @@
       "description_en": "Call Meitu Design Studio Agent Teams with a single sentence — from market strategy insights to e-commerce image sets, marketing videos, social media graphics, posters, and brand visuals — completing the full commercial design workflow with zero barriers.",
       "source": "designkit-buddy-cli",
       "type": "cli",
+      "version": "1.0.2",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "创建一个 Team Agent 房间并处理我的设计任务",
@@ -3547,9 +3499,9 @@
       "id": "camscanner-mcp",
       "name": "扫描全能王",
       "name_en": "CamScanner",
-      "description": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, and cloud document saving.",
-      "description_zh": "智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、文档云端保存等。",
-      "description_en": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, and cloud document saving.",
+      "description": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, receipt/invoice recognition, cloud document search, and cloud document saving.",
+      "description_zh": "智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、发票/票据识别、云文档搜索、文档云端保存等。",
+      "description_en": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, receipt/invoice recognition, cloud document search, and cloud document saving.",
       "source": "camscanner-mcp",
       "type": "mcp",
       "examples_zh": [
@@ -3557,14 +3509,18 @@
         "把这个PDF转成Excel",
         "帮我增强一下这张照片",
         "识别这张图片上的文字",
-        "把这几张扫描件合并成一个PDF"
+        "把这几张扫描件合并成一个PDF",
+        "帮我识别这张发票",
+        "找一下我的合同文档"
       ],
       "examples_en": [
         "Convert this image to Word",
         "Convert this PDF to Excel",
         "Enhance this photo",
         "Recognize text in this image",
-        "Merge these scanned pages into a PDF"
+        "Merge these scanned pages into a PDF",
+        "Recognize this receipt",
+        "Search my cloud documents"
       ],
       "visible_in": [
         "internal",
@@ -3750,12 +3706,12 @@
       "id": "lingyi-mcp",
       "name": "零一运营",
       "name_en": "Lingyi Ops",
-      "description": "Lingyi Ops MCP: WeChat Channels analysis, daily topics, copy rewrite, and pre-publish checks.",
-      "description_zh": "零一运营：视频号拆解、热点选题、文案去 AI 味、内容预检。连接后用自然语言打开对应 Skill 的填写表单。",
-      "description_en": "Lingyi Ops: WeChat Channels analysis, daily topics, copy rewrite, and pre-publish checks. Opens the matching Skill form in the MCP App.",
+      "description": "Lingyi Ops exclusive knowledge base for viral WeChat Channels and private-traffic content.",
+      "description_zh": "零一运营独家知识库：7大行业的视频号/私域的爆款内容案例库 + 零一300万份运营实战文档萃取。",
+      "description_en": "Lingyi Ops exclusive knowledge base for viral WeChat Channels and private-traffic content. Case libraries across 7 industries, distilled from 3 million Lingyi hands-on operations documents.",
       "source": "lingyi-mcp",
       "type": "mcp",
-      "version": "1.2.0",
+      "version": "1.4.0",
       "visible_in": [
         "internal",
         "iOA",
@@ -4101,12 +4057,12 @@
       "name_zh": "森浦qeubee金融数据",
       "name_en": "Sumscope qeubee Data",
       "description": "Query Sumscope fixed-income market data: bond info, valuations, quotes, issuance, financials and China macro indicators.",
-      "description_zh": "查询森浦固定收益市场数据：债券基础信息、中债估值、经纪商与CFETS行情、一级发行、发行人财务报表、中国宏观指标和交易日历。",
-      "description_en": "Query Sumscope fixed-income market data: bond basic info, CDC valuations, broker & CFETS trade stats, primary issuance, issuer financial statements, China macro indicators and trading calendar.",
+      "description_zh": "查询森浦固定收益市场数据：债券基础信息、一级发行、票据行情、舆情信息、发行人财务报表、宏观指标和交易日历。",
+      "description_en": "Query Sumscope fixed-income market data, including bond reference data, primary issuance, bill quotes, public opinion information, issuer financial statements, macroeconomic indicators, and trading calendars.",
       "source": "sumscope-data",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "查询 2405050.IB 这只债券的基础信息和最新评级",
@@ -4507,6 +4463,91 @@
         "Analyze the attribution dimensions behind the drop in a certain model's order conversion rate",
         "Forecast the next 30 days' trend of game user-acquisition conversion and ROI",
         "Build an order sales operations dashboard based on the order data knowledge base"
+      ]
+    },
+    {
+      "id": "today-watermark-camera",
+      "name": "今日水印相机",
+      "name_en": "Today Watermark Camera",
+      "description": "Use natural language to query and export Today Watermark Camera team photos, and assist with photo archiving, attendance checks, ledger organization, and photo statistics.",
+      "description_zh": "用自然语言查询和导出今日水印相机的团队照片，通过对话辅助完成照片归档、考勤核对、台账整理和照片统计。",
+      "description_en": "Use natural language to query and export Today Watermark Camera team photos, and assist with photo archiving, attendance checks, ledger organization, and photo statistics.",
+      "source": "today-watermark-camera",
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ],
+      "examples_zh": [
+        "帮我找出本周施工现场的照片",
+        "统计这个月团队拍了多少张照片",
+        "列出本月拍照最多的 10 位成员",
+        "把昨天张三拍的照片打包导出"
+      ],
+      "examples_en": [
+        "Find construction site photos taken this week",
+        "Count how many photos the team took this month",
+        "Show the top 10 photographers this month",
+        "Export the photos taken by a team member yesterday"
+      ]
+    },
+    {
+      "id": "xmed-figure-mcp",
+      "name": "迪安智能科研云",
+      "name_zh": "迪安智能科研云",
+      "name_en": "DAZD X-Med MCP",
+      "description": "Scientific visualization: volcano, PCA, enrichment, survival, and more.",
+      "description_zh": "科研数据可视化：火山图、PCA、富集分析、生存分析，自动匹配发表级输出",
+      "description_en": "Scientific visualization: volcano, PCA, enrichment, survival, and more.",
+      "source": "xmed-figure-mcp",
+      "type": "mcp",
+      "version": "1.0.10",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我画一个火山图，用差异分析结果",
+        "用 PCA 分析样本分布",
+        "给这些表达数据画一个聚类热图",
+        "做 GO 富集分析的条形图",
+        "帮我画 KM 生存分析曲线"
+      ],
+      "examples_en": [
+        "Generate a volcano plot from my differential expression data",
+        "Run PCA to visualize sample distribution",
+        "Create a clustered heatmap for my expression data",
+        "Make an enrichment bar chart for GO analysis",
+        "Plot KM survival curves for my clinical data"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "aimoderator",
+      "name": "思研平台",
+      "name_en": "Aimoderator",
+      "description": "Create AI interview projects on Aimoderator with natural language. Provide a title, background and outline (optional opening), and get a shareable interview link.",
+      "description_zh": "用自然语言快速创建 AI 访谈项目：提供标题、背景、大纲（及可选开场白），即可在思研平台生成访谈项目并返回可直接分享的访谈链接。",
+      "description_en": "Create AI interview projects on Aimoderator with natural language. Provide a title, background and outline (optional opening), and get a shareable interview link.",
+      "source": "aimoderator",
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ],
+      "examples_zh": [
+        "帮我创建一个关于黄金理财用户体验的访谈项目，大纲有5道题",
+        "创建一个访谈：标题“新功能满意度调研”，背景是上线了金价提醒功能，帮我拟一份大纲",
+        "创建一个英文访谈项目，用专业主持风格，开场白介绍这是一次产品体验回访"
+      ],
+      "examples_en": [
+        "Create an interview project about gold investment user experience with 5 questions",
+        "Create an interview titled 'New feature satisfaction survey' with an outline about the price-alert feature",
+        "Create an English interview in a professional hosting style, with an opening introducing this product experience follow-up"
       ]
     }
   ]

@@ -86,7 +86,7 @@
 | 1 | 篡改检测 | 检测图片是否经过 PS 修改，返回置信度和可疑区域 |
 | 2 | AI 生成检测 | 检测图片是否由 AI 生成（如 Midjourney、DALL-E），返回置信度 |
 
-注意：`validate_image` 不支持 base64_content，必须先 upload_file 获得 file_id。
+注意：`validate_image` 不支持 base64_content，必须先上传文件获得 file_id。
 
 ## scan_image_edit + edit_image — 图片文字编辑
 
@@ -98,7 +98,13 @@
 
 ## extract_image — 公式提取
 
-识别图片中的数学公式，返回 LaTeX 格式文本。适用于：
+识别图片中的数学公式区域，裁剪并拼接为一张 PNG 图片返回。适用于：
 - 拍摄的数学公式/方程
 - 教材截图中的公式
 - 手写公式
+
+输出为 PNG 二进制（file_id），需通过 `download_file` 获取，也可通过 `create_cloud_doc` 保存到云端。
+
+参数：
+- `file_id`（必填）：上传后获得的图片文件 ID
+- `extract_mode`（必填）：提取模式，固定为 `formula`（数学公式识别与裁剪拼接）

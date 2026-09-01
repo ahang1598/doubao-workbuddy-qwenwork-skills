@@ -1,8 +1,8 @@
 {
   "init": {
-    "darwin": "curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.sh | bash -s 1.0.4 || curl -fsSL https://cdn.jsdelivr.net/gh/uupt-mcp/uupt-open-cli@main/scripts/install.sh | bash -s 1.0.4",
-    "linux": "curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.sh | bash -s 1.0.4 || curl -fsSL https://cdn.jsdelivr.net/gh/uupt-mcp/uupt-open-cli@main/scripts/install.sh | bash -s 1.0.4",
-    "win32": "cmd.exe /c \"(%SystemRoot%\\System32\\curl.exe -fsSL --tlsv1.2 --connect-timeout 15 --max-time 45 -o %TEMP%\\uupt-install.ps1 https://ghfast.top/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.ps1 || %SystemRoot%\\System32\\curl.exe -fsSL --tlsv1.2 --connect-timeout 15 --max-time 45 -o %TEMP%\\uupt-install.ps1 https://cdn.jsdelivr.net/gh/uupt-mcp/uupt-open-cli@main/scripts/install.ps1 || %SystemRoot%\\System32\\curl.exe -fsSL --tlsv1.2 --connect-timeout 15 --max-time 45 -o %TEMP%\\uupt-install.ps1 https://ghproxy.net/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.ps1) && powershell -NoProfile -ExecutionPolicy Bypass -File %TEMP%\\uupt-install.ps1 1.0.4\""
+    "darwin": "curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.sh | bash -s 1.1.0 || curl -fsSL https://cdn.jsdelivr.net/gh/uupt-mcp/uupt-open-cli@main/scripts/install.sh | bash -s 1.1.0",
+    "linux": "curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.sh | bash -s 1.1.0 || curl -fsSL https://cdn.jsdelivr.net/gh/uupt-mcp/uupt-open-cli@main/scripts/install.sh | bash -s 1.1.0",
+    "win32": "cmd.exe /c \"(%SystemRoot%\\System32\\curl.exe -fsSL --tlsv1.2 --connect-timeout 15 --max-time 45 -o %TEMP%\\uupt-install.ps1 https://ghfast.top/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.ps1 || %SystemRoot%\\System32\\curl.exe -fsSL --tlsv1.2 --connect-timeout 15 --max-time 45 -o %TEMP%\\uupt-install.ps1 https://cdn.jsdelivr.net/gh/uupt-mcp/uupt-open-cli@main/scripts/install.ps1 || %SystemRoot%\\System32\\curl.exe -fsSL --tlsv1.2 --connect-timeout 15 --max-time 45 -o %TEMP%\\uupt-install.ps1 https://ghproxy.net/https://raw.githubusercontent.com/uupt-mcp/uupt-open-cli/main/scripts/install.ps1) && powershell -NoProfile -ExecutionPolicy Bypass -File %TEMP%\\uupt-install.ps1 1.1.0\""
   },
   "auth": {
     "darwin": "$HOME/.uupt-open-cli/uupt-open-cli auth login",
@@ -18,6 +18,14 @@
     "darwin": "$HOME/.uupt-open-cli/uupt-open-cli auth status",
     "linux": "$HOME/.uupt-open-cli/uupt-open-cli auth status",
     "win32": "%USERPROFILE%\\.uupt-open-cli\\uupt-open-cli.exe auth status"
+  },
+  "versionCheck": {
+    "command": {
+      "darwin": "$HOME/.uupt-open-cli/uupt-open-cli --version",
+      "linux": "$HOME/.uupt-open-cli/uupt-open-cli --version",
+      "win32": "%USERPROFILE%\\.uupt-open-cli\\uupt-open-cli.exe --version"
+    },
+    "minVersion": "1.1.0"
   },
   "statusMatch": "Logged in as",
   "authUrlDomain": "127.0.0.1",

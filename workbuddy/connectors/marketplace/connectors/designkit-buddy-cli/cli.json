@@ -14,7 +14,8 @@
       "linux": "designkit --version",
       "win32": "designkit.cmd --version"
     },
-    "minVersion": "1.0.21"
+    "minVersion": "1.0.24",
+    "versionPattern": "(\\d+\\.\\d+\\.\\d+)"
   },
   "auth": {
     "darwin": "designkit auth login",

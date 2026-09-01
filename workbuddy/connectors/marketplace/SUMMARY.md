@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/connectors/marketplace/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/connectors-marketplace`
-- 条目数：150
-- 文件数：2541
-- 最近同步：2026-08-31 18:00:02 +0800
+- 条目数：151
+- 文件数：2574
+- 最近同步：2026-09-01 18:00:01 +0800
 
 ## 场景导航（按用途）
 
@@ -29,12 +29,12 @@
 - **PandaData 金融数据** — 查询、整理和分析 A 股、期货、期权、港美股、基金、宏观经济及量化因子等金融数据，支持统计比较与趋势归纳。
 - **企查查** — 查询和核实企业工商登记信息。支持股东结构、实际控制人、受益所有人、高管团队、对外投资、财务数据、年报及上市信息查询，用自然语言快速完成企业身份核验与背景调查。
 - **上奇产业通-企业动态追踪** — 实时追踪企业全生命周期动态，覆盖投资设立、股权变动、创新平台、中标、知识产权、排名、迁移、资质认定、工商变更、上市、标准制定、招聘、拿地等维度，并提供企业实体匹配。 Version: 1.0.1.
-- **森浦qeubee金融数据** — 查询森浦固定收益市场数据：债券基础信息、中债估值、经纪商与CFETS行情、一级发行、发行人财务报表、中国宏观指标和交易日历。 Version: 1.0.0.
+- **森浦qeubee金融数据** — 查询森浦固定收益市场数据：债券基础信息、一级发行、票据行情、舆情信息、发行人财务报表、宏观指标和交易日历。 Version: 1.0.1.
 - **通达信** — 通过通达信 MCP 查询全球股票行情数据、条件选股、研究报告、公告资讯和宏观信息。支持个股基本面分析、同行业对比和智能选股筛查。
 - **同舟金融研究** — 连接公开行情、研报检索、行业图谱与同舟投研材料，为股市研究提供可复核证据。 Version: 0.21.2.
 - **Tushare** — Tushare 金融数据服务，支持 A股、指数、ETF/基金、财务、估值、资金流、公告新闻、板块概念与宏观数据等研究工作。 Version: 1.0.0.
 - **腾讯自选股** — 直连腾讯自选股，实时掌握毫秒级行情与资金动态，用自然语言分析自选数据、设置股价提醒、管理模拟交易，轻松搞定盯盘与投资决策。
-- **Wind 金融数据** — 通过自然语言查询股票、基金、指数、债券、公告、财经新闻和宏观经济数据。 Version: 1.1.0.
+- **Wind Alice 万得金融数据** — 全量开放万得（Wind）金融数据与工具能力，覆盖沪深港美等全球60多个国家地区的股票、基金、债券、商品、指数、经济数据与万得金融模型与工具集。让WorkBuddy变身金融分析专家，成为具备数据穿透、投研分析、风险决策等多维金融能力的专业智能体。 Version: 1.2.0.
 - **天创信用星图MCP** — 企业风险 AI 分析助手，用自然语言识别企业所属行业、分析企业间关联方关系（股权/实控人/担保/共同投资）。
 - **盈米MCP** — 查询基金与市场数据，完成基金研究、组合分析、财富规划及金融内容生成。
 
@@ -51,9 +51,10 @@
 - **腾讯云数据湖计算 DLC** — 通过 MCP 操作腾讯云数据湖计算（DLC）：执行 SQL / Spark SQL，浏览 Catalog、数据库、表与分区，管理 Spark 作业，查询任务与日志，诊断任务性能，查看引擎与用户权限。
 - **腾讯云数据仓库 TCHouse-C** — 腾讯云数据仓库 TCHouse-C 智能运维与分析助手，用自然语言完成集群健康诊断、慢 SQL 分析、规格选型推荐、表结构设计与 NL2SQL 查询。 Version: 1.0.0.
 - **微盟 WOS CLI** — 通过自然语言调用 woscli 操作微盟 WOS 业务能力：查询与管理订单、商品、客户资料、营销活动、数据看板等。
+- **迪安智能科研云** — 科研数据可视化：火山图、PCA、富集分析、生存分析，自动匹配发表级输出 Version: 1.0.10.
 
 ### 文档/表格/PPT
-- **扫描全能王** — 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、文档云端保存等。
+- **扫描全能王** — 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、发票/票据识别、云文档搜索、文档云端保存等。
 - **钉钉** — 通过命令行管理钉钉全产品能力：AI 表格、考勤、日历、群聊与机器人、通讯录、开放平台文档、DING 消息、钉钉文档、钉钉云盘、AI 听记、邮箱、OA 审批、日志、待办。
 - **飞书** — 通过命令行管理飞书/Lark 全产品能力：即时通讯、邮箱、日历、云文档、电子表格、多维表格（Base）、幻灯片、画板、知识库、云空间、妙记、视频会议、任务、审批、考勤、通讯录、OKR 等。
 - **金数据** — 用自然语言在金数据（jinshuju.net）创建表单、表格、问卷、考试、报名、收款等各类场景应用：一句话生成表单与表格、批量处理数据、自动统计分析，零门槛快速搭建。
@@ -63,7 +64,6 @@
 - **腾讯文档** — 创建、编辑和协作腾讯文档。用自然语言管理在线表格、文档和幻灯片，轻松完成内容查询、数据整理和团队协同。
 - **腾讯文档企业版** — 创建、编辑和协作腾讯文档。用自然语言管理在线表格、文档和幻灯片，轻松完成内容查询、数据整理和团队协同。
 - **TextIn xParse·智能文档解析** — 上传文件（PDF、图片、Word、Excel、PPT、扫描件等），即可将其解析为 Markdown 或结构化 JSON，可还原文档目录结构和复杂表格结构，适用于高精度高性能要求的文档处理OCR任务，每日免费1000页。
-- **TextIn xParse·智能文档解析** — 通过命令行将文件（PDF、图片、Word、Excel、PPT、扫描件等）解析为 Markdown 或结构化 JSON，可还原文档目录结构和复杂表格结构，适用于高精度高性能要求的文档处理任务，每日免费1000页。
 
 ### 设计可视化
 - **Alpha派投研助手** — Alpha派·Lite版是讯兔科技为金融工作者、投资者量身打造的AI助理，掌握深度行业、公司研究分析与大类资产、市场策略专业解读能力，并具备专业的写报告、画PPT、做图表、写纪要等金融白领必备技能。 Version: 1.0.0.
@@ -71,16 +71,16 @@
 - **Canva可画** — 无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容
 - **Canva可画** — 无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容
 - **创客贴 AI 创作** — 一键调用创客贴强大的AI在线设计能力，一句话生成专业营销设计，覆盖海报、品牌logo、封面配图、小红书图文，电商等设计场景，支持图文分层可编辑，点选改字，让设计小白轻松做图做视频！ Version: 0.1.0.
-- **美图设计室 AI设计 CLI** — 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。
+- **美图设计室 AI设计 CLI** — 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 Version: 1.0.2.
 - **同花顺法律AI助手** — 查询中国法律法规、司法案例、裁判文书及互联网法律实务资讯，支持法条检索、类案检索、深度法律研究、法律文书起草与诉讼可视化。 Version: 1.0.0.
 - **Flova** — Flova AI 视频与图片内容创作：支持剧本、短片、短剧、漫剧、电影、广告、商品 TVC 与视觉设计，覆盖文生图、文生视频、图生视频、素材生成、分镜、修改、审阅和导出。 Version: 1.1.1.
 - **九数云BI** — 上传 Excel 或 CSV 表格，一键生成原生的可视化数据分析报告、仪表板、图表。
-- **Kling AI** — 一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电...
-- **Kling AI** — 一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电...
+- **Kling AI** — 一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、...
 - **MasterGo 莫高设计** — 连接 MasterGo 画布，让 AI 进行设计、修改、同步和获取 D2C 代码。
 - **Picset AI 电商图片** — Picset AI 电商图片生成：面向电商卖家、设计师和美工，根据商品图一键生成主图、详情图、套图、Listing 图和 A+ 商品图，支持卖点图、场景图、功能图等上架素材。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，可自定义比例、分辨率和数量，支持方案规划、积分报价、生成跟踪和按编号局部修改。
 - **纷享销客CRM** — 用自然语言查询客户、推进商机、写跟进记录、处理审批、建图表等，轻松搞定销售全链路工作。
 - **腾讯云数据仓库 TCHouse-C** — 腾讯云数据仓库 TCHouse-C 智能运维与分析助手，用自然语言完成集群健康诊断、慢 SQL 分析、规格选型推荐、表结构设计与 NL2SQL 查询。 Version: 1.0.0.
+- **迪安智能科研云** — 科研数据可视化：火山图、PCA、富集分析、生存分析，自动匹配发表级输出 Version: 1.0.10.
 
 ### 研究/调研
 - **AgentEarth** — AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。 Version: 1.0.0.
@@ -107,17 +107,16 @@
 - **Canva可画** — 无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容
 - **创客贴 AI 创作** — 一键调用创客贴强大的AI在线设计能力，一句话生成专业营销设计，覆盖海报、品牌logo、封面配图、小红书图文，电商等设计场景，支持图文分层可编辑，点选改字，让设计小白轻松做图做视频！ Version: 0.1.0.
 - **出海匠** — 基于实时 TikTok Shop 数据完成选品、竞品分析、达人筛选与带货内容创作，并管理社媒账号、发布内容、运营评论和私信。
-- **美图设计室 AI设计 CLI** — 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。
+- **美图设计室 AI设计 CLI** — 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 Version: 1.0.2.
 - **夺冠蜂巢** — 覆盖内容大脑、品牌画像、热点选题、口播与图文文案、配图、播客、配音、视频封装和多账号运营的一站式 AI 自媒体内容生产平台。 Version: 2.0.0.
 - **帆软增长谋士** — 企业洞察与增长分析：查询企业经营风险、舆情、招投标、专利、资质、政策等公开商业数据，并调用已授权的 MOSS 增长谋士 Agent 生成分析与报告。 Version: 1.1.0.
 - **Flova** — Flova AI 视频与图片内容创作：支持剧本、短片、短剧、漫剧、电影、广告、商品 TVC 与视觉设计，覆盖文生图、文生视频、图生视频、素材生成、分镜、修改、审阅和导出。 Version: 1.1.1.
 - **腾讯公益机构服务平台** — 腾讯公益机构服务平台连接器：授权后可读取您机构的基本信息与资质证件、公益项目详情、筹款与拨付数据、财务披露记录及平台待办事项，用于为您提供机构运营分析与项目管理辅助服务。 Version: 1.0.0.
 - **电商内容专家** — 通过 OAuth 连接电商内容专家，创建智能精修、商品主图、商品详情页、爆款图复制、KOC 种草、图文带货、视频生成和爆款视频复制任务。 Version: 1.0.0.
 - **金手指·AI广告投放** — WorkBuddy 里的腾讯广告投放执行台：查数据、写需求单、生成投放深链、轻量调优。
-- **Kling AI** — 一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电...
-- **Kling AI** — 一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电...
+- **Kling AI** — 一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、...
 - **领星ERP** — 使用自然语言查询和管理领星ERP中的店铺、库存、Listing、销售、利润、广告和运营数据。
-- **零一运营** — 零一运营：视频号拆解、热点选题、文案去 AI 味、内容预检。连接后用自然语言打开对应 Skill 的填写表单。 Version: 1.2.0.
+- **零一运营** — 零一运营独家知识库：7大行业的视频号/私域的爆款内容案例库 + 零一300万份运营实战文档萃取。 Version: 1.4.0.
 - **Linkfox 选品** — 跨境电商选品一站式 AI 工具集，整合 竞品查询/ABA/Keepa/Sorftime/Jungle Scout/卖家精灵/SIF/极目/商业洞察/合规检测等 多项子能力，覆盖选品、关键词、竞品、评论、利基与趋势、合规检测。
 - **Picset AI 电商图片** — Picset AI 电商图片生成：面向电商卖家、设计师和美工，根据商品图一键生成主图、详情图、套图、Listing 图和 A+ 商品图，支持卖点图、场景图、功能图等上架素材。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，可自定义比例、分辨率和数量，支持方案规划、积分报价、生成跟踪和按编号局部修改。
 - **Picset AI 视频创作** — Picset AI 视频创作连接器支持在 WorkBuddy 中通过密钥调用电商商品视频生成、爆款视频复刻和模特图生成能力，完成素材上传登记、脚本规划、视频脚本生成、积分预估、确认提交、异步生成和任务状态查询。MVP 支持 Seedance 2.0、Seedance 2.0 Fast、Seedance 2.0 Mini 三个模型，默认使用 Seedance 2.0。
@@ -126,6 +125,7 @@
 - **Tec-Do 2.0 广告与增长情报** — 面向出海广告投放和增长团队的 AI 能力集合。
 - **腾讯营销投放** — 腾讯营销投放 Skill，为大模型赋予广告投放管理能力：支持广告账户授权、广告/智投项目的创建与更新、创意管理、广告数据查询与分析、推广内容资产管理，以及操作日志查询等完整的广告投放全链路操作。
 - **TikTok for Business** — TikTok for Business MCP Server 是基于模型上下文协议（MCP）搭建的标准化桥梁，助力开发者与广告主将 AI 智能代理直接对接 TikTok 广告平台。它将广告核心能力⸺广告活动管理、效果报表、受众配置以及创意运营，封装为一套稳定、可投入生产环境使用的工具。AI智能代理仅通过简洁结构化指令，即可完成 TikTok 广告的管理、优化与数据依托这套工具报表查询工作。
+- **Wind Alice 万得金融数据** — 全量开放万得（Wind）金融数据与工具能力，覆盖沪深港美等全球60多个国家地区的股票、基金、债券、商品、指数、经济数据与万得金融模型与工具集。让WorkBuddy变身金融分析专家，成为具备数据穿透、投研分析、风险决策等多维金融能力的专业智能体。 Version: 1.2.0.
 - **微盟 WOS CLI** — 通过自然语言调用 woscli 操作微盟 WOS 业务能力：查询与管理订单、商品、客户资料、营销活动、数据看板等。
 
 ### 协作/办公
@@ -142,6 +142,7 @@
 - **轻流** — 轻流无代码平台连接器。通过自然语言创建应用、管理表单数据、处理审批流程、查询和导出数据，一站式连接轻流全部能力。
 - **纷享销客CRM** — 用自然语言查询客户、推进商机、写跟进记录、处理审批、建图表等，轻松搞定销售全链路工作。
 - **腾讯会议** — 通过命令行创建、查询和管理腾讯会议。支持快速发起会议、查看日程安排、管理参会人员。
+- **今日水印相机** — 用自然语言查询和导出今日水印相机的团队照片，通过对话辅助完成照片归档、考勤核对、台账整理和照片统计。
 - **企业微信** — 企业微信官方 CLI 套件，覆盖消息、邮件、文档、待办、日程、会议、微盘、通讯录等业务功能。支持机器人主动通知、新建与读取文档、文档搜索、新建管理日程、预约与获取会议信息、新建跟进待办、上传与获取微盘文件、邮件读取与发送等能力
 - **微盛企微管家SCRM** — 查询或管理企业微信中的客户信息、客户标签、客户群、营销素材、活码、群发、跟进记录、联系人、商机、汇报、抽奖、客户日程、聊天记录等业务能力。
 - **中兴新云AI智报** — 财务云 AI 报销助手：用自然语言完成报销申请、发票查询识别、报销单查询与费用审批等操作。
@@ -149,6 +150,7 @@
 ### 法务/合规
 - **AgentEarth** — AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。 Version: 1.0.0.
 - **财汇金融与风险数据** — 财汇 MCP 提供专业金融与风险数据服务，覆盖境内企业工商、上市公司、债券、基金、金融机构、宏观与区域经济、监管与司法风险、新闻公告及法规等多维度数据，支撑金融数据查询、风险评估、分析研究、投资交易、舆情监测、投行尽调、信贷管理、合规审查等业务场景。 Version: 1.0.0.
+- **扫描全能王** — 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、发票/票据识别、云文档搜索、文档云端保存等。
 - **法大大睿契** — 提供法律法规检索、类案检索、企业信息查询与合同审查能力，帮助用户快速查找相关法条、相似案例、核验企业信息并完成合同风险审查。 Version: 1.0.1.
 - **帆软增长谋士** — 企业洞察与增长分析：查询企业经营风险、舆情、招投标、专利、资质、政策等公开商业数据，并调用已授权的 MOSS 增长谋士 Agent 生成分析与报告。 Version: 1.1.0.
 - **同花顺法律AI助手** — 查询中国法律法规、司法案例、裁判文书及互联网法律实务资讯，支持法条检索、类案检索、深度法律研究、法律文书起草与诉讼可视化。 Version: 1.0.0.
@@ -184,10 +186,11 @@
 
 ### 通用工具/平台
 - **AgentEarth** — AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。 Version: 1.0.0.
+- **思研平台** — 用自然语言快速创建 AI 访谈项目：提供标题、背景、大纲（及可选开场白），即可在思研平台生成访谈项目并返回可直接分享的访谈链接。
 - **腾讯健康全周期管理平台** — 全周期管理平台机构端的数据查询MCP连接器，覆盖医疗数据、管理任务、对话沟通等业务域的查询能力，所有数据仅在对话内分析、不落盘不导出。 Version: 2.0.0.
 - **北森AI · HR专家** — 依托北森HR SaaS平台，把审批、招聘进展、员工档案、绩效履历、考勤假期、组织架构和企业制度等近百个人力场景装进Workbuddy，一句话查询人力数据、办理HR业务。 Version: 1.0.0.
 - **BioBuddy 生物医药研究助手** — BioBuddy 生物医药智能研究平台：一次连接 Gateway，即可发现并挂载已获授权的分子设计、转化研究、靶点发现与数据智能 MCP 工具。 Version: 1.0.3.
-- **扫描全能王** — 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、文档云端保存等。
+- **扫描全能王** — 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、发票/票据识别、云文档搜索、文档云端保存等。
 - **水滴征信** — 通过水滴征信企业信息服务平台查询工商、知识产权、舆情、财务、土地、企业关联关系、关联方等企业多维信息，并支持企业二要素/三要素核验。
 - **CNB** — 通过自然语言管理 CNB 平台：仓库、Issue、PR、流水线、制品库等操作。
 - **DCS Cloud** — 引导 dcs CLI（下载、自动更新、PAT 登录），之后直接执行 CLI 操作 DCS Cloud：项目、任务、工作流、计费、数据文件。用户需在云平台个人中心创建个人访问令牌(PAT)并粘贴到连接器。 Version: 2.0.0.
@@ -201,6 +204,7 @@
 - **轻流** — 轻流无代码平台连接器。通过自然语言创建应用、管理表单数据、处理审批流程、查询和导出数据，一站式连接轻流全部能力。
 - **上奇产业通-企业动态追踪** — 实时追踪企业全生命周期动态，覆盖投资设立、股权变动、创新平台、中标、知识产权、排名、迁移、资质认定、工商变更、上市、标准制定、招聘、拿地等维度，并提供企业实体匹配。 Version: 1.0.1.
 - **TikTok for Business** — TikTok for Business MCP Server 是基于模型上下文协议（MCP）搭建的标准化桥梁，助力开发者与广告主将 AI 智能代理直接对接 TikTok 广告平台。它将广告核心能力⸺广告活动管理、效果报表、受众配置以及创意运营，封装为一套稳定、可投入生产环境使用的工具。AI智能代理仅通过简洁结构化指令，即可完成 TikTok 广告的管理、优化与数据依托这套工具报表查询工作。
+- **Wind Alice 万得金融数据** — 全量开放万得（Wind）金融数据与工具能力，覆盖沪深港美等全球60多个国家地区的股票、基金、债券、商品、指数、经济数据与万得金融模型与工具集。让WorkBuddy变身金融分析专家，成为具备数据穿透、投研分析、风险决策等多维金融能力的专业智能体。 Version: 1.2.0.
 - **华宇元典法律数据** — 华宇元典法律数据为智能体提供法律法规、案例文书、企业信息 MCP 工具能力。
 - **云客AI工作手机** — 提供真实手机的数据读取与设备控制能力。AI 自动采集通话与录音，沉淀全量沟通数据驱动销售分析；同时允许 AI 直接操控手机拨打电话、发短信、操作 APP，把实体手机变成 Agent 的硬件执行单元。
 
@@ -239,7 +243,7 @@
 - **微云** — 查看、下载、删除微云文件，并且提供上传文件到微云、生成分享链接能力，帮你管理微云文件
 - **畅捷通T+** — 畅捷通 T+Cloud 自然语言操作入口：查询/管理销售订单、采购订单、库存单据、生产工单、财务凭证、报表及基础档案。 Version: 1.0.0.
 - **天眼查** — 通过天眼查 MCP 查询多维度企业数据。支持工商登记、股东结构、司法风险、知识产权、董监高、经营数据等 160+ 项企业数据能力，用自然语言完成企业尽调与商业情报分析。
-- **UU跑腿** — 通过自然语言使用 UU跑腿：同城配送与帮帮服务，支持询价、下单、查单、取消和跑男追踪 Version: 1.0.3.
+- **UU跑腿** — 通过自然语言使用 UU跑腿：同城配送与帮帮服务，支持询价、下单、查单、取消、跑男追踪和领取优惠券 Version: 1.1.0.
 - **百智WiseNote** — 通过用户授权读取百智 WiseNote 会议列表、会议详情摘要和会议转写内容。
 - **威科先行** — 威科先行依托全面、准确、及时更新的法规、案例等法律数据研发的MCP服务，支持语义检索、关键词检索等场景。
 - **微脉体重管理** — 生成个性化成人体重管理方案，渲染为可打卡的独立 HTML 页面：分阶段目标、饮食运动建议、餐食照片热量分析、本地体重记录。 Version: 1.0.1.
@@ -257,6 +261,7 @@
 | AgentEarth | `workbuddy/connectors/marketplace/connectors/agent-earth` | 金融研究 | AgentEarth AgentEarth | 3 | AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。 Version: 1.0.0. |
 | AI-HIVE | `workbuddy/connectors/marketplace/connectors/ai-hive` | 其他 | AI-HIVE AI-HIVE | 29 | 连接全球 100+ 顶尖 AI 模型（Seedance 2.5、H3 (MiniMax)、Happyhorse、GPT-image、Nano-Banana、Deepseek、Kimi 等），一键搞定文本、图像、视频创作。 |
 | 智慧记AI进销存 | `workbuddy/connectors/marketplace/connectors/ailit` | 营销/内容运营 | 智慧记AI进销存 Zhihuiji AI ERP | 12 | 结合您的进销存业务数据，可实现成批量对账、销售开单和批量创建商品，覆盖销售、采购、库存、收银、对账及经营分析等多种业务场景。 Version: 0.8.1. |
+| 思研平台 | `workbuddy/connectors/marketplace/connectors/aimoderator` | 通用工具/平台 | 思研平台 Aimoderator | 2 | 用自然语言快速创建 AI 访谈项目：提供标题、背景、大纲（及可选开场白），即可在思研平台生成访谈项目并返回可直接分享的访谈链接。 |
 | Alpha派投研助手 | `workbuddy/connectors/marketplace/connectors/alphapai-lite-mcp` | 金融研究 | Alpha派投研助手 AlphaPai Investment Research Assistant | 10 | Alpha派·Lite版是讯兔科技为金融工作者、投资者量身打造的AI助理，掌握深度行业、公司研究分析与大类资产、市场策略专业解读能力，并具备专业的写报告、画PPT、做图表、写纪要等金融白领必备技能。 Version: 1.0.0. |
 | 腾讯健康全周期管理平台 | `workbuddy/connectors/marketplace/connectors/archive-hospital-mcp` | 通用工具/平台 | 腾讯健康全周期管理平台 Tencent Health Full-Cycle Care Platform | 2 | 全周期管理平台机构端的数据查询MCP连接器，覆盖医疗数据、管理任务、对话沟通等业务域的查询能力，所有数据仅在对话内分析、不落盘不导出。 Version: 2.0.0. |
 | 向日葵远程控制 | `workbuddy/connectors/marketplace/connectors/awesun` | 其他 | 向日葵远程控制 AweSun | 5 | 通过命令行管理远端设备，实时监测在线状态、秒级发起远程控制、快速传输文件及远程截屏。零部署、免更新，轻松实现智能批量运维。 |
@@ -267,7 +272,7 @@
 | BioBuddy 生物医药研究助手 | `workbuddy/connectors/marketplace/connectors/biobuddy` | 设计可视化 | BioBuddy 生物医药研究助手 BioBuddy Biomedical Research Assistant | 5 | BioBuddy 生物医药智能研究平台：一次连接 Gateway，即可发现并挂载已获授权的分子设计、转化研究、靶点发现与数据智能 MCP 工具。 Version: 1.0.3. |
 | Bugly 质量概览 | `workbuddy/connectors/marketplace/connectors/bugly-token` | 其他 | Bugly 质量概览 Bugly Quality Overview | 3 | 查看产品的质量概览 包括崩溃率 anr率 foom（oom）率 启动耗时 |
 | 财汇金融与风险数据 | `workbuddy/connectors/marketplace/connectors/caihui-mcp` | 金融研究 | 财汇金融与风险数据 FinChina MCP | 2 | 财汇 MCP 提供专业金融与风险数据服务，覆盖境内企业工商、上市公司、债券、基金、金融机构、宏观与区域经济、监管与司法风险、新闻公告及法规等多维度数据，支撑金融数据查询、风险评估、分析研究、投资交易、舆情监测、投行尽调、信贷管理、合规审查等业务场景。 Version: 1.0.0. |
-| 扫描全能王 | `workbuddy/connectors/marketplace/connectors/camscanner-mcp` | 文档/表格/PPT | 扫描全能王 CamScanner | 6 | 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、文档云端保存等。 |
+| 扫描全能王 | `workbuddy/connectors/marketplace/connectors/camscanner-mcp` | 文档/表格/PPT | 扫描全能王 CamScanner | 6 | 智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、发票/票据识别、云文档搜索、文档云端保存等。 |
 | Canva可画 | `workbuddy/connectors/marketplace/connectors/canva` | 设计可视化 | Canva可画 Canva | 2 | 无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容 |
 | Canva可画 | `workbuddy/connectors/marketplace/connectors/canva-ai` | 设计可视化 | Canva可画 Canva | 2 | 无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容 |
 | 创客贴 AI 创作 | `workbuddy/connectors/marketplace/connectors/chuangkit` | 设计可视化 | 创客贴 AI 创作 Chuangkit | 2 | 一键调用创客贴强大的AI在线设计能力，一句话生成专业营销设计，覆盖海报、品牌logo、封面配图、小红书图文，电商等设计场景，支持图文分层可编辑，点选改字，让设计小白轻松做图做视频！ Version: 0.1.0. |
@@ -279,12 +284,12 @@
 | DataBuddy | `workbuddy/connectors/marketplace/connectors/databuddy` | 数据分析 | DataBuddy DataBuddy | 17 | 连接 DataBuddy 数据知识库，让 AI 基于企业真实数据作答——问数、报告、异动归因、预测、相关性等分析更可信，并可生成实时更新的仪表盘。 |
 | 通联数据 | `workbuddy/connectors/marketplace/connectors/datayes-data` | 金融研究 | 通联数据 DataYes | 3 | 用自然语言查询金融数据：A股/港股、基金、债券、指数、期货期权、因子、实时行情、宏观、公告与政策法规。 |
 | DCS Cloud | `workbuddy/connectors/marketplace/connectors/dcs-cloud` | 通用工具/平台 | DCS Cloud DCS Cloud | 6 | 引导 dcs CLI（下载、自动更新、PAT 登录），之后直接执行 CLI 操作 DCS Cloud：项目、任务、工作流、计费、数据文件。用户需在云平台个人中心创建个人访问令牌(PAT)并粘贴到连接器。 Version: 2.0.0. |
-| 美图设计室 AI设计 CLI | `workbuddy/connectors/marketplace/connectors/designkit-buddy-cli` | 设计可视化 | 美图设计室 AI设计 CLI DesignKit Buddy CLI | 2 | 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 |
+| 美图设计室 AI设计 CLI | `workbuddy/connectors/marketplace/connectors/designkit-buddy-cli` | 设计可视化 | 美图设计室 AI设计 CLI DesignKit Buddy CLI | 2 | 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 Version: 1.0.2. |
 | 钉钉 | `workbuddy/connectors/marketplace/connectors/dingtalk` | 文档/表格/PPT | 钉钉 DingTalk | 170 | 通过命令行管理钉钉全产品能力：AI 表格、考勤、日历、群聊与机器人、通讯录、开放平台文档、DING 消息、钉钉文档、钉钉云盘、AI 听记、邮箱、OA 审批、日志、待办。 |
 | 深知可信工作台 | `workbuddy/connectors/marketplace/connectors/dknowc-mcp` | 研究/调研 | 深知可信工作台 DKnow Trusted Workbench | 2 | 深知可信工作台面向政策、法律、标准和公共服务场景，提供可信问答、权威检索、深度研究和材料整理能力。它可以帮助用户查询政策原文、办事条件、申报材料、补贴资质、法律法规和行业标准，梳理多地区、多时间范围的信息，并基于可追溯的权威来源形成清晰、可核验的结果。 |
 | 夺冠蜂巢 | `workbuddy/connectors/marketplace/connectors/duoguan-fengchao` | 营销/内容运营 | 夺冠蜂巢 Duoguan Fengchao | 2 | 覆盖内容大脑、品牌画像、热点选题、口播与图文文案、配图、播客、配音、视频封装和多账号运营的一站式 AI 自媒体内容生产平台。 Version: 2.0.0. |
 | 大智慧MCP | `workbuddy/connectors/marketplace/connectors/dzh-mcp` | 金融研究 | 大智慧MCP DZH MCP | 2 | 提供A股实时行情/舆情/资金面/基本面/技术面多维数据查询能力，辅助投资决策。 |
-| EdgeOne Makers | `workbuddy/connectors/marketplace/connectors/edgeone-pages` | 其他 | EdgeOne Makers EdgeOne Makers | 2 | 将项目部署到 EdgeOne Makers 并返回线上访问地址，支持全栈、云函数、AI Agent 等开发场景。 |
+| EdgeOne Makers | `workbuddy/connectors/marketplace/connectors/edgeone-pages` | 其他 | EdgeOne Makers EdgeOne Makers | 49 | 将项目部署到 EdgeOne Makers 并返回线上访问地址，支持全栈、云函数、AI Agent 等开发场景。 |
 | 易方达基金 | `workbuddy/connectors/marketplace/connectors/efunds` | 金融研究 | 易方达基金 E Fund | 2 | 接入易方达基金MCP服务，一句话查透基金画像——业绩、风险收益、持仓结构等核心指标一目了然，还能随时调阅易方达发布的投研观点、产品解读与市场洞察，助力您高效进行投资决策。 Version: 1.0.0. |
 | 弹性MapReduce | `workbuddy/connectors/marketplace/connectors/emr-query` | 其他 | 弹性MapReduce Elastic MapReduce | 52 | 通过CLI实现弹性 MapReduce 集群、节点、服务、作业、监控、YARN 调度、自动扩缩容、用户与配置等查询。 |
 | EzyJoin智慧会议 | `workbuddy/connectors/marketplace/connectors/ezjoin-meeting` | 协作/办公 | EzyJoin智慧会议 EzyJoin Smart Meeting | 2 | 用自然语言管理 EzyJoin 智慧会议：预约会议室、创建/取消会议、查询会议日程与 AI 纪要。 |
@@ -316,14 +321,13 @@
 | 金数据 | `workbuddy/connectors/marketplace/connectors/jinshuju` | 文档/表格/PPT | 金数据 Jinshuju | 2 | 用自然语言在金数据（jinshuju.net）创建表单、表格、问卷、考试、报名、收款等各类场景应用：一句话生成表单与表格、批量处理数据、自动统计分析，零门槛快速搭建。 |
 | 九数云BI | `workbuddy/connectors/marketplace/connectors/jiushuyun` | 数据分析 | 九数云BI Jiushuyun BI | 1 | 上传 Excel 或 CSV 表格，一键生成原生的可视化数据分析报告、仪表板、图表。 |
 | 金山文档 | `workbuddy/connectors/marketplace/connectors/kdocs` | 文档/表格/PPT | 金山文档 Kingsoft Docs | 84 | 创建、搜索和管理金山文档（WPS 云文档）。支持新建多种文档类型（Word/Excel/PDF/PPT/智能表格/多维表格/智能文档）、读取与搜索文档内容、编辑更新、分享、移动重命名整理、标签收藏管理、知识库空间操作、网页剪藏，以及接龙转表格、AI PPT 生成等。 |
-| Kling AI | `workbuddy/connectors/marketplace/connectors/kling-ai-plugin` | 设计可视化 | Kling AI Kling AI | 13 | 一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电... |
-| Kling AI | `workbuddy/connectors/marketplace/connectors/kling-ai-plugin-ai` | 设计可视化 | Kling AI Kling AI | 13 | 一句话，让灵感从想法变成大片。可灵（Kling / Kling AI / 可灵AI）是面向创作者、设计师、视频制作人、电商卖家、广告营销和品牌团队的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、参考图创作、单镜头与多分镜视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、商品详情图、广告素材、产品展示视频、营销短片、电... |
+| Kling AI | `workbuddy/connectors/marketplace/connectors/kling-ai-plugin` | 设计可视化 | Kling AI Kling AI | 13 | 一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、... |
 | 同花顺快查企业数据 | `workbuddy/connectors/marketplace/connectors/kuaicha-search` | 金融研究 | 同花顺快查企业数据 Kuaicha Enterprise Search | 3 | 查询中国企业工商、股权投资、经营司法风险、知识产权、招投标及新闻舆情数据。 |
 | LemonClaw | `workbuddy/connectors/marketplace/connectors/lemonclaw` | 法务/合规 | LemonClaw LemonClaw | 2 | 连接柠檬云财务、进销存、业财和发票系统，支持查账、开票、业务查询、经营分析等企业经营场景。 |
 | 乐享知识库 | `workbuddy/connectors/marketplace/connectors/lexiang` | 其他 | 乐享知识库 Tencent Lexiang | 28 | 搜索、创建和管理乐享知识库中的文档。支持导入 Markdown、按标签整理内容、追踪团队文档的更新动态。 |
 | Linear | `workbuddy/connectors/marketplace/connectors/linear-mcp` | 代码开发 | Linear Linear | 1 | 管理 Linear 中的 Issues、项目、文档和发布。支持创建和更新 Issue 并指派负责人与标签，评论与讨论串回复，创建项目和里程碑及进度报告，管理文档和附件，查看 Sprint 周期与团队状态，搜索和 Code Review PR 变更。 |
 | 领星ERP | `workbuddy/connectors/marketplace/connectors/lingxing-mcp` | 营销/内容运营 | 领星ERP LingXing ERP | 3 | 使用自然语言查询和管理领星ERP中的店铺、库存、Listing、销售、利润、广告和运营数据。 |
-| 零一运营 | `workbuddy/connectors/marketplace/connectors/lingyi-mcp` | 营销/内容运营 | 零一运营 Lingyi Ops | 2 | 零一运营：视频号拆解、热点选题、文案去 AI 味、内容预检。连接后用自然语言打开对应 Skill 的填写表单。 Version: 1.2.0. |
+| 零一运营 | `workbuddy/connectors/marketplace/connectors/lingyi-mcp` | 营销/内容运营 | 零一运营 Lingyi Ops | 2 | 零一运营独家知识库：7大行业的视频号/私域的爆款内容案例库 + 零一300万份运营实战文档萃取。 Version: 1.4.0. |
 | Linkfox 选品 | `workbuddy/connectors/marketplace/connectors/linkfox-product-selection` | 营销/内容运营 | Linkfox 选品 Linkfox Product Selection | 141 | 跨境电商选品一站式 AI 工具集，整合 竞品查询/ABA/Keepa/Sorftime/Jungle Scout/卖家精灵/SIF/极目/商业洞察/合规检测等 多项子能力，覆盖选品、关键词、竞品、评论、利基与趋势、合规检测。 |
 | Lovrabet CLI | `workbuddy/connectors/marketplace/connectors/lovrabet-cli` | 其他 | Lovrabet CLI Lovrabet CLI | 32 | 连接企业系统、数据和流程，让AI完成工作，交付结果 Version: 2.1.23. |
 | MasterGo 莫高设计 | `workbuddy/connectors/marketplace/connectors/mastergo-vibe-mcp` | 设计可视化 | MasterGo 莫高设计 MasterGo | 2 | 连接 MasterGo 画布，让 AI 进行设计、修改、同步和获取 D2C 代码。 |
@@ -357,7 +361,7 @@
 | 用友智能服务（AI BaaS） | `workbuddy/connectors/marketplace/connectors/shanglv-mcp-gateway` | 营销/内容运营 | 用友智能服务（AI BaaS） Yonyou AI BaaS | 2 | 通过用友银企联、税企联、商旅云等财务服务产品，为企业提供财务税务与银行资金数据服务，并提供企业商旅运营服务和行程服务。用自然语言完成企业的资金、税务、商旅的全面运营管理。 |
 | 纷享销客CRM | `workbuddy/connectors/marketplace/connectors/sharecrm` | 设计可视化 | 纷享销客CRM ShareCRM | 21 | 用自然语言查询客户、推进商机、写跟进记录、处理审批、建图表等，轻松搞定销售全链路工作。 |
 | 上奇产业通-企业动态追踪 | `workbuddy/connectors/marketplace/connectors/sq-company-dynamic` | 金融研究 | 上奇产业通-企业动态追踪 Company Dynamic Tracking | 3 | 实时追踪企业全生命周期动态，覆盖投资设立、股权变动、创新平台、中标、知识产权、排名、迁移、资质认定、工商变更、上市、标准制定、招聘、拿地等维度，并提供企业实体匹配。 Version: 1.0.1. |
-| 森浦qeubee金融数据 | `workbuddy/connectors/marketplace/connectors/sumscope-data` | 金融研究 | 森浦qeubee金融数据 Sumscope qeubee Data | 3 | 查询森浦固定收益市场数据：债券基础信息、中债估值、经纪商与CFETS行情、一级发行、发行人财务报表、中国宏观指标和交易日历。 Version: 1.0.0. |
+| 森浦qeubee金融数据 | `workbuddy/connectors/marketplace/connectors/sumscope-data` | 金融研究 | 森浦qeubee金融数据 Sumscope qeubee Data | 3 | 查询森浦固定收益市场数据：债券基础信息、一级发行、票据行情、舆情信息、发行人财务报表、宏观指标和交易日历。 Version: 1.0.1. |
 | 腾讯数字文化智能体 | `workbuddy/connectors/marketplace/connectors/tanyuan-assistant` | 研究/调研 | 腾讯数字文化智能体 TDC - Tencent Digital Culture | 2 | 基于文化可信知识库的智能体服务，提供世界遗产、博物馆藏品、甲骨文字形释义、学术文献等可溯源检索与创作辅助。覆盖申遗文本、考古数据、陶瓷基因库、纹样库等多模态知识，支持研究考据、策展辅助、文化科普与内容创作。 |
 | TAPD | `workbuddy/connectors/marketplace/connectors/tapd` | 其他 | TAPD TAPD | 2 | 管理需求、缺陷、任务和迭代。查询项目进度、拆分需求、流转状态、填写工时，覆盖需求到发布的研发全生命周期。 |
 | 同程程心 | `workbuddy/connectors/marketplace/connectors/tc-chengxin` | 其他 | 同程程心 Tongcheng Chengxin | 35 | 同程程心可通过自然语言查询机票、火车票、酒店、景点、度假产品等旅行资源，支持火空联程、智能交通推荐、特价机票搜索、景区门票预订，以及完整行程规划，显著提升出行效率。 |
@@ -376,18 +380,18 @@
 | 微云 | `workbuddy/connectors/marketplace/connectors/tencent-weiyun` | 其他 | 微云 Weiyun | 10 | 查看、下载、删除微云文件，并且提供上传文件到微云、生成分享链接能力，帮你管理微云文件 |
 | 腾讯营销投放 | `workbuddy/connectors/marketplace/connectors/tencentads` | 营销/内容运营 | 腾讯营销投放 Tencent Ads Delivery | 154 | 腾讯营销投放 Skill，为大模型赋予广告投放管理能力：支持广告账户授权、广告/智投项目的创建与更新、创意管理、广告数据查询与分析、推广内容资产管理，以及操作日志查询等完整的广告投放全链路操作。 |
 | TextIn xParse·智能文档解析 | `workbuddy/connectors/marketplace/connectors/textin-xparse` | 文档/表格/PPT | TextIn xParse·智能文档解析 TextIn xParse · Intelligent Document Parsing | 11 | 上传文件（PDF、图片、Word、Excel、PPT、扫描件等），即可将其解析为 Markdown 或结构化 JSON，可还原文档目录结构和复杂表格结构，适用于高精度高性能要求的文档处理OCR任务，每日免费1000页。 |
-| TextIn xParse·智能文档解析 | `workbuddy/connectors/marketplace/connectors/textin-xparse-ai` | 文档/表格/PPT | TextIn xParse·智能文档解析 TextIn xParse · Intelligent Document Parsing | 8 | 通过命令行将文件（PDF、图片、Word、Excel、PPT、扫描件等）解析为 Markdown 或结构化 JSON，可还原文档目录结构和复杂表格结构，适用于高精度高性能要求的文档处理任务，每日免费1000页。 |
 | TikTok for Business | `workbuddy/connectors/marketplace/connectors/tiktok` | 营销/内容运营 | TikTok for Business TikTok for Business | 1 | TikTok for Business MCP Server 是基于模型上下文协议（MCP）搭建的标准化桥梁，助力开发者与广告主将 AI 智能代理直接对接 TikTok 广告平台。它将广告核心能力⸺广告活动管理、效果报表、受众配置以及创意运营，封装为一套稳定、可投入生产环境使用的工具。AI智能代理仅通过简洁结构化指令，即可完成 TikTok 广告的管理、优化与数据依托这套工具报表查询工作。 |
 | 腾讯会议 | `workbuddy/connectors/marketplace/connectors/tmeet` | 协作/办公 | 腾讯会议 Tencent Meeting | 9 | 通过命令行创建、查询和管理腾讯会议。支持快速发起会议、查看日程安排、管理参会人员。 |
+| 今日水印相机 | `workbuddy/connectors/marketplace/connectors/today-watermark-camera` | 协作/办公 | 今日水印相机 Today Watermark Camera | 3 | 用自然语言查询和导出今日水印相机的团队照片，通过对话辅助完成照片归档、考勤核对、台账整理和照片统计。 |
 | 同舟金融研究 | `workbuddy/connectors/marketplace/connectors/tongzhou-fin-research` | 金融研究 | 同舟金融研究 Tongzhou Financial Research | 2 | 连接公开行情、研报检索、行业图谱与同舟投研材料，为股市研究提供可复核证据。 Version: 0.21.2. |
 | 畅捷通T+ | `workbuddy/connectors/marketplace/connectors/tplus-api` | 其他 | 畅捷通T+ Chanjet T+ | 2 | 畅捷通 T+Cloud 自然语言操作入口：查询/管理销售订单、采购订单、库存单据、生产工单、财务凭证、报表及基础档案。 Version: 1.0.0. |
 | Tushare | `workbuddy/connectors/marketplace/connectors/tushare` | 金融研究 | Tushare Tushare | 3 | Tushare 金融数据服务，支持 A股、指数、ETF/基金、财务、估值、资金流、公告新闻、板块概念与宏观数据等研究工作。 Version: 1.0.0. |
 | 天眼查 | `workbuddy/connectors/marketplace/connectors/tyc-mcp` | 其他 | 天眼查 Tianyancha | 2 | 通过天眼查 MCP 查询多维度企业数据。支持工商登记、股东结构、司法风险、知识产权、董监高、经营数据等 160+ 项企业数据能力，用自然语言完成企业尽调与商业情报分析。 |
-| UU跑腿 | `workbuddy/connectors/marketplace/connectors/uupt` | 其他 | UU跑腿 UU Delivery | 2 | 通过自然语言使用 UU跑腿：同城配送与帮帮服务，支持询价、下单、查单、取消和跑男追踪 Version: 1.0.3. |
+| UU跑腿 | `workbuddy/connectors/marketplace/connectors/uupt` | 其他 | UU跑腿 UU Delivery | 2 | 通过自然语言使用 UU跑腿：同城配送与帮帮服务，支持询价、下单、查单、取消、跑男追踪和领取优惠券 Version: 1.1.0. |
 | 企业微信 | `workbuddy/connectors/marketplace/connectors/wecom` | 协作/办公 | 企业微信 WeCom | 97 | 企业微信官方 CLI 套件，覆盖消息、邮件、文档、待办、日程、会议、微盘、通讯录等业务功能。支持机器人主动通知、新建与读取文档、文档搜索、新建管理日程、预约与获取会议信息、新建跟进待办、上传与获取微盘文件、邮件读取与发送等能力 |
 | 微盛企微管家SCRM | `workbuddy/connectors/marketplace/connectors/weisheng-scrm` | 协作/办公 | 微盛企微管家SCRM Weisheng SCRM | 4 | 查询或管理企业微信中的客户信息、客户标签、客户群、营销素材、活码、群发、跟进记录、联系人、商机、汇报、抽奖、客户日程、聊天记录等业务能力。 |
 | 腾讯自选股 | `workbuddy/connectors/marketplace/connectors/westock-mcp` | 金融研究 | 腾讯自选股 WeStock | 2 | 直连腾讯自选股，实时掌握毫秒级行情与资金动态，用自然语言分析自选数据、设置股价提醒、管理模拟交易，轻松搞定盯盘与投资决策。 |
-| Wind 金融数据 | `workbuddy/connectors/marketplace/connectors/wind-finance` | 金融研究 | Wind 金融数据 Wind Financial Data | 3 | 通过自然语言查询股票、基金、指数、债券、公告、财经新闻和宏观经济数据。 Version: 1.1.0. |
+| Wind Alice 万得金融数据 | `workbuddy/connectors/marketplace/connectors/wind-finance` | 金融研究 | Wind Alice 万得金融数据 Wind Alice Wind Financial Data | 3 | 全量开放万得（Wind）金融数据与工具能力，覆盖沪深港美等全球60多个国家地区的股票、基金、债券、商品、指数、经济数据与万得金融模型与工具集。让WorkBuddy变身金融分析专家，成为具备数据穿透、投研分析、风险决策等多维金融能力的专业智能体。 Version: 1.2.0. |
 | 百智WiseNote | `workbuddy/connectors/marketplace/connectors/wisenote` | 其他 | 百智WiseNote Baizhi WiseNote | 2 | 通过用户授权读取百智 WiseNote 会议列表、会议详情摘要和会议转写内容。 |
 | 威科先行 | `workbuddy/connectors/marketplace/connectors/wk-workbuddy` | 其他 | 威科先行 WoltersKluwer | 2 | 威科先行依托全面、准确、及时更新的法规、案例等法律数据研发的MCP服务，支持语义检索、关键词检索等场景。 |
 | 微脉体重管理 | `workbuddy/connectors/marketplace/connectors/wm-weight-manage` | 其他 | 微脉体重管理 Weimai Weight Management | 5 | 生成个性化成人体重管理方案，渲染为可打卡的独立 HTML 页面：分阶段目标、饮食运动建议、餐食照片热量分析、本地体重记录。 Version: 1.0.1. |
@@ -395,6 +399,7 @@
 | WPS知识库 | `workbuddy/connectors/marketplace/connectors/wps-knowledgebase` | 其他 | WPS知识库 WPS Knowledge Base | 4 | 通过自然语言操作 WPS/zhishi 云端知识库：列出知识库、浏览文件树、智能问答、分享链接，以及文件/文件夹增删改查。 |
 | 小鹅通 | `workbuddy/connectors/marketplace/connectors/xiaoe-cloud-cli` | 教育/考试 | 小鹅通 Xiaoe Cloud | 2 | 用自然语言管理小鹅通店铺：查询课程与学员，创建和编辑课程，查看订单，并查找或上传图片、音频、电子书和文档素材。 |
 | 天创信用星图MCP | `workbuddy/connectors/marketplace/connectors/xingtu-claw-risk` | 金融研究 | 天创信用星图MCP Tianchuang Credit StarGraph MCP | 2 | 企业风险 AI 分析助手，用自然语言识别企业所属行业、分析企业间关联方关系（股权/实控人/担保/共同投资）。 |
+| 迪安智能科研云 | `workbuddy/connectors/marketplace/connectors/xmed-figure-mcp` | 数据分析 | 迪安智能科研云 DAZD X-Med MCP | 2 | 科研数据可视化：火山图、PCA、富集分析、生存分析，自动匹配发表级输出 Version: 1.0.10. |
 | 盈米MCP | `workbuddy/connectors/marketplace/connectors/yingmi-mcp` | 金融研究 | 盈米MCP Yingmi MCP | 3 | 查询基金与市场数据，完成基金研究、组合分析、财富规划及金融内容生成。 |
 | 智客AI · 对公(To B)营销助手 | `workbuddy/connectors/marketplace/connectors/youshu-bd-mate` | 其他 | 智客AI · 对公(To B)营销助手 YouShu BD Mate | 2 | 对公营销助手是基于企业全维数据构建的对公营销智能助手，提供从生成访前一页纸、访前客情报告、产品找客、关键人画像、营销话术及按企荐品的完整展业闭环能力。 Version: 2.0.1. |
 | 华宇元典法律数据 | `workbuddy/connectors/marketplace/connectors/yuandian-mcp` | 法务/合规 | 华宇元典法律数据 Huayu Yuandian Legal Data | 1 | 华宇元典法律数据为智能体提供法律法规、案例文书、企业信息 MCP 工具能力。 |

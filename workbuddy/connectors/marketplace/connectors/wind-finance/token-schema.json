@@ -1,6 +1,6 @@
 {
-  "title": "Wind 金融数据 MCP 配置",
-  "title_en": "Wind Financial Data MCP Configuration",
+  "title": "Wind Alice 万得金融数据 MCP 配置",
+  "title_en": "Wind Alice Wind Financial Data MCP Configuration",
   "description": "填写 Wind API Key 以启用万得金融数据查询，支持股票、债券、基金、指数、宏观数据的查询与分析。Key 仅保存在本机 ~/.workbuddy 下，不会上传云端。",
   "description_en": "Enter your Wind API Key to enable financial data query and analysis across stocks, bonds, funds, indices, and macro indicators. The key is stored locally at ~/.workbuddy and never leaves your device.",
   "docUrl": "https://aifinmarket.wind.com.cn/#/user/overview",

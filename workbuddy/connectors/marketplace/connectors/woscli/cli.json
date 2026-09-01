@@ -7,17 +7,17 @@
     "auth": {
         "darwin": "~/.woscli/woscli login",
         "linux": "~/.woscli/woscli login",
-        "win32": "& \"$env:USERPROFILE\\.woscli\\woscli.exe\" login"
+        "win32": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.woscli\\woscli.exe') login\""
     },
     "unAuth": {
         "darwin": "~/.woscli/woscli logout",
         "linux": "~/.woscli/woscli logout",
-        "win32": "& \"$env:USERPROFILE\\.woscli\\woscli.exe\" logout"
+        "win32": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.woscli\\woscli.exe') logout\""
     },
     "status": {
         "darwin": "~/.woscli/woscli status",
         "linux": "~/.woscli/woscli status",
-        "win32": "& \"$env:USERPROFILE\\.woscli\\woscli.exe\" status"
+        "win32": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.woscli\\woscli.exe') status\""
     },
     "statusMatch": "已授权",
     "authUrlDomain": "weimob.com",
@@ -27,9 +27,9 @@
         "command": {
             "darwin": "~/.woscli/woscli --version",
             "linux": "~/.woscli/woscli --version",
-            "win32": "& \"$env:USERPROFILE\\.woscli\\woscli.exe\" --version"
+            "win32": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.woscli\\woscli.exe') --version\""
         },
         "minVersion": "1.0.0",
-        "versionPattern": "woscli version (v\\d+\\.\\d+\\.\\d+|v_\\d+_\\d+-[0-9]+-g[0-9a-f]+(?:-dirty)?)"
+        "versionPattern": "woscli version v?(\\d+\\.\\d+\\.\\d+|v_\\d+_\\d+-[0-9]+-g[0-9a-f]+(?:-dirty)?)"
     }
 }
