@@ -1434,57 +1434,37 @@ def is_vertical_text(element: dict[str, Any]) -> bool:
 
 
 def detect_table_text_occlusions(elements: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Flag a free text shape or visible shape that overlaps a sibling table grid.
+    """Flag text glyphs that land on top of (or under) a table's cell grid.
 
-    Tables render their own cell text and grid lines, so a sibling text shape over the grid collides
-    with the cell content, while a visible non-text shape hides some of that grid. Text uses its
-    estimated glyph bounds to avoid reporting unused whitespace in its box; other shapes use their
-    rotation-aware visual bounds. Table cell content is not extracted as a standalone element, so it
-    cannot self-report. z-order is intentionally ignored because either stacking order is a conflict.
+    Mirrors detect_image_text_occlusions but for <table>. A free-floating text run whose glyph box
+    intersects a sibling table is almost always an accidental overlay -- the table already renders its
+    own cell text, so an unrelated shape sitting over the grid occludes it (slides p4). Text that is a
+    table cell child is part of the table's own layout and never extracted as a standalone element, so
+    this only ever sees sibling shapes. z-order is intentionally ignored: whether the text sits above
+    or below the grid, the two sets of glyphs collide in the same pixels.
     """
     issues: list[dict[str, Any]] = []
-    shapes = [
+    text_elements = [
         element
         for element in elements
-        if (
-            is_text_element(element)
-            and has_text_content(element)
-            and not is_ghost_text(element)
-            and not is_decorative_text(element)
-        )
-        or is_line_crossing_shape_candidate(element)
+        if is_text_element(element) and has_text_content(element) and not is_ghost_text(element)
     ]
     tables = [element for element in elements if element["kind"] == "table" and element["alpha"] > 0]
-    for shape in shapes:
-        shape_bbox = (
-            estimate_text_visual_bbox(shape)
-            if is_text_element(shape)
-            else rotate_bbox_around_element_center(
-                {key: shape[key] for key in ("x", "y", "width", "height")}, shape
-            )
-        )
-        if shape_bbox is None:
+    for text_element in text_elements:
+        if is_decorative_text(text_element):
+            continue
+        glyph_bbox = estimate_text_visual_bbox(text_element)
+        if glyph_bbox is None:
             continue
         for table in tables:
-            if not intersects(table, shape_bbox):
+            if not intersects(table, glyph_bbox):
                 continue
-            is_text = is_text_element(shape)
             issues.append({
                 "level": "error",
-                "code": "table_covers_text" if is_text else "table_overlaps_shape",
-                "elements": [element_ref(table), element_ref(shape)],
-                "message": (
-                    f"text shape {element_label(shape)} overlaps table {element_label(table)}"
-                    if is_text
-                    else f"shape {element_label(shape)} overlaps table {element_label(table)}"
-                ),
-                "hint": (
-                    "Move the text shape off the table grid or into a table cell; a free shape on top "
-                    "of the grid occludes the cell contents."
-                    if is_text
-                    else "Move the shape away from the table grid; a visible shape on top of the table "
-                    "hides its cells or grid lines."
-                ),
+                "code": "table_covers_text",
+                "elements": [element_ref(table), element_ref(text_element)],
+                "message": f"text shape {element_label(text_element)} overlaps table {element_label(table)}",
+                "hint": "Move the text shape off the table grid or into a table cell; a free shape on top of the grid occludes the cell contents.",
             })
     return issues
 

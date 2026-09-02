@@ -4768,32 +4768,6 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         )
         self.assertTrue(issue["hint"].startswith("Locate via related_objects[].xml_path. "))
 
-    def test_lint_xml_reports_visible_shape_overlapping_table_grid(self) -> None:
-        # A regular visible shape can obscure table cells and grid lines even without carrying text.
-        # Its whole rotated visual bounds, rather than a text glyph box, must be checked.
-        result = xml_lint.lint_xml(
-            """
-            <presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">
-              <slide xmlns="https://www.larkoffice.com/sml/2.0">
-                <data>
-                  <table id="grid" topLeftX="200" topLeftY="200" width="400" height="150">
-                    <tr><td><content><p>A</p></content></td></tr>
-                  </table>
-                  <shape id="cover" type="rect" topLeftX="620" topLeftY="200" width="40" height="200" rotation="90">
-                    <fill><fillColor color="rgba(217,45,32,1)"/></fill>
-                  </shape>
-                </data>
-              </slide>
-            </presentation>
-            """
-        )
-        occlusions = [
-            issue
-            for issue in result["slides"][0]["errors"]
-            if issue["code"] == "table_overlaps_shape" and set(issue["elements"]) == {"grid", "cover"}
-        ]
-        self.assertEqual(len(occlusions), 1)
-
     def test_lint_xml_ignores_table_with_only_cell_text(self) -> None:
         # Cell text is part of the table's own layout and is never extracted as a standalone shape, so
         # a table alone must not self-report table_covers_text (guards against a runaway detector).

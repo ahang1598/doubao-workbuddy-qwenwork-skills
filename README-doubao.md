@@ -8,7 +8,7 @@
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：106
 - 当前索引文件数：2364
-- 最近变更：[2026-09-01-180001](doubao/change-logs/2026-09-01-180001.md) - Doubao 本次同步新增 126 个文件、修改 45 个文件、删除 89 个文件。 新增条目：skills/gift-card-redemption, skills/ppt, skills/sheet。 移除条目已归档：skills/lark-sheets, skills/lark-slides-pro。 受影响范围：skills/byted-med...
+- 最近变更：[2026-09-02-180002](doubao/change-logs/2026-09-02-180002.md) - Doubao 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/ppt, skills/sheet。
 
 ## 数据来源
 
@@ -137,6 +137,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-02-180002 | [2026-09-02-180002](doubao/change-logs/2026-09-02-180002.md) | Doubao 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/ppt, skills/sheet。 |
 | 2026-09-01-180001 | [2026-09-01-180001](doubao/change-logs/2026-09-01-180001.md) | Doubao 本次同步新增 126 个文件、修改 45 个文件、删除 89 个文件。 新增条目：skills/gift-card-redemption, skills/ppt, skills/sheet。 移除条目已归档：skills/lark-sheets, skills/lark-slides-pro。 受影响范围：skills/byted-med... |
 | 2026-08-31-180002 | [2026-08-31-180002](doubao/change-logs/2026-08-31-180002.md) | Doubao 本次同步新增 3 个文件、修改 6 个文件、删除 0 个文件。 新增条目：skills/baidu-netdisk, skills/datapro-search, skills/tencent-docs-operations。 受影响范围：skills/baidu-netdisk, skills/datapro-search, skill... |
 | 2026-08-30-204031 | [2026-08-30-204031](doubao/change-logs/2026-08-30-204031.md) | Doubao 本次同步新增 33 个文件、修改 57 个文件、删除 37 个文件。 新增条目：skills/lark-meeting, skills/seedream-50。 移除条目已归档：skills/browser-task, skills/lark-minutes, skills/lark-note, skills/lark-vc。 受影响范围... |

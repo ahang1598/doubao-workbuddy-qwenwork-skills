@@ -86,7 +86,7 @@ python3 scripts/xml_lint.py --input <presentation.xml>
 | `shape_out_of_canvas` / `img_out_of_canvas` / `table_out_of_canvas` / `chart_out_of_canvas` | 文本框、矩形容器、图片、表格或图表超出 960×540 画布（只对这五类判定越界） | error |
 | `bbox_overlap` | 元素绘制区域重叠。覆盖五种情况：两段文字互压、填充形状盖住不属于它的文字、相邻卡片背景互叠、`<line>` 穿过字形、`autoFit="shape-auto-fit"` 文字长出原框压到下方元素 | error·误报高发 |
 | `image_covers_text` | `<img>` 压住文本框的估算字形区域 | error·误报高发 |
-| `table_covers_text` / `table_overlaps_shape` / `chart_covers_text` | 游离的文本框或可见 shape 压在 `<table>` 网格上，或文本框压在 `<chart>` 绘图区上，会与单元格文字、网格线、坐标轴标签或图例打架 | error·误报高发 |
+| `table_covers_text` / `chart_covers_text` | 游离的文本框压在 `<table>` 网格或 `<chart>` 绘图区上，会与单元格文字、坐标轴标签、图例打架 | error·误报高发 |
 | `text_may_overflow_shape` | 文本超出自身文本框，`overflow_axis` 区分 `height`（行数撑破高度）和 `width`（单行太宽，会意外换行或被 `wrap="false"` 裁切） | error（背景装饰巨字降 info） |
 | `text_overflows_container` | 文本框越过了它所在的背景容器（卡片、色块、胶囊）边界，`overflow` 给出四个方向各溢出多少 px | error |
 | `blank_slide` | 该页没有任何可见元素 | error |
