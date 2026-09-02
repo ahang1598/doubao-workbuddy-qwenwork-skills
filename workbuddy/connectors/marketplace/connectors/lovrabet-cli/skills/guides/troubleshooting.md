@@ -20,7 +20,7 @@
 
 优先检查：
 
-1. 当前 `env` 是否正确
+1. `lovrabet doctor` 显示的国家/地区和最终 Domain 是否正确
 2. 当前 AK 对应的是否是预期用户：`lovrabet auth info`
 3. `defaultApp` 是否能在 cache 中解析到 appcode
 4. 是否需要先刷新 app cache
@@ -32,7 +32,6 @@ lovrabet app list --no-cache
 如果你怀疑连接配置或认证信息不符合预期，比如：
 
 - `defaultApp` 明显不对
-- `env` 和预期不一致
 - `auth info` 返回的用户不是你预期的账号
 - `lovrabet doctor` 显示的 region 或 Domain 不符合预期
 
@@ -40,13 +39,12 @@ lovrabet app list --no-cache
 
 ```bash
 lovrabet config init --region cn
-lovrabet config set env daily --global
 lovrabet auth login --access-key <ACCESS_KEY>
 ```
 
 如果业务节点在印尼，把第一条改成 `lovrabet config init --region id`。企业独立部署使用 `lovrabet config init --domain-config <file>`。
 
-`config init` 只替换全局 region/Domain 路由字段，`auth login` 只替换目标作用域的 AccessKey；两者都保留其他配置。当前目录配置仍会覆盖全局同名字段，最后执行 `lovrabet doctor` 核对最终生效值。
+`config init` 只替换全局 region/Domain 路由字段，`auth login` 只替换目标作用域的 AccessKey；两者都保留其他配置。最后执行 `lovrabet doctor` 核对最终生效的国家/地区和 Domain。
 
 ## `defaultApp` 已有，但仍然找不到 appcode
 
@@ -91,5 +89,5 @@ lovrabet doctor
 
 - 配置来源不清楚
 - `defaultApp` / `currentApp` 判断异常
-- 环境和实际请求不一致
+- 国家/地区或 Domain 和实际请求不一致
 - 认证信息看起来存在，但命令仍失败

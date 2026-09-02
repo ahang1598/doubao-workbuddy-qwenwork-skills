@@ -96,7 +96,7 @@ Personal Backend Function 是当前用户在当前应用下维护的个人脚本
 2. `lovrabet personal-bff detail --id <id>` 查看现有脚本后再更新
 3. 从本地脚本文件 `create` 或 `update`
 4. `lovrabet personal-bff exec --id <id> --params '<json>' --format compress` 确认返回形状
-5. 再把结果形状用于下游调用或交付说明
+5. 页面接入时使用 `client.personal.bff.execute({ scriptId, params })`，并按 [Personal Backend Function 工作流](../references/lovrabet-personal-bff-workflow.md) 做能力检测、认证隔离和返回形状校验
 
 ```bash
 lovrabet personal-bff create --name loadOrders --file ./load-orders.js --dry-run

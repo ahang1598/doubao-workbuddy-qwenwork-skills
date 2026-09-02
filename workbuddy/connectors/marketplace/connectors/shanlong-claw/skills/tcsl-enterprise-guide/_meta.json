@@ -1,0 +1,11 @@
+{
+  "name": "tcsl-enterprise-guide",
+  "display_name": "天财商龙企业版能力导览",
+  "description": "介绍天财商龙公司概况，说明企业版经营/会员/成本三大专家及技能的能力范围，并引导用户下载企业版后通过对应专家与技能完成具体业务分析",
+  "version": "1.0.165",
+  "locale": "zh-CN",
+  "author": "shanglong-skill-creator",
+  "mode": "ai",
+  "skill_type": "business",
+  "related_skills": []
+}

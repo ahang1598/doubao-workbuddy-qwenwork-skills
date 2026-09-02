@@ -27,7 +27,7 @@
         "command": {
             "darwin": "~/.woscli/woscli --version",
             "linux": "~/.woscli/woscli --version",
-            "win32": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.woscli\\woscli.exe') --version\""
+            "win32": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$exe=(Join-Path $env:USERPROFILE '.woscli\\woscli.exe'); if(-not(Test-Path $exe)){ Write-Host 'woscli version v0.0.0' } else { & $exe --version }\""
         },
         "minVersion": "1.0.0",
         "versionPattern": "woscli version v?(\\d+\\.\\d+\\.\\d+|v_\\d+_\\d+-[0-9]+-g[0-9a-f]+(?:-dirty)?)"

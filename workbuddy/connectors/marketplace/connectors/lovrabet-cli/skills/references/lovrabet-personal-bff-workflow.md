@@ -134,3 +134,35 @@ lovrabet personal-bff exec --id <id> --params '{"status":"active"}' --format com
 ```
 
 确认字段、空态和错误形状后，再按下游调用方的契约完成接入。
+
+### 前端 SDK 调用
+
+页面通过 `client.personal.bff.execute({ scriptId, params })` 调用已经确认的 Personal Backend Function。`scriptId` 必须是 `list`、`detail`、`create` 或前序可信上下文得到的正整数，并且属于当前用户和当前应用；不要猜测 ID。
+
+```typescript
+interface OrderSummary {
+  total: number;
+}
+
+const personalBff = lovrabetClient?.personal?.bff;
+if (typeof personalBff?.execute !== "function") {
+  throw new Error("client.personal.bff.execute is not available");
+}
+
+const summary = await personalBff.execute<OrderSummary>({
+  scriptId: 123,
+  params: { status: "active" },
+});
+
+if (!summary || typeof summary.total !== "number") {
+  throw new Error("Unexpected Personal Backend Function response");
+}
+```
+
+安全边界：
+
+- 浏览器使用当前登录 Cookie，不在前端源码、构建变量、页面配置或日志中保存 Cookie、Client AK、SecretKey 或 token。
+- 服务端使用 Client AK 时，凭据只保存在服务端，并显式设置 `authMode: "client-ak"`；Personal Backend Function 不支持 OpenAPI。
+- 可选链只用于读取能力。禁止使用 `lovrabetClient?.personal?.bff?.execute?.(...)`，因为方法缺失时会静默得到 `undefined`。
+- 能力不存在时明确失败，并升级到包含 `client.personal.bff.execute` 的 SDK 版本。检测通过后通过 `personalBff.execute(...)` 调用，不要提取方法后裸调用。
+- SDK 直接返回个人函数的业务结果，不带 `execSuccess` 或 `execResult`。按前序 CLI 验证得到的返回契约检查必需字段和空态，不用 `result === undefined` 猜测 SDK 能力是否存在。

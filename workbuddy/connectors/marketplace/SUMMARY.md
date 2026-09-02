@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/connectors/marketplace/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/connectors-marketplace`
-- 条目数：151
-- 文件数：2574
-- 最近同步：2026-09-01 18:00:01 +0800
+- 条目数：153
+- 文件数：2592
+- 最近同步：2026-09-02 18:00:02 +0800
 
 ## 场景导航（按用途）
 
@@ -42,6 +42,7 @@
 - **财汇金融与风险数据** — 财汇 MCP 提供专业金融与风险数据服务，覆盖境内企业工商、上市公司、债券、基金、金融机构、宏观与区域经济、监管与司法风险、新闻公告及法规等多维度数据，支撑金融数据查询、风险评估、分析研究、投资交易、舆情监测、投行尽调、信贷管理、合规审查等业务场景。 Version: 1.0.0.
 - **福马AI外呼任务** — 通过 WorkBuddy 查询福马AI手机智能体、成员列表，并创建 AI 外呼任务。
 - **恒生聚源 MCP** — 连接恒生聚源 MCP，查询金融结构化数据、研究报告、公司公告、新闻资讯、条件选股、宏观行业、工商企业数据。支持基金经理观点持仓一致性分析、行业速报生成、金融资讯热点解读。
+- **ima** — 腾讯AI知识管家，连接后支持搜索、读取和写入知识库资料，并可搜索和订阅教育、法律、财经、科技等20+行业专业知识
 - **东方财富妙想MCP** — 通过自然语言查询的金融投研 MCP 工具套件，依托东方财富数据源，提供A股、港股、美股、基金、债券、指数板块、宏观数据查询，具备多条件资产筛选、券商研报检索、全市场公告解析、金融资讯检索能力。
 
 ### 数据分析
@@ -122,6 +123,7 @@
 - **Picset AI 视频创作** — Picset AI 视频创作连接器支持在 WorkBuddy 中通过密钥调用电商商品视频生成、爆款视频复刻和模特图生成能力，完成素材上传登记、脚本规划、视频脚本生成、积分预估、确认提交、异步生成和任务状态查询。MVP 支持 Seedance 2.0、Seedance 2.0 Fast、Seedance 2.0 Mini 三个模型，默认使用 Seedance 2.0。
 - **OpenBoost 跨境数据** — 支持市场研究、选品分析、竞对监控、VOC洞察、关键词分析、listing生成等跨境电商应用场景
 - **用友智能服务（AI BaaS）** — 通过用友银企联、税企联、商旅云等财务服务产品，为企业提供财务税务与银行资金数据服务，并提供企业商旅运营服务和行程服务。用自然语言完成企业的资金、税务、商旅的全面运营管理。
+- **天财商龙餐饮SaaS** — 天财商龙成立于1998年，是中国餐饮数字化整体解决方案服务商。连接器提供公司介绍与企业版能力范围说明；具体经营、会员、成本等业务分析请下载企业版，使用经营分析师、会员运营专家、成本管控专家及其技能完成。 Version: 1.0.165.
 - **Tec-Do 2.0 广告与增长情报** — 面向出海广告投放和增长团队的 AI 能力集合。
 - **腾讯营销投放** — 腾讯营销投放 Skill，为大模型赋予广告投放管理能力：支持广告账户授权、广告/智投项目的创建与更新、创意管理、广告数据查询与分析、推广内容资产管理，以及操作日志查询等完整的广告投放全链路操作。
 - **TikTok for Business** — TikTok for Business MCP Server 是基于模型上下文协议（MCP）搭建的标准化桥梁，助力开发者与广告主将 AI 智能代理直接对接 TikTok 广告平台。它将广告核心能力⸺广告活动管理、效果报表、受众配置以及创意运营，封装为一套稳定、可投入生产环境使用的工具。AI智能代理仅通过简洁结构化指令，即可完成 TikTok 广告的管理、优化与数据依托这套工具报表查询工作。
@@ -220,7 +222,6 @@
 - **粉笔** — 粉笔AI公考助手，帮你查专业分类、完善报考简历、智能选岗与国考模拟选岗、了解考情与报考条件，还能练易混词与成语辨析积累，提供一站式公考备考服务，让备考更精准、更高效。
 - **法研·法律法规检索** — 法研·法律法规检索，支持自然语言获取精准、现行有效的法规条文，将高质量、海量的法规知识库，无缝接入各类AI应用与工作流中。
 - **新华三Cloudnet灵犀AI助手** — 面向网络运维场景的 AI 助手，支持网络运行状态查询、网络问题分析、设备/AP 信息查询和无线终端故障排查，帮助用户快速定位网络异常并获取处理建议。
-- **ima知识库** — 引用知识库资料及文件，浏览知识库详情。
 - **零信任安全 iOA** — 提供零信任接入、终端管控、安全防护、数据防泄密等核心安全能力的管理操作 Version: 1.0.31.
 - **简道云** — 查询、整理和填写简道云数据。用自然语言查找表单记录、汇总业务进展、生成分析，并在确认后创建新记录。 Version: 1.0.0.
 - **乐享知识库** — 搜索、创建和管理乐享知识库中的文档。支持导入 Markdown、按标签整理内容、追踪团队文档的更新动态。
@@ -238,6 +239,7 @@
 - **同程程心** — 同程程心可通过自然语言查询机票、火车票、酒店、景点、度假产品等旅行资源，支持火空联程、智能交通推荐、特价机票搜索、景区门票预订，以及完整行程规划，显著提升出行效率。
 - **NextB2B贸易通MCP** — NextB2B贸易通MCP。用自然语言查商机询盘、待跟进线索、客户资产家底与业务员业绩，并按老板/业务员视角解读，为商机跟进、客户经营与业绩自查提供数据；需完成 MCP 联合授权后使用。 Version: 0.10.3.
 - **腾讯地图** — 接入腾讯地图各类位置服务，包括地点搜索、路线规划（驾车/公交/步行/骑行）、地址正逆解析、沿途搜索和天气查询等。
+- **腾讯地图·指南制作** — 用自然语言制作腾讯地图行程指南：创建、查询、更新、删除攻略。支持将攻略文本 / Markdown 内容智能转换为腾讯地图结构化行程指南数据格式（自动解析地点、补全 POI、生成路线），并一键保存同步到你的地图指南。 Version: 1.0.0.
 - **腾讯企点客服** — 腾讯企点客服连接器：用自然语言处理工单（查询/创建/更新/状态变更）、查询坐席在线与实时接待、检索/拉取客户资料、拉取人工/大模型/文本机器人的会话记录和消息、查看客服实时监控、会话监控、客服满意度与响应度报表等数据。
 - **腾讯问卷** — 创建、管理和分析腾讯问卷。用自然语言快速生成问卷、查看回收数据、设置题目逻辑。
 - **微云** — 查看、下载、删除微云文件，并且提供上传文件到微云、生成分享链接能力，帮你管理微云文件
@@ -285,7 +287,7 @@
 | 通联数据 | `workbuddy/connectors/marketplace/connectors/datayes-data` | 金融研究 | 通联数据 DataYes | 3 | 用自然语言查询金融数据：A股/港股、基金、债券、指数、期货期权、因子、实时行情、宏观、公告与政策法规。 |
 | DCS Cloud | `workbuddy/connectors/marketplace/connectors/dcs-cloud` | 通用工具/平台 | DCS Cloud DCS Cloud | 6 | 引导 dcs CLI（下载、自动更新、PAT 登录），之后直接执行 CLI 操作 DCS Cloud：项目、任务、工作流、计费、数据文件。用户需在云平台个人中心创建个人访问令牌(PAT)并粘贴到连接器。 Version: 2.0.0. |
 | 美图设计室 AI设计 CLI | `workbuddy/connectors/marketplace/connectors/designkit-buddy-cli` | 设计可视化 | 美图设计室 AI设计 CLI DesignKit Buddy CLI | 2 | 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 Version: 1.0.2. |
-| 钉钉 | `workbuddy/connectors/marketplace/connectors/dingtalk` | 文档/表格/PPT | 钉钉 DingTalk | 170 | 通过命令行管理钉钉全产品能力：AI 表格、考勤、日历、群聊与机器人、通讯录、开放平台文档、DING 消息、钉钉文档、钉钉云盘、AI 听记、邮箱、OA 审批、日志、待办。 |
+| 钉钉 | `workbuddy/connectors/marketplace/connectors/dingtalk` | 文档/表格/PPT | 钉钉 DingTalk | 172 | 通过命令行管理钉钉全产品能力：AI 表格、考勤、日历、群聊与机器人、通讯录、开放平台文档、DING 消息、钉钉文档、钉钉云盘、AI 听记、邮箱、OA 审批、日志、待办。 |
 | 深知可信工作台 | `workbuddy/connectors/marketplace/connectors/dknowc-mcp` | 研究/调研 | 深知可信工作台 DKnow Trusted Workbench | 2 | 深知可信工作台面向政策、法律、标准和公共服务场景，提供可信问答、权威检索、深度研究和材料整理能力。它可以帮助用户查询政策原文、办事条件、申报材料、补贴资质、法律法规和行业标准，梳理多地区、多时间范围的信息，并基于可追溯的权威来源形成清晰、可核验的结果。 |
 | 夺冠蜂巢 | `workbuddy/connectors/marketplace/connectors/duoguan-fengchao` | 营销/内容运营 | 夺冠蜂巢 Duoguan Fengchao | 2 | 覆盖内容大脑、品牌画像、热点选题、口播与图文文案、配图、播客、配音、视频封装和多账号运营的一站式 AI 自媒体内容生产平台。 Version: 2.0.0. |
 | 大智慧MCP | `workbuddy/connectors/marketplace/connectors/dzh-mcp` | 金融研究 | 大智慧MCP DZH MCP | 2 | 提供A股实时行情/舆情/资金面/基本面/技术面多维数据查询能力，辅助投资决策。 |
@@ -313,7 +315,7 @@
 | 新华三Cloudnet灵犀AI助手 | `workbuddy/connectors/marketplace/connectors/h3c-cloudnet` | 其他 | 新华三Cloudnet灵犀AI助手 H3C Cloudnet LinSeer AI Assistant | 3 | 面向网络运维场景的 AI 助手，支持网络运行状态查询、网络问题分析、设备/AP 信息查询和无线终端故障排查，帮助用户快速定位网络异常并获取处理建议。 |
 | 氚云 | `workbuddy/connectors/marketplace/connectors/h3yun-connector` | 协作/办公 | 氚云 H3Yun | 3 | 通过氚云连接器，将日常业务快速构建为可配置、可协同、可追踪的数字化应用。支持快速创建应用表单、管理业务数据、以流程驱动审批与任务流转，适用于客户、项目、采购、库存、售后等多类业务管理场景。 |
 | i人事AI·HR专家 | `workbuddy/connectors/marketplace/connectors/ihr-cli` | 协作/办公 | i人事AI·HR专家 iHR AI·HR Expert | 138 | 一键直接连接 i 人事。覆盖组织人事管理、劳动合同、考勤管理、薪酬管理、社保个税、智慧绩效OKRKPI、招聘管理、培训陪练、OA审批，AI面谈、数字人面试，蓝领面试，说一句话，就能查询分析人事、薪资、绩效、用工风险，提升敏捷管理水平，降低人力成本，还有自定义各类agent，SKILL，实现定制化管理要求。 Version: 0.1.2. |
-| ima知识库 | `workbuddy/connectors/marketplace/connectors/ima-mcp` | 其他 | ima知识库 ima-mcp | 1 | 引用知识库资料及文件，浏览知识库详情。 |
+| ima | `workbuddy/connectors/marketplace/connectors/ima-mcp` | 投资银行/私募 | ima ima | 2 | 腾讯AI知识管家，连接后支持搜索、读取和写入知识库资料，并可搜索和订阅教育、法律、财经、科技等20+行业专业知识 |
 | 电商内容专家 | `workbuddy/connectors/marketplace/connectors/infimind-ecommerce-content` | 营销/内容运营 | 电商内容专家 Infimind Ecommerce Content | 9 | 通过 OAuth 连接电商内容专家，创建智能精修、商品主图、商品详情页、爆款图复制、KOC 种草、图文带货、视频生成和爆款视频复制任务。 Version: 1.0.0. |
 | 零信任安全 iOA | `workbuddy/connectors/marketplace/connectors/ioa` | 其他 | 零信任安全 iOA iOA Zero Trust | 2 | 提供零信任接入、终端管控、安全防护、数据防泄密等核心安全能力的管理操作 Version: 1.0.31. |
 | 简道云 | `workbuddy/connectors/marketplace/connectors/jiandaoyun` | 其他 | 简道云 Jiandaoyun | 1 | 查询、整理和填写简道云数据。用自然语言查找表单记录、汇总业务进展、生成分析，并在确认后创建新记录。 Version: 1.0.0. |
@@ -359,6 +361,7 @@
 | SalesTouch 经营执行 | `workbuddy/connectors/marketplace/connectors/salestouch` | 研究/调研 | SalesTouch 经营执行 SalesTouch Business Operations | 7 | 通过自然语言连接 SalesTouch，完成组织资料、部门、角色权限、员工邀请、下属管理范围与销售流程配置，并处理销售执行、非销售工作、绩效、内部调研和经营汇总。 |
 | 致远互联协同办公服务 | `workbuddy/connectors/marketplace/connectors/seeyon-office-marketing-suite` | 其他 | 致远互联协同办公服务 Seeyon Collaborative Office Services | 61 | 为企业提供协同办公、会议和业务协同能力，支持用户用自然语言完成会议创建与查询、协同发起与跟进、和业务数据分析。 Version: 1.0.0. |
 | 用友智能服务（AI BaaS） | `workbuddy/connectors/marketplace/connectors/shanglv-mcp-gateway` | 营销/内容运营 | 用友智能服务（AI BaaS） Yonyou AI BaaS | 2 | 通过用友银企联、税企联、商旅云等财务服务产品，为企业提供财务税务与银行资金数据服务，并提供企业商旅运营服务和行程服务。用自然语言完成企业的资金、税务、商旅的全面运营管理。 |
+| 天财商龙餐饮SaaS | `workbuddy/connectors/marketplace/connectors/shanlong-claw` | 营销/内容运营 | 天财商龙餐饮SaaS Tiancai Shanglong Catering SaaS | 13 | 天财商龙成立于1998年，是中国餐饮数字化整体解决方案服务商。连接器提供公司介绍与企业版能力范围说明；具体经营、会员、成本等业务分析请下载企业版，使用经营分析师、会员运营专家、成本管控专家及其技能完成。 Version: 1.0.165. |
 | 纷享销客CRM | `workbuddy/connectors/marketplace/connectors/sharecrm` | 设计可视化 | 纷享销客CRM ShareCRM | 21 | 用自然语言查询客户、推进商机、写跟进记录、处理审批、建图表等，轻松搞定销售全链路工作。 |
 | 上奇产业通-企业动态追踪 | `workbuddy/connectors/marketplace/connectors/sq-company-dynamic` | 金融研究 | 上奇产业通-企业动态追踪 Company Dynamic Tracking | 3 | 实时追踪企业全生命周期动态，覆盖投资设立、股权变动、创新平台、中标、知识产权、排名、迁移、资质认定、工商变更、上市、标准制定、招聘、拿地等维度，并提供企业实体匹配。 Version: 1.0.1. |
 | 森浦qeubee金融数据 | `workbuddy/connectors/marketplace/connectors/sumscope-data` | 金融研究 | 森浦qeubee金融数据 Sumscope qeubee Data | 3 | 查询森浦固定收益市场数据：债券基础信息、一级发行、票据行情、舆情信息、发行人财务报表、宏观指标和交易日历。 Version: 1.0.1. |
@@ -374,6 +377,7 @@
 | 腾讯文档企业版 | `workbuddy/connectors/marketplace/connectors/tencent-docs-oa` | 文档/表格/PPT | 腾讯文档企业版 Tencent Docs Enterprise | 1 | 创建、编辑和协作腾讯文档。用自然语言管理在线表格、文档和幻灯片，轻松完成内容查询、数据整理和团队协同。 |
 | 腾讯健康NGES | `workbuddy/connectors/marketplace/connectors/tencent-health-nges` | 法务/合规 | 腾讯健康NGES Tencent Health NGES | 9 | 腾讯健康NGES MCP服务，支持智能问数和合规审核等功能 |
 | 腾讯地图 | `workbuddy/connectors/marketplace/connectors/tencent-map` | 其他 | 腾讯地图 Tencent Map | 2 | 接入腾讯地图各类位置服务，包括地点搜索、路线规划（驾车/公交/步行/骑行）、地址正逆解析、沿途搜索和天气查询等。 |
+| 腾讯地图·指南制作 | `workbuddy/connectors/marketplace/connectors/tencent-map-guide` | 其他 | 腾讯地图·指南制作 Tencent Map · Guide Maker | 2 | 用自然语言制作腾讯地图行程指南：创建、查询、更新、删除攻略。支持将攻略文本 / Markdown 内容智能转换为腾讯地图结构化行程指南数据格式（自动解析地点、补全 POI、生成路线），并一键保存同步到你的地图指南。 Version: 1.0.0. |
 | 腾讯企点客服 | `workbuddy/connectors/marketplace/connectors/tencent-qidian-cs` | 其他 | 腾讯企点客服 Tencent Qidian Customer Service | 2 | 腾讯企点客服连接器：用自然语言处理工单（查询/创建/更新/状态变更）、查询坐席在线与实时接待、检索/拉取客户资料、拉取人工/大模型/文本机器人的会话记录和消息、查看客服实时监控、会话监控、客服满意度与响应度报表等数据。 |
 | 腾讯问卷 | `workbuddy/connectors/marketplace/connectors/tencent-survey` | 其他 | 腾讯问卷 Tencent Survey | 6 | 创建、管理和分析腾讯问卷。用自然语言快速生成问卷、查看回收数据、设置题目逻辑。 |
 | 腾讯云数据仓库 TCHouse-C | `workbuddy/connectors/marketplace/connectors/tencent-tchouse-c` | 数据分析 | 腾讯云数据仓库 TCHouse-C Tencent Cloud TCHouse-C | 40 | 腾讯云数据仓库 TCHouse-C 智能运维与分析助手，用自然语言完成集群健康诊断、慢 SQL 分析、规格选型推荐、表结构设计与 NL2SQL 查询。 Version: 1.0.0. |

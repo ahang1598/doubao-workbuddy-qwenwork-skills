@@ -38,6 +38,37 @@
           "value_template": "${access_token}"
         }
       ]
+    },
+    {
+      "id": "ima-mcp-dual-token",
+      "when": {
+        "active_in": [
+          "iOA"
+        ]
+      },
+      "applies_to_connectors": [
+        "ima-mcp",
+        "ima-mcp-oa"
+      ],
+      "requires_connected_connectors": [
+        "ima-mcp",
+        "ima-mcp-oa"
+      ],
+      "timing": "request",
+      "inject": [
+        {
+          "from_connector": "ima-mcp",
+          "token_type": "mcp-oauth",
+          "header": "Authorization",
+          "value_template": "Bearer ${access_token}"
+        },
+        {
+          "from_connector": "ima-mcp-oa",
+          "token_type": "oneid-token",
+          "header": "X-Oneid-Access-Token",
+          "value_template": "Bearer ${access_token}"
+        }
+      ]
     }
   ],
   "connectors": [
@@ -196,21 +227,23 @@
     },
     {
       "id": "ima-mcp",
-      "name": "ima知识库",
-      "description": "Reference, browse ima knowledge base.",
-      "description_zh": "引用知识库资料及文件，浏览知识库详情。",
-      "description_en": "Reference knowledge base materials and files, browse knowledge base details.",
+      "name": "ima",
+      "name_zh": "ima",
+      "name_en": "ima",
+      "description": "腾讯AI知识管家，连接后支持搜索、读取和写入知识库资料，并可搜索和订阅教育、法律、财经、科技等20+行业专业知识",
+      "description_zh": "腾讯AI知识管家，连接后支持搜索、读取和写入知识库资料，并可搜索和订阅教育、法律、财经、科技等20+行业专业知识",
+      "description_en": "Tencent AI Knowledge Manager, after connection, supports searching, reading, and writing knowledge base materials, and can search and subscribe to professional knowledge in 20+ industries such as education, law, finance, and technology",
       "source": "ima-mcp",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
-        "在 ima 知识库中搜索『季度复盘』相关的资料",
-        "查看『产品手册』ima 知识库的详情和文件列表",
-        "引用 ima 知识库中关于 OpenAPI 的内容回答这个问题"
+        "从我的 ima 知识库里找出去年的竞品调研结论",
+        "把这几个链接都存进我的知识库",
+        "把我知识库里那篇产品方案的要点讲给我听"
       ],
       "examples_en": [
-        "Search for materials related to 'quarterly review' in ima knowledge base",
-        "Show details and file list of 'Product Manual' ima knowledge base",
-        "Answer this question by referencing the OpenAPI materials in ima knowledge base"
+        "Find last year's competitor research conclusions in my ima knowledge base",
+        "Save these links to my knowledge base",
+        "Summarize the product plan saved in my knowledge base"
       ],
       "visible_in": [
         "internal",
@@ -4548,6 +4581,72 @@
         "Create an interview project about gold investment user experience with 5 questions",
         "Create an interview titled 'New feature satisfaction survey' with an outline about the price-alert feature",
         "Create an English interview in a professional hosting style, with an opening introducing this product experience follow-up"
+      ]
+    },
+    {
+      "id": "shanlong-claw",
+      "name": "天财商龙餐饮SaaS",
+      "name_en": "Tiancai Shanglong Catering SaaS",
+      "description": "Tiancai Shanglong (est. 1998) is a leading Chinese catering digitalization solutions provider. This connector introduces the company and enterprise-edition capability scope (Business Analyst, Member Operations Expert, Cost Control Expert). For concrete business analysis, download the enterprise edition and use the corresponding experts and skills.",
+      "description_zh": "天财商龙成立于1998年，是中国餐饮数字化整体解决方案服务商。连接器提供公司介绍与企业版能力范围说明；具体经营、会员、成本等业务分析请下载企业版，使用经营分析师、会员运营专家、成本管控专家及其技能完成。",
+      "description_en": "Tiancai Shanglong (est. 1998) is a leading Chinese catering digitalization solutions provider. This connector introduces the company and enterprise-edition capability scope (Business Analyst, Member Operations Expert, Cost Control Expert). For concrete business analysis, download the enterprise edition and use the corresponding experts and skills.",
+      "source": "shanlong-claw",
+      "type": "cli",
+      "version": "1.0.165",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "天财商龙是做什么的",
+        "企业版有哪些专家和能力",
+        "经营分析该用哪个专家",
+        "会员增长和营销活动去哪里查",
+        "库存和成本卡异常怎么分析",
+        "具体业务查询需要下载企业版吗"
+      ],
+      "examples_en": [
+        "What does Tiancai Shanglong do",
+        "What experts and capabilities does the enterprise edition include",
+        "Which expert should I use for operations analysis",
+        "Where to analyze member growth and campaigns",
+        "How to analyze inventory and recipe cost anomalies",
+        "Do I need the enterprise edition for business queries"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "tencent-map-guide",
+      "name": "腾讯地图·指南制作",
+      "name_en": "Tencent Map · Guide Maker",
+      "description": "Create Tencent Map travel guides with natural language: create, query, update and delete guides. Converts free-form itinerary text / Markdown into Tencent Map's structured guide data format (parsing places, enriching POIs, building routes) and saves them to your map guides.",
+      "description_zh": "用自然语言制作腾讯地图行程指南：创建、查询、更新、删除攻略。支持将攻略文本 / Markdown 内容智能转换为腾讯地图结构化行程指南数据格式（自动解析地点、补全 POI、生成路线），并一键保存同步到你的地图指南。",
+      "description_en": "Create Tencent Map travel guides with natural language: create, query, update and delete guides. Converts free-form itinerary text / Markdown into Tencent Map's structured guide data format (parsing places, enriching POIs, building routes) and saves them to your map guides.",
+      "source": "tencent-map-guide",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我制作一份北京三日游的行程指南",
+        "把这段 Markdown 攻略转换并保存成我的地图指南",
+        "查一下我那份成都美食攻略的详情",
+        "更新我的杭州行程指南标题为『西湖深度2日游』",
+        "删除编号 TG-123 的行程指南"
+      ],
+      "examples_en": [
+        "Create a 3-day Beijing travel guide for me",
+        "Convert this Markdown itinerary and save it as my map guide",
+        "Show the details of my Chengdu food guide",
+        "Update the title of my Hangzhou guide to 'West Lake 2-Day Tour'",
+        "Delete the travel guide with id TG-123"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
       ]
     }
   ]

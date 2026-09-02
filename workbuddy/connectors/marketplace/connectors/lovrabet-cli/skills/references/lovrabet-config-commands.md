@@ -6,7 +6,7 @@
 
 ## config init — 初始化连接配置
 
-固定写入全局配置 `~/.lovrabet.json`，不需要也不接受用 `--global` 改变目标。它只配置连接路由，不登录、不保存 AccessKey，也不建立当前目录的应用绑定。
+固定写入全局配置 `~/.lovrabet.json`，不需要额外的作用域参数。它只配置连接路由，不登录、不保存 AccessKey，也不建立当前目录的应用绑定。
 
 交互模式用方向键选择 `Mainland China (cn)` 或 `Indonesia (id)`；当前不提供 `global`。非交互且未传 region/Domain 时默认 `cn`。自动化示例：
 
@@ -25,7 +25,31 @@ lovrabet config init --domain-config ./lovrabet-domains.json
 
 ### 独立部署模式
 
-Domain 文件必须是 JSON 对象，只允许以下五个字段，且至少提供一个：
+推荐使用两个 CLI 共用的版本化企业路由清单：
+
+```json
+{
+  "protocol": "lovrabet-routing/v1",
+  "kind": "enterprise",
+  "cdn": {
+    "libraries": "https://cdnjs.cloudflare.com/ajax/libs",
+    "lovrabet": "https://g.lovrabet.com"
+  },
+  "domains": {
+    "userDomain": "https://user.customer.example.com",
+    "apiDomain": "https://api.customer.example.com",
+    "runtimeDomain": "https://runtime.customer.example.com",
+    "skillDomain": "https://skills.customer.example.com",
+    "kbDomain": {
+      "default": "https://kb-admin.customer.example.com",
+      "lovrabet-cli": "https://kb.customer.example.com"
+    },
+    "appDomain": "https://app.customer.example.com"
+  }
+}
+```
+
+新版清单要求完整服务拓扑以及 `cdn.libraries` / `cdn.lovrabet`。前者是第三方库的完整 CDN 基地址，后者是 Lovrabet 自有资源 origin；Runtime CLI 校验并保留它们，供同一清单被 Rabetbase 使用。Domain 可写成所有消费者共用的 HTTPS 字符串；确有差异时写成带 `default` 或消费者键的对象。对象优先使用 `lovrabet-cli`，其次使用 `default`，两者都没有时命令报错。Runtime CLI 会保留但不使用 `appDomain`、`localDomain`、`certificateDomain` 与 `cdn`。清单不能叠加单独的 Domain flags。旧扁平 JSON 继续兼容，只允许以下五个字段，且至少提供一个：
 
 ```json
 {
@@ -37,11 +61,13 @@ Domain 文件必须是 JSON 对象，只允许以下五个字段，且至少提�
 }
 ```
 
-也可以用 `--user-domain`、`--api-domain`、`--runtime-domain`、`--skill-domain`、`--kb-domain` 逐项传入；显式 flag 覆盖文件里的同名字段。所有值必须是无账号、路径、query 和 fragment 的 HTTPS origin。
+也可以用 `--user-domain`、`--api-domain`、`--runtime-domain`、`--skill-domain`、`--kb-domain` 逐项传入；显式 flag 只覆盖旧扁平文件里的同名字段。所有值必须是无账号、路径、query 和 fragment 的 HTTPS origin。
 
-进入独立部署模式会删除全局 `region` 和旧 Domain 字段，再写入本次提供的 Domain。未提供的 Domain 仍按默认 `cn` 节点和当前 `env` 回退到 Lovrabet 公共服务；如果企业部署需要五类请求全部进入私有服务，应完整提供五个 Domain。
+新版企业清单会保存为带协议标识的 `routing` 对象，并整体优先于旧顶层 Domain；旧扁平配置继续保持既有回退行为。
 
-两种模式都保留 AccessKey、env、format、locale、应用绑定等其他全局配置。当前目录 `.lovrabet.json` 的同名字段仍会覆盖全局配置；初始化后用 `lovrabet doctor` 核对最终生效的 region 和五个 API Endpoint。
+进入旧扁平独立部署模式会删除全局 `region` 和旧 Domain 字段，再写入本次提供的 Domain。未提供的 Domain 仍按默认 `cn` 节点和当前 `env` 回退到 Lovrabet 公共服务。企业部署需要所有请求进入私有服务时，应完整提供五个 Domain；KB Service 下游地址由 Runtime Java 独立配置。
+
+两种模式都保留 AccessKey、env、format、locale、应用绑定等其他全局配置。当前目录 `.lovrabet.json` 的旧扁平同名字段仍会覆盖全局旧扁平配置；初始化后用 `lovrabet doctor` 核对最终生效的国家/地区和五个 Domain。
 
 ## config list — 查看完整配置
 
@@ -65,7 +91,7 @@ lovrabet config get <key>
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
-| `<key>` | string | **必填** — 配置键名（如 `appcode`、`env`、`riskLevel`） |
+| `<key>` | string | **必填** — 配置键名（如 `appcode`、`format`、`riskLevel`） |
 
 **示例**：
 
@@ -73,8 +99,8 @@ lovrabet config get <key>
 lovrabet config get appcode
 # 输出: app-xxxxxxxx
 
-lovrabet config get env
-# 输出: daily
+lovrabet config get format
+# 输出: compress
 ```
 
 ## config set — 写入配置项
@@ -102,11 +128,10 @@ lovrabet config set <key> <value>
 
 ```bash
 # 写入当前目录配置（默认；须在含 .lovrabet.json 的目录下执行）
-lovrabet config set env daily
 lovrabet config set format compress
 
 # 写入全局配置（任意目录可用，需用户明确意图）
-lovrabet config set env daily --global
+lovrabet config set format compress --global
 
 # 配置 User AK（client-ak）
 lovrabet config set accessKey <ACCESS_KEY>

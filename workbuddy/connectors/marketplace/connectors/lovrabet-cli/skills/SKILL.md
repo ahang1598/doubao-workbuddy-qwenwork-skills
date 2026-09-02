@@ -1,7 +1,7 @@
 ---
 name: lovrabet
 displayName: Lovrabet 运行态 CLI
-version: 2.3.0
+version: 2.3.1
 description: "Lovrabet 运行态 CLI — 面向业务场景的 AI 操作套件，通过 lovrabet 命令管理应用目录、业务角色与权限、用户级外部账号、Service Tree 业务命令、API 文档发现、数据集查询、Instant API 数据操作、Custom SQL/Backend Function、Personal Backend Function、文件上传、面向票证类业务材料文字与结构化字段提取的 OCR、定时任务、Skill、知识库与运行态 app-config key 状态检查。触发词：云图、lovrabet、lovrabet-cli、业务角色、角色成员、页面权限、菜单权限、数据集权限、user-account bind、provider 外部账号绑定、钉钉 userId 绑定、service tree、业务服务树、api-doc、dataset、data filter、file upload、file query-url、ocr recognize、OCR 识别、票证文字提取、票证字段提取、发票识别、票据识别、证照识别、附件上传、personal-bff、schedule、定时任务、cron、kb、skill、sql exec、bff exec、app-config、accessKey、compress、jq。"
 metadata:
   requires:
@@ -49,7 +49,7 @@ npm 包会自动安装同版本 Built-in Skill。若 `lovrabet doctor` 报告缺
 
 ### 认证命令选择
 
-- **首次使用或切换节点**：执行 `lovrabet config init`，选择 `cn` / `id`；独立部署使用 `--domain-config <file>`。该命令固定维护全局连接配置，不需要 `--global`
+- **首次使用或切换节点**：执行 `lovrabet config init`，选择当前已开放国家/地区；独立部署优先导入 `lovrabet-routing/v1` 清单，清单同时声明 Domain、`cdn.libraries` 与 `cdn.lovrabet`，供两个 CLI 共用。该命令固定维护全局连接配置
 - **只想更新 AK，尽量保留现有配置**：用户提供 AccessKey 后，使用 `lovrabet auth login --access-key <ACCESS_KEY>`
 - **还没有 AK，需要先自助创建**：Agent 可先执行 `lovrabet auth login --non-interactive` 获取无打扰提示，把命令根据当前 `userDomain` 返回的创建地址发给用户；用户把 AccessKey 发给 Agent 后，再执行 `lovrabet auth login --access-key <ACCESS_KEY>`
 - **想确认当前 AK 对应的是哪个用户**：使用 `lovrabet auth info`
@@ -72,7 +72,7 @@ npm 包会自动安装同版本 Built-in Skill。若 `lovrabet doctor` 报告缺
 - **不要擅自加 `--global` 或修改本地配置** — 见上文「本地配置原则」；仅在用户明确要求或文档说明的场景使用配置写命令。
 - **不要主动创建工作目录配置** — 即使连续多次在同一目录使用同一个 `--app` / `--appcode`，也只能提醒用户是否要写入当前目录 `.lovrabet.json`；必须得到用户明确同意后，才可执行 `workspace init/use`。
 - **不要回显或记录真实凭证** — 如果用户提供 AccessKey，只用于本次认证命令；不要在最终答复、日志、文档片段或排障输出里展示真实值。
-- **禁止通过修改配置文件提升权限** — 不得为了完成任务而修改 `.lovrabet.json`、环境变量或缓存内容来抬高 `riskLevel`、切换到并非用户明确授权的 `accessKey`、伪造 `defaultApp` / `appcode` / `env`、或借此突破当前权限边界。权限不足时，应明确说明限制，并要求用户提供合法的目标应用、凭证或确认范围。
+- **禁止通过修改配置文件提升权限** — 不得为了完成任务而修改 `.lovrabet.json`、环境变量或缓存内容来抬高 `riskLevel`、切换到并非用户明确授权的 `accessKey`、伪造 `defaultApp` / `appcode` 或连接路由，或借此突破当前权限边界。权限不足时，应明确说明限制，并要求用户提供合法的目标应用、凭证或确认范围。
 - **不要访问未发布应用的数据** — `app list` 默认只展示已发布应用；即使通过 `app list --include-unpublished` 或缓存看到未发布应用，也不要把它作为 `dataset` / `data` / `sql` / `bff` 的目标。
 - **不要臆测当前登录用户** — 只要任务依赖“当前是谁在登录 / 当前 AK 属于谁”，先执行 `lovrabet auth info`，再继续判断应用、权限或数据可见性。
 - **运行态业务发现与实现资产隔离** — 运行态发现业务能力，不枚举实现资产。简单基础事实查询优先通过已治理 Dataset 的字段、关联和只读操作回答；稳定规则由业务 Skill 或可信 Service Tree 绑定到已发布入口。未绑定的 Custom SQL/Backend Function 实现资产不进入运行态候选。
@@ -331,7 +331,7 @@ Service Tree 未命中不是失败条件，也不代表业务能力不存在。�
 | **kb** | `detail` | 查看 personal 知识库正文与 RAG 状态 | read | AK |
 | **kb** | `create` | 从本地文件创建 personal 知识库 | write | AK |
 | **kb** | `update` | 从本地文件更新 personal 知识库 | write | AK |
-| **kb** | `search` | 检索可见公司和个人知识 | read | AK |
+| **kb** | `search` | 检索可见公共、公司和个人知识 | read | AK |
 | **schedule** | `validate` | 校验 UTC 定时任务，不创建计划 | read | AK |
 | **schedule** | `create` | 创建周期或单次定时任务（需确认） | high-risk-write | AK |
 | **schedule** | `list` | 分页查看当前应用的定时任务 | read | AK |
@@ -435,6 +435,7 @@ Service Tree 未命中不是失败条件，也不代表业务能力不存在。�
 | 查看 Personal Backend Function | `lovrabet personal-bff detail --id <id>` |
 | 创建 Personal Backend Function | `lovrabet personal-bff create --name loadOrders --file ./load-orders.js --dry-run` |
 | 执行 Personal Backend Function | `lovrabet personal-bff exec --id <id> --params '{"key":"value"}'` |
+| 页面调用 Personal Backend Function | 先用 CLI 核对返回契约，再按 [Personal Backend Function 工作流](references/lovrabet-personal-bff-workflow.md) 使用 `client.personal.bff.execute({ scriptId, params })`；禁止用可选调用静默吞掉能力缺失 |
 
 ### Personal Backend Function 与知识库
 
