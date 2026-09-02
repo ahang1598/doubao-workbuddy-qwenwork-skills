@@ -1,0 +1,194 @@
+{
+  "analysis_type": "multi_source_aggregation",
+  "timestamp": "2026-07-31T08:18:21.641583+00:00",
+  "sources": {
+    "trends_files": 3,
+    "amazon_files": 3,
+    "alexa_files": 2
+  },
+  "ranking": [
+    "tea cosy",
+    "christmas crackers",
+    "heated clothes airer"
+  ],
+  "products": [
+    {
+      "keyword": "tea cosy",
+      "trends": {
+        "keyword": "tea cosy",
+        "trends_peak": 100,
+        "trends_avg": 35.7,
+        "trends_recent_avg": 22.2,
+        "trends_data_points": 266
+      },
+      "amazon": {
+        "keyword": "tea cosy",
+        "amazon_total": 60,
+        "amazon_price_avg": 12.67,
+        "amazon_price_min": 2.2,
+        "amazon_price_max": 26.95,
+        "amazon_rating_avg": 4.4,
+        "amazon_reviews_avg": 284,
+        "amazon_sponsored_pct": 20.0,
+        "amazon_new_product_pct": 49.2
+      },
+      "alexa": {
+        "keyword": "Find me a British style tea cosy for a large teapot on Amazo",
+        "alexa_groups": 5,
+        "alexa_total_items": 10,
+        "alexa_group_titles": [
+          "see more Designed in England – Classic & Floral",
+          "see more Union Jack & Iconic British Style",
+          "see more Handmade Wool – Artisan Style",
+          "see more Ulster Weavers – Traditional British Brand",
+          "see more Available from the Web"
+        ],
+        "alexa_top_items": [
+          {
+            "asin": "B092MC9XPL",
+            "title": "Muldale Large Tea Cozy for Teapot British - 100% Cotton Extra Thick Wadding Tea ",
+            "score": "4.6",
+            "ratings_count": "244",
+            "group": "see more Designed in England – Classic & Floral"
+          },
+          {
+            "asin": "B08P5WBT1T",
+            "title": "Muldale Large Tea Cozy for Teapot Insulated - Black - Thermal 100% Cotton Extra ",
+            "score": "4.7",
+            "ratings_count": "486",
+            "group": "see more Designed in England – Classic & Floral"
+          },
+          {
+            "asin": "B002Q0W4PG",
+            "title": "Union Jack Tea Cozy - Dome",
+            "score": "4.7",
+            "ratings_count": "629",
+            "group": "see more Union Jack & Iconic British Style"
+          },
+          {
+            "asin": "B001R7PZ3W",
+            "title": "Union Jack Tea Cosy",
+            "score": "",
+            "ratings_count": "",
+            "group": "see more Union Jack & Iconic British Style"
+          },
+          {
+            "asin": "B0BDZYJRPK",
+            "title": "Glaciart One Wool Teapot Cozy Kettle Cover | Dome Shaped Large Tea Cosy, Kettle ",
+            "score": "4.7",
+            "ratings_count": "158",
+            "group": "see more Handmade Wool – Artisan Style"
+          }
+        ]
+      },
+      "priority_score": 80,
+      "priority_reasons": [
+        "Trends avg 35.7 (high demand)",
+        "49.2% new products (market accepts newcomers)",
+        "Alexa returned 5 recommendation groups"
+      ]
+    },
+    {
+      "keyword": "christmas crackers",
+      "trends": {
+        "keyword": "christmas crackers",
+        "trends_peak": 100,
+        "trends_avg": 10.7,
+        "trends_recent_avg": 1.2,
+        "trends_data_points": 266
+      },
+      "amazon": {
+        "keyword": "christmas crackers",
+        "amazon_total": 60,
+        "amazon_price_avg": 13.52,
+        "amazon_price_min": 2.99,
+        "amazon_price_max": 27.99,
+        "amazon_rating_avg": 4.2,
+        "amazon_reviews_avg": 104,
+        "amazon_sponsored_pct": 20.0,
+        "amazon_new_product_pct": 50.0
+      },
+      "priority_score": 60,
+      "priority_reasons": [
+        "Trends avg 10.7 (moderate demand)",
+        "Recent demand low (off-season?)",
+        "50.0% new products (market accepts newcomers)"
+      ]
+    },
+    {
+      "keyword": "heated clothes airer",
+      "trends": {
+        "keyword": "heated clothes airer",
+        "trends_peak": 100,
+        "trends_avg": 10.6,
+        "trends_recent_avg": 1.5,
+        "trends_data_points": 266
+      },
+      "amazon": {
+        "keyword": "heated clothes airer",
+        "amazon_total": 60,
+        "amazon_price_avg": 63.65,
+        "amazon_price_min": 17.14,
+        "amazon_price_max": 199.99,
+        "amazon_rating_avg": 4.0,
+        "amazon_reviews_avg": 662,
+        "amazon_sponsored_pct": 20.0,
+        "amazon_new_product_pct": 28.3
+      },
+      "alexa": {
+        "keyword": "Find me a heated clothes airer for indoor drying on Amazon U",
+        "alexa_groups": 3,
+        "alexa_total_items": 6,
+        "alexa_group_titles": [
+          "see more 3-Tier Heated Airers",
+          "see more Heated Airers with Cover",
+          "see more Heated Drying Pods / Tent-Style"
+        ],
+        "alexa_top_items": [
+          {
+            "asin": "B0FP1V68QF",
+            "title": "SHARNDY Heating Clothes Drying Rack Foldable Shoes Socks Silvery Gray",
+            "score": "4.8",
+            "ratings_count": "35",
+            "group": "see more 3-Tier Heated Airers"
+          },
+          {
+            "asin": "B0D8S4H51D",
+            "title": "Aredwhiterui 3-Tier Foldable Heated Electric Clothes Drying Rack - 5min Fast Dry",
+            "score": "",
+            "ratings_count": "",
+            "group": "see more 3-Tier Heated Airers"
+          },
+          {
+            "asin": "B0BP2BGPH1",
+            "title": "XIHAADOY 3-Tier Heated Clothes Airer, 300W Foldable Heating Clothes Drying Rack,",
+            "score": "",
+            "ratings_count": "",
+            "group": "see more 3-Tier Heated Airers"
+          },
+          {
+            "asin": "B0BMPCYQLT",
+            "title": "Electric Clothes Dryer with Remote Control and Timer, 1300W Large Capacity 2-Tie",
+            "score": "",
+            "ratings_count": "",
+            "group": "see more Heated Airers with Cover"
+          },
+          {
+            "asin": "B0GCZ4JBST",
+            "title": "Gleekora Foldable Clothes Dryer,Easy Install,1200W with Timer",
+            "score": "3.8",
+            "ratings_count": "23",
+            "group": "see more Heated Drying Pods / Tent-Style"
+          }
+        ]
+      },
+      "priority_score": 45,
+      "priority_reasons": [
+        "Trends avg 10.6 (moderate demand)",
+        "Recent demand low (off-season?)",
+        "Avg reviews 662 (high barrier)",
+        "Alexa returned 3 recommendation groups"
+      ]
+    }
+  ]
+}

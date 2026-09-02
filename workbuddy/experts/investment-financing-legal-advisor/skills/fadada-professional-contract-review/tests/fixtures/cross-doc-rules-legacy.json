@@ -1,0 +1,9 @@
+[
+  {
+    "rule_id": "X-001",
+    "field": "unit_price",
+    "must_match_across": ["contract", "po"],
+    "tolerance": "exact",
+    "severity": "high"
+  }
+]

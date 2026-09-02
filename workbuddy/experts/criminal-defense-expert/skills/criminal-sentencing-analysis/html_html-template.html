@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><!-- CONTENT_SLOT:PAGE_TITLE --></title>
+<!--
+  criminal-sentencing-analysis v2.0.1
+  HTML 输出自包含模板 — 内联样式铁律
+  LLM 职责：仅填充 <!-- CONTENT_SLOT:xxx --> 占位符
+  LLM 禁止：修改 HARD_BLOCK 包裹的 <style>/<script> 内任何代码、自由发挥 HTML 布局
+
+  设计原则：
+  1. I-Practical 内部级 —— 允许 Emoji/折叠/卡片/侧栏导航
+  2. C-现代轻量视觉方案（方案C） —— 青灰 #005f73 + 暖橙 #EE9B00
+  3. 内联样式铁律 —— 所有视觉格式使用 style="..." 内联，不依赖 CSS class
+  4. 六大输出模块 —— 法定刑+基准刑+情节调节+量刑区间+缓刑评估+风险提示
+  5. Richee 组件引用 —— c04-evidence-catalog
+
+  版本标识：data-template-version="2.0.1"
+-->
+<!-- HARD_BLOCK:DONT_MODIFY_START -->
+<style>
+/*
+ * criminal-sentencing-analysis v2.0.1
+ * HARD_BLOCK — 仅包含无法内联的规则
+ *
+ * ⚠️ 此 <style> 块为 HARD_BLOCK 不可修改区。
+ * 仅含 @page / @media print / 侧栏导航交互 / Mermaid 初始化。
+ * 违反此规则将导致输出被阻断。
+ */
+
+/* 打印页面规则 */
+@page { size: A4 portrait; margin: 2.0cm 1.5cm 1.5cm 3.0cm; }
+
+/* 打印适配 */
+@media print {
+  .side-nav { display: none !important; }
+  .toolbar { display: none !important; }
+  .no-print { display: none !important; }
+  .source-section { display: none !important; }
+
+  body {
+    font-family: '微软雅黑', '宋体', serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-content { margin-left: 0 !important; }
+
+  /* 确保表格表头和行级着色打印 */
+  table thead {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 折叠区打印时展开 */
+  details { display: block !important; }
+  details > div { display: block !important; }
+
+  .page-break-before { page-break-before: always; }
+
+  /* Mermaid 图表打印时隐藏 */
+  .mermaid-wrap { display: none !important; }
+  .print-table { display: block !important; }
+
+  .template-version-watermark { opacity: 0.4; }
+}
+</style>
+<!-- HARD_BLOCK:DONT_MODIFY_END -->
+</head>
+<body style="margin:0;padding:0;font-family:'微软雅黑','PingFang SC',SimSun,FangSong,serif;font-size:11pt;line-height:1.6;color:#1A202C;background:#fff;">
+
+<!-- 侧栏导航 -->
+<nav class="side-nav" style="position:fixed;left:0;top:0;width:240px;height:100vh;overflow-y:auto;background:#F8FAFC;border-right:1px solid #E2E8F0;padding:16px 0;font-size:11pt;z-index:100;">
+  <div style="padding:8px 16px;font-weight:bold;color:#005f73;font-size:13pt;border-bottom:1px solid #E2E8F0;margin-bottom:8px;">量刑分析导航</div>
+  <a href="#module-1" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">一、法定刑分析</a>
+  <a href="#module-2" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">二、基准刑确定</a>
+  <a href="#module-3" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">三、情节调节</a>
+  <a href="#module-4" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">四、量刑区间</a>
+  <a href="#module-5" style="display:block;padding:6px 16px;color:#64748B;text-decoration:none;border-left:3px solid transparent;">五、缓刑评估</a>
+  <a href="#module-6" style="display:block;padding:6px 16px;color:#64748B;text-decoration:none;border-left:3px solid transparent;">六、风险提示</a>
+  <div style="padding:6px 16px;border-top:1px solid #E2E8F0;margin-top:8px;"></div>
+  <a href="#disclaimer" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">免责声明</a>
+</nav>
+
+<!-- 主内容区 -->
+<div class="main-content" style="margin-left:256px;padding:24px 32px;">
+
+  <!-- 工具栏 -->
+  <div class="toolbar no-print" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-bottom:20px;border-bottom:1px solid #E2E8F0;font-size:12px;color:#64748B;">
+    <span>criminal-sentencing-analysis v2.0.1 | <!-- CONTENT_SLOT:GENERATED_AT --></span>
+    <span>
+      <button class="toolbar-btn" style="padding:3px 10px;border:1px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;font-size:11pt;font-family:inherit;margin-left:8px;" onclick="toggleAllDetails()">展开/折叠高级模块</button>
+      <button class="toolbar-btn" style="padding:3px 10px;border:1px solid #E2E8F0;background:#fff;color:#64748B;cursor:pointer;font-size:11pt;font-family:inherit;margin-left:8px;" onclick="window.print()">打印/PDF</button>
+    </span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 0: 页面标题区
+     ════════════════════════════════════════ -->
+  <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #005f73;">
+    <h1 style="font-size:20px;font-weight:700;color:#1A202C;margin:0 0 6px 0;line-height:1.35;"><!-- CONTENT_SLOT:PAGE_TITLE --></h1>
+    <p style="font-size:13px;color:#64748B;margin:0 0 8px 0;"><!-- CONTENT_SLOT:SUBTITLE --></p>
+    <p style="font-size:12px;color:#64748B;margin:0;"><!-- CONTENT_SLOT:PAGE_META --></p>
+  </div>
+
+  <!-- 情节调节图例 -->
+  <div class="no-print" style="margin:8px 0 16px 0;padding:8px 12px;background:#F8FAFC;border:1px solid #E2E8F0;font-size:10pt;color:#64748B;border-radius:4px;line-height:1.8;">
+    <strong style="color:#1A202C;">情节图例：</strong>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#FFF5F5;color:#C53030;">❌ 从重</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#EDF7F0;color:#0A6E42;">✅ 从轻</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#F0F7F8;color:#005f73;">🔵 减轻</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#FFFBEB;color:#D97706;">⚠️ 待核实</span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 2: 案件信息
+     ════════════════════════════════════════ -->
+  <!-- CONTENT_SLOT:CASE_INFO -->
+
+  <!-- ════════════════════════════════════════
+     SLOT 3: 六模块内容
+     ════════════════════════════════════════ -->
+  <!-- CONTENT_SLOT:MODULE_1_TO_6 -->
+
+  <!-- ════════════════════════════════════════
+     免责声明（固定内容，始终输出，SLOT-4 控制分级）
+     ════════════════════════════════════════ -->
+  <div id="disclaimer" style="margin-top:28px;padding:12px 16px;background:#fef9f9;border-left:3px solid #C53030;font-size:11pt;color:#64748B;line-height:1.5;">
+    <strong>免责声明</strong><br>
+    本量刑分析报告为<strong>L2 中风险级</strong>产物，基于用户提供信息生成，仅供参考，不构成法律意见。<br>
+    量刑预测受法官自由裁量、地区差异、个案特殊情况等影响，不承诺量刑结果。实际量刑以法院判决为准。<br>
+    如需作为辩护依据，须由律师审核内容并结合当地司法实践调整预期。
+  </div>
+
+  <!-- 版本水印 -->
+  <div class="template-version-watermark" style="font-size:9px;color:#64748B;text-align:right;margin-top:16px;opacity:0.6;">
+    template: criminal-sentencing-analysis v2.0.1 | generated: <!-- CONTENT_SLOT:GENERATED_AT -->
+  </div>
+
+</div><!-- .main-content -->
+
+<!-- Mermaid.js CDN + 侧栏导航高亮脚本 -->
+<!-- HARD_BLOCK:DONT_MODIFY_START -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+/* Mermaid 初始化 */
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#F0F7F8',
+    primaryTextColor: '#005f73',
+    primaryBorderColor: '#005f73',
+    lineColor: '#64748B',
+    fontSize: '12px'
+  }
+});
+
+/* Mermaid 渲染错误处理 */
+mermaid.parseError = function(err, hash) {
+  var containers = document.querySelectorAll('.mermaid-wrap');
+  containers.forEach(function(container) {
+    var errorDiv = container.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('mermaid-error')) {
+      errorDiv.style.display = 'block';
+    }
+  });
+  console.error('Mermaid 渲染错误:', err);
+};
+
+/* 渲染完成后检测 */
+window.addEventListener('load', function() {
+  var mermaidDivs = document.querySelectorAll('.mermaid');
+  mermaidDivs.forEach(function(div) {
+    if (div.querySelector('svg') === null && div.textContent.trim().length > 0) {
+      var errorDiv = div.parentElement.querySelector('.mermaid-error');
+      if (errorDiv) { errorDiv.style.display = 'block'; }
+    }
+  });
+
+  /* 侧栏导航高亮 */
+  var sections = document.querySelectorAll('section[id^="module-"], #disclaimer');
+  var navLinks = document.querySelectorAll('.side-nav a');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        navLinks.forEach(function(link) { link.classList.remove('active'); });
+        var activeLink = document.querySelector('.side-nav a[href="#' + entry.target.id + '"]');
+        if (activeLink) {
+          activeLink.classList.add('active');
+          activeLink.style.background = '#F0F7F8';
+          activeLink.style.borderLeftColor = '#005f73';
+          activeLink.style.color = '#005f73';
+          activeLink.style.fontWeight = 'bold';
+        }
+        /* 重置非激活链接 */
+        navLinks.forEach(function(link) {
+          if (link !== activeLink) {
+            link.style.background = '';
+            link.style.borderLeftColor = 'transparent';
+            link.style.color = '';
+            link.style.fontWeight = '';
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(function(section) { observer.observe(section); });
+});
+
+/* 折叠/展开高级模块 */
+function toggleAllDetails() {
+  var details = document.querySelectorAll('details');
+  var allOpen = true;
+  details.forEach(function(d) { if (!d.open) allOpen = false; });
+  details.forEach(function(d) { d.open = !allOpen; });
+}
+</script>
+<!-- HARD_BLOCK:DONT_MODIFY_END -->
+
+<!-- 禁用 JavaScript 时的降级提示 -->
+<noscript>
+  <div style="padding:16px;background:#FFF5F5;border:1px solid #fca5a5;margin:12px 0;font-size:13px;color:#C53030;">
+    <strong>图表无法渲染：</strong>您的浏览器未启用 JavaScript。
+    Mermaid 量刑逻辑图需要 JavaScript 才能渲染。请启用 JavaScript 后刷新页面，
+    或展开"查看 Mermaid 源码"区域，复制代码到 <a href="https://mermaid.live" target="_blank">mermaid.live</a> 在线渲染。
+  </div>
+</noscript>
+
+</body>
+</html>

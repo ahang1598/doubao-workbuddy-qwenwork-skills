@@ -1,0 +1,70 @@
+# 周期划分（对齐用户提示词"2004 至今划分为五个周期"）
+# 用于把"管理层行为 / 组织演进 / 资源投向"落到统一的时间骨架上
+
+cycles:
+  - id: cycle1
+    name: 经济过热
+    start: "2004"
+    end: "2008"
+    macro: 高增长高投资、银行业股改上市潮
+    key_events:
+      - "2004: 国有四大行股改启动"
+      - "2006: 巴塞尔协议 II 推行、人民币升值加速"
+      - "2007: 股市 6124 点、通胀上行"
+      - "2008: 次贷危机传导、出口受阻"
+    regulator_focus: 资本充足率与股改上市
+
+  - id: cycle2
+    name: 四万亿
+    start: "2009"
+    end: "2012"
+    macro: 信贷扩张 + 影子银行兴起
+    key_events:
+      - "2009: 四万亿刺激计划"
+      - "2010: 货币紧缩、地方融资平台扩张"
+      - "2011: 通胀与影子银行爆发"
+      - "2012: 银信合作、同业业务兴起"
+    regulator_focus: 银信合作、表外监管
+
+  - id: cycle3
+    name: 新常态
+    start: "2013"
+    end: "2016"
+    macro: 去杠杆 + 金融创新
+    key_events:
+      - "2013: 钱荒（6 月）、非标资产争议"
+      - "2014: 沪港通、利率市场化提速"
+      - "2015: 股灾 + 存贷比取消"
+      - "2016: MPA 考核落地、广义信贷纳管"
+    regulator_focus: MPA、广义信贷、利率市场化
+
+  - id: cycle4
+    name: 严监管
+    start: "2017"
+    end: "2020"
+    macro: 资管新规 + "三三四十"专项检查 + 疫情
+    key_events:
+      - "2017: 三三四十专项、同业整顿"
+      - "2018: 资管新规落地、去通道"
+      - "2019: 包商/锦州事件、中小行风险暴露"
+      - "2020: 新冠疫情、让利实体"
+    regulator_focus: 资管新规、同业整顿、普惠金融
+
+  - id: cycle5
+    name: 高质量发展
+    start: "2021"
+    end: "至今"
+    macro: 房地产调整 + 零售深化 + 金融回归本源
+    key_events:
+      - "2021: 碳中和目标、房地产集中度管理"
+      - "2022: 房企信用事件、按揭提前还款潮"
+      - "2023: 金融工作会议、金融监管总局"
+      - "2024-: 存量按揭调息、零售不良抬升"
+    regulator_focus: 房地产敞口、消费金融、金融工作会议导向
+
+# 周期对齐的取值规则
+alignment_rules:
+  attribute_year_to_cycle: start_year_inclusive_end_year_inclusive
+  cross_cycle_leader_rule:
+    description: 领导任期起始年与结束年处于不同 cycle，视为跨周期
+    min_cycles_covered_for_stable_label: 2  # 跨 2+ 周期即计入"跨周期"样本

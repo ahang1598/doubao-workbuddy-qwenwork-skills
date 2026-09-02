@@ -1,0 +1,32 @@
+{
+  "name": "export-control-compliance-system-design",
+  "name_en": "export-control-compliance-system-design",
+  "description": "基于企业行业类型、产品线、出口目的地自动生成出口管制合规制度全套文件（合规手册+7套SOP+7份表格模板+角色职责+违规流程），输出为17个独立文件（9个DOCX+8个XLSX）。触发：出口管制合规制度搭建/合规手册编制/SOP体系建立。不触发：ECCN单物项分类/制裁清单筛查/出口许可证申请。",
+  "version": "2.0.0",
+  "blueprint": "bp-research-organization-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-13",
+  "updated": "2026-06-26",
+  "author": "builder-foreign-batch",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-content",
+  "output_formats": ["docx", "xlsx"],
+  "o1_format": "docx",
+  "o2_format": "xlsx",
+  "legal_domain": "涉外-出口管制",
+  "script_necessity": "none",
+  "infrastructure_dependencies": {
+    "required": ["governance.soft_degraded", "engines.docx", "engines.xlsx"],
+    "optional": []
+  },
+  "upstream_skills": [
+    "export-control-item-classification",
+    "sanctions-list-batch-screening"
+  ],
+  "downstream_skills": [
+    "export-license-application-prep",
+    "compliance-training-audit"
+  ]
+}

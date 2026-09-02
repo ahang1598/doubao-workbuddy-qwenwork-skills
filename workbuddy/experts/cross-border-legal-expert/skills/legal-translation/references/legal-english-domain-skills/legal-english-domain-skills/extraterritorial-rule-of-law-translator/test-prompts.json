@@ -1,0 +1,37 @@
+{
+  "skill": "extraterritorial-rule-of-law-translator",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "long-arm jurisdiction、extraterritorial jurisdiction、personal jurisdiction 在这段涉外管辖说明中怎么区分？",
+      "expected": "Use the skill to map power type and forum relation."
+    },
+    {
+      "type": "should-call",
+      "prompt": "请审校 minimum contacts 和 effects test 的中文译名及适用说明。",
+      "expected": "Use the skill for U.S. jurisdiction thresholds."
+    },
+    {
+      "type": "should-call",
+      "prompt": "blocking statute、blocking measures、anti-sanctions law 在合规简报里如何统一？",
+      "expected": "Use the skill to distinguish defensive measures against extraterritorial application."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "合同里的 force majeure 和 Act of God 怎么分？",
+      "expected": "Do not call; use civil-law-private-rights-translator."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "board of supervisors 应译为监事会还是监督委员会？",
+      "expected": "Do not call; use commercial-corporate-finance-translator."
+    },
+    {
+      "type": "boundary",
+      "prompt": "涉美证券诉讼中 long-arm jurisdiction、service of process 和 information disclosure 都出现了。",
+      "expected": "Call this skill and coordinate with procedure and commercial skills."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "量刑预测与辩护",
+  "marketId": "",
+  "name": "量刑预测与辩护",
+  "version": "",
+  "description": "为辩护律师生成量刑预测与辩护分析报告。基于量刑指导意见计算基准刑、情节调节比例和预计刑期，提供缓刑可能性评估和量刑辩护建议。触发：用户需要量刑预测或量刑辩护分析。不触发：刑罚具体计算（→民事赔偿计算）、判决书起草（→criminal-defense-speech-trial）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

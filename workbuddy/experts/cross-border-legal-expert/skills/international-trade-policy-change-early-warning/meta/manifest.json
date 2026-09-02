@@ -1,0 +1,18 @@
+{
+  "name": "international-trade-policy-change-early-warning",
+  "name_en": "international-trade-policy-change-early-warning",
+  "description": "检索并解读7大涉外领域法规变更及制裁名单更新，生成中文简报并标注多法域冲突。触发：EAR/SDN/ECCN变更、CFIUS/GDPR/UFLPA/FCPA追踪。不触发：制裁清单批量筛查。",
+  "version": "2.0.0",
+  "blueprint": "bp-research-organization-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-22",
+  "updated": "2026-06-26",
+  "author": "skills_richee",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-content",
+  "output_formats": ["html", "markdown"],
+  "legal_domain": "export_control, sanctions, foreign, investment_review, data_cross_border, trade_remedy, anti_bribery, supply_chain, intl_arbitration",
+  "script_necessity": "none"
+}

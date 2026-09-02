@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "data": {
+    "total": 5,
+    "high": 1,
+    "medium": 3,
+    "low": 1,
+    "items": [
+      {
+        "index": 1,
+        "clause": "第8.2条",
+        "issue": "违约金比例过高",
+        "risk_level": "中",
+        "suggestion": "建议下调违约金比例至行业合理水平"
+      },
+      {
+        "index": 2,
+        "clause": "第12.1条",
+        "issue": "单方解除权不对等",
+        "risk_level": "高",
+        "suggestion": "建议增设双方对等的解除权及补救期"
+      },
+      {
+        "index": 3,
+        "clause": "第7.2条 质保期",
+        "issue": "质保期仅3个月，低于行业惯例",
+        "risk_level": "中",
+        "suggestion": "建议质保期不少于12个月"
+      },
+      {
+        "index": 4,
+        "clause": "第10.5条 保密义务",
+        "issue": "保密义务仅约束乙方",
+        "risk_level": "中",
+        "suggestion": "建议改为双向保密义务"
+      },
+      {
+        "index": 5,
+        "clause": "第14.2条 不可抗力",
+        "issue": "不可抗力范围未包含政府行为",
+        "risk_level": "低",
+        "suggestion": "建议补充政府行为、疫情管控等情形"
+      }
+    ]
+  }
+}

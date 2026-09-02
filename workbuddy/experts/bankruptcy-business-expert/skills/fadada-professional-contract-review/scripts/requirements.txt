@@ -1,0 +1,10 @@
+# 运行本技能所需的第三方依赖（三项硬依赖 + 一项可选）
+lxml>=4.9,<7          # ooxml_engine / review_docx / validate_review_outputs：OOXML 解析与修订标记
+python-docx>=1.1,<2   # build_review_report / review_cache：报告 docx 生成
+openpyxl>=3.1,<4      # build_risk_list / extract_risk_data：风险清单 xlsx
+
+# 可选：清单 schema 校验。**不装也完整可用**——scripts/checklist_schema.py 是
+# 零依赖的内置校验器，覆盖本 schema 用到的全部 14 个关键字；装了则改用官方实现
+# 并与内置实现交叉验证。不内置 jsonschema 是因为其依赖链含 rpds-py 编译型二进制
+# wheel（平台 × Python 版本双绑定），打包需十余个 wheel 且随环境升级失效。
+# jsonschema>=4.21,<5

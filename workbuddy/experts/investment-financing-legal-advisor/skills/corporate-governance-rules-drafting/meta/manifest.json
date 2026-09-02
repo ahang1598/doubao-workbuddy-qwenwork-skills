@@ -1,0 +1,11 @@
+{
+  "name": "三会议事规则起草与优化",
+  "name_en": "corporate-governance-rules-drafting",
+  "description": "起草或审查优化股东会/董事会/监事会议事规则。触发：写董事会议事规则/审查这份议事规则有没有问题/按新公司法更新三会议事规则/三会基本议事规则。不触发：公司章程起草——公司股权全生命周期；总经理工作细则——后续独立技能。",
+  "version": "1.3.0",
+  "blueprint": "bp-corporate-governance-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2024-07-01",
+  "created": "2026-06-03"
+}

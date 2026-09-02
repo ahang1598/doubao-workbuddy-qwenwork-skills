@@ -1,0 +1,32 @@
+{
+  "scenario_id": "S-ASSET",
+  "scenario_name": "资产收购",
+  "description": "特定资产交易（不收购股权），关注资产权属清晰，核心关切权属证明/资产相关合同/资产无负担",
+  "modules": {
+    "M1": {"enabled": true, "priority": "medium", "depth": "quick", "estimated_items": 5},
+    "M2": {"enabled": false, "priority": "none", "depth": "none", "estimated_items": 0},
+    "M3": {"enabled": false, "priority": "none", "depth": "none", "estimated_items": 0},
+    "M4": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M5": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 16},
+    "M6": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 12},
+    "M7": {"enabled": false, "priority": "none", "depth": "none", "estimated_items": 0},
+    "M8": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 6},
+    "M9": {"enabled": true, "priority": "low", "depth": "quick", "estimated_items": 5},
+    "M10": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 5},
+    "M11": {"enabled": false, "priority": "none", "depth": "none", "estimated_items": 0},
+    "M12": {"enabled": true, "priority": "low", "depth": "quick", "estimated_items": 3}
+  },
+  "total_estimated": "50-75",
+  "industry_adaptation": {
+    "real_estate": {"M5": {"priority": "high", "depth": "full", "extra_items": ["建设用地规划许可证", "建设工程规划许可证", "建筑工程施工许可证", "商品房预售许可证"]}},
+    "manufacturing": {"M5": {"extra_items": ["设备清单及权属证明", "生产线环评文件"]}, "M12": {"enabled": true, "priority": "medium"}},
+    "software": {"M5": {"extra_items": ["源代码权属确认书", "软件著作权登记证书", "算法说明文档"]}}
+  },
+  "key_concerns": ["资产权属清晰", "资产无负担", "资产相关合同", "资产价值评估"],
+  "focus_modules": ["M5", "M6"],
+  "special_requirements": {
+    "M5": "需提供全部资产权属证明（不动产/动产/知识产权）",
+    "M6": "需提供与目标资产直接相关的全部合同",
+    "note": "M2/M3/M7/M11禁用——资产收购不关注公司主体"
+  }
+}

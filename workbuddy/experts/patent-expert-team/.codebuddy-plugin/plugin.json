@@ -1,0 +1,343 @@
+{
+  "name": "patent-expert-team",
+  "version": "2.0.7",
+  "description": "踏歌行专利智多星（专利陪跑专家团）V2.0 —— 覆盖发明专利申请全流程：文献检索、引用匹配、跨领域迁移、现有技术检索、交底书架构设计（3种撰写模式+内循环对抗审查）、权利要求布局优化、专业附图绘制、乔哈里窗审查、幻觉检测、AI四级闸门合规审查、审查意见答复（分类映射）、成果打包交付。由 orchestrator 统一调度 13 个专业子 skill，形成端到端的专利申请专家工作流。",
+  "author": {
+    "name": "Patent Application Expert Team",
+    "email": "15703456@qq.com"
+  },
+  "keywords": [
+    "patent",
+    "patent-application",
+    "invention-patent",
+    "cnipa",
+    "patent-drafting",
+    "prior-art-search",
+    "claim-optimization",
+    "patent-examination",
+    "literature-search",
+    "citation-matching",
+    "cross-domain-migration",
+    "patent-figures",
+    "ai-compliance"
+  ],
+  "agents": [
+    "./agents/patent-expert-orchestrator.md",
+    "./agents/patent-literature-search.md",
+    "./agents/patent-citation-matcher.md",
+    "./agents/patent-cross-domain-migrator.md",
+    "./agents/patent-prior-art-searcher.md",
+    "./agents/patent-disclosure-architect.md",
+    "./agents/patent-claim-optimizer.md",
+    "./agents/patent-figure-drawer.md",
+    "./agents/johari-window-auditor.md",
+    "./agents/hallucination-guard.md",
+    "./agents/patent-compliance-checker.md",
+    "./agents/patent-exam-responder.md",
+    "./agents/patent-packager.md"
+  ],
+  "skills": [
+    "./skills/hallucination-guard",
+    "./skills/johari-window-auditor",
+    "./skills/patent-citation-matcher",
+    "./skills/patent-claim-optimizer",
+    "./skills/patent-compliance-checker",
+    "./skills/patent-cross-domain-migrator",
+    "./skills/patent-disclosure-architect",
+    "./skills/patent-exam-responder",
+    "./skills/patent-expert-orchestrator",
+    "./skills/patent-figure-drawer",
+    "./skills/patent-literature-search",
+    "./skills/patent-packager",
+    "./skills/patent-prior-art-searcher"
+  ],
+  "expertType": "team",
+  "agentName": "patent-expert-orchestrator",
+  "teamInfo": {
+    "leadAgent": "patent-expert-orchestrator",
+    "memberAgents": [
+      "patent-literature-search",
+      "patent-citation-matcher",
+      "patent-cross-domain-migrator",
+      "patent-prior-art-searcher",
+      "patent-disclosure-architect",
+      "patent-claim-optimizer",
+      "patent-figure-drawer",
+      "johari-window-auditor",
+      "hallucination-guard",
+      "patent-compliance-checker",
+      "patent-exam-responder",
+      "patent-packager"
+    ]
+  },
+  "displayName": {
+    "en": "Patent Application Expert Team V2.0",
+    "zh": "踏歌行专利智多星专家团"
+  },
+  "profession": {
+    "en": "Patent Application Expert Team V2.0",
+    "zh": "踏歌行专利智多星专家团"
+  },
+  "displayDescription": {
+    "en": "A team of 13 patent specialists — literature search, citation matching, cross-domain migration, disclosure drafting (3 modes + internal adversarial-review loop), claim optimization, professional figure drawing, Johari-window audit, hallucination guard, AI 4-gate compliance, OA response (classification mapping) and packaging — turning tech ideas into CNIPA-ready filing packages.",
+    "zh": "13位专利专家，从文献检索、交底书、权要优化到附图、合规、答审与打包，产出CNIPA合规申报包。"
+  },
+  "avatar": "avatars/patent-expert-orchestrator.png",
+  "categoryId": "12-IndustryConsultant",
+  "defaultInitPrompt": {
+    "en": "Help me turn this tech idea into a complete invention patent filing package.",
+    "zh": "帮我把这个技术想法（附论文更好）整理成一份完整的发明专利申报材料包"
+  },
+  "plugin": "patent-expert-team",
+  "tags": [
+    {
+      "en": "Patent Building & Optimization",
+      "zh": "专利成果搭建及优化"
+    },
+    {
+      "en": "Invention Patent Filing Assistant",
+      "zh": "发明专利申报助手"
+    },
+    {
+      "en": "CNIPA Compliance",
+      "zh": "CNIPA合规"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Help me turn this tech idea into a complete invention patent filing package.",
+      "zh": "帮我把这个技术想法（附论文更好）整理成一份完整的发明专利申报材料包"
+    },
+    {
+      "en": "Migrate this method from source domain to target domain and write a patent.",
+      "zh": "把源领域的这个方法迁移到目标领域，写一篇专利"
+    },
+    {
+      "en": "The examiner issued an office action; help me draft a response.",
+      "zh": "审查员发了审查意见通知书，帮我起草答复方案"
+    }
+  ],
+  "members": [
+    {
+      "id": "patent-expert-orchestrator",
+      "displayName": {
+        "en": "Heng Ceyuan",
+        "zh": "衡策远"
+      },
+      "profession": {
+        "en": "Patent Orchestration Director",
+        "zh": "专利统筹总监"
+      },
+      "avatar": "avatars/patent-expert-orchestrator.png",
+      "role": "lead",
+      "name": {
+        "en": "Heng Ceyuan",
+        "zh": "衡策远"
+      }
+    },
+    {
+      "id": "patent-literature-search",
+      "displayName": {
+        "en": "Wen Xianyuan",
+        "zh": "文献渊"
+      },
+      "profession": {
+        "en": "Literature Search Specialist",
+        "zh": "文献检索专家"
+      },
+      "avatar": "avatars/patent-literature-search.png",
+      "role": "member",
+      "name": {
+        "en": "Wen Xianyuan",
+        "zh": "文献渊"
+      }
+    },
+    {
+      "id": "patent-citation-matcher",
+      "displayName": {
+        "en": "Yin Zhengju",
+        "zh": "引证据"
+      },
+      "profession": {
+        "en": "Citation Matching Specialist",
+        "zh": "引用匹配专家"
+      },
+      "avatar": "avatars/patent-citation-matcher.png",
+      "role": "member",
+      "name": {
+        "en": "Yin Zhengju",
+        "zh": "引证据"
+      }
+    },
+    {
+      "id": "patent-cross-domain-migrator",
+      "displayName": {
+        "en": "Qian Qianyi",
+        "zh": "迁迁移"
+      },
+      "profession": {
+        "en": "Cross-Domain Migration Specialist",
+        "zh": "跨领域迁移专家"
+      },
+      "avatar": "avatars/patent-cross-domain-migrator.png",
+      "role": "member",
+      "name": {
+        "en": "Qian Qianyi",
+        "zh": "迁迁移"
+      }
+    },
+    {
+      "id": "patent-prior-art-searcher",
+      "displayName": {
+        "en": "Cha Xinyuan",
+        "zh": "查新源"
+      },
+      "profession": {
+        "en": "Prior Art Searcher",
+        "zh": "现有技术检索专家"
+      },
+      "avatar": "avatars/patent-prior-art-searcher.png",
+      "role": "member",
+      "name": {
+        "en": "Cha Xinyuan",
+        "zh": "查新源"
+      }
+    },
+    {
+      "id": "patent-disclosure-architect",
+      "displayName": {
+        "en": "Wen Shuli",
+        "zh": "文述理"
+      },
+      "profession": {
+        "en": "Disclosure Architect",
+        "zh": "交底书撰写专家"
+      },
+      "avatar": "avatars/patent-disclosure-architect.png",
+      "role": "member",
+      "name": {
+        "en": "Wen Shuli",
+        "zh": "文述理"
+      }
+    },
+    {
+      "id": "patent-claim-optimizer",
+      "displayName": {
+        "en": "Fan Fangyuan",
+        "zh": "范方圆"
+      },
+      "profession": {
+        "en": "Claim Optimizer",
+        "zh": "权利要求优化专家"
+      },
+      "avatar": "avatars/patent-claim-optimizer.png",
+      "role": "member",
+      "name": {
+        "en": "Fan Fangyuan",
+        "zh": "范方圆"
+      }
+    },
+    {
+      "id": "patent-figure-drawer",
+      "displayName": {
+        "en": "Tu Zhizhun",
+        "zh": "图致准"
+      },
+      "profession": {
+        "en": "Patent Figure Draftsman",
+        "zh": "专利附图绘制专家"
+      },
+      "avatar": "avatars/patent-figure-drawer.png",
+      "role": "member",
+      "name": {
+        "en": "Tu Zhizhun",
+        "zh": "图致准"
+      }
+    },
+    {
+      "id": "johari-window-auditor",
+      "displayName": {
+        "en": "Jiao Chuangming",
+        "zh": "焦窗明"
+      },
+      "profession": {
+        "en": "Johari Window Auditor",
+        "zh": "乔哈里视窗审计专家"
+      },
+      "avatar": "avatars/johari-window-auditor.png",
+      "role": "member",
+      "name": {
+        "en": "Jiao Chuangming",
+        "zh": "焦窗明"
+      }
+    },
+    {
+      "id": "hallucination-guard",
+      "displayName": {
+        "en": "Yan Zhenming",
+        "zh": "验真明"
+      },
+      "profession": {
+        "en": "Hallucination Guard",
+        "zh": "幻觉检测专家"
+      },
+      "avatar": "avatars/hallucination-guard.png",
+      "role": "member",
+      "name": {
+        "en": "Yan Zhenming",
+        "zh": "验真明"
+      }
+    },
+    {
+      "id": "patent-compliance-checker",
+      "displayName": {
+        "en": "Fa Zhengqing",
+        "zh": "法正清"
+      },
+      "profession": {
+        "en": "Compliance Checker",
+        "zh": "合规审查专家"
+      },
+      "avatar": "avatars/patent-compliance-checker.png",
+      "role": "member",
+      "name": {
+        "en": "Fa Zhengqing",
+        "zh": "法正清"
+      }
+    },
+    {
+      "id": "patent-exam-responder",
+      "displayName": {
+        "en": "Tang Bianfang",
+        "zh": "唐辩方"
+      },
+      "profession": {
+        "en": "OA Response Specialist",
+        "zh": "审查意见答复专家"
+      },
+      "avatar": "avatars/patent-exam-responder.png",
+      "role": "member",
+      "name": {
+        "en": "Tang Bianfang",
+        "zh": "唐辩方"
+      }
+    },
+    {
+      "id": "patent-packager",
+      "displayName": {
+        "en": "Bao Zonghui",
+        "zh": "包综汇"
+      },
+      "profession": {
+        "en": "Filing Packager",
+        "zh": "申报打包专家"
+      },
+      "avatar": "avatars/patent-packager.png",
+      "role": "member",
+      "name": {
+        "en": "Bao Zonghui",
+        "zh": "包综汇"
+      }
+    }
+  ]
+}

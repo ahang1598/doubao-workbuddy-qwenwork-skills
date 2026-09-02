@@ -1,0 +1,16 @@
+{
+  "checklist_id": "CL-ITM-PO-2026-002",
+  "schema_version": "iterms-2.0",
+  "checklist_name": "采购合同审查清单",
+  "applicable_version": "审查v2.x",
+  "business_type": "采购合同",
+  "position": "buyer",
+  "scope": "library",
+  "version": "1.0.0",
+  "owner_org": "_default",
+  "source_meta": {
+    "generator": "合同审查清单生成器",
+    "generated_at": "2026-05-30T00:00:00+00:00"
+  },
+  "data": []
+}

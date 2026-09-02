@@ -1,0 +1,89 @@
+{
+  "name": "workbuddy-data-expert-team",
+  "version": "0.1.0",
+  "description": "DataBuddy Big Data Expert Team — orchestrates data director, data analysis expert and data governance expert to support enterprise data analysis and governance end-to-end",
+  "author": {
+    "name": "WeData Team",
+    "email": "wedata@tencent.com"
+  },
+  "agents": [
+    "./agents/data-expert-team-lead.md",
+    "./agents/databuddy-analyst.md",
+    "./agents/databuddy-governor.md"
+  ],
+  "skills": [
+    "./skills/data-task-planner",
+    "./skills/intelligent-query",
+    "./skills/intelligent-kanban",
+    "./skills/report-composer",
+    "./skills/data-classification",
+    "./skills/data-quality-anomaly",
+    "./skills/data-quality-profiling",
+    "./skills/data-quality-task",
+    "./skills/semantic-manage",
+    "./skills/unity-catalog-manage",
+    "./skills/asset-discovery",
+    "./skills/workflow-orchestration"
+  ],
+  "expertType": "team",
+  "agentName": "data-expert-team-lead",
+  "teamInfo": {
+    "leadAgent": "data-expert-team-lead",
+    "memberAgents": ["databuddy-analyst", "databuddy-governor"]
+  },
+  "displayName": {
+    "en": "TencentCloud BigData",
+    "zh": "腾讯云大数据"
+  },
+  "profession": {
+    "en": "DataBuddy Big Data Expert Team",
+    "zh": "DataBuddy大数据专家团"
+  },
+  "displayDescription": {
+    "zh": "融合业务分析与数据治理能力，支持智能问数、经营报告、指标口径解释、血缘影响和质量根因定位",
+    "en": "A DataBuddy-powered expert team that combines business analysis and data governance for data Q&A, business reports, metric explanation, lineage impact and quality root cause analysis."
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": {
+    "zh": "帮我看最近 7 天支付转化率为什么下降",
+    "en": "Help me analyze why the payment conversion rate dropped in the last 7 days."
+  },
+  "plugin": "workbuddy-data-expert-team",
+  "tags": [
+    { "en": "Data Q&A", "zh": "智能问数" },
+    { "en": "Business Reports", "zh": "经营报告" },
+    { "en": "Metric Governance", "zh": "指标治理" }
+  ],
+  "quickPrompts": [
+    { "en": "Help me analyze why the payment conversion rate dropped in the last 7 days.", "zh": "帮我看最近 7 天支付转化率为什么下降" },
+    { "en": "What is the definition of the GMV metric, and where does the data come from?", "zh": "这个 GMV 指标的口径是什么，数据来自哪里" },
+    { "en": "Which downstream assets will be affected if the GMV metric definition is changed?", "zh": "修改 GMV 指标口径会影响哪些下游资产" }
+  ],
+  "members": [
+    {
+      "id": "data-expert-team-lead",
+      "name": { "en": "Atlas Dong", "zh": "董全局" },
+      "profession": { "en": "Data Director", "zh": "数据总监" },
+      "avatar": "avatars/team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "databuddy-analyst",
+      "name": { "en": "Aiden Analytics", "zh": "艾分析" },
+      "profession": { "en": "Data Analysis Expert", "zh": "数据分析专家" },
+      "avatar": "avatars/databuddy-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "databuddy-governor",
+      "name": { "en": "Gavin Governance", "zh": "严治理" },
+      "profession": { "en": "Data Governance Expert", "zh": "数据治理专家" },
+      "avatar": "avatars/data-governance-expert.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": ["databuddy"]
+  }
+}

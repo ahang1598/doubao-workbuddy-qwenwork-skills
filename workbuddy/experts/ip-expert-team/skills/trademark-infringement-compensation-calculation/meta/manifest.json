@@ -1,0 +1,31 @@
+{
+  "name": "商标侵权赔偿测算",
+  "name_en": "tm-damage-calc",
+  "description": "根据证据选择最优赔偿计算路径，输出合理赔偿金额区间，支持时间对齐折算+四路径递进优先级（权利人实际损失→侵权人获利→许可使用费倍数→法定赔偿）+惩罚性赔偿(1-5倍)+合理开支。触发：商标侵权赔偿计算/赔偿金额测算/损失评估。不触发：起草起诉状(→tm-infringement-complaint)、侵权事实认定(→tm-infringement-complaint)。",
+  "version": "1.3.0",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-15",
+  "author": "深圳法大大网络科技有限公司",
+  "format_seriousness": "I-Practical",
+  "type_tag": "T-calculation",
+  "output_formats": ["markdown", "docx"],
+  "legal_domain": "商标民事",
+  "script_necessity": "none",
+  "dependencies": {
+    "infrastructure": [
+      {"name": "governance.soft_degraded", "required": true, "fallback": "无法降级时仅输出错误提示"},
+      {"name": "calc.date_calc", "required": false, "fallback": "手动计算侵权持续时间"},
+      {"name": "calc.limitation_calc", "required": false, "fallback": "手动计算诉讼时效"}
+    ],
+    "upstream_skills": [
+      {"name": "tm-infringement-complaint", "strength": "weak", "description": "消费其侵权事实认定和赔偿诉求"},
+      {"name": "tm-case-evaluation", "strength": "weak", "description": "消费其侵权定性输出"}
+    ],
+    "downstream_skills": [
+      {"name": "tm-infringement-complaint", "strength": "weak", "description": "下游消费测算结果作为赔偿请求依据"}
+    ]
+  }
+}

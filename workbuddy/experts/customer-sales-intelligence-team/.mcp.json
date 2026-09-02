@@ -1,0 +1,53 @@
+{
+  "mcpServers": {
+    "wx-customer-directory": {
+      "type": "http",
+      "url": "https://policy-ent-mcp-wx-cust-db.mcp.it.woa.com/",
+      "headers": {
+        "Authorization": "Bearer ${WX_CUST_DB_TOKEN}"
+      },
+      "x-workbuddy": {
+        "displayName": {
+          "zh": "公众号客户信息表",
+          "en": "WeChat Customer Directory"
+        },
+        "description": {
+          "zh": "连接后可查询公众号客户信息，用于客户语义匹配和筛选条件核验。未连接时，客户匹配与筛选能力不可用。",
+          "en": "Connect to query the WeChat customer directory for customer matching and filter validation. Customer matching and filtering are unavailable until connected."
+        },
+        "auth": {
+          "type": "token",
+          "tokenSchema": {
+            "title": {
+              "zh": "配置公众号客户信息表访问令牌",
+              "en": "Configure WeChat Customer Directory Token"
+            },
+            "description": {
+              "zh": "请输入可调用 query_wx_cust_db 的访问令牌。",
+              "en": "Enter an access token that can invoke query_wx_cust_db."
+            },
+            "fields": [
+              {
+                "key": "WX_CUST_DB_TOKEN",
+                "label": {
+                  "zh": "访问令牌",
+                  "en": "Access Token"
+                },
+                "placeholder": {
+                  "zh": "请输入访问令牌",
+                  "en": "Enter access token"
+                },
+                "type": "password",
+                "required": true,
+                "description": {
+                  "zh": "令牌仅用于连接公众号客户信息表，不会被打包进专家包。",
+                  "en": "The token is used only to connect to the WeChat customer directory and is never packaged with the expert."
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

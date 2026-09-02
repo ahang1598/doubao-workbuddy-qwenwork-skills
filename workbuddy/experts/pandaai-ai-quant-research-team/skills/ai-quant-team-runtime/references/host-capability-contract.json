@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "description": "A host must truthfully declare these booleans before loading a portable team mode.",
+  "capabilities": {
+    "filesystem_read": "Read canonical declarations, task packets and evidence.",
+    "filesystem_write": "Write run artifacts and structured member handoffs.",
+    "persistent_workspace": "Keep one run directory across pauses and member calls.",
+    "process_exec": "Execute the local workflow guard and declared Skill scripts.",
+    "isolated_member_invocation": "Run each member in a separate model context.",
+    "invocation_id": "Expose a real unique member-call identifier.",
+    "secret_redaction": "Keep login credentials and tokens out of prompts and receipts.",
+    "pandadata_access": "Provide real PandaData access through SDK, MCP or Connector.",
+    "human_approval_resume": "Pause before costed runs and resume after explicit approval.",
+    "pandaai_cli": "Expose authenticated pandaai-cli >=0.1.6 for standard/audit paid stages."
+  },
+  "fail_closed": true
+}

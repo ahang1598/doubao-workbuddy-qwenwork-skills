@@ -1,0 +1,11 @@
+{
+  "license": "MIT",
+  "metadata": {
+    "version": "1.0",
+    "category": "productivity",
+    "sources": [
+      "ECMA-376 Office Open XML File Formats",
+      "Microsoft Open XML SDK documentation"
+    ]
+  }
+}

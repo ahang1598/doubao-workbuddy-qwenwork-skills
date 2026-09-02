@@ -1,0 +1,316 @@
+{
+  "version": "2026-07-29",
+  "code_overrides": {
+    "GB": "UK",
+    "GBR": "UK",
+    "EL": "GR"
+  },
+  "special_jurisdictions": [
+    {
+      "code": "EU",
+      "canonical_name": "欧盟",
+      "kind": "supranational",
+      "aliases": ["欧洲联盟", "欧盟", "european union", "union européenne"]
+    },
+    {
+      "code": "CoE",
+      "canonical_name": "欧洲委员会",
+      "kind": "supranational",
+      "aliases": ["欧洲委员会", "council of europe", "conseil de l'europe"]
+    },
+    {
+      "code": "UN",
+      "canonical_name": "联合国",
+      "kind": "international",
+      "aliases": ["联合国", "united nations", "nations unies"]
+    },
+    {
+      "code": "INTL",
+      "canonical_name": "国际/跨国",
+      "kind": "international",
+      "aliases": ["国际法院", "国际刑事法院", "international court of justice", "international criminal court"]
+    },
+    {
+      "code": "OECD",
+      "canonical_name": "经济合作与发展组织",
+      "kind": "international",
+      "aliases": ["经合组织", "经济合作与发展组织", "oecd", "organisation for economic co-operation and development"]
+    },
+    {
+      "code": "XK",
+      "canonical_name": "科索沃",
+      "kind": "territory",
+      "aliases": ["科索沃", "kosovo"]
+    },
+    {
+      "code": "UK",
+      "canonical_name": "英国",
+      "kind": "country",
+      "aliases": ["英国", "大不列颠", "联合王国", "united kingdom", "great britain", "britain", "gb", "gbr"]
+    },
+    {
+      "code": "CN",
+      "canonical_name": "中国大陆",
+      "kind": "country",
+      "aliases": ["中华人民共和国", "中国大陆", "大陆地区", "mainland china", "people's republic of china", "prc", "chn"]
+    },
+    {
+      "code": "HK",
+      "canonical_name": "中国香港",
+      "kind": "territory",
+      "aliases": ["中华人民共和国香港特别行政区", "中国香港", "香港特别行政区", "香港", "hong kong sar", "hong kong", "hksar", "hkg"]
+    },
+    {
+      "code": "MO",
+      "canonical_name": "中国澳门",
+      "kind": "territory",
+      "aliases": ["中华人民共和国澳门特别行政区", "中国澳门", "澳门特别行政区", "澳门", "macao sar", "macao", "macau", "mac"]
+    },
+    {
+      "code": "TW",
+      "canonical_name": "中国台湾",
+      "kind": "territory",
+      "aliases": ["中国台湾", "台湾地区", "台湾", "taiwan", "twn"]
+    }
+  ],
+  "subnational_regions": [
+    {
+      "canonical_name": "加利福尼亚州",
+      "parent_code": "US",
+      "aliases": ["加利福尼亚州", "加利福尼亚", "加州", "california"],
+      "query_terms": ["California", "加利福尼亚州"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "纽约州",
+      "parent_code": "US",
+      "aliases": ["纽约州", "new york state"],
+      "query_terms": ["New York State", "纽约州"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "得克萨斯州",
+      "parent_code": "US",
+      "aliases": ["得克萨斯州", "德克萨斯州", "德州", "texas"],
+      "query_terms": ["Texas", "得克萨斯州"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "华盛顿州",
+      "parent_code": "US",
+      "aliases": ["华盛顿州", "washington state"],
+      "query_terms": ["Washington State", "华盛顿州"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "苏格兰",
+      "parent_code": "UK",
+      "aliases": ["苏格兰", "scotland", "scottish"],
+      "query_terms": ["Scotland", "Scottish"],
+      "source_hints": ["UK/ScotCourts"]
+    },
+    {
+      "canonical_name": "英格兰",
+      "parent_code": "UK",
+      "aliases": ["英格兰", "england", "english law"],
+      "query_terms": ["England", "English law"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "威尔士",
+      "parent_code": "UK",
+      "aliases": ["威尔士", "wales", "welsh"],
+      "query_terms": ["Wales", "Welsh"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "北爱尔兰",
+      "parent_code": "UK",
+      "aliases": ["北爱尔兰", "northern ireland"],
+      "query_terms": ["Northern Ireland"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "广东省",
+      "parent_code": "CN",
+      "aliases": ["广东省", "广东", "guangdong"],
+      "query_terms": ["广东省", "Guangdong"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "浙江省",
+      "parent_code": "CN",
+      "aliases": ["浙江省", "浙江", "zhejiang"],
+      "query_terms": ["浙江省", "Zhejiang"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "江苏省",
+      "parent_code": "CN",
+      "aliases": ["江苏省", "江苏", "jiangsu"],
+      "query_terms": ["江苏省", "Jiangsu"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "上海市",
+      "parent_code": "CN",
+      "aliases": ["上海市", "上海", "shanghai"],
+      "query_terms": ["上海市", "Shanghai"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "北京市",
+      "parent_code": "CN",
+      "aliases": ["北京市", "北京", "beijing"],
+      "query_terms": ["北京市", "Beijing"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "内蒙古自治区",
+      "parent_code": "CN",
+      "aliases": ["内蒙古自治区", "内蒙古", "inner mongolia"],
+      "query_terms": ["内蒙古自治区", "Inner Mongolia"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "新疆维吾尔自治区",
+      "parent_code": "CN",
+      "aliases": ["新疆维吾尔自治区", "新疆", "xinjiang"],
+      "query_terms": ["新疆维吾尔自治区", "Xinjiang"],
+      "source_hints": ["CN/NPC-LocalLaws"]
+    },
+    {
+      "canonical_name": "魁北克省",
+      "parent_code": "CA",
+      "aliases": ["魁北克省", "魁北克", "québec", "quebec"],
+      "query_terms": ["Québec", "Quebec"],
+      "source_hints": []
+    },
+    {
+      "canonical_name": "安大略省",
+      "parent_code": "CA",
+      "aliases": ["安大略省", "安大略", "ontario"],
+      "query_terms": ["Ontario"],
+      "source_hints": []
+    }
+  ],
+  "institutions": [
+    {
+      "canonical_name": "欧洲人权法院",
+      "country_code": "CoE",
+      "aliases": ["欧洲人权法院", "european court of human rights", "ecthr", "hudoc"],
+      "source_hints": ["CoE/HUDOC"]
+    },
+    {
+      "canonical_name": "欧盟法院",
+      "country_code": "EU",
+      "aliases": ["欧盟法院", "欧盟司法法院", "court of justice of the european union", "court of justice of the eu", "cjeu", "ecj", "curia"],
+      "source_hints": ["EU/CURIA"]
+    },
+    {
+      "canonical_name": "国际法院",
+      "country_code": "INTL",
+      "aliases": ["国际法院", "international court of justice", "icj"],
+      "source_hints": ["INTL/ICJDecisions"]
+    },
+    {
+      "canonical_name": "国际刑事法院",
+      "country_code": "INTL",
+      "aliases": ["国际刑事法院", "international criminal court"],
+      "source_hints": ["INTL/ICCCaseLaw", "INTL/ICCLegalTools"]
+    },
+    {
+      "canonical_name": "世界贸易组织",
+      "country_code": "INTL",
+      "aliases": ["世界贸易组织", "world trade organization", "wto"],
+      "source_hints": ["INTL/WTO-Disputes", "INTL/WTODocuments"]
+    },
+    {
+      "canonical_name": "中国全国人民代表大会",
+      "country_code": "CN",
+      "aliases": ["全国人民代表大会", "全国人大", "national people's congress"],
+      "source_hints": ["CN/NPC"]
+    },
+    {
+      "canonical_name": "中国最高人民法院",
+      "country_code": "CN",
+      "aliases": ["最高人民法院", "最高法", "supreme people's court of china"],
+      "source_hints": ["CN/SupremeCourt"]
+    }
+  ],
+  "domain_acronyms": [
+    {
+      "acronym": "CA",
+      "expansion": "Certification Authority",
+      "reason": "domain_acronym",
+      "context_pattern": "数字认证|电子认证|认证机构|证书颁发机构|数字证书|电子证书|信任服务|certification authority|certificate authority|trust service"
+    },
+    {
+      "acronym": "CA",
+      "expansion": "California",
+      "reason": "subnational_abbreviation",
+      "context_pattern": "\\bCalifornia\\b|加利福尼亚州|加州"
+    }
+  ],
+  "citation_patterns": [
+    {
+      "pattern": "\\bCELEX\\b|\\b[0-9][0-9]{4}[A-Z]{1,2}[0-9]{3,4}\\b|\\bGDPR\\b|Regulation\\s*\\(EU\\)",
+      "country_code": "EU",
+      "source_hints": ["EU/EUR-Lex"],
+      "reason": "eu_citation"
+    },
+    {
+      "pattern": "ECLI:EU:",
+      "country_code": "EU",
+      "source_hints": ["EU/CURIA"],
+      "reason": "eu_ecli"
+    },
+    {
+      "pattern": "\\bECHR\\b|\\bECtHR\\b|\\bCEDH\\b|欧洲人权公约",
+      "country_code": "CoE",
+      "source_hints": ["CoE/HUDOC"],
+      "reason": "coe_citation"
+    },
+    {
+      "pattern": "\\[[0-9]{4}\\]\\s*UKSC\\s*[0-9]+|\\bUKSC\\b",
+      "country_code": "UK",
+      "source_hints": [],
+      "reason": "uk_neutral_citation"
+    },
+    {
+      "pattern": "\\bBVerfG\\b|\\bBVerfGE\\b|\\bBGH\\b|ECLI:DE:",
+      "country_code": "DE",
+      "source_hints": [],
+      "reason": "de_citation"
+    },
+    {
+      "pattern": "中华人民共和国.{0,20}(法|条例|规定|办法)|法释〔|指导性案例",
+      "country_code": "CN",
+      "source_hints": [],
+      "reason": "cn_legal_reference"
+    }
+  ],
+  "ambiguous_terms": [
+    {
+      "term": "Georgia",
+      "candidates": [
+        {"country_code": "GE", "region": null, "label": "格鲁吉亚"},
+        {"country_code": "US", "region": "Georgia", "label": "美国佐治亚州"}
+      ]
+    },
+    {
+      "term": "刚果",
+      "candidates": [
+        {"country_code": "CG", "region": null, "label": "刚果共和国"},
+        {"country_code": "CD", "region": null, "label": "刚果民主共和国"}
+      ]
+    },
+    {
+      "term": "国际法",
+      "candidates": [
+        {"country_code": "INTL", "region": null, "label": "国际/跨国来源"},
+        {"country_code": "UN", "region": null, "label": "联合国体系"}
+      ]
+    }
+  ]
+}

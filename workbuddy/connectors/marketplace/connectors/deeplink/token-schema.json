@@ -1,0 +1,22 @@
+{
+  "title": "深度智联·地产数据 MCP 对接配置",
+  "title_en": "DeepLink Real Estate Data MCP Configuration",
+  "description": "连接深度智联房地产数据服务（使用经克而瑞授权的数据），用于查询新房、二手房、土地、企业、宏观等数据。API Key 仅保存在您的本机，不会上传或同步到 WorkBuddy 云端；连接时通过 HTTPS 请求头发送给深度智联服务完成鉴权。",
+  "description_en": "Connect to the DeepLink real estate data service using CRIC-licensed data for new homes, resale, land, enterprise, and macro data. Your API Key is stored only on this device and never uploaded or synced to WorkBuddy cloud; it is sent to the DeepLink service over HTTPS request headers for authentication when connecting.",
+  "docUrl": "https://mcp.dichanai.com/docs",
+  "docLabel": "如何获取深度智联 API Key？",
+  "docLabel_en": "How to get a DeepLink API Key?",
+  "fields": [
+    {
+      "key": "DEEPLINK_API_KEY",
+      "label": "API Key",
+      "label_en": "API Key",
+      "placeholder": "deeplink-sk- 开头，在深度智联平台个人中心自助创建",
+      "placeholder_en": "Starts with deeplink-sk-, created in your account console",
+      "type": "password",
+      "required": true,
+      "description": "用于访问深度智联地产数据服务的专属密钥，按查询次数消耗预付积分。",
+      "description_en": "Your dedicated key for the DeepLink data service. Queries consume prepaid credits."
+    }
+  ]
+}

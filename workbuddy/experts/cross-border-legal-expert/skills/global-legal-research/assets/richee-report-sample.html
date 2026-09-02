@@ -1,0 +1,227 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OBBB 合规研究报告 · Richee 样式</title><style>/* ===========================================================================
+   Richee 法律研究报告样式（HTML 输出专用）
+   来源：Richee 图表组件设计规范版 v3.8（黑白极简 · 图解感 · 浅灰底 · 单绿强调）
+   用法：生成 HTML 报告时，把本文件**全文内联**进 HTML 头部的 style 标签内。
+   注意：本文件内**禁止出现** style 闭合标签的字面量，否则会提前关闭 style 块、导致 CSS 外泄为正文。
+   维护：设计令牌（:root）与组件类与设计规范库保持一致；新增报告专用类放「报告专用」段。
+   =========================================================================== */
+
+/* ===== Design System Tokens ===== */
+:root{
+  /* 中性色 */
+  --color-neutral-0:#ffffff; --color-neutral-50:#f6f7f9; --color-neutral-200:#e2e5ea;
+  --color-neutral-300:#c9ced6; --color-neutral-400:#9aa2ae; --color-neutral-500:#6b7280;
+  --color-neutral-950:#0a0d12;
+  /* 状态色 */
+  --color-success-50:#ecfdf3; --color-success-500:#12b76a; --color-success-600:#039855; --color-success-700:#027a48;
+  --color-warning-50:#fffaeb; --color-warning-300:#fedf89; --color-warning-500:#f79009; --color-warning-600:#dc6803; --color-warning-700:#b54708;
+  --color-danger-50:#fef3f2; --color-danger-300:#fecdca; --color-danger-500:#f04438; --color-danger-600:#d92d20; --color-danger-700:#b42318;
+  --color-info-50:#eff8ff; --color-info-300:#b2ddff; --color-info-500:#2e90fa; --color-info-600:#1570ef; --color-info-700:#175cd3;
+  /* 语义别名 */
+  --bg:var(--color-neutral-50); --black:var(--color-neutral-950); --text:var(--color-neutral-950);
+  --muted:var(--color-neutral-500); --line:var(--color-neutral-200); --white:var(--color-neutral-0);
+  --red:var(--color-danger-600); --redbg:var(--color-danger-50);
+  --amber:var(--color-warning-700); --amberbg:var(--color-warning-50);
+  --green:var(--color-success-600); --greenbg:var(--color-success-50);
+  --blue:var(--color-info-50); --blue-text:var(--color-info-700);
+  --yellow:var(--color-warning-500); --orange:var(--color-warning-600);
+  /* 绿色辅助 + 强调（单色图表/进度条用） */
+  --color-green-200:#a6f4c5; --color-green-300:#6ee7a8; --color-green-400:#32d583;
+  --accent:#32d583; --accent-light:#6ee7a8; --accent-ring:#a6f4c5; --accent-dark:#039855;
+  /* 字体 */
+  --font-sans:'PingFang SC','Inter',-apple-system,sans-serif;
+  /* 圆角 */
+  --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:9999px;
+  /* 阴影 */
+  --shadow-xs:0 1px 2px rgba(17,21,28,0.04);
+  --shadow-sm:0 1px 3px rgba(17,21,28,0.06),0 1px 2px rgba(17,21,28,0.04);
+  --shadow-lg:0 4px 8px -2px rgba(17,21,28,0.04),0 12px 24px -6px rgba(17,21,28,0.1);
+  --shadow-xl:0 24px 48px -12px rgba(17,21,28,0.18);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;min-width:320px;line-height:1.75;
+}
+
+/* ── 顶栏 Topbar ── */
+.topbar{height:64px;background:var(--black);color:#fff;display:flex;align-items:center;
+  justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:30}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:14px}
+.logo{width:34px;height:34px;border-radius:var(--radius-md);background:#fff;color:var(--black);
+  display:grid;place-items:center;font-weight:600;font-size:16px;letter-spacing:-0.5px}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-neutral-300)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+/* ── 报告头 Hero ── */
+.hero{max-width:1080px;margin:0 auto;padding:48px clamp(18px,3vw,32px) 24px;position:relative}
+.small-no{font-size:28px;font-weight:600;color:var(--black);margin:0 0 12px;letter-spacing:-0.5px}
+.small-no:after{content:"";display:block;width:40px;height:2px;background:var(--accent);margin-top:8px;border-radius:var(--radius-full)}
+.hero h1{margin:0;font-size:clamp(26px,4vw,40px);line-height:1.15;letter-spacing:-0.8px;color:var(--black);max-width:860px;font-weight:600}
+.hero .sub{margin:14px 0 0;max-width:800px;font-size:clamp(13px,1.5vw,15px);line-height:1.8;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:var(--radius-full);padding:6px 12px;font-size:13px;color:var(--muted);font-weight:500}
+
+/* ── 主体 Layout ── */
+.layout{max-width:1180px;margin:0 auto;padding:8px clamp(18px,3vw,32px) 64px}
+/* 长文档：左侧 sticky 导航目录 + 右侧正文（短报告省略 with-nav 即单栏） */
+.layout.with-nav{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start}
+.content{background:#fff;border:1px solid var(--line);border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-lg);padding:clamp(24px,4vw,44px)}
+
+/* ── 导航目录 TOC（长篇幅报告，可点击锚点跳转） ── */
+.nav{position:sticky;top:16px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-xl);
+  padding:14px;box-shadow:var(--shadow-sm);max-height:calc(100vh - 32px);overflow:auto}
+.nav h3{margin:0 0 8px;font-size:12px;letter-spacing:1.5px;color:var(--muted);font-weight:500;text-transform:uppercase}
+.nav a{display:block;color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:var(--radius-md);
+  font-size:13px;margin-bottom:2px;font-weight:400;transition:background .15s,color .15s}
+.nav a:hover{background:var(--black);color:#fff}
+.nav a.active{background:var(--greenbg);color:var(--accent-dark);font-weight:600}
+.section{padding:20px 0 28px;border-bottom:1px solid var(--line);position:relative}
+.section:last-child{border-bottom:0}
+.sec-no{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:1px}
+.section h2{font-size:clamp(19px,2.2vw,24px);line-height:1.25;margin:0 0 8px;color:var(--black);font-weight:600}
+.section h3{font-size:16px;font-weight:600;margin:18px 0 6px;color:var(--black)}
+.desc,.section p{color:var(--text);font-size:14px;line-height:1.8;margin:0 0 12px}
+.muted{color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* ── 表格 Table（比较矩阵/证据目录/风险清单等） ── */
+table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);
+  border-radius:var(--radius-lg);overflow:hidden;background:#fff;margin:8px 0}
+th{text-align:left;padding:11px 14px;background:var(--black);color:#fff;font-size:13px;font-weight:600}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px;line-height:1.65;color:var(--text)}
+tr:last-child td{border-bottom:0}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ── 标签 Tags（风险等级 高/中/低 + 信息） ── */
+.tag{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600}
+.tag.high{background:var(--redbg);color:var(--red)}
+.tag.mid{background:var(--amberbg);color:var(--amber)}
+.tag.low{background:var(--greenbg);color:var(--green)}
+.tag.info{background:var(--blue);color:var(--blue-text)}
+
+/* ── 结论卡 Conclusion ── */
+.conclusion{border:1px solid var(--color-neutral-200);
+  background:linear-gradient(90deg,rgba(50,213,131,.10),rgba(255,255,255,0.98));
+  border-radius:var(--radius-lg);padding:18px 20px;margin:10px 0}
+.conclusion .head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.conclusion .head strong{font-size:16px;font-weight:600}
+.conclusion .body{font-size:14px;line-height:1.85;color:var(--text)}
+
+/* ── 指标卡 KPI（执行摘要要点，建议四个一组） ── */
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-xs)}
+.kpi .name{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;letter-spacing:0.3px}
+.kpi .value{font-size:24px;font-weight:600;line-height:1;color:var(--black)}
+.kpi .note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* ── 横向热度条 Bar（置信度/支持强度可视化） ── */
+.bar-row{display:grid;grid-template-columns:180px 1fr 64px;gap:12px;align-items:center;margin:10px 0;font-size:14px}
+.track{height:10px;border-radius:var(--radius-full);overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+.fill{height:100%;border-radius:var(--radius-full);background:var(--accent)}
+
+/* ── 时间轴 Timeline（立法演进/案件时序） ── */
+.timeline{position:relative;padding-left:20px;margin:8px 0}
+.timeline:before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--accent),var(--accent-ring))}
+.t-item{position:relative;padding-left:16px;margin-bottom:16px}
+.t-item:before{content:"";position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px #fff,0 0 0 4px var(--accent-ring)}
+.t-title{font-size:13px;font-weight:600;color:var(--black);margin-bottom:3px}
+.t-text{font-size:14px;line-height:1.7;color:var(--muted)}
+
+/* ── 风险矩阵 Matrix（证明难度 × 支持可能 等二维判断） ── */
+.matrix{display:grid;grid-template-columns:120px repeat(3,1fr);gap:6px;min-width:560px}
+.box{border:1px solid var(--line);border-radius:var(--radius-md);min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fff}
+.box.h{background:var(--black);color:#fff;font-weight:600}
+.box.r{background:var(--redbg);color:var(--red);font-weight:600}
+.box.g{background:var(--greenbg);color:var(--green);font-weight:600}
+.box.a{background:var(--amberbg);color:var(--amber);font-weight:600}
+
+/* ===========================================================================
+   报告专用组件（设计规范库之上为「法律研究报告」扩展，沿用同一令牌）
+   =========================================================================== */
+
+/* ── 免责声明块（D2 强制，置于报告首部） ── */
+.disclaimer{background:var(--color-warning-50);border:1px solid var(--color-warning-300);
+  border-radius:var(--radius-lg);padding:14px 18px;margin:0 0 20px;font-size:13px;line-height:1.8;color:var(--amber)}
+.disclaimer strong{color:var(--color-warning-700);font-weight:600}
+.disclaimer ol{margin:6px 0 0;padding-left:20px}
+
+/* ── 确定性标签（闭集，对应 L1-L4；HTML 用色块，docx 转方括号文字） ──
+   注：用 inline-block（非 inline-flex），避免在脚注悬挂缩进中与序号 [N] 重叠 */
+.lbl{display:inline-block;vertical-align:middle;line-height:1.4;padding:3px 9px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;margin-right:4px}
+.lbl-l1{background:var(--black);color:#fff}                    /* [法规原文] L1 */
+.lbl-l2{background:var(--blue);color:var(--blue-text)}         /* [权威指南] L2 */
+.lbl-l3{background:var(--color-neutral-200);color:var(--color-neutral-950)} /* [一般评论] L3 */
+.lbl-l4{background:var(--amberbg);color:var(--amber)}          /* [待验证] L4 */
+
+/* ── 访问状态徽标 ── */
+.acc{display:inline-block;vertical-align:middle;line-height:1.4;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
+.acc-ok{background:var(--greenbg);color:var(--green)}          /* ✅ 已验证 */
+.acc-reg{background:var(--amberbg);color:var(--amber)}         /* 🔐 需注册 */
+.acc-pay{background:var(--redbg);color:var(--red)}             /* 💰 需付费 */
+.acc-bot{background:var(--color-neutral-100,#eef0f3);color:var(--color-neutral-500)} /* 🤖 反爬 */
+.acc-warn{background:var(--amberbg);color:var(--amber)}        /* ⚠️ 未验证 */
+.acc-none{background:var(--redbg);color:var(--red)}            /* ❌ 未找到 */
+
+/* ── 时效性徽标（🔴🟠🟡🟢） ── */
+.fresh{display:inline-block;vertical-align:middle;line-height:1.4;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
+.fresh-critical{background:var(--redbg);color:var(--red)}      /* 🔴 极高 3-6 月 */
+.fresh-high{background:var(--amberbg);color:var(--color-warning-700)} /* 🟠 高 6-12 月 */
+.fresh-mid{background:var(--color-warning-50);color:var(--color-warning-600)} /* 🟡 中 1-3 年 */
+.fresh-low{background:var(--greenbg);color:var(--green)}       /* 🟢 低 稳定 */
+
+/* ── 置信度条（⭐×5 → 百分比可视化，复用热度条令牌） ── */
+.confidence{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:var(--radius-md);padding:10px 14px;margin:10px 0;font-size:13px;color:var(--text)}
+.confidence .stars{font-weight:600;color:var(--black);white-space:nowrap}
+.confidence .track{flex:1}
+
+/* ── 脚注区 Footnotes（核验证据记录） ── */
+.ref-link{font-size:.72em;vertical-align:super;color:var(--blue-text);text-decoration:none;font-weight:600}
+.footnotes{border-top:1px solid var(--line);margin-top:28px;padding-top:16px}
+.footnotes h2{font-size:18px;font-weight:600;color:var(--black);margin:0 0 12px}
+/* 序号 [N] 绝对定位于左侧 gutter，正文按 padding 流排——避免与确定性标签色块重叠 */
+.fn-item{position:relative;margin:.7em 0;padding-left:2.6em;font-size:12.5px;line-height:1.9;color:var(--text)}
+.fn-item>strong:first-child{position:absolute;left:0;top:0;font-weight:600}
+.fn-item .src{color:var(--muted)}
+.back-ref{color:var(--blue-text);text-decoration:none;margin-left:.4em}
+
+/* ── 页脚 Footer ── */
+.footer{margin-top:24px;background:var(--black);border-radius:var(--radius-lg);color:#fff;
+  padding:18px 20px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.footer strong{font-size:14px;font-weight:600}
+.footer p{margin:5px 0 0;color:var(--color-neutral-400);font-size:13px;line-height:1.7}
+.btn{background:#fff;color:var(--black);padding:8px 16px;border-radius:var(--radius-full);font-size:13px;font-weight:600;white-space:nowrap}
+
+/* ── 响应式 ── */
+@media(max-width:1023px){
+  /* 平板：导航目录从侧栏变为顶部横排可点击 chips */
+  .layout.with-nav{grid-template-columns:1fr}
+  .nav{position:static;max-height:none}
+  .nav a{display:inline-block;margin:0 4px 6px 0}
+}
+@media(max-width:767px){
+  .topbar{height:auto;min-height:60px;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 20px}
+  .content{border-radius:var(--radius-lg);padding:20px 16px}
+  .grid-4,.grid-3,.grid-2{grid-template-columns:1fr!important}
+  .bar-row{grid-template-columns:1fr!important;gap:6px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .matrix{min-width:560px}
+  .footer{flex-direction:column;align-items:flex-start}
+}
+
+/* ── 打印（黑白、去阴影、避免卡片跨页） ── */
+@media print{
+  .topbar{position:static}
+  .nav{display:none!important}
+  .layout.with-nav{display:block!important}
+  body{background:#fff!important}
+  .layout{padding:0!important}
+  .content{box-shadow:none!important;border:none!important;border-radius:0!important;padding:0!important}
+  .section,.demo,.conclusion,.kpi,.fn-item{break-inside:avoid}
+  a{color:var(--text)!important;text-decoration:none}
+}
+</style></head><body><header class="topbar"><div class="brand"><div class="logo">睿</div><div>法律合规深度研究报告</div></div><div class="status"><span class="dot"></span><span>美国《大而美法案》FEOC 与材料本地化条款 · Stellantis 项目竞标</span></div></header><section class="hero"><div class="small-no">US</div><h1>OBBB 法案 PFE 与材料本地化 合规研究报告</h1><p class="sub">生成时间 2026-06-03 ｜ 全面报告 ｜ 整体置信度 ⭐⭐⭐⭐☆ (84%)</p><div class="meta"><span class="pill">美国 US</span><span class="pill">企业税/合规</span><span class="pill">L1-L4 来源分层</span></div></section><main class="layout with-nav"><aside class="nav"><h3>REPORT SECTIONS</h3><a href="#s01">01 核心结论</a><a href="#s02">02 关键指标</a><a href="#s03">03 立法时间轴</a><a href="#s04">04 风险矩阵</a><a href="#sref">11 核验证据</a></aside><article class="content"><div class="disclaimer"><strong>⚠️ 免责声明</strong><ol><li>本报告仅供参考，不构成法律意见。</li><li>结论均来自实时验证来源（见脚注）。</li><li>[待验证] 信息未经交叉验证，请自行核实。</li></ol></div><section class="section" id="s01"><div class="sec-no">01</div><h2>核心结论</h2><div class="conclusion"><div class="head"><strong>综合判断</strong><span class="tag high">高风险警示</span></div><div class="body">竞标 Stellantis 项目的中国企业需重点关注 OBBB 法案引入的「被禁止的外国实体」(PFE) 制度与材料本地化比例 (MACR) 要求。<sup><a href="#fn-1" id="ref-1" class="ref-link">[1]</a></sup></div></div></section><section class="section" id="s02"><div class="sec-no">02</div><h2>关键指标</h2><div class="grid-4"><div class="kpi"><div class="name">PFE 股权穿透阈值</div><div class="value">25%</div><div class="note">外国政府持股超 25% 即认定</div></div><div class="kpi"><div class="name">技术许可红线</div><div class="value">$100万</div><div class="note">超此金额将失去抵免</div></div><div class="kpi"><div class="name">电池类 MACR (2026)</div><div class="value">≥60%</div><div class="note">非中国成分占比门槛</div></div><div class="kpi"><div class="name">审计追溯期</div><div class="value">6年</div><div class="note">IRS 可回溯审计</div></div></div></section><section class="section" id="s03"><div class="sec-no">03</div><h2>立法时间轴</h2><div class="timeline"><div class="t-item"><div class="t-title">2025-07-04｜OBBB 生效</div><div class="t-text">在 IRA 原 FEOC 规则基础上引入 PFE 制度。</div></div><div class="t-item"><div class="t-title">2026｜电池类 MACR ≥60%</div><div class="t-text">非中国成分比例门槛逐年提高。</div></div></div></section><section class="section" id="s04"><div class="sec-no">04</div><h2>风险矩阵</h2><div class="table-scroll"><div class="matrix"><div class="box h"></div><div class="box h">影响低</div><div class="box h">影响中</div><div class="box h">影响高</div><div class="box h">概率高</div><div class="box a">技术许可超限</div><div class="box r">PFE 名单直列</div><div class="box r">MACR 不达标</div><div class="box h">概率低</div><div class="box g">审计瑕疵</div><div class="box a">股权穿透</div><div class="box a">抵免追回</div></div></div></section><section class="footnotes" id="sref"><h2>核验证据</h2><div class="fn-item" id="fn-1"><strong>[1]</strong> <span class="lbl lbl-l1">[法规原文]</span> <span class="acc acc-ok">✅ 已验证</span> One Big Beautiful Bill Act (OBBB), §FEOC/PFE — <a href="https://www.govinfo.gov" target="_blank">govinfo.gov</a> <span class="src">｜ 检索：LegalDataHunter（US/GovInfo）｜ 验证时间 2026-06-03 ｜ 锚点：「Prohibited Foreign Entity…」</span> <a href="#ref-1" class="back-ref">↩</a></div><div class="fn-item" id="fn-2"><strong>[2]</strong> <span class="lbl lbl-l2">[权威指南]</span> <span class="acc acc-reg">🔐 需注册</span> ICLG Corporate Tax 2026, US Chapter <span class="src">｜ 验证时间 2026-06-03</span> <a href="#ref-2" class="back-ref">↩</a></div></section></article></main><div class="footer"><div><strong>Richee 全球法律研究</strong><p>本报告由 AI 辅助生成，仅供参考。数据路径：LDH 实时检索 + 预置官方源。</p></div><div class="btn">仅供参考</div></div><script>(function(){var ls=[].slice.call(document.querySelectorAll('.nav a'));if(!ls.length)return;var m=ls.map(function(a){var t=document.querySelector(a.getAttribute('href'));return{a:a,t:t};}).filter(function(x){return x.t;});function f(){var y=window.scrollY+120,c=m[0];m.forEach(function(x){if(x.t.offsetTop<=y)c=x;});ls.forEach(function(a){a.classList.remove('active');});if(c)c.a.classList.add('active');}window.addEventListener('scroll',f,{passive:true});f();})();</script></body></html>

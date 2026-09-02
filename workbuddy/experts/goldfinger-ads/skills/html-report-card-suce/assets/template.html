@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{DOC_TITLE}}</title>
+<!-- 🚨 无任何外链：图标一律内联 SVG（见下方 .meta 里 class 为 ico 的 svg 元素），
+     不许引入 Bootstrap Icons / Font Awesome 等 CDN 图标字体——离线打开会丢图标，
+     违反「单文件离线可看」硬要求。
+     注：本注释刻意不写出完整的 svg 起始标签字面量，避免脚本用正则抽 SVG 时误抓注释。 -->
+<style>
+/* === PASTE assets/theme.css HERE (必须内联，保证单文件离线可看) === */
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============ 版头 Hero（必填，腾讯蓝渐变） ============ -->
+  <!--
+    版头结构（照参考头图 + 旧蓝色体系 PDF，规则 14 + 16）：
+     - 品牌行 brand-row（左上，同一行左对齐）：[logo] + 白字「金手指 · 素材经理」
+       · logo 在最左（白色圆角方块托住，{{BRAND_LOGO}} = assets/brand/logo.png，
+         无文字蓝 J 上升气泡，由 inline_assets.js 内联为 base64；蓝 J 压白底清晰，不反白）
+       · 紧随其右是 brand-tag，整段写死「金手指 · 素材经理」，一个字都不许改（规则 16）
+     - title：产出物名（第一视觉焦点）
+     - subtitle：一句话说明（面向对象 · 关键参数）
+     - meta（facts 行）：日期 / 场景阶段 / 周期范围，3 个图标区分维度
+  -->
+  <div class="banner">
+    <div class="brand-row">
+      <img class="brand-logo" src="{{BRAND_LOGO}}" alt="金手指">
+      <p class="brand-tag">金手指<span class="sep">·</span>素材经理</p>
+    </div>
+    <h1 class="title">{{DOC_TITLE}}</h1>
+    <p class="subtitle">{{DOC_SUBTITLE}}</p>
+    <div class="meta">
+      <!-- 🚨 facts 图标一律用内联 SVG，不许用 <i class="bi ..."> 图标字体（CDN 外链离线会丢图标） -->
+      <span><svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"/><path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>{{DATE}}</span>
+      <span><svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12.435 12.435 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A19.626 19.626 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a19.587 19.587 0 0 0 1.349-.476l.019-.007.004-.002h.001"/></svg>{{STAGE_OR_SCENE}}</span>
+      <span><svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.153-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.153.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2h-7z"/></svg>{{PERIOD_OR_SCOPE}}</span>
+    </div>
+  </div>
+
+  <!-- ============ 主体（自由组装 section） ============ -->
+  <div class="body">
+
+    <!--
+      每个 section 固定结构：
+        <h2 class="section-title"><span class="idx">01</span>标题<span class="sec-note">可选摘要</span></h2>
+        [可选] <p class="lead">这节最该先知道的一句话</p>
+        [组件区：data-table / timeline / plain-list / callout / quote 任选]
+
+      .sec-note（章节标题右上浅色胶囊，可选）：一句话摘要 / 数量标注，如「6 条素材 · 首投」「多源交叉」。
+      没有增量信息就删掉，不硬塞。
+
+      .lead 规则（规则 2）：不加固定前缀（禁「结论：」），没增量信息就删整行。
+      序号必须连续递增（01、02、03...），能合并的板块不拆多个标题（规则 9）。
+    -->
+
+    <!-- ① 普通多列表格 -->
+    <section>
+      <h2 class="section-title"><span class="idx">01</span>{{SECTION_TITLE}}<span class="sec-note">{{可选摘要}}</span></h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <table class="data-table">
+        <thead>
+          <tr><th>列1</th><th>列2</th><th style="width:80px;text-align:right;">状态</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>...</td><td>...</td><td style="text-align:right;"><span class="pill pill-recommend">推荐</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ② KV 型两列表格（字段 + 一句话，如定位卡 / 需求六要素） -->
+    <section>
+      <h2 class="section-title"><span class="idx">02</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <table class="data-table">
+        <thead>
+          <tr><th style="width:130px;">{{维度列表头}}</th><th>{{内容列表头}}</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kv-key">字段名1</td><td>内容</td></tr>
+          <tr><td class="kv-key">字段名2</td><td>内容</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ③ 原话块 quote（引用用户原话 / 官方口径原文，浅灰底 +「」引号 + cite 标来源） -->
+    <section>
+      <h2 class="section-title"><span class="idx">03</span>{{SECTION_TITLE}}</h2>
+      <div class="quote">
+        <div class="q-text">这里放被引用的原话，前后自动带「」引号。</div>
+        <cite>来源说明（如：用户需求原文 / 腾讯广告官方口径）</cite>
+      </div>
+    </section>
+
+    <!-- ④ 时间轴（下一步建议 / 路线图，浅灰圆点串联） -->
+    <section>
+      <h2 class="section-title"><span class="idx">04</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">第 1 步</span>阶段标题</div>
+          <div class="tl-goal"><strong>目标：</strong>xxx</div>
+          <ul class="tl-list">
+            <li>动作1</li>
+            <li>动作2</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ 提示卡 callout（浅底 + 左侧彩色竖条；同一 section 内禁止多色混排，见规则 3） -->
+    <section>
+      <h2 class="section-title"><span class="idx">05</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <div class="callout"><strong class="title">建议：</strong>中性/正向说明——建议、补充、口径、可复用逻辑等。</div>
+    </section>
+
+    <!-- ⑥ 风险 / 红线并列 —— 一律裸 plain-list，不套 callout（规则 12） -->
+    <section>
+      <h2 class="section-title"><span class="idx">06</span>{{风险类章节标题}}</h2>
+      <ul class="plain-list">
+        <li><strong>要点1：</strong>说明文字</li>
+        <li><strong>要点2：</strong>说明文字</li>
+        <li><strong>要点3：</strong>说明文字</li>
+      </ul>
+      <!-- 只有【孤立单条】警示时才用：
+      <div class="callout callout-warn"><strong class="title">红线：</strong>单条强调。</div> -->
+    </section>
+
+    <!-- ⑦ 决策分支 / 条件枚举（If-then）—— plain-list + tag 字色，不用 callout（规则 15） -->
+    <section>
+      <h2 class="section-title"><span class="idx">07</span>{{DECISION_SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <ul class="plain-list">
+        <li><strong>若条件 A 成立：</strong><span class="tag-ok">推荐 ✓</span>说明为什么可行、附加条件。</li>
+        <li><strong>若只满足部分条件：</strong><span class="tag-warn">谨慎</span>可行但需补齐 xxx。</li>
+        <li><strong>若关键条件不变：</strong><span class="tag-bad">不建议</span>说明为什么宁可放弃。</li>
+      </ul>
+    </section>
+
+    <!-- ⑧ 收尾：下一步建议（关联角色并入本节，不另起标题，见规则 9） -->
+    <section>
+      <h2 class="section-title"><span class="idx">08</span>下一步建议</h2>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head">生成素材</div>
+          <div class="tl-goal">按执行手册逐条出图 / 备文案。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head">验收后投放</div>
+          <div class="tl-goal">物料备齐 → 可找 <strong>金手指 · 素材经理</strong> 衔接投放。</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ 页脚三行（给谁用 / 怎么读 / 有效期，规则硬约束） ============ -->
+  <div class="footer">
+    <p class="f-line"><strong>给谁用：</strong>{{面向对象，如：首次投放的商家 / 投放执行}}</p>
+    <p class="f-line"><strong>怎么读：</strong>{{阅读指引，如：先看素材总表定量，再逐条对照生成提示词}}</p>
+    <p class="f-line"><strong>有效期：</strong>{{时效说明，如：基于本轮预算与官方口径，平台规则更新后需复核}}</p>
+  </div>
+
+  <div class="disclaimer">
+    金手指 · 素材经理出品｜本策略基于用户提供的输入与腾讯广告官方口径整理定制；实际投放表现受平台算法、创意表现、落地页、行业淡旺季等多因素影响，量化数据仅作参考，具体请以投放后台为准。
+  </div>
+
+</div>
+</body>
+</html>

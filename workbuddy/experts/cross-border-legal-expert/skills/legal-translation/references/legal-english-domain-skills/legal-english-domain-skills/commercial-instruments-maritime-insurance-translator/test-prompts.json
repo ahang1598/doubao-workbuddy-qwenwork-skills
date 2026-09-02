@@ -1,0 +1,37 @@
+{
+  "skill": "commercial-instruments-maritime-insurance-translator",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "请审校 clean bill of lading、claused bill of lading、foul bill of lading 的译法。",
+      "expected": "Use the skill to distinguish bill-of-lading functions and types."
+    },
+    {
+      "type": "should-call",
+      "prompt": "negotiable instrument 在贸易融资协议中应译为票据还是可转让工具？",
+      "expected": "Use the skill to map negotiability and payment function."
+    },
+    {
+      "type": "should-call",
+      "prompt": "保险合同里的 indemnity contract、insurer、insured、beneficiary 请统一。",
+      "expected": "Use the skill for insurance-party and indemnity terminology."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "公司法里的 promoter 和 founder 怎么分？",
+      "expected": "Do not call; use commercial-corporate-finance-translator."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "请解释 presumption against extraterritoriality。",
+      "expected": "Do not call; use extraterritorial-rule-of-law-translator."
+    },
+    {
+      "type": "boundary",
+      "prompt": "海上货物运输合同里 force majeure 和 marine insurance coverage 需要同时审校。",
+      "expected": "Call this skill and coordinate with civil-law-private-rights-translator."
+    }
+  ]
+}

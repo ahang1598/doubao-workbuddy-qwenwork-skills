@@ -1,0 +1,28 @@
+{
+  "name": "supply-chain-compliance-review",
+  "name_en": "supply-chain-compliance-review",
+  "description": "审查供应链UFLPA强迫劳动、供应商制裁、FDPR适用性三重合规风险，输出风险评分与合规承诺书模板。触发：供应链合规审查、强迫劳动风险排查、UFLPA审查、供应商制裁筛查、FDPR供应链分析。不触发：制裁名单批量匹配（→sanctions-list-batch-screening）。",
+  "version": "1.2.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-22",
+  "updated": "2026-06-28",
+  "author": "foreign-skills-build",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-review",
+  "output_formats": ["html", "markdown"],
+  "o1_format": "html",
+  "o2_format": "markdown",
+  "legal_domain": "涉外-供应链合规|出口管制与经济制裁|强迫劳动",
+  "script_necessity": "none",
+  "infrastructure_dependencies": {
+    "required": ["governance.soft_degraded", "retrieval.statute_retriever"],
+    "optional": ["engines.html"]
+  },
+  "upstream_skills": [
+    "sanctions-list-batch-screening"
+  ],
+  "downstream_skills": []
+}

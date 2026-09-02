@@ -1,0 +1,14 @@
+{
+  "name": "多轮融资条款一致性审查",
+  "name_en": "cap-market-multi-round-consistency",
+  "description": "多轮融资各轮投资协议九维条款一致性比对(反稀释/清算优先/董事席位/回购/优先购买/信息权/保护性条款/跟售拖售/最惠国)+叠加效应分析+跨轮风险识别。触发：多轮条款一致性、跨轮冲突、叠加效应。不触发：单轮协议审查(→06)、TS审查(→01)。",
+  "version": "1.0.0",
+  "blueprint": "bp-contract-review-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-06",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

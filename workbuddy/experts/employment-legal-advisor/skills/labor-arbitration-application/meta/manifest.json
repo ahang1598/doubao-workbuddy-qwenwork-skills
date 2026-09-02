@@ -1,0 +1,12 @@
+{
+  "name": "劳动争议仲裁申请书",
+  "name_en": "labor-arbitration-application",
+  "description": "生成劳动争议仲裁申请书（DOCX）。触发：写仲裁申请书/申请劳动仲裁/起草仲裁申请。不触发：写起诉状——用诉讼文书技能；算赔偿金——用计算类技能；非劳动争议——用民事技能。",
+  "version": "3.3.0",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-03-01",
+  "created": "2026-05-11",
+  "script_necessity": "none"
+}

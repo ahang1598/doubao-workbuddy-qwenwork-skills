@@ -1,0 +1,36 @@
+{
+  "type": "productList",
+  "total": 2,
+  "products": [
+    {
+      "asin": "B086L79Q6X",
+      "title": "Hanes mens Underwear Boxer Briefs Pack, Cool & Breathable Cotton...",
+      "brand": "Hanes",
+      "imageUrl": "https://m.media-amazon.com/images/I/81abc.jpg",
+      "price": 18.02,
+      "currency": "$",
+      "rating": 4.5,
+      "ratings": 78900,
+      "unitsSold": 50000,
+      "revenue": 901000,
+      "profit": 23.5,
+      "bsr": 7,
+      "sellerCount": 12,
+      "fulfillment": "FBA",
+      "badgeBestSeller": "Best Seller in Men's Underwear"
+    },
+    {
+      "asin": "B0C9XYZ123",
+      "title": "Example Competitor Briefs 6-Pack",
+      "brand": "ExampleBrand",
+      "price": 21.99,
+      "currency": "$",
+      "rating": 4.2,
+      "ratings": 1200,
+      "unitsSold": 3200,
+      "bsr": 142,
+      "sellerCount": 3,
+      "fulfillment": "FBA"
+    }
+  ]
+}

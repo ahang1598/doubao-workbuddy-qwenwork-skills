@@ -1,0 +1,60 @@
+{
+  "name": "cross-border-spa-sha-drafting",
+  "name_en": "cross-border-spa-sha-drafting",
+  "description": "生成跨境并购SPA或SHA核心条款框架。触发：起草SPA/股份买卖协议/SHA/股东协议/跨境并购交易文件。不触发：合同审查——调用审查类技能；尽调报告——调用尽调技能。",
+  "version": "1.2.1",
+  "blueprint": "bp-contract-review-drafting-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-13",
+  "updated": "2026-06-26",
+  "author": "lv-skill-builder",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-drafting",
+  "output_formats": ["docx", "markdown"],
+  "legal_domain": "涉外-跨境投资并购",
+  "script_necessity": "none",
+  "infrastructure_dependencies": [
+    "engines.docx"
+  ],
+  "target_users": ["涉外并购律师", "跨境交易法律顾问"],
+  "applicable_scope": {
+    "transaction_types": ["股权收购SPA", "资产收购SPA", "合并协议", "股东协议SHA"],
+    "jurisdictions": ["CN内地", "CN香港", "BVI", "Cayman", "美国(CFIUS)", "多法域组合"],
+    "negotiation_stances": ["买方保护", "卖方保护", "中性平衡"]
+  },
+  "legal_basis": [
+    "中华人民共和国公司法(2023修订)",
+    "中华人民共和国民法典合同编",
+    "中华人民共和国外商投资法(2020)",
+    "外商投资安全审查办法(发展改革委商务部令第37号, 2021年1月18日施行)",
+    "企业境外投资管理办法(发改委令第11号, 2018年3月1日施行)",
+    "境外投资管理办法(商务部令2014年第3号)",
+    "国务院关于经营者集中申报标准的规定(2024修订, 国务院令第773号)",
+    "中华人民共和国反垄断法(2022修正)",
+    "BVI Business Companies Act 2004 (2024修正案, 2025年1月2日生效)",
+    "Cayman Islands Companies Act",
+    "FIRRMA (2018) + CFIUS 2026执行趋势"
+  ],
+  "governance": {
+    "risk_level": "L3",
+    "soft_degraded": true,
+    "statute_verification_required": true,
+    "lawyer_review_required": true
+  },
+  "files": [
+    "release/SKILL.md",
+    "release/.version",
+    "release/meta/manifest.json",
+    "release/references/input-spec.md",
+    "release/references/output-spec.md",
+    "release/references/legal-references.md",
+    "release/references/workflow-detail.md",
+    "release/rules/risk-framework.md",
+    "release/USAGE.md",
+    "release/DESIGN.md"
+  ],
+  "o1_format": "docx",
+  "o2_format": "markdown"
+}

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+tearsheet.json
+tearsheet.html
+examples/tearsheet.json
+examples/tearsheet.html
+*.tmp
+.DS_Store
+.idea/

@@ -1,0 +1,8 @@
+---
+description: Load the strategy performance tearsheet instructions.
+globs: ["**/*.py", "**/*.csv", "**/*.md"]
+alwaysApply: false
+---
+
+Read `SKILL.md` before changing or running this skill. State annualization, benchmark,
+risk-free, and missing-data assumptions in generated reports.

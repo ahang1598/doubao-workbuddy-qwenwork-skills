@@ -11,7 +11,7 @@ description: "根据用户提供商品图一键生成电商主图、详情图、
 
 负责把用户的商品图和自然语言要求整理成一份可修改的方案，规划每张图片的商业任务，完成报价确认，并按 [共享执行手册](../shared/execution-playbook.md) 完成上传、登记、生成、轮询和交付。
 
-只处理商品主图、详情图、套图、Listing 图和 A+ 商品图。
+只处理商品主图、详情图、套图、Listing 图和 A+ 商品图。**哪怕用户只要一张主图或一张详情图，也必须走本套图链路，不得路由到单图文生图/图生图。** 闲聊/创意单图、图片编辑交给 [单图文生图/图生图 Skill](../picset-single-image-generation/SKILL.md)；打开画布、充值套餐交给 [Agent Canvas Skill](../picset-agent-canvas/SKILL.md)；套图交付后写回画布按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md)。闲聊单图不得调用 `generate_commerce_images`。
 
 开始前完整读取 [公共交接协议](../shared/handoff-protocol.md)。如果被直接触发且没有收到上下文，按协议初始化空上下文，不创建第二套字段。
 
@@ -157,3 +157,5 @@ description: "根据用户提供商品图一键生成电商主图、详情图、
 | `get_generation_task_status` | 查询任务状态和结果 | 轮询 |
 
 调用 MCP 工具前，必须使用 `tool_search` 按工具名获取完整参数定义，再按取回的定义发起调用。
+
+套图经 `present_files` 交付后若需同步到画布，按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md) 的写回章节执行。

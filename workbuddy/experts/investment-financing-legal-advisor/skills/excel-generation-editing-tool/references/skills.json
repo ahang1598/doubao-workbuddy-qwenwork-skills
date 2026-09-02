@@ -1,0 +1,13 @@
+{
+  "id": "excel-generation-editing-tool-dev",
+  "marketId": "",
+  "name": "Excel文档处理",
+  "version": "",
+  "description": "Excel电子表格创建、编辑、读取与分析，支持.xlsx/.xlsm/.csv/.tsv格式。覆盖新建表格、数据读取、公式验证、透视表及专业格式化等操作。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

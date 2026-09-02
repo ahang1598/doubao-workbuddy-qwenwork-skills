@@ -1,0 +1,156 @@
+{
+  "name": "goldfinger-ads",
+  "version": "1.6.0",
+  "description": "Goldfinger Ads expert team: a commander orchestrating four specialists — media manager (demand-to-launch full funnel), material manager (creative strategy), AI ad buyer (build/tune/diagnose/review), and Tencent Ads consulting assistant (rules & mechanics) — covering everything from 'I want to run an ad' to launch, monitoring, and wrap-up on Tencent Ads. Since v1.6.0 the Goldfinger MCP connector is decoupled from this package and installed separately (standalone MCP connector zip, OAuth) so the platform can fully identify the user identity; the package declares dependencies.connectors=[jinshouzhi] so the platform can hang the connect chip in expert sessions.",
+  "author": {
+    "name": "WorkBuddy",
+    "email": "janylin@tencent.com"
+  },
+  "agents": [
+    "./agents/goldfinger-ads-team-lead.md",
+    "./agents/media-placement-expert.md",
+    "./agents/material-manager-suce.md",
+    "./agents/ad-delivery-allrounder.md",
+    "./agents/tencent-ads-consultant.md"
+  ],
+  "skills": [
+    "./skills/flow-demand-to-media",
+    "./skills/ad-demand-helper-pro",
+    "./skills/flow-media-manager",
+    "./skills/tencent-ads-delivery-guide",
+    "./skills/html-report-card",
+    "./skills/html-report-card-suce",
+    "./skills/material-strategy-assistant",
+    "./skills/ad-allrounder-kit"
+  ],
+  "expertType": "team",
+  "agentName": "goldfinger-ads-team-lead",
+  "teamInfo": {
+    "leadAgent": "goldfinger-ads-team-lead",
+    "memberAgents": [
+      "media-placement-expert",
+      "material-manager-suce",
+      "ad-delivery-allrounder",
+      "tencent-ads-consultant"
+    ]
+  },
+  "displayName": {
+    "en": "Goldfinger Ads Expert Team",
+    "zh": "金手指 · 广告投放专家团"
+  },
+  "profession": {
+    "en": "Goldfinger Ads Expert Team",
+    "zh": "金手指 · 广告投放专家团"
+  },
+  "displayDescription": {
+    "en": "Goldfinger ad delivery expert team: demand assessment, media strategy, material planning, delivery execution, daily monitoring and wrap-up review, plus rules consulting — all in one team for Tencent Ads.",
+    "zh": "金手指广告投放专家团：需求评估、媒介策略、素材规划、投放执行与复盘、规则咨询，一站式搞定腾讯广告。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "05-MarketingGrowth",
+  "defaultInitPrompt": {
+    "zh": "我要投腾讯广告，从需求到开投帮我全程安排",
+    "en": "I want to run Tencent ads — plan it end to end for me"
+  },
+  "plugin": "goldfinger-ads",
+  "tags": [
+    {
+      "en": "Tencent Ads",
+      "zh": "腾讯广告"
+    },
+    {
+      "en": "Ad Delivery",
+      "zh": "广告投放"
+    },
+    {
+      "en": "Full-Funnel Strategy",
+      "zh": "全链路策略"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "我要投腾讯广告，从需求到开投帮我全程安排",
+      "en": "I want to run Tencent ads — plan it end to end for me"
+    },
+    {
+      "zh": "我的广告在跑，帮我看看数据、调调优",
+      "en": "My ads are running — check the data and help me tune them"
+    },
+    {
+      "zh": "帮我出一份素材策略，要做几条素材、什么类型",
+      "en": "Build me a material strategy — how many creatives and what types"
+    }
+  ],
+  "members": [
+    {
+      "id": "goldfinger-ads-team-lead",
+      "name": {
+        "en": "Jin Yunchou",
+        "zh": "金运筹"
+      },
+      "profession": {
+        "en": "Goldfinger · Ad Delivery Commander",
+        "zh": "金手指 · 投放总指挥"
+      },
+      "avatar": "avatars/goldfinger-ads-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "media-placement-expert",
+      "name": {
+        "en": "Qi Liang",
+        "zh": "齐亮"
+      },
+      "profession": {
+        "en": "Goldfinger · Media Manager",
+        "zh": "金手指 · 媒介经理"
+      },
+      "avatar": "avatars/media-placement-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "material-manager-suce",
+      "name": {
+        "en": "Su Ce",
+        "zh": "苏策"
+      },
+      "profession": {
+        "en": "Goldfinger · Material Manager",
+        "zh": "金手指 · 素材经理"
+      },
+      "avatar": "avatars/material-manager-suce.png",
+      "role": "member"
+    },
+    {
+      "id": "ad-delivery-allrounder",
+      "name": {
+        "en": "AdBuddy",
+        "zh": "艾投"
+      },
+      "profession": {
+        "en": "Goldfinger · AI Ad Buyer",
+        "zh": "金手指 · AI 广告投手"
+      },
+      "avatar": "avatars/ad-delivery-allrounder.png",
+      "role": "member"
+    },
+    {
+      "id": "tencent-ads-consultant",
+      "name": {
+        "en": "Bai Xiao",
+        "zh": "百晓"
+      },
+      "profession": {
+        "en": "Goldfinger · Delivery Q&A Assistant",
+        "zh": "金手指 · 投放答疑小助手"
+      },
+      "avatar": "avatars/tencent-ads-consultant.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": [
+      "jinshouzhi"
+    ]
+  }
+}

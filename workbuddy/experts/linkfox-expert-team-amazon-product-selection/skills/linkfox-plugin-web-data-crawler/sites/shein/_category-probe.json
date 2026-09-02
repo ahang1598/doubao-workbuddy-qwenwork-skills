@@ -1,0 +1,47 @@
+{
+  "workflowName": "Shein 品类检测探针 (轻量级)",
+  "description": "4-step lightweight probe that detects the product category from Shein breadcrumb and detail tabs. Results are returned to the AI for parsing against categories/INDEX.md — NOT for direct display to users. This workflow intentionally extracts only classification signals, not product data.",
+  "steps": [
+    {
+      "actionCode": "OPEN_TAB",
+      "actionDescription": "打开Shein商品页面用于品类检测",
+      "tabUrl": "https://us.shein.com/ALO-2026-New-Letter-Baseball-Cap-Adjustable-Dad-Hat-Breathable-Sun-Protection-Outdoor-Sports-Multi-Color-Fashion-Hat-Breathable-Baseball-Cap-Sun-p-499589912.html?mallCode=1",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [".product-intro__head-name h1", ".product-intro__head-name", "h1"],
+      "actionDescription": "等待页面核心元素加载(商品标题)",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "[class*='breadcrumb']",
+        "[class*='bread-crumb']",
+        ".c-breadcrumb",
+        "[class*='crumb']",
+        "nav[aria-label='breadcrumb']"
+      ],
+      "extractField": "breadcrumb",
+      "extractType": "text",
+      "actionDescription": "提取面包屑导航 — 用于品类检测(Shein类目如 Women > Clothing > Dresses / Home > Kitchen > Cookware 等)",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "[class*='product-detail'] [class*='item']",
+        "[class*='common-product'] [class*='detail'] li",
+        "[class*='desc-item']",
+        "[class*='spec-item']",
+        "[class*='detail'] [class*='tab']",
+        "[class*='product-intro__description']"
+      ],
+      "extractField": "detail_keys",
+      "extractType": "list",
+      "actionDescription": "提取商品详情区字段名 — 用于品类确认(含 Material/Heel Height/Volume/Ingredients 等品类特有字段名)",
+      "tabKey": "tabKey666"
+    }
+  ]
+}

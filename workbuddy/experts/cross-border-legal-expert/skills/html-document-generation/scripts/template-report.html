@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="$lang$" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>$title$</title>
+$for(header-includes)$
+$header-includes$
+$endfor$
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><div class="logo">睿</div><div>Richee 法律研究报告</div></div>
+  <div class="status"><span class="dot"></span><span>$if(status)$$status$$else$数据源：LDH + 预置官方源$endif$</span></div>
+</header>
+
+<section class="hero">
+  $if(report-no)$<div class="small-no">$report-no$</div>$endif$
+  <h1>$title$</h1>
+  $if(subtitle)$<p class="sub">$subtitle$</p>$endif$
+  $if(pills)$<div class="meta">$pills$</div>$endif$
+</section>
+
+<main class="layout$if(toc)$ with-nav$endif$">
+  $if(toc)$
+  <aside id="TOC">
+    <h3>REPORT SECTIONS</h3>
+    $table-of-contents$
+  </aside>
+  $endif$
+  <article class="content">
+    $if(disclaimer)$
+    <div class="disclaimer"><strong>免责声明</strong>
+      <ol><li>本报告仅供参考，不构成法律意见。正式法律问题请咨询执业律师。</li>
+          <li>所有法律结论均来自实时验证的外部来源（详见各条脚注），未使用 AI 预训练知识替代法源检索。</li>
+          <li>标注 [待验证] 的信息来自 AI 辅助搜索(L4)，未经交叉验证，请谨慎参考并自行核实。</li></ol></div>
+    $endif$
+    $body$
+  </article>
+</main>
+
+$if(toc)$
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('#TOC a'));
+  if(!links.length)return;
+  var map=links.map(function(a){var t=document.querySelector(a.getAttribute('href'));return{a:a,t:t};}).filter(function(x){return x.t;});
+  function onScroll(){
+    var y=window.scrollY+120,cur=map[0];
+    map.forEach(function(x){if(x.t.offsetTop<=y)cur=x;});
+    links.forEach(function(a){a.classList.remove('active');});
+    if(cur)cur.a.classList.add('active');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
+</script>
+$endif$
+
+$if(footer)$
+<div class="footer" style="max-width:1180px;margin:0 auto 64px;">
+  <div><strong>Richee 法律研究</strong>
+    <p>$footer$</p></div>
+  <div class="btn">仅供参考</div>
+</div>
+$endif$
+
+</body>
+</html>

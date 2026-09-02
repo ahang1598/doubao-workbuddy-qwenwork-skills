@@ -1,0 +1,35 @@
+{
+  "scenario_id": "S-CROSSBORDER",
+  "scenario_name": "跨境投资",
+  "description": "外商直接投资(FDI)/境外投资(ODI)，关注外资准入合规/国家安全审查/数据跨境合规/外汇管理",
+  "modules": {
+    "M1": {"enabled": true, "priority": "high", "depth": "standard", "estimated_items": 10},
+    "M2": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 14},
+    "M3": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M4": {"enabled": true, "priority": "high", "depth": "standard", "estimated_items": 14},
+    "M5": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 12},
+    "M6": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 10},
+    "M7": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 10},
+    "M8": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M9": {"enabled": true, "priority": "low", "depth": "quick", "estimated_items": 5},
+    "M10": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 12},
+    "M11": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 10},
+    "M12": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 6}
+  },
+  "total_estimated": "70-100",
+  "industry_adaptation": {
+    "manufacturing": {"M9": {"enabled": true, "priority": "medium", "depth": "standard"}},
+    "software": {"M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "finance": {"M10": {"extra_items": ["金融业务许可证"]}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "biotech": {"M10": {"extra_items": ["药品注册证书", "临床试验批件"]}, "M11": {"enabled": true, "priority": "medium"}},
+    "new_energy": {"M10": {"extra_items": ["发电业务许可证", "碳排放配额文件"]}}
+  },
+  "key_concerns": ["外资准入合规", "国家安全审查", "数据跨境合规", "外汇管理", "转移定价", "最终受益人穿透"],
+  "focus_modules": ["M2", "M4", "M10", "M11"],
+  "special_requirements": {
+    "M2": "需穿透至最终受益人（符合外商投资安全审查要求）",
+    "M4": "需关注转移定价文档/跨境税务安排",
+    "M10": "需包含FDI备案/核准/ODI备案/经营者集中反垄断审查/外商投资安全审查",
+    "M11": "需包含数据出境安全评估/标准合同/个人信息保护合规"
+  }
+}

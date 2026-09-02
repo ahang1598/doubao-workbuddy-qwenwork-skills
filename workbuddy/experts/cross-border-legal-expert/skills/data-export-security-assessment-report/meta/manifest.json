@@ -1,0 +1,30 @@
+{
+  "name": "data-export-security-assessment-report",
+  "name_en": "data-export-security-assessment-report",
+  "description": "按照《数据出境安全评估办法》和网信办标准模板生成数据出境安全自评估报告（50-100页）。触发：企业需申报数据出境安全评估、准备自评估报告。不触发：数据出境路径判断/标准合同起草/PIA报告生成/纯境内合规分析。",
+  "version": "1.2.2",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-15",
+  "updated": "2026-06-26",
+  "author": "builder-foreign-data-export",
+  "format_seriousness": "F-Strict",
+  "type_tag": "T-drafting",
+  "output_formats": ["docx", "markdown"],
+  "legal_domain": "数据合规·涉外",
+  "script_necessity": "none",
+  "infrastructure_dependencies": [
+    "engines.docx",
+    "governance.soft_degraded"
+  ],
+  "cross_skill_references": [
+    "data-export-path-decision",
+    "data-pia-report",
+    "data-compliance-gap-analysis",
+    "export-control-item-classification"
+  ],
+  "o1_format": "docx",
+  "o2_format": "markdown"
+}

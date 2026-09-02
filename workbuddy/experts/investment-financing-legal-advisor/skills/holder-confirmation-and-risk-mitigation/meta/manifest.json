@@ -1,0 +1,14 @@
+{
+  "name": "股东确权与代持风险处置",
+  "name_en": "holder-confirmation-and-risk-mitigation",
+  "description": "投中阶段股东资格三层验证、代持效力三层判断、显名路径设计、代持风险敞口量化。触发：资格确认、代持效力、显名方案、善意取得。不触发：投资协议审查(→06)、投后维权(→04)、公司治理(→03)、权利设计(→special-rights-design)、创始人责任(→founder-liability)、多轮一致性(→multi-round)、陷阱对抗(→adversarial)、股权核验(→cap-table-verify)。",
+  "version": "1.2.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-03",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

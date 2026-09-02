@@ -1,0 +1,14 @@
+{
+  "name": "投资协议审查",
+  "name_en": "investment-agreement-review",
+  "description": "投资协议(SPA/SHA)审查/检索/改写/处置方案。六组规则集(VA/GOV/EX/FP/IR/MR)+市场基准对照+重要性分级+合同解析引擎。触发：SPA/SHA/增资协议/股权转让协议/股东协议审查。不触发：TS审查(→01)、股东确权(→02)、公司治理(→03)、投后维权(→04)、退出争议(→05)、深度尽调(→07)、陷阱对抗(→adversarial)、创始人责任(→founder-liability)、股权核验(→cap-table-verify)、权利设计(→special-rights-design)、多轮一致性(→multi-round)。",
+  "version": "1.2.0",
+  "blueprint": "bp-contract-review-drafting-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-03",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

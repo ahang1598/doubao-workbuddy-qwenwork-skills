@@ -1,0 +1,648 @@
+{
+  "expert_dir": "/Users/chanhfeng/Documents/UGit/omics-experts/expert-teams/tencent-antibody-drug-design-team",
+  "plugin_name": "tencent-antibody-drug-design-team",
+  "expert_type": "team",
+  "author_info": {
+    "name": "Tencent Health Omics Team",
+    "email": "omics@tencent.com"
+  },
+  "structure_findings": [],
+  "ai_actions": [
+    {
+      "id": "AI-C08",
+      "action_type": "platform-claim-check",
+      "priority": "recommended",
+      "instruction": "检查 displayDescription、description（plugin.json 与 agent frontmatter）以及 agent prompt 正文中，是否包含与 CodeBuddy/WorkBuddy 平台实际运行方式不符的技术承诺。平台事实：模型推理通过云端进行，专家不具备纯本地离线运行能力。需检测的违规关键词/短语包括但不限于：「本地AI」「本地模型」「本地推理」「全程不联网」「离线运行」「不上云」「零数据外传」「never uploaded」「local inference」「offline」「runs locally」等。对文件操作本身在本地进行的描述（如'直接操作本地文件'）是准确的，不算违规。发现违规项列入 BLOCKER，标注具体文件位置和修复建议。",
+      "target_file": ".codebuddy-plugin/plugin.json",
+      "reference_doc": "平台事实：CodeBuddy/WorkBuddy 模型推理均通过云端进行",
+      "context": {
+        "plugin_data_subset": {
+          "description": "Focus on antibody drug design and structure optimization, coordinating IgGM, Protenix or Boltz for candidate generation, structure prediction and ranking.",
+          "displayDescription": {
+            "en": "Focus on antibody drug design and structure optimization, coordinating IgGM, Protenix or Boltz for candidate generation, structure prediction and ranking.",
+            "zh": "专注抗体药物设计与结构优选，协同IgGM、Protenix或Boltz完成候选生成、结构预测与排序。"
+          }
+        }
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-B01",
+      "action_type": "team-rule-check",
+      "priority": "required",
+      "instruction": "请阅读 CODEBUDDY.md §4.4 与 WorkBuddy专家开发规范.md §5.2.1，对照 target_file 逐项判断主理人 prompt 是否包含：(1) 团队协作机制（铁律）章节；(2) 4 条协作铁律（建立团队 / 调度成员 / 消息中转 / 成员结论为准）；(3) 5 条红线（禁跳 TeamCreate / 禁代写成员 / 禁跳阶段 / 禁直连 / 禁 spawn 自己）；(4) 协作规则（TeamCreate→Agent spawn→SendMessage 回传 流程，含 name 参数）。缺失任一项均列入 BLOCKER。",
+      "target_file": "agents/tencent-antibody-drug-design-team-team-lead.md",
+      "reference_doc": "CODEBUDDY.md §4.4 / WorkBuddy专家开发规范.md §5.2.1",
+      "context": {
+        "agent_name": "tencent-antibody-drug-design-team-team-lead",
+        "team_size": 4
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-B07-iggm-protenix-msa-expert",
+      "action_type": "member-rule-check",
+      "priority": "required",
+      "instruction": "请阅读 CODEBUDDY.md §4.5.3 与 WorkBuddy §5.3，对照 target_file 判断成员 prompt 是否包含：(1) 角色定义；(2) 擅长领域（3-5 个具体能力点）；(3) 分析框架；(4) 数据获取方式；(5) 结构化输出模板。前 5 项缺失列入 BLOCKER。(6) 通过 SendMessage 将结果回传给主理人的明确说明，缺失时列入 SUGGESTION。",
+      "target_file": "agents/iggm-protenix-msa-expert.md",
+      "reference_doc": "CODEBUDDY.md §4.5.3 / WorkBuddy §5.3",
+      "context": {
+        "member_id": "iggm-protenix-msa-expert"
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-B07-iggm-boltz-msa-expert",
+      "action_type": "member-rule-check",
+      "priority": "required",
+      "instruction": "请阅读 CODEBUDDY.md §4.5.3 与 WorkBuddy §5.3，对照 target_file 判断成员 prompt 是否包含：(1) 角色定义；(2) 擅长领域（3-5 个具体能力点）；(3) 分析框架；(4) 数据获取方式；(5) 结构化输出模板。前 5 项缺失列入 BLOCKER。(6) 通过 SendMessage 将结果回传给主理人的明确说明，缺失时列入 SUGGESTION。",
+      "target_file": "agents/iggm-boltz-msa-expert.md",
+      "reference_doc": "CODEBUDDY.md §4.5.3 / WorkBuddy §5.3",
+      "context": {
+        "member_id": "iggm-boltz-msa-expert"
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-B07-iggm-protenix-expert",
+      "action_type": "member-rule-check",
+      "priority": "required",
+      "instruction": "请阅读 CODEBUDDY.md §4.5.3 与 WorkBuddy §5.3，对照 target_file 判断成员 prompt 是否包含：(1) 角色定义；(2) 擅长领域（3-5 个具体能力点）；(3) 分析框架；(4) 数据获取方式；(5) 结构化输出模板。前 5 项缺失列入 BLOCKER。(6) 通过 SendMessage 将结果回传给主理人的明确说明，缺失时列入 SUGGESTION。",
+      "target_file": "agents/iggm-protenix-expert.md",
+      "reference_doc": "CODEBUDDY.md §4.5.3 / WorkBuddy §5.3",
+      "context": {
+        "member_id": "iggm-protenix-expert"
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-C07",
+      "action_type": "prompt-completeness",
+      "priority": "required",
+      "instruction": "请阅读 CODEBUDDY.md §4.1 与 WorkBuddy §4.2，逐个检查 context.targets 中每个 agent.md 的 frontmatter 是否包含 displayName 和 profession 字段。缺失项列入 SUGGESTION。",
+      "reference_doc": "CODEBUDDY.md §4.1 / WorkBuddy专家开发规范.md §4.2",
+      "context": {
+        "targets": [
+          {
+            "file": "agents/iggm-protenix-msa-expert.md",
+            "has_displayName": true,
+            "has_profession": true,
+            "name": "iggm-protenix-msa-expert"
+          },
+          {
+            "file": "agents/iggm-protenix-expert.md",
+            "has_displayName": true,
+            "has_profession": true,
+            "name": "iggm-protenix-expert"
+          },
+          {
+            "file": "agents/tencent-antibody-drug-design-team-team-lead.md",
+            "has_displayName": true,
+            "has_profession": true,
+            "name": "tencent-antibody-drug-design-team-team-lead"
+          },
+          {
+            "file": "agents/iggm-boltz-msa-expert.md",
+            "has_displayName": true,
+            "has_profession": true,
+            "name": "iggm-boltz-msa-expert"
+          }
+        ]
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-G01",
+      "action_type": "security-hygiene-review",
+      "priority": "recommended",
+      "instruction": "请基于 context 中的启发式扫描结果，并阅读相关 target 文件，复核专家包安全与通用性：(1) 是否存在真实凭据/密钥硬编码；(2) scripts/bin 是否有越权读取、数据外传或危险命令；(3) 内网域名是否有公网降级或明确适用范围；(4) 个人路径、平台路径、CDN @latest 是否需要修复。真实凭据硬编码列 BLOCKER；其余按影响列 SUGGESTION，并给出可执行修复方案。",
+      "reference_doc": "安全规则：High-Priority Secure Coding Standards / CODEBUDDY.md §十七",
+      "context": {
+        "text_files_scanned": 6,
+        "credential_blockers": [],
+        "intranet_domains": [],
+        "personal_paths": [],
+        "platform_path_residue": [],
+        "cdn_latest": [],
+        "dangerous_shell": []
+      },
+      "execute": true
+    },
+    {
+      "id": "AI-Q01",
+      "action_type": "deep-quality-review",
+      "priority": "recommended",
+      "instruction": "请执行专家包深度质量评审。若 context.skip_deep_review=true，仅在报告中说明跳过原因；否则必须阅读核心 agents/*.md、README.md 与 skills/*/SKILL.md，按 11 维度输出建议级结论：AI 可执行性、路由/触发清晰度、上下文效率、容错降级、角色边界、团队编排、用户体验、受众适配、可移植性、领域准确性、可维护性。所有结论均为 SUGGESTION，不阻断。",
+      "reference_doc": "references/review-checklist.md §深度质量评审 / skill-reviewer v3.7.1 11 维度",
+      "context": {
+        "total_files": 11,
+        "total_md_chars": 7211,
+        "file_tree_top": [
+          {
+            "path": "avatars/iggm-boltz-msa-expert.png",
+            "size_kb": 399.7
+          },
+          {
+            "path": "avatars/iggm-protenix-msa-expert.png",
+            "size_kb": 399.7
+          },
+          {
+            "path": "avatars/iggm-protenix-expert.png",
+            "size_kb": 399.7
+          },
+          {
+            "path": "avatars/tencent-antibody-drug-design-team.png",
+            "size_kb": 140.9
+          },
+          {
+            "path": "avatars/tencent-antibody-drug-design-team-team-lead.png",
+            "size_kb": 133.2
+          },
+          {
+            "path": ".codebuddy-plugin/plugin.json",
+            "size_kb": 4.7
+          },
+          {
+            "path": "agents/iggm-protenix-msa-expert.md",
+            "size_kb": 3.3
+          },
+          {
+            "path": "agents/iggm-boltz-msa-expert.md",
+            "size_kb": 3.2
+          },
+          {
+            "path": "agents/iggm-protenix-expert.md",
+            "size_kb": 3.0
+          },
+          {
+            "path": "agents/tencent-antibody-drug-design-team-team-lead.md",
+            "size_kb": 2.3
+          },
+          {
+            "path": "settings.json",
+            "size_kb": 0.1
+          }
+        ],
+        "md_files_top": [
+          {
+            "path": "agents/iggm-protenix-msa-expert.md",
+            "chars": 2017,
+            "headings": [
+              {
+                "level": 1,
+                "title": "腾讯抗体设计专家（IgGM·Protenix·MSA）- 组小学"
+              },
+              {
+                "level": 2,
+                "title": "能力边界"
+              },
+              {
+                "level": 2,
+                "title": "核心能力"
+              },
+              {
+                "level": 2,
+                "title": "工作流程"
+              },
+              {
+                "level": 3,
+                "title": "阶段一：需求理解与输入预检"
+              },
+              {
+                "level": 3,
+                "title": "阶段二：候选生成与 MSA 构建"
+              },
+              {
+                "level": 3,
+                "title": "阶段三：复合物预测与候选优选"
+              },
+              {
+                "level": 2,
+                "title": "超出范围的处理"
+              }
+            ]
+          },
+          {
+            "path": "agents/iggm-boltz-msa-expert.md",
+            "chars": 1917,
+            "headings": [
+              {
+                "level": 1,
+                "title": "腾讯抗体设计专家（IgGM·Boltz·MSA）- 组小学"
+              },
+              {
+                "level": 2,
+                "title": "能力边界"
+              },
+              {
+                "level": 2,
+                "title": "核心能力"
+              },
+              {
+                "level": 2,
+                "title": "工作流程"
+              },
+              {
+                "level": 3,
+                "title": "阶段一：需求理解与输入预检"
+              },
+              {
+                "level": 3,
+                "title": "阶段二：候选生成与 MSA 构建"
+              },
+              {
+                "level": 3,
+                "title": "阶段三：Boltz-2 预测与候选优选"
+              },
+              {
+                "level": 2,
+                "title": "超出范围的处理"
+              }
+            ]
+          },
+          {
+            "path": "agents/iggm-protenix-expert.md",
+            "chars": 1816,
+            "headings": [
+              {
+                "level": 1,
+                "title": "腾讯抗体设计专家（免MSA·IgGM·Protenix）- 组小学"
+              },
+              {
+                "level": 2,
+                "title": "能力边界"
+              },
+              {
+                "level": 2,
+                "title": "核心能力"
+              },
+              {
+                "level": 2,
+                "title": "工作流程"
+              },
+              {
+                "level": 3,
+                "title": "阶段一：需求确认与参数预检"
+              },
+              {
+                "level": 3,
+                "title": "阶段二：候选生成与快速预测"
+              },
+              {
+                "level": 3,
+                "title": "阶段三：候选筛选与结果输出"
+              },
+              {
+                "level": 2,
+                "title": "超出范围的处理"
+              }
+            ]
+          },
+          {
+            "path": "agents/tencent-antibody-drug-design-team-team-lead.md",
+            "chars": 1461,
+            "headings": [
+              {
+                "level": 1,
+                "title": "腾讯抗体药物设计与结构优选专家团 - 组小学"
+              },
+              {
+                "level": 2,
+                "title": "团队成员"
+              },
+              {
+                "level": 2,
+                "title": "工作职责"
+              },
+              {
+                "level": 2,
+                "title": "任务分配逻辑"
+              },
+              {
+                "level": 2,
+                "title": "超出范围的处理"
+              }
+            ]
+          }
+        ],
+        "agent_files": [
+          {
+            "path": "agents/iggm-protenix-msa-expert.md",
+            "name": "iggm-protenix-msa-expert",
+            "description_len": 248,
+            "body_chars": 1299,
+            "has_send_message": false
+          },
+          {
+            "path": "agents/iggm-protenix-expert.md",
+            "name": "iggm-protenix-expert",
+            "description_len": 238,
+            "body_chars": 1172,
+            "has_send_message": false
+          },
+          {
+            "path": "agents/tencent-antibody-drug-design-team-team-lead.md",
+            "name": "tencent-antibody-drug-design-team-team-lead",
+            "description_len": 219,
+            "body_chars": 979,
+            "has_send_message": false
+          },
+          {
+            "path": "agents/iggm-boltz-msa-expert.md",
+            "name": "iggm-boltz-msa-expert",
+            "description_len": 232,
+            "body_chars": 1230,
+            "has_send_message": false
+          }
+        ],
+        "skill_dirs": [],
+        "plugin_summary": {
+          "name": "tencent-antibody-drug-design-team",
+          "expertType": "team",
+          "agentName": "tencent-antibody-drug-design-team-team-lead",
+          "categoryId": "04-DataAI",
+          "agents_count": 4,
+          "skills_count": 0,
+          "members_count": 4,
+          "tags_count": 3,
+          "quickPrompts_count": 3
+        },
+        "skip_deep_review": false,
+        "skip_reason": ""
+      },
+      "execute": true
+    }
+  ],
+  "finance_flag": false,
+  "extended_review_context": {
+    "security_hygiene": {
+      "text_files_scanned": 6,
+      "credential_blockers": [],
+      "intranet_domains": [],
+      "personal_paths": [],
+      "platform_path_residue": [],
+      "cdn_latest": [],
+      "dangerous_shell": []
+    },
+    "dependency_context": {
+      "bin_files": [],
+      "script_files": [],
+      "mentioned_env_vars": [],
+      "install_commands": [],
+      "documentation_files": [
+        "agents/iggm-protenix-msa-expert.md",
+        "agents/iggm-protenix-expert.md",
+        "agents/tencent-antibody-drug-design-team-team-lead.md",
+        "agents/iggm-boltz-msa-expert.md"
+      ],
+      "has_setup_section": false,
+      "needs_dependency_guide": false
+    },
+    "deep_review_context": {
+      "total_files": 11,
+      "total_md_chars": 7211,
+      "file_tree_top": [
+        {
+          "path": "avatars/iggm-boltz-msa-expert.png",
+          "size_kb": 399.7
+        },
+        {
+          "path": "avatars/iggm-protenix-msa-expert.png",
+          "size_kb": 399.7
+        },
+        {
+          "path": "avatars/iggm-protenix-expert.png",
+          "size_kb": 399.7
+        },
+        {
+          "path": "avatars/tencent-antibody-drug-design-team.png",
+          "size_kb": 140.9
+        },
+        {
+          "path": "avatars/tencent-antibody-drug-design-team-team-lead.png",
+          "size_kb": 133.2
+        },
+        {
+          "path": ".codebuddy-plugin/plugin.json",
+          "size_kb": 4.7
+        },
+        {
+          "path": "agents/iggm-protenix-msa-expert.md",
+          "size_kb": 3.3
+        },
+        {
+          "path": "agents/iggm-boltz-msa-expert.md",
+          "size_kb": 3.2
+        },
+        {
+          "path": "agents/iggm-protenix-expert.md",
+          "size_kb": 3.0
+        },
+        {
+          "path": "agents/tencent-antibody-drug-design-team-team-lead.md",
+          "size_kb": 2.3
+        },
+        {
+          "path": "settings.json",
+          "size_kb": 0.1
+        }
+      ],
+      "md_files_top": [
+        {
+          "path": "agents/iggm-protenix-msa-expert.md",
+          "chars": 2017,
+          "headings": [
+            {
+              "level": 1,
+              "title": "腾讯抗体设计专家（IgGM·Protenix·MSA）- 组小学"
+            },
+            {
+              "level": 2,
+              "title": "能力边界"
+            },
+            {
+              "level": 2,
+              "title": "核心能力"
+            },
+            {
+              "level": 2,
+              "title": "工作流程"
+            },
+            {
+              "level": 3,
+              "title": "阶段一：需求理解与输入预检"
+            },
+            {
+              "level": 3,
+              "title": "阶段二：候选生成与 MSA 构建"
+            },
+            {
+              "level": 3,
+              "title": "阶段三：复合物预测与候选优选"
+            },
+            {
+              "level": 2,
+              "title": "超出范围的处理"
+            }
+          ]
+        },
+        {
+          "path": "agents/iggm-boltz-msa-expert.md",
+          "chars": 1917,
+          "headings": [
+            {
+              "level": 1,
+              "title": "腾讯抗体设计专家（IgGM·Boltz·MSA）- 组小学"
+            },
+            {
+              "level": 2,
+              "title": "能力边界"
+            },
+            {
+              "level": 2,
+              "title": "核心能力"
+            },
+            {
+              "level": 2,
+              "title": "工作流程"
+            },
+            {
+              "level": 3,
+              "title": "阶段一：需求理解与输入预检"
+            },
+            {
+              "level": 3,
+              "title": "阶段二：候选生成与 MSA 构建"
+            },
+            {
+              "level": 3,
+              "title": "阶段三：Boltz-2 预测与候选优选"
+            },
+            {
+              "level": 2,
+              "title": "超出范围的处理"
+            }
+          ]
+        },
+        {
+          "path": "agents/iggm-protenix-expert.md",
+          "chars": 1816,
+          "headings": [
+            {
+              "level": 1,
+              "title": "腾讯抗体设计专家（免MSA·IgGM·Protenix）- 组小学"
+            },
+            {
+              "level": 2,
+              "title": "能力边界"
+            },
+            {
+              "level": 2,
+              "title": "核心能力"
+            },
+            {
+              "level": 2,
+              "title": "工作流程"
+            },
+            {
+              "level": 3,
+              "title": "阶段一：需求确认与参数预检"
+            },
+            {
+              "level": 3,
+              "title": "阶段二：候选生成与快速预测"
+            },
+            {
+              "level": 3,
+              "title": "阶段三：候选筛选与结果输出"
+            },
+            {
+              "level": 2,
+              "title": "超出范围的处理"
+            }
+          ]
+        },
+        {
+          "path": "agents/tencent-antibody-drug-design-team-team-lead.md",
+          "chars": 1461,
+          "headings": [
+            {
+              "level": 1,
+              "title": "腾讯抗体药物设计与结构优选专家团 - 组小学"
+            },
+            {
+              "level": 2,
+              "title": "团队成员"
+            },
+            {
+              "level": 2,
+              "title": "工作职责"
+            },
+            {
+              "level": 2,
+              "title": "任务分配逻辑"
+            },
+            {
+              "level": 2,
+              "title": "超出范围的处理"
+            }
+          ]
+        }
+      ],
+      "agent_files": [
+        {
+          "path": "agents/iggm-protenix-msa-expert.md",
+          "name": "iggm-protenix-msa-expert",
+          "description_len": 248,
+          "body_chars": 1299,
+          "has_send_message": false
+        },
+        {
+          "path": "agents/iggm-protenix-expert.md",
+          "name": "iggm-protenix-expert",
+          "description_len": 238,
+          "body_chars": 1172,
+          "has_send_message": false
+        },
+        {
+          "path": "agents/tencent-antibody-drug-design-team-team-lead.md",
+          "name": "tencent-antibody-drug-design-team-team-lead",
+          "description_len": 219,
+          "body_chars": 979,
+          "has_send_message": false
+        },
+        {
+          "path": "agents/iggm-boltz-msa-expert.md",
+          "name": "iggm-boltz-msa-expert",
+          "description_len": 232,
+          "body_chars": 1230,
+          "has_send_message": false
+        }
+      ],
+      "skill_dirs": [],
+      "plugin_summary": {
+        "name": "tencent-antibody-drug-design-team",
+        "expertType": "team",
+        "agentName": "tencent-antibody-drug-design-team-team-lead",
+        "categoryId": "04-DataAI",
+        "agents_count": 4,
+        "skills_count": 0,
+        "members_count": 4,
+        "tags_count": 3,
+        "quickPrompts_count": 3
+      },
+      "skip_deep_review": false,
+      "skip_reason": ""
+    }
+  },
+  "summary": {
+    "structure_blockers": 0,
+    "structure_total": 0,
+    "ai_actions_total": 8,
+    "ai_actions_to_execute": 8,
+    "security_samples": 0,
+    "dependency_guide_needed": false,
+    "deep_review_skip": false
+  },
+  "report_skeleton": "# 专家包审查报告 - tencent-antibody-drug-design-team\n\n> 专家类型：team\n\n---\n\n## 一、总体结论\n\n**整体结论：<可上架 | 需修复后方可上架>**\n\n- 结构层 BLOCKER：0 个\n- 结构层 SUGGESTION：0 个\n- 待 LLM 校验的规范项（ai_actions）：8 项\n\n\n## 二、阻断问题（BLOCKER）\n\n> LLM 填充：结构层 BLOCKER 已由脚本检测；规范层 BLOCKER 由 ai_actions 执行后追加\n\n## 三、建议改进项（SUGGESTION）\n\n> LLM 填充：包含结构层 SUGGESTION、security-hygiene-review、dependency-guide-check 等结论\n\n## 四、深度质量评审\n\n> LLM 填充：按 11 维度输出建议级评审；若 deep_review_context.skip_deep_review=true，说明跳过原因\n\n## 五、修复优先级表\n\n> LLM 填充表格\n\n## 六、亮点（可选）\n\n> LLM 填充\n"
+}

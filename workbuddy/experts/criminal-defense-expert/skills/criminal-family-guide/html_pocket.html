@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刑事家属程序指引 - 速览卡</title>
+  <style>
+    :root {
+      --stage-color: {{STAGE_COLOR}};
+
+      /* 视觉层级四色系统（与 standard/minimal 一致） */
+      --color-danger: #D32F2F;
+      --color-action: #2E7D32;
+      --color-attention: #E65100;
+      --color-reference: #616161;
+      --color-reference-bg: #F5F5F5;
+
+      --stage-red: #E74C3C;
+      --stage-amber: #F39C12;
+      --stage-green: #27AE60;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+    }
+    .pocket-card {
+      width: 210mm;
+      height: 148mm;
+      padding: 12mm 15mm;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* 页眉 */
+    .pocket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #E0E0E0;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+    .pocket-header .logo { max-width: 80px; }
+    .pocket-header .logo img { max-width: 80px; height: auto; }
+    .pocket-header .firm { font-size: 12px; font-weight: bold; color: #555; }
+
+    /* 标题行 */
+    .pocket-title {
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #222;
+    }
+
+    /* 5 图块横排——四色语义 */
+    .pocket-blocks {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .pocket-block {
+      flex: 1;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* 📍 当前阶段——阶段色填充 */
+    .pocket-block.block-status {
+      background: linear-gradient(135deg, var(--stage-color), color-mix(in srgb, var(--stage-color) 70%, #000));
+      color: #fff;
+    }
+
+    /* 👨‍⚖️ 律师在做——关注色（琥珀） */
+    .pocket-block.block-lawyer {
+      background: #FFF8E1;
+      border: 1px solid var(--color-attention);
+    }
+
+    /* ✅ 你要做——行动色（绿色） */
+    .pocket-block.block-do {
+      background: #F1F8E9;
+      border: 1px solid var(--color-action);
+    }
+
+    /* 🚫 别做！——禁止色（红色） */
+    .pocket-block.block-dont {
+      background: #FFF5F5;
+      border: 1px solid var(--color-danger);
+    }
+
+    /* ⏰ 关键时间——关注色（琥珀，与律师在做同色系，区分🟢🔴） */
+    .pocket-block.block-time {
+      background: #FFF8E1;
+      border: 1px solid var(--color-attention);
+    }
+
+    .pocket-block .block-label {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .pocket-block .block-content {
+      font-size: 11px;
+    }
+    .pocket-block .block-content .item {
+      padding: 1px 0;
+    }
+    .pocket-block .deadline-highlight {
+      color: var(--color-attention);
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* 页脚 */
+    .pocket-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #DDD;
+      padding-top: 6px;
+      font-size: 11px;
+      color: #888;
+    }
+    .pocket-footer .contact { text-align: left; }
+    .pocket-footer .contact .phone-line { font-size: 12px; }
+    .pocket-footer .disclaimer { font-size: 10px; color: #AAA; }
+
+    .watermark {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 36px;
+      opacity: 0.06;
+      color: #999;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @media print {
+      @page { size: A4; margin: 0; }
+      .pocket-card { border: none; }
+      .watermark { display: block; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="watermark no-print">仅供参考 · 不构成法律意见</div>
+
+  <div class="pocket-card">
+    <!-- 页眉 -->
+    <div class="pocket-header">
+      <div class="logo">{{LAW_FIRM_LOGO}}</div>
+      <div class="firm">{{LAW_FIRM_NAME}}</div>
+    </div>
+
+    <div class="pocket-title">刑事家属程序指引 · 速览卡</div>
+
+    <!-- 5 图块——四色语义清晰 -->
+    <div class="pocket-blocks">
+      <!-- O0a 当前状态（阶段色） -->
+      <div class="pocket-block block-status">
+        <span class="block-label">📍 当前阶段</span>
+        <div class="block-content">
+          <div class="item"><strong>{{STAGE_NAME}}</strong></div>
+          <div class="item">{{SUSPECT_NAME}}</div>
+        </div>
+      </div>
+
+      <!-- O0b 律师在做（关注色） -->
+      <div class="pocket-block block-lawyer">
+        <span class="block-label">👨‍⚖️ 律师在做</span>
+        <div class="block-content">
+          {{LAWYER_QUICK_LIST}}
+        </div>
+      </div>
+
+      <!-- O0c 你要做（行动色·绿色） -->
+      <div class="pocket-block block-do">
+        <span class="block-label">✅ 你要做</span>
+        <div class="block-content">
+          {{FAMILY_QUICK_LIST}}
+        </div>
+      </div>
+
+      <!-- O0d 别做！（禁止色·红色） -->
+      <div class="pocket-block block-dont">
+        <span class="block-label">🚫 别做！</span>
+        <div class="block-content">
+          {{DONT_QUICK_LIST}}
+        </div>
+      </div>
+
+      <!-- O0e 关键时间（信息色·蓝色） -->
+      <div class="pocket-block block-time">
+        <span class="block-label">⏰ 关键时间</span>
+        <div class="block-content">
+          <div class="deadline-highlight">{{DEADLINE}}</div>
+          <div class="item">{{DEADLINE_DESC}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="pocket-footer">
+      <div class="contact">
+        <div class="phone-line">📞 律师电话：________________</div>
+      </div>
+      <div class="disclaimer">仅供参考 · 不构成法律意见</div>
+    </div>
+  </div>
+</body>
+</html>

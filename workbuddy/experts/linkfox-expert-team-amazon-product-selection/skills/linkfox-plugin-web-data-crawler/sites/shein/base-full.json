@@ -1,0 +1,360 @@
+{
+  "workflowName": "Shein US 商品详情页数据采集",
+  "steps": [
+    {
+      "tabKey": "tabKey666",
+      "tabUrl": "https://us.shein.com/ALO-2026-New-Letter-Baseball-Cap-Adjustable-Dad-Hat-Breathable-Sun-Protection-Outdoor-Sports-Multi-Color-Fashion-Hat-Breathable-Baseball-Cap-Sun-p-499589912.html?mallCode=1",
+      "actionDescription": "打开Shein商品页",
+      "actionCode": "OPEN_TAB"
+    },
+    {
+      "selector": [".product-intro__head-name", "h1"],
+      "tabKey": "tabKey666",
+      "actionDescription": "等标题",
+      "actionCode": "WAIT"
+    },
+    {
+      "tabKey": "tabKey666",
+      "actionValue": "500",
+      "actionDescription": "滚至中部加载价格",
+      "actionCode": "SCROLL"
+    },
+    {
+      "selector": "#productMainPriceId",
+      "tabKey": "tabKey666",
+      "actionDescription": "等价格出现",
+      "actionCode": "WAIT"
+    },
+    {
+      "extractField": "title",
+      "actionDescription": "标题",
+      "actionCode": "EXTRACT",
+      "selector": ".product-intro__head-name h1",
+      "extractType": "text",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "price",
+      "actionDescription": "价格",
+      "actionCode": "EXTRACT",
+      "selector": "#productMainPriceId",
+      "extractType": "attribute",
+      "attribute": "aria-label",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "original_price",
+      "actionDescription": "原价",
+      "actionCode": "EXTRACT",
+      "selector": ".productDiscountInfo__retail",
+      "extractType": "text",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "discount",
+      "actionDescription": "折扣",
+      "actionCode": "EXTRACT",
+      "selector": ".productDiscountPercent",
+      "extractType": "text",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "sku",
+      "actionDescription": "SKU",
+      "actionCode": "EXTRACT",
+      "selector": ".product-intro__head-sku-text",
+      "extractType": "text",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "variant_current",
+      "actionDescription": "当前选中的变体值（取自 color-block 的 sub-title）",
+      "actionCode": "EXTRACT",
+      "selector": ".color-block .sub-title",
+      "extractType": "text",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "tabKey": "tabKey666",
+      "actionValue": "200",
+      "actionDescription": "滚至变体选项区域",
+      "actionCode": "SCROLL"
+    },
+    {
+      "actionCode": "LOOP",
+      "extractField": "variant_dimensions",
+      "actionDescription": "遍历变体容器（最多 2 个：.main-sales-attr__fold / .product-intro__bsSize），每容器提取维度名 + 选项名 + 缩略图。options 与 option_images 同索引配对；空容器由 AI 过滤（filter d => d.options.length > 0）",
+      "loopTarget": [".main-sales-attr__fold", ".product-intro__bsSize"],
+      "steps": [
+        {
+          "actionCode": "EXTRACT",
+          "extractField": "title",
+          "extractType": "text",
+          "selector": "{{loopElement}} .color-block .title, {{loopElement}} .size-item__title h2",
+          "actionDescription": "提取维度名（{{loopIndex}}）",
+          "tabKey": "tabKey666",
+          "allowFailure": true
+        },
+        {
+          "actionCode": "EXTRACT",
+          "extractField": "options",
+          "extractType": "list",
+          "attribute": "aria-label",
+          "selector": "{{loopElement}} [role='radio']",
+          "actionDescription": "提取选项名列表（{{loopIndex}}）",
+          "tabKey": "tabKey666",
+          "allowFailure": true,
+          "onFailure": {
+            "actionCode": "FIND_SELECTOR",
+            "field": "options",
+            "thenRetry": false
+          }
+        },
+        {
+          "actionCode": "EXTRACT",
+          "extractField": "option_images",
+          "extractType": "list",
+          "attribute": "src",
+          "selector": "{{loopElement}} [role='radio'] [class*='crop-image-container'] img",
+          "actionDescription": "提取选项缩略图列表（{{loopIndex}}；纯文本选项为空，非服装品类可能缺图）",
+          "tabKey": "tabKey666",
+          "allowFailure": true
+        }
+      ]
+    },
+    {
+      "extractField": "main_image",
+      "actionDescription": "主图",
+      "actionCode": "EXTRACT",
+      "selector": [
+        ".thumbs-picture__column-active .crop-image-container__img",
+        ".crop-image-container__img"
+      ],
+      "extractType": "attribute",
+      "attribute": "src",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "images",
+      "actionDescription": "所有缩略图",
+      "actionCode": "EXTRACT",
+      "selector": [
+        ".thumbs-picture img.crop-image-container__img",
+        ".thumbs-picture img",
+        ".crop-image-container__img"
+      ],
+      "extractType": "list",
+      "attribute": "src",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "bestseller_rank",
+      "actionDescription": "Bestseller排名（翻新/非标品类可能不存在）",
+      "actionCode": "EXTRACT",
+      "selector": [
+        ".ranking-item__primary-wrapper .ranking-item__text",
+        "[class*='ranking'] [class*='text']"
+      ],
+      "extractType": "text",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "extractField": "bestseller_category",
+      "actionDescription": "Bestseller分类（翻新/非标品类可能不存在）",
+      "actionCode": "EXTRACT",
+      "selector": [
+        ".ranking-item__second",
+        "[class*='ranking'] [class*='second']"
+      ],
+      "extractType": "text",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "extractField": "seller",
+      "actionDescription": "卖家",
+      "actionCode": "EXTRACT",
+      "selector": ".soldbybox-header__title-text",
+      "extractType": "text",
+      "tabKey": "tabKey666"
+    },
+    {
+      "extractField": "seller_ship_from",
+      "actionDescription": "发货地",
+      "actionCode": "EXTRACT",
+      "selector": ".soldbybox-header__sub-title",
+      "extractType": "text",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "2000",
+      "actionDescription": "滚动至页面底部触发 Vue clientonly 水合渲染",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "actionValue": "2000",
+      "actionDescription": "等待 Vue clientonly 水合完成，Description/Size & Fit/About Store 渲染到 DOM",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "VERIFY_SELECTOR",
+      "selector": ".common-entry__top",
+      "extractType": "list",
+      "extractField": "panel_count",
+      "actionDescription": "统计折叠面板数量（不同品类面板数不同）",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "LOOP",
+      "actionDescription": "逐个点击所有折叠面板强制展开（面板数由上一 step 动态确定）",
+      "tabKey": "tabKey666",
+      "condition": "{{panel_count.matchCount}}",
+      "start": 1,
+      "steps": [
+        {
+          "actionCode": "CLICK",
+          "selector": "section.product-meta > div:nth-of-type({{loopIndex}}) .common-entry__top",
+          "actionDescription": "点击第 {{loopIndex}} 个折叠面板",
+          "tabKey": "tabKey666",
+          "allowFailure": true
+        },
+        {
+          "actionCode": "WAIT",
+          "actionValue": "500",
+          "actionDescription": "等待面板展开动画完成",
+          "tabKey": "tabKey666"
+        }
+      ]
+    },
+    {
+      "actionCode": "EXTRACT",
+      "extractField": "product_meta",
+      "extractType": "text",
+      "selector": [
+        "section.product-meta"
+      ],
+      "actionDescription": "提取整块 product-meta 区域文本（含 Description / Size & Fit 尺寸表 / About Store，各品类字段不同，由 AI 后处理解析）",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "product_meta",
+        "hint": "product-meta section",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "3000",
+      "actionDescription": "滚动至评论区域触发懒加载",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [".common-reviews"],
+      "actionDescription": "等待评论区域渲染",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".ave-rate .rate-num"],
+      "extractField": "review_avg_score",
+      "extractType": "text",
+      "actionDescription": "提取评论平均分",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews__tab-item_active span"],
+      "extractField": "review_count_text",
+      "extractType": "text",
+      "actionDescription": "提取评论总数文本（含 Customer Reviews 前缀，AI 后处理解析数字）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews__tag-item"],
+      "extractField": "review_tags",
+      "extractType": "list",
+      "actionDescription": "提取评论标签列表",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".right-fit-rate .fit-item"],
+      "extractField": "review_fit_distribution",
+      "extractType": "list",
+      "actionDescription": "提取合身度分布（仅服装品类；AI 解析 Small/True to Size/Large 百分比）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews-new__list-item .nikename"],
+      "extractField": "review_authors",
+      "extractType": "list",
+      "actionDescription": "提取评论作者列表（匿名化昵称）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews-new__list-item .date"],
+      "extractField": "review_dates",
+      "extractType": "list",
+      "actionDescription": "提取评论日期列表",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews-new__list-item .rate-star"],
+      "extractField": "review_ratings",
+      "extractType": "list",
+      "attribute": "aria-label",
+      "actionDescription": "提取评论星级列表（aria-label 含 RatingN，AI 解析数字）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews-new__list-item .rate-des"],
+      "extractField": "review_bodies",
+      "extractType": "list",
+      "actionDescription": "提取评论正文列表",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews-new__list-item .like-num"],
+      "extractField": "review_helpful",
+      "extractType": "list",
+      "actionDescription": "提取评论有用数列表（Helpful (N)，AI 解析数字）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [".common-reviews-new__list-item .j-review-img"],
+      "extractField": "review_images",
+      "extractType": "list",
+      "attribute": "src",
+      "actionDescription": "提取评论配图 URL 列表（按评论顺序排列，含同名多图连续排列）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "CLOSE_TAB",
+      "actionDescription": "采集完成，关闭商品页标签",
+      "tabKey": "tabKey666"
+    }
+  ]
+}

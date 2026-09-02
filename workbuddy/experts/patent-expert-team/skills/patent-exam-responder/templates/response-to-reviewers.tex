@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{setspace}
+
+\newcommand{\ReviewerComment}[1]{%
+  \par\noindent\textbf{Reviewer comment}\par
+  \begin{quote}\itshape #1\end{quote}
+}
+
+\newcommand{\AuthorResponse}[1]{%
+  \par\noindent\textbf{Response}\par
+  #1\par
+}
+
+\newcommand{\RevisedExcerpt}[1]{%
+  \par\noindent\textbf{Revised manuscript text}\par
+  \begin{quote}\itshape #1\end{quote}
+}
+
+\newcommand{\ManuscriptChange}[1]{%
+  \par\noindent\textbf{Manuscript change}\par
+  #1\par
+}
+
+\newcommand{\EditorSection}{%
+  \clearpage
+  \section*{Response to the Editor}
+}
+
+\newcommand{\ReviewerSection}[1]{%
+  \clearpage
+  \section*{Response to Reviewer #1}
+}
+
+\title{Response to Reviewers\\
+\large Manuscript title to be supplied}
+\author{Corresponding author name on behalf of all authors}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Journal:} Journal name to be supplied\\
+\textbf{Manuscript ID:} Manuscript ID to be supplied\\
+\textbf{Decision type:} Major revision / minor revision / revise and resubmit to be supplied
+
+\section*{Response strategy summary}
+
+We thank the editor and reviewers for their careful evaluation of our manuscript.
+We have revised the manuscript to address the concerns raised and provide a
+point-by-point response below.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Overall posture:} Cooperative, evidence-forward, and non-defensive.
+  \item \textbf{Major revision themes:} Revision themes to be supplied.
+  \item \textbf{Unresolved author input:} None / items to be supplied.
+\end{itemize}
+
+\section*{Comment-response tracker}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.12\textwidth}
+                  >{\raggedright\arraybackslash}p{0.28\textwidth}
+                  >{\raggedright\arraybackslash}p{0.18\textwidth}
+                  >{\raggedright\arraybackslash}p{0.18\textwidth}
+                  >{\raggedright\arraybackslash}p{0.16\textwidth}}
+\textbf{ID} & \textbf{Concern} & \textbf{Action} & \textbf{Location} & \textbf{Readiness}\\
+\hline
+R1.1 & Reviewer concern summary to be supplied & Action to be supplied & Section/page/line to be supplied & draft with placeholders\\
+\end{longtable}
+
+\EditorSection
+
+\ReviewerComment{Editor comment E.1 to be supplied.}
+\AuthorResponse{We thank the editor for this guidance. Response to editor instruction E.1 to be supplied.}
+\RevisedExcerpt{Revised manuscript text related to E.1 to be supplied.}
+\ManuscriptChange{Corresponding manuscript change and location to be supplied.}
+
+\ReviewerSection{1}
+
+\subsection*{Comment R1.1}
+\ReviewerComment{Full reviewer comment R1.1 to be supplied.}
+\AuthorResponse{We thank the reviewer for raising this point. Direct response and supporting evidence to be supplied.}
+\RevisedExcerpt{Paste the revised manuscript text here. This excerpt is intentionally italic.}
+\ManuscriptChange{Manuscript change location, figure, table, supplement, or explicit placeholder to be supplied.}
+
+\subsection*{Comment R1.2}
+\ReviewerComment{Full reviewer comment R1.2 to be supplied.}
+\AuthorResponse{Response to R1.2 to be supplied.}
+\RevisedExcerpt{Revised manuscript text for R1.2 to be supplied.}
+\ManuscriptChange{Manuscript change for R1.2 to be supplied.}
+
+\ReviewerSection{2}
+
+\subsection*{Comment R2.1}
+\ReviewerComment{Full reviewer comment R2.1 to be supplied.}
+\AuthorResponse{Response to R2.1 to be supplied.}
+\RevisedExcerpt{Revised manuscript text for R2.1 to be supplied.}
+\ManuscriptChange{Manuscript change for R2.1 to be supplied.}
+
+\section*{Manuscript change checklist}
+
+\begin{itemize}[leftmargin=*]
+  \item R1.1: Specific manuscript change to be supplied.
+  \item R1.2: Specific manuscript change to be supplied.
+  \item R2.1: Specific manuscript change to be supplied.
+\end{itemize}
+
+\section*{Missing information and risk flags}
+
+\begin{itemize}[leftmargin=*]
+  \item None / missing author input to be supplied.
+\end{itemize}
+
+\end{document}

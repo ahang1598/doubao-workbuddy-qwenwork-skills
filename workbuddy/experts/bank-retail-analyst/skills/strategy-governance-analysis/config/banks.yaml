@@ -1,0 +1,54 @@
+# Skill 5 战略与治理分析 · 对标银行列表
+# 与 skill3/skill4 的 7 家不同，本 Skill 聚焦"中信 + 4 标杆"共 5 家
+# 原因见 SKILL.md § "对标范围"
+
+base_bank:
+  name: 中信银行
+  short_name: 中信
+  stock_code_a: "601998"
+  stock_code_h: "00998"
+  exchange: 上交所
+  group_parent: 中信集团
+  analysis_role: 基准行
+
+peer_banks:
+  - name: 招商银行
+    short_name: 招商
+    stock_code_a: "600036"
+    stock_code_h: "03968"
+    exchange: 上交所
+    group_parent: 招商局集团
+    analysis_role: 战略定力正面范本
+    leader_hypothesis: 高管稳定性高 + 零售定力强，"一张蓝图绘到底"典型样本
+
+  - name: 兴业银行
+    short_name: 兴业
+    stock_code_a: "601166"
+    stock_code_h: ""
+    exchange: 上交所
+    group_parent: 福建省财政厅
+    analysis_role: 商行+投行转型对照
+    leader_hypothesis: 从"同业之王"向"商行+投行"战略转型，决策连续性偏强
+
+  - name: 浦发银行
+    short_name: 浦发
+    stock_code_a: "600000"
+    stock_code_h: ""
+    exchange: 上交所
+    group_parent: 上海国际集团
+    analysis_role: 战略摇摆案例
+    leader_hypothesis: 长三角对公为主，近 10 年零售战略多次调整，战略摇摆标本
+
+  - name: 平安银行
+    short_name: 平安
+    stock_code_a: "000001"
+    stock_code_h: ""
+    exchange: 深交所
+    group_parent: 中国平安集团
+    analysis_role: 换届式创新对照
+    leader_hypothesis: 强执行力 + 换届时战略词汇大幅切换，"换届式创新"典型
+
+# 对照 skill3/skill4 的扩展银行（本 Skill 默认不纳入，可在用户显式要求时加入）
+optional_banks:
+  - {name: 光大银行, short_name: 光大}
+  - {name: 民生银行, short_name: 民生}

@@ -1,0 +1,145 @@
+{
+  "name": "today-todo-assistant",
+  "version": "2.0.3",
+  "description": "Helps organizations handle todo items via a team of experts. Invoking this expert enters the lead agent 'today-todo-team-lead' role; you MUST follow the lead SOP (agents/today-todo-team-lead.md) and complete the identity self-check first.",
+  "author": {
+    "name": "endevchen",
+    "email": ""
+  },
+  "agents": [
+    "./agents/today-todo-team-lead.md",
+    "./agents/alert-expert.md",
+    "./agents/invoice-expert.md",
+    "./agents/comment-assistant.md"
+  ],
+  "dependencies": {
+    "connectors": [
+      "gongyi-open-mcp"
+    ]
+  },
+  "expertType": "team",
+  "agentName": "today-todo-team-lead",
+  "teamInfo": {
+    "leadAgent": "today-todo-team-lead",
+    "memberAgents": [
+      "comment-assistant",
+      "alert-expert",
+      "invoice-expert"
+    ]
+  },
+  "members": [
+    {
+      "id": "today-todo-team-lead",
+      "name": {
+        "en": "TodoMate",
+        "zh": "腾讯公益今日待办专家团"
+      },
+      "profession": {
+        "en": "Today Todo Team Lead",
+        "zh": "腾讯公益今日待办专家团"
+      },
+      "avatar": "avatars/team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "comment-assistant",
+      "name": {
+        "en": "Comment Assistant",
+        "zh": "腾讯公益留言运营专家"
+      },
+      "profession": {
+        "en": "Comment Assistant",
+        "zh": "腾讯公益留言运营专家"
+      },
+      "avatar": "avatars/comment-assistant.png",
+      "role": "member"
+    },
+    {
+      "id": "alert-expert",
+      "name": {
+        "en": "Alert Expert",
+        "zh": "腾讯公益备案号证件更新专家"
+      },
+      "profession": {
+        "en": "Credential & Record Renewal Expert",
+        "zh": "腾讯公益备案号证件更新专家"
+      },
+      "avatar": "avatars/alert-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "invoice-expert",
+      "name": {
+        "en": "Invoice Expert",
+        "zh": "腾讯公益捐赠票据处理专家"
+      },
+      "profession": {
+        "en": "Invoice Processing Expert",
+        "zh": "腾讯公益捐赠票据处理专家"
+      },
+      "avatar": "avatars/invoice-expert.png",
+      "role": "member"
+    }
+  ],
+  "displayName": {
+    "en": "TodoMate",
+    "zh": "腾讯公益今日待办专家团"
+  },
+  "profession": {
+    "en": "TodoMate",
+    "zh": "腾讯公益今日待办专家团"
+  },
+  "displayDescription": {
+    "en": "Handles today's todos for charity organizations via a multi-expert team: comment replies, record renewal, and invoice processing with smart dispatch.",
+    "zh": "专家团模式协助机构处理今日待办，涵盖留言运营、证件备案更新与票据处理，智能分派任务一站式完成。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "09-OperationsHR",
+  "defaultInitPrompt": {
+    "zh": "帮我看看今天有什么要处理的",
+    "en": "Help me check today's todos"
+  },
+  "plugin": "today-todo-assistant",
+  "tags": [
+    {
+      "en": "Task Management",
+      "zh": "任务管理"
+    },
+    {
+      "en": "Dispatch",
+      "zh": "智能分派"
+    },
+    {
+      "en": "Multi-Agent",
+      "zh": "多专家协作"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Help me check today's todos",
+      "zh": "帮我看看今天有什么要处理的"
+    },
+    {
+      "en": "Process today's todos",
+      "zh": "处理今日待办"
+    },
+    {
+      "en": "Are there comments to reply?",
+      "zh": "有留言要回复吗"
+    }
+  ],
+  "skills": [
+    "./skills/alert-cert-forms",
+    "./skills/alert-info-fetcher",
+    "./skills/alert-ocr",
+    "./skills/alert-record-forms",
+    "./skills/comment-context-fetcher",
+    "./skills/comment-fetcher",
+    "./skills/comment-task-manager",
+    "./skills/comment-todo-statistics",
+    "./skills/invoice-info-fetcher",
+    "./skills/invoice-processing",
+    "./skills/reply-generator",
+    "./skills/todo-list-fetcher"
+  ]
+}

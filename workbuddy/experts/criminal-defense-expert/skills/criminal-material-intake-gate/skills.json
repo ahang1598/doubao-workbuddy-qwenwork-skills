@@ -1,0 +1,14 @@
+{
+  "id": "custom-criminal-material-intake-gate",
+  "marketId": "",
+  "name": "刑事案件材料完整性门禁",
+  "version": "1.0.0-candidate",
+  "description": "建立刑事案件独立目录，登记原始附件，检查案件内路径和逐页读取/OCR覆盖，并限制一次局部重试。",
+  "author": "",
+  "tags": "刑事案件隔离,材料完整性,OCR覆盖,断点续跑",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}
+

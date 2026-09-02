@@ -1,0 +1,15 @@
+{
+  "name": "破产债权审查",
+  "name_en": "bankruptcy-claim-review",
+  "description": "接收债权申报材料，执行八类债权分类与优先顺位确定、抵销权审查、债权金额核验，编制债权审查结论表和待确认债权清单。触发：债权申报审查/债权分类/优先顺位/抵销权审查/债权金额核验。不触发：破产程序外的债权债务纠纷诉讼/合同审查。",
+  "version": "1.1.0",
+  "blueprint": "bp-fact-evidence-organization-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-23",
+  "created": "2026-07-23",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-review",
+  "drafting_paradigm": "template_fill"
+}

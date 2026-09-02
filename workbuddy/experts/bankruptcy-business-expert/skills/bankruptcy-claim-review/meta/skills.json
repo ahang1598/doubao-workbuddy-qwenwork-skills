@@ -1,0 +1,1 @@
+{"id":"bankruptcy-claim-review","marketId":null,"name":"破产债权审查","version":"1.0.0","description":"接收债权申报材料，执行八类债权分类与优先顺位确定、抵销权审查、债权金额核验，编制债权审查结论表和待确认债权清单。","author":"深圳法大大网络科技有限公司","tags":["破产","债权审查","优先顺位","抵销权"],"skillType":"custom","skillSource":null,"skillSourceName":null}

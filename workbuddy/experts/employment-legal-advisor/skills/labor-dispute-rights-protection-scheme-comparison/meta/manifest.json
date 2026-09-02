@@ -1,0 +1,64 @@
+{
+  "name": "劳动争议维权方案对比",
+  "name_en": "labor-remedy-compare",
+  "description": "劳动争议多维权方案对比报告。触发：劳动仲裁/拖欠工资/违法解除/工伤待遇/未签合同/竞业限制等维权方案比较。不触发：民事案件维权（合同/侵权/借贷等非劳动关系纠纷）、具体文书起草、案件策略分析。",
+  "version": "3.1.0",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-05-01",
+  "created": "2026-05-11",
+  "updated": "2026-05-26",
+  "author": "labor-skill-factory",
+  "target_users": ["执业律师（劳动争议领域）"],
+  "applicable_scope": ["中国境内劳动争议", "劳动者方维权", "企业方维权"],
+  "output_types": ["html_client_report", "html_lawyer_report"],
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional",
+  "o1_format": "html",
+  "o1_audience": "当事人（终端客户）",
+  "o2_format": "html",
+  "o2_audience": "律师（内部使用）",
+  "dual_version": true,
+  "lawyer_only_annotations": [
+    "information_sufficiency_D1-D6",
+    "confidence_matrix_6dim_x_Nschemes",
+    "assumptions_list",
+    "path_switch_triggers",
+    "downstream_skills",
+    "risk_levels_L1_L2_L3"
+  ],
+  "format_capabilities": [
+    {
+      "format": "html_professional",
+      "supports": ["interactive_comparison", "risk_color_spectrum", "collapsible_panels", "print_export", "email_attachment", "responsive_layout", "dual_version_client_lawyer"]
+    }
+  ],
+  "legal_basis": [
+    "劳动争议调解仲裁法（第2/5/7/9/10/27/47/51条）",
+    "劳动法（第30/44/50/77/79/83条）",
+    "劳动合同法（第14/22/23/40/42/47/48/82/83/85/87条）",
+    "工伤保险条例（第17/37/55条）",
+    "劳动保障监察条例（第11/20条）",
+    "社会保险法（第56/86条）",
+    "劳动争议司法解释（一）",
+    "刑法第276条之一"
+  ],
+  "governance": {
+    "ssot_version": "§17",
+    "soft_degraded": true,
+    "degraded_strategy": "C+D+G",
+    "interaction_rounds": 3,
+    "risk_controls": [
+      "RC-01: 时效红线控制",
+      "RC-02: 仲裁前置原则控制",
+      "RC-03: 受众错配控制（双版本人称核对）",
+      "RC-04: 金额估算失控",
+      "RC-05: 证据缺口免责",
+      "RC-06: 执行不可行预警",
+      "RC-07: 方案遗漏自检",
+      "RC-08: 过度承诺控制"
+    ]
+  },
+  "changelog": "development/CHANGELOG.md"
+}

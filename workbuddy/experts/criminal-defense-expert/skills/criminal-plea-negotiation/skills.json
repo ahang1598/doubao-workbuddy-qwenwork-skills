@@ -1,0 +1,12 @@
+{
+  "id": "认罪认罚协商指引",
+  "marketId": "",
+  "name": "认罪认罚协商指引",
+  "version": "2.3.0-candidate",
+  "description": "为辩护律师协助当事人进行认罪认罚从宽协商，包含策略分析、量刑评估、协商方案和具结书审查。依据刑诉法第15条。触发：用户需要认罪认罚协商辅助。不触发：不起诉申请（→criminal-non-prosecution）、量刑预测（→criminal-sentencing-analysis）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

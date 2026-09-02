@@ -1,0 +1,12 @@
+{
+  "id": "刑事案件管理",
+  "marketId": "",
+  "name": "刑事案件管理",
+  "version": "",
+  "description": "管理刑事案件工作空间——自动检测已有项目（无则初始化/有则增量更新），创建目录结构、复制案卷文件、生成MD副本、按用户选定方案重命名、维护材料索引表和刑事案情表。触发：管理刑事案件/初始化刑事案件/建刑事案件目录/补充案卷材料/更新案情表。不触发：民事案件整理——调用civil-case-file-organization。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

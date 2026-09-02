@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="$lang$" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>$title$</title>
+$for(header-includes)$
+$header-includes$
+$endfor$
+</head>
+<body>
+
+<main class="layout single">
+  <article class="content">
+
+    <!-- 意见书表头：致/事由/编号/日期 -->
+    <div class="opinion-header">
+      <div class="label">致</div><div class="value">$if(addressee)$$addressee$$else$——$endif$</div>
+      <div class="label">事由</div><div class="value">$title$</div>
+      $if(report-no)$
+      <div class="label">编号</div><div class="value">$report-no$</div>
+      $endif$
+      $if(date)$
+      <div class="label">日期</div><div class="value">$date$</div>
+      $endif$
+    </div>
+
+    $if(disclaimer)$
+    <div class="disclaimer"><strong>免责声明</strong>
+      <ol><li>本意见仅供参考，不构成正式法律意见。如涉及重大决策，建议咨询执业律师并依据现行有效法律法规作出独立判断。</li></ol></div>
+    $endif$
+
+    $body$
+
+    <!-- 署名区 -->
+    $if(firm)$
+    <div class="signature-block">
+      <div class="firm">$firm$</div>
+      $if(lawyer)$<div class="lawyer">经办律师：$lawyer$</div>$endif$
+      $if(date)$<div class="date">$date$</div>$endif$
+      <div class="seal"></div>
+    </div>
+    $endif$
+
+  </article>
+</main>
+
+</body>
+</html>

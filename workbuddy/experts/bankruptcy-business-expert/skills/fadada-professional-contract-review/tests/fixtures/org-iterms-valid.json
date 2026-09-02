@@ -1,0 +1,48 @@
+{
+  "checklist_id": "CL-ITM-PO-2026-001",
+  "schema_version": "iterms-2.0",
+  "checklist_name": "采购合同审查清单",
+  "applicable_version": "审查v2.x",
+  "business_type": "采购合同",
+  "position": "buyer",
+  "scope": "library",
+  "version": "1.0.0",
+  "owner_org": "_default",
+  "source_meta": {
+    "generator": "合同审查清单生成器",
+    "generated_at": "2026-05-30T00:00:00+00:00"
+  },
+  "transaction_profile": {
+    "business_goal": "采购方按期取得合格货物",
+    "transaction_path": "采购买卖",
+    "client_position": "buyer",
+    "unknowns": []
+  },
+  "data": [
+    {
+      "审查项分组": "交付与验收",
+      "审查项名称": "交货日期明确性",
+      "风险类型": "交易风险",
+      "风险等级": "高风险",
+      "待审查条款要素": "交货日期",
+      "关联条款要素": "交付方式,验收期限",
+      "审查规则": "如未约定交货日期，或交货日期不是可识别的具体时间，则提示风险，否则不提示风险。",
+      "修改建议": "",
+      "修改方向": "补充明确、可验证的交货日期或里程碑。",
+      "风险说明": "交货日期不明确会影响履行安排、验收起算和逾期违约责任认定。",
+      "参考条款": "",
+      "法律依据": "",
+      "参考案例": "",
+      "备注": "[用规] 组织清单：CL-ITM-PO-2026-001"
+    }
+  ],
+  "cross_doc_rules": [
+    {
+      "rule_id": "X-001",
+      "field": "unit_price",
+      "must_match_across": ["contract", "po"],
+      "tolerance": "exact",
+      "risk_level": "高风险"
+    }
+  ]
+}

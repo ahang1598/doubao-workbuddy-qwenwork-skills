@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pandadata 研报复现 BACKTEST"
+  short_description: "Pandadata 真实数据驱动的研报翻译、因子复现验证、BACKTEST 策略回测、中文说明报告与交付摘要流水线。"
+  default_prompt: "复现这篇量化研报，使用 Pandadata 拉取真实数据，生成中文翻译、因子公式复现、因子验证报告、BACKTEST 策略回测报告和最终交付摘要。"

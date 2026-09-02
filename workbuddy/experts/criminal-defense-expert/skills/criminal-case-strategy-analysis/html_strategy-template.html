@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{DOC_TITLE}}</title>
+  <style>
+    body { counter-reset: page-counter; }
+    .page-break { page-break-before: always; counter-increment: page-counter; }
+    .page-number::after { content: counter(page-counter); }
+    @page {
+      size: A4 portrait;
+      margin: 2.5cm 2.6cm 2.0cm 2.8cm;
+    }
+    @page :first {
+      @top-left { content: none; }
+      @top-right { content: none; }
+      @bottom-center { content: none; }
+    }
+    @media print {
+      .screen-only { display: none !important; }
+      .print-only { display: block !important; }
+      body { margin: 0; padding: 0; }
+    }
+    @media screen {
+      body { background: #f5f3ef; padding: 1em; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;font-family:'宋体','仿宋',serif;font-size:12pt;line-height:1.5;color:#1A1A1A;background:#fffffd;">
+  <article style="max-width:156mm;margin:0 auto;padding:0;">
+
+    <!-- ===== 页眉（屏幕模式） ===== -->
+    <div class="screen-only" style="display:flex;justify-content:space-between;align-items:center;font-family:'宋体',serif;font-size:10.5pt;color:#7a7a7a;border-bottom:2.5pt solid #1b3a5c;padding-bottom:2pt;margin-bottom:1em;">
+      <span>{{HEADER_LEFT}}</span>
+      <span>{{HEADER_RIGHT}}</span>
+    </div>
+
+    <!-- ===== 文档控制页 ===== -->
+    <div style="page-break-after:always;">
+      <h2 style="font-family:'黑体','微软雅黑',sans-serif;font-size:16pt;font-weight:bold;color:#1b3a5c;text-align:center;text-indent:0;margin:0 0 1.5em 0;">文档控制</h2>
+
+      <h3 style="font-family:'黑体','宋体',serif;font-size:12pt;font-weight:bold;margin:1em 0 0.5em 0;text-indent:0;">版本历史</h3>
+      <table style="border-collapse:collapse;width:100%;margin:0.5em 0;font-size:10.5pt;">
+        <tr>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:center;background:#f5f3ef;color:#1b3a5c;width:60px;">版本</th>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:center;background:#f5f3ef;color:#1b3a5c;width:100px;">日期</th>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;">修订说明</th>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;width:80px;">修订人</th>
+        </tr>
+        <tr>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;text-align:center;">{{DOC_VERSION}}</td>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;text-align:center;">{{GENERATION_DATE}}</td>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;">初稿——供内部审阅</td>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;">{{AUTHOR_NAME}}</td>
+        </tr>
+      </table>
+
+      <h3 style="font-family:'黑体','宋体',serif;font-size:12pt;font-weight:bold;margin:1.5em 0 0.5em 0;text-indent:0;">分发清单</h3>
+      <table style="border-collapse:collapse;width:100%;margin:0.5em 0;font-size:10.5pt;">
+        <tr>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;">接收方</th>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;">单位/职务</th>
+          <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:center;background:#f5f3ef;color:#1b3a5c;width:80px;">份数</th>
+        </tr>
+        <tr>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;">{{CLIENT_NAME}}</td>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;">委托人</td>
+          <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;text-align:center;">1</td>
+        </tr>
+      </table>
+
+      <h3 style="font-family:'黑体','宋体',serif;font-size:12pt;font-weight:bold;margin:1.5em 0 0.5em 0;text-indent:0;">保密等级</h3>
+      <p style="text-indent:0;margin:0.3em 0;">{{CONFIDENTIALITY}}</p>
+    </div>
+
+    <!-- ===== 一、执行摘要 ===== -->
+    <h2 style="font-family:'黑体','微软雅黑',sans-serif;font-size:18pt;font-weight:bold;color:#1b3a5c;border-bottom:2pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">一、执行摘要</h2>
+
+    <!-- c06 结论卡（方案B配色） -->
+    <div style="border:1px solid #d4cfc5;background:linear-gradient(90deg,rgba(184,134,11,0.10),rgba(255,255,255,0.98));border-radius:12px;padding:18px 20px;font-family:'PingFang SC','Inter',-apple-system,sans-serif;margin:1.2em 0;">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;">
+        <strong style="font-size:16px;font-weight:600;color:#1b3a5c;">综合判断</strong>
+        <span style="display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;background:{{EXEC_SUMMARY_TAG_BG}};color:{{EXEC_SUMMARY_TAG_COLOR}};">{{EXEC_SUMMARY_TAG}}</span>
+      </div>
+      <div style="font-size:14px;line-height:1.85;color:#1b3a5c;">{{EXEC_SUMMARY_TEXT}}</div>
+    </div>
+
+    <!-- 关键发现 -->
+    <h3 style="font-family:'黑体','微软雅黑',sans-serif;font-size:13pt;font-weight:bold;color:#4A7FB5;margin:1em 0 0.5em 0;text-indent:0;">关键发现</h3>
+    <ol style="margin:0.5em 0;padding-left:2em;font-size:11.5pt;line-height:1.8;">
+      <li style="margin:0.2em 0;">{{KEY_FINDING_1}}</li>
+      <li style="margin:0.2em 0;">{{KEY_FINDING_2}}</li>
+      <li style="margin:0.2em 0;">{{KEY_FINDING_3}}</li>
+    </ol>
+
+    <!-- 风险概览 -->
+    <h3 style="font-family:'黑体','微软雅黑',sans-serif;font-size:13pt;font-weight:bold;color:#4A7FB5;margin:1em 0 0.5em 0;text-indent:0;">风险概览</h3>
+    <table style="border-collapse:collapse;width:100%;margin:0.5em 0;font-size:11pt;">
+      <tr>
+        <td style="padding:8px 10px;border-left:4pt solid #039855;background:#F0FDF4;width:60px;text-align:center;font-weight:bold;">低</td>
+        <td style="padding:8px 10px;background:#F0FDF4;">{{LOW_RISK_DESC}}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-left:4pt solid #b54708;background:#FFFBEB;text-align:center;font-weight:bold;">中</td>
+        <td style="padding:8px 10px;background:#FFFBEB;">{{MID_RISK_DESC}}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-left:4pt solid #d92d20;background:#FEF2F2;text-align:center;font-weight:bold;">高</td>
+        <td style="padding:8px 10px;background:#FEF2F2;">{{HIGH_RISK_DESC}}</td>
+      </tr>
+    </table>
+
+    <!-- 建议行动 -->
+    <h3 style="font-family:'黑体','微软雅黑',sans-serif;font-size:13pt;font-weight:bold;color:#b8860b;margin:1em 0 0.5em 0;text-indent:0;">建议行动</h3>
+    <table style="border-collapse:collapse;width:100%;margin:0.5em 0;font-size:11pt;">
+      <tr>
+        <td style="padding:6px 10px;font-weight:bold;color:#d92d20;width:70px;">▶ 立即</td>
+        <td style="padding:6px 10px;">{{ACTION_IMMEDIATE}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 10px;font-weight:bold;color:#b54708;">▶ 近期</td>
+        <td style="padding:6px 10px;">{{ACTION_SHORT_TERM}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 10px;font-weight:bold;color:#4A7FB5;">▶ 持续</td>
+        <td style="padding:6px 10px;">{{ACTION_ONGOING}}</td>
+      </tr>
+    </table>
+
+    <!-- ===== 二、案件基本信息 ===== -->
+    <div class="page-break"></div>
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">二、案件基本信息</h2>
+    <table style="border-collapse:collapse;width:100%;margin:1em 0;font-size:10.5pt;">
+      <tr>
+        <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;width:120px;">项目</th>
+        <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;">内容</th>
+      </tr>
+      <tr><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">被告人/犯罪嫌疑人</td><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{SUSPECT_NAME}}</td></tr>
+      <tr><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">涉嫌罪名</td><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{ALLEGED_CRIME}}</td></tr>
+      <tr><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">案件阶段</td><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{CASE_STAGE}}</td></tr>
+      <tr><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">法定刑幅度</td><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{STATUTORY_PENALTY}}</td></tr>
+      <tr><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">辩护目标</td><td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{DEFENSE_OBJECTIVE}}</td></tr>
+      <tr><td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;">分析日期</td><td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;">{{GENERATION_DATE}}</td></tr>
+    </table>
+
+    <!-- ===== 三、案件事实评估 ===== -->
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">三、案件事实评估</h2>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（一）控方指控要点</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{PROSECUTION_FACTS}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（二）事实争议点</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{FACT_DISPUTES}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（三）事实风险评估</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{FACT_RISK_ASSESSMENT}}</p>
+
+    <!-- ===== 四、证据评估 ===== -->
+    <div class="page-break"></div>
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">四、证据评估</h2>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（一）控方证据体系</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{PROSECUTION_EVIDENCE}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（二）证据链分析</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{EVIDENCE_CHAIN}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（三）辩方证据机会</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{DEFENSE_EVIDENCE_OPPORTUNITY}}</p>
+
+    <!-- ===== 五、法律适用评估 ===== -->
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">五、法律适用评估</h2>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（一）构成要件分析</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{CONSTITUTIVE_ELEMENTS}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（二）定性争议</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{QUALIFICATION_DISPUTE}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（三）法定刑分析</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{STATUTORY_PENALTY_ANALYSIS}}</p>
+
+    <!-- ===== 六、策略选项 ===== -->
+    <div class="page-break"></div>
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">六、策略选项</h2>
+
+    <!-- c12 风险矩阵（方案B配色） -->
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（一）策略选择矩阵</h3>
+    <div style="overflow-x:auto;">
+      <div style="display:grid;grid-template-columns:120px repeat(3,1fr);gap:6px;min-width:560px;font-family:'PingFang SC','Inter',-apple-system,sans-serif;">
+        <!-- 表头行 -->
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;"></div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;">证明难度低</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;">证明难度中</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;">证明难度高</div>
+        <!-- 可行性高 -->
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;">可行性高</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#ecfdf3;color:#039855;font-weight:600;">{{MATRIX_HL}}</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#ecfdf3;color:#039855;font-weight:600;">{{MATRIX_HM}}</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fffaeb;color:#b54708;font-weight:600;">{{MATRIX_HH}}</div>
+        <!-- 可行性中 -->
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;">可行性中</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#ecfdf3;color:#039855;font-weight:600;">{{MATRIX_ML}}</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fffaeb;color:#b54708;font-weight:600;">{{MATRIX_MM}}</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fffaeb;color:#b54708;font-weight:600;">{{MATRIX_MH}}</div>
+        <!-- 可行性低 -->
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#1b3a5c;color:#ffffff;font-weight:600;">可行性低</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fffaeb;color:#b54708;font-weight:600;">{{MATRIX_LL}}</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fffaeb;color:#b54708;font-weight:600;">{{MATRIX_LM}}</div>
+        <div style="border:1px solid #d4cfc5;border-radius:8px;min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:#fef3f2;color:#d92d20;font-weight:600;">{{MATRIX_LH}}</div>
+      </div>
+    </div>
+
+    <!-- 策略对比交互表 -->
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（二）策略对比</h3>
+    <table style="border-collapse:collapse;width:100%;margin:1em 0;font-size:10.5pt;">
+      <tr>
+        <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:left;background:#f5f3ef;color:#1b3a5c;">维度</th>
+        <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:center;background:#f5f3ef;color:#1b3a5c;">{{STRATEGY_A_NAME}}</th>
+        <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:center;background:#f5f3ef;color:#1b3a5c;">{{STRATEGY_B_NAME}}</th>
+        <th style="border-top:1.5pt solid #1b3a5c;border-bottom:0.75pt solid #1b3a5c;padding:6px 8px;font-weight:bold;text-align:center;background:#f5f3ef;color:#1b3a5c;">{{STRATEGY_C_NAME}}</th>
+      </tr>
+      <tr>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;font-weight:bold;">辩护层次</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;">{{A_LEVEL}}</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;">{{B_LEVEL}}</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;">{{C_LEVEL}}</td>
+      </tr>
+      <tr>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;font-weight:bold;">可行性</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:3px;background:{{A_FEAS_BG}};color:{{A_FEAS_COLOR}};font-weight:bold;">{{A_FEAS}}</span></td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:3px;background:{{B_FEAS_BG}};color:{{B_FEAS_COLOR}};font-weight:bold;">{{B_FEAS}}</span></td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:3px;background:{{C_FEAS_BG}};color:{{C_FEAS_COLOR}};font-weight:bold;">{{C_FEAS}}</span></td>
+      </tr>
+      <tr>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;font-weight:bold;">核心论点</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{A_ARGUMENT}}</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{B_ARGUMENT}}</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;">{{C_ARGUMENT}}</td>
+      </tr>
+      <tr>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;font-weight:bold;">风险等级</td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:3px;background:{{A_RISK_BG}};color:{{A_RISK_COLOR}};font-weight:bold;">{{A_RISK}}</span></td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:3px;background:{{B_RISK_BG}};color:{{B_RISK_COLOR}};font-weight:bold;">{{B_RISK}}</span></td>
+        <td style="border-bottom:0.75pt solid #d4cfc5;padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:3px;background:{{C_RISK_BG}};color:{{C_RISK_COLOR}};font-weight:bold;">{{C_RISK}}</span></td>
+      </tr>
+      <tr>
+        <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;font-weight:bold;">推荐度</td>
+        <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;text-align:center;">{{A_RECOMMEND}}</td>
+        <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;text-align:center;">{{B_RECOMMEND}}</td>
+        <td style="border-bottom:1.5pt solid #1b3a5c;padding:6px 8px;text-align:center;">{{C_RECOMMEND}}</td>
+      </tr>
+    </table>
+
+    <!-- ===== 七、推荐方案 ===== -->
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">七、推荐方案</h2>
+
+    <!-- c06 结论卡（推荐策略） -->
+    <div style="border:1px solid #d4cfc5;background:linear-gradient(90deg,rgba(184,134,11,0.10),rgba(255,255,255,0.98));border-radius:12px;padding:18px 20px;font-family:'PingFang SC','Inter',-apple-system,sans-serif;margin:1.2em 0;">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;">
+        <strong style="font-size:16px;font-weight:600;color:#1b3a5c;">推荐策略</strong>
+        <span style="display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;background:{{RECOMMEND_TAG_BG}};color:{{RECOMMEND_TAG_COLOR}};">{{RECOMMEND_TAG}}</span>
+      </div>
+      <div style="font-size:14px;line-height:1.85;color:#1b3a5c;">{{RECOMMEND_STRATEGY_TEXT}}</div>
+    </div>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">推荐理由</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{RECOMMEND_REASON}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">注意事项</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{RECOMMEND_CAUTION}}</p>
+
+    <!-- ===== 八、阶段行动计划 ===== -->
+    <div class="page-break"></div>
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">八、阶段行动计划</h2>
+
+    <!-- c13 流程图（方案B配色，简化连线版） -->
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（一）策略实施路径</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:'PingFang SC','Inter',-apple-system,sans-serif;margin:1em 0;">
+      <div style="background:#ffffff;border:1px solid #d4cfc5;border-radius:12px;padding:14px;min-height:100px;box-shadow:0 1px 2px rgba(17,21,28,0.04);border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;">
+        <div style="font-size:14px;font-weight:600;color:#1b3a5c;margin-bottom:5px;">{{STEP_1_TITLE}}</div>
+        <div style="font-size:13px;color:#7a7a7a;line-height:1.6;">{{STEP_1_DESC}}</div>
+      </div>
+      <div style="background:#ffffff;border:1px solid #d4cfc5;border-radius:12px;padding:14px;min-height:100px;box-shadow:0 1px 2px rgba(17,21,28,0.04);border-left:none;border-top-left-radius:0;border-bottom-left-radius:0;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;">
+        <div style="font-size:14px;font-weight:600;color:#1b3a5c;margin-bottom:5px;">{{STEP_2_TITLE}}</div>
+        <div style="font-size:13px;color:#7a7a7a;line-height:1.6;">{{STEP_2_DESC}}</div>
+      </div>
+      <div style="background:#ffffff;border:1px solid #d4cfc5;border-radius:12px;padding:14px;min-height:100px;box-shadow:0 1px 2px rgba(17,21,28,0.04);border-left:none;border-top-left-radius:0;border-bottom-left-radius:0;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;">
+        <div style="font-size:14px;font-weight:600;color:#1b3a5c;margin-bottom:5px;">{{STEP_3_TITLE}}</div>
+        <div style="font-size:13px;color:#7a7a7a;line-height:1.6;">{{STEP_3_DESC}}</div>
+      </div>
+      <div style="background:#ffffff;border:1px solid #d4cfc5;border-radius:12px;padding:14px;min-height:100px;box-shadow:0 1px 2px rgba(17,21,28,0.04);border-left:none;border-top-left-radius:0;border-bottom-left-radius:0;">
+        <div style="font-size:14px;font-weight:600;color:#1b3a5c;margin-bottom:5px;">{{STEP_4_TITLE}}</div>
+        <div style="font-size:13px;color:#7a7a7a;line-height:1.6;">{{STEP_4_DESC}}</div>
+      </div>
+    </div>
+
+    <!-- c09 时间轴（方案B配色） -->
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（二）关键节点时间线</h3>
+    <div style="position:relative;padding-left:20px;font-family:'PingFang SC','Inter',-apple-system,sans-serif;margin:1em 0;">
+      <div style="position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,#b8860b,#e8d080);"></div>
+      <div style="position:relative;padding-left:16px;margin-bottom:16px;">
+        <div style="position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:#b8860b;box-shadow:0 0 0 3px #ffffff,0 0 0 4px #e8d080;"></div>
+        <div style="font-size:13px;font-weight:600;color:#1b3a5c;margin-bottom:3px;">{{TIMELINE_1_TITLE}}</div>
+        <div style="font-size:14px;line-height:1.7;color:#7a7a7a;">{{TIMELINE_1_DESC}}</div>
+      </div>
+      <div style="position:relative;padding-left:16px;margin-bottom:16px;">
+        <div style="position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:#b8860b;box-shadow:0 0 0 3px #ffffff,0 0 0 4px #e8d080;"></div>
+        <div style="font-size:13px;font-weight:600;color:#1b3a5c;margin-bottom:3px;">{{TIMELINE_2_TITLE}}</div>
+        <div style="font-size:14px;line-height:1.7;color:#7a7a7a;">{{TIMELINE_2_DESC}}</div>
+      </div>
+      <div style="position:relative;padding-left:16px;margin-bottom:16px;">
+        <div style="position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:#b8860b;box-shadow:0 0 0 3px #ffffff,0 0 0 4px #e8d080;"></div>
+        <div style="font-size:13px;font-weight:600;color:#1b3a5c;margin-bottom:3px;">{{TIMELINE_3_TITLE}}</div>
+        <div style="font-size:14px;line-height:1.7;color:#7a7a7a;">{{TIMELINE_3_DESC}}</div>
+      </div>
+      <div style="position:relative;padding-left:16px;margin-bottom:0;">
+        <div style="position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:#b8860b;box-shadow:0 0 0 3px #ffffff,0 0 0 4px #e8d080;"></div>
+        <div style="font-size:13px;font-weight:600;color:#1b3a5c;margin-bottom:3px;">{{TIMELINE_4_TITLE}}</div>
+        <div style="font-size:14px;line-height:1.7;color:#7a7a7a;">{{TIMELINE_4_DESC}}</div>
+      </div>
+    </div>
+
+    <!-- ===== 九、风险提示 ===== -->
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">九、风险提示</h2>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（一）策略风险</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{STRATEGY_RISK}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（二）程序风险</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{PROCEDURAL_RISK}}</p>
+
+    <h3 style="font-family:'黑体','宋体',serif;font-size:13pt;font-weight:bold;color:#1b3a5c;margin:0.8em 0 0.3em 0;text-indent:0;">（三）证据风险</h3>
+    <p style="text-indent:2em;margin:0.3em 0;text-align:justify;">{{EVIDENCE_RISK}}</p>
+
+    <!-- ===== 十、下一步行动建议 ===== -->
+    <div class="page-break"></div>
+    <h2 style="font-family:'黑体','宋体',serif;font-size:16pt;font-weight:bold;color:#1b3a5c;border-bottom:1.5pt solid #1b3a5c;padding-bottom:0.3em;margin:1.5em 0 0.8em 0;text-indent:0;">十、下一步行动建议</h2>
+    <ol style="margin:0.5em 0;padding-left:2em;font-size:12pt;line-height:1.8;">
+      <li style="margin:0.3em 0;"><span style="font-weight:bold;">策略确认</span>：与当事人确认辩护方向和目标</li>
+      <li style="margin:0.3em 0;"><span style="font-weight:bold;">证据补充</span>：{{EVIDENCE_SUPPLEMENT}}</li>
+      <li style="margin:0.3em 0;"><span style="font-weight:bold;">时限关注</span>：{{TIME_LIMIT_ALERT}}</li>
+      <li style="margin:0.3em 0;"><span style="font-weight:bold;">技能衔接</span>：{{SKILL_HANDOFF}}</li>
+      <li style="margin:0.3em 0;"><span style="font-weight:bold;">风险防范</span>：{{RISK_PREVENTION}}</li>
+    </ol>
+
+    <!-- ===== 免责声明 ===== -->
+    <div style="margin-top:2em;padding:1em;border-top:1px solid #d4cfc5;font-size:10pt;color:#7a7a7a;">
+      <p style="text-indent:0;margin:0.3em 0;"><strong>免责声明</strong></p>
+      <p style="text-indent:0;margin:0.3em 0;">本策略分析报告仅供律师辩护决策参考，不构成法律意见，不替代律师独立判断。报告基于委托人提供的案件材料编制，材料的完整性、真实性由委托人负责。</p>
+      <p style="text-indent:0;margin:0.3em 0;">本报告中的可行性评估和风险分析基于当前可获得的信息，不构成对案件结果的承诺或保证。</p>
+    </div>
+
+    <!-- ===== 页脚 ===== -->
+    <div style="text-align:center;font-family:'宋体',serif;font-size:10.5pt;color:#7a7a7a;margin-top:2em;">
+      第 <span class="page-number"></span> 页
+    </div>
+  </article>
+</body>
+</html>

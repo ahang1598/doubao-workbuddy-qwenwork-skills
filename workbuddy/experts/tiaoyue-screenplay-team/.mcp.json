@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "tiaoyue": {
+      "type": "http",
+      "url": "https://api-gateway.tiaoyue.com/api/platform/mcp/workbuddy",
+      "x-workbuddy": {
+        "displayName": {
+          "zh": "跳跃世界MCP",
+          "en": "Tiao Yue AI MCP"
+        },
+        "description": {
+          "zh": "连接后可查询个人积分余额，在对话内生成人物与场景素材图、按分镜生成视频，并查询异步生成任务的状态。",
+          "en": "Query personal quota, generate character and scene images, produce videos from storyboards, and poll async task status in chat."
+        },
+        "icon": "./avatars/team.png",
+        "auth": {
+          "type": "oauth"
+        }
+      }
+    }
+  }
+}

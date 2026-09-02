@@ -1,0 +1,10 @@
+pandas>=2.0.0
+numpy>=1.22,<2.0
+matplotlib
+scipy
+statsmodels
+PyMuPDF
+pdfplumber
+openpyxl
+pyarrow
+requests

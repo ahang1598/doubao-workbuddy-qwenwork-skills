@@ -32,12 +32,6 @@ IMAGE_CONTENT_TYPES = {
     "image/png": ".png",
     "image/webp": ".webp",
 }
-# Allowed domains for delivery downloads. The MCP service returns image URLs
-# hosted on Alibaba Cloud OSS; restrict downloads to these domains to prevent
-# SSRF via forged URLs from a compromised service.
-ALLOWED_DELIVERY_DOMAIN_SUFFIXES = (
-    ".aliyuncs.com",
-)
 _SENSITIVE_KEYS = {
     "authorization",
     "accesskeysecret",
@@ -69,12 +63,9 @@ def plan_batches(
     max_batch_size: int = MAX_SERVICE_BATCH_SIZE,
     request_id_factory: Callable[[], object] = uuid.uuid4,
 ) -> list[dict[str, object]]:
-    """Plan execution batches from stable IDs.
+    """将主图/详情图稳定编号切分为不超过 16 张的批次，并为每批生成 request_id。
 
-    Reference implementation for the Skill orchestration layer. The CLI
-    ``main()`` does not call this; the Skill agent performs batch planning
-    in its own logic per the SKILL.md instructions. Kept for testing and
-    as a behavioural reference.
+    该函数为 skill 执行逻辑的本地辅助函数，供参考和未来复用，不通过 CLI 暴露。
     """
     if (
         isinstance(max_batch_size, bool)
@@ -105,10 +96,9 @@ def aggregate_estimates(
     batch_plans: Sequence[Mapping[str, object]],
     estimates: Mapping[str, Mapping[str, object]],
 ) -> dict[str, object]:
-    """Aggregate per-batch credit estimates into a total.
+    """按批次汇总预估积分并返回仅含公开字段的报价结果。
 
-    Reference implementation; not called by the CLI ``main()``. The Skill
-    agent handles estimate aggregation in its own logic.
+    该函数为 skill 执行逻辑的本地辅助函数，供参考和未来复用，不通过 CLI 暴露。
     """
     total: int | float = 0
     public_estimates: list[dict[str, object]] = []
@@ -143,11 +133,9 @@ def map_task_items(
     stable_ids: Sequence[str],
     items: Sequence[Mapping[str, object]],
 ) -> list[dict[str, object]]:
-    """Map service task items back to stable IDs by index.
+    """按服务返回的批内 index 将稳定编号映射回任务项。
 
-    Reference implementation; not called by the CLI ``main()``. The Skill
-    agent performs this mapping in its own logic per the SKILL.md
-    instructions for result delivery.
+    该函数为 skill 执行逻辑的本地辅助函数，供参考和未来复用，不通过 CLI 暴露。
     """
     seen: set[int] = set()
     mapped_items: list[dict[str, object]] = []
@@ -171,11 +159,9 @@ def _normalized_key(key: object) -> str:
 
 
 def redact_sensitive(value: object) -> object:
-    """Recursively replace values of sensitive keys with ``[REDACTED]``.
+    """递归脱敏映射/列表中的敏感键（_SENSITIVE_KEYS），避免凭据进入输出。
 
-    Used by ``main()`` to scrub the error output before writing to stderr,
-    ensuring that token or credential fields in a failed payload are not
-    leaked in error messages.
+    该函数为 skill 执行逻辑的本地辅助函数，供参考和未来复用，不通过 CLI 暴露。
     """
     if isinstance(value, Mapping):
         return {
@@ -221,13 +207,6 @@ def _validate_delivery_items(items: Sequence[Mapping[str, object]]) -> None:
         parsed_url = urlparse(image_url)
         if parsed_url.scheme != "https" or not parsed_url.netloc:
             raise ValueError("image_url must use HTTPS")
-        if not any(
-            parsed_url.hostname.endswith(suffix)
-            for suffix in ALLOWED_DELIVERY_DOMAIN_SUFFIXES
-        ):
-            raise ValueError(
-                f"image_url domain not allowed: {parsed_url.hostname}"
-            )
         stable_ids.append(stable_id)
     if len(set(stable_ids)) != len(stable_ids):
         raise ValueError("delivery stable ids must be unique")
@@ -288,8 +267,8 @@ def deliver_results(
                         if downloaded_bytes > MAX_DELIVERY_BYTES:
                             raise ValueError("download exceeds 30 MiB")
                         output_file.write(chunk)
-            os.replace(temporary_path, output_path)
-            temporary_path = None
+                os.replace(temporary_path, output_path)
+                temporary_path = None
         except Exception:
             if temporary_path is not None:
                 temporary_path.unlink(missing_ok=True)
@@ -319,7 +298,6 @@ def main(
     output_stream = stdout or sys.stdout
     error_stream = stderr or sys.stderr
 
-    payload: object = None
     try:
         payload = json.load(input_stream)
         if not isinstance(payload, Mapping):
@@ -340,13 +318,10 @@ def main(
         print(json.dumps(result, ensure_ascii=False, sort_keys=True), file=output_stream)
         return 0
     except Exception as error:
-        safe_payload = redact_sensitive(payload) if isinstance(payload, Mapping) else None
         public_error = {
             "error": f"{args.command}_failed",
             "message": str(error),
         }
-        if safe_payload is not None:
-            public_error["payload"] = safe_payload
         print(
             json.dumps(public_error, ensure_ascii=False, sort_keys=True),
             file=error_stream,

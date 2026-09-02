@@ -1,0 +1,10 @@
+{
+  "eventId" : "8e5b0a28-7134-4a2d-9bbd-f7ee6c7714df",
+  "operation" : "UPSERT",
+  "groupId" : "2067496336427061249",
+  "memberId" : "2067496336469004289",
+  "slug" : "amazon-suggestion-miner",
+  "agentId" : null,
+  "version" : 1784699519409,
+  "syncedAt" : "2026-07-22T05:52:01.582007716Z"
+}

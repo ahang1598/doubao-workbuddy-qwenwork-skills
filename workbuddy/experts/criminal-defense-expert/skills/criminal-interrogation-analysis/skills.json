@@ -1,0 +1,12 @@
+{
+  "id": "讯问笔录深度分析",
+  "marketId": "",
+  "name": "讯问笔录深度分析",
+  "version": "",
+  "description": "对讯问笔录进行十层深度分析，识别供述矛盾、翻供可信度、印证缺口与程序违法。触发：用户需分析讯问笔录。不触发：质证提纲（→criminal-cross-examination）、非法证据排除（→criminal-evidence-exclusion）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><!-- CONTENT_SLOT:PAGE_TITLE --></title>
+<!--
+  criminal-communication-guide v2.2.0
+  HTML 输出自包含模板 — CSS 内联嵌入 + Mermaid v11 CDN
+  LLM 职责：仅填充 <!-- CONTENT_SLOT:xxx --> 和 <!-- MERMAID_SLOT:xxx --> 占位符
+  LLM 禁止：修改 HARD_BLOCK <style> 内任何 CSS、修改 Mermaid 初始化 JS、自由发挥 HTML 布局
+
+  设计原则：
+  1. I-Practical 内部级 — 允许图表/Emoji/折叠/卡片/侧栏
+  2. C-现代轻量视觉 — 青灰 #005F73 + 暖橙 #EE9B00
+  3. 三层信息架构 — L1仪表盘 / L2详情 / L3工具
+  4. Mermaid v11 CDN — 6张图表（flowchart+gantt）
+  5. LLM 不写 CSS — 所有视觉由此 <style> 块定义
+  6. 统一字号 pt 单位
+
+  版本标识：data-template-version="2.2.0"
+-->
+<!-- HARD_BLOCK:DONT_MODIFY_START -->
+<style>
+/*
+ * criminal-communication-guide v2.2.0
+ * HTML 输出固定视觉规范 — I-Practical / C-现代轻量 / 三层信息架构
+ *
+ * ⚠️ 此 <style> 块为 HARD_BLOCK 不可修改区。
+ * LLM 不可增删改任何 CSS 属性、选择器、CSS变量。
+ * 违反此规则将导致输出被阻断（Phase 5 CHK-2）。
+ */
+
+/* ========================================
+   0. CSS 变量（七色语义色板 + 三层专用变量）
+   ======================================== */
+
+:root {
+  /* 七色语义色板 */
+  --primary-dark: #005F73;
+  --primary-light: #F0F7F8;
+  --accent-orange: #EE9B00;
+  --accent-orange-light: #FFF8EE;
+  --success-green: #0A6E42;
+  --success-green-light: #EDF7F0;
+  --warning-amber: #D97706;
+  --warning-amber-light: #FFFBEB;
+  --danger-red: #C53030;
+  --danger-red-light: #FFF5F5;
+  --neutral-gray: #64748B;
+  --neutral-light: #F8FAFC;
+  --border-gray: #E2E8F0;
+  --text-dark: #1A202C;
+
+  /* 力度三档色 */
+  --force-gentle: #0A6E42;
+  --force-gentle-light: #EDF7F0;
+  --force-firm: #005F73;
+  --force-firm-light: #F0F7F8;
+  --force-tough: #C53030;
+  --force-tough-light: #FFF5F5;
+
+  /* 字号（统一 pt） */
+  --text-xl: 16pt;
+  --text-lg: 13pt;
+  --text-base: 11pt;
+  --text-sm: 10pt;
+  --text-xs: 9pt;
+
+  /* 行距 */
+  --leading-body: 1.6;
+  --leading-heading: 1.35;
+  --leading-table: 1.5;
+
+  /* 侧栏 */
+  --sidebar-collapsed: 50px;
+  --sidebar-expanded: 240px;
+
+  /* 力度位置（LLM通过 CONTENT_SLOT 填入 --force-position: xx%） */
+  --force-position: 50%;
+  /* 进度环百分比（LLM 通过 CONTENT_SLOT 填入） */
+  --progress-material: 0%;
+  --progress-law: 0%;
+  --progress-predict: 0%;
+  --progress-worst: 0%;
+}
+
+/* ========================================
+   1. 页面级布局
+   ======================================== */
+
+@page { size: A4 portrait; margin: 2.0cm 1.5cm 1.5cm 3.0cm; }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: '微软雅黑', 'PingFang SC', SimSun, serif;
+  font-size: 11pt;
+  line-height: var(--leading-body);
+  color: var(--text-dark);
+  background: #fff;
+}
+
+/* ========================================
+   2. 侧栏导航 — 折叠式
+   ======================================== */
+
+.side-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-collapsed);
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--neutral-light);
+  border-right: 1px solid var(--border-gray);
+  padding: 8px 0;
+  font-size: 10pt;
+  z-index: 100;
+  transition: width 0.25s ease;
+}
+
+.side-nav:hover {
+  width: var(--sidebar-expanded);
+}
+
+.side-nav-title {
+  padding: 8px 8px;
+  font-weight: bold;
+  color: var(--primary-dark);
+  font-size: 10pt;
+  border-bottom: 1px solid var(--border-gray);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.side-nav a {
+  display: block;
+  padding: 6px 8px;
+  color: var(--text-dark);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  font-size: 10pt;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.side-nav a .nav-text { display: none; }
+.side-nav:hover a .nav-text { display: inline; }
+
+.side-nav a:hover {
+  background: var(--primary-light);
+}
+
+.side-nav a.active {
+  background: var(--primary-light);
+  border-left-color: var(--primary-dark);
+  color: var(--primary-dark);
+  font-weight: bold;
+}
+
+.side-nav-divider {
+  padding: 6px 8px;
+  color: var(--neutral-gray);
+  font-size: 9pt;
+  border-top: 1px solid var(--border-gray);
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ========================================
+   3. 主内容区
+   ======================================== */
+
+.main-content {
+  margin-left: 66px;
+  padding: 16px 24px;
+  transition: margin-left 0.25s ease;
+}
+
+/* ========================================
+   4. 工具栏
+   ======================================== */
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-gray);
+  font-size: var(--text-sm);
+  color: var(--neutral-gray);
+}
+
+.toolbar-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--border-gray);
+  background: #fff;
+  color: var(--neutral-gray);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-family: inherit;
+  margin-left: 8px;
+}
+
+.toolbar-btn:hover {
+  background: var(--neutral-light);
+}
+
+/* ========================================
+   5. 页面标题区
+   ======================================== */
+
+.page-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary-dark);
+}
+
+.page-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 6px 0;
+  line-height: var(--leading-heading);
+}
+
+.page-subtitle {
+  font-size: 12pt;
+  color: var(--neutral-gray);
+  margin: 0 0 6px 0;
+}
+
+.page-meta {
+  font-size: var(--text-sm);
+  color: var(--neutral-gray);
+  margin: 0;
+}
+
+/* ========================================
+   6. 模块区块（通用）
+   ======================================== */
+
+.module-block {
+  margin-bottom: 24px;
+}
+
+.module-heading {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--border-gray);
+  padding-bottom: 6px;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  line-height: var(--leading-heading);
+}
+
+/* ========================================
+   7. L1 仪表盘
+   ======================================== */
+
+.dashboard {
+  margin-bottom: 24px;
+}
+
+.dashboard-section-title {
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin: 0 0 10px 0;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--primary-dark);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-card {
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.dashboard-card--wide {
+  /* 策略总图占宽列 */
+}
+
+.dashboard-card--actions {
+  /* 行动卡片列 */
+}
+
+.dashboard-card h3 {
+  font-size: 11pt;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-dark);
+}
+
+/* 行动卡片 */
+.action-card {
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  border-left: 4px solid;
+  font-size: 10pt;
+}
+
+.action-card--urgent {
+  border-left-color: var(--danger-red);
+  background: var(--danger-red-light);
+}
+
+.action-card--today {
+  border-left-color: var(--accent-orange);
+  background: var(--accent-orange-light);
+}
+
+.action-card--week {
+  border-left-color: var(--success-green);
+  background: var(--success-green-light);
+}
+
+.action-card-title {
+  font-weight: bold;
+  font-size: 10pt;
+  margin: 0 0 2px 0;
+}
+
+.action-card--urgent .action-card-title { color: var(--danger-red); }
+.action-card--today .action-card-title { color: var(--accent-orange); }
+.action-card--week .action-card-title { color: var(--success-green); }
+
+.action-card-desc {
+  font-size: 9pt;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.action-card-deadline {
+  font-size: 8pt;
+  color: var(--neutral-gray);
+  margin-top: 4px;
+}
+
+/* 准备进度环 */
+.dashboard-progress {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.progress-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-ring {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11pt;
+  font-weight: bold;
+  color: var(--text-dark);
+}
+
+.progress-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.progress-ring--material::before {
+  background: conic-gradient(var(--success-green) calc(var(--progress-material, 0) * 3.6deg), var(--border-gray) 0deg);
+}
+.progress-ring--law::before {
+  background: conic-gradient(var(--primary-dark) calc(var(--progress-law, 0) * 3.6deg), var(--border-gray) 0deg);
+}
+.progress-ring--predict::before {
+  background: conic-gradient(var(--accent-orange) calc(var(--progress-predict, 0) * 3.6deg), var(--border-gray) 0deg);
+}
+.progress-ring--worst::before {
+  background: conic-gradient(var(--danger-red) calc(var(--progress-worst, 0) * 3.6deg), var(--border-gray) 0deg);
+}
+
+.progress-ring-inner {
+  position: relative;
+  z-index: 1;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10pt;
+  font-weight: bold;
+}
+
+.progress-label {
+  font-size: 9pt;
+  color: var(--neutral-gray);
+  text-align: center;
+}
+
+/* ========================================
+   8. 风险热力图 (CSS Grid)
+   ======================================== */
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: auto repeat(6, 1fr);
+  gap: 2px;
+  font-size: 8pt;
+}
+
+.heatmap-grid .heat-header {
+  padding: 4px 3px;
+  text-align: center;
+  font-weight: bold;
+  color: var(--neutral-gray);
+  font-size: 7.5pt;
+}
+
+.heatmap-grid .heat-row-label {
+  padding: 4px 6px;
+  font-weight: bold;
+  color: var(--text-dark);
+  text-align: right;
+  font-size: 8pt;
+}
+
+.heat-cell {
+  padding: 4px 3px;
+  text-align: center;
+  border-radius: 2px;
+  font-size: 9pt;
+  min-width: 28px;
+}
+
+.heat-l0 { background: #EDF7F0; color: #0A6E42; }
+.heat-l1 { background: #FFFBEB; color: #D97706; }
+.heat-l2 { background: #FFF8EE; color: #EE9B00; }
+.heat-l3 { background: #FFF5F5; color: #C53030; }
+.heat-l4 { background: #C53030; color: #fff; font-weight: bold; }
+
+.heatmap-legend {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 8pt;
+  color: var(--neutral-gray);
+}
+
+.heatmap-legend span {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+/* ========================================
+   9. Mermaid 图表容器
+   ======================================== */
+
+.mermaid-container {
+  margin: 0.6em 0;
+  padding: 0.6em;
+  background: #fff;
+  border: 1px solid var(--border-gray);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.mermaid-container .mermaid {
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid-fallback {
+  display: none;
+  padding: 0.8em;
+  color: var(--neutral-gray);
+  font-size: 10pt;
+  font-style: italic;
+  border: 1px dashed var(--border-gray);
+  border-radius: 4px;
+  margin: 0.6em 0;
+}
+
+/* ========================================
+   10. 数据表格
+   ======================================== */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  line-height: var(--leading-table);
+}
+
+.data-table thead tr {
+  background: var(--primary-dark);
+  color: #fff;
+  font-weight: bold;
+}
+
+.data-table th {
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: var(--neutral-light);
+}
+
+.data-table tbody tr:hover {
+  background: var(--primary-light);
+}
+
+/* ========================================
+   11. 信息卡片
+   ======================================== */
+
+.info-card {
+  border-radius: 6px;
+  padding: 0.8em 1em;
+  margin: 0.6em 0;
+  border-left: 4px solid var(--primary-dark);
+  background: var(--primary-light);
+}
+
+.info-card-title {
+  font-size: 11pt;
+  font-weight: bold;
+  color: var(--primary-dark);
+  margin: 0 0 0.4em 0;
+}
+
+/* ========================================
+   12. O1 准备清单 — 可勾选 + 折叠详情
+   ======================================== */
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.4em 0;
+}
+
+.checklist li {
+  padding: 3px 0 3px 24px;
+  position: relative;
+  line-height: 1.6;
+  font-size: 10pt;
+}
+
+.checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  font-size: 12pt;
+  color: var(--primary-dark);
+}
+
+.prep-detail {
+  margin: 0.5em 0;
+}
+
+.prep-detail summary {
+  font-weight: bold;
+  font-size: 11pt;
+  color: var(--primary-dark);
+  cursor: pointer;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+/* ========================================
+   13. O2 红线清单
+   ======================================== */
+
+.redline-card {
+  border-radius: 4px;
+  padding: 0.7em 0.9em;
+  margin: 0.5em 0;
+  border-left: 4px solid var(--danger-red);
+  background: var(--danger-red-light);
+}
+
+.redline-card-title {
+  font-size: 10pt;
+  font-weight: bold;
+  color: var(--danger-red);
+  margin: 0 0 0.3em 0;
+}
+
+.redline-content {
+  font-size: 10pt;
+  color: var(--text-dark);
+  margin: 0;
+  text-decoration: line-through;
+  text-decoration-color: var(--danger-red);
+}
+
+.redline-safe {
+  border-radius: 4px;
+  padding: 0.5em 0.9em;
+  margin: 0.3em 0 0.3em 0.8em;
+  border-left: 4px solid var(--success-green);
+  background: var(--success-green-light);
+}
+
+.redline-safe-title {
+  font-size: 9pt;
+  font-weight: bold;
+  color: var(--success-green);
+  margin: 0 0 0.2em 0;
+}
+
+.redline-safe-content {
+  font-size: 10pt;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.redline-meta {
+  font-size: 8pt;
+  color: var(--neutral-gray);
+  margin-top: 0.2em;
+}
+
+/* ========================================
+   14. O3 潜台词 — 分类标签
+   ======================================== */
+
+.subtext-tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 8pt;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.subtext-tag-police { background: var(--accent-orange-light); color: var(--accent-orange); }
+.subtext-tag-prosecutor { background: var(--primary-light); color: var(--primary-dark); }
+.subtext-tag-court { background: var(--success-green-light); color: var(--success-green); }
+
+/* ========================================
+   15. O4 力度光谱条 + 场景卡片
+   ======================================== */
+
+.force-spectrum-wrapper {
+  margin: 12px 0;
+}
+
+.force-spectrum-bar {
+  position: relative;
+  height: 20px;
+  border-radius: 10px;
+  background: linear-gradient(to right, var(--force-gentle), var(--primary-dark) 50%, var(--danger-red));
+  margin: 20px 0 28px 0;
+}
+
+.force-marker {
+  position: absolute;
+  top: -10px;
+  left: var(--force-position, 50%);
+  transform: translateX(-50%);
+  font-size: 18pt;
+  line-height: 1;
+  z-index: 2;
+}
+
+.force-marker-label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7pt;
+  font-weight: bold;
+  color: var(--danger-red);
+  white-space: nowrap;
+}
+
+.force-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9pt;
+  color: var(--neutral-gray);
+  margin-bottom: 10px;
+}
+
+/* 力度场景卡片 */
+.force-card {
+  border-radius: 6px;
+  padding: 0.7em 0.9em;
+  margin: 0.5em 0;
+  border-left: 4px solid;
+}
+
+.force-gentle {
+  border-left-color: var(--force-gentle);
+  background: var(--force-gentle-light);
+}
+
+.force-firm {
+  border-left-color: var(--force-firm);
+  background: var(--force-firm-light);
+}
+
+.force-tough {
+  border-left-color: var(--force-tough);
+  background: var(--force-tough-light);
+}
+
+.force-card-title {
+  font-size: 11pt;
+  font-weight: bold;
+  margin: 0 0 0.3em 0;
+}
+
+.force-gentle .force-card-title { color: var(--force-gentle); }
+.force-firm .force-card-title { color: var(--force-firm); }
+.force-tough .force-card-title { color: var(--force-tough); }
+
+.force-card-content {
+  font-size: 10pt;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+/* ========================================
+   16. O5 甘特图容器
+   ======================================== */
+
+.gantt-container {
+  margin: 0.8em 0;
+}
+
+.gantt-container .mermaid {
+  overflow-x: auto;
+}
+
+/* ========================================
+   17. C1 场景流程图 + 折叠详情
+   ======================================== */
+
+.scenario-card {
+  margin: 0.6em 0;
+}
+
+.scenario-card summary {
+  font-weight: bold;
+  font-size: 11pt;
+  color: var(--primary-dark);
+  cursor: pointer;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+.scenario-steps {
+  padding: 0.4em 0;
+}
+
+.scenario-step {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.3em 0;
+  font-size: 10pt;
+}
+
+.scenario-step-num {
+  display: inline-block;
+  min-width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--primary-dark);
+  color: #fff;
+  font-size: 9pt;
+  font-weight: bold;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.scenario-step-text {
+  flex: 1;
+  line-height: 22px;
+}
+
+/* ========================================
+   18. O7 沟通记录 — 表单式
+   ======================================== */
+
+.record-form {
+  border: 1px solid var(--border-gray);
+  border-radius: 4px;
+  padding: 0.8em;
+  background: var(--neutral-light);
+}
+
+.record-form-row {
+  display: flex;
+  margin: 0.3em 0;
+  font-size: 10pt;
+}
+
+.record-form-label {
+  min-width: 90px;
+  font-weight: bold;
+  color: var(--primary-dark);
+  flex-shrink: 0;
+}
+
+.record-form-value {
+  flex: 1;
+  border-bottom: 1px dashed var(--border-gray);
+  min-height: 1.3em;
+  padding-left: 4px;
+}
+
+/* ========================================
+   19. 风险徽章 + 置信度标签
+   ======================================== */
+
+.badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 9pt;
+  font-weight: bold;
+}
+
+.badge-success { background: var(--success-green-light); color: var(--success-green); }
+.badge-warning { background: var(--warning-amber-light); color: var(--warning-amber); }
+.badge-danger { background: var(--danger-red-light); color: var(--danger-red); }
+.badge-info { background: var(--primary-light); color: var(--primary-dark); }
+
+.conf-high { background: var(--success-green-light); color: var(--success-green); }
+.conf-medium { background: var(--warning-amber-light); color: var(--warning-amber); }
+.conf-low { background: var(--accent-orange-light); color: var(--accent-orange); }
+
+/* ========================================
+   20. 折叠区
+   ======================================== */
+
+details {
+  margin: 0.6em 0;
+}
+
+details summary {
+  font-weight: bold;
+  font-size: 11pt;
+  color: var(--primary-dark);
+  cursor: pointer;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+/* ========================================
+   21. 免责声明 + 律师必检清单
+   ======================================== */
+
+.disclaimer-footer {
+  margin-top: 24px;
+  padding: 10px 14px;
+  background: var(--neutral-light);
+  border: 1px solid var(--border-gray);
+  font-size: var(--text-xs);
+  color: var(--neutral-gray);
+  line-height: 1.5;
+}
+
+.disclaimer-l1 { }
+.disclaimer-l2 { border-left: 3px solid var(--danger-red); background: #fef9f9; }
+.disclaimer-l2 strong { color: var(--danger-red); }
+
+.lawyer-checklist {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--accent-orange-light);
+  border: 1px solid var(--accent-orange);
+  border-radius: 4px;
+}
+
+.lawyer-checklist-title {
+  font-size: 11pt;
+  font-weight: bold;
+  color: var(--accent-orange);
+  margin: 0 0 0.4em 0;
+}
+
+.lawyer-checklist ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 10pt;
+  color: var(--text-dark);
+  line-height: 1.7;
+}
+
+/* ========================================
+   22. 版本水印
+   ======================================== */
+
+.template-version-watermark {
+  font-size: 8pt;
+  color: var(--neutral-gray);
+  text-align: right;
+  margin-top: 14px;
+  opacity: 0.6;
+}
+
+/* ========================================
+   23. 通用辅助
+   ======================================== */
+
+.text-muted { color: var(--neutral-gray); }
+.text-warn { color: var(--warning-amber); }
+.text-critical { color: var(--danger-red); }
+.no-print { }
+
+/* ========================================
+   24. 打印适配
+   ======================================== */
+
+@media print {
+  .side-nav { display: none !important; }
+  .toolbar { display: none !important; }
+  .no-print { display: none !important; }
+
+  body {
+    font-family: '微软雅黑', '宋体', serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-content { margin-left: 16px !important; }
+
+  .mermaid svg {
+    max-width: 100%;
+    height: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  table thead {
+    background: #005F73 !important; color: #fff !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  .redline-card, .redline-safe, .force-card,
+  .info-card, .lawyer-checklist, .disclaimer-footer,
+  .heat-cell, .dashboard-card, .action-card,
+  .progress-ring, .progress-ring-inner {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  details { display: block !important; }
+  details > div { display: block !important; }
+
+  /* 保密水印 */
+  body::after {
+    content: '仅供授权人员查阅 | ' attr(data-case-id);
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 42pt;
+    color: rgba(0,0,0,0.04);
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    font-family: '微软雅黑', sans-serif;
+  }
+
+  .template-version-watermark { opacity: 0.4; }
+
+  @page {
+    @top-center {
+      content: "刑事辩护沟通指引 | 内部参考";
+      font-size: 8pt; color: #999;
+    }
+  }
+}
+</style>
+<!-- HARD_BLOCK:DONT_MODIFY_END -->
+
+<!-- Mermaid v11 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+/* Mermaid 初始化 — LLM 禁止修改 */
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#F0F7F8',
+    primaryBorderColor: '#005F73',
+    primaryTextColor: '#1A202C',
+    lineColor: '#64748B',
+    secondaryColor: '#FFF8EE',
+    tertiaryColor: '#EDF7F0',
+    fontSize: '12px'
+  },
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+  gantt: { useMaxWidth: true, titleTopMargin: 25, barHeight: 20, barGap: 4, topPadding: 50 }
+});
+</script>
+</head>
+<body data-case-id="<!-- CONTENT_SLOT:CASE_ID -->">
+
+<!-- ════════════════════════════════════════
+  侧栏导航 — 折叠式（50px图标 → hover 240px）
+  ════════════════════════════════════════ -->
+<nav class="side-nav">
+  <div class="side-nav-title">📑<span class="nav-text"> 沟通指引导航</span></div>
+  <a href="#dashboard">📊<span class="nav-text"> 仪表盘</span></a>
+  <a href="#module-o1">📋<span class="nav-text"> 一、准备清单</span></a>
+  <a href="#module-o2">🚫<span class="nav-text"> 二、红线清单</span></a>
+  <a href="#module-o3">🗣️<span class="nav-text"> 三、潜台词词典</span></a>
+  <a href="#module-o4">📏<span class="nav-text"> 四、力度校准</span></a>
+  <a href="#module-o5">⏱️<span class="nav-text"> 五、时间窗口</span></a>
+  <a href="#module-c1">📖<span class="nav-text"> 六、特殊场景</span></a>
+  <a href="#module-o7">✏️<span class="nav-text"> 七、沟通记录</span></a>
+  <div class="side-nav-divider"><span class="nav-text">工具</span></div>
+  <a href="#disclaimer">⚠<span class="nav-text"> 免责声明</span></a>
+</nav>
+
+<!-- ════════════════════════════════════════
+  主内容区
+  ════════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- 工具栏 -->
+  <div class="toolbar no-print">
+    <span>criminal-communication-guide v2.2.0 | <!-- CONTENT_SLOT:GENERATED_AT --></span>
+    <span>
+      <button class="toolbar-btn" onclick="toggleAllDetails()">展开/折叠</button>
+      <button class="toolbar-btn" onclick="window.print()">打印/PDF</button>
+    </span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 0: 页面标题区
+     ════════════════════════════════════════ -->
+  <div class="page-header">
+    <h1 class="page-title"><!-- CONTENT_SLOT:PAGE_TITLE --></h1>
+    <p class="page-subtitle"><!-- CONTENT_SLOT:SUBTITLE --></p>
+    <p class="page-meta"><!-- CONTENT_SLOT:PAGE_META --></p>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     L1 仪表盘
+     ════════════════════════════════════════ -->
+  <div id="dashboard" class="dashboard">
+    <p class="dashboard-section-title">📊 沟通策略仪表盘</p>
+
+    <div class="dashboard-grid">
+      <!-- MS-1: 通信策略总图 -->
+      <div class="dashboard-card dashboard-card--wide">
+        <h3>📍 通信策略总图</h3>
+        <div class="mermaid-container">
+          <!-- MERMAID_SLOT:MS-1_STRATEGY_START -->
+          <div class="mermaid">
+flowchart TD
+  A["请等待策略生成..."]
+          </div>
+          <!-- MERMAID_SLOT:MS-1_STRATEGY_END -->
+        </div>
+        <!-- MERMAID_SLOT:MS-1_FALLBACK_START -->
+        <div class="mermaid-fallback"><!-- CONTENT_SLOT:MS-1_FALLBACK --></div>
+        <!-- MERMAID_SLOT:MS-1_FALLBACK_END -->
+      </div>
+
+      <!-- 风险热力图 -->
+      <div class="dashboard-card">
+        <h3>🌡️ 沟通风险热力图</h3>
+        <div class="heatmap-grid">
+          <div class="heat-header"></div>
+          <div class="heat-header">认罪认罚</div>
+          <div class="heat-header">定性争议</div>
+          <div class="heat-header">程序推进</div>
+          <div class="heat-header">家属沟通</div>
+          <div class="heat-header">证据讨论</div>
+          <div class="heat-header">投诉威胁</div>
+
+          <div class="heat-row-label">公安</div>
+          <!-- CONTENT_SLOT:HEATMAP_ROW_POLICE -->
+
+          <div class="heat-row-label">检察院</div>
+          <!-- CONTENT_SLOT:HEATMAP_ROW_PROCURATOR -->
+
+          <div class="heat-row-label">法院</div>
+          <!-- CONTENT_SLOT:HEATMAP_ROW_COURT -->
+        </div>
+        <div class="heatmap-legend">
+          <span style="background:#EDF7F0"></span>安全
+          <span style="background:#FFFBEB"></span>注意
+          <span style="background:#FFF8EE"></span>警告
+          <span style="background:#FFF5F5"></span>高风险
+          <span style="background:#C53030"></span>禁区
+        </div>
+      </div>
+
+      <!-- 今日行动卡片 -->
+      <div class="dashboard-card dashboard-card--actions">
+        <h3>📌 今日行动</h3>
+        <!-- CONTENT_SLOT:ACTION_CARDS -->
+      </div>
+    </div>
+
+    <!-- 准备进度环 -->
+    <div class="dashboard-progress">
+      <div class="progress-item">
+        <div class="progress-ring progress-ring--material" style="--progress-material:<!-- CONTENT_SLOT:PROGRESS_MATERIAL -->%;">
+          <div class="progress-ring-inner"><!-- CONTENT_SLOT:PROGRESS_MATERIAL -->%</div>
+        </div>
+        <span class="progress-label">必备材料</span>
+      </div>
+      <div class="progress-item">
+        <div class="progress-ring progress-ring--law" style="--progress-law:<!-- CONTENT_SLOT:PROGRESS_LAW -->%;">
+          <div class="progress-ring-inner"><!-- CONTENT_SLOT:PROGRESS_LAW -->%</div>
+        </div>
+        <span class="progress-label">法条检索</span>
+      </div>
+      <div class="progress-item">
+        <div class="progress-ring progress-ring--predict" style="--progress-predict:<!-- CONTENT_SLOT:PROGRESS_PREDICT -->%;">
+          <div class="progress-ring-inner"><!-- CONTENT_SLOT:PROGRESS_PREDICT -->%</div>
+        </div>
+        <span class="progress-label">关注点预判</span>
+      </div>
+      <div class="progress-item">
+        <div class="progress-ring progress-ring--worst" style="--progress-worst:<!-- CONTENT_SLOT:PROGRESS_WORST -->%;">
+          <div class="progress-ring-inner"><!-- CONTENT_SLOT:PROGRESS_WORST -->%</div>
+        </div>
+        <span class="progress-label">最坏预案</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     L2 详情层
+     ════════════════════════════════════════ -->
+
+  <!-- O1 沟通前准备清单 -->
+  <section id="module-o1" class="module-block">
+    <h2 class="module-heading">一、沟通前准备清单</h2>
+    <!-- CONTENT_SLOT:O1_PREPARATION -->
+  </section>
+
+  <!-- O2 沟通红线清单 -->
+  <section id="module-o2" class="module-block">
+    <h2 class="module-heading">二、沟通红线清单</h2>
+
+    <!-- MS-2: 红线-替代决策树 -->
+    <div class="mermaid-container">
+      <!-- MERMAID_SLOT:MS-2_REDLINE_START -->
+      <div class="mermaid">
+flowchart LR
+  A["请等待红线分析..."]
+      </div>
+      <!-- MERMAID_SLOT:MS-2_REDLINE_END -->
+    </div>
+    <!-- MERMAID_SLOT:MS-2_FALLBACK_START -->
+    <div class="mermaid-fallback"><!-- CONTENT_SLOT:MS-2_FALLBACK --></div>
+    <!-- MERMAID_SLOT:MS-2_FALLBACK_END -->
+
+    <!-- CONTENT_SLOT:O2_REDLINES -->
+  </section>
+
+  <!-- O5 黄金时间窗口 -->
+  <section id="module-o5" class="module-block">
+    <h2 class="module-heading">五、黄金时间窗口</h2>
+
+    <!-- MS-5: 甘特图时间窗 -->
+    <div class="mermaid-container gantt-container">
+      <!-- MERMAID_SLOT:MS-5_GANTT_START -->
+      <div class="mermaid">
+gantt
+  title 沟通时间窗口
+  dateFormat YYYY-MM-DD
+  section 沟通行动
+  待填充 :a1, 2026-01-01, 1d
+      </div>
+      <!-- MERMAID_SLOT:MS-5_GANTT_END -->
+    </div>
+    <!-- MERMAID_SLOT:MS-5_FALLBACK_START -->
+    <div class="mermaid-fallback"><!-- CONTENT_SLOT:MS-5_FALLBACK --></div>
+    <!-- MERMAID_SLOT:MS-5_FALLBACK_END -->
+
+    <!-- CONTENT_SLOT:O5_TIMELINE -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     L3 工具层
+     ════════════════════════════════════════ -->
+
+  <!-- O3 潜台词解读词典 -->
+  <section id="module-o3" class="module-block">
+    <h2 class="module-heading">三、潜台词解读词典</h2>
+
+    <!-- MS-3: 潜台词决策树（通话中快速查询工具） -->
+    <div class="mermaid-container">
+      <!-- MERMAID_SLOT:MS-3_SUBTEXT_START -->
+      <div class="mermaid">
+flowchart TD
+  A["请等待潜台词分析..."]
+      </div>
+      <!-- MERMAID_SLOT:MS-3_SUBTEXT_END -->
+    </div>
+    <!-- MERMAID_SLOT:MS-3_FALLBACK_START -->
+    <div class="mermaid-fallback"><!-- CONTENT_SLOT:MS-3_FALLBACK --></div>
+    <!-- MERMAID_SLOT:MS-3_FALLBACK_END -->
+
+    <!-- CONTENT_SLOT:O3_SUBTEXT -->
+  </section>
+
+  <!-- O4 力度校准指南 -->
+  <section id="module-o4" class="module-block">
+    <h2 class="module-heading">四、力度校准指南</h2>
+
+    <!-- 力度光谱条 -->
+    <div class="force-spectrum-wrapper">
+      <div class="force-labels">
+        <span>🟢 温和（合作性）</span>
+        <span>🔵 坚定（权利主张）</span>
+        <span>🔴 强硬（程序施压）</span>
+      </div>
+      <div class="force-spectrum-bar" style="--force-position:<!-- CONTENT_SLOT:FORCE_POSITION -->%;">
+        <div class="force-marker">▲<span class="force-marker-label">推荐</span></div>
+      </div>
+    </div>
+
+    <!-- CONTENT_SLOT:O4_FORCE -->
+  </section>
+
+  <!-- C1 特殊场景应对（条件输出） -->
+  <section id="module-c1" class="module-block">
+    <h2 class="module-heading">六、特殊场景应对</h2>
+
+    <!-- MS-6a: 场景流程图-主要 -->
+    <div class="mermaid-container">
+      <!-- MERMAID_SLOT:MS-6a_SCENARIO_START -->
+      <div class="mermaid">
+flowchart TD
+  A["无特殊场景"]
+      </div>
+      <!-- MERMAID_SLOT:MS-6a_SCENARIO_END -->
+    </div>
+    <!-- MERMAID_SLOT:MS-6a_FALLBACK_START -->
+    <div class="mermaid-fallback"><!-- CONTENT_SLOT:MS-6a_FALLBACK --></div>
+    <!-- MERMAID_SLOT:MS-6a_FALLBACK_END -->
+
+    <!-- MS-6b: 场景流程图-次要 -->
+    <div class="mermaid-container">
+      <!-- MERMAID_SLOT:MS-6b_SCENARIO_START -->
+      <div class="mermaid">
+flowchart TD
+  A["无特殊场景"]
+      </div>
+      <!-- MERMAID_SLOT:MS-6b_SCENARIO_END -->
+    </div>
+    <!-- MERMAID_SLOT:MS-6b_FALLBACK_START -->
+    <div class="mermaid-fallback"><!-- CONTENT_SLOT:MS-6b_FALLBACK --></div>
+    <!-- MERMAID_SLOT:MS-6b_FALLBACK_END -->
+
+    <!-- CONTENT_SLOT:C1_SCENARIO -->
+  </section>
+
+  <!-- O7 沟通记录模板 -->
+  <section id="module-o7" class="module-block">
+    <h2 class="module-heading">七、沟通记录模板</h2>
+    <!-- CONTENT_SLOT:O7_RECORD -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     免责声明 + 律师必检清单
+     ════════════════════════════════════════ -->
+  <div id="disclaimer" class="disclaimer-footer disclaimer-<!-- CONTENT_SLOT:DISCLAIMER_LEVEL -->">
+    <strong>免责声明</strong><br>
+    本沟通指引为<strong>L1 辅助参考级</strong>产物，基于用户提供信息生成，仅供参考，不构成法律意见。<br>
+    沟通策略不替代律师独立判断和当庭应变。红线清单为底线，实际沟通中可能还有场景特殊红线未列出。<br>
+    潜台词解读为可能性分析，需结合具体办案人员风格综合判断。法条引用须核实现行有效性。
+  </div>
+
+  <!-- 律师必检清单 -->
+  <div class="lawyer-checklist">
+    <p class="lawyer-checklist-title">⚠️ 律师必检清单</p>
+    <ol>
+      <li>红线校验：请确认所有建议话术不触犯您案件的特殊红线</li>
+      <li>力度适当性：请确认推荐力度与您的案件情况匹配</li>
+      <li>法条现行有效性：请检索确认引用的法条仍为现行有效</li>
+    </ol>
+  </div>
+
+  <!-- 版本水印 -->
+  <div class="template-version-watermark">
+    template: criminal-communication-guide v2.2.0 | generated: <!-- CONTENT_SLOT:GENERATED_AT -->
+  </div>
+
+</div><!-- .main-content -->
+
+<!-- ════════════════════════════════════════
+  脚本区
+  ════════════════════════════════════════ -->
+<script>
+/* ========================================
+   侧栏导航高亮
+   ======================================== */
+window.addEventListener('load', function() {
+  var sections = document.querySelectorAll('.module-block, .dashboard, #disclaimer');
+  var navLinks = document.querySelectorAll('.side-nav a');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        navLinks.forEach(function(link) { link.classList.remove('active'); });
+        var activeLink = document.querySelector('.side-nav a[href="#' + entry.target.id + '"]');
+        if (activeLink) { activeLink.classList.add('active'); }
+      }
+    });
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  sections.forEach(function(section) { observer.observe(section); });
+});
+
+/* ========================================
+   折叠/展开所有 details
+   ======================================== */
+function toggleAllDetails() {
+  var details = document.querySelectorAll('details');
+  var allOpen = true;
+  details.forEach(function(d) { if (!d.open) allOpen = false; });
+  details.forEach(function(d) { d.open = !allOpen; });
+}
+
+/* ========================================
+   Mermaid CDN 降级检测
+   ======================================== */
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var mermaidDivs = document.querySelectorAll('.mermaid');
+    mermaidDivs.forEach(function(div) {
+      // 检查 Mermaid 是否成功渲染为 SVG
+      var svg = div.querySelector('svg');
+      if (!svg || svg.clientHeight === 0) {
+        // 渲染失败 → 显示 fallback
+        div.style.display = 'none';
+        var container = div.closest('.mermaid-container');
+        if (container) {
+          var fallback = container.parentElement.querySelector('.mermaid-fallback');
+          if (fallback) {
+            fallback.style.display = 'block';
+          }
+        }
+      }
+    });
+  }, 2000); // 等待 2 秒渲染
+});
+</script>
+
+</body>
+</html>

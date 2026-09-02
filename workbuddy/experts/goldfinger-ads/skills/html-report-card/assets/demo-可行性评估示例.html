@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="85FPnMDoQNu4mtjCIoHPJO">
+<head data-page-node-id="o2JtamhmYcuDGzVN5c512m">
+<meta charset="UTF-8" data-page-node-id="yXSei1Fk2x0WM7MCg7t62U">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="53qL2OWpWvCFQk0DGPIDUJ">
+<title>投放可行性评估 · 示例项目</title>
+<!-- Bootstrap Icons：仅用于 banner meta 行（规则 7）。断网时退化为无图标，不影响阅读 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" data-page-node-id="3KobJBM4AciN5veyK1a7n9">
+<style>
+/*
+ * HTML 卡片统一样式（通用版）
+ * 所有产出物共享同一份视觉基线，agent 生成时按 template.html 组装。
+ * 修改前请阅读 references/design-rules.md 的 16 条硬规则。
+ *
+ * 换主色只改下面 3 个变量：--brand / --brand-deep / --brand-soft
+ * 其余语义色（warn/ok/danger）建议保持，它们与规则 3/15 的语义绑定。
+ */
+
+:root {
+  --brand: #0052D9;
+  --brand-soft: #E8F0FE;
+  --brand-deep: #003A99;
+  --ink: #1F2329;
+  --ink-2: #4E5969;
+  --ink-3: #86909C;
+  --line: #E5E6EB;
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --warn: #FF7D00;
+  --warn-soft: #FFF7E8;
+  --ok: #00B42A;
+  --ok-soft: #E8FFEA;
+  --danger: #F53F3F;
+  --danger-soft: #FFECE8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 880px; margin: 0 auto; }
+
+/* ========== 顶部 Banner ========== */
+.banner {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+  color: #fff;
+  padding: 28px 32px;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+.banner::after {
+  content: "";
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+/* Banner 顶部品牌+角色行（纯白小字，见规则 14/16；不需要品牌行可整段删除） */
+.banner .brand-tag {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin: 0 0 10px 0;
+  letter-spacing: 0.3px;
+  position: relative;
+  z-index: 1;
+}
+.banner .brand-tag .sep { margin: 0 6px; opacity: 0.6; }
+/* Banner 左上角 logo + brand-tag 同行（垂直居中） */
+.banner-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px 0;
+  position: relative;
+  z-index: 1;
+}
+.banner .banner-logo {
+  display: block;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.95);
+  padding: 4px;
+  flex-shrink: 0;
+}
+.banner-brand .brand-tag { margin: 0; }
+.banner .title {
+  font-size: 24px; font-weight: 600;
+  margin: 0 0 4px 0;
+}
+.banner .subtitle {
+  font-size: 14px; opacity: 0.9; margin: 0;
+}
+.banner .meta {
+  margin-top: 14px; font-size: 13px;
+  opacity: 0.85;
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.banner .meta span {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.banner .meta i.bi {
+  font-size: 14px; opacity: 0.9;
+}
+
+/* ========== 主体 ========== */
+.body {
+  background: var(--surface);
+  padding: 28px 32px 8px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+section { margin-bottom: 28px; }
+section:last-child { margin-bottom: 0; }
+
+/* 章节大标题（h2）—— 序号 + 标题，无左竖条 */
+h2.section-title {
+  font-size: 17px; font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 14px 0;
+  line-height: 1.35;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+h2.section-title .idx {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+/* 每个模块的重点句 —— 放在模块正文之前；无固定前缀，见规则 2 */
+.lead {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+  margin: 0 0 14px 0;
+  padding: 12px 14px;
+  background: #FAFBFC;
+  border-radius: 6px;
+}
+.lead strong { color: var(--ink); font-weight: 600; }
+
+/* ========== 表格（含 KV 型两列表；KV 型必须带 thead） ========== */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+table.data-table th {
+  background: #FAFBFC;
+  color: var(--ink-2);
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--line);
+  font-size: 13px;
+}
+table.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--ink);
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #FAFBFC; }
+
+/* KV 型表格：左列字段名（灰字 500 weight），右列内容。用 td.kv-key */
+table.data-table td.kv-key {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* 徽章 */
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.pill-ok { background: var(--ok-soft); color: var(--ok); }
+.pill-warn { background: var(--warn-soft); color: var(--warn); }
+.pill-danger { background: var(--danger-soft); color: var(--danger); }
+.pill-brand { background: var(--brand-soft); color: var(--brand); }
+.pill-recommend { background: var(--brand); color: #fff; }
+
+/* ========== 时间轴（精简版：每块 + 目标行 + 无 icon bullets） ========== */
+.timeline {
+  position: relative;
+  padding-left: 24px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px; top: 8px; bottom: 8px;
+  width: 2px; background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 20px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -22px; top: 7px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--brand);
+}
+.tl-item .tl-head {
+  font-size: 14px; font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.tl-item .tl-head .week {
+  color: var(--brand);
+  margin-right: 6px;
+}
+.tl-item .tl-head .sep { color: var(--ink-3); margin: 0 4px; }
+.tl-item .tl-goal {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.tl-item .tl-goal strong { color: var(--ink); font-weight: 500; }
+.tl-item .tl-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.85;
+}
+.tl-item .tl-list li { padding-left: 2px; }
+
+/* ========== 提示条（2 色：默认蓝｜warn 黄，无 icon） ========== */
+.callout {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--brand);
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: var(--brand-soft);
+  color: var(--ink);
+  margin-top: 14px;
+}
+.callout strong.title {
+  color: var(--brand-deep);
+  font-weight: 600;
+  margin-right: 4px;
+}
+.callout-warn { border-color: var(--warn); background: var(--warn-soft); color: #1F2329; }
+.callout-warn strong.title { color: #7A4300; }
+
+/* ========== 通用 bullet 列表 ==========
+ * 高频用法：<li><strong>标签：</strong>描述文字</li>
+ * 左标签深黑加粗 + 冒号后微空隙，扫读时锚点清晰
+ */
+ul.plain-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.85;
+}
+ul.plain-list li { margin: 4px 0; padding-left: 2px; }
+ul.plain-list li strong { color: var(--ink); font-weight: 600; }
+ul.plain-list li strong:first-child { margin-right: 4px; }
+
+/* callout 内嵌 plain-list：紧贴上文的 title 行，无额外 margin */
+.callout ul.plain-list { margin-top: 8px; color: inherit; }
+.callout ul.plain-list li { color: inherit; }
+
+/* ========== 决策标签（用于条件枚举 / 决策分支的结论词，无底色） ==========
+ * 用法：<li><strong>若两点都谈成：</strong><span class="tag-ok">可接 ✓</span> 说明文字…</li>
+ * 三档：ok（正向 / 推荐 / 可接）｜warn（谨慎 / 有条件 / 观望）｜bad（不推荐 / 不接 / 红线）
+ * 关键：只染字色，不加底色。要与 plain-list 搭配使用，禁止塞进 callout。
+ */
+.tag-ok, .tag-warn, .tag-bad {
+  font-weight: 600;
+  margin-right: 4px;
+}
+.tag-ok { color: var(--ok); }
+.tag-warn { color: var(--warn); }
+.tag-bad { color: var(--danger); }
+
+.disclaimer {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 20px;
+  padding: 14px 0;
+}
+
+/* 打印友好 */
+@media print {
+  body { padding: 0; background: #fff; }
+  .banner { border-radius: 0; }
+  .body { border-radius: 0; box-shadow: none; }
+}
+
+</style>
+</head>
+<body data-page-node-id="xpl5WWpj88yGiqfa1rBPxD">
+<div class="container" data-page-node-id="X3uKMHCaJGogLhwqGQFyh0">
+
+  <!-- ============ 顶部 Banner（必填） ============ -->
+  <!-- brand-tag（规则 14 + 16）：
+       - 格式：金手指 · 媒介经理，完整照抄配置好的整段，不许简写或改词序
+       - 用「角色名/职能名」（如 资深分析师、项目顾问、合规审查员），不要用人格化昵称
+       - 昵称/代号只能出现在页脚 .disclaimer
+       - 不需要品牌行时，把整个 <p class="brand-tag">...</p> 删掉即可 -->
+  <div class="banner" data-page-node-id="0OrognTuaCrUPY6uRyOgUS">
+    <div class="banner-brand" data-page-node-id="UYTWhZdET0n2eNNlc2Y8gf">
+      <img class="banner-logo" src="data:image/png;base64,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" alt="金手指 logo" data-page-node-id="6GuKbPGIfp4y8HCACSVjYG" />
+      <p class="brand-tag" data-page-node-id="4uPJjUmQXNmkY8F2yzmX7t">金手指<span class="sep" data-page-node-id="mbJRfXeswGc1dgOnlMY2Lu">·</span>媒介经理</p>
+    </div>
+    <h1 class="title" data-page-node-id="v58q4ZWULdlO8V1W5XB7Il">投放可行性评估 · 示例项目</h1>
+    <p class="subtitle" data-page-node-id="MbPCPaIetlwpIEbr9BqTce">工具软件（SaaS） · 商品销售 · 首次投放前体检</p>
+    <div class="meta" data-page-node-id="tOwJrSaiN7rrY8tn689WAz">
+      <span data-page-node-id="C063qtvQp8twuWnztykUsb"><i class="bi bi-calendar3" data-page-node-id="BiKqVKgIDrsvExI4M3ugET"></i>2026-08-24</span>
+      <span data-page-node-id="27g1BlQ3wHK2nAlb98eUGS"><i class="bi bi-flag" data-page-node-id="HI8h78A6YFicGsoipwyF9M"></i>投前评估</span>
+      <span data-page-node-id="1QjcuKNeAzlbnQCFA6eQaw"><i class="bi bi-hourglass-split" data-page-node-id="UGKhiElTWAFxnBKSJp1T6a"></i>1-2 周测试期</span>
+    </div>
+  </div>
+
+  <!-- ============ 主体（自由组装 section） ============ -->
+  <div class="body" data-page-node-id="A5I2F5NK3Xsum4DNIttsf9">
+
+    <!--
+      每个 section 固定结构：
+        <h2 class="section-title"><span class="idx">01</span>标题</h2>
+        [可选] <p class="lead">这节最该先知道的一句话</p>
+        [组件区：data-table / timeline / plain-list / callout 任选]
+
+      ⚠️ .lead 规则（规则 2）：
+        - 不加任何固定前缀（禁「结论：」「小结：」），直接写那句话
+        - 按 section 性质写：判断型给结论 / 罗列型给共性或怎么用 / 流程型给关键节奏 /
+          陈述型给最该注意的一点 / 风险型给最该先避开的一条
+        - 没有增量信息就删掉整行，不要写「以下是 5 个候选方案」这类复述标题的废话
+      序号必须连续递增（01、02、03...），能合并的板块不拆多个标题（规则 9）
+    -->
+
+    <!-- ① 普通多列表格 -->
+    <section data-page-node-id="T4JYk03J9OITIrOfR6pORx">
+      <h2 class="section-title" data-page-node-id="CToMDd2xYLCuFz85Eg3ICW"><span class="idx" data-page-node-id="FUHQp5wd0bf0jC1nZu3v5p">01</span>总体判断</h2>
+      <p class="lead" data-page-node-id="yyd5756OFCxRQubEpg4kdN">总分 67/100 条件性可投——东西基本齐，但有矛盾要先解决。</p>
+      <table class="data-table" data-page-node-id="vG8EYwGGS2ZC8ttsfIM6Pn">
+        <thead data-page-node-id="o7fJtnTgivrzSejA0An9bC"><tr data-page-node-id="SzjdwG8VfI2vvI8Zex9vq7"><th style="width:130px;" data-page-node-id="RG0Umjwfk6k2BaUVZz6Ohy">评估维度</th><th data-page-node-id="9F7D85RwmtZKLkY8aJrxH7">结论</th></tr></thead>
+        <tbody data-page-node-id="J67EIz6LBQctCukkH3yCkq">
+          <tr data-page-node-id="voBKGRl2JpWsvrypoUaV2D"><td class="kv-key" data-page-node-id="FhZsWM7w3vnb19gM8aDjXh">总体结论</td><td data-page-node-id="cTFcWDrFYyGJd24vjhSkpS"><span class="tag-warn" data-page-node-id="Ny3MpwCd6SmyaVPaZtbV1a">条件性可投</span> 链路矛盾解决后可投。</td></tr>
+          <tr data-page-node-id="0F4yaL0FEKsu9B2fpABp5l"><td class="kv-key" data-page-node-id="qOyXccAepdN3cFyhNDSPo0">总评分</td><td data-page-node-id="K9eJG0cIddGlcoGYqEp5Gv">67 / 100</td></tr>
+          <tr data-page-node-id="SCbs3Q3O54PObldS0vxjx5"><td class="kv-key" data-page-node-id="uc9HZWvUIEdHlOSatNEE85">策略基调</td><td data-page-node-id="cEbuSTKIuy0AnfIrXFO5HD">保守打法</td></tr>
+          <tr data-page-node-id="KZI5f9m62DBKpjHVJbWDCh"><td class="kv-key" data-page-node-id="zxGQ1AfLK5YCD6BO8SUOIQ">主要短板</td><td data-page-node-id="3lAs5ClC9melaI3fvMcqpt">落地链路尚未跑通</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section data-page-node-id="synjZrvNbxpvuK2BOzxA5y">
+      <h2 class="section-title" data-page-node-id="Ese7roaHuA9t25lr22NKhb"><span class="idx" data-page-node-id="1cewBWQFerb0vvLOkh6qL6">02</span>五维评估</h2>
+      <p class="lead" data-page-node-id="5SHZ3PtxBYBrviKQt78z30">五个维度各看了 20 分，链路最弱、预算次弱。</p>
+      <table class="data-table" data-page-node-id="VQF80UcjRSkeMiy6K57o3f">
+        <thead data-page-node-id="xCgWzIFtQGZDMZijn29cih"><tr data-page-node-id="9NiA2wwwbrB7DeWCRREqzX"><th data-page-node-id="wsPQL9QSIuFqZpSAWWe67i">维度</th><th style="width:90px" data-page-node-id="sA5wmfZLgW5SGEkA6lI3B0">得分</th><th data-page-node-id="irBSvS0JD5sGLhFHPrOFc5">评估说明</th></tr></thead>
+        <tbody data-page-node-id="pPyVlXkOZfTCkHvt7Qc51w">
+          <tr data-page-node-id="grYxVhAw2lrnMXgch6TAYB"><td data-page-node-id="GXAc7CSr95Xy4FaxZbpvBO">预算充足度</td><td data-page-node-id="Gm1z0kgNGzcM4k1UedCmEp">12 / 20</td><td data-page-node-id="gqTAXuGtHEriTIXXj63l33">日预算 700 元偏紧，2 周起量需冷启动期。</td></tr>
+          <tr data-page-node-id="kadV8NzpU1718WyYNLwoL3"><td data-page-node-id="TO4dUHOXLu3BcxjsgT2Jm4">ROI 可测度</td><td data-page-node-id="LboZcsfsaedStqs0cvJnPN">15 / 20</td><td data-page-node-id="wmYZA9S7UgQxAaeDamfNNl">微信小店自带转化数据，能直接核 ROI。</td></tr>
+          <tr data-page-node-id="I7qBbHFLrWKO7qHciaaXb7"><td data-page-node-id="4IPez5ASpi2nM6haIiCiOx">合规就绪度</td><td data-page-node-id="rYXwBf5XjiNIgyWb3GLyKj">16 / 20</td><td data-page-node-id="k6DTlo0IYMBK9ErbdmvCMI">工具 SaaS 类无强监管，落地文案需自检。</td></tr>
+          <tr data-page-node-id="uXyZeeaXppcNT08qIJY8g4"><td data-page-node-id="vDVUV9j2QYP3tHruGnT6Qu">链路就绪度</td><td data-page-node-id="UhGvZPQSuN7JRI4BS9nYqA">8 / 20</td><td data-page-node-id="NBlYVGsEOiJvoYlYFjaDOO">落地页尚未配置，需先建站。</td></tr>
+          <tr data-page-node-id="ode55gUWhCQiHXhvqjIlPS"><td data-page-node-id="GzAWkykHlN83N9xdOQ2XHg">版位匹配度</td><td data-page-node-id="AwbmeJTcKTvuOCctIQcBiE">16 / 20</td><td data-page-node-id="FAln2AVUWrRMBW16GJowtF">朋友圈+视频号对工具类获客成熟。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section data-page-node-id="I0hfFM9KvmpX05UwAMAtsr">
+      <h2 class="section-title" data-page-node-id="xGFtLFqHzGUp5RbY4YHWB4"><span class="idx" data-page-node-id="UINVcWA3yQF3NTNBCRpWiO">03</span>优化建议</h2>
+      <p class="lead" data-page-node-id="ZvG5lQ5FJeuk80JiMV5jZy">优先把落地页和转化归因打通，再补预算到 1000 元/日。</p>
+      <ul class="plain-list" data-page-node-id="Zqbo2updGx74WXcJ781tTY">
+        <li data-page-node-id="8ozpmhDE5I3oseBbmobpMs"><strong data-page-node-id="2WYHrxqSz6fUCFhUYbuFJ9">最高优先：</strong>把广告承接页建起来——腾讯官方落地页最快 30 分钟。</li>
+        <li data-page-node-id="W2eF5MtAzErTFphXGv8lEV"><strong data-page-node-id="S5l5WoiN9WWWpJUKMxRkbX">次优先：</strong>把日预算提到 1000——链路打通后预算加 30% 跑测试。</li>
+        <li data-page-node-id="gEhX8BUzGsyrjQYNcQJKDE"><strong data-page-node-id="hPd8jwXMbep7gguCx2JZDA">可延后：</strong>测试期视频素材——先图文跑数据，再决定要不要做视频。</li>
+      </ul>
+    </section>
+
+    <section data-page-node-id="nJarvgIOdnleu9VcvKCqvv">
+      <h2 class="section-title" data-page-node-id="ny3AZnpswQTFqzLB8HlVxq"><span class="idx" data-page-node-id="PDaE1exaaOxDAkP1txy7c0">04</span>风险与避坑</h2>
+      <p class="lead" data-page-node-id="N0wONTAhhWzaMAzCtbAAJI">两个潜在风险，先讲清。</p>
+      <ul class="plain-list" data-page-node-id="4PXKgPTHYVRvRvuj6qO8Fs">
+        <li data-page-node-id="DNJ1IeVd3aceYbyaLi5nLe"><strong data-page-node-id="HqlFASv4PACS9fqa6F7UjJ">风险一：</strong>落地页未配置就上线——建议先打通再投，否则钱花了没数据。</li>
+        <li data-page-node-id="0HQenHj8oOoRsRS93ifERA"><strong data-page-node-id="5Xi1dUaxKUWhyDZebm1QvA">风险二：</strong>人群定向过宽——朋友圈智能定向 + 系统智能即可，不必手动加多套。</li>
+      </ul>
+    </section>
+
+  <div class="disclaimer" data-page-node-id="YENzGHg8HgWHwTaFteN2ya">
+    本评估基于用户提供的需求信息与公开行业 benchmark 推导，落地执行前建议结合实际账户状态与最新平台规则复核。
+  </div>
+
+</div>
+</body>
+</html>

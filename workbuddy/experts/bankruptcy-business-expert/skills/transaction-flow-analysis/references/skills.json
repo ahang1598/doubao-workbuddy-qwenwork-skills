@@ -1,0 +1,12 @@
+{
+  "id": "transaction-flow-analysis",
+  "marketId": null,
+  "name": "交易流水分析",
+  "version": "3.0.0",
+  "description": "解析多渠道交易记录（银行/微信/支付宝），按6种案件类型路由差异化分析框架，输出顶级律所级HTML可视化分析报告（金字塔结论+六要素发现+资金流向拓扑图）。触发：分析交易流水/资金流向/银行流水/转账记录。不触发：审计报告/税务分析/合同审查。",
+  "author": "深圳法大大网络科技有限公司",
+  "tags": [],
+  "skillType": "custom",
+  "skillSource": null,
+  "skillSourceName": null
+}

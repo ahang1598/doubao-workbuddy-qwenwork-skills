@@ -1,0 +1,12 @@
+{
+  "id": "刑事质证提纲",
+  "marketId": "",
+  "name": "刑事质证提纲",
+  "version": "2.4.0-candidate",
+  "description": "为辩护律师生成一审庭审质证提纲。按证据三性（合法性/真实性/关联性）逐项质证，区分证据能力异议与证明力异议，支持言词证据/实物证据/鉴定意见/辨认笔录等全类型证据。触发：用户需要质证提纲或质证意见。不触发：非法证据排除申请（→criminal-evidence-exclusion）、证据分析报告（→criminal-evidence-analysis）。",
+  "author": "深圳法大大网络科技有限公司",
+  "tags": "刑事,质证,庭审,证据",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

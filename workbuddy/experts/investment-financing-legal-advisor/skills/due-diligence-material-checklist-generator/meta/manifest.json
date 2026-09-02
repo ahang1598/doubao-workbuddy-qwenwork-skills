@@ -1,0 +1,17 @@
+{
+  "name": "尽调材料清单生成",
+  "name_en": "dd-material-checklist-generator",
+  "description": "根据交易场景生成尽调材料索取清单（Excel格式），按M&A/PE/IPO/资产收购/跨境投资5种场景路由，覆盖12大模块，含风险驱动+交叉验证+动态迭代方法论。触发：尽调启动需向目标公司发函索取材料。不触发：尽调报告(→07)、合同审查(→06)、法律意见、陷阱对抗(→adversarial)、创始人责任(→founder-liability)、股权核验(→cap-table-verify)、权利设计(→special-rights-design)、多轮一致性(→multi-round)。",
+  "version": "1.3.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-07",
+  "created": "2026-07-07",
+  "updated": "2026-07-07",
+  "author": "深圳法大大网络科技有限公司",
+  "copyright": "Copyright © 深圳市法大大网络科技有限公司 版权所有 | Author: 法大大法律AI产品线",
+  "type_tag": "T-content",
+  "script_necessity": "required",
+  "format_seriousness": "C-Professional"
+}

@@ -1,0 +1,209 @@
+{
+  "name": "cross-border-legal-expert",
+  "version": "1.0.0",
+  "description": "Cross-border legal expert team covering foreign-law and multi-jurisdiction research with citation verification (ECLI/CELEX), overseas licensing and market access, English/bilingual contract review with OOXML redlines, cross-border SPA/SHA drafting, ODI/FDI investment structures, sanctions and export-control screening, supply-chain and data-export compliance, and independent delivery verification.",
+  "author": {
+    "name": "RicheeAI",
+    "email": "legal@richeeai.com"
+  },
+  "dependencies": {
+    "connectors": [
+      "fadada-richee"
+    ]
+  },
+  "agents": [
+    "./agents/cross-border-lead.md",
+    "./agents/subagent-crossborder-material.md",
+    "./agents/subagent-crossborder-research.md",
+    "./agents/subagent-crossborder-screening.md",
+    "./agents/subagent-crossborder-drafting.md",
+    "./agents/subagent-crossborder-verification.md"
+  ],
+  "skills": [
+    "./skills/cross-border-spa-sha-drafting",
+    "./skills/data-export-security-assessment-report",
+    "./skills/english-contract-review",
+    "./skills/excel-table-processing",
+    "./skills/export-control-compliance-system-design",
+    "./skills/fadada-professional-contract-information-extraction",
+    "./skills/global-legal-research",
+    "./skills/html-document-generation",
+    "./skills/international-trade-policy-change-early-warning",
+    "./skills/legal-translation",
+    "./skills/overseas-investment-structure-design",
+    "./skills/pdf-generation-editing-tool",
+    "./skills/supply-chain-compliance-review",
+    "./skills/word-document-processing"
+  ],
+  "expertType": "team",
+  "agentName": "cross-border-lead",
+  "teamInfo": {
+    "leadAgent": "cross-border-lead",
+    "memberAgents": [
+      "subagent-crossborder-material",
+      "subagent-crossborder-research",
+      "subagent-crossborder-screening",
+      "subagent-crossborder-drafting",
+      "subagent-crossborder-verification"
+    ]
+  },
+  "displayName": {
+    "en": "Cross-border Legal Expert developed by Fadada·Richee",
+    "zh": "法大大·睿契提供的跨境法律专家"
+  },
+  "profession": {
+    "en": "Cross-border Legal Expert",
+    "zh": "跨境法律服务专家团"
+  },
+  "displayDescription": {
+    "en": "[Fadada·Richee]Cross-border legal team dispatching foreign-law research with citation verification, sanctions/export-control screening, bilingual contract review with OOXML redlines, ODI/FDI structuring and independent verification, under a fast-dialogue entry with risk-tiered team escalation.",
+    "zh": "【法大大·睿契】面向涉外律师与出海/外资企业法务的专家团：外国法与多法域比较、ECLI/CELEX 精确引用核验、境外许可牌照、英文/双语合同审查与真实红线、ODI/FDI 与跨境并购架构、制裁与出口管制筛查、数据出境合规及独立交付校验；主 Agent 快速沟通入口，按风险分级组队。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "en": "Compare the CJEU and the ECtHR and give representative case law with citations",
+    "zh": "比较欧盟法院与欧洲人权法院并给出代表性判例"
+  },
+  "plugin": "cross-border-legal-expert",
+  "tags": [
+    {
+      "en": "Cross-border Legal",
+      "zh": "涉外跨境"
+    },
+    {
+      "en": "Foreign-law Research",
+      "zh": "外国法研究"
+    },
+    {
+      "en": "Sanctions Screening",
+      "zh": "制裁筛查"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Compare the CJEU and the ECtHR and give representative case law with citations",
+      "zh": "比较欧盟法院与欧洲人权法院并给出代表性判例"
+    },
+    {
+      "en": "Verify this ECLI citation and summarize the holding",
+      "zh": "核验这条 ECLI 引用并归纳裁判要点"
+    },
+    {
+      "en": "Review this English contract on our side and give a redline",
+      "zh": "代表我方审查这份英文合同并给红线版"
+    },
+    {
+      "en": "Screen this counterparty for sanctions and export-control exposure",
+      "zh": "对这个交易对手做制裁与出口管制筛查"
+    },
+    {
+      "en": "Design an ODI holding structure for our ASEAN subsidiary",
+      "zh": "为东南亚子公司设计 ODI 多层控股架构"
+    }
+  ],
+  "members": [
+    {
+      "id": "cross-border-lead",
+      "displayName": {
+        "en": "Kuan",
+        "zh": "阚涉衡"
+      },
+      "profession": {
+        "en": "Chief Cross-border Legal Coordinator",
+        "zh": "首席跨境法律调度官"
+      },
+      "avatar": "avatars/cross-border-lead.png",
+      "role": "lead",
+      "name": {
+        "en": "Kuan",
+        "zh": "阚涉衡"
+      }
+    },
+    {
+      "id": "subagent-crossborder-material",
+      "displayName": {
+        "en": "Wen",
+        "zh": "文溯界"
+      },
+      "profession": {
+        "en": "Cross-border Material & Jurisdiction Analyst",
+        "zh": "涉外材料与法域识别员"
+      },
+      "avatar": "avatars/subagent-crossborder-material.png",
+      "role": "member",
+      "name": {
+        "en": "Wen",
+        "zh": "文溯界"
+      }
+    },
+    {
+      "id": "subagent-crossborder-research",
+      "displayName": {
+        "en": "Ou",
+        "zh": "欧鉴法"
+      },
+      "profession": {
+        "en": "Cross-border Legal Research & Jurisdiction Comparison Analyst",
+        "zh": "跨境法律研究与法域比较员"
+      },
+      "avatar": "avatars/subagent-crossborder-research.png",
+      "role": "member",
+      "name": {
+        "en": "Ou",
+        "zh": "欧鉴法"
+      }
+    },
+    {
+      "id": "subagent-crossborder-screening",
+      "displayName": {
+        "en": "Lei",
+        "zh": "雷慎裁"
+      },
+      "profession": {
+        "en": "Sanctions & Cross-border Compliance Screening Analyst",
+        "zh": "制裁与跨境合规筛查员"
+      },
+      "avatar": "avatars/subagent-crossborder-screening.png",
+      "role": "member",
+      "name": {
+        "en": "Lei",
+        "zh": "雷慎裁"
+      }
+    },
+    {
+      "id": "subagent-crossborder-drafting",
+      "displayName": {
+        "en": "Zhang",
+        "zh": "章译衡"
+      },
+      "profession": {
+        "en": "Cross-border Transaction Document & Bilingual Drafting Specialist",
+        "zh": "涉外交易文件与双语起草员"
+      },
+      "avatar": "avatars/subagent-crossborder-drafting.png",
+      "role": "member",
+      "name": {
+        "en": "Zhang",
+        "zh": "章译衡"
+      }
+    },
+    {
+      "id": "subagent-crossborder-verification",
+      "displayName": {
+        "en": "Yan",
+        "zh": "严校境"
+      },
+      "profession": {
+        "en": "Cross-border Deliverable & Bilingual Verification Officer",
+        "zh": "涉外成果与双语校验员"
+      },
+      "avatar": "avatars/subagent-crossborder-verification.png",
+      "role": "member",
+      "name": {
+        "en": "Yan",
+        "zh": "严校境"
+      }
+    }
+  ]
+}

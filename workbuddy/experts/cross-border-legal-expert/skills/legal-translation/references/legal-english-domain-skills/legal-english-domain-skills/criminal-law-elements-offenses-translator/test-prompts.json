@@ -1,0 +1,37 @@
+{
+  "skill": "criminal-law-elements-offenses-translator",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "actus reus 和 mens rea 在这份刑法译文中能否译成犯罪行为和犯罪意图？",
+      "expected": "Use the skill to preserve element-level meaning."
+    },
+    {
+      "type": "should-call",
+      "prompt": "burglary 是否一定译为入室盗窃？请结合英美法语境说明。",
+      "expected": "Use the skill to distinguish offense elements from ordinary labels."
+    },
+    {
+      "type": "should-call",
+      "prompt": "principal 在刑法和民法里分别怎么译？这里是共同犯罪语境。",
+      "expected": "Use the skill and flag civil-law false friend."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "公司章程里的 principal office 怎么翻译？",
+      "expected": "Do not call; not criminal-law principal."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "arbitration award 和 court judgment 如何区分？",
+      "expected": "Do not call; use procedure-litigation-term-mapper."
+    },
+    {
+      "type": "boundary",
+      "prompt": "刑事上诉状里 accused、defendant、appellant 和 conviction 需要统一。",
+      "expected": "Call this skill for offense/criminal labels and procedure skill for appeal posture."
+    }
+  ]
+}

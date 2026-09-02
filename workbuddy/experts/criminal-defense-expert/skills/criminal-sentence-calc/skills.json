@@ -1,0 +1,12 @@
+{
+  "id": "刑期计算器",
+  "marketId": "",
+  "name": "刑期计算器",
+  "version": "",
+  "description": "输入罪名、量刑情节和羁押信息，精确计算宣告刑期、羁押折抵及数罪并罚上限。触发：律师办案中段需要计算或核验刑期时。不触发：要求量刑预测或证据评估时。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

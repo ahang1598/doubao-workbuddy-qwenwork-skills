@@ -1,0 +1,142 @@
+{
+  "name": "small-molecule-rd-team",
+  "version": "1.0.0",
+  "description": "Focus on integrated small molecule drug R&D, coordinating property modeling, linker design, scaffold hopping and retrosynthesis planning to output optimized structures and synthesis routes.",
+  "author": {
+    "name": "Tencent Health Omics Team",
+    "email": "omics@tencent.com"
+  },
+  "expertType": "team",
+  "agentName": "small-molecule-drug-rd-team-team-lead",
+  "teamInfo": {
+    "leadAgent": "small-molecule-drug-rd-team-team-lead",
+    "memberAgents": [
+      "idrug-macrocycle-linker-designer",
+      "idrug-retrosynthesis-planner",
+      "idrug-scaffold-hopping-designer"
+    ]
+  },
+  "agents": [
+    "./agents/small-molecule-drug-rd-team-team-lead.md",
+    "./agents/idrug-macrocycle-linker-designer.md",
+    "./agents/idrug-retrosynthesis-planner.md",
+    "./agents/idrug-scaffold-hopping-designer.md"
+  ],
+  "displayName": {
+    "en": "omics-expert-team",
+    "zh": "组小学"
+  },
+  "profession": {
+    "en": "Tencent Small Molecule Drug Development Expert Team",
+    "zh": "腾讯小分子药物研发专家团"
+  },
+  "displayDescription": {
+    "en": "Focus on integrated small molecule drug R&D, coordinating property modeling, linker design, scaffold hopping and retrosynthesis planning to output optimized structures and synthesis routes.",
+    "zh": "专注小分子一体化研发，协同开展性质建模、连接体设计、骨架跃迁与逆合成规划，输出优选结构及合成路线。"
+  },
+  "avatar": "avatars/tencent-small-molecule-drug-team.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": {
+    "en": "I have a batch of labeled SMILES data, please train a property prediction model and score/rank candidate molecules",
+    "zh": "我有一批带标签的SMILES数据，请训练性质预测模型，并对候选分子评分排序"
+  },
+  "tags": [
+    {
+      "zh": "CD-MVGNN小分子性质建模与批量预测",
+      "en": "CD-MVGNN Property Modeling & Batch Prediction"
+    },
+    {
+      "zh": "LinkerTransformer大环连接体生成与闭环设计",
+      "en": "LinkerTransformer Macrocyclic Linker Generation & Ring Closure"
+    },
+    {
+      "zh": "VAE驱动的骨架跃迁与候选结构优选",
+      "en": "VAE-Driven Scaffold Hopping & Candidate Screening"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "我有一批带标签的SMILES数据，请训练性质预测模型，并对候选分子评分排序",
+      "en": "I have a batch of labeled SMILES data, please train a property prediction model and score/rank candidate molecules"
+    },
+    {
+      "zh": "请围绕这个先导分子开展骨架跃迁或大环连接体设计，生成并筛选候选结构",
+      "en": "Please perform scaffold hopping or macrocycle linker design around this lead molecule, generate and screen candidate structures"
+    },
+    {
+      "zh": "请为优选候选规划多步逆合成路线，比较不同路线并汇总结果",
+      "en": "Please plan multi-step retrosynthesis routes for optimized candidates, compare different routes and summarize results"
+    }
+  ],
+  "members": [
+    {
+      "id": "small-molecule-drug-rd-team-team-lead",
+      "name": {
+        "zh": "腾讯小分子药物研发专家团",
+        "en": "Tencent Small Molecule Drug Development Expert Team"
+      },
+      "displayName": {
+        "zh": "组小学",
+        "en": "omics-expert-team"
+      },
+      "profession": {
+        "zh": "腾讯小分子药物研发专家团",
+        "en": "Tencent Small Molecule Drug Development Expert Team"
+      },
+      "avatar": "avatars/tencent-small-molecule-drug-team-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "idrug-macrocycle-linker-designer",
+      "name": {
+        "zh": "腾讯小分子药大环连接子设计专家",
+        "en": "Tencent Small Molecule Drug Macrocyclic Linker Design Expert"
+      },
+      "displayName": {
+        "zh": "组小学",
+        "en": "omics-expert-team"
+      },
+      "profession": {
+        "zh": "腾讯小分子药大环连接子设计专家",
+        "en": "Tencent Small Molecule Drug Macrocyclic Linker Design Expert"
+      },
+      "avatar": "avatars/idrug-macrocycle-linker-designer.png",
+      "role": "member"
+    },
+    {
+      "id": "idrug-retrosynthesis-planner",
+      "name": {
+        "zh": "腾讯小分子药逆合成路线规划专家",
+        "en": "Tencent Small Molecule Drug Retrosynthesis Route Planning Expert"
+      },
+      "displayName": {
+        "zh": "组小学",
+        "en": "omics-expert-team"
+      },
+      "profession": {
+        "zh": "腾讯小分子药逆合成路线规划专家",
+        "en": "Tencent Small Molecule Drug Retrosynthesis Route Planning Expert"
+      },
+      "avatar": "avatars/idrug-retrosynthesis-planner.png",
+      "role": "member"
+    },
+    {
+      "id": "idrug-scaffold-hopping-designer",
+      "name": {
+        "zh": "腾讯小分子药骨架跃迁设计专家",
+        "en": "Tencent Small Molecule Drug Scaffold Hopping Design Expert"
+      },
+      "displayName": {
+        "zh": "组小学",
+        "en": "omics-expert-team"
+      },
+      "profession": {
+        "zh": "腾讯小分子药骨架跃迁设计专家",
+        "en": "Tencent Small Molecule Drug Scaffold Hopping Design Expert"
+      },
+      "avatar": "avatars/idrug-scaffold-hopping-designer.png",
+      "role": "member"
+    }
+  ],
+  "plugin": "small-molecule-rd-team"
+}

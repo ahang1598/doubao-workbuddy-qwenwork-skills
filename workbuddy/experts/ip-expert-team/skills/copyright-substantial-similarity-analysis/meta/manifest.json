@@ -1,0 +1,41 @@
+{
+  "name": "著作权侵权实质性相似与接触可能性分析",
+  "name_en": "copyright-substantial-similarity",
+  "description": "对原被告作品进行实质性相似比对与接触可能性评估，输出著作权侵权分析报告。触发：著作权比对/实质性相似/抄袭分析/作品相似/接触可能性/思想表达二分法。不触发：许可协议审查/合理使用判断/专利侵权比对/商标近似判断。",
+  "version": "3.0.0",
+  "blueprint": "bp-research-organization-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-18",
+  "created": "2026-06-11",
+  "author": "copyright-substantial-similarity",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional",
+  "tags": ["知识产权", "著作权侵权", "实质性相似", "接触可能性", "思想表达二分法", "独创性", "错误复制识别", "三阶交互判定"],
+  "dependencies": {
+    "external": ["web_search (联网搜索)"],
+    "internal": [
+      "schemas.case_fact_ir",
+      "governance.soft_degraded",
+      "base/rule/format-html (HTML排版规范)",
+      "base/rule/format-html/core/design-tokens.md (Richee Design Token)"
+    ]
+  },
+  "consumers": ["知识产权律师", "版权代理人", "企业法务"],
+  "coverage_scope": "中国著作权民事侵权相似性分析",
+  "output_format": "HTML",
+  "richee_components": ["c01", "c04", "c05", "c06", "c09", "c12", "c15"],
+  "requires_legal_retrieval": true,
+  "core_methodologies": [
+    "思想表达二分法剥离",
+    "独创性元素三层剥离（公共领域→Scenes à faire→独创性表达）",
+    "整体观感先行锚定与反向验证",
+    "逐层比对法（整体→结构→具体表达）+ 相似点三性分类（共通表达/共同选择/共同错误）",
+    "错误复制识别（一致性瑕疵检测）",
+    "接触可能性因果链评估（四阶传导：发表→传播→接触可行性→间接链）",
+    "相似度-接触三阶交互判定（情形A/A'/B/C）",
+    "被告抗辩路径预判（独立创作/合理使用/接触不可能/公有领域）",
+    "分权论证（每项权利独立论证）"
+  ],
+  "copyright": "Copyright © 深圳市法大大网络科技有限公司 版权所有"
+}

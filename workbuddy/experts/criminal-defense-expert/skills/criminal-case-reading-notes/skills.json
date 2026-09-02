@@ -1,0 +1,12 @@
+{
+  "id": "阅卷笔录生成",
+  "marketId": "",
+  "name": "阅卷笔录生成",
+  "version": "2.0.0",
+  "description": "为辩护律师生成阅卷笔录，系统梳理案卷材料中的关键事实、证据和法律问题。依据刑诉法第40条阅卷权。触发：用户需要阅卷笔录。不触发：证据分析（→criminal-evidence-analysis）、案件策略（→criminal-case-strategy）、会见提纲（→criminal-meeting-guide）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

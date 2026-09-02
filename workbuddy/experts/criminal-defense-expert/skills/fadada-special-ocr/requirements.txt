@@ -1,0 +1,2 @@
+PyMuPDF>=1.20
+Pillow>=9.0

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Factor Mining PandaAI"
+  short_description: "Blind-mine or extract factors with PandaAI"
+  default_prompt: "Use $factor-mining-pandaai to run an AI-led blind factor search on PandaAI, showing the search contract and candidate batch before compute is spent."

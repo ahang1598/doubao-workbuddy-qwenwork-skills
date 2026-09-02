@@ -1,0 +1,108 @@
+{
+  "name": "交易流水分析",
+  "name_en": "transaction-flow-analysis",
+  "description": "解析多渠道交易记录（银行/微信/支付宝），按6种案件类型路由差异化分析框架，输出顶级律所级HTML可视化分析报告（金字塔结论+六要素发现+资金流向拓扑图）。触发：分析交易流水/资金流向/银行流水/转账记录。不触发：审计报告/税务分析/合同审查。",
+  "version": "3.0.0",
+  "blueprint": "bp-fact-evidence-organization-v1",
+  "secondary_blueprint": "bp-visual-report-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-05-27",
+  "created": "2026-05-26",
+  "updated": "2026-05-27",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional",
+  "target_users": [
+    "中国执业律师",
+    "诉讼团队",
+    "法律工作者"
+  ],
+  "applicable_scope": {
+    "jurisdiction": "中华人民共和国大陆地区（不含港澳台）",
+    "case_types": [
+      "婚姻家事",
+      "劳动争议",
+      "民间借贷",
+      "合同纠纷",
+      "刑事辩护",
+      "执行追索"
+    ],
+    "input_channels": [
+      "银行流水",
+      "微信交易记录",
+      "支付宝交易记录"
+    ]
+  },
+  "output_types": [
+    "HTML可视化分析报告（C-Professional，唯一输出格式，含金字塔结论摘要/六要素发现卡片/资金流向拓扑图/证据交叉引用/打印适配/页码/机密标记）"
+  ],
+  "case_type_specs": {
+    "CT1": "marriage-family",
+    "CT2": "labor-dispute",
+    "CT3": "private-lending",
+    "CT4": "contract-dispute",
+    "CT5": "criminal-defense",
+    "CT6": "enforcement"
+  },
+  "work_modes": {
+    "IM1_structured": "结构化输入（已导出CSV/Excel），全6Phase分析",
+    "IM2_semistructured": "半结构化输入（手动整理的交易列表），容错解析后分析",
+    "IM3_natural_language": "自然语言描述（逐条口述交易记录），LLM逐条提取后分析"
+  },
+  "governance": {
+    "review_required": true,
+    "review_role": "执业律师",
+    "output_type": "内部工作文件（中间产品，非法院提交物）",
+    "disclaimer": "本交易分析报告由AI辅助生成，不构成审计意见或鉴定结论。律师应结合案件整体情况独立判断，关键金额认定需主办律师核实。",
+    "risk_levels": {
+      "L1": "辅助参考，可直接生成",
+      "L2": "专业底稿，需标注风险提示",
+      "L3": "高敏感，可能触发 SOFT_DEGRADED"
+    },
+    "soft_degraded": {
+      "supported": true,
+      "min_skeleton": [
+        "C_已识别交易的分类标注与异常信号初步标记",
+        "D_免责声明（治理合规层）",
+        "G_待补充交易清单与行动建议"
+      ],
+      "optional_blocks": [
+        "A_范围确认",
+        "B_蓝图对齐",
+        "E_评估标注",
+        "F_可追溯性"
+      ],
+      "degrade_strengths": [
+        "S1",
+        "S2",
+        "S3"
+      ]
+    },
+    "high_risk_phases": {
+      "Phase3": "交易分类标注（L3，涉及法律定性判断如'工资'vs'劳务费'，case_context提升精度）",
+      "Phase4": "异常模式检测（L2，涉及转移财产/洗钱等行为识别）",
+      "Phase5": "对手方与资金流向分析（L2，涉及刑事涉案资金追踪）",
+      "I1": "第一轮概览与方向确认（L2，v2.0新增，涉及异常信号初步判断）"
+    }
+  },
+  "files": [
+    "SKILL.md",
+    "DESIGN.md",
+    "USAGE.md",
+    "meta/manifest.json",
+    "references/input-spec.md",
+    "references/output-spec.md",
+    "references/workflow-detail.md",
+    "references/legal-references.md",
+    "references/analysis-methodology.md",
+    "references/skills.json",
+    "templates/case-types/marriage-family.md",
+    "templates/case-types/labor-dispute.md",
+    "templates/case-types/private-lending.md",
+    "templates/case-types/contract-dispute.md",
+    "templates/case-types/criminal-defense.md",
+    "templates/case-types/enforcement.md",
+    "templates/css/transaction-report-style.css"
+  ]
+}

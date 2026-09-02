@@ -1,0 +1,163 @@
+{
+  "name": "find-users-team",
+  "version": "1.1.2",
+  "description": "营销通·搞懂用户专家团（v1.1 更名上架版）。面向 vibe coding 出产品想 go to market 的人群：把真实用户的话变成洞察、人群、话题与内容 Brief。主理人通哥是营销通全流程主控入口——从验证需求到投广告的任意阶段进入，由他分诊到思研（调研）、本团四专家、内容专家团或金手指四件套，并以增长项目档案承载跨会话上下文。含 7 个技能：增长项目上下文 / 输出规范 / 能力对接契约 / 洞察·人群·话题·内容策略四个方法库。",
+  "author": {
+    "name": "FiT 营销技术团队",
+    "email": "june@tencent.com"
+  },
+  "keywords": [
+    "搞懂用户",
+    "用户洞察",
+    "人群扩展",
+    "话题发现",
+    "内容策略",
+    "增长闭环",
+    "独立开发者"
+  ],
+  "agents": [
+    "./agents/find-users-team-team-lead.md",
+    "./agents/user-insight-expert.md",
+    "./agents/audience-expansion-expert.md",
+    "./agents/topic-discovery-expert.md",
+    "./agents/content-strategy-brief-expert.md"
+  ],
+  "skills": [
+    "./skills/growth-project",
+    "./skills/growth-output-standard",
+    "./skills/capability-handoff",
+    "./skills/user-insight-toolkit",
+    "./skills/audience-expansion-toolkit",
+    "./skills/topic-discovery-toolkit",
+    "./skills/content-brief-toolkit"
+  ],
+  "expertType": "team",
+  "agentName": "find-users-team-team-lead",
+  "teamInfo": {
+    "leadAgent": "find-users-team-team-lead",
+    "memberAgents": [
+      "user-insight-expert",
+      "audience-expansion-expert",
+      "topic-discovery-expert",
+      "content-strategy-brief-expert"
+    ]
+  },
+  "displayName": {
+    "zh": "营销通·搞懂用户专家团",
+    "en": "Marketing Hub · Understand-Users Expert Team"
+  },
+  "profession": {
+    "zh": "营销通·搞懂用户专家团",
+    "en": "Marketing Hub · Find-Users Expert Team"
+  },
+  "displayDescription": {
+    "zh": "从你的第一批真实用户出发，找到更多可能需要产品的人，再用内容触达陌生用户。适合产品做出来了、但不知道给谁看的人。",
+    "en": "Starts from your first real users, finds more people who may need your product, then reaches strangers through content. Built for people who shipped something but don't know who to show it to."
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "05-MarketingGrowth",
+  "defaultInitPrompt": {
+    "zh": "我刚做了一个 AI 软件，但不知道有没有人需要，也不知道怎么找到第一批用户",
+    "en": "I just built an AI tool but I don't know if anyone needs it, or how to find my first users."
+  },
+  "plugin": "find-users-team",
+  "tags": [
+    {
+      "zh": "用户洞察",
+      "en": "User Insight"
+    },
+    {
+      "zh": "人群扩展",
+      "en": "Audience Expansion"
+    },
+    {
+      "zh": "找第一批用户",
+      "en": "First Users"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "我刚做了一个 AI 软件，但不知道有没有人需要，也不知道怎么找到第一批用户",
+      "en": "I just built an AI tool but I don't know if anyone needs it, or how to find my first users."
+    },
+    {
+      "zh": "我有一些用户的聊天记录和反馈，帮我看懂这些人到底卡在哪",
+      "en": "I have some user chats and feedback — help me understand what these people are actually stuck on."
+    },
+    {
+      "zh": "我已经有一批用户了，帮我找到更多相似的人",
+      "en": "I already have some users. Help me find more people like them."
+    },
+    {
+      "zh": "我已经知道目标人群了，帮我找到他们关心的话题",
+      "en": "I know my target audience. Help me find the topics they care about."
+    }
+  ],
+  "members": [
+    {
+      "id": "find-users-team-team-lead",
+      "name": {
+        "en": "Tong",
+        "zh": "通哥"
+      },
+      "profession": {
+        "en": "Marketing Hub · Marketing Strategy Expert",
+        "zh": "营销通·营销策略专家"
+      },
+      "avatar": "avatars/team.png",
+      "role": "lead"
+    },
+    {
+      "id": "user-insight-expert",
+      "name": {
+        "en": "Shiren",
+        "zh": "郑识人"
+      },
+      "profession": {
+        "en": "Marketing Hub · User Insight Expert",
+        "zh": "营销通·用户洞察专家"
+      },
+      "avatar": "avatars/team.png",
+      "role": "member"
+    },
+    {
+      "id": "audience-expansion-expert",
+      "name": {
+        "en": "Tuo",
+        "zh": "拓野"
+      },
+      "profession": {
+        "en": "Marketing Hub · Audience Expansion Expert",
+        "zh": "营销通·人群扩展专家"
+      },
+      "avatar": "avatars/team.png",
+      "role": "member"
+    },
+    {
+      "id": "topic-discovery-expert",
+      "name": {
+        "en": "Xun",
+        "zh": "寻声"
+      },
+      "profession": {
+        "en": "Marketing Hub · Topic Discovery Expert",
+        "zh": "营销通·话题发现专家"
+      },
+      "avatar": "avatars/team.png",
+      "role": "member"
+    },
+    {
+      "id": "content-strategy-brief-expert",
+      "name": {
+        "en": "Ce",
+        "zh": "策远"
+      },
+      "profession": {
+        "en": "Marketing Hub · Content Strategy Expert",
+        "zh": "营销通·内容策略专家"
+      },
+      "avatar": "avatars/team.png",
+      "role": "member"
+    }
+  ]
+}

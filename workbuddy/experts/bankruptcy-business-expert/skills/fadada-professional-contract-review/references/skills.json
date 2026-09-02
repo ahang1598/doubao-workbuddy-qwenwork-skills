@@ -1,0 +1,13 @@
+{
+  "id": "fadada-professional-contract-review",
+  "marketId": "",
+  "name": "法大大专业合同审查",
+  "version": "0.4.1",
+  "description": "用于对已有合同或具体条款进行风险审查、合规判断、可签判断、利益倾向分析和修改建议输出。支持审查意见书、风险清单、修订版合同、带批注修订版合同、多角色评审报告、跨文件核验表、文字与计算审查，并优先加载合同审查清单生成器产出的 iTerms v2 组织级 JSON；显式传入同源 iTerms Excel 时可转换为临时 JSON 后消费，fallback 旧 checklist-v1 清单。触发示例：「帮我审查这份合同」「这份合同有没有风险」「这个条款合理吗」「能不能签」「合同对我是否有利」。不适用：合同起草、字段/条款原文提取、合同比对、翻译、摘要、普通润色、格式转换。意图不明时按 references/contract-skill-routing.md 裁定；只有无法判断用户要的结果时追问一次。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

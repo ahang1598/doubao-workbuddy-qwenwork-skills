@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "deeplink": {
+      "type": "streamableHttp",
+      "url": "https://mcp.dichanai.com/mcp-server",
+      "headers": {
+        "Authorization": "Bearer ${DEEPLINK_API_KEY}"
+      },
+      "timeout": 600000
+    }
+  }
+}

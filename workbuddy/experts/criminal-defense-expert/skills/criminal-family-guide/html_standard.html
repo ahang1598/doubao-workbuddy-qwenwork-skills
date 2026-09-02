@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刑事家属程序指引 - 标准版</title>
+  <style>
+    :root {
+      --stage-color: {{STAGE_COLOR}};
+      --page-width: 210mm;
+      --page-height: 297mm;
+      --margin-v: 20mm;
+      --margin-h: 25mm;
+      --font-title: 'SimHei', 'Microsoft YaHei', sans-serif;
+      --font-body: 'SimSun', 'Songti SC', serif;
+
+      /* 视觉层级四色系统 */
+      --color-danger: #D32F2F;        /* 禁止·严禁 */
+      --color-danger-bg: #FFF5F5;
+      --color-action: #2E7D32;        /* 行动·可做 */
+      --color-action-bg: #F1F8E9;
+      --color-attention: #E65100;     /* 关注·重要 */
+      --color-attention-bg: #FFF8E1;
+      --color-reference: #616161;     /* 参考·可阅 */
+      --color-reference-bg: #F5F5F5;
+      --color-reference-border: #E0E0E0;
+
+      /* 阶段色（仅用于阶段标识，不渗透正文） */
+      --stage-red: #E74C3C;
+      --stage-amber: #F39C12;
+      --stage-green: #27AE60;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.8;
+      color: #333;
+    }
+
+    .page {
+      width: var(--page-width);
+      padding: var(--margin-v) var(--margin-h);
+      margin: 0 auto;
+    }
+
+    /* === 页眉 === */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #E0E0E0;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .logo-area { max-width: 120px; }
+    .logo-area img { max-width: 120px; height: auto; }
+    .firm-name { font-family: var(--font-title); font-size: 14px; font-weight: bold; color: #555; }
+
+    .doc-title {
+      font-family: var(--font-title);
+      font-size: 20px;
+      text-align: center;
+      margin: 12px 0 4px;
+      color: #222;
+    }
+    .doc-subtitle {
+      font-family: var(--font-title);
+      font-size: 12px;
+      text-align: center;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    /* === 视觉层级系统（四色·语义明确） === */
+
+    /* 🔴 禁止层——仅用于"不能做" */
+    .danger {
+      background: var(--color-danger-bg);
+      border-left: 4px solid var(--color-danger);
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* 🟢 行动层——用于"应该做" */
+    .action {
+      background: var(--color-action-bg);
+      border-left: 4px solid var(--color-action);
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* 🟠 关注层——用于"需要知道" */
+    .attention {
+      background: var(--color-attention-bg);
+      border-left: 4px solid var(--color-attention);
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* ⚪ 参考层——用于"可了解" */
+    .reference {
+      background: var(--color-reference-bg);
+      border-left: 4px solid var(--color-reference-border);
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* === 阶段卡（阶段色仅此使用） === */
+    .stage-card {
+      border-left: 6px solid var(--stage-color);
+      padding: 12px 16px;
+      margin: 16px 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.02), transparent);
+    }
+    .stage-card h3 { color: var(--stage-color); font-size: 17px; margin-bottom: 6px; }
+    .stage-card p { font-size: 13px; color: #555; line-height: 1.7; }
+
+    /* === 板块标题 === */
+    .section {
+      margin: 20px 0;
+      padding: 0;
+    }
+    .section-title {
+      font-family: var(--font-title);
+      font-size: 16px;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #E0E0E0;
+      color: #222;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* === 徽章（四色语义） === */
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      color: #fff;
+      font-weight: normal;
+      letter-spacing: 0.5px;
+    }
+    .badge-danger { background: var(--color-danger); }
+    .badge-action { background: var(--color-action); }
+    .badge-attention { background: var(--color-attention); }
+    .badge-reference { background: var(--color-reference); }
+
+    /* === 表格 === */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 8px 0;
+    }
+    .data-table th {
+      background: #FFF;
+      font-family: var(--font-title);
+      font-weight: bold;
+      text-align: left;
+      padding: 6px 10px;
+      border-bottom: 2px solid #E0E0E0;
+      font-size: 12px;
+      color: #555;
+    }
+    .data-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #EEE;
+      vertical-align: top;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    /* === 流程图 === */
+    .flow-chart {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: #FAFAFA;
+      border-radius: 6px;
+    }
+    .flow-node {
+      text-align: center;
+      padding: 8px 14px;
+      border-radius: 6px;
+      min-width: 80px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .flow-node.current {
+      border: 2px solid var(--stage-color);
+      background: #FFF;
+      font-weight: bold;
+    }
+    .flow-node.future {
+      border: 1px dashed #BBB;
+      background: #FFF;
+    }
+    .flow-node .node-title { font-size: 13px; font-weight: bold; }
+    .flow-node .node-duration { font-size: 11px; color: #666; }
+    .flow-node .node-action { font-size: 11px; color: var(--color-attention); margin-top: 2px; }
+    .flow-arrow {
+      font-size: 18px;
+      color: #BBB;
+      flex-shrink: 0;
+    }
+    .flow-note {
+      width: 100%;
+      font-size: 11px;
+      color: #666;
+      margin-top: 6px;
+      padding-left: 4px;
+    }
+    .flow-note .highlight {
+      color: var(--color-attention);
+      font-weight: bold;
+    }
+
+    /* === 三阶段总览 === */
+    .three-stage-timeline {
+      display: flex;
+      justify-content: space-between;
+      margin: 16px 0;
+      gap: 8px;
+    }
+    .stage-block {
+      flex: 1;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .stage-block.investigation { background: rgba(231,76,60,0.08); border: 2px solid var(--stage-red); }
+    .stage-block.review { background: rgba(243,156,18,0.08); border: 2px solid var(--stage-amber); }
+    .stage-block.trial { background: rgba(39,174,96,0.08); border: 2px solid var(--stage-green); }
+    .stage-block.current { box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+    .stage-block h5 { font-size: 14px; margin-bottom: 4px; }
+    .stage-block .duration { font-size: 12px; color: #666; }
+    .stage-arrow { display: flex; align-items: center; font-size: 20px; color: #CCC; }
+
+    /* === 折叠详情（默认关闭） === */
+    .collapsible { margin: 8px 0; border: 1px solid #EEE; border-radius: 4px; }
+    .collapsible summary {
+      padding: 8px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      list-style: none;
+      font-size: 13px;
+      background: #FAFAFA;
+      border-radius: 4px;
+    }
+    .collapsible summary::before { content: '▶ '; font-size: 10px; color: #999; }
+    .collapsible[open] summary::before { content: '▼ '; }
+    .collapsible .content { padding: 12px 14px; border-top: 1px solid #EEE; }
+
+    /* === Q&A 折叠（默认关闭） === */
+    .faq-item { border: 1px solid #EEE; border-radius: 4px; margin: 6px 0; }
+    .faq-question {
+      padding: 8px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+      background: #FAFAFA;
+    }
+    .faq-question::before { content: '▶ '; font-size: 10px; color: #999; }
+    .faq-item.open .faq-question::before { content: '▼ '; }
+    .faq-answer { padding: 8px 14px; display: none; border-top: 1px solid #EEE; font-size: 12px; color: #555; }
+    .faq-item.open .faq-answer { display: block; }
+
+    /* === 案件标签 === */
+    .case-tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: 4px;
+    }
+    .case-tag.done { background: #E8F5E9; color: var(--color-action); border: 1px solid rgba(46,125,50,0.2); }
+    .case-tag.attention { background: #FFF3E0; color: var(--color-attention); border: 1px solid rgba(230,81,0,0.2); }
+    .case-tag.highlight { background: #FFF8E1; color: #F57F17; border: 1px solid rgba(245,127,23,0.2); }
+    .case-tag.warning { background: var(--color-danger-bg); color: var(--color-danger); border: 1px solid rgba(211,47,47,0.2); }
+
+    .small-note { font-size: 11px; color: #999; margin-top: 4px; }
+
+    /* === 页脚 === */
+    footer {
+      margin-top: 24px;
+      padding-top: 8px;
+      border-top: 1px solid #DDD;
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+    }
+    .disclaimer {
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .watermark {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 48px;
+      opacity: 0.06;
+      color: #999;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+
+    @media print {
+      @page { size: A4; margin: 20mm 25mm; }
+      .page { width: auto; padding: 0; margin: 0; }
+      .section { page-break-inside: avoid; }
+      .stage-card { border: 2px solid var(--stage-color); }
+      .stage-block.current { box-shadow: none; border-width: 4px; }
+      .watermark { display: block; }
+      .no-print { display: none; }
+      .collapsible .content { display: block !important; }
+      .faq-answer { display: block !important; }
+      .data-table th, .data-table td { padding: 4px 8px; }
+      /* 黑白打印兼容：色块添加边框 */
+      .danger { border: 1px solid #999; }
+      .action { border: 1px solid #999; }
+      .attention { border: 1px solid #999; }
+      .reference { border: 1px solid #999; }
+    }
+  </style>
+</head>
+<body>
+  <div class="watermark no-print">仅供参考 · 不构成法律意见</div>
+
+  <div class="page">
+    <header>
+      <div class="logo-area">{{LAW_FIRM_LOGO}}</div>
+      <div class="firm-name">{{LAW_FIRM_NAME}}</div>
+    </header>
+
+    <div class="doc-title">刑事家属程序指引</div>
+    <div class="doc-subtitle">{{DOC_SUBTITLE}}</div>
+
+    <!-- O2 当前阶段高亮卡 -->
+    <div class="section" style="page-break-before: avoid;">
+      <div class="stage-card attention">
+        <h3>📍 当前阶段：{{STAGE_NAME}}</h3>
+        <p>{{STAGE_DESC}}</p>
+      </div>
+    </div>
+
+    <!-- O3 律师现在能做什么（关注层） -->
+    <div class="section">
+      <div class="section-title">👨‍⚖️ 律师现在能做什么 <span class="badge badge-attention">关注</span></div>
+      <div class="attention">
+        {{LAWYER_ACTIONS_TABLE}}
+      </div>
+    </div>
+
+    <!-- O4 家属能做什么（行动层·绿色） -->
+    <div class="section">
+      <div class="section-title">✅ 家属能做什么 <span class="badge badge-action">行动</span></div>
+      <div class="action">
+        {{FAMILY_CAN_DO_TABLE}}
+      </div>
+    </div>
+
+    <!-- O5 家属不能做什么（禁止层·红色） -->
+    <div class="section">
+      <div class="section-title">🚫 家属不能做什么 <span class="badge badge-danger">严禁</span></div>
+      <div class="danger">
+        {{FAMILY_CANNOT_DO_TABLE}}
+      </div>
+    </div>
+
+    <!-- O6 下一步时间节点（关注层·流程图） -->
+    <div class="section">
+      <div class="section-title">⏰ 下一步时间节点 <span class="badge badge-attention">关注</span></div>
+      <div class="attention">
+        {{NEXT_TIMELINE_FLOW}}
+      </div>
+    </div>
+
+    <!-- O7 三阶段时间线总览 -->
+    <div class="section">
+      <div class="section-title">📋 三阶段时间线总览 <span class="badge badge-attention">关注</span></div>
+      {{THREE_STAGE_TIMELINE}}
+    </div>
+
+    <!-- O8 会见规则详解（参考层·折叠） -->
+    <div class="section">
+      <div class="section-title">🤝 会见规则详解 <span class="badge badge-reference">参考</span></div>
+      <div class="reference">
+        <details class="collapsible">
+          <summary>点击展开会见规则详情</summary>
+          <div class="content">{{MEETING_RULES}}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- O9 取保候审条件（关注层） -->
+    <div class="section">
+      <div class="section-title">🔓 取保候审条件 <span class="badge badge-attention">关注</span></div>
+      <div class="attention">
+        {{BAIL_CONDITIONS_TABLE}}
+      </div>
+    </div>
+
+    <!-- O10 送物送钱规则（参考层·折叠） -->
+    <div class="section">
+      <div class="section-title">📦 送物送钱规则 <span class="badge badge-reference">参考</span></div>
+      <div class="reference">
+        <details class="collapsible">
+          <summary>点击展开送物送钱规则详情</summary>
+          <div class="content">{{VISITING_RULES}}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- O11 罪名简介（参考层·折叠） -->
+    {{CHARGE_INFO_COLLAPSIBLE}}
+
+    <!-- O12 常见问题 Q&A（参考层·折叠） -->
+    <div class="section">
+      <div class="section-title">❓ 常见问题 <span class="badge badge-reference">参考</span></div>
+      <div class="reference">
+        {{FAQ_SECTION_COMPACT}}
+      </div>
+    </div>
+
+    <footer>
+      {{LAW_FIRM_NAME}} | 联系电话：______________ | 地址：______________
+    </footer>
+
+    <div class="disclaimer">{{DISCLAIMER}}</div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        q.parentElement.classList.toggle('open');
+      });
+    });
+  </script>
+</body>
+</html>

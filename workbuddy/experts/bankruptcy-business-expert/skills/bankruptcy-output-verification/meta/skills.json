@@ -1,0 +1,1 @@
+{"id":"bankruptcy-output-verification","marketId":null,"name":"破产成果校验","version":"1.0.0","description":"交付前核验债权金额与分配金额一致性、债权优先级排序正确性、法条引用准确性、上下文一致性和管理人履职程序合规性。","author":"深圳法大大网络科技有限公司","tags":["破产","成果校验","金额核验","优先级复核"],"skillType":"custom","skillSource":null,"skillSourceName":null}

@@ -1,0 +1,68 @@
+{
+  "total": 6,
+  "high": 2,
+  "medium": 2,
+  "low": 2,
+  "items": [
+    {
+      "index": 1,
+      "clause": "第8.2条 违约金",
+      "issue": "违约金为合同总额的40%，过分高于可能损失",
+      "risk_level": "高",
+      "suggestion": "改为：违约金为合同总金额的15%，且不超过实际损失的130%",
+      "basis_tag": "[法规]",
+      "basis_detail": "《民法典》第585条",
+      "source": "local"
+    },
+    {
+      "index": 2,
+      "clause": "第12.1条 单方解除",
+      "issue": "甲方可无条件单方解除合同，乙方无对等权利",
+      "risk_level": "中",
+      "suggestion": "改为：任一方经书面通知并给予30日补救期后方可解除",
+      "basis_tag": "[用规]",
+      "basis_detail": "组织清单：checklist-procurement-v2 条款CL-12",
+      "source": "local"
+    },
+    {
+      "index": 3,
+      "clause": "第5.3条 付款条件",
+      "issue": "验收合格后180日付款，账期过长",
+      "risk_level": "高",
+      "suggestion": "改为：验收合格后30日内支付",
+      "basis_tag": "[要点]",
+      "basis_detail": "用户提示「重点关注付款账期」",
+      "source": "local"
+    },
+    {
+      "index": 4,
+      "clause": "第15条 争议解决",
+      "issue": "约定境外仲裁，执行成本高",
+      "risk_level": "中",
+      "suggestion": "改为：提交合同签订地有管辖权的人民法院诉讼解决",
+      "basis_tag": "[惯例]",
+      "basis_detail": "国内采购合同通行做法",
+      "source": "local"
+    },
+    {
+      "index": 5,
+      "clause": "第3.4条 通知方式",
+      "issue": "仅约定邮寄通知，未含电子送达",
+      "risk_level": "低",
+      "suggestion": "增加：电子邮件送达视为有效通知",
+      "basis_tag": "[惯例]",
+      "basis_detail": "商事合同通行做法",
+      "source": "local"
+    },
+    {
+      "index": 6,
+      "clause": "第9.1条 知识产权",
+      "issue": "交付成果知识产权归属未明确",
+      "risk_level": "低",
+      "suggestion": "增加：交付成果知识产权自验收合格之日起归甲方所有",
+      "basis_tag": "[用规]",
+      "basis_detail": "组织清单：checklist-procurement-v2 条款CL-09",
+      "source": "local"
+    }
+  ]
+}

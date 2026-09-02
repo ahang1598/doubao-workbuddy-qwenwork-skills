@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "keyword": "PORTABLE MONITOR",
+    "marketplace": "amazon.com",
+    "page_scope": "page1",
+    "product_count_raw": 22,
+    "product_count_deduped": 19,
+    "generated_at": "2026-07-31T06:44:00Z",
+    "schema_version": "1.0"
+  },
+  "context_profile": {
+    "category_type": "parametric_electronics",
+    "purchase_intent": "买一块能出差/扩展桌面的便携副屏，先确认尺寸、清晰度、接口和能不能接自己的设备。",
+    "title_priorities": [
+      { "signal": "size_inch", "why": "是否匹配笔记本包和视线习惯", "weight": 5 },
+      { "signal": "resolution", "why": "办公/影音清晰度预期", "weight": 5 },
+      { "signal": "ports", "why": "USB-C/HDMI 决定即插即用", "weight": 5 },
+      { "signal": "refresh_hz", "why": "游戏/高刷差异化", "weight": 3 },
+      { "signal": "device_compat", "why": "Laptop/Mac/PS/Switch 兼容", "weight": 4 },
+      { "signal": "accessories", "why": "皮套、支架、音箱降低额外购买", "weight": 3 }
+    ],
+    "image_priorities": [
+      { "signal": "product_form", "why": "独立便携屏 vs 笔记本夹式扩展屏，买错形态成本高", "weight": 5 },
+      { "signal": "on_image_specs", "why": "角标上的 15.6/1080P/HDR 强化信任", "weight": 4 },
+      { "signal": "stand_or_cover_visible", "why": "确认配件是否真实存在", "weight": 3 },
+      { "signal": "style_cluster", "why": "黑框+抽象壁纸是否同质化跟卖", "weight": 2 }
+    ],
+    "seller_likely_emphasize": [
+      "15.6\"", "1080P", "FHD", "USB-C", "HDMI", "IPS", "HDR",
+      "Speakers", "Smart Cover", "Kickstand", "Laptop/Mac/PS/Xbox/Switch", "Travel", "Gaming"
+    ],
+    "comparison_dimensions": [
+      { "dim": "product_form", "source": "image", "how_to_compare": "portable_monitor | laptop_screen_extender", "weight": 5 },
+      { "dim": "size_inch", "source": "title", "how_to_compare": "数值分箱 14 / 15.6 / 16-16.1 / 18.5+", "weight": 5 },
+      { "dim": "resolution", "source": "both", "how_to_compare": "1080P vs 2K/2.5K/4K", "weight": 5 },
+      { "dim": "refresh_hz", "source": "title", "how_to_compare": "60 vs 100+ vs 144+", "weight": 3 },
+      { "dim": "ports", "source": "title", "how_to_compare": "是否同时具备 USB-C + HDMI", "weight": 4 },
+      { "dim": "price", "source": "serp_field", "how_to_compare": "extractedPrice 排序/分位", "weight": 4 },
+      { "dim": "monthly_units", "source": "serp_field", "how_to_compare": "月销；缺失记 50", "weight": 3 }
+    ],
+    "off_topic_risks": [
+      "Laptop Screen Extender / 夹式三屏（标题含 portable monitor 但形态不同）",
+      "超大桌面式可搬运屏与旅行便携屏混排"
+    ],
+    "homogeneity_notes": "去重后约 74% 为 15.6\"、约 90% 为 1080P，USB-C/HDMI 近标配；差异化主要在高刷/2.5K 与夹式扩展形态。"
+  },
+  "products": [
+    {
+      "asin": "B0B9NNWXVP",
+      "position": 3,
+      "sponsored": false,
+      "title": "MNN 15.6\" FHD 60Hz Portable Monitor USB-C HDMI IPS HDR Gaming Laptop | 15.6\" FHD IPS HDR, 0.76cm/694g, USB-C one-cable, PC/Mac/Phone/Switch, speakers+stand, L/P, low blue, work&game",
+      "asinUrl": "https://www.amazon.com/MNN-Portable-15-6inch-Ultra-Slim-Speakers/dp/B0B9NNWXVP/",
+      "imageUrl": "https://m.media-amazon.com/images/I/81Q9vMNUOyL._AC_UY218_.jpg",
+      "imageUrl_large": "https://m.media-amazon.com/images/I/81Q9vMNUOyL.jpg",
+      "extractedPrice": 49.99,
+      "rating": 4.3,
+      "ratings": 11900,
+      "monthlySalesUnits": 10000,
+      "enrichment": {
+        "off_topic": false,
+        "units_imputed": false,
+        "title_extract": {
+          "brand": "MNN",
+          "size_inch": 15.6,
+          "resolution": "1080P",
+          "refresh_hz": 60,
+          "ports": ["USB-C", "HDMI"],
+          "features": ["ips", "hdr", "speakers", "kickstand", "plug_play", "eye_care", "gaming"]
+        },
+        "image_extract": {
+          "product_form": "portable_monitor",
+          "title_image_match": "consistent",
+          "on_image_claims": ["1080P", "15.6\"", "HDR"]
+        },
+        "compare_values": {
+          "product_form": "portable_monitor",
+          "size_inch": 15.6,
+          "resolution": "1080P",
+          "refresh_hz": 60,
+          "ports": "USB-C+HDMI",
+          "price": 49.99,
+          "monthly_units": 10000
+        }
+      }
+    },
+    {
+      "asin": "B0H25VMK6H",
+      "position": 17,
+      "sponsored": true,
+      "title": "15.6\" Laptop Screen Extender, Dual 1080P FHD IPS Portable Monitor for 13-17.3\" Laptops, Plug and Play Triple Screen with USB-C HDMI, 300 Nits, 100% sRGB, Built-in Speakers for Work, Travel, Gaming",
+      "asinUrl": "https://www.amazon.com/dp/B0H25VMK6H/",
+      "imageUrl": "https://m.media-amazon.com/images/I/71rrDx2Sq8L._AC_UY218_.jpg",
+      "imageUrl_large": "https://m.media-amazon.com/images/I/71rrDx2Sq8L.jpg",
+      "extractedPrice": 199.99,
+      "rating": 4.7,
+      "ratings": 166,
+      "monthlySalesUnits": 100,
+      "enrichment": {
+        "off_topic": true,
+        "units_imputed": false,
+        "title_extract": {
+          "brand": null,
+          "size_inch": 15.6,
+          "resolution": "1080P",
+          "refresh_hz": null,
+          "ports": ["USB-C", "HDMI"],
+          "features": ["speakers", "ips", "plug_play", "travel", "gaming", "triple_screen"]
+        },
+        "image_extract": {
+          "product_form": "laptop_screen_extender",
+          "title_image_match": "consistent",
+          "on_image_claims": ["15.6\"", "1080P"]
+        },
+        "compare_values": {
+          "product_form": "laptop_screen_extender",
+          "size_inch": 15.6,
+          "resolution": "1080P",
+          "refresh_hz": null,
+          "ports": "USB-C+HDMI",
+          "price": 199.99,
+          "monthly_units": 100
+        }
+      }
+    },
+    {
+      "asin": "B0FDL2VR2C",
+      "position": 21,
+      "sponsored": false,
+      "title": "ARZOPA 16.1'' 180Hz 2.5K Portable Monitor, 2560x1440 QHD 107% sRGB Kickstand Portable Gaming Monitor with HDR, Ultra Slim, Eye Care, External Second Screen for Laptop, PC, PS5, Mac, Xbox-Z3FC",
+      "asinUrl": "https://www.amazon.com/ARZOPA-Portable-2560x1440-Kickstand-Xbox-Z3FC/dp/B0FDL2VR2C/",
+      "imageUrl": "https://m.media-amazon.com/images/I/81Aw6PbGA-L._AC_UY218_.jpg",
+      "imageUrl_large": "https://m.media-amazon.com/images/I/81Aw6PbGA-L.jpg",
+      "extractedPrice": 139.99,
+      "rating": 4.3,
+      "ratings": 393,
+      "monthlySalesUnits": 1000,
+      "enrichment": {
+        "off_topic": false,
+        "units_imputed": false,
+        "title_extract": {
+          "brand": "ARZOPA",
+          "size_inch": 16.1,
+          "resolution": "2.5K",
+          "refresh_hz": 180,
+          "ports": [],
+          "features": ["kickstand", "hdr", "ultra_slim", "eye_care", "gaming"]
+        },
+        "image_extract": {
+          "product_form": "portable_monitor",
+          "title_image_match": "partial",
+          "on_image_claims": []
+        },
+        "compare_values": {
+          "product_form": "portable_monitor",
+          "size_inch": 16.1,
+          "resolution": "2.5K",
+          "refresh_hz": 180,
+          "ports": null,
+          "price": 139.99,
+          "monthly_units": 1000
+        }
+      }
+    }
+  ],
+  "comparison_table": {
+    "columns": [
+      { "key": "product_form", "label": "形态", "from_dim": "product_form" },
+      { "key": "size_inch", "label": "尺寸", "from_dim": "size_inch" },
+      { "key": "resolution", "label": "分辨率", "from_dim": "resolution" },
+      { "key": "refresh_hz", "label": "刷新率", "from_dim": "refresh_hz" },
+      { "key": "ports", "label": "接口", "from_dim": "ports" },
+      { "key": "price", "label": "价格", "from_dim": "price" },
+      { "key": "monthly_units", "label": "月销", "from_dim": "monthly_units" }
+    ],
+    "summary": {
+      "homogeneity": {
+        "size_15_6_pct": 73.7,
+        "resolution_1080p_pct": 89.5,
+        "usb_c_pct": 89.5,
+        "hdmi_pct": 84.2
+      },
+      "headline": "主战场为 15.6\"+1080P+USB-C/HDMI 便携屏；高刷/2.5K 与 18.5\" 为差异带；夹式扩展屏应单独对比或标偏题。",
+      "excluded_off_topic_count": 1
+    }
+  }
+}

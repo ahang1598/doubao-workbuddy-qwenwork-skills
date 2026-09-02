@@ -1,0 +1,31 @@
+{
+  "scenario_id": "S-PE",
+  "scenario_name": "PE/VC投资",
+  "description": "增资扩股/股权转让/创投，关注投资回报与退出，核心关切估值/核心资产/核心团队/投资者权利",
+  "modules": {
+    "M1": {"enabled": true, "priority": "high", "depth": "standard", "estimated_items": 8},
+    "M2": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 21},
+    "M3": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M4": {"enabled": true, "priority": "high", "depth": "standard", "estimated_items": 14},
+    "M5": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 16},
+    "M6": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 10},
+    "M7": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 14},
+    "M8": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M9": {"enabled": true, "priority": "low", "depth": "quick", "estimated_items": 5},
+    "M10": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 6},
+    "M11": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M12": {"enabled": true, "priority": "low", "depth": "quick", "estimated_items": 5}
+  },
+  "total_estimated": "65-95",
+  "industry_adaptation": {
+    "manufacturing": {"M9": {"enabled": true, "priority": "medium", "depth": "standard"}, "M12": {"enabled": true, "priority": "medium"}},
+    "software": {"M9": {"enabled": false}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "finance": {"M9": {"enabled": false}, "M10": {"extra_items": ["金融业务许可证"]}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "biotech": {"M10": {"extra_items": ["药品注册证书", "临床试验批件", "GMP认证"]}, "M11": {"enabled": true, "priority": "medium", "depth": "standard"}},
+    "new_energy": {"M9": {"enabled": true, "priority": "medium"}, "M10": {"extra_items": ["发电业务许可证", "碳排放配额文件", "可再生能源补贴文件"]}},
+    "semiconductor": {"M5": {"priority": "high", "depth": "full"}, "M10": {"extra_items": ["集成电路设计企业认定证书"]}},
+    "education": {"M10": {"extra_items": ["办学许可证"]}}
+  },
+  "key_concerns": ["估值依据", "核心资产价值", "核心团队稳定性", "退出机制", "投资者权利保护"],
+  "focus_modules": ["M2", "M5", "M7"]
+}

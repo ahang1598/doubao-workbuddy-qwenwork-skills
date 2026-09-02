@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>营销通·内容变现顾问 · 商单 Brief 评估</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/*
+ * 营销通 · 社媒内容专家团 —— HTML 卡片统一样式
+ * 所有产出物共享同一份视觉基线，agent 生成时按 template.html 组装。
+ * 修改前请阅读 references/design-rules.md 的 9 条硬规则。
+ */
+
+:root {
+  --brand: #0052D9;
+  --brand-soft: #E8F0FE;
+  --brand-deep: #003A99;
+  --ink: #1F2329;
+  --ink-2: #4E5969;
+  --ink-3: #86909C;
+  --line: #E5E6EB;
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --warn: #FF7D00;
+  --warn-soft: #FFF7E8;
+  --ok: #00B42A;
+  --ok-soft: #E8FFEA;
+  --danger: #F53F3F;
+  --danger-soft: #FFECE8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 880px; margin: 0 auto; }
+
+/* ========== 顶部 Banner ========== */
+.banner {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+  color: #fff;
+  padding: 28px 32px;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+.banner::after {
+  content: "";
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+.banner .brand-tag {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin: 0 0 10px 0;
+  letter-spacing: 0.3px;
+  position: relative;
+  z-index: 1;
+}
+.banner .brand-tag .sep { margin: 0 6px; opacity: 0.6; }
+.banner .title {
+  font-size: 24px; font-weight: 600;
+  margin: 0 0 4px 0;
+}
+.banner .subtitle {
+  font-size: 14px; opacity: 0.9; margin: 0;
+}
+.banner .meta {
+  margin-top: 14px; font-size: 13px;
+  opacity: 0.85;
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.banner .meta span {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.banner .meta i.bi {
+  font-size: 14px; opacity: 0.9;
+}
+
+/* ========== 主体 ========== */
+.body {
+  background: var(--surface);
+  padding: 28px 32px 8px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+section { margin-bottom: 28px; }
+section:last-child { margin-bottom: 0; }
+
+/* 章节大标题（h2）—— 序号 + 标题，无左竖条 */
+h2.section-title {
+  font-size: 17px; font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 14px 0;
+  line-height: 1.35;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+h2.section-title .idx {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+/* 每个模块的"结论句"—— 放在模块正文之前 */
+.lead {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+  margin: 0 0 14px 0;
+  padding: 12px 14px;
+  background: #FAFBFC;
+  border-radius: 6px;
+}
+.lead strong { color: var(--ink); font-weight: 600; }
+
+/* ========== 表格（含 KV 型两列表；KV 型必须带 thead） ========== */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+table.data-table th {
+  background: #FAFBFC;
+  color: var(--ink-2);
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--line);
+  font-size: 13px;
+}
+table.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--ink);
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #FAFBFC; }
+
+/* KV 型表格：左列字段名（灰字 500 weight），右列内容。用 td.kv-key */
+table.data-table td.kv-key {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* 徽章 */
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.pill-ok { background: var(--ok-soft); color: var(--ok); }
+.pill-warn { background: var(--warn-soft); color: var(--warn); }
+.pill-danger { background: var(--danger-soft); color: var(--danger); }
+.pill-brand { background: var(--brand-soft); color: var(--brand); }
+.pill-recommend { background: var(--brand); color: #fff; }
+
+/* ========== 时间轴（精简版：每块 + 目标行 + 无 icon bullets） ========== */
+.timeline {
+  position: relative;
+  padding-left: 24px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px; top: 8px; bottom: 8px;
+  width: 2px; background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 20px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -22px; top: 7px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--brand);
+}
+.tl-item .tl-head {
+  font-size: 14px; font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.tl-item .tl-head .week {
+  color: var(--brand);
+  margin-right: 6px;
+}
+.tl-item .tl-head .sep { color: var(--ink-3); margin: 0 4px; }
+.tl-item .tl-goal {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.tl-item .tl-goal strong { color: var(--ink); font-weight: 500; }
+.tl-item .tl-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.85;
+}
+.tl-item .tl-list li { padding-left: 2px; }
+
+/* ========== 提示条（清爽版，无 icon） ========== */
+.callout {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--brand);
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: var(--brand-soft);
+  color: var(--ink);
+  margin-top: 14px;
+}
+.callout strong.title {
+  color: var(--brand-deep);
+  font-weight: 600;
+  margin-right: 4px;
+}
+.callout-warn { border-color: var(--warn); background: var(--warn-soft); color: #1F2329; }
+.callout-warn strong.title { color: #7A4300; }
+
+/* ========== 通用 bullet 列表 ========== */
+ul.plain-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.85;
+}
+ul.plain-list li { margin: 4px 0; padding-left: 2px; }
+ul.plain-list li strong { color: var(--ink); font-weight: 600; }
+ul.plain-list li strong:first-child { margin-right: 4px; }
+
+/* 决策标签（决策分支/条件枚举的结论词，只染字色不加底色） */
+.tag-ok, .tag-warn, .tag-bad { font-weight: 600; margin-right: 4px; }
+.tag-ok { color: var(--ok); }
+.tag-warn { color: var(--warn); }
+.tag-bad { color: var(--danger); }
+
+.disclaimer {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 20px;
+  padding: 14px 0;
+}
+
+/* 打印友好 */
+@media print {
+  body { padding: 0; background: #fff; }
+  .banner { border-radius: 0; }
+  .body { border-radius: 0; box-shadow: none; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 顶部 Banner -->
+  <div class="banner">
+    <p class="brand-tag">营销通<span class="sep">·</span>内容变现顾问</p>
+    <h1 class="title">商单 Brief 评估</h1>
+    <p class="subtitle">品牌：某国货基础款女装 · 合作类型：小红书图文单条 · 报价初步：6k</p>
+    <div class="meta">
+      <span><i class="bi bi-calendar3"></i>2026-08-19</span>
+      <span><i class="bi bi-flag"></i>Brief 评估</span>
+      <span><i class="bi bi-bullseye"></i>接/不接裁决</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- 01 六要素解析（KV 表） -->
+    <section>
+      <h2 class="section-title"><span class="idx">01</span>Brief 六要素解析</h2>
+      <p class="lead">品牌方 Brief 整体清晰，但在"内容框架灵活度"和"效果对赌"两条上有明显冲突点，需要在合同前谈清。</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:130px;">Brief 要素</th>
+            <th>品牌方要求</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="kv-key">品牌背景</td><td>国货基础款女装，成立 3 年，客单价 200-400 元，目标用户 25-32 岁职场女性</td></tr>
+          <tr><td class="kv-key">产品卖点</td><td>面料舒适、通勤适配、平价可复购——3 个核心卖点，需在正文自然带出</td></tr>
+          <tr><td class="kv-key">合作形式</td><td>软广图文单条，5-8 张图，需露出品牌 logo 但不生硬</td></tr>
+          <tr><td class="kv-key">内容框架</td><td>「一周穿搭」主题，5 件品牌单品搭出 5 套通勤 look —— <strong>方框较死</strong></td></tr>
+          <tr><td class="kv-key">效果对赌</td><td>要求 24 小时内点赞 &gt; 3000，未达标扣 30% 费用 —— <strong>不合理</strong></td></tr>
+          <tr><td class="kv-key">档期/交付</td><td>下周三前定稿，下周五发布；提前 3 天审稿</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 02 冲突点与沟通话术 -->
+    <section>
+      <h2 class="section-title"><span class="idx">02</span>冲突点与沟通话术</h2>
+      <p class="lead">两个冲突点都可以谈——效果对赌必须去掉，内容框架建议改成「场景钩子」结构。</p>
+      <div class="callout callout-warn">
+        <strong class="title">冲突 1 · 效果对赌不合理：</strong>点赞数受平台算法波动极大，达人无法承诺具体数字。建议话术：「点赞是平台变量，我可以承诺内容质量指标（如封面/开头/标签规范），但不能对赌单条数据——这是行业普遍做法，也是保护双方利益。」若品牌方坚持对赌，建议改为"发布后 7 天内加发 1 篇补量内容"作为替代。
+      </div>
+      <div class="callout callout-warn">
+        <strong class="title">冲突 2 · 内容框架偏死：</strong>「一周穿搭 5 件」这种拼盘式内容在 2026 年数据表现已下滑。建议话术：「基于我账号的历史数据，「场景钩子式」（如"周五约会 3 件穿出松弛感"）比"一周穿搭"点赞率高约 60%。我建议保留 5 件单品露出，但用 3-5 个具体场景串起来，效果会更好。」
+      </div>
+    </section>
+
+    <!-- 03 接/不接裁决 -->
+    <section>
+      <h2 class="section-title"><span class="idx">03</span>接/不接裁决</h2>
+      <p class="lead">可接，但必须先解决"效果对赌"这条硬冲突。若对方不让步，不建议接。</p>
+      <ul class="plain-list">
+        <li><strong>若两点都谈成：</strong><span class="tag-ok">可接 ✓</span>品牌方产品与你账号定位（平价基础款）高度匹配；报价 6k 在你当前粉丝层级（1w）属于合理偏上；档期宽松（下周才交付）。</li>
+        <li><strong>若只谈成内容框架、对赌保留：</strong><span class="tag-warn">谨慎接</span>可以接，但要在合同里把"对赌扣款"改成"补内容"而非"扣现金"，最坏情况是免费再产出 1 篇，不至于亏本。</li>
+        <li><strong>若对赌坚持不改：</strong><span class="tag-bad">不建议接</span>点赞对赌不合理是行业共识，坚持这条的品牌方通常后续沟通也会有麻烦。宁可不接这单，也不要开这个先例。</li>
+      </ul>
+    </section>
+
+    <!-- 04 报价参考 -->
+    <section>
+      <h2 class="section-title"><span class="idx">04</span>报价参考</h2>
+      <p class="lead">6k 在你当前粉丝层级属于合理偏上，可以直接接受。若愿意做深度合作（连续 3 单以上），可以谈到 15% 折扣换稳定档期。</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:130px;">粉丝层级</th>
+            <th>图文单条报价参考区间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="kv-key">1w-3w</td><td>3k - 8k（本单 6k 在此区间偏上）</td></tr>
+          <tr><td class="kv-key">3w-10w</td><td>8k - 20k</td></tr>
+          <tr><td class="kv-key">10w-30w</td><td>20k - 50k</td></tr>
+          <tr><td class="kv-key">30w+</td><td>50k+，需一事一议</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 05 变现路径规划 -->
+    <section>
+      <h2 class="section-title"><span class="idx">05</span>后续变现路径</h2>
+      <p class="lead">这单可作为"1-3w 粉丝段的第一批商单"，跑通后可以按 3 个月节奏推进到下一阶段。</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 1</span>本单 + 后续 2-3 单（当前 1w 粉丝段）</div>
+          <div class="tl-goal"><strong>目标：</strong>建立"平价基础款女装"品类的合作案例池</div>
+          <ul class="tl-list">
+            <li>本单价 6k，后续 2 单争取维持 5k-8k 区间</li>
+            <li>每单要求"发布后 30 天数据回收报告"作为合作案例</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 2</span>粉丝突破 3w 后（3-6 个月）</div>
+          <div class="tl-goal"><strong>目标：</strong>报价升到 8k-15k，接更多品类</div>
+          <ul class="tl-list">
+            <li>拓展 2-3 个相邻品类（配饰、鞋履、护肤）</li>
+            <li>建立"合作品牌白名单/黑名单"</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 3</span>粉丝突破 10w 后（6-12 个月）</div>
+          <div class="tl-goal"><strong>目标：</strong>开始接年框合作，稳定收入</div>
+          <ul class="tl-list">
+            <li>与 1-2 个匹配品牌签年框（4-6 篇/年）</li>
+            <li>探索"选品清单"型自媒体变现（分佣模式）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 下一步建议 -->
+    <section>
+      <h2 class="section-title"><span class="idx">06</span>下一步建议</h2>
+      <ul class="plain-list">
+        <li>先按"冲突 1 沟通话术"跟品牌方谈掉效果对赌，谈成再往下走</li>
+        <li>合同里把"审稿轮次上限"写清楚（建议 2 次修改，超出加费用），避免无限改稿</li>
+        <li>内容开写前，可找 <strong>包火（爆款分析师）</strong> 拆一下你账号历史最好的 3 篇，从里面提炼合作稿的结构</li>
+        <li>正稿写完后，可找 <strong>赵写（内容风格教练）</strong> 做去 AI 味 + 商单合规改写预检</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <div class="disclaimer">
+    报价参考区间基于公开行业数据整理，实际议价受品牌预算、达人数据、合作深度等多因素影响，仅供参考。
+  </div>
+
+</div>
+
+</body>
+</html>

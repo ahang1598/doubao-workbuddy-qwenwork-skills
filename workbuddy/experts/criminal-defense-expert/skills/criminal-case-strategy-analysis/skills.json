@@ -1,0 +1,12 @@
+{
+  "id": "刑事案件策略分析",
+  "marketId": "",
+  "name": "刑事案件策略分析",
+  "version": "",
+  "description": "对刑事案件进行全案策略分析，综合案件事实、证据、法律适用和诉讼阶段，制定辩护策略方案。触发：用户需要案件策略分析。不触发：证据分析（→criminal-evidence-analysis）、量刑预测（→criminal-sentencing-analysis）、阅卷笔录（→criminal-case-reading-notes）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

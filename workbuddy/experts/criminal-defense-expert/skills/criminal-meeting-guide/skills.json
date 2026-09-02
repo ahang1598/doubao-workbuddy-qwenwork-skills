@@ -1,0 +1,12 @@
+{
+  "id": "会见提纲",
+  "marketId": "",
+  "name": "会见提纲",
+  "version": "2.3.0-candidate",
+  "description": "为辩护律师生成会见提纲（问题清单），系统设计会见时需核实的事实、证据和法律问题。依据刑诉法第39条会见权。触发：用户需要会见提纲/准备会见/会见问题。不触发：阅卷笔录（→criminal-case-reading-notes）、案件策略（→criminal-case-strategy）、调查取证（→criminal-evidence-request）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

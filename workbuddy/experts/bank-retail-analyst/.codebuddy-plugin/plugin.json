@@ -1,0 +1,207 @@
+{
+  "name": "bank-retail-analyst",
+  "version": "1.0.0",
+  "description": "Seven-agent team for bank retail financial report analysis: report download, standard & text data extraction, peer benchmarking, strategic insight and strategy-governance penetration, delivering three professional PDF reports in one pipeline.",
+  "author": {
+    "name": "腾讯云商业银行团队",
+    "email": "mengyuanchen@tencent.com"
+  },
+  "agents": [
+    "./agents/bank-retail-analyst-team-lead.md",
+    "./agents/report-downloader.md",
+    "./agents/standard-extractor.md",
+    "./agents/text-extractor.md",
+    "./agents/benchmark-analyst.md",
+    "./agents/strategic-insight-analyst.md",
+    "./agents/governance-analyst.md"
+  ],
+  "skills": [
+    "./skills/cninfo-bank-reports",
+    "./skills/standard-data-extraction",
+    "./skills/text-data-extraction",
+    "./skills/benchmark-analysis",
+    "./skills/strategic-insight",
+    "./skills/strategy-governance-analysis"
+  ],
+  "expertType": "team",
+  "agentName": "bank-retail-analyst-team-lead",
+  "teamInfo": {
+    "leadAgent": "bank-retail-analyst-team-lead",
+    "memberAgents": [
+      "report-downloader",
+      "standard-extractor",
+      "text-extractor",
+      "benchmark-analyst",
+      "strategic-insight-analyst",
+      "governance-analyst"
+    ]
+  },
+  "displayName": {
+    "en": "Bank Retail Analyst",
+    "zh": "财报研析团"
+  },
+  "profession": {
+    "en": "Bank Retail Analyst",
+    "zh": "财报研析团"
+  },
+  "displayDescription": {
+    "en": "Seven-agent pipeline for bank retail annual-report analytics: download reports, extract tabular & textual data, run peer benchmarking, strategic insight and governance penetration, and deliver three professional PDF reports in one run.",
+    "zh": "六成员财报分析专家团：自动下载年报、提取零售数据，做同业对标与战略治理穿透分析，一键交付三份专业报告。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "08-FinanceInvestment",
+  "defaultInitPrompt": {
+    "zh": "以招商银行为基准，对比兴业/中信/平安银行，生成 2025 年零售业务同业对标全套报告（对标+洞察+治理）",
+    "en": "Benchmark CMB vs CIB/CNCB/PAB for 2025 retail business: full report pack (benchmark + insight + governance)."
+  },
+  "plugin": "bank-retail-analyst",
+  "tags": [
+    {
+      "en": "Bank Financial Analytics",
+      "zh": "银行财报分析"
+    },
+    {
+      "en": "Peer Benchmarking",
+      "zh": "同业对标"
+    },
+    {
+      "en": "Strategy & Governance",
+      "zh": "战略与治理"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Benchmark CMB vs CIB/CNCB/PAB for 2025 retail business: full report pack (benchmark + insight + governance).",
+      "zh": "以招商银行为基准，对比兴业/中信/平安银行，生成 2025 年零售业务同业对标全套报告（对标+洞察+治理）"
+    },
+    {
+      "en": "Download 2025 annual reports of CMB, CIB, CNCB and PAB, extract retail data and build a benchmarking database.",
+      "zh": "下载招商银行、兴业银行、中信银行、平安银行 2025 年年度报告，提取零售业务数据并建立对标数据库"
+    },
+    {
+      "en": "Produce the 2025 retail strategic insight report and strategy-governance penetration report for CMB.",
+      "zh": "以招商银行为主角，生成 2025 年零售战略洞察报告与战略治理穿透分析报告"
+    }
+  ],
+  "members": [
+    {
+      "id": "bank-retail-analyst-team-lead",
+      "displayName": {
+        "en": "Cha",
+        "zh": "查致远"
+      },
+      "profession": {
+        "en": "Pipeline Director",
+        "zh": "研报调度官"
+      },
+      "avatar": "avatars/bank-retail-analyst-team-lead.png",
+      "role": "lead",
+      "name": {
+        "en": "Cha",
+        "zh": "查致远"
+      }
+    },
+    {
+      "id": "report-downloader",
+      "displayName": {
+        "en": "Gong",
+        "zh": "龚献源"
+      },
+      "profession": {
+        "en": "Report Downloader",
+        "zh": "资料下载员"
+      },
+      "avatar": "avatars/report-downloader.png",
+      "role": "member",
+      "name": {
+        "en": "Gong",
+        "zh": "龚献源"
+      }
+    },
+    {
+      "id": "standard-extractor",
+      "displayName": {
+        "en": "Su",
+        "zh": "苏标清"
+      },
+      "profession": {
+        "en": "Tabular Extractor",
+        "zh": "表格数据提取员"
+      },
+      "avatar": "avatars/standard-extractor.png",
+      "role": "member",
+      "name": {
+        "en": "Su",
+        "zh": "苏标清"
+      }
+    },
+    {
+      "id": "text-extractor",
+      "displayName": {
+        "en": "Wen",
+        "zh": "温闻新"
+      },
+      "profession": {
+        "en": "Textual Extractor",
+        "zh": "文字数据提取员"
+      },
+      "avatar": "avatars/text-extractor.png",
+      "role": "member",
+      "name": {
+        "en": "Wen",
+        "zh": "温闻新"
+      }
+    },
+    {
+      "id": "benchmark-analyst",
+      "displayName": {
+        "en": "Heng",
+        "zh": "衡万里"
+      },
+      "profession": {
+        "en": "Benchmark Analyst",
+        "zh": "同业对标分析师"
+      },
+      "avatar": "avatars/benchmark-analyst.png",
+      "role": "member",
+      "name": {
+        "en": "Heng",
+        "zh": "衡万里"
+      }
+    },
+    {
+      "id": "strategic-insight-analyst",
+      "displayName": {
+        "en": "Fang",
+        "zh": "方见远"
+      },
+      "profession": {
+        "en": "Insight Analyst",
+        "zh": "战略洞察分析师"
+      },
+      "avatar": "avatars/strategic-insight-analyst.png",
+      "role": "member",
+      "name": {
+        "en": "Fang",
+        "zh": "方见远"
+      }
+    },
+    {
+      "id": "governance-analyst",
+      "displayName": {
+        "en": "Yan",
+        "zh": "严治衡"
+      },
+      "profession": {
+        "en": "Governance Analyst",
+        "zh": "治理穿透分析师"
+      },
+      "avatar": "avatars/governance-analyst.png",
+      "role": "member",
+      "name": {
+        "en": "Yan",
+        "zh": "严治衡"
+      }
+    }
+  ]
+}

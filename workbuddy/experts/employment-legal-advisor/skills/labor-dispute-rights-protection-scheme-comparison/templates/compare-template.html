@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>劳动争议维权方案对比报告</title>
+<style>
+/* ========== 基础样式 ========== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #212121;
+  background: #F5F5F5;
+}
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* ========== 头部 ========== */
+.report-header {
+  border-bottom: 3px solid #1A5276;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+.report-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1A5276;
+  margin-bottom: 8px;
+}
+.report-header .meta {
+  font-size: 12px;
+  color: #616161;
+}
+.disclaimer-inline {
+  background: #ECEFF1;
+  border-left: 3px solid #78909C;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #455A64;
+  margin-top: 12px;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ========== 区块通用 ========== */
+section { margin-bottom: 28px; }
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1A5276;
+  border-bottom: 2px solid #D6EAF8;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+/* ========== 区块1: 案情摘要（2列网格） ========== */
+.case-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.summary-card {
+  background: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.summary-card.full-width {
+  grid-column: 1 / -1;
+}
+.summary-card .label {
+  font-size: 12px;
+  color: #616161;
+  margin-bottom: 4px;
+}
+.summary-card .value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+}
+
+/* ========== 区块2: 方案全景概览 ========== */
+.overview-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.overview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #E3F2FD;
+  color: #1A5276;
+  border: 1px solid #D6EAF8;
+}
+.channel-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 12px;
+}
+.channel-matrix th, .channel-matrix td {
+  border: 1px solid #E0E0E0;
+  padding: 8px 10px;
+  text-align: center;
+}
+.channel-matrix th {
+  background: #F5F5F5;
+  font-weight: 500;
+}
+.channel-matrix .feasible {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+.channel-matrix .conditional {
+  background: #FFF8E1;
+  color: #B7950B;
+}
+.channel-matrix .not-applicable {
+  background: #FAFAFA;
+  color: #BDBDBD;
+}
+
+/* ========== 区块3: 方案对比矩阵（并排卡片） ========== */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.scheme-card {
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #FFFFFF;
+  transition: box-shadow 0.2s;
+}
+.scheme-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.scheme-card.recommended {
+  border-color: #1A5276;
+  background: #F0F7FF;
+}
+.scheme-card-header {
+  padding: 12px 14px;
+  color: #FFFFFF;
+  background: #1B4F72;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.scheme-card-header .scheme-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+.scheme-card-header .badge {
+  font-size: 12px;
+  font-weight: 400;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.25);
+}
+/* 风险色标——仅左border点缀，不变更header背景 */
+.scheme-card-header.risk-high { border-left: 5px solid #C0392B; }
+.scheme-card-header.risk-medium { border-left: 5px solid #D4A017; }
+.scheme-card-header.risk-low { border-left: 5px solid #27AE60; }
+.scheme-card-header .risk-tag {
+  font-size: 11px;
+  font-weight: 400;
+  margin-left: 10px;
+  opacity: 0.85;
+}
+.scheme-card-header.risk-high .risk-tag { color: #F5B7B1; }
+.scheme-card-header.risk-medium .risk-tag { color: #FDEBD0; }
+.scheme-card-header.risk-low .risk-tag { color: #A9DFBF; }
+.scheme-card-body {
+  padding: 14px;
+}
+.scheme-card-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.scheme-card-body td {
+  padding: 6px 0;
+  border-bottom: 1px solid #F5F5F5;
+  font-size: 13px;
+  vertical-align: top;
+}
+.scheme-card-body td.dim-label {
+  color: #616161;
+  width: 28%;
+  font-size: 12px;
+}
+
+/* 金额柱状图 */
+.amount-bar-wrap {
+  margin-top: 4px;
+}
+.amount-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.amount-bar .bar-label {
+  width: 28px;
+  flex-shrink: 0;
+  color: #616161;
+}
+.amount-bar .bar-fill {
+  height: 14px;
+  border-radius: 3px;
+  margin: 0 8px;
+  flex-grow: 1;
+}
+.amount-bar .bar-amount {
+  width: 60px;
+  flex-shrink: 0;
+  text-align: right;
+  font-weight: 500;
+}
+.amount-bar .bar-fill.best { background: #27AE60; }
+.amount-bar .bar-fill.average { background: #5DADE2; }
+.amount-bar .bar-fill.worst { background: #C0392B; }
+
+/* 折叠风险详情 */
+.scheme-card details {
+  margin-top: 10px;
+  border-top: 1px solid #F5F5F5;
+  padding-top: 8px;
+}
+.scheme-card details summary {
+  font-size: 12px;
+  color: #1A5276;
+  cursor: pointer;
+  list-style: none;
+}
+.scheme-card details summary::-webkit-details-marker { display: none; }
+.scheme-card details .risk-detail {
+  padding: 8px 0 0 0;
+  font-size: 12px;
+  color: #616161;
+  line-height: 1.8;
+}
+
+/* ========== 区块4: 推荐方案 ========== */
+.recommendation-box {
+  background: #F0F7FF;
+  border: 2px solid #1A5276;
+  border-radius: 8px;
+  padding: 18px;
+  position: relative;
+  margin-top: 16px;
+}
+.recommendation-box .rec-badge {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background: #1A5276;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 4px;
+}
+.recommendation-box .reasoning-chain {
+  margin-top: 12px;
+  padding: 12px;
+  background: #FFFFFF;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.reasoning-chain ol {
+  padding-left: 20px;
+  margin-top: 6px;
+}
+.reasoning-chain li {
+  margin-bottom: 4px;
+}
+
+/* ========== 区块5: 操作指引折叠面板 ========== */
+details.guide-panel {
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+details.guide-panel summary {
+  padding: 12px 14px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  background: #FAFAFA;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+details.guide-panel summary::-webkit-details-marker { display: none; }
+details.guide-panel summary::after {
+  content: "展开 ▼";
+  font-size: 12px;
+  color: #616161;
+}
+details.guide-panel[open] summary::after {
+  content: "收起 ▲";
+}
+.guide-panel .panel-content {
+  padding: 14px;
+  border-top: 1px solid #E0E0E0;
+}
+.panel-content .guide-step {
+  margin-bottom: 12px;
+}
+.panel-content .guide-step h5 {
+  font-size: 13px;
+  color: #1A5276;
+  margin-bottom: 4px;
+}
+.panel-content .guide-step p, .panel-content .guide-step ul {
+  font-size: 13px;
+  color: #424242;
+}
+.panel-content .guide-step ul {
+  padding-left: 20px;
+}
+
+/* ========== 区块6: 时效提醒 ========== */
+.limitation-alert {
+  background: #FAFAFA;
+  border-left: 4px solid #C0392B;
+  padding: 14px 16px;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 12px;
+}
+.limitation-alert .alert-title {
+  font-weight: 600;
+  color: #C0392B;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.limitation-alert .alert-content {
+  font-size: 13px;
+  color: #424242;
+}
+.limitation-normal {
+  background: #F0F8F0;
+  border-left: 4px solid #27AE60;
+  padding: 14px 16px;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #2E7D32;
+}
+
+/* ========== 底部免责 ========== */
+.footer-disclaimer {
+  margin-top: 32px;
+  padding: 14px 16px;
+  background: #ECEFF1;
+  border: 1px solid #CFD8DC;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #546E7A;
+  line-height: 1.6;
+}
+
+/* ========== 律师版专属样式 ========== */
+.lawyer-only {
+  border-top: 2px dashed #1A5276;
+  padding-top: 24px;
+  margin-top: 20px;
+}
+.lawyer-only .section-title {
+  color: #7B1FA2; /* 紫色区分律师版 */
+}
+.lawyer-only .audience-tag {
+  font-size: 12px;
+  color: #7B1FA2;
+  font-weight: normal;
+  background: #F3E5F5;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
+.annotation-block {
+  background: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.annotation-block h3 {
+  font-size: 14px;
+  color: #7B1FA2;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #F3E5F5;
+  padding-bottom: 6px;
+}
+.annotation-block table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.annotation-block td, .annotation-block th {
+  border: 1px solid #E0E0E0;
+  padding: 6px 10px;
+}
+.annotation-block th {
+  background: #F5F5F5;
+  font-weight: 500;
+}
+.annotation-block .total-row {
+  font-weight: 600;
+  background: #FFF8E1;
+}
+.confidence-note {
+  font-size: 12px;
+  color: #616161;
+  margin-top: 8px;
+  font-style: italic;
+}
+.annotation-block ol {
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* ========== 打印适配 ========== */
+@media print {
+  body { background: #FFFFFF; }
+  .container { box-shadow: none; max-width: 100%; }
+  details.guide-panel { display: block; }
+  details.guide-panel summary::after { content: ""; }
+  .scheme-card:hover { box-shadow: none; }
+  .scheme-card { break-inside: avoid; }
+  @page { margin: 25mm 20mm; size: A4; }
+}
+</style>
+<link rel="stylesheet" href="../css/labor-remedy-compare-C-Professional.css">
+</head>
+<body>
+<div class="container">
+
+<!-- ========== 头部 ========== -->
+<header class="report-header">
+  <h1>劳动争议维权方案对比报告</h1>
+  <div class="meta">生成日期：{{REPORT_DATE}} | 报告编号：{{REPORT_ID}} | 适用当事人：{{PARTY_TYPE}}</div>
+  <div class="disclaimer-inline">
+    ⚠️ 本报告为律师基于您提供的情况所作的分析参考，不构成法律意见。维权方案的具体选择，请与您的律师充分讨论后决定。报告中的金额估算为基于法律规定的推算，实际结果可能因证据、裁判尺度等因素变化。
+  </div>
+</header>
+
+<!-- ========== 1. 案情摘要与当事人画像 ========== -->
+<section id="case-summary">
+  <h2 class="section-title">一、案情摘要与您的情况</h2>
+  {{CASE_SUMMARY}}
+</section>
+
+<!-- ========== 2. 维权方案全景概览 ========== -->
+<section id="scheme-overview">
+  <h2 class="section-title">二、您可以选择的维权方案</h2>
+  {{SCHEME_OVERVIEW}}
+</section>
+
+<!-- ========== 3. 方案对比矩阵 ========== -->
+<section id="comparison-matrix">
+  <h2 class="section-title">三、方案详细对比</h2>
+  <p style="font-size:13px; color:#616161; margin-bottom:16px;">
+    💡 卡片左侧色条代表综合风险：<span style="color:#C0392B;">■高风险</span> / <span style="color:#D4A017;">■中风险</span> / <span style="color:#27AE60;">■低风险</span>。点击每个方案可查看详细风险分析。
+  </p>
+  {{COMPARISON_MATRIX}}
+</section>
+
+<!-- ========== 4. 推荐方案 ========== -->
+<section id="recommendation">
+  <h2 class="section-title">四、我们的建议</h2>
+  {{RECOMMENDATION}}
+</section>
+
+<!-- ========== 5. 操作指引 ========== -->
+<section id="operation-guide">
+  <h2 class="section-title">五、每个方案怎么做</h2>
+  {{OPERATION_GUIDE}}
+</section>
+
+<!-- ========== 6. 时效提醒 ========== -->
+<section id="limitation">
+  <h2 class="section-title">六、时间提醒与注意事项</h2>
+  {{LIMITATION_WARNING}}
+</section>
+
+<!-- ========== 7. 内部标注 [仅律师版] ========== -->
+<!-- 律师版额外内容 -->
+{{LAWYER_INTERNAL_ANNOTATIONS}}
+
+<!-- ========== 底部免责 ========== -->
+<footer class="footer-disclaimer">
+  <strong>免责声明：</strong>本报告为律师在初步了解您的情况后基于现行法律法规作出的分析参考，不构成正式法律意见。法律适用可能因地区、具体案情、裁判尺度等因素产生差异。维权方案的具体选择和实施，请务必与您的执业律师充分讨论后决定。报告中引用的法条请以官方公布的最新文本为准。金额估算为基于法律规定的推算，实际获得金额可能因证据强弱、裁判倾向等因素而上下浮动。
+</footer>
+
+</div>
+</body>
+</html>

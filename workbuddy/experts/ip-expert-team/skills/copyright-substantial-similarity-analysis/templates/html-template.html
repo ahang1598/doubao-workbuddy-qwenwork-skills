@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><!-- CONTENT_SLOT:PAGE_TITLE --></title>
+<!--
+  copyright-substantial-similarity v3.0.0
+  HTML 输出自包含模板 — 纯内联+Richee组件（遵循html-spec.md §1.3范式唯一性条款）
+  格式严肃度：C-Professional | 样式策略：纯内联+Richee组件
+  LLM 职责：仅填充 <!-- CONTENT_SLOT:xxx --> 占位符
+  LLM 禁止：修改 <style>/<script> 内任何代码、自由发挥 HTML 布局、在CONTENT_SLOT中创建<style>、使用"鉴定"字眼
+
+  设计原则：
+  1. C-Professional 客户/律师交付级 —— Richee Design Token 视觉体系
+  2. 纯内联+Richee组件 —— CONTENT_SLOT纯内联style="..."，<style>块仅保留§1.2例外
+  3. 七大输出模块 —— 案件概况+独创性剥离+逐层比对+接触评估+综合结论+抗辩预判+降级说明
+  4. Richee 组件引用 —— c01基础表格/c04证据目录/c05风险清单/c06结论卡/c09时间轴/c12风险矩阵/c15证据链
+
+  版本标识：data-template-version="3.0.0"
+  视觉权威来源：base/rule/format-html/core/design-tokens.md
+-->
+<style>
+/*
+ * copyright-substantial-similarity v3.0.0
+ * <style> 块 — 仅包含 html-spec.md §1.2 例外规则
+ *
+ * ⚠️ 此 <style> 块仅含 @page / @page:first / @media print / @media screen / 页码计数器 / Mermaid 初始化。
+ * LLM 禁止在此块中添加任何元素级CSS class定义。
+ */
+
+/* 页码计数器 */
+body { counter-reset: page-counter; }
+.page-break { page-break-before: always; counter-increment: page-counter; }
+.page-number::after { content: counter(page-counter); }
+
+/* 打印页面规则 — C-Professional */
+@page { size: A4 portrait; margin: 2.5cm 2.6cm 2.0cm 2.8cm; }
+
+/* 首页页眉页脚清空 */
+@page :first {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+/* 屏幕预览样式 */
+@media screen {
+  body {
+    background: #f6f7f9;
+    padding: 0;
+  }
+}
+
+/* 打印适配 */
+@media print {
+  .side-nav { display: none !important; }
+  .toolbar { display: none !important; }
+  .no-print { display: none !important; }
+  .screen-only { display: none !important; }
+  .source-section { display: none !important; }
+
+  body {
+    font-family: 'PingFang SC', 'Inter', -apple-system, sans-serif;
+    font-size: 12pt;
+    line-height: 1.8;
+    color: #0a0d12;
+    margin: 0;
+    padding: 0;
+    background: #fff !important;
+  }
+
+  .main-content { margin-left: 0 !important; }
+
+  /* 确保表格表头和行级着色打印 */
+  table thead, table th, table tr, table td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 折叠区打印时展开 */
+  details { display: block !important; }
+  details > div { display: block !important; }
+
+  .page-break-before { page-break-before: always; }
+
+  /* Mermaid 图表打印时隐藏 */
+  .mermaid-wrap { display: none !important; }
+  .print-table { display: block !important; }
+
+  .template-version-watermark { opacity: 0.4; }
+
+  /* 页码打印显示 */
+  .page-footer { display: block !important; }
+}
+</style>
+</head>
+<body style="margin:0;padding:0;font-family:'PingFang SC','Inter',-apple-system,sans-serif;font-size:12pt;line-height:1.8;color:#0a0d12;background:#fff;-webkit-font-smoothing:antialiased;">
+
+<!-- 侧栏导航 -->
+<nav class="side-nav" style="position:fixed;left:0;top:0;width:240px;height:100vh;overflow-y:auto;background:#f6f7f9;border-right:1px solid #e2e5ea;padding:16px 0;font-size:11pt;z-index:100;">
+  <div style="padding:8px 16px;font-weight:bold;color:#0a0d12;font-size:13pt;border-bottom:1px solid #e2e5ea;margin-bottom:8px;">相似性分析导航</div>
+  <a href="#overview" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">案件概况</a>
+  <a href="#module-1" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">一、独创性剥离对比</a>
+  <a href="#module-2" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">二、逐层比对结果</a>
+  <a href="#module-3" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">三、接触可能性评估</a>
+  <a href="#module-4" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">四、综合分析结论</a>
+  <a href="#module-5" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">五、被告抗辩预判</a>
+  <a href="#downgrade" style="display:block;padding:6px 16px;color:#6b7280;text-decoration:none;border-left:3px solid transparent;">降级说明</a>
+  <div style="padding:6px 16px;border-top:1px solid #e2e5ea;margin-top:8px;"></div>
+  <a href="#disclaimer" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">免责声明</a>
+</nav>
+
+<!-- 主内容区 -->
+<div class="main-content" style="margin-left:256px;padding:24px 32px;">
+
+  <!-- 工具栏 -->
+  <div class="toolbar no-print" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-bottom:20px;border-bottom:1px solid #e2e5ea;font-size:12px;color:#6b7280;">
+    <span>copyright-substantial-similarity v3.0.0 | <!-- CONTENT_SLOT:GENERATED_AT --></span>
+    <span>
+      <button class="toolbar-btn" style="padding:3px 10px;border:1px solid #e2e5ea;background:#fff;color:#6b7280;cursor:pointer;font-size:11pt;font-family:inherit;margin-left:8px;" onclick="toggleAllDetails()">展开/折叠高级模块</button>
+      <button class="toolbar-btn" style="padding:3px 10px;border:1px solid #e2e5ea;background:#fff;color:#6b7280;cursor:pointer;font-size:11pt;font-family:inherit;margin-left:8px;" onclick="window.print()">打印/PDF</button>
+    </span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 0: 页面标题区
+     ════════════════════════════════════════ -->
+  <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0a0d12;">
+    <h1 style="font-size:20px;font-weight:700;color:#0a0d12;margin:0 0 6px 0;line-height:1.35;"><!-- CONTENT_SLOT:PAGE_TITLE --></h1>
+    <p style="font-size:13px;color:#6b7280;margin:0 0 8px 0;"><!-- CONTENT_SLOT:SUBTITLE --></p>
+    <p style="font-size:12px;color:#6b7280;margin:0;"><!-- CONTENT_SLOT:PAGE_META --></p>
+  </div>
+
+  <!-- 三层剥离图例 + 三性分类图例 -->
+  <div class="no-print" style="margin:8px 0 16px 0;padding:8px 12px;background:#f6f7f9;border:1px solid #e2e5ea;font-size:10pt;color:#6b7280;border-radius:4px;line-height:1.8;">
+    <strong style="color:#0a0d12;">独创性三层剥离图例：</strong>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#ecfdf3;color:#039855;">🟢 公共领域（排除）</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fffaeb;color:#b54708;">🟡 Scenes à faire（排除）</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fef3f2;color:#d92d20;">🔴 独创性表达（纳入比对）</span>
+    <br>
+    <strong style="color:#0a0d12;">相似点三性分类图例：</strong>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#f6f7f9;color:#6b7280;">共通表达 ⭐⭐（证明力弱）</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fffaeb;color:#b54708;">共同选择 ⭐⭐⭐（证明力中）</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fef3f2;color:#d92d20;">共同错误 ⭐⭐⭐⭐⭐（证明力极强）</span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 1: 案件概况
+     ════════════════════════════════════════ -->
+  <section id="overview">
+  <!-- CONTENT_SLOT:CASE_OVERVIEW -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 2: 模块一 — 独创性剥离对比清单
+     ════════════════════════════════════════ -->
+  <section id="module-1">
+  <!-- CONTENT_SLOT:MODULE_1 -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 3: 模块二 — 逐层比对结果（含整体观感锚定+三性分类+错误复制）
+     ════════════════════════════════════════ -->
+  <section id="module-2">
+  <!-- CONTENT_SLOT:MODULE_2 -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 4: 模块三 — 接触可能性评估（因果链四阶）
+     ════════════════════════════════════════ -->
+  <section id="module-3">
+  <!-- CONTENT_SLOT:MODULE_3 -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 5: 模块四 — 综合分析结论（三阶交互矩阵+分权论证）
+     ════════════════════════════════════════ -->
+  <section id="module-4">
+  <!-- CONTENT_SLOT:MODULE_4 -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 6: 模块五 — 被告抗辩路径预判【新增】
+     ════════════════════════════════════════ -->
+  <section id="module-5">
+  <!-- CONTENT_SLOT:MODULE_5 -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 7: 降级说明（如适用）
+     ════════════════════════════════════════ -->
+  <section id="downgrade">
+  <!-- CONTENT_SLOT:DOWNGRADE_NOTE -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     免责声明（固定内容，始终输出）
+     ════════════════════════════════════════ -->
+  <div id="disclaimer" style="margin-top:28px;padding:12px 16px;background:#fef3f2;border-left:3px solid #d92d20;font-size:11pt;color:#6b7280;line-height:1.5;">
+    <strong style="color:#0a0d12;">免责声明</strong><br>
+    本实质性相似分析报告为<strong>L2 中风险级</strong>产物，基于用户提供信息生成，仅供参考，不构成法律意见。<br>
+    相似性评估和接触可能性判断供律师参考，不替代律师独立判断。最终侵权认定需由法院综合全案证据作出判断。<br>
+    本报告为技术性比对分析，不构成司法鉴定意见。如需提交法院或作为诉讼依据，须由律师审核内容并核实所有标注信息。被告仍可提出合理使用抗辩（著作权法第24条），不在本报告分析范围内。
+  </div>
+
+  <!-- 页脚（CSS计数器自动页码，打印时显示） -->
+  <div class="page-footer screen-only" style="display:none;text-align:center;font-family:'PingFang SC','Inter',-apple-system,sans-serif;font-size:10.5pt;color:#6b7280;margin-top:2em;">
+    第 <span class="page-number"></span> 页
+  </div>
+
+  <!-- 版本水印 -->
+  <div class="template-version-watermark" style="font-size:9px;color:#6b7280;text-align:right;margin-top:16px;opacity:0.6;">
+    template: copyright-substantial-similarity v3.0.0 | generated: <!-- CONTENT_SLOT:GENERATED_AT --> | C-Professional + Richee Design Token
+  </div>
+
+</div><!-- .main-content -->
+
+<!-- Mermaid.js CDN + 侧栏导航高亮脚本 -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+/* Mermaid 初始化 */
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#eff8ff',
+    primaryTextColor: '#0a0d12',
+    primaryBorderColor: '#e2e5ea',
+    lineColor: '#6b7280',
+    fontSize: '12px'
+  }
+});
+
+/* Mermaid 渲染错误处理 */
+mermaid.parseError = function(err, hash) {
+  var containers = document.querySelectorAll('.mermaid-wrap');
+  containers.forEach(function(container) {
+    var errorDiv = container.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('mermaid-error')) {
+      errorDiv.style.display = 'block';
+    }
+  });
+  console.error('Mermaid 渲染错误:', err);
+};
+
+/* 渲染完成后检测 */
+window.addEventListener('load', function() {
+  var mermaidDivs = document.querySelectorAll('.mermaid');
+  mermaidDivs.forEach(function(div) {
+    if (div.querySelector('svg') === null && div.textContent.trim().length > 0) {
+      var errorDiv = div.parentElement.querySelector('.mermaid-error');
+      if (errorDiv) { errorDiv.style.display = 'block'; }
+    }
+  });
+
+  /* 侧栏导航高亮 */
+  var sections = document.querySelectorAll('section[id], #disclaimer');
+  var navLinks = document.querySelectorAll('.side-nav a');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        navLinks.forEach(function(link) { link.classList.remove('active'); });
+        var activeLink = document.querySelector('.side-nav a[href="#' + entry.target.id + '"]');
+        if (activeLink) {
+          activeLink.style.background = '#eff8ff';
+          activeLink.style.borderLeftColor = '#0a0d12';
+          activeLink.style.color = '#0a0d12';
+          activeLink.style.fontWeight = 'bold';
+        }
+        navLinks.forEach(function(link) {
+          if (link !== activeLink) {
+            link.style.background = '';
+            link.style.borderLeftColor = 'transparent';
+            link.style.color = '';
+            link.style.fontWeight = '';
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(function(section) { observer.observe(section); });
+});
+
+/* 折叠/展开高级模块 */
+function toggleAllDetails() {
+  var details = document.querySelectorAll('details');
+  var allOpen = true;
+  details.forEach(function(d) { if (!d.open) allOpen = false; });
+  details.forEach(function(d) { d.open = !allOpen; });
+}
+</script>
+
+<!-- 禁用 JavaScript 时的降级提示 -->
+<noscript>
+  <div style="padding:16px;background:#fef3f2;border:1px solid #fecdca;margin:12px 0;font-size:13px;color:#b42318;">
+    <strong>图表无法渲染：</strong>您的浏览器未启用 JavaScript。
+    Mermaid 接触传播链图需要 JavaScript 才能渲染。请启用 JavaScript 后刷新页面，
+    或展开"查看 Mermaid 源码"区域，复制代码到 <a href="https://mermaid.live" target="_blank">mermaid.live</a> 在线渲染。
+  </div>
+</noscript>
+
+</body>
+</html>

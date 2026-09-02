@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=210mm">
+<title>{{ meta.title | default('报告') }}</title>
+<style>
+/* ---- 1. 基础样式（shared pdf runtime style_guide.css） ---- */
+{{ base_css | safe }}
+
+/* ---- 2. 业务 Skill 覆盖样式 ---- */
+{{ override_css | default('') | safe }}
+
+/* ---- 3. 由 palette.json 注入的 CSS 变量覆盖 ---- */
+/* 注意：palette.json 用下划线命名（如 primary_light），但 style_guide.css
+        的所有 var() 调用用中划线（如 --primary-light）。这里把下划线统一
+        转为中划线，确保 palette 真正覆盖 style_guide.css 的默认值。
+        同时保留原名（方便用下划线消费方兼容）。修复于 2026-04-29。 */
+:root {
+{% for key, val in palette.items() %}
+    {%- if val is string and (val.startswith('#') or val.startswith('rgb') or val.startswith('hsl')) %}
+    --{{ key | replace('_', '-') }}: {{ val }};
+    --{{ key }}: {{ val }};
+    {%- endif %}
+{% endfor %}
+}
+</style>
+</head>
+<body>
+
+{# ============================================================
+   第 1 节 · 封面
+   ============================================================ #}
+<section class="cover">
+    <div class="cover-hero">
+        {% if logo_base64 %}
+        <img class="cover-logo-big" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% else %}
+        <span style="font-size:28pt; font-weight:700; color:var(--primary); font-family:'STSongti-SC-Bold','Noto Serif SC','SimSun',serif;">{{ meta.base_bank | default('基准行') }}</span>
+        {% endif %}
+    </div>
+
+    <div class="cover-title-block">
+        {% if meta.kicker %}
+        <div class="tag">{{ meta.kicker }}</div>
+        {% endif %}
+        <h1 class="cover-title">{{ meta.title | default('报告') }}</h1>
+        <p class="cover-subtitle">{{ meta.subtitle | default('') }}</p>
+    </div>
+
+    <div class="cover-meta">
+        {% for item in meta.cover_meta | default([]) %}
+        <div><span class="label">{{ item.label }}</span>{{ item.value }}</div>
+        {% endfor %}
+    </div>
+</section>
+
+{# ============================================================
+   第 2 节 · 目录
+   ============================================================ #}
+<section class="page forced toc">
+    <div class="toc">
+        <h2>目 录</h2>
+        {% for num, title, page in toc_items | default([]) %}
+        <div class="toc-item">
+            <span class="toc-num">{{ num }}</span>
+            <span class="toc-title">{{ title }}</span>
+            <span class="toc-dots"></span>
+            <span class="toc-page">{{ page }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{# ============================================================
+   第 3 节起 · 内容页（由业务 Skill 覆盖）
+   ============================================================ #}
+{% block content %}{% endblock %}
+
+{# ============================================================
+   收尾 · 免责声明（可覆盖）
+   ============================================================ #}
+{% block disclaimer %}
+<section class="page content">
+    <div class="disclaimer">
+        本报告仅作研究参考，不构成任何投资建议
+    </div>
+</section>
+{% endblock %}
+
+</body>
+</html>

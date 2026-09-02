@@ -1,0 +1,142 @@
+{
+  "agentName": "antibody-structure-optimization-team-team-lead",
+  "agents": [
+    "./agents/antibody-structure-optimization-team-team-lead.md",
+    "./agents/iggm-protenix-msa-expert.md",
+    "./agents/iggm-boltz-msa-expert.md",
+    "./agents/iggm-protenix-expert.md"
+  ],
+  "author": {
+    "email": "omics@tencent.com",
+    "name": "Tencent Health Omics Team"
+  },
+  "avatar": "avatars/tencent-antibody-drug-design-team.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": {
+    "en": "Help me design antibodies for this target",
+    "zh": "帮我针对这个靶点设计一批抗体"
+  },
+  "description": "Focus on antibody drug design and structure optimization, coordinating IgGM, Protenix or Boltz for candidate generation, structure prediction and ranking.",
+  "displayDescription": {
+    "en": "Focus on antibody drug design and structure optimization, coordinating IgGM, Protenix or Boltz for candidate generation, structure prediction and ranking.",
+    "zh": "专注抗体药物设计与结构优选，协同IgGM、Protenix或Boltz完成候选生成、结构预测与排序。"
+  },
+  "displayName": {
+    "en": "omics-expert-team",
+    "zh": "组小学"
+  },
+  "expertType": "team",
+  "members": [
+    {
+      "avatar": "avatars/tencent-antibody-drug-design-team-team-lead.png",
+      "displayName": {
+        "en": "omics-expert-team",
+        "zh": "组小学"
+      },
+      "id": "antibody-structure-optimization-team-team-lead",
+      "name": {
+        "en": "Tencent Antibody Drug Design and Structure Optimization Expert Team",
+        "zh": "腾讯抗体药物设计与结构优选专家团"
+      },
+      "profession": {
+        "en": "Tencent Antibody Drug Design and Structure Optimization Expert Team",
+        "zh": "腾讯抗体药物设计与结构优选专家团"
+      },
+      "role": "lead"
+    },
+    {
+      "avatar": "avatars/iggm-protenix-msa-expert.png",
+      "displayName": {
+        "en": "omics-expert-team",
+        "zh": "组小学"
+      },
+      "id": "iggm-protenix-msa-expert",
+      "name": {
+        "en": "Tencent Antibody Design Expert (IgGM·Protenix·MSA)",
+        "zh": "腾讯抗体设计专家（IgGM·Protenix·MSA）"
+      },
+      "profession": {
+        "en": "Tencent Antibody Design Expert (IgGM·Protenix·MSA)",
+        "zh": "腾讯抗体设计专家（IgGM·Protenix·MSA）"
+      },
+      "role": "member"
+    },
+    {
+      "avatar": "avatars/iggm-boltz-msa-expert.png",
+      "displayName": {
+        "en": "omics-expert-team",
+        "zh": "组小学"
+      },
+      "id": "iggm-boltz-msa-expert",
+      "name": {
+        "en": "Tencent Antibody Design Expert (IgGM·Boltz·MSA)",
+        "zh": "腾讯抗体设计专家（IgGM·Boltz·MSA）"
+      },
+      "profession": {
+        "en": "Tencent Antibody Design Expert (IgGM·Boltz·MSA)",
+        "zh": "腾讯抗体设计专家（IgGM·Boltz·MSA）"
+      },
+      "role": "member"
+    },
+    {
+      "avatar": "avatars/iggm-protenix-expert.png",
+      "displayName": {
+        "en": "omics-expert-team",
+        "zh": "组小学"
+      },
+      "id": "iggm-protenix-expert",
+      "name": {
+        "en": "Tencent Antibody Design Expert (MSA-Free·IgGM·Protenix)",
+        "zh": "腾讯抗体设计专家（免MSA·IgGM·Protenix）"
+      },
+      "profession": {
+        "en": "Tencent Antibody Design Expert (MSA-Free·IgGM·Protenix)",
+        "zh": "腾讯抗体设计专家（免MSA·IgGM·Protenix）"
+      },
+      "role": "member"
+    }
+  ],
+  "name": "antibody-structure-opt-team",
+  "plugin": "antibody-structure-opt-team",
+  "profession": {
+    "en": "Tencent Antibody Drug Design and Structure Optimization Expert Team",
+    "zh": "腾讯抗体药物设计与结构优选专家团"
+  },
+  "quickPrompts": [
+    {
+      "en": "Help me design antibodies for this target",
+      "zh": "帮我针对这个靶点设计一批抗体"
+    },
+    {
+      "en": "Perform affinity maturation based on this parent antibody",
+      "zh": "基于这条母本抗体做亲和力成熟"
+    },
+    {
+      "en": "Help me screen for better antibody candidate structures",
+      "zh": "帮我筛选结构更好的抗体候选"
+    }
+  ],
+  "tags": [
+    {
+      "en": "Target-Oriented Antibody \u0026 Nanobody De Novo Design",
+      "zh": "靶点导向的抗体与纳米抗体从头设计"
+    },
+    {
+      "en": "CDR Redesign, Humanization \u0026 Affinity Maturation",
+      "zh": "CDR重设计、人源化与亲和力成熟"
+    },
+    {
+      "en": "MSA-Enhanced Antibody-Antigen Complex Structure Prediction",
+      "zh": "MSA增强的抗体—抗原复合物结构预测"
+    }
+  ],
+  "teamInfo": {
+    "leadAgent": "antibody-structure-optimization-team-team-lead",
+    "memberAgents": [
+      "iggm-protenix-msa-expert",
+      "iggm-boltz-msa-expert",
+      "iggm-protenix-expert"
+    ]
+  },
+  "version": "1.0.3"
+}

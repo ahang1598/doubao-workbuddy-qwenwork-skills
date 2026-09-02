@@ -1,0 +1,14 @@
+{
+  "name": "破产案件组合管理",
+  "name_en": "bankruptcy-case-portfolio-management",
+  "description": "管理破产管理人手中多案件工作空间——新建破产案件时初始化标准化目录结构，维护多案件索引台账、跨案期限看板、进度跟踪和履职汇总，支持增量更新。触发：初始化破产案件/管理破产案件/破产案件台账/破产期限看板/破产进度跟踪/破产履职汇总/补充破产案件材料/更新破产案件状态。不触发：单案债权审查/资产追踪/分配计算——调用破产业务专家团子代理；非破产案件整理——调用对应案件整理技能。",
+  "version": "1.1.0",
+  "blueprint": "bp-fact-evidence-organization-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-07-21",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-content"
+}

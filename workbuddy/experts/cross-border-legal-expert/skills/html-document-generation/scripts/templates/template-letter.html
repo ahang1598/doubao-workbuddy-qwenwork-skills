@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="$lang$" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>$title$</title>
+$for(header-includes)$
+$header-includes$
+$endfor$
+</head>
+<body>
+
+<main class="layout single">
+  <article class="content">
+
+    <!-- 函件头 -->
+    <div class="letter-header">
+      $if(report-no)$<div class="doc-no">$report-no$</div>$endif$
+      <h1>$title$</h1>
+    </div>
+
+    <!-- 收件人 -->
+    <div class="letter-recipient">
+      <strong>致：$if(addressee)$$addressee$$else$——$endif$</strong>
+      $if(cc)$<br>抄送：$cc$$endif$
+    </div>
+
+    <!-- 正文 -->
+    <div class="letter-body">
+      $body$
+    </div>
+
+    <!-- 落款 -->
+    <div class="letter-signoff">
+      $if(firm)$<div class="firm">$firm$</div>$endif$
+      $if(date)$<div class="date">$date$</div>$endif$
+    </div>
+
+    $if(disclaimer)$
+    <div class="disclaimer" style="margin-top:32px"><strong>免责声明</strong>
+      <ol><li>本函仅供参考，不构成正式法律意见。</li></ol></div>
+    $endif$
+
+  </article>
+</main>
+
+</body>
+</html>

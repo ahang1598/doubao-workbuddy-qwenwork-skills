@@ -1,0 +1,118 @@
+{
+  "name": "ip-expert-team",
+  "version": "1.0.0",
+  "description": "Intellectual property expert team covering trademark registration, trademark enforcement strategy, trademark litigation, patent analysis and copyright infringement analysis under PRC IP law.",
+  "author": {
+    "name": "RicheeAI",
+    "email": "legal@richeeai.com"
+  },
+  "agents": [
+    "./agents/ip-team-lead.md",
+    "./agents/trademark-registration-advisor.md",
+    "./agents/trademark-enforcement-strategist.md",
+    "./agents/trademark-litigation-specialist.md",
+    "./agents/patent-analysis-specialist.md",
+    "./agents/copyright-analysis-specialist.md"
+  ],
+  "skills": [
+    "./skills/copyright-substantial-similarity-analysis",
+    "./skills/patent-analysis",
+    "./skills/tm-infringement-cross-exam",
+    "./skills/tm-infringement-strategy",
+    "./skills/tm-infringement-trial-prep",
+    "./skills/trademark-assistant",
+    "./skills/trademark-infringement-compensation-calculation",
+    "./skills/trademark-infringement-evidence-checklist-generator"
+  ],
+
+  "dependencies": {
+    "mcpServers": "./.mcp.json"
+  },
+
+  "expertType": "team",
+  "agentName": "ip-team-lead",
+  "teamInfo": {
+    "leadAgent": "ip-team-lead",
+    "memberAgents": [
+      "trademark-registration-advisor",
+      "trademark-enforcement-strategist",
+      "trademark-litigation-specialist",
+      "patent-analysis-specialist",
+      "copyright-analysis-specialist"
+    ]
+  },
+
+  "displayName": {
+    "en": "Intellectual Property Expert developed by Fadada·Richee",
+    "zh": "法大大·睿契提供的知识产权专家"
+  },
+  "profession": {
+    "en": "Intellectual Property Expert",
+    "zh": "知识产权专家团"
+  },
+  "displayDescription": {
+    "en": "[Fadada·Richee]IP team dispatching trademark registration, enforcement strategy, litigation support, patent analysis and copyright infringement analysis across the full IP lifecycle.",
+    "zh": "【法大大·睿契】面向知识产权律师，按领域调度商标注册、商标维权、商标诉讼、专利分析与著作权侵权分析，覆盖知产全流程。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "zh": "帮我的商标做个可注册性初筛和类别规划",
+    "en": "Help me do a registrability screening and class planning for my trademark"
+  },
+  "plugin": "ip-expert-team",
+  "tags": [
+    { "en": "Trademark Enforcement", "zh": "商标维权" },
+    { "en": "Patent Analysis", "zh": "专利分析" },
+    { "en": "Copyright Infringement", "zh": "著作权侵权" }
+  ],
+  "quickPrompts": [
+    { "en": "Help me do a registrability screening and class planning for my trademark", "zh": "帮我的商标做个可注册性初筛和类别规划" },
+    { "en": "Analyze the protection scope and infringement risk of this patent", "zh": "分析这个专利的保护范围和侵权风险" },
+    { "en": "Develop a trademark infringement litigation strategy and calculate compensation", "zh": "制定商标侵权诉讼策略并测算赔偿金额" }
+  ],
+  "members": [
+    {
+      "id": "ip-team-lead",
+      "name": { "en": "Quan", "zh": "权秉衡" },
+      "profession": { "en": "Chief IP Coordinator", "zh": "首席知识产权调度官" },
+      "avatar": "avatars/ip-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "trademark-registration-advisor",
+      "name": { "en": "Shen", "zh": "申可成" },
+      "profession": { "en": "Trademark Registration Advisor", "zh": "商标注册申请顾问" },
+      "avatar": "avatars/trademark-registration-advisor.png",
+      "role": "member"
+    },
+    {
+      "id": "trademark-enforcement-strategist",
+      "name": { "en": "Ce", "zh": "策守真" },
+      "profession": { "en": "Trademark Enforcement Strategist", "zh": "商标维权策略师" },
+      "avatar": "avatars/trademark-enforcement-strategist.png",
+      "role": "member"
+    },
+    {
+      "id": "trademark-litigation-specialist",
+      "name": { "en": "Zhi", "zh": "质庭锋" },
+      "profession": { "en": "Trademark Litigation Specialist", "zh": "商标诉讼庭审专员" },
+      "avatar": "avatars/trademark-litigation-specialist.png",
+      "role": "member"
+    },
+    {
+      "id": "patent-analysis-specialist",
+      "name": { "en": "Zhen", "zh": "甄利达" },
+      "profession": { "en": "Patent Analysis Specialist", "zh": "专利分析分析师" },
+      "avatar": "avatars/patent-analysis-specialist.png",
+      "role": "member"
+    },
+    {
+      "id": "copyright-analysis-specialist",
+      "name": { "en": "Zhu", "zh": "著鉴清" },
+      "profession": { "en": "Copyright Infringement Analyst", "zh": "著作权侵权分析师" },
+      "avatar": "avatars/copyright-analysis-specialist.png",
+      "role": "member"
+    }
+  ]
+}

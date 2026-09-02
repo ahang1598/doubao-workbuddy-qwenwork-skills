@@ -1,0 +1,383 @@
+{% extends "base_template.html" %}
+
+{# 统一的页眉 LOGO 渲染宏：优先用 logo_base64，否则显示基准行文字标 #}
+{% macro header_logo() -%}
+{% if logo_base64 %}
+<img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="LOGO"/>
+{% else %}
+<span class="logo-small-text" style="display:inline-block; height:26px; line-height:26px; padding:0 10px; background:var(--primary); color:#fff; font-weight:700; font-size:11pt; letter-spacing:1px; border-radius:3px; font-family:'STSongti-SC-Bold','Noto Serif SC','SimSun',serif;">{{ ctx.meta.base_bank | default('基准行') }}</span>
+{% endif %}
+{%- endmacro %}
+
+{% block content %}
+{# ========================================================================
+   3. Executive Summary
+   ======================================================================== #}
+<section class="page content first-content">
+  <div class="page-header">
+    {{ header_logo() }}
+    <div class="header-text">执行摘要 · {{ ctx.meta.title }}</div>
+  </div>
+
+  <h2 class="section-title">执行摘要</h2>
+
+  <p class="muted" style="margin-bottom:3mm">本报告基于 Skill 1 标准指标与 Skill 2 文字指标，
+  为头部股份制银行 2024/2025 两期建立对标数据库，按 5 维度矩阵展开同业比较，
+  以 <b>{{ ctx.meta.base_bank }}</b> 为基准行，输出 {{ ctx.ranking.metrics | length }} 项排名追踪与差距变化预警。</p>
+
+  <div class="kpi-row skill4-kpi">
+    {% for k in ctx.kpi_cards %}
+    <div class="kpi-card">
+      <div class="label">{{ k.label }}</div>
+      <div class="value">{{ k.value }}{% if k.unit and k.unit != '—' %}<span class="unit">{{ k.unit }}</span>{% endif %}</div>
+      <div class="yoy">同比 {{ k.yoy }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="executive-summary">
+    <h3>核心结论（{{ ctx.executive_summary | length }} 条）</h3>
+    <ol>
+      {% for s in ctx.executive_summary %}
+      <li>{{ s | safe }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+
+  <div class="two-col" style="margin-top:4mm">
+    <div class="col-card win">
+      <h4>★ 正向信号 · {{ ctx.ranking.positive_signals | length }} 条</h4>
+      {% if ctx.ranking.positive_signals %}
+      <ul style="margin:0;padding-left:5mm;font-size:8.5pt;line-height:1.7">
+        {% for s in ctx.ranking.positive_signals %}
+        <li>{{ s | rich_text }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">本期暂无"差距缩小 / 领先扩大"的显著信号；多数指标受口径披露差异限制，
+      同业可比窗口较窄，详见第五部分逐指标排名。</p>
+      {% endif %}
+    </div>
+    <div class="col-card gap">
+      <h4>⚠️ 负向信号 · {{ ctx.ranking.negative_signals | length }} 条</h4>
+      {% if ctx.ranking.negative_signals %}
+      <ul style="margin:0;padding-left:5mm;font-size:8.5pt;line-height:1.7">
+        {% for s in ctx.ranking.negative_signals %}
+        <li>{{ s | rich_text }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">本期暂无"差距扩大 / 领先收窄"的显著信号；整体排名变化平稳，
+      详见第五部分逐指标排名与前后名差距分析。</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+
+{# ========================================================================
+   4-7. 维度一 ~ 维度四（统一渲染宏）
+   ======================================================================== #}
+{% macro render_dimension(dim, part_no, part_label) %}
+<section class="page content dimension-block">
+  <div class="page-header">
+    {{ header_logo() }}
+    <div class="header-text">{{ part_label }} · {{ ctx.meta.title }}</div>
+  </div>
+
+  <h2 class="section-title">{{ part_label }} · {{ dim.title }}</h2>
+
+  {% if dim.qualitative.formulas %}
+  <div class="formula-list">
+    <h4>计算公式</h4>
+    <ul>
+      {% for f in dim.qualitative.formulas %}
+      <li>{{ f | safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if dim.qualitative.opex_risk_text %}
+  <div class="insight-card risk opex-risk">
+    <h4>⚠️ 关键口径风险</h4>
+    <p>{{ dim.qualitative.opex_risk_text | safe }}</p>
+  </div>
+  {% endif %}
+
+  <h3 class="subsection-title">{{ dim.rows_2025 | length }} 家银行 2025 年横截面</h3>
+  <table class="landscape-table">
+    <thead>
+      <tr>
+        <th style="width:18%">银行</th>
+        {% for col in dim.columns %}
+        <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in dim.rows_2025 %}
+      <tr {% if row.is_base %}class="row-highlight"{% endif %}>
+        <td class="strong-col">{{ row.bank }}{% if row.is_base %} <span class="accent">★</span>{% endif %}</td>
+        {% for col in dim.columns %}
+          {% set val = row[dim.col_keys[loop.index0]] %}
+          {% if val is none %}
+            <td class="missing" style="text-align:center">—</td>
+          {% elif '(%)' in col %}
+            <td style="text-align:right">{{ "%.2f"|format(val) }}%</td>
+          {% elif '(pp)' in col %}
+            <td style="text-align:right">{{ "%.2f"|format(val) }}pp</td>
+          {% else %}
+            <td style="text-align:right">{{ "{:,.2f}".format(val) }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if dim.yoy_changes %}
+  <div class="yoy-list">
+    <h4>2025 vs 2024 同比变化（按"{{ dim.yoy_label }}"）</h4>
+    <ul>
+      {% for c in dim.yoy_changes %}
+      <li {% if c.is_base %}class="base-row"{% endif %}>
+        {{ c.bank }}{% if c.is_base %} ★{% endif %}：
+        {% if c.missing %}
+          数据不完整（2024 = {% if c.v_2024_raw is none %}—{% else %}{{ c.v_2024_raw }}{% endif %}，2025 = {% if c.v_2025_raw is none %}—{% else %}{{ c.v_2025_raw }}{% endif %}）
+        {% elif '(%)' in dim.yoy_field %}
+          {{ "%.2f"|format(c.v_2025) }}% ← 2024 {{ "%.2f"|format(c.v_2024) }}% · 变化 {{ c.change_str }}
+        {% elif '(pp)' in dim.yoy_field %}
+          {{ "%.2f"|format(c.v_2025) }}pp ← 2024 {{ "%.2f"|format(c.v_2024) }}pp · 变化 {{ c.change_str }}
+        {% else %}
+          {{ "{:,}".format(c.v_2025 | int) }} ← 2024 {{ "{:,}".format(c.v_2024 | int) }} · 变化 {{ c.change_str }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if dim.qualitative.calibration_notes %}
+  <div class="callout-box">
+    <h4 style="margin:0 0 1.5mm 0;color:var(--accent);font-size:9pt">口径提示</h4>
+    <ul>
+      {% for n in dim.qualitative.calibration_notes %}
+      <li>{{ n | safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if dim.qualitative.key_observations %}
+  <div class="callout-box" style="border-left-color:var(--risk-red)">
+    <h4 style="margin:0 0 1.5mm 0;color:var(--risk-red);font-size:9pt">关键观察</h4>
+    <ul>
+      {% for n in dim.qualitative.key_observations %}
+      <li>{{ n | safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if dim.qualitative.structural_observations %}
+  <div class="callout-box" style="border-left-color:var(--efficiency-blue)">
+    <h4 style="margin:0 0 1.5mm 0;color:var(--efficiency-blue);font-size:9pt">结构性观察</h4>
+    <ul>
+      {% for n in dim.qualitative.structural_observations %}
+      <li>{{ n | safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</section>
+{% endmacro %}
+
+{{ render_dimension(ctx.dimensions.revenue, "ONE",   "第一部分") }}
+{{ render_dimension(ctx.dimensions.credit,  "TWO",   "第二部分") }}
+{{ render_dimension(ctx.dimensions.opex,    "THREE", "第三部分") }}
+{{ render_dimension(ctx.dimensions.spread,  "FOUR",  "第四部分") }}
+
+
+{# ========================================================================
+   8. 第五部分：维度五 - 同业排名与变化追踪
+   ======================================================================== #}
+<section class="page content">
+  <div class="page-header">
+    {{ header_logo() }}
+    <div class="header-text">第五部分 · 同业排名 · {{ ctx.meta.title }}</div>
+  </div>
+
+  <h2 class="section-title">第五部分 · 同业排名与变化追踪（{{ ctx.meta.base_bank }}视角）</h2>
+
+  <p class="muted" style="margin-bottom:3mm">在 7 家可比银行内，对每个指标计算 2024/2025 排名，
+  并追踪 {{ ctx.meta.base_bank }} 与前一名差距、对后一名领先的变化方向。
+  <span class="tag positive">★ 差距缩小 / 领先扩大</span>
+  <span class="tag negative">⚠️ 差距扩大 / 领先收窄</span>
+  <span class="tag neutral">— 无变化或不可比</span></p>
+
+  {% for m in ctx.ranking.metrics %}
+  <div class="ranking-block">
+    <div class="ranking-head">
+      <span class="metric-name">{{ m.metric }}</span>
+      <span class="direction">{{ m.direction_label }}</span>
+    </div>
+
+    <div class="ranking-yearcols">
+      {% for y in [m.year_2024, m.year_2025] %}
+      <div class="year-block">
+        <div class="year-label">{{ y.year }} 年排名（共 {{ y.n }} 家）</div>
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th class="rank-col">名次</th>
+              <th class="bank-col">银行</th>
+              <th class="value-col">数值</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in y.ranking %}
+            <tr {% if r.is_base %}class="row-highlight"{% endif %}>
+              <td class="rank-col">{{ r.rank }}</td>
+              <td class="bank-col">{{ r.bank }}{% if r.is_base %} ★{% endif %}</td>
+              <td class="value-col">{{ r.value_str }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if y.missing %}
+        <div class="missing-note">未参与排名（数据缺失）：{{ y.missing | join('、') }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="base-change">
+      <span class="label">{{ ctx.meta.base_bank }}同比（2024→2025）：</span>
+      {% if m.base.rank_change is none %}
+        <span class="tag neutral">{{ m.base.rank_change_desc }}</span>
+      {% elif m.base.rank_change > 0 %}
+        <span class="tag rank-up">{{ m.base.rank_change_desc }}</span>
+      {% elif m.base.rank_change < 0 %}
+        <span class="tag rank-down">{{ m.base.rank_change_desc }}</span>
+      {% else %}
+        <span class="tag rank-flat">{{ m.base.rank_change_desc }}</span>
+      {% endif %}
+
+      {% if m.base.v_2024_str != '—' or m.base.v_2025_str != '—' %}
+        <span style="margin-left:2mm">{{ ctx.meta.base_bank }}值：{{ m.base.v_2024_str }} → {{ m.base.v_2025_str }}</span>
+      {% endif %}
+
+      <br/>
+
+      {% if m.base.gap_vs_prev.label != '—' %}
+      <span class="tag {{ m.base.gap_vs_prev.class }}">{{ m.base.gap_vs_prev.label }}</span>
+      与前一名差距：{{ m.base.gap_vs_prev.v_2024_str }} → {{ m.base.gap_vs_prev.v_2025_str }}（{{ m.base.gap_vs_prev.delta_str }}）
+      <br/>
+      {% endif %}
+
+      {% if m.base.lead_vs_next.label != '—' %}
+      <span class="tag {{ m.base.lead_vs_next.class }}">{{ m.base.lead_vs_next.label }}</span>
+      对后一名领先：{{ m.base.lead_vs_next.v_2024_str }} → {{ m.base.lead_vs_next.v_2025_str }}（{{ m.base.lead_vs_next.delta_str }}）
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <h3 class="subsection-title">差距变化重点关注</h3>
+  <div class="two-col">
+    <div class="col-card win">
+      <h4>★ 正向信号（差距缩小 / 领先扩大）</h4>
+      {% if ctx.ranking.positive_signals %}
+      <ul style="margin:0;padding-left:5mm;font-size:8.5pt;line-height:1.7">
+        {% for s in ctx.ranking.positive_signals %}
+        <li>{{ s | rich_text }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">无</p>
+      {% endif %}
+    </div>
+    <div class="col-card gap">
+      <h4>⚠️ 负向信号（差距扩大 / 领先收窄 / 排名下滑）</h4>
+      {% if ctx.ranking.negative_signals %}
+      <ul style="margin:0;padding-left:5mm;font-size:8.5pt;line-height:1.7">
+        {% for s in ctx.ranking.negative_signals %}
+        <li>{{ s | rich_text }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">无</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+
+{# ========================================================================
+   9. 第六部分：关键发现（基准行视角）
+   ======================================================================== #}
+<section class="page content">
+  <div class="page-header">
+    {{ header_logo() }}
+    <div class="header-text">第六部分 · 关键发现 · {{ ctx.meta.title }}</div>
+  </div>
+
+  <h2 class="section-title">第六部分 · 关键发现（{{ ctx.meta.base_bank }}视角）</h2>
+
+  <p class="muted" style="margin-bottom:3mm">基于 {{ ctx.ranking.metrics | length }} 项排名指标的 {{ ctx.meta.base_bank }} 表现，按"✓ 进入第一梯队"与"✗ 落入末位梯队"分类。</p>
+
+  <ul class="findings-list">
+    {% for f in ctx.key_findings %}
+      {% if f.startswith('✓') %}
+      <li class="win"><span class="icon">✓</span>{{ f[1:].strip() | rich_text }}</li>
+      {% elif f.startswith('✗') %}
+      <li class="loss"><span class="icon">✗</span>{{ f[1:].strip() | rich_text }}</li>
+      {% else %}
+      <li>{{ f | rich_text }}</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <div class="callout-box" style="margin-top:4mm">
+    <h4 style="margin:0 0 1.5mm 0;color:var(--accent);font-size:9pt">差距变化重点关注</h4>
+    <p style="margin:0;font-size:9pt;line-height:1.7">
+    完整逐指标的"差距 / 领先"变化已在第五部分"同业排名与变化追踪"列出。
+    本节侧重排名梯队归属与趋势变化——读者如需逐指标差距数值，请回到第五部分查询。
+    </p>
+  </div>
+</section>
+
+
+{# ========================================================================
+   10. 报告收尾 · 数据免责声明
+   ======================================================================== #}
+<section class="page content">
+  <div class="page-header">
+    {{ header_logo() }}
+    <div class="header-text">免责声明 · {{ ctx.meta.title }}</div>
+  </div>
+
+  <h2 class="section-title">数据与免责声明</h2>
+
+  <p style="font-size:10.5pt;line-height:1.8;margin:4mm 0;">
+  本报告基准行：<span class="strong">{{ ctx.meta.base_bank }}</span>；
+  对标组：{{ ctx.meta.peers_excl_base | join('、') }}；
+  报告期：{{ ctx.scope.years | join(' / ') }}。
+  </p>
+
+  <p style="font-size:10pt;line-height:1.8;margin:4mm 0;color:var(--text-secondary);">
+  本报告全部指标数据来源于各银行公开披露的定期报告（年度报告 / 半年度报告），
+  由内部数据团队按照统一口径抽取、校准与口径对齐，个别指标（如零售业务分部数据）
+  存在银行间披露口径差异，已在各维度"口径提示"中说明。数据以最新期披露口径为准，
+  过往期差异已追溯更新。
+  </p>
+
+  <div class="disclaimer">
+    本报告由 AI 基于上市银行公开披露信息生成，仅供研究参考，不构成任何投资建议，亦不构成对任何个股的推荐
+  </div>
+</section>
+{% endblock %}
+
+{# 覆盖默认 disclaimer block 为空，避免重复 #}
+{% block disclaimer %}{% endblock %}

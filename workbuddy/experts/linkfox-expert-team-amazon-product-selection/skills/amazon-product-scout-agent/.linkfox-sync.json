@@ -1,0 +1,10 @@
+{
+  "eventId" : "db84e787-7420-4fcf-b5cd-b32dca8df248",
+  "operation" : "UPSERT",
+  "groupId" : "2067496336427061249",
+  "memberId" : "2067496336469004289",
+  "slug" : "amazon-product-scout-agent",
+  "agentId" : "w8B9E4zA5t7gPcSeFVbcVf",
+  "version" : 1785807520289,
+  "syncedAt" : "2026-08-04T01:38:41.225793563Z"
+}

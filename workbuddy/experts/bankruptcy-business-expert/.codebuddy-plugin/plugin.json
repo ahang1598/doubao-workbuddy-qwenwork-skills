@@ -1,0 +1,243 @@
+{
+  "name": "bankruptcy-business-expert",
+  "version": "1.0.0",
+  "description": "Bankruptcy business expert team covering liquidation, reorganization and settlement workflows for bankruptcy administrators and lawyers.",
+  "author": {
+    "name": "Richee",
+    "email": "support@richee.com"
+  },
+  "agents": [
+    "./agents/bankruptcy-team-lead.md",
+    "./agents/member-case-manager.md",
+    "./agents/member-claim-review.md",
+    "./agents/member-asset-tracing.md",
+    "./agents/member-distribution-calc.md",
+    "./agents/member-legal-research.md",
+    "./agents/member-reorg-plan.md",
+    "./agents/member-procedure-support.md",
+    "./agents/member-verification.md",
+    "./agents/member-employee-resettlement.md"
+  ],
+  "skills": [
+    "./skills/bankruptcy-case-portfolio-management",
+    "./skills/bankruptcy-claim-review",
+    "./skills/bankruptcy-asset-investigation",
+    "./skills/bankruptcy-distribution-calc",
+    "./skills/bankruptcy-legal-research",
+    "./skills/bankruptcy-output-verification",
+    "./skills/bankruptcy-reorg-plan-draft",
+    "./skills/bankruptcy-manager-report",
+    "./skills/bankruptcy-creditor-meeting",
+    "./skills/bankruptcy-employee-resettlement",
+    "./skills/word-document-processing",
+    "./skills/excel-generation-editing-tool",
+    "./skills/fadada-special-ocr",
+    "./skills/pdf-processing-toolkit",
+    "./skills/fadada-laws-and-regulations-retrieval",
+    "./skills/fadada-legal-case-search",
+    "./skills/fadada-web-search",
+    "./skills/transaction-flow-analysis",
+    "./skills/civil-procedure-deadline-alert",
+    "./skills/lawyer-practice-risk-dynamic-screening"
+  ],
+  "dependencies": {
+    "connectors": [
+      "fadada-richee"
+    ]
+  },
+  "expertType": "team",
+  "agentName": "bankruptcy-team-lead",
+  "teamInfo": {
+    "leadAgent": "bankruptcy-team-lead",
+    "memberAgents": [
+      "member-case-manager",
+      "member-claim-review",
+      "member-asset-tracing",
+      "member-distribution-calc",
+      "member-legal-research",
+      "member-reorg-plan",
+      "member-procedure-support",
+      "member-verification",
+      "member-employee-resettlement"
+    ]
+  },
+  "displayName": {
+    "en": "Bankruptcy Business Expert developed by Fadada·Richee",
+    "zh": "法大大·睿契提供的破产业务专家"
+  },
+  "profession": {
+    "en": "Bankruptcy Business Expert",
+    "zh": "破产业务专家团"
+  },
+  "displayDescription": {
+    "en": "[Fadada·Richee]A full-process bankruptcy expert team covering liquidation, reorganization and settlement for administrators and bankruptcy lawyers.",
+    "zh": "【法大大·睿契】面向破产管理人和破产律师，覆盖清算、重整与和解全流程的债权审查、资产追收、分配方案与重整计划编制。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "en": "Help me review a batch of creditor claims in a bankruptcy liquidation case.",
+    "zh": "帮我审查一批破产清算案件中的债权申报材料。"
+  },
+  "plugin": "bankruptcy-business-expert",
+  "tags": [
+    {
+      "en": "Bankruptcy",
+      "zh": "破产"
+    },
+    {
+      "en": "Creditor Claims",
+      "zh": "债权审查"
+    },
+    {
+      "en": "Reorganization",
+      "zh": "破产重整"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Help me review a batch of creditor claims in a bankruptcy liquidation case.",
+      "zh": "帮我审查一批破产清算案件中的债权申报材料。"
+    },
+    {
+      "en": "Draft a distribution plan for the bankruptcy estate.",
+      "zh": "帮我编制一份破产财产的分配方案草案。"
+    },
+    {
+      "en": "Draft a reorganization plan for the debtor company.",
+      "zh": "帮我编制一份债务人企业的重整计划草案。"
+    }
+  ],
+  "members": [
+    {
+      "id": "bankruptcy-team-lead",
+      "name": {
+        "en": "Bankruptcy Team Lead",
+        "zh": "破产业务专家团"
+      },
+      "profession": {
+        "en": "Bankruptcy Business Expert",
+        "zh": "破产业务专家团"
+      },
+      "avatar": "avatars/team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "member-case-manager",
+      "name": {
+        "en": "Case Manager",
+        "zh": "案件管理员"
+      },
+      "profession": {
+        "en": "Bankruptcy Case Manager",
+        "zh": "破产案件管理员"
+      },
+      "avatar": "avatars/member-case-manager.png",
+      "role": "member"
+    },
+    {
+      "id": "member-claim-review",
+      "name": {
+        "en": "Claim Reviewer",
+        "zh": "债权审查员"
+      },
+      "profession": {
+        "en": "Bankruptcy Claim Reviewer",
+        "zh": "破产债权审查员"
+      },
+      "avatar": "avatars/member-claim-review.png",
+      "role": "member"
+    },
+    {
+      "id": "member-asset-tracing",
+      "name": {
+        "en": "Asset Tracing Specialist",
+        "zh": "资产追踪员"
+      },
+      "profession": {
+        "en": "Bankruptcy Asset Tracing Specialist",
+        "zh": "破产资产追踪员"
+      },
+      "avatar": "avatars/member-asset-tracing.png",
+      "role": "member"
+    },
+    {
+      "id": "member-distribution-calc",
+      "name": {
+        "en": "Distribution Calculator",
+        "zh": "分配计算员"
+      },
+      "profession": {
+        "en": "Bankruptcy Distribution Calculator",
+        "zh": "破产分配计算员"
+      },
+      "avatar": "avatars/member-distribution-calc.png",
+      "role": "member"
+    },
+    {
+      "id": "member-legal-research",
+      "name": {
+        "en": "Bankruptcy Legal Analyst",
+        "zh": "破产法律分析员"
+      },
+      "profession": {
+        "en": "Bankruptcy Legal Analyst",
+        "zh": "破产法律分析员"
+      },
+      "avatar": "avatars/member-legal-research.png",
+      "role": "member"
+    },
+    {
+      "id": "member-reorg-plan",
+      "name": {
+        "en": "Reorganization Plan Drafter",
+        "zh": "重整与和解方案编制员"
+      },
+      "profession": {
+        "en": "Reorganization Plan Drafter",
+        "zh": "重整与和解方案编制员"
+      },
+      "avatar": "avatars/member-reorg-plan.png",
+      "role": "member"
+    },
+    {
+      "id": "member-procedure-support",
+      "name": {
+        "en": "Meeting & Procedure Support",
+        "zh": "会议与程序支持员"
+      },
+      "profession": {
+        "en": "Creditor Meeting Support",
+        "zh": "债权人会议支持员"
+      },
+      "avatar": "avatars/member-procedure-support.png",
+      "role": "member"
+    },
+    {
+      "id": "member-verification",
+      "name": {
+        "en": "Bankruptcy Verifier",
+        "zh": "破产成果校验员"
+      },
+      "profession": {
+        "en": "Bankruptcy Output Verifier",
+        "zh": "破产成果校验员"
+      },
+      "avatar": "avatars/member-verification.png",
+      "role": "member"
+    },
+    {
+      "id": "member-employee-resettlement",
+      "name": {
+        "en": "Employee Resettlement Specialist",
+        "zh": "职工安置专员"
+      },
+      "profession": {
+        "en": "Employee Resettlement Specialist",
+        "zh": "职工安置专员"
+      },
+      "avatar": "avatars/member-employee-resettlement.png",
+      "role": "member"
+    }
+  ]
+}

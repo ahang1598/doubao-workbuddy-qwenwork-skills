@@ -1,0 +1,737 @@
+/* =========================================================
+   Skill 3 · 同业战略洞察报告 · 样式规范
+   配色全部由 report_assets/vis/palette.json 注入（CSS 变量）
+   字体优先使用系统字体（macOS: PingFang SC / Windows: Microsoft YaHei），
+   fallback 到开源跨平台字体 Noto Sans SC / Noto Serif SC（SIL OFL 协议，免费商用）
+   ========================================================= */
+
+:root {
+    /* ---- 由 palette.json 覆盖 ---- */
+    --primary: #C8102E;          /* 基准行品牌色（由 palette.json 覆盖） */
+    --primary-dark: #8A0A20;
+    --primary-light: #F5E0E4;
+    --accent: #B58A34;           /* 古铜金（辅色） */
+    --accent-light: #E8D8B0;
+    --text-primary: #1A1A1A;
+    --text-secondary: #555555;
+    --bg-white: #FFFFFF;
+    --bg-light: #F7F7F7;
+    --border: #E0E0E0;
+
+    --growth-green: #2E7D32;
+    --risk-red: #C62828;
+    --efficiency-blue: #1565C0;
+
+    /* ---- 排版尺度 ---- */
+    --page-width: 210mm;
+    --content-max-width: 180mm;
+}
+
+/* ========== 全局 ========== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei",
+                 "Hiragino Sans GB", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-primary);
+    font-size: 10.5pt;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    orphans: 2;
+    widows: 2;
+}
+
+/* 段落防断 */
+p {
+    margin: 0.6em 0;
+    orphans: 2;
+    widows: 2;
+    text-align: justify;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary);
+    page-break-after: avoid;
+    break-after: avoid;
+    font-weight: 600;
+}
+
+/* ========== 页面结构 ========== */
+.page {
+    width: var(--page-width);
+    padding: 6mm 15mm 20mm 15mm;
+    position: relative;
+}
+
+.page.forced {
+    /* 用于目录等需要独占一页的场景。
+       min-height 设为正文模式下可打印区（A4 256mm）内的值，避免拆页 */
+    min-height: 250mm;
+    page-break-after: always;
+    break-after: page;
+    padding-top: 8mm;
+}
+
+.page.content {
+    /* 内容页：流式排版，内容溢出时自然跨页。
+       padding-top 只对首页生效；续页的顶部留白由 Playwright 的 top margin (25mm)
+       统一保证，其中 header 本体约 14mm，剩余 ~11mm 即为正文到页眉的缓冲带 */
+    page-break-before: always;
+    break-before: page;
+    min-height: 0;
+    padding-top: 4mm;
+}
+
+.page.first-content {
+    /* 第一个内容页：不需要强制分页（前面已有 forced 页） */
+    page-break-before: auto;
+}
+
+/* ========== 封面 ========== */
+.cover {
+    /* 封面导出时 margin 为 0，整张 A4 纸面都可用。
+       关键：高度必须严格 < 一页（297mm）。
+       - 如果 == 297mm，Chromium 会产出额外空白页；
+       - 如果 > 297mm，内容会溢出到第 2 页。
+       所以取 296mm，既填满视觉，又不触发额外分页。
+       子元素全部用 position: absolute 锚定到容器的具体位置，
+       不走正常文档流，彻底避免 margin-collapse / flex 撑高问题。 */
+    padding: 0;
+    width: 210mm;
+    height: 296mm;
+    min-height: 296mm;
+    max-height: 296mm;
+    page-break-after: always;
+    break-after: page;
+    background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 55%, var(--primary-light) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cover::before {
+    /* 装饰：右下角金红渐变色块 */
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 60%;
+    height: 45%;
+    background: linear-gradient(135deg, transparent 0%, var(--accent-light) 40%, var(--primary) 100%);
+    clip-path: polygon(25% 100%, 100% 100%, 100% 0%);
+    opacity: 0.85;
+}
+
+.cover::after {
+    /* 装饰：左上角细金色条 */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8mm;
+    height: 100%;
+    background: var(--accent);
+}
+
+/* 封面大 LOGO 区：绝对定位顶部 */
+.cover-hero {
+    position: absolute;
+    top: 28mm;
+    left: 25mm;
+    right: 18mm;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.cover-logo-big {
+    height: 88px;
+    width: auto;
+    max-width: 75%;
+    object-fit: contain;
+    display: block;
+}
+
+.cover-title-block {
+    position: absolute;
+    top: 110mm;
+    left: 25mm;
+    right: 18mm;
+    z-index: 2;
+}
+
+.cover-title-block .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 10pt;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+
+.cover-title {
+    font-size: 38pt;
+    line-height: 1.15;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    font-family: "STSongti-SC-Bold", "Noto Serif SC", "SimSun", serif;
+}
+
+.cover-subtitle {
+    font-size: 15pt;
+    color: var(--text-primary);
+    font-weight: 400;
+    line-height: 1.5;
+    max-width: 140mm;
+    margin-top: 6px;
+}
+
+.cover-meta {
+    position: absolute;
+    left: 47mm;
+    bottom: 28mm;
+    right: 18mm;
+    z-index: 2;
+    color: var(--text-secondary);
+    font-size: 11pt;
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+}
+
+.cover-meta .label {
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.cover-meta > div {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+/* ========== 页眉页脚 ========== */
+.page-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8mm;
+    margin-bottom: 8mm;
+    border-bottom: 1pt solid var(--border);
+}
+
+.page-header .logo-small {
+    height: 26px;
+    width: auto;
+    max-width: 180px;
+    object-fit: contain;
+}
+
+.page-header .header-text {
+    font-size: 9pt;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.page-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 15mm;
+    right: 15mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8pt;
+    color: var(--text-secondary);
+    border-top: 1pt solid var(--border);
+    padding-top: 4mm;
+}
+
+/* ========== 目录 ========== */
+.toc {
+    padding-top: 8mm;
+}
+
+.toc h2 {
+    color: var(--primary);
+    font-size: 20pt;
+    margin-bottom: 18mm;
+    padding-bottom: 6mm;
+    border-bottom: 2pt solid var(--primary);
+}
+
+.toc-item {
+    display: flex;
+    align-items: baseline;
+    padding: 7pt 0;
+    border-bottom: 1pt dotted var(--border);
+    font-size: 11.5pt;
+}
+
+.toc-item .toc-num {
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 10px;
+    min-width: 24px;
+}
+
+.toc-item .toc-title {
+    flex: 1;
+}
+
+.toc-item .toc-dots {
+    flex: 1 1 auto;
+    border-bottom: 1pt dotted var(--border);
+    margin: 0 6px 3px 6px;
+}
+
+.toc-item .toc-page {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ========== 章节标题 ========== */
+.section-title {
+    font-size: 20pt;
+    color: var(--primary);
+    margin: 0 0 6mm 0;
+    padding-bottom: 4mm;
+    border-bottom: 2pt solid var(--primary);
+    position: relative;
+}
+
+.section-title::before {
+    content: "";
+    position: absolute;
+    bottom: -2pt;
+    left: 0;
+    width: 40mm;
+    height: 3pt;
+    background: var(--accent);
+}
+
+.section-kicker {
+    /* 2026-04: 按用户反馈隐藏 "SECTION · 0X" / "SKILL X · XXX" 小标识，
+       避免正文标题上方出现机械化的分节前缀。业务 Skill 的 section-kicker
+       仍保留在 HTML 中以便后续恢复，仅通过样式隐藏。 */
+    display: none !important;
+    color: var(--accent);
+    font-size: 10pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 4mm;
+    font-weight: 600;
+}
+
+.subsection-title {
+    font-size: 14pt;
+    color: var(--text-primary);
+    margin: 8mm 0 4mm 0;
+    padding-left: 10px;
+    border-left: 4pt solid var(--primary);
+}
+
+h4 {
+    font-size: 11.5pt;
+    color: var(--primary-dark);
+    margin: 5mm 0 2mm 0;
+}
+
+/* ========== 摘要 ========== */
+.executive-summary {
+    background: linear-gradient(135deg, var(--primary-light) 0%, #FFFFFF 80%);
+    padding: 8mm;
+    border-left: 4pt solid var(--primary);
+    margin: 6mm 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.executive-summary h3 {
+    color: var(--primary);
+    margin-bottom: 4mm;
+    font-size: 13pt;
+}
+
+.executive-summary ol {
+    padding-left: 22px;
+}
+
+.executive-summary li {
+    margin: 8pt 0;
+    line-height: 1.7;
+}
+
+.executive-summary li::marker {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* ========== 洞察卡片 ========== */
+.insight-card {
+    margin: 6mm 0;
+    padding: 7mm;
+    background: var(--bg-white);
+    border: 1pt solid var(--border);
+    border-left: 5pt solid var(--primary);
+    border-radius: 2pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.insight-card.growth { border-left-color: var(--growth-green); }
+.insight-card.risk { border-left-color: var(--risk-red); }
+.insight-card.efficiency { border-left-color: var(--efficiency-blue); }
+
+.insight-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4mm;
+    flex-wrap: wrap;
+}
+
+.insight-id {
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: 1px;
+}
+
+.insight-priority {
+    display: inline-block;
+    padding: 2pt 10pt;
+    border-radius: 3pt;
+    font-size: 9pt;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.insight-priority.growth { background: var(--growth-green); }
+.insight-priority.risk { background: var(--risk-red); }
+.insight-priority.efficiency { background: var(--efficiency-blue); }
+
+.insight-title {
+    font-size: 13pt;
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.4;
+    flex: 1 0 100%;
+    margin-top: 2mm;
+}
+
+.insight-section {
+    margin-top: 4mm;
+}
+
+.insight-section-label {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 1px;
+    margin-bottom: 2mm;
+    display: inline-block;
+    padding: 1pt 6pt;
+    background: var(--primary-light);
+    border-radius: 2pt;
+}
+
+.insight-core {
+    text-align: justify;
+    line-height: 1.7;
+    color: var(--text-primary);
+}
+
+.insight-recommendations, .insight-risks, .insight-source {
+    padding-left: 20px;
+    margin-top: 2mm;
+}
+
+.insight-recommendations li, .insight-risks li, .insight-source li {
+    margin: 4pt 0;
+    line-height: 1.6;
+}
+
+.insight-recommendations li::marker { color: var(--growth-green); }
+.insight-risks li::marker { color: var(--risk-red); }
+.insight-source li::marker { color: var(--accent); }
+
+/* ========== 数据证据表 ========== */
+.evidence-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.evidence-table thead {
+    display: table-header-group;
+}
+
+.evidence-table tbody {
+    display: table-row-group;
+}
+
+.evidence-table th {
+    background: var(--primary);
+    color: #fff;
+    padding: 5pt 8pt;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9.5pt;
+    letter-spacing: 0.5px;
+}
+
+.evidence-table td {
+    padding: 4pt 8pt;
+    border-bottom: 0.5pt solid var(--border);
+    vertical-align: top;
+}
+
+.evidence-table tbody tr:nth-child(even) {
+    background: var(--bg-light);
+}
+
+.evidence-table .metric-col {
+    width: 38%;
+    color: var(--text-primary);
+}
+
+.evidence-table .value-col {
+    width: 20%;
+    font-weight: 600;
+    color: var(--primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.evidence-table .yoy-col {
+    width: 18%;
+    font-variant-numeric: tabular-nums;
+}
+
+.evidence-table .source-col {
+    width: 24%;
+    color: var(--text-secondary);
+    font-size: 8.5pt;
+}
+
+/* ========== 行业全景表 / 双栏列表 ========== */
+.landscape-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4mm 0;
+    font-size: 10pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.landscape-table thead {
+    display: table-header-group;
+}
+
+.landscape-table th {
+    background: var(--accent);
+    color: #fff;
+    padding: 6pt 8pt;
+    text-align: left;
+}
+
+.landscape-table td {
+    padding: 5pt 8pt;
+    border: 0.5pt solid var(--border);
+    vertical-align: top;
+}
+
+.landscape-table tbody tr:nth-child(even) {
+    background: var(--bg-light);
+}
+
+.landscape-table .strong-col {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+/* ========== 双栏摘要 ========== */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6mm;
+    margin: 4mm 0;
+}
+
+.col-card {
+    padding: 5mm;
+    background: var(--bg-light);
+    border-top: 3pt solid var(--accent);
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.col-card h4 {
+    color: var(--accent);
+    margin-bottom: 3mm;
+    font-size: 11pt;
+}
+
+.col-card.win { border-top-color: var(--growth-green); }
+.col-card.win h4 { color: var(--growth-green); }
+.col-card.gap { border-top-color: var(--risk-red); }
+.col-card.gap h4 { color: var(--risk-red); }
+
+/* ========== 中信雷达卡片 ========== */
+.radar-card {
+    margin: 5mm 0;
+    padding: 5mm;
+    background: linear-gradient(135deg, var(--primary-light) 0%, #fff 100%);
+    border-left: 5pt solid var(--accent);
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.radar-card h4 {
+    color: var(--primary);
+    margin-bottom: 3mm;
+}
+
+/* ========== 附录 ========== */
+.appendix-box {
+    padding: 5mm;
+    background: var(--bg-light);
+    border: 0.5pt solid var(--border);
+    margin: 3mm 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.appendix-box h4 {
+    color: var(--text-secondary);
+    margin-bottom: 2mm;
+    font-size: 11pt;
+}
+
+.appendix-box ol, .appendix-box ul {
+    padding-left: 22px;
+}
+
+.appendix-box li {
+    margin: 3pt 0;
+    color: var(--text-primary);
+    font-size: 10pt;
+}
+
+/* ========== 产物索引表 ========== */
+.artifact-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    font-family: "Menlo", "Consolas", "Source Code Pro", "Noto Sans Mono", monospace;
+    margin: 3mm 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.artifact-table thead { display: table-header-group; }
+
+.artifact-table th {
+    background: var(--text-primary);
+    color: #fff;
+    padding: 5pt 8pt;
+    text-align: left;
+    font-family: "PingFang SC", "Noto Sans SC", sans-serif;
+}
+
+.artifact-table td {
+    padding: 4pt 8pt;
+    border-bottom: 0.5pt solid var(--border);
+    vertical-align: top;
+}
+
+.artifact-table tbody tr:nth-child(even) { background: var(--bg-light); }
+
+.artifact-table code {
+    background: var(--primary-light);
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--primary-dark);
+    font-size: 9pt;
+}
+
+/* ========== 免责声明 ========== */
+.disclaimer {
+    margin-top: 8mm;
+    padding: 4mm;
+    background: var(--bg-light);
+    border: 0.5pt dashed var(--border);
+    font-size: 9pt;
+    color: var(--text-secondary);
+    text-align: center;
+    letter-spacing: 1px;
+    page-break-before: avoid;
+    break-before: avoid;
+    page-break-inside: avoid;
+}
+
+/* ========== 工具类 ========== */
+.muted { color: var(--text-secondary); }
+.strong { color: var(--primary); font-weight: 600; }
+.accent { color: var(--accent); font-weight: 600; }
+.nobr { white-space: nowrap; }
+
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4mm;
+    margin: 4mm 0;
+}
+
+.kpi-card {
+    padding: 4mm;
+    background: var(--bg-white);
+    border: 1pt solid var(--border);
+    border-top: 3pt solid var(--primary);
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.kpi-card .label {
+    font-size: 9pt;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.kpi-card .value {
+    font-size: 18pt;
+    color: var(--primary);
+    font-weight: 700;
+    margin: 2pt 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-card .yoy {
+    font-size: 9pt;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ========== 打印调整 ========== */
+@page {
+    size: A4;
+    /* 不设 margin: 0 — 由 Playwright 的 margin 参数统一控制，
+       确保 headerTemplate/footerTemplate 占据独立的页边区，
+       不会与正文重叠 */
+}
+
+@media print {
+    html, body { background: #fff; }
+}

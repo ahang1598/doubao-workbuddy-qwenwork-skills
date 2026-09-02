@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：460
-- 当前索引文件数：10854
-- 最近变更：[2026-09-02-180002](workbuddy/change-logs/2026-09-02-180002.md) - WorkBuddy 本次同步新增 21 个文件、修改 27 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/shanlong-claw, connectors/marketplace/connectors/tencent-map-guide。 受影响范围：connectors/marketpla...
+- 当前索引条目数：490
+- 当前索引文件数：15152
+- 最近变更：[2026-09-02-223755](workbuddy/change-logs/2026-09-02-223755.md) - WorkBuddy 本次同步新增 4306 个文件、修改 171 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/deeplink, connectors/marketplace/connectors/dramabuddy, connectors/marketplace/connectors/h...
 
 ## 数据来源
 
@@ -39,40 +39,60 @@
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
 | A股研究团队 | `workbuddy/experts/a-share-analysis` | 08-FinanceInvestment | 38 | 8位研究专家支持多步骤工作流编排，覆盖宏观策略、盘面解读、个股深度、估值定价、产业链映射、资金追踪、风险诊断 |
+| AI CMO | `workbuddy/experts/ai-cmo` | 06-ContentCreative | 16 | 3 位专家接力协作，跑通账号定位、选题脚本、涨粉变现全链路，含数据复盘与反哺选题的闭环。 |
 | 内容创作专家团 | `workbuddy/experts/ai-content-creator-team` | 06-ContentCreative | 25 | AI驱动的多模态内容生产团队，从创意策划到成品交付全覆盖，涵盖品牌定位、情绪板、广告方向、文案创作、视频生成、图片设计、精修合成和素材改编。 |
 | 智数分析专家团 | `workbuddy/experts/ai-data-copilot` | 04-DataAI | 22 | 6人AI数据分析团队，擅长自然语言转SQL、Python建模、RAG知识问答、仪表盘可视化与报告生成 |
+| AI大模型专家团 | `workbuddy/experts/ai-expert-studio` | 06-ContentCreative | 36 | 一个人搞不定的创意全案？5 人专家团从策划到成片成稿，一站式交付，省心省力不踩坑。 |
 | AICoding 架构专家团 | `workbuddy/experts/aicoding-architecture-expert-team` | 02-Engineering | 289 | 面向复杂系统架构设计，协同完成资料摄入、调研、业务、系统、部署、安全与用户故事全流程交付。 |
+| 组小学 | `workbuddy/experts/antibody-structure-opt-team` | 04-DataAI | 15 | 专注抗体药物设计与结构优选，协同IgGM、Protenix或Boltz完成候选生成、结构预测与排序。 |
+| 财报研析团 | `workbuddy/experts/bank-retail-analyst` | 08-FinanceInvestment | 147 | 六成员财报分析专家团：自动下载年报、提取零售数据，做同业对标与战略治理穿透分析，一键交付三份专业报告。 |
+| 法大大·睿契提供的破产业务专家 | `workbuddy/experts/bankruptcy-business-expert` | 11-SecurityCompliance | 407 | 【法大大·睿契】面向破产管理人和破产律师，覆盖清算、重整与和解全流程的债权审查、资产追收、分配方案与重整计划编制。 |
 | 相信光么 | `workbuddy/experts/believe-in-light` | 08-FinanceInvestment | 26 | 光模块产业链信号监控专家团。主理人 + 6位成员Agent 三端采集信号，因果验证+权重校准，三层嵌套输出景气度评级。 |
 | 汽车行业内容创作专家团 | `workbuddy/experts/content-creation-expert-prod` | 06-ContentCreative | 31 | 汽车行业垂类图文创作团队，5 人协作完成选题、撰写、智能配图与质检，一键交付懂车帝、小红书等风格图文 |
 | 全域内容分发专家团 | `workbuddy/experts/content-distribution-team` | 06-ContentCreative | 36 | 一站式多平台内容分发方案，覆盖12+全球社交媒体平台，提供发布规则适配、排期管理、批量发布编排和跨平台数据分析能力 |
 | 内容变现商业化专家团 | `workbuddy/experts/content-monetization-team` | 05-MarketingGrowth | 19 | 5人专家团协作覆盖CPS带货分佣、CPE/CPM效果广告、创作者-品牌交易撮合与收益分析，助力内容创作者和品牌方实现商业化价值最大化 |
 | 腾讯电子签合同法务专家 | `workbuddy/experts/contract-legal-expert` | 13-TencentZone | 17 | 腾讯电子签合同法务专家擅长合同起草、审查、对比、法规检索，能在线发起签署，劳动/租赁/买卖全场景覆盖 |
+| 对公贷前尽调专家团 | `workbuddy/experts/credit-due-diligence-report` | 08-FinanceInvestment | 24 | 对公信贷尽调专家团：信息核查、财务分析、报告撰写、合规校验四角色协作，产出尽调报告，行内数据待补充。 |
+| 法大大·睿契提供的刑事辩护专家 | `workbuddy/experts/criminal-defense-expert` | 11-SecurityCompliance | 663 | 【法大大·睿契】面向刑辩律师，按阶段调度材料分析、辩护研究、文书起草、庭审质证与成果校验，覆盖侦查至二审全流程。 |
 | 出海海 | `workbuddy/experts/cross-border-ecommerce-expert` | 05-MarketingGrowth | 10 | 精通亚马逊Shopify等国际电商平台，助力品牌出海全球 |
+| 法大大·睿契提供的跨境法律专家 | `workbuddy/experts/cross-border-legal-expert` | 11-SecurityCompliance | 346 | 【法大大·睿契】面向涉外律师与出海/外资企业法务的专家团：外国法与多法域比较、ECLI/CELEX 精确引用核验、境外许可牌照、英文/双语合同审查与真实红线、ODI/FDI 与跨境并购架构、制裁与出口管制筛查、数据出境合规及独立交付校验；主 Agent 快速沟通入口，按风险分级组队。 |
+| 客户销售增长专家团 | `workbuddy/experts/customer-sales-intelligence-team` | 07-SalesCommerce | 28 | 协同完成客户评分、赛道与场景分析、销售话术、客户匹配和分阶段攻坚，输出可直接执行的客户增长方案。 |
 | 文档达 | `workbuddy/experts/document-generation-expert` | 10-ProjectQuality | 85 | 自动化生成各类业务文档，大幅提升文档创建效率 |
 | 科研专家团 | `workbuddy/experts/empirical-research-team` | 04-DataAI | 35 | 覆盖实证研究全流程的专家团：因果推断、稳健性检验、出版级表图与降AIGC，高效完成可复现学术论文 |
+| 法大大·睿契提供的劳动人事专家团 | `workbuddy/experts/employment-legal-advisor` | 11-SecurityCompliance | 71 | 【法大大·睿契】覆盖劳动争议诊断、用工合规体检、补偿赔偿测算、劳动文书起草与成果核验的中国大陆劳动用工法律专家团队。 |
 | 工程保障团队 | `workbuddy/experts/engineering-assurance-team` | 02-Engineering | 16 | 由工程总监领导的 5 人工程专家团队：代码审查师（安全/性能/正确性）、架构师（系统设计/ADR）、SRE 工程师（事故响应/部署）、测试专家（测试策略/覆盖率）和技术文档师（文档/Runbook）。处理从代码审查到事故响应的复杂工程工作流。 |
 | 企业法务专家团 | `workbuddy/experts/enterprise-legal-team` | 11-SecurityCompliance | 211 | 面向企业法务的多角色专家团，覆盖合同、交易、隐私、产品、监管、AI 治理、雇佣与知识产权分诊。 |
 | equity-research | `workbuddy/experts/equity-research` | agent | 35 | Comprehensive equity research toolkit: earnings analysis, initiating coverage, DCF/comps valuation, long-short pitches, investment memos, event-driven analysis, portfolio risk management, and full research workflows |
+| ETF投资顾问专家团 | `workbuddy/experts/etf-advisor-team` | 08-FinanceInvestment | 144 | 自上而下定配置中枢与再平衡纪律，自下而上诊断持仓、择优替换工具，宏观技术风控协同输出多角度调仓分析参考。 |
 | 福帮手 | `workbuddy/experts/fbsir-eight-seat-board` | 12-IndustryConsultant | 82 | 福帮手经营决策独立审议专家团｜按案组建必要席位，独立判断、交叉质询、保留异议，交付可追溯行动备忘录 |
+| 营销通·搞懂用户专家团 | `workbuddy/experts/find-users-team` | 05-MarketingGrowth | 16 | 从你的第一批真实用户出发，找到更多可能需要产品的人，再用内容触达陌生用户。适合产品做出来了、但不知道给谁看的人。 |
 | 鹏城信息AI专家 | `workbuddy/experts/game-development-studio` | 03-GameSpatial | 17 | 统筹策划、技术、美术、音频、质量、运营六大专业成员，以七阶段工作流驱动游戏从概念到上线流程协同开发。 |
 | 专业高考顾问 | `workbuddy/experts/gaokao-advisor` | 12-IndustryConsultant | 41 | 检索高考真题作文、高校专业信息，查批次线与一分一段；提供全流程志愿填报引导，产出带冲稳保的志愿报告 |
+| 金手指 · 广告投放专家团 | `workbuddy/experts/goldfinger-ads` | 05-MarketingGrowth | 150 | 金手指广告投放专家团：需求评估、媒介策略、素材规划、投放执行与复盘、规则咨询，一站式搞定腾讯广告。 |
 | 深度研究团队 | `workbuddy/experts/gpt-researcher-team` | 04-DataAI | 17 | 7 位专业角色分 5 阶段协作完成深度研究：初始调研 → 规划大纲 → 逐章深度研究（审稿修订循环）→ 撰写报告框架 → 发布输出。支持完整 / 快速 / 单章三种模式。适用于行业研究、竞品分析、技术综述、学术文献综述等场景，产出带多源超链接引用的专业研究报告。 |
 | HR 运营团队 | `workbuddy/experts/hr-operations-team` | 09-OperationsHR | 14 | 由 HR 总监领导的 4 人人力资源专家团队：招聘专家（招聘漏斗/面试设计/Offer 起草）、薪酬分析师（市场对标/薪酬带分析/股权建模）、组织发展顾问（组织规划/绩效评估/人员分析）和 HR 运营专员（入职引导/政策查询/合规）。覆盖完整的员工生命周期。 |
 | 花叔数据分析专家团 | `workbuddy/experts/huashu-data-pro` | 04-DataAI | 11 | 「一人公司」本地数据分析专家团。一份 Excel 进，趋势 / 结构 / 异常三专家并行分析，交付网页、Excel、PPT 三格式报告，数据不出本地。 |
 | 卡尔的人感PPT专家团 | `workbuddy/experts/humanize-ppt-team` | 06-ContentCreative | 342 | 把原始资料梳理成人感PPT大纲，调度HTML生成、演讲模式、视频动效与交付质检，形成可演示成果。 |
 | 救火队 | `workbuddy/experts/incident-response-commander` | 02-Engineering | 79 | 系统故障时冷静指挥团队快速定位处理和恢复，是终极救火队长 |
 | 鹏城信息AI专家 | `workbuddy/experts/interview-simulator` | 09-OperationsHR | 5 | 模拟任意职位真实面试官，覆盖技术产品销售人事等全岗位，逐题评分、详细反馈与录用建议，助你备战面试。 |
+| 法大大·睿契提供的投融资顾问 | `workbuddy/experts/investment-financing-legal-advisor` | 11-SecurityCompliance | 495 | 【法大大·睿契】面向企业法务与投融资律师，按 L0-L3 分层路由调度法律尽调、法规研究、交易文件起草、交割管理与独立核验，覆盖股权投资与并购全流程。 |
 | 投资大师专家团 | `workbuddy/experts/investment-masters-team` | 08-FinanceInvestment | 51 | 13位传奇投资哲学家 + 6位专业分析师并行分析，风险管理师评估约束，投资组合经理信号聚合投票，多角度投资分析参考 |
 | 智能发票专家团 | `workbuddy/experts/invoice-verify-workbuddy` | 11-SecurityCompliance | 29 | 五位AI专家接力协作，通过上传文件、表格或文件夹，完成识别、税局验真、信用核查与归档 |
+| 法大大·睿契提供的知识产权专家 | `workbuddy/experts/ip-expert-team` | 11-SecurityCompliance | 133 | 【法大大·睿契】面向知识产权律师，按领域调度商标注册、商标维权、商标诉讼、专利分析与著作权侵权分析，覆盖知产全流程。 |
 | 求职陪跑团 | `workbuddy/experts/job-companion-team` | 12-IndustryConsultant | 21 | 5 角色陪跑型专家团，7 阶段接力覆盖自我盘点、目标定位、简历打磨、面试陪练、谈薪决策与入职复盘全流程。 |
 | KET备考专家团 | `workbuddy/experts/ket-prep-team` | 12-IndustryConsultant | 16 | 剑桥认证考官领衔，为小学生提供KET全流程备考：学情测评、词汇语法地基、听说读写专项提分、考前冲刺模考，助力Merit（优秀）/Distinction（卓越）达标。 |
+| LinkFox | `workbuddy/experts/linkfox-expert-team-amazon-product-selection` | 07-SalesCommerce | 771 | 26位亚马逊选品专家协同，覆盖市场扫描、关键词、VOC、货源、利润、库存、竞品监控与侵权风险。 |
 | 营销战役团队 | `workbuddy/experts/marketing-campaign-team` | 05-MarketingGrowth | 14 | 由营销总监领导的 4 人营销专家团队：内容创作者（博客/邮件/社媒/品牌声音）、活动策划师（战役策略/受众/渠道/预算）、SEO 专家（技术审计/内容优化/效果分析）和品牌分析师（竞品定位/品牌审核）。覆盖完整营销生命周期。 |
 | 营销增长专家团 | `workbuddy/experts/marketing-growth-team` | 05-MarketingGrowth | 85 | fCMO 级全栈营销增长团队：转化率优化、SEO 与内容策略、增长工程、数据归因分析与策略规划，全方位助力 SaaS 产品增长 |
+| 领券下单找我 | `workbuddy/experts/meituan-living-assistant` | 07-SalesCommerce | 18 | 帮您一键领取美团优惠券，搜索附近团购美食并下单，探索今日活动，覆盖餐饮饮品等生活服务，省钱省心。 |
 | MVP开发专家团 | `workbuddy/experts/mvp-dev-expert-team` | 02-Engineering | 54 | 说出你的想法，8位专家从调研、设计、编码、测试到部署全流程协作，帮你快速开发MVP产品 |
 | 计算机等级考试专家团 | `workbuddy/experts/ncre-expert` | 02-Engineering | 15 | NCRE一至四级专家团，覆盖Office、编程、数据库与网络安全，分工协作，量身定制备考方案。 |
 | 一人公司专家团 | `workbuddy/experts/opc-team` | 12-IndustryConsultant | 53 | 基于由Easy创作的《一人企业方法论》，9位专家陪你走完从资源盘点、利基定位到MVP、转化、复盘的一人公司全流程共创 |
 | 专业文档生成团队 | `workbuddy/experts/openspec-doc-team` | 10-ProjectQuality | 11 | 4 位专业角色分 6 阶段协作完成企业级长文档生成：需求分析 → 知识检索 → 内容生成 → 质量审核（循环）→ 整合汇编 → 交付输出。适用于施工图设计说明、技术方案、招投标文件、维修手册、API/系统文档等场景。 |
+| 研报复现因子挖掘回测审计 | `workbuddy/experts/pandaai-ai-quant-research-team` | 08-FinanceInvestment | 147 | 五位独立专家完成研报复现、因子设计、PandaAI大赛实跑、过拟合审计与绩效报告，缺少真实证据即阻断。 |
+| 热点题材与资金联合研判 | `workbuddy/experts/pandaai-hot-theme-team` | 08-FinanceInvestment | 62 | 五位专家联合复盘市场、题材热度和资金变化，筛选核心候选并通过风险闸门，输出可追溯的统一会诊结论。 |
 | 万方数据 | `workbuddy/experts/paper-topic-selection` | 12-IndustryConsultant | 26 | 帮你做论文选题：检索文献、推荐方向、评估新颖性、生成标题、出领域报告。说学科方向即可。 |
+| 踏歌行专利智多星专家团 | `workbuddy/experts/patent-expert-team` | 12-IndustryConsultant | 317 | 13位专利专家，从文献检索、交底书、权要优化到附图、合规、答审与打包，产出CNIPA合规申报包。 |
 | 产品战略团队 | `workbuddy/experts/product-strategy-team` | 01-ProductDesign | 16 | 由产品总监领导的 5 人产品专家团队：需求分析师（PRD/功能规格书）、用户研究员（调研综合分析）、竞品分析师（竞争情报）、数据分析师（指标追踪）和路线图规划师（路线图管理/迭代规划）。覆盖从构思到上线的完整产品生命周期。 |
 | 袋鼠帝宣传片创作团队 | `workbuddy/experts/promo-creator-team` | 06-ContentCreative | 20 | 6位专业角色分6阶段协作完成产品宣传片全流程制作：创意简报、逐镜头分镜、素材生产、HyperFrames剪辑合成、BGM设计与交付，从产品URL到可发布的60-90秒宣传片MP4 |
 | 闪造造 | `workbuddy/experts/rapid-prototyping-engineer` | 02-Engineering | 82 | 以极快速度将创意转化为可工作的原型，让团队快速验证想法 |
@@ -82,16 +102,22 @@
 | 销售作战团队 | `workbuddy/experts/sales-battle-team` | 07-SalesCommerce | 14 | 由销售总监领导的 4 人销售专家团队：客户研究员（公司/潜客情报）、外联策略师（邮件起草/电话准备）、竞争情报分析师（赢单/丢单分析/Battle Card）和销售预测分析师（Pipeline 评审/预测）。覆盖从研究到成交的完整销售周期。 |
 | 吴八哥 | `workbuddy/experts/senior-developer` | 02-Engineering | 118 | 10年以上全栈经验，精通多种语言和框架，是团队的技术中坚 |
 | SEO 内容营销团队 | `workbuddy/experts/seo-content-team` | 05-MarketingGrowth | 21 | 7位专业角色分5阶段协作：关键词研究、SEO长文创作、技术优化、内容编辑、链接策略、转化率分析，全流程自动化产出高质量SEO内容 |
+| 思研·市场研究专家团 | `workbuddy/experts/sia-research-team` | 05-MarketingGrowth | 36 | 从一个模糊的生意想法开始，先摸市场判断能不能做，再出访谈大纲问卷去问真实用户，最后把数据变成能拍板的结论。一人公司也能跑完整条链。 |
+| 组小学 | `workbuddy/experts/small-molecule-rd-team` | 04-DataAI | 12 | 专注小分子一体化研发，协同开展性质建模、连接体设计、骨架跃迁与逆合成规划，输出优选结构及合成路线。 |
+| 营销通·社媒内容专家团 | `workbuddy/experts/social-content-team` | 06-ContentCreative | 43 | 帮自媒体和品牌号搞定起号涨粉、爆款拆解、投流和变现，个人和小团队都能找到自己的做法。 |
 | 社媒互动增长专家团 | `workbuddy/experts/social-engagement-team` | 05-MarketingGrowth | 19 | 通过智能化互动自动化、AI评论运营、高转化信号挖掘和品牌舆情监控，安全高效提升社交媒体互动效果，覆盖14+全球主流平台 |
 | software-company | `workbuddy/experts/software-company` | team | 7 | Software Development Team - Optimized multi-agent SOP workflow for fast software delivery |
-| 腾讯自选股股票投研专家团 | `workbuddy/experts/stock-partner-team` | 08-FinanceInvestment | 38 | 六位投研专家团，兼擅产业策略、信号捕捉、估值定价、逆向布局、基本面与短线，基于实时行情多视角研判。 |
+| 腾讯自选股股票投研专家团 | `workbuddy/experts/stock-partner-team` | 08-FinanceInvestment | 39 | 六位投研专家团，兼擅产业策略、信号捕捉、估值定价、逆向布局、基本面与短线，基于实时行情多视角研判。 |
 | 财税合规专家团 | `workbuddy/experts/tax-compliance-team` | 11-SecurityCompliance | 19 | 覆盖票据处理、记账核算、报表编制、税务申报、合规审计五大环节的企业财税合规全链路管理专家团 |
+| 跳跃视界 | `workbuddy/experts/tiaoyue-screenplay-team` | 06-ContentCreative | 23 | 依托麦芽生态与跳跃视界AI工具打造的短剧全链路创作专家团。对话内一站式完成题材策划、剧本生成、角色场景资产生成到分镜生成预览，完整覆盖短剧创作全流程。 |
+| 腾讯公益今日待办专家团 | `workbuddy/experts/today-todo-assistant` | 09-OperationsHR | 79 | 专家团模式协助机构处理今日待办，涵盖留言运营、证件备案更新与票据处理，智能分派任务一站式完成。 |
 | 交易分析团队 | `workbuddy/experts/trading-agent` | 08-FinanceInvestment | 17 | 13位专业角色分5阶段协作完成投资分析：技术面、基本面、新闻面、情绪面数据采集 → 多空辩论 → 交易决策 → 三方风险评估 → 最终报告，输出 BUY/SELL/HOLD 建议及完整操作方案 |
 | 像素君 | `workbuddy/experts/ui-designer` | 01-ProductDesign | 144 | 精通设计系统和组件库，追求像素级完美，打造无障碍用户界面 |
 | 苍何视频解剖 | `workbuddy/experts/video-dissection` | 06-ContentCreative | 19 | 专业拆解火爆抖音视频拍摄手法的专家团。输入抖音链接，自动提取视频、转录文案、分析景别运镜、剪辑节奏、色调风格，生成完整拍摄脚本拆解文档，并提供可落地的仿拍建议。 |
 | 苍何视频生成团队 | `workbuddy/experts/video-gen-team` | 06-ContentCreative | 18 | 三位一体的AI视频创作团队：灵阅负责采集AI/科技热点，灵枢负责策划选题与脚本，灵映负责渲染MP4视频成品（配音+字幕）。全流程自动化，60秒短视频一键生成。 |
 | 小程达 | `workbuddy/experts/we-chat-mini-program-developer` | 02-Engineering | 192 | 精通微信小程序开发框架和生态，打造流畅微信原生体验应用 |
 | 号运运 | `workbuddy/experts/wechat-official-account-expert` | 06-ContentCreative | 38 | 精通公众号内容策略和粉丝增长，打造10万+品牌自媒体矩阵 |
+| 腾讯云大数据 | `workbuddy/experts/workbuddy-data-expert-team` | 04-DataAI | 73 | 融合业务分析与数据治理能力，支持智能问数、经营报告、指标口径解释、血缘影响和质量根因定位 |
 | 小台 | `workbuddy/experts/workspace-builder` | 02-Engineering | 6 | 为不同人群定制专属数字工作台，覆盖学习备考、职场效率、自媒体创作、宝妈育儿、生活管理五大场景，PC/移动端双适配，一键部署即用 |
 
 ### Official Experts / External Plugins
@@ -397,11 +423,13 @@
 | DataBuddy | `workbuddy/connectors/marketplace/connectors/databuddy` | cli | 17 | 连接 DataBuddy 数据知识库，让 AI 基于企业真实数据作答——问数、报告、异动归因、预测、相关性等分析更可信，并可生成实时更新的仪表盘。 |
 | 通联数据 | `workbuddy/connectors/marketplace/connectors/datayes-data` | mcp | 3 | 用自然语言查询金融数据：A股/港股、基金、债券、指数、期货期权、因子、实时行情、宏观、公告与政策法规。 |
 | DCS Cloud | `workbuddy/connectors/marketplace/connectors/dcs-cloud` | mcp | 6 | 引导 dcs CLI（下载、自动更新、PAT 登录），之后直接执行 CLI 操作 DCS Cloud：项目、任务、工作流、计费、数据文件。用户需在云平台个人中心创建个人访问令牌(PAT)并粘贴到连接器。 Version: 2.0.0. |
+| 深度智联·地产数据 | `workbuddy/connectors/marketplace/connectors/deeplink` | mcp | 3 | 由深度智联提供的地产 AI 数据服务。「问数」使用经克而瑞授权的中国房地产数据，覆盖新房、二手房、土地、企业、宏观、长租公寓、产城、康养、商办九大领域；「问知」提供地产、物业、银发三大领域专业知识问答。 Version: 3.0.0. |
 | 美图设计室 AI设计 CLI | `workbuddy/connectors/marketplace/connectors/designkit-buddy-cli` | cli | 2 | 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 Version: 1.0.2. |
 | 钉钉 | `workbuddy/connectors/marketplace/connectors/dingtalk` | cli | 172 | 通过命令行管理钉钉全产品能力：AI 表格、考勤、日历、群聊与机器人、通讯录、开放平台文档、DING 消息、钉钉文档、钉钉云盘、AI 听记、邮箱、OA 审批、日志、待办。 |
 | 深知可信工作台 | `workbuddy/connectors/marketplace/connectors/dknowc-mcp` | mcp | 2 | 深知可信工作台面向政策、法律、标准和公共服务场景，提供可信问答、权威检索、深度研究和材料整理能力。它可以帮助用户查询政策原文、办事条件、申报材料、补贴资质、法律法规和行业标准，梳理多地区、多时间范围的信息，并基于可追溯的权威来源形成清晰、可核验的结果。 |
+| DramaBuddy | `workbuddy/connectors/marketplace/connectors/dramabuddy` | mcp | 3 | DramaBuddy（漫剧助手）是一个人人可用的通用漫剧制作工具——只需提供小说或创意，就能自动生成剧本、角色与分镜视频，轻松做出属于自己的漫剧。 Version: 0.1.0. |
 | 夺冠蜂巢 | `workbuddy/connectors/marketplace/connectors/duoguan-fengchao` | mcp | 2 | 覆盖内容大脑、品牌画像、热点选题、口播与图文文案、配图、播客、配音、视频封装和多账号运营的一站式 AI 自媒体内容生产平台。 Version: 2.0.0. |
-| 大智慧MCP | `workbuddy/connectors/marketplace/connectors/dzh-mcp` | mcp | 2 | 提供A股实时行情/舆情/资金面/基本面/技术面多维数据查询能力，辅助投资决策。 |
+| 大智慧MCP | `workbuddy/connectors/marketplace/connectors/dzh-mcp` | mcp | 2 | 提供A股K线行情、A股实时行情、港美股K线行情、港美股实时行情、期货K线行情、期货实时行情、基金行情、公司简况资料、公司主营产品、公司股东、公司分红送转、公司财务（利润表）、公司财务（资产负债表）、公司财务（现金流量表）、股票题材概念、A股板块、研究报告、公司公告、新闻舆情、资金流向、机构调研、龙虎榜、融资融券、股票技术指标等数据查询工具，辅助投资决策。 |
 | EdgeOne Makers | `workbuddy/connectors/marketplace/connectors/edgeone-pages` | mcp | 49 | 将项目部署到 EdgeOne Makers 并返回线上访问地址，支持全栈、云函数、AI Agent 等开发场景。 |
 | 易方达基金 | `workbuddy/connectors/marketplace/connectors/efunds` | mcp | 2 | 接入易方达基金MCP服务，一句话查透基金画像——业绩、风险收益、持仓结构等核心指标一目了然，还能随时调阅易方达发布的投研观点、产品解读与市场洞察，助力您高效进行投资决策。 Version: 1.0.0. |
 | 弹性MapReduce | `workbuddy/connectors/marketplace/connectors/emr-query` | cli | 52 | 通过CLI实现弹性 MapReduce 集群、节点、服务、作业、监控、YARN 调度、自动扩缩容、用户与配置等查询。 |
@@ -410,7 +438,7 @@
 | 帆软增长谋士 | `workbuddy/connectors/marketplace/connectors/fanruan-growth-advisor` | mcp | 1 | 企业洞察与增长分析：查询企业经营风险、舆情、招投标、专利、资质、政策等公开商业数据，并调用已授权的 MOSS 增长谋士 Agent 生成分析与报告。 Version: 1.1.0. |
 | 同花顺法律AI助手 | `workbuddy/connectors/marketplace/connectors/fazhi-law` | mcp | 36 | 查询中国法律法规、司法案例、裁判文书及互联网法律实务资讯，支持法条检索、类案检索、深度法律研究、法律文书起草与诉讼可视化。 Version: 1.0.0. |
 | 福帮手 | `workbuddy/connectors/marketplace/connectors/fbs-connector` | connector | 8 | 福帮手人机协同连接器：识别当前身份与专家入口，匹配可执行场景方案，记录首值与继续使用进度，并查询乐包状态或衔接后续服务。 |
-| 飞书 | `workbuddy/connectors/marketplace/connectors/feishu` | cli | 536 | 通过命令行管理飞书/Lark 全产品能力：即时通讯、邮箱、日历、云文档、电子表格、多维表格（Base）、幻灯片、画板、知识库、云空间、妙记、视频会议、任务、审批、考勤、通讯录、OKR 等。 |
+| 飞书 | `workbuddy/connectors/marketplace/connectors/feishu` | cli | 545 | 通过命令行管理飞书/Lark 全产品能力：即时通讯、邮箱、日历、云文档、电子表格、多维表格（Base）、幻灯片、画板、知识库、云空间、妙记、视频会议、任务、审批、考勤、通讯录、OKR 等。 |
 | 分贝通 | `workbuddy/connectors/marketplace/connectors/fenbeitong` | mcp | 3 | 用自然语言查看当前分贝通账号和所属企业、切换企业，查询酒店、机票和火车票、规划行程，管理申请单与商旅订单，查询消费规则，归集发票与处理报销，并获取客服问答和问题处置支持。 |
 | 粉笔 | `workbuddy/connectors/marketplace/connectors/fenbi-baokao-decision` | mcp | 8 | 粉笔AI公考助手，帮你查专业分类、完善报考简历、智能选岗与国考模拟选岗、了解考情与报考条件，还能练易混词与成语辨析积累，提供一站式公考备考服务，让备考更精准、更高效。 |
 | 进门投研 | `workbuddy/connectors/marketplace/connectors/finenter` | mcp | 2 | 进门MCP覆盖券商、上市公司及资管机构的公开路演内容，整合内外资研报、券商点评等机构级观点，并提供实时行情、财务及量化因子等数据。经Data Agent清洗与结构化处理，减少Token消耗，提升回答准确率。 |
@@ -425,10 +453,12 @@
 | 腾讯公益机构服务平台 | `workbuddy/connectors/marketplace/connectors/gongyi-open-mcp` | mcp | 2 | 腾讯公益机构服务平台连接器：授权后可读取您机构的基本信息与资质证件、公益项目详情、筹款与拨付数据、财务披露记录及平台待办事项，用于为您提供机构运营分析与项目管理辅助服务。 Version: 1.0.0. |
 | 新华三Cloudnet灵犀AI助手 | `workbuddy/connectors/marketplace/connectors/h3c-cloudnet` | mcp | 3 | 面向网络运维场景的 AI 助手，支持网络运行状态查询、网络问题分析、设备/AP 信息查询和无线终端故障排查，帮助用户快速定位网络异常并获取处理建议。 |
 | 氚云 | `workbuddy/connectors/marketplace/connectors/h3yun-connector` | mcp | 3 | 通过氚云连接器，将日常业务快速构建为可配置、可协同、可追踪的数字化应用。支持快速创建应用表单、管理业务数据、以流程驱动审批与任务流转，适用于客户、项目、采购、库存、售后等多类业务管理场景。 |
+| 汉仪字库 | `workbuddy/connectors/marketplace/connectors/hanyi-fonts` | mcp | 2 | 连接汉仪交付平台服务，在 WorkBuddy 中查询企业合同、字体权益以及字体预览。 Version: 0.1.0. |
 | i人事AI·HR专家 | `workbuddy/connectors/marketplace/connectors/ihr-cli` | cli | 138 | 一键直接连接 i 人事。覆盖组织人事管理、劳动合同、考勤管理、薪酬管理、社保个税、智慧绩效OKRKPI、招聘管理、培训陪练、OA审批，AI面谈、数字人面试，蓝领面试，说一句话，就能查询分析人事、薪资、绩效、用工风险，提升敏捷管理水平，降低人力成本，还有自定义各类agent，SKILL，实现定制化管理要求。 Version: 0.1.2. |
 | ima | `workbuddy/connectors/marketplace/connectors/ima-mcp` | connector | 2 | 腾讯AI知识管家，连接后支持搜索、读取和写入知识库资料，并可搜索和订阅教育、法律、财经、科技等20+行业专业知识 |
 | 电商内容专家 | `workbuddy/connectors/marketplace/connectors/infimind-ecommerce-content` | mcp | 9 | 通过 OAuth 连接电商内容专家，创建智能精修、商品主图、商品详情页、爆款图复制、KOC 种草、图文带货、视频生成和爆款视频复制任务。 Version: 1.0.0. |
 | 零信任安全 iOA | `workbuddy/connectors/marketplace/connectors/ioa` | mcp | 2 | 提供零信任接入、终端管控、安全防护、数据防泄密等核心安全能力的管理操作 Version: 1.0.31. |
+| 亿欧数据MCP | `workbuddy/connectors/marketplace/connectors/iyiou-connector` | mcp | 3 | 接入亿欧数据MCP服务，用自然语言查透产业数据——企业投融资、产业链上下游、产业研报等核心数据一目了然，还能随时调阅亿欧发布的产业观点、企业解读与市场洞察，助力您高效进行商业决策。 Version: 1.0.0. |
 | 简道云 | `workbuddy/connectors/marketplace/connectors/jiandaoyun` | mcp | 1 | 查询、整理和填写简道云数据。用自然语言查找表单记录、汇总业务进展、生成分析，并在确认后创建新记录。 Version: 1.0.0. |
 | 金手指·AI广告投放 | `workbuddy/connectors/marketplace/connectors/jinshouzhi` | mcp | 2 | WorkBuddy 里的腾讯广告投放执行台：查数据、写需求单、生成投放深链、轻量调优。 |
 | 金数据 | `workbuddy/connectors/marketplace/connectors/jinshuju` | mcp | 2 | 用自然语言在金数据（jinshuju.net）创建表单、表格、问卷、考试、报名、收款等各类场景应用：一句话生成表单与表格、批量处理数据、自动统计分析，零门槛快速搭建。 |
@@ -457,7 +487,7 @@
 | PandaData 金融数据 | `workbuddy/connectors/marketplace/connectors/pandadata` | mcp | 2 | 查询、整理和分析 A 股、期货、期权、港美股、基金、宏观经济及量化因子等金融数据，支持统计比较与趋势归纳。 |
 | Repilot科研智能体 | `workbuddy/connectors/marketplace/connectors/paper-retrieval` | mcp | 2 | 课题申报书与PPT生成、快速文献检索、医学智能问答、综述报告生成，所有任务异步执行，支持状态轮询与取消。 Version: 2.0.1. |
 | 智慧芽专利&文献融合检索 | `workbuddy/connectors/marketplace/connectors/patsnap-search` | mcp | 3 | 在智慧芽全球专利数据库和文献库中进行融合检索，支持自然语言、语义搜索、关键词检索和多维过滤，并获取专利或文献信息。 |
-| Picset AI 电商图片 | `workbuddy/connectors/marketplace/connectors/picset-commerce-images` | mcp | 8 | Picset AI 电商图片生成：面向电商卖家、设计师和美工，根据商品图一键生成主图、详情图、套图、Listing 图和 A+ 商品图，支持卖点图、场景图、功能图等上架素材。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，可自定义比例、分辨率和数量，支持方案规划、积分报价、生成跟踪和按编号局部修改。 |
+| Picset AI 电商设计 | `workbuddy/connectors/marketplace/connectors/picset-commerce-images` | mcp | 13 | Picset AI 电商设计：面向电商卖家、设计师和美工，提供三条独立功能线——电商套图（主图/详情图/套图/Listing/A+，含一张也走套图）、单图文生图/图生图（独立创意单图与图片编辑）、Agent Canvas（画布承接与图片返回），以及连接器统一充值面板。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，支持方案... |
 | Picset AI 视频创作 | `workbuddy/connectors/marketplace/connectors/picset-video-generation` | mcp | 10 | Picset AI 视频创作连接器支持在 WorkBuddy 中通过密钥调用电商商品视频生成、爆款视频复刻和模特图生成能力，完成素材上传登记、脚本规划、视频脚本生成、积分预估、确认提交、异步生成和任务状态查询。MVP 支持 Seedance 2.0、Seedance 2.0 Fast、Seedance 2.0 Mini 三个模型，默认使用 Seedance 2.0。 |
 | 北大法宝·法律智能检索 | `workbuddy/connectors/marketplace/connectors/pkulaw` | mcp | 2 | 检索 + 核验一体：语义（自然语言描述）与关键词双模式检索法规、法条与司法案例；并可把文本中的法条引用与案号回北大法宝库逐条比对、对齐标准名称，输出带 pkulaw.com 原文链接的可溯源结果，专治法律幻觉。 |
 | Plaud | `workbuddy/connectors/marketplace/connectors/plaud` | mcp | 2 | 连接 Plaud 录音与 AI：浏览查找录音、读取转写和 AI 摘要、汇总会议纪要，并生成跟进邮件与待办事项。 Version: 1.0.0. |
@@ -528,6 +558,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-02-223755 | [2026-09-02-223755](workbuddy/change-logs/2026-09-02-223755.md) | WorkBuddy 本次同步新增 4306 个文件、修改 171 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/deeplink, connectors/marketplace/connectors/dramabuddy, connectors/marketplace/connectors/h... |
 | 2026-09-02-180002 | [2026-09-02-180002](workbuddy/change-logs/2026-09-02-180002.md) | WorkBuddy 本次同步新增 21 个文件、修改 27 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/shanlong-claw, connectors/marketplace/connectors/tencent-map-guide。 受影响范围：connectors/marketpla... |
 | 2026-09-01-180001 | [2026-09-01-180001](workbuddy/change-logs/2026-09-01-180001.md) | WorkBuddy 本次同步新增 58 个文件、修改 31 个文件、删除 24 个文件。 新增条目：connectors/marketplace/connectors/aimoderator, connectors/marketplace/connectors/today-watermark-camera, connectors/marketplace... |
 | 2026-08-31-180002 | [2026-08-31-180002](workbuddy/change-logs/2026-08-31-180002.md) | WorkBuddy 本次同步新增 26 个文件、修改 6 个文件、删除 10 个文件。 新增条目：connectors/marketplace/connectors/databuddy, connectors/marketplace/connectors/jinshouzhi。 移除条目已归档：connectors/marketplace/connec... |

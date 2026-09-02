@@ -1,0 +1,14 @@
+{
+  "name": "公司股权尽职调查",
+  "name_en": "company-equity-due-diligence",
+  "description": "多场景公司股权尽职调查元技能。信息采集(天眼查MCP)+十部分核查框架+16维风险矩阵+四场景路由+红旗量化。触发：尽调、收购尽调、IPO尽调、融资前尽调、股权评估。不触发：单一维度核查(→全生命周期技能)、投前合规快筛(→投资意向书)、陷阱对抗(→adversarial)、创始人责任(→founder-liability)、股权核验(→cap-table-verify)、权利设计(→special-rights-design)、多轮一致性(→multi-round)。",
+  "version": "1.1.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-03",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

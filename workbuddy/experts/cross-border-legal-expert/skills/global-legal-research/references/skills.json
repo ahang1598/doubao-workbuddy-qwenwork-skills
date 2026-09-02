@@ -1,0 +1,13 @@
+{
+  "id": "global-legal-research",
+  "marketId": "",
+  "name": "法大大-全球法律研究",
+  "version": "",
+  "description": "检索、核验并比较境外、跨境和多法域法律资料。适用于“帮我核验 ECLI/CELEX/案号”“比较欧盟法院与欧洲人权法院并给代表性判例”“某国境外牌照需要什么条件”“核验数字认证、Certification Authority 或信任服务准入”这类请求。技能先解析法域，再以 LDH 实时目录通过主题 precise-search→get、引用 resolve→get 或官方源降级链生成可回链证据。多法域按法域独立检索。不适用于合同审查或起草；不适用于纯翻译、材料提取、纯中国大陆法源检索、税额计算或诉讼代理；拒绝伪造法源、教唆违法、冒充律师和跳过来源核验。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

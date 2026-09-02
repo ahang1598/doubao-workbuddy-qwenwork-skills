@@ -38,9 +38,10 @@
       "linux": "env -u NODE_OPTIONS xparse-cli version",
       "win32": "set \"NODE_OPTIONS=\" && xparse-cli.cmd version"
     },
-    "minVersion": "2.3.0",
+    "minVersion": "2.4.3",
     "versionPattern": "xparse-cli version v?(\\d+\\.\\d+\\.\\d+)"
   },
+  "authSuppressBrowser": true,
   "authDeviceFlow": {
     "uriPattern": "\"verification_uri_complete\"\\s*:\\s*\"(https?://[^\"]+)\"",
     "codePattern": "\"user_code\"\\s*:\\s*\"([A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4})\"",

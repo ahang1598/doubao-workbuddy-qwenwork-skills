@@ -1,0 +1,152 @@
+{
+  "name": "ai-expert-studio",
+  "version": "1.1.1",
+  "description": "AI 大模型专家团——5 人创作团队，完成策划、选型、生图、生视频与质检交付。",
+  "author": {
+    "name": "AI-HIVE Team"
+  },
+  "agents": [
+    "./agents/ai-expert-studio-lead.md",
+    "./agents/brief-planner.md",
+    "./agents/model-scout.md",
+    "./agents/gen-executor.md",
+    "./agents/qa-deliverer.md"
+  ],
+  "skills": [
+    "./skills/ai-expert-studio-orchestrator",
+    "./skills/image-creator",
+    "./skills/video-creator",
+    "./skills/text-creator",
+    "./skills/user-onboarding"
+  ],
+  "expertType": "team",
+  "agentName": "ai-expert-studio-lead",
+  "teamInfo": {
+    "leadAgent": "ai-expert-studio-lead",
+    "memberAgents": [
+      "brief-planner",
+      "model-scout",
+      "gen-executor",
+      "qa-deliverer"
+    ]
+  },
+  "displayName": {
+    "en": "AI Model Expert Team",
+    "zh": "AI大模型专家团"
+  },
+  "profession": {
+    "en": "AI Model Expert Team",
+    "zh": "AI大模型专家团"
+  },
+  "displayDescription": {
+    "en": "Models not delivering? A 5-role expert team brings 100+ top AI models(Seedance 2.5、H3 (MiniMax)、Happyhorse、GPT-image、Nano-Banana、Deepseek、Kimi) and strategies to unlock their full potential.",
+    "zh": "一个人搞不定的创意全案？5 人专家团从策划到成片成稿，一站式交付，省心省力不踩坑。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "en": "It always feels like AI creation is hyped to the sky in the marketing but falls flat when I try it myself. Could your team show me how working with you differs from me just fiddling on my own — maybe with a few examples so I can feel the gap?",
+    "zh": "总觉得 AI 创作营销吹得天花乱坠、自己上手却总差点意思。想请你们介绍下，找专家团帮忙跟我自己直接捣鼓到底有什么不一样，举几个例子让我感受下。"
+  },
+  "plugin": "ai-expert-studio",
+  "tags": [
+    {
+      "en": "Creative Workflow",
+      "zh": "创作编排"
+    },
+    {
+      "en": "Image & Video Gen",
+      "zh": "生图生视频"
+    },
+    {
+      "en": "Full Delivery",
+      "zh": "全案交付"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "It always feels like AI creation is hyped to the sky in the marketing but falls flat when I try it myself. Could your team show me how working with you differs from me just fiddling on my own — maybe with a few examples so I can feel the gap?",
+      "zh": "总觉得 AI 创作营销吹得天花乱坠、自己上手却总差点意思。想请你们介绍下，找专家团帮忙跟我自己直接捣鼓到底有什么不一样，举几个例子让我感受下。"
+    },
+    {
+      "en": "Plan a 200-person tech-company annual gala: 1 hero + 1 opening video script + 1 program (10 acts + flow) + 1 host script (3-hour run) + 1 lottery visual set + 1 employee honor poster set",
+      "zh": "出一套科技公司 200 人年会的完整方案：1 张主视觉 + 1 段开场视频脚本 + 1 张节目单（10 个节目 + 流程）+ 1 段主持人串词（贯穿 3 小时）+ 1 套抽奖环节视觉 + 1 套员工荣誉海报"
+    },
+    {
+      "en": "Build an AI-101 corporate training course kit: 1 cover + 1 syllabus poster + 5 principle illustrations (NN / Transformer / Diffusion / Alignment / Agent) + 1 skill map + 1 instructor intro video + 1 30-question test + 1 certificate of completion",
+      "zh": "出一套 AI 入门企业培训完整课件：1 张封面 + 1 张课程大纲海报 + 5 张原理插图（神经网络 / Transformer / 扩散模型 / 对齐 / 智能体）+ 1 张能力图谱 + 1 段讲师介绍视频 + 1 份 30 题测试卷 + 1 张结业证书"
+    }
+  ],
+  "members": [
+    {
+      "id": "ai-expert-studio-lead",
+      "name": {
+        "en": "Wang",
+        "zh": "王总监"
+      },
+      "profession": {
+        "en": "Creative Director",
+        "zh": "创作总监"
+      },
+      "avatar": "avatars/ai-expert-studio-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "brief-planner",
+      "name": {
+        "en": "Hao",
+        "zh": "郝策划"
+      },
+      "profession": {
+        "en": "Brief Planner",
+        "zh": "需求策划"
+      },
+      "avatar": "avatars/brief-planner.png",
+      "role": "member"
+    },
+    {
+      "id": "model-scout",
+      "name": {
+        "en": "Hui",
+        "zh": "惠选模"
+      },
+      "profession": {
+        "en": "Model Scout",
+        "zh": "模型选型"
+      },
+      "avatar": "avatars/model-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "gen-executor",
+      "name": {
+        "en": "Bao",
+        "zh": "包落地"
+      },
+      "profession": {
+        "en": "Generation Executor",
+        "zh": "生成立行"
+      },
+      "avatar": "avatars/gen-executor.png",
+      "role": "member"
+    },
+    {
+      "id": "qa-deliverer",
+      "name": {
+        "en": "Yan",
+        "zh": "严质检"
+      },
+      "profession": {
+        "en": "QA",
+        "zh": "质量把关"
+      },
+      "avatar": "avatars/qa-deliverer.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": [
+      "ai-hive"
+    ]
+  }
+}

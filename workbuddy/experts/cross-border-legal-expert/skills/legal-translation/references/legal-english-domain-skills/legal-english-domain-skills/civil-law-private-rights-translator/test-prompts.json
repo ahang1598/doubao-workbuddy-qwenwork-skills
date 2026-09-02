@@ -1,0 +1,37 @@
+{
+  "skill": "civil-law-private-rights-translator",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "civil law 在这份比较法报告中应译为民法、大陆法还是国法？",
+      "expected": "Use the skill to select by legal-system meaning."
+    },
+    {
+      "type": "should-call",
+      "prompt": "不可抗力条款里 force majeure、Act of God、contingency 能否互换？",
+      "expected": "Use the skill to distinguish risk concepts."
+    },
+    {
+      "type": "should-call",
+      "prompt": "请审校合同译文中的 consideration、cause、对待给付用词。",
+      "expected": "Use the skill for system-sensitive contract terminology."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "请解释 appeal 和 appellate review 的区别。",
+      "expected": "Do not call; use procedure-litigation-term-mapper."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "帮我判断 insider trading 在证券文件中的译法。",
+      "expected": "Do not call; use commercial-corporate-finance-translator."
+    },
+    {
+      "type": "boundary",
+      "prompt": "公司董事的 capacity 是身份、行为能力还是权限？",
+      "expected": "Call this skill and coordinate with commercial-corporate-finance-translator."
+    }
+  ]
+}

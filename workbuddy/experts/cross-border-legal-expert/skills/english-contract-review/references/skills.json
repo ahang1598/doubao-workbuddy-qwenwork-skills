@@ -1,0 +1,13 @@
+{
+  "id": "english-contract-review",
+  "marketId": "",
+  "name": "英文合同审查",
+  "version": "",
+  "description": "Review, assess, comment on, or redline an existing English or bilingual contract and produce a Chinese review report plus a selectable true OOXML tracked-change redline, Chinese risk-comment version, or combined version. Trigger for review this agreement, identify unfavorable clauses, is this clause enforceable, mark up this contract, or revise vendor paper. Do not use for drafting a new agreement or new version, translation only, summary, literal explanation, clause extraction without evaluation, version comparison, or file conversion.\n",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

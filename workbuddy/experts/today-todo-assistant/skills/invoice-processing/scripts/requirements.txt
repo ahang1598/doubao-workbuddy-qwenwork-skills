@@ -1,0 +1,74 @@
+# Invoice Processing Scripts - Python 依赖
+
+# ---------------------------------------------------------------------------
+# PDF 光栅化（把页面渲染成像素图, 供视觉 OCR 用）
+#
+# ⚠️ 注意: 这里装的库是用来做「光栅化渲染」的, 不是用来「提取文本层」的。
+#    腾讯公益票据 PDF 普遍是 subset 加密字体, 文本层字符经 CID 映射不可信,
+#    必须光栅化后交给视觉 OCR。详见 invoice-processing/SKILL.md 门禁 3。
+#
+# pdf_to_images.py 会按以下优先级自动探测, 任一可用即可:
+#   1. pypdfium2  ← 首选: 纯 wheel, 无系统依赖, 速度快
+#   2. fitz       ← PyMuPDF, 功能强 (注意 AGPL license)
+#   3. pdf2image  ← 需系统装 poppler (pdftoppm), 兼容性兜底
+# 若三者都不可用，脚本会把 pypdfium2 + Pillow 一次性安装到插件专属隔离目录。
+# ---------------------------------------------------------------------------
+pypdfium2>=4.20.0
+
+# 可选备用渲染后端（AGPL license, 按需启用）
+# PyMuPDF>=1.24.0
+
+# 可选备用渲染后端（额外需要系统安装 poppler）
+# pdf2image>=1.17.0
+
+# 图像处理（pypdfium2 输出转 PIL Image 时用）
+Pillow>=10.0.0
+
+# COS 上传（cos_batch_upload.py 并发上传票据 PDF）
+# ⚠️ 纯 requests 实现（与 alert-expert upload_cos.py 同源），**不依赖 cos-python-sdk-v5**。
+#   若缺失, 脚本会自动 `pip install requests`。
+requests>=2.28.0
+
+# ---------------------------------------------------------------------------
+# 可观测埋点 SDK（run_pipeline.py 上报耗时/处理量/错误类别到伽利略）
+#
+# ⚠️ 只发布在腾讯内网 index，公网 PyPI 上没有这个包，装的时候必须带下面那行
+#    --extra-index-url，否则解析不到。该 index 匿名可读，不需要凭据。
+# 本体零第三方依赖（纯标准库）。未安装时 observe_bootstrap.py 会静默降级为空实现，
+# 不影响票据流水线，因此**不要**为它做会话启动期的自动安装探测。
+# ---------------------------------------------------------------------------
+--extra-index-url https://mirrors.tencent.com/repository/pypi/tencent_pypi/simple
+ssv-agent-obser-sdk>=0.3.0
+
+# 测试
+pytest>=7.4.0
+
+# ---------------------------------------------------------------------------
+# ⛔ 明确**不要**写进本文件的依赖：本地 OCR 引擎
+#
+#   rapidocr / onnxruntime —— local_ocr_batch.py 使用，但只在进入 OCR 阶段后
+#   按需安装，避免用户只做查询时下载模型和运行时。
+#
+# 默认组合：
+#   rapidocr==3.9.2
+#   onnxruntime>=1.17,<2
+#   opencv-python-headless>=4.6,<5
+#   PP-OCRv6 small（RapidOCR wheel 内置）
+#
+# RapidOCR 的元数据依赖 opencv-python；WB 为无 GUI 环境，local_ocr_batch.py
+# 会先安装 headless 运行时，再用 --no-deps 安装 RapidOCR，避免两个 cv2 包覆盖。
+# ⛔ 严禁在会话开始或环境自检阶段探测/提示安装本地 OCR。
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# ⛔ 明确不要装（这些是「文本层提取」库, 用于抽字段属违规行为）:
+#   pypdf / PyPDF2 / pdfplumber / pdfminer.six
+# 它们能从加密字体 PDF 里"提取到字符", 但那些字符是 CID 乱码,
+# 用它们抽字段会导致假数据与假结论（参见 2026-08-08 事故记录）。
+# ---------------------------------------------------------------------------
+
+# 无外部依赖的纯 Python 脚本:
+#   amount_conversion.py    大写金额转数值
+#   project_matcher.py      项目名子串匹配 → project_id
+#   title_normalizer.py     抬头归一化 + m:n 独占分配 + 重匹配合并
+#   checkpoint.py           断点续传进度文件

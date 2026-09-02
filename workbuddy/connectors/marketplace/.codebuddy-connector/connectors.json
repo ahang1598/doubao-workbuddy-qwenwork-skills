@@ -2222,11 +2222,11 @@
     },
     {
       "id": "picset-commerce-images",
-      "name": "Picset AI 电商图片",
-      "name_en": "Picset AI Commerce Images",
-      "description": "Design and generate ecommerce main images, detail images, Listing images, A+ content images and coordinated image suites through Picset AI.",
-      "description_zh": "Picset AI 电商图片生成：面向电商卖家、设计师和美工，根据商品图一键生成主图、详情图、套图、Listing 图和 A+ 商品图，支持卖点图、场景图、功能图等上架素材。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，可自定义比例、分辨率和数量，支持方案规划、积分报价、生成跟踪和按编号局部修改。",
-      "description_en": "Design and generate ecommerce main images, detail images, Listing images, A+ content images and coordinated image suites through Picset AI.",
+      "name": "Picset AI 电商设计",
+      "name_en": "Picset AI Commerce Design",
+      "description": "Picset AI Commerce Design provides three independent capabilities: ecommerce image suites (main, detail, listing, and A+ content images), single image text-to-image/image-to-image generation and editing, and Agent Canvas (canvas hosting and image return), plus a unified connector pricing panel. Covers Taobao, Tmall, JD, Pinduoduo, Douyin, 1688, Xiaohongshu, TikTok, Amazon, Shopify, Temu, OZON, Shopee, Alibaba.com with credit quoting, generation tracking, and indexed partial revisions.",
+      "description_zh": "Picset AI 电商设计：面向电商卖家、设计师和美工，提供三条独立功能线——电商套图（主图/详情图/套图/Listing/A+，含一张也走套图）、单图文生图/图生图（独立创意单图与图片编辑）、Agent Canvas（画布承接与图片返回），以及连接器统一充值面板。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，支持方案规划、积分报价、生成跟踪和按编号局部修改。",
+      "description_en": "Picset AI Commerce Design provides three independent capabilities: ecommerce image suites (main, detail, listing, and A+ content images), single image text-to-image/image-to-image generation and editing, and Agent Canvas (canvas hosting and image return), plus a unified connector pricing panel. Covers Taobao, Tmall, JD, Pinduoduo, Douyin, 1688, Xiaohongshu, TikTok, Amazon, Shopify, Temu, OZON, Shopee, Alibaba.com with credit quoting, generation tracking, and indexed partial revisions.",
       "source": "picset-commerce-images",
       "type": "mcp",
       "auth_mode": "token",
@@ -2240,16 +2240,16 @@
       "examples_zh": [
         "用我上传的商品图生成一套淘宝主图和详情图",
         "生成 5 张 Amazon 主图",
-        "生成一套统一风格的商品详情图",
-        "做 3 张主图加 4 张详情图，TikTok 东南亚站",
-        "把 D3 背景改成厨房，其他图片不要动"
+        "把 D3 背景改成现代极简厨房，其他图片不要动",
+        "帮我文生图一张极简原木风咖啡杯创意概念图",
+        "打开画布查看刚才生成的商品图并进行微调"
       ],
       "examples_en": [
-        "Generate a coordinated set of main and detail images for my uploaded product",
-        "Generate five Amazon main images only",
-        "Generate a consistent set of product detail images",
-        "3 main images and 4 detail images for TikTok Southeast Asia",
-        "Change only D3 to a kitchen background"
+        "Generate a coordinated set of main and detail images for my uploaded product on Taobao",
+        "Generate five Amazon main images",
+        "Change only D3 to a modern minimalist kitchen background",
+        "Generate a creative concept image of a minimalist wooden coffee cup",
+        "Open the canvas to inspect and fine-tune recently generated images"
       ]
     },
     {
@@ -3770,23 +3770,39 @@
       "id": "dzh-mcp",
       "name": "大智慧MCP",
       "name_en": "DZH MCP",
-      "description": "Provide A-share real-time quotes, multi-dimensional investment research including capital, fundamental and technical analysis, intelligent stock selection, market news and conditional alerts to support investment decisions.",
-      "description_zh": "提供A股实时行情/舆情/资金面/基本面/技术面多维数据查询能力，辅助投资决策。",
-      "description_en": "Provide multi-dimensional data query capabilities for A-share real-time quotes, public opinion, capital trends, fundamentals and technical indicators to assist in investment decision-making.",
+      "description": "Provide data query capabilities for A-share K-line and real-time quotes, Hong Kong and US stock K-line and real-time quotes, futures K-line and real-time quotes, fund quotes, company profiles, main products, shareholders, dividends and bonus shares, company financials, stock thematic concepts, A-share sectors, research reports, company announcements, news and public opinion, capital flows, institutional surveys, the Dragon-Tiger List, margin trading, and stock technical indicators to assist in investment decision-making.",
+      "description_zh": "提供A股K线行情、A股实时行情、港美股K线行情、港美股实时行情、期货K线行情、期货实时行情、基金行情、公司简况资料、公司主营产品、公司股东、公司分红送转、公司财务（利润表）、公司财务（资产负债表）、公司财务（现金流量表）、股票题材概念、A股板块、研究报告、公司公告、新闻舆情、资金流向、机构调研、龙虎榜、融资融券、股票技术指标等数据查询工具，辅助投资决策。",
+      "description_en": "Provide data query capabilities for A-share K-line and real-time quotes, Hong Kong and US stock K-line and real-time quotes, futures K-line and real-time quotes, fund quotes, company profiles, main products, shareholders, dividends and bonus shares, company financials (income statement, balance sheet, cash flow statement), stock thematic concepts, A-share sectors, research reports, company announcements, news and public opinion, capital flows, institutional surveys, the Dragon-Tiger List, margin trading, and stock technical indicators to assist in investment decision-making.",
       "source": "dzh-mcp",
       "type": "mcp",
-      "minWorkbuddyVersion": "5.0.0",
+      "minWorkbuddyVersion": "5.3.14",
       "examples_zh": [
         "查询贵州茅台的实时行情与资金流向",
         "查询贵州茅台今天的新闻资讯",
         "分析贵州茅台的财务情况",
-        "分析下贵州茅台的技术指标"
+        "分析下贵州茅台的技术指标",
+        "查询腾讯控股的港美股实时行情",
+        "查询NYMEX原油期货的实时行情",
+        "查询沪深300ETF的最新净值",
+        "查询贵州茅台的龙虎榜数据",
+        "查询贵州茅台的融资融券余额",
+        "查询宁德时代最近的机构调研记录",
+        "查询招商银行最新的研究报告",
+        "查询比亚迪的题材概念和所属板块行情"
       ],
       "examples_en": [
         "Query real-time quotes and capital flow of Kweichow Moutai",
         "Query today's news and information of Kweichow Moutai",
         "Analyze the financial status of Kweichow Moutai",
-        "Analyze the technical indicators of Kweichow Moutai"
+        "Analyze the technical indicators of Kweichow Moutai",
+        "Query real-time quotes of Tencent Holdings on the Hong Kong and US stock markets",
+        "Query the real-time quotes of NYMEX crude oil futures",
+        "Query the latest NAV of the CSI 300 ETF",
+        "Query the Dragon-Tiger List data of Kweichow Moutai",
+        "Query the margin trading balance of Kweichow Moutai",
+        "Query the recent institutional survey records of CATL",
+        "Query the latest research reports of China Merchants Bank",
+        "Query the thematic concepts and sector quotes of BYD"
       ],
       "visible_in": [
         "internal",
@@ -4647,6 +4663,126 @@
         "iOA",
         "cloudhosted",
         "selfhosted"
+      ]
+    },
+    {
+      "id": "deeplink",
+      "name": "深度智联·地产数据",
+      "name_en": "DeepLink",
+      "description": "DeepLink provides AI-powered real estate data services using CRIC-licensed data. Wenshu queries structured China real estate data, while Wenzhi answers professional questions across real estate, property management, and senior care.",
+      "description_zh": "由深度智联提供的地产 AI 数据服务。「问数」使用经克而瑞授权的中国房地产数据，覆盖新房、二手房、土地、企业、宏观、长租公寓、产城、康养、商办九大领域；「问知」提供地产、物业、银发三大领域专业知识问答。",
+      "description_en": "DeepLink provides AI-powered real estate data services using CRIC-licensed data. Wenshu queries structured China real estate data, while Wenzhi answers professional questions across real estate, property management, and senior care.",
+      "source": "deeplink",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "3.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查一下上海最近一个月的新房成交情况",
+        "对比北京、上海、深圳的二手房挂牌均价",
+        "杭州今年土地成交金额 TOP10 的地块",
+        "解读一下最近的房地产调控政策方向",
+        "物业客诉处理有哪些规范做法"
+      ],
+      "examples_en": [
+        "Show new home transactions in Shanghai for the last month",
+        "Compare resale listing prices across Beijing, Shanghai, and Shenzhen",
+        "Top 10 land deals by value in Hangzhou this year",
+        "Interpret the latest real estate regulation policy direction",
+        "What are the standard practices for property management complaint handling"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "dramabuddy",
+      "name": "DramaBuddy",
+      "name_zh": "DramaBuddy",
+      "name_en": "DramaBuddy",
+      "description": "DramaBuddy is a general-purpose comic-drama creation tool for everyone — just provide a novel or an idea, and it automatically generates the script, characters, and storyboard videos, so you can easily create your own comic-drama.",
+      "description_zh": "DramaBuddy（漫剧助手）是一个人人可用的通用漫剧制作工具——只需提供小说或创意，就能自动生成剧本、角色与分镜视频，轻松做出属于自己的漫剧。",
+      "description_en": "DramaBuddy is a general-purpose comic-drama creation tool for everyone — just provide a novel or an idea, and it automatically generates the script, characters, and storyboard videos, so you can easily create your own comic-drama.",
+      "source": "dramabuddy",
+      "type": "mcp",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "把这篇小说做成 3 分钟内的漫剧，自动出剧本、角色三视图和分镜视频",
+        "帮我在画布上生成一段 9:16 的动漫视频，主题是少女在雨中奔跑",
+        "生成一张 16:9 的角色三视图设定图，含正面、侧面、背面",
+        "用这张角色图做参考，生成 5 秒的说话视频",
+        "预览当前画布所有节点的积分，确认后再执行生成"
+      ],
+      "examples_en": [
+        "Turn this novel into a sub-3-minute comic-drama with script, character trio views and storyboard videos",
+        "Generate a 9:16 anime video on the canvas, theme: a girl running in the rain",
+        "Generate a 16:9 character design with front, side and back views",
+        "Use this character image as reference to generate a 5-second talking video",
+        "Preview the point cost of all canvas nodes, confirm before running generation"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "hanyi-fonts",
+      "name": "汉仪字库",
+      "name_zh": "汉仪字库",
+      "name_en": "Hanyi Fonts",
+      "description": "Connect to HanyiDeliver in WorkBuddy to query enterprise contract coverage, font entitlements, and font previews.",
+      "description_zh": "连接汉仪交付平台服务，在 WorkBuddy 中查询企业合同、字体权益以及字体预览。",
+      "description_en": "Connect to HanyiDeliver in WorkBuddy to query enterprise contract coverage, font entitlements, and font previews.",
+      "source": "hanyi-fonts",
+      "type": "mcp",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "5.3.14",
+      "examples_zh": [
+        "查看我可以访问的汉仪字体签约主体",
+        "在我的签约主体中搜索黑体",
+        "查看这款字体的授权范围和到期时间",
+        "用汉仪字体预览这段文字"
+      ],
+      "examples_en": [
+        "Show the Hanyi font accounts I can access",
+        "Search for Hei-style fonts in my account",
+        "Show this font's entitlement scope and expiration date",
+        "Preview this text using an entitled Hanyi font"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "iyiou-connector",
+      "name": "亿欧数据MCP",
+      "name_en": "YiouData MCP",
+      "description": "Connect to the Yiou Data MCP service and gain in-depth access to industrial data via natural language. Core datasets including corporate investment and financing, industrial chain upstream-downstream relationships, and industry research reports are readily available. You can also retrieve Yiou's published industrial perspectives, enterprise analyses and market insights at any time to support your efficient business decision-making.",
+      "description_zh": "接入亿欧数据MCP服务，用自然语言查透产业数据——企业投融资、产业链上下游、产业研报等核心数据一目了然，还能随时调阅亿欧发布的产业观点、企业解读与市场洞察，助力您高效进行商业决策。",
+      "description_en": "Connect to the Yiou Data MCP service and gain in-depth access to industrial data via natural language. Core datasets including corporate investment and financing, industrial chain upstream-downstream relationships, and industry research reports are readily available. You can also retrieve Yiou's published industrial perspectives, enterprise analyses and market insights at any time to support your efficient business decision-making.",
+      "source": "iyiou-connector",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询字节跳动近一年的融资情况",
+        "对比下小红书和Keep的历史融资事件",
+        "筛选2025年上半年由腾讯投资的融资事件"
+      ],
+      "examples_en": [
+        "Show ByteDance financing events in the past year",
+        "Batch query historical investment events for Xiaohongshu and Keep",
+        "Filter financing events invested by Tencent in the first half of 2025"
       ]
     }
   ]

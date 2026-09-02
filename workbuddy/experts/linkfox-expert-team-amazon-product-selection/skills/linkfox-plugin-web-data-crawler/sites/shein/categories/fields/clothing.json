@@ -1,0 +1,6 @@
+{
+  "categoryKey": "clothing",
+  "displayName": "服装 / Clothing (Women, Men, Kids)",
+  "description": "Shein 服装品类特有字段：材质面料、版型、洗护说明、款式细节、尺寸测量。适用于 Women's Clothing、Men's Clothing、Kids' Clothing、Activewear、Sleepwear、Swimwear。注意：color、color_options、size_options 已在 base-full.json 中覆盖，此处不再重复。",
+  "fields": []
+}

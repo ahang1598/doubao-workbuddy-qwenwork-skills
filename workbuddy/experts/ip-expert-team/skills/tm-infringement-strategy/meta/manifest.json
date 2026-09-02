@@ -1,0 +1,33 @@
+{
+  "name": "商标侵权诉讼策略制定",
+  "name_en": "tm-infringement-strategy",
+  "description": "在证据和侵权分析基础上确定商标侵权诉讼目标、选择管辖法院、设计诉请组合、预判五类抗辩，输出诉讼策略方案。触发：商标侵权诉讼策略选择、管辖法院确定、诉请组合设计。不触发：侵权比对分析、赔偿金额精确计算、类案检索",
+  "version": "1.1.0",
+  "blueprint": "bp-research-organization-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-15",
+  "author": "深圳法大大网络科技有限公司",
+  "format_seriousness": "I-Practical",
+  "type_tag": "T-consultation",
+  "output_formats": ["markdown"],
+  "legal_domain": "商标",
+  "script_necessity": "none",
+  "dependencies": {
+    "infrastructure": [
+      {"name": "governance.soft_degraded", "required": true, "fallback": "无法降级时仅输出错误提示"},
+      {"name": "governance.interaction_gates", "required": true, "fallback": "无交互门控时按≤3轮补全"}
+    ],
+    "upstream_skills": [
+      {"name": "tm-infringement-comparison", "strength": "strong", "description": "侵权比对结论（必需）"},
+      {"name": "tm-damage-calc", "strength": "weak", "description": "赔偿测算结论（可选，缺失时简化版估算）"},
+      {"name": "tm-case-research", "strength": "weak", "description": "类案检索结论（可选）"},
+      {"name": "tm-case-evaluation", "strength": "weak", "description": "案件初评报告（可选）"},
+      {"name": "tm-jurisdiction-analysis", "strength": "weak", "description": "管辖分析（可选，缺失时简化版）"}
+    ],
+    "downstream_skills": [
+      {"name": "tm-infringement-complaint", "strength": "weak", "description": "侵权起诉状，消费策略方案确定起诉状内容"}
+    ]
+  }
+}

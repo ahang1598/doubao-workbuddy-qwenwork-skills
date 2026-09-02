@@ -1,0 +1,16 @@
+# 腾讯云知识引擎文档解析依赖（Step 2）
+tencentcloud-sdk-python>=3.0.1334
+cos-python-sdk-v5>=1.9.35
+requests>=2.31.0
+
+# 配置与数据处理（Step 3/4/5 粗筛 + 精筛 + 校验 + 合并）
+pyyaml>=6.0
+
+# 说明：
+# - 粗筛 (coarse_filter.py)、精筛辅助 (fine_extractor.py)、编排 (extract_standard_metrics.py)
+#   仅依赖 Python 标准库 + pyyaml，无需额外第三方库
+# - 精筛的 LLM 调用由 Codebuddy 主 Agent 的 task 工具（子代理）完成，不直接依赖任何 SDK
+
+# 可选兜底（腾讯云服务不可用时使用）
+# pdfplumber>=0.10.0
+# PyMuPDF>=1.23.0

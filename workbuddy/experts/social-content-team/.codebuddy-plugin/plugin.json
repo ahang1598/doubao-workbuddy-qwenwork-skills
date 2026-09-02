@@ -1,0 +1,167 @@
+{
+  "name": "social-content-team",
+  "version": "1.0.0",
+  "description": "A coach-style social media content expert team fluent in the content ecosystem rules and paid promotion playbooks of WeChat, Xiaohongshu and Douyin — covering account launch, personal style cultivation with de-AI writing, viral breakdown, UGC insight mining for brands, topic planning, paid boosting and monetization. Industry-neutral core with pluggable industry packs.",
+  "author": {
+    "name": "vianneliu",
+    "email": "vianneliu@tencent.com"
+  },
+  "agents": [
+    "./agents/social-content-team-team-lead.md",
+    "./agents/launch-doctor.md",
+    "./agents/style-coach.md",
+    "./agents/viral-analyst.md",
+    "./agents/topic-scout.md",
+    "./agents/monetization-advisor.md"
+  ],
+  "skills": [
+    "./skills/output-readability",
+    "./skills/html-card-template",
+    "./skills/style-dna-training",
+    "./skills/de-ai-writing",
+    "./skills/content-methodology-analysis",
+    "./skills/ugc-insight-mining",
+    "./skills/brand-deal-compliance",
+    "./skills/brand-deal-brief",
+    "./skills/platform-playbook"
+  ],
+  "expertType": "team",
+  "agentName": "social-content-team-team-lead",
+  "teamInfo": {
+    "leadAgent": "social-content-team-team-lead",
+    "memberAgents": [
+      "launch-doctor",
+      "style-coach",
+      "viral-analyst",
+      "topic-scout",
+      "monetization-advisor"
+    ]
+  },
+  "displayName": {
+    "en": "Marketing Hub · Social Content Expert Team",
+    "zh": "营销通·社媒内容专家团"
+  },
+  "profession": {
+    "en": "Marketing Hub · Social Content Expert Team",
+    "zh": "营销通·社媒内容专家团"
+  },
+  "displayDescription": {
+    "en": "We help creators and brand accounts nail account growth, viral content breakdown, paid promotion and monetization — workable approaches for individuals and small teams alike.",
+    "zh": "帮自媒体和品牌号搞定起号涨粉、爆款拆解、投流和变现，个人和小团队都能找到自己的做法。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "刚开始做小红书，要怎么开始？",
+    "en": "I'm just starting on Xiaohongshu. How do I get going?"
+  },
+  "plugin": "social-content-team",
+  "tags": [
+    {
+      "en": "Account Growth",
+      "zh": "起号涨粉"
+    },
+    {
+      "en": "Style Cultivation",
+      "zh": "风格养成"
+    },
+    {
+      "en": "Viral Content Analysis",
+      "zh": "爆款拆解"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "I'm just starting on Xiaohongshu. How do I get going?",
+      "zh": "刚开始做小红书，要怎么开始？"
+    },
+    {
+      "en": "I run a finance account. Help me find my own voice.",
+      "zh": "我是财经自媒体，帮我找到自己的风格"
+    },
+    {
+      "en": "I took a fund company's sponsored post on WeChat. Check it for review risks.",
+      "zh": "公众号接了基金公司商单，帮我看看有没有卡审的地方"
+    }
+  ],
+  "members": [
+    {
+      "id": "social-content-team-team-lead",
+      "name": {
+        "en": "Geng",
+        "zh": "梗王"
+      },
+      "profession": {
+        "en": "Marketing Hub · Chief Content Strategist",
+        "zh": "营销通·首席内容策略官"
+      },
+      "avatar": "avatars/social-content-team-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "launch-doctor",
+      "name": {
+        "en": "Qi",
+        "zh": "启号"
+      },
+      "profession": {
+        "en": "Marketing Hub · Launch Strategist",
+        "zh": "营销通·起号规划师"
+      },
+      "avatar": "avatars/launch-doctor.png",
+      "role": "member"
+    },
+    {
+      "id": "style-coach",
+      "name": {
+        "en": "Zhao",
+        "zh": "赵写"
+      },
+      "profession": {
+        "en": "Marketing Hub · Content Style Coach",
+        "zh": "营销通·内容风格教练"
+      },
+      "avatar": "avatars/style-coach.png",
+      "role": "member"
+    },
+    {
+      "id": "viral-analyst",
+      "name": {
+        "en": "Bao",
+        "zh": "包火"
+      },
+      "profession": {
+        "en": "Marketing Hub · Viral Content Analyst",
+        "zh": "营销通·爆款分析师"
+      },
+      "avatar": "avatars/viral-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "topic-scout",
+      "name": {
+        "en": "Hao",
+        "zh": "郝选题"
+      },
+      "profession": {
+        "en": "Marketing Hub · Topic Scout",
+        "zh": "营销通·选题助手"
+      },
+      "avatar": "avatars/topic-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "monetization-advisor",
+      "name": {
+        "en": "Bian",
+        "zh": "卞现"
+      },
+      "profession": {
+        "en": "Marketing Hub · Content Monetization Advisor",
+        "zh": "营销通·内容变现顾问"
+      },
+      "avatar": "avatars/monetization-advisor.png",
+      "role": "member"
+    }
+  ]
+}

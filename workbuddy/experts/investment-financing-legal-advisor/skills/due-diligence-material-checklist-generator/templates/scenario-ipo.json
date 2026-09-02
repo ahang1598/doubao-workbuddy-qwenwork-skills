@@ -1,0 +1,39 @@
+{
+  "scenario_id": "S-IPO",
+  "scenario_name": "IPO",
+  "description": "上市前尽职调查，最高标准，核心关切股权清晰/合规性/信息披露/董监高责任",
+  "modules": {
+    "M1": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 12},
+    "M2": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 18},
+    "M3": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 10},
+    "M4": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 22},
+    "M5": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 18},
+    "M6": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 14},
+    "M7": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 14},
+    "M8": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 12},
+    "M9": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 12},
+    "M10": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 10},
+    "M11": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 14},
+    "M12": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 10}
+  },
+  "total_estimated": "100-150",
+  "industry_adaptation": {
+    "manufacturing": {"M9": {"enabled": true, "priority": "high", "depth": "full", "extra_items": ["安全生产标准化证书"]}},
+    "software": {"M9": {"enabled": true, "priority": "medium", "depth": "standard"}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "biotech": {"M10": {"extra_items": ["药品注册证书", "临床试验批件", "GMP认证", "药物非临床研究质量管理规范认证"]}, "M11": {"enabled": true, "priority": "high", "depth": "standard"}},
+    "finance": {"M10": {"extra_items": ["金融业务许可证", "金融机构营业场所安全防范设施合格证"]}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "real_estate": {"M9": {"enabled": true, "priority": "high", "depth": "full"}, "M10": {"extra_items": ["房地产预售许可证", "竣工验收备案文件"]}},
+    "new_energy": {"M9": {"enabled": true, "priority": "high", "depth": "full"}, "M10": {"extra_items": ["发电业务许可证", "碳排放配额文件", "可再生能源补贴文件"]}},
+    "semiconductor": {"M5": {"priority": "high", "depth": "full"}, "M10": {"extra_items": ["集成电路设计企业认定证书"]}, "M11": {"enabled": true, "priority": "medium"}},
+    "education": {"M10": {"extra_items": ["办学许可证", "民办非企业单位登记证书"]}}
+  },
+  "key_concerns": ["股权清晰", "合规性", "信息披露", "财务规范", "数据安全", "保险覆盖"],
+  "focus_modules": ["M2", "M3", "M4", "M9", "M11", "M12"],
+  "special_requirements": {
+    "M4": "需提供3年+1期审计报告",
+    "M3": "需完整三会文件（近3年全部决议）",
+    "M9": "最严格环保合规审查",
+    "M11": "需全面数据安全合规审查",
+    "M12": "需全部有效保险保单覆盖"
+  }
+}

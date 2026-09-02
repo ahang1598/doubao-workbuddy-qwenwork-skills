@@ -1,0 +1,37 @@
+{
+  "skill": "procedure-litigation-term-mapper",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "请审校这段英文判决摘要里 judgment、ruling、order、verdict 是否用对。",
+      "expected": "Use the skill to distinguish decision types."
+    },
+    {
+      "type": "should-call",
+      "prompt": "service of process、notice、summons 在涉外送达语境里怎么翻译？",
+      "expected": "Use the skill to map service function and document type."
+    },
+    {
+      "type": "should-call",
+      "prompt": "这个 long-arm jurisdiction 段落里 jurisdiction 和 venue 有没有混用？",
+      "expected": "Use this skill, with possible handoff to extraterritorial skill."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "帮我解释合同中的 consideration 和 cause 有什么区别。",
+      "expected": "Do not call; use civil-law-private-rights-translator."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "翻译公司章程里的 board of directors 和 board of supervisors。",
+      "expected": "Do not call; use commercial-corporate-finance-translator."
+    },
+    {
+      "type": "boundary",
+      "prompt": "刑事案中 prosecution 到底是检察机关、起诉行为还是控方？",
+      "expected": "Call this skill and coordinate with criminal-law-elements-offenses-translator."
+    }
+  ]
+}

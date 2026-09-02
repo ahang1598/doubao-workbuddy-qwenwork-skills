@@ -1,0 +1,32 @@
+{
+  "agent": "criminal-defense-team-lead",
+  "defaultLanguage": "zh",
+  "workflowMode": "team_dispatch",
+  "autoRouting": true,
+  "leadReview": true,
+  "verificationEnabled": true,
+  "citationRequired": true,
+  "caseStageRouting": {
+    "investigation": ["criminal-material-analyst", "criminal-research-strategist", "criminal-drafting-specialist"],
+    "prosecution_review": ["criminal-material-analyst", "criminal-research-strategist", "criminal-drafting-specialist", "criminal-verification-officer"],
+    "trial_first_instance": ["criminal-trial-support", "criminal-research-strategist", "criminal-drafting-specialist", "criminal-verification-officer"],
+    "appeal": ["criminal-research-strategist", "criminal-drafting-specialist", "criminal-verification-officer"],
+    "special_procedures": ["criminal-research-strategist", "criminal-drafting-specialist", "criminal-verification-officer"]
+  },
+  "defaultDeliverables": {
+    "opinion_documents": ["docx"],
+    "strategy_reports": ["html", "docx"],
+    "case_files": ["markdown", "xlsx"]
+  },
+  "qualityGates": {
+    "sourceVerification": true,
+    "legalCitationCheck": true,
+    "templateCompliance": true,
+    "finalReviewByLead": true
+  },
+  "metadata": {
+    "schemaVersion": "1.0.0",
+    "teamType": "criminal_defense",
+    "copyright": "Fadada"
+  }
+}

@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.DS_Store
+# 凭据绝不入库。CLI 的配置本来在 ~/.pandaai/，这几条是防止有人把它拷进仓库
+.pandaai/
+config.yaml
+*.token
+.env
+# Git 卫生：原始导出与大数据不入库
+*.parquet
+*.state.json
+factor_data_*.csv
+prices/
+real_runs/
+research/result-cache/
+research/
+sources/

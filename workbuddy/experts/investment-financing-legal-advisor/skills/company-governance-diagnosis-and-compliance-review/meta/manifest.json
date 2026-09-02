@@ -1,0 +1,14 @@
+{
+  "name": "公司治理诊断与合规审查",
+  "name_en": "company-governance-diagnosis-and-compliance-review",
+  "description": "投后公司治理诊断：决议效力三分法+一票否决权诊断+同业竞争/关联交易合规检查(新公司法182-185条)。触发：章程审查、决议效力、否决权、同业竞争、关联交易。不触发：投资协议审查(→06)、股东确权(→02)、投后维权(→04)、退出争议(→05)、股权核验(→cap-table-verify)、创始人责任(→founder-liability)、权利设计(→special-rights-design)、多轮一致性(→multi-round)、陷阱对抗(→adversarial)。",
+  "version": "1.2.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-03",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

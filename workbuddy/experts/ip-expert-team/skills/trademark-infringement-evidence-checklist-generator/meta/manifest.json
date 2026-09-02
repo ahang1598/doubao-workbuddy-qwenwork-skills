@@ -1,0 +1,31 @@
+{
+  "name": "商标侵权证据清单生成",
+  "name_en": "tm-infringement-evidence-checklist",
+  "description": "按商标侵权诉讼案件类型自动生成定制化证据清单，含四分类体系(E-R/E-I/E-D/E-F)、三态标记和诉请映射校验。触发：商标侵权证据准备/证据清单/证据收集指引。不触发：商标行政争议/纯法律咨询/赔偿计算/侵权比对分析",
+  "version": "1.1.0",
+  "blueprint": "bp-fact-evidence-organization-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-13",
+  "author": "lv-skill-builder",
+  "format_seriousness": "I-Practical",
+  "type_tag": "T-consultation",
+  "output_formats": ["markdown"],
+  "legal_domain": "商标侵权",
+  "script_necessity": "none",
+  "dependencies": {
+    "infrastructure": [
+      {"name": "governance.soft_degraded", "required": true, "fallback": "无法降级时仅输出错误提示"},
+      {"name": "governance.interaction_gates", "required": false, "fallback": "缺失时不做3轮交互限制，直接降级"}
+    ],
+    "upstream_skills": [
+      {"name": "tm-infringement-comparison", "strength": "weak", "description": "侵权比对，消费其比对分析结论"},
+      {"name": "tm-case-evaluation", "strength": "weak", "description": "案件初评，消费其争议类型识别输出"}
+    ],
+    "downstream_skills": [
+      {"name": "tm-infringement-complaint", "strength": "weak", "description": "侵权起诉状，消费诉请-证据映射结果"},
+      {"name": "tm-damage-calc", "strength": "weak", "description": "赔偿计算，消费损害证据分类结果"}
+    ]
+  }
+}

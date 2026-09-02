@@ -1,0 +1,111 @@
+{
+  "name": "tiaoyue-screenplay-team",
+  "version": "2.0.0",
+  "description": "Short-drama creation team: trend picks, synopsis, outline, storyboard, concept art and video previews, with a guided path to the Tiaoyue full-production platform.",
+  "author": {
+    "name": "跳跃视界",
+    "email": "tiaoyuevision@outlook.com"
+  },
+  "agents": [
+    "./agents/tiaoyue-screenplay-team-lead.md",
+    "./agents/trend-analyst.md",
+    "./agents/script-writer.md",
+    "./agents/storyboard-artist.md",
+    "./agents/concept-artist.md",
+    "./agents/video-generator.md"
+  ],
+  "skills": [
+    "./skills/screenplay-workflow"
+  ],
+  "dependencies": {
+    "mcpServers": "./.mcp.json"
+  },
+  "expertType": "team",
+  "agentName": "tiaoyue-screenplay-team-lead",
+  "displayName": {
+    "en": "Tiaoyue Drama Studio",
+    "zh": "跳跃视界"
+  },
+  "profession": {
+    "en": "Short Drama Creation Team",
+    "zh": "短剧创作专家团"
+  },
+  "displayDescription": {
+    "en": "A short-drama expert team covering trend picks, synopsis, storyboard, concept art and video previews in chat. Full production and AI assets live on Tiaoyue.",
+    "zh": "依托麦芽生态与跳跃视界AI工具打造的短剧全链路创作专家团。对话内一站式完成题材策划、剧本生成、角色场景资产生成到分镜生成预览，完整覆盖短剧创作全流程。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "写一个 30 集逆袭爽剧的故事梗概",
+    "en": "Write a synopsis for a 30-episode revenge drama"
+  },
+  "plugin": "tiaoyue-screenplay-team",
+  "tags": [
+    { "en": "Short Drama", "zh": "短剧创作" },
+    { "en": "Storyboard", "zh": "分镜脚本" },
+    { "en": "Image & Video", "zh": "图片视频生成" }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "写一个 30 集逆袭爽剧的故事梗概",
+      "en": "Write a synopsis for a 30-episode revenge drama"
+    },
+    {
+      "zh": "根据我的题材生成第一集大纲和分镜脚本",
+      "en": "Create episode-1 outline and storyboard from my idea"
+    },
+    {
+      "zh": "把第一集剧本做成人物场景素材图和视频试片",
+      "en": "Turn episode 1 into character art, scene art and a video preview"
+    }
+  ],
+  "teamInfo": {
+    "leadAgent": "tiaoyue-screenplay-team-lead",
+    "memberAgents": ["trend-analyst", "script-writer", "storyboard-artist", "concept-artist", "video-generator"]
+  },
+  "members": [
+    {
+      "id": "tiaoyue-screenplay-team-lead",
+      "name": { "en": "Jiang Lan", "zh": "江澜" },
+      "profession": { "en": "Drama Production Lead", "zh": "短剧创制统筹" },
+      "avatar": "avatars/tiaoyue-screenplay-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "trend-analyst",
+      "name": { "en": "Lu Shi", "zh": "陆拾" },
+      "profession": { "en": "Trend Analyst", "zh": "爆款选题分析师" },
+      "avatar": "avatars/trend-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "script-writer",
+      "name": { "en": "Wen Yin", "zh": "文茵" },
+      "profession": { "en": "Screenwriter", "zh": "短剧编剧" },
+      "avatar": "avatars/script-writer.png",
+      "role": "member"
+    },
+    {
+      "id": "storyboard-artist",
+      "name": { "en": "Mo Jing", "zh": "墨镜" },
+      "profession": { "en": "Storyboard Artist", "zh": "分镜师" },
+      "avatar": "avatars/storyboard-artist.png",
+      "role": "member"
+    },
+    {
+      "id": "concept-artist",
+      "name": { "en": "Yuan Hua", "zh": "袁画" },
+      "profession": { "en": "Concept Artist", "zh": "概念美术" },
+      "avatar": "avatars/concept-artist.png",
+      "role": "member"
+    },
+    {
+      "id": "video-generator",
+      "name": { "en": "Yi Zhen", "zh": "易帧" },
+      "profession": { "en": "AI Video Producer", "zh": "AI 影像生成师" },
+      "avatar": "avatars/video-generator.png",
+      "role": "member"
+    }
+  ]
+}

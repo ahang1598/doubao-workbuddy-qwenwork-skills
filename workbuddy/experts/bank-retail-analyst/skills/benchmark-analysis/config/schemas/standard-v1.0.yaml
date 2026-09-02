@@ -1,0 +1,146 @@
+# =============================================================================
+# Schema 注册表：standard-v1.0
+# 产出方：Skill 1 (skill1-standard-data-extraction)
+# 消费方：Skill 3, Skill 4, Skill 5
+# =============================================================================
+# 这是 standard 类 JSON 的唯一权威定义。
+# 所有消费者必须在 SKILL.md 的"Schema 依赖声明"节引用本文件。
+# Skill 1 产出此类 JSON 时，必须严格遵循 structure 与 field_semantics。
+# =============================================================================
+
+_version: "standard-v1.0"
+
+_meta:
+  owner: skill1-standard-data-extraction
+  published_at: "2026-04-30"
+  data_dir: "~/RetailAnalysis/data/standard/"
+  file_pattern: "<bank_key>.json"
+  consumers:
+    - skill3-benchmark-analysis
+    - skill4-strategic-insight
+    - skill5-strategy-governance
+  source_of_truth: "skills/skill1-standard-data-extraction/references/02_extraction_contract.md"
+
+# -----------------------------------------------------------------------------
+# 结构契约
+# -----------------------------------------------------------------------------
+structure:
+  top:
+    required: ["bank", "bank_key", "kind", "_schema_version", "periods", "by_period", "updated_at"]
+    prohibited_nesting:
+      - "by_period 下的 period block 内不得再含 by_period"
+      - "period block 内不得含 kind / bank_key / updated_at / extraction_date / year / metadata 等顶层字段"
+    fields:
+      bank: { type: str, description: "完整行名，如 '中信银行'" }
+      bank_key: { type: str, description: "简写键，如 '中信'" }
+      kind: { type: literal, const: "standard" }
+      _schema_version:
+        type: literal
+        const: "standard-v1.0"
+        description: "读取前必须校验此字段；不匹配则拒绝读取，不做向下兼容"
+      periods: { type: "list[str]", description: "期间标签列表" }
+      by_period: { type: dict, description: "key=期间标签如 '2025年度'；value=PeriodBlock" }
+      updated_at: { type: str, description: "ISO 时间戳" }
+
+  PeriodBlock:
+    required: ["period", "metrics"]
+    optional: ["notes", "warnings"]
+    fields:
+      period: { type: str }
+      metrics: { type: "list[MetricItem]" }
+
+  MetricItem:
+    required: ["standard_name", "values"]
+    fields:
+      standard_name:
+        type: str
+        description: "规范指标名，必须精确匹配 shared/config-sources/standard-data/metrics.yaml"
+      values:
+        type: "list[ValueItem]"
+        description: "永远是数组；同一期同一指标可能有多条候选"
+        rule: "禁止扁平 value/unit；所有数值必须包装在此数组内。未披露时 values=[]"
+
+  ValueItem:
+    required: ["period_label", "value", "unit"]
+    optional:
+      - raw_label_in_table
+      - source_line_range
+      - candidate_id
+      - confidence
+      - note
+    fields:
+      period_label:
+        type: str
+        description: "原表披露的期间字面量，已归一化"
+      value:
+        type: "int|float|null"
+        description: "禁止字符串；未披露则 null"
+        constraint: "比率类 unit='%' 时，value 为百分比数值本身（如 2.35 表示 2.35%）"
+      unit:
+        type: str
+        allowed: ["百万元", "亿元", "万元", "万户", "万张", "%", "BPs", "Pct"]
+
+# -----------------------------------------------------------------------------
+# 字段语义（消费者必读）
+# -----------------------------------------------------------------------------
+field_semantics:
+  取值方法:
+    - "必须遍历 values[] 并按 period_label 归一化目标期"
+    - "不得只取 values[0] 作为答案"
+    - "未披露指标：values=[]，禁止推算或留旧值"
+  standard_name: "必须精确匹配 shared/config-sources/standard-data/metrics.yaml，禁止中文子串匹配"
+  比率单位: "凡 unit 为 '%' 或 'BPs' 的指标，值的语义是百分比本身，不需要再除以 100"
+
+# -----------------------------------------------------------------------------
+# 校验函数（供消费者直接 import 或复用）
+# -----------------------------------------------------------------------------
+validation:
+  python_guard: |
+    def validate_standard(data: dict) -> list[str]:
+        """返回错误列表，空列表表示校验通过。"""
+        errors: list[str] = []
+        if data.get("_schema_version") != "standard-v1.0":
+            errors.append(f"unexpected _schema_version: {data.get('_schema_version')!r}")
+        if data.get("kind") != "standard":
+            errors.append(f"unexpected kind: {data.get('kind')!r}")
+        by_period = data.get("by_period")
+        if not isinstance(by_period, dict):
+            errors.append("by_period must be dict")
+            return errors
+        prohibited_in_period = {
+            "by_period", "periods", "kind", "bank_key",
+            "updated_at", "extraction_date", "year", "metadata",
+        }
+        for p, pd in by_period.items():
+            if not isinstance(pd, dict):
+                errors.append(f"by_period[{p!r}] must be dict")
+                continue
+            for k in pd.keys():
+                if k in prohibited_in_period:
+                    errors.append(f"by_period[{p!r}] has prohibited field {k!r}")
+            for m in pd.get("metrics", []):
+                if not isinstance(m, dict):
+                    continue
+                if "values" not in m:
+                    errors.append(f"metric missing 'values' in period {p!r}")
+                if "standard_name" not in m:
+                    errors.append(f"metric missing 'standard_name' in period {p!r}")
+                for v in m.get("values") or []:
+                    if not isinstance(v, dict):
+                        continue
+                    val = v.get("value")
+                    if val is not None and not isinstance(val, (int, float)):
+                        errors.append(
+                            f"value must be int/float/None in {p!r}/{m.get('standard_name')!r}, "
+                            f"got {type(val).__name__}"
+                        )
+        return errors
+
+  require_helper: |
+    def require_standard_v1(data: dict, path: str) -> None:
+        errors = validate_standard(data)
+        if errors:
+            raise ValueError(
+                f"standard-v1.0 schema violations in {path}:\n  - "
+                + "\n  - ".join(errors)
+            )

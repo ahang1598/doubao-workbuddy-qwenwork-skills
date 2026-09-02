@@ -1,0 +1,16 @@
+{
+  "mode": "full",
+  "org_no": "44050126",
+  "session_id": "a1b2c3",
+  "workspace": "./_tmp/session_a1b2c3",
+  "pdf_paths": [
+    "/Users/endevchen/Downloads/invoice_0001.pdf",
+    "/Users/endevchen/Downloads/invoice_0002.pdf"
+  ],
+  "dpi": 200,
+  "raster_workers": 8,
+  "ocr_workers": 4,
+  "ocr_threads_per_worker": 2,
+  "upload_workers": 16,
+  "logical_batch_size": 20
+}

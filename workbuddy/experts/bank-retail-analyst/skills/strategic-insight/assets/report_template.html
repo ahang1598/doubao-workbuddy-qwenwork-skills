@@ -1,0 +1,279 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+<!-- ========== Executive Summary ========== -->
+<section class="page content first-content">
+    <div class="section-kicker">SECTION · 01</div>
+    <h2 class="section-title">执行摘要</h2>
+
+    <div class="executive-summary">
+        <h3>核心判断</h3>
+        <ol>
+        {% for item in ctx.executive_summary %}
+            <li>{{ item | rich_text }}</li>
+        {% endfor %}
+        </ol>
+    </div>
+
+    <p class="muted" style="margin-top:6mm;font-size:9.5pt;">
+        以上判断基于同业年报披露数据与零售业务章节文本的综合分析生成，涵盖高频词、组织架构、战略执行效果三个维度。
+    </p>
+</section>
+
+<!-- ========== 第一部分 行业全景 ========== -->
+<section class="page content">
+    <div class="section-kicker">SECTION · 02</div>
+    <h2 class="section-title">第一部分 · 行业全景</h2>
+
+    <h3 class="subsection-title">1.1 高频词与战略表述</h3>
+    <p>基于头部 7 家股份制银行零售业务章节文本的高频词统计与跨期/跨行对比，识别出以下行业共性趋势与差异化表述：</p>
+
+    <h4>行业共同趋势</h4>
+    <table class="landscape-table">
+        <thead>
+            <tr><th>维度</th><th>行业共同高频词</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="strong-col">零售客户与服务</td>
+                <td>{{ ctx.industry_common_trends | rich_text }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>银行差异化表述</h4>
+    <table class="landscape-table">
+        <thead>
+            <tr><th style="width:20%">银行</th><th>特有高频词 / 战略标签</th></tr>
+        </thead>
+        <tbody>
+        {% for bank, words in ctx.high_frequency_analysis.bank_specific.items() %}
+            <tr>
+                <td class="strong-col">{{ bank }}</td>
+                <td>{{ words | join("、") }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if ctx.cross_period_comparison %}
+    <h4>跨期对比（显著变化）</h4>
+    <table class="landscape-table">
+        <thead>
+            <tr><th style="width:20%">银行</th><th>跨期高频词变化</th></tr>
+        </thead>
+        <tbody>
+        {% for bank, desc in ctx.cross_period_comparison.items() %}
+            <tr>
+                <td class="strong-col">{{ bank }}</td>
+                <td>{{ desc | rich_text }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <h3 class="subsection-title">1.2 组织架构变化</h3>
+    <table class="landscape-table">
+        <thead>
+            <tr>
+                <th style="width:18%">银行</th>
+                <th style="width:30%">当前零售核心部门</th>
+                <th style="width:22%">调整频率</th>
+                <th>最新动作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="strong-col">{{ ctx.org_primary_bank }}</td>
+                <td>{{ ctx.org_primary.current_departments | join("、") }}</td>
+                <td>{{ ctx.org_primary.change_frequency }}</td>
+                <td>{{ ctx.org_primary.latest_changes | rich_text }}</td>
+            </tr>
+            <tr>
+                <td class="strong-col">其他行</td>
+                <td colspan="3">{{ ctx.org_other_banks | rich_text }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="subsection-title">1.3 历史战略执行效果</h3>
+    <div class="two-col">
+        <div class="col-card win">
+            <h4>做了没说（Done · Not Said）</h4>
+            <ul>
+            {% for item in ctx.strategic_execution_done_not_said %}
+                <li>{{ item | rich_text }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="col-card gap">
+            <h4>说了没做到（Said · Not Done）</h4>
+            <ul>
+            {% for item in ctx.strategic_execution_said_not_done %}
+                <li>{{ item | rich_text }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ========== 第二部分 核心洞察 ========== -->
+<section class="page content">
+    <div class="section-kicker">SECTION · 03</div>
+    <h2 class="section-title">第二部分 · {{ ctx.insight_count }} 条核心洞察</h2>
+
+    <p class="muted" style="margin-bottom:6mm;">按"增长机会 &gt; 风险预警 &gt; 效率提升"的优先级排序，每条洞察均包含核心判断、数据依据、业务含义、行动建议与风险提示。</p>
+
+    {% for ins in ctx.insights %}
+    <div class="insight-card {{ ins.priority_class }}">
+        <div class="insight-header">
+            <span class="insight-id">#{{ "%02d" | format(ins.id) }}</span>
+            <span class="insight-priority {{ ins.priority_class }}">{{ ins.priority_type }}</span>
+            <div class="insight-title">{{ ins.title | rich_text }}</div>
+        </div>
+
+        <div class="insight-section">
+            <span class="insight-section-label">数据依据</span>
+            {% if ins.data_evidence and ins.data_evidence|length > 0 %}
+                {# 优先使用结构化 data_evidence：上方为摘要段落，下方为证据表 #}
+                <p class="insight-core" style="margin-bottom:3mm;">{{ ins.data_basis | rich_text }}</p>
+                <table class="evidence-table">
+                    <thead>
+                        <tr>
+                            <th class="metric-col">指标</th>
+                            <th class="value-col">数值</th>
+                            <th class="yoy-col">同比</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ev in ins.data_evidence %}
+                        <tr>
+                            <td class="metric-col">{{ ev.metric | rich_text }}</td>
+                            <td class="value-col">{{ ev.value | rich_text }}</td>
+                            <td class="yoy-col">{{ ev.yoy | rich_text if ev.yoy else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                {# 兼容旧版：仅有 data_basis 字符串时按段落渲染 #}
+                <p class="insight-core">{{ ins.data_basis | rich_text }}</p>
+            {% endif %}
+        </div>
+
+        <div class="insight-section">
+            <span class="insight-section-label">业务含义</span>
+            <p class="insight-core">{{ ins.business_implication | rich_text }}</p>
+        </div>
+
+        <div class="insight-section">
+            <span class="insight-section-label">行动建议</span>
+            <p class="insight-core">{{ ins.action_recommendation | rich_text }}</p>
+        </div>
+
+        <div class="insight-section">
+            <span class="insight-section-label">风险提示</span>
+            <p class="insight-core muted">{{ ins.risk_warning | rich_text }}</p>
+        </div>
+
+        {% if ins.source %}
+        <div class="insight-section">
+            <span class="insight-section-label">来源标注</span>
+            <p class="insight-core muted" style="font-size:9pt;">{{ ins.source_type | default('已披露事实') }} · {{ ins.source | rich_text }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</section>
+
+<!-- ========== 第三部分 客户 vs 同业战略雷达 ========== -->
+<section class="page content">
+    <div class="section-kicker">SECTION · 04</div>
+    <h2 class="section-title">第三部分 · {{ ctx.meta.base_bank_short }} vs 同业战略雷达</h2>
+
+    <p>基于高频词、组织架构与经营数据三维对比，{{ ctx.meta.base_bank_full }}相对同业呈现以下定位：</p>
+
+    <div class="radar-card">
+        <h4>定位 · 差异化标签</h4>
+        <p>{{ ctx.meta.base_bank_short }}当前可识别的差异化标签主要包括：{{ ctx.high_frequency_analysis.base_specific | join('、') if ctx.high_frequency_analysis.base_specific else '暂未提取到稳定差异词，建议结合年报原文复核' }}。</p>
+    </div>
+
+    <div class="two-col">
+        <div class="col-card win">
+            <h4>做了没说</h4>
+            <ul>
+                {% for item in ctx.strategic_execution_done_not_said %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        </div>
+        <div class="col-card gap">
+            <h4>说了没做到</h4>
+            <ul>
+                {% for item in ctx.strategic_execution_said_not_done %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ========== 第四部分 给管理层的建议 ========== -->
+<section class="page content">
+    <div class="section-kicker">SECTION · 05</div>
+    <h2 class="section-title">第四部分 · 给管理层的 {{ ctx.insight_count }} 条建议</h2>
+
+    {% for ins in ctx.insights %}
+    <div class="insight-card {{ ins.priority_class }}">
+        <div class="insight-header">
+            <span class="insight-id">建议 {{ '%02d' | format(ins.id) }}</span>
+            <span class="insight-priority {{ ins.priority_class }}">{{ ins.priority_type }}</span>
+            <div class="insight-title">{{ ins.title }}</div>
+        </div>
+        <p class="insight-core">{{ ins.action_recommendation | rich_text }}</p>
+    </div>
+    {% endfor %}
+</section>
+
+<!-- ========== 附录 ========== -->
+<section class="page content">
+    <div class="section-kicker">SECTION · 06</div>
+    <h2 class="section-title">附录</h2>
+
+    <h3 class="subsection-title">A. 信息来源</h3>
+    <table class="landscape-table">
+        <thead>
+            <tr><th style="width:22%">数据来源</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+        {% for s in ctx.sources %}
+            <tr>
+                <td class="strong-col">{{ s.label }}</td>
+                <td>{{ s.desc | rich_text }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 class="subsection-title">B. 口径说明</h3>
+    <div class="appendix-box">
+        <ol>
+        {% for note in ctx.caliber_notes %}
+            <li>{{ note | rich_text }}</li>
+        {% endfor %}
+        </ol>
+    </div>
+
+    <h3 class="subsection-title">C. 数据局限</h3>
+    <div class="appendix-box">
+        <ol>
+            <li>部分文字指标（如 AUM、养老金开户数）各银行披露口径存在差异，跨行对比需保留一定的误差容忍度。</li>
+            <li>信用卡不良率各行对"逾期 90 天以上计入不良"的执行存在细微差异，变化幅度以本行同比为准。</li>
+            <li>组织架构变化基于年报公开披露章节识别，部分内部事业部调整未必进入公开披露。</li>
+            <li>本报告以{{ ctx.meta.base_bank_full }}为基准客户，数据来自该行及可比同业年报；跨期指标以前一年度作为基准。</li>
+        </ol>
+    </div>
+
+    <h3 class="subsection-title">D. 免责声明</h3>
+    <div class="disclaimer">
+        本报告由 AI 基于上市银行公开披露信息生成，仅供研究参考，不构成任何投资建议，亦不构成对任何个股的推荐
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{
+  "id": "刑事证据分析报告",
+  "marketId": "",
+  "name": "刑事证据分析报告",
+  "version": "2.1.0",
+  "description": "对全案证据体系进行系统性分析，评估证据链完整性、证据三性和证明力。依据刑诉法第50/55/57条，为辩护策略提供证据层决策依据。触发：用户需要证据分析。不触发：质证提纲（→criminal-cross-examination）、非法证据排除（→criminal-evidence-exclusion）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

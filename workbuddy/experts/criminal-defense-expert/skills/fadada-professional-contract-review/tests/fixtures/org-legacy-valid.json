@@ -1,0 +1,30 @@
+{
+  "checklist_id": "CL-PO-2026-001",
+  "schema_version": "1.0",
+  "business_type": "采购合同",
+  "position": "buyer",
+  "scope": "library",
+  "version": "1.0.0",
+  "source_meta": {
+    "generator": "合同审查清单生成器",
+    "generated_at": "2026-05-30T00:00:00+00:00",
+    "owner_org": "_default"
+  },
+  "items": [
+    {
+      "item_id": "I-001",
+      "clause_type": "交货日期",
+      "risk_dimension": "commercial",
+      "check_method": "llm_semantic",
+      "check_payload": {
+        "prompt": "若未约定交货日期，请提示风险。",
+        "fields": ["交货日期", "交付方式"]
+      },
+      "severity": "high",
+      "source_tag": "[用规]",
+      "source_detail": "组织清单：legacy fixture",
+      "problem_pattern": "交货日期不明确。",
+      "suggested_wording": "补充明确交货日期。"
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+# =============================================================================
+# Schema 注册表：text-v1.0
+# 产出方：Skill 2 (skill2-text-data-extraction)
+# 消费方：Skill 3, Skill 4, Skill 5
+# =============================================================================
+# 这是 text 类 JSON 的唯一权威定义。
+# 消费者（Skill 3/4/5）读取 text JSON 前，必须先校验 _schema_version=="text-v1.0"。
+# =============================================================================
+
+_version: "text-v1.0"
+
+_meta:
+  owner: skill2-text-data-extraction
+  published_at: "2026-04-30"
+  data_dir: "~/RetailAnalysis/data/text/"
+  file_pattern: "<bank_key>.json"
+  consumers:
+    - skill3-benchmark-analysis
+    - skill4-strategic-insight
+    - skill5-strategy-governance
+  source_of_truth: "skills/skill2-text-data-extraction/SKILL.md  (MetricItem 字段契约节)"
+
+# -----------------------------------------------------------------------------
+# 结构契约
+# -----------------------------------------------------------------------------
+structure:
+  top:
+    required: ["bank", "bank_key", "kind", "_schema_version", "periods", "by_period", "updated_at"]
+    fields:
+      bank: { type: str }
+      bank_key: { type: str }
+      kind: { type: literal, const: "text" }
+      _schema_version:
+        type: literal
+        const: "text-v1.0"
+        description: "读取前必须校验；不匹配则拒绝（不做向下兼容）"
+      periods: { type: "list[str]" }
+      by_period: { type: dict, description: "key=期间标签；value=PeriodBlock" }
+      updated_at: { type: str }
+
+  PeriodBlock:
+    required: ["period", "metrics"]
+    optional: ["alerts", "notes", "warnings"]
+    prohibited: ["by_period"]   # 禁止嵌套 by_period
+    fields:
+      period: { type: str }
+      metrics: { type: "list[MetricItem]" }
+
+  MetricItem:
+    required: ["standard_name", "category_bucket", "values"]
+    prohibited_alias_fields:
+      # 旧版遗留字段名，禁止出现
+      - name
+      - metric
+      - indicator
+      - metric_type
+      - value_unit
+      - change_amount
+      - value          # 扁平 value 禁用，必须包裹在 values[] 内
+    fields:
+      standard_name:
+        type: str
+        description: "规范名；F/G bucket 须带 '(文字)' 或 '（文字）' 后缀"
+        examples:
+          分部效益: ["零售分部营业净收入(文字)", "零售分部税前利润(文字)"]
+          量价: ["个人存款成本率(文字)", "零售贷款收益率(文字)"]
+          不良率: ["个人贷款不良率(文字)"]
+      category_bucket:
+        type: str
+        allowed: ["AUM", "客户数", "财富收入", "信用卡", "分部效益", "量价", "渠道", "其他"]
+        description: "消费端必须用此字段做 bucket 过滤，禁止只用 standard_name 子串匹配"
+      values:
+        type: "list[ValueItem]"
+        description: "永远是数组。len==0 表示未披露，禁止做减法推算"
+
+  ValueItem:
+    required: ["period_label", "period_end_value", "unit"]
+    optional:
+      - change_value
+      - change_pct
+      - change_unit
+      - raw_quote
+      - source_section
+      - source_page
+      - candidate_id
+      - calibration_note
+      - confidence
+    fields:
+      period_label:
+        type: str
+      period_end_value:
+        type: "int|float|null"
+        description: "期末值（规模/金额），或比率类的百分比数值本身"
+      change_value:
+        type: "int|float|null"
+        description: "同比变动绝对值（规模差额）"
+      change_pct:
+        type: "float|null"
+        description: "同比变动百分比（%），未披露则 null"
+      change_unit:
+        type: str
+        description: "change_value 的单位，或 '%' 表示 change_value 本身已是百分点"
+      unit:
+        type: str
+        allowed: ["亿元", "万元", "百万元", "万户", "万张", "%", "BPs", "个"]
+      raw_quote:
+        type: str
+        description: "原文一句话引用，用于追溯"
+
+# -----------------------------------------------------------------------------
+# 字段语义（消费者必读）
+# -----------------------------------------------------------------------------
+field_semantics:
+  bucket过滤: |
+    筛选 "分部效益" 类指标的唯一正确写法：
+        [m for m in metrics if m["category_bucket"] == "分部效益"]
+    禁止只用 "零售" in m["standard_name"] 的子串匹配。
+  文字后缀: |
+    F bucket（分部效益）与 G bucket（量价）的 standard_name 必须含 "(文字)" 或 "（文字）"，
+    用于与 Skill 1 的表格类指标区分（同名但语义场景不同）。
+  空值语义: |
+    values=[]  → 未提取到，禁止做减法或推算
+    period_end_value=null → 该候选未给出期末值（可能只有变动）
+  同比方向: |
+    change_pct 为正表示增长，负表示下降；单位已经是 %，直接使用，不要再 *100。
+
+# -----------------------------------------------------------------------------
+# 校验函数
+# -----------------------------------------------------------------------------
+validation:
+  python_guard: |
+    _PROHIBITED_ALIAS = {
+        "name", "metric", "indicator", "metric_type",
+        "value_unit", "change_amount", "value",
+    }
+
+    def validate_text(data: dict) -> list[str]:
+        errors: list[str] = []
+        if data.get("_schema_version") != "text-v1.0":
+            errors.append(f"unexpected _schema_version: {data.get('_schema_version')!r}")
+        if data.get("kind") != "text":
+            errors.append(f"unexpected kind: {data.get('kind')!r}")
+        by_period = data.get("by_period") or {}
+        for p, pd in by_period.items():
+            if not isinstance(pd, dict):
+                continue
+            if "by_period" in pd:
+                errors.append(f"by_period[{p!r}] has prohibited nested 'by_period'")
+            for m in pd.get("metrics", []) or []:
+                if not isinstance(m, dict):
+                    continue
+                for key in _PROHIBITED_ALIAS:
+                    if key in m:
+                        errors.append(
+                            f"metric in {p!r} has prohibited alias field {key!r}; "
+                            f"use standard_name/values"
+                        )
+                if "standard_name" not in m:
+                    errors.append(f"metric missing 'standard_name' in {p!r}")
+                if "category_bucket" not in m:
+                    errors.append(f"metric missing 'category_bucket' in {p!r}")
+                if not isinstance(m.get("values"), list):
+                    errors.append(f"metric 'values' must be list in {p!r}")
+        return errors
+
+  require_helper: |
+    def require_text_v1(data: dict, path: str) -> None:
+        errors = validate_text(data)
+        if errors:
+            raise ValueError(
+                f"text-v1.0 schema violations in {path}:\n  - "
+                + "\n  - ".join(errors)
+            )

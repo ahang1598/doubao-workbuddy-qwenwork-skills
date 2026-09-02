@@ -1,0 +1,16 @@
+{
+  "name": "投后股东维权与失权处置",
+  "name_en": "post-holder-protection",
+  "description": "投后知情权三关卡行使(查账/查凭证/穿透子公司，第57条)+股东失权五步处置(催缴/决议/通知/处置，第52条)。触发：知情权行使/失权处置/投后权益评估。不触发：股东确权(→02)、日常治理(→03)、退出争议(→05)、权利设计(→special-rights-design)、股权核验(→cap-table-verify)、创始人责任(→founder-liability)、多轮一致性(→multi-round)、陷阱对抗(→adversarial)。",
+  "version": "1.2.1",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-07",
+  "created": "2026-07-03",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-consultation",
+  "drafting_paradigm": "lawyer_draft"
+}

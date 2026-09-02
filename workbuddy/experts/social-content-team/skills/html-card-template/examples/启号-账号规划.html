@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>营销通·起号规划师 · 账号 0→1 规划</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+  :root {
+    --brand: #0052D9;
+    --brand-soft: #E8F0FE;
+    --brand-deep: #003A99;
+    --ink: #1F2329;
+    --ink-2: #4E5969;
+    --ink-3: #86909C;
+    --line: #E5E6EB;
+    --bg: #F7F8FA;
+    --surface: #FFFFFF;
+    --warn: #FF7D00;
+    --warn-soft: #FFF7E8;
+    --ok: #00B42A;
+    --ok-soft: #E8FFEA;
+    --danger: #F53F3F;
+    --danger-soft: #FFECE8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+
+  /* ========== 顶部 Banner ========== */
+  .banner {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .banner::after {
+    content: "";
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .banner .brand-tag {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    margin: 0 0 10px 0;
+    letter-spacing: 0.3px;
+    position: relative;
+    z-index: 1;
+  }
+  .banner .brand-tag .sep { margin: 0 6px; opacity: 0.6; }
+  .banner .title {
+    font-size: 24px; font-weight: 600;
+    margin: 0 0 4px 0;
+  }
+  .banner .subtitle {
+    font-size: 14px; opacity: 0.9; margin: 0;
+  }
+  .banner .meta {
+    margin-top: 14px; font-size: 13px;
+    opacity: 0.85;
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+  .banner .meta span {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .banner .meta i.bi {
+    font-size: 14px; opacity: 0.9;
+  }
+
+  /* ========== 主体 ========== */
+  .body {
+    background: var(--surface);
+    padding: 28px 32px 8px;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  section { margin-bottom: 28px; }
+  section:last-child { margin-bottom: 0; }
+
+  /* 章节大标题（h2）—— 序号 + 标题，无左竖条 */
+  h2.section-title {
+    font-size: 17px; font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 14px 0;
+    line-height: 1.35;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2.section-title .idx {
+    color: var(--brand);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ★ 每个模块的"结论句"—— 放在模块正文之前，一句话总结（无左竖条） */
+  .lead {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    margin: 0 0 14px 0;
+    padding: 12px 14px;
+    background: #FAFBFC;
+    border-radius: 6px;
+  }
+  .lead strong { color: var(--ink); font-weight: 600; }
+
+  /* ========== 信息卡（每行一个字段） ========== */
+  .info-list {
+    background: var(--brand-soft);
+    padding: 16px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .info-cell {
+    background: #fff;
+    padding: 12px 14px;
+    border-radius: 8px;
+  }
+  .info-cell .label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .info-cell .value {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* ========== 表格 ========== */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.data-table th {
+    background: #FAFBFC;
+    color: var(--ink-2);
+    font-weight: 500;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--line);
+    font-size: 13px;
+  }
+  table.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    color: var(--ink);
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:hover td { background: #FAFBFC; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .pill-ok { background: var(--ok-soft); color: var(--ok); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-danger { background: var(--danger-soft); color: var(--danger); }
+  .pill-brand { background: var(--brand-soft); color: var(--brand); }
+  .pill-recommend { background: var(--brand); color: #fff; }
+
+  /* ========== 时间轴（精简版：每周块 + 目标行 + 无 icon bullets） ========== */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 6px; top: 8px; bottom: 8px;
+    width: 2px; background: var(--line);
+  }
+  .tl-item { position: relative; padding-bottom: 20px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item::before {
+    content: "";
+    position: absolute;
+    left: -22px; top: 7px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--brand);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--brand);
+  }
+  .tl-item .tl-head {
+    font-size: 14px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .tl-item .tl-head .week {
+    color: var(--brand);
+    margin-right: 6px;
+  }
+  .tl-item .tl-head .sep { color: var(--ink-3); margin: 0 4px; }
+  .tl-item .tl-goal {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+  .tl-item .tl-goal strong { color: var(--ink); font-weight: 500; }
+  .tl-item .tl-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.85;
+  }
+  .tl-item .tl-list li { padding-left: 2px; }
+
+  /* ========== 提示条（统一样式：清爽版，无 icon） ========== */
+  .callout {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-left: 3px solid var(--brand);
+    font-size: 13.5px;
+    line-height: 1.7;
+    background: var(--brand-soft);
+    color: var(--ink);
+    margin-top: 14px;
+  }
+  .callout strong.title {
+    color: var(--brand-deep);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .callout-warn { border-color: var(--warn); background: var(--warn-soft); color: #1F2329; }
+  .callout-warn strong.title { color: #7A4300; }
+
+  /* ========== 通用 bullet 列表（跟结论卡搭配，用在所有章节） ========== */
+  ul.plain-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    line-height: 1.85;
+  }
+  ul.plain-list li { margin: 4px 0; padding-left: 2px; }
+  ul.plain-list li strong { color: var(--ink); font-weight: 600; }
+  ul.plain-list li strong:first-child { margin-right: 4px; }
+
+  /* 决策标签（决策分支/条件枚举的结论词，只染字色不加底色） */
+  .tag-ok, .tag-warn, .tag-bad { font-weight: 600; margin-right: 4px; }
+  .tag-ok { color: var(--ok); }
+  .tag-warn { color: var(--warn); }
+  .tag-bad { color: var(--danger); }
+
+  .disclaimer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    margin-top: 20px;
+    padding: 14px 0;
+  }
+
+  /* 打印友好 */
+  @media print {
+    body { padding: 0; background: #fff; }
+    .banner { border-radius: 0; }
+    .body { border-radius: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 顶部 Banner -->
+  <div class="banner">
+    <p class="brand-tag">营销通<span class="sep">·</span>起号规划师</p>
+    <h1 class="title">账号 0→1 规划方案</h1>
+    <p class="subtitle">面向：城市白领 · 目标平台：小红书 · 每周产能 3-4 小时</p>
+    <div class="meta">
+      <span><i class="bi bi-calendar3"></i>2026-08-19</span>
+      <span><i class="bi bi-flag"></i>起号阶段</span>
+      <span><i class="bi bi-hourglass-split"></i>30 天路线</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- 01 赛道选择建议 -->
+    <section>
+      <h2 class="section-title"><span class="idx">01</span>赛道选择建议</h2>
+      <p class="lead">主赛道锁定「都市职场穿搭」，辅以少量「轻量职场干货」作为破圈补充（比例 8:2）。主赛道匹配你的产能与身份，辅赛道用于扩展搜索曝光。</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:130px;">候选赛道</th>
+            <th>推荐理由</th>
+            <th>风险提示</th>
+            <th style="width:90px;">结论</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>都市职场穿搭</strong></td>
+            <td>与你本职工作强相关，产能门槛低（可利用通勤时段拍摄）；小红书女性白领用户密度高，标签生态成熟</td>
+            <td>头部博主已成熟，视觉门槛正在拉高；纯穿搭易同质化</td>
+            <td><span class="pill pill-recommend">推荐</span></td>
+          </tr>
+          <tr>
+            <td>职场干货分享</td>
+            <td>门槛低、内容可积累；工具化选题（Excel / 汇报 / 跳槽）搜索需求稳定</td>
+            <td>竞争激烈；纯图文形态难破圈，需搭视频</td>
+            <td><span class="pill pill-brand">备选</span></td>
+          </tr>
+          <tr>
+            <td>轻量健身/塑形</td>
+            <td>需求刚性，用户粘性高</td>
+            <td>需真人出镜且长期坚持；数据可视化门槛高</td>
+            <td><span class="pill pill-warn">不建议</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 02 账号定位卡 -->
+    <section>
+      <h2 class="section-title"><span class="idx">02</span>账号定位卡</h2>
+      <p class="lead">做"平价基础款的组合逻辑"型都市穿搭博主，目标用户为工作 3-5 年、有搭配焦虑的一/二线城市女性；差异化在"可复制"（每套 ≤300 元）。</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:130px;">重点维度</th>
+            <th>定位建议</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color: var(--ink-2); font-weight: 500;">人设一句话</td>
+            <td>"每天 15 分钟穿好一件基础款" — 帮上班 3-5 年的女生，用平价基础款穿出通勤精致感的都市女孩</td>
+          </tr>
+          <tr>
+            <td style="color: var(--ink-2); font-weight: 500;">目标受众</td>
+            <td>25-32 岁，一/二线城市，月薪 8k-20k，工作 3-5 年的职场女性；痛点是"买了很多但每天都不知道穿什么"</td>
+          </tr>
+          <tr>
+            <td style="color: var(--ink-2); font-weight: 500;">内容形态</td>
+            <td>图文为主（3:4 竖版组图，5-8 张），每月 1-2 条短视频；封面统一米白底 + 手写体标题</td>
+          </tr>
+          <tr>
+            <td style="color: var(--ink-2); font-weight: 500;">差异化角度</td>
+            <td>不做"衣柜炫富"，做"平价基础款的组合逻辑"——每套穿搭都注明单价上限（≤300 元/套），主打"可复制"</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 03 对标账号清单 -->
+    <section>
+      <h2 class="section-title"><span class="idx">03</span>对标账号清单</h2>
+      <p class="lead">前 3 个学"打法"（封面/标题/正文结构），第 4 个 @Nana 的衣橱作为你的"体量参照系"——目标是 3 个月内接近它的更新节奏与互动率。</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:170px;">对标账号</th>
+            <th style="width:100px;">粉丝量级</th>
+            <th>可学的点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>@小 A 的通勤日记</strong></td>
+            <td><span class="pill pill-brand">12w</span></td>
+            <td>封面统一度极高（米白+同角度全身照），前 3 张图完成"钩子→场景→单品"的信息层次</td>
+          </tr>
+          <tr>
+            <td><strong>@基础款女孩 Lin</strong></td>
+            <td><span class="pill pill-brand">8w</span></td>
+            <td>标题结构固定：「场景+具体单品数+情绪词」，例如"周五约会 3 件穿出松弛感"，搜索友好</td>
+          </tr>
+          <tr>
+            <td><strong>@办公室穿搭研究所</strong></td>
+            <td><span class="pill pill-brand">25w</span></td>
+            <td>正文段落结构清晰（尺码/材质/搭配思路/替代款），互动引导用"选一套你最想要的"提升评论</td>
+          </tr>
+          <tr>
+            <td><strong>@Nana 的衣橱</strong></td>
+            <td><span class="pill pill-brand">5w</span></td>
+            <td>体量更近、更真实的锚点；节奏（周更 2-3 篇）与你产能匹配</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 04 30 天路线图 -->
+    <section>
+      <h2 class="section-title"><span class="idx">04</span>30 天路线图</h2>
+      <p class="lead">四周节奏为「冷启动 → 调优封面标题 → 建立搜索位 → 阶段复盘」，Week 1 集中拍摄，后续按每周 3 小时摊销。</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">Week 1</span>账号搭建 + 内容验证</div>
+          <div class="tl-goal"><strong>目标：</strong>完成账号资料 + 首批 5 篇发布，跑通发布流程</div>
+          <ul class="tl-list">
+            <li>完善小红书/抖音主页（头像、简介、置顶）</li>
+            <li>拍摄首批 5 篇内容（3 篇图文 + 2 条视频）</li>
+            <li>加入 3 个目标受众聚集的社群，观察真实痛点</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">Week 2</span>数据摸底 + 复盘调整</div>
+          <div class="tl-goal"><strong>目标：</strong>识别 3 篇表现最好的内容特征，调整第二批选题</div>
+          <ul class="tl-list">
+            <li>记录首批 5 篇的曝光/互动/关注转化率</li>
+            <li>按数据结果选出"起量方向"，第二批 5 篇按此复现</li>
+            <li>建立"选题-发布-复盘"周例会（自己跟自己开也算）</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">Week 3</span>内容扩量 + 首次爆款尝试</div>
+          <div class="tl-goal"><strong>目标：</strong>跑出至少 1 条 &gt; 均值 5 倍的内容</div>
+          <ul class="tl-list">
+            <li>从 Week 2 起量方向里挑 2 个角度做变体</li>
+            <li>尝试 1 次"节点内容"（如"周末小改造挑战"）</li>
+            <li>观察涨粉画像与目标受众的匹配度</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">Week 4</span>路径固化 + 商业化预备</div>
+          <div class="tl-goal"><strong>目标：</strong>形成稳定内容公式，粉丝突破 1000</div>
+          <ul class="tl-list">
+            <li>固化"封面公式 + 开头 3s 钩子 + 结尾行动指令"三件套</li>
+            <li>建立单品/品牌观察清单，为第 4 个月商单期做准备</li>
+            <li>输出第 1 版 SOP 模板</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 产能匹配说明 -->
+    <section>
+      <h2 class="section-title"><span class="idx">05</span>产能匹配说明</h2>
+      <p class="lead">方案已按你的产能上限设计，基本匹配。唯一冲突是 Week 1 首周需集中拍摄（约 4h），建议在起号前一个周末一次性拍完 2 周素材。</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:130px;">产能维度</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color: var(--ink-2); font-weight: 500;">你的产能</td>
+            <td>每周 3-4 小时（工作日晚 1h + 周末 2-3h）</td>
+          </tr>
+          <tr>
+            <td style="color: var(--ink-2); font-weight: 500;">方案要求</td>
+            <td>Week 1 需 4 小时（拍摄+首套模板），Week 2-4 每周约 3 小时</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 06 下一步建议 -->
+    <section>
+      <h2 class="section-title"><span class="idx">06</span>下一步建议</h2>
+      <ul class="plain-list">
+        <li>Week 1 结束后可来找我做「四维体检」（有真实数据了才能诊断）</li>
+        <li>Week 4 结束后可来做「下一 30 天调整」，根据实际数据修正内容组合与节奏</li>
+        <li>出现具体涨粉瓶颈时，可找 <strong>包火（爆款分析师）</strong> 拆解相似赛道的爆款</li>
+        <li>需要写正文 / 去 AI 味，可找 <strong>赵写（内容风格教练）</strong></li>
+        <li>需要具体选题清单，可找 <strong>郝选题（选题助手）</strong></li>
+        <li>需要评估变现时机与合作接洽，可找 <strong>卞现（内容变现顾问）</strong></li>
+      </ul>
+    </section>
+
+  </div>
+
+  <div class="disclaimer">
+    本方案基于用户提供的产能与偏好定制，实际起号效果受平台算法、执行度等多因素影响，不承诺具体涨粉数字。
+  </div>
+
+</div>
+</body>
+</html>

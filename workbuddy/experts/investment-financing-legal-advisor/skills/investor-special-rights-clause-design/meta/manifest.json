@@ -1,0 +1,14 @@
+{
+  "name": "投资人特殊权利条款设计",
+  "name_en": "cap-market-special-rights-design",
+  "description": "从零设计投资人21类特殊权利条款(优先清算/反稀释/回购/优先购买/跟售拖售/信息权/董事会/保护性条款/成熟期/竞业/最惠国等)+条款文本+市场基准+谈判要点+风险提示。触发：条款设计、权利起草、投资协议生成。不触发：已有条款审查(→06)、陷阱识别(→adversarial)、多轮一致性(→multi-round)。",
+  "version": "1.1.1",
+  "blueprint": "bp-contract-review-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-06",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

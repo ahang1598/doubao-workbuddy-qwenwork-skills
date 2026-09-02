@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+
+# Local research inputs, ledgers, platform responses, and generated batches
+fields.json
+existing_factors.txt
+runs*.jsonl
+runs*.jsonl.bak
+stage*.json
+_flist*.json
+_fresult*.json
+_fr_*.json
+_s2_*.json
+_s2_*.err
+_*_fields.txt

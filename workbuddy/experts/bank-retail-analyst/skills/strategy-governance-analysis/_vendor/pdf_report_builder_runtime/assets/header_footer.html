@@ -1,0 +1,21 @@
+<!-- ============================================================
+     Playwright displayHeaderFooter 模板片段
+     注意：Playwright 不接受外链 CSS，所有样式必须内联。
+     ============================================================ -->
+
+<!-- 页眉模板 -->
+<template id="header-template">
+<div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 15mm; border-bottom:1pt solid #E0E0E0; padding-bottom:4mm; font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;">
+    <img src="data:image/png;base64,{{ logo_base64 }}" style="width:52px; height:16px; object-fit:fill; display:block;" alt="logo">
+    <div style="font-size:9pt; color:#555555; letter-spacing:0.5pt;">{{ header_text | default('') }}</div>
+    <div style="font-size:8.5pt; color:#555555;">第 <span class="pageNumber"></span> / <span class="totalPages"></span> 页</div>
+</div>
+</template>
+
+<!-- 页脚模板 -->
+<template id="footer-template">
+<div style="width:100%; display:flex; justify-content:space-between; padding:0 15mm; border-top:1pt solid #E0E0E0; padding-top:3mm; font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif; font-size:8pt; color:#555555;">
+    <span>{{ footer_text | default('本报告仅作研究参考，不构成任何投资建议') }}</span>
+    <span>{{ report_title | default('') }}</span>
+</div>
+</template>

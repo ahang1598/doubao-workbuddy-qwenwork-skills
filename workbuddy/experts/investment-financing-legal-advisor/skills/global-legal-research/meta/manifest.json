@@ -1,0 +1,47 @@
+{
+  "name": "法大大-全球法律研究(MCP)",
+  "name_en": "global-legal-research-mcp",
+  "description": "通过 MCP 工具调用 LegalDataHunter(LDH) 检索、核验并比较境外、跨境和多法域法律资料。先解析法域，再以 LDH MCP 工具获取法规、判例、学说和可回链原文。触发：核验 ECLI/CELEX/案号、比较多法域判例、境外牌照条件、外国法域外效力、跨境合规研究。不触发：合同审查/起草、纯翻译、纯中国大陆法源检索、税额计算、诉讼代理。",
+  "version": "1.0.0",
+  "blueprint": "bp-legal-research-mcp-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-08-03",
+  "updated": "2026-08-03",
+  "author": "lv-skill-builder",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-research",
+  "output_formats": ["markdown", "docx"],
+  "legal_domain": "涉外-跨境法律研究",
+  "script_necessity": "none",
+  "infrastructure_dependencies": [
+    "mcp.tools.ldh_discover_countries",
+    "mcp.tools.ldh_discover_sources",
+    "mcp.tools.ldh_get_filters",
+    "mcp.tools.ldh_search",
+    "mcp.tools.ldh_get_document",
+    "mcp.tools.ldh_resolve_reference"
+  ],
+  "target_users": ["涉外律师", "跨境合规顾问", "法律研究员"],
+  "applicable_scope": {
+    "research_types": ["法规检索", "判例检索", "学说检索", "引用解析", "多法域比较"],
+    "jurisdictions": ["EU", "CoE", "UK", "US", "CN(仅港澳台涉外)", "HK", "MO", "TW", "全球其他LDH覆盖法域"],
+    "research_paths": ["A-快速概览", "B-全面报告", "C-多法域比较", "D-业务合规操作指南"]
+  },
+  "governance": {
+    "risk_level": "L2",
+    "soft_degraded": true,
+    "statute_verification_required": true,
+    "lawyer_review_required": true
+  },
+  "files": [
+    "SKILL.md",
+    "meta/manifest.json",
+    "references/business-compliance-maps.md",
+    "references/mcp-tool-contract.md",
+    "references/research-routing-rules.md",
+    "references/sources-fallback.md",
+    "references/verification-engine.md"
+  ]
+}

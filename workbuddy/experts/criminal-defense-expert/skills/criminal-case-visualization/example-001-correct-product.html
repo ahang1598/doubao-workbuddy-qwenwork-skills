@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刑事案件可视化报告——律师版（标准产物 v3.0.0）</title>
+<meta name="template-version" content="criminal-case-visualization v3.0.0">
+<!--
+  本文件是 example-001-correct-product.html
+  用途：作为 LLM 生成产物的"标准母板"——展示 7 个图表全部按 v3.0.0 规范正确生成的样式
+  v3.0.0 渲染彻底改造：
+  - Mermaid 初始化参数：fontSize:18px + useMaxWidth:false + htmlLabels:false + gantt 配置
+  - CSS 容器放宽：max-width:1100px + SVG 宽度强制填充 + max-height:2400px
+  - gantt section ≤ 2（法定期限对比改 HTML 表格）
+  - 缩放按钮默认值 100%/125%/150%
+-->
+<style>
+/* 简版 CSS：仅供示例展示。正式产物用 assets/html-template.html 完整模板 */
+body { font-family: "PingFang SC", "Microsoft YaHei", SimSun, serif; max-width: 1100px; margin: 0 auto; padding: 24px 32px; color: #334155; background: #fff; }
+.chart-block { margin-bottom: 24px; }
+.chart-subchart { margin-bottom: 12px; padding-left: 12px; border-left: 3px solid #3b82f6; }
+.chart-subchart-title { font-size: 13px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; padding-bottom: 4px; border-bottom: 1px dashed #e2e8f0; }
+.chart-title { font-size: 15px; font-weight: 600; color: #1e3a8a; margin: 0 0 4px 0; }
+.chart-desc { font-size: 12px; color: #64748b; margin: 0 0 8px 0; }
+.mermaid-wrap { background: #fff; border: 1px solid #e2e8f0; padding: 16px; text-align: center; margin-bottom: 8px; }
+.mermaid-zoom { text-align: right; margin-bottom: 4px; font-size: 11px; color: #64748b; }
+.mermaid-zoom button { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 2px 8px; margin-left: 4px; cursor: pointer; font-size: 11px; font-family: inherit; color: #334155; }
+.mermaid-error { display: none; background: #fef2f2; border: 1px solid #fca5a5; padding: 12px 16px; margin: 12px 0; font-size: 12px; color: #991b1b; }
+.mermaid-error.visible { display: block; }
+.template-version-watermark { font-size: 9px; color: #cbd5e1; text-align: right; margin-top: 16px; opacity: 0.6; }
+.page-header { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #1e3a8a; }
+.page-title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; }
+.page-subtitle { font-size: 13px; color: #64748b; margin: 0 0 6px 0; }
+.page-meta { font-size: 12px; color: #94a3b8; margin: 0; }
+.doc-header-info { font-size: 11px; color: #94a3b8; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
+.section-heading { font-size: 16px; font-weight: 600; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 12px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+.data-table thead tr { background: #1e3a8a; color: #fff; }
+.data-table th, .data-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.disclaimer-footer { margin-top: 24px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="page-container" data-template-version="3.0.0" data-generated-at="2026-06-10T17:35:00+08:00">
+
+<div class="doc-header-info">
+  <span>刑事案件可视化报告</span>
+  <span>示例案件-2026-审-001</span>
+</div>
+
+<div class="page-header">
+  <h1 class="page-title">刑事案件可视化报告——律师版（标准产物 v3.0.0）</h1>
+  <p class="page-subtitle">被告人：张三 | 罪名：合同诈骗罪 | 当前阶段：一审已判决，判决已生效 | 羁押：190天 | 刑期：10年</p>
+  <p class="page-meta">生成时间：2026-06-10 | 模板版本：v3.0.0</p>
+</div>
+
+<h3 class="section-heading">可视化图表</h3>
+
+<!-- ════════════════════════════════════════
+   图1：流程图（graph LR + 5 subgraph，v3.0.0 节点ID英文 S1-S9）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图1-flow：刑事诉讼流程全景</h4>
+  <p class="chart-desc">9 节点流程图，5 段分组，LR 横向布局避免画布过高。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+graph LR
+    subgraph 立案["立案阶段"]
+        S1["立案侦查 2024-01-10"]
+    end
+    subgraph 侦查["侦查阶段"]
+        S2["刑事拘留 2024-03-22 羁押0日"]
+        S3["批准逮捕 2024-04-28 羁押37日 第91条"]
+        S4["侦查终结 2024-06-15 羁押85日 第156条"]
+    end
+    subgraph 起诉["审查起诉"]
+        S5["提起公诉 2024-07-22 羁押122日 第172条"]
+    end
+    subgraph 审判["审判阶段"]
+        S6["一审开庭 2024-09-15 羁押177日 第208条"]
+        S7["一审判决 2024-09-28 羁押190日 十年"]
+    end
+    subgraph 执行["执行阶段"]
+        S8["判决生效 2024-10-10"]
+        S9["刑期执行 至2034-03-21 第78条"]
+    end
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9
+    style S7 fill:#fef2f2,stroke:#dc2626,stroke-width:3px,color:#991b1b
+    style S1 fill:#eff6ff,stroke:#3b82f6
+    style S2 fill:#fffbeb,stroke:#d97706
+    style S3 fill:#fffbeb,stroke:#d97706
+    style S4 fill:#f0f9ff,stroke:#0ea5e9
+    style S5 fill:#dcfce7,stroke:#22c55e
+    style S6 fill:#dbeafe,stroke:#3b82f6
+    style S8 fill:#f5f3ff,stroke:#8b5cf6
+    style S9 fill:#f8fafc,stroke:#64748b
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   图2：羁押时间线 — 长档强制双 gantt（v3.0.0 section≤2 + 法条对比HTML表格）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图2-custody：羁押与刑期时间线（双图表）</h4>
+  <p class="chart-desc">长档案件（跨度10年）按 §3.0.1 拆为图A强制措施（192天）和图B刑期执行（3650天），避免单图画布溢出。</p>
+
+  <div class="chart-subchart">
+    <h5 class="chart-subchart-title">图A 强制措施时间线（2024-03-22 → 2024-10-10，192天）</h5>
+    <div class="mermaid-zoom">缩放：<button onclick="zoomMermaid(this, 1.0)">100%</button><button onclick="zoomMermaid(this, 1.25)">125%</button><button onclick="zoomMermaid(this, 1.5)">150%</button></div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+gantt
+    title 图A 强制措施时间线
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
+    excludes    weekends
+
+    section 强制措施阶段
+    拘留 第91条 37日    :done, a1, 2024-03-22, 37d
+    侦查 第156条 2月    :done, a2, 2024-04-28, 48d
+    起诉 第172条 1.5月  :done, a3, 2024-06-15, 37d
+    审判 第208条 2月    :active, a4, 2024-07-22, 68d
+
+    section 关键节点
+    抓获拘留      :milestone, m1, 2024-03-22, 0d
+    批准逮捕      :milestone, m2, 2024-04-28, 0d
+    侦查终结      :milestone, m3, 2024-06-15, 0d
+    提起公诉      :milestone, m4, 2024-07-22, 0d
+    一审开庭      :crit, milestone, m5, 2024-09-15, 0d
+    一审判决      :crit, milestone, m6, 2024-09-28, 0d
+    判决生效      :milestone, m7, 2024-10-10, 0d
+
+    style a4 fill:#fef2f2,stroke:#dc2626,stroke-width:3px,color:#991b1b
+    style a1 fill:#dcfce7,stroke:#22c55e
+    style a2 fill:#dcfce7,stroke:#22c55e
+    style a3 fill:#dcfce7,stroke:#22c55e
+    style m5 fill:#dc2626,stroke:#991b1b,color:#ffffff
+    style m6 fill:#dc2626,stroke:#991b1b,color:#ffffff
+      </div>
+      <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+    </div>
+    <!-- v3.0.0: 法定期限对比改为HTML表格注解，不在gantt中重叠 -->
+    <table class="data-table">
+      <thead><tr><th>强制措施</th><th>实际天数</th><th>法定期限</th><th>条文</th><th>是否超期</th></tr></thead>
+      <tbody>
+        <tr><td>刑事拘留</td><td>37天</td><td>最长37日</td><td>第91条</td><td>否</td></tr>
+        <tr><td>侦查羁押</td><td>48天</td><td>最长2个月+延1个月</td><td>第156条</td><td>否</td></tr>
+        <tr><td>审查起诉</td><td>37天</td><td>最长1个月+延15日</td><td>第172条</td><td>否</td></tr>
+        <tr><td>一审审理</td><td>68天</td><td>最长2个月+延1个月</td><td>第208条</td><td>否</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-subchart">
+    <h5 class="chart-subchart-title">图B 刑期执行时间线（2024-03-22 → 2034-03-21，10年）</h5>
+    <div class="mermaid-zoom">缩放：<button onclick="zoomMermaid(this, 0.75)">75%</button><button onclick="zoomMermaid(this, 1.0)">100%</button><button onclick="zoomMermaid(this, 1.25)">125%</button></div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+gantt
+    title 图B 刑期执行时间线
+    dateFormat YYYY-MM-DD
+    axisFormat %Y年%m月
+
+    section 刑期执行
+    有期徒刑 10年  :active, p1, 2024-03-22, 3650d
+
+    section 关键节点
+    折抵完结      :milestone, p2, 2025-04-04, 0d
+    减刑临界 1/2  :milestone, p3, 2029-03-22, 0d
+    假释临界 1/2  :milestone, p4, 2029-03-22, 0d
+    刑期届满      :crit, milestone, p5, 2034-03-21, 0d
+
+    style p1 fill:#fef2f2,stroke:#dc2626,stroke-width:3px,color:#991b1b
+    style p5 fill:#dc2626,stroke:#991b1b,color:#ffffff
+    style p2 fill:#fffbeb,stroke:#d97706
+    style p3 fill:#dcfce7,stroke:#22c55e
+    style p4 fill:#dcfce7,stroke:#22c55e
+      </div>
+      <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   图3：量刑路径（graph TD + style 实际色值）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图3-sentencing：量刑逻辑推导</h4>
+  <p class="chart-desc">从法定刑起点出发，经由从重/从轻两路情节的叠加消长，最终定位宣告刑。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+graph TD
+    A["合同诈骗罪 刑法第224条"] --> B{"涉案金额 350万"}
+    B -->|"数额特别巨大"| C["十年以上 或无期"]
+    C --> D["宣告刑 十年 罚金三十万"]
+    style A fill:#eff6ff,stroke:#3b82f6,stroke-width:3px
+    style D fill:#fffbeb,stroke:#d97706,stroke-width:4px,color:#92400e
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   图4：当事人权利（graph LR + subgraph 分阶段）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图4-rights：当事人权利清单</h4>
+  <p class="chart-desc">按诉讼阶段梳理法定权利及本案实际行使情况。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+graph LR
+    A["被告人 诉讼权益"] --> B["侦查"]
+    A --> C["审查起诉"]
+    A --> D["审判"]
+    A --> E["执行"]
+    B --> B1["委托辩护人 第34条"]
+    B --> B2["取保候审 第67条"]
+    C --> C1["阅卷权 第40条"]
+    C --> C2["辩护意见 第173条"]
+    D --> D1["出庭辩护 第11条"]
+    D --> D2["最后陈述 第198条"]
+    E --> E1["申诉 第252条"]
+    E --> E2["减刑假释 刑法第78条"]
+    style A fill:#1e293b,stroke:#1e293b,color:#ffffff,stroke-width:3px
+    style B fill:#eff6ff,stroke:#3b82f6
+    style C fill:#fffbeb,stroke:#d97706
+    style D fill:#fef2f2,stroke:#dc2626
+    style E fill:#dcfce7,stroke:#22c55e
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   图5：辩护策略矩阵 — quadrant 英文 + 数据点英文（v3.0.0 沿用）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图5-defense：辩护策略评估矩阵</h4>
+  <p class="chart-desc">以可行性×影响力定位 7 项策略。右上角为优先采用象限（Priority Action）。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+quadrantChart
+    title Defense Strategy Feasibility x Impact
+    x-axis Low Feasibility --> High Feasibility
+    y-axis Low Impact --> High Impact
+    quadrant-1 Priority Action
+    quadrant-2 Key Breakthrough
+    quadrant-3 Auxiliary Argument
+    quadrant-4 Cautious Use
+    "Refund Plus Understanding Adopted": [0.95, 0.95]
+    "Actual Performance Partial": [0.80, 0.88]
+    "Converted Intent Partial": [0.62, 0.82]
+    "Expert Opinion Overreach No Response": [0.72, 0.52]
+    "Crime Amount Dispute Rejected": [0.48, 0.68]
+    "Interrogation Flaw No Response": [0.42, 0.38]
+    "Victim Fault No Response": [0.32, 0.30]
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>中文策略</th><th>英文标签</th><th>核心论点</th><th>法院采纳</th><th>可行</th><th>影响</th></tr></thead>
+    <tbody>
+      <tr><td>退赃+谅解</td><td>Refund Plus Understanding Adopted</td><td>退赃308万+书面谅解</td><td>✅</td><td>95%</td><td>95%</td></tr>
+      <tr><td>真实履约</td><td>Actual Performance Partial</td><td>85万真实采购</td><td>△</td><td>80%</td><td>90%</td></tr>
+      <tr><td>转化型故意</td><td>Converted Intent Partial</td><td>经营失败转化</td><td>△</td><td>60%</td><td>85%</td></tr>
+      <tr><td>鉴定意见越权</td><td>Expert Opinion Overreach No Response</td><td>超越鉴定范围</td><td>—</td><td>75%</td><td>55%</td></tr>
+      <tr><td>犯罪数额争议</td><td>Crime Amount Dispute Rejected</td><td>主张以265万为基准</td><td>❌</td><td>50%</td><td>70%</td></tr>
+      <tr><td>讯问程序瑕疵</td><td>Interrogation Flaw No Response</td><td>讯问时间异常</td><td>—</td><td>45%</td><td>40%</td></tr>
+      <tr><td>被害人过错</td><td>Victim Fault No Response</td><td>审慎义务不足</td><td>—</td><td>35%</td><td>35%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════════════════════════
+   图6：时间轴（section 无特殊符号 + 标签 ≤ 10 字符）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图6-timeline：关键事件编年</h4>
+  <p class="chart-desc">以时间线形式串联从初次接触到判决生效的全部重要节点，划分为案发、欺诈暴露、诉讼三个段落。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+timeline
+    title 张三合同诈骗案 关键事件
+
+    section 2023年案发
+    4月 : 经人介绍认识
+    5月10日 : 签订框架协议
+    5月17日 : 转账350万元
+    5月20日 : 购买理财150万
+    6月 : 第一批芯片采购
+    7月20日 : 第三批采购20万
+
+    section 2023年欺诈暴露
+    8月28日 : 伪造合同
+    9月15日 : 购入奔驰轿车
+    11月16日 : 转移80万
+    12月1日 : 更换手机号
+
+    section 2024年刑事追诉
+    1月8日 : 报案
+    3月22日 : 抓获拘留
+    4月28日 : 批准逮捕
+    7月22日 : 提起公诉
+    9月28日 : 判处十年
+    10月10日 : 判决生效
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   图7：资金分布 — pie 整数化 + 小类合并（v3.0.0 沿用）
+   ════════════════════════════════════════ -->
+<div class="chart-block">
+  <h4 class="chart-title">图7-funds：资金用途分布</h4>
+  <p class="chart-desc">饼图数值已四舍五入为整数，原值在标签内说明，&lt;5% 小类合并到"其他"。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+pie showData
+    title 350万元资金用途 万元
+    "芯片采购 履约 85" : 85
+    "理财产品 200" : 200
+    "偿还债务 35" : 35
+    "购买奔驰 28" : 28
+    "转移至亲属 80" : 80
+    "其他 取现20加消费14" : 34
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>流向</th><th>金额(万元)</th><th>饼图整数值</th><th>原值(精确)</th><th>占比</th><th>定性</th></tr></thead>
+    <tbody>
+      <tr><td>芯片采购</td><td>85</td><td>85</td><td>85.00</td><td>24.29%</td><td>真实交易</td></tr>
+      <tr><td>理财产品</td><td>200</td><td>200</td><td>200.00</td><td>57.14%</td><td>挪用</td></tr>
+      <tr><td>转移至亲属</td><td>80</td><td>80</td><td>80.00</td><td>22.86%</td><td>转移隐匿</td></tr>
+      <tr><td>偿还债务</td><td>35</td><td>35</td><td>35.00</td><td>10.00%</td><td>挪用</td></tr>
+      <tr><td>购买奔驰</td><td>28</td><td>28</td><td>28.00</td><td>8.00%</td><td>挥霍</td></tr>
+      <tr><td>取现去向不明</td><td>20</td><td>20</td><td>20.00</td><td>5.71%</td><td>去向不明</td></tr>
+      <tr><td>信用卡消费(其他)</td><td>13.56</td><td>14</td><td>13.56</td><td>3.87% → 合并到"其他"</td><td>消费</td></tr>
+      <tr style="font-weight:700;background:#fffbeb;"><td>合计</td><td>461.56</td><td>462</td><td>461.56</td><td>100%</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="disclaimer-footer">
+  <strong>免责声明</strong><br>
+  本可视化报告为辅助参考级产物，仅供参考，不构成法律意见、事实认定或裁判结果预测。
+  量刑路径展示的是法定刑档位和可能性范围，不构成刑期预测。实际量刑由法院依法裁判。
+  家属版须经律师审核确认后方可交付当事人及家属。
+</div>
+
+<div class="template-version-watermark">
+  template: criminal-case-visualization v3.0.0 | generated: 2026-06-10T17:35:00+08:00
+</div>
+
+</div><!-- .page-container -->
+</body>
+</html>

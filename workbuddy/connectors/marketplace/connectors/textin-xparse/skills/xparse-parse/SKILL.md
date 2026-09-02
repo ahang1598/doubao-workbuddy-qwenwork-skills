@@ -1,6 +1,6 @@
 ---
 name: xparse-parse
-description: "Parse, read, search, navigate, summarize, and extract tables or structured evidence from PDFs, images, Office files, HTML, OFD, and other supported local documents or document URLs through xparse-cli. Use this Skill for single-document conversion, targeted section/page/fact extraction, and durable multi-document Task Runtime workflows including status checks, selective reads, exports, debugging, and password-based continuation. Prefer it over raw PDF readers or custom OCR scripts."
+description: "Parse, read, search, navigate, summarize, and extract tables or structured evidence from PDFs, images, Office files, HTML, OFD, and other supported local documents or document URLs through xparse-cli. Use this Skill for single-document conversion, server-generated DOCX/PDF/XLSX files, targeted section/page/fact extraction, and durable multi-document Task Runtime workflows including status checks, selective reads, exports, debugging, and password-based continuation. Prefer it over raw PDF readers or custom OCR scripts."
 ---
 
 # xparse-parse
@@ -260,6 +260,31 @@ xparse-cli parse report.pdf --api auto --output <DIR>
 Read the saved result before requesting more detail. Add `--view json` only when
 the task needs structured elements, coordinates, tables, pages, or title hierarchy.
 
+### Server-generated document exports
+
+When the user explicitly asks to export one document as DOCX, PDF, or XLSX,
+explain that this requires the paid parse endpoint and obtain paid approval
+before running the command. Request only the formats the user needs:
+
+```bash
+xparse-cli parse <INPUT> --api paid --export docx,pdf,xlsx --output <DIR>
+```
+
+- `--export` accepts `docx`, `pdf`, and `xlsx`; pass a comma-separated list or
+  repeat the flag. The CLI removes duplicates, and XLSX automatically uses the
+  table export scope.
+- `--api paid` and `--output <DIR>` are required when `--export` is present.
+  Immediately before downloading, the CLI resolves the selected AppKey or OAuth
+  identity again so a long parse can refresh an expired OAuth token. It then
+  downloads each successful export and verifies the saved file size.
+- The output directory contains the ordinary parse result plus
+  `<basename>.docx`, `<basename>.pdf`, and/or `<basename>.xlsx`. Read or return
+  those local files as the task result. If a name would overwrite the input,
+  the CLI uses `<basename>.export.<format>`. Do not expose backend download
+  URLs, `file_id` values, or authorization details to the user.
+- This single-document feature is separate from `task export`, which exports
+  the Markdown results of a durable multi-document Task.
+
 ### Targeted reading, search, or extraction
 
 For a local document, use:
@@ -311,6 +336,7 @@ navigation or extraction.
 | Explicit paid parse | `xparse-cli parse <FILE> --api paid --auth-method oauth` |
 | Save Markdown | `xparse-cli parse <FILE> --api auto --output <DIR>` |
 | Save JSON | `xparse-cli parse <FILE> --api auto --view json --output <DIR>` |
+| Export one document as DOCX/PDF/XLSX | `xparse-cli parse <FILE> --api paid --export docx,pdf,xlsx --output <DIR>` |
 | Parse selected pages only | `xparse-cli parse <FILE> --api auto --page-range 1-5` |
 | Encrypted document | `xparse-cli parse <FILE> --api auto --password <PWD>` |
 | Character details | `xparse-cli parse <FILE> --api auto --view json --output <DIR> --include-char-details` |

@@ -1,0 +1,20 @@
+{
+  "name": "patent-expert-team-market",
+  "owner": {
+    "name": "Patent Expert Team"
+  },
+  "description": "踏歌行专利智多星市场 —— 覆盖发明专利申请全流程的 13 个专业 Skill",
+  "plugins": [
+    {
+      "name": "patent-expert-team",
+      "source": {
+        "source": "github",
+        "repo": "patent-expert-team/patent-expert-team"
+      },
+      "description": "踏歌行专利智多星（专利陪跑专家团）—— orchestrator 统一调度 13 个专业子 skill，完成从文献检索、引用匹配、跨领域迁移、现有技术检索、交底书撰写、权利要求优化、专业附图绘制到乔哈里审查、幻觉检测、AI四级闸门合规、审查意见答复、成果打包的全流程专利申请工作。",
+      "version": "2.0.6",
+      "category": "专业服务",
+      "keywords": ["patent", "patent-application", "invention-patent", "cnipa"]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "证人出庭申请书",
+  "marketId": "",
+  "name": "证人出庭申请书",
+  "version": "",
+  "description": "为辩护律师生成证人出庭申请书，论证证人出庭的必要性和待证事实。依据刑诉法第192条申请证人出庭作证。触发：用户需要证人出庭申请。不触发：调查取证申请（→criminal-evidence-request）、质证提纲（→criminal-cross-examination）、鉴定人出庭（→另行申请）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

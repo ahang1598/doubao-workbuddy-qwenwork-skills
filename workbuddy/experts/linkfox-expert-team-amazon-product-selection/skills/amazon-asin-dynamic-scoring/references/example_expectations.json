@@ -1,0 +1,16 @@
+{
+  "risk_preference": "稳健",
+  "price_min": 20,
+  "price_max": 50,
+  "min_profit_rate": 30,
+  "max_ratings": 1500,
+  "min_units_growth": 10,
+  "listing_age_preference": "近3个月",
+  "accept_amazon_fulfilled": false,
+  "weights": {
+    "low_competition": 30,
+    "rising_lifecycle": 30,
+    "profit_health": 25,
+    "low_entry_barrier": 15
+  }
+}

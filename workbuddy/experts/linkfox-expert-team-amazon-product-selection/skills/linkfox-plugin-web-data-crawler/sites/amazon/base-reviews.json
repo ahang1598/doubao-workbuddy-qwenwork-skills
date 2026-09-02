@@ -1,0 +1,93 @@
+{
+  "workflowName": "Amazon US 评论采集",
+  "steps": [
+    {
+      "actionCode": "OPEN_TAB",
+      "actionDescription": "打开亚马逊评论页面",
+      "tabUrl": "https://www.amazon.com/product-reviews/B0CP9YB3Q4/",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": "div[data-hook='review']",
+      "actionDescription": "等待评论列表加载完成",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "800",
+      "actionDescription": "滚动页面以加载更多评论",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": ["a[data-hook='review-title'] span:not([class*='cr-original-review'])", "span[data-hook='review-title'] span"],
+      "extractField": "review_titles",
+      "extractType": "list",
+      "actionDescription": "提取所有评论标题",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_titles",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": "span[data-hook='review-body']",
+      "extractField": "review_bodies",
+      "extractType": "list",
+      "actionDescription": "提取所有评论文本",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_bodies",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": ["i[data-hook='review-star-rating'] span.a-icon-alt", "i.review-rating span.a-icon-alt"],
+      "extractField": "review_ratings",
+      "extractType": "list",
+      "actionDescription": "提取所有评论星级评分",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_ratings",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": "span.a-profile-name",
+      "extractField": "review_authors",
+      "extractType": "list",
+      "actionDescription": "提取所有评论者名称",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_authors",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": "span[data-hook='review-date']",
+      "extractField": "review_dates",
+      "extractType": "list",
+      "actionDescription": "提取所有评论日期",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_dates",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "CLOSE_TAB",
+      "actionDescription": "采集完成，关闭评论页标签",
+      "tabKey": "tabKey666"
+    }
+  ]
+}

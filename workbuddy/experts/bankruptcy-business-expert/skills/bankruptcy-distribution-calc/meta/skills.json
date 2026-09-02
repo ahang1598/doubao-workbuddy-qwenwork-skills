@@ -1,0 +1,1 @@
+{"id":"bankruptcy-distribution-calc","marketId":null,"name":"破产分配计算","version":"1.0.0","description":"依据债权审查结论和可供分配财产总额，执行分配顺位计算、优先债权足额清偿计算、普通债权按比例分配，编制分配方案草案和清偿率测算表。","author":"深圳法大大网络科技有限公司","tags":["破产","分配计算","清偿率","分配方案"],"skillType":"custom","skillSource":null,"skillSourceName":null}

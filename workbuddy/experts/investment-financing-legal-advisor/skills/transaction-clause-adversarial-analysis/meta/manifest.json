@@ -1,0 +1,14 @@
+{
+  "name": "交易条款对抗性分析",
+  "name_en": "cap-market-adversarial-clause-analysis",
+  "description": "识别投资协议双轴十二类陷阱(控制轴T1-T7+经济轴T8-T12:反稀释/清算优先权/对赌/MFN/拖售等)+情境严重度+对抗分析+修改建议。触发：陷阱识别、对抗审查。不触发：合规审查(→06)、创始人责任(→founder-liability)、多轮一致(→multi-round)。",
+  "version": "1.1.0",
+  "blueprint": "bp-contract-review-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-06",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

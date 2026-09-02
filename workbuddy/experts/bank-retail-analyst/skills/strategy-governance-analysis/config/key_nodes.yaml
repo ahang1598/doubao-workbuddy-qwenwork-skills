@@ -1,0 +1,132 @@
+# 关键节点反事实推演配置
+#
+# 来源：用户提示词"2013 钱荒、2018 资管新规、2020 疫情等时点"
+# 本文件列出 Skill 5 默认纳入分析的关键节点，可按需增删
+
+key_nodes:
+  - id: 2013_qianhuang
+    name: 2013 钱荒
+    date: "2013-06"
+    shock_type: 流动性
+    shock_window_months: 6
+    context_indicators:
+      - SHIBOR 隔夜
+      - R007
+      - 银行间同业拆借余额
+      - M2 同比
+    expected_divergence: "招行坚持压降非标 vs 兴业选择守势"
+    candidate_decisions:
+      - 压降非标（标准化转表内）
+      - 守势观望（维持同业/非标敞口）
+      - 同业套利（扩表做收益）
+    resource_indicators:
+      - 同业资产占比
+      - 非标投资占比
+      - 流动性覆盖率
+      - 核心一级资本充足率
+    counterfactual_citic:
+      alt_strategies: ["招行式压降", "兴业式守势"]
+      downstream_metrics: [零售贷款不良率, ROE, 拨备覆盖率]
+
+  - id: 2016_mpa
+    name: 2016 MPA 考核
+    date: "2016-Q1"
+    shock_type: 监管
+    shock_window_months: 9
+    context_indicators:
+      - 广义信贷增速
+      - MPA 考核档位
+      - 同业负债占比
+    expected_divergence: "广义信贷口径差异（同业+理财+表外）"
+    candidate_decisions:
+      - 主动压降广义信贷
+      - 被动调整 (延迟)
+      - 维持高速扩张
+    resource_indicators:
+      - 广义信贷增速
+      - 同业负债占比
+      - 理财规模增速
+      - 表外敞口变动
+    counterfactual_citic:
+      alt_strategies: ["主动压降", "维持高速扩张"]
+      downstream_metrics: [营收增速, 不良率]
+
+  - id: 2018_asset_new_rules
+    name: 2018 资管新规
+    date: "2018-04"
+    shock_type: 监管
+    shock_window_months: 36
+    context_indicators:
+      - 理财净值化率
+      - 非标余额
+      - 通道业务规模
+    expected_divergence: "非标回表节奏 + 零售战略转型时序"
+    candidate_decisions:
+      - 快速出清（当年压降）
+      - 分段出清（3 年过渡）
+      - 延迟处置（压力后置）
+    resource_indicators:
+      - 理财净值化率
+      - 非标余额
+      - 零售贷款占比变化
+      - 财富管理收入增速
+    counterfactual_citic:
+      alt_strategies: ["招行节奏（早出清+零售提速）", "浦发节奏（延迟处置）"]
+      downstream_metrics: [财富管理收入, 零售不良率, ROE]
+
+  - id: 2020_covid
+    name: 2020 疫情
+    date: "2020-02"
+    shock_type: 宏观+信用
+    shock_window_months: 24
+    context_indicators:
+      - 零售不良新生成率
+      - 信用卡逾期率
+      - 消费贷不良率
+    expected_divergence: "信用卡与消费贷的敞口差异放大"
+    candidate_decisions:
+      - 主动压缩信用卡 (平安/招行早期)
+      - 继续扩张高收益消费贷
+      - 加大拨备提升安全垫
+    resource_indicators:
+      - 信用卡贷款余额
+      - 消费贷余额
+      - 拨备覆盖率
+      - 零售不良率
+    counterfactual_citic:
+      alt_strategies: ["平安式主动压缩", "加大拨备"]
+      downstream_metrics: [信用卡不良率, 零售信用成本, ROE]
+
+  - id: 2022_real_estate
+    name: 2022 房地产
+    date: "2022-Q2"
+    shock_type: 行业
+    shock_window_months: 24
+    context_indicators:
+      - 房企公开违约数量
+      - 按揭提前还款率
+      - 地产开发贷不良率
+    expected_divergence: "按揭 + 房企敞口差异放大"
+    candidate_decisions:
+      - 早期压降地产敞口
+      - 维持按揭战略重心
+      - 加大对公房地产拨备
+    resource_indicators:
+      - 按揭贷款不良率
+      - 对公房地产不良率
+      - 房地产相关拨备
+      - 按揭提前还款规模
+    counterfactual_citic:
+      alt_strategies: ["兴业式早期压降", "招行式集中拨备"]
+      downstream_metrics: [房地产不良率, 整体不良率]
+
+# 反事实推演红线
+counterfactual_guardrails:
+  use_contemporary_coefficient_only: true  # 只用彼时披露的行业平均系数，不用后视镜
+  output_as_range: true                    # 必须输出区间（min ~ max）
+  confidence_levels: [低, 中, 高]
+  mandatory_disclaimer: "模型推演，非事实"
+  forbidden_actions:
+    - 用当前已知结果反推决策合理性
+    - 给出点估计而非区间
+    - 跳过"彼时约束条件"直接推结论

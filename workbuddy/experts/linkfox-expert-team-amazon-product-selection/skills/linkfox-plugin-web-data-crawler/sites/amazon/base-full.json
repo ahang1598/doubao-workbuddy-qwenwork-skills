@@ -1,0 +1,566 @@
+{
+  "workflowName": "Amazon US 商品详情页数据采集",
+  "steps": [
+    {
+      "actionCode": "OPEN_TAB",
+      "actionDescription": "打开亚马逊商品详情页",
+      "tabUrl": "https://www.amazon.com/dp/B0CP9YB3Q4",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [
+        "span#productTitle"
+      ],
+      "actionDescription": "等待商品标题",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "span#productTitle"
+      ],
+      "extractField": "title",
+      "extractType": "text",
+      "actionDescription": "提取商品标题",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "title",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "input[name='ASIN']"
+      ],
+      "extractField": "asin",
+      "extractType": "attribute",
+      "attribute": "value",
+      "actionDescription": "提取ASIN",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "asin",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "input[name='items[0.base][customerVisiblePrice][displayString]']"
+      ],
+      "extractField": "price",
+      "extractType": "attribute",
+      "attribute": "value",
+      "actionDescription": "提取价格",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "price",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "span[data-basisprice-label]",
+        "span.a-text-price span.a-offscreen",
+        ".basisPrice .a-offscreen"
+      ],
+      "extractField": "list_price",
+      "extractType": "text",
+      "actionDescription": "提取划线价",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#apex-pricetopay-accessibility-label",
+        ".savingPriceOverride",
+        "#regularprice_savings"
+      ],
+      "extractField": "savings_text",
+      "extractType": "text",
+      "actionDescription": "提取优惠/折扣文本",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "span.promoPriceBlockMessage",
+        "label[for='couponText']",
+        "span.vpcoupon",
+        "#promoMessage_feature_div"
+      ],
+      "extractField": "coupon_text",
+      "extractType": "text",
+      "actionDescription": "提取 Coupon/优惠券信息",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "LOOP",
+      "extractField": "badges",
+      "actionDescription": "遍历 Badge 容器提取所有标签（互不短路，支持多 Badge 共存）",
+      "tabKey": "tabKey666",
+      "loopTarget": [
+        "#zeitgeistBadge_feature_div",
+        "#acBadge_feature_div",
+        "#dealBadgeSupportingText span",
+        "span.dealBadge",
+        "#dealprice_lbl",
+        "#climatePledgeFriendlyBadge .a-badge-label",
+        ".badge-link .a-badge-label",
+        "#newVersionBadge_feature_div",
+        "label[id^='greenBadge']"
+      ],
+      "steps": [
+        {
+          "actionCode": "EXTRACT",
+          "selector": "{{loopElement}}",
+          "extractField": "text",
+          "extractType": "text",
+          "actionDescription": "提取 Badge {{loopIndex}}",
+          "tabKey": "tabKey666",
+          "allowFailure": true
+        }
+      ]
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#landingImage"
+      ],
+      "extractField": "main_image",
+      "extractType": "attribute",
+      "attribute": "data-old-hires",
+      "actionDescription": "提取商品主图",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "images",
+        "hint": "landingImage",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT_SCRIPT",
+      "extractField": "images_raw",
+      "pattern": "\"hiRes\"\\s*:\\s*\"(https?://[^\"]+)\"",
+      "keyword": "P.when('A').register",
+      "group": 1,
+      "flags": "g",
+      "actionDescription": "从脚本提取商品图片 URL",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "extractField": "brand",
+      "actionDescription": "提取品牌名称",
+      "actionCode": "EXTRACT",
+      "selector": [
+        ".po-brand",
+        "a#bylineInfo"
+      ],
+      "extractType": "text",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "brand",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "[id^='inline-twister-dim-title-']"
+      ],
+      "extractField": "variant_dimensions",
+      "extractType": "list",
+      "actionDescription": "提取变体维度标题",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "[id^='inline-twister-expanded-dimension-text-']"
+      ],
+      "extractField": "variant_selected",
+      "extractType": "list",
+      "actionDescription": "提取当前选中变体值",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#tp-inline-twister-dim-values-container img"
+      ],
+      "extractField": "variant_options",
+      "extractType": "list",
+      "attribute": "alt",
+      "actionDescription": "提取变体选项名",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#tp-inline-twister-dim-values-container img"
+      ],
+      "extractField": "variant_thumbnails",
+      "extractType": "list",
+      "attribute": "src",
+      "actionDescription": "提取变体缩略图 URL",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "[id^='inline-twister-expander-content-'] span.a-size-base"
+      ],
+      "extractField": "variant_options_text",
+      "extractType": "list",
+      "actionDescription": "提取变体选项文字",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "li[data-asin]"
+      ],
+      "extractField": "variant_asins",
+      "extractType": "list",
+      "attribute": "data-asin",
+      "actionDescription": "提取变体 ASIN 列表",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#prime_feature_div .a-icon-prime",
+        "#deliveryBlockMessage",
+        "#mir-layout-DELIVERY_BLOCK"
+      ],
+      "extractField": "prime_delivery",
+      "extractType": "list",
+      "actionDescription": "提取 Prime 配送文案",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#mir-layout-DELIVERY_BLOCK",
+        "#deliveryBlockMessage",
+        "#contextualIngressPt_feature_div",
+        "#contextualIngressPtLabel_deliveryShortDiv"
+      ],
+      "extractField": "delivery_block_full",
+      "extractType": "list",
+      "actionDescription": "提取完整配送信息区块（含送达日期、配送方式等）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#amazonGlobal_feature_div .a-size-base",
+        "#amazonGlobal_feature_div",
+        "#merchant-info",
+        "#tabular-buybox .a-tabular-buybox-text",
+        "#shippingMessageInsideBuyBox_feature_div"
+      ],
+      "extractField": "shipping_fee",
+      "extractType": "list",
+      "actionDescription": "提取邮费/跨境配送费用详情（含 AmazonGlobal Shipping、Import Charges 等）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "span#social-proofing-faceout-title-tk_bought"
+      ],
+      "extractField": "sales_bought",
+      "extractType": "text",
+      "actionDescription": "提取购买量（X bought in past month）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#social-proofing-faceout-viewed span",
+        "#social-proofing-faceout-viewed"
+      ],
+      "extractField": "sales_viewed",
+      "extractType": "text",
+      "actionDescription": "提取浏览量（X+ viewed in past month）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "span#social-proofing-faceout-messages",
+        "#socialProofingAsinFaceout_feature_div",
+        "#dpp-front-end-messages_feature_div",
+        "#dpp-bought-in-last-month_feature_div"
+      ],
+      "extractField": "sales_data_full",
+      "extractType": "list",
+      "actionDescription": "提取全部销量/热度提示文本（兜底）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "500",
+      "actionDescription": "滚动到页面中部",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [
+        "#acrPopover",
+        "#acrCustomerReviewText"
+      ],
+      "actionDescription": "等待评分和评论数区域加载",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#acrPopover"
+      ],
+      "extractField": "rating",
+      "extractType": "attribute",
+      "attribute": "title",
+      "actionDescription": "提取商品评分",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "rating",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#acrCustomerReviewText"
+      ],
+      "extractField": "review_count",
+      "extractType": "text",
+      "actionDescription": "提取评论总数",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_count",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "400",
+      "actionDescription": "滚动到评论分布区域",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [
+        "#cm_cr_dp_d_histogram",
+        "#histogramTable",
+        ".crHistogramTable"
+      ],
+      "actionDescription": "等待评分分布表格出现",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#cm_cr_dp_d_histogram",
+        "#histogramTable",
+        ".crHistogramTable"
+      ],
+      "extractField": "review_histogram",
+      "extractType": "list",
+      "actionDescription": "提取评分分布",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "600",
+      "actionDescription": "滚动到 Customers say AI 摘要区",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [
+        "div[data-testid='overall-summary']",
+        "span[data-testid='aspect-label']"
+      ],
+      "actionDescription": "等待 Customers say AI 摘要区加载",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "div[data-testid='overall-summary']"
+      ],
+      "extractField": "review_summary_text",
+      "extractType": "text",
+      "actionDescription": "提取 Customers say AI 摘要全文",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "span[data-testid='aspect-label']"
+      ],
+      "extractField": "review_aspects",
+      "extractType": "list",
+      "actionDescription": "提取评论标签列表",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#feature-bullets ul li span.a-list-item",
+        "#productFactsDesktopExpander ul li"
+      ],
+      "extractField": "bullets",
+      "extractType": "list",
+      "actionDescription": "提取五点描述列表",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "bullets",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "1000",
+      "actionDescription": "滚动到页面底部",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [
+        "#availability span",
+        "#productDetails_expanderSectionTables",
+        "#productDetails_detailBullets_sections1",
+        "#detailBullets_feature_div",
+        "#item_details",
+        ".voyager-ns-desktop-table"
+      ],
+      "actionDescription": "等待底部详情区域加载",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#availability span"
+      ],
+      "extractField": "availability",
+      "extractType": "text",
+      "actionDescription": "提取库存状态",
+      "tabKey": "tabKey666",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "availability",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "LOOP",
+      "actionDescription": "遍历多种详情容器提取全部产品规格",
+      "extractField": "product_details",
+      "tabKey": "tabKey666",
+      "loopTarget": [
+        "#productDetails_expanderSectionTables table.prodDetTable tr",
+        "#productDetails_detailBullets_sections1 tr",
+        "#detailBullets_feature_div ul.detail-bullet-list li",
+        "#productDetails_techSpec_section_1 tr",
+        "#topHighlight .product-facts-detail",
+        "#style .voyager-ns-desktop-table tr",
+        "#item_details .voyager-ns-desktop-table tr"
+      ],
+      "steps": [
+        {
+          "actionCode": "EXTRACT",
+          "selector": "{{loopElement}}",
+          "extractType": "list",
+          "actionDescription": "提取详情容器 {{loopIndex}}",
+          "tabKey": "tabKey666",
+          "allowFailure": true
+        }
+      ]
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "3000",
+      "actionDescription": "滚动到 A+ 内容区域",
+      "tabKey": "tabKey666"
+    },
+    {
+      "actionCode": "WAIT",
+      "selector": [
+        "#aplus_feature_div"
+      ],
+      "actionDescription": "等待 A+ 内容区域加载",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "WAIT",
+      "actionValue": "1500",
+      "actionDescription": "等待 A+ 图片加载",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "EXTRACT",
+      "selector": [
+        "#aplus_feature_div #aplus .aplus-module img:not(.aplus-data-column img)"
+      ],
+      "extractField": "aplus_images",
+      "extractType": "list",
+      "attribute": ["data-src", "src"],
+      "actionDescription": "提取 A+ 内容图片 URL",
+      "tabKey": "tabKey666",
+      "allowFailure": true,
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "aplus_images",
+        "hint": "aplus module images",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT_SCRIPT",
+      "extractField": "videos",
+      "pattern": "\"url\"\\s*:\\s*\"(https?://[^\"]+)\"",
+      "keyword": "ImageBlockBTF",
+      "group": 1,
+      "flags": "g",
+      "actionDescription": "提取商品视频 URL（全量）",
+      "tabKey": "tabKey666",
+      "allowFailure": true
+    },
+    {
+      "actionCode": "CLOSE_TAB",
+      "actionDescription": "关闭商品页标签",
+      "tabKey": "tabKey666"
+    }
+  ]
+}

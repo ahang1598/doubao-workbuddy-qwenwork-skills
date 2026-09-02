@@ -1,0 +1,108 @@
+{
+  "analysis_type": "amazon_11d",
+  "timestamp": "2026-07-31T08:17:43.392451+00:00",
+  "total_keywords_analyzed": 1,
+  "results": [
+    {
+      "keyword": "tea cosy",
+      "dimensions": {
+        "1_total_results": 60,
+        "2_top_brands": [
+          {
+            "brand": "Cooksmart",
+            "count": 12,
+            "share_pct": 20.0
+          },
+          {
+            "brand": "Tea",
+            "count": 10,
+            "share_pct": 16.7
+          },
+          {
+            "brand": "Muldale",
+            "count": 3,
+            "share_pct": 5.0
+          },
+          {
+            "brand": "Pachamama",
+            "count": 3,
+            "share_pct": 5.0
+          },
+          {
+            "brand": "DOITOOL",
+            "count": 3,
+            "share_pct": 5.0
+          }
+        ],
+        "3_price_distribution": {
+          "min": 2.2,
+          "max": 26.95,
+          "avg": 12.67,
+          "median": 11.99,
+          "q1": 9.99,
+          "q3": 13.99
+        },
+        "4_rating_distribution": {
+          "avg": 4.4,
+          "distribution_pct": {
+            "5": 6.8,
+            "4": 76.3,
+            "3": 13.6,
+            "2": 1.7,
+            "1": 1.7
+          }
+        },
+        "5_review_count_distribution": {
+          "min": 1,
+          "max": 1400,
+          "avg": 284,
+          "median": 61
+        },
+        "6_sponsored_ratio": {
+          "sponsored_count": 12,
+          "total": 60,
+          "ratio_pct": 20.0
+        },
+        "7_badges": {
+          "total_badged": 2,
+          "details": [
+            {
+              "asin": "B07QLSJKD4",
+              "badge": "Amazon's Choice for \"tea cosy\"",
+              "title": "Cooksmart Tea Cosy for Small, Medium & Large Teapots | British Designed, Insulat"
+            },
+            {
+              "asin": "B0FB8X5ZLR",
+              "badge": "Save 13%",
+              "title": "Preppy Lapel Acrylic Knitting tea Cozy for 2 Cups Size, Gift，one piece,not inclu"
+            }
+          ]
+        },
+        "8_new_product_share": {
+          "new_count": 29,
+          "total": 60,
+          "ratio_pct": 48.3,
+          "threshold": "< 50 reviews"
+        },
+        "9_top_seller_sales": [],
+        "10_listing_age": {
+          "method": "estimated from review count",
+          "distribution": {
+            "new (<50 reviews)": 29,
+            "established (50-500)": 19,
+            "mature (>500)": 11
+          }
+        },
+        "11_variant_count": {
+          "available": false,
+          "note": "Variant count not available from Amazon search results. Use linkfox-amazon-product-detail for individual ASIN variant data."
+        }
+      },
+      "summary": {
+        "competition_level": "medium",
+        "entry_barrier": "medium",
+        "opportunity_score": 60
+      }
+    }
+  ]
+}

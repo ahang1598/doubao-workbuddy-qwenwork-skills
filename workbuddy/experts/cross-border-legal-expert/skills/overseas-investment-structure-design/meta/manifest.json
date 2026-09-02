@@ -1,0 +1,17 @@
+{
+  "name": "overseas-investment-structure-design",
+  "name_en": "overseas-investment-structure-design",
+  "description": "设计中国企业出海投资的多层控股架构。触发：境外控股架构搭建/ODI资金路径规划/多层SPV方案。不触发：单国公司注册咨询/境内股权架构调整/红筹上市架构——调用对应专项技能。",
+  "version": "1.2.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-25",
+  "created": "2026-06-25",
+  "author": "foreign-skills-build",
+  "format_seriousness": "C-Professional",
+  "type_tag": "T-consultation",
+  "output_formats": ["html", "markdown"],
+  "script_necessity": "none",
+  "legal_domain": "涉外投资"
+}

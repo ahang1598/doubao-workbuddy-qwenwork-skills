@@ -1,0 +1,583 @@
+{
+  "name": "linkfox-expert-team-amazon-product-selection",
+  "version": "1.0.0",
+  "description": "Linkfox 亚马逊选品专家团，包含26位专家，覆盖市场、商品、利润、VOC、货源与风险分析。",
+  "author": {
+    "name": "Linkfox",
+    "email": "support@linkfox.ai"
+  },
+  "agents": [
+    "./agents/linkfox-amazon-product-selection-team-lead.md",
+    "./agents/linkfox-expert-1688-sourcing-expert.md",
+    "./agents/linkfox-expert-aba-new-keyword-miner.md",
+    "./agents/linkfox-expert-alexa-prompt-product-selection.md",
+    "./agents/linkfox-expert-all-category-listing-scout.md",
+    "./agents/linkfox-expert-amazon-competitor-monitor.md",
+    "./agents/linkfox-expert-amazon-fba-inventory-planner.md",
+    "./agents/linkfox-expert-asin-keepa-curve-analyst.md",
+    "./agents/linkfox-expert-beginner-sellersprite-scout.md",
+    "./agents/linkfox-expert-blue-ocean-market-scanner.md",
+    "./agents/linkfox-expert-cross-cultural-product-scout.md",
+    "./agents/linkfox-expert-google-search-researcher.md",
+    "./agents/linkfox-expert-keyword-mining-expert.md",
+    "./agents/linkfox-expert-low-inventory-product-selection.md",
+    "./agents/linkfox-expert-low-price-long-tail-selector.md",
+    "./agents/linkfox-expert-low-price-product-expert.md",
+    "./agents/linkfox-expert-new-release-product-scout.md",
+    "./agents/linkfox-expert-opportunistic-product-scout.md",
+    "./agents/linkfox-expert-potential-market-scout.md",
+    "./agents/linkfox-expert-profit-calculation-expert.md",
+    "./agents/linkfox-expert-quality-listing-scout.md",
+    "./agents/linkfox-expert-sales-surge-product-scout.md",
+    "./agents/linkfox-expert-serp-market-structure-analyst.md",
+    "./agents/linkfox-expert-single-variation-potential-scout.md",
+    "./agents/linkfox-expert-tro-risk-advisor.md",
+    "./agents/linkfox-expert-unmet-demand-miner.md",
+    "./agents/linkfox-expert-voc-insight-analyst.md"
+  ],
+  "skills": [
+    "./skills/amazon-asin-dynamic-scoring",
+    "./skills/amazon-competitor-monitor",
+    "./skills/amazon-fba-inventory-planning",
+    "./skills/amazon-keyword-library-builder",
+    "./skills/amazon-niche-radar",
+    "./skills/amazon-product-scout-agent",
+    "./skills/amazon-suggestion-miner",
+    "./skills/competitor-reverse-analysis",
+    "./skills/cross-cultural-product-selection",
+    "./skills/default-superagent-loop",
+    "./skills/linkfox-1688-search-by-image",
+    "./skills/linkfox-1688-source-profiler",
+    "./skills/linkfox-aba-intelligent-query",
+    "./skills/linkfox-aba-new-keyword-miner",
+    "./skills/linkfox-aigc-imagegen",
+    "./skills/linkfox-aigc-imagegen-brand-gene-extract",
+    "./skills/linkfox-aigc-imagegen-cloth",
+    "./skills/linkfox-aigc-imagegen-product",
+    "./skills/linkfox-aigc-textgen",
+    "./skills/linkfox-aigc-videogen",
+    "./skills/linkfox-aigc-videogen-multi",
+    "./skills/linkfox-ai-mode-google-search",
+    "./skills/linkfox-amazon-alexa-search",
+    "./skills/linkfox-amazon-category-lookup",
+    "./skills/linkfox-amazon-opportunity-report-by-keyword",
+    "./skills/linkfox-amazon-opportunity-search-by-metrics",
+    "./skills/linkfox-amazon-product-detail",
+    "./skills/linkfox-amazon-reviews-list",
+    "./skills/linkfox-amazon-search",
+    "./skills/linkfox-amazon-search-by-image",
+    "./skills/linkfox-amazon-search-competition",
+    "./skills/linkfox-amazon-store-auth",
+    "./skills/linkfox-amazon-suggestion-miner",
+    "./skills/linkfox-amazon-widget-miner",
+    "./skills/linkfox-dld-product-billboard",
+    "./skills/linkfox-dld-product-search",
+    "./skills/linkfox-ebay-search",
+    "./skills/linkfox-echotik-list-new-product-rank",
+    "./skills/linkfox-echotik-list-product",
+    "./skills/linkfox-ecommerce-skill-creator",
+    "./skills/linkfox-fastmoss-product-rank-top-selling",
+    "./skills/linkfox-fastmoss-product-search",
+    "./skills/linkfox-file-upload",
+    "./skills/linkfox-google-trend-get-trend-by-keys",
+    "./skills/linkfox-google-trend-get-trend-by-time",
+    "./skills/linkfox-image-competitor-scout",
+    "./skills/linkfox-jiimore-get-niche-info",
+    "./skills/linkfox-jiimore-get-niche-info-by-keyword",
+    "./skills/linkfox-jiimore-get-niche-review-from-keyword",
+    "./skills/linkfox-jiimore-page-asins-by-asin",
+    "./skills/linkfox-jiimore-product-discovery",
+    "./skills/linkfox-keepa-product-request",
+    "./skills/linkfox-keepa-product-search",
+    "./skills/linkfox-keepa-product-series",
+    "./skills/linkfox-listing-master-test",
+    "./skills/linkfox-mpstats-ozon-brand-products",
+    "./skills/linkfox-mpstats-ozon-category-products",
+    "./skills/linkfox-mpstats-ozon-product-detail",
+    "./skills/linkfox-mpstats-ozon-product-search",
+    "./skills/linkfox-mpstats-ozon-product-trend",
+    "./skills/linkfox-mpstats-ozon-seller-products",
+    "./skills/linkfox-plugin-web-data-crawler",
+    "./skills/linkfox-product-center-listing-create",
+    "./skills/linkfox-product-center-listing-detail",
+    "./skills/linkfox-product-center-listing-update",
+    "./skills/linkfox-product-center-variant-create",
+    "./skills/linkfox-product-center-variant-detail",
+    "./skills/linkfox-product-center-variant-listings",
+    "./skills/linkfox-product-center-variant-update",
+    "./skills/linkfox-report-generator",
+    "./skills/linkfox-ruiguan-copyright-detection",
+    "./skills/linkfox-ruiguan-detection-patent-design",
+    "./skills/linkfox-ruiguan-gun-parts-search",
+    "./skills/linkfox-ruiguan-text-trademark-detection",
+    "./skills/linkfox-ruiguan-trademark-graphic-detection",
+    "./skills/linkfox-ruiguan-utility-patent-detection",
+    "./skills/linkfox-sellersprite-competitor-lookup",
+    "./skills/linkfox-sellersprite-market-research",
+    "./skills/linkfox-sellersprite-market-statistics",
+    "./skills/linkfox-sellersprite-product-search",
+    "./skills/linkfox-sellersprite-traffic-keyword",
+    "./skills/linkfox-sif-asin-keywords",
+    "./skills/linkfox-sif-asin-summary",
+    "./skills/linkfox-sif-keyword-overview",
+    "./skills/linkfox-sif-keyword-summary",
+    "./skills/linkfox-sorftime-amazon-product-detail",
+    "./skills/linkfox-sorftime-amazon-product-query",
+    "./skills/linkfox-superagent-orchestration",
+    "./skills/linkfox-task-scheduler",
+    "./skills/linkfox-tsearch-search",
+    "./skills/linkfox-wallysmarter-product-detail",
+    "./skills/linkfox-walmart-search",
+    "./skills/linkfox-youying-shopee-get-product-infos",
+    "./skills/linkfox-zhihuiya-abstract-data-translated",
+    "./skills/linkfox-zhihuiya-abstract-image",
+    "./skills/linkfox-zhihuiya-bibliography",
+    "./skills/linkfox-zhihuiya-claim-data",
+    "./skills/linkfox-zhihuiya-claim-data-translated",
+    "./skills/linkfox-zhihuiya-description-data",
+    "./skills/linkfox-zhihuiya-description-data-translated",
+    "./skills/linkfox-zhihuiya-fulltext-image",
+    "./skills/linkfox-zhihuiya-legal-status",
+    "./skills/linkfox-zhihuiya-patent-cited",
+    "./skills/linkfox-zhihuiya-patent-family",
+    "./skills/linkfox-zhihuiya-patent-forward-citation",
+    "./skills/linkfox-zhihuiya-patent-image-search",
+    "./skills/linkfox-zhihuiya-pdf-data",
+    "./skills/linkfox-zhihuiya-simple-bibliography",
+    "./skills/ppt-maker",
+    "./skills/profit-calculation-expert"
+  ],
+  "expertType": "team",
+  "agentName": "linkfox-amazon-product-selection-team-lead",
+  "teamInfo": {
+    "leadAgent": "linkfox-amazon-product-selection-team-lead",
+    "memberAgents": [
+      "linkfox-expert-1688-sourcing-expert",
+      "linkfox-expert-aba-new-keyword-miner",
+      "linkfox-expert-alexa-prompt-product-selection",
+      "linkfox-expert-all-category-listing-scout",
+      "linkfox-expert-amazon-competitor-monitor",
+      "linkfox-expert-amazon-fba-inventory-planner",
+      "linkfox-expert-asin-keepa-curve-analyst",
+      "linkfox-expert-beginner-sellersprite-scout",
+      "linkfox-expert-blue-ocean-market-scanner",
+      "linkfox-expert-cross-cultural-product-scout",
+      "linkfox-expert-google-search-researcher",
+      "linkfox-expert-keyword-mining-expert",
+      "linkfox-expert-low-inventory-product-selection",
+      "linkfox-expert-low-price-long-tail-selector",
+      "linkfox-expert-low-price-product-expert",
+      "linkfox-expert-new-release-product-scout",
+      "linkfox-expert-opportunistic-product-scout",
+      "linkfox-expert-potential-market-scout",
+      "linkfox-expert-profit-calculation-expert",
+      "linkfox-expert-quality-listing-scout",
+      "linkfox-expert-sales-surge-product-scout",
+      "linkfox-expert-serp-market-structure-analyst",
+      "linkfox-expert-single-variation-potential-scout",
+      "linkfox-expert-tro-risk-advisor",
+      "linkfox-expert-unmet-demand-miner",
+      "linkfox-expert-voc-insight-analyst"
+    ]
+  },
+  "displayName": {
+    "en": "LinkFox",
+    "zh": "LinkFox"
+  },
+  "profession": {
+    "en": "Linkfox Amazon Product Selection Team",
+    "zh": "Linkfox 亚马逊选品专家团"
+  },
+  "displayDescription": {
+    "en": "A 26-expert Amazon product selection team covering opportunity discovery, keyword mining, VOC insights, sourcing, profit calculation, competitor monitoring, inventory planning and IP risk checks.",
+    "zh": "26位亚马逊选品专家协同，覆盖市场扫描、关键词、VOC、货源、利润、库存、竞品监控与侵权风险。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "07-SalesCommerce",
+  "defaultInitPrompt": {
+    "zh": "帮我从一个关键词出发做亚马逊选品分析",
+    "en": "Run Amazon product selection analysis from a seed keyword."
+  },
+  "plugin": "linkfox-expert-team-amazon-product-selection",
+  "tags": [
+    {
+      "en": "Amazon Selection",
+      "zh": "亚马逊选品"
+    },
+    {
+      "en": "Market Research",
+      "zh": "市场调研"
+    },
+    {
+      "en": "Profit & Risk",
+      "zh": "利润与风险"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "帮我从一个关键词出发做亚马逊选品分析",
+      "en": "Run Amazon product selection analysis from a seed keyword."
+    },
+    {
+      "zh": "评估这个 ASIN 是否值得开发",
+      "en": "Evaluate whether this ASIN is worth developing."
+    },
+    {
+      "zh": "帮我找低竞争高潜力的亚马逊产品机会",
+      "en": "Find low-competition high-potential Amazon product opportunities."
+    }
+  ],
+  "members": [
+    {
+      "id": "linkfox-amazon-product-selection-team-lead",
+      "name": {
+        "en": "Lead",
+        "zh": "主理人"
+      },
+      "profession": {
+        "en": "Team Lead & Orchestrator",
+        "zh": "专家团主理人"
+      },
+      "avatar": "avatars/team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "linkfox-expert-1688-sourcing-expert",
+      "name": {
+        "en": "linkfox-expert-1688-sourcing-expert",
+        "zh": "1688找货源专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "1688找货源专家"
+      },
+      "avatar": "avatars/linkfox-expert-1688-sourcing-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-aba-new-keyword-miner",
+      "name": {
+        "en": "linkfox-expert-aba-new-keyword-miner",
+        "zh": "ABA新词挖掘专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "ABA新词挖掘专家"
+      },
+      "avatar": "avatars/linkfox-expert-aba-new-keyword-miner.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-alexa-prompt-product-selection",
+      "name": {
+        "en": "linkfox-expert-alexa-prompt-product-selection",
+        "zh": "Alexa 提示词选品专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "Alexa 提示词选品专家"
+      },
+      "avatar": "avatars/linkfox-expert-alexa-prompt-product-selection.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-all-category-listing-scout",
+      "name": {
+        "en": "linkfox-expert-all-category-listing-scout",
+        "zh": "全品类铺货专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "全品类铺货专家"
+      },
+      "avatar": "avatars/linkfox-expert-all-category-listing-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-amazon-competitor-monitor",
+      "name": {
+        "en": "linkfox-expert-amazon-competitor-monitor",
+        "zh": "亚马逊竞品动态监控专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "亚马逊竞品动态监控专家"
+      },
+      "avatar": "avatars/linkfox-expert-amazon-competitor-monitor.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-amazon-fba-inventory-planner",
+      "name": {
+        "en": "linkfox-expert-amazon-fba-inventory-planner",
+        "zh": "亚马逊FBA库存计划专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "亚马逊FBA库存计划专家"
+      },
+      "avatar": "avatars/linkfox-expert-amazon-fba-inventory-planner.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-asin-keepa-curve-analyst",
+      "name": {
+        "en": "linkfox-expert-asin-keepa-curve-analyst",
+        "zh": "ASIN-Keepa曲线解读专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "ASIN-Keepa曲线解读专家"
+      },
+      "avatar": "avatars/linkfox-expert-asin-keepa-curve-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-beginner-sellersprite-scout",
+      "name": {
+        "en": "linkfox-expert-beginner-sellersprite-scout",
+        "zh": "新手推荐选品专家-卖家精灵"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "新手推荐选品专家-卖家精灵"
+      },
+      "avatar": "avatars/linkfox-expert-beginner-sellersprite-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-blue-ocean-market-scanner",
+      "name": {
+        "en": "linkfox-expert-blue-ocean-market-scanner",
+        "zh": "蓝海扫描专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "蓝海扫描专家"
+      },
+      "avatar": "avatars/linkfox-expert-blue-ocean-market-scanner.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-cross-cultural-product-scout",
+      "name": {
+        "en": "linkfox-expert-cross-cultural-product-scout",
+        "zh": "跨文化选品专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "跨文化选品专家"
+      },
+      "avatar": "avatars/linkfox-expert-cross-cultural-product-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-google-search-researcher",
+      "name": {
+        "en": "linkfox-expert-google-search-researcher",
+        "zh": "谷歌搜索专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "谷歌搜索专家"
+      },
+      "avatar": "avatars/linkfox-expert-google-search-researcher.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-keyword-mining-expert",
+      "name": {
+        "en": "linkfox-expert-keyword-mining-expert",
+        "zh": "关键词挖掘专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "关键词挖掘专家"
+      },
+      "avatar": "avatars/linkfox-expert-keyword-mining-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-low-inventory-product-selection",
+      "name": {
+        "en": "linkfox-expert-low-inventory-product-selection",
+        "zh": "不压库存选品专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "不压库存选品专家"
+      },
+      "avatar": "avatars/linkfox-expert-low-inventory-product-selection.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-low-price-long-tail-selector",
+      "name": {
+        "en": "linkfox-expert-low-price-long-tail-selector",
+        "zh": "低价长尾选品专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "低价长尾选品专家"
+      },
+      "avatar": "avatars/linkfox-expert-low-price-long-tail-selector.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-low-price-product-expert",
+      "name": {
+        "en": "linkfox-expert-low-price-product-expert",
+        "zh": "低价商品专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "低价商品专家"
+      },
+      "avatar": "avatars/linkfox-expert-low-price-product-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-new-release-product-scout",
+      "name": {
+        "en": "linkfox-expert-new-release-product-scout",
+        "zh": "研发新品榜专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "研发新品榜专家"
+      },
+      "avatar": "avatars/linkfox-expert-new-release-product-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-opportunistic-product-scout",
+      "name": {
+        "en": "linkfox-expert-opportunistic-product-scout",
+        "zh": "投机选品专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "投机选品专家"
+      },
+      "avatar": "avatars/linkfox-expert-opportunistic-product-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-potential-market-scout",
+      "name": {
+        "en": "linkfox-expert-potential-market-scout",
+        "zh": "潜力市场专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "潜力市场专家"
+      },
+      "avatar": "avatars/linkfox-expert-potential-market-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-profit-calculation-expert",
+      "name": {
+        "en": "linkfox-expert-profit-calculation-expert",
+        "zh": "利润核算专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "利润核算专家"
+      },
+      "avatar": "avatars/linkfox-expert-profit-calculation-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-quality-listing-scout",
+      "name": {
+        "en": "linkfox-expert-quality-listing-scout",
+        "zh": "精品铺货专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "精品铺货专家"
+      },
+      "avatar": "avatars/linkfox-expert-quality-listing-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-sales-surge-product-scout",
+      "name": {
+        "en": "linkfox-expert-sales-surge-product-scout",
+        "zh": "销量飙升榜专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "销量飙升榜专家"
+      },
+      "avatar": "avatars/linkfox-expert-sales-surge-product-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-serp-market-structure-analyst",
+      "name": {
+        "en": "linkfox-expert-serp-market-structure-analyst",
+        "zh": "前三页市场格局分析专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "前三页市场格局分析专家"
+      },
+      "avatar": "avatars/linkfox-expert-serp-market-structure-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-single-variation-potential-scout",
+      "name": {
+        "en": "linkfox-expert-single-variation-potential-scout",
+        "zh": "潜力单变体专家-卖家精灵"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "潜力单变体专家-卖家精灵"
+      },
+      "avatar": "avatars/linkfox-expert-single-variation-potential-scout.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-tro-risk-advisor",
+      "name": {
+        "en": "linkfox-expert-tro-risk-advisor",
+        "zh": "TRO风险提示专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "TRO风险提示专家"
+      },
+      "avatar": "avatars/linkfox-expert-tro-risk-advisor.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-unmet-demand-miner",
+      "name": {
+        "en": "linkfox-expert-unmet-demand-miner",
+        "zh": "未满足需求挖掘专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "未满足需求挖掘专家"
+      },
+      "avatar": "avatars/linkfox-expert-unmet-demand-miner.png",
+      "role": "member"
+    },
+    {
+      "id": "linkfox-expert-voc-insight-analyst",
+      "name": {
+        "en": "linkfox-expert-voc-insight-analyst",
+        "zh": "VOC洞察专家"
+      },
+      "profession": {
+        "en": "Amazon Product Selection Expert",
+        "zh": "VOC洞察专家"
+      },
+      "avatar": "avatars/linkfox-expert-voc-insight-analyst.png",
+      "role": "member"
+    }
+  ]
+}

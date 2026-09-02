@@ -1,0 +1,812 @@
+# 指标字典 - 适配新 Skill 架构
+# Skill 1（标准数据提取器）和 Skill 2（文字数据提取器）共用此指标字典
+# 分为两大部分：表格类标准指标（Skill 1）和文字类指标（Skill 2）
+
+# ============================================================
+# 第一部分：表格类标准指标（Skill 1 使用）
+# ============================================================
+
+# --- ① 效益类指标（分部报告）---
+segment_report_metrics:
+  # -- 零售分部 --
+  - standard_name: 零售分部营业净收入
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售金融/零售银行分部的营业净收入
+    synonyms:
+      - 零售银行业务-营业净收入
+      - 零售金融业务-营业收入
+      - 个人银行业务-营业净收入
+      - 个人金融-营业净收入
+    scope: 表格
+    valid_range: { min: 0, max: 300000 }
+
+  - standard_name: 零售分部利息净收入
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部利息净收入（含内部/外部）
+    synonyms:
+      - 零售银行业务-利息净收入
+      - 零售金融-利息净收入
+      - 个人银行业务-利息净收入
+    scope: 表格
+    valid_range: { min: -50000, max: 250000 }
+
+  - standard_name: 零售分部内部利息净收入
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部内部资金往来利息净收入
+    synonyms:
+      - 分部间利息净收入
+      - 内部利息收支净额
+    scope: 表格
+    valid_range: { min: -100000, max: 100000 }
+
+  - standard_name: 零售分部外部利息净收入
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部对外利息净收入
+    synonyms:
+      - 外部客户利息净收入
+    scope: 表格
+    valid_range: { min: -50000, max: 200000 }
+
+  - standard_name: 零售分部手续费及佣金净收入
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部中间业务收入
+    synonyms:
+      - 零售银行业务-手续费及佣金净收入
+      - 个人银行业务-手续费及佣金净收入
+    scope: 表格
+    valid_range: { min: -10000, max: 100000 }
+
+  - standard_name: 零售分部信用减值损失
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部信贷减值拨备
+    synonyms:
+      - 零售银行业务-信用减值损失
+      - 个人银行业务-资产减值损失
+    scope: 表格
+    valid_range: { min: 0, max: 150000 }
+
+  - standard_name: 零售分部折旧及摊销
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部折旧摊销费用
+    synonyms:
+      - 零售银行业务-折旧及摊销
+    scope: 表格
+    valid_range: { min: 0, max: 30000 }
+
+  - standard_name: 零售分部业务费用
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部营业支出（含或不含减值损失，需标注口径）
+    synonyms:
+      - 零售银行业务-业务及管理费
+      - 零售银行业务-营业支出
+      - 个人银行业务-营业费用
+    scope: 表格
+    valid_range: { min: 0, max: 200000 }
+
+  - standard_name: 零售分部税前利润
+    category: 分部报告-零售
+    unit: 百万元
+    description: 零售分部税前利润
+    synonyms:
+      - 零售银行业务-利润总额
+      - 个人银行业务-税前利润
+    scope: 表格
+    valid_range: { min: -50000, max: 150000 }
+
+  # -- 全行合计（用于计算占比）--
+  - standard_name: 全行营业净收入
+    category: 分部报告-全行
+    unit: 百万元
+    description: 全行营业净收入合计
+    synonyms:
+      - 合计-营业净收入
+      - 全行-营业收入
+    scope: 表格
+    valid_range: { min: 0, max: 800000 }
+
+  - standard_name: 全行利息净收入
+    category: 分部报告-全行
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 600000 }
+
+  - standard_name: 全行手续费及佣金净收入
+    category: 分部报告-全行
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 200000 }
+
+  - standard_name: 全行信用减值损失
+    category: 分部报告-全行
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 300000 }
+
+  - standard_name: 全行业务费用
+    category: 分部报告-全行
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 500000 }
+
+  - standard_name: 全行税前利润
+    category: 分部报告-全行
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 300000 }
+
+# --- ② 零售存款结构与定价 ---
+retail_deposit_metrics:
+  - standard_name: 个人存款-活期-时点余额
+    category: 零售存款
+    unit: 百万元
+    synonyms: [个人活期存款, 储蓄活期存款]
+    scope: 表格
+    valid_range: { min: 0, max: 5000000 }
+
+  - standard_name: 个人存款-定期-时点余额
+    category: 零售存款
+    unit: 百万元
+    synonyms: [个人定期存款, 储蓄定期存款]
+    scope: 表格
+    valid_range: { min: 0, max: 5000000 }
+
+  - standard_name: 个人存款-合计-时点余额
+    category: 零售存款
+    unit: 百万元
+    synonyms: [个人存款余额, 零售存款余额, 储蓄存款]
+    scope: 表格
+    valid_range: { min: 0, max: 8000000 }
+
+  - standard_name: 个人存款-活期-平均余额
+    category: 零售存款
+    unit: 百万元
+    synonyms: [个人活期存款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 5000000 }
+
+  - standard_name: 个人存款-定期-平均余额
+    category: 零售存款
+    unit: 百万元
+    synonyms: [个人定期存款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 5000000 }
+
+  - standard_name: 个人存款-合计-平均余额
+    category: 零售存款
+    unit: 百万元
+    synonyms: [个人存款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 8000000 }
+
+  - standard_name: 个人存款成本率
+    category: 零售存款
+    unit: "%"
+    synonyms: [零售存款平均成本率, 个人存款利率]
+    scope: 表格
+    valid_range: { min: 0, max: 5 }
+
+  - standard_name: 个人存款成本率-本行口径
+    category: 零售存款
+    unit: "%"
+    synonyms: [本行个人存款成本率, 本行零售存款平均成本率]
+    scope: 表格
+    valid_range: { min: 0, max: 5 }
+    calibration_note: |
+      部分银行同时披露集团口径和本行口径的个人存款成本率。
+      集团口径含子公司，本行口径仅银行本体。差异通常在 5bp 以内。
+
+# --- ③ 零售贷款结构与定价 ---
+retail_loan_metrics:
+  # 第一类：信用卡贷款
+  - standard_name: 信用卡贷款-时点余额
+    category: 零售贷款-信用卡
+    unit: 百万元
+    synonyms: [信用卡应收款, 信用卡透支余额, 信用卡贷款余额, 信用卡应收账款]
+    scope: 表格
+    valid_range: { min: 0, max: 1500000 }
+
+  - standard_name: 信用卡贷款-平均余额
+    category: 零售贷款-信用卡
+    unit: 百万元
+    synonyms: [信用卡应收款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 1500000 }
+
+  # 第二类：非信用卡贷款
+  - standard_name: 住房按揭贷款-时点余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    synonyms: [个人住房贷款, 住房贷款, 房贷, 按揭贷款余额]
+    scope: 表格
+    valid_range: { min: 0, max: 4000000 }
+
+  - standard_name: 住房按揭贷款-平均余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 4000000 }
+
+  - standard_name: 消费贷款-时点余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    synonyms: [个人消费贷款, 消费信贷, 信用贷, 个人消费类贷款]
+    scope: 表格
+    valid_range: { min: 0, max: 1500000 }
+
+  - standard_name: 消费贷款-平均余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 1500000 }
+
+  - standard_name: 经营贷款-时点余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    synonyms: [个人经营性贷款, 个人经营贷款, 小微经营贷]
+    scope: 表格
+    valid_range: { min: 0, max: 1500000 }
+
+  - standard_name: 经营贷款-平均余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 1500000 }
+
+  - standard_name: 其他个人贷款-时点余额
+    category: 零售贷款-非信用卡
+    unit: 百万元
+    synonyms: [其他零售贷款, 其他个人]
+    scope: 表格
+    valid_range: { min: 0, max: 500000 }
+
+  - standard_name: 个人贷款-合计-时点余额
+    category: 零售贷款-合计
+    unit: 百万元
+    synonyms: [个人贷款余额, 零售贷款余额, 个人贷款总额]
+    scope: 表格
+    valid_range: { min: 0, max: 8000000 }
+
+  - standard_name: 个人贷款-合计-平均余额
+    category: 零售贷款-合计
+    unit: 百万元
+    synonyms: [个人贷款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 8000000 }
+
+  - standard_name: 个贷贷款收益率
+    category: 零售贷款-合计
+    unit: "%"
+    synonyms: [零售贷款平均收益率, 个人贷款利率, 个人贷款平均利率]
+    scope: 表格
+    valid_range: { min: 2, max: 10 }
+
+# --- ④ 零售贷款资产质量 ---
+retail_asset_quality_metrics:
+  # 第一类：信用卡
+  - standard_name: 信用卡-不良贷款额
+    category: 资产质量-信用卡
+    unit: 百万元
+    synonyms: [信用卡不良贷款余额, 信用卡不良余额]
+    scope: 表格
+    valid_range: { min: 0, max: 100000 }
+
+  - standard_name: 信用卡-不良贷款率
+    category: 资产质量-信用卡
+    unit: "%"
+    synonyms: [信用卡不良率, 信用卡不良贷款率]
+    scope: 表格
+    valid_range: { min: 0, max: 15 }
+
+  # 第二类：非信用卡（按细项）
+  - standard_name: 住房按揭-不良贷款额
+    category: 资产质量-非信用卡
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 50000 }
+
+  - standard_name: 住房按揭-不良贷款率
+    category: 资产质量-非信用卡
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 5 }
+
+  - standard_name: 消费贷-不良贷款额
+    category: 资产质量-非信用卡
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 50000 }
+
+  - standard_name: 消费贷-不良贷款率
+    category: 资产质量-非信用卡
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 10 }
+
+  - standard_name: 经营贷-不良贷款额
+    category: 资产质量-非信用卡
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 50000 }
+
+  - standard_name: 经营贷-不良贷款率
+    category: 资产质量-非信用卡
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 10 }
+
+  # 合计
+  - standard_name: 个人贷款-合计-不良贷款额
+    category: 资产质量-合计
+    unit: 百万元
+    synonyms: [零售贷款不良贷款余额]
+    scope: 表格
+    valid_range: { min: 0, max: 200000 }
+
+  - standard_name: 个人贷款-合计-不良贷款率
+    category: 资产质量-合计
+    unit: "%"
+    synonyms: [个人贷款不良率, 零售贷款不良率]
+    scope: 表格
+    valid_range: { min: 0, max: 10 }
+    calibration_note: |
+      【口径警示】中信等银行在『按产品划分的贷款集中度表』中披露的"个人贷款不良率"为『含信用卡』口径；
+      但MD&A或同业对标表中经常出现『不含信用卡』口径。两个口径可差异 0.2-0.5pct。
+      Skill4如需对标，建议派生计算：
+        个人贷款-不含信用卡-不良贷款率 = (个人贷款合计不良额 - 信用卡不良额) / (个人贷款合计余额 - 信用卡贷款余额)
+      或直接使用"个人贷款-不含信用卡-不良贷款率"（见下）。
+
+  - standard_name: 个人贷款-不含信用卡-不良贷款率
+    category: 资产质量-合计
+    unit: "%"
+    synonyms:
+      - 个人贷款(不含信用卡)不良率
+      - 非信用卡个人贷款不良率
+      - 零售非信用卡贷款不良率
+    scope: 文字  # 多数银行只在MD&A文字中披露或需要派生计算
+    valid_range: { min: 0, max: 8 }
+    calibration_note: |
+      大多数银行不直接披露此指标，需要从其他数据派生：
+        = (个人贷款合计不良额 - 信用卡不良额) / (个人贷款合计余额 - 信用卡贷款余额)
+      派生时请注意口径一致性（集团/本行）。
+
+# --- ⑤ 全行关键风控与收费指标 ---
+bank_wide_metrics:
+  - standard_name: 银行卡手续费收入-集团口径
+    category: 收费指标
+    unit: 百万元
+    synonyms: [银行卡手续费, 银行卡业务手续费收入]
+    scope: 表格
+    valid_range: { min: 0, max: 100000 }
+
+  - standard_name: 银行卡手续费收入-本行口径
+    category: 收费指标
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 80000 }
+
+  - standard_name: 全行拨备覆盖率
+    category: 风控指标
+    unit: "%"
+    synonyms: [拨备覆盖率, 贷款损失准备充足率]
+    scope: 表格
+    valid_range: { min: 50, max: 600 }
+
+  - standard_name: 全行贷款拨备率
+    category: 风控指标
+    unit: "%"
+    synonyms: [贷款拨备率, 拨贷比]
+    scope: 表格
+    valid_range: { min: 1, max: 10 }
+
+  - standard_name: 全行拨备变化-本期计提
+    category: 风控指标
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 300000 }
+
+  - standard_name: 全行拨备变化-本期转回
+    category: 风控指标
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 100000 }
+
+  - standard_name: 全行拨备变化-本期核销
+    category: 风控指标
+    unit: 百万元
+    scope: 表格
+    valid_range: { min: 0, max: 200000 }
+
+  - standard_name: 五级分类-正常类迁徙率
+    category: 五级分类
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 30 }
+
+  - standard_name: 五级分类-关注类迁徙率
+    category: 五级分类
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 80 }
+
+  - standard_name: 五级分类-次级类迁徙率
+    category: 五级分类
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 100 }
+
+  - standard_name: 五级分类-可疑类迁徙率
+    category: 五级分类
+    unit: "%"
+    scope: 表格
+    valid_range: { min: 0, max: 100 }
+
+  # -- 全行贷款不良率（用于对标） --
+  - standard_name: 全行贷款不良率
+    category: 风控指标
+    unit: "%"
+    synonyms: [不良贷款率, 贷款不良率]
+    scope: 表格
+    valid_range: { min: 0, max: 10 }
+
+  - standard_name: 全行不良贷款额
+    category: 风控指标
+    unit: 百万元
+    synonyms: [不良贷款余额, 不良贷款总额]
+    scope: 表格
+    valid_range: { min: 0, max: 500000 }
+
+  # -- 全行存贷款规模（用于计算零售占比） --
+  - standard_name: 全行贷款总额-时点余额
+    category: 全行规模
+    unit: 百万元
+    synonyms: [贷款和垫款总额, 客户贷款及垫款总额, 发放贷款和垫款净额]
+    scope: 表格
+    valid_range: { min: 0, max: 30000000 }
+
+  - standard_name: 全行贷款总额-平均余额
+    category: 全行规模
+    unit: 百万元
+    synonyms: [贷款和垫款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 30000000 }
+
+  - standard_name: 全行存款总额-时点余额
+    category: 全行规模
+    unit: 百万元
+    synonyms: [客户存款总额, 吸收存款总额]
+    scope: 表格
+    valid_range: { min: 0, max: 40000000 }
+
+  - standard_name: 全行存款总额-平均余额
+    category: 全行规模
+    unit: 百万元
+    synonyms: [客户存款日均余额, 吸收存款日均余额]
+    scope: 表格
+    valid_range: { min: 0, max: 40000000 }
+
+# ============================================================
+# 第二部分：文字类指标（Skill 2 使用）
+# ============================================================
+
+text_metrics:
+  # --- A. 零售AUM及相关 ---
+  - standard_name: 零售AUM
+    category: AUM
+    unit: 亿元
+    description: 个人客户管理资产总额
+    synonyms:
+      - 个人客户管理资产
+      - 零售客户总资产
+      - 个人客户金融资产
+      - 零售管理客户资产
+      - 个人金融资产
+      - 管理零售客户资产
+      - 零售客户资产
+      - AUM
+    scope: 文字
+    extract_fields: [period_end_value, change_value, change_pct]
+    calibration_note: 各行口径差异较大，需记录口径备注
+
+  - standard_name: 私行AUM
+    category: AUM
+    unit: 亿元
+    description: 私人银行客户管理资产
+    synonyms:
+      - 私人银行管理资产
+      - 私人银行客户资产
+      - 私行管理资产
+    scope: 文字
+    extract_fields: [period_end_value, change_value, change_pct]
+
+  # --- B. 客户数相关 ---
+  - standard_name: 个人客户数
+    category: 客户数
+    unit: 万户
+    synonyms: [零售客户数, 个人客户总数, 零售客户总数]
+    scope: 文字
+    extract_fields: [period_end_value, change_value, change_pct]
+
+  - standard_name: 财富管理客户数
+    category: 客户数
+    unit: 万户
+    description: 贵宾客户、富裕客户等中高端客户
+    synonyms:
+      - 贵宾客户数
+      - 富裕客户数
+      - 金葵花客户数
+      - 钻石客户数
+      - 中高端客户数
+      - 财富客户数
+    scope: 文字
+    extract_fields: [period_end_value, change_value, change_pct]
+    calibration_note: 各行划分标准不同（如金葵花50万、钻石500万等）
+
+  - standard_name: 私人银行客户数
+    category: 客户数
+    unit: 万户
+    synonyms: [私行客户数, 私行客户, 超高净值客户数]
+    scope: 文字
+    extract_fields: [period_end_value, change_value, change_pct]
+
+  # --- C. 财富管理收入相关 ---
+  - standard_name: 财富管理收入
+    category: 财富收入
+    unit: 亿元
+    synonyms: [财富管理手续费收入, 财富管理手续费及佣金收入, 零售财富管理手续费及佣金收入, 代理业务收入, 财富业务收入]
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  - standard_name: 理财收入
+    category: 财富收入
+    unit: 亿元
+    synonyms: [理财业务收入, 代理理财收入, 代销理财收入, 代理个人理财收入]
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  - standard_name: 保险收入
+    category: 财富收入
+    unit: 亿元
+    synonyms: [代理保险收入, 保险代销收入, 代销保险收入, 代理个人保险收入]
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  - standard_name: 基金收入
+    category: 财富收入
+    unit: 亿元
+    synonyms: [代理基金收入, 基金代销收入, 代销基金收入, 代理个人基金收入]
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  # --- D. 信用卡经营相关 ---
+  - standard_name: 信用卡累计发卡量
+    category: 信用卡
+    unit: 万张
+    synonyms: [信用卡发卡量, 信用卡累计发卡]
+    scope: 文字
+    extract_fields: [period_end_value, new_issued]
+
+  - standard_name: 信用卡有效卡量
+    category: 信用卡
+    unit: 万张
+    synonyms: [有效信用卡, 信用卡有效卡]
+    scope: 文字
+    extract_fields: [period_end_value]
+
+  - standard_name: 信用卡流通卡量
+    category: 信用卡
+    unit: 万张
+    synonyms: [流通信用卡, 信用卡在册卡量, 流通卡数量]
+    scope: 文字
+    extract_fields: [period_end_value]
+
+  - standard_name: 信用卡交易量
+    category: 信用卡
+    unit: 亿元
+    synonyms: [信用卡消费交易额, 信用卡交易额, 信用卡消费额]
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  # --- E. 其他零售业务指标 ---
+  - standard_name: 手机银行MAU
+    category: 渠道
+    unit: 万户
+    synonyms: [手机银行月活, APP月活跃用户, 移动银行MAU]
+    scope: 文字
+    extract_fields: [value]
+
+  - standard_name: 代发客户数
+    category: 客户数
+    unit: 万户
+    synonyms: [代发工资客户数, 代发薪客户]
+    scope: 文字
+    extract_fields: [period_end_value, change_value]
+
+  - standard_name: 代销信托及资管计划收入
+    category: 财富收入
+    unit: 亿元
+    synonyms: [代理信托计划收入, 代销资管产品收入, 代销信托收入, 信托及资管收入]
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  # --- F. 分部效益类（文字补充，当 Skill 1 表格抽取不到时由 Skill 2 补）---
+  # 📌 这些指标与 segment_report_metrics 同名但 scope=文字，归入 "分部效益" bucket
+  # 📌 标准化后名称统一带"(文字)"后缀，便于 Skill 3 在回填时区分来源
+  # ⚠️ synonyms 不使用复合短语（如 "零售金融业务营业净收入"），因为真实文字披露常拆成多个短句
+  #    粗筛策略：同时出现"零售/个人银行/业务"锚点词 + "营收/利润/非息/减值"等目标词 + 数字单位
+  - standard_name: 零售分部营业净收入(文字)
+    category: 分部效益
+    unit: 亿元
+    description: 零售银行/零售金融/个人银行分部在 MD&A/业务综述中文字披露的营业净收入
+    synonyms:
+      - 营业净收入
+      - 营业收入
+      - 零售营收
+      - 零售业务营业
+      - 零售银行营业
+      - 零售金融营业
+      - 个人银行营业
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+    calibration_note: |
+      与 Skill 1 的 `零售分部营业净收入` 为同一指标；仅当表格缺失时文字补充。
+      单位通常为"亿元"，Skill 3 回填 standard（百万元）需 ×100。
+      严禁把本配置中的说明性文字当作报告披露证据。
+
+  - standard_name: 零售分部税前利润(文字)
+    category: 分部效益
+    unit: 亿元
+    synonyms:
+      - 税前利润
+      - 利润总额
+      - 零售利润
+      - 零售税前利润
+      - 零售业务利润
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+    calibration_note: |
+      仅提取候选原文中明确归属于零售分部的税前利润，不能使用配置说明中的数值。
+
+  - standard_name: 零售非息净收入(文字)
+    category: 分部效益
+    unit: 亿元
+    synonyms:
+      - 非利息净收入
+      - 非息净收入
+      - 非息收入
+      - 手续费及佣金净收入
+      - 零售非息
+      - 零售银行非利息净收入
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+    calibration_note: |
+      仅提取候选原文中明确归属于零售分部的非利息净收入，不能使用配置说明中的数值。
+
+  - standard_name: 零售信用减值损失(文字)
+    category: 分部效益
+    unit: 亿元
+    synonyms:
+      - 信用减值损失
+      - 资产减值损失
+      - 信用减值
+      - 零售减值
+      - 零售信贷减值
+      - 零售贷款减值损失
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  # --- G. 量价类（文字补充，当表格抽取不到时文字披露的存贷成本/收益/不良率）---
+  - standard_name: 个人存款余额(文字)
+    category: 量价
+    unit: 亿元
+    synonyms:
+      - 个人存款余额
+      - 零售存款余额
+      - 储蓄存款余额
+      - 个人客户存款
+      - 零售客户存款
+    scope: 文字
+    extract_fields: [value, yoy_change, yoy_pct]
+
+  - standard_name: 个人存款成本率(文字)
+    category: 量价
+    unit: "%"
+    synonyms:
+      - 个人存款成本率
+      - 零售存款付息率
+      - 零售存款平均付息率
+      - 个人存款平均成本率
+      - 个人存款利率
+      - 储蓄存款成本率
+    scope: 文字
+    extract_fields: [value, yoy_change_bp]
+    calibration_note: |
+      文字披露常见：「个人存款成本率1.80%,同比下降31个基点」
+      Skill 3 回填 standard `个人存款成本率` 无需单位换算
+
+  - standard_name: 零售贷款收益率(文字)
+    category: 量价
+    unit: "%"
+    synonyms:
+      - 零售贷款收益率
+      - 个人贷款收益率
+      - 个贷贷款收益率
+      - 零售贷款平均收益率
+      - 个人贷款平均收益率
+      - 个人贷款平均利率
+    scope: 文字
+    extract_fields: [value, yoy_change_bp]
+
+  - standard_name: 零售贷款不良率(文字)
+    category: 量价
+    unit: "%"
+    synonyms:
+      - 零售贷款不良率
+      - 个人贷款不良率
+      - 零售信贷不良率
+      - 零售资产不良率
+      - 个人贷款不良贷款率
+    scope: 文字
+    extract_fields: [value, yoy_change_bp]
+    calibration_note: |
+      对标 Skill 1 `个人贷款-合计-不良贷款率`
+      各行口径常含/不含信用卡，需看 source_text 判断
+
+# ============================================================
+# 第三部分：Skill 3 派生指标（由 Skill 3 计算，此处仅定义）
+# ============================================================
+
+derived_metrics:
+  - standard_name: 零售营收全行占比
+    formula: 零售分部营业净收入 / 全行营业净收入 × 100%
+    unit: "%"
+
+  - standard_name: 零售非息净收入
+    formula: 零售分部营业净收入 - 零售分部利息净收入
+    unit: 百万元
+
+  - standard_name: 零售非息在全行非息占比
+    formula: 零售非息净收入 / (全行营业净收入 - 全行利息净收入) × 100%
+    unit: "%"
+
+  - standard_name: 零售非息在零售营收占比
+    formula: 零售非息净收入 / 零售分部营业净收入 × 100%
+    unit: "%"
+
+  - standard_name: 零售减值在零售营收占比
+    formula: 零售分部信用减值损失 / 零售分部营业净收入 × 100%
+    unit: "%"
+
+  - standard_name: 零售减值在全行减值占比
+    formula: 零售分部信用减值损失 / 全行信用减值损失 × 100%
+    unit: "%"
+
+  - standard_name: 零售减值外营业支出
+    formula: 零售分部业务费用 - 零售分部信用减值损失
+    unit: 百万元
+    note: 需确认各行"业务费用"口径是否含减值损失
+
+  - standard_name: 零售减值外支出在零售营收占比
+    formula: 零售减值外营业支出 / 零售分部营业净收入 × 100%
+    unit: "%"
+
+  - standard_name: 零售存贷利差
+    formula: 个贷贷款收益率 - 个人存款成本率
+    unit: "%"
+
+  - standard_name: 零售减值在零售贷款占比
+    formula: 零售分部信用减值损失 / 个人贷款-合计-时点余额 × 100%
+    unit: "%"
+    note: 衡量零售贷款的信用成本率
+
+  - standard_name: 零售存贷比
+    formula: 个人贷款-合计-平均余额 / 个人存款-合计-平均余额 × 100%
+    unit: "%"
+    note: 衡量零售资金匹配度（年日均口径）

@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "keyword": "Garden Flag",
+    "marketplace": "amazon.com",
+    "page_scope": "page1",
+    "product_count_raw": 60,
+    "product_count_deduped": 57,
+    "generated_at": "2026-07-31T06:44:00Z",
+    "schema_version": "1.0"
+  },
+  "context_profile": {
+    "category_type": "seasonal_decor",
+    "purchase_intent": "买庭院/门口装饰旗，确认尺寸是否标准、图案节日是否喜欢、是否双面耐晒，避免买到手持小旗或旗杆。",
+    "title_priorities": [
+      { "signal": "size", "why": "12x18 为庭院旗主流规格", "weight": 5 },
+      { "signal": "double_sided", "why": "双面印刷是核心预期", "weight": 5 },
+      { "signal": "occasions", "why": "季节/节日决定是否当下能用", "weight": 5 },
+      { "signal": "motif", "why": "图案主题影响点击与收藏", "weight": 4 },
+      { "signal": "pack_qty", "why": "套装覆盖多节日更省事", "weight": 3 },
+      { "signal": "durability_claims", "why": "fade/weather resistant 降低褪色担心", "weight": 3 },
+      { "signal": "customizable", "why": "个性化需求（广告位常见）", "weight": 2 }
+    ],
+    "image_priorities": [
+      { "signal": "product_form", "why": "庭院旗 vs 手持小旗 vs 旗杆，形态错误即买错", "weight": 5 },
+      { "signal": "pattern_appeal", "why": "装饰类购买强依赖图案观感", "weight": 5 },
+      { "signal": "set_collage", "why": "套装用网格图展示多款", "weight": 3 },
+      { "signal": "lifestyle_context", "why": "是否插在庭院场景中", "weight": 3 }
+    ],
+    "seller_likely_emphasize": [
+      "12x18", "Double Sided", "Welcome", "Spring", "Summer", "Halloween", "Christmas",
+      "4th of July", "Patriotic", "Weather & Fade Resistant", "Set of 12", "Yard Flag"
+    ],
+    "comparison_dimensions": [
+      { "dim": "product_form", "source": "image", "how_to_compare": "garden_flag | flag_set | hand_stick_flag | flag_stand | custom_flag", "weight": 5 },
+      { "dim": "size", "source": "title", "how_to_compare": "12x18 为主；4x6 视为手持规格", "weight": 5 },
+      { "dim": "occasions", "source": "title", "how_to_compare": "场景标签集合重叠度", "weight": 5 },
+      { "dim": "motif", "source": "both", "how_to_compare": "sunflower/hydrangea/american_flag 等", "weight": 4 },
+      { "dim": "pack_qty", "source": "title", "how_to_compare": "1 vs 12+", "weight": 3 },
+      { "dim": "double_sided", "source": "title", "how_to_compare": "布尔", "weight": 4 },
+      { "dim": "price", "source": "serp_field", "how_to_compare": "单价；套装看总价与件数", "weight": 3 }
+    ],
+    "off_topic_risks": [
+      "Garden Flag Holder / Stand（旗杆支架，高月销易占位）",
+      "4x6 Hand Held Stick Flags（手持小旗）",
+      "仅标题含 Garden Flag 的非旗帜商品"
+    ],
+    "homogeneity_notes": "约 90% 为 12x18、约 90% 写 double sided；差异化靠节日/图案/套装；品牌标题覆盖率低。"
+  },
+  "products": [
+    {
+      "asin": "B0F6D5L59P",
+      "position": 5,
+      "sponsored": false,
+      "title": "Seasonal Garden Flags Set of 12, Double Sided 12x18 Inch Yard Flags | Spring Summer Fall Winter & Holiday Outdoor Decor, 4th of July, Thanksgiving, Halloween, Christmas for All Seasons",
+      "asinUrl": "https://www.amazon.com/Seasonal-Outside-Christmas-Halloween-Decorations/dp/B0F6D5L59P/",
+      "imageUrl": "https://m.media-amazon.com/images/I/91o1POCXYmL._AC_UL320_.jpg",
+      "imageUrl_large": "https://m.media-amazon.com/images/I/91o1POCXYmL.jpg",
+      "extractedPrice": 16.99,
+      "rating": 4.8,
+      "ratings": 1000,
+      "monthlySalesUnits": 2000,
+      "enrichment": {
+        "off_topic": false,
+        "units_imputed": false,
+        "title_extract": {
+          "brand": null,
+          "size": "12x18",
+          "pack_qty": 12,
+          "double_sided": true,
+          "occasions": ["spring", "summer", "fall", "winter", "halloween", "christmas", "4th_of_july"],
+          "motif": []
+        },
+        "image_extract": {
+          "product_form": "flag_set",
+          "title_image_match": "consistent",
+          "on_image_claims": []
+        },
+        "compare_values": {
+          "product_form": "flag_set",
+          "size": "12x18",
+          "occasions": ["spring", "summer", "fall", "winter", "halloween", "christmas", "4th_of_july"],
+          "motif": [],
+          "pack_qty": 12,
+          "double_sided": true,
+          "price": 16.99
+        }
+      }
+    },
+    {
+      "asin": "B0BT8STN8X",
+      "position": 7,
+      "sponsored": false,
+      "title": "AVOIN colorlife Spring Summer Floral Welcome Garden Flag Outside 12x18 Inch | Double Sided, Weather & Fade Resistant, Yard Outdoor Decoration, All Season, Eucalyptus Greenery",
+      "asinUrl": "https://www.amazon.com/AVOIN-colorlife-12x18-Inch-Eucalyptus-Farmhouse/dp/B0BT8STN8X/",
+      "imageUrl": "https://m.media-amazon.com/images/I/71SDn04UHIL._AC_UL320_.jpg",
+      "imageUrl_large": "https://m.media-amazon.com/images/I/71SDn04UHIL.jpg",
+      "extractedPrice": 4.99,
+      "rating": 4.8,
+      "ratings": 801,
+      "monthlySalesUnits": 900,
+      "enrichment": {
+        "off_topic": false,
+        "units_imputed": false,
+        "title_extract": {
+          "brand": "AVOIN",
+          "size": "12x18",
+          "pack_qty": 1,
+          "double_sided": true,
+          "occasions": ["spring", "summer", "welcome", "all_season"],
+          "motif": ["eucalyptus"]
+        },
+        "image_extract": {
+          "product_form": "garden_flag",
+          "title_image_match": "consistent",
+          "on_image_claims": []
+        },
+        "compare_values": {
+          "product_form": "garden_flag",
+          "size": "12x18",
+          "occasions": ["spring", "summer", "welcome", "all_season"],
+          "motif": ["eucalyptus"],
+          "pack_qty": 1,
+          "double_sided": true,
+          "price": 4.99
+        }
+      }
+    },
+    {
+      "asin": "B088FLY7S8",
+      "position": 15,
+      "sponsored": false,
+      "title": "12 Pack Small American Flags on Stick Small US Flags/Mini American Flags for Outside 4x6 Inch American Hand Held Stick Flags with Kid-Safe Spear Top, Patriotic Veterans Day Decorations, 4th of July Decorations",
+      "asinUrl": "https://www.amazon.com/Uelfbaby-American-Kid-Safe-Polyester-Tear-Resistant/dp/B088FLY7S8/",
+      "imageUrl": "https://m.media-amazon.com/images/I/817zxE5-iIS._AC_UL320_.jpg",
+      "imageUrl_large": "https://m.media-amazon.com/images/I/817zxE5-iIS.jpg",
+      "extractedPrice": 6.99,
+      "rating": 4.6,
+      "ratings": 4400,
+      "monthlySalesUnits": 7000,
+      "enrichment": {
+        "off_topic": true,
+        "units_imputed": false,
+        "title_extract": {
+          "brand": null,
+          "size": "4x6",
+          "pack_qty": 12,
+          "double_sided": false,
+          "occasions": ["4th_of_july", "patriotic"],
+          "motif": ["american_flag"]
+        },
+        "image_extract": {
+          "product_form": "hand_stick_flag",
+          "title_image_match": "consistent",
+          "on_image_claims": []
+        },
+        "compare_values": {
+          "product_form": "hand_stick_flag",
+          "size": "4x6",
+          "occasions": ["4th_of_july", "patriotic"],
+          "motif": ["american_flag"],
+          "pack_qty": 12,
+          "double_sided": false,
+          "price": 6.99
+        }
+      }
+    }
+  ],
+  "comparison_table": {
+    "columns": [
+      { "key": "product_form", "label": "形态", "from_dim": "product_form" },
+      { "key": "size", "label": "尺寸", "from_dim": "size" },
+      { "key": "occasions", "label": "场景", "from_dim": "occasions" },
+      { "key": "motif", "label": "图案", "from_dim": "motif" },
+      { "key": "pack_qty", "label": "件数", "from_dim": "pack_qty" },
+      { "key": "double_sided", "label": "双面", "from_dim": "double_sided" },
+      { "key": "price", "label": "价格", "from_dim": "price" }
+    ],
+    "summary": {
+      "homogeneity": {
+        "size_12x18_pct": 89.5,
+        "double_sided_pct": 89.5,
+        "welcome_pct": 38.6,
+        "brand_in_title_pct": 28.1
+      },
+      "headline": "庭院旗主战场为 12x18 双面旗；套装与节日图案是主要差异轴；手持小旗与旗杆支架需标偏题后再比。",
+      "excluded_off_topic_count": 1
+    }
+  }
+}

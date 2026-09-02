@@ -1,0 +1,195 @@
+{
+  "risk_level": "high",
+  "risk_category": "deadline_management_with_critical_consequences",
+  "primary_risks": [
+    {
+      "risk_type": "deadline_calculation_error",
+      "description": "期限计算错误可能导致逾期，进而导致败诉、权利丧失等严重后果",
+      "severity": "critical",
+      "mitigation": [
+        "明确不保证绝对准确",
+        "强制要求以法院通知为准",
+        "所有计算必须标注法律依据",
+        "强制人工复核机制",
+        "完整免责声明"
+      ]
+    },
+    {
+      "risk_type": "legal_consequences_misstatement",
+      "description": "逾期法律后果说明不准确或不完整",
+      "severity": "high",
+      "mitigation": [
+        "必须引用准确法条",
+        "完整说明法律后果",
+        "强调严重性",
+        "标注仅供参考"
+      ]
+    },
+    {
+      "risk_type": "user_over_reliance",
+      "description": "用户过度依赖技能输出，不核实法院实际通知",
+      "severity": "critical",
+      "mitigation": [
+        "强制免责声明",
+        "明确以法院通知为准",
+        "高风险场景强制升级",
+        "定期提醒用户核实"
+      ]
+    },
+    {
+      "risk_type": "missing_critical_dates",
+      "description": "关键日期输入错误或缺失导致计算完全错误",
+      "severity": "critical",
+      "mitigation": [
+        "必填输入验证",
+        "关键日期缺失时停止计算",
+        "标注输入的重要性",
+        "建议用户核实输入信息"
+      ]
+    }
+  ],
+  "high_risk_triggers": [
+    {
+      "trigger": "deadline_expired",
+      "description": "期限已逾期",
+      "required_action": "immediate_escalation",
+      "escalation_level": "human_lawyer_review"
+    },
+    {
+      "trigger": "deadline_urgent",
+      "description": "期限即将届满（不足7天）",
+      "required_action": "immediate_escalation",
+      "escalation_level": "human_lawyer_review"
+    },
+    {
+      "trigger": "major_case_involved",
+      "description": "涉及重大金额或重大权益案件",
+      "required_action": "mandatory_escalation",
+      "escalation_level": "human_lawyer_review"
+    },
+    {
+      "trigger": "calculation_uncertainty",
+      "description": "期限计算存在争议或不确定",
+      "required_action": "mandatory_escalation",
+      "escalation_level": "human_lawyer_review"
+    }
+  ],
+  "mandatory_escalation_conditions": [
+    "期限已逾期",
+    "期限即将届满（不足7天）",
+    "涉及重大金额或重大权益案件",
+    "期限计算存在不确定因素",
+    "用户对期限计算有疑问"
+  ],
+  "prohibited_behaviors": [
+    "保证期限计算绝对准确",
+    "替代律师判断是否申请延期",
+    "自动提交申请或采取行动",
+    "替代法院的实际通知和决定",
+    "在关键信息缺失时强行计算",
+    "使用绝对化表述（'肯定'、'一定'、'必须'）"
+  ],
+  "refusal_conditions": [
+    {
+      "condition": "require_guaranteed_accuracy",
+      "threshold": "要求保证期限绝对准确",
+      "refusal_action": "refuse_and_explain_limitation"
+    },
+    {
+      "condition": "require_real_time_monitoring",
+      "threshold": "要求实时监控和自动更新",
+      "refusal_action": "refuse_and_explain_capability"
+    },
+    {
+      "condition": "require_auto_submission",
+      "threshold": "要求自动提交申请",
+      "refusal_action": "refuse_and_explain_boundary"
+    },
+    {
+      "condition": "criminal_case_request",
+      "threshold": "涉及刑事案件但要求计算刑事期限",
+      "refusal_action": "refuse_and_explain_scope"
+    }
+  ],
+  "review_requirements": {
+    "mandatory_review": true,
+    "review_scope": [
+      "期限计算准确性验证",
+      "法律依据完整性检查",
+      "风险提示充分性审查",
+      "免责声明完整性确认",
+      "升级机制有效性验证"
+    ],
+    "reviewer_qualification": "执业律师（建议3年以上诉讼经验）",
+    "review_documentation": "保留完整审核记录，包括审核人、审核时间、审核意见、修改记录"
+  },
+  "disclaimer_requirements": {
+    "mandatory_content": [
+      "不保证绝对准确声明",
+      "以法院通知为准声明",
+      "不构成法律意见声明",
+      "强制人工复核提示",
+      "后果自负声明",
+      "法院文书核实提示"
+    ],
+    "display_position": "输出末尾（必须）",
+    "format": "醒目格式（⚠️ + 加粗）"
+  },
+  "legal_basis_requirements": {
+    "mandatory": true,
+    "format": "法规名称 + 条文号 + 关键内容",
+    "accuracy": "必须准确无误",
+    "source": "官方法律法规数据库或权威版本"
+  },
+  "quality_gates": [
+    {
+      "gate_name": "legal_basis_completeness",
+      "check_items": [
+        "所有期限计算是否有法条依据",
+        "法条引用是否准确",
+        "法条内容是否完整"
+      ],
+      "pass_criteria": "法律依据100%完整准确"
+    },
+    {
+      "gate_name": "disclaimer_completeness",
+      "check_items": [
+        "免责声明是否完整",
+        "免责声明是否醒目",
+        "免责声明位置是否正确"
+      ],
+      "pass_criteria": "免责声明包含所有必需内容"
+    },
+    {
+      "gate_name": "risk_warning_adequacy",
+      "check_items": [
+        "风险提示是否充分",
+        "逾期后果是否详细说明",
+        "升级机制是否明确"
+      ],
+      "pass_criteria": "风险提示完整充分"
+    },
+    {
+      "gate_name": "escalation_mechanism",
+      "check_items": [
+        "高风险触发条件是否明确",
+        "升级流程是否清晰",
+        "升级要求是否强制"
+      ],
+      "pass_criteria": "升级机制有效可执行"
+    }
+  ],
+  "post_generation_requirements": [
+    "强制用户确认已阅读免责声明",
+    "高风险场景强制升级提示",
+    "保留完整的审核留痕",
+    "定期提醒用户核实法院通知",
+    "记录用户使用情况和反馈"
+  ],
+  "audit_requirements": {
+    "usage_logging": true,
+    "outcome_tracking": true,
+    "user_feedback_collection": true,
+    "regular_review": "每季度至少一次"
+  }
+}

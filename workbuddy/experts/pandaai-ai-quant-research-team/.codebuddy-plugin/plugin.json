@@ -1,0 +1,176 @@
+{
+  "name": "pandaai-ai-quant-research-team",
+  "version": "0.4.2",
+  "description": "Five isolated QuantSkills specialists reproduce research, design factors, enter the PandaAI factor competition through a secure CLI session, audit overfit, and issue one evidence-backed report.",
+  "author": {
+    "name": "PandaAi",
+    "email": "business@pandaai.online"
+  },
+  "agents": [
+    "./agents/pd-ai-quant-research-team.md",
+    "./agents/source-replication-researcher.md",
+    "./agents/factor-engineer.md",
+    "./agents/pandaai-experimenter.md",
+    "./agents/overfit-auditor.md",
+    "./agents/performance-reporter.md"
+  ],
+  "skills": [
+    "./skills/ai-quant-team-runtime",
+    "./skills/skill-report-replication",
+    "./skills/skill-factor-mining-pandaai",
+    "./skills/skill-pandaai-factor-online",
+    "./skills/skill-backtest-overfit",
+    "./skills/skill-strategy-tearsheet-report"
+  ],
+  "homepage": "https://github.com/quantskills/agent-ai-quant-research-team",
+  "keywords": [
+    "quant-research",
+    "factor-mining",
+    "pandaai",
+    "multi-agent"
+  ],
+  "expertType": "team",
+  "agentName": "pd-ai-quant-research-team",
+  "teamInfo": {
+    "leadAgent": "pd-ai-quant-research-team",
+    "memberAgents": [
+      "source-replication-researcher",
+      "factor-engineer",
+      "pandaai-experimenter",
+      "overfit-auditor",
+      "performance-reporter"
+    ]
+  },
+  "displayName": {
+    "zh": "研报复现因子挖掘回测审计",
+    "en": "Research Replication, Factor Mining and Audit"
+  },
+  "profession": {
+    "zh": "PD-AI量化研究专家团",
+    "en": "PD AI Quant Research Team"
+  },
+  "displayDescription": {
+    "zh": "五位独立专家完成研报复现、因子设计、PandaAI大赛实跑、过拟合审计与绩效报告，缺少真实证据即阻断。",
+    "en": "Five isolated specialists reproduce, engineer, run on PandaAI, audit, and report; missing real evidence blocks completion."
+  },
+  "avatar": "avatars/pandaai-logo-v2.png",
+  "categoryId": "08-FinanceInvestment",
+  "defaultInitPrompt": {
+    "zh": "用标准研究版复现这篇研报并形成可审计的因子结论",
+    "en": "Reproduce this report in standard mode and produce an auditable factor conclusion"
+  },
+  "plugin": "pandaai-ai-quant-research-team",
+  "tags": [
+    {
+      "zh": "研报复现",
+      "en": "Research Replication"
+    },
+    {
+      "zh": "因子挖掘",
+      "en": "Factor Mining"
+    },
+    {
+      "zh": "证据审计",
+      "en": "Evidence Audit"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "用标准研究版复现这篇研报并形成可审计的因子结论",
+      "en": "Reproduce this report in standard mode and produce an auditable factor conclusion"
+    },
+    {
+      "zh": "登录PandaAI并按因子大赛规则挖掘一批低换手因子",
+      "en": "Log in to PandaAI and mine low-turnover factors under competition rules"
+    },
+    {
+      "zh": "用完整审计版把这个量化想法转成候选因子、真实回测并生成课件报告",
+      "en": "Turn this idea into candidate factors, run real backtests, and produce a course-ready audit report"
+    }
+  ],
+  "members": [
+    {
+      "id": "pd-ai-quant-research-team",
+      "name": {
+        "zh": "PandaAi主理人",
+        "en": "PandaAi Lead"
+      },
+      "profession": {
+        "zh": "AI量化研究会诊主理人",
+        "en": "AI Quant Research Lead"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "lead"
+    },
+    {
+      "id": "source-replication-researcher",
+      "name": {
+        "zh": "PD-研报复现研究员",
+        "en": "PD-研报复现研究员"
+      },
+      "profession": {
+        "zh": "原始来源公式与回测底稿复现",
+        "en": "原始来源公式与回测底稿复现"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "factor-engineer",
+      "name": {
+        "zh": "PD-因子工程师",
+        "en": "PD-因子工程师"
+      },
+      "profession": {
+        "zh": "候选因子设计与未来函数检查",
+        "en": "候选因子设计与未来函数检查"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "pandaai-experimenter",
+      "name": {
+        "zh": "PD-PandaAI实验员",
+        "en": "PD-PandaAI实验员"
+      },
+      "profession": {
+        "zh": "平台预检预算审批与真实运行",
+        "en": "平台预检预算审批与真实运行"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "overfit-auditor",
+      "name": {
+        "zh": "PD-过拟合审计官",
+        "en": "PD-过拟合审计官"
+      },
+      "profession": {
+        "zh": "选择偏差与统计稳健性审计",
+        "en": "选择偏差与统计稳健性审计"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "performance-reporter",
+      "name": {
+        "zh": "PD-绩效报告师",
+        "en": "PD-绩效报告师"
+      },
+      "profession": {
+        "zh": "真实收益绩效报告与证据回执",
+        "en": "真实收益绩效报告与证据回执"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": [
+      "pandadata"
+    ]
+  }
+}

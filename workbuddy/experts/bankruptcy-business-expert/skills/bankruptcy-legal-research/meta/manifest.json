@@ -1,0 +1,15 @@
+{
+  "name": "破产法律研究",
+  "name_en": "bankruptcy-legal-research",
+  "description": "检索破产法及司法解释，执行债权性质法律认定、撤销权与抵销权法律分析、重整计划合法性审查和类案裁判倾向分析。触发：破产法检索/债权性质认定/撤销权分析/抵销权分析/重整计划审查/类案检索。不触发：非破产领域的一般法律研究。",
+  "version": "1.1.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-23",
+  "created": "2026-07-23",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-analysis",
+  "drafting_paradigm": "lawyer_draft"
+}

@@ -1,0 +1,57 @@
+# 案件元数据模板
+# bankruptcy-case-portfolio-management
+
+# 案件标识
+case_id: "BANK-{YYYY}-{NNN}"
+case_number: ""  # 案号，如"（2026）粤03破申123号"
+debtor_name: ""  # 债务人全称
+debtor_short_name: ""  # 债务人简称（自动提取）
+
+# 程序信息
+procedure_type: ""  # bankruptcy_liquidation / reorganization / settlement
+procedure_type_cn: ""  # 破产清算 / 破产重整 / 破产和解
+court_name: ""  # 受理法院
+filing_date: ""  # 立案日期 YYYY-MM-DD
+current_stage: ""  # intake / claim_review / asset_investigation / creditor_meeting / distribution / reorganization / closed
+stage_cn: ""  # 接管 / 债权审查 / 财产调查 / 债权人会议 / 分配 / 重整 / 已结案
+status: "active"  # active / suspended / closed
+
+# 团队信息
+team_members: []
+  # - name: "张三"
+  #   role: "负责人"  # 负责人 / 成员 / 助理 / 外部顾问
+
+# 关键期限节点
+deadlines:
+  claim_deadline: ""  # 债权申报截止日 YYYY-MM-DD
+  first_creditor_meeting: ""  # 第一次债权人会议 YYYY-MM-DD
+  reorganization_plan_deadline: ""  # 重整计划提交截止日（重整程序）
+  distribution_plan_announcement: ""  # 分配方案公告日（清算程序）
+  duty_report_deadline: ""  # 履职报告提交截止日
+
+# 重点关注
+key_concerns: []
+  # - "担保债权审查"
+  # - "在建工程处置"
+
+# 元数据
+created_at: ""  # ISO 8601 格式
+updated_at: ""  # ISO 8601 格式
+urgency: "normal"  # urgent / medium / normal
+
+# 阶段历史
+stage_history: []
+  # - stage: "intake"
+  #   entered_at: ""
+  #   exited_at: ""
+  #   trigger: ""
+
+# 履职节点状态
+duty_nodes:
+  takeover: "pending"  # pending / in_progress / completed
+  asset_investigation: "pending"
+  claim_review: "pending"
+  creditor_meeting: "pending"
+  distribution: "pending"
+  reorganization_plan: "pending"
+  report_submission: "pending"

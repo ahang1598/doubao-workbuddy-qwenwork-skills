@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0",
+  "id": "legal-translation",
+  "name": "legal-translation",
+  "display_name": "法律翻译总控技能",
+  "version": "1.2.0",
+  "language": "zh-CN",
+  "author": "法大大法律AI产品线",
+  "copyright": "© 深圳市法大大网络科技有限公司 版权所有",
+  "description": "面向律师、法务和法律运营的中文法律文书英译、英文版起草、中英双语对照 Word 生成和法律术语审校能力。先建立术语表并进行领域术语路由，再翻译、审校和输出可复核工作底稿。",
+  "capabilities": [
+    "legal_translation_zh_to_en",
+    "bilingual_word_generation",
+    "legal_terminology_review",
+    "foreign_legal_english_term_routing",
+    "china_law_source_and_review_guardrails",
+    "platform_agent_packaging"
+  ],
+  "trigger_keywords": [
+    "法律翻译",
+    "合同翻译",
+    "翻译成英文",
+    "中英双语对照",
+    "英文版合同",
+    "法律英语审校",
+    "术语统一",
+    "涉外法律英语",
+    "双语 Word",
+    "起草英文版",
+    "审校中英对照",
+    "legal translation"
+  ],
+  "negative_triggers": [
+    "普通英文润色且不涉及法律文书或法律术语",
+    "单纯法律咨询且不要求翻译、审校、起草英文版或双语对照",
+    "单纯合同审查且不要求翻译或术语审校",
+    "创建、安装或评估法律 skill 本身",
+    "要求直接外发、签署、提交诉讼仲裁或监管材料但没有人工复核安排"
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "task_type": {
+        "type": "string",
+        "enum": ["translate", "review", "draft_english", "bilingual_word", "terminology_only"]
+      },
+      "document_type": {
+        "type": "string",
+        "description": "合同、诉状、仲裁文件、公司文件、刑事材料、涉外合规备忘录、函件等"
+      },
+      "source_language": {
+        "type": "string",
+        "default": "zh-CN"
+      },
+      "target_language": {
+        "type": "string",
+        "default": "en"
+      },
+      "input_materials": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "文本、docx 文件路径、术语表、既有英文版、客户指定译法等"
+      },
+      "jurisdiction_context": {
+        "type": "string",
+        "description": "中国法、英美法、香港法、国际法、比较法、涉外/跨境等"
+      },
+      "output_format": {
+        "type": "string",
+        "enum": ["english_text", "review_report", "bilingual_word", "terminology_table", "draft_with_notes"]
+      },
+      "review_required": {
+        "type": "boolean",
+        "description": "是否需要律师、法务或专业译审复核"
+      }
+    },
+    "required": ["task_type", "output_format"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "translation_or_review": { "type": "string" },
+      "glossary_used": { "type": "array", "items": { "type": "object" } },
+      "triggered_domain_skills": { "type": "array", "items": { "type": "string" } },
+      "high_risk_terms": { "type": "array", "items": { "type": "object" } },
+      "pending_confirmations": { "type": "array", "items": { "type": "string" } },
+      "consistency_check": { "type": "object" },
+      "output_path": { "type": "string" },
+      "review_notice": { "type": "string" }
+    },
+    "required": ["translation_or_review", "glossary_used", "consistency_check", "review_notice"]
+  },
+  "resources": [
+    {
+      "path": "SKILL.md",
+      "purpose": "核心技能说明和执行工作流"
+    },
+    {
+      "path": "resources/legal_glossary.json",
+      "purpose": "基础法律术语中英对照表"
+    },
+    {
+      "path": "references/domain-skill-router.md",
+      "purpose": "7 个涉外法律英语领域技能路由规则"
+    },
+    {
+      "path": "references/terminology-review-checklist.md",
+      "purpose": "术语、法域、程序身份、编号和数字审校清单"
+    },
+    {
+      "path": "references/translation-workflow.md",
+      "purpose": "翻译工作流详细说明"
+    },
+    {
+      "path": "references/output-templates.md",
+      "purpose": "输出模板说明"
+    },
+    {
+      "path": "references/*.md",
+      "purpose": "7 个领域法律英语术语判断模块（展平后为 references/ 下 7 个 .md + 同名 .test-prompts.json）"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "scripts/extract_text.py",
+      "purpose": "从 docx 提取原文文本"
+    },
+    {
+      "path": "scripts/create_bilingual.py",
+      "purpose": "按固定 JSON schema 生成中英双语 Word"
+    }
+  ],
+  "guardrails": [
+    "不得编造官方译名、法条、案例、监管文件或机构名称",
+    "不得把美国法或其他法域默认概念套入中国法文本",
+    "双语 Word 生成必须使用预置脚本，不得自行编写替代脚本",
+    "不得修改 create_bilingual.py 的 JSON schema",
+    "无法确认的术语、公司英文名、官方译名和高风险法域问题必须列为待确认",
+    "输出定位为翻译和术语审校工作底稿，不直接给最终法律意见",
+    "外发、签署、诉讼仲裁提交、监管回应、上市披露、制裁、刑事、数据出境等高后果事项必须提示人工复核"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "起草和审查投资意向书",
+  "name_en": "draft-and-review-investment-intent",
+  "description": "投前阶段TS起草审查、行业准入与外汇合规检查、名股实债交易结构风险评估。触发：TS起草/审查、外资准入、VIE合规、跨境外汇、股债定性。不触发：SPA/SHA审查(→06)、股东确权(→02)、投后维权(→04)、权利设计(→special-rights-design)、多轮一致性(→multi-round)、陷阱对抗(→adversarial)、创始人责任(→founder-liability)、股权核验(→cap-table-verify)。",
+  "version": "1.2.0",
+  "blueprint": "bp-contract-review-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-03",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

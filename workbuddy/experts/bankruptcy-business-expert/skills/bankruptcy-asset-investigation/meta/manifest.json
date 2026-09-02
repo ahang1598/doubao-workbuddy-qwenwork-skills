@@ -1,0 +1,15 @@
+{
+  "name": "破产资产调查与追收",
+  "name_en": "bankruptcy-asset-investigation",
+  "description": "编制接管清单，执行银行流水异常分析、关联交易识别与隐匿转移财产追收线索梳理，编制财产状况报告和资产处置建议。触发：破产接管/资产调查/银行流水分析/关联交易/撤销权线索/财产状况报告。不触发：非破产场景的尽职调查/资产评估。",
+  "version": "1.1.0",
+  "blueprint": "bp-fact-evidence-organization-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-23",
+  "created": "2026-07-23",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-analysis",
+  "drafting_paradigm": "lawyer_draft"
+}

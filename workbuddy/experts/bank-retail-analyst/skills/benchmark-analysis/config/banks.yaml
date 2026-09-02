@@ -1,0 +1,292 @@
+# 银行配置文件
+# 定义对标银行组、样本组 和 各行品牌视觉资产（brand_identity）
+#
+# ⚠️ brand_identity 的用途：
+#   - `primary` / `accent` 是官方或年报高饱和度主色（已做 2026-04 交叉校验）
+#   - `logo_reference` 记录 LOGO 首要来源（用于可追溯），真实 LOGO 由 VIS 资产构建器
+#     从年报 PDF 封面提取为 `~/RetailAnalysis/report_assets/by_bank/<bank>/logo/logo.png`
+#   - 品牌色与 LOGO 的"在现场再提取" 由 shared/pdf-report-builder-runtime/scripts/
+#     bank_vis_builder.py 执行，提取结果需与 `primary_official` 交叉验证
+#   - 2015 年起的长期对标分析以 7 家头部股份制银行为核心，光大/民生已纳入默认组
+#
+# ⚠️ 基准行由用户在运行时指定，本文件不设默认基准行
+
+# ---------------------------------------------------------------------------
+# 7 家头部股份制银行完整配置（对标 + 可作为基准行的候选集合）
+# ---------------------------------------------------------------------------
+banks:
+  - name: 中信银行
+    short_name: 中信
+    aliases: ["中信", "中信银行", "CITIC", "citic", "601998"]
+    stock_code_a: "601998"
+    stock_code_h: "00998"
+    exchange: 上交所
+    official_site: "https://www.citicbank.com"
+    investor_relations_url: "https://www.citicbank.com/about/investor/"
+    annual_report_url: "https://www.citicbank.com/about/investor/annualreport/"
+    role: "基准行 · 对公+零售均衡型"
+    brand_identity:
+      primary_official: "#D70010"     # 中信红（品牌标准色）
+      accent_official: "#B8860B"      # 暗金色，年报/贵宾卡辅色，与红色形成经典搭配
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/citic_2025_annual_report.pdf"
+        page: 1
+        note: "CITIC印章 + 中信银行 + CHINA CITIC BANK 横向组合"
+      cover_title_style:
+        font_family: "Noto Serif SC"
+        title_color_var: "primary"
+
+  - name: 招商银行
+    short_name: 招商
+    aliases: ["招商", "招商银行", "招行", "CMB", "cmb", "600036"]
+    stock_code_a: "600036"
+    stock_code_h: "03968"
+    exchange: 上交所
+    official_site: "https://www.cmbchina.com"
+    investor_relations_url: "https://www.cmbchina.com/investor/"
+    annual_report_url: "https://www.cmbchina.com/investor/investor_ipo.aspx"
+    role: "零售金融、财富管理、私行标杆"
+    brand_identity:
+      primary_official: "#A30030"     # 招商红（品牌标准色，偏酒红）
+      accent_official: "#D4A843"      # 金色，年报/金葵花品牌辅色
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/cmb_2025_annual_report.pdf"
+        page: 1
+        note: "招商银行圆形印章 + CMB + 中英文行名"
+      cover_title_style:
+        font_family: "Noto Serif SC"
+        title_color_var: "primary"
+
+  - name: 平安银行
+    short_name: 平安
+    aliases: ["平安", "平安银行", "PAB", "pab", "000001"]
+    stock_code_a: "000001"
+    stock_code_h: ""
+    exchange: 深交所
+    official_site: "https://bank.pingan.com"
+    investor_relations_url: "https://bank.pingan.com/ir/"
+    annual_report_url: "https://bank.pingan.com/ir/regular_report.shtml"
+    role: "零售转型、综合金融、信用卡与消费金融标杆"
+    brand_identity:
+      primary_official: "#F15A25"     # 平安橙（品牌标准色，橙红渐变主色）
+      accent_official: "#E60012"      # 平安红，与橙色形成橙红体系
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/pab_2025_annual_report.pdf"
+        page: 1
+        note: "平安银行橙红渐变标识 + PING AN BANK"
+      cover_title_style:
+        font_family: "Noto Sans SC"
+        title_color_var: "primary"
+
+  - name: 兴业银行
+    short_name: 兴业
+    aliases: ["兴业", "兴业银行", "CIB", "cib", "601166"]
+    stock_code_a: "601166"
+    stock_code_h: ""
+    exchange: 上交所
+    official_site: "https://www.cib.com.cn"
+    investor_relations_url: "https://www.cib.com.cn/cn/aboutCIB/investor/"
+    annual_report_url: "https://www.cib.com.cn/cn/aboutCIB/investor/regular_report/"
+    role: "同业之王 / 商行+投行战略转型标杆"
+    brand_identity:
+      primary_official: "#003F97"     # 兴业蓝（品牌标准色）
+      accent_official: "#00A0E9"      # 天蓝色，与深蓝形成蓝系层次，年报常用辅色
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/cib_2025_annual_report.pdf"
+        page: 1
+        note: "蓝色方块 + 兴业银行 + CIB"
+      cover_title_style:
+        font_family: "Noto Serif SC"
+        title_color_var: "primary"
+
+  - name: 浦发银行
+    short_name: 浦发
+    aliases: ["浦发", "浦发银行", "SPDB", "spdb", "600000"]
+    stock_code_a: "600000"
+    stock_code_h: ""
+    exchange: 上交所
+    official_site: "https://www.spdb.com.cn"
+    investor_relations_url: "https://www.spdb.com.cn/investor_relations/"
+    annual_report_url: "https://www.spdb.com.cn/investor_relations/periodic_report/"
+    role: "长三角+对公为主，战略摇摆案例"
+    brand_identity:
+      primary_official: "#000073"     # 浦发藏青（品牌标准色）
+      accent_official: "#00A9E0"      # 亮蓝色，与藏青形成对比，现代科技感
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/spdb_2025_annual_report.pdf"
+        page: 1
+        note: "SPDB 蓝色抽象标识 + 浦发银行"
+      cover_title_style:
+        font_family: "Noto Serif SC"
+        title_color_var: "primary"
+
+  - name: 光大银行
+    short_name: 光大
+    aliases: ["光大", "光大银行", "CEB", "ceb", "601818", "China Everbright Bank"]
+    stock_code_a: "601818"
+    stock_code_h: "06818"
+    exchange: 上交所
+    official_site: "https://www.cebbank.com"
+    investor_relations_url: "https://www.cebbank.com/site/tzzgx/"
+    annual_report_url: "https://www.cebbank.com/site/tzzgx/gsggDetail/"
+    role: "财富管理与综合金融标杆"
+    brand_identity:
+      primary_official: "#6A1685"     # 光大紫（品牌标准色）
+      accent_official: "#F5A623"      # 暖金色，与紫色形成互补，阳光/财富寓意
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/ceb_2025_annual_report.pdf"
+        page: 1
+        note: "光大银行中国结 + CHINA EVERBRIGHT BANK"
+      cover_title_style:
+        font_family: "Noto Serif SC"
+        title_color_var: "primary"
+
+  - name: 民生银行
+    short_name: 民生
+    aliases: ["民生", "民生银行", "CMBC", "cmbc", "600016"]
+    stock_code_a: "600016"
+    stock_code_h: "01988"
+    exchange: 上交所
+    official_site: "https://www.cmbc.com.cn"
+    investor_relations_url: "https://www.cmbc.com.cn/tzzgx/"
+    annual_report_url: "https://www.cmbc.com.cn/tzzgx/dqbg/"
+    role: "零售转型与普惠小微标杆"
+    brand_identity:
+      primary_official: "#0072BC"     # 民生蓝（品牌标准色）
+      accent_official: "#00A651"      # 民生绿，与蓝色形成蓝绿搭配，活力/生机寓意
+      logo_reference:
+        source_type: annual_report_cover
+        pdf: "annual_report/cmbc_2025_annual_report.pdf"
+        page: 1
+        note: "民生银行中英文组合，绿色为主"
+      cover_title_style:
+        font_family: "Noto Serif SC"
+        title_color_var: "primary"
+
+# ---------------------------------------------------------------------------
+# 旧字段（保留向后兼容：skill1/2 依赖）
+# ---------------------------------------------------------------------------
+peer_banks:
+  - name: 招商银行
+    short_name: 招商
+    stock_code_a: "600036"
+    stock_code_h: "03968"
+    exchange: 上交所
+    investor_relations_url: "https://www.cmbchina.com/investor/"
+    role: 零售金融、财富管理、私行业务标杆
+
+  - name: 平安银行
+    short_name: 平安
+    stock_code_a: "000001"
+    stock_code_h: ""
+    exchange: 深交所
+    investor_relations_url: "https://bank.pingan.com/ir/"
+    role: 零售转型、综合金融、信用卡与消费金融标杆
+
+  - name: 兴业银行
+    short_name: 兴业
+    stock_code_a: "601166"
+    stock_code_h: ""
+    exchange: 上交所
+    investor_relations_url: "https://www.cib.com.cn/cn/aboutCIB/investor/"
+    role: 财富管理、绿色金融、综合经营对标
+
+  - name: 浦发银行
+    short_name: 浦发
+    stock_code_a: "600000"
+    stock_code_h: ""
+    exchange: 上交所
+    investor_relations_url: "https://www.spdb.com.cn/investor_relations/"
+    role: 股份制银行综合对标
+
+  - name: 民生银行
+    short_name: 民生
+    stock_code_a: "600016"
+    stock_code_h: "01988"
+    exchange: 上交所
+    investor_relations_url: "https://www.cmbc.com.cn/tzzgx/"
+    role: 零售转型与普惠小微对标
+
+  - name: 光大银行
+    short_name: 光大
+    stock_code_a: "601818"
+    stock_code_h: "06818"
+    exchange: 上交所
+    investor_relations_url: "https://www.cebbank.com/site/tzzgx/"
+    role: 财富管理与综合金融对标，可作为补充样本
+
+# ---------------------------------------------------------------------------
+# 样本组定义
+# ---------------------------------------------------------------------------
+sample_groups:
+  default:
+    name: 头部股份制银行默认组
+    description: 常规高管汇报
+    banks:
+      - 中信银行
+      - 招商银行
+      - 平安银行
+      - 兴业银行
+      - 浦发银行
+      - 民生银行
+      - 光大银行
+
+  full:
+    name: 全部股份制银行组
+    description: 年度深度研究
+    banks:
+      - 中信银行
+      - 招商银行
+      - 平安银行
+      - 兴业银行
+      - 浦发银行
+      - 民生银行
+      - 光大银行
+      - 华夏银行
+      - 渤海银行
+      - 浙商银行
+      - 恒丰银行
+      - 广发银行
+
+  custom:
+    name: 自定义竞品组
+    description: 按管理层关注对象灵活配置
+    banks: []  # 由用户运行时指定
+
+# ---------------------------------------------------------------------------
+# 默认分析材料范围
+# ---------------------------------------------------------------------------
+report_types:
+  required:
+    - name: 年度报告
+      priority: 1
+      description: 最核心数据来源
+    - name: 半年度报告
+      priority: 2
+      description: 阶段性经营分析
+
+  optional:
+    - name: 一季度报告
+      priority: 3
+      description: 趋势跟踪
+    - name: 三季度报告
+      priority: 4
+      description: 年内趋势跟踪
+    - name: 业绩发布会PPT
+      priority: 5
+      description: 管理层口径和战略表述重要来源
+    - name: 投资者交流纪要
+      priority: 6
+      description: 补充管理层解释
+    - name: 年度业绩公告
+      priority: 7
+      description: 港股或A+H股银行补充材料
+    - name: 监管公告
+      priority: 8
+      description: 补充合规披露信息

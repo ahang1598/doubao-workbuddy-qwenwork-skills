@@ -1,0 +1,15 @@
+---
+description: Use Factor Mining PandaAI for AI-led blind discovery or document-grounded factor extraction through pandaai-cli.
+alwaysApply: false
+---
+
+# Factor Mining PandaAI
+
+When the user asks to blind-mine quantitative factors with PandaAI or extract
+them from a paper, report, PDF, DOCX file, or text, read
+`.cursor/skills/factor-mining-pandaai/SKILL.md` and follow its mode workflow.
+
+Before translating or running formulas, read
+`.cursor/skills/factor-mining-pandaai/references/pandaai_cli_reference.md`.
+Never collect credentials in chat. Show formulas, parameters, assumptions, and
+research limitations before using external platform compute.

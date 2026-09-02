@@ -1,0 +1,38 @@
+{
+  "name": "fadada-professional-contract-review",
+  "name_en": "fadada-professional-contract-review",
+  "display_name": "法大大专业合同审查",
+  "copyright": "© 深圳市法大大网络科技有限公司 版权所有",
+  "skillType": "custom",
+  "outputProfiles": [
+    "markdown-preview",
+    "word-report",
+    "word-revision",
+    "excel-human"
+  ],
+  "outputStandardVersion": "1.1.0",
+  "complianceStatus": "enforced",
+  "outputRuleIds": [
+    "OUT-COM-001",
+    "OUT-COM-002",
+    "OUT-COM-003",
+    "OUT-COM-004",
+    "OUT-COM-005",
+    "OUT-COM-006",
+    "OUT-WORD-001",
+    "OUT-WORD-002",
+    "OUT-WORD-003",
+    "OUT-WORD-004",
+    "OUT-WORD-005",
+    "OUT-WORD-006",
+    "OUT-EXCEL-001",
+    "OUT-EXCEL-002"
+  ],
+  "outputExceptions": [],
+  "representativeArtifacts": [
+    "markdown-preview:clause-review-smoke",
+    "word-report:contract-review-report-smoke",
+    "word-revision:ooxml-redline-smoke",
+    "excel-human:risk-register-smoke"
+  ]
+}

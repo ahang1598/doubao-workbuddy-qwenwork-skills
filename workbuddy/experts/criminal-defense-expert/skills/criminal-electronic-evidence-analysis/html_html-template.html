@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><!-- CONTENT_SLOT:PAGE_TITLE --></title>
+<!--
+  criminal-electronic-evidence-analysis v1.0.1
+  HTML 输出自包含模板 — 内联样式铁律
+  LLM 职责：仅填充 <!-- CONTENT_SLOT:xxx --> 占位符
+  LLM 禁止：修改 HARD_BLOCK 包裹的 <style>/<script> 内任何代码、自由发挥 HTML 布局
+
+  设计原则：
+  1. I-Practical 内部级 —— 允许 Emoji/折叠/卡片/侧栏导航
+  2. C-现代轻量视觉方案（方案C） —— 青灰 #005f73 + 暖橙 #EE9B00
+  3. 内联样式铁律 —— 所有视觉格式使用 style="..." 内联，不依赖 CSS class
+  4. 五大输出块 —— 解构清单+12维度+三维映射+下游动作+条件输出
+  5. Richee 组件引用 —— c04-evidence-catalog + c05-risk-list
+
+  版本标识：data-template-version="1.0.1"
+-->
+<!-- HARD_BLOCK:DONT_MODIFY_START -->
+<style>
+/*
+ * criminal-electronic-evidence-analysis v1.0.1
+ * HARD_BLOCK — 仅包含无法内联的规则
+ *
+ * ⚠️ 此 <style> 块为 HARD_BLOCK 不可修改区。
+ * 仅含 @page / @media print / Mermaid 初始化。
+ * 违反此规则将导致输出被阻断。
+ */
+
+/* 打印页面规则 */
+@page { size: A4 portrait; margin: 2.0cm 1.5cm 1.5cm 3.0cm; }
+
+/* 打印适配 */
+@media print {
+  .side-nav { display: none !important; }
+  .toolbar { display: none !important; }
+  .no-print { display: none !important; }
+  .source-section { display: none !important; }
+
+  body {
+    font-family: '微软雅黑', '宋体', serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-content { margin-left: 0 !important; }
+
+  /* 确保表格表头和行级着色打印 */
+  table thead {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 折叠区打印时展开 */
+  details { display: block !important; }
+  details > div { display: block !important; }
+
+  .page-break-before { page-break-before: always; }
+
+  /* Mermaid 图表打印时隐藏 */
+  .mermaid-wrap { display: none !important; }
+  .print-table { display: block !important; }
+
+  .template-version-watermark { opacity: 0.4; }
+}
+</style>
+<!-- HARD_BLOCK:DONT_MODIFY_END -->
+</head>
+<body style="margin:0;padding:0;font-family:'微软雅黑','PingFang SC',SimSun,FangSong,serif;font-size:11pt;line-height:1.6;color:#1A202C;background:#fff;">
+
+<!-- 侧栏导航 -->
+<nav class="side-nav" style="position:fixed;left:0;top:0;width:240px;height:100vh;overflow-y:auto;background:#F8FAFC;border-right:1px solid #E2E8F0;padding:16px 0;font-size:11pt;z-index:100;">
+  <div style="padding:8px 16px;font-weight:bold;color:#005f73;font-size:13pt;border-bottom:1px solid #E2E8F0;margin-bottom:8px;">电子证据分析导航</div>
+  <a href="#block-1" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">一、案件基本信息</a>
+  <a href="#block-2" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">二、电子证据解构清单</a>
+  <a href="#block-3a" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">三-A 证据基础维度</a>
+  <a href="#block-3b" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">三-B 内容解构维度</a>
+  <a href="#block-3c" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">三-C 辩护点发现维度</a>
+  <a href="#block-4" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">四、三维映射</a>
+  <a href="#block-5" style="display:block;padding:6px 16px;color:#1A202C;text-decoration:none;border-left:3px solid transparent;">五、下游动作清单</a>
+</nav>
+
+<!-- 工具栏 -->
+<div class="toolbar no-print" style="position:fixed;top:0;left:240px;right:0;height:40px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;padding:0 16px;z-index:99;gap:8px;">
+  <button class="toolbar-btn" onclick="window.print()" style="padding:4px 12px;background:#005f73;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10pt;">打印</button>
+  <button class="toolbar-btn" onclick="document.querySelectorAll('details').forEach(d=>d.open=true)" style="padding:4px 12px;background:#F0F7F8;color:#005f73;border:1px solid #E2E8F0;border-radius:3px;cursor:pointer;font-size:10pt;">全部展开</button>
+  <button class="toolbar-btn" onclick="document.querySelectorAll('details').forEach(d=>d.removeAttribute('open'))" style="padding:4px 12px;background:#F0F7F8;color:#005f73;border:1px solid #E2E8F0;border-radius:3px;cursor:pointer;font-size:10pt;">全部折叠</button>
+  <span style="margin-left:auto;font-size:9pt;color:#64748B;"><!-- CONTENT_SLOT:GENERATED_AT --></span>
+</div>
+
+<!-- 主内容区 -->
+<main class="main-content" style="margin-left:256px;padding:56px 24px 24px 24px;">
+
+  <!-- 页面标题 -->
+  <header style="margin-bottom:24px;">
+    <h1 style="font-size:20pt;font-weight:700;color:#005f73;margin:0 0 4px 0;"><!-- CONTENT_SLOT:PAGE_TITLE --></h1>
+    <p style="font-size:12pt;color:#64748B;margin:0;"><!-- CONTENT_SLOT:SUBTITLE --></p>
+    <p style="font-size:10pt;color:#64748B;margin:4px 0 0 0;"><!-- CONTENT_SLOT:PAGE_META --></p>
+  </header>
+
+  <!-- 案件基本信息 -->
+  <!-- CONTENT_SLOT:CASE_INFO -->
+
+  <!-- 五大输出块 -->
+  <!-- CONTENT_SLOT:BLOCK_1_TO_5 -->
+
+  <!-- 条件输出块 -->
+  <!-- CONTENT_SLOT:CONDITIONAL_BLOCKS -->
+
+  <!-- 免责声明 -->
+  <footer style="margin-top:36px;border-left:3px solid #C53030;background:#fef9f9;padding:12px 16px;border-radius:4px;">
+    <p style="font-size:10pt;color:#1A202C;margin:0 0 4px 0;font-weight:bold;">⚠️ 免责声明</p>
+    <p style="font-size:9.5pt;color:#64748B;margin:0;line-height:1.6;">本分析报告仅为律师工作参考，不替代律师独立判断。完整性校验值验证、主体同一性判断等供参考，不替代司法鉴定意见。风险等级评估基于输入信息，可能因信息不完整而不准确。</p>
+  </footer>
+
+  <!-- 版本水印 -->
+  <div class="template-version-watermark no-print" style="text-align:right;font-size:8pt;color:#94a3b8;margin-top:12px;" data-template-version="1.0.1">
+    criminal-electronic-evidence-analysis v1.0.1 | <!-- CONTENT_SLOT:GENERATED_AT -->
+  </div>
+
+</main>
+
+</body>
+</html>

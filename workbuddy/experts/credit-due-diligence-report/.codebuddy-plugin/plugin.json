@@ -1,0 +1,177 @@
+{
+  "name": "credit-due-diligence-report",
+  "version": "1.1.1",
+  "description": "Five-agent AI team that produces bank corporate pre-loan due-diligence reports (12 chapters + 6 appendices) through external data collection, financial analysis, report drafting and compliance validation, with strict no-fabrication and in-bank placeholder rules.",
+  "author": {
+    "name": "商业银行架构中心",
+    "email": "commercial-banking@tencent.com"
+  },
+  "expertType": "team",
+  "agentName": "dd-team-lead",
+  "teamInfo": {
+    "leadAgent": "dd-team-lead",
+    "memberAgents": [
+      "data-collector",
+      "financial-analyst",
+      "report-writer",
+      "compliance-officer"
+    ]
+  },
+  "agents": [
+    "./agents/dd-team-lead.md",
+    "./agents/data-collector.md",
+    "./agents/financial-analyst.md",
+    "./agents/report-writer.md",
+    "./agents/compliance-officer.md"
+  ],
+  "skills": [
+    "./skills/credit-due-diligence-report"
+  ],
+  "displayName": {
+    "en": "Corporate DD Report Team",
+    "zh": "对公贷前尽调专家团"
+  },
+  "profession": {
+    "en": "Corporate DD Report Team",
+    "zh": "对公贷前尽调专家团"
+  },
+  "displayDescription": {
+    "en": "Five-agent team for bank corporate credit due diligence: data collection, financial analysis, 12-chapter report drafting, and compliance validation.",
+    "zh": "对公信贷尽调专家团：信息核查、财务分析、报告撰写、合规校验四角色协作，产出尽调报告，行内数据待补充。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "08-FinanceInvestment",
+  "defaultInitPrompt": {
+    "zh": "为指定企业生成一份对公贷前调查报告：先确认数据来源场景与客户类型，再由团队协作完成信息核查、财务分析、报告撰写与合规校验。",
+    "en": "Generate a corporate pre-loan DD report: confirm data-source mode and client type, then orchestrate the team for data collection, financial analysis, report drafting and compliance."
+  },
+  "tags": [
+    {
+      "en": "Due Diligence",
+      "zh": "贷前尽调"
+    },
+    {
+      "en": "Corporate Credit",
+      "zh": "对公信贷"
+    },
+    {
+      "en": "Credit Risk",
+      "zh": "信贷风控"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "为指定企业生成一份对公贷前调查报告：先确认数据来源场景与客户类型，再由团队协作完成信息核查、财务分析、报告撰写与合规校验。",
+      "en": "Generate a corporate pre-loan DD report: confirm data-source mode and client type, then orchestrate the team for data collection, financial analysis, report drafting and compliance."
+    },
+    {
+      "zh": "用公开数据写一份某上市公司的贷前调查报告（Demo 场景）",
+      "en": "Draft a public-data DD report for a listed company (Demo mode)"
+    },
+    {
+      "zh": "写一份城投客户的尽调报告框架",
+      "en": "Build a DD report framework for a city-investment client"
+    }
+  ],
+  "members": [
+    {
+      "id": "dd-team-lead",
+      "name": {
+        "en": "Chen",
+        "zh": "陈实"
+      },
+      "displayName": {
+        "en": "Chen",
+        "zh": "陈实"
+      },
+      "profession": {
+        "en": "DD Director",
+        "zh": "尽调总监"
+      },
+      "avatar": "avatars/dd-team-lead.png",
+      "agentFile": "./agents/dd-team-lead.md",
+      "skill": "credit-due-diligence-report",
+      "role": "lead"
+    },
+    {
+      "id": "data-collector",
+      "name": {
+        "en": "Luo",
+        "zh": "罗辑"
+      },
+      "displayName": {
+        "en": "Luo",
+        "zh": "罗辑"
+      },
+      "profession": {
+        "en": "External Information Check",
+        "zh": "外部信息核查"
+      },
+      "avatar": "avatars/data-collector.png",
+      "agentFile": "./agents/data-collector.md",
+      "skill": "credit-due-diligence-report",
+      "role": "member"
+    },
+    {
+      "id": "financial-analyst",
+      "name": {
+        "en": "Qian",
+        "zh": "钱明"
+      },
+      "displayName": {
+        "en": "Qian",
+        "zh": "钱明"
+      },
+      "profession": {
+        "en": "Financial Statement Analysis",
+        "zh": "财务报表分析"
+      },
+      "avatar": "avatars/financial-analyst.png",
+      "agentFile": "./agents/financial-analyst.md",
+      "skill": "credit-due-diligence-report",
+      "role": "member"
+    },
+    {
+      "id": "report-writer",
+      "name": {
+        "en": "Bi",
+        "zh": "毕成"
+      },
+      "displayName": {
+        "en": "Bi",
+        "zh": "毕成"
+      },
+      "profession": {
+        "en": "DD Report Drafting",
+        "zh": "尽调报告撰写"
+      },
+      "avatar": "avatars/report-writer.png",
+      "agentFile": "./agents/report-writer.md",
+      "skill": "credit-due-diligence-report",
+      "role": "member"
+    },
+    {
+      "id": "compliance-officer",
+      "name": {
+        "en": "He",
+        "zh": "何桂"
+      },
+      "displayName": {
+        "en": "He",
+        "zh": "何桂"
+      },
+      "profession": {
+        "en": "Compliance Validation",
+        "zh": "合规校验"
+      },
+      "avatar": "avatars/compliance-officer.png",
+      "agentFile": "./agents/compliance-officer.md",
+      "skill": "credit-due-diligence-report",
+      "role": "member"
+    }
+  ],
+  "rules": [
+    "./rules/credit-due-diligence-report_rules.md"
+  ],
+  "plugin": "credit-due-diligence-report"
+}

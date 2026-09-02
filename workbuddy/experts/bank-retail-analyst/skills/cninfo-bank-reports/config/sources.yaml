@@ -1,0 +1,145 @@
+# 数据源配置
+# 定义各银行官网、交易所和第三方数据源的访问方式及优先级
+
+# ============================================================
+# 数据源优先级
+# ============================================================
+source_priority:
+  - level: 一级
+    name: 银行官网投资者关系栏目
+    type: bank_website
+    description: 首选权威来源
+    trust_level: highest
+
+  - level: 二级
+    name: 交易所披露平台
+    type: exchange
+    description: 法定披露校验与补采
+    trust_level: high
+
+  - level: 三级
+    name: 巨潮资讯网
+    type: cninfo
+    description: 补充检索与历史公告
+    trust_level: medium
+
+  - level: 四级
+    name: 第三方数据平台
+    type: third_party
+    description: 快速补全与辅助校验，不作为最终唯一依据
+    trust_level: low
+
+# ============================================================
+# 交易所配置
+# ============================================================
+exchanges:
+  sse:
+    name: 上海证券交易所
+    base_url: "http://www.sse.com.cn"
+    disclosure_url: "http://www.sse.com.cn/disclosure/listedinfo/announcement/"
+    search_api: "http://query.sse.com.cn/security/stock/queryCompanyBulletin.do"
+    description: A股上交所上市银行
+
+  szse:
+    name: 深圳证券交易所
+    base_url: "http://www.szse.cn"
+    disclosure_url: "http://www.szse.cn/disclosure/listed/fixed/"
+    description: A股深交所上市银行
+
+  hkex:
+    name: 香港交易所
+    base_url: "https://www.hkexnews.hk"
+    disclosure_url: "https://www.hkexnews.hk/listedco/listconews/advancedsearch/search_active_main.aspx"
+    description: H股上市银行
+
+# ============================================================
+# 巨潮资讯网配置
+# ============================================================
+cninfo:
+  name: 巨潮资讯网
+  base_url: "http://www.cninfo.com.cn"
+  search_api: "http://www.cninfo.com.cn/new/hisAnnouncement/query"
+  description: 补充检索与历史公告
+  search_params:
+    pageSize: 30
+    column: "szse"  # 或 sse
+    tabName: "fulltext"
+
+# ============================================================
+# 报告类型搜索关键词
+# ============================================================
+report_search_keywords:
+  年度报告:
+    keywords:
+      - 年度报告
+      - 年报
+    exclude:
+      - 摘要
+      - 更正
+      - 英文
+    file_type: PDF
+
+  半年度报告:
+    keywords:
+      - 半年度报告
+      - 半年报
+      - 中期报告
+    exclude:
+      - 摘要
+      - 更正
+    file_type: PDF
+
+  一季度报告:
+    keywords:
+      - 第一季度报告
+      - 一季报
+    file_type: PDF
+
+  三季度报告:
+    keywords:
+      - 第三季度报告
+      - 三季报
+    file_type: PDF
+
+  业绩发布会PPT:
+    keywords:
+      - 业绩发布
+      - 业绩报告
+      - 投资者推介
+      - 业绩演示
+    file_type:
+      - PDF
+      - PPT
+      - PPTX
+
+  业绩公告:
+    keywords:
+      - 业绩公告
+      - 年度业绩
+    file_type: PDF
+
+  投资者交流纪要:
+    keywords:
+      - 投资者交流
+      - 投资者关系
+      - 分析师会议
+    file_type: PDF
+
+# ============================================================
+# 下载配置
+# ============================================================
+download_config:
+  timeout_seconds: 30
+  max_retries: 3
+  retry_delay_seconds: 5
+  max_file_size_mb: 200
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  concurrent_downloads: 3
+
+# ============================================================
+# 文件归档规则
+# ============================================================
+archive_config:
+  base_dir: "data/reports"
+  naming_pattern: "{bank_short_name}_{report_period}_{report_type}"
+  # 例如：中信_2024年度_年度报告.pdf

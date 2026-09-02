@@ -1,0 +1,179 @@
+{
+  "name": "pandaai-hot-theme-team",
+  "version": "1.0.1",
+  "description": "Orchestrates fact-first A-share theme, capital-flow, candidate-screening, and risk specialists into one evidence-backed consultation.",
+  "author": {
+    "name": "PandaAi",
+    "email": "business@pandaai.online"
+  },
+  "agents": [
+    "./agents/pd-hot-theme-team-lead.md",
+    "./agents/market-daily-review.md",
+    "./agents/concept-rotation.md",
+    "./agents/smart-money-tracker.md",
+    "./agents/stock-screener.md",
+    "./agents/a-share-market-risk-radar.md"
+  ],
+  "skills": [
+    "./skills/pd-team-evidence-gate",
+    "./skills/market-daily-review",
+    "./skills/concept-rotation-monitor",
+    "./skills/skill-northbound-margin-monitor",
+    "./skills/block-trade-radar",
+    "./skills/skill-a1-lhb-tracking",
+    "./skills/smart-money-profiler",
+    "./skills/stock-screener",
+    "./skills/pd-a-share-market-risk-radar-workflow"
+  ],
+  "homepage": "https://github.com/orgs/quantskills/repositories",
+  "keywords": [
+    "hot-theme",
+    "smart-money",
+    "stock-screening",
+    "pandadata"
+  ],
+  "expertType": "team",
+  "agentName": "pd-hot-theme-team-lead",
+  "teamInfo": {
+    "leadAgent": "pd-hot-theme-team-lead",
+    "memberAgents": [
+      "market-daily-review",
+      "concept-rotation",
+      "smart-money-tracker",
+      "stock-screener",
+      "a-share-market-risk-radar"
+    ]
+  },
+  "displayName": {
+    "zh": "热点题材与资金联合研判",
+    "en": "Theme, Capital and Candidate Joint Research"
+  },
+  "profession": {
+    "zh": "PD-热点龙头捕捉团",
+    "en": "PD Hot Theme Leadership Team"
+  },
+  "displayDescription": {
+    "zh": "五位专家联合复盘市场、题材热度和资金变化，筛选核心候选并通过风险闸门，输出可追溯的统一会诊结论。",
+    "en": "Five specialists jointly review market structure, theme heat, capital flows, candidate screening, and risk before producing one traceable consultation conclusion."
+  },
+  "avatar": "avatars/pandaai-logo-v2.png",
+  "categoryId": "08-FinanceInvestment",
+  "defaultInitPrompt": {
+    "zh": "今天市场最强的三个题材是什么，哪些有资金确认？",
+    "en": "What are today's three strongest A-share themes, and which have capital-flow confirmation?"
+  },
+  "plugin": "pandaai-hot-theme-team",
+  "tags": [
+    {
+      "zh": "热点题材",
+      "en": "Hot Themes"
+    },
+    {
+      "zh": "资金验证",
+      "en": "Capital Verification"
+    },
+    {
+      "zh": "多专家会诊",
+      "en": "Multi-Agent Consultation"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "今天市场最强的三个题材是什么，哪些有资金确认？",
+      "en": "What are today's three strongest A-share themes, and which have capital-flow confirmation?"
+    },
+    {
+      "zh": "对比机器人和AI算力，哪个题材持续性更强？",
+      "en": "Compare robotics and AI computing: which theme has stronger persistence?"
+    },
+    {
+      "zh": "找出有资金确认但还没有明显过热的题材龙头候选",
+      "en": "Find theme-leader candidates with capital confirmation but without obvious overheating"
+    }
+  ],
+  "members": [
+    {
+      "id": "pd-hot-theme-team-lead",
+      "name": {
+        "zh": "PandaAi主理人",
+        "en": "PandaAi Lead"
+      },
+      "profession": {
+        "zh": "热点龙头会诊主理人",
+        "en": "Hot Theme Team Lead"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "lead"
+    },
+    {
+      "id": "market-daily-review",
+      "name": {
+        "zh": "PD-A股每日复盘师",
+        "en": "A-Share Daily Review Analyst"
+      },
+      "profession": {
+        "zh": "市场结构与每日复盘",
+        "en": "Market Structure and Daily Review"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "concept-rotation",
+      "name": {
+        "zh": "PD-题材轮动预警器",
+        "en": "Theme Rotation Early Warning"
+      },
+      "profession": {
+        "zh": "题材热度与持续性分析",
+        "en": "Theme Heat and Persistence Analysis"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "smart-money-tracker",
+      "name": {
+        "zh": "PD-龙虎榜资金猎手",
+        "en": "Smart Money Tracker"
+      },
+      "profession": {
+        "zh": "席位与多路资金验证",
+        "en": "Seat and Multi-Flow Verification"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "stock-screener",
+      "name": {
+        "zh": "PD-一句话A股选股",
+        "en": "Natural-Language A-Share Screener"
+      },
+      "profession": {
+        "zh": "题材候选股票筛选",
+        "en": "Theme Candidate Screening"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    },
+    {
+      "id": "a-share-market-risk-radar",
+      "name": {
+        "zh": "PD-A股风险红绿灯",
+        "en": "A-Share Risk Traffic Light"
+      },
+      "profession": {
+        "zh": "市场与题材风险复核",
+        "en": "Market and Theme Risk Review"
+      },
+      "avatar": "avatars/pandaai-logo-v2.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": [
+      "pandadata"
+    ]
+  }
+}

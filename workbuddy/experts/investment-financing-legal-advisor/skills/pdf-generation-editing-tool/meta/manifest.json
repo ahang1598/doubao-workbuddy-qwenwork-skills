@@ -1,0 +1,42 @@
+{
+  "license": "MIT",
+  "metadata": {
+    "version": "2.0",
+    "category": "document-generation",
+    "changelog": [
+      {
+        "version": "2.0",
+        "date": "2026-07-15",
+        "changes": [
+          "合并 pdf-processing-toolkit 的功能，新增 PROCESS 路由（表格提取/合并拆分/旋转/水印/页码/加密/表单填写/简单PDF创建）",
+          "文本提取不纳入本 skill，统一由系统内置 read 工具（原生支持 PDF 读取与 OCR）承接，避免功能重叠",
+          "迁移 10 个处理脚本至 scripts/processing/ 子目录",
+          "迁移 forms.md 和 reference.md 文档",
+          "description 重写为三路由结构：CREATE / REFORMAT / PROCESS"
+        ]
+      },
+      {
+        "version": "1.2",
+        "date": "2026-07-15",
+        "changes": [
+          "移除对 pdf-processing-toolkit 的所有引用，该 skill 已下架"
+        ]
+      },
+      {
+        "version": "1.1",
+        "date": "2026-07-14",
+        "changes": [
+          "移除 FILL 路由（表单填写功能），统一由 pdf-processing-toolkit 处理",
+          "删除 fill_inspect.py 和 fill_write.py 脚本及 make.sh fill 命令"
+        ]
+      },
+      {
+        "version": "1.0",
+        "date": "2025-01-01",
+        "changes": [
+          "初始版本：CREATE / FILL / REFORMAT 三路由"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,258 @@
+# Tier 1 业务配方（intent → primitive chain）
+#
+# 用途：meta-skill 在「新建模式」扫描 v2 实时全集后，用本表做高频链路快捷匹配。
+#       命中 intent → 作为第一候选链路；不命中 → 退到 tier1-catalog.md 按能力桶现搭。
+#
+# SOT：所有 step 引用的 slug 必须存在于 linkfoxagent-v2/ 实时目录（每个 skill 是顶层子目录且含 SKILL.md）。
+#      本文件是 v2 的二次摘要 / 高频配方缓存，可能滞后；如发现 slug 不在实时 v2 中，先扫实时全集找替代品，再参考 tier1-by-vendor.md；找不到就把该步骤标 TBD 而不是编造。
+#
+# 字段：
+#   intent     -- 业务命名，{动作}_{对象}_{平台?}，统一 snake_case 中文
+#   keywords   -- 用户口语命中词（中英混排），meta-skill 做粗匹配
+#   platform   -- 主战场平台；跨平台写 cross
+#   steps      -- 严格按执行顺序的 Tier 1 slug；同步骤可替换的写在 alternatives
+#   tier2_hint -- 链路尾部如何接 Tier 2/3 写作类 skill（可选）
+#   notes      -- 计费/限制/注意事项
+
+recipes:
+
+  - intent: 选品_周度_amazon
+    keywords: [选品, 找品, 蓝海, opportunity, niche, sourcing, 周度选品, 选市场]
+    platform: amazon
+    steps:
+      - linkfox-sellersprite-market-research        # 50+ 维度筛蓝海类目
+      - linkfox-sellersprite-product-search         # 类目内 ASIN 颗粒度筛
+      - linkfox-keepa-product-search                # Keepa 视角交叉验证（重量/上架时间/BSR）
+      - linkfox-keepa-product-series                # 候选 ASIN 价格/BSR 时序验证
+    alternatives:
+      jiimore_us_jp_de:
+        - linkfox-jiimore-product-discovery         # **仅 US/JP/DE**，关键词 → 潜力爆品
+        - linkfox-jiimore-page-asins-by-asin        # **仅 US/JP/DE**，种子 ASIN → 同类
+      opportunity_us_only:
+        - linkfox-amazon-opportunity-report-by-keyword  # **仅美国站**，6 维 AI 报告（直接成稿）
+    tier2_hint: |
+      最终交付：JSON 文件写裸 product_list payload（{ products: [...] }），stdout 走 skill-output-protocol；
+      字段表 / 单位精度见 output-contract.md §2.3.1。
+      前端按 `{ products }` 形状自动渲染商品列表（右侧任务产出 tab）。
+    notes: |
+      market-research 给"赛道是否值得做"的 high-level 答案；
+      product-search 用于在赛道内做 ASIN 颗粒度筛选。两者顺序不要反。
+      如果用户已锁定 US/JP/DE，可优先走 jiimore 三件套（数据更专精）。
+
+  - intent: 选品_tiktok
+    keywords: [tiktok 选品, tiktok shop, 短视频选品, 达人带货, fastmoss, echotik]
+    platform: tiktok
+    steps:
+      - linkfox-fastmoss-product-rank-top-selling   # 日/周/月榜（先看大盘）
+      - linkfox-fastmoss-product-search             # 关键词/类目/佣金/销量筛
+      - linkfox-echotik-list-new-product-rank       # 16 区域新品/爆品趋势
+      - linkfox-echotik-list-product                # 关键词 + 区域 + 达人带货数据
+    alternatives:
+      hot_first:
+        - linkfox-echotik-list-new-product-rank
+        - linkfox-fastmoss-product-search
+    tier2_hint: |
+      最终交付：裸 product_list JSON + skill-output-protocol 传输。
+      TikTok 产品写入 products 数组；asin/title 必填，price 用站点本币 + currency 字段。
+      字段表见 output-contract.md §2.3.1。
+
+  - intent: 复刻_listing_amazon
+    keywords: [复刻, 抄, 仿写, listing, 仿对标, clone listing]
+    platform: amazon
+    steps:
+      - linkfox-amazon-product-detail               # 拉对标 detail（标题/五点/A+/规格/附图）
+      - linkfox-amazon-reviews-list                 # 评论作话术原料（按站点/星级/关键词过滤）
+      - linkfox-sif-asin-keywords                   # 对标 ASIN 的流量词
+      - linkfox-sellersprite-traffic-keyword        # 同 ASIN 的流量词（含转化/PPC 竞价）
+    alternatives:
+      non_us_reviews:
+        - linkfox-amazon-reviews-list               # 非美国站走这个
+    tier2_hint: |
+      数据齐后调 Tier 2 listing 写作类 skill 做生成；报告产物 handoff 给 linkfox-report-generator。
+    notes: |
+      SIF 与 SellerSprite 流量词二选一即可；两个都跑只在客户要交叉验证时。
+      评论统一用 amazon-reviews-list，按站点、星级、关键词与排序参数收窄。
+
+  - intent: 关键词矩阵_amazon
+    keywords: [关键词, 关键词矩阵, keyword research, kw 反查, 流量词, sov, 搜索量, aba]
+    platform: amazon
+    steps:
+      - linkfox-aba-intelligent-query               # ABA Search Terms Report 周维度（15 站，近 3 年）
+      - linkfox-sif-keyword-overview                # 供需比/竞争度
+      - linkfox-sif-keyword-summary                 # 关键词级流量结构 + 主要竞品 ASIN
+      - linkfox-sellersprite-traffic-keyword        # 单 ASIN 反查全部流量词（自然+SP+AC+品牌+视频）
+      - linkfox-sif-asin-keywords                   # 单 ASIN 流量词明细 + 自然/SP 排名
+    notes: |
+      ABA 是"真值"但只覆盖 15 站；少站点退到 SIF + SellerSprite 组合。
+      sif-keyword-* 关注关键词维度，sellersprite-traffic-keyword + sif-asin-keywords 关注 ASIN 维度，互为补充。
+
+  - intent: 评论_情感_挖掘
+    keywords: [评论, 评论挖掘, 痛点, 差评, 卖点, 情感分析, review mining, sentiment]
+    platform: amazon
+    steps:
+      - linkfox-amazon-reviews-list                 # 评论原文 + 星级
+      - linkfox-jiimore-get-niche-review-from-keyword  # 同细分市场评论情感聚合（**仅 US/JP/DE**）
+    alternatives:
+      non_us:
+        - linkfox-amazon-reviews-list               # 非美国站
+    tier2_hint: 输出可接 Tier 2 卖点提炼 / Q&A 生成 skill；要图片识别走 linkfox-aigc-textgen 的图文模式。
+
+  - intent: 价格监控_amazon
+    keywords: [价格监控, 跟价, 价格历史, 价格波动, repricing]
+    platform: amazon
+    steps:
+      - linkfox-keepa-product-series                # 单 ASIN 价格/BSR/卖家数/划线价/闪促 历史曲线
+    alternatives:
+      with_sales_trend:
+        - linkfox-sorftime-amazon-product-detail    # 加上销量/销额时序 + FBA 费 + 毛利率
+    notes: |
+      仅 67-skill 覆盖范围内：只能看公开侧（竞品 ASIN 历史）；店内 buybox 抢位策略需店铺授权类 skill，不在当前 Tier 1 范围。
+
+  - intent: 销量估算_amazon
+    keywords: [销量, 估算, 销量预测, sales estimate, 月销, 日销]
+    platform: amazon
+    steps:
+      - linkfox-keepa-product-request               # 结构化字段（含近 12 月月销量），单次最多 100 ASIN
+      - linkfox-keepa-product-series                # 单 ASIN BSR 时序作交叉验证
+    alternatives:
+      sorftime:
+        - linkfox-sorftime-amazon-product-detail    # 14 站含销量/销额历史 + FBA 费 + 毛利
+        - linkfox-sorftime-amazon-product-query     # 历史月份回看（最长至 2024-01）
+
+  - intent: 合规扫_listing
+    keywords: [合规, 侵权, 违禁, 政策合规, listing 自检, 违规扫]
+    platform: cross
+    steps:
+      - linkfox-ruiguan-text-trademark-detection    # 文字商标（标题/五点），15 国
+      - linkfox-ruiguan-trademark-graphic-detection # 图形商标（Logo / 图标 / 视觉标识）
+      - linkfox-ruiguan-copyright-detection         # 图片版权
+      - linkfox-ruiguan-gun-parts-search            # 政策合规（管制品/违禁品图像比对）
+    notes: |
+      适合 listing 上架前一次性走完。
+      法律敏感：高相似度结果必须完整展示并附免责声明。
+
+  - intent: 专利侵权扫_listing
+    keywords: [专利, 外观专利, 侵权, 专利侵权, 实用新型, 发明, TRO, 以图搜专利]
+    platform: cross
+    steps:
+      - linkfox-ruiguan-detection-patent-design     # 外观专利（含 TRO 维权史）
+      - linkfox-ruiguan-utility-patent-detection    # 发明/实用新型，**当前仅美国站**
+      - linkfox-zhihuiya-patent-image-search        # 以图搜外观/实用新型专利（智慧芽 PatSnap）
+      - linkfox-zhihuiya-bibliography               # 命中专利的完整著录（含申请人/发明人/优先权）
+      - linkfox-zhihuiya-legal-status               # 法律状态（是否有效）
+    notes: |
+      法律状态没失效才有侵权风险；先走 Ruiguan 再用 Zhihuiya 确认细节。
+      展示时高相似度记录必须完整展示并附免责声明（建议咨询专业律师）。
+
+  - intent: 商品详情_批量
+    keywords: [批量详情, 详情, batch detail, asin 详情, sku 详情]
+    platform: amazon
+    steps:
+      - linkfox-amazon-product-detail               # 22 站，单条快；按 ASIN 计费（单价高）
+    alternatives:
+      walmart:
+        - linkfox-wallysmarter-product-detail       # Walmart ItemId 详情 + 价格/销量历史
+      with_history:
+        - linkfox-keepa-product-request             # 结构化 + 近 12 月月销量，单次 100 ASIN
+        - linkfox-sorftime-amazon-product-detail    # 14 站，销量/销额/BSR/FBA 费 + 毛利
+    tier2_hint: |
+      最终交付：裸 product_list JSON + skill-output-protocol 传输。
+      不论 Amazon / Walmart / 含历史数据的混合形态，都写入同一份 `{ products: [...] }`；
+      Walmart 用 sku 字段时同步填 asin（前端 React key 兜底）。详见 output-contract.md §2.3.1。
+    notes: |
+      Amazon 详情按 ASIN 计费且单价较高，尽量只查用户真正关心的 ASIN。
+      要批量 + 历史数据走 Keepa 或 Sorftime，不要硬抗 Amazon 前端模拟。
+
+  - intent: 趋势_热点_监测
+    keywords: [趋势, 热点, 热搜, google trends, rising, 热度, 季节性, 实时流行]
+    platform: cross
+    steps:
+      - linkfox-google-trend-get-trend-by-time      # 指定国家最近时段的实时热门话题
+      - linkfox-google-trend-get-trend-by-keys      # 指定关键词在 XX 国家的热度趋势（最早 2004）
+      - linkfox-tsearch-search                      # 实时网页/Reddit/微信公众号/社区/站外帖验证
+    tier2_hint: 用于选品立项前的"这事在不在风口"确认。
+
+  - intent: 货源_1688
+    keywords: [货源, 工厂, 1688, 一件代发, 阿里巴巴, sourcing 1688]
+    platform: 1688
+    steps:
+      - linkfox-dld-product-billboard               # 1688 周/月榜（先看大盘）
+      - linkfox-dld-product-search                  # 货源/工厂/一件代发筛
+    tier2_hint: |
+      最终交付：裸 product_list JSON + skill-output-protocol 传输。
+      1688 商品无 ASIN，用 sku=offerId 同时回填 asin=offerId；price 用 CNY，currency=CNY。
+      详见 output-contract.md §2.3.1。
+    notes: 关键词必须中文。
+
+  - intent: 选品_shopee
+    keywords: [shopee, 虾皮, 友鹰, shopee 选品, 虾皮选品]
+    platform: shopee
+    steps:
+      - linkfox-youying-shopee-get-product-infos    # 11 站点，关键词 + 1-3 级类目 + 销量/评分/官方店/本土跨境
+    tier2_hint: |
+      最终交付：裸 product_list JSON + skill-output-protocol 传输。
+      Shopee itemid 同时回填到 asin（前端 React key 必填）；price 用站点本币 + currency 字段。
+      详见 output-contract.md §2.3.1。
+    notes: |
+      当前 Shopee 只有这一个 Tier 1，无替代品；要做 Shopee 流程需自己接 Tier 2 编排。
+
+  - intent: 选品_ebay
+    keywords: [ebay, eBay 选品, 拍卖, 一口价, 最佳出价]
+    platform: ebay
+    steps:
+      - linkfox-ebay-search                         # 前端商品列表（拍卖/一口价/最佳出价/邮编/类目）
+    tier2_hint: |
+      最终交付：裸 product_list JSON + skill-output-protocol 传输。
+      eBay itemId 回填到 asin；拍卖品 unitsSold 留空（不做估算）。详见 output-contract.md §2.3.1。
+
+  - intent: 选品_walmart
+    keywords: [walmart, 沃尔玛, walmart 选品, walmart 详情]
+    platform: walmart
+    steps:
+      - linkfox-walmart-search                      # 前端商品列表
+      - linkfox-wallysmarter-product-detail         # ItemId 详情 + 价格/销量历史
+    tier2_hint: |
+      最终交付：裸 product_list JSON + skill-output-protocol 传输。
+      Walmart itemId 回填到 asin + 写到 sku；price 默认 USD。详见 output-contract.md §2.3.1。
+
+  - intent: 综合_市场分析
+    keywords: [市场分析, 市场调研, 市场洞察, 该品类能不能做, 综合分析, market analysis]
+    platform: amazon
+    steps:
+      - linkfox-amazon-opportunity-report-by-keyword # 关键词商业洞察报告
+      - linkfox-amazon-opportunity-search-by-metrics # 指标反查细分市场
+      - linkfox-sellersprite-market-research         # 卖家精灵市场指标筛选
+    notes: |
+      按用户问题选择其中一个或组合调用；不要为"综合"自动全跑，涉及付费/高成本检索时先确认预算。
+
+  - intent: 综合_AI内容生成
+    keywords: [AI 生图, AI 生文, AI 生视频, 文生图, 图生图, 主图设计, AI 写作]
+    platform: cross
+    steps:
+      - linkfox-aigc-imagegen                       # AI 生图（多模型）
+      - linkfox-aigc-imagegen-product               # 商品图/场景图/A+ 图编排
+      - linkfox-aigc-textgen                        # AI 生文 / 图文理解
+      - linkfox-aigc-videogen                       # AI 生视频
+    notes: |
+      各 skill 输入 / 输出域不同，按"想要什么产物"挑一个，不需要串成链。
+
+# ----------------------------------------------------------------------
+# 用法（meta-skill 内部伪代码）
+#
+#   user_intent_text = ...
+#   for r in recipes:
+#       if any(k in user_intent_text for k in r.keywords):
+#           candidates.append(r)
+#   if candidates:
+#       pick best by platform match → 抄 steps
+#   else:
+#       退到 tier1-catalog.md 按能力桶搭
+#
+# 强制规则（meta-skill 调用前）：
+#   1. 缺参 / 多候选 / 不可逆动作必须用运行环境支持的 AskUserQuestion 或等价表单能力一次性收敛。
+#   2. 任何报告类产物都要 handoff 给 linkfox-report-generator（不准在对话里拼接）。
+#
+# 维护：
+#   - SOT：linkfoxagent-v2/ 实时目录；本 recipes 文件只是二次摘要 / 快捷缓存。
+#   - 新增配方门槛：同一链路在团队内被复用 ≥ 3 次再固化进来，避免堆积一次性流程。
+#   - 新增/删除 skill 时必须跑 `scripts/list_v2_skills.py --view recipes-validation --strict-recipes`，删掉或替换不存在的 slug。

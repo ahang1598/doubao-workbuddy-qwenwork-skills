@@ -1,0 +1,12 @@
+{
+  "id": "不起诉意见书",
+  "marketId": "",
+  "name": "不起诉意见书",
+  "version": "4.0.1",
+  "description": "为辩护律师在审查起诉阶段向检察院提出不起诉意见，支持法定/酌定/存疑/附条件/特殊五类不起诉类型论证。酌定不起诉三维论证法（情节轻微+社会危害性八维度+修复性三维度）；存疑不起诉排除合理怀疑三步法；附条件不起诉考验期策略。依据刑诉法第177/175/282/182条。触发：用户需要不起诉意见。不触发：认罪认罚协商（→criminal-plea-negotiation）、辩护意见书（→criminal-prosecution-defense）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

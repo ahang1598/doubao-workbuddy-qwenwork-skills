@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{DOC_TITLE}}</title>
+<!-- Bootstrap Icons：仅用于 banner meta 行（规则 7）。断网时退化为无图标，不影响阅读 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* === PASTE assets/theme.css HERE (必须内联，保证单文件离线可看) === */
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============ 顶部 Banner（必填） ============ -->
+  <!-- brand-tag（规则 14 + 16）：
+       - 格式：金手指 · 媒介经理，完整照抄配置好的整段，不许简写或改词序
+       - 用「角色名/职能名」（如 资深分析师、项目顾问、合规审查员），不要用人格化昵称
+       - 昵称/代号只能出现在页脚 .disclaimer
+       - 不需要品牌行时，把整个 <p class="brand-tag">...</p> 删掉即可 -->
+  <div class="banner">
+    <p class="brand-tag">金手指<span class="sep">·</span>媒介经理</p>
+    <h1 class="title">{{DOC_TITLE}}</h1>
+    <p class="subtitle">{{DOC_SUBTITLE}}</p>
+    <div class="meta">
+      <span><i class="bi bi-calendar3"></i>{{DATE}}</span>
+      <span><i class="bi bi-flag"></i>{{STAGE_OR_SCENE}}</span>
+      <span><i class="bi bi-hourglass-split"></i>{{PERIOD_OR_SCOPE}}</span>
+    </div>
+  </div>
+
+  <!-- ============ 主体（自由组装 section） ============ -->
+  <div class="body">
+
+    <!--
+      每个 section 固定结构：
+        <h2 class="section-title"><span class="idx">01</span>标题</h2>
+        [可选] <p class="lead">这节最该先知道的一句话</p>
+        [组件区：data-table / timeline / plain-list / callout 任选]
+
+      ⚠️ .lead 规则（规则 2）：
+        - 不加任何固定前缀（禁「结论：」「小结：」），直接写那句话
+        - 按 section 性质写：判断型给结论 / 罗列型给共性或怎么用 / 流程型给关键节奏 /
+          陈述型给最该注意的一点 / 风险型给最该先避开的一条
+        - 没有增量信息就删掉整行，不要写「以下是 5 个候选方案」这类复述标题的废话
+      序号必须连续递增（01、02、03...），能合并的板块不拆多个标题（规则 9）
+    -->
+
+    <!-- ① 普通多列表格 -->
+    <section>
+      <h2 class="section-title"><span class="idx">01</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <table class="data-table">
+        <thead>
+          <tr><th>列1</th><th>列2</th><th>列3</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>...</td><td>...</td><td><span class="pill pill-recommend">推荐</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ② KV 型两列表格（字段 + 一句话，如定位卡 / 需求六要素） -->
+    <section>
+      <h2 class="section-title"><span class="idx">02</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <table class="data-table">
+        <thead>
+          <tr><th style="width:130px;">{{维度列表头}}</th><th>{{内容列表头}}</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kv-key">字段名1</td><td>内容</td></tr>
+          <tr><td class="kv-key">字段名2</td><td>内容</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ③ 时间轴（路线图 / 阶段计划） -->
+    <section>
+      <h2 class="section-title"><span class="idx">03</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 1</span>阶段标题</div>
+          <div class="tl-goal"><strong>目标：</strong>xxx</div>
+          <ul class="tl-list">
+            <li>动作1</li>
+            <li>动作2</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ④ 提示条 callout（只 2 色；同一 section 内禁止蓝黄混排，见规则 3） -->
+    <section>
+      <h2 class="section-title"><span class="idx">04</span>{{SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <div class="callout"><strong class="title">建议：</strong>中性/正向说明——建议、补充、口径、可复用逻辑等。</div>
+    </section>
+
+    <!-- ⑤ 风险 / 红线并列 —— 一律裸 plain-list，不套 callout（规则 12） -->
+    <section>
+      <h2 class="section-title"><span class="idx">05</span>{{风险类章节标题}}</h2>
+      <ul class="plain-list">
+        <li><strong>要点1：</strong>说明文字</li>
+        <li><strong>要点2：</strong>说明文字</li>
+        <li><strong>要点3：</strong>说明文字</li>
+      </ul>
+      <!-- 只有【孤立单条】警示时才用：
+      <div class="callout callout-warn"><strong class="title">红线：</strong>单条强调。</div> -->
+    </section>
+
+    <!-- ⑥ 决策分支 / 条件枚举（If-then）—— plain-list + tag 字色，不用 callout（规则 15） -->
+    <section>
+      <h2 class="section-title"><span class="idx">06</span>{{DECISION_SECTION_TITLE}}</h2>
+      <p class="lead">{{这节最该先知道的一句话}}</p>
+      <ul class="plain-list">
+        <li><strong>若条件 A 成立：</strong><span class="tag-ok">推荐 ✓</span>说明为什么可行、附加条件。</li>
+        <li><strong>若只满足部分条件：</strong><span class="tag-warn">谨慎</span>可行但需补齐 xxx。</li>
+        <li><strong>若关键条件不变：</strong><span class="tag-bad">不建议</span>说明为什么宁可放弃。</li>
+      </ul>
+    </section>
+
+    <!-- ⑦ 收尾：下一步建议（关联角色并入本节，不另起标题，见规则 9） -->
+    <section>
+      <h2 class="section-title"><span class="idx">07</span>下一步建议</h2>
+      <ul class="plain-list">
+        <li>动作1</li>
+        <li>动作2 → 可找 <strong>{角色代号}（{角色名}）</strong></li>
+      </ul>
+    </section>
+
+  </div>
+
+  <div class="disclaimer">
+    {{DISCLAIMER_TEXT}}
+  </div>
+
+</div>
+</body>
+</html>

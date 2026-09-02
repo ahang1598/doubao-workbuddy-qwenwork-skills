@@ -1,0 +1,214 @@
+{
+  "name": "investment-financing-legal-advisor",
+  "version": "1.0.0",
+  "description": "Investment & financing legal advisor team covering legal due diligence, PRC regulatory research, transaction document drafting (TS/SPA/SHA), closing management and independent quality verification across the full equity investment and M&A lifecycle.",
+  "author": {
+    "name": "RicheeAI",
+    "email": "legal@richeeai.com"
+  },
+  "agents": [
+    "./agents/investment-financing-lead.md",
+    "./agents/due-diligence-analyst.md",
+    "./agents/regulatory-research-analyst.md",
+    "./agents/document-drafting-specialist.md",
+    "./agents/closing-management-specialist.md",
+    "./agents/quality-verification-officer.md"
+  ],
+  "skills": [
+    "./skills/cap-market-founder-liability-review",
+    "./skills/cap-market-multi-round-consistency",
+    "./skills/cap-table-verify-and-dilution-simulate",
+    "./skills/company-equity-due-diligence",
+    "./skills/company-governance-diagnosis-and-compliance-review",
+    "./skills/corporate-governance-rules-drafting",
+    "./skills/draft-and-review-investment-intent",
+    "./skills/due-diligence-material-checklist-generator",
+    "./skills/excel-generation-editing-tool",
+    "./skills/fadada-legal-case-search",
+    "./skills/fadada-laws-and-regulations-retrieval",
+    "./skills/fadada-professional-contract-drafting",
+    "./skills/fadada-professional-contract-information-extraction",
+    "./skills/fadada-professional-contract-review",
+    "./skills/fadada-special-ocr",
+    "./skills/global-legal-research",
+    "./skills/holder-confirmation-and-risk-mitigation",
+    "./skills/investment-agreement-review",
+    "./skills/investment-exit-dispute-resolution",
+    "./skills/ip-asset-ledger-risk-assessment",
+    "./skills/investor-special-rights-clause-design",
+    "./skills/pdf-generation-editing-tool",
+    "./skills/post-holder-protection",
+    "./skills/transaction-clause-adversarial-analysis",
+    "./skills/word-document-processing"
+  ],
+  "expertType": "team",
+  "agentName": "investment-financing-lead",
+  "teamInfo": {
+    "leadAgent": "investment-financing-lead",
+    "memberAgents": [
+      "due-diligence-analyst",
+      "regulatory-research-analyst",
+      "document-drafting-specialist",
+      "closing-management-specialist",
+      "quality-verification-officer"
+    ]
+  },
+  "displayName": {
+    "en": "Investment & Financing Legal Advisor developed by Fadada·Richee",
+    "zh": "法大大·睿契提供的投融资顾问"
+  },
+  "profession": {
+    "en": "Investment & Financing Legal Advisor",
+    "zh": "投融资法律顾问专家团"
+  },
+  "displayDescription": {
+    "en": "[Fadada·Richee]Investment & financing legal team dispatching due diligence, regulatory research, transaction document drafting, closing management and independent verification across the equity investment and M&A lifecycle.",
+    "zh": "【法大大·睿契】面向企业法务与投融资律师，按 L0-L3 分层路由调度法律尽调、法规研究、交易文件起草、交割管理与独立核验，覆盖股权投资与并购全流程。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "en": "Review this Series A SPA and SHA on the investor side",
+    "zh": "代表投资方审阅这套 A 轮 SPA 和 SHA"
+  },
+  "plugin": "investment-financing-legal-advisor",
+  "dependencies": {
+    "connectors": ["fadada-richee"]
+  },
+  "tags": [
+    {
+      "en": "Legal Due Diligence",
+      "zh": "法律尽调"
+    },
+    {
+      "en": "SPA/SHA Drafting",
+      "zh": "交易文件起草"
+    },
+    {
+      "en": "Closing Management",
+      "zh": "交割管理"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Review this Series A SPA and SHA on the investor side",
+      "zh": "代表投资方审阅这套 A 轮 SPA 和 SHA"
+    },
+    {
+      "en": "Do legal due diligence on this target company and produce a risk matrix",
+      "zh": "对这家目标公司做法律尽调并输出风险矩阵"
+    },
+    {
+      "en": "Design redemption, VAM and anti-dilution clauses and build a negotiation plan",
+      "zh": "设计回购、对赌与反稀释条款并给出谈判方案"
+    },
+    {
+      "en": "Extract CP checklist from the signed SPA and build a closing timetable",
+      "zh": "从已签 SPA 提取 CP 清单并编制交割时间表"
+    }
+  ],
+  "members": [
+    {
+      "id": "investment-financing-lead",
+      "displayName": {
+        "en": "Rong",
+        "zh": "融执衡"
+      },
+      "profession": {
+        "en": "Chief Investment & Financing Legal Coordinator",
+        "zh": "首席投融资调度官"
+      },
+      "avatar": "avatars/investment-financing-lead.png",
+      "role": "lead",
+      "name": {
+        "en": "Rong",
+        "zh": "融执衡"
+      }
+    },
+    {
+      "id": "due-diligence-analyst",
+      "displayName": {
+        "en": "Shen",
+        "zh": "沈溯真"
+      },
+      "profession": {
+        "en": "Investment Due Diligence Analyst",
+        "zh": "投融资尽调分析员"
+      },
+      "avatar": "avatars/due-diligence-analyst.png",
+      "role": "member",
+      "name": {
+        "en": "Shen",
+        "zh": "沈溯真"
+      }
+    },
+    {
+      "id": "regulatory-research-analyst",
+      "displayName": {
+        "en": "Su",
+        "zh": "苏鉴规"
+      },
+      "profession": {
+        "en": "Investment Regulatory Research Analyst",
+        "zh": "投融资法规研究员"
+      },
+      "avatar": "avatars/regulatory-research-analyst.png",
+      "role": "member",
+      "name": {
+        "en": "Su",
+        "zh": "苏鉴规"
+      }
+    },
+    {
+      "id": "document-drafting-specialist",
+      "displayName": {
+        "en": "Zhang",
+        "zh": "章拟衡"
+      },
+      "profession": {
+        "en": "Investment Document Drafting Specialist",
+        "zh": "投融资文件起草员"
+      },
+      "avatar": "avatars/document-drafting-specialist.png",
+      "role": "member",
+      "name": {
+        "en": "Zhang",
+        "zh": "章拟衡"
+      }
+    },
+    {
+      "id": "closing-management-specialist",
+      "displayName": {
+        "en": "Bi",
+        "zh": "毕守成"
+      },
+      "profession": {
+        "en": "Investment Closing Management Specialist",
+        "zh": "投融资交割管理员"
+      },
+      "avatar": "avatars/closing-management-specialist.png",
+      "role": "member",
+      "name": {
+        "en": "Bi",
+        "zh": "毕守成"
+      }
+    },
+    {
+      "id": "quality-verification-officer",
+      "displayName": {
+        "en": "Yan",
+        "zh": "严校之"
+      },
+      "profession": {
+        "en": "Investment Quality Verification Officer",
+        "zh": "投融资成果核验员"
+      },
+      "avatar": "avatars/quality-verification-officer.png",
+      "role": "member",
+      "name": {
+        "en": "Yan",
+        "zh": "严校之"
+      }
+    }
+  ]
+}

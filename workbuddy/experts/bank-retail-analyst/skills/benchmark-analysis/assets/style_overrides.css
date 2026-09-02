@@ -1,0 +1,422 @@
+/* ============================================================================
+ * Skill 4 PDF · 样式覆盖（基于 skill3 style_guide.css 之上追加）
+ * 仅放 skill4 专属类，不重复 skill3 已有内容
+ * ========================================================================== */
+
+/* ----------------------------------------------------------------------------
+ * 封面 LOGO 尺寸修正（覆盖 skill3 style_guide.css 的 .cover-logo-big）
+ *
+ * 背景：skill3 默认的 `height:110px; width:auto; object-fit:contain;` 在
+ *       部分 headless Chromium 场景下会把 LOGO 横向截断。为稳妥起见，
+ *       按原始 LOGO 纵横比 1302:400 ≈ 3.255:1 给定显式 width + height。
+ *
+ * 视觉上保持与 skill3 封面一致的"大 LOGO 居中偏左"观感，尺寸为 305 × 94 px
+ * （即 110px 高同比例放大），`object-fit: fill` 因尺寸已精确匹配不会形变。
+ * ------------------------------------------------------------------------- */
+.cover .cover-logo-big {
+    width: 305px !important;
+    height: 94px !important;
+    max-width: 305px !important;
+    object-fit: fill;
+    display: block;
+}
+
+/* ----------------------------------------------------------------------------
+ * 章节首页导览（原 .page-header）— v2：Playwright 全局页眉生效后的协同方案
+ *
+ * 背景：`skill4_html_to_pdf.py` v2 已启用 Playwright `displayHeaderFooter`，
+ * 每一物理页（含章节承接页）顶部 margin 区会统一渲染"细线品牌页眉"。HTML
+ * 内每章节 section 顶部的 `.page-header` 不再承担"每页页眉"职责，而是作为
+ * **章节首页的章节横幅**存在，用于区分"章节起点"与"章节承接页"。
+ *
+ * 为避免与 Playwright 页眉信息重叠（都含 LOGO + "同业财报数据分析"）：
+ *   - `.page-header` 内的 `.logo-small` 在 skill4 下隐藏（Playwright 页眉已有）
+ *   - 章节横幅用左侧古铜金色竖条 + 章节名文字呈现，尺寸更紧凑
+ *   - 只在章节首页显示；承接页的页眉由 Playwright 页眉独立承担
+ *   - 注意：.cover 内不存在 .page-header，封面完全由 skill3 style_guide.css
+ *     的 `.cover` / `.cover-hero` / `.cover-title-block` / `.cover-meta` 控制
+ * ------------------------------------------------------------------------- */
+
+/* 章节首页导览横幅（仅出现在正文 section，封面 section 无此元素） */
+.page-header {
+    border-bottom: none;
+    padding: 0 0 0 4mm;
+    margin: 0 0 6mm 0;
+    min-height: 10mm;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border-left: 3pt solid var(--accent);
+    background: linear-gradient(90deg, var(--accent-light) 0%, transparent 70%);
+    border-radius: 0 2mm 2mm 0;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+/* skill4 下 HTML 内的小 LOGO 隐藏（品牌标识由 Playwright 页眉承担） */
+.page-header .logo-small {
+    display: none !important;
+}
+
+.page-header .header-text {
+    font-size: 9.5pt;
+    color: var(--primary);
+    letter-spacing: 0.5pt;
+    font-weight: 600;
+    padding: 2mm 0 2mm 0;
+}
+
+/* --- 维度块强制分页 --- */
+.dimension-block {
+    page-break-before: always;
+    break-before: page;
+    page-break-inside: avoid;
+}
+
+/* --- 维度块内的横截面表格容器 --- */
+.dimension-block .formula-list {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+    padding: 4mm 5mm;
+    margin: 3mm 0 4mm 0;
+    border-radius: 2mm;
+    page-break-inside: avoid;
+}
+
+.dimension-block .formula-list h4 {
+    margin: 0 0 2mm 0;
+    font-size: 9pt;
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+}
+
+.dimension-block .formula-list ul {
+    margin: 0;
+    padding-left: 6mm;
+}
+
+.dimension-block .formula-list li {
+    font-size: 9pt;
+    line-height: 1.65;
+    color: var(--text-primary);
+    margin-bottom: 1mm;
+    font-family: "Menlo", "Consolas", "Source Code Pro", "Noto Sans Mono", monospace;
+}
+
+/* --- 同比变化条目列表 --- */
+.yoy-list {
+    background: var(--bg-light);
+    border-left: 3px solid var(--accent);
+    padding: 3mm 5mm;
+    margin: 3mm 0;
+    border-radius: 1mm;
+    page-break-inside: avoid;
+}
+
+.yoy-list h4 {
+    font-size: 9pt;
+    margin: 0 0 2mm 0;
+    color: var(--accent);
+    letter-spacing: 0.5pt;
+}
+
+.yoy-list ul {
+    margin: 0;
+    padding-left: 5mm;
+}
+
+.yoy-list li {
+    font-size: 9pt;
+    line-height: 1.7;
+    margin-bottom: 0.5mm;
+}
+
+.yoy-list li.base-row {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* --- 横截面表中的基准行高亮行 --- */
+.landscape-table .row-highlight,
+.landscape-table tr.row-highlight {
+    background: var(--primary-light) !important;
+    font-weight: 600;
+}
+
+.landscape-table .row-highlight td {
+    color: var(--primary-dark);
+}
+
+/* 缺失值统一灰色 */
+.landscape-table td.missing {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* --- 排名块（维度五）--- */
+.ranking-block {
+    page-break-inside: avoid;
+    margin-bottom: 6mm;
+    border: 1px solid var(--border);
+    border-radius: 2mm;
+    padding: 3mm 4mm 4mm 4mm;
+    background: var(--bg-white);
+}
+
+.ranking-block .ranking-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 1.5mm;
+    margin-bottom: 3mm;
+}
+
+.ranking-block .ranking-head .metric-name {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.ranking-block .ranking-head .direction {
+    font-size: 8.5pt;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* 排名表（紧凑） */
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    margin-bottom: 2mm;
+}
+
+.ranking-table th,
+.ranking-table td {
+    padding: 1.2mm 2mm;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.ranking-table thead th {
+    background: var(--accent-light);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 8.5pt;
+    border-bottom: 2px solid var(--accent);
+}
+
+.ranking-table tr.row-highlight {
+    background: var(--primary-light);
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.ranking-table .rank-col {
+    width: 12%;
+    text-align: center;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.ranking-table .value-col {
+    text-align: right;
+    width: 30%;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-table .bank-col {
+    width: 58%;
+}
+
+/* 双年并排 */
+.ranking-yearcols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4mm;
+    margin-bottom: 3mm;
+}
+
+.ranking-yearcols .year-block .year-label {
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1mm;
+    border-left: 3px solid var(--accent);
+    padding-left: 2mm;
+}
+
+.ranking-yearcols .year-block .missing-note {
+    font-size: 8pt;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 1mm;
+}
+
+/* 基准行同比变化 - 标签条 */
+.base-change {
+    margin-top: 2mm;
+    padding: 2mm 3mm;
+    background: var(--bg-light);
+    border-radius: 1mm;
+    font-size: 8.5pt;
+    line-height: 1.7;
+}
+
+.base-change .label {
+    font-weight: 600;
+    color: var(--primary);
+    margin-right: 2mm;
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.5mm 2mm;
+    border-radius: 1mm;
+    font-size: 8pt;
+    font-weight: 600;
+    margin-right: 2mm;
+    white-space: nowrap;
+}
+
+.tag.positive {
+    background: rgba(46, 125, 50, 0.12);
+    color: var(--growth-green);
+    border: 1px solid var(--growth-green);
+}
+
+.tag.negative {
+    background: rgba(198, 40, 40, 0.12);
+    color: var(--risk-red);
+    border: 1px solid var(--risk-red);
+}
+
+.tag.neutral {
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.tag.rank-up {
+    background: var(--growth-green);
+    color: #fff;
+}
+
+.tag.rank-down {
+    background: var(--risk-red);
+    color: #fff;
+}
+
+.tag.rank-flat {
+    background: var(--text-secondary);
+    color: #fff;
+}
+
+/* --- KPI 行（4 卡片）--- */
+.kpi-row.skill4-kpi {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3mm;
+    margin: 4mm 0 5mm 0;
+}
+
+.kpi-row.skill4-kpi .kpi-card .unit {
+    font-size: 8pt;
+    color: var(--text-secondary);
+    margin-left: 1mm;
+}
+
+/* --- 风险口径警示框 --- */
+.insight-card.risk.opex-risk {
+    margin: 3mm 0 4mm 0;
+    padding: 4mm 5mm;
+    background: rgba(198, 40, 40, 0.06);
+    border: 1px solid rgba(198, 40, 40, 0.4);
+    border-left: 4px solid var(--risk-red);
+}
+
+.insight-card.risk.opex-risk h4 {
+    margin: 0 0 2mm 0;
+    color: var(--risk-red);
+    font-size: 10pt;
+}
+
+.insight-card.risk.opex-risk p {
+    margin: 0 0 1.5mm 0;
+    font-size: 9pt;
+    line-height: 1.65;
+}
+
+/* --- 关键发现清单 --- */
+.findings-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 3mm 0;
+}
+
+.findings-list li {
+    padding: 2mm 3mm;
+    margin-bottom: 1.5mm;
+    border-left: 3px solid var(--border);
+    background: var(--bg-light);
+    font-size: 9pt;
+    line-height: 1.6;
+    page-break-inside: avoid;
+}
+
+.findings-list li.win {
+    border-left-color: var(--growth-green);
+    background: rgba(46, 125, 50, 0.06);
+}
+
+.findings-list li.loss {
+    border-left-color: var(--risk-red);
+    background: rgba(198, 40, 40, 0.06);
+}
+
+.findings-list li .icon {
+    font-weight: 700;
+    margin-right: 2mm;
+}
+
+.findings-list li.win .icon {
+    color: var(--growth-green);
+}
+
+.findings-list li.loss .icon {
+    color: var(--risk-red);
+}
+
+/* --- 引用 / 提示框 --- */
+.callout-box {
+    background: var(--bg-light);
+    border-left: 3px solid var(--accent);
+    padding: 3mm 5mm;
+    margin: 3mm 0;
+    font-size: 9pt;
+    line-height: 1.7;
+    page-break-inside: avoid;
+}
+
+.callout-box ul {
+    margin: 0;
+    padding-left: 5mm;
+}
+
+.callout-box li {
+    margin-bottom: 1mm;
+}
+
+/* --- 防孤行寡行 --- */
+p, li, td {
+    orphans: 2;
+    widows: 2;
+}
+
+/* --- 表格表头（打印时重复）--- */
+.landscape-table thead,
+.ranking-table thead,
+.artifact-table thead {
+    display: table-header-group;
+}

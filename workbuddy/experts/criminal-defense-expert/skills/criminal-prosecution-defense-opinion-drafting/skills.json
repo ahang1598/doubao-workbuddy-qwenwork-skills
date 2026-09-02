@@ -1,0 +1,12 @@
+{
+  "id": "刑事辩护意见书",
+  "marketId": "",
+  "name": "刑事辩护意见书",
+  "version": "3.2.0",
+  "description": "为辩护律师在审查起诉阶段生成辩护意见书，正文统一四段式（事实→证据→法律→量刑），向检察院提出不起诉或从宽处理意见。依据刑诉法第173条。触发：用户需要审查起诉阶段辩护意见。不触发：一审辩护词（→criminal-defense-speech-trial）、二审辩护词（→criminal-defense-speech-2nd）、不起诉申请（→criminal-non-prosecution）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

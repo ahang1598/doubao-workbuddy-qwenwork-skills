@@ -1,0 +1,37 @@
+{
+  "skill": "commercial-corporate-finance-translator",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "请判断公司法在这份英文意见中应写 company law 还是 corporate law。",
+      "expected": "Use the skill to select by jurisdiction and entity concept."
+    },
+    {
+      "type": "should-call",
+      "prompt": "公司章程里股东会、董事会、监事会的英文术语请统一审校。",
+      "expected": "Use the skill for governance-body terminology."
+    },
+    {
+      "type": "should-call",
+      "prompt": "registered capital、authorized capital、share capital 在这段译文中有混淆吗？",
+      "expected": "Use the skill to distinguish capital concepts."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "请解释 actus reus 和 mens rea。",
+      "expected": "Do not call; use criminal-law-elements-offenses-translator."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "提单 clean bill of lading 怎么翻译？",
+      "expected": "Do not call; use commercial-instruments-maritime-insurance-translator."
+    },
+    {
+      "type": "boundary",
+      "prompt": "董事签合同的 authority、capacity 和 corporate power 怎么分？",
+      "expected": "Call this skill and coordinate with civil-law-private-rights-translator."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "labor-remedy-compare",
+  "marketId": "",
+  "name": "劳动争议维权方案对比",
+  "version": "3.1.0",
+  "description": "劳动争议多维权方案对比报告。触发：劳动仲裁/拖欠工资/违法解除/工伤待遇/未签合同/竞业限制等维权方案比较。不触发：民事案件维权（合同/侵权/借贷等非劳动关系纠纷）、具体文书起草、案件策略分析。",
+  "author": "labor-skill-factory",
+  "tags": "劳动争议,维权方案,方案对比,HTML报告,当事人决策,双版本,客户版,律师版",
+  "skillType": "custom",
+  "skillSource": "local",
+  "skillSourceName": "labor-remedy-compare"
+}

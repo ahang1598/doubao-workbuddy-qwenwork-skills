@@ -1,0 +1,87 @@
+{
+  "workflowName": "Shein US 评论采集",
+  "steps": [
+    {
+      "actionCode": "OPEN_TAB",
+      "actionDescription": "打开Shein商品页面",
+      "tabUrl": "https://us.shein.com/{product-slug}-p-{product-id}.html?mallCode=1",
+      "tabKey": "tabKey888"
+    },
+    {
+      "actionCode": "WAIT",
+      "actionDescription": "等标题加载",
+      "selector": ".product-intro__head-name h1",
+      "tabKey": "tabKey888"
+    },
+    {
+      "actionCode": "SCROLL",
+      "actionValue": "3000",
+      "actionDescription": "滚到底部触发评论加载",
+      "tabKey": "tabKey888"
+    },
+    {
+      "actionCode": "WAIT",
+      "actionDescription": "等5秒评论渲染",
+      "actionValue": "5000",
+      "tabKey": "tabKey888"
+    },
+    {
+      "actionCode": "EXTRACT",
+      "actionDescription": "提取所有评价星级",
+      "selector": "[class*='common-reviews-new__list-item'] .common-rate__icon",
+      "extractType": "list",
+      "attribute": "index",
+      "extractField": "star_indexes",
+      "tabKey": "tabKey888",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "star_indexes",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "actionDescription": "提取所有评论作者",
+      "selector": "[class*='common-reviews-new__list-item'] > div:first-of-type > div:first-child",
+      "extractType": "list",
+      "extractField": "review_authors",
+      "tabKey": "tabKey888",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_authors",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "actionDescription": "提取所有评论日期",
+      "selector": ".common-reviews-new__list-item > div:first-child > div:nth-child(2)",
+      "extractType": "list",
+      "extractField": "review_dates",
+      "tabKey": "tabKey888",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_dates",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "EXTRACT",
+      "actionDescription": "提取所有评论文本",
+      "selector": ".common-reviews-new__list-item > div:nth-child(3) > div:first-child > div:first-child",
+      "extractType": "list",
+      "extractField": "review_bodies",
+      "tabKey": "tabKey888",
+      "onFailure": {
+        "actionCode": "FIND_SELECTOR",
+        "field": "review_bodies",
+        "thenRetry": true
+      }
+    },
+    {
+      "actionCode": "CLOSE_TAB",
+      "actionDescription": "采集完成，关闭标签页",
+      "tabKey": "tabKey888"
+    }
+  ]
+}

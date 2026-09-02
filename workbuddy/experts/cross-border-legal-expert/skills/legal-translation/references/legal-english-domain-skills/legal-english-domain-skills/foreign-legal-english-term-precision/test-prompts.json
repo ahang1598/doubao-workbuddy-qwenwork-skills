@@ -1,0 +1,37 @@
+{
+  "skill": "foreign-legal-english-term-precision",
+  "version": "0.1.0",
+  "darwin_compatible": true,
+  "test_cases": [
+    {
+      "type": "should-call",
+      "prompt": "帮我判断起诉状里“原告”应译为 plaintiff、claimant 还是 complainant，并说明为什么。",
+      "expected": "Use the skill to choose by forum and procedural role."
+    },
+    {
+      "type": "should-call",
+      "prompt": "这份仲裁申请中的 respondent 和 defendant 是否能混用？请审校术语。",
+      "expected": "Use the skill to distinguish arbitration respondent from court defendant."
+    },
+    {
+      "type": "should-call",
+      "prompt": "请统一这份涉外诉讼英文稿中 party、litigant、client 的用法。",
+      "expected": "Use the skill for role/function consistency."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "把 hello, thank you, see you tomorrow 翻译成中文。",
+      "expected": "Do not call; non-legal vocabulary."
+    },
+    {
+      "type": "should-not-call",
+      "prompt": "写一段英文营销文案，介绍我们的律所服务。",
+      "expected": "Do not call unless terminology precision is requested."
+    },
+    {
+      "type": "boundary",
+      "prompt": "刑事案件中 defendant、accused、suspect 三个词在不同阶段怎么选？",
+      "expected": "Call this skill first, then consider criminal-law-elements-offenses-translator if offense responsibility matters."
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "package_version": "0.4.2",
+  "team_id": "agent-ai-quant-research-team",
+  "default_execution_mode": "standard",
+  "execution_modes": "agents/execution_modes.json",
+  "lead": {
+    "id": "agent-ai-quant-research-team",
+    "declaration": "AGENTS.md"
+  },
+  "invocation": {
+    "mechanism": "AgentTool",
+    "context_policy": "isolated",
+    "task_packet_contract": "references/member-handoff-schema.md",
+    "handoff_contract": "references/member-handoff-schema.md"
+  },
+  "members": [
+    {
+      "id": "source-replication-researcher",
+      "declaration": "agents/members/source-replication-researcher.md",
+      "skills": ["skill-report-replication"],
+      "stages": ["01_source_replication"]
+    },
+    {
+      "id": "factor-engineer",
+      "declaration": "agents/members/factor-engineer.md",
+      "skills": ["skill-factor-mining-pandaai"],
+      "stages": ["02_factor_candidates"]
+    },
+    {
+      "id": "pandaai-experimenter",
+      "declaration": "agents/members/pandaai-experimenter.md",
+      "skills": ["skill-pandaai-factor-online"],
+      "stages": ["03_platform_preflight", "04_platform_execution"]
+    },
+    {
+      "id": "overfit-auditor",
+      "declaration": "agents/members/overfit-auditor.md",
+      "skills": ["skill-backtest-overfit"],
+      "stages": ["05_statistical_audit"]
+    },
+    {
+      "id": "performance-reporter",
+      "declaration": "agents/members/performance-reporter.md",
+      "skills": ["skill-strategy-tearsheet-report"],
+      "stages": ["06_tearsheet"]
+    }
+  ]
+}

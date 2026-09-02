@@ -1,0 +1,12 @@
+{
+  "id": "刑事辩护词-一审",
+  "marketId": "",
+  "name": "刑事辩护词（一审）",
+  "version": "4.4.0-candidate",
+  "description": "为辩护律师生成一审辩护词，正文用\"第一/第二/\"序号分5-7个论证点，前言强制含\"辩护人总体认为\"一段。基于金翰明/李耀辉等公众号范文交叉验证。触发：用户需要一审辩护词。不触发：二审辩护词（→criminal-defense-speech-2nd）、辩护意见书（→criminal-prosecution-defense）、质证提纲（→criminal-cross-examination）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

@@ -1,0 +1,113 @@
+{
+  "name": "employment-legal-advisor",
+  "version": "1.0.0",
+  "description": "Employment legal advisor team covering labor dispute diagnosis, regulatory research, compensation calculation, document drafting and quality verification under PRC labor law.",
+  "author": {
+    "name": "RicheeAI",
+    "email": "legal@richeeai.com"
+  },
+  "agents": [
+    "./agents/employment-team-lead.md",
+    "./agents/employment-fact-analyst.md",
+    "./agents/employment-research-specialist.md",
+    "./agents/employment-compensation-calc.md",
+    "./agents/employment-drafting-specialist.md",
+    "./agents/employment-verification-officer.md"
+  ],
+  "skills": [
+    "./skills/labor-arbitration-application",
+    "./skills/labor-dispatch-compliance-review",
+    "./skills/labor-dispute-rights-protection-scheme-comparison",
+    "./skills/labor-employment-system-generation"
+  ],
+
+  "expertType": "team",
+  "agentName": "employment-team-lead",
+  "teamInfo": {
+    "leadAgent": "employment-team-lead",
+    "memberAgents": [
+      "employment-fact-analyst",
+      "employment-research-specialist",
+      "employment-compensation-calc",
+      "employment-drafting-specialist",
+      "employment-verification-officer"
+    ]
+  },
+
+  "displayName": {
+    "en": "Employment Legal Advisor developed by Fadada·Richee",
+    "zh": "法大大·睿契提供的劳动人事专家团"
+  },
+  "profession": {
+    "en": "Employment Legal Advisor",
+    "zh": "劳动人事专家团"
+  },
+  "displayDescription": {
+    "en": "[Fadada·Richee]Employment legal team covering labor disputes, compliance audits, compensation calculation, document drafting and quality verification under PRC labor law.",
+    "zh": "【法大大·睿契】覆盖劳动争议诊断、用工合规体检、补偿赔偿测算、劳动文书起草与成果核验的中国大陆劳动用工法律专家团队。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "zh": "你好，我是劳动人事专家团。我可以帮你处理劳动争议、用工合规体检、补偿赔偿计算、劳动文书起草等事项。请告诉我你遇到的具体问题。",
+    "en": "Hello, I am the Employment Legal Advisor. I can help with labor disputes, compliance audits, compensation calculation, and document drafting. Tell me about your situation."
+  },
+  "tags": [
+    { "en": "Labor Dispute", "zh": "劳动争议" },
+    { "en": "Compliance Audit", "zh": "用工合规" },
+    { "en": "Compensation Calculation", "zh": "补偿测算" }
+  ],
+  "quickPrompts": [
+    { "en": "Hello, I am the Employment Legal Advisor. I can help with labor disputes, compliance audits, compensation calculation, and document drafting. Tell me about your situation.", "zh": "你好，我是劳动人事专家团。我可以帮你处理劳动争议、用工合规体检、补偿赔偿计算、劳动文书起草等事项。请告诉我你遇到的具体问题。" },
+    { "en": "Calculate severance pay for an employee termination", "zh": "计算员工解除的经济补偿金" },
+    { "en": "Review and draft an employment contract", "zh": "审查并起草劳动合同" }
+  ],
+  "members": [
+    {
+      "id": "employment-team-lead",
+      "name": { "en": "Qi Hefa", "zh": "齐合法" },
+      "profession": { "en": "Employment Compliance Director", "zh": "劳动法务总监" },
+      "avatar": "avatars/employment-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "employment-fact-analyst",
+      "name": { "en": "Shi Shiqing", "zh": "史实清" },
+      "profession": { "en": "Employment Fact Analyst", "zh": "用工诊断分析员" },
+      "avatar": "avatars/employment-fact-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "employment-research-specialist",
+      "name": { "en": "Luo Youju", "zh": "罗有据" },
+      "profession": { "en": "Regulatory Research Specialist", "zh": "法规口径研究员" },
+      "avatar": "avatars/employment-research-specialist.png",
+      "role": "member"
+    },
+    {
+      "id": "employment-compensation-calc",
+      "name": { "en": "Jia Suanzhun", "zh": "贾算准" },
+      "profession": { "en": "Compensation Calculation Specialist", "zh": "补偿赔偿计算员" },
+      "avatar": "avatars/employment-compensation-calc.png",
+      "role": "member"
+    },
+    {
+      "id": "employment-drafting-specialist",
+      "name": { "en": "Wen Bida", "zh": "温必达" },
+      "profession": { "en": "Document Drafting Specialist", "zh": "劳动文书起草员" },
+      "avatar": "avatars/employment-drafting-specialist.png",
+      "role": "member"
+    },
+    {
+      "id": "employment-verification-officer",
+      "name": { "en": "Yan Guanguan", "zh": "严过关" },
+      "profession": { "en": "Quality Verification Officer", "zh": "成果质量核验员" },
+      "avatar": "avatars/employment-verification-officer.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": ["fadada-richee"]
+  },
+  "plugin": "employment-legal-advisor"
+}

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+# credentials — never commit
+*.env
+user.json
+.pandadata/
+# scratch outputs
+*.csv
+report.json
+!examples/*.csv

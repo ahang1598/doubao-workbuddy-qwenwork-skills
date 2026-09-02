@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><!-- CONTENT_SLOT:PAGE_TITLE --></title>
+<!--
+  overseas-investment-structure-design v1.2.0
+  HTML 输出自包含模板 — 纯内联+Richee组件（遵循html-spec.md §1.3范式唯一性条款）
+  格式严肃度：C-Professional | 样式策略：纯内联+Richee组件
+  LLM 职责：仅填充 <!-- CONTENT_SLOT:xxx --> 占位符
+  LLM 禁止：修改 <style>/<script> 内任何代码、自由发挥 HTML 布局、在CONTENT_SLOT中创建<style>、使用 emoji 风险标记（🔴🟡🟢⚠️）
+
+  设计原则：
+  1. C-Professional 客户/律师交付级 —— Richee Design Token 视觉体系
+  2. 纯内联+Richee组件 —— CONTENT_SLOT纯内联style="..."，<style>块仅保留§1.2例外
+  3. 七大输出模块 —— O1执行摘要/O2架构图/O3控股地比选/O4设立路径/O5税负测算/O6合规清单/O7风险提示
+  4. Richee 组件引用 —— c01基础表格/c05风险清单/c06结论卡/c09时间轴/c20一页结论
+
+  版本标识：data-template-version="1.2.0"
+  视觉权威来源：base/rule/format-html/core/design-tokens.md
+-->
+<style>
+/*
+ * overseas-investment-structure-design v1.2.0
+ * <style> 块 — 仅包含 html-spec.md §1.2 例外规则
+ *
+ * ⚠️ 此 <style> 块仅含 @page / @page:first / @media print / @media screen / 页码计数器 / Mermaid 初始化。
+ * LLM 禁止在此块中添加任何元素级CSS class定义。
+ */
+
+/* 页码计数器 */
+body { counter-reset: page-counter; }
+.page-break { page-break-before: always; counter-increment: page-counter; }
+.page-number::after { content: counter(page-counter); }
+
+/* 打印页面规则 — C-Professional */
+@page { size: A4 portrait; margin: 2.5cm 2.6cm 2.0cm 2.8cm; }
+
+/* 首页页眉页脚清空 */
+@page :first {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+/* 屏幕预览样式 */
+@media screen {
+  body {
+    background: #f6f7f9;
+    padding: 0;
+  }
+}
+
+/* 打印适配 */
+@media print {
+  .side-nav { display: none !important; }
+  .toolbar { display: none !important; }
+  .no-print { display: none !important; }
+  .screen-only { display: none !important; }
+  .source-section { display: none !important; }
+
+  body {
+    font-family: 'PingFang SC', 'Inter', -apple-system, sans-serif;
+    font-size: 12pt;
+    line-height: 1.8;
+    color: #0a0d12;
+    margin: 0;
+    padding: 0;
+    background: #fff !important;
+  }
+
+  .main-content { margin-left: 0 !important; }
+
+  /* 确保表格表头和行级着色打印 */
+  table thead, table th, table tr, table td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 折叠区打印时展开 */
+  details { display: block !important; }
+  details > div { display: block !important; }
+
+  .page-break-before { page-break-before: always; }
+
+  /* Mermaid 图表打印时隐藏 */
+  .mermaid-wrap { display: none !important; }
+  .print-table { display: block !important; }
+
+  .template-version-watermark { opacity: 0.4; }
+
+  /* 页码打印显示 */
+  .page-footer { display: block !important; }
+}
+</style>
+</head>
+<body style="margin:0;padding:0;font-family:'PingFang SC','Inter',-apple-system,sans-serif;font-size:12pt;line-height:1.8;color:#0a0d12;background:#fff;-webkit-font-smoothing:antialiased;">
+
+<!-- 侧栏导航 -->
+<nav class="side-nav" style="position:fixed;left:0;top:0;width:240px;height:100vh;overflow-y:auto;background:#f6f7f9;border-right:1px solid #e2e5ea;padding:16px 0;font-size:11pt;z-index:100;">
+  <div style="padding:8px 16px;font-weight:bold;color:#0a0d12;font-size:13pt;border-bottom:1px solid #e2e5ea;margin-bottom:8px;">架构设计导航</div>
+  <a href="#overview" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">一、执行摘要</a>
+  <a href="#o2-structure" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">二、投资架构图</a>
+  <a href="#o3-jurisdiction" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">三、控股地比选矩阵</a>
+  <a href="#o4-timeline" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">四、设立路径与时间线</a>
+  <a href="#o5-tax" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">五、综合税负测算矩阵</a>
+  <a href="#o6-compliance" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">六、合规清单</a>
+  <a href="#o7-risk" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">七、风险提示与建议</a>
+  <div style="padding:6px 16px;border-top:1px solid #e2e5ea;margin-top:8px;"></div>
+  <a href="#disclaimer" style="display:block;padding:6px 16px;color:#0a0d12;text-decoration:none;border-left:3px solid transparent;">免责声明</a>
+</nav>
+
+<!-- 主内容区 -->
+<div class="main-content" style="margin-left:256px;padding:24px 32px;">
+
+  <!-- 工具栏 -->
+  <div class="toolbar no-print" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-bottom:20px;border-bottom:1px solid #e2e5ea;font-size:12px;color:#6b7280;">
+    <span>overseas-investment-structure-design v1.2.0 | <!-- CONTENT_SLOT:GENERATED_AT --></span>
+    <span>
+      <button class="toolbar-btn" style="padding:3px 10px;border:1px solid #e2e5ea;background:#fff;color:#6b7280;cursor:pointer;font-size:11pt;font-family:inherit;margin-left:8px;" onclick="window.print()">打印/PDF</button>
+    </span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 0: 页面标题区
+     ════════════════════════════════════════ -->
+  <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0a0d12;">
+    <h1 style="font-size:20px;font-weight:700;color:#0a0d12;margin:0 0 6px 0;line-height:1.35;"><!-- CONTENT_SLOT:PAGE_TITLE --></h1>
+    <p style="font-size:13px;color:#6b7280;margin:0 0 8px 0;"><!-- CONTENT_SLOT:SUBTITLE --></p>
+    <p style="font-size:12px;color:#6b7280;margin:0;"><!-- CONTENT_SLOT:PAGE_META --></p>
+  </div>
+
+  <!-- 风险等级图例 -->
+  <div class="no-print" style="margin:8px 0 16px 0;padding:8px 12px;background:#f6f7f9;border:1px solid #e2e5ea;font-size:10pt;color:#6b7280;border-radius:4px;line-height:1.8;">
+    <strong style="color:#0a0d12;">置信度图例：</strong>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#ecfdf3;color:#039855;"><span style="color:#039855;">●</span> 已核实</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fffaeb;color:#b54708;"><span style="color:#b54708;">●</span> 参考来源</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fef3f2;color:#d92d20;"><span style="color:#d92d20;">●</span> 需当地确认</span>
+    <span style="display:inline-block;padding:1px 6px;border-radius:2px;margin-left:6px;font-size:10pt;background:#fffaeb;color:#b54708;"><span style="color:#b54708;">⚠</span> 警告提示</span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SLOT 1: O1 执行摘要
+     ════════════════════════════════════════ -->
+  <section id="overview">
+  <!-- CONTENT_SLOT:O1_EXECUTIVE_SUMMARY -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 2: O2 投资架构图（Mermaid + 实体说明表）
+     ════════════════════════════════════════ -->
+  <section id="o2-structure">
+  <!-- CONTENT_SLOT:O2_STRUCTURE_DIAGRAM -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 3: O3 控股地比选矩阵
+     ════════════════════════════════════════ -->
+  <section id="o3-jurisdiction">
+  <!-- CONTENT_SLOT:O3_JURISDICTION_MATRIX -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 4: O4 设立路径与时间线
+     ════════════════════════════════════════ -->
+  <section id="o4-timeline">
+  <!-- CONTENT_SLOT:O4_TIMELINE -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 5: O5 综合税负测算矩阵
+     ════════════════════════════════════════ -->
+  <section id="o5-tax">
+  <!-- CONTENT_SLOT:O5_TAX_MATRIX -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 6: O6 合规清单（中国侧+东道国+控股地）
+     ════════════════════════════════════════ -->
+  <section id="o6-compliance">
+  <!-- CONTENT_SLOT:O6_COMPLIANCE_LIST -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     SLOT 7: O7 风险提示与建议
+     ════════════════════════════════════════ -->
+  <section id="o7-risk">
+  <!-- CONTENT_SLOT:O7_RISK_ADVICE -->
+  </section>
+
+  <!-- ════════════════════════════════════════
+     免责声明（固定内容，始终输出）
+     ════════════════════════════════════════ -->
+  <div id="disclaimer" style="margin-top:28px;padding:12px 16px;background:#fef3f2;border-left:3px solid #d92d20;font-size:11pt;color:#6b7280;line-height:1.5;">
+    <strong style="color:#0a0d12;">免责声明</strong><br>
+    本投资架构设计方案为<strong>L2 中风险级</strong>产物，基于用户提供信息与公开检索生成，仅供参考，<strong>不构成正式法律意见或投资建议</strong>。<br>
+    东道国法规信息基于公开检索（截至生成日期），可能存在滞后或偏差。税收协定条款及税率须以目标国税务机关最新确认为准。<br>
+    使用者应结合具体业务需求，咨询目标国执业律师及税务顾问，确认准入可行性及税务合规。不建议基于本报告直接做出投资决策。
+  </div>
+
+  <!-- 页脚（CSS计数器自动页码，打印时显示） -->
+  <div class="page-footer screen-only" style="display:none;text-align:center;font-family:'PingFang SC','Inter',-apple-system,sans-serif;font-size:10.5pt;color:#6b7280;margin-top:2em;">
+    第 <span class="page-number"></span> 页
+  </div>
+
+  <!-- 版本水印 -->
+  <div class="template-version-watermark" style="font-size:9px;color:#6b7280;text-align:right;margin-top:16px;opacity:0.6;">
+    template: overseas-investment-structure-design v1.2.0 | generated: <!-- CONTENT_SLOT:GENERATED_AT --> | C-Professional + Richee Design Token
+  </div>
+
+</div><!-- .main-content -->
+
+<!-- Mermaid.js CDN + 侧栏导航高亮脚本 -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+/* Mermaid 初始化 */
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#eff8ff',
+    primaryTextColor: '#0a0d12',
+    primaryBorderColor: '#e2e5ea',
+    lineColor: '#6b7280',
+    fontSize: '12px'
+  }
+});
+
+/* Mermaid 渲染错误处理 */
+mermaid.parseError = function(err, hash) {
+  var containers = document.querySelectorAll('.mermaid-wrap');
+  containers.forEach(function(container) {
+    var errorDiv = container.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('mermaid-error')) {
+      errorDiv.style.display = 'block';
+    }
+  });
+  console.error('Mermaid 渲染错误:', err);
+};
+
+/* 渲染完成后检测 */
+window.addEventListener('load', function() {
+  var mermaidDivs = document.querySelectorAll('.mermaid');
+  mermaidDivs.forEach(function(div) {
+    if (div.querySelector('svg') === null && div.textContent.trim().length > 0) {
+      var errorDiv = div.parentElement.querySelector('.mermaid-error');
+      if (errorDiv) { errorDiv.style.display = 'block'; }
+    }
+  });
+
+  /* 侧栏导航高亮 */
+  var sections = document.querySelectorAll('section[id], #disclaimer');
+  var navLinks = document.querySelectorAll('.side-nav a');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        navLinks.forEach(function(link) { link.classList.remove('active'); });
+        var activeLink = document.querySelector('.side-nav a[href="#' + entry.target.id + '"]');
+        if (activeLink) {
+          activeLink.style.background = '#eff8ff';
+          activeLink.style.borderLeftColor = '#0a0d12';
+          activeLink.style.color = '#0a0d12';
+          activeLink.style.fontWeight = 'bold';
+        }
+        navLinks.forEach(function(link) {
+          if (link !== activeLink) {
+            link.style.background = '';
+            link.style.borderLeftColor = 'transparent';
+            link.style.color = '';
+            link.style.fontWeight = '';
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(function(section) { observer.observe(section); });
+});
+</script>
+
+<!-- 禁用 JavaScript 时的降级提示 -->
+<noscript>
+  <div style="padding:16px;background:#fef3f2;border:1px solid #fecdca;margin:12px 0;font-size:13px;color:#b42318;">
+    <strong>图表无法渲染：</strong>您的浏览器未启用 JavaScript。
+    Mermaid 投资架构图需要 JavaScript 才能渲染。请启用 JavaScript 后刷新页面，
+    或复制代码到 <a href="https://mermaid.live" target="_blank">mermaid.live</a> 在线渲染。
+  </div>
+</noscript>
+
+</body>
+</html>

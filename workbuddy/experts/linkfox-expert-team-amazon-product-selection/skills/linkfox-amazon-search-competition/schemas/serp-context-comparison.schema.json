@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://grok.skills/cross-cultural-product-selection/schemas/serp-context-comparison.v1.json",
+  "title": "SERP Context Profile and Comparison Table",
+  "description": "Keyword-level context_profile + per-ASIN enrichment + dual delivery (JSON code + dynamic comparison table). Used by cross-cultural-product-selection §4.1.",
+  "type": "object",
+  "required": ["meta", "context_profile", "products"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["keyword", "marketplace", "page_scope", "generated_at", "schema_version"],
+      "properties": {
+        "keyword": { "type": "string" },
+        "marketplace": { "type": "string", "default": "amazon.com" },
+        "page_scope": { "type": "string", "description": "e.g. page1, pages1-3" },
+        "product_count_raw": { "type": "integer" },
+        "product_count_deduped": { "type": "integer" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "schema_version": { "type": "string", "const": "1.0" }
+      }
+    },
+    "context_profile": {
+      "type": "object",
+      "required": [
+        "category_type",
+        "purchase_intent",
+        "title_priorities",
+        "image_priorities",
+        "seller_likely_emphasize",
+        "comparison_dimensions",
+        "off_topic_risks"
+      ],
+      "properties": {
+        "category_type": {
+          "type": "string",
+          "enum": [
+            "parametric_electronics",
+            "apparel_functional",
+            "seasonal_decor",
+            "customizable",
+            "tool_accessory",
+            "other"
+          ]
+        },
+        "purchase_intent": { "type": "string" },
+        "title_priorities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["signal", "why", "weight"],
+            "properties": {
+              "signal": { "type": "string" },
+              "why": { "type": "string" },
+              "weight": { "type": "integer", "minimum": 1, "maximum": 5 }
+            }
+          }
+        },
+        "image_priorities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["signal", "why", "weight"],
+            "properties": {
+              "signal": { "type": "string" },
+              "why": { "type": "string" },
+              "weight": { "type": "integer", "minimum": 1, "maximum": 5 }
+            }
+          }
+        },
+        "seller_likely_emphasize": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "comparison_dimensions": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": ["dim", "source", "how_to_compare", "weight"],
+            "properties": {
+              "dim": { "type": "string" },
+              "source": {
+                "type": "string",
+                "enum": ["title", "image", "both", "serp_field"]
+              },
+              "how_to_compare": { "type": "string" },
+              "weight": { "type": "integer", "minimum": 1, "maximum": 5 }
+            }
+          }
+        },
+        "off_topic_risks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "homogeneity_notes": { "type": "string" }
+      }
+    },
+    "products": {
+      "type": "array",
+      "description": "Crawl rows with enrichment appended; original fields preserved.",
+      "items": {
+        "type": "object",
+        "required": ["asin", "enrichment"],
+        "properties": {
+          "asin": { "type": "string" },
+          "position": { "type": "integer" },
+          "sponsored": { "type": "boolean" },
+          "title": { "type": "string" },
+          "asinUrl": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "imageUrl_large": { "type": "string" },
+          "extractedPrice": { "type": ["number", "null"] },
+          "rating": { "type": ["number", "null"] },
+          "ratings": { "type": ["number", "null"] },
+          "monthlySalesUnits": { "type": ["number", "null"] },
+          "enrichment": {
+            "type": "object",
+            "required": ["off_topic", "title_extract", "image_extract", "compare_values"],
+            "properties": {
+              "off_topic": { "type": "boolean" },
+              "units_imputed": { "type": "boolean" },
+              "title_extract": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Only fields evidenced in title; else null"
+              },
+              "image_extract": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "product_form, title_image_match, on_image_claims, etc."
+              },
+              "compare_values": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Keys limited to context_profile.comparison_dimensions[].dim"
+              }
+            }
+          }
+        }
+      }
+    },
+    "comparison_table": {
+      "type": "object",
+      "description": "Optional derived view for table delivery; columns follow comparison_dimensions.",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key", "label"],
+            "properties": {
+              "key": { "type": "string" },
+              "label": { "type": "string" },
+              "from_dim": { "type": "string" }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "homogeneity": { "type": "object", "additionalProperties": true },
+            "headline": { "type": "string" },
+            "excluded_off_topic_count": { "type": "integer" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+# P0 VIS 资产验收清单
+# 所有出 PDF 的 Skill 共享此清单
+
+steps:
+  - id: P0-1
+    name: 年报 PDF 获取
+    description: 确定基准行（用户必须指定），复制/下载其最新年报 PDF
+    output: "~/RetailAnalysis/report_assets/annual_report/<bank>_<year>_annual_report.pdf"
+    criteria:
+      - 文件存在
+      - 页数 > 100
+      - 文件大小 > 5MB
+    blocking: true
+
+  - id: P0-2
+    name: 封面渲染
+    description: 用 pdftocairo -png -r 300 渲染封面 + 目录页 + 财务数据页
+    output: "~/RetailAnalysis/report_assets/vis/{cover,toc,finance}-*.png"
+    criteria:
+      - cover-*.png 存在且分辨率 >= 300 DPI
+      - toc-*.png 存在
+      - finance-*.png 存在
+    blocking: true
+
+  - id: P0-3
+    name: LOGO 提取
+    description: 用 pdfimages -all 或封面裁剪提取 LOGO，Pillow 做透明背景
+    output: "~/RetailAnalysis/report_assets/logo/"
+    criteria:
+      - logo.png 存在
+      - 高度 >= 200px
+      - 背景透明（RGBA 的 A 通道有透明像素）
+      - logo_base64.txt 存在（base64 编码）
+      - logo_source.txt 存在（记录提取来源）
+    blocking: true
+
+  - id: P0-4
+    name: 配色提取
+    description: Pillow 多页像素分析得主红色 + 辅金色，固化为 CSS 变量来源
+    output: "~/RetailAnalysis/report_assets/vis/palette.json"
+    criteria:
+      - 文件存在且可解析为 JSON
+      - 包含 primary（主色）
+      - 包含 accent（辅色）
+      - 主色 HEX 非 #FFFFFF 且非 #000000
+      - 辅色 HEX 非 #FFFFFF 且非 #000000
+    blocking: true
+
+  - id: P0-5
+    name: P0 验收门禁
+    description: 逐项勾选所有 P0 产物
+    criteria:
+      - LOGO 尺寸合格
+      - LOGO 背景透明
+      - palette.json 非空且主辅色有效
+      - 年报 PDF 页数充分
+      - 渲染图分辨率达标
+      - 所有产物在预期路径
+    blocking: true
+
+forbidden:
+  - 自行绘制或 AI 生成 LOGO
+  - 使用搜索引擎下载的模糊素材
+  - 在 CSS/HTML 中硬编码示例色值（必须引用 palette.json）
+
+fallback:
+  - condition: 年报 PDF 不可获取
+  - action: 告知用户并获得确认
+  - alternative: 改用"银行官方名称标准字体排版"替代 LOGO
+  - note: 在免责区注明"本报告 LOGO 标识为官方名称标准字体排版，因年报 PDF 下载受限未能提取原始 LOGO"

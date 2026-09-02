@@ -1,0 +1,15 @@
+{
+  "name": "重整计划草案编制",
+  "name_en": "bankruptcy-reorg-plan-draft",
+  "description": "编制破产重整计划草案（含经营方案/债权调整方案/债权清偿方案/执行期限与监督/出资人权益调整）和和解协议草案。触发：重整计划/重整草案/经营方案/债权调整/出资人权益/和解协议。不触发：破产清算分配方案/非破产场景的企业重组方案。",
+  "version": "1.1.0",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-23",
+  "created": "2026-07-23",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-drafting",
+  "drafting_paradigm": "lawyer_draft"
+}

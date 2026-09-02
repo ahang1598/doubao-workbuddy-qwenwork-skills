@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刑事家属程序指引 - 极简版</title>
+  <style>
+    :root {
+      --stage-color: {{STAGE_COLOR}};
+      --page-width: 210mm;
+      --page-height: 297mm;
+      --margin-v: 20mm;
+      --margin-h: 25mm;
+      --font-title: 'SimHei', 'Microsoft YaHei', sans-serif;
+      --font-body: 'SimSun', 'Songti SC', serif;
+
+      /* 视觉层级四色系统 */
+      --color-danger: #D32F2F;
+      --color-danger-bg: #FFF5F5;
+      --color-action: #2E7D32;
+      --color-action-bg: #F1F8E9;
+      --color-attention: #E65100;
+      --color-attention-bg: #FFF8E1;
+      --color-reference: #616161;
+      --color-reference-bg: #F5F5F5;
+      --color-reference-border: #E0E0E0;
+
+      --stage-red: #E74C3C;
+      --stage-amber: #F39C12;
+      --stage-green: #27AE60;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.8;
+      color: #333;
+    }
+    .page {
+      width: var(--page-width);
+      min-height: var(--page-height);
+      padding: var(--margin-v) var(--margin-h);
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #E0E0E0;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .logo-area { max-width: 120px; }
+    .logo-area img { max-width: 120px; height: auto; }
+    .firm-name { font-family: var(--font-title); font-size: 14px; font-weight: bold; color: #555; }
+    .doc-title {
+      font-family: var(--font-title);
+      font-size: 20px;
+      text-align: center;
+      margin: 12px 0;
+      color: #222;
+    }
+
+    /* === 视觉层级四色 === */
+    .danger {
+      background: var(--color-danger-bg);
+      border-left: 4px solid var(--color-danger);
+      padding: 10px 14px;
+      margin: 8px 0;
+      border-radius: 0 4px 4px 0;
+    }
+    .action {
+      background: var(--color-action-bg);
+      border-left: 4px solid var(--color-action);
+      padding: 10px 14px;
+      margin: 8px 0;
+      border-radius: 0 4px 4px 0;
+    }
+    .attention {
+      background: var(--color-attention-bg);
+      border-left: 4px solid var(--color-attention);
+      padding: 10px 14px;
+      margin: 8px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* 阶段卡 */
+    .stage-card {
+      border-left: 6px solid var(--stage-color);
+      padding: 10px 14px;
+      margin: 12px 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.02), transparent);
+    }
+    .stage-card h3 { color: var(--stage-color); font-size: 17px; margin-bottom: 4px; }
+    .stage-card p { font-size: 13px; color: #555; }
+
+    .section { margin: 14px 0; }
+    .section h4 {
+      font-family: var(--font-title);
+      font-size: 16px;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #E0E0E0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #222;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      color: #fff;
+      font-weight: normal;
+    }
+    .badge-danger { background: var(--color-danger); }
+    .badge-action { background: var(--color-action); }
+    .badge-attention { background: var(--color-attention); }
+
+    /* === 表格 === */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 6px 0;
+    }
+    .data-table th {
+      background: #FFF;
+      font-family: var(--font-title);
+      font-weight: bold;
+      text-align: left;
+      padding: 5px 8px;
+      border-bottom: 2px solid #E0E0E0;
+      font-size: 12px;
+      color: #555;
+    }
+    .data-table td {
+      padding: 5px 8px;
+      border-bottom: 1px solid #EEE;
+      vertical-align: top;
+    }
+
+    /* === 流程图 === */
+    .flow-chart {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 8px 0;
+      flex-wrap: wrap;
+      padding: 10px;
+      background: #FAFAFA;
+      border-radius: 6px;
+    }
+    .flow-node {
+      text-align: center;
+      padding: 6px 10px;
+      border-radius: 6px;
+      min-width: 70px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .flow-node.current {
+      border: 2px solid var(--stage-color);
+      background: #FFF;
+      font-weight: bold;
+    }
+    .flow-node.future {
+      border: 1px dashed #BBB;
+      background: #FFF;
+    }
+    .flow-node .node-title { font-size: 13px; font-weight: bold; }
+    .flow-node .node-duration { font-size: 11px; color: #666; }
+    .flow-node .node-action { font-size: 11px; color: var(--color-attention); }
+    .flow-arrow { font-size: 18px; color: #BBB; flex-shrink: 0; }
+    .flow-note {
+      width: 100%;
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .flow-note .highlight { color: var(--color-attention); font-weight: bold; }
+
+    footer {
+      margin-top: 20px;
+      padding-top: 8px;
+      border-top: 1px solid #DDD;
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+    }
+    .disclaimer {
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .watermark {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 48px;
+      opacity: 0.06;
+      color: #999;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @media print {
+      @page { size: A4; margin: 20mm 25mm; }
+      .page { width: auto; min-height: auto; padding: 0; margin: 0; }
+      .stage-card { border: 2px solid var(--stage-color); }
+      .watermark { display: block; }
+      .no-print { display: none; }
+      .danger, .action, .attention { border: 1px solid #999; }
+    }
+  </style>
+</head>
+<body>
+  <div class="watermark no-print">仅供参考 · 不构成法律意见</div>
+  <div class="page">
+    <header>
+      <div class="logo-area">{{LAW_FIRM_LOGO}}</div>
+      <div class="firm-name">{{LAW_FIRM_NAME}}</div>
+    </header>
+
+    <div class="doc-title">刑事家属程序指引（极简版）</div>
+
+    <!-- O2 当前阶段高亮卡 -->
+    <div class="stage-card">
+      <h3>{{STAGE_NAME}}</h3>
+      <p>{{STAGE_DESC}}</p>
+    </div>
+
+    <!-- O3 律师现在能做什么（关注层） -->
+    <div class="section">
+      <h4>👨‍⚖️ 律师现在能做什么 <span class="badge badge-attention">关注</span></h4>
+      <div class="attention">
+        {{LAWYER_ACTIONS_TABLE}}
+      </div>
+    </div>
+
+    <!-- O4 家属能做什么（行动层·绿色） -->
+    <div class="section">
+      <h4>✅ 家属能做什么 <span class="badge badge-action">行动</span></h4>
+      <div class="action">
+        {{FAMILY_CAN_DO_TABLE}}
+      </div>
+    </div>
+
+    <!-- O5 家属不能做什么（禁止层·红色） -->
+    <div class="section">
+      <h4>🚫 家属不能做什么 <span class="badge badge-danger">严禁</span></h4>
+      <div class="danger">
+        {{FAMILY_CANNOT_DO_TABLE}}
+      </div>
+    </div>
+
+    <!-- O6 下一步时间节点（关注层·流程图） -->
+    <div class="section">
+      <h4>⏰ 下一步时间节点 <span class="badge badge-attention">关注</span></h4>
+      <div class="attention">
+        {{NEXT_TIMELINE_FLOW}}
+      </div>
+    </div>
+
+    <footer>
+      {{LAW_FIRM_NAME}} | 联系电话：______________ | 地址：______________
+    </footer>
+
+    <div class="disclaimer">{{DISCLAIMER}}</div>
+  </div>
+</body>
+</html>

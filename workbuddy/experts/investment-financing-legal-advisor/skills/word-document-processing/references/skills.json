@@ -1,0 +1,13 @@
+{
+  "id": "word-document-processing",
+  "marketId": "",
+  "name": "Word文档处理",
+  "version": "",
+  "description": "Word文档创建、编辑和分析，支持修订跟踪、批注、格式保留。适用于处理.docx文件：创建新文档、修改编辑内容、处理修订跟踪、添加批注等文档操作任务。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

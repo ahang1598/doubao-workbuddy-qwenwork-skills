@@ -1,0 +1,13 @@
+{
+  "id": "fadada-legal-case-search",
+  "marketId": "",
+  "name": "法大大类案检索",
+  "version": "",
+  "description": "检索中国大陆裁判文书、类案（相似案件）的专用 skill，通过 RicheeAI 内部 API 接口进行检索。当用户提到查判例、找案例、搜裁判文书、查案号、研究某类案件裁判趋势、找类似案件、类案检索、这类案件法院怎么判、有没有相关判例等任务时，必须触发此 skill。即使用户只说\"帮我找找这个问题的相关案例\"或\"这种情况法院一般怎么判\"，也应触发此 skill 进行案例检索。如果用户同时需要法规和案例，本 skill 在 legal-info-search 之后运行。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

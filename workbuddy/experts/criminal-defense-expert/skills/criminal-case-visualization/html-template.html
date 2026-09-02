@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><!-- CONTENT_SLOT:PAGE_TITLE --></title>
+<!--
+  criminal-case-visualization v3.0.0
+  HTML 输出自包含模板 — CSS 内联嵌入，无需外部文件
+  LLM 职责：仅填充 10 个 <!-- CONTENT_SLOT:xxx --> 占位符、替换 MUST_REPLACE 标注的 themeVariables
+  LLM 禁止：修改 HARD_BLOCK 包裹的 <style> 内任何 CSS、自由发挥 HTML 布局、使用内联 style=""
+
+  v3.0.0 渲染彻底改造（三重根因修复）：
+  1. Mermaid 初始化参数修正——fontSize:14→18px、+useMaxWidth:false、+gantt 配置段、htmlLabels:true→false
+  2. CSS 容器放宽——max-width:820→1100px、mermaid-wrap max-height:1200→2400px、SVG宽度强制填充
+  3. 信息密度控制——gantt section ≤2（去掉"法定期限对比"重叠层）、timeline→gantt替代
+  4. 样板区更新——双gantt去掉法定期限对比section、缩放按钮默认值100%/125%/150%
+
+  v2.3.1 增强（样板区注入）：
+  1. 模板尾部新增 LLM_MANDATORY_DEMO_BLOCKS — 3 套完整可工作 HTML 样板
+  2. CSS 新增 .chart-subchart / .chart-subchart-title
+
+  v2.3.0 增强：
+  1. mermaid.parseError 回调 + zoomMermaid() 缩放控件
+  2. .mermaid-wrap max-height + 打印适配增强
+
+  设计原则：
+  1. 法律文档风格（非 Web App 风格）—— 分隔线标题、无圆角、传统排版
+  2. 打印优先 —— 所有样式需适配 A4 打印
+  3. 5 色语义色板 —— primary深蓝 / accent灰绿 / warning琥珀 / danger红 / info灰蓝
+  4. 8px 基线网格 —— 所有 margin/padding 对齐 4px/8px 倍数
+  5. LLM 不写 CSS —— 所有视觉元素由此 <style> 块定义，LLM 仅引用 class
+  6. 双受众适配 —— .lawyer 律师版 / .family 家属版，CSS class 控制显示/隐藏
+  7. 渲染健壮性 —— 缩放控件 + 错误回调 + 降级路径
+
+  版本标识：data-template-version="3.0.0"
+-->
+<!-- HARD_BLOCK:DONT_MODIFY_START -->
+<style>
+/*
+ * criminal-case-visualization v3.0.0
+ * HTML 输出固定视觉规范 — 法律文档风格
+ *
+ * ⚠️ 此 <style> 块为 HARD_BLOCK 不可修改区。
+ * LLM 不可增删改任何 CSS 属性、选择器、CSS变量。
+ * 违反此规则将导致输出被阻断（Phase 7 CHK-2）。
+ *
+ * v3.0.0 渲染改造：
+ * - .page-container max-width: 820px → 1100px（图表呼吸空间+34%）
+ * - .mermaid-wrap max-height: 1200px → 2400px（长图表不被截断）
+ * - .mermaid-wrap .mermaid SVG宽度强制填充（覆盖Mermaid JS注入的inline max-width）
+ * - 缩放按钮默认值 75%/100% → 100%/125%/150%
+ *
+ * v2.3.1 增强：
+ * - .chart-subchart / .chart-subchart-title 长档双图表容器
+ *
+ * 设计原则：
+ * 1. 法律文档风格（非 Web App 风格）—— 分隔线标题、无圆角卡片、传统排版
+ * 2. 打印优先 —— 所有样式需适配 A4 打印
+ * 3. 5 色语义色板 —— primary深蓝/accent灰绿/warning琥珀/danger红/info灰蓝，每色含light/medium/dark三档
+ * 4. 8px 基线网格 —— margin/padding 对齐 4px/8px 倍数
+ * 5. LLM 不写 CSS —— 所有视觉元素由此 <style> 块定义，LLM 仅引用 class
+ * 6. 双受众适配 —— .lawyer / .family CSS类控制差异化显示
+ */
+
+/* ========================================
+   0. CSS 变量（8px 基线网格 + 5色语义色板）
+   ======================================== */
+
+:root {
+  /* 基线网格单位 */
+  --grid-unit: 8px;
+
+  /* 5 色语义色板 */
+  --color-primary-light: #eff6ff;
+  --color-primary-medium: #3b82f6;
+  --color-primary-dark: #1e3a8a;
+  --color-primary-text: #ffffff;
+
+  --color-accent-light: #dcfce7;
+  --color-accent-medium: #22c55e;
+  --color-accent-dark: #166534;
+
+  --color-warning-light: #fffbeb;
+  --color-warning-medium: #d97706;
+  --color-warning-dark: #92400e;
+
+  --color-danger-light: #fef2f2;
+  --color-danger-medium: #dc2626;
+  --color-danger-dark: #991b1b;
+
+  --color-info-light: #f8fafc;
+  --color-info-medium: #64748b;
+  --color-info-dark: #1e293b;
+
+  /* 灰度 */
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-700: #334155;
+  --color-gray-900: #0f172a;
+
+  /* 字号 5 级系统 */
+  --text-xl: 20px;
+  --text-lg: 16px;
+  --text-base: 14px;
+  --text-sm: 12px;
+  --text-xs: 11px;
+
+  /* 行距差异化 */
+  --leading-body: 1.65;
+  --leading-body-family: 1.8;
+  --leading-heading: 1.35;
+  --leading-table: 1.4;
+  --leading-caption: 1.5;
+
+  /* 新版字体栈（含宋体/仿宋） */
+  --font-sans: "PingFang SC", "Microsoft YaHei", SimSun, FangSong, "Noto Sans SC", serif;
+}
+
+/* ========================================
+   1. 页面级布局
+   ======================================== */
+
+@page { size: A4 portrait; margin: 15mm 20mm; }
+
+.page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: calc(var(--grid-unit) * 3) calc(var(--grid-unit) * 4);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--color-gray-700);
+  background: #ffffff;
+}
+
+/* 家属版行距加大 */
+.family .page-container {
+  line-height: var(--leading-body-family);
+}
+
+/* 打印适配 */
+@media print {
+  .page-container {
+    max-width: none;
+    padding: 0;
+  }
+  .mermaid-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+  .mermaid-wrap .mermaid {
+    transform: none !important;
+  }
+  /* v3.0.0: 打印时恢复SVG宽度约束，确保A4宽度适配 */
+  .mermaid-wrap .mermaid svg {
+    width: auto !important;
+    max-width: 100% !important;
+  }
+  .mermaid-zoom { display: none; }
+}
+
+/* ========================================
+   2. 工具栏（屏幕可见，打印隐藏）
+   ======================================== */
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--grid-unit) * 0.75) 0;
+  margin-bottom: calc(var(--grid-unit) * 2.5);
+  border-bottom: 1px solid var(--color-gray-200);
+  font-size: var(--text-sm);
+  color: var(--color-gray-400);
+}
+
+.toolbar-left {
+  color: var(--color-gray-400);
+}
+
+.toolbar-right {
+  display: flex;
+  gap: var(--grid-unit);
+}
+
+.toolbar-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--color-gray-300);
+  background: #ffffff;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-family: inherit;
+}
+
+.toolbar-btn:hover {
+  background: var(--color-gray-100);
+}
+
+@media print {
+  .toolbar { display: none !important; }
+}
+
+/* ========================================
+   3. 页面标题区
+   ======================================== */
+
+.page-header {
+  margin-bottom: calc(var(--grid-unit) * 2.5);
+  padding-bottom: calc(var(--grid-unit) * 1.5);
+  border-bottom: 2px solid var(--color-primary-dark);
+}
+
+.page-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin: 0 0 calc(var(--grid-unit) * 0.5) 0;
+  line-height: var(--leading-heading);
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--color-gray-500);
+  margin: 0 0 calc(var(--grid-unit) * 0.75) 0;
+}
+
+.page-meta {
+  font-size: var(--text-sm);
+  color: var(--color-gray-400);
+  margin: 0;
+}
+
+/* 受众标识徽章 */
+.audience-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.audience-badge-lawyer {
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.audience-badge-family {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+/* ========================================
+   4. 家属版首页免责声明（仅家属版显示）
+   ======================================== */
+
+.family-disclaimer-top {
+  display: none;
+  background: var(--color-warning-light);
+  border: 1px solid #fcd34d;
+  padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 2);
+  margin-bottom: calc(var(--grid-unit) * 2.5);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-warning-dark);
+}
+
+.family .family-disclaimer-top {
+  display: block;
+}
+
+.family-disclaimer-top strong {
+  color: var(--color-danger-dark);
+}
+
+/* ========================================
+   5. 区块标题（section heading）
+   ======================================== */
+
+.section-heading {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  border-bottom: 1px solid var(--color-gray-200);
+  padding-bottom: calc(var(--grid-unit) * 0.75);
+  margin-top: calc(var(--grid-unit) * 3);
+  margin-bottom: calc(var(--grid-unit) * 1.5);
+  line-height: var(--leading-heading);
+}
+
+/* ========================================
+   6. 图表区块
+   ======================================== */
+
+.chart-block {
+  margin-bottom: calc(var(--grid-unit) * 2.5);
+}
+
+/* v3.0.0 双图表容器（图 A + 图 B 共用 .chart-block 父容器） */
+.chart-subchart {
+  margin-bottom: calc(var(--grid-unit) * 1.5);
+  padding-left: calc(var(--grid-unit) * 1.5);
+  border-left: 3px solid var(--color-primary-medium);
+}
+
+.chart-subchart:last-child {
+  margin-bottom: 0;
+}
+
+.chart-subchart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-info-dark);
+  margin: 0 0 calc(var(--grid-unit) * 0.75) 0;
+  padding-bottom: calc(var(--grid-unit) * 0.5);
+  border-bottom: 1px dashed var(--color-gray-200);
+}
+
+.chart-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  margin: 0 0 calc(var(--grid-unit) * 0.5) 0;
+}
+
+.chart-desc {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0 0 calc(var(--grid-unit) * 1.25) 0;
+}
+
+/* Mermaid 渲染容器（v3.0.0 渲染改造：max-height提升+useMaxWidth:false配合overflow-x） */
+.mermaid-wrap {
+  background: #ffffff;
+  border: 1px solid var(--color-gray-200);
+  padding: calc(var(--grid-unit) * 2);
+  margin-bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-height: 2400px;
+  text-align: center;
+}
+
+.mermaid-wrap .mermaid {
+  display: inline-block;
+  width: 100%;
+  min-height: 300px;
+  transform-origin: top center;
+}
+
+/* v3.0.0 新增：覆盖Mermaid.js注入的inline max-width，让图表以自然尺寸渲染 */
+.mermaid-wrap .mermaid svg {
+  width: 100% !important;
+  height: auto !important;
+  max-width: none !important;
+}
+
+/* 缩放控件 */
+.mermaid-zoom {
+  text-align: right;
+  margin-bottom: 4px;
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+}
+
+.mermaid-zoom button {
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-300);
+  padding: 2px 8px;
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-family: inherit;
+  color: var(--color-gray-700);
+}
+
+.mermaid-zoom button:hover {
+  background: var(--color-gray-200);
+}
+
+@media print {
+  .mermaid-zoom { display: none; }
+}
+
+/* Mermaid 渲染失败时的错误提示 */
+.mermaid-error {
+  background: var(--color-danger-light);
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 2);
+  margin: calc(var(--grid-unit) * 1.5) 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger-dark);
+  line-height: 1.6;
+  display: none;
+}
+
+.mermaid-error.visible {
+  display: block;
+}
+
+/* Mermaid 图例 */
+.chart-legend {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--grid-unit);
+  padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit) * 1.25);
+  background: var(--color-info-light);
+  border: 1px solid var(--color-gray-200);
+  border-top: none;
+}
+
+/* 源码折叠区（打印隐藏） */
+.source-section {
+  margin-top: calc(var(--grid-unit) * 1.5);
+  border: 1px solid var(--color-gray-200);
+  padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit) * 1.75);
+}
+
+.source-section summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  padding: calc(var(--grid-unit) * 0.5) 0;
+}
+
+.source-section pre {
+  background: var(--color-info-light);
+  padding: calc(var(--grid-unit) * 1.25);
+  font-size: var(--text-xs);
+  overflow-x: auto;
+  margin-top: calc(var(--grid-unit) * 0.75);
+}
+
+@media print {
+  .source-section { display: none !important; }
+}
+
+/* ========================================
+   7. 数据表格
+   ======================================== */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: var(--leading-table);
+}
+
+.data-table thead tr {
+  background: var(--color-primary-dark);
+  color: var(--color-primary-text);
+}
+
+.data-table th {
+  padding: calc(var(--grid-unit) * 1.25) calc(var(--grid-unit) * 1.5);
+  text-align: left;
+  font-weight: 600;
+}
+
+.data-table th.align-right {
+  text-align: right;
+}
+
+.data-table th.align-center {
+  text-align: center;
+}
+
+.data-table td {
+  padding: calc(var(--grid-unit) * 1.25) calc(var(--grid-unit) * 1.5);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.data-table tbody tr:hover {
+  background: #f0f4ff;
+}
+
+.data-table td.align-right {
+  text-align: right;
+}
+
+.data-table td.align-center {
+  text-align: center;
+}
+
+/* ========================================
+   8. 分析区
+   ======================================== */
+
+.analysis-block {
+  background: var(--color-gray-50);
+  padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 2);
+  margin-bottom: calc(var(--grid-unit) * 1.5);
+  border-left: 3px solid var(--color-primary-medium);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+.analysis-block h3 {
+  font-size: var(--text-base);
+  color: var(--color-gray-900);
+  margin: 0 0 calc(var(--grid-unit) * 0.75) 0;
+}
+
+/* 家属版分析区更温暖的色调 */
+.family .analysis-block {
+  border-left-color: var(--color-accent-medium);
+  background: var(--color-accent-light);
+}
+
+/* ========================================
+   9. 非预测声明（量刑路径必备） */
+   ======================================== */
+
+.non-prediction-note {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-warning-dark);
+  background: var(--color-warning-light);
+  padding: calc(var(--grid-unit) * 0.75) calc(var(--grid-unit) * 1.25);
+  margin-top: var(--grid-unit);
+  border: 1px solid #fcd34d;
+}
+
+/* ========================================
+   10. 律师确认区（家属版专属，律师版隐藏） */
+
+.lawyer-confirmation-section {
+  display: none;
+  margin-top: calc(var(--grid-unit) * 2);
+  padding: calc(var(--grid-unit) * 2);
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+}
+
+.family .lawyer-confirmation-section {
+  display: block;
+}
+
+.lawyer-confirmation-section h3 {
+  font-size: var(--text-base);
+  color: var(--color-accent-dark);
+  margin: 0 0 calc(var(--grid-unit) * 1.25) 0;
+}
+
+.lawyer-confirmation-section p {
+  font-size: var(--text-sm);
+  margin: calc(var(--grid-unit) * 0.75) 0;
+}
+
+.sign-line {
+  display: inline-block;
+  width: 180px;
+  border-bottom: 1px solid var(--color-gray-400);
+  margin-left: 8px;
+}
+
+/* ========================================
+   11. 免责声明（底部，L1/L2 分级） */
+
+.disclaimer-footer {
+  margin-top: calc(var(--grid-unit) * 3);
+  padding: calc(var(--grid-unit) * 1.25) calc(var(--grid-unit) * 1.75);
+  background: var(--color-info-light);
+  border: 1px solid var(--color-gray-200);
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+  line-height: var(--leading-caption);
+}
+
+/* L1 律师版内部使用 — 默认 */
+.disclaimer-l1 {
+  /* 默认样式，无额外标记 */
+}
+
+/* L2 家属版交付用 — 更严格措辞 + 红色强调 */
+.disclaimer-l2 {
+  border-left: 3px solid var(--color-danger-medium);
+  background: #fef9f9;
+}
+
+.disclaimer-l2 strong {
+  color: var(--color-danger-dark);
+}
+
+/* ========================================
+   12. 页眉/页脚（法律文档必备） */
+
+.doc-header-info {
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+  margin-bottom: calc(var(--grid-unit) * 2);
+  padding-bottom: var(--grid-unit);
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  justify-content: space-between;
+}
+
+.doc-footer {
+  font-size: var(--text-xs);
+  color: var(--color-gray-300);
+  margin-top: calc(var(--grid-unit) * 3);
+  padding-top: var(--grid-unit);
+  border-top: 1px solid var(--color-gray-100);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ========================================
+   13. 版本水印（v2.2.0 引入，v3.0.0 沿用，打印可见） */
+
+.template-version-watermark {
+  font-size: 9px;
+  color: var(--color-gray-300);
+  text-align: right;
+  margin-top: calc(var(--grid-unit) * 2);
+  opacity: 0.6;
+}
+
+@media print {
+  .template-version-watermark {
+    opacity: 0.4;
+  }
+}
+
+/* ========================================
+   14. 通用辅助 */
+
+.text-muted {
+  color: var(--color-gray-400);
+}
+
+.text-warn {
+  color: var(--color-warning-dark);
+}
+
+.text-critical {
+  color: var(--color-danger-medium);
+}
+
+.indicator-warn {
+  color: var(--color-warning-medium);
+  font-weight: 700;
+}
+
+.indicator-critical {
+  color: var(--color-danger-medium);
+  font-weight: 700;
+}
+
+.indicator-info {
+  color: var(--color-info-medium);
+}
+
+.no-print {
+  /* 屏幕可见，打印隐藏 */
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .data-table tbody tr:nth-child(even) {
+    background: transparent;
+  }
+  .template-version-watermark {
+    color: #c0c0c0;
+  }
+}
+</style>
+<!-- HARD_BLOCK:DONT_MODIFY_END -->
+</head>
+<body class="<!-- CONTENT_SLOT:AUDIENCE_BADGE -->">
+<div class="page-container" data-template-version="3.0.0" data-generated-at="<!-- CONTENT_SLOT:GENERATED_AT -->">
+
+<!-- ════════════════════════════════════════
+   SLOT 0: 文档页眉（案件基本信息行）
+   ════════════════════════════════════════ -->
+<div class="doc-header-info">
+  <span>刑事案件可视化报告</span>
+  <span><!-- 案件编号/当事人简称 --></span>
+</div>
+
+<!-- ════════════════════════════════════════
+   SLOT 1: 工具栏
+   ════════════════════════════════════════ -->
+<div class="toolbar">
+  <span class="toolbar-left"><!-- CONTENT_SLOT:TOOLBAR_INFO --></span>
+  <span class="toolbar-right">
+    <button class="toolbar-btn" onclick="toggleAllSource()">查看源码</button>
+    <button class="toolbar-btn" onclick="window.print()">打印/PDF</button>
+  </span>
+</div>
+
+<!-- ════════════════════════════════════════
+   SLOT 2: 家属版首页免责声明（仅 .family 显示）
+   ════════════════════════════════════════ -->
+<div class="family-disclaimer-top">
+  <strong>⚠️ 重要提示</strong>：本图表仅供参考，不构成法律意见。具体案件请咨询您的律师。家属版须经律师审核确认后方可交付当事人及家属。
+</div>
+
+<!-- ════════════════════════════════════════
+   SLOT 3: 页面标题区
+   ════════════════════════════════════════ -->
+<div class="page-header">
+  <h1 class="page-title"><!-- CONTENT_SLOT:PAGE_TITLE --></h1>
+  <p class="page-subtitle"><!-- CONTENT_SLOT:PAGE_SUBTITLE --></p>
+  <p class="page-meta"><!-- CONTENT_SLOT:PAGE_META --></p>
+</div>
+
+<!-- ════════════════════════════════════════
+   SLOT 4: 案件信息块（条件渲染）
+   ════════════════════════════════════════ -->
+<!-- CONTENT_SLOT:CASE_INFO_BLOCK -->
+
+<!-- ════════════════════════════════════════
+   SLOT 5: 图表区块（4-7个，按输出块矩阵填充）
+   每个.chart-block必须含 .mermaid-wrap + .mermaid-error + .source-section
+   ════════════════════════════════════════ -->
+<div class="section-heading">可视化图表</div>
+<!-- CONTENT_SLOT:CHART_BLOCKS -->
+
+<!-- ════════════════════════════════════════
+   SLOT 6: 案件分析区（每图表配套分析）
+   律师版含法条引用，家属版含通俗解释
+   ════════════════════════════════════════ -->
+<div class="section-heading">分析说明</div>
+<!-- CONTENT_SLOT:ANALYSIS_BLOCK -->
+
+<!-- ════════════════════════════════════════
+   SLOT 7: 律师确认区（仅家属版显示）
+   ════════════════════════════════════════ -->
+<div class="lawyer-confirmation-section">
+  <h3>律师确认</h3>
+  <p>本家属版可视化报告已经律师审核确认，内容准确、适合向当事人家属解释案件进展情况。</p>
+  <p>律师签名：<span class="sign-line"></span> &nbsp;&nbsp; 日期：<span class="sign-line"></span></p>
+  <p>律所盖章：<span class="sign-line"></span></p>
+</div>
+
+<!-- ════════════════════════════════════════
+   SLOT 8: 免责声明（固定内容，始终输出，v2.2.0 引入，v3.0.0 沿用 L1/L2 分级）
+   ENFORCE_CHECK:CHK-14 免责声明必须分级
+   ════════════════════════════════════════ -->
+<div class="disclaimer-footer <!-- CONTENT_SLOT:DISCLAIMER_LEVEL -->">
+  <!-- ENFORCE_CHECK:CHK-14 免责声明存在且分级正确 -->
+  <strong>免责声明</strong><br>
+  本可视化报告为<strong>辅助参考级</strong>产物，仅供参考，不构成法律意见、事实认定或裁判结果预测。
+  量刑路径展示的是法定刑档位和可能性范围，不构成刑期预测。实际量刑由法院依法裁判。
+  家属版须经律师审核确认后方可交付当事人及家属。
+</div>
+
+<!-- ════════════════════════════════════════
+   SLOT 9: 文档页脚（版本水印）
+   ════════════════════════════════════════ -->
+<div class="doc-footer">
+  <span>刑事案件可视化 &copy; 法大大</span>
+  <span><!-- 生成日期 --></span>
+</div>
+
+<!-- 版本水印（v3.0.0） -->
+<div class="template-version-watermark">
+  template: criminal-case-visualization v3.0.0 | generated: <!-- CONTENT_SLOT:GENERATED_AT -->
+</div>
+
+</div><!-- .page-container -->
+
+<!-- ════════════════════════════════════════
+   Mermaid.js CDN（固定版本 mermaid@10）+ 错误处理
+   ════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  /* LLM MUST_REPLACE: 根据受众版本替换以下 themeVariables 对象 */
+  /* 律师版→法律风格，家属版→商务风格，完整映射表参见 docs/output-spec.md §8.1 */
+  themeVariables: {
+    primaryColor: '#f8fafc',
+    primaryTextColor: '#1e293b',
+    primaryBorderColor: '#6b7280',
+    lineColor: '#6b7280',
+    secondaryColor: '#f1f5f9',
+    tertiaryColor: '#f8fafc',
+    fontSize: '18px'
+  },
+  /* v3.0.0: useMaxWidth:false 关闭Mermaid的SVG宽度自适应，图表以自然尺寸渲染，由CSS overflow-x:auto提供滚动 */
+  useMaxWidth: false,
+  flowchart: {
+    /* v3.0.0: htmlLabels:false — SVG原生文本缩放保真度远高于HTML标签模式 */
+    htmlLabels: false,
+    curve: 'basis'
+  },
+  /* v3.0.0 新增: gantt 配置段控制行高和字号 */
+  gantt: {
+    barHeight: 30,
+    fontSize: 14,
+    barGap: 6,
+    topPadding: 40
+  }
+});
+
+/*
+ * Mermaid 渲染错误处理（v2.2.0 引入，v3.0.0 沿用）
+ * 1. parseError 回调激活 .mermaid-error
+ * 2. load 后再次检测无 SVG 渲染的图表
+ * 3. 详细错误信息显示
+ */
+mermaid.parseError = function(err, hash) {
+  console.error('Mermaid parse error:', err);
+  var allErrors = document.querySelectorAll('.mermaid-error');
+  allErrors.forEach(function(errDiv) {
+    errDiv.classList.add('visible');
+    errDiv.textContent = '⚠️ 图表渲染失败：' + (err.message || String(err)) + '。请检查Mermaid源码或展开下方源码区域。';
+  });
+};
+
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    document.querySelectorAll('.mermaid').forEach(function(div) {
+      if (div.textContent.trim().length > 0 && !div.querySelector('svg')) {
+        var errDiv = div.parentElement.querySelector('.mermaid-error');
+        if (errDiv) {
+          errDiv.classList.add('visible');
+        }
+      }
+    });
+  }, 1500);
+});
+
+function toggleAllSource() {
+  var sections = document.querySelectorAll('.source-section');
+  var isOpen = sections.length > 0 && sections[0].open;
+  sections.forEach(function(s) { s.open = !isOpen; });
+}
+
+/*
+ * 图表缩放控件（v2.2.0 引入，v3.0.0 沿用，默认按钮改为100%/125%/150%）
+ * 解决长流程图渲染后画布过宽/过高问题
+ */
+function zoomMermaid(btn, scale) {
+  var wrap = btn.parentElement.nextElementSibling;
+  var mermaidDiv = wrap.querySelector('.mermaid');
+  if (mermaidDiv) {
+    mermaidDiv.style.transform = 'scale(' + scale + ')';
+    mermaidDiv.style.transformOrigin = 'top center';
+  }
+}
+</script>
+
+<!-- 禁用 JavaScript 时的降级提示 -->
+<noscript>
+  <div style="padding:16px; background:#fef2f2; border:1px solid #fca5a5; margin:12px 0; font-size:13px; color:#991b1b;">
+    <strong>图表无法渲染：</strong>您的浏览器未启用 JavaScript。
+    Mermaid 图表需要 JavaScript 才能渲染。请启用 JavaScript 后刷新页面，
+    或展开"查看 Mermaid 源码"区域，复制代码到 <a href="https://mermaid.live" target="_blank">mermaid.live</a> 在线渲染。
+  </div>
+</noscript>
+
+<!-- ════════════════════════════════════════════════════════════════════
+   v3.0.0 LLM_MANDATORY_DEMO_BLOCKS（强制复制样板区 — HARD_BLOCK 之外）
+   ════════════════════════════════════════════════════════════════════
+   职责：以下是 3 套完整可工作的 HTML+Mermaid 块样板。
+   LLM 生成产物前**必须**完整阅读本注释区，并严格按样板结构组装图表。
+   任何"自由发挥"都必须从下列样板派生，禁止无样板创造新结构。
+
+   v3.0.0 变更：
+   - 样板 #1 gantt section ≤ 2（去掉"法定期限对比"重叠层，法条对比改为HTML表格注解）
+   - 缩放按钮默认值 100%/125%/150%（原 75%/100%）
+
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 样板 #1：LONG_CASE_DOUBLE_GANTT（长档双 gantt 容器）         │
+   │ 适用：custody_timeline + 刑期执行段（刑期 > 12 个月）        │
+   │ 触发：current_stage ∈ {一审已判决, 判决已生效, 执行中, 服刑} │
+   │ v3.0.0: section上限≤2，法定期限对比改为HTML表格              │
+   └─────────────────────────────────────────────────────────────┘
+   ↓↓↓ 复制本块原样替换 {date1} {date2} {N} 等占位符 ↓↓↓
+
+<!-- ===== BEGIN DEMO:LONG_CASE_DOUBLE_GANTT =====
+<div class="chart-block">
+  <h4 class="chart-title">图2-custody：羁押与刑期时间线（双图表）</h4>
+  <p class="chart-desc">图A为强制措施段（短跨度），图B为刑期执行段（长跨度），分开展示避免画布溢出。法定期限对比见下方数据表格。</p>
+
+  <div class="chart-subchart">
+    <h5 class="chart-subchart-title">图A 强制措施时间线（{date1} → {date2}，{N}天）</h5>
+    <div class="mermaid-zoom">
+      缩放：<button onclick="zoomMermaid(this, 1.0)">100%</button><button onclick="zoomMermaid(this, 1.25)">125%</button><button onclick="zoomMermaid(this, 1.5)">150%</button>
+    </div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+gantt
+    title 图A 强制措施时间线
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
+    excludes    weekends
+
+    section 强制措施阶段
+    拘留 第91条       :done, a1, {date1}, 37d
+    侦查 第156条      :done, a2, {date2}, 48d
+    起诉 第172条      :done, a3, {date2}, 37d
+    审判 第208条      :active, a4, {date2}, 68d
+
+    section 关键节点
+    抓获拘留      :milestone, m1, {date1}, 0d
+    批准逮捕      :milestone, m2, {date2}, 0d
+    侦查终结      :milestone, m3, {date2}, 0d
+    提起公诉      :milestone, m4, {date2}, 0d
+    一审开庭      :crit, milestone, m5, {date2}, 0d
+    一审判决      :crit, milestone, m6, {date2}, 0d
+    判决生效      :milestone, m7, {date2}, 0d
+      </div>
+      <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+    </div>
+    <!-- v3.0.0: 法定期限对比改为HTML表格注解，不在gantt中重叠 -->
+    <table class="data-table">
+      <thead><tr><th>强制措施</th><th>实际天数</th><th>法定期限</th><th>条文</th><th>是否超期</th></tr></thead>
+      <tbody>
+        <tr><td>刑事拘留</td><td>37天</td><td>最长37日</td><td>第91条</td><td>否</td></tr>
+        <tr><td>侦查羁押</td><td>48天</td><td>最长2个月+延1个月</td><td>第156条</td><td>否</td></tr>
+        <tr><td>审查起诉</td><td>37天</td><td>最长1个月+延15日</td><td>第172条</td><td>否</td></tr>
+        <tr><td>一审审理</td><td>68天</td><td>最长2个月+延1个月</td><td>第208条</td><td>否</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-subchart">
+    <h5 class="chart-subchart-title">图B 刑期执行时间线（{date1} → {date_end}，{Y}年）</h5>
+    <div class="mermaid-zoom">
+      缩放：<button onclick="zoomMermaid(this, 0.75)">75%</button><button onclick="zoomMermaid(this, 1.0)">100%</button><button onclick="zoomMermaid(this, 1.25)">125%</button>
+    </div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+gantt
+    title 图B 刑期执行时间线
+    dateFormat YYYY-MM-DD
+    axisFormat %Y年%m月
+
+    section 刑期执行
+    有期徒刑 {Y}年  :active, p1, {date1}, {D}d
+
+    section 关键节点
+    折抵完结      :milestone, p2, {date_fold}, 0d
+    减刑临界 1/2  :milestone, p3, {date_half}, 0d
+    假释临界 1/2  :milestone, p4, {date_half}, 0d
+    刑期届满      :crit, milestone, p5, {date_end}, 0d
+      </div>
+      <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+    </div>
+  </div>
+</div>
+===== END DEMO:LONG_CASE_DOUBLE_GANTT =====
+
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 样板 #2：QUADRANT_4Q_ENGLISH（防御策略矩阵英文版）            │
+   │ 适用：defense_matrix 律师版                                    │
+   │ 强制：quadrant-1/2/3/4 必须英文+数据点必须英文                 │
+   └─────────────────────────────────────────────────────────────┘
+   ↓↓↓ 复制本块原样替换策略名/坐标值 ↓↓↓
+
+<!-- ===== BEGIN DEMO:QUADRANT_4Q_ENGLISH =====
+<div class="chart-block">
+  <h4 class="chart-title">图5-defense：辩护策略评估矩阵</h4>
+  <p class="chart-desc">以可行性×影响力定位 7 项策略。右上角为优先采用象限。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+quadrantChart
+    title Defense Strategy: Feasibility x Impact
+    x-axis Low Feasibility --> High Feasibility
+    y-axis Low Impact --> High Impact
+    quadrant-1 Priority Action
+    quadrant-2 Key Breakthrough
+    quadrant-3 Auxiliary Argument
+    quadrant-4 Cautious Use
+    "Refund Plus Understanding Adopted": [0.95, 0.95]
+    "Actual Performance Partial": [0.80, 0.88]
+    "Converted Intent Partial": [0.62, 0.82]
+    "Expert Opinion Overreach No Response": [0.72, 0.52]
+    "Crime Amount Dispute Rejected": [0.48, 0.68]
+    "Interrogation Flaw No Response": [0.42, 0.38]
+    "Victim Fault No Response": [0.32, 0.30]
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+</div>
+===== END DEMO:QUADRANT_4Q_ENGLISH =====
+
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 样板 #3：PIE_INTEGER_AND_MERGE（饼图整数化+小类合并）          │
+   │ 适用：funds_flow（资金用途饼图）                               │
+   │ 强制：数值整数+占比<5%合并"其他"+配套中文数据表                │
+   └─────────────────────────────────────────────────────────────┘
+   ↓↓↓ 复制本块原样替换数值/标签 ↓↓↓
+
+<!-- ===== BEGIN DEMO:PIE_INTEGER_AND_MERGE =====
+<div class="chart-block">
+  <h4 class="chart-title">图7-funds：资金用途分布（整数化+小类合并）</h4>
+  <p class="chart-desc">饼图数值已四舍五入为整数，原值在标签内说明，小类已合并到"其他"。</p>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+pie showData
+    title 350万元资金用途 万元
+    "芯片采购 履约 85" : 85
+    "理财产品 200" : 200
+    "偿还债务 35" : 35
+    "购买奔驰 28" : 28
+    "转移至亲属 80" : 80
+    "取现去向不明 20" : 20
+    "信用卡消费 14 (原13.56)" : 14
+    </div>
+    <div class="mermaid-error">图表渲染失败。请展开下方源码区域。</div>
+  </div>
+</div>
+===== END DEMO:PIE_INTEGER_AND_MERGE =====
+   ════════════════════════════════════════════════════════════════════
+   模板版本：v3.0.0
+   变更摘要：Mermaid渲染参数修正（fontSize18px+useMaxWidth:false+htmlLabels:false+gantt配置）+CSS容器放宽（max-width1100px+SVG宽度强制填充+max-height2400px）+样板区双gantt去掉法定期限对比section（改为HTML表格注解）+缩放按钮默认值100%/125%/150%。
+   LLM 必须按样板结构组装图表，禁止无样板创造新结构。
+   ════════════════════════════════════════════════════════════════════ -->
+
+<!-- ENFORCE_CHECK:CHK-15 字体栈必须含SimSun/FangSong fallback -->
+</body>
+</html>

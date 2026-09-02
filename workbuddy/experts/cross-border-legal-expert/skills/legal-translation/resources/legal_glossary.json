@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-03-13",
+  "description": "中英法律术语对照表。翻译时以此为基准术语，确保全文一致。",
+  "categories": [
+    {
+      "name": "合同主体与结构",
+      "terms": [
+        {"cn": "甲方", "en": "Party A"},
+        {"cn": "乙方", "en": "Party B"},
+        {"cn": "丙方", "en": "Party C"},
+        {"cn": "委托方", "en": "the Client / the Principal"},
+        {"cn": "受托方", "en": "the Contractor / the Agent"},
+        {"cn": "出租方", "en": "the Lessor"},
+        {"cn": "承租方", "en": "the Lessee"},
+        {"cn": "买方", "en": "the Buyer / the Purchaser"},
+        {"cn": "卖方", "en": "the Seller / the Vendor"},
+        {"cn": "担保方", "en": "the Guarantor"},
+        {"cn": "法定代表人", "en": "legal representative"},
+        {"cn": "授权代表", "en": "authorized representative"},
+        {"cn": "签约日期", "en": "date of execution"},
+        {"cn": "合同编号", "en": "Contract No."},
+        {"cn": "鉴于条款", "en": "WHEREAS clause / recitals"},
+        {"cn": "附件", "en": "appendix / annex / exhibit"},
+        {"cn": "补充协议", "en": "supplementary agreement"},
+        {"cn": "框架协议", "en": "framework agreement"}
+      ]
+    },
+    {
+      "name": "合同核心条款",
+      "terms": [
+        {"cn": "合同金额", "en": "contract price / contract amount"},
+        {"cn": "含税价", "en": "price inclusive of tax"},
+        {"cn": "不含税价", "en": "price exclusive of tax"},
+        {"cn": "定金", "en": "earnest money / deposit"},
+        {"cn": "预付款", "en": "advance payment"},
+        {"cn": "尾款", "en": "final payment / balance payment"},
+        {"cn": "合同期限", "en": "term of the contract"},
+        {"cn": "有效期", "en": "validity period"},
+        {"cn": "自动续期", "en": "automatic renewal"},
+        {"cn": "验收", "en": "acceptance / inspection and acceptance"},
+        {"cn": "交付物", "en": "deliverables"},
+        {"cn": "质保期", "en": "warranty period"},
+        {"cn": "保修", "en": "warranty"},
+        {"cn": "知识产权", "en": "intellectual property rights (IPR)"},
+        {"cn": "商业秘密", "en": "trade secrets"},
+        {"cn": "保密义务", "en": "confidentiality obligations"},
+        {"cn": "保密期限", "en": "confidentiality period"},
+        {"cn": "竞业限制", "en": "non-compete restriction"},
+        {"cn": "排他性", "en": "exclusivity"}
+      ]
+    },
+    {
+      "name": "违约与救济",
+      "terms": [
+        {"cn": "违约", "en": "breach of contract / default"},
+        {"cn": "违约金", "en": "liquidated damages"},
+        {"cn": "逾期付款", "en": "late payment / overdue payment"},
+        {"cn": "滞纳金", "en": "late payment penalty / overdue fine"},
+        {"cn": "赔偿损失", "en": "compensation for damages / indemnification"},
+        {"cn": "连带责任", "en": "joint and several liability"},
+        {"cn": "免责条款", "en": "exemption clause / limitation of liability"},
+        {"cn": "不可抗力", "en": "force majeure"},
+        {"cn": "情势变更", "en": "change of circumstances / frustration"},
+        {"cn": "解除合同", "en": "termination of contract"},
+        {"cn": "合同无效", "en": "invalidity of contract"},
+        {"cn": "合同效力", "en": "validity and effectiveness of contract"}
+      ]
+    },
+    {
+      "name": "争议解决",
+      "terms": [
+        {"cn": "争议解决", "en": "dispute resolution"},
+        {"cn": "友好协商", "en": "amicable negotiation"},
+        {"cn": "仲裁", "en": "arbitration"},
+        {"cn": "仲裁委员会", "en": "arbitration commission"},
+        {"cn": "中国国际经济贸易仲裁委员会", "en": "China International Economic and Trade Arbitration Commission (CIETAC)"},
+        {"cn": "北京仲裁委员会", "en": "Beijing Arbitration Commission (BAC)"},
+        {"cn": "管辖", "en": "jurisdiction"},
+        {"cn": "管辖法院", "en": "court of competent jurisdiction"},
+        {"cn": "诉讼", "en": "litigation"},
+        {"cn": "适用法律", "en": "governing law / applicable law"},
+        {"cn": "中华人民共和国法律", "en": "the laws of the People's Republic of China"}
+      ]
+    },
+    {
+      "name": "公司治理",
+      "terms": [
+        {"cn": "股东", "en": "shareholder"},
+        {"cn": "股东会", "en": "shareholders' meeting"},
+        {"cn": "董事会", "en": "board of directors"},
+        {"cn": "监事会", "en": "board of supervisors"},
+        {"cn": "董事", "en": "director"},
+        {"cn": "监事", "en": "supervisor"},
+        {"cn": "执行董事", "en": "executive director"},
+        {"cn": "总经理", "en": "general manager"},
+        {"cn": "公司章程", "en": "articles of association"},
+        {"cn": "注册资本", "en": "registered capital"},
+        {"cn": "认缴出资", "en": "subscribed capital contribution"},
+        {"cn": "实缴出资", "en": "paid-up capital contribution"},
+        {"cn": "股权转让", "en": "equity transfer / share transfer"},
+        {"cn": "有限责任公司", "en": "limited liability company (LLC)"},
+        {"cn": "股份有限公司", "en": "company limited by shares / joint stock company"},
+        {"cn": "营业执照", "en": "business license"},
+        {"cn": "统一社会信用代码", "en": "unified social credit code"}
+      ]
+    },
+    {
+      "name": "法律法规名称",
+      "terms": [
+        {"cn": "《中华人民共和国民法典》", "en": "the Civil Code of the People's Republic of China"},
+        {"cn": "《中华人民共和国公司法》", "en": "the Company Law of the People's Republic of China"},
+        {"cn": "《中华人民共和国合同法》", "en": "the Contract Law of the People's Republic of China"},
+        {"cn": "《中华人民共和国劳动合同法》", "en": "the Labor Contract Law of the People's Republic of China"},
+        {"cn": "《中华人民共和国个人信息保护法》", "en": "the Personal Information Protection Law of the People's Republic of China (PIPL)"},
+        {"cn": "《中华人民共和国数据安全法》", "en": "the Data Security Law of the People's Republic of China (DSL)"},
+        {"cn": "《中华人民共和国广告法》", "en": "the Advertising Law of the People's Republic of China"},
+        {"cn": "司法解释", "en": "judicial interpretation"},
+        {"cn": "行政法规", "en": "administrative regulation"}
+      ]
+    },
+    {
+      "name": "通用法律术语",
+      "terms": [
+        {"cn": "权利义务", "en": "rights and obligations"},
+        {"cn": "善意第三人", "en": "bona fide third party"},
+        {"cn": "过错", "en": "fault / negligence"},
+        {"cn": "故意", "en": "intentional / willful"},
+        {"cn": "重大过失", "en": "gross negligence"},
+        {"cn": "合法合规", "en": "lawful and compliant"},
+        {"cn": "生效", "en": "come into effect / take effect"},
+        {"cn": "送达", "en": "service / delivery of notice"},
+        {"cn": "通知", "en": "notice"},
+        {"cn": "书面通知", "en": "written notice"},
+        {"cn": "备案", "en": "filing / registration for record"},
+        {"cn": "公证", "en": "notarization"},
+        {"cn": "见证", "en": "witnessing"},
+        {"cn": "盖章", "en": "affix the company seal / seal"},
+        {"cn": "签字盖章", "en": "sign and seal"}
+      ]
+    }
+  ]
+}

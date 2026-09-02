@@ -1,0 +1,457 @@
+/*
+ * HTML 卡片统一样式（金手指品牌版 · 腾讯蓝体系）
+ * 本副本专为「金手指 · 素材经理」角色配置。
+ *
+ * 设计总原则（改样式前必读 references/design-rules.md）：
+ *  1. 白底为主、克制留白。主色腾讯蓝 #0052D9 只用于版头 / 章节序号 /
+ *     标签（pill）/ 提示卡（callout）四处点缀，主体正文与表格不铺满品牌色。
+ *  2. 版头 banner：腾讯蓝渐变（左深右稍亮）+ 右下浅色圆光晕；左上品牌行白字，
+ *     品牌行左上、同一行左对齐：logo 在最左（白色圆角方块托住，蓝 J 压白底保品牌色）+ 紧随其右的品牌角色文字。
+ *  3. 字体走系统中文字体栈（PingFang SC 优先），常规字距，稳重专业。
+ *
+ * 换主色只改 --brand / --brand-deep / --brand-soft；语义色（warn/ok/danger）
+ * 与规则 3/15 的语义绑定，不要动。
+ */
+
+:root {
+  /* 品牌腾讯蓝：版头 / 章节序号 / 标签 / 提示卡 */
+  --brand: #0052D9;
+  --brand-soft: #eaf1ff;
+  --brand-deep: #003ea6;
+  /* 版头渐变端点（照参考头图实测取样：左上稍亮 → 右下更深，整体沉稳不刺眼） */
+  --hero-1: #1E4CC6;
+  --hero-2: #163B99;
+
+  /* 中性色阶 */
+  --ink: #1a1a1e;      /* 主文字，近黑 */
+  --ink-2: #4a4a52;    /* 次级文字 */
+  --ink-3: #8a8a92;    /* 辅助 / 弱化文字 */
+  --line: #e8e8ee;     /* 分隔线 */
+  --canvas: #eef0f4;   /* 页面画布（浅灰，衬托白卡） */
+  --surface: #ffffff;  /* 卡片白底 */
+  --fill-1: #f4f6fa;   /* 浅底填充（表头 / lead / 原话块底） */
+  --fill-2: #fafbfd;   /* 更浅的 hover 填充 */
+  --seq: #0052D9;      /* 章节序号：腾讯蓝 */
+
+  /* 语义色（仅进标签 / 提示卡） */
+  --warn: #b26a00;     --warn-soft: rgba(255,159,10,0.14);
+  --ok: #1a7f37;       --ok-soft: rgba(52,199,89,0.14);
+  --danger: #c0362c;   --danger-soft: rgba(255,59,48,0.12);
+  --gray-pill: #6e6e73; --gray-pill-soft: rgba(120,120,128,0.14);
+
+  --radius-lg: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 10px 34px rgba(20,40,90,0.08), 0 2px 8px rgba(20,40,90,0.04);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 40px 20px;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont,
+               "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* ========== 版头 Hero（腾讯蓝渐变，辨识度最高） ========== */
+.banner {
+  background: linear-gradient(135deg, var(--hero-1) 0%, var(--hero-2) 100%);
+  color: #fff;
+  padding: 32px 40px 28px;
+  position: relative;
+  overflow: hidden;
+}
+/* 右侧装饰大圆（照参考头图最小二乘拟合实测，勿凭感觉改）：
+   实心圆、边界清晰，不是羽化光晕 —— 圆内比底色亮约 5%（rgba(255,255,255,0.05)）。
+   实测几何（banner 高 203px 时）：直径 ≈ banner 高 × 0.98 ≈ 200px；
+   圆心 y = banner 高的 29.5%（偏上，不是垂直居中）；圆心距右边缘 60px。
+   视觉上是右上方探进来的一枚弧面，overflow:hidden 负责裁切。 */
+.banner::after {
+  content: "";
+  position: absolute;
+  right: -40px; top: 29.5%;
+  transform: translateY(-50%);
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 品牌行：左上「[logo] 金手指 · 素材经理」——logo 在左、文字紧随其右、同行左对齐 */
+.banner .brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px 0;
+  position: relative;
+  z-index: 2;
+}
+.banner .brand-tag {
+  font-size: 14px;
+  color: rgba(255,255,255,0.92);
+  margin: 0;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+.banner .brand-tag .sep { margin: 0 7px; opacity: 0.6; }
+
+/* logo：白色圆角方块托住（蓝 J 压白底，保品牌色），放品牌行最左
+   注：logo.png 已按参考比例重制 —— 蓝 J 占画布 宽 62% / 高 76%，
+   左右留白 19%、上下留白 12%（留白烤进图片，视觉呼吸感由图控制）。
+   因此 CSS 侧 padding=0、object-fit:cover；圆角取白托边长的 ~28%（大圆角 squircle 观感）。
+   🚨 换 logo 源图时必须复刻此留白比例，不要靠 CSS padding 补。 */
+.banner .brand-logo {
+  flex: 0 0 auto;
+  z-index: 3;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: #fff;
+  object-fit: cover;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+}
+
+.banner .title {
+  font-size: 26px; font-weight: 700;
+  margin: 0 0 9px 0;
+  letter-spacing: -0.01em;
+  position: relative; z-index: 2;
+}
+.banner .subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  margin: 0;
+  position: relative; z-index: 2;
+}
+/* facts 行：图标 + 白/灰字层次 */
+.banner .meta {
+  margin-top: 18px; font-size: 12.5px;
+  color: rgba(255,255,255,0.78);
+  display: flex; gap: 26px; flex-wrap: wrap;
+  position: relative; z-index: 2;
+}
+.banner .meta span { display: inline-flex; align-items: center; gap: 6px; }
+/* facts 图标：内联 SVG（.ico），不用图标字体 —— 保证离线可看 */
+.banner .meta .ico { width: 13px; height: 13px; opacity: 0.85; flex: 0 0 auto; }
+.banner .meta i.bi { font-size: 13px; opacity: 0.85; }  /* 兼容历史产物，新文档一律用 .ico */
+
+/* ========== 主体 ========== */
+.body {
+  background: var(--surface);
+  padding: 32px 40px 12px;
+}
+section { margin-bottom: 32px; }
+section:last-child { margin-bottom: 0; }
+
+/* 章节标题：腾讯蓝序号 + 标题 + 右上浅色胶囊标注 */
+h2.section-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 16px 0;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h2.section-title .idx {
+  flex: none;
+  color: var(--brand);
+  font-size: 18px; font-weight: 700;
+  letter-spacing: 0.02em;
+}
+/* 右上浅色胶囊标注（章节摘要，如「6 类 · 30 张起投」） */
+h2.section-title .sec-note {
+  margin-left: auto;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--ink-3);
+  background: var(--fill-1);
+  border: 1px solid var(--line);
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0;
+}
+
+/* 每节重点句（浅蓝底 + 左侧蓝竖条，无固定前缀，见规则 2） */
+.lead {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.7;
+  margin: 0 0 16px 0;
+  padding: 13px 16px;
+  background: var(--fill-1);
+  border-radius: var(--radius-sm);
+}
+.lead strong { color: var(--ink); font-weight: 600; }
+
+/* ========== 表格 ========== */
+table.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13.5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+table.data-table th {
+  background: var(--fill-1);
+  color: var(--ink-2);
+  font-weight: 600;
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+  letter-spacing: 0;
+}
+table.data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--ink);
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tbody tr:hover td { background: var(--fill-2); }
+/* 首列强调（KV 型 / 多列首列） */
+table.data-table td.kv-key,
+table.data-table td:first-child strong {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+table.data-table td.kv-key { background: #fff; }
+
+/* ========== 样式图容器 img-frame（素材类型示例图，防裁切） ========== */
+.img-frame {
+  margin: 12px 0 4px;
+  padding: 8px;
+  background: var(--fill-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+.img-frame img {
+  max-width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: inline-block;
+}
+.img-frame .cap {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+/* ========== 素材卡 material-card（左文右图：类型名 + 优先级标签 + 说明 + 示例图） ========== */
+.material-card {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin: 12px 0;
+  background: var(--surface);
+}
+.material-card .mc-main { flex: 1 1 auto; min-width: 0; }
+.material-card .mc-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.material-card .mc-type { font-size: 15px; font-weight: 700; color: var(--ink); }
+.material-card .mc-spec {
+  font-size: 12px; color: var(--brand-deep); font-weight: 600;
+}
+.material-card .mc-spec .lv { color: var(--brand); }
+.material-card .mc-spec .dim { color: var(--ink-3); font-weight: 500; margin-left: 4px; }
+.material-card .mc-desc { font-size: 13px; color: var(--ink-2); line-height: 1.65; margin: 0; }
+.material-card .mc-thumb {
+  flex: none;
+  width: 210px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--fill-1);
+  border: 1px solid var(--line);
+}
+.material-card .mc-thumb img {
+  width: 100%; height: auto; display: block; object-fit: contain;
+}
+
+/* ========== 标签 pill ========== */
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.pill-ok { background: var(--ok-soft); color: var(--ok); }
+.pill-warn { background: var(--warn-soft); color: var(--warn); }
+.pill-danger { background: var(--danger-soft); color: var(--danger); }
+.pill-brand { background: var(--brand-soft); color: var(--brand-deep); }
+.pill-recommend { background: var(--brand); color: #fff; }
+.pill-gray { background: var(--gray-pill-soft); color: var(--gray-pill); }
+.status { float: right; margin-left: 8px; }
+
+/* ========== 原话块 quote（浅底 + 左侧蓝竖线 +「」引号 + cite） ========== */
+.quote {
+  position: relative;
+  background: var(--fill-1);
+  border-left: 3px solid var(--brand);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 13px 16px 13px 18px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.7;
+}
+.quote .q-text::before { content: "「"; color: var(--ink-3); }
+.quote .q-text::after { content: "」"; color: var(--ink-3); }
+.quote cite {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--ink-3);
+}
+.quote cite::before { content: "— "; }
+
+/* ========== 时间轴（蓝色圆点 + 竖线串联，下一步建议用） ========== */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 11px; top: 10px; bottom: 10px;
+  width: 2px; background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 22px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -30px; top: 3px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--line);
+}
+/* 圆圈内小实心点 */
+.tl-item::after {
+  content: "";
+  position: absolute;
+  left: -22px; top: 11px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.tl-item .tl-head {
+  font-size: 14px; font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.tl-item .tl-head .week { color: var(--brand-deep); margin-right: 6px; }
+.tl-item .tl-head .sep { color: var(--ink-3); margin: 0 4px; }
+.tl-item .tl-goal { font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+.tl-item .tl-goal strong { color: var(--ink); font-weight: 600; }
+.tl-item .tl-list {
+  margin: 0; padding-left: 20px;
+  font-size: 13px; color: var(--ink-2); line-height: 1.85;
+}
+.tl-item .tl-list li { padding-left: 2px; }
+
+/* ========== 提示卡 callout（浅色底 + 左侧 3px 竖条，蓝 / 黄 2 色） ========== */
+.callout {
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--brand);
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: var(--brand-soft);
+  color: var(--ink);
+  margin-top: 14px;
+}
+.callout strong.title { color: var(--brand-deep); font-weight: 700; margin-right: 4px; }
+.callout-warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.callout-warn strong.title { color: var(--warn); }
+
+/* ========== 通用 bullet 列表 ========== */
+ul.plain-list {
+  margin: 0; padding-left: 20px;
+  font-size: 13.5px; color: var(--ink-2); line-height: 1.85;
+}
+ul.plain-list li { margin: 4px 0; padding-left: 2px; }
+ul.plain-list li strong { color: var(--ink); font-weight: 600; }
+ul.plain-list li strong:first-child { margin-right: 4px; }
+.callout ul.plain-list { margin-top: 8px; color: inherit; }
+.callout ul.plain-list li { color: inherit; }
+
+/* ========== 决策标签 tag（只染字色，不加底色） ========== */
+.tag-ok, .tag-warn, .tag-bad { font-weight: 600; margin-right: 4px; }
+.tag-ok { color: var(--ok); }
+.tag-warn { color: var(--warn); }
+.tag-bad { color: var(--danger); }
+
+/* ========== 页脚三行（给谁用 / 怎么读 / 有效期） ========== */
+.footer {
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  padding: 18px 40px 22px;
+  background: var(--surface);
+}
+.footer .f-line {
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.7;
+}
+.footer .f-line strong { color: var(--ink-2); font-weight: 600; }
+.disclaimer {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  padding: 14px 40px 20px;
+  line-height: 1.6;
+  border-top: 1px solid var(--line);
+}
+
+/* ========== 移动端断点 ========== */
+@media (max-width: 680px) {
+  body { padding: 16px 10px; }
+  .banner { padding: 24px 20px 22px; }
+  .banner .brand-logo { width: 40px; height: 40px; padding: 0; }
+  .banner .title { font-size: 22px; }
+  .body { padding: 22px 20px 8px; }
+  .footer, .disclaimer { padding-left: 20px; padding-right: 20px; }
+  h2.section-title .sec-note { display: none; }
+  .material-card { flex-direction: column; }
+  .material-card .mc-thumb { width: 100%; }
+}
+
+/* ========== 打印样式 ========== */
+@media print {
+  body { padding: 0; background: #fff; }
+  .container { box-shadow: none; border-radius: 0; max-width: 100%; }
+  .banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .callout, .quote, table.data-table th, .lead, .pill-recommend, h2.section-title .idx {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  section { break-inside: avoid; }
+  .material-card { break-inside: avoid; }
+}

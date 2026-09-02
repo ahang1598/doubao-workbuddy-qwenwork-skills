@@ -1,0 +1,101 @@
+# 利润表 / Income statement
+
+> Field catalog exported from the PandaAI backtest factor list.
+> PandaAI 回测因子清单导出的字段目录。
+
+> 注:此表也含有衍生字段
+> 衍生字段命名及含义规则同前，见现金流量表处描述
+
+| 字段 | 类型 | 描述 |
+|---|---|---|
+| `is_total_revenue` | double | 营业总收入 |
+| `is_revenue` | double | 营业收入 |
+| `is_net_interest_inc` | double | 利息净收入 |
+| `is_n_commis_income` | double | 手续费及佣金净收入 |
+| `is_comm_income` | double | 手续费及佣金收入 |
+| `is_comm_exp` | double | 手续费及佣金支出 |
+| `is_n_sec_tb_income` | double | 代理买卖证券业务净收入 |
+| `is_n_sec_uw_income` | double | 证券承销业务净收入 |
+| `is_n_asset_mg_income` | double | 受托客户资产管理业务净收入 |
+| `is_prem_earned` | double | 已赚保费 |
+| `is_prem_income` | double | 保险业务收入 |
+| `is_reins_income` | double | 分保费收入 |
+| `is_out_prem` | double | 减:分出保费 |
+| `is_une_prem_reserve` | double | 提取未到期责任准备金 |
+| `is_total_cogs` | double | 营业总成本 |
+| `is_oper_exp` | double | 营业支出(金融类) |
+| `is_prem_refund` | double | 退保金 |
+| `is_compensation_payout` | double | 赔付支出 |
+| `is_compensation_payout_refu` | double | 减:摊回赔付支出 |
+| `is_reserve_insur_liab` | double | 提取保险责任准备金 |
+| `is_insur_reserve_refu` | double | 减:摊回保险责任准备金 |
+| `is_div_payt` | double | 保单红利支出 |
+| `is_reins_exp` | double | 分保费用 |
+| `is_oth_b_income` | double | 其他经营收入 |
+| `is_other_bus_cost` | double | 其他经营成本 |
+| `is_rd_exp` | double | 研发费用 |
+| `is_n_oth_income` | double | 非经营性净收益 |
+| `is_net_expo_hedging` | double | 净敞口套期收益 |
+| `is_oth_income` | double | 其他收益 |
+| `is_credit_impair_loss` | double | 信用资产减值损失 |
+| `is_oper_admin_exp` | double | 业务及管理费用 |
+| `is_reins_cost_refund` | double | 减:摊回分保费用 |
+| `is_insur_comm_exp` | double | 保险手续费及佣金支出 |
+| `is_asset_disp_income` | double | 资产处置收益 |
+| `is_oper_cost` | double | 营业成本 |
+| `is_biz_tax_surchg` | double | 营业税 |
+| `is_gross_profit` | double | 主营业务利润 |
+| `is_sell_exp` | double | 销售费用 |
+| `is_admin_exp` | double | 管理费用 |
+| `is_fin_exp` | double | 财务费用 |
+| `is_fin_exp_int_inc` | double | 利息收入(财务费用) |
+| `is_fin_exp_int_exp` | double | 利息支出(财务费用) |
+| `is_forex_gain` | double | 兑汇损益 |
+| `is_operate_profit` | double | 营业利润 |
+| `is_ass_invest_income` | double | 对联营合营企业的投资收益 |
+| `is_fv_value_chg_gain` | double | 公允价值变动净收益 |
+| `is_invest_income` | double | 投资收益 |
+| `is_assets_impair_loss` | double | 资产减值损失 |
+| `is_int_income` | double | 利息收入 |
+| `is_int_exp` | double | 利息支出 |
+| `is_non_oper_income` | double | 营业外收入 |
+| `is_non_oper_exp` | double | 营业外支出 |
+| `is_nca_disploss` | double | 非流动资产处置净损失 |
+| `is_oth_affecting_tp` | double | 影响利润总额的其他科目 |
+| `is_total_profit` | double | 利润总额 |
+| `is_income_tax` | double | 所得税 |
+| `is_invest_loss_unconf` | double | 未确认的投资损失 |
+| `is_oth_affecting_np` | double | 影响净利润的其他科目 |
+| `is_n_income` | double | 净利润 |
+| `is_non_recurring_pnl` | double | 非经常性损益 |
+| `is_net_after_nr` | double | 扣除非经常性损益后的净利润 |
+| `is_class_continuity` | double | 按经营持续性分类 |
+| `is_continued_net_profit` | double | 持续经营净利润 |
+| `is_end_net_profit` | double | 终止经营净利润 |
+| `is_class_ownership` | double | 按所有权归属分类 |
+| `is_n_income_attr_p` | double | 归属母公司净利润 |
+| `is_minority_gain` | double | 少数股东损益 |
+| `is_oth_compr_income` | double | 其他综合收益 |
+| `is_oci_unclassified` | double | 以后不能重分类进损益表的OCI |
+| `is_remeasured_oci` | double | 重新计量设定收益计划变动 |
+| `is_oci_equity_unclass` | double | 权益法下不能重分类的OCI份额 |
+| `is_oth_eqt_instruments_chg` | double | 其他权益工具投资公允价值变动 |
+| `is_corp_credit_risk_chg` | double | 企业自身信用风险公允价值变动 |
+| `is_oci_classified` | double | 以后能重分类进损益表的OCI |
+| `is_oci_equity_class` | double | 权益法下能重分类的OCI份额 |
+| `is_fa_avail_sale_chg` | double | 可供出售金融资产公允价值变动 |
+| `is_htm_reclass_chg` | double | 持有至到期投资重分类损益 |
+| `is_cf_hedging_effective` | double | 现金流量套期损益的有效部分 |
+| `is_forex_stmt_diff` | double | 外币财务报表折算差额 |
+| `is_oth_oci` | double | 其他OCI |
+| `is_oth_debt_invest_chg` | double | 其他债权投资公允价值变动 |
+| `is_assets_reclass_oci` | double | 金融资产重分类计入OCI |
+| `is_oth_debt_invest_reserve` | double | 其他债权投资信用减值准备 |
+| `is_oci_minority` | double | 归属于少数股东的OCI |
+| `is_t_compr_income` | double | 综合收益总额 |
+| `is_compr_inc_attr_p` | double | 归属于母公司的综合收益总额 |
+| `is_compr_inc_attr_m_s` | double | 归属于少数股东的综合收益总额 |
+| `is_basic_eps` | double | 基本每股收益 |
+| `is_diluted_eps` | double | 稀释每股收益 |
+| `is_adj_asset_impair` | double | 资产减值损失(调整项) |
+| `is_adj_credit_impair` | double | 信用减值损失(调整项) |

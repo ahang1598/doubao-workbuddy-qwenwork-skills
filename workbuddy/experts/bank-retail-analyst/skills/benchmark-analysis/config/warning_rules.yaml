@@ -1,0 +1,219 @@
+# 预警阈值配置
+# 定义基准行自身趋势预警、同业偏离预警和口径变化预警规则
+
+# ============================================================
+# 1. 基准行自身趋势预警
+# ============================================================
+self_trend_warnings:
+  scale_decline:
+    name: 规模类指标下降预警
+    description: 规模类指标较上年末下降超过阈值
+    level: 关注
+    applies_to:
+      - 零售AUM
+      - 零售客户数
+      - 零售存款
+      - 零售贷款
+      - 私行AUM
+      - 私行客户数
+    threshold:
+      decline_pct: 3  # 下降超过3%触发
+    action: 关注该指标变化原因
+
+  revenue_decline:
+    name: 收入类指标下降预警
+    description: 收入类指标同比下降超过阈值
+    level: 预警
+    applies_to:
+      - 零售营业收入
+      - 财富管理收入
+      - 手续费及佣金收入
+      - 信用卡收入
+    threshold:
+      yoy_decline_pct: 5  # 同比下降超过5%触发
+    action: 分析收入下滑原因，识别结构性问题
+
+  profit_decline:
+    name: 利润类指标下降预警
+    description: 利润类指标同比下降超过阈值
+    level: 预警
+    applies_to:
+      - 零售净利润
+    threshold:
+      yoy_decline_pct: 8  # 同比下降超过8%触发
+    action: 深入分析利润下滑原因（收入端/成本端/风险端）
+
+  customer_slowdown:
+    name: 客户增长放缓预警
+    description: 客户类指标增速连续两个报告期下降
+    level: 关注
+    applies_to:
+      - 零售客户数
+      - 财富客户数
+      - 私行客户数
+      - 手机银行MAU
+    threshold:
+      consecutive_decline_periods: 2  # 连续2个报告期增速下降
+    action: 分析客户增长动力是否不足
+
+  risk_deterioration:
+    name: 风险类指标恶化预警
+    description: 不良率上升超过阈值
+    level: 风险提示
+    applies_to:
+      - 零售贷款不良率
+      - 按揭贷款不良率
+      - 消费贷不良率
+      - 经营贷不良率
+    threshold:
+      increase_bp: 10  # 上升超过10BP触发
+    action: 关注资产质量变化，评估风险趋势
+
+  credit_card_risk:
+    name: 信用卡风险重点预警
+    description: 信用卡不良率上升超过阈值
+    level: 重点预警
+    applies_to:
+      - 信用卡不良率
+    threshold:
+      increase_bp: 20  # 上升超过20BP触发
+    action: 启动信用卡风险专项分析
+
+# ============================================================
+# 2. 同业偏离预警
+# ============================================================
+peer_deviation_warnings:
+  growth_lag:
+    name: 增速落后预警
+    description: 基准行增速低于同业均值超过阈值
+    level: 关注
+    applies_to:
+      - 零售AUM
+      - 零售存款
+      - 零售贷款
+      - 零售营业收入
+      - 零售净利润
+      - 财富客户数
+      - 私行AUM
+    threshold:
+      below_avg_pct: 5  # 低于同业均值5个百分点以上
+    action: 分析增长落后原因，评估是行业趋势还是自身问题
+
+  risk_elevated:
+    name: 风险偏高预警
+    description: 基准行风险指标高于同业均值超过阈值
+    level: 预警
+    applies_to:
+      - 零售贷款不良率
+      - 信用卡不良率
+      - 消费贷不良率
+      - 经营贷不良率
+      - 关注率
+      - 逾期率
+    threshold:
+      above_avg_bp: 20  # 高于同业均值20BP以上
+    action: 评估风险控制差距，启动风险专项分析
+
+  ranking_decline:
+    name: 排名下滑预警
+    description: 核心指标连续两个报告期排名下降
+    level: 关注
+    applies_to:
+      - 零售AUM
+      - 零售存款
+      - 零售贷款
+      - 零售营业收入
+      - 零售收入占比
+    threshold:
+      consecutive_decline_periods: 2  # 连续2个报告期排名下降
+    action: 分析竞争位置变化原因
+
+  contribution_low:
+    name: 贡献不足预警
+    description: 零售收入/利润占比低于同业均值超过阈值
+    level: 关注
+    applies_to:
+      - 零售收入占比
+      - 零售利润占比
+    threshold:
+      below_avg_pct: 5  # 低于同业均值5个百分点以上
+    action: 分析零售转型进度与结构调整空间
+
+  structure_deviation:
+    name: 结构偏离预警
+    description: 某类产品占比显著高于或低于同业均值
+    level: 关注
+    applies_to:
+      - 按揭贷款  # 占零售贷款比例
+      - 信用卡贷款
+      - 消费贷
+      - 经营贷
+    threshold:
+      deviation_pct: 10  # 偏离同业均值10个百分点以上
+    action: 评估产品结构合理性
+
+# ============================================================
+# 3. 口径变化预警
+# ============================================================
+calibration_change_warnings:
+  disclosure_change:
+    name: 披露口径变化
+    triggers:
+      - 基准行本期披露口径与上期不同
+      - 指标名称变化但口径相近
+      - 同一指标与上一期差异超过合理范围
+    level: 提示
+    action: 标注口径变化，评估对历史可比性的影响
+
+  peer_stop_disclosure:
+    name: 对标银行停止披露
+    triggers:
+      - 对标银行停止披露关键指标
+      - 对标银行合并或拆分指标项
+    level: 提示
+    action: 调整对标样本或标注数据缺失
+
+  version_conflict:
+    name: 版本冲突
+    triggers:
+      - 官网版本与交易所版本存在差异
+      - 修订版与原始版数据不一致
+    level: 预警
+    action: 以最新修订版为准，标注版本差异
+
+  comparability_downgrade:
+    name: 可比性等级下降
+    triggers:
+      - 指标可比性等级从A降为B或更低
+      - 新增口径差异影响横向对标
+    level: 提示
+    action: 更新可比性标注，调整排名结论
+
+# ============================================================
+# 预警等级定义
+# ============================================================
+warning_levels:
+  重点预警:
+    priority: 1
+    description: 需要立即关注和专项分析
+    color: red
+
+  预警:
+    priority: 2
+    description: 需要密切关注和跟踪
+    color: orange
+
+  风险提示:
+    priority: 3
+    description: 需要纳入风险监控
+    color: yellow
+
+  关注:
+    priority: 4
+    description: 需要持续观察
+    color: blue
+
+  提示:
+    priority: 5
+    description: 信息提示，了解即可
+    color: gray

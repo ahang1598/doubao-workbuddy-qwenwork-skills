@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "smart-money-profiler",
+  "last_updated": null,
+  "note": "Persistent seat profile archive. Append/update only — merge new 龙虎榜 episodes (de-duplicated on symbol+date+side+rank) and re-derive metrics from the accumulated sample. Seat labels are rule-matched/inferred, not official. See references/profiling-playbook.md for the full schema and update rules.",
+  "seats": []
+}

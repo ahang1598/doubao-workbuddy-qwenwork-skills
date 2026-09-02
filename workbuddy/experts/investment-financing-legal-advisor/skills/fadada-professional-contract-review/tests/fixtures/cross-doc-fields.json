@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "name": "采购合同.txt",
+      "category": "contract",
+      "fields": {
+        "unit_price": [
+          {
+            "value": "100",
+            "span": "单价100元"
+          }
+        ]
+      }
+    },
+    {
+      "name": "订单.txt",
+      "category": "po",
+      "fields": {
+        "unit_price": [
+          {
+            "value": "100",
+            "span": "单价100元"
+          }
+        ]
+      }
+    }
+  ]
+}

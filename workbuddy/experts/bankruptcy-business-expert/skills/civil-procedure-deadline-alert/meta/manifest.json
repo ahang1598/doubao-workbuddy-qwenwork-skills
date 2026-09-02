@@ -1,0 +1,74 @@
+{
+  "skill_name": "civil-procedure-deadline-alert",
+  "version": "0.1",
+  "package_mode": "high_risk",
+  "status": "draft",
+  "legal_domain": "诉讼程序法",
+  "subdomain": "期限管理与程序合规",
+  "jurisdiction": "中国",
+  "language": "zh-CN",
+  "task_type": "deadline_management",
+  "risk_level": "high",
+  "target_user": "律师、法务、案件管理人员",
+  "one_sentence_purpose": "根据案件类型和关键日期计算诉讼期限并提供预警，帮助律师及时掌握关键节点避免逾期风险",
+  "primary_inputs": [
+    "案件类型（民事/商事/行政）",
+    "关键日期（起诉/立案/判决等）",
+    "当前案件阶段"
+  ],
+  "primary_outputs": [
+    "期限清单",
+    "预警提示",
+    "法律后果",
+    "法律依据",
+    "免责声明"
+  ],
+  "artifact_classes": {
+    "runtime": [
+      "SKILL.md"
+    ],
+    "meta": [
+      "meta/manifest.json",
+      "meta/risk_controls.json"
+    ],
+    "examples": [
+      "examples/urgent-alert.md"
+    ],
+    "scripts": [
+      "scripts/processors/date_deadline_alerts.py",
+      "scripts/processors/citation_deadline_alerts.py",
+      "scripts/processors/README.md"
+    ]
+  },
+  "selected_patterns": [
+    "legal_basis_driven",
+    "risk_warning",
+    "escalation_required"
+  ],
+  "supports_references": true,
+  "requires_human_escalation": true,
+  "requires_full_review_trace": true,
+  "release_readiness": {
+    "spec_gate_required": true,
+    "package_design_gate_required": true,
+    "risk_gate_required": true,
+    "testability_gate_required": true,
+    "publishability_gate_required": true
+  },
+  "dependencies": {},
+  "high_risk_requirements": {
+    "mandatory_disclaimer": true,
+    "legal_basis_required": true,
+    "escalation_mechanism": true,
+    "human_review_trace": true,
+    "risk_warning_complete": true
+  },
+  "notes": [
+    "本技能为高风险期限管理任务",
+    "必须采用high_risk包模式",
+    "必须包含完整免责声明",
+    "所有期限计算必须有法律依据",
+    "强制升级机制必须明确",
+    "必须保留完整的审核留痕"
+  ]
+}

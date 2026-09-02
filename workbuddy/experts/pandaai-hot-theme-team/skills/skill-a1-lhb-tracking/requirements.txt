@@ -1,0 +1,5 @@
+pandas
+numpy
+scipy
+pyarrow
+panda-data==0.0.9

@@ -1,0 +1,203 @@
+skill_name: "civil-procedure-deadline-alert"
+optimizer_name: "legal_skill_optimizer_lite"
+optimizer_version: "3.1.0"
+optimized_at: "2026-03-14T12:00:00+08:00"
+
+source:
+  entry_file: "SKILL.md"
+  source_hash: "a1b2c3d4e5f6"
+  source_path: "finaskills/deadline-alerts/"
+
+classification:
+  scene_type: "deadline_calc"
+  complexity: "complex"
+  legal_risk: "high"
+  dependency: "standalone"
+
+routing:
+  analyzers_run:
+    - "UXAnalyzer"
+    - "ImplAnalyzer"
+    - "LegalAnalyzer"
+  route_reason:
+    - "complexity_high"
+    - "legal_risk_high"
+    - "date_calculation_detected"
+  mode: "standard"
+
+supplementary_reads:
+  enabled: true
+  strategy: "directed_only"
+  files_read:
+    - "SKILL.md"
+  files_skipped:
+    - "examples/"
+    - "meta/"
+    - "scripts/"
+
+findings:
+  - id: "LEG-01"
+    category: "legal"
+    severity: "high"
+    confidence: 0.92
+    title: "期限计算涉及节假日顺延规则"
+    evidence: "主文件包含'节假日顺延'、'顺延至节假日后的第一个工作日'等表述"
+    impact: "节假日判断错误可能导致期限计算错误，影响当事人权益"
+    recommendation: "在处理器中实现完整的节假日判断逻辑，或接入官方节假日API"
+    auto_fixable: false
+
+  - id: "LEG-02"
+    category: "legal"
+    severity: "medium"
+    confidence: 0.85
+    title: "起算点判断存在多种情形"
+    evidence: "主文件列明上诉期'自收到判决书之日起算'、举证期'自收到受理通知书之日起算'等多种起算规则"
+    impact: "起算点判断错误将直接导致整个期限计算错误"
+    recommendation: "在处理器中实现起算点自动识别逻辑，根据案件阶段和期限类型判断"
+    auto_fixable: false
+
+  - id: "IMP-01"
+    category: "implementation"
+    severity: "high"
+    confidence: 0.95
+    title: "日期计算逻辑可脚本化"
+    evidence: "命中D2日期推算检测：'期限'、'起算'、'届满'、'上诉期'、'举证期'、'工作日'等关键词"
+    impact: "手工推理日期容易出错，特别是涉及节假日顺延时"
+    recommendation: "生成日期计算处理器，实现自动期限计算和节假日顺延判断"
+    auto_fixable: true
+
+  - id: "IMP-02"
+    category: "implementation"
+    severity: "medium"
+    confidence: 0.82
+    title: "法条引用可结构化校验"
+    evidence: "主文件引用《民事诉讼法》第171条等多个法条"
+    impact: "法条引用错误或过时可能导致法律适用错误"
+    recommendation: "生成法条校验处理器，实现法条引用格式化和有效性检查"
+    auto_fixable: true
+
+script_candidates:
+  - detector: "D2_date_calculation"
+    confidence: 0.95
+    evidence:
+      - "出现'期限'多次"
+      - "出现'起算'、'届满'"
+      - "出现'上诉期'、'举证期'、'执行期'"
+      - "出现'工作日'、'节假日顺延'"
+    recommended_action: "generate_stub"
+    target_file: "scripts/processors/date_deadline_alerts.py"
+    risk_note: "节假日顺延规则可能因地区或年份变化，需人工确认或接入官方数据源"
+
+  - detector: "D5_citation_validation"
+    confidence: 0.82
+    evidence:
+      - "出现《民事诉讼法》引用"
+      - "出现'第171条'等条文号"
+      - "出现'法律依据'章节"
+    recommended_action: "generate_stub"
+    target_file: "scripts/processors/citation_deadline_alerts.py"
+    risk_note: "法条可能修订或废止，需校验时效性"
+
+legal_controls:
+  substantive_legal_change: false
+  requires_human_review: true
+  review_reasons:
+    - "high_legal_risk"
+    - "date_calculation_with_holiday"
+    - "citation_requirement"
+  legal_boundary_note: "v1.1.0: 添加处理器脚本引用和版本标记，未改变原有法律规则。v1.1.1: 补充完整法条原文作为计算依据，仅添加法律依据引用，未修改期限计算逻辑本身。"
+
+privacy_controls:
+  privacy_mode: "minimal_exposure"
+  contains_sensitive_input: true
+  allow_cache_for_sensitive_inputs: false
+  redact_recommended: true
+
+output:
+  files_generated:
+    - "SKILL.md"
+    - "CHANGELOG.md"
+    - "optimization_manifest.yaml"
+    - "scripts/processors/date_deadline_alerts.py"
+    - "scripts/processors/citation_deadline_alerts.py"
+    - "scripts/processors/README.md"
+  files_modified:
+    - "SKILL.md"
+  files_unchanged: []
+
+limitations:
+  - "未读取 examples/，因主文件未声明引用"
+  - "法条库基于2024年有效法律，后续修订需人工更新"
+  - "节假日数据需接入官方数据源或定期更新"
+  - "处理器逻辑已实现基础框架，复杂场景需进一步完善"
+
+update_history:
+  - version: "1.1.1"
+    date: "2026-03-14"
+    type: "legal_content_update"
+    description: "补充完整的期限计算法律依据"
+    details:
+      - "添加《民法典》第188-195条诉讼时效规定"
+      - "添加《民事诉讼法》第85-86条、第128条、第171条、第205条、第211条、第246条、第95条"
+      - "添加《民诉解释》第99条、第487条"
+      - "更新处理器脚本 DEADLINE_RULES、STATUTE_OF_LIMITATIONS、PERIOD_CALCULATION_RULES"
+      - "更新处理器脚本 KNOWN_CITATIONS 法条库"
+  - version: "1.1.0"
+    date: "2026-03-14"
+    type: "initial_optimization"
+    description: "LSO-Lite v3.1.0 初始优化"
+    details:
+      - "添加版本信息和处理器引用"
+      - "生成处理器骨架"
+
+metrics:
+  issue_count: 4
+  high_severity_count: 2
+  script_candidate_count: 2
+  estimated_token_cost: 15000
+  estimated_token_saved_ratio: 0.25
+
+cache:
+  enabled: true
+  cache_keys:
+    skill_md_hash: "a1b2c3d4e5f6"
+    optimizer_version: "3.1.0"
+    analyzer_versions:
+      UXAnalyzer: "1.0.0"
+      ImplAnalyzer: "1.0.0"
+      LegalAnalyzer: "1.0.0"
+    rule_pack_version: "2026.03"
+    legal_baseline_version: "2026.03"
+
+decision_trace:
+  - step: "read_main_file"
+    decision: "only_read_skill_md"
+    reason: "default policy - zero blind read"
+
+  - step: "complexity_assessment"
+    decision: "complex"
+    reason: "348 lines > 300 threshold"
+
+  - step: "legal_risk_assessment"
+    decision: "high"
+    reason: "contains '期限', '日期', '届满', '时效', '法律后果'"
+
+  - step: "dependency_assessment"
+    decision: "standalone"
+    reason: "no external references detected"
+
+  - step: "risk_triage"
+    decision: "run_legal_analyzer"
+    reason: "legal_risk == high and contains date calculation"
+
+  - step: "analyzer_routing"
+    decision: "run_ux_impl_legal"
+    reason: "complex + high_risk + standalone"
+
+  - step: "script_detection"
+    decision: "generate_date_stub"
+    reason: "D2 confidence 0.95 >= 0.75 threshold"
+
+  - step: "script_detection"
+    decision: "generate_citation_stub"
+    reason: "D5 confidence 0.82 >= 0.75 threshold"

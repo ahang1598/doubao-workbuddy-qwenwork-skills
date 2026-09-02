@@ -1,0 +1,25 @@
+{
+  "name": "法大大专用OCR",
+  "name_en": "fadada-special-ocr",
+  "version": "1.1.0-candidate",
+  "description": "调用内部OCR API识别扫描PDF和图片，并对超过10MB的单文件确定性拆分后按页序组装。",
+  "output_formats": ["markdown", "json"],
+  "dependencies": {
+    "python": ["PyMuPDF>=1.20", "Pillow>=9.0"]
+  },
+  "scripts": {
+    "main": "scripts/ocr_to_markdown.py",
+    "api": "scripts/parse_contract_file.py",
+    "splitter": "scripts/split_ocr_input.py"
+  },
+  "files": [
+    "SKILL.md",
+    "references/ocr-api-integration.md",
+    "references/output-contract.md",
+    "scripts/ocr_to_markdown.py",
+    "scripts/parse_contract_file.py",
+    "scripts/split_ocr_input.py",
+    "scripts/requirements.txt",
+    "meta/manifest.json"
+  ]
+}

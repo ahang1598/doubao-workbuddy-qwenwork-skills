@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "default_mode": "standard",
+  "modes": {
+    "fast": {
+      "display_name": "极速体验版",
+      "target_minutes": [3, 5],
+      "purpose": "真实取数、一次紧凑回测和最小证据回执，不执行收费平台与完整审计。",
+      "active_stages": ["00_intake", "01_source_replication", "07_final_review"],
+      "source_depth": "formula_only",
+      "max_validation_charts": 4,
+      "min_candidates": 0
+    },
+    "standard": {
+      "display_name": "标准研究版",
+      "target_minutes": [10, 20],
+      "purpose": "默认模式；定向提取来源、核心回测、候选与五专家证据链，收费前仍强制审批。",
+      "active_stages": ["00_intake", "01_source_replication", "02_factor_candidates", "03_platform_preflight", "04_platform_execution", "05_statistical_audit", "06_tearsheet", "07_final_review"],
+      "source_depth": "targeted",
+      "max_validation_charts": 6,
+      "min_candidates": 4
+    },
+    "audit": {
+      "display_name": "完整审计版",
+      "target_minutes": [30, 60],
+      "purpose": "全文复现、完整图表、至少十候选、多重检验与发布级证据，适合课件和审核。",
+      "active_stages": ["00_intake", "01_source_replication", "02_factor_candidates", "03_platform_preflight", "04_platform_execution", "05_statistical_audit", "06_tearsheet", "07_final_review"],
+      "source_depth": "full_replication",
+      "max_validation_charts": 19,
+      "min_candidates": 10
+    }
+  }
+}

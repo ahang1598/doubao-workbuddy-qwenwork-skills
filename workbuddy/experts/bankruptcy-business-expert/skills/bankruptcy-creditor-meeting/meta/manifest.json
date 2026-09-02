@@ -1,0 +1,15 @@
+{
+  "name": "债权人会议支持",
+  "name_en": "bankruptcy-creditor-meeting",
+  "description": "编制债权人会议全套材料（会议通知/议程/表决方案/表决票/会议记录），设计表决分组方案，执行表决可行性测算（双过半/2/3门槛+最小争取组合+多情景假设），检查表决程序合规性，支持债权人委员会设立。触发：债权人会议/会议通知/议程/表决方案/表决票/会议记录/债权人委员会/债委会/表决可行性/表决测算/最小争取组合。不触发：非破产场景的股东会/董事会。",
+  "version": "1.2.0",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-23",
+  "created": "2026-07-23",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-drafting",
+  "drafting_paradigm": "lawyer_draft"
+}

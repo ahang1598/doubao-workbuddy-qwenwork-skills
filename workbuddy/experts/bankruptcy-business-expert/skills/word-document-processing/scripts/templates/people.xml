@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w15:people xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml">
+  <w15:person w15:author="Claude" w15:initials="C">
+    <w15:presenceInfo w15:providerId="None" w15:userId="Claude"/>
+  </w15:person>
+</w15:people>

@@ -1,0 +1,202 @@
+{
+  "name": "criminal-defense-expert",
+  "version": "1.2.1",
+  "description": "Criminal defense expert team covering investigation, prosecution review, trial, appeal and special procedures under PRC criminal law.",
+  "author": {
+    "name": "Fadada"
+  },
+  "agents": [
+    "./agents/criminal-defense-team-lead.md",
+    "./agents/criminal-material-analyst.md",
+    "./agents/criminal-research-strategist.md",
+    "./agents/criminal-drafting-specialist.md",
+    "./agents/criminal-trial-support.md",
+    "./agents/criminal-verification-officer.md"
+  ],
+  "skills": [
+    "./skills/criminal-appeal-second-instance-drafting",
+    "./skills/criminal-arrest-review",
+    "./skills/criminal-bail-application",
+    "./skills/criminal-case-management",
+    "./skills/criminal-case-reading-notes",
+    "./skills/criminal-case-strategy-analysis",
+    "./skills/criminal-case-trial-mock-training",
+    "./skills/criminal-case-visualization",
+    "./skills/criminal-communication-guide",
+    "./skills/criminal-court-cross-examination-outline-drafting",
+    "./skills/criminal-custody-review-application-drafting",
+    "./skills/criminal-defense-speech-trial",
+    "./skills/criminal-document-delivery-check",
+    "./skills/criminal-electronic-evidence-analysis",
+    "./skills/criminal-evidence-analysis-report",
+    "./skills/criminal-evidence-request",
+    "./skills/criminal-family-guide",
+    "./skills/criminal-illegal-evidence-exclusion-drafting",
+    "./skills/criminal-interrogation-analysis",
+    "./skills/criminal-investigation-defense",
+    "./skills/criminal-juvenile-document-drafting",
+    "./skills/criminal-material-intake-gate",
+    "./skills/criminal-meeting-guide",
+    "./skills/criminal-non-prosecution",
+    "./skills/criminal-plea-negotiation",
+    "./skills/criminal-pretrial-procedure-document-drafting",
+    "./skills/criminal-prosecution-defense-opinion-drafting",
+    "./skills/criminal-quotation-proposal",
+    "./skills/criminal-sentence-calc",
+    "./skills/criminal-sentencing-analysis",
+    "./skills/criminal-simplified-fast-track-document-drafting",
+    "./skills/criminal-special-procedure-document-drafting",
+    "./skills/criminal-trial-questioning-evidence-outline",
+    "./skills/criminal-witness-appearance",
+    "./skills/fadada-laws-and-regulations-retrieval",
+    "./skills/fadada-legal-case-search",
+    "./skills/fadada-special-ocr",
+    "./skills/lawyer-practice-risk-dynamic-screening",
+    "./skills/pdf-generation-editing-tool",
+    "./skills/word-document-processing"
+  ],
+  "expertType": "team",
+  "agentName": "criminal-defense-team-lead",
+  "teamInfo": {
+    "leadAgent": "criminal-defense-team-lead",
+    "memberAgents": [
+      "criminal-material-analyst",
+      "criminal-research-strategist",
+      "criminal-drafting-specialist",
+      "criminal-trial-support",
+      "criminal-verification-officer"
+    ]
+  },
+  "displayName": {
+    "en": "Criminal Defense Expert developed by Fadada·Richee",
+    "zh": "法大大·睿契提供的刑事辩护专家"
+  },
+  "profession": {
+    "en": "Criminal Defense Expert",
+    "zh": "刑事辩护专家团"
+  },
+  "displayDescription": {
+    "en": "[Fadada·Richee]Criminal defense team dispatching material analysis, strategy research, document drafting, trial support and delivery verification across investigation to appeal stages.",
+    "zh": "【法大大·睿契】面向刑辩律师，按阶段调度材料分析、辩护研究、文书起草、庭审质证与成果校验，覆盖侦查至二审全流程。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "11-SecurityCompliance",
+  "defaultInitPrompt": {
+    "zh": "帮我分析这个刑事案件的证据链和辩护路径",
+    "en": "Help me analyze the evidence chain and defense strategy for this criminal case"
+  },
+  "plugin": "criminal-defense-expert",
+  "tags": [
+    {
+      "en": "Criminal Defense",
+      "zh": "刑事辩护"
+    },
+    {
+      "en": "Trial Advocacy",
+      "zh": "庭审质证"
+    },
+    {
+      "en": "Document Drafting",
+      "zh": "文书起草"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Help me analyze the evidence chain and defense strategy for this criminal case",
+      "zh": "帮我分析这个刑事案件的证据链和辩护路径"
+    },
+    {
+      "en": "Draft a bail application for this criminal case",
+      "zh": "起草一份取保候审申请书"
+    },
+    {
+      "en": "Prepare cross-examination and questioning outlines for first-instance trial",
+      "zh": "制作一审质证提纲和发问提纲"
+    }
+  ],
+  "members": [
+    {
+      "id": "criminal-defense-team-lead",
+      "name": {
+        "en": "Bian",
+        "zh": "辩明远"
+      },
+      "profession": {
+        "en": "Chief Defense Coordinator",
+        "zh": "首席辩护调度官"
+      },
+      "avatar": "avatars/criminal-defense-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "criminal-material-analyst",
+      "name": {
+        "en": "Zhen",
+        "zh": "甄明察"
+      },
+      "profession": {
+        "en": "Material & Evidence Analyst",
+        "zh": "材料与证据分析师"
+      },
+      "avatar": "avatars/criminal-material-analyst.png",
+      "role": "member"
+    },
+    {
+      "id": "criminal-research-strategist",
+      "name": {
+        "en": "Yan",
+        "zh": "闫慎思"
+      },
+      "profession": {
+        "en": "Defense Strategy Researcher",
+        "zh": "辩护策略研究员"
+      },
+      "avatar": "avatars/criminal-research-strategist.png",
+      "role": "member"
+    },
+    {
+      "id": "criminal-drafting-specialist",
+      "name": {
+        "en": "Zhang",
+        "zh": "章文达"
+      },
+      "profession": {
+        "en": "Criminal Document Drafter",
+        "zh": "刑事文书起草师"
+      },
+      "avatar": "avatars/criminal-drafting-specialist.png",
+      "role": "member"
+    },
+    {
+      "id": "criminal-trial-support",
+      "name": {
+        "en": "Zhi",
+        "zh": "智庭锋"
+      },
+      "profession": {
+        "en": "Trial Support Specialist",
+        "zh": "庭审质证专员"
+      },
+      "avatar": "avatars/criminal-trial-support.png",
+      "role": "member"
+    },
+    {
+      "id": "criminal-verification-officer",
+      "name": {
+        "en": "Xiao",
+        "zh": "校严明"
+      },
+      "profession": {
+        "en": "Delivery Verification Officer",
+        "zh": "交付校验官"
+      },
+      "avatar": "avatars/criminal-verification-officer.png",
+      "role": "member"
+    }
+  ],
+  "dependencies": {
+    "connectors": [
+      "fadada-richee"
+    ]
+  }
+}

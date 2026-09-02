@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+{{SHARED_CSS}}
+</style>
+<style>
+{{PLATFORM_CSS}}
+</style>
+<script>
+var P = [{{CHART_COLORS_JS}},'#f59e0b','#10b981','#ef4444','#8b5cf6','#6366f1'];
+function drawDonut(id,arg,centerText,centerSub){
+  var c=document.getElementById(id);if(!c||!c.getContext)return;
+  var data=Array.isArray(arg)?arg.map(function(d,i){d=d||{};return{label:d.label||d.name||'',value:d.value||d.data||0,color:d.color||P[i%P.length]};}):((arg||{}).labels||[]).map(function(l,i){return{label:l,value:(arg.data||arg.values||[])[i]||0,color:(arg.colors||[])[i]||P[i%P.length]};});
+  if(!data.length)return;var ctx=c.getContext('2d'),W=c.width,H=c.height,cx=W/2,cy=H/2,r=Math.min(W,H)/2-18,ir=r*.6,tt=data.reduce(function(s,d){return s+d.value;},0)||1;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);var a=-Math.PI/2;
+  data.forEach(function(d){var s=d.value/tt*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a,a+s);ctx.closePath();ctx.fillStyle=d.color;ctx.fill();a+=s;});
+  ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  if(centerText){ctx.fillStyle='#1a1a2e';ctx.font='700 28px -apple-system,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(centerText,cx,cy-4);}
+  if(centerSub){ctx.font='13px -apple-system,sans-serif';ctx.fillStyle='#8e8ea0';ctx.fillText(centerSub,cx,cy+20);}
+}
+</script>
+</head>
+<body>
+
+<div class="report-container">
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<div class="report-header">
+  <h1>{{TITLE}}</h1>
+  <div class="report-subtitle">{{SUBTITLE}}</div>
+  <div class="report-meta">{{META}}</div>
+</div>
+
+<!-- REPORT_CONTENT -->
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lb-close" id="lb-close" aria-label="关闭">&times;</button>
+  <button class="lb-prev" id="lb-prev" aria-label="上一张">&lsaquo;</button>
+  <button class="lb-next" id="lb-next" aria-label="下一张">&rsaquo;</button>
+  <div id="lb-content"></div>
+  <div class="lb-counter" id="lb-counter"></div>
+</div>
+
+</div><!-- .report-container -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  <!-- CHART_INIT -->
+
+  // ── Lightbox (图片 + 视频) ──
+  var lb=document.getElementById('lightbox'),lbContent=document.getElementById('lb-content'),
+      lbCnt=document.getElementById('lb-counter');
+  if(lb){
+    var items=[],curIdx=-1;
+    document.querySelectorAll('img[data-full]').forEach(function(img,i){
+      var idx=items.length;items.push({type:'image',src:img.dataset.full});
+      img.addEventListener('click',function(){openLb(idx);});
+    });
+    document.querySelectorAll('.gallery-video-item[data-video]').forEach(function(el,i){
+      var idx=items.length;items.push({type:'video',src:el.dataset.video});
+      el.addEventListener('click',function(){openLb(idx);});
+    });
+    function openLb(i){curIdx=i;show();lb.classList.add('open');document.body.style.overflow='hidden';}
+    function closeLb(){lbContent.innerHTML='';lb.classList.remove('open');document.body.style.overflow='';}
+    function show(){
+      lbContent.innerHTML='';
+      var item=items[curIdx];
+      if(item.type==='video'){
+        var v=document.createElement('video');v.src=item.src;v.controls=true;v.autoplay=true;
+        v.className='lb-media';lbContent.appendChild(v);
+      }else{
+        var img=document.createElement('img');img.src=item.src;img.className='lb-media';
+        lbContent.appendChild(img);
+      }
+      lbCnt.textContent=(curIdx+1)+' / '+items.length;
+    }
+    function prev(){if(items.length>0){curIdx=(curIdx-1+items.length)%items.length;show();}}
+    function next(){if(items.length>0){curIdx=(curIdx+1)%items.length;show();}}
+    document.getElementById('lb-close').addEventListener('click',closeLb);
+    document.getElementById('lb-prev').addEventListener('click',prev);
+    document.getElementById('lb-next').addEventListener('click',next);
+    lb.addEventListener('click',function(e){if(e.target===lb)closeLb();});
+    document.addEventListener('keydown',function(e){
+      if(!lb.classList.contains('open'))return;
+      if(e.key==='Escape')closeLb();
+      if(e.key==='ArrowLeft')prev();
+      if(e.key==='ArrowRight')next();
+    });
+  }
+});
+</script>
+
+</body>
+</html>

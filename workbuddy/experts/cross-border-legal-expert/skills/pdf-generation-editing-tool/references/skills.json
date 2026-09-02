@@ -1,0 +1,13 @@
+{
+  "id": "pdf-generation-editing-tool-dev",
+  "marketId": "",
+  "name": "PDF文档处理",
+  "version": "",
+  "description": "PDF文档生成、美化与处理。支持从零创建精美PDF报告与表单、将Markdown/文本转换为PDF、以及PDF合并拆分、添加水印/页码、加密解密等操作。注意：纯文本提取请使用系统内置读取工具。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

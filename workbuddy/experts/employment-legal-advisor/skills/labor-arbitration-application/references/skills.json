@@ -1,0 +1,12 @@
+{
+  "id": "劳动争议仲裁申请书",
+  "marketId": "",
+  "name": "劳动争议仲裁申请书",
+  "version": "3.3.0",
+  "description": "生成劳动争议仲裁申请书（DOCX）。触发：写仲裁申请书/申请劳动仲裁/起草仲裁申请。不触发：写起诉状——用诉讼文书技能；算赔偿金——用计算类技能；非劳动争议——用民事技能。",
+  "author": "labor-skill-team",
+  "tags": "劳动仲裁,仲裁申请书,劳动争议,DOCX,文书生成,仲裁前置,诉前评估",
+  "skillType": "custom",
+  "skillSource": "cn-lawyer-skill-creator",
+  "skillSourceName": "cn-lawyer-skill-creator"
+}

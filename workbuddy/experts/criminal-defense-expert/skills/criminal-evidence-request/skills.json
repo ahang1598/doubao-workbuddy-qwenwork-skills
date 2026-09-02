@@ -1,0 +1,12 @@
+{
+  "id": "收集、调取证据申请书",
+  "marketId": "",
+  "name": "收集、调取证据申请书",
+  "version": "",
+  "description": "为辩护律师生成收集、调取证据申请书，申请检察院或法院调取有利于辩护的证据。依据刑诉法第41/43条。触发：用户需要调查取证申请。不触发：非法证据排除（→criminal-evidence-exclusion）、证人出庭申请（→criminal-witness-appearance）、质证提纲（→criminal-cross-examination）。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": ""
+}

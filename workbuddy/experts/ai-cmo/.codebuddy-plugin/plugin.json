@@ -1,0 +1,129 @@
+{
+  "name": "ai-cmo",
+  "version": "1.0.0",
+  "description": "3 experts collaborate across positioning/incubation, hot topics & scripting, and multi-platform content & growth for AI CMO self-media operations",
+  "author": {
+    "name": "小风",
+    "email": "wind.away@163.com"
+  },
+  "agents": [
+    "./agents/ai-cmo-team-lead.md",
+    "./agents/ip-incubation-lead.md",
+    "./agents/hot-topic-expert.md",
+    "./agents/multi-platform-content-lead.md"
+  ],
+  "skills": [
+    "./skills/self-media-ops"
+  ],
+  "expertType": "team",
+  "agentName": "ai-cmo-team-lead",
+  "teamInfo": {
+    "leadAgent": "ai-cmo-team-lead",
+    "memberAgents": [
+      "ip-incubation-lead",
+      "hot-topic-expert",
+      "multi-platform-content-lead"
+    ]
+  },
+  "displayName": {
+    "en": "AI CMO",
+    "zh": "AI CMO"
+  },
+  "profession": {
+    "en": "AI CMO",
+    "zh": "AI CMO"
+  },
+  "displayDescription": {
+    "en": "3 experts collaborate across account positioning, topic & script creation, and growth & monetization — running the full self-media pipeline with a data-driven review loop.",
+    "zh": "3 位专家接力协作，跑通账号定位、选题脚本、涨粉变现全链路，含数据复盘与反哺选题的闭环。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "帮我诊断账号为什么做不起来",
+    "en": "Diagnose why my account isn't taking off"
+  },
+  "plugin": "ai-cmo",
+  "tags": [
+    {
+      "en": "Account Positioning",
+      "zh": "账号定位"
+    },
+    {
+      "en": "Topic & Script",
+      "zh": "选题脚本"
+    },
+    {
+      "en": "Growth & Monetization",
+      "zh": "涨粉变现"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Diagnose why my account isn't taking off",
+      "zh": "帮我诊断账号为什么做不起来"
+    },
+    {
+      "en": "Plan this week's topics",
+      "zh": "帮我做一个本周选题规划"
+    },
+    {
+      "en": "Rewrite my script to hook viewers in 3 seconds",
+      "zh": "帮我把这条脚本改得前 3 秒留人"
+    }
+  ],
+  "members": [
+    {
+      "id": "ai-cmo-team-lead",
+      "name": {
+        "en": "Team Lead",
+        "zh": "主理人"
+      },
+      "profession": {
+        "en": "Team Lead",
+        "zh": "主理人"
+      },
+      "avatar": "avatars/ai-cmo-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "ip-incubation-lead",
+      "name": {
+        "en": "IP Incubation Lead",
+        "zh": "IP孵化操盘手"
+      },
+      "profession": {
+        "en": "IP Incubation Lead",
+        "zh": "IP孵化操盘手"
+      },
+      "avatar": "avatars/ip-incubation-lead.png",
+      "role": "member"
+    },
+    {
+      "id": "hot-topic-expert",
+      "name": {
+        "en": "Hot Topic Expert",
+        "zh": "热点选题专家"
+      },
+      "profession": {
+        "en": "Hot Topic Expert",
+        "zh": "热点选题专家"
+      },
+      "avatar": "avatars/hot-topic-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "multi-platform-content-lead",
+      "name": {
+        "en": "Multi-Platform Content Lead",
+        "zh": "多平台内容操盘手"
+      },
+      "profession": {
+        "en": "Multi-Platform Content Lead",
+        "zh": "多平台内容操盘手"
+      },
+      "avatar": "avatars/multi-platform-content-lead.png",
+      "role": "member"
+    }
+  ]
+}

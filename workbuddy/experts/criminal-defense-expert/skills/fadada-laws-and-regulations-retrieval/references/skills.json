@@ -1,0 +1,13 @@
+{
+  "id": "fadada-laws-and-regulations-retrieval",
+  "marketId": "",
+  "name": "法大大法律法规检索",
+  "version": "",
+  "description": "检索中国大陆法律法规、行政法规、地方性法规、司法解释及条文内容的专用 skill，通过 MCP 工具 searchLawInfo 进行检索。当用户提到查法条、查法律、找法规、查规定、找司法解释、这条法律怎么说、有没有相关法律规定、查某部法律的具体条文、核验法规时效性等任务时，必须触发此 skill。即使用户只说\"这个问题有法律依据吗\"或\"帮我找找相关规定\"，也应触发此 skill 进行法规检索。如果用户同时需要法规和案例，先运行本 skill，再运行 fadada-legal-case-search。",
+  "author": "",
+  "tags": "",
+  "skillType": "custom",
+  "skillSource": "",
+  "skillSourceName": "",
+  "iconTag": ""
+}

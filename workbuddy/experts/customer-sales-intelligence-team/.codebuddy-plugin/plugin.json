@@ -1,0 +1,146 @@
+{
+  "name": "customer-sales-intelligence-team",
+  "version": "1.3.0",
+  "description": "A coordinated B2B sales intelligence team that scores customers, analyzes sectors and scenarios, generates sales scripts, matches prospects, and builds account-winning playbooks.",
+  "author": {
+    "name": "政企智拓项目组",
+    "email": "workbuddy@tencent.com"
+  },
+  "agents": [
+    "./agents/customer-sales-intelligence-team-team-lead.md",
+    "./agents/customer-scoring-expert.md",
+    "./agents/sales-playbook-expert.md",
+    "./agents/sector-recommendation-expert.md",
+    "./agents/customer-scenario-expert.md",
+    "./agents/sales-call-script-expert.md",
+    "./agents/field-sales-script-expert.md",
+    "./agents/customer-matching-expert.md",
+    "./agents/filter-condition-expert.md",
+    "./agents/recruitment-insights-expert.md"
+  ],
+  "expertType": "team",
+  "agentName": "customer-sales-intelligence-team-team-lead",
+  "teamInfo": {
+    "leadAgent": "customer-sales-intelligence-team-team-lead",
+    "memberAgents": [
+      "customer-scoring-expert",
+      "sales-playbook-expert",
+      "sector-recommendation-expert",
+      "customer-scenario-expert",
+      "sales-call-script-expert",
+      "field-sales-script-expert",
+      "customer-matching-expert",
+      "filter-condition-expert",
+      "recruitment-insights-expert"
+    ]
+  },
+  "displayName": {
+    "en": "Customer Sales Intelligence Team",
+    "zh": "客户销售增长专家团"
+  },
+  "profession": {
+    "en": "Customer Sales Intelligence Team",
+    "zh": "客户销售增长专家团"
+  },
+  "displayDescription": {
+    "en": "A coordinated team that scores customers, analyzes sectors and business scenarios, creates sales scripts and playbooks, matches prospects, and produces practical account-growth recommendations.",
+    "zh": "协同完成客户评分、赛道与场景分析、销售话术、客户匹配和分阶段攻坚，输出可直接执行的客户增长方案。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "07-SalesCommerce",
+  "defaultInitPrompt": {
+    "zh": "请根据我的需求调用合适的销售专家，完成客户评分、赛道分析、客户匹配、销售话术或客户攻坚方案。",
+    "en": "Route my request to the right sales specialists for customer scoring, sector analysis, customer matching, sales scripts, or an account-winning playbook."
+  },
+  "plugin": "customer-sales-intelligence-team",
+  "tags": [
+    { "en": "Customer Intelligence", "zh": "客户智能" },
+    { "en": "Sales Enablement", "zh": "销售赋能" },
+    { "en": "Account Growth", "zh": "客户增长" }
+  ],
+  "quickPrompts": [
+    { "en": "Route my request to the right sales specialists for customer scoring, sector analysis, customer matching, sales scripts, or an account-winning playbook.", "zh": "请根据我的需求调用合适的销售专家，完成客户评分、赛道分析、客户匹配、销售话术或客户攻坚方案。" },
+    { "en": "Score this customer and turn the result into a practical sales playbook from first contact to close.", "zh": "请先评估这个客户，再把结论转成从破冰到成交的可执行销售打法。" },
+    { "en": "Find matching customers or convert my natural-language customer-finding request into validated JSON filters.", "zh": "请匹配相关客户，或把我的自然语言找客需求转换成已核验的 JSON 筛选条件。" }
+  ],
+  "members": [
+    {
+      "id": "customer-sales-intelligence-team-team-lead",
+      "name": { "en": "Gu Heng", "zh": "顾衡" },
+      "profession": { "en": "Sales Growth Director", "zh": "销售增长总监" },
+      "avatar": "avatars/customer-sales-intelligence-team-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "customer-scoring-expert",
+      "name": { "en": "Shen Liang", "zh": "沈量" },
+      "profession": { "en": "Customer Recommendation Analyst", "zh": "客户推荐分析师" },
+      "avatar": "avatars/customer-scoring-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "sales-playbook-expert",
+      "name": { "en": "Lin Ce", "zh": "林策" },
+      "profession": { "en": "Sales Playbook Strategist", "zh": "销售打法策略师" },
+      "avatar": "avatars/sales-playbook-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "sector-recommendation-expert",
+      "name": { "en": "Zhou Yu", "zh": "周域" },
+      "profession": { "en": "Cloud Sector Recommendation Analyst", "zh": "云赛道推荐分析师" },
+      "avatar": "avatars/sector-recommendation-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "customer-scenario-expert",
+      "name": { "en": "Cheng Jing", "zh": "程景" },
+      "profession": { "en": "Customer Business Scenario Analyst", "zh": "客户业务场景分析师" },
+      "avatar": "avatars/customer-scenario-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "sales-call-script-expert",
+      "name": { "en": "Su Yan", "zh": "苏言" },
+      "profession": { "en": "B2B Sales Call Script Specialist", "zh": "B2B销售电销话术专家" },
+      "avatar": "avatars/sales-call-script-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "field-sales-script-expert",
+      "name": { "en": "Lu Xing", "zh": "陆行" },
+      "profession": { "en": "B2B Field Sales Conversation Specialist", "zh": "B2B销售陌拜话术专家" },
+      "avatar": "avatars/field-sales-script-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "customer-matching-expert",
+      "name": { "en": "Tang Pei", "zh": "唐配" },
+      "profession": { "en": "Customer Semantic Matching Analyst", "zh": "客户语义匹配分析师" },
+      "avatar": "avatars/customer-matching-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "filter-condition-expert",
+      "name": { "en": "Xu Zhun", "zh": "许准" },
+      "profession": { "en": "Customer Filter Condition Analyst", "zh": "客户筛选条件分析师" },
+      "avatar": "avatars/filter-condition-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "recruitment-insights-expert",
+      "name": { "en": "He Xi", "zh": "何析" },
+      "profession": { "en": "Recruitment Structure Analyst", "zh": "招聘结构分析师" },
+      "avatar": "avatars/recruitment-insights-expert.png",
+      "role": "member"
+    }
+  ],
+  "workbuddy": {
+    "dependencies": [
+      {
+        "type": "mcp",
+        "name": "lexiang"
+      }
+    ]
+  }
+}

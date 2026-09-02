@@ -1,0 +1,796 @@
+#!/usr/bin/env python3
+"""
+Amazon Product Scout Agent - Multi-round product selection with pagination tracking,
+cross-condition dedup, and smart condition recommendations.
+
+Usage:
+  python3 product_scout_agent.py                              # Run next round (same/last conditions)
+  python3 product_scout_agent.py --marketplace UK --min-price 10 --max-price 30 ...
+  python3 product_scout_agent.py --params params.json         # Custom params from file
+  python3 product_scout_agent.py --status                     # Show state summary
+  python3 product_scout_agent.py --suggest                    # List all condition alternatives
+  python3 product_scout_agent.py --reset                      # Reset all state
+  python3 product_scout_agent.py --init-params                # Generate template params file
+  python3 product_scout_agent.py --export-all                 # Export all unique ASINs to Excel
+"""
+import json
+import sqlite3
+import os
+import sys
+import hashlib
+import subprocess
+import time
+import argparse
+from datetime import datetime
+
+try:
+    import openpyxl
+except ImportError:
+    openpyxl = None
+
+# ── 差评风险关键词表 ──
+NEGATIVE_REVIEW_RISK_KEYWORDS = {
+    "夸大功效": [
+        "Professional Grade", "Military Grade", "Hospital Grade",
+        "Industrial Strength", "Unbreakable", "Heavy Duty",
+        "Ultra Strong", "Maximum Strength",
+    ],
+    "模糊尺寸/兼容性": [
+        "Universal Fit", "One Size Fits All", "Fits Most",
+        "Adjustable", "Multi-purpose", "Compatible with All",
+    ],
+    "速效/立竿见影": [
+        "Instant Results", "Fast Acting", "Overnight",
+        "Permanent", "Guaranteed Results", "Clinically Proven",
+    ],
+    "廉价仿制/擦边球": [
+        "Replica", "Style of", "Inspired by", "OEM",
+    ],
+    "套装/数量模糊": [
+        "Assorted", "Random Color", "Variety Pack", "Bundle",
+    ],
+    "健康/安全过度承诺": [
+        "Non-toxic", "Natural", "All Natural", "Organic",
+        "Hypoallergenic", "Chemical Free", "BPA Free",
+        "Safe for Kids", "Detox",
+    ],
+}
+
+def scan_risk_keywords(title):
+    """扫描标题中的差评风险关键词，返回命中列表（格式：类别:关键词）"""
+    if not title:
+        return ""
+    hits = []
+    title_lower = title.lower()
+    for category, keywords in NEGATIVE_REVIEW_RISK_KEYWORDS.items():
+        for kw in keywords:
+            if kw.lower() in title_lower:
+                hits.append(f"{category}:{kw}")
+    return "; ".join(hits) if hits else ""
+
+# ── linkfox_paths for standardized path resolution ──
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _SCRIPT_DIR)
+try:
+    import linkfox_paths as _lp
+except ImportError:
+    _lp = None
+
+# ── Dynamic skill path resolution (not hardcoded) ──
+_SKILLS_DIR = os.path.dirname(os.path.dirname(_SCRIPT_DIR))  # .../skills/
+SKILL_SCRIPT = os.environ.get(
+    "SELLERSPRITE_SCRIPT",
+    os.path.join(_SKILLS_DIR, "linkfox-sellersprite-product-search", "scripts", "sellersprite_product_search.py")
+)
+PAGE_SIZE = 100
+PAGES_PER_ROUND = 3
+SLUG = "amazon-product-scout-agent"
+
+# ── Marketplace-specific configs ──
+CURRENCY_SYMBOLS = {
+    "US": "$", "UK": "£", "DE": "€", "FR": "€", "JP": "¥",
+    "CA": "C$", "IT": "€", "ES": "€", "MX": "MX$", "IN": "₹"
+}
+
+CURRENCY_CODES = {
+    "US": "USD", "UK": "GBP", "DE": "EUR", "FR": "EUR", "JP": "JPY",
+    "CA": "CAD", "IT": "EUR", "ES": "EUR", "MX": "MXN", "IN": "INR"
+}
+
+MARKETPLACE_NAMES = {
+    "US": "美国", "UK": "英国", "DE": "德国", "FR": "法国", "JP": "日本",
+    "CA": "加拿大", "IT": "意大利", "ES": "西班牙", "MX": "墨西哥", "IN": "印度"
+}
+
+# EU standard dimension types (UK/DE/FR/IT/ES share the same)
+_EU_DIMS = [("SL","小号信封"),("NL","标准信封"),("LL","大号信封"),("ELL","超大号信封"),
+            ("SM","小包裹"),("SD","标准包裹"),("SB","小号大件"),("NB","标准大件"),
+            ("LB","大号大件"),("SPO","特殊大件"),("O","其他")]
+# North American dimension types (US/CA share similar)
+_NA_DIMS = [("SS","小号标准"),("LS","大号标准"),("SO","小号大件"),("MO","中号大件"),
+            ("LO","大号大件"),("LB","大号大件LB"),("SP","特殊大件"),("O","其他")]
+
+DIMENSION_TYPES = {
+    "US": _NA_DIMS,
+    "CA": [("EN","信封装"),("ST","标准"),("SO","小号大件"),("MO","中号大件"),
+           ("LO","大号大件"),("SP","特殊大件"),("O","其他")],
+    "UK": _EU_DIMS, "DE": _EU_DIMS, "FR": _EU_DIMS, "IT": _EU_DIMS, "ES": _EU_DIMS,
+    "JP": [("SM","小号"),("ST","标准"),("OV","大件"),("SS","超大尺寸"),("O","其他")],
+    "MX": _NA_DIMS,  # Mexico uses US-style FBA dimensions
+    "IN": _NA_DIMS,  # India uses US-style FBA dimensions
+}
+
+# Marketplace-specific price bands (in local currency, reasonable e-commerce ranges)
+PRICE_BANDS = {
+    "US": [(1,10),(10,30),(30,50),(50,80),(80,120)],
+    "UK": [(1,10),(10,30),(30,50),(50,80),(80,120)],
+    "DE": [(1,10),(10,30),(30,50),(50,80),(80,120)],
+    "FR": [(1,10),(10,30),(30,50),(50,80),(80,120)],
+    "IT": [(1,10),(10,30),(30,50),(50,80),(80,120)],
+    "ES": [(1,10),(10,30),(30,50),(50,80),(80,120)],
+    "JP": [(100,1000),(1000,3000),(3000,5000),(5000,8000),(8000,12000)],
+    "CA": [(5,20),(20,50),(50,80),(80,120),(120,200)],
+    "MX": [(50,300),(300,900),(900,1500),(1500,2400),(2400,3600)],
+    "IN": [(50,500),(500,1500),(1500,2500),(2500,4000),(4000,6000)],
+}
+
+# Weight unit preference per marketplace
+WEIGHT_UNITS = {
+    "US": "oz", "CA": "g", "UK": "g", "DE": "g", "FR": "g",
+    "IT": "g", "ES": "g", "JP": "g", "MX": "g", "IN": "g",
+}
+
+# Default weight thresholds per marketplace (in preferred unit)
+DEFAULT_WEIGHT_THRESHOLDS = {
+    "US": 16,    # 16 oz ≈ 454g (light/small)
+    "UK": 500,   # 500g
+    "DE": 500, "FR": 500, "IT": 500, "ES": 500,
+    "JP": 500, "CA": 500, "MX": 500, "IN": 500,
+}
+
+# Max price for "price jump" suggestion threshold per marketplace
+MAX_PRICE_JUMP_THRESHOLD = {
+    "US": 120, "UK": 120, "DE": 120, "FR": 120, "IT": 120, "ES": 120,
+    "JP": 12000, "CA": 200, "MX": 3600, "IN": 6000,
+}
+
+VALID_MARKETPLACES = ["US","UK","DE","FR","JP","CA","IT","ES","MX","IN"]
+
+# ── Session directory resolution (via linkfox_paths) ──
+def get_session_dir():
+    if _lp:
+        return _lp.session_root()
+    # Fallback if linkfox_paths not available
+    sid = os.environ.get("SESSION_ID", "")
+    if not sid:
+        sid = datetime.now().strftime("%H%M%S") + "-" + os.urandom(3).hex()
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    cwd = os.environ.get("ACPX_WORKSPACES", os.getcwd()).split(os.pathsep)[0]
+    return os.path.join(cwd, "linkfox", date_str, sid)
+
+def get_data_dir():
+    d = os.path.join(get_session_dir(), "data")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+def get_db_path():
+    return os.path.join(get_data_dir(), "scout_agent.db")
+
+def resolve_data_path(slug, ext="json"):
+    """Use linkfox_paths.resolve_data_path if available, else fallback."""
+    if _lp:
+        return _lp.resolve_data_path(slug, time.time(), ext)
+    ts = int(time.time() * 1_000_000)
+    return os.path.join(get_data_dir(), f"{slug}-{ts}.{ext}")
+
+# ── DB Schema ──
+def init_db(conn):
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS seen_products (
+            asin TEXT PRIMARY KEY, title TEXT, price REAL, monthly_sales INTEGER,
+            monthly_revenue REAL, bsr INTEGER, rating REAL, ratings_count INTEGER,
+            profit REAL, fulfillment TEXT, brand TEXT, seller_nation TEXT,
+            seller_name TEXT, available_date TEXT, weight TEXT, category_path TEXT,
+            image_url TEXT, asin_url TEXT, first_seen_round INTEGER,
+            first_seen_at TEXT, full_data TEXT,
+            monthly_sales_growth_rate REAL, fba_fee REAL, seller_num INTEGER,
+            badge_new_release TEXT, ratings_rate REAL
+        );
+        CREATE TABLE IF NOT EXISTS query_sessions (
+            query_hash TEXT PRIMARY KEY, params_json TEXT, last_page INTEGER DEFAULT 0,
+            total_fetched INTEGER DEFAULT 0, is_exhausted INTEGER DEFAULT 0,
+            created_at TEXT, updated_at TEXT
+        );
+        CREATE TABLE IF NOT EXISTS rounds (
+            round_num INTEGER PRIMARY KEY, query_hash TEXT, start_page INTEGER,
+            end_page INTEGER, products_fetched INTEGER, new_products INTEGER,
+            duplicates_filtered INTEGER, is_exhausted INTEGER, timestamp TEXT
+        );
+        CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
+    """)
+    # Migration: add new columns if table already existed without them
+    existing_cols = {row[1] for row in conn.execute("PRAGMA table_info(seen_products)").fetchall()}
+    migrations = [
+        ("monthly_sales_growth_rate", "REAL"),
+        ("fba_fee", "REAL"),
+        ("seller_num", "INTEGER"),
+        ("badge_new_release", "TEXT"),
+        ("ratings_rate", "REAL"),
+    ]
+    for col, coltype in migrations:
+        if col not in existing_cols:
+            conn.execute(f"ALTER TABLE seen_products ADD COLUMN {col} {coltype}")
+    conn.commit()
+
+def compute_query_hash(params):
+    key_params = {k: v for k, v in params.items() if k not in ('page','size')}
+    return hashlib.sha256(json.dumps(key_params, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
+
+def get_round_number(conn):
+    row = conn.execute("SELECT value FROM meta WHERE key='round'").fetchone()
+    return int(row[0]) if row else 0
+
+def increment_round(conn):
+    n = get_round_number(conn) + 1
+    conn.execute("INSERT INTO meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", ('round', str(n)))
+    conn.commit()
+    return n
+
+def get_or_create_session(conn, qh, pj):
+    row = conn.execute("SELECT last_page,total_fetched,is_exhausted FROM query_sessions WHERE query_hash=?", (qh,)).fetchone()
+    if row:
+        return {'last_page': row[0], 'total_fetched': row[1], 'is_exhausted': bool(row[2])}
+    now = datetime.now().isoformat()
+    conn.execute("INSERT INTO query_sessions(query_hash,params_json,last_page,total_fetched,is_exhausted,created_at,updated_at) VALUES(?,?,0,0,0,?,?)", (qh,pj,now,now))
+    conn.commit()
+    return {'last_page': 0, 'total_fetched': 0, 'is_exhausted': False}
+
+def update_session(conn, qh, last_page, fetched, exhausted):
+    conn.execute("UPDATE query_sessions SET last_page=?,total_fetched=total_fetched+?,is_exhausted=?,updated_at=? WHERE query_hash=?",
+                 (last_page, fetched, int(exhausted), datetime.now().isoformat(), qh))
+    conn.commit()
+
+# ── API call ──
+def fetch_page(params, page_num):
+    call_params = dict(params)
+    call_params['page'] = page_num
+    call_params['size'] = PAGE_SIZE
+    params_json = json.dumps(call_params, ensure_ascii=False)
+    print(f"  Fetching page {page_num}...", end=" ", flush=True)
+    result = subprocess.run([sys.executable, SKILL_SCRIPT, params_json], capture_output=True, text=True, cwd=os.environ.get("ACPX_WORKSPACES", os.getcwd()).split(os.pathsep)[0])
+    if result.returncode != 0:
+        print("FAILED"); print(f"  stderr: {result.stderr[:500]}"); return None
+    saved_file = None
+    for line in result.stdout.strip().split('\n'):
+        if line.startswith("Saved full response:"):
+            saved_file = line.split("Saved full response: ")[1].split(" ")[0]; break
+    if not saved_file or not os.path.exists(saved_file):
+        print("NO OUTPUT FILE"); return None
+    with open(saved_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    products = data.get('products', [])
+    print(f"got {len(products)} products")
+    return products
+
+# ── Dedup ──
+def dedup_and_store(conn, products, round_num):
+    new_p, dup_p = [], []
+    for p in products:
+        asin = p.get('asin','')
+        if not asin: continue
+        if conn.execute("SELECT asin FROM seen_products WHERE asin=?", (asin,)).fetchone():
+            dup_p.append(asin)
+        else:
+            conn.execute("""INSERT INTO seen_products(asin,title,price,monthly_sales,monthly_revenue,bsr,rating,ratings_count,profit,fulfillment,brand,seller_nation,seller_name,available_date,weight,category_path,image_url,asin_url,first_seen_round,first_seen_at,full_data,monthly_sales_growth_rate,fba_fee,seller_num,badge_new_release,ratings_rate)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (asin,p.get('title',''),p.get('price',0),p.get('monthlySalesUnits',0),p.get('monthlySalesRevenue',0),
+                 p.get('bsr',0),p.get('rating',0),p.get('ratings',0),p.get('profit',0),p.get('fulfillment',''),
+                 p.get('brand',''),p.get('sellerNation',''),p.get('sellerName',''),p.get('availableDateString',''),
+                 p.get('weight',''),p.get('nodeLabelPath',''),p.get('imageUrl',''),p.get('asinUrl',''),
+                 round_num,datetime.now().isoformat(),json.dumps(p,ensure_ascii=False),
+                 p.get('monthlySalesUnitsGrowthRate'),p.get('fba'),p.get('sellerNum'),
+                 p.get('badgeNewRelease'),p.get('ratingsRate')))
+            new_p.append(p)
+    conn.commit()
+    return new_p, dup_p
+
+# ── Excel export (full dimensions: 18 fields) ──
+EXPORT_FIELDS = ['rank','asin','title','price','monthlySalesUnits','monthlySalesRevenue','bsr','rating','ratings','profit','fulfillment','brand','sellerNation','sellerName','availableDateString','weight','nodeLabelPath','asinUrl','monthlySalesUnitsGrowthRate','fba','sellerNum','badgeNewRelease','ratingsRate','riskKeywords']
+
+def export_excel(products, round_num):
+    if not products: return None
+    excel_path = os.path.join(get_data_dir(), f"scout_round{round_num}_new_products.xlsx")
+    if openpyxl:
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = f"Round {round_num}"
+        ws.append(EXPORT_FIELDS)
+        for i, p in enumerate(products, 1):
+            p_enriched = dict(p, riskKeywords=scan_risk_keywords(p.get('title', '')))
+            row = {f: p_enriched.get(f, '') for f in EXPORT_FIELDS}
+            row['rank'] = i
+            ws.append([row[f] for f in EXPORT_FIELDS])
+        wb.save(excel_path)
+    else:
+        # Fallback: write TSV with .xlsx extension removed
+        excel_path = excel_path.replace('.xlsx', '.tsv')
+        with open(excel_path, 'w', encoding='utf-8-sig') as f:
+            f.write('\t'.join(EXPORT_FIELDS) + '\n')
+            for i, p in enumerate(products, 1):
+                p_enriched = dict(p, riskKeywords=scan_risk_keywords(p.get('title', '')))
+                row = {fld: p_enriched.get(fld, '') for fld in EXPORT_FIELDS}
+                row['rank'] = i
+                f.write('\t'.join(str(row[fld]) for fld in EXPORT_FIELDS) + '\n')
+    return excel_path
+
+# ── Condition description ──
+def describe_conditions(params):
+    cur = CURRENCY_SYMBOLS.get(params.get('marketplace','US'), '$')
+    parts = []
+    if 'minPrice' in params and 'maxPrice' in params:
+        parts.append(f"{cur}{params['minPrice']}-{params['maxPrice']}")
+    if 'maxWeights' in params:
+        parts.append(f"≤{params['maxWeights']}{params.get('weightUnit','g')}")
+    if 'minUnits' in params: parts.append(f"月销>{params['minUnits']}")
+    if 'listedWithinLastMonths' in params: parts.append(f"近{params['listedWithinLastMonths']}月新品")
+    if 'fulfillment' in params: parts.append(params['fulfillment'])
+    if 'sellerNation' in params: parts.append(f"卖家{params['sellerNation']}")
+    return " | ".join(parts)
+
+# ── Generate next steps ──
+def generate_next_steps(conn, params, exhausted, last_page, new_count, total_unique, round_num):
+    cd = describe_conditions(params)
+    cur = CURRENCY_SYMBOLS.get(params.get('marketplace','US'), '$')
+    if exhausted:
+        pag = {"status":"exhausted","message":f"当前条件（{cd}）已翻完所有商品","can_continue":False,"next_page":None}
+    else:
+        pag = {"status":"available","message":f"当前条件（{cd}）还有更多商品可翻页获取","can_continue":True,"next_page":last_page+1}
+
+    alts = []
+    cur_min, cur_max = params.get('minPrice',0), params.get('maxPrice',0)
+    mp = params.get('marketplace','US')
+    jump_max = MAX_PRICE_JUMP_THRESHOLD.get(mp, 120)
+    if cur_max > 0 and cur_max < jump_max:
+        alts.append({"label":f"价格跳跃 {cur}{cur_max}-{cur_max+(cur_max-cur_min)}","desc":"完全不重叠的更高价格区间","overlap":"无"})
+    if cur_min > 3:
+        band = cur_max - cur_min
+        alts.append({"label":f"低价区间 {cur}{max(1,cur_min-band)}-{cur_min}","desc":"完全不重叠的更低价格区间","overlap":"无"})
+    alts.append({"label":"换排序: BSR升序","desc":"同条件但按BSR排名排序，发现不同商品","overlap":"低-中"})
+    if 'maxWeights' in params:
+        cw = params['maxWeights']
+        alts.append({"label":f"扩重量 {cw}-{cw*4}g","desc":"打开更重品类空间","overlap":"无"})
+    cur_listed = params.get('listedWithinLastMonths',0)
+    if cur_listed == 3:
+        alts.append({"label":"扩上架时间到6个月","desc":"商品池扩大约2-3倍","overlap":"中"})
+    cur_u = params.get('minUnits',0)
+    if cur_u > 0:
+        alts.append({"label":f"提销量门槛>{cur_u*3}","desc":"只看更高销量的头部爆款","overlap":"低"})
+    priority = {"无":0,"低":1,"低-中":2,"中":3}
+    alts.sort(key=lambda x: priority.get(x["overlap"],4))
+    alts = alts[:3]
+
+    sessions = conn.execute("SELECT params_json,last_page,is_exhausted FROM query_sessions ORDER BY updated_at DESC").fetchall()
+    explored = []
+    for s in sessions:
+        sp = json.loads(s[0]); p = []
+        if 'minPrice' in sp and 'maxPrice' in sp: p.append(f"{cur}{sp['minPrice']}-{sp['maxPrice']}")
+        if 'maxWeights' in sp: p.append(f"≤{sp['maxWeights']}g")
+        sf = sp.get('order',{}).get('field','total_units')
+        if sf != 'total_units': p.append(f"排序:{sf}")
+        st = "已翻完" if s[2] else f"翻到第{s[1]}页"
+        explored.append(f"{', '.join(p) or '默认'} ({st})")
+
+    return {"round":round_num,"this_round_new":new_count,"total_unique_so_far":total_unique,
+            "current_condition":cd,"pagination":pag,"alternatives":alts,
+            "already_explored":explored,"call_to_action":"回复「继续」翻页获取更多 | 或选择一个新方案编号"}
+
+# ── Main round logic ──
+def run_round(params, json_output=False):
+    conn = sqlite3.connect(get_db_path()); init_db(conn)
+    qh = compute_query_hash(params)
+    pj = json.dumps({k:v for k,v in params.items() if k not in ('page','size')}, ensure_ascii=False)
+    session = get_or_create_session(conn, qh, pj)
+
+    if session['is_exhausted']:
+        total = conn.execute("SELECT COUNT(*) FROM seen_products").fetchone()[0]
+        print(f"\nEXHAUSTED: {describe_conditions(params)}")
+        print(f"  Total unique ASINs: {total}")
+        print("  Run --suggest for alternative conditions.")
+        conn.close(); return
+
+    start_page = session['last_page'] + 1 if session['last_page'] > 0 else 1
+    mode = "CONTINUE" if session['last_page'] > 0 else "NEW QUERY"
+    round_num = increment_round(conn)
+    print(f"\n{'='*60}\nRound {round_num} — {mode}\n{'='*60}")
+    print(f"  Query: {describe_conditions(params)}")
+    print(f"  Pages: {start_page}→{start_page+PAGES_PER_ROUND-1}")
+    print(f"  DB: {conn.execute('SELECT COUNT(*) FROM seen_products').fetchone()[0]} unique ASINs")
+
+    all_p, exhausted, last_pg = [], False, start_page - 1
+    for pg in range(start_page, start_page + PAGES_PER_ROUND):
+        products = fetch_page(params, pg)
+        if products is None: break
+        if len(products) == 0: exhausted = True; break
+        all_p.extend(products); last_pg = pg
+        if len(products) < PAGE_SIZE: exhausted = True; break
+        time.sleep(1)
+
+    if not all_p:
+        if not exhausted: update_session(conn, qh, last_pg, 0, True); exhausted = True
+        print("  No products. Exhausted."); conn.close(); return
+
+    new_p, dup_p = dedup_and_store(conn, all_p, round_num)
+    total = conn.execute("SELECT COUNT(*) FROM seen_products").fetchone()[0]
+    update_session(conn, qh, last_pg, len(all_p), exhausted)
+    conn.execute("INSERT INTO rounds(round_num,query_hash,start_page,end_page,products_fetched,new_products,duplicates_filtered,is_exhausted,timestamp) VALUES(?,?,?,?,?,?,?,?,?)",
+                 (round_num,qh,start_page,last_pg,len(all_p),len(new_p),len(dup_p),int(exhausted),datetime.now().isoformat()))
+    conn.commit()
+    excel_path = export_excel(new_p, round_num)
+    cur = CURRENCY_SYMBOLS.get(params.get('marketplace','US'), '$')
+
+    print(f"\n{'─'*60}\nRound {round_num} Summary\n{'─'*60}")
+    print(f"  Fetched: {len(all_p)} | New: {len(new_p)} | Dupes: {len(dup_p)} | Total: {total}")
+    print(f"  Exhausted: {'YES' if exhausted else 'NO'}" + (f" | Next: page {last_pg+1}" if not exhausted else ""))
+    if excel_path: print(f"  Excel: {excel_path}")
+    if new_p:
+        print(f"\n  Top 10 (full dimensions: 18 fields per product):")
+        for i,p in enumerate(new_p[:10],1):
+            print(f"  ── #{i} ──")
+            print(f"    ASIN: {p.get('asin','')}  |  Title: {p.get('title','')}")
+            print(f"    Price: {cur}{p.get('price',0)}  |  MonthlySales: {p.get('monthlySalesUnits',0)}  |  MonthlyRevenue: {p.get('monthlySalesRevenue',0)}")
+            print(f"    BSR: {p.get('bsr',0)}  |  Rating: {p.get('rating',0)}  |  Ratings: {p.get('ratings',0)}  |  Profit: {p.get('profit',0)}%")
+            print(f"    Fulfillment: {p.get('fulfillment','')}  |  Brand: {p.get('brand','')}  |  SellerNation: {p.get('sellerNation','')}")
+            print(f"    SellerName: {p.get('sellerName','')}  |  AvailableDate: {p.get('availableDateString','')}")
+            print(f"    Weight: {p.get('weight','')}  |  CategoryPath: {p.get('nodeLabelPath','')}")
+            print(f"    AsinUrl: {p.get('asinUrl','')}")
+
+    ns = generate_next_steps(conn, params, exhausted, last_pg, len(new_p), total, round_num)
+    print(f"\n{'─'*60}\nNEXT_STEPS_JSON_START\n{json.dumps(ns,ensure_ascii=False,indent=2)}\nNEXT_STEPS_JSON_END\n{'─'*60}")
+
+    # ── Save round summary as deliverable JSON (output protocol) ──
+    summary_path = resolve_data_path(f"{SLUG}-round{round_num}")
+    with open(summary_path, 'w', encoding='utf-8') as f:
+        json.dump({"round_summary": ns, "new_products": new_p[:20]}, f, ensure_ascii=False, indent=2)
+    size = os.path.getsize(summary_path)
+    print(f"Saved full response: {summary_path} ({size} bytes)")
+
+    # ── Export all new products as JSON for downstream scoring ──
+    if json_output and new_p:
+        json_path = os.path.join(get_data_dir(), f"scout_round{round_num}_products.json")
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(new_p, f, ensure_ascii=False, indent=2)
+        jsize = os.path.getsize(json_path)
+        print(f"JSON output: {json_path} ({jsize} bytes, {len(new_p)} products)")
+
+    conn.close()
+
+# ── Status ──
+def show_status():
+    conn = sqlite3.connect(get_db_path()); init_db(conn)
+    total = conn.execute("SELECT COUNT(*) FROM seen_products").fetchone()[0]
+    rn = get_round_number(conn)
+    print(f"\n{'='*60}\nProduct Scout — Status\n{'='*60}")
+    print(f"  Rounds: {rn} | Unique ASINs: {total}")
+    sessions = conn.execute("SELECT query_hash,params_json,last_page,total_fetched,is_exhausted FROM query_sessions ORDER BY updated_at DESC").fetchall()
+    if sessions:
+        print(f"\n  Query Sessions ({len(sessions)}):")
+        for s in sessions:
+            sp = json.loads(s[1]); cur = CURRENCY_SYMBOLS.get(sp.get('marketplace','US'),'$')
+            pr = f"{cur}{sp.get('minPrice','?')}-{sp.get('maxPrice','?')}" if 'minPrice' in sp else "?"
+            st = "EXHAUSTED" if s[4] else f"next: p{s[2]+1}"
+            print(f"    [{s[0]}] {pr} | page={s[2]} | total={s[3]} | {st}")
+    rounds = conn.execute("SELECT round_num,start_page,end_page,products_fetched,new_products,duplicates_filtered,is_exhausted FROM rounds ORDER BY round_num").fetchall()
+    if rounds:
+        print(f"\n  History:")
+        print(f"    {'R':<4}{'Pages':<10}{'Fetch':<7}{'New':<6}{'Dup':<6}{'Exh'}")
+        for r in rounds:
+            print(f"    {r[0]:<4}{f'{r[1]}→{r[2]}':<10}{r[3]:<7}{r[4]:<6}{r[5]:<6}{'Y' if r[6] else 'N'}")
+    print(f"\n{'='*60}"); conn.close()
+
+# ── Suggest alternatives (full API enum) ──
+SORT_FIELDS = [
+    ("total_units","true","销量降序","当前","当前排序"),("total_units","false","销量升序","低-中","长尾商品"),
+    ("total_amount","true","销售额降序","低-中","高客单价靠前"),("total_amount","false","销售额升序","中","小众品"),
+    ("bsr_rank","true","BSR降序","低-中","排名差→好"),("bsr_rank","false","BSR升序","低-中","排名好→差"),
+    ("price","true","价格降序","低-中","高价优先"),("price","false","价格升序","低-中","低价优先"),
+    ("rating","true","评分降序","低-中","高分优先"),("rating","false","评分升序","中","改良机会品"),
+    ("reviews","true","评论数降序","低-中","成熟商品"),("reviews","false","评论数升序","中","新品机会"),
+    ("profit","true","毛利率降序","低-中","高利润"),("profit","false","毛利率升序","中","低利润改良空间"),
+    ("reviews_rate","true","留评率降序","低-中","用户活跃"),("reviews_rate","false","留评率升序","中","改进空间"),
+    ("available_date","true","上架最新","低-中","最新商品"),("available_date","false","上架最早","低-中","较早日"),
+    ("questions","true","问答数降序","低-中","高互动"),("questions","false","问答数升序","中","低互动"),
+    ("total_units_growth","true","销量增长率降序","低-中","增长最快"),("total_units_growth","false","销量增长率升序","中","增长慢"),
+    ("total_amount_growth","true","销售额增长率降序","低-中","销售额增长快"),("total_amount_growth","false","销售额增长率升序","中","销售额增长慢"),
+    ("reviews_increasement","true","新增评论降序","低-中","评论增长快"),("reviews_increasement","false","新增评论升序","中","评论增长慢"),
+    ("bsr_rank_cv","true","BSR波动降序","低-中","不稳定商品"),("bsr_rank_cv","false","BSR波动升序","低-中","稳定商品"),
+    ("bsr_rank_cr","true","BSR变化率降序","低-中","变化大"),("bsr_rank_cr","false","BSR变化率升序","低-中","变化小"),
+    ("amz_unit","true","子体销量降序","低-中","子体销量高"),("amz_unit","false","子体销量升序","中","子体销量低"),
+]
+
+def suggest_alternatives():
+    conn = sqlite3.connect(get_db_path()); init_db(conn)
+    sessions = conn.execute("SELECT query_hash,params_json,last_page,is_exhausted FROM query_sessions ORDER BY updated_at DESC").fetchall()
+    if not sessions:
+        print(json.dumps({"error":"No previous queries"},ensure_ascii=False)); conn.close(); return
+    bp = json.loads(sessions[0][1])
+    total = conn.execute("SELECT COUNT(*) FROM seen_products").fetchone()[0]
+    eh = {s[0] for s in sessions if s[3]}
+    ex = {s[0] for s in sessions}
+    cur = CURRENCY_SYMBOLS.get(bp.get('marketplace','US'),'$')
+
+    def mv(changes):
+        p = {k:v for k,v in bp.items() if k not in ('page','size')}; p.update(changes)
+        qh = compute_query_hash(p)
+        return p, qh, qh in ex, qh in eh
+
+    cats = []
+    # 1. Sort
+    csf, csd = bp.get('order',{}).get('field','total_units'), bp.get('order',{}).get('desc','true')
+    so = []
+    for f,d,l,o,e in SORT_FIELDS:
+        _,qh,exp,exh = mv({"order":{"field":f,"desc":d}})
+        so.append({"label":l,"overlap":o,"desc":e,"is_current":f==csf and d==csd,"already_explored":exp,"exhausted":exh,"param_key":"order","param_value":{"field":f,"desc":d}})
+    cats.append({"category":"排序方式 (16字段×2方向=32种)","options":so})
+
+    # 2. Listed months
+    cl = bp.get('listedWithinLastMonths',0)
+    lo = []
+    for v,l,o,e in [(1,"近1月","子集","极致新品"),(3,"近3月","current","当前"),(6,"近6月","包含+更多","2-3倍"),(12,"近12月","包含+更多","5-10倍"),(24,"近24月","包含+更多","10-20倍")]:
+        _,qh,exp,exh = mv({"listedWithinLastMonths":v})
+        lo.append({"label":l,"overlap":o,"desc":e,"is_current":v==cl,"already_explored":exp,"exhausted":exh,"param_key":"listedWithinLastMonths","param_value":v})
+    cats.append({"category":"上架时间 (1/3/6/12/24月)","options":lo})
+
+    # 3. Price bands (marketplace-specific)
+    cmp, cxp = bp.get('minPrice',0), bp.get('maxPrice',0)
+    mp = bp.get('marketplace','US')
+    pb = PRICE_BANDS.get(mp, PRICE_BANDS["US"])
+    pb_labels = ["低价带","中低带","中高带","高价带","超高带"]
+    po = []
+    for i,(lo,hi) in enumerate(pb):
+        label = pb_labels[i] if i < len(pb_labels) else f"波段{i+1}"
+        _,qh,exp,exh = mv({"minPrice":lo,"maxPrice":hi})
+        o = "current" if lo==cmp and hi==cxp else ("无" if (hi<=cmp or lo>=cxp) else "中")
+        po.append({"label":f"{cur}{lo}-{hi}","overlap":o,"desc":label,"is_current":lo==cmp and hi==cxp,"already_explored":exp,"exhausted":exh,"param_key":"minPrice/maxPrice","param_value":{"minPrice":lo,"maxPrice":hi}})
+    cats.append({"category":f"价格区间 ({mp} {cur} 不相交波段)","options":po})
+
+    # 4. Weight bands (marketplace-specific unit)
+    cw = bp.get('maxWeights',0)
+    wu = bp.get('weightUnit', WEIGHT_UNITS.get(mp, 'g'))
+    wb = [(None,500,"≤500g"),(500,1000,"500g-1kg"),(1000,2000,"1kg-2kg"),(2000,5000,"2kg-5kg")]
+    wo = []
+    for lo,hi,l in wb:
+        ch = {"maxWeights":hi,"weightUnit":"g"}
+        if lo: ch["minWeights"] = lo
+        _,qh,exp,exh = mv(ch)
+        o = "current" if hi==cw and lo is None else ("无" if lo and lo>=cw else "低")
+        wo.append({"label":l,"overlap":o,"desc":l,"is_current":hi==cw and lo is None,"already_explored":exp,"exhausted":exh,"param_key":"minWeights/maxWeights","param_value":ch})
+    cats.append({"category":f"重量区间 (单位: g)","options":wo})
+
+    # 5. Sales threshold
+    cu = bp.get('minUnits',0)
+    st = [(50,"月销>50","高"),(100,"月销>100","高"),(151,"月销>150","current"),(300,"月销>300","低"),(500,"月销>500","低"),(1000,"月销>1000","低")]
+    so2 = []
+    for v,l,o in st:
+        _,qh,exp,exh = mv({"minUnits":v})
+        so2.append({"label":l,"overlap":o,"desc":l,"is_current":v==cu,"already_explored":exp,"exhausted":exh,"param_key":"minUnits","param_value":v})
+    cats.append({"category":"月销量门槛","options":so2})
+
+    # 6. Fulfillment
+    cf = bp.get('fulfillment','')
+    fo = []
+    for v,l,o,e in [("FBA","FBA","current","当前"),("AMZ","AMZ","无","亚马逊配送"),("FBM","FBM","无","卖家自配"),("AMZ,FBA","AMZ+FBA","高","含当前"),("FBA,FBM","FBA+FBM","高","含当前"),("AMZ,FBA,FBM","全部","高","最大池")]:
+        _,qh,exp,exh = mv({"fulfillment":v})
+        fo.append({"label":l,"overlap":o,"desc":e,"is_current":v==cf,"already_explored":exp,"exhausted":exh,"param_key":"fulfillment","param_value":v})
+    cats.append({"category":"配送方式","options":fo})
+
+    # 7. Seller nation
+    csn = bp.get('sellerNation','')
+    sno = []
+    for v,l,o,e in [("CN","中国","current","当前"),("HK","香港","低","少量重叠"),("US","美国","无","完全不同"),("CN,HK","中国+香港","高","含当前"),("","不限","高","最大池")]:
+        _,qh,exp,exh = mv({"sellerNation":v})
+        sno.append({"label":l,"overlap":o,"desc":e,"is_current":v==csn,"already_explored":exp,"exhausted":exh,"param_key":"sellerNation","param_value":v})
+    cats.append({"category":"卖家国籍","options":sno})
+
+    # 8. Badges
+    bo = []
+    for k,v,l in [("badgeBestSeller","Y","BestSeller=Y"),("badgeBestSeller","N","BestSeller=N"),("badgeAmazonsChoice","Y","Choice=Y"),("badgeAmazonsChoice","N","Choice=N"),("badgeNewRelease","Y","NewRelease=Y"),("badgeNewRelease","N","NewRelease=N")]:
+        _,qh,exp,exh = mv({k:v})
+        bo.append({"label":l,"overlap":"低","desc":l,"is_current":False,"already_explored":exp,"exhausted":exh,"param_key":k,"param_value":v})
+    cats.append({"category":"徽章筛选","options":bo})
+
+    # 9. Rating, 10. Profit, 11. BSR
+    for cat_name, opts, pkey in [
+        ("评分范围", [((3.8,4.3),"3.8-4.3改良"),((4.0,5.0),"4.0-5.0高分"),((1.0,3.5),"1.0-3.5低分"),((4.5,5.0),"4.5-5.0极高")], "minRating/maxRating"),
+        ("毛利率", [((40,100),">40%"),((50,100),">50%"),((60,100),">60%"),((1,30),"<30%")], "minProfit/maxProfit"),
+        ("BSR排名", [((1,1000),"1-1000"),((1,500),"1-500"),((1000,5000),"1000-5000"),((5000,20000),"5000-20000")], "minBsr/maxBsr"),
+    ]:
+        co = []
+        for (lo,hi),l in opts:
+            _,qh,exp,exh = mv({pkey.split("/")[0]:lo, pkey.split("/")[1]:hi})
+            co.append({"label":l,"overlap":"低-中","desc":l,"is_current":False,"already_explored":exp,"exhausted":exh,"param_key":pkey,"param_value":{pkey.split("/")[0]:lo,pkey.split("/")[1]:hi}})
+        cats.append({"category":cat_name,"options":co})
+
+    # 12. Dimension types (marketplace-specific)
+    mp = bp.get('marketplace','US')
+    dt = DIMENSION_TYPES.get(mp, DIMENSION_TYPES["US"])
+    do = []
+    for code,label in dt:
+        _,qh,exp,exh = mv({"dimensionType":code})
+        do.append({"label":f"{label}({code})","overlap":"无" if code not in ['O'] else "低","desc":label,"is_current":False,"already_explored":exp,"exhausted":exh,"param_key":"dimensionType","param_value":code})
+    cats.append({"category":f"{mp}包装尺寸类型 ({len(dt)}种)","options":do})
+
+    to = sum(len(c["options"]) for c in cats)
+    ue = sum(1 for c in cats for o in c["options"] if not o["is_current"] and not o["already_explored"])
+    ne = sum(1 for c in cats for o in c["options"] if o["overlap"] in ("无","低") and not o["is_current"] and not o["already_explored"])
+    print(json.dumps({"total_unique_in_db":total,"current_conditions":bp,"stats":{"total_options":to,"unexplored":ue,"non_overlapping_unexplored":ne},"categories":cats},ensure_ascii=False,indent=2))
+    conn.close()
+
+# ── Reset ──
+def reset_all():
+    p = get_db_path()
+    if os.path.exists(p): os.remove(p); print(f"Deleted {p}")
+    d = get_data_dir()
+    for f in os.listdir(d):
+        if f.startswith("linkfox-sellersprite-product-search-") or f.startswith("scout_round") or f.startswith("scout_all"):
+            os.remove(os.path.join(d, f))
+    print("Reset complete.")
+
+# ── Init params template ──
+def init_params():
+    """Generate a template params JSON file for user customization."""
+    template = {
+        "marketplace": "UK",
+        "listedWithinLastMonths": 3,
+        "minPrice": 10,
+        "maxPrice": 30,
+        "maxWeights": 500,
+        "weightUnit": "g",
+        "minUnits": 151,
+        "fulfillment": "FBA",
+        "sellerNation": "CN",
+        "order": {"field": "total_units", "desc": "true"},
+        "size": 100,
+        "_comment": "Edit this file and run with --params <path>. Remove fields you don't need."
+    }
+    path = os.path.join(get_data_dir(), "scout_params_template.json")
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(template, f, ensure_ascii=False, indent=2)
+    print(f"Template params file created: {path}")
+    print("Edit it and run: python3 product_scout_agent.py --params " + path)
+
+# ── Export all unique ASINs from DB ──
+def export_all():
+    """Export all unique ASINs from the SQLite DB to a single Excel file."""
+    conn = sqlite3.connect(get_db_path()); init_db(conn)
+    total = conn.execute("SELECT COUNT(*) FROM seen_products").fetchone()[0]
+    if total == 0:
+        print("No products in DB. Run a round first."); conn.close(); return
+    excel_path = os.path.join(get_data_dir(), "scout_all_unique_products.xlsx")
+    rows = conn.execute("""
+        SELECT asin, title, price, monthly_sales, monthly_revenue, bsr, rating,
+               ratings_count, profit, fulfillment, brand, seller_nation,
+               seller_name, available_date, weight, category_path, asin_url,
+               first_seen_round, first_seen_at,
+               monthly_sales_growth_rate, fba_fee, seller_num,
+               badge_new_release, ratings_rate
+        FROM seen_products ORDER BY monthly_sales DESC
+    """).fetchall()
+    headers = ['asin','title','price','monthly_sales','monthly_revenue','bsr','rating',
+               'ratings_count','profit','fulfillment','brand','seller_nation',
+               'seller_name','available_date','weight','category_path','asin_url',
+               'first_seen_round','first_seen_at',
+               'monthly_sales_growth_rate','fba_fee','seller_num',
+               'badge_new_release','ratings_rate','risk_keywords']
+    if openpyxl:
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "All Unique Products"
+        ws.append(headers)
+        for r in rows: ws.append(list(r) + [scan_risk_keywords(r[1] if r[1] else '')])
+        wb.save(excel_path)
+    else:
+        excel_path = excel_path.replace('.xlsx', '.tsv')
+        with open(excel_path, 'w', encoding='utf-8-sig') as f:
+            f.write('\t'.join(headers) + '\n')
+            for r in rows: f.write('\t'.join(str(v) for v in list(r) + [scan_risk_keywords(r[1] if r[1] else '')]) + '\n')
+    size = os.path.getsize(excel_path)
+    print(f"Exported {total} unique products to: {excel_path} ({size} bytes)")
+    print(f"Saved full response: {excel_path} ({size} bytes)")
+    conn.close()
+
+# ── CLI ──
+def parse_args():
+    ap = argparse.ArgumentParser(description="Amazon Product Scout Agent")
+    ap.add_argument('--marketplace', choices=VALID_MARKETPLACES, default=None)
+    ap.add_argument('--min-price', type=float, default=None)
+    ap.add_argument('--max-price', type=float, default=None)
+    ap.add_argument('--min-weight', type=float, default=None)
+    ap.add_argument('--max-weight', type=float, default=None)
+    ap.add_argument('--weight-unit', default='g')
+    ap.add_argument('--min-units', type=int, default=None)
+    ap.add_argument('--max-units', type=int, default=None)
+    ap.add_argument('--min-bsr', type=int, default=None)
+    ap.add_argument('--max-bsr', type=int, default=None)
+    ap.add_argument('--min-bsr-growth-rate', type=float, default=None)
+    ap.add_argument('--max-bsr-growth-rate', type=float, default=None)
+    ap.add_argument('--max-sellers', type=int, default=None)
+    ap.add_argument('--min-sellers', type=int, default=None)
+    ap.add_argument('--fulfillment', default=None)
+    ap.add_argument('--seller-nation', default=None)
+    ap.add_argument('--listed-within-months', type=int, choices=[1,3,6,12,24], default=None)
+    ap.add_argument('--sort-field', default=None)
+    ap.add_argument('--sort-desc', default=None)
+    ap.add_argument('--keyword', default=None)
+    ap.add_argument('--badge-new-release', choices=['Y','N'], default=None)
+    ap.add_argument('--badge-best-seller', choices=['Y','N'], default=None)
+    ap.add_argument('--badge-amazons-choice', choices=['Y','N'], default=None)
+    ap.add_argument('--min-units-growth-rate', type=float, default=None)
+    ap.add_argument('--max-variations', type=int, default=None)
+    ap.add_argument('--min-rating', type=float, default=None)
+    ap.add_argument('--max-rating', type=float, default=None)
+    ap.add_argument('--min-ratings', type=int, default=None)
+    ap.add_argument('--max-ratings', type=int, default=None)
+    ap.add_argument('--params', default=None, help='JSON params file')
+    ap.add_argument('--status', action='store_true')
+    ap.add_argument('--suggest', action='store_true')
+    ap.add_argument('--reset', action='store_true')
+    ap.add_argument('--init-params', action='store_true', help='Generate template params file')
+    ap.add_argument('--export-all', action='store_true', help='Export all unique ASINs to Excel')
+    ap.add_argument('--json-output', action='store_true', help='Export new products as JSON for downstream scoring')
+    ap.add_argument('--pages-per-round', type=int, default=PAGES_PER_ROUND)
+    return ap.parse_args()
+
+def main():
+    args = parse_args()
+    if args.reset: reset_all(); return
+    if args.status: show_status(); return
+    if args.suggest: suggest_alternatives(); return
+    if args.init_params: init_params(); return
+    if args.export_all: export_all(); return
+
+    if args.params:
+        with open(args.params,'r',encoding='utf-8') as f:
+            params = json.load(f)
+        params.setdefault('size', PAGE_SIZE)
+        print(f"Using params from {args.params}")
+    else:
+        params = {'size': PAGE_SIZE, 'order': {'field': 'total_units', 'desc': 'true'}}
+        if args.marketplace: params['marketplace'] = args.marketplace
+        if args.min_price is not None: params['minPrice'] = args.min_price
+        if args.max_price is not None: params['maxPrice'] = args.max_price
+        if args.max_weight is not None: params['maxWeights'] = args.max_weight; params['weightUnit'] = args.weight_unit
+        if args.min_weight is not None: params['minWeights'] = args.min_weight; params['weightUnit'] = args.weight_unit
+        if args.min_units is not None: params['minUnits'] = args.min_units
+        if args.max_units is not None: params['maxUnits'] = args.max_units
+        if args.min_bsr is not None: params['minBsr'] = args.min_bsr
+        if args.max_bsr is not None: params['maxBsr'] = args.max_bsr
+        if args.min_bsr_growth_rate is not None: params['minBsrGrowthRate'] = args.min_bsr_growth_rate
+        if args.max_bsr_growth_rate is not None: params['maxBsrGrowthRate'] = args.max_bsr_growth_rate
+        if args.max_sellers is not None: params['maxSellers'] = args.max_sellers
+        if args.min_sellers is not None: params['minSellers'] = args.min_sellers
+        if args.fulfillment: params['fulfillment'] = args.fulfillment
+        if args.seller_nation: params['sellerNation'] = args.seller_nation
+        if args.listed_within_months: params['listedWithinLastMonths'] = args.listed_within_months
+        if args.sort_field: params['order'] = {'field': args.sort_field, 'desc': args.sort_desc or 'true'}
+        if args.keyword: params['keyword'] = args.keyword
+        if args.badge_new_release: params['badgeNewRelease'] = args.badge_new_release
+        if args.badge_best_seller: params['badgeBestSeller'] = args.badge_best_seller
+        if args.badge_amazons_choice: params['badgeAmazonsChoice'] = args.badge_amazons_choice
+        if args.min_units_growth_rate is not None: params['minUnitsGrowthRate'] = args.min_units_growth_rate
+        if args.max_variations is not None: params['maxVariations'] = args.max_variations
+        if args.min_rating is not None: params['minRating'] = args.min_rating
+        if args.max_rating is not None: params['maxRating'] = args.max_rating
+        if args.min_ratings is not None: params['minRatings'] = args.min_ratings
+        if args.max_ratings is not None: params['maxRatings'] = args.max_ratings
+        print(f"Conditions: {describe_conditions(params)}")
+
+    global PAGES_PER_ROUND
+    PAGES_PER_ROUND = args.pages_per_round
+    try:
+        run_round(params, json_output=args.json_output)
+    except Exception as e:
+        print(json.dumps({"error": True, "message": str(e)}, ensure_ascii=False))
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

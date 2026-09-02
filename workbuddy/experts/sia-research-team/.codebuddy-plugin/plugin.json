@@ -1,0 +1,137 @@
+{
+  "name": "sia-research-team",
+  "version": "1.0.0",
+  "description": "Sia market research team: a research lead orchestrating three specialists — market research (feasibility scan), user research (guide & questionnaire design) and research analysis (data to conclusions) — turning a rough idea into decision-ready conclusions.",
+  "author": {
+    "name": "FiT 营销技术团队",
+    "email": "june@tencent.com"
+  },
+  "keywords": [
+    "思研",
+    "市场研究",
+    "用户调研",
+    "数据分析",
+    "AI访谈"
+  ],
+  "agents": [
+    "./agents/sia-research-team-team-lead.md",
+    "./agents/market-research-expert.md",
+    "./agents/user-research-expert.md",
+    "./agents/data-analysis-expert.md"
+  ],
+  "skills": [
+    "./skills/research-design-toolkit",
+    "./skills/html-report-card"
+  ],
+  "expertType": "team",
+  "agentName": "sia-research-team-team-lead",
+  "teamInfo": {
+    "leadAgent": "sia-research-team-team-lead",
+    "memberAgents": [
+      "market-research-expert",
+      "user-research-expert",
+      "data-analysis-expert"
+    ]
+  },
+  "displayName": {
+    "en": "Sia Market Research Team",
+    "zh": "思研·市场研究专家团"
+  },
+  "profession": {
+    "en": "Sia Market Research Team",
+    "zh": "思研·市场研究专家团"
+  },
+  "displayDescription": {
+    "en": "Start from a rough business idea: scan the market to judge feasibility, design the interview guide and questionnaire to ask real users, then turn the data into decisions you can act on.",
+    "zh": "从一个模糊的生意想法开始，先摸市场判断能不能做，再出访谈大纲问卷去问真实用户，最后把数据变成能拍板的结论。一人公司也能跑完整条链。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "05-MarketingGrowth",
+  "defaultInitPrompt": {
+    "en": "I have a business idea. Take me from market scan all the way to a conclusion report.",
+    "zh": "我有个生意想法，帮我从摸市场一直做到出结论报告"
+  },
+  "plugin": "sia-research-team",
+  "tags": [
+    {
+      "en": "Market Scan",
+      "zh": "市场摸底"
+    },
+    {
+      "en": "Research Design",
+      "zh": "调研设计"
+    },
+    {
+      "en": "Conclusion Report",
+      "zh": "结论报告"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "I have a business idea. Take me from market scan all the way to a conclusion report.",
+      "zh": "我有个生意想法，帮我从摸市场一直做到出结论报告"
+    },
+    {
+      "en": "First judge whether this niche is worth entering, then design the research if it is.",
+      "zh": "先帮我判断这个细分市场能不能做，能做再出调研方案"
+    },
+    {
+      "en": "My interview data is collected. Turn it into a decision-ready conclusion report.",
+      "zh": "我访谈数据已经收回来了，帮我出一份能拍板的结论报告"
+    }
+  ],
+  "members": [
+    {
+      "id": "sia-research-team-team-lead",
+      "name": {
+        "en": "Su",
+        "zh": "苏见微"
+      },
+      "profession": {
+        "en": "Sia · Research Team Lead",
+        "zh": "思研·研究主理人"
+      },
+      "avatar": "avatars/sia-research-team-team-lead.png",
+      "role": "lead"
+    },
+    {
+      "id": "market-research-expert",
+      "name": {
+        "en": "Ye",
+        "zh": "叶知秋"
+      },
+      "profession": {
+        "en": "Sia · Market Research Expert",
+        "zh": "思研·市场研究专家"
+      },
+      "avatar": "avatars/market-research-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "user-research-expert",
+      "name": {
+        "en": "Wen",
+        "zh": "闻真"
+      },
+      "profession": {
+        "en": "Sia · User Research Expert",
+        "zh": "思研·用户调研专家"
+      },
+      "avatar": "avatars/user-research-expert.png",
+      "role": "member"
+    },
+    {
+      "id": "data-analysis-expert",
+      "name": {
+        "en": "Zhang",
+        "zh": "章清"
+      },
+      "profession": {
+        "en": "Sia · Research Analyst",
+        "zh": "思研·调研分析专家"
+      },
+      "avatar": "avatars/data-analysis-expert.png",
+      "role": "member"
+    }
+  ]
+}

@@ -1,0 +1,546 @@
+<style>
+/* ===========================================================================
+   Richee 报告设计系统 · enterprise shared.css（自包含，由 build_enterprise_shared_css.py 自动生成）
+   = tokens.css（:root 浅色 + @media dark + [data-theme]）
+   + report-components.css（通用组件类）+ enterprise-extras.css（文书专用类）
+   6 模板共享：report / opinion / brief / letter / pleading / form
+   维护：改 tokens.json / report-components.css / enterprise-extras.css 后重跑本脚本。
+   =========================================================================== */
+
+/* ===========================================================================
+   Richee 共享设计系统 · tokens.css（由 generate_tokens.py 自动生成，请勿手改）
+   source: tokens.json | hash: 4ebcd134397aa1c1 | spec: 对话流产物组件_v2_精简版2
+   =========================================================================== */
+
+:root {
+  /* —— 颜色：浅色（默认） —— */
+  --color-accent: #029856;
+  --color-accent-bg: #ecfdf3;
+  --color-accent-light: #6ee7a8;
+  --color-bg-alt: #fafafa;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f7f7;
+  --color-bg-secondaryHover: #f2f2f2;
+  --color-bg-tag: #f2f2f2;
+  --color-bg-tagHover: #ebebeb;
+  --color-border-default: rgba(0,0,0,0.12);
+  --color-border-strong: rgba(0,0,0,0.3);
+  --color-neutral-0: #ffffff;
+  --color-neutral-100: #f2f2f2;
+  --color-neutral-150: #ebebeb;
+  --color-neutral-200: #fafafa;
+  --color-neutral-50: #f7f7f7;
+  --color-notification-danger-bg: #FCEBEB;
+  --color-notification-danger-fg: #D54941;
+  --color-notification-info-bg: #E6F1FB;
+  --color-notification-info-fg: #185FA5;
+  --color-notification-neutral-bg: #F7F7F7;
+  --color-notification-neutral-fg: rgba(0,0,0,0.9);
+  --color-risk-good-bg: #EAF3DE;
+  --color-risk-good-fg: #2BA471;
+  --color-risk-high-bg: #FCEBEB;
+  --color-risk-high-fg: #D54941;
+  --color-risk-warn-bg: #FAEEDA;
+  --color-risk-warn-fg: #E37318;
+  --color-status-danger-bg: #FCEBEB;
+  --color-status-danger-fg: #D54941;
+  --color-status-info-bg: #E6F1FB;
+  --color-status-info-fg: #185FA5;
+  --color-status-success-bg: #EAF3DE;
+  --color-status-success-fg: #2BA471;
+  --color-status-warning-bg: #FAEEDA;
+  --color-status-warning-fg: #E37318;
+  --color-text-primary: rgba(0,0,0,0.9);
+  --color-text-secondary: rgba(0,0,0,0.7);
+  --color-text-tertiary: rgba(0,0,0,0.5);
+
+  /* —— 静态（主题不变：图表品牌色 / 打印近似色 / 字体 / 间距 / 字号） —— */
+  --color-chart-1: #3E74CA;
+  --color-chart-2: #3AB7A8;
+  --color-chart-3: #36D4D9;
+  --color-chart-4: #185293;
+  --color-chart-5: #62AAF9;
+  --color-chart-6: #EBAC64;
+  --color-text-primary-print: #1A1A1A;
+  --color-text-secondary-print: #3A3A3A;
+  --color-text-tertiary-print: #6B6B6B;
+  --font-mono: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  --font-sans: -apple-system, 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
+  --fs-doc-h1: 21px;
+  --fs-doc-h2: 19px;
+  --fs-doc-h3: 17px;
+  --fs-doc-h4: 15px;
+  --fs-doc-p1: 15px;
+  --fs-doc-p1-hi: 15px;
+  --fs-doc-p2: 13px;
+  --fs-doc-p2-code: 13px;
+  --fs-doc-p3: 11px;
+  --fs-ui-body-lg: 16px;
+  --fs-ui-body-md: 14px;
+  --fs-ui-body-sm: 12px;
+  --fs-ui-body-xl: 18px;
+  --fs-ui-heading-1: 32px;
+  --fs-ui-heading-2: 28px;
+  --fs-ui-heading-3: 24px;
+  --fs-ui-heading-4: 20px;
+  --fs-ui-heading-5: 18px;
+  --fs-ui-heading-6: 16px;
+  --fs-ui-heading-7: 14px;
+  --fs-ui-heading-8: 12px;
+  --fw-doc-h1: 500;
+  --fw-doc-h2: 500;
+  --fw-doc-h3: 500;
+  --fw-doc-h4: 500;
+  --fw-doc-p1: 400;
+  --fw-doc-p1-hi: 500;
+  --fw-doc-p2: 400;
+  --fw-doc-p2-code: 400;
+  --fw-doc-p3: 400;
+  --fw-ui-body-lg: 400;
+  --fw-ui-body-md: 400;
+  --fw-ui-body-sm: 400;
+  --fw-ui-body-xl: 400;
+  --fw-ui-heading-1: 500;
+  --fw-ui-heading-2: 500;
+  --fw-ui-heading-3: 500;
+  --fw-ui-heading-4: 500;
+  --fw-ui-heading-5: 500;
+  --fw-ui-heading-6: 500;
+  --fw-ui-heading-7: 500;
+  --fw-ui-heading-8: 500;
+  --lh-doc-h1: 37px;
+  --lh-doc-h2: 33px;
+  --lh-doc-h3: 30px;
+  --lh-doc-h4: 26px;
+  --lh-doc-p1: 26px;
+  --lh-doc-p1-hi: 26px;
+  --lh-doc-p2: 23px;
+  --lh-doc-p2-code: 23px;
+  --lh-doc-p3: 19px;
+  --lh-ui-body-lg: 24px;
+  --lh-ui-body-md: 22px;
+  --lh-ui-body-sm: 20px;
+  --lh-ui-body-xl: 26px;
+  --lh-ui-heading-1: 40px;
+  --lh-ui-heading-2: 36px;
+  --lh-ui-heading-3: 32px;
+  --lh-ui-heading-4: 28px;
+  --lh-ui-heading-5: 26px;
+  --lh-ui-heading-6: 24px;
+  --lh-ui-heading-7: 22px;
+  --lh-ui-heading-8: 20px;
+  --radius-full: 9999px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+  --radius-xl: 16px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-4: 4px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-8: 8px;
+  --weight-medium: 500;
+  --weight-regular: 400;
+
+  /* —— 兼容别名（迁移期，指向新 token；新代码勿用） —— */
+  --bg: var(--color-bg-secondary);
+  --text: var(--color-text-primary);
+  --black: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --line: var(--color-border-default);
+  --white: var(--color-bg-primary);
+  --red: var(--color-status-danger-fg);
+  --redbg: var(--color-status-danger-bg);
+  --green: var(--color-status-success-fg);
+  --greenbg: var(--color-status-success-bg);
+  --amber: var(--color-status-warning-fg);
+  --amberbg: var(--color-status-warning-bg);
+  --blue: var(--color-status-info-bg);
+  --blue-text: var(--color-status-info-fg);
+  --accent: var(--color-accent);
+  --accent-light: var(--color-accent-light);
+  --accent-dark: var(--color-accent);
+  --color-neutral-950: var(--color-text-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --color-accent: #029856;
+    --color-accent-bg: #0d2e1c;
+    --color-accent-light: #6ee7a8;
+    --color-bg-alt: #252524;
+    --color-bg-primary: #1f1f1e;
+    --color-bg-secondary: #2a2a28;
+    --color-bg-secondaryHover: #323230;
+    --color-bg-tag: #323230;
+    --color-bg-tagHover: #3a3a38;
+    --color-border-default: rgba(255,255,255,0.1);
+    --color-border-strong: rgba(255,255,255,0.25);
+    --color-neutral-0: #1f1f1e;
+    --color-neutral-100: #323230;
+    --color-neutral-150: #3a3a38;
+    --color-neutral-200: #252524;
+    --color-neutral-50: #2a2a28;
+    --color-notification-danger-bg: #3d1c1c;
+    --color-notification-danger-fg: #D54941;
+    --color-notification-info-bg: #0c2a44;
+    --color-notification-info-fg: #5a9bd0;
+    --color-notification-neutral-bg: #2a2a28;
+    --color-notification-neutral-fg: rgba(255,255,255,0.9);
+    --color-risk-good-bg: #1d3a26;
+    --color-risk-good-fg: #2BA471;
+    --color-risk-high-bg: #3d1c1c;
+    --color-risk-high-fg: #D54941;
+    --color-risk-warn-bg: #3d2a14;
+    --color-risk-warn-fg: #E37318;
+    --color-status-danger-bg: #3d1c1c;
+    --color-status-danger-fg: #D54941;
+    --color-status-info-bg: #0c2a44;
+    --color-status-info-fg: #5a9bd0;
+    --color-status-success-bg: #1d3a26;
+    --color-status-success-fg: #2BA471;
+    --color-status-warning-bg: #3d2a14;
+    --color-status-warning-fg: #E37318;
+    --color-text-primary: rgba(255,255,255,0.9);
+    --color-text-secondary: rgba(255,255,255,0.7);
+    --color-text-tertiary: rgba(255,255,255,0.5);
+  }
+}
+
+html[data-theme="dark"] {
+  --color-accent: #029856;
+  --color-accent-bg: #0d2e1c;
+  --color-accent-light: #6ee7a8;
+  --color-bg-alt: #252524;
+  --color-bg-primary: #1f1f1e;
+  --color-bg-secondary: #2a2a28;
+  --color-bg-secondaryHover: #323230;
+  --color-bg-tag: #323230;
+  --color-bg-tagHover: #3a3a38;
+  --color-border-default: rgba(255,255,255,0.1);
+  --color-border-strong: rgba(255,255,255,0.25);
+  --color-neutral-0: #1f1f1e;
+  --color-neutral-100: #323230;
+  --color-neutral-150: #3a3a38;
+  --color-neutral-200: #252524;
+  --color-neutral-50: #2a2a28;
+  --color-notification-danger-bg: #3d1c1c;
+  --color-notification-danger-fg: #D54941;
+  --color-notification-info-bg: #0c2a44;
+  --color-notification-info-fg: #5a9bd0;
+  --color-notification-neutral-bg: #2a2a28;
+  --color-notification-neutral-fg: rgba(255,255,255,0.9);
+  --color-risk-good-bg: #1d3a26;
+  --color-risk-good-fg: #2BA471;
+  --color-risk-high-bg: #3d1c1c;
+  --color-risk-high-fg: #D54941;
+  --color-risk-warn-bg: #3d2a14;
+  --color-risk-warn-fg: #E37318;
+  --color-status-danger-bg: #3d1c1c;
+  --color-status-danger-fg: #D54941;
+  --color-status-info-bg: #0c2a44;
+  --color-status-info-fg: #5a9bd0;
+  --color-status-success-bg: #1d3a26;
+  --color-status-success-fg: #2BA471;
+  --color-status-warning-bg: #3d2a14;
+  --color-status-warning-fg: #E37318;
+  --color-text-primary: rgba(255,255,255,0.9);
+  --color-text-secondary: rgba(255,255,255,0.7);
+  --color-text-tertiary: rgba(255,255,255,0.5);
+}
+
+/* ===========================================================================
+   Richee 报告组件样式 · report-components.css
+   仅含组件类，全部用 var(--color-*)；token 定义由 build_report_css.py 拼入 tokens.css。
+   遵循「对话流产物组件」规范：扁平、无阴影/渐变、字重仅 400/500、容器即卡不嵌套。
+   =========================================================================== */
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--color-bg-secondary);color:var(--color-text-primary);
+  font-family:var(--font-sans);-webkit-font-smoothing:antialiased;min-width:320px;line-height:1.75;
+}
+
+/* ── 顶栏 Topbar（浅底扁平，禁近黑底） ── */
+.topbar{height:64px;background:var(--color-bg-primary);color:var(--color-text-primary);
+  display:flex;align-items:center;justify-content:space-between;padding:0 32px;
+  position:sticky;top:0;z-index:30;border-bottom:1px solid var(--color-border-default)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:var(--weight-medium);font-size:14px}
+.logo{width:34px;height:34px;border-radius:var(--radius-md);background:var(--color-bg-secondary);
+  color:var(--color-text-primary);display:grid;place-items:center;font-weight:var(--weight-medium);font-size:16px;letter-spacing:-0.5px}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary)}
+.dot{width:8px;height:8px;border-radius:var(--radius-full);background:var(--color-accent)}
+
+/* ── 报告头 Hero ── */
+.hero{max-width:1080px;margin:0 auto;padding:48px clamp(18px,3vw,32px) 24px;position:relative}
+.small-no{font-size:28px;font-weight:var(--weight-medium);color:var(--color-text-primary);margin:0 0 12px;letter-spacing:-0.5px}
+.small-no:after{content:"";display:block;width:40px;height:2px;background:var(--color-accent);margin-top:8px;border-radius:var(--radius-full)}
+.hero h1{margin:0;font-size:clamp(26px,4vw,40px);line-height:1.15;letter-spacing:-0.8px;color:var(--color-text-primary);max-width:860px;font-weight:var(--weight-medium)}
+.hero .sub{margin:14px 0 0;max-width:800px;font-size:clamp(13px,1.5vw,15px);line-height:1.8;color:var(--color-text-secondary)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.pill{border:1px solid var(--color-border-default);background:var(--color-bg-primary);border-radius:var(--radius-full);padding:6px 12px;font-size:13px;color:var(--color-text-secondary);font-weight:var(--weight-medium)}
+
+/* ── 主体 Layout ── */
+.layout{max-width:1180px;margin:0 auto;padding:8px clamp(18px,3vw,32px) 64px}
+.layout.with-nav{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start}
+.content{background:var(--color-bg-primary);border:1px solid var(--color-border-default);border-radius:var(--radius-lg);padding:clamp(24px,4vw,44px)}
+
+/* ── 导航目录 TOC ── */
+.nav{position:sticky;top:16px;background:var(--color-bg-primary);border:1px solid var(--color-border-default);
+  border-radius:var(--radius-lg);padding:14px;max-height:calc(100vh - 32px);overflow:auto}
+.nav h3{margin:0 0 8px;font-size:12px;letter-spacing:1.5px;color:var(--color-text-secondary);font-weight:var(--weight-medium)}
+.nav a{display:block;color:var(--color-text-secondary);text-decoration:none;padding:8px 10px;border-radius:var(--radius-md);font-size:13px;margin-bottom:2px;font-weight:var(--weight-regular);transition:background .15s,color .15s}
+.nav a:hover{background:var(--color-bg-secondaryHover);color:var(--color-text-primary)}
+.nav a.active{background:var(--color-status-success-bg);color:var(--color-status-success-fg);font-weight:var(--weight-medium)}
+.section{padding:20px 0 28px;border-bottom:1px solid var(--color-border-default);position:relative}
+.section:last-child{border-bottom:0}
+.sec-no{font-size:12px;font-weight:var(--weight-medium);color:var(--color-text-secondary);margin-bottom:6px;letter-spacing:1px}
+.section h2{font-size:clamp(19px,2.2vw,24px);line-height:1.25;margin:0 0 8px;color:var(--color-text-primary);font-weight:var(--weight-medium)}
+.section h3{font-size:16px;font-weight:var(--weight-medium);margin:18px 0 6px;color:var(--color-text-primary)}
+.desc,.section p{color:var(--color-text-primary);font-size:14px;line-height:1.8;margin:0 0 12px}
+.muted{color:var(--color-text-secondary)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* ── 表格 Table ── */
+table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--color-border-default);
+  border-radius:var(--radius-lg);overflow:hidden;background:var(--color-bg-primary);margin:8px 0}
+th{text-align:left;padding:11px 14px;background:var(--color-bg-secondary);color:var(--color-text-primary);font-size:13px;font-weight:var(--weight-medium)}
+td{padding:12px 14px;border-bottom:1px solid var(--color-border-default);vertical-align:top;font-size:14px;line-height:1.65;color:var(--color-text-primary)}
+tr:last-child td{border-bottom:0}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ── 标签 Tags（风险等级，同色系浅底深字 R5） ── */
+.tag{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:var(--weight-medium)}
+.tag.high{background:var(--color-status-danger-bg);color:var(--color-status-danger-fg)}
+.tag.mid{background:var(--color-status-warning-bg);color:var(--color-status-warning-fg)}
+.tag.low{background:var(--color-status-success-bg);color:var(--color-status-success-fg)}
+.tag.info{background:var(--color-status-info-bg);color:var(--color-status-info-fg)}
+
+/* ── 结论通知栏 Conclusion（R2，扁平，非嵌套卡） ── */
+.conclusion{background:var(--color-notification-neutral-bg);border-radius:var(--radius-md);
+  padding:14px 16px;margin:10px 0}
+.conclusion .head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.conclusion .head strong{font-size:15px;font-weight:var(--weight-medium)}
+.conclusion .body{font-size:14px;line-height:1.85;color:var(--color-text-primary)}
+
+/* ── 指标卡 KPI（扁平，无阴影/无边框，靠间距分隔） ── */
+.kpi{padding:16px 0}
+.kpi .name{font-size:12px;color:var(--color-text-tertiary);margin-bottom:8px;font-weight:var(--weight-medium);letter-spacing:0.3px}
+.kpi .value{font-size:24px;font-weight:var(--weight-medium);line-height:1;color:var(--color-text-primary)}
+.kpi .note{font-size:12px;color:var(--color-text-secondary);margin-top:8px;line-height:1.5}
+
+/* ── 横向热度条 Bar ── */
+.bar-row{display:grid;grid-template-columns:180px 1fr 64px;gap:12px;align-items:center;margin:10px 0;font-size:14px}
+.track{height:10px;border-radius:var(--radius-full);overflow:hidden;background:var(--color-bg-tagHover)}
+.fill{height:100%;border-radius:var(--radius-full);background:var(--color-accent)}
+
+/* ── 时间轴 Timeline（实色线，去渐变） ── */
+.timeline{position:relative;padding-left:20px;margin:8px 0}
+.timeline:before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--color-accent)}
+.t-item{position:relative;padding-left:16px;margin-bottom:16px}
+.t-item:before{content:"";position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:var(--radius-full);background:var(--color-accent)}
+.t-title{font-size:13px;font-weight:var(--weight-medium);color:var(--color-text-primary);margin-bottom:3px}
+.t-text{font-size:14px;line-height:1.7;color:var(--color-text-secondary)}
+
+/* ── 风险矩阵 Matrix ── */
+.matrix{display:grid;grid-template-columns:120px repeat(3,1fr);gap:6px;min-width:560px}
+.box{border:1px solid var(--color-border-default);border-radius:var(--radius-md);min-height:56px;padding:10px;font-size:13px;line-height:1.45;background:var(--color-bg-primary)}
+.box.h{background:var(--color-bg-secondary);color:var(--color-text-primary);font-weight:var(--weight-medium)}
+.box.r{background:var(--color-risk-high-bg);color:var(--color-risk-high-fg);font-weight:var(--weight-medium)}
+.box.g{background:var(--color-risk-good-bg);color:var(--color-risk-good-fg);font-weight:var(--weight-medium)}
+.box.a{background:var(--color-risk-warn-bg);color:var(--color-risk-warn-fg);font-weight:var(--weight-medium)}
+
+/* ── 免责声明块（警示通知栏样式） ── */
+.disclaimer{background:var(--color-status-warning-bg);border-radius:var(--radius-md);
+  padding:14px 16px;margin:0 0 20px;font-size:13px;line-height:1.8;color:var(--color-status-warning-fg)}
+.disclaimer strong{color:var(--color-status-warning-fg);font-weight:var(--weight-medium)}
+.disclaimer ol{margin:6px 0 0;padding-left:20px}
+
+/* ── 确定性标签 L1-L4 ── */
+.lbl{display:inline-block;vertical-align:middle;line-height:1.4;padding:3px 9px;border-radius:var(--radius-sm);font-size:12px;font-weight:var(--weight-medium);margin-right:4px}
+.lbl-l1{background:var(--color-bg-secondary);color:var(--color-text-primary)}
+.lbl-l2{background:var(--color-status-info-bg);color:var(--color-status-info-fg)}
+.lbl-l3{background:var(--color-bg-tag);color:var(--color-text-secondary)}
+.lbl-l4{background:var(--color-status-warning-bg);color:var(--color-status-warning-fg)}
+
+/* ── 访问状态徽标 ── */
+.acc{display:inline-block;vertical-align:middle;line-height:1.4;padding:2px 8px;border-radius:var(--radius-sm);font-size:12px;font-weight:var(--weight-medium)}
+.acc-ok{background:var(--color-status-success-bg);color:var(--color-status-success-fg)}
+.acc-reg,.acc-warn{background:var(--color-status-warning-bg);color:var(--color-status-warning-fg)}
+.acc-pay,.acc-none{background:var(--color-status-danger-bg);color:var(--color-status-danger-fg)}
+.acc-bot{background:var(--color-bg-tag);color:var(--color-text-secondary)}
+
+/* ── 时效性徽标 ── */
+.fresh{display:inline-block;vertical-align:middle;line-height:1.4;padding:2px 8px;border-radius:var(--radius-sm);font-size:12px;font-weight:var(--weight-medium)}
+.fresh-critical{background:var(--color-status-danger-bg);color:var(--color-status-danger-fg)}
+.fresh-high{background:var(--color-status-warning-bg);color:var(--color-status-warning-fg)}
+.fresh-mid{background:var(--color-status-warning-bg);color:var(--color-status-warning-fg)}
+.fresh-low{background:var(--color-status-success-bg);color:var(--color-status-success-fg)}
+
+/* ── 置信度条 ── */
+.confidence{display:flex;align-items:center;gap:12px;background:var(--color-bg-secondary);
+  border-left:3px solid var(--color-accent);border-radius:var(--radius-md);padding:10px 14px;margin:10px 0;font-size:13px;color:var(--color-text-primary)}
+.confidence .stars{font-weight:var(--weight-medium);color:var(--color-text-primary);white-space:nowrap}
+.confidence .track{flex:1}
+
+/* ── 脚注区 Footnotes ── */
+.ref-link{font-size:.72em;vertical-align:super;color:var(--color-status-info-fg);text-decoration:none;font-weight:var(--weight-medium)}
+.footnotes{border-top:1px solid var(--color-border-default);margin-top:28px;padding-top:16px}
+.footnotes h2{font-size:18px;font-weight:var(--weight-medium);color:var(--color-text-primary);margin:0 0 12px}
+.fn-item{position:relative;margin:.7em 0;padding-left:2.6em;font-size:12.5px;line-height:1.9;color:var(--color-text-primary)}
+.fn-item>strong:first-child{position:absolute;left:0;top:0;font-weight:var(--weight-medium)}
+.fn-item .src{color:var(--color-text-secondary)}
+.back-ref{color:var(--color-status-info-fg);text-decoration:none;margin-left:.4em}
+
+/* ── 页脚 Footer（浅底，禁近黑底） ── */
+.footer{margin-top:24px;background:var(--color-bg-secondary);border-radius:var(--radius-lg);color:var(--color-text-primary);
+  padding:18px 20px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.footer strong{font-size:14px;font-weight:var(--weight-medium)}
+.footer p{margin:5px 0 0;color:var(--color-text-secondary);font-size:13px;line-height:1.7}
+.btn{background:var(--color-bg-primary);color:var(--color-text-primary);padding:8px 16px;border-radius:var(--radius-full);font-size:13px;font-weight:var(--weight-medium);border:1px solid var(--color-border-default);white-space:nowrap}
+
+/* ── 响应式 ── */
+@media(max-width:1023px){
+  .layout.with-nav{grid-template-columns:1fr}
+  .nav{position:static;max-height:none}
+  .nav a{display:inline-block;margin:0 4px 6px 0}
+}
+@media(max-width:767px){
+  .topbar{height:auto;min-height:60px;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 20px}
+  .content{border-radius:var(--radius-lg);padding:20px 16px}
+  .grid-4,.grid-3,.grid-2{grid-template-columns:1fr!important}
+  .bar-row{grid-template-columns:1fr!important;gap:6px;padding:8px 0;border-bottom:1px dashed var(--color-border-default)}
+  .matrix{min-width:560px}
+  .footer{flex-direction:column;align-items:flex-start}
+}
+
+/* ── 打印 ── */
+@media print{
+  .topbar{position:static}
+  .nav{display:none!important}
+  .layout.with-nav{display:block!important}
+  body{background:var(--color-bg-primary)!important}
+  .layout{padding:0!important}
+  .content{border:none!important;border-radius:0!important;padding:0!important}
+  .section,.demo,.conclusion,.kpi,.fn-item{break-inside:avoid}
+  a{color:var(--color-text-primary)!important;text-decoration:none}
+}
+
+/* ===========================================================================
+   Enterprise 法律文书 · 专用类（enterprise-extras.css）
+   在 tokens.css + report-components.css 之上补充：#TOC、基础排版、
+   意见书/函件/简报/法定文书/官方表格专用类。全部 var(--color-*)，扁平，字重 400/500。
+   =========================================================================== */
+
+/* ── #TOC（与 .nav 并存的 id 选择器 TOC） ── */
+#TOC{position:sticky;top:16px;background:var(--color-bg-primary);border:1px solid var(--color-border-default);
+  border-radius:var(--radius-lg);padding:14px;max-height:calc(100vh - 32px);overflow:auto}
+#TOC ul{list-style:none;padding-left:1em;margin:0}
+#TOC>ul{padding-left:0}
+#TOC a{display:block;color:var(--color-text-secondary);text-decoration:none;padding:8px 10px;border-radius:var(--radius-md);
+  font-size:13px;margin-bottom:2px;transition:background .15s,color .15s}
+#TOC a:hover{background:var(--color-bg-secondaryHover);color:var(--color-text-primary)}
+
+/* ── 单栏布局 ── */
+.layout.single{max-width:800px}
+
+/* ── 代码/引用/图片（基础排版） ── */
+code{font-family:var(--font-mono);background:var(--color-bg-tag);padding:0.1em 0.3em;border-radius:var(--radius-sm);font-size:0.9em}
+pre{background:var(--color-bg-secondary);border:1px solid var(--color-border-default);border-radius:var(--radius-md);padding:1em;overflow-x:auto}
+pre code{background:none;padding:0;border-radius:0}
+blockquote{margin:1em 0;padding:0.5em 1em;border-left:3px solid var(--color-border-default);color:var(--color-text-secondary)}
+img{max-width:100%;height:auto}
+figure{text-align:center;margin:1em 0}
+figcaption{color:var(--color-text-secondary);font-size:0.9em;margin-top:0.3em}
+
+/* ── 意见书/备忘录专用 ── */
+.opinion-header{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin-bottom:24px;
+  padding-bottom:16px;border-bottom:2px solid var(--color-text-primary)}
+.opinion-header .label{font-size:13px;color:var(--color-text-secondary);font-weight:var(--weight-medium)}
+.opinion-header .value{font-size:14px;color:var(--color-text-primary);font-weight:var(--weight-medium)}
+.signature-block{margin-top:48px;padding-top:24px;border-top:1px solid var(--color-border-default);text-align:right}
+.signature-block .firm{font-size:16px;font-weight:var(--weight-medium);color:var(--color-text-primary)}
+.signature-block .lawyer{font-size:14px;color:var(--color-text-secondary);margin-top:4px}
+.signature-block .date{font-size:13px;color:var(--color-text-secondary);margin-top:8px}
+.signature-block .seal{margin-top:16px;width:120px;height:120px;border:2px dashed var(--color-border-default);
+  border-radius:var(--radius-full);display:inline-block}
+
+/* ── 函件专用 ── */
+.letter-header{margin-bottom:24px}
+.letter-header .doc-no{font-size:13px;color:var(--color-text-secondary);margin-bottom:8px}
+.letter-header h1{font-size:20px;font-weight:var(--weight-medium);text-align:center;margin:0 0 20px;
+  padding:12px 0;border-top:2px solid var(--color-text-primary);border-bottom:2px solid var(--color-text-primary)}
+.letter-recipient{font-size:14px;line-height:2;color:var(--color-text-primary);margin-bottom:24px}
+.letter-recipient strong{font-weight:var(--weight-medium)}
+.letter-body{font-size:14px;line-height:2;color:var(--color-text-primary)}
+.letter-body p{margin:0 0 16px;text-indent:2em}
+.letter-signoff{margin-top:32px;text-align:right}
+.letter-signoff .firm{font-size:15px;font-weight:var(--weight-medium);color:var(--color-text-primary)}
+.letter-signoff .date{font-size:13px;color:var(--color-text-secondary);margin-top:8px}
+
+/* ── 简报专用 ── */
+.brief-container{max-width:680px;margin:0 auto;padding:32px clamp(16px,3vw,24px)}
+.brief-container h1{font-size:clamp(22px,3.5vw,30px);font-weight:var(--weight-medium);color:var(--color-text-primary);
+  margin:0 0 8px;letter-spacing:-0.5px}
+.brief-container .brief-meta{font-size:13px;color:var(--color-text-secondary);margin-bottom:24px;
+  padding-bottom:16px;border-bottom:1px solid var(--color-border-default)}
+.brief-container p{font-size:15px;line-height:1.8;color:var(--color-text-primary);margin:0 0 16px}
+
+/* ── 法定文书专用（起诉状/申请书/答辩状）── */
+.pleading-doc{max-width:780px;margin:0 auto;padding:48px clamp(20px,3vw,40px)}
+.pleading-title{font-size:22px;font-weight:var(--weight-medium);text-align:center;margin:0 0 28px;
+  padding:16px 0;border-top:2px solid var(--color-text-primary);border-bottom:2px solid var(--color-text-primary)}
+.pleading-parties{margin-bottom:24px}
+.pleading-parties p{font-size:14px;line-height:2;color:var(--color-text-primary);margin:0}
+.pleading-parties strong{font-weight:var(--weight-medium);color:var(--color-text-primary)}
+.pleading-body{font-size:15px;line-height:2;color:var(--color-text-primary)}
+.pleading-body h2{font-size:16px;font-weight:var(--weight-medium);color:var(--color-text-primary);margin:24px 0 8px;
+  padding-left:8px;border-left:3px solid var(--color-accent)}
+.pleading-body p{margin:0 0 12px;text-indent:2em}
+.pleading-body ul,.pleading-body ol{padding-left:2em}
+.pleading-body li{margin:4px 0}
+.pleading-court{text-align:left;font-size:15px;line-height:2;margin-top:32px}
+.pleading-court strong{font-weight:var(--weight-medium)}
+.pleading-signoff{margin-top:24px;text-align:right}
+.pleading-signoff .signer{font-size:15px;font-weight:var(--weight-medium);color:var(--color-text-primary)}
+.pleading-signoff .date{font-size:14px;color:var(--color-text-secondary);margin-top:6px}
+.pleading-seal{margin-top:16px;text-align:right}
+.pleading-seal .seal-box{display:inline-block;width:100px;height:100px;border:2px dashed var(--color-border-default);border-radius:var(--radius-full)}
+
+/* ── 官方表格专用（表格填充）── */
+.form-doc{max-width:780px;margin:0 auto;padding:48px clamp(20px,3vw,40px)}
+.form-title{font-size:20px;font-weight:var(--weight-medium);text-align:center;margin:0 0 8px;color:var(--color-text-primary)}
+.form-subtitle{font-size:13px;text-align:center;color:var(--color-text-secondary);margin-bottom:24px}
+.form-table{width:100%;border-collapse:collapse;border:1.5pt solid var(--color-border-strong);background:var(--color-bg-primary)}
+.form-table th,.form-table td{border:1px solid var(--color-border-default);padding:8px 10px;font-size:14px;line-height:1.6;vertical-align:middle}
+.form-table .form-label{background:var(--color-bg-secondary);font-weight:var(--weight-medium);color:var(--color-text-primary);
+  text-align:center;white-space:nowrap;width:auto}
+.form-table .form-value{text-align:left;color:var(--color-text-primary)}
+.form-table .form-section{background:var(--color-bg-secondary);color:var(--color-text-primary);font-weight:var(--weight-medium);text-align:center;
+  font-size:13px;padding:6px 10px}
+.form-note{font-size:12px;color:var(--color-text-secondary);margin-top:12px;line-height:1.6}
+.form-signoff{margin-top:24px;display:flex;justify-content:space-between;gap:24px}
+.form-signoff .col{flex:1}
+.form-signoff .label{font-size:13px;color:var(--color-text-secondary);margin-bottom:8px}
+.form-signoff .value{font-size:14px;color:var(--color-text-primary);font-weight:var(--weight-medium);min-height:2em}
+.form-signoff .line{border-bottom:1px solid var(--color-border-default);margin-bottom:4px}
+
+/* ── 响应式（enterprise 专用补充） ── */
+@media(max-width:767px){
+  .opinion-header{grid-template-columns:1fr}
+}
+
+/* ── 打印（enterprise 专用补充；通用打印在 report-components.css） ── */
+@media print{
+  @page{size:A4;margin:2cm}
+  table,tr,td,th{page-break-inside:avoid}
+  *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+</style>

@@ -1,0 +1,15 @@
+{
+  "name": "IP资产台账与风险评估",
+  "name_en": "ip-portfolio-ledger",
+  "description": "投资方律师IP资产台账生成与风险评估，覆盖投前尽调至年度盘点四场景，同步输出xlsx台账+Markdown报告。触发：IP资产盘查/权属核验/许可链追踪/IP出资瑕疵/R&W条款映射。不触发：IP侵权诉讼/合同审查/全面尽调/陷阱条款对抗。",
+  "version": "1.2.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-07",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional",
+  "drafting_paradigm": "lawyer_draft"
+}

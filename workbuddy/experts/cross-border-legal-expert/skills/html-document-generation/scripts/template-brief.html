@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="$lang$" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>$title$</title>
+$for(header-includes)$
+$header-includes$
+$endfor$
+</head>
+<body>
+
+<main class="brief-container">
+
+  <h1>$title$</h1>
+  <div class="brief-meta">
+    $if(date)$$date$ ｜ $endif$
+    $if(author)$$author$ ｜ $endif$
+    $if(report-no)$$report-no$$endif$
+  </div>
+
+  $if(disclaimer)$
+  <div class="disclaimer"><strong>免责声明</strong>
+    <ol><li>本文仅供参考，不构成法律意见。</li></ol></div>
+  $endif$
+
+  $body$
+
+</main>
+
+</body>
+</html>

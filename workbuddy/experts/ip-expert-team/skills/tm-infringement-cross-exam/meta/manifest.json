@@ -1,0 +1,30 @@
+{
+  "name": "商标侵权质证提纲",
+  "name_en": "tm-infringement-cross-exam",
+  "description": "庭前证据交换后，针对被告证据编制商标侵权质证意见。按四性（真实性/合法性/关联性/证明力）逐项分析，内置商标特有质证要点（在先使用/合法来源/不近似/三年不使用），含举证责任意识。触发：商标侵权诉讼证据交换后需质证意见。不触发：刑事质证（→criminal-cross-examination）、非法证据排除申请。",
+  "version": "1.1.0",
+  "blueprint": "bp-trial-preparation-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-14",
+  "author": "深圳法大大网络科技有限公司",
+  "format_seriousness": "I-Practical",
+  "type_tag": "T-consultation",
+  "output_formats": ["markdown"],
+  "legal_domain": "商标侵权",
+  "script_necessity": "none",
+  "dependencies": {
+    "infrastructure": [
+      {"name": "governance.soft_degraded", "required": true, "fallback": "无法降级时仅输出错误提示"},
+      {"name": "governance.interaction_gates", "required": true, "fallback": "缺失时跳过交互补全"}
+    ],
+    "upstream_skills": [
+      {"name": "tm-infringement-comparison", "strength": "medium", "description": "商标比对，消费其比对结论用于不近似抗辩质证"},
+      {"name": "tm-damage-calc", "strength": "medium", "description": "赔偿计算，消费其计算结果用于赔偿相关证据质证"}
+    ],
+    "downstream_skills": [
+      {"name": "tm-infringement-trial-prep", "strength": "strong", "description": "庭审提纲消费本技能的质证意见"}
+    ]
+  }
+}

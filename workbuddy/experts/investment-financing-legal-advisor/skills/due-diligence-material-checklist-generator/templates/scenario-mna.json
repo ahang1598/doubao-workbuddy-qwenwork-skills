@@ -1,0 +1,33 @@
+{
+  "scenario_id": "S-MNA",
+  "scenario_name": "投资并购",
+  "description": "股权收购/合并/控股收购，全面深度尽调，核心关切或然负债/真实价值/保险覆盖/控制权",
+  "modules": {
+    "M1": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 10},
+    "M2": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 16},
+    "M3": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 10},
+    "M4": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 18},
+    "M5": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 14},
+    "M6": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 14},
+    "M7": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 12},
+    "M8": {"enabled": true, "priority": "high", "depth": "standard", "estimated_items": 10},
+    "M9": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M10": {"enabled": true, "priority": "low", "depth": "standard", "estimated_items": 6},
+    "M11": {"enabled": true, "priority": "medium", "depth": "standard", "estimated_items": 8},
+    "M12": {"enabled": true, "priority": "high", "depth": "full", "estimated_items": 8}
+  },
+  "total_estimated": "80-120",
+  "industry_adaptation": {
+    "manufacturing": {"M9": {"enabled": true, "priority": "high", "depth": "full"}, "M12": {"extra_items": ["机器损坏险保单"]}},
+    "software": {"M9": {"enabled": true, "priority": "low", "depth": "quick"}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "finance": {"M9": {"enabled": true, "priority": "low", "depth": "quick"}, "M10": {"extra_items": ["金融业务许可证"]}, "M11": {"enabled": true, "priority": "high", "depth": "full"}},
+    "real_estate": {"M9": {"enabled": true, "priority": "high", "depth": "full"}, "M10": {"extra_items": ["房地产预售许可证", "竣工验收备案文件", "土地出让合同及缴费凭证"]}},
+    "mining": {"M9": {"enabled": true, "priority": "high", "depth": "full", "extra_items": ["采矿许可证", "环境恢复方案"]}},
+    "biotech": {"M10": {"extra_items": ["药品注册证书", "临床试验批件", "GMP认证"]}, "M11": {"enabled": true, "priority": "high", "depth": "standard"}},
+    "new_energy": {"M9": {"enabled": true, "priority": "high", "depth": "full"}, "M10": {"extra_items": ["发电业务许可证", "碳排放配额文件", "可再生能源补贴文件"]}},
+    "semiconductor": {"M5": {"priority": "high", "depth": "full", "extra_items": ["集成电路布图设计登记证书"]}, "M10": {"extra_items": ["集成电路设计企业认定证书"]}},
+    "education": {"M10": {"extra_items": ["办学许可证"]}}
+  },
+  "key_concerns": ["或有负债", "真实价值", "控制权", "关联交易", "保险覆盖"],
+  "focus_modules": ["M2", "M3", "M6", "M12"]
+}

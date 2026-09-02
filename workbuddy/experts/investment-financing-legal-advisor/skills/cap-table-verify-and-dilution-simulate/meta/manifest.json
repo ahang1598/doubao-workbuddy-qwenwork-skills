@@ -1,0 +1,14 @@
+{
+  "name": "Cap Table核验与稀释模拟",
+  "name_en": "cap-market-cap-table-verify",
+  "description": "基于历轮SPA计算当前股权结构+工商登记交叉验证+未来融资稀释模拟+反稀释调整计算。触发：Cap Table核验、股权结构验证、稀释模拟、反稀释调整。不触发：多轮条款一致性(→multi-round)、投资协议审查(→06)、尽调(→07)。",
+  "version": "2.1.1",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-06",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

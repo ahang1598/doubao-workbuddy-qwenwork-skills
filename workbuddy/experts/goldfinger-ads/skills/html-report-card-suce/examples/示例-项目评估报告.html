@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目评估报告</title>
+<style>
+/*
+ * HTML 卡片统一样式（通用版）
+ * 所有产出物共享同一份视觉基线，agent 生成时按 template.html 组装。
+ * 修改前请阅读 references/design-rules.md 的 16 条硬规则。
+ *
+ * 换主色只改下面 3 个变量：--brand / --brand-deep / --brand-soft
+ * 其余语义色（warn/ok/danger）建议保持，它们与规则 3/15 的语义绑定。
+ */
+
+:root {
+  --brand: #0052D9;
+  --brand-soft: #E8F0FE;
+  --brand-deep: #003A99;
+  --ink: #1F2329;
+  --ink-2: #4E5969;
+  --ink-3: #86909C;
+  --line: #E5E6EB;
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --warn: #FF7D00;
+  --warn-soft: #FFF7E8;
+  --ok: #00B42A;
+  --ok-soft: #E8FFEA;
+  --danger: #F53F3F;
+  --danger-soft: #FFECE8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 880px; margin: 0 auto; }
+
+/* ========== 顶部 Banner ========== */
+.banner {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+  color: #fff;
+  padding: 28px 32px;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+.banner::after {
+  content: "";
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+/* Banner 顶部品牌+角色行（纯白小字，见规则 14/16；不需要品牌行可整段删除） */
+.banner .brand-tag {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin: 0 0 10px 0;
+  letter-spacing: 0.3px;
+  position: relative;
+  z-index: 1;
+}
+.banner .brand-tag .sep { margin: 0 6px; opacity: 0.6; }
+.banner .title {
+  font-size: 24px; font-weight: 600;
+  margin: 0 0 4px 0;
+}
+.banner .subtitle {
+  font-size: 14px; opacity: 0.9; margin: 0;
+}
+.banner .meta {
+  margin-top: 14px; font-size: 13px;
+  opacity: 0.85;
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.banner .meta span {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.banner .meta i.bi {
+  font-size: 14px; opacity: 0.9;
+}
+
+/* ========== 主体 ========== */
+.body {
+  background: var(--surface);
+  padding: 28px 32px 8px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+section { margin-bottom: 28px; }
+section:last-child { margin-bottom: 0; }
+
+/* 章节大标题（h2）—— 序号 + 标题，无左竖条 */
+h2.section-title {
+  font-size: 17px; font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 14px 0;
+  line-height: 1.35;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+h2.section-title .idx {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+/* 每个模块的重点句 —— 放在模块正文之前；无固定前缀，见规则 2 */
+.lead {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+  margin: 0 0 14px 0;
+  padding: 12px 14px;
+  background: #FAFBFC;
+  border-radius: 6px;
+}
+.lead strong { color: var(--ink); font-weight: 600; }
+
+/* ========== 表格（含 KV 型两列表；KV 型必须带 thead） ========== */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+table.data-table th {
+  background: #FAFBFC;
+  color: var(--ink-2);
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--line);
+  font-size: 13px;
+}
+table.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--ink);
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #FAFBFC; }
+
+/* KV 型表格：左列字段名（灰字 500 weight），右列内容。用 td.kv-key */
+table.data-table td.kv-key {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* 徽章 */
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.pill-ok { background: var(--ok-soft); color: var(--ok); }
+.pill-warn { background: var(--warn-soft); color: var(--warn); }
+.pill-danger { background: var(--danger-soft); color: var(--danger); }
+.pill-brand { background: var(--brand-soft); color: var(--brand); }
+.pill-recommend { background: var(--brand); color: #fff; }
+
+/* ========== 时间轴（精简版：每块 + 目标行 + 无 icon bullets） ========== */
+.timeline {
+  position: relative;
+  padding-left: 24px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px; top: 8px; bottom: 8px;
+  width: 2px; background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 20px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -22px; top: 7px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--brand);
+}
+.tl-item .tl-head {
+  font-size: 14px; font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.tl-item .tl-head .week {
+  color: var(--brand);
+  margin-right: 6px;
+}
+.tl-item .tl-head .sep { color: var(--ink-3); margin: 0 4px; }
+.tl-item .tl-goal {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.tl-item .tl-goal strong { color: var(--ink); font-weight: 500; }
+.tl-item .tl-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.85;
+}
+.tl-item .tl-list li { padding-left: 2px; }
+
+/* ========== 提示条（2 色：默认蓝｜warn 黄，无 icon） ========== */
+.callout {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--brand);
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: var(--brand-soft);
+  color: var(--ink);
+  margin-top: 14px;
+}
+.callout strong.title {
+  color: var(--brand-deep);
+  font-weight: 600;
+  margin-right: 4px;
+}
+.callout-warn { border-color: var(--warn); background: var(--warn-soft); color: #1F2329; }
+.callout-warn strong.title { color: #7A4300; }
+
+/* ========== 通用 bullet 列表 ==========
+ * 高频用法：<li><strong>标签：</strong>描述文字</li>
+ * 左标签深黑加粗 + 冒号后微空隙，扫读时锚点清晰
+ */
+ul.plain-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.85;
+}
+ul.plain-list li { margin: 4px 0; padding-left: 2px; }
+ul.plain-list li strong { color: var(--ink); font-weight: 600; }
+ul.plain-list li strong:first-child { margin-right: 4px; }
+
+/* callout 内嵌 plain-list：紧贴上文的 title 行，无额外 margin */
+.callout ul.plain-list { margin-top: 8px; color: inherit; }
+.callout ul.plain-list li { color: inherit; }
+
+/* ========== 决策标签（用于条件枚举 / 决策分支的结论词，无底色） ==========
+ * 用法：<li><strong>若两点都谈成：</strong><span class="tag-ok">可接 ✓</span> 说明文字…</li>
+ * 三档：ok（正向 / 推荐 / 可接）｜warn（谨慎 / 有条件 / 观望）｜bad（不推荐 / 不接 / 红线）
+ * 关键：只染字色，不加底色。要与 plain-list 搭配使用，禁止塞进 callout。
+ */
+.tag-ok, .tag-warn, .tag-bad {
+  font-weight: 600;
+  margin-right: 4px;
+}
+.tag-ok { color: var(--ok); }
+.tag-warn { color: var(--warn); }
+.tag-bad { color: var(--danger); }
+
+.disclaimer {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 20px;
+  padding: 14px 0;
+}
+
+/* 打印友好 */
+@media print {
+  body { padding: 0; background: #fff; }
+  .banner { border-radius: 0; }
+  .body { border-radius: 0; box-shadow: none; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="banner">
+    <p class="brand-tag">示例品牌<span class="sep">·</span>项目顾问</p>
+    <h1 class="title">项目评估报告</h1>
+    <p class="subtitle">面向技术负责人 · 三方案对比与推进建议</p>
+    <div class="meta">
+      <span><svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"/><path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>2026-08-20</span>
+      <span><svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12.435 12.435 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A19.626 19.626 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a19.587 19.587 0 0 0 1.349-.476l.019-.007.004-.002h.001"/></svg>方案选型阶段</span>
+      <span><svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.153-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.153.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2h-7z"/></svg>覆盖未来一个季度</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <section>
+      <h2 class="section-title"><span class="idx">01</span>整体判断</h2>
+      <p class="lead">三个候选方案里 <strong>方案B</strong> 最稳妥，但需要先补齐数据权限，否则第 2 阶段会卡住。</p>
+      <table class="data-table">
+        <thead>
+          <tr><th>候选方案</th><th>核心优势</th><th>主要风险</th><th>结论</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>方案A</td><td>上线最快，2 周可交付</td><td>扩展性差，半年后大概率重构</td><td><span class="pill pill-warn">观望</span></td></tr>
+          <tr><td>方案B</td><td>结构清晰，长期维护成本最低</td><td>依赖数据权限审批</td><td><span class="pill pill-recommend">推荐</span></td></tr>
+          <tr><td>方案C</td><td>技术最先进</td><td>团队无相关经验，学习成本高</td><td><span class="pill pill-danger">不建议</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="idx">02</span>方案要点</h2>
+      <p class="lead">核心取舍是"先跑通再优化"，所以第一阶段只做主流程，不碰边缘场景。</p>
+      <table class="data-table">
+        <thead>
+          <tr><th style="width:130px;">维度</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kv-key">目标</td><td>三个月内让主流程跑通并接入两个真实业务方</td></tr>
+          <tr><td class="kv-key">范围</td><td>只覆盖主流程，异常分支与批量场景放到第二期</td></tr>
+          <tr><td class="kv-key">关键依赖</td><td>数据权限审批、上游接口稳定性</td></tr>
+          <tr><td class="kv-key">验收标准</td><td>主流程端到端成功率 ≥ 99%，平均耗时 &lt; 2s</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="idx">03</span>推进节奏</h2>
+      <p class="lead">前四周不追求功能完整，只确保链路能端到端跑通，第五周才开始压性能。</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 1</span>打通链路</div>
+          <div class="tl-goal"><strong>目标：</strong>主流程端到端可运行</div>
+          <ul class="tl-list">
+            <li>确定接口契约并与上游对齐</li>
+            <li>搭最小可用骨架，先不做异常分支</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 2</span>接入验证</div>
+          <div class="tl-goal"><strong>目标：</strong>两个业务方真实数据跑通</div>
+          <ul class="tl-list">
+            <li>灰度接入第一个业务方，观察一周</li>
+            <li>按反馈修正契约，再接第二个</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="week">阶段 3</span>压性能</div>
+          <div class="tl-goal"><strong>目标：</strong>达到验收标准</div>
+          <ul class="tl-list">
+            <li>压测定位瓶颈，优先解决耗时最长的环节</li>
+            <li>补齐监控与告警</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="idx">04</span>口径说明</h2>
+      <div class="callout"><strong class="title">说明：</strong>本页"成功率"指端到端完成且结果校验通过的比例，不含上游超时导致的重试成功。</div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="idx">05</span>主要风险</h2>
+      <ul class="plain-list">
+        <li><strong>权限审批：</strong>数据权限走完流程通常两到三周，建议第一周就提交，不要等到阶段 2</li>
+        <li><strong>上游变更：</strong>上游接口近半年改过两次，契约要留兼容层</li>
+        <li><strong>人力波动：</strong>阶段 3 与季度复盘撞期，压测人力可能被抽走</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="idx">06</span>决策分支</h2>
+      <p class="lead">权限能否按时批下来，决定走哪条路径。</p>
+      <ul class="plain-list">
+        <li><strong>若权限两周内批复：</strong><span class="tag-ok">按原计划</span>三阶段串行推进，季度末可交付。</li>
+        <li><strong>若权限延迟到四周：</strong><span class="tag-warn">调整顺序</span>先做阶段 3 的性能骨架，权限到位后再补接入。</li>
+        <li><strong>若权限本季度无法批复：</strong><span class="tag-bad">暂缓</span>改用方案A 做临时过渡，不要硬等。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="idx">07</span>下一步建议</h2>
+      <ul class="plain-list">
+        <li>本周内提交数据权限申请，附上用途说明与最小字段清单</li>
+        <li>与上游确认接口契约并留兼容层 → 可找 <strong>李明（系统架构师）</strong></li>
+        <li>把验收标准写进需求文档，避免后期口径争议</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <div class="disclaimer">
+    —— 示例品牌 · 项目顾问 出品｜本报告仅供参考，实际执行请结合具体场景判断。
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,479 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+{# ============================================================
+   第 3 节 · 执行摘要
+   ============================================================ #}
+<section class="page content first-content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">执行摘要 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 01</p>
+    <h2 class="section-title">执行摘要</h2>
+
+    <div class="executive-summary">
+        <h3>核心结论</h3>
+        <ol>
+        {% for finding in ctx.summary.core_findings | default(['（待填充）']) %}
+            <li>{{ finding | rich_text }}</li>
+        {% endfor %}
+        </ol>
+    </div>
+
+    {# KPI 卡片行 #}
+    <div class="kpi-row">
+        {% for kpi in ctx.summary.kpis | default([]) %}
+        <div class="kpi-card">
+            <div class="label">{{ kpi.label }}</div>
+            <div class="value">{{ kpi.value }}</div>
+            <div class="yoy">{{ kpi.note | default('') | rich_text }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# 战略韧性排名 #}
+    {% if ctx.summary.resilience_ranking %}
+    <div class="radar-card">
+        <h4>战略韧性评分榜单</h4>
+        <table class="landscape-table">
+            <thead><tr><th>排名</th><th>银行</th><th>总分</th><th>高管稳定性</th><th>组织惯性</th><th>政策适配度</th><th>言行一致度</th></tr></thead>
+            <tbody>
+            {% for item in ctx.summary.resilience_ranking %}
+            <tr{% if item.bank == ctx.meta.base_bank %} class="row-highlight"{% endif %}>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.bank }}</td>
+                <td class="strong-col">{{ item.total }}</td>
+                <td>{{ item.leader_stability }}</td>
+                <td>{{ item.org_inertia }}</td>
+                <td>{{ item.policy_fit }}</td>
+                <td>{{ item.narrative_consistency }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</section>
+
+{# ============================================================
+   第 4 节 · 第一部分 时间骨架
+   ============================================================ #}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">时间骨架 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 02</p>
+    <h2 class="section-title">时间骨架：周期划分与领导者画像</h2>
+
+    {# 周期划分表 #}
+    <h3 class="subsection-title">五大周期划分</h3>
+    {% if ctx.phase1.cycles %}
+    <table class="landscape-table">
+        <thead><tr><th>周期</th><th>时段</th><th>宏观环境</th></tr></thead>
+        <tbody>
+        {% for c in ctx.phase1.cycles %}
+        <tr><td class="strong-col">{{ c.name }}</td><td>{{ c.start }}–{{ c.end }}</td><td>{{ c.macro | default('') | rich_text }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {# 领导时间线 #}
+    <h3 class="subsection-title">历任领导者画像</h3>
+    {% if ctx.phase1.leader_timeline_html %}
+    <div class="leader-timeline">
+        {{ ctx.phase1.leader_timeline_html | safe }}
+    </div>
+    {% else %}
+    <p class="muted">（领导时间线数据待填充）</p>
+    {% endif %}
+
+    {# 组织变革热力图 #}
+    <h3 class="subsection-title">组织变革热力图</h3>
+    {% if ctx.phase1.org_heatmap_html %}
+    <div class="org-heatmap">
+        {{ ctx.phase1.org_heatmap_html | safe }}
+    </div>
+    {% else %}
+    <p class="muted">（组织变革热力图数据待填充）</p>
+    {% endif %}
+</section>
+
+{# ============================================================
+   第 5 节 · 第二部分 言行比对
+   ============================================================ #}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">言行比对 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 03</p>
+    <h2 class="section-title">言行比对：战略关键词 × 资源投向</h2>
+
+    <h3 class="subsection-title">言行一致度矩阵</h3>
+    {% if ctx.phase2.consistency_table_html %}
+    {{ ctx.phase2.consistency_table_html | safe }}
+    {% else %}
+    <p class="muted">（言行一致度矩阵数据待填充）</p>
+    {% endif %}
+
+    {% if ctx.phase2.col_wins or ctx.phase2.col_gaps %}
+    <div class="two-col">
+        <div class="col-card win">
+            <h4>✓ 真战略：做了也说</h4>
+            <ul>
+            {% for item in ctx.phase2.col_wins | default([]) %}
+                <li>{{ item | rich_text }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="col-card gap">
+            <h4>✗ 宣传话术：说了没做到</h4>
+            <ul>
+            {% for item in ctx.phase2.col_gaps | default([]) %}
+                <li>{{ item | rich_text }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <h3 class="subsection-title">战略延续性评估</h3>
+    {% if ctx.phase2.continuity_items %}
+    {% for item in ctx.phase2.continuity_items %}
+    <div style="margin: 3mm 0;">
+        <strong>{{ item.bank }}</strong> · {{ item.leader }}（{{ item.tenure }}）：
+        <span class="continuity-tag {{ item.verdict_class }}">{{ item.verdict | rich_text }}</span>
+        <span class="muted" style="margin-left:6pt;">漂移率 {{ item.drift_rate }}</span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted">（战略延续性评估数据待填充）</p>
+    {% endif %}
+</section>
+
+{# ============================================================
+   第 6 节 · 第三部分 关键节点反事实推演
+   ============================================================ #}
+{% for node in ctx.phase3.key_nodes | default([]) %}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">反事实推演 · 战略与治理分析报告</span>
+    </div>
+
+    {% if loop.first %}
+    <p class="section-kicker">SECTION · 04</p>
+    <h2 class="section-title">关键节点反事实推演</h2>
+    {% endif %}
+
+    <h3 class="subsection-title">{{ node.name | default('关键节点') }}</h3>
+
+    <div class="insight-card">
+        <div class="insight-header">
+            <span class="insight-id">{{ node.date | default('') }}</span>
+            <span class="insight-priority risk">{{ node.shock_type | default('冲击事件') }}</span>
+            <span class="insight-title">{{ node.name | rich_text }}</span>
+        </div>
+        <div class="insight-section">
+            <span class="insight-section-label">彼时环境</span>
+            <p class="insight-core">{{ node.context | default('') | rich_text }}</p>
+        </div>
+        <div class="insight-section">
+            <span class="insight-section-label">各行决策</span>
+            {% if node.decisions %}
+            <table class="evidence-table">
+                <thead><tr><th>银行</th><th>决策</th><th>归因维度</th></tr></thead>
+                <tbody>
+                {% for bank, decision in node.decisions.items() %}
+                <tr{% if bank == ctx.meta.base_bank %} class="row-highlight"{% endif %}>
+                    <td class="metric-col">{{ bank }}</td>
+                    <td>{{ decision | rich_text }}</td>
+                    <td class="source-col">{{ (node.logic.get(bank, '') if node.logic else '') | rich_text }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if node.what_if %}
+    <div class="counterfactual-range">
+        <div class="cf-title">反事实模拟：{{ node.name }}</div>
+        {% for wf in node.what_if %}
+        <div class="cf-row">
+            <span class="cf-label">{{ wf.scenario }}</span>
+            <div class="cf-bar-container">
+                <div class="cf-bar confidence-{{ wf.confidence | default('medium') }}" style="width: {{ wf.bar_width | default('60') }}%;">
+                    {{ wf.impact_summary | default('') | rich_text }}
+                </div>
+            </div>
+        </div>
+        <div class="cf-endpoints" style="margin-left: 30%; padding-right: 4pt;">
+            <span>{{ wf.range_min | default('') }}</span>
+            <span>{{ wf.range_max | default('') }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="cf-disclaimer">⚠️ 以上结论为模型推演，非事实。置信度：{{ node.overall_confidence | default('中') }}。仅供研究参考。</div>
+</section>
+{% endfor %}
+
+{% if not ctx.phase3.key_nodes %}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">反事实推演 · 战略与治理分析报告</span>
+    </div>
+    <p class="section-kicker">SECTION · 04</p>
+    <h2 class="section-title">关键节点反事实推演</h2>
+    <p class="muted">（反事实推演数据待填充）</p>
+</section>
+{% endif %}
+
+{# ============================================================
+   第 7 节 · 第四部分 治理结构
+   ============================================================ #}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">治理结构 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 05</p>
+    <h2 class="section-title">治理结构影响机制</h2>
+
+    <h3 class="subsection-title">董事会专业委员会议事频率 × 业绩波动</h3>
+    {% if ctx.phase4.board_activity_html %}
+    {{ ctx.phase4.board_activity_html | safe }}
+    {% else %}
+    <p class="muted">（董事会议事数据待填充）</p>
+    {% endif %}
+
+    <h3 class="subsection-title">股东意志传导</h3>
+    {% for event in ctx.phase4.shareholder_events | default([]) %}
+    <div class="insight-card">
+        <div class="insight-header">
+            <span class="insight-id">{{ event.bank }}</span>
+            <span class="insight-title">{{ event.event | rich_text }}</span>
+        </div>
+        <div class="insight-section">
+            <span class="insight-section-label">影响链</span>
+            <p class="insight-core">{{ event.impact_chain | default('') | rich_text }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    <h3 class="subsection-title">战略韧性五角评分</h3>
+    {% if ctx.phase4.resilience_radar_html %}
+    <div class="radar-card">
+        {{ ctx.phase4.resilience_radar_html | safe }}
+    </div>
+    {% elif ctx.phase4.resilience_scores %}
+    <div class="radar-card">
+        <h4>五家银行战略韧性评分</h4>
+        <table class="landscape-table">
+            <thead><tr><th>银行</th><th>总分</th><th>等级</th><th>高管稳定性(30)</th><th>组织惯性(30)</th><th>政策适配度(20)</th><th>言行一致度(20)</th></tr></thead>
+            <tbody>
+            {% for score in ctx.phase4.resilience_scores %}
+            <tr{% if score.bank == ctx.meta.base_bank %} class="row-highlight"{% endif %}>
+                <td class="strong-col">{{ score.bank }}</td>
+                <td class="strong-col">{{ score.total }}</td>
+                <td>{{ score.grade }}</td>
+                <td>{{ score.leader_stability }}</td>
+                <td>{{ score.org_inertia }}</td>
+                <td>{{ score.policy_fit }}</td>
+                <td>{{ score.narrative_consistency }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">（战略韧性评分数据待填充）</p>
+    {% endif %}
+</section>
+
+{# ============================================================
+   第 8 节 · 第五部分 战略摇摆点诊断
+   ============================================================ #}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">战略摇摆点 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 06</p>
+    <h2 class="section-title">战略摇摆点诊断</h2>
+
+    {% for sp in ctx.swing_points | default([]) %}
+    <div class="swing-card">
+        <div class="swing-header">
+            <span class="swing-year">{{ sp.year }}</span>
+            <span class="swing-badge">战略摇摆</span>
+            <span class="swing-title">{{ sp.event | rich_text }}</span>
+        </div>
+
+        <div class="swing-section">
+            <span class="swing-section-label">诱因归因</span>
+            <p>{{ sp.root_cause | rich_text }}</p>
+        </div>
+
+        <div class="swing-section">
+            <span class="swing-section-label">三类证据</span>
+            <ul>
+            {% for ev in sp.evidence | default([]) %}
+                <li>{{ ev | rich_text }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        {% if sp.cost_assessment %}
+        <div class="swing-section">
+            <span class="swing-section-label">代价评估</span>
+            <p>{{ sp.cost_assessment | rich_text }}</p>
+        </div>
+        {% endif %}
+
+        <div class="swing-section">
+            <span class="swing-section-label">教训提炼</span>
+            <p>{{ sp.lesson | rich_text }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not ctx.swing_points %}
+    <p class="muted">（战略摇摆点数据待填充）</p>
+    {% endif %}
+</section>
+
+{# ============================================================
+   第 9 节 · 第六部分 建议方案
+   ============================================================ #}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">建议方案 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 07</p>
+    <h2 class="section-title">建议方案</h2>
+
+    <div class="recommendation-grid">
+        <div class="recommendation-col strategy-insulation">
+            <div class="col-header">战略隔离带</div>
+            {% for rec in ctx.recommendations.strategy_insulation | default([]) %}
+            <div class="insight-card growth">
+                <div class="insight-header">
+                    <span class="insight-title">{{ rec.action | rich_text }}</span>
+                </div>
+                <div class="rec-field"><span class="rec-field-label">理由</span> {{ rec.rationale | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">数据依据</span> {{ rec.data_evidence | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">预期效果</span> {{ rec.expected_effect | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">责任方</span> {{ rec.responsible_role }}</div>
+                <div class="rec-field"><span class="rec-field-label">时间窗</span> {{ rec.time_window }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="recommendation-col governance-resilience">
+            <div class="col-header">治理韧性</div>
+            {% for rec in ctx.recommendations.governance_resilience | default([]) %}
+            <div class="insight-card efficiency">
+                <div class="insight-header">
+                    <span class="insight-title">{{ rec.action | rich_text }}</span>
+                </div>
+                <div class="rec-field"><span class="rec-field-label">理由</span> {{ rec.rationale | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">数据依据</span> {{ rec.data_evidence | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">预期效果</span> {{ rec.expected_effect | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">责任方</span> {{ rec.responsible_role }}</div>
+                <div class="rec-field"><span class="rec-field-label">时间窗</span> {{ rec.time_window }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="recommendation-col key-personnel">
+            <div class="col-header">关键人事</div>
+            {% for rec in ctx.recommendations.key_personnel | default([]) %}
+            <div class="insight-card risk">
+                <div class="insight-header">
+                    <span class="insight-title">{{ rec.action | rich_text }}</span>
+                </div>
+                <div class="rec-field"><span class="rec-field-label">理由</span> {{ rec.rationale | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">数据依据</span> {{ rec.data_evidence | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">预期效果</span> {{ rec.expected_effect | rich_text }}</div>
+                <div class="rec-field"><span class="rec-field-label">责任方</span> {{ rec.responsible_role }}</div>
+                <div class="rec-field"><span class="rec-field-label">时间窗</span> {{ rec.time_window }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ============================================================
+   第 10 节 · 收尾 · 数据与免责声明
+   ============================================================ #}
+<section class="page content">
+    <div class="page-header">
+        {% if logo_base64 %}
+        <img class="logo-small" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+        {% endif %}
+        <span class="header-text">数据与免责 · 战略与治理分析报告</span>
+    </div>
+
+    <p class="section-kicker">SECTION · 08</p>
+    <h2 class="section-title">数据与免责声明</h2>
+
+    <div class="appendix-box">
+        <h4>分析参数</h4>
+        <ul>
+            <li><strong>基准行：</strong>{{ ctx.meta.base_bank | default('某某银行') }}</li>
+            <li><strong>对标组：</strong>{{ ctx.meta.peer_banks | default(['A银行','B银行','C银行','D银行']) | join('、') }}</li>
+            <li><strong>分析窗口：</strong>{{ ctx.meta.analysis_window | default('2004–至今') }}</li>
+            <li><strong>数据窗口：</strong>{{ ctx.meta.data_window | default('2015–最新期') }}</li>
+        </ul>
+    </div>
+
+    {% if ctx.risk_disclosure %}
+    <div class="appendix-box">
+        <h4>数据缺失与降级说明</h4>
+        <ul>
+        {% for item in ctx.risk_disclosure %}
+            <li>{{ item | rich_text }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="disclaimer">
+        本报告由 AI 基于上市银行公开披露信息生成，仅供研究参考，不构成任何投资建议，亦不构成对任何个股的推荐
+    </div>
+</section>
+{% endblock %}
+
+{# 覆盖默认 disclaimer block 为空，避免 base_template 再重复添加一页 #}
+{% block disclaimer %}{% endblock %}

@@ -1,0 +1,144 @@
+{
+  "name": "etf-advisor-team",
+  "version": "1.6.1",
+  "description": "A team of ETF investment advisors that anchors top-down allocation targets and rebalancing discipline, diagnoses holdings and swaps in better tools bottom-up, then compiles multi-angle rebalancing analysis with reference execution plans. v1.6.0 replaces 17 fully-substitutable scrapers with a bundled westock-data skill (Tencent WeStock market-data commands via npx, no auth required; node>=18) covering ETF details/K-line/technicals/fund flow/macro indicators/sector valuation/research reports, keeping non-substitutable scrapers (options IV, futures positions, L1 quotes, REITs, industry high-frequency) as fallback. v1.5.0 adds single-ETF consultation dual-linkage: independent-vs-inherited mode declaration (no hybrid state), portfolio linkage comparison table (allocation-layer vs execution-layer transparency), GATE 4 cross-transparency check, position percentage denominator+layer annotation, tone-evolution provenance, and reverse-trigger alerts. 79 scripts + 5 quant modules + 1 bundled skill. v1.6.1 renames members field displayName to name per marketplace schema.",
+  "author": {
+    "name": "Willzzhong",
+    "email": "willzzhong@example.com"
+  },
+  "expertType": "team",
+  "agentName": "etf-advisor-team-lead",
+  "teamInfo": {
+    "leadAgent": "etf-advisor-team-lead",
+    "memberAgents": [
+      "etf-portfolio-diagnostician",
+      "etf-market-technician",
+      "etf-macro-researcher",
+      "etf-risk-guardian"
+    ]
+  },
+  "agents": [
+    "./agents/etf-advisor-team-lead.md",
+    "./agents/etf-portfolio-diagnostician.md",
+    "./agents/etf-market-technician.md",
+    "./agents/etf-macro-researcher.md",
+    "./agents/etf-risk-guardian.md"
+  ],
+  "skills": [
+    "./skills/westock-data"
+  ],
+  "displayName": {
+    "en": "ETF Investment Advisory Team",
+    "zh": "ETF投资顾问专家团"
+  },
+  "profession": {
+    "en": "ETF Investment Advisory Team",
+    "zh": "ETF投资顾问专家团"
+  },
+  "displayDescription": {
+    "en": "Sets top-down allocation anchors and rebalancing discipline, diagnoses your ETF holdings and swaps in better tools bottom-up, with macro, technical and risk review delivering multi-angle rebalancing analysis for reference.",
+    "zh": "自上而下定配置中枢与再平衡纪律，自下而上诊断持仓、择优替换工具，宏观技术风控协同输出多角度调仓分析参考。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "08-FinanceInvestment",
+  "defaultInitPrompt": {
+    "zh": "这是我的ETF持仓（代码+份额/金额+成本价），投资风格偏[稳健/均衡/积极]，帮我分析接下来可参考的调仓方向。",
+    "en": "Here are my ETF holdings (code + shares/amount + cost basis) and my style is [conservative/balanced/aggressive]. Please analyze reference rebalancing directions for me."
+  },
+  "tags": [
+    {
+      "en": "ETF Trading Signals",
+      "zh": "ETF交易建议"
+    },
+    {
+      "en": "Portfolio Diagnosis",
+      "zh": "持仓诊断"
+    },
+    {
+      "en": "Position Management",
+      "zh": "仓位管理"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Here are my ETF holdings (code + shares/amount + cost basis) and my style is [conservative/balanced/aggressive]. Please analyze reference rebalancing directions for me.",
+      "zh": "这是我的ETF持仓（代码+份额/金额+成本价），投资风格偏[稳健/均衡/积极]，帮我分析接下来可参考的调仓方向。"
+    },
+    {
+      "en": "Here are my current ETF holdings. Diagnose whether my portfolio structure is healthy, and tell me whether I should add or reduce positions now.",
+      "zh": "这是我当前的ETF持仓，帮我诊断组合结构是否健康，接下来该加仓还是减仓？"
+    },
+    {
+      "en": "Should I take profit or keep holding my sector ETFs (e.g. semiconductor / Hang Seng Tech) at current levels?",
+      "zh": "帮我看看手里的行业主题ETF（如半导体/恒生科技）现在该止盈还是继续持有？"
+    }
+  ],
+  "members": [
+    {
+      "id": "etf-advisor-team-lead",
+      "profession": {
+        "en": "Chief Allocation Officer",
+        "zh": "首席配置官"
+      },
+      "avatar": "avatars/etf-advisor-team-lead.png",
+      "role": "lead",
+      "name": {
+        "en": "Zhen",
+        "zh": "甄权衡"
+      }
+    },
+    {
+      "id": "etf-portfolio-diagnostician",
+      "profession": {
+        "en": "Portfolio Diagnostician",
+        "zh": "持仓诊断师"
+      },
+      "avatar": "avatars/etf-portfolio-diagnostician.png",
+      "role": "member",
+      "name": {
+        "en": "Kang",
+        "zh": "康持盈"
+      }
+    },
+    {
+      "id": "etf-market-technician",
+      "profession": {
+        "en": "Market & Technical Analyst",
+        "zh": "行情技术分析师"
+      },
+      "avatar": "avatars/etf-market-technician.png",
+      "role": "member",
+      "name": {
+        "en": "Ma",
+        "zh": "马图南"
+      }
+    },
+    {
+      "id": "etf-macro-researcher",
+      "profession": {
+        "en": "Macro & Industry Researcher",
+        "zh": "宏观行业研究员"
+      },
+      "avatar": "avatars/etf-macro-researcher.png",
+      "role": "member",
+      "name": {
+        "en": "Hong",
+        "zh": "洪观远"
+      }
+    },
+    {
+      "id": "etf-risk-guardian",
+      "profession": {
+        "en": "Risk & Compliance Officer",
+        "zh": "风险合规官"
+      },
+      "avatar": "avatars/etf-risk-guardian.png",
+      "role": "member",
+      "name": {
+        "en": "Yan",
+        "zh": "严守成"
+      }
+    }
+  ],
+  "plugin": "etf-advisor-team"
+}

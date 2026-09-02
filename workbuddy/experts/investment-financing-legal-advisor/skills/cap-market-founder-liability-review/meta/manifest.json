@@ -1,0 +1,14 @@
+{
+  "name": "创始人个人责任提取与风险评估",
+  "name_en": "cap-market-founder-liability-review",
+  "description": "从投资协议系统提取创始人8类个人责任(回购/赔偿/竞业/IP/授权/锁定/连带/担保)+五维风险评估+条款联动分析+谈判建议。触发：创始人责任梳理、个人风险排查、签约前审查。不触发：投资协议合规审查(→06)、TS审查(→01)、尽调(→07)。",
+  "version": "1.1.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-01",
+  "created": "2026-07-06",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "format_seriousness": "C-Professional"
+}

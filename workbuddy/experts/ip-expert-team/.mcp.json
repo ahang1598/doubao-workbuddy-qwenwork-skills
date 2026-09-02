@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "richee-mcp-server": {
+      "type": "streamableHttp",
+      "url": "https://claw.richee.cn/claw-api/mcp/workbuddy",
+      "x-workbuddy": {
+        "displayName": {
+          "zh": "法大大睿契",
+          "en": "Fadada Richee"
+        },
+        "description": {
+          "zh": "法大大睿契法律智能平台 MCP，连接后可调用法大大睿契的法律法规检索、合同审查等法律智能能力，支撑商标、专利、著作权全流程专业分析。",
+          "en": "Fadada Richee legal intelligence MCP. Once connected, provides legal regulation search, contract review and other legal AI capabilities to support trademark, patent and copyright analysis workflows."
+        }
+      }
+    }
+  }
+}

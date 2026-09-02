@@ -1,0 +1,15 @@
+{
+  "name": "破产成果校验",
+  "name_en": "bankruptcy-output-verification",
+  "description": "交付前核验债权金额与分配金额一致性、债权优先级排序正确性、法条引用准确性、上下文一致性和管理人履职程序合规性。触发：破产成果校验/金额核验/优先级复核/法条核验/程序合规/法定章节检查。不触发：非破产领域的文档校验。",
+  "version": "1.1.0",
+  "blueprint": "bp-due-diligence-opinion-support-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-07-23",
+  "created": "2026-07-23",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-review",
+  "drafting_paradigm": "lawyer_draft"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "破产职工安置",
+  "name_en": "bankruptcy-employee-resettlement",
+  "description": "编制破产企业职工安置方案（劳动合同解除/经济补偿计算/社保清算/安置费用测算/职工债权审查），处理职工代表大会/职工安置方案表决/群体性事件预防。触发：职工安置/经济补偿/社保清算/职工债权/劳动合同解除/安置方案/职工代表大会。不触发：非破产场景的劳动争议/常规劳动合同审查。",
+  "version": "1.0.0",
+  "blueprint": "bp-litigation-arbitration-drafting-v1",
+  "risk_level": "L3",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-08-05",
+  "created": "2026-08-05",
+  "author": "深圳法大大网络科技有限公司",
+  "script_necessity": "none",
+  "type_tag": "T-drafting",
+  "drafting_paradigm": "lawyer_draft"
+}

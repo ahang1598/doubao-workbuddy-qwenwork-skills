@@ -1,0 +1,30 @@
+{
+  "name": "商标侵权庭审提纲",
+  "name_en": "tm-infringement-trial-prep",
+  "description": "开庭审理前的完整庭审准备——7环节（开庭陈述/举证计划/质证要点/法庭辩论/法官提问预判/最后陈述/时间分配），消费上游技能输出（D2质证/B1比对/A6赔偿/C3策略），框架先行+占位标注。触发：商标侵权诉讼开庭前需庭审准备。不触发：行政程序口审（→tm-oral-hearing-prep）、单独质证（→tm-infringement-cross-exam）。",
+  "version": "1.1.0",
+  "blueprint": "bp-trial-preparation-v1",
+  "risk_level": "L2",
+  "release_level": "LIMITED",
+  "knowledge_cutoff": "2026-06-01",
+  "created": "2026-06-14",
+  "author": "深圳法大大网络科技有限公司",
+  "format_seriousness": "I-Practical",
+  "type_tag": "T-consultation",
+  "output_formats": ["markdown"],
+  "legal_domain": "商标侵权",
+  "script_necessity": "none",
+  "dependencies": {
+    "infrastructure": [
+      {"name": "governance.soft_degraded", "required": true, "fallback": "无法降级时仅输出错误提示"},
+      {"name": "governance.interaction_gates", "required": true, "fallback": "缺失时跳过交互补全"}
+    ],
+    "upstream_skills": [
+      {"name": "tm-infringement-cross-exam", "strength": "strong", "description": "D2质证意见，消费其质证结论填入三、质证要点"},
+      {"name": "tm-infringement-comparison", "strength": "strong", "description": "B1比对结论，消费其比对结果填入四(一)、侵权构成论证"},
+      {"name": "tm-damage-calc", "strength": "strong", "description": "A6赔偿计算，消费其计算结果填入四(二)、赔偿计算论证"},
+      {"name": "tm-infringement-strategy", "strength": "medium", "description": "C3诉讼策略，消费其策略预判填入四(三)、对方抗辩回应"}
+    ],
+    "downstream_skills": []
+  }
+}

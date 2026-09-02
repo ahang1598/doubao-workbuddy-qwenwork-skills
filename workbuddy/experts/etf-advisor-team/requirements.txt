@@ -1,0 +1,22 @@
+# etf-advisor-team scripts 第三方依赖
+# 安装：pip install -r requirements.txt
+# 注：核心采集脚本仅依赖 requests + beautifulsoup4
+#      图表/渲染额外依赖 openpyxl/jinja2/markdown
+#      网页搜索用 WorkBuddy 自带 WebSearch 工具（LLM 层）
+#      pytdx 为可选（通达信公开协议，端口7709）
+#      web_fetcher.py 需 playwright + html2text（JS 渲染页面抓取，可选）
+
+requests
+beautifulsoup4
+openpyxl
+markdown
+jinja2
+markupsafe
+urllib3
+
+# 可选依赖（按需安装）
+pytdx
+# web_fetcher.py 专用（Playwright JS 渲染抓取，仅动态页面场景需要）
+# 安装：pip install playwright html2text && playwright install chromium
+playwright
+html2text
