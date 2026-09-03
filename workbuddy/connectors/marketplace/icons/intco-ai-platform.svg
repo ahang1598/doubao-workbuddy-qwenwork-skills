@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">英科AI中台</title>
+  <desc id="desc">由相连节点组成的英科AI中台图标</desc>
+  <defs>
+    <linearGradient id="background" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#4338CA"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#background)"/>
+  <path d="M17 22 32 13l15 9v20L32 51l-15-9V22Z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m17 22 15 9 15-9M32 31v20" fill="none" stroke="#BFDBFE" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="17" cy="22" r="4" fill="#fff"/>
+  <circle cx="47" cy="22" r="4" fill="#fff"/>
+  <circle cx="32" cy="13" r="4" fill="#fff"/>
+  <circle cx="32" cy="31" r="5" fill="#93C5FD" stroke="#fff" stroke-width="2"/>
+  <circle cx="32" cy="51" r="4" fill="#fff"/>
+</svg>
