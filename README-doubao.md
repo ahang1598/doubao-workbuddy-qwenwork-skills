@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：106
-- 当前索引文件数：2364
-- 最近变更：[2026-09-02-180002](doubao/change-logs/2026-09-02-180002.md) - Doubao 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/ppt, skills/sheet。
+- 当前索引条目数：107
+- 当前索引文件数：2375
+- 最近变更：[2026-09-03-180002](doubao/change-logs/2026-09-03-180002.md) - Doubao 本次同步新增 11 个文件、修改 1 个文件、删除 0 个文件。 新增条目：skills/doubao-answer-with-medical-evidence。 受影响范围：skills/doubao-answer-with-medical-evidence, skills/student-discount-application。
 
 ## 数据来源
 
@@ -40,6 +40,7 @@
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | skill | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
 | doubao-academic-researcher | `doubao/skills/doubao-academic-researcher` | skill | 21 | 通用学术文献调研Skill，面向研究者、学生和论文写作者在未锁定具体论文题目前摸清某学术方向、概念、机制、热点前沿、学术史或选题依据。执行系统检索、引用真实性核验、证据分级、主题聚类、交叉综合、争议与空白识别，产出结论先行、引用可追溯的结构化调研结果。触发于用户要求调研某方向、梳理研究现状或related work、查看最新进展、梳理热点前沿或学术史、找文献支撑、做选题依据、解释某概念或机制。只做文献调研与证据支撑，不产出摘要引言... |
 | doubao-announcement-analysis | `doubao/skills/doubao-announcement-analysis` | skill | 27 | 搜索并解读上市公司公告，覆盖 A股（沪深北）、港股（HKEX）、美股（SEC EDGAR）三大市场。支持两种模式：①单条/多条具体公告的深度解读（拆解公告要点、判断重要性、给出多视角分析）；②按公司或时间段批量监控并生成公告摘要合集（时效优先、覆盖面广）。适用于业绩报告解读、重大合同/协议公告解读、股权变动（增减持/回购）解读、股权激励（期权/限制性股票/员工持股计划）解读、监管问询函/关注函及回复公告解读、停牌复牌与退市风险公告... |
+| doubao-answer-with-medical-evidence | `doubao/skills/doubao-answer-with-medical-evidence` | skill | 11 | 健康问题循证咨询，患者或家属提出健康或医学问题时使用，患者提问优先使用本技能，适用于需要围绕相关症状、疾病、检查、用药、治疗或预后问题，结合医学文献进行回答的场景。该技能会使用循证医学的思路全面分析患者表现，并提供相关关怀支持。医生与医疗从业者的提问改用doubao-clinical-decision-support技能，其余医学文献专业场景改用 doubao-medical 系列技能。 |
 | doubao-app-builder | `doubao/skills/doubao-app-builder` | skill | 11 | 统一处理网页应用的生成、编辑，以及围绕已生成产物的问答。既负责把自然语言需求端到端转成可运行、可预览、可交付的网页应用产物，也负责在用户追问产物时基于真实产物作答。当用户要生成网站、H5、网页应用、管理后台、数据看板时使用。当用户要编辑已有网页应用、做功能新增、页面调整或 Bug 修复时使用。当用户提供 PRD、文档、截图或素材包并要求产出可预览网页应用时使用。当用户针对已生成的网页应用，要求总结或解读网页内容、查看或分析源码、解... |
 | doubao-book-writer | `doubao/skills/doubao-book-writer` | skill | 72 | 豆包办公里的非虚构长文档工作台。用于手册、白皮书、报告、培训材料、人物口述、家谱、资料型书稿等长文档的新建、续写、组装、改写、扩写、精修、去AI味、质检和交付。不用于小说、网文、剧本、诗歌、世界观设定、角色剧情创作、短问答、翻译或代码任务。 |
 | doubao-clinical-decision-support | `doubao/skills/doubao-clinical-decision-support` | skill | 17 | 循证医学临床辅助决策 Skill。用户需要分析临床问题，解释临床表现，提供循证医学判断时使用，用于针对临床问题，结合病例资料，查阅指南和文献等循证依据，进行科学回答与诊疗决策，进行诊断鉴别、检查路径、用药安全、治疗比较、预后和风险分析。医学文献检索调研改用 doubao-medical-literature-search，单纯报告解读改用 doubao-medical-report，其他医学文献分析场景使用 doubao-medi... |
@@ -137,6 +138,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-03-180002 | [2026-09-03-180002](doubao/change-logs/2026-09-03-180002.md) | Doubao 本次同步新增 11 个文件、修改 1 个文件、删除 0 个文件。 新增条目：skills/doubao-answer-with-medical-evidence。 受影响范围：skills/doubao-answer-with-medical-evidence, skills/student-discount-application。 |
 | 2026-09-02-180002 | [2026-09-02-180002](doubao/change-logs/2026-09-02-180002.md) | Doubao 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/ppt, skills/sheet。 |
 | 2026-09-01-180001 | [2026-09-01-180001](doubao/change-logs/2026-09-01-180001.md) | Doubao 本次同步新增 126 个文件、修改 45 个文件、删除 89 个文件。 新增条目：skills/gift-card-redemption, skills/ppt, skills/sheet。 移除条目已归档：skills/lark-sheets, skills/lark-slides-pro。 受影响范围：skills/byted-med... |
 | 2026-08-31-180002 | [2026-08-31-180002](doubao/change-logs/2026-08-31-180002.md) | Doubao 本次同步新增 3 个文件、修改 6 个文件、删除 0 个文件。 新增条目：skills/baidu-netdisk, skills/datapro-search, skills/tencent-docs-operations。 受影响范围：skills/baidu-netdisk, skills/datapro-search, skill... |
