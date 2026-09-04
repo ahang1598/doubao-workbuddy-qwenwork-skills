@@ -46,6 +46,12 @@ user / created_by / updated_by: is, isNot, isEmpty, isNotEmpty
 | `filter.conjunction` | `"and"` / `"or"` | 筛选逻辑 |
 | `filter.conditions` | `[{ "field_name", "operator", "value" }]` | 筛选条件数组，value 类型因字段类型而异（见下方 filter 格式规则） |
 
+### 字段所属表边界
+
+`series`、`group_by` 和 `filter.conditions` 中的每个 `field_name` 都必须逐字存在于 `data_config.table_name` 对应表。逐页执行 `+field-list --limit 200 --jq '.data | {total, page_count: (.fields | length), fields: [.fields[] | {id, name, type}]}'`，再在返回数据中逐字比对目标字段；不要把字段名或其他外部文本拼入 shell/JQ 表达式。找到全部目标字段即可停止。目标仍缺失时，只有 `page_count > 0` 且 `offset + page_count < total` 才用该和作为下一页 `--offset`；空页、offset 未增长或第二次出现同一 offset 时停止并报告读取不完整，不得重复请求。穷尽分页前不能判定字段不存在。Dashboard 不支持用 `关联字段.目标字段` 等点号路径临时跨表取维度、指标或筛选字段，也不能使用其他表的 field ID 或缓存中的旧 field ID。
+
+需要关联表属性时，先判断能否直接把拥有该字段的表作为 `table_name` 且仍保持所需记录粒度；否则按 [Formula](formula-field-guide.md) / [Lookup](lookup-field-guide.md) 指引在当前数据源表创建本地计算投影，默认使用 Formula，仅当用户明确要求 Lookup 时才使用 Lookup。创建后按上面的有界字段查找确认本地字段，并用一次记录查询确认有源值的样例行已得到预期结果，再把该本地字段名用于 Dashboard。无法安全投影或结果为空时不得改用点号路径猜测，也不得宣告组件完成。
+
 ### text 类型特殊结构
 
 `text` 类型组件用于展示富文本内容，**不需要数据源配置**（无 `table_name`、`series`、`group_by`、`filter`）。
@@ -93,6 +99,30 @@ user / created_by / updated_by: is, isNot, isEmpty, isNotEmpty
 只要写 `sort` 对象，就需要明确排序方向。CLI 会把 `sort.type` 为 `group` 或 `view` 且缺少 `order` 的情况规范化为 `order:"asc"`；`sort.type:"value"` 必须显式写 `order:"asc"` 或 `order:"desc"`，因为指标值排序方向会改变业务含义。
 
 如果表中行序就是业务顺序，首次创建 block 时就一次性设置 `sort:{"type":"view","order":"asc"}` 保留行序，避免创建后再二次更新排序条件。
+
+### 时间口径决策
+
+范围筛选回答“统计哪些记录”，分组维度回答“结果按什么粒度展开”；两者不可互相代替。一个请求包含多个图表、指标卡或结论时，在首次 Create/Update 前为每个交付物分别确定 `range`（筛选范围）与 `grain`（分组粒度），读完本节后逐项复核原计划。时间词只约束其所在的子目标，不得从相邻交付物继承；现有组件名称和配置只能作为待核对的现状，不能覆盖用户本次语义。
+
+| 用户语义 | 必须落地的配置 |
+|----------|----------------|
+| 按年月、逐月、各月、月度趋势、跨月比较 | `group_by` 必须包含稳定的年月键；不要只加 `CurrentMonth`，也不要直接用会产生日桶的原始 datetime |
+| 本月、当月、当前月 KPI | 用 `CurrentMonth` 或等价本月 filter 限定范围；`group_by` 只保留用户另行要求的维度，单值指标卡不强加月份分组 |
+| 按月份和另一维度 | `group_by` 同时包含年月键和另一维度，顺序与图表主轴/系列语义一致 |
+| 本年度 | 必须保留年度 filter；filter 类型不匹配时不能删掉范围约束后交付 |
+
+裸“每月”或“月度”同时可能表示逐月序列或当前月 KPI：若该交付物还要求趋势、各月、跨月、按年月或时间轴，走年月分组；若该交付物明确要求本期单值、本月或当月汇总，走本月 filter。输出形态仍无法判断时先澄清；用户明确要求立即执行或禁止追问时，未带“本月 / 当月 / 当前月”等范围词的“月度对比 / 月度趋势”默认使用 `YYYY-MM` 分组，不得借用相邻交付物的 `CurrentMonth`。
+
+服务端没有稳定保留月粒度配置键时，先按 [Formula](formula-field-guide.md) 创建文本公式字段，例如 `TEXT([日期字段], "YYYY-MM")`，用该字段作为 `group_by` 并按 group 升序。年度 datetime filter 无法稳定表达时，为目标指标创建动态 helper measure，例如 `IF(YEAR([日期字段]) = YEAR(TODAY()), [指标字段], "")`，再让 Dashboard 聚合该字段；不要持久化“当前四位年份”常量，也不要用未经验证的 Formula filter 兜底。创建公式后先用记录查询确认当年记录有值、非当年记录为空，再配置并按 Dashboard 交付健康门禁回读；不得用组件名称或请求中的未保留字段声称粒度正确。
+
+### 相对时间与年度范围验收
+
+“本月、当月、今年、本年度、年度、年底、近 N 天/月、超过 N 天/月、即将到期”等词是数据范围要求，不只是组件名称。完成前必须对本轮创建或修改的每个组件执行 `+dashboard-block-get`，检查保存后的 `data_config.filter` 和依赖公式：
+
+1. 除非用户明确要求固定历史区间，否则禁止把当前运行日期展开成 `ExactDate` 或固定年月边界后持久化；使用 `CurrentMonth`、动态年度公式或等价相对时间条件。
+2. “年度/年底”类评分、汇总、排名必须绑定真实业务日期字段，并存在当前年度范围；没有日期字段时先补充字段或澄清，不得聚合全历史后只把组件命名为“年度”。
+3. 同一需求的公式、视图、Dashboard 和最终回答必须使用同一时间范围。任一对象仍是固定当前日期、缺少年度范围或范围互相矛盾，都视为验收失败并返工。
+4. 用 `+dashboard-block-get-data` 验证计算结果；若样例数据全在同一时期，不能据此证明时间范围正确，仍以保存配置中的动态条件为准。
 
 示例 — 柱状图按销售额降序：
 
@@ -156,12 +186,35 @@ user / created_by / updated_by: is, isNot, isEmpty, isNotEmpty
 | `number` | number | is, isNot, isGreater, isGreaterEqual, isLess, isLessEqual, isEmpty, isNotEmpty | `{"field_name":"金额","operator":"isGreater","value":0}` |
 | `select` (`multiple=false`) | string（选项名） | is, isNot, isEmpty, isNotEmpty | `{"field_name":"状态","operator":"is","value":"已完成"}` |
 | `select` (`multiple=true`) | string[]（选多个）/ string（选单个） | is, isNot, contains, doesNotContain, isEmpty, isNotEmpty | 多选传数组如 `["标签1","标签2"]`；单选传单个字符串 |
-| `datetime` / `created_at` / `updated_at` | number（Unix 毫秒时间戳，13位） | is, isGreater, isGreaterEqual, isLess, isLessEqual, isEmpty, isNotEmpty | `{"field_name":"创建日期","operator":"isGreater","value":1704038400000}` |
+| `datetime` / `created_at` / `updated_at` | 绝对日期 `["ExactDate", Unix 毫秒时间戳]`；当前月 `["CurrentMonth"]` | is, isGreater, isGreaterEqual, isLess, isLessEqual, isEmpty, isNotEmpty | `{"field_name":"创建日期","operator":"is","value":["CurrentMonth"]}` |
 | `checkbox` | boolean | is | `{"field_name":"已审核","operator":"is","value":true}` |
 | `user` / `created_by` / `updated_by` | string 或 string[]（用户 ID，格式 `ou_xxx`）。不知道 `open_id` 时先用 `lark-cli contact +search-user --query "<姓名/邮箱/手机号>" --as user` 查 id。 | is, isNot, isEmpty, isNotEmpty | `{"field_name":"负责人","operator":"is","value":"ou_xxxxxxxxxxxxxxxx"}` |
 | 所有类型（为空/不为空） | 不需要 value | isEmpty, isNotEmpty | `{"field_name":"备注","operator":"isEmpty"}` |
 
-> `value` 类型为 `string | number | boolean | string[]`，需根据字段类型匹配正确格式
+> `value` 类型因字段而异，可为 `string | number | boolean | string[] | ["ExactDate", number] | ["CurrentMonth"]`，需按上表构造。
+
+### 日期筛选
+
+图表 `data_config.filter` 筛选 `datetime` / `created_at` / `updated_at` 字段时：
+
+- 有值条件支持 `is`、`isGreater`、`isGreaterEqual`、`isLess` 和 `isLessEqual`。
+- 绝对日期或区间边界写成 `["ExactDate", <Unix 毫秒时间戳>]`，不得直接传裸时间戳。
+- 当前自然月范围可用 `{"field_name":"<日期字段>","operator":"is","value":["CurrentMonth"]}`；`CurrentMonth` 只限定记录范围，不产生按月分组维度。
+- `isEmpty` / `isNotEmpty` 不传 `value`。
+
+日期区间示例：
+
+```json
+{
+  "filter": {
+    "conjunction": "and",
+    "conditions": [
+      {"field_name":"创建日期","operator":"isGreater","value":["ExactDate",1704038400000]},
+      {"field_name":"创建日期","operator":"isLess","value":["ExactDate",1735574400000]}
+    ]
+  }
+}
+```
 
 ## 约束与本地校验
 
@@ -189,6 +242,7 @@ user / created_by / updated_by: is, isNot, isEmpty, isNotEmpty
 - 看趋势变化 → 折线图 / 面积图
 - 看占比分布 → 饼图 / 环形图 / 词云
 - 多指标对比 → 组合图
+- 宽表多指标横向对比（如各科平均分、各渠道平均分、多个评分项对比）→ 先判断是否需要把字段名转换成可分组维度；不要把主键、姓名、学号等实体字段误当横轴
 - 看两变量关系 → 散点图
 - 看流程转化 → 漏斗图
 - 看多维度评分 → 雷达图
@@ -254,6 +308,32 @@ user / created_by / updated_by: is, isNot, isEmpty, isNotEmpty
     { "field_name": "指标2", "rollup": "SUM" }
   ],
   "group_by": [{ "field_name": "分类字段", "mode": "integrated" }]
+}
+```
+
+宽表多指标横向对比（多个数值字段本身就是要比较的对象）：
+
+- 典型表达：各科平均分对比、各渠道平均值对比、多个评分项对比。
+- 不要把“学号 / 姓名 / 客户 / 记录编号”等实体主键字段放进 `group_by`，否则会变成逐个实体的多指标对比。
+- 如果组件无法直接把多个 `series` 展示成“字段名作为横轴”的图，先创建 helper 汇总表，如 `科目`、`平均分` 两列；每个被比较字段写一条汇总记录，再按汇总表画柱状图。
+- helper 汇总值必须由 `+data-query` 或可复核的程序化聚合算出；不要手工心算平均值。
+
+示例：原始表有 `语文`、`数学`、`英语` 三个分数字段，用户要“各科平均分对比”。先聚合三科平均分，写入汇总表：
+
+```text
+科目 | 平均分
+语文 | <avg_语文>
+数学 | <avg_数学>
+英语 | <avg_英语>
+```
+
+再创建图表：
+
+```json
+{
+  "table_name": "各科平均分汇总",
+  "series": [{ "field_name": "平均分", "rollup": "AVERAGE" }],
+  "group_by": [{ "field_name": "科目", "mode": "integrated", "sort": {"type":"view","order":"asc"} }]
 }
 ```
 
@@ -399,5 +479,6 @@ user / created_by / updated_by: is, isNot, isEmpty, isNotEmpty
 
 - **`count_all` 与 `series` 二选一** — 两者不能同时使用
 - **filter `value` 类型因字段而异** — 文本/单选为 string，数字为 number，日期为毫秒时间戳，多选/人员可为 string[]，复选框为 boolean；`isEmpty`/`isNotEmpty` 不需要 value
+- **filter 的选项值必须溯源到真实字段选项** — `select` / `multiselect` 条件的 `value` 只能是该字段已存在的选项，先用 `+field-list` 或 `+field-search-options` 确认。写入不存在的选项、空字符串或空数组通常不会报错，但组件会静默筛不出数据（在界面上表现为筛选项一个都没勾中），最容易被误判成“筛选已配好”。交付前必须用 `+dashboard-block-get` 回读 `data_config.filter.conditions[]`，逐条确认 `field_name`、`operator`、`value` 与预期一致，再用 `+dashboard-block-get-data` 确认结果非空且符合口径
 - **`data_config` 结构随 `type` 变化** — 不同组件类型的字段不同，创建前务必确认类型对应的字段
 - **表名用 name，不是 ID** — `table_name` 对应的是表名称（如「订单表」），不是 `table_id`

@@ -89,6 +89,24 @@ When using comparison operators (`>`, `>=`, `<`, `<=`, `=`, `!=`), **both sides 
 - `select` and `user` fields can be compared with both same-type values and text
 - `text` fields in numeric aggregation (SUM/AVERAGE/MIN/MAX etc.) → convert to number with `VALUE()` first. For FILTER results, use `.MAP(VALUE(CurrentValue)).SUM()`
 
+### Typed blank branches in conditional formulas
+
+When a conditional Formula should return a number for matching rows and remain empty otherwise, keep the empty branch compatible with the numeric result:
+
+```text
+# pick the empty-branch literal, then confirm it with the readback below
+IF([Condition], [NumericExpression], "")        # attested in the dataset goldens
+IF([Condition], [NumericExpression], VALUE("")) # candidate when the field must stay numeric-typed
+```
+
+For the empty branch, `""` is the attested literal — the dataset's numeric-with-blank goldens use `""` / `" "` — and it is also correct when both branches are text. If you specifically need the field to stay numeric-typed, `VALUE("")` is a candidate, but do not assume it reads back as blank. The mandatory readback below is what decides which literal actually yields an empty, numeric-compatible cell for this base: if the represented false branch reads back as `0`, an error, or the field resolves to text, switch to the other literal instead of asserting either one works. Do not substitute `0` for an intended blank because zero is real data and cannot be distinguished from “not applicable”. Do not invent `BLANK()`, `NULL`, or `NaN()` as empty literals; they are not part of the supported function list, and a formula definition being accepted does not prove that its values can be calculated.
+
+After create/update, use `+field-get` to confirm the saved expression, then make one bounded `+record-list --field-id <condition-field> --field-id <formula-field> --json` read over existing records. Verify each branch that has a representative record in that bounded result: a represented true branch must contain the expected numeric result, and a represented false branch must be empty/null. If one branch has no representative record, mark only that branch as unverified; do not fabricate records, rewrite the Formula, or declare that branch verified merely because the sample is absent.
+
+Only an incorrect represented branch may trigger a targeted correction. If represented true and false branches both return null, treat the empty branch or branch-type compatibility as the first suspect; do not rewrite an independently verified condition, link traversal, or arithmetic expression. Make at most one targeted correction and one readback. If a represented branch still fails, report the Formula as incomplete instead of falling back to `0`; if a branch remains unrepresented, report that narrower verification gap without treating the Formula itself as wrong.
+
+Dashboard filters that restrict an aggregate to eligible records remain necessary when the user requests that population, but they do not replace the row-level distinction between a true zero and a non-applicable blank.
+
 ---
 
 ## Section 3: CurrentValue
@@ -335,6 +353,17 @@ After the result column, it's recommended to flatten with `.LISTCOMBINE()` first
 | WORKDAY     | `WORKDAY(start_date, days, [holidays])`         | Date        | Date N workdays later (skips weekends and holidays)                                                     |
 | NETWORKDAYS | `NETWORKDAYS(start_date, end_date, [holidays])` | Number      | Workdays between dates (inclusive)                                                                      |
 
+### 年度口径不是全历史聚合
+
+“今年、本年度、年度、年底”等时间词约束参与计算的记录范围，不只是字段名称或展示文案。年度评分、汇总、排名或状态判断必须：
+
+1. 使用真实业务日期字段确定记录所属年度。
+2. 在参与聚合的记录集合中加入 `YEAR([日期字段]) = YEAR(TODAY())` 或等价动态年度条件。
+3. 与引用该结果的 Lookup、Dashboard、汇总表和最终回答保持同一年度范围，不得让公式聚合全历史、下游再单独声称“本年度”。
+4. 创建或更新后先用 `+field-get` 确认保存表达式，再用有界 `+record-list` 回读代表性记录。样例数据恰好都在同一年不能证明年度条件存在。
+
+如果现有表没有可确定年度归属的日期字段，新建系统时补充明确的业务日期字段；修改已有系统时先向用户澄清。不得选择语义相邻但不等价的日期，也不得聚合全历史后仅把字段命名为“年度评分”。
+
 ### 8.5 List functions
 
 | Function    | Signature                                                                    | Return type | Description                                                                                                                                                                                                      |
@@ -425,6 +454,12 @@ Need conditional logic?
     ├─ Catch errors → IFERROR(expr, fallback)
     └─ Catch blanks → IFBLANK(expr, fallback)
 ```
+
+#### State-driven business formulas
+
+When a formula depends on a status/select field, write a small truth table before editing: each option, the expected result, and the fallback for blank or unknown status. Implement every branch explicitly with `IF` / `IFS` / `SWITCH`; do not replace a status-dependent rule with one generic arithmetic expression.
+
+After `+field-update`, read back the formula field and sample records that cover each status branch. If any expected branch has no current record, state that gap and verify the expression text instead of claiming all branches were data-tested.
 
 ### Aggregation: which function?
 

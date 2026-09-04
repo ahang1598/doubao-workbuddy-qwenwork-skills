@@ -5,6 +5,7 @@ Also flags derived values that were written as static numbers instead of formula
 """
 
 import argparse
+import contextlib
 import json
 import os
 import platform
@@ -12,6 +13,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
@@ -227,7 +229,7 @@ def _emit_hardcode_hint(hc: dict) -> bool:
 EXCEL_ERROR_VALUES = {"#VALUE!", "#DIV/0!", "#REF!", "#NAME?", "#NULL!", "#NUM!", "#N/A"}
 
 
-def _scan_formula_error_values(filename: str) -> tuple[int, dict]:
+def _scan_formula_error_values(filename: str) -> Tuple[int, dict]:
     """只统计公式格重算后的精确错误值；备注文本里的错误码不算公式错误。"""
     formula_wb = load_workbook(filename, data_only=False)
     value_wb = load_workbook(filename, data_only=True)
@@ -254,13 +256,19 @@ def _scan_formula_error_values(filename: str) -> tuple[int, dict]:
     return total_errors, error_details
 
 
-def scan_errors_only(filename: str, static_source_sheets: Optional[Set[str]] = None) -> dict:
-    """当 LibreOffice 不可用时，仅扫描文件中已有的公式错误（不触发重算）。"""
+def scan_errors_only(filename: str, static_source_sheets: Optional[Set[str]] = None,
+                     status: str = "skipped_no_libreoffice",
+                     warning: str = "LibreOffice 未安装，公式未重算，仅扫描已有错误值") -> dict:
+    """只扫描文件中已有的公式错误（不触发重算）。
+
+    两种降级都走这里：LibreOffice 不可用，或副本建不出来。status / warning 由调用方
+    指定，好让 JSON 里写的是真实原因。
+    """
     try:
         total_errors, error_details = _scan_formula_error_values(filename)
         result = {
-            "status": "skipped_no_libreoffice",
-            "warning": "LibreOffice 未安装，公式未重算，仅扫描已有错误值",
+            "status": status,
+            "warning": warning,
             "total_errors": total_errors,
             "error_summary": {k: {"count": len(v), "locations": v[:20]} for k, v in error_details.items() if v},
             "hardcode": detect_hardcode_suspects(filename, static_source_sheets=static_source_sheets),
@@ -342,7 +350,7 @@ SENSITIVITY_RE = re.compile(r"sensitivity|敏感性|scenario", re.IGNORECASE)
 TIEOUT_ROW_RE = re.compile(r"assets?|liabilit(?:y|ies)|equity|cash|net change|total", re.IGNORECASE)
 
 
-def _split_sheet_and_ref(expr: str, current_sheet: str) -> tuple[str, str]:
+def _split_sheet_and_ref(expr: str, current_sheet: str) -> Tuple[str, str]:
     if "!" in expr:
         sheet, ref = expr.split("!", 1)
         sheet = sheet.strip().strip("'")
@@ -583,14 +591,58 @@ def evaluate_formula_invariants(filename: str, max_samples: int = 8) -> dict:
     }
 
 
-def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None):
-    if not Path(filename).exists():
-        return {"error": f"File {filename} does not exist"}
+def _quiet_unlink(path: Path):
+    """删除文件，不存在就算了。Python 3.7 的 unlink() 没有 missing_ok 形参。"""
+    try:
+        path.unlink()
+    except OSError:
+        pass
 
-    if not is_libreoffice_available():
-        return scan_errors_only(filename, static_source_sheets=static_source_sheets)
 
-    abs_path = str(Path(filename).absolute())
+class _WorkspaceError(Exception):
+    """副本创建失败。独立异常类型，避免把重算阶段的 OSError 误报成「创建副本失败」。"""
+
+
+@contextlib.contextmanager
+def _recalc_workspace(filename: str):
+    """把待校验文件复制成临时副本；重算只作用于副本，原文件全程只读。
+
+    LibreOffice 的 store() 会重写整个工作簿——工作簿默认字体被换成它自己的默认
+    字体，列宽账面值随之按新字体的字符宽度基准重算，图案填充与会计式括号负数
+    格式也会被改写。诊断不该以改动交付物为代价，所以重算跑在副本上。
+    副本优先落在原文件同目录：LibreOffice 解析跨工作簿的相对路径外部引用要靠它。
+    """
+    src = Path(filename).absolute()
+    last_error = None
+    for parent in (src.parent, Path(tempfile.gettempdir())):
+        try:
+            fd, name = tempfile.mkstemp(
+                dir=str(parent), prefix=f".{src.stem}.verify-", suffix=src.suffix
+            )
+        except OSError as exc:  # 原目录只读时退到系统临时目录
+            last_error = exc
+            continue
+        tmp = Path(name)
+        os.close(fd)
+        try:
+            shutil.copyfile(src, tmp)
+        except OSError as exc:  # 磁盘满 / 写入受限：同样换下一个候选目录
+            last_error = exc
+            _quiet_unlink(tmp)
+            continue
+        try:
+            yield tmp
+            return
+        finally:
+            _quiet_unlink(tmp)
+            # soffice 被超时杀掉时锁文件不会自己消失
+            _quiet_unlink(tmp.parent / f".~lock.{tmp.name}#")
+    raise _WorkspaceError(f"cannot create verification copy for {src}: {last_error}")
+
+
+def _recalc_target(target: Path, timeout: int, static_source_sheets: Optional[Set[str]] = None):
+    """在 target 上重算并扫描。target 是临时副本，或 --in-place 下的原文件。"""
+    abs_path = str(target)
 
     if not setup_libreoffice_macro():
         return {"error": "Failed to setup LibreOffice macro"}
@@ -625,7 +677,7 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
         return {"error": error_msg}
 
     try:
-        total_errors, error_details = _scan_formula_error_values(filename)
+        total_errors, error_details = _scan_formula_error_values(abs_path)
 
         result = {
             "status": "success" if total_errors == 0 else "errors_found",
@@ -640,7 +692,7 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
                     "locations": locations[:20],
                 }
 
-        wb_formulas = load_workbook(filename, data_only=False)
+        wb_formulas = load_workbook(abs_path, data_only=False)
         formula_count = 0
         for sheet_name in wb_formulas.sheetnames:
             ws = wb_formulas[sheet_name]
@@ -655,12 +707,47 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
         wb_formulas.close()
 
         result["total_formulas"] = formula_count
-        result["hardcode"] = detect_hardcode_suspects(filename, static_source_sheets=static_source_sheets)
-        result["invariants"] = evaluate_formula_invariants(filename)
+        result["hardcode"] = detect_hardcode_suspects(abs_path, static_source_sheets=static_source_sheets)
+        result["invariants"] = evaluate_formula_invariants(abs_path)
         return result
 
     except Exception as e:
         return {"error": str(e)}
+
+
+def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None,
+           in_place: bool = False):
+    if not Path(filename).exists():
+        return {"error": f"File {filename} does not exist"}
+
+    if not is_libreoffice_available():
+        return scan_errors_only(filename, static_source_sheets=static_source_sheets)
+
+    if in_place:
+        return _recalc_target(Path(filename).absolute(), timeout, static_source_sheets)
+
+    src_dir = Path(filename).absolute().parent
+    try:
+        with _recalc_workspace(filename) as target:
+            # _recalc_target 自身抛出的 OSError 照旧透传，与 --in-place 行为一致
+            result = _recalc_target(target, timeout, static_source_sheets)
+            if target.parent != src_dir:
+                # 退到系统临时目录后，工作簿里相对路径的跨文件引用解析不到，
+                # 重算会吐出 #REF!。调用方必须能分辨这种 #REF! 不可信。
+                result["recalc_copy_dir"] = str(target.parent)
+                result["warning"] = (
+                    f"产物目录不可写，副本落在 {target.parent}；若工作簿含相对路径的跨文件引用，"
+                    "重算出的 #REF! 可能是解析失败而非真实公式错误"
+                )
+            return result
+    except _WorkspaceError as exc:
+        # 两个候选目录都建不出副本：退回只读扫描，仍然不碰原文件
+        return scan_errors_only(
+            filename,
+            static_source_sheets=static_source_sheets,
+            status="skipped_no_workspace",
+            warning=f"无法创建副本（{exc}），公式未重算，仅扫描已有错误值；需要重算可加 --in-place",
+        )
 
 
 def main():
@@ -679,15 +766,25 @@ def main():
         "--static-source-sheets",
         help="显式声明允许保留静态历史/外部数据的 sheet 名，逗号分隔、精确匹配；这些 sheet 的 hardcode suspect 降为 low/WARN",
     )
+    ap.add_argument(
+        "--in-place",
+        action="store_true",
+        help="在原文件上公式求值并保存。但注意：使用formula_verify.py --in-place 会出现预期之外的写入、例如行高、列宽、符号、数字格式、颜色、底纹等被 LibreOffice 重置。若不想改动原文件，请不要加 --in-place，脚本会在临时副本上重算。",
+    )
     args = ap.parse_args()
 
     static_source_sheets, static_source_sheet_list = _normalize_sheet_names(args.static_source_sheets)
-    result = recalc(args.excel_file, args.timeout_seconds, static_source_sheets=static_source_sheets)
+    result = recalc(args.excel_file, args.timeout_seconds, static_source_sheets=static_source_sheets,
+                    in_place=args.in_place)
     hc = result.get("hardcode") or {}
     unknown_static_source_sheets = hc.get("unknown_static_source_sheets") or []
     if unknown_static_source_sheets:
         result.setdefault("error", f"Unknown --static-source-sheets: {', '.join(unknown_static_source_sheets)}")
     print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    # 副本降级只在 JSON 里带字段容易被忽略；stderr 再喊一次，免得 #REF! 被误当真错误
+    if result.get("recalc_copy_dir") or result.get("status") == "skipped_no_workspace":
+        print(f"[recalc] {result.get('warning')}", file=sys.stderr)
 
     if static_source_sheet_list:
         print(

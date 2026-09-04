@@ -14,12 +14,32 @@ PATTERNS=(
   'vssadmin[[:space:]]+delete[[:space:]]+shadows[[:space:]].*(/all|-all)'
   'rm[[:space:]]+-rf?[[:space:]]+["'"'"']?/(System|Library|Users|usr|etc|var|private|bin)'
   'csrutil[[:space:]]+disable'
+  'pnputil(\.exe)?[[:space:]]+/delete-driver'
+  'sc(\.exe)?[[:space:]]+delete'
+  'Remove-Service'
+  'Set-MpPreference.*DisableRealtimeMonitoring'
+  'Disable-WindowsOptionalFeature'
+  'Uninstall-WindowsFeature'
+  '(Move-Item|Rename-Item|Remove-Item).*(System32|DriverStore|WindowsApps|Program Files)'
 )
 for pat in "${PATTERNS[@]}"; do
   hits=$(grep -riEn "$pat" scripts/ --include='*.ps1' --include='*.bat' --include='*.sh' | grep -v selfcheck)
   if [ -n "$hits" ]; then echo "[FAIL] 匹配到禁止模式 '$pat':"; echo "$hits"; fail=1; fi
 done
 [ $fail -eq 0 ] && echo "[OK] 未发现禁止模式"
+
+if grep -Fq '核心隔离关闭' references/windows-game-fps.md; then
+  echo "[FAIL] windows-game-fps.md 仍存在主动关闭核心隔离的建议"
+  fail=1
+fi
+if grep -Eq '安装目录.*组件改名' references/windows-tuning.md; then
+  echo "[FAIL] windows-tuning.md 仍存在改名安装目录组件的建议"
+  fail=1
+fi
+if grep -Eq '主动要求卸载.*不在此列' SKILL.md; then
+  echo "[FAIL] SKILL.md 的安全软件卸载仍存在例外"
+  fail=1
+fi
 
 echo "== 2. shell 脚本语法检查 =="
 for f in scripts/*.sh; do

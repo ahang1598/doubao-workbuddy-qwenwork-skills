@@ -57,7 +57,7 @@ The four message-pulling shortcuts (`+messages-mget`, `+chat-messages-list`, `+m
 
 ### Card Messages (Interactive)
 
-**Before sending or replying with any `interactive` card (`+messages-send` / `+messages-reply`), you MUST read [`references/card/lark-im-card-create.md`](references/card/lark-im-card-create.md) and follow its workflow.** The card JSON passed to `--msg-type interactive --content` must be the output of that workflow — never hand-write or copy a card payload.
+**Before sending, replying with, or updating any `interactive` card (`+messages-send` / `+messages-reply` / `messages.patch`), you MUST read [`references/card/lark-im-card-create.md`](references/card/lark-im-card-create.md) and follow its workflow.** The card JSON passed to `--msg-type interactive --content` (send/reply) or `messages.patch --data` (update) must be the output of that workflow — never hand-write or copy a card payload.
 
 ### Audio Messages
 
@@ -94,7 +94,7 @@ Key limits:
 
 Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。有 Shortcut 的操作优先使用。
 
-> **Pro 私有路由**：仅当上下文出现固定标注 `合并转发消息 ID: <copied_id>，共 <message_count> 条` 时提取 `copied_id`。同一上下文可按出现顺序收集 1～10 个 ID，并按[私有命令说明](references/lark-im-shared-message-mget.md)调用 `im +shared-message-mget --message-ids ...`；普通数字或 `om_` Message ID 不触发。默认只读取消息快照；用户明确需要话题回复、reaction 或二进制资源时，分别增加 `--include-thread-replies`、`--include-reactions` 或 `--download-resources`，多个需求可组合启用。
+> **Pro 私有路由**：仅当上下文出现固定标注 `合并转发消息 ID: <copied_id>，共 <message_count> 条` 时提取 `copied_id`。同一上下文可按出现顺序收集 1～10 个 ID，并按[私有命令说明](references/lark-im-shared-message-mget.md)调用 `im +shared-message-mget --message-ids ...`；普通数字或 `om_` Message ID 不触发。裸调用默认读取消息快照、话题回复和 reaction；仅当用户明确要求不读取话题回复或 reaction 时，分别增加 `--no-thread-replies` 或 `--no-reactions`。二进制资源在用户需要时增加 `--download-resources`，多个选项可组合使用。
 
 | Shortcut | 说明 |
 |----------|------|
@@ -106,7 +106,7 @@ Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。
 | [`+chat-update`](references/lark-im-chat-update.md) | Update group chat name or description; user; updates a chat's name or description |
 | [`+message-read-users`](references/lark-im-message-read-status.md) | List users who read one message; user; identity-specific scopes; supports bounded auto-pagination |
 | [`+messages-mget`](references/lark-im-messages-mget.md) | Batch get messages by IDs; user; fetches up to 50 om_ message IDs, formats sender names, expands thread replies |
-| [`+shared-message-mget`](references/lark-im-shared-message-mget.md) | Pro 私有；读取 1～10 个 Copied Message 快照；内部按输入顺序逐 ID 发起 singleton 请求，顶层以字符串 `copied_id` 严格映射；可选 thread / reaction / resource download best-effort 增强 |
+| [`+shared-message-mget`](references/lark-im-shared-message-mget.md) | Pro 私有；读取 1～10 个 Copied Message 快照；默认补拉 thread / reaction，可用 `--no-*` 关闭；resource download 按需开启 |
 | [`+messages-read-status`](references/lark-im-message-read-status.md) | Batch query whether the current user read 1–50 messages; user-only; returns readable items and invalid message IDs |
 | [`+messages-reply`](references/lark-im-messages-reply.md) | Reply to a message (supports thread replies); user; supports text/markdown/post/media replies, reply-in-thread, idempotency key |
 | [`+messages-resources-download`](references/lark-im-messages-resources-download.md) | Download an image or file attached to a message; user |
@@ -151,6 +151,11 @@ lark-cli im <resource> <method> [flags] # 调用 API
   - `update` — 设置自己的群昵称。Set or update your own nickname in the chat (self-only). Identity: `user` only (`user_access_token`); `nickname` must be a non-empty string (max 300 bytes). Use DELETE to clear it.
   - `delete` — 清空自己的群昵称。Clear your own nickname in the chat (self-only). Identity: `user` only (`user_access_token`).
 
+### chat.join_requests
+
+  - `list` — 列出群的待审批入群申请（仅群主/管理员，user_access_token）。List pending join requests for a chat. Identity: `user` only (`user_access_token`); the caller must be the chat owner or an admin. Paginated (`page_size` 1-100); stop on `has_more == false` — `page_token` is returned even on the last page, so paging while it is present never terminates.
+  - `handle` — 批量审批入群申请（approve/reject，仅群主/管理员，user_access_token）。Approve or reject pending join requests in bulk (1-50 items, processed in order). Identity: `user` only (`user_access_token`); the caller must be the chat owner or an admin. `results[]` mirrors `items[]` in count and order — check each `result` (`success` / `failed` / `already_handled`); exit 0 does not mean every item succeeded.
+
 ### chat.managers
 
   - `add_managers` — 指定群管理员。Identity: supports `user` only; only the group owner can add managers; max 10 managers per chat (20 for super-large chats), and at most 50 users per request.
@@ -163,6 +168,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
 
   - `read_status` — 批量查询当前用户对消息的已读状态。Identity: `user` only (`user_access_token`); accepts up to 50 message IDs and returns readable items plus invalid message IDs.[Must-read](references/lark-im-message-read-status.md)
   - `forward` — 转发消息。Identity: supports `user` only.
+  - `patch` — 更新已发送的消息卡片。Update an interactive message card sent by the app. This CLI runs the API with user identity; the message must have been sent within the last 14 days, and `content` must be a JSON-serialized string no larger than 30 KB.[Must-read](references/card/lark-im-card-create.md)
 ### reactions
 
   - `batch_query` — 批量获取消息表情。Identity: supports `user` only.[Must-read](references/lark-im-reactions.md)
@@ -215,6 +221,8 @@ lark-cli im <resource> <method> [flags] # 调用 API
 | `chat.managers.delete_managers` | `im:chat.managers:write_only` |
 | `chat.moderation.get` | `im:chat.moderation:read` |
 | `chat.moderation.update` | `im:chat:moderation:write_only` |
+| `chat.join_requests.list` | `im:chat.membership_application:read` |
+| `chat.join_requests.handle` | `im:chat.membership_application:write` |
 | `+messages-read-status` | user: `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
 | `+message-read-users` | user: `im:message:readonly` (recommended), `im:message`, `im:message:basic`, or `im:message:get_as_user`; bot: `im:message:readonly` |
 | `messages.read_status` | `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
@@ -222,6 +230,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
 | `messages.forward` | `im:message` |
 | `messages.merge_forward` | `im:message` |
 | `messages.read_users` | user: `im:message:readonly` (recommended), `im:message`, `im:message:basic`, or `im:message:get_as_user`; bot: `im:message:readonly` |
+| `messages.patch` | `im:message:update` |
 | `messages.urgent_app` | `im:message.urgent` |
 | `messages.urgent_phone` | `im:message.urgent:phone` |
 | `messages.urgent_sms` | `im:message.urgent:sms` |

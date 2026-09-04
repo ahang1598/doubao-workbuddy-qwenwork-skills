@@ -219,9 +219,9 @@ python scripts/formula_verify.py output.xlsx 60
 python scripts/formula_verify.py output.xlsx 60 --static-source-sheets "Comment History Snapshot,External Snapshot"
 ```
 
-依赖：需要安装 LibreOffice（`soffice` 命令可用）。脚本首次运行时会自动配置宏。
+依赖：需要安装 LibreOffice（`soffice` 命令可用）。脚本首次运行时会自动配置宏。重算在临时副本上进行，**原文件不被修改**——公式缓存值因此不会写回产物，交付时可提示用户在 Excel 中刷新（`Ctrl+Alt+F9`）；确需把缓存值写进原文件时加 `--in-place`。
 
-**LibreOffice 不可用时的降级行为**：若 `soffice` 未安装，脚本自动降级——跳过重算，仅扫描文件中已有的公式错误值，返回 `status: "skipped_no_libreoffice"` 并附带警告。此时公式单元格不含计算值，交付文件需告知用户在 Excel 中手动刷新（`Ctrl+Alt+F9`）。
+**LibreOffice 不可用时的降级行为**：若 `soffice` 未安装，脚本自动降级——跳过重算，仅扫描文件中已有的公式错误值，返回 `status: "skipped_no_libreoffice"` 并附带警告。
 
 需要图表时，用 openpyxl 建**原生 chart 对象**并绑定单元格区域作数据源（不要贴图片或只在回复里描述）；交付前重新打开文件确认 `ws._charts` 非空——回复里声称有图而产物里没有，等于该项未交付。Canvas 模式下若 `lark-cli` 无法使用，也回退到 python 处理。
 

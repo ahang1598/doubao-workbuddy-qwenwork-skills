@@ -4,7 +4,7 @@
 
 ```bash
 lark-cli im +shared-message-mget --message-ids <copied_id,...> \
-  [--include-thread-replies] [--include-reactions] [--download-resources]
+  [--no-thread-replies] [--no-reactions] [--download-resources]
 ```
 
 ## 输入与权限
@@ -12,8 +12,8 @@ lark-cli im +shared-message-mget --message-ids <copied_id,...> \
 - `--message-ids` 接收逗号分隔的 **Copied ID**，不是普通飞书消息的 `om_` Message ID。
 - 先按原始元素数校验 1～10 个，再按首次出现顺序稳定去重。
 - 仅支持 user identity，需要 scope `im:message.shared_message:read`。
-- `--include-thread-replies` 默认关闭；开启时 best-effort 使用 `im:message.group_msg:get_as_user` 与 `im:message.p2p_msg:get_as_user`。
-- `--include-reactions` 默认关闭；开启时 best-effort 使用 `im:message.reactions:read`。
+- 话题回复默认开启，通过 `im:message.group_msg:get_as_user` 与 `im:message.p2p_msg:get_as_user` 做 best-effort 补拉；明确不需要时传 `--no-thread-replies`。
+- reaction 默认开启，通过 `im:message.reactions:read` 做 best-effort 补拉；明确不需要时传 `--no-reactions`。
 - `--download-resources` 默认关闭；开启时复用主命令必需的 `im:message.shared_message:read`，把 Copied Message 快照节点中的资源 best-effort 写入 `./lark-im-resources/<copied_id>/`，不处理 live thread replies。
 - 空值、`0`、负数、非十进制、`int64` 溢出或原始元素超过 10 个会在本地返回 `validation/invalid_argument`，不发请求。
 
@@ -39,17 +39,18 @@ lark-cli im +shared-message-mget --message-ids 7670391590610799816
 lark-cli im +shared-message-mget --message-ids 7670391590610799816,7670391590610799817
 ```
 
-### Scenario 3: 按需读取扩展上下文
+### Scenario 3: 明确只读取快照
 
-仅在用户明确需要对应内容时启用可选增强；多个需求可以组合传入：
+只有用户明确要求不读取话题回复和 reaction 时，才同时使用两个 opt-out：
 
 ```bash
 lark-cli im +shared-message-mget \
   --message-ids 7670391590610799816 \
-  --include-thread-replies \
-  --include-reactions \
-  --download-resources
+  --no-thread-replies \
+  --no-reactions
 ```
+
+需要下载快照中的图片、文件或音视频时，单独增加 `--download-resources`；该选项不改变 thread 或 reaction 的默认行为。
 
 ## AI Usage Guidance
 
@@ -58,8 +59,8 @@ lark-cli im +shared-message-mget \
 3. **合并批量调用：** 同一上下文有多个标注时，按出现顺序收集 1～10 个 Copied ID，合并为一次 CLI 调用；命令内部仍逐 ID 请求。
 4. **不要推断 Copied ID：** `biz_message_ids`、`om_` Message ID、没有固定标注的普通数字以及 OAPI 返回的 `msg_type=shared` 都不是首次调用本命令的触发输入。
 5. **普通消息不调用：** 上下文只有普通消息或数字、没有固定标注时，不调用本命令，也不回退到普通消息接口猜测映射。
-6. **按用户意图启用增强：** 三项增强默认关闭；仅需读取 Copied Message 快照正文时，不增加增强参数。用户明确要求查看话题回复、完整讨论或后续回复时增加 `--include-thread-replies`；明确要求查看表情回应、成员反馈或 reaction 时增加 `--include-reactions`；明确要求查看、分析或保存图片、文件、音视频等二进制资源时增加 `--download-resources`。多个需求可以组合启用。
-7. **允许按需再次调用：** 首次未启用增强时，CLI 只返回基础快照。后续确认需要话题回复、reaction 或资源内容时，可以使用相同 Copied ID 重新调用并增加对应参数。
+6. **默认读取完整上下文：** 裸调用默认读取 Copied Message 快照、话题回复和 reaction，不要为了读取这些内容额外添加参数。只有用户明确说“只看转发快照”“不要后续回复”或“不要 reaction”时，才分别增加 `--no-thread-replies` 或 `--no-reactions`；两个要求可组合。
+7. **资源仍按需下载：** 只有用户明确要求查看、分析或保存图片、文件、音视频等二进制资源时才增加 `--download-resources`；该参数可以与任一 `--no-*` 组合。
 8. **资源下载使用专用能力：** 未启用 `--download-resources` 时，正文仍保留资源标记。Copied Message 快照资源必须通过本命令的专用资源 OAPI 下载，不要改用普通 `+messages-resources-download`。
 
 ## 请求与输出
@@ -69,10 +70,10 @@ lark-cli im +shared-message-mget \
 - 成功输出为 `{"messages":[...],"total":N}`，按稳定去重后的输入顺序排列，`total` 等于去重 Copied ID 数。每个顶层 message 的稳定字段合同为 `copied_id`、`chat_id`、`message_id`、`msg_type`、`create_time`、`sender`、`content`，启用资源下载时可增加 `resources`；`sender.sender_name` 输出为 `sender.name`，根 `content` 是已恢复层级的 `<forwarded_messages>`。
 - `shared` 子节点同时输出安全编码的 `<doubao_message_id>...</doubao_message_id>` 与 `<doubao_sender_id id_type="...">...</doubao_sender_id>`。后者直接使用同一 OAPI 节点的 `sender.id` / `sender.id_type`，不补拉联系人或其它接口；普通消息和普通数字正文不会增加这两个标签。
 - 普通受支持消息类型继续使用既有 converter。
-- 所有 singleton 主响应与可选 thread 增强共享全命令 200 节点、32 层树深、单条正文 160 KiB、累计正文 8 MiB 和最终输出 16 MiB 上限；主快照超限在 formatter/Output 前整批失败，不能按 Copied ID 重置预算。
-- 开启 thread reply 后，最多读取 10 个去重 `thread_id`，每个最多 50 条，只展开一层，并与快照共同受 200 节点上限约束。
-- 开启 reaction 后，只查询非 `shared` 的快照节点和已接纳回复；每批最多 20 个 message ID、每消息最多返回 10 条明细。count 按 OAPI 的 JSON string 合同解析为非负十进制并规范化展示；非法 count 只使对应可选 batch 降级为 unavailable，不丢弃主快照。
-- reaction 明细只消费 batch query 返回的当前页，不使用 `page_token` 继续翻页；当对应 detail group 返回 `has_more=true` 时，该 `<reactions source="live" ...>` 块会标记 `truncated="true"`。全部主请求完成后才执行 thread，再执行 reaction；thread/reaction 全开时最多 30 次逻辑请求，resource 同时开启后仍最多 50 次（最多 10 主请求、10 thread、10 reaction batch、20 resource GET）。
+- 所有 singleton 主响应与默认 thread 增强共享全命令 200 节点、32 层树深、单条正文 160 KiB、累计正文 8 MiB 和最终输出 16 MiB 上限；主快照超限在 formatter/Output 前整批失败，不能按 Copied ID 重置预算。
+- 默认最多读取 10 个去重 `thread_id`，每个最多 50 条，只展开一层，并与快照共同受 200 节点上限约束；`--no-thread-replies` 跳过该阶段。
+- 默认 reaction 只查询非 `shared` 的快照节点和已接纳回复；每批最多 20 个 message ID、每消息最多返回 10 条明细。count 按 OAPI 的 JSON string 合同解析为非负十进制并规范化展示；非法 count 只使对应 best-effort batch 降级为 unavailable，不丢弃主快照；`--no-reactions` 跳过该阶段。
+- reaction 明细只消费 batch query 返回的当前页，不使用 `page_token` 继续翻页；当对应 detail group 返回 `has_more=true` 时，该 `<reactions source="live" ...>` 块会标记 `truncated="true"`。全部主请求完成后默认先执行 thread，再执行 reaction；最多 30 次逻辑请求，resource 同时开启后仍最多 50 次（最多 10 主请求、10 thread、10 reaction batch、20 resource GET）。
 - 普通条件 scope、网络、API 或响应项失败不丢弃主快照，只在对应 `content` 写固定 `source="live" unavailable="true"`；预算截断写 `truncated="true"`。标签不包含原始错误、scope、状态码或 `log_id`。
 - `shared` 节点跳过 thread 和 reaction 增强。
 - 开启 resource download 后，从 image、file、audio、video、media 与 post 内嵌资源提取引用；image 使用 `type=image`，file/audio/video/media 与 post media 使用 `type=file`。sticker、`shared` 与未展开的嵌套 `merge_forward` 不下载。
@@ -116,7 +117,7 @@ lark-cli im +shared-message-mget \
 
 - 任一 ID 不存在或不可见、任一主请求失败、任一响应包含 0 个或多个根、空/重复节点 ID、孤儿、环、非法时间戳、未知类型、历史 `unsupport` / `doubao` 类型或空 `shared` ID 都会整批失败，不返回部分树。
 - 未登记 OAPI 业务错误沿用 `api/unknown`，保留原始 code、message 和可用 log_id；网络、超时、解码或响应合同错误 fail closed，不补拉其它 API。
-- 可选 thread/reaction 的普通失败按上述 best-effort 标签降级；单资源 scope、路径、接口、响应、下载或落盘失败只在该资源写 `error=true`，不暴露错误详情，也不影响其它资源和主快照。资源数或字节预算耗尽时写固定截断标记并停止后续下载；`context.Canceled` / `context.DeadlineExceeded` 和最终 16 MiB 输出超限仍立即终止命令。
+- 默认 thread/reaction 的普通失败按上述 best-effort 标签降级；单资源 scope、路径、接口、响应、下载或落盘失败只在该资源写 `error=true`，不暴露错误详情，也不影响其它资源和主快照。资源数或字节预算耗尽时写固定截断标记并停止后续下载；`context.Canceled` / `context.DeadlineExceeded` 和最终 16 MiB 输出超限仍立即终止命令。
 
 ## 安全使用
 

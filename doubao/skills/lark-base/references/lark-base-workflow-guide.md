@@ -4,7 +4,36 @@
 
 > **配套文档**:
 > - Workflow 的数据结构参考：[lark-base-workflow-schema.md](lark-base-workflow-schema.md)
-> - 创建/更新时重点构造 `title`、`status` 和 `steps`；复杂度集中在 `steps[].type/data/next`
+> - 创建/更新时重点构造 `title` 和 `steps`；复杂度集中在 `steps[].type/data/next`
+> - 启停状态使用专用的 enable / disable 命令管理，不要把创建成功当成已经启用
+> - `+workflow-update` 是完整替换：从 `+workflow-get` 结果保留 `title`、`status`、`steps`，但请求体中的 `status` 不负责切换运行态；实际启停只使用 `+workflow-enable` / `+workflow-disable`，并以随后 get 的状态为准
+
+## 交付红线
+
+### 先确定目标运行态
+
+计划中为本次明确目标的每个 Workflow 记录 `workflow_id`（新建时先记为待返回）、用户意图和 `target_status`。先按请求的整体最终交付意图解析同一目标最后一次明确的运行态指令，而不是按句中关键词机械抢先：明确启用或恢复取 `enabled`，明确停用、交付为草稿/预览或暂不启用取 `disabled`，明确保持当前启停状态取 `preserve`；同一目标有多次冲突指令时，以最后一次无歧义的指令为准。例如“先检查，确认后启用”最终是 `enabled`，“修改触发时间，但保持当前启停状态”最终是 `preserve`。
+
+没有明确运行态指令时，再按表格从上到下匹配默认值，命中即停止：
+
+| 用户意图 | `target_status` | 允许的状态动作 |
+|---|---|---|
+| 整体最终意图只是读取、检查、审计或解释 | `none` | 不创建、不更新、不启停 |
+| 既有 Workflow 仅修改名称、描述或消息文案，未明确要求启停，且不改变触发时间、触发条件、接收人、动作类型或动作目标 | `preserve` | 保留首次 get 读到的运行态，不调用 enable/disable |
+| 其余以执行语气要求新增或配置提醒、通知、自动发送、定时执行或触发后动作，或修改其触发时间、条件、接收人、动作类型或动作目标；即使没写“启用”也视为要求生效 | `enabled` | 完成定义后确保启用 |
+
+只有用户本次明确指定或要求创建的 Workflow 才能进入该表；发现其他 disabled Workflow 不构成启用授权。祈使或执行语气本身不能把上表的纯定义编辑提升为 `enabled`：当前为 disabled 的既有 Workflow 若只改名称、描述或消息文案，仍取 `preserve`。静态文本、公式、视图和 Dashboard 不能代替用户明确要求的主动通知。
+
+### 不可跳过的完成谓词
+
+Workflow 子任务必须同时满足以下两项，才能标记完成或进入最终答复：
+
+1. **定义后置条件：** 同一目标 ID 中本次请求涉及的全部可写定义字段与用户要求一致，包括适用的名称、描述、消息标题与正文、触发器、触发时间/时间配置（日期、时刻、周期、星期、间隔、起止时间和提醒偏移）、条件、接收人、动作类型和动作目标。
+2. **状态后置条件：** 对 `enabled` / `disabled`，不截断 `status` 的 `+workflow-get` 必须证明返回的 `status` 等于 `target_status`；`preserve` 必须证明返回的 `status` 等于首次 get 的状态；`none` 不适用状态等式，其后置条件是没有执行任何创建、更新或启停写操作。
+
+定义已经吻合或无需执行 `+workflow-update`，不能消除独立的运行态差异。`+workflow-create` 成功后默认返回 `disabled`；当 `target_status=enabled` 时，这只是中间态，必须继续调用 `+workflow-enable` 并对同一 ID `+workflow-get`。当明确要求主动提醒却不存在目标 Workflow 时，应创建并完成上述闭环，不能用说明文字、公式、视图或 Dashboard 冒充。
+
+`+workflow-update` 是完整替换：从 `+workflow-get` 结果保留 `title`、`status`、`steps`，但请求体中的 `status` 不负责切换运行态；实际启停只使用 `+workflow-enable` / `+workflow-disable`。对同一失败原因只做一次定向修复和一次复验；仍不满足任一后置条件时明确报告未完成项，不得继续循环或虚假宣告完成。
 
 ---
 
@@ -61,8 +90,55 @@
 | 多路分类 | ... → SwitchBranch → 多分支处理 | [下方](#示例4-多路分支-switchbranch) |
 | 复杂组合 | 定时+查找+循环+分支+消息 | [下方](#示例5-组合场景-定时查找循环分支消息) |
 
+## 能力边界与意图识别
+
+- 用户说“一按 / 一键 / 点一下就知道 / 按钮触发”时，优先评估 `ButtonTrigger`。如果结果需要沉淀给用户看，Workflow 应将判断结果写回表字段、日志表或消息，而不是只交付一段说明或普通看板。
+- 记录新增/修改触发和定时扫描都可能实现提醒；选择前先判断用户要实时提醒还是周期巡检。若用定时扫描替代实时提醒，需要在交付里说明触发频率。
+
+### 接收人来源门禁
+
+消息接收人只能来自用户明确点名且可唯一解析的人员/群、用户明确指定的人员/群字段，或本轮此前已经确认的真实对象；“通知我/本人”属于对当前用户的明确授权。泛化职责称谓或模糊群组描述若无法唯一映射到真实对象，不得用当前用户、Base 创建人、记录创建人或任意默认账号兜底，也不得把示例 ID 写入正式配置。
+
+接收人不明确时必须先澄清；澄清完成前不创建带伪造 `receiver` 的 Workflow，不启用不完整 Workflow。若已创建草稿则保持 `disabled`，并在最终答复中明确接收人仍待确认。回读时逐项核对 `receiver` 的来源和 `send_to_everyone`，防止扩大外发范围。
+
+### 条件类型验收
+
+创建或更新任何含条件的 Workflow 前，先用 `+field-list` 确认左值字段的真实类型，再按 [Workflow 数据结构](lark-base-workflow-schema.md) 的“条件值类型与非空约束”选择 `operator`、`value_type` 和右值。需要右值的 operator 禁止 `null`、空数组和空字符串；数值条件必须是非空有限 number，日期条件必须是合法 date，选项条件必须引用真实选项。
+
+阈值丢失是静默失败：右值写成空数组或空字符串后，工作流仍会按时触发、状态仍是 `enabled`，只是永远匹配不到记录，不会有任何报错。同一需求的 View 筛选常常是对的，**不要因为视图配对了就认为工作流也对**，两者各自独立构造。
+
+`+workflow-get` 回读时必须检查服务端保存后的完整 condition，而不是只看 Workflow 名称或状态。用户需求里有几个边界，保存后的 conditions 里就该有几个非空右值；逐项对照 `field_name / operator / value / value_type`，任一项不一致都保持或恢复 `disabled`。条件可用 `+record-list --filter-json` 表达且存在代表性数据时，用同口径的只读筛选确认命中范围；没有代表性数据时只验证保存条件。
+
+同一条件定向修复一次后仍无法原样回读时，不再重复提交同一种数值或日期条件；改用能稳定回读的文本/布尔派生字段表达同一业务谓词，再重新预检。派生字段仍不能正确保存或验证时，只将该 Workflow 验收项标记 `blocked` 并保持 `disabled`；继续完成不依赖它的其他交付物，不把该 Workflow 列入已完成项，也不得把局部阻塞扩大为整个 Base 任务失败。
+
 ---
 
+## 生命周期：创建不等于生效
+
+要求提醒、自动通知、到期处理或状态联动“能够工作”时，按以下闭环交付；不要停在创建成功：
+
+开始创建前先从用户原话登记每条流程的名称、触发时机/方向、条件、动作和接收人或目标记录。多条流程必须逐条保存 create 返回的 workflow_id，并分别走完下面的闭环；列表数量相符但任一条仍为 disabled、条件或动作不符，都不能视为完整交付。
+
+```bash
+# 1. 创建：新 workflow 默认 disabled
+lark-cli base +workflow-create --as user --base-token <base_token> --json @workflow.json
+
+# 2. 启用前预检：workflow 仍为 disabled，无真实触发副作用
+lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <wkf_id>
+
+# 3. 启用：只有用户明确要求草稿或保持禁用时才跳过
+lark-cli base +workflow-enable --as user --base-token <base_token> --workflow-id <wkf_id>
+
+# 4. 生效确认：同时验证 enabled 状态和最终定义
+lark-cli base +workflow-list --as user --base-token <base_token> --status enabled
+lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <wkf_id>
+```
+
+启用前的 `get` 必须逐项核对：trigger 的表、字段、条件和提前/推后方向符合题意；`next`、分支和引用指向真实 step；消息接收人、目标记录和写入动作来自真实字段与用户授权，不会扩大外发或写入范围。预检通过后才 enable，随后确认目标 workflow 出现在 enabled 列表。若启用后发现任何不符，先立即 `+workflow-disable` 并用 `+workflow-list --status disabled` 回查，再 update、重新执行启用前预检，最后 enable；`+workflow-update` 本身不会改变启停状态。
+
+不要从“表里有日期/状态字段”自行推断并创建 workflow；只有用户明确要求提醒、自动化、状态联动或某项流程能够工作时才创建并启用。用户要求草稿或保持禁用时，保留 disabled，并在交付结果中明确说明该流程尚不会触发。
+
+---
 ## 完整示例
 
 ### 示例 1: 新增记录触发 + 发送消息

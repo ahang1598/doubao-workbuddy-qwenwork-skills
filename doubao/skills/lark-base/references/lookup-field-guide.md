@@ -71,7 +71,7 @@ Lookup and Link serve **different purposes**. Creating a Lookup does NOT require
 | Dimension | Link | Lookup | Formula |
 |-----------|------|--------|---------|
 | Purpose | Establish record relationships (read-write) | Pull and aggregate data from another table (read-only) | Compute values from expressions (read-only) |
-| When to use | "link" / "associate" / "bind" two tables | "look up" / "reference" / "aggregate" / "count" from another table | Calculations, text manipulation, conditional logic |
+| When to use | "link" / "associate" / "bind" two tables | The user explicitly requests a Lookup field | Cross-table references and aggregations by default; calculations, text manipulation, conditional logic |
 
 **Common mistake**: Creating a Link field just to create a Lookup. If two tables share a matching text/number field, Lookup can match directly — no Link required.
 
@@ -80,11 +80,11 @@ Lookup and Link serve **different purposes**. Creating a Lookup does NOT require
 ```
 What does the user need?
 ├─ "Link"/"associate"/"bind" records between tables → Link
-├─ "Look up"/"reference"/"aggregate"/"count" from another table → Lookup
+├─ User explicitly requests a Lookup field → Lookup
 │   ├─ Needs aggregation (sum/count/average)? → Lookup + aggregate
 │   └─ Just reference a value? → Lookup (aggregate = null)
-├─ Calculations/text manipulation within current table → Formula
-└─ Access linked record's field → Prefer Lookup (more intuitive), or Formula chain access
+├─ Cross-table reference/aggregation without an explicit Lookup request → Formula
+└─ Calculations/text manipulation within the current table → Formula
 ```
 
 ---
@@ -471,7 +471,7 @@ Combine row-level matching with fixed-value filtering using `logic: "and"`:
 
 ### Mistake 6: Confusing Lookup with Link
 
-The user says "aggregate order amounts" — use Lookup, not Link. Link establishes relationships; Lookup retrieves and aggregates data.
+If the user explicitly requests a Lookup to aggregate values from another table, use Lookup rather than Link. Without that explicit request, use Formula by default. Link establishes editable record relationships; Lookup and Formula are read-only computed fields.
 
 ### Mistake 7: Using object format instead of tuple for conditions
 

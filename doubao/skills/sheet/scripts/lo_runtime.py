@@ -41,6 +41,14 @@ def _needs_shim() -> bool:
         return True
 
 
+def _quiet_unlink(path: Path):
+    """删除文件，不存在就算了。Python 3.7 的 unlink() 没有 missing_ok 形参。"""
+    try:
+        path.unlink()
+    except OSError:
+        pass
+
+
 def _owned_private_file(path: Path) -> bool:
     try:
         stat = path.stat()
@@ -76,8 +84,8 @@ def _ensure_shim() -> Path:
         if not _owned_private_file(_SHIM_SO):
             raise RuntimeError(f"LibreOffice shim permissions are unsafe: {_SHIM_SO}")
     finally:
-        tmp_src.unlink(missing_ok=True)
-        tmp_so.unlink(missing_ok=True)
+        _quiet_unlink(tmp_src)
+        _quiet_unlink(tmp_so)
     return _SHIM_SO
 
 

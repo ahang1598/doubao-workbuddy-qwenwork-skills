@@ -126,9 +126,11 @@ text 字段的 `style.type` 影响单元格检查逻辑：
 
 ### 2.9 attachment（不作为普通 CellValue 写入）
 
+- 用户说“把文件/文档/附件放进表/记录”时，默认表示要保留原始文件为附件；docx、pdf、图片等都属于附件语义。以真实文件上传到目标 attachment 单元格才算完成；可以额外读取内容并写摘要字段，但文本、URL、文件名或摘要都不等价，不能替代附件上传。
 - 追加附件：使用 `lark-cli base +record-upload-attachment --record-id <record_id> --field-id <field_id> --file <path>`；可重复 `--file` 一次追加多个附件，不能用普通记录操作接口写附件值。
 - 删除附件：使用 `lark-cli base +record-remove-attachment --record-id <record_id> --field-id <field_id> --file-token <file_token> --yes`；可重复 `--file-token` 一次删除同一单元格里的多个附件。
 - 下载附件：使用 `lark-cli base +record-download-attachment --record-id <record_id> --file-token <file_token> --output <dir>`；不传 `--file-token` 时下载整行所有附件，也可重复 `--file-token` 只下载指定附件。Base 附件必须用这个命令下载，用其他下载入口可能失败。
+- 附件上传、下载、删除后都要用返回值或读回记录校验。下载成功必须确认本地输出路径存在且文件大小合理，再向用户声明“已下载”。
 
 ## 3. 只读字段（不要写）
 

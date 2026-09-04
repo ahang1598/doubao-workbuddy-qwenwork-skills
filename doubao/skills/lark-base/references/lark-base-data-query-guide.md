@@ -1,20 +1,30 @@
 # Base data-query guide
 
-This guide is the entry point for `+data-query`. Use it for common aggregation fewshots and command selection. For the complete DSL fields, operators, limits, and response details, use [lark-base-data-query.md](lark-base-data-query.md) as the DSL SSOT.
+This guide is the entry point for `+data-query`. Use it for common single-table aggregation fewshots and command selection. If the task is a simple group/count/sum/avg/min/max/TopN query and the needed fields are already known, this guide is enough; do not read the full DSL only to confirm the aggregation name.
 
-Before using `+data-query`, also follow [lark-base-data-analysis-sop.md](lark-base-data-analysis-sop.md) to confirm that the task really needs aggregation instead of record listing or a temporary view.
+Read [lark-base-data-analysis-sop.md](lark-base-data-analysis-sop.md) when the task requires cross-table joins, full-table export, local recomputation, row-level backtracking after aggregation, or a final narrative with global conclusions. For complete DSL fields, uncommon field-type/operator details, response details, or error recovery, use [lark-base-data-query.md](lark-base-data-query.md) as the DSL SSOT.
 
 ## When to use
 
 Use `+data-query` when the user asks for server-side:
 
 - group by / aggregation
-- sum, average, min, max, count, distinct count
+- aggregation functions: `sum`, `avg`, `min`, `max`, `count`, `count_all`, `distinct_count`
 - filtered aggregation
 - sorted Top N or Bottom N
 - global statistical conclusions
 
+Use the aggregation function names above exactly in DSL. Do not write natural-language aliases such as `average` or `distinct count`.
+
 `+data-query` can return dimension field rows, but those rows are grouped by dimension values and do not include `record_id`. Use `+record-list`, `+record-search`, or `+record-get` for row-level output, record identity, or full raw record details.
+
+High-frequency limits and operator facts:
+
+- `pagination.limit` is a result cap, maximum 5000; `+data-query` does not support offset paging.
+- Datetime fields in `+data-query` support only `is`, `isEmpty`, `isNotEmpty`, `isGreater`, and `isLess`; do not use `isGreaterEqual` or `isLessEqual` for datetime.
+- For continuous calendar windows such as months, quarters, or years, build non-overlapping ranges with open operators in the document timezone: when datetime values may include a time-of-day, use `isGreater` on the window start's local midnight and `isLess` on the next window start's local midnight. Do not use UTC midnight. After splitting adjacent windows, verify their counts sum to the same query with the segment condition removed.
+- If `+data-query` returns `ok=true` but an aggregate measure is `null`, treat it as a field-type compatibility signal: check `+field-list` and the aggregation type table in the DSL SSOT before exporting records; fall back to one projected `+record-list` scan only after confirming the measure cannot be computed server-side.
+- Need more than 5000 raw rows or one-pass local joins? Use `+record-list --format json --limit 200 --offset <n>` and the analysis SOP's full-export rule.
 
 ## Common Fewshots
 

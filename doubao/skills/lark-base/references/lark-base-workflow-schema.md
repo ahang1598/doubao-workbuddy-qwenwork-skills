@@ -252,7 +252,7 @@
 | `table_name` | 是 | 数据表名 |
 | `field_name` | 是 | 日期字段名（必须为 `datetime` / `created_at` / `formula` / `lookup` 类型） |
 | `unit` | 是 | 偏移单位：`MINUTE` / `HOUR` / `DAY` / `WEEK` / `MONTH` |
-| `offset` | 是 | 提前/延后的偏移量（正数=提前，负数=延后；范围由 `unit` 决定）：`MINUTE` ∈ {0, 5, 15, 30, -5, -15, -30}；`HOUR` ∈ [-6, -1] ∪ [1, 6]；`DAY` ∈ [-7, 7]；`WEEK` ∈ [-7, -1] ∪ [1, 7]；`MONTH` ∈ [-7, -1] ∪ [1, 7] |
+| `offset` | 是 | 提前/延后的偏移量（触发时间 = 日期字段时间 + `offset` × `unit`，因此负数=提前、正数=延后；范围由 `unit` 决定）：`MINUTE` ∈ {0, 5, 15, 30, -5, -15, -30}；`HOUR` ∈ [-6, -1] ∪ [1, 6]；`DAY` ∈ [-7, 7]；`WEEK` ∈ [-7, -1] ∪ [1, 7]；`MONTH` ∈ [-7, -1] ∪ [1, 7] |
 | `hour` | 是 | 触发小时 (0-23)，默认 9 |
 | `minute` | 是 | 触发分钟 (0-59)，默认 0 |
 | `condition_list` | 否 | 过滤条件数组，数组中每个元素为 AndCondition 结构，多个 AndCondition 之间为 OR 关系  | 
@@ -923,6 +923,20 @@ $.{stepId}.{fieldId}.fileToken    → 文件 Token 列表（array<string>，仅�
   ]
 }
 ```
+
+### 条件值类型与非空约束
+
+构造 `FieldWatchItem`、`AndCondition`、`RecordFilterInfo` 或分支条件前，先用 `+field-list` 确认左值字段的真实类型。右值必须与字段类型一致：
+
+| 左值字段类型 | 右值 `value_type` | 约束 |
+|---|---|---|
+| `number` 或数值型 `formula` / `lookup` | `number` | 值必须是非空有限数字，不得使用 `""`、`null` 或空数组 |
+| `datetime` / `created_at` / `updated_at` | `date` | 使用合法日期或受支持的相对时间值，并选择日期可用 operator |
+| `select` | `option` | 选项名称或 ID 必须来自真实字段配置 |
+| `user` / `group_chat` | `user` / `group` 或类型匹配的 `ref` | 不得使用未解析的姓名、角色描述或示例 ID |
+| `text` | `text` | 需要右值的 operator 不得传空字符串 |
+
+`isEmpty` / `isNotEmpty` 不携带业务右值；其他 operator 需要非空右值。创建或更新接口返回成功后，仍须用 `+workflow-get` 检查服务端保存的完整条件；字段类型、operator、`value_type` 或值任一不匹配都表示未通过，不能继续启用或宣称完成。
 
 ### OrGroup（Branch 分支条件）
 

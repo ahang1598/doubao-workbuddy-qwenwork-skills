@@ -13,8 +13,7 @@ license: Proprietary — internal use only.
 compatibility: >-
   Linux, macOS or Windows. Needs Python 3.10+ and Pillow; PyMuPDF for pdf,
   python-pptx for pptx text, python-docx for docx, openpyxl for xlsx.
-  Screenshots of pptx need a LibreOffice install; screenshots of html need a
-  Chromium-family browser (on Windows the preinstalled Edge is enough).
+  Screenshots of pptx need a LibreOffice install.
   Missing pieces degrade to text with a warning, never a crash. On Windows
   invoke the entry point as bin/preview.cmd (or `python bin/preview`): the
   extension-less POSIX script cannot be executed directly there.
@@ -26,6 +25,7 @@ metadata:
 # Artifact Preview
 
 把产物渲染成文本加截图，交付前用 `Read` 打开图片肉眼检查。
+注意：HTML 产物不需要自检
 
 它和 `verifier-hub` 是一对：verifier 回答「文件结构和数值对不对」，
 artifact-preview 回答「文件看起来对不对」。
@@ -40,7 +40,6 @@ artifact-preview 回答「文件看起来对不对」。
 |------|-----------|------------|
 | `.pptx` / `.ppt` | 文本 + 每页截图 + 拼图 | 高：版式、配色、图表是否放得下、文字是否溢出 |
 | `.pdf`           | 文本 + 每页截图 + 拼图 | 高：版式、图片位置、中文是否正常显示 |
-| `.html`          | 原文 + 视口截图 | 高：实际渲染效果、样式是否失效、资源是否缺失 |
 | `.docx`          | 文本（含表格），**不出图** | 低：只能看内容，看不到排版 |
 | `.xlsx`          | 各 sheet 的单元格文本，**不出图** | 低：只能看内容 |
 | `.png` / `.jpg` 等 | 缩略图 | 低：本来就是图，只是缩了一份 |
@@ -151,7 +150,6 @@ preview render <file> --max-pages 5
 preview render <file> --page-range "1-3,7,10-12"
 preview render <file> --force      # 忽略缓存，重新渲染
 preview render <file> --soffice <path>    # 手动指定 LibreOffice，用于 pptx 截图
-preview render <file> --chromium <path>   # 手动指定浏览器，用于 html 截图
 
 preview info <file|hash|dir>       # 输出完整 manifest
 preview list                       # 列出所有缓存的预览
@@ -220,8 +218,6 @@ preview clean --all                # 删掉全部缓存
 - 大于 100 MB 的文件用前缀 hash 做缓存键，仍然通过文件大小复核，不会误命中。
 - `pptx` 截图需要 LibreOffice。没有就只出文本，`pages` 为空并记一条 warning，
   `ok` 仍然是 `true`，不会让调用方失败。
-- `html` 截图需要 Chromium 系浏览器。找不到就只出 `text.md` 并记 warning。
-  找到了但浏览器没能真正加载文档时会报错，不会拿一张无关的截图冒充成功。
 - `xlsx` / `docx` 按设计不出图，只输出竖线分隔的文本。
 - 缺 Python 依赖（PyMuPDF、python-pptx、python-docx、openpyxl、Pillow）时，
   对应格式的文本或图片为空并记 warning。要恢复某种格式就装它的依赖：
@@ -243,7 +239,6 @@ preview clean --all                # 删掉全部缓存
 
   系统程序装法：`apt-get install -y libreoffice chromium-browser`；
   Windows 上是 `winget install --id TheDocumentFoundation.LibreOffice -e`，
-  HTML 截图直接用系统自带的 Edge，不用另装。
   已经装了但不在 PATH 上（macOS 和 Windows 的安装器都不加 PATH），
   用 `--soffice` / `--chromium` 指定路径，或者设
   `ARTIFACT_PREVIEW_SOFFICE` / `ARTIFACT_PREVIEW_CHROMIUM`。

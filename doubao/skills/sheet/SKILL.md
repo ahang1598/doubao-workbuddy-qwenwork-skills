@@ -1,6 +1,6 @@
 ---
 name: sheet
-version: 3.2.0
+version: 3.2.1
 description: "表格全场景（本地 Excel/CSV 与飞书/doubao 在线表格）：创建、读写、分析、计算、建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。"
 metadata:
   requires:

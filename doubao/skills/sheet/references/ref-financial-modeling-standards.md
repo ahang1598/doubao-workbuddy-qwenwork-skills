@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 516 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 531 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
 
 # 金融/财务建模与财务数据整理规范
 
@@ -231,7 +231,22 @@ for col in ['E', 'F', 'G', 'H', 'I']:
     ws[f'{col}20'] = f'={col}18*(1-$B$9)'   # E18=EBIT, $B$9=Tax Rate
 ```
 
-写完横向公式后，必须用 `load_workbook(..., data_only=False)` 回读 2-3 个相邻年份列的公式字符串，确认年份引用跟随列移动、被锁定的假设保持不变；再用 `data_only=True`（或 `formula_verify.py`，含公式重算）确认无 `#REF!`、`#DIV/0!`、`#VALUE!`、`#NAME?`、`#N/A`。
+写完横向公式后，必须用 `load_workbook(..., data_only=False)` 回读 2-3 个相邻年份列的公式字符串，确认年份引用跟随列移动、被锁定的假设保持不变；再用 `data_only=True` 读一份重算过的副本（`cp <产物> .recalc.xlsx && python3 scripts/formula_verify.py .recalc.xlsx --in-place`——直接读产物全是 `None`，而对产物本身跑 `--in-place` 会出现预期外的写入操作。）确认无 `#REF!`、`#DIV/0!`、`#VALUE!`、`#NAME?`、`#N/A`。
+
+### 说明注释
+
+复杂估值/预测模型（如 DCF、LBO）或计算口径无法从表内直接看清时，在表尾增加紧凑的说明区；简单财务数据整理不强制添加。按需从以下四项中选择：
+
+- `Methodology`，关键计算口径及时间口径
+- `Key assumptions`，作为重要预测驱动及变化方式的关键假设说明
+- `Sources`，**重要**，历史值、外部数据、硬编码来源，包括用户提供的数据，必须在注释中标注：`Source: [来源], [日期], [页/表/字段]`。FY、CY、LTM、NTM、CAGR、YoY、QoQ 等缩写必须使用一致口径。**做财务推算时尤其重要**：每个外部取数与关键假设都要可追溯到来源
+- `Color convention`，颜色含义，注意解释颜色时依然要遵循注释内容的字体颜色风格，不许使用对应的颜色
+
+说明注释区不设总标题，不用"Notes"开头，直接开始写注释正文，通过字体颜色风格与表格正式内容区分
+
+使用`Methodology:`等选项名称作为对应内容的开头，每段内容是一段连续文本。
+
+只写理解和复核模型所需的信息，不复述普通公式；注意，说明区是额外的说明解释，不能替代可编辑引用的 Assumptions 区域数据。
 
 ## 视觉规范
 
@@ -247,7 +262,7 @@ openpyxl 的颜色参数用不带 `#` 的 6 位 hex（如 `Font(color='0000FF')`
 | 黑色字体 | `000000` | 本 sheet 公式或普通文本 |
 | 绿色字体 | `008000` | 同工作簿跨 sheet 引用；公式中只要出现跨 sheet 引用就用绿色 |
 | 红色字体 | `FF0000` | 外部文件/外部系统链接，慎用 |
-| 灰色斜体 | `808080` + italic | YoY、Margin、Notes、单位说明、数据来源（仅字体，灰色不做背景） |
+| 灰色斜体 | `808080` + italic | 说明注释内容，YoY、Margin、Notes、单位说明、数据来源（仅字体，灰色不做背景） |
 | 浅黄背景 | `FFF2CC` | 待确认 / 待复核的假设（临时标记，交付前应清除或确认）|
 
 ```python
@@ -259,11 +274,11 @@ black_font = Font(name=FONT, size=SIZE)                                    # 本
 black_bold = Font(name=FONT, size=SIZE, bold=True)                         # 小计/合计
 green_font = Font(name=FONT, size=SIZE, color='008000')                   # 跨表引用
 red_font   = Font(name=FONT, size=SIZE, color='FF0000')                   # 外部文件引用
-aux_font   = Font(name=FONT, size=SIZE, color='808080', italic=True)       # 辅助行：同字号，仅色+斜体
+aux_font   = Font(name=FONT, size=SIZE, color='808080', italic=True)       # 说明注释、辅助行：同字号，灰色+斜体
 highlight_fill = PatternFill('solid', fgColor='FFF2CC')                    # 待确认（浅黄，临时标记）
 ```
 
-辅助行字号与正文一致，只靠灰色和斜体区分层级。除 sheet 顶部大标题外，全表正文、分区标题、副标题、辅助行使用统一字号。
+说明注释、辅助行字号与正文一致，只靠灰色和斜体区分层级。除 sheet 顶部大标题外，全表正文、分区标题、副标题、说明注释、辅助行使用统一字号。
 
 > ⚠️ 上表是**字体**颜色编码；**背景填充**另有一套统一配色，见下「背景色与配色」。两者不要混淆：绿 / 红只用于字体（跨表 / 外链），**绝不用于背景**。
 
@@ -314,7 +329,9 @@ section_header(ws, 5, 2, 14, '训练算力',             bg=SECOND_BG)          
 section_header(ws, 6, 2, 14, '说明 / 信息区',         bg=LIGHT_BG, font=black_font)    # 三级 / 信息区：浅蓝 + 黑字
 ```
 
-### 数字格式
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
+### 数字格式与单位
 
 | 数据类型 | 推荐格式 |
 | --- | --- |
@@ -325,8 +342,6 @@ section_header(ws, 6, 2, 14, '说明 / 信息区',         bg=LIGHT_BG, font=bla
 | 百分比 | `0.0%` 或 `0.00%`，同一表内保持一致 |
 | 估值倍数 | `0.0" x"` |
 | 人数/股数 | `#,##0` |
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 零值显示为 `-`，负数使用括号法 `(123)`。如采用窄货币符号列，符号列单独放 `$` / `¥`，数值列不再带货币符号。题面点名"保留 N 位小数"时，用固定 N 位的 `number_format`（如 `0.00`）落格、尾随零必须显示——不要让货币 / 千分位 / 默认显示盖掉要求的位数，也不要把数值与文本标记混进同一格。
 
@@ -343,14 +358,10 @@ for col in year_cols:
     ws[f'{col}{year_row}'].number_format = year_fmt
 ```
 
-### 单位与来源
-
-单位必须清晰标注：
+**单位必须清晰标注**：
 
 - 全表单位统一时，在标题下方用灰色斜体副标题标注，如 `($ in Millions, Except Per Share Data)`。
 - 同一表存在多种单位时，在字段名后直接标注，如 `Revenue ($mm)`、`Gross Margin (%)`、`员工人数（万人）`、`ARPU, 元/月`。
-
-历史值、外部数据和硬编码来源必须在表尾或注释中标注：`Source: [来源], [日期], [页/表/字段]`。FY、CY、LTM、NTM、CAGR、YoY、QoQ 等缩写必须使用一致口径。**做财务推算时尤其重要**：每个外部取数与关键假设都要可追溯到来源。
 
 ### 布局与列宽
 
@@ -424,6 +435,8 @@ Sensitivity 必须极简、对称、可读。
 - 图标集。
 - 彩虹配色。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 推荐：
 
 1. 行轴和列轴以 baseline 为中心等距展开，如 WACC: 8%, 9%, 10%, 11%, 12%。
@@ -431,8 +444,6 @@ Sensitivity 必须极简、对称、可读。
 3. 所有结果格使用同一 `number_format`。
 4. 标题下方用灰色斜体说明输出指标。
 5. 每个情景格都要按该组输入**全链路重算**，不要只在 baseline 结果上做线性扰动、也不要冻结 baseline 中间表后只改展示值。
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ```python
 HEADER_BG, BASELINE_BG = 'CFE3F1', 'FFF2CC'    # 轴表头用浅蓝 light_bg；baseline 浅黄
@@ -477,16 +488,20 @@ ws['E8'].font = black_bold
 
 ```python
 # ── 三张表勾稽验证（生成后必跑）──
+# 取值走副本：对产物本身跑 --in-place 会被 LibreOffice 重写，负数括号与年份列等宽都会被改坏
+#   cp model.xlsx .recalc.xlsx && python3 scripts/formula_verify.py .recalc.xlsx --in-place
 from openpyxl import load_workbook
-wb = load_workbook('model.xlsx', data_only=True)        # 读取计算值
+wb = load_workbook('.recalc.xlsx', data_only=True)      # 读重算后的副本，产物全程不动
 bs, cfs = wb['Balance Sheet'], wb['Cash Flow Statement']
 for col in year_cols:
-    ta  = bs[f'{col}{ta_row}'].value  or 0
-    tle = bs[f'{col}{tle_row}'].value or 0
+    ta  = bs[f'{col}{ta_row}'].value
+    tle = bs[f'{col}{tle_row}'].value
+    ec  = cfs[f'{col}{ec_row}'].value
+    bc  = bs [f'{col}{cash_row}'].value
+    assert None not in (ta, tle, ec, bc), f"{col} 读不到计算值：副本没重算，先跑上面那条命令"
     assert abs(ta - tle) < 0.01, f"BS 不平衡（{col}）: TA={ta}, TL&E={tle}"
-    ec = cfs[f'{col}{ec_row}'].value   or 0
-    bc = bs [f'{col}{cash_row}'].value or 0
     assert abs(ec - bc) < 0.01, f"Cash 不匹配（{col}）: CFS={ec}, BS={bc}"
+wb.close(); import os; os.remove('.recalc.xlsx')        # 别把副本混进交付目录
 print("三张表勾稽验证全部通过")
 ```
 
@@ -513,4 +528,4 @@ Sensitivity 额外检查：
 - **飞书在线表格**：写值/公式按 `lark-sheets-write-cells`；样式、合并、列宽行高、冻结的任意组合**一次** `lark-sheets-styles-put` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `lark-sheets-batch-update`；跨 sheet 公式按 `lark-sheets-formula-translation` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
 - 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后只做必要的链接/预览处理。
 
-===== 全文完（共 516 行）=====
+===== 全文完（共 531 行）=====

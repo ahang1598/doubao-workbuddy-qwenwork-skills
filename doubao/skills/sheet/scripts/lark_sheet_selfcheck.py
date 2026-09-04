@@ -6,6 +6,8 @@
 from __future__ import annotations
 
 import argparse
+import codecs
+import json
 import os
 import re
 import sys
@@ -139,18 +141,118 @@ def truncate(items: list[str], limit: int = MAX_LIST) -> tuple[list[str], int]:
     return (items, 0) if len(items) <= limit else (items[:limit], len(items) - limit)
 
 
-# ────────────────────────── lark-cli 调用（新增重试）──────────────────────────
+# ────────────────────────── lark-cli 调用（带重试）──────────────────────────
 
-TRANSIENT = ("bad gateway", "502", "503", "504", "timed out", "was not JSON",
-             "invalid_response", "connection reset", "temporarily",
+TRANSIENT = ("bad gateway", "502", "503", "504", "timed out", "timeout",
+             "was not JSON", "invalid_response", "connection reset",
+             "connection refused", "temporarily", "eof", "broken pipe",
+             "no such host", "i/o timeout", "context deadline",
              # 飞书 API 限流。实测批量跑时命中 code 99991400
              # "request trigger frequency limit"，老的重试列表漏了它 → 直接失败。
              # 生产上模型并发跑多个任务时同样会撞到。
              "frequency limit", "rate limit", "too many requests", "429", "99991400")
 RATE_LIMIT_HINT = ("frequency limit", "rate limit", "too many requests", "429", "99991400")
+# 超时类要单独限次：一次超时就已经耗掉整个 timeout（120~180s），
+# 按常规 4 次重试最坏拖十几分钟，再叠加 sheet 级重试会更久 ——
+# 那会重演「工具太慢 → 模型弃用工具」的老问题（见 call() 注释里的实测）。
+# 所以超时类总共只试 2 次；秒级失败的网络错误（connection reset 等）不受此限。
+TIMEOUT_HINT = ("timed out", "timeout", "i/o timeout", "context deadline")
+TIMEOUT_MAX_TRIES = 2
+SHEET_RETRY_WAIT = 5.0
+
+# lark-cli 在 ok:false 时返回结构化 error 对象，run_sheets 把整个 envelope
+# 序列化成异常消息抛出。所以这里能按 error.type / error.subtype 精确判断，
+# 比在长 JSON 里搜关键词可靠 ——
+# 实测漏过的就是这一类：{"error":{"type":"network",...}}，"network" 不在
+# 老的 TRANSIENT 列表里，于是一次都没重试就把 sheet 判成读取失败。
+TRANSIENT_ERROR_TYPES = frozenset({"network", "timeout", "transient", "unavailable",
+                                   "internal", "server"})
+TRANSIENT_SUBTYPES = frozenset({"server_error", "timeout", "connection_error",
+                                "connection_reset", "rate_limited",
+                                "too_many_requests", "unavailable", "eof"})
+# 明确**不该**重试的：重试只会重复失败，还把总耗时拖长。
+PERMANENT_SUBTYPES = frozenset({"permission_denied", "not_found", "invalid_argument",
+                                "unauthenticated", "forbidden"})
+# lark-cli 会把「参数非法」也包装成 subtype=server_error —— 实测传一个无效 token，
+# 返回的是 {"subtype":"server_error","code":9499,"message":"... Invalid request
+# parameters ..."}。所以 server_error 不能单独作为重试依据，必须再看 code/message
+# 是否指向永久性问题，否则会对一个永远不可能成功的调用白等 4 次退避 × sheet 级 2 轮。
+PERMANENT_CODES = frozenset({9499})     # 飞书：Invalid request parameters
+PERMANENT_MSG = re.compile(
+    r"invalid\s+(?:request\s+)?param|invalid\s+argument|invalid\s+token|"
+    r"not\s+found|no\s+permission|permission\s+denied|unauthorized|forbidden|"
+    r"不存在|无权限|没有权限|参数[^\n]{0,6}(?:错误|非法|无效|不合法|不正确)", re.I)
 
 
-def call(shortcut: str, *, tries: int = 3, backoff: float = 2.0, **kw) -> dict[str, Any]:
+def error_obj(exc: Exception) -> dict[str, Any]:
+    """从异常消息里取回结构化 error 对象；不是 JSON 就返回空 dict。"""
+    raw = str(exc).strip()
+    if not raw.startswith("{"):
+        return {}
+    try:
+        env = json.loads(raw)
+    except (ValueError, TypeError):
+        return {}
+    err = env.get("error") if isinstance(env, dict) else None
+    return err if isinstance(err, dict) else {}
+
+
+def transient_reason(exc: Exception) -> str | None:
+    """瞬时错误则返回原因标签（用于输出），否则返回 None。
+
+    两层判断，缺一不可：
+      1. 结构化 —— 读 error.type / error.subtype。覆盖 lark-cli 正常返回
+         ok:false 的情况，也能靠 PERMANENT_SUBTYPES 明确排除权限/参数错。
+      2. 关键词 —— 覆盖拿不到 JSON 的情况：bad gateway 直接是 HTML、
+         超时是 run_sheets 自己造的消息、进程未找到等。
+    """
+    err = error_obj(exc)
+    sub = str(err.get("subtype") or "").lower()
+    typ = str(err.get("type") or "").lower()
+    if sub in PERMANENT_SUBTYPES:
+        return None                      # 权限/参数问题，重试无意义
+    # 先排永久：subtype 可能是 server_error 但实际是参数非法（见 PERMANENT_CODES 注释）
+    if err.get("code") in PERMANENT_CODES:
+        return None
+    if err.get("message") and PERMANENT_MSG.search(str(err["message"])):
+        return None
+    if typ in TRANSIENT_ERROR_TYPES:
+        return f"{typ}/{sub}" if sub else typ
+    if sub in TRANSIENT_SUBTYPES:
+        return sub
+    msg = str(exc).lower()
+    for t in TRANSIENT:
+        if t in msg:
+            return t
+    return None
+
+
+def is_timeout_error(exc: Exception) -> bool:
+    """是否超时类失败。"""
+    msg = str(exc).lower()
+    return any(t in msg for t in TIMEOUT_HINT)
+
+
+def explain_cli_error(exc: Exception) -> str:
+    """把异常压成一句可读的说明。
+
+    为什么需要它：run_sheets 抛出的消息是整个 envelope JSON，原来直接
+    `str(exc)[:80]` 截断，输出成 `读取失败：{  "ok": false,  "identity": "user"...`
+    —— 既看不出原因，又容易被当成「表格本身有问题」。
+    """
+    err = error_obj(exc)
+    if err:
+        parts = [str(err.get(k)) for k in ("type", "subtype") if err.get(k)]
+        head = "/".join(parts) or "error"
+        code = err.get("code")
+        if code not in (None, ""):
+            head += f"[code={code}]"
+        detail = str(err.get("message") or "").strip()
+        return f"{head}: {detail[:120]}" if detail else head
+    return str(exc)[:120]
+
+
+def call(shortcut: str, *, tries: int = 4, backoff: float = 2.0, **kw) -> dict[str, Any]:
     """带退避重试的 run_sheets。
 
     为什么必须加这层：真实点测里第一次 validate 跑了 120 秒撞上限，
@@ -158,6 +260,10 @@ def call(shortcut: str, *, tries: int = 3, backoff: float = 2.0, **kw) -> dict[s
     脚本 exit 1；模型的反应是放弃工具、改用自己的口头断言。
     而第二次重跑只用 5.5 秒就成功 —— 是瞬时故障。
     只重试**瞬时错误**：权限、参数、找不到 sheet 这类重试没有意义。
+
+    tries 取 4（原为 3）：网络类抖动实测常连续命中 2 次，3 次里前两次用掉后
+    只剩一次机会。退避为 2s/4s/6s，最坏额外等 12s，相对 120s 的单次 timeout
+    是可接受的代价。
     """
     last: Exception | None = None
     for attempt in range(1, tries + 1):
@@ -165,8 +271,11 @@ def call(shortcut: str, *, tries: int = 3, backoff: float = 2.0, **kw) -> dict[s
             return run_sheets(shortcut, **kw)
         except LarkCliError as exc:
             last = exc
+            reason = transient_reason(exc)
             msg = str(exc).lower()
-            if not any(t in msg for t in TRANSIENT) or attempt == tries:
+            # 超时类降低次数，避免总耗时失控（见 TIMEOUT_MAX_TRIES 注释）
+            limit = TIMEOUT_MAX_TRIES if is_timeout_error(exc) else tries
+            if reason is None or attempt >= limit:
                 raise
             # 限流要等得更久 —— 立刻重试只会继续撞同一个配额窗口
             wait = backoff * attempt
@@ -174,6 +283,7 @@ def call(shortcut: str, *, tries: int = 3, backoff: float = 2.0, **kw) -> dict[s
                 wait = max(wait, 5.0 * attempt)
             time.sleep(wait)
     raise last  # pragma: no cover
+
 
 
 # ────────────────────────── 读取层 ──────────────────────────
@@ -271,14 +381,36 @@ def read_workbook(target: str) -> tuple[dict[str, Any], list[str]]:
     wb = envelope_data(call("+workbook-info", timeout=120, **loc))
     sheets = []
     for sh in extract_sheets(wb):
-        try:
-            sheets.append(read_sheet(loc, sh))
-        except LarkCliError as exc:
-            unread.append(f"sheet「{sheet_title(sh)}」读取失败："
-                          f"{str(exc)[:80]}")
+        name = sheet_title(sh) or "?"
+        # read_sheet 内部包含多次 CLI 调用；分页中途遇到瞬时故障时，整张表重读一轮，
+        # 避免把取数抖动误判成 sheet 内容问题。
+        for sheet_try in (1, 2):
+            try:
+                sheets.append(read_sheet(loc, sh))
+                if sheet_try > 1:
+                    print(f"[stderr] sheet「{name}」第 {sheet_try} 次尝试读取成功",
+                          file=sys.stderr)
+                break
+            except LarkCliError as exc:
+                reason = transient_reason(exc)
+                if reason and sheet_try == 1 and not is_timeout_error(exc):
+                    time.sleep(SHEET_RETRY_WAIT)
+                    continue
+                if reason:
+                    unread.append(
+                        f"sheet「{name}」读取失败（{reason} —— 取数环节的瞬时故障，"
+                        f"已重试仍未成功）：{explain_cli_error(exc)}"
+                        "　→ 这不代表该 sheet 内容有错，但本工具没读到它，"
+                        "所有规则在这张表上都没生效。建议整体重跑一次本工具。")
+                else:
+                    unread.append(
+                        f"sheet「{name}」读取失败（非瞬时错误，重试无用）："
+                        f"{explain_cli_error(exc)}")
+                break
     for s in sheets:
         unread.extend(f"{s['name']}: {n}" for n in s["notes"])
     return {"loc": loc, "revision": wb.get("revision"), "sheets": sheets}, unread
+
 
 
 # ────────────────────────── 列切片（规则的公共输入）──────────────────────────
@@ -914,6 +1046,173 @@ CHECKLIST = """1. 汇总/合计/统计值/复杂业务计算 —— 必做，不
 6. 单位与口径：涉及单位换算（CM/MM、元/万元、秒/分钟）或特殊口径
    （是否含某类数据、是否排除某些行）的，逐行核对一次。"""
 
+CONFIRM_HOWTO = """做完上面 6 条，把**每条的结论**写进 --confirm 重跑一次本工具：
+示例：
+```bash
+  python3 lark_sheet_selfcheck.py <表格URL> --confirm '
+  1=按「含税、剔除退货行」口径，python 独立复算 Summary 全部 12 项，与表内公式求值逐项一致
+  2=题面要求保留的 产品参数表 仍在，回读 36 行×8 列，行数与原值一致；新增列落在 H 列右侧
+  3=题面点名 5 个 sheet / 3 个指标项，逐项打勾，产物齐全
+  4=3 个 sheet 共 240 行全部处理，抽查末尾第 238-240 行与中间第 120 行
+  5=标红 12 处，逐条复查无漏标；另核 4 处相似行确认不该标
+  6=金额统一万元口径，与源表原口径换算逐行核对 36 行'
+```
+
+每条要写**具体做了什么、结果是什么**，不是「已完成」这类空洞词——工具会拒绝。
+某条确实不适用，写明理由即可，如 `5=不适用：题面无标注/高亮要求`。
+回执用单引号包裹（内部就不必转义引号）；写成一行、条目之间空格分隔同样可以。
+
+Windows（PowerShell）必须走文件，多行文本没法可靠地作为参数传：
+  先把上面 6 条写进 ./confirm.txt，再
+```powershell
+  python lark_sheet_selfcheck.py <表格URL> --confirm "@./confirm.txt"
+```
+  @ 一定要包在双引号里，裸 @ 会被 PowerShell 当成 splatting 操作符。
+结论里要写 'Sheet1'!C900 这类带单引号的坐标时，两个平台都建议走文件。"""
+
+
+# ── 自查清单的强制回执 ────────────────────────────────────────────
+#
+# 为什么要做成命令行参数，而不是继续靠文案
+#   CHECKLIST 从第一版就在，措辞也一路收紧（CHECK_PASS 已经明说「不是产物没问题
+#   的证明」），但实测遵循率仍然低：调用方读到通过信号就交付，清单里的
+#   「独立复算」「逐项回读」「集合比对」三个动作是最常被跳过的。
+#   原因不是措辞不够强，是**结构性的**——「工具给了通过信号」和「清单要我干活」
+#   同时出现时，前者是结论、后者是建议，结论压过建议。
+#   所以把因果倒过来：不带回执时本工具**不输出任何通过信号、退出码非零**；
+#   只有把每条清单的结论写进 --confirm，才可能拿到 exit 0。
+#
+#   工具无法验证结论的真伪 —— 但能强制「必须逐条写出来」。写不出来就说明没做，
+#   而写得出来的内容同时构成交付说明的素材，可事后审计。
+#   这是本工具唯一能对「模型自己该做的动作」施加的约束。
+CONFIRM_ITEMS = 6
+MIN_CONFIRM_CHARS = 8
+HOLLOW_WORDS_RE = re.compile(
+    r"已?(?:完成|检查|核对|确认|复核|核查|处理|做完|校验|验证|复查)|"
+    r"没有?问题|无问题|正常|通过|符合要求|全部正确|都对|结果|"
+    r"本项|该项|此项|以上|如下|"
+    r"ok|okay|done|pass|yes|good|fine|n/?a", re.I)
+NON_CONTENT_RE = re.compile(r"[\s\W_]+", re.U)
+
+# 剔完空洞词和标点之后的实质字数门槛。
+SUBSTANTIVE_MIN = 4
+
+
+def substantive_len(body: str) -> int:
+    """剔掉空洞词与标点后剩下的实质字符数。"""
+    return len(NON_CONTENT_RE.sub("", HOLLOW_WORDS_RE.sub("", body)))
+
+
+# 编号切分。分两步做，因为两类写法的歧义程度不同：
+#   `N=` 最明确，允许出现在行内（模型写单行 shell 命令时就是这样），
+#        所以先把「空白 + N=」归一化成换行；
+#   `N:` `N.` `N、` 有歧义（正文里可能出现「共 3、4 月」「见 2.」），
+#        只在行首 / 换行 / `|` 之后才认。
+CONFIRM_INLINE_RE = re.compile(r"(?<=\s)([1-9])\s*=")
+CONFIRM_SPLIT_RE = re.compile(r"(?:^|[\n|])\s*([1-9])\s*[=:：.、]\s*")
+
+
+# 回执文件的编码嗅探表。BOM 是自描述的，命中就照它解，不必猜。
+# 顺序有讲究：UTF-32LE 的 BOM 是 FF FE 00 00，前两字节与 UTF-16LE 的 FF FE 相同，
+# 所以必须先判 32 位、后判 16 位，否则 UTF-32LE 会被误认成 UTF-16LE。
+CONFIRM_BOMS = (
+    (codecs.BOM_UTF8, "utf-8-sig"),
+    (codecs.BOM_UTF32_LE, "utf-32"),
+    (codecs.BOM_UTF32_BE, "utf-32"),
+    (codecs.BOM_UTF16_LE, "utf-16"),
+    (codecs.BOM_UTF16_BE, "utf-16"),
+)
+# 无 BOM 时的回退链。utf-8 先试：它结构严格，中文 GBK 字节序列几乎不可能同时是
+# 合法 utf-8，所以「utf-8 成功」基本可信。gbk 放最后兜底 —— 它几乎能解开任意字节，
+# 放前面会把 utf-8 文件解成乱码。
+CONFIRM_FALLBACK_ENCODINGS = ("utf-8", "gbk")
+
+
+def decode_confirm(data: bytes) -> str | None:
+    """按编码嗅探把回执文件解成文本；认不出来返回 None。
+
+    回执文件是调用方在自己机器上现写的，编码不由我们决定：Out-File 默认 UTF-16
+    LE + BOM（见 ref-windows-compat 硬规则 9），中文 Windows 记事本存「ANSI」是
+    GBK，Write 工具写 UTF-8、有时带 BOM。固定一种编码会在其余几种上抛
+    UnicodeDecodeError —— 它是 ValueError 而非 OSError 的子类，read_confirm 的
+    错误分支接不住，会变成裸 traceback。
+    """
+    for bom, enc in CONFIRM_BOMS:
+        if data.startswith(bom):
+            try:
+                return data.decode(enc)
+            except UnicodeDecodeError:
+                break        # BOM 对但内容坏了，别再拿回退链去凑一个乱码结果
+    else:
+        for enc in CONFIRM_FALLBACK_ENCODINGS:
+            try:
+                return data.decode(enc)
+            except UnicodeDecodeError:
+                continue
+    return None
+
+
+def read_confirm(raw: str | None) -> tuple[str | None, str | None]:
+    """取回执正文：`@路径` 从文件读，其余原样返回。"""
+    if raw is None or not raw.startswith("@"):
+        return raw, None
+    path = raw[1:].strip().strip("\"'")
+    try:
+        with open(path, "rb") as fh:
+            data = fh.read()
+    except OSError as exc:
+        return "", (f"回执文件读不到：{path}（{exc.strerror or exc}）"
+                    "　→ 确认路径相对当前目录、文件已写入；"
+                    "也可以把 6 条结论直接作为 --confirm 的值传入")
+    text = decode_confirm(data)
+    if text is None:
+        return "", (f"回执文件的编码认不出来：{path}"
+                    "（已试 UTF-8 / UTF-16 / UTF-32 / GBK）"
+                    "　→ 存成 UTF-8 再重跑")
+    return text.replace("\r\n", "\n").replace("\r", "\n"), None
+
+
+def parse_confirm(raw: str) -> tuple[dict[int, str], list[str]]:
+    """解析 --confirm 回执，返回 (编号 -> 结论, 不合格原因列表)。
+
+    只校验**形式**：编号齐全、每条有具体内容。内容真伪工具判不了，
+    也不该假装能判 —— 那属于调用方的责任，回执的作用是让它无法静默跳过。
+    """
+    items: dict[int, str] = {}
+    # 先把行内的 `N=` 提成独立行，统一走行首匹配
+    norm = CONFIRM_INLINE_RE.sub(lambda m: f"\n{m.group(1)}=", "\n" + (raw or ""))
+    parts = CONFIRM_SPLIT_RE.split(norm)
+    # split 后形如 ['', '1', '结论一', '2', '结论二', ...]
+    for i in range(1, len(parts) - 1, 2):
+        try:
+            no = int(parts[i])
+        except ValueError:
+            continue
+        body = (parts[i + 1] or "").strip().strip('"\'').strip()
+        if no in items:                 # 同一编号写了两次，接上去而不是覆盖
+            items[no] = f"{items[no]} {body}".strip()
+        else:
+            items[no] = body
+
+    problems: list[str] = []
+    missing = [n for n in range(1, CONFIRM_ITEMS + 1) if n not in items]
+    if missing:
+        problems.append("缺少第 " + "、".join(str(n) for n in missing) + " 条的结论")
+    for no in sorted(items):
+        if no > CONFIRM_ITEMS:
+            problems.append(f"第 {no} 条不在清单范围（清单共 {CONFIRM_ITEMS} 条）")
+            continue
+        body = items[no]
+        if not body:
+            problems.append(f"第 {no} 条为空")
+        elif substantive_len(body) < SUBSTANTIVE_MIN:
+            problems.append(f"第 {no} 条通篇是空话（「{body}」）—— "
+                            "要写清核了什么范围、用什么口径、得到什么数")
+        elif len(re.sub(r"\s", "", body)) < MIN_CONFIRM_CHARS:
+            problems.append(f"第 {no} 条过短（「{body}」）—— 看不出实际做了什么")
+    return items, problems
+
+
 
 # ────────────────────────── 输出 ──────────────────────────
 
@@ -922,8 +1221,14 @@ def hr(title: str, width: int = 46) -> str:
     return f"── {title} " + "─" * max(2, width - render_units(title))
 
 
-def render(wb: dict, findings: list, counts: list[str],
-           unread: list[str], unchecked: list[str], notices: list[str]) -> str:
+def render(wb: dict, findings: list, counts: list,
+           unread: list[str], unchecked: list[str], notices: list[str],
+           confirm_raw: str | None = None,
+           confirm_items: dict[int, str] | None = None,
+           confirm_problems: list[str] | None = None) -> str:
+    """将规则发现、覆盖缺口和自查回执渲染为最终检查报告。"""
+    confirm_items = confirm_items or {}
+    confirm_problems = confirm_problems or []
     head = [f"交付前自检   {wb['loc'].get('url') or wb['loc'].get('spreadsheet_token')}",
             f"revision {wb['revision']}   " + "   ".join(
                 f"{s['name']} ({s['rows']}×{s['cols']})" for s in wb["sheets"][:6]),
@@ -985,24 +1290,45 @@ def render(wb: dict, findings: list, counts: list[str],
     out.append(hr("交付前自查（逐条回答，不要跳过）"))
     out.append(CHECKLIST)
 
-    # 三态结论。语义收紧：只有**确定性错误**才算 DEFECTS，事实档不参与定性。
-    # PASS 的措辞必须不含任何令人安心的成分 —— 实测有 case 拿到 PASS 后原话
-    # 「self-check passed, let me just deliver it」，取消了它上一步已经决定要做的
-    # 回读，而那张表的原有数据实际已被整体覆盖。旧措辞虽然也写了「无法判定」，
+    # 回执区。没带回执时把「怎么回执」贴出来，让下一步动作是明确的；
+    # 带了但不合格时只报缺哪条，不重复贴格式（避免输出膨胀）。
+    if confirm_raw is None:
+        out.append("")
+        out.append(CONFIRM_HOWTO)
+    elif confirm_problems:
+        out.append("")
+        out.append(hr("自查回执不合格"))
+        out.extend(f"✗ {p}" for p in confirm_problems)
+        out.append("  → 把缺的那几条补成「做了什么 + 结果是什么」，再重跑。")
+    else:
+        out.append("")
+        out.append(hr("已收到自查回执"))
+        for no in sorted(confirm_items):
+            out.append(f"{no}. {confirm_items[no]}")
+        out.append("  → 本工具只校验了形式（编号齐全、有具体内容），"
+                   "结论的真伪由你负责。把这份回执写进交付说明。")
+
+    # 四态结论。
+    #
+    # 语义收紧的历史：只有**确定性错误**才算 DEFECTS，事实档不参与定性。
+    # 通过信号的措辞必须不含任何令人安心的成分 —— 实测有 case 拿到旧的 CHECK_PASS
+    # 后原话「self-check passed, let me just deliver it」，取消了它上一步已经决定
+    # 要做的回读，而那张表的原有数据实际已被整体覆盖。旧措辞虽然也写了「无法判定」，
     # 但结论句先说了「没发现问题」，调用方只读了前半句。
     #
-    # 分支顺序：asserts 必须排在 unread/unchecked 之前判。旧版是 `if incomplete:
-    # ... elif asserts:`，于是「有确定性错误」这个最强信号会被「没读全」吃掉 ——
-    # 一张 5101 行的表（MAX_ROWS 截断 → unread 非空）即使扫出公式错误，结论句也
-    # 只说「部分数据没读全」，而 L861-864 已经论证了调用方只读结论句前半句。
-    # 「没盖到」的信息不丢，改成挂在 DEFECTS 后面一起说。
+    # 规则层结论、当前分支的覆盖状态，以及 --confirm 回执共同决定最终退出信号。
     tail = ""
     if facts:
         tail = f" 另有「结构特征」{len(facts)} 条需你逐条判断，判完才算过。"
-
     blind = ([f"部分数据没读全（{len(unread)} 处）"] if unread else []) + \
             ([f"部分检查没跑成（{len(unchecked)} 处）"] if unchecked else [])
     blind_txt = "、".join(blind)
+    confirmed = confirm_raw is not None and not confirm_problems
+
+    # 结论句单独空一行：它前面紧挨着的是 CONFIRM_HOWTO 或回执清单这类长段落，
+    # 不空行会让 CHECK_* 这个状态标记粘在正文末尾。调用方是靠它判断该不该交付的，
+    # 而调用说明里已不再提二阶段流程，这份 stdout 是它唯一的发现路径。
+    out.append("")
 
     if asserts:
         out.append(f"CHECK_DEFECTS：{len(asserts)} 类确定性错误，先处理再交付；"
@@ -1013,14 +1339,21 @@ def render(wb: dict, findings: list, counts: list[str],
     elif blind:
         out.append(f"CHECK_INCOMPLETE：{blind_txt}，上面的结论不完整，"
                    "不能据此认为产物没问题。" + tail)
+    elif not confirmed:
+        why = ("未提供回执" if confirm_raw is None
+               else f"回执不合格：{len(confirm_problems)} 处，见上")
+        out.append(f"CHECK_RULES_ONLY（{why}）：规则扫描完成，未命中确定性错误。"
+                   "这不是可交付信号，也不代表产物没问题。"
+                   "走完上面的自查清单、带 --confirm 逐条写出结论后重跑，"
+                   "才会得到可交付信号。"
+                   "本次退出码为 4 —— 这是「还没交回执」的正常状态、不是执行失败，"
+                   "不要据此判定工具不可用或跳过自检。" + tail)
     else:
-        out.append("CHECK_PASS：规则扫描没有命中确定性错误。"
-                   "这**不是**产物没问题的证明 —— 原表是否被改坏、计算口径是否正确、"
-                   "题面要点是否覆盖，本工具都没有检查、也无法检查。"
-                   "交付前必须自己走完上面的自查清单，"
-                   "第 1、3 条要有实际的复算和逐项打勾动作，不能因为本工具通过就跳过。"
-                   + tail)
+        out.append("CHECK_OK：规则层无确定性错误，且已收到 6 条自查回执。"
+                   "注意回执内容本工具无法核实 —— "
+                   "其中任何一条你实际没做，这个信号就是无效的。" + tail)
     return "\n".join(out)
+
 
 
 def main() -> int:
@@ -1028,17 +1361,37 @@ def main() -> int:
     ap.add_argument("target", help="表格 URL 或 spreadsheet token")
     ap.add_argument("--max-findings", type=int, default=MAX_FINDINGS,
                     help=f"高置信度发现的条数上限（默认 {MAX_FINDINGS}）")
+    ap.add_argument("--confirm", default=None,
+                    help="自查清单回执：逐条写出 6 条的结论，形如 "
+                         "\"1=... 2=... 3=... 4=... 5=... 6=...\"。"
+                         "也可传 \"@./confirm.txt\" 从文件读（Windows 必须这样传）。"
+                         "不带本参数不会得到可交付信号（退出码非零）。")
     args = ap.parse_args()
+
+    confirm_raw, confirm_read_error = read_confirm(args.confirm)
+    confirm_items: dict[int, str] = {}
+    confirm_problems: list[str] = []
+    if confirm_read_error:
+        confirm_problems = [confirm_read_error]
+    elif confirm_raw is not None:
+        confirm_items, confirm_problems = parse_confirm(confirm_raw)
 
     try:
         wb, unread = read_workbook(args.target)
     except LarkCliError as exc:
         # 注意 print 到 stdout：skill 文档教模型「只读 stdout」，
         # 若把这段落在 stderr，模型看不到「自检没跑成」，会当成「没问题」。
-        print(f"交付前自检无法完成：{exc}\n\n"
+        reason = transient_reason(exc)
+        kind = (f"取数环节的瞬时故障（{reason}），已按退避重试仍未成功"
+                if reason else "非瞬时错误，重试无用")
+        nxt = ("请隔几秒整体重跑一次本工具；连续失败再按下面的清单人工核。"
+               if reason else
+               "先确认表格 URL、权限和 sheet 名是否正确；确认无误再按下面的清单人工核。")
+        print(f"交付前自检无法完成：{explain_cli_error(exc)}\n"
+              f"原因分类：{kind}\n\n"
               f"{hr('交付前自查（工具不可用，请逐条自己核）')}\n{CHECKLIST}\n\n"
               "CHECK_INCOMPLETE：读表失败，本次没有任何规则结论，"
-              "不能据此认为产物没问题。请重试一次；仍失败就按上面的清单人工核并在交付说明写明。")
+              f"不能据此认为产物没问题。{nxt}")
         print(f"[stderr] {exc}", file=sys.stderr)
         return 2
 
@@ -1060,15 +1413,15 @@ def main() -> int:
         # 旧版把它塞进 incomplete，效果是「发现越多，DEFECTS 结论越会消失」。
         notices.append(f"另有 {rest} 类低优先发现未展示（--max-findings 可放宽）")
 
-    # survey / render 也要兜底：整个工具的价值就是往 stdout 写出结论，
-    # 这两步一旦抛异常，traceback 只到 stderr，模型读到的 stdout 是空的。
+    # survey / render 也要兜底：确保失败仍向 stdout 给出可执行结论。
     try:
         counts = survey(wb)
     except Exception as exc:
         counts = []
         unchecked.append(f"低置信度普查（survey）执行失败：{str(exc)[:80]}")
     try:
-        print(render(wb, findings, counts, unread, unchecked, notices))
+        print(render(wb, findings, counts, unread, unchecked, notices,
+                     confirm_raw, confirm_items, confirm_problems))
     except Exception as exc:
         print(f"交付前自检的结果渲染失败：{str(exc)[:200]}\n\n"
               f"{hr('交付前自查（逐条回答，不要跳过）')}\n{CHECKLIST}\n\n"
@@ -1076,7 +1429,16 @@ def main() -> int:
               "不能据此认为产物没问题。请重跑一次。")
         print(f"[stderr] render failed: {exc}", file=sys.stderr)
         return 2
+
+    asserts = [f for f in findings if f[0] in ASSERT_LABELS]
+    if asserts:
+        return 3
+    if unread or unchecked:
+        return 2
+    if confirm_raw is None or confirm_problems:
+        return 4
     return 0
+
 
 
 if __name__ == "__main__":
