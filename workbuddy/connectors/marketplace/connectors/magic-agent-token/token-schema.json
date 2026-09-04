@@ -1,0 +1,33 @@
+{
+    "title": "腾讯企点营销云对接配置",
+    "title_en": "Tencent Qidian Marketing Cloud Configuration",
+    "description": "连接你所在企业的腾讯企点营销云，用于策划营销活动、圈选人群、选品配券、生成文案物料与复盘活动效果。企业密钥与业务空间 ID 仅保存在本机 ~/.workbuddy 下，不会上传到 WorkBuddy 服务端。",
+    "description_en": "Connect your company's Tencent Qidian Marketing Cloud to plan campaigns, segment audiences, pick products and offers, generate content, and review campaign performance. The corporation secret key and business space ID are stored locally in ~/.workbuddy only and are never uploaded to WorkBuddy servers.",
+    "docUrl": "https://tmc.qidian.qq.com/base/console/doc/33849?version=20260902&lang=zh_CN",
+    "docLabel": "如何获取企业密钥与业务空间 ID？",
+    "docLabel_en": "How to get the SecretKey and Business Space ID?",
+    "fields": [
+        {
+            "key": "MAGIC_AGENT_SECRET_KEY",
+            "label": "企业密钥 SecretKey",
+            "label_en": "Corporation SecretKey",
+            "placeholder": "在腾讯企点开放平台 → 企业密钥管理中申请，形如 f0736c13-74f2-...",
+            "placeholder_en": "Apply in Tencent Qidian Open Platform → Corporation Secret, e.g. f0736c13-74f2-...",
+            "type": "password",
+            "required": true,
+            "description": "腾讯企点企业密钥的 SecretKey，营销云用它反查企业身份。请使用企业管理员分配给你的密钥，泄露后请在企点侧立即作废并重新生成。",
+            "description_en": "SecretKey of your Tencent Qidian corporation credential; Marketing Cloud resolves your corporation identity from it. Use the key assigned by your admin, and revoke plus regenerate it in Qidian if it leaks."
+        },
+        {
+            "key": "MAGIC_AGENT_BIZ_ID",
+            "label": "业务空间 ID",
+            "label_en": "Business Space ID",
+            "placeholder": "在营销云控制台的业务空间设置中查看，形如 100820260427xxxx",
+            "placeholder_en": "Find it in the Marketing Cloud console → business space settings, e.g. 100820260427xxxx",
+            "type": "text",
+            "required": true,
+            "description": "指定本次对话使用哪个业务空间的人群、商品、权益与渠道数据。该空间必须属于上面密钥所属的企业，否则连接会返回 403。",
+            "description_en": "Selects which business space provides audience, product, offer, and channel data. The space must belong to the corporation that owns the key above, otherwise the connection returns 403."
+        }
+    ]
+}

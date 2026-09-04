@@ -2107,20 +2107,22 @@
       "source": "youshu-bd-mate",
       "type": "mcp",
       "minWorkbuddyVersion": "4.24.0",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "examples_zh": [
-        "帮我生成一份XXX公司的访前报告",
-        "我要去拜访XXX公司，帮我生成一套营销话术",
-        "查一下XX公司的基本情况",
-        "查一下XXX公司的股权结构和实际控制人",
-        "为XXX公司匹配适合的金融产品"
+        "帮我出一份深度求索的访前客情报告",
+        "下周要拜访云深处科技，帮我生成一份访前一页纸",
+        "准备给游戏科学打电话外呼，帮我出一套营销话术",
+        "分析一下群核科技所在空间智能赛道的竞争格局",
+        "查一下宇树科技创始人王兴兴的关键人画像和拜访触达建议",
+        "为强脑科技匹配前 5 类对公金融产品"
       ],
       "examples_en": [
-        "Generate a pre-visit report for XXX Company",
-        "I'm visiting XXX Company, help me generate a marketing script",
-        "Look up the basic info of XX Company",
-        "Check the equity structure and ultimate controller of XXX Company",
-        "Match suitable financial products for XXX Company"
+        "Generate a pre-visit customer intelligence report for DeepSeek",
+        "I'm visiting Deep Robotics next week, help me prepare a one-page pre-visit briefing",
+        "I'm about to make outbound calls to Game Science, help me draft a sales script",
+        "Analyze the competitive landscape of the spatial intelligence sector where Manycore operates",
+        "Look up Wang Xingxing, founder of Unitree, and give me a key-person profile with outreach suggestions",
+        "Match the top 5 corporate financial products for BrainCo"
       ],
       "visible_in": [
         "internal",
@@ -3216,9 +3218,9 @@
       "id": "proboost",
       "name": "OpenBoost 跨境数据",
       "name_en": "OpenBoost Cross-border Data",
-      "description": "Supports cross-border e-commerce scenarios including market research, product selection analysis, competitive monitoring, VOC insights, keyword analysis, listing generation, and more.",
-      "description_zh": "支持市场研究、选品分析、竞对监控、VOC洞察、关键词分析、listing生成等跨境电商应用场景",
-      "description_en": "Supports cross-border e-commerce scenarios including market research, product selection analysis, competitive monitoring, VOC insights, keyword analysis, listing generation, and more.",
+      "description": "OpenBoost cross-border data connector: one-stop MCP toolkit for TikTok creator/product/video analytics, Amazon product/market research, and global patent search.",
+      "description_zh": "OpenBoost 跨境数据连接器：TikTok 达人/商品/视频分析、Amazon 选品与市场分析、全球专利检索一站式 MCP 工具集。",
+      "description_en": "OpenBoost cross-border data connector: one-stop MCP toolkit for TikTok creator/product/video analytics, Amazon product/market research, and global patent search.",
       "source": "proboost",
       "type": "mcp",
       "examples_zh": [
@@ -4763,6 +4765,31 @@
       ]
     },
     {
+      "id": "myunker-mcp",
+      "name": "明源云客",
+      "name_en": "Myunker",
+      "description": "Ming Yuan Cloud Customer (Myunker) AI service platform for real estate marketing: unified customer, sales-site, channel and video-marketing data with AI content creation, live-stream lead generation, and deal-closing insights.",
+      "description_zh": "明源云客 AI 智能服务平台，以房地产营销垂直大模型为底座，统一整合客户、案场、渠道、视频营销全线产品数据，打通 AI 内容创作、直播获客、线索承接至成交全业务闭环。",
+      "description_en": "Ming Yuan Cloud Customer (Myunker) AI service platform for real estate marketing: unified customer, sales-site, channel and video-marketing data with AI content creation, live-stream lead generation, and deal-closing insights.",
+      "source": "myunker-mcp",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "我想看看最近一周的顾问接待数据。",
+        "帮我生成最近三个月来访客户的高频词。"
+      ],
+      "examples_en": [
+        "I'd like to see the consultant reception data for the past week.",
+        "Help me generate the most frequently used keywords among visiting customers over the past three months."
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
       "id": "iyiou-connector",
       "name": "亿欧数据MCP",
       "name_en": "YiouData MCP",
@@ -4847,6 +4874,219 @@
         "iOA",
         "cloudhosted",
         "selfhosted"
+      ]
+    },
+    {
+      "id": "laiye-adp",
+      "name": "来也智能文档专家",
+      "name_zh": "来也智能文档专家",
+      "name_en": "Laiye Agentic Document Expert",
+      "description": "Let your Agent understand and process any business documents directly. Upload invoices, purchase orders, contracts, and other files; ADP recognizes the content, extracts key information, and returns structured results. It supports 30+ types of Chinese invoices with authenticity verification, multilingual international invoices, purchase orders, and 11 common identity documents, covering PDF, images, Word, Excel, and OFD formats.",
+      "description_zh": "上传发票、订单、合同等文件即可完成内容识别、关键信息抽取并输出结构化结果。支持中国 30+ 种票据（含验真）、海外多语言发票、采购订单及 11 种常用证件，覆盖 PDF、图片、Word、Excel、OFD 等格式。",
+      "description_en": "Let your Agent understand and process any business documents directly. Upload invoices, purchase orders, contracts, and other files; ADP recognizes the content, extracts key information, and returns structured results. It supports 30+ types of Chinese invoices with authenticity verification, multilingual international invoices, purchase orders, and 11 common identity documents, covering PDF, images, Word, Excel, and OFD formats.",
+      "source": "laiye-adp",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我识别这张增值税发票，抽取发票号码、开票日期、金额和税号",
+        "解析这份 PDF 合同，提取完整的文本内容和表格",
+        "识别这张身份证，提取姓名、身份证号等字段",
+        "批量抽取这批海外发票的供应商、金额和税费信息",
+        "帮我解析这份财务报表，抽取核心数据并进行总结"
+      ],
+      "examples_en": [
+        "Recognize this VAT invoice and extract the invoice number, issue date, amount, and tax ID",
+        "Parse this PDF contract and extract the full text content and tables",
+        "Recognize this ID card and extract the name, ID number, and other fields",
+        "Batch extract supplier, amount, and tax information from these international invoices",
+        "Parse this financial statement, extract the key data, and provide a summary"
+      ]
+    },
+    {
+      "id": "tuniu-travel",
+      "name": "途牛旅行",
+      "name_zh": "途牛旅行",
+      "name_en": "Tuniu Travel",
+      "description": "Use the tuniu CLI to access Tuniu Open Platform travel services, including flights, hotels, attraction tickets, trains, cruises, holiday products, and package booking.",
+      "description_zh": "通过 tuniu CLI 调用途牛开放平台旅行服务，支持机票、酒店、门票、火车票、邮轮、度假产品和打包订。",
+      "description_en": "Use the tuniu CLI to access Tuniu Open Platform travel services, including flights, hotels, attraction tickets, trains, cruises, holiday products, and package booking.",
+      "source": "tuniu-travel",
+      "type": "cli",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我查南京中山陵门票",
+        "查一下明天北京到上海的机票",
+        "帮我找三亚 9 月 1 日入住、9 月 3 日离店的酒店",
+        "帮我推荐国庆去新疆的度假产品",
+        "帮我搭一套上海到三亚的机酒方案"
+      ],
+      "examples_en": [
+        "Find tickets for Sun Yat-sen Mausoleum in Nanjing",
+        "Search flights from Beijing to Shanghai tomorrow",
+        "Find hotels in Sanya from September 1 to September 3",
+        "Recommend a holiday product for Xinjiang in October",
+        "Create a flight and hotel package from Shanghai to Sanya"
+      ]
+    },
+    {
+      "id": "xhcj-mcp-announcements-news-policy",
+      "name": "新华财经资讯MCP",
+      "name_zh": "新华财经资讯MCP",
+      "name_en": "Xinhua Finance Announcements, News & Policy MCP",
+      "description": "Announcements, news and policy data, including stock news, sector news, hot topics, news search, bulk commodity flashes, forex flashes, stock flashes, announcement keyword search, and policy vector search.",
+      "description_zh": "公告、新闻、政策数据，包含股票资讯、板块资讯、热点新闻、资讯搜索、大宗快讯、外汇快讯、股票快讯、公告关键词检索、政策向量检索等",
+      "description_en": "Announcements, news and policy data, including stock news, sector news, hot topics, news search, bulk commodity flashes, forex flashes, stock flashes, announcement keyword search, and policy vector search.",
+      "source": "xhcj-mcp-announcements-news-policy",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询最近一周关于新能源汽车板块的热点新闻",
+        "检索某上市公司最新发布的股东大会公告",
+        "查找最新的国家宏观经济政策文件"
+      ],
+      "examples_en": [
+        "Find hot news about the new energy vehicle sector in the past week",
+        "Search for the latest shareholder meeting announcement of a listed company",
+        "Look up the latest national macroeconomic policy documents"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"      ]
+    },
+    {
+      "id": "xrxs",
+      "name": "薪人薪事",
+      "name_zh": "薪人薪事",
+      "name_en": "xrxs",
+      "description": "Manage XRXS HR SaaS via CLI.",
+      "description_zh": "通过自然语言管理薪人薪事：覆盖组织员工、考勤假期、招聘人才、绩效人效、薪酬个税等全模块 HR 场景，让 AI 助手成为懂业务的 HR 虚拟员工。",
+      "description_en": "Manage XRXS HR SaaS with natural language. Covers org & employee, attendance & leave, recruitment, performance, payroll and tax — turning your AI assistant into a business-savvy HR virtual employee.",
+      "source": "xrxs",
+      "type": "cli",
+      "version": "1.0.0",
+      "examples_zh": [
+        "查询本周预计入职的待入职员工是否有缺失的必填信息",
+        "检查本周预计转正员工的转正风险",
+        "检查本月预计离职员工的待处理事项",
+        "帮我查下张三的个人信息",
+        "帮我看看研发部目前有多少人，分别是什么岗位",
+        "帮我重新计算下当前考勤账套月的报表",
+        "帮我提醒下当前账套月考勤未确认的员工",
+        "帮我查询刘备的假期余额情况",
+        "帮我看看销售部目前有哪些正在招聘的职位",
+        "推荐下华东销售负责人的候选人",
+        "给刘玄德安排明天下午 3 点的现场面试，面试官是叶超前",
+        "当前进行中的考核方案都有哪些？",
+        "分析下 2026Q2 销售部季度考核结果",
+        "帮我重新计算下当前工资账套月的报表",
+        "帮我冻结当前最新账套月的工资报表",
+        "帮我发送当前工资账套月的全部工资条"
+      ],
+      "examples_en": [
+        "Check whether this week's expected new hires have any missing required information",
+        "Check the regularization risks for employees expected to be confirmed this week",
+        "Check pending to-do items for employees expected to leave this month",
+        "Query Zhang San's personal information",
+        "Show me the current headcount and roles in the R&D department",
+        "Recalculate the attendance report for the current attendance period",
+        "Remind employees who have not yet confirmed their attendance for the current period",
+        "Query Liu Bei's remaining leave balance",
+        "List the currently open positions in the sales department",
+        "Recommend candidates for the East China sales head position",
+        "Schedule a 3 PM on-site interview tomorrow for Liu Xuande with Ye Chaoqian as the interviewer",
+        "List all currently active performance appraisal schemes",
+        "Analyze the 2026 Q2 sales department quarterly performance results",
+        "Recalculate the payroll report for the current payroll period",
+        "Freeze the latest payroll report for the current period",
+        "Batch-send all pay slips for the current payroll period"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "magic-agent-token",
+      "name": "腾讯企点营销云",
+      "name_zh": "腾讯企点营销云",
+      "name_en": "Tencent Qidian Marketing Cloud",
+      "description": "Tencent Qidian Marketing Cloud: campaign planning, audience segmentation, product and offer selection, content generation, and campaign analytics",
+      "description_zh": "腾讯企点营销云：营销活动策划、人群圈选、选品配券、文案物料生成与活动复盘",
+      "description_en": "Tencent Qidian Marketing Cloud: campaign planning, audience segmentation, product and offer selection, content generation, and campaign analytics",
+      "source": "magic-agent-token",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我策划一场 618 老客复购活动",
+        "圈选近 30 天有加购未下单的人群",
+        "给这批人群选品并配一张满减券",
+        "复盘上周企微群发的转化效果"
+      ],
+      "examples_en": [
+        "Plan a 618 repurchase campaign for existing customers",
+        "Build an audience of users who added to cart but did not order in the last 30 days",
+        "Pick products for this audience and attach a discount coupon",
+        "Review last week's WeCom broadcast conversion"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "zw3d-mcp",
+      "name": "中望3D MCP",
+      "name_zh": "中望3D MCP",
+      "name_en": "ZW3D MCP",
+      "description": "用自然语言直接操作中望3D，自动创建、修改和检查可编辑的参数化零件与钣金模型。",
+      "description_zh": "用自然语言直接操作中望3D，自动创建、修改和检查可编辑的参数化零件与钣金模型。",
+      "description_en": "Directly operate ZW3D with natural language to automatically create, modify, and inspect editable parametric parts and sheet metal models.",
+      "source": "zw3d-mcp",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "帮我用中望3D画一个边长为10cm的正方体",
+        "用中望3D创建一个长120mm、宽80mm、厚10mm的矩形法兰盘：中心开一个直径40mm的通孔，四角各开一个直径8mm的安装孔",
+        "（上传工程图截图）请根据我上传的二维机械工程图，在中望3D 2027中还原为可编辑的参数化三维模型"
+      ],
+      "examples_en": [
+        "Use ZW3D to create a cube with a side length of 10 cm.​",
+        "Use ZW3D to create a rectangular flange plate measuring 120 mm long, 80 mm wide, and 10 mm thick: a Ø40 mm through hole at the center, and four Ø8 mm mounting holes, one at each corner.​",
+        "(Upload engineering drawing screenshot) Please reconstruct the uploaded 2D mechanical drawing into an editable, parametric 3D model in ZW3D 2027.​"
+      ]
+    },
+    {
+      "id": "zwcad-mcp",
+      "name": "中望CAD MCP",
+      "name_zh": "中望CAD MCP",
+      "name_en": "ZWCAD MCP",
+      "description": "用自然语言直接操作中望CAD（ZWCAD）二维平台与中望机械CAD，自动绘制、查询、标注和管理 DWG 图纸。",
+      "description_zh": "用自然语言直接操作中望CAD（ZWCAD）二维平台与中望机械CAD，自动绘制、查询、标注和管理 DWG 图纸。",
+      "description_en": "Drive ZWCAD 2D platform and ZWCAD Mechanical CAD with natural language: draw, query, annotate, and manage DWG drawings.",
+      "source": "zwcad-mcp",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.22.12",
+      "examples_zh": [
+        "在图纸原点画一条长 100 的水平直线",
+        "把图纸中所有红色圆改成蓝色，并移到新图层",
+        "在当前 DWG 中插入 A3 图框并填写标题栏",
+        "生成当前装配的零件明细表（BOM）"
+      ],
+      "examples_en": [
+        "Draw a 100-unit horizontal line from the origin",
+        "Move all red circles to a new layer and recolor them blue",
+        "Insert an A3 frame with a filled title block into the current DWG",
+        "Generate a parts list (BOM) for the current assembly"
       ]
     }
   ]

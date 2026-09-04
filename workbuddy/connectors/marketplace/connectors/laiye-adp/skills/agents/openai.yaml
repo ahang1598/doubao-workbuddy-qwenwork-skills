@@ -1,0 +1,4 @@
+interface:
+  display_name: "来也 ADP 文档处理"
+  short_description: "通过来也 ADP 上传、解析并结构化抽取票据、证件及 Office 文档"
+  default_prompt: "Use $laiye-adp-document-processing to process this document with the minimum necessary ADP tool calls and return only the requested content with traceable task details."

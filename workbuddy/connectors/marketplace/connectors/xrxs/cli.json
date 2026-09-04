@@ -1,0 +1,29 @@
+{
+  "runtime": {
+    "type": "node",
+    "version": ">=18"
+  },
+  "init": {
+    "darwin": "npm install -g xrxs-cli --allow-scripts=xrxs-cli",
+    "linux": "npm install -g xrxs-cli --allow-scripts=xrxs-cli",
+    "win32": "npm install -g xrxs-cli --allow-scripts=xrxs-cli"
+  },
+  "auth": {
+    "darwin": "xrxs-cli auth login",
+    "linux": "xrxs-cli auth login",
+    "win32": "xrxs-cli auth login"
+  },
+  "unAuth": {
+    "darwin": "xrxs-cli auth logout",
+    "linux": "xrxs-cli auth logout",
+    "win32": "xrxs-cli auth logout"
+  },
+  "status": {
+    "darwin": "xrxs-cli auth status",
+    "linux": "xrxs-cli auth status",
+    "win32": "xrxs-cli auth status"
+  },
+  "statusMatch": "profile:",
+  "authUrlDomain": "s.xinrenxinshi.com",
+  "authWaitForExit": true
+}

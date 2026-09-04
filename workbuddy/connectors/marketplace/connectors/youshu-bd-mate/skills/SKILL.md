@@ -3,7 +3,7 @@ name: "智客AI · 对公(To B)营销助手"
 description: "对公营销助手是基于企业全维数据构建的对公营销智能助手，提供从生成访前一页纸、访前客情报告、产品找客、关键人画像、营销话术及按企荐品的完整展业闭环能力。所有报告生成工具为异步模式，需配合 get_report_run 轮询获取结果。"
 description_zh: "对公营销助手是基于企业全维数据构建的对公营销智能助手，提供从生成访前一页纸、访前客情报告、产品找客、关键人画像、营销话术及按企荐品的完整展业闭环能力。所有报告生成工具为异步模式，需配合 get_report_run 轮询获取结果。"
 description_en: "The BD Mate is an intelligent corporate marketing assistant built on full-dimensional enterprise data, delivering a complete business development closed-loop from pre-visit one-pagers and customer intelligence reports to product-based customer acquisition, key-person profiling, sales scripts, and enterprise-based product recommendations. All report generation tools are asynchronous — always poll with get_report_run to retrieve results."
-version: "2.0.1"
+version: "2.0.2"
 author: "YouShu Open Platform"
 ---
 

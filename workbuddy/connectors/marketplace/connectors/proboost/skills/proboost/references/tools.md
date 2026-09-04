@@ -43,7 +43,7 @@
 | `amz_traffic_listing_page` | Listing 流量页 |
 | `amz_traffic_listing_stat` | Listing 流量统计 |
 
-## TikTok Shop（30）
+## TikTok Shop（31）
 
 | 工具 | 用途 |
 | --- | --- |
@@ -77,6 +77,7 @@
 | `tt_video_script_diy_query` | DIY 脚本 |
 | `tt_video_voice_read` | 视频评论 |
 | `tt_video_voice_summary` | 视频评论总结 |
+| `tt_hashtag_list` | 视频标签（hashtag）查询 |
 
 ## 专利（17）
 

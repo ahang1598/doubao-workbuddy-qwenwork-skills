@@ -1,0 +1,21 @@
+{
+  "title": "ADP MCP 对接配置",
+  "title_en": "ADP MCP Configuration",
+  "description": "连接您的来也 ADP 账号，用于在 WorkBuddy 中调用 ADP 的文档解析与抽取能力。API Key 仅存储在本机。",
+  "description_en": "Connect your Laiye ADP account to use ADP document parsing and extraction capabilities in WorkBuddy. The API Key is stored only on this device.",
+  "docUrl": "https://adp.laiye.com?from=getkey&utm_source=workbuddy",
+  "docLabel": "如何获取 ADP API Key？",
+  "docLabel_en": "How to get an ADP API Key?",
+  "fields": [
+    {
+      "key": "ADP_API_KEY",
+      "label": "API Key",
+      "placeholder": "在 ADP 个人设置「我的MCP」中获取",
+      "placeholder_en": "Get it from ADP Personal Settings > My MCP",
+      "type": "password",
+      "required": true,
+      "description": "用于连接您的 ADP 账号，启用文档解析、票据识别和信息抽取能力。",
+      "description_en": "Used to connect your ADP account and enable document parsing, invoice recognition, and information extraction."
+    }
+  ]
+}
