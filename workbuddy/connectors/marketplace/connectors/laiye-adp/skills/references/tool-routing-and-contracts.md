@@ -28,13 +28,13 @@
 
 | 工具 | 默认场景 | 当前基础费率 |
 |---|---|---:|
-| `extract_china_invoice` | 中国地区 30+ 常见票据、可验真票种 | 0.8 积分/页 |
+| `extract_china_invoice` | 中国地区 30+ 常见票据、可验真票种 | 抽取 0.8 积分/页；验真成功另收 0.5 积分/次 |
 | `extract_global_invoice` | 普通海外发票/收据，需标准解析链或 OCR 中间结果 | 1.5 积分/页 |
 | `extract_global_invoice_fast` | 海外发票/收据低延迟或批量吞吐，不需要 OCR 结果 | 1.0 积分/页 |
 | `extract_sea_invoice_fast` | 东南亚发票/收据，尤其是 WHT 预扣税字段 | 1.0 积分/页 |
 | `extract_purchase_order` | 采购订单；销售订单按工具描述尝试 | 1.5 积分/页 |
 
-不要把独立“发票验真”当作 MCP 工具：官方 OpenAPI 有独立接口，但 v0.1.4 未注册该工具。`extract_china_invoice` 只可报告其响应实际返回的验真字段和状态。
+不要把独立“发票验真”当作 MCP 工具：官方 OpenAPI 有独立接口，但 v0.1.4 未注册该工具；这不代表 SaaS 验真免费。`extract_china_invoice` 只可报告其响应实际返回的验真字段和状态。同一份多页发票仅需验真 1 次，多份独立发票分别计次；完整计费规则见 [积分、认证与服务限制](billing-auth-and-limits.md)。
 
 标准海外与高速海外之间按需求选择：
 

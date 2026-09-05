@@ -1180,6 +1180,7 @@
       "description_en": "Tongcheng Chengxin supports natural-language travel search for flights, trains, hotels, attractions, vacation products and itinerary planning.",
       "source": "tc-chengxin",
       "type": "cli",
+      "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "北京到上海的机票，明天出发",
         "上海到北京的特价机票",
@@ -3501,10 +3502,10 @@
       "id": "jiandaoyun",
       "name": "简道云",
       "name_zh": "简道云",
-      "name_en": "Jiandaoyun",
-      "description": "Query, organize, and enter data in Jiandaoyun. Use natural language to find form records, summarize business progress, generate analyses, and create new records after confirmation.",
-      "description_zh": "查询、整理和填写简道云数据。用自然语言查找表单记录、汇总业务进展、生成分析，并在确认后创建新记录。",
-      "description_en": "Query, organize, and enter data in Jiandaoyun. Use natural language to find form records, summarize business progress, generate analyses, and create new records after confirmation.",
+      "name_en": "JianDaoYun",
+      "description": "Query, organize, and enter data in JianDaoYun. Use natural language to find form records, summarize business progress, generate analyses, and create new records after confirmation.",
+      "description_zh": "简道云零代码平台连接器，自然语言对话创建企业应用、沉淀表单、数据、处理流程审批，查询企业业务数据进行深度分析，帮助企业快速基于真实业务数据进行AI改造",
+      "description_en": "Jiandaoyun’s no-code platform connector enables users to create enterprise applications through natural-language conversations, build and manage forms and data, process workflow approvals, and query and deeply analyze business data—helping enterprises rapidly achieve AI transformation based on real business data.",
       "source": "jiandaoyun",
       "type": "mcp",
       "version": "1.0.0",
@@ -3817,9 +3818,9 @@
       "id": "fenbeitong",
       "name": "分贝通",
       "name_en": "Fenbeitong",
-      "description": "View the current Fenbeitong account and company, switch companies; search business-travel hotels, flights and trains; plan trips; manage applications and orders; check travel policies; collect invoices; handle reimbursements; and get customer support.",
-      "description_zh": "用自然语言查看当前分贝通账号和所属企业、切换企业，查询酒店、机票和火车票、规划行程，管理申请单与商旅订单，查询消费规则，归集发票与处理报销，并获取客服问答和问题处置支持。",
-      "description_en": "View the current Fenbeitong account and company, switch companies; search business-travel hotels, flights and trains; plan trips; manage applications and orders; check travel policies; collect invoices; handle reimbursements; and get customer support.",
+      "description": "View and switch Fenbeitong account and company context; search and manage business travel; check policies, invoices and reimbursements; analyze consumption insights, compliance and cost-reduction opportunities; and get customer support.",
+      "description_zh": "用自然语言查看和切换分贝通账号与企业，查询和管理企业差旅、消费规则、发票与报销，分析消费洞察、合规风险和降本机会，并获取客服支持。",
+      "description_en": "View and switch Fenbeitong account and company context; search and manage business travel; check policies, invoices and reimbursements; analyze consumption insights, compliance and cost-reduction opportunities; and get customer support.",
       "source": "fenbeitong",
       "type": "mcp",
       "visible_in": [
@@ -3836,7 +3837,10 @@
         "帮我创建一个下周去上海的出差申请单，先预览草稿",
         "查询我本月的商旅订单和适用的消费规则",
         "把已归集的发票生成费用草稿并查看报销单",
-        "我在分贝通遇到改签问题，帮我咨询客服或处理"
+        "我在分贝通遇到改签问题，帮我咨询客服或处理",
+        "分析一下我们公司今年的消费趋势和品类结构",
+        "看下上个月酒店订单有哪些合规风险",
+        "分析本季度机票还有多少降本空间"
       ],
       "examples_en": [
         "Find hotels near Guomao, Beijing for tomorrow under 500 CNY",
@@ -3846,7 +3850,10 @@
         "Create a business-trip application for Shanghai next week and show me the draft preview",
         "Show my business-travel orders from this month and the applicable travel policies",
         "Turn my collected invoices into an expense draft and check my reimbursement forms",
-        "I have a ticket-change problem in Fenbeitong; ask customer support or help resolve it"
+        "I have a ticket-change problem in Fenbeitong; ask customer support or help resolve it",
+        "Analyze our company's spending trends and category mix this year",
+        "Identify compliance risks in last month's hotel orders",
+        "Analyze potential flight cost savings for this quarter"
       ]
     },
     {
@@ -4039,15 +4046,16 @@
     },
     {
       "id": "agent-earth",
-      "name": "AgentEarth",
-      "name_en": "AgentEarth",
-      "description": "AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。",
-      "description_zh": "AgentEarth 是 AI 助手调用全球专家级工具的统一平台。聚合 1400+ 专业 API，覆盖实时金融行情、电商与社媒数据、AI 生图与视频生成、学术论文与专利、地图与出行等真实业务场景。一次接入、自然语言调用。",
-      "description_en": "AgentEarth is the unified platform for AI assistants to access 1,400+ expert-grade APIs worldwide — real-time finance, e-commerce & social data, AI image/video generation, academic papers & patents, maps and travel, and more. Connect once and call everything in natural language.",
+      "name": "AgentEarth 金融电商社媒工具集",
+      "name_zh": "AgentEarth 金融电商社媒工具集",
+      "name_en": "AgentEarth: Finance, E‑commerce & Social Media Toolkit",
+      "description": "专业金融股票行情、电商社媒数据、内容生成、搜索抓取、学术论文与专利信息、地图信息等。一次注册便可调用不同领域专业数据，无需逐一配置各类服务。目前数据 API 已覆盖金融市场（股票 / A股 / 美股 / 加密货币 / 外汇 / 财报基本面）、电商消费（TikTok / 抖音 / 小红书 / 天猫淘宝 / 亚马逊选品）、多模态生成（AI 图像 / 视频生成、文字渲染）、搜索与采集（SEO / 语义搜索 / 网页爬取代理）、地图与天气（高德 / 地图 / 地理编码 / 全球及本地天气）、社交媒体（X/Twitter / YouTube）及文娱（影视 / 招聘 / 新闻 / 学术）几大领域。",
+      "description_zh": "专业金融股票行情、电商社媒数据、内容生成、搜索抓取、学术论文与专利信息、地图信息等。一次注册便可调用不同领域专业数据，无需逐一配置各类服务。目前数据 API 已覆盖金融市场（股票 / A股 / 美股 / 加密货币 / 外汇 / 财报基本面）、电商消费（TikTok / 抖音 / 小红书 / 天猫淘宝 / 亚马逊选品）、多模态生成（AI 图像 / 视频生成、文字渲染）、搜索与采集（SEO / 语义搜索 / 网页爬取代理）、地图与天气（高德 / 地图 / 地理编码 / 全球及本地天气）、社交媒体（X/Twitter / YouTube）及文娱（影视 / 招聘 / 新闻 / 学术）几大领域。",
+      "description_en": "Professional financial market quotes, e-commerce and social-media data, content generation, search and scraping, academic papers and patent information, maps, and more. A single registration unlocks professional data across all these domains with no need to configure each service one by one. Data APIs currently cover financial markets (stocks / A-shares / US stocks / crypto / forex / fundamentals), e-commerce (TikTok / Douyin / Xiaohongshu / Tmall-Taobao / Amazon), multimodal generation (AI image / video generation, text rendering), search and scraping (SEO / semantic search / web crawling agents), maps and weather (Amap / geocoding / global and local weather), social media (X/Twitter / YouTube), and entertainment (film / recruitment / news / academic).",
       "source": "agent-earth",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "使用 AgentEarth 查询当前比特币价格",
@@ -4881,26 +4889,26 @@
       "name": "来也智能文档专家",
       "name_zh": "来也智能文档专家",
       "name_en": "Laiye Agentic Document Expert",
-      "description": "Let your Agent understand and process any business documents directly. Upload invoices, purchase orders, contracts, and other files; ADP recognizes the content, extracts key information, and returns structured results. It supports 30+ types of Chinese invoices with authenticity verification, multilingual international invoices, purchase orders, and 11 common identity documents, covering PDF, images, Word, Excel, and OFD formats.",
-      "description_zh": "上传发票、订单、合同等文件即可完成内容识别、关键信息抽取并输出结构化结果。支持中国 30+ 种票据（含验真）、海外多语言发票、采购订单及 11 种常用证件，覆盖 PDF、图片、Word、Excel、OFD 等格式。",
-      "description_en": "Let your Agent understand and process any business documents directly. Upload invoices, purchase orders, contracts, and other files; ADP recognizes the content, extracts key information, and returns structured results. It supports 30+ types of Chinese invoices with authenticity verification, multilingual international invoices, purchase orders, and 11 common identity documents, covering PDF, images, Word, Excel, and OFD formats.",
+      "description": "让 Agent 直接读懂并处理任何业务文档。对话上传发票、订单、合同等文件即可完成内容识别、关键信息抽取并输出结构化结果。支持中国 30+ 票据（含验真）、海外多语言发票及 11 种常用证件，覆盖 PDF、图片、Word、Excel、OFD 等格式。",
+      "description_zh": "让 Agent 直接读懂并处理任何业务文档。对话上传发票、订单、合同等文件即可完成内容识别、关键信息抽取并输出结构化结果。支持中国 30+ 票据（含验真）、海外多语言发票及 11 种常用证件，覆盖 PDF、图片、Word、Excel、OFD 等格式。",
+      "description_en": "Let your Agent understand and process any business document directly. Simply upload invoices, purchase orders, contracts, and other files in the chat to identify content, extract key information, and generate structured results. Supports 30+ types of Chinese business documents with authenticity verification, multilingual overseas invoices, and 11 commonly used identity documents across PDF, image, Word, Excel, OFD, and other formats.",
       "source": "laiye-adp",
       "type": "mcp",
       "auth_mode": "token",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
-        "帮我识别这张增值税发票，抽取发票号码、开票日期、金额和税号",
-        "解析这份 PDF 合同，提取完整的文本内容和表格",
-        "识别这张身份证，提取姓名、身份证号等字段",
-        "批量抽取这批海外发票的供应商、金额和税费信息",
-        "帮我解析这份财务报表，抽取核心数据并进行总结"
+        "用 ADP 连接器帮我抽取这份发票的信息，并查验发票真伪：https://mintcdn.com/laiye-adp/DcRsiKcD3aAARaIX/images/exp.jpg",
+        "用 ADP 连接器帮我解析这份 PDF 合同，提取完整的文本内容和表格",
+        "用 ADP 连接器帮我识别这张身份证，提取姓名、身份证号等字段",
+        "用 ADP 连接器帮我批量抽取这批海外发票的供应商、金额和税费信息",
+        "用 ADP 连接器帮我解析这份财务报表，抽取核心数据并进行总结"
       ],
       "examples_en": [
-        "Recognize this VAT invoice and extract the invoice number, issue date, amount, and tax ID",
-        "Parse this PDF contract and extract the full text content and tables",
-        "Recognize this ID card and extract the name, ID number, and other fields",
-        "Batch extract supplier, amount, and tax information from these international invoices",
-        "Parse this financial statement, extract the key data, and provide a summary"
+        "Please use the ADP Connector to extract information from this invoice and verify its authenticity: https://mintcdn.com/laiye-adp/DcRsiKcD3aAARaIX/images/exp.jpg",
+        "Please use the ADP Connector to parse this PDF contract and extract the complete text and tables",
+        "Please use the ADP Connector to identify this ID card and extract fields such as the name and ID number",
+        "Please use the ADP Connector to batch-extract supplier, amount, and tax information from these overseas invoices",
+        "Please use the ADP Connector to parse this financial statement, extract the key data, and provide a summary"
       ]
     },
     {
@@ -4956,7 +4964,36 @@
         "internal",
         "iOA",
         "cloudhosted",
-        "selfhosted"      ]
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "futu-mcp",
+      "name": "富途牛牛MCP",
+      "name_zh": "富途牛牛MCP",
+      "name_en": "Futunn MCP",
+      "description": "Futunn MCP is a stock trading and market data connector. It supports multi-market (HK, US, CN, SG, JP, CA, etc.) quote queries and order execution, providing K-lines, capital flow, option chains, financial statements, research reports, institutional holdings, economic calendar, and comprehensive financial data services.",
+      "description_zh": "富途牛牛MCP是股票交易与行情数据连接器。支持港股、美股、A股、新加坡、日本、加拿大等多市场行情查询与交易下单，提供K线、资金流向、期权链、财报、研报、机构持仓、经济日历等全方位金融数据服务。",
+      "description_en": "Futunn MCP is a stock trading and market data connector. It supports multi-market (HK, US, CN, SG, JP, CA, etc.) quote queries and order execution, providing K-lines, capital flow, option chains, financial statements, research reports, institutional holdings, economic calendar, and comprehensive financial data services.",
+      "source": "futu-mcp",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "查一下腾讯(00700)最新的股价和成交量",
+        "帮我下单买入100股苹果(AAPL)",
+        "查看我的港股持仓盈亏情况",
+        "分析一下比亚迪最近的资金流入流出情况",
+        "查看腾讯的期权链，找出下月到期的看涨期权",
+        "帮我筛选美股市场中市盈率低于20、ROE大于15%的股票"
+      ],
+      "examples_en": [
+        "Check the latest price and volume for Tencent (00700)",
+        "Place an order to buy 100 shares of AAPL",
+        "Show my HK stock portfolio P&L",
+        "Analyze recent capital inflow/outflow for BYD",
+        "Show Tencent's option chain for next month's expiry calls",
+        "Screen US stocks with PE below 20 and ROE above 15%"
+      ]
     },
     {
       "id": "xrxs",
@@ -5049,9 +5086,9 @@
       "name": "中望3D MCP",
       "name_zh": "中望3D MCP",
       "name_en": "ZW3D MCP",
-      "description": "用自然语言直接操作中望3D，自动创建、修改和检查可编辑的参数化零件与钣金模型。",
-      "description_zh": "用自然语言直接操作中望3D，自动创建、修改和检查可编辑的参数化零件与钣金模型。",
-      "description_en": "Directly operate ZW3D with natural language to automatically create, modify, and inspect editable parametric parts and sheet metal models.",
+      "description": "用自然语言驱动中望3D，让设计回归思考本身。",
+      "description_zh": "用自然语言驱动中望3D，让设计回归思考本身。",
+      "description_en": "Drive ZW3D with natural language and return design to pure ideation.",
       "source": "zw3d-mcp",
       "minWorkbuddyVersion": "5.0.0",
       "examples_zh": [
@@ -5087,6 +5124,97 @@
         "Move all red circles to a new layer and recolor them blue",
         "Insert an A3 frame with a filled title block into the current DWG",
         "Generate a parts list (BOM) for the current assembly"
+      ]
+    },
+    {
+      "id": "wscnmcp-token",
+      "name": "华尔街见闻",
+      "name_zh": "华尔街见闻",
+      "name_en": "Wall Street CN",
+      "description": "Wall Street CN MCP: query A-share surge stocks with attribution (surge reasons, related sectors, sector movement notes, auto-grouped by sector) and Wall Street CN global financial news lists and article details, covering the last two months to help you quickly grasp the day's market themes and track financial hotspots",
+      "description_zh": "华尔街见闻MCP —— 提供 A 股大涨股异动归因与华尔街见闻全球财经资讯查询能力。支持查询近两个月的大涨个股（含上涨原因、关联板块、板块异动描述，自动按板块归类），以及华尔街见闻全球资讯列表与文章详情，帮助快速抓住当日市场主线、追踪财经热点。",
+      "description_en": "Wall Street CN MCP: query A-share surge stocks with attribution (surge reasons, related sectors, sector movement notes, auto-grouped by sector) and Wall Street CN global financial news lists and article details, covering the last two months to help you quickly grasp the day's market themes and track financial hotspots",
+      "source": "wscnmcp-token",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "今天有什么重要的财经资讯",
+        "今天有哪些大涨股",
+        "帮我查一下今天宁德时代为什么大涨"
+      ],
+      "examples_en": [
+        "What are today's major financial news stories?",
+        "Which stocks surged the most today?",
+        "Why did CATL surge today?"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "aidd-saas",
+      "name": "AI尽调助手",
+      "name_zh": "AI尽调助手",
+      "name_en": "AIDD SaaS",
+      "description": "Bank corporate credit due diligence platform with intake recognition, industry analysis, company profiling, business analysis, financial analysis and report generation capabilities.",
+      "description_zh": "银行对公授信尽调智能分析平台，提供进件识别、行业分析、企业画像、经营分析、财务分析和报告生成等主要环节支持。",
+      "description_en": "Bank corporate credit due diligence platform with intake recognition, industry analysis, company profiling, business analysis, financial analysis and report generation capabilities.",
+      "source": "aidd-saas",
+      "type": "mcp",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我分析[公司名称]的财务状况",
+        "生成[公司名称]的尽调报告",
+        "识别并整理这些进件材料",
+        "分析[公司名称]所在行业的整体情况",
+        "查一下[公司名称]的企业画像"
+      ],
+      "examples_en": [
+        "Analyze the financial status of [Company Name]",
+        "Generate a due diligence report for [Company Name]",
+        "Recognize and organize these intake documents",
+        "Analyze the industry landscape for [Company Name]",
+        "Look up the company profile of [Company Name]"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "tencent-yaoxiang-bi",
+      "name": "腾讯健康药箱企业数据洞察",
+      "name_en": "Pharmacy Box BI Data",
+      "description": "Query partnered pharma brands' pharmacy-box home-page data via the Pharmacy Box BI MCP: run multi-dimension data analysis and generate insight reports to inform brand marketing and operating strategy.",
+      "description_zh": "通过药箱企业数据洞察 MCP，查询合作药企的药箱品牌主页数据，按九大维度进行数据分析与洞察，生成 HTML 数据洞察报告，指引品牌宣传及运营策略。",
+      "description_en": "Query partnered pharma brands' pharmacy-box home-page data via the Pharmacy Box BI MCP: run multi-dimension data analysis and generate insight reports to inform brand marketing and operating strategy.",
+      "source": "tencent-yaoxiang-bi",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.22.12",
+      "examples_zh": [
+        "帮我生成信尔美2026年度的数据洞察报告",
+        "查询信尔美2026年1-6月的月均扫码人数",
+        "帮我生成信尔美2026上半年「整体市场规模和药箱用户分析」的数据报告"
+      ],
+      "examples_en": [
+        "Generate Xinermei's 2026 annual data insight report",
+        "Query Xinermei's average monthly scan-user count from Jan to Jun 2026",
+        "Generate Xinermei's 1H 2026 report on market size and pharmacy-box user analysis"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
       ]
     }
   ]

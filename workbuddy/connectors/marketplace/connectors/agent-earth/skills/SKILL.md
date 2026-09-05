@@ -1,7 +1,7 @@
 ---
 name: agent-earth
 description: AgentEarth external tool marketplace skill — discover and execute 1400+ external API tools (weather, finance, search, maps, AI generation, and more) via the AgentEarth MCP connector.
-version: "1.0.0"
+version: "1.1.0"
 author: "AgentEarth"
 ---
 
@@ -59,7 +59,8 @@ geocoding tool first).
 | sort | string | - | 排序方式：`hot`（热度，默认）/ `new`（最新）/ `name`（名称） |
 
 Use when the user wants to browse or search tools by name/category rather
-than describe a task.
+than describe a task. For large catalogs, paginate with `page` and
+`page_size` (max 100 per page) instead of requesting everything at once.
 
 ### GetToolDetail - inspect one tool by exact name
 
@@ -132,10 +133,18 @@ do use `error_no == 0` as their own success signal.
 
 ## Fault Tolerance & Degradation
 
+- **Authentication failure (401/403)**: If a tool call returns an auth error,
+  the API key may be invalid, expired, or revoked. Tell the user to reconnect
+  AgentEarth from the WorkBuddy Connector page — do not ask them to paste a
+  key in chat. After reconnection, retry the call.
+- **Rate limiting (429)**: If a tool call is rate-limited, wait briefly and
+  retry once. If it persists, inform the user that they may have hit their
+  plan's rate limit and suggest trying again later or upgrading their
+  AgentEarth plan.
 - **MCP connection timeout or server unreachable**: If a tool call times out
-  or the MCP server appears unreachable, tell the user the AgentEarth service
-  may be temporarily unavailable and suggest retrying later. Do not attempt
-  to construct HTTP requests yourself.
+  (default timeout is 60s) or the MCP server appears unreachable, tell the
+  user the AgentEarth service may be temporarily unavailable and suggest
+  retrying later. Do not attempt to construct HTTP requests yourself.
 - **Empty results from `RecommendTools`/`ListTools`**: If no tools match the
   query, broaden the search by rephrasing the task description, removing
   overly specific constraints, or trying different keywords. If still no
@@ -144,6 +153,12 @@ do use `error_no == 0` as their own success signal.
 - **`isError: true` from `ExecuteTool`**: Read the error detail in
   `<tool_output>`, correct `params` accordingly, and retry. If the issue
   persists, fall back to another candidate from `RecommendTools`.
+- **Large result sets & pagination**: When `ListTools` returns many results,
+  use `page` and `page_size` to paginate (max 100 per page). For
+  `RecommendTools`, increase `limit` (up to 50) if the initial candidates
+  don't fit the task. For `ExecuteTool` results that are unexpectedly large,
+  summarize the key fields for the user rather than dumping the entire
+  payload.
 
 ## When NOT to Use AgentEarth
 
@@ -169,7 +184,7 @@ If the connector shows as disconnected or a call fails with an auth error,
 tell the user to (re)connect AgentEarth from the WorkBuddy Connector page.
 
 If the user needs a new or replacement AgentEarth API key (lost, revoked, or
-first-time setup), point them to `https://agentearth.ai` — sign in, then open the
+first-time setup), point them to `https://agentearth.ai/r/8oo9zmDn` — sign in, then open the
 avatar menu in the top-right corner and go to **API Keys** — then have them
 paste it into the WorkBuddy Connector's Token form, never into the chat.
 

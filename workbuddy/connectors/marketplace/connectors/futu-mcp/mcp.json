@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "futu-mcp": {
+      "type": "streamableHttp",
+      "url": "https://mcp.futunn.com/mcp"
+    }
+  }
+}

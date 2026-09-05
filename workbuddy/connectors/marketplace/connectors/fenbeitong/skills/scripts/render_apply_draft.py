@@ -153,25 +153,74 @@ def _load_payload(encoded: str) -> dict:
         return recovered
 
 
+def _session_lookup_report(apply_id: str) -> list:
+    """逐步检查会话记录恢复链路，返回可读诊断行。"""
+    lines = []
+    env_key = next((k for k in ("CODEBUDDY_SESSION_ID", "CLAUDE_SESSION_ID")
+                    if os.environ.get(k)), None)
+    session_id = os.environ.get(env_key, "") if env_key else ""
+    lines.append(f"[1] session 环境变量 : {env_key or '未设置(CODEBUDDY_SESSION_ID / CLAUDE_SESSION_ID 都为空)'}")
+    lines.append(f"[2] session_id       : {session_id or '(空)'}")
+
+    root = Path.home() / ".workbuddy" / "projects"
+    lines.append(f"[3] projects 目录    : {root} -> {'存在' if root.is_dir() else '不存在'}")
+    if not session_id or not root.is_dir():
+        lines.append("[!] 链路中断：拿不到 session_id 或找不到 projects 目录")
+        return lines
+
+    files = sorted(root.glob(f"**/{session_id}.jsonl"),
+                   key=lambda path: path.stat().st_mtime, reverse=True)
+    lines.append(f"[4] 匹配 transcript  : {len(files)} 个")
+    if not files:
+        lines.append("[!] 链路中断：没有与当前 session_id 同名的 .jsonl")
+    return lines
+
+
+def _load_payload_by_apply_id(apply_id: str, verbose: bool) -> dict:
+    """只凭 apply_id 从会话记录取回原始载荷，模型无需搬运 Base64。"""
+    if verbose:
+        print("\n".join("  " + line for line in _session_lookup_report(apply_id)),
+              file=sys.stderr)
+    payload = _recover_from_workbuddy_session(apply_id)
+    if payload is None:
+        raise ValueError(
+            "未能从当前 WorkBuddy 会话记录中找到该 apply_id 的草稿载荷；"
+            "请改用 --payload-base64 传入完整载荷"
+        )
+    return payload
+
+
 def _safe_edit_url(value: object) -> str:
+    """校验编辑链接。
+
+    编辑链接现在优先走短链服务（短链域名不可预知，域名/路径白名单无法覆盖），
+    因此这里只做协议校验，挡住 javascript:/data: 一类伪协议。防伪造依赖载荷的
+    integrity_sha256 与会话记录恢复这两层，域名白名单原本只是第三层冗余。
+    仍是分贝通长链时按原规则规范化 query，避免多余参数进入页面。
+    """
     url = str(value or "").strip()
     if not url:
         return ""
     parsed = urlparse(url)
-    host = (parsed.hostname or "").lower()
-    allowed_host = any(
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        return ""
+
+    host = parsed.hostname.lower()
+    is_fenbeitong_long_url = any(
         host == suffix or host.endswith("." + suffix)
         for suffix in ALLOWED_EDIT_HOST_SUFFIXES
-    )
-    if parsed.scheme != "https" or not allowed_host or parsed.path != EDIT_PATH:
-        return ""
+    ) and parsed.path == EDIT_PATH
+    if not is_fenbeitong_long_url:
+        return url                      # 短链原样放行
+
     query_items = parse_qsl(parsed.query, keep_blank_values=True)
     apply_ids = [value for key, value in query_items if key == "apply_id" and value]
     if len(apply_ids) != 1:
         return ""
     query_values = {key: value for key, value in query_items}
     normalized_items = [("apply_id", apply_ids[0])]
-    for key in ("title", "state", "token"):
+    # createTime 是工具侧加的防缓存参数，剔除它会让同一草稿的多次预览地址相同
+    for key in ("title", "state", "token", "createTime"):
         value = query_values.get(key)
         if value:
             normalized_items.append((key, value))
@@ -328,11 +377,20 @@ def _write_preview(payload: dict, output_dir: Path) -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="生成 WorkBuddy 申请单草稿预览")
-    parser.add_argument("--payload-base64", required=True)
+    # 二选一：优先 --apply-id（模型只需复制一个 id，不搬运 Base64）
+    parser.add_argument("--apply-id")
+    parser.add_argument("--payload-base64")
     parser.add_argument("--output-dir", default="outputs")
+    parser.add_argument("--diagnose", action="store_true",
+                        help="把会话记录查找过程打到 stderr，用于排查恢复链路")
     args = parser.parse_args()
+    if not args.apply_id and not args.payload_base64:
+        parser.error("需要 --apply-id 或 --payload-base64 其中之一")
     try:
-        payload = _load_payload(args.payload_base64.strip())
+        if args.apply_id:
+            payload = _load_payload_by_apply_id(args.apply_id.strip(), args.diagnose)
+        else:
+            payload = _load_payload(args.payload_base64.strip())
         target = _write_preview(payload, Path(args.output_dir))
     except (OSError, ValueError) as exc:
         print(f"生成申请单草稿预览失败：{exc}", file=sys.stderr)

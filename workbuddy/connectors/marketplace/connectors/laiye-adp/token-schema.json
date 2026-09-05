@@ -10,8 +10,8 @@
     {
       "key": "ADP_API_KEY",
       "label": "API Key",
-      "placeholder": "在 ADP 个人设置「我的MCP」中获取",
-      "placeholder_en": "Get it from ADP Personal Settings > My MCP",
+      "placeholder": "点击上方链接，登录后从弹窗复制 API Key 并粘贴至此",
+      "placeholder_en": "Click the link above, sign in, then copy the API Key from the pop-up and paste it here",
       "type": "password",
       "required": true,
       "description": "用于连接您的 ADP 账号，启用文档解析、票据识别和信息抽取能力。",

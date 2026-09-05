@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006eff"/>
+      <stop offset="100%" stop-color="#0057cc"/>
+    </linearGradient>
+  </defs>
+  <!-- 圆角渐变背景 -->
+  <rect width="24" height="24" rx="5" fill="url(#bg)"/>
+  <!-- 盾牌 + 对勾（整体缩放留白） -->
+  <g transform="translate(12 12) scale(0.8) translate(-12 -12)">
+    <!-- 盾牌轮廓（风控） -->
+    <path
+      d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"
+      fill="none"
+      stroke="#fff"
+      stroke-width="1.8"
+      stroke-linejoin="round"
+    />
+    <!-- 对勾（合规通过） -->
+    <path
+      d="M8.5 12l2.5 2.5 4.5-5"
+      fill="none"
+      stroke="#86efac"
+      stroke-width="2.4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
+
