@@ -9,10 +9,10 @@ when one of these layouts fits your slide. For layouts not listed:
 derive carefully and then verify with `view_issues.py check_overlap`
 before delivery.
 
-These layouts are theme-agnostic — they describe slot geometry, not
-visual style. Theme-specific cover layouts (e.g. magazine hairline
-frame, business navy/ivory split) live in their per-theme docs under
-`themes/`.
+These layouts describe slot geometry only, not visual style. Palette, type,
+and cover composition come from the selected or invented direction in
+[visual-directions.md](visual-directions.md), optionally informed by
+`frontend-design` when available.
 
 ## Canvas
 
@@ -64,12 +64,11 @@ E_IMAGE    = (7.65, 2.00,  5.08, 4.95)
   it as `info`. Make sure z-order puts the photo first so the title
   reads on top.
 
-## Theme covers
+## Custom cover composition
 
-Some themes specify their own cover geometry that doesn't fit the
-generic A–E layouts. Read the relevant theme doc:
-
-- **Magazine Editorial** — page-spanning hairline frame with photo
-  inside. See [themes/magazine_editorial.md](themes/magazine_editorial.md).
-- **Business Deep Blue** — left navy panel + right ivory (intentionally
-  empty). See [themes/business_deep_blue.md](themes/business_deep_blue.md).
+The generic A–E layouts cover most content slides but not distinctive cover
+pages. If the deck's direction calls for a signature composition (a split
+panel, a hairline frame, a full-bleed hero with an offset title block, etc.),
+lay it out directly with primitive shapes. Pick coordinates that keep to the
+safe margins above and pass `view_issues.py check_overlap`; invent a different
+composition when that better serves the story.

@@ -12,10 +12,11 @@ unfamiliar code.
 
 ## Coordinates and units
 
-**EMU vs inches.** All shape coords are EMU. Use `Inches(x)` /
-`Emu(x)` / `Cm(x)` helpers; never pass `0.5` directly — python-pptx
-will silently treat it as 0.5 EMU (sub-micrometer), and the shape
-will render at the origin with zero size.
+**Keep coordinate math in one unit.** Convert layout literals with `Inches()`,
+`Emu()`, or `Cm()` and do not mix converted lengths with unlabeled raw integers.
+Before saving, compare content-bearing shapes and their containers with the
+slide canvas. Retained template chrome is an internal safe zone, even on a
+blank layout.
 
 ## Text
 
@@ -30,18 +31,21 @@ every text run with a Noto / Source Han name — that causes flicker
 if the named font isn't enumerated. Only patch when a user reports
 tofu, with a font name they confirmed in the picker.
 
-**`text_frame.word_wrap = True` on every textbox.** Without it,
-long lines push out of the box and clip in the rendered output
-instead of wrapping to the next line.
+**Wrap prose, not atomic display text.** Set `text_frame.word_wrap = True` for
+prose, bullets, and descriptions. For KPI values, value-plus-unit strings,
+dates, IDs, and short labels that must stay on one line, size the text against
+usable width first. If the string cannot fit at a readable size, widen the box,
+reduce the card count, or shorten the display string; do not solve it with
+wrapping or autofit.
 
 **`charSpacing` (`spc`) ≤ 200** (= 2.0pt). Above that, PowerPoint
 renders runs as single-character vertical columns instead of a
 tracked line. Wide-tracking layouts (Swiss titles, ink-wash 节气 /
 唐诗) are where this bites.
 
-**Don't center body text.** Left-align paragraphs; center is for
-titles only. Centered body reads as decorative even when the
-content is informational.
+**Don't center body text.** Set informational prose paragraphs explicitly to
+left alignment; do not rely on a template or shape default. Center only
+deliberately short display text such as titles, KPI values, or labels.
 
 ## Shapes and components
 
@@ -87,10 +91,10 @@ text or drop the slide.
 **Don't stretch images.** `add_picture(path, x, y, width=W, height=H)`
 resizes to exactly `W × H`; if that's not the native ratio, faces
 flatten and the slide reads as broken before the title is even read.
-A theme composition slot (cover, divider, hero) also must not be
+A composition slot (cover, divider, hero) also must not be
 *inset* — leaving dead space inside it breaks the page composition.
 
-The pattern for a theme slot is size-to-cover, then crop the
+The pattern for a composition slot is size-to-cover, then crop the
 overflow so the visible rectangle equals the slot:
 
 ```python
@@ -108,7 +112,7 @@ edge. `view_issues.py check_overlap` flags "shape on image" at
 `info`; that's expected.
 
 For an in-content figure where surrounding whitespace is fine
-(a photo inside body content, not a theme slot), passing only
+(a photo inside body content, not a composition slot), passing only
 `width=` to preserve native aspect is acceptable.
 
 **Inset images sit evenly inside their frame.** Equal gaps on all
@@ -143,11 +147,16 @@ viewers. `view_issues.py` runs a WCAG check; trust it. If a
 finding fires on what looked fine in your editor, the rendered
 slide is the ground truth, not the design tool.
 
-**Every slide needs a visual element** — image, chart, icon, or a
-real component shape. A slide that's a plain title plus bullet
-text is forgettable; the viewer's eye has nothing to land on.
-Either add a visual or fold the slide's content into a neighbor.
-When you're authoring covers, section dividers, hero pages, or
-quote slides on a deck you're building (not a template you're
-filling), the visual element is specifically a real photo — see
+**Give each slide a deliberate visual hierarchy.** An image, chart,
+component, or strong typographic composition should give the viewer's eye a
+clear landing point. Do not add decoration merely to satisfy a quota; a
+purposeful statement slide can be stronger than an irrelevant image. For
+image-led covers, section dividers, hero pages, or quote slides, see
 [from_scratch.md § Fetching real photos](from_scratch.md#fetching-real-photos).
+
+## Cross-slide rhythm
+
+Let information architecture determine whether compositions repeat or vary.
+Repetition can improve comparison; variation is useful only when it improves
+comprehension. Run `deck_style.py --rhythm` on the finished deck as evidence,
+never as a quota or a requirement to add photos, cards, or components.

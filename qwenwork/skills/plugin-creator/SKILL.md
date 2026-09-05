@@ -1,6 +1,6 @@
 ---
 name: plugin-creator
-version: 1.7.2
+version: 1.8.0
 description: Create, customize, or modify QwenWork / QwenWorkCN expert plugins. Use when the user wants to create a new plugin, customize an existing plugin, or edit a plugin's skills/commands.
 description_zh: 创建、定制或修改 QwenWork / QwenWorkCN 专家套件。当用户想要创建新套件、定制已有套件或编辑套件内的技能/指令时使用。
 ---
@@ -15,13 +15,22 @@ Think of it this way: a Skill is a single tool (e.g., "review a contract"); a Pl
 
 ## Language
 
-Always communicate with the user in the same language they use. All user-facing text in the plugin should match the user's language.
+Reply in the user's conversation language, but never use conversation language to infer the product UI language or technical identifiers.
 
-**Critical for display**: The Skill directory name and the `name` field in SKILL.md frontmatter are what the user sees in the current app UI. These MUST be in the user's language. For example, for a Chinese user:
-- Skill directory: `skills/合同起草/` (NOT `skills/contract-drafting/`)
-- SKILL.md name field: `name: 合同起草` (NOT `name: contract-drafting`)
-- plugin.json name: English kebab-case is fine (e.g., `"name": "legal-assistant"`) since this is an internal identifier not shown prominently in UI
-- `displayName` in plugin.json: Must be in user's language (e.g., `"displayName": "法务助手"`)
+Keep these language concerns separate:
+
+- **Conversation language** controls your replies while gathering requirements and reporting progress.
+- **UI language** controls which localized metadata the app displays. Always generate both English and Chinese display metadata.
+- **Skill output language** controls the skill's behavior and final artifacts. A request for Chinese output does not make plugin or skill identifiers Chinese.
+
+For every new plugin:
+
+- Use ASCII kebab-case for the plugin directory, `plugin.json.name`, skill directories, and `SKILL.md.name`.
+- Use English for compatibility/default metadata (`displayName`, `description`, and `argument-hint`) and provide complete explicit English and Chinese companion fields.
+- In the Global English app, write the `SKILL.md` body in English even when the conversation is Chinese. The skill may still instruct the agent to produce Chinese output when the user requests it.
+- In the Chinese app, the `SKILL.md` body may be Chinese, but bilingual metadata is still mandatory.
+
+Example: `skills/contract-drafting/` with `name: contract-drafting`, `name_en: Contract Drafting`, and `name_zh: 合同起草`.
 
 ## Key Concepts
 
@@ -395,8 +404,11 @@ Compatibility: Always use `.qoder-plugin/` for new plugins. The system also read
 {
   "name": "my-plugin",
   "displayName": "My Plugin",
+  "displayNameEn": "My Plugin",
+  "displayNameCn": "我的专家套件",
   "version": "1.0.0",
   "description": "English description of the plugin",
+  "descriptionEn": "English description of the plugin",
   "descriptionZh": "插件的中文描述",
   "author": {
     "name": "Author Name",
@@ -413,11 +425,14 @@ Compatibility: Always use `.qoder-plugin/` for new plugins. The system also read
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | Yes | Technical identifier, kebab-case (e.g., `marketing-toolkit`) |
-| `displayName` | Yes | Display name shown in UI, supports localized text |
+| `name` | Yes | ASCII kebab-case technical identifier (e.g., `marketing-toolkit`) |
+| `displayName` | Yes | English compatibility/default display name |
+| `displayNameEn` | Yes | Explicit English display name |
+| `displayNameCn` | Yes | Explicit Chinese display name |
 | `version` | Yes | Semantic version (e.g., `1.0.0`) |
 | `description` | Yes | English description |
-| `descriptionZh` | No | Chinese description |
+| `descriptionEn` | Yes | Explicit English description |
+| `descriptionZh` | Yes | Explicit Chinese description |
 | `author` | No | Author info with `name` and optional `url` |
 | `category` | No | Category: marketing, finance, legal, engineering, etc. |
 | `customizedFrom` | No | Only set when customized from a built-in plugin — use the original plugin's `displayName`. Do NOT set for brand-new plugins |
@@ -498,9 +513,14 @@ Each skill is a directory under `skills/` containing a `SKILL.md` with frontmatt
 name: my-skill-name
 version: 1.0.0
 description: What this skill does in English
+name_en: My Skill Name
+name_zh: 我的技能名称
+description_en: What this skill does in English
 description_zh: 这个技能做什么的中文描述
 user-invocable: true
 argument-hint: Brief hint of expected input
+argument-hint-en: Brief hint of expected input
+argument-hint-zh: 简要说明预期输入
 ---
 
 # Skill Title
@@ -510,12 +530,17 @@ Detailed instructions for the AI agent...
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `name` | Yes | - | Skill identifier |
+| `name` | Yes | - | ASCII kebab-case technical skill identifier |
+| `name_en` | Yes for user-invocable skills | - | Explicit English display name |
+| `name_zh` | Yes for user-invocable skills | - | Explicit Chinese display name |
 | `version` | No | - | Version number for tracking iterations |
 | `description` | Yes | - | English description |
-| `description_zh` | No | - | Chinese description |
+| `description_en` | Yes for user-invocable skills | - | Explicit English description |
+| `description_zh` | Yes for user-invocable skills | - | Explicit Chinese description |
 | `user-invocable` | No | `true` | Set to `false` for internal knowledge-base skills that are only referenced by other skills, hidden from the user menu |
-| `argument-hint` | No | - | Hint shown in the mention menu (e.g., "Upload a contract file or paste contract text") |
+| `argument-hint` | Yes for user-invocable skills | - | English compatibility/default hint shown in the mention menu |
+| `argument-hint-en` | Yes for user-invocable skills | - | Explicit English input hint |
+| `argument-hint-zh` | Yes for user-invocable skills | - | Explicit Chinese input hint |
 
 ---
 
@@ -721,8 +746,8 @@ Content injected when the user invokes this command via /command-name...
 
 ## Best Practices
 
-1. **Clear naming**: Use descriptive kebab-case for plugins, skills, and commands
-2. **Bilingual descriptions**: Provide both `description` and `descriptionZh`/`description_zh`
+1. **Clear technical naming**: Use descriptive ASCII kebab-case for plugins, skills, and commands
+2. **Complete bilingual display metadata**: Provide English defaults plus explicit English and Chinese names, descriptions, and input hints
 3. **Focused scope**: Each plugin targets a specific industry scenario or workflow
 4. **Single responsibility**: Each skill handles one specific capability
 5. **Leverage references/**: Put templates, examples, and knowledge docs in `references/` to keep SKILL.md concise

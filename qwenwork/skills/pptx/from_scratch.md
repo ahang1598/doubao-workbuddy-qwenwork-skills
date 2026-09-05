@@ -7,40 +7,46 @@ you're in [editing.md](editing.md) territory instead.
 
 ## Workflow
 
-1. **Pick a theme.** Start blank with `Presentation()` and pick from
-   [themes.md](themes.md) — an index of 7 archetypes (business deep
-   blue, magazine editorial, ink wash, swiss, …). The
-   index is just the picker; after choosing, read the matching
-   `themes/<id>.md` for palette, fonts, image_style, grammar,
-   scar-tissue, and forbid rules. Each archetype is a *starting
-   point*, not a slot you must select; invent your own when none fit.
-   For slot geometry that works across themes, see
-   [layouts.md](layouts.md).
+1. **Pick a visual direction and lock the fingerprint.** Read
+   [visual-directions.md](visual-directions.md). Treat its four archetypes as
+   proven starting points, not a closed catalog: choose one when it supports
+   the brief, adapt it when the content demands it, or invent a stronger
+   direction against the same five axes. When available, load
+   `frontend-design` for an unusual or hybrid brief. Write palette,
+   `image_style`, cover silhouette, content silhouettes, motif, and a
+   `forbid:` list in a comment at the top of the build script before
+   authoring. Keep the fingerprint coherent, but never preserve it at the
+   expense of content clarity or task completion.
 2. **Plan slide layouts** before writing code. For each slide,
    decide: which layout slot table from [layouts.md](layouts.md), what
    content goes where, and whether you need a **component** for a
    hard shape (gantt, funnel, swot, etc.) or just primitives. If at
-   at least one generated image would add value, establish the shared image-slot
+   least one generated image would add value, establish the shared image-slot
    manifest and consider the adaptive foreground fork-join in
    [SKILL.md](SKILL.md#adaptive-foreground-fork-join-for-generated-images)
    before authoring. Prefer it when authoring and image work can overlap, while
    keeping a direct or multi-wave path available when that better completes the
    task.
 3. **Author slides** with python-pptx primitives + `components/`
-   helpers + `helpers.py` for text/run formatting.
+   helpers + `helpers.py` for text/run formatting. Feed the palette and fonts
+   from step 1 into the `helpers.Style` passed to components.
 4. **Save** to a working path, then run the QA loop documented in
-   [SKILL.md](SKILL.md#qa-required): content QA → structural QA
+   [SKILL.md](SKILL.md#qa): content QA → structural QA
    (`view_issues.py`) → adaptive visual QA (overview grids first, then enough
    targeted full-resolution slides to resolve actual risk).
 
 ## Before you start: ask once if uncertain
 
 Don't chain-ask. If the prompt leaves you with two or more genuinely
-uncertain starting choices (theme + page count, topic focus + style,
-etc.), fold them into a single `ask_user_question` rather than asking
+uncertain starting choices (page count, topic focus, tone, etc.), fold
+them into a single `ask_user_question` rather than asking
 sequentially or guessing each in turn. A single ask reads as
 consultation; two or three reads as an interrogation. With zero
-uncertain choices, skip the ask entirely and start working.
+uncertain choices, skip the ask entirely and start working. Design direction
+is normally the Agent's judgment, not a required user decision. For a
+leader-reporting brief, ask once about 简版 vs 详细版 only when that choice is
+genuinely unresolved; otherwise infer the version that best completes the
+task.
 
 ## When to use a component vs primitives
 
@@ -69,7 +75,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from helpers import save_pptx
 
-prs = Presentation()  # blank — set canvas + theme yourself
+prs = Presentation()  # blank — set canvas + visual fingerprint yourself
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)  # 16:9 widescreen
 slide_w, slide_h = prs.slide_width, prs.slide_height  # EMU; 1 inch = 914400
 
@@ -176,17 +182,17 @@ needs a visual" with a component, chart, KPI row, or icon — those
 don't need a photo. The anchor pages do. A topic-driven deck (a
 city, a product, a factory floor, a person, a building, a launch)
 without a single fetched photo is broken — re-do. The default flips
-only when the chosen theme's grammar opts out explicitly (e.g. a
-diagram-only theme, a type-as-image theme, a negative-space theme);
-follow the theme file you read.
+only when the chosen direction opts out explicitly (e.g. a diagram-led,
+type-led, or deliberate negative-space deck); follow the fingerprint you
+committed to.
 
 Use an image generation or licensed image-search capability available in the
 current host. Save every selected image to a local task path before embedding
 it; never leave an expiring URL in the deck. The pattern:
 
-1. **One `image_style` suffix per deck.** Each theme file declares one
-   (e.g. `themes/business_deep_blue.md`). Append it to every prompt
-   so the deck's photos share a look.
+1. **One `image_style` suffix per deck.** Take it from the selected or
+   invented direction and append it to every prompt so the deck's photos
+   share a look.
 2. **Aspect from layout.** `16:9` for full-bleed covers and the
    image halves of Layouts B / E; `1:1` for square inserts; `9:16`
    only when the layout is vertical.
@@ -205,11 +211,11 @@ first attempts cheap. The parent owns recovery for provider failures and for an
 successful image is not regenerated merely for its watermark, dimensions,
 aspect, crop loss, or minor style variance.
 
-Do not mistake the host's `Parallel` label on several direct `ImageGen` calls
-for this topology. In the current QwenWork runtime that grouped ImageGen path is
-processed serially and blocks parent authoring; describe it as batched
-generation. True workflow overlap requires separate PPT-authoring and image
-Agent branches followed by a join.
+Do not mistake a UI `Parallel` label on several direct media-task submissions
+for this topology. It does not prove provider-side concurrency, and each image
+still requires a `qwenwork_image_generate` submission followed by a
+`qwenwork_media_task` wait. True workflow overlap requires separate PPT-authoring
+and image Agent branches followed by a join.
 
 Preplan a deterministic fallback for every image slot before dispatch. An
 anchor or supporting slot may use a same-size muted placeholder rectangle only
@@ -234,7 +240,7 @@ ignored and you get its default shape. Inspect the live parameters
 of the active image capability, then pick the value closest to your
 slot's ratio.
 
-Official ImageGen output may contain a service watermark. Unless the user
+Official generated-image output may contain a service watermark. Unless the user
 explicitly requests watermark-free assets, accept it as expected output: do not
 inspect it repeatedly, remove it, crop only to hide it, or regenerate the image
 because it is visible. If watermark-free output is explicitly required, do not
@@ -248,22 +254,21 @@ slide. Prefer, in order:
 2. For a large mismatch, adjust the image slot and rebalance nearby content
    within the planned grid.
 3. When the slot cannot move safely, use contain treatment with an intentional,
-   theme-coordinated background instead of accidental empty space.
+   direction-coordinated background instead of accidental empty space.
 4. Use the preplanned no-image fallback only when none of these treatments
    preserves a readable composition.
 
 Never stretch the image or regenerate it solely because its returned pixels or
 aspect differ from the request. The `view_issues.py` "shape on image" info
-finding is expected when a theme shape overlaps a cover-cropped image.
+finding is expected when a direction motif overlaps a cover-cropped image.
 
 Slot ratios in this skill — for others, do the math:
 
-| Slot | Ratio (w/h) |
-|---|---|
-| Layout A full-bleed cover (13.333 × 7.5) | 1.778 |
-| Layout B image-right half (6.483 × 7.5) | 0.864 |
-| Layout E image-right (5.08 × 4.95) | 1.026 |
-| Magazine Editorial cover photo (6.05 × 6.40) | 0.945 |
+| Slot                                     | Ratio (w/h) |
+| ---------------------------------------- | ----------- |
+| Layout A full-bleed cover (13.333 × 7.5) | 1.778       |
+| Layout B image-right half (6.483 × 7.5)  | 0.864       |
+| Layout E image-right (5.08 × 4.95)       | 1.026       |
 
 ## Fetching brand logos
 
@@ -319,7 +324,7 @@ and the components themselves.
 - **HTML → PPTX.** Always leaves tells (image-per-slide, font drift,
   CSS-subset substitutions). We ship real OOXML for editability.
 - **pptxgenjs as the default.** Keep python-pptx + components as the
-  theme-led default. Use the [pptxgenjs adapter](pptxgenjs.md) for native
+  direction-led default. Use the [pptxgenjs adapter](pptxgenjs.md) for native
   complex charts or an existing generator where changing adapters would add
   risk.
 - **Cloud authoring.** Cloud capabilities accelerate inspect, structural

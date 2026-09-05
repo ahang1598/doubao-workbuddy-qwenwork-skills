@@ -18,6 +18,8 @@ Borrowed design rules:
 
 from __future__ import annotations
 
+import unicodedata
+
 from pptx.dml.color import RGBColor
 
 from ._base import (
@@ -65,6 +67,8 @@ def add_metric_card(
     card.text_frame.margin_top = Emu(182880)
     card.text_frame.margin_bottom = Emu(182880)
 
+    value_text = str(content["value"])
+
     # Auto-scale: width-based size buckets. ai_slides drives this via
     # CSS clamp(), we approximate with discrete steps so PowerPoint
     # renders deterministically.
@@ -77,6 +81,18 @@ def add_metric_card(
         value_size, kicker_size, desc_size = 32, 10, 11
     else:
         value_size, kicker_size, desc_size = 26, 9, 10
+
+    # 数值与单位是不可拆分的展示原子；按可用宽度保守缩放，正文仍可换行。
+    display_units = sum(
+        1.0 if unicodedata.east_asian_width(char) in ("W", "F") else 0.55
+        for char in value_text
+    )
+    usable_width_pt = max(
+        w - int(card.text_frame.margin_left) - int(card.text_frame.margin_right),
+        1,
+    ) / 12700
+    fitted_size = int(usable_width_pt * 0.90 / max(display_units, 1.0))
+    value_size = max(18, min(value_size, fitted_size))
 
     tf = card.text_frame
     first_para_used = False
@@ -97,7 +113,6 @@ def add_metric_card(
         first_para_used = True
 
     # value
-    value_text = str(content["value"])
     if first_para_used:
         add_paragraph(
             tf, value_text,

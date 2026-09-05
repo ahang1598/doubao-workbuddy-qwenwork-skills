@@ -20,22 +20,60 @@ masters, section order); it does not mean inherit its **execution**
 fit the content's shape). Brand identity is the user's intent; broken
 execution is not.
 
-Run all three:
+Run all four:
 
 ```bash
-python -m markitdown template.pptx          # content / structure
-python scripts/view_issues.py template.pptx # overlaps, overflow, contrast, off-slide
-python scripts/thumbnail.py template.pptx   # visual — actually look at it
+python -m markitdown template.pptx           # content / structure
+python scripts/deck_style.py template.pptx --capacity --pages <FINAL_PLANNED_SLIDE_COUNT>
+                                             # ← the decisive test
+python scripts/view_issues.py template.pptx  # overlaps, overflow, contrast, off-slide
+python scripts/thumbnail.py template.pptx    # visual — actually look at it
 ```
+
+Here, `<FINAL_PLANNED_SLIDE_COUNT>` is the current outline's total slide count,
+including structural slides; do not substitute an earlier request, a guessed
+count, or content-page count. Rerun once if the outline materially changes.
+
+**Capacity informs the workflow. Read it first.** `--capacity` counts
+the template's *distinct* content-page layouts (collapsing near-
+duplicates like `内文-2` / `1_内文-2`, and excluding cover, agenda,
+divider, closing and blank) and compares that against the pages you
+need. It returns one of four baseline verdicts; use the content's actual
+information architecture to confirm or override the recommendation:
+
+The capacity JSON also records each source slide's actual layout part and
+inherited visual shapes. Treat that map—not slide-local XML, visible text, or a
+guessed slide index—as structural truth. Before adding native shapes to a
+retained source slide, inspect its entry; otherwise start from a layout verified
+as blank.
+
+| verdict | meaning | what you do |
+|---|---|---|
+| `strict` | enough distinct content layouts for every page | reuse the layouts, fill their placeholders |
+| `mixed` | enough for most pages | reuse where the information architecture matches; build the rest natively |
+| `coarse` | brand chrome is reusable, content geometry isn't | keep brand, rebuild content pages natively — see [§ When the template's layouts can't carry the content](#when-the-templates-layouts-cant-carry-the-content) |
+| `none` | no reusable content layouts at all | style reference only; compose every content page natively |
+
+A template with two content layouts usually cannot carry sixteen varied pages,
+no matter how clean its OOXML is. **This is a property of the template's
+structure, not of its execution quality** — which is why it gets its
+own check and its own script.
+
+**`view_issues.py` cannot answer this question.** It reports
+correctness — is the file broken? A well-built template with thin
+layouts returns *zero* findings and is still unable to carry your
+deck. Never infer "this template is strong, so I'll reuse its layouts"
+from a clean `view_issues.py` report. That inference produced a
+16-page deck out of two repeated layouts.
 
 A template is **good** when nothing on the page is fighting itself —
 consistent grid, type hierarchy holds, deliberate palette, every
-slide's visuals carry information. Reuse as-is. Don't restyle.
+slide's visuals carry information. Reuse as-is. Don't restyle. (Good
+execution and sufficient capacity are independent: a template can be
+beautifully built *and* `coarse`.)
 
-A template is **weak** when any of these hold:
+Beyond capacity, a template is **weak** when any of these hold:
 
-- `view_issues.py` returns warnings the author would have fixed
-  (overlaps, alignment drift, low contrast).
 - Text-heavy pages have 0–1 visuals where the content's shape calls
   for a matrix / timeline / KPI row / decision card. Generic
   bullets-only on a deck that's about comparing options, phased work,
@@ -43,29 +81,43 @@ A template is **weak** when any of these hold:
 - Decorative shapes (lone circles, ornaments) carry no information
   and don't build a motif — placeholder filler.
 - Type contrast is flat (one weight, one size carries the page).
+- `view_issues.py` returns warnings the author would have fixed
+  (overlaps, alignment drift, low contrast). Fix these on the pages
+  you keep; they're independent of the capacity verdict.
 
-Judge per slide; strong cover + weak content pages is common.
+Judge per slide; strong cover + weak content pages is common. A deck
+with a strong brand chrome (cover, dividers, page numbers, logos) and
+weak content layouts is the standard case for a Chinese enterprise
+template — treat it as **coarse-reference**: keep brand, rebuild
+content geometry.
 
 ### Surface the verdict before mapping content
 
-When the template is weak — *especially* when the user emphasized
-strict adherence — name the verdict before silently filling content
-or silently rebuilding. One short message: which pages you'll preserve
+When the capacity verdict is `mixed`, `coarse` or `none` and the resulting
+choice materially changes what the user asked to preserve — *especially* when
+the user emphasized strict adherence — name the verdict before proceeding.
+One short message: which pages you'll preserve
 exactly (cover, dividers, anything deliberate), which weak pages you'll
 upgrade *in the template's own colors and fonts*, and an opt-out for
-the user who wants the bullets kept verbatim. If the user says keep
-them, that's a deliberate call — honor it. If the template comes back
-good, skip this and just map content.
+the user who wants the bullets kept verbatim. **"严格沿用" means honor
+the brand identity, not the execution debt** — if you say nothing and
+just repeat the template's two content layouts eight times, the user
+gets a monotonous deck they didn't ask for. If the user says keep the
+template layouts verbatim, that's a deliberate call — honor it and
+warn that pages 4/7/10/13 will look identical. If capacity comes back
+`strict` and the template looks good, skip this and just map content.
 
 ### Upgrading a weak template while keeping its style
 
-The goal is "same deck, better executed," not "a new theme." Lift
+The goal is "same deck, better executed," not a redesign. Lift
 the template's design tokens and feed them to the components:
 
-1. **Sample the template's palette + fonts** — its dominant fill, its
-   accent, its title face, its body face. Build a `helpers.Style`
-   from those values (don't import a `themes/` palette; that would
-   re-brand the deck):
+1. **Sample the template's palette + fonts** from retained template shapes —
+   its dominant fill, accent, title face, body face, and text colors. Every
+   newly authored text run must set its font family and color from those
+   sampled values rather than relying on application or theme defaults. Build
+   a `helpers.Style` from those values (don't run `frontend-design` and don't
+   invent a new palette; that would re-brand the deck):
 
    ```python
    from helpers import Style, Palette, FontPair
@@ -97,6 +149,84 @@ the template's design tokens and feed them to the components:
 Re-run `view_issues.py` after the upgrade and confirm the fixes
 landed without introducing new findings.
 
+### When the template's layouts can't carry the content
+
+Distinct from "the template has broken visuals" (§ Upgrading above):
+the template's layouts are *fine* individually, but there aren't
+enough of them for your content. Symptom: you have 8 content pages
+of different material — a KPI page, an evaluation matrix, a phased
+plan, a comparison, a risk table — but the template only has 2
+content-page layouts (say, "big-number-circle" and "left-bullets").
+Mapping content forces four repeats of "big-number-circle" and four
+of "left-bullets", and the deck reads as monotonous even though
+each page individually preserves the brand.
+
+Don't repeat a template layout beyond what the content genuinely
+justifies. The rule:
+
+- **Reuse a template layout when the content page has the same
+  information architecture** as the layout was designed for. Two KPI
+  pages both showing "one headline number + one supporting number"
+  is fine. Two KPI pages where one is percent-completion and the
+  other is vendor-count crammed into the same big-circle shape is
+  not.
+- **When the content page has a different information architecture from any
+  template layout**, use the blank layout named by the capacity report and
+  verified by its inherited-visual inventory; never guess a layout index or
+  reuse a source slide that only looks blank. Add a native component styled
+  with the template's palette + fonts:
+
+  ```python
+  # From the sampled tmpl_style above.
+  blank_layout = prs.slide_layouts[<blank_layout_index>]
+  slide = prs.slides.add_slide(blank_layout)
+  # The blank layout still ships the template's chrome (page number,
+  # logo, footer). Native component uses template colors:
+  add_flow_matrix(slide, origin=(Inches(0.6), Inches(1.4)),
+                  size=(Inches(12), Inches(5.5)),
+                  content=..., style=tmpl_style)
+  ```
+
+  The result reads as the template's own design — same palette,
+  fonts, page number, logo — but with a composition shaped to the
+  actual content (matrix / timeline / process / responsibility /
+  comparison / metric strip).
+
+- **Component-to-content mapping cheatsheet.** Guides which native
+  component to use when a template layout doesn't fit:
+
+  | Content shape | Component |
+  |---|---|
+  | Sequential / phased steps (3–6) | `add_timeline` |
+  | Vendors × criteria × scores | `add_flow_matrix` |
+  | Options against each other (2–4) | `add_comparison` |
+  | Strengths / weaknesses / risks / actions | `add_swot` |
+  | Single big number + supporting detail | `add_metric_card` |
+  | Time-boxed tasks with owners | `add_gantt` |
+  | Concentric layered model | `add_layered_diagram` / `add_flywheel` |
+  | Weighted allocation (budget, time) | `add_allocation_bars` |
+  | Part-to-whole with contribution or change | Native chart or `add_allocation_bars` plus callouts |
+  | 3–6 metrics with unlike units | Metric-card composition; do not force a shared-axis chart |
+  | Multi-dimensional score (3–8 axes) | `add_radar` |
+  | Narrowing/prioritization | `add_funnel` |
+  | Highlighted quotation / thesis | `add_quote_block` |
+
+  See [components.md](components.md) for signatures.
+
+- **Preserve chrome that's on the master, not the layout.** The
+  blank layout inherits the master's page number, logo, footer band.
+  Don't hand-draw those — they're already there.
+
+- **When the content page fits no component either**, that's the
+  case for a designed-from-scratch page. Same rule: use the blank
+  layout + hand-built shapes in the template's colors.
+
+`deck_style.py --rhythm` may still report hints if repetition persists —
+treat `layout_reuse` and `content_obligation` as evidence to compare against
+the render and planned message, not automatic proof that the template cannot
+hold the content. Push pages to native components only when the actual
+information architecture warrants it.
+
 ---
 
 ## Template-Based Workflow
@@ -109,20 +239,12 @@ When using an existing presentation as a template:
    ```
    Review markitdown output to see layouts (slide titles, placeholder text, structural cues).
 
-2. **Plan slide mapping**: For each content section, choose a template slide.
-
-   ⚠️ **USE VARIED LAYOUTS** — monotonous presentations are a common failure mode. Don't default to basic title + bullet slides. Actively seek out:
-   - Multi-column layouts (2-column, 3-column)
-   - Image + text combinations
-   - Full-bleed images with text overlay
-   - Quote or callout slides
-   - Section dividers
-   - Stat/number callouts
-   - Icon grids or icon + text rows
-
-   **Avoid:** Repeating the same text-heavy layout for every slide.
-
-   Match content type to layout style (e.g., key points → bullet slide, team info → multi-column, testimonials → quote slide).
+2. **Plan content before slide mapping.** Give each advertised section a
+   substantive destination unless it is intentionally statement-only, then fit
+   structural slides within the requested bounds. Match or repeat a layout when
+   it serves the information architecture; use a native composition when it
+   does not. Placeholder count and layout variety are not goals. For data- or
+   structure-heavy pages, plan the semantic visual before cloning.
 
 3. **Unpack once through the stable package entry point**:
    ```bash
@@ -135,7 +257,10 @@ When using an existing presentation as a template:
    - Reorder slides in `<p:sldIdLst>`
    - **Complete all structural changes before step 5**
 
-5. **Edit content**: Update text in each `slide{N}.xml`.
+5. **Complete each mapped page**: replace final text and build any planned
+   chart, table, component, image, or typographic composition. Text survival
+   alone is not completion. If no semantic visual improves comprehension, keep
+   the whitespace deliberately and verify it in the render.
    **Use subagents here if available** — slides are separate XML files, so subagents can edit in parallel.
 
 6. **Pack once.** The entry point prunes, audits against the original, and
@@ -223,9 +348,11 @@ misses.
 - The formatting rules and common pitfalls below
 
 For each slide:
-1. Read the slide's XML
-2. Identify ALL placeholder content—text, images, charts, icons, captions
-3. Replace each placeholder with final content
+1. Read the slide together with its referenced layout and source render
+2. Distinguish content slots from decoration and persistent brand chrome;
+   placeholder metadata alone does not determine the role
+3. Bind each source fact once, preserve intentional chrome, and remove unused
+   content groups as a whole
 
 **Use the Edit tool, not sed or Python scripts.** The Edit tool forces specificity about what to replace and where, yielding better reliability.
 
@@ -250,7 +377,7 @@ When source content has fewer items than the template:
 
 When replacing text with different length content:
 - **Shorter replacements**: Usually safe
-- **Longer replacements**: May overflow or wrap unexpectedly — verify via markitdown that all the intended text survives
+- **Longer replacements**: May overflow or wrap unexpectedly. Markitdown proves the text survived, not that it fits; structural QA and rendered QA decide fit.
 - Consider truncating or splitting content to fit the template's design constraints
 
 **Template slots ≠ Source items**: If template has 4 team members but source has 3 users, delete the 4th member's entire group (image + text boxes), not just the text.

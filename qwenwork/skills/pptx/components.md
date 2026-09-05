@@ -22,8 +22,9 @@ add_xxx(slide, origin, size, content_arg, style, *, ...)
 - `slide` — python-pptx `Slide`
 - `origin` / `size` — `(Inches(x), Inches(y))` / `(Inches(w), Inches(h))`
 - `style` — a `helpers.Style(palette, fonts)`. See [helpers.py](helpers.py)
-  for the dataclasses; copy palette + fonts from a theme file under
-  [themes/](themes/).
+  for the dataclasses; palette + fonts come from the selected or invented
+  direction in [visual-directions.md](visual-directions.md), or from the plan
+  `frontend-design` produced when that skill is available.
 - content arg name varies (`content`, `panels`, `steps`, `rows`, …)
 
 For exact signatures and optional kwargs, read the matching
@@ -33,7 +34,7 @@ and the content-shape it expects.
 
 **House style (already enforced in code):** every component renders
 cards, nodes, bars, and bands square-cornered and flat — no rounded
-corners, no inherited theme shadow. Columns are distributed via
+corners, no shadow. Columns are distributed via
 `col_edges` so the last column lands on the layout's right margin
 exactly. The one intentional exception is `add_allocation_bars`,
 whose progress tracks stay capsule-rounded (a deliberate progress-bar
@@ -93,6 +94,9 @@ Notes
   auto-reds `-/decrease` keywords.
 - One `variant="primary"` per slide. Using primary on every card kills
   the emphasis the variant is meant to provide.
+- Treat `value` as one atomic display line. The component scales it against
+  usable width, but the caller must still choose a readable card width and card
+  count; never depend on wrapping to separate the number from its unit.
 
 ---
 

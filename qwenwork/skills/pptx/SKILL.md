@@ -1,8 +1,8 @@
 ---
 name: pptx
-version: 2.3.1
+version: 2.3.2
 description: "Use this skill any time a PowerPoint .pptx or legacy .ppt file is involved as input, output, or both. This includes creating decks; reading or extracting slide content; editing presentations; combining or splitting slides; and working with templates, layouts, speaker notes, comments, charts, actions, or fonts. Trigger whenever the user mentions a deck, slides, presentation, PPT, or a .ppt/.pptx filename. Normalize legacy .ppt input before using PPTX workflows."
-description_zh: "当 .pptx 文件以任何方式涉及时使用此技能——无论是作为输入、输出还是两者兼有。包括：创建幻灯片、演示文稿或路演材料；读取、解析或提取任何 .pptx 文件中的文本（即使提取的内容将用于其他地方，如邮件或摘要）；编辑、修改或更新现有演示文稿；合并或拆分幻灯片文件；使用模板、布局、演讲者备注或批注。当用户提及\"幻灯片\"、\"演示文稿\"、\"PPT\"或引用 .pptx 文件名时触发，无论他们计划如何使用内容。只要需要打开、创建或操作 .pptx 文件，就使用此技能。"
+description_zh: "当 PowerPoint .pptx 或旧版 .ppt 文件作为输入、输出或两者兼有时使用此技能。覆盖创建、读取、提取、编辑、合并和拆分演示文稿，以及处理模板、布局、演讲者备注、批注、图表、动作与字体。用户提到幻灯片、演示文稿、PPT 或 .ppt/.pptx 文件名时触发。处理旧版 .ppt 前，先将其规范化为适合读取或编辑的格式。"
 license: Proprietary. LICENSE.txt has complete terms
 ---
 
@@ -10,20 +10,22 @@ license: Proprietary. LICENSE.txt has complete terms
 
 ## Quick Reference
 
-| Task | Guide |
-|------|-------|
-| Normalize legacy `.ppt` | Read [references/legacy-ppt.md](references/legacy-ppt.md); use `scripts/prepare_legacy_ppt.py` before any PPTX tool |
-| Read/analyze content | `python scripts/inspect_pptx.py presentation.pptx --pretty`; use `python -m markitdown presentation.pptx` when a prose dump is useful |
-| Edit or create from template | Read [editing.md](editing.md) |
-| Create from scratch | Read [from_scratch.md](from_scratch.md) |
-| Authoring scars (any mode that adds shapes/text/images) | Read [authoring.md](authoring.md) |
-| Pick a theme (when no template fits) | Read [themes.md](themes.md) — index of 7 archetypes; per-theme details in `themes/` |
-| Slot geometry for slide composition | Read [layouts.md](layouts.md) |
-| Hard visual shapes (gantt, swot, funnel, …) | Read [components.md](components.md) — when to use each + content schema |
-| Native/complex PowerPoint charts or an existing pptxgenjs generator | Read [pptxgenjs.md](pptxgenjs.md); keep the same final QA gates |
-| Fetch real photos for slides | Read [from_scratch.md § Fetching real photos](from_scratch.md#fetching-real-photos) — use an image capability available in the current host and embed a local copy |
-| Parallel PPT authoring and generated images | Read [references/bounded-foreground-fork-join.md](references/bounded-foreground-fork-join.md) — adaptive foreground forks, priority waves, evidence-based recovery, deterministic join |
-| Fetch a brand / website logo | `from scripts.get_logo import fetch_logo` — pulls the real mark from the site's own servers (China-reachable; no Clearbit / Google s2 / Brandfetch). Never fake a logo from shapes — degrade to plain text on failure. |
+| Task                                                                | Guide                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Normalize legacy `.ppt`                                             | Read [references/legacy-ppt.md](references/legacy-ppt.md); use `scripts/prepare_legacy_ppt.py` before any PPTX tool                                                                                                                                      |
+| Read/analyze content                                                | `python scripts/inspect_pptx.py presentation.pptx --pretty`; use `python -m markitdown presentation.pptx` when a prose dump is useful                                                                                                                    |
+| Edit or create from template                                        | Read [editing.md](editing.md)                                                                                                                                                                                                                            |
+| Decide whether a template can carry the planned deck                | Plan a content-complete outline first. Treat “about N” or a page range as bounds; only an explicit “exactly N” is a quota. Then run `python scripts/deck_style.py template.pptx --capacity --pages <FINAL_PLANNED_SLIDE_COUNT>` using the planned total. |
+| Create from scratch                                                 | Read [from_scratch.md](from_scratch.md)                                                                                                                                                                                                                  |
+| Authoring scars (any mode that adds shapes/text/images)             | Read [authoring.md](authoring.md)                                                                                                                                                                                                                        |
+| Pick or invent a visual direction                                   | Read [visual-directions.md](visual-directions.md) — four proven starting points + a five-axis framework for original directions                                                                                                                          |
+| Unusual / hybrid aesthetic direction                                | Load `frontend-design` when available; otherwise invent against the same five axes in `visual-directions.md`                                                                                                                                             |
+| Slot geometry for slide composition                                 | Read [layouts.md](layouts.md)                                                                                                                                                                                                                            |
+| Hard visual shapes (gantt, swot, funnel, …)                         | Read [components.md](components.md) — when to use each + content schema                                                                                                                                                                                  |
+| Native/complex PowerPoint charts or an existing pptxgenjs generator | Read [pptxgenjs.md](pptxgenjs.md); keep the same final QA gates                                                                                                                                                                                          |
+| Fetch real photos for slides                                        | Read [from_scratch.md § Fetching real photos](from_scratch.md#fetching-real-photos) — use an image capability available in the current host and embed a local copy                                                                                       |
+| Parallel PPT authoring and generated images                         | Read [references/bounded-foreground-fork-join.md](references/bounded-foreground-fork-join.md) — adaptive foreground forks, priority waves, evidence-based recovery, deterministic join                                                                   |
+| Fetch a brand / website logo                                        | `from scripts.get_logo import fetch_logo` — pulls the real mark from the site's own servers (China-reachable; no Clearbit / Google s2 / Brandfetch). Never fake a logo from shapes — degrade to plain text on failure.                                   |
 
 ---
 
@@ -33,14 +35,16 @@ Call the bundled semantic entry points directly and let them select a validated
 execution path. Do not begin with broad environment, credential, CLI, font, or
 package inventories.
 
-| Need | Entry point |
-|---|---|
-| Inspect | `python scripts/inspect_pptx.py presentation.pptx --pretty` |
-| Validate | `python scripts/validate_pptx.py presentation.pptx --pretty` |
-| Render overview | `python scripts/thumbnail.py presentation.pptx "$PPTX_TEMP_DIR/overview"` |
-| Edit package safely | `python scripts/edit_package.py unpack ...`; edit; `python scripts/edit_package.py pack ... --original ...` |
-| Run deterministic QA | `python scripts/qa_pptx.py output.pptx --pretty`; add `--original template.pptx` for template-derived work |
-| Normalize legacy input | `python scripts/prepare_legacy_ppt.py ...` |
+| Need                        | Entry point                                                                                                                                                    |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inspect                     | `python scripts/inspect_pptx.py presentation.pptx --pretty`                                                                                                    |
+| Validate                    | `python scripts/validate_pptx.py presentation.pptx --pretty`                                                                                                   |
+| Assess template capacity    | `python scripts/deck_style.py template.pptx --capacity --pages <FINAL_PLANNED_SLIDE_COUNT>` (keep JSON output because it includes the source-slide layout map) |
+| Review finished-deck rhythm | `python scripts/deck_style.py output.pptx --rhythm --format pretty` (advisory; exit `1` means findings)                                                        |
+| Render overview             | `python scripts/thumbnail.py presentation.pptx "$PPTX_TEMP_DIR/overview"`                                                                                      |
+| Edit package safely         | `python scripts/edit_package.py unpack ...`; edit; `python scripts/edit_package.py pack ... --original ...`                                                    |
+| Run deterministic QA        | `python scripts/qa_pptx.py output.pptx --pretty`; add `--original template.pptx` for template-derived work                                                     |
+| Normalize legacy input      | `python scripts/prepare_legacy_ppt.py ...`                                                                                                                     |
 
 ### Task temporary workspace
 
@@ -121,8 +125,8 @@ python3 -c "import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv
 
 0. **QA the template first.** It's good or weak — your job is to tell.
    If good, reuse as-is and respect its design. If weak, upgrade the
-   broken slides with `components/` *in the template's own palette and
-   fonts*. See [editing.md § Step 0](editing.md#step-0-qa-the-template-before-reusing-it).
+   broken slides with `components/` _in the template's own palette and
+   fonts_. See [editing.md § Step 0](editing.md#step-0-qa-the-template-before-reusing-it).
 1. Analyze template with `thumbnail.py`
 2. Unpack → manipulate slides → edit content → clean → pack
 
@@ -132,10 +136,11 @@ python3 -c "import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv
 
 **Read [from_scratch.md](from_scratch.md) for full details.**
 
-No reference deck — blank `Presentation()` + a theme picked from
-[themes.md](themes.md). Use `components/` for hard visual shapes
-(gantt, funnel, radar, swot, etc.) and python-pptx primitives
-directly for the easy stuff. Real OOXML, fully editable in
+No reference deck — blank `Presentation()` plus a visual fingerprint chosen
+or invented through [visual-directions.md](visual-directions.md). The four
+archetypes are proven starting points, not a closed catalog. Use `components/`
+for hard visual shapes (gantt, funnel, radar, swot, etc.) and python-pptx
+primitives directly for the easy stuff. Real OOXML, fully editable in
 PowerPoint. For native/complex charts or an existing generator, retain the
 local [pptxgenjs adapter](pptxgenjs.md). If the caller supplied a `.pptx`,
 that's editing — see above.
@@ -153,13 +158,14 @@ availability, and task completion. Read
 [references/bounded-foreground-fork-join.md](references/bounded-foreground-fork-join.md)
 before dispatch.
 
-**Current runtime note:** a group of direct `ImageGen` calls may be displayed as
-`Parallel`, but QwenWork currently processes that grouped ImageGen path
-serially and the parent does not advance PPT authoring while it waits. Treat it
-as batched serial generation, never as fork-join or proof of concurrency. When
-authoring can proceed without the images and at least two image slots are
-planned, use the `Agent` fork-join path if available; fall back to direct
-generation only when delegation is unavailable or fails.
+**Current runtime note:** QwenWork exposes image generation through the asynchronous
+`qwenwork_image_generate` flow. Each image branch must submit exactly one task,
+call `qwenwork_media_task` with `action: "wait"`, and use the downloaded image
+path. A group of direct submissions may be displayed as `Parallel`, but do not
+treat that display as proof of provider-side concurrency. When authoring can
+proceed without the images and at least two image slots are planned, use the
+`Agent` fork-join path if available; fall back to direct generation only when
+delegation is unavailable or fails.
 
 - Form one compact manifest: each slot's `anchor` / `supporting` / `optional`
   role, prompt, requested size, exact box, paths, crop-loss threshold, attempt
@@ -175,10 +181,10 @@ generation only when delegation is unavailable or fails.
   return an openable placeholder draft without waiting for images. It must then
   record `authoring-result.json` with `scripts/authoring_result.py`; writing only
   the script is incomplete.
-- Each first-wave image Agent normally calls `ImageGen` once, checks the file
-  and dimensions,
+- Each first-wave image Agent normally calls `qwenwork_image_generate` once,
+  waits through `qwenwork_media_task`, checks the downloaded file and dimensions,
   and computes `crop_loss = 1 - min(source_ratio / slot_ratio, slot_ratio /
-  source_ratio)`. A value above the slot threshold is a usable,
+source_ratio)`. A value above the slot threshold is a usable,
   non-retryable `constraint_mismatch`, not a new image-processing flow.
 - The parent owns recovery. Retry a provider failure with no usable artifact;
   after final-slide visual evidence, it may also replace or regenerate a
@@ -196,55 +202,55 @@ generation only when delegation is unavailable or fails.
 - If `Agent` is unavailable, initial dispatch fails, or a small task is clearer
   without delegation, use direct parent execution without claiming concurrency.
 
-Official ImageGen watermarks are expected unless the user explicitly requested
+Official generated-image watermarks are expected unless the user explicitly requested
 otherwise. Never regenerate or edit an image solely to hide that watermark.
 
 ---
 
-## Design principles
+## Design direction
 
-The per-theme grammar files own the specific taste calls (palette,
-fonts, layout rhythm). A few principles cut across every theme:
+Use [visual-directions.md](visual-directions.md) to establish a coherent
+five-axis fingerprint: palette, image language, cover silhouette, content
+silhouettes, and motif. Choose one of its archetypes when it fits; adapt or
+invent a direction when the brief needs something else. Load `frontend-design`
+when available for unusual or hybrid work. The direction is a design hypothesis,
+not a cage: break a default when doing so materially improves clarity,
+storytelling, accessibility, or task completion, then carry the intentional
+choice consistently across the deck.
 
-- **Dominance over equality.** One color carries 60–70% of the visual
-  weight, with one or two supporting tones and one sharp accent.
-  Equal-weight palettes look unintentional.
-- **Sandwich the deck.** Dark cover + light body + dark closer is the
-  default read; or commit fully to dark for a premium feel. Don't
-  alternate randomly.
-- **Commit to one motif.** Pick a single distinctive element (rounded
-  image frames, hairline rules, color-blocked sections, etc.) and
-  carry it across every slide. Mixing motifs reads as drafted, not
-  designed.
-- **Make empty space intentional.** Size cards and frames to their actual
-  content and visual role. A border around short text is not, by itself, a
-  meaningful visual. Avoid tall, mostly empty containers that resemble
-  unfilled image slots; use a compact composition, rebalance the content, or
-  leave purposeful open space unframed.
-- **Ship complete layouts.** Draft image placeholders are allowed only while
-  parallel work is in flight. Before final QA, bind the asset or redesign the
-  slide as a complete no-image composition; never deliver a slot label, empty
-  frame, or placeholder-like panel.
+These principles remain useful across directions:
 
-Type sizing — useful as a quick check; per-theme grammars may
-override:
+- **Dominance over equality.** Give the composition a clear visual hierarchy;
+  avoid equal-weight palettes unless equality is the intended concept.
+- **Commit to a recognizable motif.** Reuse one distinctive device enough to
+  create identity without forcing it onto every slide.
+- **Vary information silhouettes.** Rotate compositions based on the content's
+  information architecture; repeated card grids are a warning sign, not a ban.
+- **Make empty space intentional.** Size cards and frames to their content and
+  visual role. On a data- or structure-heavy slide, text stranded in one region
+  with no semantic visual is a review signal, not a mandate to fill the canvas.
+  Add a chart, table, component, image, or stronger typographic composition only
+  when it clarifies existing content; never add filler merely to reduce whitespace.
+- **Ship complete layouts.** Draft placeholders are allowed only while work is
+  in flight. Before delivery, bind the asset or use a complete no-image fallback.
 
-| Element | Size |
-|---------|------|
-| Slide title | 36–44pt bold |
-| Section header | 20–24pt bold |
-| Body text | 14–16pt |
-| Captions | 10–12pt muted |
+Type sizing is a quick readability check, not a fixed style preset:
 
-For palette + font choices, read [themes.md](themes.md) and the
-matching `themes/<id>.md`. For layout slot tables and bounds, read
-[layouts.md](layouts.md). For per-shape authoring traps (low
-contrast, normAutofit overflow, accent-line-under-title, text-box
-padding), read [authoring.md](authoring.md).
+| Element        | Size          |
+| -------------- | ------------- |
+| Slide title    | 36–44pt bold  |
+| Section header | 20–24pt bold  |
+| Body text      | 14–16pt       |
+| Captions       | 10–12pt muted |
+
+For layout slot tables and bounds, read [layouts.md](layouts.md). For
+per-shape authoring traps (low contrast, autofit overflow, text-box padding,
+cropping), read [authoring.md](authoring.md). When editing a template, sample
+and preserve its palette and fonts instead of imposing a new direction.
 
 ---
 
-## QA (Required)
+## QA
 
 Inspect critically, but keep the pass bounded. A careful review may legitimately
 find no visual issue. Do not manufacture findings or extend QA merely to force
@@ -256,7 +262,10 @@ a fix-and-verify cycle.
 python -m markitdown output.pptx
 ```
 
-Check for missing content, typos, wrong order.
+Check that the deck fulfills its own narrative: promised sections have
+substantive content, dividers do not count as content, and approximate page
+counts never justify dropping supported material or adding filler. Then check
+order, wording, figures, and arithmetic.
 
 **When using templates, check for leftover placeholder text:**
 
@@ -278,20 +287,46 @@ For a template-derived deck, preserve the original as the structural baseline:
 python scripts/qa_pptx.py output.pptx --original template.pptx --pretty
 ```
 
-The single entry point keeps the cloud/local preflight, deterministic layout
-checks, and final local PowerPoint/XSD/chart gate. It reports broken rels, text
-overflow, off-slide geometry, duplicate slide IDs, unreferenced media, WCAG
-contrast, font hierarchy, palette adherence, and package validity without
-forcing the Agent to merge three output formats. Use the individual scripts
-only for focused diagnosis (`scripts/validate_pptx.py`,
-`scripts/view_issues.py`, and `scripts/oxml/package_audit.py`). Fix blocking
-findings before visual QA.
+The single entry point keeps the cloud/local preflight, deterministic
+correctness checks, and final PowerPoint/XSD/chart gate. It reports broken
+relationships, shape overlap, partial edge clipping, multi-paragraph or stale
+autofit overflow, off-slide geometry, duplicate slide IDs, unreferenced media,
+WCAG contrast, font hierarchy, palette adherence, and package validity. Tables,
+charts, SmartArt, and embedded objects participate in deterministic edge
+checks. Text-extent estimates remain warnings until the render confirms a
+visible defect. Use the
+individual scripts only for focused diagnosis (`scripts/validate_pptx.py`,
+`scripts/view_issues.py`, and `scripts/oxml/package_audit.py`). Fix errors and
+review every warning. `valid: true` means no blocking structural error; it does
+not clear warnings. Repair every warning confirmed by the render, without
+manufacturing work.
+
+Run the separate cross-slide style analysis on the finished deck:
+
+```bash
+python scripts/deck_style.py output.pptx --rhythm --format pretty
+```
+
+Every `deck_style.py` finding is advisory `info`, and the command exits `1`
+when it has advice. Use it only as evidence for repeated media or layouts and
+whether a non-structural page visibly fulfills its planned content obligation.
+Override it whenever repetition,
+whitespace, or another composition better serves the content; never optimize a
+deck merely to clear heuristic findings. Keep correctness and style separate —
+a clean `view_issues.py` report says the file is sound, not that the deck is
+visually varied.
 
 ### Visual QA
 
-Use a risk-adaptive, staged, read-only review. Visual QA judges rendered
-appearance; it must not repeat the deterministic measurements already produced
-by `validate_pptx.py`, `view_issues.py`, or `package_audit.py`.
+Use a risk-adaptive, staged, read-only review when rendered appearance is
+material to the requested result. This normally includes newly authored decks
+and visually modified templates. Skip it for read-only extraction or when the
+user explicitly wants a rough working draft. If rendering or image inspection
+is unavailable, do not abandon an otherwise complete task: deliver after the
+deterministic gates and state the unverified visual risk; do not claim visual
+completeness from markitdown or structural validity alone. Visual QA judges
+rendered appearance; it must not repeat measurements already produced by
+`validate_pptx.py`, `view_issues.py`, or `package_audit.py`.
 
 1. Create readable overview grids with no more than six slides each:
 
@@ -344,15 +379,20 @@ Hard limits:
   a proof loop.
 
 Look for:
-- visible overlap, clipping, or unreadable text
+- visible overlap, clipping, unintended line breaks inside atomic values or
+  units, or unreadable text
 - visibly uneven alignment, spacing, or visual hierarchy
 - broken, severely mis-cropped, or stretched images
-- Treat official ImageGen watermarks as expected, not as defects, unless the
+- Treat official generated-image watermarks as expected, not as defects, unless the
   user explicitly requested watermark-free assets. Do not start watermark
   removal, cropping, or regeneration work merely because the mark is visible.
 - inconsistent palette, typography, or repeated-component treatment
 - visible placeholders, placeholder-like mostly empty containers, oversized
   cards whose content is stranded in one corner, or rendering artifacts
+- data- or structure-heavy pages whose content is stranded in one region while
+  a large region carries no semantic role; distinguish intentional statement
+  or quote whitespace from a missing chart, table, component, image, or
+  typographic composition, and never use decorative filler as the cure
 
 Overview grids:
 - /path/to/qa-overview-1.jpg
@@ -367,13 +407,14 @@ slide has no visible issue, say "none". Do not repair the deck.
 ```
 
 If no subagent is available, follow the same two-stage review yourself. The
-rendered image is the visual source of truth. Do not extract images, sample
-pixels, compare hashes, or write ad hoc analysis scripts. One careful look per
-artifact is enough.
+rendered image is the visual source of truth. Do not dismiss a visible defect
+because autofit is present or structural QA classified the underlying signal
+as a warning. Do not extract images, sample pixels, compare hashes, or write ad
+hoc analysis scripts. One careful look per artifact is enough.
 
 ### Verification Loop
 
-1. Generate slides → Content QA → Structural QA → Render → Risk-adaptive visual QA
+1. Generate slides → Content QA → Structural QA → Rhythm review → Render → Risk-adaptive visual QA
 2. List visible issues; if none are found, stop after the bounded pass
 3. Fix confirmed issues in the reusable source
 4. Re-render and re-verify affected slides only

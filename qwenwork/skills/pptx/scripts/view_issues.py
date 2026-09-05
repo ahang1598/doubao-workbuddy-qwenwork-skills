@@ -1,7 +1,23 @@
 """Structural validator for .pptx files.
 
-Runs ~12 OOXML-level checks and emits findings as JSON to stdout.
+Runs OOXML-level correctness checks and emits findings as JSON to stdout.
 Real defects + defensible heuristics + a WCAG-correct contrast check.
+
+Scope is deliberately **correctness only**: "is this file broken?" Every
+check here has an objective answer that holds regardless of what stage
+you're at — inspecting someone else's template, mid-build, or about to
+deliver. Nothing here judges whether a deck is *good*.
+
+Style and capacity questions live in `deck_style.py`:
+
+    deck_style.py X.pptx --capacity --pages N   # can a template carry N pages?
+    deck_style.py X.pptx --rhythm               # is a finished deck monotonous?
+
+Keep that boundary. A clean report from this script says the file is
+well-formed; it says nothing about whether a template's layouts can carry
+your content. Conflating the two once caused an agent to repeat a
+two-layout template across eight pages because the template scored
+"no warnings".
 
 Usage:
     python scripts/view_issues.py deck.pptx
@@ -21,36 +37,37 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import sys
 import zipfile
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict
 from pathlib import Path
-from typing import Iterable
 
 import defusedxml.ElementTree as ET
 
-NSMAP = {
-    "p":  "http://schemas.openxmlformats.org/presentationml/2006/main",
-    "a":  "http://schemas.openxmlformats.org/drawingml/2006/main",
-    "r":  "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-    "rs": "http://schemas.openxmlformats.org/package/2006/relationships",
-    "c":  "http://schemas.openxmlformats.org/drawingml/2006/chart",
-}
-
-EMU_PER_CM = 360000
-EMU_PER_PT = 12700
-EMU_PER_INCH = 914400
-
-
-@dataclass
-class Finding:
-    check: str
-    severity: str          # "error" | "warning" | "info"
-    slide: int | None      # 1-based slide number; None if package-level
-    shape: str | None      # shape name if applicable
-    message: str
-    details: dict = field(default_factory=dict)
+from pptx_core import (
+    EMU_PER_CM,
+    EMU_PER_INCH,
+    NSMAP,
+    Finding,
+    _Deck,
+    _estimate_text_height_emu,
+    _estimate_text_width_emu,
+    _hex,
+    _iter_geometry,
+    _iter_layout_visuals,
+    _iter_shapes,
+    _load_deck,
+    _ph_inherit_map,
+    _print_pretty,
+    _rect_intersect,
+    _resolve_target,
+    _slide_index_of_part,
+    _slide_solid_bg,
+    _spill_collision,
+    _theme_palette_hex,
+    _vertical_spill_collision,
+    _wcag_contrast,
+)
 
 
 def main() -> int:
@@ -91,6 +108,8 @@ def run_all_checks(pptx_path: Path, *, template: str | None, require_notes: bool
     findings += check_table_dimensions(deck)
     findings += check_style_graph_cycles(deck)
     findings += check_off_slide_geometry(deck)
+    findings += check_edge_clipping(deck)
+    findings += check_inherited_layout_interference(deck)
     findings += check_overlap(deck)
     findings += check_text_overflow(deck)
     findings += check_font_hierarchy(deck)
@@ -100,113 +119,6 @@ def run_all_checks(pptx_path: Path, *, template: str | None, require_notes: bool
     if require_notes:
         findings += check_speaker_notes_presence(deck)
     return findings
-
-
-# ---------- deck loading ----------------------------------------------------
-
-
-@dataclass
-class _Deck:
-    path: Path
-    zf: zipfile.ZipFile
-    parts: dict[str, bytes]
-    rels: dict[str, list[dict]]            # part_path -> list of {Id, Type, Target}
-    slide_paths: list[str]                  # ordered ppt/slides/slideN.xml
-    slide_w_emu: int
-    slide_h_emu: int
-    media_paths: set[str]                   # ppt/media/*
-    media_referenced: set[str]              # subset actually referenced
-
-
-def _load_deck(path: Path) -> _Deck:
-    zf = zipfile.ZipFile(path)
-    parts: dict[str, bytes] = {}
-    for name in zf.namelist():
-        parts[name] = zf.read(name)
-
-    # parse rels files
-    rels: dict[str, list[dict]] = {}
-    for name in parts:
-        if name.endswith(".rels"):
-            owner = _rels_owner(name)
-            root = ET.fromstring(parts[name])
-            rels[owner] = [
-                {
-                    "Id": r.get("Id"),
-                    "Type": r.get("Type"),
-                    "Target": r.get("Target"),
-                    "TargetMode": r.get("TargetMode", "Internal"),
-                }
-                for r in root
-            ]
-
-    # slide order
-    pres_xml = ET.fromstring(parts["ppt/presentation.xml"])
-    sld_id_list = pres_xml.find("p:sldIdLst", NSMAP)
-    pres_rels = rels.get("ppt/presentation.xml", [])
-    rid_to_target = {r["Id"]: r["Target"] for r in pres_rels}
-    slide_paths: list[str] = []
-    if sld_id_list is not None:
-        for sld_id in sld_id_list.findall("p:sldId", NSMAP):
-            rid = sld_id.get(f"{{{NSMAP['r']}}}id")
-            target = rid_to_target.get(rid)
-            if target:
-                slide_paths.append(_resolve_target("ppt/presentation.xml", target))
-
-    # canvas dimensions
-    sld_sz = pres_xml.find("p:sldSz", NSMAP)
-    slide_w = int(sld_sz.get("cx")) if sld_sz is not None else 9144000
-    slide_h = int(sld_sz.get("cy")) if sld_sz is not None else 6858000
-
-    # media
-    media_paths = {p for p in parts if p.startswith("ppt/media/") and not p.endswith("/")}
-    media_referenced: set[str] = set()
-    for owner, rs in rels.items():
-        for r in rs:
-            if r["TargetMode"] == "External":
-                continue
-            target_abs = _resolve_target(owner, r["Target"])
-            if target_abs.startswith("ppt/media/"):
-                media_referenced.add(target_abs)
-
-    return _Deck(
-        path=path,
-        zf=zf,
-        parts=parts,
-        rels=rels,
-        slide_paths=slide_paths,
-        slide_w_emu=slide_w,
-        slide_h_emu=slide_h,
-        media_paths=media_paths,
-        media_referenced=media_referenced,
-    )
-
-
-def _rels_owner(rels_name: str) -> str:
-    """ppt/slides/_rels/slide1.xml.rels -> ppt/slides/slide1.xml"""
-    parts = rels_name.split("/")
-    # remove the trailing .rels
-    last = parts[-1][:-len(".rels")]
-    base = parts[:-2] + [last] if parts[-2] == "_rels" else parts[:-1] + [last]
-    return "/".join(base)
-
-
-def _resolve_target(owner: str, target: str) -> str:
-    """Resolve a relationship Target relative to its owner part."""
-    if target.startswith("/"):
-        return target.lstrip("/")
-    owner_dir = "/".join(owner.split("/")[:-1])
-    parts = owner_dir.split("/") if owner_dir else []
-    for seg in target.split("/"):
-        if seg == "..":
-            if parts:
-                parts.pop()
-        elif seg == ".":
-            continue
-        else:
-            parts.append(seg)
-    return "/".join(parts)
-
 
 # ---------- checks ---------------------------------------------------------
 
@@ -364,16 +276,18 @@ def check_style_graph_cycles(deck: _Deck) -> list[Finding]:
 def check_off_slide_geometry(deck: _Deck) -> list[Finding]:
     """Shapes whose bounding boxes lie outside the slide canvas.
 
-    Tolerance: 0.5cm. Only flag text-bearing shapes (placeholder, autoshape
-    with text, textbox). Decorative geometry off-canvas is sometimes
-    intentional.
+    Tolerance: 0.5cm. Flag text-bearing shapes and semantic graphic frames
+    (tables, charts, SmartArt, embedded objects). Decorative geometry
+    off-canvas is sometimes intentional.
     """
     out: list[Finding] = []
     tol = EMU_PER_CM // 2
     w, h = deck.slide_w_emu, deck.slide_h_emu
     for idx, slide_path in enumerate(deck.slide_paths, start=1):
-        for sp in _iter_shapes(deck.parts[slide_path]):
-            if not sp["has_text"]:
+        for sp in _iter_geometry(
+            deck.parts[slide_path], _ph_inherit_map(deck, slide_path)
+        ):
+            if not sp.get("has_text") and sp["kind"] != "graphicFrame":
                 continue
             x, y, sw, sh = sp["x"], sp["y"], sp["w"], sp["h"]
             if x + sw < -tol or x > w + tol or y + sh < -tol or y > h + tol:
@@ -382,8 +296,153 @@ def check_off_slide_geometry(deck: _Deck) -> list[Finding]:
                     severity="warning",
                     slide=idx,
                     shape=sp["name"],
-                    message=f"text-bearing shape '{sp['name']}' is outside the slide canvas",
-                    details={"x": x, "y": y, "w": sw, "h": sh, "canvas": [w, h]},
+                    message=(
+                        f"{sp['kind']} '{sp['name']}' is outside the slide canvas"
+                    ),
+                    details={
+                        "x": x, "y": y, "w": sw, "h": sh,
+                        "canvas": [w, h], "kind": sp["kind"],
+                    },
+                ))
+    return out
+
+
+def check_edge_clipping(deck: _Deck) -> list[Finding]:
+    """Shapes that start on the canvas and run off it — partially clipped.
+
+    Distinct from :func:`check_off_slide_geometry`, which only fires when a
+    shape is *entirely* outside the canvas. A shape at x=9.05" w=1.45" on a
+    10" slide is 30% off the right edge, fully visible to the author in the
+    XML and fully broken in the render, yet it satisfies neither
+    ``x > w + tol`` nor ``x + sw < -tol``. That gap shipped a table whose
+    last column was cut in half and a bar chart whose track ran past the
+    page.
+
+    Two deliberate exemptions:
+
+    - **Full-bleed pictures and background fills** — a hero image is
+      *supposed* to bleed past the edge, and cropping it is the design.
+      Recognised as any text-free shape spanning ≥90% of either axis.
+    - **Unpainted spacers** — a ``<a:noFill/>`` rect with no outline and no
+      text leaves no mark, so clipping it is invisible.
+
+    Text-bearing shapes use a 0.05" tolerance, matching the usual internal text
+    inset; other painted geometry retains the conservative 0.5cm tolerance.
+    Text and semantic graphic-frame findings are deterministic ``error``
+    findings; decorative geometry remains ``warning``.
+    """
+    out: list[Finding] = []
+    w, h = deck.slide_w_emu, deck.slide_h_emu
+    for idx, slide_path in enumerate(deck.slide_paths, start=1):
+        for sp in _iter_geometry(deck.parts[slide_path], _ph_inherit_map(deck, slide_path)):
+            if not sp.get("painted"):
+                continue
+            bx, by, bw, bh = sp.get("box") or (sp["x"], sp["y"], sp["w"], sp["h"])
+            if bw <= 0 or bh <= 0:
+                continue
+            # entirely off-canvas is check_off_slide_geometry's finding
+            if bx >= w or by >= h or bx + bw <= 0 or by + bh <= 0:
+                continue
+            over = {
+                "left": max(0, -bx), "top": max(0, -by),
+                "right": max(0, (bx + bw) - w), "bottom": max(0, (by + bh) - h),
+            }
+            is_text_shape = bool(sp.get("has_text"))
+            is_semantic_frame = sp["kind"] == "graphicFrame"
+            tol = EMU_PER_INCH // 20 if is_text_shape else EMU_PER_CM // 2
+            clipped = {k: v for k, v in over.items() if v > tol}
+            if not clipped:
+                continue
+            # A full-bleed pic/fill spanning most of an axis is bleeding by
+            # design; text is never exempt.
+            if sp.get("can_bleed") and (bw >= w * 0.9 or bh >= h * 0.9):
+                continue
+            worst = max(clipped.values())
+            out.append(Finding(
+                check="edge_clipping",
+                severity=(
+                    "error" if is_text_shape or is_semantic_frame else "warning"
+                ),
+                slide=idx,
+                shape=sp["name"],
+                message=(
+                    f"'{sp['name']}' runs off the "
+                    f"{'/'.join(sorted(clipped))} edge by "
+                    f"{worst / EMU_PER_INCH:.2f}\" — it will render clipped"
+                ),
+                details={
+                    "overflow_emu": clipped,
+                    "box": {"x": bx, "y": by, "w": bw, "h": bh},
+                    "canvas": [w, h],
+                    "has_text": is_text_shape,
+                    "kind": sp["kind"],
+                    "tolerance_emu": tol,
+                },
+            ))
+    return out
+
+
+def check_inherited_layout_interference(deck: _Deck) -> list[Finding]:
+    """报告新增文字与版式显式视觉元素之间的干扰。
+
+    整页背景以及完整包住文字的版式视觉通常是有意的构图层。继承的小型装饰落入
+    文字墨迹区域时不豁免，这正是本检查需要交给渲染审阅的失效模式。
+    """
+    out: list[Finding] = []
+    slide_area = deck.slide_w_emu * deck.slide_h_emu
+    for idx, slide_path in enumerate(deck.slide_paths, start=1):
+        authored_text = [
+            geometry
+            for geometry in _iter_geometry(
+                deck.parts[slide_path], _ph_inherit_map(deck, slide_path)
+            )
+            if geometry["kind"] == "sp"
+            and geometry["content"]
+            and not geometry.get("is_placeholder")
+        ]
+        layout_visuals = list(_iter_layout_visuals(deck, slide_path))
+        for text_shape in authored_text:
+            text_area = text_shape["w"] * text_shape["h"]
+            if text_area <= 0:
+                continue
+            for visual in layout_visuals:
+                visual_area = visual["w"] * visual["h"]
+                if visual_area <= 0 or visual_area >= slide_area * 0.75:
+                    continue
+                intersection = _rect_intersect(text_shape, visual)
+                if intersection <= 0:
+                    continue
+                # 布局视觉完整包住文字时，它通常是有意的卡片或底板。
+                visual_contains_text = (
+                    visual["x"] <= text_shape["x"]
+                    and visual["y"] <= text_shape["y"]
+                    and visual["x"] + visual["w"]
+                    >= text_shape["x"] + text_shape["w"]
+                    and visual["y"] + visual["h"]
+                    >= text_shape["y"] + text_shape["h"]
+                )
+                if visual_contains_text:
+                    continue
+                ratio = intersection / min(text_area, visual_area)
+                if ratio < 0.10:
+                    continue
+                layout_name = visual["source_part"].rsplit("/", 1)[-1]
+                out.append(Finding(
+                    check="inherited_layout_interference",
+                    severity="warning",
+                    slide=idx,
+                    shape=f"{text_shape['name']} ∩ {visual['name']}",
+                    message=(
+                        f"authored text intersects visual inherited from {layout_name} "
+                        f"by {100 * ratio:.0f}% of the smaller area; review the "
+                        "full-resolution render"
+                    ),
+                    details={
+                        "layout_part": visual["source_part"],
+                        "text_shape": text_shape["name"],
+                        "layout_shape": visual["name"],
+                        "overlap_ratio": round(ratio, 3),
+                    },
                 ))
     return out
 
@@ -412,7 +471,15 @@ def check_overlap(deck: _Deck) -> list[Finding]:
     """
     out: list[Finding] = []
     for idx, slide_path in enumerate(deck.slide_paths, start=1):
-        rects = list(_iter_geometry(deck.parts[slide_path]))
+        # Graphic frames are included in deterministic edge checks, but not in
+        # this rectangle-overlap heuristic: labels and callouts intentionally
+        # overlay charts often enough that adding them here would create noise.
+        rects = [
+            shape for shape in _iter_geometry(
+                deck.parts[slide_path], _ph_inherit_map(deck, slide_path)
+            )
+            if shape["kind"] != "graphicFrame"
+        ]
         for i, a in enumerate(rects):
             if not a["content"]:
                 continue
@@ -457,92 +524,108 @@ def check_overlap(deck: _Deck) -> list[Finding]:
     return out
 
 
-def _rect_intersect(a: dict, b: dict) -> int:
-    dx = max(0, min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]))
-    dy = max(0, min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]))
-    return dx * dy
-
-
-def _iter_geometry(slide_xml: bytes) -> Iterable[dict]:
-    """Yield bbox + content flag for every sp/pic on the slide."""
-    try:
-        root = ET.fromstring(slide_xml)
-    except ET.ParseError:
-        return
-
-    def _bbox(elem) -> tuple[int, int, int, int] | None:
-        x_frm = elem.find(".//a:xfrm", NSMAP)
-        if x_frm is None:
-            return None
-        off = x_frm.find("a:off", NSMAP)
-        ext = x_frm.find("a:ext", NSMAP)
-        if off is None or ext is None:
-            return None
-        return (
-            int(off.get("x", "0")),
-            int(off.get("y", "0")),
-            int(ext.get("cx", "0")),
-            int(ext.get("cy", "0")),
-        )
-
-    # autoshape / textbox
-    for sp in root.iter(f"{{{NSMAP['p']}}}sp"):
-        bbox = _bbox(sp)
-        if not bbox:
-            continue
-        nv = sp.find("p:nvSpPr/p:cNvPr", NSMAP)
-        name = nv.get("name") if nv is not None else "shape"
-        text_runs = sp.findall(".//a:r", NSMAP)
-        has_text = any(
-            (r.findtext("a:t", default="", namespaces=NSMAP) or "").strip()
-            for r in text_runs
-        )
-        x, y, w, h = bbox
-        yield {
-            "kind": "sp", "name": name,
-            "x": x, "y": y, "w": w, "h": h,
-            "content": has_text,
-        }
-
-    # picture
-    for pic in root.iter(f"{{{NSMAP['p']}}}pic"):
-        bbox = _bbox(pic)
-        if not bbox:
-            continue
-        nv = pic.find("p:nvPicPr/p:cNvPr", NSMAP)
-        name = nv.get("name") if nv is not None else "picture"
-        x, y, w, h = bbox
-        yield {
-            "kind": "pic", "name": name,
-            "x": x, "y": y, "w": w, "h": h,
-            "content": True,
-        }
-
-
 def check_text_overflow(deck: _Deck) -> list[Finding]:
     """Port of OfficeCLI PowerPointHandler.ShapeProperties.cs:3819-3839.
 
-    Flat 0.55em latin / 1.0em CJK width. 5% tolerance. Skip shapes with
-    autoFit=normal or autoFit=shape (PowerPoint auto-resizes those at render).
+    Flat 0.55em latin / 1.0em CJK width. 5% tolerance.
+
+    Two directions:
+
+    - **Vertical** — estimated wrapped height vs usable box height.
+    - **Horizontal** — ``wrap="none"`` shapes never wrap, so the text spills
+      sideways out of its box. Spilling into empty canvas is a legitimate
+      design (oversized display type in a deliberately narrow box), so this
+      only fires when the spill leaves the canvas or lands on another
+      content-bearing shape.
+
+    Autofit is only honoured as an escape hatch on the **vertical** axis, and
+    only when it has actually been *computed*. Neither flavour is
+    self-certifying:
+
+    - ``<a:normAutofit/>`` bare is a request that no renderer has resolved —
+      python-pptx never fills in the scale, and non-PowerPoint renderers
+      ignore the element entirely.
+    - ``<a:spAutoFit/>`` says "the box grows to the text", but the growing is
+      the author's job. python-pptx hardcodes it into every textbox it
+      creates and never recomputes ``cy``, so on a generated deck it is
+      noise: 178 of 204 text shapes carried it on a deck whose metric cards
+      visibly overflowed their 0.16" boxes.
+
+    So a ``fontScale``/``lnSpcReduction`` is trusted outright, and a bare
+    ``spAutoFit`` is only trusted when the declared height actually agrees
+    with the estimate — which is what the box-fits test below already asks.
+    Horizontal spill is never exempt: neither flavour narrows text, and a
+    stale ``spAutoFit`` box is itself the bug.
     """
     out: list[Finding] = []
     for idx, slide_path in enumerate(deck.slide_paths, start=1):
-        for sp in _iter_shapes(deck.parts[slide_path]):
+        shapes = list(_iter_shapes(deck.parts[slide_path], _ph_inherit_map(deck, slide_path)))
+        for sp in shapes:
             if not sp["has_text"]:
                 continue
-            if sp["auto_fit"] in ("normAutofit", "spAutoFit"):
-                continue
-            est_h = _estimate_text_height_emu(sp)
-            usable_h = max(sp["h"] - sp["margin_t"] - sp["margin_b"], 1)
-            if est_h > usable_h * 1.05:
+            if sp["wrap"] == "none":
+                est_w = _estimate_text_width_emu(sp)
+                usable_w = max(sp["w"] - sp["margin_l"] - sp["margin_r"], 1)
+                if est_w <= usable_w * 1.05:
+                    continue
+                spill = {
+                    "x": sp["x"] + sp["margin_l"], "y": sp["y"],
+                    "w": est_w, "h": sp["h"],
+                }
+                hit = _spill_collision(spill, sp, shapes, deck.slide_w_emu)
+                if hit is None:
+                    continue
                 out.append(Finding(
                     check="text_overflow",
                     severity="warning",
                     slide=idx,
                     shape=sp["name"],
-                    message=f"text in '{sp['name']}' likely overflows (est {est_h} EMU vs usable {usable_h} EMU)",
-                    details={"est_height_emu": est_h, "usable_height_emu": usable_h},
+                    message=(
+                        f"text in '{sp['name']}' has wrap=\"none\" and spills "
+                        f"{est_w - usable_w} EMU past its box {hit}"
+                    ),
+                    details={
+                        "axis": "horizontal",
+                        "est_width_emu": est_w,
+                        "usable_width_emu": usable_w,
+                        "collides_with": hit,
+                        "text": sp["text"][:60],
+                    },
                 ))
+                continue
+            if sp["auto_fit_computed"]:
+                continue
+            est_h = _estimate_text_height_emu(sp)
+            usable_h = max(sp["h"] - sp["margin_t"] - sp["margin_b"], 1)
+            if est_h <= usable_h * 1.05:
+                continue
+            # Overflowing the *declared* box is only a defect when something
+            # shows it: the shape's own painted edge, the canvas edge, or a
+            # neighbour the glyphs land on. An unfilled, unstroked box has no
+            # visible boundary to cross.
+            if sp["has_edge"]:
+                hit = "its own painted edge"
+            else:
+                hit = _vertical_spill_collision(sp, est_h, shapes, deck.slide_h_emu)
+                if hit is None:
+                    continue
+            out.append(Finding(
+                check="text_overflow",
+                severity="warning",
+                slide=idx,
+                shape=sp["name"],
+                message=(
+                    f"text in '{sp['name']}' overflows {hit} "
+                    f"(est {est_h} EMU vs usable {usable_h} EMU)"
+                ),
+                details={
+                    "axis": "vertical",
+                    "est_height_emu": est_h,
+                    "usable_height_emu": usable_h,
+                    "collides_with": hit,
+                    "auto_fit": sp["auto_fit"],
+                },
+            ))
     return out
 
 
@@ -550,7 +633,7 @@ def check_font_hierarchy(deck: _Deck) -> list[Finding]:
     """Detect title runs <36pt and body runs outside 11-18pt."""
     out: list[Finding] = []
     for idx, slide_path in enumerate(deck.slide_paths, start=1):
-        for sp in _iter_shapes(deck.parts[slide_path]):
+        for sp in _iter_shapes(deck.parts[slide_path], _ph_inherit_map(deck, slide_path)):
             if not sp["has_text"]:
                 continue
             is_title = sp["placeholder_type"] in ("title", "ctrTitle")
@@ -591,7 +674,7 @@ def check_low_contrast(deck: _Deck) -> list[Finding]:
     out: list[Finding] = []
     for idx, slide_path in enumerate(deck.slide_paths, start=1):
         slide_bg = _slide_solid_bg(deck.parts[slide_path])
-        for sp in _iter_shapes(deck.parts[slide_path]):
+        for sp in _iter_shapes(deck.parts[slide_path], _ph_inherit_map(deck, slide_path)):
             if not sp["has_text"] or not sp["text_colors"]:
                 continue
             backdrop = sp["solid_fill"] or slide_bg
@@ -624,7 +707,7 @@ def check_palette_adherence(deck: _Deck, template_path: str) -> list[Finding]:
     if not palette:
         return out
     for idx, slide_path in enumerate(deck.slide_paths, start=1):
-        for sp in _iter_shapes(deck.parts[slide_path]):
+        for sp in _iter_shapes(deck.parts[slide_path], _ph_inherit_map(deck, slide_path)):
             for color in sp.get("explicit_colors", []):
                 if _hex(color).upper() not in palette:
                     out.append(Finding(
@@ -667,225 +750,6 @@ def check_speaker_notes_presence(deck: _Deck) -> list[Finding]:
                 details={},
             ))
     return out
-
-
-# ---------- shape iteration -------------------------------------------------
-
-
-def _iter_shapes(slide_xml: bytes) -> Iterable[dict]:
-    """Yield a dict per shape with the bits the checks need."""
-    try:
-        root = ET.fromstring(slide_xml)
-    except ET.ParseError:
-        return
-    for sp in root.iter(f"{{{NSMAP['p']}}}sp"):
-        nv = sp.find("p:nvSpPr/p:cNvPr", NSMAP)
-        ph = sp.find("p:nvSpPr/p:nvPr/p:ph", NSMAP)
-        x_frm = sp.find("p:spPr/a:xfrm", NSMAP)
-        if x_frm is None:
-            continue
-        off = x_frm.find("a:off", NSMAP)
-        ext = x_frm.find("a:ext", NSMAP)
-        if off is None or ext is None:
-            continue
-        body_pr = sp.find("p:txBody/a:bodyPr", NSMAP)
-        margins = _body_margins(body_pr)
-        auto_fit = None
-        if body_pr is not None:
-            for tag in ("normAutofit", "spAutoFit", "noAutofit"):
-                if body_pr.find(f"a:{tag}", NSMAP) is not None:
-                    auto_fit = tag
-                    break
-
-        # text runs / colors / sizes
-        text_runs = sp.findall(".//a:r", NSMAP)
-        has_text = any((r.findtext("a:t", default="", namespaces=NSMAP) or "").strip() for r in text_runs)
-        text_sizes_emu: list[int] = []
-        text_colors: list[tuple[int, int, int]] = []
-        explicit_colors: list[tuple[int, int, int]] = []
-        for r in text_runs:
-            rpr = r.find("a:rPr", NSMAP)
-            if rpr is not None and rpr.get("sz"):
-                text_sizes_emu.append(int(rpr.get("sz")))
-            # color: a:rPr/a:solidFill/a:srgbClr
-            srgb = r.find("a:rPr/a:solidFill/a:srgbClr", NSMAP)
-            if srgb is not None and srgb.get("val"):
-                text_colors.append(_hex_to_rgb(srgb.get("val")))
-                explicit_colors.append(_hex_to_rgb(srgb.get("val")))
-
-        # shape fill
-        sf = sp.find("p:spPr/a:solidFill/a:srgbClr", NSMAP)
-        solid_fill = _hex_to_rgb(sf.get("val")) if sf is not None and sf.get("val") else None
-        if solid_fill:
-            explicit_colors.append(solid_fill)
-
-        # gather text widths (simplified: total chars)
-        text = "".join(
-            (r.findtext("a:t", default="", namespaces=NSMAP) or "")
-            for r in text_runs
-        )
-
-        yield {
-            "name": (nv.get("name") if nv is not None else "shape"),
-            "x": int(off.get("x", "0")),
-            "y": int(off.get("y", "0")),
-            "w": int(ext.get("cx", "0")),
-            "h": int(ext.get("cy", "0")),
-            "has_text": has_text,
-            "text": text,
-            "text_sizes_emu": text_sizes_emu,
-            "text_colors": text_colors,
-            "explicit_colors": explicit_colors,
-            "solid_fill": solid_fill,
-            "margin_l": margins[0],
-            "margin_t": margins[1],
-            "margin_r": margins[2],
-            "margin_b": margins[3],
-            "auto_fit": auto_fit,
-            "placeholder_type": ph.get("type") if ph is not None else None,
-        }
-
-
-def _body_margins(body_pr) -> tuple[int, int, int, int]:
-    # bodyPr attrs: lIns/tIns/rIns/bIns in EMU; defaults from spec
-    if body_pr is None:
-        return (91440, 45720, 91440, 45720)
-    return (
-        int(body_pr.get("lIns") or 91440),
-        int(body_pr.get("tIns") or 45720),
-        int(body_pr.get("rIns") or 91440),
-        int(body_pr.get("bIns") or 45720),
-    )
-
-
-def _slide_solid_bg(slide_xml: bytes) -> tuple[int, int, int] | None:
-    try:
-        root = ET.fromstring(slide_xml)
-    except ET.ParseError:
-        return None
-    sf = root.find(".//p:cSld/p:bg/p:bgPr/a:solidFill/a:srgbClr", NSMAP)
-    if sf is not None and sf.get("val"):
-        return _hex_to_rgb(sf.get("val"))
-    return None
-
-
-# ---------- text overflow estimation ---------------------------------------
-
-
-def _estimate_text_height_emu(sp: dict) -> int:
-    """Port OfficeCLI's char-width heuristic.
-
-    Latin = 0.55em, CJK/fullwidth = 1.0em. Line height = font size pt * 1.2,
-    converted to EMU. We don't have <a:bodyPr> line-spacing exposed here in
-    enough detail; default to lnSpc=1.2.
-    """
-    usable_w = max(sp["w"] - sp["margin_l"] - sp["margin_r"], 1)
-    text = sp["text"] or ""
-    if not text:
-        return 0
-    sizes = sp["text_sizes_emu"] or [1800]  # default 18pt → 1800 (hundredths-of-pt)
-    avg_size_pt = sum(sizes) / len(sizes) / 100
-    font_emu = int(avg_size_pt * EMU_PER_PT)
-    cjk_emu = font_emu          # 1.0em
-    latin_emu = int(font_emu * 0.55)
-
-    lines = 1
-    cur = 0
-    for ch in text:
-        if ch == "\n":
-            lines += 1
-            cur = 0
-            continue
-        cw = cjk_emu if _is_cjk_or_fullwidth(ch) else latin_emu
-        if cur + cw > usable_w and cur > 0:
-            lines += 1
-            cur = cw
-        else:
-            cur += cw
-
-    line_h_emu = int(font_emu * 1.2)
-    return lines * line_h_emu
-
-
-def _is_cjk_or_fullwidth(ch: str) -> bool:
-    cp = ord(ch)
-    return (
-        0x3040 <= cp <= 0x30FF        # Hiragana, Katakana
-        or 0x3400 <= cp <= 0x4DBF     # CJK Ext A
-        or 0x4E00 <= cp <= 0x9FFF     # CJK Unified
-        or 0xAC00 <= cp <= 0xD7AF     # Hangul
-        or 0xFF00 <= cp <= 0xFF60     # Fullwidth Latin
-        or 0xFFE0 <= cp <= 0xFFE6
-    )
-
-
-# ---------- contrast --------------------------------------------------------
-
-
-def _wcag_contrast(c1: tuple[int, int, int], c2: tuple[int, int, int]) -> float:
-    l1 = _relative_luminance(c1)
-    l2 = _relative_luminance(c2)
-    lighter, darker = max(l1, l2), min(l1, l2)
-    return (lighter + 0.05) / (darker + 0.05)
-
-
-def _relative_luminance(rgb: tuple[int, int, int]) -> float:
-    def lin(c):
-        c = c / 255.0
-        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
-    r, g, b = lin(rgb[0]), lin(rgb[1]), lin(rgb[2])
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b
-
-
-# ---------- palette / theme -------------------------------------------------
-
-
-def _theme_palette_hex(theme_xml: bytes) -> set[str]:
-    try:
-        root = ET.fromstring(theme_xml)
-    except ET.ParseError:
-        return set()
-    palette: set[str] = set()
-    for srgb in root.iter(f"{{{NSMAP['a']}}}srgbClr"):
-        v = srgb.get("val")
-        if v:
-            palette.add(v.upper())
-    return palette
-
-
-# ---------- misc helpers ----------------------------------------------------
-
-
-def _slide_index_of_part(deck: _Deck, part_path: str) -> int | None:
-    if part_path in deck.slide_paths:
-        return deck.slide_paths.index(part_path) + 1
-    # walk rels: chart, etc., are owned by a slide
-    for idx, sp in enumerate(deck.slide_paths, start=1):
-        for r in deck.rels.get(sp, []):
-            if _resolve_target(sp, r["Target"]) == part_path:
-                return idx
-    return None
-
-
-def _hex_to_rgb(s: str) -> tuple[int, int, int]:
-    s = s.strip().lstrip("#")
-    return (int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
-
-
-def _hex(rgb: tuple[int, int, int]) -> str:
-    return "#{:02X}{:02X}{:02X}".format(*rgb)
-
-
-def _print_pretty(findings: list[Finding]) -> None:
-    if not findings:
-        print("no issues")
-        return
-    sev_order = {"error": 0, "warning": 1, "info": 2}
-    for f in sorted(findings, key=lambda x: (x.slide or 0, sev_order.get(x.severity, 9), x.check)):
-        slide = f"slide {f.slide}" if f.slide else "deck"
-        shape = f" ({f.shape})" if f.shape else ""
-        print(f"[{f.severity.upper():7}] {slide}{shape}  {f.check}: {f.message}")
-
 
 if __name__ == "__main__":
     sys.exit(main())

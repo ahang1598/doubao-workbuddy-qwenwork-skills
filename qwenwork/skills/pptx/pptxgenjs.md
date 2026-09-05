@@ -3,7 +3,7 @@
 Use this adapter when an existing generator already uses pptxgenjs, or when a
 deck needs native PowerPoint chart combinations that are materially easier to
 express with `addChart()`. Use the default `python-pptx` workflow in
-[from_scratch.md](from_scratch.md) for theme-led decks and the bundled visual
+[from_scratch.md](from_scratch.md) for direction-led decks and the bundled visual
 components. Do not switch adapters merely because one dependency is already
 installed.
 

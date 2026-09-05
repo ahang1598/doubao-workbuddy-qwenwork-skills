@@ -35,7 +35,7 @@ Example manifest:
       "role": "anchor",
       "prompt": "visual description without slide text",
       "size": "1792x1024",
-      "box": {"x": 0.0, "y": 0.0, "w": 13.333, "h": 7.5},
+      "box": { "x": 0.0, "y": 0.0, "w": 13.333, "h": 7.5 },
       "output": "/work/assets/cover.png",
       "result": "/work/assets/results/cover.json",
       "fit_policy": "adapt_then_crop",
@@ -67,13 +67,13 @@ The children inherit the parent conversation snapshot and share the workspace,
 but each child may write only its assigned files.
 
 Avoid conflicting parent writes while the authoring child owns the draft.
-In the current QwenWork runtime, several direct `ImageGen` calls in one parent
-message are processed serially even when the UI labels their group `Parallel`.
-The parent waits and PPT authoring does not overlap them. Never count or describe
-that display state as concurrent execution. True workflow concurrency here means
-separate image Agent branches plus a PPT-authoring Agent branch, followed by a
-join. The parent may still perform independent read-only work or choose a direct
-path when no authoring child is active.
+In the current QwenWork runtime, image generation uses asynchronous
+`qwenwork_image_generate` submissions followed by `qwenwork_media_task` waits.
+A UI `Parallel` label does not prove provider-side concurrency. Never count or
+describe that display state as concurrent execution. True workflow concurrency
+here means separate image Agent branches plus a PPT-authoring Agent branch,
+followed by a join. The parent may still perform independent read-only work or
+choose a direct path when no authoring child is active.
 
 When planned image slots exceed the first wave, choose the next slots by expected
 contribution to the deck. `anchor`, `supporting`, and `optional` roles are useful
@@ -93,7 +93,7 @@ The PPT-authoring Agent must:
 - Execute the build script.
 - Return a draft PPTX that opens and passes a structural smoke check.
 - Run `python scripts/authoring_result.py record draft.pptx --build-script
-  build_deck.py --result authoring-result.json` only after the draft exists.
+build_deck.py --result authoring-result.json` only after the draft exists.
 
 An image Agent must not create the PPTX. It owns exactly one image file and one
 result JSON.
@@ -104,7 +104,7 @@ Use direct parent execution when `Agent` is absent, the initial dispatch fails,
 or `python scripts/authoring_result.py verify authoring-result.json` rejects the
 authoring artifact after the join. Keep the useful outline, slot intent, and
 successful assets, then finish through a validated ordinary authoring path.
-Do not describe direct parent `ImageGen` calls as forked or concurrent execution.
+Do not describe direct parent media-task submissions as forked or concurrent execution.
 
 ## Authoring child contract
 
@@ -153,16 +153,17 @@ Give every image child a compact task envelope:
 
 Use this compact first-attempt sequence:
 
-1. Call `ImageGen` once.
-2. If it errors, do not retry inside the child. Write a failure result and
+1. Call `qwenwork_image_generate` once, then call `qwenwork_media_task` with
+   `action: "wait"` for the returned task ID.
+2. If submission or waiting errors, do not retry inside the child. Write a failure result and
    return so the parent can coordinate recovery.
-3. If it succeeds, copy the returned file to the assigned output path.
+3. If it succeeds, copy the downloaded file to the assigned output path.
 4. Check only existence, non-zero size, decodability, width, and height.
 5. Write the result JSON and return.
 
 Do not perform watermark removal, heuristic pixel detection, repeated `Read`,
 cropping, inpainting, or slide composition repair in an image child. An official
-ImageGen watermark is expected output, not an image-child failure. The final
+generated-image watermark is expected output, not an image-child failure. The final
 slide render is the visual source of truth for whether an `anchor` remains
 materially unusable after normal layout adaptation.
 
@@ -215,7 +216,7 @@ background; apply the smallest subject-preserving crop that keeps the slide
 readable. Never stretch the image. Use the preplanned no-image fallback only
 when those treatments fail.
 
-Official ImageGen output may include a service watermark. Unless the user
+Official generated-image output may include a service watermark. Unless the user
 explicitly requested watermark-free assets, accept it without pixel inspection,
 removal, concealment cropping, or regeneration. If watermark-free output was
 explicitly requested, do not repeat the same official generation path; use an
@@ -264,6 +265,6 @@ After all required children return:
    visual risk; perform visual QA in the parent or one dedicated visual-QA Agent.
 6. Repair only the affected slides and re-render those slides.
 
-Track planned slots, `ImageGen` calls, successful slots, retry amplification,
+Track planned slots, `qwenwork_image_generate` calls, successful slots, retry amplification,
 slowest-branch time, join delay, fallback count, and final QA status. For `N`
-planned slots, retry amplification is `(ImageGen calls - N) / N`.
+planned slots, retry amplification is `(image generation calls - N) / N`.

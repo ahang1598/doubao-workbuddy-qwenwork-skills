@@ -1,6 +1,6 @@
 ---
 name: create-skill
-version: 1.1.0
+version: 1.2.0
 description: Guides users through creating effective Agent Skills for QwenWork. Use when the user wants to create, write, or author a new skill, or asks about skill structure, best practices, or SKILL.md format.
 description_zh: 引导用户为 QwenWork 创建有效的 Agent 技能。当用户想要创建、编写或制作新技能，或询问技能结构、最佳实践或 SKILL.md 格式时使用。
 ---
@@ -8,6 +8,16 @@ description_zh: 引导用户为 QwenWork 创建有效的 Agent 技能。当用�
 # Creating Skills in QwenWork
 
 This skill guides you through creating effective Agent Skills for QwenWork. Skills are markdown files that teach the agent how to perform specific tasks: reviewing PRs using team standards, generating commit messages in a preferred format, querying database schemas, or any specialized workflow.
+
+## Language and Display Contract
+
+Reply in the user's conversation language, but keep conversation language separate from the app UI language and the skill's output language.
+
+- The directory and `name` are technical identifiers. Always use ASCII kebab-case.
+- Every user-visible skill must include explicit English and Chinese display names, descriptions, and argument hints.
+- Compatibility/default fields use English so the Global English app has a safe fallback.
+- In the Global English app, write the `SKILL.md` body in English even when the conversation is Chinese.
+- A user request for Chinese skill output affects the skill instructions and runtime output only; it does not make technical identifiers or English display metadata Chinese.
 
 ## Before You Begin: Gather Requirements
 
@@ -75,7 +85,15 @@ Every skill requires a `SKILL.md` file with YAML frontmatter and markdown body:
 ```markdown
 ---
 name: your-skill-name
-description: Brief description of what this skill does and when to use it
+name_en: Your Skill Name
+name_zh: 你的技能名称
+description: Brief English description of what this skill does and when to use it
+description_en: Brief English description of what this skill does and when to use it
+description_zh: 说明这个技能做什么以及何时使用
+argument-hint: Describe the task or attach the relevant files
+argument-hint-en: Describe the task or attach the relevant files
+argument-hint-zh: 描述任务或附上相关文件
+user-invocable: true
 ---
 
 # Your Skill Name
@@ -91,8 +109,13 @@ Concrete examples of using this skill.
 
 | Field | Requirements | Purpose |
 |-------|--------------|---------|
-| `name` | Max 64 chars, lowercase letters/numbers/hyphens only | Unique identifier for the skill |
-| `description` | Max 1024 chars, non-empty | Helps agent decide when to apply the skill |
+| `name` | Max 64 chars, ASCII lowercase letters/numbers/hyphens only | Technical identifier for the skill |
+| `name_en` / `name_zh` | Non-empty for user-visible skills | Explicit localized display names |
+| `description` | Max 1024 chars, non-empty English text | Compatibility/default discovery description |
+| `description_en` / `description_zh` | Non-empty for user-visible skills | Explicit localized discovery descriptions |
+| `argument-hint` | Non-empty English text for user-visible skills | Compatibility/default Quick Command hint |
+| `argument-hint-en` / `argument-hint-zh` | Non-empty for user-visible skills | Explicit localized Quick Command hints |
+| `user-invocable` | `true` unless the skill is internal-only | Controls whether the skill appears in user menus |
 
 ---
 
@@ -461,7 +484,7 @@ If you have access to the AskUserQuestion tool, use it for efficient structured 
 ### Phase 2: Design
 
 1. Draft the skill name (lowercase, hyphens, max 64 chars)
-2. Write a specific, third-person description
+2. Write complete English and Chinese display metadata with English compatibility defaults
 3. Outline the main sections needed
 4. Identify if supporting files or scripts are needed
 
@@ -501,7 +524,15 @@ code-review/
 ```markdown
 ---
 name: code-review
+name_en: Code Review
+name_zh: 代码审查
 description: Review code for quality, security, and maintainability following team standards. Use when reviewing pull requests, examining code changes, or when the user asks for a code review.
+description_en: Review code for quality, security, and maintainability following team standards. Use when reviewing pull requests, examining code changes, or when the user asks for a code review.
+description_zh: 按团队标准审查代码质量、安全性和可维护性。用于审查拉取请求、检查代码变更或用户要求代码审查时。
+argument-hint: Paste a diff or attach the files to review
+argument-hint-en: Paste a diff or attach the files to review
+argument-hint-zh: 粘贴差异内容或附上待审查文件
+user-invocable: true
 ---
 
 # Code Review
@@ -552,6 +583,9 @@ Before finalizing a skill, verify:
 - [ ] Examples are concrete, not abstract
 
 ### Structure
+- [ ] Directory and `name` use ASCII kebab-case technical identifiers
+- [ ] User-visible metadata includes complete English and Chinese names, descriptions, and argument hints
+- [ ] Compatibility/default display metadata is English
 - [ ] File references are one level deep
 - [ ] Progressive disclosure used appropriately
 - [ ] Workflows have clear steps
