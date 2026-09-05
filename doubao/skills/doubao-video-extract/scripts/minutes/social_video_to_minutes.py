@@ -8,6 +8,7 @@ Use --run-lark to execute drive upload, minutes generation, and vc notes retriev
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -16,17 +17,57 @@ from typing import Any, Optional
 from urllib.parse import urlparse
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[1]
+SKILL_ROOT = SCRIPTS_DIR.parent
 for module_dir in ("convert", "downloader", "util", "video_extract"):
     sys.path.insert(0, str(SCRIPTS_DIR / module_dir))
 
-import convert_video_to_audio
+import acfun_downloader
+import anonymous_ytdlp_downloader
 import bilibili_downloader
+import cctv_downloader
+import convert_video_to_audio
 import direct_video_downloader
-import douyin_downloader
 import doubao_transcript_doc
 import estimate_lark_minutes_wait
+import facebook_reels_downloader
+import instagram_reels_downloader
 import kuaishou_downloader
+import mgtv_downloader
+import pearvideo_downloader
+import sohu_downloader
+import tencent_video_downloader
+import tiktok_downloader
+import twitch_clips_downloader
+import weibo_downloader
+import x_downloader
+import youtube_downloader
+import yt_dlp_candidate_common
+import download_runtime
 from script_utils import check_executable, normalize_share_input, resolve_short_video_url
+
+
+ANONYMOUS_YTDLP_DOWNLOADERS = {
+    "acfun": acfun_downloader,
+    "cctv": cctv_downloader,
+    "mgtv": mgtv_downloader,
+    "pearvideo": pearvideo_downloader,
+    "sohu": sohu_downloader,
+    "tencent_video": tencent_video_downloader,
+}
+
+SPEC_YTDLP_DOWNLOADERS = {
+    "facebook_reels": facebook_reels_downloader,
+    "instagram_reels": instagram_reels_downloader,
+    "tiktok": tiktok_downloader,
+    "twitch_clips": twitch_clips_downloader,
+    "x": x_downloader,
+}
+
+YT_DLP_PLATFORMS = {
+    *ANONYMOUS_YTDLP_DOWNLOADERS,
+    *SPEC_YTDLP_DOWNLOADERS,
+    "youtube",
+}
 
 
 class UnsupportedWebsiteError(ValueError):
@@ -47,13 +88,56 @@ def _detect_platform(input_str: str) -> str:
         return "local"
     parsed = urlparse(input_str)
     host = parsed.netloc.lower()
+    path = parsed.path.lower()
     value = input_str.strip()
+    if value.startswith("1034:"):
+        return "weibo"
     if "bilibili.com" in host or value.upper().startswith("BV") or _is_av_id(value):
         return "bilibili"
-    if "douyin.com" in host or input_str.strip().isdigit():
-        return "douyin"
+    if (
+        host == "douyin.com"
+        or host.endswith(".douyin.com")
+        or host == "iesdouyin.com"
+        or host.endswith(".iesdouyin.com")
+    ):
+        raise UnsupportedWebsiteError(_unsupported_website_message(host))
     if "kuaishou.com" in host or "kwaicdn.com" in host:
         return "kuaishou"
+    if host == "acfun.cn" or host.endswith(".acfun.cn"):
+        return "acfun"
+    if host in {"tv.cctv.com", "cntv.cn"} or host.endswith(".cntv.cn"):
+        return "cctv"
+    if host == "mgtv.com" or host.endswith(".mgtv.com"):
+        return "mgtv"
+    if host == "pearvideo.com" or host.endswith(".pearvideo.com"):
+        return "pearvideo"
+    if host in {"tv.sohu.com", "my.tv.sohu.com"}:
+        return "sohu"
+    if host == "v.qq.com":
+        return "tencent_video"
+    if (host == "facebook.com" or host.endswith(".facebook.com")) and path.startswith("/reel/"):
+        return "facebook_reels"
+    if (host == "instagram.com" or host.endswith(".instagram.com")) and path.startswith("/reel/"):
+        return "instagram_reels"
+    if host == "tiktok.com" or host.endswith(".tiktok.com"):
+        return "tiktok"
+    if host == "clips.twitch.tv" or (
+        (host == "twitch.tv" or host.endswith(".twitch.tv")) and "/clip/" in path
+    ):
+        return "twitch_clips"
+    if host in {
+        "x.com",
+        "www.x.com",
+        "mobile.x.com",
+        "twitter.com",
+        "www.twitter.com",
+        "mobile.twitter.com",
+    } and re.fullmatch(r"/[^/]+/status/\d+(?:/video/\d+)?/?", path):
+        return "x"
+    if host in {"weibo.com", "www.weibo.com", "h5.video.weibo.com"} and "/show/" in path:
+        return "weibo"
+    if (host == "youtube.com" or host.endswith(".youtube.com")) and path.rstrip("/") == "/watch":
+        return "youtube"
     if parsed.scheme in {"http", "https"}:
         try:
             probe = direct_video_downloader.probe_video_url(input_str)
@@ -64,7 +148,7 @@ def _detect_platform(input_str: str) -> str:
         raise UnsupportedWebsiteError(_unsupported_website_message(host))
     raise ValueError(
         "Unable to detect platform. Pass an existing local video file or use --platform "
-        "bilibili, douyin, kuaishou, direct, or local."
+        "with one of the supported platform names."
     )
 
 
@@ -122,15 +206,63 @@ def _prepare_media(
         return video_path, "video", str(exc)
 
 
-def _download_video(platform: str, input_str: str, output_dir: str) -> str:
+def _download_video(
+    platform: str,
+    input_str: str,
+    output_dir: str,
+    *,
+    quality: str = "lowest",
+    attempts: int = anonymous_ytdlp_downloader.DEFAULT_ATTEMPTS,
+    resolve_timeout: int = anonymous_ytdlp_downloader.DEFAULT_RESOLVE_TIMEOUT,
+    download_timeout: int = anonymous_ytdlp_downloader.DEFAULT_DOWNLOAD_TIMEOUT,
+    socket_timeout: int = anonymous_ytdlp_downloader.DEFAULT_SOCKET_TIMEOUT,
+    overall_timeout: int = anonymous_ytdlp_downloader.DEFAULT_OVERALL_TIMEOUT,
+) -> Any:
     if platform == "bilibili":
         return bilibili_downloader.download(input_str, output_dir=output_dir)
-    if platform == "douyin":
-        return douyin_downloader.download(input_str, output_dir=output_dir)
     if platform == "kuaishou":
         return kuaishou_downloader.download(input_str, output_dir=output_dir)
     if platform == "direct":
         return direct_video_downloader.download(input_str, output_dir=output_dir)
+    if platform == "weibo":
+        return weibo_downloader.download_with_info(input_str, output_dir=output_dir)
+    if platform == "youtube":
+        return youtube_downloader.download_with_info(
+            input_str,
+            output_dir=output_dir,
+            attempts=attempts,
+            socket_timeout=socket_timeout,
+            resolve_timeout=resolve_timeout,
+            download_timeout=download_timeout,
+            overall_timeout=overall_timeout,
+        )
+    if platform in ANONYMOUS_YTDLP_DOWNLOADERS:
+        module = ANONYMOUS_YTDLP_DOWNLOADERS[platform]
+        result = anonymous_ytdlp_downloader.download_with_info(
+            module.CONFIG,
+            input_str,
+            output_dir=output_dir,
+            quality=quality,
+            attempts=attempts,
+            resolve_timeout=resolve_timeout,
+            download_timeout=download_timeout,
+            socket_timeout=socket_timeout,
+            overall_timeout=overall_timeout,
+        )
+        return result
+    if platform in SPEC_YTDLP_DOWNLOADERS:
+        module = SPEC_YTDLP_DOWNLOADERS[platform]
+        result = yt_dlp_candidate_common.download_with_info(
+            input_str,
+            module.SPEC,
+            output_dir=output_dir,
+            attempts=attempts,
+            socket_timeout=socket_timeout,
+            resolve_timeout=resolve_timeout,
+            download_timeout=download_timeout,
+            overall_timeout=overall_timeout,
+        )
+        return result
     raise ValueError(f"Unsupported platform: {platform}")
 
 
@@ -148,10 +280,18 @@ def _resolve_source_info(platform: str, input_str: str) -> Optional[dict[str, An
             "metadata": play.get("metadata", {}),
             "pages": play.get("pages", []),
         }
-    if platform == "douyin":
-        return douyin_downloader.resolve_video_info(input_str)
     if platform == "kuaishou":
         return kuaishou_downloader.resolve_video_info(input_str)
+    if platform == "weibo":
+        return weibo_downloader.resolve_video_info(input_str)
+    if platform == "youtube":
+        return youtube_downloader.resolve_video_info(input_str)
+    if platform in ANONYMOUS_YTDLP_DOWNLOADERS:
+        module = ANONYMOUS_YTDLP_DOWNLOADERS[platform]
+        return anonymous_ytdlp_downloader.resolve_video_info(module.CONFIG, input_str)
+    if platform in SPEC_YTDLP_DOWNLOADERS:
+        module = SPEC_YTDLP_DOWNLOADERS[platform]
+        return yt_dlp_candidate_common.resolve_video_info(input_str, module.SPEC)
     return None
 
 
@@ -248,7 +388,12 @@ def check_environment(
     platform: str,
     media_mode: str,
     audio_output_dir: Optional[str] = None,
+    run_lark: bool = False,
 ) -> dict[str, Any]:
+    dependency_manifest_path = SKILL_ROOT / "dependencies.json"
+    dependency_manifest = json.loads(
+        dependency_manifest_path.read_text(encoding="utf-8")
+    )
     checks: dict[str, Any] = {
         "input": {
             "normalized": _normalize_video_input(input_str),
@@ -260,21 +405,32 @@ def check_environment(
             "stdlib": str(Path(os.__file__).resolve().parents[1]),
         },
         "dependencies": {
-            "lark_cli": check_executable("lark-cli"),
+            "required": {},
+            "optional": {},
+            "not_needed": ["ffmpeg", "ffprobe"],
+        },
+        "dependency_manifest": {
+            "path": str(dependency_manifest_path),
+            "schema_version": dependency_manifest.get("schema_version"),
+            "policy": dependency_manifest.get("policy", {}),
         },
     }
-    if checks["dependencies"]["lark_cli"]["available"]:
+    if run_lark:
+        lark_cli = check_executable("lark-cli")
+        checks["dependencies"]["required"]["lark_cli"] = lark_cli
+    else:
+        checks["dependencies"]["not_needed"].append("lark_cli")
+        lark_cli = None
+    if lark_cli and lark_cli["available"]:
         version_process = subprocess.run(
             ["lark-cli", "--version"],
             text=True,
             capture_output=True,
         )
-        checks["dependencies"]["lark_cli"]["version_output"] = (
+        lark_cli["version_output"] = (
             version_process.stdout or version_process.stderr
         ).strip()
-    if platform == "douyin":
-        checks["downloader"] = douyin_downloader.check_environment()
-    elif platform == "kuaishou":
+    if platform == "kuaishou":
         checks["downloader"] = kuaishou_downloader.check_environment()
     elif platform == "bilibili":
         checks["downloader"] = bilibili_downloader.check_environment()
@@ -287,6 +443,16 @@ def check_environment(
                 "success": False,
                 "error": str(exc),
             }
+    elif platform == "weibo":
+        checks["downloader"] = weibo_downloader.check_environment()
+    elif platform == "youtube":
+        checks["downloader"] = youtube_downloader.check_environment()
+    elif platform in ANONYMOUS_YTDLP_DOWNLOADERS:
+        module = ANONYMOUS_YTDLP_DOWNLOADERS[platform]
+        checks["downloader"] = anonymous_ytdlp_downloader.check_environment(module.CONFIG)
+    elif platform in SPEC_YTDLP_DOWNLOADERS:
+        module = SPEC_YTDLP_DOWNLOADERS[platform]
+        checks["downloader"] = yt_dlp_candidate_common.check_environment(module.SPEC)
     elif platform == "local":
         local_path = Path(_resolve_local_video(input_str))
         checks["local_file"] = {
@@ -297,20 +463,86 @@ def check_environment(
             "size_bytes": local_path.stat().st_size,
         }
 
+    if platform in YT_DLP_PLATFORMS:
+        downloader_check = checks.get("downloader", {})
+        yt_dlp_version = downloader_check.get("yt_dlp_version")
+        yt_dlp_runner = (
+            downloader_check.get("yt_dlp_runner")
+            or downloader_check.get("yt_dlp_binary")
+        )
+        checks["dependencies"]["required"]["yt_dlp"] = {
+            "available": bool(yt_dlp_runner),
+            "runner": yt_dlp_runner,
+            "version": yt_dlp_version,
+            "version_policy": dependency_manifest["dependencies"]["yt-dlp"][
+                "version_policy"
+            ],
+        }
+    else:
+        checks["dependencies"]["not_needed"].append("yt_dlp")
+
     if media_mode == "audio":
         fallback_note = (
             "Audio mode uses PyAV to generate a compressed MP3 file by default. "
             "If PyAV conversion fails, local video inputs may fall back to uploading the source MP4; "
             "online video sources must stop instead of uploading video."
         )
+        audio_backends = convert_video_to_audio.check_backends()
+        pyav = audio_backends.get("pyav", {"available": False})
+        checks["dependencies"]["required"]["pyav"] = {
+            **pyav,
+            "purpose": "audio_conversion",
+        }
         checks["audio_conversion"] = {
             "backend": "pyav",
-            "backends": convert_video_to_audio.check_backends(),
+            "backends": audio_backends,
             "output_dir": _audio_output_dir_check(input_str, platform, audio_output_dir),
             "note": fallback_note,
         }
+    else:
+        pyav = convert_video_to_audio.check_backends().get(
+            "pyav",
+            {"available": False},
+        )
+        checks["dependencies"]["optional"]["pyav"] = {
+            **pyav,
+            "purpose": "media_verification",
+        }
 
     return checks
+
+
+def _check_task_dependencies(
+    platform: str,
+    media_mode: str,
+    run_lark: bool,
+) -> None:
+    if platform in YT_DLP_PLATFORMS:
+        download_runtime.discover_yt_dlp_runner()
+
+    if platform != "local" and media_mode == "audio":
+        pyav = convert_video_to_audio.check_backends().get(
+            "pyav",
+            {"available": False},
+        )
+        if not pyav.get("available"):
+            raise download_runtime.DownloadRuntimeError(
+                "PyAV is required to convert online video to audio.",
+                code="DEPENDENCY_MISSING",
+                stage="preflight",
+                retryable=False,
+                detail=str(pyav.get("error") or ""),
+            )
+
+    if run_lark:
+        lark_cli = check_executable("lark-cli")
+        if not lark_cli.get("available"):
+            raise download_runtime.DownloadRuntimeError(
+                "lark-cli is required when --run-lark is enabled.",
+                code="DEPENDENCY_MISSING",
+                stage="preflight",
+                retryable=False,
+            )
 
 
 def _audio_output_dir_check(
@@ -592,14 +824,74 @@ def main() -> int:
     )
     parser.add_argument(
         "--platform",
-        choices=["auto", "bilibili", "douyin", "kuaishou", "direct", "local"],
+        choices=[
+            "auto",
+            "acfun",
+            "bilibili",
+            "cctv",
+            "direct",
+            "facebook_reels",
+            "instagram_reels",
+            "kuaishou",
+            "local",
+            "mgtv",
+            "pearvideo",
+            "sohu",
+            "tencent_video",
+            "tiktok",
+            "twitch_clips",
+            "weibo",
+            "x",
+            "youtube",
+        ],
         default="auto",
         help="Source platform. Defaults to auto detection.",
     )
     parser.add_argument(
         "--output-dir",
-        default=os.environ.get("VIDEO_SUBTITLE_DOWNLOAD_DIR", "downloads"),
+        default=(
+            os.environ.get("VIDEO_EXTRACT_DOWNLOAD_DIR")
+            or os.environ.get("VIDEO_SUBTITLE_DOWNLOAD_DIR")
+            or "downloads"
+        ),
         help="Directory for downloaded videos. Defaults to downloads.",
+    )
+    parser.add_argument(
+        "--quality",
+        default="lowest",
+        choices=("lowest", "best", "1080p", "720p", "576p", "540p", "480p", "360p", "270p"),
+        help="Resolution for shared anonymous downloaders. Defaults to lowest.",
+    )
+    parser.add_argument(
+        "--attempts",
+        type=int,
+        choices=(1, 2, 3),
+        default=anonymous_ytdlp_downloader.DEFAULT_ATTEMPTS,
+        help="Maximum download attempts. Defaults to 3.",
+    )
+    parser.add_argument(
+        "--socket-timeout",
+        type=int,
+        default=anonymous_ytdlp_downloader.DEFAULT_SOCKET_TIMEOUT,
+        help="Network socket timeout in seconds. Defaults to 20.",
+    )
+    parser.add_argument(
+        "--resolve-timeout",
+        type=int,
+        default=anonymous_ytdlp_downloader.DEFAULT_RESOLVE_TIMEOUT,
+        help="Metadata resolution timeout in seconds. Defaults to 90.",
+    )
+    parser.add_argument(
+        "--download-timeout",
+        type=int,
+        default=anonymous_ytdlp_downloader.DEFAULT_DOWNLOAD_TIMEOUT,
+        help="Single download attempt timeout in seconds. Defaults to 1800.",
+    )
+    parser.add_argument(
+        "--overall-timeout",
+        type=int,
+        default=anonymous_ytdlp_downloader.DEFAULT_OVERALL_TIMEOUT,
+        help="Overall download and retry budget in seconds. Defaults to 1800.",
     )
     parser.add_argument(
         "--audio-output-dir",
@@ -666,6 +958,7 @@ def main() -> int:
                             platform,
                             args.media_mode,
                             args.audio_output_dir,
+                            args.run_lark,
                         ),
                     },
                     ensure_ascii=False,
@@ -674,14 +967,30 @@ def main() -> int:
             )
             return 0
 
-        video_path = (
-            _resolve_local_video(normalized_input)
-            if platform == "local"
-            else _download_video(platform, normalized_input, args.output_dir)
-        )
+        _check_task_dependencies(platform, args.media_mode, args.run_lark)
+
         source_info = None
         source_info_error = None
-        if platform != "local":
+        if platform == "local":
+            video_path = _resolve_local_video(normalized_input)
+        else:
+            download_result = _download_video(
+                platform,
+                normalized_input,
+                args.output_dir,
+                quality=args.quality,
+                attempts=args.attempts,
+                resolve_timeout=args.resolve_timeout,
+                download_timeout=args.download_timeout,
+                socket_timeout=args.socket_timeout,
+                overall_timeout=args.overall_timeout,
+            )
+            if isinstance(download_result, dict):
+                video_path = str(download_result["file_path"])
+                source_info = download_result
+            else:
+                video_path = str(download_result)
+        if platform != "local" and source_info is None:
             try:
                 source_info = _resolve_source_info(platform, normalized_input)
             except Exception as exc:
@@ -695,9 +1004,37 @@ def main() -> int:
             args.audio_format,
             args.overwrite_audio,
         )
+        actual_output_dir = str(Path(video_path).resolve().parent)
+        if platform == "local":
+            output_directory = {
+                "requested": actual_output_dir,
+                "actual": actual_output_dir,
+                "fallback_used": False,
+                "fallback_reason": None,
+            }
+        else:
+            requested_output_dir = str(Path(args.output_dir).expanduser().resolve())
+            output_directory = (
+                source_info.get("output_directory")
+                if source_info
+                else None
+            ) or {
+                "requested": requested_output_dir,
+                "actual": actual_output_dir,
+                "fallback_used": requested_output_dir != actual_output_dir,
+                "fallback_reason": (
+                    "Downloader selected a writable fallback directory."
+                    if requested_output_dir != actual_output_dir
+                    else None
+                ),
+            }
         result: dict[str, Any] = {
+            "success": True,
             "platform": platform,
             "video_path": str(Path(video_path).resolve()),
+            "file_path": str(Path(video_path).resolve()),
+            "output_dir": actual_output_dir,
+            "output_directory": output_directory,
             "requested_media_mode": args.media_mode,
             "media_mode": effective_media_mode,
             "audio_backend": "pyav" if args.media_mode == "audio" else None,
@@ -712,6 +1049,14 @@ def main() -> int:
             )
         if source_info:
             result["source_info"] = source_info
+            result["metadata"] = source_info.get("metadata", {})
+            if source_info.get("quality") is not None:
+                result["selected_quality"] = source_info.get("quality")
+            if source_info.get("successful_attempt") is not None:
+                result["attempts"] = source_info.get("successful_attempt")
+            if platform in ANONYMOUS_YTDLP_DOWNLOADERS:
+                result["requested_quality"] = args.quality
+                result["verification"] = source_info.get("verification")
         elif source_info_error:
             result["source_info_error"] = source_info_error
         if args.run_lark:
@@ -737,6 +1082,27 @@ def main() -> int:
                         "error": str(exc),
                         "data": exc.to_dict(),
                     },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return 1
+        if isinstance(
+            exc,
+            (
+                anonymous_ytdlp_downloader.DownloadFailedError,
+                download_runtime.DownloadRuntimeError,
+            ),
+        ):
+            payload = download_runtime.failure_payload(exc)
+            print(
+                json.dumps(payload, ensure_ascii=False, indent=2)
+            )
+            return 1
+        if not isinstance(exc, OnlineSourceRequiresAudioError):
+            print(
+                json.dumps(
+                    download_runtime.failure_payload(exc),
                     ensure_ascii=False,
                     indent=2,
                 )

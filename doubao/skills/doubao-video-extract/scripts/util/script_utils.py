@@ -3,12 +3,13 @@
 import json
 import re
 import shutil
-import tempfile
 import warnings
 from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import Request, urlopen
+
+import download_runtime
 
 warnings.filterwarnings("ignore", message=r"urllib3 v2 only supports OpenSSL.*")
 warnings.filterwarnings("ignore", message=r"Support for Python version .* has been deprecated.*")
@@ -46,8 +47,6 @@ def resolve_short_video_url(input_str: str) -> str:
         return resolve_short_video_url(unquote(target_values[0]))
 
     short_hosts = (
-        "v.douyin.com",
-        "www.iesdouyin.com",
         "b23.tv",
         "v.kuaishou.com",
         "u.kuaishou.com",
@@ -63,24 +62,10 @@ def check_executable(name: str) -> dict[str, Any]:
 
 
 def ensure_writable_dir(path: Path, fallback_name: str = "downloads") -> Path:
-    target = path.expanduser().resolve()
-    try:
-        target.mkdir(parents=True, exist_ok=True)
-        test_file = target / ".write-test"
-        test_file.write_text("", encoding="utf-8")
-        test_file.unlink(missing_ok=True)
-        return target
-    except Exception:
-        fallback = Path.home() / ".cache" / "video-extract" / fallback_name
-        try:
-            fallback.mkdir(parents=True, exist_ok=True)
-            test_file = fallback / ".write-test"
-            test_file.write_text("", encoding="utf-8")
-            test_file.unlink(missing_ok=True)
-            return fallback.resolve()
-        except Exception:
-            temp_dir = Path(tempfile.mkdtemp(prefix="video-extract-"))
-            return temp_dir.resolve()
+    return download_runtime.resolve_output_directory(
+        str(path),
+        default_name=fallback_name,
+    ).path
 
 
 def success(data: dict[str, Any]) -> dict[str, Any]:
@@ -88,11 +73,7 @@ def success(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def failure(exc: Exception, solution: str = "") -> dict[str, Any]:
-    return {
-        "success": False,
-        "error": str(exc),
-        "solution": solution,
-    }
+    return download_runtime.failure_payload(exc, solution)
 
 
 def print_json(payload: dict[str, Any]) -> None:

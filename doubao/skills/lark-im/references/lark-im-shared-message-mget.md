@@ -67,7 +67,10 @@ lark-cli im +shared-message-mget \
 
 - 对稳定去重后的每个 Copied ID 按输入顺序各发起一次 `POST /open-apis/im/v1/messages/shared_message/batch_query`，每个 JSON body 的 `message_ids` 只包含当前 ID；不并发，不增加业务 retry 或命令级 deadline。
 - 每次响应的根只由 `upper_message_id == ""` 识别，且必须恰好有一个 `msg_type=merge_forward` 根；该根与当前 singleton 请求的 Copied ID 严格绑定，不按跨响应数组位置猜测映射。
-- 成功输出为 `{"messages":[...],"total":N}`，按稳定去重后的输入顺序排列，`total` 等于去重 Copied ID 数。每个顶层 message 的稳定字段合同为 `copied_id`、`chat_id`、`message_id`、`msg_type`、`create_time`、`sender`、`content`，启用资源下载时可增加 `resources`；`sender.sender_name` 输出为 `sender.name`，根 `content` 是已恢复层级的 `<forwarded_messages>`。
+- 成功输出为 `{"messages":[...],"total":N}`，按稳定去重后的输入顺序排列，`total` 等于去重 Copied ID 数。每个顶层 message 的稳定字段合同为 `copied_id`、`origin_chat_id`、`message_id`、`msg_type`、`create_time`、`sender`、`content`，启用资源下载时可增加 `resources`；`sender.sender_name` 输出为 `sender.name`，根 `content` 是已恢复层级的 `<forwarded_messages>`。
+- **`origin_chat_id` 语义（回传原群必读）：**
+  - `origin_chat_id` 是顶层子消息转发内容的**来源飞书群**。
+  - **需要查询原始群聊信息或者把结果回传到原始群时，使用 `origin_chat_id`。**
 - `shared` 子节点同时输出安全编码的 `<doubao_message_id>...</doubao_message_id>` 与 `<doubao_sender_id id_type="...">...</doubao_sender_id>`。后者直接使用同一 OAPI 节点的 `sender.id` / `sender.id_type`，不补拉联系人或其它接口；普通消息和普通数字正文不会增加这两个标签。
 - 普通受支持消息类型继续使用既有 converter。
 - 所有 singleton 主响应与默认 thread 增强共享全命令 200 节点、32 层树深、单条正文 160 KiB、累计正文 8 MiB 和最终输出 16 MiB 上限；主快照超限在 formatter/Output 前整批失败，不能按 Copied ID 重置预算。
@@ -91,7 +94,7 @@ lark-cli im +shared-message-mget \
 {
   "messages": [{
     "copied_id": "7670391590610799816",
-    "chat_id": "oc_a0553eda9014c201e6969b478895c230",
+    "origin_chat_id": "oc_0f1c3d8e6b2a4759c8d1e2f3a4b5c6d7",
     "resources": [
       {
         "message_id": "7670391590610799816",

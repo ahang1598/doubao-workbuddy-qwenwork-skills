@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：107
-- 当前索引文件数：2387
-- 最近变更：[2026-09-04-180001](doubao/change-logs/2026-09-04-180001.md) - Doubao 本次同步新增 12 个文件、修改 55 个文件、删除 0 个文件。 受影响范围：skills/artifact-preview, skills/doubao-pc-optimizer, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-doc...
+- 当前索引文件数：2418
+- 最近变更：[2026-09-05-180002](doubao/change-logs/2026-09-05-180002.md) - Doubao 本次同步新增 34 个文件、修改 8 个文件、删除 3 个文件。 新增条目：skills/computer-use-automation。 移除条目已归档：skills/computer-use。 受影响范围：skills/computer-use, skills/computer-use-automation, skills/douba...
 
 ## 数据来源
 
@@ -34,7 +34,7 @@
 | byted-mediakit-image | `doubao/skills/byted-mediakit-image` | skill | 23 | 面向单张或批量图片的视觉处理、质量优化、内容理解与基础编辑目标，适用于图片尺寸缩放与体积治理、质量优先缩小体积、明确体积上限/质量值/格式转换的压缩、元信息探测、裁剪旋转翻转与圆角、颜色与锐化清晰度调整、负片、模糊与打码、水印、背景移除、文字识别、画质评估与智能裁剪等。若对象和目标族已明确属于图片优化、图片理解、图片隐私保护或图片基础编辑，但具体做法不确定，可先加载本 Skill 探索。 |
 | byted-mediakit-shared | `doubao/skills/byted-mediakit-shared` | skill | 3 | MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、滤镜、运镜、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video。不承担具体能力参数说明。 |
 | byted-mediakit-video | `doubao/skills/byted-mediakit-video` | skill | 32 | 面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及抠像换脸等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索。 |
-| computer-use | `doubao/skills/computer-use` | skill | 1 | 用于操作本地电脑 GUI、浏览器原生界面或真实本地浏览器状态，包括桌面应用、系统设置、弹窗、安装器、文件选择器、专业软件、远程桌面，以及软件下载安装、更新、卸载和首次启动验证。 |
+| computer-use-automation | `doubao/skills/computer-use-automation` | skill | 1 | Use this Windows Computer Use skill whenever the user wants to open, switch to, or operate a desktop app or local GUI and complete a task in it—even when they never mention "computer use" explicitly. Trigger on reques... |
 | datapro-search | `doubao/skills/datapro-search` | skill | 1 | Use when the user invokes $datapro-search, mentions DataPro Search, or asks for a focused search of academic literature, company registry records, company risk, securities and financial data, vehicle specifications, v... |
 | doubao-academic-evaluator | `doubao/skills/doubao-academic-evaluator` | skill | 8 | 用资深审稿人和导师的眼光，对科研工作做"只看不改"的诊断。两类任务：一是评判研究想法值不值得做（打分、查新颖性、判可行性）；二是论文评审，给文章成稿挑硬伤、判断能不能投。只负责找问题、下结论、给修改方向，不替你写正文、不替你画图。要动手写作、搭结构、润色语言，请用姊妹技能 doubao-academic-polish。触发于"帮我看看这个想法""值不值得做""投稿前帮我审一遍""能不能投"。 |
 | doubao-academic-polish | `doubao/skills/doubao-academic-polish` | skill | 53 | 学术论文正文写作、结构设计与语言润色总入口。完整起草、续写、扩写、补写或实质性修订各学科的中英文论文正文时，进入paper-write-zh或paper-write-en；只做提纲、结构诊断或重排方案时，进入paper-shape结构模式；只做忠实润色或不新增研究内容的中译英时，进入paper-shape润色模式。研究评价转/doubao-academic-evaluator；独立系统性文献调研转/doubao-literatur... |
@@ -101,7 +101,7 @@
 | doubao-sentiment-tracker | `doubao/skills/doubao-sentiment-tracker` | skill | 6 | 当用户在网页端或电脑客户端需要进行舆情监控、调研、社交媒体反馈收集、用户评价、品牌声量追踪时使用。支持微博、知乎、即刻、脉脉、B站、抖音.等多平台的舆情搜索、内容筛选和原始帖子溯源。注意：判断用户所处平台是手机端时，禁止触发这个skill。 |
 | doubao-stock-screening | `doubao/skills/doubao-stock-screening` | skill | 49 | 用于 A 股、港股、美股及其他股票市场的股票筛选、候选股构建、指定股票比较、行业筛选、主题概念筛选、产业链环节筛选、策略风格筛选和龙头识别。适用于用户要求找股票、筛股票池、比较指定股票、识别行业或主题龙头、按市场/行业/主题/产业链/投资风格/透明指标排序候选标的等场景。强调动态检索、权威信源、业务证据验证、透明分组和可解释结论；禁止隐藏评分、不可解释排名和确定性投资建议。 |
 | doubao-ultimate-guide | `doubao/skills/doubao-ultimate-guide` | skill | 64 | 统一攻略创作总控 Skill：根据用户需求路由到旅游攻略、健身攻略、美食烹饪教程、游戏攻略四个分支，默认先创建飞书/Lark 文档容器，再读取对应分支 Skill 生成内容并写入同一个文档。适用于旅行行程、训练健身、菜谱烹饪、游戏实战攻略等中文攻略类创作；不适用于泛资讯、商业分析、医疗诊断、金融投资、法律意见、纯文案包装、无明确攻略目标或不安全/违规请求。 |
-| doubao-video-extract | `doubao/skills/doubao-video-extract` | skill | 22 | 可提取、下载、解析、理解在线视频或本地视频文件。在线视频包含抖音、快手、B 站、视频直链。可提取内容包含视频的音频、字幕、逐字稿、文案、脚本、总结、时间轴。可理解的视频内容包含画面、人物、物体、动作、界面等视觉元素。 |
+| doubao-video-extract | `doubao/skills/doubao-video-extract` | skill | 53 | 可提取、下载、解析、理解在线视频或本地视频文件。支持快手、B 站、AcFun、芒果 TV、梨视频、微博、X 平台、Facebook、Instagram、TikTok、Twitch、YouTube等视频平台、视频直链和本地视频。可提取内容包含视频的音频、字幕、逐字稿、文案、脚本、总结、时间轴。可理解的视频内容包含画面、人物、物体、动作、界面等视觉元素。 |
 | doubao-visualization | `doubao/skills/doubao-visualization` | skill | 22 | 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据，或用户要求图表、图解、信息图、标注、动态/交互演示时使用。优先用 ECharts、确定性 HTML/SVG 或原图叠加；不承接海报、头像、壁纸、写实图片和艺术插画创作。 |
 | doubao-wealth-planning | `doubao/skills/doubao-wealth-planning` | skill | 166 | 为个人或家庭构建目标导向的财富规划，覆盖现金流、应急资金、债务、保障、教育/养老等目标、资产配置、情景压力测试与行动清单。用于新规划、年度复盘或重大人生变化。必须先确认司法辖区和风险承受能力；不替代持牌投资、税务、保险或法律意见。 |
 | gift-card-redemption | `doubao/skills/gift-card-redemption` | skill | 3 | 查询豆包订阅礼品卡的可兑换状态和套餐，并在确认后完成兑换。适用于查询或兑换豆包订阅礼品卡，支持文本兑换码和上传的二维码图片。不处理购买、退款、订单、优惠券或非豆包礼品卡。 |
@@ -138,6 +138,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-05-180002 | [2026-09-05-180002](doubao/change-logs/2026-09-05-180002.md) | Doubao 本次同步新增 34 个文件、修改 8 个文件、删除 3 个文件。 新增条目：skills/computer-use-automation。 移除条目已归档：skills/computer-use。 受影响范围：skills/computer-use, skills/computer-use-automation, skills/douba... |
 | 2026-09-04-180001 | [2026-09-04-180001](doubao/change-logs/2026-09-04-180001.md) | Doubao 本次同步新增 12 个文件、修改 55 个文件、删除 0 个文件。 受影响范围：skills/artifact-preview, skills/doubao-pc-optimizer, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-doc... |
 | 2026-09-03-180002 | [2026-09-03-180002](doubao/change-logs/2026-09-03-180002.md) | Doubao 本次同步新增 11 个文件、修改 1 个文件、删除 0 个文件。 新增条目：skills/doubao-answer-with-medical-evidence。 受影响范围：skills/doubao-answer-with-medical-evidence, skills/student-discount-application。 |
 | 2026-09-02-180002 | [2026-09-02-180002](doubao/change-logs/2026-09-02-180002.md) | Doubao 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/ppt, skills/sheet。 |
