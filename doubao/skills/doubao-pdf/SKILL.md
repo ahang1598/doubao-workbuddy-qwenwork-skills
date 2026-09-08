@@ -7,7 +7,7 @@ description: 用于处理所有 PDF 相关任务，包括读取、创建、编�
 
 ## Overview
 
-This guide covers essential PDF processing operations using bundled Python libraries and scripts. For advanced features, JavaScript libraries, and detailed examples, see [reference.md](reference.md). If you need to fill out a PDF form, read [forms.md](forms.md) and follow its instructions.
+This guide covers essential PDF processing operations using bundled Python libraries and scripts. For editing an existing PDF, read [editing.md](editing.md). For advanced features, JavaScript libraries, and detailed examples, see [reference.md](reference.md). If you need to fill out a PDF form, read [forms.md](forms.md) and follow its instructions.
 
 
 ## Rules
@@ -272,6 +272,7 @@ with pymupdf.open("input.pdf") as document:
 | Merge PDFs | PyMuPDF | `output.insert_pdf(source)` |
 | Split PDFs | PyMuPDF | `insert_pdf(..., from_page=i, to_page=i)` |
 | Extract text | PyMuPDF | `page.get_text("text", sort=True)` |
+| Edit existing PDF content | PyMuPDF | Follow [editing.md](editing.md) |
 | Extract tables | PyMuPDF, then pdfplumber fallback | `page.find_tables()` |
 | Extract images | PyMuPDF | `document.extract_image(xref)` |
 | Add annotations/watermarks | PyMuPDF | `page.add_*_annot()` / `show_pdf_page()` |

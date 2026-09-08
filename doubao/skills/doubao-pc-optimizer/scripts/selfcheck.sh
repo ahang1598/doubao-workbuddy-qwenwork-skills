@@ -21,9 +21,10 @@ PATTERNS=(
   'Disable-WindowsOptionalFeature'
   'Uninstall-WindowsFeature'
   '(Move-Item|Rename-Item|Remove-Item).*(System32|DriverStore|WindowsApps|Program Files)'
+  '(cmd(\.exe)?|ComSpec)[^[:cntrl:]]*/(c|k)([^[:alnum:]_]|$)'
 )
 for pat in "${PATTERNS[@]}"; do
-  hits=$(grep -riEn "$pat" scripts/ --include='*.ps1' --include='*.bat' --include='*.sh' | grep -v selfcheck)
+  hits=$(grep -riEn "$pat" scripts/ --include='*.ps1' --include='*.bat' --include='*.cmd' --include='*.sh' | grep -v selfcheck)
   if [ -n "$hits" ]; then echo "[FAIL] 匹配到禁止模式 '$pat':"; echo "$hits"; fail=1; fi
 done
 [ $fail -eq 0 ] && echo "[OK] 未发现禁止模式"
@@ -38,6 +39,22 @@ if grep -Eq '安装目录.*组件改名' references/windows-tuning.md; then
 fi
 if grep -Eq '主动要求卸载.*不在此列' SKILL.md; then
   echo "[FAIL] SKILL.md 的安全软件卸载仍存在例外"
+  fail=1
+fi
+
+escaped_quotes=$(grep -rFn '\\"' scripts/ --include='*.ps1' --include='*.bat' --include='*.cmd' --include='*.sh' | grep -v selfcheck)
+if [ -n "$escaped_quotes" ]; then
+  echo "[FAIL] scripts/ 中存在用反斜杠转义双引号的写法:"
+  echo "$escaped_quotes"
+  fail=1
+fi
+
+if ! grep -Fq '禁止通过 `cmd.exe /c` 或 `/k` 传递内联命令字符串' SKILL.md; then
+  echo "[FAIL] SKILL.md 缺少 CMD 内联命令禁令"
+  fail=1
+fi
+if ! grep -Fq '临时脚本执行删除前,必须先尝试列出路径下的文件' SKILL.md; then
+  echo "[FAIL] SKILL.md 缺少临时删除脚本的路径边界检查"
   fail=1
 fi
 
