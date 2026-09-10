@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：107
-- 当前索引文件数：2416
-- 最近变更：[2026-09-08-180002](doubao/change-logs/2026-09-08-180002.md) - Doubao 本次同步新增 9 个文件、修改 7 个文件、删除 11 个文件。 新增条目：skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/byted-mediakit-image, skills/doubao-app-builder, skills/doub...
+- 当前索引文件数：2446
+- 最近变更：[2026-09-10-180013](doubao/change-logs/2026-09-10-180013.md) - Doubao 本次同步新增 30 个文件、修改 45 个文件、删除 0 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/ppt, skills/sheet。
 
 ## 数据来源
 
@@ -102,7 +102,7 @@
 | doubao-stock-screening | `doubao/skills/doubao-stock-screening` | skill | 49 | 用于 A 股、港股、美股及其他股票市场的股票筛选、候选股构建、指定股票比较、行业筛选、主题概念筛选、产业链环节筛选、策略风格筛选和龙头识别。适用于用户要求找股票、筛股票池、比较指定股票、识别行业或主题龙头、按市场/行业/主题/产业链/投资风格/透明指标排序候选标的等场景。强调动态检索、权威信源、业务证据验证、透明分组和可解释结论；禁止隐藏评分、不可解释排名和确定性投资建议。 |
 | doubao-ultimate-guide | `doubao/skills/doubao-ultimate-guide` | skill | 64 | 统一攻略创作总控 Skill：根据用户需求路由到旅游攻略、健身攻略、美食烹饪教程、游戏攻略四个分支，默认先创建飞书/Lark 文档容器，再读取对应分支 Skill 生成内容并写入同一个文档。适用于旅行行程、训练健身、菜谱烹饪、游戏实战攻略等中文攻略类创作；不适用于泛资讯、商业分析、医疗诊断、金融投资、法律意见、纯文案包装、无明确攻略目标或不安全/违规请求。 |
 | doubao-video-extract | `doubao/skills/doubao-video-extract` | skill | 53 | 可提取、下载、解析、理解在线视频或本地视频文件。支持快手、B 站、AcFun、芒果 TV、梨视频、微博、X 平台、Facebook、Instagram、TikTok、Twitch、YouTube等视频平台、视频直链和本地视频。可提取内容包含视频的音频、字幕、逐字稿、文案、脚本、总结、时间轴。可理解的视频内容包含画面、人物、物体、动作、界面等视觉元素。 |
-| doubao-visualization | `doubao/skills/doubao-visualization` | skill | 22 | 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据，或用户要求图表、图解、信息图、标注、动态/交互演示时使用。优先用 ECharts、确定性 HTML/SVG 或原图叠加；不承接海报、头像、壁纸、写实图片和艺术插画创作。 |
+| doubao-visualization | `doubao/skills/doubao-visualization` | skill | 25 | 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据，或用户明确要求图表、图解、标注、动态/交互演示时使用。优先用 ECharts、确定性 HTML/SVG 或原图叠加；不承接地图、附件交付、海报、头像、写实图片和艺术插画。 |
 | doubao-wealth-planning | `doubao/skills/doubao-wealth-planning` | skill | 166 | 为个人或家庭构建目标导向的财富规划，覆盖现金流、应急资金、债务、保障、教育/养老等目标、资产配置、情景压力测试与行动清单。用于新规划、年度复盘或重大人生变化。必须先确认司法辖区和风险承受能力；不替代持牌投资、税务、保险或法律意见。 |
 | gift-card-redemption | `doubao/skills/gift-card-redemption` | skill | 3 | 查询豆包订阅礼品卡的可兑换状态和套餐，并在确认后完成兑换。适用于查询或兑换豆包订阅礼品卡，支持文本兑换码和上传的二维码图片。不处理购买、退款、订单、优惠券或非豆包礼品卡。 |
 | html | `doubao/skills/html` | skill | 8 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
@@ -124,7 +124,7 @@
 | lark-wiki | `doubao/skills/lark-wiki` | skill | 14 | 飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域... |
 | lark-workflow-standup-report | `doubao/skills/lark-workflow-standup-report` | skill | 1 | 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。 |
 | multi-stock-comparison | `doubao/skills/multi-stock-comparison` | skill | 29 | 对两家及以上上市公司或股票进行横向研究，覆盖大盘与板块、外围市场、供应链、重要新闻与监管、商业模式、经营财务、成长、预期、估值、股价、组合以及 A/H 股与跨上市地相对价值。适用于公司比较、选股、财报或估值对比、股价与事件复盘、供应链或监管分析、组合适配、配对交易、H 股相对价值，以及需要飞书文档、高级金融图表或可复核多维报告的任务。 |
-| ppt | `doubao/skills/ppt` | skill | 41 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| ppt | `doubao/skills/ppt` | skill | 68 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | seed-audio | `doubao/skills/seed-audio` | skill | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色） |
 | seedance-25 | `doubao/skills/seedance-25` | skill | 1 | 使用seedance2.5模型生成视频,使用 Seedance 2.5 按用户原始提示词生成视频，禁止改写提示词或切换模型，并在生成前补齐时长、比例和检索所得的必要信息后向用户确认原样透传提示词、不润色视频 prompt、不要改写后生成，或显式调用本 Skill 时使用。 |
 | seedream-50 | `doubao/skills/seedream-50` | skill | 1 | 当用户明确要求使用“5.0”“5.0 Pro”“5.0pro”“Seedream 5.0 Pro”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0 Pro 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_pro" 调用实际图片工具。 |
@@ -138,6 +138,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-10-180013 | [2026-09-10-180013](doubao/change-logs/2026-09-10-180013.md) | Doubao 本次同步新增 30 个文件、修改 45 个文件、删除 0 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/ppt, skills/sheet。 |
 | 2026-09-08-180002 | [2026-09-08-180002](doubao/change-logs/2026-09-08-180002.md) | Doubao 本次同步新增 9 个文件、修改 7 个文件、删除 11 个文件。 新增条目：skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/byted-mediakit-image, skills/doubao-app-builder, skills/doub... |
 | 2026-09-05-180002 | [2026-09-05-180002](doubao/change-logs/2026-09-05-180002.md) | Doubao 本次同步新增 34 个文件、修改 8 个文件、删除 3 个文件。 新增条目：skills/computer-use-automation。 移除条目已归档：skills/computer-use。 受影响范围：skills/computer-use, skills/computer-use-automation, skills/douba... |
 | 2026-09-04-180001 | [2026-09-04-180001](doubao/change-logs/2026-09-04-180001.md) | Doubao 本次同步新增 12 个文件、修改 55 个文件、删除 0 个文件。 受影响范围：skills/artifact-preview, skills/doubao-pc-optimizer, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-doc... |
@@ -157,4 +158,3 @@
 | 2026-07-23-203625 | [2026-07-23-203625](doubao/change-logs/2026-07-23-203625.md) | 本次同步新增 65 个文件、修改 0 个文件、删除 0 个文件。 新增 skill：doubao-academic-researcher, doubao-clinical-decision-support, doubao-industry-analysis, doubao-medical-literature-search。 受影响范围：doubao-... |
 | 2026-07-18-180002 | [2026-07-18-180002](doubao/change-logs/2026-07-18-180002.md) | 本次同步新增 25 个文件、修改 57 个文件、删除 18 个文件。 新增 skill：doubao-medical-report, doubao-record。 移除的 skill 已归档：xiaohe-medical-report。 受影响范围：doubao-medical-report, doubao-record, lark-doc, lark... |
 | 2026-07-15-172708 | [2026-07-15-172708](doubao/change-logs/2026-07-15-172708.md) | 本次同步新增 96 个文件、修改 2 个文件、删除 7 个文件。 新增 skill：doubao-academic-evaluator, doubao-academic-polish, doubao-identity, doubao-newmedia-writing, xiaohe-medical-report。 移除的 skill 已归档：douba... |
-| 2026-07-13-180002 | [2026-07-13-180002](doubao/change-logs/2026-07-13-180002.md) | 本次同步新增 57 个文件、修改 60 个文件、删除 5 个文件。 受影响范围：doubao-creative-design, doubao-creative-drama, doubao-cron-scheduler, doubao-qa, lark-approval, lark-base, lark-calendar, lark-doc, lark-... |

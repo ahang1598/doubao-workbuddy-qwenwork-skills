@@ -65,6 +65,38 @@
 
 **主要服务 A 型**（B 型极少用）。从信息关系拆解结构（顺序 / 对比 / 循环 / 因果），优先用结构图呈现而非文字。线条止于节点边缘，禁止文字穿线。纯文字罗列作为兜底。
 
+## 常用 SVG 图
+
+本设计系统偏好以下设计（详情跑 `chart_help('<slug>')`）：
+
+**推荐 palette**（本场景多用深底 / 戏剧色，选一个贯穿全 deck）：
+
+| palette 名 | 底色 | 适用子味道 |
+|---|---|---|
+| `merlot_pitch` | 深墨底（**深底**） | 融资 / 招商 · 酒红 Merlot 戏剧感 |
+| `forest_luxe` | 深墨绿（**深底**） | 高端消费品 / 奢侈品 · 古铜金 |
+| `rust_terracotta` | 米白 | 工业设计 / 建材 / 制造业 · 锈橙陶土 |
+| `grape_eclectic` | 象牙 | 时尚 / 内容 / 女性向消费 · 葡萄紫 |
+
+## 骨架变体推荐（skeleton variant）
+
+传给 `make_*` 的 `variant=` 参数。不传或传 `None` / `'classic'` 走原经典设计。骨架和 palette 正交组合：骨架决定图形结构与视觉气质，palette 决定色系。
+**本场景调性**：外向、有戏剧感、卖点密度高。数据要震撼但保真。**深底 palette 尤其上镜**——特别是融资 / 战投 / 大屏演讲场景。
+
+| chart | variant | palette 推荐 | 何时用 |
+|---|---|---|---|
+| `funnel_classic` | `default_flat` | `deep_sea_navy` / `merlot_pitch` | 市场机会 TAM/SAM 收敛；deep_sea_navy 深底湖蓝 · 顶级 pitch |
+| `funnel_classic` | `bar_lollipop` | `forest_moss_v2` / `forest_luxe` | 客户旅程 KPI 行 dashboard 极简 · 深绿铜金 = 奢侈品 pitch |
+| `percent_grid` | `person_10x10` | `berry_wine` / `grape_eclectic` | 'X% 用户会 ...'（人形更卖点）· berry_wine 编辑杂志感 |
+| `quadrant_2x2` | `label_box_quadrant_bg` | `sunset_terracotta` / `rust_terracotta` | 竞品定位矩阵（带象限名 pill）· 陶土暖色高级 |
+| `quadrant_2x2` | `bubble_L` | `deep_sea_navy` / `forest_luxe` | 含市场规模的三维定位；深底 = 严肃战略 |
+| `marimekko` | `mekko_gradient` | `berry_wine` / `merlot_pitch` | 市场 × 玩家占比 · 莓果紫红戏剧感 |
+| `candle` | `line_close` | `deep_sea_navy` / `forest_luxe` | 增长曲线（不用 K 线细节）· 深底湖蓝麦色 = 对冲基金 pitch 
+
+**样式收敛**：颜色取自品牌配色、数据标签只标关键点、表格仅用细横线分隔、多图例需有区分度。**A 型页面主力用 svg 承担说服力**（对比 / 归因 / 量级流转 / 分层筛选），B 型 deck 最多 1-2 张图剩下全用视觉宣言。
+
+**版式偏好**：A 型页面优先用组合 B（单大图 + 编号驱动力，如"融资亮点"页 + 3-5 条编号解释）或组合 C（顶部 KPI 带 + 主图 + 洞察卡，用于 metrics / traction 页）；B 型宣言页不适用这些组合，直接大字 + 单一焦点。5 类语义模块与硬规则见 [`slide-taxonomy.md`](slide-taxonomy.md#svg-图页版式思路)。
+
 ## 视觉要求
 
 - **字体**：展示型（标题 / 宣言 / 大数字）与正文型清晰分工；标题敢在字号、字重、字间距上做极致对比，本身就是视觉作品。可用思源宋体 + 思源黑体组合体现层级。**B 型鼓励巨字和不对称错落排版**。

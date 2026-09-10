@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic checks for the temporary deterministic-visualization skill."""
+"""Validate structure, routing invariants, and runtime loading budgets."""
 from __future__ import annotations
 
 import json
@@ -24,6 +24,9 @@ REQUIRED = [
     "references/renderer-interaction-geometry.md",
     "references/renderer-output-mobile.md",
     "references/echarts-option-spec.md",
+    "references/echarts-web-pc-spec.md",
+    "references/echarts-web-pc-sunburst-reference.md",
+    "references/echarts-web-pc-gauge-reference.md",
     "references/echarts-source.md",
     "references/image-overlay-process-spec.md",
     "references/image-overlay-authoring-spec.md",
@@ -38,8 +41,6 @@ FORBIDDEN_FILES = [
     "references/generated-prompt-rules.md",
     "references/generated-style-guide.md",
     "references/generated-tool-contracts.md",
-    "references/migration-coverage.md",
-    "examples/generated-worked-example.md",
     "references/mode-interactive.md",
 ]
 
@@ -47,114 +48,102 @@ FORBIDDEN_TERMS = [
     "generated" + "_illustration",
     "image" + "_gen",
     "generate" + "_image",
-    "seed" + "ream_",
-    "Seed" + "ream 5",
-    "model" + "_version",
     "生成式知识" + "配图",
     "图片生成" + "工具",
     "生图" + "工具",
 ]
 
-
-def fail(message: str, errors: list[str]) -> None:
-    errors.append(message)
-
-
-def active_text() -> str:
-    paths = [
-        *ROOT.rglob("*.md"),
-        *ROOT.rglob("*.yaml"),
-        *ROOT.rglob("*.json"),
-        *ROOT.rglob("*.py"),
-    ]
-    return "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in sorted(set(paths))
-        if path.is_file()
-    )
-
-
-def validate_plan_invariants(plan: dict) -> list[str]:
-    """Validate the cross-field constraints used by the planning schema."""
-    errors: list[str] = []
-    assets = plan.get("assets") or []
-    presentations = plan.get("presentations") or []
-    required_files = set(plan.get("required_files") or [])
-    policy = plan.get("user_image_policy")
-    behavior = plan.get("html_svg_behavior")
-
-    if plan.get("required_files_loaded") is not True:
-        errors.append("required_files_loaded 必须为 true")
-
-    if not assets:
-        errors.append("assets 不能为空")
-    if "none" in assets and len(assets) != 1:
-        errors.append("assets 中的 none 不能与其他素材组合")
-    if "user_image" not in assets and policy != "not_applicable":
-        errors.append("没有 user_image 时 user_image_policy 必须为 not_applicable")
-    if policy == "observe_for_schematic":
-        if "user_image" not in assets:
-            errors.append("observe_for_schematic 需要 user_image")
-        if "html_svg" not in presentations:
-            errors.append("observe_for_schematic 需要 html_svg")
-
-    if plan.get("should_visualize") is False:
-        if presentations != ["text_only"]:
-            errors.append("should_visualize=false 时只能选择 text_only")
-
-    if "text_only" in presentations and len(presentations) != 1:
-        errors.append("text_only 不能与其他 presentation 组合")
-
-    base_html = {
-        "references/mode-html-svg.md",
-        "references/renderer-trigger-design.md",
-        "references/renderer-output-mobile.md",
-        "references/shared-quality.md",
-    }
-    interactive_html = {
-        "references/renderer-stability-math.md",
-        "references/renderer-interaction-geometry.md",
-    }
-    echarts_files = {
-        "references/mode-echarts.md",
-        "references/echarts-option-spec.md",
-        "references/shared-quality.md",
-    }
-    overlay_files = {
+BASE_ROUTES = {
+    "echarts": ["SKILL.md", "references/mode-echarts.md"],
+    "static_image_overlay": [
+        "SKILL.md",
+        "references/mode-image-overlay.md",
+    ],
+    "static_image_overlay_complex": [
+        "SKILL.md",
         "references/mode-image-overlay.md",
         "references/image-overlay-process-spec.md",
         "references/image-overlay-authoring-spec.md",
-        "references/shared-quality.md",
+    ],
+    "html_svg_static": ["SKILL.md", "references/mode-html-svg.md"],
+    "html_svg_interactive": [
+        "SKILL.md",
+        "references/mode-html-svg.md",
+        "references/renderer-stability-math.md",
+        "references/renderer-interaction-geometry.md",
+    ],
+    "echarts_web_pc": [
+        "SKILL.md",
+        "references/mode-echarts.md",
+        "references/echarts-web-pc-spec.md",
+    ],
+    "echarts_web_pc_sunburst": [
+        "SKILL.md",
+        "references/mode-echarts.md",
+        "references/echarts-web-pc-spec.md",
+        "references/echarts-web-pc-sunburst-reference.md",
+    ],
+    "echarts_web_pc_gauge": [
+        "SKILL.md",
+        "references/mode-echarts.md",
+        "references/echarts-web-pc-spec.md",
+        "references/echarts-web-pc-gauge-reference.md",
+    ],
+}
+
+BASE_ROUTE_BUDGETS = {
+    "echarts": 18_000,
+    "static_image_overlay": 18_000,
+    "static_image_overlay_complex": 48_000,
+    "html_svg_static": 20_000,
+    "html_svg_interactive": 34_000,
+    "echarts_web_pc": 40_000,
+    "echarts_web_pc_sunburst": 52_000,
+    "echarts_web_pc_gauge": 46_000,
+}
+
+
+def read(path: str) -> str:
+    return (ROOT / path).read_text(encoding="utf-8")
+
+
+def validate_plan(plan: dict) -> list[str]:
+    errors: list[str] = []
+    mode = plan.get("mode")
+    behavior = plan.get("behavior")
+    source = plan.get("source")
+    secondary = plan.get("secondary")
+    modes = {"text_only", "echarts", "static_image_overlay", "html_svg"}
+    sources = {
+        "user_content",
+        "user_image",
+        "verified",
+        "example",
+        "insufficient",
     }
 
-    if "html_svg" in presentations:
-        if behavior not in {"static", "interactive"}:
-            errors.append("html_svg 需要 static 或 interactive behavior")
-        missing = base_html - required_files
-        if missing:
-            errors.append(f"html_svg 缺少必读文件: {sorted(missing)}")
-        if behavior == "interactive":
-            missing = interactive_html - required_files
-            if missing:
-                errors.append(f"interactive html_svg 缺少必读文件: {sorted(missing)}")
-    elif behavior != "not_applicable":
-        errors.append("未选择 html_svg 时 behavior 必须为 not_applicable")
-
-    if "echarts" in presentations:
-        missing = echarts_files - required_files
-        if missing:
-            errors.append(f"echarts 缺少必读文件: {sorted(missing)}")
-
-    if "static_image_overlay" in presentations:
-        if "user_image" not in assets or policy != "preserve":
-            errors.append("原图叠加需要 user_image + preserve")
-        missing = overlay_files - required_files
-        if missing:
-            errors.append(f"原图叠加缺少必读文件: {sorted(missing)}")
-
-    if len(presentations) > 1 and "references/composition.md" not in required_files:
-        errors.append("组合输出需要 references/composition.md")
-
+    if set(plan) != {"mode", "behavior", "source", "secondary"}:
+        errors.append("plan 必须且只能包含四个最小字段")
+    if mode not in modes:
+        errors.append("mode 非法")
+    if behavior not in {"not_applicable", "static", "interactive"}:
+        errors.append("behavior 非法")
+    if source not in sources:
+        errors.append("source 非法")
+    if mode == "html_svg" and behavior not in {"static", "interactive"}:
+        errors.append("html_svg 必须指定 static 或 interactive")
+    if mode != "html_svg" and behavior != "not_applicable":
+        errors.append("非 html_svg 的 behavior 必须为 not_applicable")
+    if mode == "static_image_overlay" and source != "user_image":
+        errors.append("原图叠加必须使用 user_image")
+    if source == "insufficient" and mode != "text_only":
+        errors.append("素材不足时必须回退 text_only")
+    if secondary is not None and secondary not in modes - {"text_only"}:
+        errors.append("secondary 非法")
+    if secondary == mode:
+        errors.append("secondary 不得与 mode 重复")
+    if mode == "text_only" and secondary is not None:
+        errors.append("text_only 不得组合第二模式")
     return errors
 
 
@@ -165,146 +154,170 @@ def main() -> int:
 
     frontmatter = re.match(r"^---\n(.*?)\n---\n", text, re.S)
     if not frontmatter:
-        fail("SKILL.md 缺少合法 frontmatter", errors)
+        errors.append("SKILL.md 缺少合法 frontmatter")
     else:
         front = frontmatter.group(1)
         name = re.search(r"^name:\s*(.+)$", front, re.M)
         description = re.search(r"^description:\s*(.+)$", front, re.M)
-        if not name or name.group(1).strip() != ROOT.name:
-            fail("目录名与 frontmatter name 不一致", errors)
+        if not name or name.group(1).strip() != "doubao-visualization":
+            errors.append("frontmatter name 必须为 doubao-visualization")
         if not description:
-            fail("缺少 description", errors)
+            errors.append("缺少 description")
         elif len(description.group(1).strip()) > 260:
-            warnings.append("description 超过 260 字符，需结合平台限制复核")
+            warnings.append("description 超过 260 字符")
 
     for relative_path in REQUIRED:
         if not (ROOT / relative_path).is_file():
-            fail(f"缺少必需文件: {relative_path}", errors)
-
+            errors.append(f"缺少必需文件: {relative_path}")
     for relative_path in FORBIDDEN_FILES:
         if (ROOT / relative_path).exists():
-            fail(f"候选包仍包含禁用文件: {relative_path}", errors)
+            errors.append(f"仍包含禁用文件: {relative_path}")
 
-    links = re.findall(
-        r"`((?:references|examples|schemas|scripts)/[^`]+)`",
-        text,
-    )
-    for relative_path in links:
-        if not (ROOT / relative_path).exists():
-            fail(f"SKILL.md 引用不存在: {relative_path}", errors)
+    markdown_files = [
+        SKILL,
+        *ROOT.glob("references/*.md"),
+        *ROOT.glob("examples/*.md"),
+    ]
+    for markdown_file in markdown_files:
+        markdown = markdown_file.read_text(encoding="utf-8")
+        for reference in re.findall(r"`([^`\n]+\.md)`", markdown):
+            candidates = [
+                ROOT / reference,
+                markdown_file.parent / reference,
+                ROOT / "references" / reference,
+                ROOT / "examples" / reference,
+            ]
+            if not any(candidate.is_file() for candidate in candidates):
+                relative_source = markdown_file.relative_to(ROOT)
+                errors.append(
+                    f"{relative_source} 引用不存在: {reference}"
+                )
 
-    body_lines = len(text.splitlines())
-    if body_lines > 500:
-        fail(f"SKILL.md 共 {body_lines} 行，超过 500 行", errors)
-
-    required_terms = [
+    if len(text.splitlines()) > 140:
+        errors.append("SKILL.md 超过 140 行")
+    for term in [
         "ECharts",
         "原图",
         "HTML/SVG",
-        "静态",
-        "交互",
+        "静态默认",
         "地图禁用",
+        "按需加载",
         "附件交付",
-    ]
-    for term in required_terms:
+    ]:
         if term not in text:
-            fail(f"缺少核心路由或边界关键词: {term}", errors)
+            errors.append(f"SKILL.md 缺少核心契约: {term}")
 
-    corpus = active_text()
+    corpus = "\n".join(
+        path.read_text(encoding="utf-8")
+        for suffix in ("*.md", "*.yaml", "*.json", "*.py")
+        for path in ROOT.rglob(suffix)
+        if path.is_file()
+    )
     for term in FORBIDDEN_TERMS:
         if re.search(re.escape(term), corpus, re.I):
-            fail(f"候选包仍包含禁用能力标记: {term}", errors)
+            errors.append(f"仍包含禁用能力标记: {term}")
 
-    loading_gate_terms = [
-        "强制渐进加载门",
-        "必须完整读取",
+    for obsolete in [
         "required_files_loaded",
-    ]
-    for term in loading_gate_terms:
-        if term not in text and term not in corpus:
-            fail(f"缺少 reference 加载门关键词: {term}", errors)
+        "先完整读取 `references/routing.md`",
+        "每次使用必读",
+    ]:
+        if obsolete in text:
+            errors.append(f"入口仍包含旧加载机制: {obsolete}")
 
-    mode_loading_groups = {
-        "references/mode-echarts.md": [
-            "echarts-option-spec.md",
-            "shared-quality.md",
-            "必须完整读取",
-        ],
-        "references/mode-image-overlay.md": [
-            "image-overlay-process-spec.md",
-            "image-overlay-authoring-spec.md",
-            "shared-quality.md",
-            "必须完整读取",
-        ],
-        "references/mode-html-svg.md": [
-            "renderer-trigger-design.md",
-            "renderer-output-mobile.md",
-            "shared-quality.md",
-            "必须完整读取",
-        ],
-    }
-    for relative_path, terms in mode_loading_groups.items():
-        path = ROOT / relative_path
-        mode_text = path.read_text(encoding="utf-8") if path.exists() else ""
-        for term in terms:
-            if term not in mode_text:
-                fail(f"{relative_path} 缺少加载门要求: {term}", errors)
+    for mode_file in [
+        "references/mode-echarts.md",
+        "references/mode-image-overlay.md",
+        "references/mode-html-svg.md",
+    ]:
+        mode_text = read(mode_file)
+        if "完整运行契约" not in mode_text:
+            errors.append(f"{mode_file} 未声明常规任务自包含")
+        if "shared-quality.md" in mode_text:
+            errors.append(f"{mode_file} 仍默认依赖 shared-quality.md")
 
-    conflict_patterns = {
-        "强制临时 process 文件": (
-            r"必须.*svp_process\.json|先.*写入.*svp_process\.json"
-        ),
-        "普通 ECharts 强制 HTML": (
-            r"(?:普通|常规|原生)?数据图表.{0,30}(?:必须|一律)"
-            r".{0,20}html type=|ECharts.{0,30}(?:必须|一律)"
-            r".{0,20}html type="
-        ),
-        "示意允许替代原图证据": (
-            r"原图.*证据.*(?:可以|允许|应当|使用|改用)"
-            r".*示意.*替代"
-        ),
-    }
-    for label, pattern in conflict_patterns.items():
-        if re.search(pattern, corpus, re.I):
-            fail(f"发现已知冲突: {label}", errors)
+    overlay_mode = read("references/mode-image-overlay.md")
+    for term in [
+        "总 coord 数不超过 2",
+        "总 coord 数不少于 3",
+        "steps 不少于 2",
+        "必须同时读取",
+        "image-overlay-process-spec.md",
+        "image-overlay-authoring-spec.md",
+    ]:
+        if term not in overlay_mode:
+            errors.append(f"原图叠加缺少结构阈值或加载契约: {term}")
+
+    pc_spec = read("references/echarts-web-pc-spec.md")
+    for term in [
+        "Device platform",
+        "电脑端",
+        "网页端",
+        "986 × 420",
+    ]:
+        if term not in pc_spec:
+            errors.append(f"Web/PC ECharts 规范缺少条件或画布契约: {term}")
+    if "不是本分支默认依赖" not in pc_spec:
+        errors.append("Web/PC ECharts 规范重新引入了默认多文件加载")
+    for stale in [
+        "移动端继续遵循 `echarts-option-spec.md`",
+        "保留 `echarts-option-spec.md` 的 ES5 callback",
+    ]:
+        if stale in pc_spec:
+            errors.append(f"Web/PC ECharts 规范仍含默认加载残留: {stale}")
+    if "echarts-web-pc-sunburst-reference.md" not in text:
+        errors.append("SKILL.md 未接入 Web/PC Sunburst 参考")
+    if "echarts-web-pc-gauge-reference.md" not in text:
+        errors.append("SKILL.md 未接入 Web/PC Gauge 参考")
+
+    route_sizes = {}
+    for route, paths in BASE_ROUTES.items():
+        size = sum((ROOT / path).stat().st_size for path in paths)
+        route_sizes[route] = size
+        if size > BASE_ROUTE_BUDGETS[route]:
+            errors.append(
+                f"{route} 基础加载 {size} 字节，超过预算 "
+                f"{BASE_ROUTE_BUDGETS[route]}"
+            )
 
     schema_path = ROOT / "schemas/visualization-plan.schema.json"
-    if schema_path.exists():
-        try:
-            schema = json.loads(schema_path.read_text(encoding="utf-8"))
-            presentations = set(
-                schema["properties"]["presentations"]["items"]["enum"]
-            )
-            expected = {
-                "echarts",
-                "static_image_overlay",
-                "html_svg",
-                "text_only",
-            }
-            if presentations != expected:
-                fail("schema presentations 与临时路由不一致", errors)
-            if schema["properties"]["required_files_loaded"] != {"const": True}:
-                fail("schema 未强制 required_files_loaded=true", errors)
-            schema_text = json.dumps(schema["allOf"], ensure_ascii=False)
-            required_schema_files = [
-                "references/mode-echarts.md",
-                "references/echarts-option-spec.md",
-                "references/mode-image-overlay.md",
-                "references/image-overlay-process-spec.md",
-                "references/image-overlay-authoring-spec.md",
-                "references/mode-html-svg.md",
-                "references/renderer-trigger-design.md",
-                "references/renderer-output-mobile.md",
-                "references/renderer-stability-math.md",
-                "references/renderer-interaction-geometry.md",
-                "references/shared-quality.md",
-                "references/composition.md",
-            ]
-            for required_file in required_schema_files:
-                if required_file not in schema_text:
-                    fail(f"schema 缺少模式文件约束: {required_file}", errors)
-        except (json.JSONDecodeError, KeyError, TypeError) as exc:
-            fail(f"schema JSON 无法解析或结构错误: {exc}", errors)
+    try:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        if set(schema["required"]) != {
+            "mode",
+            "behavior",
+            "source",
+            "secondary",
+        }:
+            errors.append("schema 未使用四字段最小计划")
+        if "required_files" in schema.get("properties", {}):
+            errors.append("schema 不应包含文件加载 bookkeeping")
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        errors.append(f"schema JSON 无法解析或结构错误: {exc}")
+
+    plan_cases = [
+        {
+            "mode": "echarts",
+            "behavior": "not_applicable",
+            "source": "user_content",
+            "secondary": None,
+        },
+        {
+            "mode": "static_image_overlay",
+            "behavior": "not_applicable",
+            "source": "user_image",
+            "secondary": None,
+        },
+        {
+            "mode": "html_svg",
+            "behavior": "interactive",
+            "source": "verified",
+            "secondary": "echarts",
+        },
+    ]
+    for index, plan in enumerate(plan_cases):
+        for message in validate_plan(plan):
+            errors.append(f"plan case {index}: {message}")
 
     junk = [
         path
@@ -315,11 +328,12 @@ def main() -> int:
         or path.name == "__pycache__"
     ]
     if junk:
-        fail("目录包含缓存或 macOS 元数据文件", errors)
+        errors.append("目录包含缓存或 macOS 元数据文件")
 
     result = {
         "skill": str(ROOT),
-        "skill_lines": body_lines,
+        "skill_lines": len(text.splitlines()),
+        "route_bytes": route_sizes,
         "errors": errors,
         "warnings": warnings,
         "status": "PASS" if not errors else "FAIL",

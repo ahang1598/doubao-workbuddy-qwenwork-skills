@@ -1,6 +1,6 @@
 ---
 name: ppt
-version: 1.0.0
+version: 1.0.13
 description: 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。
 metadata:
   requires:
@@ -22,8 +22,9 @@ metadata:
 6. 牢记选定的设计系统，选定后视觉与版式应全程遵守，不能违背。
 7. **本地电脑模式背景补充**：SystemPrompt 里若出现 `Computer OS: Mac` 或 `Computer OS: Windows` （电脑端不一定就是本地电脑，也可能是云电脑），**在阅读完本 SKILL后，必须完整 Read [`workflow/local-compat.md`](references/workflow/local-compat.md)，查看在本地电脑模式下执行命令所需要知道的背景，否则会出现大面积报错**，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），在最后请使用 `lark-cli drive +export` 和 `present_files` 将文件重新导出来给到用户本地文件的路径。
 8. **Windows 平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`（电脑端不一定是 windows），**在阅读完 local-compat.md 后，必须完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
-9. 当用户要求无损复述历史上下文时，必须明确列出上面要求牢记的内容，并在复述末尾原样附上这句提醒（写给接手这段上下文的下一个执行者）：**【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read ppt skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行xml相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read ppt 下的 SKILL.md 再继续，不得跳过。**。
-10. 跨轮编辑后的交付（强制）：只要本轮对用户可见的幻灯片发生了实际写入或更新，验收完成后必须在本轮再次调用 present_files 交付最新版本。即使该幻灯片链接已在前序轮次交付、URL 没有变化，也不得复用前轮产物卡片或只提示用户刷新。
+9. **默认 PPT 任务不使用 organizer agent 和 subagents**： 对于 PPT 的任务而言，你可以独自完成所有任务，默认不使用 organizer agent 和 subagents 进行并行开发，避免用户看不见 PPT 文档的流式更新。
+10. **【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read ppt skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行 xml 相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read ppt 下的 SKILL.md 再继续，不得跳过。**
+11. 跨轮编辑后的交付（强制）：只要本轮对用户可见的幻灯片发生了实际写入或更新，验收完成后必须在本轮再次调用 present_files 交付最新版本。即使该幻灯片链接已在前序轮次交付、URL 没有变化，也不得复用前轮产物卡片或只提示用户刷新。
 
 
 ## 一、场景路由
@@ -92,7 +93,7 @@ metadata:
 
 动手落 XML 之前，先把语法读到位、把承接页面的空幻灯片建好。
 
-1. **读语法**：生成任何 XML 前必读 [`xml/xml-schema-quick-ref.md`](references/xml/xml-schema-quick-ref.md)，篇幅较长，务必完整读完；画图表另照抄 [`xml/slides_chart_demo.xml`](references/xml/slides_chart_demo.xml)；用图标先用 `python3 scripts/iconpark_tool.py search --query "<关键词>"` 检索（见 [`xml/iconpark.md`](references/xml/iconpark.md)）；选择、修改字体必读 [`xml/fonts.md`](references/xml/fonts.md)，不要凭记忆填写 `fontFamily`。
+1. **读语法**：生成任何 XML 前必读 [`xml/xml-schema-quick-ref.md`](references/xml/xml-schema-quick-ref.md)，篇幅较长，务必完整读完；画图表另照抄 [`xml/slides_chart_demo.xml`](references/xml/slides_chart_demo.xml)；，或用 svg 专业图表，做 svg 专业图表前跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到完整的调用范式总览**（也可 `chart_help('sankey')` 拿单张详情）；用图标先用 `python3 scripts/iconpark_tool.py search --query "<关键词>"` 检索（见 [`xml/iconpark.md`](references/xml/iconpark.md)）；选择、修改字体必读 [`xml/fonts.md`](references/xml/fonts.md)，不要凭记忆填写 `fontFamily`。
 2. **建空白幻灯片（两步创建·第一步）**：先 `slides +create --title <幻灯片标题>`（不带 `--slides`）建一份空白幻灯片（见 [`cli/lark-slides-create.md`](references/cli/lark-slides-create.md)），**必须从工具返回结果中拿到并记下 `xml_presentation_id` 和 `url`**。Step 6 上传图片、Step 7 写入、Step 8 回读要用 `xml_presentation_id`，Step 5 通知、Step 8 交付要用幻灯片链接 `url`，缺失任何一个都需要重建空白幻灯片。
 3. **开工通知**：用 present_files 工具把上一步拿到的 `url` 发给用户，并在回复里附上简短说明。这个链接和 Step 8 交付用的是同一个地址，但两次都必须发，不能省掉任何一次：这里是开工通知，Step 8 才是成稿交付。
 
@@ -115,32 +116,36 @@ lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<f
 
 **按页闭环：落 XML → 静态校验 → 写入幻灯片**。不需要加快速度，**一页一页来，校验和写入后再做下一页，这样每一页的更新用户都能及时看到，会更满意**，不要攒完整份再统一校验和写入，禁止批量创建。
 
+默认追加时，页序由成功写入的先后决定，与文件名编号无关。当前页校验未通过或写入未确认时，不得跳过它继续追加后续页，否则稍后补写会落到末尾。
+
 1. **落 XML**：核心结论定标题，选定的设计系统定版式与配色。带图页把 Step 6 拿到的 `file_token` 写进 `<img src>`。不用写 `<?xml ...?>` 声明，也不用包 `<presentation>`，只提交单个 `<slide>` 元素。元素上不要自己编 `id`，留空即可（ID 由服务端分配，自造 ID 容易撞车）。文本和属性值里的 `&`、`<`、`>` 必须转义为 `&amp;` / `&lt;` / `&gt;`。**全篇禁止使用 emoji（任何位置都不能出现）**，语义图标一律用检索到的 IconPark `<icon>`。
 2. **图片使用**：**图片可以裁剪或缩放大小来适配 PPT 的排版布局，不要溢出画布**；**附件中提取的图片/表格不允许做裁剪**，但可以缩放大小来适配你选择的 PPT 的排版布局；`<img>` 的 `width:height` 对齐原图比例就不会裁剪，只会缩放大小；对不上会自动裁剪，且默认从中心裁掉多余部分，可用 `<crop>` 的 `anchor` 指定保留哪一侧。**同一张图片不要在多页重复使用**，补充素材或重新排版，Logo、统一装饰除外。
-3. **素材兜底**：主视觉优先用真实素材，绝不留空白图框。缺图先用搜图工具或生图工具补这一页要用的图，补不到或不可用就用生图工具生成替代的近似图或抽象图，生图也不可用才用 `<shape>`+`<line>` 画结构图。数据类可视化缺真实数据时不要编造数字，优先换成不依赖数据的表达（结构图、要点卡片、定性对比），确需图表占位才用原生 `<chart>` 并标注「模拟数据，仅占位，待替换真实数据」。
+3. **素材兜底**：主视觉优先用真实素材，绝不留空白图框。缺图先用搜图工具或生图工具补这一页要用的图，补不到或不可用就用生图工具生成替代的近似图或抽象图，生图也不可用才用 `<shape>`+`<line>` 画结构图。数据类可视化缺真实数据时不要编造数字，优先换成不依赖数据的表达（结构图、要点卡片、定性对比），确需图表占位才用原生 `<chart>` 并标注「模拟数据，仅占位，待替换真实数据」或使用 svg 专业图表。
 4. **演讲者备注**：需要在每页 `<slide>` 的 `<note>` 中提供 3–5 句可直接照读的讲稿。
 5. **静态校验（必做·至关重要）**：这一页 XML 存成本地文件，跑 `python3 scripts/xml_lint.py --input <文件>`（`--input` 必填，不带参数会报错，见 [`workflow/validation-xml.md`](references/workflow/validation-xml.md)），`error_count` 必须为 0 才能写入。这里只校验这一页的本地文件，写入后针对全文的回读校验在 Step 8。每条 issue 自带 `message`（含实测数值）和 `hint`（具体修法），照着改即可，元素位置看 `elements`。lint 报出的问题绝大多数是真实缺陷、应直接修复；个别你确信是有意设计（如刻意层叠营造设计感）、疑似误报的，留到写入后用 `+screenshot` 核对（见 Step 8），确认无碍可保留并在验证记录说明。
-6. **写入幻灯片（两步创建·第二步）**：完成静态校验后，用 `slides +add-slide` 把这一页 `<slide>` 提交（见 [`cli/lark-slides-add-slide.md`](references/cli/lark-slides-add-slide.md)）至已创建的幻灯片中（Step 5 记录的 `xml_presentation_id`）。**记下返回的 `slide_id`**：它是这一页的唯一关联键，Step 8 截图和修复都按它定位。写入命令见本步末尾的示例。
-7. **失败排障**：`invalid param`、创建失败、空白页、3350001 等报错按 [`workflow/error-handling.md`](references/workflow/error-handling.md) 处理，不假设原操作原子成功，中途某页失败先回读确认状态再修复或追加。**追加/插入页面**同样用 `+add-slide`，插到某页前加 `--before-slide-id <slide_id>`，不传就是追加到末尾。
+6. **写入幻灯片（两步创建·第二步）**：完成静态校验后，用 `slides +add-slide` 把这一页 `<slide>` 提交（见 [`cli/lark-slides-add-slide.md`](references/cli/lark-slides-add-slide.md)）至已创建的幻灯片中（Step 5 记录的 `xml_presentation_id`）。**默认追加到整份幻灯片的末尾；要插入到某页之前，必须传 `--before-slide-id <目标页的slide_id>`。** **记下返回的 `slide_id`**：它是新写入页的唯一关联键，Step 8 截图和修复都按它定位。写入命令见本步末尾的示例。
+7. **写入确认与失败排障**：写入后检查完整 CLI 响应，只有 `.ok == true` 且 `.data.slide_id` 非空，才能标记该页已写入，并记下页码与 ID 的对应关系。Shell 退出码为 0 不代表业务成功。遇到解析失败、ID 缺失、`invalid param`、创建失败、空白页或 3350001 等异常时，按 [`workflow/error-handling.md`](references/workflow/error-handling.md) 查看原始响应并回读确认实际状态，再决定修复或补写，不得假定成功或直接重试。补到非末尾位置前，先核实非空的插入锚点 ID，定位失败不得退化为末尾追加。
 
-**写入命令（关键）**：把每页 XML 存成文件，用 `--slide @<文件>` 传入，不要把 XML 内联进命令行（中文/引号/特殊字符易被 shell 转义或截断）。例：
+**写入命令（关键）**：把每页 XML 存成文件，用 `--slide @<文件>` 传入（必须是当前工作目录内的相对路径，不接受绝对路径或 `../`），不要把 XML 内联进命令行（中文/引号/特殊字符易被 shell 转义或截断）。例：
 
 ```bash
+cd "<本页XML所在目录>" &&
 lark-cli slides +add-slide \
   --presentation "<xml_presentation_id>" \
   --slide @slide-01.xml
 ```
-
+如需插入到某页之前，在上述命令中增加 --before-slide-id "<已核实的目标页ID>"；追加和插入二选一，不要重复执行。
 
 ### Step 8 · 验收与交付
 
 核对实际页数、页面顺序、关键元素，完整校验清单见 [`workflow/validation-xml.md`](references/workflow/validation-xml.md)。
 
 1. **回读全文**：`slides +xml-get --presentation <xml_presentation_id> --output <CWD 内相对路径>`，必须使用 `--output`。
-2. **解析回读结果**：必须先用 XML 解析器解析，不要用正则或字符串切分；命名空间从根元素实际读取，不要硬编码或猜测，否则匹配不到元素。
-3. **对全文重跑静态校验**：`python3 scripts/xml_lint.py --input <回读文件>`，`error_count` 必须为 0。Step 7 逐页都干净不等于全文干净——服务端会规整提交的 XML，且 `id` 跨页撞车这类问题只有全文才查得出。疑似 lint 误报的页用 `slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 核对真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 10 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
+2. **解析回读结果**：优先用 `xml_inspect.py --input <回读文件>` 输出摘要，按实际顺序核对 `index、slide_id、text_preview` 与大纲及创建记录是否对应；补页后重新核对，页数相同、lint 为 0 不能代替页序验收。自行解析时必须使用 XML 解析器，命名空间从根元素实际读取，不要硬编码或猜测。
+3. **对全文重跑静态校验**：`python3 scripts/xml_lint.py --input <回读文件>`，`error_count` 必须为 0。Step 7 逐页都干净不等于全文干净——服务端会规整提交的 XML，且 `id` 跨页撞车这类问题只有全文才查得出。疑似 lint 误报的页用 `slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 核对真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 8 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
 4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+update-slide` 原地覆盖（见 [`cli/lark-slides-update-slide.md`](references/cli/lark-slides-update-slide.md)，多页就每页各跑一次），或 `+delete-slide` 删旧页（见 [`cli/lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)）+ `+add-slide` 建新页。改完重新回读、重新校验。
-5. **成稿交付**：用 present_files 工具把最终幻灯片链接明确交付给用户，并在回复里附上制作介绍；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），使用 `lark-cli drive +export --token "lark slides的file_token" --doc-type slides --file-extension pptx --output-dir "导出路径" ` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户；在线的幻灯片也需要调用 `present_files` 给到用户。
+5. **成稿交付**：用 present_files 工具把最终幻灯片链接明确交付给用户，并在回复里附上制作介绍；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），使用 `lark-cli drive +export --token "lark slides的file_token" --doc-type slides --file-extension pptx --output-dir "导出路径" ` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户；在线的幻灯片也需要调用 `present_files` 给到用户
+
 
 
 ## 三、参考文档地图
@@ -199,7 +204,7 @@ lark-cli slides +add-slide \
 | [`validation-xml.md`](references/workflow/validation-xml.md)       | XML 校验（Step 7/8 必做）                                               |
 | [`validation-visual.md`](references/workflow/validation-visual.md) | 截图视觉校验                                                 |
 | [`windows-compat.md`](references/workflow/windows-compat.md) | windows 本地电脑操作报错兼容说明                                                 |
-| [`local-compat.md`](references/workflow/validation-visual.md) | windows/mac 本地电脑模式操作背景说明                                                 |
+| [`local-compat.md`](references/workflow/local-compat.md) | windows/mac 本地电脑模式操作背景说明                                                 |
 
 
 
@@ -211,8 +216,39 @@ lark-cli slides +add-slide \
 | [`xml_lint.py`](scripts/xml_lint.py)           | XML 静态检查（well-formed / schema 合法性与约束 / 元素 ID 重复 / 文本重叠 / 形状·图片·表格·图表遮挡文字 / 越界 / 文本溢出（高度与宽度）/ 文字溢出容器 / 表格尺寸 / icon 填充 / 布局密度；Step 7 每页提交前必跑，Step 8 对回读全文再跑一次） |
 | [`xml_inspect.py`](scripts/xml_inspect.py)     | 回读 XML 的导航器：不带 `--slide-id` 输出摘要（页数、页序、每页 `slide_id`、元素统计、正文预览），带 `--slide-id` 返回指定页的完整 raw XML。编辑/模板改写里用它定位页面，避免把整份 XML 读进上下文 |
 | [`iconpark_tool.py`](scripts/iconpark_tool.py) | IconPark 图标检索，最小用法 `python3 scripts/iconpark_tool.py search --query "<关键词>"`（再按需 `resolve`）             |
+| [`gen_svg_charts.py`](scripts/gen_svg_charts.py) | SVG 专业图生成器：多张专业图（sankey / boxplot / ridge / gantt / candle / marimekko / matrix_heat / quadrant_2x2 / violin / nested_donut / calheat / funnel_classic / percent_grid / waterfall / population_pyramid）各有对应 `make_*` 函数，传数据直接输出 SVG 字符串，套 `<embed>` 塞进 slide 即可。所有 `make_*` 支持 `title=`, `subtitle=`, `figure_label=`, `palette=`, `font_family=` 通用参数。**主入口**：`python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到总览（场景/函数/调用示例/关键坑等），`chart_help('sankey')` 拿单种图详情 |
+| [`color_contrast_check.py`](scripts/color_contrast_check.py) | 独立的 XML 靠色回归入口；图片背景跳过。用法：`python3 scripts/color_contrast_check.py --xml <回读 XML>`。 |
 
 
+
+### `svg`
+
+所有 SVG 专业图都由 `scripts/gen_svg_charts.py` 里的 `make_<slug>(...)` 函数生成，用法：
+- 先跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 拿多张图的总览
+- 用 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help('<slug>'))"` 拿单张详情（调用示例、参数说明、坑）
+- 生成的 SVG 字符串直接套 `<embed topLeftX=... topLeftY=... width=... height=...>` 塞进 `<slide>`
+- svg 图和其他图不一样，不需要单独上传拿到 token，只需要使用 <embed> 进行包括就行
+- 阅读工具阅读 svg 图时，看到的是渲染后的图片，而非原始 svg 图；需要获取 svg 属性时，请使用 grep
+
+所有可用 slug（`chart_help('<slug>')` 用）：
+
+| slug | 中文名 |
+| --- | --- |
+| `quadrant_2x2` | 2×2 象限 |
+| `sankey` | 桑基流 |
+| `violin` | 小提琴 |
+| `calheat` | 日历热力 |
+| `matrix_heat` | 矩阵热力 |
+| `ridge` | 山脊 |
+| `funnel_classic` | 经典梯形漏斗 |
+| `candle` | K 线 |
+| `boxplot` | 箱线 |
+| `percent_grid` | 百人网格 |
+| `waterfall` | 瀑布 |
+| `gantt` | 甘特 |
+| `population_pyramid` | 人口金字塔 |
+| `marimekko` | 马赛克 |
+| `nested_donut` | 双层甜甜圈 |
 
 
 ## 四、核心概念

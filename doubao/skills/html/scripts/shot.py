@@ -34,6 +34,7 @@ Exit codes:
 import argparse
 import base64
 import hashlib
+import io
 import json
 import os
 import platform
@@ -72,6 +73,16 @@ INIT_SCRIPT = r"""
       if (type === 'click' && this && this.nodeType === 1) {
         // 只标 Element；document/window 上的委托不标（否则每个按钮都会被误认为"有 handler"）
         this.__shot_hasClickListener = true;
+        // 顺带把 listener 源码存下来。3b 的 javascript: 占位符收紧路径要用它证明
+        // "祖先 handler 是否真的路由到当前元素"——通过检查源码里是否引用了元素的
+        // class / id / data-* 值。listener 是箭头函数 / 普通函数时 toString 一般能拿到源码；
+        // native / bound / minify 后的短名会拿不到有效标识，那种情况下判定会 fallback 到
+        // 保守报（带 note 让人肉核对），不会静默漏抓。
+        try {
+          const src = typeof listener === 'function'
+            ? Function.prototype.toString.call(listener) : '';
+          if (src) (this.__shot_listenerSources = this.__shot_listenerSources || []).push(src);
+        } catch (e) {}
       }
     } catch (e) {}
     return orig.call(this, type, listener, opts);
@@ -242,6 +253,43 @@ REPORT_SCRIPT = r"""
     }
   });
 
+  // 图片形变检测：渲染盒子的宽高比 vs 图片固有宽高比
+  // 最高频成因是 `<img width=W height=H>` 属性 + CSS 只覆盖 width——HTML 的 width/height 属性是
+  // presentational hint（等价 `width:Wpx; height:Hpx`），优先级低于任何 author CSS。CSS 写了
+  // `width:100%` 只覆盖 width，height 仍是 Hpx；`aspect-ratio: auto W/H` 里的 auto 只在有一边为
+  // auto 时才反推另一边，两边都确定时不产生约束；object-fit 默认 fill 于是把内容硬拉伸填满错误的盒子。
+  const stretchedImages = [];
+  for (const im of document.querySelectorAll('img')) {
+    if (stretchedImages.length >= 12) break;
+    const nw = im.naturalWidth, nh = im.naturalHeight;
+    if (!nw || !nh) continue;                          // 未加载 / 解码失败，判不了
+    const cs = getComputedStyle(im);
+    // 只有 fill（默认值）会拉伸内容。实测 138 个产物里 cover/contain 共 133 张，
+    // 其中 42% 的盒子比例本就偏离固有比例——那是刻意的，不豁免会误报 56 张
+    if (cs.objectFit !== 'fill') continue;
+    // 用 computed width/height，不用 getBoundingClientRect：后者含 transform，
+    // 而 transform:scale(x,y) 造成的形变是刻意的，不该报
+    const w = parseFloat(cs.width), h = parseFloat(cs.height);
+    if (!(w >= 20 && h >= 20)) continue;               // 装饰性小图
+    const dev = (w / h) / (nw / nh);
+    if (dev > 0.9 && dev < 1.111) continue;            // ±10%；实测正常态精确等于 1.000，无灰色地带
+    const aw = im.getAttribute('width'), ah = im.getAttribute('height');
+    // HTML height 属性值 == 渲染 height，说明 CSS 压根没覆盖 height，它直接来自属性
+    const fromAttr = ah && Math.abs(parseFloat(ah) - h) < 1;
+    const rawSrc = im.currentSrc || im.src || '';
+    stretchedImages.push({
+      reason: fromAttr ? 'html-attr-height-not-overridden' : 'box-ratio-mismatch',
+      natural: nw + 'x' + nh,
+      rendered: Math.round(w) + 'x' + Math.round(h),
+      ratioDeviation: Math.round(dev * 100) / 100,
+      attrWidth: aw, attrHeight: ah,
+      cssWidth: cs.width, cssHeight: cs.height,
+      cls: (im.className || '').slice(0, 40),
+      alt: (im.alt || '').slice(0, 40),
+      src: rawSrc.startsWith('data:') ? rawSrc.slice(0, 24) + '...' : rawSrc.slice(0, 80),
+    });
+  }
+
   // ============ 文本相关规则 ============
   // 收集"含直接文本"的元素：至少一个 direct child 是非空 Text 节点
   // 这样过滤掉纯装饰 div、图标容器等；<span>xxx</span> 与其中的 <span> 都会分别入选（各自持有自己那段文本）
@@ -357,12 +405,125 @@ REPORT_SCRIPT = r"""
     }
   }
 
+  // 规则 2.5：伪元素文字溢出（::before / ::after）
+  // 目标：抓 content=attr(data-i) / 显式字符串 撑破了固定 width 的方块/圆点/序号徽章。
+  // 三重触发条件（同时成立才报）：
+  //   (a) content 非空非纯空白（过滤 "" / none / normal / 纯 counter/attr 但结果空）
+  //   (b) 伪元素有显式固定 width（width != "auto"）——不敢猜 auto 元素的意图
+  //   (c) canvas measureText 量出的文字宽度 > widthPx × 1.1（10% 抖动余量）
+  // 再叠加过滤：
+  //   overflow:hidden + text-overflow:ellipsis → 故意截断，跳
+  //   font-family 含 FontAwesome / Material / Icons / iconfont → 图标字体量不准，跳
+  //   尺寸 < 4×4 → 装饰性零宽伪元素，跳
+  //   display: none → 未渲染，跳
+  const pseudoOverflow = [];
+  {
+    // 一个 canvas 共享 measure
+    const mc = document.createElement('canvas');
+    const mctx = mc.getContext('2d');
+    const iconFontRe = /(FontAwesome|Font\s*Awesome|Material\s*Icons|Material\s*Symbols|iconfont|glyphicons|ionicons)/i;
+    // content 可能是 "S1" / "S10" / '"foo"' / 'attr(...)' → computed 后都是带引号的字符串
+    // 去引号 + 处理 \HHHHHH escape
+    const unquoteContent = (raw) => {
+      if (!raw) return '';
+      const s = raw.trim();
+      if (s === 'none' || s === 'normal') return '';
+      // computed content 通常是 "xxx" 或 'xxx'，还可能是多个片段："pre" attr(data-x) "post"
+      // 简化：把所有 " 或 ' 包围的段拼起来，剩下的忽略（counter() 等函数）
+      const parts = [];
+      const re = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g;
+      let m;
+      while ((m = re.exec(s)) !== null) {
+        const raw2 = m[1] !== undefined ? m[1] : m[2];
+        // \HH 转义
+        const decoded = raw2.replace(/\\([0-9a-fA-F]{1,6})\s?/g, (_, hex) => {
+          const cp = parseInt(hex, 16);
+          if (cp > 0x10ffff) return '';
+          return String.fromCodePoint(cp);
+        }).replace(/\\(.)/g, '$1');
+        parts.push(decoded);
+      }
+      return parts.join('');
+    };
+    const all = document.querySelectorAll('body *');
+    for (const el of all) {
+      if (pseudoOverflow.length >= 15) break;
+      const tag = el.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') continue;
+      for (const pseudo of ['::before', '::after']) {
+        if (pseudoOverflow.length >= 15) break;
+        let cs;
+        try { cs = getComputedStyle(el, pseudo); } catch (e) { continue; }
+        if (!cs) continue;
+        if (cs.display === 'none') continue;
+        if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+        // 触发条件 (b)：必须有显式 width
+        const wStr = cs.width;
+        if (!wStr || wStr === 'auto' || wStr.endsWith('%')) continue;
+        const wPx = parseFloat(wStr);
+        if (!(wPx > 0)) continue;
+        // 尺寸太小的装饰跳过
+        const hStr = cs.height;
+        const hPx = parseFloat(hStr) || 0;
+        if (wPx < 4 || hPx < 4) continue;
+        // 触发条件 (a)：content 有实际文字
+        const text = unquoteContent(cs.content);
+        if (!text || !text.trim()) continue;
+        // ellipsis 故意截断
+        const ellipsis = (cs.textOverflow === 'ellipsis' && cs.overflow !== 'visible');
+        if (ellipsis) continue;
+        // 图标字体
+        const fam = cs.fontFamily || '';
+        if (iconFontRe.test(fam)) continue;
+        // 测宽度
+        const fSize = cs.fontSize || '14px';
+        const fWeight = cs.fontWeight || '400';
+        const fStyle = cs.fontStyle || 'normal';
+        // canvas font 语法：style weight size family
+        mctx.font = `${fStyle} ${fWeight} ${fSize} ${fam}`;
+        const textW = mctx.measureText(text).width;
+        // 考虑 box-sizing：如果 border-box，内容区 = width - padding - border
+        // 简化：默认 content-box 就用 width 本身；border-box 减掉 padding-left/right
+        let contentW = wPx;
+        if (cs.boxSizing === 'border-box') {
+          const pl = parseFloat(cs.paddingLeft) || 0;
+          const pr = parseFloat(cs.paddingRight) || 0;
+          const bl = parseFloat(cs.borderLeftWidth) || 0;
+          const br = parseFloat(cs.borderRightWidth) || 0;
+          contentW = Math.max(1, wPx - pl - pr - bl - br);
+        }
+        // 触发条件 (c)：文字量出来比 contentW 明显宽。双门槛避免 sub-pixel 抖动：
+        //   相对差 > 3% 且绝对差 > 0.5px。这样 18px 盒子里的 S10(19.07px)、S15(18.86px) 都能触发；
+        //   而只差 0.1-0.3px 的字体度量抖动不会误报。
+        if (!(textW > contentW * 1.03 && textW - contentW > 0.5)) continue;
+        // 找不到 el 的 rect 就不报（隐藏元素）
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        pseudoOverflow.push({
+          hostTag: tag.toLowerCase(),
+          hostRect: [Math.round(r.left + window.scrollX), Math.round(r.top + window.scrollY), Math.round(r.width), Math.round(r.height)],
+          pseudo: pseudo,
+          content: text.length > 40 ? text.slice(0, 40) + '…' : text,
+          widthPx: Math.round(wPx * 10) / 10,
+          contentWidthPx: Math.round(contentW * 10) / 10,
+          textWidthPx: Math.round(textW * 10) / 10,
+          overflowPx: Math.round((textW - contentW) * 10) / 10,
+        });
+      }
+    }
+  }
+
   // 规则 3：僵尸按钮 / 无效链接
   // 目标：抓那种"看起来能点、按下去什么都不发生"的元素。
   // 局限：addEventListener 绑的 handler 无法通过 DOM API 查询到（浏览器故意封的），
   //   委托模式（document.addEventListener('click', delegateHandler)）注定漏抓。
-  // 所以只抓高特异性模式：<button> 无 onclick 且非 form submit/aria pattern/popover 触发器；
-  //   <a> 无有效 href。元素祖先带 [data-*] 时标 note 提示"可能是委托目标"。
+  // 已覆盖：
+  //   3a  <button> 无 onclick 且无 listener
+  //   3b  <a> 无有效 href（含 javascript:void(0) 占位符收紧路径）
+  //   3c  非交互标签 + cursor:pointer 但无 handler（<div class="nav-item"> 假按钮）
+  //   3d  <input type=button|submit|reset|image> 无 onclick 且无 listener
+  //   3e  <a href="#foo"> 但 #foo 在页面里不存在（断链锚点）
+  //   3f  <label for="xxx"> 但 #xxx 不存在（点击 label 无副作用）
   const deadButtons = [];
   {
     const hasDataAttr = (el) => {
@@ -384,7 +545,42 @@ REPORT_SCRIPT = r"""
       const r = el.getBoundingClientRect();
       return r.width >= 4 && r.height >= 4;
     };
-    const push = (el, reason) => {
+    // onclick 属性是"占位/no-op"字符串——生产代码里几乎没有正当用途，一律视为等同于没写。
+    // 覆盖：空串 / 分号 / `return false` / `return true` / `void 0` / `void(0)` / 纯注释 / 上述组合
+    const ONCLICK_NOOP_RE = /^\s*(?:\/\/[^\n]*|\/\*[\s\S]*?\*\/|;|return\s+(?:false|true)\s*;?|(?:return\s+)?void\s*\(?\s*0\s*\)?\s*;?|)\s*$/;
+    const isOnclickNoop = (raw) => raw != null && ONCLICK_NOOP_RE.test(raw);
+    // href 里的 javascript: 占位符——同理，作者显式关掉了 native 导航，如果 JS 侧没人接手就是纯僵尸
+    const JS_PLACEHOLDER_RE = /^\s*javascript\s*:\s*(?:void\s*\(?\s*0\s*\)?\s*;?|;|)\s*$/i;
+    // 沿祖先链找最近的绑过 click 的元素
+    const nearestAncestorWithListener = (el) => {
+      let p = el.parentElement;
+      while (p && p !== document.body) {
+        if (p.__shot_hasClickListener) return p;
+        p = p.parentElement;
+      }
+      return null;
+    };
+    // 判断祖先的某个 listener 源码"是否引用了本元素"——用作 javascript: 占位符的
+    // 收紧兜底。识别依据：class（长度≥3，过滤 "on"/"in" 等超短通用词）、id、data-* 值。
+    // 全都不匹配也不代表一定没委托（listener 被 minify 或用 e.target.tagName 就没痕迹），
+    // 这种情况下我们仍报出但带 note 提示"可能是委托，请核对"。
+    const ancestorCoversElement = (anc, el) => {
+      const srcs = anc.__shot_listenerSources || [];
+      if (!srcs.length) return null;   // 有 hasClickListener 但没源码（native/bound），无法判断
+      const tokens = [];
+      const cls = (typeof el.className === 'string' ? el.className : '').trim().split(/\s+/);
+      for (const c of cls) if (c.length >= 3) tokens.push(c);
+      if (el.id && el.id.length >= 3) tokens.push(el.id);
+      for (const attr of el.attributes) {
+        if (attr.name.startsWith('data-') && attr.value && attr.value.length >= 2) {
+          tokens.push(attr.value);
+          tokens.push(attr.name);   // 属性名本身也常出现在 querySelector('[data-page]') 里
+        }
+      }
+      if (!tokens.length) return false;
+      return srcs.some(s => tokens.some(t => s.indexOf(t) !== -1));
+    };
+    const push = (el, reason, extra) => {
       if (deadButtons.length >= 20) return;
       const r = el.getBoundingClientRect();
       const txt = (el.textContent || '').trim();
@@ -394,6 +590,7 @@ REPORT_SCRIPT = r"""
         reason: reason,
         rect: [Math.round(r.left + window.scrollX), Math.round(r.top + window.scrollY), Math.round(r.width), Math.round(r.height)],
       };
+      if (extra) Object.assign(rec, extra);
       if (hasDataAttr(el)) {
         rec.note = 'ancestor-has-data-attr: 可能被 addEventListener 委托捕获，请核对';
       }
@@ -403,15 +600,13 @@ REPORT_SCRIPT = r"""
     // 3a：<button>
     for (const btn of document.querySelectorAll('button')) {
       if (deadButtons.length >= 20) break;
-      if (btn.onclick != null) continue;
+      const onclickRaw = btn.getAttribute('onclick');
+      const onclickNoop = isOnclickNoop(onclickRaw);
+      // onclick property 有值且不是 no-op 字符串 —— 真 handler，跳过
+      if (btn.onclick != null && !onclickNoop) continue;
       // 被 addEventListener('click', ...) 绑过（自身或祖先）—— 由 INIT_SCRIPT 打的标
       if (btn.__shot_hasClickListener) continue;
-      let anc = btn.parentElement, hasAncListener = false;
-      while (anc && anc !== document.body) {
-        if (anc.__shot_hasClickListener) { hasAncListener = true; break; }
-        anc = anc.parentElement;
-      }
-      if (hasAncListener) continue;
+      if (nearestAncestorWithListener(btn)) continue;
       // form submit / reset：原生行为不需要 onclick
       const type = (btn.getAttribute('type') || '').toLowerCase();
       const inForm = !!btn.closest('form');
@@ -426,32 +621,161 @@ REPORT_SCRIPT = r"""
       // 必须可见、有文字（纯图标按钮先不报，避免和 icon button 假阳性打架）
       if (!isVisible(btn)) continue;
       if ((btn.textContent || '').trim().length === 0) continue;
-      push(btn, 'button-no-onclick');
+      push(btn, onclickNoop ? 'onclick-noop' : 'button-no-onclick',
+           onclickNoop ? { onclickAttr: (onclickRaw || '').slice(0, 60) } : null);
     }
 
     // 3b：<a>
     for (const a of document.querySelectorAll('a')) {
       if (deadButtons.length >= 20) break;
-      if (a.onclick != null) continue;
+      const onclickRaw = a.getAttribute('onclick');
+      const onclickNoop = isOnclickNoop(onclickRaw);
+      if (a.onclick != null && !onclickNoop) continue;
       if (a.__shot_hasClickListener) continue;
-      let anc = a.parentElement, hasAncListener = false;
-      while (anc && anc !== document.body) {
-        if (anc.__shot_hasClickListener) { hasAncListener = true; break; }
-        anc = anc.parentElement;
-      }
-      if (hasAncListener) continue;
-      const href = a.getAttribute('href');
       if (!isVisible(a)) continue;
       if ((a.textContent || '').trim().length === 0) continue;
+
+      const href = a.getAttribute('href');
+      const isJsPlaceholder = href !== null && JS_PLACEHOLDER_RE.test(href);
+      const anc = nearestAncestorWithListener(a);
+
+      // 分支 1：href="javascript:void(0)" / javascript:; 等占位符
+      //   作者显式声明"我用 JS 接手导航"，比 href="#" 更严格——祖先 listener 必须能证明
+      //   路由到当前元素才放行；证据不足直接报。
+      if (isJsPlaceholder) {
+        if (anc) {
+          const covered = ancestorCoversElement(anc, a);
+          if (covered === true) continue;                // 源码明确引用了本元素
+          if (covered === null) continue;                // 有 listener 但源码不可读（native/bound），保守放行
+          // covered === false：源码可读但没引用本元素 → 祖先 handler 与我无关，判为僵尸
+        }
+        push(a, 'a-href-javascript-noop-no-handler', { hrefAttr: href.slice(0, 80) });
+        continue;
+      }
+
+      // 分支 2：其他 href —— 沿用旧逻辑，祖先只要有任意 handler 就放行
+      if (anc) continue;
       if (href === null) {
-        push(a, 'a-no-href');
+        push(a, onclickNoop ? 'onclick-noop' : 'a-no-href',
+             onclickNoop ? { onclickAttr: (onclickRaw || '').slice(0, 60) } : null);
       } else if (href.trim() === '') {
         push(a, 'a-href-empty');
       } else if (href.trim() === '#') {
         // href="#" 常见于占位；如果没 onclick 且没绑事件，多半是僵尸
         push(a, 'a-href-hash-no-handler');
+      } else if (href.length > 1 && href.charAt(0) === '#' &&
+                 href.indexOf('/') === -1 && href.indexOf('?') === -1) {
+        // 3e：断链锚点。href="#foo" 但 #foo 在页面里不存在。
+        //   排除 SPA hash 路由：href 含 / 或 ? 时（"#/dashboard"、"#?tab=1"）不查。
+        const targetId = href.slice(1);
+        let target = null;
+        try {
+          target = document.getElementById(decodeURIComponent(targetId));
+        } catch (e) {
+          target = document.getElementById(targetId);
+        }
+        if (!target) {
+          // <a name="..."> 也算合法锚点（虽然 HTML5 已废弃，但老站还在用）
+          const named = document.getElementsByName(targetId);
+          if (!named || named.length === 0) {
+            push(a, 'a-broken-anchor', { hrefAttr: href.slice(0, 80) });
+          }
+        }
       }
-      // href="#some-id"（真锚点）、http/https/mailto/tel 等一律不报
+      // http/https/mailto/tel、真存在的 #id、#/spa-route 一律不报
+    }
+
+    // 3c：非 button/a/input 但 CSS `cursor: pointer` 伪装成按钮的元素（<div>/<span> 假按钮）
+    // 触发场景：sidebar 导航项写成 <div class="nav-item">、卡片 wrapper 写成 <div class="clickable">，
+    //   视觉上明确是按钮但没绑任何 handler；用户点了没反应。
+    // 判据（同时成立）：
+    //   (a) computed cursor === 'pointer'
+    //   (b) tagName 不是原生交互元素（button/a/input/select/textarea/label/summary/option/details）
+    //   (c) 自身+祖先都没被 addEventListener('click') 绑过（INIT_SCRIPT 打的标）
+    //   (d) 无 onclick 属性
+    //   (e) 无键盘可达 role（button/link/tab/menuitem/option/switch/checkbox/radio）—— 那些通常靠委托
+    //   (f) 可见 + 有文字（避免虚报纯装饰容器 / 图标）
+    // 二次过滤：
+    //   - body / html 上继承 cursor:pointer 不算（作者只是给"整体"设了 pointer，不是承诺 body 可点）
+    //   - 尺寸 < 24×16（比按钮小得多）默认忽略——多半是文字里的强调 <span>
+    //   - 元素在 <label> / <button> / <a> 后代里：外层已经吃了点击，跳过
+    for (const el of document.querySelectorAll('body *')) {
+      if (deadButtons.length >= 20) break;
+      const tag = el.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT' || tag === 'SVG' || tag === 'PATH') continue;
+      // 排除原生交互元素——它们走 3a/3b/3d
+      if (['BUTTON','A','INPUT','SELECT','TEXTAREA','LABEL','SUMMARY','OPTION','DETAILS'].indexOf(tag) !== -1) continue;
+      const cs = getComputedStyle(el);
+      if (cs.cursor !== 'pointer') continue;
+      // body/html 上继承 pointer 忽略
+      if (el === document.body || el === document.documentElement) continue;
+      // 父级也是 pointer —— 大概率是从父级"继承"下来的（子孙 badge/icon 等），
+      // 用户修外层容器就会连带修好里面这些，不重复报避免噪声
+      const parent = el.parentElement;
+      if (parent && parent !== document.body && parent !== document.documentElement) {
+        const pcs = getComputedStyle(parent);
+        if (pcs.cursor === 'pointer') continue;
+      }
+      // 显式声明的键盘可达 role：作者知道自己在做什么
+      const role = (el.getAttribute('role') || '').toLowerCase();
+      if (role && ['button','link','tab','menuitem','option','switch','checkbox','radio',
+                   'menuitemcheckbox','menuitemradio','treeitem','gridcell'].indexOf(role) !== -1) continue;
+      // 外层已是 button/a/label：点击走外层
+      if (el.closest('button, a, label')) continue;
+      // 有 onclick 属性直接跳
+      if (el.onclick != null && !isOnclickNoop(el.getAttribute('onclick'))) continue;
+      // 自身或祖先被 addEventListener('click') 绑过
+      if (el.__shot_hasClickListener) continue;
+      if (nearestAncestorWithListener(el)) continue;
+      // 可见 + 尺寸达到"按钮量级"
+      if (!isVisible(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 24 || r.height < 16) continue;
+      // 必须有可见文字（纯图标 wrapper 已在 [role=button] 分支照顾；无文字容易虚报）
+      const txt = (el.textContent || '').trim();
+      if (txt.length === 0) continue;
+      push(el, 'cursor-pointer-no-handler');
+    }
+
+    // 3d：<input type=button|submit|reset|image>
+    //   与 <button> 完全平行，但 3a 只查 <button>，input 会漏掉。
+    //   input[type=submit] 在 form 里是合法的原生行为，同样豁免；纯 <input type=button value="保存">
+    //   没绑任何 handler 就是僵尸。
+    for (const inp of document.querySelectorAll('input[type="button"], input[type="submit"], input[type="reset"], input[type="image"]')) {
+      if (deadButtons.length >= 20) break;
+      const onclickRaw = inp.getAttribute('onclick');
+      const onclickNoop = isOnclickNoop(onclickRaw);
+      if (inp.onclick != null && !onclickNoop) continue;
+      if (inp.__shot_hasClickListener) continue;
+      if (nearestAncestorWithListener(inp)) continue;
+      const type = (inp.getAttribute('type') || '').toLowerCase();
+      const inForm = !!inp.closest('form');
+      // form 里的 submit / reset：原生行为，豁免
+      if (inForm && (type === 'submit' || type === 'reset')) continue;
+      if (!isVisible(inp)) continue;
+      // input 没有 textContent，用 value / aria-label 作为文本代表
+      const label = (inp.value || inp.getAttribute('aria-label') || inp.getAttribute('title') || '').trim();
+      if (!label && type !== 'image') continue;  // 无标签的按钮先不报（多半是特殊控件）
+      push(inp, onclickNoop ? 'onclick-noop' : 'input-no-handler',
+           Object.assign({ inputType: type },
+             onclickNoop ? { onclickAttr: (onclickRaw || '').slice(0, 60) } : {}));
+    }
+
+    // 3f：<label for="xxx"> 但 #xxx 在页面里不存在
+    //   典型 case：拼写错误（for="email-inpt" 而 input id="email-input"），
+    //   或组件重构后 id 变了 for 忘改。用户点 label 期望 focus 到 input，实际什么都不发生。
+    for (const lb of document.querySelectorAll('label[for]')) {
+      if (deadButtons.length >= 20) break;
+      const forVal = (lb.getAttribute('for') || '').trim();
+      if (!forVal) continue;
+      let target = null;
+      try {
+        target = document.getElementById(forVal);
+      } catch (e) {}
+      if (target) continue;
+      if (!isVisible(lb)) continue;
+      if ((lb.textContent || '').trim().length === 0) continue;
+      push(lb, 'label-for-not-found', { forAttr: forVal.slice(0, 60) });
     }
   }
 
@@ -506,6 +830,458 @@ REPORT_SCRIPT = r"""
       }
     }
   }
+
+  // ============ 双列高度错配（uneven columns） ============
+  // 触发：同一 grid/flex 行内两列高度差过大，短列下方出现大片空白。
+  // 高频根因：**长列**里有 aspect-ratio 图/元素把长列高度锁死（等价：显式 style.height 的 px 值），
+  //          短列内容较短、align-items:start 无法拉齐 → 短列下方相对空白。
+  // 假阳性防线（缺一不报）：
+  //   1) 容器必须是 grid 显式两列以上 / row-flex 且不换行；容器宽 >= 640；不在 header/nav/footer/aside 内
+  //   2) 直接可见块级子级 top 差 < 4px（真同一行，排除 wrap 到多行）
+  //   3) 必须能识别出根因：**长列**内有 aspect-ratio 元素占长列高度 ≥60%，或长列自身/子孙有 inline style.height 硬编码
+  //      （不检 computed height——它永远 resolve 成 px，无法区分 fixed vs auto）
+  //   4) 阈值：heightRatio >= 0.30 且 heightDelta >= 160 且 gapArea (短列宽 × delta) >= 40000
+  //   5) stretch 豁免：容器 align-items:stretch 且短列 align-self 未被覆盖，且长列锁高源头不是 img 时跳过
+  //      （单纯 stretch 布局本会拉齐；但 img 的 aspect-ratio 会强行反推 height，stretch 也拉不动）
+  const unevenColumns = [];
+  {
+    const num = v => parseFloat(v) || 0;
+    const inBanned = el => !!el.closest('header, nav, footer, aside');
+    const isVisibleBlockKid = c => {
+      const cs = getComputedStyle(c);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
+      if (cs.display === 'inline' || cs.display === 'inline-block' || cs.display === 'contents') return false;
+      if (cs.position === 'absolute' || cs.position === 'fixed') return false;
+      return true;
+    };
+    // 在长列子孙里找 aspect-ratio 锁高元素（首选 img，次之带 aspect-ratio 的 div/figure）
+    const findAspectLocker = (col, colH) => {
+      const nodes = col.querySelectorAll('img, figure, div, picture, video');
+      for (let i = 0; i < nodes.length && i < 40; i++) {
+        const el = nodes[i];
+        const ics = getComputedStyle(el);
+        if (ics.display === 'none' || ics.visibility === 'hidden') continue;
+        if (!ics.aspectRatio || ics.aspectRatio === 'auto') continue;
+        const rr = el.getBoundingClientRect();
+        if (rr.height < 40) continue;
+        if (rr.height >= colH * 0.6) return { el, h: rr.height, isImg: el.tagName === 'IMG' };
+      }
+      return null;
+    };
+    // inline style.height 硬编码（且非 % / auto）——computed 值永远是 px，无法可靠判定"作者写了固定值"
+    const hasInlineFixedHeight = (col, colH) => {
+      const check = el => {
+        const h = el.style && el.style.height;
+        if (!h || h === '' || h === 'auto') return false;
+        if (h.endsWith('%')) return false;
+        const v = num(h);
+        return v >= 40 && v >= colH * 0.6;
+      };
+      if (check(col)) return true;
+      let best = null;
+      for (const c of col.children) {
+        if (!isVisibleBlockKid(c)) continue;
+        const r = c.getBoundingClientRect();
+        if (!best || r.height > best.h) best = { el: c, h: r.height };
+      }
+      return best ? check(best.el) : false;
+    };
+
+    const containers = document.querySelectorAll('body *');
+    for (const cont of containers) {
+      if (unevenColumns.length >= 6) break;
+      const cs = getComputedStyle(cont);
+      const disp = cs.display;
+      let isGrid = false, isFlex = false;
+      if (disp === 'grid' || disp === 'inline-grid') {
+        const tpl = cs.gridTemplateColumns;
+        if (!tpl || tpl === 'none' || /subgrid/i.test(tpl)) continue;
+        const cols = tpl.trim().split(/\s+/).filter(Boolean);
+        if (cols.length < 2) continue;
+        isGrid = true;
+      } else if (disp === 'flex' || disp === 'inline-flex') {
+        const fd = cs.flexDirection;
+        if (fd !== 'row' && fd !== 'row-reverse') continue;
+        if (cs.flexWrap === 'wrap' || cs.flexWrap === 'wrap-reverse') continue;
+        isFlex = true;
+      } else continue;
+
+      const contR = cont.getBoundingClientRect();
+      if (contR.width < 640) continue;
+      if (contR.height < 300) continue;
+      if (inBanned(cont)) continue;
+
+      const kids = [];
+      for (const c of cont.children) {
+        if (!isVisibleBlockKid(c)) continue;
+        const r = c.getBoundingClientRect();
+        if (r.width < 60 || r.height < 20) continue;
+        kids.push({ el: c, w: r.width, h: r.height, top: r.top });
+      }
+      if (kids.length < 2) continue;
+      const topMin = Math.min.apply(null, kids.map(k => k.top));
+      const topMax = Math.max.apply(null, kids.map(k => k.top));
+      if (topMax - topMin > 4) continue;
+
+      kids.sort((a, b) => a.h - b.h);
+      const shortK = kids[0], tallK = kids[kids.length - 1];
+      const delta = tallK.h - shortK.h;
+      const ratio = delta / tallK.h;
+      const gapArea = shortK.w * delta;
+      if (ratio < 0.30) continue;
+      if (delta < 160) continue;
+      if (gapArea < 40000) continue;
+
+      // 归因：只查长列
+      const locker = findAspectLocker(tallK.el, tallK.h);
+      let reason = null, lockerTag = null;
+      if (locker) {
+        reason = locker.isImg ? 'tall-column-image-aspect-ratio' : 'tall-column-aspect-ratio';
+        lockerTag = locker.el.tagName.toLowerCase();
+      } else if (hasInlineFixedHeight(tallK.el, tallK.h)) {
+        reason = 'tall-column-fixed-height';
+      }
+      if (!reason) continue;
+
+      // stretch 豁免：仅当锁高源头不是 img/aspect-ratio 时才豁免——那两种 stretch 也拉不动
+      const ai = cs.alignItems;
+      const shortCS = getComputedStyle(shortK.el);
+      const asel = shortCS.alignSelf;
+      const stretched = (asel === 'stretch') || ((asel === 'auto' || asel === 'normal') && ai === 'stretch');
+      if (stretched && reason === 'tall-column-fixed-height') continue;
+
+      const cls = e => (typeof e.className === 'string' ? e.className : '').split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+      const label = e => e.tagName.toLowerCase() + (cls(e) ? '.' + cls(e) : '') + (e.id ? '#' + e.id : '');
+      unevenColumns.push({
+        container: label(cont),
+        containerDisplay: isGrid ? 'grid' : 'flex',
+        containerWidth: Math.round(contR.width),
+        shortChild: { tag: label(shortK.el), w: Math.round(shortK.w), h: Math.round(shortK.h) },
+        tallChild: { tag: label(tallK.el), w: Math.round(tallK.w), h: Math.round(tallK.h) },
+        heightDeltaPx: Math.round(delta),
+        heightRatio: Math.round(ratio * 100) / 100,
+        gapArea: Math.round(gapArea),
+        reason: reason,
+        lockerTag: lockerTag,
+        alignItems: ai,
+        alignSelf: asel,
+      });
+    }
+  }
+
+  // ============ 时间轴轴线 / 圆点对齐 ============
+  // 触发：页面出现 timeline 类关键词（class/id）。时间轴是 slop 高发区，且两个根因完全机械：
+  //   pseudo-content-box —— 圆点用 ::before 画且带 border。`*{box-sizing:border-box}` **不匹配伪元素**，
+  //                         伪元素仍是 content-box，实际外径比作者心算大 2*border，偏移恒等于 border-width。
+  //   origin-mismatch    —— 轴线挂在外层容器的 ::before 上、圆点挂在内层 item 里，
+  //                         两者定位原点差一个容器 padding-left，偏移恒等于该 padding-left。
+  // 伪元素拿不到 rect，按「包含块 padding 边 + left + marginLeft + 外径/2」推算；真元素直接用 rect。
+  const timelineAlignment = { present: false, measured: 0, issues: [], deadDotStyles: [] };
+  {
+    const TLRE = /timeline|time-line|tl-|时间轴|时间线/i;
+    const idcls = el => (typeof el.className === 'string' ? el.className : '') + ' ' + (el.id || '');
+    // 容器类名可能就叫 .tl（Orange 那种），单靠 /tl-/ 会整棵树漏测，所以按 token 精确匹配一次
+    const isTLToken = el => idcls(el).trim().split(/\s+/).some(t => /^(tl|timeline|time-?line)([-_].*)?$/i.test(t));
+    const num = v => parseFloat(v) || 0;
+
+    const roots = [];
+    for (const el of document.querySelectorAll('*')) {
+      if (roots.length >= 5) break;
+      if (!TLRE.test(idcls(el)) && !isTLToken(el)) continue;
+      if (el.children.length < 2) continue;
+      if (roots.some(r => r.contains(el))) continue;   // 只取最外层，避免父子重复统计
+      roots.push(el);
+    }
+    timelineAlignment.present = roots.length > 0;
+
+    // 圆点声明了 width/height 却因为 display:inline 被静默忽略。
+    // 这不是「对齐判断」——对齐有多种合法基准（实测 42 个纵向时间轴里 83% 圆点对齐内容首行，
+    // 少数三者居中，都是合法的），判不了。而「非替换 inline 元素忽略 width/height/垂直 margin」
+    // 是 CSS 规范的硬事实：任何设计意图下这么写都不生效，属于纯代码错误，零歧义。
+    // 后果：border-radius:50% 作用在被 line-height 撑出来的畸形盒子上 → 椭圆；margin:auto 也不居中。
+    for (const r of roots) {
+      if (timelineAlignment.deadDotStyles.length >= 4) break;
+      for (const el of r.querySelectorAll('span, i, b, em')) {
+        if (timelineAlignment.deadDotStyles.length >= 4) break;
+        const inline = el.style && el.style.cssText || '';
+        const cs = getComputedStyle(el);
+        if (cs.display !== 'inline') continue;                       // 只有 inline 会吞掉尺寸
+        if (cs.borderRadius === '0px' || !cs.borderRadius) continue; // 不是圆/胶囊，不关心
+        // 圆点是纯装饰、不该有任何文字。徽章/角标的文字常常只有 1-2 个字符（"3"、"NEW"），
+        // 用长度阈值挡不住，只能要求完全没有文字内容。
+        if ((el.textContent || '').trim()) continue;
+        // 作者到底声明没声明 width/height —— inline style 直接看，作者样式表里的翻 CSSOM
+        let declW = /(^|;)\s*width\s*:/i.test(inline), declH = /(^|;)\s*height\s*:/i.test(inline);
+        if (!declW || !declH) {
+          try {
+            for (const sheet of document.styleSheets) {
+              let rules; try { rules = sheet.cssRules; } catch (e) { continue; }   // 跨域样式表
+              if (!rules) continue;
+              for (const rule of rules) {
+                if (!rule.selectorText || !rule.style) continue;
+                if (!el.matches(rule.selectorText)) continue;
+                if (rule.style.width) declW = true;
+                if (rule.style.height) declH = true;
+              }
+            }
+          } catch (e) { /* 样式表不可枚举时放弃，宁可漏报 */ }
+        }
+        if (!declW && !declH) continue;      // 没声明尺寸，那 inline 是有意的
+        const bb = el.getBoundingClientRect();
+        // 不设宽度下限：空的 inline span 被吞掉 width 后渲染宽度就是 0，圆点直接不可见——
+        // 那是这个 bug 最典型的形态，恰恰不能过滤掉。只排除 display:none 之类真不该量的。
+        if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+        timelineAlignment.deadDotStyles.push({
+          sel: el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).trim().split(/\s+/)[0] : ''),
+          declaredWidth: declW, declaredHeight: declH,
+          renderedWidth: Math.round(bb.width * 10) / 10, renderedHeight: Math.round(bb.height * 10) / 10,
+          aspect: bb.height > 0 ? Math.round((bb.width / bb.height) * 100) / 100 : null,
+          invisible: bb.width < 1 || bb.height < 1,
+          borderRadius: cs.borderRadius, lineHeight: cs.lineHeight,
+        });
+      }
+    }
+
+    // 绝对定位的包含块：伪元素看宿主自身，真元素要从父级往上找（自身是 absolute 不代表它是自己的包含块）。
+    // 除 position!=static 外，transform / filter / perspective 非 none 也会形成包含块。
+    const containing = (host, fromSelf) => {
+      let a = fromSelf ? host : host.parentElement;
+      while (a && a !== document.documentElement) {
+        const cs = getComputedStyle(a);
+        if (cs.position !== 'static') break;
+        if (cs.transform !== 'none' || cs.filter !== 'none' || cs.perspective !== 'none') break;
+        a = a.parentElement;
+      }
+      return a || document.documentElement;
+    };
+    const boxOf = (host, pseudo) => {
+      const cs = getComputedStyle(host, pseudo || null);
+      if (pseudo && (cs.content === 'none' || cs.content === 'normal')) return null;
+      const bl = num(cs.borderLeftWidth), br = num(cs.borderRightWidth);
+      const bt = num(cs.borderTopWidth), bb = num(cs.borderBottomWidth);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return null;
+      // 用户看不见的东西不参与对齐判定。**必须用 checkVisibility**：CSS opacity 不继承，
+      // 祖先 opacity:0 时子元素的 computed opacity 仍是 1，只查自身会把「未揭示的滚动动画元素」
+      // 当成正常元素量——它们还停在 translateX 的起始态，量出来的偏移是动画残留而非真实错位。
+      try {
+        if (host.checkVisibility && !host.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return null;
+      } catch (e) {}
+      if (!pseudo) {
+        const r = host.getBoundingClientRect();
+        if (r.width <= 0 || r.height <= 0) return null;
+        return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: r.width, h: r.height,
+                 cs, pseudo: '', anc: containing(host, false), borderX: bl, borderY: bt };
+      }
+      if (cs.position !== 'absolute') return null;      // 静态流伪元素无法据 left/top 推位置
+      const pad = cs.boxSizing === 'border-box' ? 0 : 1;  // ← content-box 时 border 要额外计入外径
+      const w = num(cs.width) + pad * (bl + br);
+      const h = num(cs.height) + pad * (bt + bb);
+      if (w <= 0 || h <= 0) return null;
+      const anc = containing(host, true);
+      const ar = anc.getBoundingClientRect();
+      const acs = getComputedStyle(anc);
+      const x0 = ar.left + num(acs.borderLeftWidth);
+      const y0 = ar.top + num(acs.borderTopWidth);
+      // 只写了 right / bottom 时，从包含块的 padding 盒尺寸倒推
+      const innerW = ar.width - num(acs.borderLeftWidth) - num(acs.borderRightWidth);
+      const innerH = ar.height - num(acs.borderTopWidth) - num(acs.borderBottomWidth);
+      let l = parseFloat(cs.left), t = parseFloat(cs.top);
+      if (isNaN(l)) { const rr = parseFloat(cs.right); if (!isNaN(rr)) l = innerW - rr - w; }
+      if (isNaN(t)) { const bo = parseFloat(cs.bottom); if (!isNaN(bo)) t = innerH - bo - h; }
+      const cx = isNaN(l) ? null : x0 + l + num(cs.marginLeft) + w / 2;
+      const cy = isNaN(t) ? null : y0 + t + num(cs.marginTop) + h / 2;
+      if (cx === null && cy === null) return null;
+      return { cx, cy, w, h, cs, pseudo, anc, borderX: bl, borderY: bt };
+    };
+    // 轴线判向：窄而高 = 纵向时间轴（比中心 x）；宽而扁 = 横向时间轴（比中心 y）
+    const axisDir = b => {
+      if (b.w > 0 && b.w <= 6 && b.h >= 60 && b.cx !== null) return 'v';
+      if (b.h > 0 && b.h <= 6 && b.w >= 60 && b.cy !== null) return 'h';
+      return null;
+    };
+    const isDot = b => {
+      if (b.w < 6 || b.w > 32 || Math.abs(b.w - b.h) > 3) return false;
+      const r = b.cs.borderTopLeftRadius || '';
+      if (r.indexOf('%') < 0 && num(r) < b.w / 2 - 1) return false;
+      // 只认「被显式定位」的圆：节点圆点一定是 absolute 挂在 item 上，或 grid 里 justify-self 居中。
+      // 图例色点、头像、图标那类装饰圆是普通流元素——实测就是它们造成误报，这里直接排除。
+      return b.cs.position === 'absolute' || b.cs.justifySelf === 'center';
+    };
+    const label = (host, pseudo) =>
+      host.tagName.toLowerCase() +
+      (typeof host.className === 'string' && host.className ? '.' + host.className.trim().split(/\s+/)[0] : '') +
+      pseudo;
+    const shortSel = (el) => el.tagName.toLowerCase() +
+      (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/)[0] : '');
+
+    for (const root of roots) {
+      if (timelineAlignment.issues.length >= 6) break;
+      const axes = { v: [], h: [] }, dots = [];
+      const pool = [root].concat([].slice.call(root.querySelectorAll('*'), 0, 400));
+      for (const el of pool) {
+        for (const pseudo of ['', '::before', '::after']) {
+          let b = null;
+          try { b = boxOf(el, pseudo); } catch (e) { b = null; }
+          if (!b) continue;
+          const dir = axisDir(b);
+          if (dir) axes[dir].push(Object.assign({ sel: label(el, pseudo) }, b));
+          else if (isDot(b)) dots.push(Object.assign({ sel: label(el, pseudo) }, b));
+        }
+      }
+      if (!dots.length) continue;
+      for (const dir of ['v', 'h']) {
+        const list = axes[dir];
+        if (!list.length) continue;
+        const key = dir === 'v' ? 'cx' : 'cy';
+        // 主轴 = 沿轴方向最长那条
+        const main = list.reduce((a, b) => (dir === 'v' ? (b.h > a.h ? b : a) : (b.w > a.w ? b : a)));
+        // 先算出每个圆点的偏移，再做一致性归组。
+        // 真实的对齐 bug 是**系统性**的——同一套 CSS 决定全部节点，实测负例都是 8/8、13/13 同一个偏移；
+        // 孤立的离群值基本都是误判的装饰圆。只报「至少 2 个节点共同呈现」且落在轴线附近的那组。
+        // 这条一致性要求同时挡掉了跨方向串味：纵向时间轴里若有装饰性横线，各节点相对它的 y 偏移互不相同，凑不成组。
+        const groups = {};
+        for (const d of dots) {
+          if (d[key] === null) continue;
+          // 圆点可能横跨多段轴线（多列/分段时间轴），取同方向上最近的一条比
+          const near = list.reduce((a, b) => (Math.abs(b[key] - d[key]) < Math.abs(a[key] - d[key]) ? b : a), main);
+          const off = d[key] - near[key];
+          timelineAlignment.measured += 1;
+          // 阈值 1.0px：人工盲测 37 个真实产物的结果——实测 0px 的 7 个全部判「不歪」，
+          // 实测 0.5~1px 的 5 个judged「歪」，分界就在这里。再低会撞上亚像素舍入噪音。
+          if (Math.abs(off) < 1.0) continue;
+          if (Math.abs(off) > 60) continue;   // 离轴线太远，不是挂在这条轴上的节点
+          const k = String(Math.round(off * 2) / 2);
+          (groups[k] = groups[k] || []).push({ d: d, near: near, off: off });
+        }
+        const picked = Object.keys(groups).map(k => groups[k])
+          .filter(g => g.length >= 2)
+          .sort((a, b) => b.length - a.length)
+          .slice(0, 2);
+        for (const g of picked) {
+          if (timelineAlignment.issues.length >= 6) break;
+          const d = g[0].d, near = g[0].near, off = g[0].off;
+          const dotBorder = dir === 'v' ? d.borderX : d.borderY;
+          const ancPad = d.anc !== near.anc
+            ? num(getComputedStyle(near.anc)[dir === 'v' ? 'paddingLeft' : 'paddingTop']) : 0;
+          let reason = 'arithmetic';
+          if (d.pseudo && d.cs.boxSizing === 'content-box' && dotBorder > 0 &&
+              Math.abs(Math.abs(off) - dotBorder) <= 0.6) {
+            reason = 'pseudo-content-box';
+          } else if (d.anc !== near.anc && ancPad > 0 && Math.abs(Math.abs(off) - ancPad) <= 1.5) {
+            // 只有偏移确实≈包含块的 padding 时才是"原点错位"；否则包含块不同只是写法差异，
+            // 真正错的是手算的 left/top 值，别把 hint 里的修法指错方向。
+            reason = 'origin-mismatch';
+          }
+          const rec = {
+            orientation: dir === 'v' ? 'vertical' : 'horizontal',
+            axis: near.sel, dot: d.sel,
+            offsetPx: Math.round(off * 100) / 100,
+            affectedDots: g.length,
+            dotOuterSize: Math.round((dir === 'v' ? d.w : d.h) * 100) / 100,
+            dotBoxSizing: d.cs.boxSizing,
+            dotBorderWidth: dotBorder,
+            reason: reason,
+          };
+          if (reason === 'origin-mismatch') {
+            rec.axisOrigin = shortSel(near.anc);
+            rec.dotOrigin = shortSel(d.anc);
+            rec.axisOriginPadding = getComputedStyle(near.anc)[dir === 'v' ? 'paddingLeft' : 'paddingTop'];
+          }
+          timelineAlignment.issues.push(rec);
+        }
+      }
+    }
+  }
+  // ============ 正文靠色：候选收集（判定在 python 侧做）============
+  // **只收 <p>**：人工盲测 28 个真实产物的结论——低对比度的 span / div / a / button / small
+  // （标签、徽章、序号、按钮、装饰小字）全部被判「不影响使用」，它们靠位置和形状就能识别；
+  // 只有正文段落读不清才是真 bug。
+  // 这里**不算背景色**：DOM 推不出真背景——渐变在页面不同位置颜色天差地别（同一页实测从
+  // #f4ede0 米白到 #6d7275 深灰），伪元素色块和绝对定位覆盖层又不在祖先链上。真背景一律
+  // 由 python 侧从已截好的图上采样，这里只交出前景色和坐标。
+  const textCandidates = [];
+  {
+    const num = v => parseFloat(v) || 0;
+    const parse = s => { const m = (s || '').match(/[\d.]+/g); if (!m) return null;
+      const a = m.slice(0, 3).map(Number); a.push(m[3] !== undefined ? +m[3] : 1); return a; };
+    const over = (f, b) => [0, 1, 2].map(i => f[i] * f[3] + b[i] * (1 - f[3])).concat([1]);
+    // 伪元素画的色块（徽章圆底、hero 遮罩）不在 DOM 树里，向上遍历看不到
+    const pseudoBg = el => {
+      for (const ps of ['::before', '::after']) {
+        const cs = getComputedStyle(el, ps);
+        if (!cs || cs.content === 'none' || cs.content === 'normal') continue;
+        if (cs.display === 'none' || cs.visibility === 'hidden' || num(cs.opacity) === 0) continue;
+        if (cs.backgroundImage && cs.backgroundImage !== 'none') return true;
+        const c = parse(cs.backgroundColor);
+        if (c && c[3] > 0.05) return true;
+      }
+      return false;
+    };
+    // 绝对定位、铺满祖先的背景层（<div class="hero-bg"> 铺图，文字压在上面）
+    const bgLayer = anc => {
+      const ar = anc.getBoundingClientRect();
+      if (ar.width < 1 || ar.height < 1) return false;
+      for (const c of anc.children) {
+        const cs = getComputedStyle(c);
+        if (cs.position !== 'absolute' && cs.position !== 'fixed') continue;
+        const r = c.getBoundingClientRect();
+        if (r.width < ar.width * 0.85 || r.height < ar.height * 0.85) continue;
+        if (c.tagName === 'IMG' || (cs.backgroundImage && cs.backgroundImage !== 'none')) return true;
+        if (c.querySelector && c.querySelector('img')) return true;
+      }
+      return false;
+    };
+    // 只推导**纯色**背景：这条链路没有歧义，向上找到第一个不透明色即可。
+    // 一旦遇到渐变 / 位图 / 伪元素色块 / 覆盖层就返回 null——那些必须靠像素采样，
+    // 用 DOM 猜（比如取渐变色标平均色）实测会把「白字压深灰底、完全可读」误判成靠色。
+    const solidBgOf = el => {
+      let acc = null, a = el;
+      while (a && a !== document.documentElement.parentElement) {
+        const cs = getComputedStyle(a);
+        if (cs.backgroundImage && cs.backgroundImage !== 'none') return null;
+        if (bgLayer(a) || pseudoBg(a)) return null;
+        const c = parse(cs.backgroundColor);
+        if (c && c[3] > 0) { acc = acc ? over(acc, c) : c; if (c[3] >= 0.999) return acc; }
+        a = a.parentElement;
+      }
+      return acc ? over(acc, [255, 255, 255, 1]) : [255, 255, 255, 1];
+    };
+    for (const el of document.querySelectorAll('p')) {
+      if (textCandidates.length >= 80) break;
+      let txt = '';
+      for (const n of el.childNodes) if (n.nodeType === 3) txt += n.nodeValue;
+      txt = txt.replace(/\s+/g, '');
+      if (txt.length < 8) continue;                 // 短句多是标签式用法，不是要通读的正文
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      try {
+        if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;
+      } catch (e) {}
+      const rc = el.getBoundingClientRect();
+      if (rc.width < 8 || rc.height < 8) continue;
+      let op = 1;
+      for (let a = el; a && a !== document.documentElement.parentElement; a = a.parentElement) op *= num(getComputedStyle(a).opacity);
+      if (op < 0.5) continue;                       // 刻意淡化（未激活态），设计意图不是 bug
+      if (num(cs.webkitTextStrokeWidth) > 0) continue;
+      if (cs.textShadow && cs.textShadow !== 'none') continue;
+      const clip = cs.webkitBackgroundClip || cs.backgroundClip || '';
+      if (clip.indexOf('text') >= 0) continue;      // background-clip:text 渐变填充字
+      const fg = parse(cs.color);
+      if (!fg) continue;
+      const solid = solidBgOf(el);
+      textCandidates.push({
+        text: txt.slice(0, 24),
+        fg: [Math.round(fg[0]), Math.round(fg[1]), Math.round(fg[2])],
+        fgAlpha: Math.round(fg[3] * 1000) / 1000,
+        opacity: Math.round(op * 1000) / 1000,
+        fontSizePx: Math.round(num(cs.fontSize)),
+        solidBg: solid ? [Math.round(solid[0]), Math.round(solid[1]), Math.round(solid[2])] : null,
+        x: Math.round(rc.left + scrollX), y: Math.round(rc.top + scrollY),
+        w: Math.round(rc.width), h: Math.round(rc.height),
+      });
+    }
+  }
+  const docSize = { w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight };
 
   // ============ 图表容器尺寸收集 ============
   // 只做「收集」，不判断——判断在 python 侧跨视口对比时做。
@@ -809,6 +1585,80 @@ REPORT_SCRIPT = r"""
     }
   }
 
+  // 规则 13：正文文字贴视口边缘（仅 mobile shot 启用）
+  // 最高频成因是 padding 简写把继承来的左右内边距清零：
+  //   .wrap{max-width:1180px;margin:0 auto;padding:0 28px}   ← 通用容器，左右 28px
+  //   .hero-inner{padding:88px 0 96px}                        ← 只想加上下，简写把左右一起清零
+  // 元素同时挂两个 class 时后写的简写胜出。宽屏下 margin:0 auto 的居中边距掩盖了它
+  // （1440 时 (1440-1180)/2 = 130px，看起来完美），视口一旦 ≤ max-width 居中边距归零，
+  // padding 又是 0，文字直接贴边 —— 所以只在 mobile shot 能抓到，desktop 永远正常。
+  // 与规则 11 不重叠：规则 11 查「元素比视口宽」的溢出，这里的容器宽度恰好等于视口、完全不溢出。
+  const edgeHuggingText = [];
+  if (isMobile) {
+    const t0 = Date.now(), BUDGET = 1200;      // 硬预算：文本节点极多的页面宁可少报也不能拖慢自检
+    const csCache = new Map();
+    const CS = el => { let v = csCache.get(el); if (!v) { v = getComputedStyle(el); csCache.set(el, v); } return v; };
+    // 阶段一：快扫，只量文字矩形不读祖先（读祖先 computed style 是 O(n·depth)，会拖到分钟级）
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const rng = document.createRange();
+    const cand = [];
+    let node, scanned = 0;
+    while ((node = walker.nextNode())) {
+      if ((++scanned & 255) === 0 && Date.now() - t0 > BUDGET * 0.6) break;
+      const raw = node.textContent;
+      if (!raw || raw.trim().length < 2) continue;
+      const p = node.parentElement; if (!p) continue;
+      rng.selectNodeContents(node);
+      const rects = rng.getClientRects();
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        if (r.width < 8 || r.height < 6) continue;
+        // 阈值 1px（亚像素容差）。padding 塌陷造成的贴边 left 精确等于 0；
+        // 实测 left=4px 的那例是 text-align:center 的长文本两侧各余 4px，属正常，放宽到 4 会误报。
+        if (r.left <= 1) { cand.push({ el: p, left: r.left, right: r.right, txt: raw.trim().slice(0, 30) }); break; }
+      }
+      if (cand.length >= 40) break;
+    }
+    // 阶段二：只对候选查祖先链，排掉「刻意移出视口」的
+    // 移动端收起的抽屉/侧边栏、无障碍 skip link（left:-9999px）、绝对定位 badge 都长这样
+    const exemptReason = (el) => {
+      let a = el, d = 0;
+      while (a && a !== document.documentElement && d++ < 20) {
+        const cs = CS(a);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return 'invisible';
+        if (cs.position === 'fixed' || cs.position === 'absolute' || cs.position === 'sticky') return cs.position;
+        const tr = cs.transform;
+        if (tr && tr !== 'none') {
+          const m = tr.match(/matrix\(([^)]+)\)/);
+          if (m && Number(m[1].split(',')[4]) < -1) return 'translated-x';
+        }
+        if (parseFloat(cs.left) < -40) return 'left-off-screen';
+        a = a.parentElement;
+      }
+      return null;
+    };
+    const seenEdge = new Set();
+    for (const c of cand) {
+      if (edgeHuggingText.length >= 8 || Date.now() - t0 > BUDGET) break;
+      if (exemptReason(c.el)) continue;
+      const cs = CS(c.el), pa = c.el.parentElement, pcs = pa ? CS(pa) : null;
+      const sel = c.el.tagName.toLowerCase() + (c.el.className ? '.' + String(c.el.className).trim().split(/\s+/)[0] : '');
+      if (seenEdge.has(sel)) continue;
+      seenEdge.add(sel);
+      edgeHuggingText.push({
+        tag: sel,
+        text: c.txt,
+        left: Math.round(c.left),
+        viewportWidth: vw,
+        paddingLeft: cs.paddingLeft,
+        parentTag: pa ? pa.tagName.toLowerCase() + (pa.className ? '.' + String(pa.className).trim().split(/\s+/)[0] : '') : null,
+        parentPaddingLeft: pcs ? pcs.paddingLeft : null,
+        parentMarginLeft: pcs ? pcs.marginLeft : null,
+        parentMaxWidth: pcs ? pcs.maxWidth : null,
+      });
+    }
+  }
+
   return {
     structure: {
       title: document.title,
@@ -829,10 +1679,16 @@ REPORT_SCRIPT = r"""
     horizontalOverflow: overflow,
     fontFailures: fontFailures,
     localImages: localImages,
+    stretchedImages: stretchedImages,
     overlappingText: overlappingText,
     clippedText: clippedText,
+    pseudoOverflow: pseudoOverflow,
     deadButtons: deadButtons,
     misalignedBlocks: misalignedBlocks,
+    unevenColumns: unevenColumns,
+    timelineAlignment: timelineAlignment,
+    textCandidates: textCandidates,
+    docSize: docSize,
     chartContainers: chartContainers,
     unsafeHrefRefs: unsafeHrefRefs,
     invisibleAnimations: invisibleAnimations,
@@ -841,6 +1697,7 @@ REPORT_SCRIPT = r"""
     viewportMeta: viewportMeta,
     touchTargetTooSmall: touchTargetTooSmall,
     fixedWidthElements: fixedWidthElements,
+    edgeHuggingText: edgeHuggingText,
     mobileFontIssues: mobileFontIssues,
     isMobileShot: isMobile,
   };
@@ -936,6 +1793,201 @@ def _postprocess(out_path: Path, max_width: int, jpeg_quality: int, fmt: str,
     return {"path": main_path, "slices": slices, "bytes": main_path.stat().st_size}
 
 
+def _wcag_lum(c):
+    def ch(v):
+        v /= 255.0
+        return v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+    return 0.2126 * ch(c[0]) + 0.7152 * ch(c[1]) + 0.0722 * ch(c[2])
+
+
+def _wcag_ratio(a, b):
+    l1, l2 = _wcag_lum(a), _wcag_lum(b)
+    return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+
+
+def _dominant_bg(img, box):
+    """取矩形内的主背景色：**量化到 32 级后取最大色簇，再在簇内按像素数加权平均**。
+
+    不能直接取原始众数：渐变背景下每个像素颜色都略有不同，没有任何单一色值占主导，
+    反而是文字抗锯齿的某个中间色偶然聚成最大簇——实测一个 1440×58 的深蓝渐变段落，
+    原始众数取到 #e9edf7（仅占 0.8% 像素）、算出 1.17 的假靠色，而实际是白字压
+    #23459c 深蓝、对比度 8.74 完全可读。量化把相近色并成一簇后判对。
+    纯色背景不受影响：簇内只有一个色值，加权平均就是它本身。
+
+    返回 `(颜色, 最大簇的像素占比)`。占比是必要的可信度信号：众数只有在「背景占主导」
+    时才代表背景。实测一段压在咖啡馆照片上的深褐正文（520×97、三行 18px），照片颜色
+    高度分散、每簇不到 3%，反倒是集中的文字笔画成了最大簇（占 6%），采出的"背景色"
+    正好等于文字色、算出 1.00 的假靠色；而真正同色的正文（#898989 压 #888888）
+    最大簇占 100%。
+    """
+    x, y, w, h = box
+    try:
+        colors = img.crop((x, y, x + w, y + h)).getcolors(maxcolors=1 << 20)
+    except Exception:
+        return None
+    if not colors:
+        return None
+    buckets = {}
+    for n, c in colors:
+        if not isinstance(c, tuple) or len(c) < 3:
+            continue
+        k = (c[0] >> 3, c[1] >> 3, c[2] >> 3)
+        b = buckets.get(k)
+        if b is None:
+            buckets[k] = [n, c[0] * n, c[1] * n, c[2] * n]
+        else:
+            b[0] += n; b[1] += c[0] * n; b[2] += c[1] * n; b[3] += c[2] * n
+    if not buckets:
+        return None
+    total = sum(b[0] for b in buckets.values()) or 1
+    best = max(buckets.values(), key=lambda b: b[0])
+    return ([best[1] / best[0], best[2] / best[0], best[3] / best[0]], best[0] / total)
+
+
+def _group_by_band(items, band):
+    """按 y 贪心分组：落在同一个 band 高度窗口内的候选共用一张 clip 图，控制截图次数。"""
+    groups, cur, cur_top = [], [], None
+    for c in sorted(items, key=lambda x: x.get("y", 0)):
+        y = c.get("y", 0)
+        if cur_top is None or y + c.get("h", 0) - cur_top > band:
+            if cur:
+                groups.append((cur_top, cur))
+            cur, cur_top = [c], y
+        else:
+            cur.append(c)
+    if cur:
+        groups.append((cur_top, cur))
+    return groups
+
+
+def sample_text_contrast(page, cands, doc_size, threshold=1.6, limit=6, max_shots=16):
+    """采样正文段落的**实际渲染背景色**，算 WCAG 对比度。
+
+    为什么背景色必须从像素拿、不能用 DOM 推：渐变在页面不同位置颜色天差地别
+    （同一页实测从 #f4ede0 米白到 #6d7275 深灰），按「渐变色标平均色」算会把
+    「白字压深灰底、完全可读」误判成靠色；伪元素色块（徽章圆底）和绝对定位的
+    覆盖层（<div class="hero-bg">）更不在祖先链上，向上遍历只会拿到底层浅色。
+
+    为什么不复用主截图：`full_page=True` 在超过 Chrome 16384px 纹理上限的页面上
+    **内容与坐标错位**——实测 138 个真实产物里 6 个超限、其中 5 个底部内容不对
+    （21447px 那页的图底部显示的是中段图表而非 footer）。所以这里按候选元素分组、
+    用 `clip` 单独取图；clip 会先滚动到目标区域，实测在超长页上准确。
+
+    取元素矩形内的**众数颜色**作为背景——文字笔画只占少数像素，背景占多数。
+    """
+    if not cands or page is None:
+        return []
+    try:
+        from PIL import Image           # 没装 Pillow 就静默跳过这条规则，不影响其它 lint
+    except Exception:
+        return []
+    dw = (doc_size or {}).get("w") or 0
+    if dw <= 0:
+        return []
+
+    try:
+        vp_h = int((page.viewport_size or {}).get("height") or 900)
+    except Exception:
+        vp_h = 900
+    band = max(400, vp_h)
+
+    seen, out, dropped, shot_failed = {}, [], 0, 0
+    _sample_err = [None]
+
+    def _judge(c, bg):
+        fg = [float(v) for v in c["fg"]]
+        a = float(c.get("fgAlpha", 1)) * float(c.get("opacity", 1))
+        if a < 0.999:                   # 半透明文字的实际渲染色 = 前景以 a 混到背景上
+            fg = [fg[i] * a + bg[i] * (1 - a) for i in range(3)]
+        cr = _wcag_ratio(fg, bg)
+        # 不设下限。曾经把 cr < 1.06 当「描边空心字之类，靠别的机制可见」跳过，那是错的：
+        # 候选收集阶段已经排除了 -webkit-text-stroke / text-shadow / background-clip:text，
+        # 能走到这里的近同色文字只可能是**真的读不出来的正文**（实测 #898989 压 #888888
+        # 的普通 <p> 就因此被静默）。这恰好是最严重的形态——通常是文字色变量被误用成了
+        # 跟背景相近的值。
+        if cr >= threshold:
+            return
+        key = (tuple(int(round(v)) for v in fg), tuple(int(v) for v in bg))
+        if key in seen:
+            seen[key]["count"] += 1
+            return
+        rec = {
+            "text": c.get("text", ""),
+            "color": "#%02x%02x%02x" % tuple(int(round(v)) for v in fg),
+            "background": "#%02x%02x%02x" % tuple(int(v) for v in bg),
+            "contrastRatio": round(cr, 2),
+            "fontSizePx": c.get("fontSizePx"),
+            "count": 1,
+        }
+        seen[key] = rec
+        out.append(rec)
+
+    # 分流：DOM 能推出纯色背景的直接判（无歧义、零开销），只有渐变 / 位图 /
+    # 伪元素色块 / 覆盖层底下的文字才需要截图采样——那部分才是 DOM 猜不准的。
+    need_shot = []
+    for c in cands:
+        if c.get("solidBg"):
+            _judge(c, [float(v) for v in c["solidBg"]])
+        else:
+            need_shot.append(c)
+
+    if need_shot:
+        for gi, (top, items) in enumerate(_group_by_band(need_shot, band)):
+            if gi >= max_shots:
+                dropped += len(items)
+                continue
+            bottom = max(c.get("y", 0) + c.get("h", 0) for c in items)
+            h = max(2, min(band, bottom - top + 4))
+            try:
+                # clip 的坐标语义取决于 full_page：**必须** full_page=True，此时 clip 才是
+                # 文档坐标；不带则是视口坐标，而这里传的 y 来自 rc.top + scrollY，
+                # 去掉 full_page 会稳定抛 "Clipped area is either empty or outside the
+                # resulting image"（实测 800x600 视口取文档 y=2200 即复现）。
+                raw = page.screenshot(full_page=True, type="png",
+                                      clip={"x": 0, "y": max(0, top - 2), "width": dw, "height": h})
+                img = Image.open(io.BytesIO(raw)).convert("RGB")
+            except Exception as e:
+                # 不能纯静默：采样失败会让渐变 / 图片背景上的靠色整片查不出来，
+                # 而报告里看不出任何异常。计数并留下首个错误，交给调用方报出去。
+                shot_failed += 1
+                if _sample_err[0] is None:
+                    _sample_err[0] = str(e)[:160]
+                continue
+            for c in items:
+                x = int(c.get("x", 0))
+                y = int(c.get("y", 0)) - max(0, top - 2)
+                w, hh = max(2, int(c.get("w", 0))), max(2, int(c.get("h", 0)))
+                if x < 0 or y < 0 or x >= img.size[0] or y >= img.size[1]:
+                    continue
+                w, hh = min(w, img.size[0] - x), min(hh, img.size[1] - y)
+                if w < 2 or hh < 2:
+                    continue
+                got = _dominant_bg(img, (x, y, w, hh))
+                if got is None:
+                    continue
+                bg, share = got
+                # 最大簇跟前景几乎同色时，它可能根本不是背景、而是文字笔画本身——
+                # 只有在这个簇确实占主导时才采信。照片 / 复杂图案背景下颜色高度分散，
+                # 集中的文字色反而成为最大簇（实测占 6%），采信它就是假靠色；
+                # 真正的同色正文里背景占绝大多数（实测 100%）。占比不足就放弃这个元素，
+                # 宁可漏报也不误报。
+                if _wcag_ratio([float(v) for v in c["fg"]], bg) < 1.1 and share < 0.30:
+                    continue
+                _judge(c, bg)
+
+    out.sort(key=lambda r: r["contrastRatio"])
+    if shot_failed:
+        diag = f"{shot_failed} 组候选的背景采样截图失败（首个错误：{_sample_err[0]}），这些段落未被检测"
+        if out:
+            out[0].setdefault("_note", diag)
+        else:
+            return [{"_samplingFailed": shot_failed, "_note": diag}]
+    if dropped and out:
+        out[limit - 1 if len(out) >= limit else len(out) - 1]["_note"] = (
+            f"页面过长，另有 {dropped} 个渐变/图片背景上的段落未采样")
+    return out[:limit]
+
+
 def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
              max_width, jpeg_quality, fmt, slice_over_kb, slice_over_height, slice_height, include,
              eval_code=None):
@@ -950,10 +2002,23 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
     except Exception:
         # networkidle 达不到时退回 domcontentloaded，别死等
         page.goto(url, wait_until="domcontentloaded", timeout=30_000)
-    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    # 逐段滚一遍再回顶：跳跃式滚动（0 → 底 → 0）只会让首尾屏进入视口，
+    # 页面中段元素的 IntersectionObserver 从「不相交」直接到「不相交」，永远不触发，
+    # 于是那些元素在截图和 lint 时还停在揭示前的 transform 上——量出来的位置是假的。
+    page.evaluate(
+        "async () => {"
+        "  const step = Math.max(300, Math.floor(window.innerHeight * 0.8));"
+        "  const H = document.documentElement.scrollHeight;"
+        "  for (let y = 0; y < H; y += step) {"
+        "    window.scrollTo(0, y);"
+        "    await new Promise(r => setTimeout(r, 30));"
+        "  }"
+        "  window.scrollTo(0, H);"
+        "  await new Promise(r => setTimeout(r, 60));"
+        "  window.scrollTo(0, 0);"
+        "}"
+    )
     page.wait_for_timeout(400)
-    page.evaluate("() => window.scrollTo(0, 0)")
-    page.wait_for_timeout(200)
     prepped = page.evaluate(PREP_SCRIPT)
     page.wait_for_timeout(200)
     # 渲染稳态探针：等 fonts / 图片 / 布局都稳；超时上限 3s，超了就照截，不阻塞交付
@@ -1007,196 +2072,386 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
     # DOM 报告：lint / structure 至少一个开启时才 evaluate
     if "lint" in include or "structure" in include:
         dom = page.evaluate(REPORT_SCRIPT)
-        if "structure" in include:
-            report["structure"] = dom["structure"]
-        # chartContainers 无论 lint/structure 开哪个都存下来，供跨视口对比
-        report["_chartContainers"] = dom.get("chartContainers") or []
+        _apply_dom_report(report, dom, console_bucket, resource_bucket, include)
+        # 靠色要在**渲染结果**上采样背景色（clip 截图），只有 playwright 分支持有 page
+        # 对象能截图；CDP 分支拿不到，所以这条规则不放进共用的 _apply_dom_report。
         if "lint" in include:
-            report["consoleErrors"] = [m for m in console_bucket if m["type"] == "error"]
-            report["consoleWarnings"] = [m for m in console_bucket if m["type"] == "warning"]
-            report["horizontalOverflow"] = dom["horizontalOverflow"]
-            report["resourceErrors"] = list(resource_bucket)
-            if dom.get("fontFailures"):
-                # 字体加载失败合并进 resourceErrors
-                for f in dom["fontFailures"]:
-                    report["resourceErrors"].append({
-                        "url": f"font:{f.get('family','')}",
-                        "resourceType": "font",
-                        "status": None,
-                        "reason": "font_load_error",
-                    })
-            local_imgs = dom.get("localImages") or []
-            # 只在云电脑上报。本地电脑按 SKILL.md 就该用 assets/ 相对路径引用，
-            # 报出来等于指挥模型去做规则明确禁止的事，而且原 hint 给的修法正是云电脑那条。
-            # 判据与 SKILL.md 的运行环境判定保持一致：Windows / Mac → 本地电脑，其余 → 云电脑。
-            if local_imgs and platform.system() not in ("Darwin", "Windows"):
-                report["localImageWarnings"] = local_imgs
-                report["localImageHint"] = (
-                    "含义：页面里存在 file:// 本地图片引用。云电脑交付的 HTML 不能包含文件系统引用。"
-                    " | 修法：跑 scripts/embed.py 把图以 Base64 内嵌，交付它产出的 <原文件名>_embed.html"
-                    "（准确路径看该脚本 JSON 报告的 out 字段）。"
-                    " | 豁免：本地电脑（Computer OS 为 Windows / Mac）不报此项——那里用 assets/"
-                    " 相对路径引用是规定做法。本规则只匹配 file://，http(s)/data URI 都不会报。"
-                )
-            overlapping = dom.get("overlappingText") or []
-            if overlapping:
-                report["overlappingText"] = overlapping
-                report["overlappingTextHint"] = (
-                    "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。"
-                    "coverRatio 是交集面积占较小元素面积的比例，越大越可疑。"
-                    " | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。"
-                    " | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；"
-                    "(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。"
-                )
-            clipped = dom.get("clippedText") or []
-            if clipped:
-                report["clippedText"] = clipped
-                report["clippedTextHint"] = (
-                    "含义：overflow:hidden|clip 的容器把内部文本裁掉了。clippedX/Y 是被吃掉多少 px。"
-                    "已自动排除 text-overflow:ellipsis 单行截断和 -webkit-line-clamp 多行截断（这两个是设计意图）。"
-                    " | 修法：把容器 height 改成 min-height、或允许内容溢出、或缩短文案。"
-                    " | 豁免：(1) 5-20px 小值可能是行高/边距计算的边界抖动、动画过程中的瞬时状态；"
-                    "(2) 故意的 marquee/scroll 容器（虽然 overflow:hidden 但依赖 JS 滚动）。"
-                )
-            dead = dom.get("deadButtons") or []
-            if dead:
-                report["deadButtons"] = dead
-                report["deadButtonsHint"] = (
-                    "含义：<button> 既无 onclick 也没被 addEventListener('click') 绑过，或 <a> 无有效 href。"
-                    "reason=button-no-onclick / a-no-href / a-href-empty / a-href-hash-no-handler。"
-                    "已排除 form submit/reset、popover 触发器、role=tab/menuitem/option/switch/checkbox/radio、<label> 包裹。"
-                    " | 修法：给 <button> 加 onclick 或 addEventListener；给 <a> 补 href 或改成 <button>。"
-                    " | 豁免：(1) 带 note=ancestor-has-data-attr 的项可能是**祖先事件委托**目标（document/window 上的全局委托本规则查不到），"
-                    "对着代码核对，如果确实有 document.addEventListener('click', e => e.target.closest(...)) 之类的委托捕获就忽略；"
-                    "(2) 纯装饰按钮（无 hover/focus 反馈的 mock 页面）——但这本身也算 slop，建议改成非 <button>。"
-                )
-            misaligned = dom.get("misalignedBlocks") or []
-            if misaligned:
-                report["misalignedBlocks"] = misaligned
-                report["misalignedBlocksHint"] = (
-                    "含义：section/main/article 直接子级里，个别元素撑到父容器全宽、其他兄弟明显更窄。"
-                    "widthDeltaVsGrid=比栅格宽多少 px、gridWidth=正常栅格宽度、containerWidth=父容器宽度。"
-                    "最常见根因：HTML 标签闭合错位（<p> 忘了 </p> 等）导致元素跳出 .wrap/.container 层级，"
-                    "浏览器容错解析、不报 console 错但布局层级已被打乱。"
-                    " | 修法：从 containerTag 定位到出问题的 section，逐行检查该 section 内前面的 HTML 标签闭合。"
-                    " | 豁免：(1) **full-bleed / breakout 布局**——故意做全宽 hero、全宽 gradient divider、"
-                    "文章里跳出正文栏的大图/引用块（杂志排版）。看截图确认是设计意图后忽略；"
-                    "(2) sticky/absolute 顶栏错放在 section 直接子级下（罕见）。"
-                )
-            unsafe_href = dom.get("unsafeHrefRefs") or []
-            if unsafe_href:
-                report["unsafeHrefRefsWarning"] = unsafe_href
-                report["unsafeHrefRefsHint"] = (
-                    "warning · 含义：SVG 内 <use> 或 <textPath> 用 href=\"#id\" 引用同页 fragment。"
-                    "Chrome 在 file:// 协议下会把这类引用视为 \"Unsafe attempt to load URL\" 并同步中断当前 script，"
-                    "表现是页面后段 JS 不跑（图表空、卡片空、动效不出）。"
-                    " | 修法：改成 xlink:href=\"#id\"，并在根 <svg> 上声明 xmlns:xlink=\"http://www.w3.org/1999/xlink\"；"
-                    "或同时保留两者（href + xlink:href）以兼容新旧写法。"
-                    " | 豁免：(1) 用户明确只走 http/https 部署、不会以 file:// 打开，可忽略；"
-                    "(2) 引用的是外链 URL（非 fragment）——本规则已自动过滤，不会报到；"
-                    "(3) 已在同一元素上写了 xlink:href——本规则已自动过滤。"
-                )
-            invis_anim = dom.get("invisibleAnimations") or []
-            if invis_anim:
-                report["invisibleAnimationsWarning"] = invis_anim
-                report["invisibleAnimationsHint"] = (
-                    "warning · 含义：元素初态是 opacity:0 / visibility:hidden / clip-path inset 全遮，"
-                    "且**没有 CSS transition/animation 兜底**——需要 JS 挂类（如 .in / .chart-in）才能揭出。"
-                    "如果 IO 未触发、JS 报错、user gesture 未发生，用户永远看不到这些内容。"
-                    "reason=opacity:0 / visibility:hidden / clip-path-inset。"
-                    " | 修法：(a) 检查 IntersectionObserver / ScrollTrigger / GSAP 挂载是否正确；"
-                    "(b) 给元素补 CSS transition 兜底，即使 JS 挂了也能自然过渡到可见态；"
-                    "(c) 用 @media (prefers-reduced-motion) 分支保证 reduced-motion 用户直接看到静态终态。"
-                    " | 豁免：(1) 折叠/展开面板、模态框、抽屉——初态本就该隐藏，用户主动触发才显示；"
-                    "(2) 依赖 hover/click 才展开的 tooltip/menu；"
-                    "(3) 只在特定视口尺寸/断点下显示的元素；"
-                    "(4) 类名匹配但语义是 \"揭示后可见\" 且 JS 稳定挂载可自验的——对着截图确认元素已现在最终态即可。"
-                )
-            slop_fonts = dom.get("slopFonts") or []
-            if slop_fonts:
-                report["slopFontsWarning"] = slop_fonts
-                report["slopFontsHint"] = (
-                    "warning · 含义：页面使用了 skill 明确禁的 slop 高发字体（Inter / Roboto / Arial / Fraunces / Playfair）。"
-                    "elementCount 是命中该字体的元素数（不含 fallback），sampleText 是首个样例文字。"
-                    " | 修法：换成主题相关的字体族（衬线/无衬线/等宽视调性而定），走自托管镜像 miaoda.feishu.cn/fonts/css2。"
-                    " | 豁免：(1) **用户品牌指定使用**——例如客户 CI 明确要求 Inter/Roboto，写在 brief 里可忽略；"
-                    "(2) **系统字体 fallback 命中**——虽然本规则只取 fontFamily 首选族，但如果这个族本身写的是 \"Arial\"、可能只是保守 fallback；"
-                    "如果同一元素明显还挂了自定义字体但 fallback 落到 Arial（例如自定义字体 404 了），修的其实是字体加载而非字体选型；"
-                    "(3) 极简项目本就要 \"grotesque + 中性感\"，且用户未指定——罕见但存在，看截图和 design plan 确认后可豁免。"
-                )
-            emoji_use = dom.get("emojiUsage") or []
-            if emoji_use:
-                report["emojiUsageWarning"] = emoji_use
-                report["emojiUsageHint"] = (
-                    "warning · 含义：页面正文里检出 emoji 字符（U+1F300–U+1FAFF 或 U+2600–U+27BF 平面）。"
-                    "SKILL.md 视觉设计段明确禁用 emoji——不作图标、不作装饰、不放进数据。"
-                    " | 修法：换成内联 SVG 图标（<svg viewBox=\"0 0 24 24\">）建立风格连贯的图标语言。"
-                    " | 豁免：(1) **用户品牌资产明确包含 emoji**（罕见，但如即时通讯、社交媒体主题的产物合理）；"
-                    "(2) 主题本身就是关于 emoji 的（emoji 历史 / 表情包研究 / Unicode 演进）；"
-                    "(3) 引用某条真实文本原文（如推文截图的文字版），emoji 是内容而非装饰——保留原文可接受，但仍应权衡；"
-                    "(4) 装饰性 dingbat（如 U+2713 勾选符 ✓、U+2192 箭头 →、U+2605 星 ★）落入 U+2600–U+27BF 平面被误报的，如确认是符号非 emoji 可忽略。"
-                )
-            vp = dom.get("viewportMeta") or {}
-            # 任意 shot 都要查 viewport meta（不是移动才查——桌面截图也能看出 meta 缺失）
-            if vp and (not vp.get("present") or not vp.get("hasDeviceWidth")):
-                report["viewportMetaWarning"] = vp
-                report["viewportMetaHint"] = (
-                    "warning · 含义：<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> 缺失或不含 width=device-width。"
-                    "iOS Safari / Android Chrome 在真机上会以 980px 假 viewport 渲染再等比缩小，页面上所有元素字如蚂蚁、按钮点不准。"
-                    "本次 shot.py 因为在受控 viewport 里跑截图，看起来正常，但真机用户会遭殃。"
-                    " | 修法：<head> 里加 `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">`。"
-                    " | 豁免：(1) 产物明确只交付桌面场景（大屏 kiosk / 内嵌大屏投屏），且不会有移动访问——罕见但存在；"
-                    "(2) 已设 `user-scalable=no` 或 `maximum-scale=1` 但**这本身是 anti-pattern**：违反无障碍，不推荐豁免，反而应移除；"
-                    "(3) 页面是纯打印用途，无网页渲染需求。"
-                )
-            elif vp and vp.get("present") and vp.get("disablesZoom"):
-                # meta 存在但 user-scalable=no / maximum-scale=1，独立报一条更弱的 warning
-                report["viewportMetaWarning"] = vp
-                report["viewportMetaHint"] = (
-                    "warning · 含义：viewport meta 存在但设置了 user-scalable=no 或 maximum-scale=1，禁用了用户缩放。"
-                    "这是 anti-pattern：低视力用户依赖捏合放大读页面，禁用即等于把这批用户拒之门外。"
-                    " | 修法：移除 user-scalable=no / maximum-scale=1，改成 `content=\"width=device-width, initial-scale=1\"`。"
-                    " | 豁免：几乎没有正当理由——map 交互 / 3D 交互也不用禁 zoom，那些场景内嵌自己的手势处理即可，页面缩放不冲突。"
-                )
-            tts = dom.get("touchTargetTooSmall") or []
-            if tts:
-                report["touchTargetTooSmallWarning"] = tts
-                report["touchTargetTooSmallHint"] = (
-                    "warning · 含义（仅 mobile shot 触发）：按钮 / 链接 / 交互元素的命中区 < 44×44px（iOS HIG 下限）。"
-                    "手指宽约 7–10mm ≈ 44px，小于此手指点不准，且按下会误触相邻元素。已自动过滤纯正文里的 inline 超链接（<a> inline + 高度 < 26px）。"
-                    " | 修法：给按钮/链接加 `min-width: 44px; min-height: 44px;` 或增大 padding；图标按钮特别注意，容易只给 16-20px。"
-                    " | 豁免：(1) 密集工具栏 / 编辑器 UI（图标按钮 32px 是行业惯例），但需给周围留足 gap 保证不误触；"
-                    "(2) 装饰性小 icon（不响应 click，只有 hover tooltip）——本规则应该已过滤，若仍报出可忽略；"
-                    "(3) 主要面向桌面 + 键鼠操作的产物（管理后台 / 编辑器），但如果页面同时对手机用户开放就不能豁免。"
-                )
-            fixed_w = dom.get("fixedWidthElements") or []
-            if fixed_w:
-                report["fixedWidthElementsWarning"] = fixed_w
-                report["fixedWidthElementsHint"] = (
-                    "warning · 含义（仅 mobile shot 触发）：元素 computed width > viewport 宽度，且没有 % 相对宽度、父级也不是 overflow 容器。"
-                    "典型是硬编码 `width: 1200px` 之类固定宽度未做响应式，在 390px viewport 下必然横向溢出。"
-                    "inlineWidth 字段展示 inline style 里的 width 值（无则为 null）。"
-                    " | 修法：改成相对宽度（`width: 100%`、`max-width`）、grid / flex 布局、或加移动断点 `@media (max-width: 640px) { ... }` 覆盖。"
-                    " | 豁免：(1) **故意的横向 scroller**（swiper / carousel / marquee / 横向 timeline）——父元素带 overflow-x:auto 时本规则已自动过滤；"
-                    "若你的 scroller 靠 JS 拖拽而非 overflow，需在父元素显式设 overflow-x 让规则识别；"
-                    "(2) SVG / Canvas 图表在容器里 clip 显示，元素本身尺寸大于视口但用户只看到裁切部分——但更好的做法是让 SVG viewBox 自适应。"
-                )
-            m_font = dom.get("mobileFontIssues") or []
-            if m_font:
-                report["mobileFontIssuesWarning"] = m_font
-                report["mobileFontIssuesHint"] = (
-                    "warning · 含义（仅 mobile shot 触发）：两类问题合并——"
-                    "(a) kind=small-body-text：正文字号 < 14px，手机上难读；"
-                    "(b) kind=input-under-16px：<input> / <textarea> font-size < 16px，iOS Safari 聚焦时会自动缩放页面（那种一点输入框页面跳一下的贼恶心 UX）。"
-                    " | 修法：正文 ≥ 14px（16px 更佳）；表单元素 ≥ 16px。可以在移动断点里针对性调大："
-                    "`@media (max-width: 640px) { body { font-size: 16px; } input, textarea { font-size: 16px; } }`。"
-                    " | 豁免：(1) 图例 / caption / footnote 类辅助文字，12–13px 可接受，但应控制在页面 5% 以内；"
-                    "(2) 数据密集型表格数字（如财务表 12px 是行业惯例）——需要该单元格开 `tnum` 等宽数字避免飘忽；"
-                    "(3) input 已设 `font-size: 16px` 但仍报出——可能是 inline style / 父级 rem 计算异常，检查实际 computed 值。"
+            contrast = sample_text_contrast(
+                page,
+                dom.get("textCandidates") or [],
+                dom.get("docSize") or {},
+            )
+            if contrast:
+                report["textContrastIssues"] = contrast
+                report["textContrastHint"] = (
+                    "含义：正文段落（`<p>`）的文字颜色与背景色对比度过低，读起来吃力或几乎读不出来。"
+                    "contrastRatio 是 WCAG 对比度（1.0 = 完全同色），count 是同一套配色在页面里出现的次数，"
+                    "color / background 是实际渲染色（已合成 rgba 透明度与祖先 opacity）。"
+                    "**本规则只查 `<p>`、只报低于 1.6 的**：人工盲测 28 个真实产物的结论——"
+                    "低对比度的标签、徽章、序号、按钮（span / div / a / button）全部被判「不影响使用」，"
+                    "它们靠位置和形状就能识别；只有需要通读的正文段落读不清才是真问题。"
+                    "所以触发了基本就是真的，不要当成可选建议。"
+                    " | 修法：把正文色与背景拉开亮度差——正文正常应在 4.5:1 以上，最低 3:1。"
+                    "常见根因是**同一套文字色被复用到了两种背景上**（浅色区和深色区共用一个 --text 变量），"
+                    "在其中一种上就糊了；按背景分层定义文字色（如 --text-on-light / --text-on-dark）可以根治。"
+                    "只调透明度（`opacity` / `rgba` 的 alpha）通常不够，要动色值本身的明度。"
+                    " | 检测局限（不是豁免，是**查不到**）：背景为渐变、图片、伪元素色块或绝对定位覆盖层时，"
+                    "拿不到确定的背景色，这些元素一律跳过不报——**渐变背景上的靠色本规则发现不了，要靠截图人工核对**。"
+                    " | 豁免：(1) 故意做的水印、暗纹、装饰性段落，截图上确认是设计意图；"
+                    "(2) 正文本身是次要信息且用户明确要求低调处理。"
                 )
     console_bucket.clear()
     resource_bucket.clear()
     return report
+
+
+def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
+    """把 REPORT_SCRIPT 的 dom 结果 + console/network buckets 装配进 report。
+
+    抽出这个函数是为了让 playwright 和 chrome CLI (CDP) 两条分支共用同一份装配逻辑——
+    在 CDP 里通过 addScriptToEvaluateOnNewDocument 也能跑 INIT_SCRIPT + REPORT_SCRIPT,
+    console/network 可以订阅 Runtime.consoleAPICalled / Network.responseReceived 拿到。
+    """
+    if "structure" in include:
+        report["structure"] = dom.get("structure")
+    # chartContainers 无论 lint/structure 开哪个都存下来，供跨视口对比
+    report["_chartContainers"] = dom.get("chartContainers") or []
+    if "lint" in include:
+        report["consoleErrors"] = [m for m in console_bucket if m.get("type") == "error"]
+        report["consoleWarnings"] = [m for m in console_bucket if m.get("type") == "warning"]
+        report["horizontalOverflow"] = dom.get("horizontalOverflow") or []
+        report["resourceErrors"] = list(resource_bucket)
+        if dom.get("fontFailures"):
+            # 字体加载失败合并进 resourceErrors
+            for f in dom["fontFailures"]:
+                report["resourceErrors"].append({
+                    "url": f"font:{f.get('family','')}",
+                    "resourceType": "font",
+                    "status": None,
+                    "reason": "font_load_error",
+                })
+        local_imgs = dom.get("localImages") or []
+        # 只在云电脑上报。本地电脑按 SKILL.md 就该用 assets/ 相对路径引用，
+        # 报出来等于指挥模型去做规则明确禁止的事，而且原 hint 给的修法正是云电脑那条。
+        # 判据与 SKILL.md 的运行环境判定保持一致：Windows / Mac → 本地电脑，其余 → 云电脑。
+        if local_imgs and platform.system() not in ("Darwin", "Windows"):
+            report["localImageWarnings"] = local_imgs
+            report["localImageHint"] = (
+                "含义：页面里存在 file:// 本地图片引用。云电脑交付的 HTML 不能包含文件系统引用。"
+                " | 修法：跑 scripts/embed.py 把图以 Base64 内嵌，交付它产出的 <原文件名>_embed.html"
+                "（准确路径看该脚本 JSON 报告的 out 字段）。"
+                " | 豁免：本地电脑（Computer OS 为 Windows / Mac）不报此项——那里用 assets/"
+                " 相对路径引用是规定做法。本规则只匹配 file://，http(s)/data URI 都不会报。"
+            )
+        stretched = dom.get("stretchedImages") or []
+        if stretched:
+            report["stretchedImages"] = stretched
+            report["stretchedImagesHint"] = (
+                "含义：图片渲染盒子的宽高比与图片固有宽高比不符，且 object-fit 是默认的 fill——"
+                "图像内容被硬拉伸/压扁。ratioDeviation = 渲染比例 ÷ 固有比例，1.0 为正常，"
+                "0.4 表示横向被压到四成宽。**海报、人物、二维码上尤其致命**：二维码形变后扫不出来，"
+                "属于功能损坏而非美观问题；而截图上拉伸的设计稿很容易被误读成「刻意的竖版构图」，肉眼复核会漏。"
+                " | reason=html-attr-height-not-overridden：`<img width=W height=H>` 这两个 HTML 属性是"
+                "presentational hint（等价 `width:Wpx; height:Hpx`），优先级低于任何 CSS。"
+                "CSS 里的 `width:100%` 只覆盖 width，**height 仍是 Hpx**；"
+                "`aspect-ratio: auto W/H` 只在有一边为 auto 时才反推另一边，两边都确定时不产生约束。"
+                "修法二选一，不要都做：(a) 删掉 HTML 的 `width`/`height` 属性，浏览器会自动按固有比例推导；"
+                "(b) 在 CSS 里补 `height:auto`。"
+                " | reason=box-ratio-mismatch：CSS 把 width 和 height 都写死了但比例算错，"
+                "或父级 flex/grid 的 `align-items:stretch` 把图拉高。"
+                "修法：只定一边尺寸（另一边留 auto），或改用 `object-fit:cover` 让内容裁切而不形变。"
+                " | 豁免：(1) object-fit 为 cover/contain/none/scale-down 的图**本规则完全不检查**——"
+                "那些属性下盒子比例变了内容也不形变，是正常做法，无需处理；"
+                "(2) `transform:scale(x,y)` 的刻意形变不会被报（本规则用 computed width/height，不含 transform）；"
+                "(3) 渲染尺寸 < 20×20 的装饰小图、未加载完成的图不报。"
+            )
+        overlapping = dom.get("overlappingText") or []
+        if overlapping:
+            report["overlappingText"] = overlapping
+            report["overlappingTextHint"] = (
+                "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。"
+                "coverRatio 是交集面积占较小元素面积的比例，越大越可疑。"
+                " | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。"
+                " | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；"
+                "(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。"
+            )
+        clipped = dom.get("clippedText") or []
+        if clipped:
+            report["clippedText"] = clipped
+            report["clippedTextHint"] = (
+                "含义：overflow:hidden|clip 的容器把内部文本裁掉了。clippedX/Y 是被吃掉多少 px。"
+                "已自动排除 text-overflow:ellipsis 单行截断和 -webkit-line-clamp 多行截断（这两个是设计意图）。"
+                " | 修法：把容器 height 改成 min-height、或允许内容溢出、或缩短文案。"
+                " | 豁免：(1) 5-20px 小值可能是行高/边距计算的边界抖动、动画过程中的瞬时状态；"
+                "(2) 故意的 marquee/scroll 容器（虽然 overflow:hidden 但依赖 JS 滚动）。"
+            )
+        pseudo_of = dom.get("pseudoOverflow") or []
+        if pseudo_of:
+            report["pseudoOverflow"] = pseudo_of
+            report["pseudoOverflowHint"] = (
+                "含义：::before / ::after 伪元素的 content 文字被自身固定 width 装不下（视觉上表现为字溢出小方块/圆点、"
+                "或字被居中后飘到色块两侧脱离背景）。三重触发：content 非空 + 显式 width（非 auto/百分比）+ measureText > contentWidth × 1.1。"
+                "典型 case：`content:attr(data-i)` 的序号徽章、`.tl-item::before` 的日期徽标，data 值从 1 位变成 2/3 位就撑破。"
+                "已过滤：display:none、ellipsis 截断、图标字体（FontAwesome/Material/iconfont）、尺寸 < 4×4。"
+                " | 修法：把 `width: Npx` 改成 `min-width: Npx; padding: 0 Xpx;`，配合 `display: inline-flex` 让盒子随内容自适应；"
+                "或者收紧数据保证 content 位数固定。"
+                " | 豁免：(1) 故意的装饰性溢出（大号引号从盒子里探出来做视觉效果）——对着截图确认后忽略；"
+                "(2) 用 web font 但 fallback 字体量出来偏胖导致虚报——检查 font-family 是否加载完成；"
+                "(3) overflowPx < 3 且 contentWidth ≥ 20px 的低幅度告警，通常是 measureText 精度问题。"
+            )
+        dead = dom.get("deadButtons") or []
+        if dead:
+            report["deadButtons"] = dead
+            report["deadButtonsHint"] = (
+                "含义：视觉上可点、但点了不发生任何事的元素。覆盖 6 种模式，reason 字段指明是哪种："
+                " | button-no-onclick：<button> 既无 onclick 也没被 addEventListener('click') 绑过。"
+                " | onclick-noop：onclick 属性是占位/无副作用字符串（`return false` / `void(0)` / 空串 / 分号 / 纯注释等），"
+                "extra 字段 onclickAttr 展示原始值。这类写法在生产代码里几乎没有正当用途，视同没写。"
+                " | a-no-href / a-href-empty / a-href-hash-no-handler：<a> 无 href / href=\"\" / href=\"#\" 且无 handler。"
+                " | a-href-javascript-noop-no-handler：<a href=\"javascript:void(0)\" / \"javascript:;\">，作者显式关掉 native 导航，"
+                "但 JS 侧也没人接手。收紧路径：祖先有 click listener 时，还要验证 listener 源码是否引用了本元素的 class/id/data-* 才放行；"
+                "listener 源码不可读（native/bound/被 minify）时保守放行，避免误伤。extra 字段 hrefAttr 展示原始 href。"
+                " | a-broken-anchor：<a href=\"#foo\"> 但页面里没有 id=\"foo\" 也没有 name=\"foo\" 的元素。"
+                "已排除 SPA hash 路由（href 含 / 或 ? 的形式，如 #/dashboard）。"
+                " | cursor-pointer-no-handler：<div>/<span> 等非交互标签加了 cursor:pointer 却没绑任何 click。"
+                " | input-no-handler：<input type=button|submit|reset|image> 无 onclick 也无 listener。form 里的 submit/reset 已豁免。"
+                " | label-for-not-found：<label for=\"xxx\"> 但页面里没有 id=\"xxx\"。用户点 label 期望 focus 到 input，实际什么都不发生。"
+                "extra 字段 forAttr 展示 for 值。"
+                " | 已排除：form submit/reset、popover 触发器、role=button/link/tab/menuitem/option/switch/checkbox/radio、"
+                "<label> 包裹、body/html 上继承 cursor:pointer；cursor-pointer-no-handler 只报尺寸 ≥ 24×16 且有可见文字的元素。"
+                " | 修法：给 <button>/<input> 加 onclick 或 addEventListener；给 <a> 补真实 href 或改成 <button>；"
+                "把 <div class=\"nav-item\">…</div> 之类假按钮换成真 <button> 或 <a>，或给它加 role=button+tabindex+键盘 handler；"
+                "onclick=\"return false\" 之类占位符要么删掉（配合真 handler），要么替换为 toast 提示「演示中」这类可感知反馈；"
+                "断链锚点核对目标 id 拼写；label 断链核对 for 与 input id 是否一致。"
+                " | 豁免：(1) 带 note=ancestor-has-data-attr 的项可能是**祖先事件委托**目标（document/window 上的全局委托本规则查不到），"
+                "对着代码核对，如果确实有 document.addEventListener('click', e => e.target.closest(...)) 之类的委托捕获就忽略；"
+                "(2) 纯装饰按钮（无 hover/focus 反馈的 mock 页面）——但这本身也算 slop，建议改成非 <button>；"
+                "(3) cursor-pointer-no-handler：如果元素只是 hover 变鼠标做微交互提示（如 tooltip trigger）而非真按钮，去掉 cursor:pointer 更合适；"
+                "(4) a-href-javascript-noop-no-handler：如果确实有全局委托捕获（如 window.addEventListener 或 minify 后的框架 handler），"
+                "本规则的 listener 源码启发式可能读不到明文标识 → 结合 note 字段和实际代码核对；"
+                "(5) a-broken-anchor：如果目标 id 是运行时由 JS 动态注入的（比如懒加载章节），核对确认后可忽略。"
+            )
+        misaligned = dom.get("misalignedBlocks") or []
+        if misaligned:
+            report["misalignedBlocks"] = misaligned
+            report["misalignedBlocksHint"] = (
+                "含义：section/main/article 直接子级里，个别元素撑到父容器全宽、其他兄弟明显更窄。"
+                "widthDeltaVsGrid=比栅格宽多少 px、gridWidth=正常栅格宽度、containerWidth=父容器宽度。"
+                "最常见根因：HTML 标签闭合错位（<p> 忘了 </p> 等）导致元素跳出 .wrap/.container 层级，"
+                "浏览器容错解析、不报 console 错但布局层级已被打乱。"
+                " | 修法：从 containerTag 定位到出问题的 section，逐行检查该 section 内前面的 HTML 标签闭合。"
+                " | 豁免：(1) **full-bleed / breakout 布局**——故意做全宽 hero、全宽 gradient divider、"
+                "文章里跳出正文栏的大图/引用块（杂志排版）。看截图确认是设计意图后忽略；"
+                "(2) sticky/absolute 顶栏错放在 section 直接子级下（罕见）。"
+            )
+        uneven = dom.get("unevenColumns") or []
+        if uneven:
+            report["unevenColumns"] = uneven
+            report["unevenColumnsHint"] = (
+                "含义：同一 grid / row-flex 行内两列高度差过大，短列下方出现大片空白。"
+                "heightDeltaPx=高度差 px、heightRatio=差 ÷ 长列高度、gapArea=短列宽 × 差（近似空白面积）、"
+                "lockerTag=在长列里定位到的锁高元素标签（img/figure/div 等）。"
+                "本规则设计上宁漏不错：需同时命中 heightRatio ≥ 0.30、heightDeltaPx ≥ 160、gapArea ≥ 40000，"
+                "且必须能在**长列**里定位到锁高的根因（reason 字段）才报，无法归因的一律静默。"
+                " | reason=tall-column-image-aspect-ratio：**长列**里有 <img>（或 picture/video）带 `aspect-ratio`（含继承）、"
+                "且该图占长列高度 ≥60%。图片被 `aspect-ratio:3/4` 之类锁死高度（= 列宽 × 4/3），"
+                "另一列内容较短、容器 `align-items:start`（或短列 align-self 非 stretch）就无法拉齐 → 短列下方空。"
+                "修法（推荐前两条）：(a) 让短列跟随长列拉伸——`.short-col{align-self:stretch}` 或容器去掉 `align-items:start`（回默认 stretch），"
+                "但注意 stretch 拉的是**盒子**，短列里的内容仍需自己往下铺（比如加 `justify-content:space-between` 或让某块 `margin-top:auto`），"
+                "否则盒子拉高了内容还在顶部、白仍在；(b) 让图变矮——`aspect-ratio` 换成更矮的比例（4/5、1/1）或改成 `height:100%` 跟随短列；"
+                "(c) 图列改成 sticky 图钉住 + 文字列滚动；(d) 让短列内容也变长（更适合内容自然长的情况）。"
+                " | reason=tall-column-aspect-ratio：同上但锁高元素是 figure/div，非 <img>。"
+                "多半是有人手写了 `.foo{aspect-ratio:3/4}` 的装饰盒子。修法同上。"
+                " | reason=tall-column-fixed-height：长列自身或主要子级 inline style 里写了具体 px 高度。"
+                "修法：改成 min-height 或去掉，让内容自然撑开。"
+                " | 豁免：(1) 故意的短列 + 长图并排设计（如插画配一小段说明，视觉意图就是不齐），对着截图确认后忽略；"
+                "(2) sticky 侧栏本身就短、需要长列滚动而侧栏钉住——本规则未特判 sticky，看截图确认；"
+                "(3) 容器宽度 < 640、高度 < 300、或在 header/nav/footer/aside 内的容器本规则不检查；"
+                "(4) `align-items:stretch` 且锁高源头不是 img/aspect-ratio 时本规则已豁免（那种情况布局引擎本会拉齐）。"
+            )
+        tl_align = dom.get("timelineAlignment") or {}
+        tl_issues = tl_align.get("issues") or []
+        dead_dots = tl_align.get("deadDotStyles") or []
+        # 确定性缺陷：圆点声明了 width/height 但 display:inline 让它们静默失效。
+        # 与下面的对齐检测不同，这条不需要判断设计意图——inline 吞掉尺寸声明是 CSS 规范的硬事实。
+        if dead_dots:
+            report["timelineDeadDotStyle"] = dead_dots
+            report["timelineDeadDotStyleHint"] = (
+                "含义：时间轴圆点声明了 `width`/`height`，但它的 computed `display` 是 `inline`——"
+                "**非替换 inline 元素会忽略 `width`/`height` 和垂直 `margin`**（CSS 规范如此，不是浏览器 bug）。"
+                "`<span>` 默认就是 inline，所以 `.dot{width:12px;height:12px;border-radius:50%}` 挂在 span 上时，"
+                "尺寸声明一行都不生效：盒子宽度由内容撑（常常只有几 px）、高度由 line-height 决定，"
+                "`border-radius:50%` 作用在这个畸形盒子上就画出**竖向细长椭圆**；`margin:auto` 同样不居中，圆点会偏出轴线。"
+                "看 renderedWidth/renderedHeight 与 aspect 字段：aspect 远离 1.0 就是被 line-height 拉长的。"
+                " | 修法：给圆点加 `display:block`（配 `margin:0 auto` 居中）或 `display:inline-block`。"
+                "改完 width/height/margin 立刻生效，椭圆变正圆、偏移归零。"
+                " | 本规则只在**作者确实声明了 width 或 height** 时才报——没声明尺寸的 inline 装饰元素不报，"
+                "所以触发了必定是真错：没有任何设计意图会故意写一个不生效的尺寸声明。"
+            )
+        # 只在「量到了系统性偏移」时才报。量不到（横向时间轴、表格式、canvas/echarts 渲染）一律静默：
+        # 那种情况下给不出可执行的修法，而 SKILL.md 的口径是"报出来基本都是真的"，
+        # 报一句"请人工核对"只会诱导模型去改本来正确的代码。
+        if tl_issues:
+            report["timelineAlignmentIssues"] = tl_issues
+            report["timelineAlignmentHint"] = (
+                "含义：时间轴的轴线中心与节点圆点中心不重合。orientation=vertical 比的是中心 x、"
+                "horizontal 比的是中心 y；offsetPx 是圆点相对轴线的偏移（正=偏右/偏下），"
+                "affectedDots 是呈现同一偏移的节点数。**1px 起就可能被看出来，2px 必然可辨**，这是时间轴最高频的 badcase，"
+                "实测同批产物里做对的偏移为 0.00px、做错的在 2px 以上（也见过 15px / 20px 的）。"
+                "本规则只在「至少 2 个节点呈现同一偏移」时才报——孤立离群值不报，所以触发了基本就是真的。"
+                " | reason=pseudo-content-box：圆点用 ::before 画且带 border。**`*{box-sizing:border-box}` 不匹配伪元素**，"
+                "伪元素仍是 content-box，实际外径 = width + 2*border，比按 border-box 心算的大一圈，"
+                "偏移量恒等于 dotBorderWidth。修法二选一：(a) 在该 ::before 规则里**显式补 `box-sizing:border-box`**；"
+                "(b) 改用真元素（<span>/<div>）画圆点，它才吃得到 `*` 的重置。"
+                " | reason=origin-mismatch：轴线挂在 axisOrigin 的 ::before 上、圆点挂在 dotOrigin 里，"
+                "两者是不同的定位包含块，坐标原点差一个 axisOriginPadding，偏移量恒等于它。"
+                "修法：把轴线和圆点锚到**同一个定位祖先**上，别一个挂外层容器、一个挂内层 item。"
+                " | reason=arithmetic：手算 left/top 时算错了（常见于双侧交替时间轴——"
+                "中央竖线 left:50%，奇偶两列各写一套 left，其中一列没对上，两列偏移量还不一样）。"
+                " | 最稳的写法（推荐直接改成这个，而不是去修算式）：item 用 grid 三列"
+                "（时间 / 轴 / 内容），圆点是真元素放中列、用 `justify-self:center` 让布局引擎负责居中，"
+                "轴线的 left 用 `calc()` 从同一组列宽变量推出，例如 "
+                "`.timeline{--date:88px;--axis:30px;--gap:20px}` + "
+                "`.timeline::before{left:calc(var(--date) + var(--gap) + var(--axis)/2)}`。"
+                "这样圆点一个 left 都不用手算，两者引用同一个真值来源，结构上不可能歪。"
+                "横向时间轴同理，把三列换成三行、用 `align-self:center`。"
+                " | 顺带核对（本规则不查，但同属时间轴高频问题）：文字与轴线/图标是否重叠；"
+                "每个节点是否承载了时间 + 事件名 + 一句话说明，而不是只丢一个标签。"
+                " | 豁免：(1) 故意做的错位 / 手绘风设计，且截图上成立；"
+                "(2) 圆点本身带外发光或多层 box-shadow、视觉中心与盒模型中心本就不重合。"
+            )
+        unsafe_href = dom.get("unsafeHrefRefs") or []
+        if unsafe_href:
+            report["unsafeHrefRefsWarning"] = unsafe_href
+            report["unsafeHrefRefsHint"] = (
+                "warning · 含义：SVG 内 <use> 或 <textPath> 用 href=\"#id\" 引用同页 fragment。"
+                "Chrome 在 file:// 协议下会把这类引用视为 \"Unsafe attempt to load URL\" 并同步中断当前 script，"
+                "表现是页面后段 JS 不跑（图表空、卡片空、动效不出）。"
+                " | 修法：改成 xlink:href=\"#id\"，并在根 <svg> 上声明 xmlns:xlink=\"http://www.w3.org/1999/xlink\"；"
+                "或同时保留两者（href + xlink:href）以兼容新旧写法。"
+                " | 豁免：(1) 用户明确只走 http/https 部署、不会以 file:// 打开，可忽略；"
+                "(2) 引用的是外链 URL（非 fragment）——本规则已自动过滤，不会报到；"
+                "(3) 已在同一元素上写了 xlink:href——本规则已自动过滤。"
+            )
+        invis_anim = dom.get("invisibleAnimations") or []
+        if invis_anim:
+            report["invisibleAnimationsWarning"] = invis_anim
+            report["invisibleAnimationsHint"] = (
+                "warning · 含义：元素初态是 opacity:0 / visibility:hidden / clip-path inset 全遮，"
+                "且**没有 CSS transition/animation 兜底**——需要 JS 挂类（如 .in / .chart-in）才能揭出。"
+                "如果 IO 未触发、JS 报错、user gesture 未发生，用户永远看不到这些内容。"
+                "reason=opacity:0 / visibility:hidden / clip-path-inset。"
+                " | 修法：(a) 检查 IntersectionObserver / ScrollTrigger / GSAP 挂载是否正确；"
+                "(b) 给元素补 CSS transition 兜底，即使 JS 挂了也能自然过渡到可见态；"
+                "(c) 用 @media (prefers-reduced-motion) 分支保证 reduced-motion 用户直接看到静态终态。"
+                " | 豁免：(1) 折叠/展开面板、模态框、抽屉——初态本就该隐藏，用户主动触发才显示；"
+                "(2) 依赖 hover/click 才展开的 tooltip/menu；"
+                "(3) 只在特定视口尺寸/断点下显示的元素；"
+                "(4) 类名匹配但语义是 \"揭示后可见\" 且 JS 稳定挂载可自验的——对着截图确认元素已现在最终态即可。"
+            )
+        slop_fonts = dom.get("slopFonts") or []
+        if slop_fonts:
+            report["slopFontsWarning"] = slop_fonts
+            report["slopFontsHint"] = (
+                "warning · 含义：页面使用了 skill 明确禁的 slop 高发字体（Inter / Roboto / Arial / Fraunces / Playfair）。"
+                "elementCount 是命中该字体的元素数（不含 fallback），sampleText 是首个样例文字。"
+                " | 修法：换成主题相关的字体族（衬线/无衬线/等宽视调性而定），走自托管镜像 miaoda.feishu.cn/fonts/css2。"
+                " | 豁免：(1) **用户品牌指定使用**——例如客户 CI 明确要求 Inter/Roboto，写在 brief 里可忽略；"
+                "(2) **系统字体 fallback 命中**——虽然本规则只取 fontFamily 首选族，但如果这个族本身写的是 \"Arial\"、可能只是保守 fallback；"
+                "如果同一元素明显还挂了自定义字体但 fallback 落到 Arial（例如自定义字体 404 了），修的其实是字体加载而非字体选型；"
+                "(3) 极简项目本就要 \"grotesque + 中性感\"，且用户未指定——罕见但存在，看截图和 design plan 确认后可豁免。"
+            )
+        emoji_use = dom.get("emojiUsage") or []
+        if emoji_use:
+            report["emojiUsageWarning"] = emoji_use
+            report["emojiUsageHint"] = (
+                "warning · 含义：页面正文里检出 emoji 字符（U+1F300–U+1FAFF 或 U+2600–U+27BF 平面）。"
+                "SKILL.md 视觉设计段明确禁用 emoji——不作图标、不作装饰、不放进数据。"
+                " | 修法：换成内联 SVG 图标（<svg viewBox=\"0 0 24 24\">）建立风格连贯的图标语言。"
+                " | 豁免：(1) **用户品牌资产明确包含 emoji**（罕见，但如即时通讯、社交媒体主题的产物合理）；"
+                "(2) 主题本身就是关于 emoji 的（emoji 历史 / 表情包研究 / Unicode 演进）；"
+                "(3) 引用某条真实文本原文（如推文截图的文字版），emoji 是内容而非装饰——保留原文可接受，但仍应权衡；"
+                "(4) 装饰性 dingbat（如 U+2713 勾选符 ✓、U+2192 箭头 →、U+2605 星 ★）落入 U+2600–U+27BF 平面被误报的，如确认是符号非 emoji 可忽略。"
+            )
+        vp = dom.get("viewportMeta") or {}
+        # 任意 shot 都要查 viewport meta（不是移动才查——桌面截图也能看出 meta 缺失）
+        if vp and (not vp.get("present") or not vp.get("hasDeviceWidth")):
+            report["viewportMetaWarning"] = vp
+            report["viewportMetaHint"] = (
+                "warning · 含义：<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> 缺失或不含 width=device-width。"
+                "iOS Safari / Android Chrome 在真机上会以 980px 假 viewport 渲染再等比缩小，页面上所有元素字如蚂蚁、按钮点不准。"
+                "本次 shot.py 因为在受控 viewport 里跑截图，看起来正常，但真机用户会遭殃。"
+                " | 修法：<head> 里加 `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">`。"
+                " | 豁免：(1) 产物明确只交付桌面场景（大屏 kiosk / 内嵌大屏投屏），且不会有移动访问——罕见但存在；"
+                "(2) 已设 `user-scalable=no` 或 `maximum-scale=1` 但**这本身是 anti-pattern**：违反无障碍，不推荐豁免，反而应移除；"
+                "(3) 页面是纯打印用途，无网页渲染需求。"
+            )
+        elif vp and vp.get("present") and vp.get("disablesZoom"):
+            # meta 存在但 user-scalable=no / maximum-scale=1，独立报一条更弱的 warning
+            report["viewportMetaWarning"] = vp
+            report["viewportMetaHint"] = (
+                "warning · 含义：viewport meta 存在但设置了 user-scalable=no 或 maximum-scale=1，禁用了用户缩放。"
+                "这是 anti-pattern：低视力用户依赖捏合放大读页面，禁用即等于把这批用户拒之门外。"
+                " | 修法：移除 user-scalable=no / maximum-scale=1，改成 `content=\"width=device-width, initial-scale=1\"`。"
+                " | 豁免：几乎没有正当理由——map 交互 / 3D 交互也不用禁 zoom，那些场景内嵌自己的手势处理即可，页面缩放不冲突。"
+            )
+        tts = dom.get("touchTargetTooSmall") or []
+        if tts:
+            report["touchTargetTooSmallWarning"] = tts
+            report["touchTargetTooSmallHint"] = (
+                "warning · 含义（仅 mobile shot 触发）：按钮 / 链接 / 交互元素的命中区 < 44×44px（iOS HIG 下限）。"
+                "手指宽约 7–10mm ≈ 44px，小于此手指点不准，且按下会误触相邻元素。已自动过滤纯正文里的 inline 超链接（<a> inline + 高度 < 26px）。"
+                " | 修法：给按钮/链接加 `min-width: 44px; min-height: 44px;` 或增大 padding；图标按钮特别注意，容易只给 16-20px。"
+                " | 豁免：(1) 密集工具栏 / 编辑器 UI（图标按钮 32px 是行业惯例），但需给周围留足 gap 保证不误触；"
+                "(2) 装饰性小 icon（不响应 click，只有 hover tooltip）——本规则应该已过滤，若仍报出可忽略；"
+                "(3) 主要面向桌面 + 键鼠操作的产物（管理后台 / 编辑器），但如果页面同时对手机用户开放就不能豁免。"
+            )
+        fixed_w = dom.get("fixedWidthElements") or []
+        if fixed_w:
+            report["fixedWidthElementsWarning"] = fixed_w
+            report["fixedWidthElementsHint"] = (
+                "warning · 含义（仅 mobile shot 触发）：元素 computed width > viewport 宽度，且没有 % 相对宽度、父级也不是 overflow 容器。"
+                "典型是硬编码 `width: 1200px` 之类固定宽度未做响应式，在 390px viewport 下必然横向溢出。"
+                "inlineWidth 字段展示 inline style 里的 width 值（无则为 null）。"
+                " | 修法：改成相对宽度（`width: 100%`、`max-width`）、grid / flex 布局、或加移动断点 `@media (max-width: 640px) { ... }` 覆盖。"
+                " | 豁免：(1) **故意的横向 scroller**（swiper / carousel / marquee / 横向 timeline）——父元素带 overflow-x:auto 时本规则已自动过滤；"
+                "若你的 scroller 靠 JS 拖拽而非 overflow，需在父元素显式设 overflow-x 让规则识别；"
+                "(2) SVG / Canvas 图表在容器里 clip 显示，元素本身尺寸大于视口但用户只看到裁切部分——但更好的做法是让 SVG viewBox 自适应。"
+            )
+        edge_hug = dom.get("edgeHuggingText") or []
+        if edge_hug:
+            report["edgeHuggingTextWarning"] = edge_hug
+            report["edgeHuggingTextHint"] = (
+                "warning · 含义（仅 mobile shot 触发）：正文/标题文字的渲染左边缘贴到视口边（left ≤ 1px），"
+                "左内边距完全塌陷。**桌面截图永远看不出这个问题**——它只在视口宽度 ≤ 容器 max-width 时出现。"
+                " | 最高频成因是 `padding` 简写把继承来的左右内边距清零："
+                "`.wrap{max-width:1180px;margin:0 auto;padding:0 28px}` 定义了左右 28px，"
+                "而 `.hero-inner{padding:88px 0 96px}` 只想加上下内边距，简写却把左右一起重设为 0；"
+                "元素同时挂着这两个 class（`class=\"wrap hero-inner\"`）时后写的简写胜出。"
+                "宽屏下 `margin:0 auto` 的居中边距掩盖了它——1440px 视口时 (1440−1180)/2 = 130px，看起来完全正常；"
+                "视口一旦 ≤ max-width，居中边距归零，padding 又是 0，文字就直接贴屏幕边缘。"
+                "**`margin:0 auto` 不是 padding 的替代品**，它只在 viewport > max-width 时存在。"
+                " | 看字段判断：`parentPaddingLeft` 和 `parentMarginLeft` 同时为 `0px`、`parentMaxWidth` 有具体值，就是这个成因。"
+                " | 修法：把 `padding: A 0 B` 换成 `padding-block: A B`（逻辑属性，只动上下，不碰左右），"
+                "或显式写全 `padding: A 28px B`。不要改成 `margin: 0 auto` 就完事。"
+                " | 豁免：(1) 祖先为 `position:absolute/fixed/sticky`、负向 `translateX`、`left < -40px` 的元素"
+                "（移动端收起的抽屉、无障碍 skip link、绝对定位 badge）**本规则已自动过滤**，无需处理；"
+                "(2) 刻意的满版设计——整块背景图上的装饰性大字、全宽色带里的标题，视觉上贴边成立；"
+                "(3) `text-align:center` 的长文本在窄屏两侧各余几像素属正常，本规则阈值 1px 已排除这类。"
+            )
+        m_font = dom.get("mobileFontIssues") or []
+        if m_font:
+            report["mobileFontIssuesWarning"] = m_font
+            report["mobileFontIssuesHint"] = (
+                "warning · 含义（仅 mobile shot 触发）：两类问题合并——"
+                "(a) kind=small-body-text：正文字号 < 14px，手机上难读；"
+                "(b) kind=input-under-16px：<input> / <textarea> font-size < 16px，iOS Safari 聚焦时会自动缩放页面（那种一点输入框页面跳一下的贼恶心 UX）。"
+                " | 修法：正文 ≥ 14px（16px 更佳）；表单元素 ≥ 16px。可以在移动断点里针对性调大："
+                "`@media (max-width: 640px) { body { font-size: 16px; } input, textarea { font-size: 16px; } }`。"
+                " | 豁免：(1) 图例 / caption / footnote 类辅助文字，12–13px 可接受，但应控制在页面 5% 以内；"
+                "(2) 数据密集型表格数字（如财务表 12px 是行业惯例）——需要该单元格开 `tnum` 等宽数字避免飘忽；"
+                "(3) input 已设 `font-size: 16px` 但仍报出——可能是 inline style / 父级 rem 计算异常，检查实际 computed 值。"
+            )
 
 
 def _find_chromium_fallback():
@@ -1407,21 +2662,29 @@ def _trim_bottom_whitespace(img_path: Path, bg_tolerance: int = 20, min_keep_h: 
 
 # ---------- chrome CLI 兜底：playwright 不可用时 ----------
 def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
-                     max_wait_sec: int = 30):
+                     max_wait_sec: int = 30,
+                     want_report: bool = False,
+                     console_bucket=None, resource_bucket=None):
     """CLI 模式截图：优先 CDP full-page（真正的完整长图），失败退到 --screenshot 首屏。
 
     CDP 路径：起 chrome 带 --remote-debugging-port，Python 直连 devtools
     websocket 发 Page.captureScreenshot(captureBeyondViewport=true)，
     等价于 puppeteer/playwright 底层做法，可以拿到完整长页截图。
+
+    want_report=True 时同时通过 Runtime.evaluate 跑 INIT_SCRIPT+REPORT_SCRIPT，
+    返回 dom 报告；退到 --screenshot 兜底路径时无法拿 DOM，返回 None。
     """
     w, h = viewport
     # ---- 首选：CDP 全页截图 ----
     cdp_err = None
     try:
-        _cdp_capture(exec_path, url, viewport, out_path, max_wait_sec)
+        dom = _cdp_capture(exec_path, url, viewport, out_path, max_wait_sec,
+                           want_report=want_report,
+                           console_bucket=console_bucket,
+                           resource_bucket=resource_bucket)
         # 后处理 trim 底部（CDP 一般贴合内容，很少有大空白，但保底）
         _trim_bottom_whitespace(out_path)
-        return
+        return dom
     except Exception as e:
         cdp_err = e  # 保留下来；--screenshot 退路也挂时一起报出去
 
@@ -1458,14 +2721,20 @@ def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
     if not out_path.exists() or out_path.stat().st_size == 0:
         raise RuntimeError(_with_cdp(f"chrome CLI 没有生成有效截图：{out_path}"))
     _trim_bottom_whitespace(out_path)
+    return None  # --screenshot 退路拿不到 DOM
 
 
 # ---------- 最小 CDP (Chrome DevTools Protocol) 客户端 ----------
-def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: int):
+def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: int,
+                 want_report: bool = False,
+                 console_bucket=None, resource_bucket=None):
     """启 chrome remote-debugging → 直连 websocket → Page.captureScreenshot 全页。
 
     不依赖任何第三方库；用标准库 socket 实现最小 websocket 帧收发（CDP 消息都是
     JSON 文本，短则几十字节长则几 MB 的 base64 图像）。
+
+    want_report=True 时开 Runtime/Log/Network domain 收集 console+network 事件，
+    并在稳态后跑 REPORT_SCRIPT 拿回 dom 报告；否则只出截图。
     """
     w, h = viewport
     port = _pick_free_port()
@@ -1494,15 +2763,30 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
         # 等 devtools endpoint 就绪
         ws_url, target_id = _cdp_wait_target(port, timeout=8)
         with _WSClient(ws_url) as ws:
-            # Page.enable → Page.navigate → Page.loadEventFired → Page.captureScreenshot
+            # Page.enable → 可选注入 → Page.navigate → Page.loadEventFired → Page.captureScreenshot
             ws.call("Page.enable")
+            # 用于把网络请求映射为 URL：Network.requestWillBeSent 早于 responseReceived / loadingFailed，
+            # 用来存 requestId → url。放在 _cdp_capture 局部，随 with 结束回收。
+            req_url_map = {}
+            req_type_map = {}
+            if want_report:
+                # 收 console.log/warn/error、runtime error、log entry、network 请求
+                ws.call("Runtime.enable")
+                ws.call("Log.enable")
+                ws.call("Network.enable")
+                # 在每个新文档 load 之前注入 INIT_SCRIPT（patch addEventListener 标 __shot_hasClickListener）
+                ws.call("Page.addScriptToEvaluateOnNewDocument", {"source": INIT_SCRIPT})
             ws.call("Page.navigate", {"url": url})
             # 等 load 事件；若网络卡就 wait_sec 后不再等
             deadline = time.time() + wait_sec
             got_load = False
             while time.time() < deadline:
                 ev = ws.recv_event(timeout=deadline - time.time())
-                if ev and ev.get("method") == "Page.loadEventFired":
+                if not ev:
+                    continue
+                if want_report:
+                    _cdp_dispatch_event(ev, console_bucket, resource_bucket, req_url_map, req_type_map)
+                if ev.get("method") == "Page.loadEventFired":
                     got_load = True
                     break
             # 再等 1s 让 fonts / lazy 图片跑
@@ -1525,6 +2809,19 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
                 if r.get("result", {}).get("result", {}).get("value") is True:
                     break
                 time.sleep(0.12)
+            # 消化稳态期间累积的事件
+            if want_report:
+                _cdp_flush_pending_events(ws, console_bucket, resource_bucket, req_url_map, req_type_map)
+            # 收 DOM 报告（在截图前跑，这样 REPORT_SCRIPT 看到的和截图时刻一致）
+            dom_report = None
+            if want_report:
+                rep = ws.call("Runtime.evaluate", {
+                    "expression": f"({REPORT_SCRIPT.strip()})()",
+                    "returnByValue": True,
+                }, timeout=20)
+                val = rep.get("result", {}).get("result", {}).get("value")
+                if isinstance(val, dict):
+                    dom_report = val
             # 全页截图
             resp = ws.call("Page.captureScreenshot", {
                 "format": "png",
@@ -1535,6 +2832,10 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
             if not b64:
                 raise RuntimeError("Page.captureScreenshot 返回空 data")
             out_path.write_bytes(base64.b64decode(b64))
+            # 再 flush 一次事件（截图期间可能仍有异步日志）
+            if want_report:
+                _cdp_flush_pending_events(ws, console_bucket, resource_bucket, req_url_map, req_type_map)
+            return dom_report
     except Exception as e:
         # 把 chrome 自己的 stderr 尾部拼进异常，方便定位 sandbox / GPU 崩溃这类根因
         tail = _drain_stderr_tail(proc, limit=800)
@@ -1550,6 +2851,101 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
             except Exception: pass
         try: shutil.rmtree(user_data_dir, ignore_errors=True)
         except Exception: pass
+
+
+def _cdp_dispatch_event(ev, console_bucket, resource_bucket, req_url_map, req_type_map):
+    """把单个 CDP event 落到 console/network buckets 里。
+
+    console_bucket / resource_bucket 结构与 playwright 分支保持一致——每条 dict 带
+    type/text/location（console）或 url/resourceType/status/reason（network）。
+    """
+    method = ev.get("method")
+    params = ev.get("params") or {}
+    if method == "Runtime.consoleAPICalled":
+        level = params.get("type") or ""
+        # console.log/info/debug/warn/error/... —— 只留 error/warning 与 playwright 一致
+        if level == "error":
+            typ = "error"
+        elif level == "warning":
+            typ = "warning"
+        else:
+            return
+        parts = []
+        for a in (params.get("args") or []):
+            v = a.get("value")
+            if v is None:
+                v = a.get("description") or ""
+            parts.append(str(v))
+        text = " ".join(parts)[:300]
+        url_loc = ""
+        st = params.get("stackTrace") or {}
+        frames = st.get("callFrames") or []
+        if frames:
+            url_loc = frames[0].get("url", "")
+        if console_bucket is not None:
+            console_bucket.append({"type": typ, "text": text, "location": url_loc})
+    elif method == "Runtime.exceptionThrown":
+        # 未捕获异常 —— playwright 侧走 pageerror，这里合并进 error
+        det = params.get("exceptionDetails") or {}
+        text = det.get("text") or ""
+        exc = det.get("exception") or {}
+        desc = exc.get("description") or exc.get("value") or ""
+        merged = (text + " " + str(desc)).strip()[:300]
+        if console_bucket is not None:
+            console_bucket.append({"type": "error", "text": merged, "location": det.get("url", "")})
+    elif method == "Log.entryAdded":
+        entry = params.get("entry") or {}
+        level = entry.get("level") or ""
+        if level not in ("error", "warning"):
+            return
+        text = (entry.get("text") or "")[:300]
+        if console_bucket is not None:
+            console_bucket.append({"type": level, "text": text, "location": entry.get("url", "")})
+    elif method == "Network.requestWillBeSent":
+        req_id = params.get("requestId")
+        req = params.get("request") or {}
+        if req_id:
+            req_url_map[req_id] = req.get("url", "")
+            req_type_map[req_id] = params.get("type") or "other"
+    elif method == "Network.responseReceived":
+        resp = params.get("response") or {}
+        status = resp.get("status")
+        if status and status >= 400:
+            reason = "http_4xx" if status < 500 else "http_5xx"
+            req_id = params.get("requestId")
+            if resource_bucket is not None:
+                resource_bucket.append({
+                    "url": (resp.get("url") or req_url_map.get(req_id, ""))[:200],
+                    "resourceType": params.get("type") or req_type_map.get(req_id, "other"),
+                    "status": status,
+                    "reason": reason,
+                })
+    elif method == "Network.loadingFailed":
+        req_id = params.get("requestId")
+        if resource_bucket is not None:
+            resource_bucket.append({
+                "url": req_url_map.get(req_id, "")[:200],
+                "resourceType": params.get("type") or req_type_map.get(req_id, "other"),
+                "status": None,
+                "reason": "network_error",
+            })
+
+
+def _cdp_flush_pending_events(ws, console_bucket, resource_bucket, req_url_map, req_type_map):
+    """把 WS 客户端里累积的 events pool 抽干到 buckets。
+
+    call() 里读到的非匹配 event 会存进 ws._events；这里一次性 drain。
+    再顺便非阻塞地拉一小段（<= 50ms）时间窗口的 event 兜底。
+    """
+    if not hasattr(ws, "_events"):
+        return
+    while ws._events:
+        _cdp_dispatch_event(ws._events.pop(0), console_bucket, resource_bucket, req_url_map, req_type_map)
+    # 非阻塞地再拉一小段，不阻塞主流程
+    ev = ws.recv_event(timeout=0.05)
+    while ev:
+        _cdp_dispatch_event(ev, console_bucket, resource_bucket, req_url_map, req_type_map)
+        ev = ws.recv_event(timeout=0.02)
 
 
 def _pick_free_port():
@@ -1817,8 +3213,9 @@ def _run_playwright(url, args, name, outdir, result, include):
 def _run_chrome_cli(url, args, name, outdir, result, include):
     """chrome CLI 分支：playwright 不可用时用系统 chrome 保底出图。
 
-    没有 DOM 报告能力；scroll-reveal 元素若被 opacity:0 隐藏也无法强制显现。
-    lint / structure 在此模式下无法生成，字段返回 null 并标记 reportDegraded=true。
+    首选路径通过 CDP 注入 INIT_SCRIPT + REPORT_SCRIPT 获取 dom 报告，等价于
+    playwright 分支的 lint / structure 能力；只有当 CDP 挂到 --screenshot 兜底路径时
+    才降级并标记 reportDegraded=true。
     """
     exec_path = args.exec_path or _find_chromium_fallback()
     if not exec_path:
@@ -1832,41 +3229,58 @@ def _run_chrome_cli(url, args, name, outdir, result, include):
     if getattr(args, "_eval_code", None):
         result["evalIgnored"] = "chrome_cli 降级模式不支持 --eval 注入，本次已忽略；如需注入 JS，请装 playwright。"
 
+    want_report = ("lint" in include) or ("structure" in include)
+
     def do_one(viewport, key):
         w, h = viewport
         rep = {}
-        if "screenshots" in include:
+        console_bucket, resource_bucket = [], []
+        dom = None
+        if "screenshots" in include or want_report:
             raw_out = outdir / f"{name}_{key}.png"
-            _chrome_cli_shoot(exec_path, url, viewport, raw_out)
-            post = _postprocess(raw_out, args.max_width, args.jpeg_quality, args.format,
-                                args.slice_over_kb, args.slice_over_height, args.slice_height)
-            rep["screenshot"] = str(post["path"])
-            rep["screenshotBytes"] = post["bytes"]
-            rep["truncated"] = False  # chrome CLI 用固定 24000 canvas，超出会截断——但没法检测
-            if post["slices"]:
-                rep["slices"] = [str(s) for s in post["slices"]]
-                rep["sliceHint"] = (
-                    f"主图过阈值（字节>{args.slice_over_kb}KB 或 高度>{args.slice_over_height}px），"
-                    f"已按 {args.slice_height}px 切片。若主图 Read 失败，改读 slices 里各分片。"
-                )
-        # lint / structure：chrome CLI 模式无 DOM 访问，返回 null 标记
-        if "lint" in include:
-            rep["consoleErrors"] = None
-            rep["consoleWarnings"] = None
-            rep["resourceErrors"] = None
-            rep["horizontalOverflow"] = None
-        if "structure" in include:
-            rep["structure"] = None
-        if "lint" in include or "structure" in include:
-            rep["reportDegraded"] = True
-            rep["reportHint"] = (
-                "当前 chrome CLI 降级模式：截图走 CDP 全页（若成功）或首屏回退；"
-                "lint 与 structure 字段为 null（无 DOM 结构报告）。"
-                "如需完整报告，请装 playwright：`pip install playwright && playwright install chromium`。"
+            dom = _chrome_cli_shoot(
+                exec_path, url, viewport, raw_out,
+                want_report=want_report,
+                console_bucket=console_bucket,
+                resource_bucket=resource_bucket,
             )
-        elif "screenshots" in include:
-            rep["reportDegraded"] = True
-            rep["reportHint"] = "当前 chrome CLI 降级模式：截图走 CDP 全页（若成功）或首屏回退。"
+            if "screenshots" in include:
+                post = _postprocess(raw_out, args.max_width, args.jpeg_quality, args.format,
+                                    args.slice_over_kb, args.slice_over_height, args.slice_height)
+                rep["screenshot"] = str(post["path"])
+                rep["screenshotBytes"] = post["bytes"]
+                rep["truncated"] = False  # chrome CLI 用固定 canvas，超出会截断——但没法检测
+                if post["slices"]:
+                    rep["slices"] = [str(s) for s in post["slices"]]
+                    rep["sliceHint"] = (
+                        f"主图过阈值（字节>{args.slice_over_kb}KB 或 高度>{args.slice_over_height}px），"
+                        f"已按 {args.slice_height}px 切片。若主图 Read 失败，改读 slices 里各分片。"
+                    )
+            elif raw_out.exists():
+                # 用户只要 lint/structure 时，把中间产物删掉，别留脏东西
+                try: raw_out.unlink()
+                except Exception: pass
+
+        # lint / structure：CDP 分支拿到 dom 时走完整装配；只在 --screenshot 兜底
+        # 拿不到 dom 时才降级
+        if want_report:
+            if dom is not None:
+                _apply_dom_report(rep, dom, console_bucket, resource_bucket, include)
+                rep["reportSource"] = "cdp"
+            else:
+                if "lint" in include:
+                    rep["consoleErrors"] = None
+                    rep["consoleWarnings"] = None
+                    rep["resourceErrors"] = None
+                    rep["horizontalOverflow"] = None
+                if "structure" in include:
+                    rep["structure"] = None
+                rep["reportDegraded"] = True
+                rep["reportHint"] = (
+                    "chrome CLI 走 --screenshot 兜底路径（CDP 挂了）：拿不到 DOM，"
+                    "lint 与 structure 字段为 null。如需完整报告，请装 playwright："
+                    "`pip install playwright && playwright install chromium`。"
+                )
         return rep
 
     if args.only in ("desktop", "both"):

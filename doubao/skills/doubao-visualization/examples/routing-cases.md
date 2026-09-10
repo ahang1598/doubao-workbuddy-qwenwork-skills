@@ -1,20 +1,22 @@
 # 路由案例
 
+本文件用于回归测试，不是运行时必读。
+
 ## 应触发
 
-| 用户请求 | 目标 | 素材策略 | 呈现 |
+| 用户请求 | 主模式 | 基础加载 | 条件追加 |
 | --- | --- | --- | --- |
-| “把这组季度收入做成趋势图。” | 数据分析 | 结构化数据 | ECharts |
-| “解释 RAG 从切片到召回再到回答的流程，画清楚。” | 知识讲解 | 文字资料 | 静态 HTML/SVG 流程图 |
-| “解释《动物庄园》的权力腐化机制并配图。” | 知识讲解 | 文字资料 | 静态 HTML/SVG 因果图 |
-| “做一张二战关键节点时间线。” | 知识讲解 | 已核验资料 | 静态 HTML/SVG 时间线 |
-| “画出 Agent、Skill、Tool、MCP 的关系。” | 知识讲解 | 文字资料 | 静态 HTML/SVG 架构关系图 |
-| “拖动频率观察波形怎么变。” | 动态探索 | 自绘 | 交互 HTML/SVG |
-| “逐步演示 BFS 队列变化。” | 动态探索 | 自绘 | 交互 HTML/SVG 状态演示 |
-| “数一下图里有几个零件，并标出依据。” | 视觉证据 | 保持用户原图 | 原图静态叠加 |
-| “点击机器照片上的接口显示用途。” | 视觉证据 + 动态探索 | 保持用户原图 | 原图 + HTML/SVG 交互 |
-| “参考设备照片画成简化结构示意。” | 知识讲解 | 观察原图结构 | 标明“示意”的静态 SVG |
-| “先标出传感器位置，再画温度趋势。” | 视觉证据 + 数据分析 | 保持原图 + 数据 | 原图叠加 + ECharts |
+| “把这组季度收入做成趋势图。” | ECharts | `mode-echarts.md` | 无 |
+| “做一个带 visualMap 的移动端热力图。” | ECharts | `mode-echarts.md` | `echarts-option-spec.md` |
+| “解释 RAG 从切片到回答的流程，画清楚。” | 静态 HTML/SVG | `mode-html-svg.md` | 无 |
+| “做一张移动端高密度组织关系图。” | 静态 HTML/SVG | `mode-html-svg.md` | `renderer-trigger-design.md`、`renderer-output-mobile.md` |
+| “拖动频率观察波形怎么变。” | 交互 HTML/SVG | `mode-html-svg.md` | `renderer-stability-math.md`、`renderer-interaction-geometry.md` |
+| “逐步演示 BFS 队列变化。” | 交互 HTML/SVG | `mode-html-svg.md` | `renderer-stability-math.md`、`renderer-interaction-geometry.md` |
+| “框出图中的接口位置。” | 原图静态叠加 | `mode-image-overlay.md` | 无 |
+| “识别并框出图中的 8 个核心部件。” | 原图静态叠加 | `mode-image-overlay.md` | coord ≥3，同时读取两个 image-overlay spec |
+| “沿迷宫标出完整路径。” | 原图静态叠加 | `mode-image-overlay.md` | 两个 image-overlay spec |
+| “参考设备照片画成简化结构示意。” | 静态 HTML/SVG | `mode-html-svg.md` | 标明“示意” |
+| “先标传感器位置，再画温度趋势。” | 原图叠加 + ECharts | 两个主模式文件 | `composition.md` |
 
 ## 不应触发或应降级
 

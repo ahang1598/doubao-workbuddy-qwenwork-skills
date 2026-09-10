@@ -1,15 +1,12 @@
 # 原图静态证据叠加
 
-## 读取门
+本文件是简单标注的完整运行契约，只独立覆盖满足以下全部条件的任务：单图、单 step、总 coord 数不超过 2，且不需要图例或标签避让。
 
-生成 process 或 renderer 前，**必须完整读取**：
+## 专项加载
 
-1. `mode-image-overlay.md`
-2. `image-overlay-process-spec.md`
-3. `image-overlay-authoring-spec.md`
-4. `shared-quality.md`
-
-没有读完不得开始写坐标、process 或 HTML。需要参考成熟单图实现时再读取 `examples/image-overlay-gold-process.md` 和 `examples/image-overlay-gold-reply.md`，但 example 不能替代两个 spec，并以其中标注的融合版修订为准。
+- 出现任一条件即视为复杂标注：总 coord 数不少于 3、steps 不少于 2、多图、路径、多组配对、计数、图例、标签避让、跨图联动或交互。
+- 复杂标注必须同时读取 `image-overlay-process-spec.md` 和 `image-overlay-authoring-spec.md`，不能只读其中一份。
+- 只有实现卡住时才参考 `examples/image-overlay-gold-process.md` 和 `examples/image-overlay-gold-reply.md`；示例不是运行必读。
 
 ## 适用范围
 
@@ -56,14 +53,15 @@
 
 ## renderer 结构
 
-- 输出顺序：文字讲解与答案 → 一句自然衔接 → 末尾一个 `html type="renderer"`。
+- 输出顺序：文字讲解与答案 → 一句自然衔接 → 末尾一个 ` ```html type="renderer"`。
+- 首块使用 `<html style="margin:0;padding:0;">` 和透明 div；禁用 DOCTYPE、head、body、外部 CSS 和视口单位。
 - 底图使用 `width:auto;height:auto;max-width:100%;max-height:720px;display:block`；舞台 `display:inline-block;max-width:100%`，避免竖图强行铺满宽度。
 - 使用两层覆盖：SVG 只画 line/polyline/path/rect，HTML layer 画圆点、数字、文字和胶囊。
 - SVG 固定 `viewBox="0 0 999 999" preserveAspectRatio="none"`；描边使用 `vector-effect="non-scaling-stroke"`。
 - 禁止在非等比 SVG 中放 circle、ellipse、text 或 image，避免圆点和文字变形。
 - 点使用 14-18px 小圆点 + 旁置标签，不使用遮挡原图的大圆饼。
-- 标记默认半透明；标记不少于两个时提供图例。核心结论不依赖 hover。
-- 若加入交互，必须同时支持 hover 与 click/tap；需要复杂切换或播放时改走交互模式。
+- 简单标注默认静态，不强制 JavaScript、hover 或图例；标签能直接对应且不拥挤时无需额外交互。
+- 标记密集时编号并提供图例。若加入交互，必须支持 click/tap，hover 只能作桌面增强；复杂切换或播放改走 HTML/SVG 交互模式。
 
 ## 忠实性检查
 
