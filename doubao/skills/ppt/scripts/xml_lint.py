@@ -17,9 +17,7 @@ from difflib import SequenceMatcher, get_close_matches
 from pathlib import Path
 from typing import Any
 
-import embed_svg_validator
 import sxsd_validator
-import color_contrast_check
 
 
 XS_NS = "{http://www.w3.org/2001/XMLSchema}"
@@ -3946,38 +3944,6 @@ def lint_slide(
     }
 
 
-def bind_embed_svg_issue_elements(
-    issues: list[dict[str, Any]], embed_elements: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
-    """Bind validator issues to the outer embed so normal issue enrichment still works."""
-
-    bound_issues: list[dict[str, Any]] = []
-    for issue in issues:
-        issue_copy = dict(issue)
-        embed_element: dict[str, Any] | None = None
-        issue_path = issue_copy.get("path")
-        if isinstance(issue_path, str):
-            match = re.search(r"/embed\[(\d+)\]", issue_path)
-            if match:
-                embed_index = int(match.group(1)) - 1
-                if 0 <= embed_index < len(embed_elements):
-                    embed_element = embed_elements[embed_index]
-        if embed_element is None:
-            issue_embed_id = next(iter(issue_copy.get("elements", [])), None)
-            embed_element = next(
-                (
-                    element
-                    for element in embed_elements
-                    if source_element_id(element) == issue_embed_id
-                ),
-                None,
-            )
-        if embed_element is not None:
-            issue_copy["elements"] = [element_ref(embed_element)]
-        bound_issues.append(issue_copy)
-    return bound_issues
-
-
 def dedupe_bbox_overlap_issues(issues: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Collapse duplicate bbox_overlap issues that name the same element pair.
 
@@ -4555,10 +4521,6 @@ RULE_METADATA: dict[str, dict[str, Any]] = {
         "name": "text_visual_bounds_do_not_overlap",
         "comparison": "intersection_area == 0",
     },
-    "embed_svg_bbox_overlap": {
-        "name": "embedded_svg_visual_bounds_do_not_overlap",
-        "comparison": "overlap_element_count < 2",
-    },
     "text_may_overflow_shape": {
         "name": "estimated_text_fits_declared_shape",
         "comparison": "estimated_height <= available_height",
@@ -4895,33 +4857,6 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
 
     presentation = parse_presentation(root)
     slide_roots = presentation["slide_roots"]
-    contrast_by_slide: dict[int, list[dict[str, Any]]] = {}
-    contrast_xml_path = Path(source_path) if source_path else None
-    if contrast_xml_path and contrast_xml_path.is_file():
-        contrast_records, contrast_slides = color_contrast_check.parse_xml_root(root)
-        contrast_results, _ = color_contrast_check.check(
-            contrast_records,
-            contrast_slides,
-            "",
-            color_contrast_check.DEFAULT_CONTRAST_GATE,
-        )
-        for contrast_issue in contrast_results:
-            if contrast_issue["verdict"] != "FAIL":
-                continue
-            contrast_by_slide.setdefault(contrast_issue["slide"], []).append(
-                {
-                    "level": color_contrast_check.lint_level(contrast_issue),
-                    "code": "text_color_contrast",
-                    "elements": [contrast_issue.get("object_id") or contrast_issue["object_path"]],
-                    "target": {
-                        "slide_number": contrast_issue["slide"],
-                        "xml_path": contrast_issue["object_path"],
-                    },
-                    "message": color_contrast_check.issue_message(contrast_issue),
-                    "hint": "Adjust the text or its XML-resolvable background, then rerun xml_lint.",
-                    "schema_version": "2.0",
-                }
-            )
     slides: list[dict[str, Any]] = []
     presentation_id_elements: list[dict[str, Any]] = []
     presentation_elements_by_ref: dict[str, dict[str, Any]] = {}
@@ -4958,16 +4893,6 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
             presentation["width"],
             presentation["height"],
         )
-        embed_elements = [
-            element for element in geometry["elements"] if element["kind"] == "embed"
-        ]
-        embed_svg_issues = bind_embed_svg_issue_elements(
-            [
-                *embed_svg_validator.validate_embedded_svgs(slide_root),
-                *embed_svg_validator.detect_embedded_svg_overlaps(slide_root),
-            ],
-            embed_elements,
-        )
         density_elements = extract_density_elements(slide_xml, slide_number)
         id_elements = extract_source_id_elements(slide_xml, slide_number)
         presentation_id_elements.extend(id_elements)
@@ -4999,7 +4924,6 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         )
         raw_issues = [
             *geometry["issues"],
-            *embed_svg_issues,
             *extra_overflow_issues,
             *detect_duplicate_element_ids(id_elements),
             *detect_blank_slide(
@@ -5023,7 +4947,6 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         ]
         issues = [
             *slide_sxsd_issues,
-            *contrast_by_slide.get(slide_number, []),
             *[
                 normalize_issue(issue, slide_number, elements_by_ref)
                 for issue in raw_issues

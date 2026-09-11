@@ -65,7 +65,7 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/xml_inspect.py" --input "$WORK_DIR/sourc
 
 ### 2. 截图并查看全部模板页
 
-按 `slide_id` 分批截图全部页面，每批最多 8 页；多页时重复传入 `--slide-id`：
+按 `slide_id` 分批截图全部页面，每批最多 10 页；多页时重复传入 `--slide-id`：
 
 ```bash
 lark-cli slides +screenshot --presentation "<xml_presentation_id>" --slide-id "<slide_id_1>" --slide-id "<slide_id_2>" --output-dir "$WORK_DIR/source-screenshots"

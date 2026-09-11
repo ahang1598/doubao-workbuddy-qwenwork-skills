@@ -66,20 +66,14 @@ lark-cli slides +add-slide \
 
 ## 成功输出
 
-默认 JSON 响应如下，业务字段位于 `data` 内，例如新页面 ID 取自 `.data.slide_id`：
-
 ```json
 {
-  "ok": true,
-  "identity": "user",
-  "data": {
-    "xml_presentation_id": "slides_example_presentation_id",
-    "slide_id": "slide_example_id",
-    "revision_id": 42,
-    "before_slide_id": "slide_example_target_id",
-    "images_uploaded": 1,
-    "issues": "[issue=unsupported_attr tag=<strong> attr=style]"
-  }
+  "xml_presentation_id": "slides_example_presentation_id",
+  "slide_id": "slide_example_id",
+  "revision_id": 42,
+  "before_slide_id": "slide_example_target_id",
+  "images_uploaded": 1,
+  "issues": "[issue=unsupported_attr tag=<strong> attr=style]"
 }
 ```
 

@@ -1,6 +1,6 @@
 # XML 校验
 
-本文件覆盖**写入前后对 XML 的校验**这一必做环节：写入前校验你手里的单页 XML，写入后校验服务端回读的全文。目标是发现 XML 损坏、schema 不合法、空白页、内容截断、明显溢出和未验证输出。XML 可解析的文字与背景区分度会由 `text_color_contrast` 检查；图片背景、图片裁切、间距和跨页风格等仍需截图判断，见 [validation-visual.md](validation-visual.md)。
+本文件覆盖**写入前后对 XML 的校验**这一必做环节：写入前校验你手里的单页 XML，写入后校验服务端回读的全文。目标是发现 XML 损坏、schema 不合法、空白页、内容截断、明显溢出和未验证输出。只能靠截图主观判断的视觉问题（对比度、图片裁切、间距、跨页风格等）见 [validation-visual.md](validation-visual.md)。
 
 小型已有页编辑也要做对应范围的验证：至少读取被改页面或全文 XML，确认目标元素已更新且未破坏周边结构。
 
@@ -56,7 +56,6 @@ python3 scripts/xml_lint.py --input <presentation.xml>
 - `summary.error_count == 0`。任何 error 都必须先修复再交付。
 - **schema 错误会让该页跳过几何检查**：某页存在 `sxsd_*` error 时，该页的 `element_count` 为 0，重叠/溢出/越界等几何检查全部不执行。所以看到 `sxsd_*` 必须先修 schema，再重跑一次 lint，否则几何问题会被藏住。
 - 只有 `error` 计入 `error_count` 并阻断交付；`warning` 与 `info` 不阻断，但代表真实风险，应逐条核对后决定是否修复或收紧版式。
-- `text_color_contrast` 只覆盖 XML 可解析的页面、shape、文字底色及叠层关系：背景可确定且问题明显时为 `error`，复杂背景或接近门槛时为 `warning`，须结合截图复核；图片背景和无法解析的背景会跳过，不产生靠色结论。
 - lint 可能误报有意设计：绝大多数报告都是真实缺陷、应直接修复；只有当你确信某条是刻意设计（如为层次感让文字与形状/其它元素重叠、紧凑排布）时，才用截图核对真实渲染（见 [validation-visual.md](validation-visual.md)），确认无碍后保留并在验证记录说明——不要拿"设计如此"当默认借口跳过修复。
 - 该工具不能替代页数核对、关键内容核对或真实视觉验收。
 
@@ -95,7 +94,6 @@ python3 scripts/xml_lint.py --input <presentation.xml>
 | `whiteboard_external_overlap` | `<whiteboard>` 越过自身边界压到相邻兄弟元素。自己写不出画板（schema 里没有这个元素），只有回读用户原稿时才可能遇到；回读不含画板内部的 SVG/Mermaid，最终以截图渲染为准 | warning |
 | `table_resolved_size_mismatch` | `<table>` 声明的 width/height 与 `<col>`/`<tr>` 解析出的实际总尺寸不一致 | info |
 | `image_may_cover_vertical_text` | 竖排文字疑似被 `<img>` 覆盖（竖排布局无法静态建模，需截图核对） | info |
-| `text_color_contrast` | XML 可解析背景下文字与背景区分度不足；按背景确定性和严重程度输出 error 或 warning | error / warning |
 
 `sxsd_*` 是 schema 校验，`hint` 只说哪里不合规、不给正确写法：改之前对照 [`slides_xml_schema_definition.xml`](../xml/slides_xml_schema_definition.xml) 里该标签的定义，issue 的 `expected` 有值时会直接列出该处允许的子元素或取值，`path`（如 `slide/data/shape/content/text`）只有标签名、不带序号，和上面带下标的 `xml_path` 不是一回事。
 

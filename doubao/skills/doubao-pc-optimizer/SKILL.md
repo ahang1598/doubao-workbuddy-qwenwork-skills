@@ -49,13 +49,10 @@ description: 用户需要清理磁盘垃圾、释放空间、处理电脑卡顿�
 
 - 不要用 `&&` 串联命令(PowerShell 5.1 不支持),用 `;` 或分开执行
 - 不要用 `wmic`(新系统已移除),用 `Get-CimInstance`
-- `start` 在 PowerShell 中是 `Start-Process` 的别名,参数与 CMD 的 `start` 不同
-- 运行独立的 `.bat`/`.cmd` 前必须读取并检查完整内容;执行时使用 PowerShell 调用运算符,例如 `& 'C:\完整路径\script.cmd'`,不得在路径后拼接其他命令或操作符
+- `start` 在 PowerShell 里是 `Start-Process` 的别名,参数与 cmd 的 start 完全不同;运行 .bat 用 `cmd /c "路径"`
 - 不确定环境时先执行 `echo $PSVersionTable.PSVersion`——有输出即 PowerShell
 - 运行内置 `.ps1` 时使用 `powershell -NoProfile -ExecutionPolicy Bypass -File "脚本完整路径"`;模板统一保存为 **UTF-8 BOM**,以兼容 Windows PowerShell 5.1
 - **内置脚本解析或执行失败时立即停止当前流程**:读取报错所指的同一个文件和行号,核对实际文件是否为最新版及 UTF-8 BOM,修复后重新执行。扫描没有成功就不能声称已取得扫描结果,也不能绕过模板临时编写 BAT/PS1、直接执行清理或进入 L1/L2
-- Windows 下如确需使用 CMD 专属能力,应先生成独立的 `.cmd` 文件,检查文件完整内容后再执行。禁止通过 `cmd.exe /c` 或 `/k` 传递内联命令字符串。`.cmd` 文件中的 Windows 路径必须直接使用普通双引号包裹,例如 `"C:\Path With Spaces"`;不得使用 `\"`、`\\"` 等反斜杠方式转义引号,因为反斜杠不是 PowerShell 或 CMD 的引号转义符。执行 `.cmd` 时不得在文件路径后拼接其他命令、重定向符或 `&`、`|` 等操作符
-- 临时脚本执行删除前,必须先尝试列出路径下的文件、确认解析后的目标仍位于预期白名单目录内。禁止删除盘符根目录、用户主目录、AppData 根目录、workspace 根目录或白名单根目录本身。检查失败时立即停止,不得尝试修正后直接重跑
 
 ### Windows 识别命令(只读、安全)
 

@@ -1,13 +1,14 @@
 # ECharts 精确数据图表
 
-本文件是常规 ECharts 任务的完整运行契约。读完即可生成大多数折线、柱状、饼图、散点、雷达、热力、箱线、树、桑基、漏斗和 K 线 option。
+## 读取门
 
-## 何时追加专项文件
+生成、修改或审核任何原生 ECharts option 前，**必须完整读取**：
 
-- 复杂 callback、自由布局、特殊数据格式，或移动端存在多行 legend、visualMap、dataZoom、密集标签时，再读 `echarts-option-spec.md`。
-- system prompt 的 `Device platform` 明确为“电脑端”或“网页端”时，读 `echarts-web-pc-spec.md`；移动端或未声明平台时不读取。
-- Web/PC 分支已选择 `sunburst` 或 `gauge` 时，再分别读取 `echarts-web-pc-sunburst-reference.md` 或 `echarts-web-pc-gauge-reference.md`。
-- 来源追溯或规则审计时读 `echarts-source.md`；正常生成不读取。
+1. `mode-echarts.md`
+2. `echarts-option-spec.md`
+3. `shared-quality.md`
+
+该文件保留原 Skill 对移动端表头、自由布局、特殊数据格式、tooltip 和模板的完整细则。没有读完不得开始写 option。来源追溯见 `echarts-source.md`。
 
 ## 适用范围
 
@@ -62,7 +63,6 @@
 - 直角坐标图配置 `grid` 和 `containLabel:true`。
 - 多系列配置 legend；系列多时使用滚动图例或拆图。
 - 单位在轴、tooltip、label 和正文中保持一致；控制小数位和大数单位。
-- 真实数据必须说明来源、口径或时间范围；无法核验时只输出明确标注的示例或模板。
 - 禁止 `geo`、`map`、`registerMap`、行政区划、经纬度轨迹和地图热力。
 
 ## 移动端

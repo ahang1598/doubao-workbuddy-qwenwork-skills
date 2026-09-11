@@ -62,38 +62,6 @@
 
 **目录原则**：参照头部咨询报告的目录样式，既要有品质感，也要保证信息清晰。
 
-
-## 常用 SVG 图
-
-本设计系统偏好以下设计（详情跑 `chart_help('<slug>')`）：
-
-**推荐 palette**（本场景选一个贯穿全 deck 所有图，不混用）：
-
-| palette 名 | 底色 | 适用子味道 |
-|---|---|---|
-| `burgundy_analyst` | 白底 | 头部咨询报告经典 · 勃艮第红主色 |
-| `ink_jade` | 白底 | 金融 / 战略 · 深靛 + 玉青强调 |
-| `ochre_stone` | 象牙白 | 品牌研究 / 消费品 · 焦赭石 |
-
-**样式收敛**：主色梯度 + 灰阶（无第二色族）、去纵向网格线、数据标签只标关键点与端点、图表下方写来源与口径、无 3D / 无渐变 / 无投影。
-
-**版式偏好**：本场景优先用组合 A（多图横排 + 结论卡阵，如"竞品象限 × 业务矩阵 × chord 三视角论证"）承载多视角判断，或组合 B（单大图 + 编号驱动力）详讲关键图；每张图必配 `FIGURE N · 短标签` caption，页底必有来源行和章节位置标。5 类语义模块与硬规则见 [`slide-taxonomy.md`](slide-taxonomy.md#svg-图页版式思路)。
-
-## 骨架变体推荐（skeleton variant）
-
-传给 `make_*` 的 `variant=` 参数。不传或传 `None` / `'classic'` 走原经典设计。骨架和 palette 正交组合：骨架决定图形结构与视觉气质，palette 决定色系。
-**本场景调性**：理性、结构感强、洞察密度高。装饰极简。**推荐冷色系 + 单色主导**——远离甜蜜彩色。
-
-| chart | variant | palette 推荐 | 何时用 |
-|---|---|---|---|
-| `quadrant_2x2` | `dot_cross` | `burgundy_analyst` / `nordic_slate` | 波士顿矩阵 / 战略取舍；burgundy 走 MBB 经典 / nordic 走欧洲高端 |
-| `quadrant_2x2` | `ring_arrow` | `ink_jade` | 带轨迹箭头的定位演化 · 深靛玉青克制 |
-| `marimekko` | `default_flat` | `burgundy_analyst` | 业务组合矩阵 · 头部咨询经典 |
-| `marimekko` | `shaded_residual` | `nordic_slate` / `ochre_stone` | 我方 vs 竞品占比 · nordic 冷灰理性 |
-| `sankey` | `chord_circular` | `nature_teal` / `ink_jade` | 多方关系（chord）· nature_teal 走消费研究更 fresh |
-| `nested_donut` | `donut_layered` | `nordic_slate` / `burgundy_analyst` | 多层战略地图 |
-| `waterfall` | `cross_axis` | `nordic_slate` / `ochre_stone` | 正负跨轴归因 |
-
 ## 禁止项
 
 - 用圆角矩形或矩形卡片构建层级与对齐——一律用线段、留白与字号差异替代。

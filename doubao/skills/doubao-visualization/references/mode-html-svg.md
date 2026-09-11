@@ -2,7 +2,7 @@
 
 ## 目录
 
-- [专项加载](#专项加载)
+- [读取门](#读取门)
 - [适用范围](#适用范围)
 - [静态与交互选择](#静态与交互选择)
 - [常用信息图形态](#常用信息图形态)
@@ -12,14 +12,19 @@
 - [交互要求](#交互要求)
 - [降级](#降级)
 
-本文件是普通静态 HTML/SVG 和基础交互任务的完整运行契约。常规流程、机制、架构、关系、时间线、状态机和比较图读完本文件即可生成。
+## 读取门
 
-## 专项加载
+生成任何 HTML/SVG renderer 前，必须完整读取：
 
-- 高密度排版、专用库或特殊视觉设计：读 `renderer-trigger-design.md`。
-- 明确移动端且存在复杂分栏、长文本或密集控件：读 `renderer-output-mobile.md`。
-- 使用脚本、动画或动态公式：读 `renderer-stability-math.md`。
-- 使用拖拽、播放、几何约束、DOM/ECharts 联动：再读 `renderer-interaction-geometry.md`。
+1. `mode-html-svg.md`
+2. `renderer-trigger-design.md`
+3. `renderer-output-mobile.md`
+4. `shared-quality.md`
+
+仅当 `html_svg_behavior=interactive` 时，再额外完整读取：
+
+5. `renderer-stability-math.md`
+6. `renderer-interaction-geometry.md`
 
 普通精确数据图仍优先使用原生 ECharts option。
 
@@ -87,14 +92,12 @@
 
 ## 输出约束
 
-- 用 ` ```html type="renderer" ` 代码块包裹；**禁** `<!DOCTYPE>`/`<head>`/`<body>`/`<TEXT>`。
+- 使用 `html type="renderer"`。
 - 首块外层为 `<html style="margin:0;padding:0;">` 和透明 div。
 - 不使用 DOCTYPE、head、body、TEXT；CSS 全部内联。
 - 根容器自然撑高；禁止 `100vh`、`height:100%` 和根固定大高度。
-- 容器使用 `width:100%;box-sizing:border-box`；多列必须弹性换行，长文字不得溢出。
-- 正文建议不低于 14px；仅用颜色区分时必须增加文字、形状、线型或图例。
 - 优先 HTML/SVG；Canvas 只用于 SVG 难以稳定表达的连续动态绘制。
-- 需要脚本时使用 IIFE、try/catch 和 DOM 判空，不监听 `DOMContentLoaded`。
+- 脚本使用 IIFE、try/catch 和 DOM 判空，不监听 `DOMContentLoaded`。
 - 地图库和地图组件一律禁止。
 
 ## 静态信息图要求

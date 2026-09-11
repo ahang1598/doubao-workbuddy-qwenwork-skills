@@ -33,29 +33,6 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             f"{sample_name} has XML text overlap lint errors:\n" + "\n".join(issue_summaries),
         )
 
-    def test_contrast_lint_uses_xml_argument_not_source_path(self) -> None:
-        def presentation(text_color: str) -> str:
-            return (
-                '<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">'
-                '<slide><style><fill><fillColor color="rgba(255,255,255,1)"/></fill></style><data>'
-                '<shape type="text" topLeftX="10" topLeftY="10" width="300" height="40">'
-                f'<content color="{text_color}" fontSize="16"><p>Contrast input</p></content>'
-                '</shape></data></slide></presentation>'
-            )
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            source_path = Path(temp_dir) / "stale-low-contrast.xml"
-            source_path.write_text(presentation("rgba(200,200,200,1)"), encoding="utf-8")
-            result = xml_lint.lint_xml(presentation("rgba(0,0,0,1)"), str(source_path))
-
-        contrast_issues = [
-            issue
-            for slide in result["slides"]
-            for issue in slide["issues"]
-            if issue["code"] == "text_color_contrast"
-        ]
-        self.assertEqual(contrast_issues, [])
-
     def test_cli_suggests_input_flag_for_positional_argument(self) -> None:
         script_path = Path(xml_lint.__file__).resolve()
         input_path = "/sandboxdata/workspace/file/full_presentation.xml"
@@ -629,6 +606,11 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     <rect x="10" y="10" width="220" height="120" rx="12" fill="#EFF6FF"/>
                     <circle cx="70" cy="70" r="34" fill="#2563EB"/>
                     <text x="130" y="76" font-size="18" fill="#1E3A8A">SVG OK</text>
+                    <foreignObject x="0" y="0" width="1" height="1">
+                      <embed xmlns="http://www.w3.org/1999/xhtml">
+                        <rect xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>
+                      </embed>
+                    </foreignObject>
                   </svg>
                 </embed>
               </data>
@@ -700,11 +682,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </data>
         """
         roots = [
-            (
-                "valid SVG root",
-                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140"/>',
-                False,
-            ),
+            ("valid SVG root", '<svg xmlns="http://www.w3.org/2000/svg"/>', False),
             (
                 "non-SVG root element",
                 '<rect xmlns="http://www.w3.org/2000/svg" width="20" height="20"/>',
@@ -1471,6 +1449,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140">
                     <rect x="10" y="10" width="220" height="120" fill="#EFF6FF"/>
                     <icon iconType="not-an-iconpark-name"/>
+                    <foreignObject x="0" y="0" width="60" height="60">
+                      <icon xmlns="http://www.w3.org/1999/xhtml" iconType="not-an-iconpark-name"/>
+                    </foreignObject>
                   </svg>
                 </embed>
               </data>
@@ -1480,11 +1461,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         codes = [issue["code"] for issue in result["document"]["errors"]]
         self.assertNotIn("iconpark_unsupported_icon_type", codes)
         self.assertNotIn("icon_missing_fill_color", codes)
-        self.assertEqual(result["summary"]["error_count"], 1)
-        self.assertIn(
-            "embed_svg_unsupported_element",
-            [issue["code"] for issue in result["slides"][0]["errors"]],
-        )
+        self.assertEqual(result["summary"]["error_count"], 0)
 
     def test_lint_xml_detects_overlapping_text_boxes(self) -> None:
         result = xml_lint.lint_xml(

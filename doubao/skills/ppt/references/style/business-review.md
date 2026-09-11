@@ -27,36 +27,6 @@
 - **目录决定观感**：目录页不能小字堆叠。参考样式：主题色编号 + 章节标题 22pt + 一行 12pt 浅灰说明，三者左对齐；章节间加 0.5pt 浅灰细横线；超过五章时用左右对称布局并合理缩小字号。
 - **区域填满**：任何内容必须填满其规划区域——不是"文本框填满"，而是"从截图上看到的实际文字撑满区域"。留白不足是最严重的粗糙。
 
-## 常用 SVG 图
-
-本设计系统偏好以下设计（详情跑 `chart_help('<slug>')`）：
-
-**推荐 palette**（本场景选一个贯穿全 deck 所有图，不混用）：
-
-| palette 名 | 底色 | 适用子味道 |
-|---|---|---|
-| `exec_navy` | 暖白 | 董事会 / 财务 / OKR · 深墨蓝 + 铜金 |
-| `sage_review` | 浅石灰 | 人力 / 行政 / 政务汇报 · 鼠尾草 + 暖赤 |
-| `mocha_kpi` | 墨黑（**深底**） | 增长月报 · 硬核数字页 · 摩卡橘 |
-
-## 骨架变体推荐（skeleton variant）
-传给 `make_*` 的 `variant=` 参数。不传或传 `None` / `'classic'` 走原经典设计。骨架和 palette 正交组合：骨架决定图形结构与视觉气质，palette 决定色系。
-**本场景调性**：稳、正式、克制。数据保真第一，装饰第二。**深色底 palette 特别适合董事会 / 大屏投影**——白底常规版兜底。
-
-| chart | variant | palette 推荐 | 何时用 |
-|---|---|---|---|
-| `waterfall` | `default_flat` | `exec_navy` / `nordic_slate` | P&L bridge / 归因分析；exec_navy 深靛铜金 · 财报经典 |
-| `waterfall` | `subtotal_bridge` | `jade_landscape` / `sage_review` | 多转折长序列（12+ 步）自动插 subtotal · jade_landscape 走 ESG / 亲和汇报 |
-| `sankey` | `default_ribbon_flat` | `deep_sea_navy` / `exec_navy` | 供应链 / 预算流转；deep_sea_navy 深底=电影感董事会 |
-| `gantt` | `default_flat` | `jade_landscape` / `sage_review` | 项目排期，配 critical_index 用 |
-| `gantt` | `critical_path` | `deep_sea_navy` / `exec_navy` | 关键路径高亮，做汇报专用；深底 deep_sea_navy 是高端 pitch 感 |
-| `nested_donut` | `donut_flat` | `deep_sea_navy` / `mocha_kpi` | 构成分解，中心 total 大数字 |
-| `calheat` | `default_row_52x7` | `jade_landscape` | 日度指标一年热度 · 绿=增长/健康 |
-
-**样式收敛**：品牌主色梯度 + 灰阶、圆角与全篇一致、无 3D / 无渐变、数据标签只标关键点、图表下方标口径与来源。**归因走瀑布、量级流转走桑基**，不要退回文字段落或原生条形图 workaround。
-
-**版式偏好**：本场景优先用组合 C（顶部 KPI 带 + 主图 + 洞察卡），一页承载"当前状况 + 归因 + 建议"三段叙事；避免多图散排，一页一个核心归因图。
-
 ---
 
 ## 全局禁止项

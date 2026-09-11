@@ -275,27 +275,11 @@ def print_open_failure_guidance(path, err):
 
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(
-        prog="inspect_workbook.py",
-        description="工作簿结构预检：读取 sheet 名并输出前 15 行原始矩阵，结果写入 JSON。",
-    )
-    parser.add_argument("excel_path", help="待预检的 xlsx / xls 路径")
-    parser.add_argument(
-        "output_positional",
-        nargs="?",
-        default=None,
-        help="[可选] 输出 JSON 路径（位置参数，兼容旧调用）",
-    )
-    parser.add_argument(
-        "-o", "--output",
-        default=None,
-        help="[可选] 输出 JSON 路径；与位置参数二选一，默认 probe_result.json",
-    )
-    args = parser.parse_args()
-
-    path = args.excel_path
-    out = args.output or args.output_positional or "probe_result.json"
+    if len(sys.argv) < 2:
+        print("Usage: python3 scripts/inspect_workbook.py <excel_path> [output_json]")
+        sys.exit(2)
+    path = sys.argv[1]
+    out = sys.argv[2] if len(sys.argv) > 2 else "probe_result.json"
     try:
         profile = build_profile(path)
     except Exception as err:  # 任何本地解析失败 → 引导转 +workbook-import，不要本地绕路
@@ -303,7 +287,7 @@ def main():
         sys.exit(1)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
-    print(f"Wrote: {os.path.abspath(out)}")
+    print(f"Wrote: {out}")
 
 
 if __name__ == "__main__":

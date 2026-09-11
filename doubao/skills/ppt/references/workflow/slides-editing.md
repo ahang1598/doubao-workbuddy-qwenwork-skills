@@ -41,7 +41,7 @@
 > 主原稿或参考模板是 PPTX 时，拿到文件后第一步必须通过 lark-cli drive +import 导入在线 Slides。禁止先使用 python-pptx、解压 PPTX、LibreOffice、本地渲染或其他方式解析内容。导入完成后，只通过服务端 XML、xml_inspect.py 和页面截图理解原稿。导入失败时先排查导入问题，不得静默切换为本地解析后继续编辑。
 
 ```bash
-lark-cli drive +import --file "./<deck>.pptx" --type slides --json
+lark-cli drive +import --file "./<deck>.pptx>" --type slides --json
 # `--file` 只接受 CWD 内的相对路径。PPTX 不在 CWD 时，先将文件复制到 CWD 并保留原文件名，再传入相对路径；不得直接传绝对路径。
 # 未就绪时执行响应里的 next_command，或：
 lark-cli drive +task_result --scenario import --ticket <TICKET>
@@ -115,7 +115,7 @@ python3 scripts/xml_inspect.py --input .lark-slides/current.xml --slide-id "$SID
 XML 摘要负责结构和文字，截图负责真实视觉。局部任务只截图目标页及必须联动的同页对象；全局任务覆盖封面、目录、章节页、内容页、数据页、结束页及异常页。
 
 ```bash
-# 单页传一个 --slide-id；多页重复该参数，单次最多 8 页
+# 单页传一个 --slide-id；多页重复该参数，单次最多 10 页
 lark-cli slides +screenshot \
   --presentation "$PID" \
   --slide-id "$SID_1" \
