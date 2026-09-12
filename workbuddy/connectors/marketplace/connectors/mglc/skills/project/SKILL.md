@@ -133,30 +133,31 @@ mglc episode delete <episode_id> --project-id <project_id> --yes
 
 ### script show - 查看剧本
 
-查看项目下的剧本详情。
+查看项目下的剧集的剧本详情。
 
 **命令**：
 ```bash
-mglc script show --project-id <project_id>
+mglc script show --project-id <project_id> --episode-id <episode_id>
 ```
 
 ### script create - 创建剧本
 
-创建新剧本。
+创建项目剧集的剧本。
 
 **命令**：
 ```bash
 # 直接传入内容
-mglc script create --project-id <project_id> --content "剧本内容..."
+mglc script create --project-id <project_id> --episode-id <episode_id> --content "剧本内容..."
 
 # 从文件读取
-mglc script create --project-id <project_id> --content ./script.txt
+mglc script create --project-id <project_id> --episode-id <episode_id> --content ./script.txt
 ```
 
 **参数**：
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|:----:|------|
 | --project-id | int64 | ✓ | 项目 ID |
+| --episode-id | int64 | ✓ | 剧集 ID，必填 |
 | --content | string | ✓ | 剧本内容（文本或文件路径） |
 
 ## 分镜管理
@@ -167,7 +168,7 @@ mglc script create --project-id <project_id> --content ./script.txt
 
 **命令**：
 ```bash
-mglc storyboard list --project-id <project_id> --episode 1
+mglc storyboard list --project-id <project_id> --episode <episode_number>
 ```
 
 **参数**：
@@ -194,16 +195,16 @@ mglc storyboard show <shot_id> --project-id <project_id>
 **命令**：
 ```bash
 # 基本创建
-mglc storyboard add --project-id <project_id> --episode 1 --scene-order 1 --shot-name "场景1"
+mglc storyboard add --project-id <project_id> --episode <episode_number> --scene-order <scene_order> --shot-name <shot_name>
 
 # 带画面描述
-mglc storyboard add --project-id <project_id> --episode 1 --scene-order 1 --shot-name "场景1" --prompt "画面描述"
+mglc storyboard add --project-id <project_id> --episode <episode_number> --scene-order <scene_order> --shot-name <shot_name> --prompt <prompt>
 
 # 指定插入位置
-mglc storyboard add --project-id <project_id> --episode 1 --prev-shot-id <id> --scene-order 2 --shot-name "新分镜"
+mglc storyboard add --project-id <project_id> --episode <episode_number> --prev-shot-id <id> --scene-order <scene_order> --shot-name <shot_name>
 
 # 批量创建
-mglc storyboard add --project-id <project_id> --episode 1 --scene-order 3 --shot-name "分镜" --number 5
+mglc storyboard add --project-id <project_id> --episode <episode_number> --scene-order <scene_order> --shot-name <shot_name> --number <number>
 ```
 
 **参数**：
@@ -228,13 +229,13 @@ mglc storyboard add --project-id <project_id> --episode 1 --scene-order 3 --shot
 **命令**：
 ```bash
 # 修改名称
-mglc storyboard update <shot_id> --project-id <project_id> --shot-name "新名称"
+mglc storyboard update <shot_id> --project-id <project_id> --shot-name <shot_name>
 
 # 修改画面描述
-mglc storyboard update <shot_id> --project-id <project_id> --prompt "新的画面描述"
+mglc storyboard update <shot_id> --project-id <project_id> --prompt <prompt>
 
 # 修改时长
-mglc storyboard update <shot_id> --project-id <project_id> --duration 10
+mglc storyboard update <shot_id> --project-id <project_id> --duration <duration>
 ```
 
 ### storyboard delete - 删除分镜
@@ -269,7 +270,7 @@ mglc storyboard views --project-id <project_id> --episode-id <episode_id>
 mglc subject list --project-id <project_id>
 
 # 按类型筛选
-mglc subject list --project-id <project_id> --type role
+mglc subject list --project-id <project_id> --type <role|scene|prop>
 
 # 按名称搜索
 mglc subject list --keyword "角色名"
@@ -368,30 +369,24 @@ mglc subject delete <subject_id> --project-id <project_id> --type role --yes
 
 **命令**：
 ```bash
-# 列出项目下的所有会话
-mglc session list --project-id <project_id>
-
-# 按剧集筛选
-mglc session list --project-id <project_id> --episode 1
+# 列出项目聚集下的所有会话
+mglc session list --project-id <project_id> --episode <episode_number>
 ```
 
 **参数**：
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|:----:|------|
 | --project-id | int64 | ✓ | 项目 ID |
-| --episode | int64 | - | 剧集编号 |
+| --episode | int | - | 剧集编号 |
 
 ### session create - 创建会话
 
-创建新的生成会话。
+创建新的剧集生成会话。
 
 **命令**：
 ```bash
-# 基本创建
-mglc session create --project-id <project_id> --name "会话名称"
-
 # 指定剧集和剧本
-mglc session create --project-id <project_id> --episode-id <episode_id> --script-id <script_id> --name "第1集会话"
+mglc session create --project-id <project_id> --episode-id <episode_id> --name "第1集会话"
 ```
 
 **参数**：
@@ -399,8 +394,7 @@ mglc session create --project-id <project_id> --episode-id <episode_id> --script
 |------|------|:----:|------|
 | --project-id | int64 | ✓ | 项目 ID |
 | --name | string | ✓ | 会话名称 |
-| --episode-id | int64 | - | 剧集 ID |
-| --script-id | int64 | - | 剧本 ID |
+| --episode-id | int64 | ✓ | 剧集 ID |
 
 ### session update - 更新会话
 

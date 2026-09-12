@@ -14,7 +14,7 @@
             "linux": "lark-cli --version",
             "win32": "lark-cli.cmd --version"
         },
-        "minVersion": "1.0.93"
+        "minVersion": "1.0.95"
     },
     "auth": [
         {
@@ -33,9 +33,9 @@
         },
         {
             "command": {
-                "darwin": "lark-cli auth login --recommend",
-                "linux": "lark-cli auth login --recommend",
-                "win32": "lark-cli.cmd auth login --recommend"
+                "darwin": "lark-cli auth login --recommend --exclude vc:meeting.realtime:read,im:chat:create",
+                "linux": "lark-cli auth login --recommend --exclude vc:meeting.realtime:read,im:chat:create",
+                "win32": "lark-cli.cmd auth login --recommend --exclude vc:meeting.realtime:read,im:chat:create"
             },
             "authWaitForExit": true,
             "authUrlDomain": "accounts.feishu.cn"

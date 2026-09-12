@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="启元机器人执行器图标">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#9b83ff"/>
+      <stop offset="1" stop-color="#5136de"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="68" fill="url(#g)"/>
+  <path d="M74 82c0-24 19-43 43-43h22c24 0 43 19 43 43v7c15 10 25 27 25 46v23c0 32-26 58-58 58H107c-32 0-58-26-58-58v-23c0-19 10-36 25-46z" fill="#fff" opacity=".96"/>
+  <circle cx="102" cy="132" r="13" fill="#5c42df"/>
+  <circle cx="154" cy="132" r="13" fill="#5c42df"/>
+  <path d="M98 170c18 13 42 13 60 0" fill="none" stroke="#5c42df" stroke-width="11" stroke-linecap="round"/>
+  <path d="M107 39h42" stroke="#fff" stroke-width="12" stroke-linecap="round" opacity=".96"/>
+</svg>

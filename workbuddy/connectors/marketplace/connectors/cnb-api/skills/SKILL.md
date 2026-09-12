@@ -30,6 +30,7 @@ pulls:
 - `cnb pulls add-labels --labels ready --labels approved` — 添加标签
 - `cnb pulls check-status` — 查看 CI 状态
 - `cnb pulls list-reviews` — 查看评审列表
+- `cnb pulls submit-review` — 发送评审评论或提交评审结论
 - `cnb pulls list-assignees` — 查看处理人
 - `cnb pulls get-ci-logs --sn 构建号（可选）` — 获取 CI 失败日志
 - `cnb pulls get-ci-timing --sn 构建号（可选）` — 分析 CI 耗时瓶颈

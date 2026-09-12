@@ -55,11 +55,10 @@
 | `region` | string | `cn` | 当前开放的官方节点：`cn` / `id`；默认 `cn` 可省略 |
 | `userDomain` | string | 节点内置值 | User 服务 HTTPS origin 覆盖 |
 | `apiDomain` | string | 节点内置值 | 平台 API HTTPS origin 覆盖 |
-| `runtimeDomain` | string | 节点内置值 | 普通 Runtime HTTPS origin 覆盖 |
+| `runtimeDomain` | string | 节点内置值 | Runtime HTTPS origin 覆盖，包含 Personal KB 管理与 `kb search` |
 | `skillDomain` | string | 节点默认 | SkillHub HTTPS origin 覆盖 |
-| `kbDomain` | string | 节点默认 | Personal KB 管理与 `kb search` Runtime 网关 HTTPS origin 覆盖 |
 
-五个 Domain 各自独立覆盖同名服务地址。没有显式配置时，CLI 按 `region` 和 `env` 使用内置节点：`cn` 对应中国大陆，`id` 对应 Indonesia，且 Indonesia 的最终服务地址统一使用 `*.lovrabet.id`。`development` 与 `daily` 共用非生产地址；KB Service 下游地址由 Runtime Java 配置管理。执行 `lovrabet doctor` 可查看当前实际生效的五个 Domain，无需理解内部地址层级。
+四个 Domain 各自独立覆盖同名服务地址。没有显式配置时，CLI 按 `region` 和 `env` 使用内置节点：`cn` 对应中国大陆，`id` 对应 Indonesia，且 Indonesia 的最终服务地址统一使用 `*.lovrabet.id`。`development` 与 `daily` 共用非生产地址；Personal KB 管理与搜索统一走 Runtime，KB Service 下游地址由 Runtime Java 配置管理。执行 `lovrabet doctor` 可查看当前实际生效的四个 Domain，无需理解内部地址层级。
 
 `config init` 的完整模式切换、独立部署 JSON 和校验规则见 [配置管理](lovrabet-config-commands.md#config-init--初始化连接配置)。
 

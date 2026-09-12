@@ -12,10 +12,12 @@
 
 - 发现与账户：`who_am_i`、`query_membership_and_credits`、`logout`
 - 生成与查询：`text_to_image`、`image_to_image`、`text_to_video`、`image_to_video`、`motion_control`、`query_tasks`
-- 素材与复用：`motion_library_list`、`element_create`、`element_list`、`element_get`、`element_update`、`element_delete`
+- 素材与复用：`file_upload`、`motion_library_list`、`element_create`、`element_list`、`element_get`、`element_update`、`element_delete`
 - 异常报告：`feedback`
 
 只有当前 `tools/list` 中真实存在的工具才可调用。不同区域或账号等级的工具、模型和值域可能不同，不得假设与国际端完全一致。
+
+主体库 CRUD、生成绑定、动作库选择和本地文件两步上传的执行顺序见[素材工作流](asset-workflows.md)。
 
 ## 固定工具级输入
 
@@ -27,6 +29,7 @@
 - `query_tasks`：`generationId` 必填，`taskTraceId` 选填。
 - `who_am_i`、`query_membership_and_credits`、`logout`、`motion_library_list`、`element_list`：仅有可选 `taskTraceId`。
 - `element_get`、`element_delete`：`id` 和可选 `taskTraceId`；调用前按工具说明检查实际必填规则。
+- `file_upload`：`filename`、`contentType`、`size`（字节数，number）、`taskTraceId`，按实时 schema 检查可选性；该工具只申请票据，不上传文件字节。
 - `element_create`：`name`、`description`、`resource`、`tags`、`taskTraceId`。
 - `element_update`：在 create 字段基础上增加 `id`。先 `element_get`，再按完整对象更新，避免缺失字段被清空。
 
@@ -45,7 +48,7 @@
 当工具说明与 `who_am_i` 冲突时，采用更严格的工具级限制并停止不安全提交。当前必须保留的门禁包括：
 
 - `text_to_image` 和 `text_to_video` 不使用 Element，不传 `elements` 或 `<<<id>>>`；
-- Element 先 `element_get`，图片 Element 只交给实时 schema 明确支持 `elements` 的 `image_to_image` / `image_to_video`；视频 Element 只交给实时 schema 明确支持的 `image_to_video` 模型；
+- Element 先 `element_get`，图片 Element 可交给实时 schema 声明 `elements` 且工具说明允许该类型的 `image_to_image`、`image_to_video` 或 `motion_control`；视频 Element 只交给实时 schema 明确支持的 `image_to_video` 模型；
 - `motion_control` 必须有主体 `image`，并在动作库 `motionId` 与动作来源 `video` 中二选一；其余方向、分辨率和声音参数从实时模型 schema 获取；
 - 某模型要求特定素材 URL 来源而宿主无法提供时，该模型当前不可用于这次图片请求；不得用本地路径或任意外链绕过；
 - 不得传实时模型未声明的参数、输入名或枚举值。
@@ -73,11 +76,16 @@
 
 - 图片 Element：`resource.cover` 加 1–3 个 `resource.secondary[{name,inputType,url}]`，不与 `resource.video` 同传。
 - 视频 Element：`resource.video`，可按实时工具说明附带 `resource.voice`；不与 `cover` / `secondary` 同传。
-- `tags` 至少一个，并且只能使用实时工具说明给出的标签。
-- `element_delete` 会删除用户素材，必须在调用前获得明确确认。
+- 图片和视频 Element 均可在实时工具允许时附带 `resource.voice`；参考实现使用 MP3。
+- `tags` 至少一个，并且只能使用实时工具说明给出的标签；参考仓库列出 `角色`、`动物`、`道具`、`服饰`、`场景`、`特效`、`其他`，不把它当作永远不变的枚举。
+- 生成绑定需要 prompt 中的 `<<<id>>>` 与 `arguments[]` 中 `elements` 的 JSON 数组字符串一致，数组项为 `{id, bindName}`；仍须满足所选模型必填 inputs。
+- 更新必须先读取完整对象并合并修改，保留图片主体原 `resource.cover`；`secondary[]` 整组替换且仍需 1–3 张，不静默丢弃保留项或转换资源类型。
+- `element_delete` 会删除用户素材，仅在用户明确要求删除已确定 ID 的主体后调用；目标有歧义时先澄清。
 - 图片 Element 的主图无法通过普通更新安全替换时，应先说明需要删除并重建，再等待用户确认。
 
 ## 已知输出
+
+- `file_upload`：`ticket`、`uploadUrl`、`expireAt`，不是最终文件 URL。随后向 `uploadUrl` POST multipart 字段 `ticket` 和 `file`；上传服务的参考响应为 `{url, fileType, fileSize}`，最终以实际契约与响应确认上传成功。不要展示或记录票据及上传签名 URL。
 
 - 生成提交：`generationId`、`status`，可能含 `creditsConsumed` 和 `message`。
 - `query_tasks`：`generationId`、`status`、`createTime`、`finishTime`、`works[]`；作品可能含 `status`、`contentType`、`url`、`urlWithoutWatermark`、`coverUrl`、`coverUrlWithoutWatermark`。状态按大小写不敏感处理，并以实时响应判断终态。

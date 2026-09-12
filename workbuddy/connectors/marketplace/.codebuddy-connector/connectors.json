@@ -73,61 +73,6 @@
   ],
   "connectors": [
     {
-      "id": "linear-mcp",
-      "name": "Linear",
-      "name_en": "Linear",
-      "description": "Manage Issues, projects, documents, and releases in Linear. Create and update issues with assignees and labels, comment and reply in threads, create projects with milestones and status updates, manage documents and attachments, view sprint cycles and team statuses, search and review PR diffs.",
-      "description_zh": "管理 Linear 中的 Issues、项目、文档和发布。支持创建和更新 Issue 并指派负责人与标签，评论与讨论串回复，创建项目和里程碑及进度报告，管理文档和附件，查看 Sprint 周期与团队状态，搜索和 Code Review PR 变更。",
-      "description_en": "Manage Issues, projects, documents, and releases in Linear. Create and update issues with assignees and labels, comment and reply in threads, create projects with milestones and status updates, manage documents and attachments, view sprint cycles and team statuses, search and review PR diffs.",
-      "source": "linear-mcp",
-      "auth_mode": "server-side",
-      "provider_id": "linear",
-      "examples_zh": [
-        "在我的团队创建一个高优 Bug：「用户登录后页面白屏」，指派给我，打上 Bug 标签，关联到本周的 Sprint 周期",
-        "帮我把 ENG-42 这个 Issue 标记为已完成，然后添加一条评论说明修复方案，再创建一个子任务指派给 @李伟 跟进后续优化",
-        "创建一个名为「Q3 移动端改版」的项目，加入我的团队，设置下周五为目标日期，添加三个里程碑：设计稿交付、前端开发、集成测试",
-        "查一下我所有还未开始的 Issue，筛选出 Urgent 和 High 优先级的，按创建时间排列，顺便看下每条有没有人评论过",
-        "在项目「移动端改版」里新增一条状态更新，标题写「本周进度」，内容说明完成了登录模块和首页重构，剩下的支付模块推迟到下周"
-      ],
-      "examples_en": [
-        "In my team create a high-priority Bug titled 'Blank screen after login', assign to me, label as Bug, and add to the current sprint cycle",
-        "Mark issue ENG-42 as done, add a comment explaining the fix, and create a subtask assigned to @alex for follow-up optimization",
-        "Create a new project called 'Q3 Mobile Redesign' under my team, set target date to next Friday, with three milestones: Design Handoff, Frontend Dev, and Integration Testing",
-        "Find all my unstarted issues with Urgent or High priority, sorted by creation date, and check if any have comments on them",
-        "Add a status update to the 'Mobile Redesign' project titled 'This Week's Progress', noting login module and homepage refactor are done, payment module is pushed to next week"
-      ],
-      "visible_in": [
-        "external"
-      ]
-    },
-    {
-      "id": "canva-ai",
-      "name": "Canva可画",
-      "name_en": "Canva",
-      "description": "无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容",
-      "description_zh": "无缝调用Canva可画的设计能力。一句话生成海报、演示文稿、小红书封面等设计，通过文字描述调整尺寸、填充品牌模板及检索已有内容",
-      "description_en": "Access Canva's design capabilities: design creation and editing, asset and brand management, search, export, commenting, and more.",
-      "source": "canva-ai",
-      "type": "mcp",
-      "examples_zh": [
-        "帮我总结 Q2 产品策略文档",
-        "为我们的 AI 发布会生成一个风格大胆的 pitch deck",
-        "将我的小红书帖子调整为微信朋友圈尺寸并导出为 PNG",
-        "用产品发布内容填充我们的品牌模板，8 页，专业风格",
-        "将这个 PDF [插入链接] 导入 Canva可画"
-      ],
-      "examples_en": [
-        "Summarize my Q2 product strategy doc",
-        "Generate a pitch deck for our AI launch with a bold tone",
-        "Resize my XiaoHongShu post for WeChat Moments and export as a PNG",
-        "Populate our branded template with content for a product launch presentation, 8 slides, professional tone",
-        "Import this PDF [insert URL] into Canva"
-      ],
-      "visible_in": [
-        "external"
-      ]
-    },
-    {
       "id": "tdx-connector",
       "name": "通达信",
       "name_en": "Tongdaxin Finance",
@@ -700,6 +645,102 @@
         "Create an 'AIGC Research Materials' folder and copy the relevant files into it",
         "Create a password-protected share link for 'Weekly Report.docx' that expires in 7 days",
         "Save these meeting notes to Baidu Netdisk, or transfer a file from a download URL"
+      ]
+    },
+    {
+      "id": "tushare",
+      "name": "Tushare",
+      "name_zh": "Tushare",
+      "name_en": "Tushare",
+      "description": "Tushare provides financial data for research, covering A-shares, indices, ETFs/funds, financials, valuations, capital flows, announcements and news, sector concepts, and macroeconomic data.",
+      "description_zh": "Tushare 金融数据服务，支持 A股、指数、ETF/基金、财务、估值、资金流、公告新闻、板块概念与宏观数据等研究工作。",
+      "description_en": "Tushare provides financial data for research, covering A-shares, indices, ETFs/funds, financials, valuations, capital flows, announcements and news, sector concepts, and macroeconomic data.",
+      "source": "tushare",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "获取沪深300指数最新的行情数据",
+        "帮我查询最近三天涨势最好的10只股票",
+        "看下茅台今年以来涨了多少",
+        "帮我找高 ROE 低负债的公司",
+        "最近哪个板块最强"
+      ],
+      "examples_en": [
+        "Get the latest market data for the CSI 300 index",
+        "Find the top 10 stocks with the best performance over the last three days",
+        "Check how much Moutai has risen so far this year",
+        "Find companies with high ROE and low debt",
+        "Which sector has been the strongest recently"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "dnb-global-data",
+      "name": "邓白氏查全球",
+      "name_en": "D&B Global Search",
+      "description": "Access Dun & Bradstreet global business intelligence such as company profile, financial data, risk insights, corporate linkages and UBO through natural language.",
+      "description_zh": "通过自然语言查询邓白氏全球企业档案、财务数据、风险洞察、企业关联及最终受益人（UBO）等商业洞察。",
+      "description_en": "Access Dun & Bradstreet global business intelligence such as company profile, financial data, risk insights, corporate linkages and UBO through natural language.",
+      "source": "dnb-global-data",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询 Microsoft Corporation 的企业档案",
+        "查看 Apple Inc. 的信用备忘录",
+        "搜索香港地区名为Chow Tai Fook的企业",
+        "查询 Tesla 的公司负责人与联系人",
+        "识别Apple Inc.的股东及受益人"
+      ],
+      "examples_en": [
+        "Get company profile of Microsoft Corporation",
+        "Show credit memo for Apple Inc.",
+        "Search for companies named Chow Tai Fook in Hong Kong",
+        "Retrieve principals and contacts for Tesla",
+        "Identify the shareholder and beneficial owner of Apple Inc."
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "xhcj-mcp-announcements-news-policy",
+      "name": "新华财经资讯MCP",
+      "name_zh": "新华财经资讯MCP",
+      "name_en": "Xinhua Finance Announcements, News & Policy MCP",
+      "description": "Announcements, news and policy data, including stock news, sector news, hot topics, news search, bulk commodity flashes, forex flashes, stock flashes, announcement keyword search, and policy vector search.",
+      "description_zh": "公告、新闻、政策数据，包含股票资讯、板块资讯、热点新闻、资讯搜索、大宗快讯、外汇快讯、股票快讯、公告关键词检索、政策向量检索等",
+      "description_en": "Announcements, news and policy data, including stock news, sector news, hot topics, news search, bulk commodity flashes, forex flashes, stock flashes, announcement keyword search, and policy vector search.",
+      "source": "xhcj-mcp-announcements-news-policy",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询最近一周关于新能源汽车板块的热点新闻",
+        "检索某上市公司最新发布的股东大会公告",
+        "查找最新的国家宏观经济政策文件"
+      ],
+      "examples_en": [
+        "Find hot news about the new energy vehicle sector in the past week",
+        "Search for the latest shareholder meeting announcement of a listed company",
+        "Look up the latest national macroeconomic policy documents"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
       ]
     },
     {
@@ -1298,12 +1339,6 @@
       "description_en": "Access Canva's design capabilities: design creation and editing, asset and brand management, search, export, commenting, and more.",
       "source": "canva",
       "type": "mcp",
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ],
       "examples_zh": [
         "帮我总结 Q2 产品策略文档",
         "为我们的 AI 发布会生成一个风格大胆的 pitch deck",
@@ -1610,15 +1645,13 @@
     },
     {
       "id": "linkfox-product-selection",
-      "name": "Linkfox 选品",
-      "name_en": "Linkfox Product Selection",
-      "description": "Cross-border e-commerce product selection all-in-one AI toolkit, integrating multiple sub-capabilities including competitor lookup, ABA, Keepa, Sorftime, Jungle Scout, SellerSprite, SIF, Jiimore, business insights, and compliance detection—covering product selection, keywords, competitors, reviews, niches & trends, and compliance detection.",
-      "description_zh": "跨境电商选品一站式 AI 工具集，整合 竞品查询/ABA/Keepa/Sorftime/Jungle Scout/卖家精灵/SIF/极目/商业洞察/合规检测等 多项子能力，覆盖选品、关键词、竞品、评论、利基与趋势、合规检测。",
-      "description_en": "Cross-border e-commerce product selection all-in-one AI toolkit, integrating multiple sub-capabilities including competitor lookup, ABA, Keepa, Sorftime, Jungle Scout, SellerSprite, SIF, Jiimore, business insights, and compliance detection—covering product selection, keywords, competitors, reviews, niches & trends, and compliance detection.",
+      "name": "linkfox",
+      "name_zh": "LinkFox",
+      "name_en": "LinkFox",
+      "description": "跨境电商AI运营助手，涵盖竞品查询、市场调研、内容生成、营销广告、店铺运营、合规检测等多个子能力，提供多平台多数据源的跨境电商服务。",
+      "description_zh": "跨境电商AI运营助手，涵盖竞品查询、市场调研、内容生成、营销广告、店铺运营、合规检测等多个子能力，提供多平台多数据源的跨境电商服务。",
+      "description_en": "This AI-powered cross-border e-commerce operations assistant encompasses multiple sub-capabilities, including competitor analysis, market research, content generation, marketing and advertising, store operations, and compliance monitoring, providing cross-border e-commerce services across multiple platforms and data sources.",
       "source": "linkfox-product-selection",
-      "type": "mcp",
-      "auth_mode": "token",
-      "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "用 Jungle Scout 筛选美国站月销量 500+ 的商品",
         "查 Keepa 上某 ASIN 近 90 天价格和 BSR 趋势",
@@ -2498,9 +2531,9 @@
       "name": "Kling AI",
       "name_zh": "可灵 AI",
       "name_en": "Kling AI",
-      "description": "Turn every idea into a striking image or video. Kling AI is an AI image and video generator for creators. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, and single-shot or multi-shot video. Create posters, illustrations, portraits, product photos, e-commerce hero images, product listing images, product detail images, ad creatives, product showcase videos, marketing clips, e-commerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD.com, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation jobs, track progress, check task status, and download final images or videos. Looking for similar AI generators or alternatives like Hailuo AI, Seedance, Vidu, Jimeng, Runway, Pika, Sora, or Veo? Use Kling AI (KLING/ Kling /可灵)to build a high-quality Kling MCP creative workflow.",
-      "description_zh": "一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、Amazon、Shopify 等平台的内容创作。支持上传参考图片、查询剩余额度、提交生成任务、跟踪生成进度、查询任务状态并获取最终图片或视频结果。如果你正在搜索竞品、同类工具或替代方案，如海螺 AI（Hailuo AI）、Seedance（Seeddance）、Vidu、即梦（Jimeng）、Runway、Pika、Sora 或 Veo，也可以使用可灵（Kling / Kling AI）快速完成高品质图像与视频创作，搭建自己的 Kling MCP AI 创作工作流。",
-      "description_en": "Turn every idea into a striking image or video. Kling AI is an AI image and video generator for creators. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, and single-shot or multi-shot video. Create posters, illustrations, portraits, product photos, e-commerce hero images, product listing images, product detail images, ad creatives, product showcase videos, marketing clips, e-commerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD.com, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Upload reference images, check remaining credits, submit generation jobs, track progress, check task status, and download final images or videos. Looking for similar AI generators or alternatives like Hailuo AI, Seedance, Vidu, Jimeng, Runway, Pika, Sora, or Veo? Use Kling AI (KLING/ Kling /可灵)to build a high-quality Kling MCP creative workflow.",
+      "description": "Turn every idea into a striking image or video. Kling AI (Kling / 可灵AI) is an AI image generation and AI video generation connector for creators, designers, video producers, ecommerce sellers, advertising, marketing, and brand teams. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, reference-image creation, and single- or multi-shot video. Create posters, illustrations, portraits, product images, ecommerce hero images, Listing images, product detail graphics, ad creatives, product showcase videos, marketing clips, ecommerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Browse the subject library (Elements), view subject details, and create, update, delete, or reuse subjects. Browse and preview the motion library, then apply a saved motion or reference video to a subject image for motion-controlled video generation. Upload reference images, check remaining credits, submit generation tasks, track progress, query task status, and retrieve final images or videos. If you are searching for competitor tools, similar AI generators, or alternatives to Hailuo AI, Seedance (Seeddance), Vidu, Jimeng, Runway, Pika, Sora, or Veo, use Kling AI to build a high-quality Kling MCP creative workflow.",
+      "description_zh": "一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、Amazon、Shopify 等平台的内容创作。支持查看主体库（Element）列表和主体详情，创建、更新、删除及复用主体。支持查询和预览动作库，并将库中动作或参考视频应用到主体图进行动作控制生成。支持上传参考图片、查询剩余额度、提交生成任务、跟踪生成进度、查询任务状态并获取最终图片或视频结果。如果你正在搜索竞品、同类工具或替代方案，如海螺 AI（Hailuo AI）、Seedance（Seeddance）、Vidu、即梦（Jimeng）、Runway、Pika、Sora 或 Veo，也可以使用可灵（Kling / Kling AI）快速完成高品质图像与视频创作，搭建自己的 Kling MCP AI 创作工作流。",
+      "description_en": "Turn every idea into a striking image or video. Kling AI (Kling / 可灵AI) is an AI image generation and AI video generation connector for creators, designers, video producers, ecommerce sellers, advertising, marketing, and brand teams. In WorkBuddy, use natural language for text-to-image, image-to-image, text-to-video, image-to-video, reference-image creation, and single- or multi-shot video. Create posters, illustrations, portraits, product images, ecommerce hero images, Listing images, product detail graphics, ad creatives, product showcase videos, marketing clips, ecommerce short videos, social media videos, and cinematic content for Taobao, Tmall, JD, Pinduoduo, Douyin, Kuaishou, Xiaohongshu, TikTok, Amazon, Shopify, and more. Browse the subject library (Elements), view subject details, and create, update, delete, or reuse subjects. Browse and preview the motion library, then apply a saved motion or reference video to a subject image for motion-controlled video generation. Upload reference images, check remaining credits, submit generation tasks, track progress, query task status, and retrieve final images or videos. If you are searching for competitor tools, similar AI generators, or alternatives to Hailuo AI, Seedance (Seeddance), Vidu, Jimeng, Runway, Pika, Sora, or Veo, use Kling AI to build a high-quality Kling MCP creative workflow.",
       "source": "kling-ai-plugin",
       "type": "mcp",
       "minWorkbuddyVersion": "4.24.0",
@@ -2509,14 +2542,18 @@
         "使用可灵AI画一只身穿复古宇航服的小熊猫，漂浮在空间站舷窗前，地球蓝光映亮面部，细节丰富，电影级质感",
         "使用可灵AI制作一段 5 秒电影感视频：机甲战士从高空重砸地面，冲击波瞬间震开碎石与尘雾，镜头快速推近，充满力量感",
         "使用可灵AI制作一条 15 秒运动鞋营销短片：街头开场抓住注意力，三秒切出产品特写与穿着动态，结尾落在鞋身细节特写",
-        "使用可灵AI绘制一幅古风武侠人物，身着白衣，手持长剑，立于山巅之上，云雾缭绕，夕阳余晖映照，画面唯美，细节精致"
+        "使用可灵AI绘制一幅古风武侠人物，身着白衣，手持长剑，立于山巅之上，云雾缭绕，夕阳余晖映照，画面唯美，细节精致",
+        "使用可灵AI查看动作库，预览已保存的动作；选定后，将该动作应用到我提供的主体图片生成视频",
+        "使用可灵AI将我提供的角色正面图和侧面图保存为第一个可复用主体，命名为“小白”，方便后续创作时保持角色一致"
       ],
       "examples_en": [
         "Use Kling AI to create a cyberpunk-style cat sitting on a neon-lit rooftop.",
         "Use Kling AI to paint a red panda in a vintage spacesuit, floating in front of a space station window with the Earth's blue glow illuminating its face, rich in detail, with a cinematic quality.",
         "Use Kling AI to generate a 5‑second cinematic video: a mech warrior slams down from height onto the ground, sending out a shockwave that instantly blasts apart rubble and dust, with the camera rapidly pushing in for a powerful impact.",
         "Use Kling AI to produce a 15‑second sport shoe marketing clip: open with an urban street scene to grab attention, cut to a product close‑up and dynamic wearing shots within three seconds, and end with a detailed close‑up of the shoe's upper.",
-        "Use Kling AI to paint a traditional Chinese martial arts figure in white robes, holding a long sword, standing on a mountain peak surrounded by mist and clouds, with the golden glow of sunset, beautifully composed and finely detailed."
+        "Use Kling AI to paint a traditional Chinese martial arts figure in white robes, holding a long sword, standing on a mountain peak surrounded by mist and clouds, with the golden glow of sunset, beautifully composed and finely detailed.",
+        "Use Kling AI to browse the motion library and preview saved motions; after I select one, apply it to my subject image to generate a video.",
+        "Use Kling AI to save the front and side views of my character as my first reusable Element, named “Xiaobai”, to help keep the character consistent in future creations."
       ],
       "visible_in": [
         "internal",
@@ -2588,9 +2625,9 @@
       "name": "腾讯公益机构服务平台",
       "name_zh": "腾讯公益机构服务平台",
       "name_en": "Tencent Charity Org Platform",
-      "description": "Tencent Charity organization platform connector: after authorization, read your organization's basic info and qualification certificates, charity project details, fundraising and disbursement data, financial disclosure records, and platform to-do items, to assist with organization operation analysis and project management.",
-      "description_zh": "腾讯公益机构服务平台连接器：授权后可读取您机构的基本信息与资质证件、公益项目详情、筹款与拨付数据、财务披露记录及平台待办事项，用于为您提供机构运营分析与项目管理辅助服务。",
-      "description_en": "Tencent Charity organization platform connector: after authorization, read your organization's basic info and qualification certificates, charity project details, fundraising and disbursement data, financial disclosure records, and platform to-do items, to assist with organization operation analysis and project management.",
+      "description": "Tencent Charity organization platform connector: connect and use the features of the Tencent Charity organization platform in natural language.",
+      "description_zh": "腾讯公益机构服务平台连接器：用自然语言连接并使用腾讯公益机构服务平台的功能。",
+      "description_en": "Tencent Charity organization platform connector: connect and use the features of the Tencent Charity organization platform in natural language.",
       "source": "gongyi-open-mcp",
       "type": "mcp",
       "version": "1.0.0",
@@ -2680,10 +2717,11 @@
     {
       "id": "salestouch",
       "name": "SalesTouch 经营执行",
+      "name_zh": "SalesTouch 经营执行",
       "name_en": "SalesTouch Business Operations",
-      "description": "Connect SalesTouch to configure organization profiles, units, role permissions, employee invitations, reporting scopes, and sales processes, then govern sales and non-sales execution with evidence-backed management reviews.",
-      "description_zh": "通过自然语言连接 SalesTouch，完成组织资料、部门、角色权限、员工邀请、下属管理范围与销售流程配置，并处理销售执行、非销售工作、绩效、内部调研和经营汇总。",
-      "description_en": "Connect SalesTouch to configure organization profiles, units, role permissions, employee invitations, reporting scopes, and sales processes, then govern sales and non-sales execution with evidence-backed management reviews.",
+      "description": "Connect SalesTouch to configure organization profiles, units, role permissions, employee invitations, reporting scopes, and sales processes, then govern B2B and B2C sales execution and non-sales work with evidence-backed management reviews.",
+      "description_zh": "通过自然语言连接 SalesTouch，完成组织资料、部门、角色权限、员工邀请、下属管理范围与销售流程配置，并处理 B2B/B2C 销售执行、非销售工作、绩效、内部调研和经营汇总。",
+      "description_en": "Connect SalesTouch to configure organization profiles, units, role permissions, employee invitations, reporting scopes, and sales processes, then govern B2B and B2C sales execution and non-sales work with evidence-backed management reviews.",
       "source": "salestouch",
       "type": "mcp",
       "minWorkbuddyVersion": "4.24.0",
@@ -2809,15 +2847,17 @@
       "id": "mglc",
       "name": "芒果灵创 CLI",
       "name_en": "LumeCreate CLI",
-      "description": "Create and manage AI-generated images, videos, scripts, art settings and storyboard content with Mango LingChuang.",
-      "description_zh": "通过命令行调用芒果灵创 AI 视频创作能力：可使用 30+ 模型生成图片和视频，管理项目、剧本、美术设定与分镜故事板，跟踪任务状态和生成结果。",
-      "description_en": "Use Mango LingChuang's AI video creation capabilities from the command line. Generate images and videos with 30+ models, manage projects, scripts, art settings and storyboards, and track task status and results.",
+      "description": "Create and manage AI-generated images, videos, audio, scripts, art settings and storyboard content with Mango LingChuang.",
+      "description_zh": "通过命令行调用芒果灵创 AI 视频创作能力：可使用 30+ 模型生成图片、音频（音乐、音效、配音）和视频，管理音色库、项目、剧本、美术设定与分镜故事板，跟踪任务状态和生成结果。",
+      "description_en": "Use Mango LingChuang's AI video creation capabilities from the command line. Generate images, audio (music, score, dubbing), and videos with 30+ models, manage timbres, projects, scripts, art settings and storyboards, and track task status and results.",
       "source": "mglc",
       "type": "cli",
-      "version": "0.1.11",
-      "minWorkbuddyVersion": "4.24.0",
+      "version": "0.1.13",
+      "minWorkbuddyVersion": "5.0.0",
       "examples_zh": [
         "生成一段雨后街道的电影感视频",
+        "生成一首歌颂平凡人物的音乐",
+        "给这个场景生成一段配音：一个普通人在雨后街道上走着，他正在找他的朋友。旁白：“一个平凡的普通人正在找他的朋友。”",
         "创建一个新的项目并上传剧本",
         "根据剧本提取人物设定并生成角色形象图",
         "将剧本拆解为文字脚本并上传到分镜故事板",
@@ -2826,6 +2866,8 @@
       ],
       "examples_en": [
         "Generate a cinematic video of a rainy street after the rain",
+        "Generate a song that celebrates ordinary people",
+        "Create a voiceover for this scene: an ordinary person walks down a rainy street looking for their friend. Narration: 'An ordinary person is looking for their friend.'",
         "Create a new project and upload a script",
         "Extract character settings from the script and generate character images",
         "Break the script into text scripts and upload them to the storyboard",
@@ -2931,6 +2973,31 @@
         "iOA",
         "cloudhosted",
         "selfhosted"
+      ]
+    },
+    {
+      "id": "ifind-mcp",
+      "name": "同花顺iFinD金融数据查询",
+      "name_zh": "同花顺iFinD金融数据查询",
+      "name_en": "THS iFinD Financial Data Query",
+      "description": "同花顺iFinD金融数据查询，查询股票、基金、宏观经济、行业经济、新闻公告、债券、港美股、指数板块及期货期权数据；通过内置智能问数算法，仅少量工具即可覆盖海量投研级金融数据指标，其中A股、中国公募基金、债券交易所、国内指数共4类市场支持日内高频/实时行情的level1数据，同时支持智能选股、选基、宏观行业经济指标搜索、金融公告资讯搜索等服务",
+      "description_en": "THS iFinD Financial Data Query: Access comprehensive data on stocks, funds, macroeconomics, industry economics, news & announcements, bonds, HK/US stocks, indices, sectors, futures, and options. Powered by built-in intelligent natural language query algorithms, it covers a vast array of investment-research-grade financial metrics with minimal tooling. It supports Level-1 intraday high-frequency/real-time market data for four major markets: A-shares, Chinese public mutual funds, bond exchanges, and domestic indices. Additional features include smart stock screening, fund selection, macro/industry economic indicator search, and financial announcement & news search.",
+      "source": "ifind-mcp",
+      "auth_mode": "server-side",
+      "provider_id": "ifind-mcp",
+      "examples_zh": [
+        "新能源汽车行业市值高于500亿的股票",
+        "同花顺、东方财富、恒生电子最新ROA、ROE和利润增速",
+        "六氟磷酸锂的近期价格走势",
+        "脑机接口技术近期进展资讯",
+        "查询上市公司年报/招股书中与机器人灵巧手相关内容"
+      ],
+      "examples_en": [
+        "Stocks in the new energy vehicle industry with a market cap exceeding 50 billion CNY",
+        "Latest ROA, ROE, and profit growth rate of THS, East Money, and Hundsun Technologies",
+        "Recent price trend of lithium hexafluorophosphate",
+        "Recent news and developments in brain-computer interface technology",
+        "Search for content related to robotic dexterous hands in listed companies' annual reports or prospectuses"
       ]
     },
     {
@@ -3088,14 +3155,14 @@
     {
       "id": "dcs-cloud",
       "name": "DCS Cloud",
+      "name_zh": "DCS Cloud",
       "name_en": "DCS Cloud",
-      "description": "Bootstrap the dcs CLI (download + auto-update + PAT login), then operate DCS Cloud by running the CLI directly.",
-      "description_zh": "引导 dcs CLI（下载、自动更新、PAT 登录），之后直接执行 CLI 操作 DCS Cloud：项目、任务、工作流、计费、数据文件。用户需在云平台个人中心创建个人访问令牌(PAT)并粘贴到连接器。",
-      "description_en": "Bootstrap the dcs CLI (download, auto-update, PAT login), then run the CLI directly to operate DCS Cloud: projects, tasks, workflows, billing, and data files. Create a Personal Access Token (PAT) in the cloud platform profile page and paste it into the connector.",
+      "description": "DCS CLI，连接后通过个人访问令牌（PAT）登录认证，即可操作 DCS 云平台：支持项目管理、组学数据检索与传输、离线分析任务投递与查询、工作流管理等。使用前需在云平台个人中心创建 PAT，并粘贴至连接器完成绑定。",
+      "description_zh": "DCS CLI，连接后通过个人访问令牌（PAT）登录认证，即可操作 DCS 云平台：支持项目管理、组学数据检索与传输、离线分析任务投递与查询、工作流管理等。使用前需在云平台个人中心创建 PAT，并粘贴至连接器完成绑定。",
+      "description_en": "DCS CLI allows you to log in to the DCS cloud platform using a Personal Access Token (PAT). This platform supports features such as project management, group data retrieval and transmission, offline analysis task submission and query, and workflow management. Before using the platform, you must create a PAT in your personal account and paste it into the connector to complete the connection.",
       "source": "dcs-cloud",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "2.0.0",
       "minWorkbuddyVersion": "5.0.0",
       "examples_zh": [
         "列出我所有的项目",
@@ -3535,28 +3602,30 @@
       "id": "camscanner-mcp",
       "name": "扫描全能王",
       "name_en": "CamScanner",
-      "description": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, receipt/invoice recognition, cloud document search, and cloud document saving.",
-      "description_zh": "智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、发票/票据识别、云文档搜索、文档云端保存等。",
-      "description_en": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, receipt/invoice recognition, cloud document search, and cloud document saving.",
+      "description": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, cloud document saving, search, download, move, and folder management.",
+      "description_zh": "智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、文档云端保存、云文档搜索/下载/移动/文件夹管理等。",
+      "description_en": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, cloud document saving, search, download, move, and folder management.",
       "source": "camscanner-mcp",
       "type": "mcp",
       "examples_zh": [
         "帮我把这张图片转成Word",
         "把这个PDF转成Excel",
         "帮我增强一下这张照片",
-        "识别这张图片上的文字",
         "把这几张扫描件合并成一个PDF",
         "帮我识别这张发票",
-        "找一下我的合同文档"
+        "下载我最近的云文档到本地",
+        "把这个文档移动到工作文件夹",
+        "列出我的云端文件夹"
       ],
       "examples_en": [
         "Convert this image to Word",
         "Convert this PDF to Excel",
         "Enhance this photo",
-        "Recognize text in this image",
         "Merge these scanned pages into a PDF",
         "Recognize this receipt",
-        "Search my cloud documents"
+        "Download my recent cloud document",
+        "Move this document to a work folder",
+        "List my cloud folders"
       ],
       "visible_in": [
         "internal",
@@ -3618,40 +3687,6 @@
         "Query the hourly network access success rate at the Chengdu Experimental Bureau site for today",
         "Query the number of APs and their online status at the Chengdu Experimental Bureau site",
         "Check the CPU and memory usage of device 219801A5ND823CP002X3"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
-      "id": "tushare",
-      "name": "Tushare",
-      "name_zh": "Tushare",
-      "name_en": "Tushare",
-      "description": "Tushare provides financial data for research, covering A-shares, indices, ETFs/funds, financials, valuations, capital flows, announcements and news, sector concepts, and macroeconomic data.",
-      "description_zh": "Tushare 金融数据服务，支持 A股、指数、ETF/基金、财务、估值、资金流、公告新闻、板块概念与宏观数据等研究工作。",
-      "description_en": "Tushare provides financial data for research, covering A-shares, indices, ETFs/funds, financials, valuations, capital flows, announcements and news, sector concepts, and macroeconomic data.",
-      "source": "tushare",
-      "type": "mcp",
-      "auth_mode": "token",
-      "version": "1.0.0",
-      "minWorkbuddyVersion": "4.23.0",
-      "examples_zh": [
-        "获取沪深300指数最新的行情数据",
-        "帮我查询最近三天涨势最好的10只股票",
-        "看下茅台今年以来涨了多少",
-        "帮我找高 ROE 低负债的公司",
-        "最近哪个板块最强"
-      ],
-      "examples_en": [
-        "Get the latest market data for the CSI 300 index",
-        "Find the top 10 stocks with the best performance over the last three days",
-        "Check how much Moutai has risen so far this year",
-        "Find companies with high ROE and low debt",
-        "Which sector has been the strongest recently"
       ],
       "visible_in": [
         "internal",
@@ -4613,28 +4648,34 @@
       "id": "shanlong-claw",
       "name": "天财商龙餐饮SaaS",
       "name_en": "Tiancai Shanglong Catering SaaS",
-      "description": "Tiancai Shanglong (est. 1998) is a leading Chinese catering digitalization solutions provider. This connector introduces the company and enterprise-edition capability scope (Business Analyst, Member Operations Expert, Cost Control Expert). For concrete business analysis, download the enterprise edition and use the corresponding experts and skills.",
-      "description_zh": "天财商龙成立于1998年，是中国餐饮数字化整体解决方案服务商。连接器提供公司介绍与企业版能力范围说明；具体经营、会员、成本等业务分析请下载企业版，使用经营分析师、会员运营专家、成本管控专家及其技能完成。",
-      "description_en": "Tiancai Shanglong (est. 1998) is a leading Chinese catering digitalization solutions provider. This connector introduces the company and enterprise-edition capability scope (Business Analyst, Member Operations Expert, Cost Control Expert). For concrete business analysis, download the enterprise edition and use the corresponding experts and skills.",
+      "description": "天财商龙成立于1998年，是中国餐饮数字化整体解决方案服务商。连接器提供公司介绍，以及会员数据概览、用户画像、消费、储值、复购、卡券、积分与营销活动分析（仅 CRM8）；并负责 CLI 安装与账号认证。业务查询使用当前账号权限范围内的固定只读接口。",
+      "description_zh": "天财商龙成立于1998年，是中国餐饮数字化整体解决方案服务商。连接器提供公司介绍，以及会员数据概览、用户画像、消费、储值、复购、卡券、积分与营销活动分析（仅 CRM8）；并负责 CLI 安装与账号认证。业务查询使用当前账号权限范围内的固定只读接口。",
+      "description_en": "Tiancai Shanglong company introduction and CRM8 member analytics—data overview, profile, consumption, recharge, repurchase, coupons, points, and campaigns—with CLI installation and authentication. Queries use fixed read-only commands within the current account permissions.",
       "source": "shanlong-claw",
       "type": "cli",
-      "version": "1.0.165",
+      "version": "1.0.168",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "天财商龙是做什么的",
-        "企业版有哪些专家和能力",
-        "经营分析该用哪个专家",
-        "会员增长和营销活动去哪里查",
-        "库存和成本卡异常怎么分析",
-        "具体业务查询需要下载企业版吗"
+        "会员数据概览整体表现怎么样",
+        "分析本月新增会员的用户画像",
+        "分析近一周会员消费表现",
+        "分析近一个月储值整体情况",
+        "最近复购率和复购趋势怎么样",
+        "最近发券用券效果怎么样",
+        "积分获得和兑换情况怎么样",
+        "分析最近7天的会员营销活动效果"
       ],
       "examples_en": [
         "What does Tiancai Shanglong do",
-        "What experts and capabilities does the enterprise edition include",
-        "Which expert should I use for operations analysis",
-        "Where to analyze member growth and campaigns",
-        "How to analyze inventory and recipe cost anomalies",
-        "Do I need the enterprise edition for business queries"
+        "How is the member data overview performing",
+        "Analyze the profile of members newly joined this month",
+        "Analyze member consumption for the last week",
+        "Analyze overall recharge for the last month",
+        "How are repurchase rate and trends lately",
+        "How are coupon issuance and redemption performing",
+        "How are points earned and redeemed",
+        "Analyze member campaigns for the last 7 complete days"
       ],
       "visible_in": [
         "internal",
@@ -4821,38 +4862,6 @@
       ]
     },
     {
-      "id": "dnb-global-data",
-      "name": "邓白氏查全球",
-      "name_en": "D&B Global Search",
-      "description": "Access Dun & Bradstreet global business intelligence such as company profile, financial data, risk insights, corporate linkages and UBO through natural language.",
-      "description_zh": "通过自然语言查询邓白氏全球企业档案、财务数据、风险洞察、企业关联及最终受益人（UBO）等商业洞察。",
-      "description_en": "Access Dun & Bradstreet global business intelligence such as company profile, financial data, risk insights, corporate linkages and UBO through natural language.",
-      "source": "dnb-global-data",
-      "type": "mcp",
-      "auth_mode": "token",
-      "minWorkbuddyVersion": "4.23.0",
-      "examples_zh": [
-        "查询 Microsoft Corporation 的企业档案",
-        "查看 Apple Inc. 的信用备忘录",
-        "搜索香港地区名为Chow Tai Fook的企业",
-        "查询 Tesla 的公司负责人与联系人",
-        "识别Apple Inc.的股东及受益人"
-      ],
-      "examples_en": [
-        "Get company profile of Microsoft Corporation",
-        "Show credit memo for Apple Inc.",
-        "Search for companies named Chow Tai Fook in Hong Kong",
-        "Retrieve principals and contacts for Tesla",
-        "Identify the shareholder and beneficial owner of Apple Inc."
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
       "id": "intco-ai-platform",
       "name": "英科AI中台",
       "name_zh": "英科AI中台",
@@ -4938,109 +4947,25 @@
       ]
     },
     {
-      "id": "xhcj-mcp-announcements-news-policy",
-      "name": "新华财经资讯MCP",
-      "name_zh": "新华财经资讯MCP",
-      "name_en": "Xinhua Finance Announcements, News & Policy MCP",
-      "description": "Announcements, news and policy data, including stock news, sector news, hot topics, news search, bulk commodity flashes, forex flashes, stock flashes, announcement keyword search, and policy vector search.",
-      "description_zh": "公告、新闻、政策数据，包含股票资讯、板块资讯、热点新闻、资讯搜索、大宗快讯、外汇快讯、股票快讯、公告关键词检索、政策向量检索等",
-      "description_en": "Announcements, news and policy data, including stock news, sector news, hot topics, news search, bulk commodity flashes, forex flashes, stock flashes, announcement keyword search, and policy vector search.",
-      "source": "xhcj-mcp-announcements-news-policy",
-      "type": "mcp",
-      "auth_mode": "token",
-      "version": "1.0.0",
-      "minWorkbuddyVersion": "4.23.0",
-      "examples_zh": [
-        "查询最近一周关于新能源汽车板块的热点新闻",
-        "检索某上市公司最新发布的股东大会公告",
-        "查找最新的国家宏观经济政策文件"
-      ],
-      "examples_en": [
-        "Find hot news about the new energy vehicle sector in the past week",
-        "Search for the latest shareholder meeting announcement of a listed company",
-        "Look up the latest national macroeconomic policy documents"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
-      "id": "futu-mcp",
-      "name": "富途牛牛MCP",
-      "name_zh": "富途牛牛MCP",
-      "name_en": "Futunn MCP",
-      "description": "Futunn MCP is a stock trading and market data connector. It supports multi-market (HK, US, CN, SG, JP, CA, etc.) quote queries and order execution, providing K-lines, capital flow, option chains, financial statements, research reports, institutional holdings, economic calendar, and comprehensive financial data services.",
-      "description_zh": "富途牛牛MCP是股票交易与行情数据连接器。支持港股、美股、A股、新加坡、日本、加拿大等多市场行情查询与交易下单，提供K线、资金流向、期权链、财报、研报、机构持仓、经济日历等全方位金融数据服务。",
-      "description_en": "Futunn MCP is a stock trading and market data connector. It supports multi-market (HK, US, CN, SG, JP, CA, etc.) quote queries and order execution, providing K-lines, capital flow, option chains, financial statements, research reports, institutional holdings, economic calendar, and comprehensive financial data services.",
-      "source": "futu-mcp",
-      "type": "mcp",
-      "version": "1.0.0",
-      "examples_zh": [
-        "查一下腾讯(00700)最新的股价和成交量",
-        "帮我下单买入100股苹果(AAPL)",
-        "查看我的港股持仓盈亏情况",
-        "分析一下比亚迪最近的资金流入流出情况",
-        "查看腾讯的期权链，找出下月到期的看涨期权",
-        "帮我筛选美股市场中市盈率低于20、ROE大于15%的股票"
-      ],
-      "examples_en": [
-        "Check the latest price and volume for Tencent (00700)",
-        "Place an order to buy 100 shares of AAPL",
-        "Show my HK stock portfolio P&L",
-        "Analyze recent capital inflow/outflow for BYD",
-        "Show Tencent's option chain for next month's expiry calls",
-        "Screen US stocks with PE below 20 and ROE above 15%"
-      ]
-    },
-    {
       "id": "xrxs",
       "name": "薪人薪事",
       "name_zh": "薪人薪事",
       "name_en": "xrxs",
-      "description": "Manage XRXS HR SaaS via CLI.",
-      "description_zh": "通过自然语言管理薪人薪事：覆盖组织员工、考勤假期、招聘人才、绩效人效、薪酬个税等全模块 HR 场景，让 AI 助手成为懂业务的 HR 虚拟员工。",
-      "description_en": "Manage XRXS HR SaaS with natural language. Covers org & employee, attendance & leave, recruitment, performance, payroll and tax — turning your AI assistant into a business-savvy HR virtual employee.",
+      "description": "Manage XRXS HR SaaS via MCP.",
+      "description_zh": "通过自然语言管理薪人薪事员工入职、离职及考勤月度报表归档等 HR 场景。",
+      "description_en": "Manage XRXS HR SaaS onboarding, offboarding and attendance monthly report archive via natural language.",
       "source": "xrxs",
-      "type": "cli",
+      "type": "mcp",
       "version": "1.0.0",
       "examples_zh": [
         "查询本周预计入职的待入职员工是否有缺失的必填信息",
-        "检查本周预计转正员工的转正风险",
         "检查本月预计离职员工的待处理事项",
-        "帮我查下张三的个人信息",
-        "帮我看看研发部目前有多少人，分别是什么岗位",
-        "帮我重新计算下当前考勤账套月的报表",
-        "帮我提醒下当前账套月考勤未确认的员工",
-        "帮我查询刘备的假期余额情况",
-        "帮我看看销售部目前有哪些正在招聘的职位",
-        "推荐下华东销售负责人的候选人",
-        "给刘玄德安排明天下午 3 点的现场面试，面试官是叶超前",
-        "当前进行中的考核方案都有哪些？",
-        "分析下 2026Q2 销售部季度考核结果",
-        "帮我重新计算下当前工资账套月的报表",
-        "帮我冻结当前最新账套月的工资报表",
-        "帮我发送当前工资账套月的全部工资条"
+        "帮我归档本月考勤组报表"
       ],
       "examples_en": [
         "Check whether this week's expected new hires have any missing required information",
-        "Check the regularization risks for employees expected to be confirmed this week",
         "Check pending to-do items for employees expected to leave this month",
-        "Query Zhang San's personal information",
-        "Show me the current headcount and roles in the R&D department",
-        "Recalculate the attendance report for the current attendance period",
-        "Remind employees who have not yet confirmed their attendance for the current period",
-        "Query Liu Bei's remaining leave balance",
-        "List the currently open positions in the sales department",
-        "Recommend candidates for the East China sales head position",
-        "Schedule a 3 PM on-site interview tomorrow for Liu Xuande with Ye Chaoqian as the interviewer",
-        "List all currently active performance appraisal schemes",
-        "Analyze the 2026 Q2 sales department quarterly performance results",
-        "Recalculate the payroll report for the current payroll period",
-        "Freeze the latest payroll report for the current period",
-        "Batch-send all pay slips for the current payroll period"
+        "Archive this month's attendance group reports"
       ],
       "visible_in": [
         "internal",
@@ -5198,23 +5123,1171 @@
       "description_en": "Query partnered pharma brands' pharmacy-box home-page data via the Pharmacy Box BI MCP: run multi-dimension data analysis and generate insight reports to inform brand marketing and operating strategy.",
       "source": "tencent-yaoxiang-bi",
       "type": "mcp",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minWorkbuddyVersion": "4.22.12",
       "examples_zh": [
-        "帮我生成信尔美2026年度的数据洞察报告",
-        "查询信尔美2026年1-6月的月均扫码人数",
-        "帮我生成信尔美2026上半年「整体市场规模和药箱用户分析」的数据报告"
+        "帮我生成<药品名>2026年度的数据洞察报告",
+        "查询<药品名>2026年1-6月的月均扫码人数",
+        "帮我生成<药品名>2026上半年「整体市场规模和药箱用户分析」的数据报告"
       ],
       "examples_en": [
-        "Generate Xinermei's 2026 annual data insight report",
-        "Query Xinermei's average monthly scan-user count from Jan to Jun 2026",
-        "Generate Xinermei's 1H 2026 report on market size and pharmacy-box user analysis"
+        "Generate a 2026 annual data insight report for <drug name>",
+        "Query the average monthly scan-user count of <drug name> from Jan to Jun 2026",
+        "Generate an H1 2026 'market size and pharmacy-box user analysis' report for <drug name>"
       ],
       "visible_in": [
         "internal",
         "iOA",
         "cloudhosted",
         "selfhosted"
+      ]
+    },
+    {
+      "id": "primematrix-company",
+      "name": "质数幻方·企业数据",
+      "name_zh": "质数幻方·企业数据",
+      "name_en": "Prime Matrix Company",
+      "description": "Query enterprise entity data: fuzzy company search with precise name matching, registration details, change records, shareholders and capital contributions, key personnel, contact information, beneficial owners, branches, listing information, and external investments.",
+      "description_zh": "提供企业主体的身份识别与基础信息查询服务，包含企业模糊搜索、受益所有人结果、企业基本信息、变更信息、企业联系方式、主要人员信息、企业股东信息等工具。",
+      "description_en": "Query enterprise entity data: fuzzy company search with precise name matching, registration details, change records, shareholders and capital contributions, key personnel, contact information, beneficial owners, branches, listing information, and external investments.",
+      "source": "primematrix-company",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询小米科技有限责任公司的工商基本信息",
+        "查看宁德时代新能源科技股份有限公司的股东及对外投资情况",
+        "筛选北京近五年成立的人工智能企业"
+      ],
+      "examples_en": [
+        "Show the company registration details of Xiaomi Technology Co., Ltd.",
+        "Find the shareholders and external investments of CATL",
+        "Find AI companies established in Beijing during the last five years"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "es",
+      "name": "腾讯云 Elasticsearch Service",
+      "name_en": "Tencent Cloud Elasticsearch Service",
+      "description": "Operate Tencent Cloud Elasticsearch Service (ES) via MCP: list instances, inspect cluster health/nodes/shards/thread pools, browse index settings and mappings, query monitoring metrics and cluster logs, diagnose performance and unassigned shards, and manage clusters (scale nodes/disk, restart, rollover, aliases, Kibana access, Logstash pipelines).",
+      "description_zh": "通过 MCP 操作腾讯云 Elasticsearch Service（ES）：查询实例列表，查看集群健康、节点、分片与线程池状态，浏览索引配置与 Mapping，查询监控指标与集群日志，诊断集群性能与分片未分配问题，并管理集群（节点/磁盘变配、重启、索引 Rollover、别名、Kibana 访问、Logstash 管道）。",
+      "description_en": "Operate Tencent Cloud Elasticsearch Service (ES) via MCP: list instances, inspect cluster health/nodes/shards/thread pools, browse index settings and mappings, query monitoring metrics and cluster logs, diagnose performance and unassigned shards, and manage clusters (scale nodes/disk, restart, rollover, aliases, Kibana access, Logstash pipelines).",
+      "source": "es",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我查一下 ap-guangzhou 地域下有哪些 ES 集群实例",
+        "看看 es-xxxxxxxx 集群的健康状态，有没有未分配的分片",
+        "查一下 es-xxxxxxxx 最近一小时的 CPU、JVM 内存和磁盘使用率监控数据",
+        "帮我分析 es-xxxxxxxx 集群写入变慢的原因，看下线程池和热点线程",
+        "列出 es-xxxxxxxx 中占用磁盘最大的索引，并查看它的 Mapping 和 Settings",
+        "帮我给 es-xxxxxxxx 集群扩容数据节点数量到 6 个"
+      ],
+      "examples_en": [
+        "List the Elasticsearch instances in ap-guangzhou",
+        "Check the cluster health of es-xxxxxxxx and whether there are unassigned shards",
+        "Show CPU, JVM memory and disk usage metrics of es-xxxxxxxx for the last hour",
+        "Diagnose why indexing on es-xxxxxxxx is slow, check thread pools and hot threads",
+        "List the largest indices on es-xxxxxxxx and show their mappings and settings",
+        "Scale the data nodes of es-xxxxxxxx up to 6"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "aiclass-teaching",
+      "name": "腾讯未来教室",
+      "name_en": "Tencent Future Classroom",
+      "description": "Access Tencent Future Classroom (aiclass) teaching services via MCP.",
+      "description_zh": "接入腾讯未来教室（aiclass）：查询未来教室课程列表、把 AI 生成的图片以「教学打卡」发布到未来教室小程序、对输出结果提交反馈。",
+      "description_en": "Access Tencent Future Classroom (aiclass): list your courses, publish AI-generated images as study check-in posts, and submit feedback on results.",
+      "source": "aiclass-teaching",
+      "type": "mcp",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "4.20.0",
+      "examples_zh": [
+        "查看我在未来教室的课程",
+        "把这几张图片发布到XX课程的教学打卡",
+        "对这个结果不满意，我要反馈"
+      ],
+      "examples_en": [
+        "Show my Future Classroom courses",
+        "Publish these images as a study check-in to the course",
+        "I'm not satisfied with this result, submit feedback"
+      ]
+    },
+    {
+      "id": "meitu-ai",
+      "name": "MeituHub AI影像创作",
+      "name_en": "MeituHub AI Media Creation",
+      "description": "Use MeituHub in WorkBuddy to create and edit images and videos, produce marketing and e-commerce content, and run custom workflows.",
+      "description_zh": "在 WorkBuddy 中使用 MeituHub 完成图片与视频生成编辑、营销和电商内容创作，并运行自定义工作流。",
+      "description_en": "Use MeituHub in WorkBuddy to create and edit images and videos, produce marketing and e-commerce content, and run custom workflows.",
+      "source": "meitu-ai",
+      "type": "cli",
+      "version": "0.1.3",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "生成游戏角色立绘、三视图和多风格版本",
+        "批量替换商品图背景，并输出白底图和场景图",
+        "生成营销海报和配套文案，并适配多个尺寸",
+        "根据课题生成课件结构、配文和插图素材",
+        "让这张人物照片生成一段自然转身的视频",
+        "为重复业务场景创建并运行一个自定义工作流"
+      ],
+      "examples_en": [
+        "Create game character concept art, turnarounds, and style variations",
+        "Replace product photo backgrounds in batches and output white and lifestyle images",
+        "Create marketing posters and copy in multiple sizes",
+        "Generate a lesson deck structure, copy, and illustrations from a topic",
+        "Animate this portrait into a natural turning video",
+        "Create and run a custom workflow for a recurring business scenario"
+      ]
+    },
+    {
+      "id": "yunzhi-mcp",
+      "name": "云指建站MCP服务",
+      "name_en": "YunZhi Site Builder MCP Service",
+      "description": "Create and modify website pages, manage site data such as products and articles via MCP, and deliver end-to-end from requirements to published pages with skills.",
+      "description_zh": "通过 MCP 服务创建/修改网站页面，管理网站的产品、文章等数据，与 Skill 结合实现从需求到页面的端到端自动交付，大幅简化建站流程。",
+      "description_en": "Create and modify website pages, manage site data such as products and articles via MCP, and deliver end-to-end from requirements to published pages with skills.",
+      "source": "yunzhi-mcp",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我创建一个网站首页",
+        "帮我上传一个产品",
+        "把网站首页的横幅换成这张图，并更新宣传文案",
+        "给网站写一篇公司介绍文章并发布到文章栏目"
+      ],
+      "examples_en": [
+        "Help me create a website homepage",
+        "Help me upload a product",
+        "Replace the homepage banner with this image and update the promotional copy",
+        "Write a company introduction article and publish it to the articles section"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "oiioii",
+      "name": "OiiOii",
+      "name_en": "OiiOii",
+      "description": "OiiOii is the world's first AI agent for animated and live-action video creation. Simply describe your idea, and OiiOii's cinematic professional agent team will instantly turn fragmented concepts into complete stories, advertisements, and finished videos. OiiOii also deeply integrates short-form comic drama workflows, enabling one-click completion of video stylization for global markets, script localization, multi-episode breakdown, and final production.",
+      "description_zh": "OiiOii 是全球首个 AI 动画/真人视频创作 Agent。只需描述创意，OiiOii 的影视级专业 Agents 团队就会即刻将零散的想法转化为完整的故事、广告成片；同时，OiiOii 还深度整合短漫剧工作流，无论是视频转绘出海、剧本本土化出海、多剧集拆分到成片，都能一键完成。",
+      "description_en": "OiiOii is the world's first AI agent for animated and live-action video creation. Simply describe your idea, and OiiOii's cinematic professional agent team will instantly turn fragmented concepts into complete stories, advertisements, and finished videos. OiiOii also deeply integrates short-form comic drama workflows, enabling one-click completion of video stylization for global markets, script localization, multi-episode breakdown, and final production.",
+      "source": "oiioii",
+      "type": "cli",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ],
+      "examples_zh": [
+        "帮我做个小故事：一个转学生来到异世界高中，发现同学们都有各种超能力",
+        "根据这份产品介绍，制作一条 30 秒的动画宣传片。",
+        "把这个故事脚本扩展成一部竖屏 AI 仿真人剧，并生成第一集。",
+        "根据上传的角色参考图，制作一段角色形象一致的多镜头动画。",
+        "将这份教育材料改编成适合中学生观看的动画讲解视频。",
+        "为这款游戏设计一段 45 秒的开场过场动画。",
+        "把这篇品牌故事改编成包含旁白、音乐和音效的动画短片。"
+      ],
+      "examples_en": [
+        "Help me create a short story: a transfer student arrives at a high school in another world and discovers that all the other students have different superpowers.",
+        "Create a 30-second animated promotional video based on this product introduction.",
+        "Expand this story script into a vertical-format AI live-action-style series and generate the first episode.",
+        "Using the uploaded character reference images, create a multi-shot animation with consistent character appearances.",
+        "Adapt this educational material into an animated explainer video suitable for middle school students.",
+        "Design a 45-second opening cinematic for this game.",
+        "Adapt this brand story into an animated short film with narration, music, and sound effects."
+      ]
+    },
+    {
+      "id": "cloudmall-operations",
+      "name": "云MALL运营",
+      "name_en": "CloudMall Operations",
+      "description": "Query CloudMall orders, products, and members in natural language. After connecting your operations account, read-only queries run with your real-time permissions—no need to switch to the admin console.",
+      "description_zh": "在 WorkBuddy 中用自然语言查询云MALL订单、商品与会员数据。连接运营账号后，按你当前的权限执行只读查询，结果实时返回，无需切换后台。",
+      "description_en": "Query CloudMall orders, products, and members in natural language. After connecting your operations account, read-only queries run with your real-time permissions—no need to switch to the admin console.",
+      "source": "cloudmall-operations",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查一下今天的待发货订单",
+        "看看有哪些自提的订单",
+        "找一下在售的研学类商品",
+        "看看最近一周新注册的会员"
+      ],
+      "examples_en": [
+        "List today's orders awaiting shipment",
+        "Show self-pickup orders",
+        "Find on-sale study-tour products",
+        "Show members registered in the past week"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "vibeknow-cli",
+      "name": "VibeKnow CLI",
+      "name_zh": "VibeKnow",
+      "name_en": "VibeKnow CLI",
+      "description": "Turn a document, a web page, a slide deck, or text pasted straight into the chat into a narrated video — then read its script, adjust it, and get the MP4 back in the conversation.",
+      "description_zh": "把文档、网页、PPT，或直接粘在对话里的一段文字，变成带旁白的成片。五种创作模式：灵活创作、图解视频、PPT 逐页讲解、手绘动画、一键成片，也可锁定原稿逐字照念。生成过程可分段查看进度，成片后能免费读取讲稿、调整字幕与背景音乐，并把导出的 mp4 直接发回对话。",
+      "description_en": "Turn a document, a web page, a slide deck, or text pasted straight into the chat into a narrated video. Five creation modes — freeform, illustrated, page-by-page slide walkthrough, hand-drawn animation, one-shot — or lock your own script and have it narrated verbatim. Follow progress while it runs, then read the script, adjust subtitles and background music for free, and export the MP4 straight back into the conversation.",
+      "source": "vibeknow-cli",
+      "type": "cli",
+      "version": "0.9.1",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "我有一份 PDF 报告，用 VibeKnow 帮我做成讲解视频",
+        "我发一段文字给你，用 VibeKnow 配上旁白做成视频",
+        "我有一份 PPT，用 VibeKnow 做成逐页讲解的视频",
+        "讲稿我已经写好了，用 VibeKnow 照原文念，别改我的文案",
+        "用 VibeKnow 把一篇长文章做成图解视频",
+        "用 VibeKnow 把一个小故事做成手绘动画",
+        "用 VibeKnow 生成的视频，我能看讲稿、改字幕和背景音乐吗？",
+        "VibeKnow 做好的视频能导出成 mp4 文件发我吗？"
+      ],
+      "examples_en": [
+        "I have a PDF report — use VibeKnow to turn it into a narrated video",
+        "I'll paste some text — use VibeKnow to narrate it as a video",
+        "I have a slide deck — use VibeKnow to make a page-by-page walkthrough video",
+        "I already wrote the script — have VibeKnow narrate it verbatim, don't rewrite it",
+        "Use VibeKnow to turn a long article into an illustrated video",
+        "Use VibeKnow to make a short story into a hand-drawn animation",
+        "For a video VibeKnow generated, can I read the script and tweak subtitles or music?",
+        "Can VibeKnow export a finished video to MP4 and send me the file?"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "variflight-mcp",
+      "name": "飞常准",
+      "name_zh": "飞常准",
+      "name_en": "VariFlight",
+      "description": "Query flight status, operational analysis, per-flight tickets and fares, airport and airline services, plus trips, statistics, and followed flights for the currently authenticated user.",
+      "description_zh": "查询航班动态、运行分析、逐航班机票与价格、机场与航司服务，以及当前用户的行程、统计和航班关注信息。用户身份由 C 端 MCP Key 确定。",
+      "description_en": "Query flight status, operational analysis, per-flight tickets and fares, airport and airline services, plus trips, statistics, and followed flights for the currently authenticated user.",
+      "source": "variflight-mcp",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.2.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询 MU5330 明天的航班动态。",
+        "分析我下一趟航班的延误和取消风险。",
+        "查询明天北京到上海每个航班的机票价格和售罄状态。",
+        "浦东机场有哪些地面交通和旅客服务？",
+        "查看我的历史行程和飞行统计。"
+      ],
+      "examples_en": [
+        "Check tomorrow's status for flight MU5330.",
+        "Analyze the delay and cancellation risk for my next flight.",
+        "Check per-flight fares and sold-out status from Beijing to Shanghai tomorrow.",
+        "What ground transport and passenger services are available at Pudong Airport?",
+        "Show my past trips and flight statistics."
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "xmind",
+      "name": "Xmind思维导图",
+      "name_en": "Xmind",
+      "description": "Create, read, and edit Xmind online mind maps directly from AI conversations.",
+      "description_zh": "通过 AI 对话创建、读取和编辑 Xmind 在线思维导图。",
+      "description_en": "Create, read, and edit Xmind online mind maps directly from AI conversations.",
+      "source": "xmind",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "列出我最近打开的 Xmind 导图",
+        "把这份会议纪要整理成一张 Xmind 思维导图",
+        "在“竞品分析”导图中新增“定价策略”分支"
+      ],
+      "examples_en": [
+        "List my recently opened Xmind mind maps",
+        "Turn these meeting notes into an Xmind mind map",
+        "Add a Pricing Strategy branch to my Competitor Analysis mind map"
+      ]
+    },
+    {
+      "id": "jufa-mcp-server",
+      "name": "聚法-法律数据智能服务",
+      "name_zh": "聚法-法律数据智能服务",
+      "name_en": "Jufa Legal Data",
+      "description": "Search Jufa for cases, laws, prosecution documents, contracts, tenders, and business risks.",
+      "description_zh": "检索聚法司法案例、法律法规、检察文书、合同模板、招投标及企业风险数据。",
+      "description_en": "Search Jufa for cases, laws, prosecution documents, contracts, tenders, and business risks.",
+      "source": "jufa-mcp-server",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "检索近三年建设工程施工合同纠纷的最高人民法院案例",
+        "查询《民法典》关于合同解除的现行有效条文",
+        "搜索某公司的裁判文书、被执行和行政处罚风险",
+        "查找一份软件开发合同模板并返回正文",
+        "检索某项目近期招标公告和相关招标信息"
+      ],
+      "examples_en": [
+        "Find Supreme People's Court cases on construction contract disputes from the past three years",
+        "Find the currently effective Civil Code provisions on contract termination",
+        "Review a company's litigation, enforcement, and administrative penalty risks",
+        "Find a software development contract template and return its text",
+        "Find recent tender notices and related tender information for a project"
+      ]
+    },
+    {
+      "id": "emes-ai",
+      "name": "eMES AI 助手",
+      "name_zh": "eMES AI 助手",
+      "name_en": "eMES AI Assistant",
+      "description": "Dinghua eMES AI Assistant. Connects to eMES OPENAPI to provide production data queries, dispatching, equipment repair, outsourcing, and work reporting capabilities.",
+      "description_zh": "鼎华 eMES AI 助手，连接 eMES OPENAPI，提供生产数据查询、派工、设备报修、委外加工、报工等智能能力。",
+      "description_en": "Dinghua eMES AI Assistant. Connects to eMES OPENAPI to provide production data queries, dispatching, equipment repair, outsourcing, and work reporting capabilities.",
+      "source": "emes-ai",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询今天 M01 设备的派工进度",
+        "M01 设备故障，启动报修流程",
+        "查询工单 MO20260907001 的完工情况"
+      ],
+      "examples_en": [
+        "Query today's dispatch progress for equipment M01",
+        "Equipment M01 is broken, start a repair request",
+        "Check completion status of work order MO20260907001"
+      ]
+    },
+    {
+      "id": "fastmoss",
+      "name": "FastMoss",
+      "name_zh": "FastMoss",
+      "name_en": "FastMoss",
+      "description": "FastMoss is an official TikTok Shop data analytics tool for analyzing and interpreting ecommerce data across products, creators, shops, MCN agencies, short videos, livestreams, ads, categories, markets, and rankings. Use it to discover breakout products, research product opportunities, find creators, analyze competitors, diagnose shops, shape content strategy, and evaluate advertising performance.",
+      "description_zh": "FastMoss 官方出品的 TikTok Shop 数据分析工具，覆盖商品、达人、店铺、MCN、短视频、直播、广告、类目市场与榜单数据，支持爆品挖掘、选品研究、达人筛选、竞品分析、店铺诊断、内容策略和投放效果评估。",
+      "description_en": "FastMoss is an official TikTok Shop data analytics tool for analyzing and interpreting ecommerce data across products, creators, shops, MCN agencies, short videos, livestreams, ads, categories, markets, and rankings. Use it to discover breakout products, research product opportunities, find creators, analyze competitors, diagnose shops, shape content strategy, and evaluate advertising performance.",
+      "source": "fastmoss",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我找美国 TikTok Shop 美妆类目最近一周增长最快的商品，并说明适合跟卖的原因。",
+        "分析这个商品的带货达人和爆款视频，给出达人建联优先级。",
+        "对比这几家 TikTok Shop 竞品店铺的销量、商品结构和增长机会。"
+      ],
+      "examples_en": [
+        "Find the fastest-growing beauty products on US TikTok Shop this week and explain which are worth pursuing.",
+        "Analyze the creators and viral videos driving this product, then prioritize outreach targets.",
+        "Compare these TikTok Shop competitor stores by sales, assortment, and growth opportunity."
+      ]
+    },
+    {
+      "id": "syspetro-service-22065846",
+      "name": "辛孚物性库",
+      "name_zh": "辛孚物性库",
+      "name_en": "Syspetro Properties",
+      "description": "Syspetro Properties (PropMcp) chemical property database: search components by name, formula, or CAS; query identity details and molecular weight, pure-component scalar properties, and binary mixture data availability.",
+      "description_zh": "辛孚物性库连接器：按名称、分子式或 CAS 检索化学组分，查询身份详情与分子量、纯组分基础物性，以及二元混合物物性数据可用性。",
+      "description_en": "Syspetro Properties (PropMcp) chemical property database: search components by name, formula, or CAS; query identity details and molecular weight, pure-component scalar properties, and binary mixture data availability.",
+      "source": "syspetro-service-22065846",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询组分CH4详情",
+        "帮我查一下组分CH4的偏心因子物性信息",
+        "查一下乙醇和水之间有哪些混合物物性数据",
+        "把 CAS 号 64-17-5 对应到组分名称和分子量"
+      ],
+      "examples_en": [
+        "Query the details of the component CH4",
+        "Help me check the physical property information of the eccentricity factor for component CH4",
+        "Check what mixture property data is available between ethanol and water",
+        "Look up the component name and molecular weight for CAS number 64-17-5"
+      ]
+    },
+    {
+      "id": "qveris",
+      "name": "QVeris",
+      "name_zh": "QVeris",
+      "name_en": "QVeris",
+      "description": "Discover, inspect, and call 10,000+ verified capabilities through one MCP connection.",
+      "description_zh": "通过一个 MCP 连接，发现、检查并调用 10,000+ 个实时数据、工具与外部服务能力。",
+      "description_en": "Discover, inspect, and call 10,000+ verified real-time data, tool, and external-service capabilities through one MCP connection.",
+      "source": "qveris",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询苹果公司最新股价，并说明数据来源和更新时间",
+        "发现可以查询上海未来七天天气的能力，先检查参数再调用",
+        "查找适合提取 PDF 表格的工具，并比较成功率、延迟和费用"
+      ],
+      "examples_en": [
+        "Get Apple's latest stock price and include the source and update time",
+        "Find a capability for Shanghai's seven-day weather forecast, inspect it, then call it",
+        "Find tools for extracting tables from PDFs and compare success rate, latency, and cost"
+      ]
+    },
+    {
+      "id": "meo-xiaoyuan",
+      "name": "出海精灵·小元",
+      "name_zh": "出海精灵·小元",
+      "name_en": "Xiaoyuan AI",
+      "description": "Xiaoyuan is an AI global trade expert built for Chinese exporters. Simply state your goal, and Xiaoyuan can conduct market research, analyze buyers, review customer portfolios, create marketing content, and plan trade show campaigns—delivering buyer lists, market reports, marketing strategies, and action plans.",
+      "description_zh": "面向中国外贸企业的AI出海专家。企业只需说出目标，小元即可完成市场洞察、买家分析、客户盘点、内容营销和展会策划，交付买家清单、市场报告、营销方案与行动计划。",
+      "description_en": "Xiaoyuan is an AI global trade expert built for Chinese exporters. Simply state your goal, and Xiaoyuan can conduct market research, analyze buyers, review customer portfolios, create marketing content, and plan trade show campaigns—delivering buyer lists, market reports, marketing strategies, and action plans.",
+      "source": "meo-xiaoyuan",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我找德国做咖啡机采购的买家，并看联系人",
+        "按公司名查一下这家客户的一客一档和出口国",
+        "我们类目在美国有哪些同行展商",
+        "查 HS 847130 近三年中国对美国的出口额",
+        "帮我找这家美国公司的采购决策人邮箱"
+      ],
+      "examples_en": [
+        "Find German buyers sourcing coffee machines and show their contacts",
+        "Look up this customer's company archive and export countries by company name",
+        "Which peer exhibitors in our category are in the United States?",
+        "Get China's HS 847130 export value to the US over the last three years",
+        "Find the sourcing decision-maker email at this US company"
+      ]
+    },
+    {
+      "id": "qibook-mcp",
+      "name": "企百科",
+      "name_en": "qibook",
+      "description": "Query enterprise business registration data for corporate due diligence.",
+      "description_zh": "查询企业工商登记数据，支持企业模糊搜索、企业基本信息、受益所有人、股东、实际控制人、工商变更、联系方式、主要人员、分支机构、对外投资、年报、上市公司相关信息等企业尽职调查场景。",
+      "description_en": "Query enterprise business registration data, support fuzzy enterprise search, company basic information, beneficial owners, shareholders, actual controllers, industrial-commercial changes, contact information, key personnel, branches, external investments, annual reports, listed-company related information and other enterprise due-diligence scenarios.",
+      "source": "qibook-mcp",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "查询中数智汇的法人信息",
+        "查询中数智汇的工商基本信息和股东",
+        "查询中数智汇的对外投资以及高管信息"
+      ],
+      "examples_en": [
+        "Query the legal representative information of Zhongshu Zhihui",
+        "Query the basic industrial and commercial information and shareholders of Zhongshu Zhihui",
+        "Query the external investments and senior management information of Zhongshu Zhihui"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "eccang-reconcile",
+      "name": "易仓跨境对账",
+      "name_zh": "易仓跨境对账",
+      "name_en": "Eccang Settlement Reconcile",
+      "description": "Send a platform settlement Excel file and auto-reconcile TikTok Shop / Tokopedia statements against Eccang settlement data — compare order counts and amounts, flag amount mismatches and one-sided orders, and generate a reconciliation report.",
+      "description_zh": "发一份平台结算 Excel，自动核对 TikTok Shop / Tokopedia 账单与易仓结算数据：比对订单数与结算金额，标出金额差异、单边订单，并生成可对外的对账报告。",
+      "description_en": "Send a platform settlement Excel file and auto-reconcile TikTok Shop / Tokopedia statements against Eccang settlement data — compare order counts and amounts, flag amount mismatches and one-sided orders, and generate a reconciliation report.",
+      "source": "eccang-reconcile",
+      "type": "mcp",
+      "version": "1.0.2",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我对一下这份 TikTok 账单：D:/bill/TK3631_202602.xlsx",
+        "核对 3 月份 Tokopedia 结算单，看看有没有差异",
+        "这家店 1683 单金额对不上，把差异订单列出来",
+        "生成 2 月 TikTok 账单的对账报告并发我 Excel"
+      ],
+      "examples_en": [
+        "Reconcile this TikTok settlement file: D:/bill/TK3631_202602.xlsx",
+        "Check the March Tokopedia statement for any differences",
+        "List the orders whose settlement amounts don't match",
+        "Generate the February TikTok reconciliation report as an Excel file"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "property-saas",
+      "name": "卓越智慧物业云平台",
+      "name_zh": "卓越智慧物业云平台",
+      "name_en": "Excellence Smart Property Cloud Platform",
+      "description": "Connect to the V8 smart property cloud platform. Search owners/tenants, query archives, arrears, repair orders, and execute payment write-off for property customer-service and billing scenarios.",
+      "description_zh": "连接 V8 智慧物业云平台，提供业主/租户检索、档案查询、欠费查询、报修工单查询与缴费核销能力，服务物业客服与收费场景。",
+      "description_en": "Connect to the V8 smart property cloud platform. Search owners/tenants, query archives, arrears, repair orders, and execute payment write-off for property customer-service and billing scenarios.",
+      "source": "property-saas",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查一下 101 房高婷婷的物业费欠了多少",
+        "找出这个项目还没交钱的业主",
+        "查询 3 栋 502 最近的报修工单",
+        "给我看 2 号楼王先生的业主档案",
+        "提醒我确认后再给 102 房的钱先生缴纳本月物业费"
+      ],
+      "examples_en": [
+        "How much property fee does Gao Tingting in room 101 owe?",
+        "Find owners in this project who haven't paid",
+        "Show the recent repair work orders for unit 502, building 3",
+        "Show me the owner profile of Mr. Wang in building 2",
+        "Confirm before paying this month's property fee for Mr. Qian in room 102"
+      ]
+    },
+    {
+      "id": "lemon-agi",
+      "name": "乐檬零售",
+      "name_zh": "乐檬零售",
+      "name_en": "Lemon AGI",
+      "description": "Connect to the Lemon AGI ability platform to query wholesale, warehouse, and retail business data with natural language.",
+      "description_zh": "连接乐檬零售 AGI 能力平台，通过自然语言查询零售、批发、进销存、WMS、基础资料等业务数据。",
+      "description_en": "Connect to the Lemon AGI ability platform to query wholesale, warehouse, and retail business data with natural language.",
+      "source": "lemon-agi",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询门店近 7 天的营业额",
+        "按门店统计昨天的批发销售客单数和金额",
+        "查询仓库的库存情况"
+      ],
+      "examples_en": [
+        "Query retail sales orders for the past 7 days",
+        "Count wholesale orders and amounts by store for yesterday",
+        "Check warehouse inventory status"
+      ]
+    },
+    {
+      "id": "haier-assistant",
+      "name": "海尔智能体",
+      "name_zh": "海尔智能体",
+      "name_en": "Haier Agent",
+      "description": "Product recommendations, comparison shopping, and specification inquiries, purchase channel and store locator services, as well as after-sales support and knowledge-based Q&A for Haier, Casarte, and Leader.",
+      "description_zh": "海尔、卡萨帝、统帅家电的选购推荐、型号对比、参数与价格咨询、购买渠道与门店查询，以及售后服务知识解答。",
+      "description_en": "Product recommendations, comparison shopping, and specification inquiries, purchase channel and store locator services, as well as after-sales support and knowledge-based Q&A for Haier, Casarte, and Leader.",
+      "source": "haier-assistant",
+      "type": "mcp",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "三口之家想买台冰箱，预算五千左右，有什么推荐？",
+        "帮我对比两款洗衣机，哪个更适合我？",
+        "BCD-450WGCFDM4WNU1的能效等级和噪音是多少？",
+        "帮我查查青岛市市南区的专卖店。",
+        "海尔冰箱的整机保修期是多久？"
+      ],
+      "examples_en": [
+        "A family of three looking for a fridge, budget around 5,000 yuan — any recommendations?",
+        "Can you compare two washing machines for me and tell me which one suits me better?",
+        "What's the energy rating and noise level of BCD-450WGCFDM4WNU1?",
+        "Where's the nearest store in Shinan District, Qingdao?",
+        "How long is the warranty for a Haier refrigerator?"
+      ]
+    },
+    {
+      "id": "qiyuan-robot-executor",
+      "name": "启元机器人执行器",
+      "name_zh": "启元机器人执行器",
+      "name_en": "Qiyuan Robot Executor",
+      "description": "Make a Qiyuan Q1 robot speak, make a heart gesture, or walk forward after an explicit safety confirmation.",
+      "description_zh": "让启元 Q1 机器人播报文字，并在现场安全确认后执行比心或向前走动作。",
+      "description_en": "Make a Qiyuan Q1 robot speak, make a heart gesture, or walk forward after an explicit safety confirmation.",
+      "source": "qiyuan-robot-executor",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "0.3.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "让启元机器人播报：欢迎来到启元机器人展台。",
+        "确认机器人周围安全后，让启元机器人比个心。",
+        "确认前方无人、无障碍物且地面平整后，让启元机器人向前走两步。"
+      ],
+      "examples_en": [
+        "Ask the Qiyuan robot to say: Welcome to the Qiyuan Robot booth.",
+        "After confirming the area is safe, ask the Qiyuan robot to make a heart gesture.",
+        "After confirming the path is clear and level, ask the Qiyuan robot to walk forward two steps."
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "opcmenu",
+      "name": "独行录",
+      "name_zh": "独行录",
+      "name_en": "opcmenu",
+      "description": "Find collaborators and opportunities, apply to events, and manage registrations with your agent.",
+      "description_zh": "让你的 Agent 在独行录找合作、筛选报名机会、跟进报名结果，并帮助主办方处理报名名单。",
+      "description_en": "Find collaborators and opportunities on opcmenu, follow application results, and help organizers manage registrations.",
+      "source": "opcmenu",
+      "type": "mcp",
+      "version": "1.1.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "在独行录找 3 位适合与我合作的主理人，说明理由并起草开场白。",
+        "筛出独行录上本周截止的合适活动，把报名还缺的资料一次问清。",
+        "按我的条件筛选活动报名单，先给我看建议的入围和候补名单。"
+      ],
+      "examples_en": [
+        "Find three suitable collaborators on opcmenu and draft an introduction for my review.",
+        "Find relevant events closing this week and consolidate the information missing from my applications.",
+        "Review my event registrations against my criteria and preview a shortlist and waitlist."
+      ]
+    },
+    {
+      "id": "medgroup-drgdip-toolkit",
+      "name": "DRG/DIP 工具包（MedGroup）",
+      "name_en": "DRG/DIP Toolkit (MedGroup)",
+      "description": "Connect MedGroup to query DRG/DIP cities and rules, search ICD codes, perform grouping and settlement scenario calculations, and check CC/MCC status.",
+      "description_zh": "连接 MedGroup，查询 DRG/DIP 城市与规则、检索 ICD 编码、完成分组、结算测算及 CC/MCC 查询。",
+      "description_en": "Connect MedGroup to query DRG/DIP cities and rules, search ICD codes, perform grouping and settlement scenario calculations, and check CC/MCC status.",
+      "source": "medgroup-drgdip-toolkit",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查看 MedGroup 当前支持的 DRG/DIP 城市与规则版本",
+        "检索肺炎相关 ICD-10 编码，确认后按指定城市执行 DRG 分组",
+        "核对某个 DIP 病种规则，并说明本次实际调用的工具",
+        "查询其他诊断在指定城市规则下的 CC/MCC 与排除状态"
+      ],
+      "examples_en": [
+        "List the DRG/DIP cities and rule versions currently supported by MedGroup",
+        "Search pneumonia ICD-10 codes and, after confirmation, perform DRG grouping for a selected city",
+        "Check whether a case satisfies a specified DIP rule and cite the tool that was actually called",
+        "Check CC/MCC and exclusion status for secondary diagnoses under a selected city rule"
+      ]
+    },
+    {
+      "id": "xiaolv-law-search",
+      "name": "小律同学 AI 法律检索",
+      "name_zh": "小律同学 AI 法律检索",
+      "name_en": "XiaoLv Law Search",
+      "description": "Semantic search across Chinese laws, judicial interpretations, guiding cases and sentencing standards, plus international treaties and foreign laws covering 168 countries/regions; also drafts (697 templates), edits legal documents and reviews contracts for legal risks. Each call consumes credits.",
+      "description_zh": "检索国内/国际法律法规、司法解释、量刑标准、指导案例（覆盖 168 国家/地区），支持法律文书起草（697 类模板）、编辑与合同审查。适合法律咨询、跨境合规、量刑赔偿计算、文书生成等场景。每次调用消耗积分，新用户注册即送 1688 积分。",
+      "description_en": "Semantic search across Chinese laws, judicial interpretations, guiding cases and sentencing standards, plus international treaties and foreign laws covering 168 countries/regions; also drafts (697 templates), edits legal documents and reviews contracts for legal risks. Each call consumes credits.",
+      "source": "xiaolv-law-search",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "劳动合同法关于试用期有什么规定",
+        "美国加州 CCPA 对中国出海 App 适用吗",
+        "帮我起草一份民间借贷纠纷的起诉状",
+        "审查一下这份采购合同有什么法律风险"
+      ],
+      "examples_en": [
+        "What does the Labor Contract Law say about probation periods",
+        "Does the California CCPA apply to Chinese apps operating overseas",
+        "Draft a civil complaint for a private lending dispute",
+        "Review this procurement contract for legal risks"
+      ]
+    },
+    {
+      "id": "meitu-kaipai",
+      "name": "美图 · 开拍",
+      "name_zh": "美图 · 开拍",
+      "name_en": "Meitu Kaipai",
+      "description": "An AI video creation tool by Meitu, featuring one-click editing for social media, animated subtitles, and AI-generated covers to make talking-head videos more engaging. It also offers quality enhancement, watermark and subtitle removal, and audio noise reduction to simplify common video creation tasks.",
+      "description_zh": "美图公司出品的AI视频创作工具，支持一键网感剪辑、动态字幕和AI封面，让口播视频更有网感；还提供画质修复、水印消除、字幕消除、音频降噪等功能，轻松处理视频创作中的常见问题。",
+      "description_en": "An AI video creation tool by Meitu, featuring one-click editing for social media, animated subtitles, and AI-generated covers to make talking-head videos more engaging. It also offers quality enhancement, watermark and subtitle removal, and audio noise reduction to simplify common video creation tasks.",
+      "source": "meitu-kaipai",
+      "type": "cli",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我去掉这张图片上的文字水印",
+        "帮我去掉这个视频里的水印",
+        "帮我去掉这个视频里的字幕",
+        "帮我修复这张图片的画质",
+        "帮我修复这个视频的画质"
+      ],
+      "examples_en": [
+        "Remove the text watermark from this image.",
+        "Remove the watermark from this video.",
+        "Remove the subtitles from this video.",
+        "Repair the quality of this image.",
+        "Repair the quality of this video."
+      ]
+    },
+    {
+      "id": "sugon-scinsight-agent",
+      "name": "scnet·科学文献洞察智能体",
+      "name_zh": "scnet·科学文献洞察智能体",
+      "name_en": "sugon-scinsight Agent",
+      "description": "Academic literature search Connector for finding papers, research literature, and related studies. For explicit literature-search requests, prefer the searchAcademicLiterature MCP tool, which aggregates results from configured academic providers.",
+      "description_zh": "学术文献检索 Connector：用于查论文、找文献、搜索相关研究和文献调研。对于明确的学术检索请求，优先使用 searchAcademicLiterature MCP 工具，聚合运行时已配置并启用的学术数据源，并返回可追溯的结构化文献元数据。",
+      "description_en": "Academic literature search Connector for finding papers, research literature, and related studies. For explicit literature-search requests, prefer the searchAcademicLiterature MCP tool to aggregate results from configured and enabled academic providers.",
+      "source": "sugon-scinsight-agent",
+      "type": "mcp",
+      "auth_mode": "oauth",
+      "version": "2.1.0",
+      "examples_zh": [
+        "查论文：深度学习在蛋白质结构预测中的应用",
+        "帮我找近三年的钙钛矿太阳能电池文献",
+        "搜索关于光互连拓扑的相关研究",
+        "做一个关于 AI for Science 的文献调研，给出10篇论文"
+      ],
+      "examples_en": [
+        "Find papers about protein structure prediction",
+        "Search recent literature on perovskite solar cells",
+        "Find related academic studies on optical interconnects",
+        "Search 10 papers about AI for Science"
+      ]
+    },
+    {
+      "id": "sif-mcp",
+      "name": "Sif 亚马逊运营分析",
+      "name_zh": "Sif 亚马逊运营分析",
+      "name_en": "Sif Amazon Seller Analytics",
+      "description": "Sharp insights into Amazon markets, traffic, and advertising — for market research, product research, traffic analysis, ad structure breakdown, competitor monitoring, reverse ASIN lookup, and other core seller workflows. Goes beyond raw data to deliver analysis and judgment. Officially provided by Sif (sif.com).",
+      "description_zh": "精准洞察亚马逊市场、流量与广告：适用于市场研究、选品调研、流量分析、广告架构拆解、竞品监控、反查流量词等亚马逊运营核心场景。不只返回数据，更直接给出分析与判断。由 Sif（sif.com）官方提供。",
+      "description_en": "Sharp insights into Amazon markets, traffic, and advertising — for market research, product research, traffic analysis, ad structure breakdown, competitor monitoring, reverse ASIN lookup, and other core seller workflows. Goes beyond raw data to deliver analysis and judgment. Officially provided by Sif (sif.com).",
+      "source": "sif-mcp",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "yoga mat 这个词还值得打吗？需求在涨还是在跌？",
+        "帮我分析这个 ASIN 上周流量为什么跌了？自然流 vs 广告流怎么变的？",
+        "拆解这个 ASIN 的广告结构：哪些广告活动贡献最大、哪些在拖后腿？",
+        "这个竞品 ASIN 靠哪些关键词获得流量？我能从哪切进去？",
+        "竞品 ASIN 广告在减投，是真撤了还是换打法了？我有什么机会？"
+      ],
+      "examples_en": [
+        "Is 'yoga mat' still worth bidding on? Is demand growing or declining?",
+        "Why did this ASIN's traffic drop last week? How did organic vs sponsored traffic change?",
+        "Break down this ASIN's ad structure: which campaigns lead, and which ones lag?",
+        "Which keywords drive traffic to this competitor ASIN? Where can I break in?",
+        "This competitor is pulling back on ads — real retreat or a strategy shift? What's my opportunity?"
+      ]
+    },
+    {
+      "id": "bizmuse-ai-music-video",
+      "name": "BizMuse AI 音乐视频",
+      "name_en": "BizMuse AI Music Video",
+      "description": "Create an AI music video from audio, reference images, and creative direction.",
+      "description_zh": "根据一首歌曲、参考图片和创作方向生成完整的 AI 音乐视频。支持叙事、演唱、舞蹈、抽象等内容风格，可选画幅比例、清晰度与口型同步，并可查询生成任务进度与获取成片。",
+      "description_en": "Create an AI music video from audio, reference images, and creative direction.",
+      "source": "bizmuse-ai-music-video",
+      "type": "mcp",
+      "version": "0.3.0",
+      "examples_zh": [
+        "用这首歌和这些参考图制作一个电影叙事风格的音乐视频",
+        "把这首歌制作成竖屏舞蹈音乐视频",
+        "帮我用这首歌生成一个演唱模式、带口型同步的音乐视频",
+        "查看我的音乐视频生成任务是否已经完成",
+        "获取刚才生成完成的音乐视频链接和封面"
+      ],
+      "examples_en": [
+        "Create a cinematic storytelling music video from this song and these reference images",
+        "Turn this song into a vertical choreography music video",
+        "Generate a singing-mode music video with lip-sync from this song",
+        "Check whether my music video generation task has finished",
+        "Get the video URL and cover of the music video that just finished"
+      ]
+    },
+    {
+      "id": "wangxiaobao",
+      "name": "旺小宝",
+      "name_en": "WangXiaoBao",
+      "description": "Query WangXiaoBao sales data in natural language: customers, visits, recordings, focus/resistance tags, knowledge base, quantum KPIs and Q&A.",
+      "description_zh": "用自然语言查询旺小宝业务数据：客户、来访、录音、关注点/抗性点、知识库、量子看板 KPI 与问数。",
+      "description_en": "Query WangXiaoBao sales data in natural language: customers, visits, recordings, focus/resistance tags, knowledge base, quantum KPIs and Q&A.",
+      "source": "wangxiaobao",
+      "type": "cli",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "今天来了几组客户",
+        "查一下李女士最近的来访和接待总结",
+        "本月各团队成交对比",
+        "知识库里关于学区怎么说"
+      ],
+      "examples_en": [
+        "How many customer visits today",
+        "Show recent visits and reception summary for Ms. Li",
+        "Compare deals by team this month",
+        "What does the knowledge base say about school districts"
+      ]
+    },
+    {
+      "id": "investoday-finance-data",
+      "name": "今日投资金融数据",
+      "name_en": "Investoday Financial Data",
+      "description": "Query Chinese financial-market and investment-research data, including A-shares, Hong Kong stocks, funds, indices, quotes, financials, announcements, research reports, macroeconomics, sectors, themes, and industry chains.",
+      "description_zh": "查询 A 股、港股、基金、指数、行情、财务、公告、研报、宏观经济、板块主题和产业链等金融数据与投研信息。",
+      "description_en": "Query Chinese financial-market and investment-research data, including A-shares, Hong Kong stocks, funds, indices, quotes, financials, announcements, research reports, macroeconomics, sectors, themes, and industry chains.",
+      "source": "investoday-finance-data",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "查询贵州茅台最近一个月的行情走势",
+        "用折线图对比沪深 300 和中证 500 最近一年的表现",
+        "查看宁德时代最近一期财务数据和估值指标",
+        "查询本周表现最强的申万一级行业"
+      ],
+      "examples_en": [
+        "Show Kweichow Moutai's price trend over the past month",
+        "Compare the CSI 300 and CSI 500 over the past year in a line chart",
+        "Show CATL's latest financial data and valuation metrics",
+        "List the best-performing Shenwan Level 1 industries this week"
+      ]
+    },
+    {
+      "id": "smartsalary",
+      "name": "eRoad·市场人才薪酬数据",
+      "name_en": "eRoad Market Talent & Compensation Data",
+      "description": "Connect eRoad to bring external talent and compensation market data into your workflows. Explore competitor hiring changes, talent supply by role, market compensation, and workforce productivity metrics to benchmark recruiting strategy, role pricing, and workforce planning with data instead of experience alone.",
+      "description_zh": "连接薪智（SmartSalary），把外部人才与薪酬市场数据带入现有工作流。随手查询竞品招聘变化、岗位人才供给、市场薪酬和人效指标，为招聘策略、岗位定薪及人才规划获得更清晰的外部参照，让招聘、定薪和人才规划不再只凭经验。",
+      "description_en": "Connect eRoad to bring external talent and compensation market data into your workflows. Explore competitor hiring changes, talent supply by role, market compensation, and workforce productivity metrics to benchmark recruiting strategy, role pricing, and workforce planning with data instead of experience alone.",
+      "source": "smartsalary",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "字节跳动、腾讯和阿里云在大模型、AI 基础设施与推理优化岗位上的招聘投入有何差异？请对比职位数量、主要城市、薪酬区间和经验门槛，并注明哪些业务投入判断属于招聘信号推断。",
+        "新能源汽车行业在上海、深圳、合肥和广州的招聘量与平均招聘薪酬分别如何？哪个城市的人才需求最旺、薪酬竞争最强？",
+        "宁德时代、比亚迪和阳光电源在动力电池与储能岗位上的招聘结构有何差异？请对比热招岗位、城市布局、薪酬区间和学历要求。",
+        "汽车、半导体和智能制造行业的年度离职率有何差异？哪些细分行业的人才保留压力更大？",
+        "汽车整车制造、半导体设备和工业自动化行业的技术人员占比、研发类薪酬占比和薪酬成本占营收比例有何差异？哪个行业的人才投入更偏研发？"
+      ],
+      "examples_en": [
+        "How do ByteDance, Tencent, and Alibaba Cloud differ in hiring investment for large language models, AI infrastructure, and inference optimization roles? Compare job counts, major cities, compensation ranges, and experience requirements, and identify which conclusions about business investment are inferences based on hiring signals.",
+        "What are the hiring volumes and average advertised salaries for the new energy vehicle industry in Shanghai, Shenzhen, Hefei, and Guangzhou? Which city has the strongest talent demand and the most competitive compensation?",
+        "How do CATL, BYD, and Sungrow differ in their hiring mix for power battery and energy storage roles? Compare in-demand positions, city distribution, compensation ranges, and education requirements.",
+        "How do annual turnover rates differ across the automotive, semiconductor, and smart manufacturing industries? Which sub-industries face greater employee retention pressure?",
+        "How do the automotive manufacturing, semiconductor equipment, and industrial automation industries differ in the share of technical employees, the share of compensation allocated to R&D roles, and compensation costs as a percentage of revenue? Which industry is more R&D-intensive in its talent investment?"
+      ]
+    },
+    {
+      "id": "qzd-connector",
+      "name": "企智多",
+      "name_zh": "企智多",
+      "name_en": "QZD",
+      "description": "Connect to QZD enterprise data service to query company profiles and basic corporate information through natural language.",
+      "description_zh": "接入企智多企业数据服务，支持通过自然语言查询企业基本概况等企业信息，快速了解企业背景。",
+      "description_en": "Connect to QZD enterprise data service to query company profiles and basic corporate information through natural language.",
+      "source": "qzd-connector",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询腾讯科技（深圳）有限公司的企业基本信息",
+        "帮我查一下贵州茅台的企业基本概况",
+        "查询中兴通讯的企业基本信息，了解其经营范围"
+      ],
+      "examples_en": [
+        "Query the basic information of Tencent Technology (Shenzhen) Co., Ltd.",
+        "Look up the basic profile of Kweichow Moutai",
+        "Query the basic information of ZTE Corporation to learn about its business scope"
+      ]
+    },
+    {
+      "id": "qisemierp",
+      "name": "七色米进销存",
+      "name_zh": "七色米进销存",
+      "name_en": "QiSeMi ERP",
+      "description": "Connect to the QiSeMi ERP inventory management system through natural language to query products, inventory, customers, suppliers, and business documents such as sales, purchases, and stock movements at any time. Supports sales statistics, arrears reconciliation, document creation, and more, enabling instant business data Q&A.",
+      "description_zh": "通过自然语言连接七色米进销存系统，随时查询商品、库存、客户、供应商及销售、采购、出入库等业务单据；支持销售统计、欠款对账、单据创建等操作，让业务数据问答即得。",
+      "description_en": "Connect to the QiSeMi ERP inventory management system through natural language to query products, inventory, customers, suppliers, and business documents such as sales, purchases, and stock movements at any time. Supports sales statistics, arrears reconciliation, document creation, and more, enabling instant business data Q&A.",
+      "source": "qisemierp",
+      "type": "mcp",
+      "auth_mode": "oauth",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询当前库存不足的商品有哪些",
+        "本月销售额最高的商品是什么",
+        "哪些客户有欠款",
+        "帮我创建一张销售单，提交前请确认"
+      ],
+      "examples_en": [
+        "Query which products are currently out of stock.",
+        "What is the product with the highest sales this month?",
+        "Which customers have arrears?",
+        "Help me create a sales order, please confirm before submitting."
+      ]
+    },
+    {
+      "id": "24haowan",
+      "name": "24好玩 互动营销资料库",
+      "name_en": "24haowan Interactive Marketing Library",
+      "description": "Anonymous read-only MCP service from 24haowan with 8 read-only tools: live search over the interactive-marketing H5 campaign template library, real client case library, help-center knowledge base, and industry benchmark data from real campaigns on the platform (win rates, prize tiers, campaign length, player behaviour). No sign-up, no API key, no side effects.",
+      "description_zh": "24好玩（24haowan）的匿名只读 MCP 服务，8 个工具：实时查询互动营销 H5 活动模板库、真实客户案例库、帮助中心知识库，以及来自平台真实活动的行业基准数据（中奖率 / 奖池档位 / 活动周期 / 玩家行为）。免注册、无 API Key、只读无副作用。",
+      "description_en": "Anonymous read-only MCP service from 24haowan with 8 read-only tools: live search over the interactive-marketing H5 campaign template library, real client case library, help-center knowledge base, and industry benchmark data from real campaigns on the platform (win rates, prize tiers, campaign length, player behaviour). No sign-up, no API key, no side effects.",
+      "source": "24haowan",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "有没有适合银行信用卡开卡的抽奖玩法？给我三个模板和链接",
+        "餐饮行业的 H5 活动一般设多少中奖率、活动开几天？",
+        "找几个零售行业做过的互动营销案例，要带公开数据的"
+      ],
+      "examples_en": [
+        "Any lucky-draw mechanics that fit a bank credit-card acquisition campaign? Give me three templates with links",
+        "What win rate and campaign length do restaurant H5 campaigns usually use?",
+        "Find a few retail interactive-marketing cases that come with published numbers"
+      ]
+    },
+    {
+      "id": "24haowan-space",
+      "name": "24好玩 · 方案空间",
+      "name_en": "24haowan Space",
+      "description": "24haowan Space (space.24haowan.com): an agent-native B2B pre-sales proposal platform with 21 tools. Publish a finished proposal (PDF / PPTX / HTML deck / Markdown) as a client-specific WeChat-readable link, read back which pages the client viewed and for how long, collect their feedback, log meeting notes against the proposal, and push new versions that update the same link. Requires WeChat-scan login (OAuth).",
+      "description_zh": "24好玩·方案空间（space.24haowan.com）：Agent 原生的 B2B 售前方案沟通平台，21 个工具。把做好的方案（PDF / PPTX / 网页 Deck / Markdown）发布成客户专属的微信可读链接，读回客户看了哪几页、停留多久、有什么反馈，把会议意见记回方案，改稿出新版原链接自动更新。需微信扫码登录授权。",
+      "description_en": "24haowan Space (space.24haowan.com): an agent-native B2B pre-sales proposal platform with 21 tools. Publish a finished proposal (PDF / PPTX / HTML deck / Markdown) as a client-specific WeChat-readable link, read back which pages the client viewed and for how long, collect their feedback, log meeting notes against the proposal, and push new versions that update the same link. Requires WeChat-scan login (OAuth).",
+      "source": "24haowan-space",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "把这份方案 PDF 发给李总，做一条他专属的链接，明天告诉我他看了没",
+        "上周发给客户的方案，他们看了哪几页、在哪一页停留最久？",
+        "把今天会上客户提的三条意见记到方案上，改完出 V2"
+      ],
+      "examples_en": [
+        "Send this proposal PDF to Mr. Li as a personal link and tell me tomorrow whether he opened it",
+        "For the proposal we sent last week, which pages did the client read and where did they stay longest?",
+        "Log the three comments the client made in today's meeting against the proposal, then publish V2"
+      ]
+    },
+    {
+      "id": "deli-mcp",
+      "name": "得理法律数据",
+      "name_en": "DELI Legal Data",
+      "description": "Deli Legal Data MCP service providing authoritative legal data retrieval, covering 160M+ court judgments and 3M+ laws and regulations. Supports case retrieval, statute retrieval and legal Q&A via natural language, with semantic search by case facts, disputes, statute names or provisions, plus detail and validity lookups.",
+      "description_zh": "得理法律数据 MCP 连接器，提供权威法律数据检索，覆盖 1.7 亿+裁判文书与 300 万+法律法规。支持自然语言案例检索、法规检索与法律问答，可按案情描述、争议焦点、法规名称或条款内容语义检索，并获取案例/法规详情与效力状态。",
+      "description_en": "Deli Legal Data MCP service providing authoritative legal data retrieval, covering 160M+ court judgments and 3M+ laws and regulations. Supports case retrieval, statute retrieval and legal Q&A via natural language, with semantic search by case facts, disputes, statute names or provisions, plus detail and validity lookups.",
+      "source": "deli-mcp",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "检索深圳股东损害公司债权人利益的类案",
+        "检索民间借贷利率相关的法律法规及司法解释",
+        "查一下《民法典》第六百八十条的条文内容和效力状态",
+        "劳动者主张加班费，有哪些类案和法规依据？"
+      ],
+      "examples_en": [
+        "Search for similar cases in Shenzhen regarding shareholders' liability for damaging company creditors' interests",
+        "Search for laws, regulations, and judicial interpretations related to private lending interest rates",
+        "Look up Article 680 of the Civil Code, its full text and validity status",
+        "What precedents and legal basis support employees' claims for overtime pay?"
+      ]
+    },
+    {
+      "id": "miki-cursor-catalog",
+      "name": "Miki Cursor 素材库",
+      "name_en": "Miki Cursor Catalog",
+      "description": "Browse the latest cursor styles, cursor trails, cursor pets, and available pet actions from Miki Cursor.",
+      "description_zh": "查询 Miki Cursor 最新发布的光标样式、光标轨迹、光标宠物，以及不同宠物拥有的动作。",
+      "description_en": "Browse the latest cursor styles, cursor trails, cursor pets, and available pet actions from Miki Cursor.",
+      "source": "miki-cursor-catalog",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "查询最新5个宠物",
+        "查询最新5个光标",
+        "查询最新5个轨迹",
+        "小青龙有哪些动作？"
+      ],
+      "examples_en": [
+        "Show me the five latest cursor pets",
+        "Show me the five latest cursor styles",
+        "Show me the five latest cursor trails",
+        "What actions can the puppy perform?"
+      ]
+    },
+    {
+      "id": "shangyitong",
+      "name": "VZOOM商易通-企业信息查询",
+      "name_zh": "VZOOM商易通-企业信息查询",
+      "name_en": "VZOOM ShangYiTong - Enterprise Info Query",
+      "description": "Enterprise data intelligence via ShangYiTong MCP: query company registry, equity, listed info and judicial risk.",
+      "description_zh": "通过商易通 MCP 查询企业工商、股权与人员、上市信息、司法风险等企业数据，用自然语言做企业尽调、风险核查、客户画像。",
+      "description_en": "Query enterprise registry, shareholders, listed company info and judicial/legal risk via ShangYiTong MCP. Supports due diligence, risk screening and customer profiling.",
+      "source": "shangyitong",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查一下「恒大海花岛」这家公司的工商基本信息",
+        "查一下某企业的股东和实控人是谁",
+        "查询这家公司有没有被执行、失信或诉讼记录",
+        "查一下这家公司上市情况，在哪个交易所上市"
+      ],
+      "examples_en": [
+        "Look up the company registry basic info of a company",
+        "Who are the shareholders and actual controller of this company",
+        "Check whether this company has enforcement, dishonesty or lawsuit records",
+        "Query the listing status and exchange of this listed company"
+      ]
+    },
+    {
+      "id": "listinggood",
+      "name": "ListingGood AI 推荐引擎",
+      "name_en": "ListingGood AI Recommendation Engine",
+      "description": "Make Amazon's AI recommend your products. Includes listing compliance pre-check, AI readiness scoring, one-sentence listing generation, deep compliance scan, review analysis and POA appeal drafting.",
+      "description_zh": "让亚马逊的 AI 主动推荐你的商品。提供 Listing 合规预检、AI 推荐就绪度评分、一句话生成高转化文案、深度合规扫描、差评根因分析与 POA 申诉信生成。",
+      "description_en": "Make Amazon's AI recommend your products. Includes listing compliance pre-check, AI readiness scoring, one-sentence listing generation, deep compliance scan, review analysis and POA appeal drafting.",
+      "source": "listinggood",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "测一下这款蓝牙耳机 Listing 的 AI 推荐就绪度",
+        "把『主动降噪、30 小时续航』生成亚马逊美国站 Listing",
+        "分析这条一星差评的根因并写一段回复",
+        "帮我写一封亚马逊违规通知的 POA 申诉信"
+      ],
+      "examples_en": [
+        "Check the AI recommendation readiness of this Bluetooth earbud listing",
+        "Generate an Amazon US listing from: active noise cancellation, 30-hour battery",
+        "Analyze this one-star review and draft a brand-tone response",
+        "Write a POA appeal letter for this Amazon violation notice"
+      ]
+    },
+    {
+      "id": "edu-next",
+      "name": "Edu Next",
+      "name_en": "Edu Next",
+      "description": "AI teaching for Tsinghua University School of Environment courses, tasks, feedback, and progress.",
+      "description_zh": "面向清华大学环境学院课程的 AI 教学平台，支持课程、学习任务、教学资料、成果草稿、评价反馈与学习进展协作。",
+      "description_en": "AI teaching for Tsinghua University School of Environment courses, tasks, feedback, and progress.",
+      "source": "edu-next",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "检查一下 Edu Next 连接",
+        "看看我正在教授的课程",
+        "帮我创建下周的课前学习任务",
+        "看看我最近有哪些学习任务要完成"
+      ],
+      "examples_en": [
+        "Check my Edu Next connection",
+        "Show the courses I teach",
+        "Create a pre-class activity for next week",
+        "Show my upcoming learning activities"
+      ]
+    },
+    {
+      "id": "zxygj-business-data",
+      "name": "装修云管家",
+      "name_en": "ZXYGJ Business Data",
+      "description": "Securely query customers, orders, and other business data in ZXYGJ using natural language.",
+      "description_zh": "通过自然语言安全查询装修云管家中的客户、订单及其他业务对象数据。",
+      "description_en": "Securely query customers, orders, and other business data in ZXYGJ using natural language.",
+      "source": "zxygj-business-data",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询今天新增的客户",
+        "帮我统计本月金额超过十万元的订单",
+        "查看当前账号可以查询哪些业务对象"
+      ],
+      "examples_en": [
+        "Show customers created today",
+        "Find orders over 100,000 this month",
+        "List the business objects available to my account"
+      ]
+    },
+    {
+      "id": "baijimu-enterprise-ai",
+      "name": "百积木",
+      "name_en": "Baijimu",
+      "description": "Connect WorkBuddy to Baijimu workspaces, agents, workflows, applications, and governed enterprise services.",
+      "description_zh": "连接百积木工作区、智能体、工作流、应用与受治理的企业服务。",
+      "description_en": "Connect WorkBuddy to Baijimu workspaces, agents, workflows, applications, and governed enterprise services.",
+      "source": "baijimu-enterprise-ai",
+      "type": "cli",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "列出我可以访问的百积木工作区",
+        "查看当前工作区正在运行的工作流",
+        "让百积木中的数字员工处理这项任务",
+        "查询这个业务流程的执行状态和失败节点"
+      ],
+      "examples_en": [
+        "List the Baijimu workspaces I can access",
+        "Show workflows currently running in my workspace",
+        "Ask a Baijimu digital worker to handle this task",
+        "Check this business workflow's status and failed step"
+      ]
+    },
+    {
+      "id": "58pic-qiantu-ai",
+      "name": "千图 AI",
+      "name_en": "Qiantu AI",
+      "description": "Search licensed assets, generate images and videos, run editable workflows, and manage creative assets in WorkBuddy.",
+      "description_zh": "在 WorkBuddy 中搜索正版素材、生成图片和视频、运行可编辑工作流，并管理创意资产。",
+      "description_en": "Search licensed assets, generate images and videos, run editable workflows, and manage creative assets in WorkBuddy.",
+      "source": "58pic-qiantu-ai",
+      "type": "mcp",
+      "examples_zh": [
+        "搜索适合秋季营销海报的正版素材，并给出三种创意方向",
+        "生成一张 16:9 的科技发布会主视觉，先说明预计积分消耗",
+        "读取我的海报工作流，保留原有节点结构并创建一个春日版本"
+      ],
+      "examples_en": [
+        "Find licensed assets for an autumn marketing poster and suggest three directions.",
+        "Generate a 16:9 key visual for a technology launch and explain the expected credit cost first.",
+        "Read my poster workflow, preserve its canvas structure, and create a spring version."
       ]
     }
   ]

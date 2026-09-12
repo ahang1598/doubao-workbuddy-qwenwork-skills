@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="64" height="64"
+     viewBox="190 25 845 855"
+     role="img" aria-labelledby="title desc">
+  <title id="title">质数幻方 Logo</title>
+  <desc id="desc">深蓝色几何主体、浅蓝色两侧结构、白色中心方形与透明镂空组成的质数幻方品牌标志。</desc>
+
+  <defs>
+    <linearGradient id="lightLeft" x1="202" y1="260" x2="386" y2="604" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5C9AB3"/>
+      <stop offset="1" stop-color="#5690A9"/>
+    </linearGradient>
+    <linearGradient id="lightRight" x1="838" y1="304" x2="1022" y2="678" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5C9AB3"/>
+      <stop offset="1" stop-color="#5690A9"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="386" y1="40" x2="838" y2="866" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#203E59"/>
+      <stop offset="0.55" stop-color="#1D3851"/>
+      <stop offset="1" stop-color="#1B354D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 左侧浅蓝结构 -->
+  <path d="M386 228V379L312 454L386 529L311 604L202 495V412L260 353L262 260Z"
+        fill="url(#lightLeft)" stroke="#4B8DA8" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 右侧浅蓝结构 -->
+  <path d="M914 304L1022 411V493L962 554V647L838 678L836 532L912 454L838 377Z"
+        fill="url(#lightRight)" stroke="#4B8DA8" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- 深蓝主体；下方菱形为透明镂空 -->
+  <path fill="url(#navy)" fill-rule="evenodd" stroke="#16364E" stroke-width="2" stroke-linejoin="round"
+        d="M573 40H652L914 304L762 454L838 529V679L650 866H573L312 605L460 455L386 379V229L573 40Z
+           M611 454L462 605L612 754L762 604L611 454Z"/>
+
+  <!-- 中央白色方形 -->
+  <path d="M611 153L761 303L611 453L461 303Z"
+        fill="#F8F9F9" stroke="#E7EBED" stroke-width="2" stroke-linejoin="round"/>
+</svg>

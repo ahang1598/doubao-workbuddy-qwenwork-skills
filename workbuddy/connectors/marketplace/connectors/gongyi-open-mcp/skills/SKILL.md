@@ -1,6 +1,6 @@
 ---
 name: gongyi-open-mcp-skill
-description: 腾讯公益机构服务平台连接器：授权后可读取您机构的基本信息与资质证件、公益项目详情、筹款与拨付数据、财务披露记录及平台待办事项，用于为您提供机构运营分析与项目管理辅助服务。
+description: 腾讯公益机构服务平台连接器：用自然语言连接并使用腾讯公益机构服务平台的功能。
 version: "1.0.0"
 author: "Tencent Charity"
 ---

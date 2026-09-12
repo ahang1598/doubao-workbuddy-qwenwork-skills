@@ -24,15 +24,12 @@ lovrabet notification config-list --type EMAIL --appcode <appCode> --format json
 
 每个配置项只返回用于识别和选择配置的字段：
 
-- `id`
 - `configCode`
 - `configName`
 - `channelType`
 - `description`
-- `createTime`
-- `updateTime`
 
-该命令不会输出 `endpointUrl`、`channelConfig`、SMTP 用户名或密码、token、secret、连接超时和人员身份审计字段。若任一配置缺少可用的 `configCode`、`configName` 或 `channelType`，命令返回错误，不把残缺记录包装成成功结果。
+该命令不会输出 `endpointUrl`、`channelConfig`、配置 ID、创建或更新时间、SMTP 用户名或密码、token、secret、连接超时和人员身份审计字段。若任一配置缺少可用的 `configCode`、`configName` 或 `channelType`，命令返回错误，不把残缺记录包装成成功结果。
 
 示例输出：
 
@@ -45,13 +42,10 @@ lovrabet notification config-list --type EMAIL --appcode <appCode> --format json
     "count": 1,
     "configs": [
       {
-        "id": 7,
         "configCode": "ncc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "configName": "官方邮件",
         "channelType": "EMAIL",
-        "description": "业务通知邮件",
-        "createTime": "2026-07-01T00:00:00Z",
-        "updateTime": "2026-07-02T00:00:00Z"
+        "description": "业务通知邮件"
       }
     ]
   },

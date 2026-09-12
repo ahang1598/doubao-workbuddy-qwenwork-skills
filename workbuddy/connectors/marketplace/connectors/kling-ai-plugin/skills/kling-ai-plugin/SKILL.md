@@ -1,11 +1,11 @@
 ---
-name: kling-ai
-description: 当用户希望通过 WorkBuddy 中的 Kling AI 连接器生成影视级、专业级图像或视频时使用。将自然语言需求路由为适配文生图、图生图、文生视频或图生视频的精确提示词，适合海报、广告、产品视觉和短片等创作场景。
+name: kling-ai-plugin
+description: 当用户希望通过 WorkBuddy 中的 Kling AI 连接器生成影视级、专业级图像或视频时使用。将自然语言需求路由为适配文生图、图生图、文生视频或图生视频的精确提示词，适合海报、广告、产品视觉和短片等创作场景；也用于主体库（Element）的创建、查看、更新、删除与复用，动作库查询、动作控制、素材上传、账号额度和任务查询。
 ---
 
 # 可灵 AI
 
-只使用本包在 `https://klingai.com/mcp` 配置的可灵 MCP 服务。
+只使用本包在 `https://klingai.com/mcp/plugin` 配置的可灵 MCP 服务。
 
 ## 请求路由
 
@@ -21,19 +21,18 @@ description: 当用户希望通过 WorkBuddy 中的 Kling AI 连接器生成影�
 ## 安全与提交约定
 
 - 只使用宿主的 MCP OAuth 连接流程。绝不索取 API Key，也不在日志中暴露凭证、Cookie、授权头、私有账号字段或签名 URL。
-- Before OAuth dynamic client registration, include `client_name: "Plugin-WorkBuddy"`. This is OAuth metadata, not a tool argument, URL parameter, or secret. If WorkBuddy cannot inject it, stop before authorization and report the limitation.
 - 用户提出单项生成请求，即表示在补齐会实质影响结果的缺失信息后，授权该收费生成步骤提交一次。跨媒体请求或用户明确要求多个不同任务时，把用户已明确要求的每个收费步骤分别视为一次授权；未明确要求的额外步骤必须先询问。不要额外增加灵感值消耗警告或单独确认步骤。
 - 每个明确授权的收费生成步骤最多提交一次。失败或结果不明确时，不要自动重试。
 - 运行时发现远程工具和模式定义；提供方的实时模式定义优先于本 Skill 的示例。
 - 提交进入非终态后，按提供方允许的间隔查询状态，直到成功或失败。只有用户取消或当前轮次超时才停止；停止时返回当前状态和任务编号。
 
-引用按请求类型加载：单一图片或视频生成交给对应专业 Skill，不在本 Skill 重复读取；跨媒体请求只先读取[工具流程](references/tool-workflows.md)，每个收费阶段再由对应专业 Skill 读取[MCP 输入输出契约](references/mcp-contract.md)、[模型参数快照](references/model-parameters.md)和[失败预防门禁](references/failure-prevention.md)；账号、额度和状态查询只使用实时工具说明，Element 操作才读取 MCP 契约。只有出现授权、模式定义、素材接入或提供方错误时，才读取[故障排查](references/troubleshooting.md)。
+引用按请求类型加载：单一图片或视频生成交给对应专业 Skill，不在本 Skill 重复读取；跨媒体请求只先读取[工具流程](references/tool-workflows.md)，每个收费阶段再由对应专业 Skill 读取[MCP 输入输出契约](references/mcp-contract.md)、[模型参数快照](references/model-parameters.md)和[失败预防门禁](references/failure-prevention.md)；账号、额度和状态查询只使用实时工具说明；主体库、动作库和本地素材上传读取[素材工作流](references/asset-workflows.md)与 MCP 契约。只有出现授权、模式定义、素材接入或提供方错误时，才读取[故障排查](references/troubleshooting.md)。
 
 ## 工作流程
 
-1. 判断用户需要生成、动作控制、Element 管理、账号操作还是只读查询。跨媒体生成先拆成用户已明确要求的图片与视频收费步骤，并分别采用对应专业 Skill 的工作流。
+1. 判断用户需要生成、动作控制、主体库（Element）管理、动作库查询、素材上传、账号操作还是只读查询。独立素材操作走素材工作流，完成后直接返回；下方选模型、查余额、提交及轮询仅适用于生成。跨媒体生成先拆成用户已明确要求的图片与视频收费步骤，并分别采用对应专业 Skill 的工作流。
 2. 先读取当前连接的 `tools/list`；生成或动作控制前再调用 `who_am_i`，从目标模型声明中获取完整参数与素材输入。若 `mcpVersion` 高于本包快照 `1.3.1`，不要仅因版本号较高反复阻断：当前工具列表与实时模型 schema 能完整描述目标调用时，以实时结果为准继续；只有目标工具缺失、顶层 schema 与实时模型要求冲突或宿主明确提示工具列表过期时，才要求重启宿主并在新会话刷新连接器。紧邻每次收费生成前调用 `query_membership_and_credits`；明确无余额或不足时停止。
-3. 按所选模型的实时 schema 处理图片输入，优先使用宿主已提供且 schema 接受的图片引用。只要素材来自较早的 Kling 结果，就忽略会话里保存的旧 URL，在提交新任务前用绑定的 `generationId` 调用一次 `query_tasks`，按已保存的 `works[]` 序号与 `contentType` 取回当前 URL，并在同一轮立即使用。
+3. 按所选模型的实时 schema 处理图片输入，优先使用宿主已提供且 schema 接受的图片引用；本地文件尚无可用引用时，按素材工作流检查 `file_upload` 两步上传能力。只要素材来自较早的 Kling 结果，就忽略会话里保存的旧 URL，在提交新任务前用绑定的 `generationId` 调用一次 `query_tasks`，按已保存的 `works[]` 序号与 `contentType` 取回当前 URL，并在同一轮立即使用。
 4. 只询问会实质影响结果的缺失创意要求，并只补齐会实质改变结果的缺失设置。
 5. 选定工具和模型后再构造请求。把该模型实时 `arguments[]` 和 `inputs[]` 建立为封闭白名单；逐项校验 `model`、默认值、必填项、枚举、数量限制和 input 名称。未声明字段一律不传；切换模型后必须从空请求重新构造。
 6. 每个明确授权的收费步骤选定远程生成工具后只调用一次。同一用户目标同一时间最多保留一个未终态收费任务；多个不同任务必须逐个等待终态。`who_am_i`、额度查询和附件解析都是准备步骤；用户已要求生成且输入完整、余额未显示不足时，不要在准备步骤后结束。

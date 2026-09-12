@@ -1,0 +1,10 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="60" cy="60" r="58" fill="#111827" stroke="#E7F6F6" stroke-width="3"/>
+  <g transform="translate(60,60) scale(1.7)">
+    <rect x="-20" y="-20" width="18" height="18" rx="3" fill="#E7F6F6"/>
+    <rect x="2" y="-20" width="18" height="18" rx="3" fill="#111827" stroke="#E7F6F6" stroke-width="2"/>
+    <text x="11" y="-7" font-size="14" fill="#E7F6F6" font-family="Poppins, Helvetica, Arial, sans-serif" text-anchor="middle">B</text>
+    <rect x="-20" y="2" width="18" height="18" rx="3" fill="#E7F6F6"/>
+    <rect x="2" y="2" width="18" height="18" rx="3" fill="#2BC4C7"/>
+  </g>
+</svg>

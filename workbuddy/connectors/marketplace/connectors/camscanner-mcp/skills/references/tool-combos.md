@@ -44,6 +44,10 @@
 | 检测后增强 | 上传文件 → validate_image → 根据结果选择增强方式 → download + cloud |
 | 发票识别 | 上传文件 → extract_receipt(output_mode=raw) → 解析 JSON 向用户展示 |
 | 搜索云文档 | search_cloud_doc(keyword=..., doc_type=..., start_time=...) → 展示结果列表 |
+| 下载云文档 | search_cloud_doc(keyword=...) → download_cloud_doc(doc_id=cs_doc_id) → 通过 download_url 下载到本地 |
+| 查看文件夹 | query_cloud_dir() → 以树形结构展示 |
+| 移动文档到文件夹 | search_cloud_doc(keyword=...) → query_cloud_dir() → move_cloud_doc(doc_ids=[cs_doc_id], dir_id=target_dir_id) |
+| 保存到指定文件夹 | query_cloud_dir() → create_cloud_doc(file_ids=[...], file_type=..., dir_id=target_dir_id) |
 
 ---
 

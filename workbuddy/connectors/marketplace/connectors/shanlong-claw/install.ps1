@@ -164,12 +164,12 @@ function Download-UrlToFile([string]$url, [string]$dest) {
         return
     }
     try {
-        & curl.exe -fsSL --connect-timeout 5 --max-time 120 $url -o $dest
+        & curl.exe -fsSL --connect-timeout 5 --max-time 300 $url -o $dest
         if ($LASTEXITCODE -ne 0) { throw "curl exit $LASTEXITCODE" }
     } catch {
         $req = [System.Net.HttpWebRequest]::Create($url)
-        $req.Timeout = 120000
-        $req.ReadWriteTimeout = 120000
+        $req.Timeout = 300000
+        $req.ReadWriteTimeout = 300000
         $resp = $req.GetResponse()
         try {
             $stream = $resp.GetResponseStream()
@@ -341,6 +341,11 @@ set "SL_CLI_SKIP_UPDATE=1"
 if errorlevel 1 goto :rollback_pending
 findstr /C:"\"ok\":true" "%SELF_CHECK_FILE%" >nul || goto :rollback_pending
 findstr /C:"\"version\":\"%EXPECTED_VERSION%\"" "%SELF_CHECK_FILE%" >nul || goto :rollback_pending
+
+"%SEA%" --sl-config-migrate --home "%SL_HOME%" >"%PENDING%\config-result.json" 2>nul
+if errorlevel 1 goto :rollback_pending
+findstr /C:"\"ok\":true" "%PENDING%\config-result.json" >nul || goto :rollback_pending
+findstr /C:"\"status\":\"conflict\"" "%PENDING%\config-result.json" >nul && type "%PENDING%\config-result.json" 1>&2
 
 if exist "%PENDING%\ready" copy /y "%PENDING%\ready" "%BIN%version" >nul
 if exist "%BIN%sl-sea.exe.bak" del /f /q "%BIN%sl-sea.exe.bak" 2>nul
@@ -525,9 +530,6 @@ function Install-FromSea([string]$seaPath, [string]$remoteVersion) {
     Write-WindowsWrappers $newDir
     Switch-InstallDir $newDir $INSTALL_DIR $backupDir
 
-    if (Test-Path (Join-Path $SCRIPT_DIR "default.env")) {
-        Copy-Item (Join-Path $SCRIPT_DIR "default.env") (Join-Path $SL_HOME "default.env")
-    }
     if (Test-Path $URL_CONF) {
         Copy-Item $URL_CONF $HomeUrlConf -Force
     }
@@ -542,33 +544,18 @@ function Install-FromSea([string]$seaPath, [string]$remoteVersion) {
 }
 
 function Init-Env {
-    $env_file = "$SL_HOME\.env"
-    $default_env_file = "$SCRIPT_DIR\default.env"
-    $needs_init = $false
-    $saved_key = $null
-
-    if (-not (Test-Path $env_file)) {
-        $needs_init = $true
-    } elseif (-not (Select-String -Path $env_file -Pattern 'SL_SLY_BASEURL' -Quiet)) {
-        $needs_init = $true
-        $saved_key = (Select-String -Path $env_file -Pattern '^SL_API_KEY=(.*)' | ForEach-Object { $_.Matches.Groups[1].Value }) | Select-Object -First 1
+    if (Test-Path -LiteralPath (Join-Path $SL_HOME 'pending-update/ready')) {
+        Write-Warn '配置迁移随 pending-update 激活执行，当前配置保持不变'
+        return
     }
-
-    if ($needs_init) {
-        if (-not (Test-Path $default_env_file)) {
-            Write-Err "缺少 default.env，无法初始化连接器配置"
-            exit 1
-        }
-        Copy-Item $default_env_file $env_file
-        if ($saved_key) {
-            (Get-Content $env_file) -replace '^SL_API_KEY=.*', "SL_API_KEY=$saved_key" | Set-Content $env_file
-            Write-OK "配置已修复（保留原 API Key）"
-        } else {
-            Write-OK "默认配置已初始化"
-        }
-    } else {
-        Write-OK "配置文件完整，保留原配置"
-    }
+    $sea = Join-Path $INSTALL_DIR $SeaName
+    $resultText = & $sea --sl-config-migrate --home $SL_HOME
+    if ($LASTEXITCODE -ne 0) { throw 'config-migration-failed' }
+    try { $result = ($resultText -join "`n") | ConvertFrom-Json } catch { throw 'config-migration-invalid-result' }
+    if ($result.ok -ne $true) { throw 'config-migration-failed' }
+    if ($result.status -eq 'conflict') {
+        Write-Warn ('配置已同步；保留需确认的自定义字段: ' + ($result.fields -join ', '))
+    } else { Write-OK ('配置迁移: ' + $result.status) }
 }
 
 function Setup-Path {
@@ -578,6 +565,10 @@ function Setup-Path {
 }
 
 function Verify-Install {
+    $entry = Join-Path $INSTALL_DIR 'sl.cmd'
+    if (-not (Test-Path -LiteralPath $entry -PathType Leaf)) {
+        throw '安装验证失败: sl.cmd 缺失'
+    }
     $pendingReady = Join-Path (Join-Path $SL_HOME "pending-update") "ready"
     if (Test-Path $pendingReady) {
         Write-Warn "新版本已暂存，等待下次 sl.cmd 启动时应用"
@@ -589,6 +580,17 @@ function Verify-Install {
     if (Test-Path $sea) {
         try {
             Assert-SeaRunnable $sea $version | Out-Null
+            $previousSkipUpdate = $env:SL_CLI_SKIP_UPDATE
+            try {
+                $env:SL_CLI_SKIP_UPDATE = '1'
+                $entryVersion = ((@(& $entry --version) | ForEach-Object { [string]$_ }) -join "`n").Trim()
+                if ($LASTEXITCODE -ne 0 -or $entryVersion -ne $version) {
+                    throw 'sl.cmd 版本验证失败'
+                }
+            } finally {
+                if ($null -eq $previousSkipUpdate) { Remove-Item Env:SL_CLI_SKIP_UPDATE -ErrorAction SilentlyContinue }
+                else { $env:SL_CLI_SKIP_UPDATE = $previousSkipUpdate }
+            }
             Write-OK "安装成功: sl v$version"
             return
         } catch {}
@@ -613,16 +615,9 @@ function Invoke-FullInstall([string]$baseUrl, [string]$versionUrl) {
         Assert-SeaRunnable $tmpSea $remote | Out-Null
         try {
             Install-FromSea $tmpSea $remote
-            Init-Env
             Setup-Path
             Verify-Install
-            $pendingReady = Join-Path (Join-Path $SL_HOME "pending-update") "ready"
-            if (-not (Test-Path -LiteralPath $pendingReady)) {
-                Remove-LegacyProgramAssets
-            }
-            Remove-InPlaceInstallBackup $INSTALL_DIR
-            $backupDir = "$INSTALL_DIR.bak"
-            if (Test-Path $backupDir) { Remove-Item -Recurse -Force $backupDir }
+            Init-Env
         } catch {
             $backupDir = "$INSTALL_DIR.bak"
             try { Restore-InPlaceInstallBackup $INSTALL_DIR } catch {}
@@ -632,8 +627,16 @@ function Invoke-FullInstall([string]$baseUrl, [string]$versionUrl) {
             }
             throw
         }
+        # Configuration is committed. Cleanup must never roll back only the binary.
+        try {
+            $pendingReady = Join-Path (Join-Path $SL_HOME "pending-update") "ready"
+            if (-not (Test-Path -LiteralPath $pendingReady)) { Remove-LegacyProgramAssets }
+            Remove-InPlaceInstallBackup $INSTALL_DIR
+            $backupDir = "$INSTALL_DIR.bak"
+            if (Test-Path $backupDir) { Remove-Item -Recurse -Force $backupDir }
+        } catch { Write-Warn '安装已完成；旧版本备份清理失败，保留供后续清理' }
     } finally {
-        if (Test-Path $tmpSea) { Remove-Item -Force $tmpSea }
+        if (Test-Path $tmpSea) { Remove-Item -Force $tmpSea -ErrorAction SilentlyContinue }
     }
 }
 
@@ -657,6 +660,11 @@ function Invoke-EnsureLatest {
         Invoke-FullInstall $baseUrl $versionUrl
         $local = Read-LocalVersion
     } else {
+        if (-not (Test-Path -LiteralPath (Join-Path $INSTALL_DIR 'sl.cmd') -PathType Leaf)) {
+            Write-WindowsWrappers
+        }
+        Verify-Install
+        Init-Env
         Write-OK "已是最新: v$local"
     }
 

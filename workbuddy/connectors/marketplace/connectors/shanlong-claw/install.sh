@@ -197,9 +197,9 @@ fetch_to_file() {
     return 0
   fi
   if command -v curl &>/dev/null; then
-    curl -fsSL --connect-timeout 5 --max-time 120 "$url" -o "$dest"
+    curl -fsSL --connect-timeout 5 --max-time 300 "$url" -o "$dest"
   elif command -v wget &>/dev/null; then
-    wget -q --timeout=120 -O "$dest" "$url"
+    wget -q --timeout=300 -O "$dest" "$url"
   else
     log_err "未找到 curl 或 wget，无法下载"
     exit 1
@@ -393,6 +393,13 @@ if [ -f "$PENDING/ready" ]; then
           return 1
           ;;
       esac
+      local config_result
+      if ! config_result="$("$SEA" --sl-config-migrate --home "$SL_HOME")" || [[ "$config_result" != *'"ok":true'* ]]; then
+        rm -f "$SEA"
+        if [ -f "$SEA.bak" ]; then mv "$SEA.bak" "$SEA" || true; fi
+        return 1
+      fi
+      if [[ "$config_result" == *'"status":"conflict"'* ]]; then printf '%s\n' "$config_result" >&2; fi
       if [ -f "$PENDING/ready" ]; then
         cp "$PENDING/ready" "$BIN/version" || true
       fi
@@ -459,9 +466,6 @@ install_from_sea() {
     return 1
   fi
 
-  if [ -f "$SCRIPT_DIR/default.env" ]; then
-    cp "$SCRIPT_DIR/default.env" "$SL_HOME/default.env"
-  fi
   if [ -f "$URL_CONF" ]; then
     cp "$URL_CONF" "$SL_HOME/install-url.conf"
   fi
@@ -477,35 +481,15 @@ install_from_sea() {
 }
 
 init_env() {
-  local env_file="$SL_HOME/.env"
-  local default_env_file="$SCRIPT_DIR/default.env"
-  local needs_init=false
-  local saved_key=""
-
-  if [ ! -f "$env_file" ]; then
-    needs_init=true
-  elif ! grep -q 'SL_SLY_BASEURL' "$env_file" 2>/dev/null; then
-    needs_init=true
-    saved_key=$(grep '^SL_API_KEY=' "$env_file" 2>/dev/null | head -1 | cut -d= -f2- || true)
+  if [ -f "$SL_HOME/pending-update/ready" ]; then
+    log_warn '配置迁移随 pending-update 激活执行，当前配置保持不变'
+    return 0
   fi
-
-  if [ "$needs_init" = true ]; then
-    if [ ! -f "$default_env_file" ]; then
-      log_err "缺少 default.env，无法初始化连接器配置"
-      exit 1
-    fi
-    cp "$default_env_file" "$env_file"
-    chmod 600 "$env_file"
-    if [ -n "${saved_key:-}" ]; then
-      sed -i.bak "s/^SL_API_KEY=.*/SL_API_KEY=${saved_key}/" "$env_file" && rm -f "${env_file}.bak"
-      log_ok "配置已修复（保留原 API Key）"
-    else
-      log_ok "默认配置已初始化"
-    fi
-  else
-    log_ok "配置文件完整，保留原配置"
-  fi
-  chmod 600 "$env_file"
+  local result
+  result="$("$INSTALL_DIR/$SEA_NAME" --sl-config-migrate --home "$SL_HOME")" || return 1
+  if [[ "$result" != *'"ok":true'* ]]; then log_err 'config-migration-invalid-result'; return 1; fi
+  # The internal command emits field names and status only, never values.
+  log_ok "配置迁移: $result"
 }
 
 setup_path() {
@@ -520,11 +504,19 @@ setup_path() {
 }
 
 verify_install() {
-  local version
+  local version entry_version
+  if [ ! -x "$INSTALL_DIR/sl" ]; then
+    log_err "安装验证失败: sl 启动脚本缺失或不可执行"
+    return 1
+  fi
   version="$(read_local_version)"
   [ -n "$version" ] || version="unknown"
   if [ -x "$INSTALL_DIR/$SEA_NAME" ]; then
     if assert_sea_runnable "$INSTALL_DIR/$SEA_NAME" "$version"; then
+      if ! entry_version="$(SL_CLI_SKIP_UPDATE=1 "$INSTALL_DIR/sl" --version)" || [ "$entry_version" != "$version" ]; then
+        log_err "安装验证失败: sl 启动入口版本不匹配"
+        return 1
+      fi
       log_ok "安装成功: sl v${version}"
       return 0
     fi
@@ -553,17 +545,16 @@ do_full_install() {
   verify_sea_manifest "$_SL_TMP_SEA" "$remote_ver"
   assert_sea_runnable "$_SL_TMP_SEA" "$remote_ver"
   install_from_sea "$_SL_TMP_SEA" "$remote_ver"
-  init_env
   setup_path
-  if ! verify_install; then
+  if ! verify_install || ! init_env; then
     rm -rf "$INSTALL_DIR"
     if [ -d "${INSTALL_DIR}.bak" ]; then
       mv "${INSTALL_DIR}.bak" "$INSTALL_DIR"
     fi
     return 1
   fi
-  cleanup_legacy_program_assets
-  rm -rf "${INSTALL_DIR}.bak"
+  cleanup_legacy_program_assets || log_warn '安装已完成；旧程序资产清理失败'
+  rm -rf "${INSTALL_DIR}.bak" || log_warn '安装已完成；旧版本备份清理失败'
   cleanup_sea
   trap - EXIT
 }
@@ -588,6 +579,10 @@ do_ensure_latest() {
     do_full_install
     local_ver="$(read_local_version)"
   else
+    if [ ! -x "$INSTALL_DIR/sl" ]; then write_unix_wrapper; fi
+    chmod +x "$INSTALL_DIR/$SEA_NAME"
+    verify_install
+    init_env
     log_ok "已是最新: v${local_ver}"
   fi
 

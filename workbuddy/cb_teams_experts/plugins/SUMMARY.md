@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/cb_teams_experts/plugins/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins`
-- 条目数：30
-- 文件数：1449
-- 最近同步：2026-09-05 18:00:02 +0800
+- 条目数：31
+- 文件数：1534
+- 最近同步：2026-09-12 18:00:07 +0800
 - 原始分析报告：[plugins_analysis_company_analysis.md](../plugins_analysis_company_analysis.md)
 
 ## 场景导航（按用途）
@@ -18,6 +18,7 @@
 - **ai-hedge-fund** — AI 对冲基金投资分析系统：19位投资大师并行分析 + 风险管理 + 投资组合决策的全流程投资分析。涵盖巴菲特、芒格、林奇、伯里、塔勒布、伍德、格雷厄姆等13位传奇投资哲学家 + 6位专业分析师，通过信号聚合投票输出 BUY/SELL/HOLD 建议。数据源使用 NeoData 金融数据服务。
 - **equity-research** — 股票研究
 - **finance** — 财务与会计
+- **finance-data** — 金融数据检索（209 个 API）
 - **financial-analysis** — 财务建模（DCF、LBO、Comps）
 - **investment-banking** — 投资银行（M&A、融资）
 - **lseg** — 资本市场分析
@@ -87,6 +88,7 @@
 | equity-research | `workbuddy/cb_teams_experts/plugins/equity-research` | 金融研究 | 股票研究 equity-research | 22 | 股票研究 |
 | executing-marketing-campaigns | `workbuddy/cb_teams_experts/plugins/executing-marketing-campaigns` | 营销/内容运营 | 营销活动管理 executing-marketing-campaigns | 15 | 营销活动管理 |
 | finance | `workbuddy/cb_teams_experts/plugins/finance` | 金融研究 | 财务与会计 finance | 13 | 财务与会计 |
+| finance-data | `workbuddy/cb_teams_experts/plugins/finance-data` | 金融研究 | 金融数据检索（209 个 API） finance-data | 85 | 金融数据检索（209 个 API） |
 | financial-analysis | `workbuddy/cb_teams_experts/plugins/financial-analysis` | 金融研究 | 财务建模（DCF、LBO、Comps） financial-analysis | 31 | 财务建模（DCF、LBO、Comps） |
 | 专业高考顾问 | `workbuddy/cb_teams_experts/plugins/gaokao-advisor` | 教育/考试 | 高考志愿 分数线查询 可信检索 志愿填报引导 专业高考顾问 | 41 | 辅助检索高考知识库并调用分数线、一分一段能力，整理带来源的真题、高校专业和志愿参考；同时提供全流程志愿填报引导，产出可转发的腾讯文档志愿报告 |
 | general-skills | `workbuddy/cb_teams_experts/plugins/general-skills` | 通用工具/平台 | 通用技能集 general-skills | 40 | 通用技能集 |

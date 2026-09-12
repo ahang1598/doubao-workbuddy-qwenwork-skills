@@ -10,7 +10,7 @@ lovrabet kb detail --id <id> --format compress
 lovrabet kb search --query "订单审批" --topk 5 --format compress
 ```
 
-`kb search` 只携带当前 AK，通过 `kbDomain` 调用固定 Runtime 搜索网关；Runtime 再按其 Java 环境配置访问 KB Service。返回范围是 `public/company/personal`，使用 `scope` 区分来源。
+`kb search` 只携带当前 AK，通过 `runtimeDomain` 调用固定 Runtime 搜索网关；Runtime 再按其 Java 环境配置访问 KB Service。返回范围是 `public/company/personal`，使用 `scope` 区分来源。
 
 结构化输出固定为 `data: { schemaVersion:2, profile:"runtime", total, strategyFingerprint, timingsMs, hits }`。`--topk` 可选且必须是 1–50 的整数；命中完整保留 `documentId/revision/chunkId/scope/title/text/tags/rank/rawScore/finalScore/scoreKind` 的服务端顺序和值，不输出 legacy 别名。无命中是 `total:0/hits:[]` 的成功；字段、rank、score、timing、`no-store` 或 scope 漂移都会以脱敏错误失败。
 

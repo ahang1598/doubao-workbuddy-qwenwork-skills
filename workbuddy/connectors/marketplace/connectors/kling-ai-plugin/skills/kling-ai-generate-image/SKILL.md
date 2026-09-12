@@ -1,11 +1,11 @@
 ---
 name: kling-ai-generate-image
-description: 通过 WorkBuddy 中的 Kling AI 将自然语言需求优化为精确提示词并生成影视级、专业级图像。支持文生图、图生图，适用于海报、产品摄影、广告创意和参考图编辑。
+description: 通过 WorkBuddy 中的 Kling AI 将自然语言需求优化为精确提示词并生成影视级、专业级图像。支持文生图、图生图，适用于海报、产品摄影、广告创意和参考图编辑及主体库 Element 复用。
 ---
 
 # Kling AI 图像生成
 
-将创意需求转化为一条规格明确的 Kling 图像请求。仅使用在 `https://klingai.com/mcp` 配置的 MCP 所提供的实时工具和模式定义。
+将创意需求转化为一条规格明确的 Kling 图像请求。仅使用在 `https://klingai.com/mcp/plugin` 配置的 MCP 所提供的实时工具和模式定义。
 
 ## 使用约定
 
@@ -16,6 +16,8 @@ description: 通过 WorkBuddy 中的 Kling AI 将自然语言需求优化为精�
 - 优先使用宿主已提供且所选模型 schema 接受的图片引用。
 
 提交前阅读共享的[工具流程](../kling-ai-plugin/references/tool-workflows.md)、[完整 MCP 输入输出契约](../kling-ai-plugin/references/mcp-contract.md)、[模型参数快照](../kling-ai-plugin/references/model-parameters.md)和[失败预防门禁](../kling-ai-plugin/references/failure-prevention.md)，并用当次 `tools/list` / `who_am_i` 覆盖快照中的动态值。出现授权、模式定义、素材接入或提供方错误时，再阅读共享的[故障排查](../kling-ai-plugin/references/troubleshooting.md)。
+
+使用主体库 Element 或需上传本地素材时，先阅读[素材工作流](../kling-ai-plugin/references/asset-workflows.md)，完成主体类型检查、结构化绑定或两步上传，再继续生成。
 
 ## 工作流程
 
@@ -46,7 +48,7 @@ description: 通过 WorkBuddy 中的 Kling AI 将自然语言需求优化为精�
 ## 图像输入校验
 
 - 先选择 `image_to_image` 模型，再使用其当次 schema 声明的 input 名称。不要把其他工具或模型的 `image`、`first_image` 当作 `image_1` 使用；切换模型后重新构造 inputs。
-- 优先使用宿主已提供且所选模型 schema 接受的图片引用，不要把本地路径或仅写在提示词中的图片 URL 代替结构化 input。宿主无法提供合规引用时，说明当前限制并停止。
+- 优先使用宿主已提供且所选模型 schema 接受的图片引用，不要把本地路径或仅写在提示词中的图片 URL 代替结构化 input。宿主未提供合规引用时，先按素材工作流检查两步上传；仍不可用则说明当前限制并停止。
 - 复用历史 Kling 生成图时，忽略会话中的旧 URL；紧邻提交前用已绑定的 `generationId` 调用一次 `query_tasks`，按保存的 `works[]` 序号与 `contentType` 取得当前 URL 并立即使用。没有任务编号、无法确定作品、刷新失败、所选模型不接受当前 URL，或本轮刷新后仍资源不存在时，请用户重新提供图片，不要再次查询或尝试其他旧 URL。
 - 提交前确认 `model` 已填写，必填 input 齐全、数量未超限，input 名称与 URL 来源均符合所选模型的实时 schema。
 

@@ -32,7 +32,7 @@ ol li { margin: .3rem 0; }
 <body>
 
 <h1>天财商龙餐饮SaaS · WorkBuddy 连接器</h1>
-<p class="subtitle">面向 WorkBuddy 对接方的集成手册 · v1.0.165 · CLI + Skill 方案</p>
+<p class="subtitle">面向 WorkBuddy 对接方的集成手册 · v1.0.168 · CLI + Skill 方案</p>
 
 <!-- ==================== 前置条件 ==================== -->
 <h2>前置条件</h2>
@@ -53,7 +53,15 @@ ol li { margin: .3rem 0; }
 ├── icon.png                <span class="comment">← WorkBuddy 读取：图标</span>
 ├── default.env             <span class="comment">← CLI 默认环境配置模板</span>
 ├── skills/                 <span class="comment">← WorkBuddy 读取：AI 技能（WorkBuddy 加载给 AI）</span>
-│   └── tcsl-enterprise-guide/            <span class="comment">← 公司介绍 + 企业版能力导览</span>
+│   ├── member-campaign-analysis/        <span class="comment">← 会员营销活动分析</span>
+│   ├── member-recharge-analysis/        <span class="comment">← 会员储值分析</span>
+│   ├── member-coupon-analysis/          <span class="comment">← 会员卡券分析</span>
+│   ├── member-repurchase-analysis/      <span class="comment">← 会员复购分析</span>
+│   ├── member-data-overview-analysis/   <span class="comment">← 会员数据概览综合分析</span>
+│   ├── member-consumption-analysis/     <span class="comment">← 会员消费分析</span>
+│   ├── member-profile-analysis/         <span class="comment">← 会员用户画像分析</span>
+│   ├── member-points-analysis/          <span class="comment">← 会员积分分析</span>
+│   └── tcsl-company-intro/               <span class="comment">← 天财商龙公司介绍</span>
 │       ├── SKILL.md / agents/ / rules/
 ├── install.sh              <span class="comment">← init 脚本（macOS/Linux）</span>
 ├── install.ps1             <span class="comment">← init 脚本（Windows）</span>
@@ -255,8 +263,18 @@ statusMatch: "\"authenticated\"\\s*:\\s*true"
 runtime:     { "type": "node", "version": ">=18" }
 
 <span class="comment"># WorkBuddy 从 zip 包中加载 skills/ 目录给 AI：</span>
-skills/tcsl-enterprise-guide/            <span class="comment">← 公司介绍 + 企业版能力导览</span>
+skills/member-campaign-analysis/        <span class="comment">← 会员营销活动分析</span>
+skills/member-recharge-analysis/        <span class="comment">← 会员储值分析</span>
+skills/member-coupon-analysis/          <span class="comment">← 会员卡券分析</span>
+skills/member-repurchase-analysis/      <span class="comment">← 会员复购分析</span>
+skills/member-data-overview-analysis/   <span class="comment">← 会员数据概览综合分析</span>
+skills/member-consumption-analysis/     <span class="comment">← 会员消费分析</span>
+skills/member-profile-analysis/         <span class="comment">← 会员用户画像分析</span>
+skills/member-points-analysis/          <span class="comment">← 会员积分分析</span>
+skills/tcsl-company-intro/               <span class="comment">← 天财商龙公司介绍与当前支持功能</span>
 <span class="comment"># 路由：本 Skill 的 SKILL.md「Skill 路由」+ agents/*.yaml</span></pre>
+<p>会员分析仅支持 CRM8 客户；非 CRM8 客户使用没有数据。</p>
+<p>天财商龙限时免费回馈客户,更多能力期待10月份Workbuddy企业版使用~</p>
 </div>
 
 <div class="info">

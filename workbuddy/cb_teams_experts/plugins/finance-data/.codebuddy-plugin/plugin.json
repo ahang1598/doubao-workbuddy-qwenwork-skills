@@ -1,0 +1,13 @@
+{
+  "name": "finance-data",
+  "version": "1.5.0",
+  "description": "金融数据与研究插件，包含 wb-finance-skill 金融场景总入口、neodata-financial-search 自然语言金融搜索、westock-data 结构化行情数据和 westock-tool 条件选股，覆盖股票、基金、指数、债券、期货、期权、外汇、大宗商品、行业与宏观经济等数据。",
+  "author": {
+    "name": "CodeBuddy Teams"
+  },
+  "homepage": {
+    "url": "",
+    "type": "github"
+  },
+  "license": ""
+}

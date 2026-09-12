@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="496" height="496" viewBox="0 0 496 496">
+  <defs>
+    <clipPath id="clip-logo_2">
+      <rect width="496" height="496"/>
+    </clipPath>
+  </defs>
+  <g id="logo_2" data-name="logo – 2" clip-path="url(#clip-logo_2)">
+    <rect width="496" height="496" fill="#fff"/>
+    <g id="组_2" data-name="组 2" transform="translate(0 3)">
+      <path id="交叉_1" data-name="交叉 1" d="M0,218C0,124.843,32.977,43.513,82,0c49.023,43.513,82,124.843,82,218S131.023,392.487,82,436C32.977,392.487,0,311.157,0,218Z" transform="translate(166 27)" fill="#de5145" opacity="0.75"/>
+      <path id="交叉_2" data-name="交叉 2" d="M0,218.141C0,124.924,32.9,43.542,81.8,0c48.905,43.542,81.8,124.924,81.8,218.141s-32.9,174.6-81.8,218.142C32.9,392.741,0,311.359,0,218.141Z" transform="translate(344.406 32.907) rotate(45)" fill="#ffce43" opacity="0.75"/>
+      <path id="交叉_3" data-name="交叉 3" d="M0,218C0,124.843,32.977,43.513,82,0c49.023,43.513,82,124.843,82,218S131.023,392.487,82,436C32.977,392.487,0,311.157,0,218Z" transform="translate(466 163) rotate(90)" fill="#00c25f" opacity="0.75"/>
+      <path id="交叉_4" data-name="交叉 4" d="M0,218.141C0,124.924,32.9,43.542,81.8,0c48.905,43.542,81.8,124.924,81.8,218.141s-32.9,174.6-81.8,218.142C32.9,392.741,0,311.359,0,218.141Z" transform="translate(460.093 341.406) rotate(135)" fill="#1d69fb" opacity="0.75"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="ps-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4A90E2"/>
+      <stop offset="1" stop-color="#2BB3F0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="13" fill="url(#ps-bg)"/>
+  <g fill="#ffffff">
+    <rect x="11" y="27" width="11" height="25" rx="1.5"/>
+    <rect x="26.5" y="13" width="13" height="39" rx="1.5"/>
+    <rect x="43" y="32" width="10" height="20" rx="1.5"/>
+  </g>
+  <g fill="#4A90E2" opacity="0.85">
+    <circle cx="16.5" cy="33" r="1.4"/><circle cx="16.5" cy="40" r="1.4"/><circle cx="16.5" cy="47" r="1.4"/>
+    <circle cx="33" cy="20" r="1.5"/><circle cx="33" cy="27" r="1.5"/><circle cx="33" cy="34" r="1.5"/><circle cx="33" cy="41" r="1.5"/><circle cx="33" cy="48" r="1.5"/>
+    <circle cx="48" cy="38" r="1.4"/><circle cx="48" cy="45" r="1.4"/>
+  </g>
+</svg>

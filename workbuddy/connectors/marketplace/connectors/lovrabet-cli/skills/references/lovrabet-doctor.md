@@ -25,4 +25,4 @@ lovrabet doctor
 
 `doctor` 不修改配置、不安装 Skill，也不替代业务命令的认证和权限检查。
 
-`API Endpoints` 显示 `kbDomain`，该地址同时承载 Personal KB 管理与 `kb search` Runtime 网关。KB Service 下游地址由 Runtime Java 配置管理，不在 CLI doctor 中显示。
+`API Endpoints` 显示 `runtimeDomain`，该地址同时承载普通运行态请求、Personal KB 管理与 `kb search` Runtime 网关。KB Service 下游地址由 Runtime Java 配置管理，不在 CLI doctor 中显示。

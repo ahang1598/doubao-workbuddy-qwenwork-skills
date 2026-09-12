@@ -7,7 +7,7 @@ author: "灵创 AI"
 
 # 灵创视频生成 Skill
 
-本 Skill 提供 AI 视频生成能力，支持文生视频、图生视频和多种生成模式。
+本 Skill 提供 AI 视频生成能力，支持文生视频、图生视频等多种生成模式。视频生成是异步的，用 `task status` 查询结果。
 
 ## 可用命令
 
@@ -60,15 +60,15 @@ mglc video generate --prompt "产品介绍视频" --duration 5 --web-search
 | --session-id | int64 | - | 项目生成会话 ID |
 
 **生成模式 type 说明**：
-- `text2video`：纯文本生成视频
-- `firstFrame`：首帧图片引导生成
-- `lastFrame`：尾帧图片引导生成
-- `firstLastFrame`：首尾帧约束生成
-- `subjectRef`：(角色/场景/道具)设定参考生成
-- `videoRef`：视频参考生成
-- `allMediaRef`：全媒体参考生成
-- `videoEdit`：视频编辑
-- `videoExtend`：视频扩展
+- `text2video`：根据文本生成视频
+- `firstFrame`：根据第一帧生成视频
+- `lastFrame`：根据最后一帧生成视频
+- `firstLastFrame`：根据第一帧和最后一帧生成视频
+- `subjectRef`：参考设定生成视频
+- `allMediaRef`：参考音频、视频、图片等多模态内容生成视频
+- `videoRef`：参考视频内容生成视频
+- `videoEdit`：在原视频的基础上，进行编辑生成新视频
+- `videoExtend`：在原视频的基础上，进行扩展生成新视频
 
 ## 使用建议
 
@@ -76,7 +76,7 @@ mglc video generate --prompt "产品介绍视频" --duration 5 --web-search
 2. **时长**：建议 5-10 秒，更短的时长生成质量更好
 3. **Prompt**：详细描述视频内容、动作、镜头运动
 4. **图生视频**：使用高质量参考图效果更好
-5. **进度查询**：视频生成是异步的，用 `video status` 查询结果
+5. **进度查询**：视频生成是异步的，用 `task status` 查询结果
 
 ## 注意事项
 - seedance系列视频模型可配合virtual-ip技能创作真实IP视频

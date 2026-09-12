@@ -11,7 +11,7 @@ author: "灵创 AI"
 
 ## 安装
 
-### 快速安装
+### 快速安装（可直接升级到最新版本）
 
 ```bash
 curl -fsSL https://aigc-assets.mgtv.com/mglc/install.sh | bash
@@ -20,7 +20,7 @@ curl -fsSL https://aigc-assets.mgtv.com/mglc/install.sh | bash
 安装指定版本：
 
 ```bash
-curl -fsSL https://aigc-assets.mgtv.com/mglc/install.sh | bash -s -- 0.1.0
+curl -fsSL https://aigc-assets.mgtv.com/mglc/install.sh | bash -s -- 0.1.13
 ```
 
 > 安装脚本默认安装到 `~/.local/bin`，不需要 `sudo`。若该目录不在 `PATH`，脚本会输出需要添加的环境变量。
@@ -157,10 +157,12 @@ mglc version
 
 | Skill | 命令前缀 | 功能 |
 |-------|----------|------|
-| user | `mglc auth/login/logout/user/status` | WorkBuddy 授权、登录、用户信息、状态和登出 |
+| user | `mglc logout/user info` | 退出登录、用户信息查询 |
 | model | `mglc model` | 模型列表、模型能力查询 |
 | image | `mglc image` | 图片生成、图生图、图片超分 |
 | video | `mglc video` | 视频生成、图生视频、状态查询 |
+| audio | `mglc audio` | 音乐、配乐、配音生成和状态查询 |
+| timbre | `mglc timbre` | 音色库查询、收藏、设计和克隆 |
 | virtual-ip | `mglc virtual-ip` | SD 合规素材库资产管理（用于真实IP创作） |
 | project | `mglc project/episode/script/storyboard/subject/session` | 项目、剧集、剧本、分镜、(角色/场景/道具)设定、会话管理 |
 
@@ -170,5 +172,5 @@ mglc version
 2. **查模型**：用 `mglc model list` 查看可用模型
 3. **从简单开始**：先用 `mglc image generate` 快速体验
 4. **项目工作流**：项目 → 剧集 → 剧本 → 分镜 → AI 生成
-5. **异步任务**：视频、图片、音频生成等异步任务用 `mglc task status` 查询
+5. **异步任务**：视频、图片、音频生成等异步任务用 `mglc task status` 查询, 状态码：0 已提交，1 运行中，2 成功，3 失败，4 已取消
 6. **帮助**：当遇到问题时，使用 `-h` 或 `--help` 查看帮助

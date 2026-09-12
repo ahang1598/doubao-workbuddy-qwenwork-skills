@@ -1,0 +1,73 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Brand gradient: fresh teal -> trustworthy blue (diagonal, Apple-style depth) -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"  stop-color="#1FC8B0"/>
+      <stop offset="52%" stop-color="#159FC6"/>
+      <stop offset="100%" stop-color="#1467CE"/>
+    </linearGradient>
+
+    <!-- Top sheen: subtle light coming from top, Apple material feel -->
+    <linearGradient id="sheen" x1="512" y1="100" x2="512" y2="620" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="55%"  stop-color="#FFFFFF" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Bottom vignette for grounded depth -->
+    <linearGradient id="vignette" x1="512" y1="500" x2="512" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#0A2E63" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0A2E63" stop-opacity="0.22"/>
+    </linearGradient>
+
+    <!-- Soft drop shadow beneath the icon body -->
+    <filter id="bodyShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="26" flood-color="#0A2E63" flood-opacity="0.28"/>
+    </filter>
+
+    <!-- Gentle shadow to lift the glyph off the surface -->
+    <filter id="glyphShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0A2E63" flood-opacity="0.30"/>
+    </filter>
+
+    <!-- Rounded-rect (squircle-approximation) mask for the icon body -->
+    <clipPath id="bodyClip">
+      <rect x="100" y="100" width="824" height="824" rx="185" ry="185"/>
+    </clipPath>
+  </defs>
+
+  <!-- Icon body with Apple margin + shadow -->
+  <g filter="url(#bodyShadow)">
+    <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#bg)"/>
+  </g>
+
+  <!-- Material overlays clipped to body -->
+  <g clip-path="url(#bodyClip)">
+    <rect x="100" y="100" width="824" height="824" fill="url(#sheen)"/>
+    <rect x="100" y="100" width="824" height="824" fill="url(#vignette)"/>
+    <!-- inner top highlight edge -->
+    <rect x="103" y="103" width="818" height="818" rx="182" ry="182" fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="3"/>
+  </g>
+
+  <!-- Scales of justice glyph -->
+  <g filter="url(#glyphShadow)" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- top handle -->
+    <circle cx="512" cy="304" r="24" fill="#FFFFFF" stroke="none"/>
+    <!-- central post -->
+    <line x1="512" y1="316" x2="512" y2="690" stroke-width="26"/>
+    <!-- balance beam -->
+    <line x1="342" y1="376" x2="682" y2="376" stroke-width="26"/>
+    <!-- base bar -->
+    <rect x="420" y="680" width="184" height="26" rx="13" ry="13" fill="#FFFFFF" stroke="none"/>
+
+    <!-- left pan -->
+    <line x1="342" y1="382" x2="292" y2="470" stroke-width="14"/>
+    <line x1="342" y1="382" x2="392" y2="470" stroke-width="14"/>
+    <path d="M284 470 A58 58 0 0 0 400 470" stroke-width="18"/>
+
+    <!-- right pan -->
+    <line x1="682" y1="382" x2="632" y2="470" stroke-width="14"/>
+    <line x1="682" y1="382" x2="732" y2="470" stroke-width="14"/>
+    <path d="M624 470 A58 58 0 0 0 740 470" stroke-width="18"/>
+  </g>
+</svg>

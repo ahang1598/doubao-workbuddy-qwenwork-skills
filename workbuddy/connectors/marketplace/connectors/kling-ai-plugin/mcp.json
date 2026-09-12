@@ -2,7 +2,7 @@
   "mcpServers": {
     "kling-ai-plugin": {
       "type": "http",
-      "url": "https://klingai.com/mcp",
+      "url": "https://klingai.com/mcp/plugin",
       "timeout": 30000
     }
   }

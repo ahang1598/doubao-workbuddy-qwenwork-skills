@@ -1,0 +1,4 @@
+interface:
+  display_name: "PROPDB 物性数据库"
+  short_description: "通过 PROPDB MCP 检索组分身份、基础物性与混合物数据可用性"
+  default_prompt: "使用 $propdb-skill 查询指定组分的身份和现有物性数据。"

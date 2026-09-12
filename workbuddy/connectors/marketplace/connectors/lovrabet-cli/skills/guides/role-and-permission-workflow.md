@@ -7,7 +7,7 @@
 ## 开始前
 
 1. 使用明确的 `--appcode <code>`、`--app <name>` 或已经确认的当前应用。
-2. 使用 `lovrabet role list` 获取真实角色 ID 和类型。
+2. 使用 `lovrabet role list` 获取真实角色 ID、`roleCode` 和类型。
 3. 写操作先加 `--dry-run` 检查目标和变更内容。
 4. 只有用户明确授权后才去掉 `--dry-run` 并加 `--yes`。
 
@@ -23,14 +23,15 @@ lovrabet role list --type CUSTOM --name 销售 --format compress
 lovrabet role detail --id <roleId> --format compress
 ```
 
-`role list` 返回内置角色和自定义角色。`builtin=true` 表示不能通过角色更新或删除命令修改。
+`role list` 返回内置角色和自定义角色，每个角色都包含稳定业务标识 `roleCode`。`builtin=true` 表示不能通过角色更新或删除命令修改。
 
 ### 创建和修改自定义角色
 
 ```bash
-lovrabet role create --name <roleName> --remark <remark> --dry-run --format compress
-lovrabet role create --name <roleName> --remark <remark> --yes --format compress
+lovrabet role create --name <roleName> --role-code <roleCode> --remark <remark> --dry-run --format compress
+lovrabet role create --name <roleName> --role-code <roleCode> --remark <remark> --yes --format compress
 
+lovrabet role update --id <roleId> --role-code <newRoleCode> --dry-run --format compress
 lovrabet role update --id <roleId> --name <newName> --dry-run --format compress
 lovrabet role update --id <roleId> --remark <newRemark> --yes --format compress
 
@@ -39,6 +40,7 @@ lovrabet role delete --id <roleId> --yes --format compress
 ```
 
 - 只能创建、更新和删除 CUSTOM 角色。
+- `--role-code` 最长 64 个字符且全局唯一；创建时省略则由服务端使用角色 ID，更新时可以单独修改。
 - 备注只能设置为非空内容，不能用空字符串清除。
 - 删除可能影响已有成员和权限；必须先确认角色确实不再使用。
 
