@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>婚礼主持人手卡（A5竖版拼版·对半裁开）</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;
+    color:#1a1a1a;
+    background:#e8e4e0;
+  }
+
+  /* ===== A5 竖版拼版：每张 A5 竖版纸上下各一张小卡 ===== */
+  .sheet {
+    width:148.5mm; height:210mm;
+    position:relative;
+    page-break-after:always;
+    break-after:page;
+    background:#fff;
+    margin:0 auto;
+  }
+  .sheet:last-child { page-break-after:auto; break-after:auto; }
+
+  /* 中间裁切线（纯虚线，无文字） */
+  .cut-line {
+    position:absolute; left:0; right:0; top:105mm;
+    border-top:1px dashed #c9c2be;
+    z-index:2;
+  }
+
+  /* ===== 单张小卡：148.5mm × 105mm ===== */
+  .card {
+    width:148.5mm; height:105mm;
+    padding:4mm 6mm 3mm 1.5mm;
+    display:flex; flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* 卡片头部 */
+  .card-head {
+    display:flex; align-items:center; gap:6px;
+    border-bottom:2px solid #8f2c3a; padding-bottom:1.5mm; margin-bottom:2mm;
+  }
+  .card-head .no { font-size:9px; color:#fff; background:#8f2c3a; border-radius:3px; padding:1px 6px; font-weight:bold; letter-spacing:1px; }
+  .card-head .title { font-size:13px; font-weight:bold; color:#8f2c3a; flex:1; }
+  .card-head .time { font-size:8.5px; color:#8a807b; white-space:nowrap; }
+
+  /* 卡片主体：左右分栏 */
+  .card-body { display:flex; flex:1; gap:1mm; min-height:0; }
+  .card-left { width:32%; display:flex; flex-direction:column; gap:2mm; }
+  .card-right { flex:1; }
+
+  /* 动作提示框 */
+  .cue {
+    background:#f5f2f0; border-left:3px solid #b9a8a2; border-radius:0 4px 4px 0;
+    font-size:8.5pt; color:#5d5550; padding:2mm 2.5mm; line-height:1.55;
+  }
+  .cue b { color:#8f2c3a; }
+
+  /* 下一环节提示 */
+  .next-box {
+    margin-top:auto; border-top:1px dotted #c4bbb6; padding-top:1.5mm;
+    font-size:8pt; color:#8a807b; line-height:1.45;
+  }
+
+  /* 台词 */
+  .script { font-size:10.5pt; line-height:1.62; }
+  .script p { margin-bottom:1.5mm; }
+  .script .act { color:#8a7a74; font-size:8pt; display:block; margin:0.8mm 0; }
+  .script .bride { color:#2f5d50; font-weight:bold; }
+  strong { color:#8f2c3a; }
+
+  /* 页号：右下角 */
+  .page-num {
+    position:absolute; right:5mm; bottom:2.5mm;
+    font-size:8px; color:#b0a8a3; letter-spacing:1px;
+  }
+
+  /* ===== 封面速览卡（卡00） ===== */
+  .cover-wrap { display:flex; flex:1; gap:4mm; align-items:stretch; }
+  .cover-left { flex:1.1; display:flex; flex-direction:column; justify-content:center; }
+  .cover-left .big { font-size:18px; font-weight:bold; color:#8f2c3a; letter-spacing:2px; text-align:center; }
+  .cover-left .sub { font-size:8.5px; color:#8a807b; text-align:center; margin-top:1.5mm; letter-spacing:1.5px; }
+  .cover-left .names { text-align:center; font-size:11px; margin-top:2mm; color:#1a1a1a; letter-spacing:1px; }
+  .cover-left .date { text-align:center; font-size:9px; color:#8a807b; margin-top:0.5mm; }
+  .cover-right { flex:1; }
+  .flow-table { width:100%; border-collapse:collapse; font-size:8.5pt; }
+  .flow-table td { padding:1.2mm 1mm; border-bottom:1px solid #ece6e2; }
+  .flow-table .n { color:#8f2c3a; font-weight:bold; width:6mm; }
+  .flow-table .t { width:14mm; text-align:right; color:#8a807b; font-size:7.5pt; }
+  .cover-tips { margin-top:2mm; background:#f5f2f0; border-radius:5px; padding:2mm 2.5mm; font-size:8pt; line-height:1.65; }
+
+  /* ===== 救场卡 ===== */
+  .tips-box { font-size:8.5pt; line-height:1.6; }
+  .tips-box .item { margin-bottom:1.5mm; padding-left:0.5mm; }
+  .tips-box .item b.k { color:#8f2c3a; }
+  .tips-final {
+    margin-top:2mm; background:#8f2c3a; color:#fff; border-radius:5px;
+    padding:2mm; font-size:9pt; text-align:center; line-height:1.5;
+  }
+
+  /* ===== 背面封面图 ===== */
+  .back-card {
+    width:148.5mm; height:105mm;
+    background-image: url('{{背面图文件名}}');
+    background-size: 100% 200%;
+    background-repeat: no-repeat;
+  }
+  .back-top { background-position: top; }
+  .back-bottom { background-position: bottom; }
+
+  /* ===== 打印：A5 竖版 ===== */
+  @page { size:A5 portrait; margin:0; }
+  @media print {
+    body { background:#fff; margin:0; }
+    .sheet { margin:0; }
+  }
+
+  /* ===== 屏幕预览：模拟纸张 ===== */
+  @media screen {
+    body { padding:20px; }
+    .sheet { box-shadow:0 2px 12px rgba(0,0,0,.15); margin-bottom:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== 第1张A5：正面（卡00 + 卡01） ========== -->
+<div class="sheet">
+  <!-- 上半：卡00 流程速览 -->
+  <div class="card">
+    <div class="card-head"><span class="no">00</span><span class="title">流程速览 · 封面</span><span class="time">总 ~17 min</span></div>
+    <div class="cover-wrap">
+      <div class="cover-left">
+        <div class="big">婚礼主持手卡</div>
+        <div class="sub">新郎亲自主持版</div>
+        <div class="names">{{新郎姓名}} &nbsp;&amp;&nbsp; {{新娘姓名}}</div>
+        <div class="date">{{结婚日期}}</div>
+        <div class="cover-tips">
+          <b>三条铁律：</b><br>
+          ① 语速慢半拍，环节间停 2 秒<br>
+          ② 手卡按编号拿，用完翻到最后<br>
+          ③ 忘词先让大家鼓掌，低头看卡
+        </div>
+      </div>
+      <div class="cover-right">
+        <table class="flow-table">
+          <tr><td class="n">1</td><td>开场白</td><td class="t">~2 min</td></tr>
+          <tr><td class="n">2</td><td>介绍双方家庭与来宾</td><td class="t">~1.5 min</td></tr>
+          <tr><td class="n">3</td><td>迎接新娘 · 献花牵手</td><td class="t">~2 min</td></tr>
+          <tr><td class="n">4</td><td>交换誓言 / 告白</td><td class="t">~3 min</td></tr>
+          <tr><td class="n">5</td><td>佩戴钻戒对戒</td><td class="t">~2 min</td></tr>
+          <tr><td class="n">6</td><td>敬茶 · 改口 · 红包</td><td class="t">~2.5 min</td></tr>
+          <tr><td class="n">7</td><td>父母致辞</td><td class="t">~3 min</td></tr>
+          <tr><td class="n">8</td><td>敬酒致谢 · 宣布礼成</td><td class="t">~2 min</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="page-num">01 / 12</div>
+  </div>
+  <!-- 裁切线 -->
+  <div class="cut-line"></div>
+  <!-- 下半：卡01 开场白 -->
+  <div class="card">
+    <div class="card-head"><span class="no">01</span><span class="title">开场白</span><span class="time">~2 min</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>持话筒走到场地中央，站定等全场安静再开口<br><b>音乐：</b>背景乐开口后调低</div>
+        <div class="next-box"><b>下一环节：</b>介绍来宾<br>→ 02</div>
+      </div>
+      <div class="card-right">
+        <div class="script">
+          <p>{{开场白台词_第1段}}</p>
+          <p>{{开场白台词_第2段，关键句用 <strong>加粗</strong> 标注}}</p>
+          <p>{{开场白台词_第3段}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="page-num">02 / 12</div>
+  </div>
+</div>
+
+<!-- ========== 第1张A5：背面（囍字封面 ×2） ========== -->
+<div class="sheet">
+  <div class="back-card back-top"></div>
+  <div class="cut-line"></div>
+  <div class="back-card back-bottom"></div>
+</div>
+
+<!-- ========== 第2张A5：正面（卡02 + 卡03） ========== -->
+<div class="sheet">
+  <div class="card">
+    <div class="card-head"><span class="no">02</span><span class="title">{{环节2名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 03</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节2台词}}</p></div></div>
+    </div>
+    <div class="page-num">03 / 12</div>
+  </div>
+  <div class="cut-line"></div>
+  <div class="card">
+    <div class="card-head"><span class="no">03</span><span class="title">{{环节3名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 04</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节3台词}}</p></div></div>
+    </div>
+    <div class="page-num">04 / 12</div>
+  </div>
+</div>
+<div class="sheet">
+  <div class="back-card back-top"></div>
+  <div class="cut-line"></div>
+  <div class="back-card back-bottom"></div>
+</div>
+
+<!-- ========== 第3张A5：正面（卡04 + 卡05） ========== -->
+<div class="sheet">
+  <div class="card">
+    <div class="card-head"><span class="no">04</span><span class="title">{{环节4名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 05</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节4台词}}</p></div></div>
+    </div>
+    <div class="page-num">05 / 12</div>
+  </div>
+  <div class="cut-line"></div>
+  <div class="card">
+    <div class="card-head"><span class="no">05</span><span class="title">{{环节5名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 06</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节5台词}}</p></div></div>
+    </div>
+    <div class="page-num">06 / 12</div>
+  </div>
+</div>
+<div class="sheet">
+  <div class="back-card back-top"></div>
+  <div class="cut-line"></div>
+  <div class="back-card back-bottom"></div>
+</div>
+
+<!-- ========== 第4张A5：正面（卡06 + 卡07） ========== -->
+<div class="sheet">
+  <div class="card">
+    <div class="card-head"><span class="no">06</span><span class="title">{{环节6名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 07</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节6台词}}</p></div></div>
+    </div>
+    <div class="page-num">07 / 12</div>
+  </div>
+  <div class="cut-line"></div>
+  <div class="card">
+    <div class="card-head"><span class="no">07</span><span class="title">{{环节7名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 08</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节7台词}}</p></div></div>
+    </div>
+    <div class="page-num">08 / 12</div>
+  </div>
+</div>
+<div class="sheet">
+  <div class="back-card back-top"></div>
+  <div class="cut-line"></div>
+  <div class="back-card back-bottom"></div>
+</div>
+
+<!-- ========== 第5张A5：正面（卡08 + 卡09） ========== -->
+<div class="sheet">
+  <div class="card">
+    <div class="card-head"><span class="no">08</span><span class="title">{{环节8名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 09</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节8台词}}</p></div></div>
+    </div>
+    <div class="page-num">09 / 12</div>
+  </div>
+  <div class="cut-line"></div>
+  <div class="card">
+    <div class="card-head"><span class="no">09</span><span class="title">{{环节9名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>下一环节：</b>{{下一环节}}<br>→ 10</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节9台词}}</p></div></div>
+    </div>
+    <div class="page-num">10 / 12</div>
+  </div>
+</div>
+<div class="sheet">
+  <div class="back-card back-top"></div>
+  <div class="cut-line"></div>
+  <div class="back-card back-bottom"></div>
+</div>
+
+<!-- ========== 第6张A5：正面（卡10 + 卡11救场） ========== -->
+<div class="sheet">
+  <div class="card">
+    <div class="card-head"><span class="no">10</span><span class="title">{{环节10名称}}</span><span class="time">{{时长}}</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>动作：</b>{{动作提示}}</div>
+        <div class="next-box"><b>礼成后：</b>{{后续安排}}<br>完成 ✓</div>
+      </div>
+      <div class="card-right"><div class="script"><p>{{环节10台词}}</p></div></div>
+    </div>
+    <div class="page-num">11 / 12</div>
+  </div>
+  <div class="cut-line"></div>
+  <div class="card">
+    <div class="card-head"><span class="no">11</span><span class="title">救场锦囊（随身备用）</span><span class="time">卡住就看</span></div>
+    <div class="card-body">
+      <div class="card-left">
+        <div class="cue"><b>使用时机：</b>忘词、冷场、设备故障、对方拖延时，扫一眼对应条目</div>
+        <div class="next-box" style="margin-top:auto;"><b>最后一张：</b>用完即完成<br>✦ 放松，今天你是最幸福的人</div>
+      </div>
+      <div class="card-right">
+        <div class="tips-box">
+          <div class="item"><b class="k">忘词了：</b>低头扫酒红色骨架句；或说"大家掌声再热烈一点"，趁掌声看卡。</div>
+          <div class="item"><b class="k">冷场了：</b>自己先笑："大家是不是都等着开席了？别急，流程很快啊。"</div>
+          <div class="item"><b class="k">音乐/话筒没跟上：</b>"好东西值得多等几秒，我们音响师傅比我还紧张。"</div>
+          <div class="item"><b class="k">说错话：</b>"激动了激动了，重来一遍啊"——大方纠正，没人介意。</div>
+          <div class="item"><b class="k">时间超了：</b>跳过发挥句，只留加粗骨架句，能压缩一半。</div>
+          <div class="tips-final">万能救场句：<br>"意外也是婚礼的一部分，大家掌声鼓励一下！"</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-num">12 / 12</div>
+  </div>
+</div>
+<div class="sheet">
+  <div class="back-card back-top"></div>
+  <div class="cut-line"></div>
+  <div class="back-card back-bottom"></div>
+</div>
+
+</body>
+</html>

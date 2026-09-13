@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：547
-- 当前索引文件数：15576
-- 最近变更：[2026-09-12-180007](workbuddy/change-logs/2026-09-12-180007.md) - WorkBuddy 本次同步新增 443 个文件、修改 190 个文件、删除 96 个文件。 新增条目：cb_teams_experts/finance-data, connectors/marketplace/connectors/24haowan, connectors/marketplace/connectors/24haowan-space,...
+- 当前索引条目数：548
+- 当前索引文件数：15581
+- 最近变更：[2026-09-13-180003](workbuddy/change-logs/2026-09-13-180003.md) - WorkBuddy 本次同步新增 5 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/wedding-handcard-creator。 受影响范围：skills/wedding-handcard-creator。
 
 ## 数据来源
 
@@ -392,6 +392,7 @@
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | skill | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | skill | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
 | wechat-article-pro | `workbuddy/skills/wechat-article-pro` | skill | 2 | 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签 |
+| wedding-handcard-creator | `workbuddy/skills/wedding-handcard-creator` | skill | 5 | 根据婚礼主持稿生成可直接打印的主持人手卡。输出 A5 竖版拼版（每张 A5 纸上下各一张小卡，对半裁开即得 12 张手卡），支持 HTML 和 PDF 两种格式，正面为台词+动作提示+页号，背面为红金囍字封面。适用于：用户要求制作婚礼主持手卡、把主持稿转成可打印卡片、生成司仪手卡/提词卡、设计婚礼手卡封面、输出 PDF，或已有主持稿需要配套现场手持卡片的场景。 |
 
 ### Connectors / Marketplace
 
@@ -615,6 +616,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-13-180003 | [2026-09-13-180003](workbuddy/change-logs/2026-09-13-180003.md) | WorkBuddy 本次同步新增 5 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/wedding-handcard-creator。 受影响范围：skills/wedding-handcard-creator。 |
 | 2026-09-12-180007 | [2026-09-12-180007](workbuddy/change-logs/2026-09-12-180007.md) | WorkBuddy 本次同步新增 443 个文件、修改 190 个文件、删除 96 个文件。 新增条目：cb_teams_experts/finance-data, connectors/marketplace/connectors/24haowan, connectors/marketplace/connectors/24haowan-space,... |
 | 2026-09-05-180002 | [2026-09-05-180002](workbuddy/change-logs/2026-09-05-180002.md) | WorkBuddy 本次同步新增 31 个文件、修改 13 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/aidd-saas, connectors/marketplace/connectors/futu-mcp, connectors/marketplace/connectors/tence... |
 | 2026-09-04-180001 | [2026-09-04-180001](workbuddy/change-logs/2026-09-04-180001.md) | WorkBuddy 本次同步新增 94 个文件、修改 19 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/laiye-adp, connectors/marketplace/connectors/magic-agent-token, connectors/marketplace/connect... |
