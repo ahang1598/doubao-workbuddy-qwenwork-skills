@@ -181,8 +181,11 @@ async function renderPage() {
 ### Extract text with bounding coordinates
 
 ```javascript
+import { readFileSync } from 'node:fs';
+
 async function extractTextWithCoords(pdfPath) {
-    const pdf = await pdfjsLib.getDocument(pdfPath).promise;
+    const data = new Uint8Array(readFileSync(pdfPath));
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
     const results = [];
 
     for (let i = 1; i <= pdf.numPages; i++) {
@@ -205,8 +208,11 @@ async function extractTextWithCoords(pdfPath) {
 ### Extract annotations (forms, comments)
 
 ```javascript
+import { readFileSync } from 'node:fs';
+
 async function readAnnotations(pdfPath) {
-    const pdf = await pdfjsLib.getDocument(pdfPath).promise;
+    const data = new Uint8Array(readFileSync(pdfPath));
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const annotations = await page.getAnnotations();

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.61",
+  "layout": "multi",
+  "skillNames": [
+    "dingtalk-aisearch",
+    "dingtalk-aitable",
+    "dingtalk-calendar",
+    "dingtalk-chat",
+    "dingtalk-contact",
+    "dingtalk-doc",
+    "dingtalk-drive",
+    "dingtalk-event",
+    "dingtalk-mail",
+    "dingtalk-minutes",
+    "dingtalk-misc",
+    "dingtalk-shared",
+    "dingtalk-todo",
+    "dingtalk-wiki"
+  ],
+  "routingFallbackSkill": "dingtalk-shared",
+  "transactionId": "8a4246a2-df8f-4cc6-9299-505a7fa046d9"
+}

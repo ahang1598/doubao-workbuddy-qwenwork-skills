@@ -1,10 +1,10 @@
 ---
 name: pdf
-version: 1.0.4
+version: 1.0.5
 description: >
-  Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision); render an existing .md/.html/.tex source file to PDF; or create new branded PDFs from MDX (reports, briefings, whitepapers). Do not use for: reading/summarizing/analyzing PDF content (use parse_file); PDF → Word (use pdf-convert-to-word); editing Word/PPT/spreadsheets; unauthorized files.
+  Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision), or reconstruct a text-based PDF as editable Word; render an existing .md/.html/.tex source file to PDF; or create new branded PDFs from MDX (reports, briefings, whitepapers). Do not use for: reading/summarizing/analyzing PDF content (use parse_file); editing existing Word/PPT/spreadsheets; unauthorized files.
 description_zh: >
-  对 PDF 文件本身执行结构化操作：检查/填写表单、合并/拆分、加水印、加密/解密、清除元数据、提取表格或图片、压缩、校验、把页面渲染为图片（便于以视觉方式阅读扫描版 PDF）；把已有的 .md/.html/.tex 源文件渲染为 PDF；或基于 MDX 生成带品牌样式的新 PDF（报告、简报、白皮书）。优先使用适配的 QwenWork 云端能力；云端不适配或异常时，保留可信本地路径以完成任务。不适用于：阅读/总结/分析 PDF 内容（改用 parse_file）、PDF 转 Word（改用 pdf-convert-to-word）、编辑 Word/PPT/表格内容、未授权文件。
+  对 PDF 文件本身执行结构化操作：检查/填写表单、合并/拆分、加水印、加密/解密、清除元数据、提取表格或图片、压缩、校验、把页面渲染为图片（便于以视觉方式阅读扫描版 PDF），或把文本型 PDF 重建为可编辑 Word；把已有的 .md/.html/.tex 源文件渲染为 PDF；或基于 MDX 生成带品牌样式的新 PDF（报告、简报、白皮书）。优先使用适配的 QwenWork 云端能力；云端不适配或异常时，保留可信本地路径以完成任务。不适用于：阅读/总结/分析 PDF 内容（改用 parse_file）、编辑已有 Word/PPT/表格内容、未授权文件。
 license: Proprietary. LICENSE has complete terms.
 ---
 
@@ -23,6 +23,7 @@ Use it when the user wants to:
 - extract images from a PDF
 - render PDF pages to images so the agent can read scanned pages with vision
 - inspect or fill a PDF form (AcroForm or flat/scanned via overlay)
+- reconstruct a text-based PDF as an editable Word document
 - convert an existing Office document (DOCX/PPTX/XLSX and legacy variants) to PDF
 - generate a PDF from an **existing** `.md` / `.html` / `.tex` source file in the workspace
 
@@ -32,13 +33,51 @@ Do **not** use this skill when:
 - the user only wants to **read, summarize, analyze, or ask questions** about PDF content — no PDF structural operation is needed
 - the user wants to **write/generate content** (report, article, meeting minutes, analysis) and output as PDF — the core task is content authoring, not PDF manipulation
 - the user says "export to PDF / output PDF / make this a PDF" but has **no existing `.md`/`.html`/`.tex` source file** — that is content creation
-- the user wants **PDF → Word/docx** conversion (handled by `pdf-convert-to-word`)
 - the user’s real task is to edit **Word / slides / spreadsheet** content
 - the task is mainly **image editing, restoration, or stylization**
 - the user asks for **legal-grade permanent redaction guarantees** beyond what this toolchain verifies
 - the user refers to files that are **not provided, not accessible, or not authorized**
 
 **Key principle**: if the user’s core need is “create/write content” and PDF is just the output format, do NOT trigger this skill. Only trigger when the PDF file itself (or a structured source file like `.md`) is the direct subject of work.
+
+---
+
+## PDF → Word
+
+Choose by available capability, not operating system. Start with the product and
+runtime routes below because they are usually direct, but prefer completing the
+task over minimizing route discovery. When needed, detect compatible
+pre-existing system or workspace tools through targeted checks such as PATH,
+tool registries, or standard application locations.
+
+1. Use typed `document.convert` once when it explicitly supports PDF input and
+   DOCX output.
+2. Otherwise prefer a ready Node.js route: extract text and coordinates with
+   `pdfjs-dist`, then generate the DOCX with `docx`. Load the PDF as
+   `Uint8Array`; do not flatten text before reconstructing paragraphs or tables.
+3. If Node.js, its modules, or npm are unavailable, use an existing Python
+   interpreter with `pdf2docx`.
+4. If these routes are unavailable or fail, use another compatible pre-existing
+   tool that can produce DOCX in the current environment. Verify its actual
+   PDF-to-DOCX capability instead of assuming support from the operating system.
+
+For the selected local route only, recover missing packages once. With a ready
+Node.js and npm, install:
+
+```bash
+npm install --no-save --no-package-lock --prefer-offline --fetch-retries=0 --fetch-timeout=30000 "pdfjs-dist@3.11.174" "docx@9.7.1"
+```
+
+With a ready Python and pip, install `pdf2docx` at user scope using the same
+interpreter (`<python> -m pip install --user pdf2docx`). Retry a failed route
+only when dependency recovery or new evidence changes its conditions; otherwise
+continue with another plausible route and do not revisit it. Stop only after the
+available and authorized paths are exhausted, then report the concrete evidence.
+
+Validate that the DOCX opens. Treat layout as best-effort and disclose that
+images, stamps, and pixel-perfect positioning are not preserved unless verified.
+For the PDF.js Node API, read
+[references/advanced-libraries.md](references/advanced-libraries.md#pdfjs-dist--javascript-pdf-rendering-browser--node).
 
 ---
 
@@ -57,8 +96,9 @@ All other PDF work — reading, extracting, merging, splitting, OCR, forms, wate
 
 ### Route map
 
-| User request | Route | Required entry step | Primary scripts |
+| User request | Route | Required entry step | Primary scripts / route |
 |---|---|---|---|
+| Convert a text-based PDF to editable Word | CONVERT | capability probe in PDF → Word | compatible `document.convert` → Node.js → Python → pre-existing tool |
 | Extract text from PDF | EXTRACT | `analyze_pdf.py` | `extract_content.py` |
 | Extract tables from PDF | EXTRACT | `analyze_pdf.py` | `extract_tables.py` |
 | Extract images from PDF | EXTRACT | `analyze_pdf.py` | `extract_images.py` |
@@ -79,7 +119,7 @@ All other PDF work — reading, extracting, merging, splitting, OCR, forms, wate
 
 ### Start here when the input is already a PDF
 
-For routes whose input is already a PDF, run `analyze_pdf.py` to confirm `pdf_type`, `page_count`, and file size. The downstream text/render and form decisions key off this inspection. Do not run it for an Office input being converted to PDF or for an MD/MDX source being generated as a new PDF.
+For declared-script routes whose input is already a PDF, run `analyze_pdf.py` to confirm `pdf_type`, `page_count`, and file size. The downstream text/render and form decisions key off this inspection. PDF → Word follows its capability order above and does not require `analyze_pdf.py` before runtime selection. Do not run it for an Office input being converted to PDF or for an MD/MDX source being generated as a new PDF.
 
 If `pdf_type = scanned` (or text comes back empty/garbled), default to the RENDER route: render the relevant pages with `convert_pdf_to_images.py` and read them with vision. Reach for `ocr_pipeline.py` only when the user explicitly asks for a searchable PDF or a plain-text OCR transcript.
 
@@ -91,10 +131,12 @@ A few non-obvious norms that this skill relies on:
 
 **Choose the operation semantics first; prefer cloud when it fits, and preserve
 task completion when it does not.** The agent decides pages, format, output
-path, layout, quality, and other user-visible parameters, then starts with the
-documented semantic script. In `auto` mode the script prefers a compatible typed
+path, layout, quality, and other user-visible parameters. For routes with a
+documented semantic script, start with it; PDF → Word follows its capability
+order above. In `auto` mode a semantic script prefers a compatible typed
 QwenWork capability and may switch once to a validated local implementation.
-Do not preflight packages or install dependencies before this first invocation.
+Do not preflight packages or install dependencies before the selected route's
+first invocation.
 
 Cloud authentication/authorization failures, missing capability routes, source
 limits, and unsupported feature combinations make that cloud path unsuitable;
@@ -265,8 +307,10 @@ Stop and surface the problem (don't paper over):
 
 ## Dependency policy
 
-Do not pre-install packages speculatively. First invoke the documented semantic
-script and let it use an already-ready local backend or the typed cloud route.
+Do not pre-install packages speculatively. For routes with a documented
+semantic script, invoke it first and let it use an already-ready local backend
+or the typed cloud route. PDF → Word follows its capability probe and bounded
+recovery above.
 
 ### One-time local dependency recovery
 
@@ -290,13 +334,15 @@ command).
 - Ordinary Markdown: `markdown-it-py reportlab pygments Pillow`; OCR:
   `numpy PyMuPDF rapidocr-onnxruntime reportlab Pillow`.
 
-After installation, rerun the same semantic script and arguments under
+For a declared Python semantic script, after installation rerun the same script
+and arguments under
 `QWENWORK_DOCUMENT_EXECUTION_MODE=local_required` once before considering a
 different trusted local route. On POSIX,
 prefix that environment assignment to the command; in PowerShell, set
 `$env:QWENWORK_DOCUMENT_EXECUTION_MODE = "local_required"` first. If Python,
 `pip`, installation, or forced-local execution is unavailable, stop and report
-the concrete error; never loop or retry the cloud route.
+the concrete error; never loop or retry the cloud route. PDF → Word uses the
+operation-specific retry order above instead.
 
 Do not turn this default recovery into a hard path restriction. When the
 declared script cannot express the request, a compatible pre-existing tool may
@@ -309,8 +355,8 @@ must expose the cloud result without masking it with local execution.
 Python package recovery does not authorize installing native programs such as
 LibreOffice, Tectonic, qpdf, browser runtimes, or `md2pdf`. Ask the user before
 installing a system-level dependency, and only when the requested operation has
-no Python-only route. If Python or `pip` itself is absent, surface that boundary
-instead of bootstrapping a runtime.
+no Python-only route. For a Python-script route, if Python or `pip` itself is
+absent, surface that boundary instead of bootstrapping a runtime.
 
 Some legacy, local-only scripts still print historical install hints. Treat
 them as diagnostics and apply only the bounded policy above.
