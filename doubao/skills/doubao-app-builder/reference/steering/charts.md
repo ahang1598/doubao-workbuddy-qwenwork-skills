@@ -128,7 +128,9 @@ metadata:
 
 ### 挂载（原生 JS）
 
-**不要**添加 echarts-for-react 等任何封装库。用 `ResizeObserver` 而非 `window.resize` 监听容器尺寸变化（见「窄屏适配」说明）。多图页面把下面的模式封装成一个函数复用；更新数据时对同一实例再 `setOption`，不要销毁重建。
+> ⚠️ **本节与上面的「引入」只适用于 html 链路**（无构建、CDN script）。webapp 工程按所用栈的方式来：默认栈已装好 `echarts` + `echarts-for-react`，直接 `import`，不要往 index.html 插 script 标签。本文其余部分（选型、视觉编码、窄屏适配、自检清单）两条链路通用。
+
+**不要**添加 echarts-for-react 等任何封装库（**指 html 链路**）。用 `ResizeObserver` 而非 `window.resize` 监听容器尺寸变化（见「窄屏适配」说明）。多图页面把下面的模式封装成一个函数复用；更新数据时对同一实例再 `setOption`，不要销毁重建。
 
 ```html
 <div id="chart" style="width:100%;min-height:300px"></div>

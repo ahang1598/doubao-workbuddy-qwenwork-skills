@@ -112,7 +112,7 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 - 如果上下文没有明确 `meeting_id`，先用 `lark-cli vc +meeting-list-active --format json` 发现当前用户所在会议。返回多个会议时先让用户选择。
 - 如果上下文只有 9 位会议号，先执行 `+meeting-list-active` 并按 `meeting_no` 匹配；匹配到唯一会议后再查事件。
 - 确认 `meeting_id` 后执行 `lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty` 拉取最新事件流。
-- 如果事件流显示开始共享内容（JSON 事件类型为 `magic_share_started`，pretty 时间线显示“开始共享”），并包含文档标题或 URL 等线索，必须继续读取共享文档内容后再生成总结，不能只根据共享事件和文档标题概括会议内容。
+- 如果事件流显示共享内容（JSON 事件类型为 `magic_share_started`；pretty 时间线按 `start_reason` 显示“开始共享”或“正在共享”），并包含文档标题或 URL 等线索，必须继续读取共享文档内容后再生成总结，不能只根据共享事件和文档标题概括会议内容。
 - 若存在多个共享文档，按用户问题读取相关文档；处理某条文档上下文事件时必须按该 item 的 `share_id` 精确关联，不能用“最近一次共享”替代。
 - 若文档读取失败，必须明确说明“以下总结仅基于会中事件流，未成功读取共享文档内容”。
 
@@ -134,6 +134,7 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 | 路径 | 含义与处理 |
 | --- | --- |
 | `payload.magic_share_started_items[].share_id/share_doc` | 建立一次共享会话与文档 URL/title 的映射。缺 `share_id` 时不建立映射。 |
+| `payload.magic_share_started_items[].start_reason` | `share_started` 或缺失表示真实开始；`share_detected` 表示开启 Agent 入会能力时发现已有共享。两者都建立共享映射。 |
 | `payload.magic_share_ended_items[].share_id` | 结束同一 `share_id` 的共享会话；不得结束其他映射。 |
 | `payload.document_context_changed_items[]` | 结构化消费按原序读取；pretty timeline 沿用统一时间排序。每项恰有一个已知 context 才生成 pretty 条目，未知/歧义项只保留 raw。 |
 | `item.operator` | 当前 item 的 actor；缺 ID/name 时不猜共享发起人。 |
@@ -245,7 +246,7 @@ lark-cli drive +list-replies \
 | `participant_left` | 有参会人离开会议 |
 | `chat_received` | 收到会中聊天消息 |
 | `transcript_received` | 收到转写文本 |
-| `magic_share_started` | 开始共享内容 / 文档 |
+| `magic_share_started` | 开始共享，或开启 Agent 入会能力时发现已有共享；由 `start_reason` 区分 |
 | `magic_share_ended` | 结束共享 |
 | `document_context_changed` | 评论聚焦、章节定位或元素预览上下文变化 |
 | `countdown_changed` | 会中倒计时被设置、延长、提前结束、关闭窗口，或自然结束、临近提醒 |

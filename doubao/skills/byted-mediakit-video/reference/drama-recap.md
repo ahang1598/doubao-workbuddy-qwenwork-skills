@@ -22,8 +22,9 @@
 - `--drama-script-task-id` 必须来自已完成的剧本还原终态结果。若用户未提供：先调用 [drama-script.md](drama-script.md)，轮询至终态后读取 `result.drama_script_task_id`，再调用本工具；禁止猜测或伪造。
 - 布尔参数（`--erase-subtitle`）只能写成 `--erase-subtitle=true` 或 `--erase-subtitle=false`，也可用裸 `--erase-subtitle`（等价 true）；禁止空格传值 `--erase-subtitle true`，否则该值会被当作位置参数。
 - 布尔参数取默认值时直接省略，不要显式重复默认值。
-- 对象或对象数组参数（`--drama-recap-config`、`--miniseries-edit`、`--speaker-config`、`--subtitle-config`）需传合法 JSON 字符串并整体加单引号，例如 `--drama-recap-config '[{...}]'`；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。
-- 不要用逗号分隔或裸文本传该参数。
+- 对象或对象数组参数（`--drama-recap-config`、`--miniseries-edit`、`--speaker-config`、`--subtitle-config`）需传合法 JSON 字符串；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。不要用逗号分隔或裸文本。
+- POSIX / bash：用单引号整体包裹，例如 `--drama-recap-config '[{...}]'`。
+- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --drama-recap-config "[{\"key\":\"value\"}]"`。禁止单引号 JSON、`$json` 变量和 `@file`。
 
 ### 调用示例
 

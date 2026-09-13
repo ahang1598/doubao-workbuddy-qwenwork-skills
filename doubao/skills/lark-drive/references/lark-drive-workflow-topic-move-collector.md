@@ -15,7 +15,7 @@ Risk / Structure: `R2-R3` / `S3`
 按阶段渐进加载其他 skill / 引用文档：
 
 - 目标是 Wiki 或个人文档库：[`../../lark-wiki/SKILL.md`](../../lark-wiki/SKILL.md)
-- 需要读取文档内容：[`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) 和 [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md)
+- 需要读取文档内容：[`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) 和 [`../../lark-doc/online-doc/references/lark-doc-fetch.md`](../../lark-doc/online-doc/references/lark-doc-fetch.md)
 - 需要验证 Sheet 内容：[`../../sheet/SKILL.md`](../../sheet/SKILL.md)
 - 需要 Drive 搜索：[`lark-drive-search.md`](lark-drive-search.md)
 - 需要资源解析：[`lark-drive-inspect.md`](lark-drive-inspect.md)

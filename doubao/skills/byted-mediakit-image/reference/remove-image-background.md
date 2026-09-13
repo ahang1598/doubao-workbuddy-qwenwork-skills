@@ -6,7 +6,7 @@
 
 ## 参数填写规则
 
-- 提交一张公网可访问图片 URL，并指定背景移除场景；general 适合未知主体，human/product 支持描边和透明背景裁剪。 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
+- 提交一张公网可访问图片 URL，并指定背景移除场景；human 适用于真人人像主体抠图，product 适用于商品主体抠图，general 适用于不确定主体分类或动漫/二次元、商标/Logo、非纯色背景通用物品等场景，也可在 human/product 效果不佳时改用。human/product 支持描边和透明背景裁剪。 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
 
 ## Cloud
 
@@ -37,12 +37,12 @@ mediakit-cli image remove-image-background \
 | --- | --- | --- | --- | --- | --- | --- |
 | `contour_color` | `--contour-color` | string | 否 | "#FFFFFF" | 格式: "^#[0-9a-fA-F]{6}$" | 主体描边颜色，使用十六进制 RGB，默认 #FFFFFF；仅当 need_contour 为 true 且 scene 为 human 或 product 时生效。 |
 | `contour_size` | `--contour-size` | integer | 否 | 10 | 最小值: 1；最大值: 100 | 主体描边宽度，单位 px，范围 1 至 100，默认 10；仅当 need_contour 为 true 且 scene 为 human 或 product 时生效。 |
-| `image_url` | `--image-url` | string | 是 | - | - | 待处理的图像 URL，支持公网 HTTP/HTTPS URL、本地文件路径、火山引擎对象存储 tos:// 三种输入协议；支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp 和 .heic 格式；单张图片不得超过 10 MB，图像输入分辨率的长边不得超过 7680 px、短边不得超过 4320 px。 |
+| `image_url` | `--image-url` | string | 是 | - | - | 待处理的图像 URL，支持公网 HTTP/HTTPS URL、本地文件路径、火山引擎对象存储 tos:// 三种输入协议；支持 .png、.jpg、.jpeg、.webp、.tiff、.bmp 和 .heic 格式；单张图片不得超过 30 MB，输入图像宽*高总像素上限≤40 MP；如 scene 选择 general，则图像输入分辨率的长边不得超过 10240 px、短边不得超过 6000 px；如 scene 选择 human 或 product，则图像输入分辨率的长边不得超过 7680 px、短边不得超过 4320 px。 |
 | `need_contour` | `--need-contour` | boolean | 否 | false | - | 是否为主体生成描边，默认 false；仅在 scene 为 human 或 product 时生效，在 general 场景下会被忽略。 |
 | `need_crop_background` | `--need-crop-background` | boolean | 否 | false | - | 是否将输出图片的透明背景裁剪到刚好包裹住主体，默认 false；仅在 scene 为 human 或 product 时生效，在 general 场景下会被忽略。 |
 | `output_format` | `--output-format` | string | 否 | "png" | 枚举: ["png","jpeg","webp"] | 输出图片格式可用 png、jpeg、webp，默认 png；png 支持透明背景，webp 支持透明背景，jpeg 不支持透明背景，jpeg 的透明区域将填充为黑色。 |
 | `queue_id` | `--queue-id` | string | 否 | - | - | 任务提交的目标队列 ID。如不传，默认使用系统自动创建的队列 ID。可将不同业务或优先级的任务提交到不同队列，以实现按队列对应的项目分账。队列可创建和管理，系统会自动为队列分配队列 ID。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `scene` | `--scene` | string | 是 | - | 枚举: ["general","human","product"] | 背景移除场景可用 general、human、product；general 为通用场景，适用于期望抠出图像主体但不确定该主体所属分类的场景；human 为人像抠图场景，适用于仅需抠出图像中的人像主体的场景；product 为商品抠图场景，适用于仅需抠出图像中的商品主体的场景。 |
+| `scene` | `--scene` | string | 是 | - | 枚举: ["general","human","product"] | 背景移除场景可用 general、human、product；human 为真人人像抠图场景，适用于仅需抠出图像中的真人人像主体的场景；product 为商品抠图场景，适用于仅需抠出图像中的商品主体的场景；general 为通用场景，适用于期望抠出图像主体，但不确定该主体所属分类的场景。如涉及动漫/动画/二次元素材、商标/Logo、非纯色背景的通用物品抠出场景，建议优先使用该场景模型。如针对多人人像或复杂背景商品主体抠出场景，使用 human 或 product 模型效果不佳，可换用该模型再次尝试处理。 |
 
 ### 返回结果
 

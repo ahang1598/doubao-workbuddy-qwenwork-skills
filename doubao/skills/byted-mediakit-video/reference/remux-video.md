@@ -20,8 +20,9 @@
 
 - 数组参数（`--metadata-keep-tags`）传多个值时用逗号分隔并整体加引号，例如 `--metadata-keep-tags "url1,url2"`。
 - 单个值中的文件名或 URL 不能包含逗号（`,`），否则会被 CLI 当成多个元素拆开。遇到这种情况时，先向用户澄清，请其提供不含逗号的文件名或对应 URL 后再调用。
-- 对象或对象数组参数（`--metadata-add-tags`）需传合法 JSON 字符串并整体加单引号，例如 `--metadata-add-tags '[{...}]'`；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。
-- 不要用逗号分隔或裸文本传该参数。
+- 对象或对象数组参数（`--metadata-add-tags`）需传合法 JSON 字符串；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。不要用逗号分隔或裸文本。
+- POSIX / bash：用单引号整体包裹，例如 `--metadata-add-tags '[{...}]'`。
+- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --metadata-add-tags "[{\"key\":\"value\"}]"`。禁止单引号 JSON、`$json` 变量和 `@file`。
 
 ### 调用示例
 

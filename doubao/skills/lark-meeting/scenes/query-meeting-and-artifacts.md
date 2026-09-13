@@ -23,7 +23,7 @@
 没有标识时，用 `vc +search` 搜索已经结束的会议：
 
 ```bash
-lark-cli vc +search --query <query> --start <start> --end <end> --format json
+lark-cli vc +search --query <query> --start <start> --end <end> --format json --as <source_identity>
 ```
 
 - 至少提供关键词、时间范围、组织者、参与者或会议室中的一个条件；不要把“总结”“回顾”“所有会议”等动作词当作 `--query`。

@@ -1,7 +1,7 @@
 ---
 name: lark-drive
 version: 1.0.0
-description: "飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入。用户需要整理云盘目录、处理云空间资源 URL/token、判断链接类型/真实 token/标题，或导入 Word/Markdown/Excel/CSV/PPTX/.base 为 docx/sheet/bitable/slides 时使用；doubao.com 云空间 URL/token 也按资源路径和 token 路由，不回退 WebFetch。不负责：文档内容编辑（走 lark-doc）、表格/Base 表内数据操作（走 sheet/lark-base）、知识空间节点/成员管理（走 lark-wiki）、原生 Markdown 文件读写/patch/diff（走 lark-markdown）。"
+description: "飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入，也可通过 `drive +fetch` 把 Drive 文件读取为 Markdown（含知识库里映射为 wiki URL 的 Drive 文件）。用户需要整理云盘目录、处理云空间资源 URL/token、判断链接类型/真实 token/标题、读取/总结 Drive 文件的内容、或导入 Word/Markdown/Excel/CSV/PPTX/.base 为 docx/sheet/bitable/slides 时使用；doubao.com 云空间 URL/token 也按资源路径和 token 路由，不回退 WebFetch。不负责：文档内容编辑（走 lark-doc）、表格/Base 表内数据操作（走 sheet/lark-base）、知识空间节点/成员管理（走 lark-wiki）、原生 Markdown 文件读写/patch/diff（走 lark-markdown）。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -43,12 +43,14 @@ metadata:
 - 用户要把本地 `.xlsx` / `.xls` / `.csv` 导入成电子表格，使用 `lark-cli drive +import --type sheet`。
 - 用户要在云空间（云盘/云存储）里新建文件夹，优先使用 `lark-cli drive +create-folder`。
 - 用户要查看或下载文件内容，或者查看文件可用预览格式并获取 PDF / HTML / 文本 / 图片等转换预览产物，使用 `lark-cli drive +preview`。`+preview` 和 `+download` 都支持 `--file-token` / `--url` / `--wiki-token` 三选一（Wiki 会解析到底层 `file`）；但两者只处理 Drive **文件**，若目标是 docx/sheet/bitable/slides 等在线文档，改用 `drive +export`。
+- 用户要**读取 Drive 文件的内容**（返回 Markdown）时，使用 `lark-cli drive +fetch --url '<url>'`：云盘文件的 `/file/` URL 和知识库里 Drive 文件的 wiki URL 都可直接传入，wiki 自动解包。支持范围、参数和失败处理见 [`references/lark-drive-fetch.md`](references/lark-drive-fetch.md)。
 - 用户要获取某个文件的封面图，优先使用 `lark-cli drive +cover`；先 `--list-only` 看规格，再选 `--spec` 下载。
 - 用户要导出云文档时，优先使用 `lark-cli drive +export --url '<文档 URL>' --file-extension <格式>`；详细参数、Wiki token 和错误码处理见 [`references/lark-drive-export.md`](references/lark-drive-export.md)。
 - 用户要把本地文件上传到知识库 / 文档库里的某个 wiki 节点下时，仍然使用 `lark-cli drive +upload --wiki-token <wiki_token>`；不要误切到 `wiki` 域命令。
 - `lark-base` 只负责导入完成后的 Base 内部操作（表、字段、记录、视图），不要在“本地文件 -> Base”这一步提前切到 `lark-base`。
 - 用户给的是 wiki URL / token，且后续还没明确底层资源类型时，先用 `lark-cli drive +inspect` 解包；`+inspect` 失败后不要自动切到别的写接口继续尝试，先按错误提示处理权限、scope 或链接问题。
 - `drive +inspect` / `drive +upload` 遇到 `not found`、`permission denied`、`missing scope` 时，默认停止重试；只有 `rate limit` 或临时网络错误才适合有限重试。
+- HTML 页面需要引用本地图片时，可使用 [`drive +html-image-upload`](references/lark-drive-html-image-upload.md) 上传图片并生成引用链接，具体用法见该 reference。
 
 ## 修改标题
 - 用户要**重命名 / 改标题 / 改文件名**，使用 `lark-cli drive +update-title`，用法见 [`references/lark-drive-update-title.md`](references/lark-drive-update-title.md)。
@@ -121,6 +123,7 @@ Shortcut 是对常用操作的高级封装（`lark-cli drive +<verb> [flags]`）
 | [`+create-folder`](references/lark-drive-create-folder.md) | 新建 Drive 文件夹，支持指定父文件夹。 |
 | [`+download`](references/lark-drive-download.md) | 下载 Drive 文件到本地。 |
 | [`+preview`](references/lark-drive-preview.md) | 查看或下载文件内容，或者查看文件可用预览格式并获取 PDF / HTML / 文本 / 图片等转换预览产物。 |
+| [`+fetch`](references/lark-drive-fetch.md) | 把 Drive 文件读取为 Markdown（wiki URL 自动解包）；在线文档读取走各实体 skill。 |
 | [`+cover`](references/lark-drive-cover.md) | 查看或下载文件封面图规格。 |
 | [`+status`](references/lark-drive-status.md) | 比较本地目录与 Drive 文件夹差异；默认按 SHA-256 精确比较，`--quick` 使用修改时间近似比较。 |
 | [`+pull`](references/lark-drive-pull.md) | 从 Drive 拉取文件到本地目录，支持重复远端路径处理和增量模式。 |
@@ -178,9 +181,9 @@ lark-cli drive <resource> <method> [flags] # 调用 API
 
 ### permission.members
 
-  - `auth` — 
+  - `auth` —
   - `create` — 增加协作者权限
-  - `transfer_owner` — 
+  - `transfer_owner` —
 
 ### metas
 

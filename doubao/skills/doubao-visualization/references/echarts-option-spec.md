@@ -1,5 +1,7 @@
 # ECharts 图表展示规则
 
+仅在复杂 callback、自由布局、特殊数据格式，或移动端存在多行 legend、visualMap、dataZoom、密集标签时读取。常规图表只读 `mode-echarts.md`。
+
 ## 目录
 
 - [一、触发范围：只处理适合 ECharts 的图表](#一触发范围只处理适合-echarts-的图表)

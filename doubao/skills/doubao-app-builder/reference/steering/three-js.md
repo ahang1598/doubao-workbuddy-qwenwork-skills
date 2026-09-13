@@ -1,3 +1,11 @@
+---
+name: three-js
+description: Three.js r147 UMD 引入方式参考。做 3D 场景 / 3D 小游戏、需要用 script 标签引入 Three.js 时按需读取，不单独作为媒介入口命中。
+metadata:
+  display-names:
+    zh: Three.js 引入
+---
+
 # Three.js r147 UMD 引入指南（3D 小游戏按需）
 
 r147 是最后一个含 UMD `examples/js/` 的版本：经典 `<script>` 标签引入，全局 `THREE` 命名空间。无需 importmap、无需 `type="module"`。
@@ -5,7 +13,7 @@ r147 是最后一个含 UMD `examples/js/` 的版本：经典 `<script>` 标签�
 ## 基础引入
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js" integrity="sha384-vV17nr/rMaJqmeZkFUzXLpHdQ+ME5QHKdydaqqN+3Ga39RJlNrTatJxHwGV4ml2C" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>

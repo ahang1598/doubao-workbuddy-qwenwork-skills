@@ -46,7 +46,7 @@ metadata:
 
 ## 素材
 
-- 需要精灵 / 角色 / 背景图时用环境提供的图片生成能力（返回的 CDN URL 直接引用），prompt 尾缀固定：`game asset, transparent background, flat icon, no text overlay`。写「epic / cinematic scene」会产出电影海报而非可用素材。
+- 需要精灵 / 角色 / 背景图时用环境提供的图片生成能力（**返回的 URL 先下载到任务目录，用相对路径引**，不要直接写 CDN 链接），prompt 尾缀固定：`game asset, transparent background, flat icon, no text overlay`。写「epic / cinematic scene」会产出电影海报而非可用素材。
 - 纯数字 / 色块 / 几何即可成立的玩法（2048 类）不生图。
 
 ## 难度

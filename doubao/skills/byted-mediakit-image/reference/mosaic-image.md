@@ -18,8 +18,9 @@
 
 ### 使用指南
 
-- 对象或对象数组参数（`--mosaic-regions`）需传合法 JSON 字符串并整体加单引号，例如 `--mosaic-regions '[{...}]'`；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。
-- 不要用逗号分隔或裸文本传该参数。
+- 对象或对象数组参数（`--mosaic-regions`）需传合法 JSON 字符串；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。不要用逗号分隔或裸文本。
+- POSIX / bash：用单引号整体包裹，例如 `--mosaic-regions '[{...}]'`。
+- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --mosaic-regions "[{\"top_left_x\":0,\"top_left_y\":0,\"bottom_right_x\":100,\"bottom_right_y\":100}]"`。禁止单引号 JSON、`$json` 变量和 `@file`。
 
 ### 调用示例
 

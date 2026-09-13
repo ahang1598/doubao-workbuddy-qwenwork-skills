@@ -2,10 +2,11 @@
 
 ## 能力用途
 
-基于视觉大模型，对输入的视频 URL 列表进行通用视频内容分析，输出视频级别的结构化理解结果，适用于内容审核、视频检索、标签生成等场景。
+基于视觉大模型，对输入的单个视频 URL 进行通用视频内容分析，输出视频级别的结构化理解结果，适用于内容审核、视频检索、标签生成等场景。
 
 ## 参数填写规则
 
+- `video_urls` 单次调用长度必须为 1；只传一个视频 URL。如需处理多个视频，应并发发起多次独立调用，不得一次传入视频列表。
 - 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
 
 ## Cloud
@@ -18,16 +19,18 @@
 
 ### 使用指南
 
-- 数组参数（`--prefer-endpoints`、`--prefer-models`、`--video-urls`）传多个值时用逗号分隔并整体加引号，例如 `--prefer-endpoints "url1,url2"`。
+- 数组参数（`--prefer-endpoints`、`--prefer-models`）传多个值时用逗号分隔并整体加引号，例如 `--prefer-endpoints "url1,url2"`。
+- `--video-urls` 单次只传 1 个视频 URL；不要用逗号拼接多个视频，也不要重复传递该 flag 传入多个视频。
 - 单个值中的文件名或 URL 不能包含逗号（`,`），否则会被 CLI 当成多个元素拆开。遇到这种情况时，先向用户澄清，请其提供不含逗号的文件名或对应 URL 后再调用。
-- 对象或对象数组参数（`--manual-option`）需传合法 JSON 字符串并整体加单引号，例如 `--manual-option '[{...}]'`；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。
-- 不要用逗号分隔或裸文本传该参数。
+- 对象或对象数组参数（`--manual-option`）需传合法 JSON 字符串；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。不要用逗号分隔或裸文本。
+- POSIX / bash：用单引号整体包裹，例如 `--manual-option '[{...}]'`。
+- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --manual-option "[{\"key\":\"value\"}]"`。禁止单引号 JSON、`$json` 变量和 `@file`。
 
 ### 调用示例
 
 ```bash
 mediakit-cli video video-understand-router \
-  --video-urls <video_urls_1>,<video_urls_2> \
+  --video-urls <video_url> \
   --prompt <prompt>
 ```
 
@@ -50,7 +53,7 @@ mediakit-cli video video-understand-router \
 | `prompt` | `--prompt` | string | 是 | - | 最短长度: 1 | prompt 是用于指导大模型对视频内容进行分析的自然语言描述，最小长度为 1。 |
 | `queue_id` | `--queue-id` | string | 否 | - | - | 任务提交的目标队列 ID；不传时默认使用系统自动创建的队列 ID。可将不同业务或优先级的任务提交到不同队列，以按队列对应的项目进行分账。队列可创建和管理，系统会自动分配队列 ID。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
 | `scene` | `--scene` | string | 否 | - | 枚举: ["editing"] | scene 是分析场景，用于系统优化处理策略；指定 scene 后，系统会自动决策使用该场景的最佳策略；不传时表示通用场景。editing 表示创作剪辑场景，模型会侧重于理解并输出带有精确时间戳的详细分镜信息，适用于分镜理解、智能剪辑、二次 AIGC 创作等下游任务。 |
-| `video_urls` | `--video-urls` | array<string> | 是 | - | 最少项数: 1；最多项数: 10 | video_urls 是待处理的视频 URL 列表，支持公网 HTTP/HTTPS URL、本地文件路径、火山引擎视频点播 vod:// 和火山引擎对象存储 tos:// 四种输入协议；支持 mp4、flv、ts、avi、mov、wmv、mkv 等主流视频格式；单次任务最多支持传入 10 个视频文件。 CLI 传参时可使用逗号分隔多个值，或重复传递该 flag；不要传 JSON 数组字符串。 |
+| `video_urls` | `--video-urls` | array<string> | 是 | - | 最少项数: 1；最多项数: 1 | video_urls 是待处理的视频 URL；单次调用必须且只能传入 1 个视频。支持公网 HTTP/HTTPS URL、本地文件路径、火山引擎视频点播 vod:// 和火山引擎对象存储 tos:// 四种输入协议；支持 mp4、flv、ts、avi、mov、wmv、mkv 等主流视频格式。如需处理多个视频，应并发发起多次独立调用，不得一次传入视频列表。 CLI 传参时只传单个值；不要传 JSON 数组字符串。 |
 
 ### 任务结果查询
 

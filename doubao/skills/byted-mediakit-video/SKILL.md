@@ -2,7 +2,7 @@
 name: byted-mediakit-video
 version: 0.2.1
 license: MIT
-description: "面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及抠像换脸等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索。"
+description: "面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及人像或绿幕抠像等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索；若只说有视频而未说明业务目标，应先澄清。明确要裁剪、拼接、叠加字幕、混音、合流、调速、转场、画面旋转翻转、视频滤镜或多视频拼画面的成片编辑诉求应路由到 editing；单张图片处理应路由到 image；音频转码、人声分离或语音端点检测应路由到 audio。"
 permissions:
 - shell
 metadata:
@@ -12,7 +12,7 @@ metadata:
   cliHelp: mediakit-cli video --help
   product: mediakit-cli-doubao/skills
   domain: video
-  capability_count: 30
+  capability_count: 29
 ---
 # video MediaKit Skill
 
@@ -25,7 +25,7 @@ metadata:
 
 ## 澄清与跨域路由
 
-若只说有视频而未说明业务目标，应先澄清。明确要裁剪、拼接、叠加图片或字幕、混音、合流、调速、转场、画面旋转翻转、视频滤镜或多视频拼画面的成片编辑诉求应路由到 editing；单张图片处理应路由到 image；音频转码、人声分离或语音端点检测应路由到 audio。
+若只说有视频而未说明业务目标，应先澄清。明确要裁剪、拼接、叠加字幕、混音、合流、调速、转场、画面旋转翻转、视频滤镜或多视频拼画面的成片编辑诉求应路由到 editing；单张图片处理应路由到 image；音频转码、人声分离或语音端点检测应路由到 audio。
 
 ## 工具列表
 
@@ -47,7 +47,6 @@ metadata:
 | extract-frames | 从视频中抽取截图，截图结果支持用于视频封面、预览图、雪碧图或其他视频理解任务的输入。 | Cloud | `mediakit-cli video extract-frames` | [reference/extract-frames.md](reference/extract-frames.md) |
 | extract-video-invisible-watermark | 从已嵌入暗水印的视频中解析并还原隐藏的数字信息；如果同一视频被多次嵌入暗水印，也能够提取出所有水印信息。 | Cloud | `mediakit-cli video extract-video-invisible-watermark` | [reference/extract-video-invisible-watermark.md](reference/extract-video-invisible-watermark.md) |
 | face-blur-video | 视频人脸打码可自动精准识别视频画面中的人脸区域，并对所有人脸进行模糊或马赛克处理，适用于需要保护人物五官隐私的场景。 | Cloud | `mediakit-cli video face-blur-video` | [reference/face-blur-video.md](reference/face-blur-video.md) |
-| face-swap-video | 将用户提供的目标人脸融合替换到视频中的人物上，输出高质量换脸视频，主要适用于生成式视频脱敏需要换脸的场景。 | Cloud | `mediakit-cli video face-swap-video` | [reference/face-swap-video.md](reference/face-swap-video.md) |
 | generate-highlights-microdrama | 可用于短剧高光智剪，基于输入剧集的角色和剧情故事线理解提取高光片段，并按时长、产出个数、顺剪或跳剪等要求生成高光混剪、单集预告等视频。 | Cloud | `mediakit-cli video generate-highlights-microdrama` | [reference/generate-highlights-microdrama.md](reference/generate-highlights-microdrama.md) |
 | generate-highlights-minigame | 支持识别小游戏录屏视频中的核心玩法与高光事件，例如连击、通关、极限操作，并快速生成用于买量推广的视频素材。可选提供游戏名称、玩法描述和高光定义，辅助更精准地识别精彩内容。 | Cloud | `mediakit-cli video generate-highlights-minigame` | [reference/generate-highlights-minigame.md](reference/generate-highlights-minigame.md) |
 | generate-highlights-movie | 支持面向电影、电视剧等长视频内容，按剧情故事线识别高光并拆分成多段指定时长的高光片段，用于影视合集分发的短视频素材；算法会识别并去除景色铺垫、缓慢运镜、片头片尾曲等低密度信息；每段拆条带有高光前置开场与结尾钩子设计。 | Cloud | `mediakit-cli video generate-highlights-movie` | [reference/generate-highlights-movie.md](reference/generate-highlights-movie.md) |
@@ -60,4 +59,4 @@ metadata:
 | semantic-segment | 综合分析视频的画面、语音和叙事结构，通过镜头切换、语音停顿检测等策略，在保证语义完整、避免将单句从中间切断的前提下，将长视频智能地切分为多个独立的素材片段。 | Cloud | `mediakit-cli video semantic-segment` | [reference/semantic-segment.md](reference/semantic-segment.md) |
 | transcode-video | 视频转码将视频码流转换为另一视频码流，可涉及编码格式、分辨率、码率、I 帧间隔和封装格式转换，用于适应不同业务场景、播放终端和网络环境。 | Cloud | `mediakit-cli video transcode-video` | [reference/transcode-video.md](reference/transcode-video.md) |
 | video-ocr | 用于视频字幕识别（OCR），识别输入视频画面中的字幕信息，输出带时间戳的结构化文本数据。 | Cloud | `mediakit-cli video video-ocr` | [reference/video-ocr.md](reference/video-ocr.md) |
-| video-understand-router | 基于视觉大模型，对输入的视频 URL 列表进行通用视频内容分析，输出视频级别的结构化理解结果，适用于内容审核、视频检索、标签生成等场景。 | Cloud | `mediakit-cli video video-understand-router` | [reference/video-understand-router.md](reference/video-understand-router.md) |
+| video-understand-router | 基于视觉大模型，对输入的单个视频 URL 进行通用视频内容分析，输出视频级别的结构化理解结果，适用于内容审核、视频检索、标签生成等场景。多视频需并发多次调用。 | Cloud | `mediakit-cli video video-understand-router` | [reference/video-understand-router.md](reference/video-understand-router.md) |

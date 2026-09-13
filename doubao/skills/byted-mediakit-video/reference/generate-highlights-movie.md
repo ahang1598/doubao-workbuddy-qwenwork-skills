@@ -20,8 +20,9 @@
 
 - 布尔参数（`--enable-generate-video`）只能写成 `--enable-generate-video=true` 或 `--enable-generate-video=false`，也可用裸 `--enable-generate-video`（等价 true）；禁止空格传值 `--enable-generate-video true`，否则该值会被当作位置参数。
 - 布尔参数取默认值时直接省略，不要显式重复默认值。
-- 对象或对象数组参数（`--highlight-cuts-param`、`--opening-hook-param`）需传合法 JSON 字符串并整体加单引号，例如 `--highlight-cuts-param '[{...}]'`；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。
-- 不要用逗号分隔或裸文本传该参数。
+- 对象或对象数组参数（`--highlight-cuts-param`、`--opening-hook-param`）需传合法 JSON 字符串；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。不要用逗号分隔或裸文本。
+- POSIX / bash：用单引号整体包裹，例如 `--highlight-cuts-param '[{...}]'`。
+- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --highlight-cuts-param "[{\"key\":\"value\"}]"`。禁止单引号 JSON、`$json` 变量和 `@file`。
 
 ### 调用示例
 

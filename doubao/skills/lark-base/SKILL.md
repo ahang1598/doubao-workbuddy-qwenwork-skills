@@ -1,7 +1,7 @@
 ---
 name: lark-base
-version: 1.3.3
-description: 飞书多维表格用于搭建台账、清单、资料库、问卷、登记表、收集表、项目管理、客户管理、订单管理、库存管理、进度跟踪等表格、看板和系统；支持使用数据表格、问卷、仪表盘等工具对数据进行收集、记录、整理、关联、统计、提醒、审批和自动化流转。适用于个人、团队和企业将零散信息结构化，生成可持续维护的数据管理工具。用户想记录信息、管理业务、跟踪进度、维护客户订单库存、统计分析或自动处理流程时使用；提及多维表格、Base、bitable，或提供多维表格链接时使用；支持已有多维表格的查询、编辑和分析，以及公开模板中心的分类、列表与搜索。
+version: 1.4.1
+description: 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图看板、表单问卷收集、仪表盘、自动化工作流、表格行列权限，支撑持续运营业务闭环
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -57,7 +57,7 @@ metadata:
 | Base / Table / Record | `+table-list`、`+field-list`、必要的 `+record-list` | 表、字段、关联与显式记录数量正确；搭建任务不交付空表 |
 | Formula / Lookup | `+field-get` + 有界样例 `+record-list` | 保存表达式正确，已有代表性数据的分支计算正确 |
 | View | 对应 `+view-get-*` + `+record-list --view-id` | 视图名称、实际设置和展示结果必须一致。例如名称写“本周排班”，就必须真的只显示本周记录；名称写“按状态分组”，就必须真的按状态分组 |
-| Form 创建 / 分享 | `+form-get`、`+form-questions-list`；要求链接/扫码/外部填写时加 `+form-share-get`；新建可填写表单时做测试提交和记录回读 | 题目、必填和所需分享范围正确；未明确要求改名或编号的题目，写后同一 `id` 的 `title` 必须与更新前一致；新建可填写表单且未要求空模板时，只创建 Form、只返回链接或空主表不算完成 |
+| Form 创建 / 分享 | `+form-get`、`+form-questions-list`；要求链接/扫码/外部填写时加 `+form-share-get`；新建可填写表单时做测试提交和记录回读 | 题目、必填和所需分享范围正确；未明确要求改名或编号的题目，写后同一 `id` 的 `title` 必须与更新前一致；新建可填写表单且未要求空模板时，只创建 Form、只返回链接或空主表不算完成。为新建的空表建表单时，题目集合还要与用户列举的收集项相等；给已有业务数据的表建表单时，`+form-create` 从原有字段自动带出的题目只要不影响列举项命中就保留，不得为对齐题目集合删除这些字段或其记录 |
 | Dashboard | `+dashboard-block-get` + 非文本组件 `+dashboard-block-get-data` | 数据源、维度、指标、范围和计算结果正确 |
 | Workflow | `+workflow-get` + 必要的 `+workflow-list --status ...`；可表达且有代表性数据时加等价条件查询 | 条件、接收人、动作、引用和最终运行态全部正确 |
 | Role / AdvPerm | `+base-get`、`+role-list`；排他、保密或行级隔离时对每个角色逐个 `+role-get` | 目标授权准确；读写范围分别成立；未授权角色不能访问、增删、复制或下载敏感数据 |
@@ -103,6 +103,7 @@ metadata:
 - +base-block-list 是查看一个 Base 内资源目录的新入口：它列出这个 Base 直接管理的 folder/table/docx/dashboard/workflow，适合先判断 Base 里有什么，再决定走 table、dashboard、workflow 或 docx 命令。
 - base-block 只负责资源目录管理，包括创建资源、移动到 folder、重命名和删除；具体资源内容仍走 table/dashboard/workflow 命令。
 - 新建业务 Base 时必须一次执行 lark-cli base +base-create --name "<base>" --table-name "<table>" --fields '<field-json-array>'，同时配置初始数据表的 name 和 schema；数组第一项会成为不可删除的主字段，因此直接放业务主字段。使用 --fields 前先读 [lark-base-field-json.md](references/lark-base-field-json.md) 或复用 +field-create 的字段 JSON 形状，不要猜字段属性。
+- 上一条的例外只在两个条件**同时成立**时生效：本轮确实要为这张新表创建表单，且这张表只用来承接表单提交结果、没有表单之外的业务用途。此时 `--fields` 只放 `auto_number`（序号，作主字段）、`created_by`（提交人）、`created_at`（提交时间）这三个系统字段，用户要收集的字段一个都不要预先建进表，全部留给 `+form-questions-create`；这三类都不在表单可用类型内，`+form-create` 不会把它们变成题目，交付形态与 Web 端新建收集表一致。任一条件不成立就走上一条：本轮不建表单、表同时是台账或管理系统的主数据表、表单只是既有业务表的附带录入口，都必须照常把用户要的字段建进 `--fields`，不得交付只有系统字段的空表。两种情况都必须显式传 `--fields`，不要省略而落到平台默认表。详见 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md) 的“表单题目从哪来”。
 - 只有用户明确要求空白或平台默认 Base 时，才省略 --table-name 和 --fields；该路径会创建默认 schema，不能靠删除默认主字段再无损改造成业务表。
 - 表、字段、视图、workflow、dashboard block 的名称和 ID 必须来自真实返回，不要凭用户口述猜。
 - 存储字段可写；系统字段、formula、lookup 只读；附件字段走专用 attachment 命令。
@@ -153,6 +154,7 @@ metadata:
 - 附件上传、下载、删除走专用 +record-\*-attachment 命令。
 - 写字段前先读 [lark-base-field-json.md](references/lark-base-field-json.md)；涉及 formula / lookup 时必须读 [formula-field-guide.md](references/formula-field-guide.md) / [lookup-field-guide.md](references/lookup-field-guide.md)。
 - 表名、字段名、视图名、workflow 配置中的名称必须来自真实返回；跨表场景还要读取目标表结构。
+- 多行文本按参数形态分两种写法，写反任一边都会落错：**裸字符串 flag**（如 `--description`）必须传真实换行符，写成 `$'第一行\n第二行'` —— 在 `'...'` 和 `"..."` 里 `\n` 是字面量，shell 和 CLI 都不会解释，会原样落库成两个字符；**JSON 参数**（如 `--json`、`--questions`）里必须写 `\n` 转义，不要塞真实换行，否则 JSON 解析失败。写入后回读该文本，出现字面 `\n` 判为失败并重写。
 - 搭建型任务若题面要求提醒、自动化或状态联动，不得只建字段模拟流程：创建后先在 disabled 状态用 +workflow-get 核对触发条件、步骤引用、接收人和动作范围，再显式 +workflow-enable，并用 +workflow-list --status enabled 与 +workflow-get 确认生效；只有用户明确要求草稿或保持禁用时才不启用。若启用后发现配置不符，先 +workflow-disable 并回查 disabled，再 update 和重新预检，避免校验或修复期间产生真实副作用。
 - 删除、角色更新、字段更新等高风险操作遵循 CLI 的 confirmation gate；目标不明确时先用 get/list 消歧。
 - 删除、移除或停用前，先记录明确目标和保留对象；只操作用户明确指定且在同类型内唯一确认的资源，业务描述本身不授权删除记录。
@@ -167,7 +169,11 @@ metadata:
 
 ## 表单与视图细节
 
-- `+form-create` 后先 `+form-questions-list`；已有表字段可能已成为题目，优先 update 现有题目，只 create 真实缺失项。`+form-questions-delete` 会删除承载字段。
+- `+form-create` 不创建空表单：它会把执行时表内**全部表单可用类型字段**无条件转成题目，题目集合在建 form **之前**就已由表结构决定，必须先把表结构定对再建 form。建完立刻 `+form-questions-list` 回读，优先 update 现有题目，只 create 真正缺失项。
+- 因此**不要落到平台默认表**：省略 `--fields` 建出的默认表自带 `文本` / `单选` / `日期` / `附件` 占位字段，建 form 后全部变题目，而主字段永久删不掉（`+field-delete` 返回 `800080207`）。污染只能靠不建来避免，不能指望事后删。
+- 对齐题目集合只能靠一开始不建、或把题目移出表单，任何情况下都不允许为此删除用户既有字段或记录数据；移出题目的授权条件见本节末尾的删除题目规则。
+- 提交时间用 `created_at` 承接，任何场景都不要出成 `datetime` 题目让填表人手填。填写人身份**只按用户列举的收集项来，不自行增删**：用户没有点名要收集填写人时不要收集，尤其不得因为“想留个痕迹”自行加一道姓名题；用户明确要匿名时更不要收集。用户点名要记录填写人时，用 `created_by` 承接、不建 `user` 题目（手填身份可伪造、会填错）。需要知道的机制事实是：`created_by` 只在**登录后**提交才写入真实身份，免登录或匿名提交只会写入访客身份、无法标识真人。因此当用户既点名要收集填写人、表单又必须免登录时，只能由填写人自己填，并在答复中说明该身份是自填、不可信；这属于按用户列举项交付，不是替他决定要收集身份。
+- 表单题目的完整规则（题目来源、样式被拒后的回退）见 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md)。
 - `questions[].title` 既是用户可见的题目文本，也是 `+form-submit` 使用的字段键，不是可随意排版的标签。除非用户明确要求改名或编号，不得为了排序、排版、美化或阅读性给题目标题添加数字序号、必填标记、括号说明或其他前后缀。
 - 更新既有题目的必填、描述、显隐或选项展示时，未获用户明确要求时，`+form-questions-update` 必须将从 `+form-questions-list` 读回的 `title` 原样带回；写后再次 `+form-questions-list`，逐项比较更新前后的 `id` 与 `title`。任一未授权标题变化都必须恢复原值并回读，不得把它当成问卷优化继续提交或交付。
 - `form_id` 只用于管理命令；对外提交必须使用真实 `share_token`，不能从 Base、table 或 form ID 拼接分享链接。

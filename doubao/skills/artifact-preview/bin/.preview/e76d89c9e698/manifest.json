@@ -1,0 +1,178 @@
+{
+  "schema_version": "1",
+  "source_path": "C:\\Users\\15805\\Documents\\结婚流程\\婚礼主持手卡_张鹏程_陈利凤_20261006.pdf",
+  "source_filename": "婚礼主持手卡_张鹏程_陈利凤_20261006.pdf",
+  "source_hash": "e76d89c9e698",
+  "source_size_bytes": 2284536,
+  "kind": "pdf",
+  "rendered_at_utc": "2026-09-13T06:19:51+00:00",
+  "output_dir": "C:\\Users\\15805\\AppData\\Local\\Doubao\\User Data\\Default\\.doubao\\agent_mode\\workspace\\.skills\\artifact-preview\\bin\\.preview\\e76d89c9e698",
+  "page_count": 16,
+  "rendered_page_count": 16,
+  "collage_count": 2,
+  "extracted_text_chars": 5043,
+  "text_relpath": "text.md",
+  "thumbnail_relpath": "thumb.jpg",
+  "pages": [
+    {
+      "page": 1,
+      "relpath": "pages\\p001.png",
+      "size_bytes": 152554,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 2,
+      "relpath": "pages\\p002.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 3,
+      "relpath": "pages\\p003.png",
+      "size_bytes": 149878,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 4,
+      "relpath": "pages\\p004.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 5,
+      "relpath": "pages\\p005.png",
+      "size_bytes": 175770,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 6,
+      "relpath": "pages\\p006.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 7,
+      "relpath": "pages\\p007.png",
+      "size_bytes": 193882,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 8,
+      "relpath": "pages\\p008.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 9,
+      "relpath": "pages\\p009.png",
+      "size_bytes": 142183,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 10,
+      "relpath": "pages\\p010.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 11,
+      "relpath": "pages\\p011.png",
+      "size_bytes": 146992,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 12,
+      "relpath": "pages\\p012.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 13,
+      "relpath": "pages\\p013.png",
+      "size_bytes": 174629,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 14,
+      "relpath": "pages\\p014.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 15,
+      "relpath": "pages\\p015.png",
+      "size_bytes": 190585,
+      "width": 875,
+      "height": 1240
+    },
+    {
+      "page": 16,
+      "relpath": "pages\\p016.png",
+      "size_bytes": 2194094,
+      "width": 875,
+      "height": 1240
+    }
+  ],
+  "collages": [
+    {
+      "relpath": "collages\\c1.jpg",
+      "covers_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "grid_cols": 4,
+      "grid_rows": 2,
+      "size_bytes": 535513
+    },
+    {
+      "relpath": "collages\\c2.jpg",
+      "covers_pages": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "grid_cols": 4,
+      "grid_rows": 2,
+      "size_bytes": 523324
+    }
+  ],
+  "warnings": [],
+  "options": {
+    "max_pages": 20,
+    "collage": true,
+    "page_range": null,
+    "thumbnail": true,
+    "text_only": false,
+    "jpeg_quality": 85,
+    "out_max_dim": 2048
+  },
+  "summary": {
+    "total_pages": 16,
+    "rendered_pages": 16
+  }
+}

@@ -22,21 +22,9 @@ lark-cli slides +create --title "项目汇报" --slides '[
 lark-cli slides +create --title "项目汇报" --slides '[...]' --dry-run
 ```
 
-复杂内容建议按页保存 XML，再用 `jq --rawfile` 组装 `--slides` 参数：
-
-```bash
-lark-cli slides +create --title "项目汇报" \
-  --slides "$(jq -n \
-    --rawfile s1 .lark-slides/project/slide-01.xml \
-    --rawfile s2 .lark-slides/project/slide-02.xml \
-    '[$s1, $s2]')"
-```
-
-`--rawfile` 会把文件内容作为字符串读入 JSON，自动处理 XML 中的引号和换行；不要手动拼接带大量转义符的 JSON 字符串。
-
 ## 返回值
 
-工具成功执行后，返回一个 JSON 对象，包含以下字段：
+工具成功执行后，默认返回包含 `ok`、`identity`、`data` 的 JSON 对象。以下业务字段均位于 `data` 内，例如演示文稿 ID 取自 `.data.xml_presentation_id`：
 
 - **`xml_presentation_id`**（string）：演示文稿的唯一标识符，后续添加页面时需要此 ID
 - **`title`**（string）：演示文稿标题

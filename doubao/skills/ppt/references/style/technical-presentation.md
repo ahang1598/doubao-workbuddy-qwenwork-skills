@@ -59,6 +59,37 @@
 
 **排版**：靠文字、极细浅灰线段、留白、字号差异（用大数字凸显关键值）组织信息，非必要不用卡片堆叠。
 
+## 常用 SVG 图
+
+本设计系统偏好以下设计（详情跑 `chart_help('<slug>')`）：
+
+**推荐 palette**（本场景选一个贯穿全 deck 所有图）：
+
+| palette 名 | 底色 | 适用子味道 |
+|---|---|---|
+| `sapphire_dev` | 白底 | 架构评审 / 研发汇报 · 宝石蓝 |
+| `deep_indigo` | 浅底 | AI / 数据 / ML 论文级 · 深靛 |
+| `terminal_neon` | 深底 | Terminal / DevOps / Security · 荧光绿 |
+| `pine_engineering` | 白底 | 可持续工程 / 能源 / 环保基建 · 松绿 |
+
+**样式收敛**：品牌主色 + 灰阶两级、去默认网格线与图例框、坐标轴单位与来源版本号固定、数据标签只标关键点。**QPS / 延迟 / 资源占用 / 训练曲线走原生 `<chart>`；分布对比、量级流转、系统结构走 svg**，不要退回文字段落或截图。
+
+## 骨架变体推荐（skeleton variant）
+
+传给 `make_*` 的 `variant=` 参数。不传或传 `None` / `'classic'` 走原经典设计。骨架和 palette 正交组合：骨架决定图形结构与视觉气质，palette 决定色系。
+**本场景调性**：精确、密度可高、色感冷静。可读性优先。**深色底 + 荧光点缀**是 DevOps / 监控 / 安全场景的核心武器。
+
+| chart | variant | palette 推荐 | 何时用 |
+|---|---|---|---|
+| `boxplot` | `beeswarm` | `charcoal_neon` / `sapphire_dev` | 响应时长每样本可见；charcoal_neon 深底 = SRE dashboard |
+| `boxplot` | `variable_width_gradient` | `deep_indigo` / `sci_bluegreen` | 宽度编码样本量 |
+| `violin` | `kde_only` | `sci_bluegreen` / `sapphire_dev` | 分布形状对比（极简） |
+| `candle` | `candle_american_filled` | `charcoal_neon` / `terminal_neon` | 行情 K 线（技术分析）· 深底荧光 = 交易终端 |
+| `candle` | `ohlc_american` | `nordic_slate` / `deep_indigo` | 美式棒图（去 body）· 印刷冷色 |
+| `matrix_heat` | `circle_full` | `sci_bluegreen` / `pine_engineering` | 系统指标矩阵 · 冷绿色专业 |
+| `gantt` | `gradient_bars` | `sci_bluegreen` / `sapphire_dev` | 版本节奏 |
+| `sankey` | `gradient_layered` | `charcoal_neon` / `deep_indigo` | 架构数据流；charcoal_neon 深底渐变 = 系统架构最上镜 |
+
 ---
 
 ## 配色参考（共用）

@@ -11,7 +11,7 @@
 3. **预期条数前置断言**：涉及"批量填充 N 行"或"对 M 个区域分别写入"时，建议先把 N、M 硬编码进代码，回读后比较实际与预期；不一致就优先再发一轮 `+batch-update` 补齐，补不齐则在交付说明里列出缺口。
 4. **三条工具硬约束**：`--yes` 必带（high-risk-write，不带退出码 10）；单次 ≤100 条 operations，超出按批拆分；`+cells-batch-set-style` / `+cells-batch-clear` 等批量类 shortcut 不可嵌入 operations（它们本身就是批量原子操作，直接顶层调用）。
 
-若本次 `+batch-update` 的任一子操作写入了公式、复制了公式模板、或导入了含公式的数据块，回读校验之外可继续执行 `+formula-verify` 做诊断。`+batch-update` 只保证"写入动作按序执行了"，不保证整批公式运行结果 zero-error。
+若本次 `+batch-update` 的任一子操作写入了公式、复制了公式模板、或导入了含公式的数据块，回读校验之外可继续执行 `+formula-verify` 做诊断。`+batch-update` 只保证"写入动作按序执行了"，不保证整批公式运行结果 zero-error。AI 公式改用 `+formula-verify --ai-only --range` 抽检，没有明确失败 / 不支持状态即可带 pending 交付，并告知用户后台仍在计算。
 
 ## 使用场景
 
@@ -34,7 +34,7 @@
 **公式相关批处理的建议诊断**：
 - 写前：先读 `lark-sheets-formula-translation`，把公式改写成飞书可执行语义。
 - 写时：用 `+batch-update` 一次性完成插行/写公式/复制模板等成套动作。
-- 写后：抽样回读之外，可继续跑 `lark-sheets-formula-verify` 做一次诊断。
+- 写后：抽样回读之外，可继续跑 `lark-sheets-formula-verify` 做一次诊断。AI 公式直接用 `+formula-verify --ai-only --range` 抽检，按异步交付规则处理。
 
 **`+dropdown-update` 的选项模式（`--options` / `--source-range` 二选一）+ 配色规则**（更新会重写完整验证规则；需要保留已有配色时先回读并透传 `--colors`）见 [`lark-sheets-write-cells`](./lark-sheets-write-cells.md) 的「Dropdown 选项 + 配色」节，本文不重复。`+dropdown-delete` 不涉及这些 flag。
 

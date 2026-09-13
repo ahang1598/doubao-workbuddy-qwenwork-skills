@@ -15,7 +15,7 @@ Phase files are references for this workflow, not independent skills. Do not rou
 Load other skills / references progressively:
 
 - Wiki / personal library target: [`../../lark-wiki/SKILL.md`](../../lark-wiki/SKILL.md)
-- Content read required: [`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) and [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md)
+- Content read required: [`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) and [`../../lark-doc/online-doc/references/lark-doc-fetch.md`](../../lark-doc/online-doc/references/lark-doc-fetch.md)
 - Sheet down-drill required: [`../../sheet/SKILL.md`](../../sheet/SKILL.md)
 - Base down-drill required: [`../../lark-base/SKILL.md`](../../lark-base/SKILL.md)
 
@@ -91,7 +91,7 @@ This workflow extends the shared Artifact Contract. Agent MUST maintain these in
 | `current_state` | Current state in `Execution State Machine` |
 | `target_scope` | Parsed target: Drive folder, Wiki node, Wiki space, personal doc library, single resource, or search scope |
 | `environment_profile` | Current environment and CLI profile, such as prod / BOE / PRE and config profile |
-| `identity` | `user` by default unless user explicitly asks for app / bot perspective |
+| `identity` | `user` |
 | `resource_items` | Complete normalized resource list from discovery |
 | `partial` | Whether inventory or content read cannot fully continue because of auth, permission, API / pagination failure after retries, API coverage limitations, tool budget, or scope blockers; batching checkpoints alone are not partial |
 | `inventory_continuation_state` | Structured checkpoint for continuing inventory batches within the confirmed scope. Must preserve `scope`, `queue`, `current_cursor`, `visited_page_keys`, `dedupe_keys`, and `blockers`; Drive queue entries carry `folder_token`, `path`, `depth`, and `page_token`; Wiki queue entries carry `space_id` / `node_token`, `path`, `depth`, and pagination cursor; search entries carry query / filters and pagination cursor. Missing or corrupt state is a blocker, not a completed inventory. |
@@ -224,6 +224,6 @@ Never request permission automatically, never batch permission requests, and nev
 - [lark-wiki](../../lark-wiki/SKILL.md)
 - [lark-wiki-node-delete](../../lark-wiki/references/lark-wiki-node-delete.md)
 - [lark-doc](../../lark-doc/SKILL.md)
-- [lark-doc-fetch](../../lark-doc/references/lark-doc-fetch.md)
+- [lark-doc-fetch](../../lark-doc/online-doc/references/lark-doc-fetch.md)
 - [sheet](../../sheet/SKILL.md)
 - [lark-base](../../lark-base/SKILL.md)

@@ -21,7 +21,7 @@
 
 1. 提取 `topic`、`target`、`identity`、`owner_scope` 和 `constraints`。
 2. 将 `topic` 和 `target` 视为必填字段。
-3. 除非用户明确要求 bot / app 视角，否则 `identity` 默认使用用户身份。
+3. `identity` 使用用户身份。
 4. 默认 `allow_cross_container_move=true`，但必须在 `CONFIRM_CONTEXT` 展示。
 5. 默认 `owner_scope=mine`，表示只搜索当前用户 owner / 负责的资源。
 6. 只有用户明确要求“不限 owner”“包括共享给我的”“所有我能看到的文档”或“全量搜索”时，才设置 `owner_scope=all_visible`。

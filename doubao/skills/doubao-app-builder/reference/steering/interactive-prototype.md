@@ -11,9 +11,9 @@ metadata:
 
 创建一个完全可交互的原型，具备真实的状态管理和页面切换。用原生 JS 实现动态行为：应用状态放在普通对象（或带 subscribe/notify 的极简 store）里，状态变化时重渲染受影响的 DOM。包含悬停状态、点击交互、表单验证、动画过渡和多步导航流程。用起来要像真正能运行的应用，而不是静态效果图。
 
-## 页内路由（单文件约束）
+## 页内路由（单入口约束）
 
-产物是单个 `index.html`，多「页面」用页内路由实现：每个页面是一个顶层视图容器（如 `<section data-route="detail">`），用 hash 路由（`location.hash` + `hashchange` 监听）切换显示；视图间传参走 hash query（如 `#detail?id=3`），跨会话要保留的状态放 localStorage。不拆多个 HTML 文件，不引入 router 库，不用 `type="module"`。
+产物以 `index.html` 为唯一入口 HTML（js / css 可拆成多个本地文件），多「页面」用页内路由实现：每个页面是一个顶层视图容器（如 `<section data-route="detail">`），用 hash 路由（`location.hash` + `hashchange` 监听）切换显示；视图间传参走 hash query（如 `#detail?id=3`），跨会话要保留的状态放 localStorage。不拆多个 HTML 文件，不引入 router 库，不用 `type="module"`。
 
 ## 响应式适配
 

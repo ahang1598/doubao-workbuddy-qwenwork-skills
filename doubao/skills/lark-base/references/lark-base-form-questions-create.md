@@ -4,6 +4,27 @@
 
 向多维表格表单/问卷中批量添加问题。可以新建字段并作为题目，也可以把已有字段加到表单中作为题目而不新建字段。
 
+## 表单题目从哪来
+
+`+form-create` 不创建空表单：它会把执行时表内**全部表单可用类型字段**无条件转成题目。因此题目集合在建 form **之前**就已由表结构决定，必须先把表结构定对再建 form，不能建完再挑。建完立刻 `+form-questions-list` 回读实际题目，优先 `+form-questions-update` 改现有题目，只 create 真正缺失的项。
+
+由此产生的三条约束：
+
+- **不要落到平台默认表**。`+base-create` / `+table-create` 省略 `--fields` 时会创建带 `文本` / `单选` / `日期` / `附件` 占位字段的默认表，这些字段建 form 后全部变成题目，而主字段永久删不掉（`+field-delete` 返回 `800080207`）。污染只能靠不建来避免，不能指望事后删。表里该放什么见 [SKILL.md](../SKILL.md) 的 `+base-create --fields` 规则。
+- **对齐题目集合不得破坏数据**。只能靠一开始不建，或把已有题目移出表单；任何情况下都不允许为此删除用户既有字段或其记录。移出题目的授权条件和回读要求见下方「删除语义决策表」。
+- **提交时间用 `created_at` 承接**，任何场景都不要建成 `datetime` 题目让填表人手填。
+
+### 提交人怎么承接
+
+填写人身份只按用户列举的收集项来，不自行增删。
+
+- 用户没有点名要收集填写人 → 不收集。不要因为“想留个痕迹”“方便追溯”自行加一道姓名题，也不必强加 `created_by`。用户明确说匿名时更不要收集：匿名本身就表示不想知道填写人是谁。
+- 用户点名要记录填写人（“记录谁提交的”“预约人”“登记人”“收集提交人姓名”等）→ 用 `created_by` 系统字段承接，不建 `user` 题目；手填身份可伪造、会填错，还多占一道题。
+
+需要知道的机制事实：`created_by` 只在**登录后**提交时才写入真实身份，免登录或匿名提交只写入访客身份（形如“访客 12345”），无法标识真人。
+
+因此当用户**既点名要收集填写人、表单又必须免登录**时（例如面向外部客户的登记表），`created_by` 用不了，只能由填写人自己填一道题，并在答复中说明该身份是自填、不可信。这是在交付用户列举的收集项，不是替他决定要收集身份；用户没列这一项时不适用。
+
 ## 命令
 
 ```bash
@@ -137,14 +158,54 @@ lark-cli base +form-questions-create \
 
 已有字段题目不要携带字段定义属性，例如 `type`、`style`、`options`、`multiple`、`name`。服务端使用 strict schema，误传不属于该形态的字段会被拒绝。
 
+### `description` 换行写法
+
+题目 `description` 支持多行。`--questions` 是 JSON 参数，因此换行写 `\n` 转义，不要在 JSON 里塞真实换行：
+
+```bash
+lark-cli base +form-questions-create \
+  --base-token <base_token> \
+  --table-id <table_id> \
+  --form-id <form_id> \
+  --questions '[{"type":"text","title":"备注","description":"第一行\n第二行"}]'
+```
+
+表单自身的描述走 `+form-create` / `+form-update` 的 `--description`，那是裸字符串 flag，规则相反：`\n` 在 `'...'` 和 `"..."` 里都是字面量，必须传真实换行符。
+
+```bash
+# 正确：真实换行
+lark-cli base +form-update --base-token <base_token> --table-id <table_id> --form-id <form_id> \
+  --description $'第一行\n第二行'
+
+# 错误：落库成字面量「第一行\n第二行」
+lark-cli base +form-update ... --description "第一行\n第二行"
+```
+
+两种写法都要在写入后回读（题目描述用 `+form-questions-list`，表单描述用 `+form-list` 或 `+form-get`）；回读结果里出现字面 `\n` 即为失败，必须重写。
+
 ### `style` 字段说明
 
 | 类型 | style 结构 | 说明 |
 |------|------|------|
-| `text` | `{"type":"plain"}` / `{"type":"phone"}` / `{"type":"email"}` / `{"type":"url"}` / `{"type":"barcode"}` | 保留字段已有 text style |
+| `text` | `{"type":"plain"}` / `{"type":"phone"}` / `{"type":"email"}` / `{"type":"url"}` / `{"type":"barcode"}` | 这些是文本字段本身支持的样式；某个样式能否作为表单题目由服务端裁决，被拒时按下方回退处理，不要据本表断定一定可用 |
 | `number` | `{"type":"plain","precision":2}` | precision 为小数位数 |
 | `number`（评分） | `{"type":"rating","icon":"star","min":1,"max":5}` | icon 可选：`star`/`heart`/`thumbsup`/`fire`/`smile`/`lightning`/`flower`/`number` |
 | `datetime` | `{"format":"yyyy/MM/dd"}` | format 可选：`yyyy/MM/dd`、`yyyy/MM/dd HH:mm`、`MM-dd`、`MM/dd/yyyy`、`dd/MM/yyyy` |
+
+### style 被服务端拒绝时的回退
+
+服务端接受哪些 `style` 会随版本变化，因此不要背支持清单，按下面的行为判定：
+
+**触发条件**（不依赖报错文案）：目标字段类型在受支持的 7 类内、题目带了非默认 `style`、创建题目失败 —— 一律先按“当前服务端不接受该 `style`”处理，而不是先怀疑字段类型、参数缺失或权限。
+
+**回退动作**，各做一次即可：
+
+- 新建字段题目：去掉 `style` 重发一次（省略时文本字段落为 `plain`）。此形态被拒时**不会创建字段**，无需清理。
+- 已有字段题目：先 `+field-update` 把该字段 `style.type` 改为 `plain`，再重新加入表单。
+
+**两个容易被带偏的地方**：新建字段题目失败时，报错可能指向 `use_existing_field`、`field_id` 等与本次请求无关的字段，这**不是**让你改用已有字段题目形态；已有字段题目失败时，报错可能只按字段类型描述、不区分 `style`，被拒字段本身往往正是报错中列为“受支持”的类型。两种情况都不要据报错文字改换形态或去排查别的原因。
+
+回退成功后继续交付，并在答复中说明该题目当前不支持对应的格式校验、已按普通文本收集。只回退一次；去掉 `style` 后仍被拒说明是别的原因，如实报告，不要反复改字段。用户列举的收集项不能因为这个拒绝而缺项。
 
 ### `visible_rule` 显隐条件
 

@@ -2,7 +2,7 @@
 
 > 本例展示单图结构、0-999 process 驱动、两层舞台、安全图例构造，以及 hover + click/tap + 键盘联动。正式输出仍必须遵循 `references/image-overlay-authoring-spec.md`。
 
-这是一道机箱风道题（对应 `gold-process.md` 那份 process）的**最终回复全文**。注意它的形状（=你要交付的目标）：
+这是一道机箱风道题（对应 `image-overlay-gold-process.md` 那份 process）的**最终回复全文**。注意它的形状（=你要交付的目标）：
 
 - ✅ **按此顺序**：讲解正文 → 最终答案（方案表格 + 细节）→ 收尾**一句自然衔接**（"我把…都标在图上了，照着看更直观"）→ **末尾**一张 ` ```html type="renderer" ` 可视化。**先把方案讲完、给出答案，可视化放最后**——用户不必等图形生成就能先读到结论，可视化作为佐证附在末尾。
 - ✅ process 的四条证据（bbox_zoom 进风区 + path_grow 气流路径 + node_walk 排风方向 + count_pop 出风位）**合并进同一张图**，不是四张。
