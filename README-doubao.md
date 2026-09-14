@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：108
-- 当前索引文件数：2530
-- 最近变更：[2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) - Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br...
+- 当前索引条目数：109
+- 当前索引文件数：2509
+- 最近变更：[2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) - Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。
 
 ## 数据来源
 
@@ -112,7 +112,7 @@
 | lark-base | `doubao/skills/lark-base` | skill | 32 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图看板、表单问卷收集、仪表盘、自动化工作流、表格行列权限，支撑持续运营业务闭环 |
 | lark-calendar | `doubao/skills/lark-calendar` | skill | 15 | 飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。 |
 | lark-contact | `doubao/skills/lark-contact` | skill | 4 | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。 |
-| lark-doc | `doubao/skills/lark-doc` | skill | 62 | 文档全场景处理：本地 Office Word（.docx/.doc）与在线文档（飞书、豆包 的 `/docs`、`/docx`、`/wiki` 链接）的阅读、创建和编辑。不处理 PDF、Sheet、Slide、Excel、PowerPoint、Base 表内操作。 |
+| lark-doc | `doubao/skills/lark-doc` | skill | 23 | 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive |
 | lark-drive | `doubao/skills/lark-drive` | skill | 63 | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入，也可通过 `drive +fetch` 把 Drive 文件读取为 Markdown（含知识库里映射为 wiki URL 的 Drive 文件）。用户需要整理云盘目录、处理云空间资源 URL/token、判断链... |
 | lark-im | `doubao/skills/lark-im` | skill | 59 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。 |
 | lark-mail | `doubao/skills/lark-mail` | skill | 35 | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks. |
@@ -134,11 +134,13 @@
 | student-discount-application | `doubao/skills/student-discount-application` | skill | 13 | 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。 |
 | tencent-docs-operations | `doubao/skills/tencent-docs-operations` | skill | 1 | Use when the user invokes $tencent-docs-operations, mentions Tencent Docs Operations, or requests supported Tencent Docs Operations operations. |
 | verifier-hub | `doubao/skills/verifier-hub` | skill | 18 | >- |
+| word | `doubao/skills/word` | skill | 18 | Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作使用此技能。 |
 
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-14-180008 | [2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) | Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。 |
 | 2026-09-13-180003 | [2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) | Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br... |
 | 2026-09-11-180008 | [2026-09-11-180008](doubao/change-logs/2026-09-11-180008.md) | Doubao 本次同步新增 11 个文件、修改 49 个文件、删除 39 个文件。 新增条目：skills/lark-workflow-meeting-summary。 移除条目已归档：skills/html。 受影响范围：skills/doubao-app-builder, skills/doubao-pc-optimizer, skills/dou... |
 | 2026-09-10-180013 | [2026-09-10-180013](doubao/change-logs/2026-09-10-180013.md) | Doubao 本次同步新增 30 个文件、修改 45 个文件、删除 0 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/ppt, skills/sheet。 |
@@ -158,4 +160,3 @@
 | 2026-08-12-180003 | [2026-08-12-180003](doubao/change-logs/2026-08-12-180003.md) | Doubao 本次同步新增 17 个文件、修改 12 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/student-discount-application。 |
 | 2026-08-11-180003 | [2026-08-11-180003](doubao/change-logs/2026-08-11-180003.md) | Doubao 本次同步新增 1 个文件、修改 19 个文件、删除 0 个文件。 受影响范围：skills/doubao-academic-researcher, skills/doubao-finance-model-builder, skills/doubao-identity。 |
 | 2026-08-10-155148 | [2026-08-10-155148](doubao/change-logs/2026-08-10-155148.md) | Doubao 本次同步新增 1543 个文件、修改 214 个文件、删除 39 个文件。 新增条目：skills/doubao-announcement-analysis, skills/doubao-book-writer, skills/doubao-compliance-assessment-public, skills/doubao-contr... |
-| 2026-07-23-203625 | [2026-07-23-203625](doubao/change-logs/2026-07-23-203625.md) | 本次同步新增 65 个文件、修改 0 个文件、删除 0 个文件。 新增 skill：doubao-academic-researcher, doubao-clinical-decision-support, doubao-industry-analysis, doubao-medical-literature-search。 受影响范围：doubao-... |
