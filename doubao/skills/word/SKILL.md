@@ -1,8 +1,8 @@
 ---
 name: word
-description: Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作使用此技能。
+description: Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作或有格式排版要求的写作使用此技能。
 metadata:
-  version: 1.0.30
+  version: 1.0.40
   requires:
     bins: ["python"]
 ---

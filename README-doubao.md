@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：109
-- 当前索引文件数：2509
-- 最近变更：[2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) - Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。
+- 当前索引文件数：2507
+- 最近变更：[2026-09-15-180006](doubao/change-logs/2026-09-15-180006.md) - Doubao 本次同步新增 0 个文件、修改 3 个文件、删除 2 个文件。 受影响范围：skills/word。
 
 ## 数据来源
 
@@ -134,12 +134,13 @@
 | student-discount-application | `doubao/skills/student-discount-application` | skill | 13 | 办理豆包专业版学生优惠申请：引导用户绑定抖音、完成学生认证并领取权益。仅当用户明确提出申请、继续办理或查询申请状态时加载；单纯咨询优惠或诉求不明确时不加载。 |
 | tencent-docs-operations | `doubao/skills/tencent-docs-operations` | skill | 1 | Use when the user invokes $tencent-docs-operations, mentions Tencent Docs Operations, or requests supported Tencent Docs Operations operations. |
 | verifier-hub | `doubao/skills/verifier-hub` | skill | 18 | >- |
-| word | `doubao/skills/word` | skill | 18 | Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作使用此技能。 |
+| word | `doubao/skills/word` | skill | 16 | Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作或有格式排版要求的写作使用此技能。 |
 
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-15-180006 | [2026-09-15-180006](doubao/change-logs/2026-09-15-180006.md) | Doubao 本次同步新增 0 个文件、修改 3 个文件、删除 2 个文件。 受影响范围：skills/word。 |
 | 2026-09-14-180008 | [2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) | Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。 |
 | 2026-09-13-180003 | [2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) | Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br... |
 | 2026-09-11-180008 | [2026-09-11-180008](doubao/change-logs/2026-09-11-180008.md) | Doubao 本次同步新增 11 个文件、修改 49 个文件、删除 39 个文件。 新增条目：skills/lark-workflow-meeting-summary。 移除条目已归档：skills/html。 受影响范围：skills/doubao-app-builder, skills/doubao-pc-optimizer, skills/dou... |
@@ -159,4 +160,3 @@
 | 2026-08-14-222038 | [2026-08-14-222038](doubao/change-logs/2026-08-14-222038.md) | Doubao 本次同步新增 132 个文件、修改 162 个文件、删除 84 个文件。 新增条目：skills/computer-use, skills/lark-slides-pro。 移除条目已归档：skills/doubao-finance-sector, skills/lark-ppt。 受影响范围：skills/computer-use, s... |
 | 2026-08-12-180003 | [2026-08-12-180003](doubao/change-logs/2026-08-12-180003.md) | Doubao 本次同步新增 17 个文件、修改 12 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/student-discount-application。 |
 | 2026-08-11-180003 | [2026-08-11-180003](doubao/change-logs/2026-08-11-180003.md) | Doubao 本次同步新增 1 个文件、修改 19 个文件、删除 0 个文件。 受影响范围：skills/doubao-academic-researcher, skills/doubao-finance-model-builder, skills/doubao-identity。 |
-| 2026-08-10-155148 | [2026-08-10-155148](doubao/change-logs/2026-08-10-155148.md) | Doubao 本次同步新增 1543 个文件、修改 214 个文件、删除 39 个文件。 新增条目：skills/doubao-announcement-analysis, skills/doubao-book-writer, skills/doubao-compliance-assessment-public, skills/doubao-contr... |
