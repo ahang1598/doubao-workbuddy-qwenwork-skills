@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title">
+<title id="title">数字农人图标</title>
+<!-- 原图使用 1024 坐标系，等比缩放到 64x64 画布以保持图形比例。 -->
+<g transform="scale(0.0625)">
+<rect width="1024" height="1024" rx="400" fill="#2BAE6A"/>
+<path d="M363.411 415.411H249.54V258.939H449.953V199.111H568.379V258.939H773.347V415.411H659.476V364.788H363.411V415.411Z" fill="white"/>
+<path d="M149.333 797.387L509.166 383.196L868.998 797.387H727.798L509.166 544.27L295.088 797.387H149.333Z" fill="white"/>
+<rect x="660.903" y="476.572" width="112.719" height="121.389" fill="#FBC326"/>
+<rect x="383.442" y="667.327" width="147.401" height="121.389" fill="white"/>
+<rect x="383.442" y="615.304" width="104.048" height="112.719" fill="white"/>
+</g>
+</svg>

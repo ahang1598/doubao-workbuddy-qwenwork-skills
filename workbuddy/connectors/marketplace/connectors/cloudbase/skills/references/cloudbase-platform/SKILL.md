@@ -1,7 +1,7 @@
 ---
 name: cloudbase-platform
 description: CloudBase platform overview and routing guide. This skill should be used when users need high-level capability selection, platform concepts, console navigation, or cross-platform best practices before choosing a more specific implementation skill.
-version: 2.33.2
+version: 2.34.3
 alwaysApply: false
 ---
 
@@ -37,7 +37,7 @@ If a referenced sibling skill file is missing from this environment, ask the use
 - Web app implementation -> `../web-development/SKILL.md`
 - Web auth and provider setup -> `../auth-tool-cloudbase/SKILL.md`, `../auth-web-cloudbase/SKILL.md`
 - Mini program development -> `../miniprogram-development/SKILL.md`
-- WeChat Pay, Official Account OAuth, JSAPI Pay, or Native QR-code Pay through CloudBase Integration Center -> `../cloudbase-wechat-integration/SKILL.md` (official docs: `https://docs.cloudbase.net/integration/introduce/index.md`)
+- WeChat Pay, Official Account OAuth, JSAPI Pay, or Native QR-code Pay through CloudBase Integration Center -> `../cloudbase-wechat-integration/SKILL.md` (official docs: `https://docs.cloudbase.net/integration/introduce.md`)
 - Cloud functions -> `../cloud-functions/SKILL.md`
 - Official HTTP API clients -> `../http-api-cloudbase/SKILL.md`
 - Document database -> `../cloudbase-document-database-web-sdk/SKILL.md` or `../cloudbase-document-database-in-wechat-miniprogram/SKILL.md`
@@ -191,16 +191,17 @@ When a task explicitly requires recording operation steps or results to a file (
    **Creating an environment with specific resources:**
    ```
    manageEnv(action="create", alias="my-env", packageId="baas_personal",
-             resources=["flexdb","storage","function","postgresql"], confirm="yes")
+             resources=["storage","function","postgresql"], confirm="yes")
    ```
 
    - **`resources`** (optional, create only): controls which CloudBase capabilities to enable:
-     - `flexdb` — Document database (NoSQL)
      - `storage` — Cloud Storage
      - `function` — Cloud Functions
      - `postgresql` — PostgreSQL relational database (PG mode)
-   - Defaults to all four when omitted. MCP always sends non-empty `Resources` to CreateEnv.
-   - Do **not** pass `region`: CreateEnv does not accept Region; environment region is determined by account/package.
+   - Defaults to all three when omitted. MCP always sends non-empty `Resources` to CreateEnv.
+   - `flexdb` (document database) is **not** offered: new environments are created without a NoSQL tenant. Do not pass it — it is rejected by the schema. To find out whether an environment actually has NoSQL, read `queryEnv(action="info")` → `EnvInfo.RuntimeBackends` rather than assuming.
+   - Region is selectable: pass `region` (e.g. `region="ap-shanghai"`) to choose where the environment is created. It is applied as the **`X-TC-Region` request context**, not as a CreateEnv body field — so do **not** put `Region` inside `params`. Omit it to use the current session region (`cloudBaseOptions.region` → `TCB_REGION` → project config / rc binding → site default: `ap-shanghai` for the domestic site, `ap-singapore` for the intl site). Equivalent CLI: `tcb env create --region ap-shanghai`.
+   - ⚠️ If you pass `region`, repeat the same value on the confirming call together with `confirm="yes"`; otherwise the second call falls back to the session region and the environment may be created somewhere other than the summary you confirmed.
    - ⚠️ **All paid operations** (create / modifyPlan / renew) require `confirm="yes"`.
 
    **Querying available packages before creating:**

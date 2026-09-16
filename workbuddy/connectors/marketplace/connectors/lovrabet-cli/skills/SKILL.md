@@ -1,8 +1,8 @@
 ---
 name: lovrabet
 displayName: Lovrabet 运行态 CLI
-version: 2.3.2
-description: "Lovrabet 运行态 CLI — 面向业务场景的 AI 操作套件，通过 lovrabet 命令管理应用目录、业务角色与权限、用户级外部账号、Service Tree 业务命令、API 文档发现、数据集查询、Instant API 数据操作、Custom SQL/Backend Function、Personal Backend Function、文件上传、面向票证类业务材料文字与结构化字段提取的 OCR、定时任务、Skill、知识库与运行态 app-config key 状态检查。触发词：云图、lovrabet、lovrabet-cli、业务角色、角色成员、页面权限、菜单权限、数据集权限、user-account bind、provider 外部账号绑定、钉钉 userId 绑定、service tree、业务服务树、api-doc、dataset、data filter、file upload、file query-url、ocr recognize、OCR 识别、票证文字提取、票证字段提取、发票识别、票据识别、证照识别、附件上传、personal-bff、schedule、定时任务、cron、kb、skill、sql exec、bff exec、app-config、accessKey、compress、jq。"
+version: 2.3.3
+description: "Lovrabet 运行态 CLI — 面向业务场景的 AI 操作套件，通过 lovrabet 命令管理应用目录、业务角色与权限、用户级外部账号、Service Tree 业务命令、API 文档发现、数据集查询、Instant API 数据操作、Custom SQL/Backend Function、Personal Backend Function、文件上传、面向票证类业务材料文字与结构化字段提取的 OCR、审批待办与任务办理、定时任务、Skill、知识库与运行态 app-config key 状态检查。触发词：云图、lovrabet、lovrabet-cli、业务角色、角色成员、页面权限、菜单权限、数据集权限、user-account bind、provider 外部账号绑定、钉钉 userId 绑定、service tree、业务服务树、api-doc、dataset、data filter、file upload、file query-url、ocr recognize、OCR 识别、票证文字提取、票证字段提取、发票识别、票据识别、证照识别、附件上传、personal-bff、approval、审批、待办、approve、reject、transfer、schedule、定时任务、cron、kb、skill、sql exec、bff exec、app-config、accessKey、compress、jq。"
 metadata:
   requires:
     bins: ["lovrabet"]
@@ -28,6 +28,7 @@ metadata:
   - [数据集与数据流程](guides/dataset-and-data-workflow.md)
   - [Custom SQL 与 Backend Function 流程](guides/sql-and-bff-workflow.md)
   - [排障](guides/troubleshooting.md)
+  - [审批流运行态办理](references/lovrabet-approval-workflow.md)
 - 命令细节 / 参数参考：
   - `references/*.md`
 

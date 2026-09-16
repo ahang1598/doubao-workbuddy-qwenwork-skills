@@ -33,9 +33,9 @@
         },
         {
             "command": {
-                "darwin": "lark-cli auth login --recommend --exclude vc:meeting.realtime:read,im:chat:create",
-                "linux": "lark-cli auth login --recommend --exclude vc:meeting.realtime:read,im:chat:create",
-                "win32": "lark-cli.cmd auth login --recommend --exclude vc:meeting.realtime:read,im:chat:create"
+                "darwin": "lark-cli auth login --recommend || [ $? -eq 3 ]",
+                "linux": "lark-cli auth login --recommend || [ $? -eq 3 ]",
+                "win32": "lark-cli.cmd auth login --recommend & if errorlevel 4 exit /b 1 & if errorlevel 3 exit /b 0"
             },
             "authWaitForExit": true,
             "authUrlDomain": "accounts.feishu.cn"

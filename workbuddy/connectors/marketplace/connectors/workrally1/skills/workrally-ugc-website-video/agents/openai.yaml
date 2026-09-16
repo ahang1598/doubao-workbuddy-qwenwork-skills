@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally UGC 网站视频"
+  short_description: "用真实网页截图产出达人口播宣传片"
+  default_prompt: "用 $workrally-ugc-website-video 给这个网站做一条 30 秒的达人口播宣传视频。"
+policy:
+  allow_implicit_invocation: true

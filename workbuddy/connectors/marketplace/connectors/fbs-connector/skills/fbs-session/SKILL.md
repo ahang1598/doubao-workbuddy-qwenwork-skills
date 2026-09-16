@@ -1,13 +1,15 @@
 ---
 name: fbs-connector-session
 description: "福帮手访问码激活、权益预检、流程完结与退出会话。仅处理用户明确提出或主线明确要求的高级后续，不作为首轮业务入口。"
-version: "26.8.20"
+version: "2026.9.10"
 author: "FBSir"
 ---
 
 # 福帮手会话后续
 
 执行本技能时同时遵守 `fbs-connector` 的公共安全与输出规则。
+
+组织任何写入前完整读取 `references/session-write-outcomes.md`。
 
 ## 路由
 
@@ -23,3 +25,4 @@ author: "FBSir"
 - `skill_finish` 不用于首轮入口或首值记录；主线进度由 `skill_consume` 负责。
 - 不因网络错误、重试或内部诊断擅自登出。
 - 成功必须由对应工具回执证明；没有回执就只报告未确认状态。
+- 超时、连接中断或缺失回执属于 `outcome_unknown`，不是明确失败；在确认当前 `tools/list` 提供安全状态回读前不得自动重放写操作。

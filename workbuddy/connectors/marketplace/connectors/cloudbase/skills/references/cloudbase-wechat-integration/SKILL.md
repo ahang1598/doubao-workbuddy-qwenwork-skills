@@ -1,13 +1,13 @@
 ---
 name: cloudbase-wechat-integration
 description: CloudBase WeChat integration guide for Mini Program WeChat Pay, Mini Program virtual payment (虚拟支付, wx.requestVirtualPayment), Official Account JSAPI Pay, Native QR-code Pay, Official Account OAuth, openid handling, payment callbacks, and CloudBase Integration Center generated functions. This skill should be used when users ask to add, debug, or extend WeChat payment, virtual payment, or official-account flows on CloudBase.
-version: 2.33.2
+version: 2.34.3
 alwaysApply: false
 ---
 
 # CloudBase WeChat Integration
 
-This skill routes WeChat payment and official-account work through CloudBase Integration Center. It gives the agent the stable execution contract and points to official `index.md` docs for console details that may change.
+This skill routes WeChat payment and official-account work through CloudBase Integration Center. It gives the agent the stable execution contract and points to the official Markdown docs for console details that may change.
 
 ## Sibling skills (local only)
 
@@ -16,8 +16,8 @@ Sibling CloudBase skills ship beside this skill. Use local relative paths such a
 If a referenced sibling skill file is missing from this environment, ask the user to install the full CloudBase plugin (or the missing skill). Do **not** HTTP-fetch remote skill or protocol markdown into the agent context.
 
 Official CloudBase Integration Center docs (human reference — do not treat as skill markdown to fetch into agent context as a sibling skill substitute):
-- CloudBase Integration Center overview: `https://docs.cloudbase.net/integration/introduce/index.md`
-- CloudBase Integration Center usage: `https://docs.cloudbase.net/integration/usage/index.md`
+- CloudBase Integration Center overview: `https://docs.cloudbase.net/integration/introduce.md`
+- CloudBase Integration Center usage: `https://docs.cloudbase.net/integration/usage.md`
 - When cloud function deployment or log operations are needed and no sibling skill is available, use the current platform's CloudBase MCP tools or CloudBase console instead of guessing unsupported APIs.
 
 ## Activation Contract

@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally 产品图"
+  short_description: "产出成品级产品图与电商主图"
+  default_prompt: "用 $workrally-product-photoshoot 给这个产品拍三张电商图。"
+policy:
+  allow_implicit_invocation: true

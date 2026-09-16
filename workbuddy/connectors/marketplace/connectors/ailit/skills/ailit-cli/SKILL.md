@@ -47,14 +47,6 @@ ailit auth login --non-interactive --format json
 ailit auth login --resume <workflowId> --result-set <resultSetId> --select <token> --format json
 ```
 
-TTY 用户协助登录（Agent 无法打开浏览器时）：
-
-1. 运行 `ailit auth login --timeout 3m`，命令会立即输出授权 URL，请立刻把该 URL 发给用户。
-2. 用户在浏览器打开 URL、扫码登录。
-3. 登录后浏览器跳转到 `http://127.0.0.1:<port>/callback?auth_code=<code>&state=<state>`，请用户把完整回调 URL 发回。
-4. 执行 `curl "http://127.0.0.1:<port>/callback?auth_code=<code>&state=<state>"` 完成登录。
-5. 运行 `ailit doctor` 验证登录状态。
-
 ### 输出与格式
 
 - 面向用户优先使用默认表格或友好摘要。

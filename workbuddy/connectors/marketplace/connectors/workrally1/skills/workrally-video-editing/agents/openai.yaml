@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally 视频编辑"
+  short_description: "编辑已有视频：改画面、换物体、延长、剪辑装配"
+  default_prompt: "用 $workrally-video-editing 把这个视频里的背景换掉。"
+policy:
+  allow_implicit_invocation: true

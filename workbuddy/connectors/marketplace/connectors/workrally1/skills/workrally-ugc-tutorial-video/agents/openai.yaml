@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally UGC 教程视频"
+  short_description: "产出达人分步演示的教程短视频"
+  default_prompt: "用 $workrally-ugc-tutorial-video 给这个产品做一条 30 秒的达人教程视频。"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally 烧字幕"
+  short_description: "用本地 Whisper 定时，把字幕烧进视频像素"
+  default_prompt: "用 $workrally-subtitles 把字幕烧进这条视频。"
+policy:
+  allow_implicit_invocation: true

@@ -1,7 +1,7 @@
 ---
 name: cloud-functions
 description: CloudBase function runtime guide for building, deploying, and debugging your own Event Functions or HTTP Functions. This skill should be used when users need application runtime code on CloudBase, not when they are merely calling CloudBase official platform APIs.
-version: 2.33.2
+version: 2.34.3
 alwaysApply: false
 ---
 
@@ -40,7 +40,7 @@ If a referenced sibling skill file is missing from this environment, ask the use
 
 - Detailed reference routing -> `./references.md`
 - Auth setup or provider-related backend work -> `../auth-tool-cloudbase/SKILL.md`
-- CloudBase Integration Center generated WeChat Pay or Official Account functions -> `../cloudbase-wechat-integration/SKILL.md` (official docs: `https://docs.cloudbase.net/integration/introduce/index.md`)
+- CloudBase Integration Center generated WeChat Pay or Official Account functions -> `../cloudbase-wechat-integration/SKILL.md` (official docs: `https://docs.cloudbase.net/integration/introduce.md`)
 - AI in functions -> `../ai-model-nodejs/SKILL.md`
 - Long-lived container services or Agent runtimes -> `../cloudrun-development/SKILL.md`
 - Calling CloudBase official platform APIs from a client or script -> `../http-api-cloudbase/SKILL.md`

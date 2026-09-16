@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "jumper-kpi": {
+      "type": "streamableHttp",
+      "url": "https://sit-aimcp.jumper-health.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

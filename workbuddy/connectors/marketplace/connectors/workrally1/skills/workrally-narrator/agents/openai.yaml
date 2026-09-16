@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally 旁白与口播人"
+  short_description: "锁音色配旁白，或把人合成进视频当口播人"
+  default_prompt: "用 $workrally-narrator 给这段稿子配一条旁白。"
+policy:
+  allow_implicit_invocation: true

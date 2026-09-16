@@ -14,7 +14,7 @@
             "linux": "cnb -v",
             "win32": "cnb.cmd -v"
         },
-        "minVersion": "1.15.20"
+        "minVersion": "1.15.22"
     },
     "auth": {
         "darwin": "cnb login",

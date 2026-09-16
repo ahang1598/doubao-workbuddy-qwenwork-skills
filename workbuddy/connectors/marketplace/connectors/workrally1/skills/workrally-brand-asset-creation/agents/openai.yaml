@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally 品牌视觉"
+  short_description: "产出 logo、配色、样机与品牌手册等成套品牌物料"
+  default_prompt: "用 $workrally-brand-asset-creation 给我的品牌做一套视觉物料。"
+policy:
+  allow_implicit_invocation: true

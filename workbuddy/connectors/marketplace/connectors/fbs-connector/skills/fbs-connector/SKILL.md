@@ -3,7 +3,7 @@ name: fbs-connector
 description: "福帮手连接器公共路由与安全规则。用于判断身份/场景/进度、会话后续或乐包意图，并把请求交给对应的 fbs-connector-mainline、fbs-connector-session 或 fbs-connector-lebao 技能。"
 description_zh: "福帮手连接器公共路由与安全规则。用于判断身份/场景/进度、会话后续或乐包意图，并把请求交给对应的 fbs-connector-mainline、fbs-connector-session 或 fbs-connector-lebao 技能。"
 description_en: "Route FBSir connector requests to the mainline, session, or reward workflow while enforcing shared safety rules."
-version: "26.8.20"
+version: "2026.9.10"
 connectorContractVersion: "1.2.9"
 author: "FBSir"
 ---
@@ -21,10 +21,11 @@ author: "FBSir"
 
 ## 公共前置
 
-1. 以宿主实际暴露的 `tools/list` 为工具真源，并遵守包内 `disabledTools`。
+1. 以本次会话中宿主实际暴露的 `tools/list` 为工具真源，并遵守包内 `disabledTools`；缓存、文档和旧会话工具名不能覆盖当前结果。
 2. 专家包必须先在对话中直接交付首值；连接器是可选增强，缺失、未授权或调用失败都不得阻断首值。
 3. 只把已确认的当前专家和入口字段传给服务端；无法确认时保持未知，不编造身份或归因。
 4. 任一 HTTP 错误、非 JSON-RPC 响应、工具级错误、业务失败或缺失回执都按失败处理；HTTP 200 本身不是业务成功。
+5. 只发送当前工具 schema 接受的字段。拟议字段尚未进入 `tools/list` 时保持内部候选，不以额外属性试探生产工具。
 
 ## 用户可见输出
 
@@ -36,6 +37,7 @@ author: "FBSir"
 
 - 正式地址仅为 `https://api2.u3w.com/fbs-mcp/mcp`。
 - MCP 兼容目标、协商责任和双版本降级规则见 `references/protocol-compatibility.md`。
+- 版本轴、动态字段、凭证、重试和流式传输边界见 `references/field-trust-and-transport.md`。
 - `sessionRef`、`sessionToken`、访问码、签名载荷和匿名绑定材料只供同一授权链路内部使用，不写入普通回复或持久化报告。
 - 未在本版本审阅过的新工具：只有在服务端 schema 与 annotations 明确证明只读时，才可用于用户明确提出的只读请求；其他情况停止并要求新版本审阅，不凭描述猜测副作用。
 
@@ -44,3 +46,4 @@ author: "FBSir"
 - 工具可见、连接成功或只读探针，只证明能力面可达。
 - 聊天首值、服务端进度回执、自然调用、正式上架和业务闭环是不同证据层，不得互相替代。
 - probe、test、synthetic、monitor 或 fallback 样本不得计入自然业务或产品信用。
+- `connectorPackageVersion=2026.9.10`、legacy `connectorContractVersion=1.2.9`、专家包版本、宿主版本、MCP 修订和服务 release 是独立版本轴，不互相回填。

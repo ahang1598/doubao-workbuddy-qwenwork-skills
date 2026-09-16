@@ -1278,17 +1278,25 @@
       "id": "tencent-health-nges",
       "name": "腾讯健康NGES",
       "name_en": "Tencent Health NGES",
-      "description": "Tencent Health NGES MCP Service, supports intelligent question answering, profile lookup and compliance review",
-      "description_zh": "腾讯健康NGES MCP服务，支持智能问数和合规审核等功能",
-      "description_en": "Tencent Health NGES MCP Service, supports intelligent question answering, profile lookup and compliance review",
+      "description": "Tencent Health NGES MCP service for pharma marketing: data insights on visits and meetings, HCP profile lookup, pre-call planning, post-call recording, and compliance review.",
+      "description_zh": "腾讯健康NGES医药营销智能助手，支持拜访与会议等业务数据洞察分析、医生画像查询、访前准备、访后记录写入及话术合规审核。",
+      "description_en": "Tencent Health NGES MCP service for pharma marketing: data insights on visits and meetings, HCP profile lookup, pre-call planning, post-call recording, and compliance review.",
       "source": "tencent-health-nges",
       "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "帮我查看本月的拜访KPI达成情况",
+        "查询张医生的客户画像，看看上次拜访聊了什么",
+        "这周我该优先拜访哪些医生？帮我准备拜访策略",
+        "刚拜访完李医生，帮我记录这次拜访并更新医生观念定级",
         "帮我对以下话术进行合规审核"
       ],
       "examples_en": [
         "Help me check the KPI completion for this month",
+        "Show Dr. Zhang's profile and the summary of our last visit",
+        "Which doctors should I prioritize visiting this week? Prepare a visit strategy for me",
+        "I just finished visiting Dr. Li — record this visit and update the adoption grading",
         "Help me audit the following statement"
       ],
       "visible_in": [
@@ -1707,9 +1715,9 @@
       "name": "LemonClaw",
       "name_zh": "柠檬云",
       "name_en": "LemonClaw",
-      "description": "Connect Lemon Cloud's finance, inventory and sales, business-finance integration, and invoicing systems, supporting enterprise operational scenarios such as account checking, invoicing, business inquiries, and management analysis.",
-      "description_zh": "连接柠檬云财务、进销存、业财和发票系统，支持查账、开票、业务查询、经营分析等企业经营场景。",
-      "description_en": "Connect Lemon Cloud's finance, inventory and sales, business-finance integration, and invoicing systems, supporting enterprise operational scenarios such as account checking, invoicing, business inquiries, and management analysis.",
+      "description": "Connects with Lemon Cloud Finance, Inventory, Accounting, Cloud Accounting, and Invoicing systems, supporting various business scenarios such as account reconciliation, invoice generation, business inquiry, and operational analysis.",
+      "description_zh": "连接柠檬云财务、进销存、业财、云代账和发票系统，支持查账、开票、业务查询、经营分析等企业经营场景。",
+      "description_en": "Connects with Lemon Cloud Finance, Inventory, Accounting, Cloud Accounting, and Invoicing systems, supporting various business scenarios such as account reconciliation, invoice generation, business inquiry, and operational analysis.",
       "source": "lemonclaw",
       "type": "cli",
       "minWorkbuddyVersion": "5.0.0",
@@ -2108,7 +2116,8 @@
       "description_en": "Search Chinese company profiles, ownership, risks, intellectual property, tenders, and news.",
       "source": "kuaicha-search",
       "type": "mcp",
-      "auth_mode": "token",
+      "auth_mode": "server-side",
+      "provider_id": "kuaicha-search",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "查询同花顺的工商基本信息",
@@ -2821,20 +2830,20 @@
       "id": "dknowc-mcp",
       "name": "深知可信工作台",
       "name_en": "DKnow Trusted Workbench",
-      "description": "DKnow Trusted Workbench helps with policy, legal, standards, and public-service work. It provides trusted Q&A, authoritative search, deep research, and evidence-based material organization, helping users find official sources, eligibility requirements, application materials, subsidies, regulations, and standards across regions and time periods.",
-      "description_zh": "深知可信工作台面向政策、法律、标准和公共服务场景，提供可信问答、权威检索、深度研究和材料整理能力。它可以帮助用户查询政策原文、办事条件、申报材料、补贴资质、法律法规和行业标准，梳理多地区、多时间范围的信息，并基于可追溯的权威来源形成清晰、可核验的结果。",
-      "description_en": "DKnow Trusted Workbench helps with policy, legal, standards, and public-service work. It provides trusted Q&A, authoritative search, deep research, and evidence-based material organization, helping users find official sources, eligibility requirements, application materials, subsidies, regulations, and standards across regions and time periods.",
+      "description": "DKnow Trusted Workbench focuses on trusted knowledge services for laws, policies, and standards, while supporting industry research and public-service scenarios. It breaks down complex questions into verifiable research tasks, cross-checks evidence from multiple sources, traces claims to authoritative original documents, and produces clear, source-backed answers, search results, and research materials.",
+      "description_zh": "深知可信工作台聚焦法律、政策、标准等可信知识服务，并覆盖产业研究和公共服务场景。支持将复杂问题拆解为可验证的检索任务，综合多来源材料交叉验证，追溯权威原文及依据，形成来源清晰、可核验的问答、检索与研究结果。",
+      "description_en": "DKnow Trusted Workbench focuses on trusted knowledge services for laws, policies, and standards, while supporting industry research and public-service scenarios. It breaks down complex questions into verifiable research tasks, cross-checks evidence from multiple sources, traces claims to authoritative original documents, and produces clear, source-backed answers, search results, and research materials.",
       "source": "dknowc-mcp",
       "type": "mcp",
       "examples_zh": [
-        "请使用深知可信工作台查询：深圳公积金租房提取需要哪些材料？请给出权威依据、办理条件和溯源链接。",
-        "请使用深知可信工作台搜索重庆市智能化改造技改补贴政策，返回政策原文、申报条件和权威来源链接。",
-        "请使用深知可信工作台深度对比北京、上海、深圳三地人才引进政策的类型、适用人群和核心条件，附权威政策依据。"
+        "请使用深知可信工作台查询：深圳市住房公积金租房提取目前需要满足哪些条件、准备哪些材料？请引用现行政策原文并附权威来源链接。",
+        "请使用深知可信工作台检索：GB/T 35273—2020《信息安全技术 个人信息安全规范》对个人信息保存期限和删除有哪些要求？请列出对应原文条款及权威来源链接。",
+        "请使用深知可信工作台研究：2024年以来国家层面支持低空经济发展的主要政策有哪些？请拆解政策目标、重点任务和适用领域，结合多份权威来源交叉验证并追溯原文。"
       ],
       "examples_en": [
-        "Use the DKnow Trusted Workbench to query: What documents are required for Shenzhen housing fund rental withdrawal? Provide the authoritative basis, requirements and traceability links.",
-        "Use the DKnow Trusted Workbench to search Chongqing's intelligent transformation subsidy policies and return the original text, application requirements and authoritative source links.",
-        "Use the DKnow Trusted Workbench to deep-compare talent introduction policies across Beijing, Shanghai and Shenzhen — types, applicable groups and core requirements, with authoritative policy evidence."
+        "Use DKnow Trusted Workbench to find the current eligibility conditions and required documents for housing provident fund rental withdrawal in Shenzhen. Quote the applicable policy text and provide authoritative source links.",
+        "Use DKnow Trusted Workbench to identify the requirements on personal-information retention and deletion in GB/T 35273—2020, Information Security Technology — Personal Information Security Specification. Quote the relevant clauses and provide authoritative source links.",
+        "Use DKnow Trusted Workbench to research major national policies supporting China's low-altitude economy since 2024. Break the question down by policy objectives, key tasks, and applicable fields, cross-check multiple authoritative sources, and trace the findings to original documents."
       ],
       "visible_in": [
         "internal",
@@ -2951,7 +2960,8 @@
       "description_en": "Search Chinese laws and regulations, judicial cases, judgment documents, and internet legal practice information. Supports legal article search, similar case retrieval, deep legal research, legal document drafting, and litigation visualization.",
       "source": "fazhi-law",
       "type": "mcp",
-      "auth_mode": "token",
+      "auth_mode": "server-side",
+      "provider_id": "fazhi-law",
       "version": "1.0.0",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
@@ -4223,15 +4233,15 @@
       "description_en": "Combined with your purchase, sales, and inventory business data, you can achieve batch reconciliation, sales invoicing, and batch product creation, covering various business scenarios such as sales, procurement, inventory, cashier, reconciliation, and operational analysis.",
       "source": "ailit",
       "type": "cli",
-      "version": "0.8.1",
+      "version": "0.8.3",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
-        "帮我查询【客户名称】在【时间范围】内的对账信息，并将对账单PDF发给我",
+        "帮我查询累计欠款最多的客户，并把他本月的对账单PDF发给我。",
         "我有一张客户订货单，帮我识别客户、商品和数量并创建销售单",
         "我上传了一份商品清单，帮我批量创建商品，并录入到系统"
       ],
       "examples_en": [
-        "Please check the reconciliation information for [Customer Name] during [Time Range], and send the PDF statement to me",
+        "Please look up the customer with the highest outstanding balance and send me their statement of account (PDF) for this month.",
         "I have a customer purchase order. Please extract the customer, items, and quantities to create a sales order",
         "I've uploaded a product list. Please help me bulk-create these products and import them into the system"
       ],
@@ -4531,8 +4541,8 @@
       "name_zh": "DataBuddy",
       "name_en": "DataBuddy",
       "description": "Use DataBuddy capabilities on WorkBuddy.",
-      "description_zh": "连接 DataBuddy 数据知识库，让 AI 基于企业真实数据作答——问数、报告、异动归因、预测、相关性等分析更可信，并可生成实时更新的仪表盘。",
-      "description_en": "Ground AI in your enterprise data via DataBuddy — data Q&A, reporting, root-cause analysis, forecasting, correlation analysis, and live dashboards..",
+      "description_zh": "连接腾讯云大数据 DataBuddy 数据知识库，让 AI 基于企业真实数据作答——问数、报告、异动归因、预测、相关信号分析更可信，并可生成实时更新的仪表盘。",
+      "description_en": "Connect the DataBuddy knowledge base, powered by Tencent Cloud Big Data, to let AI answer with real enterprise data — for more trustworthy Q&A, reports, anomaly attribution, forecasting, and related-signal analysis, plus dashboards that refresh in real time.",
       "source": "databuddy",
       "type": "cli",
       "minWorkbuddyVersion": "5.0.0",
@@ -5718,6 +5728,8 @@
       "source": "haier-assistant",
       "type": "mcp",
       "version": "0.1.0",
+      "auth_mode":"server-side",
+      "provider_id": "haier-assistant",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "三口之家想买台冰箱，预算五千左右，有什么推荐？",
@@ -6288,6 +6300,547 @@
         "Find licensed assets for an autumn marketing poster and suggest three directions.",
         "Generate a 16:9 key visual for a technology launch and explain the expected credit cost first.",
         "Read my poster workflow, preserve its canvas structure, and create a spring version."
+      ]
+    },
+    {
+      "id": "huita-ims",
+      "name": "慧獭进销存",
+      "name_en": "Huita IMS",
+      "description": "Huita IMS MCP connector: products/inventory (multi-store, batch/expiry), sales & purchase orders, AR/AP, and business analytics. Provides 14 read + 6 analytics + 12 write tools (preview→commit two-phase writes). Data syncs in real time with the Huita desktop and POS clients.",
+      "description_zh": "慧獭进销存一体化 MCP 连接器：商品/库存（多店多仓、批号效期）、销售与采购开单、往来对账、经营分析。提供 14 个只读 + 6 个分析 + 12 个写工具（preview→commit 两阶段写），数据与慧獭桌面端/收银台实时同步。",
+      "description_en": "Huita IMS MCP connector: products/inventory (multi-store, batch/expiry), sales & purchase orders, AR/AP, and business analytics. Provides 14 read + 6 analytics + 12 write tools (preview→commit two-phase writes). Data syncs in real time with the Huita desktop and POS clients.",
+      "source": "huita-ims",
+      "type": "mcp",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ],
+      "examples_zh": [
+        "今天哪些货要补？给我低库存清单",
+        "给老客户开一张 5 箱可乐的销售单",
+        "上月卖了多少？给我经营月报",
+        "有哪些批次快过期了？"
+      ],
+      "examples_en": [
+        "Which products are low on stock today?",
+        "Create a sales order for 5 cases of cola for our regular customer",
+        "Give me a monthly business report for last month",
+        "Which batches are expiring soon?"
+      ]
+    },
+    {
+      "id": "joyread-english",
+      "name": "JoyRead 双语绘本",
+      "name_en": "JoyRead English Picture Books",
+      "description": "Browse the JoyRead bilingual picture-book library: find books by level or theme, read page by page with native audio narration, enjoy guided reading, vocabulary games and bedtime mode, and export books as MP4 videos with narration and bilingual subtitles.",
+      "description_zh": "浏览 JoyRead 双语英语绘本库：按级别或主题找书，逐页点读原声朗读，支持亲子陪读、词汇复习、睡前故事三种陪读模式，并可将绘本导出为带朗读和双语字幕的 MP4 视频。",
+      "description_en": "Browse the JoyRead bilingual picture-book library: find books by level or theme, read page by page with native audio narration, enjoy guided reading, vocabulary games and bedtime mode, and export books as MP4 videos with narration and bilingual subtitles.",
+      "source": "joyread-english",
+      "type": "mcp",
+      "version": "1.0.0",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "找一本适合零基础、关于动物的英语绘本",
+        "有没有关于分享或友谊的故事书",
+        "把这本绘本生成互动点读页面给孩子读",
+        "带孩子玩这本书里的单词复习游戏",
+        "帮我导出这本绘本的朗读视频"
+      ],
+      "examples_en": [
+        "Find a beginner-level English picture book about animals",
+        "Is there a story about sharing or friendship?",
+        "Turn this book into an interactive click-to-read page for my child",
+        "Play a vocabulary review game from this book",
+        "Export this book as a narrated video"
+      ]
+        },
+    {
+      "id": "jiucuodashi",
+      "name": "纠错大师",
+      "name_en": "Jiucuo Dashi",
+      "description": "Connect your Jiucuo Dashi account to query your child's recent errors and generate printable review papers.",
+      "description_zh": "连接纠错大师账号，查询授权孩子的最近错题，并自动生成单学科可打印的错题复习试卷。",
+      "description_en": "Connect your Jiucuo Dashi account to query your child's recent errors and generate printable review papers.",
+      "source": "jiucuodashi",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查一下孩子最近的数学错题",
+        "最近一周有哪些错题",
+        "用错题本出一份复习试卷",
+        "把最近一个月的错题整理成练习卷"
+      ],
+      "examples_en": [
+        "Show my child's recent math errors",
+        "What errors did my child make in the last week?",
+        "Generate a review paper from recent errors",
+        "Compile the last month's errors into a practice paper"
+      ]
+    },
+    {
+      "id": "shuidi-credit",
+      "name": "水滴信用-企业尽调",
+      "name_en": "Shuidi Credit Due Diligence",
+      "description": "Query enterprise data via Shuidi Credit MCP. Supports business registration, shareholders, actual controller penetration, legal risks, intellectual property, bidding, tax credit, and sci-tech innovation assessment for one-stop enterprise due diligence through natural language.",
+      "description_zh": "水滴信用企业大数据全维度洞察，输入企业名称即可获取工商照面、股东股权、实控人穿透、司法风险、知识产权、招投标、税务信用、科创评分等全维度企业信息。适用于供应商准入尽调、企业背景核查、实控人与关联方穿透、风险预警监控、投资标的风险筛查等场景。",
+      "description_en": "Query enterprise data via Shuidi Credit MCP. Supports business registration, shareholders, actual controller penetration, legal risks, intellectual property, bidding, tax credit, and sci-tech innovation assessment for one-stop enterprise due diligence through natural language.",
+      "source": "shuidi-credit",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "生成小米的尽调报告",
+        "查一下小米的数据",
+        "查一下这家公司的股东结构和实际控制人",
+        "帮我核查这家供应商有没有司法风险和行政处罚"
+      ],
+      "examples_en": [
+        "Generate a due diligence report for Xiaomi.",
+        "Check Xiaomi's data",
+        "Look up the shareholder structure and actual controller of this company",
+        "Check whether this supplier has any legal risks or administrative penalties"
+      ]
+    },
+    {
+      "id": "sungo-device-registry",
+      "name": "医疗器械注册查询",
+      "name_en": "Medical Device Registry Lookup",
+      "description": "Look up a medical-device manufacturer across 14 official registries (NMPA, EUDAMED, FDA, MHRA, Health Canada, ANVISA, TFDA, MFDS, Roszdravnadzor and more): registration counts, risk-class split and device-level detail. 68,000+ manufacturers; every record re-verified against the manufacturer name. 100 free queries/day; unlimited with a free key.",
+      "description_zh": "输入公司名，查它在中国 NMPA、欧盟 EUDAMED、美国 FDA、英国 MHRA、加拿大、巴西、台湾、韩国、俄罗斯等 14 个官方注册库的注册数量、风险等级分布与器械明细。收录 68,000+ 家企业，每条记录逐条回查过厂商名。免费每天 100 次，领密钥后不限次。",
+      "description_en": "Look up a medical-device manufacturer across 14 official registries (NMPA, EUDAMED, FDA, MHRA, Health Canada, ANVISA, TFDA, MFDS, Roszdravnadzor and more): registration counts, risk-class split and device-level detail. 68,000+ manufacturers; every record re-verified against the manufacturer name. 100 free queries/day; unlimited with a free key.",
+      "source": "sungo-device-registry",
+      "type": "mcp",
+      "version": "1.0.0",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查一下迈瑞在哪些市场有注册",
+        "这家供应商在欧盟有没有注册记录",
+        "列出深圳理邦在美国 FDA 的注册器械",
+        "数据库覆盖哪些国家、各有多少家企业"
+      ],
+      "examples_en": [
+        "Which markets is Mindray registered in?",
+        "Does this supplier have EU EUDAMED records?",
+        "List Edan's FDA-listed devices",
+        "What markets does the database cover?"
+      ]
+    },
+    {
+      "id": "noxinfluencer-cli",
+      "name": "NoxInfluencer 红人数据与营销运营",
+      "name_en": "NoxInfluencer Creator Intelligence & Marketing Ops",
+      "description": "Operate NoxInfluencer creator intelligence and marketing operations through natural language: search and shortlist YouTube, TikTok, and Instagram creators, analyze audience, content, and cooperation signals, retrieve contacts, track content performance, run campaigns, CRM, email outreach, brand monitoring, and exports, and check quota and pricing.",
+      "description_zh": "通过自然语言调用 NoxInfluencer 的红人数据与营销运营能力：在 YouTube、TikTok、Instagram 上搜索并筛选红人，分析受众画像、内容表现与合作信号，获取联系方式，追踪内容数据，并管理 Campaign、CRM、邮件触达、品牌监测与导出任务，同时可查看配额与计费。",
+      "description_en": "Operate NoxInfluencer creator intelligence and marketing operations through natural language: search and shortlist YouTube, TikTok, and Instagram creators, analyze audience, content, and cooperation signals, retrieve contacts, track content performance, run campaigns, CRM, email outreach, brand monitoring, and exports, and check quota and pricing.",
+      "source": "noxinfluencer-cli",
+      "type": "cli",
+      "version": "0.1.1",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "找一批适合美国户外品类的 YouTube 红人，先粗筛再精选",
+        "分析这个红人的受众画像、近期内容和合作信号，判断是否值得合作",
+        "给这批红人创建邮件触达任务并发起定向邀约",
+        "监控竞品品牌在 YouTube 上的红人合作动态",
+        "查看当前 NoxInfluencer 的剩余配额和搜索成本"
+      ],
+      "examples_en": [
+        "Find US outdoor YouTube creators, then shortlist them in two passes",
+        "Analyze this creator's audience, recent content, and cooperation signals, and judge whether they are worth pursuing",
+        "Create an email outreach task for these creators and launch a targeted invitation",
+        "Monitor a competitor brand's creator collaborations on YouTube",
+        "Check my remaining NoxInfluencer quota and search costs"
+      ]
+    },
+    {
+      "id": "shuidi-discovery",
+      "name": "水滴信用-企业发现",
+      "name_en": "Shuidi Credit Enterprise Discovery",
+      "description": "Batch-filter target companies by region, industry, scale, risk, qualifications and business performance. Supports multi-dimensional screening on business registration, judicial risk, honors, bidding, equity relations, etc. One-click removal of dishonest/executed/administrative-penalty entities, and穿透 mining of affiliated enterprise groups from known companies. Ideal for lead generation, supplier admission screening, risk investigation and regional industry analysis.",
+      "description_zh": "基于企业数据仓库，面向企业发现与筛选场景：支持按工商信息、司法风险、荣誉资质、招投标、股权关系等多维条件组合筛选企业清单，可一键剔除失信/被执行/行政处罚等风险主体，也可从已知企业出发穿透挖掘关联企业群。适用于获客名单挖掘、供应商准入筛选、风险排查、区域产业分析等场景。",
+      "description_en": "Batch-filter target companies by region, industry, scale, risk, qualifications and business performance. Supports multi-dimensional screening on business registration, judicial risk, honors, bidding, equity relations, etc. One-click removal of dishonest/executed/administrative-penalty entities, and穿透 mining of affiliated enterprise groups from known companies. Ideal for lead generation, supplier admission screening, risk investigation and regional industry analysis.",
+      "source": "shuidi-discovery",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "筛选一下上海市2026-09-01新成立的企业",
+        "查一下全国在2026-09-01被列为经营异常的企业",
+        "帮我找出广东省注册资本超过1000万的制造业企业",
+        "从这家企业出发，穿透挖掘它的关联企业群"
+      ],
+      "examples_en": [
+        "Filter companies newly established in Shanghai on September 1, 2026",
+        "Check companies nationwide listed as operating abnormally on September 1, 2026",
+        "Find manufacturing companies in Guangdong with registered capital over 10 million CNY",
+        "Starting from this company,穿透 mine its affiliated enterprise group"
+      ]
+    },
+
+    {
+      "id": "connector-workshop",
+      "name": "连接器工坊",
+      "name_en": "Connector Studio",
+      "description": "Probe a remote MCP endpoint, draft and validate a WorkBuddy connector, and download it as a spec-compliant zip.",
+      "description_zh": "探测远程 MCP 端点能力，起草并校验 WorkBuddy 连接器配置，产出符合规范的连接器 zip 包。",
+      "description_en": "Probe a remote MCP endpoint, draft and validate a WorkBuddy connector, and download it as a spec-compliant zip.",
+      "source": "connector-workshop",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我探测这个 MCP 端点有哪些能力",
+        "帮我生成一个连接器的 SKILL.md",
+        "把我的连接器草稿校验一遍再打包下载"
+      ],
+      "examples_en": [
+        "Probe this MCP endpoint for its capabilities",
+        "Draft a SKILL.md for my connector",
+        "Validate and package my connector draft as a zip"
+      ]
+    },
+    {
+      "id": "kiwi-sourcing",
+      "name": "Kiwi 采购询价",
+      "name_en": "Kiwi Sourcing & Negotiation",
+      "description": "Discover suppliers, request and compare quotes, and negotiate non-binding purchasing terms.",
+      "description_zh": "发现供应商、跨商家询价、比较报价并协商非绑定采购条款。",
+      "description_en": "Discover suppliers, request and compare quotes, and negotiate non-binding purchasing terms.",
+      "source": "kiwi-sourcing",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "找三家能在一周内交付 200 个 USB-C 扩展坞的供应商",
+        "向候选商家询价并比较价格、交期、起订量和售后",
+        "在不延长交期的前提下，把最优报价再谈低 5%"
+      ],
+      "examples_en": [
+        "Find three suppliers for 200 USB-C docks deliverable within a week",
+        "Request quotes and compare price, lead time, MOQ, and after-sales terms",
+        "Negotiate the best quote down by five percent without extending delivery"
+      ]
+    },
+    {
+      "id": "masocloud-barcode-generator",
+      "name": "条码生成器",
+      "name_en": "Barcode Generator",
+      "description": "Generate 1D barcodes, 2D codes and label previews, covering CODE128, QR, DataMatrix, PDF417 and more, plus .alb label template preview.",
+      "description_zh": "生成一维条形码、二维码与标签预览图，支持 CODE128、QR、DataMatrix、PDF417 等 9 种条码与 .alb 标签模板预览，可自定义尺寸、DPI、容错等级与是否显示文字。",
+      "description_en": "Generate 1D barcodes, 2D codes and label previews, covering CODE128, QR, DataMatrix, PDF417 and more, plus .alb label template preview.",
+      "source": "masocloud-barcode-generator",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "生成一个 CODE128 条码 ABC-123456",
+        "生成 30mm 宽、20mm 高、不显示文字的条码 987654",
+        "生成 GS1-128 (01)06974592890018(11)260602(10)M0101(21)100001",
+        "把这个网址生成二维码 https://example.com",
+        "生成高容错二维码，eclevel 用 H"
+      ],
+      "examples_en": [
+        "Generate a CODE128 barcode for ABC-123456",
+        "Generate a 30mm x 20mm barcode for 987654 without text",
+        "Generate a GS1-128 (01)06974592890018(11)260602(10)M0101(21)100001",
+        "Generate a QR code for https://example.com",
+        "Generate a high error-correction QR code with eclevel H"
+      ]
+    },
+    {
+      "id": "huize-insurance-product-recommendation",
+      "name": "慧择保险产品推荐",
+      "name_en": "Huize Insurance Product Recommendation",
+      "description": "Screen and compare insurance products from Huize's internal recommendation catalog based on age, audience, occupation, budget, and coverage needs.",
+      "description_zh": "根据年龄、人群、职业、预算和保障需求，从慧择内部产品推荐库中筛选并比较保险产品。",
+      "description_en": "Screen and compare insurance products from Huize's internal recommendation catalog based on age, audience, occupation, budget, and coverage needs.",
+      "source": "huize-insurance-product-recommendation",
+      "type": "mcp",
+      "version": "0.1.0",
+      "examples_zh": [
+        "推荐适合年轻人的高性价比医疗险",
+        "比较适合30岁家庭经济支柱的重疾险",
+        "根据我的职业和预算筛选意外险"
+      ],
+      "examples_en": [
+        "Recommend cost-effective medical insurance for young adults",
+        "Compare critical illness insurance for a 30-year-old family breadwinner",
+        "Screen accident insurance based on my occupation and budget"
+      ]
+    },
+    {
+      "id": "xiehui-fr",
+      "name": "法国协会网",
+      "name_en": "France Chinese Associations Directory",
+      "description": "Search France's official government registry of 3,640+ Chinese associations by name, city, or category, and check chairman-verified certification status before contacting one.",
+      "description_zh": "查询法国内政部官方登记库收录的 3,640 家华人协会，可按名称、城市、类型搜索，查看认证状态与登记信息，联系前先核实。",
+      "description_en": "Search France's official government registry of 3,640+ Chinese associations by name, city, or category, and check chairman-verified certification status before contacting one.",
+      "source": "xiehui-fr",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "法国有哪些华人商会协会？",
+        "我要在法国办一场文化展，可以联系哪些协会？",
+        "我想做餐饮品牌出海，要联系哪些法国的华人协会？",
+        "巴黎有哪些认证过的协会？",
+        "帮我查一下 xxx 协会的注册信息"
+      ],
+      "examples_en": [
+        "What Chinese business chambers exist in France?",
+        "I'm planning a cultural exhibition in France, which associations should I contact?",
+        "I want to expand my food brand into France, which associations should I reach out to?",
+        "Which certified associations are in Paris?",
+        "Look up the registration info for a specific association"
+      ]
+    },
+    {
+      "id": "51shebao-hr-tools",
+      "name": "51社保",
+      "name_en": "51Shebao",
+      "description": "Query social insurance and housing fund contribution bases, rates, deadlines, minimum wages, average wages and maternity leave across China; search policy sources and read policy analysis reports with supporting links.",
+      "description_zh": "查询各城市社保、公积金缴费基数、比例、办理截止日、最低工资、社平工资与产假天数，检索社保政策原文与政策分析报告，附政策依据原文链接。",
+      "description_en": "Query social insurance and housing fund contribution bases, rates, deadlines, minimum wages, average wages and maternity leave across China; search policy sources and read policy analysis reports with supporting links.",
+      "source": "51shebao-hr-tools",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "北京2026年社保缴费基数上下限是多少？",
+        "深圳非深户医疗二档的公司和个人缴费比例是多少？",
+        "上海社保每月最晚什么时候办理？",
+        "成都最新的生育产假是多少天？",
+        "帮我找广东省关于加班费的政策原文"
+      ],
+      "examples_en": [
+        "What are Beijing's social insurance contribution limits for 2026?",
+        "Show the contribution rates for non-local residents under Shenzhen medical tier 2.",
+        "What is Shanghai's monthly social insurance processing deadline?",
+        "How many days of maternity leave does Chengdu grant?",
+        "Find the original policy text on overtime pay for Guangdong province."
+      ]
+    },
+    {
+      "id": "orientfutures-mobile-knowledge-base",
+      "name": "东证期货",
+      "name_en": "Orient Futures",
+      "description": "Connect to the Orient Futures MCP service for one-prompt access to reviewed futures knowledge, trading rules, risk education, contract data and account-opening guidance.",
+      "description_zh": "接入东证期货MCP服务，一句话检索经审核的期货知识、交易制度、风险投教、合约资料和开户注册说明，助力您高效进行投资决策。",
+      "description_en": "Connect to the Orient Futures MCP service for one-prompt access to reviewed futures knowledge, trading rules, risk education, contract data and account-opening guidance.",
+      "source": "orientfutures-mobile-knowledge-base",
+      "type": "mcp",
+      "version": "0.4.4",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "期货逐日盯市是什么意思，请用通俗例子解释",
+        "主力合约、主力连续和具体月份合约有什么区别",
+        "我是期货新手，开始参与前需要完成哪些开户注册步骤"
+      ],
+      "examples_en": [
+        "Explain daily mark-to-market in futures with a simple example",
+        "Compare a main contract, a continuous contract and a delivery-month contract",
+        "Explain the account-opening steps a futures beginner should complete"
+      ]
+    },
+    {
+      "id": "mindbye-contract-review",
+      "name": "明白律师·合同风险审查",
+      "name_en": "Mindbye Contract Risk Review",
+      "description": "Contract Risk Review is an intelligent contract review tool built on over 40 years of practical experience from a leading law firm in contract review, risk control, and dispute resolution. It helps identify key legal and commercial risks in Chinese contracts, including employment, divorce, lease, entrustment, and sales contracts, and generates structured review reports, actionable revision suggestions, and annotated Word documents to improve review efficiency and signing security.",
+      "description_zh": "基于头部律所40余年合同审查与争议处理实战经验沉淀，面向劳动、离婚、租赁、委托、买卖等中文合同，自动识别关键法律与交易风险，并生成规范审查报告、修改建议和 Word 批注版，提升审查效率和签署安全性。",
+      "description_en": "Contract Risk Review is an intelligent contract review tool built on over 40 years of practical experience from a leading law firm in contract review, risk control, and dispute resolution. It helps identify key legal and commercial risks in Chinese contracts, including employment, divorce, lease, entrustment, and sales contracts, and generates structured review reports, actionable revision suggestions, and annotated Word documents to improve review efficiency and signing security.",
+      "source": "mindbye-contract-review",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我审一下这份劳动合同，看看有哪些风险",
+        "审查这份离婚协议，给我修改建议和批注版 Word",
+        "这份租房合同能签吗？帮我出一份审查报告",
+        "帮我审查这份委托合同，重点关注违约责任条款"
+      ],
+      "examples_en": [
+        "Review this employment contract and flag the key legal risks",
+        "Check this divorce agreement and give me revision suggestions",
+        "Can I sign this lease? Review it and generate a report",
+        "Review this entrustment contract, focus on the liability clauses"
+      ]
+    },
+    {
+      "id": "tdengine",
+      "name": "TDengine",
+      "name_en": "TDengine",
+      "description": "Connect to TDengine to manage industrial data, build analyses, monitor events, create visualization panels, and drive industrial decisions with AI-powered data queries and root cause analysis.",
+      "description_zh": "连接 TDengine，管理工业数据，建立分析，监控事件，创建可视化面板，用 AI 问数与根因分析驱动工业决策。",
+      "description_en": "Connect to TDengine to manage industrial data, build analyses, monitor events, create visualization panels, and drive industrial decisions with AI-powered data queries and root cause analysis.",
+      "source": "tdengine",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "请对设备做一次总体扫描：当前 TDengine 环境共定义和管理了多少个设备，多少个监测指标",
+        "请选择一台近期有数据更新的设备，读取它最近 24 小时的监测数据并展示。",
+        "请选择一个可视化面板，读取它的图表配置和监测指标，并解读这个面板",
+        "请扫描最近的告警事件，挑选一条严重级别偏高的设备事件，结合该设备前后的历史数据做一次事件根因分析，可能的事件原因是什么，并提供处置建议。",
+        "请选择一台设备，为它构建一个实时分析，监控其关键指标的变化，当该指标超出合理范围时产生告警事件。请先简要说明你的方案，待用户确认后创建这个分析，最后告诉我创建结果。"
+      ],
+      "examples_en": [
+        "Perform an overall device scan: how many devices and monitoring metrics are defined and managed in the current TDengine environment?",
+        "Select a device with recent data updates, read its monitoring data from the last 24 hours, and display the data.",
+        "Select a visualization panel, read its chart configuration and monitoring metrics, and interpret the panel.",
+        "Scan recent alert events, select a high-severity device event, and perform an event root cause analysis using the device's historical data before and after the event. Explain the possible causes and provide recommended actions.",
+        "Select a device and build a real-time analysis that monitors changes in a key metric and generates an alert event when the metric falls outside a reasonable range. Briefly explain the proposed approach first, wait for user confirmation before creating the analysis, and then report the creation result."
+      ]
+    },
+    {
+      "id": "workrally1",
+      "name": "WorkRally",
+      "name_zh": "WorkRally",
+      "name_en": "WorkRally",
+      "description": "Generate product photography and video thumbnails with WorkRally: studio packshots, e-commerce hero images, lifestyle scenes, CGI concepts, and high-CTR video covers, with built-in prompt templates and quality gates.",
+      "description_zh": "用 WorkRally 生成产品图与视频封面：棚拍白底、电商主图、生活场景、CGI 概念图，以及高点击率的视频封面。内置提示词模板与质量自检。",
+      "description_en": "Generate product photography and video thumbnails with WorkRally: studio packshots, e-commerce hero images, lifestyle scenes, CGI concepts, and high-CTR video covers, with built-in prompt templates and quality gates.",
+      "source": "workrally1",
+      "type": "mcp",
+      "version": "0.3.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "给这个产品拍三张电商白底图",
+        "用这张产品图做一组生活场景图",
+        "给我的视频做一张 16:9 封面",
+        "做四个不同情绪的封面变体"
+      ],
+      "examples_en": [
+        "Shoot three clean studio packshots for this product",
+        "Turn this product photo into a set of lifestyle scenes",
+        "Create a 16:9 thumbnail for my video",
+        "Make four thumbnail variants with different emotions"
+      ]
+    },
+    {
+      "id": "tapnow",
+      "name": "TapNow 创意工作室",
+      "name_zh": "TapNow 创意工作室",
+      "name_en": "TapNow Creative Studio",
+      "description": "A visual creative studio inside WorkBuddy, powered by the TapNow Creative OS multi-model generation pipeline: from creative ideation to visual design, with ready-to-use, editable results. Built for office, marketing and social media scenarios.",
+      "description_zh": "WorkBuddy 里的视觉创意工作室：由 TapNow Creative OS 多模型生成管线驱动，覆盖从创意构思到视觉设计的完整流程，产出直接可用、可继续编辑。适用于办公、营销、自媒体等场景。",
+      "description_en": "A visual creative studio inside WorkBuddy, powered by the TapNow Creative OS multi-model generation pipeline: from creative ideation to visual design, with ready-to-use, editable results. Built for office, marketing and social media scenarios.",
+      "source": "tapnow",
+      "type": "mcp",
+      "version": "0.1.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我把这份方案的每个章节都配一张商务风格的插图",
+        "这是新品实拍图，出一套详情页用的商品图",
+        "从团队素材库找一张品牌主视觉，照着它的风格给这份方案配图",
+        "帮我出一张公众号头图"
+      ],
+      "examples_en": [
+        "Create a business-style illustration for each chapter of this proposal",
+        "Turn this product photo into a full e-commerce shot suite",
+        "Find our brand key visual in the team library and match its style across this deck",
+        "Generate a WeChat cover image"
+      ]
+    },
+    {
+      "id": "wavenote-audio",
+      "name": "WaveNote",
+      "name_zh": "WaveNote",
+      "name_en": "WaveNote",
+      "description": "Access your WaveNote recordings, transcriptions, and summaries, and start transcription tasks.",
+      "description_zh": "读取 WaveNote 录音、转写及总结内容，并为指定录音发起转写和总结任务。",
+      "description_en": "Access your WaveNote recordings, transcriptions, and summaries, and start transcription tasks.",
+      "source": "wavenote-audio",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查看我最近的录音列表",
+        "获取录音 2091 的转写内容",
+        "获取录音 2091 的总结内容",
+        "为录音 2091 重新发起转写"
+      ],
+      "examples_en": [
+        "Show my recent WaveNote recordings",
+        "Get the transcription for recording 2091",
+        "Get the summary for recording 2091",
+        "Start transcription for recording 2091"
+      ]
+    },
+    {
+      "id": "jumper-kpi",
+      "name": "天使医生",
+      "name_zh": "天使医生",
+      "name_en": "Angel Doctor",
+      "description": "Query hospital operations and staff KPI performance within your Angel Doctor account permissions.",
+      "description_zh": "通过自然语言查询当前天使医生账号有权限的医院经营指标、渠道分布、同比环比及人员 KPI 完成情况。",
+      "description_en": "Query hospital operations and staff KPI performance within your Angel Doctor account permissions.",
+      "source": "jumper-kpi",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询我有权限的门店上个月的有效金额排名",
+        "对比这家门店本月与上月同期的经营指标",
+        "看看这家门店本月哪些顾问还没有完成 KPI"
+      ],
+      "examples_en": [
+        "Rank the hospitals I can access by last month's valid amount.",
+        "Compare this hospital's performance this month with the same period last month.",
+        "Show which consultants at this hospital have not met their monthly KPI."
+      ]
+    },
+    {
+      "id": "shunong-assistant",
+      "name": "数字农人",
+      "name_en": "Shunong Assistant",
+      "description": "Connect to Shunong Assistant, authorize a company account, and check or disconnect your session.",
+      "description_zh": "连接数字农人，使用企业账号完成授权，查询登录状态，切换或退出当前连接。",
+      "description_en": "Connect to Shunong Assistant, authorize a company account, and check or disconnect your session.",
+      "source": "shunong-assistant",
+      "type": "cli",
+      "version": "0.1.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "连接数字农人，我要选择本次使用的企业",
+        "检查数字农人是否已经登录",
+        "切换数字农人当前授权的企业",
+        "退出当前数字农人连接"
+      ],
+      "examples_en": [
+        "Connect to Shunong Assistant and let me choose my company",
+        "Check whether I am signed in to Shunong Assistant",
+        "Switch the company currently authorized in Shunong Assistant",
+        "Disconnect my current Shunong Assistant session"
+      ]
+    },
+    {
+      "id": "replygen",
+      "name": "睿答",
+      "name_zh": "睿答",
+      "name_en": "ReplyGen",
+      "description": "AI customer-service connector for cross-border multi-store sellers (Shopee & more): ask in natural language for daily buyer-question digests, multi-store operations summaries, escalation handling stats, conversation insights, and order snapshot reports. Buyer PII is redacted on all output.",
+      "description_zh": "跨境电商多店铺客服 AI 连接器（Shopee 等）：用自然语言做每日买家问题总结、多店经营汇总、工单处理统计、会话洞察与订单快照报表。提供 25+ 只读/分析工具，跨店铺跨语种，买家隐私数据经脱敏后输出。",
+      "description_en": "AI customer-service connector for cross-border multi-store sellers (Shopee & more): ask in natural language for daily buyer-question digests, multi-store operations summaries, escalation handling stats, conversation insights, and order snapshot reports. 25+ read & analytics tools, cross-store and multi-language, with PII redaction on all buyer content.",
+      "source": "replygen",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "总结一下今天买家主要问了什么",
+        "给我这四个店铺本周的客服经营汇总",
+        "退款类工单这周处理了多少？有多少超时",
+        "哪几个店铺今天有异常？"
+      ],
+      "examples_en": [
+        "Summarize what buyers asked about today",
+        "Give me this week's customer-service report across all my stores",
+        "How many refund tickets were handled this week, and how many are overdue",
+        "Which stores have anomalies today"
       ]
     }
   ]

@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally UGC 开箱视频"
+  short_description: "产出达人拆快递的开箱短视频"
+  default_prompt: "用 $workrally-ugc-unboxing-video 给这个产品做一条 15 秒的开箱视频。"
+policy:
+  allow_implicit_invocation: true

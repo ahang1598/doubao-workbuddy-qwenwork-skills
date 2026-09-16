@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally UGC 产品视频"
+  short_description: "无人出镜、产品当主角的竖版口播短视频"
+  default_prompt: "用 $workrally-ugc-product-video 给这个产品做一条 15 秒的竖版视频，不要真人出镜。"
+policy:
+  allow_implicit_invocation: true

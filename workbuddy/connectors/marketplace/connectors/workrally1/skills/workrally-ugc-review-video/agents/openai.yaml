@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally UGC 达人口播视频"
+  short_description: "真人达人出镜口播的竖版测评短视频"
+  default_prompt: "用 $workrally-ugc-review-video 找个达人出镜，给这个产品做一条 30 秒的口播视频。"
+policy:
+  allow_implicit_invocation: true

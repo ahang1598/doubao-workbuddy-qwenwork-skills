@@ -12,6 +12,7 @@
 - 仅在服务端已明确推进到领取阶段时使用。
 - 必须有可验证的 `sessionRef` / `sessionToken` 或当前 schema 接受的等效会话身份。
 - 失败不得当作已领取，也不得无条件重试。
+- 若响应丢失，保持 `claim_outcome_unknown`；只在 `lebao_status` 可用且能以同一 binding 查询时回读，不以新 session 或新幂等材料重做。
 
 ## `lebao_redeem`（凭证兑换写入）
 
@@ -28,6 +29,9 @@
 - `signature`
 
 这些字段必须来自同一份可信凭证；缺失、跨凭证拼接或自行生成时停止兑换。
+
+- `issuer`、`nonce`、`payloadEncoded` 和 `signature` 只证明对应凭证域；它们不等于宿主账户认证或 MCP session。
+- 若兑换响应丢失，保持 `redeem_outcome_unknown`。没有服务端明确的同凭证回读/继续方式时停止，不重签、不换 nonce、不自动再次兑换。
 
 ## `lebao_drop`
 

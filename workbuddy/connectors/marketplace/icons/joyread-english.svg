@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#f59e0b"/>
+  <!-- open book -->
+  <path d="M32 20c-4.5-3.4-10.5-4.4-16-2.6v27.2c5.5-1.8 11.5-.8 16 2.6 4.5-3.4 10.5-4.4 16-2.6V17.4c-5.5-1.8-11.5-.8-16 2.6z"
+        fill="#fffbeb"/>
+  <path d="M32 20v27.2" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- text lines on left page -->
+  <path d="M20.5 24.5c2.5-.6 5-.4 7 .4M20.5 30.5c2.5-.6 5-.4 7 .4M20.5 36.5c2.5-.6 5-.4 7 .4"
+        stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <!-- sparkle on right page -->
+  <path d="M41 24l1.6 3.4 3.4 1.6-3.4 1.6L41 34l-1.6-3.4L36 29l3.4-1.6z" fill="#fbbf24"/>
+  <circle cx="42" cy="39" r="1.6" fill="#fbbf24"/>
+</svg>

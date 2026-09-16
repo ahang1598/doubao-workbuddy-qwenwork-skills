@@ -1,0 +1,8 @@
+interface:
+  display_name: "WorkRally 无脸频道"
+  short_description: "产出多场景成片，一次一个完整 MP4（核心版 MCP）"
+  default_prompt: "用 $workrally-faceless-video 做一条 2 分钟的无脸频道视频。"
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  allow_implicit_invocation: true

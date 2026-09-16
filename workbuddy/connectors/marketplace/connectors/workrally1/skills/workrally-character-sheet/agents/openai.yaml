@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorkRally 角色设定表"
+  short_description: "产出槽位化的角色设定表提示词与设定图"
+  default_prompt: "用 $workrally-character-sheet 给这个角色出一张分屏设定表。"
+policy:
+  allow_implicit_invocation: true
