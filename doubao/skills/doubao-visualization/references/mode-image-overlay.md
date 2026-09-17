@@ -54,7 +54,7 @@
 ## renderer 结构
 
 - 输出顺序：文字讲解与答案 → 一句自然衔接 → 末尾一个 ` ```html type="renderer"`。
-- 首块使用 `<html style="margin:0;padding:0;">` 和透明 div；禁用 DOCTYPE、head、body、外部 CSS 和视口单位。
+- 首块依次写 `<html style="margin:0;padding:0;">`、非空的 HTML `<title>` 和透明根 div；标题遵循 `SKILL.md` 的“HTML 网页标题”要求，同一文档只写一个，后续 renderer 片段不重复。禁用 DOCTYPE、显式 head/body、外部 CSS 和视口单位。
 - 底图使用 `width:auto;height:auto;max-width:100%;max-height:720px;display:block`；舞台 `display:inline-block;max-width:100%`，避免竖图强行铺满宽度。
 - 使用两层覆盖：SVG 只画 line/polyline/path/rect，HTML layer 画圆点、数字、文字和胶囊。
 - SVG 固定 `viewBox="0 0 999 999" preserveAspectRatio="none"`；描边使用 `vector-effect="non-scaling-stroke"`。

@@ -77,11 +77,11 @@
 
 ### 4.2 基础样式
 
-1. **背景**：设置 `backgroundColor: 'transparent'`。
+1. **背景**：沿用 ECharts 当前主题的默认背景，不显式设置 `backgroundColor`。
 2. **标题**：`title.text` 简短明确；不要塞长段解释；字号建议 14-16。
 3. **图例**：多系列必须配置 `legend`；系列多时使用 `legend: { type: 'scroll' }`；`itemWidth` 建议 12-16，`itemHeight` 建议 8-10。
 4. **单位**：轴名称、tooltip、label 与文字说明的单位口径一致，如“收入（万元）”“转化率（%）”。
-5. **颜色**：使用低饱和、清透色；单图主色不超过 1-2 个，多系列颜色保持区分但避免高饱和铺满。
+5. **颜色**：使用 ECharts 当前主题默认配色，不显式设置文字、系列、边框等颜色。
 6. **数值精度**：百分比、增长率、均值等保留合理小数位；避免异常长小数。
 
 ### 4.3 Tooltip
@@ -99,7 +99,6 @@
 - 所有 function 必须兼容 ES5：禁止箭头函数、`let`、`const`、可选链、模板字符串、解构、`Array.prototype.at` 等现代语法。
 - 不访问不稳定字段：`params.option`、`params.option.series`、`window`、`document`。
 - 访问 `params`、`item`、`data`、`value`、数组下标前必须判空，不要依赖固定数组下标。
-- 动态颜色优先提前写入 data item 的 `itemStyle.color`；如必须使用 `itemStyle.color` 函数，只能依赖 `params.dataIndex` 和闭包中的静态数组。
 
 ### 4.5 移动端/手机布局
 
@@ -135,7 +134,6 @@
 - 对数组型数据点，tooltip 中应显示业务可读的中文字段名，不要直接显示默认维度英文。
 - 多维数组 data item 只放数据维度，不要追加 `itemStyle`、`label` 等配置对象；如需单点样式，使用 `{ value: [...], itemStyle: {...} }`。
 - 如果使用 candlestick，数据顺序必须是 `[open, close, lowest, highest]`，不要读取不存在的 data 下标。
-- 如果辅助柱图颜色需要跟主图状态一致，优先提前写入每个 data item 的 `itemStyle.color`，不要依赖不稳定 callback 入参。
 
 ## 五、常用模板
 
@@ -145,11 +143,10 @@
 
 ```echarts
 {
-  backgroundColor: "transparent",
   title: {
     text: "季度收入趋势（示例）",
     left: "center",
-    textStyle: { color: "#1A1B1C", fontSize: 15, fontWeight: 600 },
+    textStyle: { fontSize: 15, fontWeight: 600 },
   },
   tooltip: {
     trigger: "axis",
@@ -163,7 +160,7 @@
     top: 36,
     itemWidth: 14,
     itemHeight: 8,
-    textStyle: { color: "#6B7280", fontSize: 11 },
+    textStyle: { fontSize: 11 },
   },
   grid: {
     left: 32,
@@ -176,12 +173,12 @@
     type: "category",
     name: "季度",
     data: ["Q1", "Q2", "Q3", "Q4"],
-    axisLabel: { color: "#555", fontSize: 11, hideOverlap: true },
+    axisLabel: { fontSize: 11, hideOverlap: true },
   },
   yAxis: {
     type: "value",
     name: "收入（万元）",
-    axisLabel: { color: "#555", fontSize: 11 },
+    axisLabel: { fontSize: 11 },
   },
   series: [
     {
@@ -189,9 +186,8 @@
       type: "line",
       smooth: true,
       data: [320, 410, 380, 520],
-      itemStyle: { color: "#8BC8EA" },
-      lineStyle: { color: "#8BC8EA", width: 2 },
-      areaStyle: { color: "rgba(139, 200, 234, 0.18)" },
+      lineStyle: { width: 2 },
+      areaStyle: { opacity: 0.18 },
       labelLayout: { hideOverlap: true },
     },
   ],
@@ -202,11 +198,10 @@
 
 ```echarts
 {
-  backgroundColor: "transparent",
   title: {
     text: "渠道占比（示例）",
     left: "center",
-    textStyle: { color: "#1A1B1C", fontSize: 15, fontWeight: 600 },
+    textStyle: { fontSize: 15, fontWeight: 600 },
   },
   tooltip: {
     trigger: "item",
@@ -221,7 +216,7 @@
     type: "scroll",
     itemWidth: 14,
     itemHeight: 8,
-    textStyle: { color: "#6B7280", fontSize: 11 },
+    textStyle: { fontSize: 11 },
   },
   series: [
     {
@@ -230,7 +225,7 @@
       radius: ["42%", "68%"],
       center: ["50%", "50%"],
       avoidLabelOverlap: true,
-      label: { formatter: "{b}: {d}%", color: "#555", fontSize: 11 },
+      label: { formatter: "{b}: {d}%", fontSize: 11 },
       data: [
         { value: 42, name: "自然流量" },
         { value: 28, name: "搜索" },
@@ -246,12 +241,11 @@
 
 ```echarts
 {
-  backgroundColor: "transparent",
   title: {
     text: "季度收入趋势（示例）",
     subtext: "2016-2024 营收（亿元） | 数据来源：公开报道与第三方估算",
     left: "center",
-    textStyle: { color: "#1A1B1C", fontSize: 15, fontWeight: 600 },
+    textStyle: { fontSize: 15, fontWeight: 600 },
   },
   tooltip: {
     trigger: "axis",
@@ -265,7 +259,7 @@
     top: 60,
     itemWidth: 14,
     itemHeight: 8,
-    textStyle: { color: "#6B7280", fontSize: 11 },
+    textStyle: { fontSize: 11 },
   },
   grid: {
     left: 32,
@@ -278,12 +272,12 @@
     type: "category",
     name: "季度",
     data: ["Q1", "Q2", "Q3", "Q4"],
-    axisLabel: { color: "#555", fontSize: 11, hideOverlap: true },
+    axisLabel: { fontSize: 11, hideOverlap: true },
   },
   yAxis: {
     type: "value",
     name: "收入（万元）",
-    axisLabel: { color: "#555", fontSize: 11 },
+    axisLabel: { fontSize: 11 },
   },
   series: [
     {
@@ -291,9 +285,8 @@
       type: "line",
       smooth: true,
       data: [320, 410, 380, 520],
-      itemStyle: { color: "#8BC8EA" },
-      lineStyle: { color: "#8BC8EA", width: 2 },
-      areaStyle: { color: "rgba(139, 200, 234, 0.18)" },
+      lineStyle: { width: 2 },
+      areaStyle: { opacity: 0.18 },
       labelLayout: { hideOverlap: true },
     },
   ],

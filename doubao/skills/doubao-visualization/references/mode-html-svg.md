@@ -88,7 +88,7 @@
 ## 输出约束
 
 - 用 ` ```html type="renderer" ` 代码块包裹；**禁** `<!DOCTYPE>`/`<head>`/`<body>`/`<TEXT>`。
-- 首块外层为 `<html style="margin:0;padding:0;">` 和透明 div。
+- 首块先写 `<html style="margin:0;padding:0;">`，紧接一个非空的 HTML `<title>`（如 `<title>二分查找过程演示</title>`），再写透明根 div；命名遵循 `SKILL.md` 的“HTML 网页标题”要求，同一文档只写一个，后续 renderer 片段不重复。
 - 不使用 DOCTYPE、head、body、TEXT；CSS 全部内联。
 - 根容器自然撑高；禁止 `100vh`、`height:100%` 和根固定大高度。
 - 容器使用 `width:100%;box-sizing:border-box`；多列必须弹性换行，长文字不得溢出。

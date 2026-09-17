@@ -24,7 +24,6 @@
 
 ```echarts
 {
-  backgroundColor: 'transparent',
   title: { text: '标题' },
   tooltip: { trigger: 'axis', triggerOn: 'click', renderMode: 'richText', confine: true },
   xAxis: { type: 'category', data: ['A', 'B', 'C'] },
@@ -39,6 +38,7 @@
 - 代码块语言必须是小写 `echarts`。
 - 不输出 `const option =`、`echarts.init`、`setOption`、HTML、CSS、CDN、DOM 或 renderer 包裹。
 - option 自包含、无注释、无外部变量。
+- 不显式指定颜色（含纯色和渐变）；这一限制只针对颜色属性，字号、字重、线宽、透明度、间距和位置等非颜色配置仍按原规范设置。
 - 普通数据图不得同时再输出 HTML 版 ECharts。
 
 ## 数据与图形选择

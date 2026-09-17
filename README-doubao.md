@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：109
-- 当前索引文件数：2507
-- 最近变更：[2026-09-15-180006](doubao/change-logs/2026-09-15-180006.md) - Doubao 本次同步新增 0 个文件、修改 3 个文件、删除 2 个文件。 受影响范围：skills/word。
+- 当前索引文件数：2547
+- 最近变更：[2026-09-17-225008](doubao/change-logs/2026-09-17-225008.md) - Doubao 本次同步新增 40 个文件、修改 16 个文件、删除 0 个文件。 受影响范围：skills/doubao-identity, skills/doubao-newmedia-writing, skills/doubao-pdf, skills/doubao-visualization, skills/seed-audio。
 
 ## 数据来源
 
@@ -86,7 +86,7 @@
 | doubao-paper-close-reading | `doubao/skills/doubao-paper-close-reading` | skill | 2 | 用于用户提供一篇或少量学术论文后，进行专业深度精读，讲清研究问题、研究故事、方法或理论机制、关键证据、实验结果、可信边界、复现风险与研究启示，并生成高级 Markdown 报告和飞书文档。用户要求“论文精读”“深度解读”“分析方法与实验”“判断论文价值或局限”时使用。开放主题综述、单纯题录核验、论文代写或语言润色时不使用。 |
 | doubao-patent-drafting | `doubao/skills/doubao-patent-drafting` | skill | 7 | 用户要求基于技术交底书撰写或修改中国发明、实用新型专利申请文件，或者审查已有权利要求书时使用。典型触发包括“专利撰写”“专利申请”“技术交底书”“权利要求”“说明书”“实用新型”“发明专利”。专利检索、FTO/侵权分析、无效宣告、审查意见答复、商标或著作权是相邻业务：用户只提这些时不适用本流程；与撰写需求混在一起提出时，撰写照常进行，但最终回复必须对其中每一项其他诉求逐一说明处理情况——漏掉任何一项，这次交付就是不完整的。 |
 | doubao-pc-optimizer | `doubao/skills/doubao-pc-optimizer` | skill | 11 | 用户需要清理磁盘垃圾、释放空间、处理电脑卡顿或开机慢、优化 Windows/macOS 性能、提升游戏帧率、生成安全清理脚本，或提到 C 盘满、磁盘空间不足、掉帧、运行慢时使用。 |
-| doubao-pdf | `doubao/skills/doubao-pdf` | skill | 15 | 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写和扫描件解析。用户提供、提及或要求生成 PDF 时使用。 |
+| doubao-pdf | `doubao/skills/doubao-pdf` | skill | 55 | 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。 |
 | doubao-personal-info-audit | `doubao/skills/doubao-personal-info-audit` | skill | 69 | 开展中国个人信息保护合规审计、审计触发判断、证据登记与证明力评价、事实和不确定性分析、数据分类、处理活动盘点、法律角色和处理情形识别、适用规则检索、上下位法与配套规范衔接、26模块107子项评价、风险与整改设计，并生成可追溯的Word审计报告和Excel底稿。用于个人信息保护法、网络数据安全、App/SDK、敏感个人信息、未成年人、人脸识别、自动化决策、AI、委托共享、数据出境、监管检查准备及整改复核任务。 |
 | doubao-private-company | `doubao/skills/doubao-private-company` | skill | 163 | 评估一级市场、私募股权或创业项目的初步投资价值，基于BP、Deck、财务和访谈资料输出Screening Report、投资逻辑、红旗、情景、尽调缺口和初步建议。用于项目初筛、是否进入下一轮尽调或是否安排首次会议。不要替代完整尽调、法律意见或正式IC审批。 |
 | doubao-product-analysis | `doubao/skills/doubao-product-analysis` | skill | 7 | 围绕具体产品、产品想法或存量方案，产出用于产品进入、定位、竞争策略、上市路径、能力建设与路线图决策的证据型分析报告。适用于“值不值得做或发布”“进入哪个细分”“目标用户和市场是否成立”“竞品为何这样设计”“该借鉴、差异化或放弃什么”“核心能力与 Roadmap 怎么定”“如何调整已有产品”等请求，也适用于将用户研究、市场信息、竞品实测、内部资料和业务约束整合为决策建议。支持 0→1、存量产品调整、竞品专项与组合分析；默认交付为可独... |
@@ -126,7 +126,7 @@
 | lark-workflow-standup-report | `doubao/skills/lark-workflow-standup-report` | skill | 1 | 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。 |
 | multi-stock-comparison | `doubao/skills/multi-stock-comparison` | skill | 29 | 对两家及以上上市公司或股票进行横向研究，覆盖大盘与板块、外围市场、供应链、重要新闻与监管、商业模式、经营财务、成长、预期、估值、股价、组合以及 A/H 股与跨上市地相对价值。适用于公司比较、选股、财报或估值对比、股价与事件复盘、供应链或监管分析、组合适配、配对交易、H 股相对价值，以及需要飞书文档、高级金融图表或可复核多维报告的任务。 |
 | ppt | `doubao/skills/ppt` | skill | 68 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
-| seed-audio | `doubao/skills/seed-audio` | skill | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色） |
+| seed-audio | `doubao/skills/seed-audio` | skill | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色）。如果用户的主要意图或目标产物是生成或编辑视频，应使用视频生成或编辑 skill，不得加载或使... |
 | seedance-25 | `doubao/skills/seedance-25` | skill | 1 | 使用seedance2.5模型生成视频,使用 Seedance 2.5 按用户原始提示词生成视频，禁止改写提示词或切换模型，并在生成前补齐时长、比例和检索所得的必要信息后向用户确认原样透传提示词、不润色视频 prompt、不要改写后生成，或显式调用本 Skill 时使用。 |
 | seedream-50 | `doubao/skills/seedream-50` | skill | 1 | 当用户明确要求使用“5.0”“5.0 Pro”“5.0pro”“Seedream 5.0 Pro”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0 Pro 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_pro" 调用实际图片工具。 |
 | sheet | `doubao/skills/sheet` | skill | 44 | 表格全场景（本地 Excel/CSV 与飞书/doubao 在线表格）：创建、读写、分析、计算、建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
@@ -140,6 +140,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-17-225008 | [2026-09-17-225008](doubao/change-logs/2026-09-17-225008.md) | Doubao 本次同步新增 40 个文件、修改 16 个文件、删除 0 个文件。 受影响范围：skills/doubao-identity, skills/doubao-newmedia-writing, skills/doubao-pdf, skills/doubao-visualization, skills/seed-audio。 |
 | 2026-09-15-180006 | [2026-09-15-180006](doubao/change-logs/2026-09-15-180006.md) | Doubao 本次同步新增 0 个文件、修改 3 个文件、删除 2 个文件。 受影响范围：skills/word。 |
 | 2026-09-14-180008 | [2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) | Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。 |
 | 2026-09-13-180003 | [2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) | Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br... |
@@ -159,4 +160,3 @@
 | 2026-08-20-180002 | [2026-08-20-180002](doubao/change-logs/2026-08-20-180002.md) | Doubao 本次同步新增 63 个文件、修改 67 个文件、删除 2 个文件。 新增条目：skills/artifact-preview, skills/browser-use-automation, skills/verifier-hub。 受影响范围：skills/artifact-preview, skills/browser-use-auto... |
 | 2026-08-14-222038 | [2026-08-14-222038](doubao/change-logs/2026-08-14-222038.md) | Doubao 本次同步新增 132 个文件、修改 162 个文件、删除 84 个文件。 新增条目：skills/computer-use, skills/lark-slides-pro。 移除条目已归档：skills/doubao-finance-sector, skills/lark-ppt。 受影响范围：skills/computer-use, s... |
 | 2026-08-12-180003 | [2026-08-12-180003](doubao/change-logs/2026-08-12-180003.md) | Doubao 本次同步新增 17 个文件、修改 12 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/student-discount-application。 |
-| 2026-08-11-180003 | [2026-08-11-180003](doubao/change-logs/2026-08-11-180003.md) | Doubao 本次同步新增 1 个文件、修改 19 个文件、删除 0 个文件。 受影响范围：skills/doubao-academic-researcher, skills/doubao-finance-model-builder, skills/doubao-identity。 |

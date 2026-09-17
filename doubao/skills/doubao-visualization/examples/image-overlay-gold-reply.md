@@ -52,6 +52,7 @@
 
 ```html type="renderer"
 <html style="margin:0;padding:0;">
+<title>机箱风道与进出风标注</title>
 <div style="background:transparent;width:100%;">
   <div id="svp" style="width:100%;font-family:-apple-system,'PingFang SC','Segoe UI',sans-serif;text-align:center;">
     <div class="stage" style="position:relative;display:inline-block;max-width:100%;">

@@ -30,7 +30,7 @@
 
 - 直接输出 `{ ... }`，不得添加 `option =`。
 - 不使用 `zoomToNode`；Sunburst 下钻使用 `rootToNode`。
-- 不使用无效的 `colorMappingBy: 'fixed'` 或 `'linear'`；优先通过父节点 `itemStyle.color`、调色板或合法的 `colorBy` 控制颜色。
+- 不使用无效的 `colorMappingBy: 'fixed'` 或 `'linear'`；使用默认配色，必要时通过合法的 `colorBy` 控制颜色分组。
 - 不把 `238`、`162` 当作所有 Sunburst 的固定答案。标题行数、环层数、外圈标签和最终容器宽度变化后，重新校验完整圆环包围盒。
 - 不漏配任何可见数据层的 `levels[n].label`。每层分别根据环宽和扇区角度设置字号、旋转和溢出策略；所有显示文字必须完整落在自己的扇区内。
 - 不限制数据节点数量来换取整洁。空间不足时先减少可见 label、缩短显示名、调整旋转和环宽，再使用 tooltip/下钻；不得擅自删掉用户数据。
@@ -41,14 +41,13 @@
 
 ```echarts
 {
-  backgroundColor: 'transparent',
   title: {
     text: '中国传统节日分类（按季节）',
     subtext: '由内向外：季节 → 节日 → 主要习俗；点击扇区可下钻，点击中心返回',
     top: 12,
     left: 'center',
-    textStyle: { color: '#1A1B1C', fontSize: 16, fontWeight: 600 },
-    subtextStyle: { color: '#6B7280', fontSize: 11 }
+    textStyle: { fontSize: 16, fontWeight: 600 },
+    subtextStyle: { fontSize: 11 }
   },
   tooltip: {
     trigger: 'item',
@@ -83,8 +82,6 @@
       nodeClick: 'rootToNode',
       emphasis: { focus: 'ancestor' },
       label: {
-        color: '#2B2F33',
-        textBorderColor: 'rgba(255,255,255,0.6)',
         textBorderWidth: 2
       },
       levels: [
@@ -94,7 +91,6 @@
             rotate: 0,
             fontSize: 12,
             fontWeight: 'bold',
-            color: '#5B4D2E',
             width: 66,
             overflow: 'truncate',
             formatter: '传统节日'
@@ -109,7 +105,7 @@
             width: 34,
             overflow: 'truncate'
           },
-          itemStyle: { borderWidth: 3, borderColor: '#ffffff' }
+          itemStyle: { borderWidth: 3 }
         },
         {
           label: {
@@ -118,7 +114,7 @@
             width: 42,
             overflow: 'truncate'
           },
-          itemStyle: { borderWidth: 2, borderColor: '#ffffff' }
+          itemStyle: { borderWidth: 2 }
         },
         {
           label: {
@@ -130,18 +126,16 @@
             ellipsis: '…',
             textBorderWidth: 1
           },
-          itemStyle: { borderWidth: 1, borderColor: '#ffffff', opacity: 0.92 }
+          itemStyle: { borderWidth: 1, opacity: 0.92 }
         }
       ],
       labelLayout: { hideOverlap: true },
       data: [
         {
           name: '中国传统节日',
-          itemStyle: { color: '#F6F2E7' },
           children: [
             {
               name: '春季',
-              itemStyle: { color: '#6FB58C' },
               children: [
                 {
                   name: '春节',
@@ -176,7 +170,6 @@
             },
             {
               name: '夏季',
-              itemStyle: { color: '#E39A5B' },
               children: [
                 {
                   name: '端午节',
@@ -193,7 +186,6 @@
             },
             {
               name: '秋季',
-              itemStyle: { color: '#D4AC5E' },
               children: [
                 {
                   name: '七夕节',
@@ -228,7 +220,6 @@
             },
             {
               name: '冬季',
-              itemStyle: { color: '#6E9CC4' },
               children: [
                 {
                   name: '腊八节',

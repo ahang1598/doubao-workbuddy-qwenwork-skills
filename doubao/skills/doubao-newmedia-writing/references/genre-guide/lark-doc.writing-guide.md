@@ -11,12 +11,12 @@
 
 ## 命令入口
 
-创建在线文档固定使用 `lark-cli docs +create`，参数包含 `--api-version v2`，默认 `--doc-format xml`；进入本技能后，直接用 `docs +create` 建文档。当前稳定命令体系：`docs +create` 创建文档，`docs +update` 追加或修改内容，`docs +fetch` 定位结构与校验结果，`docs +media-insert` 插入本地图片或剪贴板图片。
+创建在线文档固定使用 `lark-cli docs +create`，默认 `--doc-format xml`；进入本技能后，直接用 `docs +create` 建文档。当前稳定命令体系：`docs +create` 创建文档，`docs +update` 追加或修改内容，`docs +fetch` 定位结构与校验结果，`docs +media-insert` 插入本地图片或剪贴板图片。
 
 第一步固定执行（创建最小占位并拿入口；XML 创建时标题写入 `<title>`）：
 
 ```bash
-lark-cli docs +create --api-version v2 --doc-format xml \
+lark-cli docs +create --doc-format xml \
   --content '<title>平台｜主题｜内容类型</title><h1>待写入</h1><p>文档已创建。后续按命中的创作类型 guide 与排版 samples 写入文本内容、图片内容或图片落位、表格和核查信息。</p>'
 ```
 
@@ -25,20 +25,20 @@ lark-cli docs +create --api-version v2 --doc-format xml \
 后续追加正文（每完成一个稳定模块即追加一次）：
 
 ```bash
-lark-cli docs +update --api-version v2 --doc "$DOC" --command append \
+lark-cli docs +update --doc "$DOC" --command append \
   --doc-format xml --content '<h1>正文模块</h1><p>...</p>'
 ```
 
-参数约束：`+create / +update / +fetch` 带 `--api-version v2`；XML 创建优先把文档标题作为 `<title>...</title>` 放入 `--content` 开头；`+media-insert` 直接执行对应命令。`--command` 使用 `str_replace | block_delete | block_insert_after | block_copy_insert_after | block_replace | block_move_after | overwrite | append`；追加内容用 `append`，定向填充章节或图片区优先用 `block_insert_after`。
+参数约束：XML 创建优先把文档标题作为 `<title>...</title>` 放入 `--content` 开头；`+media-insert` 直接执行对应命令。`--command` 使用 `str_replace | block_delete | block_insert_after | block_copy_insert_after | block_replace | block_move_after | overwrite | append`；追加内容用 `append`，定向填充章节或图片区优先用 `block_insert_after`。
 
 命令参数需要确认时，读取当前 CLI 内置说明或帮助：
 
 ```bash
 lark-cli skills read lark-doc references/lark-doc-create.md
 lark-cli skills read lark-doc references/lark-doc-xml.md
-lark-cli docs +create --api-version v2 --help
-lark-cli docs +fetch --api-version v2 --help
-lark-cli docs +update --api-version v2 --help
+lark-cli docs +create --help
+lark-cli docs +fetch --help
+lark-cli docs +update --help
 lark-cli docs +media-insert --help
 ```
 
@@ -49,21 +49,21 @@ lark-cli docs +media-insert --help
 1. **结构未知或要找标题 block**：先读目录或带 id 的全文结构。
 
 ```bash
-lark-cli docs +fetch --api-version v2 --doc "$DOC" --scope outline --max-depth 3 --detail with-ids
-lark-cli docs +fetch --api-version v2 --doc "$DOC" --detail with-ids
+lark-cli docs +fetch --doc "$DOC" --scope outline --max-depth 3 --detail with-ids
+lark-cli docs +fetch --doc "$DOC" --detail with-ids
 ```
 
 2. **只有标题/关键词文本**：用 `keyword` 定位候选块，再从返回结果中取 `id` 或 `top-block-id`。
 
 ```bash
-lark-cli docs +fetch --api-version v2 --doc "$DOC" --scope keyword \
+lark-cli docs +fetch --doc "$DOC" --scope keyword \
   --keyword "封面方案|笔记配图|视觉参考区|内容验真" --detail with-ids
 ```
 
 3. **已拿到标题 block id 后读取整节**：`section` 必须搭配 `--start-block-id`。
 
 ```bash
-lark-cli docs +fetch --api-version v2 --doc "$DOC" --scope section \
+lark-cli docs +fetch --doc "$DOC" --scope section \
   --start-block-id "$HEADING_BLOCK_ID" --detail with-ids
 ```
 
@@ -78,22 +78,22 @@ lark-cli docs +fetch --api-version v2 --doc "$DOC" --scope section \
 1. **短文本替换**：使用 `str_replace --pattern --content`。
 
 ```bash
-lark-cli docs +update --api-version v2 --doc "$DOC" --command str_replace \
+lark-cli docs +update --doc "$DOC" --command str_replace \
   --pattern "待替换文本" --content "替换后的文本"
 ```
 
 2. **整段、表格、图片区或跨 block 替换**：先获取 block id，再用 `block_replace` 或 `block_insert_after`。
 
 ```bash
-lark-cli docs +fetch --api-version v2 --doc "$DOC" --detail with-ids
-lark-cli docs +update --api-version v2 --doc "$DOC" --command block_replace \
+lark-cli docs +fetch --doc "$DOC" --detail with-ids
+lark-cli docs +update --doc "$DOC" --command block_replace \
   --block-id "$BLOCK_ID" --doc-format xml --content '<h1>模块标题</h1><p>更新后的内容</p>'
 ```
 
 3. **插入到指定模块后**：先按“Fetch 定位规则”定位目标标题或模块的 `block_id`，再使用 `block_insert_after`。
 
 ```bash
-lark-cli docs +update --api-version v2 --doc "$DOC" --command block_insert_after \
+lark-cli docs +update --doc "$DOC" --command block_insert_after \
   --block-id "$BLOCK_ID" --doc-format xml --content '<h2>新增小节</h2><p>...</p>'
 ```
 
@@ -174,30 +174,28 @@ lark-cli docs +update --api-version v2 --doc "$DOC" --command block_insert_after
 
 1. 按命中类型 guide 写入时建立图片区、封面方案区或视觉参考区，写清用途和对应模块。
 2. 搜图或生图成功后按平台排版原位写入：
-   - 可访问的网络图片：先定位目标图片区、封面方案区或视觉参考区的 block id，再用 `block_insert_after` 写入 `<img href="https://..."/>`（仅支持 HTTP/HTTPS）。
-   - 本地图片或剪贴板图片：先在目标位置写入唯一落位文本，再用 `+media-insert --selection-with-ellipsis` 插入到该落位附近。
+  - 可访问的网络图片：先定位目标图片区、封面方案区或视觉参考区的 block id，再用 `block_insert_after` 写入 `<img href="https://..."/>`（仅支持 HTTP/HTTPS）。
+  - 本地图片或剪贴板图片：定位到 block id 后，再用  `block_insert_after` 写入 `<img path="@./image.png" caption="xx"/>`；也可以使用 `media-insert`。
 3. 图片工具、搜图或生图暂不可用时，在原位写入“待生成 + 图片用途 + 生成/搜索提示词”，保持文档完整可交付。
 4. 落位规则：小红书配图进“笔记配图”分栏区；公众号封面图或配图进正文、封面图或封面方案区；短视频封面图进封面方案区，关键分镜图进视觉参考区对应镜号。
 5. 图片按对应模块原位回填；最终文档中的图片区、封面方案区或视觉参考区保持完整。
 
-图片插入命令（`+media-insert` 直接执行对应命令；定向插入使用 `--selection-with-ellipsis`）：
+图片插入命令
 
 ```bash
-lark-cli docs +update --api-version v2 --doc "$DOC" --command block_insert_after \
+lark-cli docs +update --doc "$DOC" --command block_insert_after \
   --block-id "$TARGET_BLOCK_ID" --doc-format xml \
   --content '<p>图片落位：封面图｜请在此处插入</p>'
 
-lark-cli docs +media-insert --doc "$DOC" --file "./image.png" \
-  --selection-with-ellipsis "图片落位：封面图...请在此处插入" --align center --caption "封面图"
-
-lark-cli docs +media-insert --doc "$DOC" --from-clipboard \
-  --selection-with-ellipsis "图片落位：封面图...请在此处插入" --align center --caption "封面图"
+lark-cli docs +update --doc "$DOC" \
+  --command block_insert_after --block-id "$TARGET_BLOCK_ID" \
+  --content '<img path="@./image.png" align="center" caption="封面图"/>'
 ```
 
 网络图片写入目标位置：
 
 ```bash
-lark-cli docs +update --api-version v2 --doc "$DOC" --command block_insert_after \
+lark-cli docs +update --doc "$DOC" --command block_insert_after \
   --block-id "$TARGET_BLOCK_ID" --doc-format xml \
   --content '<img href="https://example.com/image.png"/>'
 ```
@@ -210,8 +208,8 @@ lark-cli docs +update --api-version v2 --doc "$DOC" --command block_insert_after
 2. 解析/格式提示（如 5000000）→ 检查正文尖括号并按 XML 转义，或改用 Markdown 模式后重试。
 3. 标题参数提示 → 把 `<title>标题</title>` 放到 `--content` 最前面重试。
 4. 标题重复 → 调整标题使其唯一后重试。
-5. 权限或登录态异常 → 先用 `lark-cli docs +create --api-version v2 --help` 确认命令存在，再处理登录、身份或权限；需要 bot 身份时可改用 `--as bot`，但仍必须确认最终文档入口可访问。
-6. 命令继续恢复 → 确认 `+create/+update/+fetch` 带 `--api-version v2`，`+media-insert` 使用自身参数；必要时执行 `lark-cli docs --api-version v2 --help` 查看当前可用子命令。
+5. 权限或登录态异常 → 先用 `lark-cli docs +create --help` 确认命令存在，再处理登录、身份或权限；需要 bot 身份时可改用 `--as bot`，但仍必须确认最终文档入口可访问。
+6. 命令继续恢复 → 确认 `+media-insert` 使用自身参数；必要时执行 `lark-cli docs --help` 查看当前可用子命令。
 7. 文档入口仍需恢复 → 暂停后续创作路由，说明具体卡点和下一步恢复方式。
 
 ## 交付前验证
@@ -222,7 +220,7 @@ lark-cli docs +update --api-version v2 --doc "$DOC" --command block_insert_after
 2. 命中的创作类型主干已把内容写入同一份文档。
 3. 对应平台核心排版区块已出现：小红书图文分区、公众号正文与验真区、短视频 7 列分镜表。
 4. 文本与图片均已原位体现：成功图片、图片占位或生成/搜索提示词至少一种存在。
-5. 需要核对写入结果时用 `lark-cli docs +fetch --api-version v2 --doc "$DOC"` 检查结构；发现缺块、错位或图片未落位先修复再交付。
+5. 需要核对写入结果时用 `lark-cli docs +fetch --doc "$DOC"` 检查结构；发现缺块、错位或图片未落位先修复再交付。
 
 ## 最终回复
 

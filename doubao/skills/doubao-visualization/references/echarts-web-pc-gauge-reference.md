@@ -51,15 +51,14 @@ labelRadius = radius - splitLine.length - axisLabel.distance - splitLine.distanc
 
 ```echarts
 {
-  backgroundColor: 'transparent',
   title: {
     text: '本周阅读目标完成率',
     subtext: '目标满值 100%，当前已完成 68%',
     left: 'center',
     top: 12,
     itemGap: 6,
-    textStyle: { color: '#1A1B1C', fontSize: 15, fontWeight: 600 },
-    subtextStyle: { color: '#6B7280', fontSize: 11 }
+    textStyle: { fontSize: 15, fontWeight: 600 },
+    subtextStyle: { fontSize: 11 }
   },
   tooltip: {
     trigger: 'item',
@@ -93,12 +92,11 @@ labelRadius = radius - splitLine.length - axisLabel.distance - splitLine.distanc
       progress: {
         show: true,
         width: 16,
-        roundCap: true,
-        itemStyle: { color: '#4E9CB5' }
+        roundCap: true
       },
       axisLine: {
         roundCap: true,
-        lineStyle: { width: 16, color: [[1, '#EDF1F5']] }
+        lineStyle: { width: 16 }
       },
       pointer: { show: false },
       anchor: { show: false },
@@ -106,17 +104,15 @@ labelRadius = radius - splitLine.length - axisLabel.distance - splitLine.distanc
       splitLine: {
         length: 8,
         distance: 0,
-        lineStyle: { color: '#FFFFFF', width: 2 }
+        lineStyle: { width: 2 }
       },
       axisLabel: {
         distance: 20,
-        color: '#8A919B',
         fontSize: 11
       },
       title: {
         show: true,
         offsetCenter: [0, '34%'],
-        color: '#8A919B',
         fontSize: 12
       },
       detail: {
@@ -124,7 +120,6 @@ labelRadius = radius - splitLine.length - axisLabel.distance - splitLine.distanc
         offsetCenter: [0, '-6%'],
         fontSize: 36,
         fontWeight: 600,
-        color: '#1A1B1C',
         formatter: '{value}%'
       },
       data: [{ value: 68, name: '已完成' }]

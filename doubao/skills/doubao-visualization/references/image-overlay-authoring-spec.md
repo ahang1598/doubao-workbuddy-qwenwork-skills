@@ -17,7 +17,7 @@
 ## §A HTML 硬约束（渲染环境强制，违反则不渲染）
 
 - 用 ` ```html type="renderer" ` 代码块包裹；**禁** `<!DOCTYPE>`/`<head>`/`<body>`/`<TEXT>`。
-- 回复里**第一个** renderer 块外层：`<html style="margin:0;padding:0;">` + 一个 `<div style="background:transparent;">`；同一回复后续块直接 `<div …>` 起手（不重复 `<html>`）。
+- 回复里**第一个** renderer 块外层：`<html style="margin:0;padding:0;">` + 非空的 HTML `<title>` + 一个 `<div style="background:transparent;">`；标题遵循 `SKILL.md` 的“HTML 网页标题”要求，同一回复后续块直接 `<div …>` 起手（不重复 `<html>` 和文档级 `<title>`）。
 - 所有 CSS **内联** `style="…"`；`<style>` 标签只允许写伪元素（如 `::-webkit-slider-thumb`）。单条 style ≤ 250 字符。
 - **全局禁**：`box-shadow`、`height:100vh`/`min-height:100vh`、固定 `height`、外部 CSS 链接，以及**任何视口单位 `vh`/`vw`/`vmin`/`vmax` 和 `min()`/`max()`/`clamp()`**（端上无真实视口，`vh` 会时而被忽略、时而≈0 把图缩成极小）。图像舞台高度默认交给图片本身 `height:auto`；**所有 `<img>` 统一按"在 `max-width` 与 `max-height` 约束框内严格等比缩放、并尽量放大到可显示最大尺寸"的规则渲染**：使用 `width:auto;height:auto;max-width:100%;max-height:720px`（**固定 px，不用 vh**），要求图片始终保持原始宽高比、不得拉伸或压缩变形；在满足 `width<=100%` 且 `height<=max-height=720px` 的前提下，渲染结果需尽可能大，并使宽或高至少有一边触达对应上限。舞台用 `display:inline-block;max-width:100%` 收缩包住图，`#svp` 用 `text-align:center` 居中；这是纯静态 CSS，不用 JS 判方向。
 - 顶层 `width:100%`（按约 784px 宿主设计），外层 `background:transparent; border:none;`。
@@ -114,7 +114,7 @@ process 的坐标是 0-999 相对值。把它们变成画面位置，**有且仅
 ## §F 发送前自检（逐条过，全过才发）
 
 1. **零泄漏单趟 + 可视化在末尾**：回复第一字符是讲解实质内容，先把讲解与答案写完、**可视化放在回复最末尾**（让用户先读到结论）；正文收尾**可用一句自然的衔接**引出末图（面向内容，如"我把…都标在图上了，对照看更清楚"），但无"我来帮你…并把过程可视化展示出来 / 做可视化标记 / 让我先看图规划 / 下面是可视化 / 见下图"这类**机制式预告或点名**；无工具/文件/process/JSON/坐标/skill 痕迹，无"创建/校验/渲染/验证通过"旁白。
-2. **HTML 约束**：` ```html type="renderer" ` 包裹；无 DOCTYPE/head/body；CSS 内联；无 box-shadow / `height:100vh` / 固定 `height` / **视口单位 vh·vw 与 min()·max()·clamp()**（竖高图舞台可用固定 `max-height:720px` + `width:auto` 限高，见 §A）；首块 `<html>`+透明 `<div>`；JS 为 IIFE+try/catch+判空、无 DOMContentLoaded、无外部库。
+2. **HTML 约束**：` ```html type="renderer" ` 包裹；无 DOCTYPE/head/body；CSS 内联；无 box-shadow / `height:100vh` / 固定 `height` / **视口单位 vh·vw 与 min()·max()·clamp()**（竖高图舞台可用固定 `max-height:720px` + `width:auto` 限高，见 §A）；首块 `<html>`+唯一、非空、与主题相符的 HTML `<title>`+透明 `<div>`；JS 为 IIFE+try/catch+判空、无 DOMContentLoaded、无外部库。
 3. **图片**：真实 https URL（含完整 TOS 参数），非本地/base64/裸 URI。
 4. **process 内嵌 + 真画出标记 + 无硬编码**：整份 process 以 `<script type="application/json">` 内嵌、**合法非空 JSON**、JS `JSON.parse` 后遍历生成标记，**图上确有标记画出**（只铺原图 / 空 svpdata / 解析失败 = 失败）；位置全由 0-999 经 §B 百分比/viewBox 算出，**没有任何手敲坐标**；SVG 描边带 `non-scaling-stroke`。
 5. **无畸变（关键）**：`preserveAspectRatio="none"` 的 SVG 里**只有** line/polyline/path/rect；**没有任何** `<circle>`/`<ellipse>`/`<text>`；所有圆点 / 序号 / 字幕 / 符号都是 `.layer` 的 HTML div（圆是正圆、字不拉伸）。
