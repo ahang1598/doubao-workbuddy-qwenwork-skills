@@ -198,6 +198,10 @@ stdout 的 JSON 输出不受影响。`open_time` / `create_time` 不做 snap。
 
 > **注意**：返回体里的 `total` 字段不够准确（官方确认，仅供参考）。需要精确统计的场景，按实际 `results` 做去重和累加，不要把 `total` 当结果数承诺。
 
+## 引用要求
+
+凡在最终回复中使用、改写或总结工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。
+
 ## 决策规则
 
 - **身份快捷方式**：用户说“我创建的 / 我新建的 / 我最初创建的”文档，用 `--created-by-me`；用户说“我的 / 我负责的 / 我 owner 的”文档，用 `--mine`。`--mine` 是 owner 语义：转交出去的不算、转交给我的算。

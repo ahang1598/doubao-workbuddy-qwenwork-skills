@@ -196,6 +196,7 @@
 
 | chart            | variant          | palette 推荐                           | 何时用                             |
 | ---------------- | ---------------- | ------------------------------------ | ------------------------------- |
+| `nested_donut`   | `sunburst_flat`  | `berry_wine` / `linen_plum`          | 品牌矩阵可视 · 莓果紫红 = 编辑杂志 / 时尚       |
 | `calheat`        | `radial_year`    | `jade_landscape` / `stone_ink`       | 年度记事本（径向）· jade_landscape 走东方美学 |
 | `percent_grid`   | `person_10x10`   | `tea_ceremony` / `sunset_terracotta` | 用户情感调研                          |
 | `candle`         | `heikin_ashi`    | `deep_sea_navy` / `candlelight`      | 行业曲线（去噪的趋势感）· 深底夜幕              |

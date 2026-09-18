@@ -1,4 +1,4 @@
-# 读取会中事件与会中互动
+# 读取会中事件、会中互动与主持管理
 
 围绕一场正在进行的会议执行只读查询或用户明确授权的会中写操作。已结束会议和会后产物使用会议查询场景。
 
@@ -12,7 +12,8 @@ lark-cli vc +meeting-list-active --format json
 ```
 
 - 返回多个会议时，展示标题、会议号和 `meeting_id` 让用户选择，不按“最近”擅选。
-- 用户只给 9 位会议号时，在活跃会议结果中按 `meeting_no` 匹配；匹配失败时说明当前登录用户没有发现该会议号对应的进行中会议。
+- 用户只给 9 位会议号时，在活跃会议结果中按 `meeting_no` 匹配；匹配失败时说明当前登录用户没有发现该会议号对应的进行中会议，不要自动入会。
+- `meeting_id` 一经确定，后续读取事件、截图、发送消息、操作倒计时、闭麦、请求开麦、结束会议和移出参会人都沿用同一个 `meeting_id`。
 
 会议号匹配见 [`lark-vc-meeting-list-active`](../references/lark-vc-meeting-list-active.md)。
 
@@ -82,6 +83,43 @@ lark-cli vc +meeting-countdown --meeting-id <meeting_id> --action set --duration
 - `set` 和 `prolong` 需要 `--duration`；提前结束或关闭时不要携带时长、提醒点或结束音频参数。
 
 动作、提醒点和权限规则见 [`lark-vc-meeting-countdown`](../references/lark-vc-meeting-countdown.md)。
+
+## 管理参会人麦克风
+
+只有用户明确要求操作指定参会人，且目标会议和目标用户已经确认时执行。先预览请求：
+
+```bash
+lark-cli vc +meeting-participant-mute --as user \
+  --meeting-id <meeting_id> --target-user-id <user_id> --dry-run
+
+lark-cli vc +meeting-participant-unmute --as user \
+  --meeting-id <meeting_id> --target-user-id <user_id> --dry-run
+```
+
+- 两个命令都要求 `vc:meeting.bot.manage:write`。
+- 默认按 `open_id` 解释目标用户；输入 `union_id` 或 `user_id` 时显式传 `--user-id-type`。只传用户 ID，不传设备 ID；服务端负责处理该用户的设备。
+- 闭麦成功可以报告操作完成。请求开麦成功必须报告“请求已发送”，不表示目标参会人已经开麦；若要确认最终状态，需要后续状态证据。
+- 详细参数、请求路径和输出语义见 [会中闭麦与请求开麦](../references/lark-vc-meeting-participant-audio.md)。
+
+## 结束整场会议或移出参会人
+
+只有用户明确要求主持管理动作，且目标会议与目标参会人已经确认时执行：
+
+```bash
+# 结束整场会议：先 dry-run，确认后再补 --yes
+lark-cli vc +meeting-end --as user --meeting-id <meeting_id> --dry-run
+
+# 移出参会人：默认用 open_id，user_type 必须来自 meeting get 快照
+lark-cli vc +meeting-participant-kickout --as user --meeting-id <meeting_id> \
+  --participant '<open_id>=<user_type>' --dry-run
+```
+
+- `vc +meeting-end` 调用用户端 PATCH 接口并要求 `vc:meeting`。
+- `vc +meeting-participant-kickout` 不要在未确认前直接补 `--yes`。
+- 结束会议或移出参会人前，先用 `vc meeting get --params '{"meeting_id":"<meeting_id>","with_participants":true}' --as user` 核对会议与参会人快照。
+- 所有 dry-run 都显式传入 `--as user`。`vc +meeting-end` 的 dry-run 只预览请求路径；`vc +meeting-participant-kickout` 的 dry-run 会回显 `user_id_type` 和按输入顺序提交的 `kickout_users`。如果回显与用户意图不完全一致，停止并修正参数，不要继续执行。
+- `--participant '<id>=<user_type>'` 每次调用接受 1 到 10 个重复 flag；ID 默认按 open_id 解释，可用 `--user-id-type union_id|user_id` 切换，且首尾不能有空白。不要根据昵称或设备信息猜 `user_type`，也不要把多个目标塞进 CSV/JSON。
+- 结束会议见 [`lark-vc-meeting-end`](../references/lark-vc-meeting-end.md)；移出参会人见 [`lark-vc-meeting-participant-kickout`](../references/lark-vc-meeting-participant-kickout.md)。
 
 ## 处理未发现会议或权限错误
 

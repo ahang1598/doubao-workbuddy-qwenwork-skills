@@ -51,6 +51,12 @@ The raw `sender_name` is not duplicated in output (its value is in `name`); the 
 
 The four message-pulling shortcuts (`+messages-mget`, `+chat-messages-list`, `+messages-search`, `+threads-messages-list`) automatically attach a `reactions` block and (for edited messages) `update_time` to each returned message — no separate `im.reactions.batch_query` call is needed. Pass `--no-reactions` to opt out. For the full contract (output shape, the `im:message.reactions:read` scope requirement, and the "missing field ≠ fetch failure" data rules), read [`references/lark-im-message-enrichment.md`](references/lark-im-message-enrichment.md).
 
+### Compact message output (`--concise`)
+
+Some message-listing shortcuts support `--concise` for compact Markdown output. Use it when the user asks for concise output or a smaller result/file; check `--help` for availability and do not combine it with an explicit `--format`, an enabled `--json`, or a non-empty `--jq`.
+
+> **Citation preservation:** `+chat-messages-list --concise` emits plain Markdown and bypasses the normal JSON envelope, so citation-enabled runs do not expose the `citations` field. When citation sources must be preserved, omit `--concise` and use the default JSON output.
+
 ### Opt-in resource auto-download (`--download-resources`)
 
 `+chat-messages-list`, `+messages-mget`, and `+threads-messages-list` accept `--download-resources` to save eligible attachments into `./lark-im-resources/` and add a `resources` array to each message. It is off by default; stickers are not downloadable. A failed attachment is reported on that resource without aborting the message pull. Use [`+messages-resources-download`](references/lark-im-messages-resources-download.md) for one attachment. See [`references/lark-im-message-enrichment.md`](references/lark-im-message-enrichment.md) for the output contract.
@@ -103,8 +109,8 @@ Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。
 | [`+chat-create`](references/lark-im-chat-create.md) | Create a group chat or topic chat; user; --chat-mode group|topic; private/public; invites users |
 | [`+chat-list`](references/lark-im-chat-list.md) | List chats the current user is a member of; defaults to groups; pass --types=p2p,group to include p2p single chats (user-only); user; supports sorting, auto-pagination, --exclude-muted (user-only) |
 | [`+chat-members-list`](references/lark-im-chat-members-list.md) | List members of a chat; returns separate users[] buckets; callable as user; --member-types filters which kinds to return; --page-all pagination; surfaces truncations[] when the server caps a bucket |
-| [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range, --order asc/desc sorting, auto-pagination |
-| [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, auto-pagination, and --exclude-muted (user identity only) |
+| [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range, --order asc/desc sorting, auto-pagination. When using this tool, be sure to preserve the citation sources. |
+| [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, auto-pagination, and --exclude-muted (user identity only). When using this tool, be sure to preserve the citation sources. |
 | [`+chat-update`](references/lark-im-chat-update.md) | Update group chat name or description; user; updates a chat's name or description |
 | [`+message-read-users`](references/lark-im-message-read-status.md) | List users who read one message; user; identity-specific scopes; supports bounded auto-pagination |
 | [`+messages-mget`](references/lark-im-messages-mget.md) | Batch get messages by IDs; user; fetches up to 50 om_ message IDs, formats sender names, expands thread replies |
@@ -112,7 +118,7 @@ Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。
 | [`+messages-read-status`](references/lark-im-message-read-status.md) | Batch query whether the current user read 1–50 messages; user-only; returns readable items and invalid message IDs |
 | [`+messages-reply`](references/lark-im-messages-reply.md) | Reply to a message (supports thread replies); user; supports text/markdown/post/media replies, reply-in-thread, idempotency key |
 | [`+messages-resources-download`](references/lark-im-messages-resources-download.md) | Download an image/file from a message; folders are not directly downloadable — expand with `im files folder --recursive` first, then download the files inside; user |
-| [`+messages-search`](references/lark-im-messages-search.md) | Search messages across chats (supports keyword, sender, time range filters) with user identity; filters by chat/sender/attachment/time, supports auto-pagination via `--page-all` / `--page-limit`, enriches results via batched mget and chats batch_query |
+| [`+messages-search`](references/lark-im-messages-search.md) | Search messages across chats (supports keyword, sender, time range filters) with user identity; filters by chat/sender/attachment/time, supports auto-pagination via `--page-all` / `--page-limit`, enriches results via batched mget and chats batch_query. When using this tool, be sure to preserve the citation sources. |
 | [`+messages-send`](references/lark-im-messages-send.md) | Send a message to a chat or direct message; user; sends to chat-id or user-id with text/markdown/post/media, supports idempotency key |
 | [`+threads-messages-list`](references/lark-im-threads-messages-list.md) | List messages in a thread; user; accepts om_/omt_ input, resolves message IDs to thread_id, supports --order asc/desc sorting, auto-pagination |
 | [`+flag-create`](references/lark-im-flag-create.md) | Create a bookmark on a message; user-only; defaults to message-layer flag; use --flag-type feed for feed-layer flag (item_type auto-detected from chat mode) |

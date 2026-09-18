@@ -12,7 +12,7 @@ This guide is the entry point for Base advanced permissions and roles. Use it to
 | Locate roles | `+role-list` | Returns role summaries. Use `+role-get` for full config. |
 | Inspect one role | `+role-get` | Use before updating a role or deciding whether a role can be deleted. |
 | Create a custom role | `+role-create` | Supports `custom_role` only. Read [role-config.md](role-config.md) before constructing `--json`. 表级 `perm` 之外还要判 `field_perm_mode`：query 把可编辑范围点名到具体字段时用 `specify` + `field_perms`（按下方“同层级降一级”落权），只给出整表表述时才用 `all_edit` / `all_read`。详见 [role-config.md](role-config.md) 的 field_perms 构造 SOP。 |
-| Update a role | `+role-update` | Delta merge. Read current config first, then send only intended changes. |
+| Update a role | `+role-update` | Omitted permission modules and tables are preserved; each submitted table rule is replaced as a whole. Read the current config first and submit complete rules for the changed tables. |
 | Delete a role | `+role-delete` | Custom roles only. System roles cannot be deleted. |
 
 ## Required order
@@ -31,7 +31,7 @@ Do not probe with `+advperm-get`: that command is not supported. Do not use an e
 - Role operations require advanced permissions to be enabled and the caller to be a Base admin.
 - `+role-create` creates custom roles only.
 - `+role-delete` is only for custom roles. System roles such as editor/reader can be configured within supported limits, but cannot be deleted.
-- `+role-update` uses delta merge: omitted fields remain unchanged, but identity fields such as `role_name` and `role_type` should match the current target role.
+- `+role-update` preserves omitted permission modules (`base_rule_map`, `table_rule_map`, `dashboard_rule_map`, `docx_rule_map`) and merges `table_rule_map` by table, preserving omitted tables. Each submitted `table_rule_map.<table>` is replaced as a whole: copy the target table's complete `TableRule` from `+role-get`, edit the intended fields, and submit it without resending unchanged tables. For `edit` / `read_only`, include complete `view_rule`, `record_rule`, and `field_rule`; the backend does not require these nested rules for `manage` / `no_perm`, so do not invent them. Keep `role_name` and `role_type` equal to the current role.
 - `+advperm-disable` invalidates existing custom roles; confirm the target Base and user intent before passing `--yes`.
 
 ## 全角色安全验收
@@ -102,13 +102,16 @@ lark-cli base +role-update \
   --yes
 ```
 
-Grant read-only access to one table:
+Update one table without discarding its nested permission rules:
 
 ```bash
+# Replace every placeholder with values from +role-get. Start from the full
+# TableRule, then adjust perm and nested values for the target permission;
+# submit the complete target TableRule shown here for a read-only result.
 lark-cli base +role-update \
   --base-token <base_token> \
   --role-id <role_id> \
-  --json '{"role_name":"Finance Reviewer","role_type":"custom_role","table_rule_map":{"Orders":{"perm":"read_only"}}}' \
+  --json '{"role_name":"<current_role_name>","role_type":"<current_role_type>","table_rule_map":{"<table_name>":{"perm":"read_only","view_rule":{"allow_edit":false,"visibility":{"all_visible":true}},"record_rule":{"record_operations":[],"other_record_all_read":true},"field_rule":{"field_perm_mode":"all_read"}}}}' \
   --yes
 ```
 

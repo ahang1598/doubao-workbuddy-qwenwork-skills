@@ -29,7 +29,9 @@ lark-cli im +threads-messages-list --thread omt_xxx --format pretty
 lark-cli im +threads-messages-list --thread omt_xxx --format table
 lark-cli im +threads-messages-list --thread omt_xxx --format csv
 
-# View as a bot
+# Read thread context as compact Markdown
+lark-cli im +threads-messages-list --thread omt_xxx --concise
+
 # Preview the request without executing it
 lark-cli im +threads-messages-list --thread omt_xxx --dry-run
 ```
@@ -47,7 +49,7 @@ lark-cli im +threads-messages-list --thread omt_xxx --dry-run
 | `--page-all` | No | Automatically fetch and merge subsequent pages; capped by `--page-limit` |
 | `--page-limit <n>` | No | Maximum pages fetched by `--page-all` (default 10, range 1-1000) |
 | `--format <fmt>` | No | Output format: `json` (default) / `pretty` / `table` / `ndjson` / `csv` |
-| `--as <identity>` | No | Identity type: `user` (default) / `bot` |
+| `--concise` | No | Render compact Markdown for thread context |
 | `--dry-run` | No | Print the request only, do not execute it |
 
 ## Core Constraints

@@ -1,6 +1,6 @@
 # 生成和修改妙记、管理妙记权限
 
-生成妙记和修改妙记都是写操作，必须有用户明确意图。生成成功后保存 `minute_token`；修改前确认唯一 `minute_token` 和目标内容，提供 token 不等于授权修改。
+生成、修改和分享妙记都是写操作，必须有用户明确意图。生成成功后保存 `minute_token`；修改前确认唯一 `minute_token` 和目标内容，提供 token 不等于授权修改。
 
 ## 从本地音视频生成妙记
 
@@ -106,6 +106,16 @@ lark-cli drive +member-list --token "<minute_url>" --format json
 ```
 
 完整妙记 URL 可自动推断资源类型为 `minutes`；裸 `minute_token` 必须显式传 `--type minutes`。需要核对指定成员时，按 `member_id` 精确匹配返回的 `items[]`，不要按姓名或列表顺序猜测。
+
+## 一键分享给会议参会人
+
+用户要求“把妙记分享给这场会的参会人”“给参会人开放妙记权限”时，使用 `minutes +share-permission`。本命令只接收 `minute_token`；分享范围、权限含义和权限校验由服务端处理，不要在 CLI 侧自行推断参会人名单。
+
+```bash
+lark-cli minutes +share-permission --minute-token <token> --as user --format json
+```
+
+执行成功只代表服务端接受请求，不要额外承诺具体通知或事件效果。完整语义见 [`lark-minutes-share-permission`](../references/lark-minutes-share-permission.md)。
 
 ## 分配妙记权限
 

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>总览与明细 · 交互示例</title>
+<script>
+// 可替换区域：仅演示可加总指标；页面布局与视觉不属于交互契约。
+const VIEW = {
+  title: '周度营收', quantity: '营收', unit: '万元',
+  groupAxis: '周次', detailAxis: '星期',
+  colors: { text: '#273330', muted: '#61716b', grid: '#dce4df',
+    bar: '#748e86', selected: '#287e70', inactive: '#b9cbc5' }
+};
+const COPY = {
+  sample: '演示数据', total: '合计', average: '日均', peak: '最高',
+  detail: '每日明细', close: '收起明细', noData: '暂无数据',
+  summaryOnly: '仅有总额，无明细', partial: '明细不完整',
+  failure: '图表库暂时无法加载，请联网后刷新。'
+};
+// 稳定 group.id；points 内 id 唯一，同一星期跨组复用 id 可保持更新对应。
+// 摘要组可写 { id:'w5', label:'第五周', total:0 }，有数但不提供展开。
+// 明细完整时从 points 求总额；明细缺失/不完整时保留有效 total，但不提供展开。
+// 没有有效明细或 total 的空组不补值。
+const SOURCE = [
+  { id: 'w1', label: '第一周', points: [
+    { id:'mon', label:'周一', value:18 }, { id:'tue', label:'周二', value:20 },
+    { id:'wed', label:'周三', value:19 }, { id:'thu', label:'周四', value:21 },
+    { id:'fri', label:'周五', value:22 }, { id:'sat', label:'周六', value:28 },
+    { id:'sun', label:'周日', value:25 }
+  ] },
+  { id: 'w2', label: '第二周', points: [
+    { id:'mon', label:'周一', value:21 }, { id:'tue', label:'周二', value:22 },
+    { id:'wed', label:'周三', value:20 }, { id:'thu', label:'周四', value:24 },
+    { id:'fri', label:'周五', value:25 }, { id:'sat', label:'周六', value:30 },
+    { id:'sun', label:'周日', value:28 }
+  ] },
+  { id: 'w3', label: '第三周', points: [
+    { id:'mon', label:'周一', value:20 }, { id:'tue', label:'周二', value:21 },
+    { id:'wed', label:'周三', value:22 }, { id:'thu', label:'周四', value:23 },
+    { id:'fri', label:'周五', value:54 }, { id:'sat', label:'周六', value:25 },
+    { id:'sun', label:'周日', value:24 }
+  ] },
+  { id: 'w4', label: '第四周', points: [
+    { id:'mon', label:'周一', value:27 }, { id:'tue', label:'周二', value:28 },
+    { id:'wed', label:'周三', value:26 }, { id:'thu', label:'周四', value:30 },
+    { id:'fri', label:'周五', value:31 }, { id:'sat', label:'周六', value:35 },
+    { id:'sun', label:'周日', value:33 }
+  ] }
+];
+</script>
+<style>
+/* 演示挂载样式：接入报告时可整体替换，保留容器可测量及 hidden 语义。 */
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.5 system-ui, sans-serif; }
+#example { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+figure { margin: 0; }
+figcaption { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+h1, h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.secondary { font-size: 12px; color: var(--muted); }
+.chart { width: 100%; height: 280px; }
+#group-buttons { display: grid; margin: 0 16px 0 60px; gap: 4px; }
+.group-button { min-width: 0; min-height: 44px; padding: 4px 2px;
+  font: inherit; color: inherit; background: none; border: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 4px; overflow-wrap: anywhere; }
+.group-button[aria-expanded="true"] { font-weight: 700; }
+.group-button:disabled { cursor: default; text-decoration: none; }
+.axis-name { margin: 4px 16px 0 0; text-align: right; }
+#detail { overflow: hidden; }
+#detail[hidden] { display: none; }
+#detail-content { padding-top: 20px; }
+.detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#close { font: inherit; padding: 8px 10px; min-height: 44px; cursor: pointer; }
+#detail-stats { margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+#daily-chart { height: 250px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 420px) { #example { padding-inline: 8px; } }
+</style>
+
+<!-- 演示挂载区：两个裸图、与柱体对应的原生名称入口，以及就近展开区。 -->
+<main id="example">
+  <figure aria-labelledby="overview-title">
+    <figcaption><h1 id="overview-title"></h1><span id="sample" class="secondary"></span></figcaption>
+    <div id="summary-chart" class="chart" role="img"></div>
+    <div id="group-buttons" aria-label="选择分组查看明细"></div>
+    <div id="group-axis" class="axis-name secondary"></div>
+  </figure>
+  <section id="detail" hidden aria-labelledby="detail-title">
+    <div id="detail-content">
+      <div class="detail-heading"><h2 id="detail-title"></h2><button id="close" type="button"></button></div>
+      <p id="detail-stats"></p>
+      <div id="daily-chart" class="chart" role="img"></div>
+    </div>
+  </section>
+  <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+(() => {
+  // ---------- 数据派生：全部数值、统计和数字文案只读取 MODEL ----------
+  const finite = n => typeof n === 'number' && Number.isFinite(n);
+  const sum = values => values.reduce((a, b) => a + b, 0);
+  const format = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 1 });
+  const number = value => value === null ? COPY.noData : format.format(value);
+  const amount = value => value === null ? COPY.noData : `${number(value)} ${VIEW.unit}`;
+  function domain(values) {
+    const min = Math.min(0, ...values), max = Math.max(0, ...values);
+    return { min: min < 0 ? min * 1.12 : 0, max: max > 0 ? max * 1.16 : min < 0 ? 0 : 1 };
+  }
+  const groups = SOURCE.map(group => {
+    const points = Array.isArray(group.points) ? group.points : [];
+    const hasDetail = points.length > 0 && points.every(p => finite(p.value));
+    const total = hasDetail ? sum(points.map(p => p.value))
+      : finite(group.total) ? group.total : null;
+    const peak = hasDetail ? points.reduce((a, b) => b.value > a.value ? b : a) : null;
+    return { id: group.id, label: String(group.label), points: hasDetail ? points : [],
+      hasDetail, total, average: hasDetail ? total / points.length : null, peak,
+      unavailable: points.length ? COPY.partial : total === null ? COPY.noData : COPY.summaryOnly };
+  });
+  const MODEL = { groups, byId: new Map(groups.map(g => [g.id, g])),
+    totalDomain: domain(groups.map(g => g.total).filter(finite)),
+    pointDomain: domain(groups.flatMap(g => g.points.map(p => p.value))) };
+
+  // ---------- 可抽取的交互实现：一个选中状态，所有入口调用 toggle/close ----------
+  const root = document.getElementById('example');
+  const summaryElement = document.getElementById('summary-chart');
+  const dailyElement = document.getElementById('daily-chart');
+  const panel = document.getElementById('detail');
+  const panelContent = document.getElementById('detail-content');
+  const buttons = new Map();
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let selectedId = null, dailyChart = null, panelAnimation = null;
+  const duration = () => reducedMotion.matches ? 0 : 240;
+  root.style.color = VIEW.colors.text;
+  root.style.setProperty('--muted', VIEW.colors.muted);
+  document.getElementById('overview-title').textContent = VIEW.title;
+  document.getElementById('sample').textContent = `${COPY.sample} · ${VIEW.unit}`;
+  document.getElementById('group-axis').textContent = VIEW.groupAxis;
+  document.getElementById('close').textContent = COPY.close;
+  if (!window.echarts) {
+    const status = document.getElementById('status');
+    status.classList.remove('sr-only'); status.textContent = COPY.failure; return;
+  }
+  const summaryChart = echarts.init(summaryElement);
+  const yAxis = bounds => ({ type: 'value', ...bounds, name: `${VIEW.quantity} / ${VIEW.unit}`,
+    nameTextStyle: { color: VIEW.colors.muted }, axisLabel: { color: VIEW.colors.muted },
+    splitLine: { lineStyle: { color: VIEW.colors.grid } }, splitNumber: 4 });
+  const baseOption = {
+    animationDuration: 0, animationDurationUpdate: duration(),
+    grid: { left: 60, right: 16, top: 42, bottom: 18 },
+    tooltip: { trigger: 'item', renderMode: 'richText', confine: true },
+    xAxis: { type: 'category', axisTick: { show: false }, axisLine: { show: false } },
+    yAxis: yAxis(MODEL.totalDomain)
+  };
+  summaryChart.setOption({ ...baseOption,
+    xAxis: { ...baseOption.xAxis, data: MODEL.groups.map(g => g.id), axisLabel: { show: false } },
+    tooltip: { ...baseOption.tooltip, formatter: p => {
+      const group = MODEL.byId.get(p.data.id);
+      return `${group.label}\n${COPY.total}：${amount(group.total)}`;
+    } },
+    series: [{ id: 'groups', type: 'bar', barMaxWidth: 88, cursor: 'default',
+      label: { show: true, position: 'top', color: VIEW.colors.text,
+        formatter: p => number(p.value) }, data: [] }]
+  });
+  function paintSelection() {
+    summaryChart.setOption({ animationDurationUpdate: duration(), series: [{ id: 'groups',
+      data: MODEL.groups.map(g => ({ id: g.id, name: g.label, value: g.total,
+        itemStyle: { color: selectedId === null ? VIEW.colors.bar
+          : selectedId === g.id ? VIEW.colors.selected : VIEW.colors.inactive } })) }] });
+    buttons.forEach((button, id) => button.setAttribute('aria-expanded', String(id === selectedId)));
+  }
+  function animatePanel(startHeight, open) {
+    if (panelAnimation) { panelAnimation.onfinish = null; panelAnimation.cancel(); panelAnimation = null; }
+    panel.hidden = false;
+    if (!duration() || !panel.animate) { panel.hidden = !open; return; }
+    panelAnimation = panel.animate([
+      { height: `${startHeight}px` }, { height: `${open ? panelContent.offsetHeight : 0}px` }
+    ], { duration: duration(), easing: 'ease-out', fill: 'both' });
+    panelAnimation.onfinish = () => {
+      panel.hidden = selectedId === null;
+      panelAnimation.cancel(); panelAnimation = null;
+    };
+  }
+  function select(id) {
+    if (id !== null && !MODEL.byId.get(id)?.hasDetail) return;
+    const startHeight = panel.getBoundingClientRect().height;
+    selectedId = id;
+    paintSelection();
+    if (id === null) { animatePanel(startHeight, false); return; }
+    const group = MODEL.byId.get(id);
+    document.getElementById('detail-title').textContent = `${group.label} · ${COPY.detail}`;
+    document.getElementById('detail-stats').textContent =
+      `${COPY.total} ${amount(group.total)} · ${COPY.average} ${amount(group.average)} · ` +
+      `${COPY.peak} ${group.peak.label} ${amount(group.peak.value)}`;
+    panel.hidden = false;
+    // 仅首次展开初始化；之后复用实例。先显现，再测量/resize。
+    if (!dailyChart) {
+      dailyChart = echarts.init(dailyElement);
+      dailyChart.setOption({ ...baseOption,
+        grid: { left: 60, right: 16, top: 42, bottom: 44 },
+        yAxis: yAxis(MODEL.pointDomain),
+        xAxis: { ...baseOption.xAxis, name: VIEW.detailAxis, nameLocation: 'middle', nameGap: 28,
+          axisLabel: { color: VIEW.colors.text, hideOverlap: true } },
+        tooltip: { ...baseOption.tooltip,
+          formatter: p => `${p.data.name}\n${VIEW.quantity}：${amount(p.value)}` },
+        series: [{ id: 'days', type: 'bar', barMaxWidth: 60,
+          itemStyle: { color: VIEW.colors.selected }, data: [] }]
+      });
+    }
+    dailyChart.resize();
+    dailyChart.setOption({ animationDurationUpdate: duration(),
+      xAxis: { data: group.points.map(p => p.id), axisLabel: {
+        formatter: id => group.points.find(p => p.id === id)?.label ?? id } },
+      series: [{ id: 'days', data: group.points.map(p => ({ id: p.id, name: String(p.label), value: p.value })) }]
+    });
+    dailyElement.setAttribute('aria-label', `${group.label}，${group.points.map(p => `${p.label}${amount(p.value)}`).join('；')}`);
+    document.getElementById('status').textContent = `${group.label}，${COPY.detail}`;
+    animatePanel(startHeight, true);
+  }
+  function toggle(id) { if (selectedId === id) close(); else select(id); }
+  function close() {
+    const previous = selectedId;
+    if (previous === null) return;
+    select(null); buttons.get(previous)?.focus({ preventScroll: true });
+    document.getElementById('status').textContent = COPY.close;
+  }
+
+  // ---------- 演示入口挂载：图形、轴边按钮、触摸和键盘共用上述动作 ----------
+  const buttonRow = document.getElementById('group-buttons');
+  buttonRow.style.gridTemplateColumns = `repeat(${Math.max(1, MODEL.groups.length)}, minmax(0, 1fr))`;
+  MODEL.groups.forEach(group => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'group-button';
+    button.textContent = group.hasDetail ? group.label : `${group.label} · ${group.unavailable}`;
+    button.disabled = !group.hasDetail;
+    button.setAttribute('aria-controls', 'detail');
+    button.setAttribute('aria-label', `${group.label}，${amount(group.total)}${group.hasDetail ? '' : '，' + group.unavailable}`);
+    button.addEventListener('click', () => toggle(group.id));
+    buttonRow.append(button); buttons.set(group.id, button);
+  });
+  summaryElement.setAttribute('aria-label', MODEL.groups.map(g => `${g.label}${amount(g.total)}`).join('；'));
+  summaryChart.on('click', event => {
+    if (event.seriesId === 'groups' && MODEL.byId.get(event.data.id)?.hasDetail) toggle(event.data.id);
+  });
+  summaryChart.on('mouseover', event => {
+    if (event.seriesId === 'groups') summaryChart.getZr().setCursorStyle(MODEL.byId.get(event.data.id)?.hasDetail ? 'pointer' : 'default');
+  });
+  document.getElementById('close').addEventListener('click', close);
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
+  const resize = () => { summaryChart.resize(); if (dailyChart && !panel.hidden) dailyChart.resize(); };
+  const observer = new ResizeObserver(resize);
+  observer.observe(summaryElement); observer.observe(dailyElement);
+  window.addEventListener('resize', resize);
+  reducedMotion.addEventListener('change', () => { if (reducedMotion.matches && panelAnimation) panelAnimation.finish(); });
+  paintSelection();
+})();
+</script>
+</html>

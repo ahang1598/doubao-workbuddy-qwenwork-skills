@@ -216,7 +216,7 @@ lark-cli slides +add-slide \
 | [`xml_lint.py`](scripts/xml_lint.py)           | XML 静态检查（well-formed / schema 合法性与约束 / 元素 ID 重复 / 文本重叠 / 形状·图片·表格·图表遮挡文字 / 越界 / 文本溢出（高度与宽度）/ 文字溢出容器 / 表格尺寸 / icon 填充 / 布局密度；Step 7 每页提交前必跑，Step 8 对回读全文再跑一次） |
 | [`xml_inspect.py`](scripts/xml_inspect.py)     | 回读 XML 的导航器：不带 `--slide-id` 输出摘要（页数、页序、每页 `slide_id`、元素统计、正文预览），带 `--slide-id` 返回指定页的完整 raw XML。编辑/模板改写里用它定位页面，避免把整份 XML 读进上下文 |
 | [`iconpark_tool.py`](scripts/iconpark_tool.py) | IconPark 图标检索，最小用法 `python3 scripts/iconpark_tool.py search --query "<关键词>"`（再按需 `resolve`）             |
-| [`gen_svg_charts.py`](scripts/gen_svg_charts.py) | SVG 专业图生成：多张专业图（sankey / boxplot / ridge / gantt / candle / marimekko / matrix_heat / quadrant_2x2 / violin / calheat / funnel_classic / percent_grid / waterfall / population_pyramid）各有对应 `make_*` 函数，传数据直接输出 SVG 字符串，套 `<embed>` 塞进 slide 即可。所有 `make_*` 支持 `title=`, `subtitle=`, `figure_label=`, `palette=`, `font_family=` 通用参数。**主入口**：`python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到总览（场景/函数/调用示例/关键坑等），`chart_help('sankey')` 拿单种图详情 |
+| [`gen_svg_charts.py`](scripts/gen_svg_charts.py) | SVG 专业图生成：多张专业图（sankey / boxplot / ridge / gantt / candle / marimekko / matrix_heat / quadrant_2x2 / violin / nested_donut / calheat / funnel_classic / percent_grid / waterfall / population_pyramid）各有对应 `make_*` 函数，传数据直接输出 SVG 字符串，套 `<embed>` 塞进 slide 即可。所有 `make_*` 支持 `title=`, `subtitle=`, `figure_label=`, `palette=`, `font_family=` 通用参数。**主入口**：`python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到总览（场景/函数/调用示例/关键坑等），`chart_help('sankey')` 拿单种图详情 |
 | [`color_contrast_check.py`](scripts/color_contrast_check.py) | 独立的 XML 靠色回归入口；图片背景跳过。用法：`python3 scripts/color_contrast_check.py --xml <回读 XML>`。 |
 
 
@@ -248,6 +248,7 @@ lark-cli slides +add-slide \
 | `gantt` | 甘特 |
 | `population_pyramid` | 人口金字塔 |
 | `marimekko` | 马赛克 |
+| `nested_donut` | 双层甜甜圈 |
 
 
 ## 四、核心概念

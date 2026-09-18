@@ -66,6 +66,7 @@
 | `waterfall`    | `default_flat` | `morandi_warm` / `pastel_dream` | 任何'从 A 到 B'的加减 |
 | `boxplot`      | `default_flat` | `nordic_slate` / `morandi_cool` | 多组数据分布         |
 | `percent_grid` | `square_10x10` | `pastel_dream` / `morandi_moss` | 百分比展示          |
+| `nested_donut` | `donut_flat`   | `pastel_dream` / `morandi_warm` | 分类占比           |
 | `gantt`        | `default_flat` | `nordic_slate` / `morandi_cool` | 时间排期           |
 
 

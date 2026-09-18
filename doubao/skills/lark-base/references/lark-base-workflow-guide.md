@@ -320,7 +320,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
           { "kind": "if_false", "to": "step_auto_approve", "label": "normal", "desc": "金额<10000" }
         ]
       },
-      "next": "step_log",
+      "next": null,
       "data": {
         "condition": {
           "conjunction": "or",
@@ -343,7 +343,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
       "id": "step_notify_manager",
       "type": "LarkMessageAction",
       "title": "通知主管审批大额订单",
-      "next": "step_log",
+      "next": null,
       "data": {
         "receiver": [{ "value_type": "user", "value": {"id": "ou_manager", "name": "主管"} }],
         "send_to_everyone": false,
@@ -360,7 +360,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
       "id": "step_auto_approve",
       "type": "SetRecordAction",
       "title": "自动标记小额订单为已审核",
-      "next": "step_log",
+      "next": null,
       "data": {
         "table_name": "订单表",
         "ref_info": { "step_id": "step_trigger" },
@@ -371,18 +371,6 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
           }
         ]
       }
-    },
-    {
-      "id": "step_log",
-      "type": "GenerateAiTextAction",
-      "title": "生成订单处理日志",
-      "next": null,
-      "data": {
-        "prompt": [
-          { "value_type": "text", "value": "请生成订单处理日志，金额：" },
-          { "value_type": "ref", "value": "$.step_trigger.fldAmount" }
-        ]
-      }
     }
   ]
 }
@@ -390,7 +378,8 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 **关键点**:
 - `IfElseBranch.children.links` 必须包含 `if_true` 和 `if_false` 两个分支
-- `next` 指向两个分支汇合后的步骤（可选，为 null 则分支结束）
+- `IfElseBranch` 不支持单一公共后继节点：其 `next` 省略或设为 `null`，两个分支尾部也不要指向同一个 step ID
+- 每个分支维护独立链路。用户仅要求两分支执行相同后续动作时，可使用不同 step ID，确保动作、输入引用、执行次数和副作用符合用户要求。用户明确要求汇合到同一公共步骤时，当前不支持；创建或更新前说明限制，用户接受独立节点方案后才按该方案写入。
 - `condition` 使用 OrGroup 结构，支持 `(A and B) or (C and D)` 的复杂条件
 - 分支内可以用 `ref_info` 引用触发记录，用 `filter_info` 批量筛选记录
 
@@ -927,7 +916,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 1. **IfElseBranch**:
    - 适合二元判断（是/否、大于/小于）
    - `children.links` 必须包含 `if_true` 和 `if_false`
-   - 可以用 `next` 指向汇合点
+   - 不支持单一汇合点；相同后续动作的处理见[条件分支示例](#示例-3-条件分支ifelsebranch)
 
 2. **SwitchBranch**:
    - 适合多路分类（3路及以上）

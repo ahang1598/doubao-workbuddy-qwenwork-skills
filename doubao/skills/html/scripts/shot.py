@@ -329,7 +329,7 @@ REPORT_SCRIPT = r"""
 
   // 平铺多图时反复用同一张：模型在需要多张不同图时偷懒复用一个文件。
   // 只看内容图（渲染 ≥ 100×100）—— 图标、logo、头像占位重复使用是正常做法，
-  // 用尺寸把它们挡在外面。data URI 也要能判（云电脑跑完 embed.py 后全是 data:），
+  // 用尺寸把它们挡在外面。data URI 也要能判（页面里可能直接内嵌 data:），
   // 用长度 + 尾部 48 字符做指纹，同一张图的 base64 完全一致。
   const duplicateImages = [];
   {
@@ -1702,6 +1702,74 @@ REPORT_SCRIPT = r"""
     } catch (e) { /* echarts 未加载或被打包重命名时静默跳过，宁可漏报 */ }
   }
 
+  // 规则 4.6：图表文本里写了 HTML 标签，但那个位置由 canvas 绘制、不解析 HTML
+  // ECharts 只有 tooltip 的默认 renderMode（'html'，DOM 浮层）解析 HTML。一旦
+  // renderMode 改成 'richText'，tooltip 就画进 canvas —— `<b>` / `<br/>` 全部原样
+  // 显示成字面文本，且 <br/> 不换行会把提示框撑成横跨整图的一行。richText 这个名字
+  // 有误导性：它指 ECharts 自有的 `rich` 富文本语法，恰恰不支持 HTML。
+  // label / axisLabel 同理，它们永远是 canvas 绘制，换行只能用 \n。
+  const chartHtmlInCanvasText = [];
+  {
+    const HTML_RE = /<\s*(?:br|b|i|u|span|div|strong|em|p|font)\b[^>]*>/i;
+    // formatter 可以是字符串模板，也可以是函数；函数就读源码找 HTML 字面量
+    const probe = (fm) => {
+      if (typeof fm === 'string') return HTML_RE.test(fm) ? fm : null;
+      if (typeof fm === 'function') {
+        let src = '';
+        try { src = fm.toString(); } catch (e) { return null; }
+        const m = src.match(HTML_RE);
+        if (!m) return null;
+        const i = Math.max(0, m.index - 30);
+        return src.slice(i, m.index + 50).replace(/\s+/g, ' ');
+      }
+      return null;
+    };
+    const push = (el, reason, where, sample) => {
+      if (chartHtmlInCanvasText.length >= 8) return;
+      if (chartHtmlInCanvasText.some(r => r.chartId === (el.id || '') && r.where === where)) return;
+      chartHtmlInCanvasText.push({
+        reason, where, chartId: el.id || '',
+        cls: (el.className || '').toString().slice(0, 40),
+        sample: String(sample).slice(0, 90),
+      });
+    };
+    try {
+      if (typeof echarts !== 'undefined' && echarts.getInstanceByDom) {
+        for (const el of document.querySelectorAll('[_echarts_instance_]')) {
+          if (chartHtmlInCanvasText.length >= 8) break;
+          let inst = null, opt = null;
+          try { inst = echarts.getInstanceByDom(el); } catch (e) { continue; }
+          if (!inst) continue;
+          try { opt = inst.getOption(); } catch (e) { continue; }
+          if (!opt) continue;
+          // (a) tooltip.renderMode === 'richText' 且 formatter 产出 HTML
+          //     getOption() 把 tooltip 规整成数组；series 上也可以各带一个
+          const tips = [].concat(opt.tooltip || []);
+          for (const s of (opt.series || [])) if (s && s.tooltip) tips.push(s.tooltip);
+          for (const tp of tips) {
+            if (!tp || tp.renderMode !== 'richText') continue;
+            const hit = probe(tp.formatter);
+            if (hit) push(el, 'tooltip-richtext', 'tooltip.formatter', hit);
+          }
+          // (b) label / axisLabel：canvas 绘制，任何 renderMode 下都不解析 HTML
+          for (const s of (opt.series || [])) {
+            if (!s) continue;
+            for (const k of ['label', 'labelLine', 'endLabel']) {
+              const hit = s[k] && probe(s[k].formatter);
+              if (hit) push(el, 'canvas-label', 'series.' + k + '.formatter', hit);
+            }
+          }
+          for (const axKey of ['xAxis', 'yAxis', 'radiusAxis', 'angleAxis']) {
+            for (const ax of [].concat(opt[axKey] || [])) {
+              const hit = ax && ax.axisLabel && probe(ax.axisLabel.formatter);
+              if (hit) push(el, 'canvas-label', axKey + '.axisLabel.formatter', hit);
+            }
+          }
+        }
+      }
+    } catch (e) { /* 同上，静默 */ }
+  }
+
   // 规则 5：SVG 用 href 而非 xlink:href（file:// 兼容硬红线）
   // 背景：Chrome 在 file:// 下会把 <use href="#id"> / <textPath href="#id"> 视为
   //   "Unsafe attempt to load URL"，同步中断当前 script 执行。表现是页面后段 JS 不跑（图表空、卡片空）。
@@ -1818,6 +1886,150 @@ REPORT_SCRIPT = r"""
         contextText: t.trim().slice(0, 60),
       });
       hits++;
+    }
+  }
+
+  // 规则 8.5：假的展开指示符（chevron 当列表符号）
+  // `›` `>` `▸` 这类 chevron / caret 在 UI 惯例里是 disclosure indicator——手风琴的展开箭头、
+  // 列表项"进入下一级"的指示器。拿它当静态列表符号，用户会以为能点开，属于假 affordance，
+  // 与规则 3 的僵尸按钮同族（那条是"看起来能点的容器"，这条是"看起来能展开的符号"）。
+  // 字符集只收 chevron / caret，**不含** `→ ➜ ⇒`——流向箭头在正文里表达因果、流程是合理的。
+  // 元素自身或祖先真能交互（绑了 click / <summary> / aria-expanded / role=button / href）时
+  // 豁免：那种情况下 chevron 正是正确用法，报出来才是错的。
+  const fakeDisclosureBullets = [];
+  {
+    const CHEV = '>＞›‹»«▸▹▶►❯⟩˃';
+    const isChev = (s) => s.length === 1 && CHEV.indexOf(s) !== -1;
+    const prefixRe = new RegExp('^([' + CHEV + '])\\s+(\\S)');
+    const interactive = (el) => {
+      if (el.closest('a[href],button,summary,details,[role="button"],[aria-expanded],[onclick],input,select,textarea,label')) return true;
+      let p = el;
+      while (p && p !== document.body) {
+        if (p.__shot_hasClickListener) return true;
+        p = p.parentElement;
+      }
+      return false;
+    };
+    const seen = new Set();
+    const groups = new Map();   // 同一条 CSS 规则会命中整组 li——按来源聚合，只报代表 + 计数
+    const add = (el, via, ch) => {
+      if (seen.has(el)) return;
+      const cs0 = getComputedStyle(el);
+      if (cs0.display === 'none' || cs0.visibility === 'hidden' || +cs0.opacity === 0) return;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) return;
+      seen.add(el);
+      const cls = (typeof el.className === 'string' ? el.className : '').trim();
+      const key = via + '|' + ch + '|' + (cls || el.tagName);
+      const g = groups.get(key);
+      if (g) { g.count++; if (g.samples.length < 3) g.samples.push((el.textContent || '').trim().slice(0, 40)); return; }
+      if (groups.size >= 8) return;
+      const rec = {
+        tag: el.tagName.toLowerCase(), via: via, char: ch, count: 1,
+        samples: [(el.textContent || '').trim().slice(0, 40)],
+        rect: [Math.round(r.left + window.scrollX), Math.round(r.top + window.scrollY), Math.round(r.width), Math.round(r.height)],
+      };
+      if (cls) rec.cls = cls.slice(0, 60);
+      // INIT_SCRIPT 的 hook 只标 Element，document 级委托标不到 —— 给核对提示，不静默漏抓
+      let p = el, dd = false;
+      while (p && p !== document.body && !dd) {
+        if (p.attributes) for (const a of p.attributes) if (a.name.startsWith('data-')) { dd = true; break; }
+        p = p.parentElement;
+      }
+      if (dd) rec.note = 'ancestor-has-data-attr: 可能是 document 级委托的可折叠组件，请核对';
+      groups.set(key, rec);
+      fakeDisclosureBullets.push(rec);
+    };
+
+    // 8.5a：列表项的 ::before / ::after content 是 chevron（最主流形态）
+    for (const el of document.querySelectorAll('li, [role="listitem"]')) {
+      if (interactive(el)) continue;
+      for (const pseudo of ['::before', '::after']) {
+        let cs; try { cs = getComputedStyle(el, pseudo); } catch (e) { continue; }
+        const raw = (cs.content || '').trim();
+        if (!raw || raw === 'none' || raw === 'normal') continue;
+        const m = raw.match(/^["'](.*)["']$/);
+        const v = m ? m[1] : raw;
+        if (isChev(v)) { add(el, 'pseudo' + pseudo, v); break; }
+      }
+    }
+
+    // 8.5b：ul / ol 的 list-style-type 是 chevron 字符串（`list-style-type: '›'`）
+    for (const ul of document.querySelectorAll('ul, ol')) {
+      let cs; try { cs = getComputedStyle(ul); } catch (e) { continue; }
+      const m = (cs.listStyleType || '').trim().match(/^["'](.*)["']$/);
+      if (m && isChev(m[1]) && !interactive(ul)) add(ul, 'list-style-type', m[1]);
+    }
+
+    // 8.5c：文本里硬写 chevron 前缀。li 直接算；非 li 需有 ≥2 个同构兄弟也这么写才算伪列表
+    {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      let n, scanned = 0;
+      while ((n = walker.nextNode())) {
+        if (++scanned > 4000) break;   // 超长文档保护；前 4000 个文本节点足够定位来源
+        const t = (n.nodeValue || '').trim();
+        const mm = t && prefixRe.exec(t);
+        if (!mm) continue;
+        // ASCII `>` / 全角 `＞` 后面紧跟数字是数学比较（"> 60%"），不是列表符号
+        if ((mm[1] === '>' || mm[1] === '＞') && /[\d.]/.test(mm[2])) continue;
+        const host = n.parentElement;
+        if (!host || interactive(host)) continue;
+        const li = host.closest('li, [role="listitem"]');
+        if (li) { add(li, 'text-prefix', mm[1]); continue; }
+        const par = host.parentElement;
+        if (!par) continue;
+        const sibs = [...par.children].filter(c => c.tagName === host.tagName && c.className === host.className);
+        if (sibs.length < 2) continue;
+        if (sibs.filter(c => prefixRe.test((c.textContent || '').trim())).length >= 2) {
+          add(host, 'pseudo-list-text', mm[1]);
+        }
+      }
+    }
+  }
+
+  // 规则 8.6：等宽卡片组最后一行只剩 1 个（孤儿卡片）。判据 N % C == 1。
+  // 按 rect.top 聚类分行，不依赖 DOM 顺序；只看等宽栅格形态，瀑布流/自然宽度不判。
+  // 最后一个已跨满整行的是刻意处理，不报。
+  const orphanCards = [];
+  {
+    const vis = (el) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width >= 40 && r.height >= 20;
+    };
+    for (const box of document.querySelectorAll('div,ul,ol,section,main')) {
+      if (orphanCards.length >= 6) break;
+      const d = getComputedStyle(box).display;
+      if (d.indexOf('grid') < 0 && d.indexOf('flex') < 0) continue;
+      const kids = [...box.children].filter(vis);
+      if (kids.length < 3 || kids.length > 40) continue;
+      const br = box.getBoundingClientRect();
+      if (br.width < 200) continue;
+      const rects = kids.map(k => k.getBoundingClientRect());
+      // 等宽判定：宽度极差 ≤ 均值 12%，否则不是等宽栅格
+      const ws = rects.map(r => r.width);
+      const avg = ws.reduce((a, b) => a + b, 0) / ws.length;
+      if (avg <= 0 || (Math.max(...ws) - Math.min(...ws)) / avg > 0.12) continue;
+      // 按 top 聚类分行（4px 容差）
+      const byTop = new Map();
+      for (const r of rects) {
+        const k = Math.round(r.top / 4) * 4;
+        byTop.set(k, (byTop.get(k) || 0) + 1);
+      }
+      const rows = [...byTop.entries()].sort((a, b) => a[0] - b[0]).map(e => e[1]);
+      if (rows.length < 2 || rows[rows.length - 1] !== 1 || rows[0] < 2) continue;
+      // 2 列出现孤儿 ⟺ N 为奇数 ⟺ 无解（换 1 列或 3 列都不更好），报了也改不动 —— 静默
+      if (rows[0] === 2) continue;
+      if (rects[rects.length - 1].width > br.width * 0.7) continue;   // 已跨满整行
+      const cls = (typeof box.className === 'string' ? box.className : '').trim();
+      const rec = {
+        tag: box.tagName.toLowerCase(), count: kids.length, cols: rows[0], rows: rows,
+        rect: [Math.round(br.left + window.scrollX), Math.round(br.top + window.scrollY),
+               Math.round(br.width), Math.round(br.height)],
+      };
+      if (cls) rec.cls = cls.slice(0, 60);
+      orphanCards.push(rec);
     }
   }
 
@@ -2075,10 +2287,13 @@ REPORT_SCRIPT = r"""
     docSize: docSize,
     chartContainers: chartContainers,
     chartBadValues: chartBadValues,
+    chartHtmlInCanvasText: chartHtmlInCanvasText,
     unsafeHrefRefs: unsafeHrefRefs,
     invisibleAnimations: invisibleAnimations,
     slopFonts: slopFonts,
     emojiUsage: emojiUsage,
+    fakeDisclosureBullets: fakeDisclosureBullets,
+    orphanCards: orphanCards,
     viewportMeta: viewportMeta,
     faviconInfo: faviconInfo,
     touchTargetTooSmall: touchTargetTooSmall,
@@ -2527,8 +2742,8 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
             report["localImageWarnings"] = local_imgs
             report["localImageHint"] = (
                 "含义：页面里存在 file:// 本地图片引用。云电脑交付的 HTML 不能包含文件系统引用。"
-                " | 修法：跑 scripts/embed.py 把图以 Base64 内嵌，交付它产出的 <原文件名>_embed.html"
-                "（准确路径看该脚本 JSON 报告的 out 字段）。"
+                " | 修法：对每张图跑 `lark-cli drive +html-image-upload --file <图片路径>`，"
+                "把返回里 data.url 的链接换进 <img src>；图片文件本身保留在 assets/ 里不要删。"
                 " | 豁免：本地电脑（Computer OS 为 Windows / Mac）不报此项——那里用 assets/"
                 " 相对路径引用是规定做法。本规则只匹配 file://，http(s)/data URI 都不会报。"
             )
@@ -2823,6 +3038,27 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
                 " | 豁免：`null` / `undefined` / `''` 本规则不报——那是 ECharts 支持的「无数据」，"
                 "可能是刻意的；关系图 / 桑基图 / 树图 / 地图的 data 是节点对象，不在检查范围内。"
             )
+        html_in_canvas = dom.get("chartHtmlInCanvasText") or []
+        if html_in_canvas:
+            report["chartHtmlInCanvasText"] = html_in_canvas
+            report["chartHtmlInCanvasTextHint"] = (
+                "含义：图表文本里写了 HTML 标签，但那个位置由 **canvas 绘制、不解析 HTML**——"
+                "`<b>` / `<br/>` 会原样显示成字面文本给用户看到。"
+                "而且 `<br/>` 不换行，一条多行提示会被拉成横跨整张图的一行，右侧内容直接被截掉。"
+                "**截图上能看见裸标签，但 consoleErrors 是空的、图表本身渲染正常**，只看有没有报错发现不了。"
+                " | reason=tooltip-richtext：`tooltip.renderMode: 'richText'` + formatter 返回 HTML。"
+                "ECharts 只有 tooltip 的**默认** renderMode（`'html'`，DOM 浮层）解析 HTML；"
+                "改成 `richText` 就画进 canvas 了。`richText` 这个名字有误导性——它指的是 ECharts "
+                "自有的 `rich` 富文本语法，恰恰不支持 HTML。"
+                "修法（二选一）：① 删掉 `renderMode: 'richText'` 回到默认，HTML 立刻生效——"
+                "想让提示框不超出图表范围用 `confine: true` 就够了，不需要动 renderMode；"
+                "② 保留 richText，则把 `<br/>` 换成 `\\n`、`<b>x</b>` 换成 ECharts 的 `rich` 样式段"
+                "（`{a|x}` + `rich: { a: { fontWeight: 'bold' } }`）。"
+                " | reason=canvas-label：`series.label` / `axisLabel` 的 formatter 里有 HTML。"
+                "这两个位置**任何配置下都是 canvas 绘制**，没有「切回 HTML」的选项："
+                "换行只能用 `\\n`，加粗/换色只能用 `rich`。"
+                " | 豁免：tooltip 在默认 renderMode 下写 HTML 是**正确用法**，本规则不报。"
+            )
         unsafe_href = dom.get("unsafeHrefRefs") or []
         if unsafe_href:
             report["unsafeHrefRefsWarning"] = unsafe_href
@@ -2875,6 +3111,39 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
                 "(2) 主题本身就是关于 emoji 的（emoji 历史 / 表情包研究 / Unicode 演进）；"
                 "(3) 引用某条真实文本原文（如推文截图的文字版），emoji 是内容而非装饰——保留原文可接受，但仍应权衡；"
                 "(4) 装饰性 dingbat（如 U+2713 勾选符 ✓、U+2192 箭头 →、U+2605 星 ★）落入 U+2600–U+27BF 平面被误报的，如确认是符号非 emoji 可忽略。"
+            )
+        fake_disc = dom.get("fakeDisclosureBullets") or []
+        if fake_disc:
+            report["fakeDisclosureBulletsWarning"] = fake_disc
+            report["fakeDisclosureBulletsHint"] = (
+                "warning · 含义：列表项拿 chevron / caret（`›` `>` `▸` `»` `❯` 等）当项目符号，"
+                "但这些元素**并不可点击**。chevron 在 UI 惯例里是 disclosure indicator——手风琴的展开箭头、"
+                "列表项\"进入下一级\"的指示器，用户看到会尝试去点、点了没反应，"
+                "属于和僵尸按钮同族的假 affordance（`via` 字段说明来源：`pseudo::before` / "
+                "`list-style-type` / `text-prefix` / `pseudo-list-text`）。"
+                " | 修法：要项目符号就用真正表示\"并列\"的记号——`•`（U+2022）、`‣`、`–`，或者 `list-style: disc`；"
+                "更干净的做法是干掉符号，只靠缩进和行距分隔，同一页面里同级信息块的呈现方式要一致。"
+                "**反过来说：如果这些列表项本来就该能展开，那不是改符号，是补上真实的展开交互**"
+                "（`<details>/<summary>` 或挂 click handler + `aria-expanded`）。"
+                " | 豁免：(1) 元素或祖先真绑了 click / 是 `<summary>` / 有 `aria-expanded` / 有 `href` 的**不会报**——"
+                "那时 chevron 是正确用法；带 `note: ancestor-has-data-attr` 的说明交互可能挂在 document 级委托上、"
+                "本规则的 hook 探测不到，核对一下确实能点就忽略；"
+                "(2) 面包屑导航、路径指示（`首页 › 产品 › 详情`）里 chevron 是分隔符不是项目符号，误报可忽略；"
+                "(3) 内容本身就是在讲这些符号（键盘按键说明、Unicode 科普、终端提示符 `>` 的教程）。"
+            )
+        orphans = dom.get("orphanCards") or []
+        if orphans:
+            report["orphanCardsWarning"] = orphans
+            report["orphanCardsHint"] = (
+                "warning · 含义：等宽卡片组最后一行只剩 1 个（`rows` 是每行个数，如 `[3,1]`），"
+                "右侧拖一大片空白、上重下轻。判据是 `N % C == 1`（卡片数对列数取余）。"
+                " | 修法：让列数序列**跳过**这一档——4 张走 `4 → 2 → 1`（跳过 3 列）。"
+                "卡片数固定就直接给这个栅格改断点即可；数量运行时才定，"
+                "用 `.cards:has(> :nth-child(4):last-child)` 配媒体查询切列数，"
+                "**通用那条要写成 `:not(:has(...))` 与它互斥**，否则 `:has()` 特异性更高，会压住宽屏那档、"
+                "把 4 张永久钉在 2 列。"
+                " | 豁免：(1) 2 列档不报——那时孤儿等价于 N 为奇数，无解；"
+                "(2) 最后一个已跨满整行的不报；(3) 瀑布流、自然宽度、刻意的非对称布局。"
             )
         fav = dom.get("faviconInfo") or {}
         if fav and (not fav.get("present") or fav.get("externalRefs") or fav.get("unencodedHash")):
@@ -3198,6 +3467,21 @@ def _trim_bottom_whitespace(img_path: Path, bg_tolerance: int = 20, min_keep_h: 
 
 
 # ---------- chrome CLI 兜底：playwright 不可用时 ----------
+
+# playwright 缺席时降级用系统 Chrome（macOS 上即 /Applications/Google Chrome.app），
+# 而 CDP 路径每次还新开一个临时 user-data-dir —— 对 Chrome 而言每次截图都是「首次运行」，
+# 组件更新、变体下载、默认浏览器检查会逐次重跑。这些对一次性 headless 截图毫无用处，
+# 其中触碰 app bundle 的写操作疑似触发 macOS TCC 的 App Management 拦截（弹窗
+# 「已阻止"XX"修改 Mac 上的 App」，责任进程记到进程树顶端的宿主 App）。统一关掉；
+# playwright 自己启动 chromium 时本身也带这批开关，两条 chrome_cli 路径实测无副作用。
+_CHROME_QUIET_FLAGS = [
+    "--disable-background-networking",
+    "--disable-component-update",
+    "--no-first-run",
+    "--no-default-browser-check",
+]
+
+
 def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
                      max_wait_sec: int = 30,
                      want_report: bool = False,
@@ -3226,6 +3510,9 @@ def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
         cdp_err = e  # 保留下来；--screenshot 退路也挂时一起报出去
 
     # ---- 退路：--screenshot 只截视口一屏 ----
+    # 注意：这里不要加 --user-data-dir。--headless=new 配 --screenshot 时 chrome 本来就用
+    # 一次性 profile，截完即退；显式指定 user-data-dir 反而会让它截完图后挂住不退出
+    # （实测 45s 超时仍在跑），把整条退路拖死。
     args = [
         exec_path,
         "--headless=new",
@@ -3236,6 +3523,7 @@ def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
         "--disable-gpu",
         "--hide-scrollbars",
         "--force-device-scale-factor=1",
+        *_CHROME_QUIET_FLAGS,
         f"--window-size={w},{h}",
         f"--screenshot={out_path}",
         url,
@@ -3288,6 +3576,7 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
             "--disable-gpu",
             "--hide-scrollbars",
             "--force-device-scale-factor=1",
+            *_CHROME_QUIET_FLAGS,
             f"--window-size={w},{h}",
             f"--remote-debugging-port={port}",
             f"--user-data-dir={user_data_dir}",
@@ -4127,15 +4416,21 @@ def _emit_publish_broken_assets(result: dict, src: str):
                 if key:
                     entry(key)["runtime"] = True
 
-    # L3：assets/ 目录里的图片文件
-    assets_dir = base / "assets"
-    if assets_dir.is_dir():
-        try:
-            for p in assets_dir.rglob("*"):
-                if p.is_file() and not p.name.startswith(".") and _IMG_EXT_RE.search(p.name):
-                    entry(str(p.resolve()))
-        except Exception:
-            pass
+    # L3：assets/ 目录里的图片文件。**仅本地电脑（macOS / Windows）执行**——
+    # 这一层的唯一产出是 unreferenced-file（磁盘上有、源码和运行时都没引用），只在
+    # 「图片用相对路径引用」的本地模式下成立。云电脑（Linux）图片走 lark-cli drive
+    # 上传、HTML 引用的是外链，assets/ 里的原图按 SKILL.md 要求保留、必然「未被引用」，
+    # 在那儿扫这一层等于对每个带图产物都误报一次，还会诱导模型删掉不该删的原图。
+    # 另外三种 reason（js-literal / js-concat / non-src-attr）不依赖本层，两端照常检测。
+    if platform.system() in ("Darwin", "Windows"):
+        assets_dir = base / "assets"
+        if assets_dir.is_dir():
+            try:
+                for p in assets_dir.rglob("*"):
+                    if p.is_file() and not p.name.startswith(".") and _IMG_EXT_RE.search(p.name):
+                        entry(str(p.resolve()))
+            except Exception:
+                pass
 
     hits = []
     for key, e in sorted(ledger.items()):
@@ -4185,6 +4480,9 @@ def _emit_publish_broken_assets(result: dict, src: str):
         " | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，"
         "但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），"
         "也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。"
+        "**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive "
+        "+html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，"
+        "在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。"
         "自行判断，别的规则不受它影响。"
     )
 

@@ -7,8 +7,17 @@ import re
 import sys
 from typing import Optional, Tuple
 
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import column_index_from_string
+try:
+    from openpyxl import Workbook, load_workbook
+    from openpyxl.utils import column_index_from_string
+except ModuleNotFoundError as _missing:  # 本机没装 openpyxl：报错现场直接给出两条出路
+    sys.stderr.write(
+        f"\n[excel_utils] 本机 Python 缺少 {_missing.name}，脚本无法在本地读写 Excel。\n"
+        "  装一次即可长期复用：python3 -m pip install --user openpyxl\n"
+        "  不装依赖也能做：把文件导入飞书在线表格，用飞书引擎读（服务端解析，无需本地库）——\n"
+        "     lark-cli sheets +workbook-import --file ./<文件名>.xlsx\n"
+    )
+    raise SystemExit(1) from _missing
 
 CELL_RE = re.compile(r"^([A-Z]+)([0-9]+)$")
 

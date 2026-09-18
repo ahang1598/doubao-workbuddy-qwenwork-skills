@@ -54,24 +54,16 @@ lark-cli wiki +node-create \
 - `obj_type`：节点关联对象类型
 - `node_type`：节点类型
 - `title`：节点标题
-- `permission_grant`（可选）：说明是否已自动为当前 CLI 用户授予可管理权限
 
 > [!IMPORTANT]
-> 创建成功后，CLI 自动授权：尝试为当前 CLI 用户授予该知识库节点的 `full_access`（可管理权限），结果里会额外返回 `permission_grant` 字段，明确说明授权结果：
-> - `status = granted`：当前 CLI 用户已获得该知识库节点的可管理权限
-> - `status = skipped`：本地没有可用的当前用户 `open_id`，因此不会自动授权
-> - `status = failed`：节点已创建成功，但自动授权用户失败；会带上失败原因，可稍后重试
->
-> `permission_grant.perm = full_access` 表示该资源已授予“可管理权限”
->
-> **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认。
+> **不要擅自执行 owner 转移。** 如果用户需要把 owner 转给自己，必须单独确认后再操作。
 
 ## 参数
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
 | `--space-id` | 否 | 目标知识空间 ID；可传特殊值 `my_library` 表示个人知识库 |
-| `--parent-node-token` | 否 | 父知识库节点 token；传入后会在该节点下创建新节点 |
+| `--parent-node-token` | 否 | 父知识库节点 token 或文档 obj_token；在解析出的 Wiki 节点下创建新节点 |
 | `--title` | 否 | 节点标题 |
 | `--node-type` | 否 | 节点类型，默认 `origin`；可选值：`origin`、`shortcut` |
 | `--obj-type` | 否 | 节点对应对象类型，默认 `docx`；可选值：`sheet`、`mindnote`、`bitable`、`file`、`docx`、`slides`。`file` 仅支持 `shortcut` 节点 |
@@ -81,7 +73,8 @@ lark-cli wiki +node-create \
 
 - **优先级**：`--space-id` > `--parent-node-token` > `my_library`
 - **显式 space**：传了 `--space-id` 时，shortcut 会直接使用该空间；如果该值是 `my_library`，则仅 `user` 身份可用，并会先调用 `GET /open-apis/wiki/v2/spaces/my_library` 解析成真实 `space_id`
-- **父节点推断**：未传 `--space-id` 但传了 `--parent-node-token` 时，会先调用 `GET /open-apis/wiki/v2/spaces/get_node` 获取父节点，再读取其 `space_id`
+- **父节点推断**：未传 `--space-id` 但传了 `--parent-node-token` 时，会先调用 `GET /open-apis/wiki/v2/spaces/node_by_token` 获取父节点，再读取其 `space_id`
+- **父节点类型**：`--parent-node-token` 接受 Wiki `node_token` 或已挂载到 Wiki 的文档 `obj_token`，创建时使用查询返回的 `node_token`；显式传空间时也会查询并校验父节点空间。
 - **个人知识库回退**：如果 `--space-id` 和 `--parent-node-token` 都没传，会自动解析 `my_library`
 
 ## 节点类型与对象类型

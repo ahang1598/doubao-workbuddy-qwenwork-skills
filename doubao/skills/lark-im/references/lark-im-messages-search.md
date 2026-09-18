@@ -147,6 +147,10 @@ lark-cli im +chat-messages-list --chat-id <chat_id>
 lark-cli im +threads-messages-list --thread <thread_id>
 ```
 
+## Citation Requirements
+
+Whenever the final response uses, paraphrases, or summarizes information returned by a tool, preserve the original URL from the tool result’s `citations` field (inside `<url>...</url>`) and cite it immediately after the corresponding statement using `<RichMediaReference>["url"]</RichMediaReference>`.
+
 ## Resource Rendering
 
 Search results reuse the same content formatter as other read commands. Image messages are rendered as placeholders such as `![Image](img_xxx)`; `folder` messages in results are expanded one level (see [`lark-im-chat-messages-list`](lark-im-chat-messages-list.md#resource-rendering) for the marker/download contract); resource binaries are **not** downloaded automatically.

@@ -1,6 +1,6 @@
 ---
 name: lark-base
-version: 1.4.1
+version: 1.4.2
 description: 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图看板、表单问卷收集、仪表盘、自动化工作流、表格行列权限，支撑持续运营业务闭环
 metadata:
   requires:
@@ -71,7 +71,7 @@ metadata:
 
 | 用户目标 | 优先命令 | 权限/边界 | 何时读 reference |
 |-|-|-|-|
-| 查 Base 本体 | +base-get | 读取 Base 本体信息 | 用返回确认 Base 名称、owner、权限和可继续操作的 token |
+| 查 Base 本体 | +base-get | 读取 Base 本体信息 | 用返回确认 Base 名称、owner、权限和可继续操作的 token。使用该工具注意保留引用信息。 |
 | 创建/复制 Base | +base-create / +base-copy | 创建/复制 Base | 新建业务 Base 时必须用 --table-name + --fields 一次配置初始数据表；只有用户明确要求空白或平台默认 Base 时才省略，写入后报告新 Base 标识和 permission_grant |
 | 浏览/搜索公开模板 | +template-categories / +template-list / +template-search | 公开模板库，不依赖目标 Base 权限 | 先读 [lark-base-template-center.md](references/lark-base-template-center.md)；模板中心不是用户云空间搜索，选中模板后用 +base-copy 创建 Base |
 | 查看 Base 内资源目录 | +base-block-list | 需要 base:block:read；不是读取 table/record 的前置步骤 | 想先了解一个 Base 里有哪些 table/docx/dashboard/workflow/folder 时优先用它；返回 ID 关系和 fewshot 看 --help |
@@ -161,7 +161,7 @@ metadata:
 - 目标无法唯一定位、数量不足或不存在时，报告核验范围与缺口；不得跨类型替代，也不得修改非目标资源来补齐。
 - 完成后回读目标及受影响的保留对象；保留对象必须仍可读且语义一致，Workflow 的定义和运行态按 [Workflow](references/lark-base-workflow-guide.md) 验收。
 - 批量写入单批最多 200 条；连续写同一表时串行执行，遇到 1254291 按短暂等待后重试处理。
-- +record-batch-update 是“同值批量更新”：同一份 patch 应用到全部 record_id_list，不要拿它做逐行不同值映射。
+- `+record-batch-update` 的 `update_records` 按 `record_id` 映射到各自的字段 patch，支持在一次请求中为不同记录更新不同字段；单次最多 200 条。
 - select/multiselect 写入未知选项可能触发平台新增选项；不是要新增时，先用 +field-list 或 +field-search-options 确认可选值。
 - 搭建型任务（做系统/管理工具/后台/看板）建完表结构后默认用 +record-batch-create 造 5\~10 条示例数据，不交付空表；用户明确只要空表/模板时才跳过。写入前必须阅读 [Mock 数据严谨性指南](references/lark-base-mock-data-guide.md)，让数据贴合字段语义并满足跨字段、跨记录和当前日期下的业务一致性；不要使用 null/空串/"示例1"占位，只写存储字段，单选/多选先用 +field-list 确认已有选项。
 - 用户明确指定演示 / mock / 测试记录条数时，必须严格按指定数量写入；写入后读回记录数验收，不要按默认 5\~10 条、批次数量或自认为更丰富的数量扩展。
@@ -169,6 +169,7 @@ metadata:
 
 ## 表单与视图细节
 
+- **调整表单题目显隐和顺序：** Form 在 `visible_fields` 接口中作为 View，`form_id` 传给 `--view-id`。用 `+view-get-visible-fields` 读取当前可见题目，再用 `+view-set-visible-fields` 提交最终需要展示的完整有序题目 ID 列表；省略当前可见题目会隐藏它，加入已有隐藏 Form 成员会重新展示，空列表会隐藏全部题目。目标只能包含已有 Form 成员；仍显示题目的 `visible_rule` 只能引用位于它之前的可见题目。
 - `+form-create` 不创建空表单：它会把执行时表内**全部表单可用类型字段**无条件转成题目，题目集合在建 form **之前**就已由表结构决定，必须先把表结构定对再建 form。建完立刻 `+form-questions-list` 回读，优先 update 现有题目，只 create 真正缺失项。
 - 因此**不要落到平台默认表**：省略 `--fields` 建出的默认表自带 `文本` / `单选` / `日期` / `附件` 占位字段，建 form 后全部变题目，而主字段永久删不掉（`+field-delete` 返回 `800080207`）。污染只能靠不建来避免，不能指望事后删。
 - 对齐题目集合只能靠一开始不建、或把题目移出表单，任何情况下都不允许为此删除用户既有字段或记录数据；移出题目的授权条件见本节末尾的删除题目规则。
@@ -201,7 +202,7 @@ metadata:
 - Workflow 的复杂点是 steps 结构和生效状态。执行任何 Workflow 写任务前完整读取 [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md) 和 steps JSON SSOT [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)；新建 workflow 默认 disabled，必须先预检完整定义，再按题意解析目标运行态、执行 enable/disable 并回查，不能把“创建成功”当作“已生效”。list/get/enable/disable 只处理已确认的 workflow ID、当前状态和用户意图。
 - 只有用户明确要求自动化或修改现有 workflow 时，才创建、更新或启用 workflow；字段、公式、视图或 dashboard 需求本身不授权启用自动化。
 - 用户说“一按 / 一键 / 点一下就知道 / 按钮触发”时，优先评估 button 字段 + ButtonTrigger workflow，或在表中创建明确的结果字段 / 视图承载一键判断结果；不要只用静态说明、普通仪表盘或手动筛选替代交互诉求。
-- Role 的复杂点是权限 JSON。角色操作先读入口 [lark-base-role-guide.md](references/lark-base-role-guide.md)；构造或修改权限 JSON 时读 [lark-base-permission-rules.md](references/lark-base-permission-rules.md)；+role-create 只支持自定义角色；+role-update 是 delta merge；角色 create/update 或解读完整配置时读权限 JSON SSOT [role-config.md](references/role-config.md)。+role-delete 只适用于自定义角色，系统角色不可删除；删除角色和关闭高级权限前必须确认目标和影响。
+- Role 的复杂点是权限 JSON。角色操作先读入口 [lark-base-role-guide.md](references/lark-base-role-guide.md)；构造或修改权限 JSON 时读 [lark-base-permission-rules.md](references/lark-base-permission-rules.md)；+role-create 只支持自定义角色；+role-update 保留未提交的权限模块和数据表，但整体替换提交的单表规则，须按 [role-config.md](references/role-config.md) 带回该表的完整 TableRule；+role-delete 只适用于自定义角色，系统角色不可删除；删除角色和关闭高级权限前必须确认目标和影响。
 
 ## 常见恢复
 

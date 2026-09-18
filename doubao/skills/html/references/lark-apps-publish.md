@@ -1,7 +1,7 @@
 # lark-apps · 用 +deploy 发布 HTML 与下载代码
 面向 agent 的操作指南，只覆盖 **`+deploy` 裸 HTML 发布**这一条链路。默认 `--as user`。认证/权限/exit-10 高风险确认等通用规则不在此重复。
 ## 术语与前提
-- **app_id**：`app_` 开头，妙搭应用唯一标识（服务端把 html 应用的 `app_type` 归一为 `modern_html`）。
+- **app_id**：`app_` 开头，doubao-html 网页唯一标识（服务端把 html 应用的 `app_type` 归一为 `modern_html`）。
 - **meta_token**：创意应用分享链接 `/page/<token>` 的最后一段，指向**别人**的应用。
 - 所有 `--file-path` / `--dir` / `--output` 路径**只接受相对当前目录的相对路径**，传绝对路径会被拒——产物不在 cwd 下时先 `cd` 过去。
 ## 整体链路

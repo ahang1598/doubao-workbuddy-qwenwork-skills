@@ -54,6 +54,16 @@ lark-cli base +data-query \
     "shaper": {"format": "flat"}
   }'
 
+# 直接使用已有视图的数据范围；viewId 会合并该视图的筛选条件
+lark-cli base +data-query \
+  --base-token MAGObxxxxx \
+  --dsl '{
+    "datasource": {"type": "table", "table": {"tableId": "tblxxxxxxxx", "viewId": "vewxxxxxxxx"}},
+    "dimensions": [{"field_name": "状态", "alias": "状态"}],
+    "measures": [{"field_name": "金额", "aggregation": "sum", "alias": "总金额"}],
+    "sort": [{"field_name": "总金额", "order": "desc"}]
+  }'
+
 # 聚合或维度查询后如需读取逐条记录，先让 data-query 返回可回查的业务 key
 lark-cli base +data-query \
   --base-token MAGObxxxxx \
@@ -118,12 +128,13 @@ POST /open-apis/base/v3/bases/:base_token/data/query
 | `datasource` | object | 是 | 数据源，包含 `type`（固定 `"table"`）和 `table` 对象 |
 | `datasource.table.tableId` | string | 二选一 | 目标数据表 ID |
 | `datasource.table.tableName` | string | 二选一 | 目标数据表名称 |
+| `datasource.table.viewId` | string | 否 | 目标表中的视图 ID；服务端合并视图筛选条件，将查询范围限定为该视图记录，不要手工复制 view filter |
 | `dimensions` | Dimension[] | 否* | 分组维度字段（GROUP BY） |
 | `measures` | Measure[] | 否* | 聚合度量字段 |
 | `filters` | FilterGroup | 否 | 过滤条件（WHERE） |
 | `sort` | Sort[] | 否 | 排序规则 |
 | `pagination` | object | 否 | 限制返回行数，`{limit: N}`，最大 5000 |
-| `shaper` | object | 否 | 结果格式，固定 `{format: "flat"}` |
+| `shaper` | object | 否 | 可选结果格式；传入时 `format` 只能为 `"flat"` |
 
 > \* `dimensions` 和 `measures` 至少填写一个。
 
@@ -469,11 +480,11 @@ CLI 输出标准信封 `{ok, identity, data}`（失败时为 `{ok:false, identit
 
 - ⚠️ **必须先查表结构**：DSL 的 `field_name` 必须与表中字段名称精确匹配（区分大小写），不能凭猜测构造。先用 `lark-cli base +field-list --base-token <base_token> --table-id <table_id>` 获取真实字段名
 - ⚠️ **权限要求按文档类型分流**：普通多维表格只需文档**阅读权限**；高级权限多维表格必须是文档管理员（**FA / Full Access**），否则返回权限错误
-- ⚠️ **alias 不支持中文**：dimensions 和 measures 的 alias 必须使用英文（如 `dim_city`、`total_amount`），中文 alias 会导致错误
+- ⚠️ **alias 可使用中文**：dimensions 和 measures 的 alias 可以使用中文或英文，但必须在整个 DSL 中唯一；排序引用 alias 时逐字使用同一名称
 - ⚠️ **API 路径是 `base/v3`**：本接口路径为 `/open-apis/base/v3/bases/:base_token/data/query`，不是 `bitable/v1`。两者完全不同，用错版本号会返回 `[2200] Internal Error`
 - ⚠️ **`dimensions` 和 `measures` 至少填一个**：两个都不填会返回 DSL 校验错误
-- ⚠️ **`shaper` 必须为 `{"format": "flat"}`**：不填或填其他值会导致结果格式不可预期，建议始终显式指定
-- ⚠️ **数据表标识 `tableId` vs `tableName`**：datasource 中可以用 `tableId`（如 `tblXXX`）或 `tableName`（数据表的用户自定义显示名称），二选一，不要混用
+- ⚠️ **`shaper` 可省略**：需要显式指定时使用 `{"format": "flat"}`，不要猜测其他格式
+- ⚠️ **数据表标识 `tableId` vs `tableName`**：datasource 中可以用 `tableId`（如 `tblXXX`）或 `tableName`（数据表的用户自定义显示名称），二选一，不要混用；需要以视图为数据范围时另传该表真实的 `viewId`
 - ⚠️ **`pagination.limit` 最大 5000**：超过会报错，且不支持 offset，只支持 limit
 - ⚠️ **所有 alias 必须全局唯一**：dimensions 和 measures 之间的 alias 也不能重名
 - ⚠️ **不要用本地分页结果替代 data-query**：凡是全局计数、分组、聚合、排序 TopN，优先让 `+data-query` 在 Base 云端查询服务中执行；默认页 `+record-list` 后本地统计只能得到已读取范围内的结果

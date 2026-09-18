@@ -96,13 +96,15 @@ lark-cli docs +fetch --doc Z1Fj...tnAc --scope section --start-block-id blkTitle
           }
         }
       },
-      "tips": "<safe replay or degradation guidance>"
+      "tips": "<safe replay or degradation guidance>",
+      "citations":[]
     }
   }
 }
 ```
 - `content` 的格式由 `--doc-format` 决定。`reference_map` 是结构化 sidecar，一级键表示引用组：普通资源组通常以 `block_type` 命名，二级键 `ref` 对应正文中的临时引用，其值由真实属性组成；保留组 `comments` 使用 `<ref>.data` 保存评论。XML、Markdown 和 IM Markdown 在存在可见评论时都会返回该组；Markdown 正文没有与评论 key 对应的内联引用，这是有意的协议设计。没有提取数据时，`reference_map` 可能为空。`comments.tips.data` 表示评论因数量上限被截断，文档顶层 `tips` 则给出安全回放或依赖降级提示。`content` 和 `reference_map` 属于同一份响应，应保留完整 JSON 响应；`im-markdown` 仅用于获取内容后在 `lark-im` 场景下使用。设置 `--scope` 时会被 `<fragment>` 包裹，详见下文“局部读取的输出结构”。
 - 评论内容不保证全部返回，需要详细信息时使用  `drive +list-comments` 获取完整评论。
+- 凡在最终回复中需要引用本文档信息时，须保留 citations 字段，提取 url 进行回复。
 
 ### 理解局部读取结果
 
@@ -125,7 +127,7 @@ lark-cli docs +fetch --doc Z1Fj...tnAc --scope section --start-block-id blkTitle
 |-|-|
 |`<img>`、`<source>`|有 `url` 时仅下载可信的公开 HTTPS URL：拒绝 userinfo 及解析到 private、loopback、link-local、multicast、unspecified 地址的 host，并逐次校验重定向；不满足时禁止请求。无 `url` 时提取 `token`，预览用 `docs +media-preview`，下载用 `docs +media-download`|
 |`<whiteboard>`|提取 `token`，使用 `docs +media-download`|
-|`<sheet>`、`<cite file-type="sheets">`|提取 `token` 和 `sheet-id`，转到 [`sheet`](../../../sheet/SKILL.md)|
+|`<sheet>`、`<cite file-type="sheets">`|提取 `token` 和 `sheet-id`，转到 [`sheet`](../../sheet/SKILL.md)|
 |`<bitable>`、`<cite file-type="bitable">`|提取 `token` 和 `table-id`，转到 [`lark-base`](../../lark-base/SKILL.md)|
 |`<vc-transcribe-tab>`|提取 `vc-node-id`，使用 [`lark-meeting`](../../lark-meeting/SKILL.md) 的 `note +detail`|
 |`<synced_reference>`|提取 `src-token` 和 `src-block-id`，读取源文档并定位 block|

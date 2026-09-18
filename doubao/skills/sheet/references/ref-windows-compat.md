@@ -5,13 +5,15 @@
 ## 硬规则
 1. **每次 Bash 调用只跑一条外部命令**：禁止 `&&` / `||` / heredoc / `$(...)` / `<<<`；组合逻辑走多次 Bash 调用或落成 `.py`。
 2. **lark-cli 路径只接受 CWD 内相对路径**：`--file` / `--output-path` / `--image ./xxx`，传 C盘路径比如 `C:\...` 这种绝对路径会被拒。开工第一步 `cd "<chat 目录>"`，之后一律 `./xxx`。
-3. **`--border-styles` / `--widths` / `--heights` / `--operations`等使用Json作为参数的指令绝对禁止命令行内联 JSON**：无论 `'{...}'` 单引号还是 `"{\"...\":\"...\"}"` 双反斜杠，PS 里两种都会拆散引号栈。只允许先 Write `params.json` / `payload.json`，再 `--border-styles "@./params.json"` / `--widths "@./payload.json"`（`@` 前必须加双引号）
+3. **取值里带 `{` `[` `"` `,` 的 flag，一律禁止命令行内联**：无论 `'{...}'` 单引号还是 `"{\"...\":\"...\"}"` 双反斜杠，PS 里两种都会拆散引号栈。只允许先 Write `params.json` / `payload.json`，再 `--border-styles "@./params.json"` / `--widths "@./payload.json"`（`@` 前必须加双引号）。判据是值的形状而不是 flag 的名字：`--cells` / `--sheets` / `--options` 这类同样适用。
+   拆散后有两种症状，见到任一种都不要去改 JSON 内容，直接落文件：报错里出现 `待` `å` `é` 这类字符（中文的 UTF-8 首字节被当成了 JSON 的开头），或 `positional arguments are not supported` 里出现 JSON 片段（引号栈拆开后的后半截成了位置参数）。
 4. **不假设 Unix 工具存在**：PowerShell 不支持 `jq` / `wget` / `unzip` / `sed` / `awk` / `pdftotext` / `base64` / `file`/ `head` / `tail` / `grep` / `which` 这些在Unix中存在的命令。
 5. **同名指令的不同含义** ：PowerShell 中，同名指令的含义可能与 Unix 中不同。`curl` 是 `Invoke-WebRequest` 别名，`ls` / `dir` 是`Get-ChildItem` 的别名, 这些同名指令与Unix中的命令参数不同。
 6. **lark-cli失败情况判定**: lark-cli 的明确失败是通过让 exit code 非 0来确认的。stderr输出除了承担 错误提示以外 还会承担 进度展示/提示等作用。 在PowerShell中，任何 stderr 输出都会被包成 NativeCommandError 并让 exit code 变非 0，所以 NativeCommandError 并不一定代表了报错，需要去细看报错内容才能知道真实报错是什么。
 7. **`python -c "..."` 里禁止出现 `\"`、`'''` 内含 `"`、`"""` 或任何双引号相关的转义**：PS 的双引号处理跟 bash 不同，会把 `\"` 拆开导致 Python 拿到不完整字符串（`SyntaxError: unterminated string literal`）。凡是脚本里要用双引号的场景，一律 Write 到 `.py` 文件后 `python xxx.py`。
 8. **不使用 PowerShell 自动变量作赋值目标**：`$PID / $HOME / $PWD / $args / $input / $error / $host / $true / $false / $null`，改用 `$PRES_ID / $SLIDE_ID / $FILE_TOKEN` 等前缀化命名。
 9. **文件读写走工具本身或 Python**：不要用 `>` / `Out-File` / `Get-Content ... | cli --xxx -`——PowerShell 5 默认非 UTF-8、加 BOM、走 stdin 时非 ASCII 字节会被重编码。让 lark-cli 用 `--output-path` / `--file` 、让 Python 用 `open(..., encoding='utf-8')`。
+10. **`python3` 调不通时改用 `python`**：Windows 上 `python3` 这个名字不一定存在，但部分沙箱会下发同名可执行文件，能直接调通。正文里以 `python3` 开头的脚本命令先按原样执行；报「找不到命令」一类错误时换成 `python` 重跑，路径与参数不变。
 
 ## 禁用命令 → 兼容替代
 
@@ -47,6 +49,7 @@
 | `--border-styles @payload.json`（未加引号） | `The splatting operator '@' cannot be used to reference variables in an expression` | 加双引号：`--border-styles "@./payload.json"` |
 | `--border-styles "$(jq ...)"` | jq 不存在 + PS 无命令替换 | Write `payload.json` 后 `--border-styles "@./payload.json"` |
 | `--border-styles "{\"top\": {\"style\":\"solid\",\"weight\":\"thin\",\"color\": \"#000000\"}}"` | PS 双引号不认 `\"` 转义，lark-cli 收到坏 JSON | Write `payload.json` 后 `--border-styles "@./payload.json"` |
+| `--options '["待制作","测试中"]'`（任何含中文的内联 JSON） | `invalid JSON: invalid character '待' looking for beginning of value` | Write 成文件后 `--options "@./options.json"`；同一条命令里的多个 payload flag 各写一个文件 |
 
 ### 编码 / BOM / CRLF
 
@@ -56,4 +59,4 @@
 | `'{"k":"v"}' \| Out-File params.json` | Out-File 默认 UTF-16 LE + BOM，lark-cli 解析失败 | 用 Write 工具生成；或 `python -c "import json; json.dump({'k':'v'}, open('params.json','w',encoding='utf-8'), ensure_ascii=False)"` |
 | shell 重定向 `> out.xlsx` | PS5 默认 UTF-16 LE + BOM | 让工具自己写文件（`--output-path "./out.xlsx"`），或 Python 写 |
 
-===== 全文完（共 59 行）=====
+===== 全文完（共 62 行）=====

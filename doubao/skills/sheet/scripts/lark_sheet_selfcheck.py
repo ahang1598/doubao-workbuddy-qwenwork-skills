@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import codecs
+import datetime
 import json
 import os
 import re
@@ -25,6 +26,12 @@ from lark_sheet_read_cli import (  # noqa: E402
     sheet_title,
 )
 
+from _checkpoints import (  # noqa: E402
+    checkpoint_skips,
+    load_checkpoints,
+    verify_checkpoints,
+)
+
 # ── 观测能力上限 ──────────────────────────────────────────────────
 # 单 sheet 读取上限，防 row_count 数万时读上百页。
 # 取 5100 而非 5000：实测有表恰好 5001 行，卡 5000 会让它
@@ -34,7 +41,7 @@ PAGE_ROWS = 400        # 分页窗口
 MAX_LIST = 6           # 单条规则最多列几个坐标
 MAX_FINDINGS = 10      # 高置信度发现总条数上限
 
-# ── 高置信度规则的阈值（依据：46 个满分产物实测）────────────────────
+# ── 高置信度规则的阈值（依据：46 份实测样本）──────────────────────
 ERROR_VALUES = ("#VALUE!", "#NAME?", "#REF!", "#DIV/0!", "#N/A", "#NUM!", "#NULL!")
 ISLAND_MIN_CELLS = 20      # 列内至少这么多非空格才谈「孤岛」，小样本没有统计意义
 ISLAND_MAJOR_RATIO = 0.90  # 多数模式占比下限
@@ -469,7 +476,7 @@ LABEL_RE = re.compile(r"(合计|小计|总计|累计|总数|平均|均值|总额
 def label_rows(sheet: dict) -> set[int]:
     """标签行（表头 / 小计 / 合计 / 平均）—— 列内统计必须先把它们剔掉。
 
-    这是实测出来的第一大噪声源：46 个满分产物里 42 个存在同列样式混杂，
+    这是实测出来的第一大噪声源：46 份样本里 42 份存在同列样式混杂，
     根因就是「表头必然异于数据行、小计行必然异于明细行」。第一版没剔，
     结果在一张完全正常的表上报了「E 列 42 格中 41 格为公式，唯 E1 是常量」
     —— E1 是表头「金额」。
@@ -537,7 +544,7 @@ def _addr_ref(addr: Any) -> str:
 
 
 def rule_formula_errors(wb: dict) -> list[tuple[str, str, list[str]]]:
-    """R1 公式错误值。满分产物上几乎不出现，是最干净的信号。
+    """R1 公式错误值。正常产物上几乎不出现，是最干净的信号。
 
     两路信号合并，都必须带坐标：
       · bad   —— 本地读回窗口里直接看到的错误值
@@ -886,14 +893,24 @@ FACT_HINT = {
     "同构区块中的异类":
         "若这些区块是同一套结构的重复（多个月份/多个门店），异类那格大概率是漏改；"
         "若各区块本就承载不同内容，则正常。",
+    "原值被改写":
+        "用户要求改的格属正常；没要求动的格被改写，就是改错了范围，逐格追回源值。",
+    "原公式丢失":
+        "原表的公式退化成静态值后，改输入不再重算；除非用户要求改这些格，否则把公式还原。",
 }
 HIGH_RULES = ASSERT_RULES + FACT_RULES
 # 排序权重：数字越小越先展示。断言档必须排在事实档之前。
-RULE_ORDER = {"公式错误值": 0, "同构区块中的异类": 1,
+RULE_ORDER = {"检查点未通过": -4,
+              "基线自相冲突": -4,
+              "基线缺失 sheet": -3, "范围外新增 sheet": -3,
+              "原值被改写": -2, "原公式丢失": -1, "范围外新增内容": -1,
+              "公式错误值": 0, "同构区块中的异类": 1,
               "数值列里混着带单位/表达式的格": 2, "数值列里混着文本数字": 3,
               "数值列未设格式且小数位参差": 4,
               "百分比量纲可疑": 5}
-ASSERT_LABELS = {"公式错误值"}
+# 基线三档排在最前：它们是拿源文件比出来的差异，用户没要求的改写在这里最先暴露。
+ASSERT_LABELS = {"公式错误值", "基线缺失 sheet", "基线自相冲突", "原值被改写",
+                 "原公式丢失", "范围外新增内容", "范围外新增 sheet", "检查点未通过"}
 
 
 # ────────────────────────── 低置信度：只报计数 ──────────────────────────
@@ -965,7 +982,7 @@ def survey_col(name: str, c: int, col: dict, skip: set[int],
 
 
 def survey(wb: dict) -> list[str]:
-    """这几类在满分产物上几乎必然出现（42/46 有样式混杂、34/46 有空洞），
+    """这几类在正常产物上几乎必然出现（42/46 有样式混杂、34/46 有空洞），
     列全部坐标会淹没真问题，所以只给计数。
 
     但纯计数「4 列 / 1 段」对模型没有可操作性 —— 它无法据此去核任何东西。
@@ -1016,6 +1033,548 @@ def survey(wb: dict) -> list[str]:
                   "备注列稀疏都正常。只列最极端的样例供定位，不是断言它们有错。）"]
 
 
+# ────────────────────────── 任务检查点（--checkpoints）──────────────────────────
+#
+# 自查清单第 1、3 条要的是「用户点名的数和产出项都核过了」。写成回执时工具只能
+# 看它像不像话；写成检查点，工具就能替调用方回读产物逐条判。在线表的值是引擎
+# 算出来的，这里读到的就是用户会看到的那个数。
+
+def run_checkpoints(wb: dict, items: list[dict]) -> dict:
+    sheets = {s["name"]: s for s in wb["sheets"]}
+
+    def lookup(sheet: str, coord: str):
+        cell = (sheets.get(sheet, {}).get("cells") or {}).get(coord)
+        if not cell:
+            return None, ""
+        return cell.get("v"), cell.get("f") or ""
+
+    return verify_checkpoints(items, lookup, list(sheets))
+
+
+def checkpoint_findings(result: dict) -> list:
+    """未通过的检查点转成断言档 finding，与其它确定性错误同档展示。"""
+    bad = [d for d in result.get("details", []) if d["result"] in ("fail", "invalid")]
+    if not bad:
+        return []
+    return [("检查点未通过",
+             f"{len(bad)} 条检查点与产物不符",
+             [f"{d['ref']}：{d['message']}" for d in bad[:MAX_LIST]])]
+
+
+# ────────────────────────── 基线对照（--baseline / --scope）──────────────────────────
+#
+# 为什么要有这一段：清单第 2 条「原表保护」原本注明「工具查不了」——产物的终态是
+# 自洽的，没有改前基准就判不出哪些格本不该长这样，回读多少遍都判不出来。
+# 传入源文件后这条就有了判据：逐格比对源与产物，把「原值被改写」「原公式丢失」
+# 摆到台面上；再配合 --scope 声明本轮允许改动的范围，范围外的改写就能定性。
+#
+# 只比值、公式、sheet 结构三项。样式、行高列宽、数字格式经导入导出会有表述差异，
+# 比了大多是噪声，判据不可靠——它们仍归自查清单，本段不碰。
+
+BASELINE_MAX_CELLS = 200000     # 单个基线 sheet 读取上限，防超大表读爆内存
+SCOPE_ALL = "ALL"               # --scope 只写 sheet 名时的整表标记
+DATE_TAIL_RE = re.compile(r"[ T]00:00:00(\.0+)?$")
+DATE_HEAD_RE = re.compile(r"^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(.*)$")
+
+
+def norm_value(value: Any) -> str:
+    """把两侧的值归一到可比较的字符串。
+
+    两侧取数路径不同（openpyxl 直读 vs cells-get），同一个格的表述常有差异：
+    日期一边是 datetime、一边是 "2026-01-01 00:00:00"，数字一边 int 一边 float。
+    不归一的话 diff 会被这类差异淹没，真正的改写反而看不见。
+    """
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "TRUE" if value else "FALSE"
+    if isinstance(value, (int, float)):
+        return f"{float(value):.10g}"
+    text = str(value).strip()
+    if not text:
+        return ""
+    num = as_number(text)
+    if num is not None:
+        return f"{num:.10g}"
+    text = DATE_TAIL_RE.sub("", text)
+    # 日期分隔符与补零：源读到 datetime、产物读回 "2026/4/1"，是同一天的两种写法。
+    # 序列号（45778）与日期串的差异不在这里抹平——那正是要查的形态之一。
+    head = DATE_HEAD_RE.match(text)
+    if head:
+        y, mth, day, rest = head.groups()
+        text = f"{y}-{int(mth):02d}-{int(day):02d}{rest}"
+    return text
+
+
+def norm_formula(formula: Any) -> str:
+    """公式归一：去掉前导 =、全部空白与跨表引用的包裹单引号，大小写不敏感。
+
+    单引号那条是实测出来的：源写 `=SUM(明细!C3:C5)`，导入在线后回读成
+    `=SUM('明细'!C3:C5)`。同一个引用的两种写法，不抹平就会报成公式被改写。
+    """
+    text = str(formula or "").strip()
+    if text.startswith("="):
+        text = text[1:]
+    text = re.sub(r"'([^']+)'(?=!)", r"\1", text)
+    return re.sub(r"\s+", "", text).upper()
+
+
+CURRENCY_RE = re.compile(r"[¥￥$€£,\s]")
+PERCENT_VALUE_RE = re.compile(r"^(-?[\d,]*\.?\d+)\s*%$")
+DATE_PARTS_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
+
+
+def values_equivalent(src: str, produced: str) -> bool:
+    """源值与产物值是否是同一个值的两种写法。
+
+    在线读回的是**渲染后的显示值**，源是底层值：0.4567 回来是 "45.67%"、
+    2026-04-01 按 m"月"d"日" 回来是 "4月1日"。不认这几种等价，每张带日期或
+    百分比格式的表都会被整列报成改写，工具就没法用了。
+    只认「同一个值的不同呈现」，值本身不同（4月2日 对 4月1日）照报。
+    """
+    if src == produced:
+        return True
+    if not src or not produced:
+        return False
+    pct = PERCENT_VALUE_RE.match(produced)
+    src_num = as_number(src)
+    if pct and src_num is not None:
+        try:
+            return abs(float(pct.group(1).replace(",", "")) / 100.0 - src_num) <= 1e-9 * max(1.0, abs(src_num))
+        except ValueError:
+            return False
+    if src_num is not None:
+        stripped = CURRENCY_RE.sub("", produced)
+        prod_num = as_number(stripped)
+        if prod_num is not None:
+            return abs(prod_num - src_num) <= 1e-9 * max(1.0, abs(src_num))
+    parts = DATE_PARTS_RE.match(src)
+    if parts:
+        year, month, day = (int(x) for x in parts.groups())
+        if date_shown_as(produced, year, month, day):
+            return True
+    # 源读成了纯数字、产物是日期：先按 Excel 日期序列号换算再比。
+    # 源文件用东亚内置日期格式（numFmtId 27-58）时，openpyxl 认不出这些格式、
+    # 把日期格读成 General 数字，而在线侧认得出、回读就是日期。同一个格的
+    # 两种读法，不换算的话每个这样的格都会被报成「数值被改成日期」。
+    # 区间取 1954-2064（序列号 2 万到 6 万）：业务表里的日期都落在这里，
+    # 而放开到全部合法序列号会把 1234 这类普通计数也当成日期放行。
+    if src_num is not None and float(src_num).is_integer() and 20000 <= src_num <= 60000:
+        try:
+            d = datetime.date(1899, 12, 30) + datetime.timedelta(days=int(src_num))
+        except (OverflowError, ValueError):
+            return False
+        return date_shown_as(produced, d.year, d.month, d.day)
+    return False
+
+
+def date_shown_as(produced: str, year: int, month: int, day: int) -> bool:
+    """产物字符串是不是这一天的某种写法（2026-04-01 / 2026/4/1 / 4月1日）。"""
+    nums = [int(n) for n in re.findall(r"\d+", produced)]
+    if not nums or month not in nums or day not in nums:
+        return False
+    return set(nums) <= {year, year % 100, month, day, 0}
+
+
+def load_baseline(path: str) -> dict[str, dict[str, Any]]:
+    """用 openpyxl 把源工作簿读成与产物同构的 {sheet: {cells, merged}}。
+
+    读两遍：一遍拿公式，一遍拿缓存值。源文件没有缓存值时（某些工具生成的 xlsx
+    不写缓存），公式格的值读出来是 None——这类格只比公式、不比值，否则会把
+    「读不到」误报成「被改写」。
+    """
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:      # pragma: no cover - 环境缺依赖
+        raise RuntimeError(f"读取基线需要 openpyxl：{exc}") from exc
+    if path.lower().endswith((".xls", ".csv")):
+        raise RuntimeError(
+            f"基线 {path} 不是 .xlsx：openpyxl 读不了 .xls / .csv。"
+            "先把源文件另存或导入导出成 .xlsx 再传 --baseline。")
+    # 公式簿走普通模式：read_only 的工作表不带 merged_cells，合并区就比不了。
+    # 值簿只取值，用 read_only 省掉一半内存。
+    wb_f = load_workbook(path, data_only=False)
+    wb_v = load_workbook(path, data_only=True, read_only=True)
+    sheets: dict[str, dict[str, Any]] = {}
+    try:
+        for name in wb_f.sheetnames:
+            ws_f, ws_v = wb_f[name], wb_v[name]
+            cells: dict[str, dict[str, Any]] = {}
+            truncated = ws_f.max_row > MAX_ROWS
+            for row_f, row_v in zip(ws_f.iter_rows(max_row=MAX_ROWS),
+                                    ws_v.iter_rows(max_row=MAX_ROWS)):
+                for cell_f, cell_v in zip(row_f, row_v):
+                    raw = cell_f.value
+                    if raw is None:
+                        continue
+                    rec: dict[str, Any] = {}
+                    if isinstance(raw, str) and raw.startswith("="):
+                        rec["f"] = raw
+                        rec["v"] = norm_value(cell_v.value)
+                        rec["v_known"] = cell_v.value is not None
+                    else:
+                        rec["v"] = norm_value(raw)
+                        rec["v_known"] = True
+                    if not rec["v"] and "f" not in rec:
+                        continue
+                    cells[cell_f.coordinate] = rec
+                    if len(cells) >= BASELINE_MAX_CELLS:
+                        truncated = True
+                        break
+                if truncated:
+                    break
+            merged = sorted(str(r) for r in getattr(ws_f, "merged_cells", []).ranges) \
+                if hasattr(getattr(ws_f, "merged_cells", None), "ranges") else []
+            sheets[name] = {"cells": cells, "merged": merged, "truncated": truncated}
+    finally:
+        wb_f.close()
+        wb_v.close()
+    return sheets
+
+
+def split_scope_items(items):
+    """按引号状态拆逗号：Excel 的 sheet 名允许逗号，`'Sales,2026'!A1:A2` 是合法写法。
+
+    直接 split(",") 会把它拆成两段，其中 `'Sales` 去掉引号后没有 `!`，会被当成
+    「整表放行」——目标表反而不在范围内，另一张真名 Sales 的表却被整张授权。
+    """
+    parts = []
+    for raw in items or []:
+        parts += _split_one_scope_item(str(raw))
+    return [p.strip() for p in parts if p.strip()]
+
+
+def split_sheet_and_range(part: str):
+    """在引号外的第一个 `!` 处切开 sheet 名与范围；没有分隔符时返回 (part, None)。
+
+    Excel 的 sheet 名允许 `!`，`'Sales!2026'!A1:A2` 是合法引用。直接 partition("!")
+    会在名字内部切开，整条范围就此作废。
+    """
+    quoted = False
+    for i, ch in enumerate(part):
+        if ch == "'":
+            quoted = not quoted
+        elif ch == "!" and not quoted:
+            return part[:i], part[i + 1:]
+    return part, None
+
+
+def _split_one_scope_item(text: str):
+    parts, buf, quoted = [], [], False
+    for ch in text:
+        if ch == "'":
+            quoted = not quoted
+        elif ch == "," and not quoted:
+            parts.append("".join(buf))
+            buf = []
+            continue
+        buf.append(ch)
+    parts.append("".join(buf))
+    return parts
+
+
+def unquote_sheet_name(name: str) -> str:
+    """去掉包裹的单引号并反转义内部的 ''。"""
+    name = name.strip()
+    if len(name) >= 2 and name.startswith("'") and name.endswith("'"):
+        name = name[1:-1]
+    return name.replace("''", "'")
+
+
+class ScopeError(ValueError):
+    """--scope 写法不合法。范围认不出时必须报错，不能退化成整表。"""
+
+
+def parse_scope(items: list[str]) -> dict[str, Any]:
+    """把 --scope 解析成 {sheet 名: SCOPE_ALL | [(r1,c1,r2,c2), ...]}。
+
+    接受三种写法：`Sheet1`（整张表）、`Sheet1!G:I`（整列区间）、`Sheet1!A2:C10`。
+    不带 `!` 的就是整表。行号省略时按 1..MAX_ROWS 处理。
+
+    --scope 划的是「本轮允许改动」的边界，认不出的范围必须 fail closed：
+    若退化成整表，范围外的改写就会被判成允许，基线门禁形同虚设。
+    """
+    scope: dict[str, Any] = {}
+    for part in split_scope_items(items):
+        raw_name, rng = split_sheet_and_range(part)
+        if rng is None:
+            scope[unquote_sheet_name(raw_name)] = SCOPE_ALL
+            continue
+        name, rng = unquote_sheet_name(raw_name), rng.strip().upper()
+        box = parse_scope_range(rng)
+        if box is None:
+            raise ScopeError(
+                f"--scope 里的范围认不出：{part!r}。"
+                "写成 '子表名!A2:C10' / '子表名!G:I' / '子表名!2:5'，整表只写子表名。")
+        if scope.get(name) == SCOPE_ALL:
+            continue
+        scope.setdefault(name, [])
+        scope[name].append(box)
+    return scope
+
+
+MAX_EXCEL_ROW = 1048576
+MAX_EXCEL_COL = 16384          # XFD
+
+
+def within_excel_bounds(box: tuple[int, int, int, int]) -> bool:
+    """行列必须落在 Excel 的真实边界内。"""
+    start_row, start_col, end_row, end_col = box
+    # 起点必须不晚于终点：反序范围本地匹配 0 格、在线会被悄悄当成正序，
+    # 两种都不是调用方写下的意思，一律判非法。
+    if start_row > end_row or start_col > end_col:
+        return False
+    return (1 <= start_row <= MAX_EXCEL_ROW and 1 <= end_row <= MAX_EXCEL_ROW
+            and 1 <= start_col <= MAX_EXCEL_COL and 1 <= end_col <= MAX_EXCEL_COL)
+
+
+def parse_scope_range(rng: str) -> tuple[int, int, int, int] | None:
+    """`A2:C10` / `G:I` / `2:5` / `B3` → (r1, c1, r2, c2)；认不出返回 None。"""
+    if not rng:
+        return None
+    left, _, right = rng.partition(":")
+    right = right or left
+
+    def split(part: str) -> tuple[str, str]:
+        m = re.match(r"^([A-Z]*)(\d*)$", part.strip())
+        return (m.group(1), m.group(2)) if m else ("", "")
+
+    lc, lr = split(left)
+    rc, rr = split(right)
+    if not (lc or lr) or not (rc or rr):
+        return None
+    start_col = col_index(lc) if lc else 1
+    end_col = col_index(rc) if rc else MAX_EXCEL_COL
+    start_row = int(lr) if lr else 1
+    end_row = int(rr) if rr else MAX_ROWS
+    # 完整单元格范围沿用原有的 min/max 归一（`C10:A2` 等价于 `A2:C10`）；
+    # 整列 `Z:A` / 整行 `9:2` 不归一，交给边界校验判非法——与本地分支行为一致。
+    if lc and lr and rc and rr:
+        box = (min(start_row, end_row), min(start_col, end_col),
+               max(start_row, end_row), max(start_col, end_col))
+    else:
+        box = (start_row, start_col, end_row, end_col)
+    # 越界一律判非法，不 clamp——只校验形状会让 `A0:XFD9999999` 这类写错的
+    # 范围被接受，所有合法坐标都算 in-scope，等于放大成整表授权。
+    return box if within_excel_bounds(box) else None
+
+
+def in_scope(scope: dict[str, Any], sheet_name: str, addr: str) -> bool:
+    entry = scope.get(sheet_name)
+    if entry is None:
+        return False
+    if entry == SCOPE_ALL:
+        return True
+    try:
+        row, col = split_ref(addr)
+    except ValueError:
+        return False
+    return any(r1 <= row <= r2 and c1 <= col <= c2 for r1, c1, r2, c2 in entry)
+
+
+def pair_sheets(wb: dict, base: dict[str, dict[str, Any]]) -> tuple[list[tuple[str, dict, dict]], list[str]]:
+    """按 sheet 名配对源与产物，返回 (源名, 源表, 产物表)。
+
+    名字对不上且两边各剩一张时按顺序兜底配对——本轮给唯一一张表改了名是常见做法，
+    报成「产物缺表」会淹没真正的差异。剩多张对不上就不猜，报缺失让调用方自己说明。
+    """
+    produced = {s["name"]: s for s in wb["sheets"]}
+    pairs, missing = [], []
+    left_base = [n for n in base if n not in produced]
+    left_prod = [n for n in produced if n not in base]
+    for name, bsheet in base.items():
+        if name in produced:
+            pairs.append((name, bsheet, produced[name]))
+    if len(left_base) == 1 and len(left_prod) == 1:
+        pairs.append((left_base[0], base[left_base[0]], produced[left_prod[0]]))
+    else:
+        missing.extend(left_base)
+    return pairs, missing
+
+
+def _collect_added_cells(bsheet: dict, psheet: dict, bname: str, pname: str,
+                         scope: dict, scoped: bool) -> tuple[int, list[str]]:
+    """产物里有、源里为空的格。返回 (范围内条数, 范围外描述列表)。
+
+    合并区的续格在源里一律读成空、值只在左上角，必须排掉——否则每个横向或
+    纵向合并表头都会被报成「范围外新增」。
+    """
+    merged_skip = merged_slaves(bsheet) | merged_slaves(psheet)
+    inside = 0
+    outside: list[str] = []
+    for addr, prec in psheet["cells"].items():
+        if addr in bsheet["cells"]:
+            continue
+        shown = norm_value(prec.get("v")) or str(prec.get("f") or "")
+        if not shown or _is_merged_slave(addr, merged_skip):
+            continue
+        if scoped and (in_scope(scope, pname, addr)
+                       or (bname != pname and in_scope(scope, bname, addr))):
+            inside += 1
+        else:
+            outside.append(f"{pname}!{addr}  源为空 → 产物 {shown[:30]}")
+    return inside, outside
+
+
+def _is_merged_slave(addr: str, merged_skip: set) -> bool:
+    try:
+        return split_ref(addr) in merged_skip
+    except ValueError:
+        return False
+
+
+def _collect_added_sheets(wb: dict, paired: set, scope: dict, scoped: bool) -> list[dict]:
+    """产物里有、源里没有的 sheet。
+
+    一律记录：没传 --scope 时它是改动事实，传了才判定。判定按格来，不按整张表
+    ——scope 精确写成 `新表!A1:A1` 时那一格已获准，不该因为该表不是整表放行就
+    把整张表判成越界。
+    """
+    added = []
+    for sheet in wb.get("sheets", []):
+        name = sheet.get("name")
+        cells = sheet.get("cells") or {}
+        if name in paired or not cells:
+            continue
+        outside = sum(1 for addr in cells
+                      if not (scoped and in_scope(scope, name, addr)))
+        added.append({"name": name, "cells": len(cells), "outside": outside})
+    return added
+
+
+def merge_baseline_sheets(base: dict, loaded: dict, path: str, conflicts: list) -> None:
+    """把一份基线并进联合快照。
+
+    多份 --baseline 必须并成一份再比：整张 sheet 直接 setdefault 会让后续同名
+    sheet 被静默丢掉，它提供的格随后会相对不完整的基准被误判成「产物新增」。
+    同名 sheet 的非重叠坐标取并集；同一坐标内容不同时记 conflict 并保留先出现
+    的那份——按文件顺序静默覆盖会让「哪份才是改前基准」变得不可知。
+    """
+    for name, sheet in loaded.items():
+        if name not in base:
+            base[name] = {**sheet, "origin": {addr: path for addr in sheet.get("cells", {})}}
+            continue
+        target = base[name]
+        origin = target.setdefault("origin", {})
+        for addr, rec in (sheet.get("cells") or {}).items():
+            if addr not in target["cells"]:
+                target["cells"][addr] = rec
+                origin[addr] = path
+            elif target["cells"][addr] != rec:
+                conflicts.append({"sheet": name, "cell": addr,
+                                  "kept": origin.get(addr, "第一份基线"),
+                                  "conflicting": path})
+        target["merged"] = sorted(set(target.get("merged") or [])
+                                  | set(sheet.get("merged") or []))
+        target["truncated"] = target.get("truncated") or sheet.get("truncated")
+
+
+def diff_baseline(wb: dict, base: dict[str, dict[str, Any]],
+                  scope: dict[str, Any]) -> tuple[list, list, list]:
+    """比对源与产物，返回 (确定性错误, 结构特征, 提示)。
+
+    分档依据是「能不能定性」：范围外的原值改写和原公式丢失，用户既然没要求动，
+    改了就是改错了，进确定性错误档；范围内的改动是本轮该做的事，只陈述条数。
+    没传 --scope 时一律只陈述——工具不知道哪些格该动，定性会大面积误报。
+    """
+    scoped = bool(scope)
+    asserts: list = []
+    facts: list = []
+    notes: list[str] = []
+    pairs, missing = pair_sheets(wb, base)
+    if missing:
+        asserts.append(("基线缺失 sheet", f"源工作簿的 {len(missing)} 张 sheet 在产物里找不到同名表",
+                        [f"{n}（源有 {len(base[n]['cells'])} 个非空格）" for n in missing[:MAX_LIST]]
+                        + ["若这几张表出现在上面的「读取不完整」里，是本次没读到、不是产物缺表，重跑一次再看；"
+                           "若是本轮给 sheet 改了名，工具按名字对不上，改回原名或在交付说明里逐张说明对应关系"]))
+    out_changed: list[str] = []
+    out_formula: list[str] = []
+    out_added: list[str] = []
+    in_changed = in_formula = in_added = 0
+    for bname, bsheet, psheet in pairs:
+        pcells = psheet["cells"]
+        pname = psheet["name"]
+        for addr, brec in bsheet["cells"].items():
+            prec = pcells.get(addr) or {}
+            # 范围按两个名字都认一次：调用方在动手前写 --scope，用的多半是源表的
+            # sheet 名，而本轮可能已经把表改成别的名字了。只认产物名会让整段
+            # 声明失效，范围内的改动全被报成越界。
+            inside = scoped and (in_scope(scope, pname, addr)
+                                 or (bname != pname and in_scope(scope, bname, addr)))
+            if brec.get("f"):
+                if norm_formula(prec.get("f")) != norm_formula(brec["f"]):
+                    line = f"{pname}!{addr}  源 {str(brec['f'])[:40]} → 产物 {str(prec.get('f') or '（无公式，静态值）')[:40]}"
+                    if inside:
+                        in_formula += 1
+                    else:
+                        out_formula.append(line)
+                if not brec.get("v_known"):
+                    continue
+            bval = brec.get("v", "")
+            pval = norm_value(prec.get("v"))
+            if bval and not values_equivalent(bval, pval):
+                line = f"{pname}!{addr}  源 {bval[:30]} → 产物 {(pval or '（空）')[:30]}"
+                if inside:
+                    in_changed += 1
+                else:
+                    out_changed.append(line)
+        # 只比源里已有的格，会漏掉「范围外从空白变成有值」——scope 声明的是
+        # 其余一格不动，新增同样是动。
+        inside_added, outside_added = _collect_added_cells(
+            bsheet, psheet, bname, pname, scope, scoped)
+        in_added += inside_added
+        out_added += outside_added
+        bmerged, pmerged = set(bsheet.get("merged") or []), set(psheet.get("merged") or [])
+        if bmerged - pmerged:
+            notes.append(f"{pname}：源有 {len(bmerged - pmerged)} 个合并区在产物里不见了")
+    paired_produced = {psheet["name"] for _b, _bs, psheet in pairs}
+    added_sheets = _collect_added_sheets(wb, paired_produced, scope, scoped)
+    if added_sheets:
+        blocked = [d for d in added_sheets if d["outside"]]
+        detail = [f"{d['name']}（{d['cells']} 个非空格"
+                  + (f"，其中 {d['outside']} 个在声明范围外）" if d["outside"] else "，都在声明范围内）")
+                  for d in added_sheets[:MAX_LIST]]
+        # 没传 --scope 时只陈述事实：工具不知道哪些表该建，定性会误报。
+        if scoped and blocked:
+            asserts.append(("范围外新增 sheet",
+                            f"产物多出 {len(blocked)} 张源里没有、且含范围外内容的 sheet", detail))
+        else:
+            facts.append(("产物新增 sheet",
+                          f"产物比源多出 {len(added_sheets)} 张 sheet", detail))
+    cut = [n for n, sh in base.items() if sh.get("truncated")]
+    if cut:
+        notes.append(f"基线只读了前 {MAX_ROWS} 行 / {BASELINE_MAX_CELLS} 格："
+                     + "、".join(cut[:MAX_LIST])
+                     + "——超出部分没有比对，别把「没报差异」当成那些行没被动过")
+    label = "范围外" if scoped else "全表"
+    if out_changed:
+        head, rest = truncate(out_changed)
+        detail = f"{label}有 {len(out_changed)} 个原有单元格的值与源文件不同"
+        item = ("原值被改写", detail, head + ([f"…另有 {rest} 处"] if rest else []))
+        (asserts if scoped else facts).append(item)
+    if out_formula:
+        head, rest = truncate(out_formula)
+        detail = f"{label}有 {len(out_formula)} 个原有公式被改写或退化成静态值"
+        item = ("原公式丢失", detail, head + ([f"…另有 {rest} 处"] if rest else []))
+        (asserts if scoped else facts).append(item)
+    if out_added:
+        head, rest = truncate(out_added)
+        detail = f"{label}有 {len(out_added)} 个源里为空的单元格在产物里被写入了内容"
+        item = ("范围外新增内容", detail, head + ([f"…另有 {rest} 处"] if rest else []))
+        (asserts if scoped else facts).append(item)
+    if scoped and (in_changed or in_formula or in_added):
+        notes.append(f"声明范围内改动 {in_changed} 个值、{in_formula} 处公式、新增 {in_added} 个格"
+                     "——这部分是本轮该做的，只计数不判定")
+    if not scoped:
+        notes.append("未传 --scope，工具无法区分「该改的」和「改错的」，上面只是改动清单；"
+                     "传入本轮允许改动的范围后，范围外的改写会被定性为确定性错误")
+    notes.append("样式、行高列宽、数字格式不在基线对照范围内（导入导出会有表述差异），仍按自查清单第 2 条自己核")
+    notes.append("同一个值的不同呈现已对齐：日期的各种写法、渲染出的百分比与千分位，"
+                 "以及源被读成日期序列号（45778）而产物是对应日期的情形——"
+                 "东亚内置日期格式在本地读不出来，那不是被改写")
+    return asserts, facts, notes
+
+
 # ────────────────────────── 固定文本 ──────────────────────────
 
 # 清单的取舍原则：只放「有确定性判据、做得完、做完能得出是/否」的动作。
@@ -1023,23 +1582,28 @@ def survey(wb: dict) -> list[str]:
 # 动作然后认为自己核过了。实测原第 2 条「原表有没有被动过？改完回读确认」
 # 就是这样失效的：终态是自洽的，没有改前基准，回读了也判不出哪些格本不该长这样，
 # 有 case 回读后把明显被覆盖的前几行判成了「正确」。所以第 2 条改成
-# 「工具查不了 + 只核题面点名要保留的部分（这部分有判据）」。
+# 「工具查不了 + 只核用户点名要保留的部分（这部分有判据）」。
 CHECKLIST = """1. 汇总/合计/统计值/复杂业务计算 —— 必做，不是可选：
    先写下你采用的口径（含哪些行、单位、筛选阈值取 > 还是 >=、时区如何换算），
    再用 python 从明细独立算一遍，和表里的公式的「求值结果」逐项对账。
    如果结果对不上或者你写的 python 脚本报错了，看看是不是你的公式或脚本没有考虑到 Corner Case。
    如果单一公式无法覆盖整列，允许对特殊行单独写公式，不要把「无法解析」当理由。
+   合计/汇总类公式另核一遍**引用区域的首末行**与明细的首末行是否对齐 ——
+   在线表会自动重算，公式框到哪算到哪，少框几行照样给出一个「看着对」的数。
    把对账结论写进交付说明。不要只看公式写得对不对，要看算出来的数对不对。
-2. 原表保护：
-   检查在编辑之前要保留的 sheet / 列 / 行 / 标题 / 单元格值是否还在、条数是否对得上，逐项回读断言。
+   独立算出来的关键数写进 `--checkpoints`（格址 + 期望值 + 容差），工具会回读产物替你对。
+2. 原表保护（编辑已有表时，用 --baseline <源文件.xlsx> --scope '<允许改动的范围>' 让工具替你比）：
+   写下本轮允许改动的范围，其余一格不动；工具会拿源文件逐格比出范围外的改写与丢失的公式。
+   没有源文件可比时，检查要保留的 sheet / 列 / 行 / 标题 / 单元格值是否还在、条数是否对得上，逐项回读断言。
    高危动作自己复查：
    - 「整列整块写入」前确认目标区域原本为空；
    - 「新增列」要落在原有效区右侧，不能覆盖已有字段；
    - 「追加」不能实现成重建或替换。
    - 「修改单元格值类型」，文本->数字/日期/百分比 等, Number Format 是否设置好？确保最终视觉效果与修改前相同？（使用 `+cells-get` 确认）
-3. 题面点名的产出项：先把题面里点名的东西抄成一张清单
+3. 用户点名的产出项：先把用户点名的东西抄成一张清单
    （sheet 名称与数量、文件名、列名、指标项、必须包含的枚举值），
    再逐项对着产物打勾。是集合比对，不是凭印象扫一眼。
+   能落到格址或子表名的项，写进 `--checkpoints` 让工具比，别只在回执里写「已核对」。
 4. 处理范围：所有该处理的 sheet 和数据行都处理了吗？
    别只处理了第一个 sheet 或前几十行 —— 数据末尾、中间抽样都要看。
 5. 条件标注（标红/高亮/筛选/去重）：既查漏标，也查误标。
@@ -1051,15 +1615,15 @@ CONFIRM_HOWTO = """做完上面 6 条，把**每条的结论**写进 --confirm �
 ```bash
   python3 lark_sheet_selfcheck.py <表格URL> --confirm '
   1=按「含税、剔除退货行」口径，python 独立复算 Summary 全部 12 项，与表内公式求值逐项一致
-  2=题面要求保留的 产品参数表 仍在，回读 36 行×8 列，行数与原值一致；新增列落在 H 列右侧
-  3=题面点名 5 个 sheet / 3 个指标项，逐项打勾，产物齐全
+  2=允许改动 明细!G:I，--baseline 比对后范围外 0 处改写、0 处公式丢失；新增列落在 H 列右侧
+  3=用户点名 5 个 sheet / 3 个指标项，逐项打勾，产物齐全
   4=3 个 sheet 共 240 行全部处理，抽查末尾第 238-240 行与中间第 120 行
   5=标红 12 处，逐条复查无漏标；另核 4 处相似行确认不该标
   6=金额统一万元口径，与源表原口径换算逐行核对 36 行'
 ```
 
 每条要写**具体做了什么、结果是什么**，不是「已完成」这类空洞词——工具会拒绝。
-某条确实不适用，写明理由即可，如 `5=不适用：题面无标注/高亮要求`。
+某条确实不适用，写明理由即可，如 `5=不适用：本次无标注/高亮要求`。
 回执用单引号包裹（内部就不必转义引号）；写成一行、条目之间空格分隔同样可以。
 
 Windows（PowerShell）必须走文件，多行文本没法可靠地作为参数传：
@@ -1213,6 +1777,29 @@ def parse_confirm(raw: str) -> tuple[dict[int, str], list[str]]:
     return items, problems
 
 
+# 第 2 条的编辑类动词：写出这些词，说明本轮改的是一张已经存在的表，
+# 那就有源文件可比，`--baseline` 不该缺席。
+EDIT_VERB_RE = re.compile(
+    r"编辑|修改|改写|补充|补齐|填充|更新|去重|替换|追加|标注|标红|覆盖|删除|整理|排序|合并")
+# 豁免：从零建表、或本轮确实拿不到源文件。命中任一就不追问基线。
+NO_BASELINE_OK_RE = re.compile(
+    r"新建|从零|新表|首次创建|无源文件|没有源文件|拿不到源文件|没有本地|在线表|不适用")
+
+
+def confirm_needs_baseline(items: dict[int, str]) -> bool:
+    """第 2 条自述在改已有表、却没给基准时为真。
+
+    为什么放在回执校验里：`--baseline` 是可选参数，可选的动作会被裁掉——
+    这一条把它接回必经路径，编辑类任务不带基准就拿不到可交付信号。
+    判据取自调用方自己写的话，不是工具的猜测；确实是新建表的，
+    在第 2 条里写明「新建表，无源文件可比」即可放行。
+    """
+    body = items.get(2) or ""
+    if not body or NO_BASELINE_OK_RE.search(body):
+        return False
+    return bool(EDIT_VERB_RE.search(body))
+
+
 
 # ────────────────────────── 输出 ──────────────────────────
 
@@ -1225,7 +1812,8 @@ def render(wb: dict, findings: list, counts: list,
            unread: list[str], unchecked: list[str], notices: list[str],
            confirm_raw: str | None = None,
            confirm_items: dict[int, str] | None = None,
-           confirm_problems: list[str] | None = None) -> str:
+           confirm_problems: list[str] | None = None,
+           baseline_notes: list[str] | None = None) -> str:
     """将规则发现、覆盖缺口和自查回执渲染为最终检查报告。"""
     confirm_items = confirm_items or {}
     confirm_problems = confirm_problems or []
@@ -1247,12 +1835,12 @@ def render(wb: dict, findings: list, counts: list,
         for label, detail, lines in asserts:
             out.append(f"✗ {label:<22} {detail}".rstrip())
             out.extend(f"    {ln}" for ln in lines)
-        out.append("  → 在题面要求改的范围内：修根因，别用 IFERROR 之类把错误藏起来。")
-        out.append("    范围外（题面没点到、且是原文件自带的）：不要改动，"
+        out.append("  → 在用户要求改的范围内：修根因，别用 IFERROR 之类把错误藏起来。")
+        out.append("    范围外（用户没点到、且是原文件自带的）：不要改动，"
                    "但必须在交付说明里逐条列出，不能静默忽略。")
         out.append("")
     if facts:
-        # 只陈述观察到的结构，不断言它是缺陷 —— 「这算不算问题」需要题面语义，
+        # 只陈述观察到的结构，不断言它是缺陷 —— 「这算不算问题」需要结合用户要求，
         # 工具没有那个信息。事实无法误报，判断权交回调用方。
         out.append(hr("结构特征（工具只能陈述事实，是否为问题由你判断）"))
         for label, detail, lines in facts:
@@ -1261,6 +1849,10 @@ def render(wb: dict, findings: list, counts: list,
             if FACT_HINT.get(label):
                 out.append(f"  → {FACT_HINT[label]}")
         out.append("  判为正常的，在交付说明里写一句理由；判为问题的，修完重跑本工具。")
+        out.append("")
+    if baseline_notes:
+        out.append(hr("基线对照说明"))
+        out.extend(f"  {n}" for n in baseline_notes)
         out.append("")
     if counts:
         out.append(hr("仅计数（正常表也常见，不逐条列）"))
@@ -1311,7 +1903,7 @@ def render(wb: dict, findings: list, counts: list,
     # 四态结论。
     #
     # 语义收紧的历史：只有**确定性错误**才算 DEFECTS，事实档不参与定性。
-    # 通过信号的措辞必须不含任何令人安心的成分 —— 实测有 case 拿到旧的 CHECK_PASS
+    # 通过信号的措辞必须不含任何令人安心的成分 —— 实测中有调用方拿到旧的 CHECK_PASS
     # 后原话「self-check passed, let me just deliver it」，取消了它上一步已经决定
     # 要做的回读，而那张表的原有数据实际已被整体覆盖。旧措辞虽然也写了「无法判定」，
     # 但结论句先说了「没发现问题」，调用方只读了前半句。
@@ -1337,8 +1929,12 @@ def render(wb: dict, findings: list, counts: list,
                       "那些区域没报问题不等于没问题。" if blind else "")
                    + tail)
     elif blind:
+        # 逃生舱：读不全常常是工具能力上限（超大表分页上限、单条规则崩掉），不是调用方的失误。
+        # 不给出口，这个门禁在大表任务上永远拿不到 CHECK_OK，调用方只能整条跳过自检。
         out.append(f"CHECK_INCOMPLETE：{blind_txt}，上面的结论不完整，"
-                   "不能据此认为产物没问题。" + tail)
+                   "不能据此认为产物没问题。先整体重跑一次；仍然读不全的，"
+                   "按上面的自查清单人工核一遍没覆盖到的区域，"
+                   "并在交付说明里写明「自检未覆盖范围 + 人工核对结论」，之后才可交付。" + tail)
     elif not confirmed:
         why = ("未提供回执" if confirm_raw is None
                else f"回执不合格：{len(confirm_problems)} 处，见上")
@@ -1352,12 +1948,17 @@ def render(wb: dict, findings: list, counts: list,
         out.append("CHECK_OK：规则层无确定性错误，且已收到 6 条自查回执。"
                    "注意回执内容本工具无法核实 —— "
                    "其中任何一条你实际没做，这个信号就是无效的。" + tail)
+        # 交付动作挂在通过信号的正下方：拿到 CHECK_OK 的当下，下一步该做什么
+        # 就在视线里，不必回文档翻交付契约。实测缺的那一步就是这一步。
+        target = wb["loc"].get("url") or wb["loc"].get("spreadsheet_token")
+        out.append(f"下一步：把 {target} 交给宿主的产物交付工具并确认调用成功 —— "
+                   "把链接写进回复正文不算交付。工具名与降级路径见调用说明。")
     return "\n".join(out)
 
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="交付前自检（无基准、不落盘）")
+    ap = argparse.ArgumentParser(description="交付前自检（不落盘；传 --baseline 后带改前基准）")
     ap.add_argument("target", help="表格 URL 或 spreadsheet token")
     ap.add_argument("--max-findings", type=int, default=MAX_FINDINGS,
                     help=f"高置信度发现的条数上限（默认 {MAX_FINDINGS}）")
@@ -1366,7 +1967,29 @@ def main() -> int:
                          "\"1=... 2=... 3=... 4=... 5=... 6=...\"。"
                          "也可传 \"@./confirm.txt\" 从文件读（Windows 必须这样传）。"
                          "不带本参数不会得到可交付信号（退出码非零）。")
+    ap.add_argument("--checkpoints", default=None, metavar="@FILE",
+                    help="任务检查点 JSON（`@./checkpoints.json` 或内联）：把用户点名的"
+                         "格址与期望值、必须由公式驱动的区域、必须存在的子表交给工具逐条回读判定")
+    ap.add_argument("--baseline", action="append", default=None, metavar="SRC.xlsx",
+                    help="源工作簿（编辑已有表时的改前基准，.xlsx）。传入后逐格比对"
+                         "值与公式，报出被改写的原值和退化成静态值的原公式；"
+                         "多个源文件重复本参数。")
+    ap.add_argument("--scope", action="append", default=None, metavar="RANGE",
+                    help="本轮允许改动的范围，如 'Sheet1!G:I' / '汇总' / 'Sheet1!A2:C10'，"
+                         "逗号分隔或重复本参数。与 --baseline 同用时，范围外的改写"
+                         "判为确定性错误；不传则只列改动清单、不定性。")
     args = ap.parse_args()
+
+    # --scope 先验：范围写错就当场报错退出，绝不带着一个被悄悄放大成整表的
+    # 边界继续跑——那样范围外的改写会被判成允许。
+    try:
+        scope_boxes = parse_scope(args.scope or [])
+    except ScopeError as exc:
+        print(f"交付前自检没开始：{exc}\n\n"
+              "CHECK_INCOMPLETE：--scope 是本轮允许改动的边界，写错就没有可信的判据，"
+              "本次没有跑任何规则。改对范围后重跑。")
+        print(f"[stderr] {exc}", file=sys.stderr)
+        return 2
 
     confirm_raw, confirm_read_error = read_confirm(args.confirm)
     confirm_items: dict[int, str] = {}
@@ -1375,6 +1998,13 @@ def main() -> int:
         confirm_problems = [confirm_read_error]
     elif confirm_raw is not None:
         confirm_items, confirm_problems = parse_confirm(confirm_raw)
+        if not args.baseline and confirm_needs_baseline(confirm_items):
+            confirm_problems.append(
+                "第 2 条说的是对已有表的编辑，但本次没传 --baseline —— "
+                "没有改前基准，范围外被改写的原值和丢失的原公式查不出来。"
+                "重跑时补上 `--baseline <源文件.xlsx> --scope '<允许改动的范围>'`。"
+                "源表只在线上、本地没有文件时，下次动手前先 `+workbook-export` 导一份改前快照当基准；"
+                "本次拿不到快照、或本轮是从零新建的，在第 2 条里写明这一点即可。")
 
     try:
         wb, unread = read_workbook(args.target)
@@ -1398,11 +2028,77 @@ def main() -> int:
     findings: list = []
     unchecked: list[str] = []               # 数据读到了、检查没跑成
     notices: list[str] = []                 # 都做了、只是没全显示
+
+    # 基线先读：规则跑之前挂到 wb 上，让规则也能拿源表当参照
+    # （派生列规则据此跳过「源里本来就是静态值」的列）。读不到源文件不中断
+    # 整次自检——它只是少了一档判据，但必须说出来，否则调用方会把
+    # 「没报差异」当成「原表没被动过」。
+    baseline_notes: list[str] = []
+    base: dict[str, dict[str, Any]] = {}
+    baseline_conflicts: list[dict] = []
+    for path in args.baseline or []:
+        try:
+            loaded = load_baseline(path)
+        except Exception as exc:
+            # 源文件本身损坏时 openpyxl 抛的是 KeyError / IndexError 这类底层异常，
+            # 光把它打出来看不出下一步该干什么，所以连修法一起给。
+            unchecked.append(
+                f"基线 {os.path.basename(path)} 读取失败：{type(exc).__name__}: {str(exc)[:100]}"
+                "　→ openpyxl 打不开这个源文件时，先 `+workbook-import` 导入再 `+workbook-export` "
+                "换出一份干净的 .xlsx 当基线；仍不行就按自查清单第 2 条人工核原表保护")
+            continue
+        merge_baseline_sheets(base, loaded, path, baseline_conflicts)
+    if baseline_conflicts:
+        # 基准本身不唯一，连「改前长什么样」都定不了，比逐格差异更靠前。
+        findings.append(("基线自相冲突",
+                         f"多份基线在 {len(baseline_conflicts)} 个格上取值不同，改前基准不唯一",
+                         [f"{c['sheet']}!{c['cell']}：采用 {os.path.basename(c['kept'])}，"
+                          f"与 {os.path.basename(c['conflicting'])} 不一致"
+                          for c in baseline_conflicts[:MAX_LIST]]
+                         + ["先确认哪一份才是本轮的改前基准，只传那一份再跑"]))
+    checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
+    if checkpoint_error:
+        unchecked.append(f"检查点没能加载：{checkpoint_error}")
+    elif checkpoints:
+        try:
+            checkpoint_result = run_checkpoints(wb, checkpoints)
+            findings.extend(checkpoint_findings(checkpoint_result))
+            # 判不了的条目记进 unchecked：既不是通过也不是失败，退出码要降级，
+            # 否则「一条过 + 一条判不了」会被当成检查点全过。
+            for detail in checkpoint_skips(checkpoint_result):
+                unchecked.append(f"检查点判不了 {detail['ref']}：{detail['message']}")
+            # 汇总状态兜底：只认 pass 为跑过了，别的一律降级。
+            if checkpoint_result.get("status") == "skipped":
+                unchecked.append("检查点一条判据都没执行：确认契约里写了 "
+                                 "expect / non_empty / formula / all_formula")
+        except Exception as exc:
+            unchecked.append(f"检查点判定执行失败：{str(exc)[:80]}")
+
     for rule in HIGH_RULES:
         try:
             findings.extend(rule(wb))
         except Exception as exc:            # 单条规则崩掉不该拖垮整次自检
             unchecked.append(f"规则 {rule.__name__} 执行失败：{str(exc)[:80]}")
+
+    if base and baseline_conflicts:
+        # 基准不唯一时不跑逐格对照：那些结论会建立在「碰巧先读到的那份」上，
+        # 和「只传对的那一份再跑」的提示自相矛盾，还会被当成确定性错误。
+        # 记进 unchecked 让退出码降级，checkpoint 等独立判据照跑。
+        unchecked.append("基线自相冲突，本次跳过逐格对照——先确认哪份才是改前基准，"
+                         "只传那一份再跑，这条才有唯一依据")
+    elif base:
+        try:
+            b_asserts, b_facts, b_notes = diff_baseline(wb, base, scope_boxes)
+            findings.extend(b_asserts + b_facts)
+            baseline_notes.extend(b_notes)
+        except Exception as exc:
+            unchecked.append(f"基线对照执行失败：{str(exc)[:80]}")
+    elif args.scope and not args.baseline:
+        # 记进 unchecked 而不是 notes：原表保护这条没跑成，退出码要降级，
+        # 否则「只给了 scope」会和「比过且没差异」一样退 0。
+        unchecked.append("给了 --scope 但没给 --baseline，没有改前基准就比不出范围外的改写——"
+                         "把源文件路径一并传进来")
+
     findings.sort(key=lambda f: RULE_ORDER.get(f[0], 99))
     # 规则内部记下的「扫描被截断」——数据读到了，是检查没跑全。
     unchecked.extend(wb.get("scan_gaps") or [])
@@ -1421,7 +2117,7 @@ def main() -> int:
         unchecked.append(f"低置信度普查（survey）执行失败：{str(exc)[:80]}")
     try:
         print(render(wb, findings, counts, unread, unchecked, notices,
-                     confirm_raw, confirm_items, confirm_problems))
+                     confirm_raw, confirm_items, confirm_problems, baseline_notes))
     except Exception as exc:
         print(f"交付前自检的结果渲染失败：{str(exc)[:200]}\n\n"
               f"{hr('交付前自查（逐条回答，不要跳过）')}\n{CHECKLIST}\n\n"

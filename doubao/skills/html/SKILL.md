@@ -1,6 +1,6 @@
 ---
 name: html
-description: 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 Miaoda 妙搭链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。
+description: 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。
 ---
 
 # 单页 HTML 开发
@@ -32,7 +32,9 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
   - **静态资源引用**：
     - 图片、音视频等**由元素 `src` 或 CSS `url()` 加载**的素材，先下载到 `assets/`；生图搜图返回的 URL 会过期，不能直接写进 html，下载后按运行环境选引用方式：
       - **本地电脑**：用相对路径，如 `<img src="assets/hero.png">`，不写绝对路径。省掉上传这一步，交付更快。
-      - **云电脑**：交付前跑 `python3 <SKILL_DIR>/scripts/embed.py <html_path>` 把图以 Base64 内嵌，确保用户下载后直接可用。产物是同目录的 `<原文件名>_embed.html`，自检和交付都用这个产物；改动只改原始 HTML，改完重新跑一遍 embed。
+      - **云电脑**：
+        - 每张图跑一次 `lark-cli drive +html-image-upload --file assets/hero.png`，取返回里 `data.url` 写进 `<img src>`。这个链接不会过期；而搜图、生图得到的 URL 会过期，不能直接放到 html中。
+        - 此场景下**严禁使用 `FileBatchUpload` 工具**，必须使用 `lark-cli drive`，否则图片也会过期。
     - **数据文件（JSON / CSV / TXT）不适用**：`file://` 页面里 `fetch` 和 `XMLHttpRequest` 都会被浏览器拒绝。优先从 URL 运行时取，取不到才固化进 JS。
     - **图片路径只能写在 `src` 属性或 CSS `url()` 里**：推荐 `<img src="assets/img1.jpg">`。发布链路只静态扫描这两个位置——写在 JS 代码里的任何形式（含 `const imgs = ['assets/a.jpg']` 这样的常量数组）、以及 `data-src` / `srcset` / `poster` 等其它属性，发布后都会裂图。
 - **分批写入**：一次写入过长的文件会让用户等待焦虑，最好一次 Write 10k token 内，简单向用户同步进度后，再继续分批写入。
@@ -40,12 +42,14 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 - **注意响应式适配，宽屏窄屏电脑手机都要能看**。
 
 - **交付与发布**：
-  - 当用户没有明确的发布需求时：用 `present_files` 这类交付工具给用户交付 HTML，**同一个产物只交付一个 `.html` 文件**——按运行环境选定一种图片引用方式就够了，不要再额外附一份 Base64 自包含版「以防万一」，用户拿到两份不知道该打开哪个。交付说明如实写清：没实现的功能、用的是示例数据、做不了的能力。本地电脑下页面依赖同目录 `assets/` 时，要简单提醒用户转发时连目录一起发。
+  - 当用户没有明确的发布需求时：用 `present_files` 这类交付工具给用户交付 HTML，**同一个产物只交付一个 `.html` 文件**——按运行环境选定一种图片引用方式就够了，不要再额外附一份「以防万一」的备份版或压缩包，用户拿到两份不知道该打开哪个。交付说明如实写清：没实现的功能、用的是示例数据、做不了的能力。本地电脑下页面依赖同目录 `assets/` 时，要简单提醒用户转发时连目录一起发。
   
-  - 当用户想要「发布」、「可访问的链接」、「给我链接」时：阅读 `references/lark-apps-publish.md`，将你的 html 文件发布为一个妙搭应用，此时无需交付 html 文件，仅需使用 present_files 交付发布后的 妙搭链接。
+  - 当用户想要「发布」、「可访问的链接」、「给我链接」时：阅读 `references/lark-apps-publish.md`，将你的 html 文件发布成一个 doubao-html 网页，此时无需交付 html 文件，仅需使用 present_files 交付发布后的 doubao-html 链接。
   
-- **修改、参考现有的妙搭应用**：
-  - 当用户给你提供了一个妙搭链接 (形如 https://{xxx}.aiforce.cloud/app/app_{xxxxxxx}/) 的链接，并希望基于此修改或新建时, 阅读 `references/lark-apps-publish.md`。先用 `lark-cli apps +get --app-id <id>` 看 `app_type`：`html` / `modern_html` 是单页 HTML，下载源码、修改、重新发布即可；其他类型使用 `doubao-app-builder` 技能。
+  - **最终给用户的回复不要过长**：最重要的产物是你最终生成的 html 产物，而不是给用户的最终回复，所以在交付了 html 产物后的最终回复不应该太长，**不能超过300字，也不能超过 8 行**，只需要简单介绍一下你生成的 html 产物即可
+
+- **修改、参考已发布的 doubao-html 网页**：
+  - 当用户给你提供了一个 doubao-html 链接（形如 `https://{xxx}.aiforce.cloud/app/app_{xxxxxxx}/`），并希望基于此修改或新建时，阅读 `references/lark-apps-publish.md`。先用 `lark-cli apps +get --app-id <id>` 看 `app_type`：`html` / `modern_html` 是单页 HTML，下载源码、修改、重新发布即可；其他类型使用 `doubao-app-builder` 技能。
   
 
 **改产物**：直接改任务目录里的原文件。
@@ -73,7 +77,7 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 **按用户当前端判断看对应那张**：用户处于电脑端则核对桌面截图，处于手机端则核对移动截图。判断不出端时则默认检查电脑端。
 
-- 输出目录默认 `<html 所在目录>/_shots/`，不属于交付产物，全部自检完且该目录下没有其他文件则可以清理一下。
+- 输出目录默认 `<html 所在目录>/_shots/`，不属于交付产物，**无需删除**——删目录会触发权限确认、打断交付。
 - 只想看一屏用 `--only desktop`。
 - 脚本内部已处理常见坑：`.rv / .fade / [data-aos]` 等滚动揭示元素强制显现（避免 `opacity:0` 截空白）、关掉 `scroll-behavior:smooth`、滚一遍触发 lazy 图片、`networkidle` 不可达时退回 `domcontentloaded`——**不需要另写截图脚本再走一遍**。
 
@@ -117,28 +121,13 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 **表格要显式给列宽**：多列表格加 `table-layout: fixed`，并给**每一列**都写宽度、加起来正好 100%（`<colgroup><col style="width:25%">` 或写在 `th` 上）。漏写一列，`auto` 布局就会把它压到一字宽、中文逐字折行，行高被撑到半屏高，同行其余列跟着变成大片空白。
 
-**图表优先于文字**：能用图表表达的关系不用文字复述；文字与图表并存时，文字只写图表未直接呈现的解读或判断，禁止把图表标签照抄一遍。遇到数据可视化任务多图表组合的看板是更好的选择，图表的生成首选 Echart，当 Echart 无法满足要求时，再考虑手写 SVG
+## 图表及其交互设计方法
 
-**可用图表类型对照**（按内容意图选择，禁止凭美观随机选型）：
-  - 时间轴（Timeline）：阶段演进、路线图、里程碑、事件序列
-  - 桑基图（Sankey）：资源/流量/预算在多个环节间的分配与流转
-  - 流程图（Flowchart）：有明确顺序与分支判断的步骤
-  - 树形图 / 组织架构图：层级归属、分类拆解、问题树
-  - 四象限 / 矩阵图：两个维度交叉的定位与分类（如重要性×紧急性）
-  - 对比表（Comparison Table）：≥3 个对象在同一组维度上的并列对比
-  - 漏斗图（Funnel）：逐级收窄的转化、筛选、决策过程
-  - 关系网络图（Network）：多对多关系、生态位、利益相关方
-  - 甘特图（Gantt）：任务在时间维度上的并行与依赖
-  - 堆叠条 / 百分比堆叠：构成占比随类别或时间的变化
-  - 折线图：连续变量的趋势与拐点
-  - 柱状图：离散类别的量级对比
-  - 散点图 / 气泡图：两至三个变量的相关性与分布
-  - 热力图：二维矩阵上的密度或强度分布
-  - 地图：地理维度的分布与流向
+**图表服务于内容理解与判断**：依据任务和数据决定图表类型、数量与组合。图表呈现关系与证据，文字只写图表未直接呈现的解读或判断，**禁止把图表标签照抄一遍**。图表首选 ECharts；仅当其无法满足所需表达或交互时，再使用 D3 或 SVG。
 
-  选型判断顺序：先问"要表达什么关系"（演进 / 流转 / 层级 / 对比 / 构成 / 趋势 / 分布），再选图表；禁止先选图表再往里塞数据。
+**设计图表及其交互前，统一从 [references/chart/atlas.md](references/chart/atlas.md) 开始**：先确定图表选型与信息组织，再按其中的指引选读图内交互或多视图体验参考。
 
-**扩展图表类型（弦图 / 力导向 / 旭日 / 雷达 / 日历热力 / Bump / Waffle / Slope / Small multiples 等）、图表红线（饼图 > 5、双 Y 轴、3D 图、词云、蛛网雷达等几乎总是错的陷阱）、库选型（D3 / Observable Plot / Rough.js / Deck.gl 等 ECharts 覆盖不到的场景）、数据叙事模式（scrollytelling、annotated chart、linked views）见 `references/chart-atlas.md`**。
+## 网页交互设计
 
 **禁止僵尸按钮**：视觉上像能点的元素——按钮、导航项、卡片入口——必须有真实的 click handler、跳转或占位反馈（如 toast 提示"演示中"）。禁止 `<button>` 无 `onclick`/`addEventListener`、`<a>` 无 `href`（或 `href="#"` / `href="javascript:void(0)"` / `href="javascript:;"` 却没实际 handler）、`<div class="nav-item">` 只挂 `cursor:pointer` 却什么都不绑——这些是原型页里最高频的 slop，要么给每个入口挂真实切页/toast，要么不做这个按钮，**宁愿不要按钮也不做僵尸按钮**
 
@@ -148,17 +137,17 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 需要在既有色板上扩色时用 oklch 派生——固定 hue 调 lightness / chroma，或沿同一 L / C 轴换 hue——不要凭空发明一个新 hex 塞进去。
 
-动手前读 `references/frontend-design.md` 确立视觉方向：有品牌或既有 UI 就对齐它的视觉语言，从零起步就从主题和材料里立一个契合的方向。已给参考图、品牌体系、设计规范或媒介 reference 时以它们为准。方向实在推不出、项目又是从零起的，先问清调性、受众、颜色、情绪——**在推不出方向时硬选，slop 就是这么来的**。
+动手前读 `references/design/frontend-design.md` 确立视觉方向：有品牌或既有 UI 就对齐它的视觉语言，从零起步就从主题和材料里立一个契合的方向。已给参考图、品牌体系、设计规范或媒介 reference 时以它们为准。方向实在推不出、项目又是从零起的，先问清调性、受众、颜色、情绪——**在推不出方向时硬选，slop 就是这么来的**。
 
 字体选少量但与主题匹配的，层级靠字号、字重、行长和语义断行建立，不靠堆字体数量。背景与配色不局限于纯黑纯白，可以按内容属性和叙事节点变化，但一致性要来自共享色板和明确的颜色关系，不是逐页随机换色；强调色数量克制、同属一个体系。视觉丰富度服务内容：既不堆无信息价值的装饰，也不把「克制」做成大量留白加同一种构图。
 
-**禁止无意义留白与失衡布局**：页面各区块须在视觉上均衡分布，禁止出现大面积无内容留白、单侧堆积、上重下空或下重上空等失衡结构；留白是用来服务于分组、呼吸或强调，不得用于填充版面。特殊布局设计除外，在特殊设计当中可以豁免。卡片组恰好 4 张时排成 2 × 2 或一行 4 个，别留 3 + 1。
+**禁止无意义留白与失衡布局**：页面各区块须在视觉上均衡分布，禁止出现大面积无内容留白、单侧堆积、上重下空或下重上空等失衡结构；留白是用来服务于分组、呼吸或强调，不得用于填充版面。特殊布局设计除外，在特殊设计当中可以豁免。卡片组在**每个断点**的列数都不能让最后一行只剩 1 个（`N % C == 1`）——4 张走 4 → 2 → 1、跳过 3 列，别留 3 + 1。
 
 **避免 AI slop**：滥用渐变、圆角＋左边框强调容器、被用滥的字体（Inter、Roboto、Arial、Fraunces）。
 
-**做 hero / signature element / 复杂动效 / Canvas / WebGL / 进阶排印 / 材质纹理 / 地图 / 音频 / 音画同步 / 数学公式时先读 `references/visual-techniques.md`**——里面有动效工具链（IntersectionObserver / GSAP / Lottie / View Transitions / Scrollama / CSS scroll-timeline）、Canvas/WebGL 选型（three.js / p5.js / matter.js）、进阶排印（variable font / background-clip / SVG textPath / feTurbulence）、材质纹理层（grain / duotone / halftone）、地图（Leaflet / MapLibre / D3-geo / Deck.gl + 免费瓦片源）、Web Audio（Tone.js / 原生 AudioContext / sonification）、动画+声音协同（音频主时钟、三种协同模式、user gesture 门槛、mute 与 reduced-motion 双通道）、KaTeX 数学公式，以及每一层对应的 slop 红线（毛玻璃、glow border、粒子网背景、data-aos 全站铺、Leaflet 蓝大头针、Mercator 全球图、rainbow 色板、音频自动播放、音乐可视化跳舞背景等）。
+**做 hero / signature element / 复杂动效 / Canvas / WebGL / 进阶排印 / 材质纹理 / 地图 / 音频 / 音画同步 / 数学公式时先读 `references/design/visual-techniques.md`**——里面有动效工具链（IntersectionObserver / GSAP / Lottie / View Transitions / Scrollama / CSS scroll-timeline）、Canvas/WebGL 选型（three.js / p5.js / matter.js）、进阶排印（variable font / background-clip / SVG textPath / feTurbulence）、材质纹理层（grain / duotone / halftone）、地图（Leaflet / MapLibre / D3-geo / Deck.gl + 免费瓦片源）、Web Audio（Tone.js / 原生 AudioContext / sonification）、动画+声音协同（音频主时钟、三种协同模式、user gesture 门槛、mute 与 reduced-motion 双通道）、KaTeX 数学公式，以及每一层对应的 slop 红线（毛玻璃、glow border、粒子网背景、data-aos 全站铺、Leaflet 蓝大头针、Mercator 全球图、rainbow 色板、音频自动播放、音乐可视化跳舞背景等）。
 
-**设计 3D 场景读 `references/3d-design.md`**，掌握材质、阴影、光照、运镜的设计方法。
+**设计 3D 场景读 `references/design/3d-design.md`**，掌握材质、阴影、光照、运镜的设计方法。
 
 **不用 emoji**：尽可能不要使用任何 emoji，也不作图标、不作装饰、不放进数据，除非用户品牌资产明确包含。需要图标体系时用内联 SVG（`<svg viewBox="0 0 24 24">`）建立风格连贯的图标语言。
 
@@ -166,4 +155,27 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 在既有 UI 上增补时，先理解并遵循它的视觉语汇：文案风格、配色、hover 状态、卡片布局、密度。
 
-**最终给用户的回复不要过长**：最重要的产物是你最终生成的 html 产物，而不是给用户的最终回复，所以在交付了 html 产物后的最终回复不应该太长，**不能超过300字，也不能超过 8 行**，只需要简单介绍一下你生成的 html 产物即可
+## 参考文档地图
+
+### `references/`
+
+| 文档 | 何时读 |
+| --- | --- |
+| [`lark-apps-publish.md`](references/lark-apps-publish.md) | 用户要「发布」「可访问的链接」，或给了 doubao-html 链接要基于它改 |
+| [`windows-compat.md`](references/windows-compat.md) | SystemPrompt 出现 `Computer OS: Windows`——**必须完整 Read**，否则大面积报错 |
+
+### `references/design/`
+
+| 文档 | 何时读 |
+| --- | --- |
+| [`frontend-design.md`](references/design/frontend-design.md) | **动手前必读**，确立视觉方向 |
+| [`visual-techniques.md`](references/design/visual-techniques.md) | hero / signature element / 复杂动效 / Canvas / WebGL / 进阶排印 / 材质纹理 / 地图 / 音频 / 音画同步 / 数学公式 |
+| [`3d-design.md`](references/design/3d-design.md) | 设计 3D 场景（材质、阴影、光照、运镜） |
+
+### `references/chart/`
+
+| 文档 | 何时读 |
+| --- | --- |
+| [`atlas.md`](references/chart/atlas.md) | **做图表与图表交互的统一入口**：先定选型与信息组织，再按其中指引选读下面两份 |
+| [`reading-interactions.md`](references/chart/reading-interactions.md) | 常规读图、固定比较、总览查看某个对象的明细（由 atlas 分流，不单独作入口） |
+| [`experience-examples.md`](references/chart/experience-examples.md) | 从同一批记录筛群体做多维比较，或明确的教学实验（同上） |

@@ -69,7 +69,7 @@
 
 - `+role-list` 用于定位角色，返回角色摘要；系统角色和自定义角色都可能出现在列表中。
 - `+role-get` 返回完整权限配置。更新前先用它确认当前 `role_name`、`role_type` 和已有权限结构。
-- `+role-update` 是 delta merge，只提交需要变更的字段；但 `role_name` 和 `role_type` 仍要带当前值，避免误改角色身份信息。
+- `+role-update` 的合并规则如下：未传入的 `base_rule_map`、`table_rule_map`、`dashboard_rule_map`、`docx_rule_map` 等权限模块保持不变；`table_rule_map` 内也按表增量合并，未提交的数据表保持不变。提交的 `table_rule_map.<table>` 则整体替换，不对其内部字段递归合并。先用 `+role-get` 读取目标表的完整 `TableRule`，在该对象上修改目标字段，再提交该表的完整规则，无需带回其他表；`role_name` 和 `role_type` 仍要带当前值。
 - `+role-delete` 仅适用于自定义角色；系统角色可以在权限上限内调整配置，但不可删除。
 
 ---
@@ -194,11 +194,11 @@
 | `record_rule` | RecordRule | 记录权限配置 |
 | `field_rule` | FieldRule | 字段权限配置 |
 
-**`+role-create` 硬约束**:
+**`+role-create` / `+role-update` 的 TableRule 硬约束**:
 
-- 当 `perm` 为 `no_perm` 时，不要设置 `view_rule`、`record_rule`、`field_rule`。
-- 当 `perm` 为其他值时，必须同时提供完整的 `view_rule`、`record_rule`、`field_rule`，缺少任意一项都会导致创建失败。
-- `+role-update` 是 delta merge，只提交要修改的字段；不要为局部更新补造未变更配置。
+- 当 `perm` 为 `manage` 或 `no_perm` 时，后端不要求 `view_rule`、`record_rule`、`field_rule`；不要为通过校验而补造这些嵌套规则。
+- 当 `perm` 为 `edit` 或 `read_only` 时，必须同时提供完整的 `view_rule`、`record_rule`、`field_rule`，缺少任意一项都会导致校验失败。
+- `+role-update` 可省略未修改的顶层字段和未修改的数据表；一旦在 `table_rule_map` 中提交某张表，就必须从 `+role-get` 回读结果复制该表完整 `TableRule` 后再修改，不能只发送 `{"perm":"..."}` 之类的嵌套 patch。
 
 ---
 

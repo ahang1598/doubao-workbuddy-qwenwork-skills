@@ -1,5 +1,3 @@
-> ⚠️ **强制前置条件**：本文档共 165 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
-
 # Lark Sheet Float Image
 
 > **选浮动图还是单元格图？只看一条**：这张图是不是**属于某条记录、要随那行一起排序 / 筛选 / 增删**？
@@ -23,7 +21,7 @@
 典型工作流：先读取现有浮动图片了解配置 → 执行创建/更新/删除 → **必须再次读取验证结果**。
 
 **常见配置错误（必须注意）**：
-- **单元格图片 vs 浮动图片选择错误（最易选错）**：图与某条记录一一对应、要随行排序 / 筛选 / 增删时，应走 `+cells-set-image`（见顶部判别），用浮动图会错位。
+- **单元格图片 vs 浮动图片选择错误**：图与某条记录一一对应、要随行排序 / 筛选 / 增删时，应走 `+cells-set-image`（见顶部判别），用浮动图会错位。
 - **图片位置参数要精确**：锚点单元格的行列索引和偏移量决定了图片位置，设置不当会导致图片遮挡数据
 - **创建后必须验证**：调用 `+float-image-list` 确认图片位置和大小正确
 
@@ -102,8 +100,6 @@ _公共四件套 · 系统：`--yes`、`--dry-run`_
 
 公共四件套：所有 shortcut 顶部排列 `--url` / `--spreadsheet-token` / `--sheet-id` / `--sheet-name`（XOR）。浮动图片是 sheet 级对象——和单元格内嵌图片不同（后者走 `+cells-set`）。
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ### `+float-image-list`
 
 ```bash
@@ -160,6 +156,6 @@ lark-cli sheets +float-image-delete --url "..." --sheet-id "$SID" --float-image-
 
 - `Validate`：XOR 公共四件套；`+float-image-create` 要求 `--image` / `--image-token` / `--image-uri` **恰好给一个**，`--position-row/col` 与 `--size-width/height` 必填且为合法整数；传 `--image` 时还会校验路径安全（绝对路径 / 越出工作目录会被拒，`--dry-run` 同样拦）。`+float-image-update` 必须 `--float-image-id`，并和 create 一样必填 `--image-name` / `--position-{row,col}` / `--size-{width,height}`（缺任一核心字段本地直接报错，不会静默发 0）；图片源 `--image-token` / `--image-uri` 可省（省略保留原图），给则二选一；`+float-image-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：写操作输出"将要 POST/PATCH/DELETE 的 float_image 请求模板"；传 `--image` 时会多打印一步本地图片上传（`POST /open-apis/drive/v1/medias/upload_all`，`parent_type=sheet_image`）。
-- `Execute`：写后不自动回读；如需确认，自行调用 `+float-image-list --float-image-id <id>` 比对新位置 / 尺寸。
+- `Execute`：写后不自动回读；create/update 后必须调用 `+float-image-list --float-image-id <id>` 比对位置与尺寸（它不回传 `image_name`，名称无从核对）；delete 后 list 确认目标不存在。
 
-===== 全文完（共 165 行）=====
+===== 全文完（共 161 行）=====

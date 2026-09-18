@@ -39,7 +39,7 @@
 | `type` | string | 是 | 步骤类型，见下方枚举 |
 | `title` | string | 否 | 步骤标题 |
 | `children` | StepChildren | 否 | 子关系边，承担所有分支/循环 |
-| `next` | string | null | 否 | 线性后继节点 ID；`null` 表示流程结束 |
+| `next` | string | null | 否 | 线性后继节点 ID；`null` 表示流程结束。`IfElseBranch` 不支持公共后继，省略或设为 `null` |
 | `data` | object | 是 | 步骤详细配置，按 `type` 区分，见后续各节 |
 
 > **总原则**：连线写 `children`，扩展标识写 `meta`，输入参数写 `data`。
@@ -108,9 +108,8 @@
 | 需求描述 | 触发器 |
 |---------|--------|
 | 新增记录时 | `AddRecordTrigger` |
-| 字段变为特定值时（**仅修改**） | `SetRecordTrigger` |
-| **新增或修改**都触发 | `ChangeRecordTrigger` |
-| 拿不准用哪个 | `ChangeRecordTrigger` |
+| 指定字段发生修改时（仅修改，可限定修改后的值） | `SetRecordTrigger` |
+| 新增或修改记录，且满足配置的筛选条件时 | `ChangeRecordTrigger` |
 
 > ⚠️ `SetRecordTrigger` 仅监听修改，`ChangeRecordTrigger` 同时监听新增 + 修改。
 
@@ -155,7 +154,7 @@
   "table_name": "订单表",
   "watched_field_name": "状态",
   "trigger_control_list": ["pasteUpdate", "automationBatchUpdate"],
-  "condition_list": [] /* AndCondition 数组 */ 
+  "condition_list": [] /* AndCondition 数组 */
 }
 ```
 
@@ -164,7 +163,7 @@
 | `table_name` | 是 | 监控的数据表名 |
 | `watched_field_name` | 是 | 监控的字段名 |
 | `trigger_control_list` | 否 | 触发控制，可选值：`pasteUpdate` / `automationBatchUpdate` / `syncUpdate` / `appendImport` / `openAPIBatchUpdate` |
-| `condition_list` | 否 | 过滤条件数组，数组中每个元素为 AndCondition 结构，多个 AndCondition 之间为 OR 关系 |
+| `condition_list` | 否 | 数组中的每个元素表示一个条件组，条件组之间为 OR，组内 conditions 之间必须为 AND |
 
 ### ChangeRecordTrigger
 
@@ -172,15 +171,26 @@
 {
   "table_name": "任务表",
   "trigger_control_list": [],
-  "condition": null
+  "condition_list": [
+    {
+      "conjunction": "and",
+      "conditions": [
+        {
+          "field_name": "预计工时",
+          "operator": "isGreater",
+          "value": [{ "value_type": "number", "value": 0 }]
+        }
+      ]
+    }
+  ]
 }
 ```
 
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| `table_name` | 是 | 监控的数据表名 |
+| 字段 | 必填 | 说明                                                                              |
+|------|------|---------------------------------------------------------------------------------|
+| `table_name` | 是 | 监控的数据表名                                                                         |
 | `trigger_control_list` | 否 | 触发控制，可选值：`pasteUpdate` / `automationBatchUpdate` / `syncUpdate` / `appendImport` |
-| `condition_list` | 否 | 过滤条件数组，数组中每个元素为 AndCondition 结构，多个 AndCondition 之间为 OR 关系 |
+| `condition_list` | 是 | 不能为空；数组中的每个元素表示一个条件组，条件组之间为 OR，组内 conditions 之间必须为 AND                          |
 
 ### SetRecordTrigger
 
@@ -204,7 +214,7 @@
 | `record_watch_info` | 否  | 记录级过滤条件（修改前值匹配），为空则监听全部 |
 | `field_watch_info` | 是  | 字段级监控条件列表，至少一个 |
 | `trigger_control_list` | 否  | 触发控制，可选值：`pasteUpdate` / `automationBatchUpdate` / `syncUpdate` / `appendImport` |
-| `condition_list` | 否  | 过滤条件数组，数组中每个元素为 AndCondition 结构，多个 AndCondition 之间为 OR 关系 |
+| `condition_list` | 否  | 数组中的每个元素表示一个条件组，条件组之间为 OR，组内 conditions 之间必须为 AND |
 
 `FieldWatchItem`：
 
@@ -257,7 +267,7 @@
 | `offset` | 是 | 提前/延后的偏移量（触发时间 = 日期字段时间 + `offset` × `unit`，因此负数=提前、正数=延后；范围由 `unit` 决定）：`MINUTE` ∈ {0, 5, 15, 30, -5, -15, -30}；`HOUR` ∈ [-6, -1] ∪ [1, 6]；`DAY` ∈ [-7, 7]；`WEEK` ∈ [-7, -1] ∪ [1, 7]；`MONTH` ∈ [-7, -1] ∪ [1, 7] |
 | `hour` | 是 | 触发小时 (0-23)，默认 9 |
 | `minute` | 是 | 触发分钟 (0-59)，默认 0 |
-| `condition_list` | 否 | 过滤条件数组，数组中每个元素为 AndCondition 结构，多个 AndCondition 之间为 OR 关系  | 
+| `condition_list` | 否 | 数组中的每个元素表示一个条件组，条件组之间为 OR，组内 conditions 之间必须为 AND  |
 
 
 ### ButtonTrigger
@@ -499,7 +509,7 @@
 
 ### IfElseBranch
 
-`children.links` 包含 `if_true` 和 `if_false` 两条边，`next` 指向两个分支汇合后的后继节点。
+`children.links` 包含 `if_true` 和 `if_false` 两条边。`IfElseBranch` 不支持单一公共后继节点：其 `next` 省略或设为 `null`，两个分支尾部也不能指向同一个 step ID。每个分支必须维护独立链路；相同后续动作与共享节点要求的处理见 [IfElseBranch 使用边界](lark-base-workflow-guide.md#示例-3-条件分支ifelsebranch)。
 
 **如果涉及到复杂的多分支场景(分支数目 >= 3时)，你应该采用 SwitchBranch，而不是嵌套的 IfElseBranch**
 
@@ -1082,7 +1092,7 @@ $.{stepId}.{fieldId}.fileToken    → 文件 Token 列表（array<string>，仅�
           { "kind": "if_false", "to": "step_4" }
         ]
       },
-      "next": "step_5",
+      "next": null,
       "data": {
         "condition": {
           "conjunction": "or",
@@ -1124,18 +1134,6 @@ $.{stepId}.{fieldId}.fileToken    → 文件 Token 列表（array<string>，仅�
         "ref_info": { "step_id": "step_1" },
         "field_values": [
           { "field_name": "审批状态", "value": [{ "value_type": "text", "value": "已通过" }] }
-        ]
-      }
-    },
-    {
-      "id": "step_5",
-      "type": "GenerateAiTextAction",
-      "title": "AI 生成订单处理日报",
-      "next": null,
-      "data": {
-        "prompt": [
-          { "value_type": "text", "value": "请根据以下订单信息生成一份简要的处理日报：" },
-          { "value_type": "ref", "value": "$.step_1.fieldxxx" }
         ]
       }
     }

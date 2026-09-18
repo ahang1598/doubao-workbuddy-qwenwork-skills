@@ -39,7 +39,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="use-iframe" content="true">
       <meta name="html-box-height-mode" content="auto">
-      <meta name="description" content="内容摘要，会导出为 html5-block 的 alt 属性，帮助模型理解该 HTML 块的用途">
+      <meta name="description" content="内容摘要，会导出为 html5-block 的 alt 属性，帮助模型理解该 HTML 块的用途；摘要里不要出现双引号，避免提前截断">
       <title></title>
     </head>
     <body>
@@ -86,3 +86,6 @@
 - 文本转义：`<` → `&lt;`，`>` → `&gt;`，`&` → `&amp;`，换行符 `\n` → `<br/>`。
 - 错误：`&lt;p&gt;内容&lt;/p&gt;`
 - 正确：`<p>A &amp; B 的对比：1 &lt; 2</p>`
+
+## 特化规则
+- 禁止文档内容里出现 `<RichMediaReference>` 标签：该标签表示来源，可根据要求用 `<a>`、`<cite type="citation">` 替代，必要时保留标题，或用简短文字替代，避免出现长 URL，影响美观。

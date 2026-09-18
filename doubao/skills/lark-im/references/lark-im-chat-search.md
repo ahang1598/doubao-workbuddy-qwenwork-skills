@@ -74,6 +74,10 @@ With `--page-all`, `--page-token` sets the starting cursor. If `meta.pagination.
 | `external` | Whether the chat is external |
 | `chat_status` | Chat status (`normal` / `dissolved` / `dissolved_save`) |
 
+## Citation Requirements
+
+Whenever the final response uses, paraphrases, or summarizes information returned by a tool, preserve the original URL from the tool result’s `citations` field (inside `<url>...</url>`) and cite it immediately after the corresponding statement using `<RichMediaReference>["url"]</RichMediaReference>`.
+
 ## Filtering muted chats
 
 When the flag is set, the JSON envelope gains a `filter` sub-object (absent otherwise, so existing consumers are unaffected); `fetched_count == returned_count + filtered_count` always holds:

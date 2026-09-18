@@ -88,6 +88,10 @@ lark-cli wiki +node-list --space-id 6946843325487912356 --parent-node-token wikc
 - Treat `invalid_parameters` (`space_id is not int`, `invalid page_token`), `not_found` (`node not found by parent node token`), and `permission_denied` as terminal for the current arguments. For `131006 permission_denied`, the user identity lacks access to the target space or parent node; this is resource access, not app scope authorization. Do not retry the same request, reauthorize, or switch identity as trial and error. Ask the resource owner or wiki administrator to grant read access, or use an accessible resource.
 - For `rate_limit`, stop immediate retries and retry later with exponential backoff or a smaller `--page-limit`.
 
+## Citation Requirements
+
+Whenever information returned by the tool is used, paraphrased, or summarized in the final response, preserve the original URL enclosed in `<url>...</url>` in the tool result's `citations` field and append it immediately after the corresponding statement in the following format: `<RichMediaReference>["url"]</RichMediaReference>`.
+
 ## Required Scope
 
 `wiki:node:retrieve`

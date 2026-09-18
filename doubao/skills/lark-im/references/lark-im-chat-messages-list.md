@@ -15,6 +15,9 @@ lark-cli im +chat-messages-list --chat-id oc_xxx
 # Get direct messages with a user (pass open_id and resolve p2p chat_id automatically)
 lark-cli im +chat-messages-list --user-id ou_xxx
 
+# Read message context as compact Markdown
+lark-cli im +chat-messages-list --chat-id oc_xxx --concise
+
 # Specify a time range (ISO 8601)
 lark-cli im +chat-messages-list --chat-id oc_xxx --start "2026-03-10T00:00:00+08:00" --end "2026-03-11T00:00:00+08:00"
 
@@ -48,6 +51,7 @@ lark-cli im +chat-messages-list --chat-id oc_xxx --format json
 | `--page-limit <n>` | No | Maximum pages fetched by `--page-all` (default 10, range 1-1000) |
 | `--no-reactions` | No | Skip auto-fetching the `reactions` block |
 | `--download-resources` | No | Download message resources (image/file/audio/video/media + post-embedded, excluding stickers) into `./lark-im-resources/` and attach a `resources` block. Off by default; no extra requests when omitted |
+| `--concise` | No | Render compact Markdown for message context |
 
 > Rule: `--chat-id` and `--user-id` are mutually exclusive. You must provide exactly one of them.
 
@@ -106,6 +110,12 @@ Each message contains:
 | `updated` | Whether the message has been edited after sending |
 | `mentions` | Array of @mentions in the message; each item contains `{id, key, name}`. Present only when the message contains @mentions |
 | `thread_id` | Thread ID (`omt_xxx`) if the message has replies in a thread. Present only when replies exist |
+
+## Citation Requirements
+
+Whenever the final response uses, paraphrases, or summarizes information returned by a tool, preserve the original URL from the tool result’s `citations` field (inside `<url>...</url>`) and cite it immediately after the corresponding statement using `<RichMediaReference>["url"]</RichMediaReference>`.
+
+`--concise` outputs plain Markdown and does not include the JSON envelope's `citations` field. When citation sources must be preserved, omit `--concise` and use the default JSON output.
 
 ## Pagination (`has_more` / `page_token`)
 

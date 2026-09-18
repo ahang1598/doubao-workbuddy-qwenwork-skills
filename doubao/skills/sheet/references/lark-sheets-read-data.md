@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 322 行，指令说明和约束分散在各部分。必须先读到末行「全文完」，再执行任何其他操作；即使已找到当前任务所需的指令，也不得提前停止。未见该标记时，下一步必须继续调用 Read，在读完之前不得调用 Bash、`--help` 或任何其他工具。读取工具能一次取全文就一次取全，被截断则调整偏移量（`offset`）续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 320 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Read Data
 
@@ -13,7 +13,7 @@
 - **空值与 0 / "0" 混杂**
 - **大小写 / 全角半角差异**（"办公费" vs "办公费 "、"Sales" vs "sales"）
 
-预探后必须在公式 / 筛选条件里用 `IFERROR` / `IFS` / 提取数值的辅助列处理所有变体；不能为了通过 head(10) 的样本就直接落地。一旦设计的逻辑只覆盖 sample 中出现的格式，就属于违规。
+预探后必须在公式 / 筛选条件里用 `IFERROR` / `IFS` / 提取数值的辅助列处理所有变体；不能为了通过 head(10) 的样本就直接落地。设计的逻辑只覆盖 sample 中出现的格式，在 sample 外的行必然出错。
 
 ⚠️ **大数字（15 位以上的身份证 / 参考号 / 流水号）做去重 / 比较时禁止用 `+csv-get` 的显示值**：`+csv-get` 返回的是**格式化显示值**，15 位以上数字会被显示成 `1.04E+14` 这类科学计数法——多个本不相同的号在显示层全变成同一个 `1.04E+14`，拿去判重会**整列误判为重复**。比较 / 去重 / 匹配大数字时必须改用 `+cells-get`（取原始精确值）或把该列读为文本，禁止用 csv-get 的科学计数显示值（反例：大批长参考号被显示成科学计数后，互不相同的号全变成同一个值，被当成整列重复并错误高亮）。
 
@@ -40,7 +40,7 @@
 
 | 脚本 | 底层 shortcut | 适用场景 |
 | --- | --- | --- |
-| `scripts/lark_inspect_workbook.py` | `+workbook-info` / `+sheet-info` / `+csv-get` | 在线表格第一步预检：拿 sheet 清单、布局、预览、`current_region` |
+| `scripts/lark_inspect_workbook.py` | `+workbook-info` / `+sheet-info` / `+csv-get` | 飞书表格第一步预检：输出所有 sheet summary、布局、预览和 `data.selection`；未点名时仅从 `resource_type=sheet && is_hidden=false` 的 visible_grid 候选中选，唯一才自动使用，多候选不得按 index 猜。 |
 | `scripts/lark_detect_subtables.py` | `+workbook-info` / `+sheet-info --include merges,hidden_rows,hidden_cols` / 小窗口 `+csv-get` | 同一 sheet 可能有多个表格区域、汇总块、备注块时，在**已知且未截断的窗口**内识别候选子表 range |
 | `scripts/lark_profile_table.py` | `+csv-get` / `+sheet-info --include hidden_rows,hidden_cols`（默认包含隐藏行列时；必要时再手工 `+cells-get` / `+table-get`） | 对**已确认且未截断的候选 range**做表头、数据范围、列类型、特殊行画像，并输出 `summary` / `field_map` / `risk_warnings` / `write_hints` |
 
@@ -58,10 +58,10 @@
 推荐链路（大表先定窗口，脚本不接受截断结果）：
 
 ```bash
-python scripts/lark_inspect_workbook.py --url "<表格URL>"
+python3 scripts/lark_inspect_workbook.py --url "<表格URL>"
 # 先用 +workbook-info 和小窗口 +csv-get 确认真实 sheet、列边界和起始区域；大表按行窗口推进。
-python scripts/lark_detect_subtables.py --url "<表格URL>" --sheet-name "<子表名>" --range "A1:H200"
-python scripts/lark_profile_table.py --url "<表格URL>" --sheet-name "<子表名>" --range "A1:H200"
+python3 scripts/lark_detect_subtables.py --url "<表格URL>" --sheet-name "<子表名>" --range "A1:H200"
+python3 scripts/lark_profile_table.py --url "<表格URL>" --sheet-name "<子表名>" --range "A1:H200"
 ```
 
 `lark_detect_subtables.py` / `lark_profile_table.py` 的 `+csv-get` 命中 `has_more` 会以错误退出并报告已读取的 `actual_range`，绝不基于半截数据给出候选范围或画像。遇到此错误，以 `actual_range` 为已完成窗口，缩小列数或从其末行之后继续读；跨窗口的候选范围、汇总行和写入落点必须再用 CLI 核对，不能把单个窗口结果当整表结论。
@@ -97,11 +97,11 @@ detect 最多确认 10 个跨窗口合并锚点；超限会在 `warnings` 中说
 
 - `write_hints.safe_append_col` 只是候选追加列，不代表绝对安全。新增列或覆盖区域前，必须用 `+csv-get` / `+cells-get` / `+sheet-info` 核对该列为空、没有隐藏列/公式/样式/对象依赖，且符合用户要求的落点。该字段已自动跳过隐藏列（跳过的列名列在 `write_hints.skipped_hidden_cols`）——注意 `--skip-hidden` 下隐藏列根本不出现在返回网格里，若它们正好都贴在数据右边缘，`data_range_has_col_gaps` 也不会告警，所以这层跳过是唯一的保护，别绕过它自己按「最后一列 +1」推落点。
 
+⚠️ **解析 CLI 输出只读 stdout**：数据走 stdout、诊断与警告走 stderr，解析 JSON 时别用 `2>&1` 合流（警告混进去会解析失败），用管道或单独重定向 stdout。命令失败先读 stderr 再调整，别原样重发。
+
 ⚠️ **大数据优先落盘、别灌进上下文**：`+csv-get` / `+cells-get` 都受调用方 Bash / 终端的单命令 stdout 输出上限约束（常见默认约 30000 字符，超过会被截断或转存为文件）。纯值分析优先用 `+csv-get` 按 `--range` 行窗口（`A1:Z500` / `A501:Z1000` …）分批重定向到文件 + 本地脚本处理 + `+csv-put` 分批回写；若确实要让结果直接进上下文又不想触发转存，给任一命令把 `--max-chars`（默认 500000）调小到略低于该上限（如 `25000`），CLI 改为优雅截断 + `has_more` 分页。
 
 > **落盘不等于读全**：`--output-path` 只是把上限从 stdout 口径放宽到有界的 2000 万字符（读取链路非流式，该上限是内存保护），不是无限。stdout 回执带 `complete` 字段——`complete:false` 时另有 `truncated` 与提示，文件里只有半截数据；多子表读取还会给 `unread_sheets` 列出预算耗尽前没读到的子表。**拿到回执先看 `complete`，不要默认整表已落全。**
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 **`+csv-get` 返回值核心设计**：
 - `annotated_csv` — **CSV 数据唯一入口**。每一逻辑行前加 `[row=N] ` 前缀（N = 真实表格行号）。任何需要行号的下游操作（合并、写入、清空、格式化、插入/删除、条件格式、筛选、图表/透视表范围、搜索替换等），**行号一律直接从 `[row=N]` 读取**。若需要纯 CSV（如喂给本地脚本做解析），去前缀即可：`line.replace(/^\[row=\d+\] /, '')`。
@@ -174,6 +174,8 @@ _公共四件套 · 系统：`--dry-run`_
 | `--output-path` | string | optional | 把完整读取结果写入本地路径（如 `./out.json`），文件内容为 data 载荷的 JSON；stdout 只回一个含 output_path/字节数的确认信息。**一旦设置，字符上限自动放宽到有界的 2000 万字符**（覆盖 --max-chars 默认），并非无限——读取链路非流式，该上限是内存保护；显式 --max-chars 优先。stdout 回执带 `complete` 字段（命中上限时另有 `truncated` 与提示），据此判断文件是否完整，不要默认整表已落全。省略时按常规把结果打到 stdout。 |
 | `--skip-hidden` | bool | optional | 跳过隐藏行列，默认 `false` |
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+dropdown-get`
 
 _公共四件套 · 系统：`--dry-run`_
@@ -206,8 +208,6 @@ _公共：URL/token（无 sheet 定位） · 系统：`--dry-run`_
 | `--max-chars` | int | optional | 单次返回字符上限，默认 500000（兜底防爆）。底层工具即使不传也有约 50000 的默认截断，故此处显式发送以放宽；要整表读取请用 --output-path 落盘（上限自动放宽到有界的 2000 万字符，非无限；回执 complete 字段说明是否完整）。 传 0 表示「不自设上限」，等价于不传（仍是 500000 / 落盘时 2000 万），不会退回底层工具那个更小的默认截断。 |
 | `--output-path` | string | optional | 把完整读取结果写入本地路径（如 `./out.json`），文件内容为 data 载荷的 JSON；stdout 只回一个含 output_path/字节数的确认信息。**一旦设置，字符上限自动放宽到有界的 2000 万字符**（覆盖 --max-chars 默认），并非无限——读取链路非流式，该上限是内存保护；显式 --max-chars 优先。stdout 回执带 `complete` 字段（命中上限时另有 `truncated` 与提示），据此判断文件是否完整，不要默认整表已落全。省略时按常规把结果打到 stdout。 |
 | `--no-header` | bool | optional | 把第一行当数据而非表头（列名取 col1/col2 …） |
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ## Examples
 
@@ -256,7 +256,7 @@ lark-cli sheets +cells-get --url "https://example.feishu.cn/sheets/shtXXX" --she
 
 `+table-put`（写入侧，见 write-cells reference）的镜像：把表格读回与 `--sheets` 完全同构的 typed 协议（`sheets[]` + `columns:[列名]` + `data:[[行]]` + `dtypes:{列名:pandas_dtype}` + `formats?:{列名:number_format}` + `range`），可直接喂回 `+table-put` 或一行还原 DataFrame。
 
-**默认（不带 `--range`）读取整张子表的完整 used range**：会跨过表中部的整行空行 / 整列空列，覆盖到真实数据边界。每个子表都回传实际读取的 `range`（如 `A1:F10`）。**截断信号分三层**：① 子表数据被 `max_chars` 裁掉时，该子表带 `truncated: true` + `truncation_warning`；② 字符预算耗尽导致后续整表一行未读时，**顶层**也带同组字段（按提示改用 `--sheet-name` 单表重跑或提高 `--max-chars`）；③ `--output-path` 落盘模式以 stdout 回执的 `complete`（命中上限时另有 `truncated`）判断文件完整。**任何一层都没报截断，也不等于逻辑读全**——used range 探测在特殊布局（大段整空行 / 空列）下可能偏窄：拿 `range` 连同返回 `data` 的实际行数、关键末行 / 末日期，与源数据行列数（`+workbook-info` / 源 xlsx）交叉核对，确认覆盖真实边界。仍要精确控制范围时显式传 `--range`；分段续读时配 `--no-header`，表头行与各段 dtypes 需自行拼接对齐。
+**默认（不带 `--range`）先按整张子表物理网格探测 used range**：可跨过表中部空行 / 空列定位真实数据边界，再读取该区域。仍受 `--max-chars` 上限约束；返回 `truncated=true` 或 `complete=false` 时，文件/响应只有部分数据，改用 `--output-path`、提高上限或按 sheet/range 续读。每个子表的 `range` 只表示本次目标区域，不能单独证明内容已完整返回。
 
 列类型从每列 `number_format` 推断（日期格式→`date`/`datetime64[ns]`、数值→`number`/`float64`、bool→`bool`），`date` 列的序列号转回 ISO `yyyy-mm-dd`——日期、数字往返不丢类型。**列类型只在该列所有非空值一致时才定（`number` / `date` / `bool`）；一列混了类型（如数字列混入「暂无」、日期列混入裸数字）会降为 `string`（dtypes 输出 `object`），让 `dtypes` 与 `data` 里每个值自洽——能 round-trip 回 `+table-put`、不让 pandas `astype` 崩。降级是无损的（脏值原样保留为文本）；若要把零星脏值转成数值列，交给调用方在 pandas 侧做（`to_numeric(errors='coerce')`），那里原始值仍在、可追溯。** 默认读所有子表、第一行当表头（`--no-header` 把首行当数据、列名取 `col1` / `col2` …）。
 
@@ -269,11 +269,11 @@ lark-cli sheets +table-get --url "<表URL>" --sheet-name "销售"
 
 #### 输出 → DataFrame（用 `sheet_to_df` helper）
 
-输出形状对齐 pandas split：`columns` 是列名数组、`data` 是二维数据、`dtypes` 是 `{列名: pandas_dtype_str}` 映射。直接喂给 `pd.DataFrame(...).astype(...)` 就能一次性还原所有列类型（不必逐列 `to_datetime` / `to_numeric`）。本 skill 把这段 2 行 helper 打包成可 import 的 [`scripts/sheets_df.py`](../scripts/sheets_df.py)（含 `df_to_sheet` 和 `sheet_to_df`，写入 / 读回成对；它在本 skill 的 `scripts/` 目录下，运行目录不在该目录时先把它加入 `sys.path` 再 import）：
+输出形状对齐 pandas split：`columns` 是列名数组、`data` 是二维数据、`dtypes` 是 `{列名: pandas_dtype_str}` 映射；`truncated/complete/truncation_warning` 说明覆盖度。未截断时可直接喂给 `pd.DataFrame(...).astype(...)`。本 skill 提供 [`scripts/lark_sheets_df.py`](../scripts/lark_sheets_df.py)：
 
 ```python
-import sys; sys.path.insert(0, "scripts")  # helper 在 skill 根的 scripts/ 下；cwd 不在 skill 根时填该目录的实际路径
-from sheets_df import sheet_to_df
+import sys; sys.path.insert(0, "scripts")  # cwd 不在 skill 根时改成 scripts/ 的实际路径
+from lark_sheets_df import sheet_to_df
 
 # 单 sheet
 df = sheet_to_df(out["data"]["sheets"][0])
@@ -287,12 +287,12 @@ df_sales = sheets["销售"]
 
 #### round-trip：读 → 改 → 写回（写读对偶）
 
-`sheet_to_df` 和 `df_to_sheet` 一对镜像 helper（[`scripts/sheets_df.py`](../scripts/sheets_df.py)）让 round-trip 三段读 / 改 / 写各一行：
+`sheet_to_df` 和 `df_to_sheet` 一对镜像 helper（[`scripts/lark_sheets_df.py`](../scripts/lark_sheets_df.py)）让 round-trip 三段读 / 改 / 写各一行：
 
 ```python
 import json, subprocess
-import sys; sys.path.insert(0, "scripts")  # 同上：sheets_df 在 skill 的 scripts/ 目录
-from sheets_df import df_to_sheet, sheet_to_df
+import sys; sys.path.insert(0, "scripts")  # cwd 不在 skill 根时改成 scripts/ 的实际路径
+from lark_sheets_df import df_to_sheet, sheet_to_df
 
 # 1. 读
 out = json.loads(subprocess.check_output(
@@ -309,8 +309,6 @@ subprocess.run(["lark-cli","sheets","+table-put","--url",URL,"--sheets","-"],
                input=json.dumps(payload).encode(), check=True)
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 `sheet_to_df(sheet)` 消费 `(columns, data, dtypes)`，`df_to_sheet(df, name, formats=...)` 重新生成同样三个字段——读 / 写完全对偶，只有 `formats` 需要手工透传一次。
 
 ### Validate / DryRun / Execute 约束
@@ -319,4 +317,4 @@ subprocess.run(["lark-cli","sheets","+table-put","--url",URL,"--sheets","-"],
 - `DryRun` 输出请求模板：`--sheet-name` 在 dry-run 输出里生成为 `<resolve:销售明细>` 占位符，不实际解析。
 - `Execute` 阶段才进行 sheet-name → sheet-id 解析与 API 调用。
 
-===== 全文完（共 322 行）=====
+===== 全文完（共 320 行）=====

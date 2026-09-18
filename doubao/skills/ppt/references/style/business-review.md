@@ -50,6 +50,7 @@
 | `sankey` | `default_ribbon_flat` | `deep_sea_navy` / `exec_navy` | 供应链 / 预算流转；deep_sea_navy 深底=电影感董事会 |
 | `gantt` | `default_flat` | `jade_landscape` / `sage_review` | 项目排期，配 critical_index 用 |
 | `gantt` | `critical_path` | `deep_sea_navy` / `exec_navy` | 关键路径高亮，做汇报专用；深底 deep_sea_navy 是高端 pitch 感 |
+| `nested_donut` | `donut_flat` | `deep_sea_navy` / `mocha_kpi` | 构成分解，中心 total 大数字 |
 | `calheat` | `default_row_52x7` | `jade_landscape` | 日度指标一年热度 · 绿=增长/健康 |
 
 **样式收敛**：品牌主色梯度 + 灰阶、圆角与全篇一致、无 3D / 无渐变、数据标签只标关键点、图表下方标口径与来源。**归因走瀑布、量级流转走桑基**，不要退回文字段落或原生条形图 workaround。

@@ -91,6 +91,7 @@
 | `marimekko` | `default_flat` | `burgundy_analyst` | 业务组合矩阵 · 头部咨询经典 |
 | `marimekko` | `shaded_residual` | `nordic_slate` / `ochre_stone` | 我方 vs 竞品占比 · nordic 冷灰理性 |
 | `sankey` | `chord_circular` | `nature_teal` / `ink_jade` | 多方关系（chord）· nature_teal 走消费研究更 fresh |
+| `nested_donut` | `donut_layered` | `nordic_slate` / `burgundy_analyst` | 多层战略地图 |
 | `waterfall` | `cross_axis` | `nordic_slate` / `ochre_stone` | 正负跨轴归因 |
 
 ## 禁止项
