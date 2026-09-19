@@ -3,7 +3,7 @@
         "xrxs": {
             "type": "streamableHttp",
             "url": "https://mcp-xrxs.xinrenxinshi.com/mcp",
-             "disabled": false
+            "disabled": false
         }
     }
 }

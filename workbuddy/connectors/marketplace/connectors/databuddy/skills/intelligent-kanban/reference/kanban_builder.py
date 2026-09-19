@@ -3051,6 +3051,37 @@ def _builder_workspace_folder_extra_args():
     return []
 
 
+def _resolve_record_resource_script():
+    """解析 <plugin-v2>/shared-scripts/record_resource.sh 绝对路径，未命中返回空串。
+    优先级：env WEDATA_RECORD_SCRIPT > CODEBUDDY_PLUGIN_ROOT > reference 上溯 5 层 > CLI 同级兜底。
+    """
+    override = os.environ.get('WEDATA_RECORD_SCRIPT', '').strip()
+    if override and os.path.isfile(override):
+        return override
+    plugin_root = os.environ.get('CODEBUDDY_PLUGIN_ROOT', '')
+    if plugin_root:
+        candidate = os.path.join(plugin_root, 'shared-scripts', 'record_resource.sh')
+        if os.path.isfile(candidate):
+            return candidate
+    # reference→intelligent-kanban→skills→data-analysis→scenarios→plugin-v2 = 5 层
+    fallback = os.path.normpath(
+        os.path.join(_BUILDER_DIR, '..', '..', '..', '..', '..',
+                     'shared-scripts', 'record_resource.sh')
+    )
+    if os.path.isfile(fallback):
+        return fallback
+    # CLI 同级兜底：l0-cli 与 shared-scripts 在 plugin-v2 下互为同级目录
+    cli_path = _resolve_wedatacli_path()
+    if cli_path:
+        cli_relative = os.path.normpath(
+            os.path.join(os.path.dirname(cli_path), '..',
+                         'shared-scripts', 'record_resource.sh')
+        )
+        if os.path.isfile(cli_relative):
+            return cli_relative
+    return ''
+
+
 def _load_save_params(params_path):
     """读取 kanban_save_params.json；不存在或损坏则返回 None。"""
     if not os.path.isfile(params_path):
@@ -3263,20 +3294,37 @@ def _persist_access_key(params_path, access_key):
 
 
 def _record_ai_kanban_to_product_json(access_key, display_name, params=None, action='update'):
-    """复用 RecordResource 将 AI 看板登记到 /workspace/file/file.json，供 ReadProductJson 读取。"""
+    """登记 AI 看板到 /workspace/file/file.json，供 ReadProductJson 读取。
+    通道降级：P0 直调 shared-scripts/record_resource.sh > P1 wedatacli RecordResource wrapper > P2 silent skip。
+
+    ⚠️ 静默契约（用户明确要求，2026-09-08）：
+      - WorkBuddy 本地连接器与 DataBuddy 沙箱下，此登记环节的**所有失败/异常/未找到**分支
+        均**只落日志文件**（{tmpdir}/intelligent-kanban-registration.log），**不打印到 stdout/stderr**，
+        避免对话面板出现 ⚠️ 警告误导用户以为看板保存出错。
+      - 成功分支保留 stdout ✅ 提示（正向反馈，用户可感知）。
+      - 若确需排查 rc=2 等问题，请查看上述日志文件。
+    """
     access_key = str(access_key or '').strip()
     if not access_key:
         return ''
 
-    cli_path = _resolve_wedatacli_path()
-    if not cli_path:
-        print('⚠️ wedatacli 未找到，跳过 AI 看板 file.json 登记')
-        return ''
+    def _kanban_log(msg):
+        """静默追加登记日志到临时文件；任何异常吞掉，绝不影响主流程或污染对话输出。"""
+        try:
+            import tempfile
+            import datetime
+            log_path = os.path.join(tempfile.gettempdir(), 'intelligent-kanban-registration.log')
+            ts = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with open(log_path, 'a', encoding='utf-8') as _lf:
+                _lf.write(f'[{ts}] [record_ai_kanban] {msg}\n')
+        except Exception:
+            pass
 
     name = str(display_name or '').strip() or 'AI 看板'
     action = 'create' if action == 'create' else 'update'
-    cmd = [
-        cli_path, 'RecordResource',
+
+    # 两条通道 argv 集一致（wrapper 只是原样透传给 record_resource.sh），因此复用同一份 record_args。
+    record_args = [
         '--id', access_key,
         '--name', name,
         '--path', f'/dashboard/aiBoard/{access_key}',
@@ -3285,7 +3333,7 @@ def _record_ai_kanban_to_product_json(access_key, display_name, params=None, act
         '--action', action,
         '--source', 'manual',
         '--command', 'UpdateAiKanBan',
-    ] + _builder_workspace_folder_extra_args()
+    ]
 
     record_env = os.environ.copy()
     workspace_id = str((params or {}).get('WorkspaceId') or '').strip()
@@ -3293,15 +3341,44 @@ def _record_ai_kanban_to_product_json(access_key, display_name, params=None, act
         record_env.setdefault('TENCENTCLOUD_WORKSPACE_ID', workspace_id)
         record_env.setdefault('WEDATA_WORKSPACE_ID', workspace_id)
 
+    import subprocess
+
+    # P0：直调 shared-scripts/record_resource.sh。
+    # 注意：该脚本不识别 --workspace_folder，workspace 上下文完全通过 record_env 继承。
+    record_sh = _resolve_record_resource_script()
+    if record_sh:
+        try:
+            proc = subprocess.run(
+                ['bash', record_sh] + record_args,
+                capture_output=True, text=True, timeout=15, env=record_env,
+            )
+            if proc.returncode == 0:
+                print(f'✅ 已通过 shared-scripts/record_resource.sh 登记 AI 看板到 file.json (AccessKey={access_key})')
+                return ''
+            # 脚本存在但执行失败不回退 wrapper：wrapper 也转发到同一脚本，避免复现错误 + 双份 warning。
+            # 静默契约：失败仅落日志，不打印到对话（不影响远端预览入库）。
+            _kanban_log(f"P0 record_resource.sh 登记失败 rc={proc.returncode} stderr={(proc.stderr or '')[:300]}")
+            return ''
+        except Exception as e:
+            # 直调异常（timeout / OSError 等）同样不回退 wrapper，避免连锁副作用。
+            _kanban_log(f'P0 record_resource.sh 直调异常（已跳过）: {e}')
+            return ''
+
+    # P1：脚本未解析到 → 回退 wedatacli RecordResource 伪命令；P2：CLI 也不可用则 silent skip。
+    cli_path = _resolve_wedatacli_path()
+    if not cli_path:
+        _kanban_log('P2 record_resource.sh 与 wedatacli 均未找到，已跳过登记（不影响远端预览入库）')
+        return ''
+
+    cmd = [cli_path, 'RecordResource'] + record_args
     try:
-        import subprocess
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=15, env=record_env)
         if proc.returncode == 0:
-            print(f'✅ 已复用 RecordResource 登记 AI 看板到 file.json (AccessKey={access_key})')
+            print(f'✅ 已复用 wedatacli RecordResource 登记 AI 看板到 file.json (AccessKey={access_key})')
         else:
-            print(f"⚠️ AI 看板 file.json 登记失败 (rc={proc.returncode}): {(proc.stderr or '')[:200]}")
+            _kanban_log(f"P1 wedatacli RecordResource 登记失败 rc={proc.returncode} stderr={(proc.stderr or '')[:300]}")
     except Exception as e:
-        print(f'⚠️ AI 看板 file.json 登记异常（已跳过）: {e}')
+        _kanban_log(f'P1 wedatacli RecordResource 登记异常（已跳过）: {e}')
     return ''
 
 

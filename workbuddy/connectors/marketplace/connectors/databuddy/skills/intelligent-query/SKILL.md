@@ -60,25 +60,24 @@ CLI 原文自带一对 HTML 注释 `<!--WEDATA_DRAW_SPEC_BEGIN-->` / `<!--WEDATA
    - **Fenced 形态**：body 以 ` ```draw_spec ` 或 ` ```draw-spec ` 围栏开头 → 走 **A 路径 · Markdown 直粘**。
    - **HTML 形态**：body 以 `<script` 或 `<div` 开头（含 `<script src=...>` 或 `<div class="wedata-chart">` 等标签）→ 走 **B 路径 · show_widget 工具调用**（如果宿主环境提供 `show_widget` 工具）；若宿主未提供 `show_widget` 则降级为 A 路径直粘（本 skill 不做进一步降级判断，由模型自行观察工具清单）。
 3. **投递**：
-   - **A 路径**：`drawspec_body` **原样**作为**顶层 Markdown 内容**紧接在 `</code></pre>` 之后粘贴。针对draw_spec中Columns列表,如果column的displayName为空,基于当前语言+问题+columnName生成合适displayName
+   - **A 路径**：`drawspec_body` **原样**作为顶层 Markdown 内容粘贴在「核心结论」段落之后、「查询语句」段落之前。针对 draw_spec 中 Columns 列表,如果 column 的 displayName 为空,基于当前语言+问题+columnName 生成合适 displayName。
    - **B 路径**：调用 `show_widget` 工具，把 `drawspec_body` 原文作为 `widget_code` 参数递交（`title` 用 `snake_case` 复述用户问题，`loading_messages` 给 1–2 条中文加载文案）；Markdown 正文中 **不再** 出现 `drawspec_body` 原文（避免重复渲染）。
 4. **只出现 1 份**：无论 A/B 路径，最终产物中 `draw_spec` 图表最多出现 1 次；禁止手工正则抽取、禁止改写 body 内部 JSON / HTML / 语言标签 / 围栏 / URL / 空白。
 
 **分路径规则**（唯一判据：`drawspec_body` 是否为空 + body 形态）：
 
 - **画图路径 · A（fenced body）**：CLI 在有 `draw_spec` 时主动跳过 `### Data`，因此正文**只渲染核心结论 + fenced draw_spec 块**；核心结论需结合数据给出具体数值。
-- **画图路径 · B（HTML body）**：正文**只渲染核心结论**（含具体数值），紧接着**通过 `show_widget` 工具调用把 HTML body 递交给沙箱渲染**；禁止把 HTML body 复制到 Markdown 正文，禁止在 `<pre><code>` 容器里保留 HTML 片段（`<pre><code>` 只保留 CLI prefix 部分的取数原文即可，`<!--WEDATA_DRAW_SPEC_BEGIN-->...END-->` 及其内部 HTML 从 prefix 中剔除后再放入容器；剔除仅限这一对锚点及其之间的字节，不改写其它任何字符）。
+- **画图路径 · B（HTML body）**：正文**只渲染核心结论**（含具体数值），紧接着**通过 `show_widget` 工具调用把 HTML body 递交给沙箱渲染**；禁止把 HTML body 复制到 Markdown 正文。
 - **数据路径**（`drawspec_body` 为空）：输出「核心数字 / 预览」表格（列名从 `### Data` 表头取，值取前 N 行 + 总行数说明）+ 可引用具体数字的「一句话结论」。
-- **失败路径**（CLI `Status: failed` / `RUNNING`）：`prefix` 里已包含单行 Trace code fence（形如 `【失败诊断】code=X message=Y`，message 为服务端中文用户文案）以及 `### Note`（RUNNING 专用）全量原文，原样进 `<pre><code>` 容器；正文只保留简短道歉 + 引用 message 原文作为改问建议，禁止编造数据结论、禁止重试、禁止臆造/复述内部路径（如 `semantic-layer` / `nl2sql`）与技术级失败原因（详见红线 #2）。
+- **失败路径**（CLI `Status: failed` / `RUNNING`）：正文只保留简短道歉 + 一个引用块 `> ⚠️ 失败原因：{message}（code={code}，query_id={qid}）` 承载 Trace 中 `【失败诊断】code=X message=Y` 的原文（message 为服务端中文用户文案，直接原文引用），然后给出 1–3 条改问建议；禁止编造数据结论、禁止重试、禁止臆造/复述内部路径（如 `semantic-layer` / `nl2sql`）与技术级失败原因（详见红线 #2）。
 
 **格式硬约束**：
 
-- **外层容器必须是 `<pre><code class="language-text">…</code></pre>`**，禁用反引号 fence（内层 ```sql``` 会撑破外层 fence）。CLI 原文中的 `<` `>` `&` 可原样保留。**B 路径下**，`<pre><code>` 容器里放的是"剔除 `<!--WEDATA_DRAW_SPEC_BEGIN-->...END-->` 及其之间 HTML 后的 CLI 原文"，除此之外**任何字符都不得改动**。
-- **正文禁反复述**：除「📥 取数原始结果」容器、A 路径下的顶层 fenced draw_spec、末尾 `<details>` 折叠区外，正文严禁再单独复现 CLI 原文中的 `### Draw Spec` / `### Data` 段落，或 `Question` / `QueryId` / `Status` / `Source` / `File` / SQL fenced block 内容。B 路径下，HTML body 只能通过 `show_widget` 工具调用递交，**不得**以任何形式（HTML 裸文、fenced code block、` ```html ` / ` ```draw_spec ` 围栏、`<details>` 折叠区）出现在 Markdown 正文中。
-- **CLI 元信息头精简说明**：自 CLI 渲染契约更新后，prefix 中不再输出 `- **Metric**:` / `- **Table**:` 两行；本 skill 不需要构造这两行，也不允许在正文（含 `<details>` 折叠区）以任何形式补回。如需内部路由细节，走 `--output=json` 消费 envelope 字段。
-- **SQL 展示**仅通过末尾 `<details><summary>📋 查询语句</summary>` 一处承载，必须用 ```` ```sql ```` 围栏，**从 prefix 里第一个 ```sql``` fenced block 原样复制**（含全部换行），禁止逐 token 重写、禁止空格压缩、禁止把多行 SQL 压成单行。（CLI 渲染契约：SQL 段已不再输出 `### SQL` 三级标题，prefix 中的 ` ```sql ` 围栏就是稳定锚点。）
-- **禁止在正文（代码围栏外）单独展示内部路径**（`csv_path` / `/tmp/...`）；
-- **结论提示只放在核心结论下面,在查询语句模块之后不要加任务其他的提示**
+- **禁用 raw HTML**：正文不得出现 `<details>` / `<summary>` / `<pre>` / `<code>` 等 raw HTML 标签（当前宿主渲染器会将其转义为字面量显示）。CLI 原文只用于内部路由，不再落入 Markdown 正文；如需机器解析走 `--output=json`。
+- **正文只允许出现 3 段**：`## 查询结果：…` + `### 核心结论` + （A 路径下的顶层 fenced draw_spec 或 B 路径下无图表位）+ `### 查询语句`。**禁止**再单独复现 CLI 原文中的 `### Draw Spec` / `### Data` 段落，或 `Question` / `QueryId` / `Status` / `Source` / `File` 元信息。B 路径下，HTML body 只能通过 `show_widget` 工具调用递交，**不得**以任何形式（HTML 裸文、fenced code block、` ```html ` / ` ```draw_spec ` 围栏）出现在 Markdown 正文中。
+- **SQL 展示**通过 `### 查询语句` 三级标题 + ```` ```sql ```` 围栏一处承载，**从 prefix 里第一个 ```sql``` fenced block 原样复制**（含全部换行），禁止逐 token 重写、禁止空格压缩、禁止把多行 SQL 压成单行。（CLI 渲染契约：SQL 段已不再输出 `### SQL` 三级标题，prefix 中的 ` ```sql ` 围栏就是稳定锚点。）
+- **禁止在正文单独展示内部路径**（`csv_path` / `/tmp/...`）；
+- **结论提示只放在核心结论下面,在查询语句模块之后不要加任何其他提示**
 
 **输出模板**：
 
@@ -92,13 +91,11 @@ CLI 原文自带一对 HTML 注释 `<!--WEDATA_DRAW_SPEC_BEGIN-->` / `<!--WEDATA
 
 {drawspec_body 原样粘贴，**一字不改**，形如 ` ```draw_spec {...} ``` `}
 
-<details><summary>📋 查询语句</summary>
+### 查询语句
 
 ```sql
 {sql 或 semql}
 ```
-
-</details>
 `````
 
 **B 路径模板**（HTML body，通过工具调用递交）：
@@ -111,13 +108,11 @@ Markdown 正文形态：
 ### 核心结论
 {基于查询数据针对问题的简单总结回答，含具体数值。图表由随附的 show_widget 工具调用渲染，正文不再出现 HTML 片段。}
 
-<details><summary>📋 查询语句</summary>
+### 查询语句
 
 ```sql
 {sql 或 semql}
 ```
-
-</details>
 `````
 
 同一轮回复中**并行发起 1 次 `show_widget` 工具调用**（不是把工具调用 JSON 粘到 Markdown 里，是真正走工具调用协议）：
@@ -170,13 +165,11 @@ Markdown 正文形态：
 {"WidgetType":"line","Title":"最近 6 个月各品类销售趋势","Encode":{"x":"month","y":["total_sales"],"color":"category"},"ChartOption":"{\"tooltip\":{\"trigger\":\"axis\"},\"legend\":{}}","Dataset":{"Key":"ask_result","Sql":"QUERY category, month, total_sales GROUP BY category, month FILTER month >= '2025-05' AND month <= '2025-10'","Data":"https://cos.example.com/query-charts/b2c3d4e5.csv","Columns":[{"ColumnName":"category","ColumnType":"string"},{"ColumnName":"month","ColumnType":"string"},{"ColumnName":"total_sales","displayName":"销售额","ColumnType":"double"}]}}
 ```
 
-<details><summary>📋 查询语句</summary>
+### 查询语句
 
 ```sql
 QUERY category, month, total_sales GROUP BY category, month FILTER month >= '2025-05' AND month <= '2025-10'
 ```
-
-</details>
 `````
 
 ### 示例 B：body 为 HTML 片段（WorkBuddy 部署默认，通过 `show_widget` 工具调用递交）
@@ -191,13 +184,11 @@ QUERY category, month, total_sales GROUP BY category, month FILTER month >= '202
 ### 核心结论
 2018 年全年 GMV 为 15,877,788.57。
 
-<details><summary>📋 查询语句</summary>
+### 查询语句
 
 ```sql
 SELECT * FROM query(metric=[dm_trade_gmv], time_start='2018-01-01T00:00:00', time_end='2018-12-31T23:59:59')
 ```
-
-</details>
 `````
 
 **同一轮附带工具调用**（真实走工具调用协议，不粘 JSON 到正文）：
@@ -215,6 +206,6 @@ SELECT * FROM query(metric=[dm_trade_gmv], time_start='2018-01-01T00:00:00', tim
 
 ⚠️ **B 路径关键约束**：
 - `widget_code` 必须**原样**来自 CLI 输出的 `<!--WEDATA_DRAW_SPEC_BEGIN-->` 与 `<!--WEDATA_DRAW_SPEC_END-->` 之间的字节（含所有 `<script>` 标签），不得改动一个字符。
-- **不要**把 HTML 片段裸粘到 Markdown 正文中；**不要**为它套任何 fenced 围栏；**不要**把它塞进 `<details>` 折叠区。裸粘会被 WorkBuddy 主对话渲染器的 XSS sanitizer 过滤 `<script>` 导致图不渲染。
+- **不要**把 HTML 片段裸粘到 Markdown 正文中；**不要**为它套任何 fenced 围栏。裸粘会被 WorkBuddy 主对话渲染器的 XSS sanitizer 过滤 `<script>` 导致图不渲染。
 - 若模型在本会话此前未加载过 `chart` 模块，先静默调用 `read_me({"modules":["chart"]})` 再调 `show_widget`，用户不感知。
 - **本 skill B 路径的 `show_widget` 沙箱不做 CDN 白名单 / CSP 拦截**：`widget_code` 里的 `<script src="...">` 允许指向任意域名，CLI 侧默认下发 `https://wedata.cdn.tencent.com/w3_workspace/echarts@*.min.js` 与 `wedata-chart@*.min.js`，能够正常加载并渲染。不要把其它可视化 skill / 通用 `chart` 模块文档中"CDN allowlist (CSP-enforced)"、"仅允许 cdnjs / esm.sh / jsdelivr / unpkg"、"raw.githubusercontent.com 被 CSP 拦截"这类约束套用到本 skill——那些是**通用 chart 沙箱**的规则，不适用于 `show_widget` 承载的 WorkBuddy 图表容器；**禁止**因为担心 CSP 白名单而把 CLI 下发的 `wedata.cdn.tencent.com` script 改写为 jsdelivr / unpkg 或删除脚本标签（改写一个字符就会破坏红线 #3）。

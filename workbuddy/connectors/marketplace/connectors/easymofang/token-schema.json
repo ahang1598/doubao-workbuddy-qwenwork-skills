@@ -1,0 +1,22 @@
+{
+    "title": "易智魔方 MCP 对接配置",
+    "title_en": "EasyMofang MCP Configuration",
+    "description": "填写开放平台个人 API Key 以连接易智魔方 MCP。凭证仅存储在本机 ~/.workbuddy 下，不会上传云端。仅支持个人 Key（sk- 前缀），团队 Key 会被拒绝。",
+    "description_en": "Enter your personal Open Platform API Key to connect EasyMofang MCP. Credentials are stored only on this device under ~/.workbuddy and are never uploaded. Personal keys (sk- prefix) only; team keys are rejected.",
+    "docUrl": "https://app.easymofang.com/open-platform",
+    "docLabel": "如何获取易智魔方 API Key？",
+    "docLabel_en": "How to get an EasyMofang API Key?",
+    "fields": [
+        {
+            "key": "MOFANG_API_KEY",
+            "label": "API Key",
+            "label_en": "API Key",
+            "placeholder": "在易智魔方开放平台创建，以 sk- 开头的个人 Key",
+            "placeholder_en": "Create in EasyMofang Open Platform; personal key starting with sk-",
+            "type": "password",
+            "required": true,
+            "description": "用于鉴权的个人 API Key。团队 Key 不支持。失效后请到开放平台重新生成并在此更新。",
+            "description_en": "Personal API Key for authentication. Team keys are not supported. If expired, regenerate it in the Open Platform and update here."
+        }
+    ]
+}

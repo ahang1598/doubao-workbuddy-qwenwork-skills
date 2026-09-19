@@ -1062,6 +1062,14 @@ def _open_duck(source, *, columns=None, src=None):
                 f"CREATE OR REPLACE VIEW {_LOCAL_VIEW} AS "
                 f"SELECT * FROM read_csv('{source}', "
                 f"header=true, columns={{{cols_sql}}}, "
+                # P0 修复（2026-09-14）：wedatacli query-sql 落盘 CSV 每个字段被双引号
+                # 包裹（RFC4180 pandas to_csv(quoting=QUOTE_MINIMAL/ALL) 默认行为），
+                # DuckDB 1.5.3 用 columns={} 时不会 sniff quote，默认 quote='\''（单引号），
+                # 导致 CAST '\"2023\"' AS BIGINT / '\"0.0000\"' AS DOUBLE 全部失败，
+                # ignore_errors=true 又把所有 CAST 失败的 cell 静默置 NULL，
+                # 度量列/数值维度列 100% 变 NULL → SUM(...) 全 NULL → 8/8 slot 空看板。
+                # 修法：显式声明 quote='\"' + escape='\"'（RFC4180 引号内 ""→"，同一符号）。
+                f"quote='\"', escape='\"', "
                 f"nullstr=['null','NULL','None','\\\\N','','NaT','nan','NaN'], "
                 f"ignore_errors=true){where_clause}"
             )
@@ -1085,6 +1093,9 @@ def _open_duck(source, *, columns=None, src=None):
                 con.execute(
                     f"CREATE OR REPLACE VIEW {_LOCAL_VIEW} AS "
                     f"SELECT * FROM read_csv_auto('{source}', header=true, sample_size=-1, "
+                    # 与主路径一致：显式 quote='\"' 让 DuckDB 剥掉 CSV 字段外双引号。
+                    # read_csv_auto 虽会 sniff quote，但显式传更稳（配合 --v1.5.3 极端脏数据）。
+                    f"quote='\"', escape='\"', "
                     f"nullstr=['null','NULL','None','\\\\N','','NaT','nan','NaN'], "
                     f"auto_type_candidates=['BIGINT','DOUBLE','VARCHAR','DATE','TIMESTAMP','BOOLEAN']){where_clause}"
                 )
@@ -1100,6 +1111,9 @@ def _open_duck(source, *, columns=None, src=None):
             con.execute(
                 f"CREATE OR REPLACE VIEW {_LOCAL_VIEW} AS "
                 f"SELECT * FROM read_csv_auto('{source}', header=true, sample_size=-1, "
+                # 与主路径一致：显式 quote='\"' 让 DuckDB 剥掉 CSV 字段外双引号
+                # （wedatacli query-sql 落盘的 RFC4180 CSV 字段被双引号包裹）。
+                f"quote='\"', escape='\"', "
                 f"nullstr=['null','NULL','None','\\\\N','','NaT','nan','NaN'], "
                 f"auto_type_candidates=['BIGINT','DOUBLE','VARCHAR','DATE','TIMESTAMP','BOOLEAN']){where_clause}"
             )
@@ -1385,6 +1399,8 @@ def _attach_companion_views(con, primary_csv_path: str, primary_table: str) -> L
             try:
                 desc_rows = con.execute(
                     f"DESCRIBE SELECT * FROM read_csv_auto('{csv_path}', header=true, sample_size=-1, "
+                    # 与主 CSV 路径一致：显式 quote='\"' 让 sniff 出的类型面向剥引号后的原值
+                    f"quote='\"', escape='\"', "
                     f"nullstr=['null','NULL','None','\\\\N','','NaT','nan','NaN'], "
                     f"auto_type_candidates=['BIGINT','DOUBLE','VARCHAR','DATE','TIMESTAMP','BOOLEAN'])"
                 ).fetchall() or []
@@ -1415,12 +1431,15 @@ def _attach_companion_views(con, primary_csv_path: str, primary_table: str) -> L
                 ])
                 read_clause = (
                     f"read_csv('{csv_path}', header=true, sample_size=-1, "
+                    # 与主 CSV 路径一致：显式 quote='\"' 让伴随表 CSV 双引号被正确剥离
+                    f"quote='\"', escape='\"', "
                     f"nullstr=['null','NULL','None','\\\\N','','NaT','nan','NaN'], "
                     f"columns={{{cols_decl}}})"
                 )
             else:
                 read_clause = (
                     f"read_csv_auto('{csv_path}', header=true, sample_size=-1, "
+                    f"quote='\"', escape='\"', "
                     f"nullstr=['null','NULL','None','\\\\N','','NaT','nan','NaN'], "
                     f"auto_type_candidates=['BIGINT','DOUBLE','VARCHAR','DATE','TIMESTAMP','BOOLEAN'])"
                 )

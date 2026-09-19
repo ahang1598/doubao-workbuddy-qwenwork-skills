@@ -1,7 +1,7 @@
 ---
 name: ai-model-nodejs
 description: "Use this skill for Node.js backend AI via @cloudbase/node-sdk (>=3.16.0) — cloud functions, CloudRun, Express/Koa/NestJS, serverless APIs, scheduled jobs, LLM proxies, agent orchestration. The only SDK supporting image generation (ai.createImageModel + generateImage). Text via ai.createModel with groups cloudbase, hunyuan-exp, or custom-*; model ids (e.g. deepseek-v4-flash, glm-5, kimi-k2.6) go in the `model` field of generateText/streamText. MUST run two-step preflight before code — see body. NOT for browser/Web (use ai-model-web) or Mini Program (use ai-model-wechat)."
-version: 2.34.3
+version: 2.34.4
 alwaysApply: false
 ---
 
@@ -75,7 +75,7 @@ Before calling any AI API on the server, **run the two-step preflight**: ① eli
 
 ### Step 0: obtain the environment ID
 
-Call the MCP tool `envQuery` with `action=info` and read `EnvId` from the response.
+Call the MCP tool `queryEnv` with `action=info` and read `EnvId` from the response.
 
 ---
 
@@ -254,7 +254,7 @@ For full `generateText` / `streamText` / `generateImage` code examples, the erro
 
 ## Best Practices
 
-1. **Run the two-step preflight before writing business code** — ① eligibility: `envQuery` → `callCloudApi(tcb, DescribeEnvPostpayPackage)` to confirm the Token Credits resource pack (text + image share the same pack); ② group readiness: `DescribeAIModels` for the `cloudbase` group and its `Models[]`, `DescribeManagedAIModelList` for the authoritative supported-model catalog, `UpdateAIModel` with a full-replacement `Models[]` + `Status: 1` when the target model is missing. If the pack is missing, return the purchase link `https://buy.cloud.tencent.com/lowcode?buyType=resPack&envId={envId}&resourceType=token` instead of emitting SDK code and letting the user debug runtime errors.
+1. **Run the two-step preflight before writing business code** — ① eligibility: `queryEnv` → `callCloudApi(tcb, DescribeEnvPostpayPackage)` to confirm the Token Credits resource pack (text + image share the same pack); ② group readiness: `DescribeAIModels` for the `cloudbase` group and its `Models[]`, `DescribeManagedAIModelList` for the authoritative supported-model catalog, `UpdateAIModel` with a full-replacement `Models[]` + `Status: 1` when the target model is missing. If the pack is missing, return the purchase link `https://buy.cloud.tencent.com/lowcode?buyType=resPack&envId={envId}&resourceType=token` instead of emitting SDK code and letting the user debug runtime errors.
 2. **Never assume any model is already enabled** — not `deepseek-v4-flash`, not `hunyuan-image`, not anything. Always verify with `DescribeAIModels` first; if the target is missing, look up the exact `Model` string in `DescribeManagedAIModelList` (do **not** guess the spelling) and then `UpdateAIModel` to enable it.
 3. **`createModel` accepts exactly three kinds of values** — `"cloudbase"` (the main managed group), `"hunyuan-exp"` (legacy builtin), or a user-defined GroupName registered via `CreateAIModel` (**MUST start with `custom-`**, e.g. `custom-kimi`, `custom-openai-compat`). **Never** guess with `createModel("deepseek")` / `createModel("kimi")` / `createModel("custom")` — the first two are vendor/model names, the last is a placeholder. `createImageModel("hunyuan-image")` is a separate image API — keep it as-is.
 4. **Do not invent SDK method names or parameters.** This skill (SKILL.md + `references/api-reference.md`) is the authoritative reference for `@cloudbase/node-sdk`'s AI surface — look up the method signature there before writing code. If a method or field is not documented there, stop and ask, or check the live contract via the MCP tools. No guessing.

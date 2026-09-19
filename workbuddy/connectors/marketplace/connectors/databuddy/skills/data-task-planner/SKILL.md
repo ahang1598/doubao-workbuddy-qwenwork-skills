@@ -47,20 +47,17 @@ description: 当用户的数据分析类问题需要"先规划再执行"时，�
   · `intent` 是复合诉求且看不清因子边界（需要先看看有哪些可用表 / 字段才能划定候选维度）；
   · `intent` 横跨多个领域 / 多个实体，单次摘要难以一次覆盖到位——此时按需多次调用、分批查看是合理的。
 - 使用CLI命令时如果workspace_folder值存在，则需要在每个CLI命令后面携带参数`--workspace_folder <workspace_folder>`
-- **命令红线**（本阶段只看元数据、不拉数据）：
-  · ✅ 仅允许两类元数据探查命令，且允许用 `grep` / `head` 等对输出做过滤：
+- **wedatacli 命令红线**（本阶段只看元数据、不拉数据）：
+  · ✅ 仅允许三类元数据&实体探查命令，且允许用 `grep` / `head` 等对输出做过滤：
     - `ll`（**不接任何位置参数**）：列出当前分析空间 / 工作区内的**全部**表与语义模型清单。与 `intent` 的相关性由本 skill 自行在返回结果里筛选（可用 `grep` 过滤输出）。
     - `cat '<databuddy-uri>'`（**协议头必须逐字为 `databuddy://`，不得改写**）：手上已有 `databuddy://` URI 时，用它查看单个实体详情。
       · ✅ 正确写法（唯一合法形态）：
         `cat 'databuddy://table/<catalog>.<schema>.<table>'`
       · ❌ 常见错例（一律禁止，写错必然报错）：
         - `cat 'table://<catalog>.<schema>.<table>'`（把资源类型段当协议头，最常见错误）
-        - `cat 'db://…'` / `cat 'catalog://…'` / `cat 'wedata://…'`（自造协议头）
         - `cat '<catalog>.<schema>.<table>'`（丢掉协议头，只剩三段式）
       · 🔑 根因提示：`<catalog>.<schema>.<table>` 是**路径段**，不是协议头；协议头永远是 `databuddy://`，`table` 是路径首段（表明"这是一张表"）。
-    - `get <singular> --…`：查看单个实体的结构化详情（表 / 视图 / 工作流 / 连接 / 任务等），返回列 / 分区 / 属性 / 存储 / 审计等完整字段；同族还有 `get columns` / `get lineage` 等按需展开。
-      · 例：查表 `get table --catalog <c> --schema <s> --table <t>`。
-      · 与 `cat` 的取舍：手上只有 `databuddy://` URI 时用 `cat`；已知 catalog/schema/table 三段式坐标、想拿结构化元数据入口时用 `get`。
+    - ontology entity overview: 获取分析空间所有相关实体信息,每次都需要调用进行获取
   · ❌ 禁用 `query-data` / `predict-data` / `correlate-data` / `Skill("knowledge")` 及其下游检索，以及任何会真实拉取业务数据、触发计算、产生分析结论的命令。
 - 跳过或命中失败时：在 `context.skipped=true` + `context.skipReason="..."` 中显式记录原因，随后直接进阶段 3。
 

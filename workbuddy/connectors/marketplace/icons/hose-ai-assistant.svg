@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">hose-ai-assistant</title>
+  <desc id="desc">行李箱与路线标记组成的差旅图标</desc>
+  <rect width="64" height="64" rx="12" fill="#075985"/>
+  <path d="M23 19v-3a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v3" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <rect x="13" y="18" width="38" height="34" rx="7" fill="#fff"/>
+  <path d="M13 32h38M23 26v12M41 26v12" fill="none" stroke="#075985" stroke-width="3" stroke-linecap="round"/>
+  <path d="M25 47c4-7 10-7 14 0" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="44" r="3" fill="#f59e0b"/>
+</svg>

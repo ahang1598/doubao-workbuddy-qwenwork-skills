@@ -2,7 +2,7 @@
   "mcpServers": {
     "kuaicha-search": {
       "type": "streamableHttp",
-      "url": "https://bizveris.kuaicha365.com/mcp?source=workbuddy",
+      "url": "https://bizveris.kuaicha365.com/open/mcp?source=workbuddy",
       "timeout": 30000
     }
   }

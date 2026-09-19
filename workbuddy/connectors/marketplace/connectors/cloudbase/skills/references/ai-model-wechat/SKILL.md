@@ -1,7 +1,7 @@
 ---
 name: ai-model-wechat
 description: "Use this skill for WeChat Mini Program AI via wx.cloud.extend.AI (小程序, wx.cloud apps). Covers generateText and streamText with callbacks (onText, onEvent, onFinish); streamText needs a data wrapper, generateText returns the raw response. Models via wx.cloud.extend.AI.createModel with groups hunyuan-exp (小程序成长计划), cloudbase (main managed), or custom-*; model id goes in the data wrapper `model` field. MUST run two-step preflight before code — see body. NOT for browser/Web (use ai-model-web), Node.js backend (use ai-model-nodejs), or image generation (use ai-model-nodejs)."
-version: 2.34.3
+version: 2.34.4
 alwaysApply: false
 ---
 
@@ -87,7 +87,7 @@ You MUST NOT jump straight into `wx.cloud.extend.AI.createModel(...)`. Before wr
 
 The Mini Program side has two billing paths: **小程序成长计划** (checked first; if enrolled, use `hunyuan-exp`) and **Token Credits 资源包** (generic fallback; if available, use the `cloudbase` main managed group).
 
-1. Fetch `envId` via the MCP tool `envQuery action=info`.
+1. Fetch `envId` via the MCP tool `queryEnv action=info`.
 
 2. Pick the branch by user intent:
 

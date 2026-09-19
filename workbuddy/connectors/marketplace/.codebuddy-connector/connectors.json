@@ -1443,34 +1443,6 @@
       ]
     },
     {
-      "id": "yzf-invoice-mcp-server",
-      "name": "云帐房AI开票",
-      "name_en": "Yunzhangfang AI Invoicing",
-      "description": "Use Yunzhangfang AI invoicing services to extract billing information and open the e-tax bureau invoicing flow.",
-      "description_zh": "通过自然语言使用云帐房 AI 开票能力，完成开票信息识别，并前往电子税局开票。",
-      "description_en": "Use Yunzhangfang AI invoicing services to extract billing information and open the e-tax bureau invoicing flow.",
-      "source": "yzf-invoice-mcp-server",
-      "type": "mcp",
-      "examples_zh": [
-        "帮我开专票给云帐房网络科技有限公司，开票项目是软件服务费，含税金额 12000 元",
-        "帮我开普票给云帐房网络科技有限公司，开票项目是信息技术服务费，含税金额 8600 元",
-        "帮我开专票给云帐房网络科技有限公司，开票项目是咨询服务费，含税金额 5300 元",
-        "帮我开普票给云帐房网络科技有限公司，开票项目是系统维护费，含税金额 2800 元"
-      ],
-      "examples_en": [
-        "Create a special VAT invoice for Yunzhangfang Network Technology Co., Ltd., invoice item software service fee, tax-included amount 12000 CNY",
-        "Create a general VAT invoice for Yunzhangfang Network Technology Co., Ltd., invoice item information technology service fee, tax-included amount 8600 CNY",
-        "Create a special VAT invoice for Yunzhangfang Network Technology Co., Ltd., invoice item consulting service fee, tax-included amount 5300 CNY",
-        "Create a general VAT invoice for Yunzhangfang Network Technology Co., Ltd., invoice item system maintenance fee, tax-included amount 2800 CNY"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
       "id": "tongzhou-fin-research",
       "name": "同舟金融研究",
       "name_en": "Tongzhou Financial Research",
@@ -1643,32 +1615,6 @@
         "What interviews do I have today, and which still need feedback?",
         "Summarize my team's headcount and attendance this month",
         "What approvals are pending for me? How do I request leave?"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
-      "id": "linkfox-product-selection",
-      "name": "linkfox",
-      "name_zh": "LinkFox",
-      "name_en": "LinkFox",
-      "description": "跨境电商AI运营助手，涵盖竞品查询、市场调研、内容生成、营销广告、店铺运营、合规检测等多个子能力，提供多平台多数据源的跨境电商服务。",
-      "description_zh": "跨境电商AI运营助手，涵盖竞品查询、市场调研、内容生成、营销广告、店铺运营、合规检测等多个子能力，提供多平台多数据源的跨境电商服务。",
-      "description_en": "This AI-powered cross-border e-commerce operations assistant encompasses multiple sub-capabilities, including competitor analysis, market research, content generation, marketing and advertising, store operations, and compliance monitoring, providing cross-border e-commerce services across multiple platforms and data sources.",
-      "source": "linkfox-product-selection",
-      "examples_zh": [
-        "用 Jungle Scout 筛选美国站月销量 500+ 的商品",
-        "查 Keepa 上某 ASIN 近 90 天价格和 BSR 趋势",
-        "用智慧芽检索商品图相似外观专利"
-      ],
-      "examples_en": [
-        "Filter US products with 500+ monthly sales via Jungle Scout",
-        "Check 90-day Keepa price and BSR trend for an ASIN",
-        "Search similar design patents from a product image"
       ],
       "visible_in": [
         "internal",
@@ -1863,39 +1809,6 @@
       ]
     },
     {
-      "id": "salesnail-instructor",
-      "name": "SalesNail 讲师",
-      "name_zh": "SalesNail 讲师",
-      "name_en": "SalesNail Instructor",
-      "description": "Self-onboard as a SalesNail instructor, maintain a business Profile, create client proposals, operate courses, facilitate classrooms, and produce evidence-backed complex-sales analysis.",
-      "description_zh": "通过自然语言自助开通讲师试用、维护商业 Profile、生成客户方案，完成游戏创作、课程配置、实时带教，以及团队、学员、班级和商机的证据化分析与复盘。",
-      "description_en": "Self-activate an instructor trial, maintain a business Profile, draft client proposals, create and reuse games, configure courses, facilitate classrooms, and analyze complex-sales performance with evidence-backed semantics.",
-      "source": "salesnail-instructor",
-      "type": "mcp",
-      "version": "0.6.5",
-      "minWorkbuddyVersion": "4.24.0",
-      "examples_zh": [
-        "帮我自助开通讲师试用，完成 Profile，并准备自我体验和好友体验课程",
-        "根据我的讲师 Profile 和这个客户 Brief 生成一份可发送的复杂销售培训方案",
-        "为制造业大客户销售培训设计并生成一个中文游戏",
-        "为这门课创建分组、设置组长并给我学员和助教邀请链接",
-        "分析第一组的重点商机，按 MEDDPICC 和 SPIN 给出证据、风险和下一步问题"
-      ],
-      "examples_en": [
-        "Activate my instructor trial, complete my Profile, and prepare self and friend starter courses",
-        "Turn my instructor Profile and this client brief into a client-ready complex-sales proposal",
-        "Design and generate a Chinese enterprise-sales game for a manufacturing company",
-        "Create course groups, assign a team leader, and return learner and assistant invitation links",
-        "Analyze one priority opportunity with MEDDPICC and SPIN evidence, risks, and next questions"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
       "id": "mx-ds-mcp",
       "name": "东方财富妙想MCP",
       "name_en": "Eastmoney MX MCP",
@@ -2050,25 +1963,24 @@
       "id": "77ircloud",
       "name": "铱云AI供应链",
       "name_en": "77ircloud AI Supply Chain",
-      "description": "Manage 77ircloud Supply Chain using natural language: supports full-lifecycle order operations, as well as query and analysis for customers, products, warehouse inventory, employee organization, financial accounts, data export, business statistics, and warning details.",
+      "description": "Manage 77ircloud AI Supply Chain using natural language: supports full-lifecycle order operations, as well as query and analysis for customers, products, warehouse inventory, employee organization, financial accounts, data export, business statistics, and warning details.",
       "description_zh": "通过自然语言管理铱云供应链：支持订单全链路操作，以及客户、商品、仓库库存、员工组织、资金账户、数据导出、经营统计和预警明细的查询分析。",
-      "description_en": "Manage 77ircloud Supply Chain using natural language: supports full-lifecycle order operations, as well as query and analysis for customers, products, warehouse inventory, employee organization, financial accounts, data export, business statistics, and warning details.",
+      "description_en": "Manage 77ircloud AI Supply Chain using natural language: supports full-lifecycle order operations, as well as query and analysis for customers, products, warehouse inventory, employee organization, financial accounts, data export, business statistics, and warning details.",
       "source": "77ircloud",
       "type": "cli",
+      "version": "1.0.2",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "分析这个月的订单趋势和业绩情况",
         "帮我把这周已付款的待审核订单全部通过",
         "查看深圳某连锁客户这周的订单记录，根据最近一个订单新开单",
-        "统计本月销售额前十的商品",
-        "查看商品精品咖啡的库存"
+        "统计本月销售额前十的商品"
       ],
       "examples_en": [
-        "Analyze this month's order trends and performance",
-        "Review all paid orders from this week and approve them in bulk",
-        "View this week's order records for a retail chain client, and create a new order based on their most recent order",
-        "Show the top 10 products by sales revenue this month",
-        "Check the inventory for the product Premium Coffee"
+        "Analyze this month's order trends and performance.",
+        "Review all paid orders from this week and approve them in bulk.",
+        "View this week's order records for a retail chain client, and create a new order based on their most recent order.",
+        "Show the top 10 products by sales revenue this month."
       ],
       "visible_in": [
         "internal",
@@ -4381,39 +4293,6 @@
       ]
     },
     {
-      "id": "polymas-workbuddy-pre",
-      "name": "智慧树·AI教学中心",
-      "name_zh": "智慧树·AI教学中心",
-      "name_en": "Zhihuishu AI Teaching Center",
-      "description": "Query a teacher's own courses, classes, student tags, group plans, grades, and assignments in Zhihuishu.",
-      "description_zh": "查询教师自己的课程、班级、学生标签、分组方案、成绩和作业等智慧树教学数据。",
-      "description_en": "Query a teacher's own courses, classes, student tags, group plans, grades, and assignments in Zhihuishu.",
-      "source": "polymas-workbuddy-pre",
-      "type": "mcp",
-      "version": "1.0.4",
-      "minWorkbuddyVersion": "4.24.0",
-      "examples_zh": [
-        "查询本学期我教的课程",
-        "查看茶艺鉴赏的课程详情和班级",
-        "查询数据结构二班的总成绩",
-        "查询这门课的学生标签和分组方案",
-        "查询这门课最近截止的作业"
-      ],
-      "examples_en": [
-        "Show the courses I teach this term",
-        "Show the course details and classes for Tea Appreciation",
-        "Show the total grades for Class 2 of Data Structures",
-        "Show student tags and group plans for this course",
-        "Show assignments for this course that are due soon"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ]
-    },
-    {
       "id": "neo-eakey",
       "name": "销售易·易启",
       "name_en": "NeoEaKey",
@@ -4545,13 +4424,8 @@
       "description_en": "Connect the DataBuddy knowledge base, powered by Tencent Cloud Big Data, to let AI answer with real enterprise data — for more trustworthy Q&A, reports, anomaly attribution, forecasting, and related-signal analysis, plus dashboards that refresh in real time.",
       "source": "databuddy",
       "type": "cli",
+      "version": "0.1.2",
       "minWorkbuddyVersion": "5.0.0",
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
-      ],
       "examples_zh": [
         "统计上个月 GMV 是多少，环比涨跌多少？",
         "帮我生成一份各门店经营数据报告",
@@ -4631,7 +4505,7 @@
     },
     {
       "id": "aimoderator",
-      "name": "思研平台",
+      "name": "思研·AI调研平台",
       "name_en": "Aimoderator",
       "description": "Create AI interview projects on Aimoderator with natural language. Provide a title, background and outline (optional opening), and get a shareable interview link.",
       "description_zh": "用自然语言快速创建 AI 访谈项目：提供标题、背景、大纲（及可选开场白），即可在思研平台生成访谈项目并返回可直接分享的访谈链接。",
@@ -4967,6 +4841,8 @@
       "source": "xrxs",
       "type": "mcp",
       "version": "1.0.0",
+      "auth_mode": "server-side",
+      "provider_id": "xrxs",
       "examples_zh": [
         "查询本周预计入职的待入职员工是否有缺失的必填信息",
         "检查本月预计离职员工的待处理事项",
@@ -4976,12 +4852,6 @@
         "Check whether this week's expected new hires have any missing required information",
         "Check pending to-do items for employees expected to leave this month",
         "Archive this month's attendance group reports"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
       ]
     },
     {
@@ -4989,22 +4859,22 @@
       "name": "腾讯企点营销云",
       "name_zh": "腾讯企点营销云",
       "name_en": "Tencent Qidian Marketing Cloud",
-      "description": "Tencent Qidian Marketing Cloud: campaign planning, audience segmentation, product and offer selection, content generation, and campaign analytics",
-      "description_zh": "腾讯企点营销云：营销活动策划、人群圈选、选品配券、文案物料生成与活动复盘",
-      "description_en": "Tencent Qidian Marketing Cloud: campaign planning, audience segmentation, product and offer selection, content generation, and campaign analytics",
+      "description": "Tencent Qidian Marketing Cloud: audience segmentation, product and offer selection, marketing content, WeCom operations, and business analytics. End-to-end campaign planning is currently unavailable in this connector.",
+      "description_zh": "腾讯企点营销云：人群圈选、选品配券、营销内容生成、企微运营与业务分析。当前连接器暂不提供完整营销活动策划流程。",
+      "description_en": "Tencent Qidian Marketing Cloud: audience segmentation, product and offer selection, marketing content, WeCom operations, and business analytics. End-to-end campaign planning is currently unavailable in this connector.",
       "source": "magic-agent-token",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.0.0",
+      "version": "1.1.1",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
-        "帮我策划一场 618 老客复购活动",
+        "分析前两周支付订单的关键指标与变化趋势",
         "圈选近 30 天有加购未下单的人群",
         "给这批人群选品并配一张满减券",
         "复盘上周企微群发的转化效果"
       ],
       "examples_en": [
-        "Plan a 618 repurchase campaign for existing customers",
+        "Analyze key payment order metrics and trends over the previous two weeks",
         "Build an audience of users who added to cart but did not order in the last 30 days",
         "Pick products for this audience and attach a discount coupon",
         "Review last week's WeCom broadcast conversion"
@@ -5728,7 +5598,7 @@
       "source": "haier-assistant",
       "type": "mcp",
       "version": "0.1.0",
-      "auth_mode":"server-side",
+      "auth_mode": "server-side",
       "provider_id": "haier-assistant",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
@@ -5911,7 +5781,7 @@
       "source": "sif-mcp",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "yoga mat 这个词还值得打吗？需求在涨还是在跌？",
@@ -6358,7 +6228,7 @@
         "Play a vocabulary review game from this book",
         "Export this book as a narrated video"
       ]
-        },
+    },
     {
       "id": "jiucuodashi",
       "name": "纠错大师",
@@ -6481,7 +6351,6 @@
         "Starting from this company,穿透 mine its affiliated enterprise group"
       ]
     },
-
     {
       "id": "connector-workshop",
       "name": "连接器工坊",
@@ -6841,6 +6710,552 @@
         "Give me this week's customer-service report across all my stores",
         "How many refund tickets were handled this week, and how many are overdue",
         "Which stores have anomalies today"
+      ]
+    },
+    {
+      "id": "guansd",
+      "name": "观思动-AI开发部署企业应用",
+      "name_zh": "观思动-AI开发部署企业应用",
+      "name_en": "Guansd — AI-built enterprise apps",
+      "description": "把需求做成公司同事能登录使用的企业应用：建应用、写代码、部署开发版、平台真机验收、发布正式版；自带企业微信登录、功能权限、数据库、文件上传和定时任务。",
+      "description_zh": "把需求做成公司同事能登录使用的企业应用：建应用、写代码、部署开发版、平台真机验收、发布正式版；自带企业微信登录、功能权限、数据库、文件上传和定时任务。",
+      "description_en": "Turn a request into an internal app your colleagues can sign in to: create the app, write the code, deploy a dev build, let the platform verify it in a real browser, then publish. WeCom login, permissions, a database, file storage and scheduled jobs are built in.",
+      "source": "guansd",
+      "type": "cli",
+      "version": "1.0.2",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "把这个 Excel 台账做成部门同事都能登录填写的系统",
+        "做一个请假、报销、采购申请的审批系统：员工手机上提交，主管审批，财务能查，谁卡在哪一步一眼能看到",
+        "给门店（或车间）做一套每日巡检：按计划自动下发检查清单，现场拍照打勾，不合格自动派整改单，总部看板里能看到谁没做",
+        "做一个设备报修和客诉工单系统：扫码报修，自动派给负责人，进度随时可查，逾期的每天早上推到企业微信群",
+        "帮我盯着合同、证照和库存：快到期或低于安全库存时自动提醒到负责人的企业微信，领导每周收一份汇总"
+      ],
+      "examples_en": [
+        "Turn this Excel ledger into a system my whole department can sign in to and fill in",
+        "Build an approval system for leave, expense and purchase requests: staff submit on their phones, managers approve, finance can look things up, and it's obvious where each request is stuck",
+        "Set up daily inspections for our stores (or workshops): checklists go out on schedule, staff tick items and take photos on site, failures auto-create rectification tasks, and HQ's dashboard shows who hasn't done theirs",
+        "Build a repair-and-complaint ticket system: scan a code to report, auto-assign an owner, track progress, and push overdue tickets to our WeCom group every morning",
+        "Keep an eye on contracts, licenses and stock for me: remind the owner on WeCom when something is about to expire or drops below safety stock, and send leadership a weekly summary"
+      ]
+    },
+    {
+      "id": "dnb-longyicha-workbuddy",
+      "name": "龙易查",
+      "name_zh": "龙易查",
+      "name_en": "D&B Long Yicha",
+      "description": "Access Dun & Bradstreet's China business database through natural language. This service provides indexing of company basic information and structured profile data, supporting entity identification and matching (quickly locating target companies through multi-criteria fuzzy search), as well as the creation of foundational company profiles covering key dimensions such as registration information, ownership structure, and organizational structure.",
+      "description_zh": "通过自然语言访问邓白氏中国企业数据。本服务提供企业基础信息与结构化档案数据索引，支持主体识别与匹配（通过多条件模糊检索快速定位目标企业）及构建企业基础画像（覆盖注册信息、股权结构、人员结构等核心维度）",
+      "description_en": "Access Dun & Bradstreet's China business database through natural language. This service provides indexing of company basic information and structured profile data, supporting entity identification and matching (quickly locating target companies through multi-criteria fuzzy search), as well as the creation of foundational company profiles covering key dimensions such as registration information, ownership structure, and organizational structure.",
+      "source": "dnb-longyicha-workbuddy",
+      "type": "mcp",
+      "auth_mode": "server-side",
+      "version": "1.1.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询 小米科技 的统一社会信用代码",
+        "查看 小米科技有限责任公司 的工商基本信息",
+        "搜索 注册地址在中国上海市的企业名称包含'科技有限公司'关键字的企业",
+        "查询 比亚迪 的法人和公司联系方式",
+        "识别 BYD 的股东及受益人"
+      ],
+      "examples_en": [
+        "Query the Unified Social Credit Code of Xiaomi Inc.",
+        "View the business registration profile of Xiaomi Inc.",
+        "Search for companies registered in Shanghai, China, whose company names contain the keyword 'Technology Co., Ltd.",
+        "Query BYD's legal representative and company contact information",
+        "Identify BYD's shareholders and beneficial owners"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "salesnail-instructor",
+      "name": "SalesNail AI 销售沙盘",
+      "name_zh": "SalesNail AI 销售沙盘",
+      "name_en": "SalesNail AI Sales Simulation",
+      "description": "Turn sales training, kickoffs, and dealer conferences into AI-customized B2B sales simulations, with team practice, instructor facilitation, and evidence-backed debriefs.",
+      "description_zh": "为销售内训、销售年会和经销商大会定制 AI 大客户销售沙盘，支持分组演练、讲师带教与证据化复盘，帮助销售、售前和交付团队练习客户决策链分析与协同推进。",
+      "description_en": "Turn sales training, kickoffs, and dealer conferences into AI-customized B2B sales simulations, with team practice, instructor facilitation, and evidence-backed debriefs.",
+      "source": "salesnail-instructor",
+      "type": "mcp",
+      "version": "0.6.7",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "给制造业销售团队设计半天的大客户销售沙盘培训，重点练习客户决策链分析和团队协同，先给我方案",
+        "80 人销售年会不想只听报告，帮我设计一场分组销售沙盘，先列出流程、分组和准备事项",
+        "经销商大会上想让厂家和经销商混编组队，练习联合攻单，帮我设计贴近行业的销售沙盘",
+        "销售、售前和交付总是配合不到一起，帮我设计客户情境沙盘，练习信息共享、资源取舍和推进节奏",
+        "复盘这次 SalesNail 销售沙盘，结合各组课堂行动记录，分析客户覆盖、资源分配和下一轮改进建议"
+      ],
+      "examples_en": [
+        "Plan a half-day B2B sales simulation for a manufacturing sales team, focused on buying committees and teamwork",
+        "Design a team sales simulation for an 80-person sales kickoff instead of more presentations; start with the agenda, groups, and preparation",
+        "Plan an industry-specific sales simulation where manufacturers and dealers form mixed teams to practice winning accounts together",
+        "Design a customer-scenario simulation for sales, presales, and delivery teams to practice information sharing, resource tradeoffs, and coordinated next steps",
+        "Debrief this SalesNail simulation using each team's classroom action records: compare stakeholder coverage, resource allocation, and next-round improvements"
+      ]
+    },
+    {
+      "id": "shopee-market-intelligence",
+      "name": "知虾选品数据-Shopee虾皮大数据分析",
+      "name_en": "Shopee Market Intelligence",
+      "description": "Query Shopee site, category, product, shop, brand, trend, and search-keyword data for read-only market analysis.",
+      "description_zh": "通过知虾数据查询 Shopee 站点、类目、商品、店铺、品牌、趋势和热搜词，支持只读市场分析。",
+      "description_en": "Query Shopee site, category, product, shop, brand, trend, and search-keyword data for read-only market analysis.",
+      "source": "shopee-market-intelligence",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询马来西亚站的一级类目",
+        "分析泰国站某三级类目近 30 天的商品销量趋势",
+        "查询新加坡站某品牌的热销商品和价格分布"
+      ],
+      "examples_en": [
+        "List level-one categories in Malaysia",
+        "Analyze 30-day product sales trends for a Thailand category",
+        "Find best-selling products and price distribution for a Singapore brand"
+      ]
+    },
+    {
+      "id": "hose-ai-assistant",
+      "name": "HOSE AI Assistant",
+      "name_zh": "合思 AI 助手",
+      "name_en": "HOSE AI Assistant",
+      "description": "Connect to HOSE business travel for authentication and real-time flight, hotel, and train searches.",
+      "description_zh": "连接合思差旅服务，提供身份校验、短信登录以及企业实时机票、酒店和火车票查询能力。",
+      "description_en": "Connect to HOSE business travel for authentication and real-time flight, hotel, and train searches.",
+      "source": "hose-ai-assistant",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询明天从上海到杭州的机票",
+        "查找杭州下周一入住、周三离店的酒店",
+        "查询明天上海到杭州的直达火车票"
+      ],
+      "examples_en": [
+        "Find flights from Shanghai to Hangzhou tomorrow",
+        "Find hotels in Hangzhou from next Monday to Wednesday",
+        "Find direct trains from Shanghai to Hangzhou tomorrow"
+      ]
+    },
+    {
+      "id": "gaoding",
+      "name": "稿定",
+      "name_zh": "稿定",
+      "name_en": "Gaoding",
+      "description": "Connect to Gaoding creative, asset, model and editor capabilities through natural language.",
+      "description_zh": "连接稿定创作、素材、模型与编辑器能力，用自然语言完成设计工作。",
+      "description_en": "Connect to Gaoding creative, asset, model and editor capabilities through natural language.",
+      "source": "gaoding",
+      "type": "cli",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "用稿定根据这份商品资料生成一张宣传图",
+        "列出稿定当前组织中的可用模型和素材资源库",
+        "连接当前稿定作品并添加一个基础形状和连接线"
+      ],
+      "examples_en": [
+        "Use Gaoding to create a promotional image from this product brief.",
+        "List the available models and asset repositories in my current Gaoding organization.",
+        "Connect to the current Gaoding work and add a basic shape and connector."
+      ]
+    },
+    {
+      "id": "dingdanbao",
+      "name": "订单豹",
+      "name_zh": "订单豹",
+      "name_en": "DingDanBao",
+      "description": "DingDanBao assistant for wholesale sales reps, covering ordering on behalf of customers, customer operations, stock, purchasing, collections, and performance briefs.",
+      "description_zh": "面向批发业务员的订单豹助手，覆盖代客下单、客户运营、库存、采购、催款与业绩简报。",
+      "description_en": "DingDanBao assistant for wholesale sales reps, covering ordering on behalf of customers, customer operations, stock, purchasing, collections, and performance briefs.",
+      "source": "dingdanbao",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮王老板下一单，酱油 5 桶料酒 10 瓶",
+        "搜一下手机号 138 的客户",
+        "今天有哪些待审核订单",
+        "查一下酱油还剩多少库存",
+        "本月我的业绩怎么样"
+      ],
+      "examples_en": [
+        "Place an order for Mr. Wang: 5 barrels of soy sauce and 10 bottles of cooking wine",
+        "Search customers by mobile number 138",
+        "Show orders waiting for audit today",
+        "Check remaining stock of soy sauce",
+        "How is my sales performance this month"
+      ]
+    },
+    {
+      "id": "dami-external-mcp",
+      "name": "达秘-TikTok批量建联&达人管理工具",
+      "name_en": "Dami TikTok Bulk Outreach & Creator Management Tool",
+      "description": "通过自然语言批量管理 TikTok 达人建联、邀约、私信和店铺/商品/达人查询。",
+      "description_zh": "通过自然语言批量管理 TikTok 达人建联、邀约、私信和店铺/商品/达人查询。",
+      "description_en": "Use natural language to manage TikTok creator outreach, invitations, messaging, and shop/product/creator queries.",
+      "source": "dami-external-mcp",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "列出我有权限访问的店铺",
+        "查询这个店铺的公开商品",
+        "帮我筛选适合邀约的达人"
+      ],
+      "examples_en": [
+        "List the shops I can access",
+        "Query public products for this shop",
+        "Find creators suitable for invitation"
+      ]
+    },
+    {
+      "id": "zhangsanfeng",
+      "name": "账三丰",
+      "name_zh": "账三丰",
+      "name_en": "Zhangsanfeng",
+      "description": "Connect to Zhangsanfeng (finance, inventory & sales, MES). Ask in natural language for income statements, balance sheets, receivables aging, purchase/sales bills, stock, work orders and reporting progress; draft vouchers and purchase-in bills from plain text and post them after confirmation.",
+      "description_zh": "连接账三丰（财务云 / 进销存 / MES）。用自然语言查利润表、资产负债表、往来账龄、采购销售单据、库存、工单与报工进度；也能一句话生成记账凭证或开采购入库单草稿，确认后入账。",
+      "description_en": "Connect to Zhangsanfeng (finance, inventory & sales, MES). Ask in natural language for income statements, balance sheets, receivables aging, purchase/sales bills, stock, work orders and reporting progress; draft vouchers and purchase-in bills from plain text and post them after confirmation.",
+      "source": "zhangsanfeng",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "本月利润表怎么样",
+        "看一下 8 月的采购入库单",
+        "应收账款账龄超过 90 天的有哪些客户",
+        "记一笔管理费用差旅费 2000 元，现金付的",
+        "从 XX 供应商采购黄桃 30 个，单价 20，入 1 号仓"
+      ],
+      "examples_en": [
+        "Show this month's income statement",
+        "List purchase-in bills for August",
+        "Which customers have receivables aged over 90 days",
+        "Record a 2000 CNY travel expense paid in cash",
+        "Purchase 30 peaches from supplier XX at 20 each into warehouse 1"
+      ]
+    },
+    {
+      "id": "menglar-ozon",
+      "name": "萌啦数据Ozon-选品数据分析",
+      "name_zh": "萌啦数据Ozon-选品数据分析",
+      "name_en": "Menglar OZON Market Intelligence",
+      "description": "萌啦数据Ozon-选品数据分析提供 Ozon 类目、商品、关键词、品牌、店铺与大盘趋势等大数据查询能力，帮助跨境卖家完成选品与运营分析。",
+      "description_zh": "萌啦数据Ozon-选品数据分析提供 Ozon 类目、商品、关键词、品牌、店铺与大盘趋势等大数据查询能力，帮助跨境卖家完成选品与运营分析。",
+      "description_en": "Menglar OZON Market Intelligence provides big-data query capabilities for Ozon categories, products, keywords, brands, shops, and market trends to help cross-border sellers with product selection and operations analysis.",
+      "source": "menglar-ozon",
+      "type": "mcp",
+      "version": "1.0.1",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询 OZON 中文一级类目，并分析某三级类目近 28 天的热销表现",
+        "查某三级类目近 28 天热销商品 Top15，并总结价格带与销量结构",
+        "对比中国专区与全站热销榜在某类目下的差异",
+        "分析某商品近 90 天的价格/评分追踪和流量关键词",
+        "查某类目热搜词周榜，并看关联商品与关键词趋势",
+        "对比两个店铺近 28 天销量和 GMV 趋势，并列出各自热销商品",
+        "查某品牌在指定类目下的热销排名及其关联商品"
+      ],
+      "examples_en": [
+        "List OZON Chinese level-1 categories and analyze the hot-sale performance of a level-3 category in the last 28 days",
+        "Show top 15 hot products of a level-3 category in the last 28 days and summarize the price range and sales structure",
+        "Compare the differences between CN zone and site-wide hot rankings for a category",
+        "Analyze a product's price/rating tracking and traffic keywords in the last 90 days",
+        "Query weekly hot keyword rankings for a category and view related products and keyword trends",
+        "Compare sales and GMV trends of two shops in the last 28 days and list their hot products",
+        "Query a brand's hot-sale ranking in a specified category and its related products"
+      ]
+    },
+    {
+      "id": "linkfox",
+      "name": "LinkFox",
+      "name_en": "LinkFox",
+      "description": "This AI-powered cross-border e-commerce operations assistant encompasses multiple sub-capabilities, including competitor analysis, market research, content generation, marketing and advertising, store operations, and compliance monitoring, providing cross-border e-commerce services across multiple platforms and data sources.",
+      "description_zh": "跨境电商AI运营助手，涵盖竞品查询、市场调研、内容生成、营销广告、店铺运营、合规检测等多个子能力，提供多平台多数据源的跨境电商服务。",
+      "description_en": "This AI-powered cross-border e-commerce operations assistant encompasses multiple sub-capabilities, including competitor analysis, market research, content generation, marketing and advertising, store operations, and compliance monitoring, providing cross-border e-commerce services across multiple platforms and data sources.",
+      "source": "linkfox",
+      "type": "mcp",
+      "examples_zh": [
+        "用 Jungle Scout 筛选美国站月销量 500+ 的商品",
+        "查 Keepa 上某 ASIN 近 90 天价格和 BSR 趋势",
+        "用智慧芽检索商品图相似外观专利"
+      ],
+      "examples_en": [
+        "Filter US products with 500+ monthly sales via Jungle Scout",
+        "Check 90-day Keepa price and BSR trend for an ASIN",
+        "Search similar design patents from a product image"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "novai-studio",
+      "name": "NovAI Studio",
+      "name_zh": "NovAI Studio",
+      "name_en": "NovAI Studio",
+      "description": "Manage AI canvases and assets, generate media, and track tasks with natural language.",
+      "description_zh": "通过自然语言管理 AI 画布和素材，生成图片、视频和音频，并查询任务进度。",
+      "description_en": "Manage AI canvases and assets, generate media, and track tasks with natural language.",
+      "source": "novai-studio",
+      "type": "mcp",
+      "auth_mode": "oauth",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查看我的 NovAI 素材和画布",
+        "根据商品素材创建一个视频生成工作流",
+        "预估生成这段视频需要多少积分",
+        "查询刚才的视频生成进度"
+      ],
+      "examples_en": [
+        "List my NovAI assets and canvases",
+        "Create a product video workflow from my assets",
+        "Estimate the points required to generate this video",
+        "Check the status of my latest generation task"
+      ]
+    },
+    {
+      "id": "hefei-city-alerts",
+      "name": "合肥便民通告",
+      "name_zh": "合肥便民通告",
+      "name_en": "Hefei City Alerts",
+      "description": "Query Hefei real-time public life info: weather & warnings, water/power/gas outage notices, traffic controls and government announcements.",
+      "description_zh": "查询合肥本地天气与预警、停水停电、燃气检修、交通管制、政府公告等实时民生信息。",
+      "description_en": "Query Hefei real-time public life info: weather & warnings, water/power/gas outage notices, traffic controls and government announcements.",
+      "source": "hefei-city-alerts",
+      "type": "mcp",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "合肥明天天气怎么样？有没有大风或暴雨预警？",
+        "这周合肥有哪些片区会停水或停电？",
+        "最近发布的和公积金相关的政府公告有哪些？"
+      ],
+      "examples_en": [
+        "What's the weather in Hefei tomorrow and are there any warnings?",
+        "Which Hefei areas have planned water or power outages this week?",
+        "Show recent government notices related to housing fund."
+      ]
+    },
+    {
+      "id": "liesun",
+      "name": "猎隼AI智聘",
+      "name_zh": "猎隼AI智聘",
+      "name_en": "Liesun AI Recruiting",
+      "description": "Connect Liesun for scientific, precise hiring. Compare candidates, review interview-recording analysis, track pipeline and funnel — quickly assess in one sentence whether to move someone forward.",
+      "description_zh": "连接猎隼，科学选人、精准选人。人选对比、面试录音分析、在招进展和招聘漏斗，一句话快速评估还要不要往下推。",
+      "description_en": "Connect Liesun for scientific, precise hiring. Compare candidates, review interview-recording analysis, track pipeline and funnel — quickly assess in one sentence whether to move someone forward.",
+      "source": "liesun",
+      "type": "mcp",
+      "version": "1.2.2",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "这个人跟岗位匹配吗，短板和风险是什么，还要不要往下推",
+        "把这几位候选人横向对比：匹配、短板、已有面试结论各差在哪",
+        "这场面试的录音分析里，结论、风险点和建议分别是什么"
+      ],
+      "examples_en": [
+        "Is this candidate a fit, what are the gaps and risks, should we move them forward",
+        "Compare these candidates side by side: fit, gaps, and existing interview conclusions",
+        "From this interview's recording analysis, what are the conclusion, risks, and recommendations"
+      ]
+    },
+    {
+      "id": "getnote",
+      "name": "得到大脑（原 Get 笔记）",
+      "name_zh": "得到大脑（原 Get 笔记）",
+      "name_en": "GetNote",
+      "description": "Connect GetNote to save ideas and webpages, find notes, read transcripts, and organize knowledge.",
+      "description_zh": "连接得到大脑与 AI：随手保存文字、网页和图片，语义查找个人笔记，读取录音转写与会议待办，并用标签、文件夹和知识库整理长期信息。",
+      "description_en": "Connect GetNote to save ideas and webpages, find notes, read transcripts, and organize knowledge.",
+      "source": "getnote",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "找找我之前关于用户增长的笔记，整理出关键结论",
+        "把这个网页存进得到大脑，并加上「产品灵感」标签",
+        "把这场会议的逐字稿和待办事项整理成一份会议纪要",
+        "根据我这周记录的工作笔记，帮我生成一份周报"
+      ],
+      "examples_en": [
+        "Find my notes about user growth and summarize the key takeaways",
+        "Save this webpage to GetNote and tag it as Product Ideas",
+        "Turn this meeting transcript and action items into concise meeting notes",
+        "Create a weekly report from the work notes I saved this week"
+      ]
+    },
+    {
+      "id": "datahub",
+      "name": "DataHub",
+      "name_zh": "DataHub",
+      "name_en": "DataHub",
+      "description": "Discover and run Data Apps, track execution and costs, and retrieve structured results.",
+      "description_zh": "用自然语言发现并运行 Data App，跟踪执行状态与费用，读取结构化结果并管理历史运行。",
+      "description_en": "Discover and run Data Apps, track execution and costs, and retrieve structured results.",
+      "source": "datahub",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我找一个能采集电商商品信息的 Data App",
+        "查看这个 Data App 的输入参数、输出字段和计费方式",
+        "用这些参数运行 Data App，最多返回 100 条数据",
+        "查看刚才那次运行的状态和费用",
+        "读取最近一次成功运行的前 50 条结果"
+      ],
+      "examples_en": [
+        "Find a Data App that can collect e-commerce product data",
+        "Show this Data App's inputs, outputs, and pricing",
+        "Run the Data App with these inputs and return at most 100 records",
+        "Check the status and cost of the run I just started",
+        "Get the first 50 records from my latest successful run"
+      ]
+    },
+    {
+      "id": "tencent-marketing-solution",
+      "name": "腾讯营销",
+      "name_zh": "腾讯营销",
+      "name_en": "Tencent Marketing Solution",
+      "description": "Connects to Tencent Marketing Solution to power intelligent operations — account management, creative inspiration, campaign optimization, and performance diagnostics — lifting efficiency across the entire marketing workflow.",
+      "description_zh": "连接腾讯营销，支持账户授权、组织与广告主管理、报表查询、创意审核与素材修复、广告知识库搜索、创意灵感推荐和视频号直播数据等能力，实现广告投放全链路智能化操作。",
+      "description_en": "Connects to Tencent Marketing Solution to power intelligent operations — account management, creative inspiration, campaign optimization, and performance diagnostics — lifting efficiency across the entire marketing workflow.",
+      "source": "tencent-marketing-solution",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "帮我分析近两周广告消耗，找出明显下滑和持续增长的客户及行业，并给出重点跟进建议。",
+        "帮我排查广告投放链路，找出掉量最严重的环节，并告诉我先改哪里、怎么改。",
+        "每天18点汇总当天投放数据，标出关键变化和异常，生成日报并推送到企业微信。",
+        "帮我查查这个广告账户的权限，哪些操作我可以直接做，哪些需要申请？",
+        "帮我看看这组广告的文案和设计，找出影响吸引力和转化的问题，并给我几版可直接使用的修改方案。",
+        "根据这些图片和视频，帮我生成几组不同角度的投放文案，并检查潜在的审核风险。"
+      ],
+      "examples_en": [
+        "Analyze ad spend over the past two weeks and identify clients and industries with significant declines or sustained growth.",
+        "Diagnose the ad delivery funnel and identify the stage with the biggest drop-off. What should I fix first?",
+        "Every day at 6 PM, summarize ad performance, flag key changes and anomalies, and send the daily report to WeCom.",
+        "Check my permissions for this ad account. What can I do directly, and what requires approval?",
+        "Review this ad's copy and design. What could be hurting its appeal or conversion?",
+        "Generate ad copy from different angles based on these images and videos, and check for potential ad-review risks."
+      ]
+    },
+    {
+      "id": "ezr-crm",
+      "name": "EZR 全域CRM",
+      "name_en": "EZR CRM",
+      "description": "Connect EZR omnichannel CRM to bring member, sales, campaign, WeCom operation, coupon analytics, mall operation, audience segmentation, and MA canvas monitoring capabilities into agents for natural-language business queries and operational insights.",
+      "description_zh": "连接 EZR 全域 CRM，把会员、销售、活动、企微运营、券分析、商城运营、人群圈选和 MA 画布监控等能力带入智能体，帮助品牌用自然语言完成经营查询、运营分析和策略洞察。",
+      "description_en": "Connect EZR omnichannel CRM to bring member, sales, campaign, WeCom operation, coupon analytics, mall operation, audience segmentation, and MA canvas monitoring capabilities into agents for natural-language business queries and operational insights.",
+      "source": "ezr-crm",
+      "type": "mcp",
+      "version": "1.0.1",
+      "auth_mode": "server-side",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我看一下最近 30 天会员招募情况",
+        "分析一下本月全域销售表现，线下、天猫和抖音渠道分别贡献多少",
+        "最近商城运营表现怎么样，商品访问、加购和成交排行有什么变化",
+        "帮我分析这个券活动的领取、核销和转化效果",
+        "圈选近 90 天有消费且在上海的会员",
+        "看一下企微客户资产和群发触达效果",
+        "查看最近一个月进行中的 MA 画布效果"
+      ],
+      "examples_en": [
+        "Show me member recruitment in the last 30 days",
+        "Analyze this month's omnichannel sales performance across offline, Tmall, and Douyin channels",
+        "Review recent mall operation performance and changes in product visits, add-to-cart, and sales rankings",
+        "Analyze the claim, redemption, and conversion performance of this coupon campaign",
+        "Segment members in Shanghai who purchased in the last 90 days",
+        "Review WeCom customer assets and mass-send touch performance",
+        "Review the performance of running MA canvases in the last month"
+      ]
+    },
+    {
+      "id": "lxcloud",
+      "name": "励销CRM",
+      "name_en": "LX Client",
+      "description": "Use natural language to query and enter business data such as leads, customers, opportunities, contracts, products, payment collection and invoicing, follow-up records, and more in LXCRM.",
+      "description_zh": "用自然语言查询和录入励销CRM线索、客户、商机、合同、产品、回款开票、跟进记录等业务数据，轻松搞定销售全链路工作。",
+      "description_en": "Use natural language to query and enter business data such as leads, customers, opportunities, contracts, products, payment collection and invoicing, follow-up records, and more in LXCRM.",
+      "source": "lxcloud",
+      "type": "mcp",
+      "examples_zh": [
+        "搜一下上周新增了多少客户",
+        "把我名下超过30天没跟进的客户列举出来",
+        "把上传的资料内容写入跟进记录"
+      ],
+      "examples_en": [
+        "Search and find out how many new customers were added last week",
+        "List out the customers under my name who have not been followed up for more than 30 days",
+        "Write the uploaded material content into the follow-up record"
+      ]
+    },
+    {
+      "id": "easymofang",
+      "name": "易智魔方",
+      "name_zh": "易智魔方",
+      "name_en": "EasyMofang",
+      "description": "AI product compliance check and ecommerce image series generation.",
+      "description_zh": "商品文案/图片商标侵权检测，以及电商套图生成与重绘。",
+      "description_en": "Trademark compliance checks for copy/images, plus ecommerce product image series generation.",
+      "source": "easymofang",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我检测这段亚马逊标题在美国站是否有商标侵权风险",
+        "对这张商品主图做图片侵权检测，国家选 US",
+        "用这几张商品图生成一套亚马逊主图和 A+",
+        "查一下刚才提交的套图任务进度"
+      ],
+      "examples_en": [
+        "Check this Amazon title for trademark risks on the US marketplace",
+        "Run image compliance check for this product photo in US",
+        "Generate an Amazon main image and A+ set from these product photos",
+        "Check the status of the product image series task I just submitted"
+      ]
+    },
+    {
+      "id": "candao-age",
+      "name": "餐道.数智经营",
+      "name_en": "CanDao.AGE",
+      "description": "Gain real-time visibility into restaurant delivery reputation with a single query: access authorized stores, reviews, key metrics, issue trends, and review reports.",
+      "description_zh": "一句话掌握餐厅外卖口碑：查询授权门店、评价指标、差评原因与趋势，快速生成评价分析报告。",
+      "description_en": "Gain real-time visibility into restaurant delivery reputation with a single query: access authorized stores, reviews, key metrics, issue trends, and review reports.",
+      "source": "candao-age",
+      "type": "mcp",
+      "version": "1.0.1",
+      "examples_zh": [
+        "生成本周全国门店外卖口碑健康度周报，标注好评率、差评率环比变化与重点关注区域。",
+        "横向对标美团、淘宝闪购、京东秒送三大渠道的差评率与回复时效，识别短板平台。",
+        "列出本周差评量TOP10门店及24小时未回复差评明细，用于区域巡检与督办。",
+        "诊断近期差评回升门店，按风险等级给出整改优先级与建议动作。",
+        "专项筛查异物、卫生类食安红线差评，按门店汇总并标记风险等级，生成食安专项报告。"
+      ],
+      "examples_en": [
+        "Generate this week's nationwide store-level food-delivery reputation-health weekly report, highlighting week-over-week changes in positive and negative comment rates and the priority regions of concern.",
+        "Benchmark negative comment rates and 24-hour response SLA across Meituan, Taobao Instant, and JD Now to identify the underperforming platform.",
+        "List this week's top 10 stores by negative comment volume together with details of negative comments left unanswered within 24 hours, for regional inspection and follow-up.",
+        "Diagnose stores with a recent rebound in negative comments, and assign remediation priorities with recommended actions by risk tier.",
+        "Screen food-safety red-line negative comments involving foreign objects and hygiene, summarize by store, flag risk levels, and generate a dedicated food-safety report."
       ]
     }
   ]

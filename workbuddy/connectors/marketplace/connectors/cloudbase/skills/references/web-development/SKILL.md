@@ -1,7 +1,7 @@
 ---
 name: web-development
 description: Use when users need to implement, integrate, debug, build, deploy, or validate a Web frontend after the product direction is already clear, especially for React, Vue, Vite, browser flows, or CloudBase Web integration.
-version: 2.34.3
+version: 2.34.4
 alwaysApply: false
 ---
 
@@ -199,7 +199,7 @@ Use this section only when the Web project needs CloudBase platform features.
 import cloudbase from "@cloudbase/js-sdk";
 
 const app = cloudbase.init({
-  env: "your-full-env-id", // Canonical full CloudBase environment ID resolved from envQuery or the console
+  env: "your-full-env-id", // Canonical full CloudBase environment ID resolved from queryEnv or the console
 });
 
 const auth = app.auth

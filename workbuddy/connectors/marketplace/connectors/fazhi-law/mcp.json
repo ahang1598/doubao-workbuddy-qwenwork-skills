@@ -2,7 +2,7 @@
   "mcpServers": {
     "fazhi-law": {
       "type": "streamableHttp",
-      "url": "https://bizveris.kuaicha365.com/law_agent/mcp?source=workbuddy",
+      "url": "https://api.fazhi.law/mcp?source=workbuddy",
       "timeout": 30000
     }
   }

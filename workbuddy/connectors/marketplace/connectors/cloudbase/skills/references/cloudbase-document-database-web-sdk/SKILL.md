@@ -1,7 +1,7 @@
 ---
 name: cloudbase-document-database-web-sdk
 description: Use CloudBase document database Web SDK only for confirmed NoSQL collection work. Query, create, update, and delete document data; if the task mentions PostgreSQL / CloudBase PG / app.rdb(), route to postgresql-development instead.
-version: 2.34.3
+version: 2.34.4
 alwaysApply: false
 ---
 
@@ -37,7 +37,7 @@ If a referenced sibling skill file is missing from this environment, ask the use
 - Server-side or cloud-function database access.
 - SQL / MySQL database operations.
 - Pure resource-permission administration with no browser SDK code.
-- **NEW business tables that the task explicitly asks to put in CloudBase PostgreSQL (CloudBase PG).** Before applying this skill, call `envQuery(action="info", envId=...)` and read `EnvInfo.RuntimeBackends`. If `postgresql === true` AND the task asks for a new business table to live in PG, switch to the `postgresql-development-cloudbase` skill for that table: it goes through `app.rdb()`, uses PG row-level security (`CREATE POLICY`), and uploads via `app.storage.from('<bucket>').upload('<key>', file)` against an explicitly-created pgstore bucket.
+- **NEW business tables that the task explicitly asks to put in CloudBase PostgreSQL (CloudBase PG).** Before applying this skill, call `queryEnv(action="info", envId=...)` and read `EnvInfo.RuntimeBackends`. If `postgresql === true` AND the task asks for a new business table to live in PG, switch to the `postgresql-development-cloudbase` skill for that table: it goes through `app.rdb()`, uses PG row-level security (`CREATE POLICY`), and uploads via `app.storage.from('<bucket>').upload('<key>', file)` against an explicitly-created pgstore bucket.
   - Existing NoSQL collections in the same env keep using THIS skill — PG and NoSQL coexist in CloudBase PG environments. The rule is "follow the task / existing surface", not "PG env forbids NoSQL".
 
 ### SDK Code vs MCP Tools

@@ -35,6 +35,7 @@
       "linux": "wedatacli version",
       "win32": "wedatacli version"
     },
-    "minVersion": "0.0.2"
+    "minVersion": "0.0.2",
+    "versionPattern": "(\\d+\\.\\d+\\.\\d+)"
   }
 }

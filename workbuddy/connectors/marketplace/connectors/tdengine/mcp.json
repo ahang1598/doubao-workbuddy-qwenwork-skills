@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "tdengine": {
-      "url": "https://${TDENGINE_API_HOST}/api/v1/mcp/stream",
+      "url": "${TDENGINE_API_SCHEMA}://${TDENGINE_API_HOST}:${TDENGINE_API_PORT}/api/v1/mcp/stream",
       "type": "streamableHttp",
       "headers": {
         "Authorization": "Bearer ${TDENGINE_API_KEY}"

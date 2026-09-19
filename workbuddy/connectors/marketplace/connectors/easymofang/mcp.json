@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "easymofang": {
+            "type": "streamableHttp",
+            "url": "https://operate.yibainetwork.com/api/easy-operate/mcp",
+            "headers": {
+                "Authorization": "Bearer ${MOFANG_API_KEY}"
+            },
+            "timeout": 60000
+        }
+    }
+}
