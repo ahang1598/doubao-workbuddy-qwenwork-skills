@@ -1,6 +1,6 @@
 ---
 name: doubao-cron-scheduler
-description: '创建、查看、更新或删除定时任务：一次性提醒、周期任务、后台监控、多轮编辑已有任务、登录态/权限敏感任务。用于用户要求提醒我、稍后检查、持续关注、每天/每周/每小时运行、创建定时任务/提醒/监控、修改/暂停/删除刚才或已有定时任务。'
+description: 创建、查看、更新或删除定时任务，包括一次性提醒、周期任务、复杂日历规则、后台监控和多轮编辑。用于用户要求提醒、持续关注、按小时/日/周/月/年运行或管理已有任务。
 ---
 
 # 定时任务Skill
@@ -15,12 +15,23 @@ description: '创建、查看、更新或删除定时任务：一次性提醒、
 
 | 工具名 | 用途 | 关键参数 |
 |---|---|---|
-| `create_cron_job` | 创建定时任务 | `title`、`query`、`schedule`、`schedule_type`(cron/at)、`enable`、`deadline`(可选) |
+| `create_cron_job` | 创建定时任务 | `title`、`query`、`schedule`、`schedule_type`(cron/at/rrule)、`enable`、`deadline`(可选) |
 | `update_cron_job` | 更新已存在的定时任务 | `cron_job_id`、`patch`(可改 title/query/schedule/schedule_type/enable/deadline) |
 | `delete_cron_job` | 删除定时任务 | `cron_job_id` |
 | `get_cron_job` | 查询单个任务详情 | `cron_job_id` |
 | `list_cron_jobs` | 按启用状态列出任务 | `enable`(true/false) |
 | `get_current_time` | 获取实时世界时间 | `timezone`(IANA 或 UTC 偏移)、`format`、`include_multiple` |
+
+## 工具返回约定
+
+- `create_cron_job` 和 `update_cron_job` 返回创建或更新后的任务详情，包括
+  `cron_job_id`、`title`、`schedule_type`、`schedule`、`status`、
+  `last_run_time`、`deadline`（如有）、`next_trigger_time`、`timezone` 和运行环境；
+  不返回 `query`。
+- `list_cron_jobs` 返回同一组任务详情字段，但不返回 `query`。需要查看某个任务的
+  `query` 时，使用 `get_cron_job`。
+- `get_cron_job` 在任务详情后单独返回完整的原始 `query`。只更新时间、标题或启用状态时
+  仍应省略 `patch.query`，由服务端保留原值。
 
 ## 锚定时间
 当下游动作需要绑定到\"现在\"这个绝对时间锚点，或当用户使用「现在、今天、明天、今晚、本周、本月、最近、N 天后、几分钟后」等相对时间表述时，必须先调用`get_current_time`拿到用户时区下的实时时间，再做后续决策——典型场景：
@@ -141,6 +152,22 @@ description: '创建、查看、更新或删除定时任务：一次性提醒、
 
 根据用户意图判断操作类型：新建、修改、删除或查询。
 
+### 单任务创建原则
+
+- 除非用户明确要求创建多个彼此独立的定时任务，否则优先只创建一个定时任务。
+- 创建前先判断用户要求的全部执行时间能否由一条标准 cron 准确表达；不能时，再判断能否由一条 RRULE 准确表达。只要其中一种可以准确表达，就只调用一次 `create_cron_job`。
+- 多个执行时间的小时与分钟不能由一条 cron 保持配对关系时，不要直接判定需要拆分。继续尝试用 RRULE 的 `BYHOUR`、`BYMINUTE` 生成当前 `FREQ` 周期内的完整候选集合，再用 `BYSETPOS` 按时间升序选出目标位置；只有最终集合与用户要求完全一致时才可使用。
+- 如果一条 cron 和一条 RRULE 都无法准确表达，必须先向用户说明需要拆分，并询问是否创建两个定时任务；未经用户明确确认，不得多次调用 `create_cron_job`。
+
+### deadline 使用规则
+
+- `cron`：支持 `deadline`。只有用户明确要求周期任务在某个日期时间后停止时才传；没有明确截止要求时不要传。
+- `at`：不要传 `deadline`，一次性执行时间由 `schedule` 决定。
+- `rrule`：
+  - 包含 `COUNT` 或 `UNTIL` 时不要传 `deadline`，终止条件以 RRULE 为准。
+  - 不包含 `COUNT`/`UNTIL`，且用户明确要求独立截止时间时，可以传 `deadline`。
+- `deadline` 使用任务时区下的 `YYYY-MM-DD HH:mm:ss` 格式。
+
 ### 创建定时任务
 
 使用 `create_cron_job` 创建新任务。
@@ -151,17 +178,108 @@ description: '创建、查看、更新或删除定时任务：一次性提醒、
 |---|---|
 | `title` | 短标题，如「提醒吃饭」「检查价格变化」「每周测试报告」 |
 | `query` | 写任务触发时真正要执行的事，应在这里描述该任务的具体目标、要求和输出期望。 |
-| `schedule_type` | 一次性任务用 `at`；周期性任务用 `cron` |
+| `schedule_type` | 一次性任务用 `at`；简单周期任务用 `cron`；复杂日历周期、带次数或结束时间的周期任务用 `rrule` |
 | `schedule` | 必须匹配 `schedule_type` |
 | `enable` | 用户未要求暂停时必须为 `true` |
-| `deadline` | 只有用户明确要求周期任务在某个截止时间后停止时才填写；`schedule_type: "at"` 时不要填写 |
+| `deadline` | 按上方“deadline 使用规则”填写 |
 
 
 **时间表达式规范**：
 - `at` 表达式使用 Linux at 可识别格式：`now + 1 minute`、`now + 2 hours`、`tomorrow 09:15`、`2026-04-12 19:13`。
 - 不要把 `in 1 minute` 写成 at 表达式；用户说「一分钟后」时写 `now + 1 minute`。
-- 周期任务用标准 Linux cron 表达式。
+- 简单周期任务优先使用标准 Linux cron 表达式。
+- 复杂日历周期、需要保持间隔相位或使用 `COUNT`/`UNTIL` 的任务使用 RRULE。
 - 除非用户明确且强烈要求，否则不要默认使用整点，尤其不要默认早上 9 点。
+
+### RRULE 调度规则
+
+#### 选择 RRULE
+
+以下场景使用 `schedule_type: "rrule"`：
+
+- 每两周、每三个月等需要保持 `INTERVAL` 相位的周期。
+- 每月最后一个工作日、每年第几个星期等复杂日历规则。
+- 用户要求执行固定次数，使用 `COUNT`。
+- 用户要求在某个本地日期时间后停止，使用 `UNTIL`。
+
+简单的每小时、每天、每周任务如果不需要上述能力，继续优先使用 cron。
+
+#### schedule 格式
+
+RRULE 的 `schedule` 必须一次性传入完整的两行文本：
+
+```text
+DTSTART:YYYYMMDDTHHMMSS
+RRULE:FREQ=...
+```
+
+- 第一行只能是 `DTSTART:`，第二行只能是 `RRULE:`，不得增加第三行。
+- `DTSTART` 是任务时区下的本地墙钟时间，也是周期相位锚点。
+- `schedule` 中禁止出现 `TZID`、结尾 `Z` 或 `+08:00` 等 UTC offset。
+- 不要向 `create_cron_job` 或 `update_cron_job` 传 timezone；任务时区由当前运行环境注入。
+- 必须保留 `RRULE:` 前缀，不要只传 `FREQ=...`。
+- `COUNT` 与 `UNTIL` 互斥；`COUNT` 必须在 1 到 1000 之间。
+- `DTSTART` 和 `UNTIL` 均只支持分钟精度：格式仍为 `YYYYMMDDTHHMMSS`，但最后两位秒必须固定为 `00`。
+- `UNTIL` 使用本地基本格式，例如 `UNTIL=20261231T235900`；不得省略秒字段，也不得带 `Z` 或 offset。
+- 不生成 `BYSECOND`、`WKST` 或其他未明确支持的扩展字段。
+
+#### deadline 规则
+
+- RRULE 包含 `COUNT` 或 `UNTIL` 时，不要传 `deadline`。
+- RRULE 不含终止条件，且用户明确要求独立截止时间时，才允许传 `deadline`。
+- 用户要求“执行 N 次”时使用 `COUNT=N`，不要自行换算 deadline。
+- 用户要求“运行到某日某时”时优先使用 `UNTIL`，不要同时再传 deadline。
+
+#### RRULE 示例
+
+每天 09:30 执行 10 次：
+
+```text
+DTSTART:20260917T093000
+RRULE:FREQ=DAILY;COUNT=10
+```
+
+从指定星期开始，每两周的周二、周四 10:30 执行：
+
+```text
+DTSTART:20260917T103000
+RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=TU,TH
+```
+
+每月最后一个工作日 18:00 执行：
+
+```text
+DTSTART:20260930T180000
+RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
+```
+
+每天 11:00、14:30 执行：
+
+```text
+DTSTART:20260901T110000
+RRULE:FREQ=DAILY;BYSETPOS=1,4;BYHOUR=11,14;BYMINUTE=0,30
+```
+
+上例中 `BYHOUR` 与 `BYMINUTE` 先生成按时间升序排列的
+`11:00、11:30、14:00、14:30`，再由 `BYSETPOS=1,4` 精确保留
+`11:00、14:30`。不得省略 `BYSETPOS` 而额外创建 `11:30、14:00`，
+也不得误判为必须拆成两个任务。
+
+每天执行并在本地时间 2026-12-31 23:59 后结束：
+
+```text
+DTSTART:20260917T090000
+RRULE:FREQ=DAILY;UNTIL=20261231T235900
+```
+
+#### 创建与更新
+
+- 创建前根据 `get_current_time` 返回的当前本地时间计算 DTSTART，但不要把时区写进 schedule。
+- 修改 RRULE 调度规则时，同时传完整的两行 `schedule` 和 `schedule_type: "rrule"`。
+- 只修改标题、query 或启用状态时，不要重写 schedule，避免改变 DTSTART 相位。
+- 更新前先用 `get_cron_job` 获取已有任务，保留用户未要求修改的字段。
+- 从 RRULE 中移除 `COUNT`/`UNTIL` 且用户没有要求新 deadline 时，不要在 patch 中保留旧 deadline。
+- 创建或更新成功后，以返回的 `schedule`、`timezone` 和 `next_trigger_time` 为准；`next_trigger_time` 可能包含系统稳定 jitter，不要求它与原始 RRULE 命中秒级相等。
 
 **创建成功后的回复**：
 - 告知已创建的任务名称。
@@ -177,16 +295,31 @@ description: '创建、查看、更新或删除定时任务：一次性提醒、
 
 使用 `update_cron_job` 更新已存在任务。
 
+**硬前置条件**：每次调用 `update_cron_job` 前，必须在同一任务执行中先成功调用
+`get_cron_job` 获取该任务的当前完整详情，并基于返回结果构造 `patch`。即使任务 ID
+或旧字段已在上下文、`list_cron_jobs`、`create_cron_job` 或此前 `update_cron_job`
+结果中出现，也不得跳过 `get_cron_job` 直接更新。
+
+**当前状态与最小 patch（硬约束）**：
+
+- `get_cron_job` 返回的任务详情是唯一可信的当前状态基线。任务中心或其他入口的修改均为有效状态；不得用历史对话、创建时承诺、旧工具返回或模型推测覆盖该结果。
+- 用户本轮明确提出的内容是唯一允许修改的增量。不得因当前状态与历史记录不一致而自行纠正、恢复或补全任何字段。
+- `patch` 只能包含用户本轮明确要求改变的字段。未明确要求改变的 `title`、`schedule`、`schedule_type`、`enable`、`deadline` 一律不得传入，即使传入值与当前值相同。
+- 用户说“保持不变”“原来那样”表示该字段不修改，应从 `patch` 省略；不得重新传入历史值或当前值。
+- 仅追加或修改任务内容时，必须基于 `get_cron_job` 返回的 `query` 合并新增需求，且 `patch` 只能包含 `query`。严禁同时传入时间、标题、启停状态或截止时间。
+- 只有用户明确要求修改时间、频率、启停、标题或截止时间时，才可传入对应字段。是否需要修改某字段存在歧义时，必须先澄清，不得根据历史承诺推断。
+- 更新成功后，以 `update_cron_job` 返回的任务详情为准；不得因返回时间与历史预期不同而再次修改调度字段。
+
 **参数填写**：
 
 | 参数 | 规则 |
 |---|---|
 | `cron_job_id` | 已存在的定时任务 ID，从 `get_cron_job` 或 `list_cron_jobs` 获取 |
-| `query` | 写任务触发时真正要执行的事，应在这里描述该任务的具体目标、要求和输出期望。 |
-| `schedule_type` | 一次性任务用 `at`；周期性任务用 `cron` |
-| `schedule` | 必须匹配 `schedule_type` |
-| `enable` | 用户未要求暂停时必须为 `true` |
-| `deadline` | 只有用户明确要求周期任务在某个截止时间后停止时才填写；`schedule_type: "at"` 时不要填写 |
+| `query` | 仅在用户要求修改任务内容时传。追加需求时基于 `get_cron_job` 返回的 query 合并后传入。 |
+| `schedule_type` | 仅在用户明确修改时间或频率时传；与 `schedule` 同时传入，且二者必须匹配。 |
+| `schedule` | 仅在用户明确修改时间或频率时传；必须匹配 `schedule_type`。 |
+| `enable` | 仅在用户明确要求暂停或恢复时传入。 |
+| `deadline` | 仅在用户明确要求修改截止时间时，按上方“deadline 使用规则”传入。 |
 
 **修改成功后的回复**：
 - 告知已更新的任务名称。
@@ -247,6 +380,10 @@ description: '创建、查看、更新或删除定时任务：一次性提醒、
 
 - 「20 分钟后提醒我休息一下」→ `at` + `now + 20 minutes`
 - 「每个工作日上午提醒我规划当天任务」→ `cron`，工作日 cron 表达式
+- 「从下周开始每两周周一提醒我」→ `rrule`，完整两行 schedule，并用 DTSTART 保持双周相位
+- 「每天提醒我，执行 10 次后停止」→ `rrule` + `COUNT=10`，不传 deadline
+- 「每月最后一个工作日提醒我结账」→ `rrule` + `BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1`
+- 「每天 11:00、14:30 提醒我」→ 一条 `rrule` + `BYSETPOS=1,4;BYHOUR=11,14;BYMINUTE=0,30`
 - 「每周一检查这个 repo 并总结失败测试」→ 周期任务，写清工作区、测试命令、输出格式和失败汇报方式
 - 「持续关注这个页面，价格变化时告诉我」→ 周期监控，写清 URL、登录态要求、对比标准和通知阈值
 - 「把刚才的提醒改到明天 10 点」→ 多轮编辑，先指代解析定位已有任务，再输出合并需求，用户确认后 update 修改时间
