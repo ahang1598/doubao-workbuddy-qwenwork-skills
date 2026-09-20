@@ -38,7 +38,7 @@ pulls:
 - `cnb pulls get-files --file-path 附件路径` — 获取 PR 附件
 
 skills:
-- `cnb skills list --json -g -p -a agent` — 列出本地 skills
+- `cnb skills list -p -a codebuddy --json` — 列出本地 skills
 
 ## 使用约定
 
@@ -47,6 +47,14 @@ skills:
 - **多行用单引号**：bash 参数为多行文本时用单引号，降低命令注入风险。
 - **范围限本仓**：快捷命令仅限当前仓库的当前 Issue/PR，跨仓库或跨编号请参考「更多 API」。
 - **提及不召唤**：评论中直接 @npc 会召唤 npc；仅提及不召唤时，用反引号包裹 `@npc`。
+  NPC 的触发条件见 `cnb-npc-search`，单独 `@仓库名` 不会触发。
+
+## 取正文里的图片与附件
+
+评论正文里的图片、附件 URL，一律用 `get-imgs` / `get-files` 取回，URL 从 `list-comments` 原文取：
+
+- **参数取 URL 的尾段**：图片取 `/imgs/<issues|pulls>/` 之后的部分，附件取 `/files/<issues|pulls>/` 之后的部分
+- **CLI 内置鉴权**：手写 `Authorization: Bearer` 或 `token` 都不被识别，只会拿到 400
 
 ## 常用链接
 

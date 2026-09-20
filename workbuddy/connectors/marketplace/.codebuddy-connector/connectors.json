@@ -7257,6 +7257,149 @@
         "Diagnose stores with a recent rebound in negative comments, and assign remediation priorities with recommended actions by risk tier.",
         "Screen food-safety red-line negative comments involving foreign objects and hygiene, summarize by store, flag risk levels, and generate a dedicated food-safety report."
       ]
+    },
+    {
+      "id": "kuka-service",
+      "name": "KUKA库卡专家",
+      "name_zh": "KUKA库卡专家",
+      "name_en": "KUKA Expert",
+      "description": "KUKA official intelligent service: answer questions about KUKA industrial robots, cobots, automation solutions, product selection and specifications.",
+      "description_zh": "库卡官方智能客服：把用户关于库卡工业机器人、协作机器人、自动化方案、产品选型、型号参数等问题，转交库卡智能问答客服并返回解答。",
+      "description_en": "KUKA official intelligent service: answer questions about KUKA industrial robots, cobots, automation solutions, product selection and specifications.",
+      "source": "kuka-service",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "库卡有哪些工业机器人产品系列？",
+        "帮我推荐一款负载 10kg 的协作机器人",
+        "KR 600 系列机器人的参数是什么？"
+      ],
+      "examples_en": [
+        "What product series does KUKA have for industrial robots?",
+        "Recommend a cobot with 10kg payload",
+        "What are the specifications of the KR 600 series?"
+      ]
+    },
+    {
+      "id": "mergerinfo",
+      "name": "MergerInfo 海外并购情报",
+      "name_en": "MergerInfo Cross-border M&A Intelligence",
+      "description": "Search overseas assets for sale, cross-border M&A events, and a company's deal activity over the past year.",
+      "description_zh": "查询海外待售标的、并购事件与巨头动向，以及指定企业近一年的交易动态。",
+      "description_en": "Search overseas assets for sale, cross-border M&A events, and a company's deal activity over the past year.",
+      "source": "mergerinfo",
+      "type": "mcp",
+      "version": "0.2.0",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "今天有哪些海外待售的工业制造标的？",
+        "最近两周半导体行业有哪些跨境并购事件？",
+        "最近有哪些巨头在海外出手？",
+        "NVIDIA 近一年有哪些交易动向？"
+      ],
+      "examples_en": [
+        "Which overseas industrial assets went up for sale today?",
+        "What cross-border semiconductor M&A happened in the last two weeks?",
+        "Which large acquirers have been active overseas recently?",
+        "What deal activity has NVIDIA had over the past year?"
+      ]
+    },
+    {
+      "id": "xinke-laile-analytics-enterprise",
+      "name": "新客来了数据分析企业版",
+      "name_zh": "新客来了数据分析企业版",
+      "name_en": "Xinke Laile Analytics Enterprise",
+      "description": "Analyze your company's lead trends, sources, and delivery performance.",
+      "description_zh": "通过自然语言分析企业自己的线索趋势、渠道来源和推送效果。",
+      "description_en": "Analyze your company's lead trends, sources, and delivery performance.",
+      "source": "xinke-laile-analytics-enterprise",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "分析我最近7天的线索趋势",
+        "统计本月各平台线索数量和占比",
+        "分析最近30天各平台的推送成功率"
+      ],
+      "examples_en": [
+        "Analyze my lead trend over the last 7 days",
+        "Compare lead volumes by platform this month",
+        "Analyze delivery success rates over the last 30 days"
+      ]
+    },
+    {
+      "id": "gt-generate-sql-data",
+      "name": "设备云维保",
+      "name_zh": "设备云维保",
+      "name_en": "Equipment Cloud Maintenance Data",
+      "description": "Query equipment, fault, maintenance, spare-parts inventory, and stock movement data with natural language. Supports statistics, trend analysis, category comparisons, and detail drill-down.",
+      "description_zh": "通过自然语言查询设备信息、故障报修、维修保养、备件库存及出入库记录，支持统计、趋势分析、分类对比和明细下钻。",
+      "description_en": "Query equipment, fault, maintenance, spare-parts inventory, and stock movement data with natural language. Supports statistics, trend analysis, category comparisons, and detail drill-down.",
+      "source": "gt-generate-sql-data",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询本月各部门的设备故障报修数量",
+        "当前正在维修的设备是哪些",
+        "列出当前库存低于库存下限的备件，并统计各仓库库存",
+        "统计上个月各班组的维修工作量"
+      ],
+      "examples_en": [
+        "Query the number of equipment fault reports by department this month",
+        "Which devices are currently undergoing fault repair?",
+        "List spare parts below the inventory threshold and summarize stock by warehouse",
+        "Compare the repair workload of each work team last month"
+      ]
+    },
+    {
+      "id": "verya-knowledgebase",
+      "name": "予非AI知识大脑",
+      "name_en": "verya",
+      "description": "Search verya knowledge, explore entity relations, and uncover insights with its knowledge graph.",
+      "description_zh": "连接后支持搜索、读取和总结予非AI知识大脑中的知识资料，融合知识图谱关联分析，通过自然语言快速定位文档、洞察实体关系并梳理知识脉络。",
+      "description_en": "Search verya knowledge, explore entity relations, and uncover insights with its knowledge graph.",
+      "source": "verya-knowledgebase",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "结合知识库与知识图谱，梳理目标领域的核心概念、实体关系和知识脉络",
+        "分析项目涉及的组织、产品与关键技术之间的关联，并标注信息来源",
+        "检索数据安全与权限管理相关制度，提炼关键要求和执行要点",
+        "对比不同产品部署方案的适用场景、技术要求与潜在风险"
+      ],
+      "examples_en": [
+        "Map key concepts, entities, and relationships using the knowledge base and knowledge graph",
+        "Analyze connections among organizations, products, and technologies, with cited sources",
+        "Review data security and access policies, then extract key requirements and actions",
+        "Compare product deployment options by use case, technical requirements, and risks"
+      ]
+    },
+    {
+      "id": "yichayun-trade-data",
+      "name": "易查云贸易数据",
+      "name_en": "Yichayun Trade Data",
+      "description": "Global customs trade data at your fingertips: find overseas buyers and suppliers by product, analyze market trends and partner-country shares, and look up company profiles and credit standing. Built on original shipment records and official statistics with clear time coverage.",
+      "description_zh": "全球海关贸易数据智能查询:按产品找海外采购商与供应商,分析市场趋势与伙伴国份额,查企业画像与资信。数据来自提单与官方统计原始记录,带明确时间口径,可追溯、可对账。",
+      "description_en": "Global customs trade data at your fingertips: find overseas buyers and suppliers by product, analyze market trends and partner-country shares, and look up company profiles and credit standing. Built on original shipment records and official statistics with clear time coverage.",
+      "source": "yichayun-trade-data",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "美国有哪些进口 LED 灯具的采购商?",
+        "锂电池出口到欧盟这两年是什么趋势?",
+        "这家越南公司平时都从哪些供应商采购、买些什么?",
+        "帮我查一下 ACME Trading 的企业背景和信用状况"
+      ],
+      "examples_en": [
+        "Which companies in the US import LED lighting?",
+        "How have lithium battery exports to the EU trended over the past two years?",
+        "What does this Vietnamese company buy, and from which suppliers?",
+        "Look up the company profile and credit standing of ACME Trading"
+      ]
     }
   ]
 }
