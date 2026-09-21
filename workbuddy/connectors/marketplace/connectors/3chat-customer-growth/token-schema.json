@@ -1,0 +1,22 @@
+{
+  "title": "3Chat 连接配置",
+  "title_en": "3Chat Connection Configuration",
+  "description": "API Key 仅存储在本机，由 WorkBuddy 在连接 MCP 服务时注入到连接 URL 的 Authorization 参数中，不会上传到云端。",
+  "description_en": "The API Key is stored locally only. WorkBuddy injects it into the Authorization parameter when connecting to the MCP service and does not upload it to the cloud.",
+  "docUrl": "https://group.3chatai.cn/t/topic/444",
+  "docLabel": "如何获取 Access Token？",
+  "docLabel_en": "How to get an Access Token?",
+  "fields": [
+    {
+      "key": "API_KEY",
+      "label": "3Chat API KEY",
+      "label_en": "3Chat API Key",
+      "type": "password",
+      "required": true,
+      "placeholder": "登陆 3Chat -> 开放平台 -> OAuth -> 创建并获取 APP KEY",
+      "placeholder_en": "Log in to 3Chat -> Open Platform -> OAuth -> Create and get an APP KEY",
+      "description": "用于访问服务 3Chat 连接器的个人访问令牌。",
+      "description_en": "A personal access token used to access the 3Chat connector service."
+    }
+  ]
+}

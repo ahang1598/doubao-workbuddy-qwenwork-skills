@@ -2723,12 +2723,14 @@
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "帮我了解今日的待办",
-        "帮我搭建一个项目管理系统",
+        "帮我在[表单名称]下录入一条客户数据",
+        "帮我查找一下[表单名称]下的任务",
         "帮我分析本月的销售经营数据，生成经营建议"
       ],
       "examples_en": [
         "Help me review today's to-do items",
-        "Help me build a project management system",
+        "Please help me add a customer record under [Form Name]",
+        "Please help me look up the tasks under [Form Name]",
         "Help me analyze this month's sales performance data and generate business recommendations"
       ],
       "visible_in": [
@@ -6303,6 +6305,30 @@
       ]
     },
     {
+      "id": "reportgem-research",
+      "name": "报告驿站",
+      "name_en": "Baogao Yizhan",
+      "description": "Baogao Yizhan aggregates tens of millions of research reports from hundreds of global research institutions, together with global company filings, U.S. SEC filings, global earnings calls, academic papers, public roadshows, charts and bilingual research materials. RAG-based structuring reduces token use and improves retrieval efficiency and research accuracy.",
+      "description_zh": "聚合数百家全球研究机构的千万级研报，并整合全球公司公告、美国SEC 文件，全球公司业绩会、学术论文，公开路演及图表，双语资料。经 RAG 结构化处理，减少 Token 消耗，提升检索效率和投研回答准确率。",
+      "description_en": "Baogao Yizhan aggregates tens of millions of research reports from hundreds of global research institutions, together with global company filings, U.S. SEC filings, global earnings calls, academic papers, public roadshows, charts and bilingual research materials. RAG-based structuring reduces token use and improves retrieval efficiency and research accuracy.",
+      "source": "reportgem-research",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "检索 300750 最近一个月的中外研报，并归纳支持与风险观点。",
+        "比较 NVIDIA 最近两份研报对数据中心收入的核心假设。",
+        "汇总 Microsoft 最近一季 10-Q、业绩会和研报对 Azure 增长的解释。",
+        "查找最近讨论 AI 数据中心资本开支的图表和表格，并注明来源。"
+      ],
+      "examples_en": [
+        "Find Chinese and global research on 300750 from the last month and summarize supporting and risk views.",
+        "Compare the core data-center revenue assumptions in the two latest NVIDIA reports.",
+        "Summarize how Microsoft's latest 10-Q, earnings call and research reports explain Azure growth.",
+        "Find recent charts and tables about AI data-center capital expenditure with source attribution."
+      ]
+    },
+    {
       "id": "noxinfluencer-cli",
       "name": "NoxInfluencer 红人数据与营销运营",
       "name_en": "NoxInfluencer Creator Intelligence & Marketing Ops",
@@ -6592,15 +6618,15 @@
     },
     {
       "id": "tapnow",
-      "name": "TapNow 创意工作室",
-      "name_zh": "TapNow 创意工作室",
-      "name_en": "TapNow Creative Studio",
+      "name": "TapNow",
+      "name_zh": "TapNow",
+      "name_en": "TapNow",
       "description": "A visual creative studio inside WorkBuddy, powered by the TapNow Creative OS multi-model generation pipeline: from creative ideation to visual design, with ready-to-use, editable results. Built for office, marketing and social media scenarios.",
       "description_zh": "WorkBuddy 里的视觉创意工作室：由 TapNow Creative OS 多模型生成管线驱动，覆盖从创意构思到视觉设计的完整流程，产出直接可用、可继续编辑。适用于办公、营销、自媒体等场景。",
       "description_en": "A visual creative studio inside WorkBuddy, powered by the TapNow Creative OS multi-model generation pipeline: from creative ideation to visual design, with ready-to-use, editable results. Built for office, marketing and social media scenarios.",
       "source": "tapnow",
       "type": "mcp",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "帮我把这份方案的每个章节都配一张商务风格的插图",
@@ -7399,6 +7425,101 @@
         "How have lithium battery exports to the EU trended over the past two years?",
         "What does this Vietnamese company buy, and from which suppliers?",
         "Look up the company profile and credit standing of ACME Trading"
+      ]
+    },
+    {
+      "id": "3chat-customer-growth",
+      "name": "3Chat 私域客户运营",
+      "name_zh": "3Chat 私域客户运营",
+      "name_en": "3Chat Customer Growth",
+      "description": "面向使用 AI 客服、销售智能体开展私域运营和客户转化的企业与商家。可在 WorkBuddy 中，通过自然语言查找、筛选和理解微信、企业微信、小红书、抖音等渠道中的真实客户，获取客户画像、历史沟通、兴趣偏好、购买意向和成交阶段，并执行单客户触达、批量营销、客户激活和精准跟进。客户回复后，可由 3Chat AI 客服/销售智能体继续自动接待、回答咨询、识别高意向客户、处理销售异议并推进成交，形成客户洞察、精准触达、AI 接待、持续跟进、成交转化的私域客户运营闭环。当前能力基于企业已接入 3Chat 的客户和渠道数据，不用于获取企业尚未拥有或未授权访问的外部用户数据。",
+      "description_zh": "面向使用AI客服、销售智能体开展私域运营和客户转化的企业与商家。可在WorkBuddy中，通过自然语言查找、筛选和理解微信、企业微信、小红书、抖音等渠道中的真实客户，获取客户画像、历史沟通、兴趣偏好、购买意向和成交阶段，并执行单客户触达、批量营销、客户激活和精准跟进。客户回复后，可由3Chat AI客服/销售智能体继续自动接待、回答咨询、识别高意向客户、处理销售异议并推进成交，形成客户洞察、精准触达、AI接待、持续跟进、成交转化的私域客户运营闭环。当前能力基于企业已接入3Chat的客户和渠道数据，不用于获取企业尚未拥有或未授权访问的外部用户数据。",
+      "description_en": "Enables AI agents to operate private-domain customers across WeChat, RedNote, and Douyin. Find, filter, and understand real customers from these channels via natural language, including profiles, chat history, interests, purchase intent, and deal stage. Then run one-to-one outreach, batch marketing, reactivation, and precise follow-ups. Once customers reply, the 3Chat AI agent continues automatically by answering inquiries, spotting high-intent leads, handling objections, and supporting conversion. Based solely on the enterprise's own integrated customer and channel data, never external or unauthorized data.",
+      "source": "3chat-customer-growth",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "找出最近有明确需求的客户，按兴趣和意向整理一下名单",
+        "把这张活动图片和介绍，群发给刚才这些匹配的客户",
+        "找出最近30天咨询过但还没成交的高意向客户，看看他们主要卡在哪里？",
+        "林女士最近怎么样？帮我总结她的兴趣、成交阶段和主要顾虑",
+        "找出最近沉默的高价值客户，结合他们之前的兴趣做一轮精准唤醒"
+      ],
+      "examples_en": [
+        "Find customers who recently showed clear needs, and organize the list by interest and intent",
+        "Send this event image and introduction to the matched customers from earlier",
+        "Find high-intent customers who consulted in the last 30 days but have not closed, and analyze where they are stuck",
+        "How is Ms. Lin doing recently? Summarize her interests, deal stage, and main concerns",
+        "Find recently silent high-value customers and run a precise reactivation based on their previous interests"
+      ]
+    },
+    {
+      "id": "yuntu-ft-workbench",
+      "name": "云图外贸工作台",
+      "name_en": "Yuntu FT Workbench",
+      "description": "Bridge WorkBuddy skills to the FT Workbench H5: skills write buyer reports, global search, intel cards and follow-ups back into the workbench stored in your own EdgeOne KV.",
+      "description_zh": "把 WorkBuddy 技能生成的外贸开发结果（买家报告/全球搜索/情报卡/跟进）自动写回「云图外贸工作台」工作台，基于 H5 + EdgeOne KV 云存储，数据主权归属用户（BYOC）。",
+      "description_en": "Bridge WorkBuddy skills to the FT Workbench H5: skills write buyer reports, global search, intel cards and follow-ups back into the workbench stored in your own EdgeOne KV.",
+      "source": "yuntu-ft-workbench",
+      "type": "mcp",
+      "examples_zh": [
+        "把刚才的买家报告保存到外贸工作台",
+        "存到工作台",
+        "帮我把这个买家的全球搜索情报保存到工作台"
+      ],
+      "examples_en": [
+        "Save the buyer report to the FT Workbench",
+        "Save this to the workbench",
+        "Save the global search intel for this buyer to the FT Workbench"
+      ]
+    },
+    {
+      "id": "charge-order-query",
+      "name": "订单门店查询",
+      "name_zh": "订单门店查询",
+      "name_en": "Order & Store Query",
+      "description": "Query shared power bank rental orders by phone number and nearby stores by coordinates, all through natural language.",
+      "description_zh": "按手机号查询共享充电宝租借订单，按经纬度查询附近门店，用自然语言即可查询订单明细与最近网点。",
+      "description_en": "Query shared power bank rental orders by phone number and nearby stores by coordinates, all through natural language.",
+      "source": "charge-order-query",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "帮我查一下手机号 13800000000 的租借订单",
+        "北京后海附近最近的门店有哪些",
+        "查一下离我最近的前 3 家门店"
+      ],
+      "examples_en": [
+        "Find rental orders for phone number 13800000000",
+        "What are the nearest stores around Beijing Houhai",
+        "Show me the 3 closest stores to my location"
+      ]
+    },
+    {
+      "id": "gongxie-erp",
+      "name": "共鞋ERP",
+      "name_en": "Gongxie ERP",
+      "description": "Query and manage warehouses, inventory, products, orders, and stock movements in Gongxie ERP.",
+      "description_zh": "查询并管理共鞋ERP中的仓库、库存、商品、订单及出入库业务。",
+      "description_en": "Query and manage warehouses, inventory, products, orders, and stock movements in Gongxie ERP.",
+      "source": "gongxie-erp",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询我有权限的仓库",
+        "查询货号 GX123 的库存",
+        "查询最近 7 天的出库单",
+        "预览一笔商品入库操作"
+      ],
+      "examples_en": [
+        "List the warehouses I can access",
+        "Check inventory for style GX123",
+        "List outbound orders from the last seven days",
+        "Preview a product inbound operation"
       ]
     }
   ]

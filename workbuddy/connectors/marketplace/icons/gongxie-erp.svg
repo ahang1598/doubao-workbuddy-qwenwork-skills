@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">共鞋ERP</title>
+  <rect width="64" height="64" rx="14" fill="#111111"/>
+  <path d="M13 39c7-1 13-5 17-12l5 5c3 3 7 5 12 6l5 1v8H13z" fill="#ffffff"/>
+  <path d="M18 45h30" stroke="#26d9a7" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="47" cy="18" r="7" fill="#26d9a7"/>
+  <path d="M44 18h6M47 15v6" stroke="#111111" stroke-width="2" stroke-linecap="round"/>
+</svg>

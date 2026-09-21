@@ -1,8 +1,8 @@
 {
     "title": "氚云 MCP 对接配置",
     "title_en": "H3Yun MCP Configuration",
-    "description": "连接您的 氚云 账号，支持快速创建应用表单、管理业务数据、以流程驱动审批与任务流转。Token 和 Base Url 仅存储在本机 ~/.workbuddy 下。",
-    "description_en": "Connect your H3Yun account, it supports rapid app creation, business data management, and workflow-driven approvals and task routing. Token and Base URL are stored only locally under ~/.workbuddy.",
+    "description": "连接您的 氚云 账号，支持快速创建应用表单、管理业务数据、以流程驱动审批与任务流转",
+    "description_en": "Connect your H3Yun account,it supports rapid app creation, business data management, and workflow-driven approvals and task routing.",
     "docUrl": "https://help.h3yun.com/280976225/",
     "docLabel": "如何获取 氚云 个人Token？",
     "docLabel_en": "How to get H3Yun personal token?",

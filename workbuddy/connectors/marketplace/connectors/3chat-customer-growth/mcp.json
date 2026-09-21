@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "3chat-customer-growth": {
+      "type": "streamableHttp",
+      "url": "https://app.3chatai.cn/mcp",
+      "headers": {
+        "Authorization": "Bearer ${API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}
