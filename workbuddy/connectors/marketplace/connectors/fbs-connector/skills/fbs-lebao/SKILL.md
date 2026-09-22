@@ -1,13 +1,17 @@
 ---
 name: fbs-connector-lebao
 description: "福帮手乐包状态查询、领取与凭证兑换。奖励只在已有绑定和价值证据后处理；服务端掉落工具由包侧禁用，不向模型开放。"
-version: "2026.9.10"
+description_zh: "查询、领取和兑换福帮手奖励凭证，保留原奖励合同。"
+description_en: "Query, claim and redeem FBSir reward vouchers under the existing reward contract."
+version: "2026.9.20"
 author: "FBSir"
 ---
 
 # 福帮手乐包后续
 
-执行本技能时同时遵守 `fbs-connector` 的公共安全与输出规则，并完整读取 `references/lebao-lifecycle.md` 后再组织参数。
+执行本技能时遵守[公共路由](../fbs-connector/SKILL.md)，完整读取 [lebao-lifecycle](references/lebao-lifecycle.md) 后组织参数。乐包凭证不等于会员钱包；不得把本工具族改为会员积分结算。
+
+本页流程仅在旧生产资源实际开放时适用。当前OAuth画像beta不开放lebao_status/lebao_claim/lebao_redeem；不因旧工具名存在文档就尝试，也不改用会员积分工具或另一个后台代调。
 
 ## 固定顺序
 

@@ -56,7 +56,11 @@ skills:
 
 评论正文里的图片、附件 URL，一律用 `get-imgs` / `get-files` 取回，URL 从 `list-comments` 原文取：
 
-- **参数取 URL 的尾段**：图片取 `/imgs/<issues|pulls>/` 之后的部分，附件取 `/files/<issues|pulls>/` 之后的部分
+- **参数取 URL 的尾段，且必须含数字 ID 段**：图片取 `/imgs/<issues|pulls>/` 之后的**完整尾段**，
+  附件取 `/files/<issues|pulls>/` 之后的完整尾段；尾段首位的数字 ID 段不能省，漏掉会返回 `404 Resource not found`：
+  - 原文 `.../-/imgs/issues/2101868753481326592/Lma2nfHjnchalMtHZcq4OA/6d7ab033-xxxx.png`
+  - 正确 `2101868753481326592/Lma2nfHjnchalMtHZcq4OA/6d7ab033-xxxx.png` ✅
+  - 漏 ID `Lma2nfHjnchalMtHZcq4OA/6d7ab033-xxxx.png` ❌ `404`
 - **CLI 内置鉴权**：手写 `Authorization: Bearer` 或 `token` 都不被识别，只会拿到 400
 
 ## 常用链接

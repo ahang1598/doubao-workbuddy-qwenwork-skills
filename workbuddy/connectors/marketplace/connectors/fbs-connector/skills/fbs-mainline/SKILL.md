@@ -1,33 +1,38 @@
 ---
 name: fbs-connector-mainline
-description: "福帮手身份、专家归因、场景方案与进度主线。任何自然入口先确认身份与服务端下一步，再原样读取场景；只有内容真实交付后才记录首值或继续使用。"
-version: "2026.9.10"
+description: "福帮手身份、场景与进度主线。先核对用户工具限制和实际加载产品包ID，再按服务原参数接续；获准且真实交付后才记录进度。"
+description_zh: "核对福帮手服务身份与场景，仅在真实交付后记录使用进度。"
+description_en: "Check FBSir identity and scene routing, then record progress only after actual delivery."
+version: "2026.9.20"
 author: "FBSir"
 ---
 
 # 福帮手身份与场景主线
 
-执行本技能时同时遵守 `fbs-connector` 的公共安全与输出规则。
+执行前读取[身份发送与工具边界](references/identity-and-permission.md)，遵守[公共路由](../fbs-connector/SKILL.md)和当前产品前置。机器约定见[身份合同](references/identity-contract.json)，不把它当宿主证明。
+
+以下是原API2主线。在已审核OAuth画像资源上，仅legacyBridge.available且本轮工具面包含的core3可沿用；新七工具按各自合同工作，不必先走场景链才能按用途读取画像。新资源每次请求都须OAuth，原匿名入口不适用。
 
 ## 固定顺序
 
-1. 调用 `skill_whoami`：只传已确认的当前专家、入口、宿主与来源字段。
+1. 具名调用 `skill_whoami` 前，从本轮实际加载清单的 `name` 取得产品包ID，优先放入 `packageName`。已知 `productId` 应与包ID一致；已知成员入口和实际包版本按原值附带。未知版本省略，不填连接器版本，也不因版本升级改用别的身份。OAuth画像预览仍单独按其当前服务合同处理。
 2. 仅当返回明确指定场景/身份读取类下一工具时，按 `references/action-envelope.md` 校验并原样转发完整 `actionEnvelope.toolArguments`；不得挑字段、改名或把 envelope 之外的候选字段并入调用。写入型下一步转交对应子技能并重新检查用户意图与写前条件。
 3. 先把场景内容转化为用户可用的首值或继续使用成果。
-4. 只有真实交付完成后，才按返回参数调用 `skill_consume`，记录一次 `first_value_completed` 或 `continued_use_completed`。
+4. 只有真实交付完成后，才按返回参数调用 `skill_consume`，记录一次 `first_value_completed` 或 `continued_use_completed`。 文件型成果必须先获得宿主展示工具对本次文件的成功回执；聊天型成果必须先出现在用户可见正文。创建文件、检查通过或进度播报均不满足此门，不能先consume后present_files。
 
 ## 强制边界
 
 - 没有上一跳可验证 action envelope 时，不主动调用场景查询，也不跟随奖励或写入型下一步。
 - 原样转发表示不增删、不改名、不改大小写；来源标记只能由真实宿主或测试夹具提供。
 - `skill_consume` 必须使用同一 action envelope 中服务端提供的幂等键、binding 和真实交付类型；丢响应时先按当前工具能力回读未决状态，不生成新键重复记录。
-- 连接器不可用时，立即回到聊天首值，不要求用户先安装、授权或排查连接器。
+- 连接器不可用时按当前产品合同提供允许的聊天帮助；不全局覆盖超级独董会三授权等产品专用前置，不因画像不可用增加阻塞。
 
 ## 归因
 
-- 当前研究范围 13 项专家的稳定身份字段见 `references/expert-routing.md`；专家各自版本不参与稳定路由，也不得改写为连接器版本。
-- 无法确认具体产品时，只传确认过的字段。服务端返回默认或未知归因时，如实降级，不宣称已完成产品归因。
-- 测试必须在请求头和工具参数两层都标记 `probe` / `test`，不得伪装为自然 WorkBuddy 请求。
+- 产品身份及待核映射见 [expert-routing](references/expert-routing.md)；专家、Skill 与连接器分别计型，版本不用于猜测身份。
+- 产品包ID是默认正式资源的识别主键，版本仅作观测；显式身份冲突不能靠删除字段绕过。遇 `FBS_ATTRIBUTION_FIELDS_MISSING`，仅服务明确未接受且允许补正时，按身份说明对只读调用最多纠正一次；写操作不自动重试。
+- text-only `attribution`是服务对声明的解释；null保持未知，路由登记不等于账户/宿主认证，不自行提升信用flags。
+- 测试属性来自真实验证配置和服务准入。旧契约支持的probe/test字段才可发送；OAuth beta不允许在封闭schema里额外塞测试字段，也不由模型手工改请求头。合成账号、来源声明和技术审计不当自然WorkBuddy使用证明。
 - 输入、服务登记或返回的规范化身份冲突时，保留 raw claim、规范化值和冲突原因；归因相关写入停止，聊天首值仍可继续。
 
 ## 工具最小合同
@@ -36,8 +41,10 @@ author: "FBSir"
 
 | 工具 | 最小前置 | 成功判定 | 副作用 |
 | --- | --- | --- | --- |
-| `skill_whoami` | 只传已确认身份/入口；匿名也可调用 | 返回有效身份/路由信封与下一步 | 业务读取，可产生 binding/观测记录 |
+| `skill_whoami` | 真实产品包ID；版本已知则传、未知则省略；匿名仅限允许它的旧资源，OAuth core另需account:read | 返回有效身份/路由信封与下一步 | 业务读取，可产生binding/观测记录 |
 | `fbs_scene_pack_query` | whoami 明确指定；同一绑定原样转发 | 返回场景内容及可验证下一步 | 业务读取，可产生 binding/观测记录 |
 | `skill_consume` | 内容已真实交付；事件类型与幂等键明确 | 服务端确认进度记录成功 | 写使用进度 |
+
+这三个原名保留旧API2进度语义。OAuth core3另由网关核对当前账号/client/grant及原始下一跳，skill_consume需要work:write；不路由成会员结算或扣分。缺core时仍可按其自身授权使用新画像工具，不代理另一上游。
 
 任何 `isError=true`、业务 `success=false`、错误包络或缺失预期字段都不是成功。

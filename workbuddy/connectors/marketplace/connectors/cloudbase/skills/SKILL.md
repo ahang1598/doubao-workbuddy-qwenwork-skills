@@ -3,7 +3,7 @@ name: cloudbase
 description: "Use this skill when you develop, design, build, deploy, debug, migrate, or troubleshoot CloudBase (腾讯云开发, 云开发, TCB, 微信云开发) projects — Web, 微信小程序, 小程序, uni-app, mobile (iOS, Android, Flutter, React Native). Covers UI (页面, 界面, 表单, dashboard, prototype, 原型); auth (登录, 注册, OAuth, publishable key); databases (NoSQL 文档数据库, MySQL 关系型数据库, PostgreSQL/CloudBase PG, app.rdb(), queryPgDatabase/managePgDatabase, CRUD, security rules); 云函数/cloud functions (serverless, scf_bootstrap); CloudRun (云托管, Dockerfile); 云存储; built-in AI (内置大模型, AI 对话, streaming, 流式输出, 图片生成, generateText, streamText, createModel, generateImage, TokenHub, Hunyuan, DeepSeek, GLM, Kimi, Token Credits 资源包, 小程序成长计划); third-party/custom model onboarding (第三方大模型接入, 大模型调用, LLM API); AI agent (智能体, AG-UI, LangGraph); ops troubleshooting (巡检, 诊断, 日志); spec workflow (需求文档, 技术方案, requirements, tasks.md). Do NOT use for non-CloudBase projects, pure frontend without CloudBase, or self-hosted backends without CloudBase."
 description_zh: 为你的小程序和 Web/H5 提供一体化运行与部署环境，包括数据库、云函数、云存储、身份权限和静态托管
 description_en: An all-in-one runtime and deployment environment for WeChat Mini Programs and Web/H5 apps, including database, cloud functions, cloud storage, identity and access control, and static hosting.
-version: 2.34.5
+version: 2.34.6
 ---
 
 # CloudBase Development Guidelines
@@ -40,6 +40,7 @@ Infer it when you can (console domain, envId, an existing error); otherwise **as
 | Remote MCP (preferred) | `https://tcb-api.cloud.tencent.com/mcp/v1` | `https://tcb-api.tencentcloud.com/mcp/v1` |
 | Local stdio MCP | default — nothing to set | `TCB_SITE=intl` + `TCB_REGION=ap-singapore` |
 | `tcb` CLI | default | `TCB_IS_INTL=true` (or `tcb config set isIntl true`) |
+| Project record `.cloudbase/project.json` | `site` omitted, or `"domestic"` | `"site": "intl"`, `"region": "ap-singapore"` |
 | Console | `tcb.cloud.tencent.com` | `tcb.tencentcloud.com` |
 | Default region | `ap-shanghai` | `ap-singapore` |
 | NoSQL / document DB tools | available | **not available** |
@@ -47,8 +48,9 @@ Infer it when you can (console domain, envId, an existing error); otherwise **as
 - **International users: connect the international remote MCP endpoint directly** — `https://tcb-api.tencentcloud.com/mcp/v1`. It is a first-class hosted endpoint; OAuth covers the login. The site is decided by the host, so there is no `site` query parameter to pass.
 - Domestic remote MCP is the same shape at `https://tcb-api.cloud.tencent.com/mcp/v1` — that stays the default for domestic users.
 - `TCB_IS_INTL` (CLI) and `TCB_SITE` (MCP) are **different variable names for different tools**. Set the one matching the tool in use; setting the wrong one silently does nothing.
+- On a first run, **settle the site once and persist it** — the CLI switch is machine-global, the MCP switch is per-client, and only `.cloudbase/project.json` is project-scoped and readable by MCP after a restart. Follow `references/site-onboarding.md`; do not re-ask on later sessions.
 
-Details and copy-paste configs: `references/mcp-setup.md`. CLI specifics: `references/tooling-fallback.md`.
+Details and copy-paste configs: `references/mcp-setup.md`. CLI specifics: `references/tooling-fallback.md`. First-run orchestration (trigger/skip, conflict arbitration, MCP-down fallback): `references/site-onboarding.md`.
 
 ## Workflow
 
@@ -172,6 +174,7 @@ Prefer CloudBase MCP for management/deploy when tools are loaded in the current 
 Load only when needed (do not expand this entry):
 
 - `references/tooling-fallback.md` — MCP vs `tcb` CLI decision tree for first session / missing tools
+- `references/site-onboarding.md` — first-run site onboarding: trigger/skip, persistence, conflict arbitration, MCP-down fallback
 - `references/deployment-workflow.md` — deploy backend/frontend, `manageApps` vs hosting, URL/docs updates, optional post-deployment Deployment Share offer (§5)
 - `references/console-links.md` — console hash paths after creating resources
 - `references/scenarios.md` — user-need → CloudBase capability mapping
@@ -187,4 +190,5 @@ All packaged reference files (required for skill lint reachability):
 - [deployment-workflow.md](references/deployment-workflow.md)
 - [mcp-setup.md](references/mcp-setup.md)
 - [scenarios.md](references/scenarios.md)
+- [site-onboarding.md](references/site-onboarding.md)
 - [tooling-fallback.md](references/tooling-fallback.md)

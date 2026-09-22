@@ -3,7 +3,7 @@
   "title_en": "VariFlight MCP User Configuration",
   "description": "填写面向 C 端用户的飞常准 MCP Key。WorkBuddy 将凭证保存在本机，并在连接时注入请求头。个人行程、统计和关注操作仅作用于该 Key 绑定的当前用户。",
   "description_en": "Enter a consumer VariFlight MCP key. WorkBuddy stores it locally and injects it into request headers. Personal trips, statistics, and follow actions are limited to the user bound to this key.",
-  "docUrl": "https://app.variflight.com/html/mcp/",
+  "docUrl": "https://cmcp.variflight.com/",
   "docLabel": "打开飞常准 MCP 开放平台获取 Key",
   "docLabel_en": "Open the VariFlight MCP platform to get a key",
   "fields": [

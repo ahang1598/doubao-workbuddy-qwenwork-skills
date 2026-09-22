@@ -2,6 +2,8 @@
 
 参数 schema 以当前 `tools/list` 为准；本文件只固定安全所需的最小合同。
 
+适用范围是旧奖励资源。画像OAuth Gateway当前不提供本页奖励工具，以下参数及恢复方式不跨资源沿用；lebao_drop继续在canonical配置禁用。
+
 ## `lebao_status`（只读）
 
 - 至少提供 `voucherId`、`serverBindingId`、`anonymousUserCodeHash` 之一。

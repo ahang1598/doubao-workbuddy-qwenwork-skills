@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>ThinkingAI AE</title>
+  <defs>
+    <linearGradient id="background" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#675CFF"/>
+      <stop offset="1" stop-color="#2F80ED"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#background)"/>
+  <path d="M15 44 27.2 18h5.6L45 44h-7l-2.4-5.6H24.2L21.9 44H15Zm11.8-11.7h6.3L30 24.8l-3.2 7.5Z" fill="#fff"/>
+  <path d="M42.5 18H49v26h-6.5z" fill="#fff" opacity=".88"/>
+</svg>

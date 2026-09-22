@@ -492,9 +492,9 @@
       "id": "fbs-connector",
       "name": "福帮手",
       "name_en": "Fbsir",
-      "description": "FBSir for WorkBuddy: identity, scene plans, progress, reward status, and expert handoffs.",
-      "description_zh": "福帮手人机协同连接器：识别当前身份与专家入口，匹配可执行场景方案，记录首值与继续使用进度，并查询乐包状态或衔接后续服务。",
-      "description_en": "FBSir for WorkBuddy: identity, scene plans, progress, reward status, and expert handoffs.",
+      "description": "Use FBSir identity, scene plans, progress and reward workflows in WorkBuddy, subject to available services and permissions.",
+      "description_zh": "福帮手连接器：协助确认服务身份、匹配场景方案、记录已完成进度并查询乐包。实际能力以当前服务与授权范围为准。",
+      "description_en": "Use FBSir identity, scene plans, progress and reward workflows in WorkBuddy, subject to available services and permissions.",
       "source": "fbs-connector",
       "minWorkbuddyVersion": "5.0.0",
       "examples_zh": [
@@ -502,14 +502,14 @@
         "根据我正在使用的专家和当前目标，匹配一个可执行的场景方案。",
         "我已经完成了第一步，请帮我记录进度并安排后续。",
         "查询我的乐包状态，并说明现在适合领取、兑换还是继续完成任务。",
-        "把这次协作归到我正在使用的福帮手专家名下。"
+        "说明当前可用的福帮手服务，以及尚未确认的进度。"
       ],
       "examples_en": [
         "Check my current FBSir identity and recommend the safest next step.",
         "Match my active expert and goal to an actionable scene plan.",
         "I finished the first step; record the progress and guide the follow-up.",
         "Check my reward status and explain whether I should claim, redeem, or continue first.",
-        "Attribute this collaboration to the FBSir expert I am currently using."
+        "Explain the FBSir services currently available and any progress that is still unconfirmed."
       ],
       "visible_in": [
         "internal",
@@ -2713,13 +2713,14 @@
     {
       "id": "h3yun-connector",
       "name": "氚云",
-      "name_en": "H3Yun",
-      "description": "With the H3Yun connector, businesses can quickly turn everyday operations into configurable, collaborative, and traceable digital applications. It supports rapid app creation, business data management, and workflow-driven approvals and task routing, making it suitable for a wide range of scenarios including customer, project, procurement, inventory, and after-sales management.",
+      "name_zh": "氚云",
+      "name_en": "h3yun",
+      "description": "通过氚云连接器，将日常业务快速构建为可配置、可协同、可追踪的数字化应用。支持快速创建应用表单、管理业务数据、以流程驱动审批与任务流转，适用于客户、项目、采购、库存、售后等多类业务管理场景。",
       "description_zh": "通过氚云连接器，将日常业务快速构建为可配置、可协同、可追踪的数字化应用。支持快速创建应用表单、管理业务数据、以流程驱动审批与任务流转，适用于客户、项目、采购、库存、售后等多类业务管理场景。",
       "description_en": "With the H3Yun connector, businesses can quickly turn everyday operations into configurable, collaborative, and traceable digital applications. It supports rapid app creation, business data management, and workflow-driven approvals and task routing, making it suitable for a wide range of scenarios including customer, project, procurement, inventory, and after-sales management.",
       "source": "h3yun-connector",
+      "version": "1.0.1",
       "type": "mcp",
-      "auth_mode": "token",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "帮我了解今日的待办",
@@ -2728,16 +2729,10 @@
         "帮我分析本月的销售经营数据，生成经营建议"
       ],
       "examples_en": [
-        "Help me review today's to-do items",
+        "Help me review today’s to-do items",
         "Please help me add a customer record under [Form Name]",
         "Please help me look up the tasks under [Form Name]",
-        "Help me analyze this month's sales performance data and generate business recommendations"
-      ],
-      "visible_in": [
-        "internal",
-        "iOA",
-        "cloudhosted",
-        "selfhosted"
+        "Help me analyze this month’s sales performance data and generate business recommendations"
       ]
     },
     {
@@ -4008,25 +4003,25 @@
       "name": "AgentEarth 金融电商社媒工具集",
       "name_zh": "AgentEarth 金融电商社媒工具集",
       "name_en": "AgentEarth: Finance, E‑commerce & Social Media Toolkit",
-      "description": "专业金融股票行情、电商社媒数据、内容生成、搜索抓取、学术论文与专利信息、地图信息等。一次注册便可调用不同领域专业数据，无需逐一配置各类服务。目前数据 API 已覆盖金融市场（股票 / A股 / 美股 / 加密货币 / 外汇 / 财报基本面）、电商消费（TikTok / 抖音 / 小红书 / 天猫淘宝 / 亚马逊选品）、多模态生成（AI 图像 / 视频生成、文字渲染）、搜索与采集（SEO / 语义搜索 / 网页爬取代理）、地图与天气（高德 / 地图 / 地理编码 / 全球及本地天气）、社交媒体（X/Twitter / YouTube）及文娱（影视 / 招聘 / 新闻 / 学术）几大领域。",
-      "description_zh": "专业金融股票行情、电商社媒数据、内容生成、搜索抓取、学术论文与专利信息、地图信息等。一次注册便可调用不同领域专业数据，无需逐一配置各类服务。目前数据 API 已覆盖金融市场（股票 / A股 / 美股 / 加密货币 / 外汇 / 财报基本面）、电商消费（TikTok / 抖音 / 小红书 / 天猫淘宝 / 亚马逊选品）、多模态生成（AI 图像 / 视频生成、文字渲染）、搜索与采集（SEO / 语义搜索 / 网页爬取代理）、地图与天气（高德 / 地图 / 地理编码 / 全球及本地天气）、社交媒体（X/Twitter / YouTube）及文娱（影视 / 招聘 / 新闻 / 学术）几大领域。",
-      "description_en": "Professional financial market quotes, e-commerce and social-media data, content generation, search and scraping, academic papers and patent information, maps, and more. A single registration unlocks professional data across all these domains with no need to configure each service one by one. Data APIs currently cover financial markets (stocks / A-shares / US stocks / crypto / forex / fundamentals), e-commerce (TikTok / Douyin / Xiaohongshu / Tmall-Taobao / Amazon), multimodal generation (AI image / video generation, text rendering), search and scraping (SEO / semantic search / web crawling agents), maps and weather (Amap / geocoding / global and local weather), social media (X/Twitter / YouTube), and entertainment (film / recruitment / news / academic).",
+      "description": "专业金融股票行情、电商社媒数据、内容生成、搜索抓取、学术论文与专利信息、地图信息等。只需一次注册便可调用不同领域专业数据，无需逐一配置各类服务，价格相对官方有大幅折扣。目前已覆盖以下领域：金融： 查询 A股、美股股票行情、股价、K线、成交量、公司财务、财报及基本面数据，覆盖基金、ETF、外汇、汇率、比特币和加密货币，辅助股票与公司研究、投资分析和市场跟踪。接入 Tushare、CoinGecko 等金融数据服务。内容生成： 支持 AI 生图、文生图、图生图、商品图（如小红书图）、海报、抠图、文字渲染、图生视频、文生视频、数字人口播、配音、背景音乐与音效生成。聚合字节跳动即梦相关模型 Dreamina 即梦、Seedream、Seedance，以及可灵 Kling、通义千问 Qwen、通义万相 Wan、腾讯混元 Hunyuan、MiniMax／海螺 AI、智谱 GLM、Google Gemini／Nano Banana／Veo、OpenAI GPT Image／Whisper、Stable Diffusion、FLUX、HeyGen、ElevenLabs 等模型与工具，满足图片制作、视频创作和音频处理需求。信息检索： 按关键词开展联网搜索、新闻查询、行业调研和深度研究，获取 SEO 数据、语义搜索结果、网页内容提取与爬取代理服务。接入 Perplexity、Tavily、Exa、Firecrawl、Linkup 等；支持论文、学术文献、引用关系与专利信息检索，X（Twitter／推特）、YouTube、TikTok 社媒内容与数据查询，以及 GitHub 仓库、代码和开发文档查询。电商： 获取抖音、TikTok Shop、淘宝、天猫、1688、亚马逊、Shopee、Temu 等平台相关数据，通过蝉妈妈、Kalodata、Sorftime 等服务查询商品、店铺、达人、直播及带货表现，辅助国内与跨境选品、供应商查找、市场调研和竞品分析。其他： 提供高德地图 Amap、和风天气 QWeather 等地图与天气服务，支持地点查询、地理编码、全球及本地天气查询，辅助出行规划；支持 OCR 图片文字识别、文档解析、PDF／Word／Excel／PPT 内容提取，并提供影视、招聘等查询。",
+      "description_zh": "专业金融股票行情、电商社媒数据、内容生成、搜索抓取、学术论文与专利信息、地图信息等。只需一次注册便可调用不同领域专业数据，无需逐一配置各类服务，价格相对官方有大幅折扣。目前已覆盖以下领域：金融： 查询 A股、美股股票行情、股价、K线、成交量、公司财务、财报及基本面数据，覆盖基金、ETF、外汇、汇率、比特币和加密货币，辅助股票与公司研究、投资分析和市场跟踪。接入 Tushare、CoinGecko 等金融数据服务。内容生成： 支持 AI 生图、文生图、图生图、商品图（如小红书图）、海报、抠图、文字渲染、图生视频、文生视频、数字人口播、配音、背景音乐与音效生成。聚合字节跳动即梦相关模型 Dreamina 即梦、Seedream、Seedance，以及可灵 Kling、通义千问 Qwen、通义万相 Wan、腾讯混元 Hunyuan、MiniMax／海螺 AI、智谱 GLM、Google Gemini／Nano Banana／Veo、OpenAI GPT Image／Whisper、Stable Diffusion、FLUX、HeyGen、ElevenLabs 等模型与工具，满足图片制作、视频创作和音频处理需求。信息检索： 按关键词开展联网搜索、新闻查询、行业调研和深度研究，获取 SEO 数据、语义搜索结果、网页内容提取与爬取代理服务。接入 Perplexity、Tavily、Exa、Firecrawl、Linkup 等；支持论文、学术文献、引用关系与专利信息检索，X（Twitter／推特）、YouTube、TikTok 社媒内容与数据查询，以及 GitHub 仓库、代码和开发文档查询。电商： 获取抖音、TikTok Shop、淘宝、天猫、1688、亚马逊、Shopee、Temu 等平台相关数据，通过蝉妈妈、Kalodata、Sorftime 等服务查询商品、店铺、达人、直播及带货表现，辅助国内与跨境选品、供应商查找、市场调研和竞品分析。其他： 提供高德地图 Amap、和风天气 QWeather 等地图与天气服务，支持地点查询、地理编码、全球及本地天气查询，辅助出行规划；支持 OCR 图片文字识别、文档解析、PDF／Word／Excel／PPT 内容提取，并提供影视、招聘等查询。",
+      "description_en": "Access specialized data and services across financial markets, e-commerce and social media, content generation, web search and scraping, academic papers and patents, maps, and more. With a single registration, you can access professional data across multiple domains without setting up each service separately—all at prices substantially discounted from official rates. The platform currently covers the following areas:Finance: Access market quotes, stock prices, candlestick charts, trading volumes, corporate financial data, financial reports, and fundamentals for Chinese A-shares and U.S. stocks. Coverage also includes mutual funds, ETFs, foreign exchange, exchange rates, Bitcoin, and other cryptocurrencies, supporting equity and company research, investment analysis, and market monitoring. Integrated financial data providers include Tushare and CoinGecko.Content Generation: Create AI-generated images, generate images from text or reference images, produce product visuals (such as images for Xiaohongshu posts) and posters, remove backgrounds, and render text in images. Capabilities also include image-to-video and text-to-video generation, digital avatar presenter videos, voiceovers, background music, and sound effects. The platform brings together ByteDance’s Dreamina (Jimeng), Seedream, and Seedance, alongside Kling, Qwen, Wan, Tencent Hunyuan, MiniMax / Hailuo AI, Zhipu GLM, Google Gemini / Nano Banana / Veo, OpenAI GPT Image / Whisper, Stable Diffusion, FLUX, HeyGen, ElevenLabs, and other models and tools for image production, video creation, and audio processing.Information Retrieval: Run keyword-based web searches, look up news, conduct industry research and in-depth investigations, and access SEO data, semantic search results, web content extraction, and scraping proxy services. Integrated providers include Perplexity, Tavily, Exa, Firecrawl, and Linkup. The platform also supports searches for research papers, academic literature, citation relationships, and patent information; social media content and data queries for X (Twitter), YouTube, and TikTok; and searches for GitHub repositories, code, and developer documentation.E-commerce: Access data related to Douyin, TikTok Shop, Taobao, Tmall, 1688, Amazon, Shopee, Temu, and other platforms. Services such as Chanmama, Kalodata, and Sorftime provide insights into products, stores, creators, livestreams, and sales performance, supporting product sourcing and selection for domestic and cross-border markets, supplier discovery, market research, and competitor analysis.Other Services: Access mapping and weather services such as Amap and QWeather, with support for place searches, geocoding, and global and local weather queries to assist with travel planning. Additional capabilities include optical character recognition (OCR), document parsing, content extraction from PDF, Word, Excel, and PowerPoint files, and searches for film, television, and job-related information.",
       "source": "agent-earth",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
-        "使用 AgentEarth 查询当前比特币价格",
-        "使用 AgentEarth 查询今天上海天气",
-        "使用 AgentEarth 推荐上海评分较高的咖啡店",
-        "通过 AgentEarth 生成一张产品海报图"
+        "使用 AgentEarth 查询特斯拉最新股价、评级共识和目标价",
+        "使用 AgentEarth 检索 新能源行业的论文、新闻和报告，整理可信结论",
+        "使用 AgentEarth 查询化妆品品类的达人带货数据、关键词热度和竞品趋势",
+        "通过 AgentEarth 帮我生成一组适合手机新品发布的图片素材，要简约，具有科技时尚感"
       ],
       "examples_en": [
-        "Use AgentEarth to check the current Bitcoin price",
-        "Use AgentEarth to check today's weather in Shanghai",
-        "Use AgentEarth to recommend highly rated coffee shops in Shanghai",
-        "Use AgentEarth to generate a product poster image"
+        "Use AgentEarth to look up Tesla's latest stock price, rating consensus, and target price.",
+        "Use AgentEarth to retrieve papers, news, and reports on the new energy industry and compile credible conclusions.",
+        "Use AgentEarth to query influencer-selling data, keyword trends, and competitor trends for the cosmetics category.",
+        "Use AgentEarth to help me generate a set of images, videos, and voiceover assets suitable for a new phone launch."
       ],
       "visible_in": [
         "internal",
@@ -4637,15 +4632,15 @@
     },
     {
       "id": "dramabuddy",
-      "name": "DramaBuddy",
-      "name_zh": "DramaBuddy",
+      "name": "阅文漫剧助手",
+      "name_zh": "阅文漫剧助手",
       "name_en": "DramaBuddy",
       "description": "DramaBuddy is a general-purpose comic-drama creation tool for everyone — just provide a novel or an idea, and it automatically generates the script, characters, and storyboard videos, so you can easily create your own comic-drama.",
-      "description_zh": "DramaBuddy（漫剧助手）是一个人人可用的通用漫剧制作工具——只需提供小说或创意，就能自动生成剧本、角色与分镜视频，轻松做出属于自己的漫剧。",
+      "description_zh": "阅文漫剧助手（DramaBuddy）是一个人人可用的通用漫剧制作工具——只需提供小说或创意，就能自动生成剧本、角色与分镜视频，轻松做出属于自己的漫剧。",
       "description_en": "DramaBuddy is a general-purpose comic-drama creation tool for everyone — just provide a novel or an idea, and it automatically generates the script, characters, and storyboard videos, so you can easily create your own comic-drama.",
       "source": "dramabuddy",
       "type": "mcp",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "把这篇小说做成 3 分钟内的漫剧，自动出剧本、角色三视图和分镜视频",
@@ -5282,21 +5277,25 @@
       "source": "variflight-mcp",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.2.0",
+      "version": "1.2.2",
       "minWorkbuddyVersion": "4.23.0",
       "examples_zh": [
         "查询 MU5330 明天的航班动态。",
         "分析我下一趟航班的延误和取消风险。",
         "查询明天北京到上海每个航班的机票价格和售罄状态。",
+        "查询下周上海到东京的往返价格参考。",
         "浦东机场有哪些地面交通和旅客服务？",
-        "查看我的历史行程和飞行统计。"
+        "查看我的历史行程和飞行统计。",
+        "帮我关注这个航班。"
       ],
       "examples_en": [
         "Check tomorrow's status for flight MU5330.",
         "Analyze the delay and cancellation risk for my next flight.",
         "Check per-flight fares and sold-out status from Beijing to Shanghai tomorrow.",
+        "Check round-trip fare references from Shanghai to Tokyo next week.",
         "What ground transport and passenger services are available at Pudong Airport?",
-        "Show my past trips and flight statistics."
+        "Show my past trips and flight statistics.",
+        "Follow this flight for me."
       ],
       "visible_in": [
         "internal",
@@ -5774,7 +5773,7 @@
     },
     {
       "id": "sif-mcp",
-      "name": "Sif 亚马逊运营分析",
+      "name": "Sif MCP",
       "name_zh": "Sif 亚马逊运营分析",
       "name_en": "Sif Amazon Seller Analytics",
       "description": "Sharp insights into Amazon markets, traffic, and advertising — for market research, product research, traffic analysis, ad structure breakdown, competitor monitoring, reverse ASIN lookup, and other core seller workflows. Goes beyond raw data to deliver analysis and judgment. Officially provided by Sif (sif.com).",
@@ -7428,6 +7427,34 @@
       ]
     },
     {
+      "id": "nvapp-windows-local",
+      "name": "NVIDIA App 本地助手（Windows）",
+      "name_en": "NVIDIA App Local Assistant (Windows)",
+      "description": "Use everyday language to check NVIDIA driver updates, launch games, choose supported graphics presets, record gameplay, take screenshots, save Instant Replay clips, or show FPS. You can also manage supported battery-saving and quiet-mode features. Requires Windows with a compatible NVIDIA App installed.",
+      "description_zh": "用自然语言操作 NVIDIA App：查驱动更新、启动游戏、选择支持的画质与性能预设、录制游戏、截图、保存即时回放或显示帧率，也能管理支持的省电和静音功能。需在 Windows 上安装兼容的 NVIDIA App。",
+      "description_en": "Use everyday language to check NVIDIA driver updates, launch games, choose supported graphics presets, record gameplay, take screenshots, save Instant Replay clips, or show FPS. You can also manage supported battery-saving and quiet-mode features. Requires Windows with a compatible NVIDIA App installed.",
+      "source": "nvapp-windows-local",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "我现在用的是哪个 NVIDIA 驱动？有可用更新吗？只检查，不要安装。",
+        "帮我启动 NVIDIA App 中的[游戏名称]。",
+        "将[游戏名称]的接电设置切换到性能（Performance）预设；如果不支持，请告诉我。",
+        "开始录制我的游戏画面。",
+        "保存当前的即时回放片段。",
+        "在游戏中显示帧率和性能统计。"
+      ],
+      "examples_en": [
+        "Which NVIDIA driver am I using, and is an update available? Just check; don't install anything.",
+        "Launch [game name] from NVIDIA App.",
+        "Set [game name]'s plugged-in settings to the Performance preset. If it isn't supported, let me know.",
+        "Start recording my gameplay.",
+        "Save the current Instant Replay clip.",
+        "Show my FPS and performance statistics while I play."
+      ]
+    },
+    {
       "id": "3chat-customer-growth",
       "name": "3Chat 私域客户运营",
       "name_zh": "3Chat 私域客户运营",
@@ -7520,6 +7547,153 @@
         "Check inventory for style GX123",
         "List outbound orders from the last seven days",
         "Preview a product inbound operation"
+      ]
+    },
+    {
+      "id": "meituan-for-business",
+      "name": "美团企业版",
+      "name_zh": "美团企业版",
+      "name_en": "Meituan for Business",
+      "description": "Connect your Meituan for Business account: authorize once and keep the local login state for future enterprise services.",
+      "description_zh": "连接美团企业版账号，完成授权登录并在本机维护登录态，供后续企业服务能力复用。",
+      "description_en": "Connect your Meituan for Business account: authorize once and keep the local login state for future enterprise services.",
+      "source": "meituan-for-business",
+      "type": "cli",
+      "version": "1.0.2",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "连接我的美团企业版",
+        "查看我的美团企业版登录状态",
+        "重新授权美团企业版"
+      ],
+      "examples_en": [
+        "Connect my Meituan for Business",
+        "Check my login status",
+        "Re-authorize my account"
+      ]
+    },
+    {
+      "id": "thinkingai-ae-cli",
+      "name": "ThinkingAI AE",
+      "name_zh": "ThinkingAI AE",
+      "name_en": "ThinkingAI AE",
+      "description": "Use natural language to analyze data and manage assets in your selected ThinkingAI AE environment.",
+      "description_zh": "通过自然语言查询和分析数据，并管理所选 ThinkingAI AE 环境中的业务资产。",
+      "description_en": "Use natural language to analyze data and manage assets in your selected ThinkingAI AE environment.",
+      "source": "thinkingai-ae-cli",
+      "type": "cli",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "列出我可以访问的 AE 项目",
+        "查询最近 7 天的用户留存情况",
+        "查找名称中包含订单的事件和属性"
+      ],
+      "examples_en": [
+        "List the AE projects I can access",
+        "Analyze user retention over the last seven days",
+        "Find events and properties whose names contain order"
+      ]
+    },
+    {
+      "id": "aholo-lux3d",
+      "name": "Aholo Lux3D",
+      "name_zh": "Aholo Lux3D",
+      "name_en": "Aholo Lux3D",
+      "description": "Create 3D assets from text or images, retexture models, convert formats, and retrieve task results.",
+      "description_zh": "通过文字或图片创建 3D 资产，为模型重绘材质、补齐视角、转换格式，并查询任务和获取结果。",
+      "description_en": "Create 3D assets from text or images, retexture models, convert formats, and retrieve task results.",
+      "source": "aholo-lux3d",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "0.1.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "用这张椅子图片生成 3D 模型，先给我报价再执行。",
+        "查询我刚才提交的生成任务，并提供模型下载链接。",
+        "把这个模型转换成 FBX 格式，先确认费用。"
+      ],
+      "examples_en": [
+        "Create a 3D model from this chair image; show me the quote before submitting.",
+        "Check my submitted generation task and provide the model download link.",
+        "Convert this model to FBX after confirming the cost."
+      ]
+    },
+    {
+      "id": "welife-ai-workbench-connector",
+      "name": "微生活 AI 工作台",
+      "name_zh": "微生活 AI 工作台",
+      "name_en": "WeLife AI Workbench",
+      "description": "Query authorized restaurant operating data through WeLife AI Workbench, including business metrics, standard reports, operating diagnosis, and marketing campaign facts.",
+      "description_zh": "连接微生活 AI 工作台，在授权范围内查询餐饮商户经营指标、六类标准经营报告、一键经营诊断和营销活动数据，支持门店对比、消费趋势、会员增长与流失风险分析。",
+      "description_en": "Query authorized restaurant operating data through WeLife AI Workbench, including business metrics, standard reports, operating diagnosis, and marketing campaign facts.",
+      "source": "welife-ai-workbench-connector",
+      "type": "mcp",
+      "version": "2.1.1",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "查询最近 7 天会员注册数量",
+        "比较最近 7 天各门店储值和消费数据",
+        "解读本商户最新的一键经营诊断",
+        "分析当前各类营销活动的累计效果"
+      ],
+      "examples_en": [
+        "Show member registrations for the last 7 days",
+        "Compare stored-value and consumption data by store for the last 7 days",
+        "Explain this merchant's latest operating diagnosis",
+        "Analyze cumulative performance by marketing campaign type"
+      ]
+    },
+    {
+      "id": "neodata",
+      "name": "NeoData金融数据库",
+      "name_en": "NeoData Financial Data",
+      "description": "Institutional-grade financial data, queried in natural language. A free data platform powered by Tencent Financial Technology covering stocks, indices, funds, bonds, futures, forex, precious metals and macro across A-share, HK, US, UK, JP and KR markets.",
+      "description_zh": "一键安装，免费使用，面向投研分析的专业金融数据服务。由腾讯金融科技链接各大权威来源，集成100+金融数据工具，覆盖股票、指数、板块、基金、债券、期货、期权、宏观、外汇、大宗商品等资产标的，提供行情报价、财务报表、资金流向、研报评级、盈利预测、舆情与事件公告等机构级数据，支持 A股 / 港股 / 美股 / 英股 / 日股 / 韩股 多市场与实时、历史双时效，口径统一、可溯源。",
+      "description_en": "A free, institutional-grade data platform powered by Tencent Financial Technology for investment research. Integrating 100+ tools and authoritative sources, it covers global equities, fixed income, commodities, FX, and derivatives across key markets (A-shares, HK, US, UK, JP, KR). It delivers standardized, traceable real-time and historical quotes, financials, capital flows, and corporate filings.",
+      "source": "neodata",
+      "type": "mcp",
+      "examples_zh": [
+        "贵州茅台 近30日股价走势",
+        "腾讯控股 业绩电话会",
+        "招商银行 2025年归母净利润",
+        "人工智能板块 今日资金流向",
+        "最新一期 中国制造业PMI",
+        "周大福今日金价"
+      ],
+      "examples_en": [
+        "Apple (AAPL) latest price and change",
+        "Tencent Holdings earnings call transcript",
+        "NVIDIA quarterly revenue and margins",
+        "10-year US Treasury yield curve",
+        "Latest US CPI reading",
+        "Alibaba ADR premium vs HK shares"
+      ]
+    },
+    {
+      "id": "viaim",
+      "name": "viaim",
+      "name_en": "viaim",
+      "description": "Connect to the viaim App to search and read recordings, transcripts and AI summaries, browse recently updated records, and turn them into meeting notes and action items.",
+      "description_zh": "连接 viaim App，查询或按关键词搜索录音记录，读取转写内容与 AI 摘要，查看最近更新的记录，并整理会议纪要和待办事项。",
+      "description_en": "Connect to the viaim App to search and read recordings, transcripts and AI summaries, browse recently updated records, and turn them into meeting notes and action items.",
+      "source": "viaim",
+      "type": "mcp",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "列出我最近的 viaim 录音记录。",
+        "查看这条录音的 AI 摘要，提取关键结论。",
+        "读取这条录音的转写内容，整理成会议纪要。",
+        "查看最近更新的录音记录。",
+        "根据这条录音的内容整理待办事项；没有明确负责人或截止时间的，请标注未明确。"
+      ],
+      "examples_en": [
+        "List my recent viaim recordings.",
+        "Read the AI summary of this recording and extract the key conclusions.",
+        "Read the transcript of this recording and turn it into meeting notes.",
+        "Show my recently updated recordings.",
+        "Extract action items from this recording. Mark any unspecified owner or deadline as unspecified."
       ]
     }
   ]
