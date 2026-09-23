@@ -432,6 +432,32 @@
       ]
     },
     {
+      "id": "neodata",
+      "name": "NeoData金融数据库",
+      "name_en": "NeoData Financial Data",
+      "description": "Institutional-grade financial data, queried in natural language. A free data platform powered by Tencent Financial Technology covering stocks, indices, funds, bonds, futures, forex, precious metals and macro across A-share, HK, US, UK, JP and KR markets.",
+      "description_zh": "一键安装，免费使用，面向投研分析的专业金融数据服务。由腾讯金融科技链接各大权威来源，集成100+金融数据工具，覆盖股票、指数、板块、基金、债券、期货、期权、宏观、外汇、大宗商品等资产标的，提供行情报价、财务报表、资金流向、研报评级、盈利预测、舆情与事件公告等机构级数据，支持 A股 / 港股 / 美股 / 英股 / 日股 / 韩股 多市场与实时、历史双时效，口径统一、可溯源。",
+      "description_en": "A free, institutional-grade data platform powered by Tencent Financial Technology for investment research. Integrating 100+ tools and authoritative sources, it covers global equities, fixed income, commodities, FX, and derivatives across key markets (A-shares, HK, US, UK, JP, KR). It delivers standardized, traceable real-time and historical quotes, financials, capital flows, and corporate filings.",
+      "source": "neodata",
+      "type": "mcp",
+      "examples_zh": [
+        "贵州茅台 近30日股价走势",
+        "腾讯控股 业绩电话会",
+        "招商银行 2025年归母净利润",
+        "人工智能板块 今日资金流向",
+        "最新一期 中国制造业PMI",
+        "周大福今日金价"
+      ],
+      "examples_en": [
+        "Apple (AAPL) latest price and change",
+        "Tencent Holdings earnings call transcript",
+        "NVIDIA quarterly revenue and margins",
+        "10-year US Treasury yield curve",
+        "Latest US CPI reading",
+        "Alibaba ADR premium vs HK shares"
+      ]
+    },
+    {
       "id": "cnb-api",
       "name": "CNB",
       "name_en": "CNB",
@@ -4599,16 +4625,15 @@
     },
     {
       "id": "deeplink",
-      "name": "深度智联·地产数据",
-      "name_en": "DeepLink",
-      "description": "DeepLink provides AI-powered real estate data services using CRIC-licensed data. Wenshu queries structured China real estate data, while Wenzhi answers professional questions across real estate, property management, and senior care.",
-      "description_zh": "由深度智联提供的地产 AI 数据服务。「问数」使用经克而瑞授权的中国房地产数据，覆盖新房、二手房、土地、企业、宏观、长租公寓、产城、康养、商办九大领域；「问知」提供地产、物业、银发三大领域专业知识问答。",
-      "description_en": "DeepLink provides AI-powered real estate data services using CRIC-licensed data. Wenshu queries structured China real estate data, while Wenzhi answers professional questions across real estate, property management, and senior care.",
+      "name": "克而瑞地产数据",
+      "name_en": "CRIC Data",
+      "description": "CRIC Data provides AI-powered access to nearly 20 years of CRIC-licensed China real estate data. Wenshu supports natural-language queries, rankings, trends, and city comparisons across nine domains, while Wenzhi answers professional questions about real estate, property management, and senior care.",
+      "description_zh": "克而瑞地产数据依托经克而瑞授权、积累近 20 年的中国不动产数据。「问数」覆盖新房、二手房、土地、企业、宏观、长租公寓、产城、康养、商办九大领域，支持自然语言查询、排行、趋势与多城对比；「问知」提供地产、物业、银发领域的政策、研究、企业、法规和运营知识问答。",
+      "description_en": "CRIC Data provides AI-powered access to nearly 20 years of CRIC-licensed China real estate data. Wenshu supports natural-language queries, rankings, trends, and city comparisons across nine domains, while Wenzhi answers professional questions about real estate, property management, and senior care.",
       "source": "deeplink",
       "type": "mcp",
-      "auth_mode": "token",
-      "version": "3.0.0",
-      "minWorkbuddyVersion": "4.23.0",
+      "version": "4.0.2",
+      "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "查一下上海最近一个月的新房成交情况",
         "对比北京、上海、深圳的二手房挂牌均价",
@@ -5455,14 +5480,14 @@
       "name": "出海精灵·小元",
       "name_zh": "出海精灵·小元",
       "name_en": "Xiaoyuan AI",
-      "description": "Xiaoyuan is an AI global trade expert built for Chinese exporters. Simply state your goal, and Xiaoyuan can conduct market research, analyze buyers, review customer portfolios, create marketing content, and plan trade show campaigns—delivering buyer lists, market reports, marketing strategies, and action plans.",
-      "description_zh": "面向中国外贸企业的AI出海专家。企业只需说出目标，小元即可完成市场洞察、买家分析、客户盘点、内容营销和展会策划，交付买家清单、市场报告、营销方案与行动计划。",
-      "description_en": "Xiaoyuan is an AI global trade expert built for Chinese exporters. Simply state your goal, and Xiaoyuan can conduct market research, analyze buyers, review customer portfolios, create marketing content, and plan trade show campaigns—delivering buyer lists, market reports, marketing strategies, and action plans.",
+      "description": "面向中国外贸企业的 AI 出海助手：搜买家、盘客户、查同行、看市场数据，给出买家清单与跟进建议。",
+      "description_zh": "面向中国外贸企业的 AI 出海助手：搜买家、盘客户、查同行、看市场数据，给出买家清单与跟进建议。",
+      "description_en": "AI export assistant for Chinese companies: find buyers, review customers, research peers and markets, and deliver buyer lists with follow-up advice.",
       "source": "meo-xiaoyuan",
       "type": "mcp",
       "auth_mode": "token",
-      "version": "1.0.1",
-      "minWorkbuddyVersion": "4.23.0",
+      "version": "1.0.2",
+      "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "帮我找德国做咖啡机采购的买家，并看联系人",
         "按公司名查一下这家客户的一客一档和出口国",
@@ -6595,24 +6620,22 @@
       "name": "WorkRally",
       "name_zh": "WorkRally",
       "name_en": "WorkRally",
-      "description": "Generate product photography and video thumbnails with WorkRally: studio packshots, e-commerce hero images, lifestyle scenes, CGI concepts, and high-CTR video covers, with built-in prompt templates and quality gates.",
-      "description_zh": "用 WorkRally 生成产品图与视频封面：棚拍白底、电商主图、生活场景、CGI 概念图，以及高点击率的视频封面。内置提示词模板与质量自检。",
-      "description_en": "Generate product photography and video thumbnails with WorkRally: studio packshots, e-commerce hero images, lifestyle scenes, CGI concepts, and high-CTR video covers, with built-in prompt templates and quality gates.",
+      "description": "用 WorkRally MCP 做剧集前期、批量生图、画布整理与成片验收。",
+      "description_zh": "用 WorkRally MCP 做剧集前期、批量生图、画布整理、字幕烧制与资产验收。",
+      "description_en": "Use WorkRally MCP for series preproduction, batch image generation, canvas organization, subtitle burn-in, and delivery QC.",
       "source": "workrally1",
       "type": "mcp",
-      "version": "0.3.0",
+      "version": "0.5.0",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
-        "给这个产品拍三张电商白底图",
-        "用这张产品图做一组生活场景图",
-        "给我的视频做一张 16:9 封面",
-        "做四个不同情绪的封面变体"
+        "把《XX》剧本做成短番：分镜 → 资产 → 视频 → 成片",
+        "给这批分镜批量出图，统一风格",
+        "帮我整理这个无限画布，按类型分画板"
       ],
       "examples_en": [
-        "Shoot three clean studio packshots for this product",
-        "Turn this product photo into a set of lifestyle scenes",
-        "Create a 16:9 thumbnail for my video",
-        "Make four thumbnail variants with different emotions"
+        "Turn this script into a short drama: storyboard, assets, video, final cut",
+        "Batch-generate these storyboard frames in one consistent style",
+        "Organize this infinite canvas into boards by asset type"
       ]
     },
     {
@@ -7596,6 +7619,33 @@
       ]
     },
     {
+      "id": "zenava",
+      "name": "天润融通·Zenava",
+      "name_zh": "天润融通·Zenava",
+      "name_en": "Tinet·Zenava",
+      "description": "连接天润客服平台，通过自然语言管理系统全产品能力：在各功能模块内导入数据、查询数据明细&数据报表、完整相关流程配置、搭建语音/文本/分析智能体。",
+      "description_zh": "连接天润客服平台，通过自然语言管理系统全产品能力：在各功能模块内导入数据、查询数据明细&数据报表、完整相关流程配置、搭建语音/文本/分析智能体。",
+      "description_en": "Connect to the Tinet customer service platform and manage all product capabilities in natural language: import data in each module, query data details and reports, complete process configuration, and build voice, text, and analytics agents.",
+      "source": "zenava",
+      "type": "cli",
+      "version": "0.1.2",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "导出本周的通话记录数据，将客户来电和座席外呼的数据分开，导出的数据要包含通话基础数据、以及转写文本",
+        "搭建一个汽车行业【DCC邀约场景】的外呼机器人，核心目的是邀约客户到店看车，若客户拒绝到店，引导客户同意添加微信",
+        "帮我查本周各技能组的接通率、平均通话时长和排队放弃量，把接通率低于 80% 的技能组单独列出来，并给出可调整的班表/路由建议",
+        "把上周在线 IM 会话按企微、网页、App 渠道拆开，导出差评和未解决会话，带上会话摘要、最后接待座席和转人工原因",
+        "搭建一个工单模块智能体，把超时未处理的工单内容进行总结，以通知的形式推送到钉钉群内"
+      ],
+      "examples_en": [
+        "Export this week's call records, split inbound customer calls and agent outbound calls, and include basic call data plus transcripts.",
+        "Build an automotive [DCC invitation] outbound bot whose goal is to invite customers to the showroom; if they decline, guide them to add WeChat.",
+        "Check this week's answer rate, AHT, and queue abandonment by skill group; list groups below 80% answer rate and suggest schedule or routing changes.",
+        "Split last week's online IM sessions by WeCom, web, and app; export negative and unresolved sessions with summaries, last handling agent, and transfer-to-agent reasons.",
+        "Build a ticket-module agent that summarizes overdue unprocessed tickets and pushes them to a DingTalk group as notifications."
+      ]
+    },
+    {
       "id": "aholo-lux3d",
       "name": "Aholo Lux3D",
       "name_zh": "Aholo Lux3D",
@@ -7645,32 +7695,6 @@
       ]
     },
     {
-      "id": "neodata",
-      "name": "NeoData金融数据库",
-      "name_en": "NeoData Financial Data",
-      "description": "Institutional-grade financial data, queried in natural language. A free data platform powered by Tencent Financial Technology covering stocks, indices, funds, bonds, futures, forex, precious metals and macro across A-share, HK, US, UK, JP and KR markets.",
-      "description_zh": "一键安装，免费使用，面向投研分析的专业金融数据服务。由腾讯金融科技链接各大权威来源，集成100+金融数据工具，覆盖股票、指数、板块、基金、债券、期货、期权、宏观、外汇、大宗商品等资产标的，提供行情报价、财务报表、资金流向、研报评级、盈利预测、舆情与事件公告等机构级数据，支持 A股 / 港股 / 美股 / 英股 / 日股 / 韩股 多市场与实时、历史双时效，口径统一、可溯源。",
-      "description_en": "A free, institutional-grade data platform powered by Tencent Financial Technology for investment research. Integrating 100+ tools and authoritative sources, it covers global equities, fixed income, commodities, FX, and derivatives across key markets (A-shares, HK, US, UK, JP, KR). It delivers standardized, traceable real-time and historical quotes, financials, capital flows, and corporate filings.",
-      "source": "neodata",
-      "type": "mcp",
-      "examples_zh": [
-        "贵州茅台 近30日股价走势",
-        "腾讯控股 业绩电话会",
-        "招商银行 2025年归母净利润",
-        "人工智能板块 今日资金流向",
-        "最新一期 中国制造业PMI",
-        "周大福今日金价"
-      ],
-      "examples_en": [
-        "Apple (AAPL) latest price and change",
-        "Tencent Holdings earnings call transcript",
-        "NVIDIA quarterly revenue and margins",
-        "10-year US Treasury yield curve",
-        "Latest US CPI reading",
-        "Alibaba ADR premium vs HK shares"
-      ]
-    },
-    {
       "id": "viaim",
       "name": "viaim",
       "name_en": "viaim",
@@ -7694,6 +7718,296 @@
         "Read the transcript of this recording and turn it into meeting notes.",
         "Show my recently updated recordings.",
         "Extract action items from this recording. Mark any unspecified owner or deadline as unspecified."
+      ]
+    },
+    {
+      "id": "yuanbei-hub",
+      "name": "生意专家",
+      "name_en": "Yuanbei Business Hub",
+      "description": "Chain-store business data assistant for sales ranking, inventory, member and operation insights",
+      "description_zh": "连锁门店经营数据助手，支持销售排名、库存补货、会员分析和经营诊断等查询",
+      "description_en": "Chain-store business data assistant for sales ranking, inventory, member and operation insights",
+      "source": "yuanbei-hub",
+      "type": "mcp",
+      "version": "1.0.0",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询连锁店铺哪个店铺销售最好",
+        "帮我看看哪些商品需要补货",
+        "分析一下会员的消费贡献"
+      ],
+      "examples_en": [
+        "Which store in my chain sells the best?",
+        "What products need restocking?",
+        "Analyze member spending contribution"
+      ]
+    },
+    {
+      "id": "wpe-general-connector",
+      "name": "腾讯数电发票",
+      "name_en": "Tencent Digital Invoice",
+      "description": "One-stop service for digital invoice issuance, delivery, verification, and accounting, helping enterprises efficiently carry out invoice business.",
+      "description_zh": "一站式数电发票开具、交付、查验、入账等，助力企业高效开展发票业务。",
+      "description_en": "One-stop service for digital invoice issuance, delivery, verification, and accounting, helping enterprises efficiently carry out invoice business.",
+      "source": "wpe-general-connector",
+      "type": "mcp",
+      "version": "1.0.2",
+      "examples_zh": [
+        "帮我查验这张发票",
+        "查询我的纳税人基本信息",
+        "查询我本周的开票数据情况",
+        "本月还剩多少授信额度可以开票？",
+        "汇总上月开票数据"
+      ],
+      "examples_en": [
+        "Please check this invoice",
+        "Query my taxpayer basic information",
+        "Query my invoicing data for this week",
+        "How much credit limit is left this month for invoicing?",
+        "Summarize last month's invoicing data"
+      ]
+    },
+    {
+      "id": "beatapi-beatdesign",
+      "name": "BeatDesign 本地创作工作台",
+      "name_en": "BeatDesign",
+      "description": "Operate a local BeatDesign Canvas, Assets, generation tasks, video timeline, and captions with natural language.",
+      "description_zh": "通过自然语言操作本地 BeatDesign 画布、素材、生成任务、视频时间线和字幕。",
+      "description_en": "Operate a local BeatDesign Canvas, Assets, generation tasks, video timeline, and captions with natural language.",
+      "source": "beatapi-beatdesign",
+      "type": "mcp",
+      "version": "0.2.3",
+      "minWorkbuddyVersion": "5.0.0",
+      "examples_zh": [
+        "打开我最近的 BeatDesign 项目并总结画布内容",
+        "把这些项目素材排成一条短视频粗剪时间线",
+        "导入这个 SRT 字幕并把编辑器停在第一条字幕",
+        "提取这段视频的尾帧并创建续写节点"
+      ],
+      "examples_en": [
+        "Open my latest BeatDesign project and summarize its Canvas",
+        "Arrange these project Assets into a rough short-video timeline",
+        "Import this SRT file and leave the Editor at the first caption",
+        "Extract this video's tail frame and create a continuation node"
+      ]
+    },
+    {
+      "id": "ofdh-doc-convert",
+      "name": "OFD 文档转换",
+      "name_en": "OFD Document Converter",
+      "description": "Convert between OFD, PDF, Word and images, and extract OFD text, powered by ofdh.cn.",
+      "description_zh": "调用 ofdh.cn 在线转换服务，支持 OFD 与 PDF、Word、图片互转，并可提取 OFD 正文文本，适用于政务、企业等国产版式文档场景。",
+      "description_en": "Convert between OFD, PDF, Word and images via the ofdh.cn online service, and extract text from OFD documents for government, enterprise and other Chinese e-document scenarios.",
+      "source": "ofdh-doc-convert",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.2.2",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "把这份 OFD 文件转成 PDF",
+        "帮我提取这份 OFD 文档里的全部文字",
+        "把这个 PDF 转换成国产 OFD 格式",
+        "把 OFD 转成 Word 方便我编辑",
+        "把这份 OFD 逐页导出成图片"
+      ],
+      "examples_en": [
+        "Convert this OFD file to PDF",
+        "Export each page of this OFD as images",
+        "Extract all text from this OFD document",
+        "Convert this PDF to the Chinese OFD format",
+        "Turn this OFD into an editable Word document"
+      ]
+    },
+    {
+      "id": "qinghu-ai",
+      "name": "青虎AI",
+      "name_en": "Qinghu AI",
+      "description": "Connect Qinghu AI ecommerce SaaS for data research, product sourcing, operations analysis, and LinkPix visual creation.",
+      "description_zh": "连接青虎AI电商 SaaS，覆盖数据研究、选品与运营分析，以及 LinkPix 商品图、详情页、广告素材和短视频创作。",
+      "description_en": "Connect Qinghu AI ecommerce SaaS for data research, product sourcing, operations analysis, and LinkPix product images, detail pages, advertising assets, and short-video creation.",
+      "source": "qinghu-ai",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查看当前可用的电商数据应用，并为我的选品调研推荐合适的查询方式",
+        "查询这个达人或短视频的数据，整理竞品分析与运营复盘结论",
+        "用这张商品图生成一组电商主图和卖点场景图",
+        "根据商品卖点制作一条带货短视频，并在提交前给我报价和参数确认"
+      ],
+      "examples_en": [
+        "List available ecommerce data applications and suggest the right research approach",
+        "Query creator or short-video data and prepare competitor and operations insights",
+        "Create ecommerce main images and selling-point scenes from this product image",
+        "Create a product video from these selling points and show cost and parameters before submission"
+      ]
+    },
+    {
+      "id": "yanxu",
+      "name": "言序",
+      "name_en": "Yanxu",
+      "description": "Create, typeset, and publish WeChat official account articles with natural language: list bound accounts and style themes, build drafts, and push them to the draft box.",
+      "description_zh": "通过自然语言创作并发布微信公众号文章：查询已绑定的公众号与样式主题、按主题排版建稿、一键推送到公众号草稿箱。",
+      "description_en": "Create, typeset, and publish WeChat official account articles with natural language: list bound accounts and style themes, build drafts, and push them to the draft box.",
+      "source": "yanxu",
+      "type": "mcp",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "帮我把这篇文章建成公众号草稿，标题控制在 30 字以内",
+        "看看我绑定了哪些公众号，各自默认用什么主题",
+        "有哪些排版样式可以选？",
+        "把这篇稿子排版好，推到公众号草稿箱"
+      ],
+      "examples_en": [
+        "Create a WeChat draft from this article, keep the title under 30 characters",
+        "List my connected official accounts and their default themes",
+        "What typesetting styles are available?",
+        "Typeset this article and push it to the draft box"
+      ]
+    },
+    {
+      "id": "weaver-eteams-connector",
+      "name": "泛微eteams数智办公云平台",
+      "name_en": "Weaver eteams Smart Office Cloud Platform",
+      "description": "Handle everyday office work on Weaver eteams in natural language. Covers approvals, schedules and meetings, mail and messaging, reports, projects and tasks, CRM, HR, expenses and invoices, archives and assets.",
+      "description_zh": "用自然语言办理泛微 eteams 上的日常办公事务。覆盖流程审批、日程会议、邮件消息、周报月报、项目任务、客户商机、人事考勤、费控发票、档案与资产。",
+      "description_en": "Handle everyday office work on Weaver eteams in natural language. Covers approvals, schedules and meetings, mail and messaging, reports, projects and tasks, CRM, HR, expenses and invoices, archives and assets.",
+      "source": "weaver-eteams-connector",
+      "type": "cli",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询我的待办流程",
+        "查一下本月考勤记录",
+        "约明天下午 3 点的项目评审会，看看哪个会议室有空",
+        "把这几张发票识别后导入票夹，并自动填好报销单"
+      ],
+      "examples_en": [
+        "Check my pending workflows",
+        "Check my attendance records for this month",
+        "Book a project review meeting tomorrow at 3 PM and find a free meeting room",
+        "Read these invoices, import them into my folder, and auto-fill the reimbursement form"
+      ]
+    },
+    {
+      "id": "medlive-medical-qa",
+      "name": "医脉通医学问答",
+      "name_en": "Medlive Medical Q&A",
+      "description": "Medical Q&A connector for clinicians: ask questions in natural language and get evidence-based answers with literature citations, with follow-up, document Q&A, and history review support.",
+      "description_zh": "面向医生的医学问答连接器：用自然语言提问并获取带文献依据的完整答案，支持多轮追问、文档问答与历史回看。",
+      "description_en": "Medical Q&A connector for clinicians: ask questions in natural language and get evidence-based answers with literature citations, with follow-up, document Q&A, and history review support.",
+      "source": "medlive-medical-qa",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "阿司匹林的主要适应症是什么",
+        "帮我查一下二甲双胍在肾功能不全患者中的用药注意事项",
+        "接着上一个问题，老年患者的剂量需要调整吗"
+      ],
+      "examples_en": [
+        "What are the main indications for aspirin?",
+        "What should I know about metformin use in patients with renal impairment?",
+        "Following up on the previous question, does the dosage need adjusting for elderly patients?"
+      ]
+    },
+    {
+      "id": "cloudhub",
+      "name": "云之家",
+      "name_en": "CloudHub",
+      "description": "Operate Yunzhijia (Kingdee) with natural language: docs, sheets, calendar, contacts, IM messages and files.",
+      "description_zh": "通过自然语言操作云之家：知识库文档、多维表格、日历日程、通讯录、IM 消息与文件管理。",
+      "description_en": "Operate Yunzhijia (Kingdee) with natural language: docs, sheets, calendar, contacts, IM messages and files.",
+      "source": "cloudhub",
+      "type": "cli",
+      "version": "0.6.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "看下我最近的云之家消息",
+        "帮我搜一下知识库里关于续费的文档",
+        "查一下今天的日程安排",
+        "给项目群发一条会议通知",
+        "查一下同事张三的联系方式"
+      ],
+      "examples_en": [
+        "Show my recent Yunzhijia messages",
+        "Search docs about renewal in the workspace",
+        "What's on my calendar today",
+        "Send a meeting notice to the project group",
+        "Find my colleague Zhang San's contact info"
+      ]
+    },
+    {
+      "id": "kingbot-xiaodie",
+      "name": "小蝶记账",
+      "name_en": "Xiaodie Accounting",
+      "description": "Smart operating connector for small businesses: support natural language entry of sales, purchase, and other business data, as well as operating data query and analysis, sales trend insight.",
+      "description_zh": "小微企业智能经营连接器：支持自然语言录入销售、采购等业务数据、经营数据查询与分析、销售趋势洞察",
+      "description_en": "Smart operating connector for small businesses: support natural language entry of sales, purchase, and other business data, as well as operating data query and analysis, sales trend insight.",
+      "source": "kingbot-xiaodie",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我记录今天卖了2374元的小蝶记账纪念衫",
+        "这个月销售额是多少",
+        "拍照识别这张单据，帮我记账",
+        "这个月利润怎么样",
+        "帮我分析一下本月经营情况"
+      ],
+      "examples_en": [
+        "Record today sales of 2374 yuan Xiaodie Accounting Commemorative T-shirt",
+        "What was this month sales revenue",
+        "Photograph and recognize this receipt, record it for me",
+        "How is this month profit",
+        "Analyze this month operating situation"
+      ]
+    },
+    {
+      "id": "voko-guest",
+      "name": "VOKO智能体商店",
+      "name_en": "VOKO Agent Store",
+      "description": "Discover or search for suitable AI agents, explore their capabilities, exchange messages, and get help completing tasks.",
+      "description_zh": "发现或查找适合的 AI 智能体，了解其能力、发送消息并读取回复，借助外部智能体完成任务。",
+      "description_en": "Discover or search for suitable AI agents, explore their capabilities, exchange messages, and get help completing tasks.",
+      "source": "voko-guest",
+      "type": "mcp",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "用 VOKO 查找擅长整理会议纪要的 AI 助手，并比较它们的能力。",
+        "查看我通过 VOKO 联系过的 AI 助手。",
+        "通过 VOKO 向选定的 AI 助手发送问题，并获取回复。"
+      ],
+      "examples_en": [
+        "Use VOKO to find AI assistants that specialize in organizing meeting notes and compare their capabilities.",
+        "Show the AI assistants I have contacted through VOKO.",
+        "Use VOKO to send my question to the selected AI assistant and get its reply."
+      ]
+    },
+    {
+      "id": "weiban-agent-mcp",
+      "name": "微伴助手",
+      "name_en": "Weiban Assistant",
+      "description": "Query authorized customer, staff, archived chat and work order data with natural language, with explicit approval for writes.",
+      "description_zh": "通过自然语言查询授权范围内的员工、客户、消息存档和工单，获取业务上下文并执行经确认的受控操作。",
+      "description_en": "Query authorized customer, staff, archived chat and work order data with natural language, with explicit approval for writes.",
+      "source": "weiban-agent-mcp",
+      "type": "mcp",
+      "version": "1.3.0",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询我最近的客户聊天，整理需要跟进的事项。",
+        "查询这个客户的资料，并说明哪些数据尚不完整。",
+        "列出最近的工单，查看指定工单的处理状态。"
+      ],
+      "examples_en": [
+        "Review my recent customer conversations and summarize follow-up items.",
+        "Look up this customer and identify any incomplete data sources.",
+        "List recent work orders and check the status of a selected order."
       ]
     }
   ]

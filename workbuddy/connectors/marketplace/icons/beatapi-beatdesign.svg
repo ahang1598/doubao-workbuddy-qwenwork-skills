@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">BeatDesign</title>
+  <rect width="64" height="64" rx="14" fill="#08090A"/>
+  <rect x="14" y="10" width="8" height="44" rx="4" fill="#FF6B1A"/>
+  <rect x="27" y="10" width="8" height="21" rx="4" fill="#F6F6F4"/>
+  <rect x="27" y="36" width="8" height="18" rx="4" fill="#F6F6F4"/>
+  <rect x="40" y="14" width="8" height="17" rx="4" fill="#F6F6F4"/>
+  <rect x="40" y="36" width="8" height="14" rx="4" fill="#F6F6F4"/>
+</svg>

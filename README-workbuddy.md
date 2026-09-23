@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：605
-- 当前索引文件数：16691
-- 最近变更：[2026-09-22-180002](workbuddy/change-logs/2026-09-22-180002.md) - WorkBuddy 本次同步新增 679 个文件、修改 62 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/aholo-lux3d, connectors/marketplace/connectors/meituan-for-business, connectors/marketplace/c...
+- 当前索引条目数：618
+- 当前索引文件数：17022
+- 最近变更：[2026-09-23-180002](workbuddy/change-logs/2026-09-23-180002.md) - WorkBuddy 本次同步新增 540 个文件、修改 9 个文件、删除 196 个文件。 新增条目：connectors/marketplace/connectors/beatapi-beatdesign, connectors/marketplace/connectors/cloudhub, connectors/marketplace/conne...
 
 ## 数据来源
 
@@ -418,6 +418,7 @@
 | 百积木 | `workbuddy/connectors/marketplace/connectors/baijimu-enterprise-ai` | cli | 2 | 连接百积木工作区、智能体、工作流、应用与受治理的企业服务。 Version: 1.0.0. |
 | 百晓智能 | `workbuddy/connectors/marketplace/connectors/baixiao-mcp` | mcp | 3 | 中英文学术检索: 搜索期刊论文、专著、政策文件；查阅最新基金招投标信息；核实参考文献真伪、追溯引用；推荐投稿期刊与审稿人。 Version: 1.0.0. |
 | 八爪鱼 | `workbuddy/connectors/marketplace/connectors/bazhuayu` | mcp | 2 | 用自然语言驱动八爪鱼云采集：搜索模板、启动任务、查询进度、导出结构化数据，并管理已有任务。 |
+| BeatDesign 本地创作工作台 | `workbuddy/connectors/marketplace/connectors/beatapi-beatdesign` | mcp | 2 | 通过自然语言操作本地 BeatDesign 画布、素材、生成任务、视频时间线和字幕。 Version: 0.2.3. |
 | 北森AI · HR专家 | `workbuddy/connectors/marketplace/connectors/beisen-cli` | cli | 44 | 依托北森HR SaaS平台，把审批、招聘进展、员工档案、绩效履历、考勤假期、组织架构和企业制度等近百个人力场景装进Workbuddy，一句话查询人力数据、办理HR业务。 Version: 1.0.0. |
 | BioBuddy 生物医药研究助手 | `workbuddy/connectors/marketplace/connectors/biobuddy` | mcp | 5 | BioBuddy 生物医药智能研究平台：一次连接 Gateway，即可发现并挂载已获授权的分子设计、转化研究、靶点发现与数据智能 MCP 工具。 Version: 1.0.3. |
 | BizMuse AI 音乐视频 | `workbuddy/connectors/marketplace/connectors/bizmuse-ai-music-video` | mcp | 2 | 根据一首歌曲、参考图片和创作方向生成完整的 AI 音乐视频。支持叙事、演唱、舞蹈、抽象等内容风格，可选画幅比例、清晰度与口型同步，并可查询生成任务进度与获取成片。 Version: 0.3.0. |
@@ -431,6 +432,7 @@
 | 出海匠 | `workbuddy/connectors/marketplace/connectors/chuhaijiang` | mcp | 12 | 基于实时 TikTok Shop 数据完成选品、竞品分析、达人筛选与带货内容创作，并管理社媒账号、发布内容、运营评论和私信。 |
 | 水滴征信 | `workbuddy/connectors/marketplace/connectors/cisp-mcp` | mcp | 3 | 通过水滴征信企业信息服务平台查询工商、知识产权、舆情、财务、土地、企业关联关系、关联方等企业多维信息，并支持企业二要素/三要素核验。 |
 | 腾讯云 CloudBase | `workbuddy/connectors/marketplace/connectors/cloudbase` | connector | 156 | 腾讯云开发 CloudBase 全栈开发、部署、调试与排障连接器。覆盖 Web 应用、微信小程序、uni-app、原生 App HTTP API、云函数、CloudRun、NoSQL/MySQL 数据库、云存储、静态托管、身份认证、AI 大模型调用、AI Agent、资源巡检与 Spec 工作流。 |
+| 云之家 | `workbuddy/connectors/marketplace/connectors/cloudhub` | cli | 15 | 通过自然语言操作云之家：知识库文档、多维表格、日历日程、通讯录、IM 消息与文件管理。 Version: 0.6.1. |
 | 云MALL运营 | `workbuddy/connectors/marketplace/connectors/cloudmall-operations` | mcp | 4 | 在 WorkBuddy 中用自然语言查询云MALL订单、商品与会员数据。连接运营账号后，按你当前的权限执行只读查询，结果实时返回，无需切换后台。 |
 | CNB | `workbuddy/connectors/marketplace/connectors/cnb-api` | cli | 2 | 通过自然语言管理 CNB 平台：仓库、Issue、PR、流水线、制品库等操作。 |
 | 连接器工坊 | `workbuddy/connectors/marketplace/connectors/connector-workshop` | mcp | 2 | 探测远程 MCP 端点能力，起草并校验 WorkBuddy 连接器配置，产出符合规范的连接器 zip 包。 Version: 1.0.0. |
@@ -440,7 +442,7 @@
 | DataHub | `workbuddy/connectors/marketplace/connectors/datahub` | mcp | 2 | 用自然语言发现并运行 Data App，跟踪执行状态与费用，读取结构化结果并管理历史运行。 Version: 1.0.0. |
 | 通联数据 | `workbuddy/connectors/marketplace/connectors/datayes-data` | mcp | 3 | 用自然语言查询金融数据：A股/港股、基金、债券、指数、期货期权、因子、实时行情、宏观、公告与政策法规。 |
 | DCS Cloud | `workbuddy/connectors/marketplace/connectors/dcs-cloud` | mcp | 6 | DCS CLI，连接后通过个人访问令牌（PAT）登录认证，即可操作 DCS 云平台：支持项目管理、组学数据检索与传输、离线分析任务投递与查询、工作流管理等。使用前需在云平台个人中心创建 PAT，并粘贴至连接器完成绑定。 |
-| 深度智联·地产数据 | `workbuddy/connectors/marketplace/connectors/deeplink` | mcp | 3 | 由深度智联提供的地产 AI 数据服务。「问数」使用经克而瑞授权的中国房地产数据，覆盖新房、二手房、土地、企业、宏观、长租公寓、产城、康养、商办九大领域；「问知」提供地产、物业、银发三大领域专业知识问答。 Version: 3.0.0. |
+| 克而瑞地产数据 | `workbuddy/connectors/marketplace/connectors/deeplink` | mcp | 2 | 克而瑞地产数据依托经克而瑞授权、积累近 20 年的中国不动产数据。「问数」覆盖新房、二手房、土地、企业、宏观、长租公寓、产城、康养、商办九大领域，支持自然语言查询、排行、趋势与多城对比；「问知」提供地产、物业、银发领域的政策、研究、企业、法规和运营知识问答。 Version: 4.0.2. |
 | 得理法律数据 | `workbuddy/connectors/marketplace/connectors/deli-mcp` | mcp | 1 | 得理法律数据 MCP 连接器，提供权威法律数据检索，覆盖 1.7 亿+裁判文书与 300 万+法律法规。支持自然语言案例检索、法规检索与法律问答，可按案情描述、争议焦点、法规名称或条款内容语义检索，并获取案例/法规详情与效力状态。 Version: 1.0.0. |
 | 美图设计室 AI设计 CLI | `workbuddy/connectors/marketplace/connectors/designkit-buddy-cli` | cli | 2 | 一句话轻松调用美图设计室Agent Teams，从市场策略洞察，到电商套图、营销视频、社媒图文、海报及品牌等视觉物料，零门槛完成商业设计的全流程。 Version: 1.0.2. |
 | 订单豹 | `workbuddy/connectors/marketplace/connectors/dingdanbao` | mcp | 8 | 面向批发业务员的订单豹助手，覆盖代客下单、客户运营、库存、采购、催款与业绩简报。 Version: 1.0.0. |
@@ -509,6 +511,7 @@
 | 聚法-法律数据智能服务 | `workbuddy/connectors/marketplace/connectors/jufa-mcp-server` | mcp | 3 | 检索聚法司法案例、法律法规、检察文书、合同模板、招投标及企业风险数据。 Version: 1.0.0. |
 | 天使医生 | `workbuddy/connectors/marketplace/connectors/jumper-kpi` | mcp | 4 | 通过自然语言查询当前天使医生账号有权限的医院经营指标、渠道分布、同比环比及人员 KPI 完成情况。 Version: 1.0.0. |
 | 金山文档 | `workbuddy/connectors/marketplace/connectors/kdocs` | mcp | 84 | 创建、搜索和管理金山文档（WPS 云文档）。支持新建多种文档类型（Word/Excel/PDF/PPT/智能表格/多维表格/智能文档）、读取与搜索文档内容、编辑更新、分享、移动重命名整理、标签收藏管理、知识库空间操作、网页剪藏，以及接龙转表格、AI PPT 生成等。 |
+| 小蝶记账 | `workbuddy/connectors/marketplace/connectors/kingbot-xiaodie` | mcp | 21 | 小微企业智能经营连接器：支持自然语言录入销售、采购等业务数据、经营数据查询与分析、销售趋势洞察 Version: 1.0.0. |
 | Kiwi 采购询价 | `workbuddy/connectors/marketplace/connectors/kiwi-sourcing` | mcp | 5 | 发现供应商、跨商家询价、比较报价并协商非绑定采购条款。 Version: 1.0.0. |
 | Kling AI | `workbuddy/connectors/marketplace/connectors/kling-ai-plugin` | mcp | 14 | 一句话，让灵感从想法变成大片。可灵 AI 是面向创作者的 AI 生图与 AI 生视频连接器，可在 WorkBuddy 中直接用自然语言完成图片生成和视频生成，包括文生图、图生图、文生视频、图生视频、单镜头与多镜头视频。适合制作海报、插画、人像、商品图、电商主图、Listing 图、广告素材、产品展示视频、营销短片、电商短视频、种草视频、社交媒体视频和电影感创意视频，可用于淘宝、天猫、京东、拼多多、抖音、快手、小红书、TikTok、... |
 | 同花顺快查企业数据 | `workbuddy/connectors/marketplace/connectors/kuaicha-search` | mcp | 2 | 查询中国企业工商、股权投资、经营司法风险、知识产权、招投标及新闻舆情数据。 |
@@ -528,11 +531,12 @@
 | 条码生成器 | `workbuddy/connectors/marketplace/connectors/masocloud-barcode-generator` | mcp | 4 | 生成一维条形码、二维码与标签预览图，支持 CODE128、QR、DataMatrix、PDF417 等 9 种条码与 .alb 标签模板预览，可自定义尺寸、DPI、容错等级与是否显示文字。 Version: 1.0.0. |
 | MasterGo 莫高设计 | `workbuddy/connectors/marketplace/connectors/mastergo-vibe-mcp` | mcp | 2 | 连接 MasterGo 画布，让 AI 进行设计、修改、同步和获取 D2C 代码。 |
 | DRG/DIP 工具包（MedGroup） | `workbuddy/connectors/marketplace/connectors/medgroup-drgdip-toolkit` | mcp | 2 | 连接 MedGroup，查询 DRG/DIP 城市与规则、检索 ICD 编码、完成分组、结算测算及 CC/MCC 查询。 Version: 1.0.0. |
+| 医脉通医学问答 | `workbuddy/connectors/marketplace/connectors/medlive-medical-qa` | mcp | 2 | 面向医生的医学问答连接器：用自然语言提问并获取带文献依据的完整答案，支持多轮追问、文档问答与历史回看。 Version: 1.0.0. |
 | MeituHub AI影像创作 | `workbuddy/connectors/marketplace/connectors/meitu-ai` | cli | 3 | 在 WorkBuddy 中使用 MeituHub 完成图片与视频生成编辑、营销和电商内容创作，并运行自定义工作流。 Version: 0.1.3. |
 | 美图 · 开拍 | `workbuddy/connectors/marketplace/connectors/meitu-kaipai` | cli | 4 | 美图公司出品的AI视频创作工具，支持一键网感剪辑、动态字幕和AI封面，让口播视频更有网感；还提供画质修复、水印消除、字幕消除、音频降噪等功能，轻松处理视频创作中的常见问题。 Version: 1.0.0. |
 | 美团企业版 | `workbuddy/connectors/marketplace/connectors/meituan-for-business` | cli | 2 | 连接美团企业版账号，完成授权登录并在本机维护登录态，供后续企业服务能力复用。 Version: 1.0.2. |
 | 萌啦数据Ozon-选品数据分析 | `workbuddy/connectors/marketplace/connectors/menglar-ozon` | mcp | 3 | 萌啦数据Ozon-选品数据分析提供 Ozon 类目、商品、关键词、品牌、店铺与大盘趋势等大数据查询能力，帮助跨境卖家完成选品与运营分析。 Version: 1.0.1. |
-| 出海精灵·小元 | `workbuddy/connectors/marketplace/connectors/meo-xiaoyuan` | mcp | 3 | 面向中国外贸企业的AI出海专家。企业只需说出目标，小元即可完成市场洞察、买家分析、客户盘点、内容营销和展会策划，交付买家清单、市场报告、营销方案与行动计划。 Version: 1.0.1. |
+| 出海精灵·小元 | `workbuddy/connectors/marketplace/connectors/meo-xiaoyuan` | mcp | 6 | 面向中国外贸企业的 AI 出海助手：搜买家、盘客户、查同行、看市场数据，给出买家清单与跟进建议。 Version: 1.0.2. |
 | MergerInfo 海外并购情报 | `workbuddy/connectors/marketplace/connectors/mergerinfo` | mcp | 4 | 查询海外待售标的、并购事件与巨头动向，以及指定企业近一年的交易动态。 Version: 0.2.0. |
 | 芒果灵创 CLI | `workbuddy/connectors/marketplace/connectors/mglc` | cli | 10 | 通过命令行调用芒果灵创 AI 视频创作能力：可使用 30+ 模型生成图片、音频（音乐、音效、配音）和视频，管理音色库、项目、剧本、美术设定与分镜故事板，跟踪任务状态和生成结果。 Version: 0.1.13. |
 | 秒哒应用搭建 | `workbuddy/connectors/marketplace/connectors/miaoda` | cli | 2 | 通过自然语言对话，即可完成网页、微信小程序及移动 App 的创建、预览、修改与发布上线，实现智能化、自动化、规模化的应用开发。 |
@@ -550,6 +554,7 @@
 | NovAI Studio | `workbuddy/connectors/marketplace/connectors/novai-studio` | mcp | 5 | 通过自然语言管理 AI 画布和素材，生成图片、视频和音频，并查询任务进度。 Version: 1.0.0. |
 | NoxInfluencer 红人数据与营销运营 | `workbuddy/connectors/marketplace/connectors/noxinfluencer-cli` | cli | 8 | 通过自然语言调用 NoxInfluencer 的红人数据与营销运营能力：在 YouTube、TikTok、Instagram 上搜索并筛选红人，分析受众画像、内容表现与合作信号，获取联系方式，追踪内容数据，并管理 Campaign、CRM、邮件触达、品牌监测与导出任务，同时可查看配额与计费。 Version: 0.1.1. |
 | NVIDIA App 本地助手（Windows） | `workbuddy/connectors/marketplace/connectors/nvapp-windows-local` | mcp | 8 | 用自然语言操作 NVIDIA App：查驱动更新、启动游戏、选择支持的画质与性能预设、录制游戏、截图、保存即时回放或显示帧率，也能管理支持的省电和静音功能。需在 Windows 上安装兼容的 NVIDIA App。 |
+| OFD 文档转换 | `workbuddy/connectors/marketplace/connectors/ofdh-doc-convert` | mcp | 3 | 调用 ofdh.cn 在线转换服务，支持 OFD 与 PDF、Word、图片互转，并可提取 OFD 正文文本，适用于政务、企业等国产版式文档场景。 Version: 1.2.2. |
 | OiiOii | `workbuddy/connectors/marketplace/connectors/oiioii` | cli | 2 | OiiOii 是全球首个 AI 动画/真人视频创作 Agent。只需描述创意，OiiOii 的影视级专业 Agents 团队就会即刻将零散的想法转化为完整的故事、广告成片；同时，OiiOii 还深度整合短漫剧工作流，无论是视频转绘出海、剧本本土化出海、多剧集拆分到成片，都能一键完成。 Version: 1.0.0. |
 | 独行录 | `workbuddy/connectors/marketplace/connectors/opcmenu` | mcp | 4 | 让你的 Agent 在独行录找合作、筛选报名机会、跟进报名结果，并帮助主办方处理报名名单。 Version: 1.1.0. |
 | 及刻智能·时空数据MCP | `workbuddy/connectors/marketplace/connectors/opendata` | mcp | 3 | 通过自然语言查询线下时空数据，提供区域热力、场景识别、客流分析、POI查询等能力，助力商业洞察、开店选址等应用场景。 |
@@ -568,6 +573,7 @@
 | 企查查·法律数据 | `workbuddy/connectors/marketplace/connectors/qcc-legal` | mcp | 2 | 检索与核验中国法律法规和司法案例。覆盖全量现行法律、行政法规、司法解释——法规级到法条级逐字正文，标注时效性与效力级别；海量裁判文书及 2.5 万+ 权威案例（最高法/最高检指导性案例、公报案例、典型案例）；并对文本中的法条与案号引用逐条回库核验、标注时效、生成可溯源超链。用自然语言完成法条依据查找、类案检索、原文调取与法律引用核验，从源头消除法条与案号幻觉。 Version: 1.0.0. |
 | 企百科 | `workbuddy/connectors/marketplace/connectors/qibook-mcp` | mcp | 2 | 查询企业工商登记数据，支持企业模糊搜索、企业基本信息、受益所有人、股东、实际控制人、工商变更、联系方式、主要人员、分支机构、对外投资、年报、上市公司相关信息等企业尽职调查场景。 Version: 1.0.0. |
 | 轻流 | `workbuddy/connectors/marketplace/connectors/qingflow` | mcp | 2 | 轻流无代码平台连接器。通过自然语言创建应用、管理表单数据、处理审批流程、查询和导出数据，一站式连接轻流全部能力。 |
+| 青虎AI | `workbuddy/connectors/marketplace/connectors/qinghu-ai` | mcp | 3 | 连接青虎AI电商 SaaS，覆盖数据研究、选品与运营分析，以及 LinkPix 商品图、详情页、广告素材和短视频创作。 |
 | 七色米进销存 | `workbuddy/connectors/marketplace/connectors/qisemierp` | mcp | 3 | 通过自然语言连接七色米进销存系统，随时查询商品、库存、客户、供应商及销售、采购、出入库等业务单据；支持销售统计、欠款对账、单据创建等操作，让业务数据问答即得。 Version: 1.0.0. |
 | 启信慧眼 | `workbuddy/connectors/marketplace/connectors/qixinhuiyan-mcp` | mcp | 1 | 通过启信慧眼 MCP 接入企业全景数据能力，支持用户用自然语言完成企业搜索、工商画像、风险识别、经营动态、知识产权等商业情报分析。 |
 | 启元机器人执行器 | `workbuddy/connectors/marketplace/connectors/qiyuan-robot-executor` | mcp | 3 | 让启元 Q1 机器人播报文字，并在现场安全确认后执行比心或向前走动作。 Version: 0.3.0. |
@@ -631,9 +637,12 @@
 | 予非AI知识大脑 | `workbuddy/connectors/marketplace/connectors/verya-knowledgebase` | mcp | 3 | 连接后支持搜索、读取和总结予非AI知识大脑中的知识资料，融合知识图谱关联分析，通过自然语言快速定位文档、洞察实体关系并梳理知识脉络。 Version: 1.0.0. |
 | viaim | `workbuddy/connectors/marketplace/connectors/viaim` | mcp | 2 | 连接 viaim App，查询或按关键词搜索录音记录，读取转写内容与 AI 摘要，查看最近更新的记录，并整理会议纪要和待办事项。 Version: 1.0.1. |
 | VibeKnow CLI | `workbuddy/connectors/marketplace/connectors/vibeknow-cli` | cli | 6 | 把文档、网页、PPT，或直接粘在对话里的一段文字，变成带旁白的成片。五种创作模式：灵活创作、图解视频、PPT 逐页讲解、手绘动画、一键成片，也可锁定原稿逐字照念。生成过程可分段查看进度，成片后能免费读取讲稿、调整字幕与背景音乐，并把导出的 mp4 直接发回对话。 Version: 0.9.1. |
+| VOKO智能体商店 | `workbuddy/connectors/marketplace/connectors/voko-guest` | mcp | 2 | 发现或查找适合的 AI 智能体，了解其能力、发送消息并读取回复，借助外部智能体完成任务。 Version: 1.0.0. |
 | 旺小宝 | `workbuddy/connectors/marketplace/connectors/wangxiaobao` | cli | 34 | 用自然语言查询旺小宝业务数据：客户、来访、录音、关注点/抗性点、知识库、量子看板 KPI 与问数。 Version: 1.0.0. |
 | WaveNote | `workbuddy/connectors/marketplace/connectors/wavenote-audio` | mcp | 2 | 读取 WaveNote 录音、转写及总结内容，并为指定录音发起转写和总结任务。 Version: 1.0.0. |
+| 泛微eteams数智办公云平台 | `workbuddy/connectors/marketplace/connectors/weaver-eteams-connector` | cli | 177 | 用自然语言办理泛微 eteams 上的日常办公事务。覆盖流程审批、日程会议、邮件消息、周报月报、项目任务、客户商机、人事考勤、费控发票、档案与资产。 Version: 1.0.0. |
 | 企业微信 | `workbuddy/connectors/marketplace/connectors/wecom` | cli | 97 | 企业微信官方 CLI 套件，覆盖消息、邮件、文档、待办、日程、会议、微盘、通讯录等业务功能。支持机器人主动通知、新建与读取文档、文档搜索、新建管理日程、预约与获取会议信息、新建跟进待办、上传与获取微盘文件、邮件读取与发送等能力 |
+| 微伴助手 | `workbuddy/connectors/marketplace/connectors/weiban-agent-mcp` | mcp | 3 | 通过自然语言查询授权范围内的员工、客户、消息存档和工单，获取业务上下文并执行经确认的受控操作。 Version: 1.3.0. |
 | 微盛企微管家SCRM | `workbuddy/connectors/marketplace/connectors/weisheng-scrm` | mcp | 4 | 查询或管理企业微信中的客户信息、客户标签、客户群、营销素材、活码、群发、跟进记录、联系人、商机、汇报、抽奖、客户日程、聊天记录等业务能力。 |
 | 微生活 AI 工作台 | `workbuddy/connectors/marketplace/connectors/welife-ai-workbench-connector` | mcp | 4 | 连接微生活 AI 工作台，在授权范围内查询餐饮商户经营指标、六类标准经营报告、一键经营诊断和营销活动数据，支持门店对比、消费趋势、会员增长与流失风险分析。 Version: 2.1.1. |
 | 腾讯自选股 | `workbuddy/connectors/marketplace/connectors/westock-mcp` | mcp | 2 | 直连腾讯自选股，实时掌握毫秒级行情与资金动态，用自然语言分析自选数据、设置股价提醒、管理模拟交易，轻松搞定盯盘与投资决策。 |
@@ -641,8 +650,9 @@
 | 百智WiseNote | `workbuddy/connectors/marketplace/connectors/wisenote` | mcp | 2 | 通过用户授权读取百智 WiseNote 会议列表、会议详情摘要和会议转写内容。 |
 | 威科先行 | `workbuddy/connectors/marketplace/connectors/wk-workbuddy` | mcp | 2 | 威科先行依托全面、准确、及时更新的法规、案例等法律数据研发的MCP服务，支持语义检索、关键词检索等场景。 |
 | 微脉体重管理 | `workbuddy/connectors/marketplace/connectors/wm-weight-manage` | mcp | 5 | 生成个性化成人体重管理方案，渲染为可打卡的独立 HTML 页面：分阶段目标、饮食运动建议、餐食照片热量分析、本地体重记录。 Version: 1.0.1. |
-| WorkRally | `workbuddy/connectors/marketplace/connectors/workrally1` | mcp | 196 | 用 WorkRally 生成产品图与视频封面：棚拍白底、电商主图、生活场景、CGI 概念图，以及高点击率的视频封面。内置提示词模板与质量自检。 Version: 0.3.0. |
+| WorkRally | `workbuddy/connectors/marketplace/connectors/workrally1` | mcp | 265 | 用 WorkRally MCP 做剧集前期、批量生图、画布整理、字幕烧制与资产验收。 Version: 0.5.0. |
 | 微盟 WOS CLI | `workbuddy/connectors/marketplace/connectors/woscli` | cli | 5 | 通过自然语言调用 woscli 操作微盟 WOS 业务能力：查询与管理订单、商品、客户资料、营销活动、数据看板等。 |
+| 腾讯数电发票 | `workbuddy/connectors/marketplace/connectors/wpe-general-connector` | mcp | 22 | 一站式数电发票开具、交付、查验、入账等，助力企业高效开展发票业务。 Version: 1.0.2. |
 | WPS知识库 | `workbuddy/connectors/marketplace/connectors/wps-knowledgebase` | cli | 4 | 通过自然语言操作 WPS/zhishi 云端知识库：列出知识库、浏览文件树、智能问答、分享链接，以及文件/文件夹增删改查。 |
 | 华尔街见闻 | `workbuddy/connectors/marketplace/connectors/wscnmcp-token` | mcp | 3 | 华尔街见闻MCP —— 提供 A 股大涨股异动归因与华尔街见闻全球财经资讯查询能力。支持查询近两个月的大涨个股（含上涨原因、关联板块、板块异动描述，自动按板块归类），以及华尔街见闻全球资讯列表与文章详情，帮助快速抓住当日市场主线、追踪财经热点。 Version: 1.0.0. |
 | 新华财经资讯MCP | `workbuddy/connectors/marketplace/connectors/xhcj-mcp-announcements-news-policy` | mcp | 3 | 公告、新闻、政策数据，包含股票资讯、板块资讯、热点新闻、资讯搜索、大宗快讯、外汇快讯、股票快讯、公告关键词检索、政策向量检索等 Version: 1.0.0. |
@@ -654,14 +664,17 @@
 | 迪安智能科研云 | `workbuddy/connectors/marketplace/connectors/xmed-figure-mcp` | mcp | 2 | 科研数据可视化：火山图、PCA、富集分析、生存分析，自动匹配发表级输出 Version: 1.0.10. |
 | Xmind思维导图 | `workbuddy/connectors/marketplace/connectors/xmind` | mcp | 2 | 通过 AI 对话创建、读取和编辑 Xmind 在线思维导图。 Version: 1.0.0. |
 | 薪人薪事 | `workbuddy/connectors/marketplace/connectors/xrxs` | mcp | 4 | 通过自然语言管理薪人薪事员工入职、离职及考勤月度报表归档等 HR 场景。 Version: 1.0.0. |
+| 言序 | `workbuddy/connectors/marketplace/connectors/yanxu` | mcp | 2 | 通过自然语言创作并发布微信公众号文章：查询已绑定的公众号与样式主题、按主题排版建稿、一键推送到公众号草稿箱。 Version: 1.0.1. |
 | 易查云贸易数据 | `workbuddy/connectors/marketplace/connectors/yichayun-trade-data` | mcp | 2 | 全球海关贸易数据智能查询:按产品找海外采购商与供应商,分析市场趋势与伙伴国份额,查企业画像与资信。数据来自提单与官方统计原始记录,带明确时间口径,可追溯、可对账。 |
 | 盈米MCP | `workbuddy/connectors/marketplace/connectors/yingmi-mcp` | mcp | 3 | 查询基金与市场数据，完成基金研究、组合分析、财富规划及金融内容生成。 |
 | 智客AI · 对公(To B)营销助手 | `workbuddy/connectors/marketplace/connectors/youshu-bd-mate` | mcp | 2 | 对公营销助手是基于企业全维数据构建的对公营销智能助手，提供从生成访前一页纸、访前客情报告、产品找客、关键人画像、营销话术及按企荐品的完整展业闭环能力。 Version: 2.0.2. |
+| 生意专家 | `workbuddy/connectors/marketplace/connectors/yuanbei-hub` | mcp | 3 | 连锁门店经营数据助手，支持销售排名、库存补货、会员分析和经营诊断等查询 Version: 1.0.0. |
 | 华宇元典法律数据 | `workbuddy/connectors/marketplace/connectors/yuandian-mcp` | mcp | 1 | 华宇元典法律数据为智能体提供法律法规、案例文书、企业信息 MCP 工具能力。 |
 | 云客AI工作手机 | `workbuddy/connectors/marketplace/connectors/yunke-cli` | cli | 2 | 提供真实手机的数据读取与设备控制能力。AI 自动采集通话与录音，沉淀全量沟通数据驱动销售分析；同时允许 AI 直接操控手机拨打电话、发短信、操作 APP，把实体手机变成 Agent 的硬件执行单元。 |
 | 云图外贸工作台 | `workbuddy/connectors/marketplace/connectors/yuntu-ft-workbench` | mcp | 1 | 把 WorkBuddy 技能生成的外贸开发结果（买家报告/全球搜索/情报卡/跟进）自动写回「云图外贸工作台」工作台，基于 H5 + EdgeOne KV 云存储，数据主权归属用户（BYOC）。 |
 | 云指建站MCP服务 | `workbuddy/connectors/marketplace/connectors/yunzhi-mcp` | mcp | 2 | 通过 MCP 服务创建/修改网站页面，管理网站的产品、文章等数据，与 Skill 结合实现从需求到页面的端到端自动交付，大幅简化建站流程。 Version: 1.0.0. |
 | 云帐房 | `workbuddy/connectors/marketplace/connectors/yzf-general-mcp-server` | mcp | 6 | 一句话把票开了、税报了、政策理清了，省的是钱，更是心。 Version: 1.1.1. |
+| 天润融通·Zenava | `workbuddy/connectors/marketplace/connectors/zenava` | cli | 5 | 连接天润客服平台，通过自然语言管理系统全产品能力：在各功能模块内导入数据、查询数据明细&数据报表、完整相关流程配置、搭建语音/文本/分析智能体。 Version: 0.1.2. |
 | 中兴新云AI智报 | `workbuddy/connectors/marketplace/connectors/zfs-fssc-ai` | mcp | 3 | 财务云 AI 报销助手：用自然语言完成报销申请、发票查询识别、报销单查询与费用审批等操作。 |
 | 账三丰 | `workbuddy/connectors/marketplace/connectors/zhangsanfeng` | mcp | 2 | 连接账三丰（财务云 / 进销存 / MES）。用自然语言查利润表、资产负债表、往来账龄、采购销售单据、库存、工单与报工进度；也能一句话生成记账凭证或开采购入库单草稿，确认后入账。 Version: 1.0.0. |
 | 知识星球 | `workbuddy/connectors/marketplace/connectors/zsxq` | cli | 2 | 用自然语言管理知识星球：浏览星球内容、发帖评论、搜索主题、回答问题、管理笔记、查看用户信息。 |
@@ -673,6 +686,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-23-180002 | [2026-09-23-180002](workbuddy/change-logs/2026-09-23-180002.md) | WorkBuddy 本次同步新增 540 个文件、修改 9 个文件、删除 196 个文件。 新增条目：connectors/marketplace/connectors/beatapi-beatdesign, connectors/marketplace/connectors/cloudhub, connectors/marketplace/conne... |
 | 2026-09-22-180002 | [2026-09-22-180002](workbuddy/change-logs/2026-09-22-180002.md) | WorkBuddy 本次同步新增 679 个文件、修改 62 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/aholo-lux3d, connectors/marketplace/connectors/meituan-for-business, connectors/marketplace/c... |
 | 2026-09-21-180001 | [2026-09-21-180001](workbuddy/change-logs/2026-09-21-180001.md) | WorkBuddy 本次同步新增 20 个文件、修改 42 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/3chat-customer-growth, connectors/marketplace/connectors/charge-order-query, connectors/market... |
 | 2026-09-20-180005 | [2026-09-20-180005](workbuddy/change-logs/2026-09-20-180005.md) | WorkBuddy 本次同步新增 22 个文件、修改 19 个文件、删除 63 个文件。 新增条目：connectors/marketplace/connectors/gt-generate-sql-data, connectors/marketplace/connectors/kuka-service, connectors/marketplace/... |
@@ -692,4 +706,3 @@
 | 2026-08-13-180002 | [2026-08-13-180002](workbuddy/change-logs/2026-08-13-180002.md) | WorkBuddy 本次同步新增 13 个文件、修改 4 个文件、删除 235 个文件。 新增条目：skills/paper-reader, skills/paper-reader.zip, skills/paper-rebuttal, skills/paper-reviewer, skills/research-lineage-map。 移除条目已归... |
 | 2026-08-11-180003 | [2026-08-11-180003](workbuddy/change-logs/2026-08-11-180003.md) | WorkBuddy 本次同步新增 54 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/mvp-dev-expert-team。 受影响范围：experts/mvp-dev-expert-team。 |
 | 2026-08-10-170319 | [2026-08-10-170319](workbuddy/change-logs/2026-08-10-170319.md) | WorkBuddy 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/.disable_to_model_invocation_migration.json。 受影响范围：skills/.disable_to_model_invocation_migration.json。 |
-| 2026-08-09-180003 | [2026-08-09-180003](workbuddy/change-logs/2026-08-09-180003.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。 |

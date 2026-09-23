@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "workrally": {
-      "type": "streamableHttp",
+      "type": "streamable-http",
       "url": "https://workrally.qq.com/zenstudio/api/mcp",
       "timeout": 30000
     }
