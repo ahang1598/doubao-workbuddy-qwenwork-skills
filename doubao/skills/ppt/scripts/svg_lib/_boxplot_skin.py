@@ -5,6 +5,7 @@ Boxplot skeleton overlay + skin apply (extracted from the v23 skeleton experimen
 Consumer:
   - svg_lib.charts.boxplot (notched_outlined / variable_width_gradient / beeswarm / strip variants)
 """
+
 from __future__ import annotations
 
 import math
@@ -478,12 +479,10 @@ def _boxplot_skeleton_overlay(
             y_dn = y_q2 + notch_h / 2
             # re-draw whiskers (thin) since baseline whiskers were stripped
             overlays.append(
-                f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" '
-                f'stroke="{INK}" stroke-width="1.0"/>'
+                f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" stroke="{INK}" stroke-width="1.0"/>'
             )
             overlays.append(
-                f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" '
-                f'stroke="{INK}" stroke-width="1.0"/>'
+                f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" stroke="{INK}" stroke-width="1.0"/>'
             )
             cap_w = box_w * 0.5
             overlays.append(
@@ -503,10 +502,7 @@ def _boxplot_skeleton_overlay(
                 f"L {xL:.1f} {y_q1:.1f} L {xL:.1f} {y_dn:.1f} "
                 f"L {xL + notch_dx:.1f} {y_q2:.1f} L {xL:.1f} {y_up:.1f} Z"
             )
-            overlays.append(
-                f'<path d="{path}" fill="{_with_alpha(col, 0.18)}" '
-                f'stroke="{col}" stroke-width="1.4"/>'
-            )
+            overlays.append(f'<path d="{path}" fill="{_with_alpha(col, 0.18)}" stroke="{col}" stroke-width="1.4"/>')
             # median mark inside notch
             overlays.append(
                 f'<line x1="{xL + notch_dx:.1f}" y1="{y_q2:.1f}" x2="{xR - notch_dx:.1f}" y2="{y_q2:.1f}" '
@@ -533,12 +529,10 @@ def _boxplot_skeleton_overlay(
             y_hi = yof(s["hi"])
             # re-draw whiskers (thin) since baseline whiskers were stripped
             overlays.append(
-                f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" '
-                f'stroke="{INK}" stroke-width="1.0"/>'
+                f'<line x1="{cx:.1f}" y1="{y_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" stroke="{INK}" stroke-width="1.0"/>'
             )
             overlays.append(
-                f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" '
-                f'stroke="{INK}" stroke-width="1.0"/>'
+                f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_lo:.1f}" stroke="{INK}" stroke-width="1.0"/>'
             )
             cap_w = w * 0.5
             overlays.append(
@@ -584,8 +578,7 @@ def _boxplot_skeleton_overlay(
                 dx = (rnd.random() - 0.5) * col_w * 0.5
                 py = yof(v)
                 overlays.append(
-                    f'<circle cx="{cx + dx:.1f}" cy="{py:.1f}" r="2.1" '
-                    f'fill="{_with_alpha(col, 0.75)}" stroke="none"/>'
+                    f'<circle cx="{cx + dx:.1f}" cy="{py:.1f}" r="2.1" fill="{_with_alpha(col, 0.75)}" stroke="none"/>'
                 )
             # median tick
             y_med = yof(s["q2"])
@@ -613,5 +606,3 @@ def _quantile(sxs, q):
 # -----------------------------------------------------------------------------
 # funnel skeleton overrides: rectangle, pipeline_horizontal, stacked_bar, pyramid
 # -----------------------------------------------------------------------------
-
-

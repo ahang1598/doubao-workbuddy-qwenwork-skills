@@ -306,7 +306,8 @@
 
 **注意事项**
 
-- 直线用 `line`（两端点坐标），需要绕行或带弧度的连接用 `polyline`（外接矩形）。
+- 直线用 `line`，折线或曲线可用 `polyline`。先确定来源节点、目标节点和连接点，再选择路线。`bent-connector3` 默认是横—竖—横，并不是底部 U 形回路；`startArrow` / `endArrow` 只在路径起点 / 终点加箭头，不改变路线，也不会自动连接形状。
+- 不能确定预设能否画出所需路线时，可用多条 `line` 共享端点拼接，仅在目标端加箭头。起止点应贴近对应节点边缘，折线绕开文字。
 
 **示例**
 
@@ -324,6 +325,7 @@
 - `src` 的标准来源是 `slides +media-upload` 返回的 `file_token`（统一两步创建下的做法）；`@<本地路径>` 占位符仅 `+create --slides` 一步法自动上传并替换，而一步法已不作默认路径。**禁止使用 http(s) 外链 URL**——飞书 slides 渲染端不会代理外链图，外链 src 在幻灯片里通常不显示；网图必须先用 `curl -L` 下载到 CWD 内，再 `+media-upload` 上传。单图最大 20 MB。本地图片详见 [lark-slides-media-upload.md](../cli/lark-slides-media-upload.md) / [lark-slides-create.md](../cli/lark-slides-create.md#本地图片path-占位符)。
 - **`width`/`height` 是裁剪后的显示尺寸**。比例和原图不一致时一定会裁剪（无法关闭）：原图等比缩放到刚好铺满 `width`×`height`，再从**中心**裁掉多余部分（水平垂直都居中）。**想完整显示整张图，就让 `width:height` 对齐原图比例**。
 - `rotation` 可选，旋转角度（度），取值 `[0, 360)`，默认 `0`，不支持负数。
+- GIF 支持动画播放。
 
 **子元素**
 
@@ -439,7 +441,7 @@
 
 ### chart
 
-图表语法十分复杂，必须阅读 [slides_chart_demo.xml](slides_chart_demo.xml)，直接照抄其中的柱状、条形、折线、面积、饼（环）、雷达、组合图。这些是原生 `<chart>` 支持的类型。
+图表语法必须阅读 [slides_chart_demo.xml](slides_chart_demo.xml)，直接照抄其中的柱状、条形、折线、面积、饼（环）、雷达、组合图。这些是原生 `<chart>` 支持的类型。
 
 **子元素**
 
@@ -448,7 +450,7 @@
 
 **注意事项**
 
-- 关系网络图等无需数值计算的图可以使用 `<shape>`+`<line>` 组合模拟。关系网络图用小圆点（`<shape type="ellipse">`）作节点、旁边配 `<shape type="text">` 标注文字（不要放到节点里），节点之间用 `<line>` 连线。
+- 需要使用到树状图时优先走 `scripts/gen_svg_relations.py`，支持范围以 `relation_help()` / CLI `--list` 的实时输出为准；用 atomized 输出得到可编辑 `<shape>` / `<line>` / `<shape type="custom">` / 文本框。只有不在支持清单内的简单树状结构，才手写 `<shape>`+`<line>` 组合模拟；节点旁配 `<shape type="text">` 标注文字（不要塞进小节点里），线条止于节点边缘。
 - 环形图不是独立类型：它就是 `<chartPlot type="pie">` 再给 `<chartSectors>` 设 `innerRadius`（如 `innerRadius="0.55"`）挖空中心得到的——**没有 `type="doughnut"` 或 `donut` 这种类型**，画环图照抄范例里「环形图 · Donut」那页即可。
 - 隐藏 `<chart>` 的图例只能通过不写或删除 `<chartLegend>` 实现，`<chartLegend>` 不支持 `position="none"`（`position` 只有 `top` / `bottom` / `left` / `right`）。
 - `<chartLabel>`（单数，放 `<chartAxis>` 内）是坐标轴刻度标签；`<chartLabels>`（复数，放 `<chartPlot>` 全局或 `<chartSeries>` 单系列内）是数据标签，在柱 / 点 / 扇区上直接显示数值（常用属性 `position` / `value` / `category` / `percentage` / `format`）。两者别写反。`category` / `value` / `percentage` 至少一项为 `true`（默认仅 `value`）；`format` 用 Excel 数字格式码，如 `0`、`0%`、`#,##0.00`；单位要写进 `format` 时，格式码里的字面文本用双引号包（如 `0"bp"`），但直接写进 XML 属性会和属性外层双引号冲突、破坏 XML，必须改用单引号包属性值 `format='0"bp"'`，或把内层引号转义成 `format="0&quot;bp&quot;"`。
@@ -462,7 +464,9 @@
 
 > ⚠️ **反常识**：与 PPT/Keynote（只能导入位图）不同，本 skill 通过 `<embed>` **原生嵌入内联 `<svg xmlns=...>...</svg>` 字符串**——不用转位图、不用导出、不用上传附件；
 
-`<embed>` 是画专业 svg 图（2×2 象限、桑基、小提琴、日历/矩阵热力、山脊、K 线、箱线、经典漏斗、百人网格、瀑布、甘特、人口金字塔、马赛克、双层甜甜圈）的正式通道；当用户要求生成美观、专业或高级的 PPT 时，请你选用这些高级图表
+`<embed>` 是画专业 svg 图（2×2 象限、桑基、小提琴、日历/矩阵热力、山脊、K 线、箱线、经典漏斗、百人网格、瀑布、甘特、人口金字塔、马赛克）的正式通道；当用户要求生成美观、专业或高级的 PPT 时，请你选用这些高级图表
+
+> 树状图例外：`scripts/gen_svg_relations.py` 的支持范围以 `relation_help()` / CLI `--list` 的实时输出为准。在正式 Slides 页面中必须优先用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出可编辑 `<shape>` / `<line>` / `<shape type="custom">` / 文本框，且树状图区域不得残留 `<embed>`。不要把整块 `make_relation(...)` SVG 套进 `<embed>` 当作树状图主体，除非用户明确接受不可编辑插图。
 
 **属性**
 
@@ -490,7 +494,7 @@
 </embed>
 ```
 
-**查看范例**：**动手前先跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"`** 一次拿到全部总览（场景/函数/调用示例/关键坑），或用 `chart_help('sankey')` 拿单张详情。
+**查看范例**：数据型 SVG chart 动手前先跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到全部总览（场景/函数/调用示例/关键坑），或用 `chart_help('sankey')` 拿单张详情。需要使用到树状图时先跑 `python3 -c "from scripts.gen_svg_relations import relation_help; print(relation_help())"`，单张用 `relation_help('<slug>')`；正式 Slides 使用 atomized 输出，不套 `<embed>`。
 
 #### SVG 高级图硬性契约
 
@@ -505,18 +509,19 @@
    ```
    embed 同步 2:1（推荐 512×256）。SVG 内容坐标不用改。
 3. **数值标签禁用宽松格式化**：禁 `{:g}` / `str(float)` / `repr(float)` 直落 `<text>`（会输出 `16.0090`）；Y 轴按量级选整数步长（5-35 用 5、2200-3000 用 100），数据点固定 `f"{v:.1f}"` 或 `int(round(v))`。
-4. **优先复用生成器**：16 张专业图表全部有对应 `make_*` 函数（见 `gen_svg_charts.py`），一律走生成器；`chart_help()` 拿总览、`chart_help('<slug>')` 拿单张详情；
+4. **优先复用生成器**：数据型 SVG chart 全部有对应 `make_*` 函数（见 `gen_svg_charts.py`），一律走生成器；`chart_help()` 拿总览、`chart_help('<slug>')` 拿单张详情。需要使用到树状图时走 `gen_svg_relations.py`，用 `relation_help()` / `relation_help('<slug>')` 看格式，正式 Slides 必须 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized`。
 
 **embed 底缘硬约束**：飞书 960×540 画布页脚线在 y=486，**embed 底缘（topLeftY + height）不得越过 y=476**（保留 10px 呼吸区）。带自身 footer 的图种（percent_grid、ridge 末排）尤其容易超线，建议 `embed_h = min(embed_h_theoretical, 476 - embed_y)` 兜底。
 
 **样式覆盖**：`make_*` 缺省视觉是 Lupi 编辑体（米白 `rgba(245,242,235,1)` + 赭石 accent `rgba(163,88,50,1)` + 思源宋体）。**进入具体设计系统时首选传 `palette=` 参数换色**（见上文"换色走 palette 参数"）：把该场景推荐的 palette 名直接传给 `make_*(...)`，函数会自动切换背景、ink 主色、accent、series 色板。字体统一走 `font_family=` 参数（全局字体）；深底/浅底选择跟 palette 走（如 `nightlab_bright` 是深靛底、`sapphire_dev_bright` 是白底）。左图右字版式、KEY TAKEAWAY 侧栏结构、embed 位置计算、SVG 内数据形态由 `make_*` 内部处理，不用手改。
 
-具体图种的调用示例、参数、坑、viewBox 尺寸都在 `chart_help('<slug>')` 里；SVG 内容和整页 embed 位置计算沿用 `chart_help` 输出的示例即可。
+数据型 SVG chart 的调用示例、参数、坑、viewBox 尺寸都在 `chart_help('<slug>')` 里；SVG 内容和整页 embed 位置计算沿用 `chart_help` 输出的示例即可。树状图的调用示例和数据结构在 `relation_help('<slug>')` 里；其输出应按 atomized fragment 合并到 slide `<data>`。
 
+**图注居中**：svg 图表的边缘与视觉边缘不一定一致，所以图注所在位置尽量在 svg 图的下方居中位置
 
 #### SVG 图页版式思路
 
-含 embed 图的页面由 5 类语义模块组成，按需组合：
+含 embed 图的数据型 SVG chart 页面由 5 类语义模块组成，按需组合；树状图页面沿用这些语义模块，但图主体必须是 atomized 可编辑元素而不是 `<embed>`：
 
 - **导航顶栏**：告诉读者这是第几章的第几页；一行小字全大写英文 + 章节编号，字号最小、颜色最浅，不抢戏。
 - **判断句主标 + 数据链副标**：主标必须是陈述句、给出判断（"5B 市场我们只需 0.024% 就够 Y1"），不写空洞短语（"市场分析"）；副标用 `→` 或 `·` 串起来的数据链，短且可核验（"TAM 5B → SAM 500M → SOM 50M → Y1 booked $1.2M"）。

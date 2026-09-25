@@ -49,6 +49,7 @@ lark-cli slides +replace-slide \
 | `--parts` | 是 | JSON 数组（`[{...}, ...]`），单次最多 200 条。支持 `@<file>` 和 `-`（stdin）读取 |
 | `--revision-id` | 否 | 基础版本号；默认 `-1` 表示基于最新版执行；传具体版本号时，服务端以该版本为 base 执行；**传不存在的版本号（超过当前 revision）返回 3350002** |
 | `--tid` | 否 | 并发事务 ID；多人协作长事务才用，单次单人调用留空 |
+| `--no-lint` | 否 | 跳过服务端版式校验（默认开启，校验 parts 拼装后的整页）；只能在当前页已被拦、完整报告已读完且符合[单页例外规则](../workflow/validation-xml.md)时单独使用，禁止多页共用或自动重试附加 |
 
 ## parts 元素结构
 
@@ -80,12 +81,14 @@ lark-cli slides +replace-slide \
 |---|---|---|
 | `<shape>` | 矩形/椭圆/三角/文本框等所有形状 | `type` 必填；`<content/>` 缺失时 CLI 会自动注入 |
 | `<line>` | 直线 | 需 `startX/startY/endX/endY` |
-| `<polyline>` | 折线 | `<border>` 是必填子元素；路径形状用 `presetHandlers` 调节，`points` 不在 schema 属性表里（lint 会报 `sxsd_unsupported_attr`），且读回时被服务端规整丢弃 |
+| `<polyline>` | 折线 | `<border>` 是必填子元素；路径形状用 `presetHandlers` 调节，`points` 不在 schema 属性表里（服务端校验会报 `sxsd_unsupported_attr`），且读回时被服务端规整丢弃 |
 | `<img>` | 图片 | `src` 必须是 [`+media-upload`](lark-slides-media-upload.md) 返回的 `file_token`，不能是 URL |
 | `<icon>` | 图标 | `iconType` 取自 iconpark 资源；语义图标先用 `scripts/iconpark_tool.py search` 检索 |
 | `<table>` | 表格 | 整表替换会**重建内部 td id**，旧 td block_id 立即失效 |
 | `<td>` | 单元格局部替换 | 只能 `block_replace`，不能 `block_insert`；`block_id` 必须是最新 `+xml-get --slide-id` 拿到的 td id |
 | `<chart>` | 图表（line/bar/column/pie/area/radar/combo） | 必须嵌 `<chartPlotArea>` + `<chartData>` + `<dim1>/<dim2>/<chartField>` |
+
+树状图不是 `<chart>`，正式 Slides 也不得用 `<embed>` 作主体。用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 生成后，把其中 `<data>` 下的 `<shape>` / `<line>` / `<shape type="custom">` / 文本框拆成多个合法根元素，分别作为 `block_insert` 或 `block_replace` 的 part 提交。
 
 **不可作为根元素**：
 
@@ -139,6 +142,8 @@ lark-cli slides +replace-slide \
 
 ## 返回值
 
+下列为 `ok: true` 时 `data` 内的业务字段；先检查完整外层响应，不要把此示例当作顶层结构。
+
 ```json
 {
   "xml_presentation_id": "slidesXXXXXXXXXXXXXXXXXXXXXX",
@@ -156,6 +161,7 @@ lark-cli slides +replace-slide \
 | `revision_id` | 成功后的新版本号，下次做乐观锁时用 |
 | `failed_part_index` | 有部分失败时存在，指向第几条 part 失败 |
 | `failed_reason` | 失败原因文字描述 |
+| `issues` | 与 `failed_reason` 相对：parts 已全部生效，服务端只是仍有发现，不影响本次调用的成功状态。内容是未达阻断级的版式校验发现；校验主体是**拼装后的整页**，因此可能报出页面上原有的元素。按实际类型读取：对象/数组直接读，JSON 字符串解码后读，普通文本原样读；完整读取全部发现，立即回读并截图核验，真实问题须修复 |
 
 整批作为原子事务：任一 part 失败则整批不生效，服务端通过 `failed_part_index` / `failed_reason` 告诉你是哪条；按此定位修正后重发。
 
@@ -216,12 +222,28 @@ lark-cli slides +replace-slide \
   --parts "$PARTS"
 ```
 
+### 返回字段与处理
+
+返回 JSON 的外层 `ok` 表示调用是否成功，`identity` 表示调用身份；成功时业务字段位于 `data`，失败时错误信息位于 `error`。按以下字段判断结果并处理 lint 发现。
+
+| 当次响应 | 读取与处理 |
+|---|---|
+| `ok: true`，未附问题发现 | 从 `data` 记录 ID、版本等业务字段，继续流程 |
+| `ok: true`，有 `data.issues` | 页面已写入；对象/数组直接读，JSON 字符串先解码，普通文本完整读。逐条处理发现，按验证流程回读与截图；不能因成功而忽略 |
+| `ok: false`，`error.code: 4000153` | 被拒页面未写入；对 `error.message` 的完整 JSON 字符串解码，读完报告后修复并开启 lint 重提 |
+| 其他失败或返回不完整 | 读完整 `error` 或诊断，按实际原因处理；不能只读 `data` 并把缺失字段默认成零问题 |
+
+返回的是 lint 报告对象时，先看 `summary` 中的 `error_count`、`warning_count`、`info_count` 和 `status`，再读 `document.errors/warnings/infos` 和 `slides[].errors/warnings/infos` 的全部问题；`slides[].issues` 可能是分级列表的镜像，不能重复计数；合并列表中的额外发现也须读取，根 `issues` 不能当作全页列表。逐条读 `code`、`message`、实际存在的 `hint` 及定位/测量字段；`element_ids` 可能为空，需继续看 `elements`、`target.xml_path` 或 schema 的 `path`。单页报告内部 `slide_number: 1` 不一定是整稿第 1 页，关联本次请求/响应的 `slide_id`。
+
+字符串长度不是问题数，`summary` 或前几百字符也不是完整问题正文。报告过大或工具输出截断时，先检查是否已有该次完整响应文件；有文件时可用 `lint_inspect.py` 分页读取，只有截断文本时无法恢复遗漏内容，不能据此认定问题已全部处理。使用 `--no-lint` 后的成功不代表校验通过；异常、长报告和单页例外规则见 [validation-xml.md](../workflow/validation-xml.md)。
+
 ## 常见错误
 
 | 现象 | 原因 | 对策 |
 |------|------|------|
 | 3350001 + hint "block_id not found" | `parts[i].block_id` 在当前页不存在 | 重新 `+xml-get --slide-id` 拿最新 XML，按里面的 short ID 再填 |
 | 3350002 not found | `--revision-id` 传了不存在的版本号（超过当前 revision） | 用 `-1` 或用 `+xml-get --slide-id` 拿到的有效 `revision_id` |
+| 4000153 `xml lint blocked` | 服务端版式校验拒绝了本次提交，整批 parts 都没生效 | 按 [validation-xml.md](../workflow/validation-xml.md) 解析并读完 `error.message` 的完整报告，修复后开启 lint 重提；报告针对拼装后的整页，须检查与既有元素的相互影响 |
 | `--parts[i] action "str_replace" is not supported` | CLI 不暴露 `str_replace` | 把替换需求改写成 `block_replace` / `block_insert` |
 | `--parts contains N items, exceeds maximum of 200` | 一次提交 parts 太多 | 拆多次调用 |
 | `--parts[i] (block_replace) requires non-empty block_id` / `replacement` | 字段缺失 | 按 parts 元素结构补齐 |

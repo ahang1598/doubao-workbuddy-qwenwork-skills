@@ -3,29 +3,72 @@
 共享 helper：palette 解析、字体解析、rgb/hls 颜色数学、SVG 骨架 helper（bbox/viewbox）、
 标题渲染、label 避让排布。所有 make_* 与 draw_* 都可以复用。
 """
+
 from __future__ import annotations
 import math
 import re
 import colorsys
 from typing import Sequence
 
-__all__ = ['_INK', '_INK6', '_INK4', '_INK2', '_INK1', '_ACC', '_rgb_prefix', '_rgba_with_alpha', '_resolve_palette', '_bg_rect_svg', '_is_dark_bg', '_is_dark_palette', '_ink_on_bg', '_punchy_title_ink', '_prepend_bg_if_dark', '_rgb_tuple', '_rgb_to_hls', '_hls_to_rgba', '_lighten_rgba', '_darken_rgba', '_derive_series_colors', '_xesc', '_svg_open', '_svg_close', '_bbox_of_svg_body', '_wrap_with_auto_viewbox', '_resolve_font', '_render_title_block', 'auto_layout_labels', 'ridge_density_from_samples', '_fmt_num', '_fmt_axis', '_svg_close', 'auto_layout_labels', 'ridge_density_from_samples', '_fmt_axis', '_dist_font_sizes', '_SVG_LIB_VARIANTS', '_variant_is_classic', '_dispatch_to_svg_lib', '_estimate_label_width_px']
-
+__all__ = [
+    "_INK",
+    "_INK6",
+    "_INK4",
+    "_INK2",
+    "_INK1",
+    "_ACC",
+    "_rgb_prefix",
+    "_rgba_with_alpha",
+    "_resolve_palette",
+    "_bg_rect_svg",
+    "_is_dark_bg",
+    "_is_dark_palette",
+    "_ink_on_bg",
+    "_punchy_title_ink",
+    "_prepend_bg_if_dark",
+    "_rgb_tuple",
+    "_rgb_to_hls",
+    "_hls_to_rgba",
+    "_lighten_rgba",
+    "_darken_rgba",
+    "_derive_series_colors",
+    "_xesc",
+    "_svg_open",
+    "_svg_close",
+    "_bbox_of_svg_body",
+    "_wrap_with_auto_viewbox",
+    "_resolve_font",
+    "_render_title_block",
+    "auto_layout_labels",
+    "ridge_density_from_samples",
+    "_fmt_num",
+    "_fmt_axis",
+    "_svg_close",
+    "auto_layout_labels",
+    "ridge_density_from_samples",
+    "_fmt_axis",
+    "_dist_font_sizes",
+    "_SVG_LIB_VARIANTS",
+    "_variant_is_classic",
+    "_dispatch_to_svg_lib",
+    "_estimate_label_width_px",
+]
 
 
 # ---- 默认色 ----
-_INK  = "rgba(28,28,26,1.0)"
+_INK = "rgba(28,28,26,1.0)"
 _INK6 = "rgba(28,28,26,0.6)"
 _INK4 = "rgba(28,28,26,0.4)"
 _INK2 = "rgba(28,28,26,0.2)"
 _INK1 = "rgba(28,28,26,0.12)"
-_ACC  = "rgba(163,88,50,1.0)"
+_ACC = "rgba(163,88,50,1.0)"
 
 
 def _rgb_prefix(rgba_str):
     """从 rgba(...) 提取 'rgba(r,g,b,' 前缀，方便与自定义 alpha 拼接。"""
     import re as _re
-    m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str or "")
+
+    m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
     if not m:
         return "rgba(28,28,26,"
     return f"rgba({int(float(m.group(1)))},{int(float(m.group(2)))},{int(float(m.group(3)))},"
@@ -50,37 +93,36 @@ def _resolve_palette(palette):
             from svg_lib.svg_palettes import PALETTES
         except ImportError:
             import os, sys
+
             _svg_lib_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svg_lib")
             if _svg_lib_dir not in sys.path:
                 sys.path.insert(0, _svg_lib_dir)
             from svg_palettes import PALETTES
         if palette not in PALETTES:
-            raise ValueError(
-                f"palette '{palette}' not found. Available: {sorted(PALETTES.keys())}"
-            )
+            raise ValueError(f"palette '{palette}' not found. Available: {sorted(PALETTES.keys())}")
         pl = dict(PALETTES[palette])
     else:
         raise TypeError(f"palette must be None / str / dict, got {type(palette).__name__}")
 
-    ink       = pl.get("ink",       _INK)
-    accent    = pl.get("accent",    _ACC)
+    ink = pl.get("ink", _INK)
+    accent = pl.get("accent", _ACC)
     secondary = pl.get("secondary", _rgba_with_alpha(ink, 0.6))
-    bg        = pl.get("bg",        None)  # None = 不渲染背景
-    muted     = pl.get("muted",     _rgba_with_alpha(ink, 0.6))
+    bg = pl.get("bg", None)  # None = 不渲染背景
+    muted = pl.get("muted", _rgba_with_alpha(ink, 0.6))
 
     out = {
-        "ink":       ink,
-        "accent":    accent,
+        "ink": ink,
+        "accent": accent,
         "secondary": secondary,
-        "bg":        bg,
-        "muted":     muted,
+        "bg": bg,
+        "muted": muted,
         # 派生（沿用旧命名，方便老函数不改逻辑）
-        "ink6":      _rgba_with_alpha(ink, 0.6),
-        "ink4":      _rgba_with_alpha(ink, 0.4),
-        "ink2":      _rgba_with_alpha(ink, 0.2),
-        "ink1":      _rgba_with_alpha(ink, 0.12),
-        "grid":      pl.get("grid",    _rgba_with_alpha(ink, 0.12)),
-        "connect":   pl.get("connect", _rgba_with_alpha(ink, 0.4)),
+        "ink6": _rgba_with_alpha(ink, 0.6),
+        "ink4": _rgba_with_alpha(ink, 0.4),
+        "ink2": _rgba_with_alpha(ink, 0.2),
+        "ink1": _rgba_with_alpha(ink, 0.12),
+        "grid": pl.get("grid", _rgba_with_alpha(ink, 0.12)),
+        "connect": pl.get("connect", _rgba_with_alpha(ink, 0.4)),
     }
     # 派生 ink_fg: 与 bg 保证对比的前景色。
     # 大部分 palette 已经把 ink 定义为与 bg 相反明度，因此直接沿用 ink；
@@ -89,11 +131,12 @@ def _resolve_palette(palette):
     # 这里内联判断。
     if bg is not None:
         import re as _re
-        _mbg = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', bg)
-        _mink = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', ink or "")
+
+        _mbg = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", bg)
+        _mink = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", ink or "")
         if _mbg and _mink:
-            _bl = 0.299*float(_mbg.group(1))+0.587*float(_mbg.group(2))+0.114*float(_mbg.group(3))
-            _il = 0.299*float(_mink.group(1))+0.587*float(_mink.group(2))+0.114*float(_mink.group(3))
+            _bl = 0.299 * float(_mbg.group(1)) + 0.587 * float(_mbg.group(2)) + 0.114 * float(_mbg.group(3))
+            _il = 0.299 * float(_mink.group(1)) + 0.587 * float(_mink.group(2)) + 0.114 * float(_mink.group(3))
             if abs(_bl - _il) < 80:  # ink 与 bg 亮度过近 → 用硬编码对比色
                 out["ink_fg"] = "rgba(240,235,222,1)" if _bl < 128 else "rgba(28,28,26,1)"
             else:
@@ -113,8 +156,7 @@ def _bg_rect_svg(pal, width, height):
     """若 palette 定义了 bg，则返回一个全图背景 <rect>。"""
     if not pal.get("bg"):
         return ""
-    return (f'<rect x="{-2}" y="{-2}" width="{width+4}" height="{height+4}" '
-            f'fill="{pal["bg"]}"/>')
+    return f'<rect x="{-2}" y="{-2}" width="{width + 4}" height="{height + 4}" fill="{pal["bg"]}"/>'
 
 
 def _is_dark_bg(pal):
@@ -123,7 +165,8 @@ def _is_dark_bg(pal):
     if not bg:
         return False
     import re as _re
-    m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', bg)
+
+    m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", bg)
     if not m:
         return False
     r, g, b = float(m.group(1)), float(m.group(2)), float(m.group(3))
@@ -139,8 +182,11 @@ def _is_dark_palette(pal):
     宁可当作浅色对待——因为浅色 chart 上再叠浅色文字只是低对比而不是隐形。
     """
     import re as _re
-    m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)',
-                  pal.get("bg", "rgba(250,248,242,1)") or "rgba(250,248,242,1)")
+
+    m = _re.match(
+        r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)",
+        pal.get("bg", "rgba(250,248,242,1)") or "rgba(250,248,242,1)",
+    )
     if not m:
         return False
     r, g, b = float(m.group(1)), float(m.group(2)), float(m.group(3))
@@ -158,11 +204,14 @@ def _ink_on_bg(pal, prefer_light=None):
     或 rgba(255,255,255,...) 之类的固定色，需要"跟 palette 挂钩"时才用本函数。
     """
     import re as _re
+
     def _luma(rgba_str):
-        m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str or "")
-        if not m: return 128.0
+        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
+        if not m:
+            return 128.0
         r, g, b = float(m.group(1)), float(m.group(2)), float(m.group(3))
-        return 0.299*r + 0.587*g + 0.114*b
+        return 0.299 * r + 0.587 * g + 0.114 * b
+
     bg = pal.get("bg", "rgba(250,248,242,1)") or "rgba(250,248,242,1)"
     bg_l = _luma(bg)
     ink = pal.get("ink", _INK)
@@ -210,7 +259,8 @@ def _punchy_title_ink(pal):
 def _rgb_tuple(rgba_str):
     """从 rgba(r,g,b,a) 提取 (r,g,b) 整数元组。"""
     import re as _re
-    m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str or "")
+
+    m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
     if not m:
         return (28, 28, 26)
     return (int(float(m.group(1))), int(float(m.group(2))), int(float(m.group(3))))
@@ -219,14 +269,16 @@ def _rgb_tuple(rgba_str):
 def _rgb_to_hls(r, g, b):
     """RGB (0-255) → HLS (h in [0,1), l in [0,1], s in [0,1])。用于色相移动派生系列色。"""
     import colorsys
-    return colorsys.rgb_to_hls(r/255, g/255, b/255)
+
+    return colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
 
 
 def _hls_to_rgba(h, l, s, alpha=1.0):
     """HLS → rgba(...) 字符串。"""
     import colorsys
+
     r, g, b = colorsys.hls_to_rgb(h % 1.0, max(0, min(1, l)), max(0, min(1, s)))
-    return f"rgba({int(r*255)},{int(g*255)},{int(b*255)},{alpha})"
+    return f"rgba({int(r * 255)},{int(g * 255)},{int(b * 255)},{alpha})"
 
 
 def _lighten_rgba(rgba_str, ratio=0.5):
@@ -288,7 +340,7 @@ def _derive_series_colors(pal, n, saturation_hint=None, lightness_hint=None, mod
             al = max(al, 0.55)  # 深底：颜色更亮
             asat = max(asat, 0.55)
         elif bg_luma > 220 and lightness_hint is None:
-            al = min(al, 0.5)   # 浅底：颜色更深
+            al = min(al, 0.5)  # 浅底：颜色更深
 
     if mode == "gradient":
         # 渐变模式：色相从 accent 起点，向"补色方向"平滑推进（跨约 240° 色相环），
@@ -364,21 +416,21 @@ def _dist_font_sizes(vb_w: float, vb_h: float, n_items: int) -> dict:
         mult = 0.5
     body = max(10.0, base * mult)  # 底线 10pt
     return {
-        "title":    round(body * 1.35, 1),   # 大标题
-        "subtitle": round(body * 0.9, 1),    # 副标题
-        "figure":   round(body * 0.8, 1),    # figure_label / figure_note
-        "ytick":    round(body * 0.9, 1),    # y 轴刻度
-        "yaxis":    round(body * 0.95, 1),   # y 轴 label
-        "group":    round(body * 1.05, 1),   # x 轴 组名主标签
+        "title": round(body * 1.35, 1),  # 大标题
+        "subtitle": round(body * 0.9, 1),  # 副标题
+        "figure": round(body * 0.8, 1),  # figure_label / figure_note
+        "ytick": round(body * 0.9, 1),  # y 轴刻度
+        "yaxis": round(body * 0.95, 1),  # y 轴 label
+        "group": round(body * 1.05, 1),  # x 轴 组名主标签
         # boxplot/violin/ridge 的 "n = X" 与 "Mdn X" 是 secondary label，
         # 系数 0.95 + floor 11pt 保证 embed 到 slide 小窗口时仍可读
-        "group_n":  round(max(11.0, body * 0.95), 1),
+        "group_n": round(max(11.0, body * 0.95), 1),
         # legend 里 4-5 项水平并排、每项 15-20 字符——若 fs 跟 body 一起拉到 22pt
         # 会把 lg_x 挤到左边，直接盖住标题或超出画布。所以给 legend 单独限一个较低上限。
-        "legend":   round(min(15.0, body * 0.7), 1),
-        "foot":     round(body * 0.8, 1),    # 底部脚注
-        "label":    round(body * 1.0, 1),    # 通用文字标签（ridge 组名）
-        "body":     round(body, 1),          # 兜底
+        "legend": round(min(15.0, body * 0.7), 1),
+        "foot": round(body * 0.8, 1),  # 底部脚注
+        "label": round(body * 1.0, 1),  # 通用文字标签（ridge 组名）
+        "body": round(body, 1),  # 兜底
     }
 
 
@@ -391,28 +443,73 @@ def _dist_font_sizes(vb_w: float, vb_h: float, n_items: int) -> dict:
 # Coefficients are copied verbatim from embed_svg_validator so the two stay in
 # lock-step. If validator gets re-tuned, update both sides.
 _LABEL_WIDE_LETTER_RATIOS = {
-    "m": 0.90, "w": 0.78, "M": 0.90, "W": 0.98,
-    "G": 0.78, "O": 0.78, "Q": 0.78,
-    "A": 0.72, "B": 0.66, "C": 0.72, "D": 0.72, "H": 0.72, "K": 0.66,
-    "N": 0.72, "P": 0.66, "R": 0.72, "U": 0.72, "X": 0.66, "Z": 0.62,
+    "m": 0.90,
+    "w": 0.78,
+    "M": 0.90,
+    "W": 0.98,
+    "G": 0.78,
+    "O": 0.78,
+    "Q": 0.78,
+    "A": 0.72,
+    "B": 0.66,
+    "C": 0.72,
+    "D": 0.72,
+    "H": 0.72,
+    "K": 0.66,
+    "N": 0.72,
+    "P": 0.66,
+    "R": 0.72,
+    "U": 0.72,
+    "X": 0.66,
+    "Z": 0.62,
 }
 _LABEL_WIDE_SYMBOL_RATIOS = {
-    "@": 1.0, "&": 0.67, "$": 0.56, "¥": 0.56, "£": 0.56, "¢": 0.56,
-    "#": 0.56, "~": 0.58, "+": 0.58, "=": 0.58, "<": 0.58, ">": 0.58,
+    "@": 1.0,
+    "&": 0.67,
+    "$": 0.56,
+    "¥": 0.56,
+    "£": 0.56,
+    "¢": 0.56,
+    "#": 0.56,
+    "~": 0.58,
+    "+": 0.58,
+    "=": 0.58,
+    "<": 0.58,
+    ">": 0.58,
 }
 _LABEL_FONT_CATEGORY = {
-    "sans":       {"upper": 0.57, "lower": 0.51, "digit": 0.58, "punct": 0.50},
-    "serif":      {"upper": 0.57, "lower": 0.53, "digit": 0.58, "punct": 0.50},
-    "wide-sans":  {"upper": 0.62, "lower": 0.58, "digit": 0.63, "punct": 0.53},
+    "sans": {"upper": 0.57, "lower": 0.51, "digit": 0.58, "punct": 0.50},
+    "serif": {"upper": 0.57, "lower": 0.53, "digit": 0.58, "punct": 0.50},
+    "wide-sans": {"upper": 0.62, "lower": 0.58, "digit": 0.63, "punct": 0.53},
 }
 _LABEL_WIDE_SANS_MARKERS = (
-    "montserrat", "poppins", "futura", "century gothic", "gotham",
-    "raleway", "nunito", "quicksand", "josefin", "comfortaa",
+    "montserrat",
+    "poppins",
+    "futura",
+    "century gothic",
+    "gotham",
+    "raleway",
+    "nunito",
+    "quicksand",
+    "josefin",
+    "comfortaa",
 )
 _LABEL_SERIF_MARKERS = (
-    "song", "songti", "simsun", "ming", "mincho",
-    "georgia", "times", "caslon", "garamond", "sourcehan-serif",
-    "source han serif", "思源宋体", "宋体", "明体", "serif",
+    "song",
+    "songti",
+    "simsun",
+    "ming",
+    "mincho",
+    "georgia",
+    "times",
+    "caslon",
+    "garamond",
+    "sourcehan-serif",
+    "source han serif",
+    "思源宋体",
+    "宋体",
+    "明体",
+    "serif",
 )
 
 
@@ -447,6 +544,7 @@ def _estimate_label_width_px(text, font_size, letter_spacing_em=0.0, bold=False,
         return 0.0
     bold_mul = 1.05 if bold else 1.0
     coeffs = _LABEL_FONT_CATEGORY[_label_font_category(font_family)]
+
     # Mirror embed_svg_validator._svg_is_cjk_char: CJK glyphs are full-width (fs * 1.0),
     # not punctuation-width. Without this, `能源供应` (4 CJK chars @ fs=22.8) is estimated at
     # ~48px while the validator sees ~96px — half the reserved space, causing the label to
@@ -460,6 +558,7 @@ def _estimate_label_width_px(text, font_size, letter_spacing_em=0.0, bold=False,
             or 0xFF01 <= code <= 0xFF60
             or 0xFFE0 <= code <= 0xFFE6
         )
+
     width = 0.0
     for ch in text:
         if ch.isspace():
@@ -498,13 +597,14 @@ def _bbox_of_svg_body(body: str) -> tuple:
     考虑：line/rect/circle/ellipse 坐标、path d 里的坐标、<text> 按 font-size × 字符数 × text-anchor × rotation 估位置。
     """
     import re as _re
+
     xs, ys = [], []
     for m in _re.finditer(r'\b(?:x1|x2|cx)="([-\d.]+)"', body):
         xs.append(float(m.group(1)))
     for m in _re.finditer(r'\b(?:y1|y2|cy)="([-\d.]+)"', body):
         ys.append(float(m.group(1)))
     # rect 加宽高
-    for m in _re.finditer(r'<rect\b([^>]*)/?>', body):
+    for m in _re.finditer(r"<rect\b([^>]*)/?>", body):
         a = m.group(1)
         xm = _re.search(r'\bx="([-\d.]+)"', a)
         ym = _re.search(r'\by="([-\d.]+)"', a)
@@ -512,18 +612,20 @@ def _bbox_of_svg_body(body: str) -> tuple:
         hm = _re.search(r'\bheight="([-\d.]+)"', a)
         if xm and ym and wm and hm:
             x, y, w, h = float(xm.group(1)), float(ym.group(1)), float(wm.group(1)), float(hm.group(1))
-            xs += [x, x + w]; ys += [y, y + h]
+            xs += [x, x + w]
+            ys += [y, y + h]
     # path d
     for m in _re.finditer(r'd="([^"]+)"', body):
-        nums = list(map(float, _re.findall(r'-?\d+\.?\d*', m.group(1))))
+        nums = list(map(float, _re.findall(r"-?\d+\.?\d*", m.group(1))))
         for i, v in enumerate(nums):
             (xs if i % 2 == 0 else ys).append(v)
     # circle 加半径
     for m in _re.finditer(r'<circle\b[^>]*cx="([-\d.]+)"[^>]*cy="([-\d.]+)"[^>]*r="([-\d.]+)"', body):
         cx, cy, rr = float(m.group(1)), float(m.group(2)), float(m.group(3))
-        xs += [cx - rr, cx + rr]; ys += [cy - rr, cy + rr]
+        xs += [cx - rr, cx + rr]
+        ys += [cy - rr, cy + rr]
     # text 外扩：font-size × 字符数 × text-anchor × rotation
-    for m in _re.finditer(r'<text\b([^>]*)>([^<]*)</text>', body):
+    for m in _re.finditer(r"<text\b([^>]*)>([^<]*)</text>", body):
         attrs, text = m.group(1), m.group(2)
         xm = _re.search(r'\bx="([-\d.]+)"', attrs)
         ym = _re.search(r'\by="([-\d.]+)"', attrs)
@@ -544,9 +646,12 @@ def _bbox_of_svg_body(body: str) -> tuple:
         n_cjk = len(text) - n_ascii
         text_w = (n_ascii * fs * 0.7 + n_cjk * fs * 1.1) * wf
         text_w += max(0, len(text) - 1) * ls_px + max(3, fs * 0.2)
-        if anchor == "start":  x1, x2 = -2, text_w
-        elif anchor == "end":  x1, x2 = -text_w, 2
-        else:                  x1, x2 = -text_w/2 - 2, text_w/2 + 2
+        if anchor == "start":
+            x1, x2 = -2, text_w
+        elif anchor == "end":
+            x1, x2 = -text_w, 2
+        else:
+            x1, x2 = -text_w / 2 - 2, text_w / 2 + 2
         y1, y2 = -fs * 1.1, fs * 0.35
         corners = [(x + x1, y + y1), (x + x2, y + y1), (x + x2, y + y2), (x + x1, y + y2)]
         if rotm:
@@ -554,9 +659,13 @@ def _bbox_of_svg_body(body: str) -> tuple:
             cx, cy = (float(rotm.group(2)), float(rotm.group(3))) if rotm.group(2) else (0.0, 0.0)
             rad = math.radians(deg)
             cos_r, sin_r = math.cos(rad), math.sin(rad)
-            corners = [(cx + (px-cx)*cos_r - (py-cy)*sin_r, cy + (px-cx)*sin_r + (py-cy)*cos_r) for (px, py) in corners]
+            corners = [
+                (cx + (px - cx) * cos_r - (py - cy) * sin_r, cy + (px - cx) * sin_r + (py - cy) * cos_r)
+                for (px, py) in corners
+            ]
         for px, py in corners:
-            xs.append(px); ys.append(py)
+            xs.append(px)
+            ys.append(py)
     if not xs or not ys:
         return (0.0, 0.0, 400.0, 300.0)
     x_min, y_min = min(xs), min(ys)
@@ -567,7 +676,7 @@ def _wrap_with_auto_viewbox(body: str, extra_pad: float = 8.0) -> str:
     """把 body 拼成完整 SVG，viewBox 按内容真实包围盒 + padding 计算。"""
     x_min, y_min, w, h = _bbox_of_svg_body(body)
     pad = max(extra_pad, min(w, h) * 0.03)
-    vb = f"{x_min - pad:.1f} {y_min - pad:.1f} {w + 2*pad:.1f} {h + 2*pad:.1f}"
+    vb = f"{x_min - pad:.1f} {y_min - pad:.1f} {w + 2 * pad:.1f} {h + 2 * pad:.1f}"
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">{body}</svg>'
 
 
@@ -580,15 +689,23 @@ def _resolve_font(font_family: str = None) -> tuple[str, str]:
     if font_family is None or font_family == "":
         return ("Inter, sans-serif", "Georgia, serif")
     return (font_family, font_family)
-def _render_title_block(x_left: float, anchor_y: float, width: float,
-                        title: str = None, subtitle: str = None,
-                        figure_label: str = None,
-                        ink: str = None, muted: str = None,
-                        title_font_size: float = 22,
-                        subtitle_font_size: float = 10,
-                        figure_font_size: float = 9,
-                        body_font: str = "Inter, sans-serif",
-                        heading_font: str = "Inter, sans-serif") -> tuple[str, float]:
+
+
+def _render_title_block(
+    x_left: float,
+    anchor_y: float,
+    width: float,
+    title: str = None,
+    subtitle: str = None,
+    figure_label: str = None,
+    ink: str = None,
+    muted: str = None,
+    title_font_size: float = 22,
+    subtitle_font_size: float = 10,
+    figure_font_size: float = 9,
+    body_font: str = "Inter, sans-serif",
+    heading_font: str = "Inter, sans-serif",
+) -> tuple[str, float]:
     """为"由 _wrap_with_auto_viewbox 自动算 viewBox 的图种"渲染顶部标题栏。
 
     风格对齐 make_ridge：默认无衬线字体、title 22pt/700/.02em、subtitle 10pt/600/.16em、
@@ -629,7 +746,7 @@ def _render_title_block(x_left: float, anchor_y: float, width: float,
             f'<text x="{x_left:.1f}" y="{y_figure:.1f}" '
             f'font-family="{body_font}" font-size="{figure_font_size}" font-weight="600" '
             f'fill="{muted}" letter-spacing=".15em">'
-            f'{_xesc(figure_label)}</text>'
+            f"{_xesc(figure_label)}</text>"
         )
     if title and y_title is not None:
         parts_top.append(
@@ -654,14 +771,18 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
     返回 [(new_x, new_y), ...]
     算法：贪心迭代——每轮找出所有重叠对，按较小重叠方向微推靠后的一方，直到无重叠或达到 iterations。
     """
+
     def bbox(x, y, text, anchor, fs):
         n_ascii = sum(1 for c in text if ord(c) < 128)
         n_cjk = len(text) - n_ascii
         w = n_ascii * fs * 0.7 + n_cjk * fs * 1.1
         h = fs * 1.3
-        if anchor == "start":   left = x
-        elif anchor == "end":   left = x - w
-        else:                   left = x - w / 2
+        if anchor == "start":
+            left = x
+        elif anchor == "end":
+            left = x - w
+        else:
+            left = x - w / 2
         return left, y - fs * 1.1, w, h
 
     positions = [(L[0], L[1]) for L in labels]
@@ -672,28 +793,37 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
         for i in range(N):
             for j in range(i + 1, N):
                 bi, bj = boxes[i], boxes[j]
-                ox = min(bi[0]+bi[2], bj[0]+bj[2]) - max(bi[0], bj[0])
-                oy = min(bi[1]+bi[3], bj[1]+bj[3]) - max(bi[1], bj[1])
-                if ox <= 0 or oy <= 0: continue
+                ox = min(bi[0] + bi[2], bj[0] + bj[2]) - max(bi[0], bj[0])
+                oy = min(bi[1] + bi[3], bj[1] + bj[3]) - max(bi[1], bj[1])
+                if ox <= 0 or oy <= 0:
+                    continue
                 axis_i = labels[i][5] if len(labels[i]) > 5 else "y"
                 axis_j = labels[j][5] if len(labels[j]) > 5 else "y"
                 if axis_i == "y" and axis_j == "y":
                     dy = oy + min_gap
-                    if positions[i][1] < positions[j][1]: positions[j] = (positions[j][0], positions[j][1] + dy)
-                    else: positions[i] = (positions[i][0], positions[i][1] + dy)
+                    if positions[i][1] < positions[j][1]:
+                        positions[j] = (positions[j][0], positions[j][1] + dy)
+                    else:
+                        positions[i] = (positions[i][0], positions[i][1] + dy)
                 elif axis_i == "x" and axis_j == "x":
                     dx = ox + min_gap
-                    if positions[i][0] < positions[j][0]: positions[j] = (positions[j][0] + dx, positions[j][1])
-                    else: positions[i] = (positions[i][0] + dx, positions[i][1])
+                    if positions[i][0] < positions[j][0]:
+                        positions[j] = (positions[j][0] + dx, positions[j][1])
+                    else:
+                        positions[i] = (positions[i][0] + dx, positions[i][1])
                 else:
                     if ox < oy:
                         dx = ox + min_gap
-                        if positions[i][0] < positions[j][0]: positions[j] = (positions[j][0] + dx, positions[j][1])
-                        else: positions[i] = (positions[i][0] + dx, positions[i][1])
+                        if positions[i][0] < positions[j][0]:
+                            positions[j] = (positions[j][0] + dx, positions[j][1])
+                        else:
+                            positions[i] = (positions[i][0] + dx, positions[i][1])
                     else:
                         dy = oy + min_gap
-                        if positions[i][1] < positions[j][1]: positions[j] = (positions[j][0], positions[j][1] + dy)
-                        else: positions[i] = (positions[i][0], positions[i][1] + dy)
+                        if positions[i][1] < positions[j][1]:
+                            positions[j] = (positions[j][0], positions[j][1] + dy)
+                        else:
+                            positions[i] = (positions[i][0], positions[i][1] + dy)
                 moved = True
         if not moved:
             break
@@ -705,11 +835,9 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
 # ==============================================================
 
 
-def ridge_density_from_samples(samples: Sequence[float],
-                               x_min: float,
-                               x_max: float,
-                               n: int = 60,
-                               bandwidth: float = None) -> list:
+def ridge_density_from_samples(
+    samples: Sequence[float], x_min: float, x_max: float, n: int = 60, bandwidth: float = None
+) -> list:
     """把原始样本转成等距密度值，供 make_ridge 使用。
 
     samples:   原始样本
@@ -726,7 +854,7 @@ def ridge_density_from_samples(samples: Sequence[float],
     var = sum((s - mean) ** 2 for s in samples) / max(1, N - 1)
     std = math.sqrt(var) if var > 0 else max((x_max - x_min) * 0.01, 1e-6)
     if bandwidth is None:
-        bandwidth = 1.06 * std * (N ** -0.2)
+        bandwidth = 1.06 * std * (N**-0.2)
     bandwidth = max(bandwidth, (x_max - x_min) * 1e-4)
     step = (x_max - x_min) / (n - 1) if n > 1 else (x_max - x_min)
     inv_2h2 = 1.0 / (2.0 * bandwidth * bandwidth)
@@ -741,7 +869,6 @@ def ridge_density_from_samples(samples: Sequence[float],
         density = density * coeff / N
         result.append(density)
     return result
-
 
 
 # ==============================================================
@@ -795,14 +922,18 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
     返回 [(new_x, new_y), ...]
     算法：贪心迭代——每轮找出所有重叠对，按较小重叠方向微推靠后的一方，直到无重叠或达到 iterations。
     """
+
     def bbox(x, y, text, anchor, fs):
         n_ascii = sum(1 for c in text if ord(c) < 128)
         n_cjk = len(text) - n_ascii
         w = n_ascii * fs * 0.7 + n_cjk * fs * 1.1
         h = fs * 1.3
-        if anchor == "start":   left = x
-        elif anchor == "end":   left = x - w
-        else:                   left = x - w / 2
+        if anchor == "start":
+            left = x
+        elif anchor == "end":
+            left = x - w
+        else:
+            left = x - w / 2
         return left, y - fs * 1.1, w, h
 
     positions = [(L[0], L[1]) for L in labels]
@@ -813,28 +944,37 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
         for i in range(N):
             for j in range(i + 1, N):
                 bi, bj = boxes[i], boxes[j]
-                ox = min(bi[0]+bi[2], bj[0]+bj[2]) - max(bi[0], bj[0])
-                oy = min(bi[1]+bi[3], bj[1]+bj[3]) - max(bi[1], bj[1])
-                if ox <= 0 or oy <= 0: continue
+                ox = min(bi[0] + bi[2], bj[0] + bj[2]) - max(bi[0], bj[0])
+                oy = min(bi[1] + bi[3], bj[1] + bj[3]) - max(bi[1], bj[1])
+                if ox <= 0 or oy <= 0:
+                    continue
                 axis_i = labels[i][5] if len(labels[i]) > 5 else "y"
                 axis_j = labels[j][5] if len(labels[j]) > 5 else "y"
                 if axis_i == "y" and axis_j == "y":
                     dy = oy + min_gap
-                    if positions[i][1] < positions[j][1]: positions[j] = (positions[j][0], positions[j][1] + dy)
-                    else: positions[i] = (positions[i][0], positions[i][1] + dy)
+                    if positions[i][1] < positions[j][1]:
+                        positions[j] = (positions[j][0], positions[j][1] + dy)
+                    else:
+                        positions[i] = (positions[i][0], positions[i][1] + dy)
                 elif axis_i == "x" and axis_j == "x":
                     dx = ox + min_gap
-                    if positions[i][0] < positions[j][0]: positions[j] = (positions[j][0] + dx, positions[j][1])
-                    else: positions[i] = (positions[i][0] + dx, positions[i][1])
+                    if positions[i][0] < positions[j][0]:
+                        positions[j] = (positions[j][0] + dx, positions[j][1])
+                    else:
+                        positions[i] = (positions[i][0] + dx, positions[i][1])
                 else:
                     if ox < oy:
                         dx = ox + min_gap
-                        if positions[i][0] < positions[j][0]: positions[j] = (positions[j][0] + dx, positions[j][1])
-                        else: positions[i] = (positions[i][0] + dx, positions[i][1])
+                        if positions[i][0] < positions[j][0]:
+                            positions[j] = (positions[j][0] + dx, positions[j][1])
+                        else:
+                            positions[i] = (positions[i][0] + dx, positions[i][1])
                     else:
                         dy = oy + min_gap
-                        if positions[i][1] < positions[j][1]: positions[j] = (positions[j][0], positions[j][1] + dy)
-                        else: positions[i] = (positions[i][0], positions[i][1] + dy)
+                        if positions[i][1] < positions[j][1]:
+                            positions[j] = (positions[j][0], positions[j][1] + dy)
+                        else:
+                            positions[i] = (positions[i][0], positions[i][1] + dy)
                 moved = True
         if not moved:
             break
@@ -846,11 +986,9 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
 # ==============================================================
 
 
-def ridge_density_from_samples(samples: Sequence[float],
-                               x_min: float,
-                               x_max: float,
-                               n: int = 60,
-                               bandwidth: float = None) -> list:
+def ridge_density_from_samples(
+    samples: Sequence[float], x_min: float, x_max: float, n: int = 60, bandwidth: float = None
+) -> list:
     """把原始样本转成等距密度值，供 make_ridge 使用。
 
     samples:   原始样本
@@ -867,7 +1005,7 @@ def ridge_density_from_samples(samples: Sequence[float],
     var = sum((s - mean) ** 2 for s in samples) / max(1, N - 1)
     std = math.sqrt(var) if var > 0 else max((x_max - x_min) * 0.01, 1e-6)
     if bandwidth is None:
-        bandwidth = 1.06 * std * (N ** -0.2)
+        bandwidth = 1.06 * std * (N**-0.2)
     bandwidth = max(bandwidth, (x_max - x_min) * 1e-4)
     step = (x_max - x_min) / (n - 1) if n > 1 else (x_max - x_min)
     inv_2h2 = 1.0 / (2.0 * bandwidth * bandwidth)
@@ -882,7 +1020,6 @@ def ridge_density_from_samples(samples: Sequence[float],
         density = density * coeff / N
         result.append(density)
     return result
-
 
 
 # ==============================================================
@@ -913,29 +1050,88 @@ def _fmt_axis(v, span):
 # ==============================================================
 
 
-
-
 _SVG_LIB_VARIANTS = {
-    "boxplot":            ("boxplot",       ["default_flat","beeswarm","notched_outlined","variable_width_gradient","strip_flat"], "default_flat"),
-    "violin":             ("violin",        ["boxplot_inner_flat","quartile_outlined","points_inner_flat","half_gradient","kde_only"], "boxplot_inner_flat"),
-    "ridge":              ("ridge",         ["default_flat","outlined_separated","gradient_overlap","joy_division","histogram_binned"], "default_flat"),
-    "funnel_classic":     ("funnel",        ["default_flat","rectangle_flat","bar_lollipop","nested_arrow","pyramid_flat"], "default_flat"),
-    "marimekko":          ("marimekko",     ["default_flat","mekko_gradient","mekko_outlined","shaded_residual","treemap_flat"], "default_flat"),
-    "nested_donut":       ("nested_donut",  ["donut_flat","donut_gradient","sunburst_flat","polar_area_outlined","donut_layered"], "donut_flat"),
-    "percent_grid":       ("percent_grid",  ["square_10x10","dot_10x10","person_10x10","square_stacked_row","dot_faceted"], "square_10x10"),
-    "population_pyramid": ("pyramid",       ["default_flat","filled_gradient","stacked_flat","dot_flat","outlined_burgundy"], "default_flat"),
-    "matrix_heat":        ("matrix_heat",   ["square_flat_full","circle_full","ellipse_upper","pie_full","annotated_number"], "square_flat_full"),
-    "quadrant_2x2":       ("quadrant",      ["dot_cross","bubble_L","label_box_quadrant_bg","emoji_icon_cross","ring_arrow"], "dot_cross"),
-    "gantt":              ("gantt",         ["default_flat","progress_split","critical_path","gradient_bars","dot_range"], "default_flat"),
-    "candle":             ("candle",        ["candle_american_filled","candle_japanese_hollow","ohlc_american","heikin_ashi","line_close"], "candle_american_filled"),
-    "event_timeline":     ("event_timeline",["horizontal_alt_dot","stepped_dot","vertical_alt_dot","horizontal_pin","circular_dot"], "horizontal_alt_dot"),
-    "sankey":             ("sankey",        ["default_ribbon_flat","alluvial_sinusoidal","chord_circular","multi_layer_flat","gradient_layered"], "default_ribbon_flat"),
-    "waterfall":          ("waterfall",     ["default_flat","subtotal_bridge","cross_axis","horizontal","stacked_gradient"], "default_flat"),
-    "calheat":            ("calheat",       ["default_row_52x7","monthly_grid_12x31","small_multiples","radial_year","dot_grid"], "default_row_52x7"),
+    "boxplot": (
+        "boxplot",
+        ["default_flat", "beeswarm", "notched_outlined", "variable_width_gradient", "strip_flat"],
+        "default_flat",
+    ),
+    "violin": (
+        "violin",
+        ["boxplot_inner_flat", "quartile_outlined", "points_inner_flat", "half_gradient", "kde_only"],
+        "boxplot_inner_flat",
+    ),
+    "ridge": (
+        "ridge",
+        ["default_flat", "outlined_separated", "gradient_overlap", "joy_division", "histogram_binned"],
+        "default_flat",
+    ),
+    "funnel_classic": (
+        "funnel",
+        ["default_flat", "rectangle_flat", "bar_lollipop", "nested_arrow", "pyramid_flat"],
+        "default_flat",
+    ),
+    "marimekko": (
+        "marimekko",
+        ["default_flat", "mekko_gradient", "mekko_outlined", "shaded_residual", "treemap_flat"],
+        "default_flat",
+    ),
+    "nested_donut": (
+        "nested_donut",
+        ["donut_flat", "donut_gradient", "sunburst_flat", "polar_area_outlined", "donut_layered"],
+        "donut_flat",
+    ),
+    "percent_grid": (
+        "percent_grid",
+        ["square_10x10", "dot_10x10", "person_10x10", "square_stacked_row", "dot_faceted"],
+        "square_10x10",
+    ),
+    "population_pyramid": (
+        "pyramid",
+        ["default_flat", "filled_gradient", "stacked_flat", "dot_flat", "outlined_burgundy"],
+        "default_flat",
+    ),
+    "matrix_heat": (
+        "matrix_heat",
+        ["square_flat_full", "circle_full", "ellipse_upper", "pie_full", "annotated_number"],
+        "square_flat_full",
+    ),
+    "quadrant_2x2": (
+        "quadrant",
+        ["dot_cross", "bubble_L", "label_box_quadrant_bg", "emoji_icon_cross", "ring_arrow"],
+        "dot_cross",
+    ),
+    "gantt": (
+        "gantt",
+        ["default_flat", "progress_split", "critical_path", "gradient_bars", "dot_range"],
+        "default_flat",
+    ),
+    "candle": (
+        "candle",
+        ["candle_american_filled", "candle_japanese_hollow", "ohlc_american", "heikin_ashi", "line_close"],
+        "candle_american_filled",
+    ),
+    "event_timeline": (
+        "event_timeline",
+        ["horizontal_alt_dot", "stepped_dot", "vertical_alt_dot", "horizontal_pin", "circular_dot"],
+        "horizontal_alt_dot",
+    ),
+    "sankey": (
+        "sankey",
+        ["default_ribbon_flat", "alluvial_sinusoidal", "chord_circular", "multi_layer_flat", "gradient_layered"],
+        "default_ribbon_flat",
+    ),
+    "waterfall": (
+        "waterfall",
+        ["default_flat", "subtotal_bridge", "cross_axis", "horizontal", "stacked_gradient"],
+        "default_flat",
+    ),
+    "calheat": (
+        "calheat",
+        ["default_row_52x7", "monthly_grid_12x31", "small_multiples", "radial_year", "dot_grid"],
+        "default_row_52x7",
+    ),
 }
-
-
-
 
 
 def _variant_is_classic(slug, variant):
@@ -945,8 +1141,7 @@ def _variant_is_classic(slug, variant):
         return True
     if slug not in _SVG_LIB_VARIANTS:
         raise ValueError(
-            f"chart '{slug}' has no skeleton variants; "
-            f"pass variant=None or 'classic', or drop the variant argument."
+            f"chart '{slug}' has no skeleton variants; pass variant=None or 'classic', or drop the variant argument."
         )
     _mod, supported, _def = _SVG_LIB_VARIANTS[slug]
     if variant not in supported:
@@ -957,9 +1152,19 @@ def _variant_is_classic(slug, variant):
     return False
 
 
-def _dispatch_to_svg_lib(slug, variant, data, title=None, subtitle=None,
-                           figure_label=None, palette=None, font_family=None,
-                           width=None, height=None, **kwargs):
+def _dispatch_to_svg_lib(
+    slug,
+    variant,
+    data,
+    title=None,
+    subtitle=None,
+    figure_label=None,
+    palette=None,
+    font_family=None,
+    width=None,
+    height=None,
+    **kwargs,
+):
     """调用 svg_lib.charts.<mod>.draw_<mod>(data, variant, palette, ...) 并返回 SVG 字符串。
 
     slug: 原 skill 的 chart slug（例如 "boxplot"、"population_pyramid"）
@@ -968,20 +1173,19 @@ def _dispatch_to_svg_lib(slug, variant, data, title=None, subtitle=None,
     其余参数尽量沿用 make_* 的通用参数
     """
     import importlib
+
     if slug not in _SVG_LIB_VARIANTS:
         raise ValueError(f"chart '{slug}' has no svg_lib variants")
     mod_name, supported, _def = _SVG_LIB_VARIANTS[slug]
     if variant not in supported:
-        raise ValueError(
-            f"chart '{slug}' variant '{variant}' not supported. "
-            f"Choose one of: {supported}"
-        )
+        raise ValueError(f"chart '{slug}' variant '{variant}' not supported. Choose one of: {supported}")
     # 动态 import svg_lib 模块
     try:
         mod = importlib.import_module(f"svg_lib.charts.{mod_name}")
     except Exception:
         # scripts/ 下能直接 import
         import sys, os
+
         _scripts_root = os.path.dirname(os.path.abspath(__file__))
         if _scripts_root not in sys.path:
             sys.path.insert(0, _scripts_root)
@@ -1007,6 +1211,7 @@ def _dispatch_to_svg_lib(slug, variant, data, title=None, subtitle=None,
         # svg_lib 里少数 draw 接受 figure_label（如 boxplot）；其余忽略
         try:
             import inspect as _inspect
+
             if "figure_label" in _inspect.signature(draw_fn).parameters:
                 call_kwargs["figure_label"] = figure_label
         except Exception:
@@ -1024,13 +1229,12 @@ def _dispatch_to_svg_lib(slug, variant, data, title=None, subtitle=None,
         # 在 <svg ...> 根元素上注入 font-family 属性（若尚未存在）。
         # 双引号内可能包含内部单引号（例如 "PingFang SC, sans-serif"），需转义为 &quot;
         import re as _re
-        m = _re.match(r'<svg\b([^>]*)>', svg)
+
+        m = _re.match(r"<svg\b([^>]*)>", svg)
         if m:
             attrs = m.group(1)
-            if 'font-family=' not in attrs:
-                _esc_ff = font_family.replace('&', '&amp;').replace('"', '&quot;')
+            if "font-family=" not in attrs:
+                _esc_ff = font_family.replace("&", "&amp;").replace('"', "&quot;")
                 new_open = f'<svg{attrs} font-family="{_esc_ff}">'
-                svg = new_open + svg[m.end():]
+                svg = new_open + svg[m.end() :]
     return svg
-
-

@@ -19,7 +19,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 > 1. SystemPrompt 中的 `Computer OS` 字段：值为 `Windows` 或 `Mac` 判为本地电脑；值为其他判为云电脑。
 > 2. SystemPrompt 未包含 `Computer OS` 字段时：`<system-reminder>` 包裹的内容中出现 `Runtime: local_pc` 判为本地电脑，出现 `Runtime: cloud_vm` 判为云电脑。
 
-**建目录**：每个任务在工作区根目录下新建语义化目录（如 `sales-dashboard/`），HTML 放在目录里，图片素材放进 `assets/`。迭代已有任务时进原目录改，不另起。
+**建目录**：每个任务在工作区根目录下新建语义化目录（如 `sales-dashboard/`）；HTML 文件放在目录里，**文件名也要语义化**（如 `销售仪表盘.html`），**不要叫 `index.html`**。图片素材放进 `assets/`。迭代已有任务时进原目录改，不另起。
 
 **平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`，**需要完整 Read `references/windows-compat.md`，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
 
@@ -37,7 +37,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
         - 此场景下**严禁使用 `FileBatchUpload` 工具**，必须使用 `lark-cli drive`，否则图片也会过期。
     - **数据文件（JSON / CSV / TXT）不适用**：`file://` 页面里 `fetch` 和 `XMLHttpRequest` 都会被浏览器拒绝。优先从 URL 运行时取，取不到才固化进 JS。
     - **图片路径只能写在 `src` 属性或 CSS `url()` 里**：推荐 `<img src="assets/img1.jpg">`。发布链路只静态扫描这两个位置——写在 JS 代码里的任何形式（含 `const imgs = ['assets/a.jpg']` 这样的常量数组）、以及 `data-src` / `srcset` / `poster` 等其它属性，发布后都会裂图。
-- **分批写入**：一次写入过长的文件会让用户等待焦虑，最好一次 Write 10k token 内，简单向用户同步进度后，再继续分批写入。
+- **分批写入**：一次写入过长的文件会让用户等待焦虑，最好一次 Write 10k token 内，简单向用户同步进度后，再继续分批写入。在首次写入时, 留下短小且独特的占位，例如 `<!-- something todo -->`，为后续 Edit 提供定位锚点。
 
 - **注意响应式适配，宽屏窄屏电脑手机都要能看**。
 

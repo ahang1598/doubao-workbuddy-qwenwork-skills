@@ -2327,71 +2327,205 @@ def parse_size(s: str):
     return int(w), int(h)
 
 
-def _postprocess(out_path: Path, max_width: int, jpeg_quality: int, fmt: str,
-                 slice_over_kb: int, slice_over_height: int, slice_height: int) -> dict:
-    """截图后处理：JPEG 转码 + 可选降宽；单张仍超阈值时按 slice_height 切片。
+def _plan_slices(page_h, scale: float, slice_out_h: int):
+    """把文档按「输出像素高度 slice_out_h」切成 CSS 坐标区间，返回 [(y, h), ...]。
 
-    - 缺 Pillow 时优雅降级：只做 JPEG 转码或返回原 PNG，slice 跳过。
-    - 返回 {"path": 主图, "slices": [子图路径...], "bytes": 主图字节数}。
+    CSS 步长向下取整：宁可多切一片，也不要某片输出超过 slice_out_h——超了就等于没切。
+    slice_out_h 传了 0 或负数时不退化成逐像素切（那会对长页发起上万次截图），
+    直接落回默认 3200。
     """
-    def _size_kb(p): return p.stat().st_size // 1024
+    if slice_out_h <= 0:
+        slice_out_h = 3200
+    step = max(1, int(slice_out_h / scale)) if scale > 0 else max(1, slice_out_h)
+    plan, y = [], 0
+    while y < page_h:
+        plan.append((y, min(step, page_h - y)))
+        y += step
+    return plan
 
-    # 用户显式要 PNG 且不需降宽：直接返回原图
-    if fmt == "png" and max_width <= 0:
-        return {"path": out_path, "slices": [], "bytes": out_path.stat().st_size}
 
+def _capture_with_clip(shoot, page_w, page_h, out_path: Path, fmt: str, *,
+                       dsf: float, max_width: int, slice_over_kb: int,
+                       slice_over_height: int, slice_height: int,
+                       budget_sec: float = 60.0) -> dict:
+    """整页截一张；输出超阈值时再按 clip 分片补截。
+
+    `shoot(clip, dest)` 由各引擎分支注入，负责编码与落盘；这里只决定「切几片、
+    每片是文档的哪一段」。clip 用 CSS 像素 + scale，**裁剪、降宽、编码在浏览器里
+    一次完成**——不需要 Pillow，也就不存在「缺 Pillow 就退化成一张读不了的原图」。
+
+    `dsf` 是 `--scale`（设备像素倍率）。注意 CDP 的 `clip.scale` 会**覆盖**而不是叠加
+    context 的 deviceScaleFactor：实测 DSF=2 + clip.scale=1 输出的仍是 CSS 尺寸。
+    所以倍率必须自己算进去，否则 `--scale` 会变成 no-op。语义与改动前对齐——
+    先按设备倍率放大，超过 --max-width 再压回上限。
+
+    返回 {"path": 主图, "slices": [...], "bytes": 主图字节数}；分片失败时额外带
+    "sliceError"，但主图一定有效。主图本身截不出来（如超过 chrome 位图上限）时，
+    退化成「只有分片」——每片都小得多，往往仍能成功。
+
+    `budget_sec` 是**分片阶段的总时间预算**。分片是 N 次独立的 CDP 调用，每次都有自己的
+    超时，长页切十几片时累计可以卡住好几分钟；自检卡死对调用方是最难排查的失败模式，
+    所以超预算就放弃分片、退回主图，而不是一直等下去。
+    """
+    dsf = dsf if dsf and dsf > 0 else 1.0
+    scale = dsf
+    if max_width > 0 and page_w * dsf > max_width:
+        scale = max_width / page_w
+    main = out_path.with_suffix(".jpg" if fmt == "jpg" else ".png")
+    # 上一轮如果跑的是另一种格式，同名异后缀的旧图会留在目录里误导读图
+    if main != out_path and out_path.exists():
+        try: out_path.unlink()
+        except Exception: pass
+    # 旧分片同理：这轮切 3 片、上轮切 5 片时，_p4of5 / _p5of5 会残留。
+    # 用正则再筛一遍，避免 glob 的 * 吃掉手工放进来的同前缀文件。
+    _slice_re = re.compile(re.escape(main.stem) + r"_p\d+of\d+" + re.escape(main.suffix) + r"$")
+    for stale in main.parent.glob(f"{main.stem}_p*of*"):
+        if _slice_re.match(stale.name):
+            try: stale.unlink()
+            except Exception: pass
+
+    main_err = None
+    # 先删掉同名旧主图：截失败时如果留着上一轮的同名文件，main.exists() 会为真，
+    # 报告就把**上一轮的图**当成本轮产物交出去了——这比没有图更坏。
+    if main.exists():
+        try: main.unlink()
+        except Exception: pass
     try:
-        from PIL import Image  # type: ignore
+        shoot({"x": 0, "y": 0, "width": page_w, "height": page_h, "scale": scale}, main)
+    except Exception as e:
+        # 整页截不出来不代表分片也不行——主图一张要装下整页，分片每张只有一段
+        main_err = f"{type(e).__name__}: {e}"[:200]
+        # 写到一半失败会留个截断文件，同样会被 main.exists() 当成有效主图
+        try: main.unlink()
+        except Exception: pass
+
+    res = {"path": main, "slices": [],
+           "bytes": main.stat().st_size if main.exists() else 0}
+    # 注意与改动前的一处**有意不同**：旧 _postprocess 在 `--format png --max-width 0` 时
+    # 直接返回、顺带跳过了切片。那个短路会让「主图过阈值自动切片」这条承诺在 PNG 下失效，
+    # 而超限图读不了正是本次要解决的问题，所以这里不跟随——切片只看阈值，不看格式。
+    over = (main_err is not None
+            or (slice_over_kb > 0 and res["bytes"] // 1024 > slice_over_kb)
+            or (slice_over_height > 0 and page_h * scale > slice_over_height))
+    if not over:
+        return res
+    plan = _plan_slices(page_h, scale, slice_height)
+    if len(plan) < 2 and main_err is None:
+        return res  # 切不出第二片，分片没有意义
+    n = len(plan)
+    deadline = time.time() + budget_sec if budget_sec and budget_sec > 0 else None
+    try:
+        for i, (y, h) in enumerate(plan):
+            if deadline and time.time() > deadline:
+                raise RuntimeError(f"分片累计超过 {budget_sec:g}s 预算（已完成 {i}/{n} 片），放弃分片")
+            sp = main.with_name(f"{main.stem}_p{i + 1}of{n}{main.suffix}")
+            try:
+                shoot({"x": 0, "y": y, "width": page_w, "height": h, "scale": scale}, sp)
+            except Exception:
+                # 这一片自己可能已经落了个截断文件，一并清掉再往上抛
+                try: sp.unlink()
+                except Exception: pass
+                raise
+            res["slices"].append(sp)
+    except Exception as e:
+        # 分片失败不该拖垮整次自检：清掉半成品，退回「只有整页主图」
+        for sp in res["slices"]:
+            try: sp.unlink()
+            except Exception: pass
+        res["slices"] = []
+        res["sliceError"] = f"{type(e).__name__}: {e}"[:200]
+    if main_err is not None:
+        if not res["slices"]:
+            # 主图和分片全军覆没：这次真没图。抛出去让上层按旧版行为降级
+            # （playwright 分支退到 chrome_cli，chrome_cli 退到 --screenshot），
+            # 别返回一个指向不存在文件的 path 让读图方去撞墙。
+            raise RuntimeError(f"整页与分片都截不出来：{main_err}"
+                               + (f"；分片：{res['sliceError']}" if res.get("sliceError") else ""))
+        res["mainError"] = main_err
+        # 主图不可信——即使残留文件还在（unlink 失败），它也是截断的或上一轮的。
+        # 无条件把 path/bytes 指向首个分片，两者始终对应同一个真实可读的文件。
+        res["path"] = res["slices"][0]
+        res["bytes"] = res["path"].stat().st_size
+    return res
+
+
+def _page_content_size(send, evaluate, viewport):
+    """拿文档的 CSS 内容尺寸，用于 clip 全页截图。返回 (w, h, degraded_reason)。
+
+    首选 `Page.getLayoutMetrics().cssContentSize`——它就是 captureBeyondViewport 用来
+    定全页尺寸的那个值，实测与 full_page 截图的真实尺寸逐例相等。
+    拿不到就退到 `documentElement.scrollWidth/Height`：语义明确是 CSS 像素，且实测在
+    绝对定位溢出文档流时仍等于真值（`body.scrollHeight` 会算少，所以不用它）。
+    **不采用同一响应里 deprecated 的 `contentSize`**——它在存在 page scale factor 时
+    可能是设备像素，单位取错会让 clip 尺寸整体翻倍或减半，比拿不到更糟。
+
+    **退到视口尺寸是最后手段，那意味着长页只会截到首屏，必须让报告说出来**，
+    否则会出现「只有首屏却报 truncated:false」这种最坏情况：静默截少。
+    """
+    lm = send("Page.getLayoutMetrics") or {}
+    box = lm.get("cssContentSize") or {}
+    if box.get("width") and box.get("height"):
+        return box["width"], box["height"], None
+    try:
+        sz = evaluate()
+        if sz and sz[0] and sz[1]:
+            return sz[0], sz[1], None
     except Exception:
-        return {"path": out_path, "slices": [], "bytes": out_path.stat().st_size}
+        pass
+    return viewport[0], viewport[1], (
+        "拿不到文档内容尺寸（getLayoutMetrics 无 cssContentSize，"
+        "scrollWidth/Height 也取不到），已退回视口尺寸——**长页只截到了首屏**。"
+    )
 
-    # 主图转码 + 降宽
-    # Pillow 9.1+ 用 Image.Resampling.LANCZOS；11.0 移除旧常量。做前瞻兜底。
-    _LANCZOS = getattr(getattr(Image, "Resampling", Image), "LANCZOS", None) or Image.LANCZOS
-    with Image.open(out_path) as im:
-        w, h = im.size
-        if max_width and w > max_width:
-            new_h = round(h * max_width / w)
-            im = im.resize((max_width, new_h), _LANCZOS)
+
+def _cdp_shooter(send, fmt: str, quality: int):
+    """造一个 shoot(clip, dest)：走 CDP Page.captureScreenshot 直出。
+
+    `send(method, params) -> result dict`——playwright 的 CDPSession 与本文件内的
+    最小 websocket 客户端返回层级不同，由调用方各自包一层，这里只认 result。
+    """
+    def shoot(clip, dest: Path):
+        params = {
+            "format": "jpeg" if fmt == "jpg" else "png",
+            "clip": clip,
+            "captureBeyondViewport": True,
+            "fromSurface": True,
+        }
         if fmt == "jpg":
-            # 有 alpha 的模式（含调色板 P）先规一化到 RGBA，再往白底 paste
-            # 直接 paste P 模式会把索引值当 RGB 用，颜色乱
-            if im.mode in ("RGBA", "LA", "P"):
-                im = im.convert("RGBA")
-                bg = Image.new("RGB", im.size, (255, 255, 255))
-                bg.paste(im, mask=im.split()[-1])
-                im = bg
-            main_path = out_path.with_suffix(".jpg")
-            im.save(main_path, "JPEG", quality=jpeg_quality, optimize=True, progressive=True)
-        else:
-            main_path = out_path
-            im.save(main_path, "PNG", optimize=True)
-    if main_path != out_path and out_path.exists():
-        out_path.unlink()
+            params["quality"] = quality
+        data = (send("Page.captureScreenshot", params) or {}).get("data")
+        if not data:
+            raise RuntimeError("Page.captureScreenshot 返回空 data")
+        dest.write_bytes(base64.b64decode(data))
+    return shoot
 
-    # 主图切片：字节超阈值 或 高度超阈值 任一命中就切
-    slices = []
-    with Image.open(main_path) as _probe:
-        main_h = _probe.size[1]
-    over_bytes = slice_over_kb > 0 and _size_kb(main_path) > slice_over_kb
-    over_height = slice_over_height > 0 and main_h > slice_over_height
-    if over_bytes or over_height:
-        with Image.open(main_path) as im:
-            w, h = im.size
-            n = (h + slice_height - 1) // slice_height
-            stem = main_path.stem
-            for i in range(n):
-                top = i * slice_height
-                bot = min(top + slice_height, h)
-                crop = im.crop((0, top, w, bot))
-                sp = main_path.with_name(f"{stem}_p{i+1}of{n}{main_path.suffix}")
-                if main_path.suffix.lower() in (".jpg", ".jpeg"):
-                    crop.save(sp, "JPEG", quality=jpeg_quality, optimize=True, progressive=True)
-                else:
-                    crop.save(sp, "PNG", optimize=True)
-                slices.append(sp)
 
-    return {"path": main_path, "slices": slices, "bytes": main_path.stat().st_size}
+def _apply_capture(rep: dict, cap: dict, slice_over_kb: int,
+                   slice_over_height: int, slice_height: int) -> None:
+    """把截图结果装进单个视口的报告。两条引擎分支共用，别再各写一份。"""
+    rep["screenshot"] = str(cap["path"])
+    rep["screenshotBytes"] = cap["bytes"]
+    if cap["slices"]:
+        rep["slices"] = [str(s) for s in cap["slices"]]
+        rep["sliceHint"] = (
+            f"主图过阈值（字节>{slice_over_kb}KB 或 高度>{slice_over_height}px），"
+            f"已按 {slice_height}px 切片。若主图 Read 失败，改读 slices 里各分片。"
+        )
+    if cap.get("sliceError"):
+        rep["sliceError"] = cap["sliceError"]
+        rep["sliceErrorHint"] = (
+            "主图过阈值但分片补截失败，只有整张主图可用。主图若 Read 不动，"
+            "就只按 lint 字段改代码，别把没看过的截图当成看过了。"
+        )
+    if cap.get("mainError"):
+        rep["screenshotMainError"] = cap["mainError"]
+        rep["screenshotMainErrorHint"] = (
+            "整页主图没截出来（多半是页面过长超过 chrome 位图上限），"
+            "已改为只提供分片。**按 slices 逐张 Read**；slices 也为空时这次没有可用截图，"
+            "只能按 lint 字段改代码。"
+        )
+    if cap.get("sizeDegraded"):
+        rep["screenshotSizeDegraded"] = cap["sizeDegraded"]
 
 
 def _wcag_lum(c):
@@ -2591,7 +2725,7 @@ def sample_text_contrast(page, cands, doc_size, threshold=1.6, limit=6, max_shot
 
 def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
              max_width, jpeg_quality, fmt, slice_over_kb, slice_over_height, slice_height, include,
-             eval_code=None):
+             eval_code=None, scale=1.0):
     w, h = viewport
     page.set_viewport_size({"width": w, "height": h})
     try:
@@ -2652,23 +2786,35 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
 
     # 截图（screenshots 开时才做；未开时也仍需渲染，用于 lint/structure）
     if "screenshots" in include:
-        page.screenshot(path=str(out_path), full_page=True)
-        post = _postprocess(out_path, max_width, jpeg_quality, fmt, slice_over_kb, slice_over_height, slice_height)
-        report["screenshot"] = str(post["path"])
-        report["screenshotBytes"] = post["bytes"]
-        # chromium canvas 上限约 30000px，超过就会被截断
-        page_h = page.evaluate("() => document.documentElement.scrollHeight")
-        if page_h and page_h > 30000:
+        # 走 CDP 而不是 page.screenshot：clip 里带 scale，裁剪 + 降宽 + 编码一次做完，
+        # 省掉「先截一张巨大 PNG 再用 Pillow 后处理」那一轮解码/重编码。
+        cdp = page.context.new_cdp_session(page)
+        try:
+            def _send(method, params=None):
+                return cdp.send(method, params or {})
+            page_w, page_h, size_degraded = _page_content_size(
+                _send,
+                lambda: page.evaluate("() => [document.documentElement.scrollWidth,"
+                                      " document.documentElement.scrollHeight]"),
+                (w, h))
+            cap = _capture_with_clip(
+                _cdp_shooter(_send, fmt, jpeg_quality), page_w, page_h, out_path, fmt,
+                dsf=scale, max_width=max_width, slice_over_kb=slice_over_kb,
+                slice_over_height=slice_over_height, slice_height=slice_height)
+            if size_degraded:
+                cap["sizeDegraded"] = size_degraded
+        finally:
+            try: cdp.detach()
+            except Exception: pass
+        _apply_capture(report, cap, slice_over_kb, slice_over_height, slice_height)
+        # chromium canvas 上限约 30000px，单张装不下就会被截断。
+        # 但分片是一段段截的，每段都远小于上限——只要出了分片，内容其实是全的，
+        # 这时再报 truncated 会让读图方以为内容缺失而放弃那些完整分片。
+        if page_h and page_h > 30000 and not cap["slices"]:
             report["truncated"] = True
             report["truncatedHint"] = f"页面高度 {page_h}px 超过 chromium 单张截图上限，实际截取被截断。"
         else:
             report["truncated"] = False
-        if post["slices"]:
-            report["slices"] = [str(s) for s in post["slices"]]
-            report["sliceHint"] = (
-                f"主图过阈值（字节>{slice_over_kb}KB 或 高度>{slice_over_height}px），"
-                f"已按 {slice_height}px 切片。若主图 Read 失败，改读 slices 里各分片。"
-            )
 
     # DOM 报告：lint / structure 至少一个开启时才 evaluate
     if "lint" in include or "structure" in include:
@@ -3485,27 +3631,30 @@ _CHROME_QUIET_FLAGS = [
 def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
                      max_wait_sec: int = 30,
                      want_report: bool = False,
-                     console_bucket=None, resource_bucket=None):
+                     console_bucket=None, resource_bucket=None, shot_opts=None):
     """CLI 模式截图：优先 CDP full-page（真正的完整长图），失败退到 --screenshot 首屏。
 
     CDP 路径：起 chrome 带 --remote-debugging-port，Python 直连 devtools
-    websocket 发 Page.captureScreenshot(captureBeyondViewport=true)，
-    等价于 puppeteer/playwright 底层做法，可以拿到完整长页截图。
+    websocket 发 Page.captureScreenshot(clip)，等价于 puppeteer/playwright 底层做法，
+    可以拿到完整长页截图，并按需分片。
 
     want_report=True 时同时通过 Runtime.evaluate 跑 INIT_SCRIPT+REPORT_SCRIPT，
     返回 dom 报告；退到 --screenshot 兜底路径时无法拿 DOM，返回 None。
+
+    返回 (dom, cap)。cap 为 None 表示这次没要图；`--screenshot` 退路只能截视口一屏、
+    没有 clip 能力，所以那条路的 cap 永远是单张无分片。
     """
     w, h = viewport
     # ---- 首选：CDP 全页截图 ----
     cdp_err = None
     try:
-        dom = _cdp_capture(exec_path, url, viewport, out_path, max_wait_sec,
-                           want_report=want_report,
-                           console_bucket=console_bucket,
-                           resource_bucket=resource_bucket)
-        # 后处理 trim 底部（CDP 一般贴合内容，很少有大空白，但保底）
-        _trim_bottom_whitespace(out_path)
-        return dom
+        dom, cap = _cdp_capture(exec_path, url, viewport, out_path, max_wait_sec,
+                                want_report=want_report,
+                                console_bucket=console_bucket,
+                                resource_bucket=resource_bucket,
+                                shot_opts=shot_opts)
+        # clip 已按 cssContentSize 精确取全页，不会再有底部大片空白，无需 trim
+        return dom, cap
     except Exception as e:
         cdp_err = e  # 保留下来；--screenshot 退路也挂时一起报出去
 
@@ -3545,15 +3694,31 @@ def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
         ))
     if not out_path.exists() or out_path.stat().st_size == 0:
         raise RuntimeError(_with_cdp(f"chrome CLI 没有生成有效截图：{out_path}"))
+    if shot_opts is None:
+        # 这次只要 DOM 报告，而这条退路本来就拿不到 DOM——图也不用留
+        try: out_path.unlink()
+        except Exception: pass
+        return None, None
+    # --screenshot 截的是固定 window-size，短页面底部会留大片空白，仍需 trim
     _trim_bottom_whitespace(out_path)
-    return None  # --screenshot 退路拿不到 DOM
+    # 这条路没有 clip 能力，也不做 Pillow 后处理就交出去。走到这里意味着 playwright 与
+    # CDP 都挂了：没有 lint 报告、只有视口一屏、本来就不是完整页面，再去精确满足
+    # --format / --max-width / --slice-* 是给一个已经失败的场景做精度优化。
+    # 改动前这条路的后处理同样取决于机器上有没有 Pillow，本就不是稳定契约。
+    return None, {"path": out_path, "slices": [], "bytes": out_path.stat().st_size,
+                  "clipUnsupported": True}
+
+
 
 
 # ---------- 最小 CDP (Chrome DevTools Protocol) 客户端 ----------
 def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: int,
                  want_report: bool = False,
-                 console_bucket=None, resource_bucket=None):
+                 console_bucket=None, resource_bucket=None, shot_opts=None):
     """启 chrome remote-debugging → 直连 websocket → Page.captureScreenshot 全页。
+
+    shot_opts=None 表示这次只要 DOM 报告、不出图，连编码都省掉。
+    返回 (dom_report, cap)；cap 为 None 表示没截图。
 
     不依赖任何第三方库；用标准库 socket 实现最小 websocket 帧收发（CDP 消息都是
     JSON 文本，短则几十字节长则几 MB 的 base64 图像）。
@@ -3648,20 +3813,34 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
                 val = rep.get("result", {}).get("result", {}).get("value")
                 if isinstance(val, dict):
                     dom_report = val
-            # 全页截图
-            resp = ws.call("Page.captureScreenshot", {
-                "format": "png",
-                "captureBeyondViewport": True,
-                "fromSurface": True,
-            }, timeout=25)
-            b64 = resp.get("result", {}).get("data", "")
-            if not b64:
-                raise RuntimeError("Page.captureScreenshot 返回空 data")
-            out_path.write_bytes(base64.b64decode(b64))
+            # 全页截图：与 playwright 分支共用 _capture_with_clip，切片规则只有一份
+            cap = None
+            if shot_opts is not None:
+                def _send(method, params=None):
+                    return ws.call(method, params or {}, timeout=25).get("result", {}) or {}
+                def _scroll_size():
+                    r = ws.call("Runtime.evaluate", {
+                        "expression": "[document.documentElement.scrollWidth,"
+                                      " document.documentElement.scrollHeight]",
+                        "returnByValue": True}, timeout=10)
+                    return r.get("result", {}).get("result", {}).get("value")
+                page_w, page_h, size_degraded = _page_content_size(_send, _scroll_size, viewport)
+                cap = _capture_with_clip(
+                    _cdp_shooter(_send, shot_opts["fmt"], shot_opts["quality"]),
+                    page_w, page_h, out_path, shot_opts["fmt"],
+                    # chrome CLI 起进程时固定 --force-device-scale-factor=1，
+                    # 所以这条路径上 --scale 本来就不生效，传 1 与改动前一致
+                    dsf=1.0,
+                    max_width=shot_opts["max_width"],
+                    slice_over_kb=shot_opts["slice_over_kb"],
+                    slice_over_height=shot_opts["slice_over_height"],
+                    slice_height=shot_opts["slice_height"])
+                if size_degraded:
+                    cap["sizeDegraded"] = size_degraded
             # 再 flush 一次事件（截图期间可能仍有异步日志）
             if want_report:
                 _cdp_flush_pending_events(ws, console_bucket, resource_bucket, req_url_map, req_type_map)
-            return dom_report
+            return dom_report, cap
     except Exception as e:
         # 把 chrome 自己的 stderr 尾部拼进异常，方便定位 sandbox / GPU 崩溃这类根因
         tail = _drain_stderr_tail(proc, limit=800)
@@ -4023,7 +4202,7 @@ def _run_playwright(url, args, name, outdir, result, include):
                     console_bucket, resource_bucket,
                     args.max_width, args.jpeg_quality, args.format,
                     args.slice_over_kb, args.slice_over_height, args.slice_height, include,
-                    eval_code=args._eval_code)
+                    eval_code=args._eval_code, scale=args.scale)
             if args.only in ("mobile", "both"):
                 p_out = outdir / f"{name}_mobile.png"
                 result["shots"]["mobile"] = one_shot(
@@ -4031,7 +4210,7 @@ def _run_playwright(url, args, name, outdir, result, include):
                     console_bucket, resource_bucket,
                     args.max_width, args.jpeg_quality, args.format,
                     args.slice_over_kb, args.slice_over_height, args.slice_height, include,
-                    eval_code=args._eval_code)
+                    eval_code=args._eval_code, scale=args.scale)
         finally:
             browser.close()
 
@@ -4064,28 +4243,30 @@ def _run_chrome_cli(url, args, name, outdir, result, include):
         dom = None
         if "screenshots" in include or want_report:
             raw_out = outdir / f"{name}_{key}.png"
-            dom = _chrome_cli_shoot(
+            shot_opts = None
+            if "screenshots" in include:
+                shot_opts = {"fmt": args.format, "quality": args.jpeg_quality,
+                             "max_width": args.max_width,
+                             "slice_over_kb": args.slice_over_kb,
+                             "slice_over_height": args.slice_over_height,
+                             "slice_height": args.slice_height}
+            dom, cap = _chrome_cli_shoot(
                 exec_path, url, viewport, raw_out,
                 want_report=want_report,
                 console_bucket=console_bucket,
                 resource_bucket=resource_bucket,
+                shot_opts=shot_opts,
             )
-            if "screenshots" in include:
-                post = _postprocess(raw_out, args.max_width, args.jpeg_quality, args.format,
-                                    args.slice_over_kb, args.slice_over_height, args.slice_height)
-                rep["screenshot"] = str(post["path"])
-                rep["screenshotBytes"] = post["bytes"]
+            if cap:
+                _apply_capture(rep, cap, args.slice_over_kb,
+                               args.slice_over_height, args.slice_height)
                 rep["truncated"] = False  # chrome CLI 用固定 canvas，超出会截断——但没法检测
-                if post["slices"]:
-                    rep["slices"] = [str(s) for s in post["slices"]]
-                    rep["sliceHint"] = (
-                        f"主图过阈值（字节>{args.slice_over_kb}KB 或 高度>{args.slice_over_height}px），"
-                        f"已按 {args.slice_height}px 切片。若主图 Read 失败，改读 slices 里各分片。"
+                if cap.get("clipUnsupported"):
+                    rep["screenshotHint"] = (
+                        "CDP 挂了，走 --screenshot 兜底：只有视口一屏，不是完整长页，"
+                        "也未按 --format / --max-width 转码降宽、未分片。"
+                        "图读不动时就只按 lint 字段改代码，别把没看过的截图当成看过了。"
                     )
-            elif raw_out.exists():
-                # 用户只要 lint/structure 时，把中间产物删掉，别留脏东西
-                try: raw_out.unlink()
-                except Exception: pass
 
         # lint / structure：CDP 分支拿到 dom 时走完整装配；只在 --screenshot 兜底
         # 拿不到 dom 时才降级

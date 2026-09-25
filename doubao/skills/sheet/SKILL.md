@@ -1,6 +1,6 @@
 ---
 name: sheet
-version: 3.5.2
+version: 3.6.0
 description: "表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。"
 metadata:
   requires:
@@ -10,6 +10,10 @@ metadata:
 # 表格全场景处理技能（sheet）
 
 覆盖本地 Excel 文件与飞书在线表格的全场景处理。**本技能不负责获取外部信息**（标准值、行情、法规参数），需要时先由其他途径取得。
+
+## skill 入口指向 mode-speed-first 时，下一步只读它
+
+`<system-reminder>` 给出的 skill 入口路径指向 `references/mode-speed-first.md` 时，动手前**只读它这一份**，读完按它的取舍执行：本文与各 reference 里写着「动手前必须完整 Read」「必须 / 才算完成」的步骤都以它为准，在它给出取舍之前不要并行加载其它 reference。入口没有指向它就是标准模式，按本文执行，也不自行去读那份文件。
 
 ## 一、通用流程（两套引擎都适用）
 
@@ -26,7 +30,7 @@ metadata:
 
 ### 2. 选引擎（按数据在哪，与交付形态无关）
 
-- **Excel 引擎**（Python + `scripts/`）：用户提供本地表格文件（上传附件或给出路径，`.xlsx` / `.xls` / `.csv`）、且没有在线链接；本轮从零新建、没有在线表可改时同样走这条。按「开工纪律」的 Excel 引擎路径走，透视表 / 图表等对象能力仍走 Must-CLI 桥接。
+- **Excel 引擎**（Python + openpyxl + `scripts/`）：**本轮从零新建**（没有源表、没有在线表可改），或用户提供本地表格文件（上传附件或给出路径，`.xlsx` / `.xls` / `.csv`）且没有在线链接。按「开工纪律」的 Excel 引擎路径走，透视表 / 图表等对象能力仍走 Must-CLI 桥接。
 - **飞书表格引擎**（`lark-cli sheets`）：用户给出 `/sheets/`、`/spreadsheets/`、或指向电子表格的 `/wiki/` 链接，或飞书表格 token。按 URL 路径 / token 判定，不看域名。
 
 **例外**：本地电脑上被 Canvas 模式打开（`file_status` 为 `open`）的本地表格文件，编辑一律走飞书表格引擎，`lark-cli sheets` 以 `--spreadsheet-token <token>` 定位（不是 `--url`），可回滚、编辑状态实时可见。**本地电脑上**用 Excel 引擎编辑本地文件时 Python 改动不可回滚，动手前先**复制一份备份**；编辑落在原文件上，备份只做回滚快照——期间不更新、不交付，交付门禁拿它当基准。
@@ -105,7 +109,7 @@ python3 scripts/excel_csv_verify.py ./output.csv --baseline ./改前快照.csv  
 | 格式继承（新列/新行） | 物理插行 / 插列用 `+dim-insert --inherit-style before\|after`；往已有空白区域扩写用 `+range-copy --paste-type formats` 先铺样式再写值 | 读 `references/lark-sheets-range-operations.md`；插行插列再读 `references/lark-sheets-sheet-structure.md` |
 | 工作簿操作 | `+workbook-create`、`+workbook-info`、`+workbook-import`、`+sheet-copy`、`+revision-get`、`+workbook-export` | 读 `references/lark-sheets-workbook.md` |
 | 行列操作 | 排序用 `+range-sort` 原子移动整行；合并 / 取消合并用 `+cells-merge` / `+cells-unmerge`；清空内容才用 `+cells-clear`；尺寸用 `+cols-resize` / `+rows-resize` | 读 `references/lark-sheets-range-operations.md`；涉结构布局再读 `references/lark-sheets-sheet-structure.md` |
-| 美化收尾 | `+styles-put` | 读 `references/lark-sheets-styles-put.md` |
+| 美化收尾 | `+styles-put`：样式 / 合并 / 行高列宽 / 冻结**一份规格一次交付**，不要拆成多次 `+cells-set-style` / `+cells-merge` / `+cols-resize`（十几次往返换同一个结果）；只冻结表头用 `+dim-freeze --rows 1`——**没有 `+sheet-freeze` 这个命令** | 读 `references/lark-sheets-styles-put.md` |
 | 子表结构 | `+sheet-info`、`+dim-insert`；删整行 / 列用 `+dim-delete`，不能用 clear 代替 | 读 `references/lark-sheets-sheet-structure.md` |
 | 画图表 / 可视化 / 柱状图 / 折线图 / 饼图 / 趋势 / 占比 | 单图用 `+chart-create-basic`，多图用扁平输入的 `+batch-chart-create`；改已有图的数据源用 `+chart-data-update`、配置用 `+chart-config-update`；只有语义 shortcut 表达不了的单系列 / 单数据点 / 高级字段才用 `+chart-create` / `+chart-update`，且只提交必要的局部 properties。动手前先断言每张图的类型、横轴字段、分组字段和目标张数，画完 `+chart-list` 逐项核；图片迁移成真图表后删除并复查原浮动图片 | 读 `references/lark-sheets-chart.md`；含透视 / 分组汇总再读 `references/lark-sheets-pivot-table.md` |
 | 分组汇总 / 透视 | `+pivot-create` | 读 `references/lark-sheets-pivot-table.md` |
@@ -180,4 +184,4 @@ lark-cli sheets +csv-get --url "https://.../sheets/shtXXX" --sheet-name "<真实
 - **envelope**：所有 shortcut 返回统一外层 `{ok, identity, data, ...}`；写操作不会自动回读，校验自行调用 `+*-list` / `+*-get` / `+cells-get`。
 - **大 payload 走文件 / stdin，不在命令行内联**：Type 标 `File + Stdin` 的 flag 支持 `--flag "@./x.json"`（`@file` 只接受 cwd 下相对路径，绝对路径被拒）与 `--flag -`（stdin）；payload 含换行 / 引号或体量大时一律落文件。**stdin 每次调用只能给一个 flag**——`+table-put` 的 `--sheets` 与 `--styles` 都是大 JSON 时，一个走 `-`、另一个走 `@./x.json`。临时文件不要落进用户项目目录。
 
-===== 全文完（共 183 行）=====
+===== 全文完（共 187 行）=====

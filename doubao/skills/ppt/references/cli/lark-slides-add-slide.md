@@ -4,8 +4,6 @@
 
 `--presentation` 接受 token / `/slides/` URL / `/wiki/` URL（wiki 自动解析），`--slide` 直接收 XML（支持 `@file` 和 stdin，复杂 XML 走文件可绕开 shell 转义），`<img src="@./local.png">` 占位符自动上传并替换成 `file_token`。
 
-**CRITICAL — 提交前必须先跑版式 lint**：把待提交的 `<slide>` XML 存成本地文件，运行 [`scripts/xml_lint.py`](../../scripts/xml_lint.py)，`summary.error_count` 必须为 0。
-
 ## 命令
 
 ```bash
@@ -46,6 +44,7 @@ lark-cli slides +add-slide --presentation "$PID" --slide @page3.xml --dry-run
 | `--before-slide-id` | 否 | 插到该 `slide_id` 之前；**不传就是追加到末尾** |
 | `--revision-id` | 否 | 演示文稿版本号，默认 `-1`（最新）；传具体版本号做乐观锁 |
 | `--dry-run` | 否 | 打印将要发起的请求（含图片上传步骤），不写入 |
+| `--no-lint` | 否 | 跳过服务端版式校验（默认开启）；只能在当前页已被拦、完整报告已读完且符合[单页例外规则](../workflow/validation-xml.md)时单独使用，禁止多页共用或自动重试附加 |
 
 `@file` 路径**必须在 CWD 内**（如 `@./plan/page3.xml`）；绝对路径和 `../` 会被拒绝并报 `unsafe file path`。
 
@@ -77,8 +76,7 @@ lark-cli slides +add-slide \
     "slide_id": "slide_example_id",
     "revision_id": 42,
     "before_slide_id": "slide_example_target_id",
-    "images_uploaded": 1,
-    "issues": "[issue=unsupported_attr tag=<strong> attr=style]"
+    "images_uploaded": 1
   }
 }
 ```
@@ -86,7 +84,22 @@ lark-cli slides +add-slide \
 | 字段 | 说明 |
 |------|------|
 | `slide_id` | 新创建页面的唯一标识 |
-| `issues` | 字符串，**只在服务端丢弃过内容时才出现**：页面创建成功，但括号里列出的标签/属性没写进去。出现就必须 `+screenshot` 复核，别当纯警告忽略；干净提交时这个字段不返回 |
+| `issues` | 仅在**页面已写入成功**且服务端有发现时返回，干净提交时不返回，不影响本次调用的成功状态。两种来源：提交的 XML 里有服务端不支持的标签/属性被丢弃（**页面内容与提交的不一致**），或未达阻断级的版式校验发现。按实际类型读取：对象/数组直接读，JSON 字符串解码后读，普通文本原样读；完整读取全部发现，立即回读并截图核验，真实问题须修复，不能按普通告警忽略 |
+
+### 返回字段与处理
+
+返回 JSON 的外层 `ok` 表示调用是否成功，`identity` 表示调用身份；成功时业务字段位于 `data`，失败时错误信息位于 `error`。按以下字段判断结果并处理 lint 发现。
+
+| 当次响应 | 读取与处理 |
+|---|---|
+| `ok: true`，未附问题发现 | 从 `data` 记录 ID、版本等业务字段，继续流程 |
+| `ok: true`，有 `data.issues` | 页面已写入；对象/数组直接读，JSON 字符串先解码，普通文本完整读。逐条处理发现，按验证流程回读与截图；不能因成功而忽略 |
+| `ok: false`，`error.code: 4000153` | 被拒页面未写入；对 `error.message` 的完整 JSON 字符串解码，读完报告后修复并开启 lint 重提 |
+| 其他失败或返回不完整 | 读完整 `error` 或诊断，按实际原因处理；不能只读 `data` 并把缺失字段默认成零问题 |
+
+返回的是 lint 报告对象时，先看 `summary` 中的 `error_count`、`warning_count`、`info_count` 和 `status`，再读 `document.errors/warnings/infos` 和 `slides[].errors/warnings/infos` 的全部问题；`slides[].issues` 可能是分级列表的镜像，不能重复计数；合并列表中的额外发现也须读取，根 `issues` 不能当作全页列表。逐条读 `code`、`message`、实际存在的 `hint` 及定位/测量字段；`element_ids` 可能为空，需继续看 `elements`、`target.xml_path` 或 schema 的 `path`。单页报告内部 `slide_number: 1` 不一定是整稿第 1 页，关联本次请求/响应的 `slide_id`。
+
+字符串长度不是问题数，`summary` 或前几百字符也不是完整问题正文。报告过大或工具输出截断时，先检查是否已有该次完整响应文件；有文件时可用 `lint_inspect.py` 分页读取，只有截断文本时无法恢复遗漏内容，不能据此认定问题已全部处理。使用 `--no-lint` 后的成功不代表校验通过；异常、长报告和单页例外规则见 [validation-xml.md](../workflow/validation-xml.md)。
 
 ## 常见错误
 
@@ -95,4 +108,5 @@ lark-cli slides +add-slide \
 | `--slide is not a single complete <slide> document` | 传了 `<presentation>` 整份 XML，或多个 `<slide>` 拼在一起 | 一次只传一页，根元素必须是 `<slide>` |
 | `--slide cannot be empty` | `@file` 指向空文件，或 stdin 没内容 | 检查文件内容 |
 | 3350001 | XML 结构/转义有问题；**或 `--before-slide-id` 不是有效 `slide_id`** | 优先改用 `--slide @file` 绕开 shell 转义；插页失败先 `+xml-get` 回读确认 `slide_id`；再按 [workflow/error-handling.md](../workflow/error-handling.md) 排查 |
+| 4000153 `xml lint blocked` | 服务端版式校验拒绝了这一页，页面未写入 | 按 [validation-xml.md](../workflow/validation-xml.md) 解析并读完 `error.message` 的完整报告，修复后开启 lint 重提 |
 | 1061004 / 403 | 当前身份对这份 PPT 没有编辑权限 | 检查是否拥有 `slides:presentation:update` 或 `slides:presentation:write_only` scope；wiki 链接另需 `wiki:node:read`，`@` 占位符另需 `docs:document.media:upload` |

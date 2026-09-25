@@ -155,8 +155,6 @@ JSON
 
 ⚠️ **收到 `formula_errors` 反馈后不建议只打补丁**：`+cells-set` 返回值里若出现 `formula_errors: [{cell, formula, error_type, detail}]`，说明某些 cell 公式编译失败（`error_type=compile_failed` 通常是函数语法错，如对数组结果直接写 `[1]` 下标取值——飞书不支持这种写法，取第 N 项要用 `INDEX(<数组表达式>, N)`；`non_formula` 是 `=` 开头但解析不通过）。此时**避免只聚焦修报错点的局部语法**（如仅把 `[1]` 换成 `INDEX(..,1)`），建议：
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 1. **重新审视整条公式的完整性**：被 formula_errors 标出的那一行，公式除了下标语法错，还可能有其他先天缺陷（字符清洗不全、IFERROR 兜底漏条件、引用列写错），修完语法错后立即整体复核
 2. **同步对称修复所有相似列**：如果同一任务涉及多列相似处理（如"算 H 列面积"用 D 列尺寸、"算 I 列面积"用 E 列尺寸），**修完一列建议把同样的清洗/兜底逻辑同步到所有相似列**，避免出现 H 列用 `SUBSTITUTE(长)+SUBSTITUTE(高)+SUBSTITUTE(×)` 而 I 列只用 `SUBSTITUTE(×)` 这种不对称处理——会导致一列编译通过有值、另一列编译通过但 IFERROR 全返回空，用户看到的是"数据为空"而非"公式错"
 3. **修完再读回验证**：不只看 `formula_errors` 为空（这只证明编译通过，不证明运行时有值），建议 `+csv-get` 读目标列前 3-5 行，确认**非空源数据对应的目标列有非空计算结果**
@@ -202,6 +200,8 @@ JSON
 |---|---|---|
 | `--options '["a","b","c"]'` | 写在命令里的固定列表 | 选项集是常量、不需要事后维护 |
 | `--source-range ''\''Sheet1'\''!T1:T3'` | 已有单元格里的值 | 选项要跟数据动态同步；想维护一张「枚举值」列后多处引用 |
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 两个 flag **必须传一个、且只能传一个**——同时传或都不传，CLI 会立刻报错。`--source-range` 用 A1 + sheet 前缀写法（如 `'Sheet1'!T1:T3`，sheet 名按 A1 标准单引号包裹），可以指同 sheet 也可以指其它 sheet（如 `'Refs'!A1:A10`）。
 
@@ -450,8 +450,6 @@ _一个或多个子表的 typed 数据，每个数组元素写入一张子表；
 - `name` (string) — 子表名
 - `row_sizes` (array<object>?) — 行高操作数组；range 使用行范围如 1:3，给 size（px）即像素行高（type 可省略）；type 为 standard/auto 时不带 size each: { range: string, size?: number, type?: enum }
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ## Examples
 
 公共四件套：所有 shortcut 顶部排列 `--url` / `--spreadsheet-token` / `--sheet-id` / `--sheet-name`（XOR）。
@@ -605,6 +603,8 @@ payload = {"sheets": [df_to_sheet(df1, "销售"),
 > ```
 > **别把 `to_json + json.loads` 换成 `df.to_dict(orient="split")`**：会留 `numpy.int64` 让 `json.dumps` 后续报 "not serializable"——这一步是清洗的关键。
 > **列名必须是字符串**：整数列名（如未指定表头时 pandas 默认的 0/1/2）会以 JSON 数字进入 `columns` 被 CLI 拒收；inline 写法要先 `df.columns = df.columns.map(str)`。`df_to_sheet` 已自动完成这一步。
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 不用 pandas 也行——typed 协议就是纯 JSON。手写场景：
 

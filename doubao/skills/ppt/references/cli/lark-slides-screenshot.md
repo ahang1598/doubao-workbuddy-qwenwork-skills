@@ -4,19 +4,23 @@
 
 获取幻灯片页面截图并保存为本地图片文件。默认用于已存在幻灯片页面截图；传入 `--content` 时用于直接渲染单个 `<slide>` XML 片段预览。本 shortcut 会在 CLI 进程内解码并写入文件，stdout 只返回文件路径、大小、页面 ID 等元信息，避免把图片 Base64 输出给模型。
 
+截图保存在当前工作目录 `<CWD>` 内的指定目录，所有示例显式传 `--output-dir`，避免使用 CLI 默认输出目录。`<CWD>` 仅用于说明位置，不作为命令参数；查看和记录响应中的实际图片路径。
+
 ## 命令
 
 ```bash
 lark-cli slides +screenshot \
   --presentation '<xml_presentation_id 或 slides/wiki URL>' \
-  --slide-id 'SLIDE_ID'
+  --slide-id 'SLIDE_ID' \
+  --output-dir ./screenshots/
 ```
 
 渲染本地 XML 内容：
 
 ```bash
 lark-cli slides +screenshot \
-  --content @slide.xml
+  --content @./slide.xml \
+  --output-dir ./screenshots/
 ```
 
 ## 参数
@@ -27,7 +31,7 @@ lark-cli slides +screenshot \
 | `--slide-id` | list 模式标准入参 | 页面 short ID；截图、修复和 review 状态均以它关联；多页截图时重复传入；一次最多 8 页。先从创建响应或 `slides +xml-get` 取得当前 `slide_ids` |
 | `--slide-number` | 条件必需 | 用户只提供“第 N 页”或旧 deck 暂未取得 `slide_id` 时使用；成功定位后必须取得对应 `slide_id`，后续不再用页号关联截图或 review 状态。`--slide-id` 与 `--slide-number` 不能同时省略 |
 | `--content` | render 模式必需 | 要直接渲染的 `<slide>` XML 片段；支持直接传值、`@file`、`-` stdin。传入后不能同时传 `--slide-id` / `--slide-number` |
-| `--output-dir` | 否 | 输出目录，默认 `.lark-slides/screenshots`；必须是当前目录内的相对路径。截图可能返回多张图片，使用目录而不是 `--output` 文件路径 |
+| `--output-dir` | 否 | 输出目录；本工作流显式传 CWD 内的相对目录，如 `./screenshots/`；使用 `.` 时直接保存到当前工作目录。参数须使用相对路径；省略时使用 CLI 自身默认目录，不保证是 `<CWD>`。截图可能返回多张图片，使用目录而不是 `--output` 文件路径 |
 | `--output-name` | 否 | 仅 render 模式（`--content`）的输出文件名 stem；未指定时优先用返回的 `slide_id`，否则用 `rendered-slide`。若目标文件已存在，会自动追加递增后缀避免覆盖 |
 
 ## 示例
@@ -37,10 +41,11 @@ lark-cli slides +screenshot \
 ```bash
 lark-cli slides +screenshot \
   --presentation slides_example_presentation_id \
-  --slide-id 'SLIDE_ID'
+  --slide-id 'SLIDE_ID' \
+  --output-dir .
 ```
 
-### 按 `slide_id` 截图与创建后视觉 review（可选）
+### 按 `slide_id` 截图与创建后视觉 review
 
 视觉 review 以当前回读得到的 `slide_ids` 为页清单。单页传一个 `--slide-id`；多页可重复传入，单次最多 8 页，超过时按批次串行执行。
 
@@ -51,7 +56,7 @@ lark-cli slides +screenshot \
   --presentation 'YOUR_PRESENTATION_ID' \
   --slide-id 'SLIDE_ID_1' \
   --slide-id 'SLIDE_ID_2' \
-  --output-dir .lark-slides/review/<deck-or-task-id>/screenshots
+  --output-dir ./screenshots/
 ```
 
 随后必须用具备图像查看能力的工具打开每个返回的 `path`，逐页记录 `pass/fix`。截图落盘、批量请求成功或只查看关键页，都不等于已完成视觉 review。
@@ -60,13 +65,14 @@ lark-cli slides +screenshot \
 
 ```bash
 lark-cli slides +screenshot \
-  --content @.lark-slides/out/demo/slide.xml \
-  --output-name preview
+  --content @./slide.xml \
+  --output-name preview \
+  --output-dir ./screenshots/
 ```
 
 ## 返回值
 
-返回 JSON 不包含 Base64 图片内容：
+以下是显式传 `--output-dir` 时的示意返回，不包含 Base64 图片内容；`<CWD>` 代表返回路径中的当前工作目录绝对路径：
 
 ```json
 {
@@ -74,13 +80,13 @@ lark-cli slides +screenshot \
   "identity": "user",
   "data": {
     "xml_presentation_id": "slides_example_presentation_id",
-    "output_dir": ".lark-slides/screenshots",
+    "output_dir": "./screenshots/",
     "screenshots": [
       {
         "slide_id": "slide_example_id",
         "slide_number": 1,
         "format": "png",
-        "path": "/abs/path/.lark-slides/screenshots/slides_example_presentation_id_p001_slide_example_id.png",
+        "path": "<CWD>/screenshots/slides_example_presentation_id_p001_slide_example_id.png",
         "size": 12345
       }
     ]

@@ -16,11 +16,11 @@ Variants (5 共享 groups):
     - joy_division          overlap + 黑底白线 (Joy Division homage)
     - histogram_binned     分离 + histogram bins
 """
+
 from __future__ import annotations
 import math
 
 from ._shared import (
-
     resolve_palette,
     xesc,
     auto_font_size,
@@ -32,7 +32,26 @@ from ._shared import (
 )
 
 
-from .._common import (_ACC, _INK, _INK1, _INK2, _INK4, _INK6, _derive_series_colors, _prepend_bg_if_dark, _resolve_font, _resolve_palette, _rgb_tuple, _rgba_with_alpha, _xesc, ridge_density_from_samples, _variant_is_classic, _dispatch_to_svg_lib, _estimate_label_width_px)
+from .._common import (
+    _ACC,
+    _INK,
+    _INK1,
+    _INK2,
+    _INK4,
+    _INK6,
+    _derive_series_colors,
+    _prepend_bg_if_dark,
+    _resolve_font,
+    _resolve_palette,
+    _rgb_tuple,
+    _rgba_with_alpha,
+    _xesc,
+    ridge_density_from_samples,
+    _variant_is_classic,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
+)
+
 BODY_FONT = "Inter, sans-serif"
 HEAD_FONT = "Georgia, serif"
 
@@ -65,8 +84,7 @@ def draw_ridge(
     unit = data.get("unit") or ""
     pal = resolve_palette(palette)
 
-    ctx = _Ctx(labels, samples_per_group, x_min, x_max, unit, pal,
-               float(width), float(height), title, subtitle)
+    ctx = _Ctx(labels, samples_per_group, x_min, x_max, unit, pal, float(width), float(height), title, subtitle)
 
     if variant == "default_flat":
         body = _draw_default_flat(ctx)
@@ -84,13 +102,7 @@ def draw_ridge(
             "gradient_overlap, joy_division, histogram_binned"
         )
 
-    return (
-        svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"])
-        + ctx.defs_svg()
-        + _header(ctx)
-        + body
-        + svg_close()
-    )
+    return svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"]) + ctx.defs_svg() + _header(ctx) + body + svg_close()
 
 
 class _Ctx:
@@ -124,10 +136,11 @@ class _Ctx:
         # SVG 字号相对 viewBox；slide embed 缩到 ~400px 时字号视觉缩 1/(W/400)。
         # 让 body 字号 ≥ 短边 * 2.4%，并按 n 退让。
         from .._common import _dist_font_sizes
+
         _fs = _dist_font_sizes(W, H, self.n)
-        self.fs_label    = _fs["label"]
-        self.fs_axis     = _fs["ytick"]
-        self.fs_title    = _fs["title"]
+        self.fs_label = _fs["label"]
+        self.fs_axis = _fs["ytick"]
+        self.fs_title = _fs["title"]
         self.fs_subtitle = _fs["subtitle"]
 
         # Adaptive left margin: reserve enough room for the longest label so
@@ -141,8 +154,7 @@ class _Ctx:
         # joy_division uses letter-spacing=".08em"; other variants use ".05em".
         # We pass .08 to cover the worst case for every variant.
         max_label_px = max(
-            (_estimate_label_width_px(lbl, self.fs_label, 0.08, bold=True,
-                                      font_family=BODY_FONT) for lbl in labels),
+            (_estimate_label_width_px(lbl, self.fs_label, 0.08, bold=True, font_family=BODY_FONT) for lbl in labels),
             default=0.0,
         )
         # 10 = anchor offset used in text templates; +8 outer safety pad so
@@ -203,7 +215,7 @@ def _kde(samples, x_min, x_max, n=80, bandwidth=None):
     var = sum((s - mean) ** 2 for s in samples) / max(1, N - 1)
     std = math.sqrt(var) if var > 0 else max((x_max - x_min) * 0.01, 1e-6)
     if bandwidth is None:
-        bandwidth = 1.06 * std * (N ** -0.2)
+        bandwidth = 1.06 * std * (N**-0.2)
     bandwidth = max(bandwidth, (x_max - x_min) * 1e-4)
     step = (x_max - x_min) / (n - 1) if n > 1 else (x_max - x_min)
     inv_2h2 = 1.0 / (2.0 * bandwidth * bandwidth)
@@ -234,7 +246,7 @@ def _axis_bottom(ctx: _Ctx, y):
         parts.append(
             f'<text x="{px:.1f}" y="{y + 14:.1f}" text-anchor="middle" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_axis}" fill="{mut}">'
-            f'{t:.1f}{xesc(ctx.unit)}</text>'
+            f"{t:.1f}{xesc(ctx.unit)}</text>"
         )
     return "".join(parts)
 
@@ -311,9 +323,7 @@ def _draw_outlined_separated(ctx: _Ctx) -> str:
             f'stroke="{_rgba_with_alpha(ink, 0.15)}" stroke-width="0.8"/>'
         )
         # outlined (stroke only, no fill)
-        parts.append(
-            f'<path d="{line_d}" fill="none" stroke="{col}" stroke-width="1.8"/>'
-        )
+        parts.append(f'<path d="{line_d}" fill="none" stroke="{col}" stroke-width="1.8"/>')
         # label
         parts.append(
             f'<text x="{ctx.ML - 10:.1f}" y="{y_base - 3:.1f}" text-anchor="end" '
@@ -346,7 +356,7 @@ def _draw_gradient_overlap(ctx: _Ctx) -> str:
             f'<linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1">'
             f'<stop offset="0%" stop-color="rgba({r},{g},{b},0.92)"/>'
             f'<stop offset="100%" stop-color="rgba({r},{g},{b},0.35)"/>'
-            f'</linearGradient>'
+            f"</linearGradient>"
         )
 
         dist = _kde(ctx.samples[i], ctx.x_min, ctx.x_max, n=80)
@@ -359,10 +369,7 @@ def _draw_gradient_overlap(ctx: _Ctx) -> str:
         line_d = "M " + " L ".join(f"{px:.1f} {py:.1f}" for px, py in zip(xs, ys))
         fill_d = line_d + f" L {xs[-1]:.1f} {y_base:.1f} L {xs[0]:.1f} {y_base:.1f} Z"
 
-        parts.append(
-            f'<path d="{fill_d}" fill="url(#{gid})" '
-            f'stroke="rgba({r},{g},{b},0.95)" stroke-width="1"/>'
-        )
+        parts.append(f'<path d="{fill_d}" fill="url(#{gid})" stroke="rgba({r},{g},{b},0.95)" stroke-width="1"/>')
         parts.append(
             f'<text x="{ctx.ML - 10:.1f}" y="{y_base - 3:.1f}" text-anchor="end" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_label}" '
@@ -415,16 +422,14 @@ def _draw_joy_division(ctx: _Ctx) -> str:
         parts.append(f'<path d="{fill_d}" fill="{bg}"/>')
         # white stroke
         line_color = "rgba(240,240,232,0.95)" if is_dark_palette(ctx.pal) else ink
-        parts.append(
-            f'<path d="{line_d}" fill="none" stroke="{line_color}" stroke-width="1.2"/>'
-        )
+        parts.append(f'<path d="{line_d}" fill="none" stroke="{line_color}" stroke-width="1.2"/>')
         # label
         lbl_col = ctx.series_color(i) if not is_dark_palette(ctx.pal) else "rgba(212,233,44,0.85)"
         parts.append(
             f'<text x="{ctx.ML - 10:.1f}" y="{y_base - 3:.1f}" text-anchor="end" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_label}" '
             f'font-weight="600" fill="{lbl_col}" letter-spacing=".08em">'
-            f'{xesc(ctx.labels[i])}</text>'
+            f"{xesc(ctx.labels[i])}</text>"
         )
 
     # x-axis (drawn after ridges so it stays on top)
@@ -480,16 +485,18 @@ def _draw_histogram_binned(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-def make_ridge(distributions: Sequence[Sequence[float]],
-               group_labels: Sequence[str] = None,
-               x_range: Sequence[float] = None,
-               x_labels: Sequence[str] = None,
-               title: str = None,
-               subtitle: str = None,
-               highlight_index: int = None,
-               font_family: str = None,
-               palette=None,
-                variant: str = None) -> str:
+def make_ridge(
+    distributions: Sequence[Sequence[float]],
+    group_labels: Sequence[str] = None,
+    x_range: Sequence[float] = None,
+    x_labels: Sequence[str] = None,
+    title: str = None,
+    subtitle: str = None,
+    highlight_index: int = None,
+    font_family: str = None,
+    palette=None,
+    variant: str = None,
+) -> str:
     """
     山脊图（Joy plot / Ridge plot · dandelion 风格）：N 组分布纵向堆叠对比，
     渐变填充 + 柔光顶线 + 群峰重叠。
@@ -502,18 +509,27 @@ def make_ridge(distributions: Sequence[Sequence[float]],
     highlight_index: 高亮某组（描边加粗）
     palette:       用 palette.series 或从 accent HLS 派生 N 色环形调色板
     """
-    if not _variant_is_classic('ridge', variant):
+    if not _variant_is_classic("ridge", variant):
         _data = {"groups": list(zip(group_labels or [f"G{i}" for i in range(len(distributions))], distributions))}
         return _dispatch_to_svg_lib(
-            'ridge', variant, _data,
-            title=title, subtitle=subtitle,
-            palette=palette, font_family=font_family,
+            "ridge",
+            variant,
+            _data,
+            title=title,
+            subtitle=subtitle,
+            palette=palette,
+            font_family=font_family,
         )
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
     _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"], _pal["ink6"], _pal["ink4"], _pal["ink2"], _pal["ink1"], _pal["accent"]
+        _pal["ink"],
+        _pal["ink6"],
+        _pal["ink4"],
+        _pal["ink2"],
+        _pal["ink1"],
+        _pal["accent"],
     )
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
 
@@ -522,10 +538,12 @@ def make_ridge(distributions: Sequence[Sequence[float]],
         raise ValueError("ridge: at least one distribution required")
     lengths = {len(d) for d in distributions}
     if len(lengths) > 1:
-        raise ValueError(f"ridge: all distributions must be same length, got lengths={lengths}. "
-                         f"Use `ridge_density_from_samples(samples, x_min, x_max, n)` to normalize sample sizes.")
+        raise ValueError(
+            f"ridge: all distributions must be same length, got lengths={lengths}. "
+            f"Use `ridge_density_from_samples(samples, x_min, x_max, n)` to normalize sample sizes."
+        )
     if group_labels is None:
-        group_labels = [f"组 {i+1}" for i in range(N)]
+        group_labels = [f"组 {i + 1}" for i in range(N)]
 
     # ---- 画布 & 布局 ----
     W = 900
@@ -536,6 +554,7 @@ def make_ridge(distributions: Sequence[Sequence[float]],
     # ROW_STEP 与 RIDGE_H 需要留出空间给左侧组名，label 越大 step 越大。
     # 先估一次 fs_label 以决定 ROW_STEP（fs_label 只依赖 W/H/N，且 H 依赖 ROW_STEP → 用近似 H）。
     from .._common import _dist_font_sizes, _estimate_label_width_px
+
     _H_approx = margin_t + (N - 1) * 34 + 62 + margin_b
     _label_est = _dist_font_sizes(W, _H_approx, N)["label"]
 
@@ -547,26 +566,25 @@ def make_ridge(distributions: Sequence[Sequence[float]],
     # embed_svg_validator so we can never under-shoot.
     _upper_labels = [str(lbl).upper() for lbl in group_labels]
     _max_label_px = max(
-        (_estimate_label_width_px(lbl, _label_est, 0.08, bold=True,
-                                  font_family=None) for lbl in _upper_labels),
+        (_estimate_label_width_px(lbl, _label_est, 0.08, bold=True, font_family=None) for lbl in _upper_labels),
         default=0.0,
     )
     # 14 = anchor offset (see label render below); +8 safety pad clears the
     # 2px OUT_OF_BOUNDS_MARGIN_PX plus rendering slack.
     margin_l = max(100, int(math.ceil(_max_label_px + 14 + 8)))
     plot_w = W - margin_l - margin_r
-    ROW_STEP = max(34.0, _label_est * 1.15 + 12)   # 组名 h + 12px 底距，避免与相邻 ridge 峰值挤到一起
-    RIDGE_H = max(62.0, ROW_STEP * 1.7)             # ridge 峰值高度不小于 62
+    ROW_STEP = max(34.0, _label_est * 1.15 + 12)  # 组名 h + 12px 底距，避免与相邻 ridge 峰值挤到一起
+    RIDGE_H = max(62.0, ROW_STEP * 1.7)  # ridge 峰值高度不小于 62
     H = margin_t + (N - 1) * ROW_STEP + RIDGE_H + margin_b
 
     # ---- 字号自适应（viewBox 短边 × 数据规模双重挂钩）----
     # W=900, H 随 N 动。short-side 通常 ~340-450 → base ~9-11 → title ~15-24。
     # 保证 slide 400px embed 后仍可读。
     _fs = _dist_font_sizes(W, H, N)
-    fs_title    = _fs["title"]     # 顶部标题
+    fs_title = _fs["title"]  # 顶部标题
     fs_subtitle = _fs["subtitle"]
-    fs_tick     = _fs["ytick"]     # x 轴 tick label（底部）
-    fs_label    = _fs["label"]     # 左侧组名
+    fs_tick = _fs["ytick"]  # x 轴 tick label（底部）
+    fs_label = _fs["label"]  # 左侧组名
 
     # ridge 语义有"次序"：相邻组应色相邻近。
     # 除非 palette 显式给了 `ridge_series` 字段，否则忽略 `series`（那是 distinct 用途），
@@ -576,8 +594,7 @@ def make_ridge(distributions: Sequence[Sequence[float]],
         if len(series_colors) < N:
             # 不够则补齐
             series_colors += _derive_series_colors(
-                {k: v for k, v in _pal.items() if k != "series"},
-                N - len(series_colors), mode="gradient"
+                {k: v for k, v in _pal.items() if k != "series"}, N - len(series_colors), mode="gradient"
             )
     else:
         # 临时把 series 抹掉，让 _derive 走 hue-shift
@@ -632,6 +649,7 @@ def make_ridge(distributions: Sequence[Sequence[float]],
         while t <= x_max + 1e-9:
             tick_xs.append(t)
             t += tick_step
+
         def _fmt_tick(v):
             if tick_step >= 1:
                 if v == 0:
@@ -642,6 +660,7 @@ def make_ridge(distributions: Sequence[Sequence[float]],
                 if v == 0:
                     return "0"
                 return f"{v:+.{dec}f}"
+
         tick_texts = [_fmt_tick(v) for v in tick_xs]
 
     def x_to_px(xv):
@@ -651,7 +670,7 @@ def make_ridge(distributions: Sequence[Sequence[float]],
     for xv in tick_xs:
         px = x_to_px(xv)
         parts.append(
-            f'<line x1="{px:.1f}" y1="{plot_top}" x2="{px:.1f}" y2="{plot_bot+12}" '
+            f'<line x1="{px:.1f}" y1="{plot_top}" x2="{px:.1f}" y2="{plot_bot + 12}" '
             f'stroke="{_INK1}" stroke-width="1"/>'
         )
 
@@ -659,19 +678,19 @@ def make_ridge(distributions: Sequence[Sequence[float]],
     if x_min <= 0 <= x_max:
         zero_px = x_to_px(0)
         parts.append(
-            f'<line x1="{zero_px:.1f}" y1="{plot_top}" x2="{zero_px:.1f}" y2="{plot_bot+12}" '
+            f'<line x1="{zero_px:.1f}" y1="{plot_top}" x2="{zero_px:.1f}" y2="{plot_bot + 12}" '
             f'stroke="{_rgba_with_alpha(_INK, 0.25)}" stroke-width="1" stroke-dasharray="2 3"/>'
         )
 
     # 底部 x 轴
     parts.append(
-        f'<line x1="{margin_l}" y1="{plot_bot+8}" x2="{W-margin_r}" y2="{plot_bot+8}" '
+        f'<line x1="{margin_l}" y1="{plot_bot + 8}" x2="{W - margin_r}" y2="{plot_bot + 8}" '
         f'stroke="{_rgba_with_alpha(_INK, 0.3)}" stroke-width="1"/>'
     )
     for xv, txt in zip(tick_xs, tick_texts):
         px = x_to_px(xv)
         parts.append(
-            f'<text font-family="{_body_font}" x="{px:.1f}" y="{plot_bot+28}" text-anchor="middle" font-size="{fs_tick}" '
+            f'<text font-family="{_body_font}" x="{px:.1f}" y="{plot_bot + 28}" text-anchor="middle" font-size="{fs_tick}" '
             f'fill="{c_muted}" letter-spacing=".05em">{_xesc(txt)}</text>'
         )
 
@@ -682,12 +701,14 @@ def make_ridge(distributions: Sequence[Sequence[float]],
         c_top = _color_alpha(col, 0.85)
         c_mid = _color_alpha(col, 0.35)
         c_bot = _color_alpha(col, 0.05)
-        defs_body.append(f'<linearGradient id="ridge_fill_{i}" x1="0" y1="0" x2="0" y2="1">'
-                         f'<stop offset="0%" stop-color="{c_top}"/>'
-                         f'<stop offset="60%" stop-color="{c_mid}"/>'
-                         f'<stop offset="100%" stop-color="{c_bot}"/>'
-                         f'</linearGradient>')
-    parts.append(f'<defs>{"".join(defs_body)}</defs>')
+        defs_body.append(
+            f'<linearGradient id="ridge_fill_{i}" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0%" stop-color="{c_top}"/>'
+            f'<stop offset="60%" stop-color="{c_mid}"/>'
+            f'<stop offset="100%" stop-color="{c_bot}"/>'
+            f"</linearGradient>"
+        )
+    parts.append(f"<defs>{''.join(defs_body)}</defs>")
 
     # 山脊：下 -> 上 后画覆盖前画
     for i in range(N - 1, -1, -1):
@@ -707,31 +728,34 @@ def make_ridge(distributions: Sequence[Sequence[float]],
 
         pts = list(zip(xs, ys))
         line_d = "M " + " L ".join(f"{px:.1f} {py:.1f}" for px, py in pts)
-        fill_d = line_d + f' L {pts[-1][0]:.1f} {y_base:.1f} L {pts[0][0]:.1f} {y_base:.1f} Z'
+        fill_d = line_d + f" L {pts[-1][0]:.1f} {y_base:.1f} L {pts[0][0]:.1f} {y_base:.1f} Z"
 
         parts.append(f'<path d="{fill_d}" fill="url(#ridge_fill_{i})" opacity="0.95"/>')
         # 柔光顶线：改用半透明厚描边（stroke-opacity + 较宽 stroke-width）模拟原 feGaussianBlur 效果
-        parts.append(f'<path d="{line_d}" fill="none" stroke="{_color_alpha(col, 0.9)}" '
-                     f'stroke-width="4" stroke-opacity="0.5" stroke-linecap="round" stroke-linejoin="round"/>')
+        parts.append(
+            f'<path d="{line_d}" fill="none" stroke="{_color_alpha(col, 0.9)}" '
+            f'stroke-width="4" stroke-opacity="0.5" stroke-linecap="round" stroke-linejoin="round"/>'
+        )
         stroke_w = 1.8 if (highlight_index is not None and i == highlight_index) else 1.2
-        parts.append(f'<path d="{line_d}" fill="none" stroke="{_color_alpha(col, 0.95)}" '
-                     f'stroke-width="{stroke_w}"/>')
+        parts.append(f'<path d="{line_d}" fill="none" stroke="{_color_alpha(col, 0.95)}" stroke-width="{stroke_w}"/>')
 
         # 左侧组名
-        parts.append(f'<text font-family="{_body_font}" x="{margin_l - 14}" y="{y_base - 4:.1f}" text-anchor="end" '
-                     f'font-size="{fs_label}" font-weight="700" '
-                     f'fill="{_color_alpha(col, 0.95)}" letter-spacing=".08em">{_xesc(str(group_labels[i]).upper())}</text>')
+        parts.append(
+            f'<text font-family="{_body_font}" x="{margin_l - 14}" y="{y_base - 4:.1f}" text-anchor="end" '
+            f'font-size="{fs_label}" font-weight="700" '
+            f'fill="{_color_alpha(col, 0.95)}" letter-spacing=".08em">{_xesc(str(group_labels[i]).upper())}</text>'
+        )
 
         # 峰值圆点
         if vmax > 0 and (vmax - vmin) >= 1e-9:
             peak_idx = max(range(n_pts), key=lambda k: dist[k])
             peak_x = xs[peak_idx]
             peak_y = ys[peak_idx]
-            parts.append(f'<circle cx="{peak_x:.1f}" cy="{peak_y:.1f}" r="2.2" '
-                         f'fill="rgba(255,255,255,0.9)" stroke="{_color_alpha(col, 0.9)}" stroke-width="0.8"/>')
+            parts.append(
+                f'<circle cx="{peak_x:.1f}" cy="{peak_y:.1f}" r="2.2" '
+                f'fill="rgba(255,255,255,0.9)" stroke="{_color_alpha(col, 0.9)}" stroke-width="0.8"/>'
+            )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)
-
-

@@ -6,6 +6,7 @@
 - 图元自适应字号
 - rsvg-convert 转 PNG 验证
 """
+
 import os, sys, re, subprocess
 from pathlib import Path
 
@@ -16,12 +17,12 @@ if str(SVG_LIB_ROOT) not in sys.path:
 from svg_palettes import PALETTES
 
 # 常用色
-_INK  = "rgba(28,28,26,1.0)"
+_INK = "rgba(28,28,26,1.0)"
 _INK6 = "rgba(28,28,26,0.6)"
 _INK4 = "rgba(28,28,26,0.4)"
 _INK2 = "rgba(28,28,26,0.2)"
 _INK1 = "rgba(28,28,26,0.12)"
-_ACC  = "rgba(163,88,50,1.0)"
+_ACC = "rgba(163,88,50,1.0)"
 
 
 def resolve_palette(palette):
@@ -40,15 +41,18 @@ def resolve_palette(palette):
     else:
         raise TypeError(f"palette must be None/str/dict, got {type(palette).__name__}")
 
-    ink       = pl.get("ink",       _INK)
-    accent    = pl.get("accent",    _ACC)
+    ink = pl.get("ink", _INK)
+    accent = pl.get("accent", _ACC)
     secondary = pl.get("secondary", _rgba_with_alpha(ink, 0.6))
-    bg        = pl.get("bg",        "rgba(250,248,242,1)")
-    muted     = pl.get("muted",     _rgba_with_alpha(ink, 0.6))
+    bg = pl.get("bg", "rgba(250,248,242,1)")
+    muted = pl.get("muted", _rgba_with_alpha(ink, 0.6))
 
     out = {
-        "ink": ink, "accent": accent, "secondary": secondary,
-        "bg": bg, "muted": muted,
+        "ink": ink,
+        "accent": accent,
+        "secondary": secondary,
+        "bg": bg,
+        "muted": muted,
         "ink6": _rgba_with_alpha(ink, 0.6),
         "ink4": _rgba_with_alpha(ink, 0.4),
         "ink2": _rgba_with_alpha(ink, 0.2),
@@ -62,7 +66,7 @@ def resolve_palette(palette):
 
 
 def _rgba_with_alpha(rgba_str, alpha):
-    m = re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str or "")
+    m = re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
     if not m:
         return f"rgba(28,28,26,{alpha})"
     r, g, b = int(float(m.group(1))), int(float(m.group(2))), int(float(m.group(3)))
@@ -70,7 +74,7 @@ def _rgba_with_alpha(rgba_str, alpha):
 
 
 def rgb_tuple(rgba_str):
-    m = re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str or "")
+    m = re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
     if not m:
         return (28, 28, 26)
     return (int(float(m.group(1))), int(float(m.group(2))), int(float(m.group(3))))
@@ -155,11 +159,15 @@ def render_to_png(svg_str, out_path, width=900):
     """把 SVG 字符串通过 rsvg-convert 转 PNG。返回是否成功。"""
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open('/tmp/_render.svg', 'w') as f:
+    with open("/tmp/_render.svg", "w") as f:
         f.write(svg_str)
     try:
-        r = subprocess.run(['rsvg-convert', '/tmp/_render.svg', '-o', str(out_path), '-w', str(width)],
-                          capture_output=True, text=True, timeout=30)
+        r = subprocess.run(
+            ["rsvg-convert", "/tmp/_render.svg", "-o", str(out_path), "-w", str(width)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
         return r.returncode == 0 and out_path.exists() and out_path.stat().st_size > 0
     except Exception as e:
         return False
@@ -167,12 +175,12 @@ def render_to_png(svg_str, out_path, width=900):
 
 def validate_svg(svg_str):
     """简单校验 SVG 语法。返回 (ok, reason)。"""
-    if not svg_str.strip().startswith('<svg'):
+    if not svg_str.strip().startswith("<svg"):
         return False, "not starts with <svg"
-    if '</svg>' not in svg_str:
+    if "</svg>" not in svg_str:
         return False, "missing </svg>"
     # 基本括号平衡
-    if svg_str.count('<') != svg_str.count('>'):
+    if svg_str.count("<") != svg_str.count(">"):
         return False, f"tag mismatch: {svg_str.count('<')} vs {svg_str.count('>')}"
     return True, "ok"
 
@@ -180,6 +188,7 @@ def validate_svg(svg_str):
 # =========================================================
 # shape_variant 皮肤分发（跨 chart 复用）
 # =========================================================
+
 
 def flat_fill(pal, base_col, alpha=0.9):
     """flat 皮肤：半透明纯色。"""
@@ -202,20 +211,22 @@ def gradient_def(gid, base_col, direction="vertical", x1=0, y1=0, x2=0, y2=100):
         f'gradientUnits="userSpaceOnUse">'
         f'<stop offset="0%" stop-color="{top}"/>'
         f'<stop offset="100%" stop-color="{bot}"/>'
-        f'</linearGradient>'
+        f"</linearGradient>"
     )
 
 
 def layered_shapes(x, y, w, h, base_col, rx=0):
     """layered 皮肤：阴影 + 主体 + 高光。返回 SVG 片段字符串。"""
     shadow = _rgba_with_alpha(_INK, 0.28)
-    rx_attr = f' rx="{rx}" ry="{rx}"' if rx > 0 else ''
+    rx_attr = f' rx="{rx}" ry="{rx}"' if rx > 0 else ""
     parts = [
-        f'<rect x="{x:.1f}" y="{y+2:.1f}" width="{w:.1f}" height="{h:.1f}"{rx_attr} fill="{shadow}"/>',
+        f'<rect x="{x:.1f}" y="{y + 2:.1f}" width="{w:.1f}" height="{h:.1f}"{rx_attr} fill="{shadow}"/>',
         f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}"{rx_attr} fill="{_rgba_with_alpha(base_col, 1.0)}"/>',
     ]
     if h > 6:
-        parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="2.5"{rx_attr} fill="rgba(255,255,255,0.5)"/>')
+        parts.append(
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="2.5"{rx_attr} fill="rgba(255,255,255,0.5)"/>'
+        )
     return "".join(parts)
 
 
@@ -227,7 +238,7 @@ def striped_pattern_def(pid, base_col, angle=45, spacing=6, line_width=1.6):
         f'width="{spacing}" height="{spacing}" '
         f'patternTransform="rotate({angle})">'
         f'<line x1="0" y1="0" x2="0" y2="{spacing}" stroke="{line_col}" stroke-width="{line_width}"/>'
-        f'</pattern>'
+        f"</pattern>"
     )
 
 
@@ -235,13 +246,11 @@ def striped_pattern_def(pid, base_col, angle=45, spacing=6, line_width=1.6):
 # 元素重叠检测（简单几何）
 # =========================================================
 
+
 def bbox_overlap(a, b):
     """检查两个 bbox {x, y, w, h} 是否重叠。"""
     return not (
-        a['x'] + a['w'] < b['x'] or
-        b['x'] + b['w'] < a['x'] or
-        a['y'] + a['h'] < b['y'] or
-        b['y'] + b['h'] < a['y']
+        a["x"] + a["w"] < b["x"] or b["x"] + b["w"] < a["x"] or a["y"] + a["h"] < b["y"] or b["y"] + b["h"] < a["y"]
     )
 
 

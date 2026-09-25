@@ -5,11 +5,13 @@
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import json
 import math
 import re
 import sys
+import threading
 import unicodedata
 import xml.parsers.expat as expat
 import xml.etree.ElementTree as ET
@@ -29,8 +31,8 @@ SML_NAMESPACE = "https://www.larkoffice.com/sml/2.0"
 SXSD_SCHEMA_PATH = Path(__file__).resolve().parents[1] / "references" / "xml" / "slides_xml_schema_definition.xml"
 ICONPARK_INDEX_PATH = Path(__file__).resolve().parents[1] / "references" / "xml" / "iconpark-index.json"
 SXSD_TAG_ALIASES = {
-    "textbox": "<shape type=\"text\">",
-    "textBox": "<shape type=\"text\">",
+    "textbox": '<shape type="text">',
+    "textBox": '<shape type="text">',
     "image": "<img>",
     "picture": "<img>",
 }
@@ -237,10 +239,17 @@ def parse_args(argv: list[str]) -> dict[str, Any]:
     return options
 
 
+_ATTRIBUTE_PATTERNS: dict[str, re.Pattern[str]] = {}
+
+
 def extract_attribute(tag_source: str, name: str) -> str | None:
-    match = re.search(
-        fr"(?:^|\s){re.escape(name)}\s*=\s*(?:\"([^\"]+)\"|'([^']+)')", tag_source
-    )
+    # 属性名来自一小批源码字面量，模式按名字缓存。这个函数在单页上会被调数千次，
+    # 每次重新 re.escape 加编译的开销在 profile 里很显眼。
+    pattern = _ATTRIBUTE_PATTERNS.get(name)
+    if pattern is None:
+        pattern = re.compile(rf"(?:^|\s){re.escape(name)}\s*=\s*(?:\"([^\"]+)\"|'([^']+)')")
+        _ATTRIBUTE_PATTERNS[name] = pattern
+    match = pattern.search(tag_source)
     if not match:
         return None
     return match.group(1) if match.group(1) is not None else match.group(2)
@@ -290,7 +299,7 @@ def effective_text_alpha(shape_alpha: int | float | None, text_color: str | None
 
 
 def has_tag(value: str, tag: str) -> bool:
-    return re.search(fr"<{re.escape(tag)}\b", value) is not None
+    return re.search(rf"<{re.escape(tag)}\b", value) is not None
 
 
 def extract_optional_alpha(attrs: str) -> int | float:
@@ -336,7 +345,7 @@ def extract_fill_alpha(value: str, shape_type: str | None = None) -> int | float
 
 def detect_inline_style_presence(content_xml: str, style_tags: set[str]) -> bool:
     for tag_name in style_tags:
-        if re.search(fr"<{re.escape(tag_name)}\b[\s>]", content_xml) is not None:
+        if re.search(rf"<{re.escape(tag_name)}\b[\s>]", content_xml) is not None:
             return True
     return False
 
@@ -360,8 +369,7 @@ def fill_last_size_gap(sizes: list[int | float], target_size: int | float) -> li
     if not sizes:
         return sizes
     final_sizes = [
-        size if index == len(sizes) - 1 else max(1, math.floor(size + 0.5))
-        for index, size in enumerate(sizes)
+        size if index == len(sizes) - 1 else max(1, math.floor(size + 0.5)) for index, size in enumerate(sizes)
     ]
     remaining_size = target_size - sum_sizes(final_sizes[:-1])
     if remaining_size >= 1:
@@ -456,6 +464,7 @@ def strip_xml_paragraphs_preserving_spaces(value: str) -> str:
     renders them at full width, but strip_xml collapses whitespace, hiding real wraps from
     width estimation. Used only by detect_text_may_wrap_shapes to avoid under-measuring.
     """
+
     def strip_line_tags(fragment: str) -> str:
         stripped = re.sub(r"<!\[CDATA\[([\s\S]*?)\]\]>", r"\1", fragment)
         stripped = re.sub(r"<br\b[^>]*>", "\n", stripped)
@@ -496,7 +505,7 @@ def extract_max_span_font_size(value: str, default_font_size: int | float) -> in
 
 
 def extract_tag_attributes(value: str, tag: str) -> str:
-    match = re.search(fr"<{re.escape(tag)}\b([^>]*)>", value)
+    match = re.search(rf"<{re.escape(tag)}\b([^>]*)>", value)
     return match.group(1) if match else ""
 
 
@@ -639,9 +648,7 @@ def validate_sxsd_document(xml: str, root: ET.Element) -> list[dict[str, Any]]:
                     continue
                 suggestions = suggest_sxsd_attrs(attr_name, allowed_attrs)
                 if suggestions:
-                    suggested_attr_candidates.setdefault((current_path, tag_name), []).append(
-                        set(suggestions)
-                    )
+                    suggested_attr_candidates.setdefault((current_path, tag_name), []).append(set(suggestions))
                 issues.append(
                     {
                         "level": "error",
@@ -658,14 +665,9 @@ def validate_sxsd_document(xml: str, root: ET.Element) -> list[dict[str, Any]]:
             visit(child, [*ancestors, tag_name], current_path)
 
     visit(root, [], "")
-    existing = {
-        (issue.get("code"), issue.get("path"), issue.get("tag"), issue.get("attr"))
-        for issue in issues
-    }
+    existing = {(issue.get("code"), issue.get("path"), issue.get("tag"), issue.get("attr")) for issue in issues}
     unsupported_tag_locations = {
-        (issue.get("path"), issue.get("tag"))
-        for issue in issues
-        if issue.get("code") == "sxsd_unsupported_tag"
+        (issue.get("path"), issue.get("tag")) for issue in issues if issue.get("code") == "sxsd_unsupported_tag"
     }
     schema_issues = _validate_sxsd_schema_constraints(xml, root)
     missing_attrs_by_location: dict[tuple[str, str], set[str]] = {}
@@ -684,16 +686,24 @@ def validate_sxsd_document(xml: str, root: ET.Element) -> list[dict[str, Any]]:
                 suggested_attrs.add((*location, next(iter(matching_missing_attrs))))
 
     for schema_issue in schema_issues:
-        if schema_issue.get("code") == "sxsd_unexpected_child" and (
-            schema_issue.get("path"),
-            schema_issue.get("tag"),
-        ) in unsupported_tag_locations:
+        if (
+            schema_issue.get("code") == "sxsd_unexpected_child"
+            and (
+                schema_issue.get("path"),
+                schema_issue.get("tag"),
+            )
+            in unsupported_tag_locations
+        ):
             continue
-        if schema_issue.get("code") == "sxsd_missing_required_attr" and (
-            schema_issue.get("path"),
-            schema_issue.get("tag"),
-            schema_issue.get("attr"),
-        ) in suggested_attrs:
+        if (
+            schema_issue.get("code") == "sxsd_missing_required_attr"
+            and (
+                schema_issue.get("path"),
+                schema_issue.get("tag"),
+                schema_issue.get("attr"),
+            )
+            in suggested_attrs
+        ):
             continue
         key = (
             schema_issue.get("code"),
@@ -735,13 +745,8 @@ def _validate_sxsd_schema_constraints(xml: str, root: ET.Element) -> list[dict[s
 def validate_embed_svg_roots(root: ET.Element) -> list[dict[str, Any]]:
     issues: list[dict[str, Any]] = []
     document_namespace = sxsd_validator.element_namespace(root.tag)
-    is_bare_slide_fragment = (
-        xml_local_name(root.tag) == "slide" and document_namespace is None
-    )
-    if (
-        document_namespace not in sxsd_validator.ACCEPTED_SML_NAMESPACES
-        and not is_bare_slide_fragment
-    ):
+    is_bare_slide_fragment = xml_local_name(root.tag) == "slide" and document_namespace is None
+    if document_namespace not in sxsd_validator.ACCEPTED_SML_NAMESPACES and not is_bare_slide_fragment:
         return issues
 
     def visit(element: ET.Element, ancestors: list[str], parent_path: str) -> None:
@@ -750,10 +755,7 @@ def validate_embed_svg_roots(root: ET.Element) -> list[dict[str, Any]]:
 
         tag_name = xml_local_name(element.tag)
         path = f"{parent_path}/{tag_name}" if parent_path else tag_name
-        if (
-            tag_name == "embed"
-            and sxsd_validator.element_namespace(element.tag) == document_namespace
-        ):
+        if tag_name == "embed" and sxsd_validator.element_namespace(element.tag) == document_namespace:
             for child in element:
                 if xml_namespace(child.tag) != SVG_NS or xml_local_name(child.tag) == "svg":
                     continue
@@ -912,11 +914,7 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
     if root_name == "slide":
         numbered_slides = [(1, root)]
     elif root_name == "presentation":
-        numbered_slides = list(
-            enumerate(
-                (child for child in root if xml_local_name(child.tag) == "slide"), start=1
-            )
-        )
+        numbered_slides = list(enumerate((child for child in root if xml_local_name(child.tag) == "slide"), start=1))
     else:
         return []
 
@@ -959,7 +957,7 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
                         },
                         "message": (
                             f"chart {locator} has no numeric dimension: neither dim1 nor dim2 supplies "
-                            "a numeric series (valueType=\"number\" or a pure number+comma CSV) to "
+                            'a numeric series (valueType="number" or a pure number+comma CSV) to '
                             "render the value axis"
                         ),
                         "hint": (
@@ -980,9 +978,7 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
                 return default if raw is None else raw in {"true", "1", "yes"}
 
             if not (
-                label_toggle("value", True)
-                or label_toggle("category", False)
-                or label_toggle("percentage", False)
+                label_toggle("value", True) or label_toggle("category", False) or label_toggle("percentage", False)
             ):
                 chart_id = owner_chart.attrib.get("id")
                 chart_path_value = owner_chart_path or path
@@ -1005,7 +1001,7 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
                         "hint": (
                             f"Locate the element via target.element_xml_path ({path}). Set at least one "
                             'of value="true", category="true" or percentage="true" (value defaults to '
-                            "true, so usually just drop the explicit value=\"false\")."
+                            'true, so usually just drop the explicit value="false").'
                         ),
                     }
                 )
@@ -1035,7 +1031,7 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
                         "hint": (
                             f"Locate the element via target.element_xml_path ({path}). Replace the "
                             "placeholder with a real number-format code such as 0, 0.00, 0%, #,##0.00, "
-                            'or 0万. Unit suffixes belong in the code itself (append literal text), not '
+                            "or 0万. Unit suffixes belong in the code itself (append literal text), not "
                             'as a "{value}" placeholder.'
                         ),
                     }
@@ -1045,9 +1041,7 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
             kind = xml_local_name(child.tag)
             child_counts[kind] = child_counts.get(kind, 0) + 1
             child_path = (
-                f"{path}/data"
-                if tag_name == "slide" and kind == "data"
-                else f"{path}/{kind}[{child_counts[kind]}]"
+                f"{path}/data" if tag_name == "slide" and kind == "data" else f"{path}/{kind}[{child_counts[kind]}]"
             )
             visit(child, [*ancestors, tag_name], child_path, owner_chart, owner_chart_path)
 
@@ -1131,7 +1125,7 @@ def validate_sml_tag_prefixes(xml: str) -> list[dict[str, Any]]:
                 "column": parser.CurrentColumnNumber,
                 "message": f"SML tag <{element_name}> must not use a namespace prefix at {path}",
                 "hint": (
-                    f'Use <{local_name}> under the default namespace '
+                    f"Use <{local_name}> under the default namespace "
                     f'<{local_name} xmlns="{SML_NAMESPACE}">, or use an unprefixed SML tag.'
                 ),
             }
@@ -1175,10 +1169,7 @@ def serialize_slide_for_layout(slide_root: ET.Element) -> str:
         if not isinstance(element.tag, str):
             continue
         element.tag = xml_local_name(element.tag)
-        attributes = {
-            xml_local_name(attribute_name): value
-            for attribute_name, value in element.attrib.items()
-        }
+        attributes = {xml_local_name(attribute_name): value for attribute_name, value in element.attrib.items()}
         element.attrib.clear()
         element.attrib.update(attributes)
     return ET.tostring(slide_copy, encoding="unicode")
@@ -1214,15 +1205,11 @@ def build_source_xml_paths(slide_xml: str, slide_number: int) -> dict[str, list[
     for child in data:
         kind = xml_local_name(child.tag)
         counts[kind] = counts.get(kind, 0) + 1
-        paths.setdefault(kind, []).append(
-            f"slide[{slide_number}]/data/{kind}[{counts[kind]}]"
-        )
+        paths.setdefault(kind, []).append(f"slide[{slide_number}]/data/{kind}[{counts[kind]}]")
     return paths
 
 
-def attach_source_xml_paths(
-    elements: list[dict[str, Any]], source_paths: dict[str, list[str]]
-) -> None:
+def attach_source_xml_paths(elements: list[dict[str, Any]], source_paths: dict[str, list[str]]) -> None:
     offsets: dict[str, int] = {}
     for element in elements:
         kind = element["kind"]
@@ -1254,9 +1241,13 @@ def extract_source_id_elements(slide_xml: str, slide_number: int) -> list[dict[s
                 if parent is root and kind == "data"
                 else f"{parent_path}/{kind}[{child_counts[kind]}]"
             )
-            source_id = extract_attribute(
-                ET.tostring(child, encoding="unicode").split(">", 1)[0], "id"
-            )
+            # 从 attrib 直接取，不要序列化开标签再正则抠：<shape> 的子树可能很大，
+            # 为了一个属性把整棵树转成字符串是这一段最贵的开销。
+            #
+            # 只认无前缀的 id。带命名空间前缀的 id（sml:id）不算 source id——把它们
+            # 纳进来会改变跨页 duplicate_element_id 的判定范围。边界见
+            # SourceIdExtractionTest。
+            source_id = child.attrib.get("id")
             if source_id:
                 elements.append(
                     {
@@ -1392,9 +1383,7 @@ def extract_elements(slide_xml: str) -> list[dict[str, Any]]:
                         "color": text_color,
                         "fillAlpha": extract_fill_alpha(content, element["type"]),
                         "borderAlpha": (
-                            extract_color_alpha(
-                                extract_attribute(extract_tag_attributes(content, "border"), "color")
-                            )
+                            extract_color_alpha(extract_attribute(extract_tag_attributes(content, "border"), "color"))
                             if has_tag(content, "border")
                             else None
                         ),
@@ -1461,13 +1450,15 @@ def detect_table_text_occlusions(elements: list[dict[str, Any]]) -> list[dict[st
         for table in tables:
             if not intersects(table, glyph_bbox):
                 continue
-            issues.append({
-                "level": "error",
-                "code": "table_covers_text",
-                "elements": [element_ref(table), element_ref(text_element)],
-                "message": f"text shape {element_label(text_element)} overlaps table {element_label(table)}",
-                "hint": "Move the text shape off the table grid or into a table cell; a free shape on top of the grid occludes the cell contents.",
-            })
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "table_covers_text",
+                    "elements": [element_ref(table), element_ref(text_element)],
+                    "message": f"text shape {element_label(text_element)} overlaps table {element_label(table)}",
+                    "hint": "Move the text shape off the table grid or into a table cell; a free shape on top of the grid occludes the cell contents.",
+                }
+            )
     return issues
 
 
@@ -1553,13 +1544,15 @@ def detect_chart_text_occlusions(elements: list[dict[str, Any]]) -> list[dict[st
             if hole is not None and bbox_within_circle(glyph_bbox, hole):
                 # A headline sitting inside a ring chart's empty center occludes nothing.
                 continue
-            issues.append({
-                "level": "error",
-                "code": "chart_covers_text",
-                "elements": [element_ref(chart), element_ref(text_element)],
-                "message": f"text shape {element_label(text_element)} overlaps chart {element_label(chart)}",
-                "hint": "Move the text shape off the chart plot area; a free shape on top of the chart occludes its axis labels, legend, and data labels.",
-            })
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "chart_covers_text",
+                    "elements": [element_ref(chart), element_ref(text_element)],
+                    "message": f"text shape {element_label(text_element)} overlaps chart {element_label(chart)}",
+                    "hint": "Move the text shape off the chart plot area; a free shape on top of the chart occludes its axis labels, legend, and data labels.",
+                }
+            )
     return issues
 
 
@@ -1635,15 +1628,17 @@ def detect_auto_fit_growth_collisions(elements: list[dict[str, Any]]) -> list[di
                 continue
             if intersection_area(grown_region, other_bbox) <= CONTAINER_OVERFLOW_MIN_PX:
                 continue
-            issues.append({
-                "level": "error",
-                "code": "bbox_overlap",
-                "elements": [element_ref(element), element_ref(other)],
-                "message": (
-                    f'auto-fit text {element_label(element)} grew {growth:g}px past its box and overlaps {element_label(other)}'
-                ),
-                "hint": "The shape-auto-fit text wrapped to more lines than its box allows; widen the box, shorten the text, or move the element below it down.",
-            })
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "bbox_overlap",
+                    "elements": [element_ref(element), element_ref(other)],
+                    "message": (
+                        f"auto-fit text {element_label(element)} grew {growth:g}px past its box and overlaps {element_label(other)}"
+                    ),
+                    "hint": "The shape-auto-fit text wrapped to more lines than its box allows; widen the box, shorten the text, or move the element below it down.",
+                }
+            )
     return issues
 
 
@@ -1764,26 +1759,24 @@ def detect_text_container_overflow(
         overflow = {
             "left": round(max(owner["x"] - text_element["x"], 0), 3),
             "top": round(max(owner["y"] - text_element["y"], 0), 3),
-            "right": round(
-                max((text_element["x"] + text_element["width"]) - (owner["x"] + owner["width"]), 0), 3
-            ),
-            "bottom": round(
-                max((text_element["y"] + text_element["height"]) - (owner["y"] + owner["height"]), 0), 3
-            ),
+            "right": round(max((text_element["x"] + text_element["width"]) - (owner["x"] + owner["width"]), 0), 3),
+            "bottom": round(max((text_element["y"] + text_element["height"]) - (owner["y"] + owner["height"]), 0), 3),
         }
         if not any(value > 0 for value in overflow.values()):
             continue
-        issues.append({
-            "level": "error",
-            "code": "text_overflows_container",
-            "elements": [element_ref(text_element), element_ref(owner)],
-            "overflow": overflow,
-            "message": (
-                f"text shape {element_label(text_element)} overflows its background container "
-                f"{element_label(owner)}"
-            ),
-            "hint": "Enlarge the container shape, shrink the text, or reduce the text so the glyphs stay inside the box.",
-        })
+        issues.append(
+            {
+                "level": "error",
+                "code": "text_overflows_container",
+                "elements": [element_ref(text_element), element_ref(owner)],
+                "overflow": overflow,
+                "message": (
+                    f"text shape {element_label(text_element)} overflows its background container "
+                    f"{element_label(owner)}"
+                ),
+                "hint": "Enlarge the container shape, shrink the text, or reduce the text so the glyphs stay inside the box.",
+            }
+        )
     return issues
 
 
@@ -1813,6 +1806,8 @@ def detect_shape_text_occlusions(elements: list[dict[str, Any]]) -> list[dict[st
         and not is_ghost_text(element)
         and not is_decorative_text(element)
     ]
+    # 字形框不在这里缓存：estimate_text_visual_bbox 自己在整次 lint_slide 的范围内做了
+    # 记忆化，这一层再存一份是白存的（留一法实测收益 0，在噪声内）。
     for shape in covering_shapes:
         for text_element in text_elements:
             if not is_drawn_in_front_of(shape, text_element):
@@ -1823,23 +1818,25 @@ def detect_shape_text_occlusions(elements: list[dict[str, Any]]) -> list[dict[st
             # The glyph box is already rotated into canvas space, so the covering shape must be too:
             # a shape authored beside the text but rotated 90 sweeps its footprint across the glyphs,
             # and comparing its unrotated bbox would miss that occlusion entirely.
-            shape_bbox = rotate_bbox_around_element_center(
+            shape_box = rotate_bbox_around_element_center(
                 {key: shape[key] for key in ("x", "y", "width", "height")}, shape
             )
-            overlap_area = intersection_area(shape_bbox, glyph)
+            overlap_area = intersection_area(shape_box, glyph)
             if overlap_area < SHAPE_TEXT_OCCLUSION_MIN_AREA:
                 continue
-            issues.append({
-                "level": "error",
-                "code": "bbox_overlap",
-                "elements": [element_ref(shape), element_ref(text_element)],
-                "measurement": {
-                    "intersection_area": round(overlap_area, 3),
-                    "fill_alpha": round(shape["alpha"] * shape["fillAlpha"], 3),
-                },
-                "message": f"shape {element_label(shape)} covers text {element_label(text_element)}",
-                "hint": "Move the filled shape behind the text or move the text outside the shape's visual area.",
-            })
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "bbox_overlap",
+                    "elements": [element_ref(shape), element_ref(text_element)],
+                    "measurement": {
+                        "intersection_area": round(overlap_area, 3),
+                        "fill_alpha": round(shape["alpha"] * shape["fillAlpha"], 3),
+                    },
+                    "message": f"shape {element_label(shape)} covers text {element_label(text_element)}",
+                    "hint": "Move the filled shape behind the text or move the text outside the shape's visual area.",
+                }
+            )
     return issues
 
 
@@ -1862,9 +1859,7 @@ def detect_shape_container_overlaps(
         and is_visually_rendered(element)
         and isinstance(element.get("fillAlpha"), (int, float))
     ]
-    owned_texts: dict[str, list[dict[str, Any]]] = {
-        element_ref(container): [] for container in containers
-    }
+    owned_texts: dict[str, list[dict[str, Any]]] = {element_ref(container): [] for container in containers}
     text_elements = [
         element
         for element in elements
@@ -1896,24 +1891,24 @@ def detect_shape_container_overlaps(
             )
             if front_covers_back_text:
                 continue
-            issues.append({
-                "level": "error",
-                "code": "bbox_overlap",
-                "elements": [element_ref(left), element_ref(right)],
-                "measurement": {
-                    "intersection_area": round(overlap_area, 3),
-                    "left_fill_alpha": round(left["alpha"] * left["fillAlpha"], 3),
-                    "right_fill_alpha": round(right["alpha"] * right["fillAlpha"], 3),
-                },
-                "message": f"shape {element_label(left)} overlaps shape {element_label(right)}",
-                "hint": "Move or resize the card background shapes so adjacent cards no longer overlap.",
-            })
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "bbox_overlap",
+                    "elements": [element_ref(left), element_ref(right)],
+                    "measurement": {
+                        "intersection_area": round(overlap_area, 3),
+                        "left_fill_alpha": round(left["alpha"] * left["fillAlpha"], 3),
+                        "right_fill_alpha": round(right["alpha"] * right["fillAlpha"], 3),
+                    },
+                    "message": f"shape {element_label(left)} overlaps shape {element_label(right)}",
+                    "hint": "Move or resize the card background shapes so adjacent cards no longer overlap.",
+                }
+            )
     return issues
 
 
-def is_full_canvas_background_image(
-    image: dict[str, Any], slide_width: int | float, slide_height: int | float
-) -> bool:
+def is_full_canvas_background_image(image: dict[str, Any], slide_width: int | float, slide_height: int | float) -> bool:
     """True for a full-bleed image drawn behind the content as the slide backdrop.
 
     A background photo/gradient that fills the canvas sits under every text run by design, so text
@@ -1966,16 +1961,18 @@ def detect_image_text_occlusions(
                 continue
             if is_vertical_text(text_element):
                 if intersects(image_element, text_element):
-                    issues.append({
-                        "level": "info",
-                        "code": "image_may_cover_vertical_text",
-                        "elements": [element_ref(image_element), element_ref(text_element)],
-                        "message": (
-                            f"image {element_label(image_element)} may cover vertical text shape "
-                            f"{element_label(text_element)}"
-                        ),
-                        "hint": "Inspect the rendered slide because vertical text layout is not statically modeled.",
-                    })
+                    issues.append(
+                        {
+                            "level": "info",
+                            "code": "image_may_cover_vertical_text",
+                            "elements": [element_ref(image_element), element_ref(text_element)],
+                            "message": (
+                                f"image {element_label(image_element)} may cover vertical text shape "
+                                f"{element_label(text_element)}"
+                            ),
+                            "hint": "Inspect the rendered slide because vertical text layout is not statically modeled.",
+                        }
+                    )
                 continue
             text_visual_bbox = estimate_text_visual_bbox(text_element)
             if text_visual_bbox is not None and intersects(image_element, text_visual_bbox):
@@ -1987,16 +1984,17 @@ def detect_image_text_occlusions(
                     image_element, text_visual_bbox
                 ):
                     continue
-                issues.append({
-                    "level": "error",
-                    "code": "image_covers_text",
-                    "elements": [element_ref(image_element), element_ref(text_element)],
-                    "message": (
-                        f"image {element_label(image_element)} covers text shape "
-                        f"{element_label(text_element)}"
-                    ),
-                    "hint": "Adjust the image and text shape coordinates or dimensions so the image no longer overlaps the text glyph area.",
-                })
+                issues.append(
+                    {
+                        "level": "error",
+                        "code": "image_covers_text",
+                        "elements": [element_ref(image_element), element_ref(text_element)],
+                        "message": (
+                            f"image {element_label(image_element)} covers text shape {element_label(text_element)}"
+                        ),
+                        "hint": "Adjust the image and text shape coordinates or dimensions so the image no longer overlaps the text glyph area.",
+                    }
+                )
     return issues
 
 
@@ -2010,13 +2008,39 @@ def normalize_text_for_overlap(text: str) -> str:
 
 
 SERIF_FONT_PATTERNS = {
-    "song", "songti", "simsun", "ming", "mincho",
-    "georgia", "times", "caslon", "garamond", "sourcehan-serif",
-    "source han serif", "思源宋体", "宋体", "明体",
+    "song",
+    "songti",
+    "simsun",
+    "ming",
+    "mincho",
+    "georgia",
+    "times",
+    "caslon",
+    "garamond",
+    "sourcehan-serif",
+    "source han serif",
+    "思源宋体",
+    "宋体",
+    "明体",
 }
 
-SANS_EXPLICIT_MARKERS = {"sans", "sans-serif", "sans serif", "sourcehan-sans", "source han sans", "思源黑体", "黑体",
-                         "helvetica", "arial", "inter", "roboto", "verdana", "tahoma", "calibri", "open sans"}
+SANS_EXPLICIT_MARKERS = {
+    "sans",
+    "sans-serif",
+    "sans serif",
+    "sourcehan-sans",
+    "source han sans",
+    "思源黑体",
+    "黑体",
+    "helvetica",
+    "arial",
+    "inter",
+    "roboto",
+    "verdana",
+    "tahoma",
+    "calibri",
+    "open sans",
+}
 
 # Geometric/wide sans-serif families advance noticeably wider than the humanist sans baseline: a digit or
 # lowercase glyph in Montserrat/Poppins/Futura is ~0.62-0.66em, not the ~0.51-0.58em the generic sans
@@ -2024,8 +2048,18 @@ SANS_EXPLICIT_MARKERS = {"sans", "sans-serif", "sans serif", "sourcehan-sans", "
 # big-type token can collide with its neighbour while the estimated glyph boxes still show a gap (slides
 # p19: the 60px bold Montserrat "48h" ink reaches x179 and touches "即做即售"/"当日鲜制", but the narrow
 # estimate stops at x165 and the overlap is scored as 0). Give these families their own wider tier.
-WIDE_SANS_FONT_MARKERS = {"montserrat", "poppins", "futura", "century gothic", "gotham", "raleway",
-                          "nunito", "quicksand", "josefin", "comfortaa"}
+WIDE_SANS_FONT_MARKERS = {
+    "montserrat",
+    "poppins",
+    "futura",
+    "century gothic",
+    "gotham",
+    "raleway",
+    "nunito",
+    "quicksand",
+    "josefin",
+    "comfortaa",
+}
 
 
 def classify_font_family(font_family: str | None) -> str:
@@ -2111,8 +2145,7 @@ def estimate_text_width(
     if east_asian_context is None:
         east_asian_context = any(is_cjk_char(character) for character in text)
     base = sum(
-        estimate_character_width(character, font_size, bold, font_family, east_asian_context)
-        for character in text
+        estimate_character_width(character, font_size, bold, font_family, east_asian_context) for character in text
     )
     return base + max(len(text) - 1, 0) * letter_spacing
 
@@ -2251,9 +2284,7 @@ def is_single_line_visual_candidate(
     return False
 
 
-def estimate_text_max_line_width(
-    element: dict[str, Any], font_size: int | float | None = None
-) -> int | float:
+def estimate_text_max_line_width(element: dict[str, Any], font_size: int | float | None = None) -> int | float:
     bold = element.get("bold", False)
     font_family = element.get("fontFamily", "")
     if font_size is None:
@@ -2266,9 +2297,7 @@ def estimate_text_max_line_width(
                     continue
                 para_font_size = resolve_font_size(element, paragraph.get("fontSize"))
                 para_letter_spacing = resolve_letter_spacing(element, paragraph)
-                widths.append(
-                    estimate_text_width(para_text, para_font_size, para_letter_spacing, bold, font_family)
-                )
+                widths.append(estimate_text_width(para_text, para_font_size, para_letter_spacing, bold, font_family))
             return max(widths or [1])
         effective_font_size = resolve_font_size(element)
     else:
@@ -2277,11 +2306,12 @@ def estimate_text_max_line_width(
     # Visual width ignores trailing whitespace: like Skia (which trims line-end
     # spaces), a run's rightmost visible glyph bounds the box. Counting trailing
     # spaces inflates the right edge and manufactures overlap false positives.
-    paragraphs = [
-        stripped for paragraph in re.split(r"\n+", element["text"]) if (stripped := paragraph.rstrip())
-    ]
+    paragraphs = [stripped for paragraph in re.split(r"\n+", element["text"]) if (stripped := paragraph.rstrip())]
     return max(
-        [estimate_text_width(paragraph, effective_font_size, letter_spacing, bold, font_family) for paragraph in paragraphs]
+        [
+            estimate_text_width(paragraph, effective_font_size, letter_spacing, bold, font_family)
+            for paragraph in paragraphs
+        ]
         or [1]
     )
 
@@ -2326,7 +2356,9 @@ def is_similar_text_overlay(
 
 
 def estimate_text_line_count_for_text(
-    element: dict[str, Any], text: str, paragraph: dict[str, Any] | None = None,
+    element: dict[str, Any],
+    text: str,
+    paragraph: dict[str, Any] | None = None,
     font_size: int | float | None = None,
 ) -> int:
     effective_font_size = resolve_font_size(element, font_size)
@@ -2364,7 +2396,8 @@ def resolve_font_size(element: dict[str, Any], font_size: int | float | None = N
 
 
 def estimate_text_line_height(
-    element: dict[str, Any], line_spacing: str | None = None,
+    element: dict[str, Any],
+    line_spacing: str | None = None,
     font_size: int | float | None = None,
 ) -> int | float | None:
     effective_font_size = resolve_font_size(element, font_size)
@@ -2378,7 +2411,9 @@ def estimate_text_line_height(
 
 
 def resolve_conservative_line_spacing(
-    element: dict[str, Any], paragraph_spacing: str | None, content_spacing: str | None,
+    element: dict[str, Any],
+    paragraph_spacing: str | None,
+    content_spacing: str | None,
     font_size: int | float,
 ) -> str | None:
     """Pick the line spacing that renders the taller block when a paragraph override and the
@@ -2402,9 +2437,7 @@ def resolve_conservative_line_spacing(
     return content_spacing if content_height > paragraph_height else paragraph_spacing
 
 
-def estimate_text_block_height(
-    element: dict[str, Any], conservative: bool = False
-) -> dict[str, Any] | None:
+def estimate_text_block_height(element: dict[str, Any], conservative: bool = False) -> dict[str, Any] | None:
     """Estimate the rendered height of a text run using its real line spacing.
 
     Returns ``{"line_count", "estimated_height", "line_heights"}`` or ``None`` when the
@@ -2469,9 +2502,7 @@ def estimate_text_block_height(
     if line_count == 0:
         return None
     first_line_leading = (
-        max(line_heights[0] - (first_paragraph_font_size or default_font_size), 0)
-        if line_heights
-        else 0
+        max(line_heights[0] - (first_paragraph_font_size or default_font_size), 0) if line_heights else 0
     )
     return {
         "line_count": line_count,
@@ -2481,9 +2512,7 @@ def estimate_text_block_height(
     }
 
 
-def short_line_passive_wrap_width(
-    element: dict[str, Any], block: dict[str, Any]
-) -> dict[str, int | float] | None:
+def short_line_passive_wrap_width(element: dict[str, Any], block: dict[str, Any]) -> dict[str, int | float] | None:
     """Return width metrics when a short single-line label overflows vertically only because it is
     too wide to fit on one line and was passively wrapped.
 
@@ -2525,7 +2554,10 @@ def short_line_passive_wrap_width(
     paragraph = paragraphs[0] if len(paragraphs) == 1 else None
     visual_width = max(
         estimate_text_width(
-            raw_line, font_size, resolve_letter_spacing(element, paragraph), element.get("bold", False),
+            raw_line,
+            font_size,
+            resolve_letter_spacing(element, paragraph),
+            element.get("bold", False),
             element.get("fontFamily", ""),
         ),
         1,
@@ -2591,13 +2623,13 @@ def detect_text_may_overflow_shapes(elements: list[dict[str, Any]]) -> list[dict
                     "width_ratio": passive_wrap["width_ratio"],
                     "message": (
                         f"text shape {element_label(element)} may overflow its own content box "
-                        f'(estimated line {visual_width:g}px, available {available_width:g}px); the single '
-                        'line is too wide and wrapped, inflating its height -- widen the shape or reduce the '
-                        'font size to keep it on one line'
+                        f"(estimated line {visual_width:g}px, available {available_width:g}px); the single "
+                        "line is too wide and wrapped, inflating its height -- widen the shape or reduce the "
+                        "font size to keep it on one line"
                     ),
                     "hint": (
                         "The run has no hard line break and is meant to stay on one line, but its box is "
-                        "too narrow so it wrapped. wrap defaults to true, so setting wrap=\"true\" or raising "
+                        'too narrow so it wrapped. wrap defaults to true, so setting wrap="true" or raising '
                         "shape.height will not un-wrap it; widen shape.width or reduce the font size instead. "
                         "This is an estimate based on font size, weight, and glyph widths."
                     ),
@@ -2607,7 +2639,7 @@ def detect_text_may_overflow_shapes(elements: list[dict[str, Any]]) -> list[dict
 
         message = (
             f"text shape {element_label(element)} may overflow its own content box "
-            f'(estimated {estimated_height:g}px, available {available_height:g}px); '
+            f"(estimated {estimated_height:g}px, available {available_height:g}px); "
             'consider setting content wrap="true" autoFit="normal-auto-fit"'
         )
         if is_background:
@@ -2625,8 +2657,8 @@ def detect_text_may_overflow_shapes(elements: list[dict[str, Any]]) -> list[dict
                 "overflow": overflow,
                 "message": message,
                 "hint": (
-                    "Increase shape.height, reduce the text, or set content wrap=\"true\" "
-                    "autoFit=\"normal-auto-fit\" (autoFit shrinks the font to fit; wrap is already "
+                    'Increase shape.height, reduce the text, or set content wrap="true" '
+                    'autoFit="normal-auto-fit" (autoFit shrinks the font to fit; wrap is already '
                     "the default). This is an estimate based on font size, line spacing, and wrapped "
                     "line count."
                 ),
@@ -2635,9 +2667,7 @@ def detect_text_may_overflow_shapes(elements: list[dict[str, Any]]) -> list[dict
     return issues
 
 
-def detect_wrap_false_width_overflow(
-    element: dict[str, Any], elements: list[dict[str, Any]]
-) -> dict[str, Any] | None:
+def detect_wrap_false_width_overflow(element: dict[str, Any], elements: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Report a wrap="false" text run whose widest hard line overruns its content box.
 
     wrap="false" text cannot reflow, so it does not "wrap" -- it is clipped or spills past the box
@@ -2672,7 +2702,7 @@ def detect_wrap_false_width_overflow(
     is_background = is_background_decorative_text(element, elements)
     message = (
         f"text shape {element_label(element)} may overflow its own content box "
-        f'(estimated line {visual_width:g}px, available {available_width:g}px); '
+        f"(estimated line {visual_width:g}px, available {available_width:g}px); "
         'the run has wrap="false" and cannot reflow, so widen the shape or shorten the text'
     )
     if is_background:
@@ -2689,7 +2719,7 @@ def detect_wrap_false_width_overflow(
         "width_ratio": ratio,
         "message": message,
         "hint": (
-            "Increase shape.width or shorten the text. wrap=\"false\" text cannot reflow, so a line "
+            'Increase shape.width or shorten the text. wrap="false" text cannot reflow, so a line '
             "wider than the box is clipped or spills past its edge. This is an estimate based on font "
             "size, weight, and glyph widths."
         ),
@@ -2757,7 +2787,10 @@ def detect_text_may_wrap_shapes(
         font_size = element["fontSize"] if isinstance(element["fontSize"], (int, float)) else 16
         visual_width = max(
             estimate_text_width(
-                raw_line, font_size, resolve_letter_spacing(element), element.get("bold", False),
+                raw_line,
+                font_size,
+                resolve_letter_spacing(element),
+                element.get("bold", False),
                 element.get("fontFamily", ""),
             ),
             1,
@@ -2790,7 +2823,7 @@ def detect_text_may_wrap_shapes(
         ratio = visual_width / available_width
         message = (
             f"text shape {element_label(element)} may wrap inside its own content box "
-            f'(estimated line {visual_width:g}px, available {available_width:g}px); '
+            f"(estimated line {visual_width:g}px, available {available_width:g}px); "
             'widen the shape (pair with content wrap="false" to keep it on one line), or reduce the text'
         )
         issues.append(
@@ -2807,8 +2840,8 @@ def detect_text_may_wrap_shapes(
                 "width_ratio": ratio,
                 "message": message,
                 "hint": (
-                    "Increase shape.width so the whole line fits, then set content wrap=\"false\" if the "
-                    "run must stay on one line -- wrap=\"false\" alone clips or spills text past a box that "
+                    'Increase shape.width so the whole line fits, then set content wrap="false" if the '
+                    'run must stay on one line -- wrap="false" alone clips or spills text past a box that '
                     "is still too narrow. Alternatively shorten the text. This is an estimate based on "
                     "font size, weight, and glyph widths."
                 ),
@@ -2817,9 +2850,7 @@ def detect_text_may_wrap_shapes(
     return issues
 
 
-def is_background_decorative_text(
-    element: dict[str, Any], elements: list[dict[str, Any]]
-) -> bool:
+def is_background_decorative_text(element: dict[str, Any], elements: list[dict[str, Any]]) -> bool:
     if not is_ghost_text(element):
         return False
     for other in elements:
@@ -2849,7 +2880,65 @@ def is_ghost_text(element: dict[str, Any]) -> bool:
     return font_size >= GHOST_TEXT_FAINT_MIN_FONT_SIZE and text_alpha < GHOST_TEXT_FAINT_MAX_ALPHA
 
 
+_MEMO_MISS = object()  # 已登记、还没算
+_MEMO_ABSENT = object()  # 没登记（临时对象）——不能用 None 区分，合法结果本身就可能是 None
+
+# 按线程存，不能用模块级全局。用全局的话两个线程同时 lint 会互相覆盖：A 进入后 B 进入，
+# A 退出时还原成 A 进入时的值（把 B 的 memo 丢掉），B 退出时又把 A 的 memo 还原成活的
+# ——此后新对象一旦复用到 A 里登记过的 id，就会命中别人的几何，报告错得没有痕迹。
+# 线程本地之后各线程互不可见，交错顺序再怎么变都不会串。
+# 进程池那条路本来就天然隔离：fork 出的 worker 各有一份模块状态。
+_MEMO_STATE = threading.local()
+
+
+def _memo_slot() -> dict[int, Any] | None:
+    return getattr(_MEMO_STATE, "memo", None)
+
+
+@contextlib.contextmanager
+def text_geometry_memo(elements: list[dict[str, Any]]):
+    """让一次 lint_slide 里同一个元素的字形框只算一次。
+
+    字形框只跟单个元素有关，但十几个检测器各自都要用，同一个元素会被反复重算；这段
+    计算是 lint_slide 里最大的开销来源。
+
+    两条约束决定了这个 memo 的形状：
+
+    * 键是 id(element)，所以被缓存的对象必须在整个作用域内活着——否则对象回收后 id
+      会被复用，缓存会把 A 的几何返回给 B。这里把 elements 引用住，并且**只缓存预先
+      登记过的那些元素**：检测器内部临时构造的 proxy 元素（如 detect 里拿 shape 拼出
+      来的文字代理）不在名单里，一律现算，不进缓存。
+    * 作用域严格等于一次调用。留到下一次会读到上一页的值，而且元素在解析阶段还会被
+      改写（如 element["fontSize"] = max(...)），跨阶段的缓存本身就不成立。
+    """
+    previous_memo = getattr(_MEMO_STATE, "memo", None)
+    previous_alive = getattr(_MEMO_STATE, "alive", None)
+    # alive 把 elements 引用住：键是 id()，对象必须在作用域内活着，否则 id 会被复用
+    _MEMO_STATE.alive = elements
+    _MEMO_STATE.memo = {id(element): _MEMO_MISS for element in elements}
+    try:
+        yield
+    finally:
+        _MEMO_STATE.memo = previous_memo
+        _MEMO_STATE.alive = previous_alive
+
+
 def estimate_text_visual_bbox(element: dict[str, Any]) -> dict[str, int | float] | None:
+    memo = _memo_slot()
+    if memo is None:
+        return compute_text_visual_bbox(element)
+    key = id(element)
+    cached = memo.get(key, _MEMO_ABSENT)
+    if cached is _MEMO_ABSENT:  # 不在登记名单里：临时对象，现算且不缓存
+        return compute_text_visual_bbox(element)
+    if cached is not _MEMO_MISS:
+        return cached  # 可能是 None，那也是算过的结果
+    result = compute_text_visual_bbox(element)
+    memo[key] = result
+    return result
+
+
+def compute_text_visual_bbox(element: dict[str, Any]) -> dict[str, int | float] | None:
     if not is_text_element(element) or not has_text_content(element) or is_decorative_text(element):
         return None
 
@@ -2903,14 +2992,10 @@ def estimate_text_visual_bbox(element: dict[str, Any]) -> dict[str, int | float]
         y += (content_height - visual_height) / 2
     elif element.get("verticalAlign") == "bottom":
         y += content_height - visual_height
-    return rotate_bbox_around_element_center(
-        {"x": x, "y": y, "width": visual_width, "height": visual_height}, element
-    )
+    return rotate_bbox_around_element_center({"x": x, "y": y, "width": visual_width, "height": visual_height}, element)
 
 
-def rotate_bbox_around_element_center(
-    bbox: dict[str, int | float], element: dict[str, Any]
-) -> dict[str, int | float]:
+def rotate_bbox_around_element_center(bbox: dict[str, int | float], element: dict[str, Any]) -> dict[str, int | float]:
     """Return the axis-aligned bounds of bbox after the element's rotation is applied.
 
     Rotation spins the whole shape about its own centre, so a glyph box computed in the shape's local
@@ -3067,17 +3152,13 @@ def text_geometry(element: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
-def _text_visual_bbox(
-    element: dict[str, Any], geometry: dict[str, Any] | None
-) -> dict[str, int | float] | None:
+def _text_visual_bbox(element: dict[str, Any], geometry: dict[str, Any] | None) -> dict[str, int | float] | None:
     if geometry is not None:
         return geometry["visual_bbox"]
     return estimate_text_visual_bbox(element)
 
 
-def _text_max_line_width(
-    element: dict[str, Any], geometry: dict[str, Any] | None
-) -> int | float:
+def _text_max_line_width(element: dict[str, Any], geometry: dict[str, Any] | None) -> int | float:
     if geometry is not None:
         return geometry["max_line_width"]
     return estimate_text_max_line_width(element)
@@ -3154,9 +3235,7 @@ def interacting_pair_indices(
             degenerate.append(index)
             continue
         box = pair_probe_bbox(element, geometry)
-        indexed.append(
-            (box["x"], box["x"] + box["width"], box["y"], box["y"] + box["height"], index)
-        )
+        indexed.append((box["x"], box["x"] + box["width"], box["y"], box["y"] + box["height"], index))
 
     pairs: set[tuple[int, int]] = set()
     open_boxes: list[tuple[int | float, int | float, int | float, int | float, int]] = []
@@ -3191,9 +3270,7 @@ def should_flag_horizontal_text_overflow(
         return False
     if is_ghost_text(left) or is_ghost_text(right):
         return False
-    if is_template_text_stack(left, right) or is_similar_text_overlay(
-        left, right, left_geometry, right_geometry
-    ):
+    if is_template_text_stack(left, right) or is_similar_text_overlay(left, right, left_geometry, right_geometry):
         return False
 
     source, target = sorted([left, right], key=lambda element: element["x"])
@@ -3239,7 +3316,12 @@ def horizontal_text_overflow_measurement(
     source_geometry = left_geometry if source is left else right_geometry
     padding_left = source.get("paddingLeft", 0)
     visual_width = _text_max_line_width(source, source_geometry)
-    source_visual_bbox = {"x": source["x"] + padding_left, "y": source["y"], "width": visual_width, "height": source["height"]}
+    source_visual_bbox = {
+        "x": source["x"] + padding_left,
+        "y": source["y"],
+        "width": visual_width,
+        "height": source["height"],
+    }
     width = intersection_width(source_visual_bbox, target)
     height = intersection_height(source_visual_bbox, target)
     return {
@@ -3291,8 +3373,7 @@ def build_whiteboard_external_overlap_issue(
         "code": "whiteboard_external_overlap",
         "elements": [element_ref(whiteboard), *element_refs],
         "message": (
-            f"whiteboard {element_label(whiteboard)} overlaps {len(element_refs)} "
-            "sibling elements across its boundary"
+            f"whiteboard {element_label(whiteboard)} overlaps {len(element_refs)} sibling elements across its boundary"
         ),
         "hint": (
             "Treat this as a static whiteboard container-bbox risk, not final visual proof. "
@@ -3412,9 +3493,7 @@ def element_canvas_bbox(element: dict[str, Any]) -> dict[str, int | float]:
     }
 
 
-def _union_text_glyph_extent(
-    element: dict[str, Any], bbox: dict[str, int | float]
-) -> dict[str, int | float]:
+def _union_text_glyph_extent(element: dict[str, Any], bbox: dict[str, int | float]) -> dict[str, int | float]:
     """Grow an axis-aligned text element's canvas box to cover glyphs painted past its authored box.
 
     A wrap="false" run keeps its full unwrapped line width even when that exceeds the authored box, and
@@ -3451,29 +3530,27 @@ def detect_elements_out_of_canvas(
             "bottom": max(bbox["y"] + bbox["height"] - slide_height, 0),
         }
         overflow_details = [
-            f"{side} by {amount:g}px"
-            for side, amount in overflow.items()
-            if amount > CANVAS_OVERFLOW_TOLERANCE
+            f"{side} by {amount:g}px" for side, amount in overflow.items() if amount > CANVAS_OVERFLOW_TOLERANCE
         ]
         if not overflow_details:
             continue
         issues.append(
             {
                 "level": "error",
-                "code": f'{element["kind"]}_out_of_canvas',
+                "code": f"{element['kind']}_out_of_canvas",
                 "elements": [element_ref(element)],
                 "canvas": {"width": slide_width, "height": slide_height},
                 "bbox": bbox,
                 "overflow": overflow,
                 "message": (
-                    f'{element["kind"]} {element_label(element)} exceeds the {slide_width:g}x{slide_height:g} canvas '
-                    f'({", ".join(overflow_details)})'
+                    f"{element['kind']} {element_label(element)} exceeds the {slide_width:g}x{slide_height:g} canvas "
+                    f"({', '.join(overflow_details)})"
                 ),
                 "hint": (
                     "Move the table inside the canvas, reduce table.width/table.height, or split the table across "
                     "slides."
                     if element["kind"] == "table"
-                    else f'Move the {element["kind"]} inside the canvas or reduce its width/height.'
+                    else f"Move the {element['kind']} inside the canvas or reduce its width/height."
                 ),
             }
         )
@@ -3540,7 +3617,7 @@ def detect_table_layout_size_mismatches(elements: list[dict[str, Any]]) -> list[
                     "resolved_size": actual_size,
                     "resolved_sizes": layout["final_sizes"],
                     "message": (
-                        f'table {element_label(table)} declares {dimension}={format_size(target_size)}px, but its '
+                        f"table {element_label(table)} declares {dimension}={format_size(target_size)}px, but its "
                         f"{child_description} resolve to {format_size(actual_size)}px"
                     ),
                     "hint": (
@@ -3552,9 +3629,7 @@ def detect_table_layout_size_mismatches(elements: list[dict[str, Any]]) -> list[
     return issues
 
 
-def segment_intersects_rect(
-    x1: float, y1: float, x2: float, y2: float, rect: dict[str, int | float]
-) -> bool:
+def segment_intersects_rect(x1: float, y1: float, x2: float, y2: float, rect: dict[str, int | float]) -> bool:
     """True when segment (x1,y1)-(x2,y2) enters the axis-aligned rect (Liang-Barsky clip)."""
     left = rect["x"]
     top = rect["y"]
@@ -3643,9 +3718,7 @@ def line_crosses_text(line: dict[str, Any], text_element: dict[str, Any]) -> boo
     target = erode_rect(glyph_bbox, line_text_graze_margin(text_element))
     if target is None:
         return False
-    return segment_intersects_rect(
-        line["startX"], line["startY"], line["endX"], line["endY"], target
-    )
+    return segment_intersects_rect(line["startX"], line["startY"], line["endX"], line["endY"], target)
 
 
 def detect_line_text_crossings(
@@ -3666,9 +3739,7 @@ def detect_line_text_crossings(
                     "level": "error",
                     "code": "bbox_overlap",
                     "elements": [element_ref(line), element_ref(text_element)],
-                    "message": (
-                        f"line {element_label(line)} crosses text {element_label(text_element)}"
-                    ),
+                    "message": (f"line {element_label(line)} crosses text {element_label(text_element)}"),
                     "hint": "Move the line off the text glyphs so it no longer cuts through the letterforms.",
                 }
             )
@@ -3705,9 +3776,7 @@ def is_line_crossing_shape_candidate(shape: dict[str, Any]) -> bool:
     )
 
 
-def line_shape_interior_chord(
-    line: dict[str, Any], shape: dict[str, Any]
-) -> tuple[int | float, int | float] | None:
+def line_shape_interior_chord(line: dict[str, Any], shape: dict[str, Any]) -> tuple[int | float, int | float] | None:
     """Length the line segment travels inside the shape body, and that body's spanned extent.
 
     The segment is transformed into the shape's local (unrotated) frame centred on the shape, then
@@ -3751,7 +3820,12 @@ def line_shape_interior_chord(
         t_exit = (-quad_b + root) / (2 * quad_a)
     else:
         t_enter, t_exit = 0.0, 1.0
-        for delta, distance in ((-dx, ax + half_width), (dx, half_width - ax), (-dy, ay + half_height), (dy, half_height - ay)):
+        for delta, distance in (
+            (-dx, ax + half_width),
+            (dx, half_width - ax),
+            (-dy, ay + half_height),
+            (dy, half_height - ay),
+        ):
             if delta == 0:
                 if distance < 0:
                     return None
@@ -3859,9 +3933,7 @@ def detect_line_shape_crossings(
                     "level": "error",
                     "code": "bbox_overlap",
                     "elements": [element_ref(line), element_ref(shape)],
-                    "message": (
-                        f"line {element_label(line)} crosses shape {element_label(shape)}"
-                    ),
+                    "message": (f"line {element_label(line)} crosses shape {element_label(shape)}"),
                     "hint": "Move or shorten the line so it no longer cuts through the shape body.",
                 }
             )
@@ -3871,7 +3943,19 @@ def detect_line_shape_crossings(
 def lint_slide(
     slide_xml: str, slide_number: int, slide_width: int | float = 960, slide_height: int | float = 540
 ) -> dict[str, Any]:
+    """本页的几何检查。字形框在这一层做记忆化，见 text_geometry_memo。"""
     elements = extract_elements(slide_xml)
+    with text_geometry_memo(elements):
+        return lint_slide_elements(elements, slide_xml, slide_number, slide_width, slide_height)
+
+
+def lint_slide_elements(
+    elements: list[dict[str, Any]],
+    slide_xml: str,
+    slide_number: int,
+    slide_width: int | float,
+    slide_height: int | float,
+) -> dict[str, Any]:
     attach_source_xml_paths(elements, build_source_xml_paths(slide_xml, slide_number))
     height_overflow_issues = detect_text_may_overflow_shapes(elements)
     # An error-level height overflow suppresses the width-wrap error for the same element (one run,
@@ -3907,17 +3991,13 @@ def lint_slide(
     for index, other_index in interacting_pair_indices(elements, geometries):
         left, right = elements[index], elements[other_index]
         left_geometry, right_geometry = geometries[index], geometries[other_index]
-        horizontal_overflow = should_flag_horizontal_text_overflow(
-            left, right, left_geometry, right_geometry
-        )
+        horizontal_overflow = should_flag_horizontal_text_overflow(left, right, left_geometry, right_geometry)
         # should_flag_overlap already returns False for non-text pairs and for glyph boxes that do
         # not overlap, so the earlier raw-bbox intersects() guard was redundant for axis-aligned
         # text (the glyph box is inside the element box) and wrong for rotated text (rotation
         # expands the glyph box past a raw box that no longer intersects -- slides p6). Rely on
         # should_flag_overlap's rotation-aware glyph geometry as the sole authority.
-        if not horizontal_overflow and not should_flag_overlap(
-            left, right, left_geometry, right_geometry
-        ):
+        if not horizontal_overflow and not should_flag_overlap(left, right, left_geometry, right_geometry):
             continue
         issues.append(
             {
@@ -3927,11 +4007,7 @@ def lint_slide(
                 "message": f"{element_label(left)} overlaps {element_label(right)}",
                 "hint": "Move or resize the elements so their visual bounds no longer intersect.",
                 **(
-                    {
-                        "measurement": horizontal_text_overflow_measurement(
-                            left, right, left_geometry, right_geometry
-                        )
-                    }
+                    {"measurement": horizontal_text_overflow_measurement(left, right, left_geometry, right_geometry)}
                     if horizontal_overflow
                     else {}
                 ),
@@ -3965,11 +4041,7 @@ def bind_embed_svg_issue_elements(
         if embed_element is None:
             issue_embed_id = next(iter(issue_copy.get("elements", [])), None)
             embed_element = next(
-                (
-                    element
-                    for element in embed_elements
-                    if source_element_id(element) == issue_embed_id
-                ),
+                (element for element in embed_elements if source_element_id(element) == issue_embed_id),
                 None,
             )
         if embed_element is not None:
@@ -4010,15 +4082,11 @@ def dedupe_bbox_overlap_issues(issues: list[dict[str, Any]]) -> list[dict[str, A
             seen.add(key)
         elif issue.get("code") == "text_may_overflow_shape" and len(issue["elements"]) == 1:
             element_locator = issue["elements"][0]
-            if (
-                element_locator in kept_overflow
-                or issue["level"] != best_overflow_level[element_locator]
-            ):
+            if element_locator in kept_overflow or issue["level"] != best_overflow_level[element_locator]:
                 continue
             kept_overflow.add(element_locator)
         deduped.append(issue)
     return deduped
-
 
 
 MIN_CONTAINER_WIDTH = 140
@@ -4069,20 +4137,23 @@ def rectangle_union_area(rectangles: list[dict[str, int | float]]) -> int | floa
 
 
 def has_similar_short_card_peer(element: dict[str, Any], elements: list[dict[str, Any]]) -> bool:
-    return sum(
-        other is not element
-        and is_visually_rendered(other)
-        and other["kind"] == "shape"
-        and other["type"] == "rect"
-        and other["width"] >= MIN_CONTAINER_WIDTH
-        and other["height"] >= MIN_SHORT_CARD_HEIGHT
-        and element_area(other) >= MIN_CONTAINER_AREA
-        and abs(other["width"] - element["width"]) / max(other["width"], element["width"])
-        <= SHORT_CARD_SIZE_TOLERANCE_RATIO
-        and abs(other["height"] - element["height"]) / max(other["height"], element["height"])
-        <= SHORT_CARD_SIZE_TOLERANCE_RATIO
-        for other in elements
-    ) >= MIN_SIMILAR_SHORT_CARD_COUNT
+    return (
+        sum(
+            other is not element
+            and is_visually_rendered(other)
+            and other["kind"] == "shape"
+            and other["type"] == "rect"
+            and other["width"] >= MIN_CONTAINER_WIDTH
+            and other["height"] >= MIN_SHORT_CARD_HEIGHT
+            and element_area(other) >= MIN_CONTAINER_AREA
+            and abs(other["width"] - element["width"]) / max(other["width"], element["width"])
+            <= SHORT_CARD_SIZE_TOLERANCE_RATIO
+            and abs(other["height"] - element["height"]) / max(other["height"], element["height"])
+            <= SHORT_CARD_SIZE_TOLERANCE_RATIO
+            for other in elements
+        )
+        >= MIN_SIMILAR_SHORT_CARD_COUNT
+    )
 
 
 def is_layout_container(
@@ -4112,9 +4183,7 @@ def is_layout_container(
     )
 
 
-def is_edge_spanning_layout_panel(
-    element: dict[str, Any], slide_width: int | float, slide_height: int | float
-) -> bool:
+def is_edge_spanning_layout_panel(element: dict[str, Any], slide_width: int | float, slide_height: int | float) -> bool:
     touches_horizontal_edge = element["x"] <= 2 or element["x"] + element["width"] >= slide_width - 2
     touches_vertical_edge = element["y"] <= 2 or element["y"] + element["height"] >= slide_height - 2
     return (touches_horizontal_edge and element["height"] >= slide_height * LAYOUT_PANEL_SPAN_RATIO) or (
@@ -4151,9 +4220,7 @@ def extract_density_elements(slide_xml: str, slide_number: int = 1) -> list[dict
     source_paths = build_source_xml_paths(slide_xml, slide_number)
     attach_source_xml_paths(elements, source_paths)
     shape_elements_by_index = {
-        element["_source_kind_index"]: element
-        for element in elements
-        if element["kind"] == "shape"
+        element["_source_kind_index"]: element for element in elements if element["kind"] == "shape"
     }
     root = ET.fromstring(slide_xml)
     shape_index = 0
@@ -4177,9 +4244,9 @@ def extract_density_elements(slide_xml: str, slide_number: int = 1) -> list[dict
             if content_node is not None
             else []
         )
-        raw_font_size = (
-            content_node.attrib.get("fontSize") if content_node is not None else None
-        ) or node.attrib.get("fontSize")
+        raw_font_size = (content_node.attrib.get("fontSize") if content_node is not None else None) or node.attrib.get(
+            "fontSize"
+        )
         try:
             base_font_size = float(raw_font_size or 16)
         except ValueError:
@@ -4206,9 +4273,7 @@ def extract_density_elements(slide_xml: str, slide_number: int = 1) -> list[dict
                 continue
         if declared_font_sizes:
             element["fontSize"] = max(declared_font_sizes)
-    for source_kind_index, match in enumerate(
-        re.finditer(r"<icon\b([^>]*)>", slide_xml), start=1
-    ):
+    for source_kind_index, match in enumerate(re.finditer(r"<icon\b([^>]*)>", slide_xml), start=1):
         attrs = match.group(1)
         source_id = extract_attribute(attrs, "id") or None
         x = extract_numeric_attribute(attrs, "topLeftX")
@@ -4234,9 +4299,7 @@ def extract_density_elements(slide_xml: str, slide_number: int = 1) -> list[dict
                 "_source_kind_index": source_kind_index,
             }
         )
-    for source_kind_index, match in enumerate(
-        re.finditer(r"<polyline\b([^>]*)>", slide_xml), start=1
-    ):
+    for source_kind_index, match in enumerate(re.finditer(r"<polyline\b([^>]*)>", slide_xml), start=1):
         attrs = match.group(1)
         x = extract_numeric_attribute(attrs, "topLeftX")
         y = extract_numeric_attribute(attrs, "topLeftY")
@@ -4316,9 +4379,7 @@ def line_stroke_bbox(element: dict[str, Any]) -> dict[str, Any]:
     return {**element, "width": max(element["width"], 1), "height": max(element["height"], 1)}
 
 
-def is_slide_content_present(
-    element: dict[str, Any], slide_bbox: dict[str, int | float]
-) -> bool:
+def is_slide_content_present(element: dict[str, Any], slide_bbox: dict[str, int | float]) -> bool:
     # Deliberately permissive, unlike slide_content_visual_bbox: blank_slide is asking "is
     # *anything* rendered here", not the richer "counts toward meaningful content density" bar
     # that sparse_slide_content/sparse_container_content apply. A plain shape with no text (a
@@ -4368,8 +4429,7 @@ def detect_sparse_container_content(
         children = [
             element
             for element in elements
-            if element is not container
-            and contains(container, element, tolerance=DENSITY_CONTAINMENT_TOLERANCE)
+            if element is not container and contains(container, element, tolerance=DENSITY_CONTAINMENT_TOLERANCE)
         ]
         if any(is_large_visual_child(child, container) for child in children):
             continue
@@ -4421,9 +4481,7 @@ def detect_sparse_slide_content(
 ) -> list[dict[str, Any]]:
     slide_bbox = {"x": 0, "y": 0, "width": slide_width, "height": slide_height}
     content = [
-        (element, bbox)
-        for element in elements
-        if (bbox := slide_content_visual_bbox(element, slide_bbox)) is not None
+        (element, bbox) for element in elements if (bbox := slide_content_visual_bbox(element, slide_bbox)) is not None
     ]
     if len(content) < MIN_SLIDE_CONTENT_ELEMENT_COUNT:
         return []
@@ -4463,9 +4521,7 @@ def detect_blank_slide(
     slide_height: int | float,
 ) -> list[dict[str, Any]]:
     slide_bbox = {"x": 0, "y": 0, "width": slide_width, "height": slide_height}
-    visible_elements = [
-        element for element in elements if is_slide_content_present(element, slide_bbox)
-    ]
+    visible_elements = [element for element in elements if is_slide_content_present(element, slide_bbox)]
     if visible_elements:
         return []
     return [
@@ -4515,10 +4571,7 @@ def detect_duplicate_element_ids(
         }
         for source_id, duplicates in elements_by_source_id.items()
         if len(duplicates) > 1
-        and (
-            not cross_slide_only
-            or len({element.get("_slide_number") for element in duplicates}) > 1
-        )
+        and (not cross_slide_only or len({element.get("_slide_number") for element in duplicates}) > 1)
     ]
 
 
@@ -4603,18 +4656,16 @@ def issue_rule(issue: dict[str, Any]) -> dict[str, Any]:
             "name": "element_stays_within_slide_canvas",
             "comparison": "max(left, top, right, bottom overflow) == 0",
         }
-    return {
-        "id": issue["code"],
-        **RULE_METADATA.get(
-            issue["code"],
-            {"name": issue["code"], "comparison": "violation_count == 0"},
-        ),
-    }
+    metadata = RULE_METADATA.get(
+        issue["code"],
+        {"name": issue["code"], "comparison": "violation_count == 0"},
+    )
+    if issue["code"] == "text_may_overflow_shape" and issue.get("overflow_axis") == "width":
+        metadata = {**metadata, "comparison": "estimated_width <= available_width"}
+    return {"id": issue["code"], **metadata}
 
 
-def issue_measurement(
-    issue: dict[str, Any], elements_by_ref: dict[str, dict[str, Any]]
-) -> dict[str, Any]:
+def issue_measurement(issue: dict[str, Any], elements_by_ref: dict[str, dict[str, Any]]) -> dict[str, Any]:
     if issue.get("measurement") is not None:
         return issue["measurement"]
     if issue["code"] == "bbox_overlap" and len(issue.get("elements", [])) == 2:
@@ -4674,9 +4725,7 @@ def related_object(element: dict[str, Any]) -> dict[str, Any]:
 
 def extract_line_elements(slide_xml: str) -> list[dict[str, Any]]:
     elements: list[dict[str, Any]] = []
-    for source_kind_index, match in enumerate(
-        re.finditer(r"<line\b([^>]*?)(/?)>", slide_xml), start=1
-    ):
+    for source_kind_index, match in enumerate(re.finditer(r"<line\b([^>]*?)(/?)>", slide_xml), start=1):
         attrs = match.group(1)
         source_id = extract_attribute(attrs, "id") or None
         start_x = extract_numeric_attribute(attrs, "startX")
@@ -4725,22 +4774,14 @@ def normalize_issue(
 ) -> dict[str, Any]:
     normalized = dict(issue)
     element_refs = list(dict.fromkeys(normalized.get("elements", [])))
-    resolved_elements = [
-        elements_by_ref[element_ref]
-        for element_ref in element_refs
-        if element_ref in elements_by_ref
-    ]
+    resolved_elements = [elements_by_ref[element_ref] for element_ref in element_refs if element_ref in elements_by_ref]
     element_locators = [
         source_element_id(elements_by_ref[element_ref]) or element_ref
         if element_ref in elements_by_ref
         else element_ref
         for element_ref in element_refs
     ]
-    element_ids = [
-        source_id
-        for element in resolved_elements
-        if (source_id := source_element_id(element)) is not None
-    ]
+    element_ids = [source_id for element in resolved_elements if (source_id := source_element_id(element)) is not None]
     normalized["schema_version"] = "2.0"
     normalized["elements"] = element_locators
     normalized["element_ids"] = element_ids
@@ -4755,9 +4796,7 @@ def normalize_issue(
         ratio = normalized["measurement"]["content_coverage_ratio"]
         threshold = normalized["rule"]["threshold"]
         container_locator = (
-            normalized["target"].get("container_id")
-            or normalized["target"].get("container_xml_path")
-            or "unknown"
+            normalized["target"].get("container_id") or normalized["target"].get("container_xml_path") or "unknown"
         )
         normalized.setdefault(
             "message",
@@ -4780,9 +4819,7 @@ def normalize_issue(
         )
     else:
         normalized.setdefault("message", normalized["code"].replace("_", " "))
-    normalized.setdefault(
-        "hint", "Inspect the reported elements and adjust them to satisfy the rule comparison."
-    )
+    normalized.setdefault("hint", "Inspect the reported elements and adjust them to satisfy the rule comparison.")
     if any(related.get("xml_path") for related in normalized["related_objects"]):
         hint = normalized["hint"]
         if not hint.startswith(XML_PATH_HINT_PREFIX):
@@ -4876,11 +4913,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         normalize_issue(issue, None, {})
         for issue in [
             *namespace_issues,
-            *[
-                issue
-                for issue in sxsd_issues
-                if not is_slide_scoped_sxsd_issue(issue, root_name)
-            ],
+            *[issue for issue in sxsd_issues if not is_slide_scoped_sxsd_issue(issue, root_name)],
             *iconpark_issues,
             *chart_dimension_issues,
         ]
@@ -4896,32 +4929,30 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
     presentation = parse_presentation(root)
     slide_roots = presentation["slide_roots"]
     contrast_by_slide: dict[int, list[dict[str, Any]]] = {}
-    contrast_xml_path = Path(source_path) if source_path else None
-    if contrast_xml_path and contrast_xml_path.is_file():
-        contrast_records, contrast_slides = color_contrast_check.parse_xml_root(root)
-        contrast_results, _ = color_contrast_check.check(
-            contrast_records,
-            contrast_slides,
-            "",
-            color_contrast_check.DEFAULT_CONTRAST_GATE,
+    contrast_records, contrast_slides = color_contrast_check.parse_xml_root(root)
+    contrast_results, _ = color_contrast_check.check(
+        contrast_records,
+        contrast_slides,
+        "",
+        color_contrast_check.DEFAULT_CONTRAST_GATE,
+    )
+    for contrast_issue in contrast_results:
+        if contrast_issue["verdict"] != "FAIL":
+            continue
+        contrast_by_slide.setdefault(contrast_issue["slide"], []).append(
+            {
+                "level": color_contrast_check.lint_level(contrast_issue),
+                "code": "text_color_contrast",
+                "elements": [contrast_issue.get("object_id") or contrast_issue["object_path"]],
+                "target": {
+                    "slide_number": contrast_issue["slide"],
+                    "xml_path": contrast_issue["object_path"],
+                },
+                "message": color_contrast_check.issue_message(contrast_issue),
+                "hint": "Adjust the text or its XML-resolvable background, then rerun xml_lint.",
+                "schema_version": "2.0",
+            }
         )
-        for contrast_issue in contrast_results:
-            if contrast_issue["verdict"] != "FAIL":
-                continue
-            contrast_by_slide.setdefault(contrast_issue["slide"], []).append(
-                {
-                    "level": color_contrast_check.lint_level(contrast_issue),
-                    "code": "text_color_contrast",
-                    "elements": [contrast_issue.get("object_id") or contrast_issue["object_path"]],
-                    "target": {
-                        "slide_number": contrast_issue["slide"],
-                        "xml_path": contrast_issue["object_path"],
-                    },
-                    "message": color_contrast_check.issue_message(contrast_issue),
-                    "hint": "Adjust the text or its XML-resolvable background, then rerun xml_lint.",
-                    "schema_version": "2.0",
-                }
-            )
     slides: list[dict[str, Any]] = []
     presentation_id_elements: list[dict[str, Any]] = []
     presentation_elements_by_ref: dict[str, dict[str, Any]] = {}
@@ -4929,16 +4960,11 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         slide_number = index + 1
         slide_root = slide_roots[index]
         slide_sxsd_issues = [
-            normalize_issue(issue, slide_number, {})
-            for issue in validate_sxsd_document(slide_xml, slide_root)
+            normalize_issue(issue, slide_number, {}) for issue in validate_sxsd_document(slide_xml, slide_root)
         ]
-        slide_sxsd_errors = [
-            issue for issue in slide_sxsd_issues if issue["level"] == "error"
-        ]
+        slide_sxsd_errors = [issue for issue in slide_sxsd_issues if issue["level"] == "error"]
         if slide_sxsd_errors:
-            slide_sxsd_warnings = [
-                issue for issue in slide_sxsd_issues if issue["level"] == "warning"
-            ]
+            slide_sxsd_warnings = [issue for issue in slide_sxsd_issues if issue["level"] == "warning"]
             slides.append(
                 {
                     "slide_number": slide_number,
@@ -4958,9 +4984,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
             presentation["width"],
             presentation["height"],
         )
-        embed_elements = [
-            element for element in geometry["elements"] if element["kind"] == "embed"
-        ]
+        embed_elements = [element for element in geometry["elements"] if element["kind"] == "embed"]
         embed_svg_issues = bind_embed_svg_issue_elements(
             [
                 *embed_svg_validator.validate_embedded_svgs(slide_root),
@@ -4971,26 +4995,17 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         density_elements = extract_density_elements(slide_xml, slide_number)
         id_elements = extract_source_id_elements(slide_xml, slide_number)
         presentation_id_elements.extend(id_elements)
-        extra_elements = [
-            element for element in density_elements if element["kind"] in {"icon", "polyline", "line"}
-        ]
-        elements_by_ref = {
-            element_ref(element): element for element in density_elements
-        }
+        extra_elements = [element for element in density_elements if element["kind"] in {"icon", "polyline", "line"}]
+        elements_by_ref = {element_ref(element): element for element in density_elements}
         visible_element_count = len(elements_by_ref)
         for element in id_elements:
             elements_by_ref.setdefault(element_ref(element), element)
         # geometry["elements"] are the exact objects should_flag_overlap/detect_elements_out_of_canvas
         # selected inside lint_slide; prefer them so measurement/related_objects stay consistent
         # with whatever actually triggered the issue, instead of density_elements' separate re-parse.
-        elements_by_ref.update(
-            {element_ref(element): element for element in geometry["elements"]}
-        )
+        elements_by_ref.update({element_ref(element): element for element in geometry["elements"]})
         presentation_elements_by_ref.update(
-            {
-                element_ref(element): elements_by_ref[element_ref(element)]
-                for element in id_elements
-            }
+            {element_ref(element): elements_by_ref[element_ref(element)] for element in id_elements}
         )
         extra_overflow_issues = detect_elements_out_of_canvas(
             extra_elements,
@@ -5024,10 +5039,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         issues = [
             *slide_sxsd_issues,
             *contrast_by_slide.get(slide_number, []),
-            *[
-                normalize_issue(issue, slide_number, elements_by_ref)
-                for issue in raw_issues
-            ],
+            *[normalize_issue(issue, slide_number, elements_by_ref) for issue in raw_issues],
         ]
         errors = [issue for issue in issues if issue["level"] == "error"]
         warnings = [issue for issue in issues if issue["level"] == "warning"]
@@ -5046,9 +5058,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
 
     top_level_issues.extend(
         normalize_issue(issue, None, presentation_elements_by_ref)
-        for issue in detect_duplicate_element_ids(
-            presentation_id_elements, cross_slide_only=True
-        )
+        for issue in detect_duplicate_element_ids(presentation_id_elements, cross_slide_only=True)
     )
 
     return build_result(

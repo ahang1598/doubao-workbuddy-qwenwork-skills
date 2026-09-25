@@ -56,11 +56,15 @@
 
 ## 稳定性
 
-- tooltip 必须包含 `triggerOn:'click'`、`renderMode:'richText'`、`confine:true`。
-- 默认 tooltip 足够时不写 formatter。必要 callback 使用 ES5 function，访问参数前判空。
-- 禁止箭头函数、`let`、`const`、模板字符串、可选链、解构和依赖 DOM 的 callback。
+- 图表与正文从同一份已核对的数据生成；标题、series、轴、tooltip和label的指标、单位、对象与期间须对应实际字段，不能把一个指标的值标成另一个指标。
+- 一维类目序列按 `axis.data[i]` 对应 `series.data[i]`，缺值用 `null` 占位，不删项造成错位；显式坐标、时间点或 `encode` 数据按维度映射检查，不强求点数等长。仅为减少刻度文字时不裁剪轴数据；真正筛选或聚合时同步处理轴和各序列。
+- 日期事件和区间数据须按对应系列与维度表达；普通 `bar` 的 `[开始,结束]` 不会自动成为区间条。核对类别及起止值映射，有执行条件时确认核心图形实际画出，而非只剩坐标和图例。
+- tooltip 必须包含 `triggerOn:'click'`、`renderMode:'richText'`、`confine:true`；richText返回纯文本，不含HTML标签，换行使用 `String.fromCharCode(10)`。
+- 默认 tooltip 足够时不写 formatter。必要 callback 直接写ES5函数并在访问参数前判空，不能把函数源码加引号当字符串；ECharts占位模板如 `formatter:'{b}: {d}%'` 仍允许。
+- 禁止箭头函数、`let`、`const`、ES6反引号模板字符串、可选链、解构和依赖 DOM 的 callback。
 - 直角坐标图配置 `grid` 和 `containLabel:true`。
 - 多系列配置 legend；系列多时使用滚动图例或拆图。
+- 核心图形和关键标签应完整可辨；其余条目可通过明确的点击、缩放或关联列表完整查看。不能用隐藏、裁切或不可读小字掩盖缺陷，也不要求首帧全部标名。
 - 单位在轴、tooltip、label 和正文中保持一致；控制小数位和大数单位。
 - 真实数据必须说明来源、口径或时间范围；无法核验时只输出明确标注的示例或模板。
 - 禁止 `geo`、`map`、`registerMap`、行政区划、经纬度轨迹和地图热力。
@@ -74,4 +78,4 @@
 - 标题 14-16px，legend/axisLabel 10-12px。
 - pie、radar、gauge 等中心图根据表头后剩余空间设置中心和半径。
 - visualMap、dataZoom、xAxis label 和单位必须分区，不得重叠。
-- 类目密集时缩短日期、旋转/隐藏重叠标签，或建议聚合、采样、拆图。
+- 类目密集时可缩写、旋转、抽稀刻度或拆图；关键标识保持可辨，其余条目完整可查，不能因隐藏标签破坏对应关系。

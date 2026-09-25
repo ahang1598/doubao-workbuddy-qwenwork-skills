@@ -5,6 +5,7 @@
 - **标准做法：统一两步创建**——先用 `+create`（不带 `--slide` / `--slides`）建**空白幻灯片**，再用 [`+add-slide`](lark-slides-add-slide.md) 逐页添加，每次只提交一个 `<slide>`。
 - 禁止：从完整 `<presentation>` XML 解析、拆分、重序列化后再生成提交 payload；提交源直接就是单页 `<slide>` XML。
 - `--slides` 一步加页仍受支持（下文有说明），但**不再作为默认路径**：复杂 XML 直接塞命令行时，中文、引号、特殊字符容易发生 shell 转义或截断，统一走两步更稳。
+- 若创建时提交的页面包含树状图，正式 Slides 必须先用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 生成可编辑元素，并让这些 `<shape>` / `<line>` / `<shape type="custom">` / 文本框位于目标页 `<data>` 中；不要把树状图作为 `<embed>` 或图片占位符。
 
 ## 命令
 
@@ -33,6 +34,7 @@ lark-cli slides +create --title "项目汇报" --slides '[...]' --dry-run
 - **`slide_ids`**（string[]，可选）：仅传 `--slides` 时返回，成功添加的页面 ID 列表
 - **`slides_added`**（integer，可选）：仅传 `--slides` 时返回，成功添加的页面数量
 - **`images_uploaded`**（integer，可选）：仅 `--slides` 中含 `@<本地路径>` 占位符时返回，已上传的去重后图片数量
+- **`slide_issues`**（数组，可选）：带页面创建时才可能返回，逐项对应一个**已写入成功的页面**（标明页序和 `slide_id`），内容是服务端对该页的发现，不影响本次调用的成功状态。两种来源：页面 XML 里有服务端不支持的标签/属性被丢弃（**页面内容与提交的不一致**），或未达阻断级的版式校验发现。按实际类型读取：对象/数组直接读，JSON 字符串解码后读，普通文本原样读；完整读取每页全部发现，立即回读并截图核验，真实问题须修复
 
 > [!IMPORTANT]
 > 不传 `--slide` / `--slides` 时，`slides +create` 只创建一个**不含任何页面（0 页）**的空演示文稿——不会自带任何默认页或空白页（回读时 `<presentation>` 里没有 `<slide>`）。创建后需要使用 `slides +add-slide` 逐页添加 slide 内容。
@@ -48,8 +50,9 @@ lark-cli slides +create --title "项目汇报" --slides '[...]' --dry-run
 | `--title` | 否 | 演示文稿标题（不传则默认 "Untitled"） |
 | `--slide` | 否 | 一页 `<slide>` XML，或 `@路径`；可重复，最多 10 次，出现顺序即页序 |
 | `--slides` | 否 | 页面 XML 的 JSON 字符串数组，最多 10 个；支持 `@文件` 和 `-`（stdin） |
+| `--no-lint` | 否 | 跳过服务端版式校验（默认开启）；只能在当前页已被拦、完整报告已读完且符合[单页例外规则](../workflow/validation-xml.md)时单独使用，禁止多页共用或自动重试附加 |
 
-两者二选一，同时传会报错。超过 10 页：先用 `+create` 建空白幻灯片，再用 [`+add-slide`](lark-slides-add-slide.md) 逐页添加。
+`--slide` 与 `--slides` 二选一，同时传会报错。按本 Skill 不得用 `+create --no-lint` 重建或批量绕过失败页；需要例外时回到已创建文档，用 `+add-slide` 单独处理。超过 10 页：先用 `+create` 建空白幻灯片，再用 [`+add-slide`](lark-slides-add-slide.md) 逐页添加。
 
 ## `--slides` 参数格式
 
@@ -114,11 +117,27 @@ PRES_ID=$(lark-cli slides +create --title "项目汇报" --jq '.data.xml_present
 lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
+### 返回字段与处理
+
+返回 JSON 的外层 `ok` 表示调用是否成功，`identity` 表示调用身份；成功时业务字段位于 `data`，失败时错误信息位于 `error`。按以下字段判断结果并处理 lint 发现。
+
+| 当次响应 | 读取与处理 |
+|---|---|
+| `ok: true`，未附问题发现 | 从 `data` 记录 ID、版本等业务字段，继续流程；空壳创建成功只说明文稿已创建 |
+| `ok: true`，有 `data.slide_issues` | 带页面创建时，逐项读取页标识和其中的 `issues`：对象/数组直接读，JSON 字符串解码后读，普通文本完整读。逐条处理发现，并按验证流程回读与截图 |
+| `ok: false`，`error.code: 4000153` | 被拒页面未写入；对 `error.message` 的完整 JSON 字符串解码，读完报告后修复并开启 lint 重提。多页创建之前已成功的页仍可能保留 |
+| 其他失败或返回不完整 | 读完整 `error` 或诊断，按实际原因处理；不能只读 `data` 并把缺失字段默认成零问题 |
+
+返回的是 lint 报告对象时，先看 `summary` 中的 `error_count`、`warning_count`、`info_count` 和 `status`，再读 `document.errors/warnings/infos` 和 `slides[].errors/warnings/infos` 的全部问题；`slides[].issues` 可能是分级列表的镜像，不能重复计数；合并列表中的额外发现也须读取，根 `issues` 不能当作全页列表。逐条读 `code`、`message`、实际存在的 `hint` 及定位/测量字段；`element_ids` 可能为空，需继续看 `elements`、`target.xml_path` 或 schema 的 `path`。单页报告内部 `slide_number: 1` 不一定是整稿第 1 页；按创建响应中各项的页面标识及创建顺序对应，缺少标识时先确认页面，不能猜测。
+
+字符串长度不是问题数，`summary` 或前几百字符也不是完整问题正文。报告过大或工具输出截断时，先检查是否已有该次完整响应文件；有文件时可用 `lint_inspect.py` 分页读取，只有截断文本时无法恢复遗漏内容，不能据此认定问题已全部处理。使用 `--no-lint` 后的成功不代表校验通过；异常、长报告和单页例外规则见 [validation-xml.md](../workflow/validation-xml.md)。
+
 ## 常见错误
 
 | 错误码 | 含义 | 解决方案 |
 |--------|------|----------|
 | 400 | 参数错误 | 检查参数格式是否正确 |
+| 4000153 `xml lint blocked` | 服务端版式校验拒绝了该页；演示文稿及其之前的页面已写入成功 | 按 [validation-xml.md](../workflow/validation-xml.md) 解析并读完 `error.message` 的完整报告，修复后开启 lint 重提；先回读确认已创建页面，用 `+add-slide` 从被拒页续接，不重建整份演示文稿 |
 | 403 | 权限不足 | 检查是否拥有 `slides:presentation:create` 和 `slides:presentation:write_only` scope |
 
 ## 相关命令

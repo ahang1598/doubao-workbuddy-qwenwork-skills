@@ -54,6 +54,7 @@ embed 尺寸：SVG 内部 viewBox 由生成器决定（见 chart_help 里各图�
       比例不同会自动从中心裁掉，若要保留某一侧用 <crop anchor="left|right|top|bottom">。
       想图占满整页 → embed 用大尺寸；想「左图右字」→ embed 用小尺寸（如 480×275、640×360）+ 旁边放 <shape type="text">。
 """
+
 import math
 import random
 import json
@@ -63,6 +64,7 @@ from typing import List, Sequence
 # Ensure this file's directory (scripts/) is on sys.path so `svg_lib.*` resolves
 # regardless of the caller's CWD or import path (e.g. `python3 -c "from scripts.gen_svg_charts import ..."`).
 import os as _os, sys as _sys
+
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 if _HERE not in _sys.path:
     _sys.path.insert(0, _HERE)
@@ -71,7 +73,7 @@ if _HERE not in _sys.path:
 try:
     from svg_lib._common import *  # noqa: F401,F403
 except ImportError:
-    _sys.path.insert(0, _os.path.join(_HERE, 'svg_lib'))
+    _sys.path.insert(0, _os.path.join(_HERE, "svg_lib"))
     from _common import *  # noqa: F401,F403
 
 
@@ -91,7 +93,6 @@ from svg_lib.charts.marimekko import make_marimekko  # noqa: F401
 from svg_lib.charts.matrix_heat import make_matrix_heat  # noqa: F401
 from svg_lib.charts.quadrant import make_quadrant_2x2  # noqa: F401
 from svg_lib.charts.violin import make_violin  # noqa: F401
-from svg_lib.charts.nested_donut import make_nested_donut  # noqa: F401
 
 
 # ============================================================
@@ -102,7 +103,6 @@ from svg_lib.charts.nested_donut import make_nested_donut  # noqa: F401
 #   - str:  从 svg_palettes.PALETTES 查表（如 "burgundy_analyst"）
 #   - dict: {"ink", "accent", "secondary", "bg", "muted"} 五字段自定义
 # 派生字段（grid/connect/point_fill 等）由 chart 内部按需从 ink/accent 自动派生
-
 
 
 # ============================================================
@@ -119,90 +119,119 @@ from svg_lib.charts.nested_donut import make_nested_donut  # noqa: F401
 
 # (chart_slug, chart_name_cn, make_fn_name, scene_one_line, min_call_example, key_enum_or_pitfall)
 _CHART_META = [
-    ("calheat", "日历热力",           "make_calheat",
-     "52×7=364 天日度指标热度：一眼看某周/某月的密度、季节性；GitHub 风 + 学术印刷版式。",
-     "make_calheat(values=[…364 个数值…], title='Daily activity, 2025', subtitle='commits per day · simulated', figure_label='FIGURE 4', kpis=[('TOTAL','1,986',''),('ACTIVE','320','of 365')], note='Each cell = one day; red circles = monthly peak.', source='Simulated.')",
-     "values 长度 ≤ 364（不足自动补 0，多余截断）；matrix 必须严格 52×7 否则 raise；SVG viewBox 是**动态尺寸**（示例参数下典型 1261×316，加 kpis 后 1261×466，去掉 show_month_bars 后 1041×316），生成后先读 viewBox 再算 embed 的 width×height 保持一致；show_month_bars / show_colorbar / highlight_monthly_peak 都可关；红圈用固定 #C25D5D，与 palette 无关。"),
-
-    ("ridge", "山脊图",               "make_ridge",
-     "多组时间序列/分布纵向堆叠对比：\"某年整体分布右移\"这种趋势。",
-     "make_ridge(distributions=[[…], [...], ...], group_labels=['2019','2020','2021'], title='延迟分布逐年变化', subtitle='ms · 3 年对比')",
-     "各组长度必须一致；原始样本先走 ridge_density_from_samples；SVG viewBox 宽固定 900，**高度随组数增长**（N=2 时 ≈188 → ratio 4.79；N=5 时 ≈290 → ratio 3.10；N=8 时 ≈392 → ratio 2.30），生成后先读 viewBox 再算 embed 的 width×height 保持一致。"),
-
-
-    ("candle", "K 线蜡烛图",           "make_candle",
-     "时序 OHLC：金融行情、月度波动区间；上涨白心描边、下跌主色实心。",
-     "make_candle(ohlc=[(o,h,l,c), ...], date_labels=[...], y_unit='$', title='月度行情', subtitle='22 交易日')",
-     "数据 round 到目标精度再传入（生成器不 round 数据标签）；SVG viewBox 1500×820（≈1.83:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用小尺寸如 600×328）。"),
-
-    ("boxplot", "箱线图",              "make_boxplot",
-     "多组分位数摘要（Q1/中位/Q3 + 须 + 离群点）：跨年、跨类别的离散度比较。",
-     "make_boxplot(groups=[('Q1', [values...]), ('Q2', [values...])], y_unit='ms', highlight_group='Q3', title='响应延迟按季度', subtitle='4 季度 · 各 60 样本')",
-     "每组样本量 ≥ 5；highlight_group 必须精确匹配某个 name；SVG viewBox 1200×720（≈1.67:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 600×360 之类）。"),
-
-    ("sankey", "桑基流",               "make_sankey",
-     "量级流转——供应链上下游、预算分配、用户漏斗、能耗结构；两侧柱条厚度按流量。",
-     "make_sankey(left_nodes=['A','B'], right_nodes=['X','Y'], flows=[('A','X',10), ('A','Y',5), ('B','X',3)], title='预算流转', subtitle='源 → 去向')",
-     "自动守恒校验（左右 total 必须相等，否则 raise）；SVG viewBox 1200×760（≈1.58:1），embed 保持这个 aspect ratio 即可。"),
-
-
-    ("funnel_classic", "经典梯形漏斗",  "make_funnel_classic",
-     "分层筛选叙事——业务场景的\"全体 → 精选组合\"（投资标的、招聘、销售），数据量小（3-8 层）、每层需要一句解读时用本图。",
-     "make_funnel_classic(stages=[50,12,8,5,3,1], stage_labels=['全市场','流动性',...], stage_descriptions=['全球可交易','日均成交额>1B',...], primary_rgb=(139,90,43), title='投资标的筛选', subtitle='6 层漏斗 · 50 → 1')",
-     "**换品牌色必须传 primary_rgb=(r,g,b)**（字符串 recolor 摸不到）；SVG viewBox 1400×780（≈1.79:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 640×356 之类）。"),
-
-    ("percent_grid", "百人网格",        "make_percent_grid",
-     "调研/问卷（\"76% 支持\"）、\"多少人选了 X\" 叙事；10×10 网格 + breakdown 累计条 + POS/NEU/NEG 大数字 + 侧栏图例。",
-     "make_percent_grid(options=[('Enthusiastic',15),('Optimistic',28),('Neutral',22),('Concerned',25),('Fearful',10)], title='How the world feels about AI', subtitle='Each square = 1% · n=12,000', figure_label='FIGURE 11', positive_labels=['Enthusiastic','Optimistic'], neutral_label='Neutral', negative_labels=['Concerned','Fearful'], note='Grid filled left-to-right, top-to-bottom.')",
-     "count ∈ [0,100] 且每项 int；sum(counts) ≤ 100 且当 <100 自动补空白类 '—'；options 类目数 2..8，越界 raise；positive/neutral/negative_labels 用 label 匹配；show_breakdown_band / show_kpi_row 可关；SVG viewBox 1400×800（≈1.75:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏可以用 480×275 之类的小尺寸）；footer 是 note 的老名 alias。"),
-
-    ("waterfall", "瀑布图",             "make_waterfall",
-     "商业/财务的\"毛→净\"、MRR 变化归因、成本节余分解、预算差异分解；连接虚线让\"跳台阶\"感一眼可读。",
-     "make_waterfall(steps=[('起点',100,'total'),('增A',20,'pos'),('减B',5,'neg'),('终点',115,'total')], title='MRR 变化归因', subtitle='Q1 → Q2 · 万美元')",
-     "**kind 必须是 'total'/'pos'/'neg' 字符串，不接受布尔**；首尾 total 都要有；换主题色传 palette={'ink':..., 'accent':..., 'pos_bar':..., 'connect':..., 'grid':..., 'muted':...}（缺省项自动从 ink 派生半透明）；SVG viewBox 约 409×227（≈1.80:1），embed 保持这个 aspect ratio 即可。"),
-
-    ("gantt", "甘特图",                  "make_gantt",
-     "项目管理/教育课程排期/产品迭代计划；关键路径主色高亮、里程碑菱形。",
-     "make_gantt(tasks=[('设计',0,4),('开发',3,10),('测试',9,12)], weeks=16, critical_index=1, milestones=[(4,'评审')], title='项目排期', subtitle='16 周 · 关键路径高亮')",
-     "milestones 只承载点事件（发布/评审），不放长任务；SVG viewBox 1620×980（≈1.65:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 640×388 之类）。"),
-
-    ("population_pyramid", "人口金字塔", "make_population_pyramid",
-     "\"人口结构\"、\"两组人群对比\"（男女、公私立、城乡、党团、前测后测）；顶部 KPI 卡片 + 中轴类目名 + 左右柱条 + median 卡片 + peak cohort 空心圆 + age-group 分组横线。",
-     "make_population_pyramid(categories=['95+','90-94',...,'0-4'], left_values=[...], right_values=[...], left_label='MALE', right_label='FEMALE', title='Population pyramid, 2025', unit='k', x_axis_label='POPULATION (THOUSANDS)', kpis=[('TOTAL POPULATION','57.2M','million persons','left'),('MEDIAN AGE','36.7','years','left')], median_index=13, median_label='MEDIAN 36.7', peak_index=13, age_group_dividers=[(3,'65+',None),(14,'WORKING','0-14')])",
-     "N ∈ [2, 30]；三序列长度必须相等且都 ≥ 0；median_index/peak_index 是**行索引**（0..N-1），median_label 会画一个 accent 描边小卡片放在 median 行上方 slot 里避让数值；kpi 每项 (header, big, sub, kind)，kind ∈ 'left'/'right'/'muted'；SVG viewBox 1280×720（≈1.78:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏可以用 640×360 之类的小尺寸）。"),
-
-    # ("event_timeline", "事件时间轴",     "make_event_timeline",
-    # "公司/机构里程碑、政务改革脉络、教育课程年表、品牌历史、行业大事记；上下交替 + 类别分色 + 同月密集自动 stagger。",
-    # "make_event_timeline(years=['3月','4月','5月','6月','7月','8月'], events=[(0.25,'above','WorkBuddy 公测','请求量迅速冲高','腾讯'),(3.0,'below','《置身钉内》发酵','陈航卸任','阿里'),(4.0,'below','飞书+豆包合并','赵祺统管','字节')], categories={'阿里':'rgba(25,52,85,1)','字节':'rgba(184,76,58,1)','腾讯':'rgba(60,120,90,1)'}, title='办公协同大事记', subtitle='2025 上半年')",
-    # "**side 只接受 'above'/'below'**；idx 可传浮点数（如 3.25 = 第 3 和第 4 刻度间偏第 4）；第 5 字段：**str = 类别 key（配 categories 自动分色 + 图例）**，bool = 老式高亮兼容；**year_range=(start, end) 包含末年整年**——(2024, 2026) 意味着 2024/1 到 2027/1 都可视，2026 各月份的事件都能画在轴内；events 建议 4-10 个；SVG viewBox 宽固定 1500，**高度随实际 stack level 层数自适应**（少事件时约 520，多事件三层堆叠时约 780），生成后先读 viewBox 再算 embed 保持一致。"),
-
-    ("marimekko", "马赛克图",            "make_marimekko",
-     "双向占比（业务组合矩阵）：列宽 = 市场规模，列内高度 = 各方份额。",
-     "make_marimekko(markets=[('欧洲', 30, [('Us', 40), ('Rival', 60)]), ('亚洲', 45, [('Us', 25), ('Rival', 75)])], we_key='Us', title='市场份额矩阵', subtitle='列宽 = 市场规模 · 列内 = 竞品份额')",
-     "**inside_share 单位是 0-100**（30 = 30%）；换品牌色传 accent_rgb=(r,g,b)；SVG viewBox 约 444×284（≈1.56:1），embed 保持这个 aspect ratio 即可。"),
-
-    ("matrix_heat", "矩阵热力",          "make_matrix_heat",
-     "N×N 节点两两关系强度：共用率、相关系数、协作频率、A-B 依赖；同色深浅编码。取代弧矩阵。",
-     "make_matrix_heat(matrix=[[-1,3,5],[3,-1,7],[5,7,-1]], labels=['A','B','C'], highlight_pair=(1,2), title='团队协作强度', subtitle='3 部门联合任务频次', colorbar_label='Value')",
-     "**传 -1 或 None 的格子会被视为『跳过』，渲染为灰色空白 + —**（用于对角线自比等无意义关系）；对角线也可以传实际值正常上色；shade 阈值和图例函数自动分位数分档；SVG viewBox 1300×820（≈1.59:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 640×405 之类）。"),
-
-    ("quadrant_2x2", "2×2 象限图",       "make_quadrant_2x2",
-     "品牌定位、战略取舍、评估矩阵——两轴各是一个对立概念，落点即定位。非高亮点用轮廓风（淡填+深描边），高亮点用实心 accent。",
-     "make_quadrant_2x2(items=[('我们',0.35,0.72),('竞品',0.75,0.65)], x_axis=('低','高'), y_axis=('大众','高端'), x_title='定价', y_title='目标客群', highlight_index=0, title='市场定位矩阵', subtitle='2 家竞品对比')",
-     "简单模式 **x/y ∈ [0,1]**；数据模式传 x_range/y_range=(min,max)；highlight_index 全篇最多 1 个；换主题色传 palette={'ink':..., 'accent':..., 'rival':..., 'point_fill':..., 'grid':..., 'muted':...}；SVG viewBox 1050×820（≈1.28:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 512×400 之类）。"),
-
-    ("violin", "小提琴分布",              "make_violin",
-     "多组连续变量的密度形状对比：按类别看分布尾巴、峰值、中位数偏移；学术印刷版 = KDE 轮廓 + 内嵌 mini boxplot + 均值空心圆 + outlier 空心圆 + Y 轴稀疏虚线网格。",
-     "make_violin(groups=[('GPT-4o',[values...]),('Claude 4.7',[values...])], y_unit='s', highlight_group='Claude 4.7', title='End-to-end response latency', subtitle='Distribution of per-request latency', figure_label='FIGURE 2', y_axis_label='Response latency (seconds)', note='Violin outlines = Gaussian KDE truncated at ±1.5·IQR whiskers.', source='Simulated data.')",
-     "y_unit='%' 时，若数据全部落在 [0,100]（问卷类）自动 clamp 到 [0,100]；若数据含负值或超 100（金融收益率、变化率等）则保持数据的自然范围不 clamp；组间量级差异大时传 y_min/y_max 聚焦；每组 (name, [values]) 且 values 至少 1 个；bandwidth=None 走 Silverman 自动；show_boxplot / show_mean / show_outliers / show_legend 都可关；per_group_n 显式指定 label 下方 'n = ...' 显示值；SVG viewBox 1200×720（≈1.67:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏可以用 600×360 之类的小尺寸）。"),
-
-    ("nested_donut", "双层甜甜圈（sunburst）", "make_nested_donut",
-     "任务/预算/流量按\"一级分类 × 二级子类\"双维度分解：内环 domain + 外环 sub-intent，父子扇形角度自然对齐；替代堆叠条 + 类别分组饼图。",
-     "make_nested_donut(data=[('产品',40,[('功能开发',20),('Bug 修复',12),('重构',8)]),('市场',30,[('投放',18),('PR',7),('活动',5)])], total_label='TASKS', total_value=100, title='任务分类占比', subtitle='内环 domain · 外环 sub-intent')",
-     "sub_pct 是**全局百分比**（不是 domain 内比例），所有 subs.sum() 应 = domain_pct；domain_colors 可选（缺省用 8 色轮转），外环色自动从主色派生浅变体；SVG viewBox 默认 720×720，但支持传 width/height 得到任意 aspect 的 viewBox（donut 主体按 min(w,h) 居中、两侧留白，避免宽扁 embed 拉伸），embed 建议 1:1 或稍宽一点，过扁则 donut 半径受 height 限制会显小。"),
+    (
+        "calheat",
+        "日历热力",
+        "make_calheat",
+        "52×7=364 天日度指标热度：一眼看某周/某月的密度、季节性；GitHub 风 + 学术印刷版式。",
+        "make_calheat(values=[…364 个数值…], title='Daily activity, 2025', subtitle='commits per day · simulated', figure_label='FIGURE 4', kpis=[('TOTAL','1,986',''),('ACTIVE','320','of 365')], note='Each cell = one day; red circles = monthly peak.', source='Simulated.')",
+        "values 长度 ≤ 364（不足自动补 0，多余截断）；matrix 必须严格 52×7 否则 raise；SVG viewBox 是**动态尺寸**（示例参数下典型 1261×316，加 kpis 后 1261×466，去掉 show_month_bars 后 1041×316），生成后先读 viewBox 再算 embed 的 width×height 保持一致；show_month_bars / show_colorbar / highlight_monthly_peak 都可关；红圈用固定 #C25D5D，与 palette 无关。",
+    ),
+    (
+        "ridge",
+        "山脊图",
+        "make_ridge",
+        '多组时间序列/分布纵向堆叠对比："某年整体分布右移"这种趋势。',
+        "make_ridge(distributions=[[…], [...], ...], group_labels=['2019','2020','2021'], title='延迟分布逐年变化', subtitle='ms · 3 年对比')",
+        "各组长度必须一致；原始样本先走 ridge_density_from_samples；SVG viewBox 宽固定 900，**高度随组数增长**（N=2 时 ≈188 → ratio 4.79；N=5 时 ≈290 → ratio 3.10；N=8 时 ≈392 → ratio 2.30），生成后先读 viewBox 再算 embed 的 width×height 保持一致。",
+    ),
+    (
+        "candle",
+        "K 线蜡烛图",
+        "make_candle",
+        "时序 OHLC：金融行情、月度波动区间；上涨白心描边、下跌主色实心。",
+        "make_candle(ohlc=[(o,h,l,c), ...], date_labels=[...], y_unit='$', title='月度行情', subtitle='22 交易日')",
+        "数据 round 到目标精度再传入（生成器不 round 数据标签）；SVG viewBox 1500×820（≈1.83:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用小尺寸如 600×328）。",
+    ),
+    (
+        "boxplot",
+        "箱线图",
+        "make_boxplot",
+        "多组分位数摘要（Q1/中位/Q3 + 须 + 离群点）：跨年、跨类别的离散度比较。",
+        "make_boxplot(groups=[('Q1', [values...]), ('Q2', [values...])], y_unit='ms', highlight_group='Q3', title='响应延迟按季度', subtitle='4 季度 · 各 60 样本')",
+        "每组样本量 ≥ 5；highlight_group 必须精确匹配某个 name；SVG viewBox 1200×720（≈1.67:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 600×360 之类）。",
+    ),
+    (
+        "sankey",
+        "桑基流",
+        "make_sankey",
+        "量级流转——供应链上下游、预算分配、用户漏斗、能耗结构；两侧柱条厚度按流量。",
+        "make_sankey(left_nodes=['A','B'], right_nodes=['X','Y'], flows=[('A','X',10), ('A','Y',5), ('B','X',3)], title='预算流转', subtitle='源 → 去向')",
+        "自动守恒校验（左右 total 必须相等，否则 raise）；SVG viewBox 1200×760（≈1.58:1），embed 保持这个 aspect ratio 即可。",
+    ),
+    (
+        "funnel_classic",
+        "经典梯形漏斗",
+        "make_funnel_classic",
+        '分层筛选叙事——业务场景的"全体 → 精选组合"（投资标的、招聘、销售），数据量小（3-8 层）、每层需要一句解读时用本图。',
+        "make_funnel_classic(stages=[50,12,8,5,3,1], stage_labels=['全市场','流动性',...], stage_descriptions=['全球可交易','日均成交额>1B',...], primary_rgb=(139,90,43), title='投资标的筛选', subtitle='6 层漏斗 · 50 → 1')",
+        "**换品牌色必须传 primary_rgb=(r,g,b)**（字符串 recolor 摸不到）；SVG viewBox 1400×780（≈1.79:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 640×356 之类）。",
+    ),
+    (
+        "percent_grid",
+        "百人网格",
+        "make_percent_grid",
+        '调研/问卷（"76% 支持"）、"多少人选了 X" 叙事；10×10 网格 + breakdown 累计条 + POS/NEU/NEG 大数字 + 侧栏图例。',
+        "make_percent_grid(options=[('Enthusiastic',15),('Optimistic',28),('Neutral',22),('Concerned',25),('Fearful',10)], title='How the world feels about AI', subtitle='Each square = 1% · n=12,000', figure_label='FIGURE 11', positive_labels=['Enthusiastic','Optimistic'], neutral_label='Neutral', negative_labels=['Concerned','Fearful'], note='Grid filled left-to-right, top-to-bottom.')",
+        "count ∈ [0,100] 且每项 int；sum(counts) ≤ 100 且当 <100 自动补空白类 '—'；options 类目数 2..8，越界 raise；positive/neutral/negative_labels 用 label 匹配；show_breakdown_band / show_kpi_row 可关；SVG viewBox 1400×800（≈1.75:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏可以用 480×275 之类的小尺寸）；footer 是 note 的老名 alias。",
+    ),
+    (
+        "waterfall",
+        "瀑布图",
+        "make_waterfall",
+        '商业/财务的"毛→净"、MRR 变化归因、成本节余分解、预算差异分解；连接虚线让"跳台阶"感一眼可读。',
+        "make_waterfall(steps=[('起点',100,'total'),('增A',20,'pos'),('减B',5,'neg'),('终点',115,'total')], title='MRR 变化归因', subtitle='Q1 → Q2 · 万美元')",
+        "**kind 必须是 'total'/'pos'/'neg' 字符串，不接受布尔**；首尾 total 都要有；换主题色传 palette={'ink':..., 'accent':..., 'pos_bar':..., 'connect':..., 'grid':..., 'muted':...}（缺省项自动从 ink 派生半透明）；SVG viewBox 约 409×227（≈1.80:1），embed 保持这个 aspect ratio 即可。",
+    ),
+    (
+        "gantt",
+        "甘特图",
+        "make_gantt",
+        "项目管理/教育课程排期/产品迭代计划；关键路径主色高亮、里程碑菱形。",
+        "make_gantt(tasks=[('设计',0,4),('开发',3,10),('测试',9,12)], weeks=16, critical_index=1, milestones=[(4,'评审')], title='项目排期', subtitle='16 周 · 关键路径高亮')",
+        "milestones 只承载点事件（发布/评审），不放长任务；SVG viewBox 1620×980（≈1.65:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 640×388 之类）。",
+    ),
+    (
+        "population_pyramid",
+        "人口金字塔",
+        "make_population_pyramid",
+        '"人口结构"、"两组人群对比"（男女、公私立、城乡、党团、前测后测）；顶部 KPI 卡片 + 中轴类目名 + 左右柱条 + median 卡片 + peak cohort 空心圆 + age-group 分组横线。',
+        "make_population_pyramid(categories=['95+','90-94',...,'0-4'], left_values=[...], right_values=[...], left_label='MALE', right_label='FEMALE', title='Population pyramid, 2025', unit='k', x_axis_label='POPULATION (THOUSANDS)', kpis=[('TOTAL POPULATION','57.2M','million persons','left'),('MEDIAN AGE','36.7','years','left')], median_index=13, median_label='MEDIAN 36.7', peak_index=13, age_group_dividers=[(3,'65+',None),(14,'WORKING','0-14')])",
+        "N ∈ [2, 30]；三序列长度必须相等且都 ≥ 0；median_index/peak_index 是**行索引**（0..N-1），median_label 会画一个 accent 描边小卡片放在 median 行上方 slot 里避让数值；kpi 每项 (header, big, sub, kind)，kind ∈ 'left'/'right'/'muted'；SVG viewBox 1280×720（≈1.78:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏可以用 640×360 之类的小尺寸）。",
+    ),
+    (
+        "marimekko",
+        "马赛克图",
+        "make_marimekko",
+        "双向占比（业务组合矩阵）：列宽 = 市场规模，列内高度 = 各方份额。",
+        "make_marimekko(markets=[('欧洲', 30, [('Us', 40), ('Rival', 60)]), ('亚洲', 45, [('Us', 25), ('Rival', 75)])], we_key='Us', title='市场份额矩阵', subtitle='列宽 = 市场规模 · 列内 = 竞品份额')",
+        "**inside_share 单位是 0-100**（30 = 30%）；换品牌色传 accent_rgb=(r,g,b)；SVG viewBox 约 444×284（≈1.56:1），embed 保持这个 aspect ratio 即可。",
+    ),
+    (
+        "matrix_heat",
+        "矩阵热力",
+        "make_matrix_heat",
+        "N×N 节点两两关系强度：共用率、相关系数、协作频率、A-B 依赖；同色深浅编码。取代弧矩阵。",
+        "make_matrix_heat(matrix=[[-1,3,5],[3,-1,7],[5,7,-1]], labels=['A','B','C'], highlight_pair=(1,2), title='团队协作强度', subtitle='3 部门联合任务频次', colorbar_label='Value')",
+        "**传 -1 或 None 的格子会被视为『跳过』，渲染为灰色空白 + —**（用于对角线自比等无意义关系）；对角线也可以传实际值正常上色；shade 阈值和图例函数自动分位数分档；SVG viewBox 1300×820（≈1.59:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 640×405 之类）。",
+    ),
+    (
+        "quadrant_2x2",
+        "2×2 象限图",
+        "make_quadrant_2x2",
+        "品牌定位、战略取舍、评估矩阵——两轴各是一个对立概念，落点即定位。非高亮点用轮廓风（淡填+深描边），高亮点用实心 accent。",
+        "make_quadrant_2x2(items=[('我们',0.35,0.72),('竞品',0.75,0.65)], x_axis=('低','高'), y_axis=('大众','高端'), x_title='定价', y_title='目标客群', highlight_index=0, title='市场定位矩阵', subtitle='2 家竞品对比')",
+        "简单模式 **x/y ∈ [0,1]**；数据模式传 x_range/y_range=(min,max)；highlight_index 全篇最多 1 个；换主题色传 palette={'ink':..., 'accent':..., 'rival':..., 'point_fill':..., 'grid':..., 'muted':...}；SVG viewBox 1050×820（≈1.28:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏用 512×400 之类）。",
+    ),
+    (
+        "violin",
+        "小提琴分布",
+        "make_violin",
+        "多组连续变量的密度形状对比：按类别看分布尾巴、峰值、中位数偏移；学术印刷版 = KDE 轮廓 + 内嵌 mini boxplot + 均值空心圆 + outlier 空心圆 + Y 轴稀疏虚线网格。",
+        "make_violin(groups=[('GPT-4o',[values...]),('Claude 4.7',[values...])], y_unit='s', highlight_group='Claude 4.7', title='End-to-end response latency', subtitle='Distribution of per-request latency', figure_label='FIGURE 2', y_axis_label='Response latency (seconds)', note='Violin outlines = Gaussian KDE truncated at ±1.5·IQR whiskers.', source='Simulated data.')",
+        "y_unit='%' 时，若数据全部落在 [0,100]（问卷类）自动 clamp 到 [0,100]；若数据含负值或超 100（金融收益率、变化率等）则保持数据的自然范围不 clamp；组间量级差异大时传 y_min/y_max 聚焦；每组 (name, [values]) 且 values 至少 1 个；bandwidth=None 走 Silverman 自动；show_boxplot / show_mean / show_outliers / show_legend 都可关；per_group_n 显式指定 label 下方 'n = ...' 显示值；SVG viewBox 1200×720（≈1.67:1），embed 保持这个 aspect ratio 即可（整页放大 vs 想留右侧文字栏可以用 600×360 之类的小尺寸）。",
+    )
 ]
-
-
 
 
 def chart_help(name: str = None) -> str:
@@ -214,116 +243,109 @@ def chart_help(name: str = None) -> str:
     # 骨架变体说明（每 variant 一行短描述，用于总览和单张详情）
     _VARIANT_HINTS = {
         "boxplot": {
-            "default_flat":            "经典箱线，Q1-Q3 主体 + 中位/须/离群",
-            "beeswarm":                "点阵沿 y 展开成蜂群，看每个样本分布（lint 会报 circle bbox 重叠，属设计意图，跳过）",
-            "notched_outlined":        "notch 缺口暗示中位数置信区间 + 描边风",
+            "default_flat": "经典箱线，Q1-Q3 主体 + 中位/须/离群",
+            "beeswarm": "点阵沿 y 展开成蜂群，看每个样本分布（lint 会报 circle bbox 重叠，属设计意图，跳过）",
+            "notched_outlined": "notch 缺口暗示中位数置信区间 + 描边风",
             "variable_width_gradient": "宽度反映组样本量 + 渐变填充",
-            "strip_flat":              "去除箱体只留点带，超简约",
+            "strip_flat": "去除箱体只留点带，超简约",
         },
         "violin": {
             "boxplot_inner_flat": "琴身 + 内嵌 mini boxplot（推荐 default）",
-            "quartile_outlined":  "琴身描边 + 3 条四分位横线",
-            "points_inner_flat":  "Sina-plot 点阵嵌在琴身内",
-            "half_gradient":      "单侧琴身 + 渐变填充",
-            "kde_only":           "纯 KDE 轮廓无内标记，气质极简",
+            "quartile_outlined": "琴身描边 + 3 条四分位横线",
+            "points_inner_flat": "Sina-plot 点阵嵌在琴身内",
+            "half_gradient": "单侧琴身 + 渐变填充",
+            "kde_only": "纯 KDE 轮廓无内标记，气质极简",
         },
         "ridge": {
-            "default_flat":       "群峰重叠渐变（推荐 default）",
+            "default_flat": "群峰重叠渐变（推荐 default）",
             "outlined_separated": "各行独立描边，无重叠",
-            "gradient_overlap":   "水平渐变编码 x 值，跨行同色系",
-            "joy_division":       "Joy Division 唱片风：纯黑线条无填充",
-            "histogram_binned":   "直方图分箱，非 KDE 平滑",
+            "gradient_overlap": "水平渐变编码 x 值，跨行同色系",
+            "joy_division": "Joy Division 唱片风：纯黑线条无填充",
+            "histogram_binned": "直方图分箱，非 KDE 平滑",
         },
         "funnel_classic": {
-            "default_flat":                "经典梯形上宽下窄（推荐 default）",
-            "rectangle_flat":              "矩形层叠，宽度 sqrt 比例编码",
-            "bar_lollipop":                "水平线 + 端点圆盘（现代 dashboard 极简）",
-            "nested_arrow":                "逐层嵌套的向下箭头（Russian doll 叙事）",
-            "pyramid_flat":                "反向金字塔上窄下宽（少见）",
+            "default_flat": "经典梯形上宽下窄（推荐 default）",
+            "rectangle_flat": "矩形层叠，宽度 sqrt 比例编码",
+            "bar_lollipop": "水平线 + 端点圆盘（现代 dashboard 极简）",
+            "nested_arrow": "逐层嵌套的向下箭头（Russian doll 叙事）",
+            "pyramid_flat": "反向金字塔上窄下宽（少见）",
         },
         "marimekko": {
-            "default_flat":     "列宽×行高双维占比（推荐 default）",
-            "mekko_gradient":   "sub 段渐变填充",
-            "mekko_outlined":   "sub 段描边风",
-            "shaded_residual":  "we 段实心 · 其余段淡色对比",
-            "treemap_flat":     "去掉 market 分列，纯 treemap 布局",
-        },
-        "nested_donut": {
-            "donut_flat":           "经典双层甜甜圈（推荐 default）",
-            "donut_gradient":       "外圈按 domain 内的 sub 渐变",
-            "sunburst_flat":        "填满圆盘的 sunburst（无空心）",
-            "polar_area_outlined":  "极坐标扇形按 value 缩半径 + 描边",
-            "donut_layered":        "多层堆叠 + 阴影",
+            "default_flat": "列宽×行高双维占比（推荐 default）",
+            "mekko_gradient": "sub 段渐变填充",
+            "mekko_outlined": "sub 段描边风",
+            "shaded_residual": "we 段实心 · 其余段淡色对比",
+            "treemap_flat": "去掉 market 分列，纯 treemap 布局",
         },
         "percent_grid": {
-            "square_10x10":       "10×10 方格（100 人代表 100%）",
-            "dot_10x10":          "同布局但用圆点",
-            "person_10x10":       "同布局但用人形 icon",
+            "square_10x10": "10×10 方格（100 人代表 100%）",
+            "dot_10x10": "同布局但用圆点",
+            "person_10x10": "同布局但用人形 icon",
             "square_stacked_row": "单行堆叠横条 + 分段",
-            "dot_faceted":        "多面板并列，每 option 独立小 grid",
+            "dot_faceted": "多面板并列，每 option 独立小 grid",
         },
         "population_pyramid": {
-            "default_flat":       "左右柱条对称（推荐 default）",
-            "filled_gradient":    "柱条渐变填充",
-            "stacked_flat":       "每 age 有 series 分段堆叠",
-            "dot_flat":           "点阵编码（1 dot = N 人）",
-            "outlined_burgundy":  "描边风 + accent 高亮",
+            "default_flat": "左右柱条对称（推荐 default）",
+            "filled_gradient": "柱条渐变填充",
+            "stacked_flat": "每 age 有 series 分段堆叠",
+            "dot_flat": "点阵编码（1 dot = N 人）",
+            "outlined_burgundy": "描边风 + accent 高亮",
         },
         "matrix_heat": {
-            "square_flat_full":  "N×N 方格填色（推荐 default）",
-            "circle_full":       "格中画圆，半径可缩",
-            "ellipse_upper":     "只画上三角，椭圆倾角编码相关性",
-            "pie_full":          "每格一个小饼图（大矩阵下 lint 会报 circle 密集 bbox 重叠，属格子密度限制，跳过）",
-            "annotated_number":  "格中直接写数字",
+            "square_flat_full": "N×N 方格填色（推荐 default）",
+            "circle_full": "格中画圆，半径可缩",
+            "ellipse_upper": "只画上三角，椭圆倾角编码相关性",
+            "pie_full": "每格一个小饼图（大矩阵下 lint 会报 circle 密集 bbox 重叠，属格子密度限制，跳过）",
+            "annotated_number": "格中直接写数字",
         },
         "quadrant_2x2": {
-            "dot_cross":              "点 + 十字准心（推荐 default）",
-            "bubble_L":                "气泡大小编码第三维（size）",
-            "label_box_quadrant_bg":   "带 pill label + 四角象限名",
-            "emoji_icon_cross":        "点换 emoji/icon",
-            "ring_arrow":              "空心环 + 箭头指向轨迹",
+            "dot_cross": "点 + 十字准心（推荐 default）",
+            "bubble_L": "气泡大小编码第三维（size）",
+            "label_box_quadrant_bg": "带 pill label + 四角象限名",
+            "emoji_icon_cross": "点换 emoji/icon",
+            "ring_arrow": "空心环 + 箭头指向轨迹",
         },
         "gantt": {
-            "default_flat":     "经典任务条 + 里程碑（推荐 default）",
-            "progress_split":   "任务条内嵌进度分段",
-            "critical_path":    "关键路径 accent 高亮 + 图例",
-            "gradient_bars":    "任务条渐变填充",
-            "dot_range":        "任务用起终圆点 + 连线",
+            "default_flat": "经典任务条 + 里程碑（推荐 default）",
+            "progress_split": "任务条内嵌进度分段",
+            "critical_path": "关键路径 accent 高亮 + 图例",
+            "gradient_bars": "任务条渐变填充",
+            "dot_range": "任务用起终圆点 + 连线",
         },
         "candle": {
-            "candle_american_filled":  "美式实心 K 线（推荐 default）",
-            "candle_japanese_hollow":  "日式空心 K 线（涨空跌实）",
-            "ohlc_american":           "美式竹节棒图（无 body）",
-            "heikin_ashi":             "平均足平滑趋势",
-            "line_close":              "只画收盘价折线",
+            "candle_american_filled": "美式实心 K 线（推荐 default）",
+            "candle_japanese_hollow": "日式空心 K 线（涨空跌实）",
+            "ohlc_american": "美式竹节棒图（无 body）",
+            "heikin_ashi": "平均足平滑趋势",
+            "line_close": "只画收盘价折线",
         },
         "event_timeline": {
             "horizontal_alt_dot": "横轴上下交替卡片（推荐 default）",
-            "stepped_dot":        "阶梯式 dot（少事件用）",
-            "vertical_alt_dot":   "竖轴左右交替卡片",
-            "horizontal_pin":     "横轴带 pin 图钉视觉",
-            "circular_dot":       "圆环上分布事件",
+            "stepped_dot": "阶梯式 dot（少事件用）",
+            "vertical_alt_dot": "竖轴左右交替卡片",
+            "horizontal_pin": "横轴带 pin 图钉视觉",
+            "circular_dot": "圆环上分布事件",
         },
         "sankey": {
             "default_ribbon_flat": "经典 bezier ribbon（推荐 default）",
             "alluvial_sinusoidal": "sinusoidal 缓动，更飘逸",
-            "chord_circular":      "圆形 chord 图，节点在圆周（lint 会报 path bbox 交叉，属流带 crossing 语义，跳过）",
-            "multi_layer_flat":    "多层 stepped/bezier（≥4 层自动降级）",
-            "gradient_layered":    "流带按源→目的渐变色",
+            "chord_circular": "圆形 chord 图，节点在圆周（lint 会报 path bbox 交叉，属流带 crossing 语义，跳过）",
+            "multi_layer_flat": "多层 stepped/bezier（≥4 层自动降级）",
+            "gradient_layered": "流带按源→目的渐变色",
         },
         "waterfall": {
-            "default_flat":     "经典瀑布（推荐 default）",
-            "subtotal_bridge":  "自动插入 Subtotal 桥接柱",
-            "cross_axis":       "水平线在 0 处，正负跨轴",
-            "horizontal":       "横向排列",
+            "default_flat": "经典瀑布（推荐 default）",
+            "subtotal_bridge": "自动插入 Subtotal 桥接柱",
+            "cross_axis": "水平线在 0 处，正负跨轴",
+            "horizontal": "横向排列",
             "stacked_gradient": "每步内部按 sub_label 分段堆叠",
         },
         "calheat": {
-            "default_row_52x7":  "GitHub 风 52 周 × 7 天（推荐 default）",
-            "monthly_grid_12x31":"12 月 × 31 天矩阵",
-            "small_multiples":   "每月一格小图并列",
-            "radial_year":       "径向布局年度视图",
-            "dot_grid":          "同 default 布局但用圆点",
+            "default_row_52x7": "GitHub 风 52 周 × 7 天（推荐 default）",
+            "monthly_grid_12x31": "12 月 × 31 天矩阵",
+            "small_multiples": "每月一格小图并列",
+            "radial_year": "径向布局年度视图",
+            "dot_grid": "同 default 布局但用圆点",
         },
     }
 
@@ -333,7 +355,7 @@ def chart_help(name: str = None) -> str:
             "",
             "## 通用规则（所有 chart 都适用）",
             "  - `<embed>` 的 topLeftX/Y/width/height 由 slide 版式决定；引擎按 SVG 内部 viewBox 缩放。",
-            "  - 想图占满整页 → embed 用大尺寸；想「左图 + 右侧解读栏」→ embed 用小尺寸（例如 480×275、640×360）+ 旁边放 `<shape type=\"text\">`。",
+            '  - 想图占满整页 → embed 用大尺寸；想「左图 + 右侧解读栏」→ embed 用小尺寸（例如 480×275、640×360）+ 旁边放 `<shape type="text">`。',
             "  - **只要 embed 的 width:height 跟下方要点里给的 SVG viewBox 比例一致，就不会裁;对不上会自动从中心裁掉多余边**（可用 `<crop anchor>` 指定保留哪一侧）。",
             "",
             "## Lint 告警的语义豁免（重要）",
@@ -496,9 +518,7 @@ def chart_help(name: str = None) -> str:
             lint_md = ""
             if slug in _LINT_HINTS:
                 lint_md = (
-                    "\n**默认参数下允许忽略的 lint 告警（设计意图，看到直接放行）**：\n"
-                    + _LINT_HINTS[slug]
-                    + "\n\n"
+                    "\n**默认参数下允许忽略的 lint 告警（设计意图，看到直接放行）**：\n" + _LINT_HINTS[slug] + "\n\n"
                     "> 只对**默认参数**有效。传入极端 label / 超小 embed / 自定义 variant 等情况仍需检查。\n"
                     "> 未在上述列表中出现的形态（比如 KPI 卡三行 bbox 相交、chart 内两 label bbox 相交）"
                     "属于真 bug，必须收敛。\n\n"
@@ -512,10 +532,7 @@ def chart_help(name: str = None) -> str:
                 f"**关键坑**：{pitfall}\n\n"
                 f"**完整 docstring**：\n```\n{docstring}\n```\n"
             )
-    return (
-        f"chart '{name}' not found. Available: "
-        + ", ".join(m[0] for m in _CHART_META)
-    )
+    return f"chart '{name}' not found. Available: " + ", ".join(m[0] for m in _CHART_META)
 
 
 # ==============================================================
@@ -523,11 +540,27 @@ def chart_help(name: str = None) -> str:
 # ==============================================================
 def _cli():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--type", required=True,
-                    choices=["calheat", "ridge", "candle", "boxplot", "sankey",
-                             "funnel_classic", "percent_grid",
-                             "waterfall", "gantt", "population_pyramid", "event_timeline", "marimekko",
-                             "matrix_heat", "quadrant_2x2", "violin"])
+    ap.add_argument(
+        "--type",
+        required=True,
+        choices=[
+            "calheat",
+            "ridge",
+            "candle",
+            "boxplot",
+            "sankey",
+            "funnel_classic",
+            "percent_grid",
+            "waterfall",
+            "gantt",
+            "population_pyramid",
+            "event_timeline",
+            "marimekko",
+            "matrix_heat",
+            "quadrant_2x2",
+            "violin",
+        ],
+    )
     ap.add_argument("--values", help="逗号分隔的数值 (calheat 备用)")
     ap.add_argument("--matrix-file", help="JSON 文件路径 · 52×7 二维数组 (calheat)")
     ap.add_argument("--distributions-file", help="JSON 文件路径 · N 组分布 (ridge)")
@@ -538,13 +571,26 @@ def _cli():
     ap.add_argument("--footer", help="底部整行说明 (funnel_classic / percent_grid)")
     ap.add_argument("--grid-file", help="JSON 文件路径 · [[label, v], ...] (percent_grid, v ∈ [0,100])")
     ap.add_argument("--waterfall-file", help="JSON 文件路径 · [[name, value, kind], ...] kind='total'/'pos'/'neg'")
-    ap.add_argument("--gantt-file", help="JSON 文件路径 · {tasks:[[name, s, e]...], weeks, critical_index, milestones:[[w,label]...]}")
-    ap.add_argument("--pyramid-file", help="JSON 文件路径 · {categories, left_values, right_values, left_label, right_label}")
+    ap.add_argument(
+        "--gantt-file",
+        help="JSON 文件路径 · {tasks:[[name, s, e]...], weeks, critical_index, milestones:[[w,label]...]}",
+    )
+    ap.add_argument(
+        "--pyramid-file", help="JSON 文件路径 · {categories, left_values, right_values, left_label, right_label}"
+    )
     ap.add_argument("--timeline-file", help="JSON 文件路径 · {years:[...], events:[[idx, side, title, sub, is_hi]...]}")
-    ap.add_argument("--marimekko-file", help="JSON 文件路径 · {markets:[[name,share,[[sub,inside_share]...]]...], we_key}")
+    ap.add_argument(
+        "--marimekko-file", help="JSON 文件路径 · {markets:[[name,share,[[sub,inside_share]...]]...], we_key}"
+    )
     ap.add_argument("--matheat-file", help="JSON 文件路径 · {matrix:N×N（对角=-1）, labels, highlight_pair:[i,j]?}")
-    ap.add_argument("--quadrant-file", help="JSON 文件路径 · {items:[[name,x,y]...], x_axis, y_axis, x_title?, y_title?, highlight_index?}")
-    ap.add_argument("--violin-file", help="JSON 文件路径 · {groups:[[name,[values...]]...], y_unit?, highlight_group?, bandwidth?, y_min?, y_max?}")
+    ap.add_argument(
+        "--quadrant-file",
+        help="JSON 文件路径 · {items:[[name,x,y]...], x_axis, y_axis, x_title?, y_title?, highlight_index?}",
+    )
+    ap.add_argument(
+        "--violin-file",
+        help="JSON 文件路径 · {groups:[[name,[values...]]...], y_unit?, highlight_group?, bandwidth?, y_min?, y_max?}",
+    )
     ap.add_argument("--labels", help="逗号分隔的标签（cluster / stage / date / time）")
     ap.add_argument("--highlight", help="boxplot 高亮组名")
     ap.add_argument("--unit", default="", help="X/Y 刻度单位后缀")
@@ -576,8 +622,14 @@ def _cli():
     elif args.type == "funnel_classic":
         stages = [int(x) for x in args.stages.split(",")]
         descs = args.descriptions.split(";") if args.descriptions else None
-        print(make_funnel_classic(stages, stage_labels=labels or [f"Stage {i+1}" for i in range(len(stages))],
-                                  stage_descriptions=descs, footer=args.footer))
+        print(
+            make_funnel_classic(
+                stages,
+                stage_labels=labels or [f"Stage {i + 1}" for i in range(len(stages))],
+                stage_descriptions=descs,
+                footer=args.footer,
+            )
+        )
     elif args.type == "percent_grid":
         opts = json.load(open(args.grid_file))
         footer = args.footer or "ONE TICK = ONE RESPONDENT · DOT MARKS EVERY TENTH"
@@ -587,14 +639,25 @@ def _cli():
         print(make_waterfall(steps))
     elif args.type == "gantt":
         cfg = json.load(open(args.gantt_file))
-        print(make_gantt(cfg["tasks"], weeks=cfg.get("weeks", 16),
-                          critical_index=cfg.get("critical_index"),
-                          milestones=cfg.get("milestones")))
+        print(
+            make_gantt(
+                cfg["tasks"],
+                weeks=cfg.get("weeks", 16),
+                critical_index=cfg.get("critical_index"),
+                milestones=cfg.get("milestones"),
+            )
+        )
     elif args.type == "population_pyramid":
         cfg = json.load(open(args.pyramid_file))
-        print(make_population_pyramid(cfg["categories"], cfg["left_values"], cfg["right_values"],
-                                       left_label=cfg.get("left_label", "MALE"),
-                                       right_label=cfg.get("right_label", "FEMALE")))
+        print(
+            make_population_pyramid(
+                cfg["categories"],
+                cfg["left_values"],
+                cfg["right_values"],
+                left_label=cfg.get("left_label", "MALE"),
+                right_label=cfg.get("right_label", "FEMALE"),
+            )
+        )
     elif args.type == "event_timeline":
         cfg = json.load(open(args.timeline_file))
         print(make_event_timeline(cfg["years"], cfg["events"]))
@@ -606,24 +669,31 @@ def _cli():
         hp = cfg.get("highlight_pair")
         if hp is not None:
             hp = tuple(hp)
-        print(make_matrix_heat(cfg["matrix"], cfg["labels"], highlight_pair=hp,
-                                value_fmt=cfg.get("value_fmt", "auto")))
+        print(make_matrix_heat(cfg["matrix"], cfg["labels"], highlight_pair=hp, value_fmt=cfg.get("value_fmt", "auto")))
     elif args.type == "quadrant_2x2":
         cfg = json.load(open(args.quadrant_file))
-        print(make_quadrant_2x2(cfg["items"],
-                                 x_axis=tuple(cfg.get("x_axis", ("低", "高"))),
-                                 y_axis=tuple(cfg.get("y_axis", ("低", "高"))),
-                                 x_title=cfg.get("x_title", ""),
-                                 y_title=cfg.get("y_title", ""),
-                                 highlight_index=cfg.get("highlight_index")))
+        print(
+            make_quadrant_2x2(
+                cfg["items"],
+                x_axis=tuple(cfg.get("x_axis", ("低", "高"))),
+                y_axis=tuple(cfg.get("y_axis", ("低", "高"))),
+                x_title=cfg.get("x_title", ""),
+                y_title=cfg.get("y_title", ""),
+                highlight_index=cfg.get("highlight_index"),
+            )
+        )
     elif args.type == "violin":
         cfg = json.load(open(args.violin_file))
-        print(make_violin(cfg["groups"],
-                           y_unit=cfg.get("y_unit", ""),
-                           highlight_group=cfg.get("highlight_group"),
-                           bandwidth=cfg.get("bandwidth"),
-                           y_min=cfg.get("y_min"),
-                           y_max=cfg.get("y_max")))
+        print(
+            make_violin(
+                cfg["groups"],
+                y_unit=cfg.get("y_unit", ""),
+                highlight_group=cfg.get("highlight_group"),
+                bandwidth=cfg.get("bandwidth"),
+                y_min=cfg.get("y_min"),
+                y_max=cfg.get("y_max"),
+            )
+        )
 
 
 if __name__ == "__main__":

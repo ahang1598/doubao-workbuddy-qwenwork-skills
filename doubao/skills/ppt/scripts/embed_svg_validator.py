@@ -139,8 +139,7 @@ def validate_embedded_svgs(
     embeds = [
         element
         for element in slide_root.iter()
-        if xml_local_name(element.tag) == "embed"
-        and xml_namespace(element.tag) == slide_namespace
+        if xml_local_name(element.tag) == "embed" and xml_namespace(element.tag) == slide_namespace
     ]
     for embed_index, embed in enumerate(embeds, start=1):
         embed_id = embed.attrib.get("id") or f"embed-{embed_index}"
@@ -163,8 +162,7 @@ def validate_embedded_svgs(
         missing_root_attrs = sorted(
             attr_name
             for attr_name in required_svg_attributes
-            if attr_name not in svg_root.attrib
-            and not (attr_name == "xmlns" and xml_namespace(svg_root.tag) == SVG_NS)
+            if attr_name not in svg_root.attrib and not (attr_name == "xmlns" and xml_namespace(svg_root.tag) == SVG_NS)
         )
         for attr_name in missing_root_attrs:
             append_issue(
@@ -206,9 +204,7 @@ def validate_embedded_svgs(
         ids: set[str] = set()
         references: list[tuple[str, str, str]] = []
         used_review_elements: set[str] = set()
-        svg_has_animation = any(
-            xml_local_name(descendant.tag) in animation_elements for descendant in svg_root.iter()
-        )
+        svg_has_animation = any(xml_local_name(descendant.tag) in animation_elements for descendant in svg_root.iter())
         for node in svg_root.iter():
             node_name = xml_local_name(node.tag)
             node_path = f"{svg_path}/{node_name}"
@@ -472,19 +468,51 @@ _SVG_WIDE_LETTER_WIDTH_RATIOS: dict[str, float] = {
     "Z": 0.62,
 }
 _SVG_SERIF_FONT_PATTERNS = {
-    "song", "songti", "simsun", "ming", "mincho",
-    "georgia", "times", "caslon", "garamond", "sourcehan-serif",
-    "source han serif", "思源宋体", "宋体", "明体",
+    "song",
+    "songti",
+    "simsun",
+    "ming",
+    "mincho",
+    "georgia",
+    "times",
+    "caslon",
+    "garamond",
+    "sourcehan-serif",
+    "source han serif",
+    "思源宋体",
+    "宋体",
+    "明体",
 }
 _SVG_SANS_EXPLICIT_MARKERS = {
-    "sans", "sans-serif", "sans serif", "sourcehan-sans", "source han sans", "思源黑体", "黑体",
-    "helvetica", "arial", "inter", "roboto", "verdana", "tahoma", "calibri", "open sans",
+    "sans",
+    "sans-serif",
+    "sans serif",
+    "sourcehan-sans",
+    "source han sans",
+    "思源黑体",
+    "黑体",
+    "helvetica",
+    "arial",
+    "inter",
+    "roboto",
+    "verdana",
+    "tahoma",
+    "calibri",
+    "open sans",
 }
 # Geometric/wide sans families (Montserrat/Poppins/Futura) advance ~0.62-0.66em per glyph,
 # noticeably wider than the humanist sans baseline; they get their own tier.
 _SVG_WIDE_SANS_FONT_MARKERS = {
-    "montserrat", "poppins", "futura", "century gothic", "gotham", "raleway",
-    "nunito", "quicksand", "josefin", "comfortaa",
+    "montserrat",
+    "poppins",
+    "futura",
+    "century gothic",
+    "gotham",
+    "raleway",
+    "nunito",
+    "quicksand",
+    "josefin",
+    "comfortaa",
 }
 _SVG_FONT_CATEGORY_MULTIPLIERS: dict[str, dict[str, float]] = {
     "sans": {"upper": 0.57, "lower": 0.51, "digit": 0.58, "punct": 0.50},
@@ -568,10 +596,7 @@ _SVG_DESCENDER_CHARS = frozenset("gjpqy" + ",;()[]{}")
 
 
 def _svg_text_has_descender(text: str) -> bool:
-    return any(
-        character in _SVG_DESCENDER_CHARS or _svg_is_cjk_char(character)
-        for character in text
-    )
+    return any(character in _SVG_DESCENDER_CHARS or _svg_is_cjk_char(character) for character in text)
 
 
 def _svg_text_width(
@@ -583,8 +608,7 @@ def _svg_text_width(
 ) -> float:
     east_asian_context = any(_svg_is_cjk_char(character) for character in text)
     width = sum(
-        _svg_estimate_character_width(character, font_size, bold, font_family, east_asian_context)
-        for character in text
+        _svg_estimate_character_width(character, font_size, bold, font_family, east_asian_context) for character in text
     )
     if text:
         width += letter_spacing * max(len(text) - 1, 0)
@@ -687,6 +711,14 @@ def _svg_visual_bbox(node: ET.Element, path: str) -> dict[str, Any] | None:
 OUT_OF_BOUNDS_MARGIN_PX = 2.0
 # A text may exceed its container path width by this much before it is treated as overflowing.
 TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX = 1.0
+# A rect covering most of the SVG is a backdrop, not a text container.
+RECT_BACKDROP_VIEWBOX_COVERAGE_RATIO = 0.8
+# A donut/pie wedge label may exceed the horizontal room inside its sector by this many pixels
+# before it is treated as truncated. It is deliberately wider than the straight-container tolerance:
+# it absorbs both the CJK advance-estimate noise and the sampling error of measuring a curved
+# chord, and it sits comfortably below the ~15px shortfall of the smallest real truncation seen on
+# slide 14 while staying above the ~5px slack a fitting percentage sub-label leaves.
+ARC_SECTOR_LABEL_TRUNCATION_TOLERANCE_PX = 10.0
 
 
 def _svg_viewbox(svg_root: ET.Element) -> tuple[float, float, float, float] | None:
@@ -761,6 +793,169 @@ def _svg_polyline_container_bbox(node: ET.Element, path: str) -> dict[str, Any] 
     }
 
 
+def _flatten_svg_arc(
+    x1: float,
+    y1: float,
+    rx: float,
+    ry: float,
+    phi_deg: float,
+    large_arc: int,
+    sweep: int,
+    x2: float,
+    y2: float,
+) -> list[tuple[float, float]]:
+    """Flatten an absolute SVG elliptical arc into polyline vertices (endpoint excluded start)."""
+    if rx == 0 or ry == 0:
+        return [(x2, y2)]
+    phi = math.radians(phi_deg)
+    rx, ry = abs(rx), abs(ry)
+    dx, dy = (x1 - x2) / 2.0, (y1 - y2) / 2.0
+    cos_phi, sin_phi = math.cos(phi), math.sin(phi)
+    x1p = cos_phi * dx + sin_phi * dy
+    y1p = -sin_phi * dx + cos_phi * dy
+    lam = x1p * x1p / (rx * rx) + y1p * y1p / (ry * ry)
+    if lam > 1:
+        scale = math.sqrt(lam)
+        rx, ry = rx * scale, ry * scale
+    numerator = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p
+    denominator = rx * rx * y1p * y1p + ry * ry * x1p * x1p
+    coef = math.sqrt(max(numerator / denominator, 0.0)) if denominator else 0.0
+    if large_arc == sweep:
+        coef = -coef
+    cxp = coef * rx * y1p / ry
+    cyp = -coef * ry * x1p / rx
+    cx = cos_phi * cxp - sin_phi * cyp + (x1 + x2) / 2.0
+    cy = sin_phi * cxp + cos_phi * cyp + (y1 + y2) / 2.0
+
+    def _vector_angle(ux: float, uy: float, vx: float, vy: float) -> float:
+        dot = ux * vx + uy * vy
+        modulus = math.hypot(ux, uy) * math.hypot(vx, vy)
+        if modulus == 0:
+            return 0.0
+        angle = math.acos(max(-1.0, min(1.0, dot / modulus)))
+        return -angle if ux * vy - uy * vx < 0 else angle
+
+    theta1 = _vector_angle(1.0, 0.0, (x1p - cxp) / rx, (y1p - cyp) / ry)
+    dtheta = _vector_angle(
+        (x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry
+    )
+    if sweep == 0 and dtheta > 0:
+        dtheta -= 2 * math.pi
+    elif sweep == 1 and dtheta < 0:
+        dtheta += 2 * math.pi
+    segments = max(2, int(math.ceil(abs(dtheta) / (math.pi / 32))))
+    points: list[tuple[float, float]] = []
+    for step in range(1, segments + 1):
+        theta = theta1 + dtheta * step / segments
+        arc_x = cos_phi * rx * math.cos(theta) - sin_phi * ry * math.sin(theta) + cx
+        arc_y = sin_phi * rx * math.cos(theta) + cos_phi * ry * math.sin(theta) + cy
+        points.append((arc_x, arc_y))
+    return points
+
+
+def _svg_arc_wedge_polygon(node: ET.Element, path: str) -> dict[str, Any] | None:
+    """Flatten a filled pie/donut wedge (absolute M/L/A/Z outline) into a polygon.
+
+    These curved sectors are exactly what _svg_polyline_container_bbox refuses to touch, so a
+    label inside one currently has no container to measure against. Only closed, arc-bearing,
+    absolute-coordinate, filled paths qualify; anything relative or built from Bezier curves is
+    left to screenshot review to avoid inventing wrong geometry.
+    """
+    if node.attrib.get("transform"):
+        # The path data is in its local coordinate system, while labels are measured in SVG root
+        # coordinates. Until this check applies SVG transform matrices, skip transformed wedges
+        # rather than compare labels against a polygon built from stale raw `d` coordinates.
+        return None
+    d = node.attrib.get("d") or ""
+    fill = node.attrib.get("fill")
+    if fill is None or fill.strip().lower() == "none":
+        return None
+    if "A" not in d:
+        return None
+    # Bail on relative commands (lowercase) and on Bezier/quadratic curves we cannot flatten here.
+    if re.search(r"[cqsthvmlz]", d) or re.search(r"[CQST]", d):
+        return None
+    tokens = re.findall(r"[MLAZ]|-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?", d)
+    points: list[tuple[float, float]] = []
+    index = 0
+    cur_x = cur_y = 0.0
+    closed = False
+    while index < len(tokens):
+        command = tokens[index]
+        if command == "M" and index + 2 < len(tokens):
+            cur_x, cur_y = float(tokens[index + 1]), float(tokens[index + 2])
+            points.append((cur_x, cur_y))
+            index += 3
+        elif command == "L" and index + 2 < len(tokens):
+            cur_x, cur_y = float(tokens[index + 1]), float(tokens[index + 2])
+            points.append((cur_x, cur_y))
+            index += 3
+        elif command == "A" and index + 7 < len(tokens):
+            rx, ry = float(tokens[index + 1]), float(tokens[index + 2])
+            rotation = float(tokens[index + 3])
+            large_arc, sweep = int(float(tokens[index + 4])), int(float(tokens[index + 5]))
+            end_x, end_y = float(tokens[index + 6]), float(tokens[index + 7])
+            points.extend(
+                _flatten_svg_arc(cur_x, cur_y, rx, ry, rotation, large_arc, sweep, end_x, end_y)
+            )
+            cur_x, cur_y = end_x, end_y
+            index += 8
+        elif command == "Z":
+            closed = True
+            index += 1
+        else:
+            index += 1
+    if not closed or len(points) < 3:
+        return None
+    xs = [point[0] for point in points]
+    ys = [point[1] for point in points]
+    return {
+        "kind": "path",
+        "path": path,
+        "points": points,
+        "x": min(xs),
+        "y": min(ys),
+        "width": max(xs) - min(xs),
+        "height": max(ys) - min(ys),
+    }
+
+
+def _point_in_polygon(x: float, y: float, points: list[tuple[float, float]]) -> bool:
+    inside = False
+    count = len(points)
+    previous = count - 1
+    for current in range(count):
+        xi, yi = points[current]
+        xj, yj = points[previous]
+        if (yi > y) != (yj > y):
+            x_cross = (xj - xi) * (y - yi) / (yj - yi) + xi
+            if x < x_cross:
+                inside = not inside
+        previous = current
+    return inside
+
+
+def _polygon_horizontal_interval(
+    points: list[tuple[float, float]], y: float, x_ref: float
+) -> tuple[float, float] | None:
+    """Return the inside-interval [left, right] of a horizontal ray at y that contains x_ref."""
+    crossings: list[float] = []
+    count = len(points)
+    previous = count - 1
+    for current in range(count):
+        xi, yi = points[current]
+        xj, yj = points[previous]
+        if (yi > y) != (yj > y):
+            crossings.append((xj - xi) * (y - yi) / (yj - yi) + xi)
+        previous = current
+    crossings.sort()
+    for pair_index in range(0, len(crossings) - 1, 2):
+        left, right = crossings[pair_index], crossings[pair_index + 1]
+        if left - 1e-6 <= x_ref <= right + 1e-6:
+            return left, right
+    return None
+
+
 def _svg_segment_clip(
     segment: dict[str, Any], xmin: float, ymin: float, xmax: float, ymax: float
 ) -> tuple[float, float, float, float] | None:
@@ -786,12 +981,8 @@ def _svg_segment_clip(
 
 
 def _svg_bbox_overlap(left: dict[str, Any], right: dict[str, Any]) -> float:
-    overlap_width = min(
-        left["x"] + left["width"], right["x"] + right["width"]
-    ) - max(left["x"], right["x"])
-    overlap_height = min(
-        left["y"] + left["height"], right["y"] + right["height"]
-    ) - max(left["y"], right["y"])
+    overlap_width = min(left["x"] + left["width"], right["x"] + right["width"]) - max(left["x"], right["x"])
+    overlap_height = min(left["y"] + left["height"], right["y"] + right["height"]) - max(left["y"], right["y"])
     if overlap_width <= 0 or overlap_height <= 0:
         return 0.0
     return overlap_width * overlap_height
@@ -811,8 +1002,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
     embeds = [
         element
         for element in slide_root.iter()
-        if xml_local_name(element.tag) == "embed"
-        and xml_namespace(element.tag) == slide_namespace
+        if xml_local_name(element.tag) == "embed" and xml_namespace(element.tag) == slide_namespace
     ]
     for embed_index, embed in enumerate(embeds, start=1):
         embed_id = embed.attrib.get("id") or f"embed-{embed_index}"
@@ -824,22 +1014,18 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
         primitives: list[dict[str, Any]] = []
         lines: list[dict[str, Any]] = []
         containers: list[dict[str, Any]] = []
+        wedges: list[dict[str, Any]] = []
         tag_counts: dict[str, int] = {}
 
         def visit(node: ET.Element, parent_hidden: bool = False, parent_animated: bool = False) -> None:
             node_name = xml_local_name(node.tag)
             tag_counts[node_name] = tag_counts.get(node_name, 0) + 1
-            node_path = (
-                svg_path
-                if node is svg_root
-                else f"{svg_path}/{node_name}[{tag_counts[node_name]}]"
-            )
+            node_path = svg_path if node is svg_root else f"{svg_path}/{node_name}[{tag_counts[node_name]}]"
             hidden = parent_hidden or node_name in {"defs", "clipPath", "mask", "filter"}
             # Animated elements move at render time, so their static coordinates cannot prove a
             # geometric defect; the new layout checks below skip them.
             animated = parent_animated or any(
-                xml_local_name(child.tag) in {"animate", "animateMotion", "animateTransform", "set"}
-                for child in node
+                xml_local_name(child.tag) in {"animate", "animateMotion", "animateTransform", "set"} for child in node
             )
             if not hidden:
                 primitive = _svg_visual_bbox(node, node_path)
@@ -851,10 +1037,16 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                     if segment is not None:
                         segment["animated"] = animated
                         lines.append(segment)
+                elif node_name == "rect" and primitive is not None and not animated:
+                    containers.append(primitive)
                 elif node_name in {"path", "polygon", "polyline"}:
                     container = _svg_polyline_container_bbox(node, node_path)
                     if container is not None and container["width"] > 0 and container["height"] > 0:
                         containers.append(container)
+                    if node_name == "path" and not animated:
+                        wedge = _svg_arc_wedge_polygon(node, node_path)
+                        if wedge is not None and wedge["width"] > 0 and wedge["height"] > 0:
+                            wedges.append(wedge)
                 elif node_name in {"circle", "ellipse"} and primitive is not None:
                     # A circle/ellipse holding a centered label is a text container too: at the
                     # vertical center the available horizontal chord is the full bbox width (the
@@ -874,11 +1066,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                 visit(child, hidden, animated)
 
         visit(svg_root)
-        texts = [
-            primitive
-            for primitive in primitives
-            if primitive["kind"] == "text" and not primitive.get("animated")
-        ]
+        texts = [primitive for primitive in primitives if primitive["kind"] == "text" and not primitive.get("animated")]
         shapes = [
             primitive
             for primitive in primitives
@@ -910,10 +1098,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                 elif (
                     left["kind"] == right["kind"]
                     and left["kind"] in {"rect", "circle", "ellipse"}
-                    and all(
-                        abs(left[key] - right[key]) < 0.001
-                        for key in ("x", "y", "width", "height")
-                    )
+                    and all(abs(left[key] - right[key]) < 0.001 for key in ("x", "y", "width", "height"))
                 ):
                     union(left_index, right_index)
 
@@ -929,10 +1114,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                     "level": "error",
                     "code": "embed_svg_bbox_overlap",
                     "path": component[0]["path"],
-                    "message": (
-                        f"embedded SVG {embed_id} has {len(component)} overlapping "
-                        f"{kind} elements"
-                    ),
+                    "message": (f"embedded SVG {embed_id} has {len(component)} overlapping {kind} elements"),
                     "hint": (
                         "Move the SVG elements to distinct coordinates, or remove duplicated "
                         "generated elements before writing the slide."
@@ -941,10 +1123,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                     "overlaps": [
                         {
                             "path": primitive["path"],
-                            "bbox": {
-                                key: round(primitive[key], 3)
-                                for key in ("x", "y", "width", "height")
-                            },
+                            "bbox": {key: round(primitive[key], 3) for key in ("x", "y", "width", "height")},
                             **({"text": primitive["text"]} if "text" in primitive else {}),
                         }
                         for primitive in component
@@ -957,10 +1136,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
             )
 
         def _text_bbox(primitive: dict[str, Any]) -> dict[str, float]:
-            return {
-                key: round(primitive[key], 3)
-                for key in ("x", "y", "width", "height")
-            }
+            return {key: round(primitive[key], 3) for key in ("x", "y", "width", "height")}
 
         # Out-of-canvas: a text or shape whose box leaves the viewBox by more than the CJK
         # width-estimate margin is clipped by the embed frame and cannot be intentional.
@@ -1050,9 +1226,7 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
             band_top = text["y"] + text["height"] * 0.15
             band_bottom = text["y"] + text["height"] * 0.7
             for line in static_lines:
-                clipped = _svg_segment_clip(
-                    line, text["x"], band_top, text["x"] + text["width"], band_bottom
-                )
+                clipped = _svg_segment_clip(line, text["x"], band_top, text["x"] + text["width"], band_bottom)
                 if clipped is None:
                     continue
                 horizontal_span = abs(clipped[2] - clipped[0])
@@ -1064,13 +1238,8 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                         "level": "error",
                         "code": "embed_svg_line_through_text",
                         "path": text["path"],
-                        "message": (
-                            f"embedded SVG {embed_id} line strikes through text '{text['text']}'"
-                        ),
-                        "hint": (
-                            "Move the line or the text apart so the connector or axis does not "
-                            "cross the label."
-                        ),
+                        "message": (f"embedded SVG {embed_id} line strikes through text '{text['text']}'"),
+                        "hint": ("Move the line or the text apart so the connector or axis does not cross the label."),
                         "elements": [embed_id],
                         "overlaps": [
                             {"path": text["path"], "bbox": _text_bbox(text), "text": text["text"]},
@@ -1096,13 +1265,32 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
             center_y = text["y"] + text["height"] / 2
             enclosing = None
             for container in containers:
+                if container["kind"] == "rect":
+                    if viewbox is not None:
+                        _, _, viewbox_width, viewbox_height = viewbox
+                        if (
+                            container["width"] * container["height"]
+                            >= viewbox_width
+                            * viewbox_height
+                            * RECT_BACKDROP_VIEWBOX_COVERAGE_RATIO
+                        ):
+                            continue
+                    # Thin rules and highlight strips may cross a label's center but do not frame it.
+                    if (
+                        text["y"]
+                        < container["y"] - TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX
+                        or text["y"] + text["height"]
+                        > container["y"]
+                        + container["height"]
+                        + TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX
+                    ):
+                        continue
                 if (
                     container["x"] <= center_x <= container["x"] + container["width"]
                     and container["y"] <= center_y <= container["y"] + container["height"]
                 ):
                     if enclosing is None or (
-                        container["width"] * container["height"]
-                        < enclosing["width"] * enclosing["height"]
+                        container["width"] * container["height"] < enclosing["width"] * enclosing["height"]
                     ):
                         enclosing = container
             if enclosing is None:
@@ -1131,6 +1319,66 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                     "measurement": {
                         "text_width_px": round(text["width"], 3),
                         "container_width_px": round(enclosing["width"], 3),
+                    },
+                }
+            )
+
+        # Pie/donut wedge label truncation: a curved sector is not a straight-edged container, so
+        # the check above never sees it. Here we find the smallest wedge whose flattened polygon
+        # encloses the label center, measure the horizontal room the sector actually leaves on each
+        # side of the label at its center row, and flag when either side clips the glyphs. Measuring
+        # per side (not total chord width) catches labels pushed toward the thin outer edge of a
+        # sector, where one side has almost no room even though the opposite side is roomy.
+        for text in texts:
+            center_x = text["x"] + text["width"] / 2
+            center_y = text["y"] + text["height"] / 2
+            enclosing_wedge = None
+            for wedge in wedges:
+                if _point_in_polygon(center_x, center_y, wedge["points"]):
+                    if enclosing_wedge is None or (
+                        wedge["width"] * wedge["height"]
+                        < enclosing_wedge["width"] * enclosing_wedge["height"]
+                    ):
+                        enclosing_wedge = wedge
+            if enclosing_wedge is None:
+                continue
+            interval = _polygon_horizontal_interval(
+                enclosing_wedge["points"], center_y, center_x
+            )
+            if interval is None:
+                continue
+            left, right = interval
+            room_left = center_x - left
+            room_right = right - center_x
+            overflow_left = (text["width"] / 2) - room_left
+            overflow_right = (text["width"] / 2) - room_right
+            overflow = max(overflow_left, overflow_right)
+            if overflow <= ARC_SECTOR_LABEL_TRUNCATION_TOLERANCE_PX:
+                continue
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "embed_svg_text_container_overflow",
+                    "path": text["path"],
+                    "message": (
+                        f"embedded SVG {embed_id} text '{text['text']}' extends "
+                        f"{round(overflow, 1)}px past the room inside its pie/donut sector and is "
+                        f"truncated"
+                    ),
+                    "hint": (
+                        "Shorten the label, reduce its font-size, or move it toward the wider part "
+                        "of the sector so it fits inside the wedge."
+                    ),
+                    "elements": [embed_id],
+                    "overlaps": [
+                        {"path": text["path"], "bbox": _text_bbox(text), "text": text["text"]},
+                        {"path": enclosing_wedge["path"], "bbox": _text_bbox(enclosing_wedge)},
+                    ],
+                    "measurement": {
+                        "text_width_px": round(text["width"], 3),
+                        "sector_room_left_px": round(room_left, 3),
+                        "sector_room_right_px": round(room_right, 3),
+                        "overflow_px": round(overflow, 3),
                     },
                 }
             )

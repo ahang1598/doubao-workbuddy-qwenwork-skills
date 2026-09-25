@@ -22,9 +22,7 @@ class IconParkToolTest(unittest.TestCase):
     def test_search_icons_finds_growth_trend(self) -> None:
         results = iconpark_tool.search_icons(self.index_data, {"query": "增长趋势", "limit": 5})
         self.assertTrue(results)
-        self.assertTrue(
-            any(entry["iconType"] == "iconpark/Charts/positive-dynamics.svg" for entry in results)
-        )
+        self.assertTrue(any(entry["iconType"] == "iconpark/Charts/positive-dynamics.svg" for entry in results))
 
     def test_search_icons_supports_english_query(self) -> None:
         results = iconpark_tool.search_icons(self.index_data, {"query": "security protect", "limit": 3})
@@ -132,9 +130,7 @@ class IconParkToolCLITest(unittest.TestCase):
 
         output = json.loads(result.stdout)
         self.assertTrue(output)
-        self.assertTrue(
-            any(entry["iconType"] == "iconpark/Charts/positive-dynamics.svg" for entry in output)
-        )
+        self.assertTrue(any(entry["iconType"] == "iconpark/Charts/positive-dynamics.svg" for entry in output))
 
     def test_cli_resolve_writes_json_to_stdout(self) -> None:
         result = self.run_tool("resolve", "--name", "chart-line")

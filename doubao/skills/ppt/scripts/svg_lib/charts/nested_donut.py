@@ -16,17 +16,37 @@ data schema：
   - value: domain 全局占比（推荐 sum=100 或与 total_value 一致，函数会按总和归一）
   - sub_value: sub 的全局占比（该 domain 所有 sub 加起来应 ≈ value；不强制）
 """
+
 from __future__ import annotations
 import math
 from typing import Dict, Optional
 
 from ._shared import (
-
-    resolve_palette, xesc, svg_open, svg_close, auto_font_size,
-    _rgba_with_alpha, rgb_tuple,
+    resolve_palette,
+    xesc,
+    svg_open,
+    svg_close,
+    auto_font_size,
+    _rgba_with_alpha,
+    rgb_tuple,
 )
 
-from .._common import (_INK, _derive_series_colors, _is_dark_palette, _prepend_bg_if_dark, _render_title_block, _resolve_font, _resolve_palette, _rgb_tuple, _rgba_with_alpha, _xesc, ridge_density_from_samples, _variant_is_classic, _dispatch_to_svg_lib, _estimate_label_width_px)
+from .._common import (
+    _INK,
+    _derive_series_colors,
+    _is_dark_palette,
+    _prepend_bg_if_dark,
+    _render_title_block,
+    _resolve_font,
+    _resolve_palette,
+    _rgb_tuple,
+    _rgba_with_alpha,
+    _xesc,
+    ridge_density_from_samples,
+    _variant_is_classic,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
+)
 
 
 def _fit_leader_label(text, max_width_px, fs, body_font, bold=True, fs_floor=9.0):
@@ -87,13 +107,13 @@ def _abbrev_number(n):
     absv = abs(v)
     sign = "-" if v < 0 else ""
     if absv >= 1e12:
-        s = f"{absv/1e12:.2f}T"
+        s = f"{absv / 1e12:.2f}T"
     elif absv >= 1e9:
-        s = f"{absv/1e9:.2f}B"
+        s = f"{absv / 1e9:.2f}B"
     elif absv >= 1e6:
-        s = f"{absv/1e6:.2f}M"
+        s = f"{absv / 1e6:.2f}M"
     elif absv >= 1e3:
-        s = f"{absv/1e3:.1f}K"
+        s = f"{absv / 1e3:.1f}K"
     else:
         # For small values keep original repr; if it's integer-valued show as int
         if isinstance(n, float) and float(n).is_integer():
@@ -140,8 +160,11 @@ def _fit_center_label(text, max_width_px, fs, body_font, bold=True, fs_floor=10.
 
 
 VARIANTS = (
-    "donut_flat", "donut_gradient", "sunburst_flat",
-    "polar_area_outlined", "donut_layered",
+    "donut_flat",
+    "donut_gradient",
+    "sunburst_flat",
+    "polar_area_outlined",
+    "donut_layered",
 )
 
 
@@ -180,18 +203,18 @@ def _arc_path(cx, cy, r_in, r_out, ang_from, ang_to):
     x3, y3 = _polar(cx, cy, r_in, ang_to)
     x4, y4 = _polar(cx, cy, r_in, ang_from)
     if r_in <= 0.01:
-        return (f"M {cx:.2f} {cy:.2f} "
-                f"L {x1:.2f} {y1:.2f} "
-                f"A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} Z")
-    return (f"M {x1:.2f} {y1:.2f} "
-            f"A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} "
-            f"L {x3:.2f} {y3:.2f} "
-            f"A {r_in:.2f} {r_in:.2f} 0 {large} 0 {x4:.2f} {y4:.2f} Z")
+        return f"M {cx:.2f} {cy:.2f} L {x1:.2f} {y1:.2f} A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} Z"
+    return (
+        f"M {x1:.2f} {y1:.2f} "
+        f"A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} "
+        f"L {x3:.2f} {y3:.2f} "
+        f"A {r_in:.2f} {r_in:.2f} 0 {large} 0 {x4:.2f} {y4:.2f} Z"
+    )
 
 
-def _render_leader_labels(cx, cy, R_ref, entries, ink, body_font,
-                          fs=10.0, min_span=1.5,
-                          viewbox_x=0.0, viewbox_w=None, margin=2.0):
+def _render_leader_labels(
+    cx, cy, R_ref, entries, ink, body_font, fs=10.0, min_span=1.5, viewbox_x=0.0, viewbox_w=None, margin=2.0
+):
     """给 outer label 打外部 leader line（水平引线 + 两侧竖排 label）。
 
     entries: list of (label_text, s_from, s_to) —— 已按扇形角度排好；跨越 span<min_span 会被丢弃。
@@ -266,7 +289,12 @@ def _render_leader_labels(cx, cy, R_ref, entries, ink, body_font,
                     avail = (label_x + text_dx) - (viewbox_x + margin)
                 if avail > 0:
                     label_text, label_fs = _fit_leader_label(
-                        label_text, avail, fs, body_font, bold=True, fs_floor=9.0,
+                        label_text,
+                        avail,
+                        fs,
+                        body_font,
+                        bold=True,
+                        fs_floor=9.0,
                     )
             fragments.append(
                 f'<polyline points="{ax:.1f},{ay:.1f} {elbow_x:.1f},{ly:.1f} '
@@ -352,17 +380,17 @@ def draw_nested_donut(
     # Layered drop-shadow for donut_layered:
     # 用一份 translate(3,5) 的深色半透明副本叠在原 path 下方，模拟原 feGaussianBlur+feOffset+feFuncA(slope=0.35) 的效果
     # （不用 <filter>，validator 不支持 filter/feX）
-    _use_layered_shadow = (variant == "donut_layered")
+    _use_layered_shadow = variant == "donut_layered"
 
     # radial gradients for donut_gradient
     if variant == "donut_gradient":
-        for i, col in enumerate(series[:len(segments)]):
+        for i, col in enumerate(series[: len(segments)]):
             r, g, b = rgb_tuple(col)
             defs_parts.append(
                 f'<radialGradient id="ndg_{i}" cx="50%" cy="50%" r="65%">'
-                f'<stop offset="0%" stop-color="rgba({min(255,r+40)},{min(255,g+40)},{min(255,b+40)},1)"/>'
-                f'<stop offset="100%" stop-color="rgba({max(0,r-30)},{max(0,g-30)},{max(0,b-30)},1)"/>'
-                f'</radialGradient>'
+                f'<stop offset="0%" stop-color="rgba({min(255, r + 40)},{min(255, g + 40)},{min(255, b + 40)},1)"/>'
+                f'<stop offset="100%" stop-color="rgba({max(0, r - 30)},{max(0, g - 30)},{max(0, b - 30)},1)"/>'
+                f"</radialGradient>"
             )
 
     # 几何
@@ -387,21 +415,19 @@ def draw_nested_donut(
     # 主图元
     if variant == "sunburst_flat":
         # 中心 ALL
-        parts.append(
-            f'<circle cx="{cx}" cy="{cy}" r="{R_center}" fill="{ink}"/>'
-        )
+        parts.append(f'<circle cx="{cx}" cy="{cy}" r="{R_center}" fill="{ink}"/>')
         # 中心值（value 在上，label 在下）
         _fs_center_val = max(14, R_center * 0.42)
         parts.append(
             f'<text x="{cx}" y="{cy - 2:.1f}" text-anchor="middle" font-family="{body_font}" '
             f'font-size="{_fs_center_val:.0f}" font-weight="800" fill="{bg}">'
-            f'{total_value:g}</text>'
+            f"{total_value:g}</text>"
         )
         parts.append(
             f'<text x="{cx}" y="{cy + _fs_center_val * 0.75:.1f}" text-anchor="middle" font-family="{body_font}" '
             f'font-size="{max(9, R_center * 0.22):.0f}" font-weight="700" fill="{bg}" '
             f'letter-spacing=".18em">'
-            f'{xesc(total_label)}</text>'
+            f"{xesc(total_label)}</text>"
         )
         ang = 0.0
         _sunburst_leader_entries = []  # collect (label_text, s_from, s_to) for leader-line pass
@@ -463,11 +489,19 @@ def draw_nested_donut(
             ang = d_to
 
         if _needs_leader and _sunburst_leader_entries:
-            parts.extend(_render_leader_labels(
-                cx, cy, R_l2_out, _sunburst_leader_entries,
-                ink=ink, body_font=body_font, fs=10.0,
-                viewbox_x=0.0, viewbox_w=width,
-            ))
+            parts.extend(
+                _render_leader_labels(
+                    cx,
+                    cy,
+                    R_l2_out,
+                    _sunburst_leader_entries,
+                    ink=ink,
+                    body_font=body_font,
+                    fs=10.0,
+                    viewbox_x=0.0,
+                    viewbox_w=width,
+                )
+            )
 
     elif variant == "polar_area_outlined":
         # 展平 sub
@@ -513,11 +547,19 @@ def draw_nested_donut(
                 if skip_tiny and (sval / max_val) < 0.15:
                     continue
                 _entries.append((f"{xesc(sname)} {sval:g}", a_from, a_to))
-            parts.extend(_render_leader_labels(
-                cx, cy, R_max, _entries,
-                ink=ink, body_font=body_font, fs=float(fs),
-                viewbox_x=0.0, viewbox_w=width,
-            ))
+            parts.extend(
+                _render_leader_labels(
+                    cx,
+                    cy,
+                    R_max,
+                    _entries,
+                    ink=ink,
+                    body_font=body_font,
+                    fs=float(fs),
+                    viewbox_x=0.0,
+                    viewbox_w=width,
+                )
+            )
         else:
             for k, (sname, sval, di) in enumerate(subs_flat):
                 a_from = k * ang_step
@@ -555,7 +597,7 @@ def draw_nested_donut(
         parts.append(
             f'<text x="{cx}" y="{cy - 2:.1f}" text-anchor="middle" font-family="{body_font}" '
             f'font-size="{_fs_center_val:.0f}" font-weight="800" fill="{ink}">'
-            f'{total_value:g}</text>'
+            f"{total_value:g}</text>"
         )
         parts.append(
             f'<text x="{cx}" y="{cy + _fs_center_val * 0.85:.1f}" text-anchor="middle" '
@@ -592,7 +634,7 @@ def draw_nested_donut(
         for ri, row in enumerate(rows):
             x_cur = legend_left
             y = lg_y_top + ri * row_h
-            for (i, dom, iw) in row:
+            for i, dom, iw in row:
                 col = series[i % len(series)]
                 r, g, b = rgb_tuple(col)
                 parts.append(
@@ -618,13 +660,9 @@ def draw_nested_donut(
             inner_d = _arc_path(cx, cy, R_center, R_inner, d_from, d_to)
             if _use_layered_shadow:
                 parts.append(
-                    f'<path d="{inner_d}" transform="translate(3,5)" '
-                    f'fill="{ink}" fill-opacity="0.25" stroke="none"/>'
+                    f'<path d="{inner_d}" transform="translate(3,5)" fill="{ink}" fill-opacity="0.25" stroke="none"/>'
                 )
-            parts.append(
-                f'<path d="{inner_d}" '
-                f'fill="{inner_fill}" stroke="{bg}" stroke-width="1.5"{filter_attr}/>'
-            )
+            parts.append(f'<path d="{inner_d}" fill="{inner_fill}" stroke="{bg}" stroke-width="1.5"{filter_attr}/>')
             mid_ang = (d_from + d_to) / 2
             span = d_to - d_from
             # Skip labels for degenerate / near-zero slices (avoid stacking labels at
@@ -643,8 +681,7 @@ def draw_nested_donut(
                             f'fill="{ink}" fill-opacity="0.22" stroke="none"/>'
                         )
                     parts.append(
-                        f'<path d="{outer_d}" '
-                        f'fill="{outer_fill}" stroke="{bg}" stroke-width="1"{filter_attr}/>'
+                        f'<path d="{outer_d}" fill="{outer_fill}" stroke="{bg}" stroke-width="1"{filter_attr}/>'
                     )
                     outer_labels.append((sname, sval, s_from, s_to, i))
                     sub_ang = s_to
@@ -690,30 +727,32 @@ def draw_nested_donut(
                         f'<path d="{outer_d}" transform="translate(3,5)" '
                         f'fill="{ink}" fill-opacity="0.22" stroke="none"/>'
                     )
-                parts.append(
-                    f'<path d="{outer_d}" '
-                    f'fill="{outer_fill}" stroke="{bg}" stroke-width="1"{filter_attr}/>'
-                )
+                parts.append(f'<path d="{outer_d}" fill="{outer_fill}" stroke="{bg}" stroke-width="1"{filter_attr}/>')
                 outer_labels.append((sname, sval, s_from, s_to, i))
                 sub_ang = s_to
             ang = d_to
 
         # 外环标签 —— 走 leader-line（>8 sub 或 wide）或径向 rotate
         if _needs_leader:
-            _entries = [
-                (f"{xesc(sname)} {sval:g}", s_from, s_to)
-                for (sname, sval, s_from, s_to, di) in outer_labels
-            ]
-            parts.extend(_render_leader_labels(
-                cx, cy, R_outer, _entries,
-                ink=ink, body_font=body_font, fs=10.0,
-                viewbox_x=0.0, viewbox_w=width,
-            ))
+            _entries = [(f"{xesc(sname)} {sval:g}", s_from, s_to) for (sname, sval, s_from, s_to, di) in outer_labels]
+            parts.extend(
+                _render_leader_labels(
+                    cx,
+                    cy,
+                    R_outer,
+                    _entries,
+                    ink=ink,
+                    body_font=body_font,
+                    fs=10.0,
+                    viewbox_x=0.0,
+                    viewbox_w=width,
+                )
+            )
         else:
             # 极小 slice（span<5°）省略 label；相邻 label 角度差过小时交替径向偏移防压叠
             prev_visible_mid = None
             prev_offset = 0
-            for (sname, sval, s_from, s_to, di) in outer_labels:
+            for sname, sval, s_from, s_to, di in outer_labels:
                 span = s_to - s_from
                 if span < 5:
                     continue
@@ -735,7 +774,7 @@ def draw_nested_donut(
                     f'font-family="{body_font}" font-size="{fs}" font-weight="600" '
                     f'fill="{ink}" dominant-baseline="middle" '
                     f'transform="rotate({rot:.1f} {tx:.1f} {ty:.1f})">'
-                    f'{xesc(sname)} {sval:g}</text>'
+                    f"{xesc(sname)} {sval:g}</text>"
                 )
 
         # 中心圆 + total
@@ -747,7 +786,7 @@ def draw_nested_donut(
         parts.append(
             f'<text x="{cx}" y="{cy - 2}" text-anchor="middle" font-family="{body_font}" '
             f'font-size="{fs_total_val:.0f}" font-weight="700" fill="{ink}">'
-            f'{total_value:g}</text>'
+            f"{total_value:g}</text>"
         )
         parts.append(
             f'<text x="{cx}" y="{cy + 18}" text-anchor="middle" font-family="{body_font}" '
@@ -777,7 +816,7 @@ def draw_nested_donut(
     _new_vb_h = min(height, max(_content_bot, cy + 20))
     if _new_vb_h < height:
         # 只在能收窄时改写 parts[0]（svg_open 输出）以及 bg rect（如果有）。
-        _new_h_str = f'{_new_vb_h:.1f}'
+        _new_h_str = f"{_new_vb_h:.1f}"
         # svg_open 生成：'<svg ... viewBox="0 0 width height">' 后可能跟 '<rect ... width="w" height="h" .../>'
         # 直接替换 parts[0]。
         _first = parts[0]
@@ -789,18 +828,20 @@ def draw_nested_donut(
     return "".join(parts)
 
 
-def make_nested_donut(data,
-                      total_label: str = "TOTAL",
-                      total_value = None,
-                      width: float = 720.0,
-                      height: float = 720.0,
-                      domain_colors: dict = None,
-                      title: str = None,
-                      subtitle: str = None,
-                      figure_label: str = None,
-                      font_family: str = None,
-                      palette: dict = None,
-                variant: str = None) -> str:
+def make_nested_donut(
+    data,
+    total_label: str = "TOTAL",
+    total_value=None,
+    width: float = 720.0,
+    height: float = 720.0,
+    domain_colors: dict = None,
+    title: str = None,
+    subtitle: str = None,
+    figure_label: str = None,
+    font_family: str = None,
+    palette: dict = None,
+    variant: str = None,
+) -> str:
     """
     双层甜甜圈（内环 = 一级分类 domain / 外环 = 二级子类 sub-intent）：
     典型场景：任务/预算/流量按"领域 × 操作类型"双维度分解，父子扇形角度自然对齐。
@@ -822,15 +863,21 @@ def make_nested_donut(data,
     - 外环文字：宽扇形（≥20°）沿弧线 textPath；窄扇形（<20°）径向从内向外 rotate
     - 中心空心圆：total_value + total_label
     """
-    if not _variant_is_classic('nested_donut', variant):
+    if not _variant_is_classic("nested_donut", variant):
         _data = {"segments": list(data), "total_label": total_label}
         if total_value is not None:
             _data["total_value"] = total_value
         return _dispatch_to_svg_lib(
-            'nested_donut', variant, _data,
-            title=title, subtitle=subtitle, figure_label=figure_label,
-            palette=palette, font_family=font_family,
-            width=width, height=height,
+            "nested_donut",
+            variant,
+            _data,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            palette=palette,
+            font_family=font_family,
+            width=width,
+            height=height,
         )
 
     if not data:
@@ -842,16 +889,20 @@ def make_nested_donut(data,
     # ---- palette ----
     def _rgba_with_alpha(rgba_str, alpha):
         import re as _re
-        m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str)
+
+        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str)
         if not m:
             return f"rgba(28,28,26,{alpha})"
         return f"rgba({int(float(m.group(1)))},{int(float(m.group(2)))},{int(float(m.group(3)))},{alpha})"
+
     def _rgb_tuple(rgba_str):
         import re as _re
-        m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str)
+
+        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str)
         if not m:
             return (28, 28, 26)
         return (int(float(m.group(1))), int(float(m.group(2))), int(float(m.group(3))))
+
     def _lighten(rgba_str, ratio=0.55):
         """把主色向白色靠 ratio 比例（0.55 = 深主色变淡主色）"""
         r, g, b = _rgb_tuple(rgba_str)
@@ -862,7 +913,7 @@ def make_nested_donut(data,
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    c_ink   = _pal.get("ink",   _INK)
+    c_ink = _pal.get("ink", _INK)
     c_muted = _pal.get("muted", _rgba_with_alpha(c_ink, 0.5))
     # 从 palette 派生系列色（先看 palette["series"]，否则从 accent 做 hue-shift 派生 n 色）
     # nested_donut 需要至少 8 个系列色（domain 轮转）
@@ -887,6 +938,7 @@ def make_nested_donut(data,
     _needs_leader = (_n_subs_total > 8) or _wide
     _label_reserve = 90.0 if _needs_leader else 0.0
     import math as _m
+
     if _wide:
         # R 由 height 主导（不用 min(w,h) —— 那样 wide embed 里 R 太小很浪费竖向空间）
         R_outer = height / 2 - 30
@@ -904,7 +956,7 @@ def make_nested_donut(data,
     # 骨架路径对齐：R_inner=0.72*R 拓宽内环 band 到 R*0.42，_text_r_default 用 0.55
     # 比例（略偏内的 midpoint），label bbox 中心留出对外环 (R_inner) 与中心圆 AABB
     # (R_center) 两侧 clearance。
-    R_inner = R_outer * 0.72   # 内环拓宽，为两行 label 让空间
+    R_inner = R_outer * 0.72  # 内环拓宽，为两行 label 让空间
     R_center = R_outer * 0.30
 
     # ---------- 字号自适应（viewBox + 数据规模双重）----------
@@ -920,14 +972,14 @@ def make_nested_donut(data,
         _fs_dom_mult = 0.72
     # 外圈标签更小些（fs * 0.85），因为空间紧
     _fs_sub_mult = _fs_dom_mult * 0.85
-    _fs_dom_wide = max(14.0, _fs_base * 1.2 * _fs_dom_mult)   # domain wide arcs
-    _fs_dom_mid  = max(12.0, _fs_base * 1.0 * _fs_dom_mult)   # domain medium arcs
-    _fs_dom_narrow = max(10.0, _fs_base * 0.75 * _fs_dom_mult) # domain narrow arcs
+    _fs_dom_wide = max(14.0, _fs_base * 1.2 * _fs_dom_mult)  # domain wide arcs
+    _fs_dom_mid = max(12.0, _fs_base * 1.0 * _fs_dom_mult)  # domain medium arcs
+    _fs_dom_narrow = max(10.0, _fs_base * 0.75 * _fs_dom_mult)  # domain narrow arcs
     _fs_pct_wide = max(12.0, _fs_base * 1.0 * _fs_dom_mult)
-    _fs_pct_mid  = max(10.0, _fs_base * 0.85 * _fs_dom_mult)
+    _fs_pct_mid = max(10.0, _fs_base * 0.85 * _fs_dom_mult)
     _fs_pct_narrow = max(9.0, _fs_base * 0.7 * _fs_dom_mult)
     _fs_sub_wide = max(13.0, _fs_base * 1.15 * _fs_sub_mult)
-    _fs_sub_mid  = max(11.0, _fs_base * 0.95 * _fs_sub_mult)
+    _fs_sub_mid = max(11.0, _fs_base * 0.95 * _fs_sub_mult)
     _fs_sub_small = max(10.0, _fs_base * 0.8 * _fs_sub_mult)
     _fs_sub_tiny = max(10.0, _fs_base * 0.7 * _fs_sub_mult)
     _fs_center_val = max(30.0, _fs_base * 2.6)
@@ -945,10 +997,12 @@ def make_nested_donut(data,
         x2, y2 = _polar(cx0, cy0, r_out, ang_to)
         x3, y3 = _polar(cx0, cy0, r_in, ang_to)
         x4, y4 = _polar(cx0, cy0, r_in, ang_from)
-        return (f"M {x1:.2f} {y1:.2f} "
-                f"A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} "
-                f"L {x3:.2f} {y3:.2f} "
-                f"A {r_in:.2f} {r_in:.2f} 0 {large} 0 {x4:.2f} {y4:.2f} Z")
+        return (
+            f"M {x1:.2f} {y1:.2f} "
+            f"A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} "
+            f"L {x3:.2f} {y3:.2f} "
+            f"A {r_in:.2f} {r_in:.2f} 0 {large} 0 {x4:.2f} {y4:.2f} Z"
+        )
 
     parts = []
     defs_parts = []  # textPath 需要的隐藏 path 定义
@@ -981,16 +1035,16 @@ def make_nested_donut(data,
         _n_ascii = sum(1 for c in dom if ord(c) < 128)
         _n_cjk = len(dom) - _n_ascii
         _wt = _n_ascii + _n_cjk * 1.6
-        _two_line = _wt > 12 and (' & ' in dom or ' ' in dom)
+        _two_line = _wt > 12 and (" & " in dom or " " in dom)
         if _two_line:
-            _split_at = dom.rfind(' & ')
+            _split_at = dom.rfind(" & ")
             if _split_at < 0:
                 _mid = len(dom) // 2
-                _left = dom.rfind(' ', 0, _mid + 3)
+                _left = dom.rfind(" ", 0, _mid + 3)
                 _split_at = _left if _left > 0 else _mid
                 _line1, _line2 = dom[:_split_at].strip(), dom[_split_at:].strip()
             else:
-                _line1, _line2 = dom[:_split_at].strip(), dom[_split_at+3:].strip()
+                _line1, _line2 = dom[:_split_at].strip(), dom[_split_at + 3 :].strip()
             _dom_widest = max(_line1, _line2, key=len)
         else:
             _line1, _line2 = dom, ""
@@ -1068,24 +1122,24 @@ def make_nested_donut(data,
         # 渲染：两行拆分复用上面预算好的 _line1 / _line2，避免重复计算
         if _two_line:
             parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty-fs_domain*0.6:.1f}" font-size="{fs_domain}" '
+                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty - fs_domain * 0.6:.1f}" font-size="{fs_domain}" '
                 f'font-weight="700" fill="rgba(255,255,255,1)" text-anchor="middle">{_xesc(_line1)}</text>'
             )
             parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty+fs_domain*0.55:.1f}" font-size="{fs_domain}" '
+                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty + fs_domain * 0.55:.1f}" font-size="{fs_domain}" '
                 f'font-weight="700" fill="rgba(255,255,255,1)" text-anchor="middle">{_xesc(_line2)}</text>'
             )
             parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty+fs_domain*0.55+fs_pct+2:.1f}" font-size="{fs_pct}" '
+                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty + fs_domain * 0.55 + fs_pct + 2:.1f}" font-size="{fs_pct}" '
                 f'font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">{dpct:.1f}%</text>'
             )
         else:
             parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty-1:.1f}" font-size="{fs_domain}" '
+                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty - 1:.1f}" font-size="{fs_domain}" '
                 f'font-weight="700" fill="rgba(255,255,255,1)" text-anchor="middle">{_xesc(dom)}</text>'
             )
             parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty+fs_pct+2:.1f}" font-size="{fs_pct}" '
+                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty + fs_pct + 2:.1f}" font-size="{fs_pct}" '
                 f'font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">{dpct:.1f}%</text>'
             )
 
@@ -1146,7 +1200,7 @@ def make_nested_donut(data,
 
         # 按侧分组：mid_ang < 180 → 右侧 label；否则左侧
         right_group = []
-        left_group  = []
+        left_group = []
         for k, (sname, spct, s_from, s_to, dom_idx) in enumerate(_outer_labels):
             span = s_to - s_from
             if span < 1.5:
@@ -1155,8 +1209,7 @@ def make_nested_donut(data,
             ax, ay = _polar(cx, cy, anchor_r, mid_ang)
             pct_str = f"{spct:.0f}%" if spct >= 1 else f"{spct:.1f}%"
             label_text = f"{_xesc(sname)} {pct_str}"
-            rec = {"name": label_text, "ax": ax, "ay": ay,
-                   "mid": mid_ang, "dom_idx": dom_idx, "y": ay}
+            rec = {"name": label_text, "ax": ax, "ay": ay, "mid": mid_ang, "dom_idx": dom_idx, "y": ay}
             if 0 <= mid_ang < 180:
                 right_group.append(rec)
             else:
@@ -1170,13 +1223,13 @@ def make_nested_donut(data,
             for r in group:
                 r["y"] = max(y_min, min(y_max, r["ay"]))
             for i in range(1, len(group)):
-                if group[i]["y"] < group[i-1]["y"] + line_h:
-                    group[i]["y"] = group[i-1]["y"] + line_h
+                if group[i]["y"] < group[i - 1]["y"] + line_h:
+                    group[i]["y"] = group[i - 1]["y"] + line_h
             if group[-1]["y"] > y_max:
                 group[-1]["y"] = y_max
                 for i in range(len(group) - 2, -1, -1):
-                    if group[i]["y"] > group[i+1]["y"] - line_h:
-                        group[i]["y"] = group[i+1]["y"] - line_h
+                    if group[i]["y"] > group[i + 1]["y"] - line_h:
+                        group[i]["y"] = group[i + 1]["y"] - line_h
 
         y_min = cy - R_outer
         y_max = cy + R_outer
@@ -1185,10 +1238,10 @@ def make_nested_donut(data,
 
         # 引线转角 x（水平段起点）
         right_elbow_x = cx + R_outer + 12
-        left_elbow_x  = cx - R_outer - 12
+        left_elbow_x = cx - R_outer - 12
         # label 文字锚点 x
         right_label_x = cx + R_outer + 28
-        left_label_x  = cx - R_outer - 28
+        left_label_x = cx - R_outer - 28
 
         def _emit(group, label_x, elbow_x, anchor_side):
             text_anchor = "start" if anchor_side == "right" else "end"
@@ -1204,7 +1257,9 @@ def make_nested_donut(data,
             _vb_left = -_vb_pad
             _margin = 2.0
             for r in group:
-                ax = r["ax"]; ay = r["ay"]; ly = r["y"]
+                ax = r["ax"]
+                ay = r["ay"]
+                ly = r["y"]
                 text_dx = 4 if anchor_side == "right" else -4
                 # 计算该 label 的可用宽度并 fit
                 if anchor_side == "right":
@@ -1215,8 +1270,12 @@ def make_nested_donut(data,
                 label_fs = fs_leader
                 if avail > 0:
                     label_text, label_fs = _fit_leader_label(
-                        label_text, avail, fs_leader, _body_font,
-                        bold=True, fs_floor=9.0,
+                        label_text,
+                        avail,
+                        fs_leader,
+                        _body_font,
+                        bold=True,
+                        fs_floor=9.0,
                     )
                 parts.append(
                     f'<polyline points="{ax:.1f},{ay:.1f} {elbow_x:.1f},{ly:.1f} '
@@ -1224,7 +1283,7 @@ def make_nested_donut(data,
                     f'fill="none" stroke="{_rgba_with_alpha(c_ink, 0.35)}" stroke-width="0.8"/>'
                 )
                 parts.append(
-                    f'<text font-family="{_body_font}" x="{label_x:.1f}" y="{ly + label_fs*0.35:.1f}" '
+                    f'<text font-family="{_body_font}" x="{label_x:.1f}" y="{ly + label_fs * 0.35:.1f}" '
                     f'font-size="{label_fs}" fill="{_leader_col}" font-weight="600" '
                     f'text-anchor="{text_anchor}" dominant-baseline="alphabetic">{label_text}</text>'
                 )
@@ -1236,9 +1295,7 @@ def make_nested_donut(data,
     # 之前中心圆硬编码 fill=白，深底 palette 上 c_ink 是浅色 → 浅色文字盖在白圆上直接消失。
     # 改用 palette.bg 让"中心空心"和页面同色（视觉上真正"挖洞"），c_ink 文字在 bg 上一定对比。
     _center_fill = _pal.get("bg") or "rgba(255,255,255,1)"
-    parts.append(
-        f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{R_center:.1f}" fill="{_center_fill}"/>'
-    )
+    parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{R_center:.1f}" fill="{_center_fill}"/>')
     if total_value is None:
         total_value = int(round(sum(d[1] for d in data)))
     # Fit the total value inside the center circle: long numbers (e.g. 1289456789)
@@ -1251,11 +1308,15 @@ def make_nested_donut(data,
     _center_avail_w = 2 * R_center * 0.9
     _total_str = _xesc(total_value)
     _total_str, _fs_center_val_fit = _fit_center_label(
-        _total_str, _center_avail_w, _fs_center_val, _body_font,
-        bold=True, fs_floor=max(12.0, _fs_center_val * 0.5),
+        _total_str,
+        _center_avail_w,
+        _fs_center_val,
+        _body_font,
+        bold=True,
+        fs_floor=max(12.0, _fs_center_val * 0.5),
     )
     parts.append(
-        f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy-3:.1f}" font-size="{_fs_center_val_fit}" font-weight="800" '
+        f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy - 3:.1f}" font-size="{_fs_center_val_fit}" font-weight="800" '
         f'fill="{c_ink}" text-anchor="middle">{_total_str}</text>'
     )
     # total_label 单独拟合：letter-spacing .2em 会额外加宽 ~ (len-1) * 0.2 * fs。
@@ -1276,7 +1337,7 @@ def make_nested_donut(data,
         fs_floor=8.0,
     )
     parts.append(
-        f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy+_fs_center_val_fit*0.75:.1f}" font-size="{_fs_center_lbl_fit}" font-weight="700" '
+        f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy + _fs_center_val_fit * 0.75:.1f}" font-size="{_fs_center_lbl_fit}" font-weight="700" '
         f'fill="{c_muted}" text-anchor="middle" letter-spacing=".2em">{_label_str}</text>'
     )
 
@@ -1284,11 +1345,17 @@ def make_nested_donut(data,
     # 顶部标题栏（可选，向 y 负方向扩）
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     _title_block, _title_h = _render_title_block(
-        x_left=0, anchor_y=-6, width=width,
-        title=title, subtitle=subtitle, figure_label=figure_label,
+        x_left=0,
+        anchor_y=-6,
+        width=width,
+        title=title,
+        subtitle=subtitle,
+        figure_label=figure_label,
         # 用 palette 解析的 c_ink（深底时是浅色），不是模块级 _INK（恒为深）
-        ink=c_ink, muted=c_muted,
-        body_font=_body_font, heading_font=_head_font,
+        ink=c_ink,
+        muted=c_muted,
+        body_font=_body_font,
+        heading_font=_head_font,
     )
     body = defs_str + _title_block + "".join(parts)
     pad = 10.0
@@ -1299,6 +1366,6 @@ def make_nested_donut(data,
     # 下 R_outer=240，height=720，就是 ~130px 底部空白）。改用 cy + R_outer +
     # 少量 margin 作为内容底界，收窄 viewBox。
     _content_bot = cy + R_outer + pad
-    vb_h = (_content_bot - vb_y)
-    _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{-pad:.1f} {vb_y:.1f} {width + 2*pad:.1f} {vb_h:.1f}">{body}</svg>'
+    vb_h = _content_bot - vb_y
+    _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{-pad:.1f} {vb_y:.1f} {width + 2 * pad:.1f} {vb_h:.1f}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)

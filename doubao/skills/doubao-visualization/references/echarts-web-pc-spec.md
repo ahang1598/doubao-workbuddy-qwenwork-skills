@@ -64,7 +64,7 @@ Web/PC 分支直接按真实 iframe CSS 像素设置文字、线宽和图例图�
 - 当主标题、副标题与图形无法在 iframe 内同时完整容纳，或副标题会明显压缩绘图区时：保留简短主标题，移除图内 `subtext`，将完整说明、时间范围和数据来源写在 ECharts 代码块外的 Markdown。不得缩小关键文字、让标题换行挤压图形，或让图形覆盖表头。
 - 多系列必须配置 legend；超过 4 个系列优先 `legend.type: 'scroll'`。
 - 折线和柱状图默认不超过 4–6 个系列；超过 6 个时优先拆图或改用更合适的表达。
-- X 轴标签超过约 12–16 个时使用采样、缩写或 dataZoom；长类目优先横向柱图。
+- X 轴标签超过约 12–16 个时采样刻度文字、缩写或使用 dataZoom，不单独裁剪轴数据；长类目优先横向柱图。
 - 横向排行默认展示 Top 10–15；双轴图最多两个 Y 轴。
 - 饼图/环图默认不超过 6 个分类；更多分类改为横向柱图。
 - 不同时堆叠多行标题、多行图例、双轴和底部 dataZoom。
@@ -73,8 +73,8 @@ Web/PC 分支直接按真实 iframe CSS 像素设置文字、线宽和图例图�
 
 将移动端已有的“无重叠、无裁切”要求同样用于 Web/PC。输出前必须检查初始状态、展开/下钻状态和关键交互状态；文字之间、文字与图形、文字与组件之间均不得覆盖。
 
-- 类目轴标签密集时使用 `axisLabel.hideOverlap: true`，并配合 `interval`、`rotate`、缩写、采样或 dataZoom；长日期优先缩短格式。不得让完整标签彼此压住。
-- 数据标签、散点标签、关系图标签等密集文字在组件支持时使用 `labelLayout: { hideOverlap: true }` 或 `moveOverlap`；仍无足够空间时，隐藏次要标签并在 tooltip 中提供完整信息。
+- 类目轴标签密集时可用 `interval`、`rotate`、缩写或 dataZoom，长日期优先缩短格式。关键标识保持可辨，其余条目可明确点击、缩放或经关联列表完整查看；不要求首帧全部标名，也不能静默丢失数据。
+- 数据标签、散点标签和关系图标签按重要性避让；关键结果不能被 `hideOverlap` 或裁切隐藏，次要标签可隐藏并通过明确交互查看，不能只靠hover承载必要信息。
 - 需要显示长文字时设置合理 `width`、`overflow: 'truncate'` 或 `'break'` 与 `lineHeight`；不得溢出画布、色块或节点背景。不能通过缩小到不可读来保留全部文字。
 - `visualMap`、dataZoom、xAxis label、xAxis name、底部 legend 和数值标签必须分层摆放。组件确实位于底部时，增加必要的 `grid.bottom`、`axisLabel.margin` 或组件间距；必要时移至顶部。
 - 直角坐标图使用 `containLabel: true`，但不得把它当作标题、轴名或多组件碰撞的唯一解决办法；长轴名应缩短、移入副标题或 tooltip。
@@ -171,7 +171,7 @@ Web 内联与全屏可能使用不同的实际容器尺寸。第一阶段 option
 - 是否因 system prompt 为电脑端/网页端而读取了本文件？若不是，不得使用本文件规则。
 - 在实际 Web 内联预览中，标题、图例、轴标签和 tooltip 是否仍可读？
 - 标题、legend、grid、dataZoom、visualMap 是否有重叠或裁切？
-- 是否逐项检查了 title/subtext/legend/breadcrumb/toolbox/visualMap、轴名/轴标签、数据标签与图形之间的重叠？密集文字是否已采用隐藏、截断、换行、采样或交互降级？
+- 是否逐项检查了 title/subtext/legend/breadcrumb/toolbox/visualMap、轴名/轴标签、数据标签与图形之间的重叠？核心系列是否实际可见，关键标签是否完整可辨，其余条目是否可明确查阅？
 - Web/PC Treemap 是否默认关闭了底部 breadcrumb；若启用，是否确实来自用户明确要求的下钻导航？
 - gauge 的顶部、两端和关键 `axisLabel` 是否完整避开进度弧、背景弧、刻度线、指针与中央 detail？
 - 是否仍严格输出小写 `echarts` 的完整 option？

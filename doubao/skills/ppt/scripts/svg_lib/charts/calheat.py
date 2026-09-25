@@ -13,17 +13,38 @@ data = {
 
 Values <= 0 are drawn as "empty" (very faint), positive values ramp toward accent color.
 """
+
 from __future__ import annotations
 import math
 import calendar
 from ._shared import (
-
-    resolve_palette, is_dark_palette, xesc,
-    rgb_tuple, _rgba_with_alpha,
+    resolve_palette,
+    is_dark_palette,
+    xesc,
+    rgb_tuple,
+    _rgba_with_alpha,
 )
 
 
-from .._common import (_ACC, _INK, _INK1, _INK2, _INK4, _INK6, _darken_rgba, _lighten_rgba, _prepend_bg_if_dark, _resolve_font, _resolve_palette, _rgb_tuple, _rgba_with_alpha, _xesc, _variant_is_classic, _dispatch_to_svg_lib)
+from .._common import (
+    _ACC,
+    _INK,
+    _INK1,
+    _INK2,
+    _INK4,
+    _INK6,
+    _darken_rgba,
+    _lighten_rgba,
+    _prepend_bg_if_dark,
+    _resolve_font,
+    _resolve_palette,
+    _rgb_tuple,
+    _rgba_with_alpha,
+    _xesc,
+    _variant_is_classic,
+    _dispatch_to_svg_lib,
+)
+
 _VARIANTS = {
     "default_row_52x7",
     "monthly_grid_12x31",
@@ -32,10 +53,8 @@ _VARIANTS = {
     "dot_grid",
 }
 
-MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-MONTH_LABELS_FULL = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-                     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+MONTH_LABELS_FULL = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
 
 def draw_calheat(
@@ -71,9 +90,12 @@ def draw_calheat(
         ]
 
     pal = resolve_palette(palette)
-    ink = pal["ink"]; accent = pal["accent"]; bg = pal["bg"]
+    ink = pal["ink"]
+    accent = pal["accent"]
+    bg = pal["bg"]
     muted = pal["muted"]
-    ink4 = pal["ink4"]; ink2 = pal["ink2"]
+    ink4 = pal["ink4"]
+    ink2 = pal["ink2"]
     dark = is_dark_palette(pal)
 
     accent_rgb = rgb_tuple(accent)
@@ -102,7 +124,9 @@ def draw_calheat(
         g = base_g + (ag - base_g) * t
         b = base_b + (ab - base_b) * t
         if t > 0.85:
-            r *= 0.9; g *= 0.9; b *= 0.9
+            r *= 0.9
+            g *= 0.9
+            b *= 0.9
         return f"rgb({int(r)},{int(g)},{int(b)})"
 
     body_font = "Inter, 'PingFang SC', sans-serif"
@@ -112,30 +136,115 @@ def draw_calheat(
 
     if variant == "default_row_52x7":
         H = float(height) if height else 480.0
-        return _render_row_52x7(W, H, values, year, title, subtitle, kpis,
-                                ink, accent, bg, muted, ink4, ink2,
-                                val_color, body_font, head_font, vmax, bg_luma)
+        return _render_row_52x7(
+            W,
+            H,
+            values,
+            year,
+            title,
+            subtitle,
+            kpis,
+            ink,
+            accent,
+            bg,
+            muted,
+            ink4,
+            ink2,
+            val_color,
+            body_font,
+            head_font,
+            vmax,
+            bg_luma,
+        )
     if variant == "dot_grid":
         H = float(height) if height else 480.0
-        return _render_row_52x7(W, H, values, year, title, subtitle, kpis,
-                                ink, accent, bg, muted, ink4, ink2,
-                                val_color, body_font, head_font, vmax, bg_luma,
-                                use_dot=True)
+        return _render_row_52x7(
+            W,
+            H,
+            values,
+            year,
+            title,
+            subtitle,
+            kpis,
+            ink,
+            accent,
+            bg,
+            muted,
+            ink4,
+            ink2,
+            val_color,
+            body_font,
+            head_font,
+            vmax,
+            bg_luma,
+            use_dot=True,
+        )
     if variant == "monthly_grid_12x31":
         H = float(height) if height else 680.0
-        return _render_monthly_grid(W, H, values, year, title, subtitle, kpis,
-                                    ink, accent, bg, muted, ink4, ink2,
-                                    val_color, body_font, head_font, vmax, bg_luma)
+        return _render_monthly_grid(
+            W,
+            H,
+            values,
+            year,
+            title,
+            subtitle,
+            kpis,
+            ink,
+            accent,
+            bg,
+            muted,
+            ink4,
+            ink2,
+            val_color,
+            body_font,
+            head_font,
+            vmax,
+            bg_luma,
+        )
     if variant == "small_multiples":
         H = float(height) if height else 700.0
-        return _render_small_multiples(W, H, values, year, title, subtitle, kpis,
-                                       ink, accent, bg, muted, ink4, ink2,
-                                       val_color, body_font, head_font, vmax, bg_luma)
+        return _render_small_multiples(
+            W,
+            H,
+            values,
+            year,
+            title,
+            subtitle,
+            kpis,
+            ink,
+            accent,
+            bg,
+            muted,
+            ink4,
+            ink2,
+            val_color,
+            body_font,
+            head_font,
+            vmax,
+            bg_luma,
+        )
     if variant == "radial_year":
         H = float(height) if height else 900.0
-        return _render_radial(W, H, values, year, title, subtitle, kpis,
-                              ink, accent, bg, muted, ink4, ink2,
-                              val_color, body_font, head_font, vmax, bg_luma)
+        return _render_radial(
+            W,
+            H,
+            values,
+            year,
+            title,
+            subtitle,
+            kpis,
+            ink,
+            accent,
+            bg,
+            muted,
+            ink4,
+            ink2,
+            val_color,
+            body_font,
+            head_font,
+            vmax,
+            bg_luma,
+        )
 
     return ""
 
@@ -154,8 +263,7 @@ def _doy_to_md(doy, year=2025):
     return 11, calendar.monthrange(year, 12)[1]
 
 
-def _title_block(x, y_top, w, title, subtitle, ink, muted,
-                 body_font, head_font):
+def _title_block(x, y_top, w, title, subtitle, ink, muted, body_font, head_font):
     parts = []
     if title:
         parts.append(
@@ -175,8 +283,7 @@ def _title_block(x, y_top, w, title, subtitle, ink, muted,
     return parts
 
 
-def _kpi_row(x, y, avail_w, kpis, ink, muted, accent, bg, ink4,
-             body_font, head_font, scale=1.0):
+def _kpi_row(x, y, avail_w, kpis, ink, muted, accent, bg, ink4, body_font, head_font, scale=1.0):
     parts = []
     if not kpis:
         return parts
@@ -193,13 +300,11 @@ def _kpi_row(x, y, avail_w, kpis, ink, muted, accent, bg, ink4,
             f'<rect x="{kx:.1f}" y="{y:.1f}" width="{kw:.1f}" height="{kpi_h:.1f}" '
             f'fill="{_rgba_with_alpha(ink, 0.02)}" stroke="{ink4}" stroke-width="0.7"/>'
         )
-        parts.append(
-            f'<rect x="{kx:.1f}" y="{y:.1f}" width="3" height="{kpi_h:.1f}" fill="{accent}"/>'
-        )
+        parts.append(f'<rect x="{kx:.1f}" y="{y:.1f}" width="3" height="{kpi_h:.1f}" fill="{accent}"/>')
         parts.append(
             f'<text x="{kx + 12:.1f}" y="{y + 16 * scale:.1f}" font-family="{body_font}" '
             f'font-size="{head_fs:.1f}" fill="{muted}" font-weight="600" letter-spacing="0.14em">'
-            f'{xesc(head)}</text>'
+            f"{xesc(head)}</text>"
         )
         parts.append(
             f'<text x="{kx + 12:.1f}" y="{y + 38 * scale:.1f}" font-family="{head_font}" '
@@ -215,10 +320,27 @@ def _kpi_row(x, y, avail_w, kpis, ink, muted, accent, bg, ink4,
 # ============================================================
 # 52x7 row / dot_grid (unified renderer)
 # ============================================================
-def _render_row_52x7(W, H, values, year, title, subtitle, kpis,
-                     ink, accent, bg, muted, ink4, ink2,
-                     val_color, body_font, head_font, vmax, bg_luma,
-                     use_dot=False):
+def _render_row_52x7(
+    W,
+    H,
+    values,
+    year,
+    title,
+    subtitle,
+    kpis,
+    ink,
+    accent,
+    bg,
+    muted,
+    ink4,
+    ink2,
+    val_color,
+    body_font,
+    head_font,
+    vmax,
+    bg_luma,
+    use_dot=False,
+):
     MARGIN_L = 80.0
     MARGIN_R = 40.0
     top_used = 40
@@ -228,11 +350,13 @@ def _render_row_52x7(W, H, values, year, title, subtitle, kpis,
     # plot_h_target was oversized.
     body = []
 
-    body.extend(_title_block(MARGIN_L, top_used, W - MARGIN_L - MARGIN_R,
-                              title, subtitle, ink, muted, body_font, head_font))
+    body.extend(
+        _title_block(MARGIN_L, top_used, W - MARGIN_L - MARGIN_R, title, subtitle, ink, muted, body_font, head_font)
+    )
     ycur = top_used + (44 if (title or subtitle) else 0)
-    body.extend(_kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R,
-                          kpis, ink, muted, accent, bg, ink4, body_font, head_font))
+    body.extend(
+        _kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R, kpis, ink, muted, accent, bg, ink4, body_font, head_font)
+    )
     ycur += 76
 
     # Grid: 53 columns x 7 rows (weekday)
@@ -283,21 +407,16 @@ def _render_row_52x7(W, H, values, year, title, subtitle, kpis,
         if use_dot:
             # dot with radius ∝ value; base color from color scale
             frac = min(1.0, v / vmax) if vmax > 0 else 0
-            r = 1.2 + (cell * 0.42) * (frac ** 0.5)
-            body.append(
-                f'<circle cx="{cx_ + cell / 2:.1f}" cy="{cy_ + cell / 2:.1f}" '
-                f'r="{r:.1f}" fill="{col}"/>'
-            )
+            r = 1.2 + (cell * 0.42) * (frac**0.5)
+            body.append(f'<circle cx="{cx_ + cell / 2:.1f}" cy="{cy_ + cell / 2:.1f}" r="{r:.1f}" fill="{col}"/>')
         else:
             body.append(
-                f'<rect x="{cx_:.1f}" y="{cy_:.1f}" width="{cell:.1f}" height="{cell:.1f}" '
-                f'rx="1.5" fill="{col}"/>'
+                f'<rect x="{cx_:.1f}" y="{cy_:.1f}" width="{cell:.1f}" height="{cell:.1f}" rx="1.5" fill="{col}"/>'
             )
 
     # legend at bottom
     legend_y = grid_y + grid_h + 24
-    _append_legend(body, grid_x, legend_y, val_color, vmax, muted, body_font,
-                   use_dot=use_dot)
+    _append_legend(body, grid_x, legend_y, val_color, vmax, muted, body_font, use_dot=use_dot)
 
     # Shrink viewBox height to actual content bottom + padding so the SVG has
     # no large empty band below the legend (grid cell is capped at 16px, so
@@ -309,7 +428,7 @@ def _render_row_52x7(W, H, values, year, title, subtitle, kpis,
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H_fit)}">']
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H_fit:.1f}" fill="{bg}"/>')
     parts.extend(body)
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "".join(parts)
 
 
@@ -327,10 +446,7 @@ def _append_legend(parts, x, y, val_color, vmax, muted, body_font, use_dot=False
             # circle swatch matches dot_grid chart cells
             cx = x + i * (box + gap) + box / 2
             cy = y + box / 2
-            parts.append(
-                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{box / 2 - 1:.1f}" '
-                f'fill="{val_color(v)}"/>'
-            )
+            parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{box / 2 - 1:.1f}" fill="{val_color(v)}"/>')
         else:
             parts.append(
                 f'<rect x="{x + i * (box + gap):.1f}" y="{y:.1f}" width="{box}" height="{box}" '
@@ -345,9 +461,26 @@ def _append_legend(parts, x, y, val_color, vmax, muted, body_font, use_dot=False
 # ============================================================
 # monthly_grid_12x31
 # ============================================================
-def _render_monthly_grid(W, H, values, year, title, subtitle, kpis,
-                         ink, accent, bg, muted, ink4, ink2,
-                         val_color, body_font, head_font, vmax, bg_luma):
+def _render_monthly_grid(
+    W,
+    H,
+    values,
+    year,
+    title,
+    subtitle,
+    kpis,
+    ink,
+    accent,
+    bg,
+    muted,
+    ink4,
+    ink2,
+    val_color,
+    body_font,
+    head_font,
+    vmax,
+    bg_luma,
+):
     body = []
 
     grid = [[None] * 31 for _ in range(12)]
@@ -357,11 +490,11 @@ def _render_monthly_grid(W, H, values, year, title, subtitle, kpis,
 
     MARGIN_L = 80.0
     MARGIN_R = 40.0
-    body.extend(_title_block(MARGIN_L, 40, W - MARGIN_L - MARGIN_R,
-                              title, subtitle, ink, muted, body_font, head_font))
+    body.extend(_title_block(MARGIN_L, 40, W - MARGIN_L - MARGIN_R, title, subtitle, ink, muted, body_font, head_font))
     ycur = 40 + (44 if (title or subtitle) else 0)
-    body.extend(_kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R,
-                          kpis, ink, muted, accent, bg, ink4, body_font, head_font))
+    body.extend(
+        _kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R, kpis, ink, muted, accent, bg, ink4, body_font, head_font)
+    )
     ycur += 76
 
     plot_w = W - MARGIN_L - MARGIN_R
@@ -369,8 +502,10 @@ def _render_monthly_grid(W, H, values, year, title, subtitle, kpis,
     GAP = 2.0
     CELL_W = min((plot_w - 30 * GAP) / 31, 22.0)
     CELL_H = min((plot_h_target - 11 * GAP) / 12, 22.0)
-    if CELL_W < 6: CELL_W = 6
-    if CELL_H < 6: CELL_H = 6
+    if CELL_W < 6:
+        CELL_W = 6
+    if CELL_H < 6:
+        CELL_H = 6
 
     grid_x = MARGIN_L + 30
     grid_y = ycur + 30
@@ -419,16 +554,33 @@ def _render_monthly_grid(W, H, values, year, title, subtitle, kpis,
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H_fit)}">']
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H_fit:.1f}" fill="{bg}"/>')
     parts.extend(body)
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "".join(parts)
 
 
 # ============================================================
 # small_multiples: 3x4 mini calendars
 # ============================================================
-def _render_small_multiples(W, H, values, year, title, subtitle, kpis,
-                            ink, accent, bg, muted, ink4, ink2,
-                            val_color, body_font, head_font, vmax, bg_luma):
+def _render_small_multiples(
+    W,
+    H,
+    values,
+    year,
+    title,
+    subtitle,
+    kpis,
+    ink,
+    accent,
+    bg,
+    muted,
+    ink4,
+    ink2,
+    val_color,
+    body_font,
+    head_font,
+    vmax,
+    bg_luma,
+):
     body = []
 
     grid = [[None] * 31 for _ in range(12)]
@@ -438,15 +590,16 @@ def _render_small_multiples(W, H, values, year, title, subtitle, kpis,
 
     MARGIN_L = 60.0
     MARGIN_R = 40.0
-    body.extend(_title_block(MARGIN_L, 40, W - MARGIN_L - MARGIN_R,
-                              title, subtitle, ink, muted, body_font, head_font))
+    body.extend(_title_block(MARGIN_L, 40, W - MARGIN_L - MARGIN_R, title, subtitle, ink, muted, body_font, head_font))
     ycur = 40 + (44 if (title or subtitle) else 0)
-    body.extend(_kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R,
-                          kpis, ink, muted, accent, bg, ink4, body_font, head_font))
+    body.extend(
+        _kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R, kpis, ink, muted, accent, bg, ink4, body_font, head_font)
+    )
     ycur += 90
 
     # 4 cols x 3 rows
-    COLS = 4; ROWS = 3
+    COLS = 4
+    ROWS = 3
     inter_gap = 16.0
     avail_w = W - MARGIN_L - MARGIN_R
     mini_full_w = (avail_w - (COLS - 1) * inter_gap) / COLS
@@ -483,7 +636,7 @@ def _render_small_multiples(W, H, values, year, title, subtitle, kpis,
         body.append(
             f'<text x="{ox + mini_pad:.1f}" y="{oy + 14:.1f}" font-family="{body_font}" '
             f'font-size="10.5" font-weight="700" fill="{ink}" letter-spacing="0.12em">'
-            f'{MONTH_LABELS_FULL[m]}</text>'
+            f"{MONTH_LABELS_FULL[m]}</text>"
         )
 
         # weekday header
@@ -507,8 +660,7 @@ def _render_small_multiples(W, H, values, year, title, subtitle, kpis,
             v = grid[m][d - 1]
             color = val_color(v if v is not None else 0)
             body.append(
-                f'<rect x="{cx_:.1f}" y="{cy_:.1f}" width="{cell:.1f}" height="{cell:.1f}" '
-                f'rx="1.2" fill="{color}"/>'
+                f'<rect x="{cx_:.1f}" y="{cy_:.1f}" width="{cell:.1f}" height="{cell:.1f}" rx="1.2" fill="{color}"/>'
             )
 
     # Bottom of the mini-calendar grid (row-3 frame bottom).
@@ -518,28 +670,57 @@ def _render_small_multiples(W, H, values, year, title, subtitle, kpis,
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H_fit)}">']
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H_fit:.1f}" fill="{bg}"/>')
     parts.extend(body)
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "".join(parts)
 
 
 # ============================================================
 # radial_year
 # ============================================================
-def _render_radial(W, H, values, year, title, subtitle, kpis,
-                   ink, accent, bg, muted, ink4, ink2,
-                   val_color, body_font, head_font, vmax, bg_luma):
+def _render_radial(
+    W,
+    H,
+    values,
+    year,
+    title,
+    subtitle,
+    kpis,
+    ink,
+    accent,
+    bg,
+    muted,
+    ink4,
+    ink2,
+    val_color,
+    body_font,
+    head_font,
+    vmax,
+    bg_luma,
+):
     body = []
 
     MARGIN_L = 60.0
     MARGIN_R = 40.0
-    body.extend(_title_block(MARGIN_L, 40, W - MARGIN_L - MARGIN_R,
-                              title, subtitle, ink, muted, body_font, head_font))
+    body.extend(_title_block(MARGIN_L, 40, W - MARGIN_L - MARGIN_R, title, subtitle, ink, muted, body_font, head_font))
     ycur = 40 + (44 if (title or subtitle) else 0)
     # scale KPI row up so text stays legible against a large radial body
     kpi_scale = max(1.0, min(1.6, H / 620.0))
-    body.extend(_kpi_row(MARGIN_L, ycur, W - MARGIN_L - MARGIN_R,
-                          kpis, ink, muted, accent, bg, ink4, body_font, head_font,
-                          scale=kpi_scale))
+    body.extend(
+        _kpi_row(
+            MARGIN_L,
+            ycur,
+            W - MARGIN_L - MARGIN_R,
+            kpis,
+            ink,
+            muted,
+            accent,
+            bg,
+            ink4,
+            body_font,
+            head_font,
+            scale=kpi_scale,
+        )
+    )
     ycur += 90 + (kpi_scale - 1.0) * 40
 
     per_month_days = [[] for _ in range(12)]
@@ -555,7 +736,8 @@ def _render_radial(W, H, values, year, title, subtitle, kpis,
     CX = W / 2
     CY = ring_top + ring_avail_h / 2
     R_OUT = min(W / 2 - 90, ring_avail_h / 2 - 60)
-    if R_OUT < 60: R_OUT = 60
+    if R_OUT < 60:
+        R_OUT = 60
     R_IN = R_OUT * 0.40
 
     n_month = 12
@@ -574,15 +756,19 @@ def _render_radial(W, H, values, year, title, subtitle, kpis,
             else:
                 v = per_month_days[m][d] if d < len(per_month_days[m]) else 0
                 fill = val_color(v)
-            p1x = CX + R_OUT * math.cos(a0g); p1y = CY + R_OUT * math.sin(a0g)
-            p2x = CX + R_OUT * math.cos(a1g); p2y = CY + R_OUT * math.sin(a1g)
-            p3x = CX + R_IN * math.cos(a1g); p3y = CY + R_IN * math.sin(a1g)
-            p4x = CX + R_IN * math.cos(a0g); p4y = CY + R_IN * math.sin(a0g)
+            p1x = CX + R_OUT * math.cos(a0g)
+            p1y = CY + R_OUT * math.sin(a0g)
+            p2x = CX + R_OUT * math.cos(a1g)
+            p2y = CY + R_OUT * math.sin(a1g)
+            p3x = CX + R_IN * math.cos(a1g)
+            p3y = CY + R_IN * math.sin(a1g)
+            p4x = CX + R_IN * math.cos(a0g)
+            p4y = CY + R_IN * math.sin(a0g)
             path = (
-                f'M {p1x:.2f} {p1y:.2f} '
-                f'A {R_OUT:.2f} {R_OUT:.2f} 0 0 1 {p2x:.2f} {p2y:.2f} '
-                f'L {p3x:.2f} {p3y:.2f} '
-                f'A {R_IN:.2f} {R_IN:.2f} 0 0 0 {p4x:.2f} {p4y:.2f} Z'
+                f"M {p1x:.2f} {p1y:.2f} "
+                f"A {R_OUT:.2f} {R_OUT:.2f} 0 0 1 {p2x:.2f} {p2y:.2f} "
+                f"L {p3x:.2f} {p3y:.2f} "
+                f"A {R_IN:.2f} {R_IN:.2f} 0 0 0 {p4x:.2f} {p4y:.2f} Z"
             )
             body.append(f'<path d="{path}" fill="{fill}"/>')
 
@@ -590,11 +776,12 @@ def _render_radial(W, H, values, year, title, subtitle, kpis,
     for m in range(n_month):
         seg = math.pi * 2 / n_month
         a = -math.pi / 2 + m * seg
-        x1 = CX + (R_IN - 4) * math.cos(a); y1 = CY + (R_IN - 4) * math.sin(a)
-        x2 = CX + (R_OUT + 4) * math.cos(a); y2 = CY + (R_OUT + 4) * math.sin(a)
+        x1 = CX + (R_IN - 4) * math.cos(a)
+        y1 = CY + (R_IN - 4) * math.sin(a)
+        x2 = CX + (R_OUT + 4) * math.cos(a)
+        y2 = CY + (R_OUT + 4) * math.sin(a)
         body.append(
-            f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}" '
-            f'stroke="{ink4}" stroke-width="0.5"/>'
+            f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}" stroke="{ink4}" stroke-width="0.5"/>'
         )
         a_mid = a + seg / 2
         # Push labels far enough outside the ring outline that a horizontal-axis label
@@ -603,22 +790,21 @@ def _render_radial(W, H, values, year, title, subtitle, kpis,
         # outline circle radius = R_OUT+0.5, so we need r_lbl > (R_OUT + text_halfwidth)
         # / |cos(a_mid)|. Adding a small buffer keeps the validator happy.
         r_lbl = R_OUT + 34
-        lx = CX + r_lbl * math.cos(a_mid); ly = CY + r_lbl * math.sin(a_mid)
+        lx = CX + r_lbl * math.cos(a_mid)
+        ly = CY + r_lbl * math.sin(a_mid)
         body.append(
             f'<text x="{lx:.2f}" y="{ly:.2f}" text-anchor="middle" '
             f'dominant-baseline="middle" font-family="{body_font}" '
             f'font-size="12" font-weight="700" fill="{ink}" letter-spacing="0.10em">'
-            f'{MONTH_LABELS_FULL[m]}</text>'
+            f"{MONTH_LABELS_FULL[m]}</text>"
         )
 
     # rings outline
     body.append(
-        f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="{R_OUT + 0.5:.1f}" fill="none" '
-        f'stroke="{ink4}" stroke-width="0.5"/>'
+        f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="{R_OUT + 0.5:.1f}" fill="none" stroke="{ink4}" stroke-width="0.5"/>'
     )
     body.append(
-        f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="{R_IN - 0.5:.1f}" fill="none" '
-        f'stroke="{ink4}" stroke-width="0.5"/>'
+        f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="{R_IN - 0.5:.1f}" fill="none" stroke="{ink4}" stroke-width="0.5"/>'
     )
 
     # center year label
@@ -645,27 +831,30 @@ def _render_radial(W, H, values, year, title, subtitle, kpis,
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H_fit)}">']
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H_fit:.1f}" fill="{bg}"/>')
     parts.extend(body)
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "".join(parts)
 
 
-def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float]] = None,
-                 year: int = None,
-                 first_dow: int = 0,
-                 title: str = None,
-                 subtitle: str = None,
-                 figure_label: str = None,
-                 figure_note: str = None,
-                 note: str = None,
-                 source: str = None,
-                 unit_label: str = "activity",
-                 kpis: "list[tuple]" = None,
-                 show_month_bars: bool = True,
-                 show_colorbar: bool = True,
-                 highlight_monthly_peak: bool = True,
-                 font_family: str = None,
-                 palette=None,
-                 variant: str = None) -> str:
+def make_calheat(
+    values: Sequence[float] = None,
+    matrix: Sequence[Sequence[float]] = None,
+    year: int = None,
+    first_dow: int = 0,
+    title: str = None,
+    subtitle: str = None,
+    figure_label: str = None,
+    figure_note: str = None,
+    note: str = None,
+    source: str = None,
+    unit_label: str = "activity",
+    kpis: "list[tuple]" = None,
+    show_month_bars: bool = True,
+    show_colorbar: bool = True,
+    highlight_monthly_peak: bool = True,
+    font_family: str = None,
+    palette=None,
+    variant: str = None,
+) -> str:
     """
     日历热力图（GitHub-style academic print）：
       - 顶部标题 + subtitle + FIGURE caption
@@ -704,14 +893,24 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
         if kpis is not None:
             data["kpis"] = kpis
         return _dispatch_to_svg_lib(
-            "calheat", variant, data,
-            title=title, subtitle=subtitle, figure_label=figure_label,
-            palette=palette, font_family=font_family,
+            "calheat",
+            variant,
+            data,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            palette=palette,
+            font_family=font_family,
         )
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
     _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"], _pal["ink6"], _pal["ink4"], _pal["ink2"], _pal["ink1"], _pal["accent"]
+        _pal["ink"],
+        _pal["ink6"],
+        _pal["ink4"],
+        _pal["ink2"],
+        _pal["ink1"],
+        _pal["accent"],
     )
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
@@ -720,9 +919,9 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
     if matrix is None:
         assert values is not None, "需要传 values 或 matrix"
         # 支持任意长度（≤ 371），不足补 0，多余截断
-        arr = list(values)[:52 * 7]
+        arr = list(values)[: 52 * 7]
         arr = arr + [0] * (52 * 7 - len(arr))
-        matrix = [arr[w * 7:(w + 1) * 7] for w in range(52)]
+        matrix = [arr[w * 7 : (w + 1) * 7] for w in range(52)]
     else:
         matrix = [list(row) for row in matrix]
         if len(matrix) != 52 or any(len(r) != 7 for r in matrix):
@@ -737,6 +936,7 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
     # ---- 颜色渐变：以 palette bg 为底，向 accent 深处渐变 ----
     def _rgb_of(rgba):
         return _rgb_tuple(rgba)
+
     accent_rgb = _rgb_of(_ACC)
     # 起点：稍深于 bg 一点点（用 muted lightened）；如果 bg 是深色，起点用 accent 淡化
     bg_rgb = _rgb_of(paper)
@@ -756,6 +956,7 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
 
     # 起点是 muted 灰 blend bg
     start_rgb = _rgb_of(c_secondary)
+
     def value_to_color(v):
         if v == vmin or v == 0:
             return empty_col
@@ -778,7 +979,8 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
             else:
                 stops2.append((st, _rgb_of(col)))
         for i in range(len(stops2) - 1):
-            t1, c1 = stops2[i]; t2, c2 = stops2[i + 1]
+            t1, c1 = stops2[i]
+            t2, c2 = stops2[i + 1]
             if t1 <= t <= t2:
                 k = (t - t1) / (t2 - t1) if t2 > t1 else 0
                 return _blend(c1, c2, k)
@@ -789,7 +991,7 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
     GAP = 3.0
     n_cols = 52
     plot_w = n_cols * (CELL + GAP) - GAP  # 883.0
-    plot_h = 7 * (CELL + GAP) - GAP        # 116.0
+    plot_h = 7 * (CELL + GAP) - GAP  # 116.0
     MARGIN_L = 100.0
     MARGIN_R = 260.0 if show_month_bars else 40.0
     # KPI 卡片顶部固定在 y=130；卡内三行 baseline 由字号动态决定，最终高度 kpi_h ≈
@@ -811,7 +1013,7 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
     # calheat 是横向长条 (aspect ~2.7)，min(W,H) 会被 H 卡住偏小。
     # 用几何均值 sqrt(W*H) 更合适，避免 base_fs 在扁 SVG 里过小。
     _n_active = sum(1 for v in flat if v > 0)
-    _base_fs = math.sqrt(W * H) * 0.02   # W=1243,H=458 → sqrt=755 → base=15.1
+    _base_fs = math.sqrt(W * H) * 0.02  # W=1243,H=458 → sqrt=755 → base=15.1
     if _n_active <= 4:
         _fs_data = _base_fs * 1.4
     elif _n_active <= 8:
@@ -823,44 +1025,53 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
 
     # 各类字号：多数元素与 base_fs 联动；月份 label 与 KPI 大数字单独控制。
     # base_fs≈15，calheat 是横条 SVG → sqrt(W*H) 派生更合适。
-    _fs_title    = round(min(34.0, max(22.0, _base_fs * 1.75)), 1)  # base*1.75 → ~26
+    _fs_title = round(min(34.0, max(22.0, _base_fs * 1.75)), 1)  # base*1.75 → ~26
     _fs_subtitle = round(min(16.0, max(11.0, _base_fs * 0.82)), 1)
-    _fs_figure   = round(min(13.0, max(10.0, _base_fs * 0.7)),  1)
-    _fs_month    = round(min(14.0, max(10.5, _base_fs * 0.73)), 1)   # 月份 label = base*1.1（相对 min(W,H) 版本）
-    _fs_kpi_hdr  = round(min(12.0, max(9.5,  _base_fs * 0.65)), 1)
-    _fs_kpi_big  = round(min(48.0, max(24.0, _base_fs * 2.5)),  1)  # KPI 大数字 base*2.5
-    _fs_kpi_sub  = round(min(12.0, max(9.5,  _base_fs * 0.65)), 1)
-    _fs_dow      = round(min(13.0, max(10.0, _base_fs * 0.7)),  1)   # Mon/Wed/Fri/Sun
-    _fs_bar_hdr  = round(min(13.0, max(10.0, _base_fs * 0.72)), 1)   # MONTHLY TOTAL
-    _fs_bar_lbl  = round(min(12.0, max(9.0,  _base_fs * 0.62)), 1)   # 月缩写
-    _fs_bar_val  = round(min(12.0, max(9.5,  _base_fs * 0.68)), 1)
-    _fs_cb       = round(min(13.0, max(11.0, _base_fs * 0.85)), 1)   # Less/More + tick
-    _fs_foot     = round(min(14.0, max(11.0, _base_fs * 0.85)), 1)   # note/source 底线 11pt
+    _fs_figure = round(min(13.0, max(10.0, _base_fs * 0.7)), 1)
+    _fs_month = round(min(14.0, max(10.5, _base_fs * 0.73)), 1)  # 月份 label = base*1.1（相对 min(W,H) 版本）
+    _fs_kpi_hdr = round(min(12.0, max(9.5, _base_fs * 0.65)), 1)
+    _fs_kpi_big = round(min(48.0, max(24.0, _base_fs * 2.5)), 1)  # KPI 大数字 base*2.5
+    _fs_kpi_sub = round(min(12.0, max(9.5, _base_fs * 0.65)), 1)
+    _fs_dow = round(min(13.0, max(10.0, _base_fs * 0.7)), 1)  # Mon/Wed/Fri/Sun
+    _fs_bar_hdr = round(min(13.0, max(10.0, _base_fs * 0.72)), 1)  # MONTHLY TOTAL
+    _fs_bar_lbl = round(min(12.0, max(9.0, _base_fs * 0.62)), 1)  # 月缩写
+    _fs_bar_val = round(min(12.0, max(9.5, _base_fs * 0.68)), 1)
+    _fs_cb = round(min(13.0, max(11.0, _base_fs * 0.85)), 1)  # Less/More + tick
+    _fs_foot = round(min(14.0, max(11.0, _base_fs * 0.85)), 1)  # note/source 底线 11pt
 
     parts = []
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H:.1f}" fill="{paper}"/>')
 
     # ---- 标题 ----
     if title:
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="52" font-family="{_head_font}" '
-                     f'font-size="{_fs_title}" font-weight="600" fill="{_INK}" letter-spacing="0.1">'
-                     f'{_xesc(title)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="52" font-family="{_head_font}" '
+            f'font-size="{_fs_title}" font-weight="600" fill="{_INK}" letter-spacing="0.1">'
+            f"{_xesc(title)}</text>"
+        )
     if subtitle:
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="76" font-family="{_body_font}" '
-                     f'font-size="{_fs_subtitle}" fill="{c_muted}" letter-spacing="0.2">'
-                     f'{_xesc(subtitle)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="76" font-family="{_body_font}" '
+            f'font-size="{_fs_subtitle}" fill="{c_muted}" letter-spacing="0.2">'
+            f"{_xesc(subtitle)}</text>"
+        )
     if title or subtitle:
-        parts.append(f'<line x1="{MARGIN_L:.1f}" y1="92" x2="{W - 40:.1f}" y2="92" '
-                     f'stroke="{_INK}" stroke-width="0.8"/>')
+        parts.append(
+            f'<line x1="{MARGIN_L:.1f}" y1="92" x2="{W - 40:.1f}" y2="92" stroke="{_INK}" stroke-width="0.8"/>'
+        )
     if figure_label:
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="112" font-family="{_body_font}" '
-                     f'font-size="{_fs_figure}" fill="{c_muted}" font-weight="600" letter-spacing="1.5">'
-                     f'{_xesc(figure_label)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="112" font-family="{_body_font}" '
+            f'font-size="{_fs_figure}" fill="{c_muted}" font-weight="600" letter-spacing="1.5">'
+            f"{_xesc(figure_label)}</text>"
+        )
     if figure_note:
         offset = 72 if figure_label else 0
-        parts.append(f'<text x="{MARGIN_L + offset:.1f}" y="112" font-family="{_body_font}" '
-                     f'font-size="{_fs_figure}" fill="{c_muted}" letter-spacing="0.4">'
-                     f'{_xesc(figure_note)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L + offset:.1f}" y="112" font-family="{_body_font}" '
+            f'font-size="{_fs_figure}" fill="{c_muted}" letter-spacing="0.4">'
+            f"{_xesc(figure_note)}</text>"
+        )
 
     # ---- KPI 卡片 ----
     if kpis:
@@ -868,7 +1079,7 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
         # 三行 baseline 布局：header (top) → big (middle) → sub (bottom)。
         # 需保证 header 底 (baseline + fs*0.2) < big 顶 (baseline - fs*0.8)，
         # 同理 big 底 < sub 顶，否则 detect_embedded_svg_overlaps 会报 bbox_overlap。
-        _hdr_gap = 4.0   # baseline 之间的额外间距
+        _hdr_gap = 4.0  # baseline 之间的额外间距
         _pad_top = 16.0  # 卡内上边到 header baseline
         _hdr_baseline = _pad_top
         _big_baseline = _hdr_baseline + _fs_kpi_hdr * 0.2 + _fs_kpi_big * 0.8 + _hdr_gap
@@ -882,42 +1093,55 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
         for i, tup in enumerate(kpis):
             head, big, sub = tup[0], tup[1], tup[2] if len(tup) > 2 else ""
             kx = MARGIN_L + i * (kpi_w + gap)
-            parts.append(f'<rect x="{kx:.1f}" y="{kpi_y:.1f}" width="{kpi_w:.1f}" '
-                         f'height="{kpi_h:.1f}" fill="{paper}" stroke="{_INK4}" stroke-width="0.8"/>')
-            parts.append(f'<rect x="{kx:.1f}" y="{kpi_y:.1f}" width="4" height="{kpi_h:.1f}" '
-                         f'fill="{_ACC}"/>')
-            parts.append(f'<text x="{kx + 16:.1f}" y="{kpi_y + _hdr_baseline:.1f}" font-family="{_body_font}" '
-                         f'font-size="{_fs_kpi_hdr}" fill="{c_muted}" font-weight="600" letter-spacing="1.4">'
-                         f'{_xesc(head)}</text>')
-            parts.append(f'<text x="{kx + 16:.1f}" y="{kpi_y + _big_baseline:.1f}" font-family="{_head_font}" '
-                         f'font-size="{_fs_kpi_big}" fill="{_INK}" font-weight="700">{_xesc(big)}</text>')
-            parts.append(f'<text x="{kx + 16:.1f}" y="{kpi_y + _sub_baseline:.1f}" font-family="{_body_font}" '
-                         f'font-size="{_fs_kpi_sub}" fill="{c_muted}">{_xesc(sub)}</text>')
+            parts.append(
+                f'<rect x="{kx:.1f}" y="{kpi_y:.1f}" width="{kpi_w:.1f}" '
+                f'height="{kpi_h:.1f}" fill="{paper}" stroke="{_INK4}" stroke-width="0.8"/>'
+            )
+            parts.append(f'<rect x="{kx:.1f}" y="{kpi_y:.1f}" width="4" height="{kpi_h:.1f}" fill="{_ACC}"/>')
+            parts.append(
+                f'<text x="{kx + 16:.1f}" y="{kpi_y + _hdr_baseline:.1f}" font-family="{_body_font}" '
+                f'font-size="{_fs_kpi_hdr}" fill="{c_muted}" font-weight="600" letter-spacing="1.4">'
+                f"{_xesc(head)}</text>"
+            )
+            parts.append(
+                f'<text x="{kx + 16:.1f}" y="{kpi_y + _big_baseline:.1f}" font-family="{_head_font}" '
+                f'font-size="{_fs_kpi_big}" fill="{_INK}" font-weight="700">{_xesc(big)}</text>'
+            )
+            parts.append(
+                f'<text x="{kx + 16:.1f}" y="{kpi_y + _sub_baseline:.1f}" font-family="{_body_font}" '
+                f'font-size="{_fs_kpi_sub}" fill="{c_muted}">{_xesc(sub)}</text>'
+            )
 
     # ---- 月份 label（顶部）+ 分隔 ----
     # 12 个月，每月约 52/12 ≈ 4.33 周
     grid_x0 = MARGIN_L
     grid_y0 = MARGIN_T
-    month_labels = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     for m in range(12):
         w_col = int(m * 52 / 12)
         mx = grid_x0 + w_col * (CELL + GAP)
-        parts.append(f'<text x="{mx:.1f}" y="{grid_y0 - 8:.1f}" font-family="{_body_font}" '
-                     f'font-size="{_fs_month}" font-weight="600" fill="{_INK}">'
-                     f'{month_labels[m]}</text>')
+        parts.append(
+            f'<text x="{mx:.1f}" y="{grid_y0 - 8:.1f}" font-family="{_body_font}" '
+            f'font-size="{_fs_month}" font-weight="600" fill="{_INK}">'
+            f"{month_labels[m]}</text>"
+        )
         # 分隔虚线（除首月）
         if m > 0:
             div_x = mx - GAP / 2
-            parts.append(f'<line x1="{div_x:.1f}" y1="{grid_y0 - 3:.1f}" x2="{div_x:.1f}" '
-                         f'y2="{grid_y0 + plot_h + 3:.1f}" stroke="{_INK4}" stroke-width="0.4" '
-                         f'stroke-dasharray="1 3"/>')
+            parts.append(
+                f'<line x1="{div_x:.1f}" y1="{grid_y0 - 3:.1f}" x2="{div_x:.1f}" '
+                f'y2="{grid_y0 + plot_h + 3:.1f}" stroke="{_INK4}" stroke-width="0.4" '
+                f'stroke-dasharray="1 3"/>'
+            )
 
     # ---- 左侧 Mon/Wed/Fri/Sun 标签 ----
     for row, wname in [(0, "Mon"), (2, "Wed"), (4, "Fri"), (6, "Sun")]:
         y = grid_y0 + row * (CELL + GAP) + CELL - 3
-        parts.append(f'<text x="{grid_x0 - 10:.1f}" y="{y:.1f}" text-anchor="end" '
-                     f'font-family="{_body_font}" font-size="{_fs_dow}" fill="{c_muted}">'
-                     f'{wname}</text>')
+        parts.append(
+            f'<text x="{grid_x0 - 10:.1f}" y="{y:.1f}" text-anchor="end" '
+            f'font-family="{_body_font}" font-size="{_fs_dow}" fill="{c_muted}">'
+            f"{wname}</text>"
+        )
 
     # ---- 绘制格子 ----
     # highlight_monthly_peak: 记录每个月的最大值 + 位置
@@ -930,8 +1154,9 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
             color = value_to_color(v)
             x = grid_x0 + w * (CELL + GAP)
             y = grid_y0 + d * (CELL + GAP)
-            parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{CELL:.1f}" height="{CELL:.1f}" '
-                         f'rx="2" fill="{color}"/>')
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y:.1f}" width="{CELL:.1f}" height="{CELL:.1f}" rx="2" fill="{color}"/>'
+            )
             if highlight_monthly_peak:
                 cur = peak_pos.get(m_of_w)
                 if cur is None or v > cur[2]:
@@ -944,8 +1169,7 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
                 continue
             x = grid_x0 + w * (CELL + GAP) + CELL - 2
             y = grid_y0 + d * (CELL + GAP) + 2
-            parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.6" fill="none" '
-                         f'stroke="{_ACC}" stroke-width="0.9"/>')
+            parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.6" fill="none" stroke="{_ACC}" stroke-width="0.9"/>')
 
     # ---- 右侧月度总和柱状图 ----
     if show_month_bars:
@@ -966,30 +1190,40 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
                 monthly[m_of_w] += matrix[w][d]
         month_max = max(monthly) if any(monthly) else 1
 
-        parts.append(f'<text x="{sum_x:.1f}" y="{sum_y - 8:.1f}" font-family="{_body_font}" '
-                     f'font-size="{_fs_bar_hdr}" font-weight="600" fill="{_INK}" letter-spacing="1.2">'
-                     f'MONTHLY TOTAL</text>')
-        parts.append(f'<line x1="{sum_x:.1f}" y1="{sum_bottom:.1f}" x2="{sum_x + sum_w:.1f}" '
-                     f'y2="{sum_bottom:.1f}" stroke="{c_muted}" stroke-width="0.8"/>')
+        parts.append(
+            f'<text x="{sum_x:.1f}" y="{sum_y - 8:.1f}" font-family="{_body_font}" '
+            f'font-size="{_fs_bar_hdr}" font-weight="600" fill="{_INK}" letter-spacing="1.2">'
+            f"MONTHLY TOTAL</text>"
+        )
+        parts.append(
+            f'<line x1="{sum_x:.1f}" y1="{sum_bottom:.1f}" x2="{sum_x + sum_w:.1f}" '
+            f'y2="{sum_bottom:.1f}" stroke="{c_muted}" stroke-width="0.8"/>'
+        )
 
         for i, mv in enumerate(monthly):
             bx = sum_x + i * (sum_bar_w + sum_bar_gap)
             bh = (mv / month_max) * sum_max_bar_h if month_max > 0 else 0
             # 用 value_to_color 类似规则
             color = value_to_color(mv / max(1, month_max) * vmax) if mv > 0 else empty_col
-            parts.append(f'<rect x="{bx:.1f}" y="{sum_bottom - bh:.1f}" width="{sum_bar_w:.1f}" '
-                         f'height="{bh:.1f}" fill="{color}"/>')
-            parts.append(f'<text x="{bx + sum_bar_w / 2:.1f}" y="{sum_bottom + 12:.1f}" '
-                         f'text-anchor="middle" font-family="{_body_font}" '
-                         f'font-size="{_fs_bar_lbl}" fill="{c_muted}">{month_labels[i][0]}</text>')
+            parts.append(
+                f'<rect x="{bx:.1f}" y="{sum_bottom - bh:.1f}" width="{sum_bar_w:.1f}" '
+                f'height="{bh:.1f}" fill="{color}"/>'
+            )
+            parts.append(
+                f'<text x="{bx + sum_bar_w / 2:.1f}" y="{sum_bottom + 12:.1f}" '
+                f'text-anchor="middle" font-family="{_body_font}" '
+                f'font-size="{_fs_bar_lbl}" fill="{c_muted}">{month_labels[i][0]}</text>'
+            )
         # 最高月标注
         max_month_idx = monthly.index(month_max) if any(monthly) else 0
         bx = sum_x + max_month_idx * (sum_bar_w + sum_bar_gap) + sum_bar_w / 2
         bh = sum_max_bar_h
         if monthly and monthly[max_month_idx] > 0:
-            parts.append(f'<text x="{bx:.1f}" y="{sum_bottom - bh - 4:.1f}" text-anchor="middle" '
-                         f'font-family="{_body_font}" font-size="{_fs_bar_val}" fill="{_INK}" '
-                         f'font-weight="600">{int(round(month_max))}</text>')
+            parts.append(
+                f'<text x="{bx:.1f}" y="{sum_bottom - bh - 4:.1f}" text-anchor="middle" '
+                f'font-family="{_body_font}" font-size="{_fs_bar_val}" fill="{_INK}" '
+                f'font-weight="600">{int(round(month_max))}</text>'
+            )
 
     # ---- 底部 colorbar ----
     cb_bottom_y = grid_y0 + plot_h + 40
@@ -997,48 +1231,66 @@ def make_calheat(values: Sequence[float] = None, matrix: Sequence[Sequence[float
         cb_x = grid_x0 + 30
         cb_h = 12.0
         cb_w = 240.0
-        parts.append(f'<text x="{cb_x - 12:.1f}" y="{cb_bottom_y + cb_h - 2:.1f}" '
-                     f'text-anchor="end" font-family="{_body_font}" font-size="{_fs_cb}" '
-                     f'fill="{c_muted}">Less</text>')
+        parts.append(
+            f'<text x="{cb_x - 12:.1f}" y="{cb_bottom_y + cb_h - 2:.1f}" '
+            f'text-anchor="end" font-family="{_body_font}" font-size="{_fs_cb}" '
+            f'fill="{c_muted}">Less</text>'
+        )
         levels = [0.0, 0.15, 0.35, 0.55, 0.75, 0.95]
         seg_w = cb_w / len(levels)
         for i, t in enumerate(levels):
             fill = value_to_color(t * vmax)
             cxseg = cb_x + i * seg_w
-            parts.append(f'<rect x="{cxseg:.1f}" y="{cb_bottom_y:.1f}" width="{seg_w - 3:.1f}" '
-                         f'height="{cb_h:.1f}" rx="2" fill="{fill}"/>')
-        parts.append(f'<text x="{cb_x + cb_w + 10:.1f}" y="{cb_bottom_y + cb_h - 2:.1f}" '
-                     f'text-anchor="start" font-family="{_body_font}" font-size="{_fs_cb}" '
-                     f'fill="{c_muted}">More</text>')
+            parts.append(
+                f'<rect x="{cxseg:.1f}" y="{cb_bottom_y:.1f}" width="{seg_w - 3:.1f}" '
+                f'height="{cb_h:.1f}" rx="2" fill="{fill}"/>'
+            )
+        parts.append(
+            f'<text x="{cb_x + cb_w + 10:.1f}" y="{cb_bottom_y + cb_h - 2:.1f}" '
+            f'text-anchor="start" font-family="{_body_font}" font-size="{_fs_cb}" '
+            f'fill="{c_muted}">More</text>'
+        )
         # 数值刻度
         for i in range(5):
             px = cb_x + (i / 4) * cb_w
             val = int(round(i / 4 * vmax))
-            parts.append(f'<text x="{px:.1f}" y="{cb_bottom_y + cb_h + 14:.1f}" '
-                         f'text-anchor="middle" font-family="{_body_font}" '
-                         f'font-size="{_fs_cb}" fill="{c_muted}">{val}</text>')
+            parts.append(
+                f'<text x="{px:.1f}" y="{cb_bottom_y + cb_h + 14:.1f}" '
+                f'text-anchor="middle" font-family="{_body_font}" '
+                f'font-size="{_fs_cb}" fill="{c_muted}">{val}</text>'
+            )
         # peak circle 说明
         if highlight_monthly_peak:
-            parts.append(f'<circle cx="{cb_x + cb_w + 130:.1f}" cy="{cb_bottom_y + cb_h / 2:.1f}" '
-                         f'r="2" fill="none" stroke="{_ACC}" stroke-width="0.9"/>')
-            parts.append(f'<text x="{cb_x + cb_w + 140:.1f}" y="{cb_bottom_y + cb_h - 2:.1f}" '
-                         f'font-family="{_body_font}" font-size="{_fs_cb}" fill="{c_muted}">'
-                         f'Monthly peak</text>')
+            parts.append(
+                f'<circle cx="{cb_x + cb_w + 130:.1f}" cy="{cb_bottom_y + cb_h / 2:.1f}" '
+                f'r="2" fill="none" stroke="{_ACC}" stroke-width="0.9"/>'
+            )
+            parts.append(
+                f'<text x="{cb_x + cb_w + 140:.1f}" y="{cb_bottom_y + cb_h - 2:.1f}" '
+                f'font-family="{_body_font}" font-size="{_fs_cb}" fill="{c_muted}">'
+                f"Monthly peak</text>"
+            )
 
     # ---- 脚注 ----
     if note or source:
         foot_y = H - 30
-        parts.append(f'<line x1="{MARGIN_L:.1f}" y1="{foot_y - 14:.1f}" x2="{W - 40:.1f}" '
-                     f'y2="{foot_y - 14:.1f}" stroke="{_INK4}" stroke-width="0.5"/>')
+        parts.append(
+            f'<line x1="{MARGIN_L:.1f}" y1="{foot_y - 14:.1f}" x2="{W - 40:.1f}" '
+            f'y2="{foot_y - 14:.1f}" stroke="{_INK4}" stroke-width="0.5"/>'
+        )
         if note:
-            parts.append(f'<text x="{MARGIN_L:.1f}" y="{foot_y:.1f}" font-family="{_body_font}" '
-                         f'font-size="{_fs_foot}" fill="{c_muted}">'
-                         f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>')
+            parts.append(
+                f'<text x="{MARGIN_L:.1f}" y="{foot_y:.1f}" font-family="{_body_font}" '
+                f'font-size="{_fs_foot}" fill="{c_muted}">'
+                f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
+            )
         if source:
             y_off = foot_y + (14 if note else 0)
-            parts.append(f'<text x="{MARGIN_L:.1f}" y="{y_off:.1f}" font-family="{_body_font}" '
-                         f'font-size="{_fs_foot}" fill="{c_muted}">'
-                         f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>')
+            parts.append(
+                f'<text x="{MARGIN_L:.1f}" y="{y_off:.1f}" font-family="{_body_font}" '
+                f'font-size="{_fs_foot}" fill="{c_muted}">'
+                f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>'
+            )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H)}">{body}</svg>'

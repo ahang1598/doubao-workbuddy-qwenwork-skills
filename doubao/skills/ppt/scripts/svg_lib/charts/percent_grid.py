@@ -15,21 +15,45 @@ data schema：
   - 所有 count 加起来应 ≤ 100；> 100 时截断到 100（并把多余的类丢弃并 warn）
   - < 100 时剩余用 muted 灰色填充
 """
+
 from __future__ import annotations
 import math
 import warnings
 from typing import Dict, Optional, List, Tuple
 
 from ._shared import (
-
-    resolve_palette, xesc, svg_open, svg_close, auto_font_size,
-    _rgba_with_alpha, rgb_tuple,
+    resolve_palette,
+    xesc,
+    svg_open,
+    svg_close,
+    auto_font_size,
+    _rgba_with_alpha,
+    rgb_tuple,
 )
 
-from .._common import (_ACC, _INK, _INK1, _INK2, _INK4, _INK6, _derive_series_colors, _prepend_bg_if_dark, _resolve_font, _resolve_palette, _rgba_with_alpha, _xesc, _variant_is_classic, _dispatch_to_svg_lib)
+from .._common import (
+    _ACC,
+    _INK,
+    _INK1,
+    _INK2,
+    _INK4,
+    _INK6,
+    _derive_series_colors,
+    _prepend_bg_if_dark,
+    _resolve_font,
+    _resolve_palette,
+    _rgba_with_alpha,
+    _xesc,
+    _variant_is_classic,
+    _dispatch_to_svg_lib,
+)
+
 VARIANTS = (
-    "square_10x10", "dot_10x10", "person_10x10",
-    "square_stacked_row", "dot_faceted",
+    "square_10x10",
+    "dot_10x10",
+    "person_10x10",
+    "square_stacked_row",
+    "dot_faceted",
 )
 
 
@@ -189,7 +213,7 @@ def draw_percent_grid(
         parts.append(
             f'<text x="{ML}" y="24" font-family="{body_font}" font-size="10" '
             f'font-weight="700" fill="{pal["muted"]}" letter-spacing=".18em">'
-            f'{xesc(figure_label)}</text>'
+            f"{xesc(figure_label)}</text>"
         )
     if title:
         parts.append(
@@ -251,13 +275,11 @@ def _draw_legend(parts, options, cx, cy, pal, orientation="horizontal", max_w=80
         if x + item_w > right and x > cx:
             x = cx
             y += row_h
-        parts.append(
-            f'<rect x="{x}" y="{y}" width="14" height="14" fill="{col}" rx="2"/>'
-        )
+        parts.append(f'<rect x="{x}" y="{y}" width="14" height="14" fill="{col}" rx="2"/>')
         parts.append(
             f'<text x="{x + 20}" y="{y + 11}" font-family="{body_font}" '
             f'font-size="{fs}" font-weight="600" fill="{ink}">'
-            f'{xesc(lbl)} {cnt}%</text>'
+            f"{xesc(lbl)} {cnt}%</text>"
         )
         x += item_w
 
@@ -280,17 +302,12 @@ def _draw_10x10_squares(parts, fills, ML, top_offset, options, pal, width=900):
         y = grid_y + row * (cell + gap)
         # shadow
         parts.append(
-            f'<rect x="{x + 1:.1f}" y="{y + 1:.1f}" width="{cell}" height="{cell}" '
-            f'fill="rgba(0,0,0,0.05)" rx="3"/>'
+            f'<rect x="{x + 1:.1f}" y="{y + 1:.1f}" width="{cell}" height="{cell}" fill="rgba(0,0,0,0.05)" rx="3"/>'
         )
-        parts.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{cell}" height="{cell}" '
-            f'fill="{fill}" rx="3"/>'
-        )
+        parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{cell}" height="{cell}" fill="{fill}" rx="3"/>')
     # legend 放在主 grid 下方（横向多行），避免右侧巨量留白
     grid_bottom = grid_y + 10 * (cell + gap) - gap
-    _draw_legend(parts, options, grid_x, grid_bottom + 30, pal,
-                 max_w=10 * (cell + gap) - gap)
+    _draw_legend(parts, options, grid_x, grid_bottom + 30, pal, max_w=10 * (cell + gap) - gap)
 
 
 def _draw_10x10_dots(parts, fills, ML, top_offset, options, pal, width=900):
@@ -313,8 +330,7 @@ def _draw_10x10_dots(parts, fills, ML, top_offset, options, pal, width=900):
         parts.append(f'<circle cx="{cx + 1:.1f}" cy="{cy + 1:.1f}" r="{r}" fill="rgba(0,0,0,0.05)"/>')
         parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{fill}"/>')
     grid_bottom = grid_y + 10 * (cell + gap) - gap
-    _draw_legend(parts, options, grid_x, grid_bottom + 30, pal,
-                 max_w=10 * (cell + gap) - gap)
+    _draw_legend(parts, options, grid_x, grid_bottom + 30, pal, max_w=10 * (cell + gap) - gap)
 
 
 def _draw_10x10_persons(parts, fills, ML, top_offset, options, pal, width=900):
@@ -336,18 +352,17 @@ def _draw_10x10_persons(parts, fills, ML, top_offset, options, pal, width=900):
         # 简笔小人
         parts.append(
             f'<circle cx="{cx:.1f}" cy="{cy - 8.5:.1f}" r="4.2" fill="{fill}"/>'
-            f'<path d="M {cx-6:.1f} {cy-3:.1f} '
-            f'Q {cx-6:.1f} {cy-6:.1f} {cx-3:.1f} {cy-6:.1f} '
-            f'L {cx+3:.1f} {cy-6:.1f} '
-            f'Q {cx+6:.1f} {cy-6:.1f} {cx+6:.1f} {cy-3:.1f} '
-            f'L {cx+5:.1f} {cy+5:.1f} '
-            f'L {cx-5:.1f} {cy+5:.1f} Z" fill="{fill}"/>'
-            f'<rect x="{cx-4:.1f}" y="{cy+5:.1f}" width="3" height="7" fill="{fill}"/>'
-            f'<rect x="{cx+1:.1f}" y="{cy+5:.1f}" width="3" height="7" fill="{fill}"/>'
+            f'<path d="M {cx - 6:.1f} {cy - 3:.1f} '
+            f"Q {cx - 6:.1f} {cy - 6:.1f} {cx - 3:.1f} {cy - 6:.1f} "
+            f"L {cx + 3:.1f} {cy - 6:.1f} "
+            f"Q {cx + 6:.1f} {cy - 6:.1f} {cx + 6:.1f} {cy - 3:.1f} "
+            f"L {cx + 5:.1f} {cy + 5:.1f} "
+            f'L {cx - 5:.1f} {cy + 5:.1f} Z" fill="{fill}"/>'
+            f'<rect x="{cx - 4:.1f}" y="{cy + 5:.1f}" width="3" height="7" fill="{fill}"/>'
+            f'<rect x="{cx + 1:.1f}" y="{cy + 5:.1f}" width="3" height="7" fill="{fill}"/>'
         )
     grid_bottom = grid_y + 10 * (cell + gap) - gap
-    _draw_legend(parts, options, grid_x, grid_bottom + 30, pal,
-                 max_w=10 * (cell + gap) - gap)
+    _draw_legend(parts, options, grid_x, grid_bottom + 30, pal, max_w=10 * (cell + gap) - gap)
 
 
 def _draw_stacked_row(parts, fills, ML, top_offset, options, pal, width):
@@ -367,8 +382,7 @@ def _draw_stacked_row(parts, fills, ML, top_offset, options, pal, width):
     for i, fill in enumerate(fills):
         x = grid_x + i * (cell_w + cell_gap)
         parts.append(
-            f'<rect x="{x:.2f}" y="{grid_y:.1f}" width="{cell_w:.2f}" height="{cell_h}" '
-            f'fill="{fill}" rx="1"/>'
+            f'<rect x="{x:.2f}" y="{grid_y:.1f}" width="{cell_w:.2f}" height="{cell_h}" fill="{fill}" rx="1"/>'
         )
     # 刻度
     ink = pal["ink"]
@@ -422,7 +436,7 @@ def _draw_faceted(parts, options, remaining, ML, top_offset, pal, series, width,
         parts.append(
             f'<text x="{px0 + panel_w - 4:.1f}" y="{grid_y + 14:.1f}" text-anchor="end" '
             f'font-family="{body_font}" font-size="14" font-weight="700" fill="{fill}">'
-            f'{cnt}%</text>'
+            f"{cnt}%</text>"
         )
         # 边框：严格包住 grid（gx0/gy0 起点），并向外扩 3px 视觉留白，
         # 避免 border 与 grid 因 panel 与 grid_size 不等宽而错位。
@@ -443,23 +457,25 @@ def _draw_faceted(parts, options, remaining, ML, top_offset, pal, series, width,
             parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="{f}"/>')
 
 
-def make_percent_grid(options,
-                      title: str = None,
-                      subtitle: str = None,
-                      figure_label: str = None,
-                      figure_note: str = None,
-                      footer: str = None,
-                      note: str = None,
-                      show_breakdown_band: bool = True,
-                      show_kpi_row: bool = True,
-                      positive_labels=None,
-                      negative_labels=None,
-                      neutral_label: str = None,
-                      width: float = 800.0,
-                      height: float = 700.0,
-                      font_family: str = None,
-                      palette=None,
-                variant: str = None) -> str:
+def make_percent_grid(
+    options,
+    title: str = None,
+    subtitle: str = None,
+    figure_label: str = None,
+    figure_note: str = None,
+    footer: str = None,
+    note: str = None,
+    show_breakdown_band: bool = True,
+    show_kpi_row: bool = True,
+    positive_labels=None,
+    negative_labels=None,
+    neutral_label: str = None,
+    width: float = 800.0,
+    height: float = 700.0,
+    font_family: str = None,
+    palette=None,
+    variant: str = None,
+) -> str:
     """
     百人网格 / 100-dot infographic (Financial-print academic style).
 
@@ -481,18 +497,28 @@ def make_percent_grid(options,
       - 每 count 必须是 [0, 100] 之间的整数；负数或非整数 raise
       - sum(counts) ∈ [0, 100]，>100 raise；< 100 自动补空白类 "—"
     """
-    if not _variant_is_classic('percent_grid', variant):
+    if not _variant_is_classic("percent_grid", variant):
         _data = {"options": list(options)}
         return _dispatch_to_svg_lib(
-            'percent_grid', variant, _data,
-            title=title, subtitle=subtitle, figure_label=figure_label,
-            palette=palette, font_family=font_family,
+            "percent_grid",
+            variant,
+            _data,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            palette=palette,
+            font_family=font_family,
         )
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
     _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"], _pal["ink6"], _pal["ink4"], _pal["ink2"], _pal["ink1"], _pal["accent"]
+        _pal["ink"],
+        _pal["ink6"],
+        _pal["ink4"],
+        _pal["ink2"],
+        _pal["ink1"],
+        _pal["accent"],
     )
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     # 页面背景（承接 palette.bg，若无则用白纸感）
@@ -548,19 +574,19 @@ def make_percent_grid(options,
         _fs_mult = 0.9
     else:
         _fs_mult = 0.72
-    _fs_title    = max(24.0, _fs_base * 2.2)
+    _fs_title = max(24.0, _fs_base * 2.2)
     _fs_subtitle = max(13.0, _fs_base * 1.1)
-    _fs_figure   = max(11.0, _fs_base * 0.95)
-    _fs_header   = max(12.0, _fs_base * 1.0)           # ONE SQUARE = 1% / BREAKDOWN
+    _fs_figure = max(11.0, _fs_base * 0.95)
+    _fs_header = max(12.0, _fs_base * 1.0)  # ONE SQUARE = 1% / BREAKDOWN
     _fs_breakdown_num = max(14.0, _fs_base * 1.2 * _fs_mult)
     _fs_breakdown_lbl = max(11.0, _fs_base * 0.95 * _fs_mult)
-    _fs_kpi_hdr  = max(11.0, _fs_base * 0.9)
-    _fs_kpi_big  = max(38.0, _fs_base * 3.4)
-    _fs_kpi_sub  = max(11.0, _fs_base * 0.95)
+    _fs_kpi_hdr = max(11.0, _fs_base * 0.9)
+    _fs_kpi_big = max(38.0, _fs_base * 3.4)
+    _fs_kpi_sub = max(11.0, _fs_base * 0.95)
     _fs_legend_hdr = max(12.0, _fs_base * 1.0)
     _fs_legend_lbl = max(12.0, _fs_base * 1.05 * _fs_mult)
     _fs_legend_pct = max(18.0, _fs_base * 1.6 * _fs_mult)
-    _fs_note     = max(11.0, _fs_base * 0.95)
+    _fs_note = max(11.0, _fs_base * 0.95)
 
     parts = []
     # 页面背景（吃满整张 svg，避免 auto viewBox 因为它是 W/H 而漏掉）
@@ -568,25 +594,34 @@ def make_percent_grid(options,
 
     # ---- 标题区 ----
     if title:
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="52" font-family="{_head_font}" '
-                     f'font-size="{_fs_title}" font-weight="600" fill="{_INK}" letter-spacing="0.1">'
-                     f'{_xesc(title)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="52" font-family="{_head_font}" '
+            f'font-size="{_fs_title}" font-weight="600" fill="{_INK}" letter-spacing="0.1">'
+            f"{_xesc(title)}</text>"
+        )
     if subtitle:
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="76" font-family="{_body_font}" '
-                     f'font-size="{_fs_subtitle}" fill="{c_muted}" letter-spacing="0.2">'
-                     f'{_xesc(subtitle)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="76" font-family="{_body_font}" '
+            f'font-size="{_fs_subtitle}" fill="{c_muted}" letter-spacing="0.2">'
+            f"{_xesc(subtitle)}</text>"
+        )
     if title or subtitle:
-        parts.append(f'<line x1="{MARGIN_L:.1f}" y1="92" x2="{W-MARGIN_R:.1f}" y2="92" '
-                     f'stroke="{_INK}" stroke-width="0.8"/>')
+        parts.append(
+            f'<line x1="{MARGIN_L:.1f}" y1="92" x2="{W - MARGIN_R:.1f}" y2="92" stroke="{_INK}" stroke-width="0.8"/>'
+        )
     if figure_label:
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="112" font-family="{_body_font}" '
-                     f'font-size="{_fs_figure}" fill="{c_muted}" font-weight="600" letter-spacing="1.5">'
-                     f'{_xesc(figure_label)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="112" font-family="{_body_font}" '
+            f'font-size="{_fs_figure}" fill="{c_muted}" font-weight="600" letter-spacing="1.5">'
+            f"{_xesc(figure_label)}</text>"
+        )
     if figure_note:
         offset = 82 if figure_label else 0
-        parts.append(f'<text x="{MARGIN_L + offset:.1f}" y="112" font-family="{_body_font}" '
-                     f'font-size="{_fs_figure}" fill="{c_muted}" letter-spacing="0.4">'
-                     f'{_xesc(figure_note)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L + offset:.1f}" y="112" font-family="{_body_font}" '
+            f'font-size="{_fs_figure}" fill="{c_muted}" letter-spacing="0.4">'
+            f"{_xesc(figure_note)}</text>"
+        )
 
     # ---- 主 grid 10×10 ----
     GRID_N = 10
@@ -597,9 +632,11 @@ def make_percent_grid(options,
     main_y = MARGIN_T + 40
 
     # header 上小标签
-    parts.append(f'<text x="{main_x:.1f}" y="{main_y - 12:.1f}" font-family="{_body_font}" '
-                 f'font-size="{_fs_header}" fill="{c_muted}" font-weight="600" letter-spacing="1.8">'
-                 f'ONE SQUARE = 1%</text>')
+    parts.append(
+        f'<text x="{main_x:.1f}" y="{main_y - 12:.1f}" font-family="{_body_font}" '
+        f'font-size="{_fs_header}" fill="{c_muted}" font-weight="600" letter-spacing="1.8">'
+        f"ONE SQUARE = 1%</text>"
+    )
 
     # 填格：按类别顺序左→右、上→下逐个染色
     idx = 0
@@ -611,52 +648,65 @@ def make_percent_grid(options,
             x = main_x + col * (main_cell + main_gap)
             y = main_y + row * (main_cell + main_gap)
             # 阴影底
-            parts.append(f'<rect x="{x+1:.1f}" y="{y+1:.1f}" width="{main_cell:.1f}" '
-                         f'height="{main_cell:.1f}" fill="rgba(0,0,0,0.05)" rx="3"/>')
+            parts.append(
+                f'<rect x="{x + 1:.1f}" y="{y + 1:.1f}" width="{main_cell:.1f}" '
+                f'height="{main_cell:.1f}" fill="rgba(0,0,0,0.05)" rx="3"/>'
+            )
             # 主色块
-            parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{main_cell:.1f}" '
-                         f'height="{main_cell:.1f}" fill="{_rgba_with_alpha(col_fill, 0.92)}" rx="3"/>')
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y:.1f}" width="{main_cell:.1f}" '
+                f'height="{main_cell:.1f}" fill="{_rgba_with_alpha(col_fill, 0.92)}" rx="3"/>'
+            )
             idx += 1
 
     # ---- 底部累计条 ----
     if show_breakdown_band:
         band_y = main_y + main_size + 22
         band_h = 26.0
-        parts.append(f'<text x="{main_x:.1f}" y="{band_y - 8:.1f}" font-family="{_body_font}" '
-                     f'font-size="{_fs_header}" fill="{c_muted}" font-weight="600" letter-spacing="1.4">'
-                     f'BREAKDOWN</text>')
+        parts.append(
+            f'<text x="{main_x:.1f}" y="{band_y - 8:.1f}" font-family="{_body_font}" '
+            f'font-size="{_fs_header}" fill="{c_muted}" font-weight="600" letter-spacing="1.4">'
+            f"BREAKDOWN</text>"
+        )
         cur_x = main_x
         for ci, cnt in enumerate(counts_norm):
             col_fill = series_cols[ci]
             seg_w = cnt / 100.0 * main_size
-            parts.append(f'<rect x="{cur_x:.1f}" y="{band_y:.1f}" width="{seg_w:.1f}" '
-                         f'height="{band_h:.1f}" fill="{_rgba_with_alpha(col_fill, 0.92)}"/>')
+            parts.append(
+                f'<rect x="{cur_x:.1f}" y="{band_y:.1f}" width="{seg_w:.1f}" '
+                f'height="{band_h:.1f}" fill="{_rgba_with_alpha(col_fill, 0.92)}"/>'
+            )
             # 段内数字：按实际文本宽度判断是否放得下（否则会溢出到相邻段并触发 text_shape_overlap）
             num_str = f"{cnt}%"
             num_w = len(num_str) * _fs_breakdown_num * 0.55  # 数字近似 0.55em/char
             if seg_w >= max(30.0, num_w + 4):
                 # 段内数字（用高对比色）
-                parts.append(f'<text x="{cur_x + seg_w/2:.1f}" y="{band_y + band_h/2 + 4:.1f}" '
-                             f'text-anchor="middle" font-family="{_head_font}" '
-                             f'font-size="{_fs_breakdown_num}" font-weight="700" fill="{paper}">{cnt}%</text>')
+                parts.append(
+                    f'<text x="{cur_x + seg_w / 2:.1f}" y="{band_y + band_h / 2 + 4:.1f}" '
+                    f'text-anchor="middle" font-family="{_head_font}" '
+                    f'font-size="{_fs_breakdown_num}" font-weight="700" fill="{paper}">{cnt}%</text>'
+                )
             cur_x += seg_w
         # 段外描边
-        parts.append(f'<rect x="{main_x:.1f}" y="{band_y:.1f}" width="{main_size:.1f}" '
-                     f'height="{band_h:.1f}" fill="none" stroke="{_INK4}" stroke-width="0.5"/>')
+        parts.append(
+            f'<rect x="{main_x:.1f}" y="{band_y:.1f}" width="{main_size:.1f}" '
+            f'height="{band_h:.1f}" fill="none" stroke="{_INK4}" stroke-width="0.5"/>'
+        )
         # 类别 label（横条下方）
         # 用 CJK-aware 宽度估算 + segment margin，避免窄段的 label 溢出到相邻段。
         cur_x = main_x
         for ci, cnt in enumerate(counts_norm):
             seg_w = cnt / 100.0 * main_size
             lab_str = labels_norm[ci]
-            lab_w = sum((_fs_breakdown_lbl if ord(c) > 127 else _fs_breakdown_lbl * 0.55)
-                        for c in lab_str)
+            lab_w = sum((_fs_breakdown_lbl if ord(c) > 127 else _fs_breakdown_lbl * 0.55) for c in lab_str)
             # 至少留 4px 左右 padding；宽度不够就不画（避免相邻 label 撞）
             if seg_w > 40 and lab_w + 8 <= seg_w:
-                parts.append(f'<text x="{cur_x + seg_w/2:.1f}" y="{band_y + band_h + 15:.1f}" '
-                             f'text-anchor="middle" font-family="{_body_font}" '
-                             f'font-size="{_fs_breakdown_lbl}" fill="{_INK}" font-weight="600">'
-                             f'{_xesc(lab_str)}</text>')
+                parts.append(
+                    f'<text x="{cur_x + seg_w / 2:.1f}" y="{band_y + band_h + 15:.1f}" '
+                    f'text-anchor="middle" font-family="{_body_font}" '
+                    f'font-size="{_fs_breakdown_lbl}" fill="{_INK}" font-weight="600">'
+                    f"{_xesc(lab_str)}</text>"
+                )
             cur_x += seg_w
     else:
         band_y = main_y + main_size
@@ -725,14 +775,20 @@ def make_percent_grid(options,
         y_sub_baseline = y_big_baseline + fs_big_used * 0.2 + gap_bs + fs_sub_used * 0.8
         for i, (lab, val, col, sub) in enumerate(kpi_slots):
             kx = kpi_x + i * (slot_w + gap)
-            parts.append(f'<text x="{kx:.1f}" y="{y_hdr_baseline:.1f}" font-family="{_body_font}" '
-                         f'font-size="{fs_hdr_used}" fill="{c_muted}" font-weight="600" letter-spacing="1.4">'
-                         f'{lab}</text>')
-            parts.append(f'<text x="{kx:.1f}" y="{y_big_baseline:.1f}" font-family="{_head_font}" '
-                         f'font-size="{fs_big_used}" fill="{_rgba_with_alpha(col, 1)}" font-weight="700">'
-                         f'{val}%</text>')
-            parts.append(f'<text x="{kx:.1f}" y="{y_sub_baseline:.1f}" font-family="{_body_font}" '
-                         f'font-size="{fs_sub_used}" fill="{c_muted}">{_xesc(sub)}</text>')
+            parts.append(
+                f'<text x="{kx:.1f}" y="{y_hdr_baseline:.1f}" font-family="{_body_font}" '
+                f'font-size="{fs_hdr_used}" fill="{c_muted}" font-weight="600" letter-spacing="1.4">'
+                f"{lab}</text>"
+            )
+            parts.append(
+                f'<text x="{kx:.1f}" y="{y_big_baseline:.1f}" font-family="{_head_font}" '
+                f'font-size="{fs_big_used}" fill="{_rgba_with_alpha(col, 1)}" font-weight="700">'
+                f"{val}%</text>"
+            )
+            parts.append(
+                f'<text x="{kx:.1f}" y="{y_sub_baseline:.1f}" font-family="{_body_font}" '
+                f'font-size="{fs_sub_used}" fill="{c_muted}">{_xesc(sub)}</text>'
+            )
         # KPI sub 是 KPI 行最后一行；它的字底沿 = baseline + fs*0.2
         _content_bottom_y = max(_content_bottom_y, y_sub_baseline + fs_sub_used * 0.2)
 
@@ -742,6 +798,7 @@ def make_percent_grid(options,
     # max(70.0, _fs_legend_pct*3.0) 高估百分数字宽度，配合 text-anchor="end"，
     # 在 W=800 时最多溢出 ~56px（slide 11: 856 vs 800）。
     lg_y = main_y + 4
+
     # 图例宽度：右侧留给 % 数字，label 区宽度按 CJK-aware 估算
     # 拉丁字符 = fs * 0.55；CJK 字符 = fs * 1.0（一个 em 宽）
     def _cjk_aware_w(s, fs, bold=False):
@@ -753,6 +810,7 @@ def make_percent_grid(options,
     # 若默认字号下 legend 塞不下（label 过长），按可用宽度反解字号
     _lg_x_min = main_x + main_size + 20  # 主 grid 右边至少留 20px gap
     _avail_lg_w = W - MARGIN_R - _lg_x_min
+
     def _compute_legend_w(fs_lbl, fs_pct):
         # label 走 font-weight="600" bold；pct 走 font-weight="700" bold。
         _mlbl = max((_cjk_aware_w(str(lab), fs_lbl, bold=True) for lab in labels_norm), default=0)
@@ -763,15 +821,13 @@ def make_percent_grid(options,
 
     _fs_legend_lbl_used = _fs_legend_lbl
     _fs_legend_pct_used = _fs_legend_pct
-    _legend_total_w, _swatch_w, _max_lbl_w, _pct_num_w = _compute_legend_w(
-        _fs_legend_lbl_used, _fs_legend_pct_used)
+    _legend_total_w, _swatch_w, _max_lbl_w, _pct_num_w = _compute_legend_w(_fs_legend_lbl_used, _fs_legend_pct_used)
     if _legend_total_w > _avail_lg_w:
         # 按比例整体缩小 legend 字号（保底不小于 9pt 和 12pt）
         shrink = _avail_lg_w / _legend_total_w
         _fs_legend_lbl_used = max(9.0, _fs_legend_lbl_used * shrink)
         _fs_legend_pct_used = max(12.0, _fs_legend_pct_used * shrink)
-        _legend_total_w, _swatch_w, _max_lbl_w, _pct_num_w = _compute_legend_w(
-            _fs_legend_lbl_used, _fs_legend_pct_used)
+        _legend_total_w, _swatch_w, _max_lbl_w, _pct_num_w = _compute_legend_w(_fs_legend_lbl_used, _fs_legend_pct_used)
 
     _pct_col_offset = _swatch_w + 8 + _max_lbl_w + 12
     # 行高跟（缩后的）label 字号联动，避免 label 变大后互相压叠
@@ -783,22 +839,32 @@ def make_percent_grid(options,
     _lg_x_preferred = main_x + main_size + 60
     _lg_x_max = W - MARGIN_R - _legend_total_w
     lg_x = max(_lg_x_min, min(_lg_x_preferred, _lg_x_max))
-    parts.append(f'<text x="{lg_x:.1f}" y="{lg_y - 12:.1f}" font-family="{_body_font}" '
-                 f'font-size="{_fs_legend_hdr}" fill="{c_muted}" font-weight="600" letter-spacing="1.8">'
-                 f'CATEGORIES</text>')
-    parts.append(f'<line x1="{lg_x:.1f}" y1="{lg_y - 6:.1f}" x2="{lg_x + _legend_total_w:.1f}" '
-                 f'y2="{lg_y - 6:.1f}" stroke="{_INK4}" stroke-width="0.6"/>')
+    parts.append(
+        f'<text x="{lg_x:.1f}" y="{lg_y - 12:.1f}" font-family="{_body_font}" '
+        f'font-size="{_fs_legend_hdr}" fill="{c_muted}" font-weight="600" letter-spacing="1.8">'
+        f"CATEGORIES</text>"
+    )
+    parts.append(
+        f'<line x1="{lg_x:.1f}" y1="{lg_y - 6:.1f}" x2="{lg_x + _legend_total_w:.1f}" '
+        f'y2="{lg_y - 6:.1f}" stroke="{_INK4}" stroke-width="0.6"/>'
+    )
     for i, (lab, cnt) in enumerate(zip(labels_norm, counts_norm)):
         row_y = lg_y + i * lg_row_h
         col = series_cols[i]
-        parts.append(f'<rect x="{lg_x:.1f}" y="{row_y:.1f}" width="{_swatch_w:.1f}" height="{_swatch_w:.1f}" '
-                     f'fill="{_rgba_with_alpha(col, 0.92)}" rx="2"/>')
-        parts.append(f'<text x="{lg_x + _swatch_w + 8:.1f}" y="{row_y + _swatch_w*0.75:.1f}" font-family="{_body_font}" '
-                     f'font-size="{_fs_legend_lbl_used}" font-weight="600" fill="{_INK}">{_xesc(lab)}</text>')
+        parts.append(
+            f'<rect x="{lg_x:.1f}" y="{row_y:.1f}" width="{_swatch_w:.1f}" height="{_swatch_w:.1f}" '
+            f'fill="{_rgba_with_alpha(col, 0.92)}" rx="2"/>'
+        )
+        parts.append(
+            f'<text x="{lg_x + _swatch_w + 8:.1f}" y="{row_y + _swatch_w * 0.75:.1f}" font-family="{_body_font}" '
+            f'font-size="{_fs_legend_lbl_used}" font-weight="600" fill="{_INK}">{_xesc(lab)}</text>'
+        )
         # 百分比大字
-        parts.append(f'<text x="{lg_x + _legend_total_w:.1f}" y="{row_y + _swatch_w*0.8:.1f}" font-family="{_head_font}" '
-                     f'font-size="{_fs_legend_pct_used}" font-weight="700" fill="{_rgba_with_alpha(col, 1)}" '
-                     f'text-anchor="end">{cnt}%</text>')
+        parts.append(
+            f'<text x="{lg_x + _legend_total_w:.1f}" y="{row_y + _swatch_w * 0.8:.1f}" font-family="{_head_font}" '
+            f'font-size="{_fs_legend_pct_used}" font-weight="700" fill="{_rgba_with_alpha(col, 1)}" '
+            f'text-anchor="end">{cnt}%</text>'
+        )
     # legend 最后一行底沿（用于 note 定位）
     _legend_last_row_bottom = lg_y + (len(labels_norm) - 1) * lg_row_h + max(_swatch_w, _fs_legend_pct_used)
     _content_bottom_y = max(_content_bottom_y, _legend_last_row_bottom)
@@ -812,11 +878,15 @@ def make_percent_grid(options,
         # 上限：baseline 加下沿 fs*0.2 不越过 viewBox 底
         _note_baseline_max = H - _fs_note * 0.2 - 2
         foot_y = min(max(H - 32, _note_baseline_min), _note_baseline_max)
-        parts.append(f'<line x1="{MARGIN_L:.1f}" y1="{foot_y - 14:.1f}" x2="{W - MARGIN_R:.1f}" '
-                     f'y2="{foot_y - 14:.1f}" stroke="{_INK4}" stroke-width="0.5"/>')
-        parts.append(f'<text x="{MARGIN_L:.1f}" y="{foot_y:.1f}" font-family="{_body_font}" '
-                     f'font-size="{_fs_note}" fill="{c_muted}">'
-                     f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>')
+        parts.append(
+            f'<line x1="{MARGIN_L:.1f}" y1="{foot_y - 14:.1f}" x2="{W - MARGIN_R:.1f}" '
+            f'y2="{foot_y - 14:.1f}" stroke="{_INK4}" stroke-width="0.5"/>'
+        )
+        parts.append(
+            f'<text x="{MARGIN_L:.1f}" y="{foot_y:.1f}" font-family="{_body_font}" '
+            f'font-size="{_fs_note}" fill="{c_muted}">'
+            f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
+        )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H)}">{body}</svg>'

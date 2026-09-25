@@ -8,13 +8,15 @@ description: >-
 
 # 主 MD ref 使用说明
 
-本文件是 `doubao-creative-video/MD.md` 的 UGC 口播策略 ref。主 MD 命中 UGC 路由后读取本文件执行；不要把本文件作为独立触发入口覆盖主 MD 的视频生成门控。
+本文件是 `doubao-creative-video/SKILL.md` 的 UGC 口播策略 ref。主 MD 命中 UGC 路由后读取本文件执行；不要把本文件作为独立触发入口覆盖主 MD 的视频生成门控。
+
+所有普通澄清与最终生成确认必须读取并遵守`references/video-clarification-ref.md`。先整理完整生成内容、参数和台词，展示后使用统一澄清 ref 指定的固定收口句，等待用户回复“按要求生成”后再生成。
 
 主 MD 传入的 `ref` 先按 `product_ref/script_ref/creator_ref/scene_ref/style_ref/audio_ref/platform_ref` 分类，再进入下方 UGC 策略。
 
 ## ref 输入适配
 
-`ref` 只是输入封装形式，不改变 UGC 原策略：主 MD 完成一次澄清确认和产品上传门控后，本 ref 仍然先输出轻量分镜表，再按 UGC 口播逻辑生成；本 ref 不额外增加第二次确认，也不得绕过主确认。
+`ref` 只是输入封装形式，不改变 UGC 原策略：主 MD 按`references/video-clarification-ref.md`完成阻塞信息澄清、产品上传门控和最终生成确认后，本 ref 仍然先输出轻量分镜表，再按 UGC 口播逻辑生成；本 ref 不额外增加确认，也不得绕过主确认。
 
 遵守主 MD 的通用参考图与分镜图表策略：完整分镜图表只做顺序拆解改写，不整图直参；出镜 IP/人物按 `@image1/@image2...` 图片顺序说明参考对象、保留锚点和防漂移约束。
 
@@ -33,7 +35,7 @@ description: >-
 把一句需求变成**像真人随手拍**的 UGC 口播视频。目标：主播真实无 AI 感，产品严格贴合用户参考图，prompt 足够细，分镜表可直接执行。
 
 ```text
-brief -> 产品锁定 -> 随机主播脸谱蓝图 -> 多卖点脚本 -> 轻量分镜表(硬门控) -> Seedance prompt -> 调用视频工具 -> notify_hunman 整理输出并展示视频 -> 成功摘要
+brief -> 产品锁定 -> 随机主播脸谱蓝图 -> 多卖点脚本 -> 轻量分镜表(硬门控) -> Seedance prompt -> 调用视频工具 -> 逐项执行统一视频结果交付门禁 -> 成功摘要
 ```
 
 ## 输出契约
@@ -282,7 +284,8 @@ Seedance 强提示：
 - `image_to_video`：有用户产品图/首帧/分镜图且要强一致时优先考虑。
 - `duration` 默认 15 秒，`ratio` 默认 9:16 竖屏。
 - 返回 `video_url/output_url/url/result_url` 或本地路径；没有则失败。
-- 工具返回可用链接或本地路径后，必须按主 MD 要求调用 `notify_hunman` 展示视频；未展示前不得使用成功格式。
+- 工具返回可用链接或本地路径后，每个视频结果必须立即按 `references/media-result-delivery-gate.md` 单独调用 `present_files` 展示；未完成前不得使用成功格式、筛选版本或启动修复。
+- 效果不佳、身份漂移、产品不一致或画面文字错误都不能静默丢弃当前成功结果。先交付并记录问题，再按统一门禁决定阻断下游或等待用户。
 
 ## 给用户的成功格式
 
@@ -303,7 +306,7 @@ Seedance 强提示：
 失败：
 
 ```text
-视频工具未返回可用链接，当前无法确认成片；可重跑视频工具。
+视频工具未返回可用链接，当前无法确认成片；本次不自动重跑，等待你决定是否重试。
 ```
 
 ## 内部自检

@@ -279,7 +279,7 @@ def resolve_icon(index_data: dict[str, Any], name_or_type: str | None) -> dict[s
         candidates = {
             normalize_token(entry["iconType"]),
             normalize_token(entry["name"]),
-            normalize_token(f'{entry["category"]}/{entry["name"]}.svg'),
+            normalize_token(f"{entry['category']}/{entry['name']}.svg"),
         }
         if target in candidates:
             matches.append(entry)

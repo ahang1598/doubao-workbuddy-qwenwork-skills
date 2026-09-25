@@ -18,12 +18,12 @@ Variants (5 共享同一份 data):
     - stacked_gradient    每个 pos/neg 步骤按子类别堆叠 + 渐变（读取 list value）
                           若某 step 的 value 是 scalar，则自动拆成单段
 """
+
 from __future__ import annotations
 
 import math
 
 from ._shared import (
-
     resolve_palette,
     xesc,
     auto_font_size,
@@ -36,7 +36,23 @@ from ._shared import (
 )
 
 
-from .._common import (_ACC, _INK, _INK2, _INK6, _prepend_bg_if_dark, _punchy_title_ink, _render_title_block, _resolve_font, _resolve_palette, _rgba_with_alpha, _wrap_with_auto_viewbox, _xesc, _variant_is_classic, _dispatch_to_svg_lib)
+from .._common import (
+    _ACC,
+    _INK,
+    _INK2,
+    _INK6,
+    _prepend_bg_if_dark,
+    _punchy_title_ink,
+    _render_title_block,
+    _resolve_font,
+    _resolve_palette,
+    _rgba_with_alpha,
+    _wrap_with_auto_viewbox,
+    _xesc,
+    _variant_is_classic,
+    _dispatch_to_svg_lib,
+)
+
 BODY_FONT = "Inter, sans-serif"
 HEAD_FONT = "Georgia, serif"
 
@@ -44,6 +60,7 @@ HEAD_FONT = "Georgia, serif"
 # ---------------------------------------------------------------------------
 # entry
 # ---------------------------------------------------------------------------
+
 
 def draw_waterfall(
     data: dict,
@@ -82,22 +99,16 @@ def draw_waterfall(
             "cross_axis, horizontal, stacked_gradient"
         )
 
-    ctx = _Ctx(steps=steps, pal=pal, W=float(width), H=float(height),
-               title=title, subtitle=subtitle)
+    ctx = _Ctx(steps=steps, pal=pal, W=float(width), H=float(height), title=title, subtitle=subtitle)
     body = body_fn(ctx)
 
-    return (
-        svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"])
-        + ctx.defs_svg()
-        + _header(ctx)
-        + body
-        + svg_close()
-    )
+    return svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"]) + ctx.defs_svg() + _header(ctx) + body + svg_close()
 
 
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
 
 class _Ctx:
     def __init__(self, steps, pal, W, H, title, subtitle):
@@ -109,9 +120,9 @@ class _Ctx:
         self.subtitle = subtitle
         self.n = len(steps)
         # 字号自适应：viewBox 尺寸 × 数据规模 双重驱动
-        self.fs_label = viewbox_fs(W, H, self.n, role_mult=1.0)   # step 名字
+        self.fs_label = viewbox_fs(W, H, self.n, role_mult=1.0)  # step 名字
         self.fs_value = viewbox_fs(W, H, self.n, role_mult=1.05)  # 数值（数字要大点）
-        self.fs_tick = viewbox_fs(W, H, self.n, role_mult=0.85)   # Y 轴刻度
+        self.fs_tick = viewbox_fs(W, H, self.n, role_mult=0.85)  # Y 轴刻度
         self.header_h = 50 if title else 20
         if subtitle:
             self.header_h += 18
@@ -261,6 +272,7 @@ def _colors(pal, kind):
 # 1) default_flat — vertical waterfall
 # ---------------------------------------------------------------------------
 
+
 def _est_text_width(s: str, fs: float) -> float:
     """Rough monospace-ish estimate of glyph run width for a text run."""
     if not s:
@@ -270,9 +282,16 @@ def _est_text_width(s: str, fs: float) -> float:
     return n_ascii * fs * 0.6 + n_cjk * fs * 1.05
 
 
-def _emit_gridline_with_gaps(x0: float, x1: float, y: float, stroke: str,
-                              stroke_width: float, dash: str,
-                              text_bboxes: list, extra_attrs: str = "") -> str:
+def _emit_gridline_with_gaps(
+    x0: float,
+    x1: float,
+    y: float,
+    stroke: str,
+    stroke_width: float,
+    dash: str,
+    text_bboxes: list,
+    extra_attrs: str = "",
+) -> str:
     """Emit a horizontal line as one or more <line> segments, skipping any
     x-ranges where y falls inside a text bbox's 15%-70% band (same band the
     validator uses to flag "line strikes through text").
@@ -288,7 +307,7 @@ def _emit_gridline_with_gaps(x0: float, x1: float, y: float, stroke: str,
     lo, hi = (x0, x1) if x0 <= x1 else (x1, x0)
     # find bands covering y
     gaps = []
-    for (tx, ty, tw, th) in text_bboxes:
+    for tx, ty, tw, th in text_bboxes:
         # validator band: [ty + th*0.15, ty + th*0.7]
         # widen slightly (0.05 top / 0.75 bottom) so borderline hits are also covered
         band_top = ty + th * 0.05
@@ -401,7 +420,12 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
         y = yof(t)
         parts.append(
             _emit_gridline_with_gaps(
-                plot_left, plot_right, y, grid_col, 0.5, "2 3",
+                plot_left,
+                plot_right,
+                y,
+                grid_col,
+                0.5,
+                "2 3",
                 value_bboxes,
             )
         )
@@ -485,10 +509,7 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
                             )
                         k += spacing
             else:
-                parts.append(
-                    f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" '
-                    f'height="{h:.1f}" fill="{col}"/>'
-                )
+                parts.append(f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" fill="{col}"/>')
 
         # value label above/below bar
         sign = "+" if disp > 0 else ("-" if disp < 0 else "")
@@ -521,8 +542,12 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
             y_conn = yof(sv)
             parts.append(
                 _emit_gridline_with_gaps(
-                    prev_end_x, x0, y_conn,
-                    _rgba_with_alpha(ink, 0.45), 1, "3 3",
+                    prev_end_x,
+                    x0,
+                    y_conn,
+                    _rgba_with_alpha(ink, 0.45),
+                    1,
+                    "3 3",
                     value_bboxes,
                 )
             )
@@ -551,9 +576,7 @@ def _draw_subtotal_bridge(ctx: _Ctx) -> str:
     # 多个 running section，避免大数据集只在开头出现一次 subtotal 的问题。
     layout = _compute_layout(ctx.steps)
     n = len(layout)
-    has_intermediate_total = any(
-        i not in (0, n - 1) and layout[i][1] == "total" for i in range(n)
-    )
+    has_intermediate_total = any(i not in (0, n - 1) and layout[i][1] == "total" for i in range(n))
     if not has_intermediate_total and n >= 5:
         # Scan for every pos<->neg turning point; insert Subtotal after each
         # turning point subject to a min-spacing of 3 steps from the previous
@@ -562,9 +585,7 @@ def _draw_subtotal_bridge(ctx: _Ctx) -> str:
         for i in range(1, n - 1):
             kind_i = layout[i][1]
             kind_next = layout[i + 1][1]
-            if (kind_i == "pos" and kind_next == "neg") or (
-                kind_i == "neg" and kind_next == "pos"
-            ):
+            if (kind_i == "pos" and kind_next == "neg") or (kind_i == "neg" and kind_next == "pos"):
                 turning_points.append(i + 1)  # insert BEFORE step i+1
 
         # Filter to keep min-spacing >=3 (in original layout indices)
@@ -605,6 +626,7 @@ def _draw_cross_axis(ctx: _Ctx) -> str:
 # 4) horizontal
 # ---------------------------------------------------------------------------
 
+
 def _draw_horizontal(ctx: _Ctx) -> str:
     parts = []
     layout = _compute_layout(ctx.steps)
@@ -621,7 +643,7 @@ def _draw_horizontal(ctx: _Ctx) -> str:
     pad = (v_max - v_min) * 0.08
     v_lo, v_hi, ticks = _nice_ticks(v_min - pad * 0.4, v_max + pad, target=5)
 
-    ML = 140    # left margin for category labels
+    ML = 140  # left margin for category labels
     MR = 60
     plot_left = ML
     plot_right = ctx.W - MR
@@ -677,10 +699,7 @@ def _draw_horizontal(ctx: _Ctx) -> str:
             x_a = xof(0.0)
             x_b = xof(ev)
             x0, w = (x_a, x_b - x_a) if x_b >= x_a else (x_b, x_a - x_b)
-            parts.append(
-                f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{w:.1f}" height="{bar_h:.1f}" '
-                f'fill="{col}"/>'
-            )
+            parts.append(f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{w:.1f}" height="{bar_h:.1f}" fill="{col}"/>')
             lx = x_b + 6 if x_b >= x_a else x_b - 6
             anchor = "start" if x_b >= x_a else "end"
             parts.append(
@@ -692,8 +711,7 @@ def _draw_horizontal(ctx: _Ctx) -> str:
             x_a = xof(sv)
             x_b = xof(ev)
             parts.append(
-                f'<rect x="{x_a:.1f}" y="{y_top:.1f}" width="{x_b - x_a:.1f}" '
-                f'height="{bar_h:.1f}" fill="{col}"/>'
+                f'<rect x="{x_a:.1f}" y="{y_top:.1f}" width="{x_b - x_a:.1f}" height="{bar_h:.1f}" fill="{col}"/>'
             )
             parts.append(
                 f'<text x="{x_b + 6:.1f}" y="{cy + 4:.1f}" font-family="{BODY_FONT}" '
@@ -728,6 +746,7 @@ def _draw_horizontal(ctx: _Ctx) -> str:
 # ---------------------------------------------------------------------------
 # 5) stacked_gradient — 每个 step 按子类别堆叠 + 渐变
 # ---------------------------------------------------------------------------
+
 
 def _draw_stacked_gradient(ctx: _Ctx) -> str:
     parts = []
@@ -822,7 +841,12 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
         y = yof(t)
         parts.append(
             _emit_gridline_with_gaps(
-                plot_left, plot_right, y, grid, 0.5, "2 3",
+                plot_left,
+                plot_right,
+                y,
+                grid,
+                0.5,
+                "2 3",
                 value_bboxes,
             )
         )
@@ -853,7 +877,7 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                 f'gradientUnits="userSpaceOnUse">'
                 f'<stop offset="0%" stop-color="rgba({r},{g},{b},1)"/>'
                 f'<stop offset="100%" stop-color="rgba({r},{g},{b},0.55)"/>'
-                f'</linearGradient>'
+                f"</linearGradient>"
             )
             parts.append(
                 f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" '
@@ -906,7 +930,7 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                     f'x2="0" y2="{y_seg_bot:.1f}" gradientUnits="userSpaceOnUse">'
                     f'<stop offset="0%" stop-color="rgba({r},{g},{b},1)"/>'
                     f'<stop offset="100%" stop-color="rgba({r},{g},{b},0.55)"/>'
-                    f'</linearGradient>'
+                    f"</linearGradient>"
                 )
                 parts.append(
                     f'<rect x="{x0:.1f}" y="{y_seg_top:.1f}" width="{bar_w:.1f}" '
@@ -915,7 +939,7 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                 # small in-seg label if room
                 if seg_h > ctx.fs_tick * 2 and sub_lb:
                     parts.append(
-                        f'<text x="{x_c:.1f}" y="{y_seg_top + seg_h/2 + 3:.1f}" '
+                        f'<text x="{x_c:.1f}" y="{y_seg_top + seg_h / 2 + 3:.1f}" '
                         f'text-anchor="middle" font-family="{BODY_FONT}" '
                         f'font-size="{ctx.fs_tick}" font-weight="600" '
                         f'fill="rgba(255,255,255,0.95)">{xesc(sub_lb)} {_fmt(sub_val)}</text>'
@@ -942,8 +966,12 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
             nx = plot_left + (i + 1) * slot + slot / 2 - bar_w / 2
             parts.append(
                 _emit_gridline_with_gaps(
-                    x0 + bar_w, nx, y_conn,
-                    _rgba_with_alpha(ink, 0.45), 1, "3 3",
+                    x0 + bar_w,
+                    nx,
+                    y_conn,
+                    _rgba_with_alpha(ink, 0.45),
+                    1,
+                    "3 3",
                     value_bboxes,
                 )
             )
@@ -962,9 +990,7 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
         lg_x = plot_left
         for lb in seen_subs:
             col = sub_color[lb]
-            parts.append(
-                f'<rect x="{lg_x:.1f}" y="{lg_y - 9:.1f}" width="12" height="10" fill="{col}"/>'
-            )
+            parts.append(f'<rect x="{lg_x:.1f}" y="{lg_y - 9:.1f}" width="12" height="10" fill="{col}"/>')
             parts.append(
                 f'<text x="{lg_x + 16:.1f}" y="{lg_y:.1f}" font-family="{BODY_FONT}" '
                 f'font-size="{ctx.fs_tick}" font-weight="600" fill="{ink}">{xesc(lb)}</text>'
@@ -974,16 +1000,18 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-def make_waterfall(steps,
-                   width: float = 1000.0,
-                   height: float = 560.0,
-                   value_fmt: str = "auto",
-                   title: str = None,
-                   subtitle: str = None,
-                   figure_label: str = None,
-                   font_family: str = None,
-                   palette: dict = None,
-                variant: str = None) -> str:
+def make_waterfall(
+    steps,
+    width: float = 1000.0,
+    height: float = 560.0,
+    value_fmt: str = "auto",
+    title: str = None,
+    subtitle: str = None,
+    figure_label: str = None,
+    font_family: str = None,
+    palette: dict = None,
+    variant: str = None,
+) -> str:
     """
     从起点到终点的逐项加减（Lupi 编辑体扁平风）：
     - total 柱（首尾）：纯黑实心，无描边无圆角
@@ -1010,31 +1038,39 @@ def make_waterfall(steps,
       示例：palette={"accent":"rgba(56,102,168,1)","ink":"rgba(20,30,50,1)"}
     Y 轴刻度按量级整数化对齐（不出 88.8 / 101.6 这类半整数）。
     """
-    if not _variant_is_classic('waterfall', variant):
+    if not _variant_is_classic("waterfall", variant):
         _data = {"steps": list(steps)}
         return _dispatch_to_svg_lib(
-            'waterfall', variant, _data,
-            title=title, subtitle=subtitle, figure_label=figure_label,
-            palette=palette, font_family=font_family,
+            "waterfall",
+            variant,
+            _data,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            palette=palette,
+            font_family=font_family,
         )
 
     if not steps or len(steps) < 2:
         raise ValueError("waterfall: need at least 2 steps (start + end)")
+
     # ---- 配色解析 ----
     def _rgba_with_alpha(rgba_str, alpha):
         import re as _re
-        m = _re.match(r'\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)', rgba_str)
+
+        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str)
         if not m:
             return f"rgba(28,28,26,{alpha})"
         return f"rgba({int(float(m.group(1)))},{int(float(m.group(2)))},{int(float(m.group(3)))},{alpha})"
+
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    c_ink      = _pal.get("ink",      _INK)
-    c_accent   = _pal.get("accent",   _ACC)
-    c_pos_bar  = _pal.get("pos_bar",  _rgba_with_alpha(c_ink, 0.6))
-    c_connect  = _pal.get("connect",  _rgba_with_alpha(c_ink, 0.4))
-    c_grid     = _pal.get("grid",     _rgba_with_alpha(c_ink, 0.12))
-    c_muted    = _pal.get("muted",    _rgba_with_alpha(c_ink, 0.6))
+    c_ink = _pal.get("ink", _INK)
+    c_accent = _pal.get("accent", _ACC)
+    c_pos_bar = _pal.get("pos_bar", _rgba_with_alpha(c_ink, 0.6))
+    c_connect = _pal.get("connect", _rgba_with_alpha(c_ink, 0.4))
+    c_grid = _pal.get("grid", _rgba_with_alpha(c_ink, 0.12))
+    c_muted = _pal.get("muted", _rgba_with_alpha(c_ink, 0.6))
     c_stroke_z = _rgba_with_alpha(c_ink, 0.4)  # 零增量柱的空心描边
     running = 0.0
     all_v = []
@@ -1042,13 +1078,13 @@ def make_waterfall(steps,
     step_yvals = []
     for i, s in enumerate(steps):
         name, v, kind = s
-        if kind == 'total':
+        if kind == "total":
             top = v
             running = v
             total_vals.append(v)
             step_yvals.append((top, None))
             all_v.append(v)
-        elif kind == 'pos':
+        elif kind == "pos":
             bot = running
             top = running + abs(v)
             running += abs(v)
@@ -1104,6 +1140,7 @@ def make_waterfall(steps,
             return f"{int(round(v)):,}"
         else:
             return format(v, value_fmt)
+
     def _fmt_tick(v):
         if _tick_decimals == 0:
             return f"{int(round(v)):,}"
@@ -1113,8 +1150,10 @@ def make_waterfall(steps,
     axis_x1 = width - 40
     top_y = 70
     bot_y = height - 60
+
     def yof(v):
         return bot_y - (v - y_min) / (y_max - y_min) * (bot_y - top_y)
+
     n = len(steps)
     slot = (axis_x1 - axis_x0 - 20) / n
     bar_w = min(110, slot * 0.6)
@@ -1135,15 +1174,15 @@ def make_waterfall(steps,
         _y_top = yof(_top_v)
         _y_bot = yof(_bot_v)
         _h_bar = _y_bot - _y_top
-        _zero = (_kind in ('pos', 'neg')) and _h_bar < 1.0
+        _zero = (_kind in ("pos", "neg")) and _h_bar < 1.0
         if _zero:
             _y_top = min(_y_top, _y_bot) - 0.75
             _y_bot = _y_top + 1.5
-        if _kind == 'total':
+        if _kind == "total":
             _txt = _fmt(_v)
             _fs = 16.0
             _baseline_y = _y_top - 5
-        elif _kind == 'pos':
+        elif _kind == "pos":
             _txt = f"+{_fmt(abs(_v))}"
             _fs = 14.0
             _baseline_y = _y_top - 4
@@ -1163,21 +1202,28 @@ def make_waterfall(steps,
         y = yof(tick)
         parts.append(
             _emit_gridline_with_gaps(
-                axis_x0, axis_x1, y, c_grid, 0.5, "2 3",
+                axis_x0,
+                axis_x1,
+                y,
+                c_grid,
+                0.5,
+                "2 3",
                 value_bboxes,
             )
         )
         parts.append(
-            f'<text font-family="{_body_font}" x="{axis_x0-4}" y="{y+3:.1f}" font-size="12" fill="{c_muted}" text-anchor="end">{_fmt_tick(tick)}</text>'
+            f'<text font-family="{_body_font}" x="{axis_x0 - 4}" y="{y + 3:.1f}" font-size="12" fill="{c_muted}" text-anchor="end">{_fmt_tick(tick)}</text>'
         )
         tick += tick_step
 
     running = 0.0
+
     # 类别标签旋转策略：只要有任何一个标签宽度超过 slot*0.9，就统一全部旋转（避免同图内一半旋转一半不旋转）
     def _label_text_w(nm):
         n_ascii = sum(1 for c in nm if ord(c) < 128)
         n_cjk = len(nm) - n_ascii
         return n_ascii * 8 * 0.6 + n_cjk * 8 * 1.1
+
     _rotate_labels = any(_label_text_w(s[0]) > slot * 0.9 for s in steps)
 
     for i, (name, v, kind) in enumerate(steps):
@@ -1187,22 +1233,20 @@ def make_waterfall(steps,
         y_bot = yof(bot_v)
         h_bar = y_bot - y_top
         # 零增量柱占位：pos/neg 的 v==0（h_bar≈0）时画一根 1.5px 高的空心细框，避免"柱消失"
-        _zero_bar = (kind in ('pos', 'neg')) and h_bar < 1.0
+        _zero_bar = (kind in ("pos", "neg")) and h_bar < 1.0
         if _zero_bar:
             y_top = min(y_top, y_bot) - 0.75
             y_bot = y_top + 1.5
             h_bar = 1.5
-        if kind == 'total':
+        if kind == "total":
             # 主墨实心，无描边无圆角
+            parts.append(f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" fill="{c_ink}"/>')
             parts.append(
-                f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" fill="{c_ink}"/>'
-            )
-            parts.append(
-                f'<text font-family="{_body_font}" x="{x+bar_w/2:.1f}" y="{y_top-5:.1f}" font-size="16" font-weight="800" '
+                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_top - 5:.1f}" font-size="16" font-weight="800" '
                 f'fill="{c_ink}" text-anchor="middle">{_fmt(v)}</text>'
             )
             running = v
-        elif kind == 'pos':
+        elif kind == "pos":
             # 中灰实心；零增量退化成空心细框
             if _zero_bar:
                 parts.append(
@@ -1214,7 +1258,7 @@ def make_waterfall(steps,
                     f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" fill="{c_pos_bar}"/>'
                 )
             parts.append(
-                f'<text font-family="{_body_font}" x="{x+bar_w/2:.1f}" y="{y_top-4:.1f}" font-size="14" font-weight="700" '
+                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_top - 4:.1f}" font-size="14" font-weight="700" '
                 f'fill="{c_ink}" text-anchor="middle">+{_fmt(abs(v))}</text>'
             )
             running += abs(v)
@@ -1248,7 +1292,7 @@ def make_waterfall(steps,
                         )
                     k += spacing
             parts.append(
-                f'<text font-family="{_body_font}" x="{x+bar_w/2:.1f}" y="{y_bot+11:.1f}" font-size="12" font-weight="700" '
+                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_bot + 11:.1f}" font-size="12" font-weight="700" '
                 f'fill="{c_accent}" text-anchor="middle">-{_fmt(abs(v))}</text>'
             )
             running -= abs(v)
@@ -1259,8 +1303,12 @@ def make_waterfall(steps,
             nx = axis_x0 + 8 + (i + 1) * slot + (slot - bar_w) / 2
             parts.append(
                 _emit_gridline_with_gaps(
-                    x + bar_w, nx, connect_y,
-                    c_connect, 1, "3 3",
+                    x + bar_w,
+                    nx,
+                    connect_y,
+                    c_connect,
+                    1,
+                    "3 3",
                     value_bboxes,
                 )
             )
@@ -1286,14 +1334,19 @@ def make_waterfall(steps,
     # title 拉到 crisp near-white；浅底 palette 保持不变（硬规则要求）。
     _title_ink = _punchy_title_ink(_pal)
     _title_block, _ = _render_title_block(
-        x_left=axis_x0, anchor_y=top_y - 6,
+        x_left=axis_x0,
+        anchor_y=top_y - 6,
         width=axis_x1 - axis_x0,
-        title=title, subtitle=subtitle, figure_label=figure_label,
+        title=title,
+        subtitle=subtitle,
+        figure_label=figure_label,
         # 用 palette 解析出来的 c_ink（深底 palette 时是浅色 ink），而不是模块级 _INK。
         # 后者恒为深色 rgba(28,28,26,1)——在深底上直接消失。
         # title 参数走 punchy 色；subtitle / figure_label 由 muted 承载不受影响。
-        ink=_title_ink, muted=c_muted,
-        body_font=_body_font, heading_font=_head_font,
+        ink=_title_ink,
+        muted=c_muted,
+        body_font=_body_font,
+        heading_font=_head_font,
     )
     _svg_result = _wrap_with_auto_viewbox(_title_block + "".join(parts), extra_pad=12.0)
     return _prepend_bg_if_dark(_svg_result, _pal)

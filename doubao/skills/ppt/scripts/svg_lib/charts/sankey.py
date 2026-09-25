@@ -22,11 +22,11 @@ Variants:
     - multi_layer_flat       多层 flat
     - gradient_layered      带渐变 + 高光的 ribbon
 """
+
 from __future__ import annotations
 import math
 
 from ._shared import (
-
     resolve_palette,
     xesc,
     auto_font_size,
@@ -38,7 +38,24 @@ from ._shared import (
 )
 
 
-from .._common import (_ACC, _INK, _INK1, _INK2, _INK4, _INK6, _derive_series_colors, _prepend_bg_if_dark, _resolve_font, _resolve_palette, _rgb_tuple, _rgba_with_alpha, _xesc, _variant_is_classic, _dispatch_to_svg_lib)
+from .._common import (
+    _ACC,
+    _INK,
+    _INK1,
+    _INK2,
+    _INK4,
+    _INK6,
+    _derive_series_colors,
+    _prepend_bg_if_dark,
+    _resolve_font,
+    _resolve_palette,
+    _rgb_tuple,
+    _rgba_with_alpha,
+    _xesc,
+    _variant_is_classic,
+    _dispatch_to_svg_lib,
+)
+
 BODY_FONT = "Inter, sans-serif"
 HEAD_FONT = "Georgia, serif"
 
@@ -61,8 +78,9 @@ def draw_sankey(
     else:
         layers, inter_flows = _normalize_layered(data)
         if variant == "default_ribbon_flat":
-            body = _draw_ribbon(layers, inter_flows, pal, width, height, title, subtitle,
-                                curve="bezier", gradient=False)
+            body = _draw_ribbon(
+                layers, inter_flows, pal, width, height, title, subtitle, curve="bezier", gradient=False
+            )
         elif variant == "multi_layer_flat":
             # stepped/orthogonal ribbons for 2-3 layers; deep-layer data (>=4) falls
             # back to bezier because the stepped router self-intersects at midpoints
@@ -70,32 +88,25 @@ def draw_sankey(
             # opacity + node strokes + layer guide lines) keeps it distinct from
             # default_ribbon_flat regardless of the underlying curve.
             curve = "stepped" if len(layers) <= 3 else "bezier"
-            body = _draw_ribbon(layers, inter_flows, pal, width, height, title, subtitle,
-                                curve=curve, gradient=False, flat_style=True)
+            body = _draw_ribbon(
+                layers, inter_flows, pal, width, height, title, subtitle, curve=curve, gradient=False, flat_style=True
+            )
         elif variant == "gradient_layered":
-            body = _draw_ribbon(layers, inter_flows, pal, width, height, title, subtitle,
-                                curve="bezier", gradient=True)
+            body = _draw_ribbon(layers, inter_flows, pal, width, height, title, subtitle, curve="bezier", gradient=True)
         elif variant == "alluvial_sinusoidal":
-            body = _draw_ribbon(layers, inter_flows, pal, width, height, title, subtitle,
-                                curve="sinusoidal", gradient=False)
+            body = _draw_ribbon(
+                layers, inter_flows, pal, width, height, title, subtitle, curve="sinusoidal", gradient=False
+            )
         else:
             raise ValueError(
                 f"unknown variant {variant!r}. Supported: default_ribbon_flat, "
                 "alluvial_sinusoidal, chord_circular, multi_layer_flat, gradient_layered"
             )
         # header is inside _draw_ribbon (as it needs its own layout)
-        return (
-            svg_open(0, 0, float(width), float(height), bg=pal["bg"])
-            + body
-            + svg_close()
-        )
+        return svg_open(0, 0, float(width), float(height), bg=pal["bg"]) + body + svg_close()
 
     # chord assembles its own header
-    return (
-        svg_open(0, 0, float(width), float(height), bg=pal["bg"])
-        + body
-        + svg_close()
-    )
+    return svg_open(0, 0, float(width), float(height), bg=pal["bg"]) + body + svg_close()
 
 
 def _normalize_layered(data):
@@ -106,7 +117,7 @@ def _normalize_layered(data):
         if len(layers) < 2:
             raise ValueError("draw_sankey: layers needs at least 2 groups")
         if len(inter) != len(layers) - 1:
-            raise ValueError(f"draw_sankey: inter_flows must have {len(layers)-1} entries")
+            raise ValueError(f"draw_sankey: inter_flows must have {len(layers) - 1} entries")
         return layers, inter
     if "nodes" in data and "flows" in data:
         # collapse into 2 layers: src set + dst set
@@ -155,8 +166,11 @@ def _normalize_chord(data):
 # ribbon (bezier / sinusoidal) with optional gradient
 # ============================================================
 def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier", gradient=False, flat_style=False):
-    W = float(W); H = float(H)
-    ink = pal["ink"]; mut = pal["muted"]; bg = pal["bg"]
+    W = float(W)
+    H = float(H)
+    ink = pal["ink"]
+    mut = pal["muted"]
+    bg = pal["bg"]
     series = pal.get("series") or [pal["accent"]]
     n_layers = len(layers)
 
@@ -309,7 +323,7 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
                     f'<linearGradient id="{gid}" x1="0%" y1="0%" x2="100%" y2="0%">'
                     f'<stop offset="0%" stop-color="rgba({r1},{g1},{b1},0.55)"/>'
                     f'<stop offset="100%" stop-color="rgba({r2},{g2},{b2},0.25)"/>'
-                    f'</linearGradient>'
+                    f"</linearGradient>"
                 )
                 fill = f"url(#{gid})"
             elif flat_style:
@@ -318,10 +332,7 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
             else:
                 fill = _rgba_with_alpha(col, 0.32)
             stroke = _rgba_with_alpha(col, 0.5)
-            parts.append(
-                f'<path d="{d_path}" fill="{fill}" stroke="{stroke}" stroke-width="0.4">'
-                f'</path>'
-            )
+            parts.append(f'<path d="{d_path}" fill="{fill}" stroke="{stroke}" stroke-width="0.4"></path>')
 
     # draw nodes on top
     max_col_total = max(sum(node_totals[li].values()) for li in range(n_layers))
@@ -384,6 +395,7 @@ def _bezier_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
 
 def _sinusoidal_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot, n=32):
     """S-curve using (1-cos(pi*t))/2 as easing."""
+
     def edge(y1, y2):
         pts = []
         for i in range(n + 1):
@@ -437,8 +449,11 @@ def _stepped_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
 # chord_circular
 # ============================================================
 def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
-    W = float(W); H = float(H)
-    ink = pal["ink"]; mut = pal["muted"]; bg = pal["bg"]
+    W = float(W)
+    H = float(H)
+    ink = pal["ink"]
+    mut = pal["muted"]
+    bg = pal["bg"]
     series = pal.get("series") or [pal["accent"]]
     N = len(nodes)
     node_idx = {n: i for i, n in enumerate(nodes)}
@@ -572,7 +587,7 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
         parts.append(
             f'<path d="{path}" fill="{_rgba_with_alpha(col, 0.34)}" '
             f'stroke="{_rgba_with_alpha(col, 0.5)}" stroke-width="0.4">'
-            f'</path>'
+            f"</path>"
         )
 
     # outer arcs (bands)
@@ -630,24 +645,26 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
     return "".join(parts)
 
 
-def make_sankey(left_nodes=None,
-                right_nodes=None,
-                flows=None,
-                layers: list = None,
-                inter_flows: list = None,
-                layer_titles: list = None,
-                title: str = None,
-                subtitle: str = None,
-                figure_label: str = None,
-                note: str = None,
-                source: str = None,
-                node_gap: float = 18.0,
-                node_width: float = 14.0,
-                width: float = 1200.0,
-                height: float = 760.0,
-                font_family: str = None,
-                palette=None,
-                variant: str = None) -> str:
+def make_sankey(
+    left_nodes=None,
+    right_nodes=None,
+    flows=None,
+    layers: list = None,
+    inter_flows: list = None,
+    layer_titles: list = None,
+    title: str = None,
+    subtitle: str = None,
+    figure_label: str = None,
+    note: str = None,
+    source: str = None,
+    node_gap: float = 18.0,
+    node_width: float = 14.0,
+    width: float = 1200.0,
+    height: float = 760.0,
+    font_family: str = None,
+    palette=None,
+    variant: str = None,
+) -> str:
     """
     桑基图 · dandelion academic 风格（支持任意层数）。
 
@@ -674,12 +691,21 @@ def make_sankey(left_nodes=None,
 
     palette: 用 palette.series 或 accent 派生每层节点色
     """
-    if not _variant_is_classic('sankey', variant):
-        _data = ({"layers": layers, "inter_flows": inter_flows} if layers is not None and inter_flows is not None else {"layers": [left_nodes or [], right_nodes or []], "inter_flows": [flows or []]})
+    if not _variant_is_classic("sankey", variant):
+        _data = (
+            {"layers": layers, "inter_flows": inter_flows}
+            if layers is not None and inter_flows is not None
+            else {"layers": [left_nodes or [], right_nodes or []], "inter_flows": [flows or []]}
+        )
         return _dispatch_to_svg_lib(
-            'sankey', variant, _data,
-            title=title, subtitle=subtitle, figure_label=figure_label,
-            palette=palette, font_family=font_family,
+            "sankey",
+            variant,
+            _data,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            palette=palette,
+            font_family=font_family,
         )
 
     # ---------- API 归一化 ----------
@@ -693,7 +719,7 @@ def make_sankey(left_nodes=None,
         if inter_flows is None:
             raise ValueError("sankey: `inter_flows` required when `layers` given")
         if len(inter_flows) != len(layers) - 1:
-            raise ValueError(f"sankey: inter_flows must have {len(layers)-1} groups, got {len(inter_flows)}")
+            raise ValueError(f"sankey: inter_flows must have {len(layers) - 1} groups, got {len(inter_flows)}")
 
     n_layers = len(layers)
     if n_layers < 2:
@@ -702,7 +728,12 @@ def make_sankey(left_nodes=None,
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
     _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"], _pal["ink6"], _pal["ink4"], _pal["ink2"], _pal["ink1"], _pal["accent"]
+        _pal["ink"],
+        _pal["ink6"],
+        _pal["ink4"],
+        _pal["ink2"],
+        _pal["ink1"],
+        _pal["accent"],
     )
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
@@ -723,6 +754,7 @@ def make_sankey(left_nodes=None,
                 continue
             d.setdefault(s, {})[dst] = d.get(s, {}).get(dst, 0) + v
         return d
+
     flow_dicts = [_flow_dict(fl) for fl in inter_flows]
 
     # 每层节点的 total flow：入流 vs 出流
@@ -734,8 +766,8 @@ def make_sankey(left_nodes=None,
             out_sum = 0.0
             if li > 0:
                 # 入流
-                for src in layers[li-1]:
-                    in_sum += flow_dicts[li-1].get(src, {}).get(name, 0)
+                for src in layers[li - 1]:
+                    in_sum += flow_dicts[li - 1].get(src, {}).get(name, 0)
             if li < n_layers - 1:
                 # 出流
                 out_sum = sum(flow_dicts[li].get(name, {}).values())
@@ -772,7 +804,7 @@ def make_sankey(left_nodes=None,
                 mid_cols = []
                 for k in range(n_nodes):
                     # 从 ink 到 muted 灰调
-                    t = 0.3 + 0.4 * (k / max(1, n_nodes-1))
+                    t = 0.3 + 0.4 * (k / max(1, n_nodes - 1))
                     r, g, b = _rgb_tuple(_INK)
                     mid_cols.append(f"rgba({r},{g},{b},{t:.2f})")
                 layer_node_colors.append(mid_cols)
@@ -790,8 +822,8 @@ def make_sankey(left_nodes=None,
     # validator's own per-glyph model, and clamp margin above.
     # The outer <text> also gets font-size=fs_node explicitly (below in the
     # node-drawing loop) so validator width tracks real render.
-    _fs_name = 20   # matches fs_node upper bound below
-    _fs_val = 15    # matches fs_nval upper bound below
+    _fs_name = 20  # matches fs_node upper bound below
+    _fs_val = 15  # matches fs_nval upper bound below
 
     # Use the validator's own width model so what we reserve equals what the
     # OOB linter measures. If import fails (e.g. running outside the patched
@@ -808,12 +840,18 @@ def make_sankey(left_nodes=None,
         w = 0.0
         b = 1.05 if bold else 1.0
         for c in s:
-            if c == " ": w += fs * 0.33 * b
-            elif c == "%": w += fs * 0.85 * b
-            elif c.isdigit(): w += fs * 0.58 * b
-            elif c.isupper(): w += fs * 0.72 * b   # conservative wide-letter avg
-            elif c.islower(): w += fs * 0.55 * b
-            else: w += fs * 0.50 * b
+            if c == " ":
+                w += fs * 0.33 * b
+            elif c == "%":
+                w += fs * 0.85 * b
+            elif c.isdigit():
+                w += fs * 0.58 * b
+            elif c.isupper():
+                w += fs * 0.72 * b  # conservative wide-letter avg
+            elif c.islower():
+                w += fs * 0.55 * b
+            else:
+                w += fs * 0.50 * b
         return w
 
     def _label_str(name, total_val):
@@ -898,13 +936,13 @@ def make_sankey(left_nodes=None,
     _est_node_h = max(20.0, (plot_h - node_gap * max(0, _max_col_nodes - 1)) / max(1, _max_col_nodes))
     _fs_scale = max(0.75, min(1.8, _est_node_h / 65.0))
     # 上限保护
-    fs_title    = round(min(32.0, 26 * _fs_scale), 1)
+    fs_title = round(min(32.0, 26 * _fs_scale), 1)
     fs_subtitle = round(min(15.0, 12 * _fs_scale), 1)
-    fs_figure   = round(min(12.0, 10 * _fs_scale), 1)
-    fs_layer    = round(min(13.0, 10 * _fs_scale), 1)   # 层标题
-    fs_node     = round(min(20.0, 15 * _fs_scale), 1)   # 节点名（单行布局，可以更大）
-    fs_nval     = round(min(15.0, 11 * _fs_scale), 1)   # 节点数值
-    fs_foot     = round(min(11.0, 9.5 * _fs_scale), 1)
+    fs_figure = round(min(12.0, 10 * _fs_scale), 1)
+    fs_layer = round(min(13.0, 10 * _fs_scale), 1)  # 层标题
+    fs_node = round(min(20.0, 15 * _fs_scale), 1)  # 节点名（单行布局，可以更大）
+    fs_nval = round(min(15.0, 11 * _fs_scale), 1)  # 节点数值
+    fs_foot = round(min(11.0, 9.5 * _fs_scale), 1)
 
     # 每层节点垂直位置
     def layout_column(items, totals):
@@ -963,7 +1001,7 @@ def make_sankey(left_nodes=None,
                 scale = scales[li]
                 y = y0
                 out_segments[li][name] = {}
-                for dst in layers[li+1]:
+                for dst in layers[li + 1]:
                     v = flow_dicts[li].get(name, {}).get(dst, 0)
                     if v > 0:
                         h = v * scale
@@ -974,8 +1012,8 @@ def make_sankey(left_nodes=None,
                 scale = scales[li]
                 y = y0
                 in_segments[li][name] = {}
-                for src in layers[li-1]:
-                    v = flow_dicts[li-1].get(src, {}).get(name, 0)
+                for src in layers[li - 1]:
+                    v = flow_dicts[li - 1].get(src, {}).get(name, 0)
                     if v > 0:
                         h = v * scale
                         in_segments[li][name][src] = (y, y + h)
@@ -988,28 +1026,38 @@ def make_sankey(left_nodes=None,
 
     # 顶部
     # y 位置跟字号联动，避免大 scale 时挤
-    _y_title    = 20 + fs_title
+    _y_title = 20 + fs_title
     _y_subtitle = _y_title + fs_title * 0.55 + fs_subtitle
-    _y_line     = _y_subtitle + 12
-    _y_figure   = _y_line + 14 + fs_figure * 0.5
+    _y_line = _y_subtitle + 12
+    _y_figure = _y_line + 14 + fs_figure * 0.5
     if title:
-        parts.append(f'<text x="{MARGIN_L}" y="{_y_title:.1f}" '
-                     f'font-family="{_head_font}" '
-                     f'font-size="{fs_title}" font-weight="600" fill="{_INK}" letter-spacing=".05em">'
-                     f'{_xesc(title)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L}" y="{_y_title:.1f}" '
+            f'font-family="{_head_font}" '
+            f'font-size="{fs_title}" font-weight="600" fill="{_INK}" letter-spacing=".05em">'
+            f"{_xesc(title)}</text>"
+        )
     if subtitle:
-        parts.append(f'<text x="{MARGIN_L}" y="{_y_subtitle:.1f}" '
-                     f'font-family="{_body_font}" font-size="{fs_subtitle}" fill="{c_muted}" '
-                     f'letter-spacing=".16em">{_xesc(subtitle)}</text>')
-        parts.append(f'<line x1="{MARGIN_L}" y1="{_y_line:.1f}" x2="{width-MARGIN_R}" y2="{_y_line:.1f}" '
-                     f'stroke="{_INK}" stroke-width="0.8"/>')
+        parts.append(
+            f'<text x="{MARGIN_L}" y="{_y_subtitle:.1f}" '
+            f'font-family="{_body_font}" font-size="{fs_subtitle}" fill="{c_muted}" '
+            f'letter-spacing=".16em">{_xesc(subtitle)}</text>'
+        )
+        parts.append(
+            f'<line x1="{MARGIN_L}" y1="{_y_line:.1f}" x2="{width - MARGIN_R}" y2="{_y_line:.1f}" '
+            f'stroke="{_INK}" stroke-width="0.8"/>'
+        )
     if figure_label:
-        parts.append(f'<text x="{MARGIN_L}" y="{_y_figure:.1f}" font-family="{_body_font}" font-size="{fs_figure}" '
-                     f'fill="{c_muted}" font-weight="600" letter-spacing=".15em">{_xesc(figure_label)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L}" y="{_y_figure:.1f}" font-family="{_body_font}" font-size="{fs_figure}" '
+            f'fill="{c_muted}" font-weight="600" letter-spacing=".15em">{_xesc(figure_label)}</text>'
+        )
         lbl_w = max(72, len(figure_label) * 8 + 20)
         note_txt = f"{n_layers}-layer Sankey · N={int(total_n):,}" if total_n else f"{n_layers}-layer Sankey"
-        parts.append(f'<text x="{MARGIN_L+lbl_w}" y="{_y_figure:.1f}" font-family="{_body_font}" font-size="{fs_figure}" '
-                     f'fill="{c_muted}" letter-spacing=".04em">{_xesc(note_txt)}</text>')
+        parts.append(
+            f'<text x="{MARGIN_L + lbl_w}" y="{_y_figure:.1f}" font-family="{_body_font}" font-size="{fs_figure}" '
+            f'fill="{c_muted}" letter-spacing=".04em">{_xesc(note_txt)}</text>'
+        )
 
     # 层标题（大写小字）
     if layer_titles:
@@ -1024,18 +1072,22 @@ def make_sankey(left_nodes=None,
                 tx = lx + node_width
             else:
                 tx = lx + node_width / 2
-            parts.append(f'<text x="{tx:.1f}" y="{MARGIN_T-24}" text-anchor="{anchor}" '
-                         f'font-family="{_body_font}" font-size="{fs_layer}" font-weight="600" '
-                         f'fill="{_INK}" letter-spacing=".16em">{_xesc(str(lt).upper())}</text>')
+            parts.append(
+                f'<text x="{tx:.1f}" y="{MARGIN_T - 24}" text-anchor="{anchor}" '
+                f'font-family="{_body_font}" font-size="{fs_layer}" font-weight="600" '
+                f'fill="{_INK}" letter-spacing=".16em">{_xesc(str(lt).upper())}</text>'
+            )
 
     # ---------- 画流带 ----------
     def ribbon_path(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
         xc = (x1 + x2) / 2
-        return (f'M {x1:.1f} {y1_top:.1f} '
-                f'C {xc:.1f} {y1_top:.1f} {xc:.1f} {y2_top:.1f} {x2:.1f} {y2_top:.1f} '
-                f'L {x2:.1f} {y2_bot:.1f} '
-                f'C {xc:.1f} {y2_bot:.1f} {xc:.1f} {y1_bot:.1f} {x1:.1f} {y1_bot:.1f} '
-                f'Z')
+        return (
+            f"M {x1:.1f} {y1_top:.1f} "
+            f"C {xc:.1f} {y1_top:.1f} {xc:.1f} {y2_top:.1f} {x2:.1f} {y2_top:.1f} "
+            f"L {x2:.1f} {y2_bot:.1f} "
+            f"C {xc:.1f} {y2_bot:.1f} {xc:.1f} {y1_bot:.1f} {x1:.1f} {y1_bot:.1f} "
+            f"Z"
+        )
 
     for li in range(n_layers - 1):
         src_layer = layers[li]
@@ -1049,20 +1101,18 @@ def make_sankey(left_nodes=None,
                 if v <= 0:
                     continue
                 seg_from = out_segments[li][s].get(d)
-                seg_to = in_segments[li+1][d].get(s)
+                seg_to = in_segments[li + 1][d].get(s)
                 if seg_from is None or seg_to is None:
                     continue
                 x1 = layer_xs[li] + node_width
-                x2 = layer_xs[li+1]
+                x2 = layer_xs[li + 1]
                 y1t, y1b = seg_from
                 y2t, y2b = seg_to
                 d_path = ribbon_path(x1, y1t, y1b, x2, y2t, y2b)
                 # 半透明填色 + 淡描边
                 fill_col = _rgba_with_alpha(col, 0.32)
                 stroke_col = _rgba_with_alpha(col, 0.55)
-                parts.append(f'<path d="{d_path}" fill="{fill_col}" stroke="{stroke_col}" '
-                             f'stroke-width="0.4">'
-                             f'</path>')
+                parts.append(f'<path d="{d_path}" fill="{fill_col}" stroke="{stroke_col}" stroke-width="0.4"></path>')
 
     # ---------- 画节点 ----------
     for li in range(n_layers):
@@ -1071,11 +1121,12 @@ def make_sankey(left_nodes=None,
             y0, y1 = layer_positions[li][name]
             col = layer_node_colors[li][ni]
             lx = layer_xs[li]
-            parts.append(f'<rect x="{lx:.1f}" y="{y0:.1f}" width="{node_width}" height="{y1-y0:.1f}" '
-                         f'fill="{_rgba_with_alpha(col, 0.9)}"/>')
+            parts.append(
+                f'<rect x="{lx:.1f}" y="{y0:.1f}" width="{node_width}" height="{y1 - y0:.1f}" '
+                f'fill="{_rgba_with_alpha(col, 0.9)}"/>'
+            )
             # 顶端 2px accent 条
-            parts.append(f'<rect x="{lx:.1f}" y="{y0:.1f}" width="{node_width}" height="2" '
-                         f'fill="{col}"/>')
+            parts.append(f'<rect x="{lx:.1f}" y="{y0:.1f}" width="{node_width}" height="2" fill="{col}"/>')
 
             # 标签位置
             total_val = layer_totals[li].get(name, 0)
@@ -1107,7 +1158,10 @@ def make_sankey(left_nodes=None,
             # anchor=end（左列）：数值在节点名之后（视觉在节点名右侧、靠近节点）
             # anchor=start（右列/中间列）：数值在节点名之后（节点名右、数值再右）
             # baseline 与原节点名对齐（yc - 4）
-            stroke_attr = f' paint-order="stroke" stroke="{PAPER}" stroke-width="3" stroke-linejoin="round"' if use_stroke else ''
+            stroke_attr = (
+                f' paint-order="stroke" stroke="{PAPER}" stroke-width="3" stroke-linejoin="round"' if use_stroke else ""
+            )
+
             # 用两个独立 <text> 而不是 <text> 内两个 <tspan>——避免服务端 pretty-print
             # 时在 tspan 之间插入换行/缩进空白，导致 lint 用 itertext() 拿到长串后按外层
             # font-size 高估宽度触发 embed_svg_out_of_bounds。
@@ -1116,13 +1170,20 @@ def make_sankey(left_nodes=None,
                 b = 1.05 if bold else 1.0
                 w = 0.0
                 for c in s:
-                    if c == " ": w += fs * 0.33 * b
-                    elif c == "%": w += fs * 0.85 * b
-                    elif c.isdigit(): w += fs * 0.58 * b
-                    elif c.isupper(): w += fs * 0.72 * b
-                    elif c.islower(): w += fs * 0.55 * b
-                    else: w += fs * 0.50 * b
+                    if c == " ":
+                        w += fs * 0.33 * b
+                    elif c == "%":
+                        w += fs * 0.85 * b
+                    elif c.isdigit():
+                        w += fs * 0.58 * b
+                    elif c.isupper():
+                        w += fs * 0.72 * b
+                    elif c.islower():
+                        w += fs * 0.55 * b
+                    else:
+                        w += fs * 0.50 * b
                 return w
+
             name_w = _approx_w(str(name), fs_node, bold=True)
             sub_w = _approx_w(sub_txt, fs_nval)
             gap = 6
@@ -1156,24 +1217,29 @@ def make_sankey(left_nodes=None,
     # 底部脚注
     if note or source:
         foot_y = height - 45
-        parts.append(f'<line x1="{MARGIN_L}" y1="{foot_y-14}" x2="{width-MARGIN_R}" y2="{foot_y-14}" '
-                     f'stroke="{_INK4}" stroke-width="0.5"/>')
+        parts.append(
+            f'<line x1="{MARGIN_L}" y1="{foot_y - 14}" x2="{width - MARGIN_R}" y2="{foot_y - 14}" '
+            f'stroke="{_INK4}" stroke-width="0.5"/>'
+        )
         if note:
-            parts.append(f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
-                         f'font-size="{fs_foot}" fill="{c_muted}">'
-                         f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>')
+            parts.append(
+                f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
+                f'font-size="{fs_foot}" fill="{c_muted}">'
+                f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
+            )
         if source:
-            parts.append(f'<text x="{MARGIN_L}" y="{foot_y+14}" font-family="{_body_font}" '
-                         f'font-size="{fs_foot}" fill="{c_muted}">'
-                         f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>')
+            parts.append(
+                f'<text x="{MARGIN_L}" y="{foot_y + 14}" font-family="{_body_font}" '
+                f'font-size="{fs_foot}" fill="{c_muted}">'
+                f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>'
+            )
         if figure_label:
-            parts.append(f'<text x="{width-MARGIN_R}" y="{foot_y+14}" text-anchor="end" '
-                         f'font-family="{_body_font}" font-size="{fs_foot}" fill="{c_muted}" '
-                         f'letter-spacing=".05em">{_xesc(figure_label)}</text>')
+            parts.append(
+                f'<text x="{width - MARGIN_R}" y="{foot_y + 14}" text-anchor="end" '
+                f'font-family="{_body_font}" font-size="{fs_foot}" fill="{c_muted}" '
+                f'letter-spacing=".05em">{_xesc(figure_label)}</text>'
+            )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(width)} {int(height)}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)
-
-
-

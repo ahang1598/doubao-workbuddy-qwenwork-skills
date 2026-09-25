@@ -4,7 +4,9 @@ Each module exposes a single `draw_<chart>(data, variant, palette, ...)` API.
 
 Imports are best-effort so tests can run before all groups are done.
 """
+
 __all__ = []
+
 
 def _try(mod_name, attr):
     try:
@@ -13,6 +15,7 @@ def _try(mod_name, attr):
         __all__.append(attr)
     except Exception:
         pass
+
 
 for _m, _a in [
     ("boxplot", "draw_boxplot"),

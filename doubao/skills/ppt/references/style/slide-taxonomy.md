@@ -107,7 +107,10 @@
 | Times New Roman | 拉丁 | 衬线 | 正式文档默认字体 | 公文、投稿硬性要求 |
 
 
-## 图形选型通用规则
-- ** 用户要的是简单的 PPT 或数据关系 **→ 原生 `<chart>`**：柱 / 条 / 折线 / 面积 / 饼 / 雷达 / 组合。照抄范例 [`../xml/slides_chart_demo.xml`](../xml/slides_chart_demo.xml)；具体视觉规格（配色、去除默认装饰、数据标签、坐标轴）以所选场景文档为准。
-- ** 用户要的是专业、好看、高端的 PPT 或原生图表不支持 **→ 16 张 SVG 专业图**：**动手前先跑** `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿完整调用范式总览（也可 `chart_help(slug)` 拿单张详情；本场景偏好哪几张见对应场景文档「常用 SVG 图」。
+## 图表选型通用规则
+- **大原则是：优先用原生图表、然后是 shape 组合，最后是 svg 图表**
+- **可以使用原生图表来表示的图表**： 原生 `<chart>`**：柱形 / 条形 / 折线 / 阶梯 / 面积 / 饼 / 雷达 / 组合。照抄范例 [`../xml/slides_chart_demo.xml`](../xml/slides_chart_demo.xml)；具体视觉规格（配色、去除默认装饰、数据标签、坐标轴）以所选场景文档为准。
+- **可以使用 shape 组合来生成的图表**：使用 shape 组合来进行支持，包括：气泡、瀑布、矩形树状、甘特、直方、子弹、金字塔、韦恩图这些，可以直接使用 shape 间的组合来实现图表展示
+- **用户要的是专业、好看、高端的 PPT 并且原生图表、shape组合对这种数据展示不够专业时**：走 svg 专业图表：**动手前先跑** `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿完整调用范式总览（也可 `chart_help(slug)` 拿单张详情；本场景偏好哪几张见对应场景文档「常用 SVG 图」。
+- **需要使用到树状图** → SVG 树状图：**动手前先跑** `python3 -c "from scripts.gen_svg_relations import relation_help; print(relation_help())"`；支持范围以当前 manifest 为准，不在文档中硬编码。正式 Slides 必须用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出可编辑元素，树状图主体不得用 `<embed>`。
 - **并列要点、单一数字、纯文字论证 → 不用图**：走所选场景文档的排版语言（大数字、极细线段、字号差、留白），不为了"有图"硬塞。

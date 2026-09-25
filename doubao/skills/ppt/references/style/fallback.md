@@ -51,7 +51,7 @@
 
 ## 常用 SVG 图
 
-本设计系统偏好以下设计（详情跑 `chart_help('<slug>')`）：
+本设计系统偏好以下数据型 SVG chart 设计（详情跑 `chart_help('<slug>')`）；需要使用到树状图时走 `relation_help('<slug>')`，正式 Slides 必须用 atomized 可编辑输出，不得用 `<embed>` 作主体：
 
 **推荐 palette**（按照当前slide的色系风格和用户需求来选定）
 
@@ -66,7 +66,4 @@
 | `waterfall`    | `default_flat` | `morandi_warm` / `pastel_dream` | 任何'从 A 到 B'的加减 |
 | `boxplot`      | `default_flat` | `nordic_slate` / `morandi_cool` | 多组数据分布         |
 | `percent_grid` | `square_10x10` | `pastel_dream` / `morandi_moss` | 百分比展示          |
-| `nested_donut` | `donut_flat`   | `pastel_dream` / `morandi_warm` | 分类占比           |
 | `gantt`        | `default_flat` | `nordic_slate` / `morandi_cool` | 时间排期           |
-
-

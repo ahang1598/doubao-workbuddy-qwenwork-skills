@@ -19,9 +19,7 @@ XS_NS = "{http://www.w3.org/2001/XMLSchema}"
 SML_NAMESPACE = "https://www.larkoffice.com/sml/2.0"
 SML_LEGACY_HTTP_NAMESPACE = "http://www.larkoffice.com/sml/2.0"
 SML_READBACK_NAMESPACE = "/sml/2.0"
-ACCEPTED_SML_NAMESPACES = frozenset(
-    (SML_NAMESPACE, SML_LEGACY_HTTP_NAMESPACE, SML_READBACK_NAMESPACE)
-)
+ACCEPTED_SML_NAMESPACES = frozenset((SML_NAMESPACE, SML_LEGACY_HTTP_NAMESPACE, SML_READBACK_NAMESPACE))
 
 
 def local_name(value: str) -> str:
@@ -112,9 +110,7 @@ def parse_simple_type(
     restriction = first_direct_child(element, "restriction")
     union = first_direct_child(element, "union")
     if union is not None:
-        union_members = [
-            local_name(member) for member in union.attrib.get("memberTypes", "").split()
-        ]
+        union_members = [local_name(member) for member in union.attrib.get("memberTypes", "").split()]
         for index, inline_simple in enumerate(direct_children(union, "simpleType"), start=1):
             inline_name = f"__inline_union_member_{name}_{index}"
             union_members.append(inline_name)
@@ -546,9 +542,7 @@ def python_pattern_for_xsd(pattern: str) -> str:
                 body = r" \t\n\r"
                 if in_character_class:
                     if escaped == "S":
-                        raise ValueError(
-                            f"unsupported complemented XSD character class \\{escaped} inside []"
-                        )
+                        raise ValueError(f"unsupported complemented XSD character class \\{escaped} inside []")
                     translated.append(body)
                 else:
                     prefix = "^" if escaped == "S" else ""
@@ -702,17 +696,13 @@ def validate_element_attributes(
             continue
         code, expected = validation_error
         if code == "sxsd_unsupported_pattern":
-            message = (
-                f'unsupported SXSD pattern for attribute "{attr_name}" on <{tag}> at {path}'
-            )
+            message = f'unsupported SXSD pattern for attribute "{attr_name}" on <{tag}> at {path}'
             hint = (
                 f"Extend the SXSD pattern interpreter for {attr_rule.type_name}; "
                 "do not treat this attribute value as validated."
             )
         else:
-            message = (
-                f'invalid SXSD value {value!r} for attribute "{attr_name}" on <{tag}> at {path}'
-            )
+            message = f'invalid SXSD value {value!r} for attribute "{attr_name}" on <{tag}> at {path}'
             hint = f'Set attribute "{attr_name}" to a value valid for {attr_rule.type_name}.'
         issues.append(
             issue(
@@ -769,9 +759,7 @@ def validate_element_children(
     tag = local_name(element.tag)
     complex_type = complex_type_for_element(element_rule, model)
     child_rules, wildcard_rules, choice_requirements = (
-        child_rules_for_complex_type(complex_type)
-        if complex_type is not None
-        else ([], [], [])
+        child_rules_for_complex_type(complex_type) if complex_type is not None else ([], [], [])
     )
     rules_by_name: dict[str, list[ChildRule]] = {}
     for child_rule in child_rules:
@@ -799,18 +787,14 @@ def validate_element_children(
         )
         if not candidates and wildcard_match is None:
             expected_children = sorted(rules_by_name)
-            expected_children.extend(
-                wildcard_namespace_description(rule.namespace) for rule in wildcard_rules
-            )
+            expected_children.extend(wildcard_namespace_description(rule.namespace) for rule in wildcard_rules)
             issues.append(
                 issue(
                     "sxsd_unexpected_child",
                     child_path,
                     child_name,
                     attr=None,
-                    expected="one of: " + ", ".join(expected_children)
-                    if expected_children
-                    else "no child elements",
+                    expected="one of: " + ", ".join(expected_children) if expected_children else "no child elements",
                     actual=child_name,
                     message=f"unexpected SXSD child <{child_name}> under <{tag}> at {child_path}",
                     hint=f"Move or remove <{child_name}> so <{tag}> follows the SXSD child structure.",
@@ -959,23 +943,17 @@ def validate_sxsd(root: ET.Element, schema_path: Path) -> list[dict[str, Any]]:
     root_name = local_name(root.tag)
     document_namespace = element_namespace(root.tag)
     is_bare_slide_fragment = root_name == "slide" and document_namespace is None
-    has_valid_document_namespace = (
-        document_namespace in ACCEPTED_SML_NAMESPACES or is_bare_slide_fragment
-    )
+    has_valid_document_namespace = document_namespace in ACCEPTED_SML_NAMESPACES or is_bare_slide_fragment
 
     def visit(element: ET.Element, parent_path: str, element_rule: ElementRule) -> None:
         tag = local_name(element.tag)
         path = f"{parent_path}/{tag}" if parent_path else tag
         namespace = element_namespace(element.tag)
         invalid_root_namespace = (
-            not parent_path
-            and namespace not in ACCEPTED_SML_NAMESPACES
-            and not is_bare_slide_fragment
+            not parent_path and namespace not in ACCEPTED_SML_NAMESPACES and not is_bare_slide_fragment
         )
         invalid_descendant_namespace = (
-            bool(parent_path)
-            and has_valid_document_namespace
-            and namespace != document_namespace
+            bool(parent_path) and has_valid_document_namespace and namespace != document_namespace
         )
         if invalid_root_namespace or invalid_descendant_namespace:
             expected_namespace = document_namespace if parent_path else SML_NAMESPACE

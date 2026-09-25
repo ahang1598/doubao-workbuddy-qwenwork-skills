@@ -7,6 +7,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -40,7 +41,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                 '<slide><style><fill><fillColor color="rgba(255,255,255,1)"/></fill></style><data>'
                 '<shape type="text" topLeftX="10" topLeftY="10" width="300" height="40">'
                 f'<content color="{text_color}" fontSize="16"><p>Contrast input</p></content>'
-                '</shape></data></slide></presentation>'
+                "</shape></data></slide></presentation>"
             )
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -49,12 +50,34 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             result = xml_lint.lint_xml(presentation("rgba(0,0,0,1)"), str(source_path))
 
         contrast_issues = [
-            issue
+            issue for slide in result["slides"] for issue in slide["issues"] if issue["code"] == "text_color_contrast"
+        ]
+        self.assertEqual(contrast_issues, [])
+
+    def test_contrast_lint_runs_without_source_path(self) -> None:
+        """A caller that never touches disk still gets contrast findings.
+
+        The contrast check reads the in-memory root, so gating it on
+        ``source_path`` pointing at a real file silently skipped every
+        string-only caller (the lint service passes XML with no path).
+        """
+        xml = (
+            '<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">'
+            '<slide><style><fill><fillColor color="rgba(255,255,255,1)"/></fill></style><data>'
+            '<shape type="text" topLeftX="10" topLeftY="10" width="300" height="40">'
+            '<content color="rgba(240,240,240,1)" fontSize="16"><p>Contrast input</p></content>'
+            "</shape></data></slide></presentation>"
+        )
+
+        result = xml_lint.lint_xml(xml)
+
+        contrast_codes = [
+            issue["code"]
             for slide in result["slides"]
             for issue in slide["issues"]
             if issue["code"] == "text_color_contrast"
         ]
-        self.assertEqual(contrast_issues, [])
+        self.assertEqual(contrast_codes, ["text_color_contrast"])
 
     def test_cli_suggests_input_flag_for_positional_argument(self) -> None:
         script_path = Path(xml_lint.__file__).resolve()
@@ -84,9 +107,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                 '<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">'
                 '<slide xmlns="https://www.larkoffice.com/sml/2.0"><data>'
                 '<shape type="text" topLeftX="10" topLeftY="10" width="100" height="30">'
-                '<content><p><span>Test</span></p></content>'
-                '</shape></data></slide>'
-                '</presentation>',
+                "<content><p><span>Test</span></p></content>"
+                "</shape></data></slide>"
+                "</presentation>",
                 encoding="utf-8",
             )
             requested_path.symlink_to(resolved_path)
@@ -142,10 +165,10 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     <data>
                       <img src="tok" topLeftX="560" topLeftY="0" width="400" height="540"/>
                       <shape type="text" topLeftX="64" topLeftY="150" width="420" height="70">
-                        <content textType="title"><p><span fontSize="42">Quarterly Review</span></p></content>
+                        <content textType="title" color="rgba(255,255,255,1)"><p><span fontSize="42">Quarterly Review</span></p></content>
                       </shape>
                       <shape type="text" topLeftX="64" topLeftY="235" width="420" height="36">
-                        <content textType="sub-headline"><p><span fontSize="20">Focus, progress, and next steps</span></p></content>
+                        <content textType="sub-headline" color="rgba(226,232,240,1)"><p><span fontSize="20">Focus, progress, and next steps</span></p></content>
                       </shape>
                     </data>
                   </slide>
@@ -681,9 +704,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             ("bare slide", "<slide>{content}</slide>"),
             (
                 "short namespace",
-                '<presentation xmlns="/sml/2.0" width="960" height="540">'
-                "<slide>{content}</slide>"
-                "</presentation>",
+                '<presentation xmlns="/sml/2.0" width="960" height="540"><slide>{content}</slide></presentation>',
             ),
             (
                 "HTTPS namespace",
@@ -716,14 +737,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             for root_name, svg_root, should_error in roots:
                 with self.subTest(document=document_name, root=root_name):
                     content = embed_template.format(svg_root=svg_root)
-                    result = xml_lint.lint_xml(
-                        document_template.format(content=content)
-                    )
-                    codes = [
-                        issue["code"]
-                        for slide in result["slides"]
-                        for issue in slide["issues"]
-                    ]
+                    result = xml_lint.lint_xml(document_template.format(content=content))
+                    codes = [issue["code"] for slide in result["slides"] for issue in slide["issues"]]
                     if should_error:
                         self.assertIn("sxsd_unexpected_child", codes)
                     else:
@@ -732,7 +747,11 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
 
     def test_lint_xml_reports_sxsd_unsupported_tag_with_alias_hint(self) -> None:
         cases = [
-            ("textbox", '<textbox topLeftX="80" topLeftY="80" width="300" height="60">Text</textbox>', '<shape type="text">'),
+            (
+                "textbox",
+                '<textbox topLeftX="80" topLeftY="80" width="300" height="60">Text</textbox>',
+                '<shape type="text">',
+            ),
             ("image", '<image src="tok" topLeftX="80" topLeftY="80" width="300" height="180"/>', "<img>"),
         ]
         for tag_name, element_xml, expected_hint in cases:
@@ -745,9 +764,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     """
                 )
                 slide_issues = result["slides"][0]["issues"]
-                issue = next(
-                    issue for issue in slide_issues if issue["code"] == "sxsd_unsupported_tag"
-                )
+                issue = next(issue for issue in slide_issues if issue["code"] == "sxsd_unsupported_tag")
                 self.assertEqual(result["summary"]["error_count"], 1)
                 self.assertEqual(
                     [reported["code"] for reported in slide_issues],
@@ -759,9 +776,24 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
 
     def test_lint_xml_reports_sxsd_unsupported_attr_with_alias_hint(self) -> None:
         cases = [
-            ("shape", "x", "topLeftX", '<shape type="text" x="80" topLeftY="80" width="300" height="60"><content><p>Text</p></content></shape>'),
-            ("shape", "heigth", "height", '<shape type="text" topLeftX="80" topLeftY="80" width="300" heigth="60"><content><p>Text</p></content></shape>'),
-            ("content", "fontColor", "color", '<shape type="text" topLeftX="80" topLeftY="80" width="300" height="60"><content fontColor="rgba(0, 0, 0, 1)"><p>Text</p></content></shape>'),
+            (
+                "shape",
+                "x",
+                "topLeftX",
+                '<shape type="text" x="80" topLeftY="80" width="300" height="60"><content><p>Text</p></content></shape>',
+            ),
+            (
+                "shape",
+                "heigth",
+                "height",
+                '<shape type="text" topLeftX="80" topLeftY="80" width="300" heigth="60"><content><p>Text</p></content></shape>',
+            ),
+            (
+                "content",
+                "fontColor",
+                "color",
+                '<shape type="text" topLeftX="80" topLeftY="80" width="300" height="60"><content fontColor="rgba(0, 0, 0, 1)"><p>Text</p></content></shape>',
+            ),
         ]
         for tag_name, attr_name, expected_attr, element_xml in cases:
             with self.subTest(attr=attr_name):
@@ -773,9 +805,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     """
                 )
                 slide_issues = result["slides"][0]["issues"]
-                issue = next(
-                    issue for issue in slide_issues if issue["code"] == "sxsd_unsupported_attr"
-                )
+                issue = next(issue for issue in slide_issues if issue["code"] == "sxsd_unsupported_attr")
                 self.assertEqual(result["summary"]["error_count"], 1)
                 self.assertEqual(
                     [reported["code"] for reported in slide_issues],
@@ -802,11 +832,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issues = [
-            issue
-            for slide in result["slides"]
-            for issue in slide["issues"]
-        ]
+        issues = [issue for slide in result["slides"] for issue in slide["issues"]]
         self.assertEqual(
             [issue for issue in issues if issue["code"] == "sxsd_unsupported_attr"],
             [],
@@ -861,10 +887,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            [
-                (issue["code"], issue.get("attr"))
-                for issue in result["slides"][0]["issues"]
-            ],
+            [(issue["code"], issue.get("attr")) for issue in result["slides"][0]["issues"]],
             [("sxsd_unsupported_attr", "topLeftXX")],
         )
 
@@ -1044,9 +1067,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertEqual(issue["code"], "chart_missing_numeric_dimension")
         self.assertEqual(issue["tag"], "chartData")
         self.assertEqual(issue["path"], "slide[1]/data/chart[1]/chartData[1]")
-        self.assertEqual(
-            issue["target"]["chart_xml_path"], "slide[1]/data/chart[1]"
-        )
+        self.assertEqual(issue["target"]["chart_xml_path"], "slide[1]/data/chart[1]")
 
     def test_lint_xml_chart_dimension_issue_carries_slide_and_chart_locators(self) -> None:
         # Two bad charts on slide 1 plus one on slide 2 must each be independently locatable.
@@ -1130,9 +1151,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         self.assertEqual(both_string["summary"]["error_count"], 1)
-        self.assertEqual(
-            both_string["issues"][0]["code"], "chart_missing_numeric_dimension"
-        )
+        self.assertEqual(both_string["issues"][0]["code"], "chart_missing_numeric_dimension")
 
     def test_lint_xml_accepts_chart_numeric_category_dimension(self) -> None:
         # dim1 numeric (years), dim2 labels: the numeric dim1 still drives the value axis.
@@ -1178,9 +1197,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         )
 
         self.assertEqual(result["summary"]["error_count"], 1)
-        self.assertEqual(
-            result["issues"][0]["code"], "chart_missing_numeric_dimension"
-        )
+        self.assertEqual(result["issues"][0]["code"], "chart_missing_numeric_dimension")
 
     def test_lint_xml_rejects_chart_format_template_placeholder(self) -> None:
         # `format` is an Excel-style number-format code; a "{value}bp" placeholder borrowed from
@@ -1569,9 +1586,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertIn(("blH", "blY"), overlap_pairs)
         self.assertIn(("blw", "blQ"), overlap_pairs)
         wrap_ids = {
-            issue["elements"][0]
-            for issue in result["slides"][0]["issues"]
-            if issue.get("overflow_axis") == "width"
+            issue["elements"][0] for issue in result["slides"][0]["issues"] if issue.get("overflow_axis") == "width"
         }
         self.assertEqual(wrap_ids, {"blV"})
 
@@ -1591,11 +1606,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         self.assertEqual(result["summary"]["warning_count"], 0)
-        overlap_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "bbox_overlap"
-        ]
+        overlap_issues = [issue for issue in result["slides"][0]["issues"] if issue["code"] == "bbox_overlap"]
         self.assertEqual(len(overlap_issues), 1)
         self.assertEqual(overlap_issues[0]["elements"], ["source", "target"])
         self.assertGreater(overlap_issues[0]["measurement"]["intersection_area"], 0)
@@ -1642,9 +1653,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overlap_pairs = {
-            tuple(issue["elements"])
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "bbox_overlap"
+            tuple(issue["elements"]) for issue in result["slides"][0]["issues"] if issue["code"] == "bbox_overlap"
         }
         self.assertIn(("body", "caption"), overlap_pairs)
 
@@ -1760,9 +1769,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        wrap_issues = [
-            issue for issue in result["slides"][0]["issues"] if issue.get("overflow_axis") == "width"
-        ]
+        wrap_issues = [issue for issue in result["slides"][0]["issues"] if issue.get("overflow_axis") == "width"]
         wrap_ids = {issue["elements"][0] for issue in wrap_issues}
         # The three real false-negatives are caught, independent of autoFit and collapsed spaces.
         self.assertEqual(wrap_ids, {"near-fit", "under-measured", "auto-fit-spaced"})
@@ -1800,9 +1807,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         width_wrap_ids = {
-            issue["elements"][0]
-            for issue in result["slides"][0]["issues"]
-            if issue.get("overflow_axis") == "width"
+            issue["elements"][0] for issue in result["slides"][0]["issues"] if issue.get("overflow_axis") == "width"
         }
         self.assertEqual(width_wrap_ids, set())
 
@@ -1845,9 +1850,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        wrap_issues = [
-            issue for issue in result["slides"][0]["issues"] if issue.get("overflow_axis") == "width"
-        ]
+        wrap_issues = [issue for issue in result["slides"][0]["issues"] if issue.get("overflow_axis") == "width"]
         self.assertEqual(len(wrap_issues), 1)
         issue = wrap_issues[0]
         # The message must not present wrap="false" as a solo fix ("set content wrap=\"false\"").
@@ -1895,9 +1898,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(overflow_issues, [])
 
@@ -1914,9 +1915,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(overflow_issues, [])
 
@@ -1935,9 +1934,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(len(overflow_issues), 1)
         self.assertEqual(overflow_issues[0]["elements"], ["sheet-success"])
@@ -1955,9 +1952,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(len(overflow_issues), 1)
         self.assertEqual(overflow_issues[0]["elements"], ["plain-age"])
@@ -2026,7 +2021,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         wrap_issues = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["credit"]
         ]
         # Promoting the em-dashes to full-width makes the run too wide for the box; the renderer then
@@ -2050,10 +2046,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        wrap_issues = [
-            issue for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
-        ]
+        wrap_issues = [issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"]
         self.assertEqual(wrap_issues, [])
 
     def test_lint_xml_reports_percent_heavy_run_overflowing_by_full_width_glyph(self) -> None:
@@ -2072,7 +2065,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["metrics"]
         ]
         self.assertEqual(len(overflow), 1)
@@ -2093,7 +2087,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["bvd"]
         ]
         self.assertEqual(len(overflow), 1)
@@ -2116,7 +2111,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         reports = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["label"]
         ]
         self.assertEqual(len(reports), 1)
@@ -2137,10 +2133,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        reports = [
-            issue for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
-        ]
+        reports = [issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"]
         self.assertEqual(len(reports), 1)
         self.assertEqual(reports[0]["elements"], ["slide[1]/data/shape[1]"])
 
@@ -2159,9 +2152,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(overflow_issues, [])
 
@@ -2180,9 +2171,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(overflow_issues, [])
 
@@ -2206,9 +2195,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(len(overflow_issues), 1)
         self.assertEqual(overflow_issues[0]["elements"], ["dense-body"])
@@ -2228,9 +2215,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(len(overflow_issues), 1)
         self.assertEqual(overflow_issues[0]["elements"], ["caption"])
@@ -2250,9 +2235,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "text_may_overflow_shape"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(len(overflow_issues), 1)
         self.assertEqual(overflow_issues[0]["elements"], ["micro-caption"])
@@ -2308,7 +2291,12 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             if issue["code"] == "text_may_overflow_shape"
         }
         self.assertEqual(issues["bg-deco"]["level"], "info")
-        self.assertEqual(result["summary"]["warning_count"], 0)
+        # The faint 0.3-alpha numeral is also a contrast warning; this test is
+        # about the overflow level, so count only text_may_overflow_shape.
+        self.assertEqual(
+            [issue["code"] for issue in result["slides"][0]["warnings"]],
+            ["text_color_contrast"],
+        )
         self.assertEqual(result["summary"]["info_count"], 1)
         self.assertEqual(result["slides"][0]["infos"], [issues["bg-deco"]])
         self.assertIn("background decoration", issues["bg-deco"]["message"])
@@ -2426,7 +2414,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         self.assertEqual(result["summary"]["error_count"], 1)
-        self.assertEqual(result["slides"][0]["issues"][0]["code"], "shape_out_of_canvas")
+        self.assertEqual([issue["code"] for issue in result["slides"][0]["errors"]], ["shape_out_of_canvas"])
 
     def test_lint_xml_keeps_out_of_canvas_error_for_medium_text_without_faint_alpha(self) -> None:
         result = xml_lint.lint_xml(
@@ -2441,8 +2429,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         self.assertEqual(result["summary"]["error_count"], 1)
-        self.assertEqual(result["slides"][0]["issues"][0]["code"], "shape_out_of_canvas")
-        self.assertEqual(result["slides"][0]["issues"][0]["elements"], ["medium-not-ghost"])
+        self.assertEqual([issue["code"] for issue in result["slides"][0]["errors"]], ["shape_out_of_canvas"])
+        self.assertEqual(result["slides"][0]["errors"][0]["elements"], ["medium-not-ghost"])
 
     def test_lint_xml_keeps_out_of_canvas_error_for_half_alpha_large_text(self) -> None:
         result = xml_lint.lint_xml(
@@ -2461,11 +2449,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         # width-overflow catch is genuine and stacks on top of the out-of-canvas error.
         codes = [issue["code"] for issue in result["slides"][0]["issues"]]
         self.assertIn("shape_out_of_canvas", codes)
-        out_of_canvas = [
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "shape_out_of_canvas"
-        ]
+        out_of_canvas = [issue for issue in result["slides"][0]["issues"] if issue["code"] == "shape_out_of_canvas"]
         self.assertEqual(out_of_canvas[0]["elements"], ["half-alpha"])
         width_overflow = [
             issue
@@ -2649,6 +2633,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         issue = overflow_issues[0]
         self.assertEqual(issue["overflow_axis"], "width")
         self.assertGreater(issue["width_ratio"], 1.0)
+        self.assertEqual(issue["rule"]["comparison"], "estimated_width <= available_width")
         self.assertEqual(issue["level"], "error")
         # The actionable fix (widen / reduce font) must be present; the no-op wrap="true" must not.
         self.assertRegex(issue["hint"], r"widen shape\.width|reduce the font size")
@@ -2699,7 +2684,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["section-title"]
         ]
         self.assertEqual(len(overflow_issues), 1)
@@ -2726,7 +2712,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["tall-title"]
         ]
         self.assertEqual(len(overflow_issues), 1)
@@ -2749,7 +2736,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow_issues = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["fits-title"]
         ]
         self.assertEqual(overflow_issues, [])
@@ -2811,7 +2799,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         self.assertEqual([element["id"] for element in elements], ["photo", "headline", "table", "chart", "wb", "emb"])
-        self.assertEqual([element["kind"] for element in elements], ["img", "shape", "table", "chart", "whiteboard", "embed"])
+        self.assertEqual(
+            [element["kind"] for element in elements], ["img", "shape", "table", "chart", "whiteboard", "embed"]
+        )
         self.assertEqual([element["order"] for element in elements], [0, 1, 2, 3, 4, 5])
         self.assertEqual(elements[1]["type"], "text")
         self.assertEqual(elements[1]["textType"], "headline")
@@ -2950,9 +2940,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"strike", "title"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"strike", "title"}]
         self.assertEqual(len(crossing), 1)
         self.assertEqual(crossing[0]["code"], "bbox_overlap")
 
@@ -2971,9 +2959,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"vbar", "col"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"vbar", "col"}]
         self.assertEqual(len(crossing), 1)
 
     def test_lint_xml_reports_horizontal_line_inside_wide_line_spacing_span(self) -> None:
@@ -2996,9 +2982,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"rule", "poem"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"rule", "poem"}]
         self.assertEqual(len(crossing), 1)
         self.assertEqual(crossing[0]["code"], "bbox_overlap")
 
@@ -3017,9 +3001,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"diag", "para"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"diag", "para"}]
         self.assertEqual(len(crossing), 1)
 
     def test_lint_xml_ignores_diagonal_line_whose_bbox_but_not_segment_crosses_text(self) -> None:
@@ -3118,7 +3100,10 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        self.assertEqual(result["summary"]["error_count"], 0)
+        self.assertEqual(
+            [issue["code"] for issue in result["slides"][0]["issues"]],
+            ["text_color_contrast"],
+        )
 
     def test_lint_xml_ignores_line_below_visual_glyph_height(self) -> None:
         # Verbatim from deck GpGusGCwplQyK8dFN9LczmBXnwQ slide 7: the shape frame is 80px tall but the
@@ -3160,9 +3145,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"col-rule", "band"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"col-rule", "band"}]
         self.assertEqual(len(crossing), 1)
         self.assertEqual(crossing[0]["code"], "bbox_overlap")
 
@@ -3186,9 +3169,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"arrow", "node"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"arrow", "node"}]
         self.assertEqual(len(crossing), 1)
 
     def test_lint_xml_reports_column_rule_running_through_outlined_cards(self) -> None:
@@ -3264,9 +3245,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"footer", "scrim"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"footer", "scrim"}]
         self.assertEqual(crossing, [])
 
     def test_lint_xml_ignores_axis_line_threading_timeline_marker_dots(self) -> None:
@@ -3287,9 +3266,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"axis", "dot"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"axis", "dot"}]
         self.assertEqual(crossing, [])
 
     def test_lint_xml_ignores_line_grazing_shape_edge_without_cutting_body(self) -> None:
@@ -3310,9 +3287,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"edge-rule", "card"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"edge-rule", "card"}]
         self.assertEqual(crossing, [])
 
     def test_lint_xml_ignores_invisible_line_crossing_shape(self) -> None:
@@ -3331,9 +3306,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        crossing = [
-            issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"ghost", "card"}
-        ]
+        crossing = [issue for issue in result["slides"][0]["errors"] if set(issue["elements"]) == {"ghost", "card"}]
         self.assertEqual(crossing, [])
 
     def test_lint_xml_ignores_line_over_transparent_text_shape_via_shape_rule(self) -> None:
@@ -3405,7 +3378,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertEqual(issues_by_element["rotated-rect"]["code"], "shape_out_of_canvas")
         self.assertEqual(issues_by_element["rotated-rect"]["overflow"], {"left": 0, "top": 0, "right": 40, "bottom": 0})
         self.assertEqual(issues_by_element["rotated-image"]["code"], "img_out_of_canvas")
-        self.assertEqual(issues_by_element["rotated-image"]["overflow"], {"left": 0, "top": 0, "right": 40, "bottom": 0})
+        self.assertEqual(
+            issues_by_element["rotated-image"]["overflow"], {"left": 0, "top": 0, "right": 40, "bottom": 0}
+        )
 
     def test_detect_elements_out_of_canvas_reports_every_element_kind(self) -> None:
         issues = xml_lint.detect_elements_out_of_canvas(
@@ -3636,11 +3611,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "table_out_of_canvas"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "table_out_of_canvas")
         self.assertEqual(issue["element_ids"], ["t2"])
         self.assertEqual(
             issue["related_objects"][0]["xml_path"],
@@ -3659,10 +3630,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        canvas_issue = next(
-            issue for issue in result["slides"][0]["issues"]
-            if issue["code"] == "shape_out_of_canvas"
-        )
+        canvas_issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "shape_out_of_canvas")
         self.assertEqual(canvas_issue["element_ids"], ["dup"])
         self.assertEqual(
             canvas_issue["related_objects"],
@@ -3676,14 +3644,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                 }
             ],
         )
-        self.assertTrue(
-            canvas_issue["hint"].startswith(
-                "Locate via related_objects[].xml_path. "
-            )
-        )
+        self.assertTrue(canvas_issue["hint"].startswith("Locate via related_objects[].xml_path. "))
         duplicate_issue = next(
-            issue for issue in result["slides"][0]["issues"]
-            if issue["code"] == "duplicate_element_id"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "duplicate_element_id"
         )
         self.assertEqual(
             duplicate_issue["hint"],
@@ -3715,11 +3678,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "duplicate_element_id"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "duplicate_element_id")
         self.assertFalse(result["summary"]["release_ready"])
         self.assertEqual(issue["element_ids"], ["bjs", "bjs"])
         self.assertEqual(
@@ -3754,11 +3713,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "duplicate_element_id"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "duplicate_element_id")
         self.assertEqual(issue["element_ids"], ["baa", "baa"])
         self.assertEqual(
             [obj["xml_path"] for obj in issue["related_objects"]],
@@ -3777,11 +3732,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "duplicate_element_id"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "duplicate_element_id")
         self.assertFalse(result["summary"]["release_ready"])
         self.assertEqual(issue["element_ids"], ["dup", "dup"])
         self.assertEqual(
@@ -3841,11 +3792,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["document"]["errors"]
-            if issue["code"] == "duplicate_element_id"
-        )
+        issue = next(issue for issue in result["document"]["errors"] if issue["code"] == "duplicate_element_id")
         self.assertFalse(result["summary"]["release_ready"])
         self.assertEqual(issue["element_ids"], ["dup", "dup"])
         self.assertEqual(
@@ -3919,11 +3866,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["document"]["errors"]
-            if issue["code"] == "duplicate_element_id"
-        )
+        issue = next(issue for issue in result["document"]["errors"] if issue["code"] == "duplicate_element_id")
         self.assertFalse(result["summary"]["release_ready"])
         self.assertEqual(issue["element_ids"], ["baa", "baa"])
         self.assertEqual(
@@ -3956,19 +3899,14 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue for issue in result["slides"][0]["issues"]
-            if issue["code"] == "shape_out_of_canvas"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "shape_out_of_canvas")
         self.assertEqual(issue["related_objects"][0]["kind"], "shape")
         self.assertEqual(
             issue["related_objects"][0]["xml_path"],
             "slide[1]/data/shape[1]",
         )
         duplicate_issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "duplicate_element_id"
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "duplicate_element_id"
         )
         self.assertEqual(
             [obj["xml_path"] for obj in duplicate_issue["related_objects"]],
@@ -4021,11 +3959,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "image_covers_text"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "image_covers_text")
         self.assertEqual(
             issue["elements"],
             ["srv-42", "slide[1]/data/shape[1]"],
@@ -4103,9 +4037,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     f'<slide xmlns="https://www.larkoffice.com/sml/2.0"><data>{pair[0]}{pair[1]}</data></slide>'
                 )
                 issue = next(
-                    issue
-                    for issue in result["slides"][0]["issues"]
-                    if issue["code"] == "duplicate_element_id"
+                    issue for issue in result["slides"][0]["issues"] if issue["code"] == "duplicate_element_id"
                 )
                 self.assertEqual(issue["element_ids"], ["dup", "dup"])
                 self.assertEqual(
@@ -4128,19 +4060,14 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue for issue in result["slides"][0]["issues"]
-            if issue["code"] == "shape_out_of_canvas"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "shape_out_of_canvas")
         self.assertEqual(issue["element_ids"], [])
         self.assertNotIn("element_id", issue["related_objects"][0])
         self.assertEqual(
             issue["related_objects"][0]["xml_path"],
             "slide[1]/data/shape[1]",
         )
-        self.assertTrue(
-            issue["hint"].startswith("Locate via related_objects[].xml_path. ")
-        )
+        self.assertTrue(issue["hint"].startswith("Locate via related_objects[].xml_path. "))
         self.assertNotIn(
             "duplicate_element_id",
             [candidate["code"] for candidate in result["slides"][0]["issues"]],
@@ -4157,11 +4084,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "shape_out_of_canvas"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "shape_out_of_canvas")
         self.assertEqual(issue["element_ids"], [])
         self.assertNotIn("element_id", issue["related_objects"][0])
         self.assertEqual(
@@ -4292,7 +4215,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         collisions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"flat", "spun"}
         ]
         self.assertEqual(len(collisions), 1)
@@ -4315,7 +4239,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         collisions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"shadow", "fill"}
         ]
         self.assertEqual(collisions, [])
@@ -4339,7 +4264,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "text_overflows_container" and set(issue["elements"]) == {"body", "card"}
         ]
         self.assertEqual(len(overflow), 1)
@@ -4363,10 +4289,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </slide>
             """
         )
-        overflow = [
-            issue for issue in result["slides"][0]["errors"]
-            if issue["code"] == "text_overflows_container"
-        ]
+        overflow = [issue for issue in result["slides"][0]["errors"] if issue["code"] == "text_overflows_container"]
         self.assertEqual(len(overflow), 1)
         self.assertEqual(
             overflow[0]["elements"],
@@ -4397,7 +4320,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "text_overflows_container" and issue["elements"] == ["body", "card"]
         ]
         self.assertEqual(len(overflow), 1)
@@ -4426,7 +4350,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overflow = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "text_overflows_container" and issue["elements"] == ["body", "card"]
         ]
         self.assertEqual(len(overflow), 1)
@@ -4456,10 +4381,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </presentation>
             """
         )
-        overflow = [
-            issue for issue in result["slides"][0]["errors"]
-            if issue["code"] == "text_overflows_container"
-        ]
+        overflow = [issue for issue in result["slides"][0]["errors"] if issue["code"] == "text_overflows_container"]
         self.assertEqual(len(overflow), 1)
         self.assertEqual(overflow[0]["elements"], ["body", "card"])
         self.assertEqual(overflow[0]["overflow"]["bottom"], 20)
@@ -4508,8 +4430,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         occlusions = [
             issue
             for issue in result["slides"][0]["errors"]
-            if issue["code"] == "bbox_overlap"
-            and issue["elements"] == ["right-card", "left-text"]
+            if issue["code"] == "bbox_overlap" and issue["elements"] == ["right-card", "left-text"]
         ]
         self.assertEqual(len(occlusions), 1)
         self.assertGreater(occlusions[0]["measurement"]["intersection_area"], 4)
@@ -4586,8 +4507,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         occlusions = [
             issue
             for issue in result["slides"][0]["errors"]
-            if issue["code"] == "bbox_overlap"
-            and issue["elements"] == ["bar", "label"]
+            if issue["code"] == "bbox_overlap" and issue["elements"] == ["bar", "label"]
         ]
         self.assertEqual(len(occlusions), 1)
         self.assertGreater(occlusions[0]["measurement"]["intersection_area"], 4)
@@ -4615,8 +4535,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         overlaps = [
             issue
             for issue in result["slides"][0]["errors"]
-            if issue["code"] == "bbox_overlap"
-            and issue["elements"] == ["left-card", "right-card"]
+            if issue["code"] == "bbox_overlap" and issue["elements"] == ["left-card", "right-card"]
         ]
         self.assertEqual(len(overlaps), 1)
         self.assertEqual(overlaps[0]["measurement"]["intersection_area"], 3300)
@@ -4642,8 +4561,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         overlaps = [
             issue
             for issue in result["slides"][0]["errors"]
-            if issue["code"] == "bbox_overlap"
-            and issue["elements"] == ["left-card", "right-card"]
+            if issue["code"] == "bbox_overlap" and issue["elements"] == ["left-card", "right-card"]
         ]
         self.assertEqual(len(overlaps), 1)
         self.assertEqual(overlaps[0]["measurement"]["left_fill_alpha"], 0.02)
@@ -4667,8 +4585,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         overlaps = [
             issue
             for issue in result["slides"][0]["issues"]
-            if issue["code"] == "bbox_overlap"
-            and set(issue["elements"]) == {"left-deco", "right-deco"}
+            if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"left-deco", "right-deco"}
         ]
         self.assertEqual(overlaps, [])
 
@@ -4761,7 +4678,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         occlusions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "table_covers_text" and set(issue["elements"]) == {"grid", "stray"}
         ]
         self.assertEqual(len(occlusions), 1)
@@ -4836,7 +4754,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         occlusions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "chart_covers_text" and set(issue["elements"]) == {"pie", "stray"}
         ]
         self.assertEqual(len(occlusions), 1)
@@ -4938,7 +4857,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         occlusions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "chart_covers_text" and set(issue["elements"]) == {"donut", "stray"}
         ]
         self.assertEqual(len(occlusions), 1)
@@ -4975,10 +4895,10 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             slide_number=1,
         )
         occlusions = [
-            issue for issue in result["issues"]
+            issue
+            for issue in result["issues"]
             if issue["code"] == "chart_covers_text"
-            and set(issue["elements"])
-            == {"slide[1]/data/chart[1]", "slide[1]/data/shape[1]"}
+            and set(issue["elements"]) == {"slide[1]/data/chart[1]", "slide[1]/data/shape[1]"}
         ]
         self.assertEqual(len(occlusions), 1)
 
@@ -5003,7 +4923,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         collisions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"title", "body"}
         ]
         self.assertEqual(len(collisions), 1)
@@ -5026,7 +4947,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         collisions = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"title", "body"}
         ]
         self.assertEqual(collisions, [])
@@ -5050,11 +4972,11 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         container_hits = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_overflows_container" and "rule" in issue["elements"]
         ]
         self.assertEqual(container_hits, [])
-
 
     def test_lint_xml_keeps_resolved_table_sizes_positive_when_target_is_too_small(self) -> None:
         result = xml_lint.lint_xml(
@@ -5356,9 +5278,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         overlap_pairs = {
-            frozenset(issue["elements"])
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "bbox_overlap"
+            frozenset(issue["elements"]) for issue in result["slides"][0]["issues"] if issue["code"] == "bbox_overlap"
         }
         self.assertIn(frozenset({"hero", "label"}), overlap_pairs)
         self.assertIn(frozenset({"hero", "sub"}), overlap_pairs)
@@ -5391,7 +5311,6 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                     narrow,
                 )
 
-
     def test_lint_xml_reports_vertical_text_image_overlap_as_warning(self) -> None:
         result = xml_lint.lint_xml(
             """
@@ -5403,7 +5322,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             </data></slide>
             """
         )
-        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "image_may_cover_vertical_text")
+        issue = next(
+            issue for issue in result["slides"][0]["issues"] if issue["code"] == "image_may_cover_vertical_text"
+        )
         self.assertEqual(issue["level"], "info")
         self.assertEqual(result["summary"]["error_count"], 0)
         self.assertEqual(result["summary"]["info_count"], 1)
@@ -5437,11 +5358,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][1]["issues"]
-            if issue["code"] == "image_covers_text"
-        )
+        issue = next(issue for issue in result["slides"][1]["issues"] if issue["code"] == "image_covers_text")
         self.assertEqual(
             [(obj["kind"], obj["xml_path"]) for obj in issue["related_objects"]],
             [
@@ -5449,9 +5366,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                 ("shape", "slide[2]/data/shape[3]"),
             ],
         )
-        self.assertTrue(
-            all("element_id" not in obj for obj in issue["related_objects"])
-        )
+        self.assertTrue(all("element_id" not in obj for obj in issue["related_objects"]))
 
     def test_lint_xml_related_objects_include_line_xml_path(self) -> None:
         result = xml_lint.lint_xml(
@@ -5475,10 +5390,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             if issue["code"] == "bbox_overlap" and issue["elements"][0] == "connector"
         )
         self.assertEqual(
-            {
-                obj["element_id"]: obj["xml_path"]
-                for obj in issue["related_objects"]
-            },
+            {obj["element_id"]: obj["xml_path"] for obj in issue["related_objects"]},
             {
                 "connector": "slide[1]/data/line[1]",
                 "label": "slide[1]/data/shape[1]",
@@ -5518,7 +5430,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         codes = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "image_covers_text" and "backdrop" in issue["elements"]
         ]
         self.assertEqual(codes, [])
@@ -5540,7 +5453,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         codes = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "image_covers_text" and set(issue["elements"]) == {"cover", "text"}
         ]
         self.assertEqual(len(codes), 1)
@@ -5566,12 +5480,11 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         # The image is well under the full-canvas ratio, so guard that the exemption came from glyph
         # enclosure rather than the pre-existing backdrop rule.
         self.assertFalse(
-            xml_lint.is_full_canvas_background_image(
-                {"x": 54, "y": 116, "width": 852, "height": 380}, 960, 540
-            )
+            xml_lint.is_full_canvas_background_image({"x": 54, "y": 116, "width": 852, "height": 380}, 960, 540)
         )
         codes = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "image_covers_text" and "localbg" in issue["elements"]
         ]
         self.assertEqual(codes, [])
@@ -5593,7 +5506,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         codes = [
-            issue for issue in result["slides"][0]["issues"]
+            issue
+            for issue in result["slides"][0]["issues"]
             if issue["code"] == "image_covers_text" and set(issue["elements"]) == {"clipper", "text"}
         ]
         self.assertEqual(len(codes), 1)
@@ -5638,7 +5552,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         collisions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"block", "run"}
         ]
         self.assertEqual(len(collisions), 1)
@@ -5671,7 +5586,8 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             """
         )
         collisions = [
-            issue for issue in result["slides"][0]["errors"]
+            issue
+            for issue in result["slides"][0]["errors"]
             if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"title", "subtitle"}
         ]
         self.assertEqual(len(collisions), 1)
@@ -5692,16 +5608,9 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "sparse_container_content"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content")
         self.assertEqual(
-            {
-                obj["element_id"]: obj["xml_path"]
-                for obj in issue["related_objects"]
-            },
+            {obj["element_id"]: obj["xml_path"] for obj in issue["related_objects"]},
             {
                 "card": "slide[1]/data/shape[1]",
                 "visual": "slide[1]/data/icon[1]",
@@ -5778,20 +5687,26 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
         issue = result["slides"][0]["issues"][0]
         self.assertEqual(issue["code"], "sparse_container_content")
         self.assertEqual(issue["target"]["container_id"], "trend-card")
-        self.assertEqual(issue["target"], {
-            "slide_number": 1,
-            "container_id": "trend-card",
-            "container_xml_path": "slide[1]/data/shape[1]",
-            "container_type": "rect",
-            "bbox": {"x": 500, "y": 135, "width": 410, "height": 370},
-        })
+        self.assertEqual(
+            issue["target"],
+            {
+                "slide_number": 1,
+                "container_id": "trend-card",
+                "container_xml_path": "slide[1]/data/shape[1]",
+                "container_type": "rect",
+                "bbox": {"x": 500, "y": 135, "width": 410, "height": 370},
+            },
+        )
         self.assertLess(issue["measurement"]["content_coverage_ratio"], 0.15)
-        self.assertEqual(issue["rule"], {
-            "name": "large_container_visible_content_coverage",
-            "threshold": 0.15,
-            "comparison": "content_coverage_ratio < threshold",
-            "id": "sparse_container_content",
-        })
+        self.assertEqual(
+            issue["rule"],
+            {
+                "name": "large_container_visible_content_coverage",
+                "threshold": 0.15,
+                "comparison": "content_coverage_ratio < threshold",
+                "id": "sparse_container_content",
+            },
+        )
         self.assertEqual(issue["measurement"]["container_area"], 151700)
         self.assertEqual(issue["measurement"]["content_coverage_ratio"], 0.036)
         self.assertEqual(issue["elements"], ["trend-card", "trend-title", "trend-copy"])
@@ -5817,11 +5732,7 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue
-            for issue in result["slides"][0]["issues"]
-            if issue["code"] == "sparse_container_content"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content")
         self.assertNotIn("container_id", issue["target"])
         self.assertEqual(
             issue["target"]["container_xml_path"],
@@ -6094,9 +6005,7 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content")
         self.assertEqual(issue["target"]["container_id"], "chart-card")
 
     def test_lint_xml_warns_for_small_empty_visual_placeholder_cards(self) -> None:
@@ -6171,9 +6080,7 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content")
         self.assertEqual(issue["target"]["container_id"], "card")
 
     def test_lint_xml_allows_edge_spanning_layout_panel_and_nested_decoration(self) -> None:
@@ -6223,9 +6130,7 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content")
         self.assertEqual(issue["target"]["container_id"], "card")
         self.assertEqual(issue["measurement"]["content_coverage_ratio"], 0)
 
@@ -6279,9 +6184,9 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
         )
 
         overflow = [
-            issue for issue in result["slides"][0]["errors"]
-            if issue["code"] == "text_overflows_container"
-            and issue["elements"] == ["metric", "metric-card"]
+            issue
+            for issue in result["slides"][0]["errors"]
+            if issue["code"] == "text_overflows_container" and issue["elements"] == ["metric", "metric-card"]
         ]
         self.assertEqual(len(overflow), 1)
         self.assertEqual(overflow[0]["overflow"]["right"], 4)
@@ -6357,12 +6262,8 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
         card_b = {"kind": "shape", "type": "rect", "x": 400, "y": 0, "width": 300, "height": 100}
         card_c = {"kind": "shape", "type": "rect", "x": 0, "y": 200, "width": 300, "height": 100}
 
-        self.assertFalse(
-            xml_lint.has_similar_short_card_peer(card_a, [card_a, card_b])
-        )
-        self.assertTrue(
-            xml_lint.has_similar_short_card_peer(card_a, [card_a, card_b, card_c])
-        )
+        self.assertFalse(xml_lint.has_similar_short_card_peer(card_a, [card_a, card_b]))
+        self.assertTrue(xml_lint.has_similar_short_card_peer(card_a, [card_a, card_b, card_c]))
 
     def test_lint_xml_reports_schema_version_2_for_sparse_issues(self) -> None:
         result = xml_lint.lint_xml(
@@ -6375,9 +6276,7 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
             """
         )
 
-        issue = next(
-            issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content"
-        )
+        issue = next(issue for issue in result["slides"][0]["issues"] if issue["code"] == "sparse_container_content")
         self.assertEqual(issue["schema_version"], "2.0")
 
     def test_lint_xml_does_not_report_blank_slide_for_textless_decorative_shapes(self) -> None:
@@ -6466,17 +6365,25 @@ class XmlTextOverlapLintDensityTest(unittest.TestCase):
     def test_has_similar_short_card_peer_ignores_invisible_peers(self) -> None:
         visible_card = {"kind": "shape", "type": "rect", "x": 0, "y": 0, "width": 300, "height": 100}
         ghost_1 = {
-            "kind": "shape", "type": "rect", "x": 400, "y": 0, "width": 300, "height": 100, "alpha": 0,
+            "kind": "shape",
+            "type": "rect",
+            "x": 400,
+            "y": 0,
+            "width": 300,
+            "height": 100,
+            "alpha": 0,
         }
         ghost_2 = {
-            "kind": "shape", "type": "rect", "x": 800, "y": 0, "width": 300, "height": 100, "alpha": 0,
+            "kind": "shape",
+            "type": "rect",
+            "x": 800,
+            "y": 0,
+            "width": 300,
+            "height": 100,
+            "alpha": 0,
         }
 
-        self.assertFalse(
-            xml_lint.has_similar_short_card_peer(
-                visible_card, [visible_card, ghost_1, ghost_2]
-            )
-        )
+        self.assertFalse(xml_lint.has_similar_short_card_peer(visible_card, [visible_card, ghost_1, ghost_2]))
 
 
 SML_NAMESPACE = "https://www.larkoffice.com/sml/2.0"
@@ -6513,7 +6420,6 @@ class SxsdSyntaxTestCase(unittest.TestCase):
 
 
 class SxsdSyntaxAttributeTest(SxsdSyntaxTestCase):
-
     def test_xsd_pattern_translation_only_expands_whitespace_classes(self) -> None:
         self.assertEqual(
             sxsd_validator.python_pattern_for_xsd(r"\s+\S+\w+\d+"),
@@ -6536,9 +6442,7 @@ class SxsdSyntaxAttributeTest(SxsdSyntaxTestCase):
 
     def test_href_domain_pattern_keeps_xsd_matching_behavior(self) -> None:
         pattern = r"[\w.-]+[.:]\S*"
-        reference_pattern = sxsd_validator.re.compile(
-            sxsd_validator.python_pattern_for_xsd(pattern)
-        )
+        reference_pattern = sxsd_validator.re.compile(sxsd_validator.python_pattern_for_xsd(pattern))
 
         for length in range(5):
             for characters in itertools.product("a.:-/ ©", repeat=length):
@@ -6861,6 +6765,7 @@ class SxsdSyntaxAttributeTest(SxsdSyntaxTestCase):
 
         self.assert_issue(issues, "sxsd_pattern_mismatch", attr="color")
 
+
 class SxsdSyntaxStructureTest(SxsdSyntaxTestCase):
     def test_accepts_nested_content_in_referenced_rich_text_shadow(self) -> None:
         issues = self.validate(
@@ -6901,15 +6806,13 @@ class SxsdSyntaxStructureTest(SxsdSyntaxTestCase):
     def test_accepts_standalone_slide_fragment_without_namespace(self) -> None:
         issues = self.validate(
             '<slide><data><shape type="text" topLeftX="10" topLeftY="20" width="300" height="80">'
-            '<content><p>Text</p></content></shape></data></slide>'
+            "<content><p>Text</p></content></shape></data></slide>"
         )
 
         self.assertEqual(issues, [])
 
     def test_rejects_presentation_without_namespace(self) -> None:
-        issues = self.validate(
-            '<presentation width="960" height="540"><slide/></presentation>'
-        )
+        issues = self.validate('<presentation width="960" height="540"><slide/></presentation>')
 
         self.assert_issue(issues, "sxsd_invalid_namespace", path="presentation")
 
@@ -6955,9 +6858,7 @@ class SxsdSyntaxStructureTest(SxsdSyntaxTestCase):
         self.assert_issue(issues, "sxsd_invalid_child_order", path="presentation/title")
 
     def test_enforces_presentation_slide_minimum_from_xsd(self) -> None:
-        issues = self.validate(
-            f'<presentation xmlns="{SML_NAMESPACE}" width="1920" height="1080"/>'
-        )
+        issues = self.validate(f'<presentation xmlns="{SML_NAMESPACE}" width="1920" height="1080"/>')
 
         self.assert_issue(issues, "sxsd_missing_required_child", path="presentation")
 
@@ -7131,8 +7032,9 @@ class PairwiseTextIndexTest(unittest.TestCase):
                 )
         return flagged
 
-    def text_shape(self, ref: str, x: int, y: int, width: int, height: int, text: str,
-                   rotation: int = 0, content_extra: str = "") -> str:
+    def text_shape(
+        self, ref: str, x: int, y: int, width: int, height: int, text: str, rotation: int = 0, content_extra: str = ""
+    ) -> str:
         return (
             f'<shape id="{ref}" type="text" topLeftX="{x}" topLeftY="{y}" width="{width}" '
             f'height="{height}" rotation="{rotation}">'
@@ -7162,13 +7064,17 @@ class PairwiseTextIndexTest(unittest.TestCase):
         """
         slide_xml = self.slide(
             self.text_shape(
-                "vertical", 400, 20, 60, 400,
+                "vertical",
+                400,
+                20,
+                60,
+                400,
                 "rotated run that sweeps sideways across the whole slide when the box is turned "
                 "ninety degrees and keeps going",
-                rotation=90, content_extra=' fontSize="14"',
+                rotation=90,
+                content_extra=' fontSize="14"',
             )
-            + self.text_shape("beside", 200, 235, 110, 30, "left neighbour",
-                              content_extra=' fontSize="16"')
+            + self.text_shape("beside", 200, 235, 110, 30, "left neighbour", content_extra=' fontSize="16"')
         )
         elements = xml_lint.extract_elements(slide_xml)
         rotated, neighbour = elements[0], elements[1]
@@ -7187,11 +7093,15 @@ class PairwiseTextIndexTest(unittest.TestCase):
         """
         slide_xml = self.slide(
             self.text_shape(
-                "arrows", 80, 200, 40, 40, "→" * 20,
+                "arrows",
+                80,
+                200,
+                40,
+                40,
+                "→" * 20,
                 content_extra=' wrap="false" fontSize="28"',
             )
-            + self.text_shape("target", 300, 200, 200, 40, "target run",
-                              content_extra=' fontSize="16"')
+            + self.text_shape("target", 300, 200, 200, 40, "target run", content_extra=' fontSize="16"')
         )
         elements = xml_lint.extract_elements(slide_xml)
         geometries = self.geometries(elements)
@@ -7208,7 +7118,11 @@ class PairwiseTextIndexTest(unittest.TestCase):
         """
         slide_xml = self.slide(
             self.text_shape(
-                "flat", 80, 20, 60, 0,
+                "flat",
+                80,
+                20,
+                60,
+                0,
                 "zero height run whose line is much wider than its box",
                 content_extra=' wrap="false" fontSize="20"',
             )
@@ -7223,8 +7137,7 @@ class PairwiseTextIndexTest(unittest.TestCase):
     def test_index_prunes_spatially_separated_runs(self) -> None:
         """The point of the index: runs nowhere near each other are never paired."""
         slide_xml = self.slide(
-            self.text_shape("far_left", 0, 0, 80, 30, "left")
-            + self.text_shape("far_right", 860, 500, 80, 30, "right")
+            self.text_shape("far_left", 0, 0, 80, 30, "left") + self.text_shape("far_right", 860, 500, 80, 30, "right")
         )
         elements = xml_lint.extract_elements(slide_xml)
         geometries = self.geometries(elements)
@@ -7236,8 +7149,7 @@ class PairwiseTextIndexTest(unittest.TestCase):
         slide_xml = self.slide(
             '<img src="tok" topLeftX="80" topLeftY="80" width="200" height="200"/>'
             + '<shape id="rect" type="rect" topLeftX="90" topLeftY="90" width="200" height="200" '
-            'rotation="0" fillColor="#EEEEEE"/>'
-            + self.text_shape("empty", 100, 100, 200, 60, "")
+            'rotation="0" fillColor="#EEEEEE"/>' + self.text_shape("empty", 100, 100, 200, 60, "")
         )
         elements = xml_lint.extract_elements(slide_xml)
         geometries = self.geometries(elements)
@@ -7247,8 +7159,7 @@ class PairwiseTextIndexTest(unittest.TestCase):
     def test_index_emits_pairs_in_full_scan_order(self) -> None:
         """Issue order is part of the report, so candidates must keep the full scan's ordering."""
         body = "".join(
-            self.text_shape(f"r{i}", 80 + i * 10, 80 + i * 5, 300, 60, f"overlapping run {i}")
-            for i in range(6)
+            self.text_shape(f"r{i}", 80 + i * 10, 80 + i * 5, 300, 60, f"overlapping run {i}") for i in range(6)
         )
         elements = xml_lint.extract_elements(self.slide(body))
         geometries = self.geometries(elements)
@@ -7280,12 +7191,16 @@ class PairwiseTextIndexTest(unittest.TestCase):
             (left_index, right_index)
             for left_index, right_index in itertools.combinations(range(len(elements)), 2)
             if xml_lint.should_flag_horizontal_text_overflow(
-                elements[left_index], elements[right_index],
-                geometries[left_index], geometries[right_index],
+                elements[left_index],
+                elements[right_index],
+                geometries[left_index],
+                geometries[right_index],
             )
             or xml_lint.should_flag_overlap(
-                elements[left_index], elements[right_index],
-                geometries[left_index], geometries[right_index],
+                elements[left_index],
+                elements[right_index],
+                geometries[left_index],
+                geometries[right_index],
             )
         }
 
@@ -7326,9 +7241,7 @@ class PairwiseTextGeometryReuseTest(unittest.TestCase):
                 )
                 self.assertEqual(
                     xml_lint.should_flag_horizontal_text_overflow(left, right),
-                    xml_lint.should_flag_horizontal_text_overflow(
-                        left, right, left_geometry, right_geometry
-                    ),
+                    xml_lint.should_flag_horizontal_text_overflow(left, right, left_geometry, right_geometry),
                 )
                 self.assertEqual(
                     xml_lint.is_similar_text_overlay(left, right),
@@ -7336,9 +7249,7 @@ class PairwiseTextGeometryReuseTest(unittest.TestCase):
                 )
                 self.assertEqual(
                     xml_lint.horizontal_text_overflow_measurement(left, right),
-                    xml_lint.horizontal_text_overflow_measurement(
-                        left, right, left_geometry, right_geometry
-                    ),
+                    xml_lint.horizontal_text_overflow_measurement(left, right, left_geometry, right_geometry),
                 )
 
     def test_text_geometry_is_none_for_elements_the_pairwise_tests_skip(self) -> None:
@@ -7370,10 +7281,284 @@ class PairwiseTextGeometryReuseTest(unittest.TestCase):
         self.assertGreaterEqual(probe["x"] + probe["width"], glyph["x"] + glyph["width"])
         self.assertGreaterEqual(probe["y"] + probe["height"], glyph["y"] + glyph["height"])
         # the unwrapped line reaches past the authored right edge, and the probe box follows it
-        self.assertGreaterEqual(
-            probe["x"] + probe["width"], element["x"] + geometry["max_line_width"]
-        )
+        self.assertGreaterEqual(probe["x"] + probe["width"], element["x"] + geometry["max_line_width"])
         self.assertGreater(probe["width"], element["width"])
+
+
+class SourceIdExtractionTest(unittest.TestCase):
+    """取 source id 的语义边界。
+
+    「哪些 id 算 source id」直接决定跨页 duplicate_element_id 的判定范围，所以这组边界
+    是契约而不是实现细节：id 缺失、带命名空间前缀、藏在别的属性值里，各自算不算，
+    都钉在下面。换实现（读 attrib、正则抠开标签、XPath……）时这些行为一个都不能变。
+    """
+
+    NS = "https://www.larkoffice.com/sml/2.0"
+    SHAPE_ATTRS = 'type="text" topLeftX="80" topLeftY="80" width="300" height="60" rotation="0"'
+    BODY = "<content><p>文字</p></content>"
+
+    def source_ids(self, slide_body: str) -> list[str]:
+        slide = f'<slide xmlns="{self.NS}"><data>{slide_body}</data></slide>'
+        return [element["_source_id"] for element in xml_lint.extract_source_id_elements(slide, 1)]
+
+    def test_element_without_an_id_is_not_collected(self) -> None:
+        self.assertEqual(self.source_ids(f"<shape {self.SHAPE_ATTRS}>{self.BODY}</shape>"), [])
+
+    def test_empty_id_is_not_collected(self) -> None:
+        self.assertEqual(self.source_ids(f'<shape id="" {self.SHAPE_ATTRS}>{self.BODY}</shape>'), [])
+
+    def test_plain_id_is_collected(self) -> None:
+        self.assertEqual(self.source_ids(f'<shape id="aa" {self.SHAPE_ATTRS}>{self.BODY}</shape>'), ["aa"])
+
+    def test_namespace_prefixed_id_is_ignored(self) -> None:
+        """带前缀的 id 一直是被忽略的，不要顺手「修正」成识别。
+
+        按 local name 去找会把这类元素纳入 id 集合，跨页 duplicate_element_id 的判定
+        范围就跟着变了。要不要认带前缀的 id 是检测口径问题，不能由实现方式顺带决定。
+        """
+        body = f'<shape sml:id="aa" {self.SHAPE_ATTRS} xmlns:sml="{self.NS}">{self.BODY}</shape>'
+
+        self.assertEqual(self.source_ids(body), [])
+
+    def test_id_inside_another_attribute_value_is_not_matched(self) -> None:
+        body = (
+            '<shape type=\'text id="fake"\' topLeftX="80" topLeftY="80" width="300" '
+            f'height="60" rotation="0">{self.BODY}</shape>'
+        )
+
+        self.assertEqual(self.source_ids(body), [])
+
+    def test_attribute_merely_ending_in_id_is_not_matched(self) -> None:
+        self.assertEqual(self.source_ids(f'<shape data-id="aa" {self.SHAPE_ATTRS}>{self.BODY}</shape>'), [])
+
+    def test_ids_on_descendants_are_collected_too(self) -> None:
+        body = f'<shape {self.SHAPE_ATTRS}><content id="inner"><p>文字</p></content></shape>'
+
+        self.assertEqual(self.source_ids(body), ["inner"])
+
+
+class TextGeometryMemoTest(unittest.TestCase):
+    """字形框记忆化只能省时间，不能改结果，也不能把临时对象的几何张冠李戴。"""
+
+    NS = 'xmlns="https://www.larkoffice.com/sml/2.0"'
+
+    def text_shape(self, ref: str, x: int, y: int, text: str) -> str:
+        return (
+            f'<shape id="{ref}" type="text" topLeftX="{x}" topLeftY="{y}" width="300" '
+            f'height="60" rotation="0"><content fontSize="20"><p>{text}</p></content></shape>'
+        )
+
+    def slide(self, body: str) -> str:
+        return f"<slide {self.NS}><data>{body}</data></slide>"
+
+    def test_memo_returns_the_same_value_as_computing(self) -> None:
+        elements = xml_lint.extract_elements(
+            self.slide(self.text_shape("a", 80, 80, "标题文本") + self.text_shape("b", 100, 90, "另一段"))
+        )
+        expected = [xml_lint.compute_text_visual_bbox(element) for element in elements]
+
+        with xml_lint.text_geometry_memo(elements):
+            first = [xml_lint.estimate_text_visual_bbox(element) for element in elements]
+            second = [xml_lint.estimate_text_visual_bbox(element) for element in elements]
+
+        self.assertEqual(expected, first)
+        self.assertEqual(expected, second)
+
+    def test_memo_computes_each_registered_element_once(self) -> None:
+        elements = xml_lint.extract_elements(
+            self.slide("".join(self.text_shape(f"r{i}", 80, 80 + i * 10, f"文本 {i}") for i in range(5)))
+        )
+        with (
+            mock.patch.object(
+                xml_lint, "compute_text_visual_bbox", wraps=xml_lint.compute_text_visual_bbox
+            ) as computed,
+            xml_lint.text_geometry_memo(elements),
+        ):
+            for _ in range(4):
+                for element in elements:
+                    xml_lint.estimate_text_visual_bbox(element)
+
+        self.assertEqual(computed.call_count, len(elements))
+
+    def test_unregistered_elements_are_never_cached(self) -> None:
+        """检测器内部会临时拼出代理元素。
+
+        它们不在登记名单里，必须每次现算：这类对象一旦被回收，id() 会被复用，缓存
+        就会把上一个对象的几何返回给下一个——报告会错得毫无痕迹。
+        """
+        elements = xml_lint.extract_elements(self.slide(self.text_shape("a", 80, 80, "标题")))
+        proxy = dict(elements[0])
+        proxy["fontSize"] = 16
+
+        with xml_lint.text_geometry_memo(elements):
+            first = xml_lint.estimate_text_visual_bbox(proxy)
+            proxy["fontSize"] = 40
+            second = xml_lint.estimate_text_visual_bbox(proxy)
+
+        self.assertNotEqual(first, second)
+        self.assertEqual(second, xml_lint.compute_text_visual_bbox(proxy))
+
+    def test_memo_caches_a_legitimate_none(self) -> None:
+        """非文本/纯装饰元素的字形框就是 None，不能把它当成「还没算」反复重算。"""
+        elements = xml_lint.extract_elements(
+            self.slide('<img src="tok" topLeftX="10" topLeftY="10" width="80" height="80"/>')
+        )
+
+        with (
+            mock.patch.object(
+                xml_lint, "compute_text_visual_bbox", wraps=xml_lint.compute_text_visual_bbox
+            ) as computed,
+            xml_lint.text_geometry_memo(elements),
+        ):
+            self.assertIsNone(xml_lint.estimate_text_visual_bbox(elements[0]))
+            self.assertIsNone(xml_lint.estimate_text_visual_bbox(elements[0]))
+
+        self.assertEqual(computed.call_count, 1)
+
+    def test_memo_does_not_leak_across_scopes(self) -> None:
+        """作用域必须严格等于一次调用，否则会读到上一页的值。"""
+        elements = xml_lint.extract_elements(self.slide(self.text_shape("a", 80, 80, "标题")))
+
+        with xml_lint.text_geometry_memo(elements):
+            pass
+
+        self.assertIsNone(xml_lint._memo_slot())
+
+    def test_memo_is_restored_even_when_the_body_raises(self) -> None:
+        elements = xml_lint.extract_elements(self.slide(self.text_shape("a", 80, 80, "标题")))
+
+        with self.assertRaises(RuntimeError):
+            with xml_lint.text_geometry_memo(elements):
+                raise RuntimeError("boom")
+
+        self.assertIsNone(xml_lint._memo_slot())
+
+    def test_every_memo_key_is_backed_by_a_live_registered_element(self) -> None:
+        """键是 id()，所以「每个键都对应一个还活着的登记元素」是这套缓存的根本前提。
+
+        这条成立，id 复用就不可能发生在缓存键上——地址一直被占着，别的对象（哪个线程
+        造的都一样，进程共用地址空间）拿不到它。这里直接断言这个不变量，而不是靠反复
+        造对象去撞地址碰运气。
+        """
+        elements = xml_lint.extract_elements(
+            self.slide("".join(self.text_shape(f"r{i}", 80, 80 + i * 10, f"文本 {i}") for i in range(6)))
+        )
+
+        with xml_lint.text_geometry_memo(elements):
+            for element in elements:
+                xml_lint.estimate_text_visual_bbox(element)
+            memo = xml_lint._memo_slot()
+            alive_ids = {id(element) for element in xml_lint._MEMO_STATE.alive}
+
+            self.assertTrue(set(memo).issubset(alive_ids))
+            self.assertEqual(set(memo), {id(element) for element in elements})
+
+    def test_registered_ids_are_not_reusable_while_the_scope_is_open(self) -> None:
+        """作用域内不断造对象再丢掉，谁都不应该拿到已登记的地址。"""
+        elements = xml_lint.extract_elements(
+            self.slide("".join(self.text_shape(f"r{i}", 80, 80 + i * 10, f"文本 {i}") for i in range(6)))
+        )
+
+        with xml_lint.text_geometry_memo(elements):
+            registered = set(xml_lint._memo_slot())
+            collisions = []
+            for _ in range(200):
+                junk = [{"kind": "shape", "x": n} for n in range(32)]
+                collisions.extend(id(item) for item in junk if id(item) in registered)
+                del junk
+
+            self.assertEqual(collisions, [])
+
+    def test_another_thread_cannot_see_or_clobber_this_thread_memo(self) -> None:
+        """memo 必须按线程存。
+
+        用模块级全局的话：A 进入后 B 进入，A 退出时把 B 的 memo 丢掉，B 退出时又把 A 的
+        memo 还原成活的；此后新对象一旦复用到 A 里登记过的 id，就会命中别人的几何。
+        这个用例直接检查那个交错：B 进出一轮之后，A 自己看到的 memo 必须还是自己的。
+        """
+        elements = xml_lint.extract_elements(self.slide(self.text_shape("a", 80, 80, "标题")))
+        other = xml_lint.extract_elements(self.slide(self.text_shape("b", 80, 80, "另一页")))
+        seen: dict[str, object] = {}
+        started, done = threading.Event(), threading.Event()
+
+        def other_thread() -> None:
+            started.wait(timeout=5)
+            seen["inside_other"] = xml_lint._memo_slot()  # 不该看到 A 的 memo
+            with xml_lint.text_geometry_memo(other):
+                xml_lint.estimate_text_visual_bbox(other[0])
+            done.set()
+
+        worker = threading.Thread(target=other_thread)
+        worker.start()
+        with xml_lint.text_geometry_memo(elements):
+            mine = xml_lint._memo_slot()
+            started.set()
+            done.wait(timeout=5)
+            seen["after_other"] = xml_lint._memo_slot()
+        worker.join(timeout=5)
+
+        self.assertIsNone(seen["inside_other"])
+        self.assertIs(seen["after_other"], mine)
+        self.assertIsNone(xml_lint._memo_slot())
+
+    def test_detectors_still_work_without_an_active_memo(self) -> None:
+        """外部（含单测）会直接调检测器，此时没有 memo，必须照常现算。"""
+        elements = xml_lint.extract_elements(
+            self.slide(self.text_shape("a", 80, 80, "重叠文本") + self.text_shape("b", 100, 90, "重叠文本"))
+        )
+
+        self.assertIsNone(xml_lint._memo_slot())
+        self.assertIsNotNone(xml_lint.estimate_text_visual_bbox(elements[0]))
+
+
+class MultiSlideReportTest(unittest.TestCase):
+    """多页文档的报告结构。
+
+    逐页检查各自独立，只有跨页 id 撞车是唯一需要在合并之后做的检查；报告按页号索引，
+    页序错了等于整份报告串页。这两条跟检查逻辑本身无关，容易在重构里被悄悄改掉，
+    所以单独钉住。
+    """
+
+    NS = 'xmlns="https://www.larkoffice.com/sml/2.0"'
+
+    def deck(self, slide_count: int, *, overlap: bool = False) -> str:
+        slides = []
+        for index in range(slide_count):
+            body = (
+                f'<shape id="a{index}" type="text" topLeftX="80" topLeftY="80" width="700" '
+                f'height="60" rotation="0"><content fontSize="20"><p>第 {index} 页标题</p>'
+                "</content></shape>"
+            )
+            if overlap:
+                body += (
+                    f'<shape id="b{index}" type="text" topLeftX="100" topLeftY="90" width="700" '
+                    f'height="60" rotation="0"><content fontSize="20"><p>第 {index} 页标题</p>'
+                    "</content></shape>"
+                )
+            slides.append(f"<slide {self.NS}><data>{body}</data></slide>")
+        return f'<presentation {self.NS} width="960" height="540">' + "".join(slides) + "</presentation>"
+
+    def test_slide_order_follows_document_order(self) -> None:
+        """页号必须是 1..N 且与文档顺序一致——报告按页号索引。"""
+        result = xml_lint.lint_xml(self.deck(9))
+
+        self.assertEqual([slide["slide_number"] for slide in result["slides"]], list(range(1, 10)))
+
+    def test_cross_slide_id_collision_is_detected(self) -> None:
+        """跨页 id 撞车是唯一跨页的检查，逐页检查看不见它，必须在合并之后做。"""
+        one = (
+            f'<slide {self.NS}><data><shape id="dup" type="text" topLeftX="80" topLeftY="80" '
+            'width="400" height="60" rotation="0"><content><p>甲</p></content></shape></data></slide>'
+        )
+        two = one.replace("甲", "乙")
+        filler = (
+            f'<slide {self.NS}><data><shape type="text" topLeftX="80" topLeftY="80" width="400" '
+            'height="60" rotation="0"><content><p>丙</p></content></shape></data></slide>'
+        )
+        xml = f'<presentation {self.NS} width="960" height="540">' + one + filler + filler + two + "</presentation>"
+
+        codes = [issue["code"] for issue in xml_lint.lint_xml(xml)["issues"]]
+        self.assertIn("duplicate_element_id", codes)
 
 
 if __name__ == "__main__":

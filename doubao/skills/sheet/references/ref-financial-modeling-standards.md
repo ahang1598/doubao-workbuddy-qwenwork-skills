@@ -1,5 +1,3 @@
-> ⚠️ **强制前置条件**：本文档共 535 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
-
 # 金融/财务建模与财务数据整理规范
 
 ## 定位与优先级
@@ -392,8 +390,6 @@ for col in 'DEFGHIJKLMN':                # 年份列：紧凑且统一
     ws.column_dimensions[col].width = 9
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 分区标题行用于隔离 Key Assumptions、Core Calculation、Terminal Value、Sensitivity 等区块：
 
 - 同层级标题使用相同背景色和**相同的左右填充列范围**（如都从 B 列到 N 列）。
@@ -532,4 +528,4 @@ Sensitivity 额外检查：
 - **飞书表格**：写值/公式按 `references/lark-sheets-write-cells.md`；样式、合并、列宽行高、冻结的任意组合**一次** `references/lark-sheets-styles-put.md` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `references/lark-sheets-batch-update.md`；跨 sheet 公式按 `references/lark-sheets-formula-translation.md` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
 - 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后只做必要的链接/预览处理。
 
-===== 全文完（共 535 行）=====
+===== 全文完（共 531 行）=====

@@ -1,5 +1,3 @@
-> ⚠️ **强制前置条件**：本文档共 603 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
-
 # Excel 文件技术工作流（xlsx workflow）
 
 本文件覆盖 Excel 文件的创建、编辑、公式重算与验证的完整技术流程。
@@ -416,8 +414,6 @@ ws.delete_cols(3, 1)   # 从第3列开始删除1列
 ws.column_dimensions['C'].hidden = True  # 隐藏C列
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ### pandas 行列操作
 
 ```python
@@ -600,4 +596,4 @@ def get_cell_validation(filepath: str, sheet_name: str, cell_address: str) -> di
 
 写入时若违反规则会出现 `Excel 已发现"file.xlsx"中的部分内容存在问题`。修改前先调用 `get_cell_validation` 拿到 `allowed_values`，再决定是直接使用合法值还是先 `ws.data_validations.dataValidation.remove(dv)` 移除规则。
 
-===== 全文完（共 603 行）=====
+===== 全文完（共 599 行）=====

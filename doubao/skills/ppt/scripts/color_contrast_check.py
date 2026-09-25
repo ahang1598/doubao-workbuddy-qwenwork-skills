@@ -5,6 +5,7 @@ The checker is deliberately conservative: a text/background contrast failure
 is a ``FAIL``. ``--format json`` is intended for regression automation; the
 text format remains convenient for humans.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -41,9 +42,7 @@ STATUS_CARD_MIN_HEIGHT = 40.0
 STATUS_CARD_MAX_HEIGHT = 90.0
 DARK_GRADIENT_MAX_LUMINANCE = 0.03
 DARK_GRADIENT_MIN_CONTRAST = 2.5
-RGBA_RE = re.compile(
-    r"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)", re.I
-)
+RGBA_RE = re.compile(r"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)", re.I)
 GRADIENT_STOP_RE = re.compile(r"(rgba?\([^)]*\))\s*([\d.]+)?%?", re.I)
 PATTERN_PERCENT_RE = re.compile(r"pct(\d+)$", re.I)
 NAVIGATION_TOKEN_RE = re.compile(r"\d{1,3}$")
@@ -114,12 +113,12 @@ def srgb_to_linear(component: int) -> float:
 
 
 def luminance(rgb: tuple[int, int, int]) -> float:
-    return .2126 * srgb_to_linear(rgb[0]) + .7152 * srgb_to_linear(rgb[1]) + .0722 * srgb_to_linear(rgb[2])
+    return 0.2126 * srgb_to_linear(rgb[0]) + 0.7152 * srgb_to_linear(rgb[1]) + 0.0722 * srgb_to_linear(rgb[2])
 
 
 def contrast(fg: tuple[int, int, int], bg: tuple[int, int, int]) -> float:
     first, second = luminance(fg), luminance(bg)
-    return (max(first, second) + .05) / (min(first, second) + .05)
+    return (max(first, second) + 0.05) / (min(first, second) + 0.05)
 
 
 def color_or_gradient(value: str | None, x_ratio: float) -> tuple[int, int, int, float] | None:
@@ -145,7 +144,9 @@ def color_or_gradient(value: str | None, x_ratio: float) -> tuple[int, int, int,
     first, left_position = left
     last, right_position = right
     progress = 0 if right_position == left_position else (position - left_position) / (right_position - left_position)
-    return tuple(round(first[i] + (last[i] - first[i]) * progress) for i in range(3)) + (first[3] + (last[3] - first[3]) * progress,)
+    return tuple(round(first[i] + (last[i] - first[i]) * progress) for i in range(3)) + (
+        first[3] + (last[3] - first[3]) * progress,
+    )
 
 
 def fill_color(elem: ET.Element) -> str | None:
@@ -182,19 +183,26 @@ def element_bbox(elem: ET.Element) -> tuple[float, float, float, float]:
         x1, y1 = number(elem.get("startX")), number(elem.get("startY"))
         x2, y2 = number(elem.get("endX")), number(elem.get("endY"))
         return min(x1, x2) - width / 2, min(y1, y2) - width / 2, abs(x2 - x1) + width, abs(y2 - y1) + width
-    return number(elem.get("topLeftX")), number(elem.get("topLeftY")), number(elem.get("width")), number(elem.get("height"))
+    return (
+        number(elem.get("topLeftX")),
+        number(elem.get("topLeftY")),
+        number(elem.get("width")),
+        number(elem.get("height")),
+    )
 
 
 def table_cell_paints(node: ET.Element, order: int) -> Iterable[Paint]:
     x0, y0 = number(node.get("topLeftX")), number(node.get("topLeftY"))
-    widths = [number(col.get("width"), number(node.get("width")) / 2) for col in node.iter() if local_name(col) == "col"] or [number(node.get("width"))]
+    widths = [
+        number(col.get("width"), number(node.get("width")) / 2) for col in node.iter() if local_name(col) == "col"
+    ] or [number(node.get("width"))]
     row_y = y0
     for row in (item for item in node if local_name(item) == "tr"):
         row_h = number(row.get("height"), number(node.get("height")) / 2)
         x, column = x0, 0
         for cell in (item for item in row if local_name(item) == "td"):
             span = int(number(cell.get("colspan"), 1))
-            cell_w = sum(widths[column:column + span]) or number(node.get("width"))
+            cell_w = sum(widths[column : column + span]) or number(node.get("width"))
             yield Paint(x, row_y, cell_w, row_h, fill_color(cell), order)
             x += cell_w
             column += span
@@ -249,13 +257,33 @@ def theme_default(root: ET.Element) -> str | None:
     return None
 
 
-def element_record(slide_num: int, slide_id: str, text: str, style: dict[str, str], bbox: tuple[float, float, float, float], paint_index: int, source: str, shape_background: str | None = None, object_id: str | None = None, object_path: str | None = None, shape_alpha: float | None = None) -> dict:
+def element_record(
+    slide_num: int,
+    slide_id: str,
+    text: str,
+    style: dict[str, str],
+    bbox: tuple[float, float, float, float],
+    paint_index: int,
+    source: str,
+    shape_background: str | None = None,
+    object_id: str | None = None,
+    object_path: str | None = None,
+    shape_alpha: float | None = None,
+) -> dict:
     return {
-        "slide": slide_num, "slide_id": slide_id, "text": text[:160], "fg_color": style.get("color") or style.get("fontColor") or "rgba(31, 35, 41, 1)",
-        "font_size": number(style.get("fontSize"), 16), "bold": style.get("bold", "").lower() in {"true", "1", "bold"},
-        "text_background": style.get("backgroundColor"), "shape_background": shape_background,
-        "bbox": bbox, "paint_index": paint_index, "source": source,
-        "object_id": object_id, "object_path": object_path,
+        "slide": slide_num,
+        "slide_id": slide_id,
+        "text": text[:160],
+        "fg_color": style.get("color") or style.get("fontColor") or "rgba(31, 35, 41, 1)",
+        "font_size": number(style.get("fontSize"), 16),
+        "bold": style.get("bold", "").lower() in {"true", "1", "bold"},
+        "text_background": style.get("backgroundColor"),
+        "shape_background": shape_background,
+        "bbox": bbox,
+        "paint_index": paint_index,
+        "source": source,
+        "object_id": object_id,
+        "object_path": object_path,
         "shape_alpha": shape_alpha,
     }
 
@@ -300,7 +328,9 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
                 if tag in {"line", "polyline"}:
                     color = border_color(node)
                 elif tag == "chart":
-                    color = next((child.get("color") for child in node.iter() if local_name(child) == "chartBackground"), None)
+                    color = next(
+                        (child.get("color") for child in node.iter() if local_name(child) == "chartBackground"), None
+                    )
                 paint = Paint(x, y, width, height, color, order, tag)
                 if tag != "img" and paint.color:
                     paints.append(paint)
@@ -318,42 +348,111 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
                     continue
                 inherited = {"color": fallback_fg, "fontSize": "16"}
                 inherited = attrs(inherited, content)
-                bbox = (number(node.get("topLeftX")), number(node.get("topLeftY")), number(node.get("width")), number(node.get("height")))
+                bbox = (
+                    number(node.get("topLeftX")),
+                    number(node.get("topLeftY")),
+                    number(node.get("width")),
+                    number(node.get("height")),
+                )
                 for paragraph in content.iter():
                     if local_name(paragraph) == "p":
                         for text, style in inline_runs(paragraph, inherited):
-                            records.append(element_record(slide_num, slide_id, text, style, bbox, paint_index[id(node)], "shape", fill_color(node), node.get("id"), object_path[id(node)], shape_alpha=number(node.get("alpha"), 1.0) if node.get("alpha") is not None else None))
+                            records.append(
+                                element_record(
+                                    slide_num,
+                                    slide_id,
+                                    text,
+                                    style,
+                                    bbox,
+                                    paint_index[id(node)],
+                                    "shape",
+                                    fill_color(node),
+                                    node.get("id"),
+                                    object_path[id(node)],
+                                    shape_alpha=number(node.get("alpha"), 1.0)
+                                    if node.get("alpha") is not None
+                                    else None,
+                                )
+                            )
             elif tag == "table":
                 x, y = number(node.get("topLeftX")), number(node.get("topLeftY"))
-                widths = [number(col.get("width"), number(node.get("width")) / 2) for col in node.iter() if local_name(col) == "col"] or [number(node.get("width"))]
+                widths = [
+                    number(col.get("width"), number(node.get("width")) / 2)
+                    for col in node.iter()
+                    if local_name(col) == "col"
+                ] or [number(node.get("width"))]
                 row_y, column = y, 0
                 for row in (item for item in node if local_name(item) == "tr"):
                     row_h = number(row.get("height"), number(node.get("height")) / 2)
                     for cell in (item for item in row if local_name(item) == "td"):
                         span = int(number(cell.get("colspan"), 1))
-                        cell_w = sum(widths[column:column + span]) or number(node.get("width"))
+                        cell_w = sum(widths[column : column + span]) or number(node.get("width"))
                         content = next((child for child in cell if local_name(child) == "content"), None)
                         if content is not None:
-                            inherited = attrs({"color": fallback_fg, "fontSize": "16", "backgroundColor": fill_color(cell) or ""}, content)
+                            inherited = attrs(
+                                {"color": fallback_fg, "fontSize": "16", "backgroundColor": fill_color(cell) or ""},
+                                content,
+                            )
                             for paragraph in content.iter():
                                 if local_name(paragraph) == "p":
                                     for text, style in inline_runs(paragraph, inherited):
-                                        records.append(element_record(slide_num, slide_id, text, style, (x, row_y, cell_w, row_h), paint_index[id(node)], "table", object_id=node.get("id"), object_path=object_path[id(node)]))
+                                        records.append(
+                                            element_record(
+                                                slide_num,
+                                                slide_id,
+                                                text,
+                                                style,
+                                                (x, row_y, cell_w, row_h),
+                                                paint_index[id(node)],
+                                                "table",
+                                                object_id=node.get("id"),
+                                                object_path=object_path[id(node)],
+                                            )
+                                        )
                         x += cell_w
                         column += span
-                    x = number(node.get("topLeftX")); row_y += row_h; column = 0
+                    x = number(node.get("topLeftX"))
+                    row_y += row_h
+                    column = 0
             elif tag == "chart":
-                chart_bg = next((child.get("color") for child in node.iter() if local_name(child) == "chartBackground"), None)
-                chart_bbox = (number(node.get("topLeftX")), number(node.get("topLeftY")), number(node.get("width")), number(node.get("height")))
+                chart_bg = next(
+                    (child.get("color") for child in node.iter() if local_name(child) == "chartBackground"), None
+                )
+                chart_bbox = (
+                    number(node.get("topLeftX")),
+                    number(node.get("topLeftY")),
+                    number(node.get("width")),
+                    number(node.get("height")),
+                )
                 for child in node.iter():
-                    if local_name(child) in {"chartTitle", "chartLabel", "chartLabels", "chartLegend"} and (child.text or child.get("color")):
+                    if local_name(child) in {"chartTitle", "chartLabel", "chartLabels", "chartLegend"} and (
+                        child.text or child.get("color")
+                    ):
                         label = (child.text or local_name(child)).strip()
-                        style = {"color": child.get("color") or fallback_fg, "fontSize": child.get("fontSize", "11"), "backgroundColor": chart_bg or ""}
-                        records.append(element_record(slide_num, slide_id, label, style, chart_bbox, paint_index[id(node)], "chart", object_id=node.get("id"), object_path=object_path[id(node)]))
+                        style = {
+                            "color": child.get("color") or fallback_fg,
+                            "fontSize": child.get("fontSize", "11"),
+                            "backgroundColor": chart_bg or "",
+                        }
+                        records.append(
+                            element_record(
+                                slide_num,
+                                slide_id,
+                                label,
+                                style,
+                                chart_bbox,
+                                paint_index[id(node)],
+                                "chart",
+                                object_id=node.get("id"),
+                                object_path=object_path[id(node)],
+                            )
+                        )
     return records, slides
 
 
-def background_at(record: dict, slide: dict, x: float, y: float) -> tuple[tuple[int, int, int, float] | None, bool, list[tuple[int, int, int, float]], bool, bool]:
+def background_at(
+    record: dict, slide: dict, x: float, y: float
+) -> tuple[tuple[int, int, int, float] | None, bool, list[tuple[int, int, int, float]], bool, bool]:
     bg = color_or_gradient(slide["page_bg"], x / 960) or DEFAULT_BG
     target_index = record["paint_index"]
     unresolved = False
@@ -370,7 +469,7 @@ def background_at(record: dict, slide: dict, x: float, y: float) -> tuple[tuple[
         (True, record.get("shape_background")),
         (False, record.get("text_background")),
     ):
-        color = color_or_gradient(color_value, .5)
+        color = color_or_gradient(color_value, 0.5)
         if color and is_shape_background:
             color = (*color[:3], color[3] * effective_shape_alpha(record))
         # ``rgba(..., 0)`` is not a background.  Compositing rather than
@@ -405,7 +504,11 @@ def is_decorative_navigation_token(text: str, font_size: float, image_backed: bo
     is not available in Slides XML.  This deliberately does not cover normal
     numeric content such as dates, values, table cells, or small page numbers.
     """
-    return image_backed and font_size >= NAVIGATION_BADGE_MIN_FONT_SIZE and bool(NAVIGATION_TOKEN_RE.fullmatch(text.strip()))
+    return (
+        image_backed
+        and font_size >= NAVIGATION_BADGE_MIN_FONT_SIZE
+        and bool(NAVIGATION_TOKEN_RE.fullmatch(text.strip()))
+    )
 
 
 def is_display_percent(text: str, font_size: float) -> bool:
@@ -413,7 +516,9 @@ def is_display_percent(text: str, font_size: float) -> bool:
     return font_size >= DISPLAY_PERCENT_MIN_FONT_SIZE and bool(DISPLAY_PERCENT_RE.fullmatch(text.strip()))
 
 
-def is_white_status_card_label(fg: tuple[int, int, int, float], bg: tuple[int, int, int, float], bbox: tuple[float, float, float, float]) -> bool:
+def is_white_status_card_label(
+    fg: tuple[int, int, int, float], bg: tuple[int, int, int, float], bbox: tuple[float, float, float, float]
+) -> bool:
     """Recognise compact, high-saturation status cards with white labels.
 
     These can fall below the configured contrast gate for some green/blue/orange
@@ -436,7 +541,9 @@ def is_connector_label(text: str, bbox: tuple[float, float, float, float]) -> bo
 
 def is_dark_gradient_annotation(fg: tuple[int, int, int, float], ratio: float, complex_background: bool) -> bool:
     """Keep readable dark annotations on a rendered gradient out of FAIL."""
-    return complex_background and luminance(fg[:3]) <= DARK_GRADIENT_MAX_LUMINANCE and ratio >= DARK_GRADIENT_MIN_CONTRAST
+    return (
+        complex_background and luminance(fg[:3]) <= DARK_GRADIENT_MAX_LUMINANCE and ratio >= DARK_GRADIENT_MIN_CONTRAST
+    )
 
 
 def effective_shape_alpha(item: dict) -> float:
@@ -516,7 +623,15 @@ def check(
     results, has_fail = [], False
     for record in records:
         if is_decorative_display_text(record["text"], record["font_size"]):
-            results.append({**record, "contrast": None, "verdict": "SKIP", "reason": "giant short display text is decorative", "bg_source": "decorative"})
+            results.append(
+                {
+                    **record,
+                    "contrast": None,
+                    "verdict": "SKIP",
+                    "reason": "giant short display text is decorative",
+                    "bg_source": "decorative",
+                }
+            )
             continue
         slide = slides[record["slide"]]
         fg = parse_color(record["fg_color"]) or DEFAULT_FG
@@ -552,7 +667,15 @@ def check(
                     foreground, bg = over(overlay, foreground), over(overlay, bg)
                 observations.append((foreground, bg, point_x, point_y))
         if image_backed:
-            results.append({**record, "contrast": None, "verdict": "SKIP", "reason": "image-backed text excluded", "bg_source": "image excluded"})
+            results.append(
+                {
+                    **record,
+                    "contrast": None,
+                    "verdict": "SKIP",
+                    "reason": "image-backed text excluded",
+                    "bg_source": "image excluded",
+                }
+            )
             continue
         contrast_values = [contrast(item[0][:3], item[1][:3]) for item in observations]
         source = "xml layered fill" if observations else "missing background"
@@ -562,41 +685,92 @@ def check(
             continue
         fg_final, bg_final, worst_x, worst_y = min(observations, key=lambda item: contrast(item[0][:3], item[1][:3]))
         ratio = min(contrast_values)
-        record.update({
-            "effective_fg_color": color_css(fg_final),
-            "effective_bg_color": color_css(bg_final),
-            "worst_sample": {
-                "x": worst_x,
-                "y": worst_y,
-                "contrast": ratio,
-                "method": "xml",
-            },
-        })
+        record.update(
+            {
+                "effective_fg_color": color_css(fg_final),
+                "effective_bg_color": color_css(bg_final),
+                "worst_sample": {
+                    "x": worst_x,
+                    "y": worst_y,
+                    "contrast": ratio,
+                    "method": "xml",
+                },
+            }
+        )
+
         def is_complex_color(value: str | None) -> bool:
             color = parse_color(value)
             return bool(value and "gradient" in value.lower()) or bool(color and color[3] < 1)
 
-        complex_background = single_sample_paint_coverage or line_backed or (
-            record.get("shape_background") is not None and effective_shape_alpha(record) < 1.0
-        ) or any(is_complex_color(value) for value in (slide["page_bg"], record.get("shape_background"), record.get("text_background"))) or any(
-            (paint.color or "").lower().find("gradient") >= 0 or (parse_color(paint.color) or DEFAULT_BG)[3] < 1
-            for paint in slide["paints"] if paint.covers(x + width / 2, y + height / 2)
+        complex_background = (
+            single_sample_paint_coverage
+            or line_backed
+            or (record.get("shape_background") is not None and effective_shape_alpha(record) < 1.0)
+            or any(
+                is_complex_color(value)
+                for value in (slide["page_bg"], record.get("shape_background"), record.get("text_background"))
+            )
+            or any(
+                (paint.color or "").lower().find("gradient") >= 0 or (parse_color(paint.color) or DEFAULT_BG)[3] < 1
+                for paint in slide["paints"]
+                if paint.covers(x + width / 2, y + height / 2)
+            )
         )
         record["complex_background"] = complex_background
         if is_decorative_navigation_token(record["text"], record["font_size"], image_backed):
-            results.append({**record, "contrast": ratio, "verdict": "SKIP", "reason": "image-backed numeric navigation badge needs visual review", "bg_source": source})
+            results.append(
+                {
+                    **record,
+                    "contrast": ratio,
+                    "verdict": "SKIP",
+                    "reason": "image-backed numeric navigation badge needs visual review",
+                    "bg_source": source,
+                }
+            )
             continue
         if is_display_percent(record["text"], record["font_size"]):
-            results.append({**record, "contrast": ratio, "verdict": "PASS", "reason": "large whole-number display metric", "bg_source": source})
+            results.append(
+                {
+                    **record,
+                    "contrast": ratio,
+                    "verdict": "PASS",
+                    "reason": "large whole-number display metric",
+                    "bg_source": source,
+                }
+            )
             continue
         if is_white_status_card_label(fg_final, bg_final, record["bbox"]):
-            results.append({**record, "contrast": ratio, "verdict": "PASS", "reason": "compact saturated status card", "bg_source": source})
+            results.append(
+                {
+                    **record,
+                    "contrast": ratio,
+                    "verdict": "PASS",
+                    "reason": "compact saturated status card",
+                    "bg_source": source,
+                }
+            )
             continue
         if is_connector_label(record["text"], record["bbox"]):
-            results.append({**record, "contrast": ratio, "verdict": "PASS", "reason": "secondary diagram connector label", "bg_source": source})
+            results.append(
+                {
+                    **record,
+                    "contrast": ratio,
+                    "verdict": "PASS",
+                    "reason": "secondary diagram connector label",
+                    "bg_source": source,
+                }
+            )
             continue
         if is_dark_gradient_annotation(fg_final, ratio, complex_background):
-            results.append({**record, "contrast": ratio, "verdict": "PASS", "reason": "readable dark annotation on complex background", "bg_source": source})
+            results.append(
+                {
+                    **record,
+                    "contrast": ratio,
+                    "verdict": "PASS",
+                    "reason": "readable dark annotation on complex background",
+                    "bg_source": source,
+                }
+            )
             continue
         # Large text uses the baseline gate on every XML-resolvable surface.
         # The complex-background guard below adds a small safety margin.
@@ -672,7 +846,9 @@ def production_result(item: dict) -> dict:
 def print_text(results: list[dict], has_fail: bool) -> None:
     for item in (item for item in results if item["verdict"] == "FAIL"):
         ratio = "n/a" if item["contrast"] is None else f"{item['contrast']:.2f}:1"
-        print(f"{item['verdict']:4} p{item['slide']:02d} {item['source']:5} {item['text']!r} contrast={ratio} {item['reason']}")
+        print(
+            f"{item['verdict']:4} p{item['slide']:02d} {item['source']:5} {item['text']!r} contrast={ratio} {item['reason']}"
+        )
     totals = summary(results, has_fail)
     print("summary " + " ".join(f"{key}={value}" for key, value in totals.items()))
 
@@ -680,7 +856,12 @@ def print_text(results: list[dict], has_fail: bool) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Slides XML text contrast checker (image-backed text excluded)")
     parser.add_argument("--xml", required=True)
-    parser.add_argument("--threshold", type=float, default=DEFAULT_CONTRAST_GATE, help=f"minimum contrast ratio for ordinary text (default: {DEFAULT_CONTRAST_GATE})")
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=DEFAULT_CONTRAST_GATE,
+        help=f"minimum contrast ratio for ordinary text (default: {DEFAULT_CONTRAST_GATE})",
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args()
     if not os.path.isfile(args.xml):
@@ -693,7 +874,10 @@ def main() -> int:
         "",
         args.threshold,
     )
-    payload = {"summary": summary(results, has_fail), "issues": [production_result(item) for item in results if item["verdict"] == "FAIL"]}
+    payload = {
+        "summary": summary(results, has_fail),
+        "issues": [production_result(item) for item in results if item["verdict"] == "FAIL"],
+    }
     if args.format == "json":
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:

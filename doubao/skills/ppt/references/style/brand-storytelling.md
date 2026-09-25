@@ -176,7 +176,7 @@
 
 #### 常用 SVG 图
 
-本设计系统偏好以下设计（详情跑 `chart_help('<slug>')`）：
+本设计系统偏好以下数据型 SVG chart 设计（详情跑 `chart_help('<slug>')`）；需要使用到树状图（如品牌架构、价值层级、故事地图）时走 `relation_help('<slug>')`，正式 Slides 必须用 atomized 可编辑输出，不得用 `<embed>` 作主体：
 
 **推荐 palette**（本场景选一个贯穿全 deck，绝不混用）：
 本场景调性：叙事感 · 大留白 · 一图一句。装饰节制但可有情绪。**暖色 / 材质色 / 高级中式** 都是核心武器；深底代表夜幕篇章。
@@ -196,7 +196,6 @@
 
 | chart            | variant          | palette 推荐                           | 何时用                             |
 | ---------------- | ---------------- | ------------------------------------ | ------------------------------- |
-| `nested_donut`   | `sunburst_flat`  | `berry_wine` / `linen_plum`          | 品牌矩阵可视 · 莓果紫红 = 编辑杂志 / 时尚       |
 | `calheat`        | `radial_year`    | `jade_landscape` / `stone_ink`       | 年度记事本（径向）· jade_landscape 走东方美学 |
 | `percent_grid`   | `person_10x10`   | `tea_ceremony` / `sunset_terracotta` | 用户情感调研                          |
 | `candle`         | `heikin_ashi`    | `deep_sea_navy` / `candlelight`      | 行业曲线（去噪的趋势感）· 深底夜幕              |

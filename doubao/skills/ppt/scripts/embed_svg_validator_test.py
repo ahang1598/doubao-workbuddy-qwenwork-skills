@@ -297,5 +297,177 @@ class EmbeddedSvgLintTest(unittest.TestCase):
         )
         self.assertTrue(all(issue["elements"] == ["visual"] for issue in issues))
 
+
+class EmbeddedSvgTextContainerOverflowTest(unittest.TestCase):
+    """Exercise embed_svg_text_container_overflow across the container kinds it must generalize to.
+
+    A truncated label can sit inside a straight-edged polygon, a circle, or a curved pie/donut
+    wedge, and the label itself may be a name or a numeric/percentage annotation. These cases pin
+    the positive detections, the negative (fitting) counterparts, and the animated-sector skip.
+    """
+
+    def overflow_issues(self, svg_body: str) -> list[dict[str, object]]:
+        result = xml_lint.lint_xml(
+            f"""
+            <slide xmlns="{SML_NAMESPACE}">
+              <data>
+                <embed id="visual" topLeftX="0" topLeftY="0" width="440" height="280">
+                  {svg_body}
+                </embed>
+              </data>
+            </slide>
+            """
+        )
+        return [
+            issue
+            for slide in result["slides"]
+            for issue in slide["issues"]
+            if issue["code"] == "embed_svg_text_container_overflow"
+        ]
+
+    def test_flags_label_wider_than_polygon_container(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <polygon points="60,80 140,80 140,120 60,120" fill="rgb(200,200,200)"/>
+              <text x="100" y="104" font-size="14" text-anchor="middle"
+                font-family="思源黑体">超长的标签文字</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["measurement"]["container_width_px"], 80.0)
+        self.assertGreater(
+            issues[0]["measurement"]["text_width_px"],
+            issues[0]["measurement"]["container_width_px"],
+        )
+
+    def test_flags_label_wider_than_circle_container(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="22" fill="rgb(50,50,50)"/>
+              <text x="100" y="105" font-size="14" text-anchor="middle"
+                font-family="思源黑体">环形标签文字</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["measurement"]["container_width_px"], 44.0)
+
+    def test_flags_label_wider_than_rect_container(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <rect x="20" y="70" width="100" height="50"
+                fill="rgb(245,245,245)" stroke="rgb(80,80,80)"/>
+              <text x="28" y="108" font-size="14" font-family="思源黑体">
+                全国发生面积4500万亩次
+              </text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["measurement"]["container_width_px"], 100.0)
+        self.assertGreater(
+            issues[0]["measurement"]["text_width_px"],
+            issues[0]["measurement"]["container_width_px"],
+        )
+
+    def test_ignores_viewbox_background_rect_as_text_container(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <rect x="0" y="0" width="200" height="200" fill="rgb(245,245,245)"/>
+              <text x="100" y="108" font-size="24" text-anchor="middle"
+                font-family="思源黑体">背景装饰大标题文字</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(issues, [])
+
+    def test_ignores_thin_decorative_rect_as_text_container(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <rect x="40" y="96" width="120" height="4" fill="rgb(180,180,180)"/>
+              <text x="100" y="104" font-size="14" text-anchor="middle"
+                font-family="思源黑体">装饰线上的长标签文字</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(issues, [])
+
+    def test_accepts_label_that_fits_its_polygon_container(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <polygon points="40,80 160,80 160,120 40,120" fill="rgb(200,200,200)"/>
+              <text x="100" y="104" font-size="14" text-anchor="middle"
+                font-family="思源黑体">短标签</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(issues, [])
+
+    def test_flags_label_truncated_inside_pie_donut_wedge(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+              <path d="M 200 60 A 140 140 0 0 1 280.0 85.0 L 240.0 130.0 A 70 70 0 0 0 200 130 Z"
+                fill="rgb(40,60,110)"/>
+              <text x="215" y="100" font-size="18" font-weight="700" text-anchor="middle"
+                font-family="思源黑体">交通出行方向</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(len(issues), 1)
+        measurement = issues[0]["measurement"]
+        self.assertIn("sector_room_left_px", measurement)
+        self.assertIn("sector_room_right_px", measurement)
+        self.assertGreater(measurement["overflow_px"], 10.0)
+
+    def test_flags_numeric_percentage_label_truncated_inside_wedge(self) -> None:
+        # A percentage sub-label is judged purely on the sector room it has, exactly like a name
+        # label; it is not skipped by category.
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+              <path d="M 200 60 A 140 140 0 0 1 280.0 85.0 L 240.0 130.0 A 70 70 0 0 0 200 130 Z"
+                fill="rgb(40,60,110)"/>
+              <text x="215" y="100" font-size="18" font-weight="700" text-anchor="middle"
+                font-family="思源黑体">88.8%</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["overlaps"][0]["text"], "88.8%")
+
+    def test_skips_truncation_check_for_animated_wedge(self) -> None:
+        issues = self.overflow_issues(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+              <path d="M 200 60 A 140 140 0 0 1 280.0 85.0 L 240.0 130.0 A 70 70 0 0 0 200 130 Z"
+                fill="rgb(40,60,110)">
+                <animateTransform attributeName="transform" type="rotate" values="0;10;0"
+                  dur="2s" begin="0s" repeatCount="indefinite"/>
+              </path>
+              <text x="215" y="100" font-size="18" font-weight="700" text-anchor="middle"
+                font-family="思源黑体">交通出行方向</text>
+            </svg>
+            """
+        )
+
+        self.assertEqual(issues, [])
+
+
 if __name__ == "__main__":
     unittest.main()

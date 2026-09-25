@@ -43,3 +43,5 @@
 
 # SVG 图特殊处理
 使用 token 对本地文件进行处理时，如果需要插入任意的 svg 图，则**必须转成 png 图片来上传**，不允许使用 <embed> 格式进行上传
+
+树状图不要转成 png，也不要用 `<embed>` 作为主体；正式 Slides 仍按 `scripts/gen_svg_relations.py` 的规则使用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出可编辑元素。

@@ -248,6 +248,8 @@ bu.hotkey("ctrl", "a")
 bu.press_key("Enter")
 ```
 
+`bu.click_xy`, `bu.drag`, and `bu.scroll(x,y,...)` use coordinates relative to the page viewport, normalized to a `0-1000` range.
+
 ## Downloads
 
 For a direct HTTP(S) link or URL:

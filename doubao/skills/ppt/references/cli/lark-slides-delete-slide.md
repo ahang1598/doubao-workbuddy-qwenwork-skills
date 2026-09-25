@@ -48,7 +48,9 @@ lark-cli slides +delete-slide --presentation "$PID" --slide-id "$SID" --dry-run
 `slide_id` 是服务端短 ID，**不能从 XML 里推导**。两个来源：
 
 1. `+create` / `+add-slide` 的返回值里存下来；
-2. 事后回读：`slides +xml-get --presentation "$PID" --output .lark-slides/plan/<deck>/readback.xml`。
+2. 事后回读：`slides +xml-get --presentation "$PID" --output ./readback.xml`。
+
+`./readback.xml` 表示当前工作目录 `<CWD>` 下的文件；实际文件名按任务/读取批次区分，避免覆盖已有文件。
 
 删错页的代价高于多跑一次回读 —— 不确定就先回读 + `+screenshot` 看一眼再删。
 

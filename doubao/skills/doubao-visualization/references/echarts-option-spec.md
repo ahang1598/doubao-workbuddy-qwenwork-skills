@@ -96,7 +96,7 @@
 
 ### 4.4 Callback 安全
 
-- 所有 function 必须兼容 ES5：禁止箭头函数、`let`、`const`、可选链、模板字符串、解构、`Array.prototype.at` 等现代语法。
+- 所有 function 必须兼容 ES5：禁止箭头函数、`let`、`const`、可选链、ES6反引号模板字符串、解构、`Array.prototype.at` 等现代语法；合法formatter占位模板不属于函数源码字符串。
 - 不访问不稳定字段：`params.option`、`params.option.series`、`window`、`document`。
 - 访问 `params`、`item`、`data`、`value`、数组下标前必须判空，不要依赖固定数组下标。
 
@@ -118,7 +118,7 @@
 - 如果 `visualMap`、`dataZoom`、`legend` 或 `xAxis.name` 等组件放在 bottom 区域，必须与 xAxis label 分层摆放：增加 `grid.bottom`、`axisLabel.margin` 或组件间距，必要时把组件移到 top，避免单位名、色带、滑块和值标签重叠。
 - 移动端/手机不要使用过小百分比边距，例如 `left: '2%'`；直角坐标图 `grid.left` 建议不小于 44，`grid.right` 建议不小于 16。
 - 移动端/手机典型总高度约 351dp。普通多行 legend 应完整展示并继续增加表头高度，但绘图区尽量保留至少约 140dp；系列过多导致无法兼顾时，优先建议拆图或改用更合适的图表表达。
-- xAxis 标签多时设置 `hideOverlap`，可配合 `interval` 或 `rotate`；日期很长时优先缩短为 MM-DD，不要输出 YYYY-MM-DD。
+- xAxis 标签可缩写、换行、旋转或抽稀显示，但不单独裁剪轴数据；关键标识保持可辨，其余条目完整可查。日期很长时优先缩短为 MM-DD，不要输出 YYYY-MM-DD。
 - 双 yAxis 或多 yAxis 时，name 要短，nameGap 不要过大，单位优先放 tooltip、legend、axisLabel 或短 name。
 - 默认优先使用单 grid；只有图表确实需要副图或分区展示时才使用多 grid。
 - 如果使用多 grid，保持各 grid 的 left/right 对齐，并在上下 grid 之间留出足够间距；上方 grid 可以隐藏 xAxis label，只在最底部 grid 显示 xAxis label。
@@ -133,6 +133,7 @@
 
 - 对数组型数据点，tooltip 中应显示业务可读的中文字段名，不要直接显示默认维度英文。
 - 多维数组 data item 只放数据维度，不要追加 `itemStyle`、`label` 等配置对象；如需单点样式，使用 `{ value: [...], itemStyle: {...} }`。
+- `dataset` / 多维tuple核对 `dimensions`、`encode.x` / `encode.y` 与轴类型；热力图类目索引从0开始，横纵维度不能颠倒。时间点按自身坐标定位，不套用一维类目序列的等长要求。
 - 如果使用 candlestick，数据顺序必须是 `[open, close, lowest, highest]`，不要读取不存在的 data 下标。
 
 ## 五、常用模板
@@ -243,7 +244,7 @@
 {
   title: {
     text: "季度收入趋势（示例）",
-    subtext: "2016-2024 营收（亿元） | 数据来源：公开报道与第三方估算",
+    subtext: "2024年各季度收入（万元） | 示例数据",
     left: "center",
     textStyle: { fontSize: 15, fontWeight: 600 },
   },

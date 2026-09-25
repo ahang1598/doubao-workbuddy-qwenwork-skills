@@ -12,6 +12,7 @@
 6. **不使用 PowerShell 自动变量作赋值目标**：`$PID / $HOME / $PWD / $args / $input / $error / $host / $true / $false / $null`，改用 `$PRES_ID / $SLIDE_ID / $FILE_TOKEN` 等前缀化命名。
 7. **文件读写走工具本身或 Python**：不要用 `>` / `Out-File` / `Get-Content ... | cli --xxx -`——PowerShell 5 默认非 UTF-8、加 BOM、走 stdin 时非 ASCII 字节会被重编码。让 lark-cli 用 `--output`、让 Python 用 `open(..., encoding='utf-8')`。
 8. 在 Windows PowerShell 5.X 上，lark-cli 的任何 stderr 输出（进度、失败 JSON、提示）都会被包成 NativeCommandError 并让 exit code 变非 0，所以 NativeCommandError 并不一定代表了报错，需要去细看报错内容才能知道真实报错是什么
+9. **默认字体用微软雅黑**：除非用户提供了模版、用户指定了字体或用户的需求是对原有 ppt 进行编辑，否则 windows 场景下，默认设置 fontFamily="微软雅黑"
 
 ## 禁用命令 → 兼容替代
 

@@ -1,5 +1,3 @@
-> ⚠️ **强制前置条件**：本文档共 444 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
-
 # Lark Sheet Workbook
 
 ## Sheet 结构变更保守化（编辑类任务必做）
@@ -357,8 +355,6 @@ lark-cli sheets +workbook-import --file ./report.csv --folder-token <FOLDER_TOKE
 
 把飞书电子表格导出为本地 `.xlsx`（整工作簿）或单子表 `.csv`（异步任务 + 内置轮询 + 可选下载）。
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ```bash
 # 1) 只创建并轮询导出任务，不下载（默认）：返回 file_token / status 便于稍后续传
 lark-cli sheets +workbook-export --url "https://example.feishu.cn/sheets/shtXXX"
@@ -441,4 +437,4 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
 - `Execute`：sheet create/rename/move/copy/hide/unhide/delete 后必须调用 `+workbook-info`，按稳定的 sheet_id 核对名称、顺序、可见性与数量；import 按上方 ready/job_status + workbook-info 闭环；需要本地文件的 export 按 output-path + 文件存在/可重开闭环。
 
-===== 全文完（共 444 行）=====
+===== 全文完（共 440 行）=====
