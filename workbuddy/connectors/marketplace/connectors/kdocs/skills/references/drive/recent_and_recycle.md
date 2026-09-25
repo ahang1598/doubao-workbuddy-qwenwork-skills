@@ -6,7 +6,6 @@
 
 获取当前用户最近访问的文档列表，支持分页、过滤和排序。
 
-
 #### 调用示例
 
 获取最近访问列表：
@@ -16,7 +15,6 @@
   "page_size": 20
 }
 ```
-
 
 #### 参数说明
 
@@ -65,7 +63,7 @@
 
 获取回收站文件列表，支持分页和按云盘过滤。
 
-
+> 返回的 `items[].id` 用于 `restore_deleted_file` 的 `file_id`，勿与 `get_file_info` 的 id 混用
 
 #### 调用示例
 
@@ -76,7 +74,6 @@
   "page_size": 20
 }
 ```
-
 
 #### 参数说明
 
@@ -122,10 +119,16 @@
 
 #### 功能说明
 
-将回收站文件还原到原位置
+将回收站中的文件还原到删除前的位置。须先调用 `list_deleted_files` 获取待恢复文件的 `id`。
 
+#### 调用约束
+
+- **前置检查**：file_id 须来自 list_deleted_files 的 items[].id；勿用 get_file_info / url / link_id
 
 **幂等性**：是
+
+> 标准流程：`list_deleted_files` → 向用户确认目标文件 → `restore_deleted_file(file_id=items[].id)`
+> 批量恢复时逐个调用本工具
 
 #### 调用示例
 
@@ -137,10 +140,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 回收站中的文件 ID（由 `list_deleted_files` 返回）
+- `file_id` (string, 必填): 回收站文件 ID，取自 `list_deleted_files` 返回的 `items[].id`
+
+`file_id` 必须来自 `list_deleted_files` 响应的 `items[].id`。
+回收站文件不在普通文件索引中，勿使用 `url`、`link_id` 或 `get_file_info` 得到的 id。
 
 #### 返回值说明
 
@@ -151,7 +156,3 @@
 }
 
 ```
-
-
----
-

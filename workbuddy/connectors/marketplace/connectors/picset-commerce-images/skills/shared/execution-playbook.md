@@ -1,6 +1,6 @@
 # Picset 共享执行手册
 
-本手册定义电商图片生成流程中报价、上传、生成、轮询和交付五个阶段的标准操作。所有业务 Skill 统一遵循本手册，不重复实现执行逻辑。
+本手册定义电商图片生成流程中报价、上传、生成、轮询、交付与画布承接的标准操作。电商 Skill 按本手册执行；单图按专属手册执行，不借用此处电商报价与生成工具。跨能力费用授权统一遵循 [共享积分确认规则](./credit-confirmation-playbook.md)。
 
 调用 MCP 工具前，必须使用 `tool_search` 按工具名获取完整参数定义，再按取回的定义发起调用。禁止凭工具名猜测参数结构。
 
@@ -12,10 +12,12 @@
 
 1. **只读报价**：调用 `quote_commerce_image_credits`，展示主图/详情图的数量、比例、分辨率、单价、小计和总计。该回合不上传、不登记、不生成。
 2. **积分确认**：先读取 `__SKILL_DIR__/user_preferences.json`。若 `confirm_credits` 为 `false`，展示预估积分后直接进入下一步，不等待确认；否则向用户明确询问是否接受预估积分，说明最终按提交时实时积分扣除，可能与预估不同，等待用户新的明确确认消息。首次无偏好文件时，在报价后询问用户是否以后跳过积分确认。详见第七节。
-3. **上传登记**：用户确认积分后，对每个本地素材执行 `get_reference_image_upload_token` → `picset_client.py upload` → `register_reference_image`。
-4. **提交生成**：素材全部登记后，按主图/详情图/A+ 商品图分批调用 `generate_commerce_images`，保存返回的 `task_id`。
-5. **静默轮询**：固定 30 秒间隔调用 `get_generation_task_status`，直到所有批次进入终态。
-6. **结果交付**：按稳定编号恢复结果，将成功图片下载到本地，通过 `present_files` 展示本地路径。
+3. **余额校验**：费用授权完成后、上传前，调用 `get_user_credits`，将 `available_credits` 与最新报价总计比较。余额不足则立即打开充值面板并停止，不上传、不生成。细则见 [连接器充值手册](./connector-pricing-playbook.md)。
+4. **上传登记**：余额足够后，对每个本地素材执行 `get_reference_image_upload_token` → `picset_client.py upload` → `register_reference_image`。
+5. **提交生成**：素材全部登记后，按主图/详情图/A+ 商品图分批调用 `generate_commerce_images`，保存返回的 `task_id`。
+6. **静默轮询**：固定 30 秒间隔调用 `get_generation_task_status`，直到所有批次进入终态。
+7. **结果交付**：按稳定编号恢复结果，将成功图片下载到本地，通过 `present_files` 展示本地路径。
+8. **画布自动承接**：有成功图时，按 [Agent Canvas 共享手册](./agent-canvas-playbook.md) 第三节**打开 → 校验 → 缺图再 insert**；不等待用户要求。
 
 不探索其他脚本、工具或服务。任一阶段失败时，保留已完成状态，不自动重建已提交任务。
 
@@ -85,6 +87,7 @@
 ### 前置条件
 
 - 用户已明确确认积分，或用户偏好设置为跳过积分确认
+- 已按 [连接器充值手册](./connector-pricing-playbook.md) 完成生成前余额校验，且 `available_credits` 不低于最新预估
 - 素材有本地路径，尚未登记
 
 ### 固定链路
@@ -151,6 +154,7 @@ EOF
 
 - 所有素材已完成上传登记，有参考图 URL
 - 用户已确认积分，或用户偏好设置为跳过积分确认
+- 生成前余额校验已通过；提交前若距上次校验已隔较长时间或用户刚充值回来，可再次调用 `get_user_credits` 确认
 
 ### 分批规则
 
@@ -180,7 +184,7 @@ EOF
 
 - 不得先调用 `generate_commerce_images` 试探或校验 `request_id`
 - 某一批提交失败时，保留已成功提交的批次及其任务，只重试未提交或失败批次
-- 提交返回积分不足时，停止后续生成和轮询，调用 `open_agent_pricing` 打开连接器统一充值面板，不得向用户展示 URL
+- 生成前余额不足或提交返回积分不足时，停止后续生成和轮询，调用 `open_agent_pricing` 打开连接器统一充值面板，不得向用户展示 URL
 
 ---
 
@@ -229,7 +233,7 @@ EOF
 
 ### 用途
 
-把生成结果按稳定编号交付给用户。生成完成后，agent 通过公共交付器 `picset_client.py deliver` 将成功图片从服务端返回的 `image_url` 下载到本地，再通过 `present_files` 工具以本地路径展示给用户。全程不经过画布，不输出图片链接。
+把生成结果按稳定编号交付给用户。生成完成后，agent 通过公共交付器 `picset_client.py deliver` 将成功图片从服务端返回的 `image_url` 下载到本地，再通过 `present_files` 工具以本地路径展示给用户。本地交付完成后，有成功图时还必须按 [Agent Canvas 共享手册](./agent-canvas-playbook.md) **打开画布并校验**；宿主推送未到位时兜底 `insert`。不输出图片链接。
 
 ### 成功项条件
 
@@ -280,19 +284,36 @@ EOF
 
 - 先将成功图片下载到本地并通过 `present_files` 展示
 - 对话中说明失败编号和原因
+- 仅将成功图走画布打开+校验+必要时兜底插入；失败项不推画布
 - 不自动补建失败图片
-- 支持用户按编号单张重试，重试后同样下载并 `present_files` 展示
+- 支持用户按编号单张重试，重试后同样下载、`present_files` 展示，并走同一画布承接流程
+
+### 画布自动承接
+
+`present_files` 完成后、最终文字总结前执行（至少一张成功图时）：
+
+1. 按 [Agent Canvas 共享手册](./agent-canvas-playbook.md)「宿主 conversation_id 解析」取得真实 ID；仍缺失则说明无法打开画布并跳过本步，不虚构。
+2. 调用 `open_agent_canvas`（**`initial_images` 省略或 `[]`**），保存返回的 `agentCanvasSessionId`。
+3. 调用 `get_agent_canvas_state`，读取 `imageIds` / `imageCount`。
+4. 若本批成功稳定编号**已全部**出现在 `imageIds`：不再插入。
+5. 若有缺失：对每张缺失图调用 `insert_agent_canvas_image`（`image.url`=服务端 `image_url`，`image.id`=稳定编号，`request_id`=**新** UUID v4）；可再 `get_agent_canvas_state` 确认。
+6. 若尚未 `panelActive: true`，可再调用一次无图的 `open_agent_canvas`。
+
+细则见 [Agent Canvas 共享手册](./agent-canvas-playbook.md)「交付后打开 + 校验 + 兜底插入」。
 
 ### 约束
 
 - 不分析图片质量，不输出主观评价
 - 不按完成顺序重排编号
-- 图片下载和展示由 agent 侧 `picset_client.py deliver` + `present_files` 完成，不依赖画布
+- 图片本地下载和展示由 agent 侧 `picset_client.py deliver` + `present_files` 完成；画布承接是交付后的必做步骤，不替代 `present_files`
+- 禁止用 `initial_images` 在打开时批量塞本批图；已在 `imageIds` 中的编号禁止再 `insert`
 - 本地下载的图片持久化在 `picset_output/<task_id>/`，用户后续可凭编号或 task_id 找到文件
 
 ---
 
 ## 七、用户偏好管理
+
+完整授权规则以 [共享积分确认规则](./credit-confirmation-playbook.md) 为准，本节保留电商原有路径与操作索引。此处 `__SKILL_DIR__` 仅指电商子 Skill 目录；单图及风格复刻也读取同一个电商偏好文件，不在各自目录另存授权。恢复确认后各能力统一恢复。
 
 ### 偏好文件
 
@@ -304,19 +325,19 @@ EOF
 
 ### 首次设置
 
-- 首次报价后，若偏好文件不存在，在展示预估积分的同时追加询问："以后是否每次都需要确认积分？（回复'不用确认'可跳过，随时可恢复）"
-- 用户回复"不用确认""以后不用问了"等明确意图时，写入 `{"confirm_credits": false}`，本次直接继续生成
+- 首次报价后，若偏好文件不存在，在展示预估积分的同时追加询问："以后电商、单图和复刻都自动确认积分吗？（回复'不用确认'可启用，随时可恢复）"
+- 用户回复"不用确认""以后不用问了"等明确意图时，设置 `{"confirm_credits": false}`，保留已有其他字段；本次报价已展示后直接继续生成
 - 用户回复"需要确认"或未明确选择时，不创建偏好文件，保持每次确认
 
 ### 读取逻辑
 
 - 每次报价后、进入上传登记前，读取偏好文件
 - 若文件存在且 `confirm_credits` 为 `false`，展示积分后直接继续，不等待用户确认
-- 若文件不存在、解析失败或 `confirm_credits` 不为 `false`，按原流程等待用户确认
+- 若文件不存在、解析失败、不是 JSON 对象或 `confirm_credits` 不为布尔值 `false`，按原流程等待用户确认；字符串 `"false"` 不算授权
 
 ### 恢复确认
 
-- 用户随时说"恢复积分确认""以后都要确认积分"等，删除偏好文件或将 `confirm_credits` 改为 `true`，告知用户已恢复
+- 用户随时说"恢复积分确认""以后都要确认积分"等，将唯一偏好文件的 `confirm_credits` 改为 `true` 并保留其他字段，或删除仅含该偏好的文件，告知三项能力均已恢复；持久化失败时按共享规则阻止旧授权继续生效
 
 ### 安全边界
 

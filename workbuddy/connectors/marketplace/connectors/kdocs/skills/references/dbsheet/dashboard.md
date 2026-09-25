@@ -4,13 +4,11 @@
 
 #### 功能说明
 
+复制仪表盘
 
-**前置条件**：`dashboard_id` 来自 `dbsheet.dashboard_list`。
+#### 调用约束
 
-
-
-#### 操作约束
-
+- **前置检查**：`dashboard_id` 来自 `dbsheet.dashboard_list`。
 - **后置验证**：dashboard_list 确认副本已创建
 
 **幂等性**：否 — 重复调用可能产生多个副本，先确认是否已成功
@@ -29,10 +27,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `dashboard_id` (integer, 必填): 源仪表盘 ID
 - `body` (object, 必填): JSON 请求体，须含 name（新仪表盘名称）
 
@@ -43,7 +42,6 @@
 | `name` | string | 新仪表盘名称 |
 
 其它可选字段见 copy-dashboard 文档。
-
 
 #### 返回值说明
 
@@ -67,10 +65,7 @@
 
 #### 功能说明
 
-
 **必填 query**：无。
-
-
 
 #### 调用示例
 
@@ -82,10 +77,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 
 #### 返回值说明
 
@@ -101,7 +97,3 @@
 |------|------|------|
 | `result` | string | ok 表示成功 |
 | `detail` | object | dashboards 数组 |
-
-
----
-

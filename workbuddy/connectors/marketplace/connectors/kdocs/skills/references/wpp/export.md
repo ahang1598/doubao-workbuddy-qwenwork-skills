@@ -8,8 +8,6 @@
 
 **适用于**：缩略图、逐页图片导出。
 
-
-
 **幂等性**：否 — 导出为异步任务，用 task_id 轮询结果而非重复提交
 
 #### 调用示例
@@ -32,10 +30,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `link_id` (string, 必填): 演示文稿的分享链接 ID（从分享链接 URL 中提取）
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL；与 link_id、file_id 三选一
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享 id；与 url、file_id 三选一
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 id；与 url、link_id 三选一
 - `format` (string, 必填): 导出图片格式。可选值：`png` / `jpeg`
 - `dpi` (integer, 可选): 图片 DPI。可选值：`96` / `150` / `300`；默认值：`96`
 - `water_mark` (boolean, 可选): 是否含水印；默认值：`true`
@@ -84,8 +83,6 @@
 
 **步骤二**：传入 `task_id` 查询导出进度，`status` 为 `running` 时需等待后重试，`finished` 时返回下载链接。
 
-
-
 **幂等性**：否 — 导出为异步任务，用 task_id 轮询结果而非重复提交
 
 #### 调用示例
@@ -117,10 +114,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 演示文稿文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL；与 link_id、file_id 三选一
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享 id；与 url、file_id 三选一
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 id；与 url、link_id 三选一
 - `format` (string, 必填): 固定 `pdf`
 - `task_id` (string, 可选): 任务 ID，步骤一返回，轮询时必填
 - `task_type` (string, 可选): 任务类型，固定 `normal_export`（轮询时必填）
@@ -178,7 +176,3 @@
 | `task_type` | string | 固定为 `normal_export`（导出 PDF 场景） |
 | `status` | string | `running` / `finished` |
 | `data.url` | string | PDF 下载地址（`finished` 时，有时效） |
-
-
----
-

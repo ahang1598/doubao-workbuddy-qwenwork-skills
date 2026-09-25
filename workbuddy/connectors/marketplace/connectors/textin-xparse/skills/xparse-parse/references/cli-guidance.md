@@ -81,6 +81,13 @@ writing fails, inspect the structured `OUTPUT_FAILED` diagnostics.
 | Specific pages only | `xparse-cli parse doc.pdf --api auto --page-range 1-5` |
 | Encrypted document | `xparse-cli parse doc.pdf --api auto --password secret123` |
 | Save to directory | `xparse-cli parse doc.pdf --api auto --output ./result/` |
+| Upload without parsing | `xparse-cli upload doc.pdf --operation-id <OPERATION_ID>` |
+| Create extraction from uploaded or parsed asset | `xparse-cli task run --task-type extract --instruction '<REQUEST>' --file-id <FILE_ASSET_ID>` |
+
+`upload` returns the original File Asset ID. A new extraction Task can use that
+ID directly: parsed files reuse results, while raw files first enter paid
+managed parsing. The upload itself starts no Parse or Extract Task. An existing
+extraction Task's `task add --file-id` still requires a parsed asset.
 
 ## Advanced Options
 

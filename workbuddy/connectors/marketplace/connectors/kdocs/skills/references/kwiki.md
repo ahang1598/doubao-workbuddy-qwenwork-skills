@@ -11,12 +11,10 @@
 - 需要浏览知识库根目录或某个知识库文件夹下的资料
 - 需要把**已有云文档**导入知识库
 - 需要在知识库里新建文件夹或在线文件，并对库内资料做删除、下载
-- 仔细阅读接口参数说明，不猜测，不胡编乱造
 
 ### 特别说明
 
 > - 仔细阅读接口参数说明，不猜测，不胡编乱造
-
 > - 本地上传不走 `kwiki.*`
 
 ### 链接输出规范
@@ -82,10 +80,10 @@
 3. 按文件类型选择上传方式：
 
 **常规文件（docx/pdf/pptx/xlsx 等）**：
-`upload_file(drive_id=知识库drive_id, parent_id=目标文件夹id, name="文件名.docx", content_base64=...)`
+`upload_new_file(drive_id=知识库drive_id, parent_id=目标文件夹id, name="文件名.docx", content_base64=...)`
 
 **Markdown 文件（.md）**：
-> 默认转为在线智能文档，保留格式和结构化内容。仅当用户明确要求"上传并保持 md 格式"时，才使用 `upload_file` 直接上传原始 `.md` 文件。
+> 默认转为在线智能文档，保留格式和结构化内容。仅当用户明确要求"上传并保持 md 格式"时，才使用 `upload_new_file` 直接上传原始 `.md` 文件。
 
 - `kwiki.create_item(doc_type="o", kuid=目标文件夹kuid, title="文件名（不含后缀）")` 创建智能文档
 - 读取本地 `.md` 文件内容
@@ -115,7 +113,7 @@
 2. `curl.exe -L -o "文件名" "签名URL"` 下载
 
 **智能文档（doc_type="o"）**：`wps.export` 不支持直接导出，无特殊情况，默认转换成Markdown格式：
-- **Markdown** → `read_file_content(drive_id, file_id, format="markdown")`（异步，需轮询 task_id），将返回的 markdown 内容保存为 `.md` 文件
+- **Markdown** → `read_file(file_id=...)`；`status=pending` 时用本次响应的 `task_id` 和原参数获取结果，返回完整内容后，将 `data.content` 保存为 `.md` 文件
 
 **快捷方式文件（type="shortcut"）**：通过 `search_files` 搜索原始文件名找到源文件，再用源文件的 `link_id` 走上述通用流程。
 
@@ -149,7 +147,7 @@
 4. **返回结果**：按匹配度排序，展示文件名、所在库/路径、修改时间、直达链接；结果过多时提示用户按文件类型或时间范围二次筛选
 5. **展示结果并询问用户** → 展示文件信息 + **主动询问是否下载到本地或打开查看（提供在线链接）用户选择下载时的后续操作**：
 
-- `search_files` 返回的 `file_id` 可直接用于 `read_file_content` 等通用接口
+- `search_files` 返回的 `file_id` 可直接用于 `read_file` 等通用接口
 - 根据文件类型选择下载方式，详见「下载知识库文件到本地」流程
 
 #### 整理分类知识库
@@ -184,13 +182,13 @@
 **流程**
 1. 主流程：scrape_url → scrape_progress(status=1) → move_file → get_file_link
 2. 降级流程（scrape_url 失败/status=-1，如公众号等 JS 渲染页面）：
-   browser 抓取正文 → create_file(name=xxx.docx)
-   → upload_file(drive_id=xxx parent_id=0 file_id=xxx content_format=markdown content_base64=xxx)
+   browser 抓取正文
+   → create_file_with_content(name="标题", file_extension="docx", content=<抓取 Markdown 明文>)
    → move_file → get_file_link
 
 | 注意 | 说明 |
 |------|------|
-| upload_file 必填参数 | `drive_id` 和 `parent_id` 必须显式传递 |
+| 降级新建 | 用 create_file_with_content；content 为 Markdown 明文，不需要进行 Base64 编码 |
 | ID 体系 | kwiki 内部 kuid 需通过 `kwiki.list_items` 获取 |
 
 ## 错误速查表
@@ -200,3 +198,4 @@
 | 错误特征 | 原因 | 处理方式 |
 |----------|------|----------|
 | `code: 403000006`，`msg: "当前版本仅支持个人用户"` | 当前登录的是企业/团队账号，该知识库接口仅对个人账号开放 | 提示用户切换至个人账号后重试 |
+| `conflict` / `lock` / 写入冲突 | 并发操作同一知识库节点（如同时创建/移动/删除兄弟节点）导致锁竞争 | 指数退避重试（2s → 4s → 8s，最多 3 次）；批量操作兄弟节点时改为串行逐条执行 |

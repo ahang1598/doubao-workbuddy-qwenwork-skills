@@ -66,6 +66,11 @@ Task-level parse defaults can be provided as a JSON file:
 xparse-cli task run --files 'docs/*.pdf' --config ./parse-config.json --api auto
 ```
 
+The CLI defaults `capabilities.pages` to `true` so newly parsed files include
+page metadata and preview images. A custom config inherits this default when
+the key is absent; explicit `"pages": false` is preserved. Existing Tasks retain
+their stored config, and previously parsed files do not gain page images retroactively.
+
 Do not put `document.password` in that file. Passwords are resource-specific.
 
 ## Create another Run under the same Task

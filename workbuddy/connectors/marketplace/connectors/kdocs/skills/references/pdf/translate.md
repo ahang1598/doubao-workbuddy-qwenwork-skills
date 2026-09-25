@@ -12,8 +12,6 @@
 - 若下游返回任务态，工具会自动轮询进度直到完成或失败
 - 默认按全文翻译；如需局部翻译可传 `pages` 指定页码区间（1-based）
 
-
-
 > 鉴权依赖 Cookie `wps_sid`
 > 若返回任务态，建议直接信任工具的同步结果，无需额外轮询
 
@@ -48,17 +46,18 @@
 }
 ```
 
-
 #### 参数说明
 
 - `async_mode` (integer, 可选): 映射下游 `_m` 参数；默认 0；默认值：`0`
 - `file_type` (string, 可选): 文件类型，传 `doc` 走文字内核；默认 PDF 内核
-- `file_id` (string, 必填): 待导出文件 ID，可传空字符串（表示当前文件）
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 待导出文件的 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 待导出文件的分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 待导出文件 ID
 - `file_source` (object, 必填): 文档来源信息，包含 `origin`、`s3_params`、`s3_file_info` 等，必须包含 origin: kdocs.cn
 - `password` (string, 可选): 文件密码。**注意：暂不支持加密文件。**
 - `header` (object, 必填): 下游透传 header 参数
 - `body` (object, 必填): 下游透传 body 参数
-- `from_lang` (string, 必填): 源语言。必须先调用read_file_content读取文档内容，根据文档实际内容判断语言：
+- `from_lang` (string, 必填): 源语言。必须先调用 read_file 读取文档内容，根据文档实际内容判断语言：
 1. 分析文档中的文字内容，识别其主要语言
 2. 如果文档主要是中文，则传 "zh"
 3. 如果文档主要是其他语言（如英文、日文等），则传对应的语言代码
@@ -295,8 +294,6 @@
 - `task_id` 会映射到下游 `_t`
 - 推荐在 `pdf.translate_full_file` 未返回最终态时使用
 
-
-
 > 建议轮询间隔 1-2 秒
 
 #### 调用示例
@@ -310,10 +307,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `task_id` (string, 必填): 全文翻译任务 ID
 - `file_type` (string, 可选): 文件类型。传 `doc` 拉起文字内核；不传默认 PDF 内核
 
@@ -367,8 +365,6 @@
 
 **适用于**：用户主动中止全文翻译，或任务长时间阻塞需要终止。
 
-
-
 **幂等性**：是
 
 > 若任务已完成，接口可能返回可接受的幂等结果
@@ -383,10 +379,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 被取消全文翻译的文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 被取消全文翻译的文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 被取消全文翻译的分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 被取消全文翻译的文件 ID
 
 #### 返回值说明
 
@@ -420,7 +417,3 @@
 |------|------|------|
 | `data.canceled` | boolean | 是否取消成功 |
 | `data.task_id` | string | 被取消的任务 ID（若下游返回） |
-
-
----
-

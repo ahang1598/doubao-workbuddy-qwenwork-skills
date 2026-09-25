@@ -4,12 +4,13 @@
 
 #### 功能说明
 
+列举自定义角色
 
-**必填 query**：以接口约定为准（通常无或仅有筛选类参数）。
+#### 调用约束
 
-**前置条件**：文档已开通**高级权限 / 内容权限**能力；否则可能返回业务错误。
+- **前置检查**：文档已开通**高级权限 / 内容权限**能力；否则可能返回业务错误。
 
-
+**幂等性**：是
 
 > 返回中的系统预置角色与自定义角色区分方式以接口约定为准。
 
@@ -23,10 +24,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 
 #### 返回值说明
 
@@ -50,12 +52,13 @@
 
 #### 功能说明
 
+获取异步任务结果
 
-**必填 query**：`task_type`（异步任务类型）。
+#### 调用约束
 
-**前置条件**：`task_id` 来自「新增/更新/删除自定义角色」等异步接口返回。
+- **前置检查**：`task_id`须来自「新增/更新/删除自定义角色」等异步接口返回。
 
-
+**幂等性**：是
 
 #### 调用示例
 
@@ -64,28 +67,27 @@
 ```json
 {
   "file_id": "string",
-  "task_id": "task_xxx",
-  "task_type": "content_permission"
+  "task_id": "task_xxx"
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `task_id` (string, 必填): 异步任务 ID
-- `task_type` (content_permission, 必填): 异步任务类型（query 参数）
 
 **请求参数**
 
 | 位置 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|------|
-| Path | `file_id` | string | 是 | 文件 ID |
+| Path | `url` | string | 三选一 | 文档 URL |
+| Path | `link_id` | string | 三选一 | 分享链接 ID |
+| Path | `file_id` | string | 三选一 | 文件 ID |
 | Path | `task_id` | string | 是 | 异步任务 ID |
-| Query | `task_type` | content_permission | 是 | 异步任务类型 |
 
 异步类接口提交后须轮询本工具直至状态为完成或失败，勿用相同 body 盲目重试创建接口。
-
 
 #### 返回值说明
 
@@ -109,13 +111,11 @@
 
 #### 功能说明
 
+新增自定义角色（异步）
 
-**前置条件**：文档已开启高级权限；调用方有管理权限配置能力。
+#### 调用约束
 
-
-
-#### 操作约束
-
+- **前置检查**：文档已开启高级权限；调用方有管理权限配置能力。
 - **后置验证**：轮询 dbsheet.permission_query_task 直至结束
 
 **幂等性**：否 — 先 permission_query_task 再决定是否重试
@@ -147,10 +147,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `body` (object, 必填): JSON 请求体，包含 content_permission_name、permission_data
 
 **body 根级必填**
@@ -222,7 +223,6 @@
 - `Intersected`：最多 65535 个元素。
 - 其他规则：最多 1 个元素。
 
-
 #### 返回值说明
 
 ```json
@@ -245,13 +245,11 @@
 
 #### 功能说明
 
+更新自定义角色（异步）
 
-**前置条件**：角色已存在；文档开启高级权限。
+#### 调用约束
 
-
-
-#### 操作约束
-
+- **前置检查**：角色已存在；文档开启高级权限。
 - **后置验证**：轮询 permission_query_task
 
 **幂等性**：否 — 先 permission_query_task 确认状态再决定是否重试
@@ -281,10 +279,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `body` (object, 必填): JSON 请求体，包含 cloud_permission_id、content_permission_name、permission_data
 
 **body 根级必填**
@@ -347,7 +346,6 @@
 - `Intersected`：最多 65535 个元素。
 - 其他规则：最多 1 个元素。
 
-
 #### 返回值说明
 
 ```json
@@ -370,14 +368,12 @@
 
 #### 功能说明
 
+删除自定义角色（异步）
 
-**前置条件**：待删角色无不可解除的依赖；文档开启高级权限。
-
-
-
-#### 操作约束
+#### 调用约束
 
 - **前置检查**：permission_list_roles 确认目标角色
+- **前置检查**：待删角色无不可解除的依赖；文档开启高级权限。
 - **用户确认**：删除角色将影响已绑定成员的能力
 
 **幂等性**：否 — 先 permission_query_task 确认状态再决定是否重试
@@ -397,10 +393,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `body` (object, 必填): JSON 请求体，包含 cloud_permission_id、replace_cloud_permission_id、replace_permission_type
 
 **body 根级必填**
@@ -410,7 +407,6 @@
 | `cloud_permission_id` | integer | 是 | 需要删除的权限组云 ID |
 | `replace_cloud_permission_id` | integer | 是 | 替换的云权限 ID |
 | `replace_permission_type` | string | 是 | 替换的权限组类型。可选值：`system`、`team_custom`、`content_custom` |
-
 
 #### 返回值说明
 
@@ -434,10 +430,13 @@
 
 #### 功能说明
 
-**前置条件**：文档已开启高级权限；`cloud_permission_id` 可与 `dbsheet.permission_list_roles` 返回体中的云权限 ID 对照填写。
-**请求方式**：GET，请通过 query 传递 `cloud_permission_id`、`permission_type` 等参数。
+列举成员（内容权限）
 
+#### 调用约束
 
+- **前置检查**：文档已开启高级权限；`cloud_permission_id` 可与 `dbsheet.permission_list_roles` 返回体中的云权限 ID 对照填写。
+
+**幂等性**：是
 
 > 若业务未开通高级权限，接口可能失败，与参数是否完整无关。
 
@@ -465,10 +464,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `cloud_permission_id` (integer, 必填): 云权限 ID（query 参数）
 - `permission_type` (string, 必填): 权限组类型（query 参数），可选值：`system`、`team_custom`、`content_custom`
 - `alias_name` (string, 可选): 权限别名（query 参数）；拿不到 permission_id 时可传，可选值：`manageable`、`viewable`、`editable`
@@ -484,7 +484,6 @@
 | Query | `alias_name` | string | 否 | 权限别名：`manageable`、`viewable`、`editable`（拿不到 permission_id 时可传） |
 | Query | `page_token` | string | 否 | 分页起始位置标识；首页可不传，默认分页数量 20 个 item |
 
-
 #### 返回值说明
 
 ```json
@@ -499,7 +498,3 @@
 |------|------|------|
 | `result` | string | ok 表示成功 |
 | `detail` | object | 成员主体列表 |
-
-
----
-

@@ -33,7 +33,8 @@ def _required_string(token: Mapping[str, Any], key: str) -> str:
 
 
 def _content_type(path: Path) -> str:
-    return mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    guessed = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    return "audio/wav" if guessed in {"audio/x-wav", "audio/wave"} else guessed
 
 
 def _authorization(token: Mapping[str, Any], oss_path: str, content_type: str, date: str) -> str:
@@ -69,9 +70,13 @@ def upload_file_to_oss(token: Mapping[str, Any], file_path: str | Path) -> dict[
 
     bucket = _required_string(token, "bucket")
     region = _required_string(token, "region")
-    path_prefix = _required_string(token, "pathPrefix").rstrip("/")
+    object_key = token.get("objectKey")
+    if isinstance(object_key, str) and object_key:
+        oss_path = object_key
+    else:
+        path_prefix = _required_string(token, "pathPrefix").rstrip("/")
+        oss_path = f"{path_prefix}/{uuid.uuid4().hex}{source_path.suffix.lower() or '.bin'}"
     security_token = _required_string(token, "securityToken")
-    oss_path = f"{path_prefix}/{uuid.uuid4().hex}{source_path.suffix.lower() or '.bin'}"
     date = email.utils.formatdate(usegmt=True)
     url = f"https://{bucket}.{region}.aliyuncs.com/{urllib.parse.quote(oss_path, safe='/')}"
     request = urllib.request.Request(
@@ -93,7 +98,15 @@ def upload_file_to_oss(token: Mapping[str, Any], file_path: str | Path) -> dict[
             response.read()
     except urllib.error.HTTPError as error:
         raise OssUploadError(f"OSS_HTTP_{error.code}") from error
-    return {"oss_path": oss_path, "file_type": content_type, "file_size": file_size}
+    result: dict[str, Any] = {
+        "oss_path": oss_path,
+        "file_type": content_type,
+        "file_size": file_size,
+    }
+    upload_id = token.get("uploadId")
+    if isinstance(upload_id, str) and upload_id:
+        result["upload_id"] = upload_id
+    return result
 
 
 def load_token_from_stdin() -> dict[str, Any]:

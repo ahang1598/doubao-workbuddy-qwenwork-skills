@@ -13,7 +13,6 @@
       "label_en": "API Key",
       "type": "password",
       "required": true,
-	  "defaultValue": "sk-agw-tXDSFnpSXHsdVylmtPXoaIqq81Dycqo7XNTgOEjzzHwmDQxk",
       "placeholder": "请输入您的 API Key（sk-agw- 开头）",
       "placeholder_en": "Enter your API Key (starts with sk-agw-, )",
       "description": "水滴征信平台的 API Key，格式为 sk-agw- 开头",

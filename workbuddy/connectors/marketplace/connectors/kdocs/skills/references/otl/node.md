@@ -47,6 +47,19 @@
 
 ## Block 节点属性
 
+### doc — 文档块
+
+全局唯一根节点。查询时通过 `otl.block_query`（`params: { blockIds: ["doc"] }`）获取。
+
+| 属性 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `cover` | object | 否 | 文档封面图，无封面时为 `{}`。子字段见下方 |
+| ↳ `sourceKey` | string | **是** | 图片资源 id（为空字符串表示无封面图）；可通过 `upload_attachment` 上传图片获得（返回值 `object_id`）；可通过 `download_attachment` 下载对应资源 |
+| ↳ `offsetX` | integer | 否 | 封面图 X 轴偏移，范围 `-5000`–`5000`，默认 `0` |
+| ↳ `offsetY` | integer | 否 | 封面图 Y 轴偏移，范围 `-5000`–`5000`，默认 `0` |
+
+设置/清除封面图：通过 `otl.block_update`（`update_attrs`，`blockId` 设为 `"doc"`）。传入 `cover: {}` 清除封面图。
+
 ### title — 文档标题
 
 全文档唯一，必须为 doc 的第一个子块。title中的 text 节点不支持 Inline 通用属性, 不可包含换行符。
@@ -162,13 +175,9 @@ codeBlock 中的 text 节点不支持 Inline 通用属性， 可包含换行符�
 
 ### picture — 图片
 
-插入新图片时，图片资源 id ，图片宽高可通过工具upload_attachment获得（object_id, extra_info.width, extra_info.height）。
-
-注意，若向upload_attachment工具传入图片的base64编码时，**必须**生成临时文件进行参数传入，避免直接内联导致超过命令行长度限制。
-
 | 属性 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `sourceKey` | string | **是** | 图片资源 id |
+| `sourceKey` | string | **是** | 图片资源 id；可通过 `upload_attachment` 上传图片获得（返回值 `object_id`，宽高取 `extra_info.width`、`extra_info.height`）；可通过 `download_attachment` 下载对应资源 |
 | `width` | number | **是** | 图片原始宽度 |
 | `height` | number | **是** | 图片原始高度 |
 | `renderWidth` | number | 否 | 图片渲染宽度 |
@@ -236,7 +245,7 @@ codeBlock 中的 text 节点不支持 Inline 通用属性， 可包含换行符�
 |------|------|------|------|
 | `type` | integer | **是** | `1`=流程图, `2`=思维导图 |
 | `sourceId` | string | **是** | 元数据 id，可查询当前文档获取已有id |
-| `sourceKey` | string | **是** | 预览图 id， 可查询当前文档获取已有id |
+| `sourceKey` | string | **是** | 预览图 id， 可查询当前文档获取已有id；可通过 `download_attachment` 下载对应资源 |
 | `width` | number | **是** | 原始宽度 |
 | `height` | number | **是** | 原始高度 |
 | `caption` | string | 否 | 描述 |
@@ -284,7 +293,7 @@ codeBlock 中的 text 节点不支持 Inline 通用属性， 可包含换行符�
 | `title` | string | **是** | 标题 |
 | `url` | string | **是** | 超链接（http(s):// 开头） |
 | `viewType` | integer | **是** | `1`=标题视图, `2`=卡片视图（父块须为 paragraph 且无兄弟节点） |
-| `sourceKey` | string | **是** | 图标 id |
+| `sourceKey` | string | **是** | 图标 id；可通过 `upload_attachment` 上传获得（返回值 `object_id`）；可通过 `download_attachment` 下载对应资源 |
 | `description` | string | **是** | 超链接描述 |
 
 ### schedule — 日程
@@ -322,7 +331,7 @@ codeBlock 中的 text 节点不支持 Inline 通用属性， 可包含换行符�
 
 | 属性 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `wpsDocumentId` | string | **是** | 文档/文件 id |
+| `wpsDocumentId` | string | **是** | 文档/文件 id；当 `viewType=4`（附件视图）时，可通过 `upload_attachment` 上传获得（返回值 `object_id`），可通过 `download_attachment` 下载对应附件 |
 | `wpsDocumentName` | string | **是** | 文档/文件名 |
 | `wpsDocumentType` | string | **是** | 文档/文件类型 |
 | `wpsDocumentLink` | string | 云文档必填 | 云文档链接（http(s):// 开头，本地文件无此属性） |

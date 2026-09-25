@@ -544,28 +544,31 @@
         "selfhosted"
       ]
     },
-    {
+        {
       "id": "kdocs",
-      "name": "金山文档",
-      "name_en": "Kingsoft Docs",
-      "description": "创建、搜索和管理金山文档（WPS 云文档）。支持新建多种文档类型（Word/Excel/PDF/PPT/智能表格/多维表格/智能文档）、读取与搜索文档内容、编辑更新、分享、移动重命名整理、标签收藏管理、知识库空间操作、网页剪藏，以及接龙转表格、AI PPT 生成等。",
-      "description_zh": "创建、搜索和管理金山文档（WPS 云文档）。支持新建多种文档类型（Word/Excel/PDF/PPT/智能表格/多维表格/智能文档）、读取与搜索文档内容、编辑更新、分享、移动重命名整理、标签收藏管理、知识库空间操作、网页剪藏，以及接龙转表格、AI PPT 生成等。",
-      "description_en": "Create, search, and manage Kingsoft Docs (WPS Cloud Docs). Supports creating multiple document types (Word/Excel/PDF/PPT/Smart Sheet/Multi-dimTable/Smart Doc), reading and searching content, editing, sharing, organizing with tags and favorites, knowledge base management, web clipping, and AI PPT generation.",
+      "name": "金山文档|WPS云文档",
+      "name_en": "kdocs",
+      "description": "Kdocs Skill. Turn conversations into actions — save knowledge instantly, organize fragmented notes, convert chain messages to tables, export docs as Markdown, beautify spreadsheets, and generate collection forms. All in one prompt.",
+      "description_zh": "金山文档官方 Skill。对话即操作——知识一键存入、碎片内容整理、接龙转表格、文档转 Markdown、表格美化、收发表生成，全在一句话内完成。",
+      "description_en": "Kdocs Skill. Turn conversations into actions — save knowledge instantly, organize fragmented notes, convert chain messages to tables, export docs as Markdown, beautify spreadsheets, and generate collection forms. All in one prompt.",
       "source": "kdocs",
       "type": "mcp",
       "auth_mode": "server-side",
       "provider_id": "wps",
+      "minWorkbuddyVersion": "4.22.12",
       "examples_zh": [
-        "搜索我金山文档里所有包含「周报」的文档，列出标题和最近修改时间",
-        "帮我在金山文档根目录新建一个智能文档，标题是「Q3 项目总结」，把以下内容写进去",
-        "读取「项目计划.xlsx」表格的内容，按优先级整理后输出",
-        "把这个网页保存到我的金山文档：https://example.com/article"
+        "把这段接龙内容整理成表格",
+        "把这个网页存到我的金山文档里",
+        "帮我把这些零散笔记整理归档到一个文档",
+        "生成一份活动报名信息收集表",
+        "新建一个智能文档，标题为「项目周报」，写入本周进展"
       ],
       "examples_en": [
-        "Search all documents in my Kingsoft Docs containing 'weekly report' and list titles with last modified time",
-        "Create a new smart document in my Kingsoft Docs root with title 'Q3 Project Summary' and write the following content",
-        "Read the content of 'Project Plan.xlsx' and organize it by priority",
-        "Save this webpage to my Kingsoft Docs: https://example.com/article"
+        "Turn this chain-message content into a table",
+        "Save this webpage to my Kdocs",
+        "Help me organize these scattered notes into one document",
+        "Generate an event registration collection form",
+        "Create a smart doc titled \"Weekly Project Report\" with this week's progress"
       ]
     },
     {
@@ -1774,9 +1777,9 @@
       "id": "textin-xparse",
       "name": "TextIn xParse·智能文档解析",
       "name_en": "TextIn xParse · Intelligent Document Parsing",
-      "description": "Upload files (PDFs, images, Word, Excel, PowerPoint, scanned documents, and more) to parse them into Markdown or structured JSON. Preserve document hierarchies and complex table structures for high-accuracy, high-performance OCR and document processing tasks. Parse up to 1,000 pages free each day.",
-      "description_zh": "上传文件（PDF、图片、Word、Excel、PPT、扫描件等），即可将其解析为 Markdown 或结构化 JSON，可还原文档目录结构和复杂表格结构，适用于高精度高性能要求的文档处理OCR任务，每日免费1000页。",
-      "description_en": "Upload files (PDFs, images, Word, Excel, PowerPoint, scanned documents, and more) to parse them into Markdown or structured JSON. Preserve document hierarchies and complex table structures for high-accuracy, high-performance OCR and document processing tasks. Parse up to 1,000 pages free each day.",
+      "description": "Upload files (PDFs, images, Word, Excel, PowerPoint, scanned documents, and more) to parse them into Markdown or structured JSON. Preserve document hierarchies and complex table structures for high-accuracy, high-performance OCR and document processing tasks. Parse up to 1,000 pages free each day. It also supports document image forensics to accurately determine whether an image is authentic or manipulated.",
+      "description_zh": "支持 PDF、图片、Word、Excel、PPT、扫描件等文档的高精度高性能OCR/文字识别、解析、格式转换、提取与结构化抽取，可识别表格、公式、手写体并输出 Markdown 或 JSON，支持复杂表格版式还原和批量处理，每日免费 1000 页。更可支持文档图像鉴伪，精准判定图片真假。",
+      "description_en": "Upload files (PDFs, images, Word, Excel, PowerPoint, scanned documents, and more) to parse them into Markdown or structured JSON. Preserve document hierarchies and complex table structures for high-accuracy, high-performance OCR and document processing tasks. Parse up to 1,000 pages free each day. It also supports document image forensics to accurately determine whether an image is authentic or manipulated.",
       "source": "textin-xparse",
       "type": "cli",
       "minWorkbuddyVersion": "5.0.0",
@@ -1785,14 +1788,16 @@
         "用 xParse 识别这份扫描件，逐字还原成可编辑文本",
         "用 xParse 识别这批发票，提取抬头、税号、金额并汇总成表",
         "用 xParse 解析并总结这份 PDF 的核心内容：https://web-api.textin.com/image/download?filename=4249da45f6e946d2afd8380d59.pdf",
-        "用 xParse 把这份 PDF 解析成 Markdown，用于知识库入库"
+        "用 xParse 把这份 PDF 解析成 Markdown，用于知识库入库",
+        "上传图片，检查是否存在 AI 生成、PS 修改或局部篡改，并标出可疑区域。"
       ],
       "examples_en": [
         "Use the xParse Connector to parse this PDF, extract all tables, and convert them to Excel",
         "Use xParse to recognize this scanned document and reproduce it verbatim as editable text",
         "Use xParse to recognize these invoices, extract the invoice titles, tax IDs, and amounts, and summarize them in a table",
         "Use xParse to parse and summarize the key points of this PDF: https://web-api.textin.com/image/download?filename=4249da45f6e946d2afd8380d59.pdf",
-        "Use xParse to parse this PDF into Markdown for ingestion into a knowledge base"
+        "Use xParse to parse this PDF into Markdown for ingestion into a knowledge base",
+        "Upload an image, check for AI generation, Photoshop edits, or local tampering, and highlight suspicious regions."
       ],
       "visible_in": [
         "internal",
@@ -2207,9 +2212,9 @@
       "id": "picset-commerce-images",
       "name": "Picset AI 电商设计",
       "name_en": "Picset AI Commerce Design",
-      "description": "Picset AI Commerce Design provides three independent capabilities: ecommerce image suites (main, detail, listing, and A+ content images), single image text-to-image/image-to-image generation and editing, and Agent Canvas (canvas hosting and image return), plus a unified connector pricing panel. Covers Taobao, Tmall, JD, Pinduoduo, Douyin, 1688, Xiaohongshu, TikTok, Amazon, Shopify, Temu, OZON, Shopee, Alibaba.com with credit quoting, generation tracking, and indexed partial revisions.",
-      "description_zh": "Picset AI 电商设计：面向电商卖家、设计师和美工，提供三条独立功能线——电商套图（主图/详情图/套图/Listing/A+，含一张也走套图）、单图文生图/图生图（独立创意单图与图片编辑）、Agent Canvas（画布承接与图片返回），以及连接器统一充值面板。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，支持方案规划、积分报价、生成跟踪和按编号局部修改。",
-      "description_en": "Picset AI Commerce Design provides three independent capabilities: ecommerce image suites (main, detail, listing, and A+ content images), single image text-to-image/image-to-image generation and editing, and Agent Canvas (canvas hosting and image return), plus a unified connector pricing panel. Covers Taobao, Tmall, JD, Pinduoduo, Douyin, 1688, Xiaohongshu, TikTok, Amazon, Shopify, Temu, OZON, Shopee, Alibaba.com with credit quoting, generation tracking, and indexed partial revisions.",
+      "description": "Picset AI Commerce Design provides four independent capabilities, including product style replication from a style reference: ecommerce image suites (main, detail, listing, and A+ content images), single image text-to-image/image-to-image generation and editing, and Agent Canvas (canvas hosting and image return), plus a unified connector pricing panel. Covers Taobao, Tmall, JD, Pinduoduo, Douyin, 1688, Xiaohongshu, TikTok, Amazon, Shopify, Temu, OZON, Shopee, Alibaba.com with credit quoting, generation tracking, and indexed partial revisions.",
+      "description_zh": "Picset AI 电商设计：面向电商卖家、设计师和美工，提供四条独立功能线——电商套图（主图/详情图/套图/Listing/A+，含一张也走套图）、单图文生图/图生图（独立创意单图与图片编辑）、风格复刻（参考风格与商品图，含复刻电商主图）、Agent Canvas（画布承接与图片返回），以及连接器统一充值面板。覆盖淘宝、天猫、京东、拼多多、抖音、1688、小红书、TikTok、Amazon、Shopify、Temu、OZON、Shopee、阿里巴巴国际站等主流平台，支持方案规划、积分报价、生成跟踪和按编号局部修改。",
+      "description_en": "Picset AI Commerce Design provides four independent capabilities, including product style replication from a style reference: ecommerce image suites (main, detail, listing, and A+ content images), single image text-to-image/image-to-image generation and editing, and Agent Canvas (canvas hosting and image return), plus a unified connector pricing panel. Covers Taobao, Tmall, JD, Pinduoduo, Douyin, 1688, Xiaohongshu, TikTok, Amazon, Shopify, Temu, OZON, Shopee, Alibaba.com with credit quoting, generation tracking, and indexed partial revisions.",
       "source": "picset-commerce-images",
       "type": "mcp",
       "auth_mode": "token",
@@ -2221,6 +2226,7 @@
         "selfhosted"
       ],
       "examples_zh": [
+        "按这张风格参考图复刻一张淘宝主图，商品换成我的",
         "用我上传的商品图生成一套淘宝主图和详情图",
         "生成 5 张 Amazon 主图",
         "把 D3 背景改成现代极简厨房，其他图片不要动",
@@ -2228,6 +2234,7 @@
         "打开画布查看刚才生成的商品图并进行微调"
       ],
       "examples_en": [
+        "Recreate a Taobao main image using this style reference and my product photos",
         "Generate a coordinated set of main and detail images for my uploaded product on Taobao",
         "Generate five Amazon main images",
         "Change only D3 to a modern minimalist kitchen background",
@@ -2239,9 +2246,9 @@
       "id": "picset-video-generation",
       "name": "Picset AI 视频创作",
       "name_en": "Picset AI Video Generation",
-      "description": "Picset AI 视频创作连接器支持在 WorkBuddy 中通过密钥调用电商商品视频生成、爆款视频复刻和模特图生成能力，完成素材上传登记、脚本规划、视频脚本生成、积分预估、确认提交、异步生成和任务状态查询。MVP 支持 Seedance 2.0、Seedance 2.0 Fast、Seedance 2.0 Mini 三个模型，默认使用 Seedance 2.0。",
-      "description_zh": "Picset AI 视频创作连接器支持在 WorkBuddy 中通过密钥调用电商商品视频生成、爆款视频复刻和模特图生成能力，完成素材上传登记、脚本规划、视频脚本生成、积分预估、确认提交、异步生成和任务状态查询。MVP 支持 Seedance 2.0、Seedance 2.0 Fast、Seedance 2.0 Mini 三个模型，默认使用 Seedance 2.0。",
-      "description_en": "Picset AI video creation connector for ecommerce product video generation, viral video recreation, and model image generation in WorkBuddy, with asset upload registration, script planning, credit estimates, explicit confirmation, asynchronous generation, and task status tools. The MVP supports Seedance 2.0, Seedance 2.0 Fast, and Seedance 2.0 Mini models, with Seedance 2.0 as the default.",
+      "description": "用于 Picset AI 视频创作和独立人物三视图生成，包括商品带货视频生成、爆款视频复刻、有人物参考图或无人物参考图的正面/侧面/背面三视图生成。支持 UGC 种草、产品口播、带货短剧、产品演示、开箱种草、痛点解决、TVC 品牌广告等类型，并支持有声或静音视频、参考音频、固定模特和多条视频生成。该 Skill 会路由到生成视频、复刻视频或人物三视图子 Skill，根据用户提供的商品图、唯一主目标视频、人物素材和创作要求，完成用户确认、素材准备、异步生成、状态恢复与结果交付。",
+      "description_zh": "用于 Picset AI 视频创作和独立人物三视图生成，包括商品带货视频生成、爆款视频复刻、有人物参考图或无人物参考图的正面/侧面/背面三视图生成。支持 UGC 种草、产品口播、带货短剧、产品演示、开箱种草、痛点解决、TVC 品牌广告等类型，并支持有声或静音视频、参考音频、固定模特和多条视频生成。该 Skill 会路由到生成视频、复刻视频或人物三视图子 Skill，根据用户提供的商品图、唯一主目标视频、人物素材和创作要求，完成用户确认、素材准备、异步生成、状态恢复与结果交付。",
+      "description_en": "Route Picset AI ecommerce video creation requests across product video generation, viral video recreation, and model image generation while preserving shared context.",
       "source": "picset-video-generation",
       "type": "mcp",
       "auth_mode": "token",
@@ -3547,17 +3554,18 @@
       "id": "camscanner-mcp",
       "name": "扫描全能王",
       "name_en": "CamScanner",
-      "description": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, cloud document saving, search, download, move, and folder management.",
-      "description_zh": "智能文档转换与处理平台。支持图片/PDF格式转换（Word、Excel、Markdown、PDF）、图片增强（去阴影、锐化、高清化、老照片修复）、OCR文字识别、图片翻译、公式提取、水印处理、多图合并、文档云端保存、云文档搜索/下载/移动/文件夹管理等。",
-      "description_en": "Smart document conversion and processing platform. Supports image/PDF format conversion (Word, Excel, Markdown, PDF), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, cloud document saving, search, download, move, and folder management.",
+      "description": "Smart document conversion and processing platform. Supports image/PDF conversion to Word, Excel and Markdown, images to PDF, Word/Excel/PPT to PDF, Office format upgrades (DOC to DOCX), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, and cloud document saving, search, download, move and folder management.",
+      "description_zh": "智能文档转换与处理平台。支持图片/PDF转Word、Excel、Markdown，图片转PDF，Word/Excel/PPT转PDF，Office文档格式升级（DOC→DOCX等），图片增强（去阴影、锐化、高清化、老照片修复），OCR文字识别、图片翻译、公式提取、水印处理、多图合并，以及云文档保存/搜索/下载/移动/文件夹管理等。",
+      "description_en": "Smart document conversion and processing platform. Supports image/PDF conversion to Word, Excel and Markdown, images to PDF, Word/Excel/PPT to PDF, Office format upgrades (DOC to DOCX), image enhancement (shadow removal, sharpening, HD upscaling, photo restoration), OCR, image translation, formula extraction, watermark processing, multi-image merging, and cloud document saving, search, download, move and folder management.",
       "source": "camscanner-mcp",
       "type": "mcp",
       "examples_zh": [
         "帮我把这张图片转成Word",
         "把这个PDF转成Excel",
         "帮我增强一下这张照片",
-        "把这几张扫描件合并成一个PDF",
-        "帮我识别这张发票",
+        "识别这张图片上的文字",
+        "翻译图片中的英文",
+        "帮我把这个Word文档转成PDF",
         "下载我最近的云文档到本地",
         "把这个文档移动到工作文件夹",
         "列出我的云端文件夹"
@@ -3565,9 +3573,10 @@
       "examples_en": [
         "Convert this image to Word",
         "Convert this PDF to Excel",
-        "Enhance this photo",
-        "Merge these scanned pages into a PDF",
-        "Recognize this receipt",
+        "Enhance this photo and make it HD",
+        "Extract text from this image with OCR",
+        "Translate the text in this image",
+        "Convert this Word document to PDF",
         "Download my recent cloud document",
         "Move this document to a work folder",
         "List my cloud folders"
@@ -6525,7 +6534,7 @@
       "description_en": "Query social insurance and housing fund contribution bases, rates, deadlines, minimum wages, average wages and maternity leave across China; search policy sources and read policy analysis reports with supporting links.",
       "source": "51shebao-hr-tools",
       "type": "mcp",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
         "北京2026年社保缴费基数上下限是多少？",
@@ -6625,17 +6634,21 @@
       "description_en": "Use WorkRally MCP for series preproduction, batch image generation, canvas organization, subtitle burn-in, and delivery QC.",
       "source": "workrally1",
       "type": "mcp",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "minWorkbuddyVersion": "4.24.0",
       "examples_zh": [
-        "把《XX》剧本做成短番：分镜 → 资产 → 视频 → 成片",
-        "给这批分镜批量出图，统一风格",
-        "帮我整理这个无限画布，按类型分画板"
+        "我有一个剧本，我要生成一个 XX 分钟的漫剧",
+        "给我想一个 2 分钟的剧集故事",
+        "我有一个产品，想做一个叙事的短片",
+        "我想做一个 3D 国漫的漫剧",
+        "我有一张图片，用这个风格做成一个 XX 分钟短片"
       ],
       "examples_en": [
-        "Turn this script into a short drama: storyboard, assets, video, final cut",
-        "Batch-generate these storyboard frames in one consistent style",
-        "Organize this infinite canvas into boards by asset type"
+        "I have a script and want to turn it into an XX-minute comic drama",
+        "Come up with a 2-minute episode story for me",
+        "I have a product and want a narrative short film",
+        "I want to make a 3D Chinese-animation comic drama",
+        "I have an image — use this style to make an XX-minute short film"
       ]
     },
     {
@@ -8008,6 +8021,404 @@
         "Review my recent customer conversations and summarize follow-up items.",
         "Look up this customer and identify any incomplete data sources.",
         "List recent work orders and check the status of a selected order."
+      ]
+    },
+    {
+      "id": "youzan-workbuddy",
+      "name": "有赞",
+      "name_en": "Youzan",
+      "description": "通过 MCP 查询有赞店铺商品、订单、会员、营销、供应链、流量等 16 个业务域数据，支持订单、会员等原始数据导出，全部能力只读。",
+      "description_zh": "通过 MCP 查询有赞店铺商品、订单、会员、营销、供应链、流量等 16 个业务域数据，支持订单、会员等原始数据导出，全部能力只读。",
+      "description_en": "Query Youzan store data across 16 business domains including products, orders, members, marketing, supply chain, and traffic via MCP, with read-only access and supported raw data exports.",
+      "source": "youzan-workbuddy",
+      "type": "mcp",
+      "examples_zh": [
+        "查询当前店铺在售商品",
+        "查询当前店铺今日订单数据",
+        "查询指定会员的等级和积分记录",
+        "查询当前店铺正在生效的营销活动"
+      ],
+      "examples_en": [
+        "Check the current store's listed products",
+        "Query today's order data for the current store",
+        "Check a member's level and points history",
+        "List active marketing campaigns for the current store"
+      ]
+    },
+    {
+      "id": "yixiaoke",
+      "name": "翼小客",
+      "name_zh": "翼小客",
+      "name_en": "YiXiaoKe",
+      "description": "Look up customers, opportunities and orders, write follow-ups, handle approvals and to-dos, review call/SMS/WeChat records, manage devices, and view risk-control statistics in natural language.",
+      "description_zh": "用自然语言查客户、商机、订单，写跟进、处理待办审批，查通话/短信/微信记录，管设备工牌，看风控统计，打通销售全链路。",
+      "description_en": "Look up customers, opportunities and orders, write follow-ups, handle approvals and to-dos, review call/SMS/WeChat records, manage devices, and view risk-control statistics in natural language.",
+      "source": "yixiaoke",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "把我名下超过 30 天没跟进的客户列出来",
+        "查一下客户 XX 科技有限公司的跟进记录和关联商机",
+        "帮我给客户张三写一条今天的拜访跟进",
+        "看看我今天的待办审批有哪些",
+        "统计本月销售团队的通话量和敏感词触发情况"
+      ],
+      "examples_en": [
+        "List my customers that have not been followed up for over 30 days",
+        "Show the follow-up records and related opportunities for customer XX Technology Co., Ltd.",
+        "Write today's visit follow-up for customer Zhang San",
+        "Show my pending approvals and to-dos for today",
+        "Summarize this month's call volume and sensitive-word triggers for the sales team"
+      ]
+    },
+    {
+      "id": "sesunfox-gateway",
+      "name": "聚宝赞",
+      "name_zh": "聚宝赞",
+      "name_en": "Jubaozan",
+      "description": "通过自然语言查询聚宝赞的订单、商品、门店、优惠券、退款单、直播间和云仓库存数据。",
+      "description_zh": "通过自然语言查询聚宝赞的订单、商品、门店、优惠券、退款单、直播间和云仓库存数据。",
+      "description_en": "Query Jubaozan orders, products, stores, coupons, refunds, live rooms and warehouse inventory with natural language.",
+      "source": "sesunfox-gateway",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查一下昨天的聚宝赞订单，按下单时间倒序",
+        "搜商品名包含「羊毛衫」的商品，看看价格",
+        "最近有哪些退款单，状态分别是什么",
+        "列一下我们的门店",
+        "查一下云仓 WH-CENTER-00000003 的库存"
+      ],
+      "examples_en": [
+        "Show yesterday's Jubaozan orders, newest first",
+        "Search products named \"sweater\" and list their prices",
+        "List recent refunds and their status",
+        "List our stores",
+        "Check warehouse inventory for WH-CENTER-00000003"
+      ],
+      "visible_in": [
+        "internal",
+        "iOA",
+        "cloudhosted",
+        "selfhosted"
+      ]
+    },
+    {
+      "id": "leads-cloud-crm",
+      "name": "询盘云CRM",
+      "name_zh": "询盘云CRM",
+      "name_en": "Leads Cloud CRM",
+      "description": "Query LeadsCloud CRM records, follow-ups, touchpoints, and WhatsApp via MCP.",
+      "description_zh": "通过 MCP 查询线索、客户、联系人、商机、订单、跟进、触点画像与 WhatsApp 会话。",
+      "description_en": "Query LeadsCloud CRM records, follow-ups, touchpoints, and WhatsApp via MCP.",
+      "source": "leads-cloud-crm",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "查询最近创建的公海线索",
+        "找出名为 Acme 的客户",
+        "查看这个商机的跟进时间线",
+        "汇总某个成员的 WhatsApp 会话"
+      ],
+      "examples_en": [
+        "Show the most recently created public-pool leads",
+        "Find the customer named Acme",
+        "Show this opportunity's follow-up timeline",
+        "Summarize WhatsApp conversations for a member"
+      ]
+    },
+    {
+      "id": "yunzhi-campus",
+      "name": "云之校园号",
+      "name_zh": "云之校园号",
+      "name_en": "Yunzhi Campus",
+      "description": "Query the signed-in campus teacher's own leave records, including dates, types, reasons and approval status, and check the leave workflows available at their school.",
+      "description_zh": "查询校园号教师本人的请假记录，包括请假时间、类型、原因、审批状态与当前审批节点，并查看所在学校可用的请假流程。",
+      "description_en": "Query the signed-in campus teacher's own leave records, including dates, types, reasons and approval status, and check the leave workflows available at their school.",
+      "source": "yunzhi-campus",
+      "type": "mcp",
+      "auth_mode": "oauth",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询我本月的请假记录",
+        "查一下我上个月的病假记录",
+        "查看我审批中的请假",
+        "我今年一共有哪些请假记录",
+        "查看我可以使用的请假流程"
+      ],
+      "examples_en": [
+        "List my leave records for this month",
+        "Show my sick leave records from last month",
+        "Show my leave requests that are under review",
+        "List my leave records for this year",
+        "Check my available leave workflows"
+      ]
+    },
+    {
+      "id": "erhao-hr",
+      "name": "二号人事部",
+      "name_en": "Erhao HR",
+      "description": "Query Erhao HR data across HR records, organization, attendance and payroll with natural language: employee roster/transfers/contracts, org structure and distribution, attendance/leave/overtime, and payroll/cost/tax analysis.",
+      "description_zh": "通过自然语言查询人事、组织、考勤与薪酬四域数据：员工花名册/异动/合同、组织架构与维度分布、考勤/假期/加班、薪资核算/成本/个税，为人力分析提供数据支撑。",
+      "description_en": "Query Erhao HR data across HR records, organization, attendance and payroll with natural language: employee roster/transfers/contracts, org structure and distribution, attendance/leave/overtime, and payroll/cost/tax analysis.",
+      "source": "erhao-hr",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "0.1.9",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查一下公司各部门有多少人，按职级分布",
+        "列出本月离职的员工，并统计各部门离职人数",
+        "上月整体出勤率是多少，迟到早退最多的部门是哪个",
+        "查一下本月的请假明细，按假期类型汇总天数",
+        "上月各部门的实发工资总额和人均成本是多少",
+        "帮我看下研发部的岗位和职务设置，以及各岗位的在职人数",
+        "统计本季度各部门的加班时长，按工作日、休息日、节假日区分",
+        "查一下员工的合同签订情况，有哪些人还没签合同",
+        "查询上个季度的个税明细，按纳税单位分组",
+        "近六个月各部门的入职和转正人数分别是多少"
+      ],
+      "examples_en": [
+        "How many people are in each department, by level?",
+        "List employees who left this month and count leavers per department",
+        "What was last month's overall attendance rate, and which department had the most lateness?",
+        "Show this month's leave records grouped by leave type in days",
+        "What were last month's total net pay and average cost per employee by department?",
+        "Show me the job positions and job titles of the R&D department, with headcount per position",
+        "Total overtime hours by department this quarter, split by weekday, weekend and holiday",
+        "Check contract status — who has not signed a contract yet?",
+        "Query last quarter's tax records grouped by tax unit",
+        "How many people joined and how many completed probation in each department in the last six months?"
+      ]
+    },
+    {
+      "id": "xuanpian-schedule",
+      "name": "选片PRO云档期",
+      "name_en": "XuanPian PRO Cloud Schedule",
+      "description": "Connect to the XuanPian PRO photo-studio scheduling system to check shooting schedules with natural language: monthly availability summary per day, time-slot details for a specific date, and account binding via bind code.",
+      "description_zh": "连接影楼选片系统，通过自然语言查询拍摄档期：支持整月每日可约汇总、单日各时间段档位明细，并支持使用绑定码绑定选片系统账号。",
+      "description_en": "Connect to the XuanPian PRO photo-studio scheduling system to check shooting schedules with natural language: monthly availability summary per day, time-slot details for a specific date, and account binding via bind code.",
+      "source": "xuanpian-schedule",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "帮我看看9月哪些天还能约拍摄",
+        "查一下10月15号还有几个可约的档期",
+        "这个月哪天拍摄档期最空",
+        "我的绑定码是123456，帮我绑定选片系统账号"
+      ],
+      "examples_en": [
+        "Which days in September are still available for photo shooting?",
+        "How many open slots are left on October 15?",
+        "Which day this month has the fewest bookings?",
+        "Bind my photo studio account with code 123456"
+      ]
+    },
+    {
+      "id": "uptgai-manager",
+      "name": "优品・AI投顾工作台",
+      "name_zh": "优品・AI投顾工作台",
+      "name_en": "UPTG AI Advisor Workbench",
+      "description": "Connect to the UPTG AI investment advisory workbench to query recommended stocks and advisory strategies, track watchlists and positions, and support stock screening, review and client service.",
+      "description_zh": "连接优品・AI投顾工作台，查询推荐股票与投顾策略，跟踪自选股与持仓表现，辅助完成选股、复盘和客户服务。",
+      "description_en": "Connect to the UPTG AI investment advisory workbench to query recommended stocks and advisory strategies, track watchlists and positions, and support stock screening, review and client service.",
+      "source": "uptgai-manager",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "查看今天推荐的股票",
+        "查询这只股票的推荐理由和最新观点",
+        "看看我自选股票里最近表现最好的几只",
+        "帮我整理一份给客户的投资参考摘要"
+      ],
+      "examples_en": [
+        "Show today's recommended stocks",
+        "Explain why this stock is recommended and the latest view on it",
+        "Show the best performing stocks in my watchlist recently",
+        "Draft an investment reference summary for my client"
+      ]
+    },
+    {
+      "id": "realtrace",
+      "name": "RealTrace 电商与社媒数据",
+      "name_zh": "RealTrace 电商与社媒数据",
+      "name_en": "RealTrace Commerce & Social Data",
+      "description": "Search and analyze products, reviews, posts, comments, creators, and trends across major global commerce and social platforms.",
+      "description_zh": "查询与分析全球主流电商和社媒平台的商品、评论、内容、创作者与趋势数据。",
+      "description_en": "Search and analyze products, reviews, posts, comments, creators, and trends across major global commerce and social platforms.",
+      "source": "realtrace",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.1",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询 Amazon 美国站上 MacBook Air M4 的商品详情和前 20 条评论，总结主要优缺点",
+        "搜索 TikTok 上关于家用储能的热门视频，并整理用户最关注的话题",
+        "比较 Walmart 和 Target 上同类无线耳机的价格、评分和评论反馈",
+        "查找 YouTube 上某个品牌近期的视频，并分析评论中的消费者观点",
+        "采集某个 Amazon 商品的 500 条评论，并持续汇报采集任务进度"
+      ],
+      "examples_en": [
+        "Find the product details and first 20 Amazon US reviews for MacBook Air M4, then summarize the main pros and cons",
+        "Search TikTok for popular home energy storage videos and organize the topics users care about most",
+        "Compare prices, ratings, and review feedback for similar wireless earbuds on Walmart and Target",
+        "Find a brand's recent YouTube videos and analyze consumer opinions in the comments",
+        "Collect 500 reviews for an Amazon product and keep reporting the collection progress"
+      ]
+    },
+    {
+      "id": "yunjing-crm-analytics",
+      "name": "云净透析中心CRM与经营管理系统",
+      "name_zh": "云净透析中心CRM与经营管理系统",
+      "name_en": "Yunjing CRM Analytics",
+      "description": "Query masked, read-only business and patient-operations analytics within your CRM permissions.",
+      "description_zh": "在当前 CRM 权限范围内查询脱敏的经营、患者、客户、工单及中心运营汇总数据。",
+      "description_en": "Query masked, read-only business and patient-operations analytics within your CRM permissions.",
+      "source": "yunjing-crm-analytics",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "0.1.0",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询本月经营总览",
+        "分析近 12 个月新增患者趋势",
+        "汇总本月患者跟进待办、完成和逾期情况",
+        "汇总本月工单状态和逾期处理情况",
+        "查询新客户、老客户和公海客户分布"
+      ],
+      "examples_en": [
+        "Show this month's business overview",
+        "Analyze the new-patient trend for the last 12 months",
+        "Summarize this month's follow-up to-dos, completions, and overdue items",
+        "Summarize this month's work order status and overdue handling",
+        "Show the distribution of new, existing, and public-pool customers"
+      ]
+    },
+    {
+      "id": "duoguan-ge",
+      "name": "夺冠 GEO",
+      "name_zh": "夺冠 GEO",
+      "name_en": "Duoguan GEO",
+      "description": "Query and manage GEO analytics, content, publishing, websites, keywords, and tenant data with natural language.",
+      "description_zh": "通过自然语言查询和管理 GEO 总览、内容、发布、网站、关键词及租户相关数据。",
+      "description_en": "Query and manage GEO analytics, content, publishing, websites, keywords, and tenant data with natural language.",
+      "source": "duoguan-ge",
+      "type": "mcp",
+      "version": "0.1.0",
+      "examples_zh": [
+        "查询最近 7 天的 GEO 总览",
+        "列出当前租户的关键词",
+        "查询最近的内容发布记录"
+      ],
+      "examples_en": [
+        "Query the GEO overview for the last 7 days",
+        "List keywords for the current tenant",
+        "Query recent content publishing records"
+      ]
+    },
+    {
+      "id": "duoguan-course",
+      "name": "创意兔微课",
+      "name_en": "Creative Rabbit Micro-Course",
+      "description": "Connect to Creative Rabbit Micro-Course to turn your target audience, customer pain points, offer, and unique strengths into a complete course plan, presentation, narration scripts, and publish-ready micro-course for knowledge-based lead generation, private-domain marketing, and corporate training.",
+      "description_zh": "对接创意兔微课平台，输入目标人群、客户痛点、转化产品与自身优势，自动完成课程策划、PPT 制作、口播稿撰写，一键制作微课并发布上线，适用于知识获客、私域营销、企业内训等场景。",
+      "description_en": "Connect to Creative Rabbit Micro-Course to turn your target audience, customer pain points, offer, and unique strengths into a complete course plan, presentation, narration scripts, and publish-ready micro-course for knowledge-based lead generation, private-domain marketing, and corporate training.",
+      "source": "duoguan-course",
+      "type": "mcp",
+      "auth_mode": "token",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "用这个 PPT 做一门微课",
+        "看看刚才的课程做好了吗",
+        "预览视频后发布这门课程"
+      ],
+      "examples_en": [
+        "Create a course from this PPT",
+        "Check my course progress",
+        "Publish this course after preview"
+      ]
+    },
+    {
+      "id": "xiaoliebian-scrm",
+      "name": "小裂变 SCRM",
+      "name_en": "Xiaoliebian SCRM Assistant",
+      "description": "Query and manage Xiaoliebian SCRM customers, staff, chats, campaigns, and operational data using natural language.",
+      "description_zh": "小裂变SCRM连接器，帮你查询企业微信中的私域客户、客户群数据，制定朋友圈发布任务、群发触达任务，自动统计员工聊天排行榜，总结员工和客户聊天内容，小裂变SCRM&WorkBuddy帮你做好企业微信私域运营",
+      "description_en": "Query and manage Xiaoliebian SCRM customers, staff, chats, campaigns, and operational data using natural language.",
+      "source": "xiaoliebian-scrm",
+      "type": "mcp",
+      "minWorkbuddyVersion": "4.24.0",
+      "examples_zh": [
+        "查询本周新增私域客户数，并按员工汇总",
+        "查看昨天企微群发任务的发送结果和失败原因",
+        "分析指定日期范围内的员工和客户聊天数据"
+      ],
+      "examples_en": [
+        "Show this week's new customer count grouped by staff",
+        "Check yesterday's group messaging results and failure reasons",
+        "Analyze staff group-chat data for a date range"
+      ]
+    },
+    {
+      "id": "chainlon-geo-mcp",
+      "name": "链龙 GEO 可见度检测",
+      "name_zh": "链龙 GEO 可见度检测",
+      "name_en": "Chainlon GEO Visibility",
+      "description": "Check whether a brand is visible in AI search, generate keyword matrices, and run GEO diagnostics with actionable advice. Results come from real retrieval sources, and it honestly reports degraded mode instead of fabricating scores.",
+      "description_zh": "查询品牌在 AI 搜索里是否被提到、生成关键词矩阵、输出 GEO 综合诊断与行动建议；数据来自真实检索，未配置数据源时如实提示降级，绝不编造分数与排名。",
+      "description_en": "Check whether a brand is visible in AI search, generate keyword matrices, and run GEO diagnostics with actionable advice. Results come from real retrieval sources, and it honestly reports degraded mode instead of fabricating scores.",
+      "source": "chainlon-geo-mcp",
+      "type": "mcp",
+      "version": "1.0.0",
+      "examples_zh": [
+        "查一下某某造型在 AI 搜索里的可见度",
+        "帮我生成一份杭州美发的关键词矩阵",
+        "给某某造型做个 GEO 综合诊断，行业美发，城市北京",
+        "我们品牌在豆包和 DeepSeek 里能被搜到吗"
+      ],
+      "examples_en": [
+        "Check whether a brand is visible in AI search",
+        "Generate a keyword matrix for the hair salon industry in Hangzhou",
+        "Run a full GEO diagnosis for a brand in the hair salon industry in Beijing",
+        "Can our brand be found in Doubao and DeepSeek?"
+      ]
+    },
+    {
+      "id": "lawyerone",
+      "name": "法保·全栈法律智能服务",
+      "name_zh": "法保·全栈法律智能服务",
+      "name_en": "LawyerOne",
+      "description": "Fabao LawyerOne delivers a full-stack legal AI service: search 2M+ regulations and 160M+ court rulings, get legal consultation, review and generate contracts, draft single-party legal documents, predict judgment outcomes and desensitize documents.",
+      "description_zh": "一站式垂类法律 AI 能力服务，支持法规检索、案例检索、合同智能审查、合同/单方文书生成、智能法律咨询、裁判结果预测、文件脱敏，实现法律文书处理、法律资料检索等全链路智能化。",
+      "description_en": "Fabao LawyerOne delivers a full-stack legal AI service: search 2M+ regulations and 160M+ court rulings, get legal consultation, review and generate contracts, draft single-party legal documents, predict judgment outcomes and desensitize documents.",
+      "source": "lawyerone",
+      "type": "mcp",
+      "auth_mode": "token",
+      "version": "1.0.0",
+      "minWorkbuddyVersion": "4.23.0",
+      "examples_zh": [
+        "公司以严重违反规章制度为由开除我，帮我找找类似的判决",
+        "民法典合同编对违约责任是怎么规定的",
+        "朋友借钱10万元不还，我起诉的话胜诉概率多大，大概能判多少",
+        "帮我生成一份房屋租赁合同",
+        "帮我看下这份合同的风险，我是乙方",
+        "帮我起草一份催款函",
+        "帮忙脱敏一下这份文件，把个人敏感信息去掉"
+      ],
+      "examples_en": [
+        "Company fired me for alleged policy violation, find similar court rulings",
+        "How does the Civil Code define liability for breach of contract?",
+        "My friend owes me 100k RMB, what are my chances if I sue?",
+        "Generate a residential lease agreement for me",
+        "Review this contract for risks, I am Party B",
+        "Draft a payment demand letter for me",
+        "Desensitize this document and mask the personal information"
       ]
     }
   ]

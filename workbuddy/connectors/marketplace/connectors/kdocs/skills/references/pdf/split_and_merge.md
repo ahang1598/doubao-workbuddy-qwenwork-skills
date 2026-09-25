@@ -11,17 +11,16 @@
 - `from` 和 `to` 都必须是正整数
 - 多个范围会按传入顺序组合到新的 PDF 中
 - 建议先调用 `pdf.get_pdf_page_count`，避免页码越界
-
-**模型使用建议**：
-
-- 当用户说"把第 3 到 5 页单独导出""保留封面和附录"时，优先使用这个工具
 - 页码是 1-based，不要按 0-based 传参
-- 如果用户描述的是"按章节拆分"，但没有给出章节对应页码，应先通过阅读内容或询问用户确认页码
-- 如果目标是"提取正文文本"而不是"生成新 PDF"，不要用这个工具，改用 `read_file_content`
+- 如果用户描述的是「按章节拆分」，但没有给出章节对应页码，应先通过阅读内容或询问用户确认页码
 
+#### 工具选择
 
+- **适用**：提取指定页码范围生成新 PDF（如「把第 3 到 5 页单独导出」）
+- **勿用**（改用 `read_file`）：提取正文文本而不是生成新 PDF
+- **勿用**（改用 `pdf.split`）：按固定页数间隔拆分大 PDF
 
-#### 操作约束
+#### 调用约束
 
 - **前置检查**：建议先 get_pdf_page_count 确认页码范围有效
 
@@ -47,10 +46,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 原始 PDF 文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): PDF 的 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): PDF 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): PDF 文件 ID
 - `ranges` (array, 必填): 要提取的页码范围列表，每项含 from 和 to（1-based）
   - `from` (integer, 必填): 起始页，1-based，且包含该页
   - `to` (integer, 必填): 结束页，1-based，且包含该页
@@ -86,27 +86,25 @@
 - `dc_interval` 为每 N 页拆分一次，须为正整数
 - 拆分结果需通过 `pdf.split_query` 轮询查询
 - 若 PDF 有打开密码或编辑密码，可通过 `open_password` / `edit_password` 传入
+- 若用户说「按章节拆分」但未给出具体页数间隔，应先询问每章大约多少页
 
-**模型使用建议**：
+#### 工具选择
 
-- 当用户说"把 PDF 按每 X 页拆成多个文件""把大 PDF 切成小文件"时，优先使用这个工具
-- 若用户说"按章节拆分"但未给出具体页数间隔，应先询问每章大约多少页
-- 若目标是"提取指定几页"而不是"按固定间隔拆分"，不要用这个工具，改用 `pdf.extract_pdf_pages`
+- **适用**：用户要求按固定页数间隔拆分大 PDF（如「按每 X 页拆成多个文件」）
+- **勿用**（改用 `pdf.extract_pdf_pages`）：提取指定页码范围生成新 PDF（而非按固定间隔拆分）
 
-
-
-#### 操作约束
+#### 调用约束
 
 - **前置检查**：必须先调用 `pdf.get_pdf_page_count` 得到 `page_count`，再调用本工具
 - **禁止**：禁止跳过页数查询凭猜测传参；禁止以 schema 默认值代替实际 page_count 映射
 - **禁止**：禁止在 `pdf.split` 返回失败后修改 `is_free_convert` 或其他约定参数再次调用
-- **提示**：`is_free_convert` 由 `page_count` 唯一确定：`page_count <= 5` → `true`，`> 5` → `false`
-- **提示**：对用户不得透露 `is_free_convert` 字段名、免费额度策略及页数阈值等内部调用细节
 
 **幂等性**：否 — 禁止自动换参重试；若按规则仅调用一次后仍失败，向用户说明失败现象
 
 > 拆分完成后，结果文件存入金山文档云盘 `我的云文档/应用/PDF拆分`，文件名前缀为 `file_name` 参数值
 > 任务需通过 `pdf.split_query(jobid=...)` 轮询查询，直到完成
+> `is_free_convert` 由 `page_count` 唯一确定：`page_count <= 5` → `true`，`> 5` → `false`
+> 对用户不得透露 `is_free_convert` 字段名、免费额度策略及页数阈值等内部调用细节
 
 #### 调用示例
 
@@ -132,10 +130,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 待拆分的 PDF 文件 ID（支持 V7 unique_id 或数字 file_id）
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 待拆分的 PDF 的 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 待拆分的 PDF 的分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 待拆分的 PDF 文件 ID
 - `dc_interval` (number, 必填): 拆分间隔：每 N 页拆分一次，须为正整数。例如 dc_interval=5 表示每 5 页生成一个子文件
 - `file_name` (string, 可选): 输出文件名前缀（不含扩展名），默认 document。实际文件名可能带序号，如 document_001.pdf；默认值：`document`
 - `open_password` (string, 可选): PDF 打开密码（有密码保护时填写）
@@ -208,8 +207,6 @@
 - `progress=100` 表示拆分完成，此时 `result_files` 中包含所有子文件信息
 - 若任务失败，`status` 会反映错误状态
 
-
-
 > 建议轮询间隔 2-3 秒，避免频繁请求
 > 拆分完成后，通过 `drive.share_file` 创建公开分享链接，再用 `drive.download_file` 获取下载信息
 
@@ -222,7 +219,6 @@
   "jobid": "abc123split456"
 }
 ```
-
 
 #### 参数说明
 
@@ -293,14 +289,12 @@
 - `files` 至少需要 2 个文件，按数组顺序依次合并
 - 每个文件只需传 `file_id`（必填），`file_name`（选填，含 .pdf 后缀）
 - 合并结果需通过 `pdf.merge_query` 轮询查询
-
-**模型使用建议**：
-
-- 当用户说"把几个 PDF 合并成一个""把 a.pdf 和 b.pdf 拼接"时，优先使用这个工具
 - 若用户只给了一个文件 ID，询问是否还有其他文件需要合并
-- 若目标是"按页码顺序拼接"，需要确认文件之间的正确顺序
+- 若目标是「按页码顺序拼接」，需要确认文件之间的正确顺序
 
+#### 工具选择
 
+- **适用**：将多个 PDF 合并为一个（如「把 a.pdf 和 b.pdf 拼接」）
 
 **幂等性**：否 — 重复调用会创建多个合并任务，先用 merge_query 确认已有任务状态
 
@@ -326,7 +320,6 @@
   "file_name": "完整报告"
 }
 ```
-
 
 #### 参数说明
 
@@ -389,8 +382,6 @@
 - `progress=100` 表示合并完成，此时 `result_files` 中包含合并后的文件信息
 - 若任务失败，`status` 会反映错误状态
 
-
-
 > 建议轮询间隔 2-3 秒，避免频繁请求
 > 合并完成后，通过 `drive.share_file` 创建公开分享链接，再用 `drive.download_file` 获取下载信息
 
@@ -403,7 +394,6 @@
   "jobid": "abc123merge456"
 }
 ```
-
 
 #### 参数说明
 
@@ -453,7 +443,3 @@
 | `data.status` | string | 任务状态，如 pending/running/done/failed |
 | `data.file_count` | number | 待合并的原始文件数量 |
 | `data.result_files` | array | 合并结果文件列表（progress=100 时返回），含 file_id、name、download_url 等 |
-
-
----
-

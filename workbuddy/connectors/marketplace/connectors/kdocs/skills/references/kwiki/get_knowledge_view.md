@@ -6,7 +6,6 @@
 
 根据 drive_id 或名称查询单个知识库的详细信息。drive_id 与 name 至少提供其一。
 
-
 > 如果用户同时给了名称和 ID，优先用 ID
 > 若名称匹配到多个知识库，需结合返回结果进一步确认目标知识库
 
@@ -28,7 +27,6 @@
   "name": "销售知识库"
 }
 ```
-
 
 #### 参数说明
 
@@ -74,7 +72,3 @@
 | `data.member_total` | number | 成员总数 |
 | `data.utime` | number | 最近更新时间（Unix 时间戳，秒） |
 | `data.owner` | object | 知识库所有者信息，含 id / name / avatar |
-
-
----
-

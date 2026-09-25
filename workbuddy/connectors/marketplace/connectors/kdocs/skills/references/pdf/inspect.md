@@ -12,8 +12,6 @@
 - 当用户已经明确给出可靠页数范围时，也可以直接调用后续工具
 - 这个工具只解决"页数确认"，不负责读取正文内容
 
-
-
 #### 调用示例
 
 查询 PDF 页数：
@@ -24,10 +22,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): PDF 文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): PDF 的 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): PDF 的分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): PDF 文件 ID
 
 #### 返回值说明
 
@@ -45,7 +44,3 @@
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `data.page_count` | integer | PDF 总页数 |
-
-
----
-

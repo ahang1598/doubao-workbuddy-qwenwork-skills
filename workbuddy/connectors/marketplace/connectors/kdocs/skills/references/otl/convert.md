@@ -6,7 +6,16 @@
 
 将 HTML、Markdown 等内容转换为智能文档块结构，适合在正式插入前先生成可复用的块内容。
 
+#### 工具选择
 
+- **适用**：配合 `otl.block_insert` 将外部 Markdown/HTML 转为块后再插入指定位置
+- **适用**：表格转块（`params.format=markdown` + 管道表）
+- **勿用**（改用 `otl.insert_content`）：仅需在文档末尾追加表格且无需指定块位置 — 一步 `format=markdown` + `mode=append` 即可；勿绕 convert+insert
+- **勿用**（改用 `otl.convert`）：params.content 含表格却拟用 format=html — 改 `params.format=markdown` 写管道表，或改 `otl.insert_content`
+
+#### 调用约束
+
+- **禁止**：表格内容禁止 `params.format=html`；须改为 `markdown` 管道表
 
 **幂等性**：是
 
@@ -29,7 +38,19 @@
 }
 ```
 
-将 HTML 内容转为块数据：
+将 Markdown 表格转为块数据：
+
+```json
+{
+  "file_id": "string",
+  "params": {
+    "format": "markdown",
+    "content": "## 数据\n\n| 列A | 列B |\n| --- | --- |\n| 1 | 2 |"
+  }
+}
+```
+
+将 HTML 段落转为块数据（非表格）：
 
 ```json
 {
@@ -41,13 +62,25 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 智能文档文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `params` (object, 必填): 转换参数对象
   - `format` (string, 必填): 源数据格式，支持 `"html"` 或 `"markdown"`
   - `content` (string, 必填): 待转换的源数据内容
+
+#### 表格内容
+
+**识别**：`params.content` 含 Markdown 管道表（`| col |` + `| --- |`），或 HTML `<table`。
+
+| 场景 | `params.format` |
+| :--- | :--- |
+| 表格 | **`markdown`**（管道表语法） |
+| 非表格富文本段落 | `html` 或 `markdown` |
+
+**禁止**：表格使用 `params.format=html`。全文末尾追加表格时优先 `otl.insert_content`（`format=markdown`），见 `otl/insert_content.md`。
 
 #### 返回值说明
 
@@ -61,7 +94,3 @@
 }
 
 ```
-
-
----
-

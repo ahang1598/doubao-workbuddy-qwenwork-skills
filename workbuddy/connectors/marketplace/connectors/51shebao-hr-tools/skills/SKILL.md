@@ -1,7 +1,7 @@
 ---
 name: 51shebao-hr-tools
 description: 51社保政策查询技能，用于查询中国城市社保与公积金的缴费基数、比例、办理截止日、最低工资、社平工资与产假天数，检索社保政策原文，并读取政策分析报告
-version: "1.0.0"
+version: "1.0.1"
 author: 51社保
 ---
 
@@ -22,11 +22,12 @@ This Skill only provides social insurance and housing fund policy queries, polic
 
 1. 用户问的是「某城市某年的缴费基数上下限、缴费比例、办理截止日、最低工资、社平工资、产假」等**参数型问题** → `query_policy_config_list` 查 `policy_id`，再 `query_policy_config` 取参数与政策依据。
 2. 用户问的是「某城市/省份某项社保政策的**原文规定**」（如“广东加班费怎么规定的”“上海生育津贴政策原文”）→ 直接用 `query_policy_notes` 按维度检索政策原文。
-3. 用户要求「整体了解一下 51社保政策库覆盖了哪些城市/主题」→ `query_policy_catalog` 看可检索范围（domains/topics/regions），再据此构造 `query_policy_notes` 检索条件。
-4. 用户问「最新的政策分析报告/宏观结论」→ `query_policy_report` 读正式政策分析报告（无参数）。
-5. 城市、年度、参保身份或政策事项会影响答案且用户没说清楚时，先向用户确认，不要自行猜测。
+3. 用户用**口语生活化说法**提问（如“离职后断缴了怎么办”“试用期要不要交社保”），或需要**追溯某条政策的依据链**、**读指定文件原文** → 用 `policy_kb_call`：先 `search_semantic` 传用户原话检索，命中后按 `path` 查 `wikilinks` 依据链、再 `note_read` 读原文。
+4. 用户要求「整体了解一下 51社保政策库覆盖了哪些城市/主题」→ `query_policy_catalog` 看可检索范围（domains/topics/regions），再据此构造 `query_policy_notes` 检索条件。
+5. 用户问「最新的政策分析报告/宏观结论」→ `query_policy_report` 读正式政策分析报告（无参数）。
+6. 城市、年度、参保身份或政策事项会影响答案且用户没说清楚时，先向用户确认，不要自行猜测。
 
-For parameter-type questions (limits, rates, deadlines, wages, leave days), use `query_policy_config_list` then `query_policy_config`. For policy-source retrieval (original legal text by region/domain/topic), use `query_policy_notes`, and optionally `query_policy_catalog` first to learn supported dimensions. Use `query_policy_report` to read the formal analysis report. Ask for missing city, year, identity, or topic details when they materially affect the answer.
+For parameter-type questions (limits, rates, deadlines, wages, leave days), use `query_policy_config_list` then `query_policy_config`. For policy-source retrieval (original legal text by region/domain/topic), use `query_policy_notes`, and optionally `query_policy_catalog` first to learn supported dimensions. For colloquial natural-language questions, evidence-chain tracing, or reading a specific document, use `policy_kb_call` (`search_semantic` → `wikilinks` → `note_read`). Use `query_policy_report` to read the formal analysis report. Ask for missing city, year, identity, or topic details when they materially affect the answer.
 
 ## 可用工具 / Available tools
 
@@ -37,14 +38,14 @@ For parameter-type questions (limits, rates, deadlines, wages, leave days), use 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|:----:|------|
 | regionName | string | ✅ | 城市名，如“北京”“成都”“上海” |
-| year | integer | - | 政策年度；当前支持 2025、2026，不传默认 2026 |
+| year | integer | - | 政策年度；不传取数据文件**最新年度**（随数据推进，如 2026/2027）。传未支持年度会报错并列出可用年度 |
 | identity | string | - | 参保身份或医保档位，如“深户-医疗一档”；不传返回全部身份档 |
 
 如果返回多个身份档位，应结合用户情况选择；无法判断时列出差异并询问用户。此工具不返回具体险种比例或截止日数值。
 
 ### query_policy_config - 获取政策参数和依据
 
-根据 `policy_id` 获取缴费基数、单位/个人比例、截止日、最低工资、社平工资、产假等参数以及政策证据。Returns policy parameters and supporting evidence for a selected `policy_id`.
+根据 `policy_id` 获取缴费基数、单位/个人比例、截止日、社平工资、**双轨口径**、产假、月最低工资与**非全日制最低小时工资**等参数以及政策证据。Returns policy parameters and supporting evidence for a selected `policy_id`.
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|:----:|------|
@@ -68,15 +69,47 @@ For parameter-type questions (limits, rates, deadlines, wages, leave days), use 
 | region_level | string | - | 层级：all / city / province / national，默认 all |
 | region | string | - | 城市名或省名（与 region_level 匹配；all 时匹配 city 或 province） |
 | domain | string | - | 政策分类精确匹配：薪酬 / 社保 / 用工 / 福利 |
-| topic | string[] | - | 事项数组（OR），如 `["调基", "公积金缴存"]`；取值见 query_policy_catalog.topics |
+| topic | string[] | - | 事项数组（OR），如 `["调基", "公积金缴存"]`；取值见 query_policy_catalog.topics。传未收录取值时工具直接报错并回显合法取值 |
 | status | string | - | 现行有效（默认）/ all（含已失效） |
 | asof | string | - | 日期 `YYYY-MM-DD`，按 [effective, expiry) 时间窗口判定现行（优先于 status） |
 | year | integer | - | 政策针对年度 |
-| query | string | - | 标题+正文子串（轻量全文检索） |
+| query | string | - | **精确短关键词**检索，词间空格分隔（AND），只做词面匹配；自然语言整句请改用 `policy_kb_call(search_semantic)` |
 | limit | integer | - | 返回条数上限，最大 50，默认 20 |
 | include_content | boolean | - | true 时附正文全文，默认 false |
 
-返回 JSON：`{count, not_found, hits[], upper_hits[]}`。单层无命中时 `upper_hits` 给出上层候选（city→省→national），`not_found=true` 表示“当前层级未收录但可向上层找依据”。回答“XX 政策原文怎么规定的”时优先用本工具。
+返回 JSON：`{count, not_found, hits[], upper_hits[], bm25_hits?}`。单层无命中时 `upper_hits` 给出上层候选（city→省→national），`not_found=true` 表示“当前层级未收录但可向上层找依据”；带 `query` 且结构化返空时 `bm25_hits` 为服务端全文检索兜底命中（含 score），优先采信。回答“XX 政策原文怎么规定的”时优先用本工具。
+
+引用约束：回答中出现具体数字/日期/文号时，必须 `include_content=true` 核到条款原文后再引用，不得仅凭标题或 abstract 引用数值。
+
+### policy_kb_call - 政策知识库检索原语
+
+调用政策知识库的检索原语（白名单透传，全部只读）。结构化检索不够用时使用：口语自然语言检索、依据链追溯、读指定原文、核对元数据。Calls policy-knowledge-base retrieval primitives (whitelisted pass-through, fully read-only) — semantic search, evidence-chain tracing, reading specific documents, and metadata checks.
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|:----:|------|
+| tool_name | string | ✅ | 白名单内的原语名，取值见下表 |
+| arguments | object | ✅ | 该原语的参数对象，示例见下表 |
+
+白名单原语（8 个，均为只读）：
+
+| tool_name | 用途 | arguments 示例 |
+|------|------|------|
+| search_semantic | 自然语言整句查政策，**传用户原话、勿分词** | `{"query": "2026年上海社保缴费基数上下限是多少", "top_k": 5}` |
+| search_text | 精确关键词/文号/数字检索（词间空格分隔） | `{"query": "21.75 月计薪天数", "top_k": 10}` |
+| wikilinks | 图谱查询。`query` 取 `outgoing` 查本篇引用的依据链（上位法/省级文/历年版本），取 `backlinks` 查引用本篇的笔记 | `{"query": "outgoing", "path": "市级文件/唐山/….md"}` |
+| note_read | 读单篇政策原文 | `{"path": "…"}` |
+| note_read_many | 批量读多篇原文 | `{"paths": ["…", "…"]}` |
+| frontmatter | 轻量核对元数据，仅支持 `action: "get"`（看 status/生效日期/policy_id），其他 action 会被拒绝 | `{"path": "…", "action": "get"}` |
+| vault_list | 浏览政策库目录结构 | `{"path": "市级文件"}` |
+| note_inspect | 笔记元数据全景摘要 | `{"path": "…"}` |
+
+典型链路：`search_semantic` 命中结果带 `path` → `wikilinks(outgoing)` 查依据链 → `note_read` 读原文。
+
+检索约定：
+
+- 用户用口语词（如“断缴”“大病医疗”“试用期交社保”）时，先 `note_read` 读「00-规范/术语对照表」把口语折叠成官方词面，再发起检索。
+- 引用约束同 `query_policy_notes`：回答中引用任何具体数字/日期/文号/条款前，必须核到原文（`note_read` 或 `query_policy_notes` + `include_content=true`），不得仅凭标题、snippet 或 abstract 引用数值。
+- 白名单外的原语会被拒绝；语义检索超时或服务不可用时提示稍后重试，不要改口编造结论。
 
 ### query_policy_report - 读取政策分析报告
 

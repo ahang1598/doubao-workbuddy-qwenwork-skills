@@ -6,8 +6,7 @@
 
 在指定父级 kuid 下新建文件夹或指定类型的云文档。
 
-
-#### 操作约束
+#### 调用约束
 
 - **后置验证**：`kwiki.list_items` 确认创建成功
 
@@ -36,7 +35,6 @@
   "title": "销售常见问题"
 }
 ```
-
 
 #### 参数说明
 
@@ -70,7 +68,3 @@
 | `data.kuid` | string | 新建项的 kuid |
 | `data.title` | string | 新建项标题 |
 | `data.url` | string | 相对路径，拼接 `https://www.kdocs.cn` + url 得到完整链接 |
-
-
----
-

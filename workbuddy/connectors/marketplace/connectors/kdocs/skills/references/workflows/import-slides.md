@@ -12,14 +12,14 @@
 
 ### 前置条件
 
-- 目标演示文稿必须已存在于云文档中（需要 `link_id`）
+- 目标演示文稿必须已存在于云文档中（传 `url` / `link_id` / `file_id` 之一）
 - 源 PPTX 文件需通过可访问的 URL 提供（`object_url`）
 
 ### 参数说明
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `link_id` | string | 是 | 目标演示文稿的 link_id（URL 路径参数） |
+| `url` / `link_id` / `file_id` | string | 三选一 | 目标演示文稿 |
 | `object_url` | string | 是 | 源 PPTX 文件的下载 URL |
 | `slide_idx` | integer | 是 | 插入位置（目标文稿中的幻灯片索引，从 0 开始；用户说"第 n 页"时传 n-1；导入页面占据该位置，原页面后移；超出范围自动尾插） |
 | `source_idxs` | integer[] | 是 | 要导入的源文件幻灯片索引数组（从 0 开始） |
@@ -27,10 +27,9 @@
 ### 执行流程
 
 ```
-步骤 0: 获取目标演示文稿 link_id
-        ├─ 用户提供了云文档链接 → 从 URL 路径末尾提取 link_id
-        ├─ 用户提供了 link_id → 直接使用
-        └─ 用户指定了文件名 → search_files(keyword=...) → 取 link_id
+步骤 0: 定位目标演示文稿
+        ├─ 用户提供了云文档链接 / link_id / file_id → 直接使用
+        └─ 用户指定了文件名 → search_files(keyword=...) → 取 file_id 或 link_id
 
 步骤 1: 获取源 PPTX 文件的 object_url
         ├─ 用户提供了外部 URL → 直接使用
@@ -43,7 +42,7 @@
 
 步骤 3: 调用导入接口
         wpp.import_slides(
-            link_id=<目标文件>,
+            url|link_id|file_id=<目标文件>,
             object_url=<源PPTX的URL>,
             slide_idx=<插入位置>,
             source_idxs=<源页面索引数组>

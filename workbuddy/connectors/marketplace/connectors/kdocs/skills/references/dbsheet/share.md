@@ -4,14 +4,13 @@
 
 #### 功能说明
 
+打开分享视图
 
-**前置条件**：对目标视图有管理分享权限；`view_id` 来自 `dbsheet.get_schema` 或 `dbsheet.views_list`。
-
-
-
-#### 操作约束
+#### 调用约束
 
 - **前置检查**：逐项核对 file_id、sheet_id、view_id、body.permission、body.share_to、body.view_type 均已齐备；缺任一须停止并向用户列出缺少的参数名
+- **前置检查**：view_id 必须来自 dbsheet.get_schema 或 dbsheet.views_list 的返回值，禁止猜测。若本会话未调用过上述任一工具，须先调用后再取 view_id。
+- **前置检查**：使用该工具前必须先调用 get_schema 和 dbsheet.views_list 确认要操作的数据表 id 和视图 id，不得自行捏造数据表 id 和视图 id。
 - **禁止**：参数不齐时禁止调用，不得用默认值凑数或猜测缺失参数
 - **后置验证**：可用 dbsheet.share_view_status 或 share_get_link_info 核对
 
@@ -36,10 +35,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID（必填；缺失时提示用户缺少 `多维表格文件 ID`）
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `sheet_id` (integer, 必填): 数据表 ID（必填；缺失时提示用户缺少 `数据表 ID`）
 - `view_id` (string, 必填): 视图 ID（必填；缺失时提示用户缺少 `视图 ID`）
 - `body` (object, 必填): JSON 请求体；**须同时包含** `permission`、`share_to`、`view_type` 三个键，缺一则视为参数不齐
@@ -54,7 +54,6 @@
 | `permission` | string | 是 | `edit`（可编辑）、`read`（可查看） |
 | `share_to` | string | 是 | `anyone`（所有人）、`company`（企业内成员）、`assigned`（指定人） |
 | `view_type` | string | 是 | `G0`（表格）、`F0`（表单）、`D0`（仪表盘） |
-
 
 #### 返回值说明
 
@@ -78,12 +77,14 @@
 
 #### 功能说明
 
+查询视图是否已开启分享
 
-**必填 query**：无（路径参数即全部）。
+#### 调用约束
 
-**前置条件**：有读取该视图分享状态的权限。
+- **前置检查**：使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+- **前置检查**：调用该工具前需要确认是否有读取该视图分享状态的权限。
 
-
+**幂等性**：是
 
 #### 调用示例
 
@@ -97,11 +98,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `view_id` (string, 必填): 视图 ID
 
 #### 返回值说明
@@ -126,12 +128,14 @@
 
 #### 功能说明
 
+查询分享链接信息
 
-**必填 query**：无。
+#### 调用约束
 
-**前置条件**：分享已开启且 `share_id` 有效（可由 view_status / open_view 返回）。
+- **前置检查**：分享已开启且 `share_id` 有效（可由 view_status / open_view 返回）；使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+- **前置检查**：调用前需确认分享已开启且 `share_id` 有效（可由 view_status / open_view 返回）。。
 
-
+**幂等性**：是
 
 #### 调用示例
 
@@ -146,11 +150,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `view_id` (string, 必填): 视图 ID
 - `share_id` (string, 必填): 分享链接 ID
 
@@ -176,14 +181,13 @@
 
 #### 功能说明
 
+关闭分享视图
 
-**前置条件**：`share_id` 有效且当前用户可关闭该分享。
-
-
-
-#### 操作约束
+#### 调用约束
 
 - **前置检查**：share_view_status 确认当前分享状态
+- **前置检查**：使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+- **前置检查**：调用前需确认`share_id` 有效且当前用户可关闭该分享。。
 - **用户确认**：关闭后外部访问方将无法通过该链接访问
 
 **幂等性**：否 — 关闭后再次调用无效，先确认当前分享状态
@@ -202,11 +206,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `view_id` (string, 必填): 视图 ID
 - `share_id` (string, 必填): 分享链接 ID
 - `body` (object, 可选): 可传入要求关闭原因等字段；无需附加则传空对象
@@ -233,12 +238,14 @@
 
 #### 功能说明
 
+查询表单是否可重复提交
 
-**必填 query**：无。
+#### 调用约束
 
-**前置条件**：`view_id` 为**表单（Form）**视图且已生成分享链接；非表单视图勿调用。
+- **前置检查**：使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+- **前置检查**：调用前需确认`view_id` 为**表单（Form）**视图且已生成分享链接；非表单视图勿调用。。
 
-
+**幂等性**：是
 
 #### 调用示例
 
@@ -253,11 +260,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `view_id` (string, 必填): 表单视图 ID
 - `share_id` (string, 必填): 分享链接 ID
 
@@ -283,16 +291,16 @@
 
 #### 功能说明
 
+设置表单是否可重复提交
 
-**前置条件**：表单视图 + 有效 `share_id`；与 get_repeatable 相同。
+#### 调用约束
 
-
-
-#### 操作约束
-
-- **提示**：与官方 set-repeatable 文档保持一致
+- **前置检查**：使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+- **前置检查**：需要表单视图 + 有效 `share_id`；与 get_repeatable 相同。。
 
 **幂等性**：是
+
+> 与官方 set-repeatable 文档保持一致
 
 #### 调用示例
 
@@ -310,11 +318,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `view_id` (string, 必填): 表单视图 ID
 - `share_id` (string, 必填): 分享链接 ID
 - `body` (object, 必填): JSON 请求体，须含 repeatable（boolean）字段，可与顶层同名字段合并
@@ -324,7 +333,6 @@
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `repeatable` | boolean | 是否允许访客重复提交表单 |
-
 
 #### 返回值说明
 
@@ -348,13 +356,12 @@
 
 #### 功能说明
 
+修改分享权限
 
-**前置条件**：分享已开启且具备修改该链接权限的能力。
+#### 调用约束
 
-
-
-#### 操作约束
-
+- **前置检查**：使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+- **前置检查**：调用该工具前需要确认分享已开启且具备修改该链接权限的能力。
 - **后置验证**：可用 dbsheet.share_get_link_info 核对
 
 **幂等性**：是
@@ -376,11 +383,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `view_id` (string, 必填): 视图 ID
 - `share_id` (string, 必填): 分享链接 ID
 - `body` (object, 必填): JSON 请求体，须含 permission、share_to 字段
@@ -391,7 +399,6 @@
 |------|------|------|------|
 | `permission` | string | 是 | 分享权限。可选值：`edit`（可编辑）、`read`（可查看） |
 | `share_to` | string | 是 | 分享范围。可选值：`anyone`（所有人）、`company`（企业内成员）、`assigned`（指定人） |
-
 
 #### 返回值说明
 
@@ -407,7 +414,3 @@
 |------|------|------|
 | `result` | string | ok 表示成功 |
 | `detail` | object | 接口返回详情 |
-
-
----
-

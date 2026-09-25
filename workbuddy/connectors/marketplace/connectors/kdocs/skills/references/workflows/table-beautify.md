@@ -1,7 +1,6 @@
 # 表格美化与数据规范
 
 > 读取表格数据，进行格式美化、数据规范化和样式调整，并通过条件格式、数据校验、区域权限固化规则
-
 **适用场景**：用户要求优化、美化或规范表格的格式和数据，或需要为表格添加输入约束、高亮规则
 
 **触发词**：表格美化、美化表格、优化表格、整理表格、规范表格、格式化表格、加下拉、添加校验、高亮异常、锁定表头、条件格式、数据校验
@@ -12,7 +11,6 @@
 - 用户要求锁定表头或保护公式区域不被修改
 
 **工具链**：`search_files` → `sheet.get_sheets_info` → `sheet.get_range_data` → AI 分析 → `sheet.update_range_data`（格式化/规范化）→ `sheet.create_conditional_format_rules`（高亮异常值）→ `sheet.create_data_validations`（下拉约束）→ `sheet.create_protection_ranges`（锁定区域，可选）
-
 ## 涉及工具
 
 | 工具 | 服务 | 用途 |
@@ -36,7 +34,10 @@
 **步骤 2**：读取表格结构和数据
 ```
 sheet.get_sheets_info(file_id) → 获取 sheetId、数据区域 rowTo/colTo
-sheet.get_range_data(file_id, worksheet_id=sheetId, row_from=0, row_to=rowTo, col_from=0, col_to=colTo) → 读取全部数据
+sheet.get_range_data(file_id, worksheet_id=sheetId, range={
+  "rowFrom": 0, "rowTo": rowTo,
+  "colFrom": 0, "colTo": colTo
+}) → 读取全部数据（四个坐标写在 range 对象内，行列索引从 0 开始）
 ```
 
 **步骤 3**：AI 分析数据问题，识别列类型，生成美化与规范方案

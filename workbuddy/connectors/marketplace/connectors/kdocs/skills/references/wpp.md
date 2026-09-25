@@ -12,6 +12,8 @@
 
 **在线演示（WPP）** 提供幻灯片操作（添加/删除/复制）、形状插入、主题字体/配色设置、导出图片或 PDF 等能力，通过本文 **`wpp.*`** 工具描述；
 
+- 若只是读取幻灯片正文/结构，优先使用 `read_file`（返回 `content_format=kdc` 的结构化数据）
+
 ### 使用场景
 
 | 场景 | 说明 |
@@ -20,19 +22,20 @@
 | 培训课件 | 结构化幻灯片内容 |
 | 对外宣讲 | 导出 PDF / 图片 |
 
-### 原子操作能力（wpp.execute）
+### 文档定位
 
-`wpp.execute` 提供演示文稿的 JSAPI 原子操作能力，通过 `command` 参数区分不同操作：
+除创建空白演示 / 纯任务查询外，`wpp.*` 统一传 `url` / `link_id` / `file_id` **三选一**。
 
-| 操作类别 | 可用命令 |
-|---------|---------|
-| 幻灯片操作 | `addLayoutSlide`、`deleteSlide`、`copyPasteSlide`、`getSlidesCount` |
-| 插入形状 | `addRectangle`、`addOval`、`addTriangle`、`addRoundedRectangle` |
+### 结构化工具
 
-**使用要求**：
-- 只能使用已定义的命令，禁止自创脚本
-- 执行前需在功能清单中确认命令是否支持
-- 详细模板和参数见 `references/wpp/execute.md`
+| 能力域 | 工具 |
+|--------|------|
+| 幻灯片 | `wpp.read_slide` / `wpp.write_slide` |
+| 形状 | `wpp.read_shape` / `wpp.write_shape` |
+| 演示文稿属性 | `wpp.read_presentation` / `wpp.write_presentation` |
+| 母版 | `wpp.read_master` / `wpp.write_master` |
+
+`wpp.write_shape` 的 `insert_picture` action 用于在幻灯片上插入图片形状，需传 `image_url`（公网可访问的图片 URL）及 `slide_id`、位置尺寸等参数；也可通过 `body` 传入完整请求体。
 
 ---
 
@@ -42,8 +45,8 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`wpp.insert_slide`](wpp/slide.md) | 在已有演示中插入空白页 | `file_id`, `slide_idx` |
-| [`wpp.import_slides`](wpp/slide.md) | 将外部 PPTX 的指定页面导入到已有演示文稿 | `link_id`, `object_url`, `slide_idx`, `source_idxs` |
+| [`wpp.insert_slide`](wpp/slide.md) | 在已有演示中插入空白页 | `url`\|`link_id`\|`file_id`, `slide_idx` |
+| [`wpp.import_slides`](wpp/slide.md) | 将外部 PPTX 的指定页面导入到已有演示文稿 | `url`\|`link_id`\|`file_id`, `object_url`, `slide_idx`, `source_idxs` |
 
 ## 二、主题（字体与配色）
 
@@ -51,10 +54,10 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`wpp.set_font_presentation`](wpp/theme.md) | 全文更换字体 | `file_id` |
-| [`wpp.set_font_slide`](wpp/theme.md) | 单页更换字体 | `file_id`, `slide_idx` |
-| [`wpp.set_color_presentation`](wpp/theme.md) | 全文更换配色 | `file_id` |
-| [`wpp.set_color_slide`](wpp/theme.md) | 单页更换配色 | `file_id`, `slide_idx`, `theme_color_mode`, `color_scheme_id` |
+| [`wpp.set_font_presentation`](wpp/theme.md) | 全文更换字体 | `url`\|`link_id`\|`file_id` |
+| [`wpp.set_font_slide`](wpp/theme.md) | 单页更换字体 | `url`\|`link_id`\|`file_id`, `slide_idx` |
+| [`wpp.set_color_presentation`](wpp/theme.md) | 全文更换配色 | `url`\|`link_id`\|`file_id` |
+| [`wpp.set_color_slide`](wpp/theme.md) | 单页更换配色 | `url`\|`link_id`\|`file_id`, `slide_idx`, `theme_color_mode`, `color_scheme_id` |
 
 ### 字体与配色约束
 
@@ -93,16 +96,44 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`wpp.export_image`](wpp/export.md) | 导出为图片 | `link_id`, `format` |
-| [`wpp.export_pdf`](wpp/export.md) | 异步导出 PDF | `file_id`, `format` |
+| [`wpp.export_image`](wpp/export.md) | 导出为图片 | `url`\|`link_id`\|`file_id`, `format` |
+| [`wpp.export_pdf`](wpp/export.md) | 异步导出 PDF | `url`\|`link_id`\|`file_id`, `format` |
 
-## 四、原子操作
+## 四、幻灯片
 
-> 通过 JSAPI 对演示文稿进行读写与编辑
+> 幻灯片、备注与标签的查询与编辑
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`wpp.execute`](wpp/execute.md) | 透传执行演示文稿 JSAPI | `file_id`, `command` |
+| [`wpp.read_slide`](wpp/doc_slide.md) | 查询演示文稿幻灯片相关信息 | `url`\|`link_id`\|`file_id`, `action` |
+| [`wpp.write_slide`](wpp/doc_slide.md) | 插入、移动、复制或删除演示文稿幻灯片，以及管理幻灯片标签 | `url`\|`link_id`\|`file_id`, `action` |
+
+## 五、形状
+
+> 幻灯片上形状的查询与编辑
+
+| 工具 | 功能 | 必填参数 |
+|------|------|----------|
+| [`wpp.read_shape`](wpp/doc_shape.md) | 查询幻灯片上的形状对象（图形、文本框、线条等） | `url`\|`link_id`\|`file_id`, `action`, `slide_id` |
+| [`wpp.write_shape`](wpp/doc_shape.md) | 在幻灯片上插入、修改或删除形状对象 | `url`\|`link_id`\|`file_id`, `action`, `slide_id` |
+
+## 六、演示文稿属性
+
+> 演示文稿级属性的查询与编辑
+
+| 工具 | 功能 | 必填参数 |
+|------|------|----------|
+| [`wpp.read_presentation`](wpp/doc_presentation.md) | 查询演示文稿整体属性与标签 | `url`\|`link_id`\|`file_id`, `action` |
+| [`wpp.write_presentation`](wpp/doc_presentation.md) | 更新演示文稿整体属性与标签 | `url`\|`link_id`\|`file_id`, `action` |
+
+## 七、母版
+
+> 母版的查询与编辑
+
+| 工具 | 功能 | 必填参数 |
+|------|------|----------|
+| [`wpp.read_master`](wpp/doc_master.md) | 查询演示文稿母版属性 | `url`\|`link_id`\|`file_id`, `action` |
+| [`wpp.write_master`](wpp/doc_master.md) | 更新或删除演示文稿母版属性 | `url`\|`link_id`\|`file_id`, `action` |
 
 ## 常用工作流
 

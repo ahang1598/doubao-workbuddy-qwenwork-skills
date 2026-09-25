@@ -4,12 +4,13 @@
 
 #### 功能说明
 
+查询全部 Hook 订阅
 
-**必填 query**：无。
+#### 调用约束
 
-**前置条件**：应用具备订阅查询权限。
+- **前置检查**：应用具备订阅查询权限。
 
-
+**幂等性**：是
 
 #### 调用示例
 
@@ -21,10 +22,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 
 #### 返回值说明
 
@@ -48,16 +50,21 @@
 
 #### 功能说明
 
-**前置条件**：应用具备多维表格 Webhook 能力；`callback_url` 可公网访问且可接收 JSON 格式 POST 请求。
+创建 Hook 订阅
 
+#### 工具选择
 
+- **适用**：为多维表格创建 Webhook 订阅时
+- **勿用**（改用 `dbsheet.delete_webhook`）：删除 Webhook 订阅
 
-#### 操作约束
+#### 调用约束
 
+- **前置检查**：应用具备多维表格 Webhook 能力；`callback_url` 可公网访问且可接收 JSON 格式 POST 请求。
 - **后置验证**：list_webhooks 确认 webhook 已创建
-- **提示**：勿向不可信回调地址泄露事件数据；删除订阅用 dbsheet.delete_webhook
 
 **幂等性**：否 — 重复调用会创建多个订阅，先确认是否已成功
+
+> 勿向不可信回调地址泄露事件数据
 
 #### 调用示例
 
@@ -76,10 +83,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `body` (object, 必填): JSON 请求体，包含 command、data、callback_url
 
 **请求体（`body`）字段**
@@ -140,7 +148,6 @@
   | `sheet_id` | int64 | 数据表 id |
   | `field_id` | string | 被监听删除的字段 id |
 
-
 #### 返回值说明
 
 ```json
@@ -163,13 +170,11 @@
 
 #### 功能说明
 
+取消 Hook 订阅
 
-**前置条件**：`hook_id` 须为当前文档下有效订阅（可先 `dbsheet.list_webhooks`）。
+#### 调用约束
 
-
-
-#### 操作约束
-
+- **前置检查**：“`hook_id`” 须为当前文档下有效订阅（可先 `dbsheet.list_webhooks`)
 - **用户确认**：取消后需重新创建才能接收事件
 
 **幂等性**：否 — 删除失败勿盲目重试，先 list_webhooks 确认 hook_id
@@ -185,10 +190,11 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `hook_id` (string, 必填): Hook 订阅 ID
 - `body` (object, 可选): JSON 请求体，补充附加字段；可省略或传 {}
 
@@ -206,7 +212,3 @@
 |------|------|------|
 | `result` | string | ok 表示成功 |
 | `detail` | object | 接口返回详情 |
-
-
----
-

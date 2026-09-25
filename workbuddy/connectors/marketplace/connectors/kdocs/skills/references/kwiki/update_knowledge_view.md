@@ -6,8 +6,7 @@
 
 更新知识库名称、描述、封面、状态等配置，按需传入待修改字段。
 
-
-#### 操作约束
+#### 调用约束
 
 - **前置检查**：`kwiki.get_knowledge_view` 确认目标知识库存在及当前配置
 - **后置验证**：`kwiki.get_knowledge_view` 确认名称或简介已更新
@@ -29,7 +28,6 @@
 }
 ```
 
-
 #### 参数说明
 
 - `drive_id` (string, 必填): 知识库云盘 ID，来自 `list_knowledge_views` 或 `get_knowledge_view` 返回值
@@ -49,7 +47,3 @@
 }
 
 ```
-
-
----
-

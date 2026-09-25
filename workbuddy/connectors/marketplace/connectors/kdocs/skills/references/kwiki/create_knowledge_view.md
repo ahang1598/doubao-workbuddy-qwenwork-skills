@@ -6,8 +6,7 @@
 
 创建新的个人知识库空间，可设置名称、状态、描述、封面与来源等基础信息。
 
-
-#### 操作约束
+#### 调用约束
 
 - **后置验证**：新建后调用 `kwiki.get_knowledge_view` 或 `kwiki.list_knowledge_views` 核对返回的 `drive_id`、`group_id`、`kuid`
 
@@ -24,7 +23,6 @@
   "status": 1
 }
 ```
-
 
 #### 参数说明
 
@@ -55,7 +53,3 @@
 | `data.drive_id` | string | 新建知识库的云盘 ID |
 | `data.group_id` | string | 新建知识库的群组 ID |
 | `data.kuid` | string | 新建知识库的 kuid，格式 `0s_...` |
-
-
----
-

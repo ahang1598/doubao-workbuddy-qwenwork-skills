@@ -4,6 +4,27 @@
 
 **适用范围**：本文档中的所有 `sheet.*` 工具同时适用于 Excel（.xlsx）和智能表格（.ksheet）。
 
+### 区域读取参数示例
+
+调用 `sheet.get_range_data` 前，先读取 [详细参数与返回值](sheet/data.md)。`worksheet_id` 使用 `sheet.get_sheets_info` 返回的 `sheetId`；四个坐标写在 `range` 对象内，字段名为 `rowFrom`、`rowTo`、`colFrom`、`colTo`，索引从 0 开始。
+
+使用 worksheet_id 和 range 对象读取 A1:F11 区域（前 11 行、前 6 列）：
+
+```json
+{
+  "file_id": "VsdfG0001234567",
+  "worksheet_id": 3,
+  "range": {
+    "rowFrom": 0,
+    "rowTo": 10,
+    "colFrom": 0,
+    "colTo": 5
+  }
+}
+```
+
+示例中的 `3` 应替换为目标工作表返回的 `sheetId`。
+
 ---
 
 ### 表格工具概述
@@ -13,30 +34,43 @@
 - **Excel（.xlsx）**：传统在线表格
 - **智能表格（.ksheet）**：高级结构化表格
 
-### 创建表格文件
+### 新建并写入
 
-#### 创建 Excel 文件
-
-通过 `create_file` 创建，`name` 须带 `.xlsx` 后缀，`file_type` 设为 `file`：
+新建表格并写入 → `create_file_with_content`：`name` 只写文档名，传 `file_extension: "xlsx"` 或 `"ksheet"` 与 `rangeData`（单表、≤500 项；参数与失败补写见 `drive/create_file_with_content`）。
 
 ```json
 {
-  "name": "销售数据表.xlsx",
-  "file_type": "file",
-  "parent_id": "folder_abc123"
+  "name": "销售数据表",
+  "file_extension": "xlsx",
+  "rangeData": [
+    {
+      "row_from": 0,
+      "row_to": 0,
+      "col_from": 0,
+      "col_to": 2,
+      "formula": [["姓名", "部门", "金额"]]
+    }
+  ]
 }
 ```
 
-#### 创建智能表格
 
-通过 `sheet.create_airsheet_file` 创建，`.ksheet` 不要再走 `create_file`：
+## 表格选区更新工具差异
 
-```json
-{
-  "type": "ksheet",
-  "tname": "项目任务跟踪表.ksheet"
-}
-```
+| 对比项 | `sheet.update_range_data` | `sheet.range_data_batch_update` | 选择建议 |
+|--------|---------------------------|----------------------------------|----------|
+| 写入文本/公式 | 支持 | 支持 | 两者均可 |
+| 设置格式/合并单元格 | 支持 | 支持 | 两者均可 |
+| 插入图片 | 不支持 | 支持 | 涉及图片写入时优先使用 `sheet.range_data_batch_update` |
+| 参数风格 | camelCase（如 `rangeData`） | 下划线参数（如 `range_data`） | 与上下游参数风格保持一致 |
+
+> 提示：`sheet.range_data_batch_update` 为唯一优先入口；`sheet.update_range_data` 仅作兜底（batch 写入失败时使用）。
+
+---
+
+### 写入/更新已有表格
+
+批量改单元格、筛选、条件格式等 → 下文 `sheet.*` 与「工具组合速查」。精读区域用 `sheet.get_range_data`；概览首读可用 `read_file`（可选 `sheet_name`、`sheet_range`）。定位目标文件见 `file-locating-guide`。
 
 ### Excel vs 智能表格（ksheet）对比
 
@@ -75,7 +109,8 @@
 - 需要做任务管理/项目跟踪 → 选 **ksheet**
 - 需要做财务报表 → 选 **Excel**
 
-> **注意**：`ksheet` 文件创建需使用 `sheet.create_airsheet_file`；创建完成后，和 Excel 一样继续使用 `sheet.*` 接口做工作表管理与数据操作。
+> **注意**：`ksheet` 文件创建完成后，和 Excel 一样继续使用 `sheet.*` 接口做工作表管理与数据操作。
+> **ksheet vs dbsheet 区分**：ksheet（`.ksheet`）走 `sheet.*` API，适合单表数据+视图切换；如需多数据表、关联记录、Webhook、丰富字段类型（附件/关联/人员等）→ 用 `.dbt`（`dbsheet.*` API，见 `references/dbsheet.md`）。
 
 ### 表格增强能力
 
@@ -97,13 +132,12 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.get_sheets_info`](sheet/worksheet.md) | 获取工作表列表 | `file_id` |
-| [`sheet.create_airsheet_file`](sheet/worksheet.md) | 新建智能表格文件 | `tname` |
-| [`sheet.add_sheet`](sheet/worksheet.md) | 新增工作表 | `file_id` |
-| [`sheet.rename_sheet`](sheet/worksheet.md) | 重命名工作表 | `file_id`, `sheetId`, `name` |
-| [`sheet.delete_sheets`](sheet/worksheet.md) | 删除工作表 | `file_id`, `sheetIds` |
-| [`sheet.copy_worksheet`](sheet/worksheet.md) | 复制工作表 | `file_id`, `worksheet_id` |
-| [`sheet.update_worksheet`](sheet/worksheet.md) | 更新工作表名称或位置 | `file_id`, `worksheet_id` |
+| [`sheet.get_sheets_info`](sheet/worksheet.md) | 获取工作表列表 | `url`\|`link_id`\|`file_id` |
+| [`sheet.add_sheet`](sheet/worksheet.md) | 新增工作表 | `url`\|`link_id`\|`file_id` |
+| [`sheet.update_sheet`](sheet/worksheet.md) | 更新工作表 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.delete_sheets`](sheet/worksheet.md) | 删除工作表 | `url`\|`link_id`\|`file_id` |
+| [`sheet.copy_worksheet`](sheet/worksheet.md) | 复制工作表 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.update_worksheet`](sheet/worksheet.md) | 更新工作表名称或位置 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
 
 ## 二、数据操作
 
@@ -111,12 +145,28 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.get_range_data`](sheet/data.md) | 获取选区数据 | `file_id`, `sheetId`, `range` |
-| [`sheet.update_range_data`](sheet/data.md) | 批量更新选区数据 | `file_id`, `sheetId`, `rangeData` |
-| [`sheet.delete_range`](sheet/data.md) | 删除行或列 | `file_id`, `sheetId`, `rangeData` |
-| [`sheet.add_row`](sheet/data.md) | 追加一行数据 | `file_id`, `sheetId`, `rangeData` |
-| [`sheet.retrieve_record`](sheet/data.md) | 遍历筛选记录（支持分页与条件） | `file_id`, `sheetId`, `range`, `Filter` |
-| [`sheet.get_attachment_url`](sheet/data.md) | 获取图片下载地址 | `filename` |
+| [`sheet.get_range_data`](sheet/data.md) | 获取选区数据 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range` |
+| [`sheet.range_data_batch_update`](sheet/data.md) | 批量更新区域数据（下划线参数版本） | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range_data` |
+| [`sheet.delete_range_data`](sheet/data.md) | 删除行或列 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range_data` |
+| [`sheet.add_row`](sheet/data.md) | 追加一行数据 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.find_range_data`](sheet/data.md) | 遍历筛选记录（支持分页与条件） | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range`, `filter` |
+| [`sheet.get_attachment_url`](sheet/data.md) | 上传附件到文件 | `file_id`, `filename`, `url`\|`content_base64`, `Content-Type` |
+| [`sheet.add_chart`](sheet/data.md) | 在工作表中新增图表 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `chartType`, `sourceAddress`, `rectAddress`, `title` |
+| [`sheet.range_auto_fill`](sheet/data.md) | 用源区域自动填充目标区域 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `sourceAddress`, `targetAddress` |
+| [`sheet.get_chart_information`](sheet/data.md) | 获取工作表图表信息 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.update_chart`](sheet/data.md) | 修改图表属性 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `index`, `updateType` |
+| [`sheet.create_pivot_table`](sheet/data.md) | 创建数据透视表 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `sourceAddress` |
+| [`sheet.merge_range`](sheet/data.md) | 合并单元格区域 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range` |
+| [`sheet.range_sort`](sheet/data.md) | 对区域进行原地排序 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range`, `key` |
+| [`sheet.update_pivot_table`](sheet/data.md) | 修改数据透视表属性或执行透视表操作 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `tableName`, `updateType` |
+| [`sheet.update_pivot_field`](sheet/data.md) | 修改数据透视表字段属性或执行字段级操作 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `tableName`, `fieldName`, `updateType` |
+| [`sheet.delete_pivot_table`](sheet/data.md) | 删除整个数据透视表 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `tableName` |
+| [`sheet.get_pivot_tables`](sheet/data.md) | 获取数据透视表信息（支持透视表/字段/数据项三级下钻） | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.auto_fit`](sheet/data.md) | 自适应列宽或行高 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range` |
+| [`sheet.get_typed_value`](sheet/data.md) | 读取区域数据并保留单元格类型 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range` |
+| [`sheet.update_range_data`](sheet/data.md) | 批量更新选区数据 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `rangeData` |
+| [`sheet.insert_rows_cols`](sheet/data.md) | 插入行或列 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `type` |
+| [`sheet.set_range_width_height`](sheet/data.md) | 调整行高列宽 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range` |
 
 ## 三、筛选
 
@@ -124,10 +174,10 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.get_filters`](sheet/filters.md) | 获取筛选条件 | `file_id`, `worksheet_id` |
-| [`sheet.open_filters`](sheet/filters.md) | 开启工作表筛选 | `file_id`, `worksheet_id`, `expand_filter_range`, `range` |
-| [`sheet.update_filters`](sheet/filters.md) | 更新列筛选条件 | `file_id`, `worksheet_id`, `col`, `condition` |
-| [`sheet.delete_filters`](sheet/filters.md) | 删除工作表筛选 | `file_id`, `worksheet_id` |
+| [`sheet.get_filters`](sheet/filters.md) | 获取筛选条件 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.open_filters`](sheet/filters.md) | 开启工作表筛选 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `expand_filter_range`, `range` |
+| [`sheet.update_filters`](sheet/filters.md) | 更新列筛选条件 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `col`, `condition` |
+| [`sheet.delete_filters`](sheet/filters.md) | 删除工作表筛选 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
 
 ## 四、条件格式
 
@@ -135,10 +185,10 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.get_conditional_format_rules`](sheet/conditional_format.md) | 获取条件格式规则 | `file_id`, `worksheet_id` |
-| [`sheet.create_conditional_format_rules`](sheet/conditional_format.md) | 创建条件格式规则 | `file_id`, `worksheet_id`, `rule` |
-| [`sheet.update_conditional_format_rules`](sheet/conditional_format.md) | 更新条件格式规则 | `file_id`, `worksheet_id`, `rule` |
-| [`sheet.delete_conditional_format_rules`](sheet/conditional_format.md) | 删除条件格式规则 | `file_id`, `worksheet_id`, `ranges` |
+| [`sheet.get_conditional_format_rules`](sheet/conditional_format.md) | 获取条件格式规则 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.create_conditional_format_rules`](sheet/conditional_format.md) | 创建条件格式规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `rule` |
+| [`sheet.update_conditional_format_rules`](sheet/conditional_format.md) | 更新条件格式规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `rule` |
+| [`sheet.delete_conditional_format_rules`](sheet/conditional_format.md) | 删除条件格式规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `ranges` |
 
 ## 五、数据校验
 
@@ -146,10 +196,10 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.get_data_validations`](sheet/data_validations.md) | 获取数据校验规则 | `file_id`, `worksheet_id`, `col_from`, `col_to`, `row_from`, `row_to` |
-| [`sheet.create_data_validations`](sheet/data_validations.md) | 创建数据校验规则 | `file_id`, `worksheet_id`, `args`, `field_type`, `range` |
-| [`sheet.update_data_validations`](sheet/data_validations.md) | 更新数据校验规则 | `file_id`, `worksheet_id`, `args`, `field_type`, `range` |
-| [`sheet.delete_data_validations`](sheet/data_validations.md) | 删除数据校验规则 | `file_id`, `worksheet_id`, `range` |
+| [`sheet.get_data_validations`](sheet/data_validations.md) | 获取数据校验规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `col_from`, `col_to`, `row_from`, `row_to` |
+| [`sheet.create_data_validations`](sheet/data_validations.md) | 创建数据校验规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `args`, `field_type`, `range` |
+| [`sheet.update_data_validations`](sheet/data_validations.md) | 更新数据校验规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `args`, `field_type`, `range` |
+| [`sheet.delete_data_validations`](sheet/data_validations.md) | 删除数据校验规则 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `range` |
 
 ## 六、区域权限
 
@@ -157,10 +207,10 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.list_protection_ranges`](sheet/protection_ranges.md) | 获取区域权限列表 | `file_id`, `worksheet_id` |
-| [`sheet.create_protection_ranges`](sheet/protection_ranges.md) | 创建区域权限 | `file_id`, `sheets_protection_infos` |
-| [`sheet.update_protection_ranges`](sheet/protection_ranges.md) | 批量更新区域权限 | `file_id`, `sheets_protection_infos` |
-| [`sheet.delete_protection_ranges`](sheet/protection_ranges.md) | 批量删除区域权限 | `file_id`, `sheets_protection_infos` |
+| [`sheet.list_protection_ranges`](sheet/protection_ranges.md) | 获取区域权限列表 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.create_protection_ranges`](sheet/protection_ranges.md) | 创建区域权限 | `url`\|`link_id`\|`file_id`, `sheets_protection_infos` |
+| [`sheet.update_protection_ranges`](sheet/protection_ranges.md) | 批量更新区域权限 | `url`\|`link_id`\|`file_id`, `sheets_protection_infos` |
+| [`sheet.delete_protection_ranges`](sheet/protection_ranges.md) | 批量删除区域权限 | `url`\|`link_id`\|`file_id`, `sheets_protection_infos` |
 
 ## 七、浮动图片
 
@@ -168,18 +218,36 @@
 
 | 工具 | 功能 | 必填参数 |
 |------|------|----------|
-| [`sheet.list_float_images`](sheet/float_images.md) | 查询浮动图片列表 | `file_id`, `worksheet_id` |
-| [`sheet.get_float_image`](sheet/float_images.md) | 获取单张浮动图片详情 | `file_id`, `worksheet_id`, `float_image_id` |
+| [`sheet.list_float_images`](sheet/float_images.md) | 查询浮动图片列表 | `url`\|`link_id`\|`file_id`, `worksheet_id` |
+| [`sheet.get_float_image`](sheet/float_images.md) | 获取单张浮动图片详情 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `float_image_id` |
 | [`sheet.create_float_images`](sheet/float_images.md) | 创建浮动图片 | `file_id`, `worksheet_id`, `sheet_id`, `tag`, `x_pos`, `y_pos` |
-| [`sheet.update_float_images`](sheet/float_images.md) | 更新浮动图片位置或尺寸 | `file_id`, `worksheet_id`, `float_image_id` |
-| [`sheet.delete_float_images`](sheet/float_images.md) | 删除浮动图片 | `file_id`, `worksheet_id`, `float_image_id` |
+| [`sheet.update_float_images`](sheet/float_images.md) | 更新浮动图片位置或尺寸 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `float_image_id` |
+| [`sheet.delete_float_images`](sheet/float_images.md) | 删除浮动图片 | `url`\|`link_id`\|`file_id`, `worksheet_id`, `float_image_id` |
+
+### `sheet.find_range_data` 与 `sheet.get_range_data`的区别
+
+| 对比项 | `sheet.find_range_data` | `sheet.get_range_data` |
+|--------|-------------------------|------------------------|
+| 核心用途 | 先筛选再返回命中数据 | 直接读取固定矩形范围数据 |
+| 是否支持筛选条件 | 支持（`filter.condition`） | 不支持 |
+| 是否支持搜索 | 支持（`filter.search`） | 不支持 |
+| 是否支持去重 | 支持（`filter.duplicates`） | 不支持 |
+| 是否支持分页 | 支持（`page.page` / `page.page_size`） | 不支持（一次返回范围内数据） |
+| 是否可返回总数 | 支持（`show_total`） | 不支持 |
+| 典型场景 | 大范围检索、按条件过滤、统计候选结果 | 精准读取已知区域（如 A1:F100） |
+| 推荐使用时机 | 你只知道业务条件（例如“状态=已完成且金额>1000”），不知道具体行号，或结果很多需要分页浏览时 | 你已经知道要读的确切区域（例如 A1:F100），目标是快速拿到原始区域数据时 |
+
+快速决策：**先确认用户意图是否需要筛选/搜索/去重/分页**。需要就用 `sheet.find_range_data`；不需要且范围已知就用 `sheet.get_range_data`。
 
 ## 工具组合速查
 
 | 用户需求 | 推荐工具组合 |
 |----------|-------------|
-| 读表格（矩形区域） | `sheet.get_sheets_info` → `sheet.get_range_data` |
-| 写表格（批量改单元格） | `sheet.get_range_data`（可选对照）→ `sheet.update_range_data` → `sheet.get_range_data` 验证 |
+| 新建表格并写入初稿 | 见 SKILL「创建/写入」 |
+| 表格概览/首读 | `read_file`（可选 `sheet_name`、`sheet_range`） |
+| 读表格（矩形区域，精读/校验） | `sheet.get_sheets_info` → `sheet.get_range_data` |
+| 跨表按主键/列名回填字段 | 见 `references/workflows/sheet-cross-fill.md` |
+| 写表格（批量改单元格） | `sheet.get_range_data`（可选对照）→ `sheet.range_data_batch_update` → `sheet.get_range_data` 验证 |
 | 给某列配置下拉选项 | `sheet.get_data_validations`（可选）→ `sheet.create_data_validations` / `sheet.update_data_validations` |
 | 管理条件格式高亮 | `sheet.get_conditional_format_rules` → `sheet.create_conditional_format_rules` / `sheet.update_conditional_format_rules` / `sheet.delete_conditional_format_rules` |
 | 管理区域权限 | `sheet.list_protection_ranges` → `sheet.create_protection_ranges` / `sheet.update_protection_ranges` / `sheet.delete_protection_ranges` |
@@ -192,6 +260,8 @@
 
 | 错误特征 | 原因 | 处理方式 |
 |----------|------|----------|
+| `400100` invalid op_type / 参数值不被识别 | 凭直觉猜测 op_type/opType 等枚举值，未查文档 | 打开 `references/sheet/data.md` 对应工具的参数说明，从 description 中的对照表取正确值，修正后重试一次 |
+| `400001` 参数缺失 / 格式错误 | 未确认必填参数或参数类型（如 opType 漏传、rangeData 传错） | 打开 `references/sheet/data.md` 对应工具的参数表，确认参数名、类型、必填性，补齐后重试 |
 | 表格读不到或结构不明 | 未先取工作表列表 / 区域错误 | 先 `sheet.get_sheets_info`，再 `sheet.get_range_data` |
 | 智能表格增强配置不生效 | 使用了普通 Excel，或未先读取现有配置结构 | 确认文件为 `.ksheet`，并先调用对应的 `get/list` 工具查看当前结构 |
 

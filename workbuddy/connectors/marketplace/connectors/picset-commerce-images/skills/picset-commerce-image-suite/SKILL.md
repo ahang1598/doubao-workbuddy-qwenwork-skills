@@ -9,9 +9,11 @@ description: "根据用户提供商品图一键生成电商主图、详情图、
 
 ## 职责与边界
 
+**先排除明确风格复刻**：用户提供风格参考图和商品图，要求“复刻一张淘宝主图/详情图/A+”时，交给 [风格复刻 Skill](../picset-style-replicate/SKILL.md)，素材缺失先补齐，不调用本能力冒充复刻。以下“一张主图也走套图”规则适用于普通电商生成，不覆盖明确复刻。仅提供商品图要做主图，或普通参考生成，不自动归为复刻。
+
 负责把用户的商品图和自然语言要求整理成一份可修改的方案，规划每张图片的商业任务，完成报价确认，并按 [共享执行手册](../shared/execution-playbook.md) 完成上传、登记、生成、轮询和交付。
 
-只处理商品主图、详情图、套图、Listing 图和 A+ 商品图。**哪怕用户只要一张主图或一张详情图，也必须走本套图链路，不得路由到单图文生图/图生图。** 闲聊/创意单图、图片编辑交给 [单图文生图/图生图 Skill](../picset-single-image-generation/SKILL.md)；打开画布、充值套餐交给 [Agent Canvas Skill](../picset-agent-canvas/SKILL.md)；套图交付后写回画布按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md)。闲聊单图不得调用 `generate_commerce_images`。
+只处理商品主图、详情图、套图、Listing 图和 A+ 商品图。**哪怕用户只要一张主图或一张详情图，也必须走本套图链路，不得路由到单图文生图/图生图。** 闲聊/创意单图、图片编辑交给 [单图文生图/图生图 Skill](../picset-single-image-generation/SKILL.md)；充值套餐交给连接器统一充值面板；**套图交付成功后本能力按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md) 打开画布并校验，宿主推送未到位时兜底 insert**，替换特定旧图等其他画布操作交给 [Agent Canvas Skill](../picset-agent-canvas/SKILL.md)。闲聊单图不得调用 `generate_commerce_images`。
 
 开始前完整读取 [公共交接协议](../shared/handoff-protocol.md)。如果被直接触发且没有收到上下文，按协议初始化空上下文，不创建第二套字段。
 
@@ -108,10 +110,12 @@ description: "根据用户提供商品图一键生成电商主图、详情图、
 
 1. **只读报价**：调用 `quote_commerce_image_credits`，展示主图/详情图的数量、比例、分辨率、单价、小计和总计。该回合不上传、不登记、不生成。
 2. **积分确认**：先读取用户偏好，若设置为跳过积分确认则直接继续；否则向用户明确询问是否接受预估积分，说明最终按提交时实时积分扣除，可能与预估不同，等待用户新的明确确认消息。
-3. **上传登记**：用户确认积分后，对每个本地素材执行 `get_reference_image_upload_token` → `picset_client.py upload` → `register_reference_image`。
-4. **提交生成**：素材全部登记后，按主图/详情图/A+ 商品图分批调用 `generate_commerce_images`，保存返回的 `task_id`。
-5. **静默轮询**：固定 30 秒间隔调用 `get_generation_task_status`，直到所有批次进入终态。
-6. **结果交付**：按稳定编号恢复结果，将成功图片下载到本地，通过 `present_files` 展示本地路径。具体操作见 [共享执行手册](../shared/execution-playbook.md) 第六节。
+3. **余额校验**：费用授权后、上传前调用 `get_user_credits`；`available_credits` 低于最新预估则打开充值面板并停止。见 [连接器充值手册](../shared/connector-pricing-playbook.md)。
+4. **上传登记**：余额足够后，对每个本地素材执行 `get_reference_image_upload_token` → `picset_client.py upload` → `register_reference_image`。
+5. **提交生成**：素材全部登记后，按主图/详情图/A+ 商品图分批调用 `generate_commerce_images`，保存返回的 `task_id`。
+6. **静默轮询**：固定 30 秒间隔调用 `get_generation_task_status`，直到所有批次进入终态。
+7. **结果交付**：按稳定编号恢复结果，将成功图片下载到本地，通过 `present_files` 展示本地路径。具体操作见 [共享执行手册](../shared/execution-playbook.md) 第六节。
+8. **画布自动承接**：有成功图时，按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md) **打开 → 校验 → 缺图再 insert**（禁止交付时用 `initial_images`）；不等待用户要求。须先按手册解析宿主 `conversation_id`（`host-conversation-id` / `CODEBUDDY_CONVERSATION_REQUEST_ID`）；解析失败时跳过并说明。
 
 不探索其他脚本、工具或服务。任一阶段失败时，保留已完成状态，不自动重建已提交任务。
 
@@ -142,7 +146,7 @@ description: "根据用户提供商品图一键生成电商主图、详情图、
 
 全部失败时如实说明，不展示或编造结果，提供重试入口。
 
-生成结果下载到本地后通过 `present_files` 展示，不在对话中重复输出图片链接或 Markdown 图片节点。
+生成结果下载到本地后通过 `present_files` 展示，不在对话中重复输出图片链接或 Markdown 图片节点。有成功图时须自动打开画布并校验；缺图时兜底 insert。
 
 ## MCP 工具参数速查
 
@@ -153,9 +157,14 @@ description: "根据用户提供商品图一键生成电商主图、详情图、
 | `get_reference_image_upload_token` | 获取短期 OSS 上传凭证 | 上传登记 |
 | `register_reference_image` | 登记已上传素材为参考图 URL | 上传登记 |
 | `quote_commerce_image_credits` | 只读报价，返回预估积分 | 报价 |
+| `get_user_credits` | 查询可用积分余额 | 生成前余额校验 |
 | `generate_commerce_images` | 提交生成任务，返回 task_id | 生成提交 |
 | `get_generation_task_status` | 查询任务状态和结果 | 轮询 |
+| `open_agent_canvas` | 交付成功后打开/复用画布 Panel（无 `initial_images`） | 结果交付 |
+| `get_agent_canvas_state` | 校验画布是否已有本批图 | 结果交付 |
+| `insert_agent_canvas_image` | 校验缺图时兜底插入；或用户明确要求放入未推送图 | 结果交付 / 手动承接 |
+| `open_agent_pricing` | 打开连接器统一充值面板 | 积分不足 |
 
 调用 MCP 工具前，必须使用 `tool_search` 按工具名获取完整参数定义，再按取回的定义发起调用。
 
-套图经 `present_files` 交付后若需同步到画布，按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md) 的写回章节执行。
+套图经 `present_files` 交付后**必须**按 [Agent Canvas 共享手册](../shared/agent-canvas-playbook.md) 打开 → 校验 → 缺图再 insert；禁止交付时用 `initial_images`。

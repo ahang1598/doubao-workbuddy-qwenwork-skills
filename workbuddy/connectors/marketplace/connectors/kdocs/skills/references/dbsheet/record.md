@@ -7,18 +7,27 @@
 在指定数据表中批量创建记录。每条记录通过 `fields` 字段传入一个**序列化的 JSON 字符串**，
 字符串内部为字段名（或字段 ID）到值的映射。
 
+#### 工具选择
 
+- **适用**：向已有数据表批量新增记录，且 fields 的 key 已对照 get_schema 的现有列名
+- **适用**：全空记录复用后仍有剩余条数须追加到表尾
+- **适用**：用户明确要求在表尾/末尾追加记录
+- **勿用**（改用 `dbsheet.get_schema`）：尚未 get_schema
+- **勿用**：get_schema 后仍有字段无法映射到现有列（含尚未确认是否新建列） — 先读 references/dbsheet.md「写入前字段映射」；未确认禁止 create_fields
+- **勿用**（改用 `dbsheet.update_records`）：尚未 list_records 盘点可复用全空记录，且用户意图为新增记录（非明确追加到表尾） — create_records 仅追加到表尾；须先按 references/dbsheet.md「新增记录与全空记录复用」复用全空记录
 
-#### 操作约束
+#### 调用约束
 
-- **后置验证**：调用 list_records 或 get_record 确认记录已创建
+- **前置检查**：须先 get_schema 并阅读 param_detail 字段值规范；fields 的 key 须全部存在于 schema
+- **前置检查**：新增记录前须 list_records 并按 references/dbsheet.md「新增记录与全空记录复用」优先 update_records 复用全空记录；禁止 delete_records 清理全空记录
+- **后置验证**：必须 list_records 或 get_record 回读验证；禁止仅凭 result ok 宣称成功
 
 **幂等性**：否 — 重复调用会插入重复记录，先确认是否已成功
 
 > `records[].fields` 是对象（key-value 映射），不是序列化 JSON 字符串
 > 关联字段（Link）值格式为关联记录 id 的字符串数组，如 `["id1", "id2"]`
 > `prefer_id=true` 时，`fields` 内部的 key 应为字段 ID（由 get_schema 返回），而非字段名
-> `b_add_select_item=true` 时，可通过 `field_values` 提前声明要新增的选项；若不声明，选项名称直接写入 `fields` 中也会触发新增
+> `add_select_item=true` 时，可通过 `field_values` 提前声明要新增的选项；若不声明，选项名称直接写入 `fields` 中也会触发新增
 > `text_value` 和 `link_value` 仅影响响应返回格式，不影响写入行为
 > Url 字段传入为对象 `{address, displayText}`，响应中以数组形式返回
 > Rating 字段的上限由 `max`/`max_value` 定义，可通过 get_schema 查询
@@ -55,18 +64,7 @@
 {
   "file_id": "VsdfG0001234567",
   "sheet_id": 3,
-  "b_add_select_item": true,
-  "field_values": [
-    {
-      "fieldId": "E",
-      "listItems": [
-        {
-          "value": "选项30",
-          "color": "0xF0EEF7"
-        }
-      ]
-    }
-  ],
+  "add_select_item": true,
   "records": [
     {
       "fields": {
@@ -87,45 +85,44 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `records` (array[object], 必填): 要创建的记录列表，每个元素含 `fields` 对象（字段名/ID → 值的映射）
 - `prefer_id` (boolean, 可选): 是否使用字段 ID 作为 key；默认 false（使用字段名），为 `true` 时 `fields` 内部的 key 应为字段 ID
 - `value_prefer_id` (boolean, 可选): 是否使用选项 ID 作为 选项值，默认为 false
 - `omit_failure` (boolean, 可选): 单条记录创建失败是否不中断整批请求，默认为 false
 - `text_value` (string, 可选): 响应返回值格式：`original` 返回原始值（默认）、`text` 返回文本值、`compound` 同时返回原始值和文本值
 - `link_value` (string, 可选): 关联字段响应格式：`id` 仅返回关联记录 id（默认）；`all` 返回 id 和文本
-- `b_add_select_item` (boolean, 可选): 是否允许在写入记录时同步新增选项（配合 `field_values` 使用）
-- `field_values` (array, 可选): 创建记录时需要新增的选项配置列表，每项含 `fieldId`（字段 ID）和 `listItems`（待新增选项数组，每项含 `value` 和 `color`）
+- `add_select_item` (boolean, 可选): 是否自动新增不存在的选项，默认 true
 
 **请求体根级参数**
 
 | 名称 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `sheetId` | integer | 是 | 数据表 ID |
+| `sheet_id` | integer | 是 | 数据表 ID |
 | `records` | array[object] | 是 | 待创建记录列表，每项含 `fields` 对象 |
-| `preferId` | boolean | 否 | 默认 `false`。`true` 时 `fields` 的 key 为字段 ID |
-| `valuePreferId` | boolean | 否 | 默认 `false`。`true` 时用选项 ID 标识选项值 |
-| `omitFailure` | boolean | 否 | 默认 `false`。`true` 时单条失败不中断整批 |
+| `prefer_id` | boolean | 否 | 默认 `false`。`true` 时 `fields` 的 key 为字段 ID |
+| `value_prefer_id` | boolean | 否 | 默认 `false`。`true` 时用选项 ID 标识选项值 |
+| `omit_failure` | boolean | 否 | 默认 `false`。`true` 时单条失败不中断整批 |
 | `textValue` | string | 否 | 响应值格式：`original`（默认）/ `text` / `compound` |
-| `linkValue` | string | 否 | 关联字段响应格式：`id`（默认）/ `all` |
-| `bAddSelectItem` | boolean | 否 | 是否允许写入时同步新增选项 |
-| `fieldValues` | array[object] | 否 | 需新增的选项配置，配合 `bAddSelectItem: true` 使用 |
+| `link_value` | string | 否 | 关联字段响应格式：`id`（默认）/ `all` |
+| `add_select_item` | boolean | 否 | 是否自动新增不存在的选项，默认 true |
 
-**`records[]` 元素结构**
+**`records[].fields` 元素结构**
 
 | 属性 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `fields` | object | 是 | 字段名（或字段 ID）→ 值的映射对象 |
 
-**`fieldValues[]` 元素结构**
+**`field_values[].listItems` 元素结构**
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| `fieldId` | string | 要新增选项的字段 ID |
+| `field_id` | string | 要新增选项的字段 ID |
 | `listItems` | array[object] | 待新增选项，每项含 `value`（string）和 `color`（string，如 `"0xF0EEF7"`） |
 
 **`fields` 对象各字段类型填写规范**
@@ -142,9 +139,9 @@
 | 单选项（SingleSelect） | string | `"选项1"` | 已有选项的 `value`；`bAddSelectItem=true` 时可传新选项 |
 | 多选项（MultipleSelect） | string[] | `["选项1","选项2"]` | 已有选项 `value` 的字符串数组 |
 | 等级（Rating） | int | `3` | 不超过字段 `max` /`max_value` 上限 |
-| 进度条（Complete） | float | `0.5` | 进度值 0.0–1.0 | 
+| 进度条（Complete） | float | `0.5` | 进度值 0.0–1.0 |
 | 联系人（Contact） | object[] | `[{"id":"uid","nickname":"张三","avatar_url":"https://…"}]` | `id` 为用户 uid |
-| 附件（Attachment） | object[] | `[{"uploadId":"…","fileName":"a.png","size":1024,"source":"Cloud","type":"image/png"}]` | 需先上传获得 `uploadId`；`linkUrl`、`imgSize` 选填 |
+| 附件（Attachment） | object[] | `[{"uploadId":"…","fileName":"a.png","size":1024,"source":"upload_ks3","type":"image/png"}]` | `source` 取 `upload_ks3` 或 `Cloud`（须 `linkUrl`）；本地上传勿标 `Cloud`；格式见 `dbsheet.create_fields` Attachment 节 |
 | 关联（Link） | string[] | `["record_id_1","record_id_2"]` | 关联记录 id 数组 |
 | 富文本（Note） | object | `{"fileId":"…","summary":"摘要","modifyDate":"2024/12/09 12:00:00"}` | — |
 | 地址（Address） | object | `{"districts":["广东省","珠海市","香洲区"],"detail":"详细地址"}` | `districts` 层级与字段 `addressLevel` 一致 |
@@ -157,15 +154,9 @@
 
 ```json
 {
-  "sheetId": 3,
-  "preferId": false,
-  "bAddSelectItem": true,
-  "fieldValues": [
-    {
-      "fieldId": "E",
-      "listItems": [{ "value": "选项30", "color": "0xF0EEF7" }]
-    }
-  ],
+  "sheet_id": 3,
+  "prefer_id": false,
+  "add_select_item": true,
   "records": [
     {
       "fields": {
@@ -201,14 +192,13 @@
 | `等级` | Rating | 不超过字段 `max` /`max_value` 的整数 |
 | `进度条` | Complete | `0.5` | 进度值 0.0–1.0 |
 | `联系人` | Contact | `[{"id":"uid","nickname":"昵称","avatar_url":"…"}]` |
-| `附件` | Attachment | `[{"uploadId":"…","fileName":"…","size":0,"source":"Cloud","type":"image/png"}]` |
+| `附件` | Attachment | `[{"uploadId":"…","fileName":"…","size":0,"source":"upload_ks3","type":"image/png"}]` |
 | `关联` | Link | `["record_id_1","record_id_2"]` |
 | `富文本` | Note | `{"fileId":"…","summary":"摘要","modifyDate":"2025/12/31 12:00:00"}` |
 | `地址` | Address | `{"districts":["广东省","珠海市","香洲区"],"detail":"…"}` |
 | `级联` | Cascade | `{"districts":["一级选项","二级选项"]}` |
 
 > `Formula`、`AutoNumber`、`CreatedTime`、`CreatedBy`、`LastModifiedBy`、`Lookup` 为系统自动字段，**无需传入**。
-
 
 #### 返回值说明
 
@@ -241,22 +231,24 @@
 
 #### 功能说明
 
+⚠️ **`file_id`、`sheet_id`、`records` 三个顶层参数全部必填。**
+各字段类型（Date、Phone、Contact 等）的值格式要求参见 `dbsheet.create_fields` 的字段类型说明，格式错误会导致 `Failed due to field`。
+
 批量更新数据表中已有记录的字段值。每条记录必须提供 `id`（记录 ID）和 `fields`
-（序列化的 JSON 字符串，内容为字段名或字段 ID 到新值的映射）。
+（对象结构，内容为字段名或字段 ID 到新值的映射）。
 
+#### 调用约束
 
-
-#### 操作约束
-
-- **前置检查**：调用 list_records 或 get_record 确认目标记录 ID 存在及当前字段值
-- **后置验证**：调用 get_record 确认字段已更新为预期值
+- **前置检查**：须 get_schema 确认 sheet_id 与字段结构，且 fields 的 key 已映射到现有列；规则见 references/dbsheet.md「写入前字段映射」
+- **前置检查**：调用 list_records 确认目标记录 ID 存在；向表新增记录时按 references/dbsheet.md「新增记录与全空记录复用」仅更新全空记录（合法改已有行不在此限）
+- **后置验证**：必须 get_record 或 list_records 回读验证；禁止仅凭 result ok 宣称成功
 
 **幂等性**：是
 
 > `records[].fields` 是对象（key-value 映射），不是序列化 JSON 字符串；仅传入需要修改的字段，未传字段保持原值不变
 > 关联字段（Link）值格式为关联记录 id 的字符串数组，如 `["id1", "id2"]`
 > `prefer_id=true` 时，`fields` 内部的 key 应为字段 ID（由 get_schema 返回），而非字段名
-> `b_add_select_item=true` 时，可通过 `field_values` 预声明要新增的选项
+> `add_select_item=true` 时，可通过 `fieldValues` 预声明要新增的选项
 > `text_value` 和 `link_value` 仅影响响应返回格式，不影响写入行为
 > Url 字段传入为对象 `{address, displayText}`，响应中以数组形式返回
 > Rating 字段的上限由 `max`/`max_value` 定义，创建字段时通过 `dbsheet.create_fields` 设置
@@ -295,18 +287,7 @@
 {
   "file_id": "VsdfG0001234567",
   "sheet_id": 3,
-  "b_add_select_item": true,
-  "field_values": [
-    {
-      "fieldId": "E",
-      "listItems": [
-        {
-          "value": "选项30",
-          "color": "0xF0EEF7"
-        }
-      ]
-    }
-  ],
+  "add_select_item": true,
   "records": [
     {
       "id": "B",
@@ -325,33 +306,32 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `records` (array[object], 必填): 要更新的记录列表，每个元素包含 `id`（记录 ID）和 `fields`（序列化 JSON 字符串）
 - `prefer_id` (boolean, 可选): 是否使用字段 ID 作为 key；默认 false（使用字段名），为 `true` 时 `fields` 内部的 key 应为字段 ID
 - `value_prefer_id` (boolean, 可选): 是否使用选项 ID 作为 选项值，默认为 false
 - `omit_failure` (boolean, 可选): 单条记录创建失败是否不中断整批请求，默认为 false
 - `text_value` (string, 可选): 响应返回值格式：`original` 返回原始值（默认）、`text` 返回文本值、`compound` 同时返回原始值和文本值
 - `link_value` (string, 可选): 关联字段响应格式：`id` 仅返回关联记录 id（默认）；`all` 返回 id 和文本
-- `b_add_select_item` (boolean, 可选): 是否允许在写入记录时同步新增选项（配合 `field_values` 使用）
-- `field_values` (array, 可选): 更新记录时需要新增的选项配置列表，每项含 `fieldId`（字段 ID）和 `listItems`（待新增选项数组，每项含 `value` 和 `color`）
+- `add_select_item` (boolean, 可选): 是否自动新增不存在的选项，默认 true
 
 **请求体根级参数**
 
 | 名称 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `sheetId` | integer | 是 | 数据表 ID |
+| `sheet_id` | integer | 是 | 数据表 ID |
 | `records` | array[object] | 是 | 待更新记录列表，每项含 `id` 和 `fields` 对象 |
-| `preferId` | boolean | 否 | 默认 `false`。`true` 时 `fields` 的 key 为字段 ID |
-| `valuePreferId` | boolean | 否 | 默认 `false`。`true` 时用选项 ID 标识选项值 |
-| `omitFailure` | boolean | 否 | 默认 `false`。`true` 时单条失败不中断整批 |
-| `textValue` | string | 否 | 响应值格式：`original`（默认）/ `text` / `compound` |
-| `linkValue` | string | 否 | 关联字段响应格式：`id`（默认）/ `all` |
-| `bAddSelectItem` | boolean | 否 | 是否允许写入时同步新增选项 |
-| `fieldValues` | array[object] | 否 | 需新增的选项配置，配合 `bAddSelectItem: true` 使用 |
+| `prefer_id` | boolean | 否 | 默认 `false`。`true` 时 `fields` 的 key 为字段 ID |
+| `value_prefer_id` | boolean | 否 | 默认 `false`。`true` 时用选项 ID 标识选项值 |
+| `omit_failure` | boolean | 否 | 默认 `false`。`true` 时单条失败不中断整批 |
+| `text_value` | string | 否 | 响应值格式：`original`（默认）/ `text` / `compound` |
+| `link_value` | string | 否 | 关联字段响应格式：`id`（默认）/ `all` |
+| `add_select_item` | boolean | 否 | 是否自动新增不存在的选项，默认 true |
 
 **`records[]` 元素结构**
 
@@ -359,13 +339,6 @@
 |------|------|------|------|
 | `id` | string | **是** | 目标记录 ID（通过 list_records / get_record 获取） |
 | `fields` | object | 是 | 字段名（或字段 ID）→ 新值的映射对象；仅传需要修改的字段 |
-
-**`fieldValues[]` 元素结构**
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `fieldId` | string | 要新增选项的字段 ID |
-| `listItems` | array[object] | 待新增选项，每项含 `value`（string）和 `color`（string，如 `"0xF0EEF7"`） |
 
 **`fields` 对象各字段类型填写规范**
 
@@ -383,9 +356,9 @@
 | 等级（Rating） | int | `3` | 不超过字段 `max` /`max_value` 上限 |
 | 进度条（Complete） | float | `0.5` | 进度值 0.0–1.0 |
 | 联系人（Contact） | object[] | `[{"id":"uid","nickname":"张三","avatar_url":"https://…"}]` | `id` 为用户 uid |
-| 附件（Attachment） | object[] | `[{"uploadId":"…","fileName":"a.png","size":1024,"source":"Cloud","type":"image/png"}]` | 需先上传获得 `uploadId`；`linkUrl`、`imgSize` 选填 |
+| 附件（Attachment） | object[] | `[{"uploadId":"…","fileName":"a.png","size":1024,"source":"upload_ks3","type":"image/png"}]` | `source` 取 `upload_ks3` 或 `Cloud`（须 `linkUrl`）；本地上传勿标 `Cloud`；格式见 `dbsheet.create_fields` Attachment 节 |
 | 关联（Link） | string[] | `["I","G"]` | 关联记录 id 数组 |
-| 富文本（Note） | object | `{"fileId":"…","summary":"摘要","modifyDate":"2024/12/09 12:00:00"}` | — |
+| 富文本（Note） | object | `{"fileId":"…","summary":"摘要","modifyDate":"2024/12/09 12:00:00"}` | 仅可更新 summary 等元数据；**正文内容须用 `get_schema_detail` 获取 content_id 后通过 `innerdoc_block_*` 工具链读写，不可通过 update_records 写入正文内容** |
 | 地址（Address） | object | `{"districts":["广东省","珠海市","香洲区"],"detail":"详细地址"}` | `districts` 层级与字段 `addressLevel` 一致 |
 | 级联（Cascade） | object | `{"districts":["一级选项","二级选项"]}` | 各级选中值数组 |
 | 公式 / 编号 / 创建时间 / 创建者 / 最后修改者 / 引用 | — | **不可填写** | 自动字段，传入会被忽略或报错 |
@@ -396,15 +369,9 @@
 
 ```json
 {
-  "sheetId": 3,
-  "preferId": false,
-  "bAddSelectItem": true,
-  "fieldValues": [
-    {
-      "fieldId": "E",
-      "listItems": [{ "value": "选项30", "color": "0xF0EEF7" }]
-    }
-  ],
+  "sheet_id": 3,
+  "prefer_id": false,
+  "add_select_item": true,
   "records": [
     {
       "id": "B",
@@ -417,7 +384,6 @@
   ]
 }
 ```
-
 
 #### 返回值说明
 
@@ -456,9 +422,13 @@
 
 #### 功能说明
 
-分页遍历数据表中的记录，支持按视图过滤、指定返回字段，以及通过 `filter` 参数实现复杂查询条件（多字段 AND/OR 组合筛选）。
+分页遍历数据表中的记录，支持按视图过滤、指定返回字段，以及通过 `filter` 参数实现复杂查询条件（支持 criteria 单层筛选和 filters 递归嵌套条件组）。
 
+#### 调用约束
 
+- **前置检查**：使用该工具前必须先调用get_schema确认要操作的数据表id，不得自行捏造数据表id。
+
+**幂等性**：是
 
 #### 调用示例
 
@@ -515,30 +485,127 @@
 }
 ```
 
+嵌套条件组查询：
+
+```json
+{
+  "file_id": "string",
+  "sheet_id": 1,
+  "page_size": 100,
+  "offset": "",
+  "filter": {
+    "mode": "OR",
+    "filters": [
+      {
+        "mode": "AND",
+        "criteria": [
+          {
+            "field": "名称",
+            "op": "Equals",
+            "values": [
+              "a"
+            ]
+          },
+          {
+            "field": "数量",
+            "op": "Equals",
+            "values": [
+              "1"
+            ]
+          }
+        ]
+      },
+      {
+        "mode": "AND",
+        "criteria": [
+          {
+            "field": "名称",
+            "op": "Equals",
+            "values": [
+              "b"
+            ]
+          },
+          {
+            "field": "数量",
+            "op": "Equals",
+            "values": [
+              "2"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `sheet_id` (integer, 必填): 目标数据表 ID
-- `page_size` (integer, 可选): 每页记录数
+- `page_size` (integer, 可选): 每页记录数，默认 100，取值范围 1-1000
 - `offset` (string, 可选): 翻页游标，首次请求传空字符串，后续传响应中的 `offset` 值
 - `view_id` (string, 可选): 按指定视图返回记录
-- `max_records` (integer, 可选): 最多返回的记录总数
-- `fields` (array, 可选): 只返回指定字段列表，不填则返回所有字段
-- `filter` (object, 可选): 筛选条件，含 mode 和 criteria 列表
-  - `mode` (string, 必填): 条件连接方式：`"AND"` 或 `"OR"`
-  - `criteria` (array, 必填): 筛选条件列表
-    - `field` (string, 必填): 字段名称或 ID
-    - `op` (string, 必填): 筛选操作符（见附录：筛选规则）
-    - `values` (array, 可选): 筛选值，`Empty`/`NotEmpty` 时可省略
-- `prefer_id` (boolean, 可选): 是否使用字段 ID 作为 key
-- `text_value` (string, 可选): 文本值格式：`"original"`（原始值）或 `"display"`（显示值）
-- `link_value` (string, 可选): 关联字段值格式：`"id"` 或 `"value"`
-- `show_record_extra_info` (boolean, 可选): 是否返回记录额外信息
-- `show_fields_info` (boolean, 可选): 是否在响应中返回字段定义信息
+- `max_records` (integer, 可选): 最多返回的记录总数，上限 100
+- `fields` (array, 可选): 只返回指定字段列表；字段名或字段 ID 取决于 `prefer_id`，不填则返回所有字段
+- `filter` (object, 可选): 筛选条件，支持 criteria 单层条件和 filters 递归嵌套条件组
+  - `mode` (string, 选填): 条件连接方式，`"AND"` 或 `"OR"`，缺省 `"AND"`
+  - `criteria` (array): 筛选条件列表，同一字段不可定义多个条件
+    - `field` (string, 必填): 字段名称或 ID（取决于 `prefer_id`）
+    - `op` (string, 必填): 筛选操作符（见 `param_detail` 筛选规则表）
+    - `values` (array, 必填): 筛选值，`Empty`/`NotEmpty` 时可省略；支持字符串或日期动态结构体
+  - `filters` (array): 递归条件组，每个元素是一个 filter 对象，可实现 AND/OR 嵌套
+- `prefer_id` (boolean, 可选): 是否使用字段 ID 和选项 ID 标识，为 true 时参数内全部 field/fields 均按 ID 解析
+- `text_value` (string, 可选): 文本值格式：`"original"`（原始值）/ `"text"`（文本值）/ `"compound"`（原始值和文本值）
+- `link_value` (string, 可选): 关联字段值格式：`"id"`（仅返回 ID）/ `"all"`（返回 ID 和文本）
+- `show_record_extra_info` (boolean, 可选): 为 true 时额外返回创建者、创建时间、最后修改者、最后修改时间
+- `show_fields_info` (boolean, 可选): 为 true 时额外返回 fields 结构体，展示字段定义信息（类似 get_schema 中的 fields）
 
 > **分页说明**：响应中的 `offset` 指向下一页第一条记录，下次请求将该值传入 `offset` 即可翻页。最后一页不再返回 `offset`。
 
+**筛选操作符**（大小写不敏感）：
+
+| 操作符 | 含义 | values 上限 |
+|--------|------|------------|
+| Equals | 等于 | 1 |
+| NotEqu | 不等于 | 1 |
+| Greater | 大于 | 1 |
+| GreaterEqu | 大等于 | 1 |
+| Less | 小于 | 1 |
+| LessEqu | 小等于 | 1 |
+| GreaterEquAndLessEqu | 介于（取等） | 2 |
+| LessOrGreater | 介于（不取等） | 2 |
+| BeginWith | 开头是 | 1 |
+| EndWith | 结尾是 | 1 |
+| Contains | 包含 | 1 |
+| NotContains | 不包含 | 1 |
+| Intersected | 指定值 | 65535 |
+| Empty | 为空 | 0 |
+| NotEmpty | 不为空 | 0 |
+
+**日期动态筛选**：values 元素可为结构体 `{ "type": "DynamicSimple", "dynamicType": "..." }`，`dynamicType` 可选值（大小写不敏感）：
+
+| dynamicType | 含义 |
+|-------------|------|
+| today | 今天 |
+| yesterday | 昨天 |
+| tomorrow | 明天 |
+| last7Days | 最近 7 天 |
+| last30Days | 最近 30 天 |
+| last7DaysContainToday | 最近 7 天（含今天） |
+| last30DaysContainToday | 最近 30 天（含今天） |
+| thisWeek | 本周 |
+| lastWeek | 上周 |
+| nextWeek | 下周 |
+| thisMonth | 本月 |
+| lastMonth | 上月 |
+| nextMonth | 次月 |
+
+> op 为 greater/less 时，dynamicType 只能是 yesterday / today / tomorrow。
+
+**筛选注意事项**：filter 非结构体、criterion 未指定 field、op/values 不合法、values 元素超限等情形，整个请求将直接失败。
 
 #### 返回值说明
 
@@ -572,6 +639,11 @@
 
 获取数据表中某条指定记录的完整字段内容。
 
+#### 调用约束
+
+- **前置检查**：使用该工具前必须先调用get_schema确认要操作的数据表id，不得自行捏造数据表id。
+
+**幂等性**：是
 
 #### 调用示例
 
@@ -585,17 +657,18 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
 - `sheet_id` (integer, 必填): 目标数据表 ID
 - `record_id` (string, 必填): 记录 ID
-- `prefer_id` (boolean, 可选): 是否使用字段 ID 作为 key
-- `text_value` (string, 可选): 文本值格式：`"original"`（原始值）或 `"display"`（显示值）
-- `link_value` (string, 可选): 关联字段值格式：`"id"` 或 `"value"`
-- `show_record_extra_info` (boolean, 可选): 是否返回记录额外信息
-- `show_fields_info` (boolean, 可选): 是否返回字段定义信息
+- `prefer_id` (boolean, 可选): 是否使用字段 ID 和选项 ID 标识
+- `text_value` (string, 可选): 文本值格式：`"original"`（原始值）/ `"text"`（文本值）/ `"compound"`（原始值和文本值）
+- `link_value` (string, 可选): 关联字段值格式：`"id"`（仅返回 ID）/ `"all"`（返回 ID 和文本）
+- `show_record_extra_info` (boolean, 可选): 为 true 时额外返回创建者、创建时间、最后修改者、最后修改时间
+- `show_fields_info` (boolean, 可选): 为 true 时额外返回 fields 结构体，展示字段定义信息（类似 get_schema 中的 fields）
 
 #### 返回值说明
 
@@ -629,13 +702,13 @@
 #### 功能说明
 
 批量删除数据表中的指定记录。`records` 为记录 ID 的对象数组，**不是字符串数组**。
+file_id和sheet_id为必填参数，不允许为空。
 
+#### 调用约束
 
-
-#### 操作约束
-
-- **前置检查**：调用 list_records 或 get_record 核对拟删记录的内容，确认记录 ID 正确
+- **前置检查**：调用 list_records 或 get_record 核对拟删记录的内容，确认记录 ID 正确；使用该工具前必须先调用get_schema确认要操作的数据表id，不得自行捏造数据表id。
 - **用户确认**：批量删除记录不可恢复，必须向用户确认记录列表和数量
+- **用户确认**：当 mode=all 时将删除当前数据表全部记录，必须向用户二次确认
 
 **幂等性**：是
 
@@ -649,6 +722,8 @@
 {
   "file_id": "VsdfG0001234567",
   "sheet_id": 3,
+  "mode": "include",
+  "is_batch": false,
   "records": [
     {
       "id": "G"
@@ -660,23 +735,32 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID（路径参数）
-- `sheet_id` (integer, 必填): 数据表 ID
-- `records` (array[string], 必填): 要删除的记录 ID 列表（对象数组，每项为一个记录 ID）
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
+- `records` (array[object], 必填): 要删除的记录列表（对象数组）
+- `mode` (string, 可选): 删除模式，默认 `include`；`all` 表示删除所有记录。可选值：`include` / `all`；默认值：`include`
+- `is_batch` (boolean, 可选): 是否批量删除，默认 `false`；默认值：`false`
 
 **请求体结构：**
 
 | 字段 | 类型 | 是否必填 | 说明 |
 |------|------|----------|------|
 | `records` | array[object] | 是 | 记录 ID 对象数组，每个元素为一条记录的 ID |
+| `mode` | string | 否 | 删除模式，默认 `include`；`all` 表示删除所有记录 |
+| `is_batch` | boolean | 否 | 是否批量删除，默认 `false` |
 
 **请求体示例：**
 
 ```json
 {
+  "file_id": "你的 file_id",
+  "sheet_id": 3,
+  "mode": "include",
+  "is_batch": false,
   "records": [
     { "id": "G" },
     { "id": "H" },
@@ -686,7 +770,6 @@
 ```
 
 > 记录 ID 可通过 `dbsheet.list_records` 或 `dbsheet.get_record` 获取。
-
 
 #### 返回值说明
 
@@ -718,9 +801,6 @@
 
 #### 功能说明
 
-
-**请求体（均在 JSON 内，无 URL query）**
-
 | 名称 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | fields | array[string] | 是* | 指定返回记录中的字段；*文档写必填，若不填则默认返回全部字段。`prefer_id=true` 时填字段 id，否则填字段名 |
@@ -735,7 +815,11 @@
 | text_value | string | 否 | 不填默认 original；可选 original、text、compound |
 | view_id | string | 否 | 指定视图则从该视图取用户可见记录；不填从工作表取 |
 
+#### 调用约束
 
+- **前置检查**：使用该工具前必须先调用get_schema和dbsheet.views_list确认要操作的数据表id和视图id，不得自行捏造数据表id和视图id。
+
+**幂等性**：是
 
 > filter.criteria 的结构需符合多维表格接口对筛选条件的约定。
 
@@ -776,11 +860,12 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `body` (object, 可选): 可选整包请求体；与顶层字段混用时同键以顶层为准
 - `fields` (array, 必填): 指定所返回记录中的字段信息，若不填写则默认返回全部字段。prefer_id=true 时须用字段 id，否则用字段名
 - `filter` (object, 可选): 筛选条件
@@ -801,7 +886,6 @@
 所有列举参数均在 **POST JSON 请求体** 中，不拼 URL query。
 
 若同时传 `body` 与顶层字段，同键以 **顶层** 为准。
-
 
 #### 返回值说明
 
@@ -854,8 +938,9 @@
 
 #### 功能说明
 
-
-**请求体（均在 JSON 内，无 URL query）**
+⚠️ **`records` 必须为 JSON 字符串数组，从 `dbsheet.list_records` 或 `dbsheet.records_list` 获取记录 ID。** `file_id`、`sheet_id`、`records` 三个全部必填。
+✅ 正确：`records: ["rec_xxx", "rec_yyy"]`
+❌ 错误：`records: "(array, 3 items)"`（字符串）、`records: true`（布尔值）、`records: {_keys:[...]}`（对象）
 
 | 名称 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -865,10 +950,13 @@
 | show_record_extra_info | boolean | 否 | 为 true 时额外显示创建者、创建时间、最后修改者、最后修改时间（与是否有对应字段无关） |
 | text_value | string | 否 | 返回值类型，不填默认 original；可选 original、text、compound |
 
+#### 调用约束
 
+- **前置检查**：使用该工具前必须先调用get_schema确认要操作的数据表id，不得自行捏造数据表id。
+
+**幂等性**：是
 
 > records 为必填参数，需传入有效的记录 id 列表。
-> records_search 在 MCP 层若要求 filter 为必填参数，传空条件 {"mode":"AND","criteria":[]} 即可满足
 
 #### 调用示例
 
@@ -902,13 +990,14 @@
 }
 ```
 
-
 #### 参数说明
 
-- `file_id` (string, 必填): 多维表格文件 ID
-- `sheet_id` (integer, 必填): 数据表 ID
+- `url` (string, 三选一必填: `url` / `link_id` / `file_id`): 文档 URL
+- `link_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 分享链接 ID
+- `file_id` (string, 三选一必填: `url` / `link_id` / `file_id`): 文件 ID
+- `sheet_id` (integer, 必填): 数据表 ID（整数，不可传字符串）
 - `body` (object, 可选): 可选整包请求体；与顶层字段混用时同键以顶层为准
-- `records` (array, 必填): 记录 ID 列表，指定要检索的记录
+- `records` (array, 必填): ⚠️ 记录 ID 列表（字符串数组，如 `["rec123"]`），不可传布尔值、对象或字符串
 - `prefer_id` (boolean, 可选): 是否使用字段 / 选项 ID 而不是字段 / 选项名来标识
 - `show_fields_info` (boolean, 可选): 是否返回 fields 结构体展示字段信息。为 true 时，若指定了 fields 则返回指定字段；未指定 fields 时，根据是否指定 view_id 决定返回视图可见字段或全部字段
 - `show_record_extra_info` (boolean, 可选): 是否返回创建者、创建时间、最后修改者、最后修改时间信息（与是否有对应字段无关）
@@ -942,7 +1031,3 @@
 | `msg` | string | 响应信息 |
 | `data` | object | 响应数据 |
 | `more` | object | 更多的错误信息 |
-
-
----
-

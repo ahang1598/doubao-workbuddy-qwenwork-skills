@@ -10,25 +10,26 @@
 
 - 面向在线文字文档，不是本地 `.docx` 文件直传接口
 - 支持创建空白在线文档、导出为 DOCX / PDF / 图片 / AP
-- 提供 Core Execute 原子能力，对文档进行段落/区间级别的增删改查和格式设置等操作
-- 若只是读取正文内容，仍优先使用通用工具 `read_file_content`
+- 提供结构化原子工具，对文档进行段落/区间级别的增删改查和格式设置等操作
+- 若只是读取正文内容，仍优先使用通用工具 `read_file`
 
 ### 何时使用 `wps.*`
-
 - 需要新建一个空白在线文字文档
 - 需要把在线文字导出为 DOCX、PDF、图片或 AP 文稿
 - 需要对文档执行原子操作：读取/修改指定段落内容、查找替换、设置段落格式、设置字符格式等
 
 ### 何时不要用 `wps.*`
-
-- 创建普通 `.docx` 文件：用 `create_file`
-- 上传或覆盖本地 docx/pdf 文件：用 `upload_file`
+- 创建空白文档 `.docx` 文件：用 `create_empty_file`
+- 创建并写入，优先用工具 `create_file_with_content`
+- 上传本地 docx/pdf 等文件：用 `upload_new_file`；覆盖已有文档：用 `upload_replace_file`
 - 写 Markdown 富文本内容到智能文档：用 `otl.*`
 
 ### `wps.*` 工具调用说明
 
-- 格式：服务名和工具分开: 服务名 wps.xx
-  例如：kdocs wps.export
+- 格式：服务名和工具分开，property 级命令保留点号
+  例如：`kdocs-cli wps texts.range`、`kdocs-cli wps export`
+- 文档定位：除创建空白文档 / 纯任务查询外，统一传 `url` / `link_id` / `file_id` **三选一**
+
 
 ## 导出能力总览
 
@@ -38,399 +39,210 @@
 - `wps.export_image`：导出 PNG / JPEG 图片
 - `wps.query_export`：统一查询异步导出结果
 
-> `wps.export` 和 `wps.export_image` 的必填参数是 `link_id`（非 `file_id`）。`link_id` 来自 `get_file_info`、`list_files`、`search_files` 等接口返回，或从文档 URL 路径末尾提取，详见「获取文件标识指南」。
-
 ### 选择建议
 
 - 需要拿到 `.docx` 下载地址：用 `wps.export`，传 `format=docx`
-- 需要导出图片：用 `wps.export_image`，传 `link_id` 和 `format=png/jpeg`
+- 需要导出图片：用 `wps.export_image`，传 `format=png/jpeg`，定位 `url` / `link_id` / `file_id` 三选一
 - 需要导出 PDF：先 `wps.export`，传 `format=pdf`；再按需用 `wps.query_export`
-- 需要导出 AP：先 `wps.export`，传 `format=ap`；再用 `wps.query_export`
+- 需要导出 AP：先 `wps.export`，传 `format=ap`；再用 `wps.query_export`（`format=ap` 时须传 export 返回的 `file_id`）
 
-## Core Execute 概述
+## 结构化文档工具
 
-`wps.core_execute` 是在线文字的统一原子操作入口，通过 `command` 选择操作类型，`param` 传递命令参数。
+| 能力域 | 参考 |
+|--------|------|
+| 文本 | [texts](wps/texts.md) |
+| 表格 | [tables](wps/tables.md) |
+| 图片 | [images](wps/images.md) |
+| 形状 | [shapes](wps/shapes.md) |
+| 书签 | [bookmarks](wps/bookmarks.md) |
+| 内容控件 | [content_controls](wps/content_controls.md) |
+| 脚注尾注 | [footnote_endnotes](wps/footnote_endnotes.md) |
+| 页眉页脚 | [header_footers](wps/header_footers.md) |
+| 域 | [fields](wps/fields.md) |
+| 水印 | [watermarks](wps/watermarks.md) |
+| 列表 | [lists](wps/lists.md) |
+| 节 | [sections](wps/sections.md) |
+| 样式 | [styles](wps/styles.md) |
+| 修订 | [revisions](wps/revisions.md) |
+| 交叉引用 | [references](wps/references.md) |
+| 保护 | [protection](wps/protection.md) |
+| OLE | [ole](wps/ole.md) |
+| 索引 | [indexes](wps/indexes.md) |
+| 超链接 | [hyperlinks](wps/hyperlinks.md) |
+| 公式 | [formulas](wps/formulas.md) |
+| 题注 | [captions](wps/captions.md) |
+| 分隔符 | [breaks](wps/breaks.md) |
+| 目录 | [tocs](wps/tocs.md) |
+| 批注 | [comments](wps/comments.md) |
 
-当前已上线 3 个模块。命令查找、完整路由表和参数速查见：[execute.md](wps/execute.md)
+### 图片类写操作
 
-| 模块 | 能力 | 详细参考 |
-|------|------|---------|
-| 文档内容 | 段落/区间读写、查找替换 | [content.md](wps/content.md) |
-| 段落格式 | 对齐、缩进、行间距 | [paragraph-format.md](wps/paragraph-format.md) |
-| 字符格式 | 字体样式、高亮色 | [character-format.md](wps/character-format.md) |
-| 枚举值 | 对齐/行距/颜色/下划线常量 | [enums.md](wps/enums.md) |
+以下工具需传入**公网可访问的图片 URL**（服务端会拉取图片）：
 
----
+| 工具 | 顶层参数 | 说明 |
+|------|----------|------|
+| `wps.watermarks.image` | `file_path` | 插入图片水印 |
+| `wps.shapes.picture` | `file_path` | 插入浮动图片形状 |
 
 ## 一、导出
 
-### 1. wps.export
+> 异步导出为多种格式及状态轮询
 
-#### 功能说明
+| 工具 | 功能 | 必填参数 |
+|------|------|----------|
+| [`wps.export`](wps/export.md) | 统一导出在线文字文档 | `url`\|`link_id`\|`file_id`, `format` |
+| [`wps.export_image`](wps/export_image.md) | 将在线文字导出为图片 | `url`\|`link_id`\|`file_id`, `format` |
+| [`wps.query_export`](wps/query_export.md) | 统一查询异步导出结果 | `format`, `task_id` |
 
-统一导出在线文字文档，按 `format` 分发到不同导出分支：
+## 二、书签操作
 
-- `docx`：返回 DOCX 下载结果
-- `pdf`：创建 PDF 导出任务
-- `ap`：发起 AP 导出流程
+> WPS 文字文档 bookmarks 域相关操作。
 
+属性与工具列表见 [书签操作](wps/bookmarks.md)。
 
+## 三、分隔符操作
 
-#### 操作约束
+> WPS 文字文档 breaks 域相关操作。
 
-- **前置检查**：先通过 `get_file_info` / `search_files` / `list_files` 获取 `link_id`，或从文档 URL 路径末尾提取
+属性与工具列表见 [分隔符操作](wps/breaks.md)。
 
-**幂等性**：否 — 导出为异步任务，用 task_id 轮询结果而非重复提交
+## 四、题注操作
 
-#### 调用示例
+> WPS 文字文档 captions 域相关操作。
 
-`format=docx` 导出 DOCX：
+属性与工具列表见 [题注操作](wps/captions.md)。
 
-```json
-{
-  "link_id": "link_xxx",
-  "format": "docx",
-  "with_checksums": "md5,sha256"
-}
-```
+## 五、批注操作
 
-`format=pdf` 导出 PDF：
+> WPS 文字文档 comments 域相关操作。
 
-```json
-{
-  "link_id": "link_xxx",
-  "format": "pdf",
-  "from_page": 1,
-  "to_page": 10
-}
-```
+属性与工具列表见 [批注操作](wps/comments.md)。
 
-`format=ap` 导出 AP 文稿：
+## 六、内容控件操作
 
-```json
-{
-  "link_id": "link_xxx",
-  "format": "ap",
-  "name": "季度经营分析"
-}
-```
+> WPS 文字文档 content_controls 域相关操作。
 
+属性与工具列表见 [内容控件操作](wps/content_controls.md)。
 
-#### 参数说明
+## 七、域操作
 
-- `link_id` (string, 必填): 在线文字文件的链接 ID（非 file_id）
-- `format` (string, 必填): 导出格式。可选值：`docx` / `pdf` / `ap`
-- `with_checksums` (string, 可选): `format=docx` 时可传，校验算法列表，如 `md5,sha256`
-- `cid` (string, 可选): `format=docx` 时可传，分享链接 ID
-- `from_page` (number, 可选): `format=pdf` 时可传，起始页码；默认值：`1`
-- `to_page` (number, 可选): `format=pdf` 时可传，结束页码；默认值：`9999`
-- `client_id` (string, 可选): 导出时可选的客户端标识
-- `password` (string, 可选): `format=pdf` 时可传，源文档密码
-- `store_type` (string, 可选): `format=pdf` 时可传，如 `ks3`、`cloud`
-- `multipage` (number, 可选): `format=pdf` 时可传；默认值：`1`
-- `opt_frame` (boolean, 可选): `format=pdf` 时可传；默认值：`true`
-- `export_open_password` (string, 可选): `format=pdf` 时可传，导出 PDF 打开密码
-- `export_modify_password` (string, 可选): `format=pdf` 时可传，导出 PDF 修改密码
-- `name` (string, 可选): `format=ap` 时必填，智能文档名称，不含后缀
+> WPS 文字文档 fields 域相关操作。
 
----
+属性与工具列表见 [域操作](wps/fields.md)。
 
-### 2. wps.export_image
+## 八、脚注尾注操作
 
-#### 功能说明
+> WPS 文字文档 footnote_endnotes 域相关操作。
 
-将在线文字导出为 `png` 或 `jpeg` 图片。该接口走图片导出链路，入参必须使用 `link_id`，不能使用 `file_id`。
+属性与工具列表见 [脚注尾注操作](wps/footnote_endnotes.md)。
 
+## 九、公式操作
 
+> WPS 文字文档 formulas 域相关操作。
 
-#### 操作约束
+属性与工具列表见 [公式操作](wps/formulas.md)。
 
-- **前置检查**：先通过 `get_file_info` / `search_files` / `list_files` 获取 `link_id`，或从文档 URL 路径末尾提取
+## 十、页眉页脚操作
 
-**幂等性**：否 — 导出为异步任务，用 task_id 轮询结果而非重复提交
+> WPS 文字文档 header_footers 域相关操作。
 
-#### 调用示例
+属性与工具列表见 [页眉页脚操作](wps/header_footers.md)。
 
-导出为 PNG 长图：
+## 十一、超链接操作
 
-```json
-{
-  "link_id": "link_xxx",
-  "format": "png",
-  "dpi": 150,
-  "from_page": 1,
-  "to_page": 3,
-  "combine_long_pic": true
-}
-```
+> WPS 文字文档 hyperlinks 域相关操作。
 
+属性与工具列表见 [超链接操作](wps/hyperlinks.md)。
 
-#### 参数说明
+## 十二、图片操作
 
-- `link_id` (string, 必填): 在线文字文件的链接 ID（非 file_id）
-- `format` (string, 必填): 导出图片格式。可选值：`png` / `jpeg`
-- `dpi` (number, 可选): 导出图片 DPI。可选值：`96` / `150` / `300`；默认值：`96`
-- `water_mark` (boolean, 可选): 是否添加水印；默认值：`true`
-- `from_page` (number, 可选): 起始页码；默认值：`1`
-- `to_page` (number, 可选): 结束页码；默认值：`9999`
-- `combine_long_pic` (boolean, 可选): 是否合并为长图；`false` 表示逐页；默认值：`true`
-- `use_xva` (boolean, 可选): 是否启用 XVA 渲染
-- `client_id` (string, 可选): 导出时可选的客户端标识
-- `password` (string, 可选): 源文档密码
-- `store_type` (string, 可选): 存储类型，如 `ks3`、`cloud`
+> WPS 文字文档 images 域相关操作。
 
-#### 返回值说明
+属性与工具列表见 [图片操作](wps/images.md)。
 
-```json
-{
-  "code": 0,
-  "data": {
-    "url": "https://xxx.wps.cn/export/image.png",
-    "file_id": "string"
-  }
-}
+## 十三、索引操作
 
-```
+> WPS 文字文档 indexes 域相关操作。
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `data.url` | string | 导出图片的下载地址 |
-| `data.file_id` | string | 导出图片的文件 ID |
+属性与工具列表见 [索引操作](wps/indexes.md)。
 
----
+## 十四、列表操作
 
-### 3. wps.query_export
+> WPS 文字文档 lists 域相关操作。
 
-#### 功能说明
+属性与工具列表见 [列表操作](wps/lists.md)。
 
-统一查询异步导出结果：
+## 十五、OLE 对象操作
 
-- `format=pdf`：查询 PDF 导出任务
-- `format=ap`：查询 AP 导出任务
+> WPS 文字文档 ole 域相关操作。
 
+属性与工具列表见 [OLE 对象操作](wps/ole.md)。
 
+## 十六、文档保护操作
 
-#### 调用示例
+> WPS 文字文档 protection 域相关操作。
 
-`format=pdf` 查询 PDF 导出结果：
+属性与工具列表见 [文档保护操作](wps/protection.md)。
 
-```json
-{
-  "format": "pdf",
-  "task_id": "task_xxx",
-  "task_type": "normal_export"
-}
-```
+## 十七、交叉引用操作
 
-`format=ap` 查询 AP 导出结果：
+> WPS 文字文档 references 域相关操作。
 
-```json
-{
-  "format": "ap",
-  "file_id": "ap_file_xxx",
-  "task_id": "task_xxx"
-}
-```
+属性与工具列表见 [交叉引用操作](wps/references.md)。
 
+## 十八、修订操作
 
-#### 参数说明
+> WPS 文字文档 revisions 域相关操作。
 
-- `format` (string, 必填): 导出格式。可选值：`pdf` / `ap`
-- `task_id` (string, 必填): 导出任务 ID
-- `task_type` (string, 可选): `format=pdf` 时可传，通常为 `normal_export`
-- `file_id` (string, 可选): `format=ap` 时必填，传 `wps.export` 返回的新智能文档文件 ID
-- `extra_query` (object, 可选): `format=ap` 时可传，补充查询参数
+属性与工具列表见 [修订操作](wps/revisions.md)。
 
----
+## 十九、节操作
 
-## 二、原子操作
+> WPS 文字文档 sections 域相关操作。
 
-### 4. wps.core_execute
+属性与工具列表见 [节操作](wps/sections.md)。
 
-#### 功能说明
+## 二十、形状操作
 
-通过 `id + command + param` 调用在线文字原子能力。
-每个 command 对应一种原子操作，param 结构随 command 不同。
-
-**一、文档内容**
-- 读取: getFullContent / getParagraphContent / getRangeContent / getParagraphsCount
-- 修改: modifyParagraphContent / modifyRangeContent
-- 查找替换: findContent / replaceContent
+> WPS 文字文档 shapes 域相关操作。
 
-**二、段落格式**
-- 对齐: modifyParagraphAlignment / modifyRangeAlignment
-- 缩进: modifyParagraph[Left|Right|FirstLine]Indent / modifyRange[Left|Right|FirstLine]Indent
-- 行间距: modifyParagraphLineSpacing / modifyRangeLineSpacing
-
-**三、字符格式**
-- 字符样式: modifyParagraphFontStyle / modifyRangeFontStyle（key-value 模式）
-- 高亮色: modifyParagraphHighlight / modifyRangeHighlight
-
-各命令完整参数与枚举表见 wps 经验文档。
-
-
-
-> param 结构随 command 变化，不传则为 {}
-> 段落索引 n 从 1 开始，超出范围自动限制到最后一段
-> 区间参数 begin/end 为字符位置，从 0 开始
-> key-value 类命令（FontStyle）通过 key 选择属性，value 类型随 key 变化
-
-#### 调用示例
-
-读取全文：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "getFullContent"
-}
-```
-
-读取第 3 段：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "getParagraphContent",
-  "param": {
-    "n": 3
-  }
-}
-```
-
-修改第 1 段内容：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "modifyParagraphContent",
-  "param": {
-    "n": 1,
-    "str": "新的段落内容"
-  }
-}
-```
-
-全文替换：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "replaceContent",
-  "param": {
-    "findText": "旧词",
-    "replaceText": "新词",
-    "isAll": true
-  }
-}
-```
-
-设置段落居中：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "modifyParagraphAlignment",
-  "param": {
-    "n": 1,
-    "algMode": 1
-  }
-}
-```
-
-修改首行缩进 2 字符：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "modifyParagraphFirstLineIndent",
-  "param": {
-    "n": 1,
-    "indent": 2,
-    "unit": "ch"
-  }
-}
-```
-
-设置 1.5 倍行距：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "modifyParagraphLineSpacing",
-  "param": {
-    "n": 1,
-    "spacingRule": 1
-  }
-}
-```
-
-设置段落字体加粗：
-
-```json
-{
-  "id": "file_xxx",
-  "command": "modifyParagraphFontStyle",
-  "param": {
-    "n": 1,
-    "key": "Bold",
-    "value": true
-  }
-}
-```
-
-
-#### 参数说明
-
-- `id` (string, 必填): 在线文字文件 ID（file_id）
-- `command` (string, 必填): 原子操作命令名，支持以下值：
-文档内容: getFullContent / getParagraphContent / getRangeContent / getParagraphsCount / modifyParagraphContent / modifyRangeContent / findContent / replaceContent
-段落格式: modifyParagraphAlignment / modifyRangeAlignment / modifyParagraphLeftIndent / modifyParagraphRightIndent / modifyParagraphFirstLineIndent / modifyRangeLeftIndent / modifyRangeRightIndent / modifyRangeFirstLineIndent / modifyParagraphLineSpacing / modifyRangeLineSpacing
-字符格式: modifyParagraphFontStyle / modifyRangeFontStyle / modifyParagraphHighlight / modifyRangeHighlight
-
-- `param` (object, 可选): 命令参数对象，结构随 command 变化。速查：
-- getFullContent / getParagraphsCount: 无需参数
-- getParagraphContent: {n}
-- getRangeContent: {begin, end}
-- modifyParagraphContent: {n, str}
-- modifyRangeContent: {begin, end, str}
-- findContent: {findText, isAll}
-- replaceContent: {findText, replaceText, isAll}
-- modifyParagraphAlignment: {n, algMode}
-- modifyRangeAlignment: {begin, end, algMode}
-- modifyParagraph[Left|Right|FirstLine]Indent: {n, indent, unit}
-- modifyRange[Left|Right|FirstLine]Indent: {begin, end, indent, unit}
-- modifyParagraphLineSpacing: {n, spacingRule, spacingValue}
-- modifyRangeLineSpacing: {begin, end, spacingRule, spacingValue}
-- modifyParagraphFontStyle: {n, key, value}
-- modifyRangeFontStyle: {begin, end, key, value}
-- modifyParagraphHighlight: {n, highColor}
-- modifyRangeHighlight: {begin, end, highColor}
-各命令完整参数说明与枚举值见 wps 经验文档。
-
-
-#### 返回值说明
-
-```json
-{"ok": true, "message": "success", "data": "..."}
-
-```
-
----
-
-
-## 工具速查表
-
-| # | 工具名 | 分类 | 功能 | 必填参数 |
-|---|--------|------|------|----------|
-| 1 | `wps.export` | export | 统一导出在线文字文档 | `link_id`, `format` |
-| 2 | `wps.export_image` | export | 将在线文字导出为图片 | `link_id`, `format` |
-| 3 | `wps.query_export` | export | 统一查询异步导出结果 | `format`, `task_id` |
-| 4 | `wps.core_execute` | execute | 在线文字原子操作入口，通过 command 指定操作类型 | `id`, `command` |
-
-## Core Execute 使用指引
-
-- 命令路由表与参数速查 → [execute.md](wps/execute.md)
+属性与工具列表见 [形状操作](wps/shapes.md)。
+
+## 二十一、样式操作
+
+> WPS 文字文档 styles 域相关操作。
+
+属性与工具列表见 [样式操作](wps/styles.md)。
+
+## 二十二、表格操作
+
+> WPS 文字文档 tables 域相关操作。
+
+属性与工具列表见 [表格操作](wps/tables.md)。
+
+## 二十三、文字文档文本操作
+
+> WPS 文字文档中与段落、字符区间相关的文本格式与内容操作。
+
+属性与工具列表见 [文字文档文本操作](wps/texts.md)。
+
+## 二十四、目录操作
+
+> WPS 文字文档 tocs 域相关操作。
+
+属性与工具列表见 [目录操作](wps/tocs.md)。
+
+## 二十五、水印操作
+
+> WPS 文字文档 watermarks 域相关操作。
+
+属性与工具列表见 [水印操作](wps/watermarks.md)。
+
+## 二十六、WordML/XML 插入
+
+> WPS 文字文档 xmls 域相关操作。
+
+属性与工具列表见 [WordML/XML 插入](wps/xmls.md)。
 
 ## 典型用途
 
@@ -439,7 +251,7 @@
 | 空白文档创建 | 新建在线文字后再进入后续编辑流程 |
 | 文档导出 | 通过 `wps.export`、`wps.export_image`、`wps.query_export` 完成 |
 | AP 生成 | 通过 `wps.export(format=ap)` 与 `wps.query_export(format=ap)` 完成 |
-| 内容读写 | 通过 `wps.core_execute` → `getFullContent` / `modifyParagraphContent` 等 完成 |
-| 查找替换 | 通过 `wps.core_execute` → `findContent` / `replaceContent` 等 完成 |
-| 段落格式 | 通过 `wps.core_execute` → `modifyParagraphAlignment` / `modifyParagraphLineSpacing` 等 完成 |
-| 字符样式 | 通过 `wps.core_execute` → `modifyParagraphFontStyle` / `modifyRangeHighlight` 等 完成 |
+| 内容读写 | 通过 `wps.texts.content`、`wps.texts.range`、`wps.texts.count` 等文本工具完成 |
+| 查找替换 | 通过 `wps.texts.search` / `wps.texts.replace` 完成 |
+| 段落格式 | 通过 `wps.texts.alignment`、`wps.texts.indent`、`wps.texts.line_spacing` 等完成 |
+| 字符样式 | 通过 `wps.texts.font`、`wps.texts.highlight`、`wps.texts.format` 等完成 |
