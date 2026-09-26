@@ -1,17 +1,17 @@
 ---
-name: fbs-connector-session
-description: "福帮手访问码激活、权益预检、流程完结与退出会话。仅处理用户明确提出或主线明确要求的高级后续，不作为首轮业务入口。"
-description_zh: "处理福帮手原业务会话的访问码、预检、完结和退出。"
-description_en: "Handle legacy FBSir activation, entitlement prechecks, completion and business-session logout."
-version: "2026.9.20"
-author: "FBSir"
+name: fbs-session
+description: 福帮手访问码激活、权益预检、流程完结与退出会话。仅处理用户明确提出或主线明确要求的高级后续，不作为首轮业务入口。
+metadata:
+  ai.workbuddy.description_zh: 处理福帮手原业务会话的访问码、预检、完结和退出。
+  ai.workbuddy.description_en: Handle legacy FBSir activation, entitlement prechecks, completion and business-session logout.
+  ai.workbuddy.version: 2026.9.25-r7
+  ai.workbuddy.author: FBSir
 ---
-
 # 福帮手会话后续
 
 执行本技能时遵守[公共路由](../fbs-connector/SKILL.md)。
 
-本页四项仅为旧生产资源合同。OAuth画像beta的条件桥只开放core3，不开放skill_activate/skill_precheck/skill_finish/skill_logout；在该资源停止本页动作，不借会员工具或另一连接绕过。
+本页四项保留 canonical 旧业务合同，须当前实际开放。历史独立 OAuth 预览的条件桥只开放 core3，不开放skill_activate/skill_precheck/skill_finish/skill_logout；在该资源停止本页动作，不借会员工具或另一连接绕过。
 
 组织任何写入前完整读取 `references/session-write-outcomes.md`。
 

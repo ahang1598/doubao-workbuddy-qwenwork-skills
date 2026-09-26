@@ -7,8 +7,8 @@
 - 目录：`workbuddy/connectors/marketplace/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/connectors-marketplace`
 - 条目数：298
-- 文件数：5029
-- 最近同步：2026-09-25 08:53:43 +0800
+- 文件数：5034
+- 最近同步：2026-09-26 18:00:02 +0800
 
 ## 场景导航（按用途）
 
@@ -368,7 +368,7 @@
 - **EdgeOne Makers** — 将项目部署到 EdgeOne Makers 并返回线上访问地址，支持全栈、云函数、AI Agent 等开发场景。
 - **eMES AI 助手** — 鼎华 eMES AI 助手，连接 eMES OPENAPI，提供生产数据查询、派工、设备报修、委外加工、报工等智能能力。 Version: 1.0.0.
 - **弹性MapReduce** — 通过CLI实现弹性 MapReduce 集群、节点、服务、作业、监控、YARN 调度、自动扩缩容、用户与配置等查询。
-- **福帮手** — 福帮手连接器：协助确认服务身份、匹配场景方案、记录已完成进度并查询乐包。实际能力以当前服务与授权范围为准。
+- **福帮手** — 福帮手连接器：保留身份、场景、进度和乐包；在当前授权与用途允许时确认账号、读取或提交待确认画像。 Version: 2026.9.25-r7.
 - **粉笔** — 粉笔AI公考助手，帮你查专业分类、完善报考简历、智能选岗与国考模拟选岗、了解考情与报考条件，还能练易混词与成语辨析积累，提供一站式公考备考服务，让备考更精准、更高效。
 - **法研·法律法规检索** — 法研·法律法规检索，支持自然语言获取精准、现行有效的法规条文，将高质量、海量的法规知识库，无缝接入各类AI应用与工作流中。
 - **设备云维保** — 通过自然语言查询设备信息、故障报修、维修保养、备件库存及出入库记录，支持统计、趋势分析、分类对比和明细下钻。 Version: 1.0.0.
@@ -483,7 +483,7 @@
 | 创客贴 AI 创作 | `workbuddy/connectors/marketplace/connectors/chuangkit` | 设计可视化 | 创客贴 AI 创作 Chuangkit | 2 | 一键调用创客贴强大的AI在线设计能力，一句话生成专业营销设计，覆盖海报、品牌logo、封面配图、小红书图文，电商等设计场景，支持图文分层可编辑，点选改字，让设计小白轻松做图做视频！ Version: 0.1.0. |
 | 出海匠 | `workbuddy/connectors/marketplace/connectors/chuhaijiang` | 营销/内容运营 | 出海匠 Chuhaijiang | 12 | 基于实时 TikTok Shop 数据完成选品、竞品分析、达人筛选与带货内容创作，并管理社媒账号、发布内容、运营评论和私信。 |
 | 水滴征信 | `workbuddy/connectors/marketplace/connectors/cisp-mcp` | 通用工具/平台 | 水滴征信 Zenicredit | 3 | 通过水滴征信企业信息服务平台查询工商、知识产权、舆情、财务、土地、企业关联关系、关联方等企业多维信息，并支持企业二要素/三要素核验。 |
-| 腾讯云 CloudBase | `workbuddy/connectors/marketplace/connectors/cloudbase` | 数据分析 | 腾讯云 CloudBase Tencent CloudBase | 156 | 腾讯云开发 CloudBase 全栈开发、部署、调试与排障连接器。覆盖 Web 应用、微信小程序、uni-app、原生 App HTTP API、云函数、CloudRun、NoSQL/MySQL 数据库、云存储、静态托管、身份认证、AI 大模型调用、AI Agent、资源巡检与 Spec 工作流。 |
+| 腾讯云 CloudBase | `workbuddy/connectors/marketplace/connectors/cloudbase` | 数据分析 | 腾讯云 CloudBase Tencent CloudBase | 157 | 腾讯云开发 CloudBase 全栈开发、部署、调试与排障连接器。覆盖 Web 应用、微信小程序、uni-app、原生 App HTTP API、云函数、CloudRun、NoSQL/MySQL 数据库、云存储、静态托管、身份认证、AI 大模型调用、AI Agent、资源巡检与 Spec 工作流。 |
 | 云之家 | `workbuddy/connectors/marketplace/connectors/cloudhub` | 文档/表格/PPT | 云之家 CloudHub | 15 | 通过自然语言操作云之家：知识库文档、多维表格、日历日程、通讯录、IM 消息与文件管理。 Version: 0.6.1. |
 | 云MALL运营 | `workbuddy/connectors/marketplace/connectors/cloudmall-operations` | 营销/内容运营 | 云MALL运营 CloudMall Operations | 4 | 在 WorkBuddy 中用自然语言查询云MALL订单、商品与会员数据。连接运营账号后，按你当前的权限执行只读查询，结果实时返回，无需切换后台。 |
 | CNB | `workbuddy/connectors/marketplace/connectors/cnb-api` | 通用工具/平台 | CNB CNB | 2 | 通过自然语言管理 CNB 平台：仓库、Issue、PR、流水线、制品库等操作。 |
@@ -522,7 +522,7 @@
 | 帆软增长谋士 | `workbuddy/connectors/marketplace/connectors/fanruan-growth-advisor` | 营销/内容运营 | 帆软增长谋士 Fanruan Growth Advisor | 1 | 企业洞察与增长分析：查询企业经营风险、舆情、招投标、专利、资质、政策等公开商业数据，并调用已授权的 MOSS 增长谋士 Agent 生成分析与报告。 Version: 1.1.0. |
 | FastMoss | `workbuddy/connectors/marketplace/connectors/fastmoss` | 营销/内容运营 | FastMoss FastMoss | 9 | FastMoss 官方出品的 TikTok Shop 数据分析工具，覆盖商品、达人、店铺、MCN、短视频、直播、广告、类目市场与榜单数据，支持爆品挖掘、选品研究、达人筛选、竞品分析、店铺诊断、内容策略和投放效果评估。 Version: 1.0.0. |
 | 同花顺法律AI助手 | `workbuddy/connectors/marketplace/connectors/fazhi-law` | 设计可视化 | 同花顺法律AI助手 RoyalFlush Legal AI Assistant | 75 | 查询中国法律法规、司法案例、裁判文书及互联网法律实务资讯，支持法条检索、类案检索、深度法律研究、法律文书起草与诉讼可视化。 Version: 1.0.0. |
-| 福帮手 | `workbuddy/connectors/marketplace/connectors/fbs-connector` | 其他 | 福帮手 Fbsir | 26 | 福帮手连接器：协助确认服务身份、匹配场景方案、记录已完成进度并查询乐包。实际能力以当前服务与授权范围为准。 |
+| 福帮手 | `workbuddy/connectors/marketplace/connectors/fbs-connector` | 其他 | 福帮手 Fbsir | 30 | 福帮手连接器：保留身份、场景、进度和乐包；在当前授权与用途允许时确认账号、读取或提交待确认画像。 Version: 2026.9.25-r7. |
 | 飞书 | `workbuddy/connectors/marketplace/connectors/feishu` | 文档/表格/PPT | 飞书 Feishu | 551 | 通过命令行管理飞书/Lark 全产品能力：即时通讯、邮箱、日历、云文档、电子表格、多维表格（Base）、幻灯片、画板、知识库、云空间、妙记、视频会议、任务、审批、考勤、通讯录、OKR 等。 |
 | 分贝通 | `workbuddy/connectors/marketplace/connectors/fenbeitong` | 法务/合规 | 分贝通 Fenbeitong | 4 | 用自然语言查看和切换分贝通账号与企业，查询和管理企业差旅、消费规则、发票与报销，分析消费洞察、合规风险和降本机会，并获取客服支持。 |
 | 粉笔 | `workbuddy/connectors/marketplace/connectors/fenbi-baokao-decision` | 其他 | 粉笔 Fenbi | 8 | 粉笔AI公考助手，帮你查专业分类、完善报考简历、智能选岗与国考模拟选岗、了解考情与报考条件，还能练易混词与成语辨析积累，提供一站式公考备考服务，让备考更精准、更高效。 |

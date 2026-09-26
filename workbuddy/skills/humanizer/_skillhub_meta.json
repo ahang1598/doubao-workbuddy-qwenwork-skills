@@ -16,5 +16,6 @@
   ],
   "description_zh": "去除文本中的 AI 写作痕迹",
   "description_en": "Remove AI writing patterns from text",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:7bbd744c30dcf5011f222c439d4d609a70bafdd4f6153f8f9fcbed35495d4200"
 }

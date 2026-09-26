@@ -16,5 +16,6 @@
   ],
   "description_zh": "公众号长文写作+AI封面+自动发草稿（刘润风格、3000-5000字）",
   "description_en": "WeChat Official Account long-form writing with AI cover & auto-publish to drafts",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:176f881353505546ac8c6776d7a20da510ddfe53d4027f12e4389ebf023e6db9"
 }

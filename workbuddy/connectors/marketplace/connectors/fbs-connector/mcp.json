@@ -6,8 +6,8 @@
       "staticHeaders": {
         "X-FBS-Connector-Source": "fbs-connector",
         "X-FBS-Connector-Id": "fbs-connector",
-        "X-FBS-Connector-Version": "1.2.9",
-        "X-FBS-Connector-Package-Version": "2026.9.20",
+        "X-FBS-Connector-Version": "1.3.0",
+        "X-FBS-Connector-Package-Version": "2026.9.25-r7",
         "X-Request-Source": "workbuddy"
       },
       "disabledTools": [

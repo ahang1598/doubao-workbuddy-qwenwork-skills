@@ -1,10 +1,10 @@
 # 授权与恢复
 
-先区分本包默认旧生产资源和经维护者审核配置的OAuth画像资源。后者已有基线源码，但当前mcp.json不选择它；实际启用仍按[能力门](capability-routing.md)。WorkBuddy宿主处理OAuth发现、浏览器授权与刷新；模型不接收、抄写或持久化授权码、Token、Cookie、密码或client_secret，不启动本地OAuth守护进程，也不跨资源透传用户Bearer。
+本包的 canonical `mcp.json` 指向 `https://api2.u3w.com/fbs-mcp/mcp`。2026-09-23 该资源的 OAuth protected-resource metadata 指向 `cjddh920-preview` 授权服务器；独立审核预览画像资源仍是另一 URL，不能把两者授权或服务准入互相代用。实际可调用能力按[能力门](capability-routing.md)及本轮工具、scope、准入回执确定。WorkBuddy宿主处理OAuth发现、浏览器授权与刷新；模型不接收、抄写或持久化授权码、Token、Cookie、密码或client_secret，不启动本地OAuth守护进程，也不跨资源透传用户Bearer。
 
 服务端必须从经验证且面向本资源的授权确定账户；模型不得填写 `subject_id` 或任意 userId 替代认证。MCP session、匿名绑定、昵称、静态请求头和产品 ID 均不能证明本人账号，不自动合并旧匿名记录。平台第三方应用授权与福帮手会员 OAuth 分属不同授权，不互传令牌。
 
-缺工具时分别核对：未连接/未就绪、未授权、本轮未暴露、服务未实现。仅宿主支持时允许一次有界只读重新发现；仍缺失即停止自动重试。不要从一个缺失名字断言整个平台没有能力。授权取消不循环弹窗；刷新失败/撤销时引导用户重新连接，不降级为匿名读取私有资料。
+缺工具时分别核对：未连接/未就绪、未授权、本轮未暴露、服务未实现。仅宿主支持时允许一次有界只读重新发现；仍缺失即停止自动重试。不要从一个缺失名字断言整个平台没有能力。授权取消不循环弹窗；刷新失败/撤销时引导用户重新连接，不降级为匿名读取私有资料。若宿主呈现 `invalid_token`，按[原生时序](native-oauth-sequence.md)核对事件顺序，先核对受保护工具的原始 HTTP 401 challenge、资源元数据和授权服务器发现阶段；匿名 `initialize/tools/list` 的 200 与 UI“已连接”不证明有可用 Bearer。授权服务器元数据拒绝或回退路径返回非 JSON 时，停止同一工具重试并转交连接器/服务维护者处理。
 
 OAuth只确认本次福帮手账号授权，不等于自然人实名。画像用途、逐项事实确认、企业权限、费用和外部联系分别批准；用户拒绝画像不取消原有权益。新资源的PROFILE_CONSENT_REQUIRED是用途未同意，不是OAuth scope不足，不循环重新登录或扩大scope。
 

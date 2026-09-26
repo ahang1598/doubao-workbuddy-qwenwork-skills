@@ -16,5 +16,6 @@
   ],
   "description_zh": "输入论文PDF，秒出核心观点/方法/结论摘要，支持三档深度和多篇对比分析",
   "description_en": "Input a paper PDF for instant core insights, methods & conclusions summary, with three depth modes and multi-paper comparison",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:3c0e14b946c7a8c627aee278b227dad60e21aa0d33a842865af1f7f5f6dfb510"
 }

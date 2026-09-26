@@ -1,12 +1,12 @@
 ---
-name: fbs-connector-member
-description: "说明福帮手会员权益、积分与回执的能力边界；当前默认资源仅提供指引，不执行收费。"
-description_zh: "仅说明会员权益、积分与回执的接入条件；未开放时不代查或扣费。"
-description_en: "Explain membership, credit and receipt prerequisites; unavailable tools remain guidance only and never trigger billing."
-version: "2026.9.20"
-author: "FBSir"
+name: fbs-member
+description: 说明福帮手会员权益、积分与回执的能力边界；当前默认资源仅提供指引，不执行收费。
+metadata:
+  ai.workbuddy.description_zh: 仅说明会员权益、积分与回执的接入条件；未开放时不代查或扣费。
+  ai.workbuddy.description_en: Explain membership, credit and receipt prerequisites; unavailable tools remain guidance only and never trigger billing.
+  ai.workbuddy.version: 2026.9.25-r7
+  ai.workbuddy.author: FBSir
 ---
-
 # 会员与服务回执
 
 会员权益、积分与收费工具在当前连接器Gateway仍为support_readiness=guidance_only；管理系统存在这些业务不等于该资源已暴露MCP工具。先遵守[公共路由](../fbs-connector/SKILL.md)。例外是已审查OAuth Gateway的member_whoami：通过能力门后可查最小账号主体/状态，但不返回会员权益、余额或实名证明。

@@ -18,5 +18,6 @@
   "description_en": "Search and summarize the latest research papers from ArXiv",
   "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-watcher.svg",
   "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\arxiv-watcher\\_icon.svg",
-  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-watcher.svg"
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-watcher.svg",
+  "installedContentHash": "sha256:82833911d4b9ff36fcff5c816705c7e2abf4aa3ba60aaf400c2c81ebc57fed4a"
 }

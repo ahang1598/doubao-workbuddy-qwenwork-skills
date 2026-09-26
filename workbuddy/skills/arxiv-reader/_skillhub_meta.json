@@ -18,5 +18,6 @@
   "description_en": "LLM-based ArXiv paper classification and in-depth reading tool",
   "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-reader.svg",
   "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\arxiv-reader\\_icon.svg",
-  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-reader.svg"
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/arxiv-reader.svg",
+  "installedContentHash": "sha256:f5a81e941ab740a17b5ee4d3e8cd9f568a9589e91155584a4bdaa766ccacf35d"
 }

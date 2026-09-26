@@ -2,7 +2,7 @@
 
 本表记录2026-09-20审查的公开列表与本机市场缓存，不把缓存、已安装登记和本次实际加载混为一体。专家/专家团之外另列 fbs-bookwriter Skill；连接器是传输产品，不借用任一专家身份。原2026.9.10服务映射仅作历史核对，不能因静态清单自动扩展；当前调用还须通过本候选的版本/schema准入。
 
-本表不是OAuth画像Gateway的全量白名单。其172a425基线只接受超级独董会、自适应成果交付专家和独董会团的已审元组/版本，详见[机器合同](identity-contract.json)的resourceProfiles.oauthProfileGateway.acceptedExpertVersions；其它上市产品或独立Skill不因此获得该beta画像入口，不能借用三者身份。没有已加载专家来源时，账号级member_whoami/fbs_capabilities与需要完整来源的五个profile工具分别处理。
+本表是历史产品映射，不是当前 OAuth 画像准入白名单。当前 canonical 源码快照的四产品/版本见[机器合同](identity-contract.json)的 resourceProfiles.canonicalProfileGateway.acceptedExpertVersions；它不是新版本准入回执。172a425 的三产品限制只属于 historicalPreviewGateway。研究员后继等新版本须按原值验证，不能借用旧版本或另一专家身份。没有已加载专家来源时，账号级 member_whoami/fbs_capabilities 与需要完整四字段的五个 profile 工具分别处理。
 
 公开列表的董秘助手 `git:fbsir-board-assistant:fbsir-board-assistant`、智能原生案例研究员 `git:fbsir-industry-scene-expert:fbsir-industry-scene-expert` 与下列缓存包ID不同。没有迁移或别名回执，统一标记 `identity_mapping_unverified`；不因中文名称相同或版本不同就合并。
 

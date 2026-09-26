@@ -18,5 +18,6 @@
   "description_en": "Ctrip travel assistant for hotel/flight booking, itinerary planning & travel guides",
   "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/ctrip-wendao.png",
   "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\ctrip-wendao\\_icon.png",
-  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/ctrip-wendao.png"
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/ctrip-wendao.png",
+  "installedContentHash": "sha256:4612c0d30e05e91eafce9f1ad74f96cc2f408bbe37faefab5ec4ce98e12e7ed1"
 }

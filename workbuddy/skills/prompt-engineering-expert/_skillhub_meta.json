@@ -16,5 +16,6 @@
   ],
   "description_zh": "提示词工程专家：编写、分析、优化提示词和 AI 指令，覆盖最佳实践与高级技巧",
   "description_en": "Expert prompt engineering: write, analyze and optimize prompts and AI agent instructions",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:42658983975c068210eda75d90e5f2e701a7c3ef8ee8883d4eda9de0b60917ee"
 }

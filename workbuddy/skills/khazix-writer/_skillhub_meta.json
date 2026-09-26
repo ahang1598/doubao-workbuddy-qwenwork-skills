@@ -16,5 +16,6 @@
   ],
   "description_zh": "卡兹克风格的公众号长文写作，真诚有温度的AI内容创作",
   "description_en": "WeChat long-form writing in Khazix's authentic, personal voice",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:983276a42c2d0b92fcf2b9e513e4dc9549ee89c7e02662d0a63594f326580ac7"
 }

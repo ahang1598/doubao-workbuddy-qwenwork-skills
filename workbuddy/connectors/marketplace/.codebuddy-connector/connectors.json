@@ -518,24 +518,25 @@
       "id": "fbs-connector",
       "name": "福帮手",
       "name_en": "Fbsir",
-      "description": "Use FBSir identity, scene plans, progress and reward workflows in WorkBuddy, subject to available services and permissions.",
-      "description_zh": "福帮手连接器：协助确认服务身份、匹配场景方案、记录已完成进度并查询乐包。实际能力以当前服务与授权范围为准。",
-      "description_en": "Use FBSir identity, scene plans, progress and reward workflows in WorkBuddy, subject to available services and permissions.",
+      "description": "Use FBSir identity, scenes, progress and rewards, with OAuth account and purpose-limited profile tools when available.",
+      "description_zh": "福帮手连接器：保留身份、场景、进度和乐包；在当前授权与用途允许时确认账号、读取或提交待确认画像。",
+      "description_en": "Use FBSir identity, scenes, progress and rewards, with OAuth account and purpose-limited profile tools when available.",
       "source": "fbs-connector",
+      "version": "2026.9.25-r7",
       "minWorkbuddyVersion": "5.0.0",
       "examples_zh": [
         "先确认我当前的福帮手身份和最稳妥的下一步，再继续推进。",
         "根据我正在使用的专家和当前目标，匹配一个可执行的场景方案。",
         "我已经完成了第一步，请帮我记录进度并安排后续。",
         "查询我的乐包状态，并说明现在适合领取、兑换还是继续完成任务。",
-        "说明当前可用的福帮手服务，以及尚未确认的进度。"
+        "确认本次福帮手账号与可用能力；经我选择后，按用途使用已确认资料。"
       ],
       "examples_en": [
         "Check my current FBSir identity and recommend the safest next step.",
         "Match my active expert and goal to an actionable scene plan.",
         "I finished the first step; record the progress and guide the follow-up.",
         "Check my reward status and explain whether I should claim, redeem, or continue first.",
-        "Explain the FBSir services currently available and any progress that is still unconfirmed."
+        "Check my FBSir account and available capabilities; use confirmed profile facts only for a purpose I choose."
       ],
       "visible_in": [
         "internal",

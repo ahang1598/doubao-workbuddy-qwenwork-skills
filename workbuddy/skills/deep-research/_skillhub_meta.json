@@ -16,5 +16,6 @@
   ],
   "description_zh": "结构化深度调研工作流，支持大纲生成、并行搜索、报告输出",
   "description_en": "Structured deep research workflow: outline, parallel search, report generation",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:9a62664e7155e5d16f8a16d5d15ecc19a3945d32c8e004f15fedd5ca7e3c9955"
 }

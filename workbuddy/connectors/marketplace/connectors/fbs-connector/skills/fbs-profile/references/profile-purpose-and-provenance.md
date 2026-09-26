@@ -1,6 +1,6 @@
 # 画像用途、提案和来源
 
-先通过[capability-routing](../../fbs-connector/references/capability-routing.md)。本文对应会员Gateway源码`172a42582630c3941976da534408378c0dcc675a`；隔离服务已ACTIVE且基础路由检查通过，完整授权业务矩阵与宿主证据另行验收。实际调用仍须已审核资源配置、当前tools/list/schema和授权。canonical mcp.json保持旧生产地址，没有自动启用画像。机器边界见[身份合同](../../fbs-mainline/references/identity-contract.json)的resourceProfiles.oauthProfileGateway。
+先通过[capability-routing](../../fbs-connector/references/capability-routing.md)。本文输入形状与机器合同 sourceSnapshot 绑定的 R15 canonical 七工具源码及实际编译定义核对；运行时工具/schema、准入、账号政策和用途授权仍逐项确认。历史 172a425 预览留在机器合同 historicalPreviewGateway，不能用它的合成账号/三产品限制替代当前资源。当前机器边界见[身份合同](../../fbs-mainline/references/identity-contract.json)的 resourceProfiles.canonicalProfileGateway。
 
 账户来自本资源有效 OAuth，主体在同一 issuer 内不随客户端或组织改变；不在参数补 subject_id/userId/grant，不以匿名 binding、产品ID或昵称选择他人。contextRef只能由服务签发，绑定账号、当前client/grant、精确上下文和用途。不同grant各自网页同意后才共享本人同范围事实；新grant不能复用旧ref。共享连接器的productId仅为声明来源，不能实现按专家保密。
 
@@ -10,6 +10,8 @@
 |---|---|
 | PERSONAL / personal / expert-personalization | work_role、industry、experience、goals、constraints、decision_style、preferred_language、output_preference、delivery_preference、collaboration_preference |
 | CASE / 本人已有个人case-ID / decision-support | objective、constraint、decision、success_criteria、deadline |
+
+`PERSONAL` 的 `contextId` 只能是字面值 `personal`，不因每次任务或测试而变化；它与新写动作的 `operationId` 是两个字段。`CASE` 编号必须来自本人已有事项且以 `case-` 开头，服务仍独立检查存在性和归属。当前 `profile_status.purposes` 会给出 PERSONAL 的 `contextId=personal/contextIdSource=fixed`，以及 CASE 的 `contextIdSource=existing_personal_case/contextIdPrefix=case-/contextIdMustExist=true`；以本轮实际返回核对，不能把提示值扩展成新建事项能力。
 
 组织画像、企业事项编号和organizationId覆盖明确拒绝，不能降级成个人。事项由本人门户已有流程选择/创建；本资源没有member_case_create等事项工具。只提出用户明确选择的最少短值，不上传聊天全文、原稿、媒体、文件路径、证件或凭据，不推断无关敏感标签。会员/账务信息不是可编辑画像字段。
 
@@ -21,7 +23,11 @@
 
 `profile_propose` 必填operationId、contextRef、fieldKey、value、evidence、claimKind，每次一项。value/evidence各最多256个UTF-16字符单位；claimKind只能明确取user_statement（用户已陈述）、artifact_observation（本轮获准材料观察）、expert_inference（专家推断），缺失不得猜测或代填。sourceEvidenceTrust固定client_declared_unverified；本人确认或纠正后仍保留原kind/evidence，不因此证明观察客观正确。
 
-operationId在首次明确动作前分配并保留，同号同载荷返回原回执，异归属/载荷/产品版本冲突则停止。ID格式为1–64字符，首位字母数字，其余字母数字或`._:-`；不要把个人信息放进编号，也不为生号运行未授权Shell或写记忆。MCP新增提案不接收callerOperationId、expectedVersion、amend或独立purpose参数。丢响应先按原operationId查profile_operation_receipt；同账号不同grant不能跨读该回执，需本人网页核对，不能另造新号。
+operationId在用户明确选择某项写操作后由调用端本地分配并保留，同号同载荷返回原回执，异归属/载荷/产品版本冲突则停止。优先使用安全随机UUID；不要向用户索要内部操作号，也不要把个人信息放进编号。可选本地请求规划器见[profile-request-plan.mjs](../scripts/profile-request-plan.mjs)，纯本地验证不联网，不能代替实时schema或服务判权。MCP新增提案不接收callerOperationId、expectedVersion、amend或独立purpose参数。丢响应先按原operationId查profile_operation_receipt；同账号不同grant不能跨读该回执，需本人网页核对，不能另造新号。
+
+任务追踪中`episodeId`只作本地任务分组，`attemptId`每次调用重新生成；二者不进入闭合工具schema。工具回执里的JSON-RPC `requestId`、写操作`operationId`和服务`requestRef`分别保存，不能用其中一个替代另一个。没有同一实际响应中的requestRef时标记`not_observed`，不按时间拼接用户或操作。
+
+`PROFILE_CONTEXT_UNSUPPORTED` 的安全下一步是 `review_context_contract`：核对 `supportedContexts` 中的精确组合及既有事项来源，保留错误与原操作号，不自动替换contextId或再次调用写入口。即使本次返回 `serviceRequestAccepted=false`，也不能由此断言此前同号操作从未存在；`PROFILE_NOT_FOUND` 同样只说明当前查询没有返回该回执。用户和主任务确认后继方案前不改变载荷/版本或新造操作号重写。此错误不是OAuth失效、scope不足、用途同意缺失或“平台未开放”的通用别名。
 
 提案不是确认。网页写操作使用本人Cookie、固定同源、X-Fbs-Profile:1及expectedVersion；这些由本人页面处理，模型不能手工搬运Cookie、伪造批准或向MCP塞accepted=true。当前没有另行暴露的一次性挑战参数。
 

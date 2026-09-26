@@ -10,7 +10,7 @@
 
 旧业务字段包括产品/包/入口、渠道、意图、交互、场景、binding和幂等材料；不把这些整包复制到新profile工具。`attributionContext`、`installInstanceId`或任意账户主体覆盖不是新Gateway输入。认证账户由OAuth服务验证；profile参数按[实际协议](../../fbs-profile/references/profile-purpose-and-provenance.md)，不能补userId/subject/grant或旧会话材料。
 
-产品、包名、专家入口和专家版本只来自本次实际加载且可核验的 manifest/宿主字段；静态产品表、候选目标版本和旧记忆不证明本次加载。默认正式资源以清单name对应的产品包ID识别14个已登记产品；版本只作观测，未知可以省略，升级不改变身份。成员入口用于区分同一包内的专家，可选字段按schema省略。连接器版本不填入packageVersion/expertPackageVersion，不能套用邻近产品或缓存版本。具体规则见[身份与权限](../../fbs-mainline/references/identity-and-permission.md)。
+产品、包名、专家入口和专家版本只来自本次实际加载且可核验的 manifest/宿主字段；静态产品表、候选目标版本和旧记忆不证明本次加载。canonical 旧业务合同以清单 name 对应的产品包ID识别登记产品；在其 schema 允许时未知版本可省略。七个 OAuth 工具一旦声明专家则校验完整四元组与当前版本准入，五个 profile 工具不能省略未知版本或假填旧值。升级不改变产品身份。成员入口用于区分同一包内的专家，可选字段按schema省略。连接器版本不填入packageVersion/expertPackageVersion，不能套用邻近产品或缓存版本。具体规则见[身份与权限](../../fbs-mainline/references/identity-and-permission.md)。
 
 意图须来自本次明确请求和合同允许的分类，不能以服务默认 general 或高非空率冒充已识别意图。日志字段缺失可能来自生产者/查询器投影差异，模型不得补 natural、可信来源或产品信用标签。探针只用真实测试载体提供的标记；自然/业务分类由独立服务证据判定，不由 Skill 自证。
 
@@ -49,8 +49,8 @@ HTTP 200、SSE 建连或 JSON-RPC 成功包络均不能替代工具和业务成�
 
 ## 版本轴
 
-- connector package：`2026.9.20`
-- legacy connector contract header：`1.2.9`
+- connector package：`2026.9.25-r7`
+- connector contract header：`1.3.0`（不替代专家版本）
 - expert package：各专家自己的当前版本
 - host、MCP protocol 和 service release：由各自运行时事实产生
 

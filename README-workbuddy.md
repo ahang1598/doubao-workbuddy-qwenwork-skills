@@ -7,8 +7,8 @@
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：633
-- 当前索引文件数：17591
-- 最近变更：[2026-09-25-085343](workbuddy/change-logs/2026-09-25-085343.md) - WorkBuddy 本次同步新增 593 个文件、修改 108 个文件、删除 9 个文件。 新增条目：connectors/marketplace/connectors/chainlon-geo-mcp, connectors/marketplace/connectors/duoguan-course, connectors/marketplace/c...
+- 当前索引文件数：17596
+- 最近变更：[2026-09-26-180002](workbuddy/change-logs/2026-09-26-180002.md) - WorkBuddy 本次同步新增 5 个文件、修改 54 个文件、删除 0 个文件。 受影响范围：connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/cloudbase, connectors/marketplace/connectors/cnb-...
 
 ## 数据来源
 
@@ -432,7 +432,7 @@
 | 创客贴 AI 创作 | `workbuddy/connectors/marketplace/connectors/chuangkit` | cli | 2 | 一键调用创客贴强大的AI在线设计能力，一句话生成专业营销设计，覆盖海报、品牌logo、封面配图、小红书图文，电商等设计场景，支持图文分层可编辑，点选改字，让设计小白轻松做图做视频！ Version: 0.1.0. |
 | 出海匠 | `workbuddy/connectors/marketplace/connectors/chuhaijiang` | mcp | 12 | 基于实时 TikTok Shop 数据完成选品、竞品分析、达人筛选与带货内容创作，并管理社媒账号、发布内容、运营评论和私信。 |
 | 水滴征信 | `workbuddy/connectors/marketplace/connectors/cisp-mcp` | mcp | 3 | 通过水滴征信企业信息服务平台查询工商、知识产权、舆情、财务、土地、企业关联关系、关联方等企业多维信息，并支持企业二要素/三要素核验。 |
-| 腾讯云 CloudBase | `workbuddy/connectors/marketplace/connectors/cloudbase` | connector | 156 | 腾讯云开发 CloudBase 全栈开发、部署、调试与排障连接器。覆盖 Web 应用、微信小程序、uni-app、原生 App HTTP API、云函数、CloudRun、NoSQL/MySQL 数据库、云存储、静态托管、身份认证、AI 大模型调用、AI Agent、资源巡检与 Spec 工作流。 |
+| 腾讯云 CloudBase | `workbuddy/connectors/marketplace/connectors/cloudbase` | connector | 157 | 腾讯云开发 CloudBase 全栈开发、部署、调试与排障连接器。覆盖 Web 应用、微信小程序、uni-app、原生 App HTTP API、云函数、CloudRun、NoSQL/MySQL 数据库、云存储、静态托管、身份认证、AI 大模型调用、AI Agent、资源巡检与 Spec 工作流。 |
 | 云之家 | `workbuddy/connectors/marketplace/connectors/cloudhub` | cli | 15 | 通过自然语言操作云之家：知识库文档、多维表格、日历日程、通讯录、IM 消息与文件管理。 Version: 0.6.1. |
 | 云MALL运营 | `workbuddy/connectors/marketplace/connectors/cloudmall-operations` | mcp | 4 | 在 WorkBuddy 中用自然语言查询云MALL订单、商品与会员数据。连接运营账号后，按你当前的权限执行只读查询，结果实时返回，无需切换后台。 |
 | CNB | `workbuddy/connectors/marketplace/connectors/cnb-api` | cli | 2 | 通过自然语言管理 CNB 平台：仓库、Issue、PR、流水线、制品库等操作。 |
@@ -471,7 +471,7 @@
 | 帆软增长谋士 | `workbuddy/connectors/marketplace/connectors/fanruan-growth-advisor` | mcp | 1 | 企业洞察与增长分析：查询企业经营风险、舆情、招投标、专利、资质、政策等公开商业数据，并调用已授权的 MOSS 增长谋士 Agent 生成分析与报告。 Version: 1.1.0. |
 | FastMoss | `workbuddy/connectors/marketplace/connectors/fastmoss` | mcp | 9 | FastMoss 官方出品的 TikTok Shop 数据分析工具，覆盖商品、达人、店铺、MCN、短视频、直播、广告、类目市场与榜单数据，支持爆品挖掘、选品研究、达人筛选、竞品分析、店铺诊断、内容策略和投放效果评估。 Version: 1.0.0. |
 | 同花顺法律AI助手 | `workbuddy/connectors/marketplace/connectors/fazhi-law` | mcp | 75 | 查询中国法律法规、司法案例、裁判文书及互联网法律实务资讯，支持法条检索、类案检索、深度法律研究、法律文书起草与诉讼可视化。 Version: 1.0.0. |
-| 福帮手 | `workbuddy/connectors/marketplace/connectors/fbs-connector` | connector | 26 | 福帮手连接器：协助确认服务身份、匹配场景方案、记录已完成进度并查询乐包。实际能力以当前服务与授权范围为准。 |
+| 福帮手 | `workbuddy/connectors/marketplace/connectors/fbs-connector` | connector | 30 | 福帮手连接器：保留身份、场景、进度和乐包；在当前授权与用途允许时确认账号、读取或提交待确认画像。 Version: 2026.9.25-r7. |
 | 飞书 | `workbuddy/connectors/marketplace/connectors/feishu` | cli | 551 | 通过命令行管理飞书/Lark 全产品能力：即时通讯、邮箱、日历、云文档、电子表格、多维表格（Base）、幻灯片、画板、知识库、云空间、妙记、视频会议、任务、审批、考勤、通讯录、OKR 等。 |
 | 分贝通 | `workbuddy/connectors/marketplace/connectors/fenbeitong` | mcp | 4 | 用自然语言查看和切换分贝通账号与企业，查询和管理企业差旅、消费规则、发票与报销，分析消费洞察、合规风险和降本机会，并获取客服支持。 |
 | 粉笔 | `workbuddy/connectors/marketplace/connectors/fenbi-baokao-decision` | mcp | 8 | 粉笔AI公考助手，帮你查专业分类、完善报考简历、智能选岗与国考模拟选岗、了解考情与报考条件，还能练易混词与成语辨析积累，提供一站式公考备考服务，让备考更精准、更高效。 |
@@ -701,6 +701,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-09-26-180002 | [2026-09-26-180002](workbuddy/change-logs/2026-09-26-180002.md) | WorkBuddy 本次同步新增 5 个文件、修改 54 个文件、删除 0 个文件。 受影响范围：connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/cloudbase, connectors/marketplace/connectors/cnb-... |
 | 2026-09-25-085343 | [2026-09-25-085343](workbuddy/change-logs/2026-09-25-085343.md) | WorkBuddy 本次同步新增 593 个文件、修改 108 个文件、删除 9 个文件。 新增条目：connectors/marketplace/connectors/chainlon-geo-mcp, connectors/marketplace/connectors/duoguan-course, connectors/marketplace/c... |
 | 2026-09-23-180002 | [2026-09-23-180002](workbuddy/change-logs/2026-09-23-180002.md) | WorkBuddy 本次同步新增 540 个文件、修改 9 个文件、删除 196 个文件。 新增条目：connectors/marketplace/connectors/beatapi-beatdesign, connectors/marketplace/connectors/cloudhub, connectors/marketplace/conne... |
 | 2026-09-22-180002 | [2026-09-22-180002](workbuddy/change-logs/2026-09-22-180002.md) | WorkBuddy 本次同步新增 679 个文件、修改 62 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/aholo-lux3d, connectors/marketplace/connectors/meituan-for-business, connectors/marketplace/c... |
@@ -720,4 +721,3 @@
 | 2026-08-30-212148 | [2026-08-30-212148](workbuddy/change-logs/2026-08-30-212148.md) | WorkBuddy 本次同步新增 2677 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/default, connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/77ircloud, connectors/market... |
 | 2026-08-20-180002 | [2026-08-20-180002](workbuddy/change-logs/2026-08-20-180002.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/aihot__skillhub。 |
 | 2026-08-13-180002 | [2026-08-13-180002](workbuddy/change-logs/2026-08-13-180002.md) | WorkBuddy 本次同步新增 13 个文件、修改 4 个文件、删除 235 个文件。 新增条目：skills/paper-reader, skills/paper-reader.zip, skills/paper-rebuttal, skills/paper-reviewer, skills/research-lineage-map。 移除条目已归... |
-| 2026-08-11-180003 | [2026-08-11-180003](workbuddy/change-logs/2026-08-11-180003.md) | WorkBuddy 本次同步新增 54 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/mvp-dev-expert-team。 受影响范围：experts/mvp-dev-expert-team。 |

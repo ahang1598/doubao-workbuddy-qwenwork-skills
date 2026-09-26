@@ -1,19 +1,21 @@
 ---
-name: fbs-connector-mainline
-description: "福帮手身份、场景与进度主线。先核对用户工具限制和实际加载产品包ID，再按服务原参数接续；获准且真实交付后才记录进度。"
-description_zh: "核对福帮手服务身份与场景，仅在真实交付后记录使用进度。"
-description_en: "Check FBSir identity and scene routing, then record progress only after actual delivery."
-version: "2026.9.20"
-author: "FBSir"
+name: fbs-mainline
+description: 福帮手旧业务场景、匿名绑定与进度主线；不用于核对OAuth登录账号或本人画像。获准且真实交付后才记录进度。
+metadata:
+  ai.workbuddy.description_zh: 核对福帮手服务身份与场景，仅在真实交付后记录使用进度。
+  ai.workbuddy.description_en: Check FBSir identity and scene routing, then record progress only after actual delivery.
+  ai.workbuddy.version: 2026.9.25-r7
+  ai.workbuddy.author: FBSir
 ---
-
 # 福帮手身份与场景主线
 
 执行前读取[身份发送与工具边界](references/identity-and-permission.md)，遵守[公共路由](../fbs-connector/SKILL.md)和当前产品前置。机器约定见[身份合同](references/identity-contract.json)，不把它当宿主证明。
 
-以下是原API2主线。在已审核OAuth画像资源上，仅legacyBridge.available且本轮工具面包含的core3可沿用；新七工具按各自合同工作，不必先走场景链才能按用途读取画像。新资源每次请求都须OAuth，原匿名入口不适用。
+以下保留 canonical 的旧 API2 主线，仅按当前旧工具 schema 与原信封执行。相同 URL 的七个 OAuth 账号/画像工具走独立合同，不必先走场景链。只有在另行选择历史预览资源时，才按该资源 legacyBridge.available 判断合成 core3；不把预览桥状态当成 canonical 旧工具的总开关。新七工具的受保护调用需要 OAuth，旧匿名身份不能替代。
 
-## 固定顺序
+## 仅旧场景与进度请求的固定顺序
+
+用户只是核对登录账号、连接授权或本人画像时，不进入下列顺序，返回公共路由的 `member_whoami / fbs_capabilities`。已加载专家必须用自己包内的实际 ID 和版本；本技能不能把当前专家降为无身份调用。
 
 1. 具名调用 `skill_whoami` 前，从本轮实际加载清单的 `name` 取得产品包ID，优先放入 `packageName`。已知 `productId` 应与包ID一致；已知成员入口和实际包版本按原值附带。未知版本省略，不填连接器版本，也不因版本升级改用别的身份。OAuth画像预览仍单独按其当前服务合同处理。
 2. 仅当返回明确指定场景/身份读取类下一工具时，按 `references/action-envelope.md` 校验并原样转发完整 `actionEnvelope.toolArguments`；不得挑字段、改名或把 envelope 之外的候选字段并入调用。写入型下一步转交对应子技能并重新检查用户意图与写前条件。

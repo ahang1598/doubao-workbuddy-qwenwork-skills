@@ -18,5 +18,6 @@
   "description_en": "Real-time web search via TencentCloud WSA API with keyword, site & time filters",
   "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/tencent-yuanbao-standard-search.svg",
   "iconLocalPath": "C:\\Users\\15805\\.workbuddy\\skills\\tencent-yuanbao-standard-search\\_icon.svg",
-  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/tencent-yuanbao-standard-search.svg"
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/tencent-yuanbao-standard-search.svg",
+  "installedContentHash": "sha256:be6ca336e75712109be6189ab671d32d14cb13fb3b1d858976e89ee234f717f3"
 }
