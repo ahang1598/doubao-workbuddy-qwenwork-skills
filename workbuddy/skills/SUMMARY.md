@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/.workbuddy/skills`
 - 条目数：17
 - 文件数：160
-- 最近同步：2026-09-28 18:00:10 +0800
+- 最近同步：2026-10-08 09:05:57 +0800
 
 ## 场景导航（按用途）
 
@@ -32,7 +32,7 @@
 - **research-lineage-map** — 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点...
 
 ### 营销/内容运营
-- **wechat-article-pro** — 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签
+- **wechat-article-pro** — 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签。亦支持基于用户给定的稿件或链接改写
 
 ### 通用工具/平台
 - **paper-reader** — 基于论文文本的通用读论文助手。用户提供论文文本（文件路径或直接粘贴），解答各类读论文需求——总结、精读、内容问答、概念解释、批判性分析等，并将结果以 Markdown 写入当前工作目录。触发词：读论文、论文总结、精读这篇论文、帮我分析这篇论文、这篇论文讲了什么、论文问答、论文笔记。输入为纯文本/Markdown 论文内容；不做论文检索下载、不做扫描件 OCR、不做论文写作降重。
@@ -65,5 +65,5 @@
 | research-lineage-map | `workbuddy/skills/research-lineage-map` | 设计可视化 | research-lineage-map | 4 | 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点... |
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | 通用工具/平台 | skillhub-daily | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | 其他 | tencent-yuanbao-standard-search | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
-| wechat-article-pro | `workbuddy/skills/wechat-article-pro` | 营销/内容运营 | wechat-article-pro | 2 | 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签 |
+| wechat-article-pro | `workbuddy/skills/wechat-article-pro` | 营销/内容运营 | wechat-article-pro | 2 | 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签。亦支持基于用户给定的稿件或链接改写 |
 | wedding-handcard-creator | `workbuddy/skills/wedding-handcard-creator` | 文档/表格/PPT | wedding-handcard-creator | 5 | 根据婚礼主持稿生成可直接打印的主持人手卡。输出 A5 竖版拼版（每张 A5 纸上下各一张小卡，对半裁开即得 12 张手卡），支持 HTML 和 PDF 两种格式，正面为台词+动作提示+页号，背面为红金囍字封面。适用于：用户要求制作婚礼主持手卡、把主持稿转成可打印卡片、生成司仪手卡/提词卡、设计婚礼手卡封面、输出 PDF，或已有主持稿需要配套现场手持卡片的场景。 |

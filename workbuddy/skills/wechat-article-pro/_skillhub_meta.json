@@ -2,7 +2,7 @@
   "name": "微信公众号文章发布",
   "installedAt": 1783579036891,
   "source": "marketplace",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "skillId": "skill_2054902471873105920",
   "examples_zh": [
     "围绕'AI对就业的影响'写一篇公众号长文，搜热点+生成封面+发草稿",
@@ -17,5 +17,5 @@
   "description_zh": "公众号长文写作+AI封面+自动发草稿（刘润风格、3000-5000字）",
   "description_en": "WeChat Official Account long-form writing with AI cover & auto-publish to drafts",
   "iconSource": "letter:auto",
-  "installedContentHash": "sha256:176f881353505546ac8c6776d7a20da510ddfe53d4027f12e4389ebf023e6db9"
+  "installedContentHash": "sha256:2a2ad7e6c1038c506436ce9e8287108557c172a7d48a462a236bd59d31ff2b6e"
 }
