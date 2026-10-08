@@ -45,7 +45,7 @@ lark-cli calendar +create --summary "..." --start "..." --end "..." \
 > 自动设置 `reminders: [{"minutes": 5}]`，默认日程开始前 5 分钟提醒。
 > 自动设置 `vchat: {"vc_type": "vc"}`，默认日程包含飞书视频会议。如需其他视频会议类型或不含视频会议，请使用完整 API 命令。
 > 失败保护：若添加参会人失败（如 open_id 错误），CLI 会自动删除刚创建的空日程（回滚，不通知参会人）。
-> 审批会议室：`+create` 不暴露低频字段 `attendees[].approval_reason`。如果会议室要求审批，请使用用户身份先创建日程，再用完整 API `calendar event.attendees create` 添加会议室并传 `approval_reason`。
+> 审批会议室：`+create` 不暴露低频字段 `attendees[].approval_reason`。如果会议室要求审批，请先创建日程，再用完整 API `calendar event.attendees create` 添加会议室并传 `approval_reason`。
 
 ## 高级用法（完整 API 命令）
 
@@ -59,6 +59,7 @@ lark-cli calendar +create --summary "..." --start "..." --end "..." \
 lark-cli calendar event.attendees create \
   --params '{"calendar_id":"<CALENDAR_ID>","event_id":"<EVENT_ID>"}' \
   --data '{"attendees": [{"type": "resource", "room_id": "omm_xxx", "approval_reason": "申请原因"}]}'
+```
 
 完整 API 命令的关键差异和处理策略：
 - 时间参数是 **Unix 秒字符串**（非 ISO 8601）。换算时**禁止依赖容器默认时区**（常为 UTC，会导致 8 小时偏移），必须显式指定目标时区。

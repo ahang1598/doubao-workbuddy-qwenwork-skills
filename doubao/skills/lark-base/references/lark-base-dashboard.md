@@ -51,6 +51,7 @@ create/update 可选 `--position`，用 12 列栅格坐标精确指定单个组�
 > - 坐标**取值不做本地校验**：越界、负值或重叠坐标会原样发给服务端，由服务端自动重排。调用方仍应优先规划 12 列范围内且不重叠的坐标，避免自动重排改变预期落点。
 > - 不传 `--position`：create 由服务端自动装箱，update 保持当前布局不变。
 > - 只有用户明确给出 `x/y/w/h`、具体行列/顺序、每个组件宽高或可直接换算的尺寸比例时才用 `--position`。“调整布局”“美化”“撑满”“铺满”本身不算精确约束，没有组件级坐标或尺寸时优先用 `+dashboard-arrange` 整盘编排。
+> - **例外（arrange 兜底重试）**：本次新建仪表盘经 `+dashboard-arrange` 重排后布局仍不合格（组件重叠、中间整行为空、行内有空档、非末行右侧留白，或末行未从左起排）时，即使用户没有给出坐标，也应主动用 `--position` 按 12 列栅格自算坐标兜底：逐行左起、行内铺满（`x+w<=12`）、组件间不重叠；写后回读 `+dashboard-block-get` 的 `position` 按该判据自检，确实受平台限制无法满足时再如实报告。
 > - 命令成功即视为写入成功，一般无需仅为读回位置再调用 `+dashboard-block-get` / `+dashboard-block-list`；成功响应不代表最终渲染位置已经过读回验证。
 
 ## statistics 指标卡数值格式
@@ -63,6 +64,7 @@ create/update 可选 `--position`，用 12 列栅格坐标精确指定单个组�
 
 从 0 到 1 创建仪表盘时，按用户需求规划组件的类型和数量，并注意以下要点：
 
+- 类型选择先看结果粒度，再看指标数量：只要用户要求“按 / 各 / 每某维度”或已解析出非空 `group_by`，即使只有一个统计指标，也必须使用支持分类轴的分组图表并保留该 `group_by`；只有真正无维度、预期返回单值的结果才能使用 `statistics`。
 - 聚合方式：创建指标卡或分布图时优先把聚合写进 `data_config`，只有 Top N、字段取值探索、复杂筛选校验或 helper 汇总表场景才先用 `+data-query`。
 - Dry-run 边界：已按模板构造的简单指标卡、分布图、趋势图不需要逐个 `--dry-run` 后再真实创建；只有在调试 JSON、检查请求体、复杂自造 `data_config` 或处理 API validation 错误时才 dry-run。
 - 验证方式：创建响应只确认请求已受理，不代表运行时一定能算出正确数据；完成前按上方交付健康门禁验证本次目标组件的实际配置与计算结果，不把全量无关组件带入检查。
@@ -81,7 +83,7 @@ lark-cli base +table-list --base-token xxx
 lark-cli base +field-list --base-token xxx --table-id <table_id>
 
 # 第 3 步：规划应该创建哪些组件（根据用户需求确定组件类型和数量）
-# 例如：总销售额（指标卡）、月度趋势（折线图）、品类占比（饼图）
+# 例如：总销售额（指标卡）、月度趋势（折线图）、负责人 Top N（排行榜）、满意度评分（NPS）
 
 # 第 4 步：顺序创建每个组件（必须串行执行，不能并发）
 # 重要：创建组件前，先确定 dashboard_id、组件 name/type 和真实表字段
@@ -104,6 +106,14 @@ lark-cli base +dashboard-block-create \
   --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"月份","mode":"integrated"}]}'
 
 # 继续创建其他组件...
+
+# 排行榜组件：省略 limit_size 和 sort 时分别默认 10、value desc
+lark-cli base +dashboard-block-create \
+  --base-token xxx \
+  --dashboard-id blk_xxx \
+  --name "负责人销售额 Top 10" \
+  --type ranking \
+  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"负责人"}]}'
 
 # 第 5 步：组件创建完成后，可按需使用 arrange 智能重排（未使用 --position 时可选）
 # 默认布局可能不够美观，arrange 会根据组件数量和类型自动优化布局
@@ -173,6 +183,13 @@ lark-cli base +dashboard-block-update \
   --data-config '{...}' \
   --position '{...}'   # 可选，只在需要调整布局时传
 
+# 排行榜只修改 Top N；不会覆盖分组、指标、筛选或排序
+lark-cli base +dashboard-block-update \
+  --base-token xxx \
+  --dashboard-id blk_xxx \
+  --block-id chtxxxxxxxx \
+  --data-config '{"limit_size":20}'
+
 ```
 
 ### 场景 4：重排仪表盘布局
@@ -182,6 +199,7 @@ lark-cli base +dashboard-block-update \
 > [!CAUTION]
 > - 排列结果是**服务端智能推荐**，不一定完全符合用户预期
 > - `+dashboard-arrange` 无法指定 `x/y/w/h`、精确位置或尺寸，排列逻辑是**自适应**的；只有用户明确给出可执行的组件级坐标、行列或尺寸约束时才改用 `--position`
+> - **本次新建仪表盘经 `+dashboard-arrange` 重排后布局仍不合格（重叠、空行、行内空档、非末行右留白或末行未左起）时，即使用户没给坐标，也应改用 `--position` 逐组件自算坐标兜底重试，写后回读 `position` 自检；判据见 [lark-base-solution-design.md](lark-base-solution-design.md) 的仪表盘布局条**
 > - **不建议**在已有仪表盘上自动调用，除非用户明确要求
 > - 用户只要求一般性重排、美化、撑满或铺满时，用 `+dashboard-arrange` 整盘编排
 > - 编排结果不理想时，可结合用户反馈再调整；不要为了凑效果去探测 raw `lark-cli api`、源码或未公开布局参数
@@ -236,7 +254,9 @@ lark-cli base +dashboard-block-get-data --base-token xxx --block-id chtxxxxxxxx
 | 数据趋势（时间变化） | line | 折线图组件 |
 | 类别比较（谁高谁低） | column | 柱状图组件 |
 | 占比分布（各部分比例） | pie | 饼图组件 |
-| 单个关键指标 | statistics | 指标卡组件 |
+| 无 `group_by` 的单值关键指标 | statistics | 指标卡组件 |
+| 单维度 Top N 排名 | ranking | 排行榜组件，单分组、单指标 |
+| 满意度评分分布 | nps | NPS 图，单个 Rating 字段与可选分段 |
 | 富文本说明/标题/注释 | text | 文本组件（支持 Markdown） |
 
 详细组件类型和 data_config 完整规则：[dashboard-block-data-config.md](dashboard-block-data-config.md)

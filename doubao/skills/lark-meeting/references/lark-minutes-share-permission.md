@@ -1,17 +1,17 @@
 # minutes +share-permission
 
-将一条妙记一键分享给会议参会人。**写操作**，只有用户明确要求“分享给参会人”“给这场会的人开放妙记权限”时才调用。
+将一条妙记一键分享给会议参会人。**写操作**，只有用户明确要求"分享给参会人""给这场会的人开放妙记权限"时才调用。
 
-本 skill 对应 shortcut：`lark-cli minutes +share-permission`（调用 `POST /open-apis/minutes/v1/minutes/{minute_token}/permissions/share`），以当前登录用户身份执行。
+本 skill 对应 shortcut：`lark-cli minutes +share-permission`（调用 `POST /open-apis/minutes/v1/minutes/{minute_token}/permissions/share`）。仅支持用户身份。
 
 ## 命令
 
 ```bash
-# 以 user 身份将妙记权限分享给会议参会人
-lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --as user
+# 将妙记权限分享给会议参会人
+lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx
 
 # 预览 API 调用
-lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --as user --dry-run
+lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --dry-run
 ```
 
 ## 参数
@@ -24,9 +24,9 @@ lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --as 
 ## 权限语义
 
 - 本命令只接收 `minute_token`。分享范围、权限含义和权限校验由服务端下游处理，CLI 不自行判断参会人范围。
-- `--as user` 表示以当前登录用户身份发起一键分享。
+- 本产物所有命令自动以当前登录用户身份执行。
 - 给指定成员授权时不要用本命令，使用 `drive +member-add`。
-- 为当前用户向所有者申请查看或编辑权限时不要用本命令，使用 `minutes +apply-permission`。
+- 为当前调用身份向所有者申请查看或编辑权限时不要用本命令，使用 `minutes +apply-permission`。
 
 ## 所需权限
 
@@ -38,8 +38,8 @@ lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --as 
 
 ```json
 {
-  "minute_token": "obcnxxxxxxxxxxxxxxxxxxxx",
-  "shared": true
+ "minute_token": "obcnxxxxxxxxxxxxxxxxxxxx",
+ "shared": true
 }
 ```
 
@@ -61,5 +61,5 @@ lark-cli minutes +share-permission --minute-token obcnxxxxxxxxxxxxxxxxxxxx --as 
 | 错误现象 | 根本原因 | 解决方案 |
 |---------|---------|---------|
 | `--minute-token` 为空或格式不合法 | 缺少有效妙记 Token | 从妙记 URL、搜索结果或会议产物里重新取 token |
-| `missing required scope(s)` | 当前用户缺少 `minutes:permission:write` | 让 agent 平台为当前用户补开 `minutes:permission:write` scope |
+| `missing required scope(s)` | 当前用户缺少 `minutes:permission:write` | 根据错误响应中的 `console_url` 在应用后台补开权限后重试 |
 | `permission_denied` | 当前用户没有操作这条妙记的资源权限 | 请妙记所有者授权 |

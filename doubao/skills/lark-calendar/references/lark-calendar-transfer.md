@@ -1,6 +1,6 @@
 # calendar +transfer
 
-把一个日程的**组织者（organizer）**转让给另一个用户或机器人。用户和机器人之间可以任意互转。
+把一个日程的**组织者（organizer）**转让给另一个用户或机器人。
 
 ## 命令
 
@@ -33,30 +33,27 @@ lark-cli calendar +transfer --event-id <event_id> --to-user-id ou_xxx --dry-run
 | `--yes` | **是**（非 dry-run） | 高敏写操作确认 |
 | `--dry-run` | 否 | 预览 API 调用，不执行 |
 
-## 转让方向
+## 转让接收方
 
-转出方和接收方是两个**互相独立**的参数：
+**接收方**由 `--to-user-id` 决定，传谁的 open_id 就转给谁，是人还是机器人不影响命令写法。
 
-- **转出方**是当前登录用户身份，必须是日程**当前组织者**。用非组织者身份调用会返回 403。
-- **接收方**由 `--to-user-id` 决定，传谁的 open_id 就转给谁，是人还是机器人不影响命令写法。
-
-| 方向 | 命令 |
+| 接收方 | 命令 |
 |------|------|
-| 转让给用户 | `--as user --to-user-id <对方用户 open_id>` |
-| 转让给机器人 | `--as user --to-user-id <bot 的 open_id>` |
+| 用户 | `--to-user-id <用户 open_id>` |
+| 机器人 | `--to-user-id <机器人 open_id>` |
 
 **取接收人 open_id**：
 
 ```bash
 # 用户
-lark-cli contact +search-user --query <姓名> --as user
+lark-cli contact +search-user --query <姓名>
 # 机器人：从它所在群的成员列表里取 bots[] 中的 open_id
 lark-cli im +chat-members-list --chat-id <chat_id> --member-types bot
 ```
 
 机器人的 open_id 同样是 `ou_` 开头；不要传 `cli_` 开头的 app_id，那是应用 ID，不是日程参与人身份。
 
-无论哪个方向，转让都要求转出方和接收方**同租户**
+转让要求转出方和接收方**同租户**。
 
 ## 重复性日程
 

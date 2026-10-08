@@ -69,14 +69,6 @@ Do not silently save clipped or missing replacement text. For text translation,
 expand into confirmed whitespace, reduce font size within a legible limit, or
 reflow only the affected region before considering document reconstruction.
 
-For translation tasks specifically, classify same-script vs cross-language
-first — see [`references/workflows/translation.md`](references/workflows/translation.md).
-Same-script variants (e.g. Traditional ↔ Simplified Chinese) allow direct
-in-place substitution with default redaction flags. Cross-language translation
-(e.g. English ↔ Chinese) changes text length and must preserve highlight fills
-and image positions, which requires the non-default `apply_redactions` flags
-and the drawings/image anchor checks shown in that workflow.
-
 ## Image and Page-Content Editing
 
 | Task | PyMuPDF Tool | Notes |

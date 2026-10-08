@@ -90,6 +90,7 @@ lark-cli base +form-questions-update \
 - 不要用“只传要改的字段”的方式更新题目。比如只传 `{"id":"q_002","title":"新标题"}` 会让 `description` 清空、`required` 回落为 `false`、`visible_rule` 清空。
 - 用户明确要求清空时才传空值：`description:""` 清空描述，`visible_rule:null` 清空显隐条件，`conditions:[]` 也表示无条件显示。
 - 更新后再次执行 `+form-questions-list`。对每个本轮未获授权改名或编号的题目，按同一 `id` 比较写前、写后的 `title`；任一标题变化都要恢复原值并回读，不得继续使用变化后的标题提交表单或宣称完成。
+- **本命令只改题目属性，不改题序，返回值也不代表题序。** 响应里的 `questions` 只覆盖本次请求涉及的题目，即使 `--questions` 按理想顺序排好，表单里的实际题序也不会因此改变；把这份返回当成“顺序已经对了”的证据是常见误判。题序只以 `+form-questions-list` / `+view-get-visible-fields` 的回读为准，需要改题序时用 `+view-set-visible-fields` 提交完整有序题目 ID 列表（Form 仅在 `visible_fields` 接口中作为 View，`form_id` 传 `--view-id`）。
 
 ### `visible_rule` 显隐条件
 

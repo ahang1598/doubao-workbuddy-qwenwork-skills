@@ -62,6 +62,7 @@ PUT /open-apis/base/v3/bases/:base_token/tables/:table_id/fields/:field_id
   - 不能把非 `link` 字段改成 `link`，也不能把 `link` 改成非 `link`。
   - 现有 `link` 字段的 `bidirectional` 不能改。
 - `auto_number` 更新的 `style.rules` 支持 `text`、`created_time`、`incremental_number`。
+- 签字字段（`attachment` + `style.type:"signature"`）更新时必须把 `style` 一起写回；漏传会按 `plain` 处理，转成普通附件并丢掉签字专属配置。不要再 `PUT` 回 `signature` 来自动恢复：当前底层 `attachment -> signature` 转换会清空该列的附件值；也不要用“新建字段 + 迁移”，因为签字单元格无法通过 API 写回。若已经误降级，停止后续写操作并报告数据风险；恢复方案必须单独验证后再执行。
 
 **推荐更新示例**
 
@@ -104,7 +105,7 @@ PUT /open-apis/base/v3/bases/:base_token/tables/:table_id/fields/:field_id
 1. 建议先用 `+field-get` 拉现状，再做最小化修改。
 2. `formula/lookup` 类型更新前先阅读对应指南。
 3. 如果更新 `auto_number`，理解为“更新编号规则，同时把新规则应用到已有编号”；执行后按返回提示读回字段并在必要时抽样记录值。
-4. 如果这次更新会改变字段 `type` 先按下方“字段类型变更规则”判断能否执行。如果不修改 `type`，大多数场景都相对安全。
+4. 如果这次更新会改变字段 `type` 先按下方“字段类型变更规则”判断能否执行。如果不修改 `type`，大多数场景都相对安全；已知例外是签字字段漏传 `style`，`type` 不变也会丢数据，见上方 JSON 值规范。
 
 ### Select 选项改名或替换
 
@@ -191,7 +192,7 @@ PUT /open-apis/base/v3/bases/:base_token/tables/:table_id/fields/:field_id
 
 - ⚠️ 这是全量字段属性更新语义，不是 patch。
 - ⚠️ 这是高风险写入操作，执行时必须带 `--yes`。
-- ⚠️ 当 `type` 是 `formula` 或 `lookup` 时，先阅读对应指南再执行。
+- ⚠️ 当 `type` 是 `formula` 或 `lookup` 时，先阅读对应指南再执行，并在命令上带隐藏确认 flag `--i-have-read-guide`；不带该 flag 时 CLI 会直接拒绝。
 
 ## 参考
 

@@ -63,6 +63,7 @@ POST /open-apis/base/v3/bases/:base_token/tables/:table_id/fields
   - `link`：必须有 `link_table`，可选 `bidirectional`、`bidirectional_link_field_name`。
   - `formula`：必须有 `expression`；先读 formula guide，再创建。
   - `lookup`：必须有 `from`、`select`、`where`；先读 lookup guide，再创建。
+  - `attachment`：签字字段没有 `"type":"signature"`，用 `style.type:"signature"` 创建；见 [lark-base-field-json.md](lark-base-field-json.md) §3.12。若接口拒绝该 style，停止并报告当前环境尚未支持；不要删掉 `style` 重试，否则会创建普通附件字段。
 
 **正确（base +field-create）**
 
@@ -105,7 +106,7 @@ POST /open-apis/base/v3/bases/:base_token/tables/:table_id/fields
 ## 坑点
 
 - ⚠️ 这是写入操作，执行前必须确认。
-- ⚠️ 当 `type` 是 `formula` 或 `lookup` 时，先读对应 guide，再创建。
+- ⚠️ 当 `type` 是 `formula` 或 `lookup` 时，先读对应 guide，再创建，并在命令上带隐藏确认 flag `--i-have-read-guide`；不带该 flag 时 CLI 会直接拒绝。
 - ⚠️ 不要把“每次创建后都 `+field-get`”当作固定流程；按返回里的 `field_get_recommended` 和 `next_step` 决定是否读回。
 
 ## 参考

@@ -3625,6 +3625,10 @@ _CHROME_QUIET_FLAGS = [
     "--disable-component-update",
     "--no-first-run",
     "--no-default-browser-check",
+    # 与 Playwright 默认参数一致：临时截图会话不访问系统凭据存储，
+    # 避免 macOS 弹出读取「Chrome Safe Storage」的钥匙串权限请求。
+    "--password-store=basic",
+    "--use-mock-keychain",
 ]
 
 

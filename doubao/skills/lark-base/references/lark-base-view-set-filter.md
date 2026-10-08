@@ -81,7 +81,7 @@ Few-shot：
 - 标量类字段（`text` / `number` / `datetime` 等）的 value 用标量、别包成数组（各类型详见 value 写法一节）。
 - `user` / `group_chat` / `link` 不要写成单个标量。
 - `empty` / `non_empty` 不要硬塞无意义的 value。
-- 日期条件稳定写法用 `ExactDate(...)` 或 `Today` / `Yesterday` / `Tomorrow`。
+- 日期条件稳定写法用 `ExactDate(...)` 或相对时间关键字。支持的关键字共 11 个：`Today`、`Tomorrow`、`Yesterday`、`CurrentWeek`、`LastWeek`、`CurrentMonth`、`LastMonth`、`TheLastWeek`、`TheNextWeek`、`TheLastMonth`、`TheNextMonth`。范围会随时间推进时先在这 11 个里找能直接表达的，覆盖不到的（今年、近 N 天、超过 N 天）再建 `TODAY()` / `YEAR(TODAY())` 动态函数的辅助 Formula 让 View 筛选该字段，不要把运行当天换算成固定 `ExactDate` 边界保存。
 - `formula` / `lookup` 的 value 形状不固定；拿不准时先读当前 filter 或字段定义，或根据错误提示修正类型。
 
 ### 持久视图的相对时间

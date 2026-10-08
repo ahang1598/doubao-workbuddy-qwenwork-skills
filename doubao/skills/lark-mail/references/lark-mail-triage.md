@@ -138,6 +138,10 @@ tip: read full content: single message use mail +message --mailbox 'shared@examp
 
 搜索路径（使用 `--query` 或 `from`/`to`/`subject` 等 filter）的分页结果在**同一翻页链内**保持一致（无重复、无丢失）。但不同 `--max` 值发起的独立搜索可能返回不同排序，这是搜索 API 的固有行为。列表路径（仅 `folder`/`label` 筛选）无此限制。
 
+## 引用要求
+
+凡在最终回复中使用、改写或总结工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。
+
 ## 参考
 
 - [lark-mail](../SKILL.md) — 邮箱域总览

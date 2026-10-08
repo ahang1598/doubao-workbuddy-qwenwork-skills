@@ -1,6 +1,6 @@
 # vc +meeting-participant-kickout
 
-以主持人或联席主持人身份，从一场正在进行中的会议移出一个或多个指定参会人。该命令不会结束整场会议。
+以主持人或联席主持人的用户身份，从一场正在进行中的会议移出一个或多个指定参会人。该命令不会结束整场会议。
 
 本 skill 对应 shortcut：`lark-cli vc +meeting-participant-kickout`（调用 `POST /open-apis/vc/v1/meetings/{meeting_id}/kickout`）。
 
@@ -9,14 +9,12 @@
 ```bash
 # 先预览一个目标，不移出参会人
 lark-cli vc +meeting-participant-kickout \
-  --as user \
   --meeting-id <meeting_id> \
   --participant '<open_id>=<user_type>' \
   --dry-run
 
 # 用户明确确认后，可按输入顺序提交多个目标
 lark-cli vc +meeting-participant-kickout \
-  --as user \
   --meeting-id <meeting_id> \
   --user-id-type open_id \
   --participant '<open_id_1>=<user_type_1>' \
@@ -24,7 +22,7 @@ lark-cli vc +meeting-participant-kickout \
   --yes
 ```
 
-## 参数与身份
+## 参数
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
@@ -34,17 +32,17 @@ lark-cli vc +meeting-participant-kickout \
 | `--dry-run` | 否 | 只预览 POST 路径和请求体，不发送 API 请求，也不移出参会人 |
 | `--yes` | 真实执行必需 | 确认高风险写操作；只有用户明确确认会议和目标参会人后才能传入 |
 
-- 显式使用 `--as user`。
+- 仅支持用户身份，本产物所有命令自动以当前登录用户身份执行。
 - 需要 `vc:meeting` scope。
-- 执行者必须是目标会议的主持人或具备相应权限的联席主持人；权限拒绝时向用户说明，不要重试。
+- 执行者必须是目标会议的主持人或具备相应权限的联席主持人；权限拒绝时不得静默更换用户身份。
 
 ## participant tuple 规则
 
 1. 从目标会议的参会人快照读取目标用户 ID 和 `user_type`。默认使用 `open_id`；如果输入的是 `union_id` 或 `user_id`，必须显式传 `--user-id-type`。
 
-   ```bash
-   lark-cli vc meeting get --params '{"meeting_id":"<meeting_id>","with_participants":true}' --as user
-   ```
+ ```bash
+ lark-cli vc meeting get --params '{"meeting_id":"<meeting_id>","with_participants":true}'
+ ```
 
 2. 不要仅凭设备 ID 或显示名猜测 `user_type`。
 3. CLI 将 ID 当作字符串原样发送，因此前导零会保留；如果 tuple 里的 ID 含首尾空白，CLI 会直接报错，不会帮你 trim 后继续执行。
@@ -61,9 +59,9 @@ lark-cli vc +meeting-participant-kickout \
 
 ```json
 {
-  "kickout_users": [
-    {"id": "<open_id>", "user_type": 1}
-  ]
+ "kickout_users": [
+ {"id": "<open_id>", "user_type": 1}
+ ]
 }
 ```
 
@@ -77,9 +75,9 @@ lark-cli vc +meeting-participant-kickout \
 ## 使用边界
 
 - 结束所有人的整场会议：使用 [vc +meeting-end](lark-vc-meeting-end.md)。
-- participant tuple 不确定时先读取快照；不要尝试默认参会人。
+- participant tuple 不确定时先读取快照；不要尝试默认参会人或默认身份。
 
 ## 相关场景
 
-- [会中事件、互动与主持管理](../scenes/live-meeting-interact.md)
+- [会中事件与互动](../scenes/live-meeting-interact.md)
 - [结束整场会议](lark-vc-meeting-end.md)

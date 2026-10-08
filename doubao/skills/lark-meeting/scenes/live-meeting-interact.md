@@ -2,6 +2,8 @@
 
 围绕一场正在进行的会议执行只读查询或用户明确授权的会中写操作。已结束会议和会后产物使用会议查询场景。
 
+各节是按目标选择的分支，不是依次执行的步骤。已有 `meeting_id` 时跳过会议发现；用户要会议绑定群时直接进入 [获取或创建会议群聊](#获取或创建会议群聊)，不要先拉取事件。“会里刚才发了什么”指会中聊天事件，“会议绑定群里发了什么”指 IM 消息；上下文无法区分时先确认消息位置。
+
 ## 发现进行中的会议
 
 没有 `meeting_id` 时：
@@ -12,8 +14,7 @@ lark-cli vc +meeting-list-active --format json
 ```
 
 - 返回多个会议时，展示标题、会议号和 `meeting_id` 让用户选择，不按“最近”擅选。
-- 用户只给 9 位会议号时，在活跃会议结果中按 `meeting_no` 匹配；匹配失败时说明当前登录用户没有发现该会议号对应的进行中会议，不要自动入会。
-- `meeting_id` 一经确定，后续读取事件、截图、发送消息、操作倒计时、闭麦、请求开麦、结束会议和移出参会人都沿用同一个 `meeting_id`。
+- 用户只给 9 位会议号时，在活跃会议结果中按 `meeting_no` 匹配；匹配失败时说明当前登录用户没有发现该会议号对应的进行中会议。
 
 会议号匹配见 [`lark-vc-meeting-list-active`](../references/lark-vc-meeting-list-active.md)。
 
@@ -28,7 +29,7 @@ lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
 - 默认用 pretty 理解时间线；需要精确结构化字段、文档上下文或转发到 IM 时使用 JSON。
 - 不要用会中事件代替已结束会议的参会人快照或会后复盘。
 
-事件类型、分页、五分钟窗口和错误码见 [`lark-vc-meeting-events`](../references/lark-vc-meeting-events.md)。
+事件类型、分页、15 分钟宽限窗口和错误码见 [`lark-vc-meeting-events`](../references/lark-vc-meeting-events.md)。
 
 ## 读取共享内容和文档上下文
 
@@ -55,6 +56,32 @@ lark-cli vc +meeting-screenshot --meeting-id <meeting_id>
 
 会议 ID、输出文件和失败处理见 [`lark-vc-meeting-screenshot`](../references/lark-vc-meeting-screenshot.md)。
 
+## 获取或创建会议群聊
+
+使用已确定的 `meeting_id`；已有 `chat_id` 且只需消息操作时直接执行本节末尾的 IM 步骤。根据用户意图选择查询或创建，不把两者默认串行执行。
+
+**查询已有绑定，或需要先找到群再读写消息：**
+
+已有详情结果时直接复用其中的绑定，批量结果按 [详情参考](../references/lark-vc-detail.md#聊天绑定结果) 解析对应项；否则只查询会议基础信息：
+
+```bash
+lark-cli vc meeting get --meeting-id "<meeting_id>" --format json
+```
+
+成功后读取 `data.meeting.chat_id`；查询失败按实际错误处理，字段缺失、为空或为 `"0"` 则说明未取得绑定并停止，不自动创建。
+
+**用户明确要求创建或复用：**
+
+会议正在进行且当前用户在会时执行；详情可读不能证明在会。服务端决定新建或复用，无需先查绑定，也不额外创建普通 IM 群。
+
+```bash
+lark-cli vc +meeting-chat --meeting-id <meeting_id> --format json
+```
+
+成功读取 `data.chat_id`。不在会中或会议已结束时说明创建条件不满足。参数、权限及失败恢复按需读取 [创建参考](../references/lark-vc-meeting-chat.md)。
+
+只要聊天 ID 时返回后停止。只有用户要求消息操作时，才携带 `chat_id`、消息范围或待发送内容，进入 [IM 消息读取](../../lark-im/references/lark-im-chat-messages-list.md) 或 [IM 消息发送](../../lark-im/references/lark-im-messages-send.md)。返回 ID 可能是复用的私聊，不保证正式入群或 IM 访问权限；IM 拒绝访问时报告实际错误，不重新建群。
+
 ## 发送会中文本或表情
 
 只有用户明确要求发送并确认目标会议与内容时执行：
@@ -66,7 +93,7 @@ lark-cli vc +meeting-message-send --meeting-id <meeting_id> --msg-type text --te
 - 不要为了发送自动执行额外操作，也不要先查会议详情再发送。
 - reaction 使用 Reference 中大小写敏感的完整 emoji key；不要编造 key。
 - 发送失败时停止并报告，不重复发送，避免重复可见副作用。
-- 用户要发送绑定群或 IM 消息时改用 `lark-im`，不要把会中消息命令当作群消息能力。
+- 用户要发送绑定群消息且尚无 `chat_id` 时，先进入 [本场景的群聊步骤](#获取或创建会议群聊)；已有 `chat_id` 时转 IM，不要把会中消息命令当作群消息能力。
 
 文本、reaction 和权限规则见 [`lark-vc-meeting-message-send`](../references/lark-vc-meeting-message-send.md)。
 
@@ -86,17 +113,14 @@ lark-cli vc +meeting-countdown --meeting-id <meeting_id> --action set --duration
 
 ## 管理参会人麦克风
 
-只有用户明确要求操作指定参会人，且目标会议和目标用户已经确认时执行。先预览请求：
+只有用户明确要求操作指定参会人，且目标会议与目标用户已经确认时执行。先预览请求：
 
 ```bash
-lark-cli vc +meeting-participant-mute --as user \
-  --meeting-id <meeting_id> --target-user-id <user_id> --dry-run
+lark-cli vc +meeting-participant-mute --meeting-id <meeting_id> --target-user-id <user_id> --dry-run
 
-lark-cli vc +meeting-participant-unmute --as user \
-  --meeting-id <meeting_id> --target-user-id <user_id> --dry-run
+lark-cli vc +meeting-participant-unmute --meeting-id <meeting_id> --target-user-id <user_id> --dry-run
 ```
 
-- 两个命令都要求 `vc:meeting.bot.manage:write`。
 - 默认按 `open_id` 解释目标用户；输入 `union_id` 或 `user_id` 时显式传 `--user-id-type`。只传用户 ID，不传设备 ID；服务端负责处理该用户的设备。
 - 闭麦成功可以报告操作完成。请求开麦成功必须报告“请求已发送”，不表示目标参会人已经开麦；若要确认最终状态，需要后续状态证据。
 - 详细参数、请求路径和输出语义见 [会中闭麦与请求开麦](../references/lark-vc-meeting-participant-audio.md)。
@@ -107,17 +131,17 @@ lark-cli vc +meeting-participant-unmute --as user \
 
 ```bash
 # 结束整场会议：先 dry-run，确认后再补 --yes
-lark-cli vc +meeting-end --as user --meeting-id <meeting_id> --dry-run
+lark-cli vc +meeting-end --meeting-id <meeting_id> --dry-run
 
 # 移出参会人：默认用 open_id，user_type 必须来自 meeting get 快照
-lark-cli vc +meeting-participant-kickout --as user --meeting-id <meeting_id> \
+lark-cli vc +meeting-participant-kickout --meeting-id <meeting_id> \
   --participant '<open_id>=<user_type>' --dry-run
 ```
 
-- `vc +meeting-end` 调用用户端 PATCH 接口并要求 `vc:meeting`。
-- `vc +meeting-participant-kickout` 不要在未确认前直接补 `--yes`。
-- 结束会议或移出参会人前，先用 `vc meeting get --params '{"meeting_id":"<meeting_id>","with_participants":true}' --as user` 核对会议与参会人快照。
-- 所有 dry-run 都显式传入 `--as user`。`vc +meeting-end` 的 dry-run 只预览请求路径；`vc +meeting-participant-kickout` 的 dry-run 会回显 `user_id_type` 和按输入顺序提交的 `kickout_users`。如果回显与用户意图不完全一致，停止并修正参数，不要继续执行。
+- `vc +meeting-end` 结束所有参会人的整场会议，需要 `vc:meeting` 权限；当前用户必须是目标会议有权限结束会议的主持人。
+- `vc +meeting-participant-kickout` 移出一至十个指定参会人。不要在未确认前直接补 `--yes`。
+- 结束会议或移出参会人前，先用 `vc meeting get --params '{"meeting_id":"<meeting_id>","with_participants":true}'` 核对会议与参会人快照。
+- `vc +meeting-participant-kickout` 的 dry-run 会回显 `user_id_type` 和按输入顺序提交的 `kickout_users`。如果回显与用户意图不完全一致，停止并修正参数，不要继续执行。
 - `--participant '<id>=<user_type>'` 每次调用接受 1 到 10 个重复 flag；ID 默认按 open_id 解释，可用 `--user-id-type union_id|user_id` 切换，且首尾不能有空白。不要根据昵称或设备信息猜 `user_type`，也不要把多个目标塞进 CSV/JSON。
 - 结束会议见 [`lark-vc-meeting-end`](../references/lark-vc-meeting-end.md)；移出参会人见 [`lark-vc-meeting-participant-kickout`](../references/lark-vc-meeting-participant-kickout.md)。
 

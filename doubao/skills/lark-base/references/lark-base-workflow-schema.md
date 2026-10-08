@@ -154,7 +154,7 @@
   "table_name": "订单表",
   "watched_field_name": "状态",
   "trigger_control_list": ["pasteUpdate", "automationBatchUpdate"],
-  "condition_list": [] /* AndCondition 数组 */
+  "condition_list": null /* AndCondition[] | null；无条件时写 null 或省略 */
 }
 ```
 
@@ -200,7 +200,7 @@
   "record_watch_conjunction": "and",
   "record_watch_info": [ /* FieldCondition[] */ ],
   "field_watch_info": [
-    { "field_name": "状态", "operator": "is", "value": [{ "value_type": "text", "value": "已发货" }] }
+    { "field_name": "状态", "operator": "is", "value": [{ "value_type": "option", "value": { "name": "已发货" } }] }
   ],
   "trigger_control_list": [],
   "condition_list": null
@@ -229,7 +229,7 @@
 ```json
 {
   "rule": "WEEKLY",
-  "start_time": "2025-01-01 09:00",
+  "start_time": "2025-01-06 09:00",
   "sub_unit": [1, 3, 5],
   "is_never_end": true
 }
@@ -238,10 +238,10 @@
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `rule` | 是 | `NO_REPEAT` / `DAILY` / `WEEKLY` / `MONTHLY` / `YEARLY` / `WORKDAY` / `CUSTOM` |
-| `start_time` | 否 | 开始时间，格式 `yyyy-MM-dd HH:mm` |
+| `start_time` | 否 | 开始时间，写入格式 `yyyy-MM-dd HH:mm`；`+workflow-get` 回读渲染为 `yyyy/MM/dd HH:mm`，分隔符不同属预期。`WEEKLY` / `MONTHLY` 必须显式给出，且日期必须真正落在目标星期几 / 几号上——触发日以它为准核对，不得沿用示例日期或与目标日无关的历史日期 |
 | `interval` | 否 | 自定义间隔 [1,30]（仅 CUSTOM） |
 | `unit` | 否 | 自定义单位：`SECOND` / `MINUTE` / `HOUR` / `DAY` / `WEEK` / `MONTH` / `YEAR` |
-| `sub_unit` | 否 | 子单位（`WEEKLY` 时为星期几数组 0-6，`MONTHLY` 时为几号数组 1-31） |
+| `sub_unit` | 否 | 子单位（`WEEKLY` 时为星期几数组 0-6，`MONTHLY` 时为几号数组 1-31）。回读不返回本字段，无法据此验证；触发日一律以 `start_time` 为准 |
 | `end_time` | 否 | 结束时间 |
 | `is_never_end` | 否 | 是否永不结束 |
 
@@ -995,7 +995,7 @@ $.{stepId}.{fieldId}.fileToken    → 文件 Token 列表（array<string>，仅�
 {
   "conjunction": "and",
   "conditions": [
-    { "field_name": "状态", "operator": "is", "value": [{ "value_type": "text", "value": "进行中" }] }
+    { "field_name": "状态", "operator": "is", "value": [{ "value_type": "option", "value": { "name": "进行中" } }] }
   ]
 }
 ```
@@ -1042,7 +1042,7 @@ $.{stepId}.{fieldId}.fileToken    → 文件 Token 列表（array<string>，仅�
 {
   "conjunction": "and",
   "conditions": [
-    { "field_name": "状态", "operator": "is", "value": [{ "value_type": "text", "value": "进行中" }] }
+    { "field_name": "状态", "operator": "is", "value": [{ "value_type": "option", "value": { "name": "进行中" } }] }
   ]
 }
 ```
@@ -1133,7 +1133,7 @@ $.{stepId}.{fieldId}.fileToken    → 文件 Token 列表（array<string>，仅�
         "table_name": "订单表",
         "ref_info": { "step_id": "step_1" },
         "field_values": [
-          { "field_name": "审批状态", "value": [{ "value_type": "text", "value": "已通过" }] }
+          { "field_name": "审批状态", "value": [{ "value_type": "option", "value": { "name": "已通过" } }] }
         ]
       }
     }

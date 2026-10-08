@@ -108,6 +108,10 @@ lark-cli vc +search --query "周会" --page-token "<PAGE_TOKEN>"
 
 - 默认输出 JSON，包含 `items`、`has_more` 和 `page_token`。
 
+## 引用要求
+
+凡在最终回复中使用、改写或总结工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。
+
 ## Pagination (`has_more` / `page_token`)
 
 - 当结果中返回 `has_more=true` 时，说明还有更多页可继续获取。

@@ -24,6 +24,7 @@ High-frequency limits and operator facts:
 - Datetime fields in `+data-query` support only `is`, `isEmpty`, `isNotEmpty`, `isGreater`, and `isLess`; do not use `isGreaterEqual` or `isLessEqual` for datetime.
 - For continuous calendar windows such as months, quarters, or years, build non-overlapping ranges with open operators in the document timezone: when datetime values may include a time-of-day, use `isGreater` on the window start's local midnight and `isLess` on the next window start's local midnight. Do not use UTC midnight. After splitting adjacent windows, verify their counts sum to the same query with the segment condition removed.
 - If `+data-query` returns `ok=true` but an aggregate measure is `null`, treat it as a field-type compatibility signal: check `+field-list` and the aggregation type table in the DSL SSOT before exporting records; fall back to one projected `+record-list` scan only after confirming the measure cannot be computed server-side.
+- **Average precision.** If `avg` returns a rounded mean, recompute it as `sum(field) / count(field)` before comparing groups. Use the same filters and valid numeric values for both aggregates. A zero count means the mean is undefined. If the sum is also rounded, recompute from the group's complete raw values.
 - Need more than 5000 raw rows or one-pass local joins? Use `+record-list --format json --limit 200 --offset <n>` and the analysis SOP's full-export rule.
 
 ## Common Fewshots

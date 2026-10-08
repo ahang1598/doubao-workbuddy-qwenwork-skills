@@ -222,6 +222,10 @@ lark-cli mail user_mailbox.message.attachments download_url \
 - `organizer`：组织者邮箱。
 - `attendees`：参会人邮箱列表。
 
+## 引用要求
+
+凡在最终回复中使用、改写或总结工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。
+
 ## 相关命令
 
 - `lark-cli mail +thread` — 读取会话中所有邮件

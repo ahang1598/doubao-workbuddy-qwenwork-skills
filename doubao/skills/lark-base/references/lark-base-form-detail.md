@@ -56,7 +56,8 @@ lark-cli base +form-detail --share-token <share_token> --format pretty
 ```bash
 lark-cli base +form-submit \
   --share-token <share_token> \
-  --json '{"fields":{"姓名":"张三","评分":5}}'
+  --json '{"fields":{"姓名":"张三","评分":5}}' \
+  --yes
 ```
 
 提交附件字段：
@@ -65,7 +66,8 @@ lark-cli base +form-submit \
 lark-cli base +form-submit \
   --share-token <share_token> \
   --base-token <base_token_from_form_detail> \
-  --json '{"fields":{"姓名":"张三"},"attachments":{"附件":["./report.pdf"]}}'
+  --json '{"fields":{"姓名":"张三"},"attachments":{"附件":["./report.pdf"]}}' \
+  --yes
 ```
 
 附件字段不要写进 `fields`；放在顶层 `attachments`，值为本地文件路径数组。

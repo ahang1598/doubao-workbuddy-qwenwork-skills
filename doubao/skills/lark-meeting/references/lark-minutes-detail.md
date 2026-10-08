@@ -23,7 +23,7 @@ lark-cli minutes +detail --minute-tokens obcxxx --transcript --overwrite --outpu
 
 ## 输出
 
-`minutes` 数组每条含 `minute_token`、`title`、`note_id`、`artifacts`。`note_id` 仅在该妙记关联了会议纪要时返回，可直接传给 [`note +detail`](lark-note-detail.md) 拿纪要文档 token，无需再绕回 `vc +detail`。`artifacts` 中**只包含本次请求的产物**：
+`minutes` 数组每条含 `minute_token`、`title`、`note_id`、`meeting_id`（仅在该妙记由会议生成时返回）、`artifacts`。`note_id` 仅在该妙记关联了会议纪要时返回，可直接传给 [`note +detail`](lark-note-detail.md) 拿纪要文档 token，无需再绕回 `vc +detail`。`artifacts` 中**只包含本次请求的产物**：
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -34,6 +34,16 @@ lark-cli minutes +detail --minute-tokens obcxxx --transcript --overwrite --outpu
 | `artifacts.transcript_file` | string | 逐字稿本地文件路径。 |
 
 逐字稿默认落地 `./minutes/{minute_token}/transcript.txt`，与 `minutes +download` 同目录便于聚合。指定 `--output-dir <dir>` 时改写到 `<dir>/artifact-{title}-{minute_token}/transcript.txt`。
+
+## 引用要求
+
+凡在最终回复中使用、改写或总结工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。
+
+## 反查关联会议
+
+`meeting_id` 提供从妙记反向定位会议的入口，传给 `vc +detail --meeting-ids` 可继续查会议详情、参会人或反查日程（会议详情可含 `calendar_event_id`，用于再反查日程）。
+
+批量结果要逐条检查 `data.minutes[]` 的 `status` 和 `error`，不能只看整个命令是否成功。`status=processing` 表示仍在生成，按 `retryable` / `next_command` 等待或重试；其他错误按实际失败处理。成功取得基础信息后仍缺少 `meeting_id` 时，只说明未取得关联会议 ID，不据此断言妙记为手动上传，也不猜测 ID 反查。
 
 ## minute_token 来源
 

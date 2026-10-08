@@ -5,8 +5,8 @@
 ## 命令
 
 ```bash
-# 用户以自身身份加入（默认场景）
-lark-cli calendar +join-event --token <token> --as user
+# 当前登录用户加入日程
+lark-cli calendar +join-event --token <token>
 ```
 
 ## 参数

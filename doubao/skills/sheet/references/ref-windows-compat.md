@@ -38,7 +38,7 @@
 | `unzip file.zip` | `python -c "import zipfile; zipfile.ZipFile('file.zip').extractall('.')"` |
 | `sed -i` / `awk` | Python `re.sub` / 处理逻辑 |
 | `pdftotext file.pdf -` | `python -c "import fitz; print(''.join(p.get_text() for p in fitz.open('file.pdf')))"` |
-| `base64 -d` | `python -c "import base64,sys; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read()))"` |
+| `base64 -d` | 对已有的通用 base64 文本可用 `python -c "import base64,sys; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read()))"`；图表缩略图不用本通用写法，按 `references/lark-sheets-chart.md` 直接运行 `lark_chart_thumbnail_decode.py --url ... --sheet-id ... --chart-id ... --output-dir ...` |
 
 ### lark-cli 参数
 

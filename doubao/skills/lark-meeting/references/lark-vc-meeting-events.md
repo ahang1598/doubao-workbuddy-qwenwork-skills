@@ -1,13 +1,13 @@
 
 # vc +meeting-events
 
-查询一场正在进行的视频会议中的会中事件列表。该命令是**读操作**，读取当前登录用户所在会议的事件。对已结束会议，存在一个**结束后 5 分钟内的宽限窗口**。
+查询一场正在进行的视频会议中的会中事件列表，也可查询会议关联录音的转写内容。该命令是**读操作**，读取当前登录用户所在会议的事件。会议结束后存在一个**结束后 15 分钟内的宽限窗口**，窗口内仍可继续拉取事件；超出窗口后应改为查询会议产物。
 
 本 skill 对应 shortcut：`lark-cli vc +meeting-events`（调用 `GET /open-apis/vc/v1/bots/events`）。
 
 可见性边界：
 
-- `meeting_id` 来自 `+meeting-list-active`。
+- `meeting_id` 来自 `+meeting-list-active`：后续读取事件继续使用同一 `meeting_id`。
 - 只能读取当前登录用户作为可见参与者所在的会议，不能拿任意 `meeting_id` 直接查。
 
 ## 命令
@@ -42,7 +42,8 @@ lark-cli vc +meeting-events --meeting-id <id> --page-token <last_page_token> --p
 - `+meeting-list-active` 返回体中的 `meeting_id`
 - `+search` 结果中的 `id`
 
-**不要**把 9 位会议号（`--meeting-number`）传给这个命令；如果返回多个会议，先让用户选择具体 `meeting_id`。
+**不要**把 9 位会议号（`--meeting-number`）传给这个命令。
+如果返回多个会议，先让用户选择具体 `meeting_id`。
 
 如果用户提供的是 9 位会议号，先查 active meetings 并按 `meeting_no` 匹配。匹配到唯一项后，取该项的长数字 `meeting_id`，再调用本命令；匹配失败时说明当前登录用户没有发现该会议号对应的进行中会议。
 
@@ -62,11 +63,9 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 
 若当前用户不是会议可见参与者，后端通常会报 `no permission`。
 
-后端对已结束会议的宽限规则是：
-
-- **会议进行中**：当前用户须仍在会中
-- **会议已结束后的 5 分钟内**：仍可拉取事件
-- **会议结束超过 5 分钟**：按会议结束处理，通常不再返回事件流
+- **会议进行中**：当前用户须仍在会中。
+- **会议已结束后的 15 分钟内**：仍可拉取事件。
+- **会议结束超过 15 分钟**：会返回会议结束错误；不要尝试继续拉取事件，改用会议详情、纪要、逐字稿或录制等会后产物。
 
 ### 4. 自动分页规则
 
@@ -81,13 +80,13 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 - **默认命令模板**：`lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty`
 - 如果你发现自己执行成了不带 `--page-all` 的单页查询，而响应里又出现 `has_more=true` / `more available` / 非空 `page_token`，应立刻意识到这只是部分结果。
 - 遇到上述情况，默认补救方式是继续使用返回的 `page_token` 续拉，例如：`lark-cli vc +meeting-events --meeting-id <id> --page-token <returned_page_token> --page-all --format pretty`
-- 只有在用户明确要求“就看第一页”“先不要翻页”时，才不要默认带 `--page-all`
-- 只要你是基于 `+meeting-events` 来回答一场**正在进行中的会议内容**，就不能直接复用上一次查询结果。无论用户是在问“现在是谁在说话”“刚刚发生了什么”“最新事件有哪些”，还是让你“总结一下这个会议讲什么”，都必须先重新执行一次 `+meeting-events`，确认拿到的是最新事件流，再回答用户。只有在用户明确要求基于某次历史快照继续分析时，才可以复用旧结果。
+- 只有在用户明确要求"就看第一页""先不要翻页"时，才不要默认带 `--page-all`
+- 只要你是基于 `+meeting-events` 来回答一场**正在进行中的会议内容**，就不能直接复用上一次查询结果。无论用户是在问"现在是谁在说话""刚刚发生了什么""最新事件有哪些"，还是让你"总结一下这个会议讲什么"，都必须先重新执行一次 `+meeting-events`，确认拿到的是最新事件流，再回答用户。只有在用户明确要求基于某次历史快照继续分析时，才可以复用旧结果。
 
 ### 5. 输出格式差异
 
-- `--format pretty`：默认推荐格式，输出当前身份和逐条时间线，适合快速理解“发生了什么”。
-- `--format json`：结构化契约，顶层包含 `meeting`、`identity`、`events`、`has_more`、`page_token`。`identity` 表示当前读取身份；事件 actor 统一含 `participant_type`、`role`、`label`；每条事件保留 `payload` 便于追溯细节。
+- `--format pretty`：默认推荐格式，输出逐条时间线，适合快速理解"发生了什么"。
+- `--format json`：结构化契约，顶层包含 `meeting`、`events`、`has_more`、`page_token`。事件 actor 统一含 `participant_type`、`role`、`label`；每条事件保留 `payload` 便于追溯细节。
 - `--format ndjson`：输出事件行，并带 metadata 行，适合流式消费。
 
 **选型原则**：默认先用 `--format pretty`；仅当 `pretty` 缺少完成任务所必需的结构化字段时，才改用 `--format json`。用户明确要求 JSON 或规则明确要求结构化字段时可直接用 `--format json`；需要流式消费时用 `--format ndjson`。
@@ -100,10 +99,10 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 
 当用户意图是：
 
-- “总结这个会议”
-- “这个会议讲了什么”
-- “有哪些结论 / 待办 / 关键讨论”
-- “共享文档里在讲什么”
+- "总结这个会议"
+- "这个会议讲了什么"
+- "有哪些结论 / 待办 / 关键讨论"
+- "共享文档里在讲什么"
 
 不要只基于事件时间线直接回答。此时 `+meeting-events` 只是**线索发现器**，不是最终信息源。
 
@@ -112,9 +111,9 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 - 如果上下文没有明确 `meeting_id`，先用 `lark-cli vc +meeting-list-active --format json` 发现当前用户所在会议。返回多个会议时先让用户选择。
 - 如果上下文只有 9 位会议号，先执行 `+meeting-list-active` 并按 `meeting_no` 匹配；匹配到唯一会议后再查事件。
 - 确认 `meeting_id` 后执行 `lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty` 拉取最新事件流。
-- 如果事件流显示共享内容（JSON 事件类型为 `magic_share_started`；pretty 时间线按 `start_reason` 显示“开始共享”或“正在共享”），并包含文档标题或 URL 等线索，必须继续读取共享文档内容后再生成总结，不能只根据共享事件和文档标题概括会议内容。
-- 若存在多个共享文档，按用户问题读取相关文档；处理某条文档上下文事件时必须按该 item 的 `share_id` 精确关联，不能用“最近一次共享”替代。
-- 若文档读取失败，必须明确说明“以下总结仅基于会中事件流，未成功读取共享文档内容”。
+- 如果事件流显示共享内容（JSON 事件类型为 `magic_share_started`；pretty 时间线按 `start_reason` 显示"开始共享"或"正在共享"），并包含文档标题或 URL 等线索，必须继续读取共享文档内容后再生成总结，不能只根据共享事件和文档标题概括会议内容。
+- 若存在多个共享文档，按用户问题读取相关文档；处理某条文档上下文事件时必须按该 item 的 `share_id` 精确关联，不能用"最近一次共享"替代。
+- 若文档读取失败，必须明确说明"以下总结仅基于会中事件流，未成功读取共享文档内容"。
 
 ### 7. 文档上下文事件消费
 
@@ -126,7 +125,7 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 
 1. 从 `payload.magic_share_started_items[]` 读取 `share_id` 和 `share_doc`，建立 `share_id -> share_doc` 映射并标记会话开始。同一 `share_id` 重复携带相同文档时按幂等事件处理；若指向不同文档则停止解析，不覆盖旧映射。
 2. `document_context_changed_items[]` 通过自己的 `share_id` 精确查找该映射。当前契约中 item 自带的 `share_doc` 不提供文档信息；只保留它的原始值，不作为 URL/title 来源，也不做冲突判定。
-3. `payload.magic_share_ended_items[]` 使用相同 `share_id` 标记该会话结束。历史映射可保留用于解释本批次中结束前已发生的上下文事件，但不能再作为新的活动共享会话。
+3. `payload.magic_share_ended_items[]` 使用相同的 `share_id` 标记该会话结束。历史映射可保留用于解释本批次中结束前已发生的上下文事件，但不能再作为新的活动共享会话。
 4. 增量拉取从会话中途开始且本地没有对应映射时，重新拉取包含 `magic_share_started` 的完整事件流；仍无法命中则标记未解析。禁止回退到当前文档、最近一次共享或其他 `share_id`。
 
 #### 字段合同
@@ -149,7 +148,7 @@ lark-cli vc +meeting-events --meeting-id <id> --page-all --format pretty
 
 #### 评论聚焦：只查一个 ID
 
-先读取当前 item 的 `share_id` 和 `comment_focus.comment_id`，再按“共享会话关联”取得 `share_doc.url`。优先把完整 URL 传给现有 shortcut，由它解析实际 `file_token/file_type`（含 Wiki 解包）；如果上游只留下裸 token，则必须同时提供已解析且受支持的 `file_type`。
+先读取当前 item 的 `share_id` 和 `comment_focus.comment_id`，再按"共享会话关联"取得 `share_doc.url`。优先把完整 URL 传给现有 shortcut，由它解析实际 `file_token/file_type`（含 Wiki 解包）；如果上游只留下裸 token，则必须同时提供已解析且受支持的 `file_type`。
 
 ```bash
 # 推荐：share_doc.url 完整可用
@@ -221,9 +220,9 @@ lark-cli drive +list-replies \
 - 不管这次是只查 1 页，还是通过 `--page-all` 已经把当前可见事件都拿完，都应把最后拿到的 `page_token` 一并保留下来并返回给用户。
 - 只要响应里出现 `has_more=true`、pretty 里出现 `more available`，或返回了非空 `page_token`，就必须先判断当前结果是否完整；默认情况下，这意味着你还需要继续分页。
 - 如果没有使用 `--page-all`，但出现了上述分页信号，默认应继续用返回的 `page_token` 拉下一页，而不是直接结束。只有在用户明确不要继续翻页时，才可以停止并明确说明当前结果不完整。
-- 下次继续“查新增事件”时，应优先复用上一次保存的 `page_token`，而不是从头全量再拉一次。
-- 只有在用户明确要求“从头回放全部事件”时，才忽略历史 `page_token`，重新从第一页开始。
-- 但如果用户要你回答的是**当前这场会正在讲什么**，而不是“上一次之后新增了什么”，也要先做一次新的事件查询，再决定是否需要基于旧 `page_token` 继续补拉。
+- 下次继续"查新增事件"时，应优先复用上一次保存的 `page_token`，而不是从头全量再拉一次。
+- 只有在用户明确要求"从头回放全部事件"时，才忽略历史 `page_token`，重新从第一页开始。
+- 但如果用户要你回答的是**当前这场会正在讲什么**，而不是"上一次之后新增了什么"，也要先做一次新的事件查询，再决定是否需要基于旧 `page_token` 继续补拉。
 
 ## 返回结构
 
@@ -232,7 +231,6 @@ lark-cli drive +list-replies \
 | 字段 | 说明 |
 |------|------|
 | `meeting` | 会议身份与时间状态，包含 `id/topic/meeting_no/start_time/end_time/status` |
-| `identity` | 当前读取身份，包含 `id/name/participant_type/label` |
 | `events` | 结构化事件列表；每条事件沿用 `event_id/event_type/event_time/actors/payload` 公共 envelope，事件专属数据保留在 `payload` |
 | `warnings` | 非阻断告警列表；事件列表本身仍可使用 |
 | `has_more` | 是否还有下一页 |
@@ -263,7 +261,7 @@ lark-cli drive +list-replies \
 - 其他聊天消息写成文本节点：`{"tag":"text","text":"<content>"}`。
 - 最终调用 `im +messages-send --msg-type post --content '<post-json>'`，其中 `<post-json>` 应混合使用可渲染 `emotion` 节点和文本 fallback；不要用 `--markdown` 承载会中 reaction。
 - 如果 IM 返回 `message_content_emotion_tag's emoji_type is invalid`，只降级非法 reaction key，不要把整条消息退化成纯文本。
-- 如果用户原始请求已经明确“发给我 / 推送给我 / 发到我的聊天框 / 发到我的单聊”，这已经覆盖本次收件人、内容和发送动作，直接发送给当前用户，不要再二次询问“是否发送”。
+- 如果用户原始请求已经明确"发给我 / 推送给我 / 发到我的聊天框 / 发到我的单聊"，这已经覆盖本次收件人、内容和发送动作，直接发送给当前用户，不要再二次询问"是否发送"。
 - 该发送始终以当前登录用户身份完成，无需选择身份。
 - 如果用户要求发给某个群或其他人但收件人不可唯一确定，只询问缺失的收件人信息。
 
@@ -274,7 +272,7 @@ lark-cli vc +meeting-events \
   --format json
 ```
 
-如果用户已经要求“发给我”，`<open_id>` 使用当前用户的 open_id；需要解析时先用用户查询能力获取当前用户信息。构造 IM post 时只发送用户请求范围内的会中内容，不要把前一条自然语言预览当作发送内容。
+如果用户已经要求"发给我"，`<open_id>` 使用当前用户的 open_id；需要解析时先用用户查询能力获取当前用户信息。构造 IM post 时只发送用户请求范围内的会中内容，不要把前一条自然语言预览当作发送内容。
 
 ## pretty 输出示例
 
@@ -303,7 +301,7 @@ lark-cli vc +meeting-events \
 |---------|---------|---------|
 | `--meeting-id is required` | 未传入 `--meeting-id` | 传入长数字 `meeting.id` |
 | 无权限 / 不可见 | 当前用户不是该会议的可见参与者，或 `meeting_id` 不是从用户可见路径获得 | 确认 `meeting_id` 来自 `+meeting-list-active`；若凭证缺失由 agent 平台补齐用户凭证后重试。**如果只是想看参会人快照，改用 `lark-cli vc meeting get --params '{"meeting_id":"<meeting.id>","with_participants":true}'`** |
-| `20001 meeting_status_MEETING_END` | 会议已结束且已超出后端允许的 5 分钟宽限窗口 | 本接口不再适合继续拉取事件。先用 `lark-cli vc +detail --meeting-ids <meeting.id>` 获取会议产物信息，再根据 `note_display_type` / `note_id` / `minute_token` 和用户意图选择纪要正文、逐字稿或妙记；参会人请用 `lark-cli vc meeting get --params '{"meeting_id":"<meeting.id>"}' --with-participants` |
+| `20001 meeting_status_MEETING_END` | 会议已结束且已超出后端允许的 15 分钟宽限窗口 | 本接口不再适合继续拉取事件。先用 `lark-cli vc +detail --meeting-ids <meeting.id>` 获取会议产物信息，再根据 `note_display_type` / `note_id` / `minute_token` 和用户意图选择纪要正文、逐字稿或妙记；参会人请用 `lark-cli vc meeting get --params '{"meeting_id":"<meeting.id>"}' --with-participants` |
 | `20002 meeting not exist` | `meeting_id` 错误，或会议实例当前已不可获取（常见于把 9 位会议号当 meeting_id 传） | 确认传入的是长数字 `meeting_id`，不是 9 位会议号 |
 | `HTTP 404` / `HTTP 500` | 服务端当前无法找到或处理该会议实例 | 换一个正在进行且当前用户可见的 meeting_id，或排查后端问题 |
 
@@ -313,7 +311,8 @@ lark-cli vc +meeting-events \
 - 如果会议已经结束，不要卡在 `+meeting-events`：  
   - 先用 `lark-cli vc +detail --meeting-ids <meeting.id>` 获取会议产物信息。
   - 再根据 `note_display_type`、`note_id`、`minute_token` 和用户意图，按 `lark-meeting` 的产物决策读取纪要正文、逐字稿或妙记。
-- 事件列表是否完整，取决于当前用户何时在会以及后端当前可见的会中事件范围。对于已结束会议，通常只在**结束后 5 分钟内**还能继续拉到事件。
+- 事件列表是否完整，取决于当前用户何时在会以及后端当前可见的会中事件范围。对于已结束会议，通常只在**结束后 15 分钟内**还能继续拉到事件；超出窗口后改用会议产物。
+- 如果会中有关联录音，直接用 `+meeting-events` 获取录音转写内容，无需再走妙记查询路径。
 - 查询"谁参加过某会议"请用 `vc meeting get --params '{"meeting_id":"<id>","with_participants":true}'`——这是参会人**快照** API，对已结束会议也可查；**不要** 用 `+meeting-events` 做参会人查询。
 
 ## 相关场景

@@ -6,19 +6,19 @@
 
 ```bash
 # 先预览请求
-lark-cli vc +meeting-recording-start --as user --meeting-id 6911188411932033028 --dry-run
-lark-cli vc +meeting-recording-stop --as user --meeting-id 6911188411932033028 --dry-run
+lark-cli vc +meeting-recording-start --meeting-id <meeting_id> --dry-run
+lark-cli vc +meeting-recording-stop --meeting-id <meeting_id> --dry-run
 
 # 开始或停止录制
-lark-cli vc +meeting-recording-start --as user --meeting-id 6911188411932033028
-lark-cli vc +meeting-recording-stop --as user --meeting-id 6911188411932033028
+lark-cli vc +meeting-recording-start --meeting-id <meeting_id>
+lark-cli vc +meeting-recording-stop --meeting-id <meeting_id>
 ```
 
 ## 核心约束
 
-- 仅支持 `--as user`，所需权限为 `vc:record`（更新会议录制信息）。应用后台和用户授权都必须包含该 scope。
+- 本产物所有命令自动以当前登录用户身份执行，所需权限为 `vc:record`（更新会议录制信息）。
 - 操作者必须在会议中且是当前主持人。开始录制要求会议正在进行；停止录制要求会议正在录制。
-- `--meeting-id` 必须是会议开始后产生的长会议 ID，不是 9 位会议号。可先运行 `lark-cli vc +meeting-list-active --as user`，从唯一目标会议中取得 `meeting_id`。
+- `--meeting-id` 必须是会议开始后产生的长会议 ID，不是 9 位会议号。可先运行 `lark-cli vc +meeting-list-active`，从唯一目标会议中取得 `meeting_id`。
 - `+meeting-recording-start` 不发送可选的 `timezone` 请求字段，使用 OpenAPI 的默认行为。
 
 ## OpenAPI 契约

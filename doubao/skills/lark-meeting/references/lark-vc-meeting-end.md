@@ -2,19 +2,19 @@
 
 结束一场正在进行中的视频会议。该命令会结束所有人的整场会议。
 
-`lark-cli vc +meeting-end` 显式传入 `--as user` 后调用 `PATCH /open-apis/vc/v1/meetings/{meeting_id}/end`，请求体为空。
+本 reference 描述 `lark-cli vc +meeting-end`：调用 `PATCH /open-apis/vc/v1/meetings/{meeting_id}/end`，请求体为空。
 
 ## 命令
 
 ```bash
 # 先预览目标请求，不结束会议
-lark-cli vc +meeting-end --as user --meeting-id <meeting_id> --dry-run
+lark-cli vc +meeting-end --meeting-id <meeting_id> --dry-run
 
 # 用户明确确认后结束整场会议
-lark-cli vc +meeting-end --as user --meeting-id <meeting_id> --yes
+lark-cli vc +meeting-end --meeting-id <meeting_id> --yes
 ```
 
-## 参数与身份
+## 参数
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
@@ -22,9 +22,8 @@ lark-cli vc +meeting-end --as user --meeting-id <meeting_id> --yes
 | `--dry-run` | 否 | 只预览 PATCH 路径，不发送 API 请求，也不结束会议 |
 | `--yes` | 真实执行必需 | 确认高风险写操作；只有用户明确确认目标会议后才能传入 |
 
-- dry-run 必须显式传入 `--as user`；真实执行也显式传 `--as user`。
 - 需要 `vc:meeting` scope。
-- 当前用户必须是目标会议有权限结束会议的主持人；普通参会人或联席主持人会被拒绝，此时向用户说明原因，不要重试。
+- 当前用户必须是目标会议有权限结束会议的主持人；普通参会人或联席主持人被拒绝时，不得静默更换用户身份。
 
 ## 使用边界
 

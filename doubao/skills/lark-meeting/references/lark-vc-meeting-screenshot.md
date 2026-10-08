@@ -28,7 +28,7 @@ lark-cli vc +meeting-screenshot --meeting-id <long_meeting_id> --output ./meetin
 
 | 错误现象 | 根本原因 | 解决方案 |
 | --- | --- | --- |
-| `128006`: `meeting screenshot is currently in limited availability and is not available for this meeting.` | 会议截图能力仍在灰度，当前会议不在可用范围内 | 不要通过切换 `--as` 身份或新增 scope 绕过。确认目标会议归属方是否在截图能力范围内；如果应当可用，保留 `log_id` 交给服务端排查 |
+| `128006`: `meeting screenshot is currently in limited availability and is not available for this meeting.` | 会议截图能力仍在灰度，当前会议不在可用范围内 | 确认目标会议归属方是否在截图能力范围内；如果应当可用，保留 `log_id` 交给服务端排查 |
 
 ## 文件路径与结果
 

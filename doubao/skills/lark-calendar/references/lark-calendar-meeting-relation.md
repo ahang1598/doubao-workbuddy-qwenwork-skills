@@ -26,7 +26,7 @@
 lark-cli calendar +agenda --start <now> --end <now>
 
 # 2. 用户已加入的视频会议
-lark-cli vc +meeting-list-active --as user
+lark-cli vc +meeting-list-active
 
 # 3. 步骤 1 每个日程回查关联 meeting_id
 #    输出是 event_id → meeting_id 映射；后续所有交叉都按 meeting_id 匹配

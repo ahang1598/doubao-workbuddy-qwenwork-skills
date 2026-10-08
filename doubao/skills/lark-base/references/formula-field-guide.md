@@ -508,6 +508,21 @@ Note: COUNTIF can use a table as data range (only counting, no specific column n
 [TargetTable].FILTER(CurrentValue.[MatchCol] = [CurrentTableField]).[ReturnCol]
 ```
 
+### Match keys in Patterns 1-3
+
+Patterns 1-3 only hold when **both sides** of the comparison are single-valued. `link` / `DuplexLink` and `select` with `multiple=true` hold a **list**, so `=` compares list to list and does not reliably match even when both sides look like the same single item. Check the match field's type with `+field-list` first. When one side is a list, match by containment with the list on the left and a scalar on the right (same shape as Section 5's expanded form):
+
+```
+Wrong:   [Table].COUNTIF(CurrentValue.[LinkField] = [LinkField])
+Correct: [Table].COUNTIF(CurrentValue.[LinkField].CONTAIN([ScalarKey]))
+```
+
+`[ScalarKey]` must be a scalar identifying value of the current row (the linked record's primary-field text, an ID field, or a helper formula that extracts one) — not the link field itself. Counting on the target table and pulling the number back with a `lookup` field avoids list comparison entirely; see [lookup-field-guide.md](lookup-field-guide.md).
+
+The failure is silent: the `=` expression saves fine and returns a plausible number, it just matches only rows whose list is *identical*. One row holding several links is enough to corrupt every other row's result — a single-link row stops matching it and undercounts, so the whole column is wrong while still looking reasonable. Verify against records that hold more than one link, not only the single-link ones.
+
+When the request enumerates the fields a match is made on, count them against the predicates in the `+field-get` readback before delivering; a condition you cannot express must be stated explicitly, never silently dropped.
+
 ### Pattern 4: Link field values + aggregation
 
 ```

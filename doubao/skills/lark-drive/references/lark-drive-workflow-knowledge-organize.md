@@ -15,7 +15,7 @@ Phase files are references for this workflow, not independent skills. Do not rou
 Load other skills / references progressively:
 
 - Wiki / personal library target: [`../../lark-wiki/SKILL.md`](../../lark-wiki/SKILL.md)
-- Content read required: [`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) and [`../../lark-doc/online-doc/references/lark-doc-fetch.md`](../../lark-doc/online-doc/references/lark-doc-fetch.md)
+- Content read required: [`../../lark-doc/SKILL.md`](../../lark-doc/SKILL.md) and [`../../lark-doc/references/lark-doc-fetch.md`](../../lark-doc/references/lark-doc-fetch.md)
 - Sheet down-drill required: [`../../sheet/SKILL.md`](../../sheet/SKILL.md)
 - Base down-drill required: [`../../lark-base/SKILL.md`](../../lark-base/SKILL.md)
 
@@ -224,6 +224,6 @@ Never request permission automatically, never batch permission requests, and nev
 - [lark-wiki](../../lark-wiki/SKILL.md)
 - [lark-wiki-node-delete](../../lark-wiki/references/lark-wiki-node-delete.md)
 - [lark-doc](../../lark-doc/SKILL.md)
-- [lark-doc-fetch](../../lark-doc/online-doc/references/lark-doc-fetch.md)
+- [lark-doc-fetch](../../lark-doc/references/lark-doc-fetch.md)
 - [sheet](../../sheet/SKILL.md)
 - [lark-base](../../lark-base/SKILL.md)

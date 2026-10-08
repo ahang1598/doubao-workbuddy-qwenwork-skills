@@ -1,6 +1,6 @@
 ---
 name: lark-base
-version: 1.4.2
+version: 1.4.3
 description: 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图看板、表单问卷收集、仪表盘、自动化工作流、表格行列权限，支撑持续运营业务闭环
 metadata:
   requires:
@@ -34,33 +34,39 @@ metadata:
 
 任何创建、修改、删除、启停、提交或权限配置任务，开始写入前必须从用户原话拆出原子验收项，并在内部记录 `requirement`、目标对象、预期状态、回读命令和通过条件。多对象、多步骤任务逐项维护 `pending -> written -> verified`：写命令成功只能进入 `written`，只有服务端回读满足通过条件才能进入 `verified`。写成功不等于完成。
 
+- **位置和口径是两个独立的验收项。** 用户指定了交付物该落在哪个对象上时，先回读确认它确实在那个对象上，再确认数值正确。你认为放在别处更合理**不构成替换授权**：要么两处都落，要么落在用户指定的位置并在答复里说明理由。口径对而位置错，该项判未完成。
+- **复制粒度：** 复制对象以用户明确宾语为准：“数据表 / 表 / 某张表”用 `+table-copy`，只有“整个 Base / 多维表格文件”或明确要求独立流转、隔离时才用 `+base-copy`；“给我一个副本”本身不改变对象层级。用户要求副本或备份且未明确只复制结构时，连数据一起复制并加 `--range all --wait`；不得用新 Base 冒充表副本。
 - 只回读本轮创建、修改、删除、启停或明确复用的对象，以及因本次写入可能受影响的依赖或默认对象；已有可信返回 ID 时直接读取，不为验收扫描无关资源。
 - 最终答复前逐项核对清单。全部显式要求必须为 `verified`，或如实标记 `blocked` 并说明缺失证据；存在 `pending` / `written` 时不得宣称全部完成。
 - 多步骤或连续修改按用户顺序执行，每一步写后立即回读并通过该时点的后置条件，才能进入下一步。请求同时包含创建和后续查询、修改或删除时，必须先将创建阶段验收为 `verified`：结构正确、所需分享或测试提交可用、Mock 数量与业务关系通过 `+record-list` 回读；未通过前不得进入下一步。全部步骤结束后再次回读最终保留的数据表，除非用户明确要求清空，否则为空即不得交付。后续删除、关闭或覆盖对象不能替代前一步验收，也不能掩盖前一步错误。
-- 搭建型请求中新建业务 Base、数据表或表单时，示例数据属于不可取消的创建阶段检查点：写入前必须阅读 [Mock 数据严谨性指南](references/lark-base-mock-data-guide.md)，按用户指定数量写入；未指定且未明确要求空表/空模板时写入 5~10 条合理样例，并验证数量、关键字段及跨字段/跨记录业务不变量。只对既有 Base 做明确的小范围结构修改时，不擅自补数据。
+- **本轮新建了数据表，就把「表里有记录」加进验收清单**，通过条件见验收矩阵「本轮新建表的记录」行。
 - 用户在搭建或修改 Base 的同一请求中要求按字段分组、排序、排名、汇总或“最后这样看”时，该展示结构本身是交付物：必须创建并回读持久 View、Dashboard 或汇总表。`+data-query` 和最终答复里的表格只能用于计算与验证，查询输出不能替代持久产物；只有纯查询且未要求改造 Base 时才可只返回分析结果。
 - Base 任务默认在目标 Base 内闭环：提醒、通知、自动执行或状态联动必须优先落为目标 Base 内的 Workflow；图表、看板或持续可视化必须优先落为 Base Dashboard。豆包定时任务、会话内临时图表及其他模块不能冒充 Base 交付物；Base 工具能力不足时，必须如实说明未完成或受阻，才允许跨模块降级。纯查询或未要求沉淀的一次性分析仍可直接在会话中回答。
-- 时间范围必须进入聚合源头。题面或本轮新增对象出现“本月、今年、本年度、年度、年底”等语义时，逐个检查 Formula、View、Dashboard、汇总表和最终回答：参与 `SUM` / `AVERAGE` / `COUNT` / 排名的记录集合必须先按真实业务日期做等价动态过滤；全历史聚合后只把字段或组件命名为“年度/本月”不得交付，样例数据恰好都在同一时间范围也不能作为通过证据。
-- 题面出现“提醒我”“通知我”“自动处理”等执行语义且 Workflow 能表达时，Workflow 是必交付项，不得降级成可选建议或“如需可再配置”。接收人、触发条件或动作目标缺失时，该项保持 `blocked` 或 Workflow 保持 `disabled` 并向用户澄清，不能直接省略，也不能用当前用户兜底未解析的职责称谓。
+- 时间范围必须进入聚合源头。题面或本轮新增对象出现锚定运行当天、随时间推移而变化的动态/相对时间语义（本周、上周、本月、今年、本年度、年度、年底、近/超过 N 天或月、未来/接下来 N 天或月等）时，逐个检查 Formula、View、Dashboard、汇总表和最终回答：参与 `SUM` / `AVERAGE` / `COUNT` / 排名的记录集合必须先按真实业务日期做等价动态过滤；全历史聚合后只把字段或组件命名为“年度/本月”不得交付，样例数据恰好都在同一时间范围也不能作为通过证据。
 - 含条件的 Workflow 必须 fail-closed：创建或更新后先保持 `disabled`，用 `+workflow-get` 将用户要求的每个条件逐项对照服务端保存的 `field_name / operator / value / value_type`；必需右值为空、类型错误或边界缺失时保持或恢复 `disabled`。定向修复一次仍不能正确回读时，改用可验证的文本/布尔派生字段表达同一业务谓词；仍失败时只将该 Workflow 验收项标记 `blocked`，继续完成并交付不依赖它的表、数据、视图、表单和 Dashboard，不得启用该 Workflow 或声称自动化已生效。
-- 题面没有明确要求提醒、通知、审批、自动执行或按钮触发时，不要自行创建或启用 Workflow；额外 Workflow 不是丰富度加分项。确需提供可选方案时只在答复中建议，不落地、不启用，更不能把当前用户作为未指定业务角色的默认接收人。
+- **系统角色**（Owner、Admin、Editor、Reader）保持平台默认，不修改、不收窄、不在答复里声称做了限制；只有用户用平台角色名点名时才按字面处理。
+- **平台生成的「普通用户」**（`+advperm-enable` 时自动创建的 `custom_role`，默认全表可编辑、可复制下载）不得保留：一律 `+role-delete` 删除，再按题面出现的角色词逐个 `+role-create` 从 `no_perm` 新建并授权。
+- **业务角色**按题面角色词创建；题面的排他表述既是对被点名角色的授权，也是对其他自定义角色的禁止。收尾 `+role-list` 回读：不得再有「普通用户」，题面点名的角色一个都不能少。
 - 仅当句子同时包含可解析的权限主体、权限能力和资源范围，或明确要求高级权限/角色配置时，才启动权限流程；Workflow 的“只要……就……”以及普通字段、表单、视图操作中的“只/仅/所有”不得触发。每个权限步骤先生成“主体 × 资源 × 能力 × 排除主体”约束；角色轴、记录轴和字段轴可以同时命中，不得二选一。新建角色从 `no_perm` 构造，既有角色只修改违反本轮约束的能力。
 - 新建角色被授权“填写/录入记录”，同时仅点名部分字段可继续修改时：`record_operations` 只加入 `add`；创建记录所需的可写业务字段只在新增记录时可写，设为 `create`，点名可修改字段设为 `edit`，系统字段和不可写派生字段保持只读；必须使用 `field_perm_mode=specify`，不得退化为 `all_edit`，未明确授权时不得加入 `delete`。权限字段先映射到真实 `+field-list` 结果；无法可靠唯一映射时先澄清，不能用 `all_edit` 兜底。
-- 每个编号权限步骤写后都必须 `+role-list` 并对全部角色逐个 `+role-get`，将实际 `perm / record_operations / field_perms / record_rule / copy / download` 与约束逐行断言，只定向修复违反约束的角色和能力。明确敏感、保密或隐私的表在同一权限任务中列出允许访问角色时，这些角色构成访问白名单，未列角色对该表必须为 `no_perm` 且禁止复制下载；行级隔离则要求所有可能访问数据的默认/自定义角色采用同一有效隔离或无权限。任一约束未通过不得进入下一权限阶段，后续扩权、删角色或关闭高级权限不能覆盖前一阶段错误。完整流程见 [lark-base-role-guide.md](references/lark-base-role-guide.md)。
-- 相对时间词是持久配置的数据范围，不是名称装饰。出现“本月、今年、年度、年底、近/超过 N 天或月、即将到期”等语义时，最终答复前检查本轮 Formula、View、Dashboard 和 Workflow 的保存后配置；除非用户明确要求固定历史区间，否则不得把运行当天换算成固定 `ExactDate` / 年月边界，所有相关对象必须使用一致的动态范围。
+- 给角色授予某表可编辑时，题面没有禁止的能力（新增、删除、视图管理）保持默认，收窄只针对题面点名要禁止的那一项。
+- 每个编号权限步骤写后都必须 `+role-list` 并对本轮创建或修改的业务角色逐个 `+role-get`，将实际 `perm / record_operations / field_perms / record_rule / copy / download` 与约束逐行断言，只定向修复违反约束的角色和能力。明确敏感、保密或隐私的表在同一权限任务中列出允许访问角色时，这些角色构成访问白名单，未列角色对该表必须为 `no_perm` 且禁止复制下载；行级隔离则要求所有可能访问数据的默认/自定义角色采用同一有效隔离或无权限。任一约束未通过不得进入下一权限阶段，后续扩权、删角色或关闭高级权限不能覆盖前一阶段错误。完整流程见 [lark-base-role-guide.md](references/lark-base-role-guide.md)。
+- 相对时间词是持久配置的数据范围，不是名称装饰。判据看时间范围是否锚定运行当天、会随时间推移而变化（动态 / 相对时间范围）：本周、上周、本月、今年、年度、年底、近/超过 N 天或月、未来/接下来 N 天或月、即将到期等都属此类。出现这类语义时，最终答复前检查本轮 Formula、View、Dashboard 和 Workflow 的保存后配置；除非用户明确要求固定历史区间，否则不得把运行当天换算成固定 `ExactDate` / 年月边界，所有相关对象必须使用一致的动态范围。
 - 回读不一致时，只针对失败项做一次定向修复并复验；仍不满足则报告未完成项，不得用写接口的成功响应、资源名称或最终说明文字推断成功。
 
 ## 写任务验收矩阵
 
 | 交付物 | 必须回读 | 通过条件 |
 |-|-|-|
-| Base / Table / Record | `+table-list`、`+field-list`、必要的 `+record-list` | 表、字段、关联与显式记录数量正确；搭建任务不交付空表 |
+| Base / Table / Field | `+table-list`、`+field-list` | 表、字段、关联正确 |
+| **本轮新建表的记录** | 逐表 `+record-list` | **硬条件**：本轮执行过 `+base-create` / `+table-create` 的**每一张**业务数据表，`record_count` 都必须**不少于 5 条，一般写 5~10 条**，除非用户明确要求表为空 —— **用户没说就是没要求，不要自己替用户判断这张表该不该是空的**。用户给了数据就写用户的，没给就补 mock；示例数据是交付物的一部分，让用户看到数据填进来之后是什么样。不是本轮新建的表不涉及 mock 数据。写 mock 前必读 [Mock 数据严谨性指南](references/lark-base-mock-data-guide.md)，按其中的业务不变量造数并逐条自查。**最终答复的验收摘要必须逐表写出 `record_count` 实测值**。Mock 记录须全部回读并逐字段核对跨字段一致性，不得只抽查一行。以执行当天为基准：状态表示事情已经发生完的记录，其对应日期不得晚于当天，同行数值也不得与该状态相反；成对时间字段的先后要对（结束不早于开始、审批不早于提交）；人名文本与人员字段指向同一人。 |
+| 复制表 / 文件 | 复制表时在原 `base_token` 下回读源表和副本表的结构与记录 | 确认源表与副本表的 `table_id` 不同并对账字段与记录；复制文件才验收新 Base |
 | Formula / Lookup | `+field-get` + 有界样例 `+record-list` | 保存表达式正确，已有代表性数据的分支计算正确 |
-| View | 对应 `+view-get-*` + `+record-list --view-id` | 视图名称、实际设置和展示结果必须一致。例如名称写“本周排班”，就必须真的只显示本周记录；名称写“按状态分组”，就必须真的按状态分组 |
-| Form 创建 / 分享 | `+form-get`、`+form-questions-list`；要求链接/扫码/外部填写时加 `+form-share-get`；新建可填写表单时做测试提交和记录回读 | 题目、必填和所需分享范围正确；未明确要求改名或编号的题目，写后同一 `id` 的 `title` 必须与更新前一致；新建可填写表单且未要求空模板时，只创建 Form、只返回链接或空主表不算完成。为新建的空表建表单时，题目集合还要与用户列举的收集项相等；给已有业务数据的表建表单时，`+form-create` 从原有字段自动带出的题目只要不影响列举项命中就保留，不得为对齐题目集合删除这些字段或其记录 |
+| View | 对应 `+view-get-*` + `+record-list --view-id` | 视图名称、实际设置和展示结果必须一致。**硬条件**：把用户原话与视图名、Dashboard 组件名三者里的限定词（时间范围、状态、分组维度、排序口径）取并集逐个摘出来，名称里没写但用户原话里要求了的同样要落到配置里，在回读到的 `filter` / `group` / `sort` / `group_by` 里找到对应配置；回读结果为 `null` 或空即为未实现，当前记录恰好都符合不算。搭建任务全部写入结束后，先对本轮新建的每张数据表执行 `+view-list`，枚举其全部视图；对本轮主动创建、重命名或明确作为交付物的视图，逐个执行 `+view-get-filter`、`+view-get-group`、`+view-get-sort`，并用 `+record-list --view-id` 验证结果。筛选集合、分组维度、排序口径和动态时间范围必须由对应配置兑现。 |
+| Form 创建 / 分享 | `+form-get`、`+form-questions-list`；要求链接/扫码/外部填写时加 `+form-share-get`；新建可填写表单时做测试提交和记录回读 | 题目、必填、题序和所需分享范围正确；题序须用 `+form-questions-list` 实际回读并与交付题序一致，不能只看写命令的返回；未明确要求改名或编号的题目，写后同一 `id` 的 `title` 必须与更新前一致；新建可填写表单且未要求空模板时，只创建 Form、只返回链接或空主表不算完成。为新建的空表建表单时，题目集合还要与用户列举的收集项相等；给已有业务数据的表建表单时，`+form-create` 从原有字段自动带出的题目只要不影响列举项命中就保留，不得为对齐题目集合删除这些字段或其记录 |
 | Dashboard | `+dashboard-block-get` + 非文本组件 `+dashboard-block-get-data` | 数据源、维度、指标、范围和计算结果正确 |
-| Workflow | `+workflow-get` + 必要的 `+workflow-list --status ...`；可表达且有代表性数据时加等价条件查询 | 条件、接收人、动作、引用和最终运行态全部正确 |
-| Role / AdvPerm | `+base-get`、`+role-list`；排他、保密或行级隔离时对每个角色逐个 `+role-get` | 目标授权准确；读写范围分别成立；未授权角色不能访问、增删、复制或下载敏感数据 |
+| Workflow | `+workflow-get` + 必要的 `+workflow-list --status ...`；可表达且有代表性数据时加等价条件查询 | 触发时机、条件、接收人、动作、引用和最终运行态全部正确 |
+| Role / AdvPerm | `+base-get`、`+role-list`；对本轮创建 / 修改的业务角色逐个 `+role-get` | 目标授权准确；读写范围分别成立；未授权自定义角色不能访问、增删、复制或下载敏感数据。**硬条件**：本轮执行过 `+advperm-enable` 时，回读的 `+role-list` 里不得再有「普通用户」，且题面点名的角色词逐个能在角色集合里找到 |
 | Analysis | 确定性查询结果 + 物化产物回读 | 查询结果、产物数据和最终回答使用同一口径且数值一致 |
 
 ### Base 模板中心
@@ -72,7 +78,8 @@ metadata:
 | 用户目标 | 优先命令 | 权限/边界 | 何时读 reference |
 |-|-|-|-|
 | 查 Base 本体 | +base-get | 读取 Base 本体信息 | 用返回确认 Base 名称、owner、权限和可继续操作的 token。使用该工具注意保留引用信息。 |
-| 创建/复制 Base | +base-create / +base-copy | 创建/复制 Base | 新建业务 Base 时必须用 --table-name + --fields 一次配置初始数据表；只有用户明确要求空白或平台默认 Base 时才省略，写入后报告新 Base 标识和 permission_grant |
+| 创建 Base / 复制整个多维表格文件 | +base-create / +base-copy | 得到一个独立的新 Base | 新建业务 Base 时必须用 --table-name + --fields 一次配置初始数据表；只有用户明确要求空白或平台默认 Base 时才省略，写入后报告新 Base 标识和 permission_grant。`+base-copy` 适用于副本要独立流转的场景：发给别人参考、单独分享、与原库隔离的沙箱、交接 |
+| 复制一张数据表 | +table-copy | 副本作为新表留在当前 Base 内，与原表并列 | 适用于备份、练习、同库派生版本和保留原表对照；连数据一起复制加 `--range all --wait`。明确宾语是数据表时不得改用 `+base-copy`；只有明确复制整个 Base 或要求独立流转、隔离时才复制文件 |
 | 浏览/搜索公开模板 | +template-categories / +template-list / +template-search | 公开模板库，不依赖目标 Base 权限 | 先读 [lark-base-template-center.md](references/lark-base-template-center.md)；模板中心不是用户云空间搜索，选中模板后用 +base-copy 创建 Base |
 | 查看 Base 内资源目录 | +base-block-list | 需要 base:block:read；不是读取 table/record 的前置步骤 | 想先了解一个 Base 里有哪些 table/docx/dashboard/workflow/folder 时优先用它；返回 ID 关系和 fewshot 看 --help |
 | 管理 Base 内资源目录 | +base-block-create/move/rename/delete | 管理 Base 直接挂载资源 | 创建或整理 Base 直接管理的 folder/table/docx/dashboard/workflow；资源内容继续用对应命令 |
@@ -83,7 +90,7 @@ metadata:
 | 写记录 | +record-upsert / +record-batch-create / +record-batch-update | 写记录权限 | 必读 [lark-base-record-upsert.md](references/lark-base-record-upsert.md) / [lark-base-record-batch-create.md](references/lark-base-record-batch-create.md) / [lark-base-record-batch-update.md](references/lark-base-record-batch-update.md) 和 [lark-base-cell-value.md](references/lark-base-cell-value.md) |
 | 附件字段 | +record-upload-attachment / +record-download-attachment / +record-remove-attachment | 附件专用能力 | 附件不要伪造成普通 CellValue；上传走本地文件，下载/删除按 file token 或字段定位 |
 | 删除记录 / 分享记录链接 / 历史 | +record-delete / +record-share-link-create / +record-history-list | 删除、分享、历史能力 | 删除前确认 record；分享链接最多 100 条；历史读 [lark-base-record-history-list.md](references/lark-base-record-history-list.md)，只查单条记录，不做整表审计 |
-| 管理视图 | +view-create/rename/delete；配置用 +view-set-filter / -sort / -group / -visible-fields / -card / -timebar 及对应 +view-get-\* | 依赖目标表权限 | 六类配置各有独立 set/get 子命令，只有 filter 有 reference（[lark-base-view-set-filter.md](references/lark-base-view-set-filter.md)）；其余直接用该子命令的 `--help` 取 JSON 形状（如 `+view-set-group --help`），改已有配置先 get 现状再整体提交 |
+| 管理视图 | +view-create/rename/delete；配置用 +view-set-filter / -sort / -group / -visible-fields / -card / -timebar 及对应 +view-get-\* | 依赖目标表权限 | `+view-create` 没有 `--name`，名称放进 `--json`（如 `{"name":"...","type":"grid"}`）；六类配置各有独立 set/get 子命令，只有 filter 有 reference（[lark-base-view-set-filter.md](references/lark-base-view-set-filter.md)）；其余直接用该子命令的 `--help` 取 JSON 形状（如 `+view-set-group --help`），改已有配置先 get 现状再整体提交 |
 | 一次性聚合统计 | +data-query | 普通 Base 需要文档阅读权限；高级权限 Base 需管理员 FA | 必读 [lark-base-data-analysis-sop.md](references/lark-base-data-analysis-sop.md) 和入口 [lark-base-data-query-guide.md](references/lark-base-data-query-guide.md)；完整 DSL 再读 [lark-base-data-query.md](references/lark-base-data-query.md) |
 | 公式字段 | +field-create/update --json '{"type":"formula",...}' | 字段结构变更 | 必读 [formula-field-guide.md](references/formula-field-guide.md)，读后再加隐藏确认 flag --i-have-read-guide |
 | Lookup 字段 | +field-create/update --json '{"type":"lookup",...}' | 字段结构变更 | 必读 [lookup-field-guide.md](references/lookup-field-guide.md)，读后再加隐藏确认 flag --i-have-read-guide |
@@ -91,7 +98,7 @@ metadata:
 | 表单题目创建/更新 | +form-questions-create / +form-questions-update | 表单结构变更 | 读 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md) / [lark-base-form-questions-update.md](references/lark-base-form-questions-update.md)；复用已有字段时传 `use_existing_field:true` + `field_id` |
 | 其他表单管理 | +form-list/get/detail/create/update/delete / +form-questions-list/delete / +form-share-get/update | 表单管理能力 | +form-detail 读 [lark-base-form-detail.md](references/lark-base-form-detail.md)；删除题目默认连带删除底层字段，只移出表单时必须传 `--keep-field`；分享更新前先读取现状 |
 | 仪表盘与组件 | +dashboard-\* / +dashboard-block-\* / +dashboard-share-get/update | 仪表盘与 block 能力 | 提到图表/看板/block 时先读 [lark-base-dashboard.md](references/lark-base-dashboard.md)；组件 data_config 读 [dashboard-block-data-config.md](references/dashboard-block-data-config.md)；读取图表计算结果用 +dashboard-block-get-data；分享更新前先读取现状 |
-| Workflow / 自动化 / 提醒 / 状态联动 | +workflow-\* | 工作流能力 | 用户要求提醒、到期前/后、自动通知，或状态变化后开放/暂停/回滚/生成记录等语义时，Workflow 是必交付项；执行任何 Workflow 写任务前完整读取 [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md)，由该入口继续路由运行态、交付验收和 steps JSON SSOT [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)。条件右值是静默失败点：需求中的数值边界必须真正落进 `filter_info.conditions[].value` 且类型匹配，创建后 `+workflow-get` 回读确认，空值或类型不符即返工 |
+| Workflow / 自动化 / 提醒 / 定时 / 状态联动 | +workflow-\* | 工作流能力 | 用户要求提醒、到期前/后、自动通知，按固定周期（每天 / 每周 / 每月等）定期执行汇总、报表或推送，或状态变化后开放/暂停/回滚/生成记录等语义时，Workflow 是必交付项。**触发器不止记录变化**：`TimerTrigger` 提供上述周期的定时触发，并可串联后续动作，周期性任务同样在 Workflow 内闭环，不要改用 Base 外的模块；执行任何 Workflow 写任务前完整读取 [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md)，由该入口继续路由运行态、交付验收和 steps JSON SSOT [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)。条件右值是静默失败点：需求中的数值边界必须真正落进 `filter_info.conditions[].value` 且类型匹配，创建后 `+workflow-get` 回读确认，空值或类型不符即返工 |
 | 高级权限与角色 | +advperm-\* / +role-\* | 高级权限能力 | 角色操作先读入口 [lark-base-role-guide.md](references/lark-base-role-guide.md)；构造或修改权限 JSON 时读 [lark-base-permission-rules.md](references/lark-base-permission-rules.md)；角色 create/update 或解读完整配置再读权限 JSON SSOT [role-config.md](references/role-config.md)；系统角色不可删除；关闭高级权限会影响自定义角色 |
 
 当遇到模糊搭建/系统/管理工具/台账/收集/分析类需求，用户并未指明产物多维表格的具体结构时,或需要同时搭建多张表、字段、视图、仪表盘、自动化、角色权限时，必读 [Base 系统搭建指引](references/lark-base-solution-design.md)：它给出交付清单、表设计原则、丰富度等指引。
@@ -99,16 +106,17 @@ metadata:
 ## Base 心智模型
 
 - Base 曾用名 Bitable；返回字段、错误或旧文档里的 bitable 多为历史兼容，不代表应改走裸 API 或另一套命令。
-- `+base-create` 新建独立 Base，`+base-copy` 复制已有 Base；除非用户明确要求改造副本，不要把两个交付物合并或修改复制件。
+- `+base-create` 新建独立 Base，`+base-copy` 复制整个 Base，`+table-copy` 在原 Base 内复制数据表并生成新的 `table_id`。除非用户明确要求改造副本，不要把两个交付物合并或修改复制件；验收表副本时回读原 Base，Base 名正确不能证明表副本存在。
 - +base-block-list 是查看一个 Base 内资源目录的新入口：它列出这个 Base 直接管理的 folder/table/docx/dashboard/workflow，适合先判断 Base 里有什么，再决定走 table、dashboard、workflow 或 docx 命令。
 - base-block 只负责资源目录管理，包括创建资源、移动到 folder、重命名和删除；具体资源内容仍走 table/dashboard/workflow 命令。
 - 新建业务 Base 时必须一次执行 lark-cli base +base-create --name "<base>" --table-name "<table>" --fields '<field-json-array>'，同时配置初始数据表的 name 和 schema；数组第一项会成为不可删除的主字段，因此直接放业务主字段。使用 --fields 前先读 [lark-base-field-json.md](references/lark-base-field-json.md) 或复用 +field-create 的字段 JSON 形状，不要猜字段属性。
 - 上一条的例外只在两个条件**同时成立**时生效：本轮确实要为这张新表创建表单，且这张表只用来承接表单提交结果、没有表单之外的业务用途。此时 `--fields` 只放 `auto_number`（序号，作主字段）、`created_by`（提交人）、`created_at`（提交时间）这三个系统字段，用户要收集的字段一个都不要预先建进表，全部留给 `+form-questions-create`；这三类都不在表单可用类型内，`+form-create` 不会把它们变成题目，交付形态与 Web 端新建收集表一致。任一条件不成立就走上一条：本轮不建表单、表同时是台账或管理系统的主数据表、表单只是既有业务表的附带录入口，都必须照常把用户要的字段建进 `--fields`，不得交付只有系统字段的空表。两种情况都必须显式传 `--fields`，不要省略而落到平台默认表。详见 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md) 的“表单题目从哪来”。
 - 只有用户明确要求空白或平台默认 Base 时，才省略 --table-name 和 --fields；该路径会创建默认 schema，不能靠删除默认主字段再无损改造成业务表。
 - 表、字段、视图、workflow、dashboard block 的名称和 ID 必须来自真实返回，不要凭用户口述猜。
-- 存储字段可写；系统字段、formula、lookup 只读；附件字段走专用 attachment 命令。
+- 存储字段可写；系统字段、formula、lookup 只读；附件字段走专用 attachment 命令。其中 `style.type` 为 `signature` 的附件字段（签字）单元格只读，写入或上传前先用 `+field-get` 核对样式，规则见 [lark-base-field-json.md](references/lark-base-field-json.md) §3.12。
 - `字段插件` 用于扩展基础字段能力：按同一行其他字段内容触发 LLM 生成，并写回已有目标字段；当前已确认目标字段支持文本、单选、多选、数字、日期，配置或触发前先读 [field-extension](references/lark-base-field-extension.md)。
 - 一次性原始记录查询优先用 +record-list / +record-search 的 filter/sort；聚合分析优先用 +data-query；需要长期显示在表中时，才新增 formula / lookup 字段。
+- 当统计、汇总或派生结果要留在多维表格里长期使用时，必须用 formula / lookup 字段动态计算，不得先用 +data-query 或程序一次性算出静态值再写回普通字段——静态写回不会随源数据变化更新，会随后失真。此约束只针对随源数据变化的统计/派生结果；本身是事实录入的存储值（如某笔订单金额、Mock 明细）仍按普通字段写入。
 - formula 适合常规计算、条件判断、文本/日期处理和长期派生指标；lookup 适合明确的跨表查找、筛选后取值或聚合引用。
 - 写入、分析、公式、lookup、workflow、dashboard 前，先读取真实结构：表、字段、视图、关联表和 dashboard block 名称都以命令返回为准。
 - 跨表场景必须读取目标表结构；link 单元格中的关联 record_id 只是连接键，最终回答要回查并展示用户可读字段。
@@ -143,10 +151,13 @@ metadata:
 6. 一次性原始记录查询优先用 +record-list / +record-search 的 filter/sort；聚合分析优先用 +data-query；要把结果长期显示在表里，才考虑新增 formula / lookup 字段。
 7. +data-query 可返回聚合结果或维度字段行，但维度行按字段组合去重且不返回 record_id；需要逐条记录、记录定位或完整行级字段时，再用 +record-list / +record-search / +record-get 回查。
 8. 分组、计数、求和、均值、TopN、对比谁更多/谁更高等结构化结论，必须由 +data-query 或可复核的程序化聚合产生；不要在思考或回复里手工数行、手工累加或按自然语言阅读结果估算。
+   - 先用未舍入值算出排名并判断是否并列，再按需要保留小数展示。回复直接使用计算结论，不根据展示值重新比较；用户明确要求按舍入值比较时除外。
+   - 回复中新增合计、占比等数字前，先检查是否已有对应的工具计算结果；没有就通过 +data-query 查询计算，或基于已核实的数据用程序补算。合计要明确包含哪些项，占比还要明确分母。回复直接引用结果，不补写未经计算的额外数字。
 9. 不要静默剔除“疑似异常值”或自行改变分析样本。怀疑数据异常时，默认先给全量口径；如确有必要，可额外给“剔除疑似异常”口径，并说明剔除依据和两套结果差异。
 10. 全量脚本读取 +record-list 时固定用 `--format json --limit 200 --offset <n>`；响应没有 page_token，下一页用 `offset += len(data.data)`，直到 `data.has_more=false`。投影行按 `data.fields` 建索引读取 `data.data`，不要用 `data.records` 或 `row["字段名"]`。
 11. +data-query 聚合函数只用 `sum`、`avg`、`min`、`max`、`count`、`count_all`、`distinct_count`；不要写 `average` 或 `distinct count`。
 12. 日期筛选分两套：`+record-list` / `+record-search` 的 `--filter-json` 用 tuple operator，datetime 边界优先写 `>` / `<` 加 `ExactDate(...)`；`+data-query` DSL 的 datetime 只支持 `is`、`isEmpty`、`isNotEmpty`、`isGreater`、`isLess`。
+13. 简单分组统计直接在回复中给出用户要求的分组明细、总数和占比，不能只返回产物链接。用户未要求进一步分析时，不自行增加分类汇总；用户要求进一步分析时，新增的分类汇总须先明确分类规则，再调用工具计算。
 
 ## 写入前置规则
 
@@ -163,14 +174,13 @@ metadata:
 - 批量写入单批最多 200 条；连续写同一表时串行执行，遇到 1254291 按短暂等待后重试处理。
 - `+record-batch-update` 的 `update_records` 按 `record_id` 映射到各自的字段 patch，支持在一次请求中为不同记录更新不同字段；单次最多 200 条。
 - select/multiselect 写入未知选项可能触发平台新增选项；不是要新增时，先用 +field-list 或 +field-search-options 确认可选值。
-- 搭建型任务（做系统/管理工具/后台/看板）建完表结构后默认用 +record-batch-create 造 5\~10 条示例数据，不交付空表；用户明确只要空表/模板时才跳过。写入前必须阅读 [Mock 数据严谨性指南](references/lark-base-mock-data-guide.md)，让数据贴合字段语义并满足跨字段、跨记录和当前日期下的业务一致性；不要使用 null/空串/"示例1"占位，只写存储字段，单选/多选先用 +field-list 确认已有选项。
-- 用户明确指定演示 / mock / 测试记录条数时，必须严格按指定数量写入；写入后读回记录数验收，不要按默认 5\~10 条、批次数量或自认为更丰富的数量扩展。
-- 用户说“记个账 / 做个账本 / 台账 / 清单 / 库 / 系统”但未提供真实业务明细时，默认目标是搭建可长期维护的结构化工具，并按上条补充示例数据；只有用户明确要录入某一笔真实数据时，才停下来追问该笔明细。
+- 用户说“记个账 / 做个账本 / 台账 / 清单 / 库 / 系统”但没给真实业务明细时，默认是搭一个能长期用的结构化工具，不要停下来追问明细；只有用户明确要录入某一笔真实数据时才追问。
 
 ## 表单与视图细节
 
 - **调整表单题目显隐和顺序：** Form 在 `visible_fields` 接口中作为 View，`form_id` 传给 `--view-id`。用 `+view-get-visible-fields` 读取当前可见题目，再用 `+view-set-visible-fields` 提交最终需要展示的完整有序题目 ID 列表；省略当前可见题目会隐藏它，加入已有隐藏 Form 成员会重新展示，空列表会隐藏全部题目。目标只能包含已有 Form 成员；仍显示题目的 `visible_rule` 只能引用位于它之前的可见题目。
 - `+form-create` 不创建空表单：它会把执行时表内**全部表单可用类型字段**无条件转成题目，题目集合在建 form **之前**就已由表结构决定，必须先把表结构定对再建 form。建完立刻 `+form-questions-list` 回读，优先 update 现有题目，只 create 真正缺失项。
+- **题目集合由表结构决定，题目顺序不是**：`+form-create` 自动生成的题序不保证继承字段顺序，同一份表结构重复建 form 也可能得到不同题序，所以题序是要单独验收的配置，不能沿用平台返回的默认顺序，也不能假定它跟着字段顺序走。等题目集合定稿（create / delete 都做完）后，用 `+form-questions-list` 读出实际题序与目标题序比对：目标题序按填写人从头填到尾的自然顺序排——身份与基础信息（姓名、工号、部门、联系方式等）在前，需要思考或选择的业务题在后；题面或来源材料已给出分节、编号或条目顺序时以它为准。只重排已有题目，不为了排序新增身份题。已经符合目标题序就不必写；不符合才用上一条的 `+view-set-visible-fields` 提交并再回读一次，重排后还要复查带 `visible_rule` 的题目是否仍只引用排在它之前的可见题目。题序没有回读过不得标记 verified。
 - 因此**不要落到平台默认表**：省略 `--fields` 建出的默认表自带 `文本` / `单选` / `日期` / `附件` 占位字段，建 form 后全部变题目，而主字段永久删不掉（`+field-delete` 返回 `800080207`）。污染只能靠不建来避免，不能指望事后删。
 - 对齐题目集合只能靠一开始不建、或把题目移出表单，任何情况下都不允许为此删除用户既有字段或记录数据；移出题目的授权条件见本节末尾的删除题目规则。
 - 提交时间用 `created_at` 承接，任何场景都不要出成 `datetime` 题目让填表人手填。填写人身份**只按用户列举的收集项来，不自行增删**：用户没有点名要收集填写人时不要收集，尤其不得因为“想留个痕迹”自行加一道姓名题；用户明确要匿名时更不要收集。用户点名要记录填写人时，用 `created_by` 承接、不建 `user` 题目（手填身份可伪造、会填错）。需要知道的机制事实是：`created_by` 只在**登录后**提交才写入真实身份，免登录或匿名提交只会写入访客身份、无法标识真人。因此当用户既点名要收集填写人、表单又必须免登录时，只能由填写人自己填，并在答复中说明该身份是自填、不可信；这属于按用户列举项交付，不是替他决定要收集身份。
@@ -180,25 +190,28 @@ metadata:
 - `form_id` 只用于管理命令；对外提交必须使用真实 `share_token`，不能从 Base、table 或 form ID 拼接分享链接。
 - +form-submit 前必须先跑 +form-detail，读取 questions[].type、required、filter 和附件场景需要的 base_token；不要填写被 filter 隐藏的问题。
 - 表单附件不要写进 fields，放在 --json.attachments；提交附件时必须同时传表单所属 Base 的 --base-token。
-- 表单、问卷、收集系统也属于搭建型任务。创建表结构和表单后，默认要按 [Mock 数据严谨性指南](references/lark-base-mock-data-guide.md) 完成创建阶段检查点：补 5\~10 条可验证 Mock 数据；工具链支持真实提交时至少 1 条必须经 `+form-detail -> +form-submit` 写入并回读，其余记录可批量写入。即使同一请求后续删除表单，也必须先完成此检查点，且最终再次回读确认保留的数据表非空；只创建空表单、空主表或只直接写底表却声称表单可用都不符合交付要求，除非用户明确只要空模板。
+- 表单底表同样适用验收矩阵「本轮新建表的记录」行,**表单的存在不构成豁免**。表单场景的增量要求：工具链支持真实提交时，至少 1 条记录必须经 `+form-detail -> +form-submit` 写入并回读，用以验证提交链路；其余记录可批量写入。**这条经提交写入的记录属于交付数据，验证完不得删除**；确需清理时，必须先补齐记录并回读非空再删。即使同一请求后续删除表单，也要先完成记录写入。
 - `+form-questions-create` 有两种形态：新建字段题目传 `title` + `type`；复用已有字段题目传 `use_existing_field:true` + `field_id`。两种形态都只支持表单允许的 7 种字段类型，复用已有字段不能绕过类型限制；完整支持与不支持列表见 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md)。复用字段只把已有字段加入表单，不创建字段，也不改变已有记录数据；不要携带 `type`、`style`、`options` 等字段定义属性。
 - 创建题目前先执行 `+form-questions-list`。目标标题已存在时，除非用户明确要求同名独立问题，否则使用 `+form-questions-update` 修改，不要先创建同名问题再删除旧问题。
 - 表里有该字段不等于表单能收到该信息：表单只收集自己题目列表里的项。用户枚举了要收集的信息项时，把每一项与 `+form-questions-list` 的回读结果逐项配对，缺一项就补一项；该信息已经是表内字段时用 `+form-questions-create --questions '[{"use_existing_field":true,"field_id":"<field_id>"}]'` 加进表单，不要因为字段已存在就当作已完成。
 - “删除/移除表单题目、问题、问卷项”只授权修改表单，默认使用 `--keep-field` 保留底层 Field 及历史值；只有用户明确要求同时删除底层字段/整列及其数据时才允许省略 `--keep-field`。操作前后分别用 `+form-questions-list`、`+field-list` 和必要的 `+record-list` 核对；详细删除语义决策表见 [lark-base-form-questions-create.md](references/lark-base-form-questions-create.md)。
+- 用户把某项材料定为必须提供时，约束落在采集入口：还没有承接它的表单就先建一个，表单题设 `required:true`，只在特定条件下必填的再配 `visible_rule`。写进描述、说明字段或默认值都不算实现，提醒类 Workflow 也不算——它不阻止提交。写后逐题回读 `required`。
 - 管理表单分享使用 `+form-share-get` / `+form-share-update` 管理启停、访问范围和匿名/登录要求；对应字段为 `enabled`、`access_scope`、`allow_anonymous`、`require_login`。更新前先读取现状，每次只修改一个字段，布尔值显式传 `true` 或 `false`。
+- 分享范围由填写人范围决定，不由题面用词决定：填写人是组织内的特定群体，或表单收集个人敏感信息时，用 `access_scope=tenant` + `require_login=true`；只有面向组织外不特定对象时才放开为任何人可填。
 - 用户说“填写入口、发链接、别人自己填、同事提交、在线填写”时，交付物是**可访问的表单入口**，不得仅创建 form 就结束。创建题目后直接执行 `+form-share-get`；若 `enabled=false`，先用 `+form-share-update` 开启，外部或无需登录填写还要逐项设置 `access_scope=anyone`、`allow_anonymous=true`、`require_login=false`，再回读。只有 `enabled=true` 且 `share_url 非空` 才能标记 verified；否则必须继续修复或明确报告 blocked，不得声称“可在前端获取/可直接分享”。若父级 `base --help` 未列出分享命令，先运行精确的 `lark-cli base +form-share-get --help` / `+form-share-update --help`，不能据父级帮助或旧记忆判断能力不支持。
 - view 的每类配置都有独立子命令：filter、sort、group、visible-fields、card、timebar 各自有 `+view-set-*` 与 `+view-get-*`。只有 filter 保留了 reference，其余没有 reference 不代表能力不存在——直接读对应子命令的 `--help` 获取 JSON 形状，不要绕道 raw API、改用替代产物或只在答复里描述。修改已有配置先用对应 get 读现状，保留未修改字段，只替换用户要求变更的配置。
 - 视图适合持久化、共享和 UI 复用；一次性筛选/排序可先用 +record-list / +record-search 的 filter/sort 验证结果，再按需要沉淀为持久视图。
 - 视图名称不能冒充配置。创建或重命名前先做视图名称拆解，把名称中的对象类型、筛选集合、分组字段、排序和时间范围分别写成验收项；新建 kanban、gallery、calendar、gantt 等视图时平台给出的默认分组或展示字段只是平台兜底，不是用户要求的维度，必须显式设置目标配置。写入后按项调用 `+view-get-filter/group/sort/card/timebar/visible-fields`，再用 `+record-list --view-id` 检查代表性命中项与排除项。任一名称承诺与保存配置或实际记录不一致时，修正配置或改成真实名称后再交付，详见 [lark-base-view-set-filter.md](references/lark-base-view-set-filter.md)。
+- 用户要求把某个源字段映射成若干业务类别后分组时，分组键必须是实际输出这些类别的已有字段或派生字段；直接按源字段的原始值逐项分组不能替代类别分组。
 - 将自然语言目标转成筛选或分析条件前，必须读取完整候选值域并逐项标记 `Include / Exclude / Unknown`：只有字段证据能直接证明不满足目标的值才可 `Exclude`，`Unknown` 必须保留并分组展示或先向用户澄清；阶段、局部或相邻语义字段不能证明最终业务状态。写入后按各子类数量核对命中项与排除项，详见 [Base 数据表查询与分析 SOP](references/lark-base-data-analysis-sop.md)。
 - 用户要“未完成 / 未归还 / 待处理 / 逾期”等状态视图时，优先用原始结构字段表达条件（如实际归还时间为空、处理状态不为已完成），不要只基于自造展示文案做 contains 筛选。若只能筛公式文案，必须枚举所有目标状态并读回视图记录验证。
-- 长期复用视图中的相对时间条件（本月、今年、超过 N 天/月、近 N 天/月）禁止硬编码当前日期。优先使用平台相对日期关键字、辅助公式字段或动态判断字段；无法动态表达时必须说明限制，不要把固定日期视图包装成持续可用能力。
+- 长期复用视图中的相对时间条件（凡锚定运行当天、随时间推移而变化的动态/相对范围：本周、上周、本月、今年、超过 N 天/月、近 N 天/月、未来/接下来 N 天/月等）禁止硬编码当前日期。优先使用平台相对日期关键字、辅助公式字段或动态判断字段；无法动态表达时必须说明限制，不要把固定日期视图包装成持续可用能力。
 
 ## Dashboard / Workflow / Role
 
-- Dashboard 的复杂点是 block 的 data_config，不是 list/get/create/delete 命令参数。创建或更新 block 前先读 [dashboard-block-data-config.md](references/dashboard-block-data-config.md)，组件必须串行创建；+dashboard-arrange 是服务端智能布局，只在用户明确要求重排/美化时执行。+dashboard-block-get-data 读取图表最终计算结果，不返回 block 名称、类型、布局或 data_config；需要元数据先用 +dashboard-block-get。
+- Dashboard 的复杂点是 block 的 data_config，不是 list/get/create/delete 命令参数。创建或更新 block 前先读 [dashboard-block-data-config.md](references/dashboard-block-data-config.md)；排行榜使用单分组、单指标、Top N 和指标值排序，NPS 使用单个 Rating 评分字段与可选分段，两者都必须按专属结构配置。组件必须串行创建；+dashboard-arrange 是服务端智能布局，只在用户明确要求重排/美化时执行。+dashboard-block-get-data 读取图表最终计算结果，不返回 block 名称、类型、布局或 data_config；需要元数据先用 +dashboard-block-get。
 - Base 场景中用户要求“图 / 图表 / 看板 / 直观看到 / 可视化”时，默认优先创建 Base Dashboard 组件并沉淀在 Base 中；外部图片或一次性文本统计只能作为补充，不能替代 Base 内可持续更新的图表。交付前用 `+dashboard-block-list` 确认组件存在，关键图表用 `+dashboard-block-get-data` 验证可计算。
-- 管理 Dashboard 分享使用 `+dashboard-share-get` / `+dashboard-share-update` 管理启停、访问范围和返回源 Base 入口；对应字段为 `enabled`、`access_scope`、`show_source`。更新前先读取现状，每次只修改一个字段，显式 `false` 必须保留。
+- 管理 Dashboard 分享使用 `+dashboard-share-get` / `+dashboard-share-update` 管理启停、访问范围和返回源 Base 入口；对应字段为 `enabled`、`access_scope`、`show_source`。更新前先读取现状，每次只修改一个字段，显式 `false` 必须保留。用户要求把看板给他人查看时，交付物是已开启的分享链接：只有 `enabled=true` 且分享 URL 非空才能标记 `verified`，浏览器地址栏的 Base/看板地址不算，也不能只说“可自行分享”；受限时如实标记 `blocked`。
 - Workflow 的复杂点是 steps 结构和生效状态。执行任何 Workflow 写任务前完整读取 [lark-base-workflow-guide.md](references/lark-base-workflow-guide.md) 和 steps JSON SSOT [lark-base-workflow-schema.md](references/lark-base-workflow-schema.md)；新建 workflow 默认 disabled，必须先预检完整定义，再按题意解析目标运行态、执行 enable/disable 并回查，不能把“创建成功”当作“已生效”。list/get/enable/disable 只处理已确认的 workflow ID、当前状态和用户意图。
 - 只有用户明确要求自动化或修改现有 workflow 时，才创建、更新或启用 workflow；字段、公式、视图或 dashboard 需求本身不授权启用自动化。
 - 用户说“一按 / 一键 / 点一下就知道 / 按钮触发”时，优先评估 button 字段 + ButtonTrigger workflow，或在表中创建明确的结果字段 / 视图承载一键判断结果；不要只用静态说明、普通仪表盘或手动筛选替代交互诉求。
