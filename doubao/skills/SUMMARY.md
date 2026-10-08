@@ -7,8 +7,8 @@
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
 - 条目数：109
-- 文件数：2718
-- 最近同步：2026-09-25 18:00:02 +0800
+- 文件数：2723
+- 最近同步：2026-10-08 09:05:57 +0800
 
 ## 场景导航（按用途）
 
@@ -339,7 +339,7 @@
 | lark-wiki | `doubao/skills/lark-wiki` | 协作/办公 | lark-wiki | 14 | 飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域... |
 | lark-workflow-standup-report | `doubao/skills/lark-workflow-standup-report` | 协作/办公 | lark-workflow-standup-report | 1 | 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。 |
 | multi-stock-comparison | `doubao/skills/multi-stock-comparison` | 金融研究 | multi-stock-comparison | 29 | 对两家及以上上市公司或股票进行横向研究，覆盖大盘与板块、外围市场、供应链、重要新闻与监管、商业模式、经营财务、成长、预期、估值、股价、组合以及 A/H 股与跨上市地相对价值。适用于公司比较、选股、财报或估值对比、股价与事件复盘、供应链或监管分析、组合适配、配对交易、H 股相对价值，以及需要飞书文档、高级金融图表或可复核多维报告的任务。 |
-| pdf | `doubao/skills/pdf` | 文档/表格/PPT | pdf | 55 | 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。 |
+| pdf | `doubao/skills/pdf` | 文档/表格/PPT | pdf | 60 | 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。 |
 | ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 191 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | seed-audio | `doubao/skills/seed-audio` | 通用工具/平台 | seed-audio | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色）。如果用户的主要意图或目标产物是生成或编辑视频，应使用视频生成或编辑 skill，不得加载或使... |
 | seedance-25 | `doubao/skills/seedance-25` | 其他 | seedance-25 | 1 | 介绍 Seedance 2.5 的视频生成参数。用户指定 Seedance 2.5 或显式调用本 Skill 时使用；实际生成前必须路由 doubao-creative-video，固定使用 seedance_2.5。 |

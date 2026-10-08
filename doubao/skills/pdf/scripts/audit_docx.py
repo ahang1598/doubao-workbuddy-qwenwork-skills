@@ -480,6 +480,518 @@ def _check_omml_cambria_math(doc):
     }
 
 
+# 评测报告发现 11/15 case 报「结构-列表伪造」，主要症状是 SubAgent 把源 PDF 的
+# 多级条款（一、（一）、1./（1）、5.2.1.1、● 等）以字面文本写入 Normal 段落而非
+# 使用 python-docx 的 numPr 关联编号样式，导致 Word 不能自动续号、不能整体调层级。
+# 这里的正则用来数「字面编号但没有 numPr」的段落数量，从而在结构 QA 阶段挡住。
+# 每个正则匹配段落开头即可，宽松匹配减少漏检。
+LITERAL_NUMBER_PATTERNS = (
+    re.compile(r"^[一二三四五六七八九十百]{1,4}[、\.\s]"),  # 中文序号：一、二、
+    re.compile(r"^[\(（][一二三四五六七八九十百]{1,4}[\)）]"),  # 中文括号序号：（一）
+    re.compile(r"^\d{1,3}[\.．]\s"),  # 阿拉伯数字一级：1. 2.
+    re.compile(r"^[\(（]\d{1,3}[\)）]"),  # 阿拉伯括号：（1）
+    re.compile(r"^\d+(?:\.\d+){1,4}[\s．]"),  # 多级数字：5.2.1.1
+    re.compile(r"^[●•·▪◆★]\s?"),  # 项目符号
+    re.compile(r"^[a-zA-Z][\.．)]\s"),  # a. b) A. 等英文字母序号
+)
+
+
+# python-docx 自带样式名（含中英本地化）；仅认这些为「使用了 Heading 大纲」。
+# style.name 为默认字符串，比 style_id 更稳定（英文包默认就是 "Heading 1"）。
+_HEADING_STYLE_PREFIXES = ("Heading ", "标题 ", "题 ", "Title")
+
+
+def _count_heading_style_paragraphs(doc):
+    """统计使用 Heading 1..9 / Title 样式的正文段落数。
+
+    评测 15/15 case 都报「结构-标题层级错误」：SubAgent 把源 PDF 的章节标题写成
+    Normal + 加粗 + 大字号的段落，Word 视之为普通正文，无法生成大纲/目录/自动续号。
+    正确做法是 `paragraph.style = doc.styles['Heading 1']`；由本函数配合
+    _estimate_source_heading_count 做数量对比。
+    """
+    count = 0
+    samples = []
+    for para in doc.paragraphs:
+        style_name = (para.style.name if para.style else "") or ""
+        if not style_name.startswith(_HEADING_STYLE_PREFIXES):
+            continue
+        count += 1
+        if len(samples) < 5:
+            samples.append(para.text.strip()[:40])
+    return count, samples
+
+
+def _estimate_source_heading_count(layout, size_ratio=1.15):
+    """从 pdf_layout.pages[].text_lines 估计源 PDF 中章节标题的下限数量。
+
+    启发式（与 analyze_pdf_layout._looks_like_heading 语义对齐）：
+      - 字号 > 正文字号中位数 * size_ratio
+      - 单行短文本（<= 40 字符）
+      - 不以句末标点收尾
+    还需去重同页多次触发（同一节标题被 blocks 拆多行时避免重复计数）。
+
+    返回估计的标题数量；样本不足或字号信息缺失时返回 None（不做对比）。
+    """
+    body_size = _pdf_body_size_median(layout)
+    if body_size is None:
+        return None
+    threshold = body_size * size_ratio
+    endings = tuple(".。!！?？:：;；,，")
+    total = 0
+    for page in layout.get("pages", []):
+        seen = set()
+        for line in page.get("text_lines", []) or []:
+            size = line.get("size", 0) or 0
+            text = (line.get("text", "") or "").strip()
+            if not text or len(text) > 40:
+                continue
+            if size <= threshold:
+                continue
+            if text.endswith(endings):
+                continue
+            # 同页同文本仅记一次（PyMuPDF 会把跨行标题拆多个 text_line）
+            if text in seen:
+                continue
+            seen.add(text)
+            total += 1
+    return total
+
+
+def _count_literal_numbered_paragraphs(doc):
+    """统计"以字面编号开头但未挂 numPr"的段落数量。
+
+    评测数据：11/15 case 「结构-列表伪造」，本函数是抓这一类问题的直接指标。
+    只扫短段落（<= 100 字符）以避免正文里"1. 有" 等偶然匹配；已挂 numPr 的段落
+    是"结构正确"，跳过不算。返回 (count, samples)。
+    """
+    count = 0
+    samples = []
+    for para in doc.paragraphs:
+        text = para.text.strip()
+        if not text or len(text) > 100:
+            continue
+        numPr = para._p.find(f"{qn('w:pPr')}/{qn('w:numPr')}")
+        if numPr is not None:
+            continue
+        for pattern in LITERAL_NUMBER_PATTERNS:
+            if pattern.match(text):
+                count += 1
+                if len(samples) < 5:
+                    samples.append(text[:50])
+                break
+    return count, samples
+
+
+def _estimate_source_numbered_line_count(layout):
+    """估计源 PDF 中"以字面编号开头的多级条款行"数量。
+
+    仅按 text_lines 的文本前缀匹配 LITERAL_NUMBER_PATTERNS，不看字号——多级条款
+    在源 PDF 里通常是正文字号，只是有编号前缀。这个数量作为「DOCX 应至少有多少
+    numPr 关联段落」的下限依据。
+    """
+    total = 0
+    for page in layout.get("pages", []):
+        for line in page.get("text_lines", []) or []:
+            text = (line.get("text", "") or "").strip()
+            if not text or len(text) > 100:
+                continue
+            for pattern in LITERAL_NUMBER_PATTERNS:
+                if pattern.match(text):
+                    total += 1
+                    break
+    return total
+
+
+def _count_numpr_paragraphs(doc):
+    """统计 DOCX 中挂了 numPr 的段落数。与字面编号数量做对比时使用。"""
+    count = 0
+    for para in doc.paragraphs:
+        numPr = para._p.find(f"{qn('w:pPr')}/{qn('w:numPr')}")
+        if numPr is not None:
+            count += 1
+    return count
+
+
+# EMU→DXA 换算：1 pt = 20 DXA = 12700 EMU；1 DXA = 635 EMU
+_EMU_PER_DXA = 635
+
+# 段落 indent 挤压后允许的最小内容宽度，取 body 宽度的 5% —— 低于这个阈值
+# 说明缩进过大，段落几乎没内容空间可写；这是启发式经验值，保守以避免
+# 「悬挂缩进 hanging = 短距离」这种正常场景被误报。
+_MIN_PARAGRAPH_CONTENT_RATIO = 0.05
+
+
+def _section_body_widths_dxa(doc):
+    """返回所有 section 的 body 可用宽度列表（单位 DXA）。
+
+    body 宽度 = page_width - left_margin - right_margin。多 section 时保留每个
+    section 的宽度；调用方按需选"最窄"做保守判断或按段落归属 section 精确取值。
+    """
+    widths = []
+    for section in doc.sections:
+        page_w = section.page_width
+        left = section.left_margin
+        right = section.right_margin
+        if page_w is None or left is None or right is None:
+            continue
+        body_emu = int(page_w) - int(left) - int(right)
+        if body_emu <= 0:
+            continue
+        widths.append(body_emu / _EMU_PER_DXA)
+    return widths
+
+
+def _emu_to_dxa(emu):
+    """EMU → DXA。图片 <wp:extent cx> 是 EMU，需要换算才能与 body 宽度对比。"""
+    try:
+        return float(emu) / _EMU_PER_DXA
+    except (TypeError, ValueError):
+        return None
+
+
+def _check_content_overflow(doc):
+    """统一检查 4 类"声明性内容溢出"（能从 OOXML 静态算出、不依赖渲染）：
+
+      1. 顶层表格 tblGrid 总宽 > section body 宽度
+         —— 评测 case 6 红线级失败根因（body 18cm 承载 35cm 表格）
+      2. 嵌套表格 tblGrid 总宽 > 外层 cell 的 tcW
+         —— cell 里塞不下的子表会拉宽或截断
+      3. inline 图片 wp:extent cx 换算 DXA > body 宽度
+         —— 图片过大会被 Word 缩放或部分裁切
+      4. 段落 indent (left+right) 让可用宽 < body*5%
+         —— 缩进设太大，段落几乎无内容空间
+
+    返回按 kind 分类的问题列表：
+        [{"kind": "top_table" | "nested_table" | "inline_image" | "paragraph_indent",
+          ...细节字段}, ...]
+    调用方按 kind 决定 error/warning 分级。
+
+    2% 浮点/边距误差容忍；负 indent（悬挂缩进）跳过；cx=0 或 tcW=auto/pct 跳过
+    以避免假阳性。
+    """
+    issues = []
+    body_widths = _section_body_widths_dxa(doc)
+    if not body_widths:
+        return issues
+    min_body_dxa = min(body_widths)
+
+    # --- Case 1: 顶层表格 tblGrid vs section body ---
+    for index, table in enumerate(doc.tables, start=1):
+        grid = [dxa_value(column) for column in table._tbl.tblGrid]
+        total_dxa = sum(v for v in grid if v)
+        if total_dxa <= 0:
+            continue
+        overflow = total_dxa - min_body_dxa
+        if overflow <= min_body_dxa * 0.02:
+            continue
+        issues.append({
+            "kind": "top_table",
+            "table_index": index,
+            "table_total_dxa": total_dxa,
+            "container_dxa": round(min_body_dxa),
+            "overflow_dxa": round(overflow),
+            "overflow_pct": round(overflow / min_body_dxa * 100, 1),
+        })
+
+    # --- Case 2: 嵌套表格 tblGrid vs outer cell tcW ---
+    # 遍历所有 cell（含嵌套），对 cell.tables 里每个子表算总宽 vs cell 自身宽度
+    for outer_index, outer_table in enumerate(doc.tables, start=1):
+        _collect_nested_overflow(outer_table, outer_index, [], issues)
+
+    # --- Case 3: inline 图片 wp:extent cx vs body ---
+    # inline shape 用 <wp:inline><wp:extent cx="EMU" cy="EMU"/></wp:inline> 表达
+    extent_tag = f"{{{'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing'}}}extent"
+    for img_index, extent_el in enumerate(doc.element.iter(extent_tag), start=1):
+        cx = extent_el.get("cx")
+        cx_dxa = _emu_to_dxa(cx) if cx else None
+        if not cx_dxa or cx_dxa <= 0:
+            continue
+        overflow = cx_dxa - min_body_dxa
+        if overflow <= min_body_dxa * 0.02:
+            continue
+        issues.append({
+            "kind": "inline_image",
+            "image_index": img_index,
+            "image_width_dxa": round(cx_dxa),
+            "container_dxa": round(min_body_dxa),
+            "overflow_dxa": round(overflow),
+            "overflow_pct": round(overflow / min_body_dxa * 100, 1),
+        })
+
+    # --- Case 4: 段落 indent 让可用宽度 < body*5% ---
+    min_content_dxa = min_body_dxa * _MIN_PARAGRAPH_CONTENT_RATIO
+    for para_index, para in enumerate(doc.paragraphs, start=1):
+        pPr = para._p.find(qn("w:pPr"))
+        if pPr is None:
+            continue
+        ind = pPr.find(qn("w:ind"))
+        if ind is None:
+            continue
+        left = _dxa_int(ind.get(qn("w:left"))) or 0
+        right = _dxa_int(ind.get(qn("w:right"))) or 0
+        # 负值 = 悬挂 / negative indent 是刻意的，跳过
+        if left < 0 or right < 0:
+            continue
+        remaining = min_body_dxa - left - right
+        if remaining >= min_content_dxa:
+            continue
+        issues.append({
+            "kind": "paragraph_indent",
+            "paragraph_index": para_index,
+            "left_indent_dxa": left,
+            "right_indent_dxa": right,
+            "container_dxa": round(min_body_dxa),
+            "remaining_dxa": round(remaining),
+            "text_sample": para.text.strip()[:40],
+        })
+
+    return issues
+
+
+def _dxa_int(raw):
+    """把 rPr/ind 里的 DXA 数值字符串转 int；无法解析返回 None。"""
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
+def _collect_nested_overflow(table, outer_index, path, issues):
+    """递归遍历嵌套 table，把"子表 tblGrid > 所在 cell tcW"记录到 issues。"""
+    for row_i, row in enumerate(table.rows):
+        for col_i, cell in enumerate(row.cells):
+            # cell 的宽度取 <w:tcPr><w:tcW w:w=... w:type="dxa"/>
+            tcPr = cell._tc.find(qn("w:tcPr"))
+            cell_dxa = None
+            if tcPr is not None:
+                tcW = tcPr.find(qn("w:tcW"))
+                if tcW is not None:
+                    # 只处理明确的 dxa 单位；auto/pct/nil 无法计算绝对宽度，跳过
+                    type_attr = tcW.get(qn("w:type")) or "dxa"
+                    if type_attr == "dxa":
+                        cell_dxa = _dxa_int(tcW.get(qn("w:w")))
+            for nested_i, nested in enumerate(cell.tables, start=1):
+                nested_grid = [dxa_value(c) for c in nested._tbl.tblGrid]
+                nested_total = sum(v for v in nested_grid if v)
+                if nested_total <= 0 or cell_dxa is None or cell_dxa <= 0:
+                    # 缺信息时跳过（避免假阳性）；深层嵌套仍递归下去
+                    _collect_nested_overflow(
+                        nested, outer_index, path + [(row_i, col_i, nested_i)], issues,
+                    )
+                    continue
+                overflow = nested_total - cell_dxa
+                if overflow > cell_dxa * 0.02:
+                    issues.append({
+                        "kind": "nested_table",
+                        "outer_table_index": outer_index,
+                        "path": path + [(row_i, col_i, nested_i)],
+                        "nested_total_dxa": nested_total,
+                        "container_dxa": cell_dxa,
+                        "overflow_dxa": round(overflow),
+                        "overflow_pct": round(overflow / cell_dxa * 100, 1),
+                    })
+                _collect_nested_overflow(
+                    nested, outer_index, path + [(row_i, col_i, nested_i)], issues,
+                )
+
+
+def _check_footer_uses_page_field(doc):
+    """检查各 section footer 是否用 PAGE / NUMPAGES 域动态输出页码。
+
+    评测 3/15 case 报「页脚是静态数字'1'/'2'/...」——SubAgent 用
+    `footer.paragraphs[0].add_run("1")` 而不是 field code，导致增页后页码错乱。
+    Word 域的 XML 表现是 `<w:fldChar>` + `<w:instrText>PAGE</w:instrText>`。
+
+    返回：
+      - {"has_footer": False}: 所有 section 都没有 footer 文本；不做判定
+      - {"has_footer": True, "uses_field": True/False, "static_page_numbers": [...]}
+        static_page_numbers 是当前 footer 里看起来像页码但非 field 的短文本样例
+    """
+    has_any_footer_text = False
+    uses_field = False
+    static_samples = []
+    for section in doc.sections:
+        footer_el = section.footer._element
+        if footer_el is None:
+            continue
+        footer_text = "\n".join(p.text for p in section.footer.paragraphs).strip()
+        if not footer_text:
+            continue
+        has_any_footer_text = True
+        # 检测 PAGE / NUMPAGES 域指令；用 iter 而非 xpath 兼容 python-docx 的
+        # BaseOxmlElement（后者不接受 namespaces= 关键字）
+        for instr in footer_el.iter(qn("w:instrText")):
+            code = (instr.text or "").strip().upper()
+            if code.startswith("PAGE") or code.startswith("NUMPAGES") or "PAGE " in code:
+                uses_field = True
+                break
+        if not uses_field:
+            # 检测静态页码字符串（数字、"第 X 页"、"-1-" 等）
+            for line in footer_text.splitlines():
+                clean = line.strip()
+                if not clean or len(clean) > 30:
+                    continue
+                for pattern in PAGE_MARKER_PATTERNS:
+                    if pattern.match(clean):
+                        if len(static_samples) < 3:
+                            static_samples.append(clean)
+                        break
+    if not has_any_footer_text:
+        return {"has_footer": False}
+    return {
+        "has_footer": True,
+        "uses_field": uses_field,
+        "static_page_numbers": static_samples,
+    }
+
+
+def _summarize_overflow_issues(issues, errors, warnings):
+    """把 _check_content_overflow 返回的 issues 按 kind 归类，追加到 errors/warnings。
+
+    分级：
+      - top_table / nested_table / inline_image → errors（明确的渲染失败）
+      - paragraph_indent → warnings（悬挂缩进等合理场景需要 agent 判断）
+    """
+    by_kind = collections.defaultdict(list)
+    for it in issues:
+        by_kind[it["kind"]].append(it)
+
+    if by_kind["top_table"]:
+        preview = [
+            f"表#{it['table_index']}超出{it['overflow_pct']}%"
+            f"（{it['table_total_dxa']}dxa vs body {it['container_dxa']}dxa）"
+            for it in by_kind["top_table"][:5]
+        ]
+        errors.append(
+            f"{len(by_kind['top_table'])} 个顶层表格宽度超出 section body 可用宽度（{preview}）；"
+            f"评测 case 6 红线级失败根因——python-docx `columns[i].width` 静默接受超宽值，"
+            f"Word 渲染时列内容会大面积超出页面边界。检查 <w:tblGrid> 的列宽 Cm 总和 "
+            f"≤ section 的 page_width - left_margin - right_margin"
+        )
+
+    if by_kind["nested_table"]:
+        preview = [
+            f"外表#{it['outer_table_index']}路径{it['path']}子表超出{it['overflow_pct']}%"
+            f"（子表 {it['nested_total_dxa']}dxa vs cell {it['container_dxa']}dxa）"
+            for it in by_kind["nested_table"][:5]
+        ]
+        errors.append(
+            f"{len(by_kind['nested_table'])} 个嵌套表格宽度超出外层 cell tcW（{preview}）；"
+            f"子表被父 cell 挤压时内容会截断或拉宽父 cell 造成整体版面塌陷，"
+            f"请把子表 tblGrid 总宽收敛到 <w:tcW w:w=...> 之内"
+        )
+
+    if by_kind["inline_image"]:
+        preview = [
+            f"图#{it['image_index']}宽 {it['image_width_dxa']}dxa 超出 body {it['container_dxa']}dxa "
+            f"({it['overflow_pct']}%)"
+            for it in by_kind["inline_image"][:5]
+        ]
+        errors.append(
+            f"{len(by_kind['inline_image'])} 张 inline 图片宽度超出 section body（{preview}）；"
+            f"Word 会自动缩放或裁切，视觉与源 PDF 无法对齐——按源图实际显示宽度设 wp:extent cx，"
+            f"或按 body 可用宽度反算最大允许 cx"
+        )
+
+    if by_kind["paragraph_indent"]:
+        preview = [
+            f"段落#{it['paragraph_index']}(text={it['text_sample']!r}) "
+            f"left+right={it['left_indent_dxa']}+{it['right_indent_dxa']}dxa，"
+            f"剩余 {it['remaining_dxa']}dxa"
+            for it in by_kind["paragraph_indent"][:5]
+        ]
+        warnings.append(
+            f"{len(by_kind['paragraph_indent'])} 个段落 indent (left+right) 挤压后可用宽 < body 的 5%（{preview}）；"
+            f"若是刻意的悬挂缩进/单栏窄段可忽略，否则检查 <w:pPr><w:ind> 数值是否设错单位（DXA vs pt）"
+        )
+
+
+def _check_docx_semantic_structure(doc, layout):
+    """把 4 项结构语义硬检查聚合成一个 report 片段。
+
+    对齐评测报告 (P0)：
+      1. Heading 大纲使用率 vs 源 PDF 章节数（15/15 case 触发）→ 警告
+      2. 字面编号 vs numPr 使用率（11/15 case 触发）→ 警告
+      3. 表格 tblGrid 总宽 vs body 宽度（case 4/6/12 直接触发；case 6 红线）→ 错误
+      4. 页脚 PAGE field vs 静态文字（3/15 case 触发）→ 警告
+
+    只有"表格宽度超出 body"是硬阻断错误——它一定会导致 Word 渲染截字；
+    其他 3 项虽是 P0 根因但语义启发式有假阳性风险，走警告让 agent 自主判断。
+    返回 (result_dict, errors_list, warnings_list)。
+    """
+    result = {}
+    errors = []
+    warnings = []
+
+    heading_count, heading_samples = _count_heading_style_paragraphs(doc)
+    numpr_count = _count_numpr_paragraphs(doc)
+    literal_count, literal_samples = _count_literal_numbered_paragraphs(doc)
+    result["Heading样式段落数"] = heading_count
+    result["Heading样例"] = heading_samples
+    result["numPr关联段落数"] = numpr_count
+    result["字面编号段落数"] = literal_count
+    result["字面编号样例"] = literal_samples
+
+    if layout is not None:
+        source_heading = _estimate_source_heading_count(layout)
+        source_numbered = _estimate_source_numbered_line_count(layout)
+        result["源PDF章节标题估算"] = source_heading
+        result["源PDF字面编号行估算"] = source_numbered
+
+        # 章节标题：源 PDF 估计有 >= 3 个明显大字号短行，DOCX 却几乎没用 Heading。
+        # 阈值 30% 是评测报告观察值：case 11 (E=2, 表单) heading_count=0 是合理的；
+        # 但 case 1 (196 页规范) source_heading > 30 时 heading_count=0 就是明确失败。
+        # 走警告：启发式估算章节数会误判艺术字/夸张字号封面，让 agent 自己判断
+        if (source_heading is not None and source_heading >= 3
+                and heading_count < max(1, source_heading * 0.3)):
+            warnings.append(
+                f"章节标题层级未使用 Heading 大纲：源 PDF 估算至少 {source_heading} 个章节标题，"
+                f"DOCX 中 Heading 1..9/Title 样式段落仅 {heading_count} 个。评测 15/15 case 触发，"
+                f"必须用 python-docx `paragraph.style = doc.styles['Heading N']` 或 `add_heading` "
+                f"绑定大纲级别，而非仅设加粗/大字号"
+            )
+
+        # 多级列表：源 PDF 估计有多级条款行，DOCX 大量以字面编号开头但无 numPr。
+        # 触发条件：源估算 >= 8 行多级条款 且 DOCX 里字面编号段落显著多于 numPr 段落
+        # （字面 >= 5 段且 numPr 覆盖率 < 30%）。阈值放宽保证抓得住"字面伪造"的常见形态。
+        # 走警告：DOCX 里的字面前缀可能是正文引用（如"5.2.1 xxx"是内文提及）
+        if source_numbered is not None and source_numbered >= 8:
+            numpr_coverage = numpr_count / source_numbered
+            if numpr_coverage < 0.3 and literal_count >= 5 and literal_count > numpr_count * 2:
+                warnings.append(
+                    f"多级列表未使用 numPr 结构：源 PDF 估算 {source_numbered} 行多级条款/项目符号，"
+                    f"DOCX 中 numPr 关联段落仅 {numpr_count} 个（覆盖率 {numpr_coverage:.0%}），"
+                    f"却有 {literal_count} 段以字面编号开头（如 {literal_samples[:3]}）。"
+                    f"评测 11/15 case 触发，必须用 python-docx numbering.xml + `paragraph._p...numPr` "
+                    f"绑定编号样式，Word 才能自动续号、跨页维护层级"
+                )
+
+    # 内容溢出（覆盖 4 类静态可检测的 overflow）
+    #   - top_table / nested_table / inline_image → error（明确的渲染失败源头）
+    #   - paragraph_indent → warning（假阳性风险高，让 agent 自己看）
+    overflow_issues = _check_content_overflow(doc)
+    if overflow_issues:
+        result["内容溢出"] = overflow_issues
+        _summarize_overflow_issues(overflow_issues, errors, warnings)
+
+    # 页脚 field 检查（无 layout 也可查）
+    footer_result = _check_footer_uses_page_field(doc)
+    result["页脚页码检查"] = footer_result
+    if footer_result.get("has_footer") and not footer_result.get("uses_field"):
+        static_pn = footer_result.get("static_page_numbers") or []
+        if static_pn:
+            warnings.append(
+                f"页脚检测到静态页码字符串 {static_pn}，未使用 PAGE 域动态输出；"
+                f"评测 3/15 case 触发（case 10/13/15）——Word 增页后不能自动续号。"
+                f"请通过 `<w:fldChar>` + `<w:instrText>PAGE</w:instrText>` 建立域，"
+                f"python-docx 里可用 `run._element.append(oxml_element)` 手工插入"
+            )
+
+    return result, errors, warnings
+
+
 def _special_chars_from_text(text):
     """扫描非 ASCII、非 CJK 汉字/常见 CJK 标点的符号字符（Unicode S* 类）。
 
@@ -1146,6 +1658,15 @@ def audit(path, layout, strict_tables=False, fidelity="high", rendered_pdf=None,
     docx_links = _collect_docx_links(doc)
     report["目录与链接"] = {"docx": docx_links}
 
+    # 结构语义硬检查——覆盖评测 P0 根因。
+    # 只有"表格宽度超出 body"是硬阻断错误（一定导致 Word 渲染截字）；
+    # Heading / numPr / 页脚 field 走警告，让 agent 自主判断（启发式估算存在假阳性）。
+    # 无 layout 时仅跑不依赖 layout 的表宽和页脚检查。
+    semantic_result, semantic_errors, semantic_warnings = _check_docx_semantic_structure(doc, layout)
+    report["结构语义"] = semantic_result
+    report["错误"].extend(semantic_errors)
+    report["警告"].extend(semantic_warnings)
+
     if layout is not None:
         report["错误"].extend(_validate_layout_relationships(layout))
         pdf_meaningful = sum(p.get("meaningful_chars", 0) for p in layout.get("pages", []))
@@ -1373,9 +1894,7 @@ def main():
                         help="用 fc-list 检查 pdf_layout.pages[].text_lines[].font 声明的字体是否本机可用；缺字体会导致 libreoffice 沉默替换、进而使页数漂移")
     parser.add_argument("--xsd-validate", action="store_true",
                         help="启用 OOXML XSD schema 校验（默认关闭）；加载 scripts/ooxml_schemas/wml.xsd 校验 "
-                             "word/document.xml，已知误报如 rFonts@hint='cs'、uiPriority 会被过滤。"
-                             "默认关闭的原因：wml 结构违规 Word 通常宽容处理（可用 docx2pdf.py --reformat 洗一遍），"
-                             "而真正影响 Word 打开的公式结构错已由 OMML Cambria Math 校验兜住")
+                             "word/document.xml，已知误报如 rFonts@hint='cs'、uiPriority 会被过滤。")
     parser.add_argument("--schemas-dir", type=Path,
                         help=f"OOXML XSD 目录，默认 {_DEFAULT_SCHEMAS_DIR}（ECMA-376 5th Transitional + OPC，26+4 个 XSD）")
     args = parser.parse_args()

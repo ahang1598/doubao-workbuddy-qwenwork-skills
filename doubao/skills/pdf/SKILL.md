@@ -17,10 +17,11 @@ This guide covers essential PDF processing operations using bundled Python libra
 - Use the bundled Python libraries and scripts for all default workflows. Do not invoke a system CLI when PyMuPDF, pypdf, pdfplumber, reportlab, or Pillow can perform the operation.
 - When extracting text, check page count, empty pages, repeated-page hashes, replacement characters, and a visual sample. Do not assume a larger character count is more accurate.
 - Install the locked Python dependencies with `python -m pip install -r requirements.txt`.
-- If the user has no explicit file format requirements, keep the same file extension as the source file。If the user explicitly specifies an output format, follow it. 
+- **If the user has no explicit file format requirements, keep the same file extension as the source file.** If the user explicitly specifies an output format, follow it.
 - Do not convert a PDF to Word or a Lark/Feishu document merely because the task involves substantial content editing, reformatting, removing images, changing layout, or producing editable intermediate content. The complexity of the edit does not change the default deliverable.
 - Route to PDF-to-Word only when the user explicitly requests Word, DOCX, or a Word-editable deliverable, or provides an editable Word file as the document to modify. Generic references to a “document,” “report,” “file,” “proposal,” or “editable file” do not by themselves mean Word. When routed, follow [`pdf-to-word.md`](references/workflows/pdf-to-word.md). This workflow owns the complete PDF analysis, DOCX reconstruction, structural audit, and visual QA process.
 - Route to PDF-to-Doc only when the user explicitly requests a Lark/Feishu cloud document, Lark/Feishu Doc, Wiki, or provides an existing Lark/Feishu document as the target to modify. Do not interpret the generic words “doc” or “document” as a Lark/Feishu document without clear platform context. When routed, follow [`pdf-to-doc.md`](references/workflows/pdf-to-doc.md). This workflow owns the complete PDF analysis, Lark XML generation, batched append with fetch readback, and visual QA process.
+- Route to PDF Translation only when the user explicitly requests translating a PDF's text content to another language while preserving the original layout as a PDF. Same-script variants (Traditional ↔ Simplified Chinese, en-US ↔ en-GB, etc.) run inline as a short single-agent path; cross-language translation (English ↔ Chinese, CJK ↔ Latin, etc.) must launch a multi-agent workflow via `create_agent`. When routed, follow [`references/workflows/translation.md`](references/workflows/translation.md).
 
 ## Quick Start
 
@@ -283,6 +284,7 @@ with pymupdf.open("input.pdf") as document:
 | Fill PDF forms | pypdf (see [forms.md](forms.md)) | Keep canonical field-tree handling |
 | PDF to Word pipeline | [`pdf-to-word.md`](./references/workflows/pdf-to-word.md)| Parse PDF, rebuild editable DOCX, structure audit and page-by-page visual QA |
 | PDF to Feishu Doc pipeline | [`pdf-to-doc.md`](./references/workflows/pdf-to-doc.md)  | Parse PDF, generate Lark XML, batched append with fetch readback and page-by-page visual QA |
+| PDF translation (route by script) | [`translation.md`](./references/workflows/translation.md) | Same-script → direct substitute; cross-language → protect highlight fills and image positions |
 
 ## Next Steps
 
