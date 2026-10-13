@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "mcpLazyLoad": {
+    "toolDescriptionMaxCharsByServer": {
+      "taobao-open-platform": 160
+    }
+  },
+  "categories": [
+    {
+      "id": "featured",
+      "order": 0,
+      "label": {
+        "en": "Featured & System",
+        "zh": "推荐/系统级"
+      }
+    },
+    {
+      "id": "communication",
+      "order": 10,
+      "label": {
+        "en": "Communication & Collaboration",
+        "zh": "沟通协作"
+      }
+    },
+    {
+      "id": "project_management",
+      "order": 20,
+      "label": {
+        "en": "Project Management",
+        "zh": "项目管理"
+      }
+    },
+    {
+      "id": "knowledge_docs",
+      "order": 30,
+      "label": {
+        "en": "Knowledge & Docs",
+        "zh": "知识文档"
+      }
+    },
+    {
+      "id": "marketing",
+      "order": 36,
+      "label": {
+        "en": "Marketing",
+        "zh": "市场营销"
+      }
+    },
+    {
+      "id": "ecommerce_retail",
+      "order": 37,
+      "label": {
+        "en": "Ecommerce & Retail",
+        "zh": "电商零售"
+      }
+    },
+    {
+      "id": "hr_recruiting",
+      "order": 38,
+      "label": {
+        "en": "HR & Recruiting",
+        "zh": "人力招聘"
+      }
+    },
+    {
+      "id": "developer_tools",
+      "order": 40,
+      "label": {
+        "en": "Developer Tools",
+        "zh": "开发工具"
+      }
+    },
+    {
+      "id": "design",
+      "order": 50,
+      "label": {
+        "en": "Design & Creativity",
+        "zh": "设计创意"
+      }
+    },
+    {
+      "id": "productivity",
+      "order": 60,
+      "label": {
+        "en": "Productivity Tools",
+        "zh": "效率工具"
+      }
+    },
+    {
+      "id": "data_storage",
+      "order": 70,
+      "label": {
+        "en": "Data & Storage",
+        "zh": "数据存储"
+      }
+    },
+    {
+      "id": "maps_location",
+      "order": 80,
+      "label": {
+        "en": "Maps & Mobility",
+        "zh": "地图出行"
+      }
+    },
+    {
+      "id": "industry_data",
+      "order": 90,
+      "label": {
+        "en": "Industry Data",
+        "zh": "行业数据"
+      }
+    }
+  ],
+  "connectors": {
+    "dws": {
+      "ecosystem": "cn",
+      "category": "communication",
+      "hiddenInLangs": []
+    },
+    "lark": {
+      "ecosystem": "cn",
+      "category": "communication",
+      "hiddenInLangs": []
+    },
+    "slack": {
+      "ecosystem": "en",
+      "category": "communication",
+      "hiddenInLangs": []
+    },
+    "line": {
+      "ecosystem": "en",
+      "category": "communication",
+      "hiddenInLangs": []
+    },
+    "notion": {
+      "ecosystem": "en",
+      "category": "knowledge_docs",
+      "hiddenInLangs": []
+    },
+    "google-calendar": {
+      "ecosystem": "en",
+      "category": "productivity",
+      "hiddenInLangs": []
+    },
+    "figma": {
+      "ecosystem": "en",
+      "category": "design",
+      "hiddenInLangs": []
+    },
+    "vercel": {
+      "ecosystem": "en",
+      "category": "developer_tools",
+      "hiddenInLangs": []
+    },
+    "google-maps": {
+      "ecosystem": "en",
+      "category": "productivity",
+      "hiddenInLangs": []
+    }
+  },
+  "sortOrders": {
+    "en": [
+      "slack",
+      "line",
+      "dws",
+      "lark",
+      "notion",
+      "vercel",
+      "figma",
+      "google-calendar",
+      "google-maps"
+    ],
+    "zh": [
+      "dws",
+      "lark",
+      "slack",
+      "line",
+      "notion",
+      "vercel",
+      "figma",
+      "google-calendar",
+      "google-maps"
+    ]
+  }
+}

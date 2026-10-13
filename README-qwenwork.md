@@ -6,14 +6,16 @@
 
 - 平台目录：`qwenwork/`
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：190
-- 当前索引文件数：4686
-- 最近变更：[2026-10-13-203506](qwenwork/change-logs/2026-10-13-203506.md) - QwenWork 本次同步新增 477 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/computer-use-guidance-windows, skills/lark-approval, skills/lark-apps, skills/lark-attendance, skills/lark-base, skills/la...
+- 当前索引条目数：265
+- 当前索引文件数：4761
+- 最近变更：[2026-10-13-204349](qwenwork/change-logs/2026-10-13-204349.md) - QwenWork 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/market-metadata.json, connectors/mcp.json。 受影响范围：connectors/market-metadata.json, connectors/mcp.json。
 
 ## 数据来源
 
 - `experts` <= `/mnt/c/Users/15805/.qwenworkcn/plugins`
 - `skills` <= `/mnt/c/Users/15805/.qwenworkcn/skills`
+- `connectors/mcp.json` <= `/mnt/c/Users/15805/.qwenworkcn/mcp.json`
+- `connectors/market-metadata.json` <= `/mnt/c/Users/15805/.qwenworkcn/cache/mcp/market-metadata-cn.json`
 
 ## 导航文件
 
@@ -21,6 +23,7 @@
 
 - [Experts](qwenwork/experts/SUMMARY.md) — `experts/` 功能导航
 - [Skills](qwenwork/skills/SUMMARY.md) — `skills/` 功能导航
+- [Connectors / Installed Registry](qwenwork/connectors/SUMMARY.md) — `connectors/` 功能导航
 
 ## 分类索引
 
@@ -108,7 +111,7 @@
 | ECharts 图表生成 | `qwenwork/skills/echart` | 数据分析 | 1 | 生成数据可视化图表，支持词云、折线图、柱状图、饼图、面积图及混合图表。 输出自包含 HTML 文件（引入 ECharts CDN），用户点击即可查看高质量图表。 支持导出 PNG 图片。当用户提到"生成图表"、"画个图"、"数据可视化"、 "柱状图"、"折线图"、"饼图"、"词云"、"图表展示数据"时使用。 不用于非 ECharts 的图表库（如 D3、Chart.js），不用于纯数据分析（无图表需求）。 |
 | find-skills | `qwenwork/skills/find-skills` | 系统内置 | 4 | Do NOT invoke this skill as a routine first step. Do NOT invoke when any installed skill (see the available skills list) can handle the task, or when general capabilities (writing, coding, analysis, translation, web s... |
 | FLYAI-飞猪旅行 | `qwenwork/skills/flyai` | 效率工具 | 10 | Search flights, hotels, attractions, concerts, and travel deals with natural language. FlyAI connects to Fliggy MCP for real-time search and booking across hotels, flights, cruises, visas, car rentals, and event ticke... |
-| 十大命理综合 | `qwenwork/skills/fortune-master-pro` | 效率工具 | 17 | 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做... |
+| 十大命理综合 | `qwenwork/skills/fortune-master-pro` | 教育学习 | 17 | 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做... |
 | 英语学习乐园 | `qwenwork/skills/fun-englishzone` | 教育学习 | 15 | 一位互动性强、趣味十足的英语老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的英语学习体验。当你需要学习词汇、练习语法、训练发音、提升阅读理解或写作能力时使用此技能。涵盖从 A1 到 C2 的完整 CEFR 英语水平体系，支持个性化学习路径和即时反馈。 |
 | 趣味数学课堂 | `qwenwork/skills/fun-mathclass` | 教育学习 | 14 | 一位互动性强、趣味十足的数学老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的数学学习体验。当用户需要学习数学概念、练习数学题目、可视化理解数学原理、或进行游戏化数学挑战时使用此技能。涵盖从小学算术到大学微积分的完整知识体系，支持自适应难度和即时反馈。 |
 | 生成 PPTX | `qwenwork/skills/generate-pptx` | 知识文档 | 8 | 通过多轮沟通收集需求、确认逐页结构、生成每页 SVG 幻灯片并输出 PPTX 文件。适用于用户要求生成 PPT/PPTX、制作演示文稿、把文案或提纲转成幻灯片、先确认页纲再出稿，或需要把模型生成的 SVG 幻灯片打包成可下载 PPTX 的场景。 |
@@ -186,7 +189,7 @@
 | media-generation-premium | `qwenwork/skills/media-generation-premium` | 设计创意 | 1 | Generate or edit images and generate videos or music for the enterprise premium media experience. Image, video, and music requests use official automatic model selection or organization-configured models exposed by th... |
 | 新闻总结 | `qwenwork/skills/news-summary` | 市场营销 | 3 | 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and... |
 | 通知函件写作 | `qwenwork/skills/official-document-writing` | 法律服务 | 12 | 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。 |
-| 宜搭应用 | `qwenwork/skills/openyida-app` | 数据分析 | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
+| 宜搭应用 | `qwenwork/skills/openyida-app` | 项目管理 | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
 | 落地页生成器 | `qwenwork/skills/page-crafter` | 市场营销 | 1 | Professional high-end Landing Page generation tool. Creates visually stunning, Awwwards-level web pages with cinematic hero sections, modern animations. Trigger keywords: landing page, 落地页, web page, hero section, pro... |
 | 学术论文深度研究 | `qwenwork/skills/paper-deepresearch` | 教育学习 | 1 | 面向学术论文的**原文级调研（Deep Research）**能力模块。适用于：用户指定某篇论文要求"读透 + 追踪背景 + 扩展最新相关工作"，或用户给出某个学术 topic 要求系统性深度调研与写作综述。 |
 | pdf | `qwenwork/skills/pdf` | 知识文档 | 53 | Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision)... |
@@ -205,7 +208,7 @@
 | 简历助手 | `qwenwork/skills/resume-helper` | 人力招聘 | 12 | 创作、美化、优化简历及生成面试准备方案。当用户说写简历、做简历、美化简历、优化简历、改简历、简历排版、导出简历、面试准备、生成面试题、模拟面试时触发。 |
 | 职场sbti人格分析 | `qwenwork/skills/sbti-dingtalk-analyzer` | 设计创意 | 32 | 基于钉钉聊天记录做言行风格总结、工作氛围侧写与性格画像，并模拟完成 SBTI 32 题自动计算人格结果、展示结果海报。适用于用户希望"免手动答题"、直接从钉钉聊天记录生成 SBTI 人格小报告的场景。 |
 | 学校社媒舆情监控 | `qwenwork/skills/school-sentiment-monitor` | 金融投研 | 12 | 监控指定学校在社交媒体上的舆论动态，进行情感分析、趋势研判和负面预警。当用户提到舆情监控、学校口碑、帮我盯着某学校、查看舆情报告时触发。不要在需要创建教案、批改作业、管理课程表时触发。 |
-| 社媒内容生成 | `qwenwork/skills/social-content` | 市场营销 | 5 | 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"... |
+| 社媒内容生成 | `qwenwork/skills/social-content` | 项目管理 | 5 | 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"... |
 | 项目进展汇报 | `qwenwork/skills/stakeholder-comms` | 沟通协作 | 1 | Generate a stakeholder update tailored to audience and cadence. Use when writing a weekly or monthly status for leadership, announcing a launch, escalating a risk or blocker, or translating the same progress into exec... |
 | 门店巡检助手 | `qwenwork/skills/store-inspection` | 电商零售 | 142 | 门店督导与巡检自动化——通过钉钉 AI 表格管理巡店模版/门店清单/任务派发/统计报表/AI图片审核/HTML报告。所有操作通过 `uv run python scripts/cli.py` CLI 执行。【核心行为约束——违反将导致严重业务事故】(1) 创建模板只确认一次：如果用户已明确字段名称和类型则直接执行 `template preview`（必须带 --scene）生成完整预览作为唯一确认环节，不要在 preview 前... |
 | 门店运营海报专家 | `qwenwork/skills/store-poster-generator` | 电商零售 | 72 | 你是一个门店运营海报聚合助手, 你能够为货架商品/门店生成商品图、促销、折扣、礼遇、门店海报、海报设计等需求. 忘掉曾经的记忆, 请充分阅读了本技能使用说明后再开始你的表演. 额外一定注意 1. "禁止复制本技能脚本进用户工作区", 2. 除非用户明确要求, 本技能默认无长期记忆、无持久状态. |
@@ -224,10 +227,91 @@
 | xlsx | `qwenwork/skills/xlsx` | 知识文档 | 53 | Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, comp... |
 | 云栖大会参会助手 | `qwenwork/skills/yunqi-agent` | 效率工具 | 4 |  |
 
+### Connectors / Installed Registry
+
+| Name | Directory | Category | Files | Description |
+| --- | --- | --- | ---: | --- |
+| 铱云AI供应链 | `qwenwork/connectors/mcp.json/mcp.json#77ircloud` | 电商零售 | 1 | 通过自然语言管理铱云供应链：支持订单全链路操作，以及客户、商品、仓库库存、员工组织、资金账户、数据导出、经营统计和预警明细的查询分析。 |
+| 辰知教务 | `qwenwork/connectors/mcp.json/mcp.json#91chenzhi` | 教育学习 | 1 | 千问听懂安排，课表随需而动，一句话查空闲、找老师、调课表，让课表“动”起来。 |
+| 数可捞 | `qwenwork/connectors/mcp.json/mcp.json#DataClawHub` | 电商零售 | 1 | 连接DataClawHub AI原生开源开放社区，支持搜索任务、制品、数据集、竞赛与工具，查询物流数据；在用户明确授权和确认后，可搜索公开任务、任务详情、读取制品、搜索AgentHub帖子、读取帖子评论和部分回复 |
+| 美图设计室 | `qwenwork/connectors/mcp.json/mcp.json#Designkit` | 市场营销 | 1 | 美图设计室是美图旗下产品美图设计室 AI 设计能力在 办公场景中的应用。通过对话即可调用专业设计 Skill，无需学习复杂软件或编写 Prompt，轻松完成从市场策略洞察到电商套图、营销视频、社媒图文、海报、品牌等商业设计任务。 |
+| FTShare 金融数据 | `qwenwork/connectors/mcp.json/mcp.json#FTShare` | 金融投研 | 1 | FTShare 金融数据与特色因子查询 MCP。根据用户关于股票、ETF、指数、基金、可转债、期货、港股、美股、资金流、财务、宏观经济或特色因子的需求，匹配并调用对应数据工具 |
+| Hologrow | `qwenwork/connectors/mcp.json/mcp.json#Hologrow` | 电商零售 | 1 | Hologrow 将您分散在跨境电商平台、广告渠道和ERP中的数据连接起来，让您可以直接通过自然语言洞察经营表现、对比渠道成效、追踪变化原因并生成分析报告。 支持 Amazon Seller Central、Amazon Ads、Google Ads、GA4、Meta Ads 和GSC等多种平台。Hologrow 仅提供只读数据访问，不会修改您的广告活动、商品信息、订单或店铺设置等。 |
+| 好多店 | `qwenwork/connectors/mcp.json/mcp.json#X-Store` | 金融投研 | 1 | 好多店连接器面向连锁品牌总部，提供门店运营管理场景下的查询与辅助分析能力，帮助品牌推进门店标准化落地。 连接后可以查询企业下所有门店数据，包括巡店记录、店务执行情况、检查失分项、整改工单及风险信息。可辅助生成区域月度复盘、单店问题诊断和整改专项分析，梳理重点门店、共性问题与待跟进事项。 |
+| AI-HIVE | `qwenwork/connectors/mcp.json/mcp.json#ai-hive` | 设计创意 | 1 | 连接全球 100+ 顶尖 AI 模型（Seedance 2.5、Wan 3.0、H3、GPT-image2、Nano-Banana、Deepseek、Kimi 等），一键搞定文本、图片、视频创作，并查询余额与生成任务 |
+| 钉钉假勤 | `qwenwork/connectors/mcp.json/mcp.json#attendance-leave-pro` | 开发工具 | 1 | 钉钉假勤 MCP 帮助企业高效完成考勤假勤的日常管理。支持批量初始化考勤组与班次，快速搭建考勤基础配置；排班规则的建立与批量调班、换班、复制排班；班次的新增、调整与临时安排；假期规则的设置，以及员工假期额度的发放与调整；并可按部门、人员快速查询考勤归属与请假信息。 |
+| 百晓智能 | `qwenwork/connectors/mcp.json/mcp.json#baixiao-mcp` | 教育学习 | 1 | 中英文学术检索：搜索期刊论文、专著、政策文件；查阅最新基金招投标信息；核实参考文献真伪、追溯引用；推荐投稿期刊、相关文献、审稿人 |
+| 草料二维码 | `qwenwork/connectors/mcp.json/mcp.json#caoliao` | 数据分析 | 1 | 读取并分析你组织在草料二维码里的数据：按指标出数、看分布趋势、下钻到具体记录，也能看码被扫了多少次、多少人扫，以及浏览码、表单与分区。只读不改数据，需组织管理员授权。 |
+| 高德云图 | `qwenwork/connectors/mcp.json/mcp.json#cloudmap-gateway` | 数据分析 | 1 | 提供地图数据、商业洞察、选址经营等服务 |
+| cue | `qwenwork/connectors/mcp.json/mcp.json#cue` | 知识文档 | 1 | 连接你的 cue 账号：用自己的智能体创建、发布和演示 cue 演示文稿与文档，管理分享和阅读记录。 |
+| 融易算DeepTax | `qwenwork/connectors/mcp.json/mcp.json#deeptax` | 法律服务 | 1 | 完成登录授权并绑定公司后，可查看绑定公司与客户，进行智能开票、发票查询与统计，并查看银行流水、工资凭证、税种申报等账税数据。 |
+| 叮当OKR | `qwenwork/connectors/mcp.json/mcp.json#dingteam-okr-mcp` | 项目管理 | 1 | 连接叮当OKR，读写目标与关键结果、同步进度，并生成 OKR 目标关系图。适用于目标制定、拆解、对齐与进度查询。 |
+| 单小二 | `qwenwork/connectors/mcp.json/mcp.json#dxe-mcp-server` | 效率工具 | 1 | 帮助客户更快捷操作工单查询使用 |
+| 亿贸AI | `qwenwork/connectors/mcp.json/mcp.json#easipass` | 法律服务 | 1 | 提供贸易合规审查、商品归类查询及贸易市场数据分析与智能解读服务。 |
+| Elasticsearch连接器 | `qwenwork/connectors/mcp.json/mcp.json#elasticsearch-service` | 数据分析 | 1 | 连接 Elasticsearch 数据库 |
+| 口岸高质量数据集 | `qwenwork/connectors/mcp.json/mcp.json#eptrade-hqd` | 法律服务 | 1 | 口岸贸易业务 MCP 服务，依托口岸高质量标准化数据集，对外输出标准化调用能力，核心包含两大模块：一是贸易合规码表查询，内置检验检疫名称、危险化学品目录、危险货物品名表、两用物项和技术进出口许可证管理目录、海关 HS 税则编码五类官方基准数据；二是贸易关务智能问答。服务覆盖报关通关、出口合规校验等航贸业务场景，底层数据完成标准化清洗与权威交叉校验，可支撑大模型问答、合规检索、编码匹配等 AI 应用落地，助力口岸贸易数字化转型。 |
+| EverMe | `qwenwork/connectors/mcp.json/mcp.json#everme` | 知识文档 | 1 | EverMe 是一款以用户记忆为中心的个人 AI 数字分身产品，将日常对话沉淀为个人专属的记忆资产，实现多端共享的第二大脑。 |
+| MOSS增长谋士 | `qwenwork/connectors/mcp.json/mcp.json#fanruan-growth-advisor` | 法律服务 | 1 | MOSS增长谋士是帆软软件有限公司面向企业打造的商业洞察智能体，拥有50多类企业级数据源，涵盖企业工商、招投标、关键人员、供应链图谱、企业诉讼与经营风险、全平台舆情等信息源，可以帮助企业解决市场行业研究、ToB线索商机挖掘、竞对情报分析、合作风险洞察等工作，助力企业增长。 |
+| figma | `qwenwork/connectors/mcp.json/mcp.json#figma` | 设计创意 | 1 |  |
+| Flova AI | `qwenwork/connectors/mcp.json/mcp.json#flova` | 设计创意 | 1 | 连接 Flova AI，在千问办公中创建和继续视频与图片创作项目。生成图片、视频、分镜等类型的素材，覆盖漫剧短剧、广告、短片与音乐 MV等场景的全流程创作与交付。 |
+| google-calendar | `qwenwork/connectors/mcp.json/mcp.json#google-calendar` | 效率工具 | 1 |  |
+| google-maps | `qwenwork/connectors/mcp.json/mcp.json#google-maps` | 效率工具 | 1 |  |
+| 找客户 | `qwenwork/connectors/mcp.json/mcp.json#gtmos` | 市场营销 | 1 | 找客户是一款面向 B2B 销售、市场和创业者的 AI 客户线索连接器。用户只需说明销售的产品或服务，即可自动完成目标客户推断、作战方案生成、全网商机搜索、购买意向判断和联系方式下钻，并返回带有公司名称、地区、商机依据、来源链接、发现时间和联系方式状态的结构化客户线索。支持国内与海外市场、目标地域、产品优势以及综合排序、意向优先、日期优先和触达优先等策略。 |
+| 用友好会计｜智能财税管理 | `qwenwork/connectors/mcp.json/mcp.json#hkj` | 数据分析 | 1 | 好会计 MCP 连接器：这是一个 Streamable HTTP MCP 服务。先调用 initialize 根据[账套]来建立会话；当用户没有指定账套时，根据[获取账套列表]工具查询默认账套；当用户指定账套时，使用模糊自然语言匹配账套来选择账套。支持好会计财务数据的查询与操作。 |
+| 可灵AI | `qwenwork/connectors/mcp.json/mcp.json#https:/klingai.com` | 市场营销 | 1 | 一句话，让灵感从想法变成大片。可灵 AI 面向创作者、设计师、电商卖家、视频制作人和营销团队，可在千问办公中通过自然语言完成文生图、图生图、文生视频、图生视频、动作控制、参考图创作和多镜头视频。支持上传素材、查询额度、提交已确认的生成任务、跟踪进度并获取最终图片或视频。 |
+| 极睿电商创作 | `qwenwork/connectors/mcp.json/mcp.json#infimind-ecommerce-content` | 电商零售 | 1 | 电商内容专家面向品牌、电商运营和内容团队，提供图片与视频一体化 AI 创作能力。通过统一连接器可创建智能精修、商品主图、商品详情页、爆款图复制、KOC 种草、图文带货、视频生成和爆款视频复制任务，并查询任务状态与结果。采用 OAuth 2.0 按用户授权，支持个人与企业空间的数据权限隔离。 |
+| 简道云 | `qwenwork/connectors/mcp.json/mcp.json#jiandaoyun` | 数据分析 | 1 | 用于查询、整理和填写简道云数据，用自然语言查找表单记录、汇总业务进展、生成分析，并在确认后创建新记录。 |
+| 金数据 | `qwenwork/connectors/mcp.json/mcp.json#jinshuju` | 数据分析 | 1 | 用自然语言在金数据（jinshuju.net）创建表单、表格、问卷、考试、报名、收款等各类场景应用：一句话生成表单与表格、批量处理数据、自动统计分析，零门槛快速搭建。 |
+| 金智CRM | `qwenwork/connectors/mcp.json/mcp.json#jinzhi_mcp` | 市场营销 | 1 | 金智CRM是覆盖销售全流程的业务管理平台，通过连接器直接调取客户数据、执行制单与提醒，解决业务信息查询难、操作繁琐的问题。 |
+| 同花顺快查·企业数据 | `qwenwork/connectors/mcp.json/mcp.json#kuaicha365` | 法律服务 | 1 | 涵盖中国企业金融股票、企业工商、股权投资、司法风险、知识产权、招投标、新闻舆情、法律法规、案件文书等数据，结果可溯源，避免幻觉。用自然语言快速完成企业身份核验与背景调查。 |
+| line | `qwenwork/connectors/mcp.json/mcp.json#line` | 沟通协作 | 1 |  |
+| Linear | `qwenwork/connectors/mcp.json/mcp.json#linear` | 项目管理 | 1 | 管理 Linear 问题、项目和团队 |
+| Linkfox 跨境商品视频生成 | `qwenwork/connectors/mcp.json/mcp.json#linkfox-video` | 电商零售 | 1 | 面向跨境电商视频素材生产的 AI 工具链，覆盖品牌风格提炼、带货视频生成、带货口播、视频复刻、视频翻译等能力，帮助商家快速打造高质量、高转化的全链路电商视觉内容。 |
+| 励销CRM | `qwenwork/connectors/mcp.json/mcp.json#lxcrm` | 法律服务 | 1 | 用自然语言查询和录入励销CRM线索、客户、商机、合同、产品、回款开票、跟进记录等业务数据，轻松搞定销售全链路工作。 |
+| Moka HR | `qwenwork/connectors/mcp.json/mcp.json#moka` | 沟通协作 | 1 | 招聘和人事一体的 AI 同事，把查询与执行收进一个对话。人才推荐、招聘动态、考勤绩效、审批待办，一句话问清；候选人寻访、面试分析与面试官评估，一句话发起。 |
+| MySQL连接器 | `qwenwork/connectors/mcp.json/mcp.json#mysql-service` | 数据分析 | 1 | 连接 MySQL 数据库进行 AI 数据分析、 AI 业务分析等场景 |
+| Neon | `qwenwork/connectors/mcp.json/mcp.json#neon` | 数据分析 | 1 | 管理 Neon Serverless Postgres 数据库、分支和项目 |
+| Notion | `qwenwork/connectors/mcp.json/mcp.json#notion` | 知识文档 | 1 | 读写和检索 Notion 页面与数据库 |
+| ONES | `qwenwork/connectors/mcp.json/mcp.json#ones` | 数据分析 | 1 | 连接 ONES 企业级智能研发管理平台，让千问办公在用户授权范围内访问和操作项目与知识库数据。支持查询项目、需求、任务和缺陷，创建及更新工作项、推进状态、登记工时，以及检索、创建和更新 Wiki 文档，为进度跟踪、研发协作和知识整理提供数据与操作能力。 |
+| Pixso | `qwenwork/connectors/mcp.json/mcp.json#pixso-remote-mcp` | 设计创意 | 1 | Pixso MCP 是一套远程设计协作协议，从设计稿生成与编辑、组件与样式资产管理，到布局校验、视觉核验、代码与设计双向转换及设计规范调用，用户均可在对话中一站式完成。 |
+| 北大法宝·法律智能检索 | `qwenwork/connectors/mcp.json/mcp.json#pkulaw` | 法律服务 | 1 | 语义（自然语言描述） + 关键词（精确/模糊查询）双模式检索法规与案例，结果均带 pkulaw.com 原文链接，可追溯、可复核、可直接引用。 |
+| 北极星绩效 | `qwenwork/connectors/mcp.json/mcp.json#polaris-pekhr` | 人力招聘 | 1 | 一键连接北极星绩效，快速获取个人绩效结果，汇总分析团队考核情况，直观呈现绩效分布。 |
+| OpenBoost 跨境数据 | `qwenwork/connectors/mcp.json/mcp.json#proboost-tiktok-amazon-patent-mcp` | 电商零售 | 1 | 支持市场研究、选品分析、竞对监控、VOC洞察、关键词分析、listing生成等跨境电商应用场景 |
+| 企查查 | `qwenwork/connectors/mcp.json/mcp.json#qcc-company` | 金融投研 | 1 | 查询和核实企业工商登记信息。支持股东结构、实际控制人、受益所有人、高管团队、对外投资、财务数据、年报及上市信息查询，用自然语言快速完成企业身份核验与背景调查。 |
+| 企查查·法律数据 | `qwenwork/connectors/mcp.json/mcp.json#qcc-legal` | 法律服务 | 1 | 检索与核验中国法律法规和司法案例，覆盖全量现行法律、行政法规、司法解释——法规级到法条级逐字正文，标注时效性与效力级别；海量裁判文书及 2.5 万+ 权威案例（最高法/最高检指导性案例、公报案例、典型案例）；并对文本中的法条与案号引用逐条回库核验、标注时效、生成可溯源超链。用自然语言完成法条依据查找、类案检索、原文调取与法律引用核验，从源头消除法条与案号幻觉。 |
+| 企百科 | `qwenwork/connectors/mcp.json/mcp.json#qibook` | 效率工具 | 1 | 提供企业主体的身份识别与基础信息查询服务，包含企业模糊搜索、受益所有人结果、企业基本信息、变更信息、企业联系方式、主要人员信息、企业股东、实际控制人等工具。 |
+| 纷享销客CRM | `qwenwork/connectors/mcp.json/mcp.json#sharecrm` | 市场营销 | 1 | 用自然语言查询客户、推进商机、写跟进记录、处理审批、建图表等，轻松搞定销售全链路工作。 |
+| 数联宝-铁路货运查询 | `qwenwork/connectors/mcp.json/mcp.json#shulian-railway` | 电商零售 | 1 | 查询铁路站点停卸装命令及生效时间，以及铁路专用线资料、办理范围和相关单位。 |
+| Supabase | `qwenwork/connectors/mcp.json/mcp.json#supabase` | 数据分析 | 1 | 管理 Supabase 项目、数据库和边缘函数 |
+| 淘宝闪购餐饮商家版 | `qwenwork/connectors/mcp.json/mcp.json#taobao-flash-sale-cli` | 电商零售 | 1 | 在千问办公沙箱中安装并连接淘宝闪购餐饮 CLI |
+| 淘宝闪购零售商家版 | `qwenwork/connectors/mcp.json/mcp.json#taobao-flash-sale-retail` | 电商零售 | 1 | 连接淘宝闪购零售MCP能力 |
+| 淘宝天猫商家端 | `qwenwork/connectors/mcp.json/mcp.json#taobao-open-platform` | 电商零售 | 1 | 连接生意参谋、阿里妈妈、淘宝直播商家后台、千牛等多个淘宝天猫商家后台数据MCP |
+| 钉钉项目 | `qwenwork/connectors/mcp.json/mcp.json#teambition-mcp` | 项目管理 | 1 | 管理钉钉项目Teambition 项目、任务和团队。 |
+| Vercel | `qwenwork/connectors/mcp.json/mcp.json#vercel` | 开发工具 | 1 | 管理 Vercel 项目、部署和 Serverless 函数 |
+| 微博 | `qwenwork/connectors/mcp.json/mcp.json#weibo` | 市场营销 | 1 | 通过微博 MCP 连接器访问微博开放平台全部核心能力：微博查询与发布、评论互动、头条文章与V+付费专栏、点赞表态、用户资料与统计、粉丝深度画像、实时热搜榜单及影视综艺指数等。 |
+| 万方数据 | `qwenwork/connectors/mcp.json/mcp.json#wfdata` | 教育学习 | 1 | 通过万方数据 MCP 查询学术期刊、学位论文、专利、标准等文献资源，支持智能检索、全文下载与引文分析。 |
+| Wind Alice万得金融数据 | `qwenwork/connectors/mcp.json/mcp.json#wind` | 金融投研 | 1 | 全量开放万得（Wind）金融数据与工具能力，覆盖沪深港美等全球60多个国家地区的股票、基金、债券、商品、指数、经济数据与万得金融模型与工具集。让WorkBuddy变身金融分析专家，成为具备数据穿透、投研分析、风险决策等多维金融能力的专业智能体。 |
+| 销帮帮CRM | `qwenwork/connectors/mcp.json/mcp.json#xbb-mcp-server` | 法律服务 | 1 | 提供销帮帮CRM客户、线索、商机、跟进记录、合同、回款等业务查询能力，快速获取权限范围内的业务数据。 |
+| 小鹅通 | `qwenwork/connectors/mcp.json/mcp.json#xiaoe-mcp` | 电商零售 | 1 | 用自然语言管理小鹅通店铺：查询课程与学员，创建和编辑课程，查看订单，并查找或上传图片、音频、电子书和文档素材。 |
+| 小裂变SCRM | `qwenwork/connectors/mcp.json/mcp.json#xiaoliebian` | 市场营销 | 1 | 帮助品牌商家查询企业微信中的私域客户、客户群数据，制定朋友圈发布任务、群发触达任务，自动统计员工聊天排行榜，总结员工和客户聊天内容，小裂变SCRM&千问办公帮你做好企业微信私域运营 |
+| 销售易CRM | `qwenwork/connectors/mcp.json/mcp.json#xiaoshouyi` | 市场营销 | 1 | 用自然语言查客户、推商机、盘线索、领公海、写跟进，一句话打通销售工作闭环。 |
+| TextIn xParse·智能文档解析 | `qwenwork/connectors/mcp.json/mcp.json#xparse-mcp` | 数据分析 | 1 | 支持 PDF、图片、Word、Excel、PPT、扫描件等文档的高精度高性能OCR/文字识别、解析、格式转换、提取与结构化抽取，可识别表格、公式、手写体并输出 Markdown 或 JSON，支持复杂表格版式还原和批量处理，每日免费 1000 页。更可支持文档图像鉴伪，精准判定图片真假。 |
+| 薪人薪事 | `qwenwork/connectors/mcp.json/mcp.json#xrxs` | 人力招聘 | 1 | 通过自然语言管理薪人薪事：覆盖组织员工、考勤假期、招聘人才、绩效人效、薪酬个税等全模块 HR 场景，让 AI 助手成为懂业务的 HR 虚拟员工。 |
+| 银泰商业开放平台 | `qwenwork/connectors/mcp.json/mcp.json#yintai-open-platform` | 电商零售 | 1 | 浙江莲荷科技有限公司 |
+| 有赞 | `qwenwork/connectors/mcp.json/mcp.json#youzan` | 市场营销 | 1 | 通过自然语言查询有赞店铺数据，覆盖商品、订单、客户会员、营销活动、供应链、门店、员工、储值卡、企微等业务。 |
+| 华宇元典法律数据 | `qwenwork/connectors/mcp.json/mcp.json#yuandian` | 法律服务 | 1 | 华宇元典法律数据为智能体提供法律法规、案例文书、企业信息 MCP 工具能力。 |
+| 云听ConsumerLens | `qwenwork/connectors/mcp.json/mcp.json#yunting-consumerlens` | 市场营销 | 1 | 云听ConsumerLens 提供基于电商评论与消费者反馈数据的查询与分析能力，支持品类/品牌口碑洞察、竞品对比、问题发现及指标分析。 |
+| 云图智影 | `qwenwork/connectors/mcp.json/mcp.json#yuntu-art` | 设计创意 | 1 | 云图智影 - 影视 AI 创作平台（MCP + Skills 连接器包） |
+| 语忆Neosight | `qwenwork/connectors/mcp.json/mcp.json#yuyidata` | 电商零售 | 1 | 集成电商行业分析 Skill 与数据 MCP 连接器。对接对话、评价、订单、商品全域数据，自动完成数据加工、问题发现、原因归因与策略生成，覆盖客服质检、VOC 洞察、商品售后、经营分析等场景，直接输出可执行的行动建议，支撑企业级 AI 业务落地。 |
+| 企享link·发票验真 | `qwenwork/connectors/mcp.json/mcp.json#zhengqiying` | 法律服务 | 1 | 为客户提供发票验真服务 |
+| 证书管理 | `qwenwork/connectors/mcp.json/mcp.json#zzdingyun` | 数据分析 | 1 | 证书管理助手，为企业提供人员证书与企业证书的全流程数字化管控。涵盖证书台账、到期预警，能够直接查询、分析、管理企业的证书数据，自动识别证书缺口并给出补缺建议。适用于资质申报、投标校验、动态核查等场景。 |
+| 天眼查 | `qwenwork/connectors/mcp.json/mcp.json#天眼查MCP` | 法律服务 | 1 | 天眼查 MCP 是天眼查官方推出的，面向智能体的企业商业信息连接服务，可通过标准 MCP 接口调用天眼查企业数据能力，覆盖企业主体检索、工商登记、股权结构、受益所有人、董监高、经营公示、风险诉讼、知识产权、上市公司信息、招投标与资产处置等维度。为企业核验、客户尽调、风险排查、供应商评估、投资研究、法务合规和经营分析等场景提供可信数据支撑。 |
+
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-13-204349 | [2026-10-13-204349](qwenwork/change-logs/2026-10-13-204349.md) | QwenWork 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/market-metadata.json, connectors/mcp.json。 受影响范围：connectors/market-metadata.json, connectors/mcp.json。 |
 | 2026-10-13-203506 | [2026-10-13-203506](qwenwork/change-logs/2026-10-13-203506.md) | QwenWork 本次同步新增 477 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/computer-use-guidance-windows, skills/lark-approval, skills/lark-apps, skills/lark-attendance, skills/lark-base, skills/la... |
 | 2026-10-13-202954 | [2026-10-13-202954](qwenwork/change-logs/2026-10-13-202954.md) | QwenWork 本次同步新增 1964 个文件、修改 120 个文件、删除 0 个文件。 新增条目：skills/a-stock-diagnosis, skills/a-stock-realtime, skills/activity-recommend, skills/agent-task-hub, skills/ai-table-data-anal... |
 | 2026-09-13-180003 | [2026-09-13-180003](qwenwork/change-logs/2026-09-13-180003.md) | QwenWork 本次同步新增 274 个文件、修改 3 个文件、删除 607 个文件。 新增条目：skills/.dws-skill-state.json, skills/dingtalk-aisearch, skills/dingtalk-aitable, skills/dingtalk-calendar, skills/dingtalk-chat... |

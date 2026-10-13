@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/.qwenworkcn/skills`
 - 条目数：170
 - 文件数：3002
-- 最近同步：2026-10-13 20:35:06 +0800
+- 最近同步：2026-10-13 20:43:49 +0800
 
 ## 场景导航（按用途）
 
@@ -63,6 +63,10 @@
 - **多人工作台** — 通用多人工作台生成器（任意业务类型）。先引导用户描述设计思路，再生成带角色权限管控、真实数据库读写、管理后台数据查看、在线发布分享的动态工作台网页。用户要求"做一个工作台/管理后台/协作系统/带数据库的多角色网页/内部工具"时使用。最小流水线场景优先用 min-db-workbench；本 skill 面向任意类型（PMO/日历/库存/审批/CRM 等）。
 - **wecom-unified** — 企业微信 CLI 套件。仅当用户明确要求使用企业微信/企微，或给出 doc.weixin.qq.com、page.weixin.qq.com、drive.weixin.qq.com 链接时触发；不要因为泛化的找人、文档、表格、日程、会议、待办、邮件或发消息请求而触发。覆盖通讯录、文档、表格、日程、会议、待办、微盘、邮件、消息和媒体文件。
 - **工作周报** — 触发词：「生成周报」「帮我写周报」「本周工作总结」「周报」「weekly report」。 基于钉钉生态的每周周报自动生成 Skill：从当周日程、任务、听记、云文档中提取工作内容， 使用 `knowledge` 兜底补全遗漏信息，最终直接生成结构化的钉钉在线文档周报。
+
+### 项目管理
+- **宜搭应用** — 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。
+- **社媒内容生成** — 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"...
 
 ### 法律服务
 - **中文合同审查技能** — > 专业的中文合同风险识别与修订建议工具
@@ -124,7 +128,6 @@
 - **落地页生成器** — Professional high-end Landing Page generation tool. Creates visually stunning, Awwwards-level web pages with cinematic hero sections, modern animations. Trigger keywords: landing page, 落地页, web page, hero section, pro...
 - **产品定价策略** — When the user wants help with pricing decisions, packaging, or monetization strategy. Also use when the user mentions 'pricing,' 'pricing tiers,' 'freemium,' 'free trial,' 'packaging,' 'price increase,' 'value metric,...
 - **产品营销定位** — When the user wants to create or update their product marketing context document. Also use when the user mentions 'product context,' 'marketing context,' 'set up context,' 'positioning,' 'who is my target audience,' '...
-- **社媒内容生成** — 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"...
 - **话题趋势报告** — 触发词：「新闻总结」「话题趋势」「帮我整理一下XX的动态」「搜集XX领域最近的新闻」「生成XX话题报告」。 根据用户指定的主题和时间范围，自动检索权威动态，生成一份钉钉在线文档动态报告， 按类别聚类，每条新闻含 intro / description / 索引链接。强调时间筛选 + 权威优先 + 去重。
 
 ### 电商零售
@@ -139,6 +142,7 @@
 
 ### 教育学习
 - **视频速读** — 当用户发送B站(bilibili.com)视频链接并要求"总结视频内容"、"帮我总结"、"总结一下这个视频/课程"时触发。生成美观的HTML学习报告+MD归档文件。自动识别单集(详细灵活分析)和多P系列(分组折叠+阶段总结)，支持上百集课程快速输出结构化报告。
+- **十大命理综合** — 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做...
 - **英语学习乐园** — 一位互动性强、趣味十足的英语老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的英语学习体验。当你需要学习词汇、练习语法、训练发音、提升阅读理解或写作能力时使用此技能。涵盖从 A1 到 C2 的完整 CEFR 英语水平体系，支持个性化学习路径和即时反馈。
 - **趣味数学课堂** — 一位互动性强、趣味十足的数学老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的数学学习体验。当用户需要学习数学概念、练习数学题目、可视化理解数学原理、或进行游戏化数学挑战时使用此技能。涵盖从小学算术到大学微积分的完整知识体系，支持自适应难度和即时反馈。
 - **互动学习卡片** — 为教师创建课堂专用的交互式学习应用。包含闪卡、测验和浏览模式。基于记忆科学原理设计，支持学生自主学习和课堂互动练习。当老师需要制作学科知识点卡片、课堂练习题、复习工具或家校共育学习资源时使用此技能。不要在简单文档生成、纯文本整理或非教学场景时触发。
@@ -156,7 +160,6 @@
 - **AI表格汇报PPT** — 从钉钉 AI 表格、多维表、数据表或已有 Word/PPT/HTML 生成内容先确认、可追溯、可下钻、可导出 PDF 的单文件 PPT 式可视化报告（默认固定 16:9 演示稿），图表可下钻回钉钉原始记录。 当用户提到把 AI 表格做成 PPT、汇报 PPT、管理报告、可视化报告、HTML 报告、仪表盘、数据汇报页面、下钻报告、打印报告，或只说"做个汇报PPT""做个汇报页面""把这个表可视化""生成仪表盘"时使用； 也用于把 P...
 - **数据可视化** — 从表格文件 (.xlsx / .xlsm / .csv / .tsv) 生成自包含 HTML 数据分析报告。 含 KPI 卡片、ECharts 图表、文字洞察。数据 inline 嵌入。 TRIGGER: 用户上传表格文件 + 提出分析/出报告/看趋势/做可视化/出 KPI/同环比/ 排名/构成/异常/帕累托/漏斗/留存/归因/分群等诉求时立即触发, 包括"出份报告"/ "做个分析"/"看看数据"这类模糊表达。 PARTIAL:...
 - **ECharts 图表生成** — 生成数据可视化图表，支持词云、折线图、柱状图、饼图、面积图及混合图表。 输出自包含 HTML 文件（引入 ECharts CDN），用户点击即可查看高质量图表。 支持导出 PNG 图片。当用户提到"生成图表"、"画个图"、"数据可视化"、 "柱状图"、"折线图"、"饼图"、"词云"、"图表展示数据"时使用。 不用于非 ECharts 的图表库（如 D3、Chart.js），不用于纯数据分析（无图表需求）。
-- **宜搭应用** — 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。
 - **数据分析** — Quick BI-智能分析 技能，具备多种数据分析能力: 1. **数据集问数**：自然语言查询 Quick BI 平台数据集，自动智能选表匹配 2. **文件问数**：上传 Excel/CSV 文件，通过 Quick BI API 进行智能分析 3. **文档解析**：解析 PDF/Word/Excel/CSV/图片等文档，提取文本，并支持提取关键字段并生成结构化 Excel 4. **仪表板技能生成**：将 QuickBI 仪...
 - **多语言翻译工具** — 任意两语言对的文章 / 文档翻译——含所有小语种方向（越南语 / 泰语 / 印尼语 / 阿拉伯语 / 俄语 / 葡语 / 土耳其语 等 ↔ 中 / 英 或互译），不限于中英日韩西法德。核心强项 = **结构化输出 + 术语一致 + 专有名词保留**：Markdown 表格 / 列表 / SRT / iOS strings / 占位符（`%@` `{0}` `{{var}}` `\\n`）/ 日期 / 数字 ID 逐字守恒；用户即席指...
 
@@ -198,7 +201,6 @@
 ### 效率工具
 - **网页搜索与网页提取** — 通过阿里云 DTS-AI 搜索公开网页、发现相关来源并提取指定网页的内容。用户需要联网搜索、查询最新资料或新闻、开展产品或行业调研、查找官方网站或 URL、阅读或抓取网页、比较不同来源、核验事实、汇总网页信息并注明来源，或提到 DTS-AI、WebSearch、WebFetch 时使用。
 - **FLYAI-飞猪旅行** — Search flights, hotels, attractions, concerts, and travel deals with natural language. FlyAI connects to Fliggy MCP for real-time search and booking across hotels, flights, cruises, visas, car rentals, and event ticke...
-- **十大命理综合** — 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做...
 - **AI表格协同应答助手** — AI 表格协同应答助手 · 让 IM、Agent 与 AI 表格协同响应你的钉钉消息。@机器人或@你本人， 千问办公 Agent 自动处理并回复（联网查资料 / 读文档 / 查日志 / 执行操作）；消息进度实时可见 （处理中→处理完成状态标签），所有消息自动沉淀到 AI 表格形成问题库（提问人 / 时间 / 来源 / 内容 / 结果 / 状态）。 支持多群 + 单聊监听、机器人 / 本人双身份回复。当用户要求部署钉钉消息监听、搭建...
 - **夸克网盘官方Skill** — 夸克网盘官方(Quark Drive)Skill，用于文件上传/下载（支持断点续传）、文件分享与转存、网盘文件搜索、相册整理、AI助手（文件总结与知识问答，支持万级文件）。当用户需要操作夸克网盘文件或进行身份验证时使用。
 - **云栖大会参会助手** — 
@@ -269,7 +271,7 @@
 | ECharts 图表生成 | `qwenwork/skills/echart` | 数据分析 | echart | 1 | 生成数据可视化图表，支持词云、折线图、柱状图、饼图、面积图及混合图表。 输出自包含 HTML 文件（引入 ECharts CDN），用户点击即可查看高质量图表。 支持导出 PNG 图片。当用户提到"生成图表"、"画个图"、"数据可视化"、 "柱状图"、"折线图"、"饼图"、"词云"、"图表展示数据"时使用。 不用于非 ECharts 的图表库（如 D3、Chart.js），不用于纯数据分析（无图表需求）。 |
 | find-skills | `qwenwork/skills/find-skills` | 系统内置 | find-skills | 4 | Do NOT invoke this skill as a routine first step. Do NOT invoke when any installed skill (see the available skills list) can handle the task, or when general capabilities (writing, coding, analysis, translation, web s... |
 | FLYAI-飞猪旅行 | `qwenwork/skills/flyai` | 效率工具 | flyai | 10 | Search flights, hotels, attractions, concerts, and travel deals with natural language. FlyAI connects to Fliggy MCP for real-time search and booking across hotels, flights, cruises, visas, car rentals, and event ticke... |
-| 十大命理综合 | `qwenwork/skills/fortune-master-pro` | 效率工具 | fortune-master-pro | 17 | 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做... |
+| 十大命理综合 | `qwenwork/skills/fortune-master-pro` | 教育学习 | fortune-master-pro | 17 | 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做... |
 | 英语学习乐园 | `qwenwork/skills/fun-englishzone` | 教育学习 | fun-englishzone | 15 | 一位互动性强、趣味十足的英语老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的英语学习体验。当你需要学习词汇、练习语法、训练发音、提升阅读理解或写作能力时使用此技能。涵盖从 A1 到 C2 的完整 CEFR 英语水平体系，支持个性化学习路径和即时反馈。 |
 | 趣味数学课堂 | `qwenwork/skills/fun-mathclass` | 教育学习 | fun-mathclass | 14 | 一位互动性强、趣味十足的数学老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的数学学习体验。当用户需要学习数学概念、练习数学题目、可视化理解数学原理、或进行游戏化数学挑战时使用此技能。涵盖从小学算术到大学微积分的完整知识体系，支持自适应难度和即时反馈。 |
 | 生成 PPTX | `qwenwork/skills/generate-pptx` | 知识文档 | generate-pptx | 8 | 通过多轮沟通收集需求、确认逐页结构、生成每页 SVG 幻灯片并输出 PPTX 文件。适用于用户要求生成 PPT/PPTX、制作演示文稿、把文案或提纲转成幻灯片、先确认页纲再出稿，或需要把模型生成的 SVG 幻灯片打包成可下载 PPTX 的场景。 |
@@ -347,7 +349,7 @@
 | media-generation-premium | `qwenwork/skills/media-generation-premium` | 设计创意 | media-generation-premium | 1 | Generate or edit images and generate videos or music for the enterprise premium media experience. Image, video, and music requests use official automatic model selection or organization-configured models exposed by th... |
 | 新闻总结 | `qwenwork/skills/news-summary` | 市场营销 | news-summary | 3 | 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and... |
 | 通知函件写作 | `qwenwork/skills/official-document-writing` | 法律服务 | official-document-writing | 12 | 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。 |
-| 宜搭应用 | `qwenwork/skills/openyida-app` | 数据分析 | openyida-app | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
+| 宜搭应用 | `qwenwork/skills/openyida-app` | 项目管理 | openyida-app | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
 | 落地页生成器 | `qwenwork/skills/page-crafter` | 市场营销 | page-crafter | 1 | Professional high-end Landing Page generation tool. Creates visually stunning, Awwwards-level web pages with cinematic hero sections, modern animations. Trigger keywords: landing page, 落地页, web page, hero section, pro... |
 | 学术论文深度研究 | `qwenwork/skills/paper-deepresearch` | 教育学习 | paper-deepresearch | 1 | 面向学术论文的**原文级调研（Deep Research）**能力模块。适用于：用户指定某篇论文要求"读透 + 追踪背景 + 扩展最新相关工作"，或用户给出某个学术 topic 要求系统性深度调研与写作综述。 |
 | pdf | `qwenwork/skills/pdf` | 知识文档 | pdf | 53 | Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision)... |
@@ -366,7 +368,7 @@
 | 简历助手 | `qwenwork/skills/resume-helper` | 人力招聘 | resume-helper | 12 | 创作、美化、优化简历及生成面试准备方案。当用户说写简历、做简历、美化简历、优化简历、改简历、简历排版、导出简历、面试准备、生成面试题、模拟面试时触发。 |
 | 职场sbti人格分析 | `qwenwork/skills/sbti-dingtalk-analyzer` | 设计创意 | sbti-dingtalk-analyzer | 32 | 基于钉钉聊天记录做言行风格总结、工作氛围侧写与性格画像，并模拟完成 SBTI 32 题自动计算人格结果、展示结果海报。适用于用户希望"免手动答题"、直接从钉钉聊天记录生成 SBTI 人格小报告的场景。 |
 | 学校社媒舆情监控 | `qwenwork/skills/school-sentiment-monitor` | 金融投研 | school-sentiment-monitor | 12 | 监控指定学校在社交媒体上的舆论动态，进行情感分析、趋势研判和负面预警。当用户提到舆情监控、学校口碑、帮我盯着某学校、查看舆情报告时触发。不要在需要创建教案、批改作业、管理课程表时触发。 |
-| 社媒内容生成 | `qwenwork/skills/social-content` | 市场营销 | social-content | 5 | 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"... |
+| 社媒内容生成 | `qwenwork/skills/social-content` | 项目管理 | social-content | 5 | 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"... |
 | 项目进展汇报 | `qwenwork/skills/stakeholder-comms` | 沟通协作 | stakeholder-comms | 1 | Generate a stakeholder update tailored to audience and cadence. Use when writing a weekly or monthly status for leadership, announcing a launch, escalating a risk or blocker, or translating the same progress into exec... |
 | 门店巡检助手 | `qwenwork/skills/store-inspection` | 电商零售 | store-inspection | 142 | 门店督导与巡检自动化——通过钉钉 AI 表格管理巡店模版/门店清单/任务派发/统计报表/AI图片审核/HTML报告。所有操作通过 `uv run python scripts/cli.py` CLI 执行。【核心行为约束——违反将导致严重业务事故】(1) 创建模板只确认一次：如果用户已明确字段名称和类型则直接执行 `template preview`（必须带 --scene）生成完整预览作为唯一确认环节，不要在 preview 前... |
 | 门店运营海报专家 | `qwenwork/skills/store-poster-generator` | 电商零售 | store-poster-generator | 72 | 你是一个门店运营海报聚合助手, 你能够为货架商品/门店生成商品图、促销、折扣、礼遇、门店海报、海报设计等需求. 忘掉曾经的记忆, 请充分阅读了本技能使用说明后再开始你的表演. 额外一定注意 1. "禁止复制本技能脚本进用户工作区", 2. 除非用户明确要求, 本技能默认无长期记忆、无持久状态. |

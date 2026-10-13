@@ -129,9 +129,10 @@ QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], .
         # the prefix rules above already cover the collaboration suites.
         "待办", "todo", "邮件", "群聊", "周报",
     )),
+    ("项目管理", ("teambition", "linear"), ("项目管理", "okr", "排期", "敏捷", "迭代", "issue")),
     ("法律服务", ("lawd", "lawding", "labor-contract", "legal-"), (
         "法律", "律师", "合同", "诉讼", "起诉", "答辩", "证据", "尽调",
-        "脱敏", "合规", "遗嘱", "上诉", "律所", "文书",
+        "脱敏", "合规", "遗嘱", "上诉", "律所", "文书", "发票", "税务", "验真",
     )),
     ("金融投研", ("a-stock", "cn-stock", "valuation-"), (
         "股票", "行情", "估值", "投资", "研报", "行业研究", "公司调研",
@@ -140,24 +141,27 @@ QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], .
     ("市场营销", ("marketing",), (
         "营销", "文案", "社媒", "抖音", "小红书", "选题", "话题", "落地页",
         "竞品", "定价", "视频号", "话术", "舆情", "创意", "客户研究", "用户研究",
+        "微博", "crm", "销售", "商机",
     )),
     ("电商零售", ("utp-",), (
         "电商", "客服", "采购", "1688", "门店", "巡检", "导购", "试穿",
-        "商品", "带货", "选品",
+        "商品", "带货", "选品", "淘宝", "闪购", "商家", "零售", "物流",
+        "货运", "铁路", "银泰", "订单",
     )),
     ("人力招聘", ("resume-",), ("简历", "招聘", "面试", "人才", "hr")),
     ("教育学习", ("fun-",), (
         "学习", "课堂", "数学", "英语", "教案", "校园", "学校", "科研",
-        "学术", "论文",
+        "学术", "论文", "教务", "课表", "老师",
     )),
     ("数据分析", ("ai-table", "aitable", "im-aitable", "quickbi"), (
         "数据", "表格", "图表", "可视化", "报表", "echart",
     )),
     ("设计创意", ("media-generation", "icon-"), (
-        "图标", "图像", "设计", "媒体生成", "海报", "视觉",
+        "图标", "图像", "设计", "媒体生成", "海报", "视觉", "视频", "影视",
+        "分镜", "漫剧",
     )),
     ("知识文档", ("docx", "pptx", "xlsx", "pdf", "generate-pptx"), (
-        "文档", "笔记", "知识库", "解析", "文献", " ppt ", "word",
+        "文档", "笔记", "知识库", "解析", "文献", " ppt ", "word", "记忆", "大脑",
     )),
     ("内容写作", ("de-ai-writing",), (
         "写作", "公文", "标书", "商业计划", "润色", "转写",
@@ -169,7 +173,7 @@ QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], .
     )),
     ("效率工具", (), (
         "翻译", "网盘", "旅行", "飞猪", "大会", "命理", "人格", "速读",
-        "搜索", "网页", "引导", "新闻",
+        "搜索", "网页", "引导", "新闻", "工单",
     )),
     ("系统内置", (
         "find-skills", "qwenwork-guidance", "using-superpowers",
@@ -235,6 +239,11 @@ class SourceSpec:
     # When True, entries carry their own category (e.g. skill-plaza taxonomy)
     # and SUMMARY navigation groups by that category instead of SCENARIOS.
     use_entry_categories: bool = False
+    # Directory (relative to platform root) where the SUMMARY.md for this
+    # source lives. Defaults to ``target``; set for file sources whose summary
+    # sits in the parent directory of the synced file (e.g. the QwenWork
+    # connectors registry).
+    summary_dir: str = ""
 
 
 @dataclass(frozen=True)
@@ -381,6 +390,26 @@ PLATFORMS: dict[str, PlatformSpec] = {
                 item_kind="skill",
                 use_entry_categories=True,
             ),
+            SourceSpec(
+                name="connectors_registry",
+                title="Connectors / Installed Registry",
+                source=Path("/mnt/c/Users/15805/.qwenworkcn/mcp.json"),
+                target="connectors/mcp.json",
+                item_kind="connector",
+                source_is_file=True,
+                use_entry_categories=True,
+                summary_dir="connectors",
+            ),
+            SourceSpec(
+                name="connectors_metadata",
+                title="Connectors / Market Metadata",
+                source=Path(
+                    "/mnt/c/Users/15805/.qwenworkcn/cache/mcp/market-metadata-cn.json"
+                ),
+                target="connectors/market-metadata.json",
+                item_kind="connector metadata",
+                source_is_file=True,
+            ),
         ),
     ),
     "chatgpt": PlatformSpec(
@@ -459,7 +488,7 @@ def file_hash(path: Path) -> str:
 
 def protected_summary_rel(source: SourceSpec) -> str:
     """The repo-relative path of the generated SUMMARY.md for ``source``."""
-    return rel_join(source.target, SUMMARY_FILENAME)
+    return rel_join(source.summary_dir or source.target, SUMMARY_FILENAME)
 
 
 def list_source_files(source: SourceSpec) -> dict[str, Path]:
@@ -841,10 +870,64 @@ def connector_marketplace_entries(target: Path, source: SourceSpec):
     return entries
 
 
+def qwenwork_connector_entries(platform_root: Path, source: SourceSpec):
+    """Entries for the QwenWork installed-connector registry.
+
+    The registry is a single synced file (``connectors/mcp.json``) whose
+    ``mcpServers`` map holds one entry per installed market connector with
+    ``_displayName_zh``/``_displayDescription_zh`` metadata. Categorization
+    prefers the official market mapping in the synced
+    ``connectors/market-metadata.json`` (id -> category id, resolved through
+    PLAZA_CATEGORY_ALIASES) and falls back to :func:`plaza_category` keyword
+    rules. ``directory`` points into the registry via ``mcp.json#<id>``.
+    """
+    registry_path = path_from_rel(platform_root, source.target)
+    if not registry_path.is_file():
+        return []
+    registry = load_json(registry_path)
+    servers = registry.get("mcpServers") or {}
+
+    official: dict[str, str] = {}
+    metadata_path = registry_path.parent / "market-metadata.json"
+    if metadata_path.is_file():
+        metadata = load_json(metadata_path)
+        for conn_id, info in (metadata.get("connectors") or {}).items():
+            if isinstance(info, dict) and info.get("category"):
+                official[str(conn_id)] = str(info["category"])
+
+    entries = []
+    for key in sorted(servers):
+        server = servers[key] or {}
+        if not isinstance(server, dict):
+            continue
+        name = str(server.get("_displayName_zh") or server.get("_displayName") or key)
+        description = one_line(
+            str(server.get("_displayDescription_zh") or server.get("_displayDescription") or "")
+        )
+        category = ""
+        mapped = official.get(str(server.get("_builtinId") or key))
+        if mapped and mapped in PLAZA_CATEGORY_ALIASES:
+            category = PLAZA_CATEGORY_ALIASES[mapped]
+        if not category:
+            category = plaza_category(key, f"{name} {key} {description}", [])
+        keywords = extract_keywords(name, description, None)
+        entries.append((
+            name,
+            f"{PurePosixPath(source.target).name}#{key}",
+            category,
+            1,
+            description,
+            keywords,
+        ))
+    return entries
+
+
 def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[str, tuple[str, str]]):
     """Entries for a directory source as 6-tuples
     ``(name, directory, category, file_count, description, keywords)``."""
     target = path_from_rel(platform_root, source.target)
+    if source.name == "connectors_registry":
+        return qwenwork_connector_entries(platform_root, source)
     if source.source_is_file:
         return []
     if not target.exists():
@@ -1058,10 +1141,10 @@ def render_readme(platform: PlatformSpec, repo_root: Path, latest_log: Path | No
                 f"{escape_cell(category)} | {file_count} | {escape_cell(description)} |"
             )
         sections.append(f"### {source.title}\n\n" + "\n".join(rows) + "\n")
-        if not source.source_is_file:
-            summary_rel = rel_join(platform.root, source.target, SUMMARY_FILENAME)
+        if not source.source_is_file or source.summary_dir:
+            summary_rel = rel_join(platform.root, source.summary_dir or source.target, SUMMARY_FILENAME)
             nav_lines.append(
-                f"- [{source.title}]({summary_rel}) — `{source.target}/` 功能导航"
+                f"- [{source.title}]({summary_rel}) — `{source.summary_dir or source.target}/` 功能导航"
             )
 
     if logs:
@@ -1132,7 +1215,7 @@ def render_summary(
     -> 完整目录表 (full directory table with primary scenario as 类型).
     """
     total_files = sum(entry[3] for entry in entries)
-    target_dir_rel = rel_join(platform.root, source.target)
+    target_dir_rel = rel_join(platform.root, source.summary_dir or source.target)
     stamp = sync_time
 
     # ---- Overview ----
@@ -1224,10 +1307,14 @@ def write_summary_file(
     """Write the SUMMARY.md for one source only when its content changed.
 
     Returns ``(path, changed)`` where ``changed`` is True when the file was
-    rewritten. Returns ``None`` for file sources or empty entry sets."""
-    if source.source_is_file or not entries:
+    rewritten. Returns ``None`` for empty entry sets. The file lands in
+    ``source.summary_dir`` (or ``source.target``) — file sources may set
+    ``summary_dir`` to place the navigation next to rather than inside the
+    synced file."""
+    if not entries:
         return None
-    target_dir = path_from_rel(repo_root / platform.root, source.target)
+    summary_rel = source.summary_dir or source.target
+    target_dir = path_from_rel(repo_root / platform.root, summary_rel)
     target_dir.mkdir(parents=True, exist_ok=True)
     path = target_dir / SUMMARY_FILENAME
     changed = write_if_changed(path, render_summary(platform, repo_root, source, entries, sync_time))
@@ -1363,7 +1450,7 @@ def sync_platform(args: argparse.Namespace) -> int:
         )
         for source in platform.sources:
             entries = source_entries(platform_root, source, cb_analysis)
-            if source.source_is_file or not entries:
+            if not entries:
                 continue
             result = write_summary_file(platform, repo_root, source, entries, sync_time)
             if result and result[1]:
