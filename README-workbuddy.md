@@ -7,8 +7,8 @@
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：635
-- 当前索引文件数：17631
-- 最近变更：[2026-10-08-090557](workbuddy/change-logs/2026-10-08-090557.md) - WorkBuddy 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/wechat-article-pro。
+- 当前索引文件数：17632
+- 最近变更：[2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) - WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。
 
 ## 数据来源
 
@@ -355,7 +355,7 @@
 | equity-research | `workbuddy/cb_teams_experts/plugins/equity-research` | 金融和商业分析 | 22 | 股票研究 |
 | executing-marketing-campaigns | `workbuddy/cb_teams_experts/plugins/executing-marketing-campaigns` | 营销和内部运营 | 15 | 营销活动管理 |
 | finance | `workbuddy/cb_teams_experts/plugins/finance` | 金融和商业分析 | 13 | 财务与会计 |
-| finance-data | `workbuddy/cb_teams_experts/plugins/finance-data` | 金融和商业分析 | 22 | 金融数据检索（209 个 API） |
+| finance-data | `workbuddy/cb_teams_experts/plugins/finance-data` | 金融和商业分析 | 23 | 金融数据检索（209 个 API） |
 | financial-analysis | `workbuddy/cb_teams_experts/plugins/financial-analysis` | 金融和商业分析 | 31 | 财务建模（DCF、LBO、Comps） |
 | 专业高考顾问 | `workbuddy/cb_teams_experts/plugins/gaokao-advisor` | 12-IndustryConsultant | 41 | 辅助检索高考知识库并调用分数线、一分一段能力，整理带来源的真题、高校专业和志愿参考；同时提供全流程志愿填报引导，产出可转发的腾讯文档志愿报告 |
 | general-skills | `workbuddy/cb_teams_experts/plugins/general-skills` | 文件处理和通用工具 | 40 | 通用技能集 |
@@ -703,6 +703,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-13-180008 | [2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) | WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。 |
 | 2026-10-08-090557 | [2026-10-08-090557](workbuddy/change-logs/2026-10-08-090557.md) | WorkBuddy 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/wechat-article-pro。 |
 | 2026-09-28-180010 | [2026-09-28-180010](workbuddy/change-logs/2026-09-28-180010.md) | WorkBuddy 本次同步新增 35 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/expert-tax-advisory-practice, experts/senior-accessible-travel。 受影响范围：experts/expert-tax-advisory-practice, experts/senio... |
 | 2026-09-26-180002 | [2026-09-26-180002](workbuddy/change-logs/2026-09-26-180002.md) | WorkBuddy 本次同步新增 5 个文件、修改 54 个文件、删除 0 个文件。 受影响范围：connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/cloudbase, connectors/marketplace/connectors/cnb-... |
@@ -722,4 +723,3 @@
 | 2026-09-02-180002 | [2026-09-02-180002](workbuddy/change-logs/2026-09-02-180002.md) | WorkBuddy 本次同步新增 21 个文件、修改 27 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/shanlong-claw, connectors/marketplace/connectors/tencent-map-guide。 受影响范围：connectors/marketpla... |
 | 2026-09-01-180001 | [2026-09-01-180001](workbuddy/change-logs/2026-09-01-180001.md) | WorkBuddy 本次同步新增 58 个文件、修改 31 个文件、删除 24 个文件。 新增条目：connectors/marketplace/connectors/aimoderator, connectors/marketplace/connectors/today-watermark-camera, connectors/marketplace... |
 | 2026-08-31-180002 | [2026-08-31-180002](workbuddy/change-logs/2026-08-31-180002.md) | WorkBuddy 本次同步新增 26 个文件、修改 6 个文件、删除 10 个文件。 新增条目：connectors/marketplace/connectors/databuddy, connectors/marketplace/connectors/jinshouzhi。 移除条目已归档：connectors/marketplace/connec... |
-| 2026-08-30-212148 | [2026-08-30-212148](workbuddy/change-logs/2026-08-30-212148.md) | WorkBuddy 本次同步新增 2677 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/default, connectors/marketplace/.codebuddy-connector, connectors/marketplace/connectors/77ircloud, connectors/market... |
