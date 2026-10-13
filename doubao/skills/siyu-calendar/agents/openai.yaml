@@ -1,0 +1,7 @@
+interface:
+  display_name: "餐饮私域月度营销日历"
+  short_description: "为餐饮品牌生成固定栏目、月度营销日历、活动建议及每日内容配置"
+  icon_small: "./assets/icc-grow-icon.png"
+  icon_large: "./assets/icc-grow-icon.png"
+  brand_color: "#FF2342"
+  default_prompt: "使用 $siyu-calendar 根据餐饮品牌资料生成私域月度营销日历。"

@@ -1,0 +1,255 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>粉色关卡标题与胶囊</title><style data-cyber-recipe="pink-party-level-heading">
+.cs-capsule{position:relative;display:inline-block;box-sizing:border-box;flex:none;width:var(--cs-capsule-width,59px);height:var(--cs-capsule-height,14px);border-radius:999px;background:var(--cs-capsule-fill,#a7eed8);color:var(--cs-capsule-ink,#348f86);font:5px/1 Arial,sans-serif;letter-spacing:1px;padding:0 8px;text-shadow:none;vertical-align:middle}
+.cs-capsule__label{position:absolute;left:8px;top:50%;transform:translateY(-50%)}
+.cs-capsule::after{content:"";position:absolute;box-sizing:border-box;right:var(--cs-capsule-gap,3px);top:50%;transform:translateY(-50%);width:var(--cs-capsule-thumb-width,26px);height:calc(100% - 4px);border:1px solid var(--cs-capsule-thumb-edge,#7a8792);border-radius:999px;background:var(--cs-capsule-thumb,#26313c)}
+.cyber10-recipe, .cyber10-recipe * {box-sizing: border-box;}
+.cyber10-recipe {margin: 0px; background: rgb(9, 10, 12); color: white; font: 400 22px / 1.55 CyberSourceHan, sans-serif;}
+.cyber10-recipe img {max-width: 100%; height: auto;}
+.cyber10-recipe .vl-neon-edge {outline: var(--vl-neon-width,1px) solid var(--vl-neon-color,var(--vl-accent,#00d8df)); outline-offset: 0px; box-shadow: 0 0 var(--vl-neon-blur,16px) color-mix(in srgb,var(--vl-neon-color,var(--vl-accent,#00d8df)) calc(var(--vl-neon-alpha,.65) * 100%),transparent),inset 0 0 var(--vl-neon-inset,4px) color-mix(in srgb,var(--vl-neon-color,var(--vl-accent,#00d8df)) calc(var(--vl-neon-alpha,.65) * 100%),transparent);}
+.cyber10-recipe .vl-neon-type {text-shadow: 0 0 var(--vl-neon-blur,16px) color-mix(in srgb,var(--vl-neon-color,var(--vl-accent,#00d8df)) calc(var(--vl-neon-alpha,.65) * 100%),transparent);}
+.cyber10-recipe .ct-scan {position: relative; isolation: isolate;}
+.cyber10-recipe .ct-scan__layer {position: absolute; inset: 0px; z-index: 0; pointer-events: none; user-select: none; border-radius: inherit; opacity: var(--ct-scan-enabled,1); background: repeating-linear-gradient(to bottom,var(--ct-scan-color,rgba(196,232,246,.08)) 0,var(--ct-scan-color,rgba(196,232,246,.08)) clamp(.5px,var(--ct-scan-line,1px),1px),transparent clamp(.5px,var(--ct-scan-line,1px),1px),transparent clamp(2px,var(--ct-scan-period,3px),4px));}
+.cyber10-recipe .ct-scan__content {position: relative; z-index: 1; min-width: 0px;}
+.cyber10-recipe .c10-masthead {display: grid; grid-template-columns: minmax(95px, 145px) 26px minmax(0px, 1fr); gap: 10px; align-items: center; font-family: CyberSourceHan, sans-serif; color: rgb(255, 255, 255);}
+.cyber10-recipe .c10-masthead__side {grid-area: 1 / 1; font-size: 44px; line-height: 1.08; font-weight: 400; color: rgb(250, 39, 150); text-align: right;}
+.cyber10-recipe .c10-masthead__slash {grid-area: 1 / 2; align-self: stretch; min-height: 108px; background: linear-gradient(120deg, transparent 48%, rgb(255, 196, 232) 49%, rgb(255, 255, 255) 50%, rgb(250, 41, 149) 51%, transparent 52%);}
+.cyber10-recipe .c10-masthead__main {grid-area: 1 / 3; min-width: 0px;}
+.cyber10-recipe .c10-masthead__en {display: block; margin-bottom: 12px; font: 700 20px / 1.25 Arial, sans-serif; color: rgb(191, 255, 243);}
+.cyber10-recipe .c10-masthead .section-title {margin: 0px; font-size: 42px; line-height: 1.22; font-weight: 700; overflow-wrap: anywhere;}
+.cyber10-recipe .c10-masthead__sub {grid-column: 1 / -1; margin: 14px 0px 0px; text-align: center; font-size: 22px; line-height: 1.55; font-weight: 400;}
+@media (max-width: 440px){.cyber10-recipe .c10-masthead {grid-template-columns: 82px 18px minmax(0px, 1fr); gap: 7px;}
+.cyber10-recipe .c10-masthead__side {font-size: 30px;}
+.cyber10-recipe .c10-masthead__slash {min-height: 88px;}
+.cyber10-recipe .c10-masthead .section-title {font-size: 29px;}
+.cyber10-recipe .c10-masthead__en {font-size: 15px;}
+.cyber10-recipe .c10-masthead__sub {font-size: 20px;}}
+.cyber10-recipe .c10-stages {margin: 0px; padding: 0px; list-style: none; font-family: CyberSourceHan, sans-serif; color: rgb(255, 255, 255);}
+.cyber10-recipe .c10-stage {display: grid; grid-template-columns: 50px 88px minmax(0px, 1fr); column-gap: 12px; position: relative;}
+.cyber10-recipe .c10-stage__rail {position: relative; isolation: isolate; grid-area: 1 / 1; background: linear-gradient(90deg, rgb(255, 173, 215) 0%, rgb(244, 87, 173) 19%, rgb(222, 38, 126) 48%, rgb(251, 54, 159) 79%, rgb(255, 145, 204) 100%);}
+.cyber10-recipe .c10-stage__rail::before {content: ""; position: absolute; inset: 0px; z-index: -1; background: url("SLOT:screen-grain") repeat; opacity: 0.22;}
+.cyber10-recipe .c10-stage__rail::after {content: ""; position: absolute; inset: 0px 15px; background: radial-gradient(circle, rgb(97, 103, 118) 0px, rgb(97, 103, 118) 3px, transparent 4px) center top / 14px 14px repeat-y, rgb(17, 21, 38); border-inline: 2px solid rgb(71, 51, 69);}
+.cyber10-recipe .c10-stage:first-child .c10-stage__rail {border-radius: 9px 9px 0px 0px; padding-top: 51px;}
+.cyber10-recipe .c10-stage:first-child .c10-stage__rail::after {top: 51px; border-radius: 12px 12px 0px 0px;}
+.cyber10-recipe .c10-stage:last-child .c10-stage__rail {border-radius: 0px 0px 9px 9px;}
+.cyber10-recipe .c10-stage:last-child .c10-stage__rail::after {bottom: 10px; border-radius: 0px 0px 12px 12px;}
+.cyber10-recipe .c10-stage__start {position: absolute; z-index: 2; top: 7px; left: 8px; width: 34px; padding: 5px 0px; border-radius: 5px; background: rgb(32, 35, 43); border: 1px solid rgb(204, 208, 212); text-align: center; font: 10px / 1 Arial, sans-serif;}
+.cyber10-recipe .c10-stage__light {position: absolute; z-index: 2; left: 22px; top: 21%; bottom: 23%; width: 7px; border-radius: 8px; background: linear-gradient(90deg, rgb(255, 20, 139), rgb(255, 139, 201), rgb(255, 20, 139)); box-shadow: rgb(252, 35, 147) 0px 0px 7px;}
+.cyber10-recipe .c10-stage__link {grid-area: 1 / 2; position: relative; padding-top: 54px; font: 10px / 1.4 Arial, sans-serif;}
+.cyber10-recipe .c10-stage__link::before {content: ""; position: absolute; top: 73px; left: 5px; width: 39px; height: 32%; border-top: 1px solid rgb(161, 160, 166); border-right: 1px solid rgb(161, 160, 166); border-bottom: 1px solid rgb(161, 160, 166);}
+.cyber10-recipe .c10-stage__link::after {content: ""; position: absolute; left: 4px; top: 71px; width: 4px; height: 4px; border-radius: 50%; background: rgb(255, 255, 255);}
+.cyber10-recipe .c10-stage__content {grid-area: 1 / 3; min-width: 0px; padding: 0px 0px 36px;}
+.cyber10-recipe .c10-stage:last-child .c10-stage__content {padding-bottom: 10px;}
+.cyber10-recipe .c10-stage__content h3 {margin: 0px 0px 8px; font-size: 23px; line-height: 1.45; font-weight: 700;}
+.cyber10-recipe .c10-stage__content .body-copy {margin: 0px 0px 14px; font-size: 21px; line-height: 1.55; font-weight: 400;}
+.cyber10-recipe .c10-stage__content img {display: block; width: 100%; height: auto;}
+@media (max-width: 440px){.cyber10-recipe .c10-stage {grid-template-columns: 34px 49px minmax(0px, 1fr); column-gap: 8px;}
+.cyber10-recipe .c10-stage__rail::after {inset-inline: 9px;}
+.cyber10-recipe .c10-stage__light {left: 14px; width: 6px;}
+.cyber10-recipe .c10-stage__start {left: 3px; width: 28px; font-size: 8px;}
+.cyber10-recipe .c10-stage__link::before {width: 28px;}
+.cyber10-recipe .c10-stage__link {font-size: 8px;}
+.cyber10-recipe .c10-stage__content h3 {font-size: 20px;}
+.cyber10-recipe .c10-stage__content .body-copy {font-size: 20px;}}
+.cyber10-recipe .c10-control {--c10-axis: 90deg; display: flex; align-items: center; gap: 20px; position: relative; isolation: isolate; box-sizing: border-box; width: 100%; padding: 12px 18px; border-radius: 8px; border: 1px solid rgb(67, 67, 75); background: linear-gradient(var(--c10-axis),#2e3037 0%,#43464b 20%,#171a24 49%,#383d43 78%,#30343b 100%); box-shadow: rgba(207, 178, 195, 0.2) 0px -3px 12px, rgba(175, 180, 182, 0.25) 0px 1px 1px inset;}
+.cyber10-recipe .c10-control::before {content: ""; position: absolute; inset: 0px; z-index: -1; border-radius: inherit; background: url("SLOT:screen-grain") repeat; opacity: 0.2;}
+.cyber10-recipe .c10-control__cross {position: relative; flex: 0 0 22px; width: 22px; height: 22px; background: linear-gradient(rgb(85, 91, 96), rgb(37, 41, 46)); clip-path: polygon(35% 0px, 65% 0px, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0px 65%, 0px 35%, 35% 35%);}
+.cyber10-recipe .c10-control__track {position: relative; flex: 1 1 0%; min-width: 0px; height: 12px; border: 2px solid rgb(23, 25, 39); border-radius: 12px; background: linear-gradient(rgb(6, 11, 29), rgb(66, 73, 95)); box-shadow: rgb(117, 121, 131) 0px 1px 0px;}
+.cyber10-recipe .c10-control__track::before {content: ""; position: absolute; inset: 3px; background: linear-gradient(var(--c10-axis),#ff208b 0%,#ff62b6 43%,#f539a5 62%,#247bff 94%,#3f4254 100%); border-radius: 8px;}
+.cyber10-recipe .c10-control__track::after {content: ""; position: absolute; top: 0px; bottom: 0px; left: var(--c10-marker,72%); width: 18px; border-radius: 10px; border: 1px solid rgb(16, 32, 56); background: radial-gradient(circle at 30% 45%, rgb(101, 127, 156) 0px, rgb(101, 127, 156) 15%, rgb(28, 41, 66) 20%, rgb(28, 41, 66) 40%, transparent 45%), linear-gradient(rgb(70, 85, 113), rgb(17, 27, 43));}
+.cyber10-recipe .c10-control__dots {flex: 0 0 24px; width: 24px; height: 24px; background: radial-gradient(circle, rgb(164, 172, 176) 0px, rgb(164, 172, 176) 0.7px, rgb(20, 24, 32) 1px, transparent 1.5px) 0px 0px / 6px 6px;}
+.cyber10-recipe .c10-control--vertical {--c10-axis: 180deg; flex-direction: column; width: 50px; min-height: 230px; padding: 14px 10px; gap: 16px;}
+.cyber10-recipe .c10-control--vertical .c10-control__track {width: 12px; min-height: 150px; flex: 1 1 0%;}
+.cyber10-recipe .c10-control--vertical .c10-control__track::after {left: 0px; right: 0px; top: var(--c10-marker,72%); bottom: auto; width: auto; height: 18px;}
+.cyber10-recipe {width: 658px; max-width: 100%; margin: 0px auto; position: relative; isolation: isolate; background: rgb(13, 6, 13); color: rgb(255, 255, 255); font-family: CyberSourceHan, sans-serif; font-weight: 400; overflow-wrap: break-word;}
+.cyber10-recipe::before {content: ""; position: absolute; inset: 0px; z-index: -1; background: url("SLOT:screen-grain") repeat, radial-gradient(at 10% 24%, rgba(91, 12, 57, 0.176), transparent 33%), radial-gradient(at 95% 64%, rgba(70, 16, 71, 0.176), transparent 34%); opacity: 0.68;}
+.cyber10-recipe * {box-sizing: border-box;}
+.cyber10-recipe img {display: block; max-width: 100%; height: auto;}
+.cyber10-recipe .body-copy {font-size: 21px; line-height: 1.55; font-weight: 400; margin: 12px 0px;}
+.cyber10-recipe .c10-small {font-size: 15px; line-height: 1.55; color: rgb(206, 202, 208);}
+.cyber10-recipe .c10-center {text-align: center;}
+.cyber10-recipe .c10-pink {--vl-neon-color: #ff1b9b; --vl-neon-blur: 14px; --vl-neon-alpha: .8;}
+.cyber10-recipe .c10-mint {--vl-neon-color: #38ffdc; --vl-neon-blur: 8px; color: rgb(214, 255, 246);}
+.cyber10-recipe .c10-kv {position: relative;}
+.cyber10-recipe .c10-kv img {width: 100%;}
+.cyber10-recipe .c10-date {position: absolute; top: 28px; left: 36px; margin: 0px; color: rgb(255, 37, 154); font: 700 39px / 1.15 Arial, sans-serif; letter-spacing: 2px;}
+.cyber10-recipe .c10-intro {padding: 2px 35px 0px;}
+.cyber10-recipe .c10-start-title {margin: 0px; text-align: center; font-size: 62px; line-height: 1.35; font-weight: 700;}
+.cyber10-recipe .c10-start-title::before, .cyber10-recipe .c10-start-title::after {content: "✦"; display: inline-block; margin: 0px 14px; font-size: 25px; vertical-align: middle;}
+.cyber10-recipe .c10-start-en {text-align: center; font: 700 21px / 1.4 Arial, sans-serif; margin: 0px 0px 60px;}
+.cyber10-recipe .c10-window {margin: 0px;}
+.cyber10-recipe .c10-toolbar, .cyber10-recipe .c10-level {position: relative; isolation: isolate; background: linear-gradient(105deg, rgb(238, 84, 181) 0%, rgb(172, 17, 111) 17%, rgb(249, 69, 142) 31%, rgb(37, 9, 20) 49%, rgb(8, 8, 16) 59%, rgb(230, 62, 132) 84%, rgb(168, 33, 124) 100%); --vl-neon-color: #ff65be; --vl-neon-blur: 10px; --vl-neon-inset: 3px; border: 1px solid rgb(255, 196, 231); border-radius: 10px;}
+.cyber10-recipe .c10-toolbar::before, .cyber10-recipe .c10-level::before, .cyber10-recipe .c10-window-body::before {content: ""; position: absolute; inset: 0px; z-index: -1; border-radius: inherit; background: url("SLOT:screen-grain") repeat; opacity: 0.29;}
+.cyber10-recipe .c10-toolbar {min-height: 55px; padding: 17px 18px; display: flex; align-items: center; gap: 12px;}
+.cyber10-recipe .c10-status {display: flex; gap: 10px; margin-right: auto;}
+.cyber10-recipe .c10-status i {width: 13px; height: 13px; border-radius: 50%; background: rgb(255, 50, 166); border: 2px solid rgb(9, 8, 17); box-shadow: rgb(255, 199, 233) 1px 1px 2px inset;}
+.cyber10-recipe .c10-status i:first-child {background: rgb(9, 8, 17);}
+.cyber10-recipe .c10-input {width: 106px; border-radius: 20px; background: linear-gradient(rgb(5, 7, 19), rgb(34, 35, 48)); border-bottom: 1px solid rgb(161, 134, 159); padding: 3px 7px; color: rgb(161, 160, 175); font: 9px / 1 Arial, sans-serif;}
+.cyber10-recipe .c10-window-body {position: relative; isolation: isolate; margin: 7px 7px 0px; border: 7px solid rgb(48, 43, 49); background: linear-gradient(110deg, rgb(28, 25, 30), rgb(33, 29, 35) 55%, rgb(21, 19, 24)); outline: rgb(84, 69, 81) solid 1px; outline-offset: -14px; padding: 25px 23px;}
+.cyber10-recipe .c10-window-split {display: grid; grid-template-columns: minmax(0px, 1.85fr) minmax(0px, 1fr); gap: 22px;}
+.cyber10-recipe .c10-window-split > div:last-child {border-left: 1px solid rgb(72, 64, 73); padding-left: 25px;}
+.cyber10-recipe .c10-window-split .body-copy {margin: 0px 0px 8px;}
+.cyber10-recipe .c10-warning {margin-top: 31px !important; font-size: 16px !important;}
+.cyber10-recipe .c10-team-logo {width: 65px; margin: 0px auto 12px;}
+.cyber10-recipe .c10-team p {font-size: 15px; line-height: 1.45; margin: 8px 0px;}
+.cyber10-recipe .c10-game-key {display: block; width: max-content; margin-left: auto; border: 1px solid rgb(166, 168, 176); border-radius: 5px; padding: 5px; background: rgb(23, 25, 36); font: 10px / 1 Arial, sans-serif; text-align: center;}
+.cyber10-recipe .c10-world {margin: 90px 40px 0px;}
+.cyber10-recipe .c10-world > .c10-masthead {margin: 0px 15px 42px;}
+.cyber10-recipe .c10-open-frame {position: relative; isolation: isolate; padding: 26px 40px 38px;}
+.cyber10-recipe .c10-open-frame::before, .cyber10-recipe .c10-open-frame::after {content: ""; position: absolute; z-index: -1; pointer-events: none; width: 96px; height: 135px; border-color: rgb(251, 133, 213); border-style: solid; filter: drop-shadow(rgb(246, 35, 174) 0px 0px 5px);}
+.cyber10-recipe .c10-open-frame::before {left: 0px; top: 0px; border-width: 1px 0px 0px 2px; border-radius: 18px 0px 0px; mask-image: linear-gradient(135deg, rgb(0, 0, 0), transparent 75%);}
+.cyber10-recipe .c10-open-frame::after {right: 0px; bottom: 0px; border-width: 0px 2px 1px 0px; border-radius: 0px 0px 20px; mask-image: linear-gradient(315deg, rgb(0, 0, 0), transparent 75%);}
+.cyber10-recipe .c10-open-frame {background: linear-gradient(90deg, rgba(176, 42, 108, 0.19), transparent 2px) left center / 1px 100% no-repeat, linear-gradient(90deg, rgba(162, 41, 112, 0.18), transparent) right center / 1px 100% no-repeat;}
+.cyber10-recipe .c10-entry .body-copy {margin: 0px 0px 15px; font-size: 22px;}
+.cyber10-recipe .c10-entry img, .cyber10-recipe .c10-wide-image {width: 100%;}
+.cyber10-recipe .c10-level-section {margin-top: 50px;}
+.cyber10-recipe .c10-level {padding: 15px 86px 15px 28px; margin: 0px 0px 24px; font-size: 32px; line-height: 1.35; font-weight: 700;}
+.cyber10-recipe .c10-toggle {position: absolute; right: 27px; top: 18px; width: 59px; height: 14px; border-radius: 14px; background: linear-gradient(90deg, rgb(104, 249, 218), rgb(198, 255, 233)); box-shadow: rgba(139, 255, 249, 0.467) 0px 0px 6px; color: rgb(52, 143, 134); padding: 3px 8px; font: 5px / 1 Arial, sans-serif; letter-spacing: 1px;}
+.cyber10-recipe .c10-toggle::after {content: ""; position: absolute; box-sizing: border-box; right: 3px; top: 50%; transform: translateY(-50%); width: 26px; height: 10px; background: linear-gradient(rgb(17, 22, 33), rgb(56, 66, 75)); border-radius: 10px; border: 1px solid rgb(122, 135, 146);}
+.cyber10-recipe .c10-level-section > .body-copy {text-align: center; margin: 20px 0px 26px;}
+.cyber10-recipe .c10-level-section .c10-stages {margin-top: 36px;}
+.cyber10-recipe .c10-highlight {font-size: 25px; line-height: 1.5; font-weight: 700; letter-spacing: 2px; text-align: center; margin: 29px 0px 0px;}
+.cyber10-recipe .c10-gifts {padding-top: 4px; text-align: center;}
+.cyber10-recipe .c10-gifts > .body-copy {margin: 0px 0px 46px;}
+.cyber10-recipe .c10-gifts h3 {font-size: 24px; margin: 0px 0px 4px;}
+.cyber10-recipe .c10-gifts .c10-gift-copy {margin: 0px -12px 20px;}
+.cyber10-recipe .c10-gift-image {width: 450px; margin: auto;}
+.cyber10-recipe .c10-hidden {margin-top: 72px;}
+.cyber10-recipe .c10-hidden > .body-copy {margin: 27px 0px 38px;}
+.cyber10-recipe .c10-control-wrap {width: 425px; max-width: 100%; margin: 0px auto;}
+.cyber10-recipe .c10-frame-warning {font-size: 16px; text-align: center; line-height: 1.55; margin: 13px 0px 0px;}
+.cyber10-recipe .c10-party {margin: 105px 40px 0px;}
+.cyber10-recipe .c10-party > .c10-masthead {margin: 0px 4px 43px;}
+.cyber10-recipe .c10-party .c10-masthead .section-title {font-family: Arial, sans-serif; font-size: 49px;}
+.cyber10-recipe .c10-party .c10-open-frame {padding-top: 36px;}
+.cyber10-recipe .c10-party .c10-stage__content {padding-bottom: 37px;}
+.cyber10-recipe .c10-party .c10-highlight {margin: 30px 0px 16px;}
+.cyber10-recipe .c10-park {margin-top: 105px;}
+.cyber10-recipe .c10-park > .c10-masthead {margin: 0px 40px 40px;}
+.cyber10-recipe .c10-park-field {position: relative; isolation: isolate; padding: 70px 40px 65px; background: radial-gradient(at 50% 48%, rgba(80, 16, 52, 0.16), transparent 65%);}
+.cyber10-recipe .c10-park-field::before, .cyber10-recipe .c10-park-field::after {content: ""; position: absolute; z-index: -1; left: -9%; width: 118%; height: 130px; border: 3px solid transparent; border-radius: 50%; pointer-events: none; filter: drop-shadow(rgb(252, 73, 172) 0px 0px 5px) drop-shadow(rgb(236, 39, 157) 0px 0px 13px);}
+.cyber10-recipe .c10-park-field::before {top: 0px; border-top-color: rgb(255, 181, 229); transform: rotate(-3deg);}
+.cyber10-recipe .c10-park-field::after {bottom: 0px; border-bottom-color: rgb(255, 181, 229); transform: rotate(-3deg);}
+.cyber10-recipe .c10-park-columns {display: grid; grid-template-columns: 235px minmax(0px, 1fr); gap: 20px; align-items: center;}
+.cyber10-recipe .c10-route {position: relative;}
+.cyber10-recipe .c10-route img {width: 100%;}
+.cyber10-recipe .c10-route-label {position: absolute; font-size: 15px; font-weight: 700; color: rgb(255, 53, 164); line-height: 1.2;}
+.cyber10-recipe .c10-route-label--ins {right: 0px; top: 23%;}
+.cyber10-recipe .c10-route-label--park {left: 32%; top: 61%;}
+.cyber10-recipe .c10-park-columns .body-copy {font-size: 20px; margin: 0px 0px 16px; line-height: 1.7;}
+.cyber10-recipe .c10-park-field .c10-control-wrap {margin-top: 47px;}
+.cyber10-recipe .c10-finish {margin: 100px 35px 0px;}
+.cyber10-recipe .c10-finish > .c10-masthead {margin-bottom: 28px;}
+.cyber10-recipe .c10-finish .c10-masthead .section-title {font-size: 40px;}
+.cyber10-recipe .c10-clear {text-align: center; font-size: 43px; line-height: 1.4; letter-spacing: 7px; margin: 30px 0px;}
+.cyber10-recipe .c10-finish .c10-window-body {text-align: center; padding: 25px 8px 19px;}
+.cyber10-recipe .c10-finish .body-copy {margin: 0px; line-height: 1.85;}
+.cyber10-recipe .c10-finish .c10-small {margin: 12px 0px 0px;}
+.cyber10-recipe .c10-footer {padding: 28px 30px 30px; text-align: center;}
+.cyber10-recipe .c10-footer > .body-copy {margin: 0px 0px 3px;}
+.cyber10-recipe .c10-address {margin: 42px 0px 0px; font-style: normal; font-size: 16px; line-height: 1.7; font-weight: 700;}
+.cyber10-recipe .c10-footer-brands {display: grid; grid-template-columns: 80px 1fr 1fr 90px; gap: 20px; align-items: end; margin-top: 14px; text-align: center;}
+.cyber10-recipe .c10-footer-brands img {width: 80px; margin: auto;}
+.cyber10-recipe .c10-footer-brands p {font: 700 13px / 1.2 Arial, sans-serif; letter-spacing: 0.5px; margin: 0px;}
+.cyber10-recipe .c10-footer-brands .c10-year {width: 88px;}
+@media (max-width: 440px){.cyber10-recipe .c10-intro, .cyber10-recipe .c10-finish {padding-inline: 0px; margin-inline: 20px;}
+.cyber10-recipe .c10-start-title {font-size: 43px;}
+.cyber10-recipe .c10-start-title::before, .cyber10-recipe .c10-start-title::after {font-size: 18px; margin-inline: 8px;}
+.cyber10-recipe .c10-start-en {font-size: 18px; margin-bottom: 40px;}
+.cyber10-recipe .c10-date {font-size: 26px; top: 18px; left: 24px;}
+.cyber10-recipe .c10-toolbar {gap: 8px; padding-inline: 12px;}
+.cyber10-recipe .c10-input {width: 78px;}
+.cyber10-recipe .c10-status {gap: 7px;}
+.cyber10-recipe .c10-window-body {padding: 20px 15px;}
+.cyber10-recipe .c10-window-split {grid-template-columns: minmax(0px, 1fr); gap: 18px;}
+.cyber10-recipe .c10-window-split > div:last-child {border-left: 0px; border-top: 1px solid rgb(72, 64, 73); padding: 18px 0px 0px;}
+.cyber10-recipe .c10-team-logo {float: right;}
+.cyber10-recipe .c10-world, .cyber10-recipe .c10-party {margin-inline: 18px; margin-top: 65px;}
+.cyber10-recipe .c10-world > .c10-masthead {margin-inline: 0px;}
+.cyber10-recipe .c10-open-frame {padding: 24px 16px 30px;}
+.cyber10-recipe .c10-level {font-size: 25px; padding-left: 18px; padding-right: 74px;}
+.cyber10-recipe .c10-toggle {right: 14px;}
+.cyber10-recipe .body-copy {font-size: 20px;}
+.cyber10-recipe .c10-highlight {font-size: 22px; letter-spacing: 0px;}
+.cyber10-recipe .c10-gifts .c10-gift-copy {margin-inline: 0px;}
+.cyber10-recipe .c10-party .c10-masthead .section-title {font-size: 33px;}
+.cyber10-recipe .c10-park {margin-top: 70px;}
+.cyber10-recipe .c10-park > .c10-masthead {margin-inline: 18px;}
+.cyber10-recipe .c10-park-field {padding: 55px 22px;}
+.cyber10-recipe .c10-park-columns {grid-template-columns: minmax(0px, 1fr); gap: 24px;}
+.cyber10-recipe .c10-route {width: 235px; margin: auto;}
+.cyber10-recipe .c10-finish .c10-masthead .section-title {font-size: 29px;}
+.cyber10-recipe .c10-clear {font-size: 30px; letter-spacing: 4px;}
+.cyber10-recipe .c10-footer {padding-inline: 20px;}
+.cyber10-recipe .c10-footer-brands {grid-template-columns: 60px 1fr 1fr 65px; gap: 8px;}
+.cyber10-recipe .c10-footer-brands p {font-size: 10px;}}
+.cyber10-recipe {overflow-x: clip;}
+.cyber10-recipe::before {opacity: 0.07;}
+.cyber10-recipe .c10-date {display: none;}
+.cyber10-recipe {overflow: hidden;}
+.cyber10-recipe {font-synthesis: none;}
+.cyber10-recipe .c10-toolbar, .cyber10-recipe .c10-level {background: linear-gradient(90deg, rgb(117, 10, 72) 0%, rgb(186, 27, 170) 10%, rgb(206, 36, 140) 19%, rgb(205, 47, 108) 27%, rgb(174, 35, 75) 36%, rgb(91, 15, 40) 44%, rgb(41, 3, 22) 53%, rgb(51, 4, 24) 62%, rgb(65, 6, 30) 70%, rgb(138, 23, 57) 79%, rgb(179, 40, 78) 88%, rgb(170, 33, 100) 96%, rgb(140, 27, 89) 100%); border: 1px solid rgb(255, 133, 207); box-shadow: rgb(232, 86, 161) 0px 0px 0px 1px inset, rgba(221, 59, 143, 0.24) 0px 0px 5px inset, rgb(255, 116, 194) 0px 0px 3px, rgba(235, 21, 140, 0.44) 0px 0px 10px, rgba(231, 37, 144, 0.16) 0px 0px 20px; --vl-neon-color: #ff0090; --vl-neon-blur: 18px; --vl-neon-inset: 1px; filter: none;}
+.cyber10-recipe .c10-toolbar::before, .cyber10-recipe .c10-level::before {background: url("SLOT:screen-grain") repeat; opacity: 0.055; mix-blend-mode: soft-light; pointer-events: none;}
+.cyber10-recipe .c10-toolbar::after, .cyber10-recipe .c10-level::after {content: ""; position: absolute; inset: 0px; border-radius: inherit; pointer-events: none; background: none; filter: none; box-shadow: rgba(249, 217, 234, 0.7) 0px 1px 1px inset, rgb(220, 119, 173) 0px -1px 1px inset; opacity: 1;}
+.cyber10-recipe .c10-toolbar {min-height: 54px; padding: 12px 18px;}
+.cyber10-recipe .c10-window-body {background: rgb(16, 13, 17); border-color: rgb(44, 37, 43); outline-color: rgb(73, 55, 64); padding: 15px 18px; filter: none; --ct-scan-color: transparent !important;}
+.cyber10-recipe .c10-window-body::before {background: url("SLOT:screen-grain") repeat; opacity: 0.045; mix-blend-mode: soft-light; pointer-events: none;}
+.cyber10-recipe .c10-window-body::after {content: none;}
+.cyber10-recipe .c10-window-body > .ct-scan__layer {display: none;}
+.cyber10-recipe .c10-window-body > .ct-scan__content {background: none; filter: none;}
+.cyber10-recipe .c10-window-split {grid-template-columns: minmax(0px, 1.6fr) minmax(178px, 1fr); gap: 14px;}
+.cyber10-recipe .c10-window-split > div {min-width: 0px;}
+.cyber10-recipe .c10-window-split > div:last-child {padding-left: 15px; border-left-color: rgb(61, 48, 57);}
+.cyber10-recipe .c10-window-split .body-copy {font-size: 20px; line-height: 1.45; margin: 0px 0px 7px;}
+.cyber10-recipe .c10-warning {margin-top: 24px !important;}
+.cyber10-recipe .c10-team-logo {width: 59px; margin: 0px auto 8px;}
+.cyber10-recipe .c10-team p {font-size: 14px; line-height: 1.4; margin: 6px 0px; word-break: normal; overflow-wrap: break-word; font-weight: 400;}
+.cyber10-recipe .c10-game-key {max-width: 100%; padding: 4px;}
+.cyber10-recipe .c10-finish .c10-window-body {padding: 19px 12px 16px;}
+.cyber10-recipe .c10-finish .body-copy {line-height: 1.65;}
+.cyber10-recipe .c10-level {font-family: CyberSourceHan, sans-serif; font-weight: 500; font-size: 30px; line-height: 1.22; letter-spacing: 0.025em; padding: 15px 77px 15px 28px; color: rgb(244, 255, 253); text-shadow: rgb(143, 255, 240) -1px 0px 2px, rgb(35, 229, 216) 1px 0px 4px, rgba(32, 221, 205, 0.52) 0px 0px 8px; word-break: normal; overflow-wrap: break-word;}
+.cyber10-recipe .c10-toggle {top: 17px; right: 26px; text-shadow: none; letter-spacing: 1px;}
+.cyber10-recipe .c10-masthead {grid-template-columns: 136px 22px minmax(0px, 1fr); gap: 9px;}
+.cyber10-recipe .c10-masthead__side {font-family: CyberSourceHan, sans-serif; font-weight: 300; font-size: 44px; line-height: 1.03; letter-spacing: 0px; color: rgb(255, 22, 155); text-shadow: rgb(255, 0, 144) 0px 0px 3px, rgba(255, 0, 144, 0.7) 0px 0px 12px; --vl-neon-blur: 12px;}
+.cyber10-recipe .c10-masthead__slash {min-height: 108px; background: linear-gradient(120deg, transparent 48.7%, rgb(255, 184, 227) 49.4%, rgb(255, 243, 251) 50%, rgb(255, 35, 159) 50.6%, transparent 51.3%); filter: drop-shadow(rgb(255, 0, 144) 0px 0px 4px);}
+.cyber10-recipe .c10-masthead .section-title {font-family: CyberSourceHan, sans-serif; font-size: 42px; font-weight: 650; line-height: 1.16; letter-spacing: 0.025em; word-break: normal; overflow-wrap: break-word; color: rgb(255, 245, 251); text-shadow: rgba(255, 0, 144, 0.44) 0px 0px 4px, rgba(255, 0, 144, 0.27) 0px 0px 8px; --vl-neon-color: #ff0090; --vl-neon-blur: 15px;}
+.cyber10-recipe .c10-masthead__en {font-family: Arial, sans-serif; font-size: 20px; font-weight: 700; line-height: 1.25; letter-spacing: 0px; margin-bottom: 10px; color: rgb(223, 255, 248); text-shadow: rgb(84, 255, 227) 0px 0px 3px, rgb(0, 220, 182) 0px 0px 8px; overflow-wrap: normal; word-break: normal;}
+.cyber10-recipe .c10-world > .c10-masthead {margin: 0px 0px 32px;}
+.cyber10-recipe .c10-party .c10-masthead .section-title {font-family: Arial, sans-serif; font-size: 47px; font-weight: 700; letter-spacing: 0px; overflow-wrap: normal;}
+.cyber10-recipe .c10-finish .c10-masthead .section-title {font-size: 39px;}
+.cyber10-recipe .c10-start-title {font-family: CyberSourceHan, sans-serif; font-weight: 700; letter-spacing: 0.025em; color: rgb(255, 245, 251); text-shadow: rgb(255, 242, 250) 0px 0px 3px, rgb(255, 0, 144) 0px 0px 7px, rgb(255, 0, 144) 0px 0px 19px; --vl-neon-color: #ff0090;}
+.cyber10-recipe .body-copy {font-family: CyberSourceHan, sans-serif; font-weight: 400;}
+.cyber10-recipe .body-copy strong {font-weight: 900;}
+.cyber10-recipe .c10-level-section > .body-copy {font-weight: 700; line-height: 1.5;}
+.cyber10-recipe .c10-stage__content h3, .cyber10-recipe .c10-highlight, .cyber10-recipe .c10-gifts h3 {font-family: CyberSourceHan, sans-serif; font-weight: 700;}
+.cyber10-recipe .c10-stage__rail {background: linear-gradient(90deg, rgb(255, 143, 207) 0%, rgb(255, 0, 144) 17%, rgb(185, 0, 98) 46%, rgb(239, 0, 132) 78%, rgb(255, 114, 195) 100%); box-shadow: rgb(255, 197, 233) 1px 0px 1px inset, rgb(255, 177, 223) -1px 0px 1px inset;}
+.cyber10-recipe .c10-stage__rail::before, .cyber10-recipe .c10-control::before {opacity: 0.055; mix-blend-mode: soft-light; pointer-events: none;}
+@media (max-width: 600px){.cyber10-recipe .c10-masthead {grid-template-columns: 100px 20px minmax(0px, 1fr); gap: 8px;}
+.cyber10-recipe .c10-masthead__side {font-size: 37px;}
+.cyber10-recipe .c10-masthead .section-title {font-size: 35px;}
+.cyber10-recipe .c10-masthead__en {font-size: 17px;}
+.cyber10-recipe .c10-party .c10-masthead .section-title {font-size: 38px;}
+.cyber10-recipe .c10-finish .c10-masthead .section-title {font-size: 33px;}
+.cyber10-recipe .c10-window-split {grid-template-columns: minmax(0px, 1fr); gap: 12px;}
+.cyber10-recipe .c10-window-split > div:last-child {border-left: 0px; border-top: 1px solid rgb(61, 48, 57); padding: 12px 0px 0px;}
+.cyber10-recipe .c10-team-logo {float: right; margin: 0px 0px 8px 12px;}}
+@media (max-width: 440px){.cyber10-recipe .c10-toolbar {min-height: 48px; padding: 10px 12px; gap: 8px;}
+.cyber10-recipe .c10-input {min-width: 0px; max-width: 29%;}
+.cyber10-recipe .c10-window-body {padding: 14px 12px;}
+.cyber10-recipe .c10-window-split .body-copy {font-size: 19px;}
+.cyber10-recipe .c10-warning {margin-top: 18px !important; font-size: 15px !important;}
+.cyber10-recipe .c10-team p {font-size: 14px;}
+.cyber10-recipe .c10-masthead {grid-template-columns: 80px 18px minmax(0px, 1fr); gap: 7px;}
+.cyber10-recipe .c10-masthead__side {font-size: 30px;}
+.cyber10-recipe .c10-masthead__slash {min-height: 88px;}
+.cyber10-recipe .c10-masthead .section-title {font-size: 29px; line-height: 1.2;}
+.cyber10-recipe .c10-masthead__en {font-size: 15px; margin-bottom: 8px;}
+.cyber10-recipe .c10-party .c10-masthead .section-title {font-size: 33px;}
+.cyber10-recipe .c10-finish .c10-masthead .section-title {font-size: 29px;}
+.cyber10-recipe .c10-level {font-size: 25px; line-height: 1.25; padding: 13px 63px 13px 16px; letter-spacing: 0.025em;}
+.cyber10-recipe .c10-toggle {right: 12px; top: 17px; width: 45px;}
+.cyber10-recipe .c10-level-section > .body-copy {font-size: 20px;}}
+.cyber10-recipe .c10-level {text-shadow: rgba(35, 229, 216, 0.44) 0px 0px 2px, rgba(32, 221, 205, 0.2) 0px 0px 4px;}
+.cyber10-recipe .c10-toolbar::before, .cyber10-recipe .c10-level::before {opacity: 0.17; filter: grayscale(1) contrast(1.7); mix-blend-mode: soft-light;}
+.cyber10-recipe .c10-window-body::before {opacity: 0.075; filter: grayscale(1); mix-blend-mode: soft-light;}
+.cyber10-recipe .c10-level {font-weight: 500; text-shadow: none;}
+.cyber10-recipe .c10-level .c10-toggle {top: 50%; transform: translateY(-50%); margin-top: 0px;}</style></head><body><main class="case-page cyber10-recipe"><h2 class="c10-level section-title vl-neon-edge">第一关 · 能量补给站<span class="cs-capsule c10-toggle" aria-hidden="true">ON</span></h2></main></body></html>

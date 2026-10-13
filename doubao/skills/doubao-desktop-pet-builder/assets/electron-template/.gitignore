@@ -1,0 +1,10 @@
+node_modules/
+.webpack/
+.build/
+out/
+release/
+qa/*
+!qa/manual-checklist.md
+*.log
+.DS_Store
+Thumbs.db

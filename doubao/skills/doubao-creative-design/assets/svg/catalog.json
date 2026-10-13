@@ -1,0 +1,462 @@
+{
+  "version": 2,
+  "path_base": "skill-root",
+  "ref_bindings": "assets/templates/ref-bindings.json",
+  "usage": "按当前 ref_key 与目标效果筛选；只有 最终 HTML 已绑定消费者时才读取或内嵌对应 SVG。",
+  "entries": [
+    {
+      "id": "svg.binder-clip",
+      "name": "简化装订夹",
+      "path": "assets/svg/binder-clip.svg",
+      "tags": [
+        "夹子",
+        "装订",
+        "纸本",
+        "binder clip"
+      ],
+      "css_consumer_ids": [
+        "shape.binder-clip"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "menu",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.folder-bottom-left",
+      "name": "文件夹左下轮廓",
+      "path": "assets/svg/folder-bottom-left.svg",
+      "tags": [
+        "文件夹",
+        "轮廓",
+        "mask"
+      ],
+      "css_consumer_ids": [
+        "shape.folder"
+      ],
+      "ref_keys": [
+        "ecommerce-detail-page",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.folder-bottom-right",
+      "name": "文件夹右下轮廓",
+      "path": "assets/svg/folder-bottom-right.svg",
+      "tags": [
+        "文件夹",
+        "轮廓",
+        "mask"
+      ],
+      "css_consumer_ids": [
+        "shape.folder"
+      ],
+      "ref_keys": [
+        "ecommerce-detail-page",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.folder-slope",
+      "name": "文件夹斜坡轮廓",
+      "path": "assets/svg/folder-slope.svg",
+      "tags": [
+        "文件夹",
+        "斜坡",
+        "mask"
+      ],
+      "css_consumer_ids": [
+        "shape.folder"
+      ],
+      "ref_keys": [
+        "ecommerce-detail-page",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.folder-top-left",
+      "name": "文件夹左上轮廓",
+      "path": "assets/svg/folder-top-left.svg",
+      "tags": [
+        "文件夹",
+        "页签",
+        "mask"
+      ],
+      "css_consumer_ids": [
+        "shape.folder"
+      ],
+      "ref_keys": [
+        "ecommerce-detail-page",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.folder-top-right",
+      "name": "文件夹右上轮廓",
+      "path": "assets/svg/folder-top-right.svg",
+      "tags": [
+        "文件夹",
+        "页签",
+        "mask"
+      ],
+      "css_consumer_ids": [
+        "shape.folder"
+      ],
+      "ref_keys": [
+        "ecommerce-detail-page",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.frosted-grain",
+      "name": "磨砂玻璃颗粒",
+      "path": "assets/svg/frosted-grain.svg",
+      "tags": [
+        "磨砂",
+        "玻璃",
+        "颗粒",
+        "texture"
+      ],
+      "css_consumer_ids": [
+        "material.glass"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.paper-fiber",
+      "name": "纸张纤维纹理",
+      "path": "assets/svg/paper-fiber.svg",
+      "tags": [
+        "纸张",
+        "纤维",
+        "纹理",
+        "texture"
+      ],
+      "css_consumer_ids": [
+        "material.paper",
+        "surface.light-paper"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.paper-torn",
+      "name": "不规则撕纸边",
+      "path": "assets/svg/paper-torn.svg",
+      "tags": [
+        "撕纸",
+        "纸边",
+        "mask"
+      ],
+      "css_consumer_ids": [
+        "shape.torn-paper"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "menu",
+        "personal-card",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.plastic-grain",
+      "name": "半透明塑料颗粒",
+      "path": "assets/svg/plastic-grain.svg",
+      "tags": [
+        "塑料",
+        "半透明",
+        "颗粒",
+        "texture"
+      ],
+      "css_consumer_ids": [
+        "material.plastic"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.route-s",
+      "name": "S 形阅读导览线",
+      "path": "assets/svg/route-s.svg",
+      "tags": [
+        "路径",
+        "导览",
+        "时间轴",
+        "步骤"
+      ],
+      "css_consumer_ids": [
+        "layout.route-flow"
+      ],
+      "ref_keys": [
+        "ecommerce-detail-page",
+        "flowchart",
+        "mind-map",
+        "social-carousel",
+        "social-long-image"
+      ]
+    },
+    {
+      "id": "svg.screen-grain",
+      "name": "屏幕彩色颗粒",
+      "path": "assets/svg/screen-grain.svg",
+      "tags": [
+        "屏幕",
+        "颗粒",
+        "印刷",
+        "texture"
+      ],
+      "css_consumer_ids": [
+        "surface.screen-grain"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "knowledge-graph",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.text-arc",
+      "name": "弧形路径文字",
+      "path": "assets/svg/text-arc.svg",
+      "tags": [
+        "弧形文字",
+        "textPath",
+        "路径排字"
+      ],
+      "css_consumer_ids": [
+        "text.arc"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "logo-system",
+        "menu",
+        "personal-card",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.invite-ceremony-mask",
+      "name": "仪式邀请函遮罩",
+      "path": "assets/svg/invite-ceremony-mask.svg",
+      "tags": [
+        "invite-ceremony-mask"
+      ],
+      "css_consumer_ids": [
+        "shape.ceremony-edge"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.invite-wave-mask",
+      "name": "波浪邀请函遮罩",
+      "path": "assets/svg/invite-wave-mask.svg",
+      "tags": [
+        "invite-wave-mask"
+      ],
+      "css_consumer_ids": [
+        "shape.sweeping-band"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.resume-3899116ad59e17",
+      "name": "简历几何资源 3899116ad59e17",
+      "path": "assets/svg/resume-3899116ad59e17.svg",
+      "tags": [
+        "resume-3899116ad59e17"
+      ],
+      "css_consumer_ids": [],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.resume-c0728a36f2c5ec",
+      "name": "简历几何资源 c0728a36f2c5ec",
+      "path": "assets/svg/resume-c0728a36f2c5ec.svg",
+      "tags": [
+        "resume-c0728a36f2c5ec"
+      ],
+      "css_consumer_ids": [],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.resume-f932e5fdcc7fcc",
+      "name": "简历几何资源 f932e5fdcc7fcc",
+      "path": "assets/svg/resume-f932e5fdcc7fcc.svg",
+      "tags": [
+        "resume-f932e5fdcc7fcc"
+      ],
+      "css_consumer_ids": [],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    },
+    {
+      "id": "svg.retro-worn-ink",
+      "name": "复古磨损油墨",
+      "path": "assets/svg/retro-worn-ink.svg",
+      "tags": [
+        "retro-worn-ink"
+      ],
+      "css_consumer_ids": [
+        "surface.worn-ink"
+      ],
+      "ref_keys": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ]
+    }
+  ]
+}

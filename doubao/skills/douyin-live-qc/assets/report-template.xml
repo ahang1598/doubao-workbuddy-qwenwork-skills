@@ -1,0 +1,138 @@
+<title>{{账号名称}}直播间质检报告｜{{抽查日期时间}}</title>
+<callout emoji="📋" background-color="light-blue" border-color="blue">
+<p><b>抽查对象：</b>{{账号名称}}　<b>类目：</b>{{类目}}　<b>抽查时长：</b>{{N}}分钟　<b>抽查时间：</b>{{起止时间}}</p>
+<p><b>综合评分：</b>{{X.X}}/10（{{等级}}）　<b>合规风险：</b>高风险{{N}}项、中风险{{N}}项</p>
+</callout>
+<h1>一、基本信息</h1>
+<table>
+<colgroup><col width="120"/><col width="480"/></colgroup>
+<tbody>
+<tr><td background-color="light-gray"><b>账号名称</b></td><td>{{账号名称}}（房间号 {{room_id}}）</td></tr>
+<tr><td background-color="light-gray"><b>产品类目</b></td><td>{{类目，如 apparel/software/food/beauty/general}}</td></tr>
+<tr><td background-color="light-gray"><b>直播间链接</b></td><td><a href="https://live.douyin.com/{{room_id}}">https://live.douyin.com/{{room_id}}</a></td></tr>
+<tr><td background-color="light-gray"><b>抽查时段</b></td><td>{{起止时间}}</td></tr>
+<tr><td background-color="light-gray"><b>主推商品/服务</b></td><td>{{商品名称与价格，或服务/会员名称与价格}}</td></tr>
+<tr><td background-color="light-gray"><b>主播配置</b></td><td>{{单人/双人，主播特征}}</td></tr>
+<tr><td background-color="light-gray"><b>飞书妙记</b></td><td><a href="https://bytedance.larkoffice.com/minutes/{{minute_token}}">点击查看完整逐字稿</a></td></tr>
+<tr><td background-color="light-gray"><b>录制文件</b></td><td>{{文件名}}（{{大小}}，1080×1920）</td></tr>
+<tr><td background-color="light-gray"><b>质检范围</b></td><td>{{本次质检覆盖的方面，如：全面质检 / 画面检查+话术合规 / 仅售后与价格；未检查的维度注明"本次未检查"}}</td></tr>
+</tbody>
+</table>
+<h1>二、SOP执行情况检查</h1>
+<!--
+  SOP 检查项说明：
+  以下为通用检查项，适用于所有类目。
+  根据实际类目，需将"产品/服务卖点介绍"和"售后/保障说明"替换为类目专属维度，
+  并可增加类目专属检查行。参考 qc-criteria.md 的"类目适配表"：
+  - apparel（服装）：产品参数介绍、尺码引导、售后政策口播、发货时效说明、颜色/款式讲解
+  - software（软件/会员）：功能介绍与边界说明、版本/套餐区别、退款/试用/续费说明
+  - food（食品）：成分/配料说明、保质期/储存/食用方法、售后政策口播
+  - beauty（美妆）：成分/功效说明、适用肤质/使用方法、售后政策口播
+  - general（通用）：使用以下通用项即可
+-->
+<table>
+<colgroup><col width="140"/><col width="70"/><col width="80"/><col width="310"/></colgroup>
+<thead><tr>
+<th background-color="light-gray">SOP检查项</th>
+<th background-color="light-gray">执行</th>
+<th background-color="light-gray">评分</th>
+<th background-color="light-gray">实际表现</th>
+</tr></thead>
+<tbody>
+<tr><td>产品/服务卖点介绍</td><td><span text-color="green"><b>✓</b></span></td><td>{{分}}</td><td>{{核心卖点是否讲清、是否有演示/案例、参数是否有据}}</td></tr>
+<tr><td>售后/保障说明</td><td><span text-color="green"><b>✓</b></span></td><td>{{分}}</td><td>{{退款/质保/价保/运费险等是否完整说明}}</td></tr>
+<tr><td>价格/优惠说明</td><td><span text-color="green"><b>✓</b></span></td><td>{{分}}</td><td>{{原价、活动价、折扣、使用条件是否清晰}}</td></tr>
+<tr><td>关注/粉丝团引导</td><td><span text-color="orange"><b>△</b></span></td><td>{{分}}</td><td>{{是否引导关注、粉丝团/专享券}}</td></tr>
+<tr><td>互动回应</td><td><span text-color="orange"><b>△</b></span></td><td>{{分}}</td><td>{{是否实际回应弹幕问题}}</td></tr>
+<tr><td>行动指令</td><td><span text-color="green"><b>✓</b></span></td><td>{{分}}</td><td>{{是否明确告诉观众点哪里、怎么买}}</td></tr>
+<!-- 在此插入类目专属检查行，如服装的"尺码引导""发货时效"，软件的"版本区别""退款试用"等 -->
+<tr><td><b>合规性</b></td><td><span text-color="red"><b>✗</b></span></td><td><b>{{分}}</b></td><td><b>{{N}}项高风险违规</b></td></tr>
+<tr><td>话术专业度</td><td><span text-color="orange"><b>△</b></span></td><td>{{分}}</td><td>{{重复度、口误、节奏情况}}</td></tr>
+<tr><td background-color="light-yellow"><b>综合评分</b></td><td background-color="light-yellow">—</td><td background-color="light-yellow"><b>{{X.X}}</b></td><td background-color="light-yellow">{{一句话总评}}</td></tr>
+</tbody>
+</table>
+<h1>三、画面检查结果（抽帧）</h1>
+<!--
+  画面检查为可选项：仅当用户在确认节点二选择了"画面检查"或"全面质检"时保留本章节，否则整节删除。
+  抽帧间隔需在下方注明；基于抽帧的检查不能替代逐帧审核。
+-->
+<callout emoji="🖼️" background-color="light-yellow" border-color="yellow">
+<p><b>检查方式：</b>每{{N}}秒抽一帧，共{{N}}帧。基于抽帧的画面检查不能覆盖全程，仅反映抽帧时刻的画面状态。</p>
+</callout>
+<table>
+<colgroup><col width="40"/><col width="100"/><col width="160"/><col width="200"/><col width="100"/></colgroup>
+<thead><tr>
+<th background-color="light-gray">序号</th>
+<th background-color="light-gray">时间点</th>
+<th background-color="light-gray">问题类型</th>
+<th background-color="light-gray">问题描述</th>
+<th background-color="light-gray">风险等级</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>{{mm:ss}}</td><td>{{贴片文字违规/价格标识/商品展示/导流元素/其他}}</td><td>{{具体问题，如"角标含'全网第一'字样"}}</td><td>{{高/中/低}}</td></tr>
+</tbody>
+</table>
+<p><span text-color="gray">未发现明显画面问题时，在此注明"抽帧范围内未发现明显画面违规"。</span></p>
+<h1>四、合规风险清单</h1>
+<h2>高风险（需立即整改）</h2>
+<table>
+<colgroup><col width="40"/><col width="150"/><col width="210"/><col width="200"/></colgroup>
+<thead><tr>
+<th background-color="light-gray">序号</th>
+<th background-color="light-gray">违规原话</th>
+<th background-color="light-gray">问题分析</th>
+<th background-color="light-gray">整改建议</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{{逐字稿原话，加引号}}</td>
+<td>{{为何违规 + 法条编号}}</td>
+<td>{{可直接替换的改写建议}}</td>
+</tr>
+</tbody>
+</table>
+<h2>中风险（需尽快整改）</h2>
+<table>
+<colgroup><col width="40"/><col width="150"/><col width="210"/><col width="200"/></colgroup>
+<thead><tr>
+<th background-color="light-gray">序号</th>
+<th background-color="light-gray">违规原话</th>
+<th background-color="light-gray">问题分析</th>
+<th background-color="light-gray">整改建议</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>{{原话}}</td><td>{{分析}}</td><td>{{建议}}</td></tr>
+</tbody>
+</table>
+<h1>五、亮点与改进建议</h1>
+<h2>值得肯定的三点</h2>
+<callout emoji="👍" background-color="light-green" border-color="green">
+<p><b>1. {{亮点标题}}。</b>{{具体表现 + 为何有价值，如能否作为培训案例}}</p>
+<p><b>2. {{亮点标题}}。</b>{{具体表现}}</p>
+<p><b>3. {{亮点标题}}。</b>{{具体表现}}</p>
+</callout>
+<h2>需要改进的方向</h2>
+<ul>
+<li><b>{{改进项}}（P0）：</b>{{问题描述 + 可执行的整改动作}}</li>
+<li><b>{{改进项}}（P1）：</b>{{问题描述 + 整改动作}}</li>
+</ul>
+<h2>与历史抽查的横向对比</h2>
+<table>
+<colgroup><col width="150"/><col width="120"/><col width="120"/><col width="210"/></colgroup>
+<thead><tr>
+<th background-color="light-gray">维度</th>
+<th background-color="light-gray">{{账号A}}</th>
+<th background-color="light-gray">{{账号B}}</th>
+<th background-color="light-gray">共性问题</th>
+</tr></thead>
+<tbody>
+<tr><td>综合评分</td><td>{{分}}</td><td>{{分}}</td><td>—</td></tr>
+<tr><td>合规性</td><td>{{分}}</td><td>{{分}}</td><td>{{共性违规}}</td></tr>
+</tbody>
+</table>
+<callout emoji="⚠️" background-color="light-red" border-color="red">
+<p><b>关键发现：</b>{{若多账号出现相同违规表述，明确指出问题在话术模板层面，建议从模板统一清理，比逐个培训主播更有效率}}</p>
+</callout>
+<hr/>
+<p><span text-color="gray">报告生成时间：{{时间}}　｜　质检依据：《广告法》《明码标价和禁止价格欺诈规定》《规范促销行为暂行规定》《侵害消费者权益行为处罚办法》《反不正当竞争法》</span></p>

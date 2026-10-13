@@ -1,0 +1,17 @@
+{
+  "id": "regression.application-optional-fields-rejected",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "普通申请不得主动增加姓名、学号、院系、申请人或日期字段。",
+  "candidate_output": "场地申请书\n申请人：[待补：姓名]\n学号：[待补：学号]\n院系：[待补：院系]\n申请日期：[待补：日期]",
+  "assertions": {
+    "required_substrings": ["场地申请书"],
+    "forbidden_substrings": ["申请人", "姓名", "学号", "院系", "申请日期"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": false, "forbidden_literals": []},
+  "expected_valid": false,
+  "expected_issue_codes": ["FORBIDDEN_TEXT_PRESENT"]
+}

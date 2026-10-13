@@ -1,0 +1,95 @@
+{
+ "purpose": "包内 gold 的数值指纹。用途只有一个：review 全绿时的**并排对照板**（M3）——回答「离好还差多远」，不判对错、不阻断。",
+ "measuredBy": "scripts/check.py --aesthetic 的 ref-board 原料，真实浏览器实测，不是估计值",
+ "app-home": {
+  "cliff": 1.3,
+  "radMid": 10,
+  "radLevels": 7,
+  "accentSat": 1,
+  "imgPct": 16.5,
+  "assets": 9,
+  "perScreen": 9,
+  "body": 15,
+  "profile": "app-screen"
+ },
+ "h5-cycle": {
+  "cliff": 4.9,
+  "radMid": 50,
+  "radLevels": 4,
+  "accentSat": 0.64,
+  "imgPct": 0,
+  "assets": 14,
+  "perScreen": 2.3,
+  "body": 16,
+  "profile": "h5"
+ },
+ "h5-qq2026": {
+  "cliff": 6.1,
+  "radMid": 3,
+  "radLevels": 8,
+  "accentSat": 1,
+  "imgPct": 3.1,
+  "assets": 18,
+  "perScreen": 1.8,
+  "body": 16,
+  "profile": "h5"
+ },
+ "web-pulse": {
+  "cliff": 13.5,
+  "radMid": 6,
+  "radLevels": 4,
+  "accentSat": 1,
+  "imgPct": 100,
+  "assets": 17,
+  "perScreen": 17,
+  "body": 16,
+  "profile": "web"
+ },
+ "console-api": {
+  "cliff": 2,
+  "radMid": 6,
+  "radLevels": 6,
+  "accentSat": 0.94,
+  "imgPct": 11.3,
+  "assets": 3,
+  "perScreen": 3,
+  "body": 14,
+  "profile": "web-console"
+ },
+ "screen-hotan": {
+  "cliff": 4,
+  "radMid": 50,
+  "radLevels": 3,
+  "accentSat": 1,
+  "imgPct": 40.6,
+  "assets": 3,
+  "perScreen": 3,
+  "body": 16,
+  "profile": "big-screen",
+  "viewport": "4001x2251"
+ },
+ "board-flow": {
+  "cliff": 3.1,
+  "radMid": 6,
+  "radLevels": 9,
+  "accentSat": 1,
+  "imgPct": 0,
+  "assets": 1,
+  "perScreen": 1,
+  "body": 14,
+  "profile": "spec-board",
+  "viewport": "3400x760"
+ },
+ "longimg-summit": {
+  "cliff": 2.9,
+  "radMid": 14,
+  "radLevels": 5,
+  "accentSat": 1,
+  "imgPct": 5.4,
+  "assets": 2,
+  "perScreen": 2,
+  "body": 28,
+  "profile": "long-image",
+  "viewport": "750x4200"
+ }
+}

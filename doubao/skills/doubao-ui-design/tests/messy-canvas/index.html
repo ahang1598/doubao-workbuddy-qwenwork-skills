@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>版面工艺门的阳性对照</title>
+<!--
+  这份文件的职责是**被抓出来**。
+
+  它复刻的是手工把三份 doc 从"乱"改到"好多了"之前的那一版：
+  技术上全对、所有旧门都是绿的，而用户一眼说"乱"。
+  四个毛病各对应一条门，缺任何一条都说明那条门是摆设：
+
+    E1 孤儿行     四宫格 4 项、关键屏 6 项，用 auto-fit → 820px 下排成 3+1 / 5+1
+    E2 贴边       padding:0 4px —— 正文左边距只有 4px
+    E4 转义残留   minmax(min(100%%,250px),1fr) 里的 %% 是非法值，
+                  浏览器**静默丢弃整条声明**，网格塌成一列，没有任何报错
+    E5 示例字折行 字阶示例在窄列里断成两行，看起来像坏了
+    E6 声明没生效 .gain 标签上写了 --cols:3，实际渲染 1 列——写了但没生效
+
+  改这份文件之前先想清楚：它变绿了，不代表包变好了，代表门瞎了。
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.cv{
+  --ink:#14161A; --sub:#5A6070; --line:#E3E1DA; --acc:#FF3B14;
+  --mono:ui-monospace,Menlo,monospace;
+  width:100%; max-width:980px; margin:0 auto; background:#fff; color:var(--ink);
+  font-family:-apple-system,"PingFang SC",system-ui,sans-serif;
+  font-size:15px; line-height:1.78;
+  padding:0 4px 48px;                 /* E2：整篇正文跟着只有 4px */
+}
+.topbar{height:5px;background:var(--acc);margin:0 -4px 26px}
+.sec{padding-top:56px}
+.sec-top{border-top:2px solid var(--ink);padding-top:20px;
+  display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:baseline}
+.sn{font:800 30px/1 var(--mono);color:#B3260A}
+.sec-top h2{font-size:26px;font-weight:800}
+.lede{font-size:16px;margin-top:22px;max-width:38em}   /* E3：上限 980 而行宽 38em */
+
+/* E1：列数随宽度浮动，控制不住 */
+.quad{display:grid;gap:0 38px;margin-top:26px;border-top:1px solid var(--line);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.quad>div{padding:22px 22px 22px 0;border-bottom:1px solid var(--line)}
+.screens{display:grid;gap:18px 14px;margin-top:24px;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr))}
+.screens figure{margin:0;background:#EEE;min-height:120px}
+
+/* E4：这一条是从做 % 格式化的文件抄过来的，%% 原样留下了。
+   浏览器不会报错，只是把整条 grid-template-columns 丢掉，于是塌成一列。 */
+.gain{display:grid;gap:0 34px;margin-top:26px;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%%,220px),1fr))}
+.gain>div{padding:22px 20px 22px 0;border-bottom:1px solid var(--line)}
+
+/* E5：没有 nowrap，示例字在窄列里断行 */
+.ts{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:5px 0}
+</style>
+</head>
+<body>
+<div class="cv">
+  <div class="topbar"></div>
+
+  <section class="sec">
+    <div class="sec-top"><div class="sn">01</div><h2>我们怎么理解这件事</h2></div>
+    <p class="lede">这一段正文左边几乎顶到画布边缘，右边却空着一大块。
+      单看每个元素都没问题，合起来就是"没排版"。这正是所有门都绿、用户一眼说乱的样子。</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-top"><div class="sn">02</div><h2>视觉语言</h2></div>
+    <div class="quad">
+      <div><h4>色板</h4><div class="ts"><b>Aa 骨色画布底</b><small>01</small></div></div>
+      <div><h4>字阶</h4><div class="ts"><b>Aa 说明文字与正文和标题共用一套</b><small>02</small></div></div>
+      <div><h4>圆角</h4><div class="ts"><b>Aa 可点元素才是圆的</b><small>03</small></div></div>
+      <div><h4>栅格</h4><div class="ts"><b>Aa 缝隙只留一线</b><small>04</small></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-top"><div class="sn">03</div><h2>关键界面</h2></div>
+    <div class="screens">
+      <figure></figure><figure></figure><figure></figure>
+      <figure></figure><figure></figure><figure></figure>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-top"><div class="sn">04</div><h2>为什么这对你有效</h2></div>
+    <div class="gain" style="--cols:3">
+      <div><h4>转化</h4><p>这一栏本该是三列并排。</p></div>
+      <div><h4>留存</h4><p>但上面那条声明里有转义残留。</p></div>
+      <div><h4>品牌</h4><p>于是它静默塌成了一列，而且没有任何报错。</p></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

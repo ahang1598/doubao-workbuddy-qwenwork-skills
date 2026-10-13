@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "school": null,
+    "campus": "unknown",
+    "interests": [],
+    "personality_preferences": [],
+    "time": {
+      "hours_per_week_available": null,
+      "available_periods": [],
+      "busy_periods": []
+    },
+    "skills": {
+      "have": [],
+      "want_to_learn": []
+    },
+    "goals": [],
+    "hard_constraints": {
+      "max_hours_per_week": null,
+      "exclude_tags": [],
+      "max_fee": null,
+      "cross_campus_ok": true
+    }
+  },
+  "clubs": [],
+  "weights": {
+    "interest_fit": 0.3,
+    "goal_fit": 0.2,
+    "environment_fit": 0.15,
+    "skill_fit": 0.15,
+    "time_fit": 0.2
+  },
+  "normalization_notes": []
+}

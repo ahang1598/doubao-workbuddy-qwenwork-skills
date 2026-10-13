@@ -1,0 +1,92 @@
+{
+  "purpose": "外部最高质量样本的数值指纹。两个用途：① 门标定（任何 BLOCK 门 FAIL 它们即门错，见 tests/test_reference_gates.py）；② 审美裁决对照板的视觉与数值锚点。",
+  "measuredAt": "2026-07-25",
+  "method": "在真实浏览器里对首屏运行同源 JS（getComputedStyle + getBoundingClientRect + document.getAnimations），视口 1280×720。不是估计值。",
+  "caveats": [
+    "worstBodyContrast 只统计**背景可信**的文字（不含渐变/背景图/伪元素底色/媒体之上的文字）。cowboy 首屏白字压在深色照片上，naive 实现会量出 1.09:1 —— 这正是 text-invisible 门必须跳过不可信背景的原因。",
+    "thumbs/*.jpg 来自各站 og:image（品牌官方分享图，非首屏截图），仅作为对照板的视觉调性锚点，不作为版式还原依据。"
+  ],
+  "sites": [
+    {
+      "id": "cowboy",
+      "host": "cowboy.com",
+      "kind": "product-commerce",
+      "readAs": "满版真实照片 + 巨字标题 + 单个胶囊 CTA + 近单色深场",
+      "thumb": "thumbs/cowboy.jpg",
+      "measured": {
+        "surfaceColorCount": 3,
+        "surfaceFamily": "near-black",
+        "fontMin": 12,
+        "fontMedian": 16,
+        "displayMax": 72,
+        "typeRatio": 4.5,
+        "firstViewportTextBlocks": 15,
+        "imageAreaPct": 100,
+        "animationsRunning": 5,
+        "worstBodyContrastTrusted": null
+      }
+    },
+    {
+      "id": "lunge",
+      "host": "lunge.world",
+      "kind": "product-commerce",
+      "readAs": "近白场 + 一张巨大产品照居中 + 左下极小数据对（产地/价格）+ 一个黑胶囊 CTA；留白本身就是设计",
+      "thumb": "thumbs/lunge.jpg",
+      "measured": {
+        "surfaceColorCount": 2,
+        "surfaceFamily": "off-white",
+        "fontMin": 16,
+        "fontMedian": 16,
+        "displayMax": 36,
+        "typeRatio": 2.25,
+        "firstViewportTextBlocks": 14,
+        "imageAreaPct": 100,
+        "animationsRunning": 17,
+        "worstBodyContrastTrusted": 12.15
+      }
+    },
+    {
+      "id": "fuse",
+      "host": "fusewallet.com",
+      "kind": "product-landing",
+      "readAs": "近白场 + 居中一句大标题 + 一行副标 + 一个黑按钮 + 一张真实场景照（水泥地上的手机）；无 feature 三卡、无玻璃卡",
+      "thumb": "thumbs/fuse.jpg",
+      "measured": {
+        "surfaceColorCount": 1,
+        "surfaceFamily": "off-white",
+        "fontMin": 14,
+        "fontMedian": 16,
+        "displayMax": 64,
+        "typeRatio": 4.0,
+        "firstViewportTextBlocks": 4,
+        "imageAreaPct": 46.4,
+        "animationsRunning": 0,
+        "worstBodyContrastTrusted": null
+      }
+    },
+    {
+      "id": "mew",
+      "host": "mew.xyz",
+      "kind": "brand-poster",
+      "readAs": "两色（朱红/近黑）+ 巨字本身就是首屏内容 + 跑马灯字条 + 贴纸式插画；零卡片零渐变零阴影，滚动驱动整场景换色",
+      "thumb": null,
+      "measured": {
+        "surfaceColorCount": 2,
+        "surfaceFamily": "duotone",
+        "displayMaxViewportRatio": 0.62,
+        "imageAreaPct": 40,
+        "animationsRunning": 5,
+        "note": "首屏字高约占视口 62%；数值为目视量取，未跑同源 JS（页面滚动驱动，量测会被过渡态干扰）。"
+      }
+    }
+  ],
+  "calibration": {
+    "surfaceColorCount": {"observed": [1, 3], "rule": "顶级样本首屏底色不超过 3 种。>4 种进 REPORT，不阻断。"},
+    "typeRatio": {"observed": [2.25, 4.5], "rule": "2.25 也能得奖（lunge 的主角是产品照不是字）。所以字阶比只能是 WARN，绝不能设成硬门；旧门要求 ≥3.5 会判死 lunge。"},
+    "displayMax": {"observed": [36, 72], "rule": "绝对 px 下限不成立：lunge 只有 36px。正确判据是「巨字 ≥48px **或** 首屏媒体占比 ≥40%」二者其一。"},
+    "firstViewportTextBlocks": {"observed": [4, 15], "rule": "4 段也能得奖 —— 不得用「内容丰富度」当否决项。"},
+    "imageAreaPct": {"observed": [40, 100], "rule": "首屏媒体占比下沿 40%。"},
+    "animationsRunning": {"observed": [0, 17], "rule": "动效默认开，但 0 也可以是对的（fuse 是纯静态且极好）。所以「动效必须存在」只能针对 motionPlan.required=true 的稿。"},
+    "worstBodyContrast": {"observed": [12.15], "rule": "可信样本远高于 4.5。硬门定在 3.0，余量 >300%。"}
+  }
+}

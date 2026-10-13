@@ -1,0 +1,24 @@
+{
+  "title": "示例公司分时股价",
+  "subtitle": "示例数据：实际使用时替换全部价格点与来源",
+  "symbol": "00000.HK",
+  "market": "港股",
+  "currency": "HKD",
+  "timeframe": "分时",
+  "adjustment": "不复权",
+  "palette": "cn",
+  "theme": "terminal-light",
+  "previous_close": 100.0,
+  "price_decimals": 2,
+  "series": [
+    {"time": "2026-07-23 09:30", "close": 100.2, "average": 100.2, "volume": 120000},
+    {"time": "2026-07-23 10:00", "close": 101.1, "average": 100.6, "volume": 185000},
+    {"time": "2026-07-23 10:30", "close": 100.7, "average": 100.7, "volume": 99000},
+    {"time": "2026-07-23 11:00", "close": 102.0, "average": 101.0, "volume": 210000},
+    {"time": "2026-07-23 11:30", "close": 101.6, "average": 101.1, "volume": 132000}
+  ],
+  "events": [
+    {"time": "2026-07-23 10:30", "label": "示例事件"}
+  ],
+  "source_note": "示例模板；报告中必须替换为可核验的数据来源与查询截止时点"
+}

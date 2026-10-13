@@ -62,6 +62,8 @@ lark-cli im +shared-message-mget \
 6. **默认读取完整上下文：** 裸调用默认读取 Copied Message 快照、话题回复和 reaction，不要为了读取这些内容额外添加参数。只有用户明确说“只看转发快照”“不要后续回复”或“不要 reaction”时，才分别增加 `--no-thread-replies` 或 `--no-reactions`；两个要求可组合。
 7. **资源仍按需下载：** 只有用户明确要求查看、分析或保存图片、文件、音视频等二进制资源时才增加 `--download-resources`；该参数可以与任一 `--no-*` 组合。
 8. **资源下载使用专用能力：** 未启用 `--download-resources` 时，正文仍保留资源标记。Copied Message 快照资源必须通过本命令的专用资源 OAPI 下载，不要改用普通 `+messages-resources-download`。
+9. **回复原飞书消息：** 回复合并转发中的非豆包原飞书消息时，使用对应内层节点的 `lark_message_id`；需要定位上下文时参考同节点的 `chat_id` 与 `thread_id`。
+10. **拒绝回复豆包消息：** 若目标节点包含 `<doubao_message_id>`，不要调用飞书回复能力，直接说明无法通过飞书回复豆包消息。
 
 ## 请求与输出
 
@@ -71,6 +73,7 @@ lark-cli im +shared-message-mget \
 - **`origin_chat_id` 语义（回传原群必读）：**
   - `origin_chat_id` 是顶层子消息转发内容的**来源飞书群**。
   - **需要查询原始群聊信息或者把结果回传到原始群时，使用 `origin_chat_id`。**
+- 非豆包内层节点会在正文前输出安全编码的 `<lark_message_id>...</lark_message_id>`、非空 `<chat_id>...</chat_id>` 与非空 `<thread_id>...</thread_id>`，供定位原飞书消息与话题上下文；`shared` 豆包节点不输出这些飞书定位标签。
 - `shared` 子节点同时输出安全编码的 `<doubao_message_id>...</doubao_message_id>` 与 `<doubao_sender_id id_type="...">...</doubao_sender_id>`。后者直接使用同一 OAPI 节点的 `sender.id` / `sender.id_type`，不补拉联系人或其它接口；普通消息和普通数字正文不会增加这两个标签。
 - 普通受支持消息类型继续使用既有 converter。
 - 所有 singleton 主响应与默认 thread 增强共享全命令 200 节点、32 层树深、单条正文 160 KiB、累计正文 8 MiB 和最终输出 16 MiB 上限；主快照超限在 formatter/Output 前整批失败，不能按 Copied ID 重置预算。

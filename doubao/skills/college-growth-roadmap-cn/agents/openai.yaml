@@ -1,0 +1,5 @@
+interface:
+  display_name: "大学四年成长路线图与节点核验"
+  short_description: "规划从当前学期到毕业的关键节点，并核验动态资格与政策依据"
+  display_description: "把升学、就业、资格与目标城市准备整理为跨学期路线图，并区分当前证据、历史参考和待核验事项"
+  default_prompt: "使用 $college-growth-roadmap-cn 为我制定从当前学期到毕业的成长路线图，并标出必须核验的官方节点。"

@@ -1,0 +1,25 @@
+{
+  "title": "示例公司日 K",
+  "subtitle": "示例数据：实际使用时替换全部 OHLC 与来源",
+  "symbol": "000001.SZ",
+  "market": "A股",
+  "currency": "CNY",
+  "timeframe": "日 K",
+  "adjustment": "前复权",
+  "palette": "cn",
+  "theme": "terminal-light",
+  "ma_windows": [3, 5],
+  "show_volume": true,
+  "series": [
+    {"date": "2026-07-14", "open": 10.00, "high": 10.45, "low": 9.88, "close": 10.32, "volume": 1200000},
+    {"date": "2026-07-15", "open": 10.30, "high": 10.66, "low": 10.12, "close": 10.51, "volume": 1450000},
+    {"date": "2026-07-16", "open": 10.50, "high": 10.58, "low": 10.08, "close": 10.20, "volume": 1320000},
+    {"date": "2026-07-17", "open": 10.18, "high": 10.80, "low": 10.10, "close": 10.72, "volume": 1760000},
+    {"date": "2026-07-20", "open": 10.70, "high": 11.05, "low": 10.55, "close": 10.94, "volume": 1980000},
+    {"date": "2026-07-21", "open": 10.96, "high": 11.20, "low": 10.71, "close": 10.80, "volume": 1540000}
+  ],
+  "events": [
+    {"date": "2026-07-17", "label": "示例公告"}
+  ],
+  "source_note": "示例模板；报告中必须替换为可核验的 OHLC、复权口径与查询截止时点"
+}

@@ -1,0 +1,10 @@
+# 评审、证据与打包产物
+artifacts/
+evidence/
+reviews/
+source/
+*.zip
+
+# 操作系统与压缩包元数据
+.DS_Store
+__MACOSX/

@@ -1,0 +1,92 @@
+{
+  "fixtures": [
+    {
+      "fixture_id": "sales-merge-plan-deal-strategy",
+      "source_slug": "plan-deal-strategy",
+      "claims": [{"claim_id": "c-deal", "claim": "机会阶段来自CRM快照", "claim_type": "fact", "critical": true, "object_id": "opp-1", "period": "2026-Q3", "unit": null, "source_ids": ["crm-opp-1"], "source_tier": "crm_truth", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-deal", "evidence_type": "crm_snapshot", "source_id": "crm-opp-1"}],
+      "facts": {"deal_anchor": "opp-1", "truth_source": "crm_truth", "actions": [{"action_id": "a1", "risk_id": "r1"}]}
+    },
+    {
+      "fixture_id": "sales-merge-build-competitive-brief",
+      "source_slug": "build-competitive-brief",
+      "claims": [{"claim_id": "c-comp", "claim": "竞品是否在场尚未确认", "claim_type": "unknown", "critical": true, "object_id": "opp-2", "period": "2026-Q3", "unit": null, "source_ids": [], "source_tier": "lead_only", "confidence": "low", "conflict_state": "open"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-comp", "evidence_type": "customer_note", "source_id": "note-2"}],
+      "facts": {"competitor_presence": "unconfirmed", "posture": "预防性应对", "unsupported_claims": [], "禁用表述": ["不要声称竞品已入围"]}
+    },
+    {
+      "fixture_id": "sales-merge-build-business-case",
+      "source_slug": "build-business-case",
+      "claims": [{"claim_id": "c-value", "claim": "客户价值输入按证据状态分层", "claim_type": "fact", "critical": true, "object_id": "opp-3", "period": "12m", "unit": "CNY", "source_ids": ["customer-value-sheet"], "source_tier": "customer_primary", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-value", "evidence_type": "customer_workbook", "source_id": "customer-value-sheet"}],
+      "facts": {"input_labels": ["Known", "Inferred", "Assumed", "Missing"], "calculation_tool": "roi_value_model"}
+    },
+    {
+      "fixture_id": "sales-merge-analyze-account-signals",
+      "source_slug": "analyze-account-signals",
+      "claims": [{"claim_id": "c-signal", "claim": "账户信号相对前次快照发生变化", "claim_type": "inference", "critical": false, "object_id": "account-4", "period": "2026-07", "unit": null, "source_ids": ["crm-account-4", "snapshot-prev-4"], "source_tier": "crm_truth", "confidence": "medium", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-signal", "evidence_type": "account_signal", "source_id": "snapshot-prev-4"}],
+      "facts": {"delta_claimed": true, "prior_snapshot_id": "snapshot-prev-4", "crm_overridden": false}
+    },
+    {
+      "fixture_id": "sales-merge-enrich-company-contact",
+      "source_slug": "enrich-company-and-contact-data",
+      "claims": [{"claim_id": "c-enrich", "claim": "输入集合逐项保留", "claim_type": "calculation", "critical": true, "object_id": "list-5", "period": "2026-07-24", "unit": "records", "source_ids": ["input-list-5"], "source_tier": "primary", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-enrich", "evidence_type": "identity_resolution", "source_id": "input-list-5"}],
+      "facts": {"input_ids": ["row-1", "row-2", "row-3"], "output_ids": ["row-1", "row-2", "row-3"], "unresolved_separate": true}
+    },
+    {
+      "fixture_id": "sales-merge-prioritize-accounts",
+      "source_slug": "prioritize-accounts",
+      "claims": [{"claim_id": "c-priority", "claim": "账户分桶基于可比字段和抑制规则", "claim_type": "calculation", "critical": true, "object_id": "book-6", "period": "2026-W30", "unit": "accounts", "source_ids": ["crm-book-6"], "source_tier": "crm_truth", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-priority", "evidence_type": "account_book", "source_id": "crm-book-6"}],
+      "facts": {"accounts": [{"account_id": "a1", "bucket": "优先跟进"}, {"account_id": "a2", "bucket": "持续观察"}, {"account_id": "a3", "bucket": "暂停触达"}], "unknown_ranked": false}
+    },
+    {
+      "fixture_id": "sales-merge-review-forecast",
+      "source_slug": "review-forecast",
+      "claims": [{"claim_id": "c-forecast", "claim": "预测移动来自两期真实快照", "claim_type": "calculation", "critical": true, "object_id": "book-7", "period": "2026-Q3", "unit": "USD", "source_ids": ["snapshot-current-7", "snapshot-prior-7"], "source_tier": "crm_truth", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-forecast", "evidence_type": "forecast_snapshot_pair", "source_id": "snapshot-current-7"}],
+      "facts": {"current_snapshot_id": "snapshot-current-7", "prior_snapshot_id": "snapshot-prior-7", "movement_claimed": true, "probabilities": [0.2, 0.6, 1.0], "calculation_tool": "pipeline_forecast"}
+    },
+    {
+      "fixture_id": "sales-merge-company-research",
+      "source_slug": "sales-company-research",
+      "claims": [{"claim_id": "c-research", "claim": "公司公开事实用于形成触达假设", "claim_type": "inference", "critical": false, "object_id": "account-8", "period": "2026-07", "unit": null, "source_ids": ["official-company-8"], "source_tier": "official", "confidence": "medium", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-research", "evidence_type": "official_company_page", "source_id": "official-company-8"}],
+      "facts": {"sourced_context": true, "draft_only": true, "sent": false}
+    },
+    {
+      "fixture_id": "sales-mode-customer-quotes",
+      "source_slug": "find-customer-quotes",
+      "claims": [{"claim_id": "c-quote", "claim": "客户逐字表达实施担忧", "claim_type": "fact", "critical": true, "object_id": "call-9", "period": "2026-07-20", "unit": null, "source_ids": ["transcript-9"], "source_tier": "customer_primary", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-quote", "evidence_type": "transcript", "source_id": "transcript-9"}],
+      "facts": {"quote": {"verbatim": "我们担心实施周期太长", "source_text": "客户：我们担心实施周期太长，希望先明确资源。", "speaker_state": "confirmed_external", "source_id": "transcript-9"}}
+    },
+    {
+      "fixture_id": "sales-mode-internal-sources",
+      "source_slug": "find-key-internal-sources",
+      "claims": [{"claim_id": "c-internal", "claim": "维护中的安全评审文档是当前权威入口", "claim_type": "fact", "critical": false, "object_id": "topic-10", "period": "2026-07-24", "unit": null, "source_ids": ["maintained-doc-10"], "source_tier": "primary", "confidence": "high", "conflict_state": "none"}],
+      "available_artifacts": ["merge_coverage_result", "claim_ledger", "evidence_compact"],
+      "evidence": [{"evidence_id": "e-internal", "evidence_type": "maintained_internal_doc", "source_id": "maintained-doc-10"}],
+      "facts": {"read_only": true, "canonical_source": true, "message_sent": false, "ownership_changed": false}
+    }
+  ],
+  "connector_fixtures": [
+    {"fixture_id": "sales-connector-salesforce", "source_slug": "salesforce", "disposition": "connector_or_tool", "layer": "support", "business_decision": false},
+    {"fixture_id": "sales-connector-hubspot", "source_slug": "hubspot", "disposition": "connector_or_tool", "layer": "support", "business_decision": false},
+    {"fixture_id": "sales-connector-apollo", "source_slug": "apollo", "disposition": "connector_or_tool", "layer": "support", "business_decision": false},
+    {"fixture_id": "sales-connector-zoominfo", "source_slug": "zoominfo", "disposition": "connector_or_tool", "layer": "support", "business_decision": false},
+    {"fixture_id": "sales-connector-ask-user", "source_slug": "answers-ask-user-input", "disposition": "connector_or_tool", "layer": "support", "business_decision": false},
+    {"fixture_id": "sales-connector-index", "source_slug": "index", "disposition": "connector_or_tool", "layer": "support", "business_decision": false}
+  ]
+}

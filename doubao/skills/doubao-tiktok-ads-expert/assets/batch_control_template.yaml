@@ -1,0 +1,51 @@
+# ⚡ TikTok Ads 批量调控需求模板
+# 填写后交给 AI 执行，所有字段不含凭证信息
+# 凭证由 MCP 客户端自动从本地加密存储读取
+
+# ==================== 通用配置 ====================
+
+# 调控层级：campaign / adgroup / ad
+level: "adgroup"
+
+# 操作类型：status / budget / bid / rename
+action: "status"
+
+# 目标实体指定方式（二选一）
+# 方式一：直接指定 ID 列表
+entity_ids:
+  # - "123456789"
+  # - "987654321"
+
+# 方式二：按条件筛选（entity_ids 为空时生效）
+filter:
+  # campaign_id: "123456"          # 限定所属 Campaign（adgroup/ad 层级）
+  # adgroup_id: "456789"           # 限定所属 Ad Group（ad 层级）
+  # operation_status: "ENABLE"     # 按当前状态筛选
+  # campaign_name: "Summer_2026"   # 按名称筛选
+
+# ==================== 操作参数（按 action 类型填写） ====================
+
+# --- action: status （批量状态调控） ---
+status:
+  operation: "disable"              # enable / disable / delete
+
+# --- action: budget （批量预算调整，仅 campaign/adgroup） ---
+budget:
+  mode: "percent"                   # set=绝对值 / percent=百分比 / delta=增减量
+  value: 20                         # set: 目标金额; percent: 正负百分比; delta: 正负金额
+  # budget_mode: "BUDGET_MODE_DAY"  # 可选，同时修改预算模式
+
+# --- action: bid （批量出价调整，仅 adgroup） ---
+bid:
+  mode: "set"                       # set / percent / delta
+  value: 5.0                        # 目标出价金额
+  # bid_type: "BID_TYPE_CUSTOM"     # 可选，同时切换出价类型
+
+# --- action: rename （批量重命名） ---
+rename:
+  pattern: "prefix:US_"             # prefix:X / suffix:X / replace:旧->新 / sequence:X / 直接名称
+
+# ==================== 执行选项 ====================
+options:
+  dry_run: true                     # true=预演（默认）/ false=真实执行
+  verbose: true                     # 是否展示全部明细

@@ -1,0 +1,20 @@
+{
+  "id": "negative.policy-query-no-output",
+  "category": "negative",
+  "expected_route": "not_trigger",
+  "description": "纯政策查询不应生成校园文书候选输出。",
+  "candidate_output": "",
+  "assertions": {
+    "required_substrings": [],
+    "forbidden_substrings": ["申请书", "尊敬的"],
+    "forbidden_regexes": [],
+    "max_output_chars": 100,
+    "allow_empty_output": true
+  },
+  "privacy": {
+    "scan_standard_patterns": true,
+    "forbidden_literals": []
+  },
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

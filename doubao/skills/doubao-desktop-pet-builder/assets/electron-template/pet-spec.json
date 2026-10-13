@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 5,
+  "app": {
+    "name": "圆圆桌宠",
+    "appId": "com.example.roundpet",
+    "version": "1.0.0",
+    "language": "zh-CN"
+  },
+  "targets": {
+    "windows": { "enabled": true, "arch": "x64" },
+    "macos": { "enabled": false, "arch": "current" }
+  },
+  "character": {
+    "inputType": "single-image",
+    "coreAsset": "core-ip/core-ip.png",
+    "displayName": "圆圆",
+    "archetype": "cat",
+    "personality": ["亲人", "贪吃", "有点慵懒"],
+    "preserveTraits": ["圆脸", "大眼睛", "蓬松尾巴"],
+    "style": "balanced-cartoon",
+    "mirrorSafe": false
+  },
+  "assetPipeline": {
+    "backgroundMode": "semantic-cutout",
+    "segmentationBackend": "auto",
+    "subjectKind": "illustration",
+    "generationBackground": "transparent-grid",
+    "backgroundTolerance": 28,
+    "edgeFeather": 12,
+    "safeMargin": 24,
+    "targetOccupancy": 0.78
+  },
+  "experience": {
+    "theme": {
+      "primary": "#FF8A24",
+      "accent": "#FFC987",
+      "background": "#FFF7ED",
+      "surface": "#FFFFFF",
+      "text": "#3A2A20",
+      "muted": "#9A7B6A",
+      "cornerRadius": 24
+    },
+    "petSizing": {
+      "baseWindowPx": 220,
+      "defaultScale": 0.8
+    },
+    "interactions": [
+      {
+        "id": "pet-head",
+        "emoji": "💗",
+        "label": "摸摸头",
+        "stateId": "pet",
+        "durationMs": 1500,
+        "affectionGain": 3,
+        "feedback": ["好舒服呀", "再摸一下嘛"]
+      },
+      {
+        "id": "feed-snack",
+        "emoji": "🐟",
+        "label": "喂小鱼干",
+        "stateId": "eat",
+        "durationMs": 1800,
+        "affectionGain": 5,
+        "feedback": ["好吃！", "谢谢你的小鱼干"]
+      },
+      {
+        "id": "play-toy",
+        "emoji": "🪶",
+        "label": "玩逗猫棒",
+        "stateId": "play",
+        "durationMs": 1600,
+        "affectionGain": 4,
+        "feedback": ["抓到啦！", "再玩一次吧"]
+      }
+    ]
+  },
+  "motion": {
+    "breathing": { "enabled": true, "periodMs": 3200, "scaleX": 0.012, "scaleY": 0.022 },
+    "squashStretch": { "enabled": true, "durationMs": 320, "intensity": 0.08 },
+    "idleIntervalMs": { "min": 7000, "max": 13000 }
+  },
+  "features": {
+    "transparentWindow": true,
+    "drag": true,
+    "tray": true,
+    "edgeSnap": true,
+    "reminders": true,
+    "interactions": true,
+    "relationship": true,
+    "filePocket": false,
+    "dashboard": true,
+    "typingReaction": false,
+    "autonomousMovement": false
+  },
+  "states": [
+    {
+      "id": "idle",
+      "triggers": ["app:start", "ambient:idle"],
+      "frames": ["idle-01.png", "idle-02.png", "idle-03.png", "idle-04.png"],
+      "frameDurationMs": 900,
+      "loop": true,
+      "priority": 10,
+      "interrupt": "resume",
+      "cooldownMs": 0,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": false
+    },
+    {
+      "id": "blink",
+      "triggers": ["ambient:blink"],
+      "frames": ["blink-01.png", "blink-02.png", "blink-03.png", "blink-04.png", "blink-05.png"],
+      "frameDurationMs": 75,
+      "loop": false,
+      "priority": 30,
+      "interrupt": "restart",
+      "cooldownMs": 2500,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": true
+    },
+    {
+      "id": "happy",
+      "triggers": ["pointer:tap"],
+      "frames": ["happy-01.png", "happy-02.png", "happy-03.png", "happy-04.png", "happy-05.png"],
+      "frameDurationMs": 110,
+      "loop": false,
+      "priority": 70,
+      "interrupt": "restart",
+      "cooldownMs": 300,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": true
+    },
+    {
+      "id": "notify",
+      "triggers": ["reminder:due"],
+      "frames": ["notify-01.png", "notify-02.png", "notify-03.png", "notify-04.png", "notify-05.png"],
+      "frameDurationMs": 120,
+      "loop": false,
+      "priority": 95,
+      "interrupt": "restart",
+      "cooldownMs": 800,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": true
+    },
+    {
+      "id": "peek",
+      "triggers": ["window:edge-snap"],
+      "frames": ["peek-01.png", "peek-02.png", "peek-03.png", "peek-04.png", "peek-05.png"],
+      "frameDurationMs": 120,
+      "loop": false,
+      "priority": 55,
+      "interrupt": "resume",
+      "cooldownMs": 1800,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": false
+    },
+    {
+      "id": "pet",
+      "triggers": ["interaction:pet-head"],
+      "frames": ["pet-01.png", "pet-02.png", "pet-03.png", "pet-04.png", "pet-05.png"],
+      "frameDurationMs": 120,
+      "loop": true,
+      "priority": 85,
+      "interrupt": "restart",
+      "cooldownMs": 250,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": true
+    },
+    {
+      "id": "eat",
+      "triggers": ["interaction:feed-snack"],
+      "frames": ["eat-01.png", "eat-02.png", "eat-03.png", "eat-04.png", "eat-05.png"],
+      "frameDurationMs": 120,
+      "loop": true,
+      "priority": 85,
+      "interrupt": "restart",
+      "cooldownMs": 300,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": true
+    },
+    {
+      "id": "play",
+      "triggers": ["interaction:play-toy"],
+      "frames": ["play-01.png", "play-02.png", "play-03.png", "play-04.png", "play-05.png"],
+      "frameDurationMs": 110,
+      "loop": true,
+      "priority": 85,
+      "interrupt": "restart",
+      "cooldownMs": 300,
+      "direction": "neutral",
+      "anchor": { "x": 0.5, "y": 0.95 },
+      "mirrorSafe": false
+    }
+  ],
+  "storage": {
+    "userData": "app-user-data",
+    "filePocket": "documents-app-name"
+  },
+  "build": {
+    "windows": { "arch": "x64", "installer": "squirrel", "portable": "zip" },
+    "macos": { "arch": "current", "diskImage": "dmg", "portable": "zip" },
+    "timeoutMinutes": 20,
+    "unsigned": true
+  }
+}

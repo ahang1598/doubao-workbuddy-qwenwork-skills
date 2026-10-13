@@ -1,0 +1,56 @@
+{
+  "skill_name": "cvp-breakeven",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Price 1,200, variable cost 780, fixed costs 8,400,000/year. How many units to break even, and how many for 2,100,000 after-tax profit at 30% tax?",
+      "expected_output": "Contribution 420/unit. Breakeven 20,000 units (24,000,000 revenue). After-tax target needs pre-tax 3,000,000 -> (8,400,000+3,000,000)/420 = 27,143 units.",
+      "assertions": [
+        "Breakeven of 20,000 units",
+        "Grosses up the after-tax target to 3,000,000 pre-tax",
+        "Target volume of approximately 27,143 units",
+        "Calculations verified with code"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "We're at 65% capacity. A one-off export order: 8,000 units at 450 when our full cost is 520 (variable 380, allocated fixed 140). Extra export packaging 25/unit. Take it?",
+      "expected_output": "Incremental analysis: contribution = (450-380-25) x 8,000 = 360,000 positive -> accept, given spare capacity and no domestic price spoilage. Allocated fixed cost is irrelevant.",
+      "assertions": [
+        "Ignores allocated fixed cost in the decision",
+        "Computes incremental contribution of 360,000",
+        "Conditions acceptance on spare capacity and market separation",
+        "Recommends accepting with stated caveats"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Sales wants a 7% price cut claiming volume will rise 12%. CM ratio is 32%. Does the math work?",
+      "expected_output": "Required volume increase to hold contribution = 7/(32-7) = 28%. The promised 12% falls far short -> contribution falls. Show the calculation and the elasticity the plan implicitly assumes.",
+      "assertions": [
+        "Computes required volume growth of 28% using the CM-ratio formula",
+        "Concludes 12% is insufficient and contribution falls",
+        "Quantifies the contribution loss at the promised 12%",
+        "Frames the burden of proof on demonstrated elasticity"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "From the attached unit economics (evals/files/product_economics.csv): compute breakeven units and sales, units needed for the target profit, margin of safety at current volume, and degree of operating leverage.",
+      "expected_output": "Breakeven 6,000 units ($300,000); target requires 8,000 units; MOS 25%; DOL 4.0.",
+      "assertions": [
+        "Breakeven 6,000 units",
+        "8,000 units for the $40,000 target profit",
+        "Margin of safety 25%",
+        "DOL approx 4.0",
+        "Computes with code"
+      ],
+      "files": [
+        "evals/files/product_economics.csv"
+      ]
+    }
+  ]
+}

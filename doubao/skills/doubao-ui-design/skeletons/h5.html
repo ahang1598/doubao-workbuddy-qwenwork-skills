@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#000000">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   移动端机箱。这里只有**容器与几何**：取景框、状态栏、分屏引擎、
+   进度、底部条、素材层、降级。全部来自 gold/h5-qq2026 里已经验证过的写法。
+
+   边界写死在这里，不要越过：
+     机箱可以复用，**人格不可以复用**。
+     这个文件里不出现任何具体配色、字体、圆角值、构图 ——
+     那些由 style.py 的六维签名逐案生成，由你手写。
+   判据：两个不同 query 的移动端产物，机箱代码可以相同，
+        视觉层 CSS Jaccard 必须 <=0.55（python3 scripts/style.py --diverge A B）。
+
+   这里最容易犯的错是**把桌面官网压窄**当成 H5：--maxw:1180px、
+   分屏高度 330 到 895 不等、最大字号 30px。那不是 H5。
+   H5 的定义是：一屏 = 100dvh，一屏一件事，巨字，强入场，底部常驻操作条。
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --ink:#0A0A0F;            /* TODO 底色 —— 由 style.json 的 ground 决定，别停在纯黑 */
+  --paper:#F3EEE1;          /* TODO 文字色 */
+  --dim:rgba(243,238,225,.62);
+  --ease:cubic-bezier(.22,.75,.3,1);
+  --bar:76px;               /* 底部操作条高度，正文必须避开它 */
+  --scrim:.45;              /* 素材层暗场强度，压在图上的文字靠它拿到对比度 */
+
+  /* ── 取景框：机身与台面**都跟着设计方向走**，不是永远的黑机身 + 黑底 ──
+     规则：机身与台面跟着设计方向走，不能永远是黑机身；
+     台面可以做成有模糊效果的氛围场。
+     三种参考做法：水下蓝的雾场 / 森林绿的雾场 / 浅灰奶油场 —— 手机都是浅机身，
+     台面都是**大面积模糊的氛围**，不是一块平的纯色。台面是产品世界的延伸。
+
+     四组出厂预设，按 style.json 的 ground 选一组，然后**照着改**：
+       暗场   --frame:#14161C  --frame-2:#2A2E38  --stage-1:#131A2C --stage-2:#07080E
+       亮场   --frame:#FFFFFF  --frame-2:#E4E7EE  --stage-1:#EEF2F8 --stage-2:#D9DFEA
+       纸感   --frame:#F7F2E7  --frame-2:#DED5C2  --stage-1:#F3ECDD --stage-2:#DFD3BC
+       高饱和 --frame:#FFFFFF  --frame-2:#F0D7CB  --stage-1:#FFE2CE --stage-2:#F6B18A */
+  --frame:#14161C;          /* 机身 */
+  --frame-2:#2A2E38;        /* 机身外圈 */
+  --stage-1:#131A2C;        /* 台面近处 */
+  --stage-2:#07080E;        /* 台面远处 */
+  --halo-1:#7FA8FF;         /* TODO 模糊光斑一 —— 通常取强调色 */
+  --halo-2:#FF6B4A;         /* TODO 模糊光斑二 —— 第二色 */
+  --halo-a:.30;             /* 光斑强度；亮场调到 .22 左右，暗场可以到 .40 */
+  --stage-art:none;         /* 想让台面就是这个世界本身：url(assets/s1.jpg) */
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);overflow:hidden;
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;min-height:24px}
+img,svg{display:block}
+
+/* ── 桌面观看：套进手机取景框。评审在电脑上看，别让他看一张拉宽的页 ──
+   台面 = 底色渐变 + 两团大面积模糊光斑（+ 可选的世界大图）。
+   手机是**放在一个场里**的，不是贴在一块纯色上。 */
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  background:radial-gradient(130% 90% at 50% 8%,var(--stage-1),var(--stage-2) 72%)}
+.stage::before{content:"";position:absolute;inset:-18%;z-index:0;pointer-events:none;
+  opacity:var(--halo-a);filter:blur(90px);
+  background:
+    radial-gradient(38% 30% at 22% 24%,var(--halo-1),transparent 70%),
+    radial-gradient(42% 34% at 78% 74%,var(--halo-2),transparent 70%)}
+/* 把 --stage-art 指向首屏那张图，它会被放大并模糊 —— 场和内容是同一个世界。
+   参考图里"水下"和"森林"两张就是这么做的。 */
+.stage::after{content:"";position:absolute;inset:-12%;z-index:0;pointer-events:none;
+  background:var(--stage-art) center/cover no-repeat;filter:blur(46px) saturate(1.1);
+  opacity:.5}
+#app{position:relative;z-index:1;width:100%;height:100%;overflow:hidden;
+  background:var(--ink)}
+@media(min-width:760px){
+  #app{width:390px;height:min(844px,86vh);border-radius:44px;
+    box-shadow:0 0 0 11px var(--frame),0 0 0 13px var(--frame-2),
+               0 44px 100px rgba(0,0,0,.42)}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:112px;height:26px;border-radius:15px;background:var(--frame);z-index:60}
+}
+@media(max-width:759px){.notch{display:none}.stage::before,.stage::after{display:none}}
+
+/* ── 仿真状态栏：纯 CSS clip-path 画的信号/WiFi/电池 ── */
+.statusbar{position:absolute;top:0;left:0;right:0;z-index:55;height:44px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none;
+  font-size:13px;font-weight:600;color:var(--paper)}
+.sb-r{display:flex;align-items:center;gap:5px}
+.sb-r i{display:block;background:var(--paper);border-radius:1px}
+.sb-r .sig{width:15px;height:10px;
+  clip-path:polygon(0 72%,18% 72%,18% 100%,0 100%,0 72%,27% 46%,45% 46%,45% 100%,27% 100%,
+    27% 46%,54% 22%,72% 22%,72% 100%,54% 100%,54% 22%,82% 0,100% 0,100% 100%,82% 100%)}
+.sb-r .wifi{width:14px;height:10px;
+  clip-path:polygon(50% 100%,32% 74%,68% 74%,50% 100%,50% 66%,20% 40%,28% 30%,72% 30%,80% 40%,
+    50% 66%,50% 24%,8% 12%,14% 2%,86% 2%,92% 12%)}
+.sb-r .bat{width:22px;height:11px;border-radius:3px;background:none;position:relative;
+  box-shadow:inset 0 0 0 1px var(--paper)}
+.sb-r .bat::before{content:"";position:absolute;inset:2px;width:64%;
+  background:var(--paper);border-radius:1px}
+.sb-r .bat::after{content:"";position:absolute;right:-3px;top:3.5px;width:2px;height:4px;
+  background:var(--paper);border-radius:0 1px 1px 0}
+
+/* ── 顶部：眉标 + 页码 + N 段进度 ── */
+.top{position:absolute;top:0;left:0;right:0;z-index:50;pointer-events:none;
+  padding:calc(env(safe-area-inset-top) + 52px) 20px 0;
+  display:flex;align-items:center;justify-content:space-between}
+.pager{font-size:12px;letter-spacing:.1em;color:var(--dim)}
+.pager b{color:var(--paper);font-size:15px}
+.bars{position:absolute;top:calc(env(safe-area-inset-top) + 78px);left:20px;right:20px;
+  z-index:50;display:flex;gap:3px;pointer-events:none}
+.bars i{flex:1;height:2px;border-radius:2px;background:rgba(255,255,255,.18)}
+.bars i.on{background:var(--paper)}
+
+/* ── 分屏引擎：这四行是 H5 之所以是 H5 的地方，不要动 ── */
+#deck{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#deck::-webkit-scrollbar{display:none}
+.screen{
+  position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;
+  overflow:hidden;display:flex;flex-direction:column;justify-content:center;
+  /* 顶部给状态栏+眉标，底部给操作条。门会查"正文不被操作条压住" */
+  padding:calc(env(safe-area-inset-top) + 100px) 26px calc(var(--bar) + 26px);
+  isolation:isolate;
+}
+
+/* ── 素材层：生图**只能出矩形、没有透明底**，所以它唯一正确的角色是满版背景 ──
+   用法：
+     <section class="screen" data-t="3" style="--art:url(assets/scene-03.jpg)">
+       <div class="art"></div>        满版素材，object-fit:cover 的等价写法
+       <div class="scrim"></div>      可控暗场，保证压在图上的文字有对比度
+       <div class="content">…</div>   文字压在上面
+     </section>
+   .scrim 是必需件：没有它，压在图上的文字对比度不可控，
+   而对比度门会跳过"背景不可信"的文字 —— 等于没人管。
+   异形、图标、圆头像一律走 SVG / CSS clip-path / border-radius，不要拿生图当浮动元素：
+   矩形图贴上去必然带一圈白边。 */
+.art{position:absolute;inset:0;z-index:-2;background:var(--art) center/cover no-repeat}
+.scrim{position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(0,0,0,calc(var(--scrim) * .55)) 0%,
+                                     rgba(0,0,0,var(--scrim)) 100%)}
+.content{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px}
+
+/* 每屏一套色。十屏十色但底纹与质感共用一层 —— 换色不换人格。
+   TODO 按你的方案改；屏数不固定 10 屏。 */
+.screen[data-t="1"]{--bg1:#0A0F22;--bg2:#16224A;--key:#7FA8FF}
+.screen:not([style*="--art"])::before{content:"";position:absolute;inset:0;z-index:-2;
+  background:radial-gradient(120% 78% at 50% 8%,var(--bg2),var(--bg1) 62%,var(--ink))}
+
+/* ── 巨数字：门会查"每屏要有主角"（>=30px 巨字 或 >=20% 屏面积的画面）──
+   注意：单位标签如果是巨数字的**兄弟节点**，font-size 用 em 会按父级算。
+   实测事故：.26em 被算成 4.16px，六处单位全隐形。单位一律用绝对值。 */
+.num{font-weight:800;line-height:.82;letter-spacing:-.03em;
+  font-size:clamp(56px,22vw,110px)}
+.unit{font-size:22px;font-weight:700;margin-left:7px;color:var(--key)}
+
+/* ── 底部常驻条：上一页 / 继续 / 分享 三件套 + 安全区 ── */
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:50;display:flex;gap:10px;
+  align-items:center;padding:12px 20px calc(env(safe-area-inset-bottom) + 14px);
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.86) 42%)}
+.dock .ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.28)}
+.dock .next{flex:1;height:46px;border-radius:999px;background:var(--paper);
+  color:var(--ink);font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* ── Toast：每个副作用都要有一句解释 ──────────────────────────
+   用户点名 QQ 年报的一条优点：「分享跳转还会出现 Toast 解释发生了什么」。
+   两份参照案例各有 6 处 toast。骨架必须自带最小实现 ——
+   否则只有翻源码的人才拿得到，那是运气，不是机制。
+   最小实现在这里；说什么话由你定。 */
+.toast{position:absolute;left:50%;bottom:calc(var(--bar) + 26px);z-index:70;
+  transform:translate(-50%,14px);opacity:0;pointer-events:none;
+  max-width:78%;padding:11px 18px;border-radius:999px;
+  background:rgba(0,0,0,.82);color:var(--paper);font-size:13.5px;line-height:1.5;
+  transition:opacity .28s var(--ease),transform .28s var(--ease)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ── 开场壳：把等待做成内容 ────────────────────────────────────
+   gold/h5-qq2026 的开场是「插卡启动」——扫描线 + 逐行日志 + 进度条，
+   用户点名它「进入有仪式感」。这里只给**空壳与退场机制**，
+   内容由"借来的世界"填（一台旧机器 / 一个电视台 / 一次开机自检…）。
+   给满了，所有人的 H5 又会长一样。不要它就把 .intro 整段删掉。 */
+.intro{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;background:var(--ink);
+  transition:opacity .6s var(--ease),visibility .6s}
+.intro.off{opacity:0;visibility:hidden;pointer-events:none}
+
+/* ── 进屏才播 ── */
+.an{opacity:0;transform:translateY(22px);
+  transition:opacity .75s var(--ease),transform .75s var(--ease)}
+.live .an{opacity:1;transform:none}
+.live .an:nth-child(2){transition-delay:.1s}
+.live .an:nth-child(3){transition-delay:.2s}
+.live .an:nth-child(4){transition-delay:.3s}
+@media(prefers-reduced-motion:reduce){
+  .an{opacity:1!important;transform:none!important}*{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="stage"><div id="app">
+  <div class="notch"></div>
+
+  <div class="statusbar">
+    <span>__TIME__</span>
+    <span class="sb-r"><i class="sig"></i><i class="wifi"></i><i class="bat"></i></span>
+  </div>
+  <div class="top">
+    <div class="pager"><b id="pgNow">01</b> / <span id="pgAll">1</span></div>
+  </div>
+  <div class="bars" id="bars"></div>
+
+  <div id="deck">
+    <!-- 一屏一件事。屏数由需求定。每屏 data-t 换一套色。
+         **别让十屏共用一个骨架** —— 这是往期年度报告最容易犯的错。
+         换着来：满版素材压巨数字 / 居中人像 / 窗口容器 / 并置多数 / 词云 / 卡片。
+         要用满版素材就给 section 写 style="--art:url(assets/xx.jpg)"，
+         并把 .art + .scrim 两层放进去。 -->
+    <section class="screen" data-t="1">
+      <div class="content">
+        <div class="an">__KICKER__</div>
+        <h2 class="an">__TITLE__</h2>
+        <div class="an"><span class="num" data-n="0">0</span><span class="unit">__UNIT__</span></div>
+        <p class="an">__BODY__</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="dock">
+    <button class="ic" id="btnPrev" aria-label="上一页">↑</button>
+    <button class="next" id="btnNext">继续 ↓</button>
+    <button class="ic" id="btnShare" aria-label="分享">↗</button>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <!-- 开场壳。内容自己填（TODO），2.5 秒自退；不要就整段删掉。 -->
+  <div class="intro" id="intro"><!-- TODO 借来的那个世界怎么开场 --></div>
+
+</div></div>
+
+<script>
+const deck=document.getElementById('deck');
+const screens=[...document.querySelectorAll('.screen')];
+const bars=document.getElementById('bars');
+bars.innerHTML=screens.map(()=>'<i></i>').join('');
+const barEls=[...bars.children];
+document.getElementById('pgAll').textContent=String(screens.length).padStart(2,'0');
+let cur=0;
+const go=i=>screens[Math.max(0,Math.min(screens.length-1,i))]
+  .scrollIntoView({behavior:'smooth',block:'start'});
+/* 副作用要有一句解释 —— 分享 / 保存 / 复制之后告诉他刚刚发生了什么 */
+const toastEl=document.getElementById('toast');let toastT;
+function toast(msg){
+  toastEl.textContent=msg;toastEl.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('on'),1600);
+}
+const btnNext=document.getElementById('btnNext');
+function setCur(i){
+  cur=i;
+  document.getElementById('pgNow').textContent=String(i+1).padStart(2,'0');
+  barEls.forEach((b,k)=>b.classList.toggle('on',k<=i));
+  /* 控件文案响应当前状态：到末屏，"继续"变成"再看一遍"。
+     用户点名的那条 ——「到了末页，文案自动变成再看一遍，控件会响应当前状态」。
+     TODO 文案换成你这一稿的口吻，机制别删。 */
+  btnNext.textContent=(i===screens.length-1)?'再看一遍 ↺':'继续 ↓';
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.intersectionRatio>0.55){e.target.classList.add('live');setCur(screens.indexOf(e.target));}
+}),{root:deck,threshold:[0.55]});
+screens.forEach(s=>io.observe(s));
+/* 一个意图多条通路，反馈同一套：按钮 / 键盘 / 点空白 / 上下滑动。
+   手势翻页由 scroll-snap 自己管，所以这里只补另外三条。
+   末屏的"继续"变成"再看一遍"，点它回到第一屏 —— 体验有闭环，不会突然断掉。 */
+btnNext.onclick=()=>go(cur===screens.length-1?0:cur+1);
+document.getElementById('btnPrev').onclick=()=>go(cur-1);
+deck.addEventListener('click',e=>{if(e.target.closest('button,a'))return;go(cur+1);});
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowUp'){e.preventDefault();go(cur-1);}
+});
+document.getElementById('btnShare').onclick=()=>{
+  /* TODO 换成你这一稿真正的分享动作。**动作可以换，那句解释不能省。** */
+  toast('已复制链接，去粘贴给朋友吧');
+};
+/* 开场壳自退。没有 .intro 就什么都不做。 */
+const intro=document.getElementById('intro');
+if(intro){
+  if(!intro.textContent.trim()&&!intro.children.length) intro.classList.add('off');
+  else setTimeout(()=>intro.classList.add('off'),2500);
+}
+/* 数字滚动：进屏才跑 */
+const nio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return; nio.unobserve(e.target);
+  const el=e.target,end=+el.dataset.n,t0=performance.now();
+  (function step(t){const k=Math.min(1,(t-t0)/1200);
+    el.textContent=Math.round(end*(1-Math.pow(1-k,3))).toLocaleString('en-US');
+    if(k<1)requestAnimationFrame(step);})(t0);
+}),{root:deck,threshold:.4});
+document.querySelectorAll('[data-n]').forEach(el=>nio.observe(el));
+setCur(0);
+
+/* ── 关键屏声明（截图器读它，不猜按钮）────────────────────────
+   分屏 H5 的"状态"就是一屏一屏。**为什么不让脚本自己滚**：
+   内容滚的是 #deck 这个内层容器，window 根本不动 —— 兜底路径会拍出 N 张同图。
+   加屏 / 删屏之后这份清单会自己跟着 .screen 走，不用维护。 */
+window.__UI_CAPTURE__={
+  reset:async()=>deck.scrollTo({top:0,behavior:'instant'}),
+  states:[...document.querySelectorAll('.screen')].map((s,i)=>({
+    id:'s'+(i+1),
+    label:(s.querySelector('h1,h2,.lead')||{}).textContent?.trim().slice(0,12)
+          ||('第 '+(i+1)+' 屏'),
+    go:async()=>s.scrollIntoView({behavior:'instant',block:'start'})
+  }))};
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "budget_volume": 10000,
+  "budget_price": 50,
+  "actual_volume": 11000,
+  "actual_price": 48,
+  "expected": {
+    "total_variance": 28000,
+    "volume_effect": 50000,
+    "price_effect": -22000
+  }
+}

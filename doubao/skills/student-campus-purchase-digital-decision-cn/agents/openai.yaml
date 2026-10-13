@@ -1,0 +1,7 @@
+interface:
+  display_name: "开学采购与数码决策"
+  short_description: "按专业任务、学校限制和预算规划开学用品与数码设备"
+  default_prompt: "Use $student-campus-purchase-digital-decision-cn to review my back-to-school purchase plan and identify what to buy now, verify later, or skip."
+
+policy:
+  allow_implicit_invocation: true

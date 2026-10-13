@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%233384ff'/%3E%3Cstop offset='.52' stop-color='%23014bde'/%3E%3Cstop offset='1' stop-color='%23a945fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ctext x='16' y='21' text-anchor='middle' fill='white' font-family='Arial,sans-serif' font-size='14' font-weight='700'%3EAI%3C/text%3E%3C/svg%3E">
+    <title>直播实时质检工作台</title>
+    <link rel="stylesheet" href="/app.css">
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="topbar" aria-labelledby="page-title">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3.5" y="4" width="7" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/>
+              <rect x="13.5" y="4" width="7" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/>
+              <path d="m5.8 11.8 1.3 1.3 2.3-2.7M16 15v-3m2 3V9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div>
+            <h1 id="page-title">直播实时质检工作台</h1>
+            <p id="page-context" class="page-context">持续监测直播内容，实时展示质检结果</p>
+          </div>
+        </div>
+        <div class="refresh-state" aria-label="自动刷新状态">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="monitor-state">实时监测中</span>
+          <span class="refresh-divider" aria-hidden="true">·</span>
+          <span id="refresh-frequency">正在连接</span>
+          <time id="refreshed-at" hidden>—</time>
+        </div>
+      </header>
+
+      <section id="error" class="notice" hidden role="alert">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 10v6M12 7.5v.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="error-text"></span>
+      </section>
+
+      <section id="report-outcome" class="report-outcome" hidden aria-label="任务结束与报告">
+        <div id="generation-status" class="generation-status" hidden aria-live="polite">
+          <span class="generation-status-icon" aria-hidden="true"></span>
+          <div>
+            <strong id="generation-title">质检报告生成中</strong>
+            <p id="generation-copy">任务完成后将自动获取质检报告。</p>
+          </div>
+        </div>
+
+        <div id="report-access" class="report-access" aria-label="报告入口" hidden>
+          <a id="report-button" class="report-card quality-report-card" href="#" target="_blank" rel="noopener noreferrer" hidden>
+            <span class="report-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M7 3.75h7l3 3V20H7V3.75Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3.75V7h3M10 11h4M10 14.5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </span>
+            <span class="report-card-copy">
+              <strong>质检报告</strong>
+              <small>查看自动质检结论、风险规则与命中证据</small>
+            </span>
+            <span class="report-card-action">查看质检报告 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <a id="review-report-link" class="report-card review-report-card" href="#" target="_blank" rel="noopener noreferrer" hidden>
+            <span class="report-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 18.5V14m4.7 4.5V9.7m4.6 8.8V6m4.7 12.5V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m5 10 4.7-3.5 4.6 1.2L19 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="report-card-copy">
+              <strong>直播复盘报告</strong>
+              <small>查看内容结构、关键表现与优化建议</small>
+            </span>
+            <span class="report-card-action">查看复盘报告 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="detail">
+          <header class="detail-header">
+            <div>
+              <div class="detail-title-row">
+                <h2 id="task-name">直播质检详情</h2>
+                <span id="status" class="detail-status status-pending">连接中</span>
+              </div>
+              <div id="task-meta" class="task-meta" aria-label="直播任务信息">
+                <span class="task-account"><span class="task-meta-label">主播</span><strong id="task-account">正在读取…</strong></span>
+                <span id="task-scenario" class="scenario-tag" hidden>—</span>
+                <span id="task-duration" class="task-duration" hidden>—</span>
+              </div>
+            </div>
+            <div id="end-task-actions" class="end-task-actions" hidden>
+              <button id="end-task-button" class="end-task-button" type="button" disabled aria-describedby="end-task-note">结束质检</button>
+              <small id="end-task-note">结束当前质检</small>
+              <span id="end-task-message" role="status" aria-live="polite"></span>
+              <button id="end-task-retry" class="end-task-retry" type="button" hidden>重新准备</button>
+            </div>
+          </header>
+
+          <section aria-labelledby="audit-title">
+            <header class="detail-section-header">
+              <div>
+                <div class="audit-heading-row">
+                  <h3 id="audit-title">自动质检结果</h3>
+                </div>
+                <p>AI 实时识别直播内容风险，最新质检结果将在此持续更新</p>
+              </div>
+            </header>
+            <div class="risk-overview" aria-label="风险概览">
+              <div><span>本页自动质检命中</span><strong id="risk-total">0</strong></div>
+              <div><span>本页涉及规则</span><strong id="risk-rules">0</strong></div>
+              <div><span title="相对直播开始时间">最新命中时点</span><strong id="risk-latest">—</strong></div>
+              <div><span>主要命中规则</span><strong id="risk-top">—</strong></div>
+            </div>
+            <p id="audit-status-note" class="audit-scope" role="status" hidden></p>
+            <div class="rule-filter-row" aria-label="按规则类型筛选">
+              <div id="rule-filter" class="rule-filter" role="group">
+                <button class="rule-filter-chip active" type="button" data-rule="all" aria-pressed="true">全部</button>
+              </div>
+              <span id="record-summary">已加载 0 条</span>
+            </div>
+            <div class="audit-stream">
+              <button id="new-records" class="new-records" type="button" hidden>有新结果，回到最新</button>
+              <div id="records" class="audit-list" aria-live="polite">
+                <div class="audit-empty">正在等待自动质检结果…</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

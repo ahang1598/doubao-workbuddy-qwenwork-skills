@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>R31-P · 没有 TabBar、没有状态栏，但版心收得住</title>
+<!--
+  这份是 frame-intact 的**特异性**对照（用例 R31-P）。
+
+  它是一个登录页：**没有 .tabbar、没有 .statusbar、没有 .stage、没有 #app**，
+  一个我们骨架里的类名都没有 —— 但它的版心被 `max-width:400px;margin:auto` 收住了。
+
+  R31 v3 曾经想让判据去查 `.stage/#app/.statusbar/.tabbar` 四个类名。
+  那是**对一份骨架的过拟合**：登录页、详情页、全屏沉浸式 H5 合法地没有它们。
+  所以判据必须是纯几何的 —— 量版心宽度，不问用什么实现。
+
+  **这份必须 PASS。** 它一 FAIL，就说明判据又退回类名清单了。
+-->
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:#0E1013;color:#F2F0EC;
+       font:15px/1.7 -apple-system,"PingFang SC",system-ui,sans-serif;
+       display:grid;place-items:center}
+  .sheet{width:100%;max-width:400px;margin:auto;padding:40px 28px;
+         background:#16191E;border-radius:24px;min-height:620px;
+         display:flex;flex-direction:column;justify-content:center;gap:22px}
+  h1{font-size:30px;line-height:1.25;letter-spacing:-.01em}
+  p{color:#98A0AC}
+  label{display:block;font-size:13px;color:#98A0AC;margin-bottom:8px}
+  input{width:100%;height:48px;padding:0 14px;border-radius:12px;
+        border:1px solid #2A2F37;background:#0E1013;color:#F2F0EC;font-size:15px}
+  button{width:100%;height:50px;border:0;border-radius:12px;background:#E2542C;
+         color:#fff;font-size:16px;font-weight:600}
+  .alt{text-align:center;color:#98A0AC;font-size:13px}
+  .mark{width:56px;height:56px;border-radius:16px;
+        background:linear-gradient(150deg,#E2542C,#8E2A12)}
+</style></head><body>
+<main class="sheet">
+  <div class="mark"></div>
+  <h1>回到你的校园广场</h1>
+  <p>用学号登录，只有同校的人看得到你的动态。</p>
+  <div><label for="u">学号</label><input id="u" placeholder="2026xxxxxx"></div>
+  <div><label for="p">密码</label><input id="p" type="password" placeholder="至少 8 位"></div>
+  <button>登录</button>
+  <div class="alt">忘记密码？用校园邮箱找回</div>
+</main>
+</body></html>

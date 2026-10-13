@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="140" viewBox="0 0 320 140" role="img" aria-label="弧形标题"><defs><path id="text-arc" d="M24 100Q160 20 296 100"/></defs><text fill="currentColor" font-size="28" font-weight="700" letter-spacing="0"><textPath href="#text-arc" startOffset="50%" text-anchor="middle">弧形标题</textPath></text></svg>

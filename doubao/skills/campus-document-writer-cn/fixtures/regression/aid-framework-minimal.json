@@ -1,0 +1,17 @@
+{
+  "id": "regression.aid-framework-minimal",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "助学金框架允许必要空字段，但不得把未知事实写实或用示例诱导敏感内容。",
+  "candidate_output": "姓名：[待确认：姓名]\n学号：[待确认：学号]\n家庭主要收入来自务农，目前家庭开支压力较大。具体收入：[待确认：具体收入]；家庭成员情况：[待确认：家庭成员情况]；证明材料：[待确认：证明材料]。现申请助学金，恳请审核。",
+  "assertions": {
+    "required_substrings": ["姓名：[待确认：姓名]", "学号：[待确认：学号]", "主要收入来自务农", "具体收入：[待确认：具体收入]", "家庭成员情况：[待确认：家庭成员情况]", "证明材料：[待确认：证明材料]"],
+    "forbidden_substrings": ["家庭住址", "患病", "种植", "养殖", "低保", "负债", "年收入", "承诺", "如父母", "如村委会"],
+    "forbidden_regexes": [],
+    "max_output_chars": 400,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

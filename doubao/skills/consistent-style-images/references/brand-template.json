@@ -1,0 +1,55 @@
+{
+  "id": "new-brand",
+  "name": "新品牌（待填写）",
+  "version": "draft-1",
+  "status": "draft",
+  "expression": {
+    "positioning": {
+      "value": null,
+      "state": "pending",
+      "source": ""
+    },
+    "core_values": {
+      "value": null,
+      "state": "pending",
+      "source": ""
+    },
+    "tone": {
+      "value": null,
+      "state": "pending",
+      "source": ""
+    },
+    "audience": {
+      "value": null,
+      "state": "pending",
+      "source": ""
+    },
+    "must_say": {
+      "value": null,
+      "state": "pending",
+      "source": ""
+    },
+    "must_avoid": {
+      "value": null,
+      "state": "pending",
+      "source": ""
+    }
+  },
+  "sources": [],
+  "references": [],
+  "assets": {},
+  "fonts": {},
+  "palette": {},
+  "constraints": {
+    "palette_options": null,
+    "require_all_palette_colors": false,
+    "max_text_levels": null,
+    "allowed_alignments": null,
+    "allowed_button_shapes": null,
+    "cta_required": false,
+    "unique_primary": false,
+    "forbid_terminal_comma": false
+  },
+  "visual_guidance": {},
+  "review_rules": []
+}

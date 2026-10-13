@@ -1,0 +1,103 @@
+/* Lite-only capabilities; console layout lives in generated app.css. */
+body {
+  margin: 0;
+}
+[hidden] {
+  display: none !important;
+}
+.lite-edition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #737a87;
+}
+.lite-edition summary {
+  cursor: pointer;
+  color: #315bba;
+}
+.lite-edition a {
+  color: #1664ff;
+  text-decoration: none;
+}
+.lite-edition details {
+  position: relative;
+}
+.lite-edition details p {
+  position: absolute;
+  right: 0;
+  top: 24px;
+  z-index: 30;
+  width: min(290px, 80vw);
+  padding: 16px;
+  margin: 0;
+  border: 1px solid #dde2e9;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 5px 15px #0001;
+}
+.judgment-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.page .rule-unknown .rule-status {
+  color: #737a87;
+  background: #f1f3f5;
+}
+.page .report-status {
+  max-width: 100%;
+}
+.page .report-status .analysis-segment-body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.images button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+.images img { max-width: 160px; }
+.lite-image-dialog {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: none;
+  max-height: none;
+  background: transparent;
+  overflow: hidden;
+}
+.lite-image-dialog::backdrop { background: var(--color-mask-bg); }
+.lite-image-dialog button { border: 0; padding: 0; font: inherit; }
+.lite-image-dialog .arco-image-preview-img { touch-action: none; }
+.lite-image-dialog .arco-image-preview-close-btn { display: grid; place-items: center; }
+.lite-review-state {
+  padding: 32px;
+}
+/* Empty recommendations have no index and must use the full row. */
+.actions li.empty {
+  display: block;
+  color: #8a909b;
+}
+@media (max-width: 640px) {
+  .lite-edition {
+    gap: 4px;
+  }
+}
+
+
+.edition-guide { margin: 0 0 16px; padding: 14px 18px; border: 1px solid #e5e6eb; border-radius: 10px; background: #fff; color: #4e5969; font-size: 13px; line-height: 1.8; }
+.edition-guide a { color: #1664ff; text-decoration: none; }
+.edition-guide a:hover { text-decoration: underline; }
+.edition-guide a:focus-visible { outline: 2px solid #1664ff; outline-offset: 2px; }
+
+/* Video snapshots disclose processing and evidence coverage independently. */
+.video-coverage { margin-bottom: 20px; padding: 20px 24px; border: 1px solid #e5b868; border-radius: 12px; background: #fffbf2; color: #533b18; }
+.video-coverage h2 { margin: 0 0 10px; font-size: 20px; }
+.video-coverage p { margin: 8px 0; line-height: 1.7; }
+.video-coverage ul { max-height: 240px; overflow: auto; line-height: 1.8; }
+
+.video-rule-reasons { margin-top: 10px; line-height: 1.6; font-size: 12px; overflow-wrap: anywhere; }
+.video-rule-reasons p { margin: 8px 0; }

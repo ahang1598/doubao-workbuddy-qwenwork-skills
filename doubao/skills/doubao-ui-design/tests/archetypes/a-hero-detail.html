@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>岛屿详情</title><style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;font:15px/1.6
+ -apple-system,"PingFang SC",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img,svg{display:block;max-width:100%}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(130% 90% at 50% 8%,var(--s1),var(--s2) 72%)}
+#app{position:relative;z-index:1;width:100%;height:100%;overflow:hidden;background:var(--bg)}
+@media(min-width:760px){#app{width:390px;height:min(844px,86vh);border-radius:44px;
+ box-shadow:0 0 0 11px var(--frame),0 0 0 13px var(--frame2),0 44px 100px rgba(0,0,0,.4)}}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:0 22px;z-index:55;
+ display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;
+ pointer-events:none}
+
+:root{--bg:#0F1512;--ink:#EFF3EF;--dim:#9FB0A6;--key:#3FBF7F;--s1:#16241C;--s2:#050807;
+ --frame:#101613;--frame2:#2A3A31}
+.hero{position:absolute;inset:0 0 auto;height:52%;
+ background:linear-gradient(180deg,#2E6E52,#123A2A 60%,#0F1512)}
+.hero::after{content:"";position:absolute;inset:0;
+ background:radial-gradient(70% 46% at 26% 30%,rgba(255,255,255,.22),transparent 62%)}
+.back{position:absolute;top:58px;left:18px;z-index:20;width:38px;height:38px;border-radius:50%;
+ background:rgba(0,0,0,.42);display:grid;place-items:center}
+.fav{position:absolute;top:58px;right:18px;z-index:20;width:38px;height:38px;border-radius:50%;
+ background:rgba(0,0,0,.42);display:grid;place-items:center}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:46%;z-index:10;background:var(--bg);
+ border-radius:24px 24px 0 0;padding:22px 20px 108px;overflow-y:auto}
+h1{font-size:26px;font-weight:800;letter-spacing:-.01em}
+.meta{display:flex;gap:14px;color:var(--dim);font-size:13.5px;margin:8px 0 16px}
+.desc{font-size:14.5px;line-height:1.9;color:var(--dim)}
+.thumbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}
+.thumbs i{display:block;height:74px;border-radius:10px;
+ background:linear-gradient(150deg,#2E6E52,#17392B)}
+.cta{position:absolute;left:0;right:0;bottom:0;z-index:40;padding:14px 20px 26px;
+ background:linear-gradient(180deg,transparent,var(--bg) 34%);display:flex;gap:12px;align-items:center}
+.price{font-size:19px;font-weight:800}.price small{display:block;font-size:12px;color:var(--dim);font-weight:400}
+.book{margin-left:auto;height:48px;padding:0 30px;border-radius:12px;background:var(--key);
+ color:#04140C;font-weight:700;font-size:15.5px}
+
+</style></head><body><div class="stage"><div id="app">
+<div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+
+<div class="hero"></div>
+<button class="back" aria-label="返回">‹</button>
+<button class="fav" id="fav" aria-label="收藏">♡</button>
+<div class="sheet" id="sheet">
+  <h1>努沙佩尼达 · 蓝梦礁</h1>
+  <div class="meta"><span>★ 4.8</span><span>巴厘岛东南</span><span>船程 45 分钟</span></div>
+  <p class="desc">从萨努尔码头出发，快艇四十五分钟。岛的东侧是断崖，西侧是浅滩，
+  下午三点之后光线最好，可以在断崖上看到整片礁盘的颜色分层。</p>
+  <div class="thumbs"><i></i><i></i><i></i></div>
+  <p class="desc" style="margin-top:18px">建议留两天：第一天走断崖线，第二天浮潜。
+  岛上没有大型超市，防晒和现金要在出发前备好。</p>
+</div>
+<div class="cta"><div class="price">¥ 780<small>每人 / 含船票</small></div>
+  <button class="book" id="book">预订</button></div>
+
+</div></div><script>
+let f=false;document.getElementById('fav').onclick=function(){f=!f;
+ this.textContent=f?'♥':'♡';this.style.color=f?'#3FBF7F':'inherit';};
+let b=false;document.getElementById('book').onclick=function(){b=!b;
+ this.textContent=b?'已预订':'预订';};
+document.getElementById('sheet').addEventListener('scroll',()=>{});
+</script></body></html>

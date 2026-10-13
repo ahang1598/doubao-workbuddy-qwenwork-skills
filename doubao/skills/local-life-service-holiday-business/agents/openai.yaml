@@ -1,0 +1,9 @@
+interface:
+  display_name: "节日经营"
+  short_description: "结合真实门店数据生成中秋国庆经营方案与HTML报告"
+  icon_small: "./assets/skill-icon.svg"
+  icon_large: "./assets/skill-icon.svg"
+  brand_color: "#0B6F64"
+  default_prompt: "使用 $local-life-service-holiday-business 为当前选择的门店生成中秋国庆经营方案。"
+policy:
+  allow_implicit_invocation: true

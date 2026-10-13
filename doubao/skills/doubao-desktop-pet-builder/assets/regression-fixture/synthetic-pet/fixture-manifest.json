@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "source": "deterministic synthetic regression fixture; not for user delivery",
+  "specSchemaVersion": 5,
+  "frameCount": 40,
+  "frames": [
+    {
+      "state": "core-ip",
+      "frame": "core-ip/core-ip.png",
+      "bytes": 4285
+    },
+    {
+      "state": "idle",
+      "frame": "idle-01.png",
+      "bytes": 4285
+    },
+    {
+      "state": "idle",
+      "frame": "idle-02.png",
+      "bytes": 4314
+    },
+    {
+      "state": "idle",
+      "frame": "idle-03.png",
+      "bytes": 4368
+    },
+    {
+      "state": "idle",
+      "frame": "idle-04.png",
+      "bytes": 4311
+    },
+    {
+      "state": "blink",
+      "frame": "blink-01.png",
+      "bytes": 4318
+    },
+    {
+      "state": "blink",
+      "frame": "blink-02.png",
+      "bytes": 4218
+    },
+    {
+      "state": "blink",
+      "frame": "blink-03.png",
+      "bytes": 4144
+    },
+    {
+      "state": "blink",
+      "frame": "blink-04.png",
+      "bytes": 4198
+    },
+    {
+      "state": "blink",
+      "frame": "blink-05.png",
+      "bytes": 4302
+    },
+    {
+      "state": "happy",
+      "frame": "happy-01.png",
+      "bytes": 4367
+    },
+    {
+      "state": "happy",
+      "frame": "happy-02.png",
+      "bytes": 4322
+    },
+    {
+      "state": "happy",
+      "frame": "happy-03.png",
+      "bytes": 4315
+    },
+    {
+      "state": "happy",
+      "frame": "happy-04.png",
+      "bytes": 4367
+    },
+    {
+      "state": "happy",
+      "frame": "happy-05.png",
+      "bytes": 4395
+    },
+    {
+      "state": "notify",
+      "frame": "notify-01.png",
+      "bytes": 4449
+    },
+    {
+      "state": "notify",
+      "frame": "notify-02.png",
+      "bytes": 4435
+    },
+    {
+      "state": "notify",
+      "frame": "notify-03.png",
+      "bytes": 4405
+    },
+    {
+      "state": "notify",
+      "frame": "notify-04.png",
+      "bytes": 4379
+    },
+    {
+      "state": "notify",
+      "frame": "notify-05.png",
+      "bytes": 4356
+    },
+    {
+      "state": "peek",
+      "frame": "peek-01.png",
+      "bytes": 4648
+    },
+    {
+      "state": "peek",
+      "frame": "peek-02.png",
+      "bytes": 4683
+    },
+    {
+      "state": "peek",
+      "frame": "peek-03.png",
+      "bytes": 4723
+    },
+    {
+      "state": "peek",
+      "frame": "peek-04.png",
+      "bytes": 4708
+    },
+    {
+      "state": "peek",
+      "frame": "peek-05.png",
+      "bytes": 4730
+    },
+    {
+      "state": "pet",
+      "frame": "pet-01.png",
+      "bytes": 4420
+    },
+    {
+      "state": "pet",
+      "frame": "pet-02.png",
+      "bytes": 4394
+    },
+    {
+      "state": "pet",
+      "frame": "pet-03.png",
+      "bytes": 4390
+    },
+    {
+      "state": "pet",
+      "frame": "pet-04.png",
+      "bytes": 4372
+    },
+    {
+      "state": "pet",
+      "frame": "pet-05.png",
+      "bytes": 4389
+    },
+    {
+      "state": "eat",
+      "frame": "eat-01.png",
+      "bytes": 4421
+    },
+    {
+      "state": "eat",
+      "frame": "eat-02.png",
+      "bytes": 4377
+    },
+    {
+      "state": "eat",
+      "frame": "eat-03.png",
+      "bytes": 4360
+    },
+    {
+      "state": "eat",
+      "frame": "eat-04.png",
+      "bytes": 4360
+    },
+    {
+      "state": "eat",
+      "frame": "eat-05.png",
+      "bytes": 4406
+    },
+    {
+      "state": "play",
+      "frame": "play-01.png",
+      "bytes": 4397
+    },
+    {
+      "state": "play",
+      "frame": "play-02.png",
+      "bytes": 4471
+    },
+    {
+      "state": "play",
+      "frame": "play-03.png",
+      "bytes": 4502
+    },
+    {
+      "state": "play",
+      "frame": "play-04.png",
+      "bytes": 4467
+    },
+    {
+      "state": "play",
+      "frame": "play-05.png",
+      "bytes": 4485
+    }
+  ]
+}

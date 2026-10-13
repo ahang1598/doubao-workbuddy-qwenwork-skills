@@ -1,0 +1,28 @@
+{
+  "example_notice": "虚构学生档案，仅用于演示字段",
+  "runtime": {
+    "network_tool_status": "not_used",
+    "limitations": [
+      "本示例未联网，也未核验商城或学校动态数据"
+    ]
+  },
+  "sources": [],
+  "school": "示例大学",
+  "campus": "主校区",
+  "major": "计算机科学",
+  "status": "大一新生",
+  "total_budget": 10000,
+  "digital_budget": 8000,
+  "existing_devices": [
+    "手机"
+  ],
+  "tasks": [
+    "Python/Java 编程",
+    "Docker",
+    "文档网课"
+  ],
+  "unknowns": [
+    "宿舍床尺寸",
+    "宿舍电器限制"
+  ]
+}

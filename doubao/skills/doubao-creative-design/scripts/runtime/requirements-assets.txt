@@ -1,0 +1,4 @@
+# WOFF/WOFF2 decoding and static SVG stylesheet conversion.
+fonttools[woff]>=4.56.0
+tinycss2>=1.4.0
+cssselect2>=0.8.0

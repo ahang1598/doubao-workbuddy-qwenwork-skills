@@ -1,0 +1,59 @@
+{
+  "context": {
+    "school": "示例大学",
+    "campus": "目标校区",
+    "admission_year": 2026,
+    "program_level": "本科",
+    "student_category": "普通新生",
+    "timezone": "Asia/Shanghai"
+  },
+  "runtime": {
+    "network_tool_status": "not_used",
+    "limitations": ["示例模板未进行联网核验"]
+  },
+  "sources": [
+    {
+      "id": "S1",
+      "title": "示例大学2026级新生报到须知",
+      "publisher": "示例大学招生办公室",
+      "issued_at": "2026-07-20",
+      "locator": "文件名、页码或公开链接",
+      "official": true,
+      "public_contact": "学校招生网站公开咨询页链接或部门名称",
+      "access_method": "user_provided",
+      "authorization_status": "not_applicable",
+      "retrieved_at": null,
+      "scope": "示例大学2026级、目标校区、目标培养层次",
+      "scope_context": {
+        "admission_year": 2026,
+        "schools": ["示例大学"],
+        "campuses": ["目标校区"],
+        "program_levels": ["本科"],
+        "student_categories": ["普通新生"]
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "online-profile",
+      "title": "完成迎新系统信息确认",
+      "category": "online_onboarding",
+      "stage": "before_arrival",
+      "requirement": "required",
+      "evidence_status": "confirmed",
+      "applies_to": "2026级普通本科新生",
+      "deadline": null,
+      "location": "学校迎新系统",
+      "materials": [],
+      "actions": ["由学生本人登录官方系统核对信息"],
+      "prerequisites": ["取得学校发放的账号激活说明"],
+      "completion_evidence": "系统显示信息确认完成",
+      "fallback": "通过通知指定的学校官方渠道咨询",
+      "source_ids": ["S1"],
+      "notes": "截止时间未在来源中明确时保持为空",
+      "risk_level": "medium"
+    }
+  ],
+  "assumptions": [],
+  "conflicts": []
+}

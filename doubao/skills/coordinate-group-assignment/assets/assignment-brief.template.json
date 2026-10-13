@@ -1,0 +1,19 @@
+{
+  "mode": "plan",
+  "assignment": {
+    "title": "课程小组作业标题",
+    "course": "课程名称",
+    "assignment_type": "case_study",
+    "objective": "从作业要求中提取的目标",
+    "deliverables": [
+      {"type": "report", "format": "markdown", "length_or_size": "待确认"}
+    ],
+    "rubric": [],
+    "deadlines": {"final": null, "internal": []},
+    "constraints": [],
+    "ai_policy": "unknown",
+    "status": "draft"
+  },
+  "team": [],
+  "contributions": []
+}

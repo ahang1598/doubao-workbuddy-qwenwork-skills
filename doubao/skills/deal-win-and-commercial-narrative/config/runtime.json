@@ -1,0 +1,339 @@
+{
+  "skill_id": "deal-win-and-commercial-narrative",
+  "version": "V2-search-autonomy",
+  "contract_version": "V3.3",
+  "production_id": "PROD-019",
+  "core_skill_id": "CORE-058",
+  "case_type": "sales_deal_decision",
+  "default_mode": "full_win_package",
+  "default_delivery_tier": "direct",
+  "modes": [
+    "full_win_package",
+    "competitive_battle",
+    "commercial_case",
+    "poc_alignment",
+    "execution_overlay"
+  ],
+  "state_contract": {
+    "field": "artifact_state",
+    "allowed_states": [
+      "ready",
+      "degraded",
+      "intake_required",
+      "confirmation_required",
+      "routed",
+      "stopped"
+    ]
+  },
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 1800,
+      "target_output_tokens": 1200,
+      "required_slots": [
+        "direct_answer",
+        "evidence",
+        "counter_risk",
+        "limitations",
+        "next_step"
+      ]
+    },
+    "brief": {
+      "target_chars": 5000,
+      "target_output_tokens": 3200,
+      "required_slots": [
+        "decision",
+        "claim_ledger",
+        "unknowns",
+        "risks",
+        "actions",
+        "artifact_index"
+      ]
+    },
+    "full": {
+      "target_chars": 11000,
+      "target_output_tokens": 7000,
+      "required_slots": [
+        "deal_map",
+        "buying_committee",
+        "procurement_risks",
+        "competitive_position",
+        "commercial_case",
+        "poc_or_proposal",
+        "actions",
+        "artifact_index"
+      ]
+    }
+  },
+  "provider_safety_ceiling": {
+    "hard_max_output_tokens": 8000,
+    "on_approach": "compress_to_minimum_complete_artifact"
+  },
+  "route_contract": {
+    "required_fields": [
+      "selected_skill",
+      "intent",
+      "route_status"
+    ],
+    "route_only_forbids_analysis": true,
+    "adjacent": {
+      "general_meeting": [
+        "summary-briefing",
+        "business-document-authoring"
+      ],
+      "sales_rep_call_coaching": "sales-call-coaching-and-trends",
+      "crm_master_data": "data-governance",
+      "formal_performance": "performance-review-development"
+    }
+  },
+  "intake_required_inputs": {
+    "blocking": [
+      "opportunity_or_account_anchor",
+      "stage_or_goal",
+      "at_least_one_evidence_class"
+    ],
+    "backfillable": [
+      "amount",
+      "close_date",
+      "call_evidence",
+      "competitors",
+      "value_inputs",
+      "rfp_or_poc_constraints"
+    ],
+    "freeze_fields": [
+      "account_legal_entity",
+      "opportunity",
+      "product",
+      "region",
+      "currency",
+      "sales_stage",
+      "pricebook_version",
+      "contract_version"
+    ],
+    "max_clarifying_questions": 3
+  },
+  "capability_gates": {
+    "status_enum": [
+      "allowed",
+      "missing",
+      "blocked"
+    ],
+    "slots": [
+      "can_qualify_opportunity",
+      "can_build_deal_map",
+      "can_build_competitive_position",
+      "can_model_roi",
+      "can_prepare_poc_or_proposal",
+      "can_draft_followup",
+      "can_send_followup",
+      "can_write_crm"
+    ],
+    "blocked_slots_are_local": true
+  },
+  "truth_priority": {
+    "crm_owned": [
+      "account",
+      "opportunity",
+      "owner",
+      "stage",
+      "amount",
+      "forecast_category",
+      "close_date",
+      "activity"
+    ],
+    "supporting_only": [
+      "meeting",
+      "email",
+      "message",
+      "file",
+      "public_research"
+    ],
+    "sales_judgment_claim_type": "management_claim"
+  },
+  "claim_ledger": {
+    "required_fields": [
+      "claim_id",
+      "claim",
+      "claim_type",
+      "critical",
+      "object_id",
+      "period",
+      "unit",
+      "source_ids",
+      "source_tier",
+      "confidence",
+      "conflict_state"
+    ],
+    "claim_types": [
+      "fact",
+      "calculation",
+      "inference",
+      "assumption",
+      "management_claim",
+      "unknown"
+    ],
+    "unknown_must_not_rank": true
+  },
+  "deterministic_tool": {
+    "name": "roi_value_model",
+    "path": "scripts/roi_value_model.py",
+    "input_schema": "schemas/roi-value-model.schema.json",
+    "operations": ["calculate", "gate", "finalize"],
+    "contract": "validated_formula_inputs_units_period_currency_low_base_high",
+    "no_model_recalculation": true,
+    "missing_input_policy": "structural_formula_only"
+  },
+  "tool_contract": {
+    "null_policy": "preserve_unknown",
+    "forbid_default_industry_metrics": true,
+    "require_formula_and_inputs": true
+  },
+  "compact_tool_output": [
+    "core_results",
+    "exceptions",
+    "unknowns",
+    "hard_gates",
+    "source_index",
+    "full_artifact_path"
+  ],
+  "expected_artifacts": [
+    "win_strategy_commercial_narrative_pack",
+    "claim_ledger",
+    "roi_full_json",
+    "roi_compact_json",
+    "roi_final_json"
+  ],
+  "deliverable_validator": "runtime/validate_deliverable.py",
+  "claim_artifact_permission_gate": {
+    "path": "scripts/roi_value_model.py",
+    "operation": "gate",
+    "claim_schema": "schemas/roi-value-model.schema.json#/$defs/claim",
+    "required_artifacts": ["roi_full_json", "roi_compact_json", "roi_final_json", "claim_ledger"],
+    "caller_may_override_required_artifacts": false,
+    "receipt_fields": ["artifact_name", "path", "expected_sha256"],
+    "verify": ["file_exists", "sha256_matches_receipt", "artifact_name", "artifact_state_consistency", "counts_consistency", "required_artifact_set_consistency"]
+  },
+  "finalizer": {
+    "mode": "source_locked",
+    "path": "scripts/roi_value_model.py",
+    "operation": "finalize",
+    "max_runs": 1,
+    "forbid": [
+      "new_search",
+      "new_source_id",
+      "new_object",
+      "new_threshold",
+      "new_number"
+    ]
+  },
+  "privacy_scan": {
+    "enabled": true,
+    "minimize_pii": true
+  },
+  "side_effect_policy": {
+    "draft_is_not_send": true,
+    "require_preview_permission_confirmation": true,
+    "execution_default": "not_executed",
+    "idempotency_key_fields": [
+      "opportunity_anchor",
+      "action_type",
+      "calendar_day"
+    ],
+    "deny": [
+      "delete",
+      "pay",
+      "bribery",
+      "bypass_procurement"
+    ]
+  },
+  "success_contract": {
+    "success": "required_slots_supported_and_hard_gates_pass",
+    "degraded": "minimum_complete_artifact_with_local_blocked_slots",
+    "stop": "unsafe_or_no_anchor_after_clarification"
+  },
+  "loading_profile": {
+    "root": "route_intake_capability_workflow_output_hard_gates",
+    "references": "load_minimum_matching_mode"
+  },
+  "search_runtime": {
+    "router": "runtime/search_router.py",
+    "evidence_validator": "runtime/search_evidence_validator.py",
+    "deliverable_validator": "runtime/validate_deliverable.py",
+    "route_default": "optional",
+    "max_calls": 3,
+    "optional_max_calls": 2,
+    "evidence_context": "compact_ledger_only",
+    "source_order": [
+      "official_primary",
+      "company_primary",
+      "platform_primary",
+      "reputable_secondary"
+    ],
+    "query_stages": [
+      "freeze_scope",
+      "targeted_primary_lookup",
+      "resolve_material_conflicts"
+    ],
+    "primary_source_types": [
+      "official_primary",
+      "company_primary",
+      "platform_primary"
+    ],
+    "critical_claim_policy": {
+      "require_primary_or_official": true,
+      "critical_claims": "客户承诺|合同与审批状态|竞品当前事实|ROI输入|POC成功标准",
+      "unsupported_action": "unknown",
+      "conflict_action": "disclose_or_unknown"
+    },
+    "deliverable_contract": {
+      "required_any": [
+        [
+          "结论",
+          "摘要"
+        ],
+        [
+          "证据",
+          "来源",
+          "依据"
+        ],
+        [
+          "局限",
+          "未知",
+          "风险"
+        ]
+      ],
+      "min_urls": 0,
+      "min_chars": 120,
+      "forbidden_patterns": [
+        "DETERMINISTIC TOOL OUTPUT",
+        "search-evidence\\.json"
+      ],
+      "repair_policy": "deterministic_only_no_new_facts"
+    },
+    "decision_policy": {
+      "version": "task-semantic-v1",
+      "principle": "先判断核心交付是否依赖外部公共证据，不要求用户声明是否联网",
+      "core_deliverable": "交易/MEDDPICC评估与优先行动 | 商业案例与ROI叙事 | 提案架构或Battle Card要点 | POC范围与成功标准",
+      "required_when": [
+        "竞争战斗卡依赖当前公开竞品能力、定价或公司动态且用户无材料"
+      ],
+      "optional_when": [
+        "补客户公司背景、行业事件或公开采购语境"
+      ],
+      "off_when": [
+        "商机纪要、RFP、MEDDPICC 和价值假设已闭合"
+      ],
+      "blocked_when": [
+        "获取客户私密采购信息、伪造竞情或绕过受限门户"
+      ],
+      "required_max_calls": 4,
+      "optional_max_calls": 2,
+      "clarify_when_material": [
+        "object",
+        "scope",
+        "time"
+      ],
+      "route_default_rationale": "赢单主体是内部商机证据，公开背景可按缺口自主补充。",
+      "audit_schema_version": "1.0"
+    }
+  }
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>骑不骑 · 封面</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#FAF8F4}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",
+  "Microsoft YaHei",system-ui,sans-serif;color:#3A3530}
+.cover{position:relative;width:100vw;height:100vh;min-height:540px;overflow:hidden;
+  isolation:isolate;background:#FAF8F4;
+  /* 12 列网格底纹 + 一处强调色光晕：整份文档的"纸" */
+  background-image:
+    linear-gradient(90deg,rgba(58,53,48,.05) 1px,transparent 1px),
+    radial-gradient(circle at 20% 16%,rgba(107,142,90,.16),transparent 42%);
+  background-size:8.3333% 100%,100% 100%;}
+/* 巨号编号水印：先于一切被看到，也最先被忘掉 —— 它只提供"这是一份正经方案"的信号 */
+.folio{position:absolute;right:-2.5vw;bottom:-9vh;z-index:0;
+  font-size:clamp(240px,30vw,460px);font-weight:900;line-height:.72;
+  letter-spacing:-.08em;color:rgba(58,53,48,.06);user-select:none}
+.meta{position:absolute;z-index:3;font-size:11px;letter-spacing:.28em;
+  font-weight:600;color:rgba(58,53,48,.5);text-transform:uppercase}
+.meta.tl{top:5.4vh;left:4.6vw}
+.meta.bl{bottom:5.4vh;left:4.6vw;display:flex;gap:2.2vw;letter-spacing:.2em}
+.meta.br{bottom:5.4vh;right:4.6vw;letter-spacing:.2em}
+.side{position:absolute;z-index:3;right:1.9vw;top:50%;transform:translateY(-50%) rotate(180deg);
+  writing-mode:vertical-rl;font-size:10.5px;letter-spacing:.42em;color:rgba(58,53,48,.5);font-weight:600}
+.stage{position:absolute;inset:0;z-index:2;display:grid;align-items:center;
+  padding:0 4.6vw;gap:4vw}
+.title{font-size:clamp(40px,5.6vw,86px);font-weight:800;line-height:1.06;
+  letter-spacing:-.022em;max-width:15ch}
+.title em{font-style:normal;color:#6B8E5A}
+.rule{width:min(38vw,420px);height:2px;background:#3A3530;margin:3.4vh 0 2.6vh;opacity:.9}
+.sub{font-size:clamp(13px,1.15vw,17px);line-height:1.85;color:rgba(58,53,48,.66);max-width:32ch}
+.art{position:relative;overflow:hidden;background:#E7E2D8}
+.art img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ── 版式 A：cinematic-field —— 横图满版，字压在上面 ── */
+.v-cinematic .stage{grid-template-columns:1fr;align-content:end;padding-bottom:11vh}
+.v-cinematic .art{position:absolute;inset:0;z-index:-1}
+.v-cinematic .art::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(75deg,rgba(36,31,27,.8) 8%,rgba(36,31,27,.3) 52%,transparent 88%)}
+.v-cinematic .title,.v-cinematic .sub{color:#FAF8F4}
+.v-cinematic .rule{background:#FAF8F4}
+.v-cinematic .meta,.v-cinematic .side{color:#FAF8F4;opacity:.72}
+.v-cinematic .folio{color:#FAF8F4;opacity:.10}
+
+/* ── 版式 B：editorial-object —— 左字右物，像杂志封面 ── */
+.v-editorial .stage{grid-template-columns:1.06fr .94fr}
+.v-editorial .art{height:74vh;align-self:center;border-radius:2px}
+
+/* ── 版式 C：interface-archive —— 界面陈列，给 App / 多屏产物 ── */
+.v-archive .stage{grid-template-columns:1.02fr .98fr}
+.v-archive .shelf{position:relative;height:76vh;align-self:center;
+  background:#EFEBE2;display:flex;align-items:center;justify-content:center;
+  border-radius:2px}
+.v-archive .shelf::before{content:"";position:absolute;width:66%;aspect-ratio:1;
+  border:1px solid rgba(107,142,90,.24);border-radius:50%}
+.v-archive .phone{position:relative;z-index:2;height:62vh;aspect-ratio:390/844;
+  border-radius:14px;overflow:hidden;background:#0B0F1C;
+  box-shadow:0 22px 60px rgba(0,0,0,.28),0 0 0 6px #3A3530}
+.v-archive .phone img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body>
+<div class="cover v-editorial">
+  <div class="folio">26</div>
+  <div class="meta tl">DESIGN PROPOSAL / 01</div>
+  <div class="side">骑不骑 · WEEKEND RIDE · 2026</div>
+  
+  <div class="stage">
+    <div>
+      <h1 class="title">只问一件事<br>你今天有<br><em>多少时间</em></h1>
+      <div class="rule"></div>
+      <p class="sub">周末骑行决策 App。<br>六屏，从「要不要去」走到「走吧」。</p>
+    </div>
+    <div class="art"><img src="cover-src.jpg" alt="骑不骑 主视觉"></div>
+  </div>
+  <div class="meta bl">移动端 App · 6 屏 · 决策流</div>
+  <div class="meta br">骑不骑</div>
+</div>
+</body>
+</html>

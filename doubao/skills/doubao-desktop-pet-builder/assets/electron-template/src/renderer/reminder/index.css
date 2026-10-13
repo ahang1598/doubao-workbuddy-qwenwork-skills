@@ -1,0 +1,114 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#reminder-card {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface, #ffffff);
+  border-radius: var(--radius, 24px);
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text, #3a2a20);
+  margin-bottom: 12px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+label {
+  font-size: 13px;
+  color: var(--muted, #9a7b6a);
+}
+
+input[type="text"], input[type="datetime-local"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--accent, #ffc987);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text, #3a2a20);
+  background: var(--background, #fff7ed);
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input:focus {
+  border-color: var(--primary, #ff8a24);
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background: var(--primary, #ff8a24);
+  color: white;
+}
+
+.btn-secondary {
+  background: var(--background, #fff7ed);
+  color: var(--text, #3a2a20);
+}
+
+.reminder-list {
+  max-height: 150px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.reminder-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.reminder-list::-webkit-scrollbar-thumb {
+  background: var(--accent, #ffc987);
+  border-radius: 2px;
+}

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="节日经营">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="54" x2="438" y2="462" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766A"/>
+      <stop offset="1" stop-color="#064E48"/>
+    </linearGradient>
+    <radialGradient id="moon" cx=".35" cy=".3" r=".8">
+      <stop stop-color="#FFF6D6"/>
+      <stop offset="1" stop-color="#D7B66E"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <circle cx="208" cy="184" r="101" fill="url(#moon)"/>
+  <path d="M87 371c97-65 194-31 338-110v122H87z" fill="#F7F1DF" opacity=".94"/>
+  <path d="M115 365c55-21 100-25 149-13 60 15 103 3 148-23" fill="none" stroke="#C66047" stroke-width="17" stroke-linecap="round"/>
+  <path d="M324 105h73v178l-36-21-37 21z" fill="#B95743"/>
+  <path d="M343 139h35M343 169h35" stroke="#F6D8A8" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="152" cy="351" r="13" fill="#D7B66E"/>
+  <circle cx="198" cy="372" r="9" fill="#D7B66E"/>
+</svg>

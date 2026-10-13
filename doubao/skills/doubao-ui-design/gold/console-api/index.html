@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数据中台 · 数据服务监控</title>
+<!--
+  gold · web-console —— 数据中台的「数据服务（API）调用监控」页。
+
+  它证明的是：**B 端的判断标准和官网正好相反。**
+
+    官网　　首屏影像占比越高越好（获奖站实测 40–100%）
+    B 端　　满屏是图就是设计错误 —— 屏幕要给数据、图表、列表和操作入口
+            （所以 `first-view-media` 这条门对 web-console 关掉，见 SKIP_BY_PROFILE）
+
+  这一稿的六条机制（评分细则见同目录 rubric.md，六个维度各有满分标准与扣分判断）：
+
+  1. **一屏之内答完一个问题。** 这页只回答"API 调用得怎么样"：
+     总览 → 趋势 → 排行 → 冷热 → 错误 → 告警。不掺 API 创建、不掺数据表管理。
+  2. **顺序即因果。** 上面四个总览指标是结论，往下每一块都在解释其中一个：
+     错误率 0.3% → 错误率趋势 → 错误原因分布 → 具体告警记录。
+     **有联系的板块在空间上放在一起**，这是评分细则明写的扣分项。
+  3. **一个数配一个环比。** 光有数字没有对照，看的人无法判断"这算好还是坏"。
+  4. **图表类型跟着问题走**：趋势用折线、对比用表格排行、构成用环形、
+     时间点异常用面积。**不要一律用柱状图**。
+  5. **状态色分两个角色**：底色用浅的（12–14% 透明度），字用深的。
+     只用一个值时浅底同色字必然掉到 3:1 以下 —— 看得见但读不清。
+  6. **密度靠行高，不靠塞。** 表格行高 44px、卡片间距 16px；
+     斑马纹不如一条 1px 细线。
+
+  这一稿是**亮场**（实测亮部 95%、面色 1 种），因为它是长时间盯屏的工作台。
+  和 gold/screen-hotan 那份深场大屏并排看：**同样是数据，指挥厅和工作台
+  的底色决策是相反的** —— 场景决定亮暗，不是审美偏好决定。
+-->
+<style>
+:root{
+  --canvas:#F5F6F8;
+  --panel:#FFFFFF;
+  --ink:#1B1F26;
+  --muted:#6B7280;
+  --line:#E8EAEE;
+  --accent:#2563EB;
+  --accent-soft:#EEF3FE;
+  --ok:#0F9D58;      --ok-ink:#0A6B3C;
+  --warn:#E8871A;    --warn-ink:#8A4B04;
+  --bad:#E5484D;     --bad-ink:#9B1C20;
+  --r:6px;
+  --side:216px;
+  --row:44px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;min-height:28px}
+a{color:inherit;text-decoration:none}
+table{border-collapse:collapse;width:100%}
+svg{display:block}
+
+.app{display:grid;grid-template-columns:var(--side) 1fr;min-height:100vh}
+
+/* ── 侧栏 ── */
+.side{background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:2px;padding:16px 10px}
+.side .brand{display:flex;align-items:center;gap:9px;font-weight:700;
+  letter-spacing:.02em;padding:6px 10px 20px;font-size:15px}
+.side .brand i{width:22px;height:22px;border-radius:5px;flex:none;
+  background:linear-gradient(140deg,#4C8DFF,#1E49B8);font-style:normal}
+.side a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);
+  color:var(--muted)}
+.side a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.side svg{width:17px;height:17px;flex:none}
+.side .grp{font-size:12px;color:var(--muted);padding:16px 10px 6px;letter-spacing:.04em}
+
+/* ── 主区 ── */
+.main{display:flex;flex-direction:column;min-width:0}
+.top{display:flex;align-items:center;gap:12px;padding:13px 24px;
+  border-bottom:1px solid var(--line);background:var(--panel)}
+.top h1{font-size:17px;font-weight:650}
+.top .crumb{color:var(--muted);font-size:13px}
+.top .sp{margin-left:auto}
+.body{padding:18px 24px 28px;display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* 筛选条：B 端的入口在这里，不在首屏大图里 */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:11px 14px}
+.filters label{color:var(--muted)}
+.field{border:1px solid var(--line);border-radius:var(--r);padding:5px 11px;
+  min-width:150px;color:var(--ink);background:#FCFCFD}
+.btn{border:1px solid var(--line);border-radius:var(--r);padding:6px 16px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+
+/* 指标条：主指标一档大，次指标一档小 */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px 15px}
+.kpi .k{color:var(--muted);font-size:12.5px;display:flex;gap:10px;align-items:baseline;
+  justify-content:space-between}
+.kpi .v{font-size:28px;font-weight:700;line-height:1.25;margin-top:2px;
+  display:flex;align-items:baseline;gap:6px}
+.kpi .v em{font-size:13px;font-weight:400;color:var(--muted);font-style:normal}
+.delta{font-size:12px;font-weight:600}
+.delta.up{color:var(--bad-ink)} .delta.down{color:var(--ok-ink)}
+.mini{height:5px;border-radius:3px;background:#EDF0F5;margin-top:10px;overflow:hidden}
+.mini i{display:block;height:100%;background:linear-gradient(90deg,#7FA8FF,var(--accent))}
+/* 这一行原本是 #9AA1AC，压在 #F7F9FC 的浅底块上实测 2.47:1 —— 看得见读不清。
+   B 端的弱信息不能比 --muted 更浅：长时间盯屏，浅一档就废了。 */
+.kpi .foot{display:flex;justify-content:space-between;color:var(--muted);
+  font-size:12px;margin-top:7px}
+
+/* 面板 */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.panel > header{display:flex;align-items:center;gap:10px;padding:13px 16px 0}
+.panel > header h2{font-size:15px;font-weight:650}
+.panel > header .sp{margin-left:auto}
+.panel .date{color:var(--muted);font-size:12px;padding:2px 16px 10px}
+.panel .pad{padding:0 16px 16px}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg span{padding:4px 12px;font-size:12.5px;color:var(--muted)}
+.seg span.on{background:var(--accent);color:#fff;font-weight:600}
+
+/* 表格 */
+th,td{text-align:left;padding:0 14px;height:var(--row);border-bottom:1px solid var(--line);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+th{color:var(--muted);font-weight:500;font-size:12.5px;background:#FAFBFC}
+tbody tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+/* 表格里的链接也是可点元素：行高 44px，但 <a> 自己只有 20px 高。
+   热区门量的是元素自己的盒子，不是它所在的行 —— 用 inline-flex 撑满行高。 */
+td .api{color:var(--accent);display:inline-flex;align-items:center;height:28px}
+.tag{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;
+  background:rgba(15,157,88,.12);color:var(--ok-ink)}
+.tag.warn{background:rgba(232,135,26,.14);color:var(--warn-ink)}
+.tag.bad{background:rgba(229,72,77,.12);color:var(--bad-ink)}
+
+/* 冷热：一个环 + 两个方块 */
+.hotcold{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+.donut{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--accent) 0 34.87%, #E9EDF3 34.87% 100%)}
+.donut i{width:98px;height:98px;border-radius:50%;background:var(--panel);display:grid;
+  place-items:center;text-align:center;font-style:normal;line-height:1.35}
+.donut i b{display:block;font-size:19px}
+.donut i span{font-size:11.5px;color:var(--muted)}
+.pair2{display:grid;grid-template-rows:1fr 1fr;gap:12px}
+.mininum{border:1px solid var(--line);border-radius:var(--r);padding:11px 14px}
+.mininum .k{color:var(--muted);font-size:12.5px}
+.mininum .v{font-size:22px;font-weight:700;display:flex;align-items:baseline;gap:6px}
+.mininum .v em{font-size:12px;font-weight:400;color:var(--muted);font-style:normal}
+
+/* 图例 */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:2px;display:block}
+
+/* 四种状态：切换用 data-state */
+[data-state]{display:none}
+[data-state].on{display:block}
+.empty,.loading,.error{display:grid;place-items:center;gap:9px;
+  padding:52px 20px;text-align:center;color:var(--muted)}
+.empty b,.error b{color:var(--ink);font-size:15px}
+.skel{background:linear-gradient(90deg,#EDF0F5,#F7F9FB,#EDF0F5);
+  height:32px;border-radius:var(--r);margin:8px 16px}
+
+/* 弹窗 */
+.scrim{position:fixed;inset:0;background:rgba(15,20,28,.42);opacity:0;
+  pointer-events:none;transition:opacity .18s;z-index:30}
+.scrim.on{opacity:1;pointer-events:auto}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%);z-index:31;
+  width:min(560px,92vw);background:var(--panel);border-radius:10px;padding:20px;
+  opacity:0;pointer-events:none;transition:.18s;box-shadow:0 24px 60px rgba(15,20,30,.2)}
+.modal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.modal h3{font-size:16px;margin-bottom:8px}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.modal .kv{display:grid;grid-template-columns:88px 1fr;gap:8px 14px;
+  font-size:13.5px;margin-top:12px}
+.modal .kv dt{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side">
+    <div class="brand"><i></i>数据中台</div>
+    <div class="grp">数据服务</div>
+    <a class="on" href="#">
+      <svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" opacity=".0"/><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM88,144v24a8,8,0,0,1-16,0V144a8,8,0,0,1,16,0Zm40-40v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm40-24v88a8,8,0,0,1-16,0V80a8,8,0,0,1,16,0Z"/></svg>
+      <span>服务监控</span></a>
+    <a href="#">
+      <svg viewBox="0 0 256 256" fill="currentColor"><path d="M69.12,94.15,28.5,128l40.62,33.85a8,8,0,1,1-10.24,12.29l-48-40a8,8,0,0,1,0-12.29l48-40a8,8,0,0,1,10.24,12.3Zm176,27.7-48-40a8,8,0,1,0-10.24,12.3L227.5,128l-40.62,33.85a8,8,0,1,0,10.24,12.29l48-40a8,8,0,0,0,0-12.29ZM162.73,32.48a8,8,0,0,0-10.25,4.79l-64,176a8,8,0,0,0,4.79,10.26A8.14,8.14,0,0,0,96,224a8,8,0,0,0,7.52-5.27l64-176A8,8,0,0,0,162.73,32.48Z"/></svg>
+      <span>API 管理</span></a>
+    <a href="#">
+      <svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></svg>
+      <span>调用日志</span></a>
+    <div class="grp">数据资产</div>
+    <a href="#">
+      <svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Z"/></svg>
+      <span>数据表</span></a>
+    <a href="#">
+      <svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V88H40Zm0,144V104H216v96Z"/></svg>
+      <span>血缘图谱</span></a>
+  </nav>
+
+  <div class="main">
+    <header class="top">
+      <span class="crumb">数据服务 /</span>
+      <h1>服务监控</h1>
+      <span class="sp"></span>
+      <button class="btn" data-go="empty">空状态</button>
+      <button class="btn" data-go="loading">加载态</button>
+      <button class="btn" data-go="error">异常态</button>
+      <button class="btn" data-go="data">有数据</button>
+      <button class="btn primary" id="detail">查看告警详情</button>
+    </header>
+
+    <div class="body">
+      <div class="filters">
+        <label>时间周期：</label>
+        <span class="field num">2021.05.21</span>
+        <span style="color:var(--muted)">→</span>
+        <span class="field num">2021.05.21</span>
+        <label style="margin-left:12px">所属业务：</label>
+        <span class="field">不限</span>
+        <button class="btn primary" style="margin-left:6px">搜索</button>
+      </div>
+
+      <!-- 四个总览指标：下面每一块都在解释其中一个 -->
+      <div class="kpis">
+        <div class="kpi">
+          <div class="k"><span>系统内已有 API 数</span><span>日均增长 <b class="num">5.00</b> 个</span></div>
+          <div class="v"><span class="num">195</span><em>个</em>
+            <span class="delta up num">▲ 2.88%</span></div>
+          <div class="mini"><i style="width:42%"></i></div>
+          <div class="foot"><span>已使用 <b class="num">68</b> 个</span>
+            <span>已发布 <b class="num">162</b> 个</span></div>
+        </div>
+        <div class="kpi">
+          <div class="k"><span>API 累计调用次数</span><span>日均调用 <b class="num">69.00</b> 次</span></div>
+          <div class="v"><span class="num">69</span><em>次</em>
+            <span class="delta up num">▲ 3.29%</span></div>
+          <div class="foot" style="margin-top:12px;background:#F7F9FC;border-radius:4px;
+            padding:6px 10px"><span>平均耗时 <b class="num">10.23ms</b></span>
+            <span class="delta up num">▲ 2.18%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="k"><span>调用错误率</span><span>日均错误 <b class="num">19.00</b> 个</span></div>
+          <div class="v"><span class="num">0.3%</span>
+            <span class="delta down num">▼ 18.27%</span></div>
+          <div class="mini"><i style="width:6%;background:var(--bad)"></i></div>
+          <div class="foot"><span>错误数 <b class="num">149</b> 个</span><span></span></div>
+        </div>
+        <div class="kpi">
+          <div class="k"><span>累计告警数</span><span>日均告警 <b class="num">3</b> 个</span></div>
+          <div class="v"><span class="num">3</span><em>个</em>
+            <span class="delta down num">▼ 10.06%</span></div>
+          <svg viewBox="0 0 220 42" style="width:100%;height:36px;margin-top:6px">
+            <path d="M0,34 L22,30 L44,32 L66,20 L88,26 L110,10 L132,22 L154,16 L176,28 L198,24 L220,30 L220,42 L0,42 Z"
+                  fill="rgba(229,72,77,.16)"/>
+            <path d="M0,34 L22,30 L44,32 L66,20 L88,26 L110,10 L132,22 L154,16 L176,28 L198,24 L220,30"
+                  fill="none" stroke="#E5484D" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ── 有数据 ── -->
+      <section data-state="data" class="on">
+        <div class="duo">
+          <div class="panel">
+            <header><h2>调用变化趋势</h2></header>
+            <div class="date num">2021.05.21</div>
+            <div class="pad">
+              <div class="legend" style="margin-bottom:8px">
+                <span><i style="background:#2563EB"></i>调用次数（次）</span>
+                <span><i style="background:#12B886"></i>平均耗时（ms）</span></div>
+              <svg viewBox="0 0 620 260" style="width:100%;height:250px">
+                <g stroke="#EDF0F5" stroke-width="1">
+                  <line x1="44" y1="20" x2="600" y2="20"/><line x1="44" y1="68" x2="600" y2="68"/>
+                  <line x1="44" y1="116" x2="600" y2="116"/><line x1="44" y1="164" x2="600" y2="164"/>
+                  <line x1="44" y1="212" x2="600" y2="212"/></g>
+                <g fill="#9AA1AC" font-size="12">
+                  <text x="10" y="24">25</text><text x="10" y="72">20</text>
+                  <text x="10" y="120">15</text><text x="10" y="168">10</text>
+                  <text x="16" y="216">5</text>
+                  <text x="44" y="238">08时</text><text x="132" y="238">2时</text>
+                  <text x="220" y="238">4时</text><text x="308" y="238">8时</text>
+                  <text x="396" y="238">10时</text><text x="484" y="238">14时</text>
+                  <text x="560" y="238">16时</text></g>
+                <path d="M52,206 L140,182 L228,120 L316,60 L404,74 L492,150 L580,118"
+                      fill="none" stroke="#2563EB" stroke-width="2.5"/>
+                <path d="M52,196 L140,150 L228,96 L316,44 L404,96 L492,128 L580,102"
+                      fill="none" stroke="#12B886" stroke-width="2.5"/>
+                <line x1="316" y1="20" x2="316" y2="212" stroke="#6B7280" stroke-width="1"/>
+                <g><rect x="322" y="52" width="150" height="62" rx="4" fill="#2B3038"/>
+                  <text x="334" y="72" fill="#E7EAF0" font-size="12">9时</text>
+                  <circle cx="338" cy="86" r="4" fill="#2563EB"/>
+                  <text x="350" y="90" fill="#C7CCD6" font-size="12">调用次数　23 次</text>
+                  <circle cx="338" cy="104" r="4" fill="#12B886"/>
+                  <text x="350" y="108" fill="#C7CCD6" font-size="12">平均耗时　18 ms</text></g>
+              </svg>
+            </div>
+          </div>
+
+          <div class="panel">
+            <header><h2>API 调用排行 TOP5</h2>
+              <span class="sp"></span>
+              <span class="seg"><span class="on">按调用次数</span><span>按平均耗时</span></span></header>
+            <div class="date num">2021.05.21</div>
+            <table>
+              <thead><tr><th style="width:44px"></th><th>API 名称</th>
+                <th class="n" style="text-align:right">调用次数</th>
+                <th class="n" style="text-align:right">总耗时（ms）</th>
+                <th class="n" style="text-align:right">平均耗时（ms）</th></tr></thead>
+              <tbody>
+                <tr><td class="num">1</td><td><a class="api" href="#">order_detail_query</a></td>
+                  <td class="n num">10</td><td class="n num">200</td><td class="n num">20</td></tr>
+                <tr><td class="num">2</td><td><a class="api" href="#">user_profile_batch</a></td>
+                  <td class="n num">10</td><td class="n num">180</td><td class="n num">18</td></tr>
+                <tr><td class="num">3</td><td><a class="api" href="#">stock_realtime_get</a></td>
+                  <td class="n num">10</td><td class="n num">160</td><td class="n num">16</td></tr>
+                <tr><td class="num">4</td><td><a class="api" href="#">coupon_rule_list</a></td>
+                  <td class="n num">10</td><td class="n num">140</td><td class="n num">14</td></tr>
+                <tr><td class="num">5</td><td><a class="api" href="#">shop_score_daily</a></td>
+                  <td class="n num">10</td><td class="n num">120</td><td class="n num">12</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="duo" style="margin-top:16px">
+          <div class="panel">
+            <header><h2>API 调用个数及冷热情况</h2></header>
+            <div class="date num">2021.05.21</div>
+            <div class="pad hotcold">
+              <div class="donut"><i><b class="num">34.87%</b><span>API 使用率</span></i></div>
+              <div class="pair2">
+                <div class="mininum"><div class="k">过冷 API（30 天内调用 0 次）</div>
+                  <div class="v"><span class="num">3</span><em>个</em>
+                    <span class="delta up num">▲ 3.29%</span></div></div>
+                <div class="mininum"><div class="k">过热 API（超出配额 80%）</div>
+                  <div class="v"><span class="num">6</span><em>个</em>
+                    <span class="delta up num">▲ 3.29%</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <header><h2>过冷 / 过热 API 概况</h2>
+              <span class="sp"></span>
+              <span class="seg"><span class="on">过冷 API</span><span>过热 API</span></span></header>
+            <div class="date num">2021.05.21</div>
+            <table>
+              <thead><tr><th style="width:44px"></th><th>API 名称</th><th>标记日期</th>
+                <th class="n" style="text-align:right">前 30 天日均调用次数</th></tr></thead>
+              <tbody>
+                <tr><td class="num">1</td><td><a class="api" href="#">legacy_addr_parse</a></td>
+                  <td class="num">2021.05.21</td><td class="n num">0</td></tr>
+                <tr><td class="num">2</td><td><a class="api" href="#">old_pay_callback</a></td>
+                  <td class="num">2021.05.21</td><td class="n num">0</td></tr>
+                <tr><td class="num">3</td><td><a class="api" href="#">tmp_report_export</a></td>
+                  <td class="num">2021.05.21</td><td class="n num">0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 错误率那一族：趋势 → 构成 → 排行 → 记录，四块挨在一起 -->
+        <div class="panel" style="margin-top:16px">
+          <header><h2>API 调用错误率趋势</h2></header>
+          <div class="date num">2021.05.15–2021.05.21</div>
+          <div class="pad">
+            <svg viewBox="0 0 1240 220" style="width:100%;height:200px">
+              <g stroke="#EDF0F5" stroke-width="1">
+                <line x1="52" y1="18" x2="1220" y2="18"/><line x1="52" y1="58" x2="1220" y2="58"/>
+                <line x1="52" y1="98" x2="1220" y2="98"/><line x1="52" y1="138" x2="1220" y2="138"/>
+                <line x1="52" y1="178" x2="1220" y2="178"/></g>
+              <g fill="#9AA1AC" font-size="12">
+                <text x="8" y="22">0.5%</text><text x="8" y="62">0.4%</text>
+                <text x="8" y="102">0.3%</text><text x="8" y="142">0.2%</text>
+                <text x="8" y="182">0.1%</text>
+                <text x="60" y="204">08时</text><text x="240" y="204">2时</text>
+                <text x="420" y="204">4时</text><text x="600" y="204">8时</text>
+                <text x="780" y="204">10时</text><text x="960" y="204">14时</text>
+                <text x="1140" y="204">16时</text></g>
+              <path d="M64,150 L244,58 L424,168 L604,150 L784,160 L964,132 L1144,172"
+                    fill="none" stroke="#E5484D" stroke-width="2.5"/>
+              <line x1="244" y1="18" x2="244" y2="178" stroke="#6B7280"/>
+              <g><rect x="252" y="76" width="152" height="60" rx="4" fill="#2B3038"/>
+                <text x="264" y="96" fill="#E7EAF0" font-size="12">3时</text>
+                <circle cx="268" cy="110" r="4" fill="#2563EB"/>
+                <text x="280" y="114" fill="#C7CCD6" font-size="12">调用错误率　0.13%</text>
+                <circle cx="268" cy="128" r="4" fill="#12B886"/>
+                <text x="280" y="132" fill="#C7CCD6" font-size="12">错误数　6</text></g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="duo" style="margin-top:16px">
+          <div class="panel">
+            <header><h2>调用错误原因分布</h2></header>
+            <div class="pad" style="display:grid;grid-template-columns:210px 1fr;
+              gap:16px;align-items:center">
+              <svg viewBox="0 0 200 200" style="width:200px;height:200px">
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#E5484D" stroke-width="34"
+                  stroke-dasharray="94 358" transform="rotate(-90 100 100)"/>
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#4C8DFF" stroke-width="34"
+                  stroke-dasharray="82 370" stroke-dashoffset="-94" transform="rotate(-90 100 100)"/>
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#12B886" stroke-width="34"
+                  stroke-dasharray="72 380" stroke-dashoffset="-176" transform="rotate(-90 100 100)"/>
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#8E6BE8" stroke-width="34"
+                  stroke-dasharray="46 406" stroke-dashoffset="-248" transform="rotate(-90 100 100)"/>
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#E8871A" stroke-width="34"
+                  stroke-dasharray="38 414" stroke-dashoffset="-294" transform="rotate(-90 100 100)"/>
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#C3C9D4" stroke-width="34"
+                  stroke-dasharray="120 332" stroke-dashoffset="-332" transform="rotate(-90 100 100)"/>
+                <text x="100" y="94" text-anchor="middle" fill="#6B7280" font-size="13">总计</text>
+                <text x="100" y="120" text-anchor="middle" fill="#1B1F26" font-size="26"
+                      font-weight="700">149</text>
+              </svg>
+              <div class="legend" style="flex-direction:column;gap:9px">
+                <span><i style="background:#E5484D"></i>频繁请求　<b class="num">31</b>　20.80%</span>
+                <span><i style="background:#4C8DFF"></i>数据量超限　<b class="num">27</b>　18.12%</span>
+                <span><i style="background:#12B886"></i>地址未上线　<b class="num">24</b>　16.11%</span>
+                <span><i style="background:#8E6BE8"></i>执行失败　<b class="num">16</b>　10.74%</span>
+                <span><i style="background:#E8871A"></i>调用失败　<b class="num">13</b>　8.72%</span>
+                <span><i style="background:#C3C9D4"></i>其他　<b class="num">38</b>　25.51%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <header><h2>API 调用错误率排行 TOP5</h2></header>
+            <div class="date num">2021.05.21</div>
+            <table>
+              <thead><tr><th style="width:44px"></th><th>API 名称</th>
+                <th class="n" style="text-align:right">调用次数</th>
+                <th class="n" style="text-align:right">错误数</th>
+                <th class="n" style="text-align:right">错误率</th></tr></thead>
+              <tbody>
+                <tr><td class="num">1</td><td><a class="api" href="#">order_detail_query</a></td>
+                  <td class="n num">1000</td><td class="n num">3</td>
+                  <td class="n"><span class="tag bad num">3%</span></td></tr>
+                <tr><td class="num">2</td><td><a class="api" href="#">user_profile_batch</a></td>
+                  <td class="n num">1000</td><td class="n num">2</td>
+                  <td class="n"><span class="tag warn num">2%</span></td></tr>
+                <tr><td class="num">3</td><td><a class="api" href="#">stock_realtime_get</a></td>
+                  <td class="n num">1000</td><td class="n num">2</td>
+                  <td class="n"><span class="tag warn num">2%</span></td></tr>
+                <tr><td class="num">4</td><td><a class="api" href="#">coupon_rule_list</a></td>
+                  <td class="n num">1000</td><td class="n num">2</td>
+                  <td class="n"><span class="tag warn num">2%</span></td></tr>
+                <tr><td class="num">5</td><td><a class="api" href="#">shop_score_daily</a></td>
+                  <td class="n num">1000</td><td class="n num">1</td>
+                  <td class="n"><span class="tag num">1%</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <header><h2>告警记录</h2><span class="sp"></span>
+            <span style="color:var(--muted);font-size:12px">共 <b class="num">12</b> 条</span></header>
+          <div class="date num">2021.05.21</div>
+          <table>
+            <thead><tr><th style="width:44px"></th><th style="width:180px">告警时间</th>
+              <th style="width:150px">告警类型</th><th>详情</th>
+              <th style="width:110px">通知人</th><th style="width:96px">状态</th></tr></thead>
+            <tbody>
+              <tr><td class="num">1</td><td class="num">2021.05.21 12:02:36</td><td>接口频繁调用</td>
+                <td>「order_detail_query」接口频繁调用达 312 次/s</td><td>数据服务值班</td>
+                <td><span class="tag bad">未处理</span></td></tr>
+              <tr><td class="num">2</td><td class="num">2021.05.21 11:02:36</td><td>数据库执行失败</td>
+                <td>「user_profile_batch」接口数据库执行失败</td><td>数据服务值班</td>
+                <td><span class="tag warn">处理中</span></td></tr>
+              <tr><td class="num">3</td><td class="num">2021.05.21 09:41:07</td><td>数据量超限</td>
+                <td>「stock_realtime_get」单次返回 12.4 万行，超出 10 万行上限</td>
+                <td>数仓平台组</td><td><span class="tag">已恢复</span></td></tr>
+              <tr><td class="num">4</td><td class="num">2021.05.21 08:16:52</td><td>地址未上线</td>
+                <td>「tmp_report_export」调用了未发布环境的地址</td><td>数仓平台组</td>
+                <td><span class="tag">已恢复</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 空：要给出口，不是只写"暂无数据" -->
+      <section data-state="empty"><div class="panel"><div class="empty">
+        <svg viewBox="0 0 256 256" width="52" height="52" fill="#C3C9D4"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Z"/></svg>
+        <b>这个时间段没有调用记录</b>
+        <span>当前筛选：2021.05.21 · 全部业务。换一个更长的周期，或者去 API 管理确认服务是否已发布。</span>
+        <button class="btn primary">把周期放宽到近 7 天</button>
+      </div></div></section>
+
+      <!-- 加载：骨架屏，不转圈 -->
+      <section data-state="loading"><div class="panel"><div class="loading">
+        <div style="width:100%"><div class="skel"></div><div class="skel"></div>
+          <div class="skel" style="width:60%"></div></div>
+        <span>正在汇总 195 个 API 近 24 小时的调用数据</span>
+      </div></div></section>
+
+      <!-- 异常：说清楚发生了什么 + 怎么重试 -->
+      <section data-state="error"><div class="panel"><div class="error">
+        <svg viewBox="0 0 256 256" width="52" height="52" fill="#E5484D"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"/></svg>
+        <b>监控数据拉取超时</b>
+        <span>指标服务 10s 内没有返回。已展示的是 12:00 的缓存快照，可能不是最新的。</span>
+        <button class="btn">重试</button>
+      </div></div></section>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal">
+  <h3>告警详情</h3>
+  <p style="color:var(--muted)">「order_detail_query」接口频繁调用达 312 次/s，
+     超过配额 200 次/s。</p>
+  <dl class="kv">
+    <dt>告警时间</dt><dd class="num">2021.05.21 12:02:36</dd>
+    <dt>所属业务</dt><dd>交易履约</dd>
+    <dt>调用方</dt><dd>营销活动中心（appid: mkt-center）</dd>
+    <dt>建议处置</dt><dd>临时提额至 400 次/s，并联系调用方确认是否有重试风暴</dd>
+  </dl>
+  <div class="acts"><button class="btn" data-close>关闭</button>
+    <button class="btn primary" data-close>临时提额</button></div>
+</div>
+
+<script>
+const scrim=document.getElementById('scrim'),modal=document.getElementById('modal');
+function openModal(on){scrim.classList.toggle('on',on);modal.classList.toggle('on',on);}
+scrim.onclick=()=>openModal(false);
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>openModal(false));
+document.getElementById('detail').onclick=()=>openModal(true);
+
+/* 四种状态：有数据 / 空 / 加载 / 异常。**门会真的去点** —— 点了要真的变。 */
+function show(name){
+  document.querySelectorAll('[data-state]').forEach(s=>
+    s.classList.toggle('on', s.dataset.state===name));
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+
+/* 分段控件也要真的切 */
+document.querySelectorAll('.seg').forEach(g=>g.querySelectorAll('span').forEach(s=>
+  s.onclick=()=>{g.querySelectorAll('span').forEach(x=>x.classList.remove('on'));
+                 s.classList.add('on');}));
+
+/* 关键屏声明：截图器只枚举它，不猜按钮 */
+window.__UI_CAPTURE__={
+  reset:async()=>{openModal(false);show('data');},
+  states:[
+    {id:'data',    label:'有数据'},
+    {id:'modal',   label:'告警详情弹窗', go:async()=>openModal(true)},
+    {id:'empty',   label:'空状态',  go:async()=>show('empty')},
+    {id:'loading', label:'加载态',  go:async()=>show('loading')},
+    {id:'error',   label:'异常态',  go:async()=>show('error')}
+  ]};
+</script>
+</body>
+</html>

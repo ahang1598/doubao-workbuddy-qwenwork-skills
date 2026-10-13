@@ -1,0 +1,34 @@
+/* 把成品页的截图放进文档时用的两个图位。
+
+   `pack_img.py` 把这份文件原样内联进它生成的片段，所以片段粘进**任何**画布
+   都成立 —— 画布可能是骨架建的，也可能是从零手写的；依赖画布里已有某条规则，
+   就有一半概率裸奔，裸奔的样子是通栏竖排、没有机身。
+
+   前缀 `ui-` 独占，不会撞上画布自己的类名。
+   颜色一律 `var(--x, 兜底)`：画布定义了人格变量就跟着人格走，没定义才用中性值。
+   **这里只有机制（场、机身、排布），没有人格（配色、字体）。**
+
+   .ui-stage      手机站在一块场里。机身占容器 15–28%，两侧各留 30%+ 的场，
+                  这样它看起来是「一台手机」而不是「一张竖图」。
+   .ui-stage-row  2–3 台横排，第二台抬高 7% 形成错落。
+   .ui-plate      横图/宽屏的通栏版面证据：场 + 大圆角 + 一层柔和投影。 */
+
+.ui-stage{--phone:22%;margin:26px 0;padding:clamp(28px,5%,56px) 0;
+  background:linear-gradient(160deg,var(--soft,#F4F4F2),var(--bg,#EAEAE7));
+  border-radius:14px;display:flex;align-items:flex-start;
+  justify-content:center;gap:4%}
+.ui-stage figure{margin:0;width:var(--phone);flex:none}
+.ui-stage img{width:100%;display:block;border-radius:12px;
+  box-shadow:0 0 0 1.5px rgba(0,0,0,.14),0 18px 34px -14px rgba(0,0,0,.34)}
+.ui-stage figcaption{margin-top:12px;font-size:12px;line-height:1.6;
+  color:var(--sub,#77746E);text-align:center}
+.ui-stage figcaption b{display:block;color:var(--ink,#1C1B19);font-size:12.5px}
+.ui-stage-row>figure:nth-child(2){transform:translateY(-7%)}
+.ui-plate{margin:26px 0;padding:clamp(20px,3.4%,40px);
+  background:linear-gradient(160deg,var(--soft,#F4F4F2),var(--bg,#EAEAE7));
+  border-radius:14px}
+.ui-plate img{width:100%;display:block;border-radius:10px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.06),0 24px 48px -18px rgba(0,0,0,.28)}
+.ui-plate figcaption{margin-top:14px;font-size:12px;line-height:1.6;
+  color:var(--sub,#77746E)}
+.ui-plate figcaption b{display:block;color:var(--ink,#1C1B19);font-size:12.5px}

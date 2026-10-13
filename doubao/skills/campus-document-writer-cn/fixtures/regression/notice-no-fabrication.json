@@ -1,0 +1,17 @@
+{
+  "id": "regression.notice-no-fabrication",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "报名通知不得补写目的、附件、逾期规则、发布单位或联系方式。",
+  "candidate_output": "报名通知\n\n报名对象：大一学生\n报名截止时间：本月25日\n报名方式：将报名表交至学院办公室。",
+  "assertions": {
+    "required_substrings": ["报名对象：大一学生", "报名截止时间：本月25日", "报名方式：将报名表交至学院办公室"],
+    "forbidden_substrings": ["为进一步", "提升", "附件", "逾期", "不予受理", "学院发布", "联系人", "联系电话"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

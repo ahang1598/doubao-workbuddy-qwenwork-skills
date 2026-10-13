@@ -1,0 +1,4 @@
+interface:
+  display_name: "中英商品海报策划与生图"
+  short_description: "从随手拍商品图完成中英文主题策划、商业排版与竖版海报生成"
+  default_prompt: "Use $create-seedream-product-posters to turn this product snapshot into a polished Chinese or English 9:16 campaign poster."

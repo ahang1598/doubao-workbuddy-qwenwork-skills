@@ -1,0 +1,17 @@
+{
+  "id": "regression.polish-no-new-facts",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "润色必须保留原事实，不得新增成绩、服务时长或荣誉。",
+  "candidate_output": "我是信息学院学生，上一学年专业排名第5，担任班级心理委员，并参与过两次学院迎新志愿服务。现申请校级二等奖学金。",
+  "assertions": {
+    "required_substrings": ["专业排名第5", "班级心理委员", "两次学院迎新志愿服务", "校级二等奖学金"],
+    "forbidden_substrings": ["成绩优异", "多次获奖", "累计", "小时", "一等奖", "优秀学生"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   数据大屏骨架。**它不滚动、不触控、也没有"首屏"这个概念。**
+
+   所以这几条和其它载体是反的：
+     不用留 24px 热区 —— 没人用手指点 4001px 的画布
+     不用管 overflow-x —— 它按给定尺寸整屏铺满，本来就不滚
+     不用首屏影像占比 —— 大屏的画面就是数据本身
+
+   真正决定它好不好的是三件事：
+     1 **一眼看到最重要的那个数**。主视觉区占画布 30–45%，其余是佐证。
+     2 **一屏之内密度均匀**。大屏最常见的失败是左上角挤死、右下角空着。
+     3 **图表用 SVG 画**。生图画不了精确数字，也画不了可读的中文标签。
+
+   尺寸从 query 来（比如 4001×2251）。改 --W / --H 两个变量，
+   整块画布用 transform:scale 适配浏览器窗口，**内部一律按设计尺寸写死**。
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --W:1920;              /* TODO 换成 query 给的宽 */
+  --H:1080;              /* TODO 换成 query 给的高 */
+  /* TODO 四组数值。大屏几乎都是深场 —— 亮场在大屏上会刺眼且反光 */
+  --bg:#070A12;          /* TODO 底 */
+  --panel:rgba(255,255,255,.045);
+  --ink:#E9EEF7;         /* TODO 墨色 */
+  --muted:#7C8AA3;       /* TODO 弱信息 */
+  --line:rgba(233,238,247,.12);
+  --accent:#3DE0FF;      /* TODO 唯一强调色 */
+  --warn:#FFB020; --bad:#FF5A5A;
+  --r:8px;
+  --pad:32px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{color:var(--ink);
+  /* TODO 换字体栈。大屏的数字一定要等宽 */
+  font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;display:grid;place-items:center}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* 适配层：画布按设计尺寸写死，靠 scale 塞进任何窗口。
+   截图和交付都按设计尺寸出，**不要改内部的绝对数值**。 */
+
+.fit{position:fixed;inset:0;overflow:hidden;background:#02040A}
+/* 定尺画布怎么塞进任意窗口：**必须用 JS 算缩放比**。
+   原来写的是 `transform:scale(min(100vw / (var(--W) * 1px), …))` ——
+   **CSS 的 calc 不能拿长度除长度得出一个纯数**，整条 transform 被丢弃，
+   画布按 4001×2251 原尺寸渲染、只露出中间一小块，浏览器里打开是一片黑。
+   （我自己没发现，是因为截图时用的视口正好等于画布尺寸，缩放比是 1。）
+   `--k` 由底部那几行 JS 写进来，resize 时重算。 */
+.canvas{
+  position:absolute; left:50%; top:50%;
+  width:calc(var(--W) * 1px); height:calc(var(--H) * 1px);
+  transform:translate(-50%,-50%) scale(var(--k,1));
+  transform-origin:center;
+  background:
+    radial-gradient(1200px 600px at 20% 0%, rgba(61,224,255,.10), transparent 60%),
+    var(--bg);
+  padding:var(--pad);
+  display:grid;grid-template-rows:auto 1fr;gap:var(--pad);position:relative;
+}
+
+/* 抬头 */
+.head{display:flex;align-items:baseline;gap:20px}
+.head h1{font-size:34px;font-weight:700;letter-spacing:.04em}
+.head .sub{color:var(--muted);font-size:15px}
+.head .clock{margin-left:auto;color:var(--muted);font-size:15px}
+
+/* 三列布局：侧-主-侧。主视觉区一定比两侧大一档 */
+.grid{display:grid;grid-template-columns:1fr 1.9fr 1fr;gap:var(--pad);min-height:0}
+.col{display:grid;grid-auto-rows:1fr;gap:var(--pad);min-height:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.card h3{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.06em}
+.card .body{flex:1;min-height:0}
+
+/* 主视觉：那个"一眼看到的数" */
+.stage{display:grid;grid-template-rows:auto 1fr;gap:14px}
+.hero-num{font-size:96px;font-weight:800;line-height:1;color:var(--accent)}
+.hero-cap{color:var(--muted);font-size:16px}
+
+/* 指标条 */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px}
+.kpi .k{color:var(--muted);font-size:13px}
+.kpi .v{font-size:30px;font-weight:700;margin-top:4px}
+
+/* 榜单 */
+.rank{display:flex;flex-direction:column;gap:9px}
+.rank .row{display:flex;align-items:center;gap:10px;font-size:15px}
+.rank .i{width:20px;color:var(--accent);font-weight:700}
+.rank .bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.rank .bar i{display:block;height:100%;background:var(--accent)}
+</style>
+</head>
+<body>
+<div class="fit"><div class="canvas">
+  <header class="head">
+    <h1>TODO 这块大屏叫什么</h1>
+    <span class="sub">TODO 一句话：谁在看，看什么</span>
+    <span class="clock num">TODO 更新时间</span>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card"><h3>TODO 左上区</h3><div class="body">
+        <!-- TODO 图表用 inline SVG 画 --></div></div>
+      <div class="card"><h3>TODO 左下区</h3><div class="body rank">
+        <div class="row"><span class="i num">1</span><span>TODO</span>
+          <span class="bar"><i style="width:82%"></i></span><span class="num">0</span></div>
+        <div class="row"><span class="i num">2</span><span>TODO</span>
+          <span class="bar"><i style="width:61%"></i></span><span class="num">0</span></div>
+      </div></div>
+    </div>
+
+    <!-- 主视觉区：占画布 30–45%，**它是唯一的视觉重心** -->
+    <div class="col">
+      <div class="card stage">
+        <div>
+          <div class="hero-num num">0</div>
+          <div class="hero-cap">TODO 这个数是什么，为什么它最重要</div>
+        </div>
+        <div class="body"><!-- TODO 主图表 / 地图 / 时序，用 SVG --></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="k">TODO</div><div class="v num">0</div></div>
+        <div class="kpi"><div class="k">TODO</div><div class="v num">0</div></div>
+        <div class="kpi"><div class="k">TODO</div><div class="v num">0</div></div>
+        <div class="kpi"><div class="k">TODO</div><div class="v num">0</div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card"><h3>TODO 右上区</h3><div class="body"></div></div>
+      <div class="card"><h3>TODO 右下区</h3><div class="body"></div></div>
+    </div>
+  </div>
+</div></div>
+
+<script>
+/* 定尺画布的缩放：CSS 算不出"长度 ÷ 长度 = 纯数"，只能 JS 来。
+   这三行是这一类载体的**必需件**，删了它页面在任何非设计尺寸的窗口里都是坏的。 */
+(function(){
+  var el = document.querySelector('.canvas');
+  function fit(){
+    var s = getComputedStyle(el);
+    var W = parseFloat(s.getPropertyValue('--W')) || el.offsetWidth;
+    var H = parseFloat(s.getPropertyValue('--H')) || el.offsetHeight;
+    el.style.setProperty('--k', Math.min(innerWidth / W, innerHeight / H));
+  }
+  fit(); addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>

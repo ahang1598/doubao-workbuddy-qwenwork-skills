@@ -1,0 +1,17 @@
+{
+  "id": "regression.partial-date-preserved",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "用户只给月日时必须原样保留，不得用平台年份补全、换算时长或增加个人字段。",
+  "candidate_output": "请假时间：8月11日至13日。",
+  "assertions": {
+    "required_substrings": ["8月11日至13日"],
+    "forbidden_substrings": ["2026-08-11", "2026-08-13", "2026年", "共计", "姓名：", "学生：", "学号："],
+    "forbidden_regexes": [],
+    "max_output_chars": 200,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

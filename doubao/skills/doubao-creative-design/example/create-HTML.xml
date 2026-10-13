@@ -1,0 +1,4 @@
+<item type="HTML" path="/deliverables/detail-page" title="商品详情页" brief="包含首屏、产品卖点、使用方法与购买引导的完整 HTML 商品详情页。">
+  <size width="1080" height="8000" />
+  <asset url="https://cdn.example.com/s/htmlA1b2" />
+</item>

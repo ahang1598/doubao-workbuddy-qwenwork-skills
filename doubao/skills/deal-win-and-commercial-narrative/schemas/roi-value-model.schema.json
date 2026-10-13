@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sales.roi-value-model.input.v1",
+  "type": "object",
+  "required": ["object_id", "currency", "period", "scenarios", "claims"],
+  "properties": {
+    "object_id": {"type": "string", "minLength": 1},
+    "currency": {"type": "string", "minLength": 1},
+    "period": {"type": "string", "minLength": 1},
+    "scenarios": {
+      "type": "object",
+      "required": ["low", "base", "high"],
+      "properties": {
+        "low": {"$ref": "#/$defs/scenario"},
+        "base": {"$ref": "#/$defs/scenario"},
+        "high": {"$ref": "#/$defs/scenario"}
+      },
+      "additionalProperties": false
+    },
+    "claims": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/claim"}},
+    "gate_context": {"type": "object"}
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "claim", "claim_type", "critical", "object_id", "period", "unit", "source_ids", "source_tier", "confidence", "conflict_state"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "claim": {"type": "string", "minLength": 1},
+        "claim_type": {"enum": ["fact", "calculation", "inference", "assumption", "management_claim", "unknown"]},
+        "critical": {"type": "boolean"},
+        "object_id": {"type": "string", "minLength": 1},
+        "period": {"type": "string", "minLength": 1},
+        "unit": {"type": ["string", "null"]},
+        "source_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "source_tier": {"enum": ["primary", "customer_primary", "counterparty", "official", "crm_truth", "transaction_primary", "secondary", "lead_only"]},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "conflict_state": {"enum": ["none", "open", "resolved"]}
+      }
+    },
+    "nullableNumber": {"type": ["number", "integer", "string", "null"]},
+    "scenario": {
+      "type": "object",
+      "required": ["benefit_drivers", "costs"],
+      "properties": {
+        "benefit_drivers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["driver_id", "quantity", "unit_value", "realization_rate"],
+            "properties": {
+              "driver_id": {"type": "string"},
+              "quantity": {"$ref": "#/$defs/nullableNumber"},
+              "unit_value": {"$ref": "#/$defs/nullableNumber"},
+              "realization_rate": {"$ref": "#/$defs/nullableNumber"}
+            }
+          }
+        },
+        "costs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["cost_id", "amount"],
+            "properties": {
+              "cost_id": {"type": "string"},
+              "amount": {"$ref": "#/$defs/nullableNumber"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

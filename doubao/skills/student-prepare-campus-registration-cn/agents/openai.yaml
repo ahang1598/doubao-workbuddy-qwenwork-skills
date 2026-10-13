@@ -1,0 +1,4 @@
+interface:
+  display_name: "新生报到与材料清单"
+  short_description: "核验高校新生报到要求并生成可追溯的分阶段材料与行动清单"
+  default_prompt: "使用 $student-prepare-campus-registration-cn 核验我的大学报到通知和材料，生成分步骤清单并标出待确认项。"

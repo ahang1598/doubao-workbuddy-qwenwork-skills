@@ -1,0 +1,7 @@
+interface:
+  display_name: "餐饮私域诊断与策略"
+  short_description: "通过六题开放诊断，生成餐饮私域经营策略网页报告"
+  icon_small: "./assets/icc-grow-icon.png"
+  icon_large: "./assets/icc-grow-icon.png"
+  brand_color: "#FF2141"
+  default_prompt: "使用 $siyu-strategy 逐题诊断我们餐饮品牌的私域经营问题，并生成《餐饮私域诊断与策略》网页报告。"

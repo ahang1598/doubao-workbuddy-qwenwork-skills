@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   设计展板骨架。**它不是可运行界面，是一张给人看的方案图。**
+
+   所以判断标准和产品界面相反：
+     产品界面　交互要真的能点、状态要真的会变
+     展板　　　横向读得顺、每帧有中文步骤标签、箭头指得清楚
+
+   典型用途：交互流程图（11 帧）、图层拆解、改版前后对照、状态机说明。
+
+   三条硬的：
+     1 **每帧必须有编号 + 中文标签**，不能只有图。评分表逐帧看标签。
+     2 **箭头是内容不是装饰**：它表达"下一步"，方向和落点要准。
+     3 横向排布，整体宽度由帧数决定；**页面不做纵向滚动叙事**。
+
+   帧内放什么：真机截图、线框、或直接把界面画出来。见 craft/page-grammar.md。
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  /* TODO 四组数值。展板底色建议偏中性冷灰或纸感，让帧内的界面跳出来 */
+  --canvas:#101216;      /* TODO 展板底 */
+  --ink:#F2F4F7;         /* TODO 墨色 */
+  --muted:#98A0AC;       /* TODO 弱信息 */
+  --line:rgba(242,244,247,.16);
+  --accent:#FFC93C;      /* TODO 唯一强调色：给编号和箭头 */
+  --frame:#FFFFFF;       /* 帧内画布底 */
+  --r:10px;
+  --fw:300px;            /* 帧宽 —— 移动端帧用 300，宽屏帧改 420 */
+  --gap:76px;            /* 帧间距，箭头住在这里 */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);
+  /* TODO 换字体栈 */
+  font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+.num{font-variant-numeric:tabular-nums}
+
+.board{padding:56px clamp(28px,4vw,72px) 72px;min-width:max-content}
+
+/* 抬头：展板要能被单独看懂，所以标题和一句话说明是必须的 */
+.head{max-width:900px;margin-bottom:40px}
+.head .eyebrow{color:var(--accent);letter-spacing:.14em;font-size:12px;
+  text-transform:uppercase}
+.head h1{font-size:clamp(30px,3.4vw,46px);line-height:1.15;margin:10px 0 12px;
+  letter-spacing:-.01em}
+.head p{color:var(--muted);max-width:62ch}
+
+/* 泳道：一条流程一行。多条流程就多来几个 .lane */
+.lane{margin-bottom:52px}
+.lane > h2{font-size:15px;font-weight:600;letter-spacing:.02em;margin-bottom:6px}
+.lane > .note{color:var(--muted);font-size:13px;margin-bottom:20px}
+
+/* 帧带：横向排布，箭头由 ::after 画在缝隙里 */
+.frames{display:flex;align-items:flex-start;gap:var(--gap)}
+.frame{width:var(--fw);flex:none;position:relative}
+.frame:not(:last-child)::after{
+  content:"";position:absolute;top:calc(var(--fw) * 0.9);
+  left:calc(100% + 14px);width:calc(var(--gap) - 28px);height:2px;
+  background:var(--accent);}
+.frame:not(:last-child)::before{
+  content:"";position:absolute;top:calc(var(--fw) * 0.9 - 4px);
+  left:calc(100% + var(--gap) - 20px);
+  border:5px solid transparent;border-left-color:var(--accent);z-index:2}
+
+/* 帧编号 + 中文标签：**评分表逐帧看这两样** */
+.frame .cap{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.frame .sn{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+.frame .cap b{font-size:14.5px;font-weight:650}
+.frame .why{color:var(--muted);font-size:12.5px;margin-top:8px;line-height:1.65}
+
+/* 帧内画布：手机帧就是 390:844，宽屏帧改成 16:10 */
+.shot{background:var(--frame);border-radius:var(--r);overflow:hidden;
+  aspect-ratio:390/844;position:relative;border:1px solid var(--line)}
+.shot.wide{aspect-ratio:16/10}
+.shot img{width:100%;height:100%;object-fit:cover}
+
+/* 标注：指着帧内某个位置说话。left/top 用百分比，跟着帧走 */
+.pin{position:absolute;width:22px;height:22px;border-radius:50%;
+  background:var(--accent);color:#101216;display:grid;place-items:center;
+  font-size:12px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.legend{display:flex;flex-wrap:wrap;gap:14px 26px;margin-top:14px;color:var(--muted);
+  font-size:12.5px}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:18px;height:18px;border-radius:50%;background:var(--accent);
+  color:#101216;display:grid;place-items:center;font-size:11px;font-weight:700;
+  font-style:normal}
+</style>
+</head>
+<body>
+<div class="board">
+  <header class="head">
+    <div class="eyebrow">__PART__</div>
+    <h1>TODO 这块展板讲什么（一句话，别写"设计方案"）</h1>
+    <p>TODO 谁在什么场景下走这条流程，走完得到什么。展板要能被单独看懂。</p>
+  </header>
+
+  <!-- 一条流程一个 .lane。帧数按 query 给的来 —— 说 11 帧就是 11 帧 -->
+  <section class="lane">
+    <h2>TODO 这条流程叫什么</h2>
+    <div class="note">TODO 一句话：从哪儿开始，到哪儿结束</div>
+
+    <div class="frames">
+      <!-- 复制这个 .frame 到需要的帧数。删掉不用的 .pin -->
+      <figure class="frame">
+        <div class="cap"><span class="sn num">01</span><b>TODO 这一帧叫什么</b></div>
+        <div class="shot">
+          <!-- TODO 真机截图 / 线框 / 直接画的界面 -->
+          <div class="pin" style="left:8%;top:14%">1</div>
+        </div>
+        <div class="why">TODO 他在这一帧要做什么，我们为此放了什么。</div>
+      </figure>
+
+      <figure class="frame">
+        <div class="cap"><span class="sn num">02</span><b>TODO</b></div>
+        <div class="shot"></div>
+        <div class="why">TODO</div>
+      </figure>
+
+      <figure class="frame">
+        <div class="cap"><span class="sn num">03</span><b>TODO</b></div>
+        <div class="shot"></div>
+        <div class="why">TODO</div>
+      </figure>
+    </div>
+
+    <div class="legend">
+      <span><i>1</i>TODO 标注一说明</span>
+      <span><i>2</i>TODO 标注二说明</span>
+    </div>
+  </section>
+</div>
+</body>
+</html>

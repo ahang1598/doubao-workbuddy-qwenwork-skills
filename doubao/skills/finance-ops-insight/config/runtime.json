@@ -1,0 +1,295 @@
+{
+  "skill_id": "finance-ops-insight",
+  "version": "V2-search-autonomy",
+  "department_optimization_version": "V3.3-finance-integration",
+  "production_id": "PROD-068",
+  "core_skill_id": "CORE-037",
+  "archetype": "calculation-decision",
+  "category": "财务管理",
+  "case_type": "finance-ops-insight",
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 1200,
+      "target_output_tokens": 700,
+      "required_slots": [
+        "direct_answer",
+        "hard_gates",
+        "evidence",
+        "limitations",
+        "next_action"
+      ]
+    },
+    "brief": {
+      "target_chars": 3000,
+      "target_output_tokens": 1600,
+      "required_slots": [
+        "answer",
+        "metric_bridge",
+        "exceptions",
+        "unknowns",
+        "actions",
+        "artifact_index"
+      ]
+    },
+    "full": {
+      "target_chars": 7000,
+      "target_output_tokens": 3600,
+      "required_slots": [
+        "executive_summary",
+        "metric_bridge",
+        "scenarios",
+        "counter_case",
+        "unknowns",
+        "actions",
+        "artifact_index"
+      ]
+    }
+  },
+  "provider_safety_ceiling": {
+    "max_output_tokens": 6000,
+    "on_risk": "complete_compact_degraded_artifact"
+  },
+  "route_contract": {
+    "fields": [
+      "selected_skill",
+      "intent",
+      "route_status"
+    ],
+    "route_only_no_analysis": true
+  },
+  "capability_gates": {
+    "can_explain_variance": [
+      "financial_data",
+      "baseline",
+      "period_currency"
+    ],
+    "can_forecast": [
+      "opening_cash",
+      "dated_cash_flows",
+      "period_currency"
+    ],
+    "can_analyze_margin": [
+      "revenue",
+      "cost_basis"
+    ],
+    "can_recommend_action": [
+      "metric_result",
+      "user_policy_or_explicit_scenario"
+    ]
+  },
+  "claim_ledger": {
+    "required": true,
+    "critical_primary_or_official": true,
+    "unknown_conservation": true
+  },
+  "artifact_contract": {
+    "full": "write_complete_json_with_schema_hash_counts",
+    "compact": "core_results_exceptions_unknowns_hard_gates_sources_path"
+  },
+  "deterministic_tool": "scripts/business_metrics.py",
+  "tool_contract": {
+    "generic_schema": true,
+    "preserve_unknown": true,
+    "emit_formula_unit_period_assumptions": true
+  },
+  "compact_tool_output": "compact_summary_only",
+  "deliverable_validator": "runtime/validate_deliverable.py",
+  "finalizer": {
+    "type": "source_locked",
+    "max_runs": 1,
+    "may_add_facts": false
+  },
+  "privacy_scan": true,
+  "side_effect_policy": {
+    "read_compute_draft": "allow",
+    "write_send_post_pay": "preview_confirm_permission_audit"
+  },
+  "success_contract": {
+    "success": "completed",
+    "degraded": "minimum_complete_artifact",
+    "stop": "failed_or_routed"
+  },
+  "loading_profile": {
+    "root_minimal": true,
+    "references_on_demand": true
+  },
+  "primary_artifact": "CFO财务简报",
+  "states": [
+    "ready",
+    "degraded",
+    "intake_required",
+    "confirmation_required",
+    "routed",
+    "stopped"
+  ],
+  "modes": [
+    "variance",
+    "margin",
+    "cash_runway",
+    "cfo_brief"
+  ],
+  "analysis_modules": [
+    "break_even",
+    "client_profitability",
+    "pricing_sensitivity",
+    "revenue_and_profit_concentration",
+    "seasonality",
+    "recurring_costs",
+    "monthly_digest",
+    "annual_review"
+  ],
+  "default_mode": "cfo_brief",
+  "routing": {
+    "positive_triggers": [
+      "预算实际差异",
+      "毛利分析",
+      "runway",
+      "发薪可行性",
+      "CFO简报",
+      "现金流滚动预测"
+    ],
+    "negative_triggers": [
+      "法定审计",
+      "税务申报提交",
+      "ERP过账",
+      "付款执行",
+      "催收诉讼"
+    ],
+    "adjacent_routes": {
+      "tax_filing": "税务申报闭环",
+      "ar_collections_legal": "催收诉讼",
+      "erp_mutation": "主数据/过账写入",
+      "audit_opinion": "审计意见"
+    }
+  },
+  "intake": {
+    "blocking": [
+      "financial_data_or_cash_schedule",
+      "analysis_purpose_and_baseline",
+      "period_and_currency_policy"
+    ],
+    "optional": [
+      "balance_sheet",
+      "gl_summary",
+      "budget_table",
+      "sku_structure",
+      "payroll_dates_amounts",
+      "credit_line",
+      "scenario_assumptions"
+    ],
+    "max_clarifying_questions": 3
+  },
+  "permissions": {
+    "read_uploads": "allow",
+    "run_local_scripts": "allow",
+    "write_exports": "confirm",
+    "send_message": "confirmation_required",
+    "pay": "deny",
+    "delete": "deny",
+    "deploy": "deny",
+    "mutate_erp": "deny"
+  },
+  "scripts": {
+    "variance_decomp": "scripts/variance_decomp.py",
+    "margin_calc": "scripts/margin_calc.py",
+    "cash_runway": "scripts/cash_runway.py",
+    "business_metrics": "scripts/business_metrics.py"
+  },
+  "output_budget": {
+    "max_chars": 12000,
+    "compression_order": [
+      "appendix_detail",
+      "secondary_scenarios",
+      "verbose_narrative"
+    ],
+    "never_compress": [
+      "hard_gates",
+      "payroll_status",
+      "core_tables",
+      "limitations",
+      "terminal_state"
+    ]
+  },
+  "calculation_policy": {
+    "preserve_nulls": true,
+    "forbid_invented_defaults": true,
+    "quote_script_output_verbatim": true,
+    "failed_recon_is_hard_stop": true,
+    "confidence_thresholds_require_user_policy": true,
+    "without_confidence_policy": "unknown_and_coverage_facts_only",
+    "top_n_requires_explicit_input": true,
+    "missing_allocated_cost_blocks_profitability": true
+  },
+  "safety": {
+    "untrusted_external_content": true,
+    "no_legal_tax_opinion": true
+  },
+  "search_runtime": {
+    "router": "runtime/search_router.py",
+    "evidence_validator": "runtime/search_evidence_validator.py",
+    "deliverable_validator": "runtime/validate_deliverable.py",
+    "route_default": "off",
+    "max_calls": 0,
+    "optional_max_calls": 0,
+    "source_order": [
+      "user_material",
+      "authorized_private_data",
+      "official_primary"
+    ],
+    "query_stages": [],
+    "primary_source_types": [
+      "user_material",
+      "authorized_private_data"
+    ],
+    "critical_claim_policy": {
+      "require_primary_or_official": true,
+      "critical_claims": "账簿、预算、实际与用户确认的情景假设",
+      "unsupported_action": "unknown",
+      "conflict_action": "disclose_or_unknown"
+    },
+    "deliverable_contract": {
+      "required_any": [
+        [
+          "结论",
+          "交付"
+        ],
+        [
+          "局限",
+          "风险",
+          "免责声明"
+        ]
+      ],
+      "min_urls": 0,
+      "min_chars": 80,
+      "forbidden_patterns": [
+        "DETERMINISTIC TOOL OUTPUT",
+        "search-evidence\\.json"
+      ],
+      "repair_policy": "deterministic_only_no_new_facts"
+    },
+    "decision_policy": {
+      "version": "task-semantic-v1",
+      "principle": "先判断核心交付是否依赖外部公共证据，不要求用户声明是否联网",
+      "core_deliverable": "差异瀑布与narrative | CFO执行摘要与行动项 | 毛利诊断与定价情景 | 滚动现金流与发薪可行性",
+      "required_when": [],
+      "optional_when": [
+        "公开利率或同行基准属于可选附录，不是典型主路径"
+      ],
+      "off_when": [
+        "依据 P&L、BS、GL、预算和现金流做经营解读"
+      ],
+      "blocked_when": [
+        "搜索企业私有财务、银行信息或用外部基准替代内部事实"
+      ],
+      "required_max_calls": 3,
+      "optional_max_calls": 2,
+      "clarify_when_material": [
+        "object",
+        "scope",
+        "time"
+      ],
+      "route_default_rationale": "主结论必须由用户财务数据支撑，当前 off 合理。",
+      "audit_schema_version": "1.0"
+    }
+  }
+}

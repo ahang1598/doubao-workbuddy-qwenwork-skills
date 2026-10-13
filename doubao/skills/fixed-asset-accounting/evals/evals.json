@@ -1,0 +1,56 @@
+{
+  "skill_name": "fixed-asset-accounting",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We bought a generator: invoice 12,000,000 NGN, delivery 400,000, installation 600,000, staff training 250,000, 10-year life, 1,000,000 residual, straight-line. What do we capitalize and what's annual depreciation?",
+      "expected_output": "Capitalize 13,000,000 (invoice + delivery + installation); expense training 250,000. Annual depreciation = (13,000,000 - 1,000,000)/10 = 1,200,000.",
+      "assertions": [
+        "Capitalizes 13,000,000 including delivery and installation",
+        "Expenses the 250,000 training cost with rationale",
+        "Computes annual depreciation of 1,200,000 net of residual",
+        "Verifies arithmetic with code"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "We sold a truck for 3,500,000. Original cost 9,000,000, accumulated depreciation 6,200,000. Book the disposal.",
+      "expected_output": "Carrying amount 2,800,000; gain 700,000. Entry: Dr Cash 3,500,000, Dr Accumulated Depreciation 6,200,000 / Cr Vehicle Cost 9,000,000, Cr Gain on Disposal 700,000.",
+      "assertions": [
+        "Computes carrying amount of 2,800,000",
+        "Recognizes a gain of 700,000",
+        "Derecognizes both cost and accumulated depreciation in the entry",
+        "Entry balances"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "A processing plant (carrying amount 800M) serves a product line whose market price collapsed. FV less costs of disposal is 520M; value in use from our DCF is 610M. Impair?",
+      "expected_output": "Recoverable amount = max(520M, 610M) = 610M. Impairment loss = 190M. Dr Impairment Loss / Cr Accumulated Impairment 190M. Should note IFRS reversal possibility if conditions recover and prospective depreciation on the new base.",
+      "assertions": [
+        "Uses the HIGHER of FV-CTS and VIU as recoverable amount",
+        "Computes impairment of 190M, not 280M",
+        "Books the impairment entry correctly",
+        "Notes revised depreciation base going forward and IFRS reversal rules"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Compute year-1 depreciation for each asset in the attached register (evals/files/asset_register.xlsx) using the stated method, and total the charge. The mould has a 200,000-unit life and produced 35,000 units this year.",
+      "expected_output": "Press $20,000 (SL); trucks $40,000 (DDB y1); mould $17,500 (UoP); total $77,500.",
+      "assertions": [
+        "Straight-line charge $20,000",
+        "Double-declining year-1 charge $40,000",
+        "Units-of-production charge $17,500",
+        "Total year-1 depreciation $77,500",
+        "Computes with code"
+      ],
+      "files": [
+        "evals/files/asset_register.xlsx"
+      ]
+    }
+  ]
+}

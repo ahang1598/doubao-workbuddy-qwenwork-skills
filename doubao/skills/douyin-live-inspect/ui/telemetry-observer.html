@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>埋点观察台 · 质检 Skill</title>
+  <style>
+    :root { color-scheme:light; font-family:system-ui,-apple-system,"PingFang SC",sans-serif; color:#172f36; background:#f3f6f5; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    header { padding:30px 36px 24px; background:#fff; border-bottom:1px solid #dce5e1; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:2px; color:#507568; margin:0 0 12px; }
+    h1 { font-size:26px; font-weight:650; letter-spacing:-.5px; margin:0; }
+    .title { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    .subtitle { color:#5c7076; font-size:13px; margin:12px 0 0; line-height:1.7; }
+    #connection { border-radius:20px; padding:7px 12px; font-size:12px; white-space:nowrap; background:#edf2f0; }
+    #connection[data-state="connected"] { background:#e1f3e8; color:#17673b; }
+    #connection[data-state="error"] { background:#fff0df; color:#865510; }
+    main { padding:24px 36px; }
+    .toolbar { display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+    label { font-size:12px; color:#5c7076; display:flex; align-items:center; gap:8px; }
+    input,select { font:inherit; color:#172f36; background:white; border:1px solid #cddbd4; border-radius:7px; padding:9px 10px; }
+    input { width:270px; }
+    :focus-visible { outline:3px solid #74bda0; outline-offset:2px; }
+    #count { margin-left:auto; font-size:12px; color:#5c7076; }
+    .workspace { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(310px,1fr); gap:20px; align-items:start; }
+    .panel { border:1px solid #dce5e1; border-radius:10px; overflow:hidden; background:white; }
+    .panel-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:17px 20px; border-bottom:1px solid #e6eeea; }
+    h2 { font-size:14px; margin:0; font-weight:650; }
+    .small { color:#73888b; font-size:11px; }
+    .table-wrap { max-height:65vh; overflow:auto; }
+    table { width:100%; border-collapse:collapse; font-size:12px; text-align:left; }
+    th { color:#6a7f81; font-weight:500; background:#f9fbfa; position:sticky; top:0; padding:12px 15px; white-space:nowrap; }
+    td { padding:13px 15px; border-top:1px solid #eef3f0; vertical-align:top; }
+    tbody tr { cursor:pointer; }
+    tbody tr:hover,tbody tr.selected { background:#eff8f3; }
+    .event-key { border:0; padding:0; background:none; color:#205d4a; text-align:left; font:600 12px ui-monospace,SFMono-Regular,Consolas,monospace; cursor:pointer; overflow-wrap:anywhere; }
+    .event-description { margin-top:5px; color:#73888b; line-height:1.5; max-width:330px; }
+    .nowrap { white-space:nowrap; }
+    .result { color:#247146; }
+    .result[data-result="failure"],.result[data-result="failed"] { color:#b1453a; }
+    .result[data-result="partial"],.result[data-result="cancelled"] { color:#9b6a16; }
+    #empty { padding:60px 24px; text-align:center; color:#6a7f81; font-size:13px; line-height:1.9; }
+    #empty strong { display:block; color:#345d50; font-weight:600; margin-bottom:6px; }
+    .details { position:sticky; top:20px; }
+    #detail-description { margin:18px 20px; color:#5c7076; font-size:12px; line-height:1.7; }
+    #detail-meta { padding:0 20px; font-size:12px; line-height:1.9; overflow-wrap:anywhere; }
+    pre { margin:18px 12px 12px; border-radius:6px; background:#f5f8f6; padding:16px; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace; max-height:49vh; overflow:auto; }
+    footer { color:#758789; font-size:11px; margin-top:18px; line-height:1.8; }
+    [hidden] { display:none!important; }
+    @media(max-width:1000px) { .workspace { grid-template-columns:1fr; } .details { position:static; } }
+    @media(max-width:600px) { header { padding:22px 18px; } main { padding:18px; } h1 { font-size:22px; } input { width:190px; } #count { margin-left:0; } }
+  </style>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">INSPECTION SKILL / LOCAL OBSERVER</p>
+    <div class="title"><h1>埋点观察台</h1><span id="connection" role="status" data-state="waiting">正在连接</span></div>
+    <p class="subtitle">实时查看本机埋点。正常上报照常进行，观察记录仅保存在内存中。</p>
+  </header>
+  <main>
+    <div class="toolbar">
+      <label>搜索<input id="search" type="search" placeholder="事件 Key 或中文说明" autocomplete="off"></label>
+      <label>版本<select id="mode"><option value="all">全部</option><option value="formal">正式版</option><option value="lite">Lite</option><option value="shared">公共入口 / 准备</option></select></label>
+      <span id="count">尚未捕获事件</span>
+    </div>
+    <div class="workspace">
+      <section class="panel" aria-label="实时事件列表">
+        <div class="panel-heading"><h2>实时事件</h2><span class="small">最新事件在前 · 点击查看详情</span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th scope="col">本机时间</th><th scope="col">事件</th><th scope="col">版本</th><th scope="col">业务结果</th></tr></thead><tbody id="events"></tbody></table>
+          <div id="empty"><strong>等待下一条埋点</strong>现在正常使用 Skill，事件进入发送通道后会出现在这里。<br>服务开启前的事件不会补发；关闭遥测时不会捕获事件。</div>
+        </div>
+      </section>
+      <aside class="panel details" aria-label="事件详情">
+        <div class="panel-heading"><h2>事件详情</h2><span class="small" id="detail-status">未选择</span></div>
+        <p id="detail-description">从左侧选择一条事件，查看中文说明和实际发送字段。</p>
+        <div id="detail-meta"></div>
+        <pre id="detail" hidden></pre>
+      </aside>
+    </div>
+    <footer>“已捕获”仅表示事件进入 SDK 发送通道，不代表线上平台已接收或入库。业务结果与埋点投递结果不同。<br>仅观察相同本机用户、相同配置目录的运行实例；最多保留最近 1000 条，服务关闭后清空。</footer>
+  </main>
+</body>
+</html>

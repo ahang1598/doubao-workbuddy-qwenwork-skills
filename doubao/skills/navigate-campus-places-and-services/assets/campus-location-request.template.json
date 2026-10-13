@@ -1,0 +1,35 @@
+{
+  "mode": "service_guide",
+  "institution": {
+    "name": "",
+    "official_domain": "",
+    "campus": ""
+  },
+  "requester": {
+    "role": ""
+  },
+  "service": {
+    "raw_query": "",
+    "normalized_intent": ""
+  },
+  "place": {
+    "raw_label": "",
+    "place_type": ""
+  },
+  "event_context": {
+    "name": "",
+    "date": "",
+    "term_or_batch": "",
+    "session": ""
+  },
+  "route": {
+    "requested": false,
+    "origin": "",
+    "mode": ""
+  },
+  "constraints": {
+    "date_context": "",
+    "accessibility": ""
+  }
+}
+

@@ -1,0 +1,19 @@
+[project]
+name = "audit-skill"
+version = "0.1.0"
+description = "Video Audit and Censorship Skill"
+requires-python = ">=3.10"
+dependencies = [
+     "funasr",
+     "torch",
+     "modelscope",
+     "kaldi-native-fbank",
+     "numpy",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "black",
+    "isort"
+]

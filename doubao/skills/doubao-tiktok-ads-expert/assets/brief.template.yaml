@@ -1,0 +1,81 @@
+# =============================================================================
+# TikTok 广告搭建需求单（MCP版）
+# =============================================================================
+# 使用说明：
+# 1. 复制本模板，填写你的广告需求
+# 2. 保存为 YAML 文件
+# 3. 使用 build_ad.py --config 执行搭建
+# =============================================================================
+
+# -------------------- 账户信息 --------------------
+# 注意：凭证从本地配置文件和加密存储读取，不需要在这里填写
+# advertiser_id 可选，不填则使用配置文件中的默认账户
+advertiser_id: ""  # 可选，不填使用默认账户
+
+# -------------------- 广告计划（Campaign） --------------------
+campaign:
+  campaign_name: "My Campaign"        # 广告计划名称
+  objective_type: "APP_PROMOTION"     # 营销目标
+                                       # 可选值：APP_PROMOTION / CONVERSIONS / TRAFFIC / REACH / VIDEO_VIEWS / ENGAGEMENT / LEAD_GENERATION / PRODUCT_SALES
+  budget_mode: "BUDGET_MODE_DAY"      # 预算模式
+                                       # 可选值：BUDGET_MODE_DAY（日预算）/ BUDGET_MODE_TOTAL（总预算）
+  budget: 50                          # 预算金额（美元）
+
+# -------------------- 广告组（Ad Group） --------------------
+adgroup:
+  adgroup_name: "My Ad Group"         # 广告组名称
+  optimization_goal: "INSTALL"        # 优化目标
+                                       # 可选值：INSTALL / IN_APP_EVENT / CONVERSIONS / CLICK / IMPRESSION / VIDEO_VIEW
+  billing_event: "OCPM"               # 计费方式
+                                       # 可选值：OCPM / CPC / CPM / CPV
+  bid_type: "BID_TYPE_NO_BID"         # 出价类型
+                                       # 可选值：BID_TYPE_NO_BID（自动出价）/ BID_TYPE_MANUAL（手动出价）
+  bid_amount: 0                       # 手动出价金额（自动出价时填0）
+
+  # 定向设置
+  targeting:
+    location: ["US"]                  # 投放地区
+    age: ["18-24", "25-34", "35-44"]  # 年龄段
+    gender: "GENDER_ALL"              # 性别：GENDER_MALE / GENDER_FEMALE / GENDER_ALL
+    language: ["en"]                  # 语言
+    interests: []                     # 兴趣定向（可选）
+    behaviors: []                     # 行为定向（可选）
+
+  # 版位设置
+  placement:
+    placement_type: "PLACEMENT_TYPE_AUTOMATIC"  # 版位类型
+                                                 # PLACEMENT_TYPE_AUTOMATIC（自动版位）
+                                                 # PLACEMENT_TYPE_MANUAL（手动版位）
+    placements: []                              # 手动版位列表（自动版位时留空）
+
+  # 投放排期
+  schedule:
+    start_time: ""                   # 开始时间（YYYY-MM-DD HH:MM:SS）
+    end_time: ""                     # 结束时间（YYYY-MM-DD HH:MM:SS，留空表示长期投放）
+
+# -------------------- 广告创意（Ad） --------------------
+ad:
+  ad_name: "My Ad"                    # 广告名称
+  ad_format: "SINGLE_VIDEO"           # 广告格式
+                                       # 可选值：SINGLE_VIDEO / SINGLE_IMAGE / CAROUSEL
+  video_id: ""                        # 视频素材 ID（视频广告必填）
+  image_id: ""                        # 图片素材 ID（图片广告必填）
+  ad_text: "Download now!"            # 广告文案
+  call_to_action: "INSTALL_NOW"       # CTA 按钮
+                                       # 可选值：INSTALL_NOW / DOWNLOAD / SHOP_NOW / LEARN_MORE / SIGN_UP / CONTACT_US
+  landing_page_url: ""                # 落地页 URL（网站转化类广告必填）
+
+# -------------------- 高级设置（可选） --------------------
+advanced:
+  pixel_id: ""                        # Pixel ID（转化追踪，可选）
+  app_id: ""                          # App ID（应用推广类，可选）
+  deep_link: ""                       # 深链（可选）
+  tracking_params: {}                 # 追踪参数（可选）
+
+# =============================================================================
+# 安全说明：
+# - 本文件不存储任何敏感凭证（Token、Secret等）
+# - 凭证从本地配置文件和加密存储读取
+# - 新建广告默认状态为 DISABLE（暂停）
+# - 确认无误后可手动启用
+# =============================================================================

@@ -1,0 +1,41 @@
+{
+  "schema_version": "font-cdn-manifest-2.0",
+  "cdn_base_url": "https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/v1",
+  "verified_at": "2026-09-04",
+  "policy": "Only explicitly listed and verified objects may be downloaded. Do not derive URLs from catalog paths.",
+  "files": [
+    {
+      "catalog_id": "chinese-0010-font-4f8d31775b64",
+      "name": "思源黑体-简体中文版",
+      "local_path": "assets/fonts/packages/chinese/chinese-0010-font-4f8d31775b64/SourceHanSansSC-VF.otf",
+      "cdn_path": "source-han-sans-sc-vf/source-han-sans-sc-vf.otf",
+      "cdn_url": "https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/v1/source-han-sans-sc-vf/source-han-sans-sc-vf.otf",
+      "size_bytes": 31749144,
+      "md5": "6648923c1b313561d0166744592cd80b",
+      "content_type": "application/font-sfnt",
+      "verified": true
+    },
+    {
+      "catalog_id": "chinese-0045-font-c817c7883480",
+      "name": "抖音美好体",
+      "local_path": "assets/fonts/packages/chinese/chinese-0045-font-c817c7883480/DouyinSansBold.ttf",
+      "cdn_path": "douyin-sans/douyin-sans-bold.ttf",
+      "cdn_url": "https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/v1/douyin-sans/douyin-sans-bold.ttf",
+      "size_bytes": 1919404,
+      "md5": "6068c4698b30572ac0d208464cc8d03a",
+      "content_type": "application/font-sfnt",
+      "verified": true
+    },
+    {
+      "catalog_id": "chinese-0088-font-3a98f632ba91",
+      "name": "优设得意黑",
+      "local_path": "assets/fonts/packages/chinese/chinese-0088-font-3a98f632ba91/SmileySans-Oblique.ttf",
+      "cdn_path": "smiley-sans/smiley-sans-oblique.ttf",
+      "cdn_url": "https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/v1/smiley-sans/smiley-sans-oblique.ttf",
+      "size_bytes": 2629764,
+      "md5": "0f7526e2ca815e5e8ffd3bd8a1663144",
+      "content_type": "application/font-sfnt",
+      "verified": true
+    }
+  ]
+}

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750,initial-scale=1">
+<title>实验有道 · 增长无限 —— 年度宣讲会分享长图</title>
+<!--
+  gold · long-image —— 「实验有道 · 增长无限」年度宣讲会活动分享长图，750×N。
+
+  它证明的是：**长图不是"竖着的网页"，也不是分屏 H5。**
+
+    分屏 H5　一屏 = 一个视口高，scroll-snap 落点确定，有翻页控件
+    长图　　 没有"屏"只有段；连续往下读；**零交互控件**；
+             最终会被截成一张图保存到相册、转发到群里
+
+  这一稿的五条机制：
+
+  1. **首段要能单独当封面。** 转发时缩略图截的就是它 ——
+     所以主标、时间、入口三件事必须挤在第一屏之内，不能往下拖。
+  2. **段与段之间必须换气。** 这一份用了四种交替：深底 / 浅底块 /
+     通栏图 / 一条细线。**十段一个样是长图最容易犯的错** ——
+     它不像网页有滚动条给人进度感，节奏全靠底色和留白。
+  3. **字号要按 750 画布放大**：正文 26–30px、段标 48–56px、巨字 90–140px。
+     照 App 的 15px 写，出图之后在手机相册里看就是糊的。
+  4. **一段一件事，一段最多一个巨字。** 巨字是节奏点，多了就没有节奏。
+  5. **议程这类重复结构要给"分组"**（Part 1 / Part 2），
+     否则 8 条讲者信息连着排下来，读的人会在第 3 条放弃。
+
+  实测这一稿深场 85%、面色 3 种 —— 长图适合一个明确的主调，
+  因为它整张被一次看到，不像网页可以靠分屏换调性。
+
+  **这份 gold 有一处已知短板，不要照抄这一点：**
+  礼品格、讲者头像、二维码全是手绘 SVG，而原稿那一份是 4 张礼品实拍
+  + 8 张讲者人像。所以 `asset-count` 在它身上会报一条 REPORT（实测 3 个，下限 6）。
+  **那条 REPORT 是对的** —— 一张要被转发的长图，真实人脸和实拍物件比手绘更有说服力。
+  留着这条不修，是因为把阈值调低去迁就一份还原稿，等于把尺子拧弯来量自己。
+-->
+<style>
+:root{
+  --canvas:#0A0B14;
+  --ink:#F4F5FA;
+  --muted:#9AA0B5;
+  --accent:#8B7BFF;         /* 唯一强调色 */
+  --accent-2:#C9C2FF;
+  --soft:#141628;           /* 换气用的浅一档底块 */
+  --line:rgba(244,245,250,.12);
+  --r:18px;
+  --pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:750px;margin:0 auto;background:var(--canvas);color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  font-size:28px;line-height:1.75;-webkit-font-smoothing:antialiased}
+img{display:block;width:100%}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+.seg{padding:var(--pad);position:relative}
+.seg.soft{background:var(--soft)}
+.seg.flush{padding-left:0;padding-right:0}
+.rule{height:1px;background:var(--line);margin:0 var(--pad)}
+
+/* ── 01 封面段：转发缩略图截的就是它 ── */
+.cover{min-height:980px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(600px 420px at 78% 34%, rgba(139,123,255,.42), transparent 68%),
+    radial-gradient(420px 320px at 16% 84%, rgba(72,196,255,.20), transparent 70%),
+    linear-gradient(180deg,#0E1024,#0A0B14)}
+.cover .brandbar{display:flex;align-items:center;gap:16px;font-size:22px;
+  color:var(--muted);position:relative;z-index:2}
+.cover .brandbar b{color:var(--ink);font-weight:600}
+.cover .brandbar i{width:1px;height:20px;background:var(--line);font-style:normal}
+.cover .mid{position:relative;z-index:2;margin-top:56px}
+.cover .kicker{font-size:24px;letter-spacing:.14em;color:var(--accent-2)}
+.cover h1{font-size:82px;line-height:1.14;font-weight:800;letter-spacing:.02em;
+  margin:22px 0 14px}
+.cover .en{font-size:26px;color:var(--muted);letter-spacing:.04em}
+.cover .when{position:relative;z-index:2}
+.cover .when .arrow{font-size:44px;color:var(--accent-2);line-height:1}
+.cover .when .k{font-size:24px;color:var(--muted);margin-top:22px}
+.cover .when .v{font-size:64px;font-weight:800;line-height:1.2}
+/* 主视觉：一座 CSS/SVG 画的天平。**长图的主视觉不一定要生图** ——
+   这里的形是"实验 = 权衡"，用几何画反而更干净、也不会出手指瑕疵。 */
+.scale{position:absolute;right:-40px;top:180px;width:430px;height:430px;z-index:1;
+  filter:drop-shadow(0 30px 60px rgba(139,123,255,.35))}
+.orb{position:absolute;border-radius:50%;z-index:1;
+  background:radial-gradient(circle at 32% 28%, #E6E1FF, #7C6BF0 62%, #3B2FA8)}
+.orb.a{width:44px;height:44px;right:86px;top:150px}
+.orb.b{width:26px;height:26px;right:330px;top:392px}
+.orb.c{width:18px;height:18px;right:70px;top:520px}
+
+/* ── 段头 ── */
+.sn{font-size:24px;font-weight:800;color:var(--accent-2);letter-spacing:.16em}
+h2{font-size:54px;line-height:1.2;font-weight:800;margin:14px 0 20px;letter-spacing:.01em}
+.lead{color:var(--muted);font-size:27px}
+/* 装饰性章节标题：中间是内容，两边是发光符号 */
+.ornate{display:flex;align-items:center;justify-content:center;gap:20px;
+  font-size:44px;font-weight:800;letter-spacing:.06em;margin-bottom:30px}
+.ornate::before,.ornate::after{content:"✦";color:var(--accent);font-size:26px}
+
+/* 简介卡 */
+.card{background:rgba(244,245,250,.05);border:1px solid var(--line);
+  border-radius:var(--r);padding:34px 36px}
+.card p{font-size:27px;line-height:1.9}
+.card p + p{margin-top:20px}
+.card .hi{color:var(--accent-2);font-weight:700}
+
+/* 礼品：四格 */
+.gifts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+/* 礼品格是**手绘 SVG**，不是色块占位 —— gold/h5-qq2026 证明过这条路
+   （零 <img>、全 SVG/CSS，实测 18 个视觉资产）。长图必须有真实画面，
+   否则它就是一根纯文字面条，转发出去没人看第二眼。 */
+.gift{aspect-ratio:1;border-radius:14px;border:1px solid var(--line);overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  font-size:20px;color:var(--muted);text-align:center;padding:12px;line-height:1.4;margin:0}
+.gift svg{width:74%;height:auto}
+.gift.g1{background:linear-gradient(150deg,#2A2E44,#171A2B)}
+.gift.g2{background:linear-gradient(150deg,#3A2A32,#1C1620)}
+.gift.g3{background:linear-gradient(150deg,#243440,#131C24)}
+.gift.g4{background:linear-gradient(150deg,#3A3320,#1F1B12)}
+.giftline{display:flex;align-items:center;justify-content:center;gap:14px;
+  font-size:28px;margin-top:30px;color:var(--accent-2);font-weight:700}
+
+/* 议程：分 Part，每 Part 下若干讲者 */
+.part{text-align:center;margin:8px 0 26px}
+.part .t{font-size:46px;font-weight:800}
+.part .s{font-size:26px;color:var(--muted);margin-top:8px}
+.talk{display:flex;gap:24px;background:rgba(244,245,250,.045);
+  border:1px solid var(--line);border-radius:var(--r);padding:28px 30px;
+  align-items:flex-start}
+.talk + .talk{margin-top:18px}
+.talk .when{font-size:26px;color:var(--accent-2);font-weight:700;flex:none;width:170px}
+.talk .txt{flex:1;min-width:0}
+.talk h3{font-size:31px;line-height:1.45;font-weight:700}
+.talk .tag{display:inline-block;margin-top:10px;font-size:21px;color:var(--accent-2);
+  border:1px solid rgba(139,123,255,.5);border-radius:6px;padding:2px 12px}
+.talk .who{font-size:27px;margin-top:14px;font-weight:600}
+.talk .org{font-size:22px;color:var(--muted);line-height:1.6}
+.talk .face{width:132px;height:150px;border-radius:12px;flex:none;overflow:hidden;
+  background:linear-gradient(160deg,#39405C,#20263A);display:grid;place-items:center}
+.talk .face svg{width:100%;height:100%}
+
+/* 页脚 */
+.foot{padding:var(--pad);text-align:center;color:var(--muted);font-size:24px;
+  background:var(--soft)}
+.qr{width:190px;height:190px;margin:0 auto 22px;border-radius:14px;background:#fff;
+  overflow:hidden;padding:10px}
+.qr svg{width:100%;height:100%}
+</style>
+</head>
+<body>
+
+<!-- 01 封面段 -->
+<section class="seg cover">
+  <div class="brandbar"><b>字节跳动</b><i></i>数据平台<i></i><b>Libra</b></div>
+
+  <svg class="scale" viewBox="0 0 200 200" aria-label="天平主视觉">
+    <defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#EDEAFF"/><stop offset=".5" stop-color="#9E8CFF"/>
+        <stop offset="1" stop-color="#4A38B8"/></linearGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#D7D0FF"/><stop offset="1" stop-color="#6C58E0"/></linearGradient>
+    </defs>
+    <path d="M100 18 L118 44 L100 70 L82 44 Z" fill="url(#g1)"/>
+    <rect x="97" y="66" width="6" height="84" fill="url(#g2)"/>
+    <rect x="40" y="76" width="120" height="6" rx="3" fill="url(#g2)"/>
+    <path d="M40 79 L22 118 L58 118 Z" fill="url(#g1)" opacity=".92"/>
+    <path d="M160 79 L142 118 L178 118 Z" fill="url(#g1)" opacity=".92"/>
+    <rect x="66" y="150" width="68" height="8" rx="4" fill="url(#g2)"/>
+    <rect x="52" y="158" width="96" height="10" rx="5" fill="url(#g1)"/>
+  </svg>
+  <span class="orb a"></span><span class="orb b"></span><span class="orb c"></span>
+
+  <div class="mid">
+    <div class="kicker">Libra 2025 年度宣讲会</div>
+    <h1>实验有道 · 增长无限</h1>
+    <div class="en">Experiments with Direction · Growth without Limits</div>
+  </div>
+
+  <div class="when">
+    <div class="arrow">↓</div>
+    <div class="k">北京时间：2026 年 1 月 22 日</div>
+    <div class="v num">周四 / 15:00</div>
+  </div>
+</section>
+
+<!-- 02 简介段：浅底块换气 -->
+<section class="seg soft">
+  <div class="ornate">宣讲会 · 简介</div>
+  <div class="card">
+    <p>在业务快速迭代的道路上，实验不仅是验证想法的工具，更是业务增长的
+       <span class="hi">「导航仪」</span>。</p>
+    <p>实验评估平台 Libra 持续升级：重随机分流筑牢科学根基，高级分析 &amp; 成本治理
+       &amp; 全新的分流 SDK 等多维度优化提升实验效率，LLM 赋能智能决策！</p>
+    <p class="hi">以科学、高效、智能，诚邀各位实验官共启实验驱动增长新篇章 ~</p>
+  </div>
+</section>
+
+<!-- 03 礼品段：回到深底 -->
+<section class="seg">
+  <div class="ornate">有奖活动 · 礼品</div>
+  <p class="lead" style="text-align:center">
+    超值大奖 3 个：20 寸前开盖多功能行李箱<br>
+    电脑支架包、文创麦食系列盲盒挂件、3C 认证充电宝等超多字节周边<br>
+    奶茶咖啡代金券，随机送（霸王茶姬、喜茶、星巴克）<br>
+    更有 5–100 元的活动豆，发不停！</p>
+  <div class="giftline">🎁 近 1000 份礼品派送，请持续锁定直播间哦 ~</div>
+  <div class="gifts">
+    <figure class="gift g1">
+      <svg viewBox="0 0 120 120" aria-label="多功能行李箱">
+        <rect x="30" y="26" width="60" height="76" rx="9" fill="#4A5170"/>
+        <rect x="36" y="32" width="48" height="64" rx="6" fill="#6C7599"/>
+        <rect x="52" y="10" width="16" height="18" rx="4" fill="none"
+              stroke="#9AA3C4" stroke-width="4"/>
+        <rect x="36" y="52" width="48" height="6" fill="#39405C"/>
+        <circle cx="42" cy="106" r="5" fill="#2C3049"/>
+        <circle cx="78" cy="106" r="5" fill="#2C3049"/>
+      </svg>
+      <figcaption>多功能行李箱</figcaption></figure>
+    <figure class="gift g2">
+      <svg viewBox="0 0 120 120" aria-label="文创盲盒挂件">
+        <path d="M24 46 L60 28 L96 46 L96 92 L60 110 L24 92 Z" fill="#6E4358"/>
+        <path d="M24 46 L60 64 L96 46" fill="none" stroke="#C58AA6" stroke-width="4"/>
+        <path d="M60 64 L60 110" stroke="#C58AA6" stroke-width="4"/>
+        <circle cx="60" cy="46" r="9" fill="#F0C0D4"/>
+        <path d="M52 22 Q60 8 68 22" fill="none" stroke="#F0C0D4" stroke-width="4"/>
+      </svg>
+      <figcaption>文创盲盒挂件</figcaption></figure>
+    <figure class="gift g3">
+      <svg viewBox="0 0 120 120" aria-label="便携充电宝">
+        <rect x="36" y="18" width="48" height="84" rx="10" fill="#2C4658"/>
+        <rect x="43" y="26" width="34" height="52" rx="5" fill="#3E6A85"/>
+        <path d="M62 34 L52 58 L60 58 L56 76 L70 50 L61 50 Z" fill="#7FE0FF"/>
+        <rect x="47" y="86" width="26" height="6" rx="3" fill="#7FE0FF"/>
+      </svg>
+      <figcaption>便携充电宝</figcaption></figure>
+    <figure class="gift g4">
+      <svg viewBox="0 0 120 120" aria-label="字节周边帆布包">
+        <path d="M28 42 H92 L86 104 H34 Z" fill="#5A4A24"/>
+        <path d="M44 42 V32 a16 16 0 0 1 32 0 V42" fill="none"
+              stroke="#C9A44C" stroke-width="5"/>
+        <rect x="48" y="62" width="24" height="24" rx="4" fill="#C9A44C"/>
+      </svg>
+      <figcaption>字节周边帆布包</figcaption></figure>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- 04 议程 Part 1 -->
+<section class="seg">
+  <div class="part">
+    <div class="t">✦ Part 1 ✦</div>
+    <div class="s">{ 重随机：筑牢实验科学根基 }</div>
+  </div>
+  <div class="talk">
+    <div class="when num">15:05–15:20</div>
+    <div class="txt">
+      <h3>《重随机——更好的实验设计，帮助实现更精准的评估》</h3>
+      <span class="tag">科学根基</span>
+      <div class="who">秦永立</div>
+      <div class="org">Data–数据平台–数据应用–实验评估–应用研究</div>
+    </div>
+    <div class="face">
+      <svg viewBox="0 0 132 150" aria-label="讲者">
+        <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9E8CFF"/><stop offset="1" stop-color="#4A38B8"/>
+        </linearGradient></defs>
+        <circle cx="66" cy="56" r="26" fill="url(#fg)"/>
+        <path d="M18 150 a48 44 0 0 1 96 0 Z" fill="url(#fg)" opacity=".82"/>
+      </svg></div>
+  </div>
+</section>
+
+<!-- 05 议程 Part 2：浅底块换气 -->
+<section class="seg soft">
+  <div class="part">
+    <div class="t">✦ Part 2 ✦</div>
+    <div class="s">{ 效率革新：让实验低耗高可用 }</div>
+  </div>
+  <div class="talk">
+    <div class="when num">15:25–15:35</div>
+    <div class="txt">
+      <h3>《高级分析提效实践——电商场景下的实验分析效率提升方案》</h3>
+      <span class="tag">提人效</span>
+      <div class="who">陈蓬</div>
+      <div class="org">中国电商–数据科学–体验</div>
+    </div>
+    <div class="face">
+      <svg viewBox="0 0 132 150" aria-label="讲者">
+        <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9E8CFF"/><stop offset="1" stop-color="#4A38B8"/>
+        </linearGradient></defs>
+        <circle cx="66" cy="56" r="26" fill="url(#fg)"/>
+        <path d="M18 150 a48 44 0 0 1 96 0 Z" fill="url(#fg)" opacity=".82"/>
+      </svg></div>
+  </div>
+  <div class="talk">
+    <div class="when num">15:40–15:50</div>
+    <div class="txt">
+      <h3>《从成本洞察到业务增益：抖音推荐实验成本治理之路》</h3>
+      <span class="tag">降成本</span>
+      <div class="who">高雪莹</div>
+      <div class="org">Data–抖音</div>
+    </div>
+    <div class="face">
+      <svg viewBox="0 0 132 150" aria-label="讲者">
+        <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9E8CFF"/><stop offset="1" stop-color="#4A38B8"/>
+        </linearGradient></defs>
+        <circle cx="66" cy="56" r="26" fill="url(#fg)"/>
+        <path d="M18 150 a48 44 0 0 1 96 0 Z" fill="url(#fg)" opacity=".82"/>
+      </svg></div>
+  </div>
+  <div class="talk">
+    <div class="when num">15:55–16:05</div>
+    <div class="txt">
+      <h3>《分流本地化——分流接入新范式，助力业务快又稳的获取分流结果》</h3>
+      <span class="tag">稳定性</span>
+      <div class="who">丛汉廷、王子杰</div>
+      <div class="org">Data–数据平台–数据应用–实验评估–通用实验平台</div>
+    </div>
+    <div class="face">
+      <svg viewBox="0 0 132 150" aria-label="讲者">
+        <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9E8CFF"/><stop offset="1" stop-color="#4A38B8"/>
+        </linearGradient></defs>
+        <circle cx="66" cy="56" r="26" fill="url(#fg)"/>
+        <path d="M18 150 a48 44 0 0 1 96 0 Z" fill="url(#fg)" opacity=".82"/>
+      </svg></div>
+  </div>
+</section>
+
+<!-- 06 议程 Part 3 -->
+<section class="seg">
+  <div class="part">
+    <div class="t">✦ Part 3 ✦</div>
+    <div class="s">{ 智能决策：LLM 走进实验现场 }</div>
+  </div>
+  <div class="talk">
+    <div class="when num">16:10–16:25</div>
+    <div class="txt">
+      <h3>《LLM 赋能实验智能决策——从看数到给结论》</h3>
+      <span class="tag">智能化</span>
+      <div class="who">周珂</div>
+      <div class="org">Data–数据平台–数据应用–实验评估</div>
+    </div>
+    <div class="face">
+      <svg viewBox="0 0 132 150" aria-label="讲者">
+        <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9E8CFF"/><stop offset="1" stop-color="#4A38B8"/>
+        </linearGradient></defs>
+        <circle cx="66" cy="56" r="26" fill="url(#fg)"/>
+        <path d="M18 150 a48 44 0 0 1 96 0 Z" fill="url(#fg)" opacity=".82"/>
+      </svg></div>
+  </div>
+  <div class="talk">
+    <div class="when num">16:25–16:40</div>
+    <div class="txt">
+      <h3>《圆桌：下一个五年，实验平台该往哪儿走》</h3>
+      <span class="tag">圆桌</span>
+      <div class="who">全体讲者</div>
+      <div class="org">现场提问，直播间同步互动</div>
+    </div>
+    <div class="face">
+      <svg viewBox="0 0 132 150" aria-label="圆桌">
+        <circle cx="46" cy="52" r="20" fill="#8B7BFF"/>
+        <circle cx="88" cy="52" r="20" fill="#C9C2FF"/>
+        <path d="M8 150 a40 38 0 0 1 76 0 Z" fill="#8B7BFF" opacity=".8"/>
+        <path d="M52 150 a40 38 0 0 1 76 0 Z" fill="#C9C2FF" opacity=".7"/>
+      </svg></div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="qr">
+    <svg viewBox="0 0 100 100" aria-label="预约二维码">
+      <rect width="100" height="100" fill="#fff"/>
+      <g fill="#0A0B14">
+        <path d="M10 10h24v24H10z M16 16h12v12H16z"/>
+        <path d="M66 10h24v24H66z M72 16h12v12H72z"/>
+        <path d="M10 66h24v24H10z M16 72h12v12H16z"/>
+        <rect x="42" y="12" width="6" height="6"/><rect x="52" y="12" width="6" height="6"/>
+        <rect x="42" y="24" width="6" height="6"/><rect x="54" y="30" width="6" height="6"/>
+        <rect x="12" y="42" width="6" height="6"/><rect x="24" y="42" width="6" height="6"/>
+        <rect x="36" y="42" width="6" height="6"/><rect x="48" y="42" width="6" height="6"/>
+        <rect x="60" y="42" width="6" height="6"/><rect x="72" y="42" width="6" height="6"/>
+        <rect x="42" y="54" width="6" height="6"/><rect x="66" y="54" width="6" height="6"/>
+        <rect x="42" y="66" width="6" height="6"/><rect x="54" y="66" width="6" height="6"/>
+        <rect x="78" y="66" width="6" height="6"/><rect x="48" y="78" width="6" height="6"/>
+        <rect x="66" y="78" width="6" height="6"/><rect x="78" y="84" width="6" height="6"/>
+      </g></svg></div>
+  Libra 2025 年度宣讲会 · 2026 年 1 月 22 日 周四 15:00<br>
+  扫码进直播间，或在 Libra 平台首页点「年度宣讲」预约
+</footer>
+</body>
+</html>

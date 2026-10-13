@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0",
+  "packet_status": "draft",
+  "club": {
+    "name": "[待确认：社团正式名称]",
+    "school": "[待确认：学校]",
+    "campus": "[待确认：校区]",
+    "type": "[待确认：社团类型]",
+    "mission": "[待确认：社团宗旨]",
+    "activities": [],
+    "newcomer_development": []
+  },
+  "campaign": {
+    "goal": "[待确认：本次招新目标]",
+    "audiences": [
+      "[待确认：目标新人]"
+    ],
+    "target_count": null,
+    "departments": [
+      {
+        "id": "general",
+        "name": "[待确认：部门或岗位]",
+        "openings": null,
+        "description": "[待确认：新人实际工作]",
+        "requirements": []
+      }
+    ],
+    "timeline": [
+      {
+        "id": "application",
+        "label": "报名",
+        "start": "[待确认：报名开始时间]",
+        "end": "[待确认：报名截止时间]",
+        "location": "[待确认：报名或活动地点]",
+        "owner": "[待确认：负责人]"
+      }
+    ],
+    "channels": [],
+    "cta": {
+      "action": "[待确认：主行动]",
+      "deadline": "[待确认：截止时间]",
+      "link_or_placeholder": "[待确认：报名链接或二维码]",
+      "contact": "[待确认：公开联系人或渠道]"
+    }
+  },
+  "message": {
+    "core_values": [
+      "[待确认：有证据支持的新人价值]"
+    ],
+    "evidence": [],
+    "tone": [
+      "真诚",
+      "清晰"
+    ],
+    "slogan": "",
+    "forbidden_claims": [
+      "包进",
+      "保研",
+      "直接内推"
+    ]
+  },
+  "selection": {
+    "format": "[待确认：选拔形式]",
+    "competencies": [],
+    "duration_minutes": null,
+    "interviewer_count": null,
+    "score_scale": null
+  },
+  "staffing": {
+    "defaults": {
+      "max_shifts_per_person": 2,
+      "max_consecutive_shifts": 1
+    },
+    "members": [
+      {
+        "id": "m01",
+        "display_name": "成员甲",
+        "skills": [
+          "宣讲"
+        ],
+        "available_shift_ids": [
+          "s01"
+        ],
+        "preferred_shift_ids": [
+          "s01"
+        ],
+        "max_shifts": 2,
+        "max_consecutive_shifts": 1
+      }
+    ],
+    "shifts": [
+      {
+        "id": "s01",
+        "label": "首日早班",
+        "date": "[待确认：日期]",
+        "start": "09:00",
+        "end": "11:00",
+        "location": "[待确认：摊位位置]",
+        "roles": [
+          {
+            "name": "讲解",
+            "min_count": 1,
+            "required_skills": [],
+            "preferred_skills": [
+              "宣讲"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "outputs": [],
+  "output_options": {
+    "speech_minutes": 5,
+    "wechat_target_chars": 1600,
+    "poster_versions": 3,
+    "notice_scenarios": [
+      "welcome",
+      "interview_reminder",
+      "deadline"
+    ]
+  },
+  "facts": [
+    {
+      "field": "club.name",
+      "value": "[待确认：社团正式名称]",
+      "status": "placeholder",
+      "critical": true,
+      "source": ""
+    },
+    {
+      "field": "campaign.cta.action",
+      "value": "[待确认：主行动]",
+      "status": "placeholder",
+      "critical": true,
+      "source": ""
+    },
+    {
+      "field": "campaign.cta.deadline",
+      "value": "[待确认：截止时间]",
+      "status": "placeholder",
+      "critical": true,
+      "source": ""
+    },
+    {
+      "field": "campaign.cta.link_or_placeholder",
+      "value": "[待确认：报名链接或二维码]",
+      "status": "placeholder",
+      "critical": true,
+      "source": ""
+    }
+  ],
+  "notes": []
+}

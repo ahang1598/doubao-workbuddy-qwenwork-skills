@@ -1,0 +1,4 @@
+interface:
+  display_name: "生活服务AIGC推广视频生成"
+  short_description: "为抖音生活服务商家生成可投放的宣传短视频创意与素材"
+  default_prompt: "使用 $local-life-service-aigc-video 为我的门店生成一条抖音生活服务宣传视频。"

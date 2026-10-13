@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>客资中心 · 深度转化功能引导流程展板</title>
+<!--
+  gold · spec-board —— 「客资中心 · 深转功能引导」5 帧横向流程展板。
+
+  它证明的是：**展板不是可运行界面，是一张给人看的方案图。**
+  所以对它关掉的门比开着的多（见 check.py 的 SKIP_BY_PROFILE）：
+  没有首屏影像占比、不触控、横向本来就该宽、也没有"正文离版心边距"这回事。
+
+  剩下的判据全在这四条机制上：
+
+  1. **每帧必须有编号 + 中文步骤标签。** 评审是逐帧看标签的 ——
+     只有图没有标签，读的人得自己猜这一步在干什么。
+     标签栏做成一条通栏的深色 pill：编号是徽章、说明是正文，中间一根竖线。
+  2. **箭头是内容不是装饰。** 它表达"下一步"，所以方向、落点、长度都要准，
+     而且要落在两帧**画面区**的垂直中线上，不是随便找个空隙塞一个。
+  3. **帧内是浅色界面、帧外是深色底。** 这个反差就是展板的全部视觉语言 ——
+     深底把一堆浅色截图收成一组，而不是让它们散在白纸上。
+     实测这一稿暗部 55% / 亮部 30%：**深底占多数，但不是全黑**。
+  4. **一帧只讲一件事。** 5 帧讲完"从看到入口到进入深转"，
+     多一帧都是负担 —— 帧数由流程决定，不由画面好不好看决定。
+
+  尺寸由 query 定（这一份 3400×760，原稿 17280×3574 是同一个比例族）。
+  展板横向排布，**页面不做纵向叙事**。
+-->
+<style>
+:root{
+  --bg:#0B0E14;
+  --board:#161B26;
+  --chip:#222835;
+  --ink:#F2F5FA;
+  --muted:#98A2B3;
+  --line:rgba(242,245,250,.10);
+  --arrow:#6B7484;
+  --frame:#FFFFFF;
+  --r:14px;
+  --fw:520px;      /* 帧宽 */
+  --gap:96px;      /* 帧间距，箭头住在这里 */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)}
+body{color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+img{display:block;max-width:100%}
+
+.board{margin:36px;padding:44px 48px 52px;background:var(--board);
+  border-radius:22px;min-width:max-content}
+.board > h1{font-size:44px;font-weight:800;letter-spacing:.01em;margin-bottom:8px}
+.board > .sub{color:var(--muted);font-size:16px;margin-bottom:34px;max-width:70ch}
+
+.frames{display:flex;align-items:flex-start;gap:var(--gap)}
+.frame{width:var(--fw);flex:none;position:relative}
+
+/* 箭头：落在两帧画面区的垂直中线上 */
+.frame:not(:last-child)::after{content:"";position:absolute;top:300px;
+  left:calc(100% + 22px);width:calc(var(--gap) - 52px);height:6px;
+  background:var(--arrow);border-radius:1px}
+.frame:not(:last-child)::before{content:"";position:absolute;top:288px;
+  left:calc(100% + var(--gap) - 30px);border:15px solid transparent;
+  border-left-color:var(--arrow);border-right:0;z-index:2}
+
+/* 标签栏：编号徽章 + 竖线 + 中文说明 */
+.cap{display:flex;align-items:center;gap:16px;background:var(--chip);
+  border-radius:10px;padding:12px 16px;margin-bottom:16px;min-height:56px}
+.cap .sn{background:#E8EDF5;color:#131720;font-weight:800;font-size:15px;
+  padding:4px 12px;border-radius:6px;flex:none;letter-spacing:.02em}
+.cap .bar{width:1px;height:22px;background:rgba(242,245,250,.22);flex:none}
+.cap b{font-weight:600;font-size:15px;line-height:1.5}
+.cap b em{font-style:normal;color:var(--muted);font-weight:400}
+
+/* 帧体：浅色界面装在一个略深的舞台里 */
+.shot{background:#8A8F98;border-radius:var(--r);padding:28px;height:430px;
+  display:grid;place-items:center;overflow:hidden}
+.shot.plain{background:#0F131B;border:1px solid var(--line);padding:0;
+  place-items:stretch}
+.why{color:var(--muted);font-size:13.5px;margin-top:14px;line-height:1.7}
+.why b{color:var(--ink);font-weight:600}
+
+/* ── 帧内的界面：用真的 HTML 画，不贴位图 ──────────────── */
+.ui{background:#fff;color:#1B1F26;border-radius:10px;width:100%;height:100%;
+  overflow:hidden;display:flex;font-size:11px;line-height:1.5}
+.ui .nav{width:112px;flex:none;border-right:1px solid #EDEFF3;padding:10px 8px;
+  display:flex;flex-direction:column;gap:3px}
+.ui .nav .logo{display:flex;align-items:center;gap:5px;font-weight:700;font-size:11.5px;
+  padding:2px 6px 10px;color:#1B1F26}
+.ui .nav .logo i{width:14px;height:14px;border-radius:4px;flex:none;
+  background:linear-gradient(140deg,#5AA7FF,#1F6BE0);font-style:normal}
+.ui .nav a{padding:5px 6px;border-radius:4px;color:#697586}
+.ui .nav a.on{background:#EAF2FF;color:#1F6BE0;font-weight:600}
+.ui .main{flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.ui .h{display:flex;align-items:center;gap:8px}
+.ui .h b{font-size:14px}
+.ui .h .pill{margin-left:auto;background:#FFF1E6;color:#B4530C;border-radius:99px;
+  padding:2px 8px;font-size:10px}
+.ui .banner{display:flex;gap:9px;align-items:flex-start;background:#EFF5FF;
+  border:1px solid #D6E4FF;border-radius:7px;padding:9px 11px}
+.ui .banner .rk{width:18px;height:18px;border-radius:5px;flex:none;
+  background:linear-gradient(140deg,#7FB6FF,#2F73E8)}
+.ui .banner b{display:block;font-size:11.5px}
+.ui .banner span{color:#697586;font-size:10px}
+.ui .banner .go{margin-left:auto;background:#1F6BE0;color:#fff;border-radius:5px;
+  padding:4px 10px;font-size:10px;flex:none;align-self:center}
+.tbl{border:1px solid #EDEFF3;border-radius:7px;overflow:hidden;flex:1;min-height:0}
+.tr{display:grid;grid-template-columns:1.6fr 1fr .8fr .8fr;gap:8px;
+  padding:0 10px;height:26px;align-items:center;border-bottom:1px solid #F2F4F7}
+.tr.head{background:#FAFBFC;color:#697586;font-size:10px}
+.tr .av{display:flex;align-items:center;gap:6px}
+.tr .av i{width:15px;height:15px;border-radius:50%;flex:none;
+  background:linear-gradient(140deg,#FFC97A,#F2894B)}
+.tr .lk{color:#1F6BE0}
+.foot2{display:flex;align-items:center;gap:6px;justify-content:flex-end;
+  color:#697586;font-size:10px}
+.foot2 i{width:17px;height:17px;border:1px solid #E3E7EE;border-radius:3px;
+  display:grid;place-items:center;font-style:normal;font-size:10.5px}
+.foot2 i.on{background:#1F6BE0;border-color:#1F6BE0;color:#fff}
+
+/* 弹窗帧 */
+/* 换底色的容器必须**同时**换字色：这个弹窗是白底，而它继承的是
+   展板深底那套浅色墨 —— 结果标题是白字压白底（实测 1.05:1）。
+   只做一半的换色是这类展板最常见的隐形缺陷。 */
+.dlg{background:#fff;color:#1B1F26;border-radius:10px;width:86%;overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.28)}
+.dlg .top{display:flex;align-items:center;padding:12px 14px;font-weight:700;font-size:13px}
+/* 关闭按钮也是可读元素：#98A2B3 压白底 2.58:1。它小，但它是唯一的退出口。 */
+.dlg .top .x{margin-left:auto;color:#737E90}
+.dlg .hero{background:linear-gradient(120deg,#EAF3FF,#F7FAFF);padding:16px 18px 18px;
+  display:flex;gap:14px}
+.dlg .hero .txt{flex:1}
+.dlg .hero h4{font-size:19px;line-height:1.35;color:#1F6BE0;margin-bottom:9px}
+.dlg .hero li{list-style:none;color:#48505E;font-size:11px;line-height:1.9;
+  display:flex;gap:6px}
+.dlg .hero li::before{content:"";width:5px;height:5px;border-radius:50%;
+  background:#1F6BE0;margin-top:8px;flex:none}
+.dlg .hero .btn{display:inline-block;margin-top:11px;background:#1F6BE0;color:#fff;
+  border-radius:6px;padding:6px 14px;font-size:11px}
+.dlg .hero .mock{width:44%;background:#fff;border-radius:6px;border:1px solid #E3E9F2;
+  padding:8px;display:flex;flex-direction:column;gap:5px}
+.dlg .hero .mock .l{height:7px;border-radius:2px;background:#EDF1F7}
+.dlg .hero .mock .l.s{width:56%}
+.dlg .hero .mock .l.k{background:#D7E6FF;width:38%}
+
+/* 步骤条帧 */
+.steps{display:flex;align-items:center;gap:10px;background:#fff;border-radius:8px;
+  padding:11px 14px;color:#1B1F26;font-size:11px}
+.steps .s{display:flex;align-items:center;gap:6px;color:#697586}
+.steps .s.on{color:#1F6BE0;font-weight:700}
+/* 徽章里的数字原来 9.5px —— 帧内界面是缩微稿，但**字号门量的是真实 px**，
+   缩微也不能低于 10px，否则这块展板被人凑近看时就是糊的。 */
+.steps .s i{width:17px;height:17px;border-radius:50%;background:#EDF1F7;color:#5B6577;
+  display:grid;place-items:center;font-style:normal;font-size:10.5px}
+.steps .s.on i{background:#1F6BE0;color:#fff}
+/* 步骤分隔符原来是 #C3C9D4，压在白底上实测 1.66:1 —— 它是可见的分隔符，
+   不是装饰，读不清就等于没有。**分隔符也要过对比度**。 */
+.steps .sep{color:#8A93A3}
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>客资中心 · 深度转化引导</h1>
+  <p class="sub">商家从"看到入口"到"完成一次深转投放"要经过 5 步。
+     这块展板逐帧标出每一步的触发条件、页面位置和收口动作，供研发与运营对齐。</p>
+
+  <div class="frames">
+
+    <!-- 01 -->
+    <figure class="frame">
+      <div class="cap"><span class="sn num">01</span><span class="bar"></span>
+        <b>弹窗引导<em>　首次进入客资中心时全屏弹出，一个账号只出一次</em></b></div>
+      <div class="shot">
+        <div class="dlg">
+          <div class="top">深转引导<span class="x">✕</span></div>
+          <div class="hero">
+            <div class="txt">
+              <h4>你有内容可投深转<br>快去投放！</h4>
+              <ul>
+                <li>客户更精准，系统能帮你找到更容易成交的客户</li>
+                <li>跟进更省力，线索质量更高，跟起来更省力</li>
+                <li>获客更划算，同样的广告费能拿到更多有效客户</li>
+              </ul>
+              <span class="btn">立即开启</span>
+            </div>
+            <div class="mock">
+              <div class="l k"></div><div class="l"></div><div class="l s"></div>
+              <div class="l"></div><div class="l s"></div><div class="l"></div>
+              <div class="l k"></div><div class="l s"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="why">关掉之后不再出现。它只负责让人知道"有这么个东西"，不承担转化。</div>
+    </figure>
+
+    <!-- 02 -->
+    <figure class="frame">
+      <div class="cap"><span class="sn num">02</span><span class="bar"></span>
+        <b>Banner 引导<em>　首次出现 banner，支持关闭；当天关后不再出，3 天后再出</em></b></div>
+      <div class="shot plain">
+        <div class="ui">
+          <div class="nav">
+            <div class="logo"><i></i>抖音来客</div>
+            <a>首页</a><a>店铺管理</a><a>商品管理</a><a>订单管理</a>
+            <a>财务管理</a><a>数据中心</a><a>内容经营</a><a class="on">线索经营</a>
+            <a style="padding-left:16px">客资中心</a>
+            <a style="padding-left:16px">深度转化</a>
+          </div>
+          <div class="main">
+            <div class="h"><b>客资中心</b><span style="color:#697586">客资设置</span>
+              <span class="pill">你有 2 个账户可投深转</span></div>
+            <div class="banner"><span class="rk"></span>
+              <div><b>你有 2 个账户可投深转，快去投放！</b>
+                <span>这些投放内容已完成深转预训练，建议尽快去投深转。相比直投线索，
+                      深转投放更有机会降低有效线索成本、提升跑量能力。</span></div>
+              <span class="go">立即投放</span></div>
+            <div class="tbl">
+              <div class="tr head"><span>客户</span><span>线索来源</span>
+                <span>状态</span><span>操作</span></div>
+              <div class="tr"><span class="av"><i></i>王女士</span><span>短视频挂载</span>
+                <span>待跟进</span><span class="lk">查看</span></div>
+              <div class="tr"><span class="av"><i></i>李先生</span><span>直播间留资</span>
+                <span>已联系</span><span class="lk">查看</span></div>
+              <div class="tr"><span class="av"><i></i>张女士</span><span>搜索广告</span>
+                <span>待跟进</span><span class="lk">查看</span></div>
+              <div class="tr"><span class="av"><i></i>陈先生</span><span>短视频挂载</span>
+                <span>已成交</span><span class="lk">查看</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="why">常驻在列表上方，不遮挡内容。「立即投放」是这一帧唯一的收口动作。</div>
+    </figure>
+
+    <!-- 03 -->
+    <figure class="frame">
+      <div class="cap"><span class="sn num">03</span><span class="bar"></span>
+        <b>选择账号<em>　点 banner 后弹出，只列已开户、且有可投标的的账号</em></b></div>
+      <div class="shot">
+        <div class="dlg" style="width:94%">
+          <div class="top">选择账户<span class="x">✕</span></div>
+          <div style="padding:12px 14px;color:#1B1F26">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span style="flex:1;border:1px solid #E3E7EE;border-radius:5px;
+                padding:5px 9px;color:#737E90;font-size:10.5px">请输入名称</span>
+              <span style="font-size:10.5px;color:#1F6BE0">☑ 仅查看已开户门店</span></div>
+            <div class="tbl" style="border:0">
+              <div class="tr head" style="grid-template-columns:1.9fr .7fr .7fr .7fr">
+                <span>账户名称</span><span>状态</span><span>可投放标的数</span><span>操作</span></div>
+              <div class="tr" style="grid-template-columns:1.9fr .7fr .7fr .7fr">
+                <span class="av"><i></i>深圳汇艺谷网络科技</span>
+                <span style="color:#1F6BE0">已开户</span><span class="num">18</span>
+                <span class="lk">立即投放</span></div>
+              <div class="tr" style="grid-template-columns:1.9fr .7fr .7fr .7fr">
+                <span class="av"><i></i>深圳汇艺谷网络科技</span>
+                <span style="color:#1F6BE0">已开户</span><span class="num">10</span>
+                <span class="lk">立即投放</span></div>
+              <div class="tr" style="grid-template-columns:1.9fr .7fr .7fr .7fr">
+                <span class="av"><i></i>深圳汇艺谷网络科技</span>
+                <span style="color:#1F6BE0">已开户</span><span class="num">10</span>
+                <span class="lk">立即投放</span></div>
+              <div class="tr" style="grid-template-columns:1.9fr .7fr .7fr .7fr">
+                <span class="av"><i></i>深圳汇艺谷网络科技</span>
+                <span style="color:#1F6BE0">已开户</span><span class="num">18</span>
+                <span class="lk">立即投放</span></div>
+            </div>
+            <div class="foot2" style="margin-top:9px">共 23 条记录
+              <i class="on num">1</i><i class="num">2</i><i class="num">3</i>
+              <i class="num">4</i><span>…</span><i class="num">100</i></div>
+          </div>
+        </div>
+      </div>
+      <div class="why">一个商家常有多个投放账户。<b>不做默认选中</b> —— 投错账户的代价是真金白银。</div>
+    </figure>
+
+    <!-- 04 -->
+    <figure class="frame">
+      <div class="cap"><span class="sn num">04</span><span class="bar"></span>
+        <b>进入本地推的深转<em>　带着账号跳转，落在"预训练与投放"这一步上</em></b></div>
+      <div class="shot plain">
+        <div class="ui">
+          <div class="nav">
+            <div class="logo"><i></i>巨量本地推</div>
+            <a class="on">深度转化</a>
+            <a style="padding-left:16px">线索回传工具</a>
+            <a style="padding-left:16px">回传明细</a>
+          </div>
+          <div class="main">
+            <div class="h"><b>账户状态概览</b>
+              <span class="pill">当前完成比例 17%</span></div>
+            <div class="steps">
+              <span class="s"><i>✓</i>深转回传设置</span><span class="sep">›</span>
+              <span class="s on"><i class="num">4</i>预训练与投放</span><span class="sep">›</span>
+              <span class="s"><i class="num">6</i>监控回传质量</span></div>
+            <div class="banner" style="background:#FFF7E8;border-color:#FFE1AE">
+              <span class="rk" style="background:linear-gradient(140deg,#FFCE7A,#F0A32E)"></span>
+              <div><b>预训练维度从广告账户变更为同主体的投放内容</b>
+                <span>同一内容跨账户投放深转可直接继承原有深转预估模型，提升投放效果。</span></div></div>
+            <div class="tbl">
+              <div class="tr head"><span>投放内容</span><span>状态</span>
+                <span>通过节点</span><span>操作</span></div>
+              <div class="tr"><span class="av"><i></i>商品名称 A</span>
+                <span style="color:#0A6B3C">训练通过</span><span>确认意向</span>
+                <span class="lk">去投放</span></div>
+              <div class="tr"><span class="av"><i></i>商品名称 B</span>
+                <span style="color:#0A6B3C">训练通过</span><span>预付定金</span>
+                <span class="lk">去投放</span></div>
+              <div class="tr"><span class="av"><i></i>全部门店</span>
+                <span style="color:#0A6B3C">训练通过</span><span>确认意向</span>
+                <span class="lk">去投放</span></div>
+              <div class="tr"><span class="av"><i></i>抖音号名称</span>
+                <span style="color:#B4530C">训练中</span><span>—</span>
+                <span style="color:#737E90">等待中</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="why">跳过来之后<b>不能落在首页</b>：落在首页等于让人重新找一遍，前四步白做。</div>
+    </figure>
+
+    <!-- 05 -->
+    <figure class="frame">
+      <div class="cap"><span class="sn num">05</span><span class="bar"></span>
+        <b>投放后回看<em>　7 天后在客资中心回看深转效果，形成闭环</em></b></div>
+      <div class="shot plain">
+        <div class="ui">
+          <div class="nav">
+            <div class="logo"><i></i>抖音来客</div>
+            <a>首页</a><a class="on">线索经营</a>
+            <a style="padding-left:16px">客资中心</a>
+            <a style="padding-left:16px">深转效果</a>
+          </div>
+          <div class="main">
+            <div class="h"><b>深转效果对比</b>
+              <span class="pill">近 7 天</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div style="border:1px solid #EDEFF3;border-radius:6px;padding:8px 10px">
+                <div style="color:#697586;font-size:10px">有效线索成本</div>
+                <div style="font-size:17px;font-weight:700">¥ 38.2
+                  <span style="font-size:10px;color:#0A6B3C">▼ 21%</span></div></div>
+              <div style="border:1px solid #EDEFF3;border-radius:6px;padding:8px 10px">
+                <div style="color:#697586;font-size:10px">线索量</div>
+                <div style="font-size:17px;font-weight:700">1,286
+                  <span style="font-size:10px;color:#0A6B3C">▲ 34%</span></div></div>
+              <div style="border:1px solid #EDEFF3;border-radius:6px;padding:8px 10px">
+                <div style="color:#697586;font-size:10px">成交率</div>
+                <div style="font-size:17px;font-weight:700">9.4%
+                  <span style="font-size:10px;color:#0A6B3C">▲ 2.1pt</span></div></div>
+            </div>
+            <div class="tbl">
+              <div class="tr head"><span>投放内容</span><span>方式</span>
+                <span>线索量</span><span>成本</span></div>
+              <div class="tr"><span class="av"><i></i>商品名称 A</span>
+                <span style="color:#1F6BE0">深转</span><span class="num">642</span>
+                <span class="num">¥35.1</span></div>
+              <div class="tr"><span class="av"><i></i>商品名称 A</span>
+                <span style="color:#737E90">直投</span><span class="num">318</span>
+                <span class="num">¥48.6</span></div>
+              <div class="tr"><span class="av"><i></i>全部门店</span>
+                <span style="color:#1F6BE0">深转</span><span class="num">326</span>
+                <span class="num">¥39.8</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="why"><b>末帧要承担责任</b>：它回答第 1 帧许下的那个承诺兑现了没有，否则整条流程没有收口。</div>
+    </figure>
+
+  </div>
+</div>
+</body>
+</html>

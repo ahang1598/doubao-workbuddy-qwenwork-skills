@@ -1,0 +1,59 @@
+{
+  "data_file": "/path/to/data.sav",
+  "output_dir": "/path/to/output",
+  "factors": {
+    "X1": {
+      "label": "思考线索",
+      "source_col": "数据中的原始列名（可选）",
+      "levels": {"1": 0, "2": 1},
+      "level_labels": ["无思考", "有思考"]
+    },
+    "X2": {
+      "label": "任务类型",
+      "levels": {"1": 0, "2": 1},
+      "level_labels": ["机械任务", "人类任务"]
+    }
+  },
+  "scales": {
+    "M_拟人化": ["anthropho1", "anthropho2", "anthropho3"],
+    "Y_满意度": ["AIsatisfy1", "AIsatisfy2", "AIsatisfy3", "AIsatisfy4"]
+  },
+  "manipulation_checks": [
+    {
+      "iv": "X1",
+      "check_var": "thinkingprocess1",
+      "label": "机器人呈现了思考过程",
+      "type": "continuous",
+      "expected_direction": "high"
+    },
+    {
+      "iv": "X2",
+      "check_var": "task1",
+      "label": "任务是机械工具性任务",
+      "type": "continuous",
+      "expected_direction": "low"
+    },
+    {
+      "iv": "X1",
+      "check_var": "color_recall",
+      "label": "广告背景颜色识别",
+      "type": "categorical",
+      "correct_values": {"0": "red", "1": "blue"},
+      "correct_threshold": 0.80
+    }
+  ],
+  "dvs": {
+    "M_拟人化": "拟人化感知",
+    "Y_满意度": "AI满意度"
+  },
+  "mediation": {
+    "X": "X1",
+    "W": "X2",
+    "Z": null,
+    "M": "M_拟人化",
+    "Y_cols": ["Y_满意度"],
+    "Y_names": ["AI满意度"],
+    "n_boot": 5000,
+    "seed": 42
+  }
+}

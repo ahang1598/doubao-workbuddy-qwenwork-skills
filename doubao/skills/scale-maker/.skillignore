@@ -1,0 +1,18 @@
+# Python runtime
+__pycache__/
+*.py[cod]
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Runtime-only data
+temp_data/
+
+# Local logs and generated reports
+*.log
+coverage/
+.pytest_cache/

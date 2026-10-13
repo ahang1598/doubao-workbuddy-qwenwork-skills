@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>正文贴边的阳性对照</title>
+<!-- 复刻真实事故（官网，不是文档）：`.specs{padding:120px 0}` 写在
+     `.wrap{padding-inline:var(--gut)}` 后面，**padding 简写把 padding-inline 清零了**，
+     于是整段左右留白变 0，标题第一个字和右列数值都被切在边缘上。
+     声明写了，被静默清掉了 —— 所以判据只看文字实际离边多远，不看你写没写。 -->
+<style>*{box-sizing:border-box;margin:0;padding:0}
+:root{--gut:clamp(24px,4.5vw,80px);--ink:#F3EEE1;--world:#12100E}
+body{background:var(--world);color:var(--ink);font-family:system-ui,"PingFang SC",sans-serif}
+.wrap{padding-inline:var(--gut)}
+.hero{height:60vh;display:grid;place-items:center;background:#1C1916}
+.specs{padding:120px 0;background:var(--world)}   /* ← 简写把 padding-inline 清零 */
+.specs-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:60px;align-items:start}
+.specs h2{font-size:48px;line-height:1.2;font-weight:300}
+.specs p{margin-top:20px;color:#9A9086;line-height:1.9}
+.row{display:flex;justify-content:space-between;padding:22px 0;
+  border-bottom:1px solid rgba(243,238,225,.1)}
+</style></head><body>
+<section class="hero wrap"><h1>贴边的阳性对照</h1></section>
+<section class="specs wrap"><div class="specs-grid">
+<div><h2>参数里的<br>匠心</h2>
+<p>每一个数字背后，都是工程师们反复打磨的结果。我们不堆砌参数，只做真正有用的技术。</p></div>
+<div>
+<div class="row"><span>产品尺寸</span><span>Ø 80 × 95 mm</span></div>
+<div class="row"><span>供电方式</span><span>USB-C / 纽扣电池</span></div>
+<div class="row"><span>材质</span><span>陶瓷 / 6063 铝合金</span></div>
+</div></div></section></body></html>

@@ -1,0 +1,17 @@
+{
+  "id": "regression.course-change-minimal",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "课程调换申请只陈述时间冲突和用户要求待补的课程、教师信息。",
+  "candidate_output": "因两门课程时间冲突，现申请调换课程。拟调换课程：[待补：拟调换课程]；任课教师信息：[待补：任课教师信息]。恳请审核。",
+  "assertions": {
+    "required_substrings": ["两门课程时间冲突", "拟调换课程：[待补：拟调换课程]", "任课教师信息：[待补：任课教师信息]"],
+    "forbidden_substrings": ["课程等效", "学分", "培养方案", "毕业", "风险", "责任", "承诺", "联系方式"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

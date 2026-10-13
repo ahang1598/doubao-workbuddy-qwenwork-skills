@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>QQ 2026 年度报告 · 封面</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#0A1226}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",
+  "Microsoft YaHei",system-ui,sans-serif;color:#F3EEE1}
+.cover{position:relative;width:100vw;height:100vh;min-height:540px;overflow:hidden;
+  isolation:isolate;background:#0A1226;
+  /* 12 列网格底纹 + 一处强调色光晕：整份文档的"纸" */
+  background-image:
+    linear-gradient(90deg,rgba(243,238,225,.045) 1px,transparent 1px),
+    radial-gradient(circle at 24% 18%,rgba(18,183,245,.2),transparent 42%);
+  background-size:8.3333% 100%,100% 100%;}
+/* 巨号编号水印：先于一切被看到，也最先被忘掉 —— 它只提供"这是一份正经方案"的信号 */
+.folio{position:absolute;right:-2.5vw;bottom:-9vh;z-index:0;
+  font-size:clamp(240px,30vw,460px);font-weight:900;line-height:.72;
+  letter-spacing:-.08em;color:rgba(243,238,225,.055);user-select:none}
+.meta{position:absolute;z-index:3;font-size:11px;letter-spacing:.28em;
+  font-weight:600;color:rgba(243,238,225,.46);text-transform:uppercase}
+.meta.tl{top:5.4vh;left:4.6vw}
+.meta.bl{bottom:5.4vh;left:4.6vw;display:flex;gap:2.2vw;letter-spacing:.2em}
+.meta.br{bottom:5.4vh;right:4.6vw;letter-spacing:.2em}
+.side{position:absolute;z-index:3;right:1.9vw;top:50%;transform:translateY(-50%) rotate(180deg);
+  writing-mode:vertical-rl;font-size:10.5px;letter-spacing:.42em;color:rgba(243,238,225,.46);font-weight:600}
+.stage{position:absolute;inset:0;z-index:2;display:grid;align-items:center;
+  padding:0 4.6vw;gap:4vw}
+.title{font-size:clamp(40px,5.6vw,86px);font-weight:800;line-height:1.06;
+  letter-spacing:-.022em;max-width:15ch}
+.title em{font-style:normal;color:#FFC93C}
+.rule{width:min(38vw,420px);height:2px;background:#F3EEE1;margin:3.4vh 0 2.6vh;opacity:.9}
+.sub{font-size:clamp(13px,1.15vw,17px);line-height:1.85;color:rgba(243,238,225,.6);max-width:32ch}
+.art{position:relative;overflow:hidden;background:#050A16}
+.art img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ── 版式 A：cinematic-field —— 横图满版，字压在上面 ── */
+.v-cinematic .stage{grid-template-columns:1fr;align-content:end;padding-bottom:11vh}
+.v-cinematic .art{position:absolute;inset:0;z-index:-1}
+.v-cinematic .art::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(75deg,rgba(5,8,20,.88) 8%,rgba(5,8,20,.4) 52%,transparent 88%)}
+.v-cinematic .title,.v-cinematic .sub{color:#F3EEE1}
+.v-cinematic .rule{background:#F3EEE1}
+.v-cinematic .meta,.v-cinematic .side{color:#F3EEE1;opacity:.72}
+.v-cinematic .folio{color:#F3EEE1;opacity:.10}
+
+/* ── 版式 B：editorial-object —— 左字右物，像杂志封面 ── */
+.v-editorial .stage{grid-template-columns:1.06fr .94fr}
+.v-editorial .art{height:74vh;align-self:center;border-radius:2px}
+
+/* ── 版式 C：interface-archive —— 界面陈列，给 App / 多屏产物 ── */
+.v-archive .stage{grid-template-columns:1.02fr .98fr}
+.v-archive .shelf{position:relative;height:76vh;align-self:center;
+  background:#101B36;display:flex;align-items:center;justify-content:center;
+  border-radius:2px}
+.v-archive .shelf::before{content:"";position:absolute;width:66%;aspect-ratio:1;
+  border:1px solid rgba(87,214,255,.2);border-radius:50%}
+.v-archive .phone{position:relative;z-index:2;height:62vh;aspect-ratio:390/844;
+  border-radius:14px;overflow:hidden;background:#0B0F1C;
+  box-shadow:0 22px 60px rgba(0,0,0,.28),0 0 0 6px #1B2440}
+.v-archive .phone img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body>
+<div class="cover v-archive">
+  <div class="folio">26</div>
+  <div class="meta tl">DESIGN PROPOSAL / 01</div>
+  <div class="side">QQ · ANNUAL REPORT · 2026</div>
+  
+  <div class="stage">
+    <div>
+      <h1 class="title">把这一年<br>装进一台<br><em>旧机器</em></h1>
+      <div class="rule"></div>
+      <p class="sub">QQ 2026 年度盘点报告。<br>十屏竖版，复古风。</p>
+    </div>
+    <div class="shelf"><div class="phone"><img src="../h5-qq2026/cover-shot.jpg" alt="QQ 2026 年度报告 主视觉"></div></div>
+  </div>
+  <div class="meta bl">移动端 H5 · 10 屏 · 可分享</div>
+  <div class="meta br">腾讯 QQ</div>
+</div>
+</body>
+</html>

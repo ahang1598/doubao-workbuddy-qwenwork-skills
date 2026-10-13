@@ -1,0 +1,29 @@
+{
+  "contributions": [
+    {
+      "member_id": "M01",
+      "task_id": "T01",
+      "status": "submitted",
+      "claims": [
+        {
+          "claim_id": "C01",
+          "statement": "待核验的事实或观点",
+          "claim_type": "fact",
+          "classification_source": "supplied",
+          "evidence_ids": ["E01"]
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_id": "E01",
+          "source_member_id": "M01",
+          "source": "待填写",
+          "locator": "待填写",
+          "verification": "unresolved"
+        }
+      ],
+      "draft_content": "保留成员原始提交文本",
+      "open_questions": []
+    }
+  ]
+}

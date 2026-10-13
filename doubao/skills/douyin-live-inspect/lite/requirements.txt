@@ -1,0 +1,3 @@
+# CPU inference; Python 3.10+. FFmpeg/FFprobe are host dependencies.
+sherpa-onnx==1.13.4
+numpy>=1.24,<3

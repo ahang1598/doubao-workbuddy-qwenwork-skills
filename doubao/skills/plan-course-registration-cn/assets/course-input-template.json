@@ -1,0 +1,61 @@
+{
+  "profile": {
+    "institution": "某国内大学",
+    "campus": "主校区",
+    "school": "某学院",
+    "program": "某专业",
+    "cohort_year": 2024,
+    "curriculum_version": "2024版",
+    "target_term": "2026-2027学年第一学期",
+    "completed_courses": ["MATH1001", "CS2001"],
+    "enrolled_courses": [],
+    "proposed_courses": ["CS2102"],
+    "goals": ["完成专业必修", "为数据方向实习做准备"],
+    "risk_tolerance": "balanced",
+    "weekly_time_budget": 35,
+    "desired_credits": {"min": 18, "max": 24},
+    "weights": {
+      "difficulty_fit": 0.22,
+      "grading": 0.16,
+      "schedule_fit": 0.18,
+      "future_utility": 0.28,
+      "workload_fit": 0.16
+    }
+  },
+  "courses": [
+    {
+      "course_id": "CS2102",
+      "section_id": "01",
+      "name": "数据结构",
+      "credits": 4,
+      "category": "专业必修",
+      "status": "considering",
+      "addable": true,
+      "capacity_status": "open",
+      "meetings": [
+        {"day": 2, "start_period": 3, "end_period": 4, "week_start": 1, "week_end": 16, "parity": "all"}
+      ],
+      "prerequisites": {
+        "all_of": ["CS2001"],
+        "any_of_groups": [],
+        "corequisites": []
+      },
+      "exclusions": [],
+      "difficulty": {"rating": 4, "evidence_level": "syllabus"},
+      "grading": {
+        "friendliness": 3.6,
+        "evidence_level": "aggregated",
+        "sample_size": 48,
+        "term": "2025-2026学年第一学期",
+        "source_age_semesters": 2,
+        "instructor_match": true
+      },
+      "schedule_fit": 4,
+      "workload_hours": 9,
+      "future_utility": {"rating": 5, "evidence_level": "official"},
+      "sources": [
+        {"type": "official", "publisher": "某国内大学教务处", "title": "培养方案", "source": "培养方案.pdf", "published_or_updated": "2026-07-01", "verification_status": "verified", "freshness": "current", "supports": ["curriculum", "capacity", "addable"]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Doubao Desktop Pet Builder"
+  short_description: "Create, generate, and repair Electron desktop pets"
+  default_prompt: "Use $doubao-desktop-pet-builder to create or repair a desktop pet. Follow the platform-specific cutout route, asset QA, runtime verification, and packaging workflow."

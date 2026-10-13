@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>骑行 App - 首页</title>
+  <link rel="stylesheet" href="shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* 首页特有样式 */
+    .greeting {
+      padding: 8px 0 20px;
+    }
+    
+    .greeting h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    
+    .greeting p {
+      font-size: 14px;
+      color: var(--ink-secondary);
+      margin-top: 4px;
+    }
+    
+    /* 天气卡片 */
+    .weather-card {
+      background: linear-gradient(135deg, #FFF5EB 0%, #FFE8D6 100%);
+      border-radius: var(--r-card);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .weather-icon {
+      width: 56px;
+      height: 56px;
+      background: rgba(232, 122, 61, .15);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .weather-info {
+      flex: 1;
+    }
+    
+    .weather-temp {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+    }
+    
+    .weather-desc {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      margin-top: 4px;
+    }
+    
+    .weather-tag {
+      padding: 6px 12px;
+      background: var(--success);
+      color: white;
+      border-radius: var(--r-pill);
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font-display);
+    }
+    
+    /* 时间选择器 */
+    .time-selector {
+      margin-bottom: 20px;
+    }
+    
+    .time-selector-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .time-selector-label span {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    
+    .time-slider {
+      position: relative;
+      height: 48px;
+      background: var(--surface);
+      border-radius: var(--r-control);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    
+    .time-slider-track {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      right: 16px;
+      height: 6px;
+      background: rgba(58, 53, 48, .08);
+      border-radius: 3px;
+      transform: translateY(-50%);
+    }
+    
+    .time-slider-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--world-light), var(--world));
+      border-radius: 3px;
+    }
+    
+    .time-slider-thumb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 28px;
+      height: 28px;
+      background: white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0,0,0,.15), 0 0 0 4px rgba(107, 142, 90, .2);
+    }
+    
+    .time-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      padding: 0 4px;
+    }
+    
+    .time-markers span {
+      font-size: 11px;
+      color: var(--ink-tertiary);
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+    
+    /* 路线卡片 */
+    .route-section-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .route-section-title .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      background: rgba(232, 122, 61, .12);
+      color: var(--accent);
+      border-radius: var(--r-pill);
+    }
+    
+    .route-card {
+      background: var(--surface);
+      border-radius: var(--r-card);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .route-card:active {
+      transform: scale(0.98);
+    }
+    
+    .route-card.recommended {
+      border: 2px solid var(--accent);
+    }
+    
+    .route-card.recommended::before {
+      content: '推荐';
+      position: absolute;
+      top: 12px;
+      right: -24px;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 28px;
+      transform: rotate(45deg);
+      font-family: var(--font-display);
+    }
+    
+    .route-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    
+    .route-name {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    
+    .route-area {
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-top: 2px;
+    }
+    
+    .route-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .route-stat {
+      text-align: center;
+    }
+    
+    .route-stat-value {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+    }
+    
+    .route-stat-value .unit {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+    
+    .route-stat-label {
+      font-size: 11px;
+      color: var(--ink-tertiary);
+      margin-top: 4px;
+    }
+    
+    .route-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid rgba(58, 53, 48, .06);
+    }
+    
+    .route-return {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--ink-secondary);
+    }
+    
+    .route-return-time {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--world-dark);
+      font-size: 14px;
+    }
+    
+    .route-facilities {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .facility-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(107, 142, 90, .1);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    /* 更多路线 */
+    .more-routes {
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      color: var(--ink-secondary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
+          <rect x="0" y="8" width="3" height="4" rx="0.5"/>
+          <rect x="5" y="5" width="3" height="7" rx="0.5"/>
+          <rect x="10" y="2" width="3" height="10" rx="0.5"/>
+          <rect x="15" y="0" width="3" height="12" rx="0.5"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
+          <path d="M8 2.5c2.1 0 4 .8 5.5 2.1l1.1-1.2C12.7 1.8 10.5 1 8 1S3.3 1.8 1.4 3.4l1.1 1.2C4 3.3 5.9 2.5 8 2.5z"/>
+          <path d="M8 6c1.2 0 2.3.4 3.2 1.2l1.1-1.2C11.1 4.7 9.6 4 8 4s-3.1.7-4.3 2l1.1 1.2C5.7 6.4 6.8 6 8 6z"/>
+          <circle cx="8" cy="9.5" r="1.5"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="2.5"/>
+          <rect x="2" y="2" width="16" height="8" rx="1" fill="currentColor"/>
+          <rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- 内容区 -->
+    <div class="safe-area">
+      <!-- 问候 -->
+      <div class="greeting">
+        <h1>早上好，思羽 👋</h1>
+        <p>今天天气不错，要不要出去骑一圈？</p>
+      </div>
+      
+      <!-- 天气卡片 -->
+      <div class="weather-card">
+        <div class="weather-icon">☀️</div>
+        <div class="weather-info">
+          <div class="weather-temp">26°C</div>
+          <div class="weather-desc">晴 · 微风 · 空气质量优</div>
+        </div>
+        <div class="weather-tag">适合骑行</div>
+      </div>
+      
+      <!-- 可用时间选择 -->
+      <div class="time-selector">
+        <div class="time-selector-label">
+          你今天有多少时间？
+          <span>1.5 小时</span>
+        </div>
+        <div class="time-slider">
+          <div class="time-slider-track">
+            <div class="time-slider-fill"></div>
+            <div class="time-slider-thumb"></div>
+          </div>
+        </div>
+        <div class="time-markers">
+          <span>30分</span>
+          <span>1小时</span>
+          <span>1.5小时</span>
+          <span>2小时</span>
+          <span>3小时+</span>
+        </div>
+      </div>
+      
+      <!-- 推荐路线 -->
+      <div class="route-section-title">
+        为你推荐
+        <span class="badge">2 条匹配</span>
+      </div>
+      
+      <!-- 路线卡片 1 - 推荐 -->
+      <div class="route-card recommended">
+        <div class="route-header">
+          <div>
+            <div class="route-name">深圳湾公园环线</div>
+            <div class="route-area">南山区 · 沿海绿道</div>
+          </div>
+          <span class="tag tag-green">轻松</span>
+        </div>
+        
+        <div class="route-stats">
+          <div class="route-stat">
+            <div class="route-stat-value">8.5<span class="unit">km</span></div>
+            <div class="route-stat-label">距离</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-value">45<span class="unit">分</span></div>
+            <div class="route-stat-label">骑行时间</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-value">12<span class="unit">m</span></div>
+            <div class="route-stat-label">累计爬升</div>
+          </div>
+        </div>
+        
+        <div class="route-footer">
+          <div class="route-return">
+            <span>🕐</span>
+            <span>预计</span>
+            <span class="route-return-time">11:30</span>
+            <span>回到起点</span>
+          </div>
+          <div class="route-facilities">
+            <div class="facility-icon" title="饮水站">💧</div>
+            <div class="facility-icon" title="便利店">🏪</div>
+            <div class="facility-icon" title="休息区">🪑</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 路线卡片 2 -->
+      <div class="route-card">
+        <div class="route-header">
+          <div>
+            <div class="route-name">塘朗山脚下绿道</div>
+            <div class="route-area">南山区 · 林荫道</div>
+          </div>
+          <span class="tag tag-orange">适中</span>
+        </div>
+        
+        <div class="route-stats">
+          <div class="route-stat">
+            <div class="route-stat-value">12<span class="unit">km</span></div>
+            <div class="route-stat-label">距离</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-value">65<span class="unit">分</span></div>
+            <div class="route-stat-label">骑行时间</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-value">45<span class="unit">m</span></div>
+            <div class="route-stat-label">累计爬升</div>
+          </div>
+        </div>
+        
+        <div class="route-footer">
+          <div class="route-return">
+            <span>🕐</span>
+            <span>预计</span>
+            <span class="route-return-time">11:50</span>
+            <span>回到起点</span>
+          </div>
+          <div class="route-facilities">
+            <div class="facility-icon" title="饮水站">💧</div>
+            <div class="facility-icon" title="休息区">🪑</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="more-routes">
+        查看更多路线 →
+      </div>
+    </div>
+    
+    <!-- 底部操作条 -->
+    <div class="bottom-bar">
+      <button class="btn-primary">
+        <span>🚴</span>
+        就选深圳湾，出发准备
+      </button>
+    </div>
+  </div>
+</body>
+</html>

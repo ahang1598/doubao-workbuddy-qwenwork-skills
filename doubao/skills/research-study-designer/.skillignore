@@ -1,0 +1,15 @@
+# Runtime temporary data
+temp_data/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Logs and local outputs
+*.log
+.DS_Store
+
+# Editor and OS temporary files
+*~
+*.swp
+*.tmp

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>圆肖像与胶囊履历编辑简历</title>
+<!-- Load catalog dependencies first. Example text is fictional; replace it before use. -->
+<style data-resume-css="15">
+.cvx-resume-02{--cvx-paper:#ffffff;--cvx-ink:#111111;--cvx-accent:#a4cae3;--cvx-secondary:#c5dfef;--cvx-line:#111111;--cvx-edge:52px;--cvx-top:60px;--cvx-section-gap:36px;--cvx-column-gap:28px;--cvx-portrait-size:260px;--cvx-portrait-x:50%;--cvx-portrait-y:40%;--cvx-record-left:1fr;--cvx-record-right:1.08fr;--cvx-record-column-gap:16px;--cvx-record-row-gap:25px;--cvx-record-inner-gap:10px;--cvx-record-tag-gap:8px;--cvx-record-bullet-gap:1px;--cvx-record-heading-gap:20px;--cvx-record-badge-fill:var(--cvx-accent);--cvx-record-badge-ink:var(--cvx-ink);--vl-label-bg:var(--cvx-accent);--vl-label-ink:var(--cvx-ink);position:relative;width:800px;max-width:100%;height:1132px;min-height:1132px;max-height:1132px;box-sizing:border-box;display:flex;flex-direction:column;padding-top:var(--cvx-top);background:var(--cvx-paper);color:var(--cvx-ink);font-family:Arial,sans-serif;font-size:14px;line-height:1.3;font-synthesis:none;overflow-wrap:anywhere;container-name:cvx-resume-sheet;container-type:inline-size}
+.cvx-resume-02 *{box-sizing:border-box;min-width:0;max-width:100%;font-synthesis:none;overflow-wrap:anywhere}
+.cvx-resume-02 h1,.cvx-resume-02 h2,.cvx-resume-02 h3,.cvx-resume-02 p{margin:0}
+.cvx-resume-02 a{color:inherit;text-decoration:none}
+.cvx-resume-02 address{font-style:normal}
+.cvx-resume-02 .vl-badge{--vl-label-bg:var(--cvx-accent);--vl-label-ink:var(--cvx-ink);white-space:normal;overflow-wrap:anywhere}
+.cvx-resume-02 .cvx-r02-outline{--vl-label-bg:var(--cvx-paper);--vl-label-ink:var(--cvx-ink);background:var(--cvx-paper);border:1px solid var(--cvx-line)}
+.cvx-r02-hero{margin-inline:var(--cvx-edge);display:grid;grid-template-columns:minmax(0,var(--cvx-portrait-size)) minmax(0,1fr);gap:48px;align-items:start}
+.cvx-r02-portrait{position:relative;width:var(--cvx-portrait-size);aspect-ratio:1}
+.cvx-r02-photo-window{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;background:var(--cvx-paper)}
+.cvx-r02-photo-window img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--cvx-portrait-x) var(--cvx-portrait-y)}
+.cvx-r02-cv{position:absolute;left:0;top:24px;font-size:26px;font-weight:700;line-height:1.1}
+.cvx-r02-star{display:block;fill:var(--cvx-ink);pointer-events:none}
+.cvx-r02-portrait-star{position:absolute;right:24px;bottom:0;width:56px;height:56px}
+.cvx-r02-intro{padding-top:16px;display:grid;gap:22px;align-content:start}
+.cvx-r02-identity{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center}
+.cvx-resume-02 .cvx-r02-name{font-size:21px;font-weight:700;line-height:1.15}
+.cvx-r02-phone{font-size:19px;line-height:1.25}
+.cvx-resume-02 .cvx-r02-statement{font-size:26px;line-height:1.18;letter-spacing:-.35px}
+.cvx-r02-statement strong{font-weight:700}
+.cvx-r02-statement em{font-family:"Times New Roman",serif;font-size:1.08em;font-style:italic;font-weight:700}
+.cvx-r02-mail{font-size:20px;line-height:1.3;justify-self:start}
+.cvx-r02-middle{margin:20px var(--cvx-edge) 0;display:grid;grid-template-columns:minmax(0,232px) minmax(0,1fr);column-gap:var(--cvx-column-gap);align-items:start}
+.cvx-r02-sidebar{padding-left:30px;display:grid;gap:38px;align-content:start}
+.cvx-resume-02 .cvx-r02-role{font-family:"Times New Roman",serif;font-size:29px;line-height:1.1;font-weight:400;font-style:italic}
+.cvx-r02-languages,.cvx-r02-skills{display:grid;gap:0;font-size:14px;line-height:1.3}
+.cvx-r02-skills{position:relative}
+.cvx-r02-side-rule{position:absolute;top:5px;right:calc(100% + 11px);width:71px;max-width:none;height:6px;background:var(--cvx-accent);pointer-events:none}
+.cvx-r02-experience{padding-top:40px}
+.cvx-resume-02 .cvx-r02-heading{font-size:20px;font-weight:400;line-height:1.25;margin-bottom:var(--cvx-record-heading-gap)}
+.cvx-resume-02 .cvx-record{grid-template-columns:minmax(0,var(--cvx-record-left)) minmax(0,var(--cvx-record-right))}
+.cvx-resume-02 .cvx-record-title{font-size:14px;font-weight:700;line-height:1.25;margin-bottom:var(--cvx-record-inner-gap)}
+.cvx-resume-02 .cvx-record-organisation{font-size:12px;line-height:1.25;font-weight:700}
+.cvx-resume-02 .cvx-record-date{--vl-label-bg:var(--cvx-paper);--vl-label-ink:var(--cvx-ink);font-size:12px;line-height:1.25;font-weight:400;border-color:var(--cvx-line)}
+.cvx-resume-02 .cvx-record-projects{font-size:12.5px;line-height:1.25}
+.cvx-r02-education{margin:var(--cvx-section-gap) var(--cvx-edge) 40px;padding-left:30px;display:grid;grid-template-columns:minmax(0,1fr) 164px;column-gap:20px;align-items:start;--cvx-record-left:1.05fr;--cvx-record-right:1.35fr;--cvx-record-row-gap:26px}
+.cvx-resume-02 .cvx-r02-education>.cvx-r02-heading{grid-column:1 / -1}
+.cvx-r02-education-art{position:relative;align-self:stretch;min-height:280px;margin-right:calc(-1 * var(--cvx-edge));max-width:none;overflow:hidden;pointer-events:none}
+.cvx-r02-education-star{position:absolute;width:320px;height:320px;max-width:none;right:-98px;top:-10px;fill:var(--cvx-secondary)}
+.cvx-r02-footer{margin-top:auto;padding:20px var(--cvx-edge) 32px;background:var(--cvx-accent);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;column-gap:28px;row-gap:16px}
+.cvx-resume-02 .cvx-r02-footer-mail{--vl-label-bg:var(--cvx-accent);background:var(--cvx-accent);font-size:18px;line-height:1.25}
+.cvx-r02-footer-star{width:36px;height:36px;fill:var(--cvx-paper);flex:0 0 36px}
+.cvx-r02-footer-phone{font-size:20px}
+@container cvx-record-list (max-width:25rem){.cvx-resume-02 .cvx-record{grid-template-columns:minmax(0,1fr)}}
+@container cvx-resume-sheet (max-width:650px){.cvx-r02-hero{margin-inline:24px;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:24px}.cvx-r02-identity{grid-template-columns:minmax(0,1fr)}.cvx-r02-middle{margin-inline:24px;grid-template-columns:minmax(0,1fr);row-gap:32px}.cvx-r02-sidebar{padding-left:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.cvx-r02-role{grid-column:1 / -1}.cvx-r02-experience{padding-top:0}.cvx-r02-side-rule{display:none}.cvx-r02-education{margin-inline:24px;padding-left:0;grid-template-columns:minmax(0,1fr) 100px;gap:16px}.cvx-r02-education-art{margin-right:-24px}.cvx-r02-footer{padding-inline:24px}}
+@container cvx-resume-sheet (max-width:440px){.cvx-r02-hero{grid-template-columns:minmax(0,1fr)}.cvx-r02-portrait{width:220px}.cvx-r02-intro{padding-top:0}.cvx-r02-sidebar{grid-template-columns:minmax(0,1fr)}.cvx-r02-education{grid-template-columns:minmax(0,1fr)}.cvx-r02-education-art{min-height:180px;margin-right:-24px}.cvx-r02-education-star{width:220px;height:220px;right:-60px;top:0}}
+.cvx-r02-statement em{font-family:Arial,sans-serif;font-size:1em;font-weight:400}.cvx-resume-02 .cvx-r02-role{font-family:Arial,sans-serif}
+
+.cvx-resume-02 .cvx-r02-name .vl-badge{border:0;border-radius:12px}.cvx-resume-02 .cvx-r02-cv,.cvx-resume-02 .cvx-record-organisation{border:0}.cvx-resume-02 .cvx-record-meta{gap:6px}.cvx-resume-02 .cvx-record-meta>.vl-badge{--vl-badge-pad-x:8px}
+
+.cvx-r02-face-safe{position:absolute;left:18%;top:25%;width:62%;height:60%;pointer-events:none}.cvx-r02-photo-window{position:relative}
+
+@container cvx-resume-sheet (max-width:650px){.cvx-resume-02 .cvx-r02-cv{top:8px;font-size:22px}}
+
+
+
+/* A4 is a fixed page, not the measured content height. Overflow must be checked before export. */
+main[data-resume-page="a4"]{width:800px;min-width:800px;max-width:800px;height:1132px;min-height:1132px;max-height:1132px;--cvx-safe-edge:48px;overflow:visible;flex-shrink:0}
+main[data-resume-page="a4"]> *{flex-shrink:0}
+@page{size:210mm 297mm;margin:0}
+
+main.cvx-resume-02[data-resume-page="a4"]{--cvx-top:48px;--cvx-edge:48px;--cvx-section-gap:24px;--cvx-portrait-size:220px;--cvx-record-row-gap:20px;--cvx-record-inner-gap:8px;--cvx-record-heading-gap:16px}
+main.cvx-resume-02 .cvx-record-projects{font-size:13.5px;line-height:1.3}
+main.cvx-resume-02 .cvx-r02-cv{top:0}
+main.cvx-resume-02 .cvx-r02-experience{padding-top:16px}
+main.cvx-resume-02 .cvx-r02-sidebar{gap:24px;padding-left:12px}
+main.cvx-resume-02 .cvx-r02-education{padding-left:12px;margin-bottom:24px;--cvx-record-row-gap:18px;grid-template-columns:minmax(0,1fr) 112px}
+main.cvx-resume-02 .cvx-r02-footer{padding:16px 48px 48px;gap:16px;margin-top:auto}
+main.cvx-resume-02 .cvx-r02-education-art{min-height:230px}
+main.cvx-resume-02[data-density="compact"]{--cvx-portrait-size:160px;--cvx-column-gap:24px;--cvx-section-gap:18px;--cvx-record-heading-gap:12px;--cvx-record-row-gap:16px;--cvx-record-inner-gap:6px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-hero{gap:24px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-middle{grid-template-columns:minmax(0,170px) minmax(0,1fr);margin-top:16px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-intro{padding-top:0;gap:14px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-experience{padding-top:0}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-sidebar{padding-left:0;gap:18px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-education{padding-left:0;grid-template-columns:minmax(0,1fr) 72px;--cvx-record-row-gap:16px;margin-bottom:18px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-education-art{min-height:180px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-education-star{width:230px;height:230px;right:-98px;top:0}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-cv{top:0;font-size:26px}
+main.cvx-resume-02[data-density="compact"] .cvx-r02-portrait-star{right:0;bottom:-4px;width:42px;height:42px}
+</style></head><body><main data-resume-page="a4" data-safe-inset="48" data-density="normal" data-content-status="fictional-layout-sample-replace-all-personal-data" class="cvx-resume-02" data-recipe="combination.resume-circle-editorial" lang="fr" aria-label="CV de démonstration — Chloé Huet">
+<header class="cvx-r02-hero" data-safe-block="r02-hero">
+<div class="cvx-r02-portrait">
+<div class="cvx-r02-photo-window"><img src="{{portrait_asset}}" data-asset-slot="portrait" alt="Portrait à fournir pour ce modèle de CV"><span class="cvx-r02-face-safe" data-face-safe="portrait" aria-hidden="true"></span></div>
+<span class="vl-badge cvx-r02-cv" data-css-atom="shape.badge" data-text="r02-cv">CV</span>
+<svg class="cv-radial cvx-r02-star cvx-r02-portrait-star" data-css-atom="shape.radial-sticker" data-preset="asterisk" style="--cv-sticker-color:var(--cvx-ink);--cv-arm-width:8px" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><g class="cv-radial-asterisk"><path d="M50 4V96 M4 50H96 M17.5 17.5L82.5 82.5 M17.5 82.5L82.5 17.5"/></g></svg>
+</div>
+<div class="cvx-r02-intro">
+<div class="cvx-r02-identity"><h1 class="cvx-r02-name"><span class="vl-badge" data-css-atom="shape.badge" data-text="r02-name">ALICE ROSE</span></h1><a class="cvx-r02-phone" href="tel:+1234567890" data-text="r02-header-phone">+123-456-7890</a></div>
+<p class="cvx-r02-statement" data-text="r02-statement">Je transforme les <strong>idées</strong><br>en contenu <em>impactant</em><br>pour faire <strong>rayonner</strong><br>votre marque.</p>
+<a class="vl-badge cvx-r02-outline cvx-r02-mail" data-css-atom="shape.badge" href="mailto:hello@example.com" data-text="r02-header-email">hello@example.com</a>
+</div>
+</header>
+<div class="cvx-r02-middle">
+<div class="cvx-r02-sidebar">
+<section data-safe-block="r02-profession" aria-label="Profession"><h2 class="cvx-r02-role" data-text="r02-role">Cheffe de<br>projet digitale</h2></section>
+<section class="cvx-r02-languages" data-safe-block="r02-languages" aria-label="Langues"><p data-text="r02-lang-fr">Français | Native</p><p data-text="r02-lang-en">Anglais | C1</p><p data-text="r02-lang-es">Espagnol | B2</p><p data-text="r02-lang-ko">Coréen | A2</p></section>
+<section class="cvx-r02-skills" data-safe-block="r02-skills" aria-label="Compétences"><div class="cvx-r02-side-rule" aria-hidden="true"></div><p data-text="r02-skill-1">Collaboration d’équipe</p><p data-text="r02-skill-2">Communication web</p><p data-text="r02-skill-3">Stratégie marketing</p><p data-text="r02-skill-4">Gestion de projet agile</p><p data-text="r02-skill-5">Maîtrise des outils IA</p></section>
+</div>
+<section class="cvx-grouped-record-row cvx-r02-experience" data-css-atom="layout.grouped-record-row" data-safe-block="r02-experience" aria-labelledby="cvx-r02-experience-title">
+<h2 class="cvx-r02-heading" id="cvx-r02-experience-title"><span class="vl-badge cvx-r02-outline" data-css-atom="shape.badge" data-text="r02-experience-heading">Expériences</span></h2>
+<div class="cvx-record-list">
+<article class="cvx-record" data-safe-block="r02-job-1" aria-label="Cheffe de projet digital, 2024–2025"><div class="cvx-record-summary"><h3 class="cvx-record-title" data-text="r02-job-1-title">Cheffe de projet digital</h3><div class="cvx-record-meta"><span class="vl-badge cvx-record-organisation" data-css-atom="shape.badge" data-text="r02-job-1-org">Liceria, Inc.</span><span class="vl-badge cvx-record-date" data-css-atom="shape.badge" data-text="r02-job-1-date"><time datetime="2024">2024</time>–<time datetime="2025">2025</time></span></div></div><ul class="cvx-record-projects"><li data-text="r02-job-1-a">Piloter les campagnes en ligne</li><li data-text="r02-job-1-b">Coordonner les équipes</li><li data-text="r02-job-1-c">Suivre les délais et les budgets</li></ul></article>
+<article class="cvx-record" data-safe-block="r02-job-2" aria-label="Responsable marketing digital, 2022–2023"><div class="cvx-record-summary"><h3 class="cvx-record-title" data-text="r02-job-2-title">Responsable marketing digital</h3><div class="cvx-record-meta"><span class="vl-badge cvx-record-organisation" data-css-atom="shape.badge" data-text="r02-job-2-org">Liceria, Inc.</span><span class="vl-badge cvx-record-date" data-css-atom="shape.badge" data-text="r02-job-2-date"><time datetime="2022">2022</time>–<time datetime="2023">2023</time></span></div></div><ul class="cvx-record-projects"><li data-text="r02-job-2-a">Création de contenus web</li><li data-text="r02-job-2-b">Optimiser SEO et performances</li><li data-text="r02-job-2-c">Analyser les résultats et KPIs</li></ul></article>
+<article class="cvx-record" data-safe-block="r02-job-3" aria-label="Chargée de communication, 2020–2021"><div class="cvx-record-summary"><h3 class="cvx-record-title" data-text="r02-job-3-title">Chargée de communication</h3><div class="cvx-record-meta"><span class="vl-badge cvx-record-organisation" data-css-atom="shape.badge" data-text="r02-job-3-org">Shodwe, Inc.</span><span class="vl-badge cvx-record-date" data-css-atom="shape.badge" data-text="r02-job-3-date"><time datetime="2020">2020</time>–<time datetime="2021">2021</time></span></div></div><ul class="cvx-record-projects"><li data-text="r02-job-3-a">Gérer les partenariats externes</li><li data-text="r02-job-3-b">Déployer les actions promotionnelles</li><li data-text="r02-job-3-c">Suivre le reporting et les indicateurs</li></ul></article>
+</div>
+</section>
+</div>
+<section class="cvx-grouped-record-row cvx-r02-education" data-css-atom="layout.grouped-record-row" data-safe-block="r02-education" aria-labelledby="cvx-r02-education-title">
+<h2 class="cvx-r02-heading" id="cvx-r02-education-title"><span class="vl-badge cvx-r02-outline" data-css-atom="shape.badge" data-text="r02-education-heading">Formations</span></h2>
+<div class="cvx-record-list">
+<article class="cvx-record" data-safe-block="r02-degree-1" aria-label="Master en management digital"><div class="cvx-record-summary"><h3 class="cvx-record-title" data-text="r02-degree-1-title">Master +5 | Management digital</h3><div class="cvx-record-meta"><span class="vl-badge cvx-record-organisation" data-css-atom="shape.badge" data-text="r02-degree-1-org">Univ. Any City</span><span class="vl-badge cvx-record-date" data-css-atom="shape.badge" data-text="r02-degree-1-date"><time datetime="2020">2020</time>–<time datetime="2022">2022</time></span></div></div><ul class="cvx-record-projects"><li data-text="r02-degree-1-a">Pilotage de projets complexes</li><li data-text="r02-degree-1-b">Transformation digitale et stratégie</li><li data-text="r02-degree-1-c">Analyse de données et KPIs</li></ul></article>
+<article class="cvx-record" data-safe-block="r02-degree-2" aria-label="Licence en communication"><div class="cvx-record-summary"><h3 class="cvx-record-title" data-text="r02-degree-2-title">Licence +3 | Communication</h3><div class="cvx-record-meta"><span class="vl-badge cvx-record-organisation" data-css-atom="shape.badge" data-text="r02-degree-2-org">Univ. Any City</span><span class="vl-badge cvx-record-date" data-css-atom="shape.badge" data-text="r02-degree-2-date"><time datetime="2019">2019</time>–<time datetime="2020">2020</time></span></div></div><ul class="cvx-record-projects"><li data-text="r02-degree-2-a">Stratégie digitale et social media</li><li data-text="r02-degree-2-b">Analyse de marché et SEO</li><li data-text="r02-degree-2-c">Rédaction et storytelling</li></ul></article>
+<article class="cvx-record" data-safe-block="r02-degree-3" aria-label="DUT en communication"><div class="cvx-record-summary"><h3 class="cvx-record-title" data-text="r02-degree-3-title">DUT +1 | Communication</h3><div class="cvx-record-meta"><span class="vl-badge cvx-record-organisation" data-css-atom="shape.badge" data-text="r02-degree-3-org">Univ. Any City</span><span class="vl-badge cvx-record-date" data-css-atom="shape.badge" data-text="r02-degree-3-date"><time datetime="2018">2018</time>–<time datetime="2019">2019</time></span></div></div><ul class="cvx-record-projects"><li data-text="r02-degree-3-a">Création de contenus numériques</li><li data-text="r02-degree-3-b">Gestion de projets web</li><li data-text="r02-degree-3-c">Bases de marketing digital</li></ul></article>
+</div>
+<div class="cvx-r02-education-art" aria-hidden="true"><svg class="cv-radial cvx-r02-star cvx-r02-education-star" data-css-atom="shape.radial-sticker" data-preset="asterisk" style="--cv-sticker-color:var(--cvx-secondary);--cv-arm-width:8px" viewBox="0 0 100 100" focusable="false"><g class="cv-radial-asterisk"><path d="M50 4V96 M4 50H96 M17.5 17.5L82.5 82.5 M17.5 82.5L82.5 17.5"/></g></svg></div>
+</section>
+<footer class="cvx-r02-footer" data-safe-block="r02-footer" aria-label="Contact"><a class="vl-badge cvx-r02-outline cvx-r02-footer-mail" data-css-atom="shape.badge" href="mailto:hello@example.com" data-text="r02-footer-email">hello@example.com</a><svg class="cv-radial cvx-r02-star cvx-r02-footer-star" data-css-atom="shape.radial-sticker" data-preset="asterisk" style="--cv-sticker-color:var(--cvx-paper);--cv-arm-width:8px" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><g class="cv-radial-asterisk"><path d="M50 4V96 M4 50H96 M17.5 17.5L82.5 82.5 M17.5 82.5L82.5 17.5"/></g></svg><a class="cvx-r02-footer-phone" href="tel:+1234567890" data-text="r02-footer-phone">+123-456-7890</a></footer>
+</main></body></html>

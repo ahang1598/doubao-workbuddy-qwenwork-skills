@@ -1,0 +1,4 @@
+interface:
+  display_name: "生服商家同行对比分析报告"
+  short_description: "生成抖音生活服务商家同行对比经营分析、对标归因与行动计划报告"
+  default_prompt: "Use $local-life-service-peer-comparison 生成一份抖音生活服务商家同行对比分析报告。"

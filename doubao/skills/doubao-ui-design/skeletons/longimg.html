@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   活动分享长图骨架。750×N 单栏纵向，**一张会被保存到相册、转发到群里的图**。
+
+   它和分屏 H5 不是一回事：
+     分屏 H5　一屏 = 一个视口高，scroll-snap 落点确定，有翻页控件
+     长图　　 没有"屏"，只有段；连续往下读；没有任何交互控件
+
+   三条硬的：
+     1 **固定 750 宽**。它最终会被截成一张图，不做响应式、不写断点。
+     2 **段与段之间要有换气**：底色块、通栏图、一条细线，三选一交替，
+       否则十段下来是一根没有节奏的面条。
+     3 **首段要能单独当封面**：转发时缩略图截的就是它。
+
+   字号在 750 画布上要放大：正文 26–30px、标题 48–72px、巨字 90–140px。
+   照 App 的 15px 写，出图之后在手机上是看不清的。
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  /* TODO 四组数值。长图适合一个明确的主色调 —— 它整张被看到 */
+  --canvas:#FFF7EC;      /* TODO 底 */
+  --ink:#1E1A14;         /* TODO 墨色 */
+  --muted:#7A7266;       /* TODO 弱信息 */
+  --accent:#E2542C;      /* TODO 唯一强调色 */
+  --line:rgba(30,26,20,.14);
+  --soft:#F5E6D2;        /* TODO 换气用的浅底块 */
+  --r:16px;
+  --pad:56px;            /* 左右留白。750 画布上 56 才够透气 */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:750px;margin:0 auto;background:var(--canvas);color:var(--ink);
+  /* TODO 换字体栈 */
+  font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:28px;line-height:1.75;-webkit-font-smoothing:antialiased}
+img{display:block;width:100%}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* 段：一段一件事。用 .soft / .dark 交替换气 */
+.seg{padding:var(--pad);position:relative}
+.seg.soft{background:var(--soft)}
+.seg.dark{background:var(--ink);color:var(--canvas)}
+.seg.dark .sub{color:rgba(255,255,255,.66)}
+.seg.flush{padding-left:0;padding-right:0}      /* 通栏图段 */
+
+/* 首段 = 封面。转发缩略图截的就是它，**要能单独看懂** */
+.cover{min-height:900px;display:flex;flex-direction:column;justify-content:flex-end;
+  position:relative;overflow:hidden;background:var(--ink);color:var(--canvas)}
+.cover .bg{position:absolute;inset:0}
+.cover .bg img{height:100%;object-fit:cover}
+.cover::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(10,8,6,.25),rgba(10,8,6,.86))}
+.cover .in{position:relative;z-index:2;padding:var(--pad)}
+.cover .eyebrow{letter-spacing:.2em;font-size:24px;color:var(--accent)}
+.cover h1{font-size:80px;line-height:1.1;font-weight:800;margin:18px 0 14px;
+  letter-spacing:-.01em}
+.cover p{font-size:28px;color:rgba(255,255,255,.8)}
+
+/* 段头 */
+.sn{font-size:24px;font-weight:700;color:var(--accent);letter-spacing:.12em}
+h2{font-size:52px;line-height:1.2;font-weight:800;margin:12px 0 18px;
+  letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:26px}
+
+/* 巨字：长图的节奏靠它。一段最多一个 */
+.big{font-size:120px;line-height:1;font-weight:900;color:var(--accent);margin:14px 0}
+.big small{font-size:32px;font-weight:700;margin-left:10px}
+
+/* 卡片列 / 双列。缝隙小一点让图连成一片 */
+.rows{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+/* **换底色的容器必须同时换字色。** 这张卡是白底，而它可能落在 .seg.dark
+   里 —— 那一段把字色改成了浅色，于是白卡上是白字（实测 1.06:1）。
+   只做一半的换色是长图/展板这类深浅混排版面最常见的隐形缺陷。 */
+.card{background:#fff;color:var(--ink);border:1px solid var(--line);
+  border-radius:var(--r);padding:26px}
+.card b{display:block;font-size:30px;margin-bottom:6px}
+.card span{color:var(--muted);font-size:24px}
+
+/* 换气：一条细线 / 一个印章。别用它当装饰堆料 */
+.rule{height:1px;background:var(--line);margin:0 var(--pad)}
+
+/* 页脚：二维码 / 落款 */
+.foot{padding:var(--pad);text-align:center;color:var(--muted);font-size:24px}
+.qr{width:180px;height:180px;margin:0 auto 18px;background:#fff;border-radius:var(--r)}
+</style>
+</head>
+<body>
+
+<!-- 01 封面段：转发缩略图就是它 -->
+<section class="seg cover">
+  <div class="bg"><!-- TODO 满版主视觉 --></div>
+  <div class="in">
+    <div class="eyebrow">__PART__</div>
+    <h1>TODO 一句话主标（别超过 14 个字）</h1>
+    <p>TODO 副标：谁的、什么时候、为什么值得看</p>
+  </div>
+</section>
+
+<!-- 02 内容段。换气用 .soft / .dark / .flush 交替，别十段一个样 -->
+<section class="seg">
+  <div class="sn num">01</div>
+  <h2>TODO 这一段讲什么</h2>
+  <div class="sub">TODO 一句话铺垫</div>
+  <div class="big num">0<small>TODO 单位</small></div>
+  <p>TODO 正文。长图的正文可以长一点，但一段只讲一件事。</p>
+</section>
+
+<div class="rule"></div>
+
+<section class="seg soft">
+  <div class="sn num">02</div>
+  <h2>TODO</h2>
+  <div class="rows">
+    <div class="card"><b>TODO</b><span>TODO</span></div>
+    <div class="card"><b>TODO</b><span>TODO</span></div>
+  </div>
+</section>
+
+<!-- 通栏图段：换气最有效的一种 -->
+<section class="seg flush"><!-- TODO 通栏图 --></section>
+
+<section class="seg dark">
+  <div class="sn num">03</div>
+  <h2>TODO</h2>
+  <div class="duo">
+    <div class="card"><b>TODO</b><span>TODO</span></div>
+    <div class="card"><b>TODO</b><span>TODO</span></div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="qr"><!-- TODO 二维码 --></div>
+  TODO 落款 / 活动时间 / 参与方式
+</footer>
+</body>
+</html>

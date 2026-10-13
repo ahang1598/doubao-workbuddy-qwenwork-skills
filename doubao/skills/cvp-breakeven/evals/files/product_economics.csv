@@ -1,0 +1,6 @@
+item,value
+selling_price,50.0
+variable_cost_per_unit,30.0
+fixed_costs,120000
+current_units,8000
+target_profit,40000

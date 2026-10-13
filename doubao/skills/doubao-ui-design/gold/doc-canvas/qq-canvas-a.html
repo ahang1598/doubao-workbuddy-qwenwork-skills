@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QQ 2026 年度盘点 · 设计方案（上篇）</title>
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0}
+.cv{
+  --ink:#1B2A4A; --sub:#5B6478; --line:#D8D0BC; --bg:#F6F2E8; --soft:#EDE7D8;
+  --acc:#12B7F5; --acc2:#CFF0FF; --accink:#0E5F80; --r:0;
+  /* --accink 是强调色**当文字用**时的那一支。
+     QQ 的品牌蓝在纸底上实测 1.87:1，INSIGHT 那行标签整条读不出来。
+     强调色做色块可以饱和，做文字必须压深——这是两个不同的角色。 */
+  --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  width:100%; max-width:900px; margin:0 auto;
+  /* 阅读边距：文字不能贴着块边。飞书块宽 560–1145 浮动，所以用 clamp 跟着走。
+     顶部那条色带要满幅，所以它用负 margin 顶出去（见 .topbar）。 */
+  --gut:clamp(24px,4.6vw,56px); background:var(--bg); color:var(--ink);
+  font-family:"Songti SC","Noto Serif CJK SC",-apple-system,"PingFang SC","Microsoft YaHei",serif;
+  font-size:15px; line-height:1.82; letter-spacing:.005em;
+  -webkit-font-smoothing:antialiased; padding:0 var(--gut) 48px;
+}
+.cv img{display:block;max-width:100%;height:auto}
+.cv b{font-weight:600}
+.topbar{height:5px;background:var(--acc);margin:0 calc(var(--gut) * -1) 26px}
+.runhead{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font:600 11px/1.6 var(--mono);letter-spacing:.22em;color:var(--sub);
+  padding-bottom:12px;border-bottom:1px solid var(--line)}
+.runhead span:last-child{color:var(--accink)}
+
+.sec{padding-top:58px}
+.sec-top{border-top:3px double var(--ink);padding-top:20px;
+  display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:baseline}
+.sn{font:800 30px/1 var(--mono);color:var(--accink);letter-spacing:-.02em}
+.sec-top h2{font-size:26px;font-weight:800;line-height:1.25;letter-spacing:-.01em}
+
+.lede{font-size:17px;line-height:2;color:var(--ink);margin-top:24px;max-width:42em}
+.lede em{font-style:normal;background:linear-gradient(transparent 62%,var(--acc2) 62%);
+  padding:0 2px;font-weight:600}
+.body{font-size:15.5px;line-height:1.95;margin-top:20px;max-width:42em;color:var(--ink);opacity:.88}
+
+/* 洞察：一段被抬起来的判断 */
+.insight{margin-top:28px;padding:26px 28px;background:var(--soft);
+  border-left:3px solid var(--acc)}
+.insight .k{font:600 11px/1.7 var(--mono);letter-spacing:.2em;color:var(--accink);
+  display:block;margin-bottom:10px}
+.insight p{font-size:19px;line-height:1.72;font-weight:600;letter-spacing:-.005em}
+
+/* 设计主张：整篇最大的一句话 */
+.claim{margin-top:32px;padding:38px 0 32px;border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);text-align:center}
+.claim q{quotes:none;display:block;font-size:clamp(30px,4.4vw,44px);font-weight:800;
+  line-height:1.26;letter-spacing:-.02em}
+.claim q em{font-style:normal;color:var(--accink)}
+.claim .why{margin-top:20px;font-size:14.5px;color:var(--sub);line-height:1.9;
+  max-width:34em;margin-inline:auto}
+
+/* 通栏版面证据 */
+.plate{margin-top:30px}
+.plate img{width:100%;border:1px solid var(--line);border-radius:var(--r)}
+.plate .cap{font-size:13.5px;color:var(--sub);margin-top:12px;line-height:1.85;max-width:42em}
+.plate .cap b{color:var(--ink)}
+
+/* 双图 */
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));
+  gap:22px 24px;margin-top:28px;align-items:start}
+.duo figure{margin:0}
+.duo img{border:1px solid var(--line);border-radius:var(--r)}
+.duo figcaption{font-size:13px;color:var(--sub);margin-top:10px;line-height:1.8}
+.duo figcaption b{display:block;color:var(--ink);font-size:14px;margin-bottom:4px}
+
+/* 左标签右正文 */
+.dl{margin-top:26px}
+.dl .r{display:grid;grid-template-columns:minmax(86px,104px) 1fr;gap:14px 20px;
+  padding:18px 0;border-top:1px solid var(--line);align-items:baseline}
+.dl .r:last-child{border-bottom:1px solid var(--line)}
+.dl dt{font:600 11px/1.7 var(--mono);letter-spacing:.14em;color:var(--accink)}
+.dl dd{font-size:15px;line-height:1.92}
+
+/* ── 列数必须整除项数，否则会出现"孤儿行"（3+1 / 5+1），整版立刻显乱 ──
+   auto-fit 的列数随宽度浮动，控制不住；飞书块宽又在 560–1145 之间跳。
+   所以这里显式给列数：由**项数**决定，不由宽度决定。
+   用法：<div class="screens" style="--cols:3">（6 项 → 3×2，任何宽度都是整行） */
+.quad,.screens,.gain{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr))}
+
+/* 四宫格：数值要被看到，不要被读到。4 项 → 2 列 */
+.quad{--cols:2;gap:0 38px;margin-top:30px;border-top:1px solid var(--line)}
+.quad>div{padding:24px 22px 24px 0;border-bottom:1px solid var(--line)}
+.quad h4{font:600 11px/1.7 var(--mono);letter-spacing:.18em;color:var(--sub);margin-bottom:15px}
+.sw{display:flex;align-items:center;gap:12px;padding:7px 0}
+.sw i{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.sw span{font-size:14px}
+.sw small{margin-left:auto;font-size:12px;color:var(--sub)}
+.ts{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0}
+.ts b{white-space:nowrap}
+.ts b{font-weight:600}
+.ts small{font-size:12px;color:var(--sub)}
+.rd{display:flex;align-items:center;gap:12px;padding:7px 0;font-size:14px}
+.rd i{width:52px;height:26px;background:var(--soft);border:1px solid var(--line);flex:none}
+.note{font-size:13px;color:var(--sub);margin-top:12px;line-height:1.85}
+
+/* 关键屏网格：列数由项数决定，写在标签上 */
+.screens{gap:22px 14px;margin-top:26px}
+.screens figure{margin:0}
+.screens img{width:100%;border-radius:var(--r);border:1px solid var(--line);background:var(--soft)}
+.screens figcaption{margin-top:9px;font-size:12.5px;line-height:1.7;color:var(--sub)}
+.screens figcaption b{display:block;color:var(--ink);font-size:13px;margin-bottom:2px}
+.flowtag{font:600 10.5px/1 var(--mono);letter-spacing:.16em;color:var(--accink);
+  display:block;margin-bottom:5px}
+
+/* 效益：3 项 → 3 列 */
+.gain{--cols:3;gap:0 clamp(18px,3vw,34px);margin-top:28px;border-top:1px solid var(--line)}
+.gain>div{padding:26px 20px 26px 0;border-bottom:1px solid var(--line)}
+.gain h4{font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+.gain p{font-size:14.5px;line-height:1.92;color:var(--ink);opacity:.88}
+
+/* 下一步 */
+.next{margin-top:26px}
+.next div{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:baseline;
+  padding:17px 0;border-top:1px solid var(--line);font-size:15px;line-height:1.88}
+.next div:last-child{border-bottom:1px solid var(--line)}
+.next b{font:600 11px/1.7 var(--mono);letter-spacing:.14em;color:var(--accink)}
+
+.foot{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);
+  font:400 11px/1.8 var(--mono);letter-spacing:.1em;color:var(--sub);
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+</style>
+</head>
+<body>
+<div class="cv">
+<div class="topbar"></div>
+<div class="runhead"><span>QQ 2026 年度盘点报告</span><span>设计方案 / 上篇</span></div>
+<section class="sec"><div class="sec-top"><div class="sn">01</div><h2>我们怎么理解这件事</h2></div>
+<p class="lede">十屏年度盘点，中间八屏讲数据，最后一屏要能让人愿意发出去。
+      你还给了一个前提：今年可以换个风格，走复古。<br>
+      我们把它翻译成一句话：<em>这一版的目标不是把数据讲清楚，是让人愿意把它转出去。</em></p>
+<p class="body">数据讲清楚是及格线。真正决定它成不成的，
+      是他看完最后一屏时会不会想截图。所以我们把大部分精力放在
+      "怎么让每一屏都值得被看见"，而不是"怎么把每个数字标注清楚"。</p>
+</section>
+<section class="sec"><div class="sec-top"><div class="sn">02</div><h2>我们看到的机会</h2></div>
+<div class="insight"><span class="k">INSIGHT</span>
+      <p>往期的问题不是不好看，<br>是每年都好看成同一个样子。</p></div>
+<p class="body">我们看了往期四版，也看了同期几家平台的年度报告。
+      它们几乎共用一套语言：柔和的水彩插画、轻盈的细体字、一个居中的大数字。
+      单看都好看，放在一起就分不出谁是谁。</p>
+<p class="body">而 QQ 手里有一样别家拿不到的东西：<b>它自己的历史。</b>
+      像素企鹅、蓝色标题栏的对话框、显像管的扫描线、月亮和星星的等级图标——
+      这些不是怀旧素材，是<b>只有 QQ 能用的品牌资产</b>。
+      别人复制不了，因为别人没有过那段时间。</p>
+</section>
+<section class="sec"><div class="sec-top"><div class="sn">03</div><h2>设计主张</h2></div>
+<div class="claim">
+      <q>把这一年<br>装进一台<em>旧机器</em></q>
+      <p class="why">整份报告是一台 2003 年的电脑在回放他这一年。
+        开机、读盘、逐屏显示——连等待都是内容的一部分。</p></div>
+</section>
+<section class="sec"><div class="sec-top"><div class="sn">04</div><h2>视觉语言</h2></div>
+<p class="body">"复古"如果只是加一层噪点滤镜，等于没换。
+      我们把它落到四件能被一眼指认的东西上。</p>
+<dl class="dl">
+      <div class="r"><dt>像素企鹅</dt><dd>用点阵重新画的企鹅，
+        放多大都不糊，换颜色不用重画。它贯穿全程，是这台机器的主人。</dd></div>
+      <div class="r"><dt>旧对话框</dt><dd>蓝色渐变的标题栏、右上角三个小方块、
+        外凸的边框。放数据图表和好友名单的地方，都装在这样一个窗口里。</dd></div>
+      <div class="r"><dt>显像管质感</dt><dd>每隔几像素一条暗线，四角压暗。
+        它铺在全部十屏上，是把十种颜色统一起来的那一层。</dd></div>
+      <div class="r"><dt>月亮与星星</dt><dd>QQ 的等级图标。只有老用户看得懂，
+        而这正是它的价值——它是一句对老用户说的暗号。</dd></div>
+    </dl>
+<div class="quad">
+      <div><h4>色板</h4>
+        <div class="sw"><i style="background:#071A3A"></i><span>夜靛</span><small>底色起点</small></div>
+        <div class="sw"><i style="background:#12B7F5"></i><span>QQ 蓝</span><small>品牌锚</small></div>
+        <div class="sw"><i style="background:#FFC93C"></i><span>像素黄</span><small>结束页</small></div>
+        <div class="sw"><i style="background:#FF4D4D"></i><span>企鹅红</span><small>围巾与红钻</small></div>
+      </div>
+      <div><h4>十屏十色</h4>
+        <div class="sw"><i style="background:linear-gradient(90deg,#0E2E63,#57D6FF)"></i><span>封面 · 夜</span></div>
+        <div class="sw"><i style="background:linear-gradient(90deg,#2A1C63,#9B7BFF)"></i><span>深夜 · 紫</span></div>
+        <div class="sw"><i style="background:linear-gradient(90deg,#5A1740,#FF6FA5)"></i><span>挚友 · 玫</span></div>
+        <div class="sw"><i style="background:linear-gradient(90deg,#123064,#FFC93C)"></i><span>分享 · 金</span></div>
+        <p class="note">每屏换一次颜色，但底纹和扫描线始终是同一层——换色不换人格。</p>
+      </div>
+      <div><h4>字</h4>
+        <div class="ts"><b style="font-size:12px">Aa 眉标</b><small>最小</small></div>
+        <div class="ts"><b style="font-size:15px">Aa 一句话</b><small>正文</small></div>
+        <div class="ts"><b style="font-size:28px">Aa 屏标题</b><small>一屏一句</small></div>
+        <div class="ts"><b style="font-size:46px">Aa 数字</b><small>还会更大</small></div>
+      </div>
+      <div><h4>节奏</h4>
+        <div class="ts"><b>一屏</b><small>一件事</small></div>
+        <div class="ts"><b>翻页</b><small>滑动 / 点按钮 / 点画面</small></div>
+        <div class="ts"><b>动效</b><small>进屏才播</small></div>
+        <p class="note">数字从零滚上来，进度条从零长出来——
+          他看到的是"正在算给他看"，而不是一张已经算好的表。</p>
+      </div>
+    </div>
+</section>
+<div class="foot"><span>QQ 2026 · 上篇</span><span>2026</span></div>
+</div>
+</body>
+</html>

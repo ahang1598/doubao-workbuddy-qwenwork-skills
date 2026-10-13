@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#000000">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   产品界面原型的机箱。**它不是 h5.html 的变体，是另一种东西。**
+
+   为什么要单独一份：把「小程序首页改版」做成 5 屏宣讲 deck 是典型失败，
+   根因之一就是包里只有一份移动端骨架，而那份骨架是年报形状的
+   （分屏引擎 + 页码 + 分段进度条 + 三键底栏）。
+   规则：不要照抄年报 H5 的顶栏与底栏按钮 ——
+   每个产品的导航不一样，形式要按这一稿的产品长。
+
+   所以这份骨架里**没有**：分屏、scroll-snap、页码、分段进度条、
+   「继续 / 上一页 / 分享」三键条、巨数字。那些属于叙事 H5。
+
+   这份骨架里**有**的，是任何一个产品首页都会有的容器：
+     取景框 · 状态栏 · 顶部栏 · 一条连续的内容流 · 底部 tab · toast
+   而**底部 tab 也是可以删的** —— 工具类 App 常常没有 tab，
+   只有一个悬浮主操作；删了不违反任何门。门查的是
+   「他知不知道自己在哪」和「主操作够不够得着」，不是「有没有 tab 栏」。
+
+   边界和 h5.html 一样：机箱可以复用，**人格不可以**。
+   这个文件里不出现任何具体配色、字体、圆角值 —— 那些由 style.json 逐案定。
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#0E0E10;            /* TODO 底色 —— 由 style.json 的 ground 决定，别停在纯黑 */
+  --surface:#17171A;       /* TODO 卡片底 */
+  --ink:#F2F1EE;           /* TODO 主文字 */
+  --dim:rgba(242,241,238,.58);
+  --line:rgba(242,241,238,.10);
+  --key:#FF5A2B;           /* TODO 强调色，只给一个角色用 */
+  --r:14px;                /* TODO 圆角 —— 获奖库中位 3px，别默认胶囊 */
+  --ease:cubic-bezier(.22,.75,.3,1);
+  --tab:64px;              /* 底部 tab 高度；不要 tab 就把这个改成 0 */
+
+  /* ── 取景框：机身与台面**都跟着设计方向走**，不是永远的黑机身 + 黑底 ──
+     规则：机身与台面跟着设计方向走，不能永远是黑机身；
+     台面可以做成有模糊效果的氛围场。
+     三种参考做法：水下蓝的雾场 / 森林绿的雾场 / 浅灰奶油场 —— 手机都是浅机身，
+     台面都是**大面积模糊的氛围**，不是一块平的纯色。台面是产品世界的延伸。
+
+     四组出厂预设，按 style.json 的 ground 选一组，然后**照着改**：
+       暗场   --frame:#14161C  --frame-2:#2A2E38  --stage-1:#131A2C --stage-2:#07080E
+       亮场   --frame:#FFFFFF  --frame-2:#E4E7EE  --stage-1:#EEF2F8 --stage-2:#D9DFEA
+       纸感   --frame:#F7F2E7  --frame-2:#DED5C2  --stage-1:#F3ECDD --stage-2:#DFD3BC
+       高饱和 --frame:#FFFFFF  --frame-2:#F0D7CB  --stage-1:#FFE2CE --stage-2:#F6B18A
+     两团模糊光斑的颜色用 --halo-1 / --halo-2 —— 通常取强调色和第二色。 */
+  --frame:#14161C;         /* 机身 */
+  --frame-2:#2A2E38;       /* 机身外圈 */
+  --stage-1:#131A2C;       /* 台面近处 */
+  --stage-2:#07080E;       /* 台面远处 */
+  --halo-1:var(--key);     /* 模糊光斑一 */
+  --halo-2:#3A5CFF;        /* TODO 模糊光斑二 —— 换成你这一稿的第二色 */
+  --halo-a:.30;            /* 光斑强度；亮场调到 .22 左右，暗场可以到 .40 */
+  --stage-art:none;        /* 想让台面就是产品世界本身：url(assets/hero.jpg) */
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;min-height:24px}
+img,svg{display:block;max-width:100%}
+
+/* ── 桌面观看：套进手机取景框。评审在电脑上看 ── */
+/* 台面：底色渐变 + 两团大面积模糊光斑（+ 可选的产品世界大图）。
+   手机是**放在一个场里**的，不是贴在一块纯色上。 */
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  background:radial-gradient(130% 90% at 50% 8%,var(--stage-1),var(--stage-2) 72%)}
+.stage::before{content:"";position:absolute;inset:-18%;z-index:0;pointer-events:none;
+  opacity:var(--halo-a);filter:blur(90px);
+  background:
+    radial-gradient(38% 30% at 22% 24%,var(--halo-1),transparent 70%),
+    radial-gradient(42% 34% at 78% 74%,var(--halo-2),transparent 70%)}
+/* 想让台面就是产品世界本身：把 --stage-art 指向首屏那张图，它会被放大并模糊。
+   这是参考图里"水下"和"森林"两张的做法 —— 场和产品是同一个世界。 */
+.stage::after{content:"";position:absolute;inset:-12%;z-index:0;pointer-events:none;
+  background:var(--stage-art) center/cover no-repeat;filter:blur(46px) saturate(1.1);
+  opacity:.5}
+#app{position:relative;z-index:1;width:100%;height:100%;overflow:hidden;
+  background:var(--bg)}
+@media(min-width:760px){
+  #app{width:390px;height:min(844px,86vh);border-radius:44px;
+    box-shadow:0 0 0 11px var(--frame),0 0 0 13px var(--frame-2),
+               0 44px 100px rgba(0,0,0,.42)}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:112px;height:26px;border-radius:15px;background:var(--frame);z-index:60}
+}
+@media(max-width:759px){.notch{display:none}.stage::before,.stage::after{display:none}}
+
+/* ── 仿真状态栏 ── */
+.statusbar{position:absolute;top:0;left:0;right:0;z-index:55;height:44px;padding:0 22px;
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none;
+  font-size:13px;font-weight:600}
+.sb-r{display:flex;align-items:center;gap:5px}
+.sb-r i{display:block;background:currentColor;border-radius:1px}
+.sb-r .sig{width:15px;height:10px;
+  clip-path:polygon(0 72%,18% 72%,18% 100%,0 100%,0 72%,27% 46%,45% 46%,45% 100%,27% 100%,
+    27% 46%,54% 22%,72% 22%,72% 100%,54% 100%,54% 22%,82% 0,100% 0,100% 100%,82% 100%)}
+.sb-r .wifi{width:14px;height:10px;
+  clip-path:polygon(50% 100%,32% 74%,68% 74%,50% 100%,50% 66%,20% 40%,28% 30%,72% 30%,80% 40%,
+    50% 66%,50% 24%,8% 12%,14% 2%,86% 2%,92% 12%)}
+.sb-r .bat{width:22px;height:11px;border-radius:3px;background:none;position:relative;
+  box-shadow:inset 0 0 0 1px currentColor}
+.sb-r .bat::before{content:"";position:absolute;inset:2px;width:64%;
+  background:currentColor;border-radius:1px}
+
+/* ── 顶部栏：产品的身份 + 一两个入口。不是"页码 + 进度条"。 ── */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:50;
+  padding:calc(env(safe-area-inset-top) + 52px) 20px 12px;
+  display:flex;align-items:center;gap:12px;background:var(--bg)}
+
+/* ── 内容流：一条连续的滚动，不是分屏 ──────────────────────
+   产品首页放得下十几条信息，这是对的。不要一屏一件事 —— 那是年报。 */
+#flow{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:calc(env(safe-area-inset-top) + 104px) 20px
+          calc(var(--tab) + env(safe-area-inset-bottom) + 20px)}
+#flow::-webkit-scrollbar{display:none}
+
+/* 面板：底部 tab 切到哪个就显示哪个。这是**第一个真实状态切换**。 */
+.panel[hidden]{display:none}
+
+/* 卡片：内容即画面。产品界面里的图是内容，不是背景。 */
+.card{background:var(--surface);border-radius:var(--r);overflow:hidden;
+  margin-bottom:14px;border:1px solid var(--line)}
+
+/* ══ 五个版式原语 ══════════════════════════════════════════════
+   一条单列竖流装不下所有产品。实看 269 份参考稿里的移动端案例，
+   反复出现的就是下面这五种，**混用是常态**（一个首页往往同时有 rail 和 grid2）。
+   都是可删的：用不到就整段删掉，删了不违反任何门。
+
+   .rail    横滑轨道   分类 chip / 推荐位 / 「查看全部」那一行
+   .grid2   双列瀑布   商品、菜谱、房源、图集
+   .rows    密集列表   排行榜、流水、消息 —— 一屏十几行、几乎无图是**正当**的
+   .hero    顶部大图 + 上浮面板   详情页；这种页通常**没有 tab**，底部是一条通栏 CTA
+   .canvas  全屏画布 + bottom sheet   地图 / 相机 / 播放器；主操作可以在屏幕中间
+
+   最后两种要连带删掉 .tabbar —— 详情页和地图页不该有底部 tab。 */
+
+/* 横滑轨道：项宽固定，靠 scroll-snap 对齐，不要让它换行 */
+.rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;
+  margin:0 -20px 14px;padding:0 20px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail>*{flex:0 0 auto;scroll-snap-align:start}
+.rail.chips>*{padding:8px 15px;border-radius:999px;background:var(--surface);
+  border:1px solid var(--line);font-size:13.5px;color:var(--dim);white-space:nowrap}
+.rail.chips>.on{background:var(--key);border-color:var(--key);color:var(--bg);font-weight:600}
+
+/* 双列瀑布：列数写死 2，不用 auto-fit —— 列数浮动会排出孤儿行 */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.grid2 img,.grid2 .ph{width:100%;border-radius:var(--r);display:block}
+
+/* 密集列表：分隔线不用卡片。一屏十几行、几乎没有图，是正当的产品形态，
+   门不会因为"画面少"拦你（asset-count 对产品界面下调到 5，小头像也计数）。 */
+.rows{margin-bottom:14px}
+.rows .row{display:flex;align-items:center;gap:12px;padding:11px 0;
+  border-bottom:1px solid var(--line)}
+.rows .row:last-child{border-bottom:0}
+.rows .row .end{margin-left:auto;color:var(--dim);font-size:13px}
+
+/* 顶部大图 + 上浮面板：面板压住图的下缘，圆角只在上面两个角 */
+.hero{position:absolute;inset:0 0 auto;height:52%;z-index:0}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:46%;z-index:10;background:var(--bg);
+  border-radius:24px 24px 0 0;padding:22px 20px 108px;overflow-y:auto}
+/* 详情页的底部是一条通栏 CTA，不是 tab。左边放价格/状态，右边放主按钮。 */
+.cta{position:absolute;left:0;right:0;bottom:0;z-index:40;display:flex;gap:12px;
+  align-items:center;padding:14px 20px calc(env(safe-area-inset-bottom) + 20px);
+  background:linear-gradient(180deg,transparent,var(--bg) 34%)}
+.cta .go{margin-left:auto;height:48px;padding:0 30px;border-radius:12px;
+  background:var(--key);color:var(--bg);font-weight:700}
+
+/* 全屏画布 + bottom sheet：画布故意从面板下面延伸出去，**不给它留 padding**。
+   dock-reserved 不会拦这种：>18% 视口高的一律当面板，不当常驻底栏。 */
+.canvas{position:absolute;inset:0;z-index:0}
+.panel{position:absolute;left:0;right:0;bottom:0;z-index:20;background:var(--surface);
+  border-radius:22px 22px 0 0;padding:18px 20px calc(env(safe-area-inset-bottom) + 22px);
+  box-shadow:0 -8px 30px rgba(0,0,0,.16)}
+.panel .grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+
+/* 展开态：点一张卡展开详情，再点收起。这是**第二个真实状态切换**。 */
+.card .more{max-height:0;overflow:hidden;
+  transition:max-height .34s var(--ease)}
+.card.open .more{max-height:420px}
+
+/* ── 底部 tab：不要 tab 的产品就把这一整块删掉 ──────────────
+   删掉之后要给一个悬浮主操作，否则「主操作在拇指区」这条会报出来。 */
+.tabbar{position:absolute;left:0;right:0;bottom:0;z-index:50;height:var(--tab);
+  padding-bottom:env(safe-area-inset-bottom);
+  display:flex;align-items:stretch;background:var(--bg);border-top:1px solid var(--line)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;font-size:11px;color:var(--dim)}
+.tabbar button.on{color:var(--key)}          /* 选中态 = 他知道自己在哪 */
+
+/* ── 弹窗 / 半屏面板：**相对取景框定位，不是相对视口** ──────────
+   实测：一份交付出去的产物，点「发布」之后弹窗糊了半个屏幕、
+   完全跑出手机取景框 —— 因为它用了 `position:fixed`，而 fixed 的参照系
+   永远是视口，不是那个 390px 的 #app。
+   这里一律 `position:absolute` + `#app{position:relative}` 就不会错。
+   不要弹窗就把这一段删掉。 */
+.scrim{position:absolute;inset:0;z-index:88;background:rgba(0,0,0,.44);
+  opacity:0;pointer-events:none;transition:opacity .26s var(--ease)}
+.scrim.on{opacity:1;pointer-events:auto}
+.modal{position:absolute;left:0;right:0;bottom:0;z-index:90;
+  background:var(--surface);border-radius:20px 20px 0 0;
+  padding:20px 20px calc(env(safe-area-inset-bottom) + 20px);
+  max-height:82%;overflow-y:auto;
+  transform:translateY(100%);transition:transform .3s var(--ease)}
+.modal.on{transform:none}
+.modal .grab{width:38px;height:4px;border-radius:2px;background:var(--line);
+  margin:0 auto 14px}
+
+/* ── Toast：每个副作用都要有一句解释 ── */
+.toast{position:absolute;left:50%;bottom:calc(var(--tab) + 24px);z-index:70;
+  transform:translate(-50%,14px);opacity:0;pointer-events:none;
+  max-width:78%;padding:11px 18px;border-radius:999px;
+  background:rgba(0,0,0,.86);color:#fff;font-size:13.5px;line-height:1.5;
+  transition:opacity .28s var(--ease),transform .28s var(--ease)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ── 骨架屏：把等待做成内容，不是转圈 ── */
+.skel{background:linear-gradient(90deg,var(--surface),var(--line),var(--surface));
+  background-size:200% 100%;animation:sh 1.2s linear infinite;border-radius:var(--r)}
+@keyframes sh{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="stage"><div id="app">
+  <div class="notch"></div>
+
+  <div class="statusbar">
+    <span>__TIME__</span>
+    <span class="sb-r"><i class="sig"></i><i class="wifi"></i><i class="bat"></i></span>
+  </div>
+
+  <div class="topbar">
+    <!-- TODO 产品的身份：名字 / 位置 / 搜索 / 消息。不要放"设计方案"这类词 ——
+         首屏是产品本身，不是关于它的说明。prototype-voice 会查。 -->
+  </div>
+
+  <div id="flow">
+    <section class="panel" data-panel="home">
+      <!-- TODO 首页内容流。至少要让人一眼认出这是什么产品、能干什么。
+           门查首屏 >=3 个可操作元素。 -->
+      <article class="card" data-expand>
+        <!-- TODO 一张真实的内容卡；点它展开 .more -->
+        <div class="more"><!-- TODO 展开后才看到的详情 --></div>
+      </article>
+    </section>
+    <section class="panel" data-panel="two" hidden><!-- TODO 第二个 tab 的内容 --></section>
+    <section class="panel" data-panel="me" hidden><!-- TODO 第三个 tab 的内容 --></section>
+  </div>
+
+  <nav class="tabbar">
+    <button class="on" data-go="home">首页</button>
+    <button data-go="two">TODO</button>
+    <button data-go="me">我的</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- 弹窗：不要就整段删。注意它在 #app 里面，不在 body 上。 -->
+  <div class="scrim" id="scrim"></div>
+  <div class="modal" id="modal">
+    <div class="grab"></div>
+    <!-- TODO 半屏面板的内容：发布 / 筛选 / 选规格…… -->
+  </div>
+</div></div>
+
+<script>
+/* 副作用要有一句解释 —— 收藏 / 提交 / 删除之后告诉他刚刚发生了什么 */
+const toastEl=document.getElementById('toast');let toastT;
+function toast(msg){
+  toastEl.textContent=msg;toastEl.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('on'),1600);
+}
+
+/* 状态切换一：底部 tab。选中态就是"他知道自己在哪"的表达。 */
+const panels=[...document.querySelectorAll('.panel')];
+const tabs=[...document.querySelectorAll('.tabbar button')];
+tabs.forEach(b=>b.onclick=()=>{
+  tabs.forEach(x=>x.classList.toggle('on',x===b));
+  panels.forEach(p=>p.hidden = p.dataset.panel!==b.dataset.go);
+  document.getElementById('flow').scrollTop=0;
+});
+
+/* 状态切换二：卡片展开 / 收起。控件文案跟着状态走。 */
+document.querySelectorAll('[data-expand]').forEach(c=>{
+  c.addEventListener('click',e=>{
+    if(e.target.closest('button:not([data-toggle]),a')) return;
+    c.classList.toggle('open');
+    const t=c.querySelector('[data-toggle]');
+    if(t) t.textContent = c.classList.contains('open') ? '收起' : '展开';
+  });
+});
+
+/* 弹窗开关。scrim 和 modal 一起动，点 scrim 关闭。 */
+const scrim=document.getElementById('scrim'),modal=document.getElementById('modal');
+function openModal(on){
+  if(!scrim||!modal) return;
+  scrim.classList.toggle('on',on); modal.classList.toggle('on',on);
+}
+if(scrim) scrim.onclick=()=>openModal(false);
+
+/* 一个意图多条通路：点击之外，进屏懒加载也是一条。
+   产品界面不需要键盘翻页 —— 那是年报的通路，别照抄。 */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.remove('skel');io.unobserve(e.target);}
+}),{threshold:.2});
+document.querySelectorAll('.skel').forEach(e=>io.observe(e));
+
+/* ── 关键屏声明（截图器读它，不猜按钮）────────────────────────
+   `shoot.py states` 只**枚举**这份清单，一个按钮都不猜。没有它的时候
+   脚本只能滚动兜底，而这份骨架 body 是锁死的、内容在 #flow 里滚 ——
+   于是 6 张关键屏是同一张图（本机复现过：5 个文件、1 个 sha256）。
+
+   **改稿时要跟着改这份清单**：删了 tab 就删掉对应的 state，
+   加了筛选/详情/空态就加进来。它是"这一稿有哪些真实界面状态"的唯一声明，
+   doc 的关键界面那一节放的就是它们。 */
+window.__UI_CAPTURE__={
+  reset:async()=>{ openModal(false);
+    const first=document.querySelector('.tabbar button'); if(first) first.click(); },
+  states:[
+    {id:'home',   label:'首页'},
+    {id:'expand', label:'卡片展开', go:async()=>{
+        const c=document.querySelector('[data-expand]'); if(c) c.click(); }},
+    {id:'modal',  label:'弹层/主操作', go:async()=>openModal(true)},
+    {id:'tab2',   label:'第二个 tab', go:async()=>{
+        const b=document.querySelectorAll('.tabbar button')[1]; if(b) b.click(); }},
+    {id:'tab3',   label:'第三个 tab', go:async()=>{
+        const b=document.querySelectorAll('.tabbar button')[2]; if(b) b.click(); }}
+  ]};
+</script>
+</body>
+</html>

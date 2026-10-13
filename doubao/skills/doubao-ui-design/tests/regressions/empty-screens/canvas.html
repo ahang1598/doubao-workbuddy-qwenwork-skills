@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>关键界面槽位空着的阳性对照</title>
+<!-- 复刻真实事故：两个真实任务都把关键屏截出来了（p01–p10 各 932KB 躺在 shots/ 里），
+     .screens 和 .device-showcase 两个容器也建得整整齐齐 —— 里面一张图都没有。
+     用户的原话是「doc 里面的 app 图全没了」。
+     当时这份画布的所有门都是绿的，因为没有一道门冲这一节去。
+     这份文件的职责是被 doc-screens-empty 抓住。 -->
+<style>*{box-sizing:border-box;margin:0;padding:0}
+.cv{--ink:#2D241E;--sub:#7A6A5C;--line:#EDE0D4;--acc:#FF7A45;--accink:#C74A18;
+  max-width:900px;margin:0 auto;padding:0 40px 48px;background:#FFF8F0;color:var(--ink);
+  font-family:system-ui,"PingFang SC",sans-serif;font-size:15px;line-height:1.85}
+.sec{padding-top:56px}
+.sec-top{border-top:2px solid var(--ink);padding-top:20px;display:grid;
+  grid-template-columns:auto 1fr;gap:18px;align-items:baseline}
+.sn{font:800 30px/1 ui-monospace,monospace;color:var(--accink)}
+.sec-top h2{font-size:26px;font-weight:800}
+p{max-width:34em;margin-top:16px}
+.screens{--cols:2;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));
+  gap:20px 16px;margin-top:28px}
+.screens .screen-wrap{border-radius:20px;border:1px solid var(--line);background:#fff;
+  aspect-ratio:9/19;display:grid;place-items:center;color:var(--accink);font-weight:700}
+.device-showcase{margin-top:32px;padding:40px 0;border-radius:20px;
+  background:linear-gradient(135deg,#FFE8D6,#FFC9A8);
+  display:flex;align-items:flex-end;justify-content:center;gap:5%}
+.device-showcase figure{margin:0;width:24%;aspect-ratio:9/19;border-radius:24px;
+  background:#fff}
+</style></head><body><div class="cv">
+<section class="sec"><div class="sec-top"><div class="sn">05</div><h2>关键界面</h2></div>
+<p>从刷动态到发现话题，从消息互动到个人主页，四个核心页面构成完整的体验闭环。
+下面这几屏是成品页的真机截图 —— 本该是。</p>
+<div class="screens" style="--cols:2">
+  <div class="screen-wrap">首页 · 动态流</div>
+  <div class="screen-wrap">发现 · 话题广场</div>
+</div>
+<div class="device-showcase"><figure></figure><figure></figure></div>
+</section></div></body></html>

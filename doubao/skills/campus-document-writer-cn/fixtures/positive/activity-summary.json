@@ -1,0 +1,20 @@
+{
+  "id": "positive.activity-summary",
+  "category": "positive",
+  "expected_route": "trigger",
+  "description": "真实活动记录可整理为短总结。",
+  "candidate_output": "本次活动为旧书交换，学习部负责登记。现场排队较久，下次增加预登记。",
+  "assertions": {
+    "required_substrings": ["旧书交换", "学习部负责登记", "现场排队较久", "下次增加预登记"],
+    "forbidden_substrings": ["参与人数", "媒体报道", "取得圆满成功"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {
+    "scan_standard_patterns": true,
+    "forbidden_literals": []
+  },
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

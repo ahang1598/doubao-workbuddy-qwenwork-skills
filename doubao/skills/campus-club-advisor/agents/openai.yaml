@@ -1,0 +1,5 @@
+interface:
+  display_name: "校园社团匹配与面试准备"
+  display_description: "根据学生画像核验校园社团，给出可解释匹配与招新准备。"
+  short_description: "核验校园社团并按兴趣时间技能给出匹配建议"
+  default_prompt: "使用 $campus-club-advisor 根据我的兴趣、互动偏好、时间和技能推荐适合的校园社团，并为已核验的招新流程做准备。"

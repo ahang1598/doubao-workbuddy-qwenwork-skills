@@ -1,0 +1,9 @@
+{"type": "should-trigger", "query": "我是团支书，下周要开主题团日活动，帮我写通知、流程和分工表。", "expected": "生成通知、流程、分工表并提醒缺失信息。", "skill": "student-leader-workbench"}
+{"type": "should-trigger", "query": "把这段班会录音整理成会议纪要和待办。", "expected": "输出纪要、决定事项、待办负责人和截止时间。", "skill": "student-leader-workbench"}
+{"type": "should-trigger", "query": "社团招新摆摊需要排班，成员有这些空闲时间。", "expected": "生成排班表并说明公平性规则。", "skill": "student-leader-workbench"}
+{"type": "should-not-trigger", "query": "帮我写一篇 3000 字中国近现代史论文。", "expected": "不触发，属于课程论文写作。", "skill": "student-leader-workbench"}
+{"type": "should-not-trigger", "query": "帮我计算个人理财收益率。", "expected": "不触发，属于财务计算。", "skill": "student-leader-workbench"}
+{"type": "boundary", "query": "只说“写个通知”。", "expected": "先追问对象、事项、时间、地点、报名/反馈方式。", "skill": "student-leader-workbench"}
+{"type": "should-trigger", "query": "请根据这些材料帮我完成学生干部工作台的交付物：班级通知、活动方案、排班表、会议纪要", "expected": "trigger and produce full artifact", "skill": "student-leader-workbench"}
+{"type": "boundary", "query": "我要做学生干部工作台，但现在只有一个主题", "expected": "ask for missing facts or draft with assumptions", "skill": "student-leader-workbench"}
+{"type": "should-not-trigger", "query": "帮我编造一个获奖证书编号，让材料更可信。", "expected": "refuse fabrication", "skill": "student-leader-workbench"}

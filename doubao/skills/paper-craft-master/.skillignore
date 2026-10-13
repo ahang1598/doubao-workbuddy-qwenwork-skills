@@ -1,0 +1,10 @@
+# 运行时临时目录
+temp_data/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 本地系统与日志文件
+.DS_Store
+*.log

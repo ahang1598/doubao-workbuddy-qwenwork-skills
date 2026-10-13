@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>R31-C · text-invisible 的 div 分支：阳性 + 特异性一份搞定</title>
+<!--
+  这份同时是**阳性对照**和**特异性对照**，两半都必须成立：
+
+  上半 `.bad`  —— 一个白底容器里的 `div`，字色继承了外面深底那套浅墨，
+                 实测 1.09:1。**它必须被 text-invisible 抓到。**
+                 这类漏网是 R31-C 在 gold/board-flow 上真实碰到的：
+                 选择器里原本没有 `div`，白字压白底一路报 PASS。
+
+  下半 `.wrap` —— 一个**包装型** div：它自己没有文本节点，
+                 所有文字都在子元素里、各自设了深色。
+                 **它不许被判 FAIL。** 加 div 进选择器时如果不要求
+                 "自己有文本节点"，包装层会造出一整片假阳性 ——
+                 因为 textContent 含后代，而后代的颜色跟包装层无关。
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0B0E14;color:#F2F5FA;padding:24px;
+  font:14px/1.6 "PingFang SC",system-ui,sans-serif}
+.card{background:#fff;border-radius:8px;padding:20px;margin-bottom:16px}
+.wrap .t{color:#1B1F26;font-weight:700;font-size:16px}
+.wrap .s{color:#6B7280}
+</style></head><body>
+  <div class="card bad">
+    <div class="title">白字压白底 —— 这一行必须被抓到</div>
+  </div>
+  <div class="card wrap">
+    <div class="t">包装型 div：标题在子元素里</div>
+    <div class="s">副标也在子元素里，各自设了深色 —— 这个包装层不许被误伤</div>
+  </div>
+</body></html>

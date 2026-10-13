@@ -1,0 +1,99 @@
+{
+  "version": "analysis-mode-contract-v1",
+  "contract_hash": "3b7d6a0a727943dac100fdd7eb40aff237d63e2a96a16ddea6251dcc0259ed32",
+  "tiers": {
+    "direct": {
+      "applicability": [
+        "只需解决一个可隔离的局部判断。"
+      ],
+      "evidence_requirements": [
+        "覆盖最小证据链，并保留范围、时点、来源和状态。"
+      ],
+      "analysis": [
+        "直接回答当前问题，不附带无关阶段、清单或报告。"
+      ],
+      "stop_conditions": [
+        "判断已有边界明确的答案，新增内容不会改变结论。"
+      ],
+      "degradation": [
+        "只降低依赖缺失证据的断言；未知保持未知。"
+      ],
+      "references": [
+        {
+          "path": "references/sector-methods.md",
+          "when": "读取与当前局部问题对应的方法。"
+        },
+        {
+          "path": "references/evidence-discipline.md",
+          "when": "核对范围、时点、资金或因果边界。"
+        }
+      ]
+    },
+    "brief": {
+      "applicability": [
+        "需要连接核心驱动、竞争性约束及验证或失效信号。"
+      ],
+      "evidence_requirements": [
+        "覆盖决定性驱动、主要替代解释、关键反证和适用基准。"
+      ],
+      "analysis": [
+        "只选择与核心判断有关的维度，形成可证伪的论证链。"
+      ],
+      "stop_conditions": [
+        "核心解释与主要竞争解释已区分，扩展只会增加篇幅。"
+      ],
+      "degradation": [
+        "缺少某节点时缩小对应结论，不把缺失记为负面。"
+      ],
+      "references": [
+        {
+          "path": "references/sector-methods.md",
+          "when": "选择核心判断需要的方法。"
+        },
+        {
+          "path": "references/evidence-discipline.md",
+          "when": "建立可比口径、证据谱系和反证边界。"
+        },
+        {
+          "path": "references/helper-input.md",
+          "when": "确实需要收益、相对收益或宽度算术。"
+        }
+      ]
+    },
+    "full": {
+      "applicability": [
+        "包含耦合判断、跨对象比较、结构分化、竞争解释或条件情景。"
+      ],
+      "evidence_requirements": [
+        "建立共同口径，覆盖结构证据、替代解释、约束和失效信号。"
+      ],
+      "analysis": [
+        "拆解依赖并比较对象与解释；最终回答仍可简短。"
+      ],
+      "stop_conditions": [
+        "主要依赖、替代解释、结构证据和失效条件均已处理。"
+      ],
+      "degradation": [
+        "只降级受缺口影响的比较；共同口径不足时取消对应排名。"
+      ],
+      "references": [
+        {
+          "path": "references/sector-methods.md",
+          "when": "组合多个任务方法或条件情景。"
+        },
+        {
+          "path": "references/evidence-discipline.md",
+          "when": "处理跨对象口径、历史时点和因果限制。"
+        },
+        {
+          "path": "references/verification-workflow.md",
+          "when": "需要断言、事件窗口或文件交付检查。"
+        },
+        {
+          "path": "references/helper-input.md",
+          "when": "可比结论包含确定性算术。"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "profile": {"institution": "测试大学", "program": "计算机", "target_term": "2026秋"},
+  "courses": [
+    {"course_id": "CS2001", "section_id": "01", "name": "算法", "credits": 3, "sources": [{"publisher": "测试大学", "source": "目录", "published_or_updated": "2026-07-01", "verification_status": "verified", "freshness": "current", "supports": ["curriculum"]}]},
+    {"course_id": "CS2001", "section_id": "02", "name": "算法", "credits": 3, "sources": [{"publisher": "测试大学", "source": "目录", "published_or_updated": "2026-07-01", "verification_status": "verified", "freshness": "current", "supports": ["curriculum"]}]}
+  ]
+}

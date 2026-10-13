@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "packet_status": "draft",
+  "brief_snapshot": {
+    "outputs": [],
+    "fact_values": {
+      "club.name": "[待确认：社团正式名称]",
+      "campaign.cta.deadline": "[待确认：截止时间]"
+    },
+    "fact_statuses": {
+      "club.name": "placeholder",
+      "campaign.cta.deadline": "placeholder"
+    },
+    "forbidden_claims": [
+      "包进",
+      "保研",
+      "直接内推"
+    ],
+    "competency_ids": []
+  },
+  "materials": {},
+  "qa_report": {
+    "errors": [],
+    "warnings": [],
+    "unresolved": []
+  }
+}

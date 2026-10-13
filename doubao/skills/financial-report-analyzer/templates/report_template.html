@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>{{COMPANY_NAME}} {{YEAR}} 年度财报分析报告</title>
+<style>
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    color: #1a1a2e;
+    background: #f8f9fc;
+    line-height: 1.7;
+  }
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    color: #16213e;
+    border-bottom: 3px solid #0f3460;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  h2 {
+    font-size: 20px;
+    color: #0f3460;
+    margin-top: 36px;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 4px solid #e94560;
+  }
+  h3 {
+    font-size: 17px;
+    color: #16213e;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  thead th {
+    background: #0f3460;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 14px;
+  }
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #eef0f5;
+    font-size: 14px;
+  }
+  tbody tr:hover {
+    background: #f0f4ff;
+  }
+  .section-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .highlight-positive { color: #27ae60; font-weight: 600; }
+  .highlight-negative { color: #e74c3c; font-weight: 600; }
+  .conclusion-box {
+    background: linear-gradient(135deg, #f8f9fc 0%, #eef1f8 100%);
+    border-radius: 10px;
+    padding: 24px;
+    margin-top: 20px;
+  }
+  .conclusion-box strong { color: #0f3460; }
+  .tag-advantage {
+    display: inline-block;
+    background: #d4edda;
+    color: #155724;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-right: 6px;
+  }
+  .tag-risk {
+    display: inline-block;
+    background: #f8d7da;
+    color: #721c24;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-right: 6px;
+  }
+  p { margin: 8px 0; font-size: 15px; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; font-size: 14px; }
+  .chart-container {
+    text-align: center;
+    margin: 20px 0;
+  }
+  .chart-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .chart-container .chart-caption {
+    font-size: 13px;
+    color: #888;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  使用说明（Agent 必读）：
+  1. 将所有 {{占位符}} 替换为真实数据
+  2. 严禁删除任何章节（1-4），严禁修改表格列数
+  3. 核心财务摘要表格必须保留 4 列：指标 / 本期数值 / 同比增长 / 行业平均(参考)
+  4. 如果某项数据缺失，填写 "N/A" 而非删除该行或该列
+  5. 可以在各 section-card 中增加子段落、图表等补充内容，但不得删减已有结构
+  6. 同比增长为正时加 class="highlight-positive"，为负时加 class="highlight-negative"
+============================================================ -->
+
+<h1>{{COMPANY_NAME}} {{YEAR}} 年度财报分析报告</h1>
+<p class="subtitle">报告生成时间：{{DATE}} | 数据来源：公司年度报告</p>
+
+<!-- ==================== 第1章 核心财务摘要 ==================== -->
+<h2>1. 核心财务摘要</h2>
+<table>
+  <thead>
+    <tr>
+      <th>指标</th>
+      <th>本期数值</th>
+      <th>同比增长</th>
+      <th>行业平均 (参考)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>营业收入</td>
+      <td>{{REVENUE}}</td>
+      <td class="{{REVENUE_GROWTH_CLASS}}">{{REVENUE_GROWTH}}</td>
+      <td>{{REVENUE_INDUSTRY_AVG}}</td>
+    </tr>
+    <tr>
+      <td>归母净利润</td>
+      <td>{{NET_PROFIT}}</td>
+      <td class="{{NET_PROFIT_GROWTH_CLASS}}">{{NET_PROFIT_GROWTH}}</td>
+      <td>{{NET_PROFIT_INDUSTRY_AVG}}</td>
+    </tr>
+    <tr>
+      <td>扣非净利润</td>
+      <td>{{NON_RECURRING_NET_PROFIT}}</td>
+      <td class="{{NON_RECURRING_GROWTH_CLASS}}">{{NON_RECURRING_GROWTH}}</td>
+      <td>{{NON_RECURRING_INDUSTRY_AVG}}</td>
+    </tr>
+    <tr>
+      <td>毛利率</td>
+      <td>{{GROSS_MARGIN}}</td>
+      <td class="{{GROSS_MARGIN_CHANGE_CLASS}}">{{GROSS_MARGIN_CHANGE}}</td>
+      <td>{{GROSS_MARGIN_INDUSTRY_AVG}}</td>
+    </tr>
+    <tr>
+      <td>ROE</td>
+      <td>{{ROE}}</td>
+      <td class="{{ROE_CHANGE_CLASS}}">{{ROE_CHANGE}}</td>
+      <td>{{ROE_INDUSTRY_AVG}}</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<div class="chart-container">
+  <img src="{{CHART_FINANCIAL_OVERVIEW}}" alt="核心财务指标对比">
+  <p class="chart-caption">图1 核心财务指标对比（单位：亿元）</p>
+</div>
+<!-- ==================== 第2章 财务状况深度分析 ==================== -->
+<h2>2. 财务状况深度分析</h2>
+
+<h3>2.1 盈利能力分析</h3>
+<div class="section-card">
+  <!-- 在此处详细描述盈利能力的变动原因，结合毛利率、净利率和费用率进行分析 -->
+  <p>{{PROFITABILITY_ANALYSIS}}</p>
+</div>
+
+<h3>2.2 偿债与风险分析</h3>
+<div class="section-card">
+  <!-- 分析资产负债率、流动比率、速动比率等，评估财务安全性 -->
+  <p>{{SOLVENCY_ANALYSIS}}</p>
+  <div class="chart-container">
+    <img src="{{CHART_PROFITABILITY}}" alt="盈利能力指标">
+    <p class="chart-caption">图2 盈利能力指标分析（%）</p>
+</div>
+
+<h3>2.3 营运效率分析</h3>
+<div class="section-card">
+  <!-- 分析应收账款周转率、存货周转率、总资产周转率等，评估公司管理效率 -->
+  <p>{{EFFICIENCY_ANALYSIS}}</p>
+</div>
+
+<!-- ==================== 第3章 现金流与利润质量 ==================== -->
+<h2>3. 现金流与利润质量</h2>
+<div class="section-card">
+  <div class="chart-container">
+    <img src="{{CHART_ASSET_STRUCTURE}}" alt="资产结构分布">
+    <p class="chart-caption">图3 资产结构分布</p>
+  </div>
+  <!-- 对比净利润与经营现金流，评估盈利的真实性；分析投资和筹资现金流结构 -->
+  <p>{{CASHFLOW_ANALYSIS}}</p>
+</div>
+
+<!-- ==================== 第4章 结论与建议 ==================== -->
+<h2>4. 结论与建议</h2>
+<div class="conclusion-box">
+  <p><strong>优势：</strong></p>
+  <ul>
+    <!-- 列出 2-4 条核心优势，每条用 <li> -->
+    {{ADVANTAGES_LIST}}
+  </ul>
+
+  <p><strong>风险：</strong></p>
+  <ul>
+    <!-- 列出 2-4 条主要风险，每条用 <li> -->
+    {{RISKS_LIST}}
+  </ul>
+
+  <p><strong>综合评价：</strong></p>
+  <p>{{OVERALL_ASSESSMENT}}</p>
+</div>
+
+</body>
+</html>

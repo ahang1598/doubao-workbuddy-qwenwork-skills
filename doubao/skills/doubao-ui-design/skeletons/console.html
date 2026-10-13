@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   B 端控制台骨架。只保证三件事：装得下、不溢出、可读。
+   颜色、字体、密度、图表形态 —— 全部是空的，那是你的活。
+
+   **B 端和官网不是同一种东西，判断标准是相反的：**
+     官网　　首屏影像占比越高越好（获奖站实测 40–100%）
+     控制台　满屏是图就是设计错误 —— 屏幕要给数据、筛选和操作入口
+
+   写配色之前必读 craft/product-palettes.md（它专讲 dashboard / 后台 / SaaS）。
+   密度与信息层级见 craft/page-grammar.md，交互见 craft/interaction-contract.md。
+
+   **四种状态一个都不能少**：有数据 / 空 / 加载 / 异常。
+   B 端稿最常见的失分就是只画了"数据饱满"那一种。
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  /* TODO 四组数值从本轮证据里推，不要用这里的占位值。
+     B 端的底色几乎不用纯白：长时间盯屏，纯白会把细线全吃掉。 */
+  --canvas:#F7F8FA;      /* TODO 工作区底 */
+  --panel:#FFFFFF;       /* TODO 卡片/表格底 */
+  --ink:#1B1F26;         /* TODO 墨色 */
+  --muted:#6B7280;       /* TODO 弱信息（对 --panel 要 >=4.5:1） */
+  --line:#E5E7EB;        /* TODO 分隔线，B 端靠线不靠阴影 */
+  --accent:#2563EB;      /* TODO 唯一强调色 —— 只给"当前/主操作"用 */
+  /* TODO 状态色。**状态色要分两个角色**：底色用浅的，字用深的。
+     只用一个值时，浅底 + 同色字必然掉到 3:1 以下 —— 那就是"看得见但读不清"。
+     下面这三对是过 WCAG 的起点，配色换了也要保持这个关系。 */
+  --warn:#D97706; --warn-ink:#8A4B04;
+  --bad:#DC2626;  --bad-ink:#991B1B;
+  --ok:#059669;   --ok-ink:#036043;
+  --r:6px;               /* TODO 圆角。B 端偏小甚至直角，胶囊会削弱严肃感 */
+  --side:232px;          /* 侧栏宽 */
+  --row:44px;            /* 表格行高 —— 密度的第一决定项 */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);
+  /* TODO 换字体栈。数字务必用 tabular-nums，否则表格列会跳 */
+  font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;min-height:28px}
+a{color:inherit;text-decoration:none}
+table{border-collapse:collapse;width:100%}
+
+.app{display:grid;grid-template-columns:var(--side) 1fr;min-height:100vh}
+@media (max-width:1180px){ .app{grid-template-columns:64px 1fr} .side .label{display:none} }
+
+/* ── 侧栏：他知不知道自己在哪 ───────────────────────────── */
+.side{background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:2px;padding:16px 10px}
+.side .brand{font-weight:700;letter-spacing:.02em;padding:6px 10px 18px}
+.side a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);
+  color:var(--muted)}
+.side a.on{background:color-mix(in srgb,var(--accent) 10%,transparent);
+  color:var(--accent);font-weight:600}
+.side svg{width:18px;height:18px;flex:none}
+
+/* ── 主区 ──────────────────────────────────────────────── */
+.main{display:flex;flex-direction:column;min-width:0}
+.top{display:flex;align-items:center;gap:14px;padding:14px 24px;
+  border-bottom:1px solid var(--line);background:var(--panel)}
+.top h1{font-size:17px;font-weight:650}
+.top .sp{margin-left:auto}
+.body{padding:20px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* 指标条：**不要做成四张一样的大卡**，主指标要比次指标大一档 */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px}
+.kpi .k{color:var(--muted);font-size:12px}
+.kpi .v{font-size:26px;font-weight:700;margin-top:4px}
+.kpi .d{font-size:12px;color:var(--ok)}
+
+/* 筛选条：B 端的入口在这里，不在首屏大图里 */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.chip{border:1px solid var(--line);border-radius:var(--r);padding:5px 11px;color:var(--muted)}
+.chip.on{border-color:var(--accent);color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.field{border:1px solid var(--line);border-radius:var(--r);padding:5px 10px;min-width:150px}
+
+/* 表格：B 端的主角。斑马纹不如一条细线，行高才是密度 */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.panel > header{display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-bottom:1px solid var(--line);font-weight:600}
+th,td{text-align:left;padding:0 16px;height:var(--row);border-bottom:1px solid var(--line);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+th{color:var(--muted);font-weight:500;font-size:12.5px;letter-spacing:.02em}
+tbody tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;
+  background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok-ink)}
+.tag.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn-ink)}
+.tag.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad-ink)}
+
+/* 图表位：**图表用 SVG 画，不要生图** —— 生图画不了精确数字 */
+.charts{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media (max-width:1180px){ .charts{grid-template-columns:1fr} }
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;min-height:240px}
+
+/* ── 四种状态：切换用 data-state，一个都不能少 ─────────────── */
+[data-state]{display:none}
+[data-state].on{display:block}
+.empty,.loading,.error{display:grid;place-items:center;gap:10px;
+  padding:56px 20px;text-align:center;color:var(--muted)}
+.empty b,.error b{color:var(--ink);font-size:15px}
+.skel{background:linear-gradient(90deg,var(--line),transparent,var(--line));
+  height:var(--row);border-radius:var(--r);margin:6px 16px;opacity:.7}
+
+/* 弹窗：B 端的编辑/确认都在这里发生 */
+.scrim{position:fixed;inset:0;background:rgba(12,14,18,.42);opacity:0;
+  pointer-events:none;transition:opacity .18s}
+.scrim.on{opacity:1;pointer-events:auto}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%);
+  width:min(560px,92vw);background:var(--panel);border-radius:calc(var(--r) * 1.6);
+  padding:20px;opacity:0;pointer-events:none;transition:.18s;
+  box-shadow:0 24px 60px rgba(15,20,30,.18)}
+.modal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.modal h3{font-size:16px;margin-bottom:10px}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.btn{border:1px solid var(--line);border-radius:var(--r);padding:7px 14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 侧栏：图标用 icons.py 取，不要手搓 path，更不要 emoji -->
+  <nav class="side">
+    <div class="brand">__PROJECT__</div>
+    <a class="on" href="#"><!-- TODO svg --><span class="label">总览</span></a>
+    <a href="#"><span class="label">TODO 第二项</span></a>
+    <a href="#"><span class="label">TODO 第三项</span></a>
+  </nav>
+
+  <div class="main">
+    <header class="top">
+      <h1>TODO 这一屏叫什么</h1>
+      <span class="sp"></span>
+      <button class="btn" data-go="empty">看空状态</button>
+      <button class="btn" data-go="loading">看加载态</button>
+      <button class="btn" data-go="error">看异常态</button>
+      <button class="btn primary" id="new">TODO 主操作</button>
+    </header>
+
+    <div class="body">
+      <div class="filters">
+        <span class="chip on">TODO 默认筛选</span>
+        <span class="chip">TODO 第二个</span>
+        <span class="chip">TODO 第三个</span>
+        <input class="field" placeholder="TODO 搜索什么">
+      </div>
+
+      <div class="kpis">
+        <!-- TODO 主指标 1 个 + 次指标 2–3 个。不要四张一样大 -->
+        <div class="kpi"><div class="k">TODO 指标名</div><div class="v num">0</div>
+          <div class="d">TODO 同比</div></div>
+        <div class="kpi"><div class="k">TODO</div><div class="v num">0</div></div>
+        <div class="kpi"><div class="k">TODO</div><div class="v num">0</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart"><!-- TODO 主图表，用 inline SVG 画 --></div>
+        <div class="chart"><!-- TODO 次图表 / 分布 --></div>
+      </div>
+
+      <!-- 有数据 -->
+      <section data-state="data" class="on">
+        <div class="panel">
+          <header>TODO 这张表讲什么<span style="margin-left:auto;color:var(--muted);
+            font-weight:400;font-size:12px">TODO 共 N 条</span></header>
+          <table>
+            <thead><tr><th>TODO 列一</th><th>TODO 列二</th><th>状态</th><th class="n">TODO 数值</th></tr></thead>
+            <tbody>
+              <tr><td>TODO</td><td>TODO</td><td><span class="tag">正常</span></td><td class="n">0</td></tr>
+              <tr><td>TODO</td><td>TODO</td><td><span class="tag warn">预警</span></td><td class="n">0</td></tr>
+              <tr><td>TODO</td><td>TODO</td><td><span class="tag bad">异常</span></td><td class="n">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 空：**要给出口**，不要只写"暂无数据" -->
+      <section data-state="empty"><div class="panel"><div class="empty">
+        <b>TODO 还没有数据</b>
+        <span>TODO 一句话说明为什么空，以及他现在能做什么</span>
+        <button class="btn primary">TODO 出口按钮</button>
+      </div></div></section>
+
+      <!-- 加载：骨架屏，不要转圈 -->
+      <section data-state="loading"><div class="panel"><div class="loading">
+        <div style="width:100%"><div class="skel"></div><div class="skel"></div>
+          <div class="skel"></div></div>
+      </div></div></section>
+
+      <!-- 异常：说清楚发生了什么 + 怎么重试 -->
+      <section data-state="error"><div class="panel"><div class="error">
+        <b>TODO 出什么错了</b>
+        <span>TODO 他能做什么（重试 / 联系谁 / 换个筛选）</span>
+        <button class="btn">重试</button>
+      </div></div></section>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal">
+  <h3>TODO 弹窗标题</h3>
+  <p style="color:var(--muted)">TODO 这个弹窗让他做什么</p>
+  <div class="acts"><button class="btn" data-close>取消</button>
+    <button class="btn primary" data-close>确定</button></div>
+</div>
+
+<script>
+const scrim=document.getElementById('scrim'),modal=document.getElementById('modal');
+function openModal(on){scrim.classList.toggle('on',on);modal.classList.toggle('on',on);}
+scrim.onclick=()=>openModal(false);
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>openModal(false));
+document.getElementById('new').onclick=()=>openModal(true);
+
+/* 四种状态切换。**门会真的去点** —— 点了要真的变。 */
+function show(name){
+  document.querySelectorAll('[data-state]').forEach(s=>
+    s.classList.toggle('on', s.dataset.state===name));
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+
+/* 关键屏声明：截图器只枚举它，不猜按钮。改稿时跟着改这份清单。 */
+window.__UI_CAPTURE__={
+  reset:async()=>{openModal(false);show('data');},
+  states:[
+    {id:'data',    label:'有数据'},
+    {id:'filter',  label:'筛选中', go:async()=>{
+        const c=document.querySelectorAll('.chip')[1]; if(c) c.classList.add('on');}},
+    {id:'modal',   label:'编辑弹窗', go:async()=>openModal(true)},
+    {id:'empty',   label:'空状态',  go:async()=>show('empty')},
+    {id:'loading', label:'加载态',  go:async()=>show('loading')},
+    {id:'error',   label:'异常态',  go:async()=>show('error')}
+  ]};
+</script>
+</body>
+</html>

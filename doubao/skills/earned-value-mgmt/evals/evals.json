@@ -1,0 +1,58 @@
+{
+  "skill_name": "earned-value-mgmt",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our project was supposed to be 50% done ($500k PV). We've spent $600k (AC) but we are only 40% done (EV = $400k). How are we doing?",
+      "expected_output": "Should calculate CPI (400/600 = 0.67). Should calculate SPI (400/500 = 0.80). Should conclude the project is over budget and behind schedule. Should provide a Project Performance Dashboard.",
+      "assertions": [
+        "Calculates CPI as 0.67",
+        "Calculates SPI as 0.80",
+        "Concludes project is over budget and behind schedule",
+        "Mentions the EAC (Estimate at Completion) forecast",
+        "Output follows Project Performance Dashboard structure"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Project: BAC 50M, 40% complete (EV 20M), AC 26M, PV 24M. Compute CPI, SPI, and a defensible EAC range.",
+      "expected_output": "CPI = 0.769, SPI = 0.833. EAC range: optimistic AC+(BAC-EV)=56M; CPI-based 50/0.769=65M; combined CPI x SPI ~ 72.8M. TCPI to budget = 30/24 = 1.25 - recovery unrealistic; report the range with the CPI-based as the likely floor at this completion stage.",
+      "assertions": [
+        "Computes CPI 0.769 and SPI 0.833 correctly",
+        "Produces the three-formula EAC range (56M / 65M / ~73M)",
+        "Computes TCPI of 1.25 and calls recovery unrealistic",
+        "Notes CPI stability research making 65M a floor, not a ceiling",
+        "Verifies with code"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Our SPI is 0.98 so the PM says schedule is fine, but the critical-path milestone slipped 2 months. Reconcile.",
+      "expected_output": "SPI aggregates all work - off-critical-path tasks running ahead mask critical-path slippage; SPI($) also drifts to 1.0 late in projects. Use earned schedule SPI(t) and critical-path analysis; the milestone slip is the real signal.",
+      "assertions": [
+        "Explains SPI masking via non-critical work",
+        "Mentions SPI($) converging to 1.0 as completion approaches",
+        "Recommends earned schedule and critical-path tracking",
+        "Prioritizes the milestone slip over the index"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Assess the project in the attached status file (evals/files/project_status.csv): compute CV, SV, CPI, SPI, EAC (CPI method), and TCPI, and state whether the original budget is still credible.",
+      "expected_output": "CV -70,000, SV -50,000, CPI 0.865, SPI 0.90, EAC $2,311,111, TCPI 1.047.",
+      "assertions": [
+        "CPI approx 0.87 and SPI 0.90",
+        "Cost variance -$70,000 and schedule variance -$50,000",
+        "EAC approx $2,311,111",
+        "TCPI approx 1.05 - concludes hitting BAC requires above-baseline efficiency",
+        "Computes with code"
+      ],
+      "files": [
+        "evals/files/project_status.csv"
+      ]
+    }
+  ]
+}

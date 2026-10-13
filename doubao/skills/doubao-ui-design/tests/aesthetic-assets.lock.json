@@ -1,0 +1,446 @@
+{
+ "craft/aesthetic-baseline.md": [
+  18523,
+  "98c43559b37f7b62"
+ ],
+ "craft/anti-patterns.md": [
+  6390,
+  "a7098e7c092ff1a6"
+ ],
+ "craft/award-mechanisms.md": [
+  4673,
+  "f77d05d1230d9bdb"
+ ],
+ "craft/completeness.md": [
+  9577,
+  "648541d9fed45f22"
+ ],
+ "craft/composition-mechanisms.md": [
+  9568,
+  "1651d807f642a89b"
+ ],
+ "craft/composition-motion.md": [
+  11915,
+  "846050d0c90356c7"
+ ],
+ "craft/interaction-contract.md": [
+  9912,
+  "00349c493e4d3454"
+ ],
+ "craft/motion-engines.md": [
+  5929,
+  "9d3ffe207456d87b"
+ ],
+ "craft/motion-patterns.md": [
+  7476,
+  "a612417b08e94d27"
+ ],
+ "craft/motion-quality.md": [
+  7071,
+  "8cb0abffd0e6b254"
+ ],
+ "craft/page-grammar.md": [
+  6884,
+  "7303dcf8d6492413"
+ ],
+ "craft/phosphor-icons.md": [
+  3709,
+  "5d645b12b14212dd"
+ ],
+ "craft/product-palettes.md": [
+  8457,
+  "135e260ebd2a1621"
+ ],
+ "craft/scale-atlas.md": [
+  4259,
+  "048eda5ad39e2673"
+ ],
+ "reference/competitor-evidence.md": [
+  5891,
+  "0c963f9b269725c1"
+ ],
+ "reference/fingerprints/gold.json": [
+  1787,
+  "876b792291770f2c"
+ ],
+ "reference/fingerprints/index.json": [
+  4470,
+  "fd09891bc6d2073f"
+ ],
+ "reference/fingerprints/thumbs/cowboy.jpg": [
+  37714,
+  "04cd6a9e2fe1e402"
+ ],
+ "reference/fingerprints/thumbs/fuse.jpg": [
+  15080,
+  "2d92984c15ce12eb"
+ ],
+ "reference/fingerprints/thumbs/lunge.jpg": [
+  7067,
+  "a346ae1bbe11f9fc"
+ ],
+ "reference/image-direction.md": [
+  21866,
+  "83baf2364d0a1592"
+ ],
+ "reference/image-prompts.md": [
+  13203,
+  "94a92a9d25ecc6e8"
+ ],
+ "reference/scale-atlas.json": [
+  3051,
+  "bfa157c1601d02be"
+ ],
+ "gold/README.md": [
+  13142,
+  "b3691f7666236610"
+ ],
+ "gold/app-home/assertions.py": [
+  6267,
+  "c187643352f733f2"
+ ],
+ "gold/app-home/index.html": [
+  27335,
+  "0abc12f3cd362a1e"
+ ],
+ "gold/board-flow/assertions.py": [
+  4951,
+  "6e253122481a67e7"
+ ],
+ "gold/board-flow/index.html": [
+  20985,
+  "5be3ab07460910f0"
+ ],
+ "gold/console-api/assertions.py": [
+  6091,
+  "85479b6ae214b487"
+ ],
+ "gold/console-api/index.html": [
+  33407,
+  "59d25de18fde42b1"
+ ],
+ "gold/console-api/rubric.md": [
+  3334,
+  "ded1d05da31fd484"
+ ],
+ "gold/doc-canvas/build_docs.py": [
+  30839,
+  "b586ef978d665885"
+ ],
+ "gold/doc-canvas/cover.py": [
+  8253,
+  "55e025eea388f6f8"
+ ],
+ "gold/doc-canvas/img/qq-p01.jpg": [
+  21389,
+  "78903a684e0d8556"
+ ],
+ "gold/doc-canvas/img/qq-p02.jpg": [
+  27900,
+  "65be75e600abd36f"
+ ],
+ "gold/doc-canvas/img/qq-p03.jpg": [
+  22673,
+  "5678c3b398839427"
+ ],
+ "gold/doc-canvas/img/qq-p04.jpg": [
+  21590,
+  "4a9dab24a58a4af5"
+ ],
+ "gold/doc-canvas/img/qq-p05.jpg": [
+  19775,
+  "d22c551b2235236e"
+ ],
+ "gold/doc-canvas/img/qq-p06.jpg": [
+  23042,
+  "f9d8261088fdbb6a"
+ ],
+ "gold/doc-canvas/img/qq-p07.jpg": [
+  21792,
+  "bdbb6716b6924ec5"
+ ],
+ "gold/doc-canvas/img/qq-p08.jpg": [
+  23118,
+  "a38385645ca97498"
+ ],
+ "gold/doc-canvas/img/qq-p09.jpg": [
+  22789,
+  "fae5e0dc732269e9"
+ ],
+ "gold/doc-canvas/img/qq-p10.jpg": [
+  23224,
+  "cd0eae6b7f04adee"
+ ],
+ "gold/doc-canvas/img/web-band.jpg": [
+  35521,
+  "7547924e9e2b0bea"
+ ],
+ "gold/doc-canvas/img/web-hero.jpg": [
+  88154,
+  "2f6d4fb43afe708b"
+ ],
+ "gold/doc-canvas/img/web-join.jpg": [
+  32690,
+  "b52edf11b683ddef"
+ ],
+ "gold/doc-canvas/img/web-look.jpg": [
+  85326,
+  "d20dde833913437b"
+ ],
+ "gold/doc-canvas/img/web-shop.jpg": [
+  88594,
+  "b9bf46fa56f2faf0"
+ ],
+ "gold/doc-canvas/img/web-tech.jpg": [
+  27541,
+  "bb73bed0cfbdeefa"
+ ],
+ "gold/doc-canvas/pulse-canvas-a.html": [
+  173936,
+  "1e619acb52521367"
+ ],
+ "gold/doc-canvas/pulse-canvas-b.html": [
+  440618,
+  "e7babf540c482b85"
+ ],
+ "gold/doc-canvas/pulse-cover.html": [
+  4385,
+  "b99b185984a7086a"
+ ],
+ "gold/doc-canvas/pulse-cover.jpg": [
+  122963,
+  "11bb976b0298f476"
+ ],
+ "gold/doc-canvas/pulse-proposal.xml": [
+  1618,
+  "e447048d413815b5"
+ ],
+ "gold/doc-canvas/qq-canvas-a.html": [
+  12286,
+  "b114a5b2a3eb3b6b"
+ ],
+ "gold/doc-canvas/qq-canvas-b.html": [
+  315031,
+  "6c893b947420637b"
+ ],
+ "gold/doc-canvas/qq-cover.html": [
+  4402,
+  "e9e7af86e6c616fb"
+ ],
+ "gold/doc-canvas/qq-cover.jpg": [
+  73452,
+  "c4eb1f1134d68d9f"
+ ],
+ "gold/doc-canvas/qq-proposal.xml": [
+  1695,
+  "00e06a424dc57e8d"
+ ],
+ "gold/doc-cycle/build_doc.py": [
+  18501,
+  "3d1e3aeaded99a85"
+ ],
+ "gold/doc-cycle/cover-src.jpg": [
+  156147,
+  "d1bc2196d8fc2c22"
+ ],
+ "gold/doc-cycle/cycle-canvas-a.html": [
+  12439,
+  "7c6e99141e6f4420"
+ ],
+ "gold/doc-cycle/cycle-canvas-b.html": [
+  303345,
+  "ec1b62e744015108"
+ ],
+ "gold/doc-cycle/cycle-cover.html": [
+  4360,
+  "78b6e7fc8450dbe0"
+ ],
+ "gold/doc-cycle/cycle-cover.jpg": [
+  133797,
+  "a3aaecee19403af8"
+ ],
+ "gold/doc-cycle/cycle-proposal.xml": [
+  1640,
+  "4d0962ec46d96e82"
+ ],
+ "gold/doc-cycle/img/s01.jpg": [
+  26446,
+  "4746b1b9960f4f82"
+ ],
+ "gold/doc-cycle/img/s02.jpg": [
+  40268,
+  "4107ab9823d7dfbf"
+ ],
+ "gold/doc-cycle/img/s03.jpg": [
+  36459,
+  "a34b3bebfbca60d9"
+ ],
+ "gold/doc-cycle/img/s04.jpg": [
+  39816,
+  "61ccb7e304457173"
+ ],
+ "gold/doc-cycle/img/s05.jpg": [
+  32000,
+  "9b345443ee04649f"
+ ],
+ "gold/doc-cycle/img/s06.jpg": [
+  43910,
+  "c6e10f17ba51abb3"
+ ],
+ "gold/doc-personas.json": [
+  1090,
+  "81d678cebe85dd25"
+ ],
+ "gold/h5-cycle/assets/s1-dawn.jpg": [
+  156147,
+  "d1bc2196d8fc2c22"
+ ],
+ "gold/h5-cycle/assets/s2-autumn.jpg": [
+  271960,
+  "195366bdaf0c8d43"
+ ],
+ "gold/h5-cycle/assets/s3-poplar.jpg": [
+  183659,
+  "21d347fb4a5ba864"
+ ],
+ "gold/h5-cycle/assets/s4-forest.jpg": [
+  257995,
+  "759fb37339fd451f"
+ ],
+ "gold/h5-cycle/assets/s5-lane.jpg": [
+  179956,
+  "0f883a10026f869a"
+ ],
+ "gold/h5-cycle/assets/s6-coast.jpg": [
+  250600,
+  "4b60995b5df00e0e"
+ ],
+ "gold/h5-cycle/index.html": [
+  19711,
+  "369c253319649864"
+ ],
+ "gold/h5-qq2026/assertions.py": [
+  6443,
+  "b0f284791df97d46"
+ ],
+ "gold/h5-qq2026/cover-shot.jpg": [
+  43393,
+  "87cd1d53fddd484f"
+ ],
+ "gold/h5-qq2026/index.html": [
+  40011,
+  "d34c23c1bd42f1b0"
+ ],
+ "gold/longimg-summit/assertions.py": [
+  3861,
+  "1bc02f676aaa262e"
+ ],
+ "gold/longimg-summit/index.html": [
+  19522,
+  "297392cd1a8019e3"
+ ],
+ "gold/screen-hotan/assertions.py": [
+  5267,
+  "606f0793fa081406"
+ ],
+ "gold/screen-hotan/index.html": [
+  25352,
+  "d0d28a214de2cb26"
+ ],
+ "gold/screen-hotan/rubric.md": [
+  2937,
+  "a31620ad66a7fba5"
+ ],
+ "gold/web-pulse/assertions.py": [
+  5839,
+  "4a43838a070c5f93"
+ ],
+ "gold/web-pulse/assets/climb.jpg": [
+  135005,
+  "a11c78799516a33f"
+ ],
+ "gold/web-pulse/assets/court.jpg": [
+  256974,
+  "2ef93fad700f5b9b"
+ ],
+ "gold/web-pulse/assets/crew.jpg": [
+  170716,
+  "e794e163e606b247"
+ ],
+ "gold/web-pulse/assets/duo.jpg": [
+  202416,
+  "410cd0529620df05"
+ ],
+ "gold/web-pulse/assets/hero.jpg": [
+  453254,
+  "40e3cdee7d767d72"
+ ],
+ "gold/web-pulse/assets/maroon.jpg": [
+  96376,
+  "2da2a688662ce930"
+ ],
+ "gold/web-pulse/assets/member.jpg": [
+  89260,
+  "e33a99d06f2dad23"
+ ],
+ "gold/web-pulse/assets/neon.jpg": [
+  321103,
+  "9d8e87120cce5912"
+ ],
+ "gold/web-pulse/assets/netteal.jpg": [
+  294389,
+  "fa0b658dc6f2bc97"
+ ],
+ "gold/web-pulse/assets/orange.jpg": [
+  180296,
+  "d3c78d0fa3f1f4fd"
+ ],
+ "gold/web-pulse/assets/p1.jpg": [
+  19176,
+  "b1d47ca9067a0be3"
+ ],
+ "gold/web-pulse/assets/p2.jpg": [
+  29551,
+  "fe87a87ee49332bf"
+ ],
+ "gold/web-pulse/assets/p3.jpg": [
+  34565,
+  "bdc231ab8d9cd61c"
+ ],
+ "gold/web-pulse/assets/p4.jpg": [
+  15322,
+  "01662bb2218525b4"
+ ],
+ "gold/web-pulse/assets/p5.jpg": [
+  111535,
+  "6812a62ea845267a"
+ ],
+ "gold/web-pulse/assets/p6.jpg": [
+  28959,
+  "f64dffcbdfa14e37"
+ ],
+ "gold/web-pulse/assets/p7.jpg": [
+  59816,
+  "807e3848761bb027"
+ ],
+ "gold/web-pulse/assets/p8.jpg": [
+  42936,
+  "f07f0f8761a3f274"
+ ],
+ "gold/web-pulse/index.html": [
+  35827,
+  "b22a49735e82a698"
+ ],
+ "assets/phosphor/LICENSE": [
+  1097,
+  "549c8a86f7426da0"
+ ],
+ "assets/phosphor/catalog.json": [
+  29732,
+  "e1fb2dd23493c4a2"
+ ],
+ "assets/phosphor/phosphor-svgs-flat.zip": [
+  4433376,
+  "1da1285bc272c793"
+ ]
+}

@@ -1,0 +1,3 @@
+member_id,display_name,skills,available_shift_ids,preferred_shift_ids,max_shifts,max_consecutive_shifts
+m01,成员甲,宣讲|摄影,s01|s02,s01,2,1
+m02,成员乙,物料管理,s01|s03,,2,1

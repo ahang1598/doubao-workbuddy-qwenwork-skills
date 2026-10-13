@@ -1,0 +1,47 @@
+{
+  "PULSE": {
+    "paper": "rgb(255, 255, 255)",
+    "ink": "rgb(20, 22, 26)",
+    "muted": "rgb(20, 22, 26)",
+    "rule": "2px solid",
+    "font": "-apple-system",
+    "radius": "3px",
+    "accent": "rgb(212, 46, 13)",
+    "bodySize": "15px",
+    "lineH": "27.3px",
+    "h2Size": "26px",
+    "numSize": "30px",
+    "numFont": "ui-monospace",
+    "secGap": "58px"
+  },
+  "QQ": {
+    "paper": "rgb(246, 242, 232)",
+    "ink": "rgb(27, 42, 74)",
+    "muted": "rgb(27, 42, 74)",
+    "rule": "3px double",
+    "font": "Songti SC",
+    "radius": "0px",
+    "accent": "rgb(14, 95, 128)",
+    "bodySize": "15px",
+    "lineH": "27.3px",
+    "h2Size": "26px",
+    "numSize": "30px",
+    "numFont": "SF Mono",
+    "secGap": "58px"
+  },
+  "骑不骑": {
+    "paper": "rgb(250, 248, 244)",
+    "ink": "rgb(58, 53, 48)",
+    "muted": "rgb(74, 68, 62)",
+    "rule": "0px none",
+    "font": "Nunito",
+    "radius": "0px",
+    "accent": "rgb(255, 255, 255)",
+    "bodySize": "15.5px",
+    "lineH": "29.45px",
+    "h2Size": "25px",
+    "numSize": "15px",
+    "numFont": "Nunito",
+    "secGap": "52px"
+  }
+}

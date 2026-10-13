@@ -1,0 +1,4 @@
+interface:
+  display_name: "发布会级产品视频提示词"
+  short_description: "生成现代极简、精密高级的产品广告视频提示词模板"
+  default_prompt: "使用 $apple-keynote-product-video，先告诉我需要提供哪些商品资料，再为产品生成一版发布会级视频提示词。"

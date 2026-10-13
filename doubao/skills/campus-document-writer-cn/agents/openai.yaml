@@ -1,0 +1,8 @@
+interface:
+  display_name: "校园事务文书生成"
+  display_description: "依据真实信息起草或润色校园请假、申请、通知、邀请和总结。"
+  short_description: "依据真实信息起草校园事务文书"
+  default_prompt: "使用 $campus-document-writer-cn，仅依据我提供的真实信息起草校园事务文书。"
+
+policy:
+  allow_implicit_invocation: true

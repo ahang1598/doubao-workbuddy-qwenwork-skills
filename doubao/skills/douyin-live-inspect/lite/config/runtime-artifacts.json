@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "release": "inspect-python-zipformer-1",
+  "model": "zipformer-multi-zh-hans-int8-2023-12-13",
+  "platforms": {
+    "darwin-arm64": {},
+    "darwin-x64": {},
+    "linux-x64": {},
+    "win32-x64": {}
+  },
+  "shared": {
+    "asr": {
+      "version": "inspect-python-zipformer-1",
+      "url": "https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/models/inspect-python-zipformer-1/asr-model.tar.gz",
+      "bytes": 59733822,
+      "sha256": "3dea3b0897c2be28d0fd0053e052a015b3b37187515834f4c4a111eb3470191b",
+      "unpacked_bytes": 76979177,
+      "max_files": 108,
+      "files": [
+        {
+          "path": "licenses/onnxruntime-MIT.txt",
+          "bytes": 1073,
+          "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+        },
+        {
+          "path": "licenses/sherpa-onnx-Apache-2.0.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "manifest.json",
+          "bytes": 1552,
+          "sha256": "b1773d0b9edc0e4a11728a09ddb869dad29541ada65eb100d9abb2c51e6dfe02"
+        },
+        {
+          "path": "model/zipformer-multi-zh-hans-int8-2023-12-13/decoder.onnx",
+          "bytes": 5165084,
+          "sha256": "93f0df50c2834fe225bbabd664d59fc2488b15736fbc6acaabddec3188dea9b4"
+        },
+        {
+          "path": "model/zipformer-multi-zh-hans-int8-2023-12-13/encoder.int8.onnx",
+          "bytes": 70104213,
+          "sha256": "d6380c74c75aaf37a739061a9197440fc5ca3f73ee339e588268eff2e9d3bf84"
+        },
+        {
+          "path": "model/zipformer-multi-zh-hans-int8-2023-12-13/joiner.int8.onnx",
+          "bytes": 1033417,
+          "sha256": "7fa442b8b35b1ab217dbceadb57a7da5388ee445c6c722eab576a57071e0dcea"
+        },
+        {
+          "path": "model/zipformer-multi-zh-hans-int8-2023-12-13/tokens.txt",
+          "bytes": 18626,
+          "sha256": "6722bd1585f46f84456b29c3550a343a3cc375b971645773c02ed8e0b4e2405c"
+        },
+        {
+          "path": "vad/silero_vad.onnx",
+          "bytes": 643854,
+          "sha256": "9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6"
+        }
+      ],
+      "executables": [],
+      "entrypoints": {}
+    }
+  },
+  "compatibility": {
+    "loader_protocol": 1,
+    "model_manifest_schema": 3,
+    "engine": "zipformer_transducer",
+    "sherpa_onnx": "1.13.4"
+  }
+}

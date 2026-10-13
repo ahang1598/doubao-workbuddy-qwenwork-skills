@@ -1,0 +1,5 @@
+interface:
+  display_name: "校园地点与办事导航"
+  display_description: "核实高校校内地点、活动考场位置与办事流程，并标注来源、适用范围和未确认项。"
+  short_description: "核实高校校园地点和办事流程，标注来源、适用范围与未确认项"
+  default_prompt: "使用 $navigate-campus-places-and-services 根据真实来源查找校园建筑用途、活动或考试地点以及办事流程。"

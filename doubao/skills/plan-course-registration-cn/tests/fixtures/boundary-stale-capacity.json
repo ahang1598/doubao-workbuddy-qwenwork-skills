@@ -1,0 +1,8 @@
+{
+  "profile": {"institution": "测试大学", "program": "计算机", "target_term": "2026秋"},
+  "courses": [{
+    "course_id": "CS2001", "section_id": "01", "name": "算法", "credits": 3,
+    "addable": true, "capacity_status": "open",
+    "sources": [{"publisher": "测试大学教务处", "source": "旧通知", "published_or_updated": "2025-01-01", "verification_status": "verified", "freshness": "stale", "supports": ["capacity", "addable"]}]
+  }]
+}

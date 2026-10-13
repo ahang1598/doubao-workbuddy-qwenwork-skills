@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PULSE 脉冲 — 城市训练系列 SS26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bone:#EFECE3;
+  --bone-2:#E4E0D4;
+  --ink:#14140F;
+  --ink-soft:#2A2A22;
+  --signal:#FF3B14;
+  --lime:#C9F24D;
+  --dust:#6E6A60;
+  --line:rgba(20,20,15,.14);
+  --gut:clamp(20px,3.6vw,64px);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bone);color:var(--ink);
+  font-family:"Archivo","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body.locked{overflow:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--signal);color:#fff}
+
+/* ---------- shared type ---------- */
+.mono{font-family:"Space Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.display{
+  font-weight:900;font-stretch:82%;line-height:.86;letter-spacing:-.025em;
+  text-transform:uppercase;
+}
+.cn-display{font-weight:800;line-height:.98;letter-spacing:-.01em}
+.rule{height:1px;background:var(--line);width:100%}
+.wrap{padding-inline:var(--gut)}
+
+/* ---------- nav ---------- */
+header{
+  position:fixed;inset:0 0 auto 0;z-index:80;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:22px var(--gut);color:#fff;mix-blend-mode:normal;
+  transition:padding .4s var(--ease),background .4s var(--ease),color .4s var(--ease),
+             border-color .4s var(--ease);
+  border-bottom:1px solid transparent;
+}
+header.solid{
+  background:rgba(239,236,227,.86);backdrop-filter:blur(14px) saturate(1.4);
+  color:var(--ink);padding:12px var(--gut);border-bottom-color:var(--line);
+}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-weight:900;font-stretch:78%;font-size:26px;letter-spacing:.02em}
+.brand span{font-size:12px;letter-spacing:.42em;opacity:.62}
+nav{display:flex;gap:30px}
+nav a{font-size:13px;letter-spacing:.02em;position:relative;padding-block:4px}
+nav a::after{content:"";position:absolute;left:0;bottom:0;height:1.5px;width:0;
+  background:var(--signal);transition:width .35s var(--ease)}
+nav a:hover::after{width:100%}
+.tools{display:flex;align-items:center;gap:18px}
+.bag{
+  display:inline-flex;align-items:center;gap:9px;border:1px solid currentColor;
+  border-radius:999px;padding:8px 16px;font-size:12px;letter-spacing:.08em;
+  transition:background .3s var(--ease),color .3s var(--ease),border-color .3s;
+}
+.bag:hover{background:var(--signal);border-color:var(--signal);color:#fff}
+.bag i{font-style:normal;font-family:"Space Mono",monospace;font-weight:700}
+.bag.pop{animation:pop .45s var(--ease)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;background:#0C0C0A}
+.hero-media{position:absolute;inset:-6% 0 -6% 0;}
+.hero-media img{width:100%;height:100%;object-fit:cover;object-position:58% 42%;
+  transform:scale(1.06);animation:heroIn 2.4s var(--ease) both}
+@keyframes heroIn{from{transform:scale(1.18);opacity:.2}to{transform:scale(1.06);opacity:1}}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,8,6,.66) 0%,rgba(8,8,6,.12) 34%,rgba(8,8,6,.28) 62%,rgba(8,8,6,.88) 100%)}
+.hero-inner{position:absolute;inset:auto 0 0 0;z-index:3;padding:0 var(--gut) 116px;color:#fff}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:22px;opacity:.9}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--signal);
+  box-shadow:0 0 0 0 rgba(255,59,20,.7);animation:ping 2s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 12px rgba(255,59,20,0)}100%{box-shadow:0 0 0 0 rgba(255,59,20,0)}}
+h1.hero-title{font-size:clamp(52px,10.4vw,168px);font-weight:800;line-height:.9;
+  letter-spacing:-.02em;max-width:14ch}
+h1.hero-title em{font-style:normal;color:var(--signal)}
+.hero-sub{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+  gap:28px 48px;margin-top:34px;max-width:1180px}
+.hero-sub p{flex:1 1 340px;max-width:44ch;font-size:15px;line-height:1.8;
+  color:rgba(255,255,255,.78)}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:12px;border-radius:999px;
+  padding:16px 30px;font-size:14px;font-weight:600;letter-spacing:.04em;
+  transition:transform .35s var(--ease),background .3s,color .3s,border-color .3s}
+.btn:hover{transform:translateY(-2px)}
+.btn-solid{background:var(--signal);color:#fff}
+.btn-solid:hover{background:#fff;color:var(--ink)}
+.btn-ghost{border:1px solid rgba(255,255,255,.42);color:#fff}
+.btn-ghost:hover{background:#fff;color:var(--ink);border-color:#fff}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-ink:hover{background:var(--signal)}
+.scrollhint{position:absolute;left:var(--gut);bottom:44px;z-index:4;color:rgba(255,255,255,.6);
+  display:flex;align-items:center;gap:10px}
+.scrollhint span{display:block;width:34px;height:1px;background:rgba(255,255,255,.5);
+  animation:slide 1.8s var(--ease) infinite}
+@keyframes slide{0%{transform:scaleX(.2);transform-origin:left}
+  50%{transform:scaleX(1);transform-origin:left}
+  51%{transform:scaleX(1);transform-origin:right}
+  100%{transform:scaleX(.2);transform-origin:right}}
+
+/* ---------- marquee ---------- */
+.marquee{background:var(--ink);color:var(--bone);overflow:hidden;padding:15px 0;
+  border-block:1px solid var(--ink)}
+.marquee-track{display:flex;width:max-content;animation:mq 30s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+@keyframes mq{to{transform:translateX(-50%)}}
+.marquee-track span{display:inline-flex;align-items:center;gap:52px;white-space:nowrap;
+  padding-right:52px;font-size:14px;letter-spacing:.02em}
+.marquee em{font-style:normal;color:var(--signal)}
+
+/* ---------- section frame ---------- */
+section{position:relative}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;
+  flex-wrap:wrap;padding-block:88px 34px}
+.sec-head h2{font-size:clamp(30px,4.6vw,64px);font-weight:800;line-height:1;letter-spacing:-.02em}
+.sec-head .idx{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.2em;
+  color:var(--dust);display:block;margin-bottom:16px}
+.sec-head p{max-width:40ch;font-size:14px;color:var(--ink-soft);opacity:.78}
+
+/* ---------- filters + grid ---------- */
+.filters{display:flex;gap:8px;flex-wrap:wrap;padding-block:26px 30px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:13px;
+  transition:all .28s var(--ease)}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bone);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px 4px;padding-bottom:8px}
+@media(max-width:1180px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--bone-2);position:relative;overflow:hidden;
+  display:flex;flex-direction:column;transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.card.hide{display:none}
+.card-media{position:relative;aspect-ratio:3/4;overflow:hidden;background:#E9E5DA}
+.card-media img{width:100%;height:100%;object-fit:cover;
+  transition:transform 1s var(--ease),filter .6s var(--ease)}
+.card:hover .card-media img{transform:scale(1.05)}
+.tag{position:absolute;top:12px;left:12px;background:var(--signal);color:#fff;
+  border-radius:999px;padding:5px 11px;font-family:"Space Mono",monospace;font-size:10px;
+  letter-spacing:.14em}
+.tag.lime{background:var(--lime);color:var(--ink)}
+.sizes{position:absolute;left:0;right:0;bottom:0;display:flex;gap:6px;justify-content:center;
+  padding:12px;background:linear-gradient(180deg,transparent,rgba(233,229,218,.96));
+  transform:translateY(102%);transition:transform .42s var(--ease)}
+.card:hover .sizes{transform:translateY(0)}
+.sizes button{border:1px solid var(--line);background:rgba(255,255,255,.6);border-radius:6px;
+  min-width:38px;padding:6px 4px;font-size:12px;transition:all .2s}
+.sizes button:hover{background:var(--ink);color:var(--bone);border-color:var(--ink)}
+.sizes button[aria-pressed="true"]{background:var(--ink);color:var(--bone);border-color:var(--ink)}
+.card-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card-body h3{font-size:15px;font-weight:600;letter-spacing:-.005em}
+.card-body .meta{font-size:12px;color:var(--dust)}
+.swatches{display:flex;gap:6px;margin-top:auto}
+.swatches i{width:12px;height:12px;border-radius:50%;display:block;
+  box-shadow:0 0 0 1px rgba(20,20,15,.18) inset}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding-top:12px;border-top:1px solid var(--line)}
+.price{font-family:"Space Mono",monospace;font-size:15px;font-weight:700}
+.add{border:1px solid var(--ink);border-radius:999px;padding:8px 15px;font-size:12px;
+  letter-spacing:.04em;transition:all .28s var(--ease);white-space:nowrap}
+.add:hover{background:var(--ink);color:var(--bone)}
+.add.done{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+
+/* ---------- editorial band ---------- */
+.band{position:relative;min-height:86vh;display:grid;grid-template-columns:1.1fr .9fr;
+  background:var(--ink);color:var(--bone);margin-top:96px;overflow:hidden}
+@media(max-width:900px){.band{grid-template-columns:1fr}}
+.band-copy{padding:clamp(48px,7vw,110px) var(--gut);display:flex;flex-direction:column;
+  justify-content:center;gap:26px}
+.band-copy h2{font-size:clamp(34px,5vw,78px);font-weight:800;line-height:.98;letter-spacing:-.02em}
+.band-copy h2 em{font-style:normal;color:var(--signal)}
+.band-copy p{max-width:42ch;color:rgba(239,236,227,.7);font-size:15px;line-height:1.8}
+.stats{display:flex;gap:44px;flex-wrap:wrap;margin-top:10px}
+.stat b{display:block;font-family:"Space Mono",monospace;font-size:clamp(34px,4.6vw,60px);
+  font-weight:700;line-height:1;color:var(--bone)}
+.stat span{display:block;margin-top:8px;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(239,236,227,.5)}
+.band-media{position:relative;overflow:hidden;min-height:52vh}
+.band-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* ---------- lookbook rail ---------- */
+.rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding-left:var(--gut);padding-right:var(--gut);padding-bottom:12px;
+  scroll-padding-left:var(--gut);scrollbar-width:thin}
+.rail::-webkit-scrollbar{height:4px}
+.rail::-webkit-scrollbar-thumb{background:var(--line)}
+.shot{flex:0 0 clamp(260px,29vw,400px);scroll-snap-align:start;position:relative}
+.shot img{width:100%;aspect-ratio:4/5;object-fit:cover;
+  filter:saturate(1.02) contrast(1.02)}
+.shot figcaption{display:flex;justify-content:space-between;gap:12px;
+  padding:12px 2px;font-size:12px;color:var(--dust)}
+.shot figcaption b{color:var(--ink);font-weight:600}
+
+/* ---------- tech ---------- */
+.tech{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(28px,5vw,80px);
+  padding:clamp(60px,7vw,110px) var(--gut);align-items:center}
+@media(max-width:900px){.tech{grid-template-columns:1fr}}
+.tech-media{position:relative}
+.tech-media img{width:100%;aspect-ratio:4/5;object-fit:cover}
+.tech-media .badge{position:absolute;right:-14px;bottom:26px;background:var(--lime);
+  color:var(--ink);border-radius:999px;padding:14px 22px;font-size:13px;font-weight:700;
+  box-shadow:0 18px 40px rgba(20,20,15,.16)}
+.spec{border-top:1px solid var(--line);padding:22px 0;display:grid;
+  grid-template-columns:120px 1fr;gap:20px;align-items:baseline}
+.spec dt{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.12em;color:var(--dust)}
+.spec dd{font-size:15px;line-height:1.7}
+.spec dd b{display:block;font-size:clamp(28px,3.4vw,44px);font-weight:800;line-height:1;
+  letter-spacing:-.02em;margin-bottom:6px}
+.spec dd b i{font-style:normal;font-size:.45em;font-weight:600;color:var(--dust);
+  margin-left:6px;letter-spacing:0}
+
+/* ---------- crew ---------- */
+.crew{position:relative;margin-top:20px}
+.crew-media{position:relative;height:min(72vh,620px);overflow:hidden}
+.crew-media img{width:100%;height:100%;object-fit:cover;object-position:92% 34%}
+.crew-media::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(10,10,8,.9) 0%,rgba(10,10,8,.72) 38%,rgba(10,10,8,.3) 78%,rgba(10,10,8,.5) 100%)}
+.crew-copy{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  gap:22px;padding:0 var(--gut);color:#fff;z-index:2;max-width:760px}
+.crew-copy h2{font-size:clamp(30px,4.6vw,62px);font-weight:800;line-height:1;letter-spacing:-.02em}
+.crew-copy p{color:rgba(255,255,255,.76);max-width:38ch;font-size:15px;line-height:1.8}
+.calendar{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.calendar div{border:1px solid rgba(255,255,255,.32);border-radius:10px;padding:10px 14px;
+  font-size:12px;backdrop-filter:blur(6px)}
+.calendar div b{display:block;font-family:"Space Mono",monospace;font-size:16px;margin-bottom:2px}
+
+/* ---------- join ---------- */
+.join{display:grid;grid-template-columns:1fr 1fr;background:var(--signal);color:#fff}
+@media(max-width:900px){.join{grid-template-columns:1fr}}
+.join-copy{padding:clamp(48px,6vw,96px) var(--gut);display:flex;flex-direction:column;
+  justify-content:center;gap:20px}
+.join-copy h2{font-size:clamp(30px,4.4vw,60px);font-weight:800;line-height:1;letter-spacing:-.02em}
+.join-copy p{max-width:36ch;color:rgba(255,255,255,.85);font-size:15px;line-height:1.75}
+.field{display:flex;gap:8px;max-width:460px;margin-top:6px}
+.field input{flex:1;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.08);
+  border-radius:999px;padding:14px 20px;color:#fff;font:inherit;font-size:14px;outline:none}
+.field input::placeholder{color:rgba(255,255,255,.6)}
+.field input:focus-visible{border-color:#fff;background:rgba(255,255,255,.16)}
+.field button{background:#fff;color:var(--signal);border-radius:999px;padding:14px 26px;
+  font-size:14px;font-weight:700;white-space:nowrap;transition:transform .3s var(--ease)}
+.field button:hover{transform:translateY(-2px)}
+.join-media{position:relative;overflow:hidden;isolation:isolate;
+  height:clamp(420px,46vw,600px)}
+.join-media img{width:100%;height:100%;object-fit:cover;min-height:340px;
+  object-position:50% 30%;filter:grayscale(1) contrast(1.1) brightness(1.02)}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:rgba(239,236,227,.62);padding:70px var(--gut) 34px}
+.foot-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:38px;
+  padding-bottom:48px;border-bottom:1px solid rgba(239,236,227,.14)}
+@media(max-width:820px){.foot-grid{grid-template-columns:1fr 1fr}}
+.foot-grid h4{color:var(--bone);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  margin-bottom:16px;font-family:"Space Mono",monospace}
+.foot-grid a{display:block;padding:5px 0;font-size:14px;transition:color .25s}
+.foot-grid a:hover{color:var(--signal)}
+.wordmark{font-size:clamp(58px,15vw,220px);font-weight:900;font-stretch:74%;line-height:.8;
+  color:rgba(239,236,227,.1);letter-spacing:-.03em;margin-top:40px;user-select:none}
+.foot-legal{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  padding-top:24px;font-size:11px;letter-spacing:.06em;color:rgba(239,236,227,.4)}
+
+/* ---------- cart drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(12,12,10,.5);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .4s var(--ease);z-index:90}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--bone);
+  z-index:100;transform:translateX(102%);transition:transform .5s var(--ease);
+  display:flex;flex-direction:column;box-shadow:-30px 0 70px rgba(20,20,15,.22)}
+.drawer.on{transform:translateX(0)}
+.drawer header{position:static;color:var(--ink);padding:22px 24px;background:none;
+  border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.drawer h3{font-size:16px;font-weight:700;letter-spacing:.02em}
+.close{font-size:22px;line-height:1;padding:4px 8px;border-radius:50%;transition:background .25s}
+.close:hover{background:var(--bone-2)}
+.items{flex:1;overflow-y:auto;padding:8px 24px}
+.empty{padding:60px 0;text-align:center;color:var(--dust);font-size:14px}
+.line{display:grid;grid-template-columns:64px 1fr auto;gap:14px;padding:18px 0;
+  border-bottom:1px solid var(--line);align-items:start}
+.line img{width:64px;height:80px;object-fit:cover;background:var(--bone-2)}
+.line h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.line small{color:var(--dust);font-size:12px;display:block;margin-bottom:8px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px}
+.qty button{width:26px;height:26px;font-size:14px;line-height:1}
+.qty span{min-width:24px;text-align:center;font-family:"Space Mono",monospace;font-size:12px}
+.line .p{font-family:"Space Mono",monospace;font-size:14px;font-weight:700;text-align:right}
+.line .rm{display:block;margin-top:10px;font-size:11px;color:var(--dust);text-decoration:underline}
+.line .rm:hover{color:var(--signal)}
+.checkout{border-top:1px solid var(--line);padding:20px 24px 26px;background:var(--bone)}
+.sum{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:var(--dust)}
+.sum.total{color:var(--ink);font-size:16px;font-weight:700;padding-top:12px;margin-top:8px;
+  border-top:1px solid var(--line)}
+.sum.total b{font-family:"Space Mono",monospace}
+.checkout .btn{width:100%;justify-content:center;margin-top:14px}
+.pay{display:flex;gap:8px;justify-content:center;margin-top:14px;font-size:11px;color:var(--dust)}
+.toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,140%);z-index:120;
+  background:var(--ink);color:var(--bone);border-radius:999px;padding:14px 26px;font-size:13px;
+  transition:transform .5s var(--ease);display:flex;gap:10px;align-items:center}
+.toast.on{transform:translate(-50%,0)}
+.toast b{color:var(--lime)}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv-mask{clip-path:inset(0 0 100% 0);transition:clip-path 1.1s var(--ease)}
+.rv-mask.in{clip-path:inset(0 0 0 0)}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.01ms!important}
+  .rv,.rv-mask{opacity:1;transform:none;clip-path:none}
+}
+</style>
+</head>
+<body>
+
+<header id="nav">
+  <a class="brand" href="#top"><b>PULSE</b><span>脉冲</span></a>
+  <nav>
+    <a href="#shop">新品上架</a>
+    <a href="#look">系列大片</a>
+    <a href="#tech">面料科技</a>
+    <a href="#crew">城市训练队</a>
+  </nav>
+  <div class="tools">
+    <button class="mono" style="letter-spacing:.14em;padding:8px 10px">搜索</button>
+    <button class="bag" id="bagBtn">购物袋 <i id="bagN">0</i></button>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="hero-media"><img src="assets/hero.jpg" alt="PULSE SS26 城市训练系列主视觉" width="1800" height="2700"></div>
+  <div class="hero-inner">
+    <div class="eyebrow mono"><span class="dot"></span> SS26 / DROP 03 · 城市训练系列 · 今日 20:00 开售</div>
+    <h1 class="hero-title">先动起来<br>再<em>谈风格</em></h1>
+    <div class="hero-sub">
+      <p>为 18–26 岁的身体做训练服。四向弹力、无缝腰封、汗湿不透色，从深夜球场穿到便利店。</p>
+      <div class="cta-row">
+        <a class="btn btn-solid" href="#shop">立即选购 <span>→</span></a>
+        <a class="btn btn-ghost" href="#tech">看看面料</a>
+      </div>
+    </div>
+  </div>
+  <div class="scrollhint mono"><span></span> SCROLL</div>
+</section>
+
+<div class="marquee">
+  <div class="marquee-track">
+    <span>满 ¥399 包邮 <em>✦</em> 30 天无理由退换 <em>✦</em> 会员生日双倍积分 <em>✦</em> 门店 1 小时自提 <em>✦</em> 旧衣回收换券 <em>✦</em></span>
+    <span>满 ¥399 包邮 <em>✦</em> 30 天无理由退换 <em>✦</em> 会员生日双倍积分 <em>✦</em> 门店 1 小时自提 <em>✦</em> 旧衣回收换券 <em>✦</em></span>
+  </div>
+</div>
+
+<!-- ============ SHOP ============ -->
+<section id="shop" class="wrap">
+  <div class="sec-head rv">
+    <div>
+      <span class="idx">01 / SHOP THE DROP</span>
+      <h2>本周上新 8 件<br>直接加袋结账</h2>
+    </div>
+    <p>全线现货，下单后 48 小时内发出。悬停查看尺码，选好尺码再加入购物袋。</p>
+  </div>
+
+  <div class="filters rv" id="filters">
+    <button class="chip" aria-pressed="true" data-f="all">全部 8</button>
+    <button class="chip" aria-pressed="false" data-f="top">上装</button>
+    <button class="chip" aria-pressed="false" data-f="bottom">下装</button>
+    <button class="chip" aria-pressed="false" data-f="outer">外套</button>
+    <button class="chip" aria-pressed="false" data-f="shoe">鞋履</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- ============ EDITORIAL BAND ============ -->
+<section class="band">
+  <div class="band-copy">
+    <span class="idx mono" style="color:rgba(239,236,227,.45)">02 / WHY PULSE</span>
+    <h2>我们不做<br><em>安静的</em>运动服</h2>
+    <p>lululemon 让运动服进了写字楼，PULSE 想让它回到球场、地铁口和 23:40 的便利店。同样的技术面料，更吵的颜色，更低的价格带。</p>
+    <div class="stats">
+      <div class="stat"><b data-count="248">0</b><span>克重 g/m²</span></div>
+      <div class="stat"><b data-count="4">0</b><span>向弹力</span></div>
+      <div class="stat"><b data-count="92">0</b><span>% 回弹率</span></div>
+      <div class="stat"><b data-count="30">0</b><span>天试穿期</span></div>
+    </div>
+  </div>
+  <div class="band-media"><img src="assets/maroon.jpg" alt="PULSE 品牌大片" loading="lazy"></div>
+</section>
+
+<!-- ============ LOOKBOOK ============ -->
+<section id="look">
+  <div class="wrap sec-head rv">
+    <div>
+      <span class="idx">03 / LOOKBOOK</span>
+      <h2>SS26 城市训练</h2>
+    </div>
+    <p>横向拖动查看整组大片。每套造型都可直接点进商品页。</p>
+  </div>
+  <div class="rail">
+    <figure class="shot rv"><img src="assets/court.jpg" alt="午夜球场造型" loading="lazy">
+      <figcaption><b>LOOK 01 · 午夜球场</b><span>¥1,096 一套</span></figcaption></figure>
+    <figure class="shot rv"><img src="assets/netteal.jpg" alt="荧光训练造型" loading="lazy">
+      <figcaption><b>LOOK 02 · 荧光训练</b><span>¥738 一套</span></figcaption></figure>
+    <figure class="shot rv"><img src="assets/neon.jpg" alt="街头滑板造型" loading="lazy">
+      <figcaption><b>LOOK 03 · 街头滑板</b><span>¥892 一套</span></figcaption></figure>
+    <figure class="shot rv"><img src="assets/climb.jpg" alt="攀岩馆造型" loading="lazy">
+      <figcaption><b>LOOK 04 · 攀岩馆</b><span>¥659 一套</span></figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ TECH ============ -->
+<section id="tech" class="tech">
+  <div class="tech-media rv-mask">
+    <img src="assets/duo.jpg" alt="PULSE FLEX-4 面料实拍" loading="lazy">
+    <div class="badge">FLEX-4™ 四向弹力</div>
+  </div>
+  <div>
+    <span class="idx mono" style="color:var(--dust);display:block;margin-bottom:14px">04 / FABRIC</span>
+    <h2 class="rv" style="font-size:clamp(30px,4.4vw,60px);font-weight:800;line-height:1;letter-spacing:-.02em;margin-bottom:26px">
+      三块面料<br>撑起一整个衣柜</h2>
+    <dl>
+      <div class="spec rv"><dt>FLEX-4™</dt>
+        <dd><b>248<i>g/m²</i></b>尼龙 78% / 氨纶 22%。四向弹力，深蹲不透，洗 50 次腰封不松。</dd></div>
+      <div class="spec rv"><dt>AIRLOOP™</dt>
+        <dd><b>0.8<i>s 导汗</i></b>蜂窝针织，汗珠 0.8 秒扩散，湿态不贴身、不显色差。</dd></div>
+      <div class="spec rv"><dt>NIGHTPRINT™</dt>
+        <dd><b>120<i>m 可视</i></b>反光印花，夜跑 120 米外可见。图案是印上去的，不是贴的。</dd></div>
+    </dl>
+    <a class="btn btn-ink rv" href="#shop" style="margin-top:24px">看用这些面料的 8 件单品 →</a>
+  </div>
+</section>
+
+<!-- ============ CREW ============ -->
+<section id="crew" class="crew">
+  <div class="crew-media"><img src="assets/crew.jpg" alt="PULSE 城市训练队" loading="lazy"></div>
+  <div class="crew-copy">
+    <span class="idx mono" style="color:rgba(255,255,255,.5)">05 / CREW</span>
+    <h2>周三夜跑，<br>穿 PULSE 的都来</h2>
+    <p>七座城市、每周三 20:00、跑完在便利店门口拍合照。免费参加，报名即送一次面料体验装。</p>
+    <div class="calendar">
+      <div><b>上海</b>安福路 · 周三 20:00</div>
+      <div><b>北京</b>朝阳公园 · 周四 19:30</div>
+      <div><b>成都</b>东安湖 · 周三 20:00</div>
+      <div><b>深圳</b>人才公园 · 周五 20:00</div>
+    </div>
+    <div class="cta-row" style="margin-top:8px">
+      <button class="btn btn-solid" onclick="toast('已报名本周三夜跑，见面礼在袋子里 ✦')">报名本周三</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ JOIN ============ -->
+<section class="join">
+  <div class="join-copy">
+    <span class="idx mono" style="color:rgba(255,255,255,.7)">06 / MEMBER</span>
+    <h2>加入 PULSE CLUB<br>先穿一步</h2>
+    <p>新品提前 24 小时购买权、生日双倍积分、每季度一次免费改裤长。</p>
+    <form class="field" onsubmit="event.preventDefault();toast('已加入 PULSE CLUB，欢迎邮件已发出 ✦');this.reset()">
+      <input type="email" required placeholder="输入邮箱，立刻加入" aria-label="邮箱">
+      <button type="submit">加入</button>
+    </form>
+  </div>
+  <div class="join-media"><img src="assets/member.jpg" alt="PULSE CLUB 会员" loading="lazy"></div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <h4>PULSE 脉冲</h4>
+      <p style="max-width:34ch;font-size:14px;line-height:1.8">
+        为 00 后做的训练服品牌。2023 年创立于上海，7 城 11 家门店。</p>
+    </div>
+    <div><h4>购物</h4><a href="#shop">全部商品</a><a href="#shop">本周上新</a><a href="#look">系列大片</a><a href="#">门店自提</a></div>
+    <div><h4>服务</h4><a href="#">尺码指南</a><a href="#">30 天退换</a><a href="#">洗护说明</a><a href="#">旧衣回收</a></div>
+    <div><h4>关于</h4><a href="#tech">面料科技</a><a href="#crew">城市训练队</a><a href="#">可持续</a><a href="#">加入我们</a></div>
+  </div>
+  <div class="wordmark">PULSE</div>
+  <div class="foot-legal">
+    <span>© 2026 PULSE 脉冲运动 · 沪ICP备 2026xxxx 号</span>
+    <span>本页为设计稿 · 摄影素材来自 Pexels 免费授权</span>
+  </div>
+</footer>
+
+<!-- ============ CART ============ -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="购物袋">
+  <header><h3>购物袋</h3><button class="close" id="closeBag" aria-label="关闭">×</button></header>
+  <div class="items" id="items"><div class="empty">袋子还是空的。<br>挑一件周三夜跑穿的？</div></div>
+  <div class="checkout">
+    <div class="sum"><span>商品小计</span><span id="sub">¥0</span></div>
+    <div class="sum"><span>运费</span><span id="ship">满 ¥399 包邮</span></div>
+    <div class="sum total"><span>合计</span><b id="tot">¥0</b></div>
+    <button class="btn btn-ink" id="payBtn">去结算</button>
+    <div class="pay mono">支付宝 · 微信支付 · 银联 · 门店自提</div>
+  </div>
+</aside>
+<div class="toast" id="toast"><b>✦</b><span id="toastMsg"></span></div>
+
+<script>
+/* ---------------- data ---------------- */
+const P = [
+ {id:1,n:"FLEX-4 无缝紧身裤 · 高腰",c:"bottom",img:"assets/p1.jpg",price:459,tag:"新品",cols:["#14140F","#FF3B14","#8E8A7E"],meta:"FLEX-4™ / 4 色 / XS–XL"},
+ {id:2,n:"AIRLOOP 训练背心",c:"top",img:"assets/p6.jpg",price:239,tag:"补货",cols:["#14140F","#C9F24D"],meta:"AIRLOOP™ / 2 色 / XS–L"},
+ {id:3,n:"城市训练夹克 · 防泼水",c:"outer",img:"assets/p2.jpg",price:699,tag:"",cols:["#8E8A7E","#14140F"],meta:"NIGHTPRINT™ / 3 色 / S–XL"},
+ {id:4,n:"轻量抓绒开衫",c:"outer",img:"assets/p3.jpg",price:559,tag:"",cols:["#B9B3A4","#14140F"],meta:"再生纤维 / 2 色 / S–XL"},
+ {id:5,n:"通勤训练背包 18L",c:"top",img:"assets/p4.jpg",price:389,tag:"联名",cols:["#14140F"],meta:"防泼水 / 18L / 单一尺码"},
+ {id:6,n:"OVERSIZE 训练卫衣",c:"top",img:"assets/p5.jpg",price:429,tag:"",cols:["#B9B3A4","#14140F","#FF3B14"],meta:"340g 双面绒 / 3 色 / S–XXL"},
+ {id:7,n:"BOUNCE-1 训练鞋",c:"shoe",img:"assets/p7.jpg",price:899,tag:"限量",cols:["#F2EFE7","#14140F"],meta:"回弹中底 / 2 色 / 36–45"},
+ {id:8,n:"双人训练套装（2 件）",c:"top",img:"assets/p8.jpg",price:658,tag:"",cols:["#14140F","#FF3B14"],meta:"套装 / 2 色 / XS–XL"}
+];
+const SIZES=["XS","S","M","L","XL"];
+const grid=document.getElementById('grid');
+const money=n=>"¥"+n.toLocaleString('zh-CN');
+
+grid.innerHTML=P.map((p,i)=>`
+<article class="card rv" data-c="${p.c}" style="transition-delay:${(i%4)*70}ms">
+  <div class="card-media">
+    ${p.tag?`<span class="tag ${p.tag==='限量'?'lime':''}">${p.tag}</span>`:''}
+    <img src="${p.img}" alt="${p.n}" loading="lazy">
+    <div class="sizes" role="group" aria-label="选择尺码">
+      ${(p.c==='shoe'?["38","39","40","41","42"]:SIZES).map(s=>`<button aria-pressed="false" data-s="${s}">${s}</button>`).join('')}
+    </div>
+  </div>
+  <div class="card-body">
+    <h3>${p.n}</h3>
+    <div class="meta">${p.meta}</div>
+    <div class="swatches">${p.cols.map(c=>`<i style="background:${c}"></i>`).join('')}</div>
+    <div class="price-row">
+      <span class="price">${money(p.price)}</span>
+      <button class="add" data-id="${p.id}">加入购物袋</button>
+    </div>
+  </div>
+</article>`).join('');
+
+/* ---------------- size pick ---------------- */
+grid.addEventListener('click',e=>{
+  const b=e.target.closest('.sizes button'); if(!b) return;
+  b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true');
+});
+
+/* ---------------- filters ---------------- */
+document.getElementById('filters').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));
+  c.setAttribute('aria-pressed','true');
+  const f=c.dataset.f;
+  document.querySelectorAll('.card').forEach(card=>{
+    card.classList.toggle('hide', f!=='all' && card.dataset.c!==f);
+  });
+});
+
+/* ---------------- cart ---------------- */
+let cart=[];
+const items=document.getElementById('items'),bagN=document.getElementById('bagN'),
+      bagBtn=document.getElementById('bagBtn'),drawer=document.getElementById('drawer'),
+      scrim=document.getElementById('scrim');
+
+function openBag(v){drawer.classList.toggle('on',v);scrim.classList.toggle('on',v);
+  document.body.classList.toggle('locked',v);}
+bagBtn.onclick=()=>openBag(true);
+document.getElementById('closeBag').onclick=()=>openBag(false);
+scrim.onclick=()=>openBag(false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')openBag(false)});
+
+grid.addEventListener('click',e=>{
+  const b=e.target.closest('.add'); if(!b) return;
+  const p=P.find(x=>x.id==b.dataset.id);
+  const picked=b.closest('.card').querySelector('.sizes button[aria-pressed="true"]');
+  const size=picked?picked.dataset.s:(p.c==='shoe'?'40':'M');
+  const key=p.id+'-'+size;
+  const hit=cart.find(x=>x.key===key);
+  if(hit) hit.q++; else cart.push({key,id:p.id,n:p.n,img:p.img,price:p.price,size,q:1});
+  b.textContent='已加入 ✓'; b.classList.add('done');
+  setTimeout(()=>{b.textContent='加入购物袋';b.classList.remove('done')},1300);
+  bagBtn.classList.add('pop'); setTimeout(()=>bagBtn.classList.remove('pop'),460);
+  render(); toast(`${p.n}（${size}）已加入购物袋`);
+});
+
+function render(){
+  const n=cart.reduce((s,x)=>s+x.q,0);
+  bagN.textContent=n;
+  if(!cart.length){
+    items.innerHTML='<div class="empty">袋子还是空的。<br>挑一件周三夜跑穿的？</div>';
+  }else{
+    items.innerHTML=cart.map(x=>`
+      <div class="line">
+        <img src="${x.img}" alt="">
+        <div>
+          <h4>${x.n}</h4><small>尺码 ${x.size}</small>
+          <div class="qty">
+            <button data-k="${x.key}" data-d="-1" aria-label="减少">−</button>
+            <span>${x.q}</span>
+            <button data-k="${x.key}" data-d="1" aria-label="增加">+</button>
+          </div>
+        </div>
+        <div><div class="p">${money(x.price*x.q)}</div>
+          <a class="rm" data-rm="${x.key}">移除</a></div>
+      </div>`).join('');
+  }
+  const sub=cart.reduce((s,x)=>s+x.price*x.q,0);
+  document.getElementById('sub').textContent=money(sub);
+  document.getElementById('ship').textContent = sub===0?'满 ¥399 包邮':(sub>=399?'免运费':money(15));
+  document.getElementById('tot').textContent=money(sub+(sub>0&&sub<399?15:0));
+}
+items.addEventListener('click',e=>{
+  const q=e.target.closest('[data-d]'), r=e.target.closest('[data-rm]');
+  if(q){const it=cart.find(x=>x.key===q.dataset.k); it.q+= +q.dataset.d;
+    if(it.q<1) cart=cart.filter(x=>x.key!==q.dataset.k); render();}
+  if(r){cart=cart.filter(x=>x.key!==r.dataset.rm); render();}
+});
+document.getElementById('payBtn').onclick=()=>{
+  if(!cart.length){toast('先挑一件再结算 ✦');return;}
+  const n=cart.reduce((s,x)=>s+x.q,0);
+  cart=[];render();openBag(false);
+  toast(`下单成功 · ${n} 件商品 48 小时内发出`);
+};
+
+/* ---------------- toast ---------------- */
+let tT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('on'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('on'),2600);
+}
+
+/* ---------------- nav + reveal + counters ---------------- */
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('solid',scrollY>window.innerHeight*.78),{passive:true});
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+}),{threshold:.16,rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.rv,.rv-mask').forEach(el=>io.observe(el));
+
+const cio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting) return; cio.unobserve(e.target);
+  const el=e.target, end=+el.dataset.count, t0=performance.now(), dur=1100;
+  (function step(t){
+    const k=Math.min(1,(t-t0)/dur), v=Math.round(end*(1-Math.pow(1-k,3)));
+    el.textContent=v; if(k<1) requestAnimationFrame(step);
+  })(t0);
+}),{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* hero parallax */
+const hm=document.querySelector('.hero-media');
+addEventListener('scroll',()=>{
+  if(scrollY<window.innerHeight*1.2) hm.style.transform=`translateY(${scrollY*.22}px)`;
+},{passive:true});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "生活服务热点洞察"
+  short_description: "基于数据平台为商家后台商家生成强相关热点洞察HTML报告"
+  default_prompt: "使用 $local-life-service-hot-find 为这个商家生成一页可直接交付的生活服务热点洞察 HTML。"

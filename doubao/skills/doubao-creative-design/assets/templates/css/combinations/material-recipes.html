@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<!-- Assembly source: run scripts/runtime/inline-svg-assets.py before preview or delivery. -->
+<!--
+INLINE_RECIPE_TEMPLATE — 六个可复制的行内组件，完整结构按 data-recipe 提取。
+配方与局部默认覆盖：recipes.md；配色：../colors/palettes.md；布局与字体：../layouts/layout-and-type.md。
+形状参数、结构与遮罩：../shapes/containers.md；材质参数、SVG 与光照：../surfaces/materials.md。
+需要搜索名称时才查 ../catalog.json；索引不存参数值，实际内容直接读对应文档段落。
+保留完整 article 的分层与自定义属性，替换真实文字并重新分配 data-layer-id。
+CSS/SVG 实现以分类正文代码块为源，本文件是行内投影；修改原子时同步受影响实例。
+纹理内部频率、纤维几何、密度与种子需在生成阶段修改 SVG，不能只改 CSS 变量。
+最终产物遵守现有行内样式、固定画布、字体与交付协议；本示例画幅不作为新任务默认。
+-->
+<html lang="zh-CN" data-canvas-width="1120" data-canvas-height="1320" style="width: 1120px; height: 1320px; margin: 0px; padding: 0px; box-sizing: border-box;">
+<head>
+<meta charset="UTF-8">
+<title>材质配方 · 行内 HTML 模板</title>
+</head>
+<body style="width: 1120px; height: 1320px; margin: 0px; padding: 0px; box-sizing: border-box;">
+<main id="material-template" style="position: relative; width: 1120px; height: 1320px; background: rgb(245, 245, 239); color: rgb(41, 65, 58); font-family: &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; box-sizing: border-box;">
+<p style="position: absolute; left: 48px; top: 36px; margin: 0px; font-size: 12px; line-height: 20px; letter-spacing: 2px; color: rgb(117, 135, 121); box-sizing: border-box;">MATERIAL RECIPES / INLINE HTML</p>
+<h1 style="position: absolute; left: 48px; top: 68px; margin: 0px; font-size: 40px; line-height: 56px; font-weight: 600; box-sizing: border-box;">同一种材质，两种容器。</h1>
+<p style="position: absolute; left: 48px; top: 134px; margin: 0px; font-size: 15px; line-height: 24px; color: rgb(110, 128, 116); box-sizing: border-box;">轻纹理默认值 · 真实文字层 · 轮廓与材质可分别调整</p>
+<h2 style="position: absolute; left: 48px; top: 188px; margin: 0px; font-size: 17px; line-height: 26px; font-weight: 600; box-sizing: border-box;">01 / 半透明塑料</h2>
+<p style="position: absolute; right: 48px; top: 188px; margin: 0px; font-size: 12px; line-height: 26px; color: rgb(119, 135, 115); box-sizing: border-box;">纹理强度 14%</p>
+<section aria-label="01 / 半透明塑料" style="position: absolute; overflow: hidden; background: radial-gradient(at 0px 5%, rgb(242, 255, 255) 0px, transparent 62%), linear-gradient(120deg, rgb(199, 249, 248), rgb(121, 232, 238)); left: 48px; top: 228px; width: 1024px; height: 272px; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; border-radius: 20px; box-sizing: border-box;">
+<span aria-hidden="true" style="position: absolute; pointer-events: none; width: 150px; height: 150px; left: 17%; top: 32%; border-radius: 50%; background: radial-gradient(circle at 30% 25%, rgb(255, 242, 179), rgb(233, 231, 80) 55%, rgb(170, 202, 82)); box-shadow: rgba(76, 127, 76, 0.133) -8px -12px 20px inset, rgba(38, 152, 159, 0.133) 0px 20px 40px; box-sizing: border-box;">
+</span>
+<span aria-hidden="true" style="position: absolute; pointer-events: none; width: 90px; height: 280px; right: 24%; top: 10%; transform: rotate(33deg); border-radius: 30px; background: repeating-linear-gradient(90deg, rgb(238, 253, 253) 0px, rgb(238, 253, 253) 8px, rgb(114, 206, 203) 8px, rgb(114, 206, 203) 15px); box-shadow: rgba(33, 126, 108, 0.133) 8px 14px 26px; box-sizing: border-box;">
+</span>
+<article data-recipe="folder-plastic" data-layer-id="folder-plastic" style="--vl-hue: 184; --vl-alpha: .72; --vl-blur: 8px; --vl-grain: .14; --vl-texture-size: 192px; --vl-texture-blend: soft-light; --vl-texture: url(&quot;asset:svg/plastic-grain.svg&quot;); --vl-edge: .96; --vl-shadow: 0; --vl-tab-width: 44cqi; --vl-tab-height: 30px; --vl-slope: 32px; --vl-radius: 18px; --vl-padding: 26px; --vl-accent: #ffdf53; --vl-back-display: block; --vl-ink: hsl(var(--vl-hue) 70% 19%); --vl-tint: hsl(var(--vl-hue) 87% 91%); --vl-highlight: .60; --vl-contour: from var(--vl-radius) 0,
+    line to calc(var(--vl-tab-width) - 12px) 0,
+    curve to calc(var(--vl-tab-width) + 8px) 8px with var(--vl-tab-width) 0 / calc(var(--vl-tab-width) + 2px) 2px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 8px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) var(--vl-tab-height) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) calc(var(--vl-tab-height) - 2px) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) var(--vl-tab-height),
+    line to calc(100% - var(--vl-radius)) var(--vl-tab-height),
+    curve to 100% calc(var(--vl-tab-height) + var(--vl-radius)) with 100% var(--vl-tab-height),
+    line to 100% calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) 100% with 100% 100%,
+    line to var(--vl-radius) 100%,
+    curve to 0 calc(100% - var(--vl-radius)) with 0 100%,
+    line to 0 var(--vl-radius),
+    curve to var(--vl-radius) 0 with 0 0,
+    close; --vl-shape: shape(var(--vl-contour)); --vl-outline: shape(evenodd var(--vl-contour),
+    move to var(--vl-radius) 2px,
+    line to calc(var(--vl-tab-width) - 12px) 2px,
+    curve to calc(var(--vl-tab-width) + 8px) 10px with var(--vl-tab-width) 2px / calc(var(--vl-tab-width) + 2px) 4px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 6px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) calc(var(--vl-tab-height) + 2px) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) var(--vl-tab-height) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - var(--vl-radius)) calc(var(--vl-tab-height) + 2px),
+    curve to calc(100% - 1.5px) calc(var(--vl-tab-height) + var(--vl-radius)) with calc(100% - 1.5px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - 1.5px) calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) calc(100% - 2.5px) with calc(100% - 1.5px) calc(100% - 2.5px),
+    line to var(--vl-radius) calc(100% - 2.5px),
+    curve to 1.5px calc(100% - var(--vl-radius)) with 1.5px calc(100% - 2.5px),
+    line to 1.5px var(--vl-radius),
+    curve to var(--vl-radius) 2px with 1.5px 2px,
+    close); position: relative; container-type: inline-size; color: var(--vl-ink); font-family: var(--vl-font-family); text-align: left; min-width: 0px; overflow-wrap: anywhere; box-sizing: border-box; width: 100%; min-height: 236px; --vl-border-width: 1.5px; --vl-content-offset: 26px; --vl-texture-size-x: var(--vl-texture-size); --vl-texture-size-y: var(--vl-texture-size); --vl-texture-x: 0px; --vl-texture-y: 0px; --vl-light-angle: 112deg; --vl-light-width: 36%; --vl-light-softness: 0px; --vl-light-x: 20%; --vl-light-y: 10%; --vl-shadow-x: 0px; --vl-shadow-y: 2px; --vl-shadow-blur: 5px; --vl-shadow-spread: 0px; --vl-surface-end: hsl(var(--vl-hue) 82% 91%); --vl-muted-ink: var(--vl-ink); --vl-edge-color: #fff; --vl-light-color: #fff; --vl-shadow-color: hsl(var(--vl-hue) 80% 25%); --vl-label-bg: hsl(var(--vl-hue) 66% 48% / .82); --vl-label-ink: #fff; --vl-font-family: &quot;Avenir Next&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; --vl-title-size: 30px; --vl-title-weight: 700; --vl-title-leading: 42px; --vl-title-tracking: -.05em; --vl-body-size: 14px; --vl-body-leading: 26px; --vl-body-opacity: .82; --vl-title-gap-before: 14px; --vl-title-gap-after: 8px; --vl-rotate: 0deg; --vl-shift-x: 0px; --vl-shift-y: 0px; transform: translate(var(--vl-shift-x), var(--vl-shift-y)) rotate(var(--vl-rotate));">
+<span data-material-layer="shadow" aria-hidden="true" style="position: absolute; z-index: 0; inset: auto 6px 1px; height: 36px; border-radius: 0 0 var(--vl-radius) var(--vl-radius); box-shadow: var(--vl-shadow-x) var(--vl-shadow-y) var(--vl-shadow-blur) var(--vl-shadow-spread) color-mix(in srgb, var(--vl-shadow-color) calc(var(--vl-shadow) * 100%), transparent); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="back" aria-hidden="true" style="position: absolute; display: var(--vl-back-display); z-index: 0; left: calc(var(--vl-tab-width) - 12px); right: 9px; top: 12px; height: calc(var(--vl-tab-height) + 35px); border-radius: 13px 13px 0px 0px; background: linear-gradient(100deg, #fff8ac, var(--vl-accent)); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="edge" aria-hidden="true" style="position: absolute; inset: 0px; clip-path: var(--vl-outline); pointer-events: none; z-index: 1; background: linear-gradient(155deg, color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 100%), transparent), color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 35%), transparent) 65%, hsl(var(--vl-hue) 95% 65% / var(--vl-edge))); box-sizing: border-box;">
+</span>
+<span data-material-layer="surface" aria-hidden="true" style="position: absolute; inset: 2px 1.5px 2.5px; clip-path: var(--vl-shape); pointer-events: none; z-index: 2; mask-image: url(&quot;asset:svg/folder-top-left.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-slope.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-top-right.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-bottom-left.svg&quot;), url(&quot;asset:svg/folder-bottom-right.svg&quot;); mask-size: var(--vl-radius) var(--vl-radius),
+    calc(var(--vl-tab-width) - var(--vl-radius) - 12px) var(--vl-tab-height),
+    calc(var(--vl-slope) + 24px) var(--vl-tab-height),
+    var(--vl-radius) calc(100% - var(--vl-radius) * 2),
+    calc(100% - var(--vl-radius) * 2) calc(100% - var(--vl-tab-height)),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) calc(100% - var(--vl-tab-height) - var(--vl-radius) * 2),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) var(--vl-radius); mask-position: left 0 top 0,
+    left var(--vl-radius) top 0,
+    left calc(var(--vl-tab-width) - 12px) top 0,
+    left 0 top var(--vl-radius),
+    left var(--vl-radius) top var(--vl-tab-height),
+    right 0 top var(--vl-tab-height),
+    right 0 top calc(var(--vl-tab-height) + var(--vl-radius)),
+    left 0 bottom 0,
+    right 0 bottom 0; mask-repeat: no-repeat; background: linear-gradient(150deg, color-mix(in srgb, var(--vl-tint) calc(var(--vl-alpha) * 100%), transparent), color-mix(in srgb, var(--vl-surface-end) calc(var(--vl-alpha) * 100%), transparent)); backdrop-filter: blur(var(--vl-blur)) saturate(1.25); box-shadow: inset 0 -3px 0 hsl(var(--vl-hue) 90% 55% / .14); box-sizing: border-box;">
+<span data-material-layer="texture" aria-hidden="true" style="position: absolute; inset: 0px; z-index: 1; opacity: var(--vl-grain); background-image: var(--vl-texture); background-size: var(--vl-texture-size-x) var(--vl-texture-size-y); background-repeat: repeat; mix-blend-mode: var(--vl-texture-blend); box-sizing: border-box; background-position: var(--vl-texture-x) var(--vl-texture-y);">
+</span>
+<span data-material-layer="light" aria-hidden="true" style="position: absolute; inset: 0px; opacity: var(--vl-highlight); background: linear-gradient(var(--vl-light-angle), transparent 6%, color-mix(in srgb, var(--vl-light-color) 60%, transparent) calc(6% + var(--vl-light-width) * 13 / 36), color-mix(in srgb, var(--vl-light-color) 6.666667%, transparent) calc(6% + var(--vl-light-width) * 24 / 36), transparent calc(6% + var(--vl-light-width))),
+    linear-gradient(160deg, #fffa, transparent 29%, transparent 70%, #fff6),
+    linear-gradient(0deg, #fff7, transparent 7%); box-shadow: inset 0 2px 1px #fffc, inset 0 -5px 8px hsl(var(--vl-hue) 70% 32% / .18); box-sizing: border-box; filter: blur(var(--vl-light-softness));">
+</span>
+</span>
+<header data-slot="tab" style="position: absolute; z-index: 3; top: 12px; left: 22px; max-width: calc(var(--vl-tab-width) - 28px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: clamp(12px, 3cqi, 17px); line-height: 1.4; font-weight: 650; letter-spacing: 0.01em; box-sizing: border-box;">文件夹卡片</header>
+<div data-material-layer="content" style="position: relative; z-index: 3; padding: calc(var(--vl-tab-height) + var(--vl-content-offset)) var(--vl-padding) var(--vl-padding); box-sizing: border-box;">
+<span data-slot="label" style="display: inline-block; padding: 5px 11px; border-radius: 5px; background: var(--vl-label-bg); color: var(--vl-label-ink); font-size: 12px; font-weight: 650; line-height: 1.4; box-sizing: border-box;">内容指南</span>
+<h2 data-slot="title" style="margin: var(--vl-title-gap-before) 0 var(--vl-title-gap-after); font-size: var(--vl-title-size); line-height: var(--vl-title-leading); font-weight: var(--vl-title-weight); letter-spacing: var(--vl-title-tracking); box-sizing: border-box;">让知识，看得见。</h2>
+<p data-slot="body" style="margin: 0px; font-size: var(--vl-body-size); line-height: var(--vl-body-leading); opacity: var(--vl-body-opacity); white-space: pre-line; box-sizing: border-box; color: var(--vl-muted-ink);">细纹与高光带来轻盈的塑料感。
+适合课程、活动和知识内容。</p>
+</div>
+</article>
+<article data-recipe="rounded-plastic" data-layer-id="rounded-plastic" style="--vl-hue: 184; --vl-alpha: .72; --vl-blur: 8px; --vl-grain: .14; --vl-texture-size: 192px; --vl-texture-blend: soft-light; --vl-texture: url(&quot;asset:svg/plastic-grain.svg&quot;); --vl-edge: .96; --vl-shadow: 0; --vl-tab-width: 44cqi; --vl-tab-height: 30px; --vl-slope: 32px; --vl-radius: 18px; --vl-padding: 26px; --vl-accent: #ffdf53; --vl-back-display: block; --vl-ink: hsl(var(--vl-hue) 70% 19%); --vl-tint: hsl(var(--vl-hue) 87% 91%); --vl-highlight: .60; --vl-contour: from var(--vl-radius) 0,
+    line to calc(var(--vl-tab-width) - 12px) 0,
+    curve to calc(var(--vl-tab-width) + 8px) 8px with var(--vl-tab-width) 0 / calc(var(--vl-tab-width) + 2px) 2px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 8px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) var(--vl-tab-height) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) calc(var(--vl-tab-height) - 2px) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) var(--vl-tab-height),
+    line to calc(100% - var(--vl-radius)) var(--vl-tab-height),
+    curve to 100% calc(var(--vl-tab-height) + var(--vl-radius)) with 100% var(--vl-tab-height),
+    line to 100% calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) 100% with 100% 100%,
+    line to var(--vl-radius) 100%,
+    curve to 0 calc(100% - var(--vl-radius)) with 0 100%,
+    line to 0 var(--vl-radius),
+    curve to var(--vl-radius) 0 with 0 0,
+    close; --vl-shape: shape(var(--vl-contour)); --vl-outline: shape(evenodd var(--vl-contour),
+    move to var(--vl-radius) 2px,
+    line to calc(var(--vl-tab-width) - 12px) 2px,
+    curve to calc(var(--vl-tab-width) + 8px) 10px with var(--vl-tab-width) 2px / calc(var(--vl-tab-width) + 2px) 4px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 6px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) calc(var(--vl-tab-height) + 2px) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) var(--vl-tab-height) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - var(--vl-radius)) calc(var(--vl-tab-height) + 2px),
+    curve to calc(100% - 1.5px) calc(var(--vl-tab-height) + var(--vl-radius)) with calc(100% - 1.5px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - 1.5px) calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) calc(100% - 2.5px) with calc(100% - 1.5px) calc(100% - 2.5px),
+    line to var(--vl-radius) calc(100% - 2.5px),
+    curve to 1.5px calc(100% - var(--vl-radius)) with 1.5px calc(100% - 2.5px),
+    line to 1.5px var(--vl-radius),
+    curve to var(--vl-radius) 2px with 1.5px 2px,
+    close); position: relative; container-type: inline-size; color: var(--vl-ink); font-family: var(--vl-font-family); text-align: left; min-width: 0px; overflow-wrap: anywhere; box-sizing: border-box; width: 100%; min-height: 236px; --vl-border-width: 1.5px; --vl-content-offset: 26px; --vl-texture-size-x: var(--vl-texture-size); --vl-texture-size-y: var(--vl-texture-size); --vl-texture-x: 0px; --vl-texture-y: 0px; --vl-light-angle: 112deg; --vl-light-width: 36%; --vl-light-softness: 0px; --vl-light-x: 20%; --vl-light-y: 10%; --vl-shadow-x: 0px; --vl-shadow-y: 2px; --vl-shadow-blur: 5px; --vl-shadow-spread: 0px; --vl-surface-end: hsl(var(--vl-hue) 82% 91%); --vl-muted-ink: var(--vl-ink); --vl-edge-color: #fff; --vl-light-color: #fff; --vl-shadow-color: hsl(var(--vl-hue) 80% 25%); --vl-label-bg: hsl(var(--vl-hue) 66% 48% / .82); --vl-label-ink: #fff; --vl-font-family: &quot;Avenir Next&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; --vl-title-size: 30px; --vl-title-weight: 700; --vl-title-leading: 42px; --vl-title-tracking: -.05em; --vl-body-size: 14px; --vl-body-leading: 26px; --vl-body-opacity: .82; --vl-title-gap-before: 14px; --vl-title-gap-after: 8px; --vl-rotate: 0deg; --vl-shift-x: 0px; --vl-shift-y: 0px; transform: translate(var(--vl-shift-x), var(--vl-shift-y)) rotate(var(--vl-rotate));">
+<span data-material-layer="shadow" aria-hidden="true" style="position: absolute; z-index: 0; inset: auto 6px 1px; height: 36px; border-radius: 0 0 var(--vl-radius) var(--vl-radius); box-shadow: var(--vl-shadow-x) var(--vl-shadow-y) var(--vl-shadow-blur) var(--vl-shadow-spread) color-mix(in srgb, var(--vl-shadow-color) calc(var(--vl-shadow) * 100%), transparent); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="edge" aria-hidden="true" style="position: absolute; inset: 0px; clip-path: none; pointer-events: none; z-index: 1; background: none; border-radius: var(--vl-radius); border: var(--vl-border-width) solid color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 100%), transparent); box-sizing: border-box;">
+</span>
+<span data-material-layer="surface" aria-hidden="true" style="position: absolute; inset: calc(var(--vl-border-width) + .5px) var(--vl-border-width) calc(var(--vl-border-width) + 1px); clip-path: none; pointer-events: none; z-index: 2; mask-image: none; mask-size: var(--vl-radius) var(--vl-radius),
+    calc(var(--vl-tab-width) - var(--vl-radius) - 12px) var(--vl-tab-height),
+    calc(var(--vl-slope) + 24px) var(--vl-tab-height),
+    var(--vl-radius) calc(100% - var(--vl-radius) * 2),
+    calc(100% - var(--vl-radius) * 2) calc(100% - var(--vl-tab-height)),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) calc(100% - var(--vl-tab-height) - var(--vl-radius) * 2),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) var(--vl-radius); mask-position: left 0 top 0,
+    left var(--vl-radius) top 0,
+    left calc(var(--vl-tab-width) - 12px) top 0,
+    left 0 top var(--vl-radius),
+    left var(--vl-radius) top var(--vl-tab-height),
+    right 0 top var(--vl-tab-height),
+    right 0 top calc(var(--vl-tab-height) + var(--vl-radius)),
+    left 0 bottom 0,
+    right 0 bottom 0; mask-repeat: no-repeat; background: linear-gradient(150deg, color-mix(in srgb, var(--vl-tint) calc(var(--vl-alpha) * 100%), transparent), color-mix(in srgb, var(--vl-surface-end) calc(var(--vl-alpha) * 100%), transparent)); backdrop-filter: blur(var(--vl-blur)) saturate(1.25); box-shadow: inset 0 -3px 0 hsl(var(--vl-hue) 90% 55% / .14); border-radius: calc(var(--vl-radius) - var(--vl-border-width)); overflow: hidden; box-sizing: border-box;">
+<span data-material-layer="texture" aria-hidden="true" style="position: absolute; inset: 0px; z-index: 1; opacity: var(--vl-grain); background-image: var(--vl-texture); background-size: var(--vl-texture-size-x) var(--vl-texture-size-y); background-repeat: repeat; mix-blend-mode: var(--vl-texture-blend); box-sizing: border-box; background-position: var(--vl-texture-x) var(--vl-texture-y);">
+</span>
+<span data-material-layer="light" aria-hidden="true" style="position: absolute; inset: 0px; opacity: var(--vl-highlight); background: linear-gradient(var(--vl-light-angle), transparent 6%, color-mix(in srgb, var(--vl-light-color) 60%, transparent) calc(6% + var(--vl-light-width) * 13 / 36), color-mix(in srgb, var(--vl-light-color) 6.666667%, transparent) calc(6% + var(--vl-light-width) * 24 / 36), transparent calc(6% + var(--vl-light-width))),
+    linear-gradient(160deg, #fffa, transparent 29%, transparent 70%, #fff6),
+    linear-gradient(0deg, #fff7, transparent 7%); box-shadow: inset 0 2px 1px #fffc, inset 0 -5px 8px hsl(var(--vl-hue) 70% 32% / .18); box-sizing: border-box; filter: blur(var(--vl-light-softness));">
+</span>
+</span>
+<div data-material-layer="content" style="position: relative; z-index: 3; padding: var(--vl-padding); box-sizing: border-box;">
+<span data-slot="label" style="display: inline-block; padding: 5px 11px; border-radius: 5px; background: var(--vl-label-bg); color: var(--vl-label-ink); font-size: 12px; font-weight: 650; line-height: 1.4; box-sizing: border-box;">普通圆角卡片</span>
+<h2 data-slot="title" style="margin: var(--vl-title-gap-before) 0 var(--vl-title-gap-after); font-size: var(--vl-title-size); line-height: var(--vl-title-leading); font-weight: var(--vl-title-weight); letter-spacing: var(--vl-title-tracking); box-sizing: border-box;">让知识，看得见。</h2>
+<p data-slot="body" style="margin: 0px; font-size: var(--vl-body-size); line-height: var(--vl-body-leading); opacity: var(--vl-body-opacity); white-space: pre-line; box-sizing: border-box; color: var(--vl-muted-ink);">细纹与高光带来轻盈的塑料感。
+适合课程、活动和知识内容。</p>
+</div>
+</article>
+</section>
+<h2 style="position: absolute; left: 48px; top: 538px; margin: 0px; font-size: 17px; line-height: 26px; font-weight: 600; box-sizing: border-box;">02 / 砂粒毛玻璃</h2>
+<p style="position: absolute; right: 48px; top: 538px; margin: 0px; font-size: 12px; line-height: 26px; color: rgb(119, 135, 115); box-sizing: border-box;">纹理强度 18%</p>
+<section aria-label="02 / 砂粒毛玻璃" style="position: absolute; overflow: hidden; background: radial-gradient(at 0px 5%, rgb(242, 255, 255) 0px, transparent 62%), linear-gradient(120deg, rgb(199, 249, 248), rgb(121, 232, 238)); left: 48px; top: 578px; width: 1024px; height: 272px; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; border-radius: 20px; box-sizing: border-box;">
+<span aria-hidden="true" style="position: absolute; pointer-events: none; width: 150px; height: 150px; left: 17%; top: 32%; border-radius: 50%; background: radial-gradient(circle at 30% 25%, rgb(255, 242, 179), rgb(233, 231, 80) 55%, rgb(170, 202, 82)); box-shadow: rgba(76, 127, 76, 0.133) -8px -12px 20px inset, rgba(38, 152, 159, 0.133) 0px 20px 40px; box-sizing: border-box;">
+</span>
+<span aria-hidden="true" style="position: absolute; pointer-events: none; width: 90px; height: 280px; right: 24%; top: 10%; transform: rotate(33deg); border-radius: 30px; background: repeating-linear-gradient(90deg, rgb(238, 253, 253) 0px, rgb(238, 253, 253) 8px, rgb(114, 206, 203) 8px, rgb(114, 206, 203) 15px); box-shadow: rgba(33, 126, 108, 0.133) 8px 14px 26px; box-sizing: border-box;">
+</span>
+<article data-recipe="folder-glass" data-layer-id="folder-glass" style="--vl-hue: 184; --vl-alpha: .24; --vl-blur: 18px; --vl-grain: .18; --vl-texture-size: 176px; --vl-texture-blend: soft-light; --vl-texture: url(&quot;asset:svg/frosted-grain.svg&quot;); --vl-edge: .95; --vl-shadow: 0; --vl-tab-width: 44cqi; --vl-tab-height: 30px; --vl-slope: 32px; --vl-radius: 18px; --vl-padding: 26px; --vl-accent: #ffdf53; --vl-back-display: block; --vl-ink: hsl(var(--vl-hue) 70% 19%); --vl-tint: hsl(var(--vl-hue) 87% 91%); --vl-highlight: .40; --vl-contour: from var(--vl-radius) 0,
+    line to calc(var(--vl-tab-width) - 12px) 0,
+    curve to calc(var(--vl-tab-width) + 8px) 8px with var(--vl-tab-width) 0 / calc(var(--vl-tab-width) + 2px) 2px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 8px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) var(--vl-tab-height) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) calc(var(--vl-tab-height) - 2px) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) var(--vl-tab-height),
+    line to calc(100% - var(--vl-radius)) var(--vl-tab-height),
+    curve to 100% calc(var(--vl-tab-height) + var(--vl-radius)) with 100% var(--vl-tab-height),
+    line to 100% calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) 100% with 100% 100%,
+    line to var(--vl-radius) 100%,
+    curve to 0 calc(100% - var(--vl-radius)) with 0 100%,
+    line to 0 var(--vl-radius),
+    curve to var(--vl-radius) 0 with 0 0,
+    close; --vl-shape: shape(var(--vl-contour)); --vl-outline: shape(evenodd var(--vl-contour),
+    move to var(--vl-radius) 2px,
+    line to calc(var(--vl-tab-width) - 12px) 2px,
+    curve to calc(var(--vl-tab-width) + 8px) 10px with var(--vl-tab-width) 2px / calc(var(--vl-tab-width) + 2px) 4px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 6px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) calc(var(--vl-tab-height) + 2px) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) var(--vl-tab-height) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - var(--vl-radius)) calc(var(--vl-tab-height) + 2px),
+    curve to calc(100% - 1.5px) calc(var(--vl-tab-height) + var(--vl-radius)) with calc(100% - 1.5px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - 1.5px) calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) calc(100% - 2.5px) with calc(100% - 1.5px) calc(100% - 2.5px),
+    line to var(--vl-radius) calc(100% - 2.5px),
+    curve to 1.5px calc(100% - var(--vl-radius)) with 1.5px calc(100% - 2.5px),
+    line to 1.5px var(--vl-radius),
+    curve to var(--vl-radius) 2px with 1.5px 2px,
+    close); position: relative; container-type: inline-size; color: var(--vl-ink); font-family: var(--vl-font-family); text-align: left; min-width: 0px; overflow-wrap: anywhere; box-sizing: border-box; width: 100%; min-height: 236px; --vl-border-width: 1.5px; --vl-content-offset: 26px; --vl-texture-size-x: var(--vl-texture-size); --vl-texture-size-y: var(--vl-texture-size); --vl-texture-x: 0px; --vl-texture-y: 0px; --vl-light-angle: 112deg; --vl-light-width: 36%; --vl-light-softness: 0px; --vl-light-x: 20%; --vl-light-y: 10%; --vl-shadow-x: 0px; --vl-shadow-y: 2px; --vl-shadow-blur: 5px; --vl-shadow-spread: 0px; --vl-surface-end: hsl(var(--vl-hue) 82% 91%); --vl-muted-ink: var(--vl-ink); --vl-edge-color: #fff; --vl-light-color: #fff; --vl-shadow-color: hsl(var(--vl-hue) 80% 25%); --vl-label-bg: hsl(var(--vl-hue) 66% 48% / .82); --vl-label-ink: #fff; --vl-font-family: &quot;Avenir Next&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; --vl-title-size: 30px; --vl-title-weight: 700; --vl-title-leading: 42px; --vl-title-tracking: -.05em; --vl-body-size: 14px; --vl-body-leading: 26px; --vl-body-opacity: .82; --vl-title-gap-before: 14px; --vl-title-gap-after: 8px; --vl-rotate: 0deg; --vl-shift-x: 0px; --vl-shift-y: 0px; transform: translate(var(--vl-shift-x), var(--vl-shift-y)) rotate(var(--vl-rotate));">
+<span data-material-layer="shadow" aria-hidden="true" style="position: absolute; z-index: 0; inset: auto 6px 1px; height: 36px; border-radius: 0 0 var(--vl-radius) var(--vl-radius); box-shadow: var(--vl-shadow-x) var(--vl-shadow-y) var(--vl-shadow-blur) var(--vl-shadow-spread) color-mix(in srgb, var(--vl-shadow-color) calc(var(--vl-shadow) * 100%), transparent); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="back" aria-hidden="true" style="position: absolute; display: var(--vl-back-display); z-index: 0; left: calc(var(--vl-tab-width) - 12px); right: 9px; top: 12px; height: calc(var(--vl-tab-height) + 35px); border-radius: 13px 13px 0px 0px; background: linear-gradient(100deg, #fff8ac, var(--vl-accent)); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="edge" aria-hidden="true" style="position: absolute; inset: 0px; clip-path: var(--vl-outline); pointer-events: none; z-index: 1; background: linear-gradient(155deg, color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 100%), transparent), color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 35%), transparent) 65%, hsl(var(--vl-hue) 95% 65% / var(--vl-edge))); box-sizing: border-box;">
+</span>
+<span data-material-layer="surface" aria-hidden="true" style="position: absolute; inset: 2px 1.5px 2.5px; clip-path: var(--vl-shape); pointer-events: none; z-index: 2; mask-image: url(&quot;asset:svg/folder-top-left.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-slope.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-top-right.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-bottom-left.svg&quot;), url(&quot;asset:svg/folder-bottom-right.svg&quot;); mask-size: var(--vl-radius) var(--vl-radius),
+    calc(var(--vl-tab-width) - var(--vl-radius) - 12px) var(--vl-tab-height),
+    calc(var(--vl-slope) + 24px) var(--vl-tab-height),
+    var(--vl-radius) calc(100% - var(--vl-radius) * 2),
+    calc(100% - var(--vl-radius) * 2) calc(100% - var(--vl-tab-height)),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) calc(100% - var(--vl-tab-height) - var(--vl-radius) * 2),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) var(--vl-radius); mask-position: left 0 top 0,
+    left var(--vl-radius) top 0,
+    left calc(var(--vl-tab-width) - 12px) top 0,
+    left 0 top var(--vl-radius),
+    left var(--vl-radius) top var(--vl-tab-height),
+    right 0 top var(--vl-tab-height),
+    right 0 top calc(var(--vl-tab-height) + var(--vl-radius)),
+    left 0 bottom 0,
+    right 0 bottom 0; mask-repeat: no-repeat; background: linear-gradient(150deg, color-mix(in srgb, var(--vl-tint) calc(var(--vl-alpha) * 100%), transparent), color-mix(in srgb, var(--vl-surface-end) calc(var(--vl-alpha) * 100%), transparent)); backdrop-filter: blur(var(--vl-blur)) saturate(1.25); box-shadow: inset 0 -3px 0 hsl(var(--vl-hue) 90% 55% / .14); box-sizing: border-box;">
+<span data-material-layer="texture" aria-hidden="true" style="position: absolute; inset: 0px; z-index: 1; opacity: var(--vl-grain); background-image: var(--vl-texture); background-size: var(--vl-texture-size-x) var(--vl-texture-size-y); background-repeat: repeat; mix-blend-mode: var(--vl-texture-blend); box-sizing: border-box; background-position: var(--vl-texture-x) var(--vl-texture-y);">
+</span>
+<span data-material-layer="light" aria-hidden="true" style="position: absolute; inset: 0px; opacity: var(--vl-highlight); background: linear-gradient(var(--vl-light-angle), transparent 6%, color-mix(in srgb, var(--vl-light-color) 60%, transparent) calc(6% + var(--vl-light-width) * 13 / 36), color-mix(in srgb, var(--vl-light-color) 6.666667%, transparent) calc(6% + var(--vl-light-width) * 24 / 36), transparent calc(6% + var(--vl-light-width))),
+    linear-gradient(160deg, #fffa, transparent 29%, transparent 70%, #fff6),
+    linear-gradient(0deg, #fff7, transparent 7%); box-shadow: inset 0 2px 1px #fffc, inset 0 -5px 8px hsl(var(--vl-hue) 70% 32% / .18); box-sizing: border-box; filter: blur(var(--vl-light-softness));">
+</span>
+</span>
+<header data-slot="tab" style="position: absolute; z-index: 3; top: 12px; left: 22px; max-width: calc(var(--vl-tab-width) - 28px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: clamp(12px, 3cqi, 17px); line-height: 1.4; font-weight: 650; letter-spacing: 0.01em; box-sizing: border-box;">文件夹卡片</header>
+<div data-material-layer="content" style="position: relative; z-index: 3; padding: calc(var(--vl-tab-height) + var(--vl-content-offset)) var(--vl-padding) var(--vl-padding); box-sizing: border-box;">
+<span data-slot="label" style="display: inline-block; padding: 5px 11px; border-radius: 5px; background: var(--vl-label-bg); color: var(--vl-label-ink); font-size: 12px; font-weight: 650; line-height: 1.4; box-sizing: border-box;">内容指南</span>
+<h2 data-slot="title" style="margin: var(--vl-title-gap-before) 0 var(--vl-title-gap-after); font-size: var(--vl-title-size); line-height: var(--vl-title-leading); font-weight: var(--vl-title-weight); letter-spacing: var(--vl-title-tracking); box-sizing: border-box;">让光，穿过表面。</h2>
+<p data-slot="body" style="margin: 0px; font-size: var(--vl-body-size); line-height: var(--vl-body-leading); opacity: var(--vl-body-opacity); white-space: pre-line; box-sizing: border-box; color: var(--vl-muted-ink);">背景柔化，细砂停留在表面。
+用于需要透光与叠层的内容。</p>
+</div>
+</article>
+<article data-recipe="rounded-glass" data-layer-id="rounded-glass" style="--vl-hue: 184; --vl-alpha: .24; --vl-blur: 18px; --vl-grain: .18; --vl-texture-size: 176px; --vl-texture-blend: soft-light; --vl-texture: url(&quot;asset:svg/frosted-grain.svg&quot;); --vl-edge: .95; --vl-shadow: 0; --vl-tab-width: 44cqi; --vl-tab-height: 30px; --vl-slope: 32px; --vl-radius: 18px; --vl-padding: 26px; --vl-accent: #ffdf53; --vl-back-display: block; --vl-ink: hsl(var(--vl-hue) 70% 19%); --vl-tint: hsl(var(--vl-hue) 87% 91%); --vl-highlight: .40; --vl-contour: from var(--vl-radius) 0,
+    line to calc(var(--vl-tab-width) - 12px) 0,
+    curve to calc(var(--vl-tab-width) + 8px) 8px with var(--vl-tab-width) 0 / calc(var(--vl-tab-width) + 2px) 2px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 8px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) var(--vl-tab-height) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) calc(var(--vl-tab-height) - 2px) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) var(--vl-tab-height),
+    line to calc(100% - var(--vl-radius)) var(--vl-tab-height),
+    curve to 100% calc(var(--vl-tab-height) + var(--vl-radius)) with 100% var(--vl-tab-height),
+    line to 100% calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) 100% with 100% 100%,
+    line to var(--vl-radius) 100%,
+    curve to 0 calc(100% - var(--vl-radius)) with 0 100%,
+    line to 0 var(--vl-radius),
+    curve to var(--vl-radius) 0 with 0 0,
+    close; --vl-shape: shape(var(--vl-contour)); --vl-outline: shape(evenodd var(--vl-contour),
+    move to var(--vl-radius) 2px,
+    line to calc(var(--vl-tab-width) - 12px) 2px,
+    curve to calc(var(--vl-tab-width) + 8px) 10px with var(--vl-tab-width) 2px / calc(var(--vl-tab-width) + 2px) 4px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 6px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) calc(var(--vl-tab-height) + 2px) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) var(--vl-tab-height) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - var(--vl-radius)) calc(var(--vl-tab-height) + 2px),
+    curve to calc(100% - 1.5px) calc(var(--vl-tab-height) + var(--vl-radius)) with calc(100% - 1.5px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - 1.5px) calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) calc(100% - 2.5px) with calc(100% - 1.5px) calc(100% - 2.5px),
+    line to var(--vl-radius) calc(100% - 2.5px),
+    curve to 1.5px calc(100% - var(--vl-radius)) with 1.5px calc(100% - 2.5px),
+    line to 1.5px var(--vl-radius),
+    curve to var(--vl-radius) 2px with 1.5px 2px,
+    close); position: relative; container-type: inline-size; color: var(--vl-ink); font-family: var(--vl-font-family); text-align: left; min-width: 0px; overflow-wrap: anywhere; box-sizing: border-box; width: 100%; min-height: 236px; --vl-border-width: 1.5px; --vl-content-offset: 26px; --vl-texture-size-x: var(--vl-texture-size); --vl-texture-size-y: var(--vl-texture-size); --vl-texture-x: 0px; --vl-texture-y: 0px; --vl-light-angle: 112deg; --vl-light-width: 36%; --vl-light-softness: 0px; --vl-light-x: 20%; --vl-light-y: 10%; --vl-shadow-x: 0px; --vl-shadow-y: 2px; --vl-shadow-blur: 5px; --vl-shadow-spread: 0px; --vl-surface-end: hsl(var(--vl-hue) 82% 91%); --vl-muted-ink: var(--vl-ink); --vl-edge-color: #fff; --vl-light-color: #fff; --vl-shadow-color: hsl(var(--vl-hue) 80% 25%); --vl-label-bg: hsl(var(--vl-hue) 66% 48% / .82); --vl-label-ink: #fff; --vl-font-family: &quot;Avenir Next&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; --vl-title-size: 30px; --vl-title-weight: 700; --vl-title-leading: 42px; --vl-title-tracking: -.05em; --vl-body-size: 14px; --vl-body-leading: 26px; --vl-body-opacity: .82; --vl-title-gap-before: 14px; --vl-title-gap-after: 8px; --vl-rotate: 0deg; --vl-shift-x: 0px; --vl-shift-y: 0px; transform: translate(var(--vl-shift-x), var(--vl-shift-y)) rotate(var(--vl-rotate));">
+<span data-material-layer="shadow" aria-hidden="true" style="position: absolute; z-index: 0; inset: auto 6px 1px; height: 36px; border-radius: 0 0 var(--vl-radius) var(--vl-radius); box-shadow: var(--vl-shadow-x) var(--vl-shadow-y) var(--vl-shadow-blur) var(--vl-shadow-spread) color-mix(in srgb, var(--vl-shadow-color) calc(var(--vl-shadow) * 100%), transparent); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="edge" aria-hidden="true" style="position: absolute; inset: 0px; clip-path: none; pointer-events: none; z-index: 1; background: none; border-radius: var(--vl-radius); border: var(--vl-border-width) solid color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 100%), transparent); box-sizing: border-box;">
+</span>
+<span data-material-layer="surface" aria-hidden="true" style="position: absolute; inset: calc(var(--vl-border-width) + .5px) var(--vl-border-width) calc(var(--vl-border-width) + 1px); clip-path: none; pointer-events: none; z-index: 2; mask-image: none; mask-size: var(--vl-radius) var(--vl-radius),
+    calc(var(--vl-tab-width) - var(--vl-radius) - 12px) var(--vl-tab-height),
+    calc(var(--vl-slope) + 24px) var(--vl-tab-height),
+    var(--vl-radius) calc(100% - var(--vl-radius) * 2),
+    calc(100% - var(--vl-radius) * 2) calc(100% - var(--vl-tab-height)),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) calc(100% - var(--vl-tab-height) - var(--vl-radius) * 2),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) var(--vl-radius); mask-position: left 0 top 0,
+    left var(--vl-radius) top 0,
+    left calc(var(--vl-tab-width) - 12px) top 0,
+    left 0 top var(--vl-radius),
+    left var(--vl-radius) top var(--vl-tab-height),
+    right 0 top var(--vl-tab-height),
+    right 0 top calc(var(--vl-tab-height) + var(--vl-radius)),
+    left 0 bottom 0,
+    right 0 bottom 0; mask-repeat: no-repeat; background: linear-gradient(150deg, color-mix(in srgb, var(--vl-tint) calc(var(--vl-alpha) * 100%), transparent), color-mix(in srgb, var(--vl-surface-end) calc(var(--vl-alpha) * 100%), transparent)); backdrop-filter: blur(var(--vl-blur)) saturate(1.25); box-shadow: inset 0 -3px 0 hsl(var(--vl-hue) 90% 55% / .14); border-radius: calc(var(--vl-radius) - var(--vl-border-width)); overflow: hidden; box-sizing: border-box;">
+<span data-material-layer="texture" aria-hidden="true" style="position: absolute; inset: 0px; z-index: 1; opacity: var(--vl-grain); background-image: var(--vl-texture); background-size: var(--vl-texture-size-x) var(--vl-texture-size-y); background-repeat: repeat; mix-blend-mode: var(--vl-texture-blend); box-sizing: border-box; background-position: var(--vl-texture-x) var(--vl-texture-y);">
+</span>
+<span data-material-layer="light" aria-hidden="true" style="position: absolute; inset: 0px; opacity: var(--vl-highlight); background: linear-gradient(var(--vl-light-angle), transparent 6%, color-mix(in srgb, var(--vl-light-color) 60%, transparent) calc(6% + var(--vl-light-width) * 13 / 36), color-mix(in srgb, var(--vl-light-color) 6.666667%, transparent) calc(6% + var(--vl-light-width) * 24 / 36), transparent calc(6% + var(--vl-light-width))),
+    linear-gradient(160deg, #fffa, transparent 29%, transparent 70%, #fff6),
+    linear-gradient(0deg, #fff7, transparent 7%); box-shadow: inset 0 2px 1px #fffc, inset 0 -5px 8px hsl(var(--vl-hue) 70% 32% / .18); box-sizing: border-box; filter: blur(var(--vl-light-softness));">
+</span>
+</span>
+<div data-material-layer="content" style="position: relative; z-index: 3; padding: var(--vl-padding); box-sizing: border-box;">
+<span data-slot="label" style="display: inline-block; padding: 5px 11px; border-radius: 5px; background: var(--vl-label-bg); color: var(--vl-label-ink); font-size: 12px; font-weight: 650; line-height: 1.4; box-sizing: border-box;">普通圆角卡片</span>
+<h2 data-slot="title" style="margin: var(--vl-title-gap-before) 0 var(--vl-title-gap-after); font-size: var(--vl-title-size); line-height: var(--vl-title-leading); font-weight: var(--vl-title-weight); letter-spacing: var(--vl-title-tracking); box-sizing: border-box;">让光，穿过表面。</h2>
+<p data-slot="body" style="margin: 0px; font-size: var(--vl-body-size); line-height: var(--vl-body-leading); opacity: var(--vl-body-opacity); white-space: pre-line; box-sizing: border-box; color: var(--vl-muted-ink);">背景柔化，细砂停留在表面。
+用于需要透光与叠层的内容。</p>
+</div>
+</article>
+</section>
+<h2 style="position: absolute; left: 48px; top: 888px; margin: 0px; font-size: 17px; line-height: 26px; font-weight: 600; box-sizing: border-box;">03 / 纤维纸张</h2>
+<p style="position: absolute; right: 48px; top: 888px; margin: 0px; font-size: 12px; line-height: 26px; color: rgb(119, 135, 115); box-sizing: border-box;">纹理强度 36%</p>
+<section aria-label="03 / 纤维纸张" style="position: absolute; overflow: hidden; background: radial-gradient(at 0px 0%, rgb(255, 253, 246), transparent 70%), rgb(233, 225, 210); left: 48px; top: 928px; width: 1024px; height: 272px; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; border-radius: 20px; box-sizing: border-box;">
+<article data-recipe="folder-paper" data-layer-id="folder-paper" style="--vl-hue: 35; --vl-alpha: .97; --vl-blur: 0px; --vl-grain: .36; --vl-texture-size: 256px; --vl-texture-blend: multiply; --vl-texture: url(&quot;asset:svg/paper-fiber.svg&quot;); --vl-edge: .45; --vl-shadow: 0; --vl-tab-width: 44cqi; --vl-tab-height: 30px; --vl-slope: 32px; --vl-radius: 18px; --vl-padding: 26px; --vl-accent: #dd9671; --vl-back-display: block; --vl-ink: #53432e; --vl-tint: #f1e6cc; --vl-highlight: .16; --vl-contour: from var(--vl-radius) 0,
+    line to calc(var(--vl-tab-width) - 12px) 0,
+    curve to calc(var(--vl-tab-width) + 8px) 8px with var(--vl-tab-width) 0 / calc(var(--vl-tab-width) + 2px) 2px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 8px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) var(--vl-tab-height) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) calc(var(--vl-tab-height) - 2px) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) var(--vl-tab-height),
+    line to calc(100% - var(--vl-radius)) var(--vl-tab-height),
+    curve to 100% calc(var(--vl-tab-height) + var(--vl-radius)) with 100% var(--vl-tab-height),
+    line to 100% calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) 100% with 100% 100%,
+    line to var(--vl-radius) 100%,
+    curve to 0 calc(100% - var(--vl-radius)) with 0 100%,
+    line to 0 var(--vl-radius),
+    curve to var(--vl-radius) 0 with 0 0,
+    close; --vl-shape: shape(var(--vl-contour)); --vl-outline: shape(evenodd var(--vl-contour),
+    move to var(--vl-radius) 2px,
+    line to calc(var(--vl-tab-width) - 12px) 2px,
+    curve to calc(var(--vl-tab-width) + 8px) 10px with var(--vl-tab-width) 2px / calc(var(--vl-tab-width) + 2px) 4px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 6px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) calc(var(--vl-tab-height) + 2px) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) var(--vl-tab-height) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - var(--vl-radius)) calc(var(--vl-tab-height) + 2px),
+    curve to calc(100% - 1.5px) calc(var(--vl-tab-height) + var(--vl-radius)) with calc(100% - 1.5px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - 1.5px) calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) calc(100% - 2.5px) with calc(100% - 1.5px) calc(100% - 2.5px),
+    line to var(--vl-radius) calc(100% - 2.5px),
+    curve to 1.5px calc(100% - var(--vl-radius)) with 1.5px calc(100% - 2.5px),
+    line to 1.5px var(--vl-radius),
+    curve to var(--vl-radius) 2px with 1.5px 2px,
+    close); position: relative; container-type: inline-size; color: var(--vl-ink); font-family: var(--vl-font-family); text-align: left; min-width: 0px; overflow-wrap: anywhere; box-sizing: border-box; width: 100%; min-height: 236px; --vl-border-width: 1.5px; --vl-content-offset: 26px; --vl-texture-size-x: var(--vl-texture-size); --vl-texture-size-y: var(--vl-texture-size); --vl-texture-x: 0px; --vl-texture-y: 0px; --vl-light-angle: 112deg; --vl-light-width: 36%; --vl-light-softness: 0px; --vl-light-x: 20%; --vl-light-y: 10%; --vl-shadow-x: 0px; --vl-shadow-y: 2px; --vl-shadow-blur: 5px; --vl-shadow-spread: 0px; --vl-surface-end: hsl(var(--vl-hue) 82% 91%); --vl-muted-ink: var(--vl-ink); --vl-edge-color: #fff; --vl-light-color: #fff; --vl-shadow-color: hsl(var(--vl-hue) 80% 25%); --vl-label-bg: hsl(var(--vl-hue) 66% 48% / .82); --vl-label-ink: #fff; --vl-font-family: &quot;Avenir Next&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; --vl-title-size: 30px; --vl-title-weight: 700; --vl-title-leading: 42px; --vl-title-tracking: -.05em; --vl-body-size: 14px; --vl-body-leading: 26px; --vl-body-opacity: .82; --vl-title-gap-before: 14px; --vl-title-gap-after: 8px; --vl-rotate: 0deg; --vl-shift-x: 0px; --vl-shift-y: 0px; transform: translate(var(--vl-shift-x), var(--vl-shift-y)) rotate(var(--vl-rotate));">
+<span data-material-layer="shadow" aria-hidden="true" style="position: absolute; z-index: 0; inset: auto 6px 1px; height: 36px; border-radius: 0 0 var(--vl-radius) var(--vl-radius); box-shadow: var(--vl-shadow-x) var(--vl-shadow-y) var(--vl-shadow-blur) var(--vl-shadow-spread) color-mix(in srgb, var(--vl-shadow-color) calc(var(--vl-shadow) * 100%), transparent); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="back" aria-hidden="true" style="position: absolute; display: var(--vl-back-display); z-index: 0; left: calc(var(--vl-tab-width) - 12px); right: 9px; top: 12px; height: calc(var(--vl-tab-height) + 35px); border-radius: 13px 13px 0px 0px; background: linear-gradient(100deg, #fff8ac, var(--vl-accent)); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="edge" aria-hidden="true" style="position: absolute; inset: 0px; clip-path: var(--vl-outline); pointer-events: none; z-index: 1; background: linear-gradient(155deg, color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 100%), transparent), color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 35%), transparent) 65%, hsl(var(--vl-hue) 95% 65% / var(--vl-edge))); box-sizing: border-box;">
+</span>
+<span data-material-layer="surface" aria-hidden="true" style="position: absolute; inset: 2px 1.5px 2.5px; clip-path: var(--vl-shape); pointer-events: none; z-index: 2; mask-image: url(&quot;asset:svg/folder-top-left.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-slope.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-top-right.svg&quot;), linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0)), url(&quot;asset:svg/folder-bottom-left.svg&quot;), url(&quot;asset:svg/folder-bottom-right.svg&quot;); mask-size: var(--vl-radius) var(--vl-radius),
+    calc(var(--vl-tab-width) - var(--vl-radius) - 12px) var(--vl-tab-height),
+    calc(var(--vl-slope) + 24px) var(--vl-tab-height),
+    var(--vl-radius) calc(100% - var(--vl-radius) * 2),
+    calc(100% - var(--vl-radius) * 2) calc(100% - var(--vl-tab-height)),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) calc(100% - var(--vl-tab-height) - var(--vl-radius) * 2),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) var(--vl-radius); mask-position: left 0 top 0,
+    left var(--vl-radius) top 0,
+    left calc(var(--vl-tab-width) - 12px) top 0,
+    left 0 top var(--vl-radius),
+    left var(--vl-radius) top var(--vl-tab-height),
+    right 0 top var(--vl-tab-height),
+    right 0 top calc(var(--vl-tab-height) + var(--vl-radius)),
+    left 0 bottom 0,
+    right 0 bottom 0; mask-repeat: no-repeat; background: color-mix(in srgb, var(--vl-tint) calc(var(--vl-alpha) * 100%), transparent); backdrop-filter: blur(var(--vl-blur)) saturate(1.25); box-shadow: inset 0 -3px 0 hsl(var(--vl-hue) 90% 55% / .14); box-sizing: border-box;">
+<span data-material-layer="texture" aria-hidden="true" style="position: absolute; inset: 0px; z-index: 1; opacity: var(--vl-grain); background-image: var(--vl-texture); background-size: var(--vl-texture-size-x) var(--vl-texture-size-y); background-repeat: repeat; mix-blend-mode: var(--vl-texture-blend); box-sizing: border-box; background-position: var(--vl-texture-x) var(--vl-texture-y);">
+</span>
+<span data-material-layer="light" aria-hidden="true" style="position: absolute; inset: 0px; opacity: var(--vl-highlight); background: radial-gradient(ellipse at var(--vl-light-x) var(--vl-light-y), color-mix(in srgb, var(--vl-light-color) 53.333333%, transparent), transparent 65%), linear-gradient(0deg, #92774b44, transparent 8%); box-shadow: rgba(255, 255, 255, 0.6) 0px 1px 1px inset, rgba(128, 103, 71, 0.133) 0px -3px 3px inset; box-sizing: border-box; filter: blur(var(--vl-light-softness));">
+</span>
+</span>
+<header data-slot="tab" style="position: absolute; z-index: 3; top: 12px; left: 22px; max-width: calc(var(--vl-tab-width) - 28px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: clamp(12px, 3cqi, 17px); line-height: 1.4; font-weight: 650; letter-spacing: 0.01em; box-sizing: border-box;">文件夹卡片</header>
+<div data-material-layer="content" style="position: relative; z-index: 3; padding: calc(var(--vl-tab-height) + var(--vl-content-offset)) var(--vl-padding) var(--vl-padding); box-sizing: border-box;">
+<span data-slot="label" style="display: inline-block; padding: 5px 11px; border-radius: 5px; background: var(--vl-label-bg); color: var(--vl-label-ink); font-size: 12px; font-weight: 650; line-height: 1.4; box-sizing: border-box;">内容指南</span>
+<h2 data-slot="title" style="margin: var(--vl-title-gap-before) 0 var(--vl-title-gap-after); font-size: var(--vl-title-size); line-height: var(--vl-title-leading); font-weight: var(--vl-title-weight); letter-spacing: var(--vl-title-tracking); box-sizing: border-box;">留一点，手作温度。</h2>
+<p data-slot="body" style="margin: 0px; font-size: var(--vl-body-size); line-height: var(--vl-body-leading); opacity: var(--vl-body-opacity); white-space: pre-line; box-sizing: border-box; color: var(--vl-muted-ink);">短纤维与暖色纸面相互叠加。
+用于手记与生活方式内容。</p>
+</div>
+</article>
+<article data-recipe="rounded-paper" data-layer-id="rounded-paper" style="--vl-hue: 35; --vl-alpha: .97; --vl-blur: 0px; --vl-grain: .36; --vl-texture-size: 256px; --vl-texture-blend: multiply; --vl-texture: url(&quot;asset:svg/paper-fiber.svg&quot;); --vl-edge: .45; --vl-shadow: 0; --vl-tab-width: 44cqi; --vl-tab-height: 30px; --vl-slope: 32px; --vl-radius: 18px; --vl-padding: 26px; --vl-accent: #dd9671; --vl-back-display: block; --vl-ink: #53432e; --vl-tint: #f1e6cc; --vl-highlight: .16; --vl-contour: from var(--vl-radius) 0,
+    line to calc(var(--vl-tab-width) - 12px) 0,
+    curve to calc(var(--vl-tab-width) + 8px) 8px with var(--vl-tab-width) 0 / calc(var(--vl-tab-width) + 2px) 2px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 8px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) var(--vl-tab-height) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) calc(var(--vl-tab-height) - 2px) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) var(--vl-tab-height),
+    line to calc(100% - var(--vl-radius)) var(--vl-tab-height),
+    curve to 100% calc(var(--vl-tab-height) + var(--vl-radius)) with 100% var(--vl-tab-height),
+    line to 100% calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) 100% with 100% 100%,
+    line to var(--vl-radius) 100%,
+    curve to 0 calc(100% - var(--vl-radius)) with 0 100%,
+    line to 0 var(--vl-radius),
+    curve to var(--vl-radius) 0 with 0 0,
+    close; --vl-shape: shape(var(--vl-contour)); --vl-outline: shape(evenodd var(--vl-contour),
+    move to var(--vl-radius) 2px,
+    line to calc(var(--vl-tab-width) - 12px) 2px,
+    curve to calc(var(--vl-tab-width) + 8px) 10px with var(--vl-tab-width) 2px / calc(var(--vl-tab-width) + 2px) 4px,
+    line to calc(var(--vl-tab-width) + var(--vl-slope) - 8px) calc(var(--vl-tab-height) - 6px),
+    curve to calc(var(--vl-tab-width) + var(--vl-slope) + 12px) calc(var(--vl-tab-height) + 2px) with calc(var(--vl-tab-width) + var(--vl-slope) - 2px) var(--vl-tab-height) / calc(var(--vl-tab-width) + var(--vl-slope) + 2px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - var(--vl-radius)) calc(var(--vl-tab-height) + 2px),
+    curve to calc(100% - 1.5px) calc(var(--vl-tab-height) + var(--vl-radius)) with calc(100% - 1.5px) calc(var(--vl-tab-height) + 2px),
+    line to calc(100% - 1.5px) calc(100% - var(--vl-radius)),
+    curve to calc(100% - var(--vl-radius)) calc(100% - 2.5px) with calc(100% - 1.5px) calc(100% - 2.5px),
+    line to var(--vl-radius) calc(100% - 2.5px),
+    curve to 1.5px calc(100% - var(--vl-radius)) with 1.5px calc(100% - 2.5px),
+    line to 1.5px var(--vl-radius),
+    curve to var(--vl-radius) 2px with 1.5px 2px,
+    close); position: relative; container-type: inline-size; color: var(--vl-ink); font-family: var(--vl-font-family); text-align: left; min-width: 0px; overflow-wrap: anywhere; box-sizing: border-box; width: 100%; min-height: 236px; --vl-border-width: 1.5px; --vl-content-offset: 26px; --vl-texture-size-x: var(--vl-texture-size); --vl-texture-size-y: var(--vl-texture-size); --vl-texture-x: 0px; --vl-texture-y: 0px; --vl-light-angle: 112deg; --vl-light-width: 36%; --vl-light-softness: 0px; --vl-light-x: 20%; --vl-light-y: 10%; --vl-shadow-x: 0px; --vl-shadow-y: 2px; --vl-shadow-blur: 5px; --vl-shadow-spread: 0px; --vl-surface-end: hsl(var(--vl-hue) 82% 91%); --vl-muted-ink: var(--vl-ink); --vl-edge-color: #fff; --vl-light-color: #fff; --vl-shadow-color: hsl(var(--vl-hue) 80% 25%); --vl-label-bg: hsl(var(--vl-hue) 66% 48% / .82); --vl-label-ink: #fff; --vl-font-family: &quot;Avenir Next&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; --vl-title-size: 30px; --vl-title-weight: 700; --vl-title-leading: 42px; --vl-title-tracking: -.05em; --vl-body-size: 14px; --vl-body-leading: 26px; --vl-body-opacity: .82; --vl-title-gap-before: 14px; --vl-title-gap-after: 8px; --vl-rotate: 0deg; --vl-shift-x: 0px; --vl-shift-y: 0px; transform: translate(var(--vl-shift-x), var(--vl-shift-y)) rotate(var(--vl-rotate));">
+<span data-material-layer="shadow" aria-hidden="true" style="position: absolute; z-index: 0; inset: auto 6px 1px; height: 36px; border-radius: 0 0 var(--vl-radius) var(--vl-radius); box-shadow: var(--vl-shadow-x) var(--vl-shadow-y) var(--vl-shadow-blur) var(--vl-shadow-spread) color-mix(in srgb, var(--vl-shadow-color) calc(var(--vl-shadow) * 100%), transparent); pointer-events: none; box-sizing: border-box;">
+</span>
+<span data-material-layer="edge" aria-hidden="true" style="position: absolute; inset: 0px; clip-path: none; pointer-events: none; z-index: 1; background: none; border-radius: var(--vl-radius); border: var(--vl-border-width) solid color-mix(in srgb, var(--vl-edge-color) calc(var(--vl-edge) * 100%), transparent); box-sizing: border-box;">
+</span>
+<span data-material-layer="surface" aria-hidden="true" style="position: absolute; inset: calc(var(--vl-border-width) + .5px) var(--vl-border-width) calc(var(--vl-border-width) + 1px); clip-path: none; pointer-events: none; z-index: 2; mask-image: none; mask-size: var(--vl-radius) var(--vl-radius),
+    calc(var(--vl-tab-width) - var(--vl-radius) - 12px) var(--vl-tab-height),
+    calc(var(--vl-slope) + 24px) var(--vl-tab-height),
+    var(--vl-radius) calc(100% - var(--vl-radius) * 2),
+    calc(100% - var(--vl-radius) * 2) calc(100% - var(--vl-tab-height)),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) calc(100% - var(--vl-tab-height) - var(--vl-radius) * 2),
+    var(--vl-radius) var(--vl-radius),
+    var(--vl-radius) var(--vl-radius); mask-position: left 0 top 0,
+    left var(--vl-radius) top 0,
+    left calc(var(--vl-tab-width) - 12px) top 0,
+    left 0 top var(--vl-radius),
+    left var(--vl-radius) top var(--vl-tab-height),
+    right 0 top var(--vl-tab-height),
+    right 0 top calc(var(--vl-tab-height) + var(--vl-radius)),
+    left 0 bottom 0,
+    right 0 bottom 0; mask-repeat: no-repeat; background: color-mix(in srgb, var(--vl-tint) calc(var(--vl-alpha) * 100%), transparent); backdrop-filter: blur(var(--vl-blur)) saturate(1.25); box-shadow: inset 0 -3px 0 hsl(var(--vl-hue) 90% 55% / .14); border-radius: calc(var(--vl-radius) - var(--vl-border-width)); overflow: hidden; box-sizing: border-box;">
+<span data-material-layer="texture" aria-hidden="true" style="position: absolute; inset: 0px; z-index: 1; opacity: var(--vl-grain); background-image: var(--vl-texture); background-size: var(--vl-texture-size-x) var(--vl-texture-size-y); background-repeat: repeat; mix-blend-mode: var(--vl-texture-blend); box-sizing: border-box; background-position: var(--vl-texture-x) var(--vl-texture-y);">
+</span>
+<span data-material-layer="light" aria-hidden="true" style="position: absolute; inset: 0px; opacity: var(--vl-highlight); background: radial-gradient(ellipse at var(--vl-light-x) var(--vl-light-y), color-mix(in srgb, var(--vl-light-color) 53.333333%, transparent), transparent 65%), linear-gradient(0deg, #92774b44, transparent 8%); box-shadow: rgba(255, 255, 255, 0.6) 0px 1px 1px inset, rgba(128, 103, 71, 0.133) 0px -3px 3px inset; box-sizing: border-box; filter: blur(var(--vl-light-softness));">
+</span>
+</span>
+<div data-material-layer="content" style="position: relative; z-index: 3; padding: var(--vl-padding); box-sizing: border-box;">
+<span data-slot="label" style="display: inline-block; padding: 5px 11px; border-radius: 5px; background: var(--vl-label-bg); color: var(--vl-label-ink); font-size: 12px; font-weight: 650; line-height: 1.4; box-sizing: border-box;">普通圆角卡片</span>
+<h2 data-slot="title" style="margin: var(--vl-title-gap-before) 0 var(--vl-title-gap-after); font-size: var(--vl-title-size); line-height: var(--vl-title-leading); font-weight: var(--vl-title-weight); letter-spacing: var(--vl-title-tracking); box-sizing: border-box;">留一点，手作温度。</h2>
+<p data-slot="body" style="margin: 0px; font-size: var(--vl-body-size); line-height: var(--vl-body-leading); opacity: var(--vl-body-opacity); white-space: pre-line; box-sizing: border-box; color: var(--vl-muted-ink);">短纤维与暖色纸面相互叠加。
+用于手记与生活方式内容。</p>
+</div>
+</article>
+</section>
+<p style="position: absolute; left: 48px; top: 1270px; margin: 0px; font-size: 12px; line-height: 20px; color: rgb(119, 135, 115); box-sizing: border-box;">同一参数可整体设置，也可覆盖单个实例；内容与纹理分别编辑。</p>
+</main>
+</body>
+</html>

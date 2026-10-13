@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   这份骨架只保证三件事：装得下、不溢出、可读。
+   颜色、字体、构图、节奏、材质 —— 全部是空的，那是你的活。
+
+   直接改这个文件。不要指望某个脚本把它变好看。
+   参考 craft/aesthetic-baseline.md 定四组数值，
+   参考 craft/page-grammar.md 定每段的职责与构图，
+   写完跑 scripts/shoot.py，把图读进来看，再改。
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── 四组数值：从本轮证据里推，不要用这里的占位值 ─────────────
+     色板：底色不要停在纯白/纯黑；强调色只给一个角色用
+     字阶：要有断崖，标题不能只是"大一点的正文"
+     圆角：3 个角色值，不要全局一值；建议"只有可点的东西才是圆的"
+     栅格：留白用 clamp 跟着视口走，卡片缝隙可以小到 4px 让图连成一片
+     ── 参考站实测区间见 reference/fingerprints/index.json ───────── */
+  --canvas:#F4F2ED;        /* TODO 底色 */
+  --ink:#16161A;           /* TODO 墨色 */
+  --accent:#000000;        /* TODO 唯一强调色 */
+  --muted:#6E6A60;         /* TODO 弱信息（对骨色需 >=4.5:1，别更浅） */
+  --line:rgba(20,20,15,.14);
+
+  --gut:clamp(20px,3.6vw,64px);          /* 页面左右留白 */
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--canvas);color:var(--ink);
+  /* TODO 换成你为这个品牌选的字体栈；CJK 用 PingFang SC */
+  font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;                     /* 防溢出，但别用它盖住真溢出 */
+}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+/* 可点区域下限 24px —— 这是门会查的 */
+button,a[href]{min-height:24px}
+
+.wrap{padding-inline:var(--gut)}
+
+/* ── 首屏 ─────────────────────────────────────────────────────
+   门会量「首屏画面占比 >= 40%」（含 CSS/SVG 画的画面）。
+   四个获奖参考站实测 40–100%，40% 是下沿不是目标。 */
+.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;background:#0C0C0A}
+.hero-media{position:absolute;inset:0}
+.hero-media img{width:100%;height:100%;object-fit:cover}
+/* 压在图上的文字：底下必须有可控的暗场，否则对比度不可控。
+   注意门会跳过"背景不可信"的文字 —— 跳过不等于安全，你得自己保证读得出来。 */
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,8,6,.6),rgba(8,8,6,.1) 40%,rgba(8,8,6,.85))}
+.hero-inner{position:absolute;inset:auto 0 0 0;z-index:2;padding:0 var(--gut) 96px;color:#fff}
+
+/* 首屏的第二个原语：**分栏**（左巨号细体标题 + 右满版摄影）。
+   实测成立 —— 参照案例里评分最高的那份官网就是这个构图。
+   它不是默认值：用哪一个由 style.json 的 layoutLogic 决定。
+     full-bleed-stack → 上面那个满版压字
+     axial / grid     → 这个分栏
+   用法：给 .hero 加 class="hero split"，里面放 .hero-copy + .hero-media。 */
+.hero.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));
+  align-items:stretch;background:var(--canvas)}
+.hero.split::after{content:none}                 /* 分栏不需要满版暗场 */
+.hero.split .hero-media{position:relative;inset:auto;height:100%}
+.hero.split .hero-copy{display:flex;flex-direction:column;justify-content:center;
+  gap:22px;padding:var(--gut);color:var(--ink)}
+.hero.split .hero-inner{display:none}
+
+/* ── 通用段 ───────────────────────────────────────────────────
+   不要每段都长一样。craft/page-grammar.md 的段职责表先答四个问题：
+   job / proof / geometry / move，再决定形状。 */
+section{position:relative}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;
+  gap:28px;flex-wrap:wrap;padding-block:88px 34px}
+
+/* 网格：auto-fit + minmax，不写断点 */
+.grid{display:grid;gap:4px;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+
+/* 横向轨：注意 padding 要留出页面留白，否则第一张贴边 */
+.rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding-inline:var(--gut);scroll-padding-left:var(--gut)}
+.rail>*{flex:0 0 clamp(260px,29vw,400px);scroll-snap-align:start}
+
+
+/* ── 滚动驱动的场景推进（motionVoice=scene-advance 时用）───────────
+   这是我们和获奖稿差得最远的一层，所以骨架给一个能跑的起点。
+
+   实测证据：把一个获奖案例定格在开头和 72% 两个时间点——
+   底色由浅变深、主体由一团火花换成一个网状球体、标题整段被换掉、
+   底部多出一栏。**这不是入场动画，是滚动位置 = 场景进度。**
+
+   入场揭示（.rv）解决的是"元素怎么出现"；
+   滚动驱动解决的是"页面怎么讲一件事"。只有前者的页面，
+   滚起来是一串各自淡入的块；有后者的，滚起来是一个连续的场景。
+
+   用法：外层给高度（决定这一段能演多久），内层 sticky 成舞台，
+   把 --p（0→1 的进度）绑到任何你想让它连续变的东西上。
+   舞台里放什么、变什么，是你的设计 —— 骨架只保证进度算得对、降级不白屏。 */
+.scene{position:relative;height:300vh}          /* 300vh ≈ 演三屏那么久 */
+.scene-stage{position:sticky;top:0;height:100vh;overflow:hidden;
+  display:grid;place-items:center;
+  /* 底色跟着进度走：浅 → 深。换成任何两个色都行 */
+  background:color-mix(in oklab,var(--canvas) calc((1 - var(--p,0)) * 100%),var(--ink));
+  transition:background .1s linear}
+.scene-stage .subject{                            /* 主体：跟着进度缩放与位移 */
+  transform:scale(calc(.82 + var(--p,0) * .26)) translateY(calc(var(--p,0) * -6vh));
+  will-change:transform}
+.scene-stage .line{                               /* 两句文案交替：一句退一句进 */
+  position:absolute;left:var(--gut);right:var(--gut);text-align:center;
+  transition:opacity .25s linear}
+.scene-stage .line-a{opacity:calc(1 - var(--p,0) * 2.2)}
+.scene-stage .line-b{opacity:calc((var(--p,0) - .55) * 2.6)}
+@media(prefers-reduced-motion:reduce){
+  /* 降级不能白屏：舞台停在终态，两句文案都显示 */
+  .scene{height:auto}
+  .scene-stage{position:static;height:auto;padding-block:14vh;--p:1}
+  .scene-stage .line-a,.scene-stage .line-b{position:static;opacity:1}
+  .scene-stage .subject{transform:none}
+}
+
+/* ── 动效 ─────────────────────────────────────────────────────
+   三条硬约束：加性（别用 opacity:0 起手当唯一手段，关掉动效会白屏）、
+   绑真实内容（挂在图/标题上，不新建装饰层）、可降级。
+   入场只播一次；滚动驱动的连续状态才是"大屏很酷"和"像 PPT"的分界。 */
+.rv{opacity:0;transform:translateY(24px);
+  transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.01ms!important}
+  .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- 首屏：一个主角 + 一个主行动。别在这里塞三张等大的图。
+     两个原语二选一（由 style.json 的 layoutLogic 定，不要两个都留着）：
+       A 满版压字   <section class="hero">        ← 下面这个
+       B 左字右图   <section class="hero split">  ← 加 .hero-copy，去掉 .hero-inner -->
+<section class="hero">
+  <div class="hero-media"><img src="assets/hero.jpg" alt="" width="1800" height="1200"></div>
+  <div class="hero-inner">
+    <h1>__H1__</h1>
+  </div>
+</section>
+
+
+<!-- 滚动驱动的场景（motionVoice=scene-advance 才用；用不上就整段删掉，别留空壳）
+     舞台里放什么由你定：一个物、一段视频、一组图。骨架只管进度和降级。 -->
+<section class="scene" data-scene>
+  <div class="scene-stage">
+    <div class="subject"><img src="assets/hero.jpg" alt="" width="1400" height="1400"></div>
+    <h2 class="line line-a">__LINE_A__</h2>
+    <h2 class="line line-b">__LINE_B__</h2>
+  </div>
+</section>
+
+<!-- 中段：段数与顺序由内容定。删掉这段注释和下面的空壳，写你自己的。 -->
+<section class="wrap">
+  <div class="sec-head"><h2>__SECTION__</h2></div>
+  <div class="grid"><!-- … --></div>
+</section>
+
+<script>
+/* 入场揭示。数字滚动、购物车、筛选这些交互自己写 ——
+   "支持直接购买"这类承诺必须是真能点的，门和断言都会查。 */
+
+/* 滚动进度 → CSS 变量。用 rAF 节流，别在 scroll 里直接改样式。 */
+const scenes=[...document.querySelectorAll('[data-scene]')];
+if(scenes.length && !matchMedia('(prefers-reduced-motion:reduce)').matches){
+  let tick=false;
+  const upd=()=>{tick=false;scenes.forEach(sc=>{
+    const r=sc.getBoundingClientRect(), span=r.height-innerHeight;
+    const p=span>0?Math.min(1,Math.max(0,-r.top/span)):0;
+    sc.querySelector('.scene-stage').style.setProperty('--p',p.toFixed(3));});};
+  addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(upd);}},{passive:true});
+  upd;
+}
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+}),{threshold:.16,rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

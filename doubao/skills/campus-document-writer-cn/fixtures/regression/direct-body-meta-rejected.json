@@ -1,0 +1,17 @@
+{
+  "id": "regression.direct-body-meta-rejected",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "正常成稿不得添加正文前后的元说明。",
+  "candidate_output": "以下是为你整理的正式版本：\n课程调整申请\n因课程时间冲突，现申请调整课程。\n请补填个人信息后提交，如需调整请告诉我。",
+  "assertions": {
+    "required_substrings": ["课程调整申请"],
+    "forbidden_substrings": ["以下是", "请补填", "如需调整", "请告诉我"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": false, "forbidden_literals": []},
+  "expected_valid": false,
+  "expected_issue_codes": ["FORBIDDEN_TEXT_PRESENT"]
+}

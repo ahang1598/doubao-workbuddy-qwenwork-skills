@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sales.pipeline-forecast.input.v2",
+  "type": "object",
+  "required": ["currency", "period", "amount_basis", "current_snapshot", "claims"],
+  "properties": {
+    "currency": {"type": "string", "minLength": 1},
+    "period": {"type": "string", "minLength": 1},
+    "amount_basis": {"type": "string", "minLength": 1},
+    "stage_probabilities": {
+      "type": "object",
+      "additionalProperties": {"type": ["number", "integer", "null"], "minimum": 0, "maximum": 1}
+    },
+    "quota": {"type": ["number", "integer", "string", "null"]},
+    "derive_fiscal_quarter": {"type": "boolean"},
+    "fiscal_calendar": {"type": ["object", "null"]},
+    "stage_sensitivity": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["opportunity_id", "amount", "candidate_stages"],
+        "properties": {
+          "opportunity_id": {"type": "string", "minLength": 1},
+          "amount": {"type": ["number", "integer", "string", "null"]},
+          "candidate_stages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "current_snapshot": {"type": "array", "items": {"$ref": "#/$defs/opportunity"}},
+    "prior_snapshot": {
+      "oneOf": [
+        {"type": "array", "items": {"$ref": "#/$defs/opportunity"}},
+        {"type": "null"}
+      ]
+    },
+    "claims": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/claim"}},
+    "gate_context": {"type": "object"}
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "claim", "claim_type", "critical", "object_id", "period", "unit", "source_ids", "source_tier", "confidence", "conflict_state"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "claim": {"type": "string", "minLength": 1},
+        "claim_type": {"enum": ["fact", "calculation", "inference", "assumption", "management_claim", "unknown"]},
+        "critical": {"type": "boolean"},
+        "object_id": {"type": "string", "minLength": 1},
+        "period": {"type": "string", "minLength": 1},
+        "unit": {"type": ["string", "null"]},
+        "source_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "source_tier": {"enum": ["primary", "customer_primary", "counterparty", "official", "crm_truth", "transaction_primary", "secondary", "lead_only"]},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "conflict_state": {"enum": ["none", "open", "resolved"]}
+      }
+    },
+    "opportunity": {
+      "type": "object",
+      "required": ["opportunity_id", "stage", "amount", "currency"],
+      "properties": {
+        "opportunity_id": {"type": ["string", "null"]},
+        "stage": {"type": ["string", "null"]},
+        "amount": {"type": ["number", "integer", "string", "null"]},
+        "currency": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    }
+  }
+}

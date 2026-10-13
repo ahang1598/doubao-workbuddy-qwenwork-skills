@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>叫车</title><style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;font:15px/1.6
+ -apple-system,"PingFang SC",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img,svg{display:block;max-width:100%}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(130% 90% at 50% 8%,var(--s1),var(--s2) 72%)}
+#app{position:relative;z-index:1;width:100%;height:100%;overflow:hidden;background:var(--bg)}
+@media(min-width:760px){#app{width:390px;height:min(844px,86vh);border-radius:44px;
+ box-shadow:0 0 0 11px var(--frame),0 0 0 13px var(--frame2),0 44px 100px rgba(0,0,0,.4)}}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:0 22px;z-index:55;
+ display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;
+ pointer-events:none}
+
+:root{--bg:#F3F5F4;--ink:#14201A;--dim:#5E6E66;--key:#12B05F;--s1:#E9EFEA;--s2:#CBD8D0;
+ --frame:#FFFFFF;--frame2:#E2E7E4}
+.map{position:absolute;inset:0;background:#DCE6E0}
+.map svg{width:100%;height:100%}
+.panel{position:absolute;left:0;right:0;bottom:0;z-index:20;background:#fff;
+ border-radius:22px 22px 0 0;padding:18px 20px 28px;box-shadow:0 -8px 30px rgba(0,0,0,.10)}
+.grab{width:38px;height:4px;border-radius:2px;background:#D5DDD8;margin:0 auto 14px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ECF0EE}
+.row:last-of-type{border-bottom:0}
+.row b{font-size:15px}.row span{color:#4A5951;font-size:13px}
+.row .p{margin-left:auto;font-weight:700}
+.opt{display:flex;gap:9px;margin:10px 0 14px}
+.opt button{flex:1;height:38px;border-radius:10px;border:1px solid #CDD7D2;font-size:14px;color:#3D4B44}
+/* 选中态的绿字要压深：品牌绿 #12B05F 落在浅绿底上实测 2.59:1，
+   肉眼只觉得'淡了点'，门会拦。--key 做色块可以饱和，做**文字**必须另给一个深的。 */
+.opt button.on{border-color:var(--key);color:#0A7A40;font-weight:700;background:#EAF8F0}
+/* 白字压在品牌绿 #12B05F 上实测 2.84:1 —— 这是最常见的一个真实缺陷：
+   品牌色是给色块用的，当按钮底色配白字往往就不够。压深一档到 #0E8F4C（4.16:1）。 */
+.go{width:100%;height:50px;border-radius:13px;background:#0E8F4C;color:#fff;
+ font-weight:700;font-size:16px}
+
+</style></head><body><div class="stage"><div id="app">
+<div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+
+<div class="map"><svg viewBox="0 0 390 500" aria-label="附近路网">
+ <rect width="390" height="500" fill="#DCE6E0"/>
+ <path d="M0 180 H390 M0 320 H390 M120 0 V500 M270 0 V500" stroke="#EFF4F1" stroke-width="14"/>
+ <path d="M0 250 H390" stroke="#fff" stroke-width="20"/>
+ <circle cx="150" cy="250" r="9" fill="#12B05F" stroke="#fff" stroke-width="4"/>
+ <circle cx="300" cy="180" r="7" fill="#14201A" stroke="#fff" stroke-width="3"/></svg></div>
+<div class="panel">
+  <div class="grab"></div>
+  <div class="row"><b>去 望湖里 3 号院</b><span>2.4 公里</span><span class="p">约 12 分钟</span></div>
+  <div class="opt">
+    <button class="on" data-car="快车">快车 ¥18</button>
+    <button data-car="优享">优享 ¥26</button>
+    <button data-car="拼车">拼车 ¥11</button>
+  </div>
+  <button class="go" id="go">现在叫车</button>
+</div>
+
+</div></div><script>
+const opt=[...document.querySelectorAll('.opt button')];
+opt.forEach(b=>b.onclick=()=>{opt.forEach(x=>x.classList.toggle('on',x===b));
+ document.getElementById('go').textContent='叫 '+b.dataset.car+' · 现在';});
+let calling=false;document.getElementById('go').onclick=function(){calling=!calling;
+ this.textContent=calling?'正在为你找车…':'现在叫车';};
+</script></body></html>

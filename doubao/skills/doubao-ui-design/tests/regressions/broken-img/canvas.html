@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>裂图的阳性对照</title>
+<!-- 复刻真实事故：画布写 src="../h5/assets/hero-bg.jpg" 与 src="../shots/full-3.png"，
+     飞书把相对路径**静默丢掉**，用户打开文档看到三个裂图占位符。
+     上一版的规则是 `'src="assets/' in t`（否定式窄枚举），这两种写法都从旁边溜了过去。
+     正向口径是：每个 <img src> 都必须是 data: URI。 -->
+<style>*{box-sizing:border-box;margin:0;padding:0}
+.cv{max-width:900px;margin:0 auto;padding:0 40px 48px;background:#fff;
+  font-family:system-ui,sans-serif;font-size:15px;line-height:1.78}
+.cv img{display:block;max-width:100%}</style></head><body><div class="cv">
+<p>下面两张图在本地能打开，进了飞书就是裂的。</p>
+<img src="../h5/assets/hero-bg.jpg" alt="旧版首页">
+<img src="../shots/full-3.png" alt="新版首页">
+</div></body></html>

@@ -1,0 +1,224 @@
+[
+  {
+    "check_id": "DP0-01",
+    "label": "商家名称、groupid、门店数、区域数",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "merchant_name",
+      "merchant_groupid",
+      "store_count",
+      "region_count"
+    ]
+  },
+  {
+    "check_id": "DP0-02",
+    "label": "成交金额、环比",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "transaction_amount",
+      "transaction_amount_change_rate"
+    ]
+  },
+  {
+    "check_id": "DP0-03",
+    "label": "核销金额、环比",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "redemption_amount",
+      "redemption_amount_change_rate"
+    ]
+  },
+  {
+    "check_id": "DP0-04",
+    "label": "退款金额、环比",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "refund_amount",
+      "refund_amount_change_rate"
+    ]
+  },
+  {
+    "check_id": "DP0-05",
+    "label": "门店动销率、动销门店数",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "selling_store_rate",
+      "selling_store_count"
+    ]
+  },
+  {
+    "check_id": "DP0-06",
+    "label": "日店均成交、日店均核销",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "avg_daily_transaction_amount_per_store",
+      "avg_daily_redemption_amount_per_store"
+    ]
+  },
+  {
+    "check_id": "DP0-07",
+    "label": "商品榜单 Top5",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "product_ranking_top5"
+    ]
+  },
+  {
+    "check_id": "DP0-08",
+    "label": "商品概览：全部商品、动销商品、滞销商品",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "product_count_all",
+      "product_count_selling",
+      "product_count_slow_moving"
+    ]
+  },
+  {
+    "check_id": "DP0-09",
+    "label": "搜索分析：搜索词、搜索曝光、搜索点击、搜索成交",
+    "platform": "platform",
+    "priority": "core_required",
+    "metric_keys": [
+      "search_terms",
+      "search_impressions",
+      "search_clicks",
+      "search_transactions"
+    ]
+  },
+  {
+    "check_id": "DP1-01",
+    "label": "成交来源分布：渠道、体裁",
+    "platform": "platform",
+    "priority": "extended_on_demand",
+    "metric_keys": [
+      "transaction_source_by_channel",
+      "transaction_source_by_content_format"
+    ]
+  },
+  {
+    "check_id": "DP1-02",
+    "label": "退款原因分布",
+    "platform": "platform",
+    "priority": "extended_on_demand",
+    "metric_keys": [
+      "refund_reason_distribution"
+    ]
+  },
+  {
+    "check_id": "DP1-03",
+    "label": "评价数据：评分、评价数",
+    "platform": "platform",
+    "priority": "extended_on_demand",
+    "metric_keys": [
+      "rating_score",
+      "review_count"
+    ]
+  },
+  {
+    "check_id": "DP1-04",
+    "label": "流量数据：曝光、访问、渠道分布",
+    "platform": "platform",
+    "priority": "extended_on_demand",
+    "metric_keys": [
+      "traffic_impressions",
+      "traffic_visits",
+      "traffic_channel_distribution"
+    ]
+  },
+  {
+    "check_id": "DP1-05",
+    "label": "门店榜单",
+    "platform": "platform",
+    "priority": "extended_on_demand",
+    "metric_keys": [
+      "store_ranking"
+    ]
+  },
+  {
+    "check_id": "DP1-06",
+    "label": "行业竞争排名：概览层级",
+    "platform": "platform",
+    "priority": "extended_on_demand",
+    "metric_keys": [
+      "industry_competition_overview_rank"
+    ]
+  },
+  {
+    "check_id": "BP0-01",
+    "label": "商家名称：用于跨平台校验",
+    "platform": "backend",
+    "priority": "backend_required",
+    "metric_keys": [
+      "merchant_name"
+    ]
+  },
+  {
+    "check_id": "BP0-02",
+    "label": "成交金额、核销金额、退款金额",
+    "platform": "backend",
+    "priority": "backend_required",
+    "metric_keys": [
+      "transaction_amount",
+      "redemption_amount",
+      "refund_amount"
+    ]
+  },
+  {
+    "check_id": "BP0-03",
+    "label": "曝光次数",
+    "platform": "backend",
+    "priority": "backend_required",
+    "metric_keys": [
+      "impression_count"
+    ]
+  },
+  {
+    "check_id": "BP0-04",
+    "label": "经营分、门店等级分布",
+    "platform": "backend",
+    "priority": "backend_required",
+    "metric_keys": [
+      "business_score",
+      "store_grade_distribution"
+    ]
+  },
+  {
+    "check_id": "BP0-05",
+    "label": "门店数、抖音号数",
+    "platform": "backend",
+    "priority": "backend_required",
+    "metric_keys": [
+      "store_count",
+      "douyin_account_count"
+    ]
+  },
+  {
+    "check_id": "BP0-06",
+    "label": "违规状态、收款状态",
+    "platform": "backend",
+    "priority": "backend_required",
+    "metric_keys": [
+      "violation_status",
+      "payment_status"
+    ]
+  },
+  {
+    "check_id": "PRE-01",
+    "label": "分流补充字段",
+    "platform": "platform",
+    "priority": "precheck",
+    "metric_keys": [
+      "store_visits",
+      "product_count_onsale",
+      "ad_spend"
+    ]
+  }
+]

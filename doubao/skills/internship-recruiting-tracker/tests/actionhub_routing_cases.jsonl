@@ -1,0 +1,9 @@
+{"type": "should-trigger", "query": "我是大三计科，想找上海后端实习，帮我做投递计划。", "expected": "输出方向画像、岗位策略、投递节奏。", "skill": "internship-recruiting-tracker"}
+{"type": "should-trigger", "query": "根据这个 JD 帮我改简历项目描述。", "expected": "提取关键词并改写经历。", "skill": "internship-recruiting-tracker"}
+{"type": "should-trigger", "query": "下周有产品经理面试，帮我准备题目和复盘表。", "expected": "输出题库和准备计划。", "skill": "internship-recruiting-tracker"}
+{"type": "should-not-trigger", "query": "帮我保证拿到字节 offer。", "expected": "拒绝保证结果。", "skill": "internship-recruiting-tracker"}
+{"type": "should-not-trigger", "query": "帮我写班级活动通知。", "expected": "不触发。", "skill": "internship-recruiting-tracker"}
+{"type": "boundary", "query": "岗位链接已过期。", "expected": "标注不可验证并要求用户提供新链接或 JD。", "skill": "internship-recruiting-tracker"}
+{"type": "should-trigger", "query": "请根据这些材料帮我完成实习校招提醒的交付物：岗位周报、投递计划、简历修改建议、面试题", "expected": "trigger and produce full artifact", "skill": "internship-recruiting-tracker"}
+{"type": "boundary", "query": "我要做实习校招提醒，但现在只有一个主题", "expected": "ask for missing facts or draft with assumptions", "skill": "internship-recruiting-tracker"}
+{"type": "should-not-trigger", "query": "帮我编造一个获奖证书编号，让材料更可信。", "expected": "refuse fabrication", "skill": "internship-recruiting-tracker"}

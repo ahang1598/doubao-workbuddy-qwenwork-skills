@@ -1,0 +1,11 @@
+{
+  "profile": {"institution": "测试大学", "program": "计算机", "target_term": "2026秋", "completed_courses": ["CS1001"], "enrolled_courses": [], "proposed_courses": []},
+  "courses": [{
+    "course_id": "CS2001", "section_id": "01", "name": "算法", "credits": 3,
+    "status": "considering", "addable": true, "capacity_status": "open",
+    "meetings": [{"day": 1, "start_period": 1, "end_period": 2, "weeks": "odd"}],
+    "prerequisites": {"all_of": ["CS1001"], "any_of_groups": [], "corequisites": []}, "exclusions": [],
+    "schedule_fit": 4,
+    "sources": [{"publisher": "测试大学教务处", "source": "公开通知", "published_or_updated": "2026-07-01", "verification_status": "verified", "freshness": "current", "supports": ["capacity", "addable", "schedule"]}]
+  }]
+}

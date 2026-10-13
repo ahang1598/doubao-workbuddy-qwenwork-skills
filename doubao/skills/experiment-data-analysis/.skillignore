@@ -1,0 +1,18 @@
+# Skill runtime artifacts
+*.zip
+.idea/
+__pycache__/
+*/__pycache__/
+*.pyc
+.aime/.setup_status
+temp_data/
+*/temp_data/
+.DS_Store
+
+# Analysis outputs and local participant data
+output/
+outputs/
+reports/
+logs/
+datasets/
+*.log

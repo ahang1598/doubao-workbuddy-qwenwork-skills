@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    {
+      "task_id": "T01",
+      "title": "明确背景与问题",
+      "deliverable": "问题定义草稿",
+      "owner": "unassigned",
+      "collaborators": [],
+      "backup": null,
+      "depends_on": [],
+      "due_at": null,
+      "acceptance_criteria": ["写出问题定义", "标记来源或待确认项"],
+      "rubric_links": ["R1"],
+      "status": "todo"
+    }
+  ],
+  "rubric_criteria": ["R1"]
+}

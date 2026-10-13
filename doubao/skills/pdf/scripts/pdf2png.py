@@ -22,6 +22,19 @@ def grid_size(page_count):
     return columns, rows
 
 
+def parse_pages(value, page_count):
+    if not value:
+        return list(range(1, page_count + 1))
+    pages = set()
+    for part in value.split(","):
+        if "-" in part:
+            start, end = (int(number) for number in part.split("-", 1))
+            pages.update(range(start, end + 1))
+        else:
+            pages.add(int(part))
+    return sorted(pages)
+
+
 def merged_page_pixmap(document, page_numbers, dpi):
     page_numbers = list(page_numbers)
     page_rects = [document[index].rect for index in page_numbers]
@@ -69,40 +82,50 @@ def merged_page_pixmap(document, page_numbers, dpi):
     return pixmap
 
 
-def png_name(stem, start, end):
+def png_name(start, end):
     if start == end:
         return f"page-{start:03d}.png"
     return f"page-{start:03d}-{end:03d}.png"
 
 
-def pdf_to_png(pdf, output_dir, dpi):
+def pdf_to_png(pdf, output_dir, dpi, pages=None):
     output_dir.mkdir(parents=True, exist_ok=True)
     document = fitz.open(pdf)
-    page_count = len(document)
+    page_numbers = parse_pages(pages, len(document))
     output_files = []
-    for start in range(0, page_count, PAGES_PER_IMAGE):
-        end = min(start + PAGES_PER_IMAGE, page_count)
-        if end - start == 1:
-            pixmap = document[start].get_pixmap(dpi=dpi, alpha=False)
+    for start in range(0, len(page_numbers), PAGES_PER_IMAGE):
+        group = page_numbers[start : start + PAGES_PER_IMAGE]
+        page_indices = [page_number - 1 for page_number in group]
+        if len(page_indices) == 1:
+            pixmap = document[page_indices[0]].get_pixmap(
+                dpi=dpi,
+                alpha=False,
+            )
         else:
-            pixmap = merged_page_pixmap(document, range(start, end), dpi)
-        output_file = output_dir / png_name(pdf.stem, start + 1, end)
+            pixmap = merged_page_pixmap(document, page_indices, dpi)
+        output_file = output_dir / png_name(group[0], group[-1])
         pixmap.save(output_file)
         output_files.append(output_file)
     document.close()
-    return page_count, output_files
+    return len(page_numbers), output_files
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pdf")
     parser.add_argument("--output", required=True)
+    parser.add_argument("--pages", help="One-based pages, for example 1,3-5")
     parser.add_argument("--dpi", type=int, default=200)
     args = parser.parse_args()
 
     pdf = Path(args.pdf).resolve()
     output_dir = Path(args.output).resolve()
-    page_count, output_files = pdf_to_png(pdf, output_dir, args.dpi)
+    page_count, output_files = pdf_to_png(
+        pdf,
+        output_dir,
+        args.dpi,
+        args.pages,
+    )
     print(
         f"Wrote {len(output_files)} PNG files for {page_count} pages "
         f"to {output_dir}"

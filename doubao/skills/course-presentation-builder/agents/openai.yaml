@@ -1,0 +1,3 @@
+display_name: "课程汇报 PPT"
+short_description: "根据课程题目、文档、论文或调研材料生成 PPT 结构、页面文案、演讲稿"
+default_prompt: "请用 课程汇报 PPT 帮我处理一个真实校园场景，并输出可直接使用的交付物。"

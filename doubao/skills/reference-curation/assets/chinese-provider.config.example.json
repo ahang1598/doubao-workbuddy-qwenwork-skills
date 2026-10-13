@@ -1,0 +1,24 @@
+{
+  "runtime": "doubao",
+  "logical_tool": "search_cn_bibliography",
+  "tool_alias": "replace-with-mounted-tool-name",
+  "transport": "mcp_or_openapi",
+  "configured_by": "app_publisher_or_admin",
+  "credential_location": "platform_secret_or_mcp_server",
+  "provider": "replace-with-authorized-provider",
+  "required_for_language": ["zh"],
+  "input_fields": ["title", "authors", "year", "doi", "sources", "max_results"],
+  "status_values": [
+    "ok",
+    "no_match",
+    "auth_required",
+    "rate_limited",
+    "unavailable",
+    "invalid_response"
+  ],
+  "fallbacks": ["user_structured_export", "exact_doi", "unresolved"],
+  "on_missing_tool": "ask_for_export_or_doi_and_contact_admin",
+  "on_no_match": "keep_unresolved",
+  "never_request_from_end_user": ["api_key", "endpoint", "authorization_header"],
+  "never_store": ["api_key", "authorization_header", "full_query_with_personal_data"]
+}

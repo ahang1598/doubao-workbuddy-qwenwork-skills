@@ -1,0 +1,4 @@
+interface:
+  display_name: "参考文献核验与整理"
+  short_description: "核验 DOI 与书目元数据，输出可追溯记录和待复核引用草稿"
+  default_prompt: "使用 $reference-curation 整理这组参考文献，先离线规范化并列出核验计划，得到许可后再联网补全元数据。"

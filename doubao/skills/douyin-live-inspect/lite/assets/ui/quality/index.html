@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%233384ff'/%3E%3Cstop offset='.52' stop-color='%23014bde'/%3E%3Cstop offset='1' stop-color='%23a945fb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Ctext x='16' y='21' text-anchor='middle' fill='white' font-family='Arial,sans-serif' font-size='14' font-weight='700'%3EAI%3C/text%3E%3C/svg%3E">
+    <title>视频质检报告</title>
+    <link rel="stylesheet" href="/shared/arco.css">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/shared/lite.css">
+  </head>
+  <body><div class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">AI</span><strong id="report-brand-title">视频质检报告</strong></div><a id="back-to-monitor" hidden>返回质检操作台</a><div class="lite-edition"><details><summary>Lite 体验版</summary><p>无需火山引擎账号即可体验核心直播质检。自动生成直播与视频内容复盘。正式版能力升级：更丰富且灵活配置的质检规则与专业模型能力。<br>问题描述：如何开通企业直播质检服务</p></details><a href="https://console.volcengine.com/workorder/create?step=3&amp;SubProductID=P00000078" target="_blank" rel="noopener noreferrer">申请开通正式版</a></div>
+    </header>
+      <p class="edition-guide">如需后续使用正式版，可<a href="https://console.volcengine.com/workorder/create?step=3&amp;SubProductID=P00000078&amp;sessionID=f3eb625d-af6c-11f1-b754-4a64e05716c9" target="_blank" rel="noopener noreferrer">提交工单申请开通</a>。<br>打开后请手动填写：① 相关产品选择“视频服务 / 企业直播”；② 问题分类选择“操作指导”；③ 问题描述填写“如何开通企业直播质检服务”。然后选择消息提醒接收方式，点击“提交工单”，等待处理结果；提交不代表已开通。也可查看 <a href="https://docs.volcengine.com/docs/3019/2024033?lang=zh" target="_blank" rel="noopener noreferrer">直播质检能力介绍</a>。</p>
+
+    <main class="shell">
+      <section id="video-coverage" class="video-coverage" hidden aria-label="检测覆盖范围">
+        <h2 id="coverage-title"></h2><p id="coverage-summary"></p><p id="video-report-note"></p>
+        <details id="coverage-details"><summary>查看未检测范围与证据缺口</summary><ul id="video-report-gaps"></ul></details>
+      </section>
+      <div class="report-layout">
+        <section class="diagnosis-card">
+          <div class="diagnosis-banner"><span>✦</span><h2>质检结论</h2></div>
+          <div class="diagnosis-body">
+            <div class="diagnosis-summary">
+              <div class="diagnosis-title"><p id="diagnosis-summary">正在生成质检总结…</p><div class="top-hit-rules" id="top-hit-rules" aria-label="主要命中规则" hidden></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="report-sidebar">
+          <section class="task-card">
+            <div class="task-cover"><span><i>▶</i><b id="task-cover-label">质检报告</b></span></div>
+            <div class="task-heading">
+              <h1 id="task-name">视频质检报告</h1>
+              <p class="task-account" id="task-account" hidden></p>
+              <p class="task-meta" id="task-meta">正在加载报告数据…</p>
+              <div class="task-scene-tags" id="task-scene-tags" hidden><span id="task-scene">—</span></div>
+            </div>
+            <div class="task-session" id="task-session" hidden><span id="task-session-label">质检场次</span><strong id="task-session-time">—</strong></div>
+          </section>
+
+          <article class="panel player-panel">
+            <div class="panel-title"><h2 id="player-title">质检视频</h2><span class="secure-chip">安全播放</span></div>
+            <div class="video-frame">
+              <video id="video" controls playsinline preload="none"></video>
+              <div class="video-empty" id="video-empty" hidden>视频播放失败；请完整解压报告 ZIP 并保留 media 目录，或下载单文件报告后用本地 Chrome 或 Edge 打开。</div>
+            </div>
+            <div class="playhead-row"><span id="playhead-time">00:00</span><span id="active-caption">点击下方时间点定位证据</span></div>
+            <div class="timeline" id="timeline" aria-label="风险证据时间轴"></div>
+            <div class="timeline-legend" id="timeline-legend"><span><i class="legend-risk"></i>风险片段</span><span><i class="legend-playhead"></i>当前播放位置</span></div>
+          </article>
+        </aside>
+
+        <div class="report-content">
+          <section class="data-card">
+            <div class="section-title"><h2>质检数据</h2></div>
+            <div class="summary-grid" aria-label="报告摘要">
+              <article class="metric metric-risk"><span>风险片段数</span><strong id="risk-count">—</strong><small>本次报告风险证据</small></article>
+              <article class="metric"><span>命中规则 / 已检测规则</span><strong><b id="hit-count">—</b> / <b id="rule-count">—</b></strong></article>
+              <article class="metric"><span id="duration-label">视频时长</span><strong id="duration">—</strong><small>支持时间轴定位</small></article>
+              <article class="metric"><span>语音片段</span><strong id="utterance-count">—</strong><small>已识别语音片段</small></article>
+            </div>
+          </section>
+
+          <section class="panel content-analysis-panel">
+            <div class="panel-title analysis-heading">
+              <div><span class="analysis-spark" aria-hidden="true">✦</span><h2>内容分析</h2></div>
+            </div>
+            <div class="analysis-controls">
+              <div class="analysis-tabs" role="tablist" aria-label="内容分析范围">
+                <button class="analysis-tab active" id="analysis-tab-global" type="button" role="tab" aria-selected="true" data-analysis-tab="global">全部</button>
+                <button class="analysis-tab" id="analysis-tab-risk" type="button" role="tab" aria-selected="false" data-analysis-tab="risk">风险片段</button>
+              </div>
+              <label class="search" id="asr-search-wrap"><span class="search-icon" aria-hidden="true"></span><input id="asr-search" type="text" inputmode="search" autocomplete="off" placeholder="搜索内容" aria-label="搜索内容"><button class="search-clear" id="asr-search-clear" type="button" aria-label="清空搜索" hidden>×</button></label>
+            </div>
+            <div class="analysis-pane" id="analysis-pane-global" role="tabpanel" aria-labelledby="analysis-tab-global">
+              <div class="transcript-list" id="transcript-list"></div>
+            </div>
+            <div class="analysis-pane evidence-pane" id="analysis-pane-risk" role="tabpanel" aria-labelledby="analysis-tab-risk" hidden>
+              <p class="evidence-pane-summary" id="evidence-summary">按时间顺序呈现全部风险片段</p>
+              <div class="evidence-list" id="evidence-list"></div>
+            </div>
+          </section>
+
+          <section class="rules-section">
+            <div class="section-title"><div><h2>规则检测结果</h2>
+              <p>本次检测使用的全部质检规则</p>
+            </div></div>
+            <div class="rule-grid" id="rule-grid"></div>
+
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div><script src="/shared/lite.js" defer></script>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

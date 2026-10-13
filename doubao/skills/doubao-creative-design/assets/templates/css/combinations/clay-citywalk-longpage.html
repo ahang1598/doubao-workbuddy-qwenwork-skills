@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>城市漫游 · 活动导览示意</title>
+<style data-recipe-css="clay-citywalk-longpage">
+.cc{--cc-page-bg-fit:cover;--cc-page-bg-position:center top;--cc-board-width:calc(100% - 36px);--cc-border:4px;--cc-edge:#c7c8b9;--cc-shadow:0 5px 0 #656c5266,0 8px 12px #34432230;--cc-paper:#fff9d9;--cc-ink:#534a30;--cc-blue:#59b4db;--cc-red:#e75c43;--cc-green:#306c50;position:relative;isolation:isolate;width:364px;max-width:100%;margin:0 auto;color:var(--cc-ink);background:#a5b868;font:13px/1.6 "PingFang SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
+.cc,.cc *{box-sizing:border-box}
+.cc h1,.cc h2,.cc h3,.cc p,.cc ol,.cc ul,.cc figure{margin:0}
+.cc ol,.cc ul{padding:0;list-style:none}
+.cc img{display:block;max-width:100%;font-size:12px;line-height:1.5;color:#665e41}
+.cc h1{font-size:34px;line-height:1.2;font-weight:900;letter-spacing:1px}
+.cc h2{font-size:24px;line-height:1.3;font-weight:900}
+.cc h3{font-size:14px;line-height:1.5}
+.cc small{font-size:12px}
+.cc>img[data-background-slot="clay-page-bg"]{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;object-fit:var(--cc-page-bg-fit);object-position:var(--cc-page-bg-position)}
+.cc>section,.cc>div{position:relative;z-index:1}
+.cc .cc-board{width:var(--cc-board-width);margin-inline:auto;border:var(--cc-border) solid var(--cc-edge);border-radius:15px;background:var(--cc-paper);box-shadow:inset 0 2px 0 #fff9,var(--cc-shadow)}
+.cc .cc-tag{display:inline-block;padding:4px 13px;border-radius:20px;background:#fff9c6;box-shadow:0 3px 0 #766c3533;font-weight:700}
+.cc .cc-note{font-size:12px;line-height:1.6}
+.cc .cc-label{display:inline-block;padding:6px 18px;border:2px solid #fceec0;border-radius:12px;background:var(--cc-red);color:#fff8e5;font-size:12px;box-shadow:0 3px 0 #963e3438}
+.cc .cc-asset{object-fit:contain}
+.cc .cc-window{border:3px solid #fff7d5;border-radius:7px;background:#e8e2c4}
+.cc .cc-window img{width:100%;height:100%;object-fit:contain}
+.cc .cc-hero{position:relative;background:transparent}
+.cc .cc-hero-copy{position:relative;z-index:1;padding:28px 20px 0;text-align:center}
+.cc .cc-eyebrow{font-size:12px;font-weight:700;letter-spacing:3px;margin-bottom:6px}
+.cc .cc-hero-sub{margin-top:8px;font-size:14px;font-weight:700}
+.cc .cc-status{display:inline-block;margin-top:9px;padding:2px 9px;background:#fff9d7b8;border-radius:10px;font-size:12px}
+.cc .cc-hero-stage{position:relative;z-index:1;min-height:306px;padding:14px 25px 30px}
+.cc .cc-hero-duck{width:100%;height:262px;object-fit:contain}
+.cc .cc-bubble{position:absolute;left:17px;top:29px;max-width:92px;padding:9px 12px;border-radius:50% 50% 42% 44%;background:#fffde4;box-shadow:2px 4px 0 #857a4233;font-weight:700;transform:rotate(-8deg)}
+.cc .cc-direction{position:absolute;right:16px;bottom:25px;padding:5px 11px;border:3px solid #fff6d9;border-radius:7px;background:#9b643e;color:#fff;transform:rotate(12deg);font-weight:700}
+.cc .cc-field{position:relative;background:transparent}
+.cc .cc-section{position:relative;z-index:1;background:transparent}
+.cc .cc-intro{padding:4px 25px 25px;text-align:center}
+.cc .cc-intro h2{display:inline-block;padding:10px 26px;background:#fffbb7;border-radius:48% 42% 44% 40%;font-size:24px;box-shadow:0 3px 0 #6775332b;transform:rotate(-3deg)}
+.cc .cc-intro p{margin-top:15px;color:#fffce2;font-size:14px;font-weight:700;text-shadow:0 1px 2px #48592e}
+.cc .cc-intro .cc-note{font-size:12px;font-weight:400}
+.cc .cc-steps{padding:0 0 5px}
+.cc .cc-pill-title{position:relative;width:max-content;max-width:calc(100% - 50px);margin:0 auto 17px;padding:6px 20px;border:4px solid #d7d9c6;border-radius:40px;background:var(--cc-red);box-shadow:inset 0 2px 0 #fff6,0 4px 0 #53604265;text-align:center;color:#fff9df}
+.cc .cc-pill-title:after{content:"";position:absolute;width:5px;height:17px;left:calc(50% - 2px);top:calc(100% + 4px);background:#a7afa1;z-index:-1}
+.cc .cc-step-board{position:relative;padding:10px;background:#eeedde;border-color:#b5b8aa;border-radius:15px}
+.cc .cc-step-board:after{content:"";display:block;position:absolute;left:18%;right:18%;height:20px;top:100%;border-left:7px solid #b9c0b4;border-right:7px solid #b9c0b4;filter:drop-shadow(0 3px 1px #46513a66)}
+.cc .cc-step-list{display:grid;gap:8px}
+.cc .cc-step-row{display:grid;grid-template-columns:54px minmax(0,1fr) 55px;align-items:center;gap:7px;padding:9px 6px;border:2px solid #e8dfae;border-radius:5px;background:#fff9d7;box-shadow:inset 0 2px 0 #fff,0 2px 0 #ccc7a5}
+.cc .cc-step-number{align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding-right:6px;border-right:1px solid #e3d990;color:#635729}
+.cc .cc-step-number small{font-size:12px;font-weight:700}
+.cc .cc-step-number strong{font-size:20px;line-height:1.25}
+.cc .cc-step-copy{font-size:12px}
+.cc .cc-step-copy strong{font-size:13px}
+.cc .cc-inline-card{display:inline-block!important;width:28px;height:23px;vertical-align:middle;object-fit:contain;margin-left:3px}
+.cc .cc-step-icon{width:55px;height:62px}
+.cc .cc-step-decor{position:relative;height:100px;margin-top:19px}
+.cc .cc-step-decor img{position:absolute;left:6px;bottom:1px;width:110px;height:99px}
+.cc .cc-benefits{padding:0 0 28px}
+.cc .cc-cabinet{position:relative;padding:0 9px 13px;border-color:#c4c7b9;background:#f5f0dc;border-radius:18px 18px 13px 13px}
+.cc .cc-cabinet-top{margin:-4px -9px 0;padding:8px 12px;background:#afb7b6;border:4px solid #c4cac2;border-radius:20px 20px 5px 5px;box-shadow:inset 0 5px 0 #d3d9d3,0 4px 0 #7d8c87}
+.cc .cc-cabinet-title{position:relative;padding:17px 10px 16px;margin:3px -9px 0;background:var(--cc-blue);color:#fffde7;text-align:center;border-bottom:4px solid #4295bc;box-shadow:inset 3px 0 0 #a9e3ee,inset -3px 0 0 #368bae}
+.cc .cc-cabinet-title .cc-tag{margin-bottom:7px;color:#626751;font-size:12px;padding:2px 12px}
+.cc .cc-cabinet-title h2{font-size:24px}
+.cc .cc-cabinet-title p{margin-top:6px;font-size:12px}
+.cc .cc-cabinet-caption{padding:10px 4px 7px;font-weight:700}
+.cc .cc-benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.cc .cc-benefit{min-width:0;padding:6px 3px 8px;text-align:center;border:2px solid #fff3d5;border-radius:11px;background:#efb2ba;box-shadow:inset 0 2px 0 #ffd9df}
+.cc .cc-benefit:nth-child(n+4){background:#f6df88;box-shadow:inset 0 2px 0 #fff1b5}
+.cc .cc-benefit img{width:100%;height:67px;object-fit:contain;margin:4px auto}
+.cc .cc-benefit h3{font-size:12px}
+.cc .cc-benefit p{font-size:12px}
+.cc .cc-cabinet-foot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;font-size:12px;text-align:center}
+.cc .cc-cabinet-foot span{padding:6px;background:#fff2ae;border:2px solid #e5d691;border-radius:10px}
+.cc .cc-cabinet-foot span+span{color:#fff6df;background:#e86466;border-color:#d95559}
+.cc .cc-citywalk{padding:0 0 12px}
+.cc .cc-green-sign{position:relative;width:var(--cc-board-width);margin:0 auto 9px;padding:15px 11px;border:4px solid #e2e6c1;border-radius:10px;background:var(--cc-green);color:#fffde7;text-align:center;box-shadow:inset 0 0 0 1px #80ac87,var(--cc-shadow)}
+.cc .cc-green-sign:before,.cc .cc-green-sign:after{content:"";position:absolute;top:7px;width:5px;height:5px;background:#edeaca;border-radius:50%}
+.cc .cc-green-sign:before{left:7px}.cc .cc-green-sign:after{right:7px}
+.cc .cc-green-sign p{margin-top:7px;font-size:12px}
+.cc .cc-map-frame{position:relative;width:var(--cc-board-width);margin:auto;padding:33px 12px 12px;border:6px solid #cccbb1;border-top:13px solid #eac957;border-radius:12px 12px 5px 5px;background:#ede8c8;box-shadow:inset 0 3px 0 #fff2a1,var(--cc-shadow)}
+.cc .cc-route-header{position:absolute;top:1px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;letter-spacing:3px}
+.cc .cc-map-frame .cc-window{aspect-ratio:4/5}
+.cc .cc-map-frame figcaption{text-align:center;margin-top:10px;font-size:12px}
+.cc .cc-citywalk-footer{display:grid;grid-template-columns:91px minmax(0,1fr);gap:8px;align-items:center;padding:14px 21px 0}
+.cc .cc-citywalk-footer img{width:91px;height:79px}
+.cc .cc-citywalk-footer p{font-size:12px;color:#fffce4;text-shadow:0 1px 2px #53613a}
+.cc .cc-rewards{padding:15px 0 8px}
+.cc .cc-hanging{position:relative;width:var(--cc-board-width);margin:22px auto 0;padding:15px 12px 17px;border:5px solid #86c6b4;border-radius:12px 12px 5px 5px;background:#fff9d8;box-shadow:inset 0 0 0 2px #d6ead2,var(--cc-shadow)}
+.cc .cc-hanging:before,.cc .cc-hanging:after{content:"";position:absolute;width:5px;height:30px;top:-30px;border-radius:4px;background:#dfd8b6;box-shadow:2px 0 0 #707e5766}
+.cc .cc-hanging:before{left:24px}.cc .cc-hanging:after{right:24px}
+.cc .cc-hanging h2{text-align:center;color:#75612f}
+.cc .cc-hanging>p{text-align:center;margin-top:5px;font-size:12px}
+.cc .cc-reward-layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:10px;align-items:center;margin-top:12px}
+.cc .cc-reward-layout img{width:100%;height:158px}
+.cc .cc-reward-copy p{margin-top:6px;font-size:12px}
+.cc .cc-reward-copy strong{font-size:14px}
+.cc .cc-snail-space{height:67px;position:relative}
+.cc .cc-snail-space img{position:absolute;right:10px;bottom:0;width:78px;height:65px}
+.cc .cc-theme{padding:0 0 20px}
+.cc .cc-exhibit{width:var(--cc-board-width);margin:auto}
+.cc .cc-red-roof{position:relative;z-index:2;padding:17px 12px 14px;border:4px solid #dc593e;border-bottom:7px solid #b23c2f;border-radius:21px 21px 6px 6px;background:var(--cc-red);color:#fff8dd;box-shadow:inset 0 3px 0 #ffab80,0 4px 0 #604b3540;text-align:center}
+.cc .cc-red-roof p{font-size:12px;margin-top:7px}
+.cc .cc-exhibit-body{margin:0 12px;padding:13px 10px 14px;border-left:9px solid #777e64;border-right:9px solid #777e64;background:#fff9da;box-shadow:inset 3px 0 0 #d6d8bb,inset -3px 0 0 #d6d8bb,0 5px 0 #56614155}
+.cc .cc-exhibit-body .cc-window{aspect-ratio:4/3;border-color:#e8dda7}
+.cc .cc-exhibit-copy{padding:12px 2px 0}
+.cc .cc-exhibit-copy h3{font-size:18px;line-height:1.4}
+.cc .cc-exhibit-copy p{margin-top:7px}
+.cc .cc-exhibit-meta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin:12px 0;padding:9px 0;border-top:1px dashed #c9bc83;border-bottom:1px dashed #c9bc83;font-size:12px}
+.cc .cc-exhibit-meta strong{display:block;color:#a04c35}
+.cc .cc-exhibit-foot{text-align:center}
+.cc .cc-theme-plaque{width:max-content;max-width:calc(100% - 42px);margin:14px 20px 0 auto;padding:8px 16px;border:3px solid #e7c075;border-radius:5px;background:#cc9d53;color:#fffbe7;text-align:center;box-shadow:inset 0 2px 0 #ffe1a5,0 4px 0 #5b673e40;transform:rotate(3deg)}
+.cc .cc-theme-plaque strong{display:block;font-size:16px}
+.cc .cc-shops{padding-top:9px}
+.cc .cc-shop-head{position:relative;z-index:2;display:grid;grid-template-columns:58px minmax(0,1fr);column-gap:6px;align-items:end;width:var(--cc-board-width);margin:auto;padding:0}
+.cc .cc-shop-head:after{content:"";position:absolute;z-index:2;left:19px;bottom:28px;width:29px;height:5px;border-radius:50%;background:radial-gradient(ellipse,#345c6b66,transparent 72%);pointer-events:none}
+.cc .cc-shop-sign{position:relative;z-index:3;grid-column:2;grid-row:1;min-width:0;width:auto;margin:0 12px 0 0;padding:11px 10px;background:#fff9d7;border:6px solid #5aaed0;border-radius:15px 15px 8px 8px;box-shadow:inset 0 2px 0 #fff,3px 3px 0 #337da3,0 5px 4px -2px #28556d66;text-align:center;transform:translateY(7px)}
+.cc .cc-shop-sign h2{font-size:24px}
+.cc .cc-shop-sign p{font-size:12px;margin-top:3px}
+.cc .cc-pigeon{position:relative;z-index:4;grid-column:1;grid-row:1;align-self:end;width:52px;height:64px;margin:0 0 0 6px;object-position:center bottom;transform:translateY(11px)}
+.cc .cc-shop-counter{position:relative;z-index:1;grid-column:1 / -1;grid-row:2;width:100%;height:42px;border-radius:9px;box-shadow:0 3px 2px #35525a40,0 7px 8px -3px #34463255;pointer-events:none}
+.cc .cc-shop-counter-top{position:absolute;inset:0 0 auto;height:26px;border-radius:9px 9px 4px 4px;background:linear-gradient(180deg,#a0dced 0%,#7fcce9 42%,#61b8df 100%);clip-path:polygon(4% 0,96% 0,100% 100%,0 100%);box-shadow:inset 0 2px 1px #d6f5fa99}
+.cc .cc-shop-counter-front{position:absolute;inset:24px 0 0;border-radius:4px 4px 9px 9px;background:linear-gradient(180deg,#64bee5 0%,#4ba8d3 55%,#368ab4 100%);box-shadow:inset 0 2px 1px #afe4f480,inset 0 -3px 2px #286f983d}
+.cc .cc-shop-board{position:relative;z-index:1;margin-top:0;padding:17px 12px 14px;border-top:0;border-color:#c9cfb5;border-radius:0 0 13px 13px;background:#f5f2d5}
+.cc .cc-shop-list{display:grid;gap:9px}
+.cc .cc-shop-row{display:grid;grid-template-columns:58px minmax(0,1fr);gap:9px;align-items:start;padding:8px;border:2px solid #e6ddb0;border-radius:10px;background:#fff6b7;box-shadow:inset 0 2px 0 #fffbdc,0 2px 0 #cfccaa55}
+.cc .cc-shop-row:nth-child(4n+3),.cc .cc-shop-row:nth-child(4n+4){background:#f2cbd1;border-color:#e3b9bf;box-shadow:inset 0 2px 0 #ffe4e8,0 2px 0 #cfb8ab55}
+.cc .cc-shop-row .cc-window{width:58px;aspect-ratio:1;border-width:2px;border-radius:8px}
+.cc .cc-shop-row h3{font-size:14px}
+.cc .cc-shop-row p{font-size:12px;margin-top:3px}
+.cc .cc-shop-meta{color:#797354}
+.cc .cc-shop-footer{text-align:center;padding-top:14px}
+.cc .cc-shop-footer p{font-size:12px;margin-top:8px}
+.cc .cc-closing{padding:18px 18px 32px;text-align:center}
+.cc .cc-closing-decor{position:relative;display:grid;grid-template-columns:74px minmax(0,1fr) 104px;align-items:end;gap:10px;min-height:117px;margin-bottom:14px}
+.cc .cc-closing-cone{grid-column:1;width:74px;height:90px}
+.cc .cc-closing-duck{grid-column:3;width:104px;height:117px}
+.cc .cc-closing-card{padding:15px 13px;border:4px solid #d9d7bf;border-radius:22px;background:#fff7d6;box-shadow:inset 0 2px 0 #fff,0 5px 0 #4e56514d}
+.cc .cc-closing-card h2{font-size:26px;color:#b7523c}
+.cc .cc-closing-card p{margin-top:8px}
+.cc .cc-closing-card .cc-note{color:#77725e}
+@media(max-width:320px){.cc{--cc-board-width:calc(100% - 24px)}.cc h1{font-size:30px}.cc .cc-step-row{grid-template-columns:47px minmax(0,1fr) 43px;gap:5px}.cc .cc-step-icon{width:43px}.cc .cc-benefit-grid{gap:4px}.cc .cc-benefit{padding-inline:2px}.cc .cc-reward-layout{grid-template-columns:minmax(0,1fr)}.cc .cc-reward-layout img{height:160px}.cc .cc-reward-copy{text-align:center}.cc .cc-shop-board{padding-inline:8px}.cc .cc-shop-row{grid-template-columns:49px minmax(0,1fr);gap:7px;padding:7px}.cc .cc-shop-row .cc-window{width:49px}}
+</style>
+</head>
+<body>
+<main class="cc" data-recipe="clay-citywalk-longpage" data-validation="unverified" aria-label="城市漫游活动导览，未核实演示模板">
+<section class="cc-hero" data-section="hero" aria-labelledby="cc-hero-title">
+<div class="cc-hero-copy">
+<p class="cc-eyebrow">CITY WALK GUIDE</p>
+<h1 id="cc-hero-title">城市漫游生活节</h1>
+<p class="cc-hero-sub">沿着街道，发现生活的小惊喜</p>
+<p class="cc-status">导览示意 · 时间与地点待确认</p>
+</div>
+<div class="cc-hero-stage">
+<img class="cc-hero-duck cc-asset" data-asset-slot="clay-hero-duck" src="{{clay-hero-duck}}" alt="待填透明素材：主视觉漫游鸭">
+<p class="cc-bubble">生活<br>不止一条路</p>
+<p class="cc-direction">城市漫游 ↑</p>
+</div>
+</section>
+
+<div class="cc-field">
+<section class="cc-section cc-intro" data-section="intro" aria-labelledby="cc-intro-title">
+<h2 id="cc-intro-title">从街角出发<br>和城市打个招呼</h2>
+<p>把熟悉的街道，走成新的风景。<br>跟着导览慢慢逛，<br>收集属于自己的城市片段。</p>
+<p class="cc-note">本页为中性演示模板，素材与活动信息均待补充核实。</p>
+</section>
+
+<section class="cc-section cc-steps" data-section="steps" aria-labelledby="cc-steps-title">
+<header class="cc-pill-title"><h2 id="cc-steps-title">参与方式</h2></header>
+<div class="cc-board cc-step-board">
+<ol class="cc-step-list">
+<li class="cc-step-row">
+<div class="cc-step-number"><small>STEP 01</small><strong>领卡</strong></div>
+<p class="cc-step-copy"><strong>获取漫游导览卡</strong><img class="cc-inline-card" data-asset-slot="clay-step-card" src="{{clay-step-card}}" alt="待填透明素材：导览卡"><br>领取方式与使用说明待公布。</p>
+<img class="cc-step-icon cc-asset" data-asset-slot="clay-step-cone" src="{{clay-step-cone}}" alt="待填透明素材：步骤路锥">
+</li>
+<li class="cc-step-row">
+<div class="cc-step-number"><small>STEP 02</small><strong>逛游</strong></div>
+<p class="cc-step-copy"><strong>选择一条 Citywalk 路线</strong><br>沿途看看小店，记录街角发现。</p>
+<img class="cc-step-icon cc-asset" data-asset-slot="clay-step-bag" src="{{clay-step-bag}}" alt="待填透明素材：漫游提袋">
+</li>
+<li class="cc-step-row">
+<div class="cc-step-number"><small>STEP 03</small><strong>体验</strong></div>
+<p class="cc-step-copy"><strong>查看主题活动安排</strong><br>开放时间、参与条件与预约方式待确认。</p>
+<img class="cc-step-icon cc-asset" data-asset-slot="clay-step-ticket" src="{{clay-step-ticket}}" alt="待填透明素材：活动票券">
+</li>
+</ol>
+</div>
+<div class="cc-step-decor" aria-label="独立前景预留区">
+<img class="cc-asset" data-asset-slot="clay-skate-duck" src="{{clay-skate-duck}}" alt="待填透明素材：滑板鸭">
+</div>
+</section>
+
+<section class="cc-section cc-benefits" data-section="benefits" aria-labelledby="cc-benefits-title">
+<div class="cc-board cc-cabinet">
+<div class="cc-cabinet-top" aria-hidden="true"></div>
+<header class="cc-cabinet-title">
+<span class="cc-tag">出发前，先看看</span>
+<h2 id="cc-benefits-title">你的城市漫游<br>灵感补给柜</h2>
+<p>六类内容展示 · 不代表已确认权益</p>
+</header>
+<p class="cc-cabinet-caption">漫游内容一览</p>
+<ul class="cc-benefit-grid">
+<li class="cc-benefit">
+<h3>出行灵感</h3>
+<img class="cc-asset" data-asset-slot="clay-benefit-01" src="{{clay-benefit-01}}" alt="待填透明素材：权益展示一">
+<p>路线内容待补充</p>
+</li>
+<li class="cc-benefit">
+<h3>街角发现</h3>
+<img class="cc-asset" data-asset-slot="clay-benefit-02" src="{{clay-benefit-02}}" alt="待填透明素材：权益展示二">
+<p>探索点位待确认</p>
+</li>
+<li class="cc-benefit">
+<h3>主题体验</h3>
+<img class="cc-asset" data-asset-slot="clay-benefit-03" src="{{clay-benefit-03}}" alt="待填透明素材：权益展示三">
+<p>活动安排待公布</p>
+</li>
+<li class="cc-benefit">
+<h3>漫游记录</h3>
+<img class="cc-asset" data-asset-slot="clay-benefit-04" src="{{clay-benefit-04}}" alt="待填透明素材：权益展示四">
+<p>记录玩法待补充</p>
+</li>
+<li class="cc-benefit">
+<h3>小店相遇</h3>
+<img class="cc-asset" data-asset-slot="clay-benefit-05" src="{{clay-benefit-05}}" alt="待填透明素材：权益展示五">
+<p>参与门店待核实</p>
+</li>
+<li class="cc-benefit">
+<h3>纪念收藏</h3>
+<img class="cc-asset" data-asset-slot="clay-benefit-06" src="{{clay-benefit-06}}" alt="待填透明素材：权益展示六">
+<p>相关规则待确认</p>
+</li>
+</ul>
+<div class="cc-cabinet-foot"><span>导览说明待完善</span><span>参与规则待发布</span></div>
+</div>
+</section>
+
+<section class="cc-section cc-citywalk" data-section="citywalk" aria-labelledby="cc-citywalk-title">
+<header class="cc-green-sign">
+<h2 id="cc-citywalk-title">精选主题 Citywalk<br>遇见有趣的小店</h2>
+<p>一张地图，串起街道与日常</p>
+</header>
+<figure class="cc-map-frame">
+<div class="cc-route-header">出发 · 漫步 · 发现</div>
+<div class="cc-window">
+<img data-asset-slot="clay-citywalk-map" src="{{clay-citywalk-map}}" alt="待填不透明独立图窗：Citywalk 路线地图">
+</div>
+<figcaption>路线图待上传；起终点、距离与通行信息待核实。</figcaption>
+</figure>
+<div class="cc-citywalk-footer">
+<img class="cc-asset" data-asset-slot="clay-resting-duck" src="{{clay-resting-duck}}" alt="待填透明素材：休息鸭">
+<div><span class="cc-label">路线详情待补充</span><p>走累了就歇一会儿，按自己的节奏出发。</p></div>
+</div>
+</section>
+
+<section class="cc-section cc-rewards" data-section="rewards" aria-labelledby="cc-rewards-title">
+<div class="cc-hanging">
+<h2 id="cc-rewards-title">漫游福利展示</h2>
+<p>把街角的小惊喜，留给下一次相遇</p>
+<div class="cc-reward-layout">
+<img class="cc-asset" data-asset-slot="clay-reward-group" src="{{clay-reward-group}}" alt="待填透明素材：奖品组合，不包含牌匾背景">
+<div class="cc-reward-copy">
+<strong>惊喜内容待揭晓</strong>
+<p>此处预留奖品组合展示，当前不构成赠送或兑换承诺。</p>
+<p>奖品内容、数量、领取条件及期限，均待核实后补充。</p>
+</div>
+</div>
+</div>
+<div class="cc-snail-space">
+<img class="cc-asset" data-asset-slot="clay-snail" src="{{clay-snail}}" alt="待填透明素材：蜗牛">
+</div>
+</section>
+
+<section class="cc-section cc-theme" data-section="theme" aria-labelledby="cc-theme-title">
+<div class="cc-exhibit">
+<header class="cc-red-roof">
+<h2 id="cc-theme-title">城市主题活动<br>一起发现新日常</h2>
+<p>把一次散步，变成一段特别的记忆</p>
+</header>
+<div class="cc-exhibit-body">
+<figure class="cc-window">
+<img data-asset-slot="clay-theme-photo" src="{{clay-theme-photo}}" alt="待填不透明独立图窗：主题活动照片">
+</figure>
+<div class="cc-exhibit-copy">
+<h3>街角灵感补给站</h3>
+<p>主题展览、互动体验与休息空间的内容示意。实际活动形式以核实后的说明为准。</p>
+<div class="cc-exhibit-meta">
+<p><strong>活动时间</strong>待确认</p>
+<p><strong>活动地点</strong>待确认</p>
+<p><strong>参与方式</strong>待公布</p>
+<p><strong>开放安排</strong>待核实</p>
+</div>
+<div class="cc-exhibit-foot"><span class="cc-label">活动详情待完善</span></div>
+</div>
+</div>
+</div>
+<aside class="cc-theme-plaque"><strong>季节漫游笔记</strong><p>把今天的发现，慢慢收藏</p></aside>
+</section>
+
+<section class="cc-section cc-shops" data-section="shops" aria-labelledby="cc-shops-title">
+<header class="cc-shop-head">
+<div class="cc-shop-sign">
+<h2 id="cc-shops-title">街角小店清单</h2>
+<p>八个展示位置 · 实际门店待确认</p>
+</div>
+<img class="cc-pigeon cc-asset" data-asset-slot="clay-pigeon" src="{{clay-pigeon}}" alt="待填透明素材：鸽子">
+<div class="cc-shop-counter" aria-hidden="true">
+<div class="cc-shop-counter-top"></div>
+<div class="cc-shop-counter-front"></div>
+</div>
+</header>
+<div class="cc-board cc-shop-board">
+<ol class="cc-shop-list">
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-01" src="{{clay-shop-01}}" alt="待填不透明独立图窗：门店一"></figure>
+<div><h3>01 · 街角咖啡空间</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>一处适合短暂停留的空间，营业时间及参与内容待核实。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-02" src="{{clay-shop-02}}" alt="待填不透明独立图窗：门店二"></figure>
+<div><h3>02 · 日常烘焙小店</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>沿途发现日常风味，产品信息与活动安排待补充。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-03" src="{{clay-shop-03}}" alt="待填不透明独立图窗：门店三"></figure>
+<div><h3>03 · 独立书店</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>给散步留一点阅读时间，开放信息与店内规则待确认。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-04" src="{{clay-shop-04}}" alt="待填不透明独立图窗：门店四"></figure>
+<div><h3>04 · 手作工作室</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>认识街区里的创作日常，体验项目与预约要求待公布。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-05" src="{{clay-shop-05}}" alt="待填不透明独立图窗：门店五"></figure>
+<div><h3>05 · 花草生活铺</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>在绿意里寻找季节线索，展示内容与到店安排待核实。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-06" src="{{clay-shop-06}}" alt="待填不透明独立图窗：门店六"></figure>
+<div><h3>06 · 街区轻食空间</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>为漫游预留补给时间，餐饮内容与营业信息待确认。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-07" src="{{clay-shop-07}}" alt="待填不透明独立图窗：门店七"></figure>
+<div><h3>07 · 创意杂货铺</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>看看日常物件里的小巧思，商品与活动信息待补充。</p></div>
+</li>
+<li class="cc-shop-row">
+<figure class="cc-window"><img data-asset-slot="clay-shop-08" src="{{clay-shop-08}}" alt="待填不透明独立图窗：门店八"></figure>
+<div><h3>08 · 社区艺术空间</h3><p class="cc-shop-meta">示意类别 · 店名与地址待填</p><p>在街区与创作相遇，展览内容和参观条件待核实。</p></div>
+</li>
+</ol>
+<footer class="cc-shop-footer">
+<span class="cc-label">门店信息持续完善中</span>
+<p>以上名称为类别示意，不指向已确认的真实商户。</p>
+</footer>
+</div>
+</section>
+
+<section class="cc-section cc-closing" data-section="closing" aria-labelledby="cc-closing-title">
+<div class="cc-closing-decor">
+<img class="cc-closing-cone cc-asset" data-asset-slot="clay-closing-cone" src="{{clay-closing-cone}}" alt="待填透明素材：收尾路锥">
+<img class="cc-closing-duck cc-asset" data-asset-slot="clay-closing-duck" src="{{clay-closing-duck}}" alt="待填透明素材：收尾鸭">
+</div>
+<div class="cc-closing-card">
+<h2 id="cc-closing-title">下一站，街角见</h2>
+<p>慢一点走，多一点发现。<br>让每一次出发，都有新的故事。</p>
+<p class="cc-note">出行请留意天气与道路状况，遵守公共空间及门店规则。</p>
+<p class="cc-note">本页素材槽尚待填充；日期、地点、权益和预约信息未经核实，不作为实际参与依据。</p>
+</div>
+</section>
+</div>
+<img data-background-slot="clay-page-bg" src="{{clay-page-bg}}" alt="" aria-hidden="true">
+</main>
+</body>
+</html>

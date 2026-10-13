@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!-- ══ 写完这一份之后，唯一的下一步是执行这一条命令 ═══════════════
+     __NEXT_CMD__
+
+     它是**一条要执行的命令**，不是「你自己去看一眼」。
+     一条做完：起服务器 → 整页与逐状态截图 → 跑门 → 写好看图回执。
+     不要自己 open_url_in_browser、不要自己 take_screenshot、
+     不要自己 python3 -m http.server —— 那条路走完也拿不到门的结果，
+     更拿不到交付参数，最后既没有 doc 也没有卡片。
+     ══════════════════════════════════════════════════════════════ -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__ · 封面</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   文档封面。**每篇 doc 都要有一张封面**
+   —— 这是它唯一值得抢救的产能，所以搬过来了。
+
+   搬的是**机制**，不是那份 f-string 大字符串：
+     1 版式由内容自动选，不是一套模板套所有稿，也不是随机
+     2 主图从 assetPlan 里按角色挑（opening / declaration / flagship），
+       不是抓第一张 —— 封面主角 = 方案主角，两者要一致
+     3 满版 16:9，截图时只截 [data-doc-cover-root]
+       —— 封面是一张图，不是一段网页；进飞书是原生图片块
+
+   三种版式是**起点不是全集**，你可以写第四种。但：
+     版式可以同，视觉必须不同。
+     配色、字体、网格密度、光晕位置一律由 style.json 的六维签名决定，
+     **不许在这个骨架里写死**。
+
+   出图：
+     python3 scripts/shoot.py full doc/cover.html shots/cover.png 1600 900
+   然后 base64 内嵌进画布或 proposal 的图片块。
+   ══════════════════════════════════════════════════════════════════ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;display:grid;place-items:center;min-height:100vh}
+
+.cover{
+  --ink:#0E0F12;            /* TODO 由 style.json 的 ground 决定 */
+  --paper:#F4F1E8;          /* TODO */
+  --acc:__ACCENT__;         /* TODO 唯一强调色，跟成品一致 */
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  position:relative;width:1600px;height:900px;overflow:hidden;
+  background:var(--ink);color:var(--paper);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",
+    "Microsoft YaHei",system-ui,sans-serif;
+  isolation:isolate;
+}
+/* 12 列网格底纹 —— 成本极低，但它让封面看起来是"一份正经方案"而不是一张图 */
+.cover::before{content:"";position:absolute;inset:0;z-index:0;opacity:.10;
+  background:repeating-linear-gradient(90deg,var(--paper) 0 1px,transparent 1px
+    calc(100% / 12))}
+/* 一个 accent 径向光晕。位置由你定，不要三处都放 */
+.cover::after{content:"";position:absolute;z-index:0;width:900px;height:900px;
+  right:-240px;top:-320px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,var(--acc) 0%,transparent 62%);opacity:.22}
+
+/* 巨号年份 / 编号水印 */
+.folio{position:absolute;z-index:1;right:-2vw;bottom:-6vh;line-height:.78;
+  font:800 clamp(250px,29vw,480px)/1 var(--mono);color:var(--paper);opacity:.06;
+  letter-spacing:-.04em;pointer-events:none}
+
+.art{position:absolute;inset:0;z-index:0;
+  background:var(--art) center/cover no-repeat}
+.scrim{position:absolute;inset:0;z-index:1}
+.body{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  padding:76px 84px}
+
+/* 这行小字元数据是"这是一份正经方案"的信号，成本极低，不要删 */
+.meta{display:flex;justify-content:space-between;gap:24px;
+  font:600 13px/1.6 var(--mono);letter-spacing:.28em;opacity:.72}
+.subject{font-size:clamp(52px,5.4vw,86px);font-weight:800;line-height:1.05;
+  letter-spacing:-.02em;max-width:16em}
+.thesis{margin-top:22px;font-size:20px;line-height:1.6;max-width:30em;opacity:.82}
+.rule{height:2px;background:var(--paper);opacity:.9;margin:0 0 28px;width:120px}
+
+/* ── 版式 A · interface-archive ──────────────────────────────
+   什么时候用：App / 小程序 / H5 —— 主素材是一组关键屏。
+   构图：左侧文字轴，右侧关键屏斜向排开成"档案"。 */
+.cover.interface-archive .body{justify-content:space-between}
+.cover.interface-archive .shots{position:absolute;z-index:1;right:60px;bottom:-40px;
+  display:flex;gap:22px;transform:rotate(-8deg)}
+.cover.interface-archive .shots img{width:236px;border-radius:22px;
+  box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.cover.interface-archive .shots img:nth-child(2){transform:translateY(46px)}
+.cover.interface-archive .shots img:nth-child(3){transform:translateY(92px)}
+
+/* ── 版式 B · editorial-object ───────────────────────────────
+   什么时候用：主素材是**竖图**（人像、单品、场景竖构图）。
+   构图：左文右图两栏，图满高不裁头。 */
+.cover.editorial-object .body{display:grid;grid-template-columns:1fr .78fr;gap:64px}
+.cover.editorial-object .col{display:flex;flex-direction:column;justify-content:space-between}
+.cover.editorial-object .figure{position:relative;margin:-76px -84px -76px 0;
+  background:var(--art) center/cover no-repeat}
+
+/* ── 版式 C · cinematic-field ────────────────────────────────
+   什么时候用：主素材是**横图**（空间、场景、产品横构图）。
+   构图：满版图 + 底部压字，暗场保证对比度。 */
+.cover.cinematic-field .scrim{
+  background:linear-gradient(180deg,rgba(0,0,0,.42) 0%,rgba(0,0,0,.05) 38%,
+                                    rgba(0,0,0,.82) 100%)}
+.cover.cinematic-field .body{justify-content:space-between}
+.cover.cinematic-field .subject{max-width:20em}
+</style>
+</head>
+<body>
+
+<!-- 换版式：改根节点的第二个 class。
+     interface-archive / editorial-object / cinematic-field
+     选哪个由内容定 —— skeleton.py cover 会按 --class 和主素材的长宽比替你选好并说明理由。
+     满版素材写在 style="--art:url(...)" 上；生图只能出矩形，所以它只当满版背景。 -->
+<div class="cover cinematic-field" data-doc-cover-root
+     style="--art:url(assets/__HERO__)">
+  <div class="art"></div>
+  <div class="scrim"></div>
+  <div class="folio">__FOLIO__</div>
+
+  <div class="body">
+    <div class="meta"><span>__PROJECT__</span><span>__COUNT_LABEL__</span></div>
+    <div>
+      <div class="rule"></div>
+      <div class="subject">__SUBJECT__</div>
+      <div class="thesis">__THESIS__</div>
+    </div>
+    <div class="meta"><span>__DATE__</span><span>__PART__</span></div>
+  </div>
+
+  <!-- 版式 A 才用这一块；用不上就整块删掉，别留空壳
+  <div class="shots">
+    <img src="data:image/jpeg;base64,__BASE64__" alt="">
+  </div> -->
+</div>
+
+</body>
+</html>

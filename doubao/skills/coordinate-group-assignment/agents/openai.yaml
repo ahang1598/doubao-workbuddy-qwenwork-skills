@@ -1,0 +1,5 @@
+interface:
+  display_name: "小组作业规划与整合助手"
+  display_description: "把课程小组作业拆成任务，提出可确认分工并整合带证据的成员提交。"
+  short_description: "拆解课程小组任务、提出可解释分工并整合可追溯成员提交"
+  default_prompt: "使用 $coordinate-group-assignment 将这份课程小组作业拆成任务并提出分工，或整合带成员标识的提交。"

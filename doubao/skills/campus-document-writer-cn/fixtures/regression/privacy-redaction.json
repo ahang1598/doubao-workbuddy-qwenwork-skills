@@ -1,0 +1,20 @@
+{
+  "id": "regression.privacy-redaction",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "无关手机号不得进入活动总结。",
+  "candidate_output": "本次活动为宿舍楼消防演练，我负责签到工作。活动中发现集合速度偏慢，下一次增加楼层引导员。联系电话13900000000。",
+  "assertions": {
+    "required_substrings": ["宿舍楼消防演练", "集合速度偏慢", "增加楼层引导员"],
+    "forbidden_substrings": [],
+    "forbidden_regexes": [],
+    "max_output_chars": 400,
+    "allow_empty_output": false
+  },
+  "privacy": {
+    "scan_standard_patterns": true,
+    "forbidden_literals": []
+  },
+  "expected_valid": false,
+  "expected_issue_codes": ["PII_PHONE"]
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <filter id="blur"><feGaussianBlur stdDeviation="3"/></filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#e44"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="800" fill="#fbf7ea"/>
+  <line x1="80" y1="150" x2="1120" y2="150" stroke="#b7d3ef" stroke-width="2"/>
+  <line x1="80" y1="260" x2="1120" y2="260" stroke="#b7d3ef" stroke-width="2"/>
+  <line x1="80" y1="370" x2="1120" y2="370" stroke="#b7d3ef" stroke-width="2"/>
+  <line x1="80" y1="480" x2="1120" y2="480" stroke="#b7d3ef" stroke-width="2"/>
+  <line x1="80" y1="590" x2="1120" y2="590" stroke="#b7d3ef" stroke-width="2"/>
+  <text x="90" y="105" font-family="KaiTi, STKaiti, cursive" font-size="48" fill="#17365d">动量定理（第 6 讲）</text>
+  <text x="100" y="220" font-family="KaiTi, STKaiti, cursive" font-size="42" fill="#222">I = ∫ F dt = Δp</text>
+  <text x="620" y="220" font-family="KaiTi, STKaiti, cursive" font-size="34" fill="#222">条件：惯性系</text>
+  <text x="100" y="330" font-family="KaiTi, STKaiti, cursive" font-size="36" fill="#222">系统：小车 + 砝码</text>
+  <rect x="80" y="282" width="450" height="72" rx="20" fill="none" stroke="#e44" stroke-width="5"/>
+  <path d="M 535 318 C 650 318, 680 410, 790 410" fill="none" stroke="#e44" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="810" y="425" font-family="KaiTi, STKaiti, cursive" font-size="34" fill="#b21f1f">先选系统！</text>
+  <text x="100" y="440" font-family="KaiTi, STKaiti, cursive" font-size="34" fill="#222">例：变力作用，图像面积 = 冲量</text>
+  <text x="100" y="550" font-family="KaiTi, STKaiti, cursive" font-size="34" fill="#222">易错：把内力也写进外力冲量</text>
+  <text x="100" y="660" font-family="KaiTi, STKaiti, cursive" font-size="34" fill="#222">作业：P42 1—4，周五 23:59</text>
+  <text x="720" y="660" font-family="KaiTi, STKaiti, cursive" font-size="34" fill="#555" filter="url(#blur)">补充公式 Δp=?</text>
+  <text x="870" y="735" font-family="Arial, sans-serif" font-size="22" fill="#666">synthetic test page 1</text>
+</svg>
+

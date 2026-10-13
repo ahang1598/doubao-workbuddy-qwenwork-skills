@@ -1,0 +1,22 @@
+# macOS metadata
+.DS_Store
+**/.DS_Store
+__MACOSX/
+**/__MACOSX/
+._*
+**/._*
+
+# Runtime and editor artifacts
+temp_data/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+
+# Local test evidence must remain outside the publishable Skill
+evidence/
+selftest_evidence.json

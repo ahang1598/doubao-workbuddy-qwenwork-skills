@@ -1,0 +1,17 @@
+{
+  "id": "regression.invitation-no-fabrication",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "邀请函不得补写用户未提供的主题、形式、流程、后勤、回执或联系方式。",
+  "candidate_output": "诚邀您拨冗担任校友行业分享会嘉宾。活动时间：[待补：活动时间]；活动地点：[待补：活动地点]。",
+  "assertions": {
+    "required_substrings": ["校友行业分享会", "活动时间：[待补：活动时间]", "活动地点：[待补：活动地点]"],
+    "forbidden_substrings": ["校友姓名", "行业经验", "职业规划", "线下分享", "互动答疑", "交通", "住宿", "请于", "赐复", "请与我们联系", "联系人", "联系电话", "2026-08-14"],
+    "forbidden_regexes": [],
+    "max_output_chars": 400,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

@@ -1,0 +1,844 @@
+{
+  "target": {
+    "display_name": "所选门店",
+    "mode": "store_set",
+    "store_names": [
+      "南山店",
+      "福田店"
+    ],
+    "categories": [
+      "正餐",
+      "正餐"
+    ],
+    "store_keys": [
+      "SYNTHETIC-A",
+      "SYNTHETIC-B"
+    ]
+  },
+  "account_consistency": {
+    "status": "matched",
+    "checked_by": "local-life-service-holiday-business",
+    "method": "dom",
+    "entry": "existing_verified_tab",
+    "backend_merchant_name": "示例品牌",
+    "platform_merchant_name": "示例品牌",
+    "merchant_name": "示例品牌",
+    "checked_at": "2026-09-10T10:00:00+08:00"
+  },
+  "sources": {
+    "S01": {
+      "platform": "抖音生意经",
+      "method": "dom",
+      "path": "经营数据页面",
+      "scope": "已核对的2家门店",
+      "window": "2026-08-11—2026-09-09"
+    },
+    "S02": {
+      "platform": "抖音来客",
+      "method": "dom",
+      "path": "经营数据页面",
+      "scope": "已核对的2家门店",
+      "window": "2026-08-11—2026-09-09"
+    }
+  },
+  "items": [
+    {
+      "id": "R001",
+      "check_id": "DP0-01",
+      "metric_key": "merchant_name",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-01/merchant_name",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": "示例品牌",
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R002",
+      "check_id": "DP0-01",
+      "metric_key": "merchant_groupid",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-01/merchant_groupid",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": "SYNTHETIC-MERCHANT",
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R003",
+      "check_id": "DP0-01",
+      "metric_key": "store_count",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-01/store_count",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 2,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R004",
+      "check_id": "DP0-01",
+      "metric_key": "region_count",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-01/region_count",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 1,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R005",
+      "check_id": "DP0-02",
+      "metric_key": "transaction_amount",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-02/transaction_amount",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 12000,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R006",
+      "check_id": "DP0-02",
+      "metric_key": "transaction_amount_change_rate",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-02/transaction_amount_change_rate",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "zero",
+      "raw_value": 0,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R007",
+      "check_id": "DP0-03",
+      "metric_key": "redemption_amount",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-03/redemption_amount",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 8000,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R008",
+      "check_id": "DP0-03",
+      "metric_key": "redemption_amount_change_rate",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-03/redemption_amount_change_rate",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "zero",
+      "raw_value": 0,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R009",
+      "check_id": "DP0-04",
+      "metric_key": "refund_amount",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-04/refund_amount",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 300,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R010",
+      "check_id": "DP0-04",
+      "metric_key": "refund_amount_change_rate",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-04/refund_amount_change_rate",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "zero",
+      "raw_value": 0,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R011",
+      "check_id": "DP0-05",
+      "metric_key": "selling_store_rate",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-05/selling_store_rate",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 100,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R012",
+      "check_id": "DP0-05",
+      "metric_key": "selling_store_count",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-05/selling_store_count",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 2,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R013",
+      "check_id": "DP0-06",
+      "metric_key": "avg_daily_transaction_amount_per_store",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-06/avg_daily_transaction_amount_per_store",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 200,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R014",
+      "check_id": "DP0-06",
+      "metric_key": "avg_daily_redemption_amount_per_store",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-06/avg_daily_redemption_amount_per_store",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 133.33,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R015",
+      "check_id": "DP0-07",
+      "metric_key": "product_ranking_top5",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-07/product_ranking_top5",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": [
+        {
+          "name": "示例双人餐",
+          "transaction_amount": 9000
+        },
+        {
+          "name": "示例四人餐",
+          "transaction_amount": 3000
+        }
+      ],
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R016",
+      "check_id": "DP0-08",
+      "metric_key": "product_count_all",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-08/product_count_all",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 3,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R017",
+      "check_id": "DP0-08",
+      "metric_key": "product_count_selling",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-08/product_count_selling",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 2,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R018",
+      "check_id": "DP0-08",
+      "metric_key": "product_count_slow_moving",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-08/product_count_slow_moving",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 1,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R019",
+      "check_id": "DP0-09",
+      "metric_key": "search_terms",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-09/search_terms",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": [
+        {
+          "term": "双人餐",
+          "clicks": 30
+        }
+      ],
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R020",
+      "check_id": "DP0-09",
+      "metric_key": "search_impressions",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-09/search_impressions",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 1000,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R021",
+      "check_id": "DP0-09",
+      "metric_key": "search_clicks",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-09/search_clicks",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 80,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R022",
+      "check_id": "DP0-09",
+      "metric_key": "search_transactions",
+      "priority": "core_required",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/DP0-09/search_transactions",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 10,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R023",
+      "check_id": "BP0-01",
+      "metric_key": "merchant_name",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-01/merchant_name",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": "示例品牌",
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R024",
+      "check_id": "BP0-02",
+      "metric_key": "transaction_amount",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-02/transaction_amount",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 12000,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R025",
+      "check_id": "BP0-02",
+      "metric_key": "redemption_amount",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-02/redemption_amount",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 8000,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R026",
+      "check_id": "BP0-02",
+      "metric_key": "refund_amount",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-02/refund_amount",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 300,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R027",
+      "check_id": "BP0-03",
+      "metric_key": "impression_count",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-03/impression_count",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 1000,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R028",
+      "check_id": "BP0-04",
+      "metric_key": "business_score",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-04/business_score",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 4.8,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R029",
+      "check_id": "BP0-04",
+      "metric_key": "store_grade_distribution",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-04/store_grade_distribution",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": [
+        {
+          "grade": "良好",
+          "count": 2
+        }
+      ],
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R030",
+      "check_id": "BP0-05",
+      "metric_key": "store_count",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-05/store_count",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 2,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R031",
+      "check_id": "BP0-05",
+      "metric_key": "douyin_account_count",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-05/douyin_account_count",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 1,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R032",
+      "check_id": "BP0-06",
+      "metric_key": "violation_status",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-06/violation_status",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": "正常",
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R033",
+      "check_id": "BP0-06",
+      "metric_key": "payment_status",
+      "priority": "backend_required",
+      "source_id": "S02",
+      "evidence_ref": "合成字段证据/BP0-06/payment_status",
+      "actual_scope": "merchant",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": "正常",
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      },
+      "use_policy": "identity_only"
+    },
+    {
+      "id": "R034",
+      "check_id": "PRE-01",
+      "metric_key": "store_visits",
+      "priority": "precheck",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/PRE-01/store_visits",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 200,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R035",
+      "check_id": "PRE-01",
+      "metric_key": "product_count_onsale",
+      "priority": "precheck",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/PRE-01/product_count_onsale",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "observed",
+      "raw_value": 3,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    },
+    {
+      "id": "R036",
+      "check_id": "PRE-01",
+      "metric_key": "ad_spend",
+      "priority": "precheck",
+      "source_id": "S01",
+      "evidence_ref": "合成字段证据/PRE-01/ad_spend",
+      "actual_scope": "store_set",
+      "scope_store_keys": [
+        "SYNTHETIC-A",
+        "SYNTHETIC-B"
+      ],
+      "status": "zero",
+      "raw_value": 0,
+      "reason": null,
+      "window": {
+        "start": "2026-08-11",
+        "end": "2026-09-09"
+      }
+    }
+  ],
+  "platform": {
+    "platform": "抖音生意经",
+    "merchant_name": "示例品牌",
+    "selection_complete": true,
+    "selection_evidence": "合成验证材料；不代表真实页面",
+    "captured_at": "2026-09-10T10:00:00+08:00",
+    "stores": [
+      {
+        "match_key": "SYNTHETIC-A",
+        "match_basis": "shared_poi_id",
+        "name": "南山店",
+        "address": "城市示例路1号",
+        "category": "正餐",
+        "evidence_ref": "合成映射A"
+      },
+      {
+        "match_key": "SYNTHETIC-B",
+        "match_basis": "shared_poi_id",
+        "name": "福田店",
+        "address": "城市示例路2号",
+        "category": "正餐",
+        "evidence_ref": "合成映射B"
+      }
+    ]
+  },
+  "backend": {
+    "platform": "抖音来客",
+    "merchant_name": "示例品牌",
+    "selection_complete": true,
+    "selection_evidence": "合成验证材料；不代表真实页面",
+    "captured_at": "2026-09-10T10:00:00+08:00",
+    "stores": [
+      {
+        "match_key": "SYNTHETIC-A",
+        "match_basis": "shared_poi_id",
+        "name": "南山店",
+        "address": "城市示例路1号",
+        "category": "正餐",
+        "evidence_ref": "合成映射A"
+      },
+      {
+        "match_key": "SYNTHETIC-B",
+        "match_basis": "shared_poi_id",
+        "name": "福田店",
+        "address": "城市示例路2号",
+        "category": "正餐",
+        "evidence_ref": "合成映射B"
+      }
+    ]
+  }
+}

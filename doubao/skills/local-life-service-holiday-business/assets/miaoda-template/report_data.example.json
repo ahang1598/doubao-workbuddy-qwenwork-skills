@@ -1,0 +1,473 @@
+{
+  "report": {
+    "title": "中秋国庆经营方案",
+    "year": "2026",
+    "edition": "V6.0",
+    "status_label": "经营诊断",
+    "report_date": "2026-09-10",
+    "window": {
+      "start": "2026-08-11",
+      "end": "2026-09-09"
+    },
+    "footer": "数据截至报告日，以所选门店范围为准。"
+  },
+  "store": {
+    "name": "所选门店",
+    "city": "",
+    "district": "",
+    "category_l1": "",
+    "category_l2": ""
+  },
+  "collection": {
+    "route": "F2",
+    "route_label": "所选门店经营诊断",
+    "key_gaps": []
+  },
+  "holidays": {
+    "mid_autumn": {
+      "start": "2026-09-25",
+      "end": "2026-09-27",
+      "scene": "家庭团圆"
+    },
+    "national_day": {
+      "start": "2026-10-01",
+      "end": "2026-10-07",
+      "scene": "朋友相聚与出游"
+    }
+  },
+  "overview": {
+    "headline": "围绕同一批门店，",
+    "emphasis": "分别接住团圆与出游。",
+    "summary": "方案围绕所选门店的商品、内容和节日接待展开。",
+    "source_note": "",
+    "season_note": "",
+    "season_differences": [
+      {
+        "title": "消费人数与场景",
+        "body": "中秋关注家庭团圆，国庆兼顾朋友聚会与游客尝鲜。"
+      },
+      {
+        "title": "商品、价格与履约",
+        "body": "先核对实际套餐人数、可用日期与预约规则，不因为节日自行编造价格。"
+      },
+      {
+        "title": "名字与短视频",
+        "body": "商品名称说明人数与真实招牌；视频按中秋和国庆分别表达。"
+      },
+      {
+        "title": "节日含义与活动",
+        "body": "结合团圆、亲子和出游提供策略，赠品与接待条件未明时合并确认。"
+      }
+    ],
+    "store_translation": {
+      "label": "本次分析范围",
+      "headline": "共同策略注明适用门店，品类建议依真实供给。",
+      "description": "不把品牌信息直接当成某家门店事实。",
+      "highlight_action_ids": [
+        "a1",
+        "a2",
+        "a3"
+      ]
+    }
+  },
+  "metrics": [
+    {
+      "label": "成交金额",
+      "value": 12000,
+      "unit": "元",
+      "foot": "近30日 · 所选门店汇总",
+      "status": "observed",
+      "scope": "store_set",
+      "source_ids": [
+        "S01"
+      ],
+      "record_id": "R005"
+    },
+    {
+      "label": "核销金额",
+      "value": 8000,
+      "unit": "元",
+      "foot": "近30日 · 所选门店汇总",
+      "status": "observed",
+      "scope": "store_set",
+      "source_ids": [
+        "S01"
+      ],
+      "record_id": "R007"
+    },
+    {
+      "label": "在售商品",
+      "value": 3,
+      "unit": "个",
+      "foot": "近30日 · 所选门店汇总",
+      "status": "observed",
+      "scope": "store_set",
+      "source_ids": [
+        "S01"
+      ],
+      "record_id": "R035"
+    },
+    {
+      "label": "门店页访问人数",
+      "value": 200,
+      "unit": "人",
+      "foot": "近30日 · 所选门店汇总",
+      "status": "observed",
+      "scope": "store_set",
+      "source_ids": [
+        "S01"
+      ],
+      "record_id": "R034"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a1",
+      "order": "01",
+      "action_name": "保留主力商品",
+      "dimensions": [
+        "消费场景",
+        "商品品类"
+      ],
+      "kind": "延续亮点",
+      "tone": "green",
+      "holiday": "all",
+      "tag": "双节 · 所选门店",
+      "title": "延续双人餐的真实卖点",
+      "description": "商品榜单中双人餐成交9000元，占12000元的75%。",
+      "evidence": "商品榜单中双人餐成交9000元，占12000元的75%。",
+      "deadline": "9月24日前",
+      "owner": "品牌运营 × 对应门店负责人",
+      "why": "结合双节场景与已记录字段，明确本次调整的依据。",
+      "current": "商品榜单中双人餐成交9000元，占12000元的75%。",
+      "proposal": "仅在真实供给与履约条件确认后落实相关建议。",
+      "steps": [
+        "核对适用门店真实商品、服务和日期规则。",
+        "按中秋团圆或国庆出游整理对应文字与素材。",
+        "上线前由运营核对可用范围与实际履约条件。"
+      ],
+      "measurement": "观察同一门店范围、同一口径下的访问、成交和核销。",
+      "condition": "实际条件按门店证据确认。",
+      "source_ids": [
+        "S01",
+        "H01"
+      ],
+      "evidence_item_ids": [
+        "R015"
+      ],
+      "basis_type": "store_fact",
+      "applicable_store_indices": [
+        1,
+        2
+      ],
+      "applicable_categories": [
+        "正餐"
+      ]
+    },
+    {
+      "id": "a2",
+      "order": "02",
+      "action_name": "核对假日规则",
+      "dimensions": [
+        "消费场景",
+        "商品品类"
+      ],
+      "kind": "优化改进",
+      "tone": "amber",
+      "holiday": "all",
+      "tag": "双节 · 所选门店",
+      "title": "逐店核对套餐假日使用规则",
+      "description": "策略建议：确认可用日期、预约与接待条件，再补全规则表达。",
+      "evidence": "策略建议：确认可用日期、预约与接待条件，再补全规则表达。",
+      "deadline": "9月24日前",
+      "owner": "品牌运营 × 对应门店负责人",
+      "why": "结合双节场景与已记录字段，明确本次调整的依据。",
+      "current": "策略建议：确认可用日期、预约与接待条件，再补全规则表达。",
+      "proposal": "仅在真实供给与履约条件确认后落实相关建议。",
+      "steps": [
+        "核对适用门店真实商品、服务和日期规则。",
+        "按中秋团圆或国庆出游整理对应文字与素材。",
+        "上线前由运营核对可用范围与实际履约条件。"
+      ],
+      "measurement": "观察同一门店范围、同一口径下的访问、成交和核销。",
+      "condition": "实际条件按门店证据确认。",
+      "source_ids": [
+        "S01",
+        "H01"
+      ],
+      "evidence_item_ids": [
+        "R016"
+      ],
+      "basis_type": "strategy",
+      "applicable_store_indices": [
+        1,
+        2
+      ],
+      "applicable_categories": [
+        "正餐"
+      ]
+    },
+    {
+      "id": "a3",
+      "order": "03",
+      "action_name": "补足团圆表达",
+      "dimensions": [
+        "消费场景",
+        "商品品类"
+      ],
+      "kind": "机会拓展",
+      "tone": "amber",
+      "holiday": "mid",
+      "tag": "双节 · 所选门店",
+      "title": "让家庭聚餐信息更清楚",
+      "description": "策略建议：围绕人数、份量、儿童服务与真实菜品准备中秋表达。",
+      "evidence": "策略建议：围绕人数、份量、儿童服务与真实菜品准备中秋表达。",
+      "deadline": "9月24日前",
+      "owner": "品牌运营 × 对应门店负责人",
+      "why": "结合双节场景与已记录字段，明确本次调整的依据。",
+      "current": "策略建议：围绕人数、份量、儿童服务与真实菜品准备中秋表达。",
+      "proposal": "仅在真实供给与履约条件确认后落实相关建议。",
+      "steps": [
+        "核对适用门店真实商品、服务和日期规则。",
+        "按中秋团圆或国庆出游整理对应文字与素材。",
+        "上线前由运营核对可用范围与实际履约条件。"
+      ],
+      "measurement": "观察同一门店范围、同一口径下的访问、成交和核销。",
+      "condition": "实际条件按门店证据确认。",
+      "source_ids": [
+        "S01",
+        "H01"
+      ],
+      "evidence_item_ids": [
+        "R016"
+      ],
+      "basis_type": "strategy",
+      "applicable_store_indices": [
+        1,
+        2
+      ],
+      "applicable_categories": [
+        "正餐"
+      ]
+    },
+    {
+      "id": "a4",
+      "order": "04",
+      "action_name": "准备出游视频",
+      "dimensions": [
+        "抖音短视频运营",
+        "消费趋势"
+      ],
+      "kind": "机会拓展",
+      "tone": "amber",
+      "holiday": "national",
+      "tag": "双节 · 所选门店",
+      "title": "把交通与招牌拍清楚",
+      "description": "策略建议：用真实门店、交通路线、招牌与套餐内容承接国庆出游。",
+      "evidence": "策略建议：用真实门店、交通路线、招牌与套餐内容承接国庆出游。",
+      "deadline": "9月24日前",
+      "owner": "品牌运营 × 对应门店负责人",
+      "why": "结合双节场景与已记录字段，明确本次调整的依据。",
+      "current": "策略建议：用真实门店、交通路线、招牌与套餐内容承接国庆出游。",
+      "proposal": "仅在真实供给与履约条件确认后落实相关建议。",
+      "steps": [
+        "核对适用门店真实商品、服务和日期规则。",
+        "按中秋团圆或国庆出游整理对应文字与素材。",
+        "上线前由运营核对可用范围与实际履约条件。"
+      ],
+      "measurement": "观察同一门店范围、同一口径下的访问、成交和核销。",
+      "condition": "实际条件按门店证据确认。",
+      "source_ids": [
+        "S01",
+        "H01"
+      ],
+      "evidence_item_ids": [
+        "R034"
+      ],
+      "basis_type": "strategy",
+      "applicable_store_indices": [
+        1,
+        2
+      ],
+      "applicable_categories": [
+        "正餐"
+      ]
+    },
+    {
+      "id": "a5",
+      "order": "05",
+      "action_name": "安排推广节奏",
+      "dimensions": [
+        "抖音短视频运营",
+        "消费趋势"
+      ],
+      "kind": "优化改进",
+      "tone": "amber",
+      "holiday": "all",
+      "tag": "双节 · 所选门店",
+      "title": "依据近期承接再安排投流",
+      "description": "当前观察窗口消耗为0，仅说明近30日未见消耗，不代表全部历史。",
+      "evidence": "当前观察窗口消耗为0，仅说明近30日未见消耗，不代表全部历史。",
+      "deadline": "9月24日前",
+      "owner": "品牌运营 × 对应门店负责人",
+      "why": "结合双节场景与已记录字段，明确本次调整的依据。",
+      "current": "当前观察窗口消耗为0，仅说明近30日未见消耗，不代表全部历史。",
+      "proposal": "仅在真实供给与履约条件确认后落实相关建议。",
+      "steps": [
+        "核对适用门店真实商品、服务和日期规则。",
+        "按中秋团圆或国庆出游整理对应文字与素材。",
+        "上线前由运营核对可用范围与实际履约条件。"
+      ],
+      "measurement": "观察同一门店范围、同一口径下的访问、成交和核销。",
+      "condition": "实际条件按门店证据确认。",
+      "source_ids": [
+        "S01",
+        "H01"
+      ],
+      "evidence_item_ids": [
+        "R036"
+      ],
+      "basis_type": "store_fact",
+      "applicable_store_indices": [
+        1,
+        2
+      ],
+      "applicable_categories": [
+        "正餐"
+      ]
+    }
+  ],
+  "insights": {
+    "trends": {
+      "title": "双节消费趋势",
+      "description": "结合所选门店的已验证数据形成判断。",
+      "badge": "经营诊断",
+      "status": "observed",
+      "source_ids": [
+        "H01"
+      ],
+      "empty_title": "当前未取得该模块数据",
+      "empty_body": "不补编热点或同行。",
+      "items": []
+    },
+    "hotspots": {
+      "title": "热点洞察",
+      "description": "结合所选门店的已验证数据形成判断。",
+      "badge": "经营诊断",
+      "status": "unavailable",
+      "source_ids": [
+        "S01"
+      ],
+      "empty_title": "当前未取得该模块数据",
+      "empty_body": "不补编热点或同行。",
+      "items": []
+    },
+    "peers": {
+      "title": "同行动作",
+      "description": "结合所选门店的已验证数据形成判断。",
+      "badge": "经营诊断",
+      "status": "unavailable",
+      "source_ids": [
+        "S01"
+      ],
+      "empty_title": "当前未取得该模块数据",
+      "empty_body": "不补编热点或同行。",
+      "items": []
+    },
+    "ads": {
+      "title": "投流复盘",
+      "description": "结合所选门店的已验证数据形成判断。",
+      "badge": "经营诊断",
+      "status": "observed",
+      "source_ids": [
+        "S01"
+      ],
+      "empty_title": "当前未取得该模块数据",
+      "empty_body": "不补编热点或同行。",
+      "items": []
+    },
+    "products": {
+      "title": "商品诊断",
+      "description": "结合所选门店的已验证数据形成判断。",
+      "badge": "经营诊断",
+      "status": "observed",
+      "source_ids": [
+        "S01"
+      ],
+      "empty_title": "当前未取得该模块数据",
+      "empty_body": "不补编热点或同行。",
+      "items": []
+    }
+  },
+  "timeline": [
+    {
+      "date": "09.10—09.24",
+      "title": "节前准备",
+      "tasks": [
+        "按适用门店和真实履约条件执行已确认动作。"
+      ],
+      "owner": "品牌运营 × 门店"
+    },
+    {
+      "date": "09.25—09.27",
+      "title": "中秋执行",
+      "tasks": [
+        "按适用门店和真实履约条件执行已确认动作。"
+      ],
+      "owner": "品牌运营 × 门店"
+    },
+    {
+      "date": "09.28—09.30",
+      "title": "两节切换",
+      "tasks": [
+        "按适用门店和真实履约条件执行已确认动作。"
+      ],
+      "owner": "品牌运营 × 门店"
+    },
+    {
+      "date": "10.01—10.07",
+      "title": "国庆执行",
+      "tasks": [
+        "按适用门店和真实履约条件执行已确认动作。"
+      ],
+      "owner": "品牌运营 × 门店"
+    }
+  ],
+  "sources": [
+    {
+      "id": "S01",
+      "priority": "platform_core",
+      "status": "observed",
+      "name": "经营数据",
+      "platform": "抖音生意经",
+      "path": "经营数据页面",
+      "scope": "已核对的2家门店",
+      "window": "2026-08-11—2026-09-09",
+      "note": "按已核对门店范围与观察窗口读取"
+    },
+    {
+      "id": "S02",
+      "priority": "merchant_backend",
+      "status": "observed",
+      "name": "经营数据",
+      "platform": "抖音来客",
+      "path": "经营数据页面",
+      "scope": "已核对的2家门店",
+      "window": "2026-08-11—2026-09-09",
+      "note": "按已核对门店范围与观察窗口读取"
+    },
+    {
+      "id": "H01",
+      "priority": "historical_reference",
+      "status": "observed",
+      "name": "双节定性认知",
+      "platform": "Skill内置方法",
+      "path": "holiday-playbook.md",
+      "scope": "通用方法",
+      "window": "历史定性",
+      "note": "不作为实时涨幅或门店事实"
+    }
+  ],
+  "missing": [],
+  "next_tasks": []
+}

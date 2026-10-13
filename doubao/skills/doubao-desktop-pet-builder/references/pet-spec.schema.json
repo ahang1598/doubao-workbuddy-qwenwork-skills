@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://doubao.local/schemas/desktop-pet/pet-spec-v5.schema.json",
+  "title": "Doubao Desktop Pet Specification v5",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "app", "targets", "character", "assetPipeline", "experience", "motion", "features", "states", "storage", "build"],
+  "properties": {
+    "schemaVersion": { "const": 5 },
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "appId", "version", "language"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "appId": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9]*(\\.[a-zA-Z0-9-]+)+$" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$" },
+        "language": { "type": "string", "minLength": 2, "maxLength": 16 }
+      }
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["windows", "macos"],
+      "properties": {
+        "windows": { "$ref": "#/$defs/target" },
+        "macos": { "$ref": "#/$defs/target" }
+      }
+    },
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputType", "coreAsset", "displayName", "archetype", "personality", "preserveTraits", "style", "mirrorSafe"],
+      "properties": {
+        "inputType": { "enum": ["single-image", "action-pack", "text", "existing-project"] },
+        "coreAsset": { "$ref": "#/$defs/safeRelativePath" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "archetype": { "enum": ["cat", "dog", "rabbit", "bird", "reptile", "fish", "fantasy", "person", "robot", "object", "custom"] },
+        "personality": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "type": "string", "minLength": 1, "maxLength": 24 } },
+        "preserveTraits": { "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 80 } },
+        "style": { "enum": ["preserve", "balanced-cartoon", "key-elements", "custom"] },
+        "mirrorSafe": { "type": "boolean" }
+      }
+    },
+    "assetPipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backgroundMode", "segmentationBackend", "subjectKind", "generationBackground", "backgroundTolerance", "edgeFeather", "safeMargin", "targetOccupancy"],
+      "properties": {
+        "backgroundMode": { "const": "semantic-cutout" },
+        "segmentationBackend": { "enum": ["auto", "apple-vision", "rembg"] },
+        "subjectKind": { "enum": ["auto", "illustration", "photo"] },
+        "generationBackground": { "enum": ["transparent-grid", "solid-chroma"] },
+        "backgroundTolerance": { "type": "integer", "minimum": 12, "maximum": 48 },
+        "edgeFeather": { "type": "integer", "minimum": 4, "maximum": 24 },
+        "safeMargin": { "type": "integer", "minimum": 16, "maximum": 64 },
+        "targetOccupancy": { "type": "number", "minimum": 0.65, "maximum": 0.82 }
+      }
+    },
+    "experience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["theme", "petSizing", "interactions"],
+      "properties": {
+        "theme": { "$ref": "#/$defs/theme" },
+        "petSizing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["baseWindowPx", "defaultScale"],
+          "properties": {
+            "baseWindowPx": { "type": "integer", "minimum": 180, "maximum": 260 },
+            "defaultScale": { "enum": [0.65, 0.8, 1, 1.2] }
+          }
+        },
+        "interactions": {
+          "type": "array",
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/interaction" }
+        }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["breathing", "squashStretch", "idleIntervalMs"],
+      "properties": {
+        "breathing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "periodMs", "scaleX", "scaleY"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "periodMs": { "type": "integer", "minimum": 1800, "maximum": 8000 },
+            "scaleX": { "type": "number", "minimum": 0, "maximum": 0.04 },
+            "scaleY": { "type": "number", "minimum": 0, "maximum": 0.05 }
+          }
+        },
+        "squashStretch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "durationMs", "intensity"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "durationMs": { "type": "integer", "minimum": 160, "maximum": 600 },
+            "intensity": { "type": "number", "minimum": 0, "maximum": 0.15 }
+          }
+        },
+        "idleIntervalMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": {
+            "min": { "type": "integer", "minimum": 3000, "maximum": 60000 },
+            "max": { "type": "integer", "minimum": 3000, "maximum": 120000 }
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transparentWindow", "drag", "tray", "edgeSnap", "reminders", "interactions", "relationship", "filePocket", "dashboard", "typingReaction", "autonomousMovement"],
+      "properties": {
+        "transparentWindow": { "const": true },
+        "drag": { "type": "boolean" },
+        "tray": { "type": "boolean" },
+        "edgeSnap": { "type": "boolean" },
+        "reminders": { "type": "boolean" },
+        "interactions": { "type": "boolean" },
+        "relationship": { "type": "boolean" },
+        "filePocket": { "type": "boolean" },
+        "dashboard": { "type": "boolean" },
+        "typingReaction": { "type": "boolean" },
+        "autonomousMovement": { "type": "boolean" }
+      }
+    },
+    "states": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 40,
+      "items": { "$ref": "#/$defs/state" }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["userData", "filePocket"],
+      "properties": {
+        "userData": { "const": "app-user-data" },
+        "filePocket": { "const": "documents-app-name" }
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["windows", "macos", "timeoutMinutes", "unsigned"],
+      "properties": {
+        "windows": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["arch", "installer", "portable"],
+          "properties": {
+            "arch": { "const": "x64" },
+            "installer": { "const": "squirrel" },
+            "portable": { "const": "zip" }
+          }
+        },
+        "macos": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["arch", "diskImage", "portable"],
+          "properties": {
+            "arch": { "enum": ["current", "arm64", "x64"] },
+            "diskImage": { "const": "dmg" },
+            "portable": { "const": "zip" }
+          }
+        },
+        "timeoutMinutes": { "type": "integer", "minimum": 5, "maximum": 60 },
+        "unsigned": { "const": true }
+      }
+    }
+  },
+  "$defs": {
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "arch"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "arch": { "enum": ["x64", "arm64", "current"] }
+      }
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?![/\\\\])(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$"
+    },
+    "hexColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "accent", "background", "surface", "text", "muted", "cornerRadius"],
+      "properties": {
+        "primary": { "$ref": "#/$defs/hexColor" },
+        "accent": { "$ref": "#/$defs/hexColor" },
+        "background": { "$ref": "#/$defs/hexColor" },
+        "surface": { "$ref": "#/$defs/hexColor" },
+        "text": { "$ref": "#/$defs/hexColor" },
+        "muted": { "$ref": "#/$defs/hexColor" },
+        "cornerRadius": { "type": "integer", "minimum": 12, "maximum": 32 }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "emoji", "label", "stateId", "durationMs", "affectionGain", "feedback"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "emoji": { "type": "string", "minLength": 1, "maxLength": 8 },
+        "label": { "type": "string", "minLength": 1, "maxLength": 24 },
+        "stateId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "durationMs": { "type": "integer", "minimum": 300, "maximum": 10000 },
+        "affectionGain": { "type": "integer", "minimum": 0, "maximum": 20 },
+        "feedback": { "type": "array", "minItems": 2, "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 40 } }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "triggers", "frames", "frameDurationMs", "loop", "priority", "interrupt", "cooldownMs", "direction", "anchor", "mirrorSafe"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "triggers": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z-]*:[a-z0-9]+(?:-[a-z0-9]+)*$" } },
+        "frames": { "type": "array", "minItems": 1, "maxItems": 24, "uniqueItems": true, "items": { "$ref": "#/$defs/safeRelativePath" } },
+        "frameDurationMs": { "type": "integer", "minimum": 40, "maximum": 10000 },
+        "loop": { "type": "boolean" },
+        "priority": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "interrupt": { "enum": ["resume", "restart", "discard", "block"] },
+        "cooldownMs": { "type": "integer", "minimum": 0, "maximum": 3600000 },
+        "direction": { "enum": ["neutral", "left", "right"] },
+        "anchor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "number", "minimum": 0, "maximum": 1 },
+            "y": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "mirrorSafe": { "type": "boolean" }
+      }
+    }
+  }
+}

@@ -1,0 +1,323 @@
+/* 骑行 App 共享样式 */
+:root {
+  /* 色板 - 自然温暖系 */
+  --canvas: #F7F4EE;           /* 底色：浅暖沙色 */
+  --canvas-warm: #F0EBE1;      /* 暖底色变体 */
+  --world: #6B8E5A;            /* 世界色：橄榄绿 */
+  --world-light: #A8C49A;      /* 浅绿 */
+  --world-dark: #4A6B3D;       /* 深绿 */
+  --accent: #E87A3D;           /* 强调色：暖橙 */
+  --accent-light: #F5B895;     /* 浅橙 */
+  --ink: #3A3530;              /* 文字色：深棕灰 */
+  --ink-secondary: #7A7268;    /* 次要文字 */
+  --ink-tertiary: #A8A095;     /* 三级文字 */
+  --surface: #FFFFFF;          /* 表面白 */
+  --surface-soft: #FBF9F5;     /* 软表面 */
+  
+  /* 状态色 */
+  --success: #7BA05B;
+  --warning: #E8A83D;
+  --danger: #D9634F;
+  
+  /* 圆角 */
+  --r-shell: 32px;
+  --r-card: 20px;
+  --r-control: 12px;
+  --r-pill: 999px;
+  
+  /* 阴影 - 多层有色影 */
+  --shadow-card:
+    0 1px 2px rgba(58, 53, 48, .04),
+    0 8px 24px -8px rgba(58, 53, 48, .08),
+    0 24px 48px -20px rgba(58, 53, 48, .12);
+  
+  --shadow-float:
+    0 2px 8px rgba(232, 122, 61, .12),
+    0 12px 32px -8px rgba(232, 122, 61, .2),
+    0 32px 64px -20px rgba(232, 122, 61, .16);
+  
+  /* 字阶 */
+  --font-display: 'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--canvas);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 手机框架 */
+.phone-frame {
+  width: 375px;
+  height: 812px;
+  background: var(--canvas);
+  border-radius: 44px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 12px #1a1a1a,
+    0 0 0 14px #2a2a2a,
+    0 40px 80px -20px rgba(0,0,0,.4);
+  margin: 40px auto;
+}
+
+/* 状态栏 */
+.status-bar {
+  height: 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  position: relative;
+  z-index: 10;
+}
+
+.status-bar .time {
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.status-bar .icons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* 安全区 */
+.safe-area {
+  padding: 0 20px;
+  padding-bottom: calc(34px + 80px); /* 底部安全区 + 操作条 */
+  height: calc(100% - 44px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.safe-area::-webkit-scrollbar {
+  display: none;
+}
+
+/* 底部操作条 */
+.bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px calc(12px + 24px);
+  background: linear-gradient(to top, var(--canvas) 60%, transparent);
+  z-index: 20;
+}
+
+/* 按钮 */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 52px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-control);
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  cursor: pointer;
+  box-shadow: var(--shadow-float);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(232, 122, 61, .2);
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 52px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid rgba(58, 53, 48, .1);
+  border-radius: var(--r-control);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:active {
+  background: var(--surface-soft);
+}
+
+/* 标签 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.tag-green {
+  background: rgba(107, 142, 90, .12);
+  color: var(--world-dark);
+}
+
+.tag-orange {
+  background: rgba(232, 122, 61, .12);
+  color: var(--accent);
+}
+
+.tag-gray {
+  background: rgba(58, 53, 48, .08);
+  color: var(--ink-secondary);
+}
+
+/* 卡片 */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-card);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+/* 大数字 */
+.big-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* 分割线 */
+.divider {
+  height: 1px;
+  background: rgba(58, 53, 48, .08);
+  margin: 16px 0;
+}
+
+/* 页面标题 */
+.page-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--ink-secondary);
+  margin-top: 4px;
+}
+
+/* 导航栏 */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 16px;
+}
+
+.nav-back {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+}
+
+.nav-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.nav-placeholder {
+  width: 40px;
+}
+
+/* 图标容器 */
+.icon-box {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.icon-box-green {
+  background: rgba(107, 142, 90, .12);
+  color: var(--world-dark);
+}
+
+.icon-box-orange {
+  background: rgba(232, 122, 61, .12);
+  color: var(--accent);
+}
+
+.icon-box-gray {
+  background: rgba(58, 53, 48, .06);
+  color: var(--ink-secondary);
+}
+
+/* 行项目 */
+.row-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.row-item + .row-item {
+  border-top: 1px solid rgba(58, 53, 48, .06);
+}
+
+.row-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.row-desc {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  margin-top: 2px;
+}
+
+.row-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}

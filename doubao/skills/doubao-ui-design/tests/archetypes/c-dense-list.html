@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>作者榜</title><style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;font:15px/1.6
+ -apple-system,"PingFang SC",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img,svg{display:block;max-width:100%}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(130% 90% at 50% 8%,var(--s1),var(--s2) 72%)}
+#app{position:relative;z-index:1;width:100%;height:100%;overflow:hidden;background:var(--bg)}
+@media(min-width:760px){#app{width:390px;height:min(844px,86vh);border-radius:44px;
+ box-shadow:0 0 0 11px var(--frame),0 0 0 13px var(--frame2),0 44px 100px rgba(0,0,0,.4)}}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:0 22px;z-index:55;
+ display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;
+ pointer-events:none}
+
+:root{--bg:#FFF8F2;--ink:#241A12;--dim:#8A776A;--key:#E4572E;--s1:#FCEFE4;--s2:#EBD8C6;
+ --frame:#FFFFFF;--frame2:#EFE0D2}
+.top{position:absolute;top:0;left:0;right:0;z-index:30;background:var(--bg);
+ padding:52px 18px 8px}
+.top h1{font-size:20px;font-weight:800}
+.tabs{display:flex;gap:18px;margin-top:12px;font-size:14.5px;color:var(--dim)}
+.tabs button{padding-bottom:8px;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--key)}
+#list{position:absolute;inset:126px 0 0;overflow-y:auto;padding:4px 18px 30px}
+.it{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F0E4D8}
+.it .n{width:22px;font-weight:800;color:var(--dim);font-size:15px}
+.it .n.hot{color:var(--key)}
+.it .av{width:38px;height:38px;border-radius:50%;flex:none;
+ background:linear-gradient(140deg,#F6C7A8,#E4572E)}
+.it .t{font-size:14.5px;font-weight:600}
+.it .s{font-size:12.5px;color:var(--dim)}
+.it .v{margin-left:auto;font-size:13.5px;color:var(--dim)}
+
+</style></head><body><div class="stage"><div id="app">
+<div class="sb"><span>9:41</span><span>▮▮▮</span></div>
+
+<div class="top"><h1>本周作者榜</h1>
+ <div class="tabs"><button class="on" data-k="week">本周</button>
+ <button data-k="month">本月</button><button data-k="new">新人</button></div></div>
+<div id="list"></div>
+
+</div></div><script>
+const DATA={week:[["林间有雾","散文 · 12 篇","4.2 万"],["九月不下雨","诗 · 7 篇","3.8 万"],
+["老陈的杂货铺","随笔 · 21 篇","3.1 万"],["半张书桌","书评 · 9 篇","2.7 万"],
+["南方无冬","小说 · 4 篇","2.4 万"],["拾柒","摄影手记 · 15 篇","2.2 万"],
+["石榴与盐","食记 · 11 篇","1.9 万"],["夜航船","历史 · 6 篇","1.7 万"],
+["白鸟不渡","译文 · 8 篇","1.5 万"],["三月与七月","日记 · 30 篇","1.3 万"],
+["旧电台","乐评 · 5 篇","1.1 万"],["纸鸢","绘本 · 3 篇","9 千"]],
+month:[["老陈的杂货铺","随笔 · 82 篇","18 万"],["林间有雾","散文 · 44 篇","16 万"],
+["夜航船","历史 · 26 篇","12 万"],["南方无冬","小说 · 19 篇","11 万"],
+["拾柒","摄影手记 · 60 篇","9.4 万"],["石榴与盐","食记 · 38 篇","8.1 万"]],
+new:[["纸鸢","绘本 · 3 篇","9 千"],["未名湖畔的猫","观察 · 2 篇","7 千"],
+["晚八点半","播客手记 · 4 篇","5 千"]]};
+function render(k){document.getElementById('list').innerHTML=DATA[k].map((r,i)=>
+ `<div class="it"><span class="n ${i<3?'hot':''}">${i+1}</span><span class="av"></span>
+ <span><span class="t">${r[0]}</span><br><span class="s">${r[1]}</span></span>
+ <span class="v">${r[2]}</span></div>`).join('');}
+const tb=[...document.querySelectorAll('.tabs button')];
+tb.forEach(b=>b.onclick=()=>{tb.forEach(x=>x.classList.toggle('on',x===b));render(b.dataset.k);
+ document.getElementById('list').scrollTop=0;});
+render('week');
+</script></body></html>

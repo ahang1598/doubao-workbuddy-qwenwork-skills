@@ -1,0 +1,32 @@
+{
+  "example_notice": "虚构用户材料示例，不代表任何真实学校、竞赛、资格或政策",
+  "runtime": {
+    "network_tool_status": "not_used",
+    "evaluated_at": "2026-08-17T12:00:00+08:00"
+  },
+  "final_ready": false,
+  "unresolved": [
+    "目标机构当年官方通知尚未提供"
+  ],
+  "conflicts": [],
+  "sources": [
+    {
+      "source_id": "S1",
+      "publisher": "用户",
+      "source": "用户提供的目标偏好",
+      "source_kind": "user_material",
+      "capabilities": [
+        "user_goal"
+      ],
+      "applicable_scope": "仅证明用户当前目标，不证明政策或资格",
+      "published_at": null,
+      "updated_at": null,
+      "access_method": "user_provided",
+      "authorization_status": "not_applicable",
+      "retrieved_at": null,
+      "valid_until": null,
+      "verification_status": "user_material",
+      "freshness": "not_applicable"
+    }
+  ]
+}

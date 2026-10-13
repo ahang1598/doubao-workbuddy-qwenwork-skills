@@ -1,0 +1,1026 @@
+{
+  "quality/+project-list": {
+    "action": "ListProjects",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "display-name",
+        "location": "query",
+        "field": "DisplayName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "page-number",
+        "location": "query",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "query",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "pageSizeMax": 10000,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+scenario-list": {
+    "action": "ListScenarios",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "page-number",
+        "location": "query",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "query",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-name",
+        "location": "query",
+        "field": "ScenarioName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "scenario-type",
+        "location": "query",
+        "field": "ScenarioType",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "sort-by",
+        "location": "query",
+        "field": "SortBy",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "CreatedTime",
+          "UpdatedTime"
+        ]
+      },
+      {
+        "flag": "sort-order",
+        "location": "query",
+        "field": "SortOrder",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "DESC",
+          "ASC"
+        ]
+      }
+    ],
+    "fixedInput": {
+      "scenarioType": 2
+    },
+    "timeTransforms": {},
+    "aliases": {},
+    "pageSizeMax": 500,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+scenario-get": {
+    "action": "GetScenario",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-id",
+        "location": "query",
+        "field": "ScenarioId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+task-create": {
+    "action": "CreateTask",
+    "method": "POST",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "activity-id",
+        "location": "body",
+        "field": "ActivityId",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "callback-url",
+        "location": "body",
+        "field": "CallbackURL",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "extra",
+        "location": "body",
+        "field": "Extra",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "live-pull-url",
+        "location": "body",
+        "field": "LivePullURL",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "body",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-id",
+        "location": "body",
+        "field": "ScenarioId",
+        "type": "number",
+        "required": true
+      },
+      {
+        "flag": "specifiable-rule-args",
+        "location": "body",
+        "field": "SpecifiableRuleArgs",
+        "type": "array",
+        "items": {},
+        "required": false
+      },
+      {
+        "flag": "tag-ids",
+        "location": "body",
+        "field": "TagIds",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false
+      },
+      {
+        "flag": "task-name",
+        "location": "body",
+        "field": "TaskName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-start-time",
+        "location": "body",
+        "field": "TaskStartTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "task-type",
+        "location": "body",
+        "field": "TaskType",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {
+      "taskType": 2
+    },
+    "timeTransforms": {
+      "taskStartTime": "instant"
+    },
+    "aliases": {
+      "tagIds": "tag-id"
+    },
+    "requiresConfirmation": false,
+    "readOnly": false
+  },
+  "quality/+task-list": {
+    "action": "ListTasks",
+    "method": "POST",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "activity-id",
+        "location": "body",
+        "field": "ActivityId",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "end-time",
+        "location": "body",
+        "field": "EndTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "machine-status",
+        "location": "body",
+        "field": "MachineStatus",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false,
+        "enum": [
+          "1",
+          "2"
+        ]
+      },
+      {
+        "flag": "manual-status",
+        "location": "body",
+        "field": "ManualStatus",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false,
+        "enum": [
+          "1",
+          "2"
+        ]
+      },
+      {
+        "flag": "page-number",
+        "location": "body",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "body",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "body",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-id",
+        "location": "body",
+        "field": "ScenarioId",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "sort-by",
+        "location": "body",
+        "field": "SortBy",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "CreatedTime",
+          "UpdatedTime"
+        ]
+      },
+      {
+        "flag": "sort-order",
+        "location": "body",
+        "field": "SortOrder",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "DESC",
+          "ASC"
+        ]
+      },
+      {
+        "flag": "start-time",
+        "location": "body",
+        "field": "StartTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "tag-ids",
+        "location": "body",
+        "field": "TagIds",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false
+      },
+      {
+        "flag": "task-ids",
+        "location": "body",
+        "field": "TaskIds",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false
+      },
+      {
+        "flag": "task-name",
+        "location": "body",
+        "field": "TaskName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "task-status",
+        "location": "body",
+        "field": "TaskStatus",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false,
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      {
+        "flag": "task-type",
+        "location": "body",
+        "field": "TaskType",
+        "type": "number",
+        "required": false
+      }
+    ],
+    "fixedInput": {
+      "taskType": 2
+    },
+    "timeTransforms": {
+      "startTime": "day-start",
+      "endTime": "day-end"
+    },
+    "aliases": {
+      "tagIds": "tag-id",
+      "taskIds": "task-id"
+    },
+    "pageSizeMax": 10000,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+task-get": {
+    "action": "GetTask",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-id",
+        "location": "query",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+task-end": {
+    "action": "EndTask",
+    "method": "POST",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "body",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-id",
+        "location": "body",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": true,
+    "readOnly": false
+  },
+  "quality/+report-get": {
+    "action": "GetReport",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-id",
+        "location": "query",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+screenshot-list": {
+    "action": "ListLiveScreenshot",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "end-time",
+        "location": "query",
+        "field": "EndTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-number",
+        "location": "query",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "query",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "start-time",
+        "location": "query",
+        "field": "StartTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "task-id",
+        "location": "query",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {
+      "startTime": "instant",
+      "endTime": "instant"
+    },
+    "aliases": {},
+    "pageSizeMax": 100,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "content/+video-project-list": {
+    "action": "ListProjects",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "display-name",
+        "location": "query",
+        "field": "DisplayName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "page-number",
+        "location": "query",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "query",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "pageSizeMax": 10000,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "content/+video-scenario-list": {
+    "action": "ListVideoScenarios",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "page-number",
+        "location": "query",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "query",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-name",
+        "location": "query",
+        "field": "ScenarioName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "sort-by",
+        "location": "query",
+        "field": "SortBy",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "CreatedTime",
+          "UpdatedTime"
+        ]
+      },
+      {
+        "flag": "sort-order",
+        "location": "query",
+        "field": "SortOrder",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "DESC",
+          "ASC"
+        ]
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "pageSizeMax": 500,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "content/+video-scenario-get": {
+    "action": "GetVideoScenario",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-id",
+        "location": "query",
+        "field": "ScenarioId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "content/+video-task-create": {
+    "action": "CreateVideoTask",
+    "method": "POST",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "callback-url",
+        "location": "body",
+        "field": "CallbackURL",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "extra",
+        "location": "body",
+        "field": "Extra",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "body",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-id",
+        "location": "body",
+        "field": "ScenarioId",
+        "type": "number",
+        "required": true
+      },
+      {
+        "flag": "source-type",
+        "location": "body",
+        "field": "SourceType",
+        "type": "number",
+        "required": true,
+        "enum": [
+          1,
+          3,
+          4
+        ]
+      },
+      {
+        "flag": "specifiable-rule-args",
+        "location": "body",
+        "field": "SpecifiableRuleArgs",
+        "type": "array",
+        "items": {},
+        "required": false
+      },
+      {
+        "flag": "tag-ids",
+        "location": "body",
+        "field": "TagIds",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false
+      },
+      {
+        "flag": "task-items",
+        "location": "body",
+        "field": "TaskItems",
+        "type": "array",
+        "items": {},
+        "required": true
+      },
+      {
+        "flag": "task-name",
+        "location": "body",
+        "field": "TaskName",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {
+      "tagIds": "tag-id"
+    },
+    "requiresConfirmation": false,
+    "readOnly": false
+  },
+  "content/+video-task-list": {
+    "action": "ListVideoTasks",
+    "method": "POST",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "end-time",
+        "location": "body",
+        "field": "EndTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "machine-status",
+        "location": "body",
+        "field": "MachineStatus",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false,
+        "enum": [
+          "1",
+          "2"
+        ]
+      },
+      {
+        "flag": "manual-status",
+        "location": "body",
+        "field": "ManualStatus",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false,
+        "enum": [
+          "1",
+          "2"
+        ]
+      },
+      {
+        "flag": "page-number",
+        "location": "body",
+        "field": "PageNumber",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "page-size",
+        "location": "body",
+        "field": "PageSize",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "project-name",
+        "location": "body",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "scenario-id",
+        "location": "body",
+        "field": "ScenarioId",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "sort-by",
+        "location": "body",
+        "field": "SortBy",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "CreatedTime",
+          "UpdatedTime"
+        ]
+      },
+      {
+        "flag": "sort-order",
+        "location": "body",
+        "field": "SortOrder",
+        "type": "string",
+        "required": false,
+        "enum": [
+          "DESC",
+          "ASC"
+        ]
+      },
+      {
+        "flag": "start-time",
+        "location": "body",
+        "field": "StartTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "flag": "tag-ids",
+        "location": "body",
+        "field": "TagIds",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false
+      },
+      {
+        "flag": "task-ids",
+        "location": "body",
+        "field": "TaskIds",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false
+      },
+      {
+        "flag": "task-name",
+        "location": "body",
+        "field": "TaskName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "flag": "task-status",
+        "location": "body",
+        "field": "TaskStatus",
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "required": false,
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {
+      "startTime": "day-start",
+      "endTime": "day-end"
+    },
+    "aliases": {
+      "tagIds": "tag-id",
+      "taskIds": "task-id"
+    },
+    "pageSizeMax": 10000,
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "content/+video-task-get": {
+    "action": "GetVideoTask",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-id",
+        "location": "query",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "content/+video-task-end": {
+    "action": "EndVideoTask",
+    "method": "POST",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "body",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-id",
+        "location": "body",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": true,
+    "readOnly": false
+  },
+  "content/+video-report-get": {
+    "action": "GetVideoReport",
+    "method": "GET",
+    "version": "2024-08-01",
+    "fields": [
+      {
+        "flag": "project-name",
+        "location": "query",
+        "field": "ProjectName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "flag": "task-id",
+        "location": "query",
+        "field": "TaskId",
+        "type": "number",
+        "required": true
+      }
+    ],
+    "fixedInput": {},
+    "timeTransforms": {},
+    "aliases": {},
+    "requiresConfirmation": false,
+    "readOnly": true
+  },
+  "quality/+audit-list": {
+    "action": "ListLiveAudit",
+    "method": "GET",
+    "version": "2023-01-01",
+    "readOnly": true,
+    "fields": [
+      {
+        "field": "ProjectName",
+        "type": "string",
+        "required": true,
+        "location": "query",
+        "flag": "project-name"
+      },
+      {
+        "field": "TaskID",
+        "type": "integer",
+        "required": true,
+        "location": "query",
+        "flag": "task-id"
+      },
+      {
+        "field": "Limit",
+        "type": "integer",
+        "required": false,
+        "location": "query",
+        "flag": "limit"
+      },
+      {
+        "field": "AuditSourceCategory",
+        "type": "string",
+        "required": false,
+        "location": "query",
+        "flag": "audit-source-category"
+      },
+      {
+        "field": "IncludeStats",
+        "type": "boolean",
+        "required": false,
+        "location": "query",
+        "flag": "include-stats"
+      }
+    ]
+  }
+}

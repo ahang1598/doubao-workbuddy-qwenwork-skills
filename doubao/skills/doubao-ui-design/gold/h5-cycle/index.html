@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#3A3530">
+<title>今天骑不骑 · 周末骑行决策</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   gold #3 · 骑行 App「今天骑不骑」
+   它在三份 gold 里承担的示范职责：**生图/照片只能出矩形 → 只当满版背景**。
+   每一屏都是 .art（满版照片）+ .scrim（可控暗场）+ .content（真文字压上面）。
+   没有一张浮动的矩形图，所以没有一处白边。
+
+   人格上它和另外两份刻意不同：沙色暖场 / 圆润字 / 大圆角 / 柔和多层阴影，
+   而不是 PULSE 的骨色直角编辑体，也不是 QQ 的深场像素体。
+   —— 这三份合起来要证明的是：**文档与产物的气质应该随主题变。**
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --sand:#FAF8F4;          /* 纸感沙色：所有卡片的底 */
+  --ink:#3A3530;           /* 棕灰墨：比纯黑暖，配得上林地照片 */
+  --ink-2:#7A7268;
+  --moss:#6B8E5A;          /* 橄榄绿：能走的、可以出发的 */
+  --moss-soft:#A8C49A;
+  --clay:#D9634F;          /* 陶土橙：要注意的、要决定的 */
+  --bar:78px;
+  --ease:cubic-bezier(.22,.75,.3,1);
+  --r-shell:32px; --r-card:20px; --r-ctl:12px; --r-pill:999px;
+  --sh-1:0 1px 2px rgba(58,53,48,.06), 0 8px 24px -8px rgba(58,53,48,.14);
+  --sh-2:0 2px 6px rgba(58,53,48,.08), 0 20px 48px -16px rgba(58,53,48,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#241F1B;color:var(--ink);overflow:hidden;
+  font-family:"Nunito","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;min-height:24px}
+img,svg{display:block}
+
+/* 桌面观看：手机取景框 */
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1100px 640px at 50% -8%,#3E3A33,#241F1B 62%)}
+#app{position:relative;width:100%;height:100%;overflow:hidden;background:#241F1B}
+@media(min-width:760px){
+  #app{width:390px;height:min(844px,86vh);border-radius:44px;
+    box-shadow:0 0 0 11px #17140F,0 0 0 13px #34302A,0 40px 90px rgba(0,0,0,.62)}
+}
+
+/* 分屏 */
+#deck{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none}
+#deck::-webkit-scrollbar{display:none}
+.screen{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;
+  overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:calc(env(safe-area-inset-top) + 96px) 22px calc(var(--bar) + 22px);
+  isolation:isolate}
+
+/* ── 素材三层：这是这份 gold 要示范的东西 ────────────────────────
+   生图只能出矩形、没有透明底 → 它唯一正确的角色是满版背景。
+   .art 用 cover 铺满，永远不会出现白边；
+   .scrim 保证压在照片上的字读得出来（对比度门会跳过"背景不可信"的文字，
+   跳过不等于安全，得自己负责）。 */
+.art{position:absolute;inset:0;z-index:-2;background:var(--art) center/cover no-repeat;
+  transform:scale(1.06);transition:transform 1.4s var(--ease)}
+.live .art{transform:scale(1)}
+.scrim{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(36,31,27,.44) 0%,rgba(36,31,27,.08) 26%,
+    rgba(36,31,27,.52) 62%,rgba(36,31,27,.88) 100%)}
+
+/* ── 顶栏 ── */
+.statusbar{position:absolute;top:0;left:0;right:0;z-index:55;height:44px;padding:0 22px;
+  display:flex;align-items:center;justify-content:space-between;color:#fff;
+  font-size:13px;font-weight:700;letter-spacing:.02em;pointer-events:none}
+.sb-r{display:flex;align-items:center;gap:5px}
+.sb-r i{display:block;background:#fff;border-radius:1px}
+.sb-r .sig{width:15px;height:10px;clip-path:polygon(0 72%,18% 72%,18% 100%,0 100%,0 72%,
+  27% 46%,45% 46%,45% 100%,27% 100%,27% 46%,54% 22%,72% 22%,72% 100%,54% 100%,54% 22%,
+  82% 0,100% 0,100% 100%,82% 100%)}
+.sb-r .bat{width:22px;height:11px;border-radius:3px;background:none;
+  box-shadow:inset 0 0 0 1px #fff;position:relative}
+.sb-r .bat::before{content:"";position:absolute;inset:2px;width:66%;background:#fff;border-radius:1px}
+.top{position:absolute;top:calc(env(safe-area-inset-top) + 52px);left:22px;right:22px;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none;color:#fff}
+.brand{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.04em}
+.brand svg{width:19px;height:19px}
+.pager{font-size:12px;font-weight:700;opacity:.72;letter-spacing:.06em}
+.bars{position:absolute;top:calc(env(safe-area-inset-top) + 82px);left:22px;right:22px;z-index:50;
+  display:flex;gap:4px;pointer-events:none}
+.bars i{flex:1;height:2px;background:rgba(255,255,255,.28);border-radius:2px}
+.bars i.on{background:#fff}
+
+/* ── 内容 ── */
+.kicker{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
+  background:rgba(250,248,244,.92);color:var(--ink);border-radius:var(--r-pill);
+  padding:7px 14px;font-size:12px;font-weight:800;letter-spacing:.04em;
+  box-shadow:var(--sh-1);margin-bottom:16px}
+.kicker b{color:var(--moss)}
+h2{font-size:30px;line-height:1.3;font-weight:800;letter-spacing:-.01em;color:#fff;
+  text-shadow:0 2px 18px rgba(36,31,27,.5)}
+h2 em{font-style:normal;color:var(--moss-soft)}
+.lead{margin-top:12px;font-size:15px;line-height:1.8;color:rgba(255,255,255,.9);
+  text-shadow:0 1px 12px rgba(36,31,27,.5);max-width:24em}
+
+/* 沙色卡：在照片上保证可读，用实底不用玻璃 */
+.card{background:var(--sand);border-radius:var(--r-card);padding:18px;
+  box-shadow:var(--sh-2);margin-top:16px}
+.card h3{font-size:17px;font-weight:800;margin-bottom:4px}
+.card p{font-size:14px;line-height:1.75;color:var(--ink-2)}
+
+.stats{display:flex;gap:22px;margin-top:14px}
+.stats div b{display:block;font-size:26px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.stats div span{display:block;margin-top:5px;font-size:12px;color:var(--ink-2);font-weight:600}
+
+.big{font-size:clamp(58px,20vw,92px);font-weight:800;line-height:.84;letter-spacing:-.03em;
+  color:#fff;text-shadow:0 4px 26px rgba(36,31,27,.55)}
+.unit{font-size:20px;font-weight:800;margin-left:8px;color:var(--moss-soft)}
+
+/* 时间滑杆 */
+.slider{margin-top:8px}
+.track{height:8px;border-radius:var(--r-pill);background:rgba(250,248,244,.34);position:relative}
+.fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:var(--r-pill);
+  background:var(--moss);transition:width 1s var(--ease) .3s}
+.live .fill{width:52%}
+.thumb{position:absolute;top:50%;left:0;width:24px;height:24px;border-radius:50%;
+  background:var(--sand);box-shadow:var(--sh-1);transform:translate(-50%,-50%);
+  transition:left 1s var(--ease) .3s}
+.live .thumb{left:52%}
+.ticks{display:flex;justify-content:space-between;margin-top:10px;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.72)}
+
+/* 路线卡 */
+.route{display:flex;gap:12px;align-items:center;padding:14px;background:var(--sand);
+  border-radius:var(--r-card);box-shadow:var(--sh-2);margin-top:12px}
+.route .pick{width:38px;height:38px;flex:none;border-radius:var(--r-ctl);
+  background:var(--moss);display:grid;place-items:center}
+.route .pick svg{width:19px;height:19px}
+.route.alt .pick{background:var(--moss-soft)}
+.route h4{font-size:15.5px;font-weight:800}
+.route small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink-2);font-weight:600}
+.route .n{margin-left:auto;text-align:right;font-size:13px;font-weight:800;color:var(--moss)}
+
+/* 检查清单 */
+.checks{margin-top:14px;background:var(--sand);border-radius:var(--r-card);
+  padding:6px 16px;box-shadow:var(--sh-2)}
+.checks div{display:flex;align-items:center;gap:11px;padding:13px 0;font-size:14.5px;
+  font-weight:700;border-bottom:1px solid rgba(58,53,48,.09)}
+.checks div:last-child{border-bottom:0}
+.checks i{width:22px;height:22px;flex:none;border-radius:50%;background:var(--moss);
+  display:grid;place-items:center}
+.checks i svg{width:12px;height:12px}
+.checks i.warn{background:var(--clay)}
+.checks span{margin-left:auto;font-size:13px;color:var(--ink-2);font-weight:700}
+
+/* 结束页 */
+.share{display:flex;gap:10px;margin-top:16px}
+.share button{flex:1;height:50px;border-radius:var(--r-pill);font-size:15px;font-weight:800}
+.share .go{background:var(--clay);color:#fff;box-shadow:var(--sh-2)}
+.share .sec{background:rgba(250,248,244,.94);color:var(--ink);box-shadow:var(--sh-1)}
+
+/* 底部常驻条 */
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:50;display:flex;gap:10px;
+  align-items:center;padding:12px 20px calc(env(safe-area-inset-bottom) + 14px);
+  background:linear-gradient(180deg,transparent,rgba(36,31,27,.9) 46%)}
+.dock .next{flex:1;height:48px;border-radius:var(--r-pill);background:var(--sand);
+  color:var(--ink);font-weight:800;font-size:15px;display:flex;align-items:center;
+  justify-content:center;gap:8px;box-shadow:var(--sh-2)}
+.dock .ic{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  border:1.5px solid rgba(250,248,244,.5);color:#fff;font-size:17px}
+
+/* 入场 */
+.an{opacity:0;transform:translateY(20px);
+  transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.live .an{opacity:1;transform:none}
+.live .an:nth-child(2){transition-delay:.08s}
+.live .an:nth-child(3){transition-delay:.16s}
+.live .an:nth-child(4){transition-delay:.24s}
+.live .an:nth-child(5){transition-delay:.32s}
+.toast{position:absolute;left:50%;bottom:calc(var(--bar) + 26px);transform:translate(-50%,16px);
+  background:rgba(36,31,27,.95);color:var(--sand);border-radius:var(--r-pill);
+  padding:11px 20px;font-size:13.5px;font-weight:700;opacity:0;z-index:70;
+  transition:all .4s var(--ease);pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){
+  .an,.art{opacity:1!important;transform:none!important}
+  .fill{width:52%!important}.thumb{left:52%!important}
+  *{animation:none!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="stage"><div id="app">
+
+  <div class="statusbar"><span>9:41</span>
+    <span class="sb-r"><i class="sig"></i><i class="bat"></i></span></div>
+  <div class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
+        <path d="M15 17.5h-6l4-9h-3M13 8.5h3.5l2 9"/></svg>
+      骑不骑
+    </div>
+    <div class="pager"><b id="pgNow">01</b> / 06</div>
+  </div>
+  <div class="bars" id="bars"></div>
+
+  <div id="deck">
+
+    <!-- 01 今天适合吗 -->
+    <section class="screen" style="--art:url(assets/s1-dawn.jpg)">
+      <div class="art"></div><div class="scrim"></div>
+      <div class="kicker an">周六 · 10 月 18 日　<b>晴 22°C</b></div>
+      <h2 class="an">早上好，思羽<br><em>今天很适合骑车</em></h2>
+      <p class="lead an">微风、空气优、不晒。<br>要不要出去转一圈？</p>
+      <div class="card an">
+        <h3>不用做计划</h3>
+        <p>接下来三屏，我们只问你一件事：今天有多少时间。剩下的交给我们。</p>
+      </div>
+    </section>
+
+    <!-- 02 你有多少时间 -->
+    <section class="screen" style="--art:url(assets/s2-autumn.jpg)">
+      <div class="art"></div><div class="scrim"></div>
+      <div class="kicker an">第一步 · <b>唯一要你决定的事</b></div>
+      <h2 class="an">你今天<br>有多少时间？</h2>
+      <div class="an" style="margin-top:18px">
+        <span class="big" data-n="1.5">0</span><span class="unit">小时</span>
+      </div>
+      <div class="slider an">
+        <div class="track"><div class="fill"></div><div class="thumb"></div></div>
+        <div class="ticks"><span>30 分</span><span>1 时</span><span>1.5 时</span>
+          <span>2 时</span><span>3 时+</span></div>
+      </div>
+      <p class="lead an">拖一下就行。我们只推荐能在这个时间里<b>骑完并回到起点</b>的路线。</p>
+    </section>
+
+    <!-- 03 为你选了两条 -->
+    <section class="screen" style="--art:url(assets/s3-poplar.jpg)">
+      <div class="art"></div><div class="scrim"></div>
+      <div class="kicker an">第二步 · <b>只给两个选项</b></div>
+      <h2 class="an">1.5 小时能骑完的<br>只有这两条</h2>
+      <div class="route an">
+        <div class="pick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+        <div><h4>深圳湾公园环线</h4><small>沿海绿道 · 全程无坡</small></div>
+        <div class="n">8.5 km<br><small style="font-weight:600;color:var(--ink-2)">45 分</small></div>
+      </div>
+      <div class="route alt an">
+        <div class="pick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+        <div><h4>塘朗山脚下绿道</h4><small>林荫道 · 缓坡 45 米</small></div>
+        <div class="n">12 km<br><small style="font-weight:600;color:var(--ink-2)">65 分</small></div>
+      </div>
+      <p class="lead an">不给你十条让你挑。<b>你不知道自己想要什么，我们该帮你选。</b></p>
+    </section>
+
+    <!-- 04 这条路长什么样 -->
+    <section class="screen" style="--art:url(assets/s4-forest.jpg)">
+      <div class="art"></div><div class="scrim"></div>
+      <div class="kicker an">深圳湾公园环线 · <b>已选</b></div>
+      <h2 class="an">这一路<br>会是什么样</h2>
+      <div class="card an">
+        <div class="stats">
+          <div><b>8.5</b><span>公里</span></div>
+          <div><b>45</b><span>分钟</span></div>
+          <div><b>12</b><span>米爬升</span></div>
+          <div><b>4</b><span>处补给</span></div>
+        </div>
+      </div>
+      <p class="lead an">全程平路、两处便利店、一处公共水站。<br>
+        按现在出发算，<b>11:30 回到起点</b>。</p>
+    </section>
+
+    <!-- 05 出发前 -->
+    <section class="screen" style="--art:url(assets/s5-lane.jpg)">
+      <div class="art"></div><div class="scrim"></div>
+      <div class="kicker an">第三步 · <b>四件事，看一眼</b></div>
+      <h2 class="an">出发前<br>就检查这四样</h2>
+      <div class="checks an">
+        <div><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></i>
+          时间够 <span>还剩 45 分余量</span></div>
+        <div><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></i>
+          体力够 <span>轻松级</span></div>
+        <div><i class="warn"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4"
+          stroke-linecap="round"><path d="M12 6v8M12 17.6v.2"/></svg></i>
+          带水 <span>路上第 2 处才有</span></div>
+        <div><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></i>
+          能按时回 <span>11:30</span></div>
+      </div>
+      <p class="lead an">只有一项要注意，其余都好了。</p>
+    </section>
+
+    <!-- 06 出发 -->
+    <section class="screen" style="--art:url(assets/s6-coast.jpg)">
+      <div class="art"></div><div class="scrim"></div>
+      <div class="kicker an">一切就绪 · <b>可以出发</b></div>
+      <h2 class="an">走吧<br><em>11:30 见</em></h2>
+      <div class="card an">
+        <h3>深圳湾公园环线</h3>
+        <p>8.5 km · 45 分 · 全程平路 · 4 处补给</p>
+        <div class="stats" style="margin-top:12px">
+          <div><b style="color:var(--moss)">05:00</b><span>倒计时出发</span></div>
+          <div><b>22°C</b><span>晴 · 微风</span></div>
+        </div>
+      </div>
+      <div class="share an">
+        <button class="go" data-act="start">开始骑行</button>
+        <button class="sec" data-act="share">叫上朋友</button>
+      </div>
+      <p class="lead an" style="font-size:13.5px;opacity:.86">
+        骑完会自动生成一张路线卡，可以直接发出去。</p>
+    </section>
+
+  </div>
+
+  <div class="dock" id="dock">
+    <button class="ic" id="btnUp" aria-label="上一页">↑</button>
+    <button class="next" id="btnNext">继续 <span>↓</span></button>
+    <button class="ic" id="btnShare" aria-label="分享">↗</button>
+  </div>
+  <div class="toast" id="toast"></div>
+
+</div></div>
+
+<script>
+const deck=document.getElementById('deck');
+const screens=[...document.querySelectorAll('.screen')];
+const bars=document.getElementById('bars');
+bars.innerHTML=screens.map(()=>'<i></i>').join('');
+const barEls=[...bars.children];
+let cur=0;
+
+function setCur(i){
+  cur=i;
+  document.getElementById('pgNow').textContent=String(i+1).padStart(2,'0');
+  barEls.forEach((b,k)=>b.classList.toggle('on',k<=i));
+  document.getElementById('btnNext').innerHTML =
+    i===screens.length-1 ? '再看一遍 <span>↺</span>' : '继续 <span>↓</span>';
+}
+const go=i=>screens[Math.max(0,Math.min(screens.length-1,i))]
+  .scrollIntoView({behavior:'smooth',block:'start'});
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.intersectionRatio>0.55){e.target.classList.add('live');setCur(screens.indexOf(e.target));}
+}),{root:deck,threshold:[0.55]});
+screens.forEach(s=>io.observe(s));
+
+document.getElementById('btnNext').onclick=()=>go(cur===screens.length-1?0:cur+1);
+document.getElementById('btnUp').onclick=()=>go(cur-1);
+document.getElementById('btnShare').onclick=e=>{e.stopPropagation();go(5);toast('去最后一屏叫上朋友 ↗');};
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowUp'){e.preventDefault();go(cur-1);}
+});
+deck.addEventListener('click',e=>{
+  if(e.target.closest('button')) return;
+  if(cur<screens.length-1) go(cur+1);
+});
+
+/* 数字滚动 */
+const nio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting) return; nio.unobserve(e.target);
+  const el=e.target, end=parseFloat(el.dataset.n), t0=performance.now(), dec=end%1?1:0;
+  (function step(t){
+    const k=Math.min(1,(t-t0)/1100);
+    el.textContent=(end*(1-Math.pow(1-k,3))).toFixed(dec);
+    if(k<1) requestAnimationFrame(step);
+  })(t0);
+}),{root:deck,threshold:.4});
+document.querySelectorAll('[data-n]').forEach(el=>nio.observe(el));
+
+let tT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
+document.querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{
+  e.stopPropagation();
+  toast(b.dataset.act==='start' ? '已开始记录 · 祝你骑得开心' : '已生成邀请，选个朋友发过去');
+});
+setCur(0);
+</script>
+</body>
+</html>

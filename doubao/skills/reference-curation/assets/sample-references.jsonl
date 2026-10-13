@@ -1,0 +1,2 @@
+{"id":"zh-journal-demo","type":"article","title":"数字化学习资源对高校学生学习投入的影响","authors":[{"raw":"张三"},{"raw":"李四"}],"year":2024,"venue":"现代教育技术","language":"zh","source_evidence":[{"provider":"user_file","locator":"sample"}],"verification":"unresolved","missing_fields":["doi"]}
+{"id":"doi-demo","type":"article","title":"Highly accurate protein structure prediction with AlphaFold","authors":[],"doi":"10.1038/s41586-021-03819-2","language":"en","verification":"unresolved","missing_fields":["authors","year","venue","doi"]}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "餐饮私域全生命周期营销"
+  short_description: "按五类状态与7大场景生成餐饮全生命周期营销HTML"
+  icon_small: "./assets/icc-grow-icon.png"
+  icon_large: "./assets/icc-grow-icon.png"
+  brand_color: "#FF1F3D"
+  default_prompt: "使用 $siyu-lifecycle，先通过4个简单问题讲清餐饮私域全生命周期营销方法论，再按五类状态与7大触达场景生成可落地HTML方案。"

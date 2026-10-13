@@ -1,0 +1,50 @@
+{
+  "version": "analysis-mode-contract-v1",
+  "policy": {
+    "aliases": {
+      "deep": "full"
+    },
+    "output_forms": [
+      "answer",
+      "report",
+      "files"
+    ],
+    "default_output_form": "answer",
+    "full_implies_report": false,
+    "full_implies_files": false,
+    "length_or_keywords_determine_tier": false,
+    "shared_quality_not_shared_chapters": true,
+    "missing_evidence_degrades_affected_claims_only": true,
+    "script_required": false,
+    "routing_priority": [
+      "safety_and_scope",
+      "explicit_user_options",
+      "semantic_dependencies",
+      "smallest_sufficient_tier"
+    ]
+  },
+  "tiers": {
+    "direct": "Answer one local question with the minimum sufficient evidence and relevant limitations.",
+    "brief": "Resolve a focused chain of related questions, its drivers, constraints and verification signals.",
+    "full": "Resolve coupled judgments, cross-object comparisons or scenarios with comparable evidence, alternatives and falsification."
+  },
+  "business_dimensions": {
+    "time_mode": {
+      "values": [
+        "pre_market",
+        "post_market"
+      ],
+      "required": false,
+      "description": "Daily pre/post session; intraday/range/nontrading tasks retain honest task state rather than forcing a completed close."
+    },
+    "scope": {
+      "values": [
+        "whole_market",
+        "custom_domains"
+      ],
+      "required": true,
+      "description": "Whole specified market or user-selected sectors/themes/assets/companies; independent of depth and delivery."
+    }
+  },
+  "domain_modes": []
+}

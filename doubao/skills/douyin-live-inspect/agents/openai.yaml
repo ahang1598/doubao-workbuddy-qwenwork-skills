@@ -1,0 +1,4 @@
+interface:
+  display_name: "抖音直播实时质检与内容复盘"
+  short_description: "检测抖音直播与视频中的规则风险，获取质检报告和内容复盘。"
+  default_prompt: "使用 $douyin-live-inspect（抖音直播实时质检与内容复盘）检查我提供的直播链接或视频。"

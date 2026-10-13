@@ -1,0 +1,17 @@
+{
+  "id": "regression.dorm-order-no-expansion",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "宿舍调换申请必须保持字段顺序，并原样保留作息差异，不扩写冲突后果。",
+  "candidate_output": "申请人：[待补：申请人]\n当前宿舍：[待补：当前宿舍]\n拟调宿舍：[待补：拟调宿舍]\n真实原因：作息差异\n双方确认情况：[待补：双方确认情况]\n申请日期：[待补：申请日期]",
+  "assertions": {
+    "required_substrings": ["申请人：[待补：申请人]", "当前宿舍：[待补：当前宿舍]", "拟调宿舍：[待补：拟调宿舍]", "真实原因：作息差异", "双方确认情况：[待补：双方确认情况]", "申请日期：[待补：申请日期]"],
+    "forbidden_substrings": ["矛盾", "冲突", "影响学习", "影响休息", "已协商一致"],
+    "forbidden_regexes": [],
+    "max_output_chars": 300,
+    "allow_empty_output": false
+  },
+  "privacy": {"scan_standard_patterns": true, "forbidden_literals": []},
+  "expected_valid": true,
+  "expected_issue_codes": []
+}

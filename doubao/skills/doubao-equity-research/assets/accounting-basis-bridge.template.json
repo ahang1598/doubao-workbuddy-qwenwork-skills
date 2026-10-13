@@ -1,0 +1,31 @@
+{
+  "title": "示例公司归母净利润",
+  "metric": "归母净利润",
+  "unit": "百万元",
+  "basis_pair": "ifrs_non_ifrs",
+  "strict_reconciliation": true,
+  "valuation_basis": "Non-IFRS diluted EPS",
+  "periods": [
+    {
+      "period": "FY2025",
+      "ifrs": 800,
+      "non_ifrs": 1120,
+      "adjustments": [
+        {
+          "label": "股份支付",
+          "amount": 220,
+          "recurrence": "recurring",
+          "cash_effect": "non_cash",
+          "note": "示例值；实际使用时回到公司调节表"
+        },
+        {
+          "label": "并购无形资产摊销",
+          "amount": 100,
+          "recurrence": "potentially_recurring",
+          "cash_effect": "non_cash",
+          "note": "示例值；检查并购活动是否使其持续发生"
+        }
+      ]
+    }
+  ]
+}

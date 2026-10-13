@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>内容复盘报告</title>
+    <link rel="stylesheet" href="/shared/arco.css" />
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/shared/lite.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div class="brand">
+          <span class="logo">AI</span
+          ><span id="report-title">内容复盘报告</span>
+        </div>
+        <a id="back-to-monitor" hidden>返回质检操作台</a><div class="lite-edition">
+          <details>
+            <summary>Lite 体验版</summary>
+            <p>
+              基于本次采集内容生成复盘。正式版支持更丰富的规则配置和统一报告管理。
+            </p>
+          </details>
+          <a
+            href="https://console.volcengine.com/workorder/create?step=3&amp;SubProductID=P00000078"
+            target="_blank"
+            rel="noopener noreferrer"
+            >申请开通正式版</a
+          >
+        </div>
+      </header>
+      <p class="edition-guide">如需后续使用正式版，可<a href="https://console.volcengine.com/workorder/create?step=3&amp;SubProductID=P00000078&amp;sessionID=f3eb625d-af6c-11f1-b754-4a64e05716c9" target="_blank" rel="noopener noreferrer">提交工单申请开通</a>。<br>打开后请手动填写：① 相关产品选择“视频服务 / 企业直播”；② 问题分类选择“操作指导”；③ 问题描述填写“如何开通企业直播质检服务”。然后选择消息提醒接收方式，点击“提交工单”，等待处理结果；提交不代表已开通。也可查看 <a href="https://docs.volcengine.com/docs/3019/2024033?lang=zh" target="_blank" rel="noopener noreferrer">直播质检能力介绍</a>。</p>
+      <div class="lite-review-state" id="review-state" role="status">
+        正在读取复盘报告…
+      </div>
+      <main class="shell" id="report" hidden>
+        <section class="conclusion">
+          <div class="conclusionHead">
+            <span aria-hidden="true">✦</span>
+            <h2>复盘结论</h2>
+          </div>
+          <div class="conclusionBody">
+            <p id="conclusion"></p>
+          </div>
+        </section>
+        <aside class="sidebar" aria-label="信息与回放">
+          <section class="info">
+            <div class="infoTop">
+              <div class="cover">
+                <span aria-hidden="true">▶</span
+                ><span id="cover-label">内容复盘</span>
+              </div>
+              <div class="infoTitle">
+                <h1 id="task-name"></h1>
+                <div class="meta">
+                  <span id="duration"></span
+                  ><span class="scene" id="scenario"></span>
+                </div>
+              </div>
+            </div>
+            <div class="session">
+              <span>内容时段</span><span id="session"></span>
+            </div>
+          </section>
+          <section class="playback">
+            <h2 id="playback-title">回放</h2>
+            <div class="player">
+              <div class="video-frame">
+                <video
+                  id="video"
+                  controls
+                  playsinline
+                  preload="none"
+                ></video>
+                <div class="video-empty" id="video-empty">
+                  暂无可用回放，仍可查看文字复盘
+                </div>
+              </div>
+            </div>
+            <p class="playbackTip" id="playback-tip">点击内容分析中的时间点定位回放</p>
+          </section>
+        </aside>
+        <div class="main">
+          <section class="insights">
+            <h2>复盘洞察与建议</h2>
+            <section class="section">
+              <h2 class="sectionHeading">关键发现</h2>
+              <div class="findings">
+                <section class="findingPanel highlight">
+                  <h3>表现亮点</h3>
+                  <div id="highlights"></div>
+                </section>
+                <section class="findingPanel problem">
+                  <h3>主要问题</h3>
+                  <div id="problems"></div>
+                </section>
+              </div>
+            </section>
+            <section class="section">
+              <h2 class="sectionHeading">优化建议</h2>
+              <ol
+                class="structure"
+                id="structure"
+                aria-label="推荐话术结构"
+              ></ol>
+              <ol class="actions" id="actions" aria-label="逐条优化建议"></ol>
+
+            </section>
+          </section>
+          <section class="data">
+            <h2 id="data-title">直播数据</h2>
+            <div class="metrics" id="metrics"></div>
+          </section>
+          <section class="analysis">
+            <div class="analysisHeader">
+              <h2>内容分析</h2>
+              <div class="filters">
+                <div
+                  class="arco-radio-group arco-radio-group-size-default arco-radio-group-type-button"
+                  role="radiogroup"
+                  aria-label="内容类型"
+                  id="filters"
+                ></div>
+                <input
+                  class="search"
+                  id="search"
+                  type="search"
+                  aria-label="搜索内容"
+                  placeholder="搜索内容"
+                />
+              </div>
+            </div>
+            <div
+              class="analysisBody"
+              id="analysis-body"
+              role="region"
+              aria-label="内容分析片段"
+              tabindex="0"
+            >
+              <ol class="timeline" id="timeline"></ol>
+              <p class="timelineEnd" id="timeline-end"></p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="/shared/icons.js" defer></script><script src="/shared/lite.js" defer></script>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

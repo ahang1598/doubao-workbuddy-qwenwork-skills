@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#071A3A">
+<title>QQ 2026 年度报告 · 时光机</title>
+<style>
+:root{
+  --ink:#050B18;
+  --paper:#F3EEE1;
+  --qq:#12B7F5;
+  --gold:#FFC93C;
+  --red:#FF4D4D;
+  --dim:rgba(243,238,225,.62);
+  --dim2:rgba(243,238,225,.56);
+  --ease:cubic-bezier(.22,.75,.3,1);
+  --bar:76px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:#05070F;color:var(--paper);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  overflow:hidden;
+}
+img,svg{display:block}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ============ 桌面观看：手机取景框 ============ */
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(1200px 700px at 50% -10%,#12224A 0%,#070B16 55%,#05070F 100%);}
+#app{position:relative;width:100%;height:100%;overflow:hidden;background:var(--ink)}
+@media(min-width:760px){
+  #app{width:390px;height:min(844px,86vh);border-radius:44px;
+    box-shadow:0 0 0 11px #14161C,0 0 0 13px #2A2E38,0 40px 90px rgba(0,0,0,.66);}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:112px;height:26px;border-radius:15px;background:#14161C;z-index:60}
+  .deskhint{position:fixed;left:0;right:0;bottom:22px;text-align:center;
+    font-size:12px;letter-spacing:.2em;color:rgba(243,238,225,.34)}
+}
+@media(max-width:759px){.notch,.deskhint{display:none}}
+
+/* ============ 滚动容器 ============ */
+#deck{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#deck::-webkit-scrollbar{display:none}
+.screen{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;
+  overflow:hidden;display:flex;flex-direction:column;justify-content:center;
+  padding:calc(env(safe-area-inset-top) + 100px) 26px calc(var(--bar) + 26px);
+  isolation:isolate}
+
+/* 每屏一套色：底色 + 主色 */
+.screen[data-t="1"]{--bg1:#071A3A;--bg2:#0E2E63;--key:#57D6FF}
+.screen[data-t="2"]{--bg1:#04203C;--bg2:#0A3A6B;--key:#12B7F5}
+.screen[data-t="3"]{--bg1:#052B2C;--bg2:#0A4A46;--key:#3BE0C4}
+.screen[data-t="4"]{--bg1:#150E30;--bg2:#2A1C63;--key:#9B7BFF}
+.screen[data-t="5"]{--bg1:#2A0B1E;--bg2:#5A1740;--key:#FF6FA5}
+.screen[data-t="6"]{--bg1:#06251B;--bg2:#0D4A33;--key:#5BE08A}
+.screen[data-t="7"]{--bg1:#2B1608;--bg2:#5C3110;--key:#FFA23A}
+.screen[data-t="8"]{--bg1:#101534;--bg2:#232C63;--key:#93AEFF}
+.screen[data-t="9"]{--bg1:#2A0A0A;--bg2:#5C1A12;--key:#FF7A45}
+.screen[data-t="10"]{--bg1:#071A3A;--bg2:#123064;--key:#FFC93C}
+.screen::before{content:"";position:absolute;inset:0;z-index:-3;
+  background:
+    radial-gradient(120% 78% at 50% 8%,var(--bg2) 0%,var(--bg1) 62%,#04070E 100%)}
+/* CRT 扫描线 + 网格 + 噪点 */
+.screen::after{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.20) 0 1px,transparent 1px 3px),
+    linear-gradient(0deg,rgba(5,7,15,.7),transparent 24%,transparent 74%,rgba(5,7,15,.86));
+  mix-blend-mode:multiply}
+.gridfx{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.14;
+  background-image:linear-gradient(var(--key) 1px,transparent 1px),
+    linear-gradient(90deg,var(--key) 1px,transparent 1px);
+  background-size:26px 26px;
+  mask-image:radial-gradient(120% 70% at 50% 40%,#000 8%,transparent 72%);
+  -webkit-mask-image:radial-gradient(120% 70% at 50% 40%,#000 8%,transparent 72%)}
+
+/* ============ 通用排版 ============ */
+.kicker{font-size:11px;letter-spacing:.34em;color:var(--dim2);margin-bottom:16px;
+  display:flex;align-items:center;gap:9px}
+.kicker b{color:var(--key);font-weight:700}
+.lead{font-size:16px;line-height:1.85;color:var(--dim);max-width:22em}
+.lead strong{color:var(--paper);font-weight:600}
+h2.big{font-size:30px;line-height:1.28;font-weight:800;letter-spacing:-.01em}
+.num{
+  font-family:"DIN Alternate","Helvetica Neue",Impact,system-ui,sans-serif;
+  font-weight:800;line-height:.82;letter-spacing:-.03em;color:var(--paper);
+  text-shadow:3px 3px 0 rgba(0,0,0,.42), 6px 6px 0 color-mix(in srgb,var(--key) 55%,transparent);
+}
+.num.xxl{font-size:clamp(74px,25vw,116px)}
+.num.xl{font-size:clamp(56px,19vw,88px)}
+/* 注意：.unit 是 .num 的兄弟节点，em 会按 .screen 的 16px 算 —— 用绝对值 */
+.unit{font-size:22px;font-weight:700;letter-spacing:.06em;margin-left:7px;
+  text-shadow:none;color:var(--key)}
+.tagline{font-size:13px;color:var(--dim2);letter-spacing:.06em}
+
+/* 像素立体小标签 */
+.pill{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--key);
+  color:var(--key);border-radius:999px;padding:6px 13px;font-size:12px;letter-spacing:.04em}
+.pill.solid{background:var(--key);color:#08111F;border-color:var(--key);font-weight:700}
+
+/* 98 窗口 */
+.win{background:#D8D3C2;color:#1A1A16;border:2px solid;
+  border-color:#FFFDF4 #6E6A5A #6E6A5A #FFFDF4;box-shadow:4px 4px 0 rgba(0,0,0,.45);
+  border-radius:2px;overflow:hidden}
+.win-bar{background:linear-gradient(90deg,#083A86,#2F86D6);color:#fff;
+  font-size:11px;letter-spacing:.06em;padding:4px 6px;display:flex;
+  align-items:center;justify-content:space-between}
+.win-bar em{font-style:normal;display:flex;gap:3px}
+.win-bar i{font-style:normal;width:14px;height:12px;background:#D8D3C2;color:#1A1A16;
+  border:1px solid;border-color:#FFFDF4 #4A4638 #4A4638 #FFFDF4;font-size:9px;
+  display:grid;place-items:center;line-height:1}
+.win-body{padding:12px}
+.win-screen{background:#0B0F1C;border:1px solid #6E6A5A;padding:10px;
+  box-shadow:inset 1px 1px 0 rgba(0,0,0,.6)}
+.win-list .rank{border-bottom:1px solid rgba(26,26,22,.16)}
+.win-list .rank .nm{color:#1A1A16}
+.win-list .rank .no{color:#6E6A5A}
+.win-list .rank .av{background:#B9B3A0;color:#1A1A16}
+.win-list .rank .vl{color:#083A86}
+
+/* ============ 状态栏 ============ */
+.statusbar{position:absolute;top:0;left:0;right:0;z-index:55;height:44px;
+  padding:0 24px;display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--paper);
+  pointer-events:none;font-family:"DIN Alternate",system-ui}
+.sb-r{display:flex;align-items:center;gap:5px}
+.sb-r i{display:block;background:var(--paper);border-radius:1px}
+.sb-r .sig{width:15px;height:10px;
+  clip-path:polygon(0 72%,18% 72%,18% 100%,0 100%,0 72%,27% 46%,45% 46%,45% 100%,27% 100%,
+    27% 46%,54% 22%,72% 22%,72% 100%,54% 100%,54% 22%,82% 0,100% 0,100% 100%,82% 100%)}
+.sb-r .wifi{width:14px;height:10px;
+  clip-path:polygon(50% 100%,32% 74%,68% 74%,50% 100%,50% 66%,20% 40%,28% 30%,72% 30%,80% 40%,50% 66%,
+    50% 24%,8% 12%,14% 2%,86% 2%,92% 12%)}
+.sb-r .bat{width:22px;height:11px;border-radius:3px;background:none;
+  box-shadow:inset 0 0 0 1px var(--paper);position:relative}
+.sb-r .bat::before{content:"";position:absolute;inset:2px;width:64%;background:var(--paper);border-radius:1px}
+.sb-r .bat::after{content:"";position:absolute;right:-3px;top:3.5px;width:2px;height:4px;
+  background:var(--paper);border-radius:0 1px 1px 0}
+
+/* ============ 顶栏 / 进度 ============ */
+.top{position:absolute;top:0;left:0;right:0;z-index:50;
+  padding:calc(env(safe-area-inset-top) + 52px) 20px 0;
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.logo{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.2em;
+  color:rgba(243,238,225,.7)}
+.logo svg{width:20px;height:22px}
+.pager{font-family:"DIN Alternate",monospace;font-size:12px;color:rgba(243,238,225,.55);
+  letter-spacing:.1em}
+.pager b{color:var(--paper);font-size:15px}
+.bars{position:absolute;top:calc(env(safe-area-inset-top) + 78px);left:20px;right:20px;
+  z-index:50;display:flex;gap:3px;pointer-events:none}
+.bars i{flex:1;height:2px;background:rgba(243,238,225,.18);overflow:hidden;border-radius:2px}
+.bars i.on{background:var(--paper)}
+
+/* ============ 底部操作条 ============ */
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:50;
+  padding:12px 20px calc(env(safe-area-inset-bottom) + 14px);
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,transparent,rgba(4,7,14,.86) 42%)}
+.dock .next{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  height:46px;border-radius:999px;background:var(--paper);color:#08111F;
+  font-size:15px;font-weight:700;letter-spacing:.02em;
+  box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.dock .next:active{transform:translateY(1px)}
+.dock .ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid rgba(243,238,225,.28);color:var(--paper);font-size:16px}
+.dock.hide{opacity:0;pointer-events:none;transition:opacity .4s}
+
+/* ============ 入场动效 ============ */
+.an{opacity:0;transform:translateY(22px);
+  transition:opacity .75s var(--ease),transform .75s var(--ease)}
+.live .an{opacity:1;transform:none}
+.live .an:nth-child(1){transition-delay:.05s}
+.live .an:nth-child(2){transition-delay:.14s}
+.live .an:nth-child(3){transition-delay:.23s}
+.live .an:nth-child(4){transition-delay:.32s}
+.live .an:nth-child(5){transition-delay:.41s}
+.live .an:nth-child(6){transition-delay:.5s}
+.wipe{clip-path:inset(0 100% 0 0);transition:clip-path 1s var(--ease) .1s}
+.live .wipe{clip-path:inset(0 0 0 0)}
+.pop{opacity:0;transform:scale(.72) rotate(-6deg);
+  transition:opacity .5s var(--ease),transform .62s cubic-bezier(.2,1.5,.4,1)}
+.live .pop{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .an,.wipe,.pop{opacity:1!important;transform:none!important;clip-path:none!important}
+  *{animation:none!important}
+}
+
+/* ============ 屏 1 开机 ============ */
+.boot{position:absolute;inset:0;z-index:40;background:#03060D;display:grid;
+  place-items:center;transition:opacity .6s ease,visibility .6s}
+.boot.off{opacity:0;visibility:hidden}
+.boot-inner{width:min(300px,82%);text-align:center}
+.crtline{height:2px;background:var(--qq);box-shadow:0 0 18px var(--qq);
+  animation:crt 1.5s var(--ease) forwards}
+@keyframes crt{0%{width:0;opacity:0}20%{opacity:1}100%{width:100%;opacity:.25}}
+.boot p{font-family:"DIN Alternate",monospace;font-size:11px;letter-spacing:.16em;
+  color:rgba(87,214,255,.85);margin-top:14px;text-align:left;min-height:1.4em}
+.dial{margin-top:16px;height:10px;border:1px solid rgba(87,214,255,.5);padding:1px}
+.dial i{display:block;height:100%;width:0;background:
+  repeating-linear-gradient(90deg,var(--qq) 0 5px,transparent 5px 8px);
+  animation:dial 2.4s steps(24) forwards}
+@keyframes dial{to{width:100%}}
+
+.cover-title{font-size:clamp(40px,13.5vw,60px);font-weight:900;line-height:1.02;
+  letter-spacing:-.02em}
+.cover-title span{color:var(--gold);
+  text-shadow:0 0 24px rgba(255,201,60,.45)}
+.year{font-family:"DIN Alternate",monospace;font-size:clamp(52px,17vw,74px);
+  font-weight:800;line-height:.8;letter-spacing:.02em;color:transparent;
+  -webkit-text-stroke:2px rgba(243,238,225,.8);
+  text-shadow:0 0 40px rgba(87,214,255,.3)}
+.float{animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+/* 屏 2：满版日历底纹 */
+.calwash{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  display:flex;align-items:center;padding:0 8px;opacity:.9;
+  mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent 92%);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 62%,transparent 92%)}
+.calwash .calgrid{width:100%}
+
+/* 封面 CRT 电视 */
+.stars{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.stars i{position:absolute;width:2px;height:2px;background:var(--paper);border-radius:50%;
+  animation:tw 3.4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
+.tv{width:min(268px,74vw);background:#1B2233;border:3px solid;
+  border-color:#3C4762 #0C111C #0C111C #3C4762;border-radius:14px;padding:12px 12px 8px;
+  box-shadow:0 22px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.05)}
+.tv-screen{position:relative;aspect-ratio:1/.96;border-radius:10px;overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 20%,#12386E,#061631 70%,#03081A);
+  display:grid;place-items:center;
+  box-shadow:inset 0 0 34px rgba(0,0,0,.85),inset 0 0 0 2px rgba(87,214,255,.22)}
+.tv-screen::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px)}
+.tv-screen .year{position:absolute;top:10%;left:0;right:0;text-align:center;
+  -webkit-text-stroke:2px rgba(87,214,255,.92);
+  text-shadow:0 0 26px rgba(87,214,255,.75),0 0 60px rgba(87,214,255,.35)}
+.tv-screen span{position:relative;z-index:2;margin-top:30%}
+.tv-foot{display:flex;align-items:center;gap:6px;padding:8px 4px 2px}
+.tv-foot i{width:9px;height:9px;border-radius:50%;background:#0C111C;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.tv-foot i:first-child{background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.tv-foot span{margin-left:auto;font-size:10px;letter-spacing:.22em;color:rgba(243,238,225,.42);
+  font-family:"DIN Alternate",monospace}
+
+/* QQ 等级图标（星 / 月 / 太阳） */
+.lvicons{display:inline-flex;gap:4px;align-items:center;vertical-align:2px}
+.lvicons i{width:13px;height:13px;display:block;background:var(--gold)}
+.lvicons i.star{clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.lvicons i.moon{background:#8FD3FF;border-radius:50%;
+  clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%,74% 84%,86% 50%,74% 16%)}
+.lvicons i.sun{background:var(--red);border-radius:50%}
+
+/* ============ 组件 ============ */
+.calgrid{display:grid;grid-template-columns:repeat(28,1fr);gap:2px;margin-top:6px}
+.calgrid i{aspect-ratio:1;border-radius:1px;background:rgba(243,238,225,.09)}
+.calgrid i.on{background:var(--key);opacity:.5}
+.calgrid i.hot{background:var(--key);opacity:1;
+  box-shadow:0 0 5px color-mix(in srgb,var(--key) 70%,transparent)}
+
+.chatlog{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.bub{padding:9px 14px;border-radius:14px 14px 14px 4px;font-size:14px;max-width:78%;
+  background:rgba(243,238,225,.1);border:1px solid rgba(243,238,225,.16);
+  color:var(--dim);opacity:0;transform:translateY(14px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.bub.me{align-self:flex-end;border-radius:14px 14px 4px 14px;
+  background:color-mix(in srgb,var(--key) 24%,transparent);
+  border-color:color-mix(in srgb,var(--key) 44%,transparent);color:var(--paper)}
+.live .bub{opacity:1;transform:none}
+.live .bub:nth-of-type(1){transition-delay:.55s}
+.live .bub:nth-of-type(2){transition-delay:.75s}
+.live .bub:nth-of-type(3){transition-delay:.95s}
+
+.chart{display:flex;align-items:flex-end;gap:5px;height:112px;margin-top:4px}
+.chart i{flex:1;background:linear-gradient(180deg,var(--key),transparent);
+  border-radius:2px 2px 0 0;height:var(--h);opacity:.85;
+  transform:scaleY(0);transform-origin:bottom;transition:transform .8s var(--ease)}
+.live .chart i{transform:scaleY(1)}
+.chart-x{display:flex;justify-content:space-between;font-size:10px;
+  color:var(--dim2);margin-top:8px;letter-spacing:.08em}
+
+.avatar{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(140deg,var(--key),rgba(255,255,255,.15));
+  font-size:30px;font-weight:800;color:#08111F;
+  box-shadow:0 0 0 3px rgba(243,238,225,.9),0 0 34px color-mix(in srgb,var(--key) 55%,transparent)}
+.rank{display:flex;align-items:center;gap:11px;padding:10px 0;
+  border-bottom:1px solid rgba(243,238,225,.12)}
+.rank:last-child{border-bottom:0}
+.rank .no{font-family:"DIN Alternate",monospace;font-size:12px;color:var(--dim2);width:20px}
+.rank .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(243,238,225,.14);font-size:13px;font-weight:700}
+.rank .nm{flex:1;font-size:14px}
+.rank .vl{font-family:"DIN Alternate",monospace;font-size:14px;color:var(--key);font-weight:700}
+.meter{height:6px;border-radius:3px;background:rgba(243,238,225,.14);overflow:hidden;margin-top:9px}
+.meter i{display:block;height:100%;width:0;border-radius:3px;background:var(--key);
+  transition:width 1.2s var(--ease) .2s}
+.live .meter i{width:var(--w)}
+
+.mosaic{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.mosaic i{aspect-ratio:1;border-radius:3px;background:rgba(243,238,225,.12);
+  display:grid;place-items:center;font-size:10px;color:var(--dim2)}
+.mosaic i.on{background:var(--key);box-shadow:0 0 10px color-mix(in srgb,var(--key) 45%,transparent)}
+
+.cloud{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cloud b{border:1px solid rgba(243,238,225,.2);border-radius:6px;padding:6px 11px;
+  font-weight:500;color:var(--dim);font-size:13px;background:rgba(243,238,225,.05)}
+.cloud b.s1{font-size:22px;font-weight:800;color:#08111F;background:var(--key);
+  border-color:var(--key);padding:8px 15px}
+.cloud b.s2{font-size:17px;font-weight:700;color:var(--paper);
+  border-color:color-mix(in srgb,var(--key) 60%,transparent)}
+
+.stats2{display:flex;gap:20px;flex-wrap:wrap}
+.stats2 div b{display:block;font-family:"DIN Alternate",monospace;font-size:50px;
+  font-weight:800;line-height:1;color:var(--paper)}
+.stats2 div span{display:block;margin-top:6px;font-size:11px;letter-spacing:.14em;color:var(--dim2)}
+
+.rpg{display:grid;gap:9px}
+.rpg .row{display:grid;grid-template-columns:56px 1fr 34px;align-items:center;gap:9px;font-size:12px}
+.rpg .bar{height:11px;background:#9C9684;border:1px solid #6E6A5A;padding:1px}
+.rpg .bar i{display:block;height:100%;width:0;background:#083A86;
+  transition:width 1s var(--ease) .3s}
+.live .rpg .bar i{width:var(--w)}
+.rpg .vv{font-family:"DIN Alternate",monospace;text-align:right}
+
+.card2026{border:1px solid rgba(255,201,60,.42);border-radius:18px;padding:20px;
+  background:linear-gradient(160deg,rgba(255,201,60,.14),rgba(18,183,245,.08));
+  backdrop-filter:blur(6px)}
+.card2026 .row{display:flex;justify-content:space-between;font-size:13px;
+  padding:7px 0;border-bottom:1px dashed rgba(243,238,225,.18)}
+.card2026 .row:last-child{border-bottom:0}
+.card2026 .row b{font-family:"DIN Alternate",monospace;color:var(--gold)}
+.qr{width:62px;height:62px;background:var(--paper);border-radius:6px;padding:5px;flex:none}
+.qr svg{width:100%;height:100%}
+.share-row{display:flex;gap:10px;margin-top:4px}
+.share-row button{flex:1;height:46px;border-radius:999px;font-size:14px;font-weight:700}
+.share-row .p{background:var(--gold);color:#2B1D00}
+.share-row .s{border:1px solid rgba(243,238,225,.34);color:var(--paper)}
+.friends{display:flex;gap:-8px;align-items:center}
+.friends i{width:28px;height:28px;border-radius:50%;background:rgba(243,238,225,.18);
+  border:2px solid var(--bg1);margin-left:-8px;display:grid;place-items:center;
+  font-size:11px;font-style:normal}
+.friends i:first-child{margin-left:0}
+
+.toast{position:absolute;left:50%;bottom:calc(var(--bar) + 30px);transform:translate(-50%,20px);
+  background:rgba(5,9,18,.94);border:1px solid rgba(243,238,225,.2);color:var(--paper);
+  border-radius:999px;padding:11px 20px;font-size:13px;opacity:0;z-index:70;
+  transition:all .4s var(--ease);pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="stage">
+<div id="app">
+  <div class="notch"></div>
+
+  <div class="statusbar">
+    <span>17:41</span>
+    <span class="sb-r"><i class="sig"></i><i class="wifi"></i><i class="bat"></i></span>
+  </div>
+  <div class="top">
+    <div class="logo"><span id="logoPenguin"></span> QQ 年度报告</div>
+    <div class="pager"><b id="pgNow">01</b> / 10</div>
+  </div>
+  <div class="bars" id="bars"></div>
+
+  <div id="deck">
+
+    <!-- ========== 01 封面 ========== -->
+    <section class="screen" data-t="1">
+      <div class="gridfx"></div>
+      <div class="boot" id="boot"><div class="boot-inner">
+        <div class="crtline"></div>
+        <p id="bootlog"></p>
+        <div class="dial"><i></i></div>
+      </div></div>
+      <div class="stars" id="stars"></div>
+      <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px">
+        <div class="tv an">
+          <div class="tv-screen">
+            <div class="year">2026</div>
+            <span class="float" id="coverPenguin"></span>
+          </div>
+          <div class="tv-foot"><i></i><i></i><i></i><span>CH 26 · ON AIR</span></div>
+        </div>
+        <h1 class="cover-title an">我的 QQ<br><span>年度时光机</span></h1>
+        <p class="lead an" style="text-align:center;font-size:14px;margin:0 auto">
+          一整年的在线痕迹，被装进了这台旧机器。<br>共 <strong>10</strong> 页，大约 60 秒。</p>
+        <button class="pill solid an" style="padding:13px 30px;font-size:15px" data-go="1">
+          插卡启动 ▸</button>
+      </div>
+    </section>
+
+    <!-- ========== 02 陪伴天数 ========== -->
+    <section class="screen" data-t="2">
+      <div class="gridfx"></div>
+      <div class="calwash"><div class="calgrid" id="cal"></div></div>
+      <div class="kicker an"><b>01</b> 在线天数 · ONLINE DAYS</div>
+      <h2 class="big an">这一年，你有<br>328 天把 QQ 挂在线上</h2>
+      <div class="an" style="margin:auto 0 6px;padding-top:26px">
+        <span class="num xxl" data-n="328">0</span><span class="unit">天</span>
+      </div>
+      <div class="tagline an" style="margin-bottom:16px">
+        底纹里每一格是一天 · 亮的是你在线的日子</div>
+      <p class="lead an">
+        最长连续在线 <strong>61 天</strong>，从 3 月 2 日到 5 月 1 日。<br>那两个月，你大概过得挺热闹。</p>
+    </section>
+
+    <!-- ========== 03 消息条数 ========== -->
+    <section class="screen" data-t="3">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>02</b> 消息总数 · MESSAGES</div>
+      <h2 class="big an">你一共敲出了</h2>
+      <div class="an" style="margin:16px 0 4px">
+        <span class="num xxl" data-n="12860">0</span><span class="unit">条</span>
+      </div>
+      <p class="lead an">平均每天 <strong>39.2 条</strong>，其中 <strong>4,102 条</strong>发在 22:00 以后。<br>
+        最长的一条 <strong>486 个字</strong>——发给了「阿栗」。</p>
+      <div class="an" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">
+        <span class="pill">表情包 3,204 张</span>
+        <span class="pill">语音 861 条</span>
+        <span class="pill">撤回 97 次</span>
+      </div>
+      <div class="an chatlog" style="margin-top:auto">
+        <div class="tagline" style="margin-bottom:10px">你今年被撤回最多的三句</div>
+        <div class="bub">在吗</div>
+        <div class="bub me">算了没事</div>
+        <div class="bub">刚刚那条当我没说</div>
+      </div>
+    </section>
+
+    <!-- ========== 04 深夜时刻 ========== -->
+    <section class="screen" data-t="4">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>03</b> 深夜时刻 · AFTER DARK</div>
+      <h2 class="big an">你最晚的一条消息<br>发在 <span style="color:var(--key)">03:47</span></h2>
+      <div class="an" style="margin-top:22px">
+        <div class="win">
+          <div class="win-bar"><span>◈ 消息时段分布.exe</span><em data-decor="Win98 标题栏字形，装饰不是正文"><i>_</i><i>□</i><i>×</i></em></div>
+          <div class="win-body">
+            <div class="win-screen">
+              <div class="chart" id="chart"></div>
+              <div class="chart-x"><span>06</span><span>12</span><span>18</span><span>24</span><span>05</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="an" style="display:flex;gap:26px;margin-top:22px">
+        <div><span class="num" style="font-size:56px" data-n="41">0</span><span class="unit">%</span>
+          <div class="tagline" style="margin-top:8px">深夜时段占比</div></div>
+        <div><span class="num" style="font-size:56px" data-n="87">0</span><span class="unit">次</span>
+          <div class="tagline" style="margin-top:8px">凌晨还在回消息</div></div>
+      </div>
+      <p class="lead an" style="margin-top:18px">2 月 14 日那天，你聊到了 <strong>凌晨 3:47</strong>。</p>
+    </section>
+
+    <!-- ========== 05 最常聊的人 ========== -->
+    <section class="screen" data-t="5">
+      <div class="gridfx"></div>
+      <div class="kicker an" style="justify-content:center"><b>04</b> 年度挚友 · BEST FRIEND</div>
+      <div class="an" style="text-align:center">
+        <div class="avatar pop" style="width:112px;height:112px;font-size:40px;margin:0 auto 14px">栗</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:.02em">阿栗</div>
+        <div class="tagline" style="margin-top:5px">互删 0 次 · 认识第 6 年</div>
+      </div>
+      <div class="an" style="text-align:center;margin:18px 0 2px">
+        <span class="num xl" data-n="1286">0</span><span class="unit">条</span>
+      </div>
+      <p class="lead an" style="text-align:center;margin:0 auto">
+        你们互发了 1,286 条消息，占你全年的 <strong>10%</strong>。</p>
+      <div class="an" style="margin:18px auto 0;width:100%;max-width:300px">
+        <div class="tagline" style="display:flex;justify-content:space-between">
+          <span>亲密度</span><span style="color:var(--key)">87 / 100</span></div>
+        <div class="meter" style="--w:87%"><i></i></div>
+      </div>
+      <div class="an" style="margin-top:20px">
+        <div class="tagline" style="margin-bottom:6px">其余高频对话</div>
+        <div class="rank"><span class="no">02</span><span class="av">默</span><span class="nm">默默</span><span class="vl">903</span></div>
+        <div class="rank"><span class="no">03</span><span class="av">桃</span><span class="nm">桃子罐头</span><span class="vl">764</span></div>
+        <div class="rank"><span class="no">04</span><span class="av">妈</span><span class="nm">妈妈</span><span class="vl">612</span></div>
+      </div>
+    </section>
+
+    <!-- ========== 06 群聊江湖 ========== -->
+    <section class="screen" data-t="6">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>05</b> 群聊江湖 · GROUPS</div>
+      <h2 class="big an">你在 <span style="color:var(--key)">48 个群</span>里<br>当过潜水员和话事人</h2>
+      <div class="an" style="margin:22px 0 16px">
+        <span class="num xl" data-n="48">0</span><span class="unit">个群</span>
+      </div>
+      <div class="an mosaic" id="mosaic"></div>
+      <p class="lead an" style="margin-top:20px">
+        最活跃的是「<strong>周三夜跑群</strong>」，你在里面发了 <strong>1,904 条</strong>。<br>
+        有 <strong>17 个群</strong>你一整年没说过话。</p>
+    </section>
+
+    <!-- ========== 07 QQ 空间 ========== -->
+    <section class="screen" data-t="7">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>06</b> QQ 空间 · QZONE</div>
+      <h2 class="big an">你的空间<br>还没有荒</h2>
+      <div class="an stats2" style="margin:24px 0 6px">
+        <div><b data-n="96">0</b><span>条说说</span></div>
+        <div><b data-n="5280">0</b><span>次访问</span></div>
+        <div><b data-n="1904">0</b><span>个赞</span></div>
+      </div>
+      <div class="an" style="margin-top:22px">
+        <div class="win">
+          <div class="win-bar"><span>◈ 最近访客</span><em data-decor="Win98 标题栏字形，装饰不是正文"><i>_</i><i>□</i><i>×</i></em></div>
+          <div class="win-body win-list" style="padding:6px 12px">
+            <div class="rank"><span class="no">1</span><span class="av">栗</span><span class="nm">阿栗 悄悄看了你 42 次</span><span class="vl">42</span></div>
+            <div class="rank"><span class="no">2</span><span class="av">?</span><span class="nm">匿名访客</span><span class="vl">28</span></div>
+            <div class="rank"><span class="no">3</span><span class="av">默</span><span class="nm">默默</span><span class="vl">19</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="lead an" style="margin-top:18px">
+        最火的一条说说获得 <strong>218 个赞</strong>，发在 6 月 12 日 23:40。</p>
+    </section>
+
+    <!-- ========== 08 兴趣关键词 ========== -->
+    <section class="screen" data-t="8">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>07</b> 年度关键词 · KEYWORDS</div>
+      <h2 class="big an">从你的聊天里<br>掉出来这些词</h2>
+      <div class="an cloud" style="margin:26px 0 20px">
+        <b class="s1">摸鱼</b><b class="s2">夜跑</b><b>剧本杀</b><b class="s2">演唱会</b>
+        <b>咖啡</b><b class="s2">考研</b><b>加班</b><b>猫</b><b class="s2">拼团</b>
+        <b>失眠</b><b>Citywalk</b><b>球鞋</b>
+      </div>
+      <p class="lead an">「<strong>摸鱼</strong>」出现了 <strong>412 次</strong>，是你今年说得最多的词。<br>
+        排第二的是「<strong>夜跑</strong>」，288 次。</p>
+      <div class="an" style="margin-top:20px">
+        <div class="tagline" style="margin-bottom:8px">兴趣分布</div>
+        <div class="rank"><span class="no">01</span><span class="nm">运动健身</span><span class="vl">31%</span></div>
+        <div class="rank"><span class="no">02</span><span class="nm">音乐现场</span><span class="vl">24%</span></div>
+        <div class="rank"><span class="no">03</span><span class="nm">桌游剧本</span><span class="vl">18%</span></div>
+      </div>
+    </section>
+
+    <!-- ========== 09 年度形象 ========== -->
+    <section class="screen" data-t="9">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>08</b> 年度形象 · YOUR TITLE</div>
+      <div class="an pop" style="text-align:center;margin-bottom:6px">
+        <span id="badgePenguin"></span>
+      </div>
+      <h2 class="big an" style="text-align:center;font-size:34px">
+        深夜话痨侠 <span style="color:var(--key)">LV.7</span></h2>
+      <div class="an" style="text-align:center;margin-top:-4px">
+        <span class="lvicons"><i class="moon"></i><i class="star"></i><i class="star"></i><i class="star"></i></span>
+        <span class="tagline" style="margin-left:8px">1 月亮 3 星 · 距下一级还差 42 天</span>
+      </div>
+      <p class="lead an" style="text-align:center;margin:10px auto 20px">
+        白天潜水，午夜上线。<br>你的消息有 41% 发生在别人睡着以后。</p>
+      <div class="an">
+        <div class="win">
+          <div class="win-bar"><span>◈ 年度属性面板</span><em data-decor="Win98 标题栏字形，装饰不是正文"><i>_</i><i>□</i><i>×</i></em></div>
+          <div class="win-body rpg">
+            <div class="row"><span>话痨值</span><span class="bar" style="--w:92%"><i></i></span><span class="vv">92</span></div>
+            <div class="row"><span>夜猫指数</span><span class="bar" style="--w:87%"><i></i></span><span class="vv">87</span></div>
+            <div class="row"><span>群活跃度</span><span class="bar" style="--w:64%"><i></i></span><span class="vv">64</span></div>
+            <div class="row"><span>潜水功力</span><span class="bar" style="--w:38%"><i></i></span><span class="vv">38</span></div>
+            <div class="row"><span>表情包库</span><span class="bar" style="--w:96%"><i></i></span><span class="vv">96</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="tagline an" style="text-align:center;margin-top:16px">
+        全站仅 <b style="color:var(--key)">3.6%</b> 的人拿到这个称号</p>
+    </section>
+
+    <!-- ========== 10 分享结束页 ========== -->
+    <section class="screen" data-t="10">
+      <div class="gridfx"></div>
+      <div class="kicker an"><b>09</b> 年度报告 · 已生成</div>
+      <h2 class="big an" style="font-size:26px">把这台时光机<br>递给你的朋友</h2>
+      <div class="an card2026" style="margin:18px 0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
+          <div>
+            <div style="font-size:11px;letter-spacing:.24em;color:var(--gold)">QQ ANNUAL 2026</div>
+            <div style="font-size:22px;font-weight:800;margin-top:6px">深夜话痨侠 LV.7</div>
+          </div>
+          <div class="qr" id="qr"></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="row"><span>在线天数</span><b>328 天</b></div>
+          <div class="row"><span>消息总数</span><b>12,860 条</b></div>
+          <div class="row"><span>年度挚友</span><b>阿栗</b></div>
+          <div class="row"><span>年度关键词</span><b>摸鱼</b></div>
+        </div>
+      </div>
+      <div class="an share-row">
+        <button class="p" data-share="poster">保存长图</button>
+        <button class="s" data-share="friend">分享给好友</button>
+      </div>
+      <div class="an" style="display:flex;align-items:center;gap:12px;margin-top:18px">
+        <div class="friends"><i>栗</i><i>默</i><i>桃</i><i>+9</i></div>
+        <div class="tagline">已有 12 位好友看过你的报告</div>
+      </div>
+      <p class="tagline an" style="margin-top:16px;opacity:.7">
+        打开 QQ 搜索「年度报告」，生成你自己的这一台。</p>
+    </section>
+
+  </div><!-- /deck -->
+
+  <div class="dock" id="dock">
+    <button class="ic" id="btnUp" aria-label="上一页">↑</button>
+    <button class="next" id="btnNext">继续 <span>↓</span></button>
+    <button class="ic" id="btnShare" aria-label="分享">↗</button>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<div class="deskhint">↑↓ 或点击「继续」翻页 · 手机端上下滑动</div>
+
+<script>
+/* ---------- 像素企鹅：一张字符点阵，多处复用 ---------- */
+const PENGUIN = [
+"......KKKK......",
+"....KKKKKKKK....",
+"...KKKKKKKKKK...",
+"..KKKKKKKKKKKK..",
+"..KKWWKKKKWWKK..",
+"..KKWKKKKKKWKK..",
+"..KKKKKYYKKKKK..",
+"..KKKKKYYKKKKK..",
+"...KKKKKKKKKK...",
+"..RRRRRRRRRRRR..",
+".RRRRRRRRRRRRRR.",
+"KKKKWWWWWWWWKKKK",
+"KKKWWWWWWWWWWKKK",
+"KKKWWWWWWWWWWKKK",
+"KKKWWWWWWWWWWKKK",
+".KKWWWWWWWWWWKK.",
+"..KKWWWWWWWWKK..",
+"...YYY....YYY..."];
+const PAL={K:"#141A26",W:"#FFFFFF",Y:"#FFB020",R:"#FF4D4D"};
+function penguin(px){
+  const w=PENGUIN[0].length,h=PENGUIN.length;
+  let r='';
+  PENGUIN.forEach((row,y)=>[...row].forEach((c,x)=>{
+    if(PAL[c]) r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL[c]}"/>`;
+  }));
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w*px}" height="${h*px}"
+    shape-rendering="crispEdges" style="filter:drop-shadow(0 6px 0 rgba(0,0,0,.35))">${r}</svg>`;
+}
+document.getElementById('logoPenguin').innerHTML=penguin(1.25);
+(function(){let h='';for(let i=0;i<46;i++){
+  h+=`<i style="left:${(i*37)%97}%;top:${(i*53)%96}%;animation-delay:${-(i%17)*.3}s"></i>`;}
+  document.getElementById('stars').innerHTML=h;})();
+document.getElementById('coverPenguin').innerHTML=penguin(6);
+document.getElementById('badgePenguin').innerHTML=penguin(4.5);
+
+/* ---------- 二维码（纯装饰的确定性点阵，非真实编码） ---------- */
+(function(){
+  const N=21; let s=0x2026, r='';
+  const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff;};
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const fp=(x<7&&y<7)||(x>N-8&&y<7)||(x<7&&y>N-8);
+    const on= fp ? (x%6===0||y%6===0||(x>1&&x<5&&y>1&&y<5)||(x>N-7&&x<N-3&&y>1&&y<5)||(x>1&&x<5&&y>N-7&&y<N-3))
+                 : rnd()>0.55;
+    if(on) r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#08111F"/>`;
+  }
+  document.getElementById('qr').innerHTML=
+    `<svg viewBox="0 0 ${N} ${N}" shape-rendering="crispEdges">${r}</svg>`;
+})();
+
+/* ---------- 日历格 328/365 ---------- */
+(function(){
+  const cal=document.getElementById('cal');
+  let html='';
+  for(let i=0;i<365;i++){
+    const off=(i*7919)%365>=328;
+    const hot=i>=61&&i<122&&!off;
+    html+=`<i class="${off?'':(hot?'hot':'on')}"></i>`;
+  }
+  cal.innerHTML=html;
+})();
+
+/* ---------- 时段柱状图 ---------- */
+(function(){
+  const v=[6,4,3,3,5,12,26,38,44,52,58,49,55,61,57,63,72,86,94,78,66,48,30,16];
+  document.getElementById('chart').innerHTML=
+    v.map((h,i)=>`<i style="--h:${h}%;transition-delay:${i*22}ms"></i>`).join('');
+})();
+
+/* ---------- 群聊方阵 ---------- */
+(function(){
+  let html='';
+  const hot=[0,3,7,11,14,19,22,26,31,35,40,44];
+  for(let i=0;i<48;i++) html+=`<i class="${hot.includes(i)?'on':''}"></i>`;
+  document.getElementById('mosaic').innerHTML=html;
+})();
+
+
+/* ---------- 开机动画 ---------- */
+(function(){
+  const lines=["QQ TIMEMACHINE v2026","LOADING 2026.LOG ...","MESSAGES  12,860  OK","FRIENDS   184     OK","READY."];
+  const el=document.getElementById('bootlog'); let i=0;
+  const t=setInterval(()=>{
+    el.textContent=lines[i++]||"READY.";
+    if(i>=lines.length){clearInterval(t);
+      setTimeout(()=>{document.getElementById('boot').classList.add('off');
+        document.querySelector('.screen[data-t="1"]').classList.add('live');},420);}
+  },420);
+})();
+
+/* ---------- 分屏导航 ---------- */
+const deck=document.getElementById('deck');
+const screens=[...document.querySelectorAll('.screen')];
+const bars=document.getElementById('bars');
+bars.innerHTML=screens.map(()=>'<i></i>').join('');
+const barEls=[...bars.children];
+let cur=0;
+
+function setCur(i){
+  cur=i;
+  document.getElementById('pgNow').textContent=String(i+1).padStart(2,'0');
+  barEls.forEach((b,k)=>b.classList.toggle('on',k<=i));
+  document.getElementById('btnNext').innerHTML =
+    i===screens.length-1 ? '再看一遍 <span>↺</span>' : '继续 <span>↓</span>';
+}
+function go(i){
+  const t=Math.max(0,Math.min(screens.length-1,i));
+  screens[t].scrollIntoView({behavior:'smooth',block:'start'});
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.intersectionRatio>0.55){ e.target.classList.add('live'); setCur(screens.indexOf(e.target)); }
+}),{root:deck,threshold:[0.55]});
+screens.forEach(s=>io.observe(s));
+
+document.getElementById('btnNext').onclick=()=>go(cur===screens.length-1?0:cur+1);
+document.getElementById('btnUp').onclick=()=>go(cur-1);
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=e=>{e.stopPropagation();go(+b.dataset.go);});
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' ')  {e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowUp'  ||e.key==='PageUp')                 {e.preventDefault();go(cur-1);}
+});
+/* 点击空白处也翻页（避开按钮与可交互元素） */
+deck.addEventListener('click',e=>{
+  if(e.target.closest('button,a,.win-bar,.cloud')) return;
+  if(cur<screens.length-1) go(cur+1);
+});
+
+/* ---------- 数字滚动 ---------- */
+const nio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting) return; nio.unobserve(e.target);
+  const el=e.target, end=+el.dataset.n, t0=performance.now(), dur=1200;
+  (function step(t){
+    const k=Math.min(1,(t-t0)/dur);
+    el.textContent=Math.round(end*(1-Math.pow(1-k,3))).toLocaleString('en-US');
+    if(k<1) requestAnimationFrame(step);
+  })(t0);
+}),{root:deck,threshold:.4});
+document.querySelectorAll('[data-n]').forEach(el=>nio.observe(el));
+
+/* ---------- 分享 ---------- */
+let tT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
+document.querySelectorAll('[data-share]').forEach(b=>b.onclick=e=>{
+  e.stopPropagation();
+  toast(b.dataset.share==='poster' ? '长图已保存到相册 · 可直接发朋友圈'
+                                   : '已生成分享卡片 · 选择好友即可发送');
+});
+document.getElementById('btnShare').onclick=e=>{e.stopPropagation();go(9);toast('去结束页分享给好友 ↗');};
+setCur(0);
+</script>
+</body>
+</html>

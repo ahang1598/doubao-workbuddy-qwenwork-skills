@@ -1,0 +1,4 @@
+interface:
+  display_name: "开学选课决策顾问"
+  short_description: "比较本校具体课程并制定可复核的选课与退补选方案"
+  default_prompt: "使用 $plan-course-registration-cn，根据我的学校规则、候选课程和个人目标生成退补选决策方案。"

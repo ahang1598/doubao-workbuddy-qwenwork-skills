@@ -1,0 +1,22 @@
+# Skill runtime artifacts
+*.zip
+.idea/
+.vscode/
+.venv/
+venv/
+__pycache__/
+*/__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+.aime/.setup_status
+.DS_Store
+
+# User data and generated results are never part of the published Skill
+inputs/
+outputs/
+logs/
+temp_data/
+*/temp_data/
+regression_results.log
+table_*.rtf

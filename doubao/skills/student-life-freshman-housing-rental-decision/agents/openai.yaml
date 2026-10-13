@@ -1,0 +1,4 @@
+interface:
+  display_name: "新生住宿与租房决策"
+  short_description: "比较宿舍与租房方案，核算真实成本并识别看房签约风险"
+  default_prompt: "使用 $student-life-freshman-housing-rental-decision 比较我的住宿方案，并给出风险门禁、预算和下一步。"

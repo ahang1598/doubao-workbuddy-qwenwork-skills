@@ -1,0 +1,13 @@
+interface:
+  display_name: 上课笔记整理
+  short_description: 识别录音、课件、图片与手写内容，生成预习和复习笔记
+  default_prompt: 使用 $student-organize-lecture-notes，识别并整合我的课堂材料，生成带来源、待核对项、课前预习和复习题的结构化笔记。
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

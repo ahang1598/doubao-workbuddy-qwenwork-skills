@@ -1,0 +1,20 @@
+{
+  "id": "regression.invitation-optional-fields-rejected",
+  "category": "regression",
+  "expected_route": "trigger",
+  "description": "邀请函必须拒绝用户未要求的姓名占位符、分享内容、回执和当天日期。",
+  "candidate_output": "校友行业分享会嘉宾邀请函\n尊敬的[待补：校友姓名]校友：\n学院职业发展协会诚邀您担任分享嘉宾，与在校同学分享行业经验。\n时间：[待补：活动时间]\n地点：[待补：活动地点]\n烦请赐复。\n学院职业发展协会\n2026-08-14",
+  "assertions": {
+    "required_substrings": ["校友行业分享会嘉宾邀请函", "时间：[待补：活动时间]", "地点：[待补：活动地点]"],
+    "forbidden_substrings": ["校友姓名", "在校同学", "行业经验", "赐复", "2026-08-14"],
+    "forbidden_regexes": [],
+    "max_output_chars": 400,
+    "allow_empty_output": false
+  },
+  "privacy": {
+    "scan_standard_patterns": true,
+    "forbidden_literals": []
+  },
+  "expected_valid": false,
+  "expected_issue_codes": ["FORBIDDEN_TEXT_PRESENT"]
+}

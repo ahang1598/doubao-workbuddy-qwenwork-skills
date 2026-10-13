@@ -1,0 +1,75 @@
+{
+  "example_notice": "虚构候选与报价，不代表真实商品价格、库存或购买推荐",
+  "runtime": {
+    "network_tool_status": "not_used",
+    "limitations": [
+      "价格来自用户提供的虚构示例，本次未联网"
+    ]
+  },
+  "weights": {
+    "performance": 2,
+    "portability": 1.5,
+    "battery": 1,
+    "compatibility": 2,
+    "price_value": 1.5,
+    "longevity": 1
+  },
+  "candidates": [
+    {
+      "name": "示例候选A",
+      "price": 5999,
+      "price_checked_at": "2026-08-11T12:00:00+08:00",
+      "price_source": "用户提供的示例报价，不代表真实商品价格",
+      "price_access_method": "user_provided",
+      "price_authorization_status": "not_applicable",
+      "hard_constraints": {
+        "software_compatible": true,
+        "within_budget": true
+      },
+      "scores": {
+        "performance": 8,
+        "portability": 8,
+        "battery": 8,
+        "compatibility": 9,
+        "price_value": 8,
+        "longevity": 8
+      },
+      "evidence": {
+        "performance": "示例：用户材料中的任务基准",
+        "portability": "示例：用户材料中的重量",
+        "battery": "示例：用户材料中的续航记录",
+        "compatibility": "示例：院系软件要求与候选规格",
+        "price_value": "示例：带日期与来源的用户报价",
+        "longevity": "示例：相对用户计划周期的性能余量"
+      }
+    },
+    {
+      "name": "示例候选B",
+      "price": 6999,
+      "price_checked_at": "2026-08-11T12:00:00+08:00",
+      "price_source": "用户提供的示例报价，不代表真实商品价格",
+      "price_access_method": "user_provided",
+      "price_authorization_status": "not_applicable",
+      "hard_constraints": {
+        "software_compatible": false,
+        "within_budget": true
+      },
+      "scores": {
+        "performance": 9,
+        "portability": 9,
+        "battery": 9,
+        "compatibility": 4,
+        "price_value": 7,
+        "longevity": 8
+      },
+      "evidence": {
+        "performance": "示例：用户材料中的任务基准",
+        "portability": "示例：用户材料中的重量",
+        "battery": "示例：用户材料中的续航记录",
+        "compatibility": "示例：院系软件要求与候选规格",
+        "price_value": "示例：带日期与来源的用户报价",
+        "longevity": "示例：相对用户计划周期的性能余量"
+      }
+    }
+  ]
+}

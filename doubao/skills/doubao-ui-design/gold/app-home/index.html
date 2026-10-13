@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#0B1020">
+<title>班次 · 通勤到站</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   gold 第四份：**产品界面原型**。前三份分别是宽屏官网、叙事 H5 ×2，
+   而「App / 小程序界面」这一形态一直没有样本 —— 上一轮就是在这里翻的车：
+   「咖啡点单小程序首页改版」被做成了 5 屏宣讲 deck。
+
+   这一份要证明的三件事：
+     1 首屏就是产品本身 —— 一打开就知道下一班车几分钟后到，不是封面页
+     2 点了真的会变 —— 方向切换 / 换乘展开 / 底部 tab，三个真实状态
+     3 **不照抄年报的机箱** —— 这里没有页码、没有分段进度条、
+       没有「上一页 / 继续 / 分享」三键。产品不需要那些。
+       位置表达是底部 tab 的选中态和方向段控件的选中态，那才是产品的形式。
+
+   人格（和另外三份 gold 两两不同）：
+     深夜靛底 · 站台灯的琥珀 · 压缩体数字 · 10px 圆角 · 无衬线冷静
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#0B1020;
+  --surface:#141B2E;
+  --surface-2:#1B2440;
+  --ink:#EDF1F7;
+  --dim:#93A0B8;
+  --line:rgba(237,241,247,.10);
+  --amber:#FFB23F;          /* 站台灯 —— 只给"下一班"和选中态用 */
+  --line4:#3DDC97;          /* 4 号线 */
+  --line2:#5B8CFF;          /* 2 号线 */
+  --r:10px;
+  --ease:cubic-bezier(.22,.75,.3,1);
+  --tab:62px;
+
+  /* 取景框：机身和台面都跟着这一稿的方向走。
+     这一稿是暗场，所以机身取深，但台面**不是一块纯黑** ——
+     两团模糊光斑用站台灯的琥珀和 4 号线的绿，台面是这个产品世界的延伸。
+     亮场 / 纸感 / 高饱和的预设写在 skeletons/app.html 的 :root 注释里。 */
+  --frame:#0E1424;
+  --frame-2:#26304A;
+  --stage-1:#151E36;
+  --stage-2:#04060C;
+  --halo-1:#FFB23F;
+  --halo-2:#3DDC97;
+  --halo-a:.26;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+svg{display:block}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  background:radial-gradient(130% 90% at 50% 8%,var(--stage-1),var(--stage-2) 72%)}
+.stage::before{content:"";position:absolute;inset:-18%;z-index:0;pointer-events:none;
+  opacity:var(--halo-a);filter:blur(90px);
+  background:
+    radial-gradient(38% 30% at 22% 24%,var(--halo-1),transparent 70%),
+    radial-gradient(42% 34% at 78% 74%,var(--halo-2),transparent 70%)}
+#app{position:relative;z-index:1;width:100%;height:100%;overflow:hidden;
+  background:var(--bg)}
+@media(min-width:760px){
+  #app{width:390px;height:min(844px,86vh);border-radius:44px;
+    box-shadow:0 0 0 11px var(--frame),0 0 0 13px var(--frame-2),
+               0 44px 100px rgba(0,0,0,.5)}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:112px;height:26px;border-radius:15px;background:var(--frame);z-index:60}
+}
+@media(max-width:759px){.notch{display:none}.stage::before{display:none}}
+
+/* 站台灯：顶部一层暖光，整屏的气质来源 */
+.glow{position:absolute;top:0;left:0;right:0;height:300px;z-index:0;pointer-events:none;
+  background:radial-gradient(120% 78% at 50% -14%,rgba(255,178,63,.20),transparent 64%)}
+
+.statusbar{position:absolute;top:0;left:0;right:0;z-index:55;height:44px;padding:0 22px;
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none;
+  font-size:13px;font-weight:600}
+.sb-r{display:flex;align-items:center;gap:5px}
+.sb-r i{display:block;background:currentColor;border-radius:1px}
+.sb-r .sig{width:15px;height:10px;
+  clip-path:polygon(0 72%,18% 72%,18% 100%,0 100%,0 72%,27% 46%,45% 46%,45% 100%,27% 100%,
+    27% 46%,54% 22%,72% 22%,72% 100%,54% 100%,54% 22%,82% 0,100% 0,100% 100%,82% 100%)}
+.sb-r .wifi{width:14px;height:10px;
+  clip-path:polygon(50% 100%,32% 74%,68% 74%,50% 100%,50% 66%,20% 40%,28% 30%,72% 30%,80% 40%,
+    50% 66%,50% 24%,8% 12%,14% 2%,86% 2%,92% 12%)}
+.sb-r .bat{width:22px;height:11px;border-radius:3px;position:relative;
+  box-shadow:inset 0 0 0 1px currentColor}
+.sb-r .bat::before{content:"";position:absolute;inset:2px;width:64%;
+  background:currentColor;border-radius:1px}
+
+/* 顶部栏：产品的身份 + 当前所在站。不是"页码 + 进度条"。 */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:50;
+  padding:calc(env(safe-area-inset-top) + 50px) 20px 10px;
+  display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,
+    var(--bg) 62%,rgba(11,16,32,0))}
+.brand{font-size:17px;font-weight:700;letter-spacing:.04em}
+.at{font-size:13px;color:var(--dim)}
+.at b{color:var(--ink);font-weight:600}
+.icbtn{margin-left:auto;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+
+/* 方向段控件 —— 位置表达之一，也是第一个真实状态切换 */
+.seg{position:absolute;top:calc(env(safe-area-inset-top) + 96px);left:20px;right:20px;
+  z-index:50;display:flex;gap:4px;padding:4px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r)}
+.seg button{flex:1;height:36px;border-radius:7px;font-size:14px;color:var(--dim)}
+.seg button.on{background:var(--surface-2);color:var(--ink);font-weight:600;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+
+#flow{position:relative;z-index:10;height:100%;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:calc(env(safe-area-inset-top) + 152px) 20px
+          calc(var(--tab) + env(safe-area-inset-bottom) + 26px)}
+#flow::-webkit-scrollbar{display:none}
+.panel[hidden]{display:none}
+
+.eyebrow{font-size:12px;letter-spacing:.16em;color:var(--dim);margin:20px 0 10px}
+
+/* 下一班：整屏的主角。渐变底 + 线路色带 + 巨大的倒计时 */
+.next{position:relative;border-radius:14px;overflow:hidden;padding:20px 18px 18px;
+  background:linear-gradient(158deg,#1C2745 0%,#151D33 52%,#121829 100%);
+  border:1px solid rgba(255,178,63,.22)}
+.next::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--line4),rgba(61,220,151,.25))}
+.route{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--line4);flex:none}
+.route b{color:var(--ink);font-weight:600;font-size:14px}
+.count{display:flex;align-items:baseline;gap:6px;margin:10px 0 4px}
+.count .m{font-size:64px;font-weight:800;line-height:.9;color:var(--amber)}
+.count .u{font-size:20px;font-weight:700;color:var(--amber)}
+.count .s{font-size:20px;font-weight:600;color:var(--dim);margin-left:2px}
+.after{font-size:13.5px;color:var(--dim)}
+.after b{color:var(--ink);font-weight:600}
+
+/* 车厢拥挤度：六节，热力三档。这是"内容即画面"。 */
+.cars{margin:16px 0 4px}
+.cars .cap{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);
+  margin-bottom:7px}
+.cars svg{width:100%;height:34px}
+
+.acts{display:flex;gap:9px;margin-top:15px}
+.acts button{height:42px;border-radius:9px;font-size:14.5px;font-weight:600}
+.acts .go{flex:1;background:var(--amber);color:#26180A}
+.acts .fav{width:100px;border:1px solid var(--line);color:var(--ink)}
+
+/* 换乘方案：点开看全部站点 —— 第二个真实状态切换 */
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:10px}
+.plan .hd{display:flex;align-items:center;gap:9px}
+.plan .tag{font-size:11.5px;font-weight:700;padding:3px 7px;border-radius:5px;
+  color:#08120C;background:var(--line4)}
+.plan .tag.b{background:var(--line2);color:#060C1E}
+.plan .hd .t{font-size:14.5px;font-weight:600}
+.plan .hd .r{margin-left:auto;font-size:13px;color:var(--dim)}
+.plan .sub{font-size:13px;color:var(--dim);margin-top:5px}
+.plan .more{max-height:0;overflow:hidden;visibility:hidden;
+  transition:max-height .34s var(--ease),visibility .34s}
+.plan.open .more{visibility:visible}
+.plan.open .more{max-height:280px}
+.plan .stops{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.plan .stops svg{width:100%;height:60px}
+.plan .toggle{margin-top:11px;font-size:13px;color:var(--amber);font-weight:600}
+
+/* 今日时刻密度：一条 SVG 条形图，说明"这个点是不是高峰" */
+.dense{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px 12px}
+.dense .hd{display:flex;justify-content:space-between;align-items:baseline}
+.dense .hd b{font-size:14.5px}
+.dense .hd span{font-size:12.5px;color:var(--dim)}
+.dense svg{width:100%;height:56px;margin-top:10px}
+.dense .axis{display:flex;justify-content:space-between;font-size:11.5px;
+  color:var(--dim);margin-top:4px}
+
+/* 附近站点：迷你地图 + 步行时间 */
+.near{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden}
+.near .map{height:132px;background:linear-gradient(135deg,#17203A,#111728)}
+.near .map svg{width:100%;height:100%}
+.near .rows{padding:4px 16px 12px}
+.near .row{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--line);font-size:14px}
+.near .row:last-child{border-bottom:0}
+.near .row .w{margin-left:auto;font-size:13px;color:var(--dim)}
+
+.tabbar{position:absolute;left:0;right:0;bottom:0;z-index:50;
+  display:flex;align-items:stretch;background:rgba(11,16,32,.94);
+  border-top:1px solid var(--line);
+  padding:9px 0 calc(env(safe-area-inset-bottom) + 13px);
+  backdrop-filter:blur(12px)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;
+  font-size:11.5px;color:var(--dim);min-height:40px}
+.tabbar button.on{color:var(--amber)}
+.tabbar .ic{width:20px;height:20px;border-radius:5px;border:1.6px solid currentColor}
+.tabbar button:nth-child(2) .ic{border-radius:50%}
+.tabbar button:nth-child(3) .ic{border-radius:5px 5px 9px 9px}
+
+.toast{position:absolute;left:50%;bottom:calc(var(--tab) + 34px);z-index:70;
+  transform:translate(-50%,14px);opacity:0;pointer-events:none;max-width:78%;
+  padding:11px 18px;border-radius:999px;background:rgba(6,9,18,.94);
+  border:1px solid var(--line);font-size:13.5px;
+  transition:opacity .28s var(--ease),transform .28s var(--ease)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="stage"><div id="app">
+  <div class="notch"></div>
+  <div class="glow"></div>
+
+  <div class="statusbar">
+    <span>8:12</span>
+    <span class="sb-r"><i class="sig"></i><i class="wifi"></i><i class="bat"></i></span>
+  </div>
+
+  <div class="topbar">
+    <div>
+      <div class="brand">班次</div>
+      <div class="at">你在 <b>白石桥南</b> · 步行 3 分钟到站台</div>
+    </div>
+    <button class="icbtn" id="btnSearch" aria-label="搜索线路">
+      <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+        <circle cx="7.2" cy="7.2" r="5.4" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M11.3 11.3 15.4 15.4" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="seg" role="tablist" aria-label="通勤方向">
+    <button role="tab" class="on" aria-selected="true" data-dir="work">上班 · 去公司</button>
+    <button role="tab" aria-selected="false" data-dir="home">回家 · 去望湖里</button>
+  </div>
+
+  <div id="flow">
+    <!-- ══ 到站 ══ -->
+    <section class="panel" data-panel="live">
+      <div class="eyebrow">下一班</div>
+
+      <div class="next">
+        <div class="route"><i class="dot"></i><b id="rLine">4 号线</b>
+          <span>往 <span id="rTo">海棠湾</span> · <span id="rPlat">B 口 2 号站台</span></span></div>
+        <div class="count num">
+          <span class="m" id="cMin">3</span><span class="u">分</span>
+          <span class="s" id="cSec">12 秒</span>
+        </div>
+        <p class="after">坐到底 <b id="rEta">22 分钟</b>，<b id="rArr">8:47</b> 到<span id="rDest">公司</span>。</p>
+
+        <div class="cars">
+          <div class="cap"><span>车厢拥挤度</span><span id="carHint">第 5、6 节还有座</span></div>
+          <svg viewBox="0 0 340 34" preserveAspectRatio="none" role="img"
+               aria-label="六节车厢拥挤度：前四节拥挤，后两节宽松">
+            <g id="carG"></g>
+          </svg>
+        </div>
+
+        <div class="acts">
+          <button class="go" id="btnRemind">到站前 2 分钟提醒我</button>
+          <button class="fav" id="btnFav">收藏</button>
+        </div>
+      </div>
+
+      <div class="eyebrow">换乘方案</div>
+
+      <article class="plan" data-expand>
+        <div class="hd"><span class="tag">4</span><span class="t">直达 · 不换乘</span>
+          <span class="r num">22 分</span></div>
+        <p class="sub">从白石桥南上车，7 站直达公司站，全程不用出站换乘，车门在右侧开。</p>
+        <div class="more">
+          <div class="stops">
+            <svg viewBox="0 0 340 60" role="img" aria-label="七站直达路径">
+              <line x1="12" y1="30" x2="328" y2="30" stroke="#3DDC97" stroke-width="3"
+                    stroke-linecap="round"/>
+              <g fill="#0B1020" stroke="#3DDC97" stroke-width="2.4">
+                <circle cx="12" cy="30" r="6"/><circle cx="65" cy="30" r="4.6"/>
+                <circle cx="118" cy="30" r="4.6"/><circle cx="170" cy="30" r="4.6"/>
+                <circle cx="223" cy="30" r="4.6"/><circle cx="276" cy="30" r="4.6"/>
+                <circle cx="328" cy="30" r="6"/></g>
+              <g fill="#93A0B8" font-size="11" font-family="system-ui">
+                <text x="12" y="52" text-anchor="start">白石桥南</text>
+                <text x="170" y="52" text-anchor="middle">动物园</text>
+                <text x="328" y="52" text-anchor="end">公司站</text></g>
+            </svg>
+          </div>
+          <div class="toggle" data-toggle>收起</div>
+        </div>
+      </article>
+
+      <article class="plan" data-expand>
+        <div class="hd"><span class="tag b">2</span><span class="t">换 2 号线 · 有座概率高</span>
+          <span class="r num">26 分</span></div>
+        <p class="sub">比直达多 4 分钟，但西直门换乘之后基本都能坐下，适合想补觉的早上。</p>
+        <div class="more">
+          <div class="stops">
+            <svg viewBox="0 0 340 60" role="img" aria-label="换乘 2 号线路径">
+              <line x1="12" y1="30" x2="160" y2="30" stroke="#3DDC97" stroke-width="3"
+                    stroke-linecap="round"/>
+              <line x1="160" y1="30" x2="328" y2="30" stroke="#5B8CFF" stroke-width="3"
+                    stroke-linecap="round"/>
+              <g fill="#0B1020" stroke-width="2.4">
+                <circle cx="12" cy="30" r="6" stroke="#3DDC97"/>
+                <circle cx="86" cy="30" r="4.6" stroke="#3DDC97"/>
+                <circle cx="160" cy="30" r="7" stroke="#FFB23F"/>
+                <circle cx="244" cy="30" r="4.6" stroke="#5B8CFF"/>
+                <circle cx="328" cy="30" r="6" stroke="#5B8CFF"/></g>
+              <g fill="#93A0B8" font-size="11" font-family="system-ui">
+                <text x="12" y="52" text-anchor="start">白石桥南</text>
+                <text x="160" y="52" text-anchor="middle">西直门 换乘</text>
+                <text x="328" y="52" text-anchor="end">公司站</text></g>
+            </svg>
+          </div>
+          <div class="toggle" data-toggle>收起</div>
+        </div>
+      </article>
+
+      <div class="eyebrow">出站怎么走</div>
+      <div class="dense">
+        <div class="hd"><b>公司站 · C 口最近</b><span>出闸后左转，走 180 米</span></div>
+        <svg viewBox="0 0 340 62" role="img"
+             aria-label="公司站出站路径：出闸左转经扶梯到 C 口">
+          <path d="M14 46 H108 V20 H214 V44 H326" stroke="#FFB23F" stroke-width="3.4"
+                fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <g fill="#0B1020" stroke="#FFB23F" stroke-width="2.6">
+            <circle cx="14" cy="46" r="6.5"/><circle cx="326" cy="44" r="6.5"/></g>
+          <g stroke="#93A0B8" stroke-width="2" fill="none" opacity=".75">
+            <path d="M100 30 l8 -6 8 6"/><path d="M100 38 l8 -6 8 6"/></g>
+          <g fill="#93A0B8" font-size="11" font-family="system-ui">
+            <text x="14" y="60">出闸</text>
+            <text x="108" y="14" text-anchor="middle">上行扶梯</text>
+            <text x="326" y="60" text-anchor="end">C 口</text></g>
+        </svg>
+      </div>
+
+      <div class="eyebrow">这个点挤不挤</div>
+      <div class="dense">
+        <div class="hd"><b>今日发车密度</b><span>你现在在这里 ↓</span></div>
+        <svg viewBox="0 0 340 56" preserveAspectRatio="none" role="img"
+             aria-label="今日发车密度条形图，8 点是高峰"><g id="denG"></g></svg>
+        <div class="axis"><span>6:00</span><span>8:00</span><span>12:00</span>
+          <span>18:00</span><span>23:00</span></div>
+      </div>
+
+      <div class="eyebrow">附近还有</div>
+      <div class="near">
+        <div class="map">
+          <svg viewBox="0 0 340 132" role="img" aria-label="附近三个站点的位置示意">
+            <path d="M0 96 L120 96 L120 26 L340 26" stroke="#3DDC97" stroke-width="3"
+                  fill="none" opacity=".85"/>
+            <path d="M40 132 L40 60 L340 60" stroke="#5B8CFF" stroke-width="3"
+                  fill="none" opacity=".8"/>
+            <path d="M0 12 L200 12 L200 132" stroke="#93A0B8" stroke-width="2"
+                  fill="none" opacity=".28"/>
+            <circle cx="120" cy="96" r="8" fill="#0B1020" stroke="#FFB23F" stroke-width="3"/>
+            <circle cx="40" cy="60" r="6" fill="#0B1020" stroke="#5B8CFF" stroke-width="2.6"/>
+            <circle cx="200" cy="26" r="6" fill="#0B1020" stroke="#3DDC97" stroke-width="2.6"/>
+            <text x="132" y="100" fill="#EDF1F7" font-size="11.5"
+                  font-family="system-ui">你在这</text>
+          </svg>
+        </div>
+        <div class="rows">
+          <div class="row"><span>白石桥南 · 4 号线</span><span class="w num">步行 3 分</span></div>
+          <div class="row"><span>国家图书馆 · 9 号线</span><span class="w num">步行 8 分</span></div>
+          <div class="row"><span>魏公村 · 4 号线</span><span class="w num">步行 11 分</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ 线路 ══ -->
+    <section class="panel" data-panel="lines" hidden>
+      <div class="eyebrow">我常坐的</div>
+      <article class="plan"><div class="hd"><span class="tag">4</span>
+        <span class="t">4 号线 · 安河桥北 ⇄ 天宫院</span><span class="r num">2 分一班</span></div>
+        <p class="sub">早高峰 7:20–9:10 加密，末班 23:15。</p></article>
+      <article class="plan"><div class="hd"><span class="tag b">2</span>
+        <span class="t">2 号线 · 内环</span><span class="r num">3 分一班</span></div>
+        <p class="sub">西直门换乘要走 4 分钟连廊，赶时间就别选它。</p></article>
+      <div class="eyebrow">最近查过</div>
+      <article class="plan"><div class="hd"><span class="tag b">9</span>
+        <span class="t">9 号线 · 国家图书馆</span><span class="r num">4 分一班</span></div>
+        <p class="sub">周末去图书馆走这条，比 4 号线少一次换乘。</p></article>
+    </section>
+
+    <!-- ══ 我的 ══ -->
+    <section class="panel" data-panel="me" hidden>
+      <div class="eyebrow">通勤画像</div>
+      <div class="dense"><div class="hd"><b>这个月</b><span>比上月少 1 小时 12 分</span></div>
+        <div class="after" style="margin-top:9px">
+          你一共通勤 <b class="num">41</b> 次，平均单程 <b class="num">24 分钟</b>。
+          最顺的一天是 10 月 9 日，全程 <b class="num">19 分钟</b>。</div></div>
+      <div class="eyebrow">提醒</div>
+      <article class="plan"><div class="hd"><span class="t">到站前 2 分钟提醒</span>
+        <span class="r">已开</span></div>
+        <p class="sub">工作日 7:40–9:00 生效。</p></article>
+      <article class="plan"><div class="hd"><span class="t">末班车提醒</span>
+        <span class="r">未开</span></div>
+        <p class="sub">末班前 30 分钟提醒你回家。</p></article>
+    </section>
+  </div>
+
+  <nav class="tabbar" role="tablist" aria-label="主导航">
+    <button class="on" data-go="live" aria-selected="true"><i class="ic"></i>到站</button>
+    <button data-go="lines" aria-selected="false"><i class="ic"></i>线路</button>
+    <button data-go="me" aria-selected="false"><i class="ic"></i>我的</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+</div></div>
+
+<script>
+/* ── 副作用要有一句解释 ────────────────────────────────── */
+const toastEl=document.getElementById('toast');let toastT;
+function toast(msg){
+  toastEl.textContent=msg;toastEl.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('on'),1700);
+}
+
+/* ── 车厢拥挤度：三档热力，六节 ─────────────────────────── */
+const CROWD={work:[3,3,3,2,1,1],home:[2,3,3,3,2,1]};
+const HEAT=['#3DDC97','#FFB23F','#FF6B5A'];
+function drawCars(load){
+  document.getElementById('carG').innerHTML=load.map((v,i)=>{
+    const x=i*57+2,w=51;
+    return `<rect x="${x}" y="4" width="${w}" height="26" rx="4"
+      fill="${HEAT[v-1]}" opacity="${0.32+v*0.22}"/>
+      <text x="${x+w/2}" y="22" text-anchor="middle" font-size="11"
+      font-family="system-ui" fill="#0B1020" font-weight="700">${i+1}</text>`;
+  }).join('');
+}
+
+/* ── 发车密度：24 条，8 点最高 ──────────────────────────── */
+const DENSE=[2,3,5,7,9,10,9,7,5,4,4,5,6,7,9,10,8,6,5,4,3,2,2,1];
+document.getElementById('denG').innerHTML=DENSE.map((v,i)=>{
+  const x=i*14+2,h=v*5.2;
+  return `<rect x="${x}" y="${54-h}" width="10" height="${h}" rx="2.5"
+    fill="${i===2?'#FFB23F':'#2E3A57'}"/>`;
+}).join('');
+
+/* ── 状态一：通勤方向。产品的"位置表达"是段控件的选中态，
+      不是年报那种页码 + 分段进度条。 ─────────────────────── */
+const DIR={
+  work:{line:'4 号线',to:'海棠湾',plat:'B 口 2 号站台',eta:'22 分钟',
+        dest:'公司',arr:'8:47',hint:'第 5、6 节还有座'},
+  home:{line:'2 号线',to:'积水潭',plat:'A 口 1 号站台',eta:'26 分钟',
+        dest:'家',arr:'19:12',hint:'第 6 节最松'}
+};
+const segBtns=[...document.querySelectorAll('.seg button')];
+function setDir(k){
+  const d=DIR[k];
+  segBtns.forEach(b=>{const on=b.dataset.dir===k;
+    b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));});
+  rLine.textContent=d.line; rTo.textContent=d.to; rPlat.textContent=d.plat;
+  rEta.textContent=d.eta; rDest.textContent=d.dest; rArr.textContent=d.arr;
+  carHint.textContent=d.hint;
+  document.querySelector('.next::before');
+  document.querySelector('.dot').style.background=k==='work'?'var(--line4)':'var(--line2)';
+  drawCars(CROWD[k]);
+  left=k==='work'?192:415;
+  tick();
+}
+segBtns.forEach(b=>b.onclick=()=>{setDir(b.dataset.dir);
+  toast(b.dataset.dir==='work'?'已切到上班方向':'已切到回家方向');});
+
+/* ── 控件文案响应状态：倒计时每秒变，到点了换一句话 ────────── */
+let left=192;
+const cMin=document.getElementById('cMin'),cSec=document.getElementById('cSec');
+function tick(){
+  if(left<=0){cMin.textContent='正在';cSec.textContent='进站';
+              document.querySelector('.count .u').textContent='';return;}
+  cMin.textContent=Math.floor(left/60);
+  cSec.textContent=String(left%60).padStart(2,'0')+' 秒';
+  document.querySelector('.count .u').textContent='分';
+}
+setInterval(()=>{left=Math.max(0,left-1);tick();},1000);
+tick();
+
+/* ── 状态二：换乘方案展开 / 收起，控件文案跟着状态走 ──────── */
+document.querySelectorAll('[data-expand]').forEach(c=>{
+  c.addEventListener('click',e=>{
+    if(e.target.closest('button')) return;
+    c.classList.toggle('open');
+    const t=c.querySelector('[data-toggle]');
+    if(t) t.textContent=c.classList.contains('open')?'收起':'展开全部站点';
+  });
+});
+
+/* ── 状态三：底部 tab。选中态就是"他知道自己在哪"。 ────────── */
+const panels=[...document.querySelectorAll('.panel')];
+const tabs=[...document.querySelectorAll('.tabbar button')];
+tabs.forEach(b=>b.onclick=()=>{
+  tabs.forEach(x=>{const on=x===b;
+    x.classList.toggle('on',on);x.setAttribute('aria-selected',String(on));});
+  panels.forEach(p=>{p.hidden=p.dataset.panel!==b.dataset.go;});
+  document.getElementById('flow').scrollTop=0;
+});
+
+/* ── 主操作与收藏：每个副作用都给一句解释 ─────────────────── */
+let reminding=false;
+document.getElementById('btnRemind').onclick=function(){
+  reminding=!reminding;
+  this.textContent=reminding?'已设提醒 · 点此取消':'到站前 2 分钟提醒我';
+  this.style.background=reminding?'transparent':'var(--amber)';
+  this.style.color=reminding?'var(--amber)':'#26180A';
+  this.style.border=reminding?'1px solid var(--amber)':'0';
+  toast(reminding?'到站前 2 分钟会震一下':'提醒已取消');
+};
+let faved=false;
+document.getElementById('btnFav').onclick=function(){
+  faved=!faved; this.textContent=faved?'已收藏':'收藏';
+  this.style.color=faved?'var(--amber)':'var(--ink)';
+  toast(faved?'这条已加进「我常坐的」':'已从「我常坐的」移除');
+};
+document.getElementById('btnSearch').onclick=()=>toast('搜索线路、站点或目的地');
+
+/* ── 一个意图多条通路：点击之外，滚动到底也是一条（懒加载更多） ── */
+const flow=document.getElementById('flow');
+let loadedMore=false;
+flow.addEventListener('scroll',()=>{
+  if(loadedMore) return;
+  if(flow.scrollTop+flow.clientHeight>flow.scrollHeight-40){
+    loadedMore=true; toast('已经是全部方案了');
+  }
+});
+
+drawCars(CROWD.work);
+</script>
+</body>
+</html>

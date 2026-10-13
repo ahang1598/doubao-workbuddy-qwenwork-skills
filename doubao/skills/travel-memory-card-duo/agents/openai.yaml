@@ -1,0 +1,4 @@
+interface:
+  display_name: "旅行记忆卡双图版"
+  short_description: "一次生成完整旅行记忆卡与同款六枚透明底贴纸 PNG 文件"
+  default_prompt: "使用 $travel-memory-card-duo 把我上传的照片做成完整旅行记忆卡，并同时输出同款六枚透明底 PNG 贴纸图。"

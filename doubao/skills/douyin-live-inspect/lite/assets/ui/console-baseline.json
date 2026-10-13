@@ -1,0 +1,48 @@
+{
+  "source": "console-livesaas",
+  "commit": "84632c4016ea373a04b9c783077251f3ac1be596",
+  "compiler": "less@3.13.1",
+  "pages": {
+    "quality": {
+      "file": "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/QualityReport/style.module.less",
+      "sha256": "3636098bc39097b16c7e508613d1d75028eab25f59e6b5ebefccefac68301832",
+      "output": "quality/app.css",
+      "output_sha256": "328747d8fd57c888c2af2b777349d068b7d98de0136814c87991c716b846c576"
+    },
+    "monitor": {
+      "file": "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/LiveDashboard/style.module.less",
+      "sha256": "1e8c9c1f6c2e27726d34b48a6069e16e8313067f933a594502cb62d9172d2ca2",
+      "output": "monitor/app.css",
+      "output_sha256": "48bcf9e6b2b1f716ac995d8d866b38003e0a8afbfa98c922b94c5e294154a12d"
+    },
+    "review": {
+      "file": "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/ReviewReport/style.module.less",
+      "sha256": "47698cb6983d68ab42e5d17736d2eeacc46c95e1fd6360e155b207f148c60c65",
+      "output": "review/app.css",
+      "output_sha256": "e196c98ba31b958472eafb9bd18dedefe83cd241ffd3acdd102ffb5353e63e6d"
+    }
+  },
+  "dependencies": {
+    "es/style/index.css": "87ea9a6b14150950fd950b8e8a74b7128da9176fafa23e490273f07c68219a32",
+    "es/Radio/style/index.css": "8f0f3e061fdf2dff40d737f083285d1e8700e27a28c86cc147fc08d0eacb3c29",
+    "es/Button/style/index.css": "f8fe56337eb00cee20789462053ffae1b85b230ec7be288d1dc017d455cf4f0f",
+    "es/Image/style/index.css": "9870763c704768b61b7c6d34b5b3308b14ddb6b59679cd101ff5cc1acbd04097",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconFullscreen/index.js": "94f587a305ea8d57fbe7c7d322bd00da24a2a4543c94862c350c91fa5ff81c75",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconRotateRight/index.js": "8c07694e41990741b601950a0e301448595c55f0aa6eb1acfdb0e478cd2e2946",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconRotateLeft/index.js": "cd33c9a1d65c4fb1753a6227de379eaff616d5f2d1428ccac130828b0297e178",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconZoomIn/index.js": "f943e4e635835b9fe983c3b0b40e9cb25ee1a03395ead1307fdc51aab27ceac3",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconZoomOut/index.js": "b47752e9b1d2ef0fa78db121af46eb7f43ebc28eaf37ab182ff9e4f4a5ca6099",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconOriginalSize/index.js": "949396a5fa1902571bd3e1db6090f263cc1ef8f562c8d76ea6c8b2bdf11b4baa",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconClose/index.js": "29ef8c502e66aa5324fa9af8540fb3edf6945b3e4c456e4990bd07a355d8701d",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconLeft/index.js": "5faf0a5aff8696c5ee7fa6b48dd0d2f0e88088760a45e4c5d6bbcb73f2d47fc3",
+    "apps/video-inspect/node_modules/@arco-design/web-react/icon/react-icon-cjs/IconRight/index.js": "11076efa34e509ff02346df276ed66af07cc949f4f17d0a25bbdcdd2da1dbe33"
+  },
+  "structure": {
+    "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/QualityReport/components/ReportView.tsx": "3057c9331e6648fba169c3d81bdde71a1b543ed29cbed29e1853f8e0ceb1c84b",
+    "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/QualityReport/components/ReportMedia.tsx": "51a6c94933463d46ddf694899eb6b2afb48527e108eb5a336b618011b5e8472d",
+    "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/ReviewReport/index.tsx": "1e0011d74429cc109684cd5a82301a0e3613a56f6220b7f122e6fbe3f12b002c",
+    "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/LiveDashboard/shell.ts": "e1775b9f00ba023e21f1ebdf95d1da8b50d543b3841baef8349cd3df6b0b2b86",
+    "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/LiveDashboard/view.ts": "8a558337e346495aefca22a152ee218e2812f1dc6bd65b8103d25ef10a200f4b",
+    "apps/video-inspect/src/pages/ProjectManagement/TaskManagement/components/EndTaskButton.tsx": "ecbc8dfe74e07e1fb4e71f93ddf06f76d6fa9105d2cb36199bb21ff1936e5441"
+  }
+}

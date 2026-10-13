@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>和田智能测温防疫平台 · 指挥大屏</title>
+<!--
+  gold · big-screen —— 「和田智能测温防疫平台」市政府指挥大厅首屏，4001×2251。
+
+  它证明的是：**大屏的判断标准和官网、和 B 端后台全都不一样。**
+
+    官网　　首屏影像占比越高越好
+    B 端　　满屏是图就是设计错误
+    大屏　　画面就是数据本身；一眼看到最重要的那个数，其余是佐证
+
+  这一稿的四条机制，是它拿分的地方（评分细则见同目录 rubric.md）：
+
+  1. **地图是视觉主角，而且是唯一主角。** 它占中间三分之一，左右两条数据轨
+     围着它。**不要把地图和图表做成平权的四宫格** —— 那是报表不是大屏。
+  2. **两个总数被抬到地图正上方**（登记车辆总数 / 登记人员总数）。
+     一眼看到的那两个数就是它们，其余板块全是解释这两个数怎么来的。
+  3. **深场是功能不是风格。** 指挥厅是暗环境、投在大屏上；亮场会刺眼、会反光。
+     实测这一稿暗部占 85%、亮部 1%。
+  4. **预警用红、常态用青，两色不混用。** 右下两块预警是整屏唯一的红，
+     所以它在 4001px 宽的画面里仍然第一眼就能被找到。
+
+  几何是写死的（4001×2251），靠 transform:scale 塞进任何窗口 ——
+  **截图和交付都按设计尺寸出，内部一律不做响应式**。
+  大屏不滚动、不触控，所以 hit-area / overflow-x / screen-height / first-view-media
+  这几条门对它不适用（见 check.py 的 SKIP_BY_PROFILE）。
+-->
+<style>
+:root{
+  --W:4001; --H:2251;
+  --bg:#05080F;
+  --panel:rgba(20,44,66,.34);
+  --panel-line:rgba(64,196,255,.22);
+  --ink:#E8F4FF;
+  --dim:#7FA3C0;
+  --cyan:#2FE3FF;         /* 常态：唯一强调色 */
+  --cyan-deep:#0C7FA8;
+  --red:#FF4D4F;          /* 预警：整屏唯一的红 */
+  --amber:#FFC24B;
+  --grid:rgba(64,196,255,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#02040A}
+body{color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;display:grid;place-items:center}
+.num{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+
+
+.fit{position:fixed;inset:0;overflow:hidden;background:#02040A}
+/* 定尺画布怎么塞进任意窗口：**必须用 JS 算缩放比**。
+   原来写的是 `transform:scale(min(100vw / (var(--W) * 1px), …))` ——
+   **CSS 的 calc 不能拿长度除长度得出一个纯数**，整条 transform 被丢弃，
+   画布按 4001×2251 原尺寸渲染、只露出中间一小块，浏览器里打开是一片黑。
+   （我自己没发现，是因为截图时用的视口正好等于画布尺寸，缩放比是 1。）
+   `--k` 由底部那几行 JS 写进来，resize 时重算。 */
+.canvas{
+  position:absolute; left:50%; top:50%;
+  width:calc(var(--W) * 1px); height:calc(var(--H) * 1px);
+  transform:translate(-50%,-50%) scale(var(--k,1));
+  transform-origin:center; position:relative; overflow:hidden;
+  background:
+    radial-gradient(1800px 900px at 50% 8%, rgba(24,86,124,.42), transparent 62%),
+    radial-gradient(1200px 800px at 50% 92%, rgba(12,60,92,.30), transparent 60%),
+    var(--bg);
+}
+/* 底纹：细网格 + 扫描线，只做质感，不抢内容 */
+.canvas::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:80px 80px}
+
+/* ── 抬头 ───────────────────────────────────────────── */
+.head{position:absolute;top:0;left:0;right:0;height:150px;z-index:5;
+  background:linear-gradient(180deg,rgba(10,58,92,.85),transparent)}
+.head h1{position:absolute;left:50%;top:34px;transform:translateX(-50%);
+  font-size:56px;font-weight:800;letter-spacing:.10em;
+  background:linear-gradient(180deg,#FFFFFF,#8FE6FF);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 40px rgba(47,227,255,.35)}
+.head .deco{position:absolute;top:56px;height:2px;width:520px;
+  background:linear-gradient(90deg,transparent,var(--cyan))}
+.head .deco.l{left:150px}
+.head .deco.r{right:150px;transform:scaleX(-1)}
+.search{position:absolute;right:150px;top:104px;width:520px;height:60px;
+  border:1px solid var(--panel-line);border-radius:6px;background:rgba(8,30,48,.6);
+  display:flex;align-items:center;gap:16px;padding:0 22px;color:var(--dim);font-size:24px}
+.search .mag{width:26px;height:26px;border:2px solid var(--cyan);border-radius:50%;
+  position:relative;flex:none}
+.search .mag::after{content:"";position:absolute;right:-9px;bottom:-3px;width:12px;height:2px;
+  background:var(--cyan);transform:rotate(45deg)}
+
+/* 区域切换：地图上方的一排 */
+.regions{position:absolute;left:50%;top:104px;transform:translateX(-50%);z-index:6;
+  display:flex;align-items:center;gap:26px}
+.regions .tab{font-size:26px;color:var(--dim);padding:10px 26px;border-radius:4px;
+  border:1px solid var(--panel-line);background:rgba(8,30,48,.55)}
+/* 这里原来用的是 ◀◀◀ / ▶▶▶ 字符。它们是 Extended_Pictographic，
+   会被 aes-emoji-per-asset 当成"emoji 冒充图标"——**而那条门是对的**：
+   几何符号该用 CSS 画，借字符会跟着系统字体变形。 */
+.regions .arrow{display:flex;gap:5px;align-items:center}
+.regions .arrow i{width:0;height:0;border:9px solid transparent;
+  border-right-color:var(--cyan);font-style:normal}
+.regions .arrow.r i{border-right-color:transparent;border-left-color:var(--cyan)}
+.regions .node{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;
+  font-size:24px;color:var(--dim);border:1px solid var(--panel-line);
+  background:radial-gradient(circle,rgba(12,60,92,.7),rgba(6,22,38,.7))}
+.regions .node.on{color:#06121C;font-weight:700;border-color:var(--cyan);
+  background:radial-gradient(circle,#7FEFFF,#17A9CE);
+  box-shadow:0 0 40px rgba(47,227,255,.55)}
+
+/* ── 三列骨架：左轨 · 地图 · 右轨 ────────────────────── */
+.grid3{position:absolute;inset:224px 40px 40px;z-index:4;
+  display:grid;grid-template-columns:900px 1fr 900px;gap:40px}
+.rail{display:grid;grid-template-rows:repeat(4,1fr);gap:34px;min-height:0}
+
+.card{position:relative;background:var(--panel);border:1px solid var(--panel-line);
+  padding:26px 30px 24px;display:flex;flex-direction:column;min-height:0}
+/* 四角切角：大屏的"科技感"靠这类几何，不靠渐变堆料 */
+.card::before,.card::after{content:"";position:absolute;width:22px;height:22px;
+  border:3px solid var(--cyan);opacity:.85}
+.card::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+.card::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+.card > h3{font-size:34px;font-weight:800;letter-spacing:.08em;text-align:center;
+  margin-bottom:20px;position:relative}
+.card > h3::before,.card > h3::after{content:"";position:absolute;top:50%;width:120px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan))}
+.card > h3::before{left:0}
+.card > h3::after{right:0;transform:scaleX(-1)}
+.card .body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px}
+
+/* 条形统计 */
+.bar{display:flex;align-items:center;gap:18px;font-size:26px}
+.bar .k{color:var(--dim);width:150px;flex:none}
+.bar .idx{width:44px;height:44px;border-radius:50%;border:1px solid var(--panel-line);
+  display:grid;place-items:center;font-size:22px;color:var(--cyan);flex:none}
+.bar .track{flex:1;height:14px;background:rgba(64,196,255,.12);overflow:hidden}
+.bar .track i{display:block;height:100%;
+  background:linear-gradient(90deg,var(--cyan-deep),var(--cyan))}
+.bar .v{width:130px;text-align:right;font-weight:700;flex:none}
+.bar.warn .track i{background:linear-gradient(90deg,#8A2B2C,var(--red))}
+.bar .v.red{color:var(--red)}
+
+/* 发车统计：两个圆环 + 一个巨数 */
+.dual{display:flex;align-items:center;gap:40px}
+.dual .big{flex:1}
+.dual .big .k{color:var(--dim);font-size:26px}
+.dual .big .v{font-size:62px;font-weight:800;color:var(--cyan)}
+.ring{width:130px;height:130px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:conic-gradient(var(--cyan) 0 78%, rgba(64,196,255,.14) 78% 100%)}
+.ring i{width:104px;height:104px;border-radius:50%;background:#071626;display:grid;
+  place-items:center;font-size:22px;color:var(--dim);font-style:normal;text-align:center;
+  line-height:1.25}
+.ring.small{background:conic-gradient(var(--red) 0 12%, rgba(64,196,255,.14) 12% 100%)}
+
+/* 柱状图 */
+.chart{display:flex;align-items:flex-end;gap:26px;height:100%;padding-top:12px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;height:100%}
+.chart .pair{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:7px}
+.chart .pair i{width:22px;display:block;background:linear-gradient(180deg,var(--cyan),var(--cyan-deep))}
+.chart .pair i.b{background:linear-gradient(180deg,var(--red),#7A2224)}
+.chart .col span{font-size:22px;color:var(--dim);white-space:nowrap}
+.legend{display:flex;gap:28px;justify-content:center;font-size:22px;color:var(--dim)}
+.legend b{display:inline-block;width:20px;height:10px;background:var(--cyan);margin-right:8px}
+.legend b.r{background:var(--red)}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;font-size:24px}
+th{background:rgba(47,227,255,.14);color:var(--ink);font-weight:600;
+  padding:12px 14px;text-align:left}
+td{padding:12px 14px;color:var(--dim);border-bottom:1px solid rgba(64,196,255,.10)}
+td.n{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+td.n.red{color:var(--red);font-weight:700}
+
+/* ── 地图区 ─────────────────────────────────────────── */
+.stage{position:relative;min-height:0;display:flex;flex-direction:column}
+.totals{display:flex;justify-content:center;gap:70px;margin-bottom:10px}
+.total{position:relative;padding:16px 54px;min-width:520px;text-align:center;
+  border:1px solid var(--panel-line);
+  background:linear-gradient(180deg,rgba(20,74,110,.55),rgba(8,28,46,.35));
+  clip-path:polygon(28px 0,100% 0,100% calc(100% - 28px),calc(100% - 28px) 100%,0 100%,0 28px)}
+.total .k{font-size:26px;color:var(--dim);letter-spacing:.06em}
+.total .v{font-size:64px;font-weight:800;color:var(--cyan);
+  text-shadow:0 0 30px rgba(47,227,255,.45)}
+.map{flex:1;position:relative;min-height:0}
+/* 和田地区轮廓：SVG 画的，不是生图 —— 生图画不了准确的行政边界 */
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.pin{position:absolute;transform:translate(-50%,-100%);width:34px;height:44px}
+.pin i{display:block;width:34px;height:34px;transform:rotate(45deg);border-radius:6px 6px 6px 0;
+  background:var(--amber);box-shadow:0 0 18px rgba(255,194,75,.6)}
+.pin.check i{background:var(--cyan);box-shadow:0 0 18px rgba(47,227,255,.6)}
+.pin.alert i{background:var(--red);box-shadow:0 0 18px rgba(255,77,79,.7)}
+.tip{position:absolute;transform:translate(-50%,-100%);padding:16px 22px;font-size:23px;
+  background:rgba(6,26,44,.94);border:1px solid var(--cyan);line-height:1.75;
+  white-space:nowrap;color:var(--dim)}
+.tip b{color:var(--ink);display:block;font-size:26px;margin-bottom:6px}
+.tip span{color:var(--cyan);font-variant-numeric:tabular-nums}
+.maplegend{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+  display:flex;gap:44px;font-size:24px;color:var(--dim);
+  background:rgba(6,22,38,.7);border:1px solid var(--panel-line);padding:12px 34px}
+.maplegend em{font-style:normal;display:inline-flex;align-items:center;gap:10px}
+.maplegend em::before{content:"";width:16px;height:16px;transform:rotate(45deg);
+  border-radius:3px 3px 3px 0;background:var(--cyan)}
+.maplegend em.j::before{background:var(--amber)}
+.maplegend em.w::before{background:var(--red)}
+.maplegend em.g::before{background:#5E7488}
+
+/* 预警列表 */
+.alarm{border:1px solid rgba(255,77,79,.42);background:rgba(52,12,16,.42);
+  padding:18px 22px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.alarm > .t{display:flex;align-items:baseline;gap:18px;font-size:28px}
+.alarm > .t b{background:var(--red);color:#fff;padding:4px 16px;font-weight:700;font-size:26px}
+.alarm > .t span{color:var(--dim);font-size:24px}
+.alarm > .t span i{color:var(--red);font-style:normal;font-weight:700;font-size:28px}
+.alarm .row{display:flex;gap:18px;font-size:22px;color:var(--dim);line-height:1.7}
+.alarm .row .no{color:var(--ink);font-weight:700;flex:none}
+.alarm .row .plate{color:var(--red);border:1px solid var(--red);padding:1px 10px;
+  font-size:20px;height:fit-content;flex:none}
+</style>
+</head>
+<body>
+<div class="fit"><div class="canvas">
+
+  <header class="head">
+    <span class="deco l"></span><span class="deco r"></span>
+    <h1>和田智能测温防疫平台</h1>
+    <div class="search"><span class="mag"></span>交接点编号</div>
+  </header>
+
+  <nav class="regions">
+    <span class="tab">防疫专题</span>
+    <span class="arrow"><i></i><i></i><i></i></span>
+    <span class="node">和田县</span>
+    <span class="node">墨玉县</span>
+    <span class="node on">和田地区</span>
+    <span class="node">皮山县</span>
+    <span class="node">于田县</span>
+    <span class="arrow r"><i></i><i></i><i></i></span>
+    <span class="tab">测温专题</span>
+  </nav>
+
+  <div class="grid3">
+    <!-- ── 左轨 ── -->
+    <div class="rail">
+      <section class="card">
+        <h3>登记人车统计</h3>
+        <div class="body">
+          <div class="bar"><span class="k" style="width:auto;margin-left:auto">人员</span>
+            <span class="v" style="width:120px;color:#06121C;background:var(--cyan);
+              text-align:center;font-weight:700">车辆</span></div>
+          <div class="bar"><span class="k">检查站1</span><span class="idx num">1</span>
+            <span class="track"><i style="width:92%"></i></span><span class="v num">2345</span></div>
+          <div class="bar"><span class="k">检查站2</span><span class="idx num">2</span>
+            <span class="track"><i style="width:52%"></i></span><span class="v num">1243</span></div>
+          <div class="bar"><span class="k">检查站3</span><span class="idx num">3</span>
+            <span class="track"><i style="width:16%"></i></span><span class="v num">354</span></div>
+          <div class="bar"><span class="k">检查站4</span><span class="idx num">4</span>
+            <span class="track"><i style="width:14%"></i></span><span class="v num">321</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>发车统计</h3>
+        <div class="body">
+          <div class="dual">
+            <div class="big"><div class="k">已登记车辆总数</div>
+              <div class="v num">81900</div></div>
+            <div class="ring"><i>已发车<br>总数</i></div>
+          </div>
+          <div class="dual">
+            <div class="big"><div class="k">车辆登记总量</div>
+              <div class="v num">81942</div></div>
+            <div class="ring small"><i>未发车<br>总数 42</i></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>车辆交接</h3>
+        <div class="body">
+          <div class="legend"><span><b></b>已交接车辆</span><span><b class="r"></b>未交接车辆</span></div>
+          <div class="chart">
+            <div class="col"><div class="pair"><i style="height:76%"></i><i class="b" style="height:34%"></i></div><span>和田市</span></div>
+            <div class="col"><div class="pair"><i style="height:62%"></i><i class="b" style="height:28%"></i></div><span>和田县</span></div>
+            <div class="col"><div class="pair"><i style="height:70%"></i><i class="b" style="height:31%"></i></div><span>墨玉县</span></div>
+            <div class="col"><div class="pair"><i style="height:48%"></i><i class="b" style="height:22%"></i></div><span>皮山县</span></div>
+            <div class="col"><div class="pair"><i style="height:58%"></i><i class="b" style="height:26%"></i></div><span>洛浦县</span></div>
+            <div class="col"><div class="pair"><i style="height:44%"></i><i class="b" style="height:19%"></i></div><span>策勒县</span></div>
+            <div class="col"><div class="pair"><i style="height:52%"></i><i class="b" style="height:24%"></i></div><span>于田县</span></div>
+            <div class="col"><div class="pair"><i style="height:38%"></i><i class="b" style="height:16%"></i></div><span>民丰县</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>交接点滞留车辆</h3>
+        <div class="body">
+          <table>
+            <thead><tr><th>序号</th><th>交接点</th><th>滞留车辆</th><th>超时预警</th></tr></thead>
+            <tbody>
+              <tr><td class="num">01</td><td>玉龙喀什交接点</td><td class="n num">23</td><td class="n num red">1</td></tr>
+              <tr><td class="num">02</td><td>喀拉喀什交接点</td><td class="n num">13</td><td class="n num red">2</td></tr>
+              <tr><td class="num">03</td><td>布扎克交接点</td><td class="n num">34</td><td class="n num red">1</td></tr>
+              <tr><td class="num">04</td><td>拉斯奎交接点</td><td class="n num">43</td><td class="n num red">5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── 地图：视觉主角 ── -->
+    <div class="stage">
+      <div class="totals">
+        <div class="total"><div class="k">登记车辆总数</div><div class="v num">161,345,241</div></div>
+        <div class="total"><div class="k">登记人员总数</div><div class="v num">391,345,241</div></div>
+      </div>
+      <div class="map">
+        <svg viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid meet" aria-label="和田地区行政区划">
+          <defs>
+            <linearGradient id="terr" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1FBFA8" stop-opacity=".92"/>
+              <stop offset="1" stop-color="#0A3F52" stop-opacity=".92"/>
+            </linearGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="14" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <!-- 外圈行政边界（浅） -->
+          <path d="M120 520 L210 300 L400 210 L560 190 L700 250 L830 300 L900 420
+                   L860 560 L720 660 L560 720 L400 700 L250 640 Z"
+                fill="none" stroke="rgba(120,180,210,.35)" stroke-width="2"/>
+          <!-- 和田地区主体 -->
+          <g filter="url(#glow)">
+            <path d="M170 520 L250 330 L420 250 L570 235 L695 290 L840 340 L865 445
+                     L810 560 L680 645 L540 690 L395 670 L262 610 Z"
+                  fill="url(#terr)" stroke="#7FF0DC" stroke-width="3"/>
+            <path d="M170 520 L250 330 L420 250 L570 235 L695 290 L840 340 L865 445
+                     L810 560 L680 645 L540 690 L395 670 L262 610 Z"
+                  fill="none" stroke="rgba(127,240,220,.35)" stroke-width="14"
+                  transform="translate(0,26)"/>
+          </g>
+          <!-- 内部县界 -->
+          <g stroke="rgba(190,255,245,.30)" stroke-width="2" fill="none">
+            <path d="M420 250 L455 470 L540 690"/>
+            <path d="M695 290 L640 470 L680 645"/>
+            <path d="M262 610 L455 470 L840 340"/>
+          </g>
+        </svg>
+
+        <!-- 点位：检查站（青）· 交接点（琥珀）· 预警（红） -->
+        <span class="pin check" style="left:31%;top:47%"><i></i></span>
+        <span class="pin check" style="left:52%;top:33%"><i></i></span>
+        <span class="pin check" style="left:69%;top:44%"><i></i></span>
+        <span class="pin" style="left:38%;top:39%"><i></i></span>
+        <span class="pin" style="left:45%;top:52%"><i></i></span>
+        <span class="pin" style="left:58%;top:46%"><i></i></span>
+        <span class="pin" style="left:64%;top:57%"><i></i></span>
+        <span class="pin" style="left:73%;top:36%"><i></i></span>
+        <span class="pin" style="left:49%;top:64%"><i></i></span>
+        <span class="pin alert" style="left:34%;top:60%"><i></i></span>
+        <span class="pin alert" style="left:78%;top:50%"><i></i></span>
+
+        <div class="tip" style="left:56%;top:31%">
+          <b>玉龙喀什交接点</b>
+          交接总数：<span>254</span><br>放行数量：<span>234</span><br>滞留数量：<span>20</span>
+        </div>
+        <div class="tip" style="left:31%;top:46%">
+          <b>布扎克检查站</b>
+          登记总人数：<span>254</span><br>登记总车辆：<span>234</span><br>滞留总点数：<span>20</span>
+        </div>
+
+        <div class="maplegend">
+          <em>检查站</em><em class="j">交接点</em><em class="w">预警</em><em class="g">隔离点</em>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 右轨 ── -->
+    <div class="rail">
+      <section class="card">
+        <h3>车辆出和情况</h3>
+        <div class="body">
+          <div class="legend"><span><b></b>已出和车辆</span><span><b class="r"></b>未出和车辆</span></div>
+          <div class="bar"><span class="k">检查站1</span>
+            <span class="track"><i style="width:88%"></i></span><span class="v num">2345</span></div>
+          <div class="bar warn"><span class="k"></span>
+            <span class="track"><i style="width:11%"></i></span><span class="v num red">245</span></div>
+          <div class="bar"><span class="k">检查站2</span>
+            <span class="track"><i style="width:88%"></i></span><span class="v num">2345</span></div>
+          <div class="bar warn"><span class="k"></span>
+            <span class="track"><i style="width:11%"></i></span><span class="v num red">245</span></div>
+          <div class="bar"><span class="k">检查站3</span>
+            <span class="track"><i style="width:88%"></i></span><span class="v num">2345</span></div>
+          <div class="bar warn"><span class="k"></span>
+            <span class="track"><i style="width:11%"></i></span><span class="v num red">245</span></div>
+        </div>
+      </section>
+
+      <section class="card" style="grid-row:span 3">
+        <h3>实时预警</h3>
+        <div class="body" style="gap:26px">
+          <div class="alarm">
+            <div class="t"><b>违轨预警</b><span>今日 <i>13</i></span><span>历史总数 <i>256</i></span></div>
+            <div class="row"><span class="no">NO.1</span><span class="plate">新R87455</span>
+              <span>车牌号：新R87455　号牌颜色：蓝色<br>
+                    预警时间：2020-10-29 17:34:34　预警地点：玉龙喀什镇 324 国道</span></div>
+            <div class="row"><span class="no">NO.2</span><span class="plate">新R87455</span>
+              <span>车牌号：新R87455　号牌颜色：蓝色<br>
+                    预警时间：2020-10-29 17:34:34　预警地点：布扎克乡 315 国道</span></div>
+            <div class="row"><span class="no">NO.3</span><span class="plate">新R87455</span>
+              <span>车牌号：新R87455　号牌颜色：蓝色<br>
+                    预警时间：2020-10-29 17:34:34　预警地点：拉斯奎镇 217 省道</span></div>
+          </div>
+          <div class="alarm">
+            <div class="t"><b>超时预警</b><span>今日 <i>14</i></span><span>历史总数 <i>167</i></span></div>
+            <div class="row"><span class="no">NO.1</span><span class="plate">新R87455</span>
+              <span>车牌号：新R87455　号牌颜色：蓝色<br>
+                    预警时间：2020-10-29 17:34:34　滞留时长：4 小时 12 分</span></div>
+            <div class="row"><span class="no">NO.2</span><span class="plate">新R87455</span>
+              <span>车牌号：新R87455　号牌颜色：蓝色<br>
+                    预警时间：2020-10-29 17:34:34　滞留时长：3 小时 06 分</span></div>
+            <div class="row"><span class="no">NO.3</span><span class="plate">新R87455</span>
+              <span>车牌号：新R87455　号牌颜色：蓝色<br>
+                    预警时间：2020-10-29 17:34:34　滞留时长：2 小时 48 分</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div></div>
+
+<script>
+/* 定尺画布的缩放：CSS 算不出"长度 ÷ 长度 = 纯数"，只能 JS 来。
+   这三行是这一类载体的**必需件**，删了它页面在任何非设计尺寸的窗口里都是坏的。 */
+(function(){
+  var el = document.querySelector('.canvas');
+  function fit(){
+    var s = getComputedStyle(el);
+    var W = parseFloat(s.getPropertyValue('--W')) || el.offsetWidth;
+    var H = parseFloat(s.getPropertyValue('--H')) || el.offsetHeight;
+    el.style.setProperty('--k', Math.min(innerWidth / W, innerHeight / H));
+  }
+  fit(); addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<title>骑不骑 · 周末骑行决策 App 设计方案</title>
+<img href="cycle-cover.jpg" width="1600" height="900" caption="骑不骑 · 周末骑行决策 App 设计方案" name="cycle-cover.jpg"/>
+
+<p>这个 App 服务的是周末偶尔骑一次的城市人，不是专业骑手。他们要的不是数据，是「能不能去、去了会不会累、能不能按时回来」这三个问题的答案。我们把它翻译成一句话：<b>只问一件事——你今天有多少时间。</b></p>
+
+<h1>设计思路与视觉语言</h1>
+<p>下面这块画布讲四件事：我们怎么理解这件事、市面上的骑行 App 漏掉了谁、设计主张，以及这个产品看起来会是什么气质。</p>
+<html5-block path="@cycle-canvas-a.html"></html5-block>
+
+<h1>他会怎么走完这一趟</h1>
+<p>六屏，从「要不要去」走到「走吧」。下面这块画布逐屏说明他在每一段想干什么，以及这套方案对业务意味着什么。</p>
+<html5-block path="@cycle-canvas-b.html"></html5-block>
+
+<h1>一句话总结</h1>
+<callout emoji="🚲" background-color="light-green" border-color="green"><p><b>只问一件事：你今天有多少时间。</b>其余全部由我们判断。时间是他唯一说得清的约束，也是唯一真正决定「骑不骑」的变量。决定越少，出门越快。</p></callout>
+<p>六屏现在就可以在手机上走一遍，随时可以约一次现场体验。</p>

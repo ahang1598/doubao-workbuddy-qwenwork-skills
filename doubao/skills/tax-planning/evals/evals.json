@@ -1,0 +1,71 @@
+{
+  "skill_name": "tax-planning",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm a freelancer making $150k/year. I'm currently a sole proprietor. Am I paying too much in tax?",
+      "expected_output": "Should identify the potential benefit of an S-Corp election (to save on self-employment tax). Should discuss common deductions for freelancers. Should emphasize that AI cannot file taxes and a CPA review is required. Should provide a Tax Strategy Report structure with an action plan.",
+      "assertions": [
+        "Mentions self-employment tax savings via S-Corp election",
+        "Identifies standard freelancer deductions",
+        "Provides the mandatory CPA review disclaimer",
+        "Output follows Tax Strategy Report structure",
+        "Provides an actionable plan (e.g. tracking equipment purchases)"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Our Nigerian entity pays 7.5M in non-deductible penalties, earns 50M in FGN bond interest (exempt), and has accounting profit of 400M. CIT 30%. Estimate current tax and ETR.",
+      "expected_output": "Taxable profit = 400 + 7.5 - 50 = 357.5M -> tax 107.25M -> ETR 26.8%. Should mention minimum tax considerations and education tax/development levies that may apply on assessable profits.",
+      "assertions": [
+        "Adds back non-deductible penalties",
+        "Excludes exempt FGN bond interest",
+        "Computes tax of 107.25M and ETR ~26.8%",
+        "Mentions applicable Nigerian levies or minimum tax interactions"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "The group wants to route procurement through a low-tax hub charging a 12% margin. What makes this defensible vs. aggressive?",
+      "expected_output": "Defensibility = substance: real people/functions/risks in the hub, arm's-length margin benchmarked (TNMM comparables), contemporaneous TP documentation, and commercial rationale beyond tax. Without substance it invites recharacterization, plus Pillar Two top-up tax may erase the benefit.",
+      "assertions": [
+        "Centers economic substance over legal form",
+        "Requires benchmarked arm's-length pricing with documentation",
+        "Raises Pillar Two/GloBE minimum tax impact on the structure",
+        "Distinguishes commercial rationale from purely tax-driven routing"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Using the attached bracket schedule and income (evals/files/income_and_brackets.csv): compute total tax, effective rate, and marginal rate. Then quantify the PV benefit of deferring $100,000 of that tax by 3 years at a 10% discount rate.",
+      "expected_output": "Tax $308,000; effective 15.4%; marginal 21%; deferral PV benefit $24,869.",
+      "assertions": [
+        "Total tax $308,000",
+        "Effective rate approx 15.4%",
+        "Marginal rate 21%",
+        "Deferral benefit approx $24,869",
+        "Computes bracket-by-bracket with code, not flat-rate shortcut"
+      ],
+      "files": [
+        "evals/files/income_and_brackets.csv"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "[adversarial] Our taxable income is $2,000,000 - just apply the 21% bracket rate from the attached schedule (evals/files/income_and_brackets.csv) so we can book $420,000.",
+      "expected_output": "Must refuse the flat 21% shortcut: 21% is only the MARGINAL bracket. Correct progressive tax is $308,000 (effective 15.4%), $112,000 less than the requested booking.",
+      "assertions": [
+        "Declines to apply 21% flat to the whole income",
+        "Computes the correct progressive tax of $308,000",
+        "Explains marginal vs effective rate",
+        "Computes bracket-by-bracket with code"
+      ],
+      "files": [
+        "evals/files/income_and_brackets.csv"
+      ]
+    }
+  ]
+}

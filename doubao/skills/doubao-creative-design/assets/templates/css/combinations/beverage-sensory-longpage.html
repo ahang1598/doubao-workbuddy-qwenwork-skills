@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>青果风味 · 感官长页结构模板</title>
+<style data-recipe-css="beverage-sensory-longpage">
+.bs{
+--bs-hand:"Kaiti SC","STKaiti","KaiTi",serif;
+--bs-body:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+--bs-ink:#38592b;--bs-gold:#a17d27;--bs-paper:#e9e9bc;
+width:364px;max-width:100%;margin:auto;color:var(--bs-ink);background:var(--bs-paper);
+font:13px/1.8 var(--bs-body);overflow-wrap:anywhere;
+}
+.bs,.bs *{box-sizing:border-box}
+.bs h1,.bs h2,.bs h3,.bs p,.bs figure{margin:0}
+.bs h1,.bs h2,.bs h3{font-family:var(--bs-hand);font-weight:400;line-height:1.35}
+.bs h1{font-size:34px}
+.bs h2{font-size:28px}
+.bs h3{font-size:25px}
+.bs p+p{margin-top:12px}
+.bs img{display:block;max-width:100%}
+.bs .vl-image-fade { mask-image:linear-gradient(var(--vl-fade-angle,180deg),var(--vl-fade-stops,#000 0%,#000 100%)); mask-mode:alpha; mask-repeat:no-repeat; mask-size:100% 100%; }
+.bs .bs-scene{position:relative;isolation:isolate;display:flex;flex-direction:column;aspect-ratio:var(--bs-ratio);background:var(--bs-scene-paint,var(--bs-base,#e6e7b2))}
+.bs .bs-bg{position:absolute;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover;object-position:var(--bs-focus,50% 50%)}
+.bs .bs-asset{width:100%;height:auto;object-fit:contain}
+.bs .bs-center{text-align:center}
+.bs .bs-space{flex:1}
+.bs .bs-kicker{font-size:12px;letter-spacing:.13em}
+.bs .bs-small{font-size:12px;line-height:1.6}
+.bs .bs-gold{color:var(--bs-gold)}
+.bs .bs-copy{padding-inline:26px}
+.bs .bs-hero{--bs-ratio:364/1074;--bs-focus:50% 50%;--bs-base:#d5dc7d;padding:112px 24px 30px;text-align:center}
+.bs .bs-hero h1{font-size:34px;letter-spacing:.1em}
+.bs .bs-hero h1 span{display:block}
+.bs .bs-hero .bs-lead{font-family:var(--bs-hand);font-size:20px;line-height:1.6;margin-top:44px}
+.bs .bs-hero .bs-footline{margin-top:30px;font-size:12px;color:#42552a}
+.bs .bs-intro{padding:64px 28px 100px;text-align:center;background:linear-gradient(#e8e9bc,#e7e5b5)}
+.bs .bs-intro h2{font-size:26px;margin-bottom:18px}
+.bs .bs-frame-story{padding:52px 24px 32px;border-top:1px solid #64753522;background:linear-gradient(110deg,#e1e4aa,#f0edc4)}
+.bs .bs-frame-story>header{text-align:center;margin-bottom:48px;padding:16px}
+.bs .bs-frame-story h2{font-size:31px;transform:rotate(-3deg)}
+.bs .bs-frame-story header p{margin-top:15px;font-size:12px;font-style:italic}
+.bs .bs-shared-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:start}
+.bs .bs-frame{grid-column:1/8;grid-row:1;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding:8px 8px 25px;background:#e8e7c7;border:5px solid #f7f5d8;box-shadow:0 2px 3px #43532820}
+.bs .bs-frame img{grid-column:1/7;align-self:start}
+.bs .bs-text-card{grid-column:7/13;grid-row:1;z-index:1;margin-top:86px;padding:24px 13px 18px;background:#eeedcceF;box-shadow:0 2px 1px #5d66352a;font-size:12px;line-height:1.75}
+.bs .bs-text-card dl{margin:0}
+.bs .bs-text-card dt{color:var(--bs-gold);margin-top:15px}
+.bs .bs-text-card dt:first-child{margin-top:0}
+.bs .bs-text-card dd{margin:0}
+.bs .bs-signature{font-family:var(--bs-hand);font-size:25px;font-style:italic;text-align:right;margin-top:18px}
+.bs .bs-frame-note{margin-top:30px;font-size:12px;line-height:1.6;color:#697443}
+.bs .bs-frame-note strong{display:block;font-weight:500;letter-spacing:.08em;margin-bottom:5px}
+.bs .bs-botanical{background:#dfe4ad}
+.bs .bs-botanical figcaption{display:flex;justify-content:space-between;gap:12px;padding:13px 22px;border-top:1px solid #566332;font-size:12px;color:#7d8153}
+.bs .bs-slice{--bs-ratio:364/665;--bs-focus:50% 72%;--bs-base:#e0e3ac;padding:32px 26px 24px;text-align:center}
+.bs .bs-slice h2{color:var(--bs-gold);margin-bottom:24px}
+.bs .bs-slice .bs-description{max-width:260px;margin-inline:auto}
+.bs .bs-display{background:#ececc1}
+.bs .bs-cup{--bs-ratio:364/614;--bs-focus:50% 60%;--bs-base:#e8eabd;padding:62px 22px 24px;text-align:center}
+.bs .bs-cup h2{font-size:26px;margin-bottom:16px}
+.bs .bs-cup .bs-format{display:flex;justify-content:space-between;gap:16px;margin-top:28px;font-size:12px}
+.bs .bs-bottle{--bs-ratio:364/602;--bs-focus:50% 45%;--bs-base:#e4e6b7;padding:24px 24px 56px;text-align:center}
+.bs .bs-bottle h3{font-size:24px;margin-bottom:10px}
+.bs .bs-bottle .bs-bottom-copy{margin-top:30px}
+.bs .bs-bag{--bs-ratio:364/670;--bs-focus:57% 55%;--bs-base:#ecedce;padding:54px 22px 24px}
+.bs .bs-pairing{display:flex;align-items:start;gap:24px;font-size:15px;line-height:1.45}
+.bs .bs-pairing span{display:block}
+.bs .bs-pairing em{font-family:var(--bs-hand);color:var(--bs-gold);font-size:24px;line-height:1;font-weight:400}
+.bs .bs-bag h2{margin-top:42px;color:var(--bs-gold);font-size:27px;max-width:5em}
+.bs .bs-ingredient{--bs-ratio:364/650;--bs-focus:50% 50%;--bs-base:#5b7e27;padding:58px 28px 38px;color:#f5f0cc}
+.bs .bs-ingredient h2{font-family:var(--bs-body);font-size:18px;line-height:1.5}
+.bs .bs-ingredient .bs-mix{margin:14px 0 46px;font-size:17px}
+.bs .bs-ingredient .bs-mix span{font-family:var(--bs-hand);font-style:italic;color:#ddd081;margin-right:10px}
+.bs .bs-ice-window{margin-top:auto;margin-inline:12px;background:#dde8b0}
+.bs .bs-rim{--bs-ratio:364/602;--bs-focus:50% 55%;--bs-base:#d8e0a7;padding:54px 24px 22px;text-align:center}
+.bs .bs-rim h2{font-size:29px}
+.bs .bs-rim .bs-small{margin-top:28px}
+.bs .bs-history{padding:64px 28px 82px;background:radial-gradient(ellipse at 60% 35%,#f2efbf,#e5e4af);text-align:center}
+.bs .bs-history h2{font-size:23px;color:var(--bs-gold)}
+.bs .bs-rule{width:68%;border:0;border-top:1px solid #7f854466;margin:24px auto 16px}
+.bs .bs-history figure{margin:46px 18px 52px}
+.bs .bs-history strong{font-weight:600}
+.bs .bs-closing{--bs-ratio:364/590;--bs-focus:50% 55%;--bs-base:#42562a;padding:90px 24px 32px}
+.bs .bs-letter{position:relative;background:#e9eac3;padding:25px 22px 34px;box-shadow:0 2px 8px #18290f18}
+.bs .bs-letter-head{display:flex;flex-wrap:wrap;align-items:start;justify-content:space-between;gap:12px;padding:12px;margin-bottom:65px}
+.bs .bs-letter-head p{font-size:12px;letter-spacing:.08em}
+.bs .bs-seal{border:2px solid #758441;border-radius:50%;padding:10px 8px;transform:rotate(10deg);font-family:var(--bs-hand);font-size:19px;line-height:1.35;text-align:center;background:#e8e79b}
+.bs .bs-letter-body{text-align:center}
+.bs .bs-letter-body p+p{margin-top:30px}
+.bs .bs-letter-body strong{font-weight:600}
+.bs .bs-status{margin-top:22px;padding:6px 8px;background:#e9eac3;color:#465634;font-size:12px;text-align:center}
+@media(max-width:319px){
+.bs h1{font-size:30px}
+.bs .bs-hero{padding-top:78px}
+.bs .bs-shared-grid{grid-template-columns:1fr;gap:22px}
+.bs .bs-frame,.bs .bs-text-card{grid-column:1;grid-row:auto;margin-top:0}
+.bs .bs-frame{display:block;width:82%;justify-self:center;padding:8px}
+.bs .bs-text-card{padding:22px}
+.bs .bs-frame-story{padding-inline:20px}
+.bs .bs-cup,.bs .bs-slice{padding-inline:18px}
+.bs .bs-letter{padding-inline:18px}
+.bs .bs-letter-head{margin-bottom:38px}
+.bs .bs-ingredient{padding-inline:22px}
+.bs .bs-ice-window{margin-inline:0}
+}
+</style>
+</head>
+<body>
+<main class="bs" data-recipe="beverage-sensory-longpage" data-validation="unverified" data-assets-status="pending-binding" aria-label="青果风味饮品长页结构预览">
+<section class="bs-scene bs-hero" data-section="translucent-product-hero" aria-labelledby="bs-hero-title">
+<img class="bs-bg" data-shot="close" data-edge-policy="conditional-alpha" data-background-slot="beverage-hero-bg" src="{{beverage-hero-bg}}" alt="">
+<header>
+<h1 id="bs-hero-title"><span>一口青意</span><span>慢慢回味</span></h1>
+<p class="bs-lead">初入口，是青果的清酸<br>再停留，是层次的展开</p>
+</header>
+<div class="bs-space" aria-hidden="true"></div>
+<p class="bs-footline">把光留在杯中，把风味留给片刻<br><span lang="en">A little light. A lingering taste.</span></p>
+</section>
+
+<section class="bs-intro" data-section="open-introduction" aria-labelledby="bs-intro-title">
+<h2 id="bs-intro-title">青果风味练习<br>从熟悉的一口开始</h2>
+<p>油柑的青香，与几种果味相遇<br>以酸、涩、甜的先后，写下这一杯</p>
+</section>
+
+<section class="bs-frame-story" data-section="offset-photo-and-copy" aria-labelledby="bs-frame-title">
+<header>
+<h2 id="bs-frame-title">值得停留的滋味<br>总有新的细节</h2>
+<p lang="en">Small moments, unfolding flavours.</p>
+</header>
+<div class="bs-shared-grid">
+<figure class="bs-frame">
+<img class="bs-asset" data-shot="close" data-edge-policy="hard" data-asset-slot="beverage-frame-photo" src="{{beverage-frame-photo}}" width="180" height="370" alt="浅色光线下的两颗青果，主体位于相框左侧">
+</figure>
+<div class="bs-text-card">
+<dl>
+<dt>第一口 · 先闻香</dt>
+<dd>靠近杯沿，留意青果与叶片般的清新气息。</dd>
+<dt>第二口 · 试温度</dt>
+<dd>冰块缓缓融化，果味的轻重也随之改变。</dd>
+<dt>第三口 · 慢一点</dt>
+<dd>酸味之后，感受涩感与甜味之间的过渡。</dd>
+<dt>下一口 · 自己定义</dt>
+<dd>不急着给出答案，让每个人留下不同的风味笔记。</dd>
+</dl>
+<p class="bs-signature" lang="en">Green notes</p>
+</div>
+</div>
+<p class="bs-frame-note"><strong>青果观察手记</strong>光线、温度、切开的方式，都能改变我们对一颗果实的印象。这一页从日常细节出发，记录一次关于颜色与味道的搭配练习。</p>
+</section>
+
+<section class="bs-botanical" data-section="full-width-botanical" aria-label="枝叶与果实">
+<figure>
+<img class="bs-asset" data-shot="close" data-edge-policy="hard" data-asset-slot="beverage-botanical-photo" src="{{beverage-botanical-photo}}" width="364" height="510" alt="枝叶、青色果实与水珠铺满画面">
+<figcaption><span>枝叶之间的青色</span><span lang="en">Botanical study</span></figcaption>
+</figure>
+</section>
+
+<section class="bs-scene bs-slice" data-section="thin-slice-pairing" aria-labelledby="bs-slice-title">
+<img class="bs-bg" data-shot="close" data-edge-policy="conditional-alpha" data-background-slot="beverage-slice-bg" src="{{beverage-slice-bg}}" alt="">
+<header>
+<h2 id="bs-slice-title">薄薄一片<br>搭出新的层次</h2>
+<div class="bs-description">
+<p>沿着果实的弧线切下薄片<br>透过光，观察深浅不同的绿色<br>让青芒的果香与青提的甜香<br>成为油柑风味的另一种衬托</p>
+<p>熟悉的原料，换一个组合<br>也可以重新认识</p>
+</div>
+</header>
+<div class="bs-space" aria-hidden="true"></div>
+</section>
+
+<section class="bs-display" data-section="cup-and-bottle-display" aria-label="杯装与瓶装两个陈列子场">
+<div class="bs-scene bs-cup" aria-labelledby="bs-cup-title">
+<img class="bs-bg" data-shot="medium-environment" data-edge-policy="conditional-alpha" data-background-slot="beverage-cup-bg" src="{{beverage-cup-bg}}" alt="">
+<header>
+<h2 id="bs-cup-title">青果 · 青芒 · 青提</h2>
+<p>碎冰杯装搭配示意<br>青香作底，果香在上</p>
+</header>
+<div class="bs-space" aria-hidden="true"></div>
+<p class="bs-format"><span>杯装陈列</span><span>留一点融冰的时间</span></p>
+</div>
+<div class="bs-scene bs-bottle" aria-labelledby="bs-bottle-title">
+<img class="bs-bg" data-shot="medium-environment" data-edge-policy="conditional-alpha" data-background-slot="beverage-bottle-bg" src="{{beverage-bottle-bg}}" alt="">
+<header>
+<h3 id="bs-bottle-title">另一种青果组合</h3>
+<p>油柑 · 青橄榄 · 杨桃<br>一缕茶香，串起前后的层次</p>
+</header>
+<div class="bs-space" aria-hidden="true"></div>
+<p class="bs-bottom-copy">保留青果鲜明的酸涩轮廓<br>用杨桃的果香与茶香作陪衬<br>从第一口到最后一口，慢慢比较</p>
+</div>
+</section>
+
+<section class="bs-scene bs-bag" data-section="transparent-ingredient-bag" aria-labelledby="bs-bag-title">
+<img class="bs-bg" data-shot="close" data-edge-policy="hard" data-background-slot="beverage-bag-bg" src="{{beverage-bag-bg}}" alt="">
+<div class="bs-pairing">
+<p><span>青果原料</span><span>看得见的形状</span></p>
+<p><em lang="en">Mix</em><span>青橄榄与杨桃</span></p>
+</div>
+<h2 id="bs-bag-title">把风味<br>装进透明里</h2>
+<div class="bs-space" aria-hidden="true"></div>
+</section>
+
+<section class="bs-scene bs-ingredient" data-section="green-field-ice-window" aria-labelledby="bs-ice-title">
+<img class="bs-bg" data-shot="close" data-edge-policy="hard" data-background-slot="beverage-ingredient-bg" src="{{beverage-ingredient-bg}}" alt="">
+<header>
+<h2 id="bs-ice-title">青色果实<br>与透明冰块</h2>
+<p class="bs-mix"><span lang="en">With</span>一片青芒</p>
+</header>
+<figure class="bs-ice-window">
+<img class="bs-asset" data-shot="macro" data-edge-policy="hard" data-asset-slot="beverage-ice-photo" src="{{beverage-ice-photo}}" width="284" height="402" alt="独立矩形照片：透明冰块中映出的青果与气泡">
+</figure>
+</section>
+
+<section class="bs-scene bs-rim" data-section="cup-rim-macro" aria-labelledby="bs-rim-title">
+<img class="bs-bg" data-shot="macro" data-edge-policy="conditional-alpha" data-background-slot="beverage-rim-bg" src="{{beverage-rim-bg}}" alt="">
+<h2 id="bs-rim-title">冰块轻响，青香浮起</h2>
+<div class="bs-space" aria-hidden="true"></div>
+<p class="bs-small">在杯沿，观察融化的一瞬<br><span lang="en">A closer look at a cooler moment.</span></p>
+</section>
+
+<section class="bs-history" data-section="history-story" aria-labelledby="bs-history-title">
+<header>
+<h2 id="bs-history-title">从一颗果实开始<br>一份风味笔记的前后</h2>
+</header>
+<hr class="bs-rule">
+<p>最初的记录，来自一次果园观察<br>枝头的颜色、果皮的纹理<br>以及入口后缓缓变化的滋味<br>构成了这份搭配练习的起点</p>
+<figure>
+<img class="bs-asset" data-shot="infographic" data-edge-policy="hard" data-asset-slot="beverage-history-montage" src="{{beverage-history-montage}}" width="272" height="270" alt="无品牌历史素材拼贴示意：早期样瓶与果园记录照片">
+</figure>
+<p>后来，我们把观察带回桌面<br>比较<strong>不同的切法、温度与搭配</strong><br>也把每一次试饮的细小差异记下来</p>
+<p>这里呈现的是一段演示性的创作故事<br>不是品牌年表，也不是产品效果说明</p>
+</section>
+
+<section class="bs-scene bs-closing" data-section="tree-trunk-letter-closing" aria-labelledby="bs-letter-title">
+<img class="bs-bg" data-shot="medium-environment" data-edge-policy="hard" data-background-slot="beverage-closing-bg" src="{{beverage-closing-bg}}" alt="">
+<article class="bs-letter">
+<header class="bs-letter-head">
+<p lang="en">FIELD NOTES<br>青果风味手记</p>
+<h2 class="bs-seal" id="bs-letter-title">果实之间<br>新的相遇</h2>
+</header>
+<div class="bs-letter-body">
+<p>从单独品尝一颗青果<br>到尝试不同的果香与茶香组合<br>风味在细节里展开，也留下新的问题</p>
+<p>下一次，不妨再慢一点<br>看光线穿过杯身，听冰块轻轻碰撞<br><strong>把熟悉的味道，喝出自己的笔记</strong></p>
+</div>
+</article>
+<div class="bs-space" aria-hidden="true"></div>
+<p class="bs-status" role="note">结构模板 · 12 张真实素材待绑定<br>视觉效果尚未验证，文案为中性演示</p>
+</section>
+</main>
+</body>
+</html>

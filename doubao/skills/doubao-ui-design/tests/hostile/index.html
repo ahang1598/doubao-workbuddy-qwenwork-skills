@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>shoot.py 的敌意样本</title>
+<!--
+  这份文件的唯一职责是**让 shoot.py 崩溃**，如果它还会崩的话。
+
+  上一轮 shoot.py 用 wait_until="networkidle"，要求「500ms 内无网络连接」。
+  下面四样东西各自都能让 idle 永远不到来：
+    1 外链字体指向一个解析不了的域名 —— 请求一直挂着
+    2 一个永不结束的 CSS 动画
+    3 一个 setInterval 一直在跑
+    4 一张够大的 base64 图，解码要时间
+  R4 的判据只有一条：**跑完必须出图**（软降级可以，抛异常不行）。
+-->
+<link rel="stylesheet" href="https://fonts.invalid.example/css2?family=Nunito&display=swap">
+<style>
+  body{margin:0;background:#0B0C10;color:#F2EFE6;
+       font-family:system-ui,-apple-system,"PingFang SC",sans-serif}
+  .hero{height:100vh;display:grid;place-items:center;position:relative;overflow:hidden}
+  .hero h1{font-size:clamp(48px,10vw,120px);margin:0;letter-spacing:-.03em}
+  .spin{position:absolute;width:520px;height:520px;border-radius:50%;
+        background:conic-gradient(#FF3B14,#0B0C10,#FF3B14);
+        filter:blur(46px);opacity:.5;animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .tick{position:fixed;left:20px;bottom:20px;font:600 13px ui-monospace,monospace}
+  .big{display:block;width:100%;max-width:900px;margin:40px auto}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="spin"></div>
+    <h1>HOSTILE</h1>
+  </div>
+  <img class="big" alt="一张 base64 大图，解码需要时间"
+       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDY3NSI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRkYzQjE0Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMEIwQzEwIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjc1IiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+">
+  <div class="tick" id="t">00</div>
+<script>
+  let n = 0;
+  setInterval(() => { document.getElementById('t').textContent = String(++n).padStart(2,'0'); }, 120);
+</script>
+</body>
+</html>

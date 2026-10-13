@@ -1,0 +1,31 @@
+{
+  "example_notice": "虚构预算示例，不代表真实商品价格或购买推荐",
+  "currency": "CNY",
+  "total_budget": 10000,
+  "items": [
+    {
+      "name": "主力电脑",
+      "tier": "buy_now",
+      "quantity": 1,
+      "price_estimate": 6500
+    },
+    {
+      "name": "基础床品",
+      "tier": "buy_now",
+      "quantity": 1,
+      "price_estimate": 500
+    },
+    {
+      "name": "桌面收纳",
+      "tier": "after_arrival",
+      "quantity": 1,
+      "price_estimate": 250
+    },
+    {
+      "name": "平板",
+      "tier": "optional",
+      "quantity": 1,
+      "price_estimate": 2500
+    }
+  ]
+}

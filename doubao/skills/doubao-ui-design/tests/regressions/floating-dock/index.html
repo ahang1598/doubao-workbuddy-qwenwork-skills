@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>底栏没贴底的阳性对照</title>
+<!-- 复刻真实事故：底部 Tab 用 position:sticky;bottom:0，而滚动容器又留了
+     padding-bottom:76px 给它 —— sticky 是**在流里**的，padding 把它顶高了 76px，
+     于是它卡在半空，下面还露出内容。absolute/fixed 才脱离流。
+     这份文件的职责是被 dock-at-bottom 抓住。 -->
+<style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#1A1512;color:#F3EEE1;font-family:system-ui,"PingFang SC",sans-serif}
+#app{position:relative;width:100%;height:100%;overflow:hidden}
+#scroll{position:absolute;inset:0;overflow-y:auto;
+  padding-bottom:calc(64px + 12px)}          /* ← 就是这一行把 sticky 顶高了 */
+.card{margin:16px;padding:20px;border-radius:16px;background:#241D18;min-height:220px}
+.card p{color:#CFC4B8;line-height:1.8;margin-top:8px}
+.tab-bar{position:sticky;bottom:0;height:64px;background:rgba(26,21,18,.95);
+  display:flex;align-items:center;border-top:1px solid rgba(212,165,116,.15)}
+.tab-item{flex:1;text-align:center;font-size:12px;color:#D4A574}
+</style></head><body><div id="app"><div id="scroll">
+<div class="card"><h2>邻居们在喝什么</h2><p>这一屏底下那条 Tab 应该贴在手机底边上，
+实际它被容器的 padding-bottom 顶高了 76 像素，卡在半空，下面还露出内容。</p></div>
+<div class="card"><h2>今天喝点什么</h2><p>滚动容器为底栏预留空间是对的做法，
+但那是给 absolute/fixed 底栏用的；sticky 在流里，预留就变成了双重计算。</p></div>
+<div class="tab-bar"><div class="tab-item">首页</div><div class="tab-item">点单</div>
+<div class="tab-item">订单</div><div class="tab-item">我的</div></div>
+</div></div></body></html>

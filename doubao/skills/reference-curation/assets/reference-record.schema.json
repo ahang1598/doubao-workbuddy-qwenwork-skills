@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://校园skill.local/reference-curation/reference-record.schema.json",
+  "title": "ReferenceRecord",
+  "type": "object",
+  "required": ["id", "type", "title", "authors", "language", "verification", "missing_fields"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "type": {"enum": ["article", "book", "thesis", "conference", "report", "web", "dataset", "preprint", "standard"]},
+    "title": {"type": ["string", "null"]},
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "family": {"type": ["string", "null"]},
+          "given": {"type": ["string", "null"]},
+          "raw": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "year": {"type": ["integer", "null"]},
+    "venue": {"type": ["string", "null"]},
+    "volume": {"type": ["string", "null"]},
+    "issue": {"type": ["string", "null"]},
+    "pages": {"type": ["string", "null"]},
+    "doi": {"type": ["string", "null"]},
+    "url": {"type": ["string", "null"]},
+    "language": {"enum": ["zh", "en", "other", "unknown"]},
+    "source_evidence": {"type": "array", "items": {"type": "object"}},
+    "verification": {"enum": ["exact", "corroborated", "partial", "conflict", "unresolved", "rejected"]},
+    "missing_fields": {"type": "array", "items": {"type": "string"}},
+    "conflicts": {"type": "array", "items": {"type": "object"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

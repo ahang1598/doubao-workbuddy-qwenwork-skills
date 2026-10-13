@@ -1,0 +1,24 @@
+{
+  "artifact_id": "MERGE-001",
+  "revision": 1,
+  "previous_artifact_id": null,
+  "change_request": null,
+  "change_log": [],
+  "status": "team_review",
+  "content_blocks": [
+    {
+      "block_id": "B01",
+      "heading": "待整合章节",
+      "content": "",
+      "source_claim_ids": []
+    }
+  ],
+  "evidence_map": [],
+  "duplicate_register": [],
+  "tension_register": [],
+  "conflict_register": [],
+  "gap_register": [],
+  "unresolved_submissions": [],
+  "unclassified_claims": [],
+  "contribution_map": {}
+}

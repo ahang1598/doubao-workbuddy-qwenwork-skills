@@ -1,0 +1,18 @@
+<title>PULSE 脉冲 · 00 后运动品牌官网 设计方案</title>
+<!-- 封面不写在这里：<img href> 只吃公网 URL，本地路径会被飞书静默丢弃，
+     结果是"发布成功但封面没了"。封面在发布之后用媒体插入补进第 1 块：
+       python3 scripts/publish.py --update <doc_id> --proposal pulse-proposal.xml \
+                                  --cover pulse-cover.jpg -->
+<p>你要一个 00 后运动品牌的官网，能在站内直接买，气质对标 lululemon 但要更年轻。我们把它翻译成一句话：<b>这个官网要让一个 22 岁的人愿意截图发出去，然后顺手买一件。</b></p>
+
+<h1>设计思路与视觉语言</h1>
+<p>下面这块画布讲四件事：我们怎么理解这件事、我们看到的机会、设计主张，以及这个品牌看起来会是什么样子。</p>
+<html5-block path="@pulse-canvas-a.html"></html5-block>
+
+<h1>他会怎么走完这一趟</h1>
+<p>从打开首页到下单，一共六个版面。下面这块画布逐屏说明他在每一段想干什么，以及这套方案对你的业务意味着什么。</p>
+<html5-block path="@pulse-canvas-b.html"></html5-block>
+
+<h1>一句话总结</h1>
+<callout emoji="🏁" background-color="light-orange" border-color="orange"><p><b>先动起来，再谈风格。</b>先给态度，再给货——首屏不介绍产品，只回答"这是谁的牌子"。这句话既是官网的开场白，也可以直接搬去门店橱窗、包装和短片。</p></callout>
+<p>整站现在就可以打开走一遍，也可以先只落地首屏做一次内部验证。随时可以约。</p>

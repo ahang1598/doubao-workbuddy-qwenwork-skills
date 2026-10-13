@@ -1,0 +1,690 @@
+{
+  "version": 3,
+  "usage": "先由当前品类 Spec 取得 ref_key，再筛选 CSS 与 SVG 候选。映射只表示可进入候选集，不表示必须应用；最终由 最终 HTML 按自然语言 Design Brief 的对象、作用和参考继承范围绑定真实消费者。",
+  "naming_contract": {
+    "category_ref_key": "category_refs 的键是品类 Spec、Visual System、CSS 与 SVG 共用的稳定名称",
+    "template_id": "CSS catalog.entries[].id 与 SVG catalog.entries[].id 是唯一机器名，不使用展示标题做关联键",
+    "display_name": "各 catalog entries[].name 是给 Agent 和检查输出使用的唯一中文展示名",
+    "resolution": "category_ref_key → CSS default_ref_keys/entry_overrides 或 SVG ref_keys → catalog id + name + implementation path",
+    "binding_meaning": "命中只进入候选集；最终采用项必须在 最终 HTML 绑定真实消费者、正文依赖和覆盖值"
+  },
+  "category_refs": {
+    "announcement-poster": {
+      "label": "通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图",
+      "spec": "references/style/coding/scenarios/announcement-poster-spec.md",
+      "visual": "references/style/coding/systems/announcement-poster-visual-system.md"
+    },
+    "ecommerce-detail-page": {
+      "label": "电商详情页／A+",
+      "spec": "references/style/coding/scenarios/ecommerce-detail-page-spec.md",
+      "visual": "references/style/coding/systems/ecommerce-visual-system.md"
+    },
+    "logo-system": {
+      "label": "Logo 系统",
+      "spec": "references/style/coding/scenarios/logo-spec.md",
+      "visual": "references/style/coding/systems/logo-visual-system.md"
+    },
+    "menu": {
+      "label": "菜单／饮品单／酒单",
+      "spec": "references/style/coding/scenarios/menu-spec.md",
+      "visual": "references/style/coding/systems/menu-visual-system.md"
+    },
+    "mind-map": {
+      "label": "思维导图／概念关联图",
+      "spec": "references/style/coding/scenarios/mind-map-spec.md",
+      "visual": "references/style/coding/systems/diagram-visual-system.md"
+    },
+    "flowchart": {
+      "label": "流程图",
+      "spec": "references/style/coding/scenarios/flowchart-spec.md",
+      "visual": "references/style/coding/systems/diagram-visual-system.md"
+    },
+    "knowledge-graph": {
+      "label": "知识图谱",
+      "spec": "references/style/coding/scenarios/knowledge-graph-spec.md",
+      "visual": "references/style/coding/systems/diagram-visual-system.md"
+    },
+    "personal-card": {
+      "label": "名片／会员卡／权益卡",
+      "spec": "references/style/coding/scenarios/personal-card-spec.md",
+      "visual": "references/style/coding/systems/personal-card-visual-system.md"
+    },
+    "resume": {
+      "label": "简历／CV",
+      "spec": "references/style/coding/scenarios/resume-spec.md",
+      "visual": "references/style/coding/systems/resume-visual-system.md"
+    },
+    "social-carousel": {
+      "label": "社媒套图／轮播",
+      "spec": "references/style/coding/scenarios/social-carousel-spec.md",
+      "visual": "references/style/coding/systems/social-visual-system.md"
+    },
+    "social-long-image": {
+      "label": "社媒长图／连续信息长图",
+      "spec": "references/style/coding/scenarios/social-long-image-spec.md",
+      "visual": "references/style/coding/systems/social-visual-system.md"
+    },
+    "tri-fold": {
+      "label": "三折页",
+      "spec": "references/style/coding/scenarios/tri-fold-spec.md",
+      "visual": "references/style/coding/systems/tri-fold-visual-system.md"
+    },
+    "vi-system": {
+      "label": "VI 视觉识别系统",
+      "spec": "references/style/coding/scenarios/vi-spec.md",
+      "visual": "references/style/coding/systems/vi-visual-system.md"
+    }
+  },
+  "css": {
+    "catalog": "assets/templates/css/catalog.json",
+    "default_ref_keys": [
+      "announcement-poster",
+      "ecommerce-detail-page",
+      "logo-system",
+      "menu",
+      "mind-map",
+      "flowchart",
+      "knowledge-graph",
+      "personal-card",
+      "resume",
+      "social-carousel",
+      "social-long-image",
+      "tri-fold",
+      "vi-system"
+    ],
+    "entry_overrides": {
+      "layout.carousel-statement": ["social-carousel"],
+      "layout.carousel-steps": ["social-carousel"],
+      "layout.carousel-topics": ["social-carousel"],
+      "layout.carousel-rewards": ["social-carousel"],
+      "layout.carousel-map": ["social-carousel"],
+      "layout.route-flow": [
+        "ecommerce-detail-page",
+        "flowchart",
+        "mind-map",
+        "social-carousel",
+        "social-long-image"
+      ],
+      "layout.annotated-figure": [
+        "ecommerce-detail-page",
+        "knowledge-graph",
+        "mind-map",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "text.arc": [
+        "announcement-poster",
+        "logo-system",
+        "menu",
+        "personal-card",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.clear-light": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "surface.diffuse-field": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "palette.neon-cyan": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "surface.screen-grain": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "surface.neon-edge": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "shape.sparkle": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "menu",
+        "mind-map",
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.retro-pop-collage": [
+        "announcement-poster",
+        "ecommerce-detail-page",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.luminous-sphere": [
+        "ecommerce-detail-page",
+        "logo-system",
+        "personal-card",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.science-blue-white": [
+        "ecommerce-detail-page",
+        "mind-map",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.botanical-green-gold": [
+        "ecommerce-detail-page",
+        "menu",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.urban-pink-cinema": [
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.urban-blue-concert": [
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.industrial-silver-panel": [
+        "ecommerce-detail-page",
+        "mind-map",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.ivory-portrait-report": [
+        "personal-card",
+        "resume",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.kraft-editorial-report": [
+        "announcement-poster",
+        "personal-card",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.torn-paper-report": [
+        "announcement-poster",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.antique-illustrated-story": [
+        "menu",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.minnan-folk-editorial": [
+        "announcement-poster",
+        "menu",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.oriental-garden-scroll": [
+        "announcement-poster",
+        "menu",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.oriental-vermilion-scent": [
+        "ecommerce-detail-page",
+        "menu",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.oriental-family-album": [
+        "personal-card",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.doodle-learning-guide": [
+        "mind-map",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.playful-product-editorial": [
+        "ecommerce-detail-page",
+        "social-carousel",
+        "social-long-image",
+        "vi-system"
+      ],
+      "combination.osmanthus-poetic-light": [
+        "ecommerce-detail-page",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.woody-scent-editorial": [
+        "ecommerce-detail-page",
+        "menu",
+        "social-carousel",
+        "social-long-image",
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.camera-ui-explainer": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.ocean-orbit-campaign": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.theatre-collage-guide": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.clay-craft-office": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.clay-parenting-collage": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.personified-fashion-stage": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.pop-campaign-ranking": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.clinical-cyan-evidence": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.black-orange-product-stage": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.craft-denim-cocoa": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.craft-butter-rose": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.craft-pink-cocoa": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.craft-ivory-red": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.four-zone-imagery": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.offset-cut-window": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.vertical-title-whitespace": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.dark-editorial": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.spanning-display-title": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.ribbon-image-group": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.invitation-spring-envelope": [
+        "announcement-poster"
+      ],
+      "combination.notice-cobalt-paper": [
+        "announcement-poster"
+      ],
+      "combination.notice-school-notebook": [
+        "announcement-poster"
+      ],
+      "combination.notice-lime-letter": [
+        "announcement-poster"
+      ],
+      "combination.notice-pop-promotion": [
+        "announcement-poster"
+      ],
+      "combination.notice-mint-editorial": [
+        "announcement-poster"
+      ],
+      "combination.invitation-expo-wave": [
+        "announcement-poster"
+      ],
+      "combination.invitation-ceremony-red": [
+        "announcement-poster"
+      ],
+      "combination.invitation-holographic-blue": [
+        "announcement-poster"
+      ],
+      "combination.invitation-nocturne-gold": [
+        "announcement-poster"
+      ],
+      "layout.title-letter-stack": [
+        "announcement-poster"
+      ],
+      "layout.split-masthead": [
+        "announcement-poster"
+      ],
+      "layout.bound-paper-stack": [
+        "announcement-poster"
+      ],
+      "layout.sectioned-ticket": [
+        "announcement-poster"
+      ],
+      "layout.contact-footer": [
+        "announcement-poster"
+      ],
+      "layout.labeled-facts": [
+        "announcement-poster"
+      ],
+      "combination.notice-blue-ticket": [
+        "announcement-poster"
+      ],
+      "combination.notice-summer-notebook": [
+        "announcement-poster"
+      ],
+      "layout.brochure-visual-zones": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.brochure-cross-boundary-window": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.brochure-spanning-title": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.brochure-continuous-scene": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.brochure-protruding-object": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.bamboo-open-scroll": [
+        "social-long-image"
+      ],
+      "combination.woodcraft-airy-scroll": [
+        "social-long-image"
+      ],
+      "layout.identity-sidebar": [
+        "resume"
+      ],
+      "layout.vertical-section-rail": [
+        "resume"
+      ],
+      "layout.cross-zone-sections": [
+        "resume"
+      ],
+      "layout.curve-portrait-junction": [
+        "resume"
+      ],
+      "combination.resume-01": [
+        "resume"
+      ],
+      "combination.resume-02": [
+        "resume"
+      ],
+      "combination.resume-03": [
+        "resume"
+      ],
+      "combination.resume-04": [
+        "resume"
+      ],
+      "combination.resume-05": [
+        "resume"
+      ],
+      "combination.resume-06": [
+        "resume"
+      ],
+      "combination.resume-07": [
+        "resume"
+      ],
+      "combination.resume-08": [
+        "resume"
+      ],
+      "combination.resume-09": [
+        "resume"
+      ],
+      "combination.resume-10": [
+        "resume"
+      ],
+      "combination.resume-11": [
+        "resume"
+      ],
+      "combination.resume-12": [
+        "resume"
+      ],
+      "combination.resume-13": [
+        "resume"
+      ],
+      "combination.cold-blue-terminal-chapters": [
+        "social-long-image"
+      ],
+      "layout.resume-profile-left": [
+        "resume"
+      ],
+      "layout.resume-section-rail": [
+        "resume"
+      ],
+      "layout.resume-cross-zone": [
+        "resume"
+      ],
+      "layout.resume-name-photo": [
+        "resume"
+      ],
+      "layout.resume-narrow-sidebar": [
+        "resume"
+      ],
+      "layout.resume-section-sidebar": [
+        "resume"
+      ],
+      "layout.resume-curve-junction": [
+        "resume"
+      ],
+      "layout.resume-editorial-grid": [
+        "resume"
+      ],
+      "layout.resume-paper-collage": [
+        "resume"
+      ],
+      "layout.resume-profile-header": [
+        "resume"
+      ],
+      "layout.resume-three-zones": [
+        "resume"
+      ],
+      "layout.resume-timeline-columns": [
+        "resume"
+      ],
+      "layout.resume-editorial-rows": [
+        "resume"
+      ],
+      "combination.tavern-shelf-directory": [
+        "social-long-image"
+      ],
+      "combination.tavern-paper-dispenser": [
+        "social-long-image"
+      ],
+      "combination.clipped-archive-reading": [
+        "social-long-image"
+      ],
+      "combination.silver-coupon-grid": [
+        "social-long-image"
+      ],
+      "combination.warning-archive-longpage": [
+        "social-long-image"
+      ],
+      "combination.silver-starlight-longpage": [
+        "social-long-image"
+      ],
+      "combination.tavern-directory-longpage": [
+        "social-long-image"
+      ],
+      "layout.fold-cut-window": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.fold-four-zone-editorial": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.fold-title-agenda": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.fold-tea-six-panels": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.fold-panel-view": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "combination.blue-silver-roster-ticket": [
+        "social-long-image"
+      ],
+      "combination.blue-silver-prize-console": [
+        "social-long-image"
+      ],
+      "combination.blue-silver-concert-longpage": [
+        "social-long-image"
+      ],
+      "combination.pink-party-window": [
+        "social-long-image"
+      ],
+      "combination.pink-party-level-heading": [
+        "social-long-image"
+      ],
+      "combination.pink-party-linked-stages": [
+        "social-long-image"
+      ],
+      "combination.pink-party-longpage": [
+        "social-long-image"
+      ],
+      "layout.fold-floral-editorial": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.fold-care-waves": [
+        "tri-fold",
+        "vi-system"
+      ],
+      "layout.product-performance-longpage": [
+        "ecommerce-detail-page"
+      ],
+      "layout.editorial-lookbook-longpage": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.mist-green-performance-longpage": [
+        "ecommerce-detail-page"
+      ],
+      "combination.cream-sport-editorial-longpage": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "layout.numbered-media-longpage": [
+        "ecommerce-detail-page"
+      ],
+      "combination.warm-bakery-story-longpage": [
+        "ecommerce-detail-page"
+      ],
+      "layout.sensory-macro-longpage": [
+        "ecommerce-detail-page",
+        "social-long-image"
+      ],
+      "combination.resume-letter-rail": [
+        "resume"
+      ],
+      "combination.resume-circle-editorial": [
+        "resume"
+      ],
+      "combination.resume-pink-name-collage": [
+        "resume"
+      ]
+    }
+  },
+  "svg": {
+    "catalog": "assets/svg/catalog.json"
+  }
+}

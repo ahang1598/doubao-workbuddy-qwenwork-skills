@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>R31-N · 固定底栏 + 完全移出屏幕的 bottom-sheet</title>
+<!--
+  这份是 R31 方案附录 A 的最小复现页，也是 `content-under-dock`(app-screen)
+  被删掉的证据（用例 R31-N）。
+
+  它是一个**正确的** App 布局：`#flow` 给底栏留了 90px 的 padding-bottom，
+  底栏 64px，滚到底不会压住任何东西 —— `dock-reserved` 因此 PASS。
+  而 `.publish-modal` 用 `transform:translateY(100%)` 完全移出了屏幕
+  （rect 是 844–1124，视口只有 844 高），它根本不在画面上。
+
+  上一版的 `content-under-dock`(app-screen) 在这份页面上 **BLOCK**，
+  detail 给的却是两个**内容块**的类名（post-card«E»），
+  `want` 说的是"固定底栏与正文重叠" —— **门的 want 与 detail 指的不是同一个对象**。
+  一条真实 trace 在它上面死磕 15 分 14 秒、约 52 次调用，改了 4 次底栏定位、
+  3 次弹窗、2 次 padding，全部无效 —— 因为要改的东西本来就没有错。
+
+  **判据：这份页面在 app-screen 下不许出现 content-under-dock，
+  而 dock-reserved 必须仍然 PASS。**
+-->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:#0E1013;color:#F2F0EC;
+     font:15px/1.7 -apple-system,"PingFang SC",system-ui,sans-serif}
+#flow{height:100%;overflow-y:auto;padding:16px 16px 90px}
+.post-card{background:#16191E;border-radius:16px;padding:16px;margin-bottom:12px;
+           height:180px;display:flex;flex-direction:column;justify-content:space-between}
+.post-card b{font-size:17px}
+.tabbar{position:fixed;bottom:0;left:0;right:0;height:64px;background:#16191E;
+        display:flex;align-items:center;justify-content:space-around;
+        border-top:1px solid #2A2F37}
+.publish-modal{position:fixed;bottom:0;left:0;right:0;transform:translateY(100%);
+  background:#16191E;height:280px;border-radius:24px 24px 0 0;padding:20px}
+</style></head><body>
+<div id="flow">
+  <div class="post-card"><b>三教二楼的自习室今晚有位置</b><span>17 条回应 · 计算机学院</span></div>
+  <div class="post-card"><b>校运会接力队还差一棒</b><span>42 条回应 · 体育部</span></div>
+  <div class="post-card"><b>失物招领：一把黑色雨伞</b><span>3 条回应 · 图书馆</span></div>
+  <div class="post-card"><b>周五的乐队排练改到 B 栋</b><span>9 条回应 · 音乐社</span></div>
+  <div class="post-card"><b>二手教材转让，专业课全套</b><span>28 条回应 · 跳蚤市场</span></div>
+</div>
+<nav class="tabbar"><div>广场</div><div>话题</div><div>消息</div><div>我的</div></nav>
+<div class="publish-modal">发布一条动态</div>
+</body></html>
