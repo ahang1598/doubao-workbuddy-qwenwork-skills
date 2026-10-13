@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{STORE_NAME}} - {{CHECK_DATE}}{{REPORT_TYPE}}</title>
+
+<style>
+    body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; background-color: #f5f7fa; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .header p { margin: 10px 0 0; opacity: 0.9; }
+    .section { padding: 20px 30px; border-bottom: 1px solid #eee; }
+    .section:last-child { border-bottom: none; }
+    .section-title { font-size: 18px; font-weight: bold; color: #ff7e5f; margin-bottom: 15px; display: flex; align-items: center; }
+    .section-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #ff7e5f; margin-right: 10px; border-radius: 2px; }
+    .record-card { background: #f9f9f9; border-radius: 6px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #ddd; }
+    .record-card.morning { border-left-color: #4caf50; }
+    .record-card.afternoon { border-left-color: #ff9800; }
+    .record-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+    .status-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; color: white; }
+    .status-pass { background: #4caf50; }
+    .status-fail { background: #f44336; }
+    .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+    .check-item { background: white; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+    .item-header { padding: 10px; background: #fafafa; font-weight: 600; font-size: 14px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+    .item-content { padding: 10px; }
+    .item-img { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-top: 5px; cursor: pointer; transition: transform 0.2s; }
+    .item-img:hover { transform: scale(1.02); }
+    .item-desc { font-size: 12px; color: #666; margin-top: 8px; line-height: 1.5; min-height: 36px; }
+    .footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
+
+    /* Lightbox Modal */
+    .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); }
+    .modal-content { margin: auto; display: block; max-width: 90%; max-height: 90vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .close { position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .close:hover, .close:focus { color: #bbb; text-decoration: none; cursor: pointer; }
+</style>
+
+</head>
+<body>
+    <div class="container">
+        <!-- ====== HEADER ====== -->
+        <div class="header">
+            <h1>{{STORE_NAME}} · {{REPORT_TYPE}}</h1>
+            <p>检查日期：{{CHECK_DATE}} | 督导员：{{INSPECTOR_NAME}}</p>
+        </div>
+
+        <!-- ====== 总结分析 ====== -->
+        <div class="section">
+            <div class="section-title">📊 整体检查总结</div>
+            <div class="record-card morning" style="border-left-color: #ff9800;">
+                {{SUMMARY_CONTENT}}
+            </div>
+        </div>
+
+        <!-- ====== 按记录/时段分组的检查详情（可重复多个 section） ====== -->
+        <!-- BEGIN_RECORD_SECTION -->
+        <div class="section">
+            <div class="section-title">{{RECORD_TITLE}}</div>
+            <div class="record-card {{RECORD_CLASS}}">
+                <div class="record-header">
+                    <span>提交时间：{{SUBMIT_TIME}}</span>
+                    <span class="status-tag {{OVERALL_STATUS_CLASS}}">{{OVERALL_STATUS}}</span>
+                </div>
+                <div class="item-grid">
+
+                    <!-- BEGIN_CHECK_ITEM -->
+                    <div class="check-item">
+                        <div class="item-header">{{ITEM_INDEX}}. {{ITEM_NAME}} <span class="status-tag {{ITEM_STATUS_CLASS}}">{{ITEM_STATUS}}</span></div>
+                        <div class="item-content">
+                            <img src="{{ITEM_IMG_SRC}}" class="item-img" alt="{{ITEM_INDEX}}. {{ITEM_NAME}}">
+                            <div class="item-desc">{{ITEM_AI_REVIEW}}</div>
+                        </div>
+                    </div>
+                    <!-- END_CHECK_ITEM -->
+
+                </div>
+            </div>
+        </div>
+        <!-- END_RECORD_SECTION -->
+
+        <!-- ====== FOOTER ====== -->
+        <div class="footer">
+            报告生成时间：{{GENERATED_AT}} | 数据来源：{{DATA_SOURCE}}
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="img01">
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var modal = document.getElementById("imageModal");
+        var modalImg = document.getElementById("img01");
+        var span = document.getElementsByClassName("close")[0];
+        var imgs = document.querySelectorAll('.item-img');
+        imgs.forEach(function(img) {
+            img.onclick = function(){
+                modal.style.display = "block";
+                modalImg.src = this.src;
+            }
+        });
+        span.onclick = function() { modal.style.display = "none"; }
+        modal.onclick = function(event) {
+            if (event.target === modal) { modal.style.display = "none"; }
+        }
+    });
+</script>
+
+</body>
+</html>

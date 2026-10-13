@@ -1,0 +1,22 @@
+{
+  "name": "literature-distiller",
+  "version": "1.0.0",
+  "description": "文献深度蒸馏助手（4+2 模型）。支持本地 PDF 文献的深度解析，自动提取元数据、逻辑骨架、引文网络及批判性洞察，并生成结构化报告。",
+  "author": "QoderWork",
+  "main": "SKILL.md",
+  "scripts": {
+    "test": "echo \"No tests configured\""
+  },
+  "keywords": [
+    "literature",
+    "distiller",
+    "deep-analysis",
+    "academic",
+    "pdf",
+    "citation-network"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

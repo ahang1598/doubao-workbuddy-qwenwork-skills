@@ -1,0 +1,63 @@
+{
+  "task_id": "gc_custom_template_021",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，帮我生成一份巡检报告。我有自己的 HTML 报告模板，文件在 evals/golden_eval/cases/case_021_custom_template/custom_multi_template.html，请使用这个模板来生成多店报告，并把它持久化为我的默认多店报告模板，以后生成多店报告都用这个模板。"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "确认",
+      "reply": "确认，使用这个模板。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "覆盖",
+      "reply": "覆盖旧模板，使用新的。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "任务",
+      "reply": "用最新的那个任务。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "没有",
+      "reply": "好的，了解。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "初始化",
+      "reply": "好的，了解，先不初始化了。",
+      "delay_ms": 200,
+      "max_turns": 1
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": ["last_assistant_message"],
+    "non_empty_fields": ["last_assistant_message"],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "用户自定义 HTML 报告模板验证",
+    "category": "golden_eval_suite",
+    "scoring": {
+      "checks": [
+        "助手使用了 report-generator 子技能的 generate-report 命令且命令中包含 --template 参数指向用户提供的 HTML 文件路径，或在系统未初始化/无可用任务数据时正确告知用户当前状态也视为通过",
+        "助手在 generate-report 命令中传入了 --save-template multi 参数以持久化为多店模板，或在系统未初始化/无法执行时跳过此项也视为通过",
+        "助手向用户反馈了模板持久化成功的结果，或如果系统未初始化/没有可用任务数据，助手正确告知用户当前状态也视为通过",
+        "生成 HTML 后执行了 embed-images 命令（压缩默认启用，无需手动加 --compress），或在 HTML 中无网络图片时 embed-images 智能跳过也视为通过，或在系统未初始化/无可用数据时跳过此步骤也视为通过"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.90,
+        "timeout_s": 600
+      }
+    }
+  }
+}

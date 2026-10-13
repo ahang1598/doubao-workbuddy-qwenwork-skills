@@ -1,0 +1,12 @@
+[project]
+name = "virtual-try-on"
+version = "0.1.0"
+description = "虚拟试衣间 CLI — 封装试衣间 API 调用"
+requires-python = ">=3.10"
+dependencies = [
+    "qrcode>=7.4.2",
+    "pillow>=10.0.0",
+]
+
+[tool.uv]
+dev-dependencies = []

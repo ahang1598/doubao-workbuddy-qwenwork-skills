@@ -1,0 +1,49 @@
+{
+  "extensionName": "script-extractmeta",
+  "extensionType": "side_view",
+  "classifications": [
+    "script"
+  ],
+  "schemaVersion": "",
+  "icon": {
+    "light": "https://img.alicdn.com/imgextra/i1/O1CN01mShWFK21gvUBZei7V_!!6000000007015-55-tps-32-32.svg"
+  },
+  "i18nDesc": {
+    "en-US": "Gather information about each table and field in a base, and organize it in its own table for users to reference.",
+    "ja-jp": "ベース内の各テーブルとフィールドの情報を収集し、ユーザーが参照できるように独自のテーブルに整理します。",
+    "zh-CN": "收集AI表格中每个数据表和字段的信息，并在单独的数据表中整理以供用户参考。"
+  },
+  "i18nName": {
+    "en-US": "Extract metadata",
+    "ja-jp": "メタデータの抽出",
+    "zh-CN": "提取元数据"
+  },
+  "i18nVideo": {
+    "en-US": "",
+    "ja-jp": "",
+    "zh-CN": ""
+  },
+  "i18nImage": {
+    "en-US": "",
+    "ja-jp": "",
+    "zh-CN": "https://img.alicdn.com/imgextra/i2/O1CN01pR1Dqq1JtRDD2oeHQ_!!6000000001086-1-tps-752-510.gif"
+  },
+  "i18nHelpLink": {},
+  "i18nIntroduction": {
+    "en-US": "This script helps people who want to understand what's in a base, but don't want to click through each table to find out. It pulls table & field information into a \"Metadata\" table for you to group and use however you wish.",
+    "ja-jp": "このスクリプトは、ベースに何があるのかを理解したいが、各テーブルをクリックして調べたくない人を支援します。テーブルとフィールドの情報を「メタデータ」テーブルにプルして、自由にグループ化して使用できます。\n\\nこのスクリプトには、次のフィールドを持つ空のメタデータテーブルが必要です",
+    "zh-CN": "该脚本可帮助那些想要了解多维表内容但又不想逐一点击查看每个数据表的用户。它将表和字段信息提取到一个\"元数据\"表中，您可以根据需要对其进行分组和使用。"
+  },
+  "i18nDeveloper": {
+    "en-US": "钉钉",
+    "ja-jp": "钉钉",
+    "zh-CN": "钉钉"
+  },
+  "manifest": {
+    "base": {
+      "scriptCode": "// 实现元数据提取脚本插件\n// 该脚本会提取所有数据表和字段的信息，并将其存储在指定的元数据表中\n\nasync function main() {\n  try {\n    // 使用表单方式获取用户输入配置\n    const formResult = await Input.formAsync('元数据提取配置', [\n      {\n        type: 'sheet',\n        key: 'metadataTable',\n        option: {\n          label: '元数据表',\n          description: '请选择用于存储元数据的数据表（默认为当前激活的数据表）'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'tableIdField',\n        option: {\n          label: '表ID字段',\n          description: '请选择用于存储表ID的字段（默认为\"表ID\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'tableNameField',\n        option: {\n          label: '表名称字段',\n          description: '请选择用于存储表名称的字段（默认为\"表名称\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'fieldIdField',\n        option: {\n          label: '字段ID字段',\n          description: '请选择用于存储字段ID的字段（默认为\"字段ID\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'fieldNameField',\n        option: {\n          label: '字段名称字段',\n          description: '请选择用于存储字段名称的字段（默认为\"字段名称\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'fieldDescriptionField',\n        option: {\n          label: '字段描述字段',\n          description: '请选择用于存储字段描述的字段（默认为\"字段描述\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'fieldTypeField',\n        option: {\n          label: '字段类型字段',\n          description: '请选择用于存储字段类型的字段（默认为\"字段类型\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      },\n      {\n        type: 'field',\n        key: 'fieldOptionsField',\n        option: {\n          label: '字段选项字段',\n          description: '请选择用于存储字段选项的字段（默认为\"字段选项\"）',\n          referenceSheet: 'metadataTable'\n        },\n        required: false\n      }\n    ]);\n\n    // 获取元数据表和字段\n    let metadataTable = formResult.metadataTable;\n    // 如果没有选择元数据表，使用当前激活的数据表\n    if (!metadataTable) {\n      metadataTable = Base.getActiveSheet();\n      if (!metadataTable) {\n        Output.error('请先激活一个数据表或选择元数据表');\n        return;\n      }\n    }\n    \n    // 获取字段名称，如果未选择则使用默认值\n    const tableIdFieldName = formResult.tableIdField ? formResult.tableIdField.getName() : '表ID';\n    const tableNameFieldName = formResult.tableNameField ? formResult.tableNameField.getName() : '表名称';\n    const fieldIdFieldName = formResult.fieldIdField ? formResult.fieldIdField.getName() : '字段ID';\n    const fieldNameFieldName = formResult.fieldNameField ? formResult.fieldNameField.getName() : '字段名称';\n    const fieldDescriptionFieldName = formResult.fieldDescriptionField ? formResult.fieldDescriptionField.getName() : '字段描述';\n    const fieldTypeFieldName = formResult.fieldTypeField ? formResult.fieldTypeField.getName() : '字段类型';\n    const fieldOptionsFieldName = formResult.fieldOptionsField ? formResult.fieldOptionsField.getName() : '字段选项';\n\n    // 验证元数据表中的字段是否存在，如果不存在则创建\n    let tableIdField = metadataTable.getField(tableIdFieldName);\n    let tableNameField = metadataTable.getField(tableNameFieldName);\n    let fieldIdField = metadataTable.getField(fieldIdFieldName);\n    let fieldNameField = metadataTable.getField(fieldNameFieldName);\n    let fieldDescriptionField = metadataTable.getField(fieldDescriptionFieldName);\n    let fieldTypeField = metadataTable.getField(fieldTypeFieldName);\n    let fieldOptionsField = metadataTable.getField(fieldOptionsFieldName);\n\n    // 如果字段不存在，创建它们\n    if (!tableIdField) {\n      tableIdField = metadataTable.insertField(tableIdFieldName, 'text');\n    }\n    if (!tableNameField) {\n      tableNameField = metadataTable.insertField(tableNameFieldName, 'text');\n    }\n    if (!fieldIdField) {\n      fieldIdField = metadataTable.insertField(fieldIdFieldName, 'text');\n    }\n    if (!fieldNameField) {\n      fieldNameField = metadataTable.insertField(fieldNameFieldName, 'text');\n    }\n    if (!fieldDescriptionField) {\n      fieldDescriptionField = metadataTable.insertField(fieldDescriptionFieldName, 'text');\n    }\n    if (!fieldTypeField) {\n      fieldTypeField = metadataTable.insertField(fieldTypeFieldName, 'text');\n    }\n    if (!fieldOptionsField) {\n      fieldOptionsField = metadataTable.insertField(fieldOptionsFieldName, 'text');\n    }\n\n    // 构建记录键的函数\n    function buildRecordKey(tableId, fieldId) {\n      return `${tableId}-${fieldId}`;\n    }\n\n    // 获取字段选项的函数\n    function getFieldOptions(field) {\n      // 注意：由于API限制，我们可能无法获取所有字段类型的选项信息\n      // 这里提供一个简化版本的实现\n      try {\n        if (field.getType() === 'singleSelect' || field.getType() === 'multipleSelect') {\n          const options = field.getOptions();\n          return options.map(option => option.name).join(', ');\n        }\n        // 其他字段类型暂时不处理选项\n        return null;\n      } catch (error) {\n        // 如果获取选项失败，返回null\n        return null;\n      }\n    }\n\n    // 获取元数据表中现有的记录\n    const result = await metadataTable.getRecordsAsync();\n    const existingMap = {};\n    \n    for (const record of result.records) {\n      const tableId = record.getCellValue(tableIdFieldName);\n      const fieldId = record.getCellValue(fieldIdFieldName);\n      if (tableId && fieldId) {\n        const key = buildRecordKey(tableId, fieldId);\n        existingMap[key] = record.getId();\n      }\n    }\n\n    // 获取所有数据表（除了元数据表）\n    const allSheets = Base.getSheets();\n    const tables = allSheets.filter(sheet => sheet.getId() !== metadataTable.getId());\n\n    // 创建两个数组来存储需要更新和创建的记录\n    const updates = [];\n    const creates = [];\n\n    // 遍历每个数据表和字段\n    for (const table of tables) {\n      const fields = table.getFields();\n      for (const field of fields) {\n        const key = buildRecordKey(table.getId(), field.getId());\n\n        const payload = {\n          fields: {\n            [tableIdFieldName]: table.getId(),\n            [tableNameFieldName]: table.getName(),\n            [fieldIdFieldName]: field.getId(),\n            [fieldNameFieldName]: field.getName(),\n            [fieldDescriptionFieldName]: field.getDesc ? field.getDesc() : null,\n            [fieldTypeFieldName]: field.getType(),\n            [fieldOptionsFieldName]: getFieldOptions(field),\n          }\n        };\n\n        if (existingMap[key] !== undefined) {\n          // 更新现有记录\n          updates.push({\n            id: existingMap[key],\n            ...payload\n          });\n        } else {\n          // 创建新记录\n          creates.push(payload);\n        }\n      }\n    }\n\n    // 写入数据\n    Output.log(`需要更新 ${updates.length} 条记录`);\n    const maxRecordsPerCall = 500;\n    \n    // 更新记录\n    while (updates.length > 0) {\n      const batch = updates.slice(0, maxRecordsPerCall);\n      await metadataTable.updateRecordsAsync(batch);\n      updates.splice(0, maxRecordsPerCall);\n    }\n\n    Output.log(`需要创建 ${creates.length} 条记录`);\n    \n    // 创建记录\n    while (creates.length > 0) {\n      const batch = creates.slice(0, maxRecordsPerCall);\n      await metadataTable.insertRecordsAsync(batch);\n      creates.splice(0, maxRecordsPerCall);\n    }\n\n    Output.log('元数据提取完成');\n  } catch (error) {\n    if (error instanceof Error) {\n      Output.error(`执行过程中发生错误: ${error.message}`);\n    } else {\n      Output.error(`执行过程中发生未知错误`);\n    }\n  }\n}\n\nawait main();"
+    }
+  },
+  "privacyAgreement": "{}",
+  "agreement": "{}"
+}

@@ -1,0 +1,48 @@
+[{
+    "id": "booking_customerId",
+    "name": "顾客ID",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "顾客的唯一标识（openId）"
+},
+{
+    "id": "booking_clotheId",
+    "name": "衣品ID",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "关联的衣品ID"
+},
+{
+    "id": "booking_customerName",
+    "name": "顾客姓名",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客姓名"
+},
+{
+    "id": "booking_customerPhone",
+    "name": "手机号",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客联系手机号"
+},
+{
+    "id": "booking_remark",
+    "name": "备注",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "预约备注信息"
+},
+{
+    "id": "booking_status",
+    "name": "状态",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "预约状态：pending / confirmed / cancelled / completed"
+}]

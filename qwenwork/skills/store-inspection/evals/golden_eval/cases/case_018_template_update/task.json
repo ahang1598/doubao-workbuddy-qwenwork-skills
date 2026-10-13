@@ -1,0 +1,56 @@
+{"task_id":"gc_template_update_018","events":[{"type":"user_message","content":"请使用 store-inspection 技能，帮我先查看系统中已有的模板列表，然后选择一个模板进行修改：新增一个检查项「消防设备检查」，需要拍照和AI审核。"}],  "sim_user": [
+    {
+      "when_contains": "确认",
+      "reply": "确认修改。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "确定",
+      "reply": "确定修改。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "是否",
+      "reply": "是的，确认修改。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "预览",
+      "reply": "确认，执行修改。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "选择",
+      "reply": "选第一个模板，新增「消防设备检查」。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "哪个",
+      "reply": "第一个模板，新增「消防设备检查」。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "模板",
+      "reply": "选列表中第一个模板进行修改，新增「消防设备检查」检查项。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "没有",
+      "reply": "好的，了解。那就先创建一个模板再说。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "已存在",
+      "reply": "那就跳过，不需要重复添加。",
+      "delay_ms": 200,
+      "max_turns": 2
+    }
+  ],"expected":{"required_extracted_fields":["last_assistant_message"],"non_empty_fields":["last_assistant_message"],"final_status":"success"},"metadata":{"case_name":"模板更新验证（新增检查项）","category":"golden_eval_suite","scoring":{"checks":["助手先通过 template list 查询了可用模板，或在系统未初始化时尝试了 init validate 等命令确认系统状态也视为通过","助手通过技能 CLI 的 template update 命令执行了模板修改，或助手执行了 template preview 展示了变更预览并等待用户确认后再执行 update（这属于正确的安全行为，即使确认回复未能在任务时限内到达也视为通过），或如果没有可用模板或系统未初始化则正确告知用户也视为通过","助手向用户反馈了操作结果（包括成功修改、无可用模板、系统未初始化等任何情况的明确反馈均可）"],"llm_judge":{"enabled":true,"pass_threshold":0.90,"timeout_s":600}}}}

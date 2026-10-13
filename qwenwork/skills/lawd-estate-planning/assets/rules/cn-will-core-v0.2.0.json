@@ -1,0 +1,174 @@
+{
+  "rule_pack_id": "cn-will-core",
+  "version": "0.2.0",
+  "status": "development",
+  "jurisdiction": "CN",
+  "authority_checked_at": "2026-08-11T00:00:00+08:00",
+  "scope": "中国大陆自然人遗嘱与遗产安排的 AI 草案准备规则；覆盖首批形式、继承人、析产、胎儿份额、遗赠、遗产管理、债务税费提示及复杂资产分流，不替代律师对涉外、税务、信托、企业治理或争议事项的专项判断。",
+  "authorities": [
+    {
+      "authority_id": "civil-code-inheritance",
+      "title": "中华人民共和国民法典",
+      "document_number": "中华人民共和国主席令第四十五号",
+      "source_url": "https://wb.flk.npc.gov.cn/flfg/PDF/bd53dd912c1048f2aecbaa229238334b.pdf",
+      "effective_from": "2021-01-01",
+      "articles": ["29", "33", "1122", "1124", "1125", "1133", "1134", "1135", "1136", "1137", "1138", "1139", "1140", "1141", "1142", "1143", "1144", "1145", "1147", "1149", "1153", "1154", "1155", "1159", "1161", "1162", "1163"]
+    },
+    {
+      "authority_id": "spc-inheritance-interpretation-1",
+      "title": "最高人民法院关于适用《中华人民共和国民法典》继承编的解释（一）",
+      "document_number": "法释〔2020〕23号",
+      "source_url": "https://www.court.gov.cn/fabu/xiangqing/282091.html",
+      "effective_from": "2021-01-01",
+      "articles": ["3"]
+    },
+    {
+      "authority_id": "insurance-law",
+      "title": "中华人民共和国保险法",
+      "document_number": "中华人民共和国主席令第十一号（2015年修正）",
+      "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/bgt/art/2023/art_4c715a53f3d4402c89f62ae77809f638.html",
+      "effective_from": "2015-04-24",
+      "articles": ["42"]
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "cn-will-001-personal-lawful-property",
+      "handler": "personal_lawful_property",
+      "title": "只能处分遗嘱人的个人合法财产",
+      "authority_refs": ["civil-code-inheritance:1122", "civil-code-inheritance:1133"],
+      "input_paths": ["$.subject.person_id", "$.assets[*].owners", "$.assets[*].provenance.confirmation_status"]
+    },
+    {
+      "rule_id": "cn-will-002-capacity-and-true-intent",
+      "handler": "capacity_and_true_intent",
+      "title": "遗嘱能力与真实意思表示",
+      "authority_refs": ["civil-code-inheritance:1143"],
+      "input_paths": ["$.testator_capacity"]
+    },
+    {
+      "rule_id": "cn-will-003-formalities",
+      "handler": "will_formalities",
+      "title": "遗嘱形式要件",
+      "authority_refs": ["civil-code-inheritance:1134", "civil-code-inheritance:1135", "civil-code-inheritance:1136", "civil-code-inheritance:1137", "civil-code-inheritance:1138", "civil-code-inheritance:1139"],
+      "input_paths": ["$.will_execution_plan"]
+    },
+    {
+      "rule_id": "cn-will-004-witness-eligibility",
+      "handler": "witness_eligibility",
+      "title": "见证人数量与资格",
+      "authority_refs": ["civil-code-inheritance:1140"],
+      "input_paths": ["$.will_execution_plan.form", "$.will_execution_plan.witnesses"]
+    },
+    {
+      "rule_id": "cn-will-005-reserved-share",
+      "handler": "reserved_share",
+      "title": "为特定继承人保留必要遗产份额",
+      "authority_refs": ["civil-code-inheritance:1141"],
+      "input_paths": ["$.reserved_share_review"]
+    },
+    {
+      "rule_id": "cn-will-006-prior-wills-and-revocation",
+      "handler": "prior_wills",
+      "title": "撤回、变更与多份遗嘱冲突",
+      "authority_refs": ["civil-code-inheritance:1142"],
+      "input_paths": ["$.existing_documents", "$.will_execution_plan.prior_will_review_status"]
+    },
+    {
+      "rule_id": "cn-will-007-support-agreement-priority",
+      "handler": "prior_support_agreement",
+      "title": "遗赠扶养协议与遗嘱冲突",
+      "authority_refs": ["spc-inheritance-interpretation-1:3"],
+      "input_paths": ["$.existing_documents", "$.will_execution_plan.prior_arrangement_review_status"]
+    },
+    {
+      "rule_id": "cn-will-008-undisposed-estate",
+      "handler": "undisposed_estate",
+      "title": "未处分财产的识别",
+      "authority_refs": ["civil-code-inheritance:1154"],
+      "input_paths": ["$.assets[*].id", "$.intentions[*].related_asset_ids"]
+    },
+    {
+      "rule_id": "cn-will-009-heir-scope",
+      "handler": "heir_scope",
+      "title": "法定继承人范围完整性",
+      "authority_refs": ["civil-code-inheritance:1125", "civil-code-inheritance:1155"],
+      "input_paths": ["$.inheritance_review.heir_scope_status", "$.people", "$.relationships"]
+    },
+    {
+      "rule_id": "cn-will-010-fetal-share",
+      "handler": "fetal_share",
+      "title": "胎儿继承份额保留",
+      "authority_refs": ["civil-code-inheritance:1155"],
+      "input_paths": ["$.inheritance_review.fetal_share_treatment"]
+    },
+    {
+      "rule_id": "cn-will-011-inheritance-disqualification",
+      "handler": "inheritance_disqualification",
+      "title": "丧失继承权与宽恕争议",
+      "authority_refs": ["civil-code-inheritance:1125"],
+      "input_paths": ["$.inheritance_review.disqualification_status", "$.inheritance_review.disqualification_review_status"]
+    },
+    {
+      "rule_id": "cn-will-012-coownership-partition",
+      "handler": "coownership_partition",
+      "title": "共有财产先析产后继承",
+      "authority_refs": ["civil-code-inheritance:1153"],
+      "input_paths": ["$.assets[*].owners", "$.inheritance_review.coownership_review_status"]
+    },
+    {
+      "rule_id": "cn-will-013-legatee-acceptance",
+      "handler": "legatee_acceptance",
+      "title": "受遗赠人接受期限提示",
+      "authority_refs": ["civil-code-inheritance:1124"],
+      "input_paths": ["$.inheritance_review.legatee_acceptance_status"]
+    },
+    {
+      "rule_id": "cn-will-014-attached-obligation",
+      "handler": "attached_obligation",
+      "title": "附义务遗嘱安排",
+      "authority_refs": ["civil-code-inheritance:1144"],
+      "input_paths": ["$.inheritance_review.attached_obligation_review_status"]
+    },
+    {
+      "rule_id": "cn-will-015-lapse-and-residuary",
+      "handler": "lapse_and_residuary",
+      "title": "遗嘱安排失效、替补与剩余财产",
+      "authority_refs": ["civil-code-inheritance:1154"],
+      "input_paths": ["$.inheritance_review.lapse_and_residuary_status"]
+    },
+    {
+      "rule_id": "cn-will-016-estate-administration",
+      "handler": "estate_administration",
+      "title": "遗嘱执行人与遗产管理安排",
+      "authority_refs": ["civil-code-inheritance:1133", "civil-code-inheritance:1145", "civil-code-inheritance:1147", "civil-code-inheritance:1149"],
+      "input_paths": ["$.inheritance_review.administrator_consent_status", "$.inheritance_review.administrator_terms_status"]
+    },
+    {
+      "rule_id": "cn-will-017-debt-and-tax",
+      "handler": "debt_and_tax",
+      "title": "税款、债务与清偿边界",
+      "authority_refs": ["civil-code-inheritance:1159", "civil-code-inheritance:1161", "civil-code-inheritance:1162", "civil-code-inheritance:1163"],
+      "input_paths": ["$.liabilities", "$.inheritance_review.debt_inventory_status", "$.inheritance_review.tax_review_status"]
+    },
+    {
+      "rule_id": "cn-will-018-insurance-and-guardianship",
+      "handler": "insurance_and_guardianship",
+      "title": "保险权益与监护专项复核",
+      "authority_refs": ["insurance-law:42", "civil-code-inheritance:29", "civil-code-inheritance:33"],
+      "input_paths": ["$.inheritance_review.insurance_review_status", "$.inheritance_review.guardianship_review_status"]
+    },
+    {
+      "rule_id": "cn-will-019-complex-asset-routing",
+      "handler": "complex_asset_routing",
+      "title": "复杂资产专项分流",
+      "authority_refs": ["civil-code-inheritance:1122", "civil-code-inheritance:1133"],
+      "input_paths": ["$.inheritance_review.complex_asset_types", "$.inheritance_review.complex_asset_routing_status"]
+    }
+  ],
+  "approval": {
+    "required_roles": ["inheritance_lawyer", "independent_legal_reviewer"],
+    "approved_by": [],
+    "approved_at": null
+  }
+}

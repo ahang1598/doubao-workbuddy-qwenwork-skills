@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gongwen Format"
+  short_description: "Format and review Chinese official documents"
+  default_prompt: "Use the gongwen format skill to check or rewrite this document so it complies with GB/T 9704-2012 and the local公文标准格式要求。"

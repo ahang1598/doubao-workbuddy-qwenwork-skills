@@ -1,0 +1,69 @@
+{
+  "description": "空成员集：sum=0、count=0，avg/min/median 为 null 而非 0",
+  "checks": [
+    {
+      "id": "empty",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "eq",
+        "field": "类别",
+        "value": "不存在"
+      }
+    },
+    {
+      "id": "sum",
+      "kind": "aggregate",
+      "field": "数",
+      "function": "sum",
+      "filter_ast": {
+        "op": "eq",
+        "field": "类别",
+        "value": "不存在"
+      }
+    },
+    {
+      "id": "avg",
+      "kind": "aggregate",
+      "field": "数",
+      "function": "avg",
+      "filter_ast": {
+        "op": "eq",
+        "field": "类别",
+        "value": "不存在"
+      }
+    },
+    {
+      "id": "min",
+      "kind": "aggregate",
+      "field": "数",
+      "function": "min",
+      "filter_ast": {
+        "op": "eq",
+        "field": "类别",
+        "value": "不存在"
+      }
+    },
+    {
+      "id": "median",
+      "kind": "aggregate",
+      "field": "数",
+      "function": "median",
+      "filter_ast": {
+        "op": "eq",
+        "field": "类别",
+        "value": "不存在"
+      }
+    },
+    {
+      "id": "count",
+      "kind": "aggregate",
+      "field": "数",
+      "function": "count",
+      "filter_ast": {
+        "op": "eq",
+        "field": "类别",
+        "value": "不存在"
+      }
+    }
+  ]
+}

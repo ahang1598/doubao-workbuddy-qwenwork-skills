@@ -1,0 +1,34 @@
+# 开发文件
+Makefile
+.github/
+.idea/
+
+# 内网调试（不随公网 Skill 发布）
+internal/
+
+# 内部文档（市场卖点/上架材料等，不随公网 Skill 发布）
+docs/
+
+# 套件源码（kits/ 走独立渠道发布，不随 utp-shopping 包分发）
+kits/
+
+# 本地测试资产（回归 dashboard / 测试场景，不随 Skill 发布）
+test/
+
+# 知识库（不随 Skill 发布）
+.qoder/
+
+# 本地安装的第三方 skill
+.agents/
+.claude/
+
+# 构建/分发产物（dist/kit 下的套件 zip 单个就几十 MB，必须排除）
+bin/
+dist/
+scripts/*.zip
+scripts/*.tgz
+*.tgz
+
+# 模板与本地锁文件（publish 会临时生成真正的 package.json）
+package_back.json
+skills-lock.json

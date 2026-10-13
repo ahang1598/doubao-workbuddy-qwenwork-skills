@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{CASE_NAME} - 证据思维导图</title>
+<style>
+
+/* ============================================================
+   打印设置 — 默认横向 A4
+   ============================================================ */
+@page {
+  size: A4 landscape;
+  margin: 10mm 14mm 10mm 14mm;
+}
+
+@media print {
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .mm-node { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ============================================================
+   基础重置
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', Arial, sans-serif;
+  font-size: 10pt;
+  color: #1a1a1a;
+  background: #f0f0f0;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   页面容器 — 横向 A4
+   ============================================================ */
+.page-container {
+  width: 277mm;
+  min-height: 185mm;
+  margin: 14px auto;
+  background: #fff;
+  padding: 10mm 14mm;
+  box-shadow: 0 3px 24px rgba(0,0,0,0.16);
+  border-radius: 2px;
+}
+
+@media print {
+  .page-container {
+    width: auto;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
+/* ============================================================
+   文档标题区
+   ============================================================ */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #333;
+  padding-bottom: 7px;
+  margin-bottom: 12px;
+}
+
+.doc-title {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+}
+
+.doc-subtitle {
+  font-size: 9pt;
+  color: #666;
+  margin-top: 2px;
+}
+
+.doc-meta-right {
+  font-size: 8.5pt;
+  color: #888;
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   思维导图外层容器
+   ============================================================ */
+.mindmap-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+/* SVG 连接线层 */
+#mm-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+/* ============================================================
+   CSS Grid 树形结构 — 3 列
+   col 1: 根节点 | col 2: 日期节点 | col 3: 事件卡片
+   ============================================================ */
+.mm-tree {
+  display: grid;
+  grid-template-columns: 80px 140px 1fr;
+  grid-auto-rows: auto;
+  column-gap: 0;
+  row-gap: 4px;
+  position: relative;
+  z-index: 2;
+  align-items: stretch;
+}
+
+/* ============================================================
+   通用节点基础样式
+   ============================================================ */
+.mm-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 6px;
+  position: relative;
+}
+
+/* ============================================================
+   根节点 — 深灰近黑
+   ============================================================ */
+.mm-root {
+  background: #5a5a5a;
+  color: #fff;
+  border-radius: 14px;
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  padding: 10px 10px;
+  margin: 2px 10px 2px 0;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+/* ============================================================
+   日期节点 — 中灰（每个事件独立日期）
+   ============================================================ */
+.mm-date {
+  background: #d5d5d5;
+  color: #333;
+  border-radius: 10px;
+  font-size: 8pt;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  padding: 4px 6px;
+  margin: 2px 4px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   事件卡片 — 白底灰边框
+   ============================================================ */
+.mm-event {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-left: 3.5px solid #888;
+  border-radius: 5px;
+  padding: 5px 10px 5px 8px;
+  margin: 2px 4px 2px 8px;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  font-size: 8pt;
+  line-height: 1.45;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.mm-event-name {
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 8.5pt;
+  line-height: 1.35;
+}
+
+.mm-event-summary {
+  font-size: 7.5pt;
+  color: #555;
+  margin-top: 3px;
+  line-height: 1.45;
+  padding: 3px 6px;
+  background: #f5f5f5;
+  border-left: 2px solid #bbb;
+  border-radius: 0 3px 3px 0;
+}
+
+.mm-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 3px;
+}
+
+.mm-event-badge {
+  font-size: 7.5pt;
+  color: #777;
+}
+
+.mm-event-amount {
+  font-size: 8pt;
+  font-weight: 700;
+  color: #444;
+  margin-top: 2px;
+}
+
+.mm-event-note {
+  font-size: 7.5pt;
+  color: #888;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   页脚
+   ============================================================ */
+.doc-footer {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid #d0d0d0;
+  font-size: 8pt;
+  color: #aaa;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ============================================================
+   工具栏（打印时隐藏）
+   ============================================================ */
+.toolbar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+}
+
+.toolbar-btn {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10pt;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: background 0.2s;
+}
+
+.toolbar-btn:hover { background: #555; }
+
+.toolbar-btn.secondary {
+  background: #fff;
+  color: #333;
+  border: 1.5px solid #333;
+}
+
+.toolbar-btn.secondary:hover { background: #f0f0f0; }
+
+@media print {
+  .toolbar { display: none; }
+}
+
+/* ============================================================
+   A3 横向模式覆盖
+   ============================================================ */
+body.size-a3 .page-container {
+  width: 415mm;
+  min-height: 270mm;
+}
+
+body.size-a3 .mm-tree {
+  grid-template-columns: 100px 160px 1fr;
+}
+
+</style>
+</head>
+<body>
+
+<!-- 工具栏 -->
+<div class="toolbar no-print">
+  <button class="toolbar-btn" onclick="window.print()">打印 / 存为 PDF</button>
+  <button class="toolbar-btn secondary" onclick="togglePageSize()">切换 A3 / A4</button>
+</div>
+
+<!-- 页面容器 -->
+<div class="page-container">
+
+  <!-- 文档标题 -->
+  <div class="doc-header">
+    <div>
+      <div class="doc-title">{CASE_NAME}</div>
+      <div class="doc-subtitle">证据材料时间线思维导图</div>
+    </div>
+    <div class="doc-meta-right">
+      生成日期：{GENERATED_DATE}<br>
+      共 {TOTAL_EVENTS} 项事件
+    </div>
+  </div>
+
+  <!-- 思维导图主体 -->
+  <div class="mindmap-wrapper" id="mm-wrapper">
+    <svg id="mm-svg"></svg>
+    <div class="mm-tree" id="mm-tree">
+      {MINDMAP_HTML}
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <div class="doc-footer">
+    <span>{CASE_NAME} · 证据时间线思维导图</span>
+    <span>共 {TOTAL_EVENTS} 项事件 · {GENERATED_DATE}</span>
+  </div>
+
+</div>
+
+<!-- 连接线数据 -->
+<script id="mm-data" type="application/json">{CONNECTIONS_JSON}</script>
+
+<script>
+// ─── 贝塞尔曲线连接线 ───
+(function() {
+  var CONNECTIONS = JSON.parse(document.getElementById('mm-data').textContent);
+
+  function drawConnections() {
+    var svg  = document.getElementById('mm-svg');
+    var tree = document.getElementById('mm-tree');
+    if (!svg || !tree) return;
+
+    var tRect = tree.getBoundingClientRect();
+    svg.setAttribute('width',  tRect.width  + 'px');
+    svg.setAttribute('height', tRect.height + 'px');
+    svg.innerHTML = '';
+
+    CONNECTIONS.forEach(function(conn) {
+      var fromId = conn[0], toId = conn[1], color = conn[2], width = conn[3] || 1.5;
+      var from = document.getElementById(fromId);
+      var to   = document.getElementById(toId);
+      if (!from || !to) return;
+
+      var fr = from.getBoundingClientRect();
+      var tr = to.getBoundingClientRect();
+
+      var x1 = fr.right  - tRect.left;
+      var y1 = (fr.top + fr.bottom) / 2 - tRect.top;
+      var x2 = tr.left   - tRect.left;
+      var y2 = (tr.top + tr.bottom) / 2 - tRect.top;
+
+      var cpx = x1 + (x2 - x1) * 0.55;
+
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d',
+        'M' + x1 + ',' + y1 +
+        ' C' + cpx + ',' + y1 +
+        ' ' + cpx + ',' + y2 +
+        ' ' + x2 + ',' + y2
+      );
+      path.setAttribute('fill',           'none');
+      path.setAttribute('stroke',         color);
+      path.setAttribute('stroke-width',   width);
+      path.setAttribute('stroke-opacity', '0.45');
+      path.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path);
+    });
+  }
+
+  window.addEventListener('load',        function() { setTimeout(drawConnections, 180); });
+  window.addEventListener('resize',      drawConnections);
+  window.addEventListener('beforeprint', function() { drawConnections(); });
+  window._redrawMindmap = drawConnections;
+})();
+
+// ─── A3 / A4 切换 ───
+function togglePageSize() {
+  document.body.classList.toggle('size-a3');
+  var el = document.getElementById('dynamic-page-style');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'dynamic-page-style';
+    document.head.appendChild(el);
+  }
+  if (document.body.classList.contains('size-a3')) {
+    el.textContent = '@page { size: A3 landscape; margin: 10mm 14mm; }';
+  } else {
+    el.textContent = '@page { size: A4 landscape; margin: 10mm 14mm; }';
+  }
+  setTimeout(function() { if (window._redrawMindmap) window._redrawMindmap(); }, 250);
+}
+</script>
+
+</body>
+</html>

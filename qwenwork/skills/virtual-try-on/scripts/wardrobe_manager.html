@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI导购 · 店铺管理</title>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-bg: #eef2ff;
+    --primary-border: #c7d2fe;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
+    --success-text: #166534;
+    --error-text: #991b1b;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --font-mono: "SF Mono", "Fira Code", Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: linear-gradient(180deg, #f0f2ff 0%, #f5f7fa 300px);
+    color: var(--gray-800);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── 顶部倒计时 ─────────────────────────────────────────── */
+  .countdown-bar {
+    background: linear-gradient(90deg, #fef9c3 0%, #fef3c7 100%);
+    border-bottom: 1px solid #fde68a;
+    padding: 10px 32px;
+    font-size: 13px;
+    color: #92400e;
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .countdown-bar.danger {
+    background: linear-gradient(90deg, #fee2e2 0%, #fecaca 100%);
+    border-color: #fca5a5;
+    color: #991b1b;
+  }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  .header {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    color: white;
+    padding: 28px 32px 24px;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  .header p { font-size: 13px; opacity: 0.85; margin-top: 6px; }
+
+  /* ── 容器 ───────────────────────────────────────────────── */
+  .container {
+    max-width: 960px;
+    margin: 28px auto;
+    padding: 0 20px;
+  }
+
+  /* ── 卡片 ───────────────────────────────────────────────── */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-title .actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* ── 徽章 ───────────────────────────────────────────────── */
+  .badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .badge-wip {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-pink { background: #fce7f3; color: #9d174d; }
+
+  /* ── 表单 ───────────────────────────────────────────────── */
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 6px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xs);
+    font-size: 14px;
+    color: var(--gray-800);
+    transition: all 0.2s;
+    background: var(--gray-50);
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    background: white;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* ── 按钮 ───────────────────────────────────────────────── */
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    color: white;
+    padding: 11px 24px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  }
+  .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+  .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+  .btn-danger:hover { background: var(--danger-border); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: var(--radius-xs); }
+  .btn-ghost { background: transparent; color: var(--primary); border: 1px solid var(--primary-border); }
+  .btn-ghost:hover { background: var(--primary-bg); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  /* ── 结果区 ─────────────────────────────────────────────── */
+  .result {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    white-space: pre-wrap;
+    word-break: break-all;
+    display: none;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .result.success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); display: block; }
+  .result.error { background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--error-text); display: block; }
+
+  /* ── 加载 / 空态 ────────────────────────────────────────── */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+  }
+  .spinner-dark { border-color: rgba(99,102,241,0.15); border-top-color: var(--primary); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state { text-align: center; padding: 48px 24px; color: var(--primary); }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--gray-400); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── 衣橱网格 ───────────────────────────────────────────── */
+  .clothes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .clothe-item {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.25s;
+    background: white;
+  }
+  .clothe-item:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .clothe-img {
+    width: 100%; height: 200px;
+    object-fit: cover;
+    background: var(--gray-50);
+    display: block;
+  }
+  .clothe-img-placeholder {
+    width: 100%; height: 200px;
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-400); font-size: 40px;
+  }
+  .clothe-info { padding: 14px; }
+  .clothe-name {
+    font-size: 14px; font-weight: 700; color: var(--gray-800);
+    margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .clothe-meta {
+    font-size: 12px; color: var(--gray-500); margin-bottom: 10px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .clothe-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .tag {
+    background: var(--primary-bg); color: var(--primary);
+    font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500;
+  }
+  .clothe-actions { display: flex; justify-content: space-between; align-items: center; }
+  .clothe-serial { font-size: 11px; color: var(--gray-400); font-family: var(--font-mono); }
+
+  /* ── 老客画像表格 ───────────────────────────────────────── */
+  .profile-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+  }
+  .profile-table thead tr {
+    background: linear-gradient(135deg, var(--primary-bg) 0%, #f0f4ff 100%);
+  }
+  .profile-table th {
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--gray-700);
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .profile-table td {
+    padding: 14px 16px;
+    border-top: 1px solid var(--gray-100);
+    vertical-align: middle;
+  }
+  .profile-table tbody tr { transition: background 0.15s; }
+  .profile-table tbody tr:hover { background: var(--gray-50); }
+  .profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+  .profile-avatar-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ── 话术卡片 ───────────────────────────────────────────── */
+  .script-list { display: flex; flex-direction: column; gap: 14px; }
+  .script-card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all 0.2s;
+    background: white;
+  }
+  .script-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary-border); }
+  .script-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .script-card-title { font-weight: 700; font-size: 15px; color: var(--gray-800); }
+  .script-body {
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.8;
+    border-left: 3px solid var(--primary-border);
+  }
+  .script-body .var {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+  .script-tags { margin-top: 12px; display: flex; gap: 6px; }
+
+  /* ── 底部提示 ───────────────────────────────────────────── */
+  .card-footer-hint {
+    text-align: center;
+    padding: 18px 0 4px;
+    color: var(--gray-400);
+    font-size: 12px;
+  }
+
+  /* ── 响应式 ─────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .container { padding: 0 12px; }
+    .card { padding: 20px; }
+    .form-row { grid-template-columns: 1fr; }
+    .clothes-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .profile-table { font-size: 12px; }
+    .profile-table th, .profile-table td { padding: 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 倒计时 -->
+<div class="countdown-bar" id="countdown-bar">
+  ⏰ 服务将在 <strong id="countdown-text">30:00</strong> 后自动关闭，请及时完成操作
+</div>
+
+<!-- Header -->
+<div class="header">
+  <h1>🪞 AI导购 · 店铺管理</h1>
+  <p>衣橱管理 · 店铺信息 · 客户画像 · 营销话术</p>
+</div>
+
+<div class="container">
+
+  <!-- ─── 衣橱列表 ─────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      <span>👗 衣橱列表</span>
+      <div class="actions">
+        <button class="btn btn-danger btn-sm" id="batchDeleteBtn" style="display:none;" onclick="batchDelete()">🗑️ 批量删除 (<span id="selectedCount">0</span>)</button>
+        <button class="btn btn-ghost btn-sm" id="selectAllBtn" style="display:none;" onclick="toggleSelectAll()">全选</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSelectMode()">☑️ 多选</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadClothes()">🔄 刷新</button>
+      </div>
+    </div>
+    <div id="clothesList">
+      <div class="loading-state">
+        <div class="spinner spinner-dark"></div>
+        <p style="margin-top:8px;">正在加载衣橱...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 店铺信息 ─────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title"><span>🏪 店铺信息</span></div>
+    <div id="storeLoading" style="text-align:center;padding:16px;color:var(--primary);font-size:13px;">
+      <div class="spinner spinner-dark"></div> 加载中...
+    </div>
+    <div id="storeForm" style="display:none;">
+      <div class="form-group">
+        <label>店铺名称</label>
+        <input type="text" id="shopName" placeholder="输入店铺名称">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>微信号</label>
+          <input type="text" id="wechat" placeholder="输入微信号">
+        </div>
+        <div class="form-group">
+          <label>店铺地址</label>
+          <input type="text" id="shopAddress" placeholder="输入店铺地址">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="updateStore()">保存店铺信息</button>
+      <div class="result" id="storeResult"></div>
+    </div>
+  </div>
+
+  <!-- ─── 老客画像管理 ─────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      <span>👥 老客画像管理</span>
+      <span class="badge badge-wip">🚧 开发中</span>
+    </div>
+    <table class="profile-table">
+      <thead>
+        <tr>
+          <th>客户</th>
+          <th>身高 / 体重</th>
+          <th>偏好风格</th>
+          <th>常购品类</th>
+          <th>最近购买</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <span class="profile-avatar">
+              <span class="profile-avatar-icon" style="background:#fce7f3;">✨</span>
+              小美
+            </span>
+          </td>
+          <td>165cm / 50kg</td>
+          <td><span class="tag">法式优雅</span> <span class="tag">通勤简约</span></td>
+          <td>连衣裙、上衣</td>
+          <td style="color:var(--gray-500);">2025-04-15</td>
+          <td><button class="btn btn-ghost btn-sm" disabled>编辑</button></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="profile-avatar">
+              <span class="profile-avatar-icon" style="background:#dbeafe;">🌸</span>
+              阿珍
+            </span>
+          </td>
+          <td>160cm / 48kg</td>
+          <td><span class="tag">甜美可爱</span> <span class="tag">休闲街头</span></td>
+          <td>裙子、外套</td>
+          <td style="color:var(--gray-500);">2025-04-22</td>
+          <td><button class="btn btn-ghost btn-sm" disabled>编辑</button></td>
+        </tr>
+        <tr>
+          <td>
+            <span class="profile-avatar">
+              <span class="profile-avatar-icon" style="background:#e0e7ff;">💼</span>
+              丽姐
+            </span>
+          </td>
+          <td>170cm / 55kg</td>
+          <td><span class="tag">职场干练</span> <span class="tag">气质优雅</span></td>
+          <td>上衣、裤子</td>
+          <td style="color:var(--gray-500);">2025-04-28</td>
+          <td><button class="btn btn-ghost btn-sm" disabled>编辑</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="card-footer-hint">以上为示例数据，功能开发中，敬请期待 🎉</div>
+  </div>
+
+  <!-- ─── AI 老客激活洞察 ───────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      <span>🤖 AI 老客激活洞察</span>
+      <span class="badge badge-wip">🚧 开发中</span>
+    </div>
+    <div style="background:linear-gradient(135deg,#eef2ff 0%,#f0f4ff 100%);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;border:1px solid var(--primary-border);">
+      <span style="font-size:24px;">💡</span>
+      <div>
+        <div style="font-weight:700;font-size:14px;color:var(--gray-800);margin-bottom:2px;">AI 为你分析了以下客户，建议优先激活</div>
+        <div style="font-size:12px;color:var(--gray-500);">基于购买频次、最近活跃度、偏好匹配度综合评估，按激活价值排序</div>
+      </div>
+    </div>
+    <div class="script-list">
+
+      <!-- 客户 1: 小美 -->
+      <div class="script-card" style="border-left:4px solid #ef4444;">
+        <div class="script-card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="profile-avatar-icon" style="background:#fce7f3;width:36px;height:36px;font-size:16px;">✨</span>
+            <div>
+              <div class="script-card-title">小美</div>
+              <div style="font-size:12px;color:var(--gray-500);">165cm / 50kg · 法式优雅 · 最近购买: 2025-04-15</div>
+            </div>
+          </div>
+          <span class="badge" style="background:#fee2e2;color:#dc2626;font-weight:700;">🔥 高价值</span>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px;">🔍 AI 洞察</div>
+          <div style="font-size:13px;color:var(--gray-700);line-height:1.7;">
+            小美已 <strong>14 天</strong>未回购，但她过去 3 个月消费 <strong>5 次</strong>，客单价 ¥380，属于高频高价值客户。近期浏览了 3 件法式连衣裙但未下单，结合换季节点，<strong>激活成功率预估 78%</strong>。建议以新品推荐切入，搭配她偏爱的法式风格。
+          </div>
+        </div>
+        <div style="position:relative;">
+          <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px;">💬 推荐话术</div>
+          <div class="script-body">
+            小美～ 好久不见！🌸 上次你买的那件碎花茶歇裙穿得还好吗？我们刚到了一批新的法式连衣裙，有几件风格特别适合你，面料也升级了更透气～ 趁现在换季刚好上新，要不要我先帮你留两件试试？发几张图给你看看👗
+          </div>
+          <button class="btn btn-ghost btn-sm" style="position:absolute;top:0;right:0;" onclick="copyScript(this)" data-script="小美～ 好久不见！🌸 上次你买的那件碎花茶歇裙穿得还好吗？我们刚到了一批新的法式连衣裙，有几件风格特别适合你，面料也升级了更透气～ 趁现在换季刚好上新，要不要我先帮你留两件试试？发几张图给你看看👗">📋 复制</button>
+        </div>
+        <div class="script-tags" style="margin-top:14px;">
+          <span class="tag">高复购</span>
+          <span class="tag">换季激活</span>
+          <span class="tag">法式优雅</span>
+        </div>
+      </div>
+
+      <!-- 客户 2: 阿珍 -->
+      <div class="script-card" style="border-left:4px solid #f59e0b;">
+        <div class="script-card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="profile-avatar-icon" style="background:#dbeafe;width:36px;height:36px;font-size:16px;">🌸</span>
+            <div>
+              <div class="script-card-title">阿珍</div>
+              <div style="font-size:12px;color:var(--gray-500);">160cm / 48kg · 甜美可爱 · 最近购买: 2025-04-22</div>
+            </div>
+          </div>
+          <span class="badge" style="background:#fef3c7;color:#92400e;font-weight:700;">⭐ 中价值</span>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px;">🔍 AI 洞察</div>
+          <div style="font-size:13px;color:var(--gray-700);line-height:1.7;">
+            阿珍 <strong>7 天</strong>前刚买了一件裙子，目前处于满意期。她偏好甜美风格、喜欢搭配购买，历史数据显示她 <strong>60% 的订单都是成套购买</strong>。建议以搭配推荐切入，推一件和上次裙子配套的外套，<strong>追单成功率预估 52%</strong>。
+          </div>
+        </div>
+        <div style="position:relative;">
+          <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px;">💬 推荐话术</div>
+          <div class="script-body">
+            阿珍～ 上次你买的那条甜美碎花裙好多姐妹都夸好看！😍 我发现有一件奶白色短款针织开衫跟它超搭的，穿一套出门绝对回头率拉满～ 而且现在买外套刚好有搭配优惠，要不要看看？我给你拍个搭配效果图🎀
+          </div>
+          <button class="btn btn-ghost btn-sm" style="position:absolute;top:0;right:0;" onclick="copyScript(this)" data-script="阿珍～ 上次你买的那条甜美碎花裙好多姐妹都夸好看！😍 我发现有一件奶白色短款针织开衫跟它超搭的，穿一套出门绝对回头率拉满～ 而且现在买外套刚好有搭配优惠，要不要看看？我给你拍个搭配效果图🎀">📋 复制</button>
+        </div>
+        <div class="script-tags" style="margin-top:14px;">
+          <span class="tag">搭配追单</span>
+          <span class="tag">甜美可爱</span>
+          <span class="tag">成套推荐</span>
+        </div>
+      </div>
+
+      <!-- 客户 3: 丽姐 -->
+      <div class="script-card" style="border-left:4px solid #6366f1;">
+        <div class="script-card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="profile-avatar-icon" style="background:#e0e7ff;width:36px;height:36px;font-size:16px;">💼</span>
+            <div>
+              <div class="script-card-title">丽姐</div>
+              <div style="font-size:12px;color:var(--gray-500);">170cm / 55kg · 职场干练 · 最近购买: 2025-04-28</div>
+            </div>
+          </div>
+          <span class="badge" style="background:#dbeafe;color:#1e40af;font-weight:700;">💎 VIP</span>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px;">🔍 AI 洞察</div>
+          <div style="font-size:13px;color:var(--gray-700);line-height:1.7;">
+            丽姐是店铺 VIP 客户，累计消费 <strong>¥12,800</strong>，最近刚买了职场通勤上衣。她即将迎来 <strong>5月生日</strong>，且偏好气质优雅风格。建议以生日关怀切入，推荐新到的轻奢系列，<strong>生日月客户转化率通常提升 40%</strong>。
+          </div>
+        </div>
+        <div style="position:relative;">
+          <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px;">💬 推荐话术</div>
+          <div class="script-body">
+            丽姐～ 提前祝你生日快乐呀！🎂🎉 作为我们的VIP老客户，店里特意为你准备了生日专属福利～ 最近新到了一批轻奢气质款，有几件西装外套和阔腿裤特别适合你的职场风格，上身效果超有气场！生日月全场再享8折，要不要来店里试试？我帮你预留了试衣间💎
+          </div>
+          <button class="btn btn-ghost btn-sm" style="position:absolute;top:0;right:0;" onclick="copyScript(this)" data-script="丽姐～ 提前祝你生日快乐呀！🎂🎉 作为我们的VIP老客户，店里特意为你准备了生日专属福利～ 最近新到了一批轻奢气质款，有几件西装外套和阔腿裤特别适合你的职场风格，上身效果超有气场！生日月全场再享8折，要不要来店里试试？我帮你预留了试衣间💎">📋 复制</button>
+        </div>
+        <div class="script-tags" style="margin-top:14px;">
+          <span class="tag">生日关怀</span>
+          <span class="tag">VIP专属</span>
+          <span class="tag">职场干练</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="card-footer-hint">以上为 AI 分析的 mock 示例数据。功能开发中，敬请期待 🎉</div>
+  </div>
+
+</div>
+
+<script>
+/* ── 工具函数 ────────────────────────────────────────────── */
+async function proxyCall(proxyPath, payload) {
+  const resp = await fetch(proxyPath, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
+  });
+  return resp.json();
+}
+
+function showResult(elementId, data) {
+  const el = document.getElementById(elementId);
+  el.className = "result " + (data.success ? "success" : "error");
+  el.textContent = JSON.stringify(data, null, 2);
+}
+
+function setLoading(btn, loading) {
+  if (loading) {
+    btn.disabled = true;
+    btn.dataset.originalText = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> 请求中...';
+  } else {
+    btn.disabled = false;
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+  }
+}
+
+function copyScript(btn) {
+  const text = btn.getAttribute("data-script");
+  navigator.clipboard.writeText(text).then(function() {
+    const original = btn.textContent;
+    btn.textContent = "✅ 已复制";
+    btn.disabled = true;
+    setTimeout(function() { btn.textContent = original; btn.disabled = false; }, 1500);
+  }).catch(function() {
+    // fallback: 选中文本
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+    const original = btn.textContent;
+    btn.textContent = "✅ 已复制";
+    btn.disabled = true;
+    setTimeout(function() { btn.textContent = original; btn.disabled = false; }, 1500);
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text || "";
+  return div.innerHTML;
+}
+
+/* ── 多选模式 ────────────────────────────────────────────── */
+let selectMode = false;
+const selectedItems = new Set();
+let currentClothes = [];
+
+function updateSelectionUI() {
+  const countEl = document.getElementById("selectedCount");
+  const batchBtn = document.getElementById("batchDeleteBtn");
+  countEl.textContent = selectedItems.size;
+  batchBtn.style.display = selectedItems.size > 0 ? "inline-flex" : "none";
+  document.querySelectorAll(".clothe-item").forEach(function(el) {
+    const sn = parseInt(el.dataset.serialNo);
+    el.style.outline = selectedItems.has(sn) ? "3px solid var(--danger)" : "";
+  });
+}
+
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  selectedItems.clear();
+  document.getElementById("selectAllBtn").style.display = selectMode ? "inline-flex" : "none";
+  document.getElementById("batchDeleteBtn").style.display = "none";
+  renderClothes(currentClothes);
+}
+
+function toggleSelectAll() {
+  if (selectedItems.size === currentClothes.length) {
+    selectedItems.clear();
+  } else {
+    currentClothes.forEach(function(item) { selectedItems.add(item.serialNo); });
+  }
+  updateSelectionUI();
+}
+
+function toggleSelect(serialNo) {
+  if (selectedItems.has(serialNo)) {
+    selectedItems.delete(serialNo);
+  } else {
+    selectedItems.add(serialNo);
+  }
+  updateSelectionUI();
+}
+
+/* ── 衣橱渲染 ────────────────────────────────────────────── */
+function renderClothes(clothes) {
+  currentClothes = clothes || [];
+  const container = document.getElementById("clothesList");
+
+  if (!clothes || clothes.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">👗</div><p>衣橱还是空的，去上传一些衣服吧～</p></div>';
+    return;
+  }
+
+  const cards = clothes.map(function(item) {
+    const tags = [];
+    if (item.category) tags.push(item.category);
+    if (item.color) tags.push(item.color);
+    if (item.style) tags.push(item.style);
+    if (item.season && item.season.length) tags.push.apply(tags, item.season);
+    const tagsHtml = tags.slice(0, 4).map(function(t) {
+      return '<span class="tag">' + escapeHtml(t) + '</span>';
+    }).join("");
+
+    const imgHtml = item.imageUrl
+      ? '<img class="clothe-img" src="' + escapeHtml(item.imageUrl) + '" alt="' + escapeHtml(item.name) + '" onerror="this.outerHTML=\'<div class=clothe-img-placeholder>👗</div>\'">'
+      : '<div class="clothe-img-placeholder">👗</div>';
+
+    const isSelected = selectedItems.has(item.serialNo);
+    const outlineStyle = isSelected ? "outline:3px solid var(--danger);" : "";
+
+    const selectOverlay = selectMode
+      ? '<div style="position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;border:2px solid var(--primary);background:' + (isSelected ? "var(--primary)" : "white") + ';cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;box-shadow:var(--shadow-sm);" onclick="event.stopPropagation();toggleSelect(' + item.serialNo + ')">' + (isSelected ? "✓" : "") + '</div>'
+      : '';
+
+    const clickHandler = selectMode
+      ? ' onclick="toggleSelect(' + item.serialNo + ')" style="cursor:pointer;' + outlineStyle + '"'
+      : ' style="' + outlineStyle + '"';
+
+    return '<div class="clothe-item" data-serial-no="' + item.serialNo + '"' + clickHandler + '>'
+      + '<div style="position:relative;">' + imgHtml + selectOverlay + '</div>'
+      + '<div class="clothe-info">'
+      + '<div class="clothe-name" title="' + escapeHtml(item.name) + '">' + escapeHtml(item.name) + '</div>'
+      + '<div class="clothe-meta">' + escapeHtml(item.desc || "暂无描述") + '</div>'
+      + '<div class="clothe-tags">' + tagsHtml + '</div>'
+      + '<div class="clothe-actions">'
+      + '<span class="clothe-serial">#' + item.serialNo + '</span>'
+      + (selectMode ? '' : '<button class="btn btn-danger btn-sm" onclick="deleteClothe(' + item.serialNo + ', \'' + escapeHtml(item.name).replace(/'/g, "\\'") + '\')">删除</button>')
+      + '</div></div></div>';
+  }).join("");
+
+  container.innerHTML = '<div class="clothes-grid">' + cards + '</div>';
+}
+
+/* ── 衣橱接口 ────────────────────────────────────────────── */
+async function loadClothes() {
+  const container = document.getElementById("clothesList");
+  container.innerHTML = '<div class="loading-state"><div class="spinner spinner-dark"></div><p style="margin-top:8px;">正在加载衣橱...</p></div>';
+  try {
+    const data = await proxyCall("/proxy/client/clothes/list");
+    if (data.success) {
+      renderClothes(data.result);
+    } else {
+      container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>加载失败: ' + escapeHtml(data.message || data.error || "未知错误") + '</p></div>';
+    }
+  } catch (err) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>网络请求失败: ' + escapeHtml(err.message) + '</p></div>';
+  }
+}
+
+async function deleteClothe(serialNo, name) {
+  if (!confirm("确定要删除「" + name + "」(#" + serialNo + ") 吗？")) return;
+  try {
+    const data = await proxyCall("/proxy/soa/clothes/delete", { serialNo: serialNo });
+    if (data.success) {
+      loadClothes();
+    } else {
+      alert("删除失败: " + (data.message || data.error || JSON.stringify(data)));
+    }
+  } catch (err) {
+    alert("删除失败: " + err.message);
+  }
+}
+
+async function batchDelete() {
+  const count = selectedItems.size;
+  if (count === 0) return;
+  if (!confirm("确定要批量删除选中的 " + count + " 件衣服吗？此操作不可撤销！")) return;
+
+  const serialNos = Array.from(selectedItems);
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const serialNo of serialNos) {
+    try {
+      const data = await proxyCall("/proxy/soa/clothes/delete", { serialNo: serialNo });
+      if (data.success) { successCount++; } else { failCount++; }
+    } catch (err) { failCount++; }
+  }
+
+  selectedItems.clear();
+  selectMode = false;
+  document.getElementById("selectAllBtn").style.display = "none";
+  document.getElementById("batchDeleteBtn").style.display = "none";
+
+  if (failCount > 0) {
+    alert("批量删除完成：成功 " + successCount + " 件，失败 " + failCount + " 件");
+  }
+  loadClothes();
+}
+
+/* ── 店铺信息 ────────────────────────────────────────────── */
+async function loadStoreInfo() {
+  try {
+    const data = await proxyCall("/proxy/client/store/info");
+    if (data.success && data.result) {
+      const store = data.result;
+      document.getElementById("shopName").value = store.shopName || "";
+      document.getElementById("wechat").value = store.wechat || "";
+      document.getElementById("shopAddress").value = store.shopAddress || "";
+    }
+  } catch (err) {
+    // 加载失败不阻塞，用户可手动填写
+  } finally {
+    document.getElementById("storeLoading").style.display = "none";
+    document.getElementById("storeForm").style.display = "block";
+  }
+}
+
+async function updateStore() {
+  const btn = event.target;
+  setLoading(btn, true);
+  try {
+    const data = await proxyCall("/proxy/soa/store/update", {
+      shopName: document.getElementById("shopName").value,
+      wechat: document.getElementById("wechat").value,
+      shopAddress: document.getElementById("shopAddress").value,
+    });
+    showResult("storeResult", data);
+  } catch (err) {
+    showResult("storeResult", { success: false, error: err.message });
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/* ── 初始化 ──────────────────────────────────────────────── */
+loadClothes();
+loadStoreInfo();
+
+/* ── 倒计时 30 分钟 ──────────────────────────────────────── */
+(function() {
+  const TOTAL_SECONDS = 30 * 60;
+  let remaining = TOTAL_SECONDS;
+  const textEl = document.getElementById("countdown-text");
+  const barEl = document.getElementById("countdown-bar");
+
+  function update() {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    textEl.textContent = mins + ":" + (secs < 10 ? "0" : "") + secs;
+    if (remaining <= 300) {
+      barEl.classList.add("danger");
+    }
+    if (remaining <= 0) {
+      textEl.textContent = "已关闭";
+      barEl.innerHTML = "⚠️ 服务已自动关闭，请重新启动管理页面";
+    }
+    remaining--;
+  }
+  update();
+  setInterval(update, 1000);
+})();
+</script>
+</body>
+</html>

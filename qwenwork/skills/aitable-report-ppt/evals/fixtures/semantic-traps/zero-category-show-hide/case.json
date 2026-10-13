@@ -1,0 +1,44 @@
+{
+  "description": "字段配置存在但无记录的选项：show 补 0、hide 剔除、placeholder 同 show",
+  "checks": [
+    {
+      "id": "show",
+      "kind": "group",
+      "config": {
+        "group_by": "状态",
+        "function": "count",
+        "zero_policy": "show",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    },
+    {
+      "id": "hide",
+      "kind": "group",
+      "config": {
+        "group_by": "状态",
+        "function": "count",
+        "zero_policy": "hide",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    },
+    {
+      "id": "placeholder",
+      "kind": "group",
+      "config": {
+        "group_by": "状态",
+        "function": "count",
+        "zero_policy": "placeholder",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    }
+  ]
+}

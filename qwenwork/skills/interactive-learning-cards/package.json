@@ -1,0 +1,22 @@
+{
+  "name": "interactive-learning-cards",
+  "version": "1.0.0",
+  "description": "为教师创建课堂专用的交互式学习应用，包含闪卡、测验和浏览模式。基于记忆科学原理设计，支持学生自主学习和课堂互动练习。当老师需要制作学科知识点卡片、课堂练习题、复习工具或家校共育学习资源时使用此技能。不要在简单文档生成、纯文本整理或非教学场景时触发。",
+  "author": "dingtalk",
+  "license": "MIT",
+  "keywords": [
+    "教育",
+    "学习",
+    "闪卡",
+    "测验",
+    "互动学习",
+    "记忆卡片"
+  ],
+  "main": "SKILL.md",
+  "files": [
+    "SKILL.md",
+    "templates/",
+    "examples/",
+    "tests/"
+  ]
+}

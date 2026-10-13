@@ -1,0 +1,69 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "证据策略分析"
+      en: "Evidence strategy"
+    description:
+      zh: "对证据做三性与举证策略分析"
+      en: "Evidence admissibility and strategy"
+    prompt:
+      zh: |-
+        请对「{{案件证据}}」做三性与证明力分析，给出举证责任与证据链补强方案。
+      en: |-
+        Analyze {{case evidence}} for admissibility, burden of proof and chain reinforcement.
+  - id: ex-2
+    title:
+      zh: "逐份质证意见"
+      en: "Cross-examination opinions"
+    description:
+      zh: "针对对方证据逐份撰写可上庭的质证意见"
+      en: "Court-ready cross-examination opinions on opposing evidence"
+    prompt:
+      zh: |-
+        请针对对方证据逐份撰写可直接上庭使用的质证意见。
+
+        对方证据材料：{{对方证据清单及材料}}
+        案件基本事实：{{案件基本事实}}
+
+        要求：
+        1. 每份证据完整覆盖真实性、合法性、关联性与证明目的反驳
+        2. 给出可当庭宣读的质证发言与质证策略
+        3. 每个质证观点附法律依据
+      en: |-
+        Draft court-ready cross-examination opinions on each item of the opposing party's evidence.
+
+        Opposing evidence: {{opposing party's evidence list and materials}}
+        Basic case facts: {{basic case facts}}
+
+        Requirements:
+        1. For each item, cover authenticity, legality, relevance and rebuttal of the asserted proof purpose
+        2. Provide statements that can be read aloud in court, plus cross-examination strategy
+        3. Attach a legal basis to each point
+  - id: ex-3
+    title:
+      zh: "证据链构建"
+      en: "Evidence chain mapping"
+    description:
+      zh: "证据对应主张、识别缺口并编制证据目录"
+      en: "Map evidence to claims, find gaps, build evidence index"
+    prompt:
+      zh: |-
+        请把证据逐项映射到法律主张，构建证据链。
+
+        证据清单：{{证据清单}}
+        法律主张：{{法律主张清单}}
+
+        要求：
+        1. 建立主张—要件—事实—证据的对应关系
+        2. 识别证据缺口并给出补证建议
+        3. 编制可提交法院的证据目录与举证要点
+      en: |-
+        Map each piece of evidence to the legal claims to build an evidence chain.
+
+        Evidence list: {{evidence list}}
+        Legal claims: {{list of legal claims}}
+
+        Requirements:
+        1. Establish claim-elements-fact-evidence mapping
+        2. Identify evidence gaps and suggest how to fill them
+        3. Produce a court-ready evidence index and burden-of-proof points

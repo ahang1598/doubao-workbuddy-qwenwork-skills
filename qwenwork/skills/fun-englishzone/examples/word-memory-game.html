@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词记忆游戏</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .score-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+        .main-content { padding: 30px; }
+        .game-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .card {
+            aspect-ratio: 1;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card.matched .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 2em;
+        }
+        .card-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .card.matched .card-back {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .controls { text-align: center; margin-top: 20px; }
+        .timer {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .achievements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            opacity: 0.3;
+            background: #e0e0e0;
+            transition: all 0.3s;
+        }
+        .badge.unlocked {
+            opacity: 1;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+        .modal-content h2 { font-size: 2em; margin-bottom: 20px; color: #333; }
+        .modal-content p { margin-bottom: 20px; font-size: 1.2em; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .game-board { grid-template-columns: repeat(3, 1fr); }
+            .card-front { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 单词记忆游戏</h1>
+            <p>翻开卡片，找到配对的单词和释义！</p>
+            <div class="score-board">
+                <div class="score-item">⭐ 配对: <span id="matches">0</span>/8</div>
+                <div class="score-item">🔄 翻牌: <span id="flips">0</span></div>
+                <div class="score-item">⏱️ 时间: <span id="timer">0:00</span></div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="timer" id="timerDisplay">0:00</div>
+            <div class="game-board" id="gameBoard"></div>
+            <div class="controls">
+                <button class="btn btn-success" onclick="startGame()">新游戏</button>
+                <button class="btn" onclick="showHint()">提示</button>
+            </div>
+            <div class="achievements">
+                <span class="badge" id="badge1">🚀 初次配对</span>
+                <span class="badge" id="badge2">⚡ 闪电速度</span>
+                <span class="badge" id="badge3">🎯 完美通关</span>
+                <span class="badge" id="badge4">👑 记忆大师</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2>🎉 恭喜通关！</h2>
+            <p>用时: <span id="finalTime">0:00</span></p>
+            <p>翻牌次数: <span id="finalFlips">0</span></p>
+            <button class="btn btn-success" onclick="closeModal(); startGame();">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        const wordPairs = [
+            { word: 'apple', meaning: '苹果' },
+            { word: 'book', meaning: '书' },
+            { word: 'cat', meaning: '猫' },
+            { word: 'dog', meaning: '狗' },
+            { word: 'elephant', meaning: '大象' },
+            { word: 'flower', meaning: '花' },
+            { word: 'garden', meaning: '花园' },
+            { word: 'house', meaning: '房子' }
+        ];
+        
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let flips = 0;
+        let timer = null;
+        let seconds = 0;
+        let gameStarted = false;
+        let canFlip = true;
+        
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function startGame() {
+            // 重置状态
+            matchedPairs = 0;
+            flips = 0;
+            seconds = 0;
+            flippedCards = [];
+            gameStarted = true;
+            canFlip = true;
+            
+            if (timer) clearInterval(timer);
+            timer = setInterval(updateTimer, 1000);
+            
+            // 创建卡片
+            cards = [];
+            wordPairs.forEach((pair, index) => {
+                cards.push({ id: index * 2, type: 'word', content: pair.word, pairId: index });
+                cards.push({ id: index * 2 + 1, type: 'meaning', content: pair.meaning, pairId: index });
+            });
+            shuffle(cards);
+            
+            // 渲染卡片
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = cards.map(card => `
+                <div class="card" data-id="${card.id}" data-pair="${card.pairId}" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">?</div>
+                        <div class="card-back">${card.content}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateDisplay();
+        }
+        
+        function flipCard(card) {
+            if (!gameStarted || !canFlip) return;
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+            
+            card.classList.add('flipped');
+            flippedCards.push(card);
+            
+            if (flippedCards.length === 2) {
+                flips++;
+                canFlip = false;
+                checkMatch();
+            }
+            
+            updateDisplay();
+        }
+        
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const pair1 = card1.dataset.pair;
+            const pair2 = card2.dataset.pair;
+            
+            if (pair1 === pair2) {
+                // 配对成功
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                
+                // 检查成就
+                if (matchedPairs === 1) document.getElementById('badge1').classList.add('unlocked');
+                if (matchedPairs === wordPairs.length) {
+                    clearInterval(timer);
+                    if (seconds < 60) document.getElementById('badge2').classList.add('unlocked');
+                    if (flips <= wordPairs.length) document.getElementById('badge3').classList.add('unlocked');
+                    document.getElementById('badge4').classList.add('unlocked');
+                    setTimeout(showWinModal, 500);
+                }
+                
+                flippedCards = [];
+                canFlip = true;
+            } else {
+                // 配对失败
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+            }
+            
+            updateDisplay();
+        }
+        
+        function updateTimer() {
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('timer').textContent = timeStr;
+            document.getElementById('timerDisplay').textContent = timeStr;
+        }
+        
+        function updateDisplay() {
+            document.getElementById('matches').textContent = matchedPairs;
+            document.getElementById('flips').textContent = flips;
+        }
+        
+        function showHint() {
+            if (!gameStarted) return;
+            const unmatched = document.querySelectorAll('.card:not(.matched)');
+            if (unmatched.length > 0) {
+                const randomCard = unmatched[Math.floor(Math.random() * unmatched.length)];
+                randomCard.style.boxShadow = '0 0 20px gold';
+                setTimeout(() => {
+                    randomCard.style.boxShadow = '';
+                }, 2000);
+            }
+        }
+        
+        function showWinModal() {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('finalTime').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('finalFlips').textContent = flips;
+            document.getElementById('winModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('winModal').classList.remove('show');
+        }
+        
+        // 初始化
+        startGame();
+    </script>
+</body>
+</html>

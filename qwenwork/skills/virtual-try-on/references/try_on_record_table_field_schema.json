@@ -1,0 +1,32 @@
+[{
+    "id": "try_on_openId",
+    "name": "OpenID",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "顾客的唯一标识"
+},
+{
+    "id": "try_on_styleNumbers",
+    "name": "试穿款号",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "试穿的衣服款号，多件用顿号分隔"
+},
+{
+    "id": "try_on_resultImage",
+    "name": "试穿效果图",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "AI生成的试穿效果图URL"
+},
+{
+    "id": "try_on_time",
+    "name": "试穿时间",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "试穿时间，ISO 8601格式"
+}]

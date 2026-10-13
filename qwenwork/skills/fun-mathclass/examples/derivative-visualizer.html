@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导数可视化工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .function-input {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .function-input input {
+            padding: 12px 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 25px;
+            width: 250px;
+            text-align: center;
+        }
+        
+        .function-input button {
+            padding: 12px 25px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .function-input button:hover {
+            background: #555;
+            transform: scale(1.05);
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .canvas-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #graphCanvas {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            background: #fafafa;
+            max-width: 100%;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .slider-value {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .info-card {
+            background: #fce4ec;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #e91e63;
+        }
+        
+        .info-card h4 {
+            color: #c2185b;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-card p {
+            color: #333;
+            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .formula-box {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .formula-box h3 {
+            color: #e65100;
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .rule-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .challenge-section {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+        }
+        
+        .challenge-section h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .function-input input {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📉 导数可视化工具</h1>
+            <p>探索导数的几何意义：切线与斜率</p>
+            <div class="function-input">
+                <span style="font-size: 1.3em; align-self: center;">f(x) =</span>
+                <input type="text" id="functionInput" value="x^2" placeholder="输入函数，如: x^2, sin(x), e^x">
+                <button onclick="updateFunction()">绘制</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="graphCanvas" width="800" height="500"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">切点位置 x</span>
+                        <span class="slider-value" id="xValue">1.00</span>
+                    </div>
+                    <input type="range" id="xSlider" min="-5" max="5" step="0.01" value="1">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">割线另一点 (演示极限)</span>
+                        <span class="slider-value" id="hValue">1.00</span>
+                    </div>
+                    <input type="range" id="hSlider" min="0.01" max="2" step="0.01" value="1">
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>函数值 f(x)</h4>
+                    <p id="fxValue">1.0000</p>
+                </div>
+                <div class="info-card">
+                    <h4>导数 f'(x) - 切线斜率</h4>
+                    <p id="fprimeValue">2.0000</p>
+                </div>
+                <div class="info-card">
+                    <h4>切线方程</h4>
+                    <p id="tangentEquation">y = 2x - 1</p>
+                </div>
+                <div class="info-card">
+                    <h4>割线斜率</h4>
+                    <p id="secantSlope">3.0000</p>
+                </div>
+            </div>
+            
+            <div class="formula-box">
+                <h3>📐 导数定义</h3>
+                <div class="formula">
+                    f'(x) = lim<sub>h→0</sub> [f(x+h) - f(x)] / h
+                </div>
+                <p style="text-align: center; color: #666; margin-top: 10px;">
+                    导数表示函数在某一点的瞬时变化率，几何上就是切线的斜率
+                </p>
+            </div>
+            
+            <div class="formula-box">
+                <h3>📚 常用导数公式</h3>
+                <div class="rules-grid">
+                    <div class="rule-item">(xⁿ)' = n·xⁿ⁻¹</div>
+                    <div class="rule-item">(eˣ)' = eˣ</div>
+                    <div class="rule-item">(ln x)' = 1/x</div>
+                    <div class="rule-item">(sin x)' = cos x</div>
+                    <div class="rule-item">(cos x)' = -sin x</div>
+                    <div class="rule-item">(tan x)' = sec²x</div>
+                    <div class="rule-item">(aˣ)' = aˣ·ln a</div>
+                    <div class="rule-item">(logₐx)' = 1/(x·ln a)</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="animateTangent()">动画演示</button>
+                <button class="btn" onclick="showExamples()">示例函数</button>
+                <button class="btn" onclick="toggleSecant()">切换割线显示</button>
+            </div>
+            
+            <div class="challenge-section">
+                <h3>🎮 挑战模式：猜测导数</h3>
+                <p>观察函数图像，猜测在给定点的导数值！</p>
+                <div class="btn-group">
+                    <button class="btn" onclick="startChallenge()">开始挑战</button>
+                </div>
+                <div id="challengeArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let currentFunction = 'x^2';
+        let showSecant = true;
+        
+        // 坐标系设置
+        const scale = 40;
+        const originX = canvas.width / 2;
+        const originY = canvas.height / 2;
+        
+        // 数学函数解析
+        function parseFunction(expr) {
+            expr = expr.replace(/\^/g, '**')
+                      .replace(/sin/g, 'Math.sin')
+                      .replace(/cos/g, 'Math.cos')
+                      .replace(/tan/g, 'Math.tan')
+                      .replace(/log/g, 'Math.log')
+                      .replace(/ln/g, 'Math.log')
+                      .replace(/exp/g, 'Math.exp')
+                      .replace(/e\*\*/g, 'Math.exp')
+                      .replace(/sqrt/g, 'Math.sqrt')
+                      .replace(/abs/g, 'Math.abs')
+                      .replace(/pi/g, 'Math.PI')
+                      .replace(/π/g, 'Math.PI');
+            
+            return (x) => {
+                try {
+                    return eval(expr);
+                } catch (e) {
+                    return NaN;
+                }
+            };
+        }
+        
+        // 计算导数（数值方法）
+        function derivative(f, x, h = 0.0001) {
+            return (f(x + h) - f(x - h)) / (2 * h);
+        }
+        
+        function drawGraph() {
+            const f = parseFunction(currentFunction);
+            const x = parseFloat(document.getElementById('xSlider').value);
+            const h = parseFloat(document.getElementById('hSlider').value);
+            
+            // 清空画布
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            drawGrid();
+            
+            // 绘制坐标轴
+            drawAxes();
+            
+            // 绘制函数曲线
+            drawFunctionCurve(f);
+            
+            // 绘制切线
+            drawTangent(f, x);
+            
+            // 绘制割线
+            if (showSecant) {
+                drawSecant(f, x, h);
+            }
+            
+            // 绘制点
+            drawPoints(f, x, h);
+            
+            // 更新信息
+            updateInfo(f, x, h);
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            
+            for (let x = originX % scale; x < canvas.width; x += scale) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = originY % scale; y < canvas.height; y += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawAxes() {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(canvas.width, originY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, canvas.height);
+            ctx.stroke();
+            
+            // 标签
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.fillText('O', originX - 15, originY + 20);
+            ctx.fillText('x', canvas.width - 20, originY + 25);
+            ctx.fillText('y', originX + 10, 20);
+            
+            // 刻度
+            ctx.font = '12px Arial';
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                const x = originX + i * scale;
+                ctx.beginPath();
+                ctx.moveTo(x, originY - 5);
+                ctx.lineTo(x, originY + 5);
+                ctx.stroke();
+                ctx.fillText(i.toString(), x - 5, originY + 20);
+                
+                const y = originY - i * scale;
+                ctx.beginPath();
+                ctx.moveTo(originX - 5, y);
+                ctx.lineTo(originX + 5, y);
+                ctx.stroke();
+                ctx.fillText(i.toString(), originX + 10, y + 5);
+            }
+        }
+        
+        function drawFunctionCurve(f) {
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            let first = true;
+            for (let px = 0; px <= canvas.width; px++) {
+                const x = (px - originX) / scale;
+                const y = f(x);
+                const py = originY - y * scale;
+                
+                if (!isNaN(y) && isFinite(y) && py >= -100 && py <= canvas.height + 100) {
+                    if (first) {
+                        ctx.moveTo(px, py);
+                        first = false;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                } else {
+                    first = true;
+                }
+            }
+            ctx.stroke();
+        }
+        
+        function drawTangent(f, x0) {
+            const y0 = f(x0);
+            const slope = derivative(f, x0);
+            
+            ctx.strokeStyle = '#f44336';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            
+            const x1 = -10;
+            const y1 = y0 + slope * (x1 - x0);
+            const x2 = 10;
+            const y2 = y0 + slope * (x2 - x0);
+            
+            ctx.moveTo(originX + x1 * scale, originY - y1 * scale);
+            ctx.lineTo(originX + x2 * scale, originY - y2 * scale);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawSecant(f, x0, h) {
+            const y0 = f(x0);
+            const x1 = x0 + h;
+            const y1 = f(x1);
+            const slope = (y1 - y0) / h;
+            
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            
+            const xs1 = -10;
+            const ys1 = y0 + slope * (xs1 - x0);
+            const xs2 = 10;
+            const ys2 = y0 + slope * (xs2 - x0);
+            
+            ctx.moveTo(originX + xs1 * scale, originY - ys1 * scale);
+            ctx.lineTo(originX + xs2 * scale, originY - ys2 * scale);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawPoints(f, x0, h) {
+            const y0 = f(x0);
+            
+            // 切点
+            drawPoint(x0, y0, '#f44336', 6, 'P');
+            
+            // 割线另一点
+            if (showSecant) {
+                const x1 = x0 + h;
+                const y1 = f(x1);
+                drawPoint(x1, y1, '#4caf50', 5, 'Q');
+            }
+        }
+        
+        function drawPoint(x, y, color, radius, label) {
+            const px = originX + x * scale;
+            const py = originY - y * scale;
+            
+            if (px < 0 || px > canvas.width || py < 0 || py > canvas.height) return;
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(px, py, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            if (label) {
+                ctx.fillStyle = color;
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(label, px + 10, py - 10);
+            }
+        }
+        
+        function updateInfo(f, x, h) {
+            const fx = f(x);
+            const fprime = derivative(f, x);
+            const x1 = x + h;
+            const fx1 = f(x1);
+            const secantSlope = (fx1 - fx) / h;
+            
+            document.getElementById('xValue').textContent = x.toFixed(2);
+            document.getElementById('hValue').textContent = h.toFixed(2);
+            document.getElementById('fxValue').textContent = fx.toFixed(4);
+            document.getElementById('fprimeValue').textContent = fprime.toFixed(4);
+            document.getElementById('secantSlope').textContent = secantSlope.toFixed(4);
+            
+            // 切线方程: y - y0 = m(x - x0) => y = mx - mx0 + y0
+            const b = fx - fprime * x;
+            const bSign = b >= 0 ? '+' : '-';
+            document.getElementById('tangentEquation').textContent = 
+                `y = ${fprime.toFixed(2)}x ${bSign} ${Math.abs(b).toFixed(2)}`;
+        }
+        
+        function updateFunction() {
+            const input = document.getElementById('functionInput').value;
+            if (input.trim()) {
+                currentFunction = input;
+                drawGraph();
+            }
+        }
+        
+        function animateTangent() {
+            let x = -5;
+            const interval = setInterval(() => {
+                document.getElementById('xSlider').value = x;
+                drawGraph();
+                x += 0.1;
+                if (x > 5) {
+                    clearInterval(interval);
+                }
+            }, 50);
+        }
+        
+        function showExamples() {
+            const examples = [
+                'x^2',
+                'x^3',
+                'sin(x)',
+                'cos(x)',
+                'e^x',
+                'ln(x)',
+                'sqrt(x)',
+                '1/x'
+            ];
+            
+            const ex = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('functionInput').value = ex;
+            currentFunction = ex;
+            drawGraph();
+        }
+        
+        function toggleSecant() {
+            showSecant = !showSecant;
+            drawGraph();
+        }
+        
+        function startChallenge() {
+            const examples = ['x^2', 'x^3', 'sin(x)', 'e^x'];
+            const ex = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('functionInput').value = ex;
+            currentFunction = ex;
+            
+            const randomX = (Math.random() * 6 - 3).toFixed(2);
+            document.getElementById('xSlider').value = randomX;
+            
+            drawGraph();
+            
+            const f = parseFunction(ex);
+            const actualDerivative = derivative(f, parseFloat(randomX));
+            
+            document.getElementById('challengeArea').innerHTML = `
+                <p style="margin: 15px 0;">函数: f(x) = ${ex}，在 x = ${randomX} 处</p>
+                <p>猜测导数值（切线斜率）: <input type="number" id="guess" step="0.1" style="padding: 8px; width: 100px;"></p>
+                <button class="btn" onclick="checkDerivativeGuess(${actualDerivative})">提交答案</button>
+                <div id="challengeResult"></div>
+            `;
+        }
+        
+        function checkDerivativeGuess(actual) {
+            const guess = parseFloat(document.getElementById('guess').value);
+            const diff = Math.abs(guess - actual);
+            const resultDiv = document.getElementById('challengeResult');
+            
+            if (diff < 0.1) {
+                resultDiv.innerHTML = `<p style="color: green; font-size: 1.2em;">🎉 正确! 实际导数值: ${actual.toFixed(4)}</p>`;
+            } else {
+                resultDiv.innerHTML = `<p style="color: red; font-size: 1.2em;">❌ 错误! 实际导数值: ${actual.toFixed(4)}</p>`;
+            }
+        }
+        
+        // 事件监听
+        document.getElementById('xSlider').addEventListener('input', drawGraph);
+        document.getElementById('hSlider').addEventListener('input', drawGraph);
+        document.getElementById('functionInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') updateFunction();
+        });
+        
+        // 初始化
+        drawGraph();
+    </script>
+</body>
+</html>

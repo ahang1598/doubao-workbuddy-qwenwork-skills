@@ -1,0 +1,8 @@
+{
+  "name": "utp-shopping",
+  "version": "2.5.0",
+  "description": "你的专业采购、购物专家，由 UTP 协议提供商业交互服务和可信基础设施，直连 1688 等百万源头工厂，提供优选全品类货源，覆盖 B2B 采购全链路：智能搜品、询盘比价、商品详情、采购车管理、可信交易&支付、订单追踪等。",
+  "keywords": ["utp", "b2b", "shopping", "procurement", "payment", "1688", "采购", "购物", "智能采购"],
+  "homepage": "https://ut-protocol.com",
+  "license": "Apache-2.0"
+}

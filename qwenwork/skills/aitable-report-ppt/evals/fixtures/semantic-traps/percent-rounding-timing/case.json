@@ -1,0 +1,42 @@
+{
+  "description": "百分比全精度计算、显示层才舍入；舍入为四舍五入远离零（含浮点陷阱值）",
+  "checks": [
+    {
+      "id": "pct",
+      "kind": "group",
+      "config": {
+        "group_by": "渠道",
+        "value_field": "额",
+        "function": "percentage",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    },
+    {
+      "id": "half_pos",
+      "kind": "format",
+      "value": 2.5,
+      "decimals": 0
+    },
+    {
+      "id": "half_neg",
+      "kind": "format",
+      "value": -2.5,
+      "decimals": 0
+    },
+    {
+      "id": "exact_binary",
+      "kind": "format",
+      "value": 0.125,
+      "decimals": 2
+    },
+    {
+      "id": "float_trap",
+      "kind": "format",
+      "value": 1.005,
+      "decimals": 2
+    }
+  ]
+}

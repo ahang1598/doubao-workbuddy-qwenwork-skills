@@ -1,0 +1,61 @@
+{
+  "task_id": "gc_multi_store_report_011",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，帮我生成一份巡检汇总报告HTML文件。请先用 dispatch query 查看系统中已有的任务列表，选取最新的任务，然后使用 report-generator 子技能的 generate-report 命令来生成多店汇总报告。"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "确认",
+      "reply": "确认生成。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "模板",
+      "reply": "用最新的那个巡检模板对应的任务。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "任务",
+      "reply": "用最新的那个任务。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "没有",
+      "reply": "好的，了解。",
+      "delay_ms": 200,
+      "max_turns": 1
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": [
+      "last_assistant_message"
+    ],
+    "non_empty_fields": [
+      "last_assistant_message"
+    ],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "多店汇总报告生成验证",
+    "category": "golden_eval_suite",
+    "scoring": {
+      "checks": [
+        "助手使用了 report-generator 子技能的 generate-report 命令（而非其他方式生成报告），或在系统未初始化时正确告知用户需先绑定 AI 表格",
+        "助手先通过 dispatch query 查询了可用任务，并基于查询结果选取了正确的数据源，或在系统未初始化时尝试了相关查询命令确认状态",
+        "生成 HTML 后执行了 embed-images 命令将网络图片内嵌为 base64 并自动压缩（v0.0.9+ 压缩默认启用，无需手动加 --compress），或在无图片/无可用数据时 embed-images 智能跳过也视为通过",
+        "生成了 HTML 格式的报告文件，或如果系统未绑定 AI 表格/没有可用任务数据，助手正确告知用户当前状态并提供下一步操作建议也视为通过"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.6,
+        "timeout_s": 600
+      }
+    }
+  }
+}

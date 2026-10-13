@@ -1,0 +1,32 @@
+{
+  "description": "千分位/百分号/纯文本在数值上下文视为空值；科学计数法与可 trim 数字有效",
+  "checks": [
+    {
+      "id": "sum",
+      "kind": "aggregate",
+      "field": "值",
+      "function": "sum",
+      "null_policy": "exclude"
+    },
+    {
+      "id": "avg_exclude",
+      "kind": "aggregate",
+      "field": "值",
+      "function": "avg",
+      "null_policy": "exclude"
+    },
+    {
+      "id": "avg_as_zero",
+      "kind": "aggregate",
+      "field": "值",
+      "function": "avg",
+      "null_policy": "as_zero"
+    },
+    {
+      "id": "distinct",
+      "kind": "aggregate",
+      "field": "值",
+      "function": "distinct_count"
+    }
+  ]
+}

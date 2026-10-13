@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+"""Parse the three fast-mode enumeration texts into candidate records."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from intake_runtime import parse_fast_lists
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input", type=Path, help="JSON with person_text, asset_text, distribution_text")
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    raw = json.loads(args.input.read_text(encoding="utf-8"))
+    result = parse_fast_lists(
+        str(raw.get("person_text") or ""),
+        str(raw.get("asset_text") or ""),
+        str(raw.get("distribution_text") or ""),
+    )
+    payload = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    if args.output:
+        args.output.write_text(payload, encoding="utf-8")
+    else:
+        print(payload, end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

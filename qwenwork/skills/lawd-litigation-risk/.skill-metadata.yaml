@@ -1,0 +1,49 @@
+examples:
+  - id: litigation-risk-assessment
+    title:
+      zh: "诉讼风险评估"
+      en: "Litigation risk assessment"
+    description:
+      zh: "立案前评估对手方胜诉概率与执行风险"
+      en: "Assess win probability and enforcement risk before filing"
+    prompt:
+      zh: |-
+        我准备起诉{{对手方企业名称}}，请做立案前的诉讼风险评估：
+
+        案由：{{案由}}
+
+        请给出胜诉概率推演、执行风险评级与立案建议。
+      en: |-
+        We plan to sue {{opposing party company name}}. Please run a pre-filing litigation risk assessment:
+
+        Cause of action: {{cause of action}}
+
+        Provide a win-probability analysis, an enforcement risk rating, and a filing recommendation.
+  - id: debt-recovery-assessment
+    title:
+      zh: "债务清偿能力评估"
+      en: "Debt recovery assessment"
+    description:
+      zh: "评估被告偿债能力、保全标的与预期清偿率"
+      en: "Assess the defendant's repayment capacity, preservable assets and expected recovery rate"
+    prompt:
+      zh: |-
+        {{债务人企业名称}}拖欠我方款项{{债权金额}}，请评估其债务清偿能力：
+
+        请输出追偿评级、可执行资产与保全标的建议、预期清偿率区间及行动时间线。
+      en: |-
+        {{debtor company name}} owes us {{claim amount}}. Please assess its debt repayment capacity:
+
+        Provide a recovery rating, enforceable assets with suggested preservation targets, an expected recovery rate range, and an action timeline.
+  - id: combined-risk-and-recovery
+    title:
+      zh: "风险与清偿连做评估"
+      en: "Combined risk & recovery assessment"
+    description:
+      zh: "一并评估能不能打赢与判后能否收回"
+      en: "Assess both winnability and post-judgment recoverability in one go"
+    prompt:
+      zh: |-
+        我拟起诉{{对手方企业名称}}追讨{{债权金额}}欠款，请连做诉讼风险评估与债务清偿能力评估，并出具一页联合结论：能不能打、判后收不收得回、是否值得立案。
+      en: |-
+        We intend to sue {{opposing party company name}} to recover a debt of {{claim amount}}. Please run both the litigation risk assessment and the debt recovery assessment, and produce a one-page joint conclusion: whether the case is winnable, whether the judgment is recoverable, and whether filing is worthwhile.

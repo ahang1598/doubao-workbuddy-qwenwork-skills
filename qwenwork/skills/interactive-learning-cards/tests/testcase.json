@@ -1,0 +1,226 @@
+{
+  "suite_id": "interactive-learning-app-test-suite",
+  "metadata": {
+    "generated_by": "QoderWork 测评系统 (QoderWork Eval System)",
+    "plan_name": "互动学习助手技能功能测评计划"
+  },
+  "tasks": [
+    {
+      "task_id": "TC001",
+      "name": "Flashcard Navigation",
+      "description": "Test next/previous card navigation",
+      "task": {
+        "task_id": "TC001",
+        "input": {
+          "events": [
+            {"type": "load", "mode": "flashcard"},
+            {"type": "click", "element": "next_button"},
+            {"type": "verify", "expectation": "card advances"},
+            {"type": "click", "element": "previous_button"},
+            {"type": "verify", "expectation": "card goes back"}
+          ]
+        },
+        "expected_output": {
+          "result": "Navigation works correctly with wrap-around"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC002",
+      "name": "Card Flip Animation",
+      "description": "Test 3D card flip functionality",
+      "task": {
+        "task_id": "TC002",
+        "input": {
+          "events": [
+            {"type": "click", "element": "card"},
+            {"type": "verify", "expectation": "flip animation plays"},
+            {"type": "verify", "expectation": "answer side shows"},
+            {"type": "click", "element": "card"},
+            {"type": "verify", "expectation": "flips back to question"}
+          ]
+        },
+        "expected_output": {
+          "result": "Smooth 3D flip animation, correct sides shown"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC003",
+      "name": "Rating System",
+      "description": "Test difficulty rating buttons",
+      "task": {
+        "task_id": "TC003",
+        "input": {
+          "events": [
+            {"type": "flip", "card": "current"},
+            {"type": "click", "element": "rating_good"},
+            {"type": "verify", "expectation": "next card appears"},
+            {"type": "verify", "expectation": "progress updates"}
+          ]
+        },
+        "expected_output": {
+          "result": "Rating recorded, card advances, progress updated"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC004",
+      "name": "Mode Switching",
+      "description": "Test switching between study modes",
+      "task": {
+        "task_id": "TC004",
+        "input": {
+          "events": [
+            {"type": "start", "mode": "flashcard"},
+            {"type": "click", "element": "quiz_tab"},
+            {"type": "verify", "expectation": "quiz interface loads"},
+            {"type": "click", "element": "browse_tab"},
+            {"type": "verify", "expectation": "browse grid loads"}
+          ]
+        },
+        "expected_output": {
+          "result": "All modes switch correctly without errors"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC005",
+      "name": "Quiz Answer Selection",
+      "description": "Test quiz answer feedback",
+      "task": {
+        "task_id": "TC005",
+        "input": {
+          "events": [
+            {"type": "switch", "mode": "quiz"},
+            {"type": "click", "element": "answer_option"},
+            {"type": "verify", "expectation": "correct answer highlighted green"},
+            {"type": "verify", "expectation": "wrong answers highlighted red"}
+          ]
+        },
+        "expected_output": {
+          "result": "Visual feedback shows correct/incorrect clearly"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC006",
+      "name": "Browse Grid Navigation",
+      "description": "Test browse to flashcard navigation",
+      "task": {
+        "task_id": "TC006",
+        "input": {
+          "events": [
+            {"type": "switch", "mode": "browse"},
+            {"type": "click", "element": "card"},
+            {"type": "verify", "expectation": "switches to flashcard mode"},
+            {"type": "verify", "expectation": "shows correct card"}
+          ]
+        },
+        "expected_output": {
+          "result": "Navigation from browse to flashcard works"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC007",
+      "name": "Keyboard Shortcuts",
+      "description": "Test keyboard navigation",
+      "task": {
+        "task_id": "TC007",
+        "input": {
+          "events": [
+            {"type": "press", "key": "Space"},
+            {"type": "verify", "expectation": "card flips"},
+            {"type": "press", "key": "ArrowRight"},
+            {"type": "verify", "expectation": "next card"},
+            {"type": "press", "key": "ArrowLeft"},
+            {"type": "verify", "expectation": "previous card"},
+            {"type": "press", "key": "1"},
+            {"type": "verify", "expectation": "rating 1 applied"},
+            {"type": "press", "key": "2"},
+            {"type": "verify", "expectation": "rating 2 applied"},
+            {"type": "press", "key": "3"},
+            {"type": "verify", "expectation": "rating 3 applied"},
+            {"type": "press", "key": "4"},
+            {"type": "verify", "expectation": "rating 4 applied"}
+          ]
+        },
+        "expected_output": {
+          "result": "All keyboard shortcuts work as expected"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC008",
+      "name": "Progress Tracking",
+      "description": "Test progress bar and stats",
+      "task": {
+        "task_id": "TC008",
+        "input": {
+          "events": [
+            {"type": "record", "state": "initial_progress"},
+            {"type": "rate", "count": "multiple"},
+            {"type": "verify", "expectation": "progress bar increases"},
+            {"type": "verify", "expectation": "stats update"}
+          ]
+        },
+        "expected_output": {
+          "result": "Progress and stats reflect actual progress"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC009",
+      "name": "Responsive Layout",
+      "description": "Test on different screen sizes",
+      "task": {
+        "task_id": "TC009",
+        "input": {
+          "events": [
+            {"type": "resize", "width": 1200},
+            {"type": "verify", "expectation": "desktop layout correct"},
+            {"type": "resize", "width": 768},
+            {"type": "verify", "expectation": "tablet layout correct"},
+            {"type": "resize", "width": 375},
+            {"type": "verify", "expectation": "mobile layout correct"}
+          ]
+        },
+        "expected_output": {
+          "result": "Layout adapts correctly to all sizes"
+        }
+      },
+      "status": "pending"
+    },
+    {
+      "task_id": "TC010",
+      "name": "Template Rendering",
+      "description": "Test template placeholders",
+      "task": {
+        "task_id": "TC010",
+        "input": {
+          "events": [
+            {"type": "check", "placeholder": "{{TITLE}}"},
+            {"type": "verify", "expectation": "replaced with actual title"},
+            {"type": "check", "placeholder": "{{QUESTION}}"},
+            {"type": "verify", "expectation": "replaced with actual question"},
+            {"type": "check", "placeholder": "{{ANSWER}}"},
+            {"type": "verify", "expectation": "replaced with actual answer"}
+          ]
+        },
+        "expected_output": {
+          "result": "All template variables replaced correctly"
+        }
+      },
+      "status": "pending"
+    }
+  ]
+}

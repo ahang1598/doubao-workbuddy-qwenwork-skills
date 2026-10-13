@@ -1,0 +1,12 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "avg_exclude": 20.0,
+    "avg_as_zero": 12.0,
+    "sum": 60.0,
+    "count": 5,
+    "distinct": 3
+  }
+}

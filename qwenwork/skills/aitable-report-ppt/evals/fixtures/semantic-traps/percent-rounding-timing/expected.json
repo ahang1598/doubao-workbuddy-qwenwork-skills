@@ -1,0 +1,21 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "pct": {
+      "categories": [
+        "线下",
+        "线上"
+      ],
+      "values": [
+        75.0,
+        25.0
+      ]
+    },
+    "half_pos": 3.0,
+    "half_neg": -3.0,
+    "exact_binary": 0.13,
+    "float_trap": 1.0
+  }
+}

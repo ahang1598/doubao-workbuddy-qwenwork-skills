@@ -1,0 +1,3 @@
+plugin:
+  secret-key: ${PLUGIN_SECRET_KEY}
+  enable-signature-verification: true

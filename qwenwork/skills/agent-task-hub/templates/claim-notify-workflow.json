@@ -1,0 +1,34 @@
+{
+  "version": "workflow-dsl/v1",
+  "name": "待认领任务群通知",
+  "trigger": "start",
+  "steps": {
+    "start": {
+      "type": "WhenRecordCreated",
+      "next": "send",
+      "data": {
+        "sheetId": "<任务台账tableId>",
+        "mustHaveFields": "<交接状态fieldId>",
+        "where": { "left": "<交接状态fieldId>", "op": "EQ", "right": { "option": "<待认领optionId>" } }
+      }
+    },
+    "send": {
+      "type": "SendMessage",
+      "data": {
+        "title": "有一个待认领任务",
+        "isButtonsEnabled": true,
+        "content": [
+          { "ref": "$.start.<通知文案fieldId>" }
+        ],
+        "buttons": [
+          {
+            "name": "去查看",
+            "color": "blue",
+            "action": { "type": "link", "url": { "ref": "$.start.rowUrl" } }
+          }
+        ],
+        "to": { "conversations": [{ "group": "<团队群cid>" }] }
+      }
+    }
+  }
+}

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发音训练工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .score-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        .main-content { padding: 30px; }
+        .phonetic-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .phonetic-btn {
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .phonetic-btn:hover, .phonetic-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .phonetic-btn.vowel { border-color: #f44336; color: #f44336; }
+        .phonetic-btn.vowel:hover, .phonetic-btn.vowel.active { background: #f44336; color: white; }
+        .word-display {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .word { font-size: 3em; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .phonetic-text { font-size: 1.8em; color: #667eea; margin-bottom: 15px; }
+        .meaning { font-size: 1.3em; color: #666; }
+        .sound-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        .sound-btn:hover { transform: scale(1.05); }
+        .sound-btn.playing { animation: pulse 0.5s infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .practice-section {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+        }
+        .practice-section h3 { color: #1976d2; margin-bottom: 20px; }
+        .word-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .word-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .word-card:hover { border-color: #667eea; transform: translateY(-3px); }
+        .word-card .w { font-size: 1.3em; font-weight: bold; color: #333; }
+        .word-card .p { font-size: 0.9em; color: #667eea; }
+        .tips-section {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .tips-section h4 { color: #e65100; margin-bottom: 15px; }
+        .tip { padding: 8px 0; border-bottom: 1px solid #ffe0b2; }
+        .tip:last-child { border-bottom: none; }
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            background: #e0e0e0;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .controls { text-align: center; margin-top: 20px; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .word { font-size: 2em; }
+            .phonetic-text { font-size: 1.3em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔊 发音训练工具</h1>
+            <p>学习国际音标，掌握地道发音</p>
+            <div class="score-board">
+                <div class="score-item">📚 已学: <span id="learned">0</span></div>
+                <div class="score-item">🎯 练习: <span id="practiced">0</span></div>
+                <div class="score-item">⭐ 得分: <span id="score">0</span></div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="category-tabs">
+                <button class="tab-btn active" onclick="showCategory('vowels')">元音</button>
+                <button class="tab-btn" onclick="showCategory('consonants')">辅音</button>
+                <button class="tab-btn" onclick="showCategory('diphthongs')">双元音</button>
+            </div>
+            
+            <div class="phonetic-chart" id="phoneticChart"></div>
+            
+            <div class="word-display">
+                <div class="word" id="currentWord">hello</div>
+                <div class="phonetic-text" id="currentPhonetic">/həˈləʊ/</div>
+                <div class="meaning" id="currentMeaning">你好</div>
+                <button class="sound-btn" id="playBtn" onclick="playSound()">🔊 播放发音</button>
+            </div>
+            
+            <div class="practice-section">
+                <h3>🎯 练习单词</h3>
+                <div class="word-list" id="wordList"></div>
+            </div>
+            
+            <div class="tips-section">
+                <h4>💡 发音技巧</h4>
+                <div id="tips"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phonetics = {
+            vowels: [
+                { symbol: '/i:/', example: 'see', phonetic: '/si:/', meaning: '看' },
+                { symbol: '/ɪ/', example: 'sit', phonetic: '/sɪt/', meaning: '坐' },
+                { symbol: '/e/', example: 'bed', phonetic: '/bed/', meaning: '床' },
+                { symbol: '/æ/', example: 'cat', phonetic: '/kæt/', meaning: '猫' },
+                { symbol: '/ɑ:/', example: 'car', phonetic: '/kɑ:/', meaning: '汽车' },
+                { symbol: '/ɒ/', example: 'hot', phonetic: '/hɒt/', meaning: '热' },
+                { symbol: '/ɔ:/', example: 'door', phonetic: '/dɔ:/', meaning: '门' },
+                { symbol: '/ʊ/', example: 'put', phonetic: '/pʊt/', meaning: '放' },
+                { symbol: '/u:/', example: 'too', phonetic: '/tu:/', meaning: '也' },
+                { symbol: '/ʌ/', example: 'cup', phonetic: '/kʌp/', meaning: '杯子' },
+                { symbol: '/ɜ:/', example: 'bird', phonetic: '/bɜ:d/', meaning: '鸟' },
+                { symbol: '/ə/', example: 'about', phonetic: '/əˈbaʊt/', meaning: '关于' }
+            ],
+            consonants: [
+                { symbol: '/p/', example: 'pen', phonetic: '/pen/', meaning: '钢笔' },
+                { symbol: '/b/', example: 'bed', phonetic: '/bed/', meaning: '床' },
+                { symbol: '/t/', example: 'tea', phonetic: '/ti:/', meaning: '茶' },
+                { symbol: '/d/', example: 'dog', phonetic: '/dɒg/', meaning: '狗' },
+                { symbol: '/k/', example: 'cat', phonetic: '/kæt/', meaning: '猫' },
+                { symbol: '/g/', example: 'go', phonetic: '/gəʊ/', meaning: '去' },
+                { symbol: '/f/', example: 'five', phonetic: '/faɪv/', meaning: '五' },
+                { symbol: '/v/', example: 'very', phonetic: '/ˈveri/', meaning: '非常' },
+                { symbol: '/θ/', example: 'think', phonetic: '/θɪŋk/', meaning: '想' },
+                { symbol: '/ð/', example: 'this', phonetic: '/ðɪs/', meaning: '这个' },
+                { symbol: '/s/', example: 'see', phonetic: '/si:/', meaning: '看' },
+                { symbol: '/z/', example: 'zoo', phonetic: '/zu:/', meaning: '动物园' }
+            ],
+            diphthongs: [
+                { symbol: '/eɪ/', example: 'day', phonetic: '/deɪ/', meaning: '天' },
+                { symbol: '/aɪ/', example: 'my', phonetic: '/maɪ/', meaning: '我的' },
+                { symbol: '/ɔɪ/', example: 'boy', phonetic: '/bɔɪ/', meaning: '男孩' },
+                { symbol: '/aʊ/', example: 'now', phonetic: '/naʊ/', meaning: '现在' },
+                { symbol: '/əʊ/', example: 'go', phonetic: '/gəʊ/', meaning: '去' },
+                { symbol: '/ɪə/', example: 'hear', phonetic: '/hɪə/', meaning: '听' },
+                { symbol: '/eə/', example: 'air', phonetic: '/eə/', meaning: '空气' },
+                { symbol: '/ʊə/', example: 'tour', phonetic: '/tʊə/', meaning: '旅游' }
+            ]
+        };
+        
+        const tips = {
+            vowels: [
+                '元音发音时气流不受阻碍',
+                '元音分为长元音和短元音',
+                '长元音发音时要拉长',
+                '短元音发音短促有力'
+            ],
+            consonants: [
+                '辅音发音时气流受到阻碍',
+                '清辅音声带不振动',
+                '浊辅音声带要振动',
+                '注意th音的发音方法'
+            ],
+            diphthongs: [
+                '双元音由两个元音组成',
+                '发音时从一个元音滑向另一个',
+                '双元音发音要连贯流畅',
+                '注意口型的变化'
+            ]
+        };
+        
+        let currentCategory = 'vowels';
+        let learned = 0;
+        let practiced = 0;
+        let score = 0;
+        
+        function showCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === {vowels: '元音', consonants: '辅音', diphthongs: '双元音'}[category]) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            const chart = document.getElementById('phoneticChart');
+            chart.innerHTML = phonetics[category].map((p, i) => `
+                <button class="phonetic-btn ${category === 'vowels' ? 'vowel' : ''}" 
+                        onclick="selectPhonetic(${i})">${p.symbol}</button>
+            `).join('');
+            
+            showTips(category);
+            showWordList();
+            selectPhonetic(0);
+        }
+        
+        function selectPhonetic(index) {
+            const p = phonetics[currentCategory][index];
+            document.getElementById('currentWord').textContent = p.example;
+            document.getElementById('currentPhonetic').textContent = p.phonetic;
+            document.getElementById('currentMeaning').textContent = p.meaning;
+            
+            document.querySelectorAll('.phonetic-btn').forEach((btn, i) => {
+                btn.classList.remove('active');
+                if (i === index) btn.classList.add('active');
+            });
+            
+            learned++;
+            updateStats();
+        }
+        
+        function showTips(category) {
+            document.getElementById('tips').innerHTML = tips[category].map(tip => 
+                `<div class="tip">• ${tip}</div>`
+            ).join('');
+        }
+        
+        function showWordList() {
+            const list = document.getElementById('wordList');
+            const words = phonetics[currentCategory].slice(0, 8);
+            list.innerHTML = words.map((w, i) => `
+                <div class="word-card" onclick="selectPhonetic(${i})">
+                    <div class="w">${w.example}</div>
+                    <div class="p">${w.phonetic}</div>
+                </div>
+            `).join('');
+        }
+        
+        function playSound() {
+            const btn = document.getElementById('playBtn');
+            btn.classList.add('playing');
+            btn.textContent = '🔊 播放中...';
+            
+            // 模拟播放
+            if ('speechSynthesis' in window) {
+                const word = document.getElementById('currentWord').textContent;
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+            
+            setTimeout(() => {
+                btn.classList.remove('playing');
+                btn.textContent = '🔊 播放发音';
+                practiced++;
+                score += 5;
+                updateStats();
+            }, 1000);
+        }
+        
+        function updateStats() {
+            document.getElementById('learned').textContent = learned;
+            document.getElementById('practiced').textContent = practiced;
+            document.getElementById('score').textContent = score;
+        }
+        
+        // 初始化
+        showCategory('vowels');
+    </script>
+</body>
+</html>

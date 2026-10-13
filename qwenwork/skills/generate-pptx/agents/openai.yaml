@@ -1,0 +1,4 @@
+interface:
+  display_name: "PPT Generator"
+  short_description: "多轮确认内容并生成 SVG 幻灯片与 PPTX 文件"
+  default_prompt: "Use $generate-pptx to clarify requirements, confirm a slide plan, generate SVG slides, and build a PPTX."

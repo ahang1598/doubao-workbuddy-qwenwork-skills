@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{姓名} - 简历</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --bg-section: #f8fafc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    line-height: 1.6;
+    background: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .resume {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 48px 56px;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header { margin-bottom: 28px; border-bottom: 2px solid var(--primary); padding-bottom: 20px; }
+  .header h1 { font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+  .header .contact { font-size: 13px; color: var(--text-secondary); display: flex; flex-wrap: wrap; gap: 12px; }
+  .header .contact span::before { margin-right: 4px; }
+
+  /* Intent */
+  .intent { font-size: 14px; color: var(--primary); font-weight: 500; margin-top: 8px; }
+
+  /* Section */
+  .section { margin-bottom: 22px; }
+  .section-title {
+    font-size: 15px; font-weight: 700; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 1.5px solid var(--primary-light);
+    padding-bottom: 4px; margin-bottom: 12px;
+  }
+
+  /* Entry */
+  .entry { margin-bottom: 16px; }
+  .entry-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .entry-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .entry-meta { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+  .entry-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+  .entry ul { padding-left: 18px; font-size: 13.5px; line-height: 1.7; }
+  .entry li { margin-bottom: 2px; }
+
+  /* Skills */
+  .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .skill-group { margin-bottom: 4px; }
+  .skill-group .label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .skill-group .value { font-size: 13px; color: var(--text-secondary); }
+
+  /* Tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    font-size: 12px; padding: 2px 10px; border-radius: 10px;
+    background: var(--primary-light); color: var(--primary); font-weight: 500;
+  }
+
+  /* Print */
+  @media print {
+    body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .resume { padding: 0; max-width: none; box-shadow: none; }
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .resume { padding: 24px 20px; }
+    .header h1 { font-size: 22px; }
+    .skills-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="resume">
+
+  <!-- 头部：姓名 + 联系方式 -->
+  <div class="header">
+    <h1>{姓名}</h1>
+    <div class="contact">
+      <span>{手机号码}</span>
+      <span>{邮箱地址}</span>
+      <span>{LinkedIn/GitHub 链接}</span>
+    </div>
+    <div class="intent">求职意向：{目标岗位}</div>
+  </div>
+
+  <!-- 教育背景 -->
+  <div class="section">
+    <div class="section-title">教育背景</div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">{学校名称}</span>
+        <span class="entry-meta">{入学时间} - {毕业时间}</span>
+      </div>
+      <div class="entry-sub">{学位} - {专业名称} | GPA: {GPA}</div>
+      <ul>
+        <li>相关课程：{列出3-5门核心课程}</li>
+        <li>荣誉奖项：{奖学金/竞赛获奖等}</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 工作经历 -->
+  <div class="section">
+    <div class="section-title">工作经历</div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">{公司名称} · {职位名称}</span>
+        <span class="entry-meta">{开始时间} - {结束时间}</span>
+      </div>
+      <ul>
+        <li>设计并实现了用户认证系统，支持 OAuth 2.0 协议，登录失败率降低 40%</li>
+        <li>优化数据库查询性能，通过索引优化和查询重构，API 响应时间从 500ms 降至 150ms</li>
+        <li>领导 5 人团队完成核心模块重构，采用微服务架构，系统可扩展性提升 3 倍</li>
+      </ul>
+    </div>
+    <!-- 更多工作经历... -->
+  </div>
+
+  <!-- 项目经验 -->
+  <div class="section">
+    <div class="section-title">项目经验</div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">{项目名称} · {角色}</span>
+        <span class="entry-meta">{时间}</span>
+      </div>
+      <div class="entry-sub">{项目简介：1-2句话说明项目是什么、解决什么问题}</div>
+      <div class="tags">
+        <span class="tag">React</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">Node.js</span>
+      </div>
+      <ul>
+        <li>个人贡献：具体负责的内容和实现的功能</li>
+        <li>取得的成果和影响（量化）</li>
+      </ul>
+    </div>
+    <!-- 更多项目经验... -->
+  </div>
+
+  <!-- 技能清单 -->
+  <div class="section">
+    <div class="section-title">技能</div>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <div class="label">编程语言</div>
+        <div class="value">精通：Python、JavaScript | 熟悉：Go、Java</div>
+      </div>
+      <div class="skill-group">
+        <div class="label">框架技术</div>
+        <div class="value">React / Django / Flask</div>
+      </div>
+      <div class="skill-group">
+        <div class="label">数据库</div>
+        <div class="value">MySQL / PostgreSQL / Redis</div>
+      </div>
+      <div class="skill-group">
+        <div class="label">工具环境</div>
+        <div class="value">Git / Docker / Linux / CI-CD</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "extensionName": "script-checkprimaryduplicate",
+  "extensionType": "side_view",
+  "classifications": [
+    "script"
+  ],
+  "schemaVersion": "v1",
+  "icon": {
+    "light": "https://img.alicdn.com/imgextra/i1/O1CN01mShWFK21gvUBZei7V_!!6000000007015-55-tps-32-32.svg"
+  },
+  "i18nDesc": {
+    "en-US": "Check whether a record's primary key value is duplicated",
+    "ja-jp": "レコードの主キー値が重複しているか確認する",
+    "zh-CN": "检查某条记录的主键值是否重复"
+  },
+  "i18nName": {
+    "en-US": "Check record duplicate",
+    "ja-jp": "主キー重複チェック",
+    "zh-CN": "检查记录重复"
+  },
+  "i18nVideo": {
+    "en-US": "",
+    "ja-jp": "",
+    "zh-CN": ""
+  },
+  "i18nImage": {
+    "en-US": "",
+    "ja-jp": "",
+    "zh-CN": ""
+  },
+  "i18nHelpLink": {},
+  "i18nIntroduction": {
+    "en-US": "Select a record and check whether its primary key value appears in any other record in the same table. The result is written to the '重复标记' field.",
+    "ja-jp": "対象レコードを選択し、同じテーブル内の他のレコードと主キー値が重複しているかを確認します。結果は「重复标记」フィールドに書き込まれます。",
+    "zh-CN": "选择一条记录，检查其主键值是否在同表其他记录中重复。结果写入“重复标记”字段。"
+  },
+  "i18nDeveloper": {
+    "en-US": "钉钉",
+    "ja-jp": "钉钉",
+    "zh-CN": "钉钉"
+  },
+  "manifest": {
+    "base": {
+      "scriptCode": "async function main() {\n  try {\n    const formResult = await Input.formAsync('检查主键列是否重复', [\n      {\n        type: 'sheet',\n        key: 'sheet',\n        option: { label: '数据表', description: '请选择要操作的数据表' },\n        required: true\n      },\n      {\n        type: 'record',\n        key: 'record',\n        option: { label: '要检查的记录', description: '请选择要检查的记录', referenceSheet: 'sheet' },\n        required: true\n      }\n    ]);\n\n    const sheet = formResult.sheet;\n    const record = formResult.record;\n\n    const sheetFields = sheet.getFields();\n    const primaryField = sheetFields.find(field => field.isPrimary());\n    if (!primaryField) {\n      Output.error('未找到主键字段，请确认有主键列');\n      return;\n    }\n    const primaryValue = record.getCellValue(primaryField.getId());\n\n    const resultFieldName = '重复标记';\n    let resultField = sheet.getField(resultFieldName);\n    if (!resultField) {\n      resultField = sheet.insertField(resultFieldName, 'text');\n    }\n    const resultFieldId = resultField.getId();\n\n    function compareCellValue(a, b) {\n      if (a == null && b == null) return true;\n      if (a == null || b == null) return false;\n      if (typeof a === 'string' || typeof a === 'number' || typeof a === 'boolean') {\n        return a === b;\n      }\n      if (typeof a === 'object' && typeof b === 'object') {\n        if ('id' in a && 'id' in b) return a.id === b.id;\n        if ('value' in a && 'value' in b) return a.value === b.value;\n        if ('url' in a && 'url' in b) return a.url === b.url;\n        if (Array.isArray(a) && Array.isArray(b)) {\n          if (a.length !== b.length) return false;\n          return a.every((item, idx) => compareCellValue(item, b[idx]));\n        }\n        return JSON.stringify(a) === JSON.stringify(b);\n      }\n      return false;\n    }\n\n    let isDuplicate = false;\n    let hasMore = true;\n    let cursor = '';\n    while (hasMore && !isDuplicate) {\n      const result = await sheet.getRecordsAsync({ pageSize: 500, cursor });\n      for (const r of result.records) {\n        if (r.getId() === record.getId()) continue;\n        if (compareCellValue(r.getCellValue(primaryField.getId()), primaryValue)) {\n          isDuplicate = true;\n          break;\n        }\n      }\n      hasMore = result.hasMore;\n      cursor = result.cursor;\n    }\n\n    await sheet.updateRecordsAsync([{\n      id: record.getId(),\n      fields: { [resultFieldId]: isDuplicate ? '重复' : '不重复' }\n    }]);\n\n    Output.log(`检查完成，主键值${isDuplicate ? '有重复' : '不重复'}`);\n  } catch (error) {\n    Output.error(`执行过程中发生错误: ${error instanceof Error ? error.message : error}`);\n  }\n}\n\nawait main();",
+      "buttonTrigger": true
+    }
+  },
+  "privacyAgreement": "{}",
+  "agreement": "{}"
+}

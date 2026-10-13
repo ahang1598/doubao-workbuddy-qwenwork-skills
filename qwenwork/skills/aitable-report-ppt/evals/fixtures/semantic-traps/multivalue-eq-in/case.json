@@ -1,0 +1,61 @@
+{
+  "description": "多值字段：eq 任一元素相等即真；分组按元素展开；空数组为空值",
+  "checks": [
+    {
+      "id": "eq_b",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "eq",
+        "field": "标签",
+        "value": "B"
+      }
+    },
+    {
+      "id": "in_ac",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "in",
+        "field": "标签",
+        "value": [
+          "A",
+          "C"
+        ]
+      }
+    },
+    {
+      "id": "eq_null",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "eq",
+        "field": "标签",
+        "value": null
+      }
+    },
+    {
+      "id": "fanout",
+      "kind": "group",
+      "config": {
+        "group_by": "标签",
+        "function": "count",
+        "null_policy": "exclude",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    },
+    {
+      "id": "as_category",
+      "kind": "group",
+      "config": {
+        "group_by": "标签",
+        "function": "count",
+        "null_policy": "as_category",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    }
+  ]
+}

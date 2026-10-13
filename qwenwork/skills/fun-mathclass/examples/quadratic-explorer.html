@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次函数探索器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .equation-display {
+            font-size: 2em;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .canvas-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #graphCanvas {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            background: #fafafa;
+            max-width: 100%;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .slider-value {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .info-card {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+        }
+        
+        .info-card h4 {
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        
+        .info-card p {
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .features {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .features h3 {
+            color: #e65100;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .equation-display {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 二次函数探索器</h1>
+            <p>调整系数，观察抛物线的变化</p>
+            <div class="equation-display" id="equation">y = 1x² + 0x + 0</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="graphCanvas" width="800" height="500"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">a (开口方向和大小)</span>
+                        <span class="slider-value" id="aValue">1</span>
+                    </div>
+                    <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">b (左右平移和倾斜)</span>
+                        <span class="slider-value" id="bValue">0</span>
+                    </div>
+                    <input type="range" id="b" min="-10" max="10" step="0.5" value="0">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">c (上下平移)</span>
+                        <span class="slider-value" id="cValue">0</span>
+                    </div>
+                    <input type="range" id="c" min="-10" max="10" step="0.5" value="0">
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>顶点坐标</h4>
+                    <p id="vertex">(0, 0)</p>
+                </div>
+                <div class="info-card">
+                    <h4>对称轴</h4>
+                    <p id="axis">x = 0</p>
+                </div>
+                <div class="info-card">
+                    <h4>根 (x截距)</h4>
+                    <p id="roots">x = 0</p>
+                </div>
+                <div class="info-card">
+                    <h4>判别式 Δ</h4>
+                    <p id="discriminant">0</p>
+                </div>
+            </div>
+            
+            <div class="features">
+                <h3>📚 学习要点</h3>
+                <ul class="feature-list">
+                    <li><strong>a > 0</strong>：抛物线开口向上，有最小值</li>
+                    <li><strong>a < 0</strong>：抛物线开口向下，有最大值</li>
+                    <li><strong>|a| 越大</strong>：抛物线越窄，开口越小</li>
+                    <li><strong>|a| 越小</strong>：抛物线越宽，开口越大</li>
+                    <li><strong>b 影响</strong>：对称轴位置 x = -b/(2a)</li>
+                    <li><strong>c 影响</strong>：y轴截距，即 x=0 时的函数值</li>
+                    <li><strong>Δ > 0</strong>：两个不同的实根</li>
+                    <li><strong>Δ = 0</strong>：一个实根（重根）</li>
+                    <li><strong>Δ < 0</strong>：无实根（有复根）</li>
+                </ul>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="resetValues()">重置</button>
+                <button class="btn" onclick="randomValues()">随机</button>
+                <button class="btn" onclick="showExamples()">示例</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取滑块元素
+        const aSlider = document.getElementById('a');
+        const bSlider = document.getElementById('b');
+        const cSlider = document.getElementById('c');
+        
+        // 坐标系设置
+        const scale = 40; // 像素/单位
+        const originX = canvas.width / 2;
+        const originY = canvas.height / 2;
+        
+        function drawGraph() {
+            const a = parseFloat(aSlider.value);
+            const b = parseFloat(bSlider.value);
+            const c = parseFloat(cSlider.value);
+            
+            // 清空画布
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            drawGrid();
+            
+            // 绘制坐标轴
+            drawAxes();
+            
+            // 绘制抛物线
+            drawParabola(a, b, c);
+            
+            // 绘制关键点
+            drawKeyPoints(a, b, c);
+            
+            // 更新显示
+            updateDisplay(a, b, c);
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = originX % scale; x < canvas.width; x += scale) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = originY % scale; y < canvas.height; y += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawAxes() {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            // X轴
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(canvas.width, originY);
+            ctx.stroke();
+            
+            // Y轴
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, canvas.height);
+            ctx.stroke();
+            
+            // 箭头
+            ctx.fillStyle = '#333';
+            // X轴箭头
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 10, originY - 5);
+            ctx.lineTo(canvas.width, originY);
+            ctx.lineTo(canvas.width - 10, originY + 5);
+            ctx.fill();
+            
+            // Y轴箭头
+            ctx.beginPath();
+            ctx.moveTo(originX - 5, 10);
+            ctx.lineTo(originX, 0);
+            ctx.lineTo(originX + 5, 10);
+            ctx.fill();
+            
+            // 原点标签
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText('O', originX - 15, originY + 20);
+            ctx.fillText('x', canvas.width - 20, originY + 25);
+            ctx.fillText('y', originX + 10, 20);
+            
+            // 刻度
+            ctx.font = '12px Arial';
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                // X轴刻度
+                const x = originX + i * scale;
+                ctx.beginPath();
+                ctx.moveTo(x, originY - 5);
+                ctx.lineTo(x, originY + 5);
+                ctx.stroke();
+                ctx.fillText(i.toString(), x - 5, originY + 20);
+                
+                // Y轴刻度
+                const y = originY - i * scale;
+                ctx.beginPath();
+                ctx.moveTo(originX - 5, y);
+                ctx.lineTo(originX + 5, y);
+                ctx.stroke();
+                ctx.fillText(i.toString(), originX + 10, y + 5);
+            }
+        }
+        
+        function drawParabola(a, b, c) {
+            if (a === 0) return;
+            
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            let first = true;
+            for (let px = 0; px <= canvas.width; px += 2) {
+                const x = (px - originX) / scale;
+                const y = a * x * x + b * x + c;
+                const py = originY - y * scale;
+                
+                if (py >= -100 && py <= canvas.height + 100) {
+                    if (first) {
+                        ctx.moveTo(px, py);
+                        first = false;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+            }
+            ctx.stroke();
+        }
+        
+        function drawKeyPoints(a, b, c) {
+            // 顶点
+            const vx = -b / (2 * a);
+            const vy = a * vx * vx + b * vx + c;
+            drawPoint(vx, vy, '#f44336', '顶点');
+            
+            // y轴截距
+            drawPoint(0, c, '#4caf50', 'y截距');
+            
+            // 根
+            const discriminant = b * b - 4 * a * c;
+            if (discriminant >= 0) {
+                const sqrtDisc = Math.sqrt(discriminant);
+                const x1 = (-b + sqrtDisc) / (2 * a);
+                const x2 = (-b - sqrtDisc) / (2 * a);
+                drawPoint(x1, 0, '#ff9800', '根1');
+                if (Math.abs(x1 - x2) > 0.01) {
+                    drawPoint(x2, 0, '#ff9800', '根2');
+                }
+            }
+        }
+        
+        function drawPoint(x, y, color, label) {
+            const px = originX + x * scale;
+            const py = originY - y * scale;
+            
+            if (px < 0 || px > canvas.width || py < 0 || py > canvas.height) return;
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 标签
+            ctx.fillStyle = color;
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText(label, px + 10, py - 10);
+        }
+        
+        function updateDisplay(a, b, c) {
+            // 更新方程显示
+            const aStr = a === 1 ? '' : a === -1 ? '-' : a;
+            const bSign = b >= 0 ? '+' : '-';
+            const bStr = b === 0 ? '' : Math.abs(b) === 1 ? 'x' : Math.abs(b) + 'x';
+            const cSign = c >= 0 ? '+' : '-';
+            const cStr = c === 0 ? '' : Math.abs(c);
+            
+            let equation = 'y = ';
+            if (a !== 0) equation += aStr + 'x² ';
+            if (b !== 0) equation += bSign + ' ' + bStr + ' ';
+            if (c !== 0 || (a === 0 && b === 0)) equation += cSign + ' ' + cStr;
+            
+            document.getElementById('equation').textContent = equation;
+            
+            // 更新滑块值
+            document.getElementById('aValue').textContent = a;
+            document.getElementById('bValue').textContent = b;
+            document.getElementById('cValue').textContent = c;
+            
+            // 计算并显示顶点
+            const vx = -b / (2 * a);
+            const vy = a * vx * vx + b * vx + c;
+            document.getElementById('vertex').textContent = 
+                a === 0 ? 'N/A' : `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+            
+            // 对称轴
+            document.getElementById('axis').textContent = 
+                a === 0 ? 'N/A' : `x = ${vx.toFixed(2)}`;
+            
+            // 判别式和根
+            const discriminant = b * b - 4 * a * c;
+            document.getElementById('discriminant').textContent = discriminant.toFixed(2);
+            
+            if (discriminant > 0) {
+                const sqrtDisc = Math.sqrt(discriminant);
+                const x1 = (-b + sqrtDisc) / (2 * a);
+                const x2 = (-b - sqrtDisc) / (2 * a);
+                document.getElementById('roots').textContent = 
+                    `x₁ = ${x1.toFixed(2)}, x₂ = ${x2.toFixed(2)}`;
+            } else if (discriminant === 0) {
+                const x = -b / (2 * a);
+                document.getElementById('roots').textContent = 
+                    `x = ${x.toFixed(2)} (重根)`;
+            } else {
+                document.getElementById('roots').textContent = '无实根 (Δ < 0)';
+            }
+        }
+        
+        function resetValues() {
+            aSlider.value = 1;
+            bSlider.value = 0;
+            cSlider.value = 0;
+            drawGraph();
+        }
+        
+        function randomValues() {
+            aSlider.value = (Math.random() * 4 - 2).toFixed(1);
+            if (Math.abs(parseFloat(aSlider.value)) < 0.5) aSlider.value = 1;
+            bSlider.value = (Math.random() * 10 - 5).toFixed(1);
+            cSlider.value = (Math.random() * 10 - 5).toFixed(1);
+            drawGraph();
+        }
+        
+        function showExamples() {
+            const examples = [
+                { a: 1, b: 0, c: 0, desc: '标准抛物线 y = x²' },
+                { a: -1, b: 0, c: 0, desc: '开口向下 y = -x²' },
+                { a: 1, b: -2, c: 1, desc: '顶点在 (1, 0)' },
+                { a: 0.5, b: 0, c: -2, desc: '宽开口，下移2单位' },
+                { a: 2, b: 4, c: 2, desc: '窄开口，左移1单位' }
+            ];
+            
+            const ex = examples[Math.floor(Math.random() * examples.length)];
+            aSlider.value = ex.a;
+            bSlider.value = ex.b;
+            cSlider.value = ex.c;
+            drawGraph();
+            
+            alert(`示例: ${ex.desc}\n方程: y = ${ex.a}x² + ${ex.b}x + ${ex.c}`);
+        }
+        
+        // 事件监听
+        aSlider.addEventListener('input', drawGraph);
+        bSlider.addEventListener('input', drawGraph);
+        cSlider.addEventListener('input', drawGraph);
+        
+        // 初始化
+        drawGraph();
+    </script>
+</body>
+</html>

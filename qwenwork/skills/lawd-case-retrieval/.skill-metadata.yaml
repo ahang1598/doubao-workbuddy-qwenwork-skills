@@ -1,0 +1,37 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "类案检索"
+      en: "Similar case search"
+    description:
+      zh: "按案情检索类似裁判案例"
+      en: "Search similar decided cases by facts"
+    prompt:
+      zh: |-
+        帮我检索与「{{案情摘要}}」类似的裁判案例，归纳裁判要旨与裁判口径。
+      en: |-
+        Search decided cases similar to {{case facts}} and summarize the holdings.
+  - id: ex-2
+    title:
+      zh: "按案号取文书"
+      en: "Fetch by case number"
+    description:
+      zh: "按案号获取裁判文书全文"
+      en: "Fetch a judgment by case number"
+    prompt:
+      zh: |-
+        请获取案号「{{案号}}」的裁判文书全文并提炼裁判要点。
+      en: |-
+        Fetch the full judgment for case number {{case number}} and extract the key holdings.
+  - id: ex-3
+    title:
+      zh: "类案检索报告"
+      en: "Case search report"
+    description:
+      zh: "生成可向法院提交的正式检索报告（Word）"
+      en: "Produce a formal search report (.docx) for court submission"
+    prompt:
+      zh: |-
+        请围绕「{{案情或法律问题}}」检索类案，并生成一份可向法院提交的正式类案检索报告（Word 版）。
+      en: |-
+        Search similar cases on {{case facts or legal issue}} and produce a formal similar-case search report (.docx) ready for court submission.

@@ -1,0 +1,80 @@
+{
+  "description": "空子式：and[]恒真、or[]恒假；not 取反；兼容别名 all/is_null/values",
+  "checks": [
+    {
+      "id": "and_empty",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "and",
+        "children": []
+      }
+    },
+    {
+      "id": "or_empty",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "or",
+        "children": []
+      }
+    },
+    {
+      "id": "not_eq",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "not",
+        "children": [
+          {
+            "op": "eq",
+            "field": "类型",
+            "value": "甲"
+          }
+        ]
+      }
+    },
+    {
+      "id": "or_with_true",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "or",
+        "children": [
+          {
+            "op": "eq",
+            "field": "类型",
+            "value": "乙"
+          },
+          {
+            "op": "and",
+            "children": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy_all",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "all"
+      }
+    },
+    {
+      "id": "legacy_is_null",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "is_null",
+        "field": "类型"
+      }
+    },
+    {
+      "id": "legacy_in_values",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "in",
+        "field": "类型",
+        "values": [
+          "乙",
+          "丙"
+        ]
+      }
+    }
+  ]
+}

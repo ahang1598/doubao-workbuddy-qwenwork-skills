@@ -1,0 +1,66 @@
+/* Three field-tested management-report themes.
+   These are recommended starting points, not the complete theme library. */
+
+/* === A · BLUE COLUMN / 明亮数字化 === */
+[data-theme="blue-column"] {
+  --report-bg: #eef3f8;
+  --report-surface: #ffffff;
+  --report-ink: #0b1828;
+  --report-heading: #082e63;
+  --report-muted: #617081;
+  --report-primary: #1768d7;
+  --report-accent: #47b5ff;
+  --report-negative: #c74840;
+  --report-line: #d9e4ef;
+  --report-card: #f6f9fc;
+  --report-radius: 8px;
+  --report-shadow: 0 22px 60px rgba(8, 46, 99, 0.08);
+  --chart-1: #082e63;
+  --chart-2: #1768d7;
+  --chart-3: #47b5ff;
+  --chart-4: #c74840;
+}
+
+/* === B · CONSULTING BLUE / 正式咨询报告 === */
+[data-theme="consulting-blue"] {
+  --report-bg: #f3f0df;
+  --report-surface: #fdfae7;
+  --report-ink: #111111;
+  --report-heading: #111111;
+  --report-muted: #696969;
+  --report-primary: #1e2bfa;
+  --report-accent: #6872ff;
+  --report-negative: #dc2626;
+  --report-line: rgba(30, 43, 250, 0.22);
+  --report-card: rgba(30, 43, 250, 0.04);
+  --report-radius: 14px;
+  --report-shadow: none;
+  --chart-1: #1e2bfa;
+  --chart-2: #6872ff;
+  --chart-3: #9ea5ff;
+  --chart-4: #c9ccff;
+}
+
+/* === C · RESEARCH GRID / 研究出版网格 === */
+[data-theme="research-grid"] {
+  --report-bg: #f0ebde;
+  --report-surface: rgba(240, 235, 222, 0.94);
+  --report-ink: #1f2be0;
+  --report-heading: #1f2be0;
+  --report-muted: rgba(17, 24, 125, 0.65);
+  --report-primary: #1f2be0;
+  --report-accent: #1f2be0;
+  --report-negative: #1f2be0;
+  --report-line: rgba(31, 43, 224, 0.28);
+  --report-card: rgba(240, 235, 222, 0.72);
+  --report-radius: 0;
+  --report-shadow: none;
+  --chart-1: #1f2be0;
+  --chart-2: rgba(31, 43, 224, 0.72);
+  --chart-3: rgba(31, 43, 224, 0.46);
+  --chart-4: rgba(31, 43, 224, 0.24);
+  background-image:
+    linear-gradient(rgba(31, 43, 224, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 43, 224, 0.055) 1px, transparent 1px);
+  background-size: 42px 42px;
+}

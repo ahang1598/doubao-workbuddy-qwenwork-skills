@@ -1,0 +1,41 @@
+{
+  "description": "contains 遇空字段返回 false；空搜索值返回 false；eq/ne null 的空值语义",
+  "checks": [
+    {
+      "id": "hit",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "contains",
+        "field": "备注",
+        "value": "关键词"
+      }
+    },
+    {
+      "id": "empty_needle",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "contains",
+        "field": "备注",
+        "value": ""
+      }
+    },
+    {
+      "id": "eq_null",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "eq",
+        "field": "备注",
+        "value": null
+      }
+    },
+    {
+      "id": "ne_null",
+      "kind": "filter",
+      "filter_ast": {
+        "op": "ne",
+        "field": "备注",
+        "value": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+examples:
+  - id: contract-pre-ai-redaction
+    title:
+      zh: "合同交给 AI 审查前先脱敏"
+      en: "Redact a contract before AI review"
+    description:
+      zh: "要把合同/文书交给 AI 审查、翻译或总结，先隐藏公司、人名、账号等真实身份"
+      en: "Hide company, personal names, accounts and IDs before handing a document to AI"
+    prompt:
+      zh: |-
+        我有一份合同要交给 AI 做审查，但不想把公司名、联系人、银行账号这些真实信息暴露出去。帮我先用文件脱敏工具处理这份合同，我操作时请指导我。
+      en: |-
+        I want to send a contract to AI for review without exposing company names, contacts, or bank accounts. Help me redact it with the local redaction tool first, and guide me through the steps.
+  - id: document-for-external-release
+    title:
+      zh: "对外发布文书脱敏"
+      en: "Redact a document for external release"
+    description:
+      zh: "判决书/函件等要对外发送，证件号、账号、联系方式、地址连同金额日期一并脱敏"
+      en: "Mask IDs, accounts, contacts and addresses (plus amounts/dates) in a document going out publicly"
+    prompt:
+      zh: |-
+        我要把一份法律文书发给外部机构，需要把当事人姓名、身份证号、手机号、住址全部脱敏，金额和日期也一起处理。打开脱敏工具并告诉我要怎么操作。
+      en: |-
+        I need to send a legal document to an outside party with all party names, ID numbers, phone numbers and addresses redacted — amounts and dates too. Open the redaction tool and show me how to proceed.
+  - id: excel-client-list-redaction
+    title:
+      zh: "Excel 客户名单脱敏"
+      en: "Redact an Excel client list"
+    description:
+      zh: "含客户姓名/电话/证件号的表格文件，按列头自动识别并替换为代号"
+      en: "Spreadsheet with client names/phones/ID numbers, auto-detected by column headers"
+    prompt:
+      zh: |-
+        我有一张 Excel 客户信息表要发给同事，里面的客户姓名、电话、证件号需要替换成"某人甲/某人乙"这样的代号。帮我用脱敏工具处理这个表格。
+      en: |-
+        I need to share an Excel client list with colleagues, with client names, phone numbers and ID numbers replaced by aliases like "Client A / Client B". Help me redact this spreadsheet with the tool.
+  - id: image-screenshot-redaction
+    title:
+      zh: "截图/扫描件涂抹脱敏"
+      en: "Redact a screenshot or scan"
+    description:
+      zh: "聊天截图、扫描件等无文字层图片，用框选补漏/涂抹方式遮盖敏感信息"
+      en: "Cover sensitive info in screenshots and scans (no text layer) via region selection and blackout"
+    prompt:
+      zh: |-
+        我有一张包含当事人信息的聊天截图要对外使用，没法选文字，帮我用脱敏工具的框选和涂抹把它遮盖掉。
+      en: |-
+        I have a chat screenshot containing a party's personal info that I need to share externally — the text can't be selected. Help me blackout the sensitive areas with the tool's region-select and paint-over features.

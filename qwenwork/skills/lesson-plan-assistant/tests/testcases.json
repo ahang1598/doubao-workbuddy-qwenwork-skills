@@ -1,0 +1,176 @@
+{
+  "testcases": [
+    {
+      "id": "TC001",
+      "category": "happy_path",
+      "input": "请帮我生成《背影》七年级语文的教案",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "标准完整教案请求"
+    },
+    {
+      "id": "TC002",
+      "category": "happy_path",
+      "input": "生成一个一元二次方程的数学教案，九年级",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "数学教案生成请求"
+    },
+    {
+      "id": "TC003",
+      "category": "happy_path",
+      "input": "给我一份小学三年级英语的教案模板",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "template",
+      "description": "教案模板请求"
+    },
+    {
+      "id": "TC004",
+      "category": "happy_path",
+      "input": "设计一个小组合作学习的评价量表",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "evaluation",
+      "description": "评价量表生成请求"
+    },
+    {
+      "id": "TC005",
+      "category": "colloquial",
+      "input": "帮我备一节课，课题是《春》，语文七年级上册",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "口语化备课请求"
+    },
+    {
+      "id": "TC006",
+      "category": "colloquial",
+      "input": "我要写教学设计，关于勾股定理的",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "口语化教学设计请求"
+    },
+    {
+      "id": "TC007",
+      "category": "colloquial",
+      "input": "来个板书设计，主题是光合作用",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "board-design",
+      "description": "口语化板书设计请求"
+    },
+    {
+      "id": "TC008",
+      "category": "negative",
+      "input": "帮我批改这篇作文",
+      "expected_skill": null,
+      "expected_function": null,
+      "description": "非教案场景-作文批改"
+    },
+    {
+      "id": "TC009",
+      "category": "negative",
+      "input": "出一份数学试卷",
+      "expected_skill": null,
+      "expected_function": null,
+      "description": "非教案场景-试卷生成"
+    },
+    {
+      "id": "TC010",
+      "category": "negative",
+      "input": "写一段学生评语",
+      "expected_skill": null,
+      "expected_function": null,
+      "description": "非教案场景-学生评语"
+    },
+    {
+      "id": "TC011",
+      "category": "boundary",
+      "input": "教案",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "template",
+      "description": "极简输入-仅关键词"
+    },
+    {
+      "id": "TC012",
+      "category": "boundary",
+      "input": "生成一份高中物理电磁感应的完整教案，要求包含课标分析、学情分析、三维目标、教学重难点、教学过程设计（导入、新课讲授、巩固练习、小结、作业布置）、板书设计和教学反思",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "超长详细输入"
+    },
+    {
+      "id": "TC013",
+      "category": "robustness",
+      "input": "教案 语文 五年级 古诗",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "无序关键词输入"
+    },
+    {
+      "id": "TC014",
+      "category": "robustness",
+      "input": "请帮我写一份教案... 嗯... 就是那个... 小学数学的... 关于分数的",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "口语化断续输入"
+    },
+    {
+      "id": "TC015",
+      "category": "tool_confusion",
+      "input": "历史时间轴",
+      "expected_skill": "history-timeline-skill (外部技能，QoderWork 未安装)",
+      "expected_function": "timeline",
+      "description": "易混淆-应触发历史技能（非本技能）"
+    },
+    {
+      "id": "TC016",
+      "category": "tool_confusion",
+      "input": "数学练习题",
+      "expected_skill": null,
+      "expected_function": null,
+      "description": "易混淆-练习题非教案"
+    },
+    {
+      "id": "TC017",
+      "category": "param_conversion",
+      "input": "七年级下册《老王》语文课教案",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "extracted_params": {
+        "subject": "语文",
+        "grade": "七年级",
+        "title": "老王",
+        "volume": "下册"
+      },
+      "description": "参数提取-课题位置不同"
+    },
+    {
+      "id": "TC018",
+      "category": "param_conversion",
+      "input": "给我一份部编版八年级上册《三峡》的教学设计",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "extracted_params": {
+        "publisher": "部编版",
+        "grade": "八年级",
+        "volume": "上册",
+        "title": "三峡"
+      },
+      "description": "参数提取-含出版社信息"
+    },
+    {
+      "id": "TC019",
+      "category": "batch",
+      "input": "生成三份教案：《春》《济南的冬天》《雨的四季》，都是七年级语文",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "full-lesson",
+      "description": "批量教案请求"
+    },
+    {
+      "id": "TC020",
+      "category": "batch",
+      "input": "分别给我语文和数学的教案模板",
+      "expected_skill": "lesson-plan-assistant",
+      "expected_function": "template",
+      "description": "多模板请求"
+    }
+  ]
+}

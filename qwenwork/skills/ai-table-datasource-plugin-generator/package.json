@@ -1,0 +1,5 @@
+{
+  "name": "ai-table-datasource-plugin-generator",
+  "version": "1.0",
+  "description": "快速生成、修改和调试钉钉 AI 表格数据源连接器插件。"
+}

@@ -1,0 +1,41 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "show": {
+      "categories": [
+        "进行中",
+        "已完成",
+        "已取消"
+      ],
+      "values": [
+        2,
+        1,
+        0
+      ]
+    },
+    "hide": {
+      "categories": [
+        "进行中",
+        "已完成"
+      ],
+      "values": [
+        2,
+        1
+      ]
+    },
+    "placeholder": {
+      "categories": [
+        "进行中",
+        "已完成",
+        "已取消"
+      ],
+      "values": [
+        2,
+        1,
+        0
+      ]
+    }
+  }
+}

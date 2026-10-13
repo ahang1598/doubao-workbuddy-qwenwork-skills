@@ -1,0 +1,20 @@
+# Quick BI 小Q问数默认配置（技能包内置，随技能包更新覆盖，请勿手动修改）
+# 用户自定义配置请使用外部文件（优先级从高到低）：
+#   1. <工作目录>/.qbi/smartq-chat/config.yaml  — 工作目录级配置（优先）
+#   2. ~/.qbi/config.yaml           — 全局配置（所有 skill 共享）
+
+# QBI 域名（默认值）
+server_domain: https://bi.aliyun.com
+
+# OpenAPI 认证配置（留空，由用户配置或试用凭证填充）
+api_key:
+api_secret:
+
+# 用户令牌（留空，由用户配置或自动注册填充）
+user_token:
+
+# 是否从环境变量读取认证信息
+use_env_property: false
+
+# 是否保存全局配置
+save_global_property: true

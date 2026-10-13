@@ -1,0 +1,24 @@
+{
+    "name": "school-sentiment-monitor",
+    "version": "1.0.0",
+    "description": "定时监控指定学校在社交媒体上的舆论动态，自动进行情感分析、趋势研判和负面预警。支持自定义监控频率和预警规则，以消息通知形式推送舆情摘要。当用户提到舆情监控、学校舆情、舆情搜索、口碑监控、舆情分析时自动触发。",
+    "author": "dingtalk",
+    "main": "SKILL.md",
+    "scripts": {
+        "test": "bash tests/run_tests.sh"
+    },
+    "keywords": [
+        "sentiment",
+        "monitor",
+        "school",
+        "education",
+        "social-media",
+        "alert",
+        "scheduled-task",
+        "analysis"
+    ],
+    "license": "MIT",
+    "engines": {
+        "python": ">=3.8.0"
+    }
+}

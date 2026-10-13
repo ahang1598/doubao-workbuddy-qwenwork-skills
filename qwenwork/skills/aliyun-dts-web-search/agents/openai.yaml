@@ -1,0 +1,4 @@
+interface:
+  display_name: "阿里云 DTS-AI 网页搜索与网页提取"
+  short_description: "搜索公开网页、提取内容用于调研、核验事实或汇总信息"
+  default_prompt: "使用 $aliyun-dts-web-search 通过阿里云 DTS-AI 搜索公开网页，提取与问题相关的内容，核验信息并在答复中注明来源。"

@@ -1,0 +1,61 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "起草起诉状"
+      en: "Draft a complaint"
+    description:
+      zh: "按案件事实起草民事起诉状并输出 Word"
+      en: "Draft a civil complaint from case facts into a Word document"
+    prompt:
+      zh: |-
+        请根据「{{案件事实与诉求}}」帮我起草一份民事起诉状，输出可提交法院的 Word 文档。
+      en: |-
+        Draft a civil complaint based on {{case facts and claims}} and output a court-submittable Word document.
+  - id: ex-2
+    title:
+      zh: "要素式起诉状"
+      en: "Element-based complaint"
+    description:
+      zh: "按部分法院立案要求的要素式格式输出起诉状"
+      en: "Use the element-based format some courts require for filing"
+    prompt:
+      zh: |-
+        本案案由为「{{案由，如民间借贷纠纷}}」，请按要素勾选/填空的要素式格式起草民事起诉状，输出 Word 文档。
+      en: |-
+        The cause of action is {{case cause, e.g., private lending dispute}}. Draft an element-based civil complaint in the element checklist format and output a Word document.
+  - id: ex-3
+    title:
+      zh: "合同纠纷起诉状"
+      en: "Contract dispute complaint"
+    description:
+      zh: "起草合同纠纷起诉状并核查仲裁条款管辖风险"
+      en: "Draft a contract dispute complaint with an arbitration-clause jurisdiction check"
+    prompt:
+      zh: |-
+        我方因「{{合同类型与纠纷事实，如买卖合同对方拖欠货款}}」发生争议，请起草民事起诉状。请先全面阅读合同条款，如发现仲裁条款请提示管辖风险。
+      en: |-
+        A dispute arose over {{contract type and facts, e.g., unpaid goods payment under a sale contract}}. Draft a civil complaint; read all contract clauses first and flag any arbitration clause as a jurisdiction risk.
+  - id: ex-4
+    title:
+      zh: "婚家纠纷起诉状"
+      en: "Family dispute complaint"
+    description:
+      zh: "起草离婚、抚养费、财产分割等婚家类起诉状"
+      en: "Draft complaints for divorce, child support and property division cases"
+    prompt:
+      zh: |-
+        请针对「{{婚家纠纷类型与事实，如离婚纠纷，主张子女抚养权并分割夫妻共同财产}}」起草一份民事起诉状。
+      en: |-
+        Draft a civil complaint for {{family dispute type and facts, e.g., divorce, seeking child custody and division of marital property}}.
+  - id: ex-5
+    title:
+      zh: "侵权/劳动纠纷起诉状"
+      en: "Tort & labor complaint"
+    description:
+      zh: "起草交通事故、人身损害或劳动争议等纠纷的起诉状"
+      en: "Draft complaints for torts (accidents, injuries) or labor disputes"
+    prompt:
+      zh: |-
+        请针对「{{侵权或劳动争议事实，如交通事故受伤索赔}}」起草一份民事起诉状，并说明已经过的前置程序（如有仲裁/调解）。
+      en: |-
+        Draft a civil complaint for {{tort or labor dispute facts, e.g., injury compensation from a traffic accident}}, noting any prior arbitration or mediation procedures.

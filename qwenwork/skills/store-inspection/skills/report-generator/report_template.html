@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{{REPORT_TITLE}} - {{CHECK_DATE}}</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+body{margin:0;background:#f4f6f8;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',Arial,sans-serif;}
+.container{max-width:1320px;margin:0 auto;padding:28px;}
+.hero{background:linear-gradient(135deg,#14213d,#2f4858);color:#fff;border-radius:18px;padding:30px 34px;margin-bottom:22px;}
+.hero h1{margin:0 0 10px;font-size:30px;}
+.hero p{margin:4px 0;color:#dbeafe;}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+.kpi{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 6px 20px rgba(15,23,42,.07);}
+.kpi .label{font-size:14px;color:#64748b;margin-bottom:8px;}
+.kpi .value{font-size:30px;font-weight:700;}
+.card{background:#fff;border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 6px 20px rgba(15,23,42,.07);}
+h2{font-size:20px;margin:0 0 14px;border-left:5px solid #2563eb;padding-left:10px;}
+.summary{font-size:15px;line-height:1.9;background:#f8fafc;border-radius:12px;padding:16px 18px;}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.chart{height:360px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{border:1px solid #e5e7eb;padding:10px;vertical-align:top;}
+th{background:#f8fafc;color:#475569;white-space:nowrap;}
+.good{color:#059669;font-weight:700;}
+.warn{color:#d97706;font-weight:700;}
+.bad{color:#dc2626;font-weight:700;}
+small{color:#64748b;}
+.tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#e0f2fe;color:#0369a1;font-size:12px;margin-right:6px;}
+.section-analysis{font-size:14px;line-height:1.8;background:#fff7ed;border-left:4px solid #f97316;border-radius:10px;padding:12px 14px;margin:0 0 16px;color:#334155;}
+.action-list li{margin-bottom:9px;line-height:1.7;}
+.footer{font-size:12px;color:#64748b;text-align:center;margin:20px 0;}
+@media(max-width:900px){.grid,.charts{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <h1>{{REPORT_TITLE}}</h1>
+    <p>统计日期：{{CHECK_DATE}}；数据来源：{{DATA_SOURCE}}；覆盖门店：{{TOTAL_STORES}} 家（{{STORE_LIST}}）。</p>
+    <p>{{REPORT_DESCRIPTION}}</p>
+  </div>
+
+  <div class="grid">
+    <div class="kpi"><div class="label">检查项总量</div><div class="value">{{TOTAL_CHECKS}}</div></div>
+    <div class="kpi"><div class="label">检查项合格率</div><div class="value good">{{PASS_RATE}}</div></div>
+    <div class="kpi"><div class="label">单次开档全项合格率</div><div class="value good">{{FULL_PASS_RATE}}</div></div>
+    <div class="kpi"><div class="label">不合格项数</div><div class="value bad">{{FAILED_COUNT}}</div></div>
+  </div>
+
+  <div class="card">
+    <h2>1. 经营概览</h2>
+    <div class="summary">
+      {{OVERVIEW_SUMMARY}}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. 门店横向对比：谁稳定，谁需要督导</h2>
+    <div class="section-analysis">{{STORE_COMPARISON_ANALYSIS}}</div>
+    <div id="storeChart" class="chart"></div>
+    <table><thead><tr><th>门店</th><th>检查项总量</th><th>合格数</th><th>不合格数</th><th>缺失/待确认</th><th>合格率</th></tr></thead><tbody>
+{{STORE_TABLE_ROWS}}
+</tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>3. 检查项维度：总部最该先抓什么</h2>
+    <div class="section-analysis">{{ITEM_DIMENSION_ANALYSIS}}</div>
+    <div id="itemChart" class="chart"></div>
+    <table><thead><tr><th>检查项</th><th>检查总量</th><th>合格数</th><th>不合格数</th><th>缺失/待确认</th><th>合格率</th><th>经营影响</th></tr></thead><tbody>
+{{ITEM_TABLE_ROWS}}
+</tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>4. 门店 × 检查项矩阵：定位每家店的薄弱环节</h2>
+    <div class="section-analysis">{{MATRIX_ANALYSIS}}</div>
+    <table><thead><tr>{{MATRIX_TABLE_HEADERS}}</tr></thead><tbody>
+{{MATRIX_TABLE_ROWS}}
+</tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>5. 不合格项明细：逐条问题清单</h2>
+    <div class="section-analysis">{{ISSUE_DETAIL_ANALYSIS}}</div>
+    <table><thead><tr><th>门店</th><th>检查项</th><th>AI 审核摘要</th><th>现场照片</th></tr></thead><tbody>
+{{ISSUE_DETAIL_ROWS}}
+</tbody></table>
+  </div>
+
+  <div class="footer">生成时间：{{GENERATED_AT}}；数值统一保留 1 位小数。</div>
+</div>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;justify-content:center;align-items:center;cursor:pointer;" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);" onclick="event.stopPropagation()">
+  <span style="position:absolute;top:20px;right:30px;color:#fff;font-size:36px;cursor:pointer;" onclick="closeLightbox()">&times;</span>
+</div>
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+function barOption(names, rates, title) {
+  return { tooltip: {trigger:'axis', valueFormatter: v => v.toFixed(1) + '%'}, grid: {left: 70, right: 30, top: 30, bottom: 80}, xAxis: {type:'category', data:names, axisLabel:{rotate:25}}, yAxis: {type:'value', max:100, axisLabel:{formatter:'{value}%'}}, series:[{name:title,type:'bar',data:rates,label:{show:true,position:'top',formatter:p=>p.value.toFixed(1)+'%'}, itemStyle:{color:p=>p.value>=90?'#059669':(p.value>=75?'#d97706':'#dc2626')}}] };
+}
+echarts.init(document.getElementById('storeChart')).setOption(barOption({{STORE_CHART_NAMES}}, {{STORE_CHART_RATES}}, '门店合格率'));
+echarts.init(document.getElementById('itemChart')).setOption(barOption({{ITEM_CHART_NAMES}}, {{ITEM_CHART_RATES}}, '检查项合格率'));
+</script>
+</body>
+</html>

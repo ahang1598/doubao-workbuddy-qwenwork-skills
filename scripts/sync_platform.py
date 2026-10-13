@@ -112,6 +112,112 @@ SCENARIOS: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 FALLBACK_SCENARIO = "其他"
 
+# Skill-plaza categories for QwenWork skills (技能广场分类). Labels follow the
+# official plaza taxonomy in `.qwenworkcn/cache/mcp/market-metadata-cn.json`
+# where possible, extended with domains the official set does not cover
+# (法律服务/金融投研/内容写作/教育学习). Each rule is
+# (label, directory-name prefixes, keywords). An explicit ``categories``/
+# ``category``/``category_code`` in a skill's SKILL.md front matter always wins
+# over these rules (see PLAZA_CATEGORY_ALIASES).
+QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
+    ("沟通协作", ("dingtalk-", "lark", "slack"), (
+        "钉钉", "会议", "待办", "todo", "日程", "邮件", "群聊", "消息",
+        "周报", "汇报", "工作台", "任务", "通知",
+    )),
+    ("法律服务", ("lawd", "lawding", "labor-contract", "legal-"), (
+        "法律", "律师", "合同", "诉讼", "起诉", "答辩", "证据", "尽调",
+        "脱敏", "合规", "遗嘱", "上诉", "律所", "文书",
+    )),
+    ("金融投研", ("a-stock", "cn-stock", "valuation-"), (
+        "股票", "行情", "估值", "投资", "研报", "行业研究", "公司调研",
+        "公司研究", "决策研究", "财报", "证券", "投研",
+    )),
+    ("市场营销", ("marketing",), (
+        "营销", "文案", "社媒", "抖音", "小红书", "选题", "话题", "落地页",
+        "竞品", "定价", "视频号", "话术", "舆情", "创意", "客户研究", "用户研究",
+    )),
+    ("电商零售", ("utp-",), (
+        "电商", "客服", "采购", "1688", "门店", "巡检", "导购", "试穿",
+        "商品", "带货", "选品",
+    )),
+    ("人力招聘", ("resume-",), ("简历", "招聘", "面试", "人才", "hr")),
+    ("教育学习", ("fun-",), (
+        "学习", "课堂", "数学", "英语", "教案", "校园", "学校", "科研",
+        "学术", "论文",
+    )),
+    ("数据分析", ("ai-table", "aitable", "im-aitable", "quickbi"), (
+        "数据", "表格", "图表", "可视化", "报表", "echart",
+    )),
+    ("设计创意", ("media-generation", "icon-"), (
+        "图标", "图像", "设计", "媒体生成", "海报", "视觉",
+    )),
+    ("知识文档", ("docx", "pptx", "xlsx", "pdf", "generate-pptx"), (
+        "文档", "笔记", "知识库", "解析", "文献", " ppt ", "word",
+    )),
+    ("内容写作", ("de-ai-writing",), (
+        "写作", "公文", "标书", "商业计划", "新闻", "润色", "转写",
+        "长文本", "函件", "文本",
+    )),
+    ("开发工具", ("qw-pages", "github", "alibabacloud-ecs"), (
+        "代码", "部署", "deploy", "页面", "supabase", "插件", "搭建",
+        "技术方案", "api", "应用",
+    )),
+    ("效率工具", (), (
+        "翻译", "网盘", "旅行", "飞猪", "大会", "命理", "人格", "速读",
+        "搜索", "网页", "引导",
+    )),
+    ("系统内置", (
+        "find-skills", "qwenwork-guidance", "using-superpowers",
+        "create-skill", "plugin-creator",
+    ), ("技能广场",)),
+)
+PLAZA_FALLBACK_CATEGORY = "其他"
+PLAZA_CATEGORY_ALIASES = {
+    "productivity": "效率工具",
+    "product_development": "开发工具",
+    "featured": "系统内置",
+    "communication": "沟通协作",
+    "project_management": "项目管理",
+    "knowledge_docs": "知识文档",
+    "marketing": "市场营销",
+    "ecommerce_retail": "电商零售",
+    "hr_recruiting": "人力招聘",
+    "developer_tools": "开发工具",
+    "design": "设计创意",
+    "data_storage": "数据存储",
+    "maps_location": "地图出行",
+    "industry_data": "金融投研",
+    "法律": "法律服务",
+    "数据安全": "法律服务",
+}
+
+
+def plaza_category(item_name: str, match_text: str, front_categories) -> str:
+    """Classify a QwenWork skill-plaza skill into a plaza category.
+
+    Priority: explicit SKILL.md front-matter categories/categories (mapped via
+    PLAZA_CATEGORY_ALIASES) -> directory-name prefix rules -> keyword rules
+    against ``match_text`` (name + zh name + description) -> fallback.
+    """
+    tokens: list[str] = []
+    for value in front_categories or ():
+        if isinstance(value, list):
+            tokens.extend(str(v).strip() for v in value if str(v).strip())
+        elif isinstance(value, str) and value.strip():
+            tokens.extend(t.strip() for t in re.split(r"[,，;；]", value) if t.strip())
+    for token in tokens:
+        if token in PLAZA_CATEGORY_ALIASES:
+            return PLAZA_CATEGORY_ALIASES[token]
+
+    lowered = match_text.lower()
+    for label, prefixes, _keywords in QWENWORK_PLAZA_CATEGORIES:
+        if item_name.startswith(prefixes):
+            return label
+    for label, _prefixes, keywords in QWENWORK_PLAZA_CATEGORIES:
+        if any(kw.lower() in lowered for kw in keywords):
+            return label
+    return PLAZA_FALLBACK_CATEGORY
+
 
 @dataclass(frozen=True)
 class SourceSpec:
@@ -121,6 +227,9 @@ class SourceSpec:
     target: str
     item_kind: str
     source_is_file: bool = False
+    # When True, entries carry their own category (e.g. skill-plaza taxonomy)
+    # and SUMMARY navigation groups by that category instead of SCENARIOS.
+    use_entry_categories: bool = False
 
 
 @dataclass(frozen=True)
@@ -265,6 +374,7 @@ PLATFORMS: dict[str, PlatformSpec] = {
                 source=Path("/mnt/c/Users/15805/.qwenworkcn/skills"),
                 target="skills",
                 item_kind="skill",
+                use_entry_categories=True,
             ),
         ),
     ),
@@ -463,7 +573,7 @@ def remove_empty_dirs(root: Path) -> None:
             pass
 
 
-def parse_front_matter(text: str) -> dict[str, str]:
+def parse_front_matter(text: str) -> dict[str, object]:
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         return {}
@@ -472,7 +582,7 @@ def parse_front_matter(text: str) -> dict[str, str]:
         if line.strip() == "---":
             break
         block.append(line)
-    data: dict[str, str] = {}
+    data: dict[str, object] = {}
     i = 0
     while i < len(block):
         match = re.match(r"^([A-Za-z0-9_-]+):\s*(.*)$", block[i])
@@ -490,6 +600,21 @@ def parse_front_matter(text: str) -> dict[str, str]:
                 i += 1
             data[key] = " ".join(collected)
             continue
+        if not value:
+            # YAML block list (`categories:` followed by `  - item` lines) —
+            # keep it as a real list so category front matter is not lost.
+            list_items: list[str] = []
+            j = i + 1
+            while j < len(block) and re.match(r"^\s+-\s+", block[j]):
+                item = re.sub(r"^\s+-\s+", "", block[j]).strip()
+                if len(item) >= 2 and item[0] == item[-1] and item[0] in {"'", '"'}:
+                    item = item[1:-1]
+                list_items.append(item)
+                j += 1
+            if list_items:
+                data[key] = list_items
+                i = j
+                continue
         if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
             value = value[1:-1]
         data[key] = value
@@ -728,8 +853,28 @@ def source_entries(platform_root: Path, source: SourceSpec, cb_analysis: dict[st
         if entries:
             return entries
     entries = []
-    for item in sorted((p for p in target.iterdir() if p.is_dir()), key=lambda p: p.name):
+    for item in sorted((p for p in target.iterdir() if p.is_dir() and not p.name.startswith(".")), key=lambda p: p.name):
         name, description, category, keywords = metadata_for_item(item, item.name)
+        if source.use_entry_categories:
+            # Skill-plaza skills: prefer the Chinese display name and the
+            # plaza taxonomy (front-matter categories first, rules second).
+            front: dict = {}
+            skill_md = item / "SKILL.md"
+            if skill_md.exists():
+                front = parse_front_matter(read_text(skill_md))
+            zh_name = front.get("name_zh") or front.get("label") or ""
+            if isinstance(zh_name, list):
+                zh_name = zh_name[0] if zh_name else ""
+            if zh_name:
+                name = str(zh_name)
+            front_categories = [
+                front.get("categories", ""),
+                front.get("category", ""),
+                front.get("category_code", ""),
+            ]
+            category = plaza_category(
+                item.name, f"{name} {item.name} {description}", front_categories
+            )
         if source.name == "cb_teams_experts":
             override = cb_analysis.get(item.name)
             if override:
@@ -1000,13 +1145,24 @@ def render_summary(
         )
 
     # ---- Scenario navigation (multi-scenario) ----
-    # Map each entry to its matched scenario list; primary = first.
+    # Map each entry to its matched scenario list; primary = first. Sources
+    # flagged use_entry_categories carry their own taxonomy (e.g. the QwenWork
+    # skill plaza), so their single entry category drives the grouping and the
+    # 类型 column instead of the generic SCENARIOS rules.
     entry_scenarios: list[tuple[tuple, list[str]]] = []
     for entry in entries:
-        name, _directory, _category, _file_count, description, keywords = entry
-        entry_scenarios.append((entry, classify_item(name, description, keywords)))
+        name, _directory, category, _file_count, description, keywords = entry
+        if source.use_entry_categories:
+            entry_scenarios.append((entry, [category]))
+        else:
+            entry_scenarios.append((entry, classify_item(name, description, keywords)))
 
-    ordered_labels = [label for label, _ in SCENARIOS] + [FALLBACK_SCENARIO]
+    if source.use_entry_categories:
+        ordered_labels = [label for label, _p, _k in QWENWORK_PLAZA_CATEGORIES] + [PLAZA_FALLBACK_CATEGORY]
+        extra = {scen for _e, scens in entry_scenarios for scen in scens} - set(ordered_labels)
+        ordered_labels.extend(sorted(extra))
+    else:
+        ordered_labels = [label for label, _ in SCENARIOS] + [FALLBACK_SCENARIO]
     scenario_blocks: list[str] = []
     for label in ordered_labels:
         members = [

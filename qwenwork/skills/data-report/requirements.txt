@@ -1,0 +1,7 @@
+pandas>=2.0.0
+openpyxl>=3.1.0
+defusedxml>=0.7.0
+lxml>=4.9.0  # optional: enhanced XML validation
+# optional: Step 3 无头浏览器真渲染校验。未安装时 VALIDATE 自动降级为纯静态校验（8 项）。
+# 安装后还需执行一次: playwright install chromium
+# playwright>=1.40.0

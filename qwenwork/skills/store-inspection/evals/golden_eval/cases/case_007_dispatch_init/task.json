@@ -1,0 +1,102 @@
+{
+  "task_id": "gc_dispatch_init_007",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，帮我派发一次巡检任务，截止时间设置为明天18:00。如果系统中还没有巡检模板，请先帮我创建一个叫「评测派发模板」的模板，检查项为：货架陈列、地面清洁，每项需要拍照和AI审核。然后再用该模板派发任务。"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "模板",
+      "reply": "直接用系统中已有的模板来派发任务即可，不需要创建新模板。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "选择",
+      "reply": "用已有的模板，直接派发。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "使用",
+      "reply": "用已有的模板派发即可。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "确认",
+      "reply": "确认。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "确定",
+      "reply": "确定。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "发布",
+      "reply": "已发布。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "链接",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "分享",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "表单",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "操作",
+      "reply": "已完成操作。",
+      "delay_ms": 3000,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "创建",
+      "reply": "确认创建。",
+      "delay_ms": 200,
+      "max_turns": 2
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": [
+      "last_assistant_message"
+    ],
+    "non_empty_fields": [
+      "last_assistant_message"
+    ],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "任务派发验证（dispatch init）",
+    "category": "golden_eval_suite",
+    "scoring": {
+      "checks": [
+        "助手最终通过技能 CLI 的 dispatch init 命令创建了派发任务实例，或在系统未绑定 AI 表格/未初始化时正确告知用户需先完成初始化并提供了操作建议（如先执行 init create 或 init url）也视为通过",
+        "助手在 dispatch init 中设置了截止时间为明天18:00 或在 extra_info 中包含了截止时间信息，或在系统未初始化无法执行时跳过此项也视为通过",
+        "助手向用户反馈了派发创建结果。如果表单分享链接因 AI 表格服务同步延迟暂时无法自动获取，助手正确引导用户完成表单发布操作也视为通过；如果系统未初始化，助手正确告知当前状态也视为通过"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.9,
+        "timeout_s": 600
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" role="img" aria-labelledby="title desc">
+  <title id="title">AI Table Datasource Plugin Generator</title>
+  <desc id="desc">A database connected to a structured table with an AI sparkle.</desc>
+  <defs>
+    <linearGradient id="bg" x1="24" y1="16" x2="176" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102A43"/>
+      <stop offset="1" stop-color="#0B1F33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="44" y1="52" x2="154" y2="150" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#36D1B4"/>
+      <stop offset="1" stop-color="#39A9FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="184" height="184" rx="44" fill="url(#bg)"/>
+  <ellipse cx="63" cy="65" rx="31" ry="13" fill="url(#accent)"/>
+  <path d="M32 65v51c0 7 14 13 31 13s31-6 31-13V65" fill="#1F8FBF" opacity=".95"/>
+  <path d="M32 82c0 7 14 13 31 13s31-6 31-13M32 99c0 7 14 13 31 13s31-6 31-13" fill="none" stroke="#92F2DF" stroke-width="5" stroke-linecap="round"/>
+  <rect x="107" y="74" width="58" height="72" rx="10" fill="#F6FBFF"/>
+  <path d="M107 96h58M107 120h58M127 74v72M147 74v72" fill="none" stroke="#2B78A5" stroke-width="5"/>
+  <path d="M91 104h17" stroke="#92F2DF" stroke-width="7" stroke-linecap="round"/>
+  <path d="m143 45 4 10 10 4-10 4-4 10-4-10-10-4 10-4 4-10Z" fill="#FFE066"/>
+  <circle cx="42" cy="151" r="6" fill="#36D1B4"/>
+  <circle cx="62" cy="151" r="6" fill="#39A9FF"/>
+  <path d="M68 151h56" stroke="#4E7595" stroke-width="5" stroke-linecap="round"/>
+</svg>

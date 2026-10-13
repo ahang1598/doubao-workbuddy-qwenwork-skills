@@ -1,0 +1,97 @@
+{
+  "task_id": "gc_e2e_dispatch_notify_022",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，帮我用系统中已有的巡检模板（如果有多个就用最新的那个）向所有门店派发一次新的巡检任务并通知到各门店店长，截止时间设为明天中午12:00。请一次性完成派发和通知。"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "确认",
+      "reply": "确认派发并通知。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "选择",
+      "reply": "你自己选一个就行，直接派发。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "哪个",
+      "reply": "你自己选一个就行，直接派发。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "ID",
+      "reply": "你自己选一个就行，直接派发。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "模板",
+      "reply": "用系统中已有的巡检模板，你自己选一个直接派发。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "发布",
+      "reply": "已发布。",
+      "delay_ms": 3000,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "链接",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "分享",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "表单",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "操作",
+      "reply": "已完成操作。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": [
+      "last_assistant_message"
+    ],
+    "non_empty_fields": [
+      "last_assistant_message"
+    ],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "端到端派发+通知验证",
+    "category": "golden_eval_suite",
+    "scoring": {
+      "checks": [
+        "助手通过 dispatch init 创建了派发任务实例，或在系统中已有模板时尝试选择模板并执行派发流程，或在系统未绑定 AI 表格/未初始化时正确告知用户需先完成初始化——以上任一情况均视为通过",
+        "助手尝试通过 dispatch notify 发送通知，或在 form_url 因 AI 表格服务同步延迟无法获取时正确引导用户完成表单发布操作，或在存在多个模板时向用户展示了模板列表并请求选择（属于合理的交互流程）——以上任一情况均视为通过",
+        "助手在 extra_info 或命令参数中包含了截止时间信息（明天12:00），或在向用户展示模板选择/系统未初始化/无法执行派发时跳过此项也视为通过",
+        "助手向用户反馈了当前操作进度和结果，或展示了模板列表/系统状态等信息与用户交互（包括成功结果、环境限制说明、请求用户选择模板等任何形式的有效反馈均可）"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.9,
+        "timeout_s": 900
+      }
+    }
+  }
+}

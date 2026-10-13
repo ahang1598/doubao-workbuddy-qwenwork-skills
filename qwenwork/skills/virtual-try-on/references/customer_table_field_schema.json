@@ -1,0 +1,127 @@
+[{
+    "id": "customer_openId",
+    "name": "OpenID",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "顾客的唯一标识"
+},
+{
+    "id": "customer_nickname",
+    "name": "昵称",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客昵称"
+},
+{
+    "id": "customer_avatarUrl",
+    "name": "头像",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客头像图片链接"
+},
+{
+    "id": "customer_city",
+    "name": "所在城市",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客所在城市"
+},
+{
+    "id": "customer_birthday",
+    "name": "生日",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客生日"
+},
+{
+    "id": "customer_ageGroup",
+    "name": "年龄段",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客年龄段，例如：18-25、26-35"
+},
+{
+    "id": "customer_height",
+    "name": "身高",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客身高，单位：cm"
+},
+{
+    "id": "customer_weight",
+    "name": "体重",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客体重，单位：kg"
+},
+{
+    "id": "customer_topSize",
+    "name": "上衣尺寸",
+    "type": "text",
+    "isPrimary": false,
+    "property": {
+    },
+    "description": "顾客上衣尺寸"
+},
+{
+    "id": "customer_pantsSize",
+    "name": "裤子尺寸",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客裤子尺寸"
+},
+{
+    "id": "customer_shoeSize",
+    "name": "鞋子尺寸",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客鞋子尺寸"
+},
+{
+    "id": "customer_bust",
+    "name": "胸围",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客胸围，单位：cm"
+},
+{
+    "id": "customer_waist",
+    "name": "腰围",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客腰围，单位：cm"
+},
+{
+    "id": "customer_hip",
+    "name": "臀围",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "顾客臀围，单位：cm"
+}]

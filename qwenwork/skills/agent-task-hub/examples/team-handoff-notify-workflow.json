@@ -1,0 +1,35 @@
+{
+  "version": "workflow-dsl/v1",
+  "name": "交接任务通知",
+  "trigger": "start",
+  "steps": {
+    "start": {
+      "type": "WhenRecordCreated",
+      "next": "send",
+      "data": {
+        "sheetId": "tbl_team_handoff",
+        "mustHaveFields": "fld_assignee",
+        "where": { "left": "fld_assignee", "op": "EXIST" }
+      }
+    },
+    "send": {
+      "type": "SendMessage",
+      "data": {
+        "sender": { "type": "person" },
+        "title": "有一个任务交接给你",
+        "isButtonsEnabled": true,
+        "content": [
+          { "ref": "$.start.fld_notice" }
+        ],
+        "buttons": [
+          {
+            "name": "去查看",
+            "color": "blue",
+            "action": { "type": "link", "url": { "ref": "$.start.rowUrl" } }
+          }
+        ],
+        "to": { "users": [{ "ref": "$.start.fld_assignee[*]" }] }
+      }
+    }
+  }
+}

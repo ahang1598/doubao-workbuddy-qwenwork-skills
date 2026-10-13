@@ -1,0 +1,47 @@
+examples:
+  - id: sync-tasks
+    title:
+      zh: 定时同步千问办公任务到台账
+      en: Sync QwenWork tasks to the ledger
+    description:
+      zh: 增量把千问办公任务的状态、结论、产出物沉淀到 AI表格 任务台账
+      en: Incrementally sediment QwenWork task status, conclusions, and outputs into the AI table ledger
+    prompt:
+      zh: |-
+        把千问办公的任务同步到 AI表格 任务台账：
+        只做增量同步，用任务ID + Agent类型 + 创建人 去重，状态变了就更新，有新任务就新增；
+        产出文件走附件上传；任务类型、优先级自动打标。
+      en: |-
+        Sync QwenWork tasks into the AI table ledger:
+        do incremental sync only, dedupe by Task ID + Agent type + creator, update changed status, insert new tasks;
+        upload output files as attachments; auto-tag task type and priority.
+  - id: handoff-task
+    title:
+      zh: 交接一个任务
+      en: Hand off a task
+    description:
+      zh: 为指定任务生成可续接的交接摘要并写回台账，供其他 agent 接手
+      en: Generate a resumable handoff summary for a task and write it back to the ledger for another agent to pick up
+    prompt:
+      zh: |-
+        把「{{任务关键词}}」这个任务做个交接：
+        在台账里找到它，拉取千问办公详情，生成交接摘要写回台账，
+        产出物引用附件而不是本地路径，最后把摘要和附件引用交给我。
+      en: |-
+        Hand off the task "{{task keyword}}":
+        find it in the ledger, pull its QwenWork detail, generate a handoff summary and write it back,
+        reference attachments instead of local paths, then give me the summary and attachment reference.
+  - id: resume-task
+    title:
+      zh: 续接一个任务
+      en: Resume a task
+    description:
+      zh: 按意图查台账找待续接任务，读取交接摘要继续推进
+      en: Look up a resumable task in the ledger by intent and continue from its handoff summary
+    prompt:
+      zh: |-
+        接着做「{{任务关键词}}」：在台账里查到这条任务，读取它的交接摘要和产出物附件，
+        基于摘要继续推进，不要重新从头开始。
+      en: |-
+        Resume "{{task keyword}}": find it in the ledger, read its handoff summary and output attachments,
+        continue from the summary without starting over.

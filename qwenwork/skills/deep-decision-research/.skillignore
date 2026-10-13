@@ -1,0 +1,13 @@
+# Local/generated files
+.env
+*.env
+.env.local
+.env.*.local
+__pycache__
+*.pyc
+.DS_Store
+dist
+outputs
+worker.log
+mcp-config.json
+scripts

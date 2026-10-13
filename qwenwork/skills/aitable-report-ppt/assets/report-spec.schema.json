@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local/aitable-report-ppt/report-spec.schema.json",
+  "title": "AI Table Visual Report Specification",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report",
+    "sources",
+    "metrics",
+    "findings",
+    "charts",
+    "drilldowns",
+    "sections",
+    "privacy",
+    "modes",
+    "validation"
+  ],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "1.1"]},
+    "semantics_version": {
+      "type": "string",
+      "description": "计算语义合同版本（references/reporting/semantics.md），缺省 1.0；语义定义变化时必须升级"
+    },
+    "report": {
+      "type": "object",
+      "required": ["title", "audience", "purpose", "confidentiality", "snapshot_at"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "audience": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "confidentiality": {"enum": ["internal", "external_masked", "public"]},
+        "snapshot_at": {"type": "string", "minLength": 1},
+        "timezone": {"type": "string", "description": "日期分桶时区，缺省 Asia/Shanghai"}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "type": {"enum": ["aitable", "csv", "json", "xlsx", "manual"]},
+          "record_count": {"type": "integer", "minimum": 0},
+          "field_count": {"type": "integer", "minimum": 0},
+          "snapshot_path": {"type": "string"}
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "kind", "evidence", "verification"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["data_fact", "rule_calculation", "human_conclusion", "ai_inference"]},
+          "formula": {
+            "type": "object",
+            "properties": {
+              "expression": {"type": "string", "minLength": 1},
+              "fields": {"type": "array", "items": {"type": "string"}},
+              "aggregation": {"enum": ["sum", "count", "avg", "min", "max", "distinct_count", "median", "percentage", "ratio", "custom"]}
+            }
+          },
+          "tolerance": {
+            "type": "object",
+            "properties": {
+              "type": {"enum": ["exact", "relative", "absolute"]},
+              "value": {"type": "number", "minimum": 0}
+            }
+          },
+          "evidence": {"type": "object"},
+          "verification": {
+            "type": "object",
+            "required": ["method"],
+            "properties": {
+              "method": {"enum": ["count_match", "sum_match", "formula_recompute", "range_check", "manual"]},
+              "expected": {}
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "kind", "evidence"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "text": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["data_fact", "rule_calculation", "human_conclusion", "ai_inference"]},
+          "evidence": {"type": "object"}
+        }
+      }
+    },
+    "charts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "question", "type", "source_id", "evidence"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "question": {"type": "string", "minLength": 1},
+          "type": {"enum": ["bar", "stacked_bar", "grouped_bar", "line", "area", "pie", "donut", "scatter", "radar", "heatmap", "treemap", "funnel", "gauge", "table", "number_card", "custom"]},
+          "source_id": {"type": "string", "minLength": 1},
+          "aggregation": {
+            "type": "object",
+            "required": ["group_by", "value_field", "function"],
+            "properties": {
+              "group_by": {"type": "string", "minLength": 1},
+              "value_field": {"type": "string", "minLength": 1},
+              "function": {"enum": ["sum", "count", "avg", "min", "max", "distinct_count", "median", "percentage", "custom"]},
+              "secondary_group": {"type": "string"}
+            }
+          },
+          "sort": {
+            "type": "object",
+            "properties": {
+              "by": {"enum": ["value", "label", "custom"]},
+              "order": {"enum": ["asc", "desc"]},
+              "custom_order": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "zero_policy": {
+            "enum": ["show", "hide", "placeholder"],
+            "default": "show"
+          },
+          "null_policy": {
+            "enum": ["exclude", "as_zero", "as_category"],
+            "default": "exclude"
+          },
+          "evidence": {"type": "object"},
+          "drilldown_id": {"type": "string"}
+        }
+      }
+    },
+    "drilldowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source_id", "columns", "mode"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "source_id": {"type": "string", "minLength": 1},
+          "columns": {
+            "type": "array",
+            "minItems": 1,
+            "description": "列可以是字段 ID 字符串（runtime 自动用 snapshot fields 的中文名渲染列头），或显式的 {field,label} 对象（label 优先于自动映射）。",
+            "items": {
+              "anyOf": [
+                {"type": "string", "minLength": 1},
+                {
+                  "type": "object",
+                  "required": ["field"],
+                  "properties": {
+                    "field": {"type": "string", "minLength": 1},
+                    "label": {"type": "string", "minLength": 1},
+                    "width": {"type": "string"}
+                  }
+                }
+              ]
+            }
+          },
+          "mode": {"enum": ["full", "local_only", "aggregate_only"]},
+          "trigger": {
+            "type": "object",
+            "required": ["type", "ref_id"],
+            "properties": {
+              "type": {"enum": ["chart", "metric", "text", "table"]},
+              "ref_id": {"type": "string", "minLength": 1},
+              "category": {
+                "type": "string",
+                "description": "仅 chart 类型可用：点击图表中该分组标签时打开本下钻；省略则作为整图 fallback"
+              }
+            }
+          },
+          "membership": {
+            "type": "object",
+            "required": ["filter_ast", "expected_record_count", "verification"],
+            "properties": {
+              "filter_ast": {
+                "type": "object",
+                "required": ["op"],
+                "properties": {
+                  "op": {"enum": ["eq", "ne", "gt", "gte", "lt", "lte", "in", "contains", "and", "or", "not"]},
+                  "field": {"type": "string"},
+                  "value": {},
+                  "children": {"type": "array", "items": {"$ref": "#/properties/drilldowns/items/properties/membership/properties/filter_ast"}}
+                }
+              },
+              "expected_record_count": {"type": "integer", "minimum": 0},
+              "verification": {
+                "type": "object",
+                "required": ["method"],
+                "properties": {
+                  "method": {"enum": ["count_match", "id_set_match", "filter_reapply"]},
+                  "expected_count": {"type": "integer", "minimum": 0},
+                  "expected_ids": {"type": "array", "items": {"type": "string"}}
+                }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"mode": {"not": {"const": "aggregate_only"}}}},
+            "then": {"required": ["trigger", "membership"]}
+          }
+        ]
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "title", "purpose"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string", "minLength": 1},
+          "narrative_role": {"enum": ["opening", "key_finding", "transition", "closing"]}
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "properties": {
+        "pii_fields": {"type": "array", "items": {"type": "string"}},
+        "masking_rules": {"type": "array", "items": {"type": "object"}},
+        "external_safe": {"type": "boolean"}
+      }
+    },
+    "modes": {
+      "type": "object",
+      "properties": {
+        "presentation": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "stage": {"const": "1920x1080"},
+            "density": {"enum": ["speaker-led", "reading-first"]}
+          }
+        },
+        "reading": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "requested_by_user": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "forbidden_text": {"type": "array", "items": {"type": "string"}},
+        "browser": {
+          "type": "object",
+          "properties": {
+            "drills": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["trigger", "modal", "rows"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "drilldown_id": {"type": "string"},
+                  "slide": {"type": "integer", "minimum": 0, "description": "触发点所在页（0 起）；验证器先翻页再点击"},
+                  "trigger": {"type": "string"},
+                  "modal": {"type": "string"},
+                  "rows": {"type": "string"},
+                  "expected_count": {"type": "integer", "minimum": 0},
+                  "close": {"type": "string"},
+                  "open_row": {"type": "string"},
+                  "iframe": {"type": "string"},
+                  "expect_iframe": {"type": "boolean"},
+                  "back": {"type": "string"},
+                  "hidden_selectors": {"type": "array", "items": {"type": "string"}}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

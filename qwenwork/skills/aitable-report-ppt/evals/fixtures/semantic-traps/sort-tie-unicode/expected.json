@@ -1,0 +1,23 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "tie": {
+      "categories": [
+        "10",
+        "A",
+        "b",
+        "一",
+        "张"
+      ],
+      "values": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  }
+}

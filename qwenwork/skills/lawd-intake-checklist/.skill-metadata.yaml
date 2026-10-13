@@ -1,0 +1,65 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "首次咨询清单"
+      en: "First consultation checklist"
+    description:
+      zh: "按案由生成首次咨询的问题与材料清单"
+      en: "Generate first-consultation questions and materials by cause of action"
+    prompt:
+      zh: |-
+        请按「{{案由/纠纷类型}}」生成一份首次咨询的问题与材料清单，防止会谈漏问漏收。
+      en: |-
+        Generate a first-consultation checklist of questions and materials for {{cause of action}} to avoid missing anything.
+  - id: contract-subtype
+    title:
+      zh: "合同场景细化"
+      en: "Contract scenario refinement"
+    description:
+      zh: "结合案情识别合同子类并细化采集清单"
+      en: "Identify the contract subtype and refine the checklist with case details"
+    prompt:
+      zh: |-
+        这是一起合同纠纷，请结合案情识别合同子类（建设工程/买卖/租赁/服务），生成针对性的必问问题与必备材料清单：
+
+        案情简述：{{合同纠纷简要经过}}
+      en: |-
+        This is a contract dispute. Identify the contract subtype (construction, sale, lease or service) from the case details and generate a targeted checklist of must-ask questions and required materials:
+
+        Case summary: {{brief description of the contract dispute}}
+  - id: gap-fill
+    title:
+      zh: "咨询信息补全"
+      en: "Fill information gaps"
+    description:
+      zh: "咨询中按案情核对信息缺口并补充问题"
+      en: "Check information gaps during a consultation and add questions"
+    prompt:
+      zh: |-
+        我正在和客户咨询「{{问题类型}}」案件，请生成采集清单帮我核对还漏了哪些信息，并结合已了解的案情标注重点：
+
+        已了解的案情：{{已掌握的案情要点}}
+      en: |-
+        I am consulting a client on a {{problem type}} matter. Generate a collection checklist so I can check what information is still missing, and highlight priorities based on the facts gathered so far:
+
+        Known facts: {{key facts gathered so far}}
+  - id: detailed-custom
+    title:
+      zh: "详细清单定制"
+      en: "Detailed custom checklist"
+    description:
+      zh: "按详细档、当事人类型与重点领域定制清单"
+      en: "Customize a detailed-level checklist by client type and focus areas"
+    prompt:
+      zh: |-
+        请生成一份详细档（detailed）的采集清单：
+
+        问题类型：{{问题类型}}
+        当事人类型：{{个人/企业}}
+        重点关注：{{重点关注的争议焦点}}
+      en: |-
+        Generate a collection checklist at the detailed level:
+
+        Problem type: {{problem type}}
+        Client type: {{individual/enterprise}}
+        Focus areas: {{key dispute issues to focus on}}

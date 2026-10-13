@@ -1,0 +1,17 @@
+{
+  "description": "聚合值全并列时按标签 Unicode 码点升序打破，禁止 locale 排序",
+  "checks": [
+    {
+      "id": "tie",
+      "kind": "group",
+      "config": {
+        "group_by": "组",
+        "function": "count",
+        "sort": {
+          "by": "value",
+          "order": "desc"
+        }
+      }
+    }
+  ]
+}

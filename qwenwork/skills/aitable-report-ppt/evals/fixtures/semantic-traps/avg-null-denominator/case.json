@@ -1,0 +1,38 @@
+{
+  "description": "含空值与字符串数值的平均：exclude 与 as_zero 双口径的分母差异",
+  "checks": [
+    {
+      "id": "avg_exclude",
+      "kind": "aggregate",
+      "field": "分数",
+      "function": "avg",
+      "null_policy": "exclude"
+    },
+    {
+      "id": "avg_as_zero",
+      "kind": "aggregate",
+      "field": "分数",
+      "function": "avg",
+      "null_policy": "as_zero"
+    },
+    {
+      "id": "sum",
+      "kind": "aggregate",
+      "field": "分数",
+      "function": "sum",
+      "null_policy": "exclude"
+    },
+    {
+      "id": "count",
+      "kind": "aggregate",
+      "field": "分数",
+      "function": "count"
+    },
+    {
+      "id": "distinct",
+      "kind": "aggregate",
+      "field": "分数",
+      "function": "distinct_count"
+    }
+  ]
+}

@@ -1,0 +1,589 @@
+{
+  "schemaVersion": 1,
+  "dates": [
+    {
+      "code": 1,
+      "name": "9月22日",
+      "nameEn": "2026-09-22"
+    },
+    {
+      "code": 2,
+      "name": "9月23日",
+      "nameEn": "2026-09-23"
+    },
+    {
+      "code": 3,
+      "name": "9月24日",
+      "nameEn": "2026-09-24"
+    }
+  ],
+  "venues": [
+    {
+      "code": "国博一期",
+      "name": "杭州国际博览中心一期",
+      "nameEn": "Hangzhou International Expo Center Phase I"
+    },
+    {
+      "code": "国博二期",
+      "name": "杭州国际博览中心二期",
+      "nameEn": "Hangzhou International Expo Center Phase II"
+    },
+    {
+      "code": "云栖小镇",
+      "name": "云栖小镇国际会展中心",
+      "nameEn": "Yunqi Town International Convention and Exhibition Center"
+    }
+  ],
+  "themes": [
+    {
+      "code": "st1",
+      "name": "模型与模型服务",
+      "nameEn": "LLM and LLM Services"
+    },
+    {
+      "code": "st2",
+      "name": "Agent 开发与Agentic 应用",
+      "nameEn": "Agent Development and Agentic Applications"
+    },
+    {
+      "code": "st3",
+      "name": "算力与 AI 基础设施",
+      "nameEn": "Computing Power and AI Infrastructure"
+    },
+    {
+      "code": "st4",
+      "name": "Agentic Cloud",
+      "nameEn": "Agentic Cloud"
+    },
+    {
+      "code": "st5",
+      "name": "数据",
+      "nameEn": "Data"
+    },
+    {
+      "code": "st6",
+      "name": "安全与治理",
+      "nameEn": "Security and Governance"
+    },
+    {
+      "code": "st7",
+      "name": "运维与成本",
+      "nameEn": "O&M and Cost"
+    },
+    {
+      "code": "st8",
+      "name": "行业实践",
+      "nameEn": "Industry Practices"
+    },
+    {
+      "code": "st9",
+      "name": "组织转型",
+      "nameEn": "Organizational Transformation"
+    },
+    {
+      "code": "st10",
+      "name": "开源与生态",
+      "nameEn": "Open Source & Ecosystem"
+    }
+  ],
+  "industries": [
+    {
+      "code": "in1",
+      "name": "跨行业",
+      "nameEn": "Cross-Industry"
+    },
+    {
+      "code": "in2",
+      "name": "金融",
+      "nameEn": "Finance"
+    },
+    {
+      "code": "in3",
+      "name": "制造",
+      "nameEn": "Manufacturing"
+    },
+    {
+      "code": "in4",
+      "name": "公共服务",
+      "nameEn": "Public Services"
+    },
+    {
+      "code": "in5",
+      "name": "汽车",
+      "nameEn": "Automotive"
+    },
+    {
+      "code": "in6",
+      "name": "医疗",
+      "nameEn": "Healthcare"
+    },
+    {
+      "code": "in7",
+      "name": "能源",
+      "nameEn": "Energy"
+    },
+    {
+      "code": "in8",
+      "name": "电信",
+      "nameEn": "Telecommunications"
+    },
+    {
+      "code": "in9",
+      "name": "互联网",
+      "nameEn": "Internet"
+    },
+    {
+      "code": "in10",
+      "name": "零售与电商",
+      "nameEn": "Retail & E-commerce"
+    },
+    {
+      "code": "in11",
+      "name": "教育科研",
+      "nameEn": "Education & Research"
+    },
+    {
+      "code": "in12",
+      "name": "传媒与内容",
+      "nameEn": "Media & Content"
+    },
+    {
+      "code": "in13",
+      "name": "游戏",
+      "nameEn": "Gaming"
+    },
+    {
+      "code": "in14",
+      "name": "航天科技",
+      "nameEn": "Aerospace Technology"
+    },
+    {
+      "code": "in15",
+      "name": "其他",
+      "nameEn": "Others"
+    }
+  ],
+  "technicalLevels": [
+    {
+      "code": "tl1",
+      "name": "零代码",
+      "nameEn": "Zero Code"
+    },
+    {
+      "code": "tl2",
+      "name": "初级",
+      "nameEn": "Beginner"
+    },
+    {
+      "code": "tl3",
+      "name": "进阶",
+      "nameEn": "Intermediate"
+    },
+    {
+      "code": "tl4",
+      "name": "专家",
+      "nameEn": "Advanced"
+    }
+  ],
+  "interests": [
+    {
+      "code": "ia1",
+      "name": "大语言模型",
+      "nameEn": "Large Language Models",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia2",
+      "name": "多模态模型",
+      "nameEn": "Multimodal Models",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia3",
+      "name": "世界模型",
+      "nameEn": "World Models",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia4",
+      "name": "语音模型",
+      "nameEn": "Speech Models",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia5",
+      "name": "模型预训练",
+      "nameEn": "Model Pre-training",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia6",
+      "name": "模型后训练",
+      "nameEn": "Model Post-training",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia8",
+      "name": "长上下文与推理时扩展",
+      "nameEn": "Long Context & Test-Time Scaling",
+      "groupCode": "ig1",
+      "groupName": "模型与训练"
+    },
+    {
+      "code": "ia7",
+      "name": "推理优化",
+      "nameEn": "Inference Optimization",
+      "groupCode": "ig2",
+      "groupName": "推理与服务"
+    },
+    {
+      "code": "ia9",
+      "name": "模型部署与服务",
+      "nameEn": "Model Deployment & Serving",
+      "groupCode": "ig2",
+      "groupName": "推理与服务"
+    },
+    {
+      "code": "ia10",
+      "name": "机密推理",
+      "nameEn": "Confidential Inference",
+      "groupCode": "ig2",
+      "groupName": "推理与服务"
+    },
+    {
+      "code": "ia11",
+      "name": "Agent 开发框架",
+      "nameEn": "Agent Development Frameworks",
+      "groupCode": "ig3",
+      "groupName": "Agent 开发"
+    },
+    {
+      "code": "ia12",
+      "name": "Agent Harness",
+      "nameEn": "Agent Harness",
+      "groupCode": "ig3",
+      "groupName": "Agent 开发"
+    },
+    {
+      "code": "ia13",
+      "name": "多智能体协作与编排",
+      "nameEn": "Multi-Agent Collaboration & Orchestration",
+      "groupCode": "ig3",
+      "groupName": "Agent 开发"
+    },
+    {
+      "code": "ia14",
+      "name": "MCP / A2A",
+      "nameEn": "MCP / A2A",
+      "groupCode": "ig3",
+      "groupName": "Agent 开发"
+    },
+    {
+      "code": "ia15",
+      "name": "上下文工程",
+      "nameEn": "Context Engineering",
+      "groupCode": "ig3",
+      "groupName": "Agent 开发"
+    },
+    {
+      "code": "ia16",
+      "name": "Agent 记忆系统",
+      "nameEn": "Agent Memory Systems",
+      "groupCode": "ig3",
+      "groupName": "Agent 开发"
+    },
+    {
+      "code": "ia17",
+      "name": "AI Coding",
+      "nameEn": "AI Coding",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia18",
+      "name": "AI 搜索",
+      "nameEn": "AI Search",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia19",
+      "name": "AI 原生应用",
+      "nameEn": "AI-Native Applications",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia20",
+      "name": "对话与语音交互",
+      "nameEn": "Conversational & Voice Interaction",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia21",
+      "name": "AIGC",
+      "nameEn": "AIGC",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia22",
+      "name": "具身智能",
+      "nameEn": "Embodied Intelligence",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia23",
+      "name": "智能终端与AI硬件",
+      "nameEn": "Smart Terminals & AI Hardware",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia24",
+      "name": "端侧AI",
+      "nameEn": "On-Device AI",
+      "groupCode": "ig4",
+      "groupName": "AI 应用"
+    },
+    {
+      "code": "ia25",
+      "name": "芯片",
+      "nameEn": "Chips",
+      "groupCode": "ig5",
+      "groupName": "算力与硬件"
+    },
+    {
+      "code": "ia26",
+      "name": "AI 计算与超节点",
+      "nameEn": "AI Computing & Super Nodes",
+      "groupCode": "ig5",
+      "groupName": "算力与硬件"
+    },
+    {
+      "code": "ia27",
+      "name": "AI 存储",
+      "nameEn": "AI Storage",
+      "groupCode": "ig5",
+      "groupName": "算力与硬件"
+    },
+    {
+      "code": "ia28",
+      "name": "网络与高速互联",
+      "nameEn": "Networking & High-Speed Interconnect",
+      "groupCode": "ig5",
+      "groupName": "算力与硬件"
+    },
+    {
+      "code": "ia29",
+      "name": "数据中心与 AI 工厂",
+      "nameEn": "Data Centers & AI Factories",
+      "groupCode": "ig5",
+      "groupName": "算力与硬件"
+    },
+    {
+      "code": "ia30",
+      "name": "Agentic Cloud",
+      "nameEn": "Agentic Cloud",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia31",
+      "name": "Agent 运行时与沙箱",
+      "nameEn": "Agent Runtime & Sandbox",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia32",
+      "name": "AI 网关与推理网关",
+      "nameEn": "AI Gateway & Inference Gateway",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia33",
+      "name": "弹性计算",
+      "nameEn": "Elastic Computing",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia34",
+      "name": "容器与 K8s",
+      "nameEn": "Containers & K8s",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia35",
+      "name": "Serverless",
+      "nameEn": "Serverless",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia36",
+      "name": "边缘计算",
+      "nameEn": "Edge Computing",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia37",
+      "name": "操作系统",
+      "nameEn": "Operating Systems",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia38",
+      "name": "混合云",
+      "nameEn": "Hybrid Cloud",
+      "groupCode": "ig6",
+      "groupName": "云与基础设施"
+    },
+    {
+      "code": "ia39",
+      "name": "数据湖仓",
+      "nameEn": "Data Lakehouse",
+      "groupCode": "ig7",
+      "groupName": "数据"
+    },
+    {
+      "code": "ia40",
+      "name": "大数据平台",
+      "nameEn": "Big Data Platforms",
+      "groupCode": "ig7",
+      "groupName": "数据"
+    },
+    {
+      "code": "ia41",
+      "name": "数据治理",
+      "nameEn": "Data Governance",
+      "groupCode": "ig7",
+      "groupName": "数据"
+    },
+    {
+      "code": "ia42",
+      "name": "Data Agent",
+      "nameEn": "Data Agent",
+      "groupCode": "ig7",
+      "groupName": "数据"
+    },
+    {
+      "code": "ia43",
+      "name": "AI 安全",
+      "nameEn": "AI Security",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia44",
+      "name": "Agent 治理与安全",
+      "nameEn": "Agent Governance & Security",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia45",
+      "name": "安全合规",
+      "nameEn": "Security & Compliance",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia46",
+      "name": "身份与权限",
+      "nameEn": "Identity & Access",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia47",
+      "name": "Responsible AI",
+      "nameEn": "Responsible AI",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia48",
+      "name": "AIOps",
+      "nameEn": "AIOps",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia49",
+      "name": "AgentOps",
+      "nameEn": "AgentOps",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia50",
+      "name": "可观测",
+      "nameEn": "Observability",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia51",
+      "name": "FinOps",
+      "nameEn": "FinOps",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia52",
+      "name": "AI Native 组织",
+      "nameEn": "AI Native Organization",
+      "groupCode": "ig8",
+      "groupName": "安全治理与运维"
+    },
+    {
+      "code": "ia53",
+      "name": "全球化与出海",
+      "nameEn": "Globalization & Going Global",
+      "groupCode": "ig9",
+      "groupName": "行业与生态"
+    },
+    {
+      "code": "ia54",
+      "name": "央国企",
+      "nameEn": "Central & State-Owned Enterprises",
+      "groupCode": "ig9",
+      "groupName": "行业与生态"
+    },
+    {
+      "code": "ia55",
+      "name": "中小企业",
+      "nameEn": "Small & Medium Enterprises",
+      "groupCode": "ig9",
+      "groupName": "行业与生态"
+    },
+    {
+      "code": "ia56",
+      "name": "开源模型与社区",
+      "nameEn": "Open Source Models & Communities",
+      "groupCode": "ig9",
+      "groupName": "行业与生态"
+    },
+    {
+      "code": "ia57",
+      "name": "开源工具与框架",
+      "nameEn": "Open Source Tools & Frameworks",
+      "groupCode": "ig9",
+      "groupName": "行业与生态"
+    }
+  ]
+}

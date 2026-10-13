@@ -1,0 +1,19 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "hit": {
+      "count": 1
+    },
+    "empty_needle": {
+      "count": 0
+    },
+    "eq_null": {
+      "count": 2
+    },
+    "ne_null": {
+      "count": 2
+    }
+  }
+}

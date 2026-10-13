@@ -1,0 +1,69 @@
+examples:
+  - id: cross-examination-opinion
+    title:
+      zh: "逐项质证意见书"
+      en: "Cross-examination opinion"
+    description:
+      zh: "对对方证据逐份做四维分析，生成可提交的质证意见书"
+      en: "Analyze opposing evidence in four dimensions and produce a court-ready opinion"
+    prompt:
+      zh: |-
+        请对对方提交的证据逐份生成质证意见，围绕真实性、合法性、关联性和证明力分别表态，给出每项证据的结论，并生成可提交法院的质证意见书 Word 文档。
+
+        对方证据材料：{{对方证据材料}}
+        我方代理身份：{{原告/被告}}
+      en: |-
+        Please prepare item-by-item cross-examination opinions on the opposing party's evidence, addressing authenticity, legality, relevance and probative value separately for each item, with a conclusion per item, and generate a court-ready Word document.
+
+        Opposing evidence materials: {{opposing evidence materials}}
+        Our role: {{plaintiff/defendant}}
+  - id: court-hearing-outline
+    title:
+      zh: "庭审质证提纲"
+      en: "Hearing outline"
+    description:
+      zh: "整理庭审口头质证的发言要点与应对话术"
+      en: "Prepare oral cross-examination talking points for the hearing"
+    prompt:
+      zh: |-
+        请基于对方提交的证据为开庭准备口头质证提纲：逐项给出口头表态要点、异议理由和现场应对话术，篇幅便于当庭发言。
+
+        对方证据材料：{{对方证据材料}}
+      en: |-
+        Based on the evidence submitted by the opposing party, prepare an oral cross-examination outline for the hearing: for each item, provide key statements, grounds for objections and ready responses, concise enough to use in court.
+
+        Opposing evidence materials: {{opposing evidence materials}}
+  - id: counter-evidence-suggestions
+    title:
+      zh: "反证与补强建议"
+      en: "Counter-evidence suggestions"
+    description:
+      zh: "针对对方证据的薄弱环节给出反证与补强建议"
+      en: "Suggest counter-evidence against weaknesses in the opposing exhibits"
+    prompt:
+      zh: |-
+        请分析对方证据的薄弱环节，结合我方现有材料给出反证与补强建议，并说明每项建议的材料依据；确有对应事项的，再提示可考虑的程序性申请。
+
+        对方证据材料：{{对方证据材料}}
+        我方现有材料：{{我方材料}}
+      en: |-
+        Analyze the weaknesses of the opposing party's evidence and, based on our available materials, suggest counter-evidence and reinforcement, stating the material basis for each suggestion; where warranted, also flag possible procedural applications.
+
+        Opposing evidence materials: {{opposing evidence materials}}
+        Our materials: {{our available materials}}
+  - id: evidence-cross-verification
+    title:
+      zh: "证据综合审查"
+      en: "Cross-check exhibits"
+    description:
+      zh: "对多份对方证据做金额、时间线、主体交叉验证"
+      en: "Cross-check amounts, timelines and parties across multiple opposing exhibits"
+    prompt:
+      zh: |-
+        请对对方提交的多份证据做综合审查：逐笔核对金额、对照形成时间线、检查主体一致性，指出相互印证或无法解释的冲突，并评估这些证据能否共同实现对方的证明目的。
+
+        对方证据材料：{{对方证据材料}}
+      en: |-
+        Review the multiple exhibits submitted by the opposing party as a whole: reconcile amounts item by item, compare their formation timelines, check consistency of the parties involved, point out corroborations or unexplained contradictions, and assess whether the exhibits jointly achieve the opposing party's stated purpose of proof.
+
+        Opposing evidence materials: {{opposing evidence materials}}

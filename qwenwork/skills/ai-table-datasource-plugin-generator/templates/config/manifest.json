@@ -1,0 +1,110 @@
+{
+  "extensionName": "__PLUGIN_SLUG__",
+  "extensionType": "data_source",
+  "classifications": [
+    "collaboration"
+  ],
+  "schemaVersion": "v1",
+  "icon": {
+    "light": "https://img.alicdn.com/imgextra/your-icon-url.png"
+  },
+  "i18nDesc": {
+    "en-US": "Sync your data source to DingTalk AI Table",
+    "es-LA": "Sincronizar tu fuente de datos con la tabla de IA de DingTalk",
+    "id-ID": "Menyinkronkan sumber data Anda ke DingTalk AI Table",
+    "ja-JP": "データソースを DingTalk AI Table に同期",
+    "ko-KR": "데이터 소스를 DingTalk AI 표로 동기화",
+    "ms-MY": "Menyegerakkan sumber data anda ke DingTalk AI Table",
+    "pt-BR": "Sincronize sua fonte de dados com a Tabela AI do DingTalk",
+    "th-TH": "ซิงค์แหล่งข้อมูลของคุณไปยัง DingTalk AI Table",
+    "tr-TR": "Veri kaynağınızı DingTalk AI Tablosuna senkronize edin",
+    "zh-CN": "同步你的数据源到钉钉 AI 表格",
+    "zh-HK": "同步你的數據源到釘釘 AI 表格",
+    "zh-TW": "同步你的數據源到釘釘 AI 表格"
+  },
+  "i18nName": {
+    "en-US": "Your Datasource",
+    "es-LA": "Tu fuente de datos",
+    "id-ID": "Sumber Data Anda",
+    "ja-JP": "データソース",
+    "ko-KR": "데이터 소스",
+    "ms-MY": "Sumber Data Anda",
+    "pt-BR": "Sua Fonte de Dados",
+    "th-TH": "แหล่งข้อมูลของคุณ",
+    "tr-TR": "Veri Kaynağınız",
+    "zh-CN": "你的数据源",
+    "zh-HK": "你的數據源",
+    "zh-TW": "你的數據源"
+  },
+  "i18nVideo": {},
+  "i18nImage": {
+    "en-US": "",
+    "ja-JP": "",
+    "zh-CN": ""
+  },
+  "i18nHelpLink": {},
+  "i18nIntroduction": {
+    "en-US": "### Your Datasource\n**One-line overview**: Sync data from your system to DingTalk AI Table for structured tracking and analysis.\n\n**Core capabilities**:\n - **Data access**: Connect to your data source and sync records with full field details.\n - **Flexible sync configuration**: Choose specific data scope and time ranges to precisely control the data.\n - **Efficient sync mechanism**: Supports manual sync and automatic sync to keep your AI Table data up-to-date.\n\n**Typical scenarios**:\n - Scenario 1: Build dashboards for data trends and analysis.\n - Scenario 2: Track progress and enable cross-team visibility.\n - Scenario 3: Analyze workload and optimize resource allocation.",
+    "es-LA": "### Tu fuente de datos\n**Resumen en una frase**: Sincroniza datos desde tu sistema con la Tabla AI de DingTalk para seguimiento estructurado y análisis de datos.\n\n* **Capacidades clave**:\n - **Acceso a datos**: Conecta tu fuente de datos y sincroniza registros con todos los detalles de los campos.\n - **Configuración flexible de sincronización**: Elige el alcance de datos y rangos de tiempo específicos para controlar con precisión los datos.\n - **Mecanismo de sincronización eficiente**: Admite sincronización manual y automática para mantener los datos de la Tabla AI actualizados.\n\n* **💡 Escenarios típicos**:\n - Escenario 1: Construir paneles de tendencias y análisis de datos.\n - Escenario 2: Seguimiento de progreso y visibilidad entre equipos.\n - Escenario 3: Análisis de carga de trabajo y optimización de asignación de recursos.",
+    "id-ID": "### Sumber Data Anda\n**Ringkasan singkat**: Sinkronisasi data dari sistem Anda ke DingTalk AI Table untuk pelacakan terstruktur dan analisis data.\n\n* **Kemampuan inti**:\n - **Akses data**: Hubungkan sumber data Anda dan sinkronkan catatan dengan detail bidang lengkap.\n - **Konfigurasi sinkronisasi yang fleksibel**: Pilih cakupan data dan rentang waktu tertentu untuk mengontrol data dengan tepat.\n - **Mekanisme sinkronisasi efisien**: Mendukung sinkronisasi manual dan otomatis untuk menjaga data AI Table tetap mutakhir.\n\n* **💡 Skenario umum**:\n - Skenario 1: Membangun dasbor untuk tren dan analisis data.\n - Skenario 2: Pelacakan kemajuan dan visibilitas lintas tim.\n - Skenario 3: Analisis beban kerja dan optimalisasi alokasi sumber daya.",
+    "ja-JP": "### データソース\n**概要**：データソースから DingTalk AI Table にデータを同期し、構造化された追跡・分析を実現します。\n\n**主な機能**：\n - **データ接続**：データソースに接続し、詳細フィールドを含むレコードを同期します。\n - **柔軟な同期設定**：データ範囲と時間範囲を選択して、データを正確に制御できます。\n - **高効率な同期機能**：手動同期と自動同期に対応します。\n\n**代表的な利用シーン**：\n - シーン 1：データトレンドと分析のダッシュボードを構築します。\n - シーン 2：進捗追跡とチーム間の可視化を実現します。\n - シーン 3：作業量分析とリソース配分の最適化を行います。",
+    "ko-KR": "### 데이터 소스\n**한 줄 요약**: 시스템에서 DingTalk AI 표로 데이터를 동기화하여 구조화된 추적 및 분석을 실현합니다.\n\n* **핵심 역량**:\n - **데이터 접근**: 데이터 소스에 연결하고 전체 필드 세부 정보를 포함한 레코드를 동기화합니다.\n - **유연한 동기화 구성**: 특정 데이터 범위와 시간 범위를 선택하여 데이터를 정밀하게 제어할 수 있습니다.\n - **효율적인 동기화 메커니즘**: 수동 동기화 및 자동 동기화를 지원하여 AI 표 데이터를 최신 상태로 유지합니다.\n\n* **💡 대표적 활용 사례**:\n - 사례 1: 데이터 트렌드 및 분석 대시보드를 구축합니다.\n - 사례 2: 진행 상황 추적과 팀 간 가시성을 실현합니다.\n - 사례 3: 작업량 분석과 자원 배분 최적화를 수행합니다.",
+    "ms-MY": "### Sumber Data Anda\n**Ringkasan dalam satu ayat**: Menyegerakkan data daripada sistem anda ke DingTalk AI Table untuk penjejakan berstruktur dan analisis data.\n\n* **Keupayaan utama**:\n - **Akses data**: Sambungkan sumber data anda dan segerakkan rekod dengan butiran medan penuh.\n - **Konfigurasi penyegerakan yang fleksibel**: Pilih skop data dan julat masa tertentu untuk mengawal data dengan tepat.\n - **Mekanisme penyegerakan yang cekap**: Menyokong penyegerakan manual dan automatik untuk memastikan data AI Table sentiasa dikemas kini.\n\n* **💡 Senario tipikal**:\n - Senario 1: Membina papan pemuka untuk trend dan analisis data.\n - Senario 2: Penjejakan kemajuan dan keterlihatan merentas pasukan.\n - Senario 3: Analisis beban kerja dan pengoptimuman peruntukan sumber.",
+    "pt-BR": "### Sua Fonte de Dados\n**Resumo em uma frase**: Sincronize dados do seu sistema com a Tabela AI do DingTalk para rastreamento estruturado e análise de dados.\n\n* **Capacidades principais**:\n - **Acesso a dados**: Conecte sua fonte de dados e sincronize registros com todos os detalhes dos campos.\n - **Configuração flexível de sincronização**: Escolha escopo de dados e intervalos de tempo específicos para controlar os dados com precisão.\n - **Mecanismo de sincronização eficiente**: Suporta sincronização manual e automática para manter os dados da Tabela AI atualizados.\n\n* **💡 Cenários típicos**:\n - Cenário 1: Construir painéis de tendências e análise de dados.\n - Cenário 2: Rastreamento de progresso e visibilidade entre equipes.\n - Cenário 3: Análise de carga de trabalho e otimização de alocação de recursos.",
+    "th-TH": "### แหล่งข้อมูลของคุณ\n**สรุปสั้นๆ**: ซิงค์ข้อมูลจากระบบของคุณไปยัง DingTalk AI Table เพื่อการติดตามและวิเคราะห์ข้อมูลอย่างเป็นระบบ\n\n* **ความสามารถหลัก**:\n - **การเข้าถึงข้อมูล**: เชื่อมต่อแหล่งข้อมูลของคุณและซิงค์บันทึกพร้อมรายละเอียดฟิลด์ครบถ้วน\n - **การกำหนดค่าการซิงค์ที่ยืดหยุ่น**: เลือกขอบเขตข้อมูลและช่วงเวลาเฉพาะเพื่อควบคุมข้อมูลได้อย่างแม่นยำ\n - **กลไกการซิงค์ที่มีประสิทธิภาพ**: รองรับการซิงค์ด้วยตนเองและการซิงค์อัตโนมัติเพื่อให้ข้อมูล AI Table เป็นปัจจุบันอยู่เสมอ\n\n* **💡 สถานการณ์ตัวอย่าง**:\n - สถานการณ์ที่ 1: สร้างแดชบอร์ดสำหรับแนวโน้มและการวิเคราะห์ข้อมูล\n - สถานการณ์ที่ 2: ติดตามความคืบหน้าและเปิดให้มองเห็นข้ามทีม\n - สถานการณ์ที่ 3: วิเคราะห์ภาระงานและเพิ่มประสิทธิภาพการจัดสรรทรัพยากร",
+    "tr-TR": "### Veri Kaynağınız\n**Tek cümleyle özet**: Sisteminizden DingTalk AI Tablosuna veri senkronize ederek yapılandırılmış takip ve analiz sağlanır.\n\n* **Temel yetenekler**:\n - **Veri erişimi**: Veri kaynağınıza bağlanın ve tüm alan ayrıntılarını içeren kayıtları senkronize edin.\n - **Esnek senkronizasyon yapılandırması**: Belirli veri kapsamı ve zaman aralıklarını seçerek verileri hassas bir şekilde kontrol edin.\n - **Verimli senkronizasyon mekanizması**: AI Tablo verilerini güncel tutmak için manuel ve otomatik senkronizasyonu destekler.\n\n* **💡 Tipik senaryolar**:\n - Senaryo 1: Veri trendleri ve analiz için panolar oluşturun.\n - Senaryo 2: İlerleme takibi ve ekipler arası görünürlük sağlayın.\n - Senaryo 3: İş yükü analizi ve kaynak tahsisi optimizasyonu yapın.",
+    "zh-CN": "### 你的数据源\n**一句话概述**：从你的系统同步数据到钉钉 AI 表格，实现数据的结构化追踪与分析。\n\n**核心能力**：\n - **数据接入**：接入你的数据源，同步记录的完整字段信息。\n - **灵活同步配置**：支持选择数据范围和时间范围，精准控制数据范围。\n - **高效同步机制**：支持手动同步和自动同步，确保 AI 表格数据保持最新。\n\n**典型场景**：\n - 场景 1：搭建数据趋势与分析看板。\n - 场景 2：进度跟踪和跨团队可视化。\n - 场景 3：工作量分析与资源分配优化。",
+    "zh-HK": "### 你的數據源\n**一句概述**：從你的系統同步數據到釘釘 AI 表格，實現數據的結構化追蹤與分析。\n\n* **核心能力**：\n - **數據接入**：接入你的數據源，同步記錄的完整字段信息。\n - **靈活同步配置**：支持選擇數據範圍和時間範圍，精準控制數據範圍。\n - **高效同步機制**：支持手動同步和自動同步，確保 AI 表格數據保持最新。\n\n* **💡 典型場景**：\n - 場景 1：搭建數據趨勢與分析看板。\n - 場景 2：進度跟蹤和跨團隊可視化。\n - 場景 3：工作量分析與資源分配優化。",
+    "zh-TW": "### 你的數據源\n**一句概述**：從你的系統同步數據到釘釘 AI 表格，實現數據的結構化追蹤與分析。\n\n* **核心能力**：\n - **數據接入**：接入你的數據源，同步記錄的完整字段信息。\n - **靈活同步配置**：支持選擇數據範圍和時間範圍，精準控制數據範圍。\n - **高效同步機制**：支持手動同步和自動同步，確保 AI 表格數據保持最新。\n\n* **💡 典型場景**：\n - 場景 1：搭建數據趨勢與分析看板。\n - 場景 2：進度跟蹤和跨團隊可視化。\n - 場景 3：工作量分析與資源分配優化。"
+  },
+  "i18nDeveloper": {
+    "en-US": "DingTalk",
+    "ja-JP": "DingTalk",
+    "zh-CN": "钉钉"
+  },
+  "manifest": {
+    "base": {
+      "dataSource": {
+        "dataSourceConfig": {
+          "uri": "https://your-frontend.example.com/index.html?corpId=$CORPID$&baseId=$BASE_ID$",
+          "initHeight": 450,
+          "initWidth": 300
+        },
+        "serverConfig": {
+          "baseUrl": "https://your-backend.example.com"
+        },
+        "uris": [
+          {
+            "method": "sheetMeta",
+            "uri": "/api/sheet_meta"
+          },
+          {
+            "method": "records",
+            "uri": "/api/records"
+          }
+        ],
+        "errorMessages": {
+          "10006": "${{err_10006}}",
+          "10007": "${{err_10007}}"
+        }
+      },
+      "sidebars": []
+    }
+  },
+  "i18nMap": {
+    "zh-CN": {
+      "err_10006": "数据源认证失败，请检查凭证",
+      "err_10007": "数据源连接超时，请稍后重试"
+    },
+    "en-US": {
+      "err_10006": "Authentication failed. Check your credentials.",
+      "err_10007": "Connection timed out. Try again later."
+    },
+    "ja-JP": {
+      "err_10006": "認証に失敗しました。認証情報を確認してください。",
+      "err_10007": "接続がタイムアウトしました。後でもう一度お試しください。"
+    }
+  },
+  "privacyAgreement": "{}",
+  "agreement": "{}"
+}

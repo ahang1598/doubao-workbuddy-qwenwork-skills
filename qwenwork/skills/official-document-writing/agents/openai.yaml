@@ -1,0 +1,6 @@
+interface:
+  display_name: "公文写作"
+  short_description: "按模板起草、审校、润色和规范化中文公文与机关材料输出"
+  default_prompt: "使用 $official-document-writing，根据我提供的事实和模板起草一份正式通知。"
+policy:
+  allow_implicit_invocation: true

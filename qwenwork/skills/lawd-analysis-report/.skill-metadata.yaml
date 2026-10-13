@@ -1,0 +1,65 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "案情分析报告"
+      en: "Case analysis report"
+    description:
+      zh: "基于案件材料出具全面法律分析建议书"
+      en: "Comprehensive legal analysis proposal from case materials"
+    prompt:
+      zh: |-
+        请根据以下案件材料出具一份全面的法律分析建议书，并生成 Word 文档：
+
+        案件材料：{{案件材料}}
+      en: |-
+        Produce a comprehensive legal analysis proposal from the case materials below, delivered as a Word document:
+
+        Case materials: {{case materials}}
+  - id: civil-commercial-case
+    title:
+      zh: "民商事案件分析"
+      en: "Civil & commercial case analysis"
+    description:
+      zh: "民商事纠纷报告：证据链、争议焦点 IRAC、管辖与程序"
+      en: "Civil/commercial dispute report: evidence chain, IRAC issue analysis, jurisdiction and procedure"
+    prompt:
+      zh: |-
+        请对「{{案情与争议焦点}}」这一民商事纠纷做深度分析，涵盖主体信息、基本案情时间轴、证据链梳理、主要法律问题的 IRAC 分析、需补充材料以及管辖与程序，并输出为 Word 版法律分析建议书。
+      en: |-
+        Produce an in-depth analysis of the civil/commercial dispute described in {{case facts and disputed issues}}, covering party information, facts timeline, evidence chain review, IRAC analysis of the main legal issues, materials to supplement, and jurisdiction and procedure, delivered as a Word legal analysis proposal.
+  - id: administrative-case
+    title:
+      zh: "行政案件分析"
+      en: "Administrative case analysis"
+    description:
+      zh: "行政案件报告：合法性审查、期限、举证责任与救济"
+      en: "Administrative case report: legality review, time limits, burden of proof and remedies"
+    prompt:
+      zh: |-
+        请分析「{{行政行为及案情材料}}」所涉行政案件，涵盖行政行为合法性审查、起诉/复议期限、举证责任与证据分析、主要法律问题的 IRAC 分析、救济程序与维权成本，并输出为 Word 版法律分析建议书。
+      en: |-
+        Analyze the administrative case concerning {{administrative act and case materials}}, covering legality review of the administrative act, litigation/reconsideration time limits, burden of proof and evidence analysis, IRAC analysis of the main legal issues, and remedies with enforcement costs, delivered as a Word legal analysis proposal.
+  - id: non-litigation-project
+    title:
+      zh: "非诉项目分析"
+      en: "Non-contentious project analysis"
+    description:
+      zh: "非诉交易报告：交易安排、尽调清单、审批与费用"
+      en: "Non-contentious transaction report: deal structure, due diligence checklist, approvals and costs"
+    prompt:
+      zh: |-
+        请对「{{交易项目与安排}}」这一非诉项目做分析，涵盖项目背景与交易安排、风险评估、交易里程碑、尽调清单与文件体系、主要法律问题分析、审批与费用，并输出为 Word 版法律分析建议书。
+      en: |-
+        Analyze the non-contentious transaction described in {{transaction and deal structure}}, covering project background and deal structure, risk assessment, transaction milestones, due diligence checklist and document framework, analysis of the main legal issues, and approvals and costs, delivered as a Word legal analysis proposal.
+  - id: transcript-multiple-cases
+    title:
+      zh: "录音转写多案分析"
+      en: "Transcript multi-case analysis"
+    description:
+      zh: "从沟通录音转写识别多个事务并逐一分析，含执业复盘"
+      en: "Identify multiple matters from a client-meeting transcript, analyze each, with practice retrospective"
+    prompt:
+      zh: |-
+        这是一份律师沟通录音转写：{{录音转写文本}}。请清洗无效信息，识别其中每个独立法律事务并逐一出具完整分析，生成法律分析建议书，并附执业复盘与合规警示。
+      en: |-
+        Attached is a client-meeting transcript: {{transcript text}}. Please clean out the noise, identify each independent legal matter, analyze every one of them in full into a legal analysis proposal, and include a practice retrospective with compliance warnings.

@@ -1,0 +1,64 @@
+[{
+    "id": "order_customerId",
+    "name": "顾客ID",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "顾客的唯一标识（openId）"
+},
+{
+    "id": "order_customerName",
+    "name": "顾客姓名",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客姓名"
+},
+{
+    "id": "order_customerPhone",
+    "name": "手机号",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "顾客联系手机号"
+},
+{
+    "id": "order_address",
+    "name": "收货地址",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "收货地址（含收货人、手机号、详细地址）"
+},
+{
+    "id": "order_items",
+    "name": "商品列表",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "订单商品列表，JSON 字符串。每项包含 productId/name/image/price/color/size/quantity"
+},
+{
+    "id": "order_totalPrice",
+    "name": "总价",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "订单总价（保存为字符串，避免精度问题）"
+},
+{
+    "id": "order_remark",
+    "name": "备注",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "订单备注信息"
+},
+{
+    "id": "order_status",
+    "name": "状态",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "订单状态：pending（已提交）/ confirmed（店主已确认）/ shipping（配送中）/ completed（已完成）/ cancelled（已取消）"
+}]

@@ -1,0 +1,20 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "by_day": {
+      "categories": [
+        "2025-01-01",
+        "2025-01-02"
+      ],
+      "values": [
+        1,
+        2
+      ]
+    },
+    "before_boundary": "2025-01-01",
+    "at_boundary": "2025-01-02",
+    "month": "2025-01"
+  }
+}

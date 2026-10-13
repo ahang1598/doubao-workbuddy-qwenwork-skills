@@ -1,12 +1,25 @@
 ---
 name: pptx
-version: 2.3.2
+version: 2.3.3
 description: "Use this skill any time a PowerPoint .pptx or legacy .ppt file is involved as input, output, or both. This includes creating decks; reading or extracting slide content; editing presentations; combining or splitting slides; and working with templates, layouts, speaker notes, comments, charts, actions, or fonts. Trigger whenever the user mentions a deck, slides, presentation, PPT, or a .ppt/.pptx filename. Normalize legacy .ppt input before using PPTX workflows."
 description_zh: "当 PowerPoint .pptx 或旧版 .ppt 文件作为输入、输出或两者兼有时使用此技能。覆盖创建、读取、提取、编辑、合并和拆分演示文稿，以及处理模板、布局、演讲者备注、批注、图表、动作与字体。用户提到幻灯片、演示文稿、PPT 或 .ppt/.pptx 文件名时触发。处理旧版 .ppt 前，先将其规范化为适合读取或编辑的格式。"
 license: Proprietary. LICENSE.txt has complete terms
 ---
 
 # PPTX Skill
+
+## User-facing style names
+
+When asking for a visual style (including AskUserQuestion labels and descriptions),
+use visual characteristics or the template's documented display title. Do not
+derive a product name from a skill invocation name, template ID, directory, or
+package name: these may retain historical identifiers for compatibility. Refer
+to this product only using the current identity supplied by the host; if a
+template has no suitable display title, describe its appearance or use a neutral
+label such as "Built-in presentation template" in the user's language. Keep
+technical identifiers unchanged in tool calls. Apply the same naming rule to
+progress messages and generated slide content, while preserving brands that the
+user explicitly wants represented in their presentation.
 
 ## Quick Reference
 

@@ -1,0 +1,53 @@
+{
+  "task_id": "gc_monitor_progress_009",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，帮我查看当前巡检任务的完成进度，有哪些门店已经提交了，哪些还没有？"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "模板",
+      "reply": "查最新的那个巡检任务。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "任务",
+      "reply": "查最新的那个巡检任务。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "没有",
+      "reply": "好的，了解。",
+      "delay_ms": 200,
+      "max_turns": 1
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": [
+      "last_assistant_message"
+    ],
+    "non_empty_fields": [
+      "last_assistant_message"
+    ],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "监控进度查询验证",
+    "category": "golden_eval_suite",
+    "scoring": {
+      "checks": [
+        "助手通过技能 CLI 查询了巡检任务的完成进度（如 dispatch query、dispatch notifications 等命令），或在系统未初始化时尝试了 init validate 等命令确认系统状态",
+        "助手向用户清晰展示了查询结果（各门店提交状态），或在系统未绑定 AI 表格/无可用任务时，正确告知用户当前系统未初始化并提供了下一步操作建议（如先执行初始化）也视为通过"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.6,
+        "timeout_s": 400
+      }
+    }
+  }
+}

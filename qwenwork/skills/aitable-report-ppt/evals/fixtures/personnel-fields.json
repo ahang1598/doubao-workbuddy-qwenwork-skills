@@ -1,0 +1,13 @@
+{
+  "data": {
+    "fields": [
+      {"fieldId": "employee_id", "fieldName": "员工编号", "type": "text"},
+      {"fieldId": "name", "fieldName": "姓名", "type": "text"},
+      {"fieldId": "department", "fieldName": "部门", "type": "singleSelect"},
+      {"fieldId": "written", "fieldName": "笔试分数", "type": "number"},
+      {"fieldId": "interview", "fieldName": "面试分数", "type": "number"},
+      {"fieldId": "rating", "fieldName": "评价档次", "type": "singleSelect"},
+      {"fieldId": "record_url", "fieldName": "原始记录", "type": "url"}
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+examples:
+  - id: parse-template-spec
+    title:
+      zh: "解析文书模板生成规格说明书"
+      en: "Parse doc template to spec"
+    description:
+      zh: "从用户提供的单份文书模板提取格式与结构规范"
+      en: "Extract format and structure spec from a single document template"
+    prompt:
+      zh: |-
+        请解析这份法律文书模板并生成模板规格说明书：模板文件：{{模板文件路径}}；文书类型：{{可选，如起诉状模板}}。
+      en: |-
+        Parse this legal document template and produce a template specification: template file: {{template file path}}; document type: {{optional, e.g. complaint template}}.
+  - id: extract-format-rules
+    title:
+      zh: "提取模板排版格式"
+      en: "Extract template formatting"
+    description:
+      zh: "提取模板的字体、字号、行距、页边距、编号体系等排版规则"
+      en: "Extract font, size, line spacing, margins and numbering rules"
+    prompt:
+      zh: |-
+        请从这份模板中提取排版格式要求（字体、字号、行距、页边距、编号体系）：模板文件：{{模板文件路径}}。
+      en: |-
+        Extract the layout rules (font, size, line spacing, margins, numbering) from this template: {{template file path}}.
+  - id: extract-outline-structure
+    title:
+      zh: "提取模板大纲与可变内容"
+      en: "Extract outline and fillable parts"
+    description:
+      zh: "提取模板章节大纲，标注固定文本与需填写的可变内容"
+      en: "Extract the outline and mark fixed text versus fillable content"
+    prompt:
+      zh: |-
+        请提取这份模板的章节大纲，并标注每部分的固定文本与需填写的可变内容：模板文件：{{模板文件路径}}。
+      en: |-
+        Extract the outline of this template and mark fixed text versus fillable content for each section: {{template file path}}.

@@ -1,0 +1,50 @@
+{
+  "extensionName": "投票按钮",
+  "extensionType": "side_view",
+  "classifications": [
+    "script"
+  ],
+  "schemaVersion": "v1",
+  "icon": {
+    "light": "https://img.alicdn.com/imgextra/i1/O1CN01mShWFK21gvUBZei7V_!!6000000007015-55-tps-32-32.svg"
+  },
+  "i18nDesc": {
+    "en-US": "Vote for records and automatically count results",
+    "ja-jp": "レコードに投票して結果を自動的に集計",
+    "zh-CN": "对记录进行投票并自动统计结果"
+  },
+  "i18nName": {
+    "en-US": "Vote",
+    "ja-jp": "投票",
+    "zh-CN": "投票"
+  },
+  "i18nVideo": {
+    "en-US": "",
+    "ja-jp": "",
+    "zh-CN": ""
+  },
+  "i18nImage": {
+    "en-US": "",
+    "ja-jp": "",
+    "zh-CN": ""
+  },
+  "i18nHelpLink": {},
+  "i18nIntroduction": {
+    "en-US": "This script allows users to vote for any record in a data table and automatically counts the voting results.",
+    "ja-jp": "このスクリプトは、データテーブル内の任意のレコードに投票し、投票結果を自動的に集計できます。",
+    "zh-CN": "该脚本允许用户对数据表中的任意记录进行投票，并自动统计投票结果。"
+  },
+  "i18nDeveloper": {
+    "en-US": "DingTalk",
+    "ja-jp": "DingTalk",
+    "zh-CN": "钉钉"
+  },
+  "manifest": {
+    "base": {
+      "scriptCode": "// 投票插件：引导用户选择目标数据表和目标行记录ID，检查并创建「投票结果」数字字段（如果不存在），然后将该记录的投票结果值加1\nasync function main() {\n  // 1. 引导用户选择目标数据表和目标行记录ID\n  const formResult = await Input.formAsync('投票设置', [\n    {\n      type: 'sheet',\n      key: 'targetSheet',\n      option: {\n        label: '选择目标数据表',\n      },\n      required: true,\n    },\n    {\n      type: 'record',\n      key: 'targetRecord',\n      option: {\n        label: '请输入要投票的记录ID',\n        referenceSheet: 'targetSheet',\n      },\n      required: true,\n    }\n  ]);\n  \n  const targetSheet = formResult.targetSheet;\n  const record = formResult.targetRecord;\n  \n  if (!targetSheet || !record) {\n    Output.error('必须选择目标数据表并输入记录ID');\n    return;\n  }\n  \n  // 2. 检查目标数据表是否存在名为「投票结果」的数字字段\n  let voteField = targetSheet.getField('投票结果');\n  \n  // 3. 如果不存在，则创建该字段\n  if (!voteField) {\n    voteField = targetSheet.insertField('投票结果', 'number');\n    Output.info('已创建「投票结果」数字字段');\n  } else {\n    // 验证字段类型是否为数字\n    if (!Base.isFieldOfType(voteField, 'number')) {\n      Output.error('已存在名为「投票结果」的字段，但不是数字类型，请删除或重命名该字段后重试');\n      return;\n    }\n  }\n  \n  let currentVoteValue = await voteField.getValueAsync(record.getId());\n  currentVoteValue = Number(currentVoteValue);\n  currentVoteValue = Number.isNaN(currentVoteValue) ? 0 : currentVoteValue;\n  \n  // 5. 将该值加1并更新回目标行记录\n  const newVoteValue = currentVoteValue + 1;\n  const success = await voteField.setValueAsync(record.getId(), newVoteValue);\n  \n  if (success) {\n    Output.info(`投票成功！当前投票结果已更新为: ${newVoteValue}`);\n    Base.ui.toast({ type:'success', message: '投票成功，已+1' });\n  } else {\n    Output.error('投票失败，请稍后重试');\n     Base.ui.toast({ type:'error', message: '投票失败' });\n  }\n}\nawait main();",
+      "buttonTrigger": true
+    }
+  },
+  "privacyAgreement": "{}",
+  "agreement": "{}"
+}

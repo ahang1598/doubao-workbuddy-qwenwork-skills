@@ -1,0 +1,35 @@
+{
+  "version": "workflow-dsl/v1",
+  "name": "交接任务通知",
+  "trigger": "start",
+  "steps": {
+    "start": {
+      "type": "WhenRecordCreated",
+      "next": "send",
+      "data": {
+        "sheetId": "<任务台账tableId>",
+        "mustHaveFields": "<任务交接对象fieldId>",
+        "where": { "left": "<任务交接对象fieldId>", "op": "EXIST" }
+      }
+    },
+    "send": {
+      "type": "SendMessage",
+      "data": {
+        "sender": { "type": "person" },
+        "title": "有一个任务交接给你",
+        "isButtonsEnabled": true,
+        "content": [
+          { "ref": "$.start.<通知文案fieldId>" }
+        ],
+        "buttons": [
+          {
+            "name": "去查看",
+            "color": "blue",
+            "action": { "type": "link", "url": { "ref": "$.start.rowUrl" } }
+          }
+        ],
+        "to": { "users": [{ "ref": "$.start.<任务交接对象fieldId>[*]" }] }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "阿里云 DTS-AI 文档解析"
+  short_description: "端到端解析 PDF、DOCX、PPTX 和图片文件为 Markdown"
+  default_prompt: "使用 $aliyun-dts-doc-parse 端到端解析指定的本地文档，将结果保存为 Markdown 并直接交付最终文件。"

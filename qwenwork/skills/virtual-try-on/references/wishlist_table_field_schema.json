@@ -1,0 +1,16 @@
+[{
+    "id": "wishlist_customerId",
+    "name": "顾客ID",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "顾客的唯一标识（openId）"
+},
+{
+    "id": "wishlist_clotheId",
+    "name": "衣品ID",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "收藏的衣品ID"
+}]

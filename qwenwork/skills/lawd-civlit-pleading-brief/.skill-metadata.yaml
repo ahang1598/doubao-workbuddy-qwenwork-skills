@@ -1,0 +1,73 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "一审代理词"
+      en: "First-instance pleading brief"
+    description:
+      zh: "为一审原告或被告起草可提交的代理词"
+      en: "Draft a submittable first-instance pleading brief for the plaintiff or defendant side"
+    prompt:
+      zh: |-
+        请基于「{{案卷材料（起诉状、答辩状、证据等）}}」起草一审代理词，我方地位为{{我方地位（原告/被告）}}。
+
+        要求：
+        1. Word 正式稿与 Markdown 提纲双输出，事实陈述均标注证据索引
+        2. 按争议焦点展开论证，回应对方主要抗辩
+      en: |-
+        Draft a first-instance pleading brief from {{case files (complaint, response, evidence, etc.)}}. Our side is {{our role (plaintiff/defendant)}}.
+
+        Requirements:
+        1. Deliver both a Word final draft and a Markdown outline, with evidence citations for every factual statement
+        2. Organize arguments by disputed issues and rebut the counterparty's main defenses
+  - id: ex-2
+    title:
+      zh: "二审代理词"
+      en: "Appellate pleading brief"
+    description:
+      zh: "为上诉人或被上诉人起草二审代理词"
+      en: "Draft an appellate pleading brief for the appellant or appellee"
+    prompt:
+      zh: |-
+        请基于「{{上诉状、一审判决等案卷材料}}」起草二审代理词，我方地位为{{我方地位（上诉人/被上诉人）}}。
+
+        要求：
+        1. 聚焦上诉请求、一审认定错误与法律适用，输出 Word 正式稿 + Markdown 提纲
+        2. 我方为上诉人时论证改判或发回，为被上诉人时论证维持原判并反驳上诉理由
+      en: |-
+        Draft an appellate pleading brief from {{appeal petition, first-instance judgment and other case files}}. Our side is {{our role (appellant/appellee)}}.
+
+        Requirements:
+        1. Focus on the appellate claims, errors in the first-instance findings, and application of law; deliver Word final draft + Markdown outline
+        2. If appellant, argue for reversal or remand; if appellee, argue for affirmance and rebut the appeal grounds
+  - id: ex-3
+    title:
+      zh: "仲裁代理意见"
+      en: "Arbitration pleading opinion"
+    description:
+      zh: "为仲裁申请人或被申请人起草代理意见"
+      en: "Draft a pleading opinion for the claimant or respondent in arbitration"
+    prompt:
+      zh: |-
+        请基于「{{案卷材料（仲裁申请书、答辩书、证据等）}}」起草仲裁代理意见，我方地位为{{我方地位（申请人/被申请人）}}。
+
+        要求：
+        1. 全文统一使用仲裁庭称谓与仲裁程序表述，输出 Word 正式稿 + Markdown 提纲
+        2. 事实陈述标注证据索引，按争议焦点展开论证
+      en: |-
+        Draft an arbitration pleading opinion from {{case files (request for arbitration, response, evidence, etc.)}}. Our side is {{our role (claimant/respondent)}}.
+
+        Requirements:
+        1. Use arbitration tribunal terminology consistently; deliver Word final draft + Markdown outline
+        2. Cite evidence indices for every factual statement and organize arguments by disputed issues
+  - id: ex-4
+    title:
+      zh: "代理词提纲框架"
+      en: "Brief outline skeleton"
+    description:
+      zh: "材料不全时先出代理词提纲框架与材料缺口清单"
+      en: "When materials are incomplete, get a brief outline skeleton plus a checklist of missing materials"
+    prompt:
+      zh: |-
+        我的案件目前只有{{已有材料}}，尚未达到起草代理词的最低启动条件。请先给出代理词提纲框架，并在同一回复中列出材料缺口清单（已收/缺失、优先级、补充方式及对代理词的影响）。
+      en: |-
+        My case materials so far are only {{materials provided}}, below the minimum needed to start. Please give me a pleading-brief outline skeleton first, and in the same reply a materials-gap checklist (collected/missing, priority, how to supply, and impact on the brief).

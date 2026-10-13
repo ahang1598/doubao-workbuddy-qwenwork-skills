@@ -1,0 +1,9 @@
+{
+  "data": {
+    "records": [
+      {"recordId": "t01", "cells": {"name": "李娜", "course": "合规基础", "status": "已完成"}},
+      {"recordId": "t02", "cells": {"name": "张伟", "course": "合规基础", "status": "已完成"}},
+      {"recordId": "t03", "cells": {"name": "陈晨", "course": "安全培训", "status": "已完成"}}
+    ]
+  }
+}

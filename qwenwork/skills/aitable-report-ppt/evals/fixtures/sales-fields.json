@@ -1,0 +1,11 @@
+{
+  "data": {
+    "fields": [
+      {"fieldId": "order_id", "fieldName": "订单号", "type": "text"},
+      {"fieldId": "region", "fieldName": "区域", "type": "singleSelect"},
+      {"fieldId": "month", "fieldName": "月份", "type": "date"},
+      {"fieldId": "revenue", "fieldName": "收入", "type": "number"},
+      {"fieldId": "target", "fieldName": "目标", "type": "number"}
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "data": {
+    "fields": [
+      { "fieldName": "任务标题", "fieldId": "fld_title", "type": "text" },
+      { "fieldName": "任务组", "fieldId": "fld_group", "type": "text" },
+      {
+        "fieldName": "交接状态",
+        "fieldId": "fld_handoff_status",
+        "type": "singleSelect",
+        "config": {
+          "options": [
+            { "name": "未交接", "id": "opt_not_started" },
+            { "name": "待认领", "id": "opt_pending" },
+            { "name": "交接中", "id": "opt_in_progress" },
+            { "name": "已接手", "id": "opt_claimed" },
+            { "name": "已完成", "id": "opt_done" }
+          ]
+        }
+      },
+      { "fieldName": "任务交接对象", "fieldId": "fld_assignee", "type": "user" },
+      { "fieldName": "状态", "fieldId": "fld_status", "type": "singleSelect" },
+      { "fieldName": "一句话摘要", "fieldId": "fld_summary", "type": "text" },
+      { "fieldName": "交接摘要", "fieldId": "fld_handoff_summary", "type": "text" },
+      { "fieldName": "产出物", "fieldId": "fld_outputs", "type": "attachment" },
+      { "fieldName": "工作文件", "fieldId": "fld_work_files", "type": "attachment" },
+      { "fieldName": "Agent类型", "fieldId": "fld_agent", "type": "singleSelect" },
+      { "fieldName": "任务ID", "fieldId": "fld_task_id", "type": "text" },
+      { "fieldName": "通知文案", "fieldId": "fld_notice", "type": "richText" },
+      { "fieldName": "创建人", "fieldId": "fld_creator", "type": "user" },
+      { "fieldName": "父记录", "fieldId": "fld_parent", "type": "unidirectionalLink" }
+    ],
+    "views": [
+      { "viewId": "fld_grid_view_1", "viewType": "Grid", "name": "表格视图" }
+    ]
+  }
+}

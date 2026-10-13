@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "1.0.61",
+  "version": "1.0.62.3",
   "layout": "multi",
   "skillNames": [
     "dingtalk-aisearch",
@@ -19,5 +19,6 @@
     "dingtalk-wiki"
   ],
   "routingFallbackSkill": "dingtalk-shared",
-  "transactionId": "8a4246a2-df8f-4cc6-9299-505a7fa046d9"
+  "transactionId": "7103fd4d-ad68-4a4c-b58c-855bc028ed82",
+  "sourceIdentity": "71d27fa6d918e60c6ee92c0988a4dfad715785cea4048347d0fbc5c72401f99f"
 }

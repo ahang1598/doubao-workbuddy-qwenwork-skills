@@ -1,0 +1,1975 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/lawd-estate-planning/case.schema.json",
+  "title": "Will and estate planning case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "work_id",
+    "status",
+    "baseline_at",
+    "audience_profile",
+    "intake_session",
+    "subject",
+    "testator_basic_info",
+    "testator_capacity",
+    "will_execution_plan",
+    "reserved_share_review",
+    "inheritance_review",
+    "people",
+    "relationships",
+    "assets",
+    "liabilities",
+    "existing_documents",
+    "intentions",
+    "evidence",
+    "issues",
+    "confirmations",
+    "consent",
+    "legal_research",
+    "rule_context",
+    "will_document",
+    "deliverables",
+    "output_preferences"
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{2,63}$"
+    },
+    "date_time_or_null": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "reference"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "user_statement",
+            "uploaded_document",
+            "professional_input",
+            "system_derived",
+            "external_source"
+          ]
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "confidence",
+        "confirmation_status",
+        "confirmed_at"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confirmation_status": {
+          "enum": [
+            "pending_confirmation",
+            "confirmed",
+            "disputed",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "confirmed_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        }
+      }
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "display_name",
+        "roles",
+        "birth_year",
+        "contact_masked",
+        "notes",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "birth_year": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1800,
+          "maximum": 2200
+        },
+        "contact_masked": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "from_person_id",
+        "to_person_id",
+        "relationship_type",
+        "status",
+        "notes",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "from_person_id": {
+          "$ref": "#/$defs/id"
+        },
+        "to_person_id": {
+          "$ref": "#/$defs/id"
+        },
+        "relationship_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "person_id",
+        "share_percent"
+      ],
+      "properties": {
+        "person_id": {
+          "$ref": "#/$defs/id"
+        },
+        "share_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "asset_type",
+        "description",
+        "location",
+        "estimated_value",
+        "currency",
+        "owners",
+        "evidence_status",
+        "arrangement_status",
+        "notes",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "asset_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimated_value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string"
+        },
+        "owners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/owner"
+          }
+        },
+        "evidence_status": {
+          "enum": [
+            "missing",
+            "uploaded",
+            "verified",
+            "not_applicable"
+          ]
+        },
+        "arrangement_status": {
+          "enum": [
+            "not_started",
+            "partial",
+            "covered",
+            "unknown"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "liability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "liability_type",
+        "description",
+        "creditor_masked",
+        "amount",
+        "currency",
+        "related_asset_ids",
+        "status",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "liability_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "creditor_masked": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amount": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string"
+        },
+        "related_asset_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "status": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "existing_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "document_type",
+        "description",
+        "document_date",
+        "file_reference",
+        "verification_status",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "document_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "document_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "file_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verification_status": {
+          "enum": [
+            "not_reviewed",
+            "reviewed",
+            "uncertain",
+            "missing"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "intention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "intention_type",
+        "summary",
+        "priority",
+        "related_person_ids",
+        "related_asset_ids",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "intention_type": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "related_person_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "related_asset_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "evidence_type",
+        "description",
+        "file_reference",
+        "sha256",
+        "related_ids",
+        "verification_status"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "evidence_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "file_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "related_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "verification_status": {
+          "enum": [
+            "not_reviewed",
+            "parsed",
+            "verified",
+            "rejected"
+          ]
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "level",
+        "issue_type",
+        "title",
+        "description",
+        "related_ids",
+        "status",
+        "next_action",
+        "owner"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "level": {
+          "enum": [
+            "BLOCKED",
+            "REVIEW_REQUIRED",
+            "WARN",
+            "INFO",
+            "PASS"
+          ]
+        },
+        "issue_type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "related_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "open",
+            "resolved",
+            "accepted",
+            "not_applicable"
+          ]
+        },
+        "next_action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "scope",
+        "related_ids",
+        "confirmed_by",
+        "confirmed_at",
+        "method"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "scope": {
+          "enum": [
+            "facts",
+            "relationships",
+            "assets",
+            "liabilities",
+            "intentions",
+            "research",
+            "output",
+            "other"
+          ]
+        },
+        "related_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "confirmed_by": {
+          "$ref": "#/$defs/id"
+        },
+        "confirmed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "card_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "card_id",
+        "base_card_id",
+        "selected_values",
+        "free_text",
+        "answer_status",
+        "answered_at",
+        "confirmed"
+      ],
+      "properties": {
+        "card_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_card_id": {
+          "$ref": "#/$defs/id"
+        },
+        "selected_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "free_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "answer_status": {
+          "enum": [
+            "answered",
+            "unknown",
+            "not_applicable",
+            "declined",
+            "later"
+          ]
+        },
+        "answered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "confirmed": {
+          "type": "boolean"
+        },
+        "field_values": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "issuing_body",
+        "document_number",
+        "effective_status",
+        "publication_date",
+        "effective_date",
+        "source_url",
+        "retrieved_at",
+        "relevance",
+        "limitations"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "issuing_body": {
+          "type": "string"
+        },
+        "document_number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effective_status": {
+          "enum": [
+            "effective",
+            "amended_effective",
+            "not_yet_effective",
+            "repealed",
+            "unknown"
+          ]
+        },
+        "publication_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "effective_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "relevance": {
+          "type": "string"
+        },
+        "limitations": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "case_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "case_number_or_library_id",
+        "court_or_publisher",
+        "decision_or_publication_date",
+        "source_kind",
+        "source_url",
+        "retrieved_at",
+        "relevance",
+        "differences"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "case_number_or_library_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "court_or_publisher": {
+          "type": "string"
+        },
+        "decision_or_publication_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "source_kind": {
+          "enum": [
+            "guiding_case",
+            "case_database",
+            "spc_typical",
+            "gazette_case",
+            "judgment_database",
+            "court_publication"
+          ]
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "relevance": {
+          "type": "string"
+        },
+        "differences": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "education_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "publisher",
+        "content_type",
+        "published_at",
+        "url",
+        "retrieved_at",
+        "verified_access",
+        "relevance"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "content_type": {
+          "enum": [
+            "article",
+            "video"
+          ]
+        },
+        "published_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verified_access": {
+          "type": "boolean"
+        },
+        "relevance": {
+          "type": "string"
+        }
+      }
+    },
+    "will_section": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "0.5.1"
+    },
+    "work_id": {
+      "$ref": "#/$defs/id"
+    },
+    "status": {
+      "enum": [
+        "audience_selecting",
+        "intake_cards",
+        "information_incomplete",
+        "user_confirming",
+        "researching",
+        "research_blocked",
+        "research_verified",
+        "review_required",
+        "ready_for_output",
+        "output_generated"
+      ]
+    },
+    "baseline_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "audience_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audience_type",
+        "language_profile",
+        "selected_via_card_id",
+        "selected_at",
+        "confirmed"
+      ],
+      "properties": {
+        "audience_type": {
+          "enum": [
+            "lawyer",
+            "general_public"
+          ]
+        },
+        "language_profile": {
+          "enum": [
+            "professional",
+            "plain"
+          ]
+        },
+        "selected_via_card_id": {
+          "const": "audience-type"
+        },
+        "selected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "confirmed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "intake_session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deck_id",
+        "deck_version",
+        "status",
+        "navigation_mode",
+        "collection_channel",
+        "coverage_assessment",
+        "required_card_ids",
+        "skipped_base_card_ids",
+        "progress",
+        "current_card_id",
+        "card_responses",
+        "confirmed_at"
+      ],
+      "properties": {
+        "deck_id": {
+          "const": "will-intake-v3"
+        },
+        "deck_version": {
+          "const": "4.0.0"
+        },
+        "status": {
+          "enum": [
+            "not_started",
+            "in_progress",
+            "awaiting_confirmation",
+            "confirmed"
+          ]
+        },
+        "navigation_mode": {
+          "const": "mode_routed_batched"
+        },
+        "coverage_assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "assessed_at",
+            "source_document_ids",
+            "topics"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "sufficient_for_drafting",
+                "cards_required"
+              ]
+            },
+            "assessed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "source_document_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/id"
+              },
+              "uniqueItems": true
+            },
+            "topics": {
+              "type": "object",
+              "additionalProperties": {
+                "enum": [
+                  "sufficient",
+                  "partial",
+                  "missing",
+                  "not_applicable"
+                ]
+              }
+            }
+          }
+        },
+        "required_card_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "skipped_base_card_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "progress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total_questions",
+            "completed_questions",
+            "current_question_index"
+          ],
+          "properties": {
+            "total_questions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "completed_questions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "current_question_index": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          }
+        },
+        "current_card_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "card_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/card_response"
+          }
+        },
+        "confirmed_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        },
+        "collection_channel": {
+          "const": "ask_user_question"
+        },
+        "collection_mode": {
+          "enum": [
+            "fast",
+            "complete",
+            "lawyer_sheet"
+          ]
+        }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "person_id"
+      ],
+      "properties": {
+        "person_id": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "testator_basic_info": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "gender",
+        "birth_date",
+        "identity_number",
+        "address",
+        "source_card_id",
+        "confirmation_status",
+        "confirmed_at"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gender": {
+          "type": "string",
+          "minLength": 1
+        },
+        "birth_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "identity_number": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_card_id": {
+          "const": "testator-basic-info"
+        },
+        "confirmation_status": {
+          "enum": [
+            "pending_confirmation",
+            "confirmed",
+            "disputed",
+            "unknown"
+          ]
+        },
+        "confirmed_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        }
+      }
+    },
+    "testator_capacity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reported_status",
+        "voluntariness_status",
+        "professional_assessment_status",
+        "observations",
+        "supporting_evidence_ids",
+        "source_card_id",
+        "confirmation_status",
+        "confirmed_at"
+      ],
+      "properties": {
+        "reported_status": {
+          "enum": [
+            "no_concern_reported",
+            "communication_support_needed",
+            "concern_reported",
+            "unknown"
+          ]
+        },
+        "voluntariness_status": {
+          "enum": [
+            "no_concern_reported",
+            "concern_reported",
+            "unknown"
+          ]
+        },
+        "professional_assessment_status": {
+          "enum": [
+            "not_provided",
+            "confirmed_capable",
+            "confirmed_incapable",
+            "inconclusive"
+          ]
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "supporting_evidence_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "source_card_id": {
+          "const": "testator-capacity"
+        },
+        "confirmation_status": {
+          "enum": [
+            "pending_confirmation",
+            "confirmed",
+            "disputed",
+            "unknown"
+          ]
+        },
+        "confirmed_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        }
+      }
+    },
+    "will_execution_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "form",
+        "witnesses",
+        "testator_signature_confirmed",
+        "witnesses_sign_each_page_confirmed",
+        "date_confirmed",
+        "continuous_presence_confirmed",
+        "identity_recording_confirmed",
+        "emergency_status",
+        "notary_appointment_planned",
+        "prior_arrangement_review_status",
+        "prior_will_review_status"
+      ],
+      "properties": {
+        "form": {
+          "enum": [
+            "holographic",
+            "dictated",
+            "printed",
+            "audio_video",
+            "oral",
+            "notarized",
+            "undecided"
+          ]
+        },
+        "witnesses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "person_id",
+              "capacity_status",
+              "is_heir_or_legatee",
+              "has_interest_with_heir_or_legatee"
+            ],
+            "properties": {
+              "person_id": {
+                "$ref": "#/$defs/id"
+              },
+              "capacity_status": {
+                "enum": [
+                  "eligible",
+                  "ineligible",
+                  "unknown"
+                ]
+              },
+              "is_heir_or_legatee": {
+                "enum": [
+                  "yes",
+                  "no",
+                  "unknown"
+                ]
+              },
+              "has_interest_with_heir_or_legatee": {
+                "enum": [
+                  "yes",
+                  "no",
+                  "unknown"
+                ]
+              }
+            }
+          }
+        },
+        "testator_signature_confirmed": {
+          "type": "boolean"
+        },
+        "witnesses_sign_each_page_confirmed": {
+          "type": "boolean"
+        },
+        "date_confirmed": {
+          "type": "boolean"
+        },
+        "continuous_presence_confirmed": {
+          "type": "boolean"
+        },
+        "identity_recording_confirmed": {
+          "type": "boolean"
+        },
+        "emergency_status": {
+          "enum": [
+            "not_applicable",
+            "active",
+            "ended",
+            "unknown"
+          ]
+        },
+        "notary_appointment_planned": {
+          "type": "boolean"
+        },
+        "prior_arrangement_review_status": {
+          "enum": [
+            "not_applicable",
+            "no_conflict",
+            "conflict",
+            "unknown"
+          ]
+        },
+        "prior_will_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "reserved_share_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "candidate_person_ids",
+        "treatment"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "no_candidate_reported",
+            "candidate_reported",
+            "unknown"
+          ]
+        },
+        "candidate_person_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "treatment": {
+          "enum": [
+            "not_applicable",
+            "reserved",
+            "professional_reviewed",
+            "not_addressed"
+          ]
+        }
+      }
+    },
+    "inheritance_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "heir_scope_status",
+        "fetal_share_treatment",
+        "disqualification_status",
+        "disqualification_review_status",
+        "legatee_acceptance_status",
+        "attached_obligation_review_status",
+        "lapse_and_residuary_status",
+        "coownership_review_status",
+        "administrator_consent_status",
+        "administrator_terms_status",
+        "debt_inventory_status",
+        "tax_review_status",
+        "insurance_review_status",
+        "guardianship_review_status",
+        "complex_asset_types",
+        "complex_asset_routing_status"
+      ],
+      "properties": {
+        "heir_scope_status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "unknown"
+          ]
+        },
+        "fetal_share_treatment": {
+          "enum": [
+            "not_applicable",
+            "reserved",
+            "professional_reviewed",
+            "not_addressed"
+          ]
+        },
+        "disqualification_status": {
+          "enum": [
+            "none",
+            "reported",
+            "unknown"
+          ]
+        },
+        "disqualification_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "legatee_acceptance_status": {
+          "enum": [
+            "not_applicable",
+            "planned",
+            "not_planned",
+            "unknown"
+          ]
+        },
+        "attached_obligation_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "lapse_and_residuary_status": {
+          "enum": [
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "coownership_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "administrator_consent_status": {
+          "enum": [
+            "confirmed",
+            "not_confirmed",
+            "unknown"
+          ]
+        },
+        "administrator_terms_status": {
+          "enum": [
+            "covered",
+            "incomplete",
+            "unknown"
+          ]
+        },
+        "debt_inventory_status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "unknown"
+          ]
+        },
+        "tax_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "insurance_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "guardianship_review_status": {
+          "enum": [
+            "not_applicable",
+            "reviewed",
+            "not_reviewed",
+            "unknown"
+          ]
+        },
+        "complex_asset_types": {
+          "enum": [
+            "none",
+            "reported",
+            "unknown"
+          ]
+        },
+        "complex_asset_routing_status": {
+          "enum": [
+            "not_applicable",
+            "routed",
+            "not_routed",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "people": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/person"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relationship"
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "liabilities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/liability"
+      }
+    },
+    "existing_documents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/existing_document"
+      }
+    },
+    "intentions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/intention"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    },
+    "confirmations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/confirmation"
+      }
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted",
+        "accepted_at",
+        "purposes",
+        "sensitive_data_acknowledged"
+      ],
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "accepted_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        },
+        "purposes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "sensitive_data_acknowledged": {
+          "type": "boolean"
+        },
+        "basis": {
+          "type": "string"
+        }
+      }
+    },
+    "legal_research": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "jurisdiction",
+        "recent_case_years",
+        "retrieved_at",
+        "authorities",
+        "cases",
+        "education_links",
+        "research_summary",
+        "limitations"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_started",
+            "in_progress",
+            "verified",
+            "blocked",
+            "stale"
+          ]
+        },
+        "jurisdiction": {
+          "type": "string"
+        },
+        "recent_case_years": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "retrieved_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        },
+        "authorities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/authority"
+          }
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/case_authority"
+          }
+        },
+        "education_links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/education_link"
+          }
+        },
+        "research_summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rule_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_pack_id",
+        "rule_pack_version",
+        "status",
+        "authority_checked_at",
+        "evaluated_at"
+      ],
+      "properties": {
+        "rule_pack_id": {
+          "const": "cn-will-core"
+        },
+        "rule_pack_version": {
+          "const": "0.2.0"
+        },
+        "status": {
+          "enum": [
+            "development",
+            "approved"
+          ]
+        },
+        "authority_checked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        }
+      }
+    },
+    "will_document": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "template_id",
+        "template_sha256",
+        "review_status",
+        "metadata",
+        "testator",
+        "sections",
+        "signature"
+      ],
+      "properties": {
+        "template_id": {
+          "const": "will-template-v1"
+        },
+        "template_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "review_status": {
+          "const": "draft_pending_review"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "will_number",
+            "execution_place",
+            "execution_date"
+          ],
+          "properties": {
+            "will_number": {
+              "type": "string"
+            },
+            "execution_place": {
+              "type": "string"
+            },
+            "execution_date": {
+              "type": "string"
+            }
+          }
+        },
+        "testator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "gender",
+            "nationality",
+            "identity_number",
+            "phone",
+            "address"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "gender": {
+              "type": "string"
+            },
+            "nationality": {
+              "type": "string"
+            },
+            "identity_number": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            }
+          }
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "declarations",
+            "legal_heirs",
+            "estate_distribution",
+            "executor",
+            "guardianship",
+            "minor_guardianship",
+            "other"
+          ],
+          "properties": {
+            "declarations": {
+              "$ref": "#/$defs/will_section"
+            },
+            "legal_heirs": {
+              "$ref": "#/$defs/will_section"
+            },
+            "estate_distribution": {
+              "$ref": "#/$defs/will_section"
+            },
+            "executor": {
+              "$ref": "#/$defs/will_section"
+            },
+            "guardianship": {
+              "$ref": "#/$defs/will_section"
+            },
+            "minor_guardianship": {
+              "$ref": "#/$defs/will_section"
+            },
+            "other": {
+              "$ref": "#/$defs/will_section"
+            }
+          }
+        },
+        "signature": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "signer_display",
+            "date_display",
+            "place_display"
+          ],
+          "properties": {
+            "signer_display": {
+              "type": "string"
+            },
+            "date_display": {
+              "type": "string"
+            },
+            "place_display": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "deliverables": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "execution_guide",
+        "ai_judgment_items"
+      ],
+      "properties": {
+        "execution_guide": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "phase",
+              "action",
+              "basis",
+              "owner",
+              "status"
+            ],
+            "properties": {
+              "phase": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "basis": {
+                "type": "string"
+              },
+              "owner": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "confirmed",
+                  "research_based",
+                  "professional_judgment_required"
+                ]
+              }
+            }
+          }
+        },
+        "ai_judgment_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "title",
+              "why_needed",
+              "decision_owner",
+              "required_materials",
+              "impact",
+              "next_action",
+              "blocking"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "why_needed": {
+                "type": "string"
+              },
+              "decision_owner": {
+                "type": "string"
+              },
+              "required_materials": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "impact": {
+                "type": "string"
+              },
+              "next_action": {
+                "type": "string"
+              },
+              "blocking": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "output_preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "formats",
+        "audiences",
+        "requested_deliverables",
+        "selection_confirmed",
+        "selected_at"
+      ],
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "json",
+              "markdown",
+              "csv",
+              "docx",
+              "pdf",
+              "xlsx"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "audiences": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "user",
+              "lawyer",
+              "notary",
+              "operator"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "requested_deliverables": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "will_docx",
+              "execution_guide",
+              "legal_research_report",
+              "education_content",
+              "asset_inventory",
+              "relationship_diagram"
+            ]
+          }
+        },
+        "selection_confirmed": {
+          "type": "boolean"
+        },
+        "selected_at": {
+          "$ref": "#/$defs/date_time_or_null"
+        }
+      }
+    }
+  }
+}

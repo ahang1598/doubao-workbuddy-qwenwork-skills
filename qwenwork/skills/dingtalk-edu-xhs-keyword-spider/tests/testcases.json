@@ -1,0 +1,188 @@
+{
+  "testcases": [
+    {
+      "id": "TC001",
+      "name": "搜索小红书关键词-基础",
+      "input": "帮我搜一下小红书上关于幼儿教育的笔记",
+      "expected_output": "执行xhs_search.py search命令，关键词为幼儿教育，获取Top5详情回填后通过generate_report.sh生成HTML舆情报告",
+      "category": "happy_path",
+      "priority": "P0"
+    },
+    {
+      "id": "TC002",
+      "name": "搜索小红书-指定排序最新",
+      "input": "搜小红书母婴用品，按最新排序",
+      "expected_output": "执行search命令，--sort 1（最新排序），获取详情后生成HTML报告",
+      "category": "happy_path",
+      "priority": "P0"
+    },
+    {
+      "id": "TC003",
+      "name": "搜索小红书-限制数量",
+      "input": "帮我搜小红书英语启蒙，只要10条",
+      "expected_output": "执行search命令，--num 10，获取详情后生成HTML报告",
+      "category": "happy_path",
+      "priority": "P0"
+    },
+    {
+      "id": "TC004",
+      "name": "搜索小红书-仅视频类型",
+      "input": "小红书上幼小衔接的视频有哪些",
+      "expected_output": "执行search命令，--type 1（仅视频），获取详情后生成HTML报告",
+      "category": "param_conversion",
+      "priority": "P0"
+    },
+    {
+      "id": "TC005",
+      "name": "搜索小红书-一周内笔记",
+      "input": "搜小红书双减政策，看最近一周的",
+      "expected_output": "执行search命令，--time 2（一周内），获取详情后生成HTML报告",
+      "category": "param_conversion",
+      "priority": "P1"
+    },
+    {
+      "id": "TC006",
+      "name": "获取笔记详情",
+      "input": "帮我看看这篇小红书笔记的内容 https://www.xiaohongshu.com/explore/xxx",
+      "expected_output": "执行detail命令，传入URL，获取笔记正文和标签，构造报告数据后通过generate_report.sh生成HTML报告",
+      "category": "happy_path",
+      "priority": "P0"
+    },
+    {
+      "id": "TC007",
+      "name": "小红书趋势分析",
+      "input": "分析一下小红书上国际学校的热门趋势",
+      "expected_output": "执行search命令搜索更多量，获取详情回填后通过generate_report.sh生成含高频标签和类型分布的HTML报告",
+      "category": "happy_path",
+      "priority": "P1"
+    },
+    {
+      "id": "TC008",
+      "name": "Cookie过期-重新登录",
+      "input": "搜索小红书报错了，说Cookie过期",
+      "expected_output": "引导用户通过浏览器重新登录小红书，提取Cookie保存到cookies.json，验证有效性后重新搜索并生成HTML报告",
+      "category": "robustness",
+      "priority": "P0"
+    },
+    {
+      "id": "TC009",
+      "name": "首次使用-环境初始化",
+      "input": "帮我搜小红书编程课推荐",
+      "expected_output": "首次使用先检查环境，运行setup_env.sh安装依赖，再检查Cookie，全部就绪后搜索并生成HTML报告",
+      "category": "boundary",
+      "priority": "P1"
+    },
+    {
+      "id": "TC010",
+      "name": "口语化-搜红书",
+      "input": "红书上有什么好的亲子游戏推荐",
+      "expected_output": "识别'红书'为小红书，执行搜索命令，关键词为亲子游戏推荐，生成HTML报告",
+      "category": "colloquial",
+      "priority": "P1"
+    },
+    {
+      "id": "TC011",
+      "name": "口语化-帮我看看小红书",
+      "input": "帮我看看小红书上大家对学而思的评价",
+      "expected_output": "识别为小红书搜索需求，搜索关键词学而思，获取详情后生成HTML舆情报告",
+      "category": "colloquial",
+      "priority": "P1"
+    },
+    {
+      "id": "TC012",
+      "name": "不触发-搜索微博",
+      "input": "帮我搜微博上的幼儿教育话题",
+      "expected_output": "不触发本技能，微博搜索不在本技能范围内",
+      "category": "negative",
+      "priority": "P0"
+    },
+    {
+      "id": "TC013",
+      "name": "不触发-创建教案",
+      "input": "帮我创建一个小学数学教案",
+      "expected_output": "不触发本技能，创建教案不在小红书搜索范围内",
+      "category": "negative",
+      "priority": "P0"
+    },
+    {
+      "id": "TC014",
+      "name": "混淆-小红书vs舆情监控",
+      "input": "帮我盯着小红书上对某学校的评价",
+      "expected_output": "触发本技能执行小红书关键词搜索并生成HTML报告，而非舆情监控技能的全平台搜索",
+      "category": "tool_confusion",
+      "priority": "P1"
+    },
+    {
+      "id": "TC015",
+      "name": "批量搜索多个关键词",
+      "input": "帮我搜小红书上幼儿园择校、幼小衔接、小学入学这三个关键词",
+      "expected_output": "分别执行三次search命令（间隔≥3秒），合并详情数据后通过generate_report.sh生成统一HTML报告",
+      "category": "batch",
+      "priority": "P1"
+    },
+    {
+      "id": "TC016",
+      "name": "搜索返回空结果",
+      "input": "搜小红书一个非常冷门的关键词xyzabc123",
+      "expected_output": "搜索返回空结果时，告知用户未找到相关笔记，建议更换关键词",
+      "category": "robustness",
+      "priority": "P1"
+    },
+    {
+      "id": "TC017",
+      "name": "搜索-最多点赞排序",
+      "input": "小红书编程启蒙，按点赞最多排序，找5条",
+      "expected_output": "执行search命令，--sort 2 --num 5，获取详情后生成HTML报告",
+      "category": "param_conversion",
+      "priority": "P1"
+    },
+    {
+      "id": "TC018",
+      "name": "搜索-最多收藏排序",
+      "input": "搜小红书中考复习资料，按收藏数排序",
+      "expected_output": "执行search命令，--sort 4（最多收藏），获取详情后生成HTML报告",
+      "category": "param_conversion",
+      "priority": "P1"
+    },
+    {
+      "id": "TC019",
+      "name": "Cookie登录-浏览器引导",
+      "input": "我需要登录小红书来搜索",
+      "expected_output": "运行xhs_cookie.py打开浏览器引导用户登录，通过context.cookies()提取Cookie（含httpOnly），保存到cookies.json",
+      "category": "happy_path",
+      "priority": "P0"
+    },
+    {
+      "id": "TC020",
+      "name": "混淆-小红书搜索vs详情",
+      "input": "搜小红书编程课",
+      "expected_output": "判断为搜索意图（非详情），执行流程A搜索关键词并生成HTML报告",
+      "category": "tool_confusion",
+      "priority": "P1"
+    },
+    {
+      "id": "TC021",
+      "name": "报告生成失败-JSON格式异常",
+      "input": "搜索成功但HTML报告生成失败",
+      "expected_output": "检查generate_report.sh退出码和stderr，排查JSON格式问题（notes为空、interact_info字段类型错误），修正后重试最多2次，仍失败则输出JSON文本摘要",
+      "category": "robustness",
+      "priority": "P1"
+    },
+    {
+      "id": "TC022",
+      "name": "报告自检-HTML文件过小",
+      "input": "生成的HTML报告打开后内容不完整",
+      "expected_output": "自检HTML文件大小<1KB，读取JSON排查notes数组、interact_info、tag_list等字段，修正后重新生成",
+      "category": "robustness",
+      "priority": "P1"
+    },
+    {
+      "id": "TC023",
+      "name": "学校舆情-定向搜索",
+      "input": "帮我查一下小红书上对XX学校的评价",
+      "expected_output": "识别为学校舆情搜索，以学校名为关键词搜索，获取详情后生成HTML舆情报告",
+      "category": "happy_path",
+      "priority": "P0"
+    }
+  ]
+}

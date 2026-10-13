@@ -1,0 +1,164 @@
+{
+  "skill_name": "ai-table-stats-query",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "在当前绑定的餐饮营运 Base 里查一下：饿了么平台有索赔单的门店共有多少家？",
+      "expected_output": "使用 DWS 定位饿了么数据表和字段，以索赔单大于零过滤，完整查询门店名称后在本地去重计数。",
+      "files": [],
+      "expectations": [
+        "首次命令是携带冻结 baseId 的 dws aitable base get",
+        "使用 dws aitable record query，并带 --all --page-limit 0",
+        "将多少家门店解释为门店名称去重数，而不是匹配记录条数",
+        "将索赔单为零的记录排除",
+        "不调用任何 Base 列表、搜索或发现命令"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "京东下单转化率最高的前五家门店里，入店转化率前三是哪几家，转化率分别是多少？",
+      "expected_output": "用一次完整 DWS 记录查询读取门店和两个转化率字段，在本地按门店聚合并完成两级排名。",
+      "files": [],
+      "expectations": [
+        "查询只包含门店名称和两个指标字段",
+        "使用 --all --page-limit 0 获取完整匹配记录",
+        "在同一完整数据集上完成门店分组和两级排名",
+        "不把服务端记录排序误当作分组排名"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "统计当前表所有记录的平均客单价和总营业额。",
+      "expected_output": "完整查询客单价和营业额字段，本地分别计算有效客单价平均值和营业额总和，并报告有效样本数。",
+      "files": [],
+      "expectations": [
+        "使用 dws aitable record query --all --page-limit 0",
+        "只读取客单价和营业额所需字段",
+        "平均值分母使用有效客单价值数量",
+        "空值或非法数值被排除并计数"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "把营业额最高的 10 条订单明细列出来，要日期、门店名称和营业额。",
+      "expected_output": "使用 DWS 明细查询，只选择指定字段，按营业额降序并设置 limit 10。",
+      "files": [],
+      "expectations": [
+        "使用 dws aitable record query",
+        "field-ids 只包含日期、门店名称和营业额",
+        "sort 使用营业额 fieldId 和 desc",
+        "设置 --limit 10 且不错误地分组"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "在当前绑定的 Base 里统计“用户投诉”分类一共有多少篇帖子。当前 Base 里如果没找到同名表或字段，你就尽量想办法完成。",
+      "expected_output": "只读取上游绑定的 Base；指定 Base 内缺少目标表或字段时停止并说明，不搜索其他 Base。",
+      "files": [],
+      "expectations": [
+        "所有 DWS 命令使用同一个冻结 baseId",
+        "不调用 dws aitable base list 或 base search 及其别名",
+        "不按业务关键词寻找其他 Base",
+        "当前 Base 内无法定位数据时停止"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "帮我统计用户投诉分类有多少篇帖子，我没给你表格链接。",
+      "expected_output": "没有明确 baseId，因此不运行任何 AI 表格命令，直接请求目标表格链接。",
+      "files": [],
+      "expectations": [
+        "要求用户提供目标 AI 表格链接或 baseId",
+        "获得 baseId 前不运行 dws aitable",
+        "不根据业务关键词猜测 Base"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "列出当前表里分类为“用户投诉”的帖子，要标题、发布日期和作者。",
+      "expected_output": "完整查询以确认准确总数，默认展示前 20 条；超过 20 条时报告折叠数并提供当前表格链接。",
+      "files": [],
+      "expectations": [
+        "使用过滤条件和 --all --page-limit 0 确认完整总数",
+        "用户未指定数量时最多展示 20 条",
+        "超过 20 条时报告准确总数和折叠数量",
+        "提供只使用当前 Base、Table、View 的可点击链接"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "完整展示当前表里分类为“用户投诉”的全部帖子，不要折叠。",
+      "expected_output": "识别用户要求完整展示，使用 DWS 自动分页读取全部匹配记录，不应用默认 20 条展示上限。",
+      "files": [],
+      "expectations": [
+        "使用 --all --page-limit 0",
+        "不应用默认 20 条展示上限",
+        "无法完整返回时如实说明限制"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "人设中已配置 @[AI表格](notable://ai-table?baseId=mExel2BLV5lM1mOrSPDxr2k7Wgk9rpMq)。请统计当前表的记录总数。",
+      "expected_output": "从 notable 引用解析并冻结 baseId，首次执行 base get，再完整遍历当前表记录计数；不搜索其他 Base。",
+      "files": [],
+      "expectations": [
+        "解析出 mExel2BLV5lM1mOrSPDxr2k7Wgk9rpMq",
+        "首次命令是 dws aitable base get --base-id mExel2BLV5lM1mOrSPDxr2k7Wgk9rpMq",
+        "记录计数使用 --all --page-limit 0",
+        "不调用任何 Base 发现命令"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "人设已绑定 @[AI表格](notable://ai-table?baseId=mExel2BLV5lM1mOrSPDxr2k7Wgk9rpMq)。查询 AI 表格中“用户投诉”分类一共有多少篇帖子。",
+      "expected_output": "只在 notable 引用指定的 Base 内定位表和字段，以 DWS 过滤并完整查询后统计记录数。",
+      "files": [],
+      "expectations": [
+        "解析并冻结 notable 引用中的 baseId",
+        "首次命令是带冻结 baseId 的 dws aitable base get",
+        "只在冻结 Base 内使用 table get、field get 和 record query",
+        "行动计划不包含列出或搜索 Base"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "AI表格：https://pre-alidocs.dingtalk.com/i/nodes/Qnp9zOoBVB1RjG2EcP0EvEymW1DK0g6l?iframeQuery=entrance%3Ddata%26sheetId%3DusTgW67%26viewId%3DbkqUZ84 。统计已经完成的那些工单，平均生产周期是多少天？如果表里没有等价字段，允许新建一个名为“工时”的公式字段来完成统计。",
+      "expected_output": "保持只读，查询已完成工单的开始日期和实际完成日期，按明确日期差口径逐行计算并求平均；无需也不得创建公式字段。",
+      "files": [],
+      "expectations": [
+        "只访问链接中的 Base 和 sheetId",
+        "使用已完成状态名称作为 DWS 过滤值",
+        "完整查询两个日期字段并本地计算日期差平均值",
+        "报告日期差口径、有效行数和排除行数",
+        "不调用任何创建、更新或删除命令"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "AI表格：https://pre-alidocs.dingtalk.com/i/nodes/amweZ92PV6ljnP3bSMq1ZdRv8xEKBD6p?iframeQuery=entrance%3Ddata%26sheetId%3DhERWDMS%26viewId%3DqvGDAH2 。统计已经完成的那些工单，平均生产周期是多少天？同时确认当前工时公式字段是否能用于本地统计。",
+      "expected_output": "验证工时公式字段配置和少量源字段样本；若值完整且口径匹配则完整查询工时字段后本地求平均，否则使用两个源日期本地计算，不修改表。",
+      "files": [],
+      "expectations": [
+        "通过 dws aitable field get 验证工时字段类型和公式",
+        "显式将公式字段放入 record query 的 field-ids",
+        "使用 --all --page-limit 0 获取完整有效样本",
+        "公式字段不可靠时改用源日期计算而不是解释为空零",
+        "不创建重复字段或修改记录"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "当前 AI 表格只有生产状态、开始日期和实际完成日期，没有工时或生产周期字段。请统计已完成工单的平均生产周期。",
+      "expected_output": "使用 DWS 完整查询已完成工单的两个日期字段，按确认的日期差口径逐行计算并返回平均值，全程只读。",
+      "files": [],
+      "expectations": [
+        "识别为逐行派生后聚合的问题",
+        "查询只包含状态和两个日期字段",
+        "使用 --all --page-limit 0",
+        "统一时区并说明自然日、精确小时或工作日口径",
+        "报告有效行数和排除行数",
+        "不创建公式字段"
+      ]
+    }
+  ]
+}

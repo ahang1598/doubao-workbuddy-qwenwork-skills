@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动学习应用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
+        
+        .card-container { perspective: 1000px; }
+        .card {
+            width: 100%; height: 320px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 32px;
+        }
+        .card-back { transform: rotateY(180deg); background: #eff6ff; }
+        
+        .rating-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .rating-again { background: #fee2e2; color: #991b1b; }
+        .rating-hard { background: #fef3c7; color: #92400e; }
+        .rating-good { background: #d1fae5; color: #065f46; }
+        .rating-easy { background: #dbeafe; color: #1e40af; }
+        .rating-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        .quiz-option {
+            padding: 16px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .quiz-option:hover { border-color: #3b82f6; background: #f8fafc; }
+        .quiz-option.correct { border-color: #10b981; background: #f0fdf4; }
+        .quiz-option.wrong { border-color: #ef4444; background: #fef2f2; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">互动学习应用</h1>
+            <p class="text-slate-500">多模式学习体验</p>
+        </header>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                <div class="text-2xl font-bold text-blue-600" id="statDue">0</div>
+                <div class="text-xs text-slate-500">待复习</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                <div class="text-2xl font-bold text-blue-600" id="statNew">0</div>
+                <div class="text-xs text-slate-500">新卡片</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                <div class="text-2xl font-bold text-blue-600" id="statStreak">0</div>
+                <div class="text-xs text-slate-500">连续</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                <div class="text-2xl font-bold text-blue-600" id="statAccuracy">0%</div>
+                <div class="text-xs text-slate-500">正确率</div>
+            </div>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="flex justify-center gap-2 mb-8 p-1 bg-slate-200 rounded-full w-fit mx-auto">
+            <button onclick="setMode('flashcard')" class="mode-tab px-6 py-2 rounded-full font-medium transition-all bg-white shadow-sm text-blue-600" data-mode="flashcard">闪卡</button>
+            <button onclick="setMode('quiz')" class="mode-tab px-6 py-2 rounded-full font-medium transition-all text-slate-600" data-mode="quiz">测验</button>
+            <button onclick="setMode('browse')" class="mode-tab px-6 py-2 rounded-full font-medium transition-all text-slate-600" data-mode="browse">浏览</button>
+        </div>
+
+        <!-- Flashcard Mode -->
+        <div id="flashcardMode" class="mode-content">
+            <div class="card-container mb-6">
+                <div class="card" id="flashcard" onclick="flipCard()">
+                    <div class="card-face">
+                        <span class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full mb-4" id="cardCategory">分类</span>
+                        <p class="text-xl text-center font-medium" id="cardQuestion">点击编辑问题</p>
+                        <span class="text-sm text-slate-400 mt-8">点击翻转</span>
+                    </div>
+                    <div class="card-face card-back">
+                        <span class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full mb-4" id="cardCategoryBack">分类</span>
+                        <p class="text-2xl text-center font-bold text-blue-700" id="cardAnswer">点击编辑答案</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ratingButtons" class="hidden grid grid-cols-4 gap-3 mb-6">
+                <button onclick="rateCard('again')" class="rating-btn rating-again">重来</button>
+                <button onclick="rateCard('hard')" class="rating-btn rating-hard">困难</button>
+                <button onclick="rateCard('good')" class="rating-btn rating-good">良好</button>
+                <button onclick="rateCard('easy')" class="rating-btn rating-easy">简单</button>
+            </div>
+
+            <div class="flex justify-center items-center gap-6">
+                <button onclick="prevCard()" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-slate-600 hover:bg-blue-50">←</button>
+                <span class="text-slate-500 font-medium" id="cardProgress">1 / 1</span>
+                <button onclick="nextCard()" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-slate-600 hover:bg-blue-50">→</button>
+            </div>
+
+            <div class="mt-8">
+                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 rounded-full transition-all" id="progressBar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Mode -->
+        <div id="quizMode" class="mode-content hidden">
+            <div class="bg-white rounded-2xl p-6 shadow-sm mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full" id="quizCategory">分类</span>
+                    <span class="text-sm text-slate-400" id="quizProgress">1 / 1</span>
+                </div>
+                <p class="text-xl font-medium mb-6" id="quizQuestion">问题</p>
+                <div class="space-y-3" id="quizOptions"></div>
+            </div>
+        </div>
+
+        <!-- Browse Mode -->
+        <div id="browseMode" class="mode-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="browseGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // 示例数据 - 用户可替换为自己的内容
+        // 注意：使用反引号(`)包裹字符串，可安全包含中文引号
+        const cards = [
+            {
+                id: "1",
+                category: "示例",
+                question: `这是第一个问题，点击编辑修改内容`,
+                answer: `这是答案，点击编辑修改内容`,
+                difficulty: "easy"
+            },
+            {
+                id: "2",
+                category: "示例",
+                question: `这是第二个问题，支持包含"引号"的内容`,
+                answer: `这是第二个答案，也支持"引号"`,
+                difficulty: "medium"
+            },
+            {
+                id: "3",
+                category: "示例",
+                question: `这是第三个问题`,
+                answer: `这是第三个答案`,
+                difficulty: "hard"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+        let currentMode = 'flashcard';
+
+        function init() {
+            renderCard();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(mode + 'Mode').classList.remove('hidden');
+            
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                if (tab.dataset.mode === mode) {
+                    tab.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+                    tab.classList.remove('text-slate-600');
+                } else {
+                    tab.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+                    tab.classList.add('text-slate-600');
+                }
+            });
+            
+            if (mode === 'quiz') renderQuiz();
+            if (mode === 'browse') renderBrowse();
+        }
+
+        function renderCard() {
+            const card = cards[currentIndex];
+            document.getElementById('cardCategory').textContent = card.category;
+            document.getElementById('cardCategoryBack').textContent = card.category;
+            document.getElementById('cardQuestion').textContent = card.question;
+            document.getElementById('cardAnswer').textContent = card.answer;
+            document.getElementById('cardProgress').textContent = `${currentIndex + 1} / ${cards.length}`;
+            
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            document.getElementById('ratingButtons').classList.add('hidden');
+            
+            const pct = ((currentIndex + 1) / cards.length) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+            document.getElementById('ratingButtons').classList.toggle('hidden', !isFlipped);
+        }
+
+        function rateCard(rating) {
+            nextCard();
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % cards.length;
+            renderCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+            renderCard();
+        }
+
+        function renderQuiz() {
+            const card = cards[currentIndex];
+            document.getElementById('quizCategory').textContent = card.category;
+            document.getElementById('quizQuestion').textContent = card.question;
+            document.getElementById('quizProgress').textContent = `${currentIndex + 1} / ${cards.length}`;
+            
+            const wrong = cards.filter((_, i) => i !== currentIndex).slice(0, 3).map(c => c.answer);
+            const options = [card.answer, ...wrong].sort(() => Math.random() - 0.5);
+            
+            document.getElementById('quizOptions').innerHTML = options.map(opt => 
+                `<button class="quiz-option w-full" onclick="selectAnswer('${opt}', '${card.answer}')">${opt}</button>`
+            ).join('');
+        }
+
+        function selectAnswer(selected, correct) {
+            const buttons = document.querySelectorAll('.quiz-option');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === correct) btn.classList.add('correct');
+                else if (btn.textContent === selected) btn.classList.add('wrong');
+            });
+            
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % cards.length;
+                renderQuiz();
+            }, 1500);
+        }
+
+        function renderBrowse() {
+            const grid = document.getElementById('browseGrid');
+            grid.innerHTML = cards.map((card, i) => `
+                <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onclick="jumpTo(${i})">
+                    <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">${card.category}</span>
+                    <p class="mt-2 font-medium text-slate-700">${card.question}</p>
+                </div>
+            `).join('');
+        }
+
+        function jumpTo(index) {
+            currentIndex = index;
+            setMode('flashcard');
+            renderCard();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (currentMode !== 'flashcard') return;
+            if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+            else if (e.code === 'ArrowRight') nextCard();
+            else if (e.code === 'ArrowLeft') prevCard();
+        });
+
+        init();
+    </script>
+</body>
+</html>

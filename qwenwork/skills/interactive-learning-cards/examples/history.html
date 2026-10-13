@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国历史年表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Serif SC', serif; background: #faf9f6; color: #292524; }
+        
+        .card-container { perspective: 1000px; }
+        .card {
+            width: 100%; height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 40px;
+            border: 1px solid #e7e5e4;
+        }
+        .card-face::before {
+            content: '';
+            position: absolute;
+            top: 20px; left: 20px; right: 20px; bottom: 20px;
+            border: 1px solid #e7e5e4;
+            pointer-events: none;
+        }
+        .card-back { transform: rotateY(180deg); background: #faf9f6; }
+        
+        .rating-btn {
+            padding: 12px 24px;
+            border: 1px solid #78716c;
+            background: transparent;
+            font-family: 'Noto Serif SC', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .rating-btn:hover { background: #44403c; color: white; }
+        
+        .quiz-option {
+            padding: 16px 20px;
+            background: white;
+            border: 1px solid #d6d3d1;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .quiz-option:hover { border-color: #78716c; background: #fafaf9; }
+        .quiz-option.correct { border-color: #65a30d; background: #f7fee7; }
+        .quiz-option.wrong { border-color: #dc2626; background: #fef2f2; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-2xl mx-auto px-4 py-10">
+        <header class="text-center mb-10 pb-6 border-b border-stone-300">
+            <h1 class="text-4xl font-bold text-stone-800 mb-3">中国历史年表</h1>
+            <p class="text-stone-500 tracking-widest">从夏商周到近现代</p>
+        </header>
+
+        <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg p-4 text-center shadow-sm border border-stone-200">
+                <div class="text-2xl font-bold text-stone-700" id="statTotal">15</div>
+                <div class="text-xs text-stone-500">历史事件</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 text-center shadow-sm border border-stone-200">
+                <div class="text-2xl font-bold text-stone-700" id="statLearned">0</div>
+                <div class="text-xs text-stone-500">已学习</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 text-center shadow-sm border border-stone-200">
+                <div class="text-2xl font-bold text-stone-700" id="statMastered">0</div>
+                <div class="text-xs text-stone-500">已掌握</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 text-center shadow-sm border border-stone-200">
+                <div class="text-2xl font-bold text-stone-700" id="statStreak">0</div>
+                <div class="text-xs text-stone-500">连对</div>
+            </div>
+        </div>
+
+        <div class="flex justify-center gap-3 mb-8">
+            <button onclick="setMode('flashcard')" class="mode-tab px-6 py-2 border border-stone-400 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all" data-mode="flashcard">卡片</button>
+            <button onclick="setMode('quiz')" class="mode-tab px-6 py-2 border border-stone-400 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all" data-mode="quiz">测验</button>
+            <button onclick="setMode('browse')" class="mode-tab px-6 py-2 border border-stone-400 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all" data-mode="browse">浏览</button>
+        </div>
+
+        <div id="flashcardMode" class="mode-content">
+            <div class="card-container mb-8">
+                <div class="card" id="flashcard" onclick="flipCard()">
+                    <div class="card-face">
+                        <span class="absolute top-8 right-10 text-sm text-stone-400 tracking-widest" id="cardDynasty">夏朝</span>
+                        <p class="text-6xl font-bold text-stone-800 mb-4" id="cardYear">约前2070年</p>
+                        <h2 class="text-2xl text-stone-600" id="cardEvent">夏朝建立</h2>
+                        <span class="absolute bottom-8 text-stone-400 text-sm tracking-widest">点击翻转</span>
+                    </div>
+                    <div class="card-face card-back">
+                        <span class="absolute top-8 right-10 text-sm text-stone-400 tracking-widest" id="cardDynastyBack">夏朝</span>
+                        <h3 class="text-2xl font-bold text-stone-800 mb-6" id="cardEventBack">夏朝建立</h3>
+                        <p class="text-stone-600 leading-relaxed text-center max-w-md" id="cardDesc">禹传位于子启，建立中国历史上第一个世袭制王朝，标志着原始社会结束，奴隶社会开始。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ratingButtons" class="hidden flex justify-center gap-4 mb-8">
+                <button onclick="rateCard('again')" class="rating-btn">重来</button>
+                <button onclick="rateCard('hard')" class="rating-btn">困难</button>
+                <button onclick="rateCard('good')" class="rating-btn">良好</button>
+                <button onclick="rateCard('easy')" class="rating-btn">简单</button>
+            </div>
+
+            <div class="flex justify-center items-center gap-8">
+                <button onclick="prevCard()" class="w-12 h-12 rounded-full border border-stone-400 flex items-center justify-center text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all">←</button>
+                <span class="text-stone-500" id="cardProgress">1 / 15</span>
+                <button onclick="nextCard()" class="w-12 h-12 rounded-full border border-stone-400 flex items-center justify-center text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all">→</button>
+            </div>
+
+            <div class="mt-10">
+                <div class="h-1 bg-stone-300">
+                    <div class="h-full bg-stone-600 transition-all" id="progressBar" style="width: 7%"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-xs text-stone-400">
+                    <span>开始</span>
+                    <span>完成</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="quizMode" class="mode-content hidden">
+            <div class="bg-white rounded-lg p-8 shadow-sm border border-stone-200 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-sm text-stone-500" id="quizDynasty">夏朝</span>
+                    <span class="text-sm text-stone-400" id="quizProgress">1 / 15</span>
+                </div>
+                <p class="text-xl mb-2" id="quizQuestion">夏朝建立的时间是哪一年？</p>
+                <div class="space-y-3 mt-6" id="quizOptions"></div>
+            </div>
+        </div>
+
+        <div id="browseMode" class="mode-content hidden">
+            <div class="space-y-3" id="browseList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 使用反引号(`)包裹字符串，可安全包含中文引号
+        const historyData = [
+            { year: "约前2070年", dynasty: "夏朝", event: "夏朝建立", desc: `禹传位于子启，建立中国历史上第一个世袭制王朝。` },
+            { year: "约前1600年", dynasty: "商朝", event: "商汤灭夏", desc: `商汤率军灭夏，建立商朝，定都于亳。` },
+            { year: "前1046年", dynasty: "周朝", event: "武王伐纣", desc: `周武王姬发率军伐纣，牧野之战后建立周朝。` },
+            { year: "前221年", dynasty: "秦朝", event: "秦统一六国", desc: `秦始皇嬴政统一六国，建立中国历史上第一个中央集权制国家。` },
+            { year: "前206年", dynasty: "汉朝", event: "西汉建立", desc: `刘邦击败项羽，建立汉朝，定都长安。` },
+            { year: "220年", dynasty: "三国", event: "三国鼎立", desc: `曹丕篡汉，刘备、孙权相继称帝，形成三国鼎立局面。` },
+            { year: "280年", dynasty: "晋朝", event: "西晋统一", desc: `司马炎灭吴，结束三国分裂，统一全国。` },
+            { year: "581年", dynasty: "隋朝", event: "隋朝建立", desc: `杨坚建立隋朝，结束南北朝分裂局面。` },
+            { year: "618年", dynasty: "唐朝", event: "唐朝建立", desc: `李渊建立唐朝，开创了中国历史上最繁荣的朝代之一。` },
+            { year: "960年", dynasty: "宋朝", event: "北宋建立", desc: `赵匡胤陈桥兵变，建立宋朝，定都开封。` },
+            { year: "1271年", dynasty: "元朝", event: "元朝建立", desc: `忽必烈建立元朝，定都大都（今北京）。` },
+            { year: "1368年", dynasty: "明朝", event: "明朝建立", desc: `朱元璋推翻元朝，建立明朝，定都南京。` },
+            { year: "1644年", dynasty: "清朝", event: "清朝入关", desc: `清军入关，建立清朝，定都北京。` },
+            { year: "1912年", dynasty: "民国", event: "中华民国成立", desc: `孙中山就任临时大总统，清朝灭亡，封建帝制结束。` },
+            { year: "1949年", dynasty: "新中国", event: "中华人民共和国成立", desc: `毛泽东在天安门城楼宣告新中国成立。` }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+        let currentMode = 'flashcard';
+        let progress = {};
+        let streak = 0;
+
+        function init() {
+            renderCard();
+            updateTabs();
+        }
+
+        function updateTabs() {
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                if (tab.dataset.mode === currentMode) {
+                    tab.classList.add('bg-stone-800', 'text-white', 'border-stone-800');
+                    tab.classList.remove('text-stone-600');
+                } else {
+                    tab.classList.remove('bg-stone-800', 'text-white', 'border-stone-800');
+                    tab.classList.add('text-stone-600');
+                }
+            });
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(mode + 'Mode').classList.remove('hidden');
+            updateTabs();
+            
+            if (mode === 'quiz') renderQuiz();
+            if (mode === 'browse') renderBrowse();
+        }
+
+        function renderCard() {
+            const item = historyData[currentIndex];
+            document.getElementById('cardDynasty').textContent = item.dynasty;
+            document.getElementById('cardDynastyBack').textContent = item.dynasty;
+            document.getElementById('cardYear').textContent = item.year;
+            document.getElementById('cardEvent').textContent = item.event;
+            document.getElementById('cardEventBack').textContent = item.event;
+            document.getElementById('cardDesc').textContent = item.desc;
+            document.getElementById('cardProgress').textContent = `${currentIndex + 1} / ${historyData.length}`;
+            
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            document.getElementById('ratingButtons').classList.add('hidden');
+            
+            const pct = ((currentIndex + 1) / historyData.length) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+            document.getElementById('ratingButtons').classList.toggle('hidden', !isFlipped);
+        }
+
+        function rateCard(rating) {
+            const item = historyData[currentIndex];
+            progress[item.event] = rating;
+            
+            if (rating === 'good' || rating === 'easy') streak++;
+            else streak = 0;
+            
+            nextCard();
+            updateStats();
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % historyData.length;
+            renderCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + historyData.length) % historyData.length;
+            renderCard();
+        }
+
+        function updateStats() {
+            const learned = Object.keys(progress).length;
+            const mastered = Object.values(progress).filter(r => r === 'good' || r === 'easy').length;
+            
+            document.getElementById('statLearned').textContent = learned;
+            document.getElementById('statMastered').textContent = mastered;
+            document.getElementById('statStreak').textContent = streak;
+        }
+
+        function renderQuiz() {
+            const item = historyData[currentIndex];
+            document.getElementById('quizDynasty').textContent = item.dynasty;
+            document.getElementById('quizQuestion').textContent = `${item.event}发生在哪一年？`;
+            document.getElementById('quizProgress').textContent = `${currentIndex + 1} / ${historyData.length}`;
+            
+            const wrong = historyData
+                .filter((_, i) => i !== currentIndex)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3)
+                .map(h => h.year);
+            
+            const options = [item.year, ...wrong].sort(() => Math.random() - 0.5);
+            
+            document.getElementById('quizOptions').innerHTML = options.map(opt => 
+                `<button class="quiz-option w-full" onclick="selectQuiz('${opt}', '${item.year}')">${opt}</button>`
+            ).join('');
+        }
+
+        function selectQuiz(selected, correct) {
+            const buttons = document.querySelectorAll('.quiz-option');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === correct) btn.classList.add('correct');
+                else if (btn.textContent === selected) btn.classList.add('wrong');
+            });
+            
+            if (selected === correct) streak++;
+            else streak = 0;
+            
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % historyData.length;
+                renderQuiz();
+                updateStats();
+            }, 1500);
+        }
+
+        function renderBrowse() {
+            const list = document.getElementById('browseList');
+            list.innerHTML = historyData.map((item, i) => `
+                <div class="bg-white rounded-lg p-4 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition-all" onclick="jumpTo(${i})">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-stone-500">${item.dynasty}</span>
+                            <h4 class="font-bold text-stone-800">${item.event}</h4>
+                        </div>
+                        <span class="text-lg font-bold text-stone-600">${item.year}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function jumpTo(index) {
+            currentIndex = index;
+            setMode('flashcard');
+            renderCard();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (currentMode !== 'flashcard') return;
+            if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+            else if (e.code === 'ArrowRight') nextCard();
+            else if (e.code === 'ArrowLeft') prevCard();
+        });
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>遗嘱事项信息采集表（律师通道）</title>
+<style>
+  :root {
+    --pink: #F9D7E4; --pink-d: #E39BBE; --pink-t: #8A4A68;
+    --blue: #DDEBF7; --blue-d: #A8C8E8; --blue-t: #3E5C76;
+    --lav: #EAE3F7; --lav-d: #C3B1E1; --lav-t: #5D4A7A;
+    --cream: #FDF3D8; --cream-d: #E4CD9A; --cream-t: #7A6234;
+    --mint: #DFF3E6; --mint-d: #A9D8BC; --mint-t: #3E6B52;
+    --bg: #FFF9F5; --ink: #4A3F49; --sub: #9A8C98;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; padding: 32px 16px 120px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 28px; }
+  header h1 { font-size: 24px; color: var(--pink-t); letter-spacing: 1px; }
+  header p { font-size: 13px; color: var(--sub); margin-top: 8px; line-height: 1.7; }
+  section { background: #fff; border-radius: 18px; padding: 22px 24px; margin-bottom: 18px; border: 1.5px solid #F3E8EE; }
+  section h2 { font-size: 16px; margin-bottom: 16px; padding-left: 12px; border-left: 5px solid var(--pink-d); border-radius: 3px; }
+  section.s-blue h2 { border-left-color: var(--blue-d); } section.s-lav h2 { border-left-color: var(--lav-d); }
+  section.s-cream h2 { border-left-color: var(--cream-d); } section.s-mint h2 { border-left-color: var(--mint-d); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+  .grid .full { grid-column: 1 / -1; }
+  label { display: block; font-size: 13px; color: var(--sub); margin-bottom: 5px; }
+  input, select, textarea { width: 100%; border: 1.5px solid #EADCE4; border-radius: 10px; padding: 9px 12px; font-size: 14px; color: var(--ink); background: #FFFDFA; font-family: inherit; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--pink-d); background: #fff; }
+  textarea { min-height: 64px; resize: vertical; }
+  .row { border: 1.5px dashed #E7D8E0; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #FFFCFA; position: relative; }
+  .row .del { position: absolute; top: 8px; right: 10px; border: none; background: none; color: var(--sub); font-size: 12px; cursor: pointer; }
+  .add { border: 1.5px dashed var(--pink-d); color: var(--pink-t); background: #FFF5F9; border-radius: 12px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+  .checks { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+  .checks label { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); margin: 0; }
+  .checks input { width: auto; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1.5px solid #F3E8EE; padding: 14px 16px; display: flex; justify-content: center; gap: 14px; align-items: center; }
+  .bar button { border: none; border-radius: 999px; padding: 11px 42px; font-size: 15px; cursor: pointer; }
+  #save { background: var(--pink-d); color: #fff; }
+  #save:hover { background: #D689B0; }
+  #status { font-size: 13px; color: var(--mint-t); }
+  .tip { font-size: 12px; color: var(--sub); margin-top: 4px; }
+</style>
+</head>
+<body>
+<script type="application/json" id="prefill-data">__PREFILL_JSON__</script>
+<div class="wrap">
+  <header>
+    <h1>遗嘱事项信息采集表</h1>
+    <p>律师通道专用 · 填写完成后点击底部「保存」，浏览器会下载一份已填写文件；<br>随后回到对话回复「已保存」，我将自动读取并继续。</p>
+  </header>
+
+  <section>
+    <h2>一、使用者与遗嘱人</h2>
+    <div class="grid">
+      <div><label>办理人身份</label><select id="f_actor"><option value="">请选择</option><option value="lawyer_representing_client">律师协助当事人</option><option value="authorized_assistant">经授权代办</option><option value="self">遗嘱人本人</option></select></div>
+      <div><label>遗嘱人性别</label><select id="f_gender"><option value="">请选择或留空（可凭身份证号推导）</option><option>男</option><option>女</option></select></div>
+      <div><label>遗嘱人姓名</label><input id="f_name"></div>
+      <div><label>出生日期</label><input id="f_birth" placeholder="可留空（凭身份证号推导）"></div>
+      <div class="full"><label>身份证号码</label><input id="f_idno"><div class="tip">性别与出生日期将自动推导；展示与输出时掩码。</div></div>
+      <div class="full"><label>住址</label><input id="f_address"></div>
+      <div class="full"><label>理解表达与真实自愿情况（有无疑点、是否受干扰）</label><textarea id="f_capacity"></textarea></div>
+    </div>
+  </section>
+
+  <section class="s-blue">
+    <h2>二、重要关系人（含法定继承人排查）</h2>
+    <div id="g_people"></div>
+    <button class="add" onclick="addPerson()">＋ 添加一位关系人</button>
+  </section>
+
+  <section class="s-cream">
+    <h2>三、财产清单</h2>
+    <div id="g_assets"></div>
+    <button class="add" onclick="addAsset()">＋ 添加一项财产</button>
+  </section>
+
+  <section class="s-lav">
+    <h2>四、债务与其他义务</h2>
+    <div id="g_debts"></div>
+    <button class="add" onclick="addDebt()">＋ 添加一项债务</button>
+  </section>
+
+  <section class="s-lav">
+    <h2>五、既有安排（旧遗嘱 / 遗赠扶养协议 / 赠与 / 受益人指定）</h2>
+    <div id="g_arr"></div>
+    <button class="add" onclick="addArr()">＋ 添加一项安排</button>
+  </section>
+
+  <section class="s-mint">
+    <h2>六、分配意向</h2>
+    <div id="g_dist"></div>
+    <button class="add" onclick="addDist()">＋ 添加一项分配</button>
+  </section>
+
+  <section>
+    <h2>七、遗嘱形式与见证</h2>
+    <div class="grid">
+      <div><label>拟采用形式</label><select id="f_form"><option value="">请选择</option><option value="holographic">自书遗嘱</option><option value="printed">打印遗嘱</option><option value="dictated">代书遗嘱</option><option value="audio_video">录音录像遗嘱</option><option value="notarized">公证遗嘱</option><option value="undecided">尚未决定</option></select></div>
+      <div><label>见证人 / 代书人（姓名与身份）</label><input id="f_witness"></div>
+      <div class="full"><label>签署要点确认（全程在场、签名、年月日等是否已安排）</label><textarea id="f_form_note"></textarea></div>
+    </div>
+  </section>
+
+  <section class="s-blue">
+    <h2>八、遗嘱执行</h2>
+    <div class="grid">
+      <div><label>遗嘱执行人（含备选）</label><input id="f_executor"></div>
+      <div><label>执行人是否知情并愿意履职</label><select id="f_executor_will"><option value="">请选择</option><option value="confirmed">已确认愿意</option><option value="not_confirmed">尚未确认</option><option value="unknown">不确定</option></select></div>
+      <div><label>原件保管方式</label><input id="f_custody"></div>
+      <div><label>生效后宣读与通知安排</label><input id="f_notice"></div>
+    </div>
+  </section>
+
+  <section class="s-lav">
+    <h2>九、特殊情况</h2>
+    <div class="checks">
+      <label><input type="checkbox" id="c_minor"> 未成年人子女</label>
+      <label><input type="checkbox" id="c_guard"> 监护安排</label>
+      <label><input type="checkbox" id="c_overseas"> 境外因素</label>
+      <label><input type="checkbox" id="c_dispute"> 家庭争议</label>
+      <label><input type="checkbox" id="c_none"> 无上述情况</label>
+    </div>
+  </section>
+
+  <section class="s-cream">
+    <h2>十、需要的成果（遗嘱草案、执行指引必含）</h2>
+    <div class="checks">
+      <label><input type="checkbox" id="c_research"> 法律法规与案例检索报告</label>
+      <label><input type="checkbox" id="c_education"> 普法文章/视频</label>
+      <label><input type="checkbox" id="c_inventory"> 资产与债务清单</label>
+      <label><input type="checkbox" id="c_diagram"> 关系人与拟继承财产示意图</label>
+    </div>
+  </section>
+</div>
+
+<div class="bar">
+  <button id="save" onclick="saveForm()">保 存</button>
+  <span id="status"></span>
+</div>
+
+<script>
+var P = {};
+try { P = JSON.parse(document.getElementById("prefill-data").textContent || "{}"); } catch (e) { P = {}; }
+function esc(v) { return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function set(id, v) { var el = document.getElementById(id); if (el && v != null && v !== "") el.value = v; }
+
+function personRow(d) {
+  d = d || {};
+  var div = document.createElement("div"); div.className = "row";
+  div.innerHTML = '<button class="del" onclick="this.parentNode.remove()">删除</button><div class="grid">' +
+    '<div><label>姓名</label><input class="p_name" value="' + esc(d.name) + '"></div>' +
+    '<div><label>与遗嘱人关系</label><input class="p_rel" value="' + esc(d.relationship) + '"></div>' +
+    '<div><label>身份证号码（可留空）</label><input class="p_idno" value="' + esc(d.identity_number) + '"></div>' +
+    '<div><label>是否可能法定继承人</label><select class="p_heir"><option value="">请选择</option><option value="yes"' + (d.is_possible_heir === "yes" ? " selected" : "") + '>是</option><option value="no"' + (d.is_possible_heir === "no" ? " selected" : "") + '>否</option><option value="unknown"' + (d.is_possible_heir === "unknown" ? " selected" : "") + '>不确定</option></select></div>' +
+    '<div class="full"><label>是否可能缺乏劳动能力又没有生活来源（必留份）</label><select class="p_share"><option value="">请选择</option><option value="yes"' + (d.reserved_share_factors === "yes" ? " selected" : "") + '>是</option><option value="no"' + (d.reserved_share_factors === "no" ? " selected" : "") + '>否</option><option value="unknown"' + (d.reserved_share_factors === "unknown" ? " selected" : "") + '>不确定</option></select></div></div>';
+  document.getElementById("g_people").appendChild(div);
+}
+function addPerson() { personRow(); }
+
+function assetRow(d) {
+  d = d || {};
+  var div = document.createElement("div"); div.className = "row";
+  div.innerHTML = '<button class="del" onclick="this.parentNode.remove()">删除</button><div class="grid">' +
+    '<div class="full"><label>财产描述（房产写到坐落地址，存款写到银行与账号，股权写到公司与比例，数字资产写到平台与账号）</label><input class="a_desc" value="' + esc(d.description) + '"></div>' +
+    '<div><label>类型</label><select class="a_type"><option value="">请选择</option><option value="real_estate"' + (d.asset_type === "real_estate" ? " selected" : "") + '>房产</option><option value="financial_assets"' + (d.asset_type === "financial_assets" ? " selected" : "") + '>存款或其他理财</option><option value="equity"' + (d.asset_type === "equity" ? " selected" : "") + '>股权或合伙份额</option><option value="vehicles"' + (d.asset_type === "vehicles" ? " selected" : "") + '>车辆</option><option value="digital_assets"' + (d.asset_type === "digital_assets" ? " selected" : "") + '>数字资产</option><option value="insurance_rights"' + (d.asset_type === "insurance_rights" ? " selected" : "") + '>保险相关权利</option><option value="claims"' + (d.asset_type === "claims" ? " selected" : "") + '>债权</option><option value="other"' + (d.asset_type === "other" ? " selected" : "") + '>其他</option></select></div>' +
+    '<div><label>权属与份额</label><input class="a_own" value="' + esc(d.ownership) + '"></div>' +
+    '<div class="full"><label>抵押 / 贷款 / 其他负担</label><input class="a_mort" value="' + esc(d.mortgage_or_debt) + '"></div></div>';
+  document.getElementById("g_assets").appendChild(div);
+}
+function addAsset() { assetRow(); }
+
+function debtRow(d) {
+  d = d || {};
+  var div = document.createElement("div"); div.className = "row";
+  div.innerHTML = '<button class="del" onclick="this.parentNode.remove()">删除</button><div class="grid">' +
+    '<div><label>类型</label><input class="d_type" value="' + esc(d.type) + '"></div>' +
+    '<div><label>债权人</label><input class="d_creditor" value="' + esc(d.creditor) + '"></div>' +
+    '<div><label>金额</label><input class="d_amount" value="' + esc(d.amount) + '"></div>' +
+    '<div><label>关联财产</label><input class="d_asset" value="' + esc(d.related_asset) + '"></div></div>';
+  document.getElementById("g_debts").appendChild(div);
+}
+function addDebt() { debtRow(); }
+
+function arrRow(d) {
+  d = d || {};
+  var div = document.createElement("div"); div.className = "row";
+  div.innerHTML = '<button class="del" onclick="this.parentNode.remove()">删除</button><div class="grid">' +
+    '<div><label>类型</label><select class="r_type"><option value="">请选择</option><option' + (d.arrangement_type === "旧遗嘱" ? " selected" : "") + '>旧遗嘱</option><option' + (d.arrangement_type === "遗赠扶养协议" ? " selected" : "") + '>遗赠扶养协议</option><option' + (d.arrangement_type === "赠与安排" ? " selected" : "") + '>赠与安排</option><option' + (d.arrangement_type === "保险或账户受益人指定" ? " selected" : "") + '>保险或账户受益人指定</option><option' + (d.arrangement_type === "其他" ? " selected" : "") + '>其他</option></select></div>' +
+    '<div><label>形成时间</label><input class="r_date" value="' + esc(d.document_date) + '"></div>' +
+    '<div class="full"><label>主要内容与相关人员</label><textarea class="r_summary">' + esc(d.summary) + '</textarea></div></div>';
+  document.getElementById("g_arr").appendChild(div);
+}
+function addArr() { arrRow(); }
+
+function distRow(d) {
+  d = d || {};
+  var div = document.createElement("div"); div.className = "row";
+  div.innerHTML = '<button class="del" onclick="this.parentNode.remove()">删除</button><div class="grid">' +
+    '<div><label>对应财产</label><input class="t_asset" value="' + esc(d.asset) + '"></div>' +
+    '<div><label>拟继承人 / 受益人</label><input class="t_bene" value="' + esc(d.beneficiaries) + '"></div>' +
+    '<div><label>分配方式 / 份额</label><input class="t_method" value="' + esc(d.distribution_method) + '"></div>' +
+    '<div><label>附义务或条件</label><input class="t_oblig" value="' + esc(d.attached_obligation) + '"></div>' +
+    '<div class="full"><label>替补安排</label><input class="t_sub" value="' + esc(d.substitute_arrangement) + '"></div></div>';
+  document.getElementById("g_dist").appendChild(div);
+}
+function addDist() { distRow(); }
+
+function rows(container, cls) {
+  return Array.prototype.map.call(document.querySelectorAll("#" + container + " .row"), function (row) {
+    var get = function (c) { var el = row.querySelector("." + c); return el ? el.value.trim() : ""; };
+    var obj = {}; cls.forEach(function (pair) { obj[pair[1]] = get(pair[0]); });
+    return obj;
+  }).filter(function (o) { return Object.keys(o).some(function (k) { return o[k]; }); });
+}
+
+function saveForm() {
+  var data = {
+    form_id: "lawyer-intake", form_version: "1.0.0",
+    saved_at: new Date().toISOString(),
+    testator: { actor: set0("f_actor"), name: set0("f_name"), gender: set0("f_gender"), birth_date: set0("f_birth"), identity_number: set0("f_idno"), address: set0("f_address"), capacity_note: set0("f_capacity") },
+    people: rows("g_people", [["p_name", "name"], ["p_rel", "relationship"], ["p_idno", "identity_number"], ["p_heir", "is_possible_heir"], ["p_share", "reserved_share_factors"]]),
+    assets: rows("g_assets", [["a_desc", "description"], ["a_type", "asset_type"], ["a_own", "ownership"], ["a_mort", "mortgage_or_debt"]]),
+    debts: rows("g_debts", [["d_type", "type"], ["d_creditor", "creditor"], ["d_amount", "amount"], ["d_asset", "related_asset"]]),
+    arrangements: rows("g_arr", [["r_type", "arrangement_type"], ["r_date", "document_date"], ["r_summary", "summary"]]),
+    distributions: rows("g_dist", [["t_asset", "asset"], ["t_bene", "beneficiaries"], ["t_method", "distribution_method"], ["t_oblig", "attached_obligation"], ["t_sub", "substitute_arrangement"]]),
+    will_form: { form: set0("f_form"), witness: set0("f_witness"), note: set0("f_form_note") },
+    execution: { executor: set0("f_executor"), executor_willingness: set0("f_executor_will"), custody: set0("f_custody"), notice: set0("f_notice") },
+    special: { minor_children: chk("c_minor"), guardianship: chk("c_guard"), overseas: chk("c_overseas"), family_dispute: chk("c_dispute"), none: chk("c_none") },
+    deliverables: { legal_research_report: chk("c_research"), education_content: chk("c_education"), asset_inventory: chk("c_inventory"), relationship_diagram: chk("c_diagram") }
+  };
+  function set0(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+  function chk(id) { var el = document.getElementById(id); return !!(el && el.checked); }
+  var payload = JSON.stringify(data, null, 2);
+  var file = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><title>已保存的遗嘱事项信息采集表</title></head><body style=\"font-family:sans-serif;padding:40px;color:#4A3F49\"><h2>已保存 ✓</h2><p>请回到千问办公对话，回复「已保存」。</p><script type=\"application/json\" id=\"intake-data\">" + payload.replace(/</g, "\\u003c") + "<\/script></body></html>";
+  var blob = new Blob([file], { type: "text/html" });
+  var a = document.createElement("a");
+  var ts = new Date(); var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+  a.href = URL.createObjectURL(blob);
+  a.download = "lawyer-intake-filled-" + ts.getFullYear() + pad(ts.getMonth() + 1) + pad(ts.getDate()) + "-" + pad(ts.getHours()) + pad(ts.getMinutes()) + ".html";
+  document.body.appendChild(a); a.click(); a.remove();
+  document.getElementById("status").textContent = "已保存 ✓ 请下载完成后回到对话回复「已保存」";
+}
+
+// 预填
+set("f_actor", P.actor); set("f_name", P.name); set("f_gender", P.gender); set("f_birth", P.birth_date);
+set("f_idno", P.identity_number); set("f_address", P.address); set("f_capacity", P.capacity_note);
+set("f_form", P.form); set("f_witness", P.witness); set("f_form_note", P.form_note);
+set("f_executor", P.executor); set("f_executor_will", P.executor_willingness); set("f_custody", P.custody); set("f_notice", P.notice);
+(P.people || []).forEach(personRow); if (!(P.people || []).length) personRow();
+(P.assets || []).forEach(assetRow); if (!(P.assets || []).length) assetRow();
+(P.debts || []).forEach(debtRow);
+(P.arrangements || []).forEach(arrRow);
+(P.distributions || []).forEach(distRow);
+if (P.special) { ["minor", "guard", "overseas", "dispute", "none"].forEach(function (k) { var el = document.getElementById("c_" + k); if (el && P.special[k]) el.checked = true; }); }
+if (P.deliverables) { ["research:legal_research_report", "education:education_content", "inventory:asset_inventory", "diagram:relationship_diagram"].forEach(function (pair) { var k = pair.split(":"); var el = document.getElementById("c_" + k[0]); if (el && P.deliverables[k[1]]) el.checked = true; }); }
+</script>
+</body>
+</html>

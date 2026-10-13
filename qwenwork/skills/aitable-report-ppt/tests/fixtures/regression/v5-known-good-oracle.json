@@ -1,0 +1,684 @@
+{
+  "oracle_version": "1.0",
+  "snapshot_sha256": "e40118d2b584a59a3e7dd1467febb3f107364806f95f8d9e121da585d399c0e6",
+  "report_spec_sha256": "4bfd8b48c5c4ad2840b3a29b347697765596b55acb9fd17aacd90fe4f5adf3e5",
+  "semantics_version": "1.0",
+  "runtime_contract_version": "1.1",
+  "runtime_asset_sha256": "7f5191e7247a743043c07d333fa2deefbf1736ba19f31398e0dbd7e47f59a26b",
+  "generated_at": "2026-08-21T13:46:37+08:00",
+  "confidentiality": "internal",
+  "metrics": {
+    "m_record_count": {
+      "expected": 300,
+      "tolerance": {
+        "type": "exact"
+      },
+      "source": "computed"
+    },
+    "m_total_sales": {
+      "expected": 39083775.0,
+      "tolerance": {
+        "type": "exact"
+      },
+      "source": "computed"
+    },
+    "m_total_cost": {
+      "expected": 20445575.0,
+      "tolerance": {
+        "type": "exact"
+      },
+      "source": "computed"
+    },
+    "m_gross_profit": {
+      "source": "declared"
+    },
+    "m_gross_margin": {
+      "source": "declared"
+    },
+    "m_total_orders": {
+      "expected": 4929.0,
+      "tolerance": {
+        "type": "exact"
+      },
+      "source": "computed"
+    },
+    "m_new_customers": {
+      "expected": 806.0,
+      "tolerance": {
+        "type": "exact"
+      },
+      "source": "computed"
+    },
+    "m_total_target": {
+      "source": "declared"
+    },
+    "m_attain_total": {
+      "source": "declared"
+    },
+    "m_months_below": {
+      "source": "declared"
+    },
+    "m_cells_below": {
+      "source": "declared"
+    }
+  },
+  "charts": {
+    "chart_monthly_sales": {
+      "categories": [
+        "2025-07",
+        "2025-08",
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "values": [
+        2871101.0,
+        3525211.0,
+        3107862.0,
+        3003239.0,
+        2744126.0,
+        3157530.0,
+        2801800.0,
+        3582691.0,
+        2947831.0,
+        2844562.0,
+        2952382.0,
+        5545440.0
+      ],
+      "total": 39083775.0
+    },
+    "chart_monthly_orders": {
+      "categories": [
+        "2025-07",
+        "2025-08",
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "values": [
+        388.0,
+        368.0,
+        487.0,
+        344.0,
+        376.0,
+        421.0,
+        469.0,
+        414.0,
+        393.0,
+        421.0,
+        417.0,
+        431.0
+      ],
+      "total": 4929.0
+    },
+    "chart_region_sales": {
+      "categories": [
+        "华南",
+        "华北",
+        "西南",
+        "华东",
+        "华中"
+      ],
+      "values": [
+        9993049.0,
+        7617922.0,
+        7379656.0,
+        7234563.0,
+        6858585.0
+      ],
+      "total": 39083775.0
+    },
+    "chart_heatmap": {
+      "source": "declared"
+    },
+    "chart_product_mix": {
+      "categories": [
+        "智能硬件",
+        "软件服务",
+        "解决方案",
+        "配件"
+      ],
+      "values": [
+        15006932.0,
+        11338690.0,
+        6846180.0,
+        5891973.0
+      ],
+      "total": 39083775.0
+    },
+    "chart_seller_sales": {
+      "categories": [
+        "郑北辰",
+        "孙立群",
+        "赵启明",
+        "周天阳",
+        "钱雨薇",
+        "吴悠然",
+        "李慕橙",
+        "王一诺"
+      ],
+      "values": [
+        6186633.0,
+        5211383.0,
+        5133437.0,
+        5027440.0,
+        4847060.0,
+        4757609.0,
+        4321081.0,
+        3599132.0
+      ],
+      "total": 39083775.0
+    }
+  },
+  "drilldowns": {
+    "drill_all": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_records": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_cost": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_orders": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_newcust": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_profit": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_margin": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_metric_attain": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_months_below": {
+      "expected_count": 150,
+      "mode": "full",
+      "member_digest": "sha256:1abe62bb2c35d56f5d1c73c2cd6edebef6632e5ebcd27a7fe48b05b753efd922"
+    },
+    "drill_cells_below": {
+      "expected_count": 106,
+      "mode": "full",
+      "member_digest": "sha256:11f0134b0aa6124ddcae7ea91ffa1a599da31e3e08662586c025f27df8ef5f22"
+    },
+    "drill_region_huanan": {
+      "expected_count": 78,
+      "mode": "full",
+      "member_digest": "sha256:cc10e9f69f0d7ffc0996cb974d15889e2681ca43384507fd44b26363e4eb43dd"
+    },
+    "drill_region_huabei": {
+      "expected_count": 56,
+      "mode": "full",
+      "member_digest": "sha256:bcab1abbdac15a48b64afa102c5897e9b6226edb15fdaab7182715257a50c989"
+    },
+    "drill_region_xinan": {
+      "expected_count": 56,
+      "mode": "full",
+      "member_digest": "sha256:e2cc2be58d4d33d9d389ba41877c910a452d224c8ac678b432bef1da8a07b007"
+    },
+    "drill_region_huadong": {
+      "expected_count": 58,
+      "mode": "full",
+      "member_digest": "sha256:91ee14949810c0f0fbecf8dd2f1f004458cc24adc961c8ca0b1de097a98c5c36"
+    },
+    "drill_region_huazhong": {
+      "expected_count": 52,
+      "mode": "full",
+      "member_digest": "sha256:af3f05ea83adcfed48862c552e2e7d6b2c7012db66e72683d7771c5b1ab77805"
+    },
+    "drill_msales_202507": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:9f4b792dd7dfd3c2b7864b47e8d2c53200d18ef20ca0a2a068f8a3937fc95acf"
+    },
+    "drill_msales_202508": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:74242eea015de54c9e540708ef68bd56e1d62df05a54418f147e472b034932a8"
+    },
+    "drill_msales_202509": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:b0afbae422f79fae9f0cef888e2fffc0596bb4e6a0cd7c6d4537ce5c0f3b0853"
+    },
+    "drill_msales_202510": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:42590e42bcfcd61baeb0037bf43751b31462db375fcd504285741d0ccac2e114"
+    },
+    "drill_msales_202511": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:023cd9f1b10b1e68337b231948368d62682e00cb1092f00bd6820cddae1a6dcb"
+    },
+    "drill_msales_202512": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:f59fc5e8db65e19745dc80ad58735ba2c82f21fe61f35928834c58512069b70d"
+    },
+    "drill_msales_202601": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:e58b0b759ae72686a2936acd91f6023dbe67be24c723161aa26d6de00a880133"
+    },
+    "drill_msales_202602": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:532ec869799c0efa58cfff7adc1033d039dd72dc3482954bdc49f8224f234aef"
+    },
+    "drill_msales_202603": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:c88260bfe76c47b113f0e7a744a07d24d2fa5efefa1a945eb1cf6011c5250cb9"
+    },
+    "drill_msales_202604": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:1e125f7edd7a029de61b84b31f8041a0922c7afe4abf99800ff29c82a878e498"
+    },
+    "drill_msales_202605": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:04bcf23c5d37395dd35a1163f563ae357569c014278b301fc71fcd5c02fe6821"
+    },
+    "drill_msales_202606": {
+      "expected_count": 25,
+      "mode": "full",
+      "member_digest": "sha256:3ff41d5b8c8be0ac06612b2b1864e4e8e406b925e6d11d8d38f5d3f4ea4362c4"
+    },
+    "drill_orders_all": {
+      "expected_count": 300,
+      "mode": "full",
+      "member_digest": "sha256:a32f3f2788e40f39ee68c16dac59ab2036c45dd540c9b1122b71b9a1faf8d772"
+    },
+    "drill_product_hardware": {
+      "expected_count": 116,
+      "mode": "full",
+      "member_digest": "sha256:9041af8a3cbb22dee5009428af99db5a7583a166e6bf1007f00d9d580707a00c"
+    },
+    "drill_product_software": {
+      "expected_count": 84,
+      "mode": "full",
+      "member_digest": "sha256:4fdd5fd5a932ca714874dd80f4cf1a6c60a4cc5b0d94aaba9963adda7252e539"
+    },
+    "drill_product_solution": {
+      "expected_count": 52,
+      "mode": "full",
+      "member_digest": "sha256:bc46242954b840155872dd20e273820a7c556b1b2b1bceb142994ce22cca5435"
+    },
+    "drill_product_parts": {
+      "expected_count": 48,
+      "mode": "full",
+      "member_digest": "sha256:468c2927fb2ae8cdef64e6d8dba0e58ec7c6a0a1b2256cdce59e8921d274f2d6"
+    },
+    "drill_seller_zheng": {
+      "expected_count": 49,
+      "mode": "full",
+      "member_digest": "sha256:eab83c1dd2d3e1d0395c670185c6bb9cfda3b34d0cc086a82f9c15dd6b61d8f3"
+    },
+    "drill_seller_sun": {
+      "expected_count": 37,
+      "mode": "full",
+      "member_digest": "sha256:28b48e8267e25c7a7b707dd48464d280b63a813617c69e11255ae3a716cfed98"
+    },
+    "drill_seller_zhao": {
+      "expected_count": 35,
+      "mode": "full",
+      "member_digest": "sha256:db50e1c86e40264c6acb61150424c596f14fa2c27b80adedd88440b98e61b4c4"
+    },
+    "drill_seller_zhou": {
+      "expected_count": 40,
+      "mode": "full",
+      "member_digest": "sha256:30fec4f5f73fb896927f472e5891a967687269da994e7699a4fa41189d229557"
+    },
+    "drill_seller_qian": {
+      "expected_count": 34,
+      "mode": "full",
+      "member_digest": "sha256:2a84498e79f7544f8c12561861ee201775c298ff0fc8a610899db64a9790a558"
+    },
+    "drill_seller_wu": {
+      "expected_count": 39,
+      "mode": "full",
+      "member_digest": "sha256:7c3f763edfe07709579f07e26bf012ce8116ac11ec2572ee41be39b3777ec5de"
+    },
+    "drill_seller_li": {
+      "expected_count": 35,
+      "mode": "full",
+      "member_digest": "sha256:3e87c1ec9cb359532cb6cf6da1a2d2074da8401b4acbb1b324617f2dd055fffb"
+    },
+    "drill_seller_wang": {
+      "expected_count": 31,
+      "mode": "full",
+      "member_digest": "sha256:e38e30005bb0a9795730b85e9a01470303f014245d098898cd3b202ca1daf4e9"
+    },
+    "drill_cell_huanan_202507": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:ecd2167d0cf2dd97aaa3f7354ef0653478b0c82fe19ea0c3018aa177e509ee2d"
+    },
+    "drill_cell_huanan_202508": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:e7f1a88fe59e16580a101d5c69157431427aa46704d83c39aac3e811f6a5b5e5"
+    },
+    "drill_cell_huanan_202509": {
+      "expected_count": 9,
+      "mode": "full",
+      "member_digest": "sha256:6357926fc54c8373334adcf984ee39ebed0c197ba124eb25d548a70dbbe89f13"
+    },
+    "drill_cell_huanan_202510": {
+      "expected_count": 8,
+      "mode": "full",
+      "member_digest": "sha256:edcf36a34d140a90df6131b9e54b4c160c1f9a9e77cce5868e4ec1d9b1215144"
+    },
+    "drill_cell_huanan_202511": {
+      "expected_count": 2,
+      "mode": "full",
+      "member_digest": "sha256:2670e8c89dc675f98467ad51744215de07139c1d01cb864c66fe384f1eb5fdea"
+    },
+    "drill_cell_huanan_202512": {
+      "expected_count": 8,
+      "mode": "full",
+      "member_digest": "sha256:4b97a72101bd8daaf9169b5783c04404d0127d7c533e36698eb0fc1a9b9b89c8"
+    },
+    "drill_cell_huanan_202601": {
+      "expected_count": 9,
+      "mode": "full",
+      "member_digest": "sha256:8d9b970c68d6188ebbbdcf8440221a51befe30ef25c10fa1a31ca65f38d59acc"
+    },
+    "drill_cell_huanan_202602": {
+      "expected_count": 9,
+      "mode": "full",
+      "member_digest": "sha256:32090a1e57be039959fc6907ab1fd7489cbe5a1cd977b091f9a40dacdee1b675"
+    },
+    "drill_cell_huanan_202603": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:c301bd1ce028b2826daa49fbffeae639312e184b3d5681e8b8b914493ad0fa65"
+    },
+    "drill_cell_huanan_202604": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:16b0af2c878b14a1fc567ae622f90d526abb6304cef9f1c7fc24e3ecd87c8f44"
+    },
+    "drill_cell_huanan_202605": {
+      "expected_count": 8,
+      "mode": "full",
+      "member_digest": "sha256:9731c34e1c11c9c50a21e906c8e52f7796ff972bc706aabd332d9af5f333fa56"
+    },
+    "drill_cell_huanan_202606": {
+      "expected_count": 5,
+      "mode": "full",
+      "member_digest": "sha256:27a13977fae6e54582b09136232cbb7b2a8137c3d4374a1e0639e2f1235642f2"
+    },
+    "drill_cell_huadong_202507": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:b53f18281b3315465b632d31ce7a40e0fb5135569ca2cbbe4dde6a7f935ba9a6"
+    },
+    "drill_cell_huadong_202508": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:f7662f22194e2f09c83f2a15680f5f063fa19b847d88f9cce9d11a678d5eef52"
+    },
+    "drill_cell_huadong_202509": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:d7045f830d730d3bab204c9b77f39b749b8b538dede1c0e3333558fdaa1526ee"
+    },
+    "drill_cell_huadong_202510": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:a2e0d8816b7d26a60a2123635425ea8f1fa0af0171becdecc4532aedc571cfc9"
+    },
+    "drill_cell_huadong_202511": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:5ac61c8a1124e30c6a06b380c923b239edb3d8eb5576d5487eef147d3f7537e8"
+    },
+    "drill_cell_huadong_202512": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:a45c5ff2c23b0ecd2f15f128ca29305b37ee424ac6327e353d18b290371c18b2"
+    },
+    "drill_cell_huadong_202601": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:b2556335c8b214817aafed76e2b81541a3cc52b5ea1ae1b2d37082756e04d366"
+    },
+    "drill_cell_huadong_202602": {
+      "expected_count": 2,
+      "mode": "full",
+      "member_digest": "sha256:41dd31a2cb1466362c70f73dc133f31b040c6f32ca0c550ed9e04693ed010e22"
+    },
+    "drill_cell_huadong_202603": {
+      "expected_count": 5,
+      "mode": "full",
+      "member_digest": "sha256:7d7267c5e38c7eaace79a441df149776ee37dafb7ff16ce3dd75d6d82688d9e1"
+    },
+    "drill_cell_huadong_202604": {
+      "expected_count": 5,
+      "mode": "full",
+      "member_digest": "sha256:6af52667617f606994f05400c877f05cde2ae35ec800155fd3610926a943f7e2"
+    },
+    "drill_cell_huadong_202605": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:96c021e5eebe83e39f7bd390016df525f3c63a45afa08c9a9776599485191342"
+    },
+    "drill_cell_huadong_202606": {
+      "expected_count": 2,
+      "mode": "full",
+      "member_digest": "sha256:8f8ce0855d59436c29ba6685bfa97d99d0668d535aa34a24948f7848ad281011"
+    },
+    "drill_cell_huabei_202507": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:d5ab05c6a64d52f100f2f13f39ca87f6e7e3e0b0c693807141baac0c24dd5250"
+    },
+    "drill_cell_huabei_202508": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:b3715f24be971af9a890867845ec7d69af0b867642753c7195945a7e45daff4f"
+    },
+    "drill_cell_huabei_202509": {
+      "expected_count": 1,
+      "mode": "full",
+      "member_digest": "sha256:3ab0053f754dc1db1e47bc0af9cffd99467d1dae499d181f7992ca3782f51629"
+    },
+    "drill_cell_huabei_202510": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:bb20a7d10767064958e3253d4c1fdd32ef5355c82f6ab8be9b195c3eebd048ef"
+    },
+    "drill_cell_huabei_202511": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:b0d2f7812cd96c623a211466a5fa27f7f11363f783be12baeee7f337017b8ada"
+    },
+    "drill_cell_huabei_202512": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:d466cfdf7078783dbf772893f7bd19ac71e8470ec08fc911d58ad9be1031a07c"
+    },
+    "drill_cell_huabei_202601": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:3181022d3933397eb80eb9614b68010016470b1d319d1d69450ce93c149a0e89"
+    },
+    "drill_cell_huabei_202602": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:315fe1d23f1fc9344334ae25d72969e804a456891f946e8affd3720c5348a190"
+    },
+    "drill_cell_huabei_202603": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:8ac4386f4a9388dda7df4f4e34b25065e96b1d34baf0ec832ad07718a3543bfa"
+    },
+    "drill_cell_huabei_202604": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:56ca57794dab65fedef135749974c4aa1e9ed4e543caf75b3badfb78cf8574f7"
+    },
+    "drill_cell_huabei_202605": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:348514166d0c24b71970fe03c17687201a5f20ce5b02b8395e5812a79e216c30"
+    },
+    "drill_cell_huabei_202606": {
+      "expected_count": 8,
+      "mode": "full",
+      "member_digest": "sha256:b057434fd8d4ef9a2618e9675434a8d6c1a8fbd4cf375796709e29a3dd3d794d"
+    },
+    "drill_cell_xinan_202507": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:ebd34a06c3e70bc75020b43c86a863e4e75a8454da25d55571ffdcd17c416566"
+    },
+    "drill_cell_xinan_202508": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:6466961d8993677a235fc5144b26925fbf5e0900311e3df8f1dbeffde535edc6"
+    },
+    "drill_cell_xinan_202510": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:bb500a7036f356897d93b1543b0e276e23f050a7d84b0490c36adbe55e1dbf23"
+    },
+    "drill_cell_xinan_202511": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:874e387d43b41e216ab9007efa1b07bd9d735714a9a66bdb0b4b5ac14d431663"
+    },
+    "drill_cell_xinan_202512": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:f189186c0556d761ed4e6500112e0425833c750bc7cce44dd6b0f46895086211"
+    },
+    "drill_cell_xinan_202601": {
+      "expected_count": 2,
+      "mode": "full",
+      "member_digest": "sha256:1fb404f613c15aa0755c2fc7b1c5fb2d32676ed764dac1238264e08e7b4e4be8"
+    },
+    "drill_cell_xinan_202602": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:9186e853c08fc2db33e3525b8b161435902ead325475147ccfb4954173ec31c4"
+    },
+    "drill_cell_xinan_202603": {
+      "expected_count": 10,
+      "mode": "full",
+      "member_digest": "sha256:294cd678e702bbd0e387297fafd13a9e69df54ce92c61773724c7c3bab22ad2f"
+    },
+    "drill_cell_xinan_202604": {
+      "expected_count": 7,
+      "mode": "full",
+      "member_digest": "sha256:14e44b72d87f8ee4127378f26ebece98a9e1269a76f05e27b29fb4c77b3de270"
+    },
+    "drill_cell_xinan_202605": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:d174bcc8273c7846b92773ddab8341caf6508c7c607df57d69161bef0326bfa4"
+    },
+    "drill_cell_xinan_202606": {
+      "expected_count": 5,
+      "mode": "full",
+      "member_digest": "sha256:16155f897f45aa577cbc812487646225f56a3e0900c135f4ad5ba603dbb1ee16"
+    },
+    "drill_cell_huazhong_202507": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:0e8996246f9c95a86cc3d3a11ba7b8f078e2925ceb4eccb5046fe44ea4fe5cc8"
+    },
+    "drill_cell_huazhong_202508": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:a8e1e6b9feab7e484930873fd07a221b49a39178902fcd1f4185eb3f5ddef4e9"
+    },
+    "drill_cell_huazhong_202509": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:d17728fd3a43f0afa6d0ba6bee5aae1292cba6c2b0cd704d5c07c688b5249702"
+    },
+    "drill_cell_huazhong_202510": {
+      "expected_count": 5,
+      "mode": "full",
+      "member_digest": "sha256:96c3a17f26526cf7fcefb7f6932327b80c6edb39b3b965a0f4c165900c0562e9"
+    },
+    "drill_cell_huazhong_202511": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:4324c0e223d8e6ca5308bd506f1c990d179d43bc507c19fa661150f504d8e4f3"
+    },
+    "drill_cell_huazhong_202512": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:4196e2dde6558cd973db6ec49ea356aafc5e656ca9e2c79a4e11d1cfe5f45ffd"
+    },
+    "drill_cell_huazhong_202601": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:aee6f82d212d654091e7d3ce1a1c15a74fd372491021b7f3086d73b9fc5821e3"
+    },
+    "drill_cell_huazhong_202602": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:85a538a9a1ceaf0ff4a02ec91bb82cd8eae0d53bed510233295b191ad385ff3f"
+    },
+    "drill_cell_huazhong_202603": {
+      "expected_count": 3,
+      "mode": "full",
+      "member_digest": "sha256:4bcd9d0505ece0bfe5b8ca806acf385b53088d50a53165eb6580b28b25b0797d"
+    },
+    "drill_cell_huazhong_202604": {
+      "expected_count": 6,
+      "mode": "full",
+      "member_digest": "sha256:551259453a2f5ee293b2ee2a1950eb0e5757f999c7f33903da37367413cf201a"
+    },
+    "drill_cell_huazhong_202605": {
+      "expected_count": 4,
+      "mode": "full",
+      "member_digest": "sha256:8bb3e0db42280076b0901ce18ba42ebf4de15d71dcb3b26786c8a14b9514e6a0"
+    },
+    "drill_cell_huazhong_202606": {
+      "expected_count": 5,
+      "mode": "full",
+      "member_digest": "sha256:0ecaf4a95db6d93142be978b1787a198b2a6e2f727bc79fe1377e556c17461fc"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+[{
+    "id": "style_analysis_customerId",
+    "name": "顾客ID",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "顾客的唯一标识（openId）"
+},
+{
+    "id": "style_analysis_styleType",
+    "name": "主要风格",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "测评得出的主要风格类型"
+},
+{
+    "id": "style_analysis_secondaryStyle",
+    "name": "次要风格",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "测评得出的次要风格类型"
+},
+{
+    "id": "style_analysis_keywords",
+    "name": "风格关键词",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "风格关键词，多个用逗号分隔"
+},
+{
+    "id": "style_analysis_userPhotoUrl",
+    "name": "用户照片",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "用户上传的照片URL"
+}]

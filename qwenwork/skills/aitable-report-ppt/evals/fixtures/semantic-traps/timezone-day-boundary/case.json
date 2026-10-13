@@ -1,0 +1,36 @@
+{
+  "description": "UTC 16:00 恰为东八区日界；23:30Z 落入次日",
+  "checks": [
+    {
+      "id": "by_day",
+      "kind": "group",
+      "config": {
+        "group_by": "时间",
+        "function": "count",
+        "date_granularity": "day",
+        "sort": {
+          "by": "label",
+          "order": "asc"
+        }
+      }
+    },
+    {
+      "id": "before_boundary",
+      "kind": "bucket",
+      "ms": 1735747199000,
+      "granularity": "day"
+    },
+    {
+      "id": "at_boundary",
+      "kind": "bucket",
+      "ms": 1735747200000,
+      "granularity": "day"
+    },
+    {
+      "id": "month",
+      "kind": "bucket",
+      "ms": 1735747200000,
+      "granularity": "month"
+    }
+  ]
+}

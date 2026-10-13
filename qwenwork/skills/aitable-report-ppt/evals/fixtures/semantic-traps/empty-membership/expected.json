@@ -1,0 +1,15 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "empty": {
+      "count": 0
+    },
+    "sum": 0.0,
+    "avg": null,
+    "min": null,
+    "median": null,
+    "count": 0
+  }
+}

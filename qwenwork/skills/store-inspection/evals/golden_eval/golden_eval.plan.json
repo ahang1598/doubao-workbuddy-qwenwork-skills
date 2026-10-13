@@ -1,0 +1,124 @@
+{
+  "suite_id": "golden_eval",
+  "runner_scope": "qwen",
+  "max_concurrency": 1,
+  "seed_policy": {
+    "base_seed": 20260514,
+    "scope": "environment_events_only"
+  },
+  "default_policy": {
+    "allow_network": true,
+    "allow_broadcast": false,
+    "allow_file_write": true,
+    "forbidden_tools": [
+      "mass_message"
+    ]
+  },
+  "graders": {
+    "schema_state": true,
+    "safety_policy": true,
+    "llm_judge": true
+  },
+  "metadata": {
+    "plan_name": "golden_eval",
+    "generated_by": {
+      "tool": "eval-test-runner-skill",
+      "generated_at": "2026-05-14"
+    },
+    "notes": "store-inspection Golden Case v5. case 按复杂度由低到高排序：信息查询类 > 基础管理类 > 有条件管理类 > 模板与派发类 > 报告类 > 流程护栏 > 端到端/多轮。每个 case 完全自包含，不依赖前序 case 运行结果。所有需要前置数据的 case 其 checks 均已包含无数据时正确告知用户的合法降级通过路径。threshold 统一 0.90。覆盖 23 个核心场景。"
+  },
+  "tasks": [
+    {
+      "task_id": "gc_capability_inquiry_002",
+      "task_file": "cases/case_002_capability_inquiry/task.json"
+    },
+    {
+      "task_id": "gc_store_list_004",
+      "task_file": "cases/case_004_store_list/task.json"
+    },
+    {
+      "task_id": "gc_message_draft_006",
+      "task_file": "cases/case_006_message_draft/task.json"
+    },
+    {
+      "task_id": "gc_init_create_001",
+      "task_file": "cases/case_001_init_create/task.json"
+    },
+    {
+      "task_id": "gc_store_add_003",
+      "task_file": "cases/case_003_store_add/task.json"
+    },
+    {
+      "task_id": "gc_config_share_016",
+      "task_file": "cases/case_016_config_share/task.json"
+    },
+    {
+      "task_id": "gc_stats_store_014",
+      "task_file": "cases/case_014_stats_store/task.json"
+    },
+    {
+      "task_id": "gc_stats_template_015",
+      "task_file": "cases/case_015_stats_template/task.json"
+    },
+    {
+      "task_id": "gc_monitor_progress_009",
+      "task_file": "cases/case_009_monitor_progress/task.json"
+    },
+    {
+      "task_id": "gc_store_delete_017",
+      "task_file": "cases/case_017_store_delete/task.json"
+    },
+    {
+      "task_id": "gc_remind_pending_010",
+      "task_file": "cases/case_010_remind_pending/task.json"
+    },
+    {
+      "task_id": "gc_template_create_005",
+      "task_file": "cases/case_005_template_create/task.json"
+    },
+    {
+      "task_id": "gc_template_update_018",
+      "task_file": "cases/case_018_template_update/task.json"
+    },
+    {
+      "task_id": "gc_dispatch_init_007",
+      "task_file": "cases/case_007_dispatch_init/task.json"
+    },
+    {
+      "task_id": "gc_dispatch_notify_008",
+      "task_file": "cases/case_008_dispatch_notify/task.json"
+    },
+    {
+      "task_id": "gc_multi_store_report_011",
+      "task_file": "cases/case_011_multi_store_report/task.json"
+    },
+    {
+      "task_id": "gc_single_store_report_012",
+      "task_file": "cases/case_012_single_store_report/task.json"
+    },
+    {
+      "task_id": "gc_report_push_013",
+      "task_file": "cases/case_013_report_push/task.json"
+    },
+    {
+      "task_id": "sg_template_preview_flow_019",
+      "task_file": "cases/case_019_template_preview_flow/task.json"
+    },
+    {
+      "task_id": "sg_dispatch_separation_020",
+      "task_file": "cases/case_020_dispatch_separation/task.json"
+    },
+    {
+      "task_id": "gc_custom_template_021",
+      "task_file": "cases/case_021_custom_template/task.json"
+    },
+    {
+      "task_id": "gc_e2e_dispatch_notify_022",
+      "task_file": "cases/case_022_e2e_dispatch_notify/task.json"
+    },
+    {
+      "task_id": "gc_multi_turn_template_023",
+      "task_file": "cases/case_023_multi_turn_template/task.json"
+    }
+  ]
+}

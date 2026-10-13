@@ -1,0 +1,84 @@
+[{
+    "id": "style_note_title",
+    "name": "标题",
+    "type": "text",
+    "isPrimary": true,
+    "property": {},
+    "description": "穿搭笔记标题"
+},
+{
+    "id": "style_note_author",
+    "name": "作者",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "笔记作者名称"
+},
+{
+    "id": "style_note_content",
+    "name": "内容",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "笔记正文内容"
+},
+{
+    "id": "style_note_images",
+    "name": "图片",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "笔记配图URL列表，多个用逗号分隔"
+},
+{
+    "id": "style_note_productIds",
+    "name": "关联商品",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "关联商品ID列表，多个用逗号分隔"
+},
+{
+    "id": "style_note_tags",
+    "name": "标签",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "笔记标签，多个用逗号分隔"
+},
+{
+    "id": "style_note_targetAudience",
+    "name": "目标人群",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "笔记目标受众描述"
+},
+{
+    "id": "style_note_noteIntent",
+    "name": "笔记意图",
+    "type": "text",
+    "isPrimary": false,
+    "property": {},
+    "description": "笔记创作意图"
+},
+{
+    "id": "style_note_likes",
+    "name": "点赞数",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "笔记点赞数"
+},
+{
+    "id": "style_note_shares",
+    "name": "分享数",
+    "type": "number",
+    "isPrimary": false,
+    "property": {
+        "formatter": "INT"
+    },
+    "description": "笔记分享数"
+}]

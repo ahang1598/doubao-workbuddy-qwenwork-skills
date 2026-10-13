@@ -1,0 +1,11 @@
+{
+  "name": "resume-helper",
+  "version": "1.0.0",
+  "description": "简历与面试辅助助手 AI 技能",
+  "keywords": [
+    "简历",
+    "面试",
+    "AI技能"
+  ],
+  "license": "MIT"
+}

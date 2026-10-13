@@ -1,0 +1,132 @@
+{
+  "task_id": "gc_remind_pending_010",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，对还没提交巡检的门店发送催办提醒消息。"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "选择",
+      "reply": "用最新的那个任务催办。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "哪个",
+      "reply": "用最新的那个任务催办。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "ID",
+      "reply": "用最新的那个任务。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "任务",
+      "reply": "用最新的那个巡检任务催办。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "确认",
+      "reply": "确认催办。",
+      "delay_ms": 200,
+      "max_turns": 5
+    },
+    {
+      "when_contains": "跳过",
+      "reply": "跳过已通知的，补发未通知的。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "重发",
+      "reply": "跳过已通知的，只补发未通知的。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "duplicate",
+      "reply": "skip，跳过已通知的。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "发布",
+      "reply": "已发布。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "链接",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "表单",
+      "reply": "已发布，请继续。",
+      "delay_ms": 3000,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "全部完成",
+      "reply": "好的，那就不用催办了，谢谢。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "无需催办",
+      "reply": "好的，了解。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "已完成",
+      "reply": "好的，了解，不用催办了。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "没有",
+      "reply": "好的，了解。",
+      "delay_ms": 200,
+      "max_turns": 2
+    },
+    {
+      "when_contains": "无法",
+      "reply": "好的，了解当前状态。",
+      "delay_ms": 200,
+      "max_turns": 2
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": [
+      "last_assistant_message"
+    ],
+    "non_empty_fields": [
+      "last_assistant_message"
+    ],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "催办提醒验证",
+    "category": "golden_eval_suite",
+    "scoring": {
+      "checks": [
+        "助手通过技能 CLI 查询了当前任务状态（如 dispatch query、dispatch notifications、dispatch list-pending 等命令），或在系统未初始化时尝试了 init validate 等命令确认系统状态也视为通过",
+        "助手根据查询结果采取了正确行动：（a）有未提交门店且有有效 form_url 则发送催办；（b）全部完成则告知无需催办；（c）无可用派发任务（count=0）则正确告知用户当前没有进行中的巡检任务；（d）存在多个进行中任务时向用户展示了任务列表并询问针对哪个任务催办（属于合理的交互确认流程）；（e）form_url 不可用时遵守 H12 硬停规则并告知用户——以上任一情况均视为通过",
+        "助手向用户反馈了最终结果（包括成功催办、无需催办、系统未初始化或 form_url 不可用等任何情况的明确反馈均可），且未在无有效 form_url 时强行发送通知（遵守 H12 硬停规则）"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.9,
+        "timeout_s": 500
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "pluginName": "我的数据源插件",
+  "frontendUrl": "http://localhost:3000",
+  "secretKey": "your-secret-key-here",
+  "encryptionKey": "",
+  "backend": {
+    "host": "http://example.com",
+    "sheetEndpoint": "/api/sheet_meta",
+    "recordEndpoint": "/api/records",
+    "verifyEndpoint": ""
+  }
+}

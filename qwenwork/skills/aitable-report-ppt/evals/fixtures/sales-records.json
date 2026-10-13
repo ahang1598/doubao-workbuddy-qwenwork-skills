@@ -1,0 +1,18 @@
+{
+  "data": {
+    "records": [
+      {"recordId": "s01", "cells": {"order_id": "SO-001", "region": "华东", "month": "2026-01-01", "revenue": 120, "target": 110}},
+      {"recordId": "s02", "cells": {"order_id": "SO-002", "region": "华东", "month": "2026-02-01", "revenue": 135, "target": 125}},
+      {"recordId": "s03", "cells": {"order_id": "SO-003", "region": "华东", "month": "2026-03-01", "revenue": 142, "target": null}},
+      {"recordId": "s04", "cells": {"order_id": "SO-004", "region": "华东", "month": "2026-04-01", "revenue": 151, "target": 150}},
+      {"recordId": "s05", "cells": {"order_id": "SO-005", "region": "华南", "month": "2026-01-01", "revenue": 98, "target": 100}},
+      {"recordId": "s06", "cells": {"order_id": "SO-006", "region": "华南", "month": "2026-02-01", "revenue": 106, "target": 105}},
+      {"recordId": "s07", "cells": {"order_id": "SO-007", "region": "华南", "month": "2026-03-01", "revenue": 115, "target": 112}},
+      {"recordId": "s08", "cells": {"order_id": "SO-008", "region": "华南", "month": "2026-04-01", "revenue": 119, "target": 120}},
+      {"recordId": "s09", "cells": {"order_id": "SO-009", "region": "华北", "month": "2026-01-01", "revenue": 87, "target": 90}},
+      {"recordId": "s10", "cells": {"order_id": "SO-010", "region": "华北", "month": "2026-02-01", "revenue": 92, "target": 95}},
+      {"recordId": "s11", "cells": {"order_id": "SO-011", "region": "华北", "month": "2026-03-01", "revenue": 101, "target": 100}},
+      {"recordId": "s12", "cells": {"order_id": "SO-012", "region": "华北", "month": "2026-04-01", "revenue": 108, "target": 105}}
+    ]
+  }
+}

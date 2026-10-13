@@ -1,0 +1,11 @@
+{
+  "owner": "daimingvip-a11y",
+  "slug": "legal-compliance-bundle",
+  "displayName": "中国法律合规AI技能包",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1774522113319,
+    "commit": "https://github.com/openclaw/skills/commit/944a7bc098a36f2b0f50bbcb0d2412239cd0e815"
+  },
+  "history": []
+}

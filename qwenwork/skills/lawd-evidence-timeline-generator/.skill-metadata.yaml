@@ -1,0 +1,49 @@
+examples:
+  - id: ex-1
+    title:
+      zh: "证据时间线"
+      en: "Evidence timeline"
+    description:
+      zh: "从证据材料提取时间信息，生成时间线文档与可视化时间轴"
+      en: "Extract dates from evidence and produce a timeline document with visual timeline"
+    prompt:
+      zh: |-
+        请根据「{{证据材料}}」提取时间信息，按时间顺序梳理事件，生成证据时间线 Markdown 文档与 HTML 可视化时间轴。
+      en: |-
+        Extract dates from {{evidence materials}}, sort events chronologically, and generate an evidence timeline Markdown document with an HTML visual timeline.
+  - id: ex-2
+    title:
+      zh: "事件排序分组"
+      en: "Sort and group events"
+    description:
+      zh: "按时间排序事件并按案件阶段分组"
+      en: "Sort events chronologically and group them by case stage"
+    prompt:
+      zh: |-
+        请根据「{{案件事实或材料}}」梳理事件，按时间从早到晚排序，并按阶段分组（如合同签署、履约、违约、催告、诉讼准备）。
+      en: |-
+        Organize events from {{case facts or materials}}, sort them chronologically, and group them by stage (e.g., contract signing, performance, breach, demand, litigation preparation).
+  - id: ex-3
+    title:
+      zh: "可打印时间轴"
+      en: "Printable timeline"
+    description:
+      zh: "生成 A4/A3 可打印的 HTML 时间轴"
+      en: "Generate a printable A4/A3 HTML timeline"
+    prompt:
+      zh: |-
+        请根据「{{证据材料}}」生成可打印的 HTML 时间轴，事件按类型自动着色，支持 A4/A3 打印，便于开庭或提交材料时使用。
+      en: |-
+        Generate a printable HTML timeline from {{evidence materials}}, with events color-coded by type and A4/A3 printing support, ready for hearings or submission.
+  - id: ex-4
+    title:
+      zh: "关键节点梳理"
+      en: "Key milestones"
+    description:
+      zh: "标注关键时间节点并提示诉讼时效"
+      en: "Mark key milestones and flag limitation periods"
+    prompt:
+      zh: |-
+        请根据「{{案件材料}}」梳理时间线，重点标注合同生效日、付款截止日、违约发生日等关键节点，并提示诉讼时效相关情况。
+      en: |-
+        Build a timeline from {{case materials}}, highlighting key milestones such as contract effective date, payment deadlines and breach date, and flag any statute-of-limitations issues.

@@ -1,0 +1,852 @@
+[
+  {
+    "name": "8-Bit Orbit",
+    "mood": [
+      "retro-tech",
+      "playful",
+      "cyberpunk",
+      "energetic"
+    ],
+    "tone": [
+      "geeky",
+      "neon",
+      "rebellious",
+      "sci-fi"
+    ],
+    "formality": "low",
+    "default_visual_density": "medium",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "moderately dense, atmospherically loaded",
+    "scheme": "dark",
+    "preview_md": "bold-template-pack/templates/8-bit-orbit/preview.md"
+  },
+  {
+    "name": "Biennale Yellow",
+    "mood": [
+      "editorial",
+      "atmospheric",
+      "warm",
+      "cultural-institution",
+      "poster-like"
+    ],
+    "tone": [
+      "literary",
+      "considered",
+      "contemplative",
+      "warm-modern",
+      "Dutch-editorial"
+    ],
+    "formality": "high",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "editorial-restrained",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/biennale-yellow/preview.md"
+  },
+  {
+    "name": "BlockFrame",
+    "mood": [
+      "bold",
+      "playful",
+      "graphic",
+      "fresh"
+    ],
+    "tone": [
+      "confident",
+      "graphic",
+      "pop",
+      "design-led"
+    ],
+    "formality": "medium-low",
+    "default_visual_density": "high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "comfortably dense",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/block-frame/preview.md"
+  },
+  {
+    "name": "Blue Professional",
+    "mood": [
+      "professional",
+      "modern",
+      "calm",
+      "trustworthy"
+    ],
+    "tone": [
+      "clean",
+      "considered",
+      "polished",
+      "neutral"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": "medium-high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "balanced and data-dense without crowding",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/blue-professional/preview.md"
+  },
+  {
+    "name": "Bold Poster",
+    "mood": [
+      "bold",
+      "editorial",
+      "loud",
+      "confident"
+    ],
+    "tone": [
+      "dramatic",
+      "graphic",
+      "sharp",
+      "intentional"
+    ],
+    "formality": "medium",
+    "default_visual_density": "high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "high — populist and packed",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/bold-poster/preview.md"
+  },
+  {
+    "name": "Broadside",
+    "mood": [
+      "editorial",
+      "dramatic",
+      "loud",
+      "newspaper"
+    ],
+    "tone": [
+      "graphic",
+      "punchy",
+      "literary",
+      "considered"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "low to medium",
+    "scheme": "dark",
+    "preview_md": "bold-template-pack/templates/broadside/preview.md"
+  },
+  {
+    "name": "Capsule",
+    "mood": [
+      "playful",
+      "modern",
+      "warm",
+      "fresh",
+      "fun"
+    ],
+    "tone": [
+      "upbeat",
+      "graphic",
+      "approachable",
+      "cool"
+    ],
+    "formality": "medium-low",
+    "default_visual_density": "medium-high",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium-high atmospheric",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/capsule/preview.md"
+  },
+  {
+    "name": "Cartesian",
+    "mood": [
+      "quiet",
+      "considered",
+      "elegant",
+      "warm-minimal"
+    ],
+    "tone": [
+      "classical",
+      "literary",
+      "restrained",
+      "confident-quiet"
+    ],
+    "formality": "high",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "sparse and breathing",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/cartesian/preview.md"
+  },
+  {
+    "name": "Cobalt Grid",
+    "mood": [
+      "editorial",
+      "design-research",
+      "studious",
+      "modernist",
+      "tech-print",
+      "monochrome"
+    ],
+    "tone": [
+      "considered",
+      "literary",
+      "studious",
+      "quietly-modern",
+      "editorial"
+    ],
+    "formality": "high",
+    "default_visual_density": "medium-high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "medium to dense, structured by the grid",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/cobalt-grid/preview.md"
+  },
+  {
+    "name": "Coral",
+    "mood": [
+      "bold",
+      "warm",
+      "modern",
+      "confident"
+    ],
+    "tone": [
+      "graphic",
+      "punchy",
+      "magazine"
+    ],
+    "formality": "medium",
+    "default_visual_density": "medium",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium-high, structured by region",
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/coral/preview.md"
+  },
+  {
+    "name": "Creative Mode",
+    "mood": [
+      "creative",
+      "confident",
+      "playful",
+      "design-led"
+    ],
+    "tone": [
+      "graphic",
+      "expressive",
+      "modern"
+    ],
+    "formality": "medium",
+    "default_visual_density": null,
+    "content_capacity": null,
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "needs_density_audit": true,
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/creative-mode/preview.md"
+  },
+  {
+    "name": "Daisy Days",
+    "mood": [
+      "cheerful",
+      "playful",
+      "warm",
+      "sunny",
+      "wholesome"
+    ],
+    "tone": [
+      "friendly",
+      "soft",
+      "encouraging",
+      "approachable",
+      "lighthearted"
+    ],
+    "formality": "low",
+    "default_visual_density": "medium",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "full but not crowded",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/daisy-days/preview.md"
+  },
+  {
+    "name": "Editorial Forest",
+    "mood": [
+      "editorial",
+      "quiet",
+      "considered",
+      "warm",
+      "intentional"
+    ],
+    "tone": [
+      "literary",
+      "thoughtful",
+      "warm",
+      "low-pressure"
+    ],
+    "formality": "medium",
+    "default_visual_density": "low",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "spacious and committed",
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/editorial-forest/preview.md"
+  },
+  {
+    "name": "Editorial Tri-Tone",
+    "mood": [
+      "editorial",
+      "warm",
+      "intentional",
+      "moody"
+    ],
+    "tone": [
+      "literary",
+      "warm",
+      "considered",
+      "stylish"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": null,
+    "content_capacity": null,
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "needs_density_audit": true,
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/editorial-tri-tone/preview.md"
+  },
+  {
+    "name": "Emerald Editorial",
+    "mood": [
+      "editorial",
+      "considered",
+      "confident",
+      "magazine-cover"
+    ],
+    "tone": [
+      "literary",
+      "authoritative",
+      "warm",
+      "designed"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": "medium",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium-full and centered",
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/emerald-editorial/preview.md"
+  },
+  {
+    "name": "Grove",
+    "mood": [
+      "organic",
+      "considered",
+      "warm",
+      "literary",
+      "natural"
+    ],
+    "tone": [
+      "classical",
+      "warm",
+      "considered",
+      "patient"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "sparse and breathing",
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/grove/preview.md"
+  },
+  {
+    "name": "Long Table",
+    "mood": [
+      "warm",
+      "intimate",
+      "modern",
+      "friendly",
+      "small-batch",
+      "social",
+      "hospitality"
+    ],
+    "tone": [
+      "warm",
+      "playful",
+      "considered",
+      "social",
+      "magazine-friendly",
+      "modern-editorial"
+    ],
+    "formality": "medium",
+    "default_visual_density": "medium-high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "rich-but-curated",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/long-table/preview.md"
+  },
+  {
+    "name": "Mat",
+    "mood": [
+      "warm-modern",
+      "considered",
+      "tactile",
+      "mid-century"
+    ],
+    "tone": [
+      "warm",
+      "design-led",
+      "intentional",
+      "considered"
+    ],
+    "formality": "medium",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium-sparse",
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/mat/preview.md"
+  },
+  {
+    "name": "Monochrome",
+    "mood": [
+      "restrained",
+      "literary",
+      "archival",
+      "ledger"
+    ],
+    "tone": [
+      "literary",
+      "considered",
+      "neutral",
+      "honest"
+    ],
+    "formality": "high",
+    "default_visual_density": "low",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "sparse",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/monochrome/preview.md"
+  },
+  {
+    "name": "Neo-Grid Bold",
+    "mood": [
+      "confident",
+      "punchy",
+      "editorial",
+      "modern"
+    ],
+    "tone": [
+      "bold",
+      "minimal",
+      "design-led",
+      "graphic"
+    ],
+    "formality": "medium",
+    "default_visual_density": "high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "dense",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/neo-grid-bold/preview.md"
+  },
+  {
+    "name": "People's Platform (Block & Bold)",
+    "mood": [
+      "activist",
+      "loud",
+      "graphic",
+      "honest"
+    ],
+    "tone": [
+      "punchy",
+      "direct",
+      "expressive",
+      "warm-bold"
+    ],
+    "formality": "medium-low",
+    "default_visual_density": null,
+    "content_capacity": null,
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "needs_density_audit": true,
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/peoples-platform/preview.md"
+  },
+  {
+    "name": "Pin & Paper",
+    "mood": [
+      "crafted",
+      "handmade",
+      "warm",
+      "thoughtful",
+      "literary"
+    ],
+    "tone": [
+      "literary",
+      "intimate",
+      "warm",
+      "grounded"
+    ],
+    "formality": "medium",
+    "default_visual_density": "medium-high",
+    "content_capacity": "medium-high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "medium-dense, populated",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/pin-and-paper/preview.md"
+  },
+  {
+    "name": "Pink Script — After Hours",
+    "mood": [
+      "nocturnal",
+      "moody",
+      "intentional",
+      "luxe",
+      "expressive"
+    ],
+    "tone": [
+      "literary",
+      "sultry",
+      "considered",
+      "magazine"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "sparse-medium with one hero moment",
+    "scheme": "dark",
+    "preview_md": "bold-template-pack/templates/pink-script/preview.md"
+  },
+  {
+    "name": "Playful",
+    "mood": [
+      "warm",
+      "approachable",
+      "indie",
+      "friendly"
+    ],
+    "tone": [
+      "upbeat",
+      "informal",
+      "welcoming"
+    ],
+    "formality": "low",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium-low",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/playful/preview.md"
+  },
+  {
+    "name": "Raw Grid",
+    "mood": [
+      "raw",
+      "punchy",
+      "energetic",
+      "confident"
+    ],
+    "tone": [
+      "direct",
+      "modern",
+      "no-nonsense",
+      "graphic"
+    ],
+    "formality": "medium-low",
+    "default_visual_density": "medium",
+    "content_capacity": "medium",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/raw-grid/preview.md"
+  },
+  {
+    "name": "Retro Windows",
+    "mood": [
+      "nostalgic",
+      "retro",
+      "geeky",
+      "playful"
+    ],
+    "tone": [
+      "winking",
+      "nostalgic",
+      "geeky",
+      "fun"
+    ],
+    "formality": "low",
+    "default_visual_density": "high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "high",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/retro-windows/preview.md"
+  },
+  {
+    "name": "Retro Zine",
+    "mood": [
+      "crafted",
+      "lo-fi",
+      "underground",
+      "warm-retro"
+    ],
+    "tone": [
+      "scrappy",
+      "warm",
+      "intentional",
+      "DIY"
+    ],
+    "formality": "medium-low",
+    "default_visual_density": "medium-high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "medium-high",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/retro-zine/preview.md"
+  },
+  {
+    "name": "Sakura Chroma",
+    "mood": [
+      "retro",
+      "playful",
+      "kawaii-tech",
+      "warm",
+      "tactile",
+      "product-catalogue"
+    ],
+    "tone": [
+      "playful",
+      "confident",
+      "warm",
+      "tactile",
+      "80s-Japanese-tech"
+    ],
+    "formality": "low",
+    "default_visual_density": "medium-high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "medium-high",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/sakura-chroma/preview.md"
+  },
+  {
+    "name": "Scatterbrain",
+    "mood": [
+      "playful",
+      "creative",
+      "warm",
+      "messy-on-purpose",
+      "workshop"
+    ],
+    "tone": [
+      "informal",
+      "warm",
+      "expressive",
+      "human"
+    ],
+    "formality": "low",
+    "default_visual_density": "medium",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "medium",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/scatterbrain/preview.md"
+  },
+  {
+    "name": "Signal",
+    "mood": [
+      "institutional",
+      "trustworthy",
+      "considered",
+      "weighty"
+    ],
+    "tone": [
+      "sober",
+      "polished",
+      "established",
+      "literary"
+    ],
+    "formality": "high",
+    "default_visual_density": "medium-low",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "medium-low and asymmetric",
+    "scheme": "mixed",
+    "preview_md": "bold-template-pack/templates/signal/preview.md"
+  },
+  {
+    "name": "Soft Editorial",
+    "mood": [
+      "literary",
+      "elegant",
+      "quiet",
+      "warm-classical"
+    ],
+    "tone": [
+      "literary",
+      "considered",
+      "warm",
+      "magazine"
+    ],
+    "formality": "high",
+    "default_visual_density": "medium",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "medium-high inside cards, generous between cards",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/soft-editorial/preview.md"
+  },
+  {
+    "name": "Stencil & Tablet",
+    "mood": [
+      "archival",
+      "earthy",
+      "tactile",
+      "considered",
+      "graphic"
+    ],
+    "tone": [
+      "weighty",
+      "considered",
+      "tactile",
+      "literary"
+    ],
+    "formality": "medium-high",
+    "default_visual_density": "high",
+    "content_capacity": "high",
+    "supported_density_modes": [
+      "speaker-led",
+      "reading-first"
+    ],
+    "density_philosophy_source": "high and confident",
+    "scheme": "light",
+    "preview_md": "bold-template-pack/templates/stencil-tablet/preview.md"
+  },
+  {
+    "name": "Studio",
+    "mood": [
+      "electric",
+      "bold",
+      "graphic",
+      "design-led",
+      "high-contrast"
+    ],
+    "tone": [
+      "graphic",
+      "loud",
+      "modern",
+      "intentional"
+    ],
+    "formality": "medium",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "low and deliberate",
+    "scheme": "dark",
+    "preview_md": "bold-template-pack/templates/studio/preview.md"
+  },
+  {
+    "name": "Vellum",
+    "mood": [
+      "scholarly",
+      "literary",
+      "considered",
+      "quiet",
+      "intellectual"
+    ],
+    "tone": [
+      "literary",
+      "considered",
+      "patient",
+      "intelligent"
+    ],
+    "formality": "high",
+    "default_visual_density": "low",
+    "content_capacity": "low",
+    "supported_density_modes": [
+      "speaker-led"
+    ],
+    "density_philosophy_source": "sparse and centered",
+    "scheme": "dark",
+    "preview_md": "bold-template-pack/templates/vellum/preview.md"
+  }
+]

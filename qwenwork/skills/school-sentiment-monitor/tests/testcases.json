@@ -1,0 +1,185 @@
+{
+  "test_cases": [
+    {
+      "id": "TC01",
+      "name": "创建监控任务",
+      "description": "用户首次使用，通过对话创建监控任务",
+      "input": "帮我监控杭州云谷学校的舆情",
+      "expected_behavior": [
+        "技能识别意图为「创建监控」",
+        "询问确认学校名称：杭州云谷学校",
+        "自动生成别名：云谷学校、云谷",
+        "询问监控时间范围",
+        "询问执行频率",
+        "展示配置摘要",
+        "用户确认后保存任务配置",
+        "立即执行首次搜索"
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "立即搜索舆情",
+      "description": "用户要求立即搜索指定学校的舆情",
+      "input": "现在查一下北京四中最近的舆情",
+      "expected_behavior": [
+        "技能识别意图为「立即搜索」",
+        "提取学校名称：北京四中",
+        "构建搜索查询（含别名：北京市第四中学、四中）",
+        "执行 WebSearch 搜索各平台",
+        "对搜索结果进行情感分析",
+        "生成结构化摘要通知",
+        "如有负面舆情则标注预警级别"
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "无搜索结果处理",
+      "description": "搜索后无任何结果时的处理",
+      "input": "搜一下XX测试学校的舆情",
+      "expected_behavior": [
+        "执行搜索",
+        "发现无结果",
+        "输出「本周期未发现新增舆情，不生成报告」",
+        "不生成 HTML 报告",
+        "不发送摘要通知"
+      ]
+    },
+    {
+      "id": "TC04",
+      "name": "负面舆情预警",
+      "description": "检测到包含一级敏感词的负面舆情时触发紧急预警",
+      "input_data": {
+        "title": "XX学校食堂疑似食物中毒事件",
+        "content": "多名学生在食堂就餐后出现呕吐症状，疑似中毒",
+        "source": "微博"
+      },
+      "expected_behavior": [
+        "识别一级敏感词「中毒」",
+        "标记 severity 为 critical",
+        "立即推送紧急预警通知",
+        "通知包含事件摘要、情感评分、建议应对措施"
+      ]
+    },
+    {
+      "id": "TC05",
+      "name": "查看历史报告",
+      "description": "用户查看已生成的报告",
+      "input": "查看详细报告",
+      "expected_behavior": [
+        "技能识别意图为「查看报告」",
+        "读取最近的分析 JSON",
+        "调用 generate_report.sh 生成 HTML",
+        "打开 HTML 报告"
+      ]
+    },
+    {
+      "id": "TC06",
+      "name": "修改监控配置",
+      "description": "用户修改已有任务的配置",
+      "input": "把监控频率改成每小时一次",
+      "expected_behavior": [
+        "技能识别意图为「修改配置」",
+        "展示当前配置",
+        "确认修改项：频率→每小时",
+        "更新任务配置",
+        "输出修改成功确认"
+      ]
+    },
+    {
+      "id": "TC07",
+      "name": "暂停和恢复任务",
+      "description": "用户暂停后恢复监控任务",
+      "input_sequence": ["暂停监控", "恢复监控"],
+      "expected_behavior": [
+        "暂停：识别意图，确认暂停，任务状态改为 paused",
+        "恢复：识别意图，确认恢复，任务状态改为 active"
+      ]
+    },
+    {
+      "id": "TC08",
+      "name": "删除监控任务",
+      "description": "用户删除监控任务",
+      "input": "取消监控",
+      "expected_behavior": [
+        "技能识别意图为「取消任务」",
+        "展示任务列表",
+        "请用户确认删除",
+        "确认后删除任务",
+        "输出删除成功确认"
+      ]
+    },
+    {
+      "id": "TC09",
+      "name": "多学校监控",
+      "description": "教育局场景，同时监控多所学校",
+      "input": "帮我监控这三所学校的舆情：云谷学校、学军中学、杭二中",
+      "expected_behavior": [
+        "识别出三所学校",
+        "分别生成各校别名",
+        "统一配置时间范围和频率",
+        "创建三个独立的监控任务",
+        "逐个执行首次搜索"
+      ]
+    },
+    {
+      "id": "TC10",
+      "name": "manage_task.py CRUD 测试",
+      "description": "验证任务管理脚本的基本 CRUD 功能",
+      "test_type": "script",
+      "commands": [
+        "echo '{\"school_name\":\"测试学校\",\"aliases\":[\"测试\"],\"time_range\":\"7d\",\"frequency\":\"daily\"}' | python3 scripts/manage_task.py create $TEST_DIR/test-tasks.json",
+        "python3 scripts/manage_task.py list $TEST_DIR/test-tasks.json",
+        "python3 scripts/manage_task.py read $TEST_DIR/test-tasks.json",
+        "python3 scripts/manage_task.py delete $TEST_DIR/test-tasks.json <task_id>"
+      ],
+      "expected": [
+        "create: 返回包含 task_id 的 JSON",
+        "list: 返回任务列表",
+        "read: 返回最新任务详情",
+        "delete: 输出删除成功"
+      ]
+    },
+    {
+      "id": "TC11",
+      "name": "报告自检 - items为空但total_count大于0",
+      "description": "analysis JSON 中 total_count=5 但 items 为空数组，报告异常",
+      "test_type": "self_check",
+      "input_data": {
+        "analysis_json": {
+          "school_name": "测试学校",
+          "total_count": 5,
+          "items": [],
+          "sentiment_distribution": {"positive": 2, "neutral": 1, "negative": 2}
+        }
+      },
+      "expected_behavior": [
+        "generate_report.sh 输出 WARNING: 报告文件过小",
+        "DIAG 输出: total_count=5, items_len=0",
+        "DIAG 输出: total_count > 0 但 items 数组为空",
+        "重新执行情感分析步骤填充 items",
+        "修正后重新生成报告"
+      ]
+    },
+    {
+      "id": "TC12",
+      "name": "报告自检 - sentiment_distribution键名错误",
+      "description": "analysis JSON 中 sentiment_distribution 使用了错误键名",
+      "test_type": "self_check",
+      "input_data": {
+        "analysis_json": {
+          "school_name": "测试学校",
+          "total_count": 3,
+          "items": [{"title": "测试", "sentiment": "negative", "sentiment_score": 80, "severity": "normal", "source": "微博", "topic": "T04", "keywords": []}],
+          "sentiment_distribution": {"pos": 1, "neu": 1, "neg": 1}
+        }
+      },
+      "expected_behavior": [
+        "generate_report.sh 输出 WARNING",
+        "DIAG 输出: dist_keys=['pos', 'neu', 'neg']",
+        "DIAG 输出: sentiment_distribution 键名错误",
+        "修正键名为 positive/neutral/negative",
+        "重新生成报告"
+      ]
+    }
+  ]
+}

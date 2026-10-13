@@ -1,0 +1,152 @@
+[
+  {
+    "id": "resume_create_001",
+    "category": "happy_path",
+    "prompt": "我想找一份Python后端开发工程师的工作，帮我写一份简历。我是计算机专业毕业，有2年工作经验，熟悉Django和Flask框架。",
+    "expected_behavior": "触发流程A，引导用户补充完整信息（姓名、联系方式、教育背景详情、工作经历细节、项目经验等），然后按STAR法则生成结构化简历"
+  },
+  {
+    "id": "resume_create_002",
+    "category": "happy_path",
+    "prompt": "我是应届毕业生，没有工作经验，怎么写出有竞争力的简历？",
+    "expected_behavior": "触发流程A，指导应届生如何突出教育背景、项目经历、实习经历、校园活动等，并帮助构建简历"
+  },
+  {
+    "id": "resume_create_003",
+    "category": "happy_path",
+    "prompt": "帮我做一份前端开发的简历",
+    "expected_behavior": "触发流程A，确认目标岗位为前端开发，引导用户补充基本信息、技术栈、项目经验等"
+  },
+  {
+    "id": "resume_optimize_001",
+    "category": "happy_path",
+    "prompt": "这是我的简历内容，帮我优化一下：\n\n张三\n电话：13800000000\n邮箱：zhangsan@example.com\n\n教育背景：\nXX大学 计算机科学 本科 2018-2022\n\n工作经历：\nXX公司 软件工程师 2022至今\n- 负责开发工作\n- 参与项目\n\n技能：Python, Java, MySQL",
+    "expected_behavior": "触发流程B，分析简历问题（描述笼统、缺乏量化、结构不完整），提供优化建议和修改对比版+最终版"
+  },
+  {
+    "id": "resume_optimize_002",
+    "category": "happy_path",
+    "prompt": "我的简历投出去没什么回应，能帮我看看有什么问题吗？",
+    "expected_behavior": "触发流程B，要求用户提供简历内容和目标岗位，从ATS友好性、关键词匹配、内容吸引力等角度分析并优化"
+  },
+  {
+    "id": "interview_prep_001",
+    "category": "happy_path",
+    "prompt": "根据我的简历生成一些前端面试可能会问的问题。我熟悉React、Vue、TypeScript，有3年经验，做过电商平台和后台管理系统。",
+    "expected_behavior": "触发流程C，生成技术知识点清单、模拟面试题（基础/实践/情景）、行为面试题，并提供参考答案要点"
+  },
+  {
+    "id": "interview_prep_002",
+    "category": "happy_path",
+    "prompt": "面试官可能会问我简历里提到的这个项目，帮我准备一下",
+    "expected_behavior": "触发流程C，要求用户提供项目详情，然后生成针对该项目的深入问题和技术知识点"
+  },
+  {
+    "id": "interview_prep_003",
+    "category": "happy_path",
+    "prompt": "帮我模拟面试，我是Java后端开发，5年经验",
+    "expected_behavior": "触发流程C，进入交互模拟面试模式，逐题提问并给出反馈"
+  },
+  {
+    "id": "tool_confusion_001",
+    "category": "tool_confusion",
+    "prompt": "帮我优化简历，同时根据优化后的简历生成面试题",
+    "expected_behavior": "先执行流程B优化简历，完成后再执行流程C基于优化后简历生成面试题，两个流程顺序执行而非只选一个"
+  },
+  {
+    "id": "tool_confusion_002",
+    "category": "tool_confusion",
+    "prompt": "帮我改一下简历，我想投产品经理的岗位",
+    "expected_behavior": "触发流程B（优化），而非流程A（创作），因为用户已有简历需要修改，同时针对产品经理岗位调整重点"
+  },
+  {
+    "id": "tool_confusion_003",
+    "category": "tool_confusion",
+    "prompt": "我之前让你写的简历，现在帮我出面试题",
+    "expected_behavior": "多轮对话延续，记住之前生成的简历内容，触发流程C基于之前的简历生成面试题"
+  },
+  {
+    "id": "param_conversion_001",
+    "category": "param_conversion",
+    "prompt": "我上传了一份简历PDF，帮我看看有什么问题",
+    "expected_behavior": "使用 Read 工具读取上传的PDF文件（QoderWork 多模态 Read 支持 PDF 识别），提取文本内容后执行流程B进行优化分析"
+  },
+  {
+    "id": "param_conversion_002",
+    "category": "param_conversion",
+    "prompt": "帮我把优化后的简历保存到文件",
+    "expected_behavior": "将优化后的简历写入工作目录的Markdown文件（文件名格式：姓名_岗位_简历.md）并通过present_files呈现给用户"
+  },
+  {
+    "id": "param_conversion_003",
+    "category": "param_conversion",
+    "prompt": "最近前端面试都问什么？",
+    "expected_behavior": "使用WebSearch查询前端面试最新趋势，结合结果生成面试准备内容"
+  },
+  {
+    "id": "boundary_001",
+    "category": "boundary",
+    "prompt": "帮我写简历，但我什么都不想说，你帮我编一份",
+    "expected_behavior": "拒绝编造，明确告知简历内容必须基于真实信息，引导用户提供基本信息"
+  },
+  {
+    "id": "boundary_002",
+    "category": "boundary",
+    "prompt": "我的简历有10页，帮我优化一下",
+    "expected_behavior": "触发流程B，分析后指出简历过长，建议精简至1-2页，保留与目标岗位最相关的内容"
+  },
+  {
+    "id": "robustness_001",
+    "category": "robustness",
+    "prompt": "优化我的简历 [粘贴了一段乱码或无法解析的内容]",
+    "expected_behavior": "提示用户简历内容无法解析，请用户直接粘贴文本或确认文件格式"
+  },
+  {
+    "id": "robustness_002",
+    "category": "robustness",
+    "prompt": "帮我准备面试，但我不知道我要面试什么岗位",
+    "expected_behavior": "主动询问目标岗位或行业方向，若不确定则提供通用版面试准备并说明可定制"
+  },
+  {
+    "id": "colloquial_001",
+    "category": "colloquial",
+    "prompt": "简历写烂了，救救我",
+    "expected_behavior": "识别为优化简历意图，触发流程B，要求提供简历内容后进行分析优化"
+  },
+  {
+    "id": "colloquial_002",
+    "category": "colloquial",
+    "prompt": "明天要面试了，我该准备啥",
+    "expected_behavior": "识别为面试准备意图，触发流程C，询问目标岗位和简历信息后生成面试准备方案"
+  },
+  {
+    "id": "colloquial_003",
+    "category": "colloquial",
+    "prompt": "从零搞一份简历，我啥也没有",
+    "expected_behavior": "识别为创作简历意图，触发流程A，逐项引导用户提供基本信息开始构建"
+  },
+  {
+    "id": "batch_001",
+    "category": "batch",
+    "prompt": "帮我同时优化简历和准备面试题",
+    "expected_behavior": "先执行流程B优化简历，完成后基于优化结果执行流程C生成面试题，顺序执行两个流程"
+  },
+  {
+    "id": "negative_001",
+    "category": "negative",
+    "prompt": "帮我写一封求职信，申请某某公司的产品经理岗位",
+    "expected_behavior": "不应触发，明确告知求职信写作不在本技能范围内"
+  },
+  {
+    "id": "negative_002",
+    "category": "negative",
+    "prompt": "我想了解一下阿里巴巴的企业文化和发展前景，帮我做个公司调研",
+    "expected_behavior": "不应触发，公司背景调研与简历/面试无关，告知用户不在技能范围内"
+  },
+  {
+    "id": "negative_003",
+    "category": "negative",
+    "prompt": "面试应该穿什么？薪资怎么谈？",
+    "expected_behavior": "不应触发，面试礼仪和薪资谈判不在技能范围内，但可引导至面试准备流程"
+  }
+]

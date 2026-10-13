@@ -1,0 +1,1533 @@
+{
+  "deck_id": "will-intake-v3",
+  "version": "4.0.0",
+  "title": "遗嘱起草信息采集卡组（千问办公原生版）",
+  "platform": "qwenwork",
+  "collection_channel": "ask_user_question",
+  "composition_mode": "deterministic_coverage",
+  "navigation_mode": "mode_routed_batched",
+  "forbidden_collection_modes": [
+    "chat_question_answer",
+    "display_only_widget",
+    "download_json",
+    "copy_json_to_chat",
+    "tell_assistant_completed"
+  ],
+  "batching": {
+    "max_questions_per_call": 4,
+    "max_options_per_question": 4,
+    "auto_other_for_free_text": true,
+    "branch_question_must_end_batch": true,
+    "repeatable_page_is_single_call": true,
+    "greedy_pack_single_questions": true,
+    "progress_label_template": "信息补充：第 {batch_index}/{batch_total} 组（必答信息共 {total_questions} 项，已确认 {completed_questions} 项）",
+    "independent_branch_questions_may_share_batch": true,
+    "work_data_write_frequency": "per_stage",
+    "correction_loop_max": 2
+  },
+  "preflight": {
+    "assess_before_cards": true,
+    "mandatory_first_card_id": "privacy-consent",
+    "non_skippable_card_ids": [
+      "privacy-consent"
+    ],
+    "inputs": [
+      "user_instruction",
+      "uploaded_documents"
+    ],
+    "coverage_values": [
+      "sufficient",
+      "partial",
+      "missing",
+      "not_applicable"
+    ],
+    "skip_when": [
+      "sufficient",
+      "not_applicable"
+    ],
+    "model_calls_during_navigation": 0
+  },
+  "fill_in_policy": {
+    "mechanism": "填空一律通过 AskUserQuestion 的选项卡完成：用户选择「其他」直接输入文字，或在题目备注（notes）中补充；禁止改为聊天逐条追问。",
+    "with_extracted_value": [
+      {
+        "label_template": "确认使用：{extracted_value}",
+        "maps_to": "extracted"
+      },
+      {
+        "label": "需要更正，请在「其他」中填写，本项勿选",
+        "maps_to": "other_input"
+      }
+    ],
+    "without_extracted_value": [
+      {
+        "label": "请在「其他」中填写，本项勿选",
+        "maps_to": "other_input"
+      },
+      {
+        "label": "暂不填写，先以占位符生成框架稿",
+        "maps_to": "placeholder"
+      }
+    ],
+    "sensitive_masked_in_option": true,
+    "placeholder_field_value": null,
+    "placeholder_answer_status": "later",
+    "notes_target": "free_text",
+    "platform_note": "千问办公的「其他」项由平台固定追加在选项末尾，位置与提示文字均不可自定义；凡需要用户文字填写的选项一律标注（请在「其他」中填写，本项勿选），填写指引写入题干。"
+  },
+  "cards": [
+    {
+      "base_card_id": "actor-authority",
+      "coverage_key": "actor_authority",
+      "kind": "single_question",
+      "title": "办理人与授权",
+      "ask": {
+        "header": "办理人",
+        "question": "本次遗嘱事务由谁办理？",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "self",
+            "label": "遗嘱人本人",
+            "description": "我就是在为自己订立遗嘱的人"
+          },
+          {
+            "value": "authorized_assistant",
+            "label": "经授权代办",
+            "description": "家人或受托人经遗嘱人授权协助办理"
+          }
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "skip_in_modes": [
+        "lawyer_sheet"
+      ],
+      "category": "入口与收尾"
+    },
+    {
+      "base_card_id": "lawyer-privacy-consent",
+      "coverage_key": "lawyer_privacy_consent",
+      "kind": "multi_select",
+      "category": "入口与收尾",
+      "modes": [
+        "lawyer_sheet"
+      ],
+      "title": "律师通道隐私确认",
+      "required_selected_values": [
+        "accepted",
+        "sensitive_data_acknowledged"
+      ],
+      "ask": {
+        "header": "隐私确认",
+        "question": "律师通道将处理当事人敏感信息，继续前请确认：本次填写的信息（当事人身份、家庭关系、财产状况、分配意愿及上传文件）仅用于本遗嘱事项的信息整理与成果生成。信息经千问办公平台及AI能力处理，按《千问办公隐私政策》在境内加密存储、按最短必要期限保存、不作商业性公开披露；您可依政策行使查阅、更正、删除、撤回同意等权利（投诉邮箱 dataprivacy@service.dingtalk.com）。您可随时停止填写，并要求删除本次工作目录中的生成文件。证件号码等敏感值展示时掩码；AI生成成果须经律师人工复核。请同时勾选以下两项：",
+        "multiSelect": true,
+        "options": [
+          {
+            "value": "accepted",
+            "label": "同意仅用于本次办理"
+          },
+          {
+            "value": "sensitive_data_acknowledged",
+            "label": "知悉敏感信息处理方式与本人权利"
+          }
+        ]
+      }
+    },
+    {
+      "base_card_id": "testator-basic-info",
+      "coverage_key": "testator_basic_info",
+      "kind": "fill_in_fields",
+      "title": "遗嘱人基本信息",
+      "response_mode": "field_values",
+      "chat_text_substitute_forbidden": true,
+      "packing_note": "5 个字段中前 4 题为一组，第 5 题与下一张卡的问题合并为一组。",
+      "fields": [
+        {
+          "field_id": "name",
+          "input": "fill_in",
+          "ask": {
+            "header": "姓名",
+            "question": "立遗嘱的人姓名？"
+          }
+        },
+        {
+          "field_id": "identity_number",
+          "input": "fill_in",
+          "sensitive": true,
+          "ask": {
+            "header": "证件号码",
+            "question": "立遗嘱的人身份证号码？（性别与出生日期会自动推导，不用另外填；展示时掩码）"
+          }
+        },
+        {
+          "field_id": "address",
+          "input": "fill_in",
+          "sensitive": true,
+          "ask": {
+            "header": "住址",
+            "question": "立遗嘱的人常住地址？"
+          }
+        }
+      ],
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "prompt": "请补充遗嘱人的基本信息（已从材料识别的字段无需重复填写）。",
+      "category": "人员确认类",
+      "derivation_note": "性别与出生日期由身份证号自动推导；用户修改身份证号时联动更新，统一在汇总核对确认。"
+    },
+    {
+      "base_card_id": "testator-capacity",
+      "coverage_key": "testator_capacity_and_intent",
+      "kind": "structured_fields",
+      "title": "理解、表达与真实意愿",
+      "response_mode": "field_values",
+      "fields": [
+        {
+          "field_id": "reported_status",
+          "input": "fixed_options",
+          "ask": {
+            "header": "理解与表达",
+            "question_self": "您目前是否能清楚理解本次安排的含义，并顺畅表达自己的想法？",
+            "question_reporter": "据您观察，遗嘱人是否能清楚理解本次安排的含义，并顺畅表达自己的想法？",
+            "options": [
+              {
+                "value": "no_concern_reported",
+                "label": "能，理解和表达都很清楚"
+              },
+              {
+                "value": "communication_support_needed",
+                "label": "有些吃力，需要辅助"
+              },
+              {
+                "value": "concern_reported",
+                "label": "存在明显困难或疑点"
+              },
+              {
+                "value": "unknown",
+                "label": "不确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "voluntariness_status",
+          "input": "fixed_options",
+          "ask": {
+            "header": "真实自愿",
+            "question_self": "接下来的各项安排是否都出自您真实、自愿的意愿，没有受到干扰或压力？",
+            "question_reporter": "据您观察，遗嘱人的各项安排是否出自其真实、自愿的意愿，没有受到干扰或压力？",
+            "options": [
+              {
+                "value": "no_concern_reported",
+                "label": "是，完全自愿"
+              },
+              {
+                "value": "concern_reported",
+                "label": "存在干扰或压力的疑虑"
+              },
+              {
+                "value": "unknown",
+                "label": "不确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "observations",
+          "input": "fixed_options",
+          "ask": {
+            "header": "补充说明",
+            "question": "还有需要补充说明的情况或可提供的材料吗？",
+            "options": [
+              {
+                "value": "none",
+                "label": "暂无补充"
+              },
+              {
+                "value": "has_notes",
+                "label": "有补充（请在「其他」中填写，本项勿选）"
+              }
+            ]
+          }
+        }
+      ],
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "perspective": {
+        "self": "办理人为遗嘱人本人时，本卡紧跟办理人确认之后作为第 1、2 题出现，使用本人口吻",
+        "reporter": "经授权代办或律师通道时，在补采阶段出现，使用转述口吻"
+      },
+      "category": "人员确认类"
+    },
+    {
+      "base_card_id": "family-map",
+      "coverage_key": "heirs_and_relationships",
+      "kind": "repeatable_pages",
+      "title": "继承人与重要关系人",
+      "count_question": {
+        "header": "关系人数量",
+        "question": "希望把财产分配给几位重要关系人？",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 位"
+          },
+          {
+            "value": "2",
+            "label": "2 位"
+          },
+          {
+            "value": "3",
+            "label": "3 位"
+          },
+          {
+            "value": "4+",
+            "label": "4 位及以上（录满 4 位后再确认是否继续）"
+          }
+        ]
+      },
+      "instance_id_template": "family-map-person-{n}",
+      "page": {
+        "title_template": "关系人 {n}",
+        "questions": [
+          {
+            "field_id": "relationship",
+            "input": "fixed_options",
+            "ask": {
+              "header": "关系",
+              "question": "关系人与遗嘱人的关系是什么？（其他关系，例如未经登记的伴侣、重要朋友等，请在「其他」中填写）",
+              "options": [
+                {
+                  "value": "spouse",
+                  "label": "配偶"
+                },
+                {
+                  "value": "father",
+                  "label": "父亲"
+                },
+                {
+                  "value": "mother",
+                  "label": "母亲"
+                },
+                {
+                  "value": "child",
+                  "label": "子女（可在备注注明儿子/女儿等）"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "name",
+            "input": "fill_in",
+            "ask": {
+              "header": "姓名",
+              "question": "该关系人的姓名？"
+            }
+          },
+          {
+            "field_id": "identity_number",
+            "input": "fill_in",
+            "sensitive": true,
+            "ask": {
+              "header": "证件号码",
+              "question": "该关系人身份证号码？（可留空；性别与出生日期自动推导，展示时掩码）"
+            }
+          },
+          {
+            "field_id": "is_possible_heir",
+            "input": "fixed_options",
+            "ask": {
+              "header": "法定继承人",
+              "question": "该关系人是否属于已知或可能的法定继承人？法定继承人包括第一顺位的配偶、子女、父母，以及第二顺位的兄弟姐妹、祖父母、外祖父母。其中，子女包括婚生子女、非婚生子女、养子女和有扶养关系的继子女；父母包括生父母、养父母和有扶养关系的继父母；兄弟姐妹包括同父母的兄弟姐妹、同父异母或者同母异父的兄弟姐妹、养兄弟姐妹、有扶养关系的继兄弟姐妹。",
+              "options": [
+                {
+                  "value": "yes",
+                  "label": "是"
+                },
+                {
+                  "value": "no",
+                  "label": "否"
+                },
+                {
+                  "value": "unknown",
+                  "label": "不确定"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "人员确认类",
+      "trailing_questions": [
+        {
+          "field_id": "other_statutory_heirs",
+          "input": "fixed_options",
+          "ask": {
+            "header": "其他继承人",
+            "question": "除已填写的关系人外，是否还有其他法定继承人，或者可能缺乏劳动能力又没有生活来源的人（如年迈父母、未成年子女），以及胎儿？（法律要求为这类人保留必要份额，需一并考虑）",
+            "options": [
+              {
+                "value": "none",
+                "label": "没有"
+              },
+              {
+                "value": "reported",
+                "label": "有（请在「其他」中填写，本项勿选）"
+              },
+              {
+                "value": "unknown",
+                "label": "不确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "fetal_share_treatment",
+          "input": "fixed_options",
+          "ask": {
+            "header": "胎儿份额",
+            "question": "本次安排是否可能涉及应当为胎儿保留的继承份额？",
+            "options": [
+              {
+                "value": "not_applicable",
+                "label": "不涉及"
+              },
+              {
+                "value": "reserved",
+                "label": "已明确保留"
+              },
+              {
+                "value": "not_addressed",
+                "label": "可能涉及但未处理"
+              },
+              {
+                "value": "unknown",
+                "label": "不确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "disqualification_status",
+          "input": "fixed_options",
+          "ask": {
+            "header": "继承权异常",
+            "question": "是否存在继承人因故意杀害被继承人、遗弃或严重虐待等行为而可能丧失继承权的情形？",
+            "options": [
+              {
+                "value": "none",
+                "label": "不存在"
+              },
+              {
+                "value": "reported",
+                "label": "存在（请在「其他」中填写，本项勿选）"
+              },
+              {
+                "value": "unknown",
+                "label": "不确定"
+              }
+            ]
+          }
+        }
+      ],
+      "derivation_note": "性别与出生日期由身份证号自动推导；'是否法定继承人'由用户逐人确认，快速模式解析时按关系推导。"
+    },
+    {
+      "base_card_id": "guardianship-special",
+      "coverage_key": "special_factors",
+      "kind": "multi_select",
+      "title": "监护与特殊情况",
+      "ask": {
+        "header": "特殊情况",
+        "question": "是否涉及以下特殊情况？（多选；没有上述情况、不确定或其他情况，请选「其他」说明）",
+        "multiSelect": true,
+        "options": [
+          {
+            "value": "minor_children",
+            "label": "涉及未成年人子女"
+          },
+          {
+            "value": "guardianship",
+            "label": "涉及监护安排"
+          },
+          {
+            "value": "overseas",
+            "label": "涉及境外财产或境外关系人"
+          },
+          {
+            "value": "family_dispute",
+            "label": "存在家庭争议"
+          }
+        ],
+        "other_value_parsing": [
+          "other",
+          "none",
+          "unknown"
+        ],
+        "exclusivity_note": "「其他」中填写“无”时映射为 none，且不得与其他选项并存。"
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "人员确认类"
+    },
+    {
+      "base_card_id": "asset-declaration",
+      "coverage_key": "assets",
+      "kind": "repeatable_pages",
+      "category": "财产确认类",
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "title": "财产申报",
+      "scope_question": {
+        "header": "财产类型",
+        "question": "需要处分哪些类型的财产？（可多选；如有股权或合伙份额、股票、保险相关权利、债权、其他类型或「无/不确定」请选「其他」填写）",
+        "multiSelect": true,
+        "options": [
+          {
+            "value": "financial_assets",
+            "label": "存款或其他理财"
+          },
+          {
+            "value": "real_estate",
+            "label": "房产"
+          },
+          {
+            "value": "digital_assets",
+            "label": "数字资产（例如高价值社交账号、游戏账号、游戏内道具（皮肤、装备、游戏币）、平台会员权益、数字货币等）"
+          }
+        ],
+        "other_value_parsing": [
+          "equity",
+          "stocks",
+          "insurance_rights",
+          "claims",
+          "other",
+          "none",
+          "unknown"
+        ],
+        "note": "股权/合伙份额、股票、保险相关权利、债权等经「其他」申报的，逐项进入财产明细页填写。"
+      },
+      "count_question": {
+        "header": "财产数量",
+        "question": "共有几项财产需要填写？",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 项"
+          },
+          {
+            "value": "2",
+            "label": "2 项"
+          },
+          {
+            "value": "3",
+            "label": "3 项"
+          },
+          {
+            "value": "4+",
+            "label": "4 项及以上（录满后再确认）"
+          }
+        ]
+      },
+      "instance_id_template": "asset-declaration-{n}",
+      "page": {
+        "title_template": "财产 {n}",
+        "questions": [
+          {
+            "field_id": "description",
+            "input": "fill_in",
+            "ask": {
+              "header": "财产描述",
+              "question": "请填写这项财产的关键识别信息：房产写到权证记载的坐落地址，存款写到银行与账号，股权写到公司名称与比例，数字资产写到平台与账号。描述应清晰、明确、可特定。"
+            }
+          },
+          {
+            "field_id": "ownership",
+            "input": "fixed_options",
+            "ask": {
+              "header": "权属与份额",
+              "question": "这项财产登记在谁名下？立遗嘱的人占多少份额？（共有情况容易遗漏，请特别留意）",
+              "options": [
+                {
+                  "value": "sole",
+                  "label": "立遗嘱的人单独所有"
+                },
+                {
+                  "value": "spouse_coowned",
+                  "label": "与配偶共有"
+                },
+                {
+                  "value": "other_coowned",
+                  "label": "与其他人共有（请在「其他」中填写，本项勿选）"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "权属不确定"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "mortgage_or_debt",
+            "input": "fixed_options",
+            "ask": {
+              "header": "抵押负担",
+              "question": "这项财产上还有没有抵押、贷款或其他负担？",
+              "options": [
+                {
+                  "value": "none",
+                  "label": "无"
+                },
+                {
+                  "value": "yes",
+                  "label": "有（请在「其他」中填写，本项勿选）"
+                },
+                {
+                  "value": "unknown",
+                  "label": "不确定"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "derivation_note": "财产类型由范围题先行选择或由描述文字自动推导（_asset_type），填写关键识别信息后不再重复选择。"
+    },
+    {
+      "base_card_id": "liability-scope",
+      "coverage_key": "liabilities",
+      "kind": "gate_then_detail",
+      "title": "债务与其他义务",
+      "gate": {
+        "header": "债务情况",
+        "question": "是否还有没还清的债务、为他人提供的担保，或其他持续要承担的义务？",
+        "options": [
+          {
+            "value": "none_known",
+            "label": "没有已知债务"
+          },
+          {
+            "value": "mortgage_only",
+            "label": "仅有房贷等财产抵押"
+          },
+          {
+            "value": "other_debts",
+            "label": "有其他债务或担保"
+          },
+          {
+            "value": "unknown",
+            "label": "不确定"
+          }
+        ]
+      },
+      "detail_when": [
+        "mortgage_only",
+        "other_debts"
+      ],
+      "detail": {
+        "questions": [
+          {
+            "field_id": "summary",
+            "input": "fill_in",
+            "ask": {
+              "header": "债务明细",
+              "question": "请简述房贷等抵押债务情况（包括类型、债权人、金额、关联财产情况，请在「其他」中填写）"
+            }
+          },
+          {
+            "field_id": "evidence_status",
+            "input": "fixed_options",
+            "ask": {
+              "header": "凭证",
+              "question": "债务凭证情况？",
+              "options": [
+                {
+                  "value": "document_held",
+                  "label": "有书面凭证"
+                },
+                {
+                  "value": "no_document",
+                  "label": "暂无凭证"
+                },
+                {
+                  "value": "unknown",
+                  "label": "不确定"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "财产确认类"
+    },
+    {
+      "base_card_id": "existing-arrangements",
+      "coverage_key": "existing_arrangements",
+      "kind": "gate_then_detail",
+      "title": "既有安排",
+      "gate": {
+        "header": "既有安排",
+        "question": "之前有没有立过遗嘱、签过遗赠扶养协议，或做过其他类似安排（比如赠与、保险受益人指定）？",
+        "options": [
+          {
+            "value": "none_known",
+            "label": "没有已知安排"
+          },
+          {
+            "value": "prior_will",
+            "label": "有旧遗嘱"
+          },
+          {
+            "value": "support_agreement",
+            "label": "有遗赠扶养协议"
+          },
+          {
+            "value": "other_arrangement",
+            "label": "其他（赠与、受益人指定等）"
+          }
+        ]
+      },
+      "detail_when": [
+        "prior_will",
+        "support_agreement",
+        "other_arrangement"
+      ],
+      "detail": {
+        "questions": [
+          {
+            "field_id": "summary",
+            "input": "fill_in",
+            "ask": {
+              "header": "安排内容",
+              "question": "请简单说说这些安排的情况（类型、时间、主要内容、涉及的人，请在「其他」中填写）"
+            }
+          },
+          {
+            "field_id": "document_status",
+            "input": "fixed_options",
+            "ask": {
+              "header": "文件状态",
+              "question": "相关文件状态？",
+              "options": [
+                {
+                  "value": "original_held",
+                  "label": "持有原件"
+                },
+                {
+                  "value": "copy_or_memory",
+                  "label": "仅复印件或凭记忆"
+                },
+                {
+                  "value": "unknown",
+                  "label": "不确定"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "遗产分配类"
+    },
+    {
+      "base_card_id": "distribution-goals",
+      "coverage_key": "distribution_goals",
+      "kind": "multi_select",
+      "title": "最重要的安排目标",
+      "ask": {
+        "header": "安排目标",
+        "question": "这份遗嘱，您最希望实现什么？（多选；其他目标或还没想好，请选「其他」说明）",
+        "multiSelect": true,
+        "options": [
+          {
+            "value": "specific_assets",
+            "label": "指定财产由指定人员继承"
+          },
+          {
+            "value": "provide_benefit",
+            "label": "保障特定人员的生活"
+          },
+          {
+            "value": "support_or_guardianship_duty_condition",
+            "label": "以继承人承担扶养、监护等义务为前提条件"
+          },
+          {
+            "value": "shares",
+            "label": "按比例分配"
+          }
+        ],
+        "other_value_parsing": [
+          "other",
+          "unknown"
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "遗产分配类"
+    },
+    {
+      "base_card_id": "estate-distribution",
+      "coverage_key": "assets",
+      "kind": "linked_pages",
+      "category": "遗产分配类",
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "title": "遗产分配方案",
+      "repeat_for": "asset-declaration.items",
+      "instance_id_template": "estate-distribution-{n}",
+      "page": {
+        "title_template": "财产 {n} 的分配",
+        "questions": [
+          {
+            "field_id": "beneficiaries",
+            "input": "person_reference_multiple",
+            "ask": {
+              "header": "受益人",
+              "question": "该财产由谁继承或受遗赠？（可多选；超过4人或另有受遗赠人请在「其他」补充姓名）",
+              "multiSelect": true,
+              "options_from": "family-map.names",
+              "max_options": 4
+            }
+          },
+          {
+            "field_id": "distribution_method",
+            "input": "fixed_options",
+            "ask": {
+              "header": "分配方式",
+              "question": "分配方式？",
+              "options": [
+                {
+                  "value": "sole",
+                  "label": "单独继承"
+                },
+                {
+                  "value": "equal_share",
+                  "label": "共同继承，均等份额"
+                },
+                {
+                  "value": "custom_share",
+                  "label": "按指定份额（请在「其他」中填写，本项勿选）"
+                },
+                {
+                  "value": "other",
+                  "label": "其他（请在「其他」中填写，本项勿选）"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "attached_obligation",
+            "input": "fixed_options",
+            "ask": {
+              "header": "义务与条件",
+              "question": "是否附义务或条件（如以扶养、监护为前提）？",
+              "options": [
+                {
+                  "value": "none",
+                  "label": "不附义务或条件"
+                },
+                {
+                  "value": "has_obligation",
+                  "label": "附义务或条件（请在「其他」中填写，本项勿选）"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "substitute_arrangement",
+            "input": "fixed_options",
+            "ask": {
+              "header": "替补安排",
+              "question": "受益人先于遗嘱人死亡时是否安排替补？",
+              "options": [
+                {
+                  "value": "none",
+                  "label": "不安排"
+                },
+                {
+                  "value": "has_substitute",
+                  "label": "安排替补（请在「其他」中填写，本项勿选）"
+                },
+                {
+                  "value": "unknown",
+                  "label": "暂不确定"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "base_card_id": "will-form-and-witnesses",
+      "coverage_key": "will_form_and_witnesses",
+      "kind": "conditional",
+      "title": "遗嘱形式与见证安排",
+      "ask": {
+        "header": "遗嘱形式",
+        "question": "您希望采用哪种遗嘱形式？（代书遗嘱、口头遗嘱或尚未决定，请选「其他」说明）",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "holographic",
+            "label": "自书遗嘱",
+            "description": "亲笔书写全文，最简便"
+          },
+          {
+            "value": "printed",
+            "label": "打印遗嘱",
+            "description": "需两名以上见证人，逐页签名"
+          },
+          {
+            "value": "audio_video",
+            "label": "录音录像遗嘱",
+            "description": "需两名以上见证人，记录身份和日期"
+          },
+          {
+            "value": "notarized",
+            "label": "公证遗嘱",
+            "description": "经公证机构办理，证明力最强"
+          }
+        ],
+        "other_value_parsing": [
+          "dictated",
+          "oral",
+          "undecided"
+        ]
+      },
+      "conditional_fields": {
+        "holographic": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "签署要点",
+              "question": "您选择的是自书遗嘱。签署时需要做到：① 全文由立遗嘱的人亲笔书写（不能打印或由他人代写）；② 亲笔签名；③ 写明年、月、日。以上事项您清楚了吗？",
+              "options": [
+                {
+                  "value": "understood",
+                  "label": "我知道了，能按要求做到"
+                },
+                {
+                  "value": "needs_explanation",
+                  "label": "不太清楚，请进一步说明"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "不确定能否做到"
+                }
+              ]
+            }
+          }
+        ],
+        "dictated": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "签署要点",
+              "question": "您选择的是代书遗嘱。签署时需要做到：① 两名以上见证人在场全程见证，由其中一人代书；② 立遗嘱的人、代书人和其他见证人签名；③ 写明年、月、日。以上事项您清楚了吗？",
+              "options": [
+                {
+                  "value": "understood",
+                  "label": "我知道了，能按要求做到"
+                },
+                {
+                  "value": "needs_explanation",
+                  "label": "不太清楚，请进一步说明"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "不确定能否做到"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "witness_arrangement",
+            "input": "fill_in",
+            "ask": {
+              "header": "见证与代书",
+              "question": "代书人和见证人是谁？（继承人、受遗赠人及其利害关系人不能当见证人；请在「其他」中填写姓名和身份）"
+            }
+          }
+        ],
+        "printed": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "签署要点",
+              "question": "您选择的是打印遗嘱。签署时需要做到：① 两名以上见证人在场全程见证；② 立遗嘱的人和见证人在遗嘱每一页签名；③ 写明年、月、日。以上事项您清楚了吗？",
+              "options": [
+                {
+                  "value": "understood",
+                  "label": "我知道了，能按要求做到"
+                },
+                {
+                  "value": "needs_explanation",
+                  "label": "不太清楚，请进一步说明"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "不确定能否做到"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "witness_arrangement",
+            "input": "fill_in",
+            "ask": {
+              "header": "见证与代书",
+              "question": "见证人是谁？（继承人、受遗赠人及其利害关系人不能当见证人；请在「其他」中填写姓名和身份）"
+            }
+          }
+        ],
+        "audio_video": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "签署要点",
+              "question": "您选择的是录音录像遗嘱。录制时需要做到：① 两名以上见证人在场全程见证；② 录音录像中记录立遗嘱的人和见证人的姓名或肖像；③ 记录年、月、日。以上事项您清楚了吗？",
+              "options": [
+                {
+                  "value": "understood",
+                  "label": "我知道了，能按要求做到"
+                },
+                {
+                  "value": "needs_explanation",
+                  "label": "不太清楚，请进一步说明"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "不确定能否做到"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "witness_arrangement",
+            "input": "fill_in",
+            "ask": {
+              "header": "见证与代书",
+              "question": "见证人是谁、资格情况如何？（请在「其他」中填写姓名和身份）"
+            }
+          }
+        ],
+        "oral": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "签署要点",
+              "question": "口头遗嘱仅在危急情况下适用：① 须有两名以上见证人在场；② 危急情况消除后能够采用书面或录音录像形式的，口头遗嘱即失效。建议危急情况缓解后尽快改用其他形式。以上事项您清楚了吗？",
+              "options": [
+                {
+                  "value": "understood",
+                  "label": "我知道了，能按要求做到"
+                },
+                {
+                  "value": "needs_explanation",
+                  "label": "不太清楚，请进一步说明"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "不确定能否做到"
+                }
+              ]
+            }
+          },
+          {
+            "field_id": "witness_arrangement",
+            "input": "fill_in",
+            "ask": {
+              "header": "见证与代书",
+              "question": "在场见证人是谁？（请在「其他」中填写姓名和身份）"
+            }
+          }
+        ],
+        "notarized": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "签署要点",
+              "question": "您选择的是公证遗嘱。办理时需要：① 遗嘱人亲自到公证机构提出申请；② 按公证机构要求提交身份、财产等材料并完成公证程序。以上事项您清楚了吗？",
+              "options": [
+                {
+                  "value": "understood",
+                  "label": "我知道了，能按要求做到"
+                },
+                {
+                  "value": "needs_explanation",
+                  "label": "不太清楚，请进一步说明"
+                },
+                {
+                  "value": "uncertain",
+                  "label": "不确定能否做到"
+                }
+              ]
+            }
+          }
+        ],
+        "undecided": [
+          {
+            "field_id": "acknowledgment",
+            "input": "fixed_options",
+            "ask": {
+              "header": "形式比较",
+              "question": "遗嘱形式尚未确定。常见形式的特点：自书遗嘱最简便（亲笔书写即可）；打印遗嘱适合不便书写的情况（需两名以上见证人）；公证遗嘱证明力最强（经公证机构办理）。您希望先了解哪一种？",
+              "options": [
+                {
+                  "value": "explain_holographic",
+                  "label": "了解自书遗嘱"
+                },
+                {
+                  "value": "explain_printed",
+                  "label": "了解打印遗嘱"
+                },
+                {
+                  "value": "explain_notarized",
+                  "label": "了解公证遗嘱"
+                },
+                {
+                  "value": "still_considering",
+                  "label": "我再考虑一下"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "acknowledgment_protocol": "understood → 按该形式编制执行计划；needs_explanation → 先作一次性说明，并将待确认事项简明列入执行指引；uncertain → 标记 REVIEW_REQUIRED，并将事项简明列入执行指引。",
+      "category": "遗嘱形式与订立类"
+    },
+    {
+      "base_card_id": "executor-custody",
+      "coverage_key": "executor_and_custody",
+      "kind": "structured_fields",
+      "title": "执行人、保管与通知",
+      "response_mode": "field_values",
+      "fields": [
+        {
+          "field_id": "executor_status",
+          "input": "fixed_options",
+          "ask": {
+            "header": "执行人",
+            "question": "希望由谁来当遗嘱执行人（负责按遗嘱处理后事的人）？",
+            "options": [
+              {
+                "value": "decided",
+                "label": "已确定（请在「其他」中填写，本项勿选）"
+              },
+              {
+                "value": "need_assistance",
+                "label": "需要律师协助确定"
+              },
+              {
+                "value": "undecided",
+                "label": "暂未确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "executor_willingness",
+          "input": "fixed_options",
+          "ask": {
+            "header": "执行人意愿",
+            "question": "拟任执行人是否已知情并愿意履职？",
+            "options": [
+              {
+                "value": "confirmed",
+                "label": "已确认愿意"
+              },
+              {
+                "value": "not_confirmed",
+                "label": "尚未确认"
+              },
+              {
+                "value": "unknown",
+                "label": "不确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "custody_method",
+          "input": "fixed_options",
+          "ask": {
+            "header": "保管方式",
+            "question": "遗嘱原件准备放在哪里保管？",
+            "options": [
+              {
+                "value": "self_custody",
+                "label": "遗嘱人自行保管"
+              },
+              {
+                "value": "professional_custody",
+                "label": "律师或公证机构保管（请在「其他」中填写，本项勿选）"
+              },
+              {
+                "value": "trusted_person",
+                "label": "可信任人员保管（请在「其他」中填写，本项勿选）"
+              },
+              {
+                "value": "undecided",
+                "label": "暂未确定"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "notification_arrangement",
+          "input": "fixed_options",
+          "ask": {
+            "header": "宣读与通知",
+            "question": "遗嘱生效后，希望通知谁、怎么通知？",
+            "options": [
+              {
+                "value": "none",
+                "label": "无特别安排"
+              },
+              {
+                "value": "has_arrangement",
+                "label": "有安排（请在「其他」中填写，本项勿选）"
+              }
+            ]
+          }
+        }
+      ],
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "遗嘱执行类"
+    },
+    {
+      "base_card_id": "deliverable-selection",
+      "coverage_key": "deliverable_selection",
+      "kind": "multi_select",
+      "title": "选择需要的成果",
+      "ask": {
+        "header": "成果选择",
+        "question": "本次将为您生成待律师人工复核的 AI 遗嘱草案与执行指引（含待判断事项）。以下成果您还需要哪些？（可多选；都不需要可不勾选）",
+        "multiSelect": true,
+        "options": [
+          {
+            "value": "legal_research_report",
+            "label": "法律法规与案例检索报告"
+          },
+          {
+            "value": "education_content",
+            "label": "普法文章/视频"
+          },
+          {
+            "value": "asset_inventory",
+            "label": "资产与债务清单"
+          },
+          {
+            "value": "relationship_diagram",
+            "label": "关系人与拟继承财产示意图"
+          }
+        ]
+      },
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "遗嘱执行类"
+    },
+    {
+      "base_card_id": "intake-confirmation",
+      "coverage_key": "final_confirmation",
+      "kind": "summary_confirmation",
+      "always_include_after_collection": true,
+      "title": "信息与起草范围确认",
+      "ask": {
+        "header": "信息核对",
+        "question": "以上是本次收集的全部信息汇总，请您核对。确认后将开始核验现行法律和相关规定，并生成文书。",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "confirmed",
+            "label": "确认无误，继续"
+          },
+          {
+            "value": "needs_correction",
+            "label": "需要修改（请在备注中说明）"
+          }
+        ]
+      },
+      "on_needs_correction": "仅重新发出受影响主题的卡片（已确认字段不再重复询问）；更正卡片的答案即视为对该项的最终确认，不再组织第二次汇总。",
+      "modes": [
+        "complete",
+        "fast_targeted"
+      ],
+      "category": "入口与收尾"
+    },
+    {
+      "base_card_id": "fast-persons-enumeration",
+      "coverage_key": "heirs_and_relationships",
+      "kind": "enumeration_fill_in",
+      "mode": "fast",
+      "modes": [
+        "fast",
+        "lawyer_sheet_parse"
+      ],
+      "title": "遗嘱人与关系人清单",
+      "parse_target": "people",
+      "ask": {
+        "header": "人员清单",
+        "question": "请一次列出立遗嘱的人和重要关系人，每人一行或用分号分隔。填写格式：姓名（身份证号码，与立遗嘱的人的关系）；号码暂不方便提供的可留空后补。示例：王五（3301********0012，本人）；张小明（3302********0034，儿子）；张小红（3303********0056，女儿）",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "enumerate_now",
+            "label": "请在「其他」中直接填写，本项勿选"
+          },
+          {
+            "value": "not_ready",
+            "label": "暂未整理好，先以占位符生成框架稿"
+          }
+        ]
+      },
+      "category": "简易快速模式"
+    },
+    {
+      "base_card_id": "fast-assets-enumeration",
+      "coverage_key": "assets",
+      "kind": "enumeration_fill_in",
+      "mode": "fast",
+      "modes": [
+        "fast",
+        "lawyer_sheet_parse"
+      ],
+      "title": "财产清单",
+      "parse_target": "assets",
+      "ask": {
+        "header": "财产清单",
+        "question": "请一次列出需要处分的财产。填写格式：财产描述（权属情况），权属可省略。示例：浙江省杭州市西湖区XX路88号房产（单独所有）、XX银行XXXXXXXX账户内存款X万元（不确定）、XXX公司30%股权、XXXX游戏账号（ID：XXXX）（单独所有）。",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "enumerate_now",
+            "label": "请在「其他」中直接填写，本项勿选"
+          },
+          {
+            "value": "not_ready",
+            "label": "暂未整理好，先以占位符生成框架稿"
+          }
+        ]
+      },
+      "category": "简易快速模式"
+    },
+    {
+      "base_card_id": "fast-distribution-enumeration",
+      "coverage_key": "real_estate_distribution",
+      "kind": "enumeration_fill_in",
+      "mode": "fast",
+      "modes": [
+        "fast",
+        "lawyer_sheet_parse"
+      ],
+      "title": "分配意向清单",
+      "parse_target": "intentions",
+      "ask": {
+        "header": "分配意向",
+        "question": "请逐项写明每项财产由谁继承及份额。填写格式：财产 → 继承人［份额］。示例：西湖区房产 → 张小明单独继承；存款 → 张小明50%、张小红50%。替补安排可写在备注",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "enumerate_now",
+            "label": "请在「其他」中直接填写，本项勿选"
+          },
+          {
+            "value": "not_ready",
+            "label": "暂未考虑好，先以占位符生成框架稿"
+          }
+        ]
+      },
+      "category": "简易快速模式"
+    },
+    {
+      "base_card_id": "fast-assumptions-correction",
+      "coverage_key": "existing_arrangements",
+      "kind": "multi_select",
+      "mode": "fast",
+      "modes": [
+        "fast",
+        "lawyer_sheet_parse"
+      ],
+      "title": "默认假设修正",
+      "ask": {
+        "header": "假设修正",
+        "question": "为了尽快形成草稿，以下事项已按通常情况作了默认处理：没有已知债务、没有旧遗嘱等既有安排、执行人和保管暂未确定、没有监护等特殊情形。哪些与实际情况不符？（多选；都相符请选「其他」填写“无”）",
+        "multiSelect": true,
+        "options": [
+          {
+            "value": "liabilities",
+            "label": "有债务、担保或抵押需要申报"
+          },
+          {
+            "value": "existing_arrangements",
+            "label": "有旧遗嘱、遗赠扶养协议等既有安排"
+          },
+          {
+            "value": "executor_custody",
+            "label": "遗嘱执行人、保管或通知已有安排"
+          },
+          {
+            "value": "special_factors",
+            "label": "涉及未成年人、监护、境外或家庭争议"
+          }
+        ],
+        "other_value_parsing": [
+          "none"
+        ],
+        "targeted_cards": {
+          "liabilities": "liability-scope",
+          "existing_arrangements": "existing-arrangements",
+          "executor_custody": "executor-custody",
+          "special_factors": "guardianship-special"
+        }
+      },
+      "category": "简易快速模式"
+    },
+    {
+      "base_card_id": "lawyer-sheet-intake",
+      "coverage_key": "actor_authority",
+      "kind": "single_question",
+      "mode": "lawyer_sheet",
+      "modes": [
+        "lawyer_sheet"
+      ],
+      "title": "律师信息表操作确认",
+      "ask": {
+        "header": "信息表",
+        "question": "已为您生成预填好的采集表单。请打开填写或补充，点击「保存」后回到这里选择：",
+        "multiSelect": false,
+        "options": [
+          {
+            "value": "saved_retrieve",
+            "label": "已保存，请读取文件"
+          },
+          {
+            "value": "need_help",
+            "label": "遇到问题，需要协助"
+          },
+          {
+            "value": "switch_complete",
+            "label": "改用完整模式"
+          }
+        ]
+      },
+      "category": "入口与收尾"
+    }
+  ],
+  "collection_modes": {
+    "default": "fast",
+    "single_summary_confirmation": true,
+    "fast": {
+      "description": "简易模式：通过选择卡片逐步确认必要基础信息，填写内容较少；前两轮按协议内联规格直发，不读卡组、不跑脚本",
+      "typical_rounds": "3-5",
+      "first_rounds_inline": true,
+      "speed_note": "简易模式前两轮按 references/card-collection.md §2 内联规格直接发出：不读取本卡组、不运行编译脚本、不先写工作数据，以消除首组卡片延迟。"
+    },
+    "complete": {
+      "description": "完整模式：按人员、财产、分配、订立形式、遗嘱执行五大类系统填写",
+      "typical_rounds": "9-14"
+    },
+    "lawyer_sheet": {
+      "audience_required": "lawyer",
+      "description": "律师专业通道：律师/法律工作者经单独隐私确认后，通过消息或附件一次性提交信息表",
+      "sheet_template": "assets/cards/lawyer-intake-sheet.md",
+      "skip_card_ids": [
+        "actor-authority"
+      ],
+      "first_card": "lawyer-privacy-consent"
+    }
+  },
+  "card_categories": {
+    "人员确认类": [
+      "testator-basic-info",
+      "testator-capacity",
+      "family-map",
+      "guardianship-special"
+    ],
+    "财产确认类": [
+      "asset-declaration",
+      "liability-scope"
+    ],
+    "遗产分配类": [
+      "existing-arrangements",
+      "distribution-goals",
+      "estate-distribution"
+    ],
+    "遗嘱形式与订立类": [
+      "will-form-and-witnesses"
+    ],
+    "遗嘱执行类": [
+      "executor-custody",
+      "deliverable-selection"
+    ],
+    "入口与收尾": [
+      "actor-authority",
+      "lawyer-privacy-consent",
+      "intake-confirmation",
+      "lawyer-sheet-intake"
+    ],
+    "简易快速模式": [
+      "fast-persons-enumeration",
+      "fast-assets-enumeration",
+      "fast-distribution-enumeration",
+      "fast-assumptions-correction"
+    ]
+  },
+  "removed_cards_v4": {
+    "removed": [
+      "asset-scope",
+      "real-estate-details",
+      "real-estate-distribution",
+      "generic-asset-details",
+      "asset-distribution",
+      "heir-and-share-review",
+      "arrangement-effect-review",
+      "estate-administration-review",
+      "complex-asset-routing"
+    ],
+    "merger_note": "asset-scope/real-estate-details/generic-asset-details → asset-declaration；real-estate-distribution/asset-distribution → estate-distribution；四张法律专项复核卡整合进 family-map 尾题、estate-distribution 义务字段、executor-custody 执行人意愿与规则推导，不再单独发卡。"
+  }
+}

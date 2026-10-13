@@ -1,0 +1,763 @@
+{
+  "schema_version": "0.5.1",
+  "work_id": "will-work-demo-001",
+  "status": "ready_for_output",
+  "baseline_at": "2026-08-10T09:00:00+08:00",
+  "audience_profile": {
+    "audience_type": "general_public",
+    "language_profile": "plain",
+    "selected_via_card_id": "mode-selection",
+    "selected_at": "2026-08-10T09:00:00+08:00",
+    "confirmed": true
+  },
+  "intake_session": {
+    "deck_id": "will-intake-v3",
+    "deck_version": "4.0.0",
+    "status": "confirmed",
+    "navigation_mode": "mode_routed_batched",
+    "coverage_assessment": {
+      "status": "cards_required",
+      "assessed_at": "2026-08-10T08:59:00+08:00",
+      "source_document_ids": [
+        "evidence-001"
+      ],
+      "topics": {
+        "audience_type": "missing",
+        "actor_authority": "missing",
+        "testator_basic_info": "partial",
+        "testator_capacity_and_intent": "missing",
+        "heirs_and_relationships": "missing",
+        "assets": "partial",
+        "real_estate_details": "partial",
+        "real_estate_distribution": "missing",
+        "liabilities": "missing",
+        "existing_arrangements": "missing",
+        "distribution_goals": "missing",
+        "executor_and_custody": "missing",
+        "will_form_and_witnesses": "missing",
+        "special_factors": "missing",
+        "inheritance_legal_review": "missing",
+        "arrangement_effect_review": "missing",
+        "estate_administration_review": "missing",
+        "complex_asset_routing": "missing",
+        "deliverable_selection": "missing",
+        "final_confirmation": "missing"
+      }
+    },
+    "required_card_ids": [
+      "actor-authority",
+      "testator-basic-info",
+      "testator-capacity",
+      "family-map",
+      "family-map-person-1",
+      "guardianship-special",
+      "asset-declaration",
+      "asset-declaration-1",
+      "liability-scope",
+      "existing-arrangements",
+      "distribution-goals",
+      "estate-distribution-1",
+      "will-form-and-witnesses",
+      "executor-custody",
+      "deliverable-selection",
+      "intake-confirmation"
+    ],
+    "skipped_base_card_ids": [],
+    "progress": {
+      "total_questions": 16,
+      "completed_questions": 16,
+      "current_question_index": null
+    },
+    "current_card_id": null,
+    "card_responses": [
+      {
+        "card_id": "actor-authority",
+        "base_card_id": "actor-authority",
+        "selected_values": [
+          "self"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:02:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "testator-basic-info",
+        "base_card_id": "testator-basic-info",
+        "selected_values": [],
+        "field_values": {
+          "name": "用户本人（演示）",
+          "identity_number": "330102198801010011",
+          "address": "某市某区（演示）",
+          "gender": "男",
+          "birth_date": "1988-01-01"
+        },
+        "free_text": "姓名、出生日期和住址经卡片确认；证件号码演示中留空。",
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:05:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "testator-capacity",
+        "base_card_id": "testator-capacity",
+        "selected_values": [],
+        "field_values": {
+          "reported_status": "no_concern_reported",
+          "voluntariness_status": "no_concern_reported",
+          "observations": "none"
+        },
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:08:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "family-map",
+        "base_card_id": "family-map",
+        "selected_values": [
+          "1"
+        ],
+        "field_values": {
+          "other_statutory_heirs": "none",
+          "fetal_share_treatment": "not_applicable",
+          "disqualification_status": "none"
+        },
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:12:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "family-map-person-1",
+        "base_card_id": "family-map",
+        "selected_values": [],
+        "field_values": {
+          "relationship": "待核验",
+          "name": "重要关系人A",
+          "identity_number": null,
+          "is_possible_heir": "unknown"
+        },
+        "free_text": "关系性质待律师核验。",
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:15:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "guardianship-special",
+        "base_card_id": "guardianship-special",
+        "selected_values": [
+          "none"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "not_applicable",
+        "answered_at": "2026-08-10T09:18:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "asset-declaration",
+        "base_card_id": "asset-declaration",
+        "selected_values": [
+          "real_estate",
+          "1"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:20:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "asset-declaration-1",
+        "base_card_id": "asset-declaration",
+        "selected_values": [],
+        "field_values": {
+          "description": "某市住宅一套（坐落地址）",
+          "ownership": "uncertain",
+          "mortgage_or_debt": "unknown"
+        },
+        "free_text": "权属份额待核验；权属材料已上传。",
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:25:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "liability-scope",
+        "base_card_id": "liability-scope",
+        "selected_values": [
+          "unknown"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "unknown",
+        "answered_at": "2026-08-10T09:28:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "existing-arrangements",
+        "base_card_id": "existing-arrangements",
+        "selected_values": [
+          "none_known"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:30:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "distribution-goals",
+        "base_card_id": "distribution-goals",
+        "selected_values": [
+          "provide_benefit"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:32:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "estate-distribution-1",
+        "base_card_id": "estate-distribution",
+        "selected_values": [],
+        "field_values": {
+          "beneficiaries": [
+            "重要关系人A"
+          ],
+          "distribution_method": "sole",
+          "attached_obligation": "none",
+          "substitute_arrangement": "none"
+        },
+        "free_text": "拟由重要关系人A受益。",
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:34:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "will-form-and-witnesses",
+        "base_card_id": "will-form-and-witnesses",
+        "selected_values": [
+          "printed"
+        ],
+        "field_values": {
+          "acknowledgment": "understood",
+          "witness_arrangement": "已安排两名见证人，均非继承人或受遗赠人的利害关系人"
+        },
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:38:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "executor-custody",
+        "base_card_id": "executor-custody",
+        "selected_values": [],
+        "field_values": {
+          "executor_status": "undecided",
+          "executor_willingness": "confirmed",
+          "custody_method": "professional_custody",
+          "notification_arrangement": "none"
+        },
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:40:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "deliverable-selection",
+        "base_card_id": "deliverable-selection",
+        "selected_values": [
+          "legal_research_report",
+          "education_content",
+          "asset_inventory",
+          "relationship_diagram"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:44:00+08:00",
+        "confirmed": true
+      },
+      {
+        "card_id": "intake-confirmation",
+        "base_card_id": "intake-confirmation",
+        "selected_values": [
+          "confirmed"
+        ],
+        "field_values": null,
+        "free_text": null,
+        "answer_status": "answered",
+        "answered_at": "2026-08-10T09:46:00+08:00",
+        "confirmed": true
+      }
+    ],
+    "confirmed_at": "2026-08-10T09:46:00+08:00",
+    "collection_channel": "ask_user_question",
+    "collection_mode": "complete"
+  },
+  "subject": {
+    "person_id": "person-001"
+  },
+  "testator_basic_info": {
+    "name": "用户本人（演示）",
+    "gender": "未在演示中提供",
+    "birth_date": "1988-01-01",
+    "identity_number": "演示数据，正式生成前填写并核验",
+    "address": "某市某区（演示）",
+    "source_card_id": "testator-basic-info",
+    "confirmation_status": "confirmed",
+    "confirmed_at": "2026-08-10T09:05:00+08:00"
+  },
+  "testator_capacity": {
+    "reported_status": "no_concern_reported",
+    "voluntariness_status": "no_concern_reported",
+    "professional_assessment_status": "not_provided",
+    "observations": [
+      "遗嘱人本人陈述能够理解本次安排并独立表达真实意愿"
+    ],
+    "supporting_evidence_ids": [],
+    "source_card_id": "testator-capacity",
+    "confirmation_status": "confirmed",
+    "confirmed_at": "2026-08-10T09:08:00+08:00"
+  },
+  "will_execution_plan": {
+    "form": "printed",
+    "witnesses": [
+      {
+        "person_id": "person-003",
+        "capacity_status": "eligible",
+        "is_heir_or_legatee": "no",
+        "has_interest_with_heir_or_legatee": "no"
+      },
+      {
+        "person_id": "person-004",
+        "capacity_status": "eligible",
+        "is_heir_or_legatee": "no",
+        "has_interest_with_heir_or_legatee": "no"
+      }
+    ],
+    "testator_signature_confirmed": true,
+    "witnesses_sign_each_page_confirmed": true,
+    "date_confirmed": true,
+    "continuous_presence_confirmed": true,
+    "identity_recording_confirmed": false,
+    "emergency_status": "not_applicable",
+    "notary_appointment_planned": false,
+    "prior_arrangement_review_status": "not_applicable",
+    "prior_will_review_status": "not_applicable"
+  },
+  "reserved_share_review": {
+    "status": "no_candidate_reported",
+    "candidate_person_ids": [],
+    "treatment": "not_applicable"
+  },
+  "inheritance_review": {
+    "heir_scope_status": "complete",
+    "fetal_share_treatment": "not_applicable",
+    "disqualification_status": "none",
+    "disqualification_review_status": "not_applicable",
+    "legatee_acceptance_status": "not_applicable",
+    "attached_obligation_review_status": "not_applicable",
+    "lapse_and_residuary_status": "reviewed",
+    "coownership_review_status": "not_applicable",
+    "administrator_consent_status": "confirmed",
+    "administrator_terms_status": "covered",
+    "debt_inventory_status": "complete",
+    "tax_review_status": "not_applicable",
+    "insurance_review_status": "not_applicable",
+    "guardianship_review_status": "not_applicable",
+    "complex_asset_types": "none",
+    "complex_asset_routing_status": "not_applicable"
+  },
+  "people": [
+    {
+      "id": "person-001",
+      "display_name": "用户本人",
+      "roles": [
+        "subject",
+        "user"
+      ],
+      "birth_year": 1988,
+      "contact_masked": "138****0000",
+      "notes": "全部为脱敏演示数据",
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "testator-basic-info"
+        },
+        "confidence": 1,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:05:00+08:00"
+      }
+    },
+    {
+      "id": "person-002",
+      "display_name": "重要关系人A",
+      "roles": [
+        "important_person",
+        "intended_beneficiary"
+      ],
+      "birth_year": null,
+      "contact_masked": null,
+      "notes": "关系性质待律师核验",
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "family-map"
+        },
+        "confidence": 0.9,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:15:00+08:00"
+      }
+    },
+    {
+      "id": "person-003",
+      "display_name": "拟任见证人甲",
+      "roles": [
+        "witness"
+      ],
+      "birth_year": 1980,
+      "contact_masked": null,
+      "notes": "脱敏演示数据",
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "will-form-and-witnesses"
+        },
+        "confidence": 1,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:42:30+08:00"
+      }
+    },
+    {
+      "id": "person-004",
+      "display_name": "拟任见证人乙",
+      "roles": [
+        "witness"
+      ],
+      "birth_year": 1982,
+      "contact_masked": null,
+      "notes": "脱敏演示数据",
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "will-form-and-witnesses"
+        },
+        "confidence": 1,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:42:30+08:00"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "relationship-001",
+      "from_person_id": "person-001",
+      "to_person_id": "person-002",
+      "relationship_type": "important_person",
+      "status": "current",
+      "notes": null,
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "family-map"
+        },
+        "confidence": 0.9,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:15:00+08:00"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-001",
+      "asset_type": "real_estate",
+      "description": "某市住宅一套",
+      "location": "某市",
+      "estimated_value": 3000000,
+      "currency": "CNY",
+      "owners": [
+        {
+          "person_id": "person-001",
+          "share_percent": 100
+        }
+      ],
+      "evidence_status": "uploaded",
+      "arrangement_status": "complete",
+      "notes": "演示案件中按已确认的个人财产记录",
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "asset-scope"
+        },
+        "confidence": 0.85,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:30:00+08:00"
+      }
+    }
+  ],
+  "liabilities": [],
+  "existing_documents": [],
+  "intentions": [
+    {
+      "id": "intention-001",
+      "intention_type": "provide_use_or_benefit",
+      "summary": "希望重要关系人A在本人去世后仍能获得稳定生活安排",
+      "priority": "high",
+      "related_person_ids": [
+        "person-002"
+      ],
+      "related_asset_ids": [
+        "asset-001"
+      ],
+      "provenance": {
+        "source": {
+          "type": "user_statement",
+          "reference": "distribution-goals"
+        },
+        "confidence": 0.95,
+        "confirmation_status": "confirmed",
+        "confirmed_at": "2026-08-10T09:40:00+08:00"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-001",
+      "evidence_type": "property_document",
+      "description": "住宅权属材料扫描件",
+      "file_reference": "source/property-document.pdf",
+      "sha256": null,
+      "related_ids": [
+        "asset-001"
+      ],
+      "verification_status": "parsed"
+    }
+  ],
+  "issues": [
+    {
+      "id": "issue-001",
+      "level": "REVIEW_REQUIRED",
+      "issue_type": "rule_pack_missing",
+      "title": "专业规则包尚未配置",
+      "description": "演示条款仅用于验证流程和版式，正式内容需结合案件事实、实时检索证据及律师判断。",
+      "related_ids": [
+        "asset-001",
+        "intention-001"
+      ],
+      "status": "open",
+      "next_action": "由律师复核权属、受益安排和条款内容",
+      "owner": "律师"
+    }
+  ],
+  "confirmations": [
+    {
+      "id": "confirmation-001",
+      "scope": "facts",
+      "related_ids": [
+        "person-001",
+        "person-002",
+        "relationship-001",
+        "asset-001"
+      ],
+      "confirmed_by": "person-001",
+      "confirmed_at": "2026-08-10T09:45:00+08:00",
+      "method": "card_summary_confirmation"
+    },
+    {
+      "id": "confirmation-002",
+      "scope": "intentions",
+      "related_ids": [
+        "intention-001"
+      ],
+      "confirmed_by": "person-001",
+      "confirmed_at": "2026-08-10T09:46:00+08:00",
+      "method": "card_summary_confirmation"
+    }
+  ],
+  "consent": {
+    "accepted": true,
+    "accepted_at": "2026-08-10T09:00:00+08:00",
+    "purposes": [
+      "will_drafting",
+      "legal_research",
+      "deliverable_generation"
+    ],
+    "sensitive_data_acknowledged": true
+  },
+  "legal_research": {
+    "status": "verified",
+    "jurisdiction": "CN",
+    "recent_case_years": 5,
+    "retrieved_at": "2026-08-10T10:15:00+08:00",
+    "authorities": [
+      {
+        "id": "law-001",
+        "title": "中华人民共和国民法典",
+        "issuing_body": "全国人民代表大会",
+        "document_number": "中华人民共和国主席令第四十五号",
+        "effective_status": "effective",
+        "publication_date": "2020-05-28",
+        "effective_date": "2021-01-01",
+        "source_url": "https://wb.flk.npc.gov.cn/flfg/PDF/bd53dd912c1048f2aecbaa229238334b.pdf",
+        "retrieved_at": "2026-08-10T10:05:00+08:00",
+        "relevance": "用于识别继承、遗嘱、遗产管理等问题的现行法基础；演示数据不代替具体条文审查。",
+        "limitations": "尚未接入具体条款规则包。"
+      }
+    ],
+    "cases": [
+      {
+        "id": "case-ref-001",
+        "title": "最高法发布第二批继承纠纷典型案例",
+        "case_number_or_library_id": null,
+        "court_or_publisher": "最高人民法院",
+        "decision_or_publication_date": "2024-12-12",
+        "source_kind": "spc_typical",
+        "source_url": "https://www.court.gov.cn/zixun/xiangqing/449671.html",
+        "retrieved_at": "2026-08-10T10:10:00+08:00",
+        "relevance": "提供继承纠纷中遗嘱自由、必要份额等问题的公开案例线索；具体适用需按案件事实比对。",
+        "differences": "演示案件事实未完整，不能直接类推案例结论。"
+      }
+    ],
+    "education_links": [
+      {
+        "id": "education-001",
+        "title": "最高法发布民法典遗产管理人制度典型案例",
+        "publisher": "最高人民法院",
+        "content_type": "article",
+        "published_at": "2026-05-21",
+        "url": "https://www.court.gov.cn/zixun/xiangqing/500671.html",
+        "retrieved_at": "2026-08-10T10:12:00+08:00",
+        "verified_access": true,
+        "relevance": "帮助理解遗嘱执行人与遗产管理的公开司法案例。"
+      }
+    ],
+    "research_summary": "已完成演示性官方法源和近年最高法案例检索；尚未形成具体法律规则包。",
+    "limitations": [
+      "本数据仅用于 Skill 回归测试。",
+      "正式案件必须根据已确认事实重新检索并由专业人员判断。"
+    ]
+  },
+  "rule_context": {
+    "rule_pack_id": "cn-will-core",
+    "rule_pack_version": "0.2.0",
+    "status": "development",
+    "authority_checked_at": "2026-08-11T00:00:00+08:00",
+    "evaluated_at": "2026-08-10T10:16:00+08:00"
+  },
+  "will_document": {
+    "template_id": "will-template-v1",
+    "template_sha256": "c8398bc4050b4bb640b7cc8e15f762ce223c6b5cbc76bda5a8f444e8f954558c",
+    "review_status": "draft_pending_review",
+    "metadata": {
+      "will_number": "DEMO-001",
+      "execution_place": "中国·浙江省某市某区",
+      "execution_date": "2026年8月10日"
+    },
+    "testator": {
+      "name": "用户本人（演示）",
+      "gender": "未在演示中提供",
+      "nationality": "中国",
+      "identity_number": "演示数据，正式生成前填写并核验",
+      "phone": "138****0000",
+      "address": "某市某区（演示）"
+    },
+    "sections": {
+      "declarations": [
+        "本条为演示条款，仅用于验证 Skill 的范本填充和版式保真，正式内容须在案件事实、现行法律和专业审核基础上形成。"
+      ],
+      "legal_heirs": [
+        "法定继承人范围及相关身份信息尚需根据完整材料核验，正式遗嘱不得直接使用本演示表述。"
+      ],
+      "estate_distribution": [
+        "关于某市住宅的权属范围和安排方式尚待核验，本演示文本不构成最终处分条款。",
+        "其他财产和债务范围应在正式起草前补充并确认。"
+      ],
+      "executor": [
+        "遗嘱执行人人选、备选安排、权限和报酬由遗嘱人确认并经专业审核后写入正式文本。"
+      ],
+      "guardianship": [
+        "当前演示案件未形成监护安排；是否适用及如何表述待专业判断。"
+      ],
+      "minor_guardianship": [
+        "当前演示案件未形成未成年子女监护安排；正式文本须按实际情况处理。"
+      ],
+      "other": [
+        "正式遗嘱的份数、保管人和通知方式由遗嘱人确认后填写。"
+      ]
+    },
+    "signature": {
+      "signer_display": "签署时本人填写",
+      "date_display": "签署时填写",
+      "place_display": "签署时填写"
+    }
+  },
+  "deliverables": {
+    "execution_guide": [
+      {
+        "phase": "签署前",
+        "action": "核对遗嘱人身份、财产权属、受益人和执行人信息",
+        "basis": "案件事实和证明材料必须与文本一致",
+        "owner": "用户与律师",
+        "status": "professional_judgment_required"
+      },
+      {
+        "phase": "生成后",
+        "action": "打开 DOCX 并逐页检查编号、姓名、日期、分页和签署区",
+        "basis": "范本版式质量门禁",
+        "owner": "经办人",
+        "status": "confirmed"
+      }
+    ],
+    "ai_judgment_items": [
+      {
+        "title": "核验住宅权属范围",
+        "why_needed": "现有材料尚不能确认遗嘱人可处分的具体份额",
+        "decision_owner": "律师与遗嘱人",
+        "required_materials": [
+          "权属证明",
+          "取得时间和出资材料"
+        ],
+        "impact": "可能影响财产处分条款",
+        "next_action": "补充材料并由律师复核",
+        "blocking": false
+      },
+      {
+        "title": "确定遗嘱执行人人选",
+        "why_needed": "演示案件仅记录了需要专业复核，未确认具体人选",
+        "decision_owner": "遗嘱人",
+        "required_materials": [
+          "候选人身份和联系方式"
+        ],
+        "impact": "影响执行人条款和后续操作",
+        "next_action": "确认本人和备选人",
+        "blocking": false
+      }
+    ]
+  },
+  "output_preferences": {
+    "language": "zh-CN",
+    "formats": [
+      "json",
+      "markdown",
+      "csv",
+      "docx"
+    ],
+    "audiences": [
+      "user",
+      "lawyer"
+    ],
+    "requested_deliverables": [
+      "will_docx",
+      "execution_guide",
+      "legal_research_report",
+      "education_content",
+      "asset_inventory",
+      "relationship_diagram"
+    ],
+    "selection_confirmed": true,
+    "selected_at": "2026-08-10T09:44:00+08:00"
+  }
+}

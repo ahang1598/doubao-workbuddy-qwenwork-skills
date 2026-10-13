@@ -1,0 +1,18 @@
+{
+  "data": {
+    "records": [
+      {"recordId": "rec-p01", "cells": {"employee_id": "E001", "name": "陈宁", "department": "综合管理", "written": 94, "interview": 76, "rating": "胜任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p01"}}},
+      {"recordId": "rec-p02", "cells": {"employee_id": "E002", "name": "王哲", "department": "行政", "written": 91, "interview": 75, "rating": "胜任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p02"}}},
+      {"recordId": "rec-p03", "cells": {"employee_id": "E003", "name": "周敏", "department": "品牌", "written": 96, "interview": 73, "rating": "胜任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p03"}}},
+      {"recordId": "rec-p04", "cells": {"employee_id": "E004", "name": "赵晨", "department": "综合管理", "written": 92, "interview": 69, "rating": "适任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p04"}}},
+      {"recordId": "rec-p05", "cells": {"employee_id": "E005", "name": "林悦", "department": "行政", "written": 88, "interview": 70, "rating": "适任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p05"}}},
+      {"recordId": "rec-p06", "cells": {"employee_id": "E006", "name": "郭凯", "department": "品牌", "written": 90, "interview": 68, "rating": "适任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p06"}}},
+      {"recordId": "rec-p07", "cells": {"employee_id": "E007", "name": "何青", "department": "综合管理", "written": 87, "interview": 70, "rating": "适任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p07"}}},
+      {"recordId": "rec-p08", "cells": {"employee_id": "E008", "name": "蒋雯", "department": "行政", "written": 89, "interview": 67, "rating": "适任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p08"}}},
+      {"recordId": "rec-p09", "cells": {"employee_id": "E009", "name": "许成", "department": "品牌", "written": 86, "interview": 68, "rating": "适任", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p09"}}},
+      {"recordId": "rec-p10", "cells": {"employee_id": "E010", "name": "吴昕", "department": "综合管理", "written": 84, "interview": 64, "rating": "待提升", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p10"}}},
+      {"recordId": "rec-p11", "cells": {"employee_id": "E011", "name": "马骁", "department": "行政", "written": 82, "interview": 63, "rating": "待提升", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p11"}}},
+      {"recordId": "rec-p12", "cells": {"employee_id": "E012", "name": "孙扬", "department": "品牌", "written": 78, "interview": 58, "rating": "不合格", "record_url": {"text": "查看", "link": "https://alidocs.dingtalk.com/notable/record?rowId=rec-p12"}}}
+    ]
+  }
+}

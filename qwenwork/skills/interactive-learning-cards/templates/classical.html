@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #f7f5f0;
+            --paper-dark: #e8e4d9;
+            --ink: #1a1a1a;
+            --ink-light: #4a4a4a;
+            --cinnabar: #c45c48;
+            --indigo: #2c3e50;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+        
+        .calligraphy { font-family: 'Ma Shan Zheng', cursive; }
+        
+        .paper-texture {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.4;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+        }
+        
+        /* Card */
+        .card-container { perspective: 1200px; }
+        .card {
+            width: 100%; height: 360px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 40px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        .card-face::before {
+            content: '';
+            position: absolute;
+            top: 20px; left: 20px; right: 20px; bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            pointer-events: none;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #faf9f7 0%, #f0ede6 100%);
+        }
+        
+        /* Buttons */
+        .btn-classical {
+            padding: 12px 28px;
+            border: 1px solid var(--ink-light);
+            background: transparent;
+            font-family: 'Noto Serif SC', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-classical:hover {
+            background: var(--indigo);
+            color: white;
+            border-color: var(--indigo);
+        }
+    </style>
+</head>
+<body>
+    <div class="paper-texture"></div>
+    
+    <div class="relative z-10 max-w-2xl mx-auto px-4 py-10">
+        <!-- Header -->
+        <header class="text-center mb-10 pb-6 border-b border-stone-300">
+            <h1 class="calligraphy text-5xl mb-3">{{TITLE}}</h1>
+            <p class="text-stone-500 tracking-widest">{{SUBTITLE}}</p>
+        </header>
+
+        <!-- Mode Tabs -->
+        <div class="flex justify-center gap-4 mb-10">
+            <button onclick="setMode('flashcard')" class="mode-tab px-6 py-2 border border-stone-400 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all" data-mode="flashcard">卡片</button>
+            <button onclick="setMode('quiz')" class="mode-tab px-6 py-2 border border-stone-400 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all" data-mode="quiz">测验</button>
+            <button onclick="setMode('browse')" class="mode-tab px-6 py-2 border border-stone-400 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all" data-mode="browse">浏览</button>
+        </div>
+
+        <!-- Flashcard Mode -->
+        <div id="flashcardMode" class="mode-content">
+            <div class="card-container mb-8">
+                <div class="card" id="flashcard" onclick="flipCard()">
+                    <div class="card-face">
+                        <span class="absolute top-8 right-10 text-sm text-stone-400 tracking-widest">{{CATEGORY}}</span>
+                        <p class="text-2xl text-center leading-relaxed" id="cardQuestion">{{QUESTION}}</p>
+                        <span class="absolute bottom-8 text-stone-400 text-sm tracking-widest">点击翻转</span>
+                    </div>
+                    <div class="card-face card-back">
+                        <span class="absolute top-8 right-10 text-sm text-stone-400 tracking-widest">{{CATEGORY}}</span>
+                        <p class="text-3xl text-center font-bold text-stone-800" id="cardAnswer">{{ANSWER}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ratingButtons" class="hidden flex justify-center gap-4 mb-8">
+                <button onclick="rateCard('again')" class="btn-classical">重来</button>
+                <button onclick="rateCard('hard')" class="btn-classical">困难</button>
+                <button onclick="rateCard('good')" class="btn-classical">良好</button>
+                <button onclick="rateCard('easy')" class="btn-classical">简单</button>
+            </div>
+
+            <div class="flex justify-center items-center gap-8">
+                <button onclick="prevCard()" class="w-12 h-12 rounded-full border border-stone-400 flex items-center justify-center text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all">←</button>
+                <span class="text-stone-500" id="cardProgress">1 / {{TOTAL}}</span>
+                <button onclick="nextCard()" class="w-12 h-12 rounded-full border border-stone-400 flex items-center justify-center text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all">→</button>
+            </div>
+
+            <div class="mt-10">
+                <div class="h-1 bg-stone-300">
+                    <div class="h-full bg-stone-600 transition-all" id="progressBar" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-xs text-stone-400">
+                    <span>开始</span>
+                    <span>完成</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz & Browse modes similar to modern.html -->
+        <div id="quizMode" class="mode-content hidden">
+            <div class="bg-white p-8 shadow-sm border border-stone-200">
+                <p class="text-xl mb-6" id="quizQuestion">{{QUESTION}}</p>
+                <div class="space-y-3" id="quizOptions"></div>
+            </div>
+        </div>
+
+        <div id="browseMode" class="mode-content hidden">
+            <div class="grid gap-4" id="browseGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // 注意：使用反引号(`)包裹字符串，可安全包含中文引号
+        const cards = [
+            {
+                id: "1",
+                category: "示例",
+                question: `示例问题，支持包含"引号"`,
+                answer: `示例答案，也支持"引号"`
+            }
+        ];
+        let currentIndex = 0, isFlipped = false, currentMode = 'flashcard';
+
+        function init() {
+            renderCard();
+            updateTabs();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(mode + 'Mode').classList.remove('hidden');
+            updateTabs();
+        }
+
+        function updateTabs() {
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                if (tab.dataset.mode === currentMode) {
+                    tab.classList.add('bg-stone-800', 'text-white', 'border-stone-800');
+                    tab.classList.remove('text-stone-600');
+                } else {
+                    tab.classList.remove('bg-stone-800', 'text-white', 'border-stone-800');
+                    tab.classList.add('text-stone-600');
+                }
+            });
+        }
+
+        function renderCard() {
+            const card = cards[currentIndex];
+            document.getElementById('cardQuestion').textContent = card.question;
+            document.getElementById('cardAnswer').textContent = card.answer;
+            document.getElementById('cardProgress').textContent = `${currentIndex + 1} / ${cards.length}`;
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            document.getElementById('ratingButtons').classList.add('hidden');
+            document.getElementById('progressBar').style.width = ((currentIndex + 1) / cards.length * 100) + '%';
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+            document.getElementById('ratingButtons').classList.toggle('hidden', !isFlipped);
+        }
+
+        function rateCard(r) { nextCard(); }
+        function nextCard() { currentIndex = (currentIndex + 1) % cards.length; renderCard(); }
+        function prevCard() { currentIndex = (currentIndex - 1 + cards.length) % cards.length; renderCard(); }
+
+        document.addEventListener('keydown', (e) => {
+            if (currentMode !== 'flashcard') return;
+            if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+            else if (e.code === 'ArrowRight') nextCard();
+            else if (e.code === 'ArrowLeft') prevCard();
+        });
+
+        init();
+    </script>
+</body>
+</html>

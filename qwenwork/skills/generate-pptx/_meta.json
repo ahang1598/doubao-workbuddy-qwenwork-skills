@@ -1,0 +1,11 @@
+{
+  "owner": "likegakki",
+  "slug": "generate-pptx",
+  "displayName": "generate-pptx",
+  "latest": {
+    "version": "1.0.1",
+    "publishedAt": 1774940055785,
+    "commit": "https://github.com/openclaw/skills/commit/f8cc80afc6f7f686344da8da8bb2653b8b856e5a"
+  },
+  "history": []
+}

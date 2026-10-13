@@ -1,0 +1,6 @@
+interface:
+  display_name: "客户沟通话术"
+  short_description: "围绕真实业务场景生成可复制可推进的客户沟通话术短文写作"
+  default_prompt: "使用 $customer-communication-writing，帮我写一段客户跟进微信话术。"
+policy:
+  allow_implicit_invocation: true

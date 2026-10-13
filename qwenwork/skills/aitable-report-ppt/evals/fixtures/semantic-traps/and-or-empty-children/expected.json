@@ -1,0 +1,28 @@
+{
+  "reviewed": false,
+  "reviewer": null,
+  "reviewed_at": null,
+  "results": {
+    "and_empty": {
+      "count": 4
+    },
+    "or_empty": {
+      "count": 0
+    },
+    "not_eq": {
+      "count": 2
+    },
+    "or_with_true": {
+      "count": 4
+    },
+    "legacy_all": {
+      "count": 4
+    },
+    "legacy_is_null": {
+      "count": 0
+    },
+    "legacy_in_values": {
+      "count": 2
+    }
+  }
+}

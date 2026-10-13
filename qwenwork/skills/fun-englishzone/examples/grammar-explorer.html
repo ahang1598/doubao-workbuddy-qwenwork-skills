@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语法探索器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .stats { display: flex; justify-content: center; gap: 30px; margin-top: 20px; flex-wrap: wrap; }
+        .stat { background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 10px; }
+        .main-content { padding: 30px; }
+        .tense-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .tense-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+        .tense-btn:hover, .tense-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .tense-display {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .tense-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .tense-formula {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+        .examples {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .examples h4 { color: #1976d2; margin-bottom: 10px; }
+        .example-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .usage-tips {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .usage-tips h4 { color: #e65100; margin-bottom: 10px; }
+        .tip-item { padding: 5px 0; }
+        .tip-item:before { content: "✓ "; color: #4caf50; }
+        .practice-section {
+            background: #e8f5e9;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+        }
+        .practice-section h3 { color: #2e7d32; margin-bottom: 20px; }
+        .question-text { font-size: 1.3em; margin-bottom: 20px; color: #333; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option {
+            padding: 15px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option:hover { border-color: #667eea; }
+        .option.selected { border-color: #667eea; background: #e8eaf6; }
+        .option.correct { border-color: #4caf50; background: #c8e6c9; }
+        .option.wrong { border-color: #f44336; background: #ffcdd2; }
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #e8f5e9; color: #2e7d32; }
+        .feedback.wrong { background: #ffebee; color: #c62828; }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4); }
+        .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .controls { text-align: center; margin-top: 20px; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .tense-btn { padding: 8px 15px; font-size: 0.85em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 语法探索器</h1>
+            <p>掌握英语时态，轻松学语法</p>
+            <div class="stats">
+                <div class="stat">✅ 正确: <span id="correct">0</span></div>
+                <div class="stat">❌ 错误: <span id="wrong">0</span></div>
+                <div class="stat">📊 准确率: <span id="accuracy">0%</span></div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="tense-selector" id="tenseSelector"></div>
+            
+            <div class="tense-display" id="tenseDisplay">
+                <div class="tense-title" id="tenseTitle">一般现在时</div>
+                <div class="tense-formula" id="tenseFormula">主语 + 动词原形/第三人称单数</div>
+                <div class="examples">
+                    <h4>例句</h4>
+                    <div id="examplesList"></div>
+                </div>
+                <div class="usage-tips">
+                    <h4>使用场景</h4>
+                    <div id="usageTips"></div>
+                </div>
+            </div>
+            
+            <div class="practice-section">
+                <h3>🎯 练习时间</h3>
+                <div id="practiceArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tenses = {
+            'present-simple': {
+                name: '一般现在时',
+                formula: '主语 + V/V-s (动词原形或第三人称单数)',
+                examples: [
+                    'I study English every day.',
+                    'She works in a hospital.',
+                    'The sun rises in the east.'
+                ],
+                usage: [
+                    '表示经常性或习惯性的动作',
+                    '表示客观事实或普遍真理',
+                    '表示现在的状态'
+                ]
+            },
+            'present-continuous': {
+                name: '现在进行时',
+                formula: '主语 + am/is/are + V-ing',
+                examples: [
+                    'I am studying now.',
+                    'She is reading a book.',
+                    'They are playing football.'
+                ],
+                usage: [
+                    '表示正在进行的动作',
+                    '表示现阶段正在做的事',
+                    '表示按计划即将发生的动作'
+                ]
+            },
+            'present-perfect': {
+                name: '现在完成时',
+                formula: '主语 + have/has + V-ed (过去分词)',
+                examples: [
+                    'I have finished my homework.',
+                    'She has lived here for 5 years.',
+                    'They have already left.'
+                ],
+                usage: [
+                    '表示过去发生的动作对现在有影响',
+                    '表示从过去持续到现在的状态',
+                    '表示经历过的事情'
+                ]
+            },
+            'past-simple': {
+                name: '一般过去时',
+                formula: '主语 + V-ed (过去式)',
+                examples: [
+                    'I visited Beijing last year.',
+                    'She bought a new car yesterday.',
+                    'They went to the park.'
+                ],
+                usage: [
+                    '表示过去某个时间发生的动作',
+                    '表示过去存在的状态',
+                    '常与yesterday, last week等连用'
+                ]
+            },
+            'past-continuous': {
+                name: '过去进行时',
+                formula: '主语 + was/were + V-ing',
+                examples: [
+                    'I was reading when you called.',
+                    'She was cooking at 8 pm.',
+                    'They were watching TV.'
+                ],
+                usage: [
+                    '表示过去某个时刻正在进行的动作',
+                    '表示过去某段时间持续的动作',
+                    '常用于描述背景'
+                ]
+            },
+            'future-simple': {
+                name: '一般将来时',
+                formula: '主语 + will + V (动词原形)',
+                examples: [
+                    'I will visit you tomorrow.',
+                    'She will be 20 next month.',
+                    'It will rain soon.'
+                ],
+                usage: [
+                    '表示将来要发生的动作',
+                    '表示临时的决定',
+                    '表示预测或推测'
+                ]
+            }
+        };
+        
+        const practiceQuestions = [
+            { tense: 'present-simple', q: 'She ___ to school every day.', opts: ['go', 'goes', 'going', 'went'], ans: 1 },
+            { tense: 'present-continuous', q: 'Look! They ___ football.', opts: ['play', 'plays', 'are playing', 'played'], ans: 2 },
+            { tense: 'present-perfect', q: 'I ___ never ___ to Paris.', opts: ['have/been', 'has/been', 'had/been', 'have/being'], ans: 0 },
+            { tense: 'past-simple', q: 'He ___ a new car yesterday.', opts: ['buy', 'buys', 'bought', 'has bought'], ans: 2 },
+            { tense: 'past-continuous', q: 'I ___ when the phone rang.', opts: ['sleep', 'slept', 'was sleeping', 'have slept'], ans: 2 },
+            { tense: 'future-simple', q: 'It ___ rain tomorrow.', opts: ['will', 'is going to', 'was going to', 'would'], ans: 0 }
+        ];
+        
+        let currentTense = 'present-simple';
+        let correct = 0;
+        let wrong = 0;
+        let currentQuestion = 0;
+        let selected = -1;
+        
+        function init() {
+            // 渲染时态选择器
+            const selector = document.getElementById('tenseSelector');
+            selector.innerHTML = Object.keys(tenses).map(key => 
+                `<button class="tense-btn ${key === currentTense ? 'active' : ''}" 
+                        onclick="selectTense('${key}')">${tenses[key].name}</button>`
+            ).join('');
+            
+            showTense(currentTense);
+            showPractice();
+        }
+        
+        function selectTense(tense) {
+            currentTense = tense;
+            document.querySelectorAll('.tense-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === tenses[tense].name) btn.classList.add('active');
+            });
+            showTense(tense);
+        }
+        
+        function showTense(tense) {
+            const data = tenses[tense];
+            document.getElementById('tenseTitle').textContent = data.name;
+            document.getElementById('tenseFormula').textContent = data.formula;
+            document.getElementById('examplesList').innerHTML = data.examples.map(ex => 
+                `<div class="example-item">${ex}</div>`
+            ).join('');
+            document.getElementById('usageTips').innerHTML = data.usage.map(tip => 
+                `<div class="tip-item">${tip}</div>`
+            ).join('');
+        }
+        
+        function showPractice() {
+            const q = practiceQuestions[currentQuestion];
+            document.getElementById('practiceArea').innerHTML = `
+                <div class="question-text">${q.q}</div>
+                <div class="options">
+                    ${q.opts.map((opt, i) => `
+                        <div class="option" onclick="selectAnswer(${i})" id="opt${i}">
+                            ${String.fromCharCode(65 + i)}. ${opt}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="feedback" id="feedback"></div>
+                <div class="controls">
+                    <button class="btn" onclick="checkAnswer()">提交</button>
+                    <button class="btn btn-success" onclick="nextQuestion()">下一题</button>
+                </div>
+            `;
+            selected = -1;
+        }
+        
+        function selectAnswer(index) {
+            selected = index;
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.remove('selected');
+                if (i === index) opt.classList.add('selected');
+            });
+        }
+        
+        function checkAnswer() {
+            if (selected === -1) return;
+            const q = practiceQuestions[currentQuestion];
+            const isCorrect = selected === q.ans;
+            
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.style.pointerEvents = 'none';
+                if (i === q.ans) opt.classList.add('correct');
+                else if (i === selected && !isCorrect) opt.classList.add('wrong');
+            });
+            
+            if (isCorrect) correct++; else wrong++;
+            
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+            feedback.textContent = isCorrect ? '✅ 正确！' : `❌ 错误！正确答案是 ${String.fromCharCode(65 + q.ans)}`;
+            
+            updateStats();
+        }
+        
+        function nextQuestion() {
+            currentQuestion = (currentQuestion + 1) % practiceQuestions.length;
+            showPractice();
+        }
+        
+        function updateStats() {
+            document.getElementById('correct').textContent = correct;
+            document.getElementById('wrong').textContent = wrong;
+            const total = correct + wrong;
+            document.getElementById('accuracy').textContent = total > 0 ? Math.round((correct / total) * 100) + '%' : '0%';
+        }
+        
+        init();
+    </script>
+</body>
+</html>

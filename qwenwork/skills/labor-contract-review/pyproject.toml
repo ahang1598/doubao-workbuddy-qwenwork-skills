@@ -1,0 +1,15 @@
+[project]
+name = "labor-contract-review"
+version = "0.1.0"
+description = "Labor contract review report renderer with annotated docx export."
+requires-python = ">=3.9"
+dependencies = [
+  "python-docx>=1.1.2",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

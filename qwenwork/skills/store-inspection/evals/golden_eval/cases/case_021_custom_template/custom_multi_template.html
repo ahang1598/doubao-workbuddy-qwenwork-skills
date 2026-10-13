@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{REPORT_TITLE}} - {{CHECK_DATE}}</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --gray: #6b7280;
+            --bg: #f8fafc;
+            --card: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 24px;
+        }
+        .container { max-width: 860px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 { font-size: 22px; margin-bottom: 8px; }
+        .header p { opacity: 0.85; font-size: 14px; }
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .kpi-card .value { font-size: 28px; font-weight: 700; }
+        .kpi-card .label { font-size: 12px; color: var(--gray); margin-top: 4px; }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 24px 0 12px;
+            padding-left: 12px;
+            border-left: 3px solid var(--primary);
+        }
+        .store-sections { margin-top: 16px; }
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 12px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>{{REPORT_TITLE}}</h1>
+        <p>检查日期：{{CHECK_DATE}} · 生成时间：{{GENERATED_AT}}</p>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="value" style="color:var(--primary);">{{TOTAL_STORES}}</div>
+            <div class="label">总门店数</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value" style="color:var(--success);">{{SUBMISSION_RATE}}</div>
+            <div class="label">提交率</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value" style="color:var(--success);">{{PASS_RATE}}</div>
+            <div class="label">通过率</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value" style="color:var(--danger);">{{FAILED_COUNT}}</div>
+            <div class="label">不合格</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value" style="color:var(--warning);">{{PENDING_COUNT}}</div>
+            <div class="label">待确认</div>
+        </div>
+    </div>
+
+    {{OVERVIEW_HTML}}
+
+    <div class="section-title">各门店详情</div>
+    <div class="store-sections">
+        {{STORE_SECTIONS}}
+    </div>
+
+    {{ISSUE_HTML}}
+
+    <div class="footer">
+        <p>本报告使用自定义模板生成 · 数据来源：钉钉 AI 表格</p>
+    </div>
+</div>
+</body>
+</html>

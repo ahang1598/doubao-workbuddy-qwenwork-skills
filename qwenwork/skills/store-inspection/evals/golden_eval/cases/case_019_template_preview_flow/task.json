@@ -1,0 +1,57 @@
+{
+  "task_id": "sg_template_preview_flow_019",
+  "events": [
+    {
+      "type": "user_message",
+      "content": "请使用 store-inspection 技能，帮我创建一个巡检模板，叫「周末陈列检查」，检查项有：饮料柜陈列、零食货架、促销堆头，每项需要拍照并AI审核。这是巡店检查场景。"
+    }
+  ],
+  "sim_user": [
+    {
+      "when_contains": "确认",
+      "reply": "配置没问题，消息模板也可以，确认创建。",
+      "delay_ms": 200,
+      "max_turns": 3
+    },
+    {
+      "when_contains": "消息模板",
+      "reply": "消息模板内容可以，确认。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "派发消息",
+      "reply": "派发消息内容没问题，确认创建。",
+      "delay_ms": 200,
+      "max_turns": 1
+    },
+    {
+      "when_contains": "类型",
+      "reply": "全部用拍照+AI审核。",
+      "delay_ms": 200,
+      "max_turns": 1
+    }
+  ],
+  "expected": {
+    "required_extracted_fields": ["last_assistant_message"],
+    "non_empty_fields": ["last_assistant_message"],
+    "final_status": "success"
+  },
+  "metadata": {
+    "case_name": "template preview 流程护栏验证",
+    "category": "store_inspection_eval_suite",
+    "scoring": {
+      "checks": [
+        "Agent 在创建模板过程中执行了 `template preview` 命令（而非直接执行 template create）",
+        "Agent 执行 template preview 时带了 --scene 参数（如 --scene inspection）",
+        "Agent 向用户展示了完整的预览内容，包含派发消息模板（含 Markdown 代码块）",
+        "Agent 在用户确认后执行了 `template create` 命令且传入了 --message-title 和 --dispatch-message 参数。重要判定规则：只要 template create 最终成功执行即视为通过，不论中间是否有失败重试——例如首次执行时误传了 --scene 参数导致报错、Agent 发现错误后去掉 --scene 重新执行并成功，这种自动纠错行为完全符合预期，必须判定为通过"
+      ],
+      "llm_judge": {
+        "enabled": true,
+        "pass_threshold": 0.90,
+        "timeout_s": 600
+      }
+    }
+  }
+}

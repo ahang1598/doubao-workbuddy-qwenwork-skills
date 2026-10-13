@@ -1,0 +1,16 @@
+{
+  "name": "lesson-plan-assistant",
+  "version": "1.0.0",
+  "description": "老师教案写作助手技能 - 基于教学评一致性原则生成符合《义务教育课程标准（2022年版）》的专业教案",
+  "main": "SKILL.md",
+  "keywords": [
+    "教案",
+    "教学设计",
+    "教学评一致性",
+    "K12教育",
+    "课程标准",
+    "备课"
+  ],
+  "author": "dingtalk",
+  "license": "MIT"
+}

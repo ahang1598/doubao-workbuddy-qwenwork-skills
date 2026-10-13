@@ -1,0 +1,59 @@
+examples:
+  - id: full-pre-trial-preparation
+    title:
+      zh: "完整庭前准备报告"
+      en: "Full pre-trial preparation"
+    description:
+      zh: "一站式完成开庭前全部准备工作，输出一份庭前准备报告"
+      en: "One-stop pre-trial preparation with a consolidated report"
+    prompt:
+      zh: |-
+        快开庭了，请帮我做一次完整的庭前准备，输出一份《庭前准备报告》：
+
+        案件基本信息：{{案由、我方诉讼地位、审理法院与案号}}
+        诉讼文书与证据材料：{{起诉状、答辩状、双方证据等文件}}
+
+        要求：
+        1. 覆盖争议焦点分析、证据分析、庭审发问策略与模拟裁判预判
+        2. 整合去重后输出一份 Word 格式的庭前准备报告
+      en: |-
+        The hearing is coming up. Please do a full pre-trial preparation and produce a consolidated Pre-Trial Preparation Report:
+
+        Case basics: {{case type, our litigation position, court and case number}}
+        Pleadings and evidence: {{complaint, answer, evidence files}}
+
+        Requirements:
+        1. Cover dispute-focus analysis, evidence analysis, courtroom questioning strategy, and judge simulation
+        2. Deduplicate and consolidate everything into a single Word report
+  - id: courtroom-questioning-strategy
+    title:
+      zh: "庭审发问策略"
+      en: "Courtroom questioning strategy"
+    description:
+      zh: "设计向对方发问、预判法官发问并准备应答"
+      en: "Design questions for the opposing party and prepare for the judge's questions"
+    prompt:
+      zh: |-
+        请帮我设计本案的庭审发问策略：
+
+        案由：{{案由}}
+        我方诉讼地位：{{原告/被告/第三人}}
+        核心争议焦点：{{争议焦点}}
+        现有证据：{{证据清单或文件}}
+
+        要求：
+        1. 设计向对方发问的问题（含发问目的、预设答案与追问方案）
+        2. 预判法官可能的发问并准备应答要点
+        3. 列出禁止发问清单，输出《庭审发问策略报告》
+      en: |-
+        Design the courtroom questioning strategy for my case:
+
+        Cause of action: {{case type}}
+        Our litigation position: {{plaintiff/defendant/third party}}
+        Core issues in dispute: {{dispute focus}}
+        Available evidence: {{evidence list or files}}
+
+        Requirements:
+        1. Design questions to ask the opposing party (purpose, expected answers, follow-ups)
+        2. Anticipate the judge's questions and prepare answers
+        3. Include a prohibited-questions list and output a Courtroom Questioning Strategy Report

@@ -1,0 +1,21 @@
+{
+  "name": "dingtalk-edu-xhs-keyword-spider",
+  "version": "1.0.0",
+  "description": "搜索小红书关键词相关笔记并生成可视化HTML舆情报告，主要用于获取学校在小红书上的舆情信息，基于Spider_XHS爬虫引擎",
+  "author": "dingtalk",
+  "keywords": [
+    "教育",
+    "钉钉",
+    "AI技能",
+    "小红书",
+    "关键词搜索",
+    "学校舆情",
+    "Spider_XHS",
+    "HTML报告"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "jsdom": "^26.0.0"
+  }
+}
