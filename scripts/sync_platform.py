@@ -1271,7 +1271,9 @@ def render_summary(
     for entry, scenarios in entry_scenarios:
         name, directory, _category, file_count, description, keywords = entry
         primary = scenarios[0]
-        full_dir = rel_join(platform.root, source.target, directory)
+        # Registry-style sources (connectors) already carry the file name in
+        # ``directory`` (``mcp.json#<id>``), so join against summary_dir.
+        full_dir = rel_join(platform.root, source.summary_dir or source.target, directory)
         rows.append(
             f"| {escape_cell(name)} | `{escape_cell(full_dir)}` | "
             f"{escape_cell(primary)} | {escape_cell(keywords)} | {file_count} | "
