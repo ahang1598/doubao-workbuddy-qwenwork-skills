@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "qwenwork-wecom-skill-source/v1",
+  "managedBy": "qwenwork-wecom-cli-connector",
+  "sourceRepository": "git@gitlab.alibaba-inc.com:QwenWorkAI/wecom-unified.git",
+  "requestedRef": "qwenwork",
+  "sourceCommit": "93c7dd957c6cf63702a487e98c1e5bd242534ce2",
+  "upstreamRepository": "https://github.com/WecomTeam/wecom-unified.git",
+  "upstreamCommit": "2620033fdb2721fb192ac06a6a0510987035d203",
+  "skillVersion": "1.1.0",
+  "cliVersion": "1.1.0"
+}

@@ -1,0 +1,9 @@
+name: computer-use-guidance-windows
+version: "0.7.0"
+description: "Windows desktop automation guidance for AI agents using Computer Use tools"
+platform: windows
+tags:
+  - computer-use
+  - windows
+  - automation
+  - ui-automation

@@ -6,17 +6,14 @@
 
 - 目录：`qwenwork/skills/`
 - 来源：`/mnt/c/Users/15805/.qwenworkcn/skills`
-- 条目数：142
-- 文件数：2525
-- 最近同步：2026-10-13 20:29:54 +0800
+- 条目数：170
+- 文件数：3002
+- 最近同步：2026-10-13 20:35:06 +0800
 
 ## 场景导航（按用途）
 
 ### 沟通协作
 - **千问办公任务台账** — 把千问办公的 agent 任务沉淀到钉钉 AI表格，形成跨 agent、跨窗口的「任务台账 + 交接登记表」。 支持创建/初始化个人台账（定时增量同步）与团队接续台账（仅 handoff 触发写摘要，保护隐私）。 当用户需要创建团队 Agent 台账、创建个人任务台账、定时沉淀/同步任务、交接、交接分支/模块/任务给某人、接手交接任务、认领任务、续接、接着做、开新会话续接、handoff、resume、查询待接续任务时使用。
-- **商业计划书生成** — 商业计划书：覆盖市场规模验证（TAM/SAM/SOM）、竞品对比矩阵、商业模式画布到财务预测与融资需求的全链路分析，输出结构化钉钉在线文档商业计划书。
-- **公司调研** — 公司调研：基于官方与公开信息，输出公司概况、业务结构、竞争位置、经营与风险的结构化研究报告，保存为钉钉在线文档。
-- **竞品分析** — 竞品分析：通过统一维度对比产品与市场信息，形成结构化对比结论与机会点，输出钉钉在线文档竞品分析报告。
 - **客户沟通话术** — 客户沟通话术写作技能。用于生成、改写、润色、压缩、扩写、结构化中文或英文客户沟通话术，覆盖销售开发、拜访建联、续费挽回、报价异议、竞品对比、客户跟进、售后安抚、客服自动回复、FAQ、群消息、内部协作催办、电话开场白、微信私聊、客户群、邮件、语音提示等场景；尤其适用于用户要求可直接复制、短而自然、有共情、有证据、有下一步 CTA、多个版本或指定渠道语气的短文写作任务。
 - **dingtalk-aisearch** — AI搜问：人员语义搜索、跨源内容定位与行为回溯。Use when 按姓名/工号/部门/职责/上下级找人，或在目标对象未知时按主题、语义、来源或行为发现相关内容。搜索结果用于候选定位；命中后需要读取、修改或验证原对象时切换到对象所属产品。完整手机号精确反查走 dingtalk-contact。命令前缀：dws aisearch。
 - **dingtalk-aitable** — 钉钉 AI 表格（多维表）。Use when 用户说 AI表格/多维表/数据表/base/table/应用模式/App 页面/Widget/建表/查记录/写数据/字段/记录增删改查/记录评论/评论回复/SQL/PostgreSQL/SELECT/JOIN/跨表关联查询/筛选/排序/公式/模板搜索/批量导入CSV或JSON/导出/仪表盘/图表/上传附件到表格/按字段类型建表/数据源/创建数据源/更新数据源配置/触发数据源同步/按任务...
@@ -35,22 +32,37 @@
 - **dingtalk-shared** — 钉钉(DingTalk) MultiSkill 的轻量共享入口。Use when 用户泛称 DWS/钉钉操作但未明确产品、请求跨产品编排、需要 URL 类型预检或产品边界消歧。清晰的单产品操作优先使用对应 dingtalk-* 子 skill；本 skill 只提供全局执行契约和按需 reference 导航，不承载产品命令全集。
 - **dingtalk-todo** — 钉钉待办 / TODO。Use when 用户说 创建待办/TODO/任务提醒/指派任务/标记完成/查待办/紧急待办/循环待办/批量建待办/逾期待办。不做日报周报（走 dingtalk-misc）、审批（走 dingtalk-misc）、日程（走 dingtalk-calendar）。命令前缀：dws todo。
 - **dingtalk-wiki** — 钉钉知识库与空间管理。Use when 用户明确说 知识库/wiki/创建、查找或列出知识库/命名的团队知识空间/个人知识库/知识库成员/库内节点创建、列表、搜索、复制、移动、删除或知识库动态。仅说“文档空间/我的文档”不触发：普通存储管理与全局文件搜索走 dingtalk-drive；节点正文读写走 dingtalk-doc。命令前缀：dws wiki。
-- **公文格式** — Format, review, or rewrite Chinese official documents according to the requirements in GB/T 9704-2012 and the local file `公文标准格式.doc`. Use this skill for 公文排版, 公文格式审查, 通知/请示/报告/函/纪要/命令（令）规范化, or when converting a draf...
 - **群聊内容摘要** — 基于钉钉群聊的智能摘要与洞察生成能力。从指定群聊/时间范围的消息中提取关键信息，识别决策、行动项、风险，生成钉钉在线文档结构化摘要。
-- **知识库审计** — 对钉钉知识库进行系统性诊断审计，支持轻量级审计和深度审计两种模式， 输出文档健康度评估、分类规划和知识地图索引文档。 Use when user mentions "审计知识库", "知识库体检", "盘一盘文档", "文档太乱了", "帮我理一理文档", "哪些文档过期了", "建个文档索引", "生成知识地图", or asks to "诊断文档质量", "规划目录结构", "看看哪些文档该清理了". Distinct fro...
-- **文献深度研读** — 论文文献速览与蒸馏助手。支持用户上传的 PDF 文件或在线链接，通过 4+2 深度蒸馏模型快速提取元数据、逻辑骨架、核心发现及批判性洞察，生成钉钉在线文档和原文PDF，并导入到知识库。适用于个人文献管理、快速浏览、知识收集等场景。
-- **新闻总结** — 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and...
-- **通知函件写作** — 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。
-- **宜搭应用** — 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。
-- **科研情报侦查** — 立项初期的情报侦察与趋势分析引擎。通过引导式对话精准锁定调研边界，并行检索学术平台与行业资讯。最终不仅输出包含明细表格与宏观趋势的结构化报告，更自动构建专属钉钉知识库，实现从“信息搜集”到“知识沉淀”的一体化交付。适用于方向探索、行业追踪及可行性预研，为后续深度文献蒸馏提供高质量数据基座。
-- **职场sbti人格分析** — 基于钉钉聊天记录做言行风格总结、工作氛围侧写与性格画像，并模拟完成 SBTI 32 题自动计算人格结果、展示结果海报。适用于用户希望"免手动答题"、直接从钉钉聊天记录生成 SBTI 人格小报告的场景。
-- **社媒内容生成** — 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"...
+- **lark-approval** — 飞书审批 API：审批实例、审批任务管理。
+- **lark-apps** — 把本地 HTML 文件或目录部署到飞书妙搭（Miaoda），生成一个公网可访问的应用及其链接（URL）。当用户要创建 HTML 或要把 HTML、静态网站或 Web demo 发布成公网可访问的链接 / 可分享链接、设置应用共享范围，或提到妙搭 / Miaoda 时使用。凡产出可独立访问的 HTML 产物都属本 skill 的潜在归宿，是否真要部署由 skill 内部协议判断。不用于：上传普通文件到云空间/云盘/云存储（用 lar...
+- **lark-attendance** — 飞书考勤打卡：查询自己的考勤打卡记录
+- **lark-base** — 当需要用 lark-cli 操作飞书多维表格（Base）时调用：搜索 Base、建表、字段管理、记录读写、记录分享链接、视图配置、历史查询，以及角色/表单/仪表盘管理/工作流；也适用于把旧的 +table / +field / +record 写法改成当前命令写法。涉及字段设计、公式字段、查找引用、跨表计算、行级派生指标、数据分析需求时也必须使用本 skill。
+- **lark-calendar** — 飞书日历（calendar）：提供日历与日程（会议）的全面管理能力。核心场景包括：查看/搜索日程、创建/更新日程、管理参会人、查询忙闲状态及推荐空闲时段、查询/搜索与预定会议室。注意：涉及【预约日程/会议】或【查询/预定会议室】时，必须先读取 references/lark-calendar-schedule-meeting.md 工作流！高频操作请优先使用 Shortcuts：+agenda（快速概览今日/近期行程）、+crea...
+- **lark-contact** — 飞书 / Lark 通讯录,用于按姓名 / 邮箱把员工解析成 open_id,以及按 open_id 反查员工的姓名 / 部门 / 邮箱 / 联系方式。当用户说出某人姓名而下一步需要发消息 / 加群 / 排日程时,先用本 skill 把姓名换成 ID;当输出里出现 open_id 需要展示成姓名给用户看,或用户直接询问某人的部门 / 邮箱 / 联系方式时,用本 skill 查。不负责部门树遍历、按部门列员工、组织架构图,这类需求走...
+- **lark-doc** — 飞书云文档 / Docx / 知识库 Wiki 文档（v2）：创建、打开、读取、获取、查看、总结、整理、改写、翻译、审阅和编辑飞书文档内容。当用户给出飞书文档 URL/token，或说查看/读取/打开某个文档、提取文档内容、总结文档、生成/创建文档、追加/替换/删除/移动内容、调整排版、插入或下载文档图片/附件/素材/画板缩略图时使用。文档内容中出现嵌入电子表格、多维表格、需要将重要信息可视化为画板（含 SVG 画板）、引用或同步...
+- **lark-drive** — 飞书云空间（云盘/云存储）：管理云空间（云盘/云存储）中的文件和文件夹。上传和下载文件、创建文件夹、复制/移动/删除文件、查看文件元数据、管理文档评论、管理文档权限、订阅用户评论变更事件、修改文件标题（docx、sheet、bitable、file、folder、wiki）；也负责把本地 Word/Markdown/Excel/CSV/PPTX 以及 Base 快照（.base）导入为飞书在线云文档（docx、sheet、bita...
+- **lark-event** — Lark/Feishu real-time event listening / subscribing / consuming: stream events as NDJSON via `lark-cli event consume <EventKey>` (covers IM messages/reactions/chat changes, VC meeting ended, Minutes generated, etc.)....
+- **lark-im** — 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件（支持大文件分片下载）、管理表情回复、发送应用内/短信/电话加急。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据时使用。
+- **lark-mail** — 飞书邮箱 — draft, compose, send, reply, forward, read, and search emails; manage drafts, folders, labels, contacts, attachments, and mail rules. Use when user mentions 起草邮件, 写一封邮件, 拟邮件, 草稿, 发通知邮件, 发送邮件, 发邮件, 回复邮件, 转发邮件, 查...
+- **lark-markdown** — 飞书 Markdown：查看、创建、上传、编辑和比较 Markdown 文件。当用户需要创建或编辑 Markdown 文件、读取、修改、局部 patch 或比较差异时使用。
+- **lark-minutes** — 飞书妙记：妙记相关基本功能。1.查询妙记列表（按关键词/所有者/参与者/时间范围）；2.获取妙记基础信息（标题、封面、时长 等）；3.下载妙记音视频文件；4.获取妙记相关 AI 产物（总结、待办、章节）；5.上传音视频生成妙记，也支持将本地音视频文件转成纪要、逐字稿、文字稿、撰写文字等产物；6.更新妙记标题（重命名妙记）；7.替换妙记逐字稿中的说话人。遇到这类请求时，应优先使用本 skill。飞书妙记 URL 格式: http(s...
+- **lark-okr** — 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标（Objective）、关键结果（Key Result）、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。
+- **lark-openapi-explorer** — 飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。
+- **lark-shared** — Use when first setting up lark-cli, running auth login, switching user/bot identity (--as), handling permission denied or scope errors, needing to update lark-cli, or seeing _notice in JSON output.
+- **lark-sheets** — 飞书电子表格：创建和操作电子表格。支持创建表格、创建/复制/删除/更新工作表、读写单元格、追加行数据、查找内容、导出文件。当用户需要创建电子表格、管理工作表、批量读写数据、在已知表格中查找内容、导出或下载表格时使用。若用户是想按名称或关键词搜索云空间（云盘/云存储）里的表格文件，请改用 lark-drive 的 drive +search 先定位资源。当用户给出 doubao.com 的 /sheets/ URL/token 时，...
+- **lark-skill-maker** — 创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 操作封装成可复用的 Skill（包装原子 API 或编排多步流程）时使用。
+- **lark-slides** — 飞书幻灯片：创建和编辑幻灯片，接口通过 XML 协议通信。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。当用户给出 doubao.com 的 /slides/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。
+- **lark-task** — 飞书任务：管理任务、清单和任务智能体。创建待办任务、查看和更新任务状态、拆分子任务、组织任务清单、分配协作成员、上传任务附件、注册或注销任务智能体、更新任务智能体的主页数据、写入智能体任务记录。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理项目清单或给他人分配任务、为任务上传附件文件、注册注销任务智能体、更新智能体主页数据、写入任务记录时使用。
+- **lark-vc** — 飞书视频会议：搜索历史会议、查询会议纪要产物（总结、待办、章节、逐字稿）、查询会议参会人快照。1. 查询已经结束的会议数量或详情时使用本技能（如历史日期｜昨天｜上周｜今天已经开过的会议等场景），查询未开始的会议日程使用 lark-calendar 技能。2. 支持通过关键词、时间范围、组织者、参与者、会议室等筛选条件搜索会议。3. 获取或整理会议纪要、逐字稿、录制产物时使用本技能。4. 查询“谁参加过某会议”“参会人列表”等参会人...
+- **lark-vc-agent** — 飞书视频会议：让机器人代当前用户加入/离开正在进行的会议，并读取会议期间的实时事件（参会人加入与离开、发言、聊天、屏幕共享等）。1. 用户提供 9 位会议号、要求代为入会或离会时使用 +meeting-join / +meeting-leave——会真实产生入会/离会记录。2. 会议进行中用户想知道“谁加入了”“谁离开了”“谁在发言”“有人共享屏幕吗”等会中动态时，机器人入会后用 +meeting-events 读取事件时间线。3...
+- **lark-whiteboard** — 飞书画板：查询和编辑飞书云文档中的画板。支持导出画板为预览图片、导出原始节点结构、使用 DSL（转成 OpenAPI 格式）、PlantUML/Mermaid 格式更新画板内容。 当用户需要查看画板内容、导出画板图片、编辑画板，或是需要可视化表达架构、流程、组织关系、时间线、因果、对比等结构化信息时使用此 skill，无论是否提及"画板"。 ⚠️ 原 `lark-whiteboard-cli` skill 已合并至本 skill，...
+- **lark-wiki** — 飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。
+- **lark-workflow-meeting-summary** — 会议纪要整理工作流：汇总指定时间范围内的会议纪要并生成结构化报告。当用户需要整理会议纪要、生成会议周报、回顾一段时间内的会议内容时使用。
+- **lark-workflow-standup-report** — 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。
 - **项目进展汇报** — Generate a stakeholder update tailored to audience and cadence. Use when writing a weekly or monthly status for leadership, announcing a launch, escalating a risk or blocker, or translating the same progress into exec...
-- **门店巡检助手** — 门店督导与巡检自动化——通过钉钉 AI 表格管理巡店模版/门店清单/任务派发/统计报表/AI图片审核/HTML报告。所有操作通过 `uv run python scripts/cli.py` CLI 执行。【核心行为约束——违反将导致严重业务事故】(1) 创建模板只确认一次：如果用户已明确字段名称和类型则直接执行 `template preview`（必须带 --scene）生成完整预览作为唯一确认环节，不要在 preview 前...
-- **话题趋势报告** — 触发词：「新闻总结」「话题趋势」「帮我整理一下XX的动态」「搜集XX领域最近的新闻」「生成XX话题报告」。 根据用户指定的主题和时间范围，自动检索权威动态，生成一份钉钉在线文档动态报告， 按类别聚类，每条新闻含 intro / description / 索引链接。强调时间筛选 + 权威优先 + 去重。
 - **多人工作台** — 通用多人工作台生成器（任意业务类型）。先引导用户描述设计思路，再生成带角色权限管控、真实数据库读写、管理后台数据查看、在线发布分享的动态工作台网页。用户要求"做一个工作台/管理后台/协作系统/带数据库的多角色网页/内部工具"时使用。最小流水线场景优先用 min-db-workbench；本 skill 面向任意类型（PMO/日历/库存/审批/CRM 等）。
+- **wecom-unified** — 企业微信 CLI 套件。仅当用户明确要求使用企业微信/企微，或给出 doc.weixin.qq.com、page.weixin.qq.com、drive.weixin.qq.com 链接时触发；不要因为泛化的找人、文档、表格、日程、会议、待办、邮件或发消息请求而触发。覆盖通讯录、文档、表格、日程、会议、待办、微盘、邮件、消息和媒体文件。
 - **工作周报** — 触发词：「生成周报」「帮我写周报」「本周工作总结」「周报」「weekly report」。 基于钉钉生态的每周周报自动生成 Skill：从当周日程、任务、听记、云文档中提取工作内容， 使用 `knowledge` 兜底补全遗漏信息，最终直接生成结构化的钉钉在线文档周报。
-- **技术方案** — 触发词：「技术方案」「系统设计」「架构方案」「技术选型」。 围绕业务目标与约束，输出架构设计、关键模块、技术选型、风险与实施计划的完整技术方案， 最终生成结构清晰的钉钉在线文档。
 
 ### 法律服务
 - **中文合同审查技能** — > 专业的中文合同风险识别与修订建议工具
@@ -82,11 +94,13 @@
 - **律师函撰写** — 资深民事律师函撰写技能。根据用户需求生成专业律师函，输出Word文档。TRIGGER when: (1) 用户提及\\"律师函\\"、\\"催告函\\"、\\"警告函\\"、\\"询问函\\"、\\"告知函\\"、\\"声明函\\"、\\"权利声明\\"等关键词，(2) 用户需要催促对方履行义务或协商，(3) 用户需要制止侵权/警告违约行为，(4) 用户需要中断诉讼时效、通知合同解除或声明权利归属，(5) 用户描述纠纷需要发函施压，(6) 用户说\\"帮我起草...
 - **法律服务方案生成器** — 法律服务方案生成器。根据用户提供的案件类型、标的金额、服务阶段、收费模式等信息，生成专业的法律服务报价方案文档；支持多种报价模板（仅报价、报价+服务内容、服务内容+团队+价格、标准+费用、团队+费用）；输出符合律所商务规范的报价方案。
 - **中国法律合规 AI 技能包** — > 50个AI驱动的法律合规自动化技能，覆盖合同、劳动、知产、数据、企业合规五大领域。
+- **通知函件写作** — 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。
 
 ### 金融投研
 - **A股个股技术诊断** — A股个股深度技术诊断工具。基于60日K线数据计算MA5/10/20/60均线、量价关系、 支撑压力位和风险信号，由 Agent 进行多维分析并输出结构化诊断报告。 Use when: (1) 用户说"帮我分析下这只股票""诊断下600519", (2) 用户问"XX技术面怎么样""趋势如何", (3) 用户要求"个股诊断""综合评估""支撑位在哪", (4) 用户要求多只股票对比分析。 Distinct from: a-stock...
 - **A股实时行情与持仓** — A股实时行情快查与持仓盈亏管理。秒级获取沪深A股现价、涨跌幅、成交量， 分析当日分时量能分布（早盘/尾盘放量）、主力抢筹/出货异常信号。 支持个人持仓管理（添加/更新/删除）和实时盈亏计算。 Use when: (1) 用户问"XX股票现在多少钱""查下600519价格", (2) 用户关注"主力动向""今天早盘放量了吗", (3) 用户说"看看我的持仓""加一只股票到持仓""持仓盈亏怎么样"。 Distinct from: a-...
 - **A股深度研究** — 对A股上市公司进行全流程深度研究，自动识别公司分析模式、路由选择合适的分析模块与行业叠加层，并合并为统一的有据可查研究框架。当用户需要对A股公司进行深度研究、个股分析、投资调研，或希望将模糊的"分析这只股票"请求转化为结构化研究工作流时使用。
+- **公司调研** — 公司调研：基于官方与公开信息，输出公司概况、业务结构、竞争位置、经营与风险的结构化研究报告，保存为钉钉在线文档。
 - **深度决策研究报告** — 主动触发型技能；仅当用户显式选择或明确调用本技能时使用。用于让 QoderWork 围绕一个明确决策目标搜索、研究、整理材料，并按内置 HTML 报告规范生成一份可在浏览器打开的自包含决策辅助报告。
 - **行业研究报告** — 面向特定行业/赛道的**系统性深度研究**能力。从行业定义、市场规模、竞争格局、技术趋势、政策环境、投融资动态等多维度进行**广覆盖、深挖掘**的全面调研，输出结构化的行业研究报告。
 - **学校社媒舆情监控** — 监控指定学校在社交媒体上的舆论动态，进行情感分析、趋势研判和负面预警。当用户提到舆情监控、学校口碑、帮我盯着某学校、查看舆情报告时触发。不要在需要创建教案、批改作业、管理课程表时触发。
@@ -94,6 +108,8 @@
 
 ### 市场营销
 - **电商活动推荐** — 营销托管活动智能推荐。根据商家的自然语言描述（如"我想找适合新品的活动"、"有没有流量补贴的活动"、"帮我推荐几个高转化的活动"），调用推荐接口获取匹配活动，解析并整理活动基本信息、起止时间、推荐介绍，以结构化列表返回给商家。当商家想找活动、选活动、了解有什么合适活动时使用。
+- **商业计划书生成** — 商业计划书：覆盖市场规模验证（TAM/SAM/SOM）、竞品对比矩阵、商业模式画布到财务预测与融资需求的全链路分析，输出结构化钉钉在线文档商业计划书。
+- **竞品分析** — 竞品分析：通过统一维度对比产品与市场信息，形成结构化对比结论与机会点，输出钉钉在线文档竞品分析报告。
 - **内容选题规划** — When the user wants to plan a content strategy, decide what content to create, or figure out what topics to cover. Also use when the user mentions "content strategy," "what should I write about," "content ideas," "blo...
 - **营销文案润色** — When the user wants to edit, review, or improve existing marketing copy, or refresh outdated content. Also use when the user mentions 'edit this copy,' 'review my copy,' 'copy feedback,' 'proofread,' 'polish this,' 'm...
 - **客户研究分析** — Multi-source research on a customer question or topic with source attribution. Use when a customer asks something you need to look up, investigating whether a bug has been reported before, checking what was previously...
@@ -104,16 +120,21 @@
 - **营销策划** — When the user needs marketing ideas, inspiration, or strategies for their SaaS or software product. Also use when the user asks for 'marketing ideas,' 'growth ideas,' 'how to market,' 'marketing strategies,' 'marketin...
 - **视频号运营专家** — 微信视频号自动化技能集合。支持认证登录、视频发布。 **何时触发**（必须使用本技能）： - 用户提及"视频号/微信视频号/wechat channels"相关操作 - 用户要求发布视频到视频号、登录视频号 - 用户提供的链接包含 channels.weixin.qq.com 域名 - 用户询问"发视频号"、"上传视频号"等视频号运营场景 **禁止使用 browseruse**：微信视频号有反爬机制，browseruse 无法持久...
 - **营销心理分析** — When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cognitive bias,' 'persuasion,' 'behavioral scie...
+- **新闻总结** — 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and...
 - **落地页生成器** — Professional high-end Landing Page generation tool. Creates visually stunning, Awwwards-level web pages with cinematic hero sections, modern animations. Trigger keywords: landing page, 落地页, web page, hero section, pro...
 - **产品定价策略** — When the user wants help with pricing decisions, packaging, or monetization strategy. Also use when the user mentions 'pricing,' 'pricing tiers,' 'freemium,' 'free trial,' 'packaging,' 'price increase,' 'value metric,...
 - **产品营销定位** — When the user wants to create or update their product marketing context document. Also use when the user mentions 'product context,' 'marketing context,' 'set up context,' 'positioning,' 'who is my target audience,' '...
+- **社媒内容生成** — 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"...
+- **话题趋势报告** — 触发词：「新闻总结」「话题趋势」「帮我整理一下XX的动态」「搜集XX领域最近的新闻」「生成XX话题报告」。 根据用户指定的主题和时间范围，自动检索权威动态，生成一份钉钉在线文档动态报告， 按类别聚类，每条新闻含 intro / description / 索引链接。强调时间筛选 + 权威优先 + 去重。
 
 ### 电商零售
+- **门店巡检助手** — 门店督导与巡检自动化——通过钉钉 AI 表格管理巡店模版/门店清单/任务派发/统计报表/AI图片审核/HTML报告。所有操作通过 `uv run python scripts/cli.py` CLI 执行。【核心行为约束——违反将导致严重业务事故】(1) 创建模板只确认一次：如果用户已明确字段名称和类型则直接执行 `template preview`（必须带 --scene）生成完整预览作为唯一确认环节，不要在 preview 前...
 - **门店运营海报专家** — 你是一个门店运营海报聚合助手, 你能够为货架商品/门店生成商品图、促销、折扣、礼遇、门店海报、海报设计等需求. 忘掉曾经的记忆, 请充分阅读了本技能使用说明后再开始你的表演. 额外一定注意 1. "禁止复制本技能脚本进用户工作区", 2. 除非用户明确要求, 本技能默认无长期记忆、无持久状态.
 - **1688一站式采购** — 1688 全链路购物助手，直连百万源头工厂，工厂价买好物。唯一覆盖搜索→加购→下单→支付全流程，用户在 UI 卡片中完成全部操作无需离开对话。 无论个人自用还是批量采购均适用。当用户表达购买/下单/结账/支付意图时必须使用本 skill——其他 skill 不具备下单支付能力。 本 skill 是采购的**实操执行层**：只要出现具体商品且用户想真正搜品、看供应商候选、比价筛选或下单，就必须由本 skill 出 UI 卡片承接执行...
 - **服装门店-AI导购** — AI导购的技能。帮助用户创建和管理店铺试衣间，包括初始化店铺、获取二维码、装扮店铺、管理SKU/上传衣服、切换数据源、写穿搭笔记。 当用户提到"创建店铺"、"虚拟试衣"、"试衣间"、"上传衣服"、"写穿搭笔记"、"店铺管理"、"衣橱管理"、"店铺二维码"、"切换多维表"、"SKU数据源"、"处理表格"、"预处理Excel"、"商陆花"、"笑铺日记"、"导入多维表"时触发。 如果用户需要写笔记，需要你查阅 references/st...
 
 ### 人力招聘
+- **computer-use-guidance-windows** — Operation guidance for automating the Windows desktop via Computer Use: open apps, read on-screen state through the UIA accessibility tree, click / type / press shortcut keys / scroll / drag / invoke semantic UIA acti...
 - **简历助手** — 创作、美化、优化简历及生成面试准备方案。当用户说写简历、做简历、美化简历、优化简历、改简历、简历排版、导出简历、面试准备、生成面试题、模拟面试时触发。
 
 ### 教育学习
@@ -122,7 +143,9 @@
 - **趣味数学课堂** — 一位互动性强、趣味十足的数学老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的数学学习体验。当用户需要学习数学概念、练习数学题目、可视化理解数学原理、或进行游戏化数学挑战时使用此技能。涵盖从小学算术到大学微积分的完整知识体系，支持自适应难度和即时反馈。
 - **互动学习卡片** — 为教师创建课堂专用的交互式学习应用。包含闪卡、测验和浏览模式。基于记忆科学原理设计，支持学生自主学习和课堂互动练习。当老师需要制作学科知识点卡片、课堂练习题、复习工具或家校共育学习资源时使用此技能。不要在简单文档生成、纯文本整理或非教学场景时触发。
 - **教案生成助手** — 生成符合《义务教育课程标准（2022年版）》的专业教案，基于教学评一致性原则设计。当用户需要编写中小学各学科教案、教学设计、教学计划时使用。不要在非教学场景（如作文批改、试卷生成、学生管理）时触发。
+- **文献深度研读** — 论文文献速览与蒸馏助手。支持用户上传的 PDF 文件或在线链接，通过 4+2 深度蒸馏模型快速提取元数据、逻辑骨架、核心发现及批判性洞察，生成钉钉在线文档和原文PDF，并导入到知识库。适用于个人文献管理、快速浏览、知识收集等场景。
 - **学术论文深度研究** — 面向学术论文的**原文级调研（Deep Research）**能力模块。适用于：用户指定某篇论文要求"读透 + 追踪背景 + 扩展最新相关工作"，或用户给出某个学术 topic 要求系统性深度调研与写作综述。
+- **科研情报侦查** — 立项初期的情报侦察与趋势分析引擎。通过引导式对话精准锁定调研边界，并行检索学术平台与行业资讯。最终不仅输出包含明细表格与宏观趋势的结构化报告，更自动构建专属钉钉知识库，实现从“信息搜集”到“知识沉淀”的一体化交付。适用于方向探索、行业追踪及可行性预研，为后续深度文献蒸馏提供高质量数据基座。
 
 ### 数据分析
 - **AI表格数据可视化分析** — 数据可视化与可视化数据分析报告：将本地 Excel/CSV/TSV、钉钉在线电子表格(axls)或已有钉钉 AI 表格统一转为 AI 表格数据源，根据数据特征设计图表组合，在其上创建原生可视化仪表盘(dashboard：指标卡/趋势/构成/排名图表)，是"上传表格出数据可视化报告"(data-report 类)诉求的钉钉原生方案。 TRIGGER: 用户要求把 Excel/CSV/在线表格做成钉钉看板/仪表盘/数据大屏/数据可视化...
@@ -133,6 +156,7 @@
 - **AI表格汇报PPT** — 从钉钉 AI 表格、多维表、数据表或已有 Word/PPT/HTML 生成内容先确认、可追溯、可下钻、可导出 PDF 的单文件 PPT 式可视化报告（默认固定 16:9 演示稿），图表可下钻回钉钉原始记录。 当用户提到把 AI 表格做成 PPT、汇报 PPT、管理报告、可视化报告、HTML 报告、仪表盘、数据汇报页面、下钻报告、打印报告，或只说"做个汇报PPT""做个汇报页面""把这个表可视化""生成仪表盘"时使用； 也用于把 P...
 - **数据可视化** — 从表格文件 (.xlsx / .xlsm / .csv / .tsv) 生成自包含 HTML 数据分析报告。 含 KPI 卡片、ECharts 图表、文字洞察。数据 inline 嵌入。 TRIGGER: 用户上传表格文件 + 提出分析/出报告/看趋势/做可视化/出 KPI/同环比/ 排名/构成/异常/帕累托/漏斗/留存/归因/分群等诉求时立即触发, 包括"出份报告"/ "做个分析"/"看看数据"这类模糊表达。 PARTIAL:...
 - **ECharts 图表生成** — 生成数据可视化图表，支持词云、折线图、柱状图、饼图、面积图及混合图表。 输出自包含 HTML 文件（引入 ECharts CDN），用户点击即可查看高质量图表。 支持导出 PNG 图片。当用户提到"生成图表"、"画个图"、"数据可视化"、 "柱状图"、"折线图"、"饼图"、"词云"、"图表展示数据"时使用。 不用于非 ECharts 的图表库（如 D3、Chart.js），不用于纯数据分析（无图表需求）。
+- **宜搭应用** — 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。
 - **数据分析** — Quick BI-智能分析 技能，具备多种数据分析能力: 1. **数据集问数**：自然语言查询 Quick BI 平台数据集，自动智能选表匹配 2. **文件问数**：上传 Excel/CSV 文件，通过 Quick BI API 进行智能分析 3. **文档解析**：解析 PDF/Word/Excel/CSV/图片等文档，提取文本，并支持提取关键字段并生成结构化 Excel 4. **仪表板技能生成**：将 QuickBI 仪...
 - **多语言翻译工具** — 任意两语言对的文章 / 文档翻译——含所有小语种方向（越南语 / 泰语 / 印尼语 / 阿拉伯语 / 俄语 / 葡语 / 土耳其语 等 ↔ 中 / 英 或互译），不限于中英日韩西法德。核心强项 = **结构化输出 + 术语一致 + 专有名词保留**：Markdown 表格 / 列表 / SRT / iOS strings / 占位符（`%@` `{0}` `{{var}}` `\\n`）/ 日期 / 数字 ID 逐字守恒；用户即席指...
 
@@ -142,21 +166,24 @@
 - **media-generation** — Generate or edit images with automatic model selection or a supported model explicitly requested by the user, generate videos, or create music as asynchronous media artifacts. Use this skill when the user asks for tex...
 - **media-generation-premium** — Generate or edit images and generate videos or music for the enterprise premium media experience. Image, video, and music requests use official automatic model selection or organization-configured models exposed by th...
 - **千问办公客户端图标替换** — Cross-platform (macOS + Windows) app icon replacement centered on the official QwenWork mascot "千仔" (Qianzai) — a flat-vector waving green octopus with two big round eyes. Auto-detects platform and routes accordingly....
+- **职场sbti人格分析** — 基于钉钉聊天记录做言行风格总结、工作氛围侧写与性格画像，并模拟完成 SBTI 32 题自动计算人格结果、展示结果海报。适用于用户希望"免手动答题"、直接从钉钉聊天记录生成 SBTI 人格小报告的场景。
 - **图像创作** — Curated image generation assistant covering 17 styles across 4 categories: character figures, scenes, products, and style transforms. Supports styles including 手办/figure, portrait, chibi, diorama, city, landmark, movi...
+- **技术方案** — 触发词：「技术方案」「系统设计」「架构方案」「技术选型」。 围绕业务目标与约束，输出架构设计、关键模块、技术选型、风险与实施计划的完整技术方案， 最终生成结构清晰的钉钉在线文档。
 
 ### 知识文档
 - **文档解析** — 通过阿里云 DTS-AI 端到端解析 PDF、DOCX、PPTX 和图片等本地文件，并将结果保存为 Markdown。用户提到 DTS-AI 文档解析，或需要把本地 PDF、Word、PowerPoint 或图片解析、转换、提取为 Markdown 时使用。
 - **标书撰写** — 专业标书撰写技能体系，支持从招标文件解读到文档质量控制的全流程工作。
 - **docx** — Comprehensive Word (.docx) skill: create, read, edit, and manipulate Word documents end-to-end. Covers turning Markdown or structured text into polished Word output, filling reusable templates ({{token}} or reference-...
 - **生成 PPTX** — 通过多轮沟通收集需求、确认逐页结构、生成每页 SVG 幻灯片并输出 PPTX 文件。适用于用户要求生成 PPT/PPTX、制作演示文稿、把文案或提纲转成幻灯片、先确认页纲再出稿，或需要把模型生成的 SVG 幻灯片打包成可下载 PPTX 的场景。
+- **知识库审计** — 对钉钉知识库进行系统性诊断审计，支持轻量级审计和深度审计两种模式， 输出文档健康度评估、分类规划和知识地图索引文档。 Use when user mentions "审计知识库", "知识库体检", "盘一盘文档", "文档太乱了", "帮我理一理文档", "哪些文档过期了", "建个文档索引", "生成知识地图", or asks to "诊断文档质量", "规划目录结构", "看看哪些文档该清理了". Distinct fro...
 - **pdf** — Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision)...
 - **pptx** — Use this skill any time a PowerPoint .pptx or legacy .ppt file is involved as input, output, or both. This includes creating decks; reading or extracting slide content; editing presentations; combining or splitting sl...
 - **xlsx** — Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, comp...
 
 ### 内容写作
-- **网页搜索与网页提取** — 通过阿里云 DTS-AI 搜索公开网页、发现相关来源并提取指定网页的内容。用户需要联网搜索、查询最新资料或新闻、开展产品或行业调研、查找官方网站或 URL、阅读或抓取网页、比较不同来源、核验事实、汇总网页信息并注明来源，或提到 DTS-AI、WebSearch、WebFetch 时使用。
 - **文本风格转写** — 内容改写工具，专注改写、扩写、缩写和风格语气迁移四种操作。当用户提供一段已有文本，要求对其进行改写（换一种说法）、扩写（补充展开）、缩写（压缩精简）、或迁移到指定风格/语气时触发本技能。TRIGGER when: 用户提供原文 + 明确指定操作类型（改写/扩写/缩写/风格迁移/语气调整）；或说\\"帮我改一下\\"\\"把这段扩展一下\\"\\"压缩到XXX字\\"\\"改成XX风格/语气\\"。DO NOT TRIGGER when: 用户要从...
 - **去 AI 味写作** — 去模板化写作技能，用于降低 AI 味、提升中文表达自然度与专业感。
+- **公文格式** — Format, review, or rewrite Chinese official documents according to the requirements in GB/T 9704-2012 and the local file `公文标准格式.doc`. Use this skill for 公文排版, 公文格式审查, 通知/请示/报告/函/纪要/命令（令）规范化, or when converting a draf...
 - **AI文本优化** — 检测并去除中文文本中的 AI 生成痕迹，使其更像人类自然书写。 覆盖内容模式（夸大意义、宣传语言、模糊归因）、语言模式（AI 高频词、三段式、同义词循环）、 风格模式（破折号滥用、粗体堆砌、表情符号）三大类 24 种 AI 写作特征的识别与改写。 Use when user mentions "去除AI痕迹", "AI味太重", "文章太像ChatGPT写的", "人性化改写", "去机器感", "让文字更自然", "humani...
 - **长文本写作专家** — Use for structured long-form writing, including blogs, reports, proposals, plans, PRDs, competitive analyses, research summaries, technical design docs, internal briefings, and decision documents. Trigger when the use...
 
@@ -169,6 +196,7 @@
 - **代码评审专家** — Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or bli...
 
 ### 效率工具
+- **网页搜索与网页提取** — 通过阿里云 DTS-AI 搜索公开网页、发现相关来源并提取指定网页的内容。用户需要联网搜索、查询最新资料或新闻、开展产品或行业调研、查找官方网站或 URL、阅读或抓取网页、比较不同来源、核验事实、汇总网页信息并注明来源，或提到 DTS-AI、WebSearch、WebFetch 时使用。
 - **FLYAI-飞猪旅行** — Search flights, hotels, attractions, concerts, and travel deals with natural language. FlyAI connects to Fliggy MCP for real-time search and booking across hotels, flights, cruises, visas, car rentals, and event ticke...
 - **十大命理综合** — 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做...
 - **AI表格协同应答助手** — AI 表格协同应答助手 · 让 IM、Agent 与 AI 表格协同响应你的钉钉消息。@机器人或@你本人， 千问办公 Agent 自动处理并回复（联网查资料 / 读文档 / 查日志 / 执行操作）；消息进度实时可见 （处理中→处理完成状态标签），所有消息自动沉淀到 AI 表格形成问题库（提问人 / 时间 / 来源 / 内容 / 结果 / 状态）。 支持多群 + 单聊监听、机器人 / 本人双身份回复。当用户要求部署钉钉消息监听、搭建...
@@ -199,13 +227,14 @@
 | AI表格汇报PPT | `qwenwork/skills/aitable-report-ppt` | 数据分析 | aitable-report-ppt | 171 | 从钉钉 AI 表格、多维表、数据表或已有 Word/PPT/HTML 生成内容先确认、可追溯、可下钻、可导出 PDF 的单文件 PPT 式可视化报告（默认固定 16:9 演示稿），图表可下钻回钉钉原始记录。 当用户提到把 AI 表格做成 PPT、汇报 PPT、管理报告、可视化报告、HTML 报告、仪表盘、数据汇报页面、下钻报告、打印报告，或只说"做个汇报PPT""做个汇报页面""把这个表可视化""生成仪表盘"时使用； 也用于把 P... |
 | 阿里云一键部署工具 | `qwenwork/skills/alibabacloud-ecs-code-deploy` | 开发工具 | alibabacloud-ecs-code-deploy | 10 | Install Alibaba Cloud CLI (aliyun) and deploy projects to Alibaba Cloud ECS using aliyun appmanager commands. Use when the user wants to deploy applications or AI agents to ECS, set up aliyun CLI, or use appmanager in... |
 | 文档解析 | `qwenwork/skills/aliyun-dts-doc-parse` | 知识文档 | aliyun-dts-doc-parse | 7 | 通过阿里云 DTS-AI 端到端解析 PDF、DOCX、PPTX 和图片等本地文件，并将结果保存为 Markdown。用户提到 DTS-AI 文档解析，或需要把本地 PDF、Word、PowerPoint 或图片解析、转换、提取为 Markdown 时使用。 |
-| 网页搜索与网页提取 | `qwenwork/skills/aliyun-dts-web-search` | 内容写作 | aliyun-dts-web-search | 7 | 通过阿里云 DTS-AI 搜索公开网页、发现相关来源并提取指定网页的内容。用户需要联网搜索、查询最新资料或新闻、开展产品或行业调研、查找官方网站或 URL、阅读或抓取网页、比较不同来源、核验事实、汇总网页信息并注明来源，或提到 DTS-AI、WebSearch、WebFetch 时使用。 |
+| 网页搜索与网页提取 | `qwenwork/skills/aliyun-dts-web-search` | 效率工具 | aliyun-dts-web-search | 7 | 通过阿里云 DTS-AI 搜索公开网页、发现相关来源并提取指定网页的内容。用户需要联网搜索、查询最新资料或新闻、开展产品或行业调研、查找官方网站或 URL、阅读或抓取网页、比较不同来源、核验事实、汇总网页信息并注明来源，或提到 DTS-AI、WebSearch、WebFetch 时使用。 |
 | 标书撰写 | `qwenwork/skills/bid-document` | 知识文档 | bidding-writing | 4 | 专业标书撰写技能体系，支持从招标文件解读到文档质量控制的全流程工作。 |
 | 视频速读 | `qwenwork/skills/bilibili-summary` | 教育学习 | bilibili-summary | 1 | 当用户发送B站(bilibili.com)视频链接并要求"总结视频内容"、"帮我总结"、"总结一下这个视频/课程"时触发。生成美观的HTML学习报告+MD归档文件。自动识别单集(详细灵活分析)和多P系列(分组折叠+阶段总结)，支持上百集课程快速输出结构化报告。 |
-| 商业计划书生成 | `qwenwork/skills/business-plan` | 沟通协作 | business-plan | 1 | 商业计划书：覆盖市场规模验证（TAM/SAM/SOM）、竞品对比矩阵、商业模式画布到财务预测与融资需求的全链路分析，输出结构化钉钉在线文档商业计划书。 |
+| 商业计划书生成 | `qwenwork/skills/business-plan` | 市场营销 | business-plan | 1 | 商业计划书：覆盖市场规模验证（TAM/SAM/SOM）、竞品对比矩阵、商业模式画布到财务预测与融资需求的全链路分析，输出结构化钉钉在线文档商业计划书。 |
 | A股深度研究 | `qwenwork/skills/cn-stock-research` | 金融投研 | cn-stock-research | 1 | 对A股上市公司进行全流程深度研究，自动识别公司分析模式、路由选择合适的分析模块与行业叠加层，并合并为统一的有据可查研究框架。当用户需要对A股公司进行深度研究、个股分析、投资调研，或希望将模糊的"分析这只股票"请求转化为结构化研究工作流时使用。 |
-| 公司调研 | `qwenwork/skills/company-research` | 沟通协作 | company-research | 1 | 公司调研：基于官方与公开信息，输出公司概况、业务结构、竞争位置、经营与风险的结构化研究报告，保存为钉钉在线文档。 |
-| 竞品分析 | `qwenwork/skills/competitive-analysis` | 沟通协作 | competitive-analysis | 1 | 竞品分析：通过统一维度对比产品与市场信息，形成结构化对比结论与机会点，输出钉钉在线文档竞品分析报告。 |
+| 公司调研 | `qwenwork/skills/company-research` | 金融投研 | company-research | 1 | 公司调研：基于官方与公开信息，输出公司概况、业务结构、竞争位置、经营与风险的结构化研究报告，保存为钉钉在线文档。 |
+| 竞品分析 | `qwenwork/skills/competitive-analysis` | 市场营销 | competitive-analysis | 1 | 竞品分析：通过统一维度对比产品与市场信息，形成结构化对比结论与机会点，输出钉钉在线文档竞品分析报告。 |
+| computer-use-guidance-windows | `qwenwork/skills/computer-use-guidance-windows` | 人力招聘 | computer-use-guidance-windows | 2 | Operation guidance for automating the Windows desktop via Computer Use: open apps, read on-screen state through the UIA accessibility tree, click / type / press shortcut keys / scroll / drag / invoke semantic UIA acti... |
 | 文本风格转写 | `qwenwork/skills/content-rewriter` | 内容写作 | content-rewriter | 5 | 内容改写工具，专注改写、扩写、缩写和风格语气迁移四种操作。当用户提供一段已有文本，要求对其进行改写（换一种说法）、扩写（补充展开）、缩写（压缩精简）、或迁移到指定风格/语气时触发本技能。TRIGGER when: 用户提供原文 + 明确指定操作类型（改写/扩写/缩写/风格迁移/语气调整）；或说\\"帮我改一下\\"\\"把这段扩展一下\\"\\"压缩到XXX字\\"\\"改成XX风格/语气\\"。DO NOT TRIGGER when: 用户要从... |
 | 内容选题规划 | `qwenwork/skills/content-strategy` | 市场营销 | content-strategy | 3 | When the user wants to plan a content strategy, decide what content to create, or figure out what topics to cover. Also use when the user mentions "content strategy," "what should I write about," "content ideas," "blo... |
 | 中文合同审查技能 | `qwenwork/skills/contract-review-cn` | 法律服务 | contract-review-cn | 10 | > 专业的中文合同风险识别与修订建议工具 |
@@ -245,16 +274,42 @@
 | 趣味数学课堂 | `qwenwork/skills/fun-mathclass` | 教育学习 | fun-mathclass | 14 | 一位互动性强、趣味十足的数学老师，通过交互式教具、视觉游乐场和游戏化挑战创造引人入胜的数学学习体验。当用户需要学习数学概念、练习数学题目、可视化理解数学原理、或进行游戏化数学挑战时使用此技能。涵盖从小学算术到大学微积分的完整知识体系，支持自适应难度和即时反馈。 |
 | 生成 PPTX | `qwenwork/skills/generate-pptx` | 知识文档 | generate-pptx | 8 | 通过多轮沟通收集需求、确认逐页结构、生成每页 SVG 幻灯片并输出 PPTX 文件。适用于用户要求生成 PPT/PPTX、制作演示文稿、把文案或提纲转成幻灯片、先确认页纲再出稿，或需要把模型生成的 SVG 幻灯片打包成可下载 PPTX 的场景。 |
 | github工具 | `qwenwork/skills/github` | 开发工具 | github | 2 | 通过 `gh` CLI 与 GitHub 交互。支持 `gh issue`、`gh pr`、`gh run`、`gh api` 等命令，用于管理 Issue、PR、CI 运行和高级查询。不要在非 GitHub 场景（如 GitLab、Bitbucket、纯 git 操作）时触发。 |
-| 公文格式 | `qwenwork/skills/gongwenformat` | 沟通协作 | gongwen-format | 13 | Format, review, or rewrite Chinese official documents according to the requirements in GB/T 9704-2012 and the local file `公文标准格式.doc`. Use this skill for 公文排版, 公文格式审查, 通知/请示/报告/函/纪要/命令（令）规范化, or when converting a draf... |
+| 公文格式 | `qwenwork/skills/gongwenformat` | 内容写作 | gongwen-format | 13 | Format, review, or rewrite Chinese official documents according to the requirements in GB/T 9704-2012 and the local file `公文标准格式.doc`. Use this skill for 公文排版, 公文格式审查, 通知/请示/报告/函/纪要/命令（令）规范化, or when converting a draf... |
 | 群聊内容摘要 | `qwenwork/skills/group-chat-summary` | 沟通协作 | group-chat-summary | 1 | 基于钉钉群聊的智能摘要与洞察生成能力。从指定群聊/时间范围的消息中提取关键信息，识别决策、行动项、风险，生成钉钉在线文档结构化摘要。 |
 | AI文本优化 | `qwenwork/skills/humanizer-zh` | 内容写作 | humanizer-zh | 1 | 检测并去除中文文本中的 AI 生成痕迹，使其更像人类自然书写。 覆盖内容模式（夸大意义、宣传语言、模糊归因）、语言模式（AI 高频词、三段式、同义词循环）、 风格模式（破折号滥用、粗体堆砌、表情符号）三大类 24 种 AI 写作特征的识别与改写。 Use when user mentions "去除AI痕迹", "AI味太重", "文章太像ChatGPT写的", "人性化改写", "去机器感", "让文字更自然", "humani... |
 | icon生成器 | `qwenwork/skills/icon-studio` | 设计创意 | icon-studio | 1 | Professional icon generator. Creates high-quality icons for Apps, websites, desktop software, games, brand logos, social avatars, and more. Supports 20+ styles (Minimal, Clay 3D, Neon, Glassmorphism, etc.) with style... |
 | AI表格协同应答助手 | `qwenwork/skills/im-aitable-butler` | 效率工具 | im-aitable-butler | 10 | AI 表格协同应答助手 · 让 IM、Agent 与 AI 表格协同响应你的钉钉消息。@机器人或@你本人， 千问办公 Agent 自动处理并回复（联网查资料 / 读文档 / 查日志 / 执行操作）；消息进度实时可见 （处理中→处理完成状态标签），所有消息自动沉淀到 AI 表格形成问题库（提问人 / 时间 / 来源 / 内容 / 结果 / 状态）。 支持多群 + 单聊监听、机器人 / 本人双身份回复。当用户要求部署钉钉消息监听、搭建... |
 | 行业研究报告 | `qwenwork/skills/industry-research` | 金融投研 | industry-research | 1 | 面向特定行业/赛道的**系统性深度研究**能力。从行业定义、市场规模、竞争格局、技术趋势、政策环境、投融资动态等多维度进行**广覆盖、深挖掘**的全面调研，输出结构化的行业研究报告。 |
 | 互动学习卡片 | `qwenwork/skills/interactive-learning-cards` | 教育学习 | interactive-learning-cards | 8 | 为教师创建课堂专用的交互式学习应用。包含闪卡、测验和浏览模式。基于记忆科学原理设计，支持学生自主学习和课堂互动练习。当老师需要制作学科知识点卡片、课堂练习题、复习工具或家校共育学习资源时使用此技能。不要在简单文档生成、纯文本整理或非教学场景时触发。 |
-| 知识库审计 | `qwenwork/skills/knowledge-audit` | 沟通协作 | knowledge-audit | 4 | 对钉钉知识库进行系统性诊断审计，支持轻量级审计和深度审计两种模式， 输出文档健康度评估、分类规划和知识地图索引文档。 Use when user mentions "审计知识库", "知识库体检", "盘一盘文档", "文档太乱了", "帮我理一理文档", "哪些文档过期了", "建个文档索引", "生成知识地图", or asks to "诊断文档质量", "规划目录结构", "看看哪些文档该清理了". Distinct fro... |
+| 知识库审计 | `qwenwork/skills/knowledge-audit` | 知识文档 | knowledge-audit | 4 | 对钉钉知识库进行系统性诊断审计，支持轻量级审计和深度审计两种模式， 输出文档健康度评估、分类规划和知识地图索引文档。 Use when user mentions "审计知识库", "知识库体检", "盘一盘文档", "文档太乱了", "帮我理一理文档", "哪些文档过期了", "建个文档索引", "生成知识地图", or asks to "诊断文档质量", "规划目录结构", "看看哪些文档该清理了". Distinct fro... |
 | 劳动合同专项起草 | `qwenwork/skills/labor-contract-generator` | 法律服务 | labor-contract-generator | 4 | 生成中国大陆标准劳动合同、空白劳动合同模板、可打印劳动合同和劳动合同 DOCX；支持固定期限、无固定期限、以完成一定工作任务为期限的劳动合同，以及试用期、保密、知识产权、培训服务期、竞业限制、文书送达、离职交接等条款生成，并可按销售岗、技术岗、高管岗、医疗岗、工厂/门店岗、驻外/外派岗输出强化版本。 |
 | 劳动合同专项审查 | `qwenwork/skills/labor-contract-review` | 法律服务 | labor-contract-review | 22 | 面向中文劳动合同签署、修订和模板复核场景，帮助用户快速识别关键用工风险、修改优先级和谈判边界，并形成可执行的审查意见。 |
+| lark-approval | `qwenwork/skills/lark-approval` | 沟通协作 | lark-approval | 1 | 飞书审批 API：审批实例、审批任务管理。 |
+| lark-apps | `qwenwork/skills/lark-apps` | 沟通协作 | lark-apps | 7 | 把本地 HTML 文件或目录部署到飞书妙搭（Miaoda），生成一个公网可访问的应用及其链接（URL）。当用户要创建 HTML 或要把 HTML、静态网站或 Web demo 发布成公网可访问的链接 / 可分享链接、设置应用共享范围，或提到妙搭 / Miaoda 时使用。凡产出可独立访问的 HTML 产物都属本 skill 的潜在归宿，是否真要部署由 skill 内部协议判断。不用于：上传普通文件到云空间/云盘/云存储（用 lar... |
+| lark-attendance | `qwenwork/skills/lark-attendance` | 沟通协作 | lark-attendance | 1 | 飞书考勤打卡：查询自己的考勤打卡记录 |
+| lark-base | `qwenwork/skills/lark-base` | 沟通协作 | lark-base | 95 | 当需要用 lark-cli 操作飞书多维表格（Base）时调用：搜索 Base、建表、字段管理、记录读写、记录分享链接、视图配置、历史查询，以及角色/表单/仪表盘管理/工作流；也适用于把旧的 +table / +field / +record 写法改成当前命令写法。涉及字段设计、公式字段、查找引用、跨表计算、行级派生指标、数据分析需求时也必须使用本 skill。 |
+| lark-calendar | `qwenwork/skills/lark-calendar` | 沟通协作 | lark-calendar | 9 | 飞书日历（calendar）：提供日历与日程（会议）的全面管理能力。核心场景包括：查看/搜索日程、创建/更新日程、管理参会人、查询忙闲状态及推荐空闲时段、查询/搜索与预定会议室。注意：涉及【预约日程/会议】或【查询/预定会议室】时，必须先读取 references/lark-calendar-schedule-meeting.md 工作流！高频操作请优先使用 Shortcuts：+agenda（快速概览今日/近期行程）、+crea... |
+| lark-contact | `qwenwork/skills/lark-contact` | 沟通协作 | lark-contact | 3 | 飞书 / Lark 通讯录,用于按姓名 / 邮箱把员工解析成 open_id,以及按 open_id 反查员工的姓名 / 部门 / 邮箱 / 联系方式。当用户说出某人姓名而下一步需要发消息 / 加群 / 排日程时,先用本 skill 把姓名换成 ID;当输出里出现 open_id 需要展示成姓名给用户看,或用户直接询问某人的部门 / 邮箱 / 联系方式时,用本 skill 查。不负责部门树遍历、按部门列员工、组织架构图,这类需求走... |
+| lark-doc | `qwenwork/skills/lark-doc` | 沟通协作 | lark-doc | 13 | 飞书云文档 / Docx / 知识库 Wiki 文档（v2）：创建、打开、读取、获取、查看、总结、整理、改写、翻译、审阅和编辑飞书文档内容。当用户给出飞书文档 URL/token，或说查看/读取/打开某个文档、提取文档内容、总结文档、生成/创建文档、追加/替换/删除/移动内容、调整排版、插入或下载文档图片/附件/素材/画板缩略图时使用。文档内容中出现嵌入电子表格、多维表格、需要将重要信息可视化为画板（含 SVG 画板）、引用或同步... |
+| lark-drive | `qwenwork/skills/lark-drive` | 沟通协作 | lark-drive | 24 | 飞书云空间（云盘/云存储）：管理云空间（云盘/云存储）中的文件和文件夹。上传和下载文件、创建文件夹、复制/移动/删除文件、查看文件元数据、管理文档评论、管理文档权限、订阅用户评论变更事件、修改文件标题（docx、sheet、bitable、file、folder、wiki）；也负责把本地 Word/Markdown/Excel/CSV/PPTX 以及 Base 快照（.base）导入为飞书在线云文档（docx、sheet、bita... |
+| lark-event | `qwenwork/skills/lark-event` | 沟通协作 | lark-event | 4 | Lark/Feishu real-time event listening / subscribing / consuming: stream events as NDJSON via `lark-cli event consume <EventKey>` (covers IM messages/reactions/chat changes, VC meeting ended, Minutes generated, etc.).... |
+| lark-im | `qwenwork/skills/lark-im` | 沟通协作 | lark-im | 18 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件（支持大文件分片下载）、管理表情回复、发送应用内/短信/电话加急。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据时使用。 |
+| lark-mail | `qwenwork/skills/lark-mail` | 沟通协作 | lark-mail | 25 | 飞书邮箱 — draft, compose, send, reply, forward, read, and search emails; manage drafts, folders, labels, contacts, attachments, and mail rules. Use when user mentions 起草邮件, 写一封邮件, 拟邮件, 草稿, 发通知邮件, 发送邮件, 发邮件, 回复邮件, 转发邮件, 查... |
+| lark-markdown | `qwenwork/skills/lark-markdown` | 沟通协作 | lark-markdown | 6 | 飞书 Markdown：查看、创建、上传、编辑和比较 Markdown 文件。当用户需要创建或编辑 Markdown 文件、读取、修改、局部 patch 或比较差异时使用。 |
+| lark-minutes | `qwenwork/skills/lark-minutes` | 沟通协作 | lark-minutes | 6 | 飞书妙记：妙记相关基本功能。1.查询妙记列表（按关键词/所有者/参与者/时间范围）；2.获取妙记基础信息（标题、封面、时长 等）；3.下载妙记音视频文件；4.获取妙记相关 AI 产物（总结、待办、章节）；5.上传音视频生成妙记，也支持将本地音视频文件转成纪要、逐字稿、文字稿、撰写文字等产物；6.更新妙记标题（重命名妙记）；7.替换妙记逐字稿中的说话人。遇到这类请求时，应优先使用本 skill。飞书妙记 URL 格式: http(s... |
+| lark-okr | `qwenwork/skills/lark-okr` | 沟通协作 | lark-okr | 11 | 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标（Objective）、关键结果（Key Result）、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。 |
+| lark-openapi-explorer | `qwenwork/skills/lark-openapi-explorer` | 沟通协作 | lark-openapi-explorer | 1 | 飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。 |
+| lark-shared | `qwenwork/skills/lark-shared` | 沟通协作 | lark-shared | 1 | Use when first setting up lark-cli, running auth login, switching user/bot identity (--as), handling permission denied or scope errors, needing to update lark-cli, or seeing _notice in JSON output. |
+| lark-sheets | `qwenwork/skills/lark-sheets` | 沟通协作 | lark-sheets | 11 | 飞书电子表格：创建和操作电子表格。支持创建表格、创建/复制/删除/更新工作表、读写单元格、追加行数据、查找内容、导出文件。当用户需要创建电子表格、管理工作表、批量读写数据、在已知表格中查找内容、导出或下载表格时使用。若用户是想按名称或关键词搜索云空间（云盘/云存储）里的表格文件，请改用 lark-drive 的 drive +search 先定位资源。当用户给出 doubao.com 的 /sheets/ URL/token 时，... |
+| lark-skill-maker | `qwenwork/skills/lark-skill-maker` | 沟通协作 | lark-skill-maker | 1 | 创建 lark-cli 的自定义 Skill。当用户需要把飞书 API 操作封装成可复用的 Skill（包装原子 API 或编排多步流程）时使用。 |
+| lark-slides | `qwenwork/skills/lark-slides` | 沟通协作 | lark-slides | 69 | 飞书幻灯片：创建和编辑幻灯片，接口通过 XML 协议通信。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。当用户给出 doubao.com 的 /slides/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。 |
+| lark-task | `qwenwork/skills/lark-task` | 沟通协作 | lark-task | 19 | 飞书任务：管理任务、清单和任务智能体。创建待办任务、查看和更新任务状态、拆分子任务、组织任务清单、分配协作成员、上传任务附件、注册或注销任务智能体、更新任务智能体的主页数据、写入智能体任务记录。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理项目清单或给他人分配任务、为任务上传附件文件、注册注销任务智能体、更新智能体主页数据、写入任务记录时使用。 |
+| lark-vc | `qwenwork/skills/lark-vc` | 沟通协作 | lark-vc | 5 | 飞书视频会议：搜索历史会议、查询会议纪要产物（总结、待办、章节、逐字稿）、查询会议参会人快照。1. 查询已经结束的会议数量或详情时使用本技能（如历史日期｜昨天｜上周｜今天已经开过的会议等场景），查询未开始的会议日程使用 lark-calendar 技能。2. 支持通过关键词、时间范围、组织者、参与者、会议室等筛选条件搜索会议。3. 获取或整理会议纪要、逐字稿、录制产物时使用本技能。4. 查询“谁参加过某会议”“参会人列表”等参会人... |
+| lark-vc-agent | `qwenwork/skills/lark-vc-agent` | 沟通协作 | lark-vc-agent | 4 | 飞书视频会议：让机器人代当前用户加入/离开正在进行的会议，并读取会议期间的实时事件（参会人加入与离开、发言、聊天、屏幕共享等）。1. 用户提供 9 位会议号、要求代为入会或离会时使用 +meeting-join / +meeting-leave——会真实产生入会/离会记录。2. 会议进行中用户想知道“谁加入了”“谁离开了”“谁在发言”“有人共享屏幕吗”等会中动态时，机器人入会后用 +meeting-events 读取事件时间线。3... |
+| lark-whiteboard | `qwenwork/skills/lark-whiteboard` | 沟通协作 | lark-whiteboard | 28 | 飞书画板：查询和编辑飞书云文档中的画板。支持导出画板为预览图片、导出原始节点结构、使用 DSL（转成 OpenAPI 格式）、PlantUML/Mermaid 格式更新画板内容。 当用户需要查看画板内容、导出画板图片、编辑画板，或是需要可视化表达架构、流程、组织关系、时间线、因果、对比等结构化信息时使用此 skill，无论是否提及"画板"。 ⚠️ 原 `lark-whiteboard-cli` skill 已合并至本 skill，... |
+| lark-wiki | `qwenwork/skills/lark-wiki` | 沟通协作 | lark-wiki | 13 | 飞书知识库：管理知识空间、空间成员和文档节点。创建和查询知识空间、查看和管理空间成员、管理节点层级结构、在知识库中组织文档和快捷方式。当用户需要在知识库中查找或创建文档、浏览知识空间结构、查看或管理空间成员、移动或复制节点时使用。当用户给出 doubao.com 的 /wiki/ URL/token 时，也应直接使用本 skill，不要因为域名不是飞书而回退到 WebFetch；路由依据是 URL 路径模式和 token，而不是域名。 |
+| lark-workflow-meeting-summary | `qwenwork/skills/lark-workflow-meeting-summary` | 沟通协作 | lark-workflow-meeting-summary | 1 | 会议纪要整理工作流：汇总指定时间范围内的会议纪要并生成结构化报告。当用户需要整理会议纪要、生成会议周报、回顾一段时间内的会议内容时使用。 |
+| lark-workflow-standup-report | `qwenwork/skills/lark-workflow-standup-report` | 沟通协作 | lark-workflow-standup-report | 1 | 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。 |
 | 案情法律分析报告 | `qwenwork/skills/lawd-analysis-report` | 法律服务 | lawd-analysis-report | 12 | 生成深度法律分析报告（民商/行政/非诉）。基于录音转写文本或案件材料，自动识别事务类型，运行时探测并调用「案例检索」「法规检索」「企业工商信息查询」三类连接器能力做自动化增强，输出排版精美的 Word (.docx) 文档。适用于律师沟通后快速产出'合伙人级别'分析建议书。TRIGGER when: (1) 用户提供录音转写文本或案件材料要求出具法律分析报告 (2) 用户要求对案件进行全面分析并生成建议书 (3) 用户提及'分析报... |
 | 律师类案检索与报告 | `qwenwork/skills/lawd-case-retrieval` | 法律服务 | lawd-case-retrieval | 24 | 律师类案检索一体化技能，一个入口三种模式：模式A 类案检索（把案情、法律问题、案由或检索词改写为专业查询，调用案例检索连接器，核验并整理真实案例，形成基于当前检索样本的裁判观点、争议焦点、法规关注清单和案例列表）、模式B 按案号取裁判文书全文（已知案号时用浏览器能力登录中国裁判文书网检索文书详情并落盘 Markdown 与 PDF）、模式C 正式类案检索报告（把已核验案例数据编排为经脚本校验的 .docx 五部分正式报告）。TRI... |
 | 上诉状生成 | `qwenwork/skills/lawd-civil-appeal-petition-generator` | 法律服务 | lawd-civil-appeal-petition-generator | 8 | 民事上诉状生成技能。根据用户提供的一审判决书、庭审材料、证据目录、质证意见及案件事实，生成或优化专业民事上诉状。TRIGGER when: (1) 用户提及\\"上诉状\\"、\\"民事上诉\\"、\\"二审上诉\\"、\\"不服一审判决\\"、\\"改判\\"、\\"发回重审\\"等关键词，(2) 用户要求起草/修改/润色上诉状，(3) 用户提供一审裁判文书并希望提炼上诉请求和上诉理由，(4) 用户需要将事实认定、证据采信、法律适用或程序问题转化为二审... |
@@ -282,7 +337,7 @@
 | 法律服务方案生成器 | `qwenwork/skills/lawding-lawyer-quotation-generator` | 法律服务 | lawding-lawyer-quotation-generator | 6 | 法律服务方案生成器。根据用户提供的案件类型、标的金额、服务阶段、收费模式等信息，生成专业的法律服务报价方案文档；支持多种报价模板（仅报价、报价+服务内容、服务内容+团队+价格、标准+费用、团队+费用）；输出符合律所商务规范的报价方案。 |
 | 中国法律合规 AI 技能包 | `qwenwork/skills/legal-compliance-bundle` | 法律服务 | legal-compliance-bundle | 54 | > 50个AI驱动的法律合规自动化技能，覆盖合同、劳动、知产、数据、企业合规五大领域。 |
 | 教案生成助手 | `qwenwork/skills/lesson-plan-assistant` | 教育学习 | lesson-plan-assistant | 12 | 生成符合《义务教育课程标准（2022年版）》的专业教案，基于教学评一致性原则设计。当用户需要编写中小学各学科教案、教学设计、教学计划时使用。不要在非教学场景（如作文批改、试卷生成、学生管理）时触发。 |
-| 文献深度研读 | `qwenwork/skills/literature-distiller` | 沟通协作 | literature-distiller | 8 | 论文文献速览与蒸馏助手。支持用户上传的 PDF 文件或在线链接，通过 4+2 深度蒸馏模型快速提取元数据、逻辑骨架、核心发现及批判性洞察，生成钉钉在线文档和原文PDF，并导入到知识库。适用于个人文献管理、快速浏览、知识收集等场景。 |
+| 文献深度研读 | `qwenwork/skills/literature-distiller` | 教育学习 | literature-distiller | 8 | 论文文献速览与蒸馏助手。支持用户上传的 PDF 文件或在线链接，通过 4+2 深度蒸馏模型快速提取元数据、逻辑骨架、核心发现及批判性洞察，生成钉钉在线文档和原文PDF，并导入到知识库。适用于个人文献管理、快速浏览、知识收集等场景。 |
 | 社媒创意专家 | `qwenwork/skills/marketing-ad` | 市场营销 | marketing-ad | 7 | 当用户需要生成、迭代或批量产出国内平台营销文案时使用。支持的平台包括：小红书（穿搭笔记、种草文案）、微信公众号（软文、推文）、朋友圈（九宫格文案）、微博（热搜文案、话题文案）、抖音（短视频文案、评论区引导）、B站（动态文案）等。当用户提到'营销文案'、'小红书笔记'、'公众号软文'、'朋友圈文案'、'微博文案'、'种草文案'、'带货文案'、'推广文案'、'爆款标题'、'帮我写一篇推文'、'朋友圈九宫格'、'抖音文案'等关键词时触发... |
 | 活动营销方案 | `qwenwork/skills/marketing-campaign-plan` | 市场营销 | marketing-campaign-plan | 1 | 活动营销方案：明确目标人群、核心卖点、传播节奏、渠道矩阵、预算与风险，形成可执行方案。 |
 | 营销策划 | `qwenwork/skills/marketing-ideas` | 市场营销 | marketing-ideas | 3 | When the user needs marketing ideas, inspiration, or strategies for their SaaS or software product. Also use when the user asks for 'marketing ideas,' 'growth ideas,' 'how to market,' 'marketing strategies,' 'marketin... |
@@ -290,9 +345,9 @@
 | 营销心理分析 | `qwenwork/skills/marketing-psychology` | 市场营销 | marketing-psychology | 1 | When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cognitive bias,' 'persuasion,' 'behavioral scie... |
 | media-generation | `qwenwork/skills/media-generation` | 设计创意 | media-generation | 1 | Generate or edit images with automatic model selection or a supported model explicitly requested by the user, generate videos, or create music as asynchronous media artifacts. Use this skill when the user asks for tex... |
 | media-generation-premium | `qwenwork/skills/media-generation-premium` | 设计创意 | media-generation-premium | 1 | Generate or edit images and generate videos or music for the enterprise premium media experience. Image, video, and music requests use official automatic model selection or organization-configured models exposed by th... |
-| 新闻总结 | `qwenwork/skills/news-summary` | 沟通协作 | news-summary | 3 | 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and... |
-| 通知函件写作 | `qwenwork/skills/official-document-writing` | 沟通协作 | official-document-writing | 12 | 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。 |
-| 宜搭应用 | `qwenwork/skills/openyida-app` | 沟通协作 | openyida-app | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
+| 新闻总结 | `qwenwork/skills/news-summary` | 市场营销 | news-summary | 3 | 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and... |
+| 通知函件写作 | `qwenwork/skills/official-document-writing` | 法律服务 | official-document-writing | 12 | 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。 |
+| 宜搭应用 | `qwenwork/skills/openyida-app` | 数据分析 | openyida-app | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
 | 落地页生成器 | `qwenwork/skills/page-crafter` | 市场营销 | page-crafter | 1 | Professional high-end Landing Page generation tool. Creates visually stunning, Awwwards-level web pages with cinematic hero sections, modern animations. Trigger keywords: landing page, 落地页, web page, hero section, pro... |
 | 学术论文深度研究 | `qwenwork/skills/paper-deepresearch` | 教育学习 | paper-deepresearch | 1 | 面向学术论文的**原文级调研（Deep Research）**能力模块。适用于：用户指定某篇论文要求"读透 + 追踪背景 + 扩展最新相关工作"，或用户给出某个学术 topic 要求系统性深度调研与写作综述。 |
 | pdf | `qwenwork/skills/pdf` | 知识文档 | pdf | 53 | Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision)... |
@@ -307,16 +362,16 @@
 | 千问办公客户端图标替换 | `qwenwork/skills/qwenwork-app-icon` | 设计创意 | qwenwork-app-icon | 11 | Cross-platform (macOS + Windows) app icon replacement centered on the official QwenWork mascot "千仔" (Qianzai) — a flat-vector waving green octopus with two big round eyes. Auto-detects platform and routes accordingly.... |
 | qwenwork-guidance | `qwenwork/skills/qwenwork-guidance` | 系统内置 | qwenwork-guidance | 7 | Routing guide for the built-in QwenWork Connector tools (mcp__qw-builtin__qw_query / mcp__qw-builtin__qw_action). Load ONLY right before calling them to view or manage QwenWork's OWN tasks/sessions or app configuratio... |
 | 代码评审专家 | `qwenwork/skills/receiving-code-review` | 开发工具 | receiving-code-review | 1 | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or bli... |
-| 科研情报侦查 | `qwenwork/skills/research-collector` | 沟通协作 | research-collector | 7 | 立项初期的情报侦察与趋势分析引擎。通过引导式对话精准锁定调研边界，并行检索学术平台与行业资讯。最终不仅输出包含明细表格与宏观趋势的结构化报告，更自动构建专属钉钉知识库，实现从“信息搜集”到“知识沉淀”的一体化交付。适用于方向探索、行业追踪及可行性预研，为后续深度文献蒸馏提供高质量数据基座。 |
+| 科研情报侦查 | `qwenwork/skills/research-collector` | 教育学习 | research-collector | 7 | 立项初期的情报侦察与趋势分析引擎。通过引导式对话精准锁定调研边界，并行检索学术平台与行业资讯。最终不仅输出包含明细表格与宏观趋势的结构化报告，更自动构建专属钉钉知识库，实现从“信息搜集”到“知识沉淀”的一体化交付。适用于方向探索、行业追踪及可行性预研，为后续深度文献蒸馏提供高质量数据基座。 |
 | 简历助手 | `qwenwork/skills/resume-helper` | 人力招聘 | resume-helper | 12 | 创作、美化、优化简历及生成面试准备方案。当用户说写简历、做简历、美化简历、优化简历、改简历、简历排版、导出简历、面试准备、生成面试题、模拟面试时触发。 |
-| 职场sbti人格分析 | `qwenwork/skills/sbti-dingtalk-analyzer` | 沟通协作 | sbti-dingtalk-analyzer | 32 | 基于钉钉聊天记录做言行风格总结、工作氛围侧写与性格画像，并模拟完成 SBTI 32 题自动计算人格结果、展示结果海报。适用于用户希望"免手动答题"、直接从钉钉聊天记录生成 SBTI 人格小报告的场景。 |
+| 职场sbti人格分析 | `qwenwork/skills/sbti-dingtalk-analyzer` | 设计创意 | sbti-dingtalk-analyzer | 32 | 基于钉钉聊天记录做言行风格总结、工作氛围侧写与性格画像，并模拟完成 SBTI 32 题自动计算人格结果、展示结果海报。适用于用户希望"免手动答题"、直接从钉钉聊天记录生成 SBTI 人格小报告的场景。 |
 | 学校社媒舆情监控 | `qwenwork/skills/school-sentiment-monitor` | 金融投研 | school-sentiment-monitor | 12 | 监控指定学校在社交媒体上的舆论动态，进行情感分析、趋势研判和负面预警。当用户提到舆情监控、学校口碑、帮我盯着某学校、查看舆情报告时触发。不要在需要创建教案、批改作业、管理课程表时触发。 |
-| 社媒内容生成 | `qwenwork/skills/social-content` | 沟通协作 | social-content | 5 | 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"... |
+| 社媒内容生成 | `qwenwork/skills/social-content` | 市场营销 | social-content | 5 | 社交媒体内容创作：根据用户指定的平台生成适配内容，支持单条文案、多平台改写、 内容日历排期、互动优化，确认后写入钉钉云文档。 Use when user mentions "社媒内容", "帮我写一条帖子", "写个小红书笔记", "公众号文案", "微博文案", "抖音脚本", "视频号文案", "朋友圈文案", "LinkedIn帖子", "X/Twitter内容", "Instagram文案", "社媒排期", "内容日历"... |
 | 项目进展汇报 | `qwenwork/skills/stakeholder-comms` | 沟通协作 | stakeholder-comms | 1 | Generate a stakeholder update tailored to audience and cadence. Use when writing a weekly or monthly status for leadership, announcing a launch, escalating a risk or blocker, or translating the same progress into exec... |
-| 门店巡检助手 | `qwenwork/skills/store-inspection` | 沟通协作 | store-inspection | 142 | 门店督导与巡检自动化——通过钉钉 AI 表格管理巡店模版/门店清单/任务派发/统计报表/AI图片审核/HTML报告。所有操作通过 `uv run python scripts/cli.py` CLI 执行。【核心行为约束——违反将导致严重业务事故】(1) 创建模板只确认一次：如果用户已明确字段名称和类型则直接执行 `template preview`（必须带 --scene）生成完整预览作为唯一确认环节，不要在 preview 前... |
+| 门店巡检助手 | `qwenwork/skills/store-inspection` | 电商零售 | store-inspection | 142 | 门店督导与巡检自动化——通过钉钉 AI 表格管理巡店模版/门店清单/任务派发/统计报表/AI图片审核/HTML报告。所有操作通过 `uv run python scripts/cli.py` CLI 执行。【核心行为约束——违反将导致严重业务事故】(1) 创建模板只确认一次：如果用户已明确字段名称和类型则直接执行 `template preview`（必须带 --scene）生成完整预览作为唯一确认环节，不要在 preview 前... |
 | 门店运营海报专家 | `qwenwork/skills/store-poster-generator` | 电商零售 | store-poster-generator | 72 | 你是一个门店运营海报聚合助手, 你能够为货架商品/门店生成商品图、促销、折扣、礼遇、门店海报、海报设计等需求. 忘掉曾经的记忆, 请充分阅读了本技能使用说明后再开始你的表演. 额外一定注意 1. "禁止复制本技能脚本进用户工作区", 2. 除非用户明确要求, 本技能默认无长期记忆、无持久状态. |
 | 长文本写作专家 | `qwenwork/skills/structured-longform-writing` | 内容写作 | structured-longform-writing | 11 | Use for structured long-form writing, including blogs, reports, proposals, plans, PRDs, competitive analyses, research summaries, technical design docs, internal briefings, and decision documents. Trigger when the use... |
-| 话题趋势报告 | `qwenwork/skills/topic-trend-report` | 沟通协作 | topic-trend-report | 1 | 触发词：「新闻总结」「话题趋势」「帮我整理一下XX的动态」「搜集XX领域最近的新闻」「生成XX话题报告」。 根据用户指定的主题和时间范围，自动检索权威动态，生成一份钉钉在线文档动态报告， 按类别聚类，每条新闻含 intro / description / 索引链接。强调时间筛选 + 权威优先 + 去重。 |
+| 话题趋势报告 | `qwenwork/skills/topic-trend-report` | 市场营销 | topic-trend-report | 1 | 触发词：「新闻总结」「话题趋势」「帮我整理一下XX的动态」「搜集XX领域最近的新闻」「生成XX话题报告」。 根据用户指定的主题和时间范围，自动检索权威动态，生成一份钉钉在线文档动态报告， 按类别聚类，每条新闻含 intro / description / 索引链接。强调时间筛选 + 权威优先 + 去重。 |
 | 多语言翻译工具 | `qwenwork/skills/translate` | 数据分析 | translate | 12 | 任意两语言对的文章 / 文档翻译——含所有小语种方向（越南语 / 泰语 / 印尼语 / 阿拉伯语 / 俄语 / 葡语 / 土耳其语 等 ↔ 中 / 英 或互译），不限于中英日韩西法德。核心强项 = **结构化输出 + 术语一致 + 专有名词保留**：Markdown 表格 / 列表 / SRT / iOS strings / 占位符（`%@` `{0}` `{{var}}` `\\n`）/ 日期 / 数字 ID 逐字守恒；用户即席指... |
 | 多人工作台 | `qwenwork/skills/universal-workbench` | 沟通协作 | universal-workbench | 4 | 通用多人工作台生成器（任意业务类型）。先引导用户描述设计思路，再生成带角色权限管控、真实数据库读写、管理后台数据查看、在线发布分享的动态工作台网页。用户要求"做一个工作台/管理后台/协作系统/带数据库的多角色网页/内部工具"时使用。最小流水线场景优先用 min-db-workbench；本 skill 面向任意类型（PMO/日历/库存/审批/CRM 等）。 |
 | 技能调用引导 | `qwenwork/skills/using-superpowers` | 系统内置 | using-superpowers | 4 | Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions |
@@ -324,7 +379,8 @@
 | 估值与投资策略分析 | `qwenwork/skills/valuation-investment-strategy` | 金融投研 | valuation-investment-strategy | 1 | 将已完成基本面分析的A股标的转化为情景估值与投资计划，根据商业模式选择合适方法并给出假设与来源链接。 |
 | 服装门店-AI导购 | `qwenwork/skills/virtual-try-on` | 电商零售 | virtual-try-on | 26 | AI导购的技能。帮助用户创建和管理店铺试衣间，包括初始化店铺、获取二维码、装扮店铺、管理SKU/上传衣服、切换数据源、写穿搭笔记。 当用户提到"创建店铺"、"虚拟试衣"、"试衣间"、"上传衣服"、"写穿搭笔记"、"店铺管理"、"衣橱管理"、"店铺二维码"、"切换多维表"、"SKU数据源"、"处理表格"、"预处理Excel"、"商陆花"、"笑铺日记"、"导入多维表"时触发。 如果用户需要写笔记，需要你查阅 references/st... |
 | 图像创作 | `qwenwork/skills/visual-forge` | 设计创意 | visual-forge | 1 | Curated image generation assistant covering 17 styles across 4 categories: character figures, scenes, products, and style transforms. Supports styles including 手办/figure, portrait, chibi, diorama, city, landmark, movi... |
+| wecom-unified | `qwenwork/skills/wecom-unified` | 沟通协作 | wecom-unified | 98 | 企业微信 CLI 套件。仅当用户明确要求使用企业微信/企微，或给出 doc.weixin.qq.com、page.weixin.qq.com、drive.weixin.qq.com 链接时触发；不要因为泛化的找人、文档、表格、日程、会议、待办、邮件或发消息请求而触发。覆盖通讯录、文档、表格、日程、会议、待办、微盘、邮件、消息和媒体文件。 |
 | 工作周报 | `qwenwork/skills/weekly-work-report` | 沟通协作 | weekly-work-report | 1 | 触发词：「生成周报」「帮我写周报」「本周工作总结」「周报」「weekly report」。 基于钉钉生态的每周周报自动生成 Skill：从当周日程、任务、听记、云文档中提取工作内容， 使用 `knowledge` 兜底补全遗漏信息，最终直接生成结构化的钉钉在线文档周报。 |
-| 技术方案 | `qwenwork/skills/wukong-doc-technical-solution` | 沟通协作 | wukong-doc-technical-solution | 1 | 触发词：「技术方案」「系统设计」「架构方案」「技术选型」。 围绕业务目标与约束，输出架构设计、关键模块、技术选型、风险与实施计划的完整技术方案， 最终生成结构清晰的钉钉在线文档。 |
+| 技术方案 | `qwenwork/skills/wukong-doc-technical-solution` | 设计创意 | wukong-doc-technical-solution | 1 | 触发词：「技术方案」「系统设计」「架构方案」「技术选型」。 围绕业务目标与约束，输出架构设计、关键模块、技术选型、风险与实施计划的完整技术方案， 最终生成结构清晰的钉钉在线文档。 |
 | xlsx | `qwenwork/skills/xlsx` | 知识文档 | xlsx | 53 | Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, comp... |
 | 云栖大会参会助手 | `qwenwork/skills/yunqi-agent` | 效率工具 | yunqi-agent | 4 |  |

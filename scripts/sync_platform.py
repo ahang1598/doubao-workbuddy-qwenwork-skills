@@ -120,9 +120,14 @@ FALLBACK_SCENARIO = "其他"
 # ``category``/``category_code`` in a skill's SKILL.md front matter always wins
 # over these rules (see PLAZA_CATEGORY_ALIASES).
 QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
-    ("沟通协作", ("dingtalk-", "lark", "slack"), (
-        "钉钉", "会议", "待办", "todo", "日程", "邮件", "群聊", "消息",
-        "周报", "汇报", "工作台", "任务", "通知",
+    ("沟通协作", (
+        "dingtalk-", "lark", "slack", "universal-workbench", "agent-task-hub",
+        "stakeholder-comms", "wecom", "group-chat-summary",
+    ), (
+        # Keep keywords tight: 钉钉/工作台/消息/通知/任务 appear in most
+        # skill descriptions (delivery targets) and would swallow everything;
+        # the prefix rules above already cover the collaboration suites.
+        "待办", "todo", "邮件", "群聊", "周报",
     )),
     ("法律服务", ("lawd", "lawding", "labor-contract", "legal-"), (
         "法律", "律师", "合同", "诉讼", "起诉", "答辩", "证据", "尽调",
@@ -155,7 +160,7 @@ QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], .
         "文档", "笔记", "知识库", "解析", "文献", " ppt ", "word",
     )),
     ("内容写作", ("de-ai-writing",), (
-        "写作", "公文", "标书", "商业计划", "新闻", "润色", "转写",
+        "写作", "公文", "标书", "商业计划", "润色", "转写",
         "长文本", "函件", "文本",
     )),
     ("开发工具", ("qw-pages", "github", "alibabacloud-ecs"), (
@@ -164,7 +169,7 @@ QWENWORK_PLAZA_CATEGORIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], .
     )),
     ("效率工具", (), (
         "翻译", "网盘", "旅行", "飞猪", "大会", "命理", "人格", "速读",
-        "搜索", "网页", "引导",
+        "搜索", "网页", "引导", "新闻",
     )),
     ("系统内置", (
         "find-skills", "qwenwork-guidance", "using-superpowers",
@@ -591,7 +596,7 @@ def parse_front_matter(text: str) -> dict[str, object]:
             continue
         key, raw = match.groups()
         value = raw.strip()
-        if value in {"|", ">"}:
+        if value in {"|", ">", "|-", ">-", "|+", ">+"}:
             i += 1
             collected: list[str] = []
             while i < len(block) and not re.match(r"^[A-Za-z0-9_-]+:\s*", block[i]):
