@@ -4,7 +4,7 @@ description: 企业微信 CLI 套件。仅当用户明确要求使用企业微�
 allowed-tools: Bash, Read
 version: 1.1.0
 install_source: qwenwork-wecom-cli-connector
-enabled_at: 1791894664381
+enabled_at: 1791897203119
 ---
 
 # 企业微信套件 (WeCom Unified)

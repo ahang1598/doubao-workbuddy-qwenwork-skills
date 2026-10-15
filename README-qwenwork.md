@@ -8,7 +8,7 @@
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：265
 - 当前索引文件数：4761
-- 最近变更：[2026-10-13-204349](qwenwork/change-logs/2026-10-13-204349.md) - QwenWork 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/market-metadata.json, connectors/mcp.json。 受影响范围：connectors/market-metadata.json, connectors/mcp.json。
+- 最近变更：[2026-10-15-192505](qwenwork/change-logs/2026-10-15-192505.md) - QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/wecom-unified。
 
 ## 数据来源
 
@@ -311,6 +311,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-15-192505 | [2026-10-15-192505](qwenwork/change-logs/2026-10-15-192505.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/wecom-unified。 |
 | 2026-10-13-204349 | [2026-10-13-204349](qwenwork/change-logs/2026-10-13-204349.md) | QwenWork 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/market-metadata.json, connectors/mcp.json。 受影响范围：connectors/market-metadata.json, connectors/mcp.json。 |
 | 2026-10-13-203506 | [2026-10-13-203506](qwenwork/change-logs/2026-10-13-203506.md) | QwenWork 本次同步新增 477 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/computer-use-guidance-windows, skills/lark-approval, skills/lark-apps, skills/lark-attendance, skills/lark-base, skills/la... |
 | 2026-10-13-202954 | [2026-10-13-202954](qwenwork/change-logs/2026-10-13-202954.md) | QwenWork 本次同步新增 1964 个文件、修改 120 个文件、删除 0 个文件。 新增条目：skills/a-stock-diagnosis, skills/a-stock-realtime, skills/activity-recommend, skills/agent-task-hub, skills/ai-table-data-anal... |
