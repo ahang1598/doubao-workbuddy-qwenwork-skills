@@ -1,0 +1,92 @@
+{
+  "runtime_input": {
+    "route": {
+      "selected_skill": "organization-workforce-planning",
+      "intent": "full_package",
+      "route_status": "selected"
+    },
+    "intake": {
+      "planning_period_and_org_scope": "2027/customer-success",
+      "business_goal_or_capability_demand": "付费客户与实施并发增长",
+      "current_org_role_reporting_baseline": "org-baseline-2026-07-20",
+      "comparable_scenario_input": "base-and-growth"
+    },
+    "capabilities": {
+      "allowed": [
+        "can_reconcile_current_hc",
+        "can_model_workforce_scenarios",
+        "can_model_cost"
+      ],
+      "missing": [],
+      "blocked_slots": []
+    },
+    "currency": "CNY_10K",
+    "period": "annual",
+    "tolerance": "0.01",
+    "scenarios": [
+      {
+        "scenario_id": "base",
+        "baseline_hc": "18",
+        "source_ids": [
+          "org-baseline-2026-07-20",
+          "scenario-sheet"
+        ],
+        "assumption_ids": [
+          "base-demand"
+        ],
+        "role_deltas": [
+          {
+            "role_id": "implementation-consultant",
+            "hc_delta": "1",
+            "recurring_unit_cost": "32",
+            "one_time_unit_cost": "3",
+            "source_ids": [
+              "scenario-sheet"
+            ],
+            "assumption_ids": [
+              "base-demand"
+            ]
+          }
+        ]
+      },
+      {
+        "scenario_id": "growth",
+        "baseline_hc": "18",
+        "source_ids": [
+          "org-baseline-2026-07-20",
+          "scenario-sheet"
+        ],
+        "assumption_ids": [
+          "growth-demand"
+        ],
+        "role_deltas": [
+          {
+            "role_id": "implementation-consultant",
+            "hc_delta": "3",
+            "recurring_unit_cost": "32",
+            "one_time_unit_cost": "3",
+            "source_ids": [
+              "scenario-sheet"
+            ],
+            "assumption_ids": [
+              "growth-demand"
+            ]
+          },
+          {
+            "role_id": "operations",
+            "hc_delta": "1",
+            "recurring_unit_cost": "28",
+            "one_time_unit_cost": "2",
+            "source_ids": [
+              "scenario-sheet"
+            ],
+            "assumption_ids": [
+              "growth-demand"
+            ]
+          }
+        ]
+      }
+    ],
+    "unknowns": []
+  }
+}

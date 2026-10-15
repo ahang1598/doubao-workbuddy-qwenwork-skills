@@ -1,0 +1,7 @@
+{
+  "source_slug": "comp-analysis",
+  "test_id": "E16_route_compensation",
+  "utterance": "分析全员薪级带、股权情景和内部薪酬公平性。",
+  "expected_route": "unavailable",
+  "expected_route_status": "unavailable"
+}

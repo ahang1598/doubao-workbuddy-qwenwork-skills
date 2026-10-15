@@ -1,0 +1,274 @@
+{
+  "skill_id": "job-modeling-and-selection-design",
+  "production_id": "PROD-022",
+  "version": "V2-search-autonomy",
+  "contract_version": "V3.3",
+  "archetype": "workflow-operations",
+  "case_type": "hr_recruiting",
+  "core_skill_id": "CORE-045",
+  "category": "人力招聘",
+  "primary_artifact": "岗位建模与甄选方案包",
+  "default_mode": "competency_model",
+  "default_delivery_tier": "direct",
+  "delivery_tiers": {
+    "direct": {
+      "target_chars": 2200,
+      "target_output_tokens": 1500,
+      "hard_max_output_tokens": 1900,
+      "required_slots": [
+        "answer",
+        "basis",
+        "unknowns",
+        "next_action"
+      ]
+    },
+    "brief": {
+      "target_chars": 6000,
+      "target_output_tokens": 4000,
+      "hard_max_output_tokens": 5000,
+      "required_slots": [
+        "frozen_role",
+        "design",
+        "evidence",
+        "risks",
+        "next_actions"
+      ]
+    },
+    "full": {
+      "target_chars": 12000,
+      "target_output_tokens": 8000,
+      "hard_max_output_tokens": 9000,
+      "required_slots": [
+        "frozen_role",
+        "jd",
+        "competency_model",
+        "interview_plan",
+        "panel",
+        "debrief",
+        "hard_gates",
+        "artifact_index"
+      ]
+    }
+  },
+  "provider_safety_ceiling": {
+    "max_output_tokens": 9500,
+    "hard_max_output_tokens": 9500,
+    "on_risk": "degrade_to_minimum_complete_artifact"
+  },
+  "route_contract": {
+    "fields": [
+      "selected_skill",
+      "intent",
+      "route_status"
+    ],
+    "route_only_forbids_business_analysis": true
+  },
+  "capability_gates": {
+    "slots": [
+      "can_define_role",
+      "can_design_scorecard",
+      "can_design_panel",
+      "can_prepare_debrief_template",
+      "can_publish_jd"
+    ],
+    "states": [
+      "allowed",
+      "missing",
+      "blocked"
+    ],
+    "partial_delivery_required": true
+  },
+  "artifact_states": [
+    "ready",
+    "degraded",
+    "intake_required",
+    "confirmation_required",
+    "routed",
+    "stopped"
+  ],
+  "modes": [
+    "jd_write",
+    "competency_model",
+    "review_driven_model",
+    "structured_interview",
+    "campus_social_selection"
+  ],
+  "blocking_inputs": [
+    "job_title_and_business_context",
+    "recruit_type",
+    "level_hc_location_comp_band_or_explicit_unknown"
+  ],
+  "optional_inputs": [
+    "existing_jd",
+    "competency_dictionary_or_model",
+    "standardized_interview_reviews",
+    "interview_rounds",
+    "interviewer_capability",
+    "org_values"
+  ],
+  "max_clarifying_questions": 3,
+  "permissions": {
+    "read_user_materials": "allow",
+    "write_local_artifact": "confirm",
+    "send_external": "deny_by_default_confirm_if_capable",
+    "publish_jd": "deny_by_default_confirm_if_capable",
+    "delete": "deny",
+    "pay": "deny",
+    "deploy": "deny"
+  },
+  "idempotency_key_fields": [
+    "production_id",
+    "slug",
+    "job_title",
+    "version"
+  ],
+  "output_budget": {
+    "soft_max_chars": 12000,
+    "compression_priority": [
+      "jd",
+      "competency_model",
+      "scoring_anchors",
+      "hard_gates",
+      "state_and_limitations",
+      "interview_questions",
+      "interviewer_tips",
+      "narrative"
+    ]
+  },
+  "routing": {
+    "adjacent": [
+      "interview_data_standardization",
+      "recruiting_process_operations",
+      "recruiting_analytics",
+      "external_talent_mapping",
+      "candidate_level_interview_execution"
+    ]
+  },
+  "safety": {
+    "untrusted_external_content": true,
+    "forbid_Discriminatory_criteria": true,
+    "no_final_hiring_decision": true,
+    "protected_attribute_inference": "forbidden",
+    "fixed_third_party_scales_or_thresholds": "forbidden"
+  },
+  "evidence_policy": {
+    "claim_ledger_required": true,
+    "unknown_conservation": true,
+    "private_inputs_not_searchable": [
+      "business_need",
+      "job_level",
+      "hc",
+      "comp_band",
+      "internal_model",
+      "interview_feedback"
+    ]
+  },
+  "deterministic_tool": "scripts/selection_design_tool.py",
+  "deterministic_tool_modes": ["evidence_completeness", "anchor_validation", "question_mapping", "panel_coverage", "privacy_gate"],
+  "tool_contract": {
+    "full_output": "selection_design_ledger",
+    "schema_version": "hr-selection-design-tool/1.0",
+    "hash": "sha256_canonical_full_json",
+    "compact_output": [
+      "coverage",
+      "unknowns",
+      "hard_gates",
+      "source_index",
+      "artifact_path"
+    ]
+  },
+  "compact_tool_output": true,
+  "expected_artifacts": [
+    "岗位建模与甄选方案包",
+    "claim_ledger"
+  ],
+  "deliverable_validator": "runtime/validate_deliverable.py",
+  "finalizer": {
+    "mode": "source_locked",
+    "may_search": false,
+    "max_runs": 1
+  },
+  "privacy_scan": {
+    "enabled": true,
+    "protected_attributes": "reject",
+    "candidate_pii": "minimize"
+  },
+  "success_contract": {
+    "success": "validated_role_and_selection_pack",
+    "degraded": "minimum_complete_artifact",
+    "stop": "unsafe_or_unroutable"
+  },
+  "loading_profile": {
+    "root_first": true,
+    "max_reference_depth": 1,
+    "preload_evals": false
+  },
+  "search_runtime": {
+    "router": "runtime/search_router.py",
+    "evidence_validator": "runtime/search_evidence_validator.py",
+    "deliverable_validator": "runtime/validate_deliverable.py",
+    "route_default": "off",
+    "max_calls": 0,
+    "optional_max_calls": 0,
+    "source_order": [
+      "user_material",
+      "authorized_private_data",
+      "official_primary"
+    ],
+    "query_stages": [],
+    "primary_source_types": [
+      "user_material",
+      "authorized_private_data"
+    ],
+    "critical_claim_policy": {
+      "require_primary_or_official": true,
+      "critical_claims": "可发布JD | 岗位能力/胜任力模型 | 人才标准文档 | 面试题库题本与评分表 | 面评模板与质量审核建议",
+      "unsupported_action": "unknown",
+      "conflict_action": "disclose_or_unknown"
+    },
+    "deliverable_contract": {
+      "required_any": [
+        [
+          "结论",
+          "交付"
+        ],
+        [
+          "局限",
+          "风险",
+          "免责声明"
+        ]
+      ],
+      "min_urls": 0,
+      "min_chars": 80,
+      "forbidden_patterns": [
+        "DETERMINISTIC TOOL OUTPUT",
+        "search-evidence\\.json"
+      ],
+      "repair_policy": "deterministic_only_no_new_facts"
+    },
+    "decision_policy": {
+      "version": "task-semantic-v1",
+      "principle": "先判断核心交付是否依赖外部公共证据，不要求用户声明是否联网",
+      "core_deliverable": "可发布JD | 岗位能力/胜任力模型 | 人才标准文档 | 面试题库题本与评分表 | 面评模板与质量审核建议",
+      "required_when": [],
+      "optional_when": [
+        "用户明确要公开市场薪酬或岗位基准时应路由专门研究"
+      ],
+      "off_when": [
+        "依据业务需求、职级和组织约束设计 JD、模型与面试方案"
+      ],
+      "blocked_when": [
+        "搜索个人敏感信息、歧视性筛选或非公开候选资料"
+      ],
+      "required_max_calls": 3,
+      "optional_max_calls": 2,
+      "clarify_when_material": [
+        "object",
+        "scope",
+        "time"
+      ],
+      "route_default_rationale": "岗位标准应由业务真实需求决定，不应默认拿公网模板替代。",
+      "audit_schema_version": "1.0"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "source_slug": "org-planning",
+  "test_id": "E18_route_org_planning",
+  "utterance": "设计组织结构、管理跨度、HC成本情景和迁移路线。",
+  "expected_route": "unavailable",
+  "expected_route_status": "unavailable"
+}

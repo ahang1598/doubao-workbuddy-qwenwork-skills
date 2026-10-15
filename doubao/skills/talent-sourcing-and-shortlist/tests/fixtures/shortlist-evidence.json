@@ -1,0 +1,49 @@
+{
+  "claims": [
+    {
+      "claim_id": "CLM-C001",
+      "claim": "C-001具备岗位所需的分布式存储与交付证据",
+      "claim_type": "fact",
+      "critical": true,
+      "object_id": "C-001",
+      "period": "2026-07",
+      "unit": null,
+      "source_ids": ["resume:project-1", "resume:project-2"],
+      "source_tier": "primary",
+      "confidence": "high",
+      "conflict_state": "none"
+    },
+    {
+      "claim_id": "CLM-C002",
+      "claim": "C-002的交付证据尚未取得",
+      "claim_type": "unknown",
+      "critical": false,
+      "object_id": "C-002",
+      "period": "2026-07",
+      "unit": null,
+      "source_ids": [],
+      "source_tier": "lead_only",
+      "confidence": "low",
+      "conflict_state": "none"
+    }
+  ],
+  "required_criteria": ["distributed_storage", "delivery"],
+  "decision_fields": ["experience", "skills"],
+  "candidates": [
+    {
+      "candidate_id": "C-001",
+      "evidence": [
+        {"criterion": "distributed_storage", "observed_value": "object storage", "source_locator": "resume:project-1"},
+        {"criterion": "delivery", "observed_value": "production launch", "source_locator": "resume:project-2"}
+      ],
+      "failed_required_criteria": []
+    },
+    {
+      "candidate_id": "C-002",
+      "evidence": [
+        {"criterion": "distributed_storage", "observed_value": "metadata service", "source_locator": "profile:work-1"}
+      ],
+      "failed_required_criteria": []
+    }
+  ]
+}

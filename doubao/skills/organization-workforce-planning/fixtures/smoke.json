@@ -1,0 +1,38 @@
+{
+  "route": {"selected_skill": "organization-workforce-planning", "intent": "compare_scenarios", "route_status": "selected"},
+  "intake": {
+    "planning_period_and_org_scope": "period-a/team-a",
+    "business_goal_or_capability_demand": "capability-a",
+    "current_org_role_reporting_baseline": "snapshot-a",
+    "comparable_scenario_input": "scenario-a"
+  },
+  "capabilities": {"allowed": ["can_model_workforce_scenarios", "can_model_cost"], "missing": [], "blocked_slots": []},
+  "currency": "CNY",
+  "period": "period-a",
+  "tolerance": "0.01",
+  "capability_map": {"capability-a": {"current": "known", "target": "known"}},
+  "workload_forecast": {"activity-a": {"volume": "known"}},
+  "structure_baseline": {"reporting_lines": ["team-a -> manager-role"]},
+  "hc_flow_breakdown": {
+    "scenario-a": {"hires": "2", "exits": "0", "transfers_in": "0", "transfers_out": "0"}
+  },
+  "scenarios": [
+    {
+      "scenario_id": "scenario-a",
+      "baseline_hc": "10",
+      "source_ids": ["snapshot-a"],
+      "assumption_ids": ["assumption-a"],
+      "role_deltas": [
+        {
+          "role_id": "role-a",
+          "hc_delta": "2",
+          "recurring_unit_cost": "30.25",
+          "one_time_unit_cost": "5.10",
+          "source_ids": ["snapshot-a"],
+          "assumption_ids": ["assumption-a"]
+        }
+      ]
+    }
+  ],
+  "unknowns": []
+}

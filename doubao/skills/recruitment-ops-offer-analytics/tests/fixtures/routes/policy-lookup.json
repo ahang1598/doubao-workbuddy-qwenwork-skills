@@ -1,0 +1,7 @@
+{
+  "source_slug": "policy-lookup",
+  "test_id": "E20_route_employment_law",
+  "utterance": "解释当前劳动法规对试用期解除的合规要求。",
+  "expected_route": "enterprise-compliance-review",
+  "expected_route_status": "routed"
+}

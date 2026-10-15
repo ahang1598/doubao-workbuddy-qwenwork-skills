@@ -1,0 +1,46 @@
+{
+  "claims": [
+    {
+      "claim_id": "CLM-ROLE-001",
+      "claim": "技术深度与交付闭环是该岗位的关键成功标准",
+      "claim_type": "fact",
+      "critical": true,
+      "object_id": "role-backend-engineer",
+      "period": "2026-H2",
+      "unit": null,
+      "source_ids": ["role-brief:success-1", "role-brief:success-2"],
+      "source_tier": "primary",
+      "confidence": "high",
+      "conflict_state": "none"
+    }
+  ],
+  "criteria_fields": ["technical_depth", "delivery", "collaboration"],
+  "publish_requested": false,
+  "automated_hiring_decision": false,
+  "dimensions": [
+    {
+      "id": "technical_depth",
+      "definition": "能解释关键技术取舍并以证据说明结果",
+      "positive_behaviors": ["说明约束、方案与验证结果"],
+      "negative_behaviors": ["只给结论，无本人行为证据"],
+      "anchors": [{"level": "meets", "behavior": "能说明取舍与验证"}],
+      "source_ids": ["role-brief:success-1"]
+    },
+    {
+      "id": "delivery",
+      "definition": "在约束下闭环交付",
+      "positive_behaviors": ["识别风险并形成可验证结果"],
+      "negative_behaviors": ["忽略依赖和失败条件"],
+      "anchors": [{"level": "meets", "behavior": "能给出闭环证据"}],
+      "source_ids": ["role-brief:success-2"]
+    }
+  ],
+  "questions": [
+    {"id": "Q1", "text": "讲一个关键技术取舍。", "dimension_ids": ["technical_depth"]},
+    {"id": "Q2", "text": "讲一个交付风险闭环。", "dimension_ids": ["delivery"]}
+  ],
+  "panel_assignments": [
+    {"interviewer_role": "technical", "dimension_ids": ["technical_depth"]},
+    {"interviewer_role": "delivery", "dimension_ids": ["delivery"]}
+  ]
+}

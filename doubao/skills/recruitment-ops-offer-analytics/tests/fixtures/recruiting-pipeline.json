@@ -1,0 +1,43 @@
+{
+  "task_type": "pipeline",
+  "claims": [
+    {
+      "claim_id": "CLM-PIPE-001",
+      "claim": "本快照中的阶段事件来自授权ATS导出",
+      "claim_type": "fact",
+      "critical": true,
+      "object_id": "pipeline-backend-2026-07-24",
+      "period": "2026-07-24",
+      "unit": "candidate",
+      "source_ids": ["ats-export:2026-07-24"],
+      "source_tier": "primary",
+      "confidence": "high",
+      "conflict_state": "none"
+    }
+  ],
+  "configured_stages": ["sourced", "screen", "interview", "offer", "accepted"],
+  "snapshot_at": "2026-07-24T00:00:00Z",
+  "decision_fields": ["candidate_id", "stage", "source"],
+  "records": [
+    {
+      "candidate_id": "C-001",
+      "source": "referral",
+      "history": [
+        {"stage": "sourced", "entered_at": "2026-07-01T00:00:00Z"},
+        {"stage": "screen", "entered_at": "2026-07-03T00:00:00Z"},
+        {"stage": "interview", "entered_at": "2026-07-06T00:00:00Z"},
+        {"stage": "offer", "entered_at": "2026-07-10T00:00:00Z"},
+        {"stage": "accepted", "entered_at": "2026-07-12T00:00:00Z"}
+      ]
+    },
+    {
+      "candidate_id": "C-002",
+      "source": "community",
+      "history": [
+        {"stage": "sourced", "entered_at": "2026-07-02T00:00:00Z"},
+        {"stage": "screen", "entered_at": "2026-07-05T00:00:00Z"},
+        {"stage": "interview", "entered_at": "2026-07-09T00:00:00Z"}
+      ]
+    }
+  ]
+}

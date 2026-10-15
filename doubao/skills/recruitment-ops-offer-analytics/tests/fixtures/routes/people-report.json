@@ -1,0 +1,7 @@
+{
+  "source_slug": "people-report",
+  "test_id": "E06_boundary_campus_non_warehouse",
+  "utterance": "基于历史人力数据形成录用分布综合判断。",
+  "expected_route": "decision-analysis-report",
+  "expected_route_status": "routed"
+}

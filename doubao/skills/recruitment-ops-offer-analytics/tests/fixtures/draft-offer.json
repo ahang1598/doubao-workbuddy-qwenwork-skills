@@ -1,0 +1,35 @@
+{
+  "task_type": "offer",
+  "claims": [
+    {
+      "claim_id": "CLM-OFFER-001",
+      "claim": "Offer字段与审批状态来自授权录用记录",
+      "claim_type": "fact",
+      "critical": true,
+      "object_id": "C-001",
+      "period": "2026-07-24",
+      "unit": null,
+      "source_ids": ["offer-record:C-001:v3", "approval:C-001"],
+      "source_tier": "primary",
+      "confidence": "high",
+      "conflict_state": "none"
+    }
+  ],
+  "send_requested": true,
+  "approval_state": "approved",
+  "send_permission": true,
+  "user_confirmed_send": true,
+  "decision_fields": ["role", "level", "location"],
+  "offer": {
+    "candidate_id": "C-001",
+    "legal_entity": "Example Entity",
+    "jurisdiction": "CN",
+    "role": "Backend Engineer",
+    "level": "L4",
+    "location": "Shanghai",
+    "employment_type": "full_time",
+    "start_date": "2026-08-10",
+    "comp_components": [{"type": "base", "amount": 100, "currency": "CNY", "period": "month"}],
+    "template_version": "offer-cn-v3"
+  }
+}

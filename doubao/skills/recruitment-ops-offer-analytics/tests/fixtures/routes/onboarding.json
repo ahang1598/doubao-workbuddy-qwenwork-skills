@@ -1,0 +1,7 @@
+{
+  "source_slug": "onboarding",
+  "test_id": "E03_sop_positive",
+  "utterance": "Offer已经Accepted，请给完整Pre-start、账号设备和30/60/90计划。",
+  "expected_route": "unavailable",
+  "expected_route_status": "unavailable"
+}

@@ -1,0 +1,7 @@
+{
+  "source_slug": "performance-review",
+  "test_id": "E17_route_performance",
+  "utterance": "完成员工年终绩效定级、晋升校准和发展计划。",
+  "expected_route": "unavailable",
+  "expected_route_status": "unavailable"
+}

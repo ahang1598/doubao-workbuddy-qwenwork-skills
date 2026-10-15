@@ -1,0 +1,50 @@
+{
+  "skill_id": "organization-workforce-planning",
+  "version": "V3.4",
+  "case_type": "decision-modeling",
+  "default_mode": "direct",
+  "artifact_states": ["ready", "degraded", "intake_required", "confirmation_required", "routed", "stopped"],
+  "primary_artifact": "organization_workforce_plan_pack",
+  "delivery_tiers": {
+    "direct": {"target_chars": 2000, "target_output_tokens": 1000, "hard_max_tokens": 1700, "required_slots": ["answer", "hard_gates", "evidence", "counterpoint", "limitations", "next_step"]},
+    "brief": {"target_chars": 5600, "target_output_tokens": 2800, "hard_max_tokens": 4200, "required_slots": ["summary", "baseline", "scenarios", "capability_gaps", "unknowns", "risks", "next_steps", "artifact_index"]},
+    "full": {"target_chars": 10000, "target_output_tokens": 5000, "hard_max_tokens": 6500, "required_slots": ["summary", "scope", "baseline", "claims", "capability_map", "scenarios", "cost_bridge", "structure_options", "transition", "risks", "next_steps", "artifact_index"]}
+  },
+  "provider_safety_ceiling": {"max_output_tokens": 6500, "overflow_action": "degrade_complete_not_truncate"},
+  "route_schema": {"required": ["selected_skill", "intent", "route_status"], "failure_state": "routed"},
+  "intake_schema": {"required": ["planning_period_and_org_scope", "business_goal_or_capability_demand", "current_org_role_reporting_baseline", "comparable_scenario_input"], "failure_state": "intake_required"},
+  "capability_schema": {"required": ["allowed", "missing", "blocked_slots"], "failure_state": "degraded"},
+  "intake_required_inputs": {
+    "blocking": ["planning_period_and_org_scope", "business_goal_or_capability_demand", "current_org_role_reporting_baseline", "comparable_scenario_input"],
+    "deferrable": ["hiring_sequence", "location_mix", "outsourcing_options", "approved_cost_parameters"],
+    "max_clarifying_questions": 3
+  },
+  "capability_gates": {
+    "can_map_capabilities": ["capability_demand"],
+    "can_reconcile_current_hc": ["current_org_role_reporting_baseline"],
+    "can_model_workforce_scenarios": ["baseline_hc", "scenario_deltas"],
+    "can_model_cost": ["cost_inputs_with_unit_period"],
+    "can_propose_structure": ["org_constraints", "capability_demand"],
+    "can_plan_transition": ["selected_or_comparable_options"],
+    "can_execute_people_or_budget_changes": ["explicit_preview", "identity_permission", "second_confirmation", "approved_mandate"]
+  },
+  "blocked_slots": {"empty_scenarios": ["scenarios", "cost_bridge", "structure_options"], "missing_cost_inputs": ["cost_bridge"], "missing_workload": ["capacity_gap"], "missing_approval": ["execution"]},
+  "search_router": {"modes": ["required", "optional", "off", "blocked"], "default": "off"},
+  "search_max_calls": {"required": 3, "optional": 2},
+  "search_evidence_context": "compact_ledger_only",
+  "deterministic_tool": {"path": "scripts/workforce_scenario_engine.py", "compute_command": "python scripts/workforce_scenario_engine.py compute --input {input} --full-out {full} --compact-out {compact}", "permission": "execute_readonly", "on_failure": "degraded_with_formula_known_values_and_blocked_unverified_slots"},
+  "tool_contract": {"schema_version": "workforce-1.1", "input_schema": "generic-workforce-scenarios-v1", "full_output": true, "compact_output": true, "unknown_preservation": true, "missing_costs_are_null_not_zero": true, "empty_scenarios_cannot_be_ready": true, "no_fixed_thresholds": true, "decimal_arithmetic": true, "tolerance_required": true, "validator_recomputes_role_hc_cost_and_flow": true, "per_object_reconciliation": true},
+  "compact_tool_output": {"required": true, "fields": ["artifact_state", "delivery_tier", "privacy_policy", "unknowns", "core_slots", "hard_gates", "counts", "source_index", "full_artifact", "full_sha256", "compact_payload_sha256"]},
+  "expected_artifacts": ["organization-workforce-plan.full.json", "organization-workforce-plan.compact.json"],
+  "deliverable_validator": {"path": "scripts/workforce_scenario_engine.py", "command": "python scripts/workforce_scenario_engine.py validate --full {full} --compact {compact}", "recompute_from_role_rows": true, "deep_compare_compact": true},
+  "finalizer": {"path": "scripts/workforce_scenario_engine.py", "command": "python scripts/workforce_scenario_engine.py finalize --input {draft} --claims {claims} --output {final}", "type": "source_locked", "source_locked": true, "max_runs": 1, "may_add_facts_or_thresholds": false, "may_clear_nonempty_core_slots": false, "validate_after_finalize": true},
+  "privacy_scan": {"path": "scripts/workforce_scenario_engine.py", "command": "python scripts/workforce_scenario_engine.py privacy --input {input} --output {output}", "enabled": true, "aggregate_first": true, "protected_fields_removed": true, "minimum_group_size_source": "user_or_organization_policy_only", "small_group_action": "suppress_or_generalize"},
+  "evaluation_assertion": {"keyword_scope": "user_visible_body_only", "artifact_scope": "schema_hash_and_recomputation", "reject_process_leakage": true},
+  "side_effect_policy": {"default": "analysis_and_preview_only", "automatic_layoff": false, "automatic_reporting_line_change": false, "automatic_budget_approval": false, "require_permission": true, "require_second_confirmation": true, "require_audit": true},
+  "success_contract": {
+    "ready": "基线勾稽、情景可复算、假设和 unknown 显式、无未授权动作",
+    "degraded": "局部能力或成本材料缺失但交付变量关系和最小完整方案",
+    "stop": "越权个体决策、伪造人事数据、自动裁员或绕过预算审批"
+  },
+  "loading_profile": {"root_first": true, "max_references_per_task": 4, "never_preload_evals": true}
+}
