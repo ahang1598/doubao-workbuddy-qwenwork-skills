@@ -1373,11 +1373,33 @@ def commit_and_maybe_push(repo_root: Path, platform: PlatformSpec, timestamp: da
 
 def write_root_readme(repo_root: Path) -> bool:
     path = repo_root / "README.md"
+    if path.exists():
+        return False
     return write_if_changed(
         path,
-        """# AI Skills And Experts Archive
+        """# AI Skills & Experts Archive
 
-本仓库按平台同步本机 AI 工具的 skills、experts 和插件市场内容。
+归档本机各 AI 工具（Doubao、WorkBuddy、QwenWork、ChatGPT）的 skills、experts 及插件市场内容，通过定时任务每日自动同步、提交并推送。
+
+## 目录结构
+
+```text
+.
+├── doubao/          # 豆包（skills）
+├── workbuddy/       # WorkBuddy（skills / experts / connectors）
+├── qwenwork/        # QwenWork（skills / experts / connectors）
+├── chatgpt/         # ChatGPT Codex（system skills / plugins）
+├── scripts/         # 同步脚本与计划任务注册
+└── README-*.md      # 各平台索引（自动生成）
+```
+
+各平台目录内含：
+
+- `SUMMARY.md` — 按用途分组的导航索引
+- `change-logs/` — 每次同步的变更记录
+- `archive/deleted/` — 已删除内容归档
+
+## 平台索引
 
 | Platform | Directory | Index |
 | --- | --- | --- |
@@ -1386,7 +1408,31 @@ def write_root_readme(repo_root: Path) -> bool:
 | QwenWork | `qwenwork/` | [README-qwenwork.md](README-qwenwork.md) |
 | ChatGPT | `chatgpt/` | [README-chatgpt.md](README-chatgpt.md) |
 
-每个平台目录内都有独立的 `change-logs/` 和 `archive/deleted/`。定时任务每天 18:00 分别运行，各平台的同步范围互不重叠。
+## 最近同步
+
+由模型基于当日 change-logs 按需总结更新，明细见各平台 `change-logs/` 目录。
+
+## 使用
+
+手动同步单个平台：
+
+```bash
+python3 scripts/sync_platform.py --platform <doubao|workbuddy|qwenwork|chatgpt>
+```
+
+常用选项：
+
+- `--commit --push` — 同步后自动提交并推送
+- `--dry-run` — 仅预览变更，不写入
+- `--refresh-docs` — 强制刷新索引文档
+
+## 自动同步
+
+Windows 计划任务每天 18:00 在 WSL 中运行各平台同步（范围互不重叠）：
+
+```powershell
+powershell -File scripts/register-windows-task.ps1
+```
 """,
     )
 
