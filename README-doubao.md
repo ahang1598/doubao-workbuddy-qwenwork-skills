@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：281
-- 当前索引文件数：4706
-- 最近变更：[2026-10-15-192505](doubao/change-logs/2026-10-15-192505.md) - Doubao 本次同步新增 82 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/android-native-build-debug, skills/app-builder-orchestration, skills/docker-env-troubleshooting, skills/evidence-based-constr...
+- 当前索引文件数：4881
+- 最近变更：[2026-10-16-180002](doubao/change-logs/2026-10-16-180002.md) - Doubao 本次同步新增 287 个文件、修改 132 个文件、删除 112 个文件。 受影响范围：skills/browser-use-automation, skills/doubao-creative-drama, skills/doubao-creative-video, skills/html, skills/lark-base, skil...
 
 ## 数据来源
 
@@ -39,7 +39,7 @@
 | baidu-netdisk | `doubao/skills/baidu-netdisk` | skill | 1 | Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the... |
 | book-proposal | `doubao/skills/book-proposal` | skill | 1 | 撰写面向出版代理人和编辑的非虚构图书提案，覆盖卖点钩子、作者平台、对标书目、营销计划与章节大纲。 |
 | browser-record-replay | `doubao/skills/browser-record-replay` | skill | 6 | Develop, record, debug, and deliver reusable browser RPA Skills with the browser built into Doubao. Use for same-computer Local Direct workflows only. |
-| browser-use-automation | `doubao/skills/browser-use-automation` | skill | 10 | Control websites exclusively through the CNGC Browser Use stack: `computer_use_tool` with `plane=\\"bu\\"` and `seed_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI... |
+| browser-use-automation | `doubao/skills/browser-use-automation` | skill | 11 | Control websites through the Aha Browser Use backend with `computer_use_tool`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click... |
 | build-club-recruitment-kit | `doubao/skills/build-club-recruitment-kit` | skill | 16 | 为校园社团负责人按需制作招新流程、宣传文案、宣讲稿、选拔题、群公告、摊位话术或排班。适用于负责人策划或起草招新物料；不用于报名者备试、企业招聘、非招新运营、图片设计及实际发送或写入外部系统。 |
 | byted-mediakit-audio | `doubao/skills/byted-mediakit-audio` | skill | 6 | 面向音频文件或视频中的音轨，处理语音边界定位、音频媒资信息探测、音频转码与码流封装适配、人声与背景声分离等目标。若对象和目标族已明确属于音频内容理解、音频转码、音频格式治理或音轨分离，但具体做法不确定，可先加载本 Skill 探索；若只说有音频而未说明业务目标，应先澄清。音频裁剪、拼接、调速、淡入淡出、混音、从视频抽取音轨或音视频合流等编辑合成诉求应路由到 editing；字幕生成、视频理解、视频增强等应路由到 video。 |
 | byted-mediakit-editing | `doubao/skills/byted-mediakit-editing` | skill | 22 | 面向音频、视频或图片素材组成成片的编辑制作目标，适用于时间线裁剪与拼接、速度和音量调整、视频滤镜、运镜特效、转场、画面裁切旋转翻转、字幕压制、局部模糊、动图截取、淡入淡出、音视频提取与合流、音频混合以及多画面空间组合等操作。若用户要给视频添加滤镜、春日/晚霞/鲜亮/白皙/食物等滤镜效果，或对象和目标族已明确是对现有素材做剪辑、合成、混合或成片编排，但具体做法不确定，可先加载本 Skill 探索；若只给出媒体类型而未说明要剪、合、调... |
@@ -102,7 +102,7 @@
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | skill | 4 | doubao-contract-reviewer 是面向大众用户的合同审查 Skill，适合在豆包/豆包 Turbo 中审查各类合同。用户上传合同或询问“帮我审合同、合同有没有问题、这份合同能不能签、合同风险、合同把关、legal review”时必须使用。本 Skill 强制输出比裸跑更有用的结构化审查：先判断我方立场，再按交易模块识别风险，区分“必改风险 / 可争取优化项 / 形式完善项”，并给出可直接替换或补充的修改文本。适... |
 | doubao-creative-design | `doubao/skills/doubao-creative-design` | skill | 273 | 当用户要求从零生成或设计商业、品牌、社交媒体及知识表达类创意图片，编辑、复刻或审查已有视觉成品，或进行系列延展、多比例适配、多资产视觉系统设计时使用。触发任务包括做图、出图、生成图片、设计海报、主视觉／KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP 角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图... |
 | doubao-creative-drama | `doubao/skills/doubao-creative-drama` | skill | 30 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
-| doubao-creative-video | `doubao/skills/doubao-creative-video` | skill | 7 | 当用户需要通用视频生成、视频编辑、视频创作、视频提示词规划或文生/图生/媒体参考生成视频时使用，包括基于视频或音频素材生成、合并或编辑视频，以及创意视频、产品广告、商品广告、UGC口播/带货/信息流视频、marketing/TVC风格广告、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频和带 ref/参考素材的视频生成。禁止用于短剧创作、剧情脚本、分集剧情、角色扮演故事或影视叙事创作；此类需求应调用 doubao-cre... |
+| doubao-creative-video | `doubao/skills/doubao-creative-video` | skill | 26 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doubao-creative-drama；其他广告、品牌、企... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | skill | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
 | doubao-cron-scheduler | `doubao/skills/doubao-cron-scheduler` | skill | 1 | 创建、查看、更新或删除定时任务，包括一次性提醒、周期任务、复杂日历规则、后台监控和多轮编辑。用于用户要求提醒、持续关注、按小时/日/周/月/年运行或管理已有任务。 |
 | doubao-cross-border-growth-content | `doubao/skills/doubao-cross-border-growth-content` | skill | 16 | Evidence-grounded cross-border ecommerce content operations for short-video and livestream scripts, UGC or creator briefs, multilingual captions, localized content angles, image/video briefs, content calendars, hook m... |
@@ -196,7 +196,7 @@
 | grant-proposal-writer | `doubao/skills/grant-proposal-writer` | skill | 1 | 撰写完整的资助申请书，涵盖需求陈述、项目设计、目标与指标、评估计划、团队介绍与预算。 |
 | help-documentation | `doubao/skills/help-documentation` | skill | 1 | 撰写产品帮助文档，包含快速上手、功能说明、常见问题与故障排除，面向终端用户。 |
 | hr-material-analysis-writing | `doubao/skills/hr-material-analysis-writing` | skill | 1 | Use when the user asks to process HR-related materials by drafting, rewriting, fact-checking, summarizing constraints, counting lists, comparing payroll/attendance data, generating formal documents, or iterating offic... |
-| html | `doubao/skills/html` | skill | 11 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
+| html | `doubao/skills/html` | skill | 13 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
 | impact-report-builder | `doubao/skills/impact-report-builder` | skill | 1 | 为非营利组织生成年度影响力报告，包含成果数据、受益人群、故事案例、财务概览与未来展望。 |
 | industry-analysis | `doubao/skills/industry-analysis` | skill | 12 | 回答中文行业基本面问题，适用于行业、价值链环节、产品市场或技术路线的定义、空间、周期、竞争、利润迁移、传导、比较、进入与产业投资机会分析；不用于股票交易阶段研判或单家公司独立估值。 |
 | inspect-excel-before-work | `doubao/skills/inspect-excel-before-work` | skill | 1 | Use when 用户要求基于新版Excel或附件做分析、计算、填报、汇总、抽取、回填或导出，并出现“先看表头”“确认字段口径”“核对sheet结构”“样本抽查”“跨文件校验”“模板识别”“发现异常先确认”等信号，尤其适用于多sheet、多版本、多附件或模板变更。 |
@@ -205,15 +205,15 @@
 | keyword-configuration-analysis | `doubao/skills/keyword-configuration-analysis` | skill | 1 | Use when the user asks for keyword configuration, keyword screening, ad diagnosis, bidding suggestions, spreadsheet analysis, configuration updates, lexicon maintenance, Search Term optimization, negative keywords, or... |
 | lark-approval | `doubao/skills/lark-approval` | skill | 20 | 飞书审批：查询和处理审批待办/已办/实例，搜索可发起审批定义、查看定义详情、发起原生审批实例，以及查询、创建、回复、编辑、删除审批评论。当用户要处理审批任务、查看审批实例、搜索或发起审批、操作审批评论时使用。审批待办不是飞书任务；非审批类待办走 lark-task。不负责创建审批定义；三方审批定义不走原生提单。 |
 | lark-attendance | `doubao/skills/lark-attendance` | skill | 1 | 飞书考勤打卡：查询自己的考勤打卡记录 |
-| lark-base | `doubao/skills/lark-base` | skill | 32 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图看板、表单问卷收集、仪表盘、自动化工作流、表格行列权限，支撑持续运营业务闭环 |
+| lark-base | `doubao/skills/lark-base` | skill | 50 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用 |
 | lark-calendar | `doubao/skills/lark-calendar` | skill | 15 | 飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。 |
 | lark-contact | `doubao/skills/lark-contact` | skill | 4 | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。 |
-| lark-doc | `doubao/skills/lark-doc` | skill | 24 | 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive |
+| lark-doc | `doubao/skills/lark-doc` | skill | 25 | 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive |
 | lark-drive | `doubao/skills/lark-drive` | skill | 63 | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入，也可通过 `drive +fetch` 把 Drive 文件读取为 Markdown（含知识库里映射为 wiki URL 的 Drive 文件）。用户需要整理云盘目录、处理云空间资源 URL/token、判断链... |
-| lark-im | `doubao/skills/lark-im` | skill | 59 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。 |
+| lark-im | `doubao/skills/lark-im` | skill | 60 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。 |
 | lark-mail | `doubao/skills/lark-mail` | skill | 35 | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks. |
 | lark-markdown | `doubao/skills/lark-markdown` | skill | 6 | 飞书 Markdown：查看、创建、上传、编辑和比较飞书中的原生 Markdown 文件。当用户要操作飞书 Markdown 文件，或比较其远端版本及本地草稿时使用。纯本地 Markdown 文件操作不触发本 skill。不负责将 Markdown 导入为飞书在线文档，也不负责文件搜索、权限、评论、移动、删除等云空间管理操作。 |
-| lark-meeting | `doubao/skills/lark-meeting` | skill | 33 | 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑、会议录制控制；查询进行中的会议、实时会议内容(发言/聊天/共享文档)问答(会上/会里)、发送会中聊天/表情、查询或创建会议绑定聊天，以及主持人结束会议、移出参会人、闭麦或请求开麦；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约... |
+| lark-meeting | `doubao/skills/lark-meeting` | skill | 34 | 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑、会议录制控制；查询进行中的会议、实时会议内容(发言/聊天/共享文档)问答(会上/会里)、发送会中聊天/表情、查询或创建会议绑定聊天，以及主持人结束会议、移出参会人、闭麦或请求开麦；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约... |
 | lark-okr | `doubao/skills/lark-okr` | skill | 26 | 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估 |
 | lark-openapi-explorer | `doubao/skills/lark-openapi-explorer` | skill | 1 | 飞书/Lark 原生 OpenAPI 探索：从官方文档库中挖掘未经 CLI 封装的原生 OpenAPI 接口。当用户的需求无法被现有 lark-* skill 或 lark-cli 已注册命令满足，需要查找并调用原生飞书 OpenAPI 时使用。 |
 | lark-shortdrama-studio | `doubao/skills/lark-shortdrama-studio` | skill | 7 | 基于飞书多维表格的短剧创作全流程工作流。从剧本到视频的完整闭环生产，支持项目看板、剧本库、分镜库、资产库四层数据模型，资产优先保证角色一致性，按15秒/段输出视频。使用场景：短剧创作、短视频制作、动画分镜、视频内容生产、AI视频批量生成、飞书多维表格项目管理。 |
@@ -243,7 +243,7 @@
 | photo-abstract-editorial | `doubao/skills/photo-abstract-editorial` | skill | 18 | Create a clean, vertical editorial artwork that preserves an uploaded photograph as the original image and pairs it with a restrained, photo-derived abstract memory panel and poetic English title. Use when asked to tr... |
 | pipeline-outbound-account-growth | `doubao/skills/pipeline-outbound-account-growth` | skill | 15 | 对CRM锚定或用户给定的账户/线索集合完成公司研究与字段补全、账户信号、可解释优先级、拓客草稿、管道健康、确定性forecast及扩建保有，输出管道拓客与账户增长经营包。CRM和Sales Intelligence连接器只负责真值读取、字段来源、映射与受控动作，不作为业务Skill。 |
 | plan-course-registration-cn | `doubao/skills/plan-course-registration-cn` | skill | 18 | 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。 |
-| ppt | `doubao/skills/ppt` | skill | 191 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| ppt | `doubao/skills/ppt` | skill | 308 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | ppt-framework-planning | `doubao/skills/ppt-framework-planning` | skill | 1 | Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要... |
 | presentation-change-control | `doubao/skills/presentation-change-control` | skill | 4 | 用于已有 PPT 或飞书幻灯片需要局部新增、删除、重排、替换或样式继承，且必须保护页序、关键数字和交付质量的场景。新建整份演示或简单读取不使用。 |
 | private-domain-marketing-operations | `doubao/skills/private-domain-marketing-operations` | skill | 4 | 基于用户授权和生命周期信号设计私域分层、内容触达、社群服务、转化培育、留存召回和实验复盘。 |
@@ -264,7 +264,7 @@
 | scientific-visualization | `doubao/skills/scientific-visualization` | skill | 18 | Create and audit truthful, accessible, publication-ready scientific figures with Matplotlib, Seaborn, or Plotly. Use for figure design, multi-panel layouts, uncertainty and missing-data displays, color/contrast review... |
 | security-threat-review | `doubao/skills/security-threat-review` | skill | 6 | 对需求文档、技术设计文档、架构方案进行安全威胁评审（STR），基于 STRIDE 方法论识别威胁、评估风险、检查合规并输出可执行的整改建议。当用户上传或提供设计/需求/架构文档并要求安全评审、威胁建模、风险分析、STR 分析、安全审查时使用。不适用于代码级漏洞扫描、渗透测试执行、告警研判或通用安全知识问答。 |
 | seed-audio | `doubao/skills/seed-audio` | skill | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色）。如果用户的主要意图或目标产物是生成或编辑视频，应使用视频生成或编辑 skill，不得加载或使... |
-| seedance-25 | `doubao/skills/seedance-25` | skill | 1 | 介绍 Seedance 2.5 的视频生成参数。用户指定 Seedance 2.5 或显式调用本 Skill 时使用；实际生成前必须路由 doubao-creative-video，固定使用 seedance_2.5。 |
+| seedance-25 | `doubao/skills/seedance-25` | skill | 2 | 使用 Seedance 2.5 生成视频。由本 Skill 拟定完整方案并通过 interaction.ask 完成澄清与执行确认，确认后调用 doubao-creative-video 组织提示词并生成。适用于用户指定 Seedance 2.5、需要用该模型制作视频，或显式调用本 Skill 的场景；固定模型，不切换。 |
 | seedance-real-selling-video | `doubao/skills/seedance-real-selling-video` | skill | 3 | Seedance 2.5 真人感出海 AI 带货视频技能，整合「去 AI 感」与「去广告感」双向优化。四大真实感支柱（混合光源、生活杂物、毛孔纹理、手机拍摄）+ 六条核心补丁语句 + 负面轰炸 + 三段锁定 + 结尾质量指令区块 + 15–25 秒带货四段式脚本。当用户需要：(1)做 AI 真人带货 / UGC 口播 / 种草视频，(2)让 AI 视频更真实更像手机实拍、降低 AI 味和广告感，(3)排查塑料皮肤、崩手多指、眼神闪... |
 | seedream-50 | `doubao/skills/seedream-50` | skill | 1 | 当用户明确要求使用“5.0”“5.0_flash”“5.0_flash”“Seedream 5.0_flash”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0_flash 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_flash" 调用实际图片工具。 |
 | sheet | `doubao/skills/sheet` | skill | 50 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
@@ -303,7 +303,7 @@
 | video-generation-qa-flow | `doubao/skills/video-generation-qa-flow` | skill | 2 | 用于 doubao-creative-video、doubao-creative-drama 或 seedance-25 已确定视频生成方案后，需要做生成前素材/参数/安全检查、失败分流和生成后验片的场景。不作为视频创作或工具调用的独立入口。 |
 | video-redaction | `doubao/skills/video-redaction` | skill | 21 | 识别视频中的敏感对话（涉黄/涉毒/暴力/色情/脏话/骂人/合规违禁词）并打哔消音；如画面有硬字幕且含敏感词，则擦除后重压干净字幕，输出可过审发布的成片。仅处理"音频敏感词打哔 + 硬字幕敏感词擦除并重压"两条主线。不处理画面人脸/车牌/logo 打码、纯粹的字幕翻译或添加、视频剪辑、画幅转换。无音轨视频直接跳过并告知用户。 |
 | weekly-review | `doubao/skills/weekly-review` | skill | 9 | 结构化复盘一周工作进展、完成事项、未完成原因、下周重点与风险，输出可直接粘贴到周报的总结。 |
-| word | `doubao/skills/word` | skill | 46 | Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作或有格式排版要求的写作使用此技能。 |
+| word | `doubao/skills/word` | skill | 60 | Office Word 的阅读、新建和修改使用此技能。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作或有格式排版要求的写作使用此技能。 |
 | word-document-processing | `doubao/skills/word-document-processing` | skill | 3 | 用于本地 Word DOC、DOCX 或 WPS 文件需要读取、转换、OCR、版式敏感编辑或交付前结构复核，且通用 lark-doc 流程需要 Office Word 专项规则的场景。在线文档、纯内容写作或简单摘要不使用。 |
 | workflow-automation | `doubao/skills/workflow-automation` | skill | 1 | Workflow creation, execution, and template management. Automates complex multi-step processes with agent coordination. Use when: automating processes, creating reusable workflows, orchestrating multi-step tasks. Skip... |
 | xyq-toolkit | `doubao/skills/xyq-toolkit` | skill | 20 | 使用小云雀 pippit-tool-cli 生成或编辑图片、生成视频、超分和擦字幕，查询结果并交付媒体；操作小云雀个人 Canvas 画布、节点、布局、连线、角色/场景、生成提示词、3D 导演台与多轨草稿；查询积分及管理授权。用户提到小云雀、xyq 并需要这些操作时使用。 |
@@ -312,6 +312,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-16-180002 | [2026-10-16-180002](doubao/change-logs/2026-10-16-180002.md) | Doubao 本次同步新增 287 个文件、修改 132 个文件、删除 112 个文件。 受影响范围：skills/browser-use-automation, skills/doubao-creative-drama, skills/doubao-creative-video, skills/html, skills/lark-base, skil... |
 | 2026-10-15-192505 | [2026-10-15-192505](doubao/change-logs/2026-10-15-192505.md) | Doubao 本次同步新增 82 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/android-native-build-debug, skills/app-builder-orchestration, skills/docker-env-troubleshooting, skills/evidence-based-constr... |
 | 2026-10-13-180008 | [2026-10-13-180008](doubao/change-logs/2026-10-13-180008.md) | Doubao 本次同步新增 1980 个文件、修改 18 个文件、删除 79 个文件。 新增条目：skills/ab-test-setup, skills/academic-journal-submission-planning, skills/ai-news-collector, skills/analyze-local-spreadsheet, s... |
 | 2026-10-08-180007 | [2026-10-08-180007](doubao/change-logs/2026-10-08-180007.md) | Doubao 本次同步新增 7 个文件、修改 76 个文件、删除 7 个文件。 受影响范围：skills/html, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-drive, skills/lark-im, skills/lark-mail, ski... |
@@ -331,4 +332,3 @@
 | 2026-09-03-180002 | [2026-09-03-180002](doubao/change-logs/2026-09-03-180002.md) | Doubao 本次同步新增 11 个文件、修改 1 个文件、删除 0 个文件。 新增条目：skills/doubao-answer-with-medical-evidence。 受影响范围：skills/doubao-answer-with-medical-evidence, skills/student-discount-application。 |
 | 2026-09-02-180002 | [2026-09-02-180002](doubao/change-logs/2026-09-02-180002.md) | Doubao 本次同步新增 0 个文件、修改 6 个文件、删除 0 个文件。 受影响范围：skills/ppt, skills/sheet。 |
 | 2026-09-01-180001 | [2026-09-01-180001](doubao/change-logs/2026-09-01-180001.md) | Doubao 本次同步新增 126 个文件、修改 45 个文件、删除 89 个文件。 新增条目：skills/gift-card-redemption, skills/ppt, skills/sheet。 移除条目已归档：skills/lark-sheets, skills/lark-slides-pro。 受影响范围：skills/byted-med... |
-| 2026-08-31-180002 | [2026-08-31-180002](doubao/change-logs/2026-08-31-180002.md) | Doubao 本次同步新增 3 个文件、修改 6 个文件、删除 0 个文件。 新增条目：skills/baidu-netdisk, skills/datapro-search, skills/tencent-docs-operations。 受影响范围：skills/baidu-netdisk, skills/datapro-search, skill... |

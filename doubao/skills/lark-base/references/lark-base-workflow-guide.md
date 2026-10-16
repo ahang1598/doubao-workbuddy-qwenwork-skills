@@ -7,6 +7,7 @@
 > - 创建/更新时重点构造 `title` 和 `steps`；复杂度集中在 `steps[].type/data/next`
 > - 启停状态使用专用的 enable / disable 命令管理，不要把创建成功当成已经启用
 > - `+workflow-update` 是完整替换：从 `+workflow-get` 结果保留 `title`、`status`、`steps`，但请求体中的 `status` 不负责切换运行态；实际启停只使用 `+workflow-enable` / `+workflow-disable`，并以随后 get 的状态为准
+> - 仪表盘按钮绑定与查询：[仪表盘按钮绑定工作流](lark-base-dashboard-button-rule.md)。先读 `bound + target`，仅在 `target.type=workflow` 时按 `target.id` 获取定义；触发器使用 `buttonElement`。
 
 ## 交付红线
 
@@ -30,13 +31,11 @@
 
 1. **人员解析**：`receiver` 按下列顺序确定，取第一个成立的。
 
-   a. 用户点名了具体的人或群且能唯一解析，就用那个对象。只有用户原词说“通知我 / 本人”时才允许当前操作用户。
+   a. 用户点名了具体的人或群且能唯一解析，就用那个对象。只有用户原词说“通知我 / 本人”时才允许当前操作用户；用 `lark-cli contact +get-user`（不传 `--user-id`）获取 `.data.user.open_id`。
 
-   b. 用户说的是职责称谓（负责人、审批人、某个岗位），用承载该职责的人员字段：触发记录用 `$.<trigger_step>.<person_field_id>`，`FindRecordAction + Loop` 用 `$.<loop_step>.item.<person_field_id>`。自动化只能取到触发记录上的数据，不能顺着关联字段去别的表取值；本表还没有这样的字段就先建一个人员字段，由填报人或经办人写入，该职责实际维护在别的主体表时先用公式按条件引用到本表。
+   b. 用户说的是职责称谓（负责人、审批人、某个岗位），用承载该职责的人员字段：触发记录用 `$.<trigger_step>.<person_field_id>`，`FindRecordAction + Loop` 用 `$.<loop_step>.item.<person_field_id>`。可以是普通人员字段，也可以按业务语义用创建人、修改人这类系统人员字段，该职责维护在别的表时用公式按条件引用到本表。自动化只能取到触发记录上的数据，不能顺着关联字段去别的表取值；本表没有合适字段就新建一个人员字段并绑定。
 
-   c. 两者都不成立时保持 `disabled + blocked`，在答复中说明接收人待确认。
-
-   新建人员字段是为了让流程随记录走，不是为了把某个账号塞进去：字段建好后由业务数据填充，不得直接填入当前用户或任意账号。
+   不在 workflow 配置里写死当前用户、Base 创建人、示例 ID 或任意账号代替职责人；`receiver` 必须 ref 承载该职责的人员字段。启用前回读 `receiver` 的引用路径和 `send_to_everyone`，确认不会扩大外发范围。人员字段的填值属于 mock 数据范畴，与接收人配置无关，按验收矩阵处理。
 2. **字段引用**：从 `+field-list` / `+field-get` 记录真实 field ID 和类型；Workflow ref、条件左值和消息内容使用服务端返回的可用路径。报 “path does not exist” 或 pathType 不兼容时，改为错误信息列出的兼容路径，不要换成展示字段名、当前用户或静态文本。
 3. **时间与状态**：临期、到期、超期、周期截止类条件必须落在真实日期字段、提前量或动态 Formula/Lookup 上；人工维护的状态枚举不能证明“快到期”。查找记录时把日期边界放进 `filter_info`，不要先查全部再靠消息文案解释范围。
 
@@ -44,12 +43,19 @@
 
 Workflow 子任务必须同时满足以下两项，才能标记完成或进入最终答复：
 
-1. **定义后置条件：** 同一目标 ID 中本次请求涉及的全部可写定义字段与用户要求一致，包括适用的名称、描述、消息标题与正文、触发器、触发时间/时间配置（日期、时刻、周期、星期、间隔、起止时间和提醒偏移）、条件、接收人、动作类型和动作目标。
+1. **定义后置条件：** 同一目标 ID 中本次请求涉及的全部可写定义字段与用户要求一致，包括适用的名称、描述、消息标题与正文、触发器、触发时间/时间配置（日期、时刻、周期、星期、间隔、起止时间和提醒偏移）、条件、接收人、动作类型和动作目标。用户指定的节点类型须在实际执行链的 `steps[].type` 中核对；要求 Agent 时，确认 `AIAgentAction` 的输入引用及结果消费路径符合需求。记录触发器回读时，分别核对事件范围、监听字段及修改前后筛选条件，确认新增、条件字段修改、其他字段修改的覆盖范围与需求一致。
 2. **状态后置条件：** 对 `enabled` / `disabled`，不截断 `status` 的 `+workflow-get` 必须证明返回的 `status` 等于 `target_status`；`preserve` 必须证明返回的 `status` 等于首次 get 的状态；`none` 不适用状态等式，其后置条件是没有执行任何创建、更新或启停写操作。
 
 定义已经吻合或无需执行 `+workflow-update`，不能消除独立的运行态差异。`+workflow-create` 成功后默认返回 `disabled`；当 `target_status=enabled` 时，这只是中间态，必须继续调用 `+workflow-enable` 并对同一 ID `+workflow-get`。当明确要求主动提醒却不存在目标 Workflow 时，应创建并完成上述闭环，不能用说明文字、公式、视图或 Dashboard 冒充。
 
 `+workflow-update` 是完整替换：从 `+workflow-get` 结果保留 `title`、`status`、`steps`，但请求体中的 `status` 不负责切换运行态；实际启停只使用 `+workflow-enable` / `+workflow-disable`。对同一失败原因只做一次定向修复和一次复验；仍不满足任一后置条件时明确报告未完成项，不得继续循环或虚假宣告完成。
+
+### 检查与实际运行
+
+1. **核对资源**：用 `+base-get`、`+table-list`、`+field-list` 及通讯录或群聊查询，确认目标 Base、表、字段和接收人的真实 ID 与类型。
+2. **预览请求**：在 `+workflow-create` / `+workflow-update` 前用 `--dry-run` 预览请求并运行本地校验。它不调用服务端，不能证明资源存在、接收人有效或实际执行成功。
+3. **保存与状态回读**：按上方[不可跳过的完成谓词](#不可跳过的完成谓词)逐项核对 Workflow 定义和运行态；创建或启用成功不能证明动作实际执行成功。
+4. **按需实测**：只有用户要求验证实际执行时，才在已授权的资源、收件人和动作范围内触发测试事件，并检查目标记录或外部动作的业务结果。
 
 ### 用工作流通知的注意事项
 
@@ -103,20 +109,27 @@ Workflow 的动作必须匹配用户要求的业务结果。若用户要求“�
 
 ## 场景速查表
 
-| 场景 | 步骤组合 | 示例 |
+| 场景 | 步骤组合 | 参考 |
 |------|---------|------|
-| 新增触发+通知 | AddRecordTrigger → LarkMessageAction | [下方](#示例1-新增记录触发--发送消息) |
+| 新增触发+通知 | AddRecordTrigger → LarkMessageAction | [下方](#示例-1-新增记录触发--发送消息) |
 | 按钮点击+调用外部接口+写入日志 | ButtonTrigger → HTTPClientAction → AddRecordAction | [下方](#示例-6-按钮触发--调用外部接口--写入同步日志) |
-| 定时+循环 | TimerTrigger → FindRecordAction → Loop → LarkMessageAction | [下方](#示例2-定时触发--查找记录--循环遍历--发送消息) |
-| 条件判断 | ... → IfElseBranch → 分支处理 | [下方](#示例3-条件分支-ifelsebranch) |
-| 多路分类 | ... → SwitchBranch → 多分支处理 | [下方](#示例4-多路分支-switchbranch) |
-| 复杂组合 | 定时+查找+循环+分支+消息 | [下方](#示例5-组合场景-定时查找循环分支消息) |
-| AI 分类 | ... → AIClassificationBranch → 分类后处理 | [下方](#示例7-ai-分类用户反馈自动分流) |
+| 定时+循环 | TimerTrigger → FindRecordAction → Loop → LarkMessageAction | [下方](#示例-2-定时触发--查找记录--循环遍历--发送消息) |
+| 条件判断 | ... → IfElseBranch → 分支处理 | [下方](#示例-3-条件分支ifelsebranch) |
+| 多路分类 | ... → SwitchBranch → 多分支处理 | [下方](#示例-4-多路分支switchbranch) |
+| 复杂组合 | 定时+查找+循环+分支+消息 | [下方](#示例-5-组合场景定时查找循环分支消息) |
+| 生成、总结、改写或提取文本 | ... → GenerateAiTextAction | [节点参数](lark-base-workflow-schema.md#generateaitextaction) |
+| 生成分类标签，各类别后续动作相同 | ... → GenerateAiTextAction | [节点参数](lark-base-workflow-schema.md#generateaitextaction) |
+| 分析 Base 数据 | ... → AIAnalysisAction | [节点参数](lark-base-workflow-schema.md#aianalysisaction) |
+| AI 智能体 / Agent、附件理解、工具调用或结构化输出 | ... → AIAgentAction | [配置与工具](lark-base-workflow-ai-agent.md) |
+| 按文本语义分类，不同类别执行不同动作 | ... → AIClassificationBranch → 各类别处理链 | [下方](#示例-7-ai-分类用户反馈自动分流) |
+| 飞书任务、日程、群组自动化 | ... → APIHubAction | [组件与参数](lark-base-workflow-apihub.md#当前支持的组件) |
+
+多个结果需要分别供下游引用时，可使用多个 `GenerateAiTextAction`，或按 [AI Agent 输出配置](lark-base-workflow-ai-agent.md#根节点-data) 使用 `AIAgentAction` 的结构化输出。
 
 ## 能力边界与意图识别
 
 - 用户说“一按 / 一键 / 点一下就知道 / 按钮触发”时，优先评估 `ButtonTrigger`。如果结果需要沉淀给用户看，Workflow 应将判断结果写回表字段、日志表或消息，而不是只交付一段说明或普通看板。
-- 记录新增/修改触发和定时扫描都可能实现提醒；选择前先判断用户要实时提醒还是周期巡检。若用定时扫描替代实时提醒，需要在交付里说明触发频率。
+- 触发器由需求语义决定，不能用 `TimerTrigger` + `FindRecordAction` 定时扫描等价替代：阈值到达（低于安全线、超过预算、状态达到某值）用 `ChangeRecordTrigger` + `condition_list`；时间到达（到期、截止、逾期、超过截止时间仍未处理）用 `ReminderTrigger` 绑定该日期字段，需要“仍未处理”就在 `condition_list` 加状态条件；只有用户原话给出周期（每天 9 点、每周一、每月汇总）才用 `TimerTrigger`。用定时扫描实现前两类视为该需求未实现，交付里说明频率也不算。条件只能拿字段与静态值比较，“当前库存 < 安全库存”先建公式字段（库存状态）再以它为条件；公式字段被重算也会触发。
 - 触发事件匹配：用户要求已有对象“变为 / 进入某状态后”执行动作时，触发器必须覆盖记录修改，不能仅监听新增。区分“当前满足条件”与“发生目标变化”，避免修改无关字段时重复执行。
 - 业务结果闭环：区分流程发起与业务完成。用户要求完成结果可查询、回写或留痕时，仅通知或创建待处理记录不算完成；必须消费真实处理结果并写入对应字段或关联记录。写后回读触发配置、结果写入动作及源对象关联，确认覆盖用户要求的阶段。
 
@@ -128,7 +141,7 @@ Workflow 的动作必须匹配用户要求的业务结果。若用户要求“�
 
 `+workflow-get` 回读时必须检查服务端保存后的完整 condition，而不是只看 Workflow 名称或状态。用户需求里有几个边界，保存后的 conditions 里就该有几个非空右值；逐项对照 `field_name / operator / value / value_type`，任一项不一致都保持或恢复 `disabled`。条件可用 `+record-list --filter-json` 表达且存在代表性数据时，用同口径的只读筛选确认命中范围；没有代表性数据时只验证保存条件。
 
-同一条件定向修复一次后仍无法原样回读时，不再重复提交同一种数值或日期条件；改用能稳定回读的文本/布尔派生字段表达同一业务谓词，再重新预检。派生字段仍不能正确保存或验证时，只将该 Workflow 验收项标记 `blocked` 并保持 `disabled`；继续完成不依赖它的其他交付物，不把该 Workflow 列入已完成项，也不得把局部阻塞扩大为整个 Base 任务失败。
+同一条件定向修复一次后仍无法原样回读时，不再重复提交同一种数值或日期条件；改用可验证的文本/布尔派生字段表达同一业务谓词并重新预检。仍不能正确保存或验证时，只将该 Workflow 验收项标记 `blocked` 并保持 `disabled`；继续完成不依赖它的其他交付物，不把该 Workflow 列入已完成项，也不得把局部阻塞扩大为整个 Base 任务失败。
 
 ---
 

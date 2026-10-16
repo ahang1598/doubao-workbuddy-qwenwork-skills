@@ -1,56 +1,62 @@
-"""svg_lib/charts/candle.py
-
-统一 API: draw_candle(data, variant, palette, ...) -> str (SVG)
-
-Data schema:
-    data = {
-        "ohlc": [(open, high, low, close), ...],   # 每天一条
-        "date_labels": [str, ...],                  # 与 ohlc 等长
-        "unit": str | None,                          # 价格单位 (可选)
-    }
-
-Variants (5 共享 ohlc + date_labels):
-    - candle_american_filled   实心涨跌柱（默认）
-    - candle_japanese_hollow   日式：涨柱空心 + 描边，跌柱实心
-    - ohlc_american            美式竖线 + open/close ticks
-    - heikin_ashi              平均足平滑（内部重算 OHLC）
-    - line_close               只画收盘价折线 + 面积
-"""
+"""统一 API: draw_candle(data, variant, palette, ...) -> str (SVG)"""
 
 from __future__ import annotations
+
 import math
 
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    viewbox_fs,
-    svg_open,
-    svg_close,
-    _rgba_with_alpha,
-    rgb_tuple,
-    is_dark_palette,
-)
-
-
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgba_with_alpha,
-    _xesc,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
+    _xesc,
+)
+from .._typography import chart_font_sizes
+from . import _academic_rigor as rigor
+from ._shared import (
+    notes_source_footer,
+    _header,
+    tr,
+    resolve_palette,
+    svg_close,
+    svg_open,
+    viewbox_fs,
+    xesc,
 )
 
 BODY_FONT = "Inter, sans-serif"
-HEAD_FONT = "Georgia, serif"
+
+
+# Multi-mode whitelist for ``make_candle``.
+#   with_volume : top_bottom_2to1 (main 2/3 K-line, sub 1/3 volume bars).
+#                 Trigger: ohlc + volume both provided, equal length, n >= 20.
+#                 Validator: raw_values non-empty, equal lengths, n >= 20.
+# Dict insertion order defines priority under multi_mode="auto".
+def _candle_count_rows(signals):
+    return int(signals.get("n", 0))
+
+
+def _validate_with_volume(signals):
+    n = int(signals.get("n", 0))
+    nv = int(signals.get("n_vol", 0))
+    if n < 20:
+        return (False, f"need n>=20 (got {n})")
+    if nv != n:
+        return (False, f"volume length {nv} != ohlc length {n}")
+    return (True, "")
+
+
+_CANDLE_MULTI_WHITELIST = {
+    "with_volume": (
+        "top_bottom_2to1",
+        lambda s: _candle_count_rows(s) >= 20 and int(s.get("n_vol", 0)) == _candle_count_rows(s),
+        lambda s: _validate_with_volume(s),
+    ),
+}
 
 
 def draw_candle(
@@ -59,8 +65,8 @@ def draw_candle(
     palette: str = "archive_ink",
     width: float = 900,
     height: float = 540,
-    title: str = None,
-    subtitle: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
 ) -> str:
     ohlc = data.get("ohlc") or []
     if len(ohlc) < 2:
@@ -72,7 +78,6 @@ def draw_candle(
 
     pal = resolve_palette(palette)
 
-    # heikin_ashi: 重算 OHLC
     if variant == "heikin_ashi":
         ohlc = _make_heikin_ashi(ohlc)
 
@@ -110,7 +115,6 @@ class _Ctx:
         self.variant = variant
         self.n = len(ohlc)
 
-        # 布局
         self.ML = 60
         self.MR = 30
         self.header_h = 20
@@ -123,7 +127,6 @@ class _Ctx:
         self.plot_w = W - self.ML - self.MR
         self.plot_h = self.plot_bot - self.plot_top
 
-        # price range
         highs = [row[1] for row in ohlc]
         lows = [row[2] for row in ohlc]
         pmax = max(highs)
@@ -141,7 +144,6 @@ class _Ctx:
         self.fs_label = viewbox_fs(W, H, self.n, role_mult=0.85)
 
     def x_of(self, i):
-        # center x for day i
         if self.n == 1:
             return self.ML + self.plot_w / 2
         return self.ML + (i + 0.5) * (self.plot_w / self.n)
@@ -157,35 +159,11 @@ class _Ctx:
         return max(1.5, step * 0.62)
 
 
-def _header(ctx: _Ctx) -> str:
-    ink = ctx.pal["ink"]
-    mut = ctx.pal["muted"]
-    parts = []
-    ML = ctx.ML
-    if ctx.title:
-        parts.append(
-            f'<text x="{ML}" y="30" font-family="{HEAD_FONT}" font-size="20" '
-            f'font-weight="600" fill="{ink}" letter-spacing=".03em">{xesc(ctx.title)}</text>'
-        )
-    if ctx.subtitle:
-        y = 48 if ctx.title else 30
-        parts.append(
-            f'<text x="{ML}" y="{y}" font-family="{BODY_FONT}" font-size="11" '
-            f'fill="{mut}" letter-spacing=".14em">{xesc(ctx.subtitle)}</text>'
-        )
-    if ctx.title:
-        parts.append(
-            f'<line x1="{ML}" y1="{ctx.header_h}" x2="{ctx.W - ctx.MR}" y2="{ctx.header_h}" '
-            f'stroke="{ink}" stroke-width="0.6" opacity="0.4"/>'
-        )
-    return "".join(parts)
-
-
 def _fmt_tick(v: float) -> str:
     """Y 轴刻度格式：|v| >= 100 → 整数；10 <= |v| < 100 → 1 位小数；|v| < 10 → 2 位小数。"""
     av = abs(v)
     if av >= 100:
-        return f"{int(round(v))}"
+        return f"{round(v)}"
     if av >= 10:
         return f"{v:.1f}"
     return f"{v:.2f}"
@@ -202,7 +180,7 @@ def _axes(ctx: _Ctx) -> str:
     span = ctx.pmax - ctx.pmin
     if span > 50:
         raw_step = span / 4.0
-        y_step = max(1, int(math.ceil(raw_step)))
+        y_step = max(1, math.ceil(raw_step))
         y_start = math.ceil(ctx.pmin / y_step) * y_step
     else:
         y_step = None  # fall back to even division
@@ -228,7 +206,6 @@ def _axes(ctx: _Ctx) -> str:
             f'font-size="{ctx.fs_axis}" fill="{mut}">{_fmt_tick(p)}{xesc(ctx.unit)}</text>'
         )
 
-    # bottom axis
     parts.append(
         f'<line x1="{ctx.ML}" y1="{ctx.plot_bot}" x2="{ctx.W - ctx.MR}" y2="{ctx.plot_bot}" '
         f'stroke="{ink}" stroke-width="0.6"/>'
@@ -259,9 +236,7 @@ def _draw_candle_filled(ctx: _Ctx) -> str:
         y_c = ctx.y_of(c)
         is_up = c >= o
         col = ctx.up_col if is_up else ctx.down_col
-        # wick
         parts.append(f'<line x1="{x:.1f}" y1="{y_h:.1f}" x2="{x:.1f}" y2="{y_l:.1f}" stroke="{col}" stroke-width="1"/>')
-        # body
         y_top = min(y_o, y_c)
         y_bot = max(y_o, y_c)
         h_body = max(1.0, y_bot - y_top)
@@ -290,7 +265,6 @@ def _draw_candle_hollow(ctx: _Ctx) -> str:
         y_bot = max(y_o, y_c)
         h_body = max(1.0, y_bot - y_top)
         if is_up:
-            # hollow (paper fill + stroke)
             parts.append(
                 f'<rect x="{x - bw / 2:.1f}" y="{y_top:.1f}" width="{bw:.1f}" height="{h_body:.1f}" '
                 f'fill="{paper}" stroke="{col}" stroke-width="1.2"/>'
@@ -316,15 +290,12 @@ def _draw_ohlc_american(ctx: _Ctx) -> str:
         y_c = ctx.y_of(c)
         is_up = c >= o
         col = ctx.up_col if is_up else ctx.down_col
-        # vertical high-low line
         parts.append(
             f'<line x1="{x:.1f}" y1="{y_h:.1f}" x2="{x:.1f}" y2="{y_l:.1f}" stroke="{col}" stroke-width="1.4"/>'
         )
-        # open tick (left)
         parts.append(
             f'<line x1="{x - tick:.1f}" y1="{y_o:.1f}" x2="{x:.1f}" y2="{y_o:.1f}" stroke="{col}" stroke-width="1.4"/>'
         )
-        # close tick (right)
         parts.append(
             f'<line x1="{x:.1f}" y1="{y_c:.1f}" x2="{x + tick:.1f}" y2="{y_c:.1f}" stroke="{col}" stroke-width="1.4"/>'
         )
@@ -336,15 +307,12 @@ def _draw_line_close(ctx: _Ctx) -> str:
     accent = ctx.pal["accent"]
     accent_soft = _rgba_with_alpha(accent, 0.16)
     pts = [(ctx.x_of(i), ctx.y_of(row[3])) for i, row in enumerate(ctx.ohlc)]
-    # area
     area = f"M {pts[0][0]:.1f} {ctx.plot_bot:.1f} "
     area += " ".join(f"L {x:.1f} {y:.1f}" for x, y in pts)
     area += f" L {pts[-1][0]:.1f} {ctx.plot_bot:.1f} Z"
     parts.append(f'<path d="{area}" fill="{accent_soft}"/>')
-    # line
     line = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
     parts.append(f'<polyline points="{line}" fill="none" stroke="{accent}" stroke-width="2" stroke-linejoin="round"/>')
-    # small dots
     if ctx.n <= 30:
         for x, y in pts:
             parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2" fill="{accent}"/>')
@@ -352,12 +320,7 @@ def _draw_line_close(ctx: _Ctx) -> str:
 
 
 def _make_heikin_ashi(ohlc):
-    """Heikin-Ashi transform:
-    HA_c = (o+h+l+c)/4
-    HA_o = (prev_HA_o + prev_HA_c)/2  (first day: (o+c)/2)
-    HA_h = max(h, HA_o, HA_c)
-    HA_l = min(l, HA_o, HA_c)
-    """
+    """Heikin-Ashi transform."""
     out = []
     for i, row in enumerate(ohlc):
         o, h, l, c = row[0], row[1], row[2], row[3]
@@ -377,6 +340,7 @@ def make_candle(
     date_labels=None,
     events=None,
     volumes=None,
+    volume=None,
     y_unit: str = "$",
     show_ma=True,
     ma_windows=(20, 60),
@@ -385,18 +349,19 @@ def make_candle(
     bollinger_k=2,
     show_volume=True,
     show_side_panel=True,
-    show_kpi=True,
+    show_kpi=False,
     title=None,
     subtitle=None,
     figure_label=None,
     note=None,
-    source: str = None,
+    source: str | None = None,
     width=1500,
     height=None,
     color_convention: str = "cn",
-    font_family: str = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
+    multi_mode: str = "auto",
 ) -> str:
     """
     K 线图 · dandelion academic 风格。
@@ -412,7 +377,8 @@ def make_candle(
     show_bollinger / bollinger_window / bollinger_k: 布林带
     show_volume: 底部成交量子图
     show_side_panel: 右侧 LEGEND + KEY EVENTS 面板
-    show_kpi: 顶部 4 个 KPI 卡片（LAST PRICE / CHANGE / RANGE / VOLUME）
+    show_kpi: 顶部 4 个 KPI 卡片（LAST PRICE / CHANGE / RANGE / VOLUME）；默认关闭——
+              RANGE 与 Y 轴重复，学术/汇报页需要时显式 show_kpi=True
 
     title/subtitle/figure_label/note: 学术风顶/底文字
     palette: 用 accent → up 色 · secondary → down 色，或用户在 palette 指定 up_color/down_color
@@ -432,7 +398,42 @@ def make_candle(
     if not ohlc:
         raise ValueError("candle: ohlc empty")
     N = len(ohlc)
-    # 归一化 ohlc → 5-tuple with volume
+    # ``volume`` is a canonical alias of ``volumes`` (kept for multi_mode api
+    # consistency across charts). If both are provided we prefer ``volume``.
+    if volume is not None and volumes is None:
+        volumes = volume
+    _mm_signals = {
+        "n": N,
+        "n_vol": len(volumes) if volumes is not None else 0,
+    }
+    # Build a sentinel BBox from (width x expected plot H ≈ height-240) so we
+    # size-gate against the real plot area, not the raw canvas.
+    _probe_W = float(width)
+    _probe_H = float(height) if height is not None else (820.0 if volumes else 620.0)
+    _probe_plot = rigor.bbox_from_edges(
+        0.0,
+        _probe_W - 60.0,
+        110.0,
+        _probe_H - 60.0,
+    )
+    _mm_mode, _mm_template, _mm_reason = rigor.resolve_multi_mode_v2(
+        multi_mode,
+        _CANDLE_MULTI_WHITELIST,
+        _mm_signals,
+        _probe_plot,
+    )
+    # Multi-mode drives the show_volume gate: when the explicit ``with_volume`` requirement is not satisfied we
+    # silent-fall-back to single (no volume strip), matching the Phase-2 contract.
+    if multi_mode in (None, "single", "off"):
+        pass  # leave show_volume as caller specified
+    elif _mm_mode == "with_volume":
+        show_volume = True  # force sub-panel on
+    else:
+        # multi_mode="auto" that didn't match → treat as single; keep the
+        # historical default (show volume only when volumes exist).
+        if multi_mode != "auto":
+            show_volume = False
+    # Normalize ohlc → 5-tuple with volume
     norm = []
     for i, row in enumerate(ohlc):
         if len(row) < 4:
@@ -449,14 +450,7 @@ def make_candle(
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"],
-        _pal["ink6"],
-        _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
-        _pal["accent"],
-    )
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
     c_bg = _pal.get("bg")
@@ -479,7 +473,6 @@ def make_candle(
     MA_LONG_COL = _pal.get("ma_long_color", c_secondary)
     BOLL_COL = _pal.get("bollinger_color", c_secondary)
 
-    # 派生指标
     closes = [c[3] for c in norm]
 
     def sma(series, n):
@@ -512,7 +505,6 @@ def make_candle(
             bd[i] = m_ - bollinger_k * sd
         boll_up, boll_dn = bu, bd
 
-    # KPIs
     first = norm[0][0]
     last = norm[-1][3]
     chg = last - first
@@ -526,7 +518,6 @@ def make_candle(
     if show_volume and not all_vols:
         show_volume = False
 
-    # ---------- 画布 ----------
     MARGIN_L = 90
     MARGIN_R = 260 if show_side_panel else 60
     # MARGIN_T：title 存在时留 title/subtitle/figure/KPI 区（KPI 高约 70）；无 title 时压缩
@@ -539,11 +530,104 @@ def make_candle(
     if height is None:
         height = 820 if show_volume else 620
 
+    fonts = chart_font_sizes(width, height, N)
+    price_label_width = max(
+        _estimate_label_width_px(f"{y_unit}{value:g}", fonts["ytick"], font_family=_body_font)
+        for row in norm
+        for value in row[:4]
+    )
+    MARGIN_L = max(MARGIN_L, price_label_width + 28)
+    # Narrow embeds: legend/events flow above the plot instead of a 260px side column.
+    side_compact = bool(show_side_panel) and float(width) - MARGIN_L - MARGIN_R < float(width) * 0.6
+    if side_compact:
+        MARGIN_L = price_label_width + 22
+        MARGIN_R = 20
+    if not show_side_panel:
+        MARGIN_R = max(MARGIN_R, price_label_width + 24)
+    MARGIN_B = max(MARGIN_B, fonts["xtick"] * 1.4 + 24 + (32 if note or source else 0))
     plot_x = MARGIN_L
     plot_w = width - MARGIN_L - MARGIN_R
+    _fs_scale = max(0.85, min(1.5, max(1, (plot_w - min(4, plot_w / N * 0.15) * (N - 1)) / N) / 17.0))
+    fs_kpi_hdr = round(min(11.0, max(10.0, 9 * _fs_scale)), 1)
+    fs_kpi_big = round(min(20.0, 15 * _fs_scale), 1)
+    fs_kpi_sub = round(min(12.0, max(10.0, 10 * _fs_scale)), 1)
+    fs_side_hdr = 11
+    fs_side_lg = 12
+    kpi_y = 128 if title else 28
+    kpi_cols = kpi_rows = 0
+    kpi_cell_h = 0
+    if side_compact:
+        fs_side_lg = 11
+        kpi_y = 128 if title else 12
+    if show_kpi and side_compact:
+        kpi_cols, kpi_rows = 2, math.ceil((4 if all_vols else 3) / 2)
+        kpi_cell_h = round(fs_kpi_hdr + fs_side_lg + 12)
+        MARGIN_T = kpi_y + kpi_rows * kpi_cell_h + 10
+    elif show_kpi:
+        n_kpi = 4 if all_vols else 3
+        kpi_cell_h = round(22 + fs_kpi_hdr + fs_kpi_big + fs_kpi_sub)
+        kpi_need_w = (
+            12
+            + 8
+            + max(
+                _estimate_label_width_px(t, fs_kpi_hdr, letter_spacing_em=0.14, bold=True, font_family=_body_font)
+                for t in (tr("PERIOD CHANGE"), tr("AVG VOLUME"))
+            )
+        )
+        kpi_need_w = max(
+            kpi_need_w,
+            20
+            + _estimate_label_width_px(
+                f"{y_unit}{period_low:.2f} — {y_unit}{period_high:.2f}", fs_kpi_big, bold=True, font_family=_head_font
+            ),
+        )
+        kpi_avail = width - MARGIN_R - MARGIN_L
+        kpi_cols = max(1, min(n_kpi, int((kpi_avail + 22) // (kpi_need_w + 22))))
+        if kpi_cols < n_kpi and kpi_cols >= 2:
+            kpi_cols = 2 if n_kpi == 4 else kpi_cols
+        kpi_rows = math.ceil(n_kpi / kpi_cols)
+        if kpi_rows > 1 or side_compact:
+            MARGIN_T = kpi_y + kpi_rows * kpi_cell_h + (kpi_rows - 1) * 10 + 30
+    compact_items = []
+    if side_compact:
+        compact_items.append(("candle", UP_COL, tr("Up day (close ≥ open)")))
+        compact_items.append(("candle", DOWN_COL, tr("Down day (close < open)")))
+        if show_ma:
+            for mi, w in enumerate(ma_windows):
+                compact_items.append(
+                    (
+                        "line",
+                        [MA_SHORT_COL, MA_LONG_COL, _ACC][min(mi, 2)],
+                        tr("MA {w} (short-term)" if mi == 0 else "MA {w} (long-term)", w=w),
+                    )
+                )
+        if show_bollinger:
+            compact_items.append(("dash", BOLL_COL, tr("Bollinger ({w}, {k}σ)", w=bollinger_window, k=bollinger_k)))
+        for ev in events or []:
+            if len(ev) >= 2 and 0 <= ev[0] < N:
+                kind = ev[2] if len(ev) > 2 else "neutral"
+                col = UP_COL if kind == "positive" else (DOWN_COL if kind == "warning" else _ACC)
+                o_i, c_i = norm[ev[0]][0], norm[ev[0]][3]
+                date_str = (
+                    date_labels[ev[0]] if (date_labels and ev[0] < len(date_labels)) else tr("bar {i}", i=ev[0] + 1)
+                )
+                compact_items.append(
+                    ("dot", col, f"{date_str} · {ev[1]} {((c_i - o_i) / o_i * 100 if o_i else 0):+.1f}%")
+                )
+        flow_x0, flow_x1 = 12, width - 12
+        fx, row = flow_x0, 0
+        compact_pos = []
+        for kind, col, text in compact_items:
+            iw = 24 + _estimate_label_width_px(text, fs_side_lg, bold=True, font_family=_body_font)
+            if fx > flow_x0 and fx + iw > flow_x1:
+                fx, row = flow_x0, row + 1
+            compact_pos.append((fx, row))
+            fx += iw + 12
+        compact_rows = row + 1 if compact_items else 0
+        compact_top = MARGIN_T if show_kpi else kpi_y
+        MARGIN_T = compact_top + compact_rows * (fs_side_lg + 8) + 14
     GAP_MID = 22
     plot_h_total = height - MARGIN_T - MARGIN_B
-    price_h_ratio = 0.72 if show_volume else 1.0
     if show_volume:
         price_h = int(plot_h_total * 0.72)
         vol_h = plot_h_total - price_h - GAP_MID
@@ -553,32 +637,24 @@ def make_candle(
     price_y = MARGIN_T
     vol_y = price_y + price_h + GAP_MID
 
-    # candle 宽度
     cand_gap = max(1, min(4, plot_w / N * 0.15))
     cand_w = max(1, (plot_w - cand_gap * (N - 1)) / N)
 
     def x_of(i):
         return plot_x + i * (cand_w + cand_gap) + cand_w / 2
 
-    # ---------- 字号 scale ----------
     # 基准：默认 N=60 天、plot_w ≈ 1150 → cand_w ≈ 17px
     # N 少（10-20）时 cand_w 变大 → 字号放大；N 多（100+）时收缩
     _fs_scale = max(0.85, min(1.5, cand_w / 17.0))
     fs_title = round(min(30.0, 26 * _fs_scale), 1)
     fs_subtitle = round(min(14.0, 12 * _fs_scale), 1)
-    fs_figure = round(min(12.0, 10 * _fs_scale), 1)
-    fs_kpi_hdr = round(min(11.0, 9 * _fs_scale), 1)
-    fs_kpi_big = round(min(20.0, 15 * _fs_scale), 1)
-    fs_kpi_sub = round(min(12.0, 10 * _fs_scale), 1)
-    fs_yaxis = round(min(13.0, 11 * _fs_scale), 1)
-    fs_xaxis = round(min(12.0, 10 * _fs_scale), 1)
-    fs_vol_hdr = round(min(11.0, 9.5 * _fs_scale), 1)
-    fs_evline = round(min(11.0, 9.5 * _fs_scale), 1)
-    fs_side_hdr = 11
-    fs_side_lg = 12
+    fs_figure = round(min(12.0, max(10.0, 10 * _fs_scale)), 1)
+    fs_yaxis = round(fonts["ytick"], 1)
+    fs_xaxis = round(fonts["xtick"], 1)
+    fs_vol_hdr = round(min(11.0, max(10.0, 9.5 * _fs_scale)), 1)
+    fs_evline = round(min(11.0, max(10.0, 9.5 * _fs_scale)), 1)
     fs_ev_date = 10
     fs_ev_ttl = 12
-    fs_foot = 11
 
     # 价格 Y 范围（含 MA、Boll 影响的 padding）
     all_hi = max(c[1] for c in norm)
@@ -598,7 +674,6 @@ def make_candle(
     def py_of(v):
         return price_y + (Y_MAX - v) / max(Y_MAX - Y_MIN, 1e-6) * price_h
 
-    # 成交量 Y
     max_vol = max(all_vols) if all_vols else 1
 
     def vy_of(v):
@@ -608,7 +683,6 @@ def make_candle(
     if c_bg:
         parts.append(f'<rect width="{width}" height="{height}" fill="{PAPER}"/>')
 
-    # ---------- 标题 ----------
     if title:
         parts.append(
             f'<text x="{MARGIN_L}" y="52" '
@@ -631,46 +705,78 @@ def make_candle(
         lbl_w = max(72, len(figure_label) * 8 + 20)
         parts.append(
             f'<text x="{MARGIN_L + lbl_w}" y="112" font-family="{_body_font}" font-size="{fs_figure}" '
-            f'fill="{c_muted}" letter-spacing=".04em">{_xesc(f"Candlestick · {N} bars · OHLC + volume")}</text>'
+            f'fill="{c_muted}" letter-spacing=".04em">{_xesc(tr("Candlestick · {n} bars · OHLC + volume", n=N))}</text>'
         )
 
-    # ---------- 顶部 KPI 卡片 ----------
     if show_kpi:
         chg_color = UP_COL if chg > 0 else DOWN_COL
         chg_arrow = "▲" if chg > 0 else "▼"
         kpis = [
-            ("LAST PRICE", f"{y_unit}{last:.2f}", "period end"),
-            ("PERIOD CHANGE", f"{chg_arrow} {chg_pct:+.1f}%", f"{y_unit}{chg:+.2f} absolute"),
+            (tr("LAST PRICE"), f"{y_unit}{last:.2f}", tr("period end")),
+            (tr("PERIOD CHANGE"), f"{chg_arrow} {chg_pct:+.1f}%", tr("{value} absolute", value=f"{y_unit}{chg:+.2f}")),
             (
-                "RANGE",
+                tr("RANGE"),
                 f"{y_unit}{period_low:.2f} — {y_unit}{period_high:.2f}",
-                f"span {y_unit}{period_high - period_low:.2f}",
+                tr("span {value}", value=f"{y_unit}{period_high - period_low:.2f}"),
             ),
         ]
         if avg_vol is not None:
             if avg_vol >= 1e6:
-                kpis.append(("AVG VOLUME", f"{avg_vol / 1e6:.2f}M", "per bar"))
+                kpis.append((tr("AVG VOLUME"), f"{avg_vol / 1e6:.2f}M", tr("per bar")))
             elif avg_vol >= 1e3:
-                kpis.append(("AVG VOLUME", f"{avg_vol / 1e3:.1f}K", "per bar"))
+                kpis.append((tr("AVG VOLUME"), f"{avg_vol / 1e3:.1f}K", tr("per bar")))
             else:
-                kpis.append(("AVG VOLUME", f"{avg_vol:,.0f}", "per bar"))
-        kpi_y = 128
+                kpis.append((tr("AVG VOLUME"), f"{avg_vol:,.0f}", tr("per bar")))
         # 4 卡片均分可用宽
         n_kpi = len(kpis)
         avail_w = width - MARGIN_R - MARGIN_L
-        kpi_w = min(220, (avail_w - 22 * (n_kpi - 1)) / n_kpi)
         kpi_gap = 22
+        kpi_w = (
+            min(220, (avail_w - kpi_gap * (kpi_cols - 1)) / kpi_cols)
+            if kpi_rows > 1
+            else min(220, (avail_w - 22 * (n_kpi - 1)) / n_kpi)
+        )
         # rect 高度跟字号联动：header + big + sub + padding
         _pad_top = 8
         _pad_mid = 6
         _pad_bot = 8
         _kpi_h = _pad_top + fs_kpi_hdr + _pad_mid + fs_kpi_big + _pad_mid + fs_kpi_sub + _pad_bot
         _kpi_h = round(_kpi_h)
-        _y_hdr = kpi_y + _pad_top + fs_kpi_hdr
-        _y_big = _y_hdr + _pad_mid + fs_kpi_big
-        _y_sub = _y_big + _pad_mid + fs_kpi_sub
-        for i, (label, big, sub) in enumerate(kpis):
-            kx = MARGIN_L + i * (kpi_w + kpi_gap)
+        kpi_y0 = kpi_y
+        col0_w = (
+            max(
+                [
+                    _estimate_label_width_px(f"{b} · {sb}", fs_side_lg, bold=True, font_family=_body_font)
+                    for _, b, sb in kpis[::2]
+                ]
+                + [
+                    _estimate_label_width_px(lb, fs_kpi_hdr, letter_spacing_em=0.08, bold=True, font_family=_body_font)
+                    for lb, _, _ in kpis[::2]
+                ]
+            )
+            + 24
+        )
+        for i, (label, big, sub) in enumerate(kpis if side_compact else []):
+            kx = 12 + (i % 2) * max((width - 24) / 2, col0_w)
+            ky = kpi_y0 + (i // 2) * kpi_cell_h
+            parts.append(
+                f'<rect x="{kx:.1f}" y="{ky + 2:.1f}" width="3" height="{kpi_cell_h - 6:.1f}" fill="{chg_color if i == 1 else _ACC}"/>'
+            )
+            parts.append(
+                f'<text x="{kx + 9:.1f}" y="{ky + 2 + fs_kpi_hdr * 0.85:.1f}" font-family="{_body_font}" '
+                f'font-size="{fs_kpi_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".08em">{_xesc(label)}</text>'
+            )
+            parts.append(
+                f'<text x="{kx + 9:.1f}" y="{ky + 6 + fs_kpi_hdr + fs_side_lg * 0.85:.1f}" font-family="{_body_font}" '
+                f'font-size="{fs_side_lg}" font-weight="700" fill="{chg_color if i == 1 else _INK}">{_xesc(big)}'
+                f'<tspan font-weight="400" fill="{c_muted}">\u00a0· {_xesc(sub)}</tspan></text>'
+            )
+        for i, (label, big, sub) in enumerate([] if side_compact else kpis):
+            kx = MARGIN_L + (i % kpi_cols) * (kpi_w + kpi_gap)
+            kpi_y = kpi_y0 + (i // kpi_cols) * (_kpi_h + 10)
+            _y_hdr = kpi_y + _pad_top + fs_kpi_hdr
+            _y_big = _y_hdr + _pad_mid + fs_kpi_big
+            _y_sub = _y_big + _pad_mid + fs_kpi_sub
             accent_c = chg_color if i == 1 else _ACC
             parts.append(
                 f'<rect x="{kx:.1f}" y="{kpi_y}" width="{kpi_w:.1f}" height="{_kpi_h}" fill="{PANEL}" '
@@ -692,8 +798,6 @@ def make_candle(
                 f'font-family="{_body_font}" font-size="{fs_kpi_sub}" fill="{c_muted}">{_xesc(sub)}</text>'
             )
 
-    # ---------- Y 网格 + 价格刻度 ----------
-    # nice-number tick
     def _nice_step(span, target=8):
         raw = span / target
         mag = 10 ** math.floor(math.log10(max(raw, 1e-9)))
@@ -702,11 +806,11 @@ def make_candle(
                 return nice * mag
         return 10 * mag
 
-    step = _nice_step(Y_MAX - Y_MIN)
+    step = _nice_step(Y_MAX - Y_MIN, target=max(2, min(8, int(price_h / (fs_yaxis * 2.2)))))
     # Bug 1 修复：当价格跨度 > 50 时，step 必须是整数（避免出现 .5 刻度）；
     # 当 step >= 1 时也上取整为整数，防止 nice=2.5 与 mag=1 相乘出现 .5。
     if (Y_MAX - Y_MIN) > 50 or step >= 1:
-        step = max(1, int(math.ceil(step)))
+        step = max(1, math.ceil(step))
     y_ticks = []
     t = math.ceil(Y_MIN / step) * step
     while t <= Y_MAX + 1e-9:
@@ -724,14 +828,12 @@ def make_candle(
             f'font-family="{_body_font}" font-size="{fs_yaxis}" fill="{_INK}">'
             f"{_xesc(f'{y_unit}{yv:g}')}</text>"
         )
-        # 右侧
         if not show_side_panel:
             parts.append(
                 f'<text x="{plot_x + plot_w + 6}" y="{py + 3.5:.1f}" text-anchor="start" '
                 f'font-family="{_body_font}" font-size="{fs_yaxis}" fill="{_INK}">{yv:g}</text>'
             )
 
-    # ---------- Bollinger 阴影带 ----------
     if boll_up and boll_dn:
         band_up = [(x_of(i), py_of(boll_up[i])) for i in range(N) if boll_up[i] is not None]
         band_dn = [(x_of(i), py_of(boll_dn[i])) for i in range(N) if boll_dn[i] is not None]
@@ -739,7 +841,6 @@ def make_candle(
             up_path = " ".join(f"{'L' if k else 'M'} {x:.1f} {y:.1f}" for k, (x, y) in enumerate(band_up))
             dn_path_rev = " ".join(f"L {x:.1f} {y:.1f}" for x, y in reversed(band_dn))
             parts.append(f'<path d="{up_path} {dn_path_rev} Z" fill="{_rgba_with_alpha(BOLL_COL, 0.06)}"/>')
-            # 上下轨虚线
             parts.append(
                 f'<path d="{up_path}" fill="none" stroke="{_rgba_with_alpha(BOLL_COL, 0.35)}" '
                 f'stroke-width="0.8" stroke-dasharray="2 2"/>'
@@ -750,7 +851,6 @@ def make_candle(
                 f'stroke-width="0.8" stroke-dasharray="2 2"/>'
             )
 
-    # ---------- 蜡烛 ----------
     for i, (o, h, l, c, v) in enumerate(norm):
         cx = x_of(i)
         is_up = c >= o
@@ -769,7 +869,6 @@ def make_candle(
             f'fill="{_rgba_with_alpha(col, 0.92)}"/>'
         )
 
-    # ---------- MA 均线 ----------
     ma_cols = [MA_SHORT_COL, MA_LONG_COL]
     for mi, ma in enumerate(ma_series):
         pts = [(x_of(i), py_of(v)) for i, v in enumerate(ma) if v is not None]
@@ -780,7 +879,6 @@ def make_candle(
         alpha = 1.0 if mi == 0 else 0.9
         parts.append(f'<path d="{d}" fill="none" stroke="{_rgba_with_alpha(col, alpha)}" stroke-width="1.6"/>')
 
-    # ---------- 事件注释 ----------
     if events:
         for ev in events:
             if len(ev) < 2:
@@ -797,7 +895,6 @@ def make_candle(
                 f'stroke="{c_muted}" stroke-width="0.6" stroke-dasharray="3 3"/>'
             )
             ann_col = UP_COL if kind == "positive" else (DOWN_COL if kind == "warning" else _ACC)
-            # 标签宽度按文字估算
             lab_w = max(90, len(str(ev_title)) * 6 + 30)
             parts.append(
                 f'<rect x="{ex - lab_w / 2:.1f}" y="{price_y + 2}" width="{lab_w:.1f}" height="18" rx="2" '
@@ -809,10 +906,8 @@ def make_candle(
                 f'font-size="{fs_evline}" fill="{_INK}" font-weight="600">{_xesc(str(ev_title))}</text>'
             )
 
-    # ---------- Volume 子图 ----------
     if show_volume and all_vols:
-        # 网格
-        for f in [0.5, 1.0]:
+        for f in [0.5, 1.0] if vol_h >= fs_yaxis * 2.4 else [1.0]:
             yv = max_vol * f
             py = vy_of(yv)
             parts.append(
@@ -827,7 +922,7 @@ def make_candle(
                 lbl = f"{yv:.0f}"
             parts.append(
                 f'<text x="{plot_x - 8}" y="{py + 3.5:.1f}" text-anchor="end" '
-                f'font-family="{_body_font}" font-size="{fs_yaxis - 1}" fill="{c_muted}">{_xesc(lbl)}</text>'
+                f'font-family="{_body_font}" font-size="{max(10, fs_yaxis - 1)}" fill="{c_muted}">{_xesc(lbl)}</text>'
             )
         for i, (o, h, l, c, v) in enumerate(norm):
             if v is None:
@@ -841,21 +936,21 @@ def make_candle(
                 f'width="{cand_w:.1f}" height="{bot - top:.1f}" '
                 f'fill="{_rgba_with_alpha(col, 0.55)}"/>'
             )
-        # 标题
         parts.append(
             f'<text x="{plot_x}" y="{vol_y - 6}" font-family="{_body_font}" '
-            f'font-size="{fs_vol_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".14em">VOLUME</text>'
+            f'font-size="{fs_vol_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".14em">{_xesc(tr("VOLUME"))}</text>'
         )
 
-    # ---------- X 轴刻度（日期） ----------
     bottom_axis_y = (vol_y + vol_h) if show_volume else (price_y + price_h)
     # 若 date_labels 存在：等距抽 6-10 个 tick
     if date_labels:
-        n_show = min(len(date_labels), 10)
-        step_lab = max(1, len(date_labels) // n_show)
-        tick_positions = list(range(0, len(date_labels), step_lab))
-        if tick_positions[-1] != len(date_labels) - 1:
-            tick_positions.append(len(date_labels) - 1)
+        widest_date = max(
+            _estimate_label_width_px(str(label), fs_xaxis, bold=True, font_family=_body_font) for label in date_labels
+        )
+        n_show = max(1, min(len(date_labels), 10, int(plot_w / (widest_date + fs_xaxis))))
+        tick_positions = (
+            [round(i * (len(date_labels) - 1) / (n_show - 1)) for i in range(n_show)] if n_show > 1 else [0]
+        )
         for pi in tick_positions:
             xv = x_of(pi)
             lbl = str(date_labels[pi])
@@ -864,47 +959,63 @@ def make_candle(
                 f'stroke="{c_muted}" stroke-width="0.8"/>'
             )
             parts.append(
-                f'<text x="{xv:.1f}" y="{bottom_axis_y + 18}" text-anchor="middle" '
+                f'<text x="{xv:.1f}" y="{bottom_axis_y + fs_xaxis + 9}" text-anchor="middle" '
                 f'font-family="{_body_font}" font-size="{fs_xaxis}" font-weight="600" '
                 f'fill="{_INK}">{_xesc(lbl)}</text>'
             )
     else:
         # 默认在 5 等分位置
-        for k in range(6):
-            i = int(k * (N - 1) / 5) if N > 1 else 0
+        for i in sorted({int(k * (N - 1) / 5) if N > 1 else 0 for k in range(6)}):
             xv = x_of(i)
             parts.append(
                 f'<line x1="{xv:.1f}" y1="{bottom_axis_y}" x2="{xv:.1f}" y2="{bottom_axis_y + 4}" '
                 f'stroke="{c_muted}" stroke-width="0.8"/>'
             )
             parts.append(
-                f'<text x="{xv:.1f}" y="{bottom_axis_y + 18}" text-anchor="middle" '
+                f'<text x="{xv:.1f}" y="{bottom_axis_y + fs_xaxis + 9}" text-anchor="middle" '
                 f'font-family="{_body_font}" font-size="{fs_xaxis}" font-weight="600" '
                 f'fill="{_INK}">{i + 1}</text>'
             )
 
-    # 时间轴基线
     parts.append(
         f'<line x1="{plot_x}" y1="{bottom_axis_y}" x2="{plot_x + plot_w}" y2="{bottom_axis_y}" '
         f'stroke="{_INK}" stroke-width="0.9"/>'
     )
 
-    # ---------- 右侧侧栏 ----------
-    if show_side_panel:
+    if side_compact:
+        for (kind, col, text), (fx, row) in zip(compact_items, compact_pos):
+            cy = compact_top + row * (fs_side_lg + 8) + fs_side_lg * 0.6
+            if kind == "candle":
+                parts.append(
+                    f'<line x1="{fx + 8:.1f}" y1="{cy - 8:.1f}" x2="{fx + 8:.1f}" y2="{cy + 8:.1f}" stroke="{col}" stroke-width="1"/>'
+                )
+                parts.append(
+                    f'<rect x="{fx + 5:.1f}" y="{cy - 5:.1f}" width="6" height="10" fill="{_rgba_with_alpha(col, 0.92)}"/>'
+                )
+            elif kind == "dot":
+                parts.append(f'<circle cx="{fx + 8:.1f}" cy="{cy:.1f}" r="3" fill="{col}"/>')
+            else:
+                dash = ' stroke-dasharray="2 2"' if kind == "dash" else ""
+                parts.append(
+                    f'<line x1="{fx:.1f}" y1="{cy:.1f}" x2="{fx + 16:.1f}" y2="{cy:.1f}" stroke="{col}" stroke-width="1.8"{dash}/>'
+                )
+            parts.append(
+                f'<text x="{fx + 24:.1f}" y="{cy + fs_side_lg * 0.35:.1f}" font-family="{_body_font}" '
+                f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">{_xesc(text)}</text>'
+            )
+    elif show_side_panel:
         side_x = width - MARGIN_R + 30
         side_w = MARGIN_R - 30 - 30
 
-        # LEGEND
         parts.append(
             f'<text x="{side_x}" y="{MARGIN_T + 10}" font-family="{_body_font}" '
-            f'font-size="{fs_side_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".14em">LEGEND</text>'
+            f'font-size="{fs_side_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".14em">{_xesc(tr("LEGEND"))}</text>'
         )
         parts.append(
             f'<line x1="{side_x}" y1="{MARGIN_T + 18}" x2="{side_x + side_w}" y2="{MARGIN_T + 18}" '
             f'stroke="{_INK}" stroke-width="0.6"/>'
         )
 
-        # 涨蜡烛示例
         lg_y = MARGIN_T + 40
 
         def _sample_candle(sx, sy, color):
@@ -916,13 +1027,13 @@ def make_candle(
         _sample_candle(side_x + 8, lg_y, UP_COL)
         parts.append(
             f'<text x="{side_x + 24}" y="{lg_y + 4}" font-family="{_body_font}" '
-            f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">Up day (close ≥ open)</text>'
+            f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">{_xesc(tr("Up day (close ≥ open)"))}</text>'
         )
 
         _sample_candle(side_x + 8, lg_y + 32, DOWN_COL)
         parts.append(
             f'<text x="{side_x + 24}" y="{lg_y + 36}" font-family="{_body_font}" '
-            f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">Down day (close &lt; open)</text>'
+            f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">{_xesc(tr("Down day (close < open)"))}</text>'
         )
 
         row_i = 2
@@ -934,10 +1045,9 @@ def make_candle(
                     f'<line x1="{side_x + 2}" y1="{y_line}" x2="{side_x + 18}" y2="{y_line}" '
                     f'stroke="{col}" stroke-width="1.8"/>'
                 )
-                short_long = "short-term" if mi == 0 else "long-term"
                 parts.append(
                     f'<text x="{side_x + 24}" y="{y_line + 4}" font-family="{_body_font}" '
-                    f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">MA {w} ({short_long})</text>'
+                    f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">{_xesc(tr("MA {w} (short-term)" if mi == 0 else "MA {w} (long-term)", w=w))}</text>'
                 )
             row_i += len(ma_windows)
         if show_bollinger:
@@ -948,15 +1058,14 @@ def make_candle(
             )
             parts.append(
                 f'<text x="{side_x + 24}" y="{y_line + 4}" font-family="{_body_font}" '
-                f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">Bollinger ({bollinger_window}, {bollinger_k}σ)</text>'
+                f'font-size="{fs_side_lg}" font-weight="600" fill="{_INK}">{_xesc(tr("Bollinger ({w}, {k}σ)", w=bollinger_window, k=bollinger_k))}</text>'
             )
 
-        # KEY EVENTS
         if events:
             ev_start = lg_y + 62 + ((len(ma_windows) if show_ma else 0) + (1 if show_bollinger else 0)) * 20 + 30
             parts.append(
                 f'<text x="{side_x}" y="{ev_start}" font-family="{_body_font}" '
-                f'font-size="{fs_side_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".14em">KEY EVENTS</text>'
+                f'font-size="{fs_side_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".14em">{_xesc(tr("KEY EVENTS"))}</text>'
             )
             parts.append(
                 f'<line x1="{side_x}" y1="{ev_start + 8}" x2="{side_x + side_w}" y2="{ev_start + 8}" '
@@ -996,32 +1105,24 @@ def make_candle(
                     f'fill="{col}">{day_ret:+.1f}%</text>'
                 )
 
-    # ---------- 底部脚注 ----------
-    if note or source:
-        foot_y = height - 32
-        parts.append(
-            f'<line x1="{MARGIN_L}" y1="{foot_y - 14}" x2="{width - 40}" y2="{foot_y - 14}" '
-            f'stroke="{_INK4}" stroke-width="0.5"/>'
+    parts.append(
+        notes_source_footer(
+            note,
+            source,
+            x=MARGIN_L,
+            x_right=width - 40,
+            y=height - 32,
+            rule=_INK4,
+            font=_body_font,
+            fs="10",
+            color=c_muted,
+            stack_source=True,
         )
-        if note:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
-                f'font-size="9.5" fill="{c_muted}">'
-                f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
-            )
-        if source:
-            src_y = foot_y + 14 if note else foot_y
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{src_y}" font-family="{_body_font}" '
-                f'font-size="9.5" fill="{c_muted}">'
-                f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>'
-            )
+    )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(width)} {int(height)}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 6) Boxplot 箱线图（多组四分位分布）
-# ==============================================================

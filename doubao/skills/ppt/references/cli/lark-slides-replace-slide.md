@@ -158,7 +158,7 @@ lark-cli slides +replace-slide \
 | `xml_presentation_id` | 解析后的真实 token（wiki URL 解析后会变化） |
 | `slide_id` | 与入参一致 |
 | `parts_count` | 本次提交的 parts 条数 |
-| `revision_id` | 成功后的新版本号，下次做乐观锁时用 |
+| `revision_id` | 写入成功后的新版本号 |
 | `failed_part_index` | 有部分失败时存在，指向第几条 part 失败 |
 | `failed_reason` | 失败原因文字描述 |
 | `issues` | 与 `failed_reason` 相对：parts 已全部生效，服务端只是仍有发现，不影响本次调用的成功状态。内容是未达阻断级的版式校验发现；校验主体是**拼装后的整页**，因此可能报出页面上原有的元素。按实际类型读取：对象/数组直接读，JSON 字符串解码后读，普通文本原样读；完整读取全部发现，立即回读并截图核验，真实问题须修复 |
@@ -209,7 +209,7 @@ lark-cli slides +replace-slide \
   ]'
 ```
 
-### 乐观锁
+### 指定基准版本
 
 ```bash
 # 读时记录 revision_id

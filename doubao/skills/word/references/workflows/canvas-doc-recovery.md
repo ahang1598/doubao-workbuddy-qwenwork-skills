@@ -21,10 +21,11 @@
 ### 1. 先确认终态
 
 - 后台任务仍运行：只跟踪同一 task，不重发。
-- 写请求已派发或派发状态不明：按操作类型只读回读；正文用稳定相邻锚点，表格读整表，layout 读 `layout + full`，分页读 `page`，图表读 `chart_data`，目录/水印用领域验收范围。
+- 写请求已派发或派发状态不明：按操作类型只读回读；正文用稳定相邻锚点，表格读整表，layout 读 `layout + full`，分页读 `page`，图表读 `chart_data`，目录、水印、批注、Field、表格几何和浮动对象用各自领域验收范围。
 - 将写入终态与验收结论分开记录。完整成功回执须满足命令的终态字段；普通 Local Update 的 `partial_success` 表示已应用但含诊断，不表示回滚或尚未写入。回执不足时，须确认原任务已终止，再以最新完整回读确认实际写入范围和结果；旧快照、部分目标、无响应、非法 JSON、缺字段和脚本解析异常都不能自行消除未知。
 - 已确认写入终态但缺少格式、结构或必要视觉证据时，记录验收缺口；不能因此改称 `unknown_write`，也不能记为已验收。
 - 终态仍未知立即返回 `unknown_write`。在未知消除前禁止新增写入、OOXML 提交和文件分支。
+- 恢复后只使用回读确认的当前目标、身份和基线继续未完成项；已完成项不重发，不复用失败前的 payload。
 
 ### 2. warning 先验证，实际偏离才修正
 
@@ -54,7 +55,7 @@
 | ID 失效或内容冲突且明确未写入 | 最新完整 Fetch 后补提交 1 次 | `local_blocked` |
 | 定位不唯一 | 重新 Fetch 消歧 1 次 | `local_blocked` |
 
-恢复不得删减或弱化 `edit_plan`。`ATTR_CAPABILITY_LIMITED` 影响用户目标或 baseline 保真时返回 `local_unsupported_runtime`；只有结构化证据明确不支持时才使用该结果。`partial_success` 本身不决定分类。权限/确认拒绝、样式 token/fingerprint 冲突及其他明确停止状态返回 `local_blocked`。
+恢复不得删减或弱化 `edit_plan`。调用严格符合已读取的公共契约与命中专项，但运行时在派发前结构化返回未知 subcommand/command/flag/option、`unsupported`、`not implemented` 或明确的协议版本不兼容时，返回 `local_unsupported_runtime`，不得继续尝试别名、相近命令、替代参数或不同 payload。调用偏离契约时，只在共享修正预算内纠正一次；请求已派发或写入终态不明时，须先按第 1 节消除 `unknown_write`。`ATTR_CAPABILITY_LIMITED` 影响用户目标或 baseline 保真时也返回 `local_unsupported_runtime`；`partial_success` 本身不决定分类。权限/确认拒绝、样式 token/fingerprint 冲突及其他明确停止状态返回 `local_blocked`。
 
 已验收目标不回滚、不重发；恢复只处理当前失败和剩余目标。任何相同失败在预算耗尽后必须结束分类，不循环修正。
 
@@ -81,7 +82,7 @@ PDF 失败不使已确认的写入失效，也不表示全部 Canvas CLI 不可�
 |---|---|---|
 | `local_succeeded` | 只读阶段：取得退出码 0、完整 JSON、`ok=true` 及该 scope 必需内容，读取 warning 不影响当前目标；更新阶段：写入终态已确认，warning 已分类，当前屏障回读核销目标与保留项，可保留已验证的 `partial_success` | 只读成功交回原阶段；更新成功表示当前 Local 目标已验收，计划内后续检查仍须完成 |
 | `local_retryable` | 明确未写入、只读失败，或终态已知且已确认可安全修正的实际偏离；仍有固定预算 | 留在 Local 恢复 |
-| `local_unsupported_runtime` | 结构化错误明确不支持，或能力限制破坏目标/baseline | Local 能力不足 |
+| `local_unsupported_runtime` | 契约一致的调用在派发前结构化返回兼容性错误，或能力限制破坏目标/baseline | Local 能力不足 |
 | `local_unstable` | 写前 Fetch 耗尽；补提交后仍明确未落盘；或同类实际偏离复现 | Local 运行不稳定 |
 | `unknown_write` | 仍运行，或派发/响应不明且回读仍无法确认写入终态 | 阻断所有新写入 |
 | `explicit_close` | 宿主字段或 CLI 结构化结果明确关闭 | 文件已关闭 |

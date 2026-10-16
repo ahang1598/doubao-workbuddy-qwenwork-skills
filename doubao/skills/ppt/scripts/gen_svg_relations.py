@@ -31,7 +31,7 @@ Python 调用:
 
 palette:
   所有 preset 默认使用 BONE_RUST palette (editorial_atelier skin)
-  · 传 palette=<Palette> 覆盖 (见 svg_relation_lib.palettes)
+  · 传 palette=<Palette> 覆盖 (见 svg_lib.relation.palettes)
 
 数据格式 (data 参数):
   每张 relation 的 data 结构不同. 详情用 relation_help('<slug>') 查询.
@@ -39,6 +39,7 @@ palette:
   正式 PPT 必须传 data 或 build_kwargs；内置 HERO_*_DATA 样例只在显式
   allow_sample_data=True / CLI --sample-data 时启用，避免假业务内容误入交付物。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -48,7 +49,7 @@ import os as _os
 import sys as _sys
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# ensure svg_relation_lib on sys.path (script may be invoked from anywhere,
+# ensure scripts/ is on sys.path so svg_lib.relation resolves (script may be invoked from anywhere,
 # e.g. `python3 scripts/gen_svg_relations.py` OR
 # `python3 -c "from scripts.gen_svg_relations import relation_help; ..."`)
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
@@ -75,47 +76,113 @@ _SCHEMA_DESCRIPTIONS: Dict[str, str] = {
 
 _RELATION_META: List[Tuple[str, str, str, str, str, str, str]] = [
     # ─────────── 当前支持的树状图 (11 种) ───────────
-    ("al_fishbone", "hero_embed_01_AL_fishbone_v2", "render_hero_embed_al_fishbone_v2", "build_al_tree",
-     "tree", "鱼骨 · root=effect + N branch × M sub-cause",
-     "root(effect) → 3-6 category → 每 category 1-5 sub-cause · 一根脊柱 + 上下分支"),
-    ("py_pmf", "hero_embed_02_PY_pmf_v2", "render_hero_embed_py_pmf_v2", "build_py_tree",
-     "tree", "3 层金字塔 · Problem / Method / Findings",
-     "root + 3 层堆叠 · 每层 3-4 支点"),
-    ("bl_bloom", "hero_embed_03_BL_bloom_v2", "render_hero_embed_bl_bloom_v2", "build_bloom_tree",
-     "tree", "Bloom 认知金字塔 · N 层水平条堆叠",
-     "root + n_layers ∈ [3,7] · 每层含 name / verbs list / example · 无 branch (线性链)"),
-    ("j1_osi", "hero_embed_04_J1_osi_v2", "render_hero_embed_j1_osi_v2", "build_osi_tree",
-     "tree", "OSI 分层协议栈 · 3-8 layer × 协议 chip",
-     "root + n_layers ∈ [3,8] · 每 layer 有 short/name/hue + 2-6 proto chip"),
-    ("mp_mindmap", "hero_embed_05_MP_mindmap_v2", "render_hero_embed_mp_mindmap_v2", "build_mp_tree",
-     "tree", "mindmap · hub 中心 + N 分支放射",
-     "root(hub) + 3-8 branch · 每 branch 2-5 leaf"),
-    ("tx_taxonomy", "hero_embed_07_TX_taxonomy_v2", "render_hero_embed_tx_taxonomy_v2", "build_tx_tree",
-     "tree", "四象限 / radial taxonomy",
-     "root + 4 category × N item"),
-    ("kp_kpi", "hero_embed_08_KP_kpi_v2", "render_hero_embed_kp_kpi_v2", "build_kpi_tree",
-     "tree", "KPI cascade · north-star → leading → lagging",
-     "root(north-star) + 2-5 leading · 每 leading 2-5 lagging · 每 KPI 有 stat/trend/healthy"),
-    ("e2_5why", "hero_embed_09_E2_5why_v2", "render_hero_embed_e2_5why_v2", "build_e2_tree",
-     "tree", "5-Why 追因阶梯 · 线性因果链",
-     "root(problem) + 2-7 why 深度 · 单链条"),
-    ("cu2_curriculum", "hero_embed_32_CU2_curriculum_v2", "render_hero_embed_cu2_curriculum_v2", "build_curriculum_tree",
-     "tree", "课程大纲 · module + lesson",
-     "root + 3-8 module · 每 module 1-10 lesson"),
-    ("ft_faulttree", "hero_embed_49_FT_faulttree_v2", "render_hero_embed_ft_faulttree_v2", "build_ft_tree",
-     "tree", "故障树 · top event + AND/OR gate + basic events",
-     "root(top event) · 中间节点 gate=AND/OR · 叶子是 basic event"),
-    ("cs_c4", "hero_embed_10_CS_c4_v2", "render_hero_embed_cs_c4_v2", "build_cs_c4_data",
-     "tree", "C4 · System > Boundary > Container (dandelion-migrated)",
-     "root(system) → 2-5 boundary → 每 boundary 1-6 container · edges 在 root.extra['edges']"),
+    (
+        "al_fishbone",
+        "hero_embed_01_AL_fishbone_v2",
+        "render_hero_embed_al_fishbone_v2",
+        "build_al_tree",
+        "tree",
+        "鱼骨 · root=effect + N branch × M sub-cause",
+        "root(effect) → 3-6 category → 每 category 1-5 sub-cause · 一根脊柱 + 上下分支",
+    ),
+    (
+        "py_pmf",
+        "hero_embed_02_PY_pmf_v2",
+        "render_hero_embed_py_pmf_v2",
+        "build_py_tree",
+        "tree",
+        "3 层金字塔 · Problem / Method / Findings",
+        "root + 3 层堆叠 · 每层 3-4 支点",
+    ),
+    (
+        "bl_bloom",
+        "hero_embed_03_BL_bloom_v2",
+        "render_hero_embed_bl_bloom_v2",
+        "build_bloom_tree",
+        "tree",
+        "Bloom 认知金字塔 · N 层水平条堆叠",
+        "root + n_layers ∈ [3,7] · 每层含 name / verbs list / example · 无 branch (线性链)",
+    ),
+    (
+        "j1_osi",
+        "hero_embed_04_J1_osi_v2",
+        "render_hero_embed_j1_osi_v2",
+        "build_osi_tree",
+        "tree",
+        "OSI 分层协议栈 · 3-8 layer × 协议 chip",
+        "root + n_layers ∈ [3,8] · 每 layer 有 short/name/hue + 2-6 proto chip",
+    ),
+    (
+        "mp_mindmap",
+        "hero_embed_05_MP_mindmap_v2",
+        "render_hero_embed_mp_mindmap_v2",
+        "build_mp_tree",
+        "tree",
+        "mindmap · hub 中心 + N 分支放射",
+        "root(hub) + 3-8 branch · 每 branch 2-5 leaf",
+    ),
+    (
+        "tx_taxonomy",
+        "hero_embed_07_TX_taxonomy_v2",
+        "render_hero_embed_tx_taxonomy_v2",
+        "build_tx_tree",
+        "tree",
+        "四象限 / radial taxonomy",
+        "root + 4 category × N item",
+    ),
+    (
+        "kp_kpi",
+        "hero_embed_08_KP_kpi_v2",
+        "render_hero_embed_kp_kpi_v2",
+        "build_kpi_tree",
+        "tree",
+        "KPI cascade · north-star → leading → lagging",
+        "root(north-star) + 2-5 leading · 每 leading 2-5 lagging · 每 KPI 有 stat/trend/healthy",
+    ),
+    (
+        "e2_5why",
+        "hero_embed_09_E2_5why_v2",
+        "render_hero_embed_e2_5why_v2",
+        "build_e2_tree",
+        "tree",
+        "5-Why 追因阶梯 · 线性因果链",
+        "root(problem) + 2-7 why 深度 · 单链条",
+    ),
+    (
+        "cu2_curriculum",
+        "hero_embed_32_CU2_curriculum_v2",
+        "render_hero_embed_cu2_curriculum_v2",
+        "build_curriculum_tree",
+        "tree",
+        "课程大纲 · module + lesson",
+        "root + 3-8 module · 每 module 1-10 lesson",
+    ),
+    (
+        "ft_faulttree",
+        "hero_embed_49_FT_faulttree_v2",
+        "render_hero_embed_ft_faulttree_v2",
+        "build_ft_tree",
+        "tree",
+        "故障树 · top event + AND/OR gate + basic events",
+        "root(top event) · 中间节点 gate=AND/OR · 叶子是 basic event",
+    ),
+    (
+        "cs_c4",
+        "hero_embed_10_CS_c4_v2",
+        "render_hero_embed_cs_c4_v2",
+        "build_cs_c4_data",
+        "tree",
+        "C4 · System > Boundary > Container (dandelion-migrated)",
+        "root(system) → 2-5 boundary → 每 boundary 1-6 container · edges 在 root.extra['edges']",
+    ),
 ]
 
-_SLUG_TO_META: Dict[str, Tuple[str, str, str, str, str, str, str]] = {
-    m[0]: m for m in _RELATION_META
-}
+_SLUG_TO_META: Dict[str, Tuple[str, str, str, str, str, str, str]] = {m[0]: m for m in _RELATION_META}
 
 # Keep this note generic so future curve-based tree presets do not need a separate registry.
-_CURVE_LINT_NOTE = "部分树状图可能使用曲线/自定义 path；若 lint 报元素重叠，不一定是真实渲染错误，先做截图检查确认后再调整。"
+_CURVE_LINT_NOTE = (
+    "部分树状图可能使用曲线/自定义 path；若 lint 报元素重叠，不一定是真实渲染错误，先做截图检查确认后再调整。"
+)
 
 _SCHEMA_ORDER = ["tree"]
 
@@ -123,6 +190,7 @@ _SCHEMA_ORDER = ["tree"]
 # ═════════════════════════════════════════════════════════════════
 # lazy import · 只在调用时加载对应 preset
 # ═════════════════════════════════════════════════════════════════
+
 
 def _load_preset(slug: str) -> Tuple[Callable, Callable, Any]:
     """按 slug 加载 (render_fn, build_fn, hero_default).
@@ -132,7 +200,7 @@ def _load_preset(slug: str) -> Tuple[Callable, Callable, Any]:
     if slug not in _SLUG_TO_META:
         raise KeyError(f"unknown relation slug: {slug!r} · use --list to see all")
     _, mod_suffix, render_name, build_name, *_ = _SLUG_TO_META[slug]
-    module = importlib.import_module(f"svg_relation_lib.presets.{mod_suffix}")
+    module = importlib.import_module(f"svg_lib.relation.presets.{mod_suffix}")
     render_fn = getattr(module, render_name)
     build_fn = getattr(module, build_name, None)
     hero_default = None
@@ -203,13 +271,11 @@ def _build_relation_data(
             built = build_fn(**kwargs)
         except TypeError as e:
             if not allow_sample_data:
-                raise TypeError(
-                    f"{slug}: build_kwargs are invalid and sample fallback is disabled: {e}"
-                ) from e
+                raise TypeError(f"{slug}: build_kwargs are invalid and sample fallback is disabled: {e}") from e
             import warnings
+
             warnings.warn(
-                f"{slug}: build_fn(**build_kwargs) raised TypeError: {e}. "
-                "Using explicitly requested sample data.",
+                f"{slug}: build_fn(**build_kwargs) raised TypeError: {e}. Using explicitly requested sample data.",
                 RuntimeWarning,
             )
     elif has_build_kwargs:
@@ -229,16 +295,19 @@ def _build_relation_data(
 # public API
 # ═════════════════════════════════════════════════════════════════
 
-def make_relation(slug: str,
-                    data: Optional[Any] = None,
-                    build_kwargs: Optional[Dict[str, Any]] = None,
-                    skin: Optional[str] = None,
-                    palette: Optional[str] = None,
-                    font_family: Optional[str] = None,
-                    allow_sample_data: bool = False,
-                    shrink: bool = True,
-                    return_meta: bool = False,
-                    **render_kwargs: Any):
+
+def make_relation(
+    slug: str,
+    data: Optional[Any] = None,
+    build_kwargs: Optional[Dict[str, Any]] = None,
+    skin: Optional[str] = None,
+    palette: Optional[str] = None,
+    font_family: Optional[str] = None,
+    allow_sample_data: bool = False,
+    shrink: bool = True,
+    return_meta: bool = False,
+    **render_kwargs: Any,
+):
     """按 slug 生成 SVG 字符串 (可选 shrink viewBox / 返回元数据).
 
     Args:
@@ -246,7 +315,7 @@ def make_relation(slug: str,
         data: 已构造的 schema 对象. 正式 PPT 推荐直接传 data.
         build_kwargs: 传给 build_<slug>_data(...) 的 kwargs. 正式 PPT 必须来自真实业务内容.
         skin: **skin = 结构骨架** (字体 / 装饰母题 / marker / chrome).
-            默认 `editorial_atelier`. 可选见 `svg_relation_lib.skins.registry.list_skins()`.
+            默认 `editorial_atelier`. 可选见 `svg_lib.relation.skins.registry.list_skins()`.
         palette: **palette = 颜色系统** (bg / ink / 8 支 hue).
         font_family: **统一字体** (可选). 传字符串 (如 `'PingFang SC, sans-serif'` 或
             `'Georgia, serif'`) 时, body 与 heading 都用它——让 svg 里的字跟 slide 主字体保持一致.
@@ -285,13 +354,19 @@ def make_relation(slug: str,
         svg = render_fn(data, **render_kwargs)
 
     if shrink:
-        from svg_relation_lib._viewbox import shrink_viewbox
+        from svg_lib.relation._viewbox import shrink_viewbox
+
         # pad_y=20 bottom-pad reserves 4-5pt slide-space buffer after atomize ·
         # keeps text descenders + shape halos inside slide canvas at slide_h=440.
         svg = shrink_viewbox(svg, pad_x=12.0, pad_y=20.0)
 
+    from svg_lib._color_compat import office_safe_svg
+
+    svg = office_safe_svg(svg)
+
     if return_meta:
-        from svg_relation_lib._viewbox import extract_viewbox, embed_sizes
+        from svg_lib.relation._viewbox import extract_viewbox, embed_sizes
+
         vb = extract_viewbox(svg)
         return {
             "svg": svg,
@@ -301,31 +376,33 @@ def make_relation(slug: str,
     return svg
 
 
-def make_relation_atomized(slug: str,
-                             slide_x0: float = 30.0,
-                             slide_y0: float = 102.0,
-                             slide_w: float = 900.0,
-                             slide_h: float = 463.0,
-                             *,
-                             data: Optional[Any] = None,
-                             build_kwargs: Optional[Dict[str, Any]] = None,
-                             skin: Optional[str] = None,
-                             palette: Optional[str] = None,
-                             font_family: Optional[str] = None,
-                             allow_sample_data: bool = False,
-                             drop_background: bool = True,
-                             drop_micro_gray_below: int = 0,
-                             drop_text_below: int = 0,
-                             min_slide_font_size: int = 10,
-                             subtitle_svg_threshold: int = 0,
-                             min_slide_font_size_subtitle: int = 8,
-                             subtitle_slide_font_cap: int = 0,
-                             subtitle_letter_spacing: float = 0.0,
-                             subtitle_color_override: str = "",
-                             strict_no_embed: bool = True,
-                             return_svg: bool = False,
-                             auto_size: bool = False,
-                             **render_kwargs: Any):
+def make_relation_atomized(
+    slug: str,
+    slide_x0: float = 30.0,
+    slide_y0: float = 102.0,
+    slide_w: float = 900.0,
+    slide_h: float = 463.0,
+    *,
+    data: Optional[Any] = None,
+    build_kwargs: Optional[Dict[str, Any]] = None,
+    skin: Optional[str] = None,
+    palette: Optional[str] = None,
+    font_family: Optional[str] = None,
+    allow_sample_data: bool = False,
+    drop_background: bool = True,
+    drop_micro_gray_below: int = 0,
+    drop_text_below: int = 0,
+    min_slide_font_size: int = 10,
+    subtitle_svg_threshold: int = 0,
+    min_slide_font_size_subtitle: int = 8,
+    subtitle_slide_font_cap: int = 0,
+    subtitle_letter_spacing: float = 0.0,
+    subtitle_color_override: str = "",
+    strict_no_embed: bool = True,
+    return_svg: bool = False,
+    auto_size: bool = False,
+    **render_kwargs: Any,
+):
     """按 slug 生成 SVG · 再原子化拆成 slide-native 元素 (可编辑 shape/line/text/custom).
 
     对比 make_relation:
@@ -367,6 +444,7 @@ def make_relation_atomized(slug: str,
         # 想加旁注只需外面另加 <shape type="text" ...>
     """
     import re
+
     # Bucket F 新方向 (2026-09-12): auto_size · 每 preset 有 recommended slide size
     # 若 auto_size=True 且 caller 用默认 900×463 · 用 preset 推荐尺寸覆盖 · 让复杂 preset 获得更大空间
     # 覆盖标准: viewBox 大或 y-span 长的保留 preset → 900×540
@@ -390,11 +468,16 @@ def make_relation_atomized(slug: str,
             slide_y0 = max_y0
     # 复用 make_relation 拿 shrunk SVG
     svg_str = make_relation(
-        slug, data=data, build_kwargs=build_kwargs,
-        skin=skin, palette=palette, font_family=font_family,
+        slug,
+        data=data,
+        build_kwargs=build_kwargs,
+        skin=skin,
+        palette=palette,
+        font_family=font_family,
         allow_sample_data=allow_sample_data,
         shrink=True,
-        return_meta=False, **render_kwargs,
+        return_meta=False,
+        **render_kwargs,
     )
 
     # 取 shrunk viewBox (原子化用它做坐标映射)
@@ -407,7 +490,15 @@ def make_relation_atomized(slug: str,
     # 把 SVG 写到临时文件 (atomize_svg_to_slide 要 Path 输入)
     import tempfile, os
     from pathlib import Path
-    from atomize_svg_to_slide import atomize_svg_to_slide, set_mapping, set_drop_background, set_drop_micro_gray, set_drop_text_below, set_min_slide_font_size, set_subtitle_relax
+    from svg_lib.atomize_svg_to_slide import (
+        atomize_svg_to_slide,
+        set_mapping,
+        set_drop_background,
+        set_drop_micro_gray,
+        set_drop_text_below,
+        set_min_slide_font_size,
+        set_subtitle_relax,
+    )
 
     # 关键 · atomize 用 viewBox 空间坐标 · 但 viewBox 可能不从 (0,0) 起
     # atomize 内部 _sx(x) = slide_x0 + x * slide_w / svg_w · 只对 (0,0) 起的 viewBox 正确
@@ -417,13 +508,30 @@ def make_relation_atomized(slug: str,
     # 所以正确做法: 把 slide_x0 相对减去 (svg_vb_x, svg_vb_y) 的映射
     # 即 slide 坐标 = slide_x0 + (elem_x - svg_vb_x) * slide_w / svg_vb_w
     # 等价于 set_mapping(svg_w=svg_vb_w, svg_h=svg_vb_h, slide_x0=slide_x0 - svg_vb_x * (slide_w/svg_vb_w), ...)
-    scale_x = slide_w / svg_vb_w
-    scale_y = slide_h / svg_vb_h
-    adj_slide_x0 = slide_x0 - svg_vb_x * scale_x
-    adj_slide_y0 = slide_y0 - svg_vb_y * scale_y
-    set_mapping(svg_w=svg_vb_w, svg_h=svg_vb_h,
-                slide_x0=adj_slide_x0, slide_y0=adj_slide_y0,
-                slide_w=slide_w, slide_h=slide_h)
+    # 2026-09-22 修复：关系图原子化后必须保持 viewBox 宽高比。
+    # 如果把同一个 SVG 用独立的 X/Y 缩放强行映射到任意 slide_w/slide_h，
+    # 圆会变成椭圆，图表整体也会被纵向拉伸；这里改为在目标槽位内等比适配。
+    # 保持调用方传入的 slide_x0/slide_y0 作为内容锚点。若把等比适配后的图居中放入槽位，
+    # 不同宽高比的关系图会在已设计好的页面中出现上下或左右“跳动”。
+    # The set_* calls below write the shared atomizer config; restore it afterwards so a chart_slide /
+    # drawing placed later in the same script does not inherit the relation's drop_background etc.
+    from svg_lib.atomize_svg_to_slide._config import _CFG
+    import copy as _copy
+
+    saved_cfg = _copy.deepcopy(_CFG)
+    scale = min(slide_w / svg_vb_w, slide_h / svg_vb_h)
+    mapped_slide_w = svg_vb_w * scale
+    mapped_slide_h = svg_vb_h * scale
+    adj_slide_x0 = slide_x0 - svg_vb_x * scale
+    adj_slide_y0 = slide_y0 - svg_vb_y * scale
+    set_mapping(
+        svg_w=svg_vb_w,
+        svg_h=svg_vb_h,
+        slide_x0=adj_slide_x0,
+        slide_y0=adj_slide_y0,
+        slide_w=mapped_slide_w,
+        slide_h=mapped_slide_h,
+    )
     set_drop_background(drop_background)
     set_drop_micro_gray(drop_micro_gray_below)
     set_drop_text_below(drop_text_below)
@@ -443,11 +551,13 @@ def make_relation_atomized(slug: str,
         fragment = atomize_svg_to_slide(Path(tmp_path))
     finally:
         os.unlink(tmp_path)
+        _CFG.clear()
+        _CFG.update(saved_cfg)
 
     if strict_no_embed and "<embed" in fragment:
         raise RuntimeError(
             f"{slug}: atomized relation output still contains {fragment.count('<embed')} <embed> element(s); "
-            "fix atomize_svg_to_slide.py or pass strict_no_embed=False only for explicit non-editable fallback."
+            "fix svg_lib/atomize_svg_to_slide.py or pass strict_no_embed=False only for explicit non-editable fallback."
         )
 
     if return_svg:
@@ -457,10 +567,9 @@ def make_relation_atomized(slug: str,
 
 import contextlib
 
+
 @contextlib.contextmanager
-def _apply_skin_palette(skin_name: Optional[str],
-                         palette_name: Optional[str],
-                         font_family: Optional[str] = None):
+def _apply_skin_palette(skin_name: Optional[str], palette_name: Optional[str], font_family: Optional[str] = None):
     """临时应用 skin/palette/font_family 到 editorial_atelier module.
 
     skin (结构骨架) 决定 svg_defs / hero_chrome / hero_footer / chip_pill 等函数行为
@@ -471,12 +580,12 @@ def _apply_skin_palette(skin_name: Optional[str],
     Yields:
         override_palette (Palette or None) · 若指定了 skin/palette 则为对应 Palette 对象
     """
-    from svg_relation_lib.skins.registry import (
+    from svg_lib.relation.skins.registry import (
         get_skin as _get_skin,
         set_active_skin as _set_active_skin,
         clear_active_skin as _clear_active_skin,
     )
-    from svg_relation_lib.skins import editorial_atelier as ea
+    from svg_lib.relation.skins import editorial_atelier as ea
 
     # 备份原值
     original_hue = dict(ea.HUE)
@@ -487,7 +596,7 @@ def _apply_skin_palette(skin_name: Optional[str],
     # 决定新 HUE + 新 palette + active skin module
     new_hue = original_hue
     new_palette_obj = None  # Palette dataclass (skin 里 PALETTE / BONE_RUST)
-    skin_mod = None         # active skin · 用于 preset opt-in draw_node 分流
+    skin_mod = None  # active skin · 用于 preset opt-in draw_node 分流
 
     if skin_name and skin_name != "editorial_atelier":
         skin_mod = _get_skin(skin_name)
@@ -496,13 +605,15 @@ def _apply_skin_palette(skin_name: Optional[str],
 
     if palette_name:
         # palette 覆盖 skin 的颜色
-        from svg_relation_lib.palettes_ext import get_palette
+        from svg_lib.relation.palettes_ext import get_palette
+
         pal = get_palette(palette_name)
         new_hue = dict(pal.hues)
         # 用 palette 的 bg/ink 造一个 Palette dataclass override
         # 注意: 我们需要保留 skin 的字体/kicker 参数, 只覆盖 bg/ink/primary/accent
         base_palette = new_palette_obj or original_palette
         from dataclasses import replace
+
         new_palette_obj = replace(
             base_palette,
             name=pal.name,
@@ -530,6 +641,7 @@ def _apply_skin_palette(skin_name: Optional[str],
         if new_palette_obj is not None:
             try:
                 from dataclasses import replace
+
                 new_palette_obj = replace(
                     new_palette_obj,
                     head_family=font_family,
@@ -578,6 +690,7 @@ def list_schemas() -> List[str]:
 # relation_help(slug=None) · 类似 chart_help
 # ═════════════════════════════════════════════════════════════════
 
+
 def relation_help(name: Optional[str] = None) -> str:
     """列出全部树状图的调用范式.
 
@@ -586,11 +699,17 @@ def relation_help(name: Optional[str] = None) -> str:
     relation_help('tree')         → 当前支持的 relation 列表
     """
     if name is None:
+        try:
+            from svg_lib.relation.skins.registry import list_skins as _list_skins
+
+            skin_names = _list_skins()
+        except Exception:
+            skin_names = ["editorial_atelier"]
         lines = [
             "# 11 种 SVG 树状图总览 (v2)",
             "",
             "## ⚠ 必读硬规则 (违反必崩)",
-            "  1. **飞书 Slides 中的树状图必须可编辑**: 当前仅支持下方 11 个 slug。默认用 `make_relation_atomized(..., strict_no_embed=True)`，把图拆成 slide-native `<shape>` / `<line>` / `<shape type=\"text\">` / custom shape；残留 `<embed>` 会直接失败。不要把 `make_relation()` 的整块 SVG 直接塞进 `<embed>` 当最终页面主体。",
+            '  1. **飞书 Slides 中的树状图必须可编辑**: 当前仅支持下方 11 个 slug。默认用 `make_relation_atomized(..., strict_no_embed=True)`，把图拆成 slide-native `<shape>` / `<line>` / `<shape type="text">` / custom shape；残留 `<embed>` 会直接失败。不要把 `make_relation()` 的整块 SVG 直接塞进 `<embed>` 当最终页面主体。',
             "  2. **坐标框自适应**: `make_relation_atomized(..., slide_x0=..., slide_y0=..., slide_w=..., slide_h=...)` 会按 SVG viewBox 映射到 slide 区域；复杂 preset 可加 `auto_size=True`。",
             f"  3. **曲线 lint 提醒**: {_CURVE_LINT_NOTE}",
             "  4. **非编辑型 SVG 只用于预览/导出**: 只有用户明确接受不可编辑插图，才用 `make_relation(..., return_meta=True)` 再写 `<embed>`。",
@@ -609,7 +728,7 @@ def relation_help(name: Optional[str] = None) -> str:
             "  - **skin** = 结构骨架 (字体 / 装饰母题 / marker / chrome). 每个场景推荐一个 skin.",
             "  - **palette** = 颜色系统 (bg / ink / 8 支 hue). 与 skin 正交, deck 里换色只换 palette.",
             "  - **font_family** = 覆盖 skin 字体 · 单字符串, body+heading 都用它 (跟 chart 侧 `make_chart(font_family=)` 语义一致). 用来让 svg 里的字跟 slide 主字体保持一致.",
-            "  - 8 skin: `editorial_atelier` · `boardroom_navy` · `duolingo_cream` · `pitch_neon` · `luxury_manual` · `mbb_consulting` · `journal_ivory` · `technical_whitepaper`",
+            f"  - {len(skin_names)} skin: " + " · ".join(f"`{s}`" for s in skin_names),
             "  - 25 palette (跟 chart 侧 palette 名对齐, deck 里 chart 和 relation 用同一个 palette 名保持视觉一致):",
             "    - **warm 底 (13)**: `bone_rust` · `exec_navy` · `classroom_indigo` · `forest_luxe` · `ivory_indigo` · `archive_ink` · `hbs_case` · `cell_press` · `rust_terracotta` · `tea_ceremony` · `stone_ink` · `linen_plum` · `meadow_science`",
             "    - **cool 底 (6)**: `burgundy_analyst` · `sapphire_dev` · `gs_research` · `sage_review` · `grape_eclectic` · `pine_engineering`",
@@ -674,7 +793,7 @@ def relation_help(name: Optional[str] = None) -> str:
     return (
         f"# {slug} · {scene}\n\n"
         f"**data schema**: `{schema}` · {schema_desc}\n\n"
-        f"**module**: `svg_relation_lib.presets.{mod_suffix}`\n"
+        f"**module**: `svg_lib.relation.presets.{mod_suffix}`\n"
         f"**render fn**: `{render_name}`\n"
         f"**build fn**: `{build_name}`\n\n"
         f"**数据格式**: {hint}\n\n"
@@ -703,6 +822,7 @@ def relation_help(name: Optional[str] = None) -> str:
 # CLI
 # ═════════════════════════════════════════════════════════════════
 
+
 def _cli():
     ap = argparse.ArgumentParser(
         description="11 种 v2 树状图的统一 SVG 生成器",
@@ -710,10 +830,21 @@ def _cli():
     )
     ap.add_argument("--type", help="relation slug (见 --list)")
     ap.add_argument("--data-file", help="JSON 文件, 传给 build_<slug>_data(**json) 的 kwargs")
-    ap.add_argument("--skin", help="skin 骨架 (editorial_atelier / boardroom_navy / duolingo_cream / pitch_neon / luxury_manual / mbb_consulting / journal_ivory / technical_whitepaper)")
-    ap.add_argument("--palette", help="palette 颜色 (bone_rust / exec_navy / mocha_kpi / nightlab / ... 见 --list-palettes)")
-    ap.add_argument("--font-family", help="统一字体 · 单字符串, body+heading 都用它 (如 'PingFang SC, sans-serif' 或 'Georgia, serif'). 跟 chart 侧 make_chart(font_family=) 语义一致.")
-    ap.add_argument("--sample-data", "--allow-sample-data", dest="sample_data", action="store_true", help="仅本地预览/回归测试使用: 允许在未提供 --data-file 时使用内置 HERO_*_DATA 样例")
+    ap.add_argument("--skin", help="skin 骨架；可用 --list-skins 查看当前 registry")
+    ap.add_argument(
+        "--palette", help="palette 颜色 (bone_rust / exec_navy / mocha_kpi / nightlab / ... 见 --list-palettes)"
+    )
+    ap.add_argument(
+        "--font-family",
+        help="统一字体 · 单字符串, body+heading 都用它 (如 'PingFang SC, sans-serif' 或 'Georgia, serif'). 跟 chart 侧 make_chart(font_family=) 语义一致.",
+    )
+    ap.add_argument(
+        "--sample-data",
+        "--allow-sample-data",
+        dest="sample_data",
+        action="store_true",
+        help="仅本地预览/回归测试使用: 允许在未提供 --data-file 时使用内置 HERO_*_DATA 样例",
+    )
     ap.add_argument("--atomized", action="store_true", help="输出可编辑 slide-native XML fragment，而不是整块 SVG")
     ap.add_argument("--slide-x0", type=float, default=30.0, help="--atomized 输出映射到 slide 的左上角 X")
     ap.add_argument("--slide-y0", type=float, default=102.0, help="--atomized 输出映射到 slide 的左上角 Y")
@@ -729,14 +860,16 @@ def _cli():
     args = ap.parse_args()
 
     if args.list_skins:
-        from svg_relation_lib.skins.registry import list_skins, get_skin
+        from svg_lib.relation.skins.registry import list_skins, get_skin
+
         for name in list_skins():
             s = get_skin(name)
             print(f"  {name:22s} bg={s.PALETTE.bg:8s} primary={s.HUE['rust']}")
         return
 
     if args.list_palettes:
-        from svg_relation_lib.palettes_ext import list_palettes, get_palette
+        from svg_lib.relation.palettes_ext import list_palettes, get_palette
+
         by_tone: Dict[str, List[str]] = {"warm": [], "cool": [], "dark": []}
         for name in list_palettes():
             by_tone[get_palette(name).tone].append(name)
@@ -803,11 +936,15 @@ def _cli():
         )
         return
 
-    result = make_relation(args.type, build_kwargs=build_kwargs,
-                            skin=args.skin, palette=args.palette,
-                            font_family=args.font_family,
-                            allow_sample_data=args.sample_data,
-                            return_meta=True)
+    result = make_relation(
+        args.type,
+        build_kwargs=build_kwargs,
+        skin=args.skin,
+        palette=args.palette,
+        font_family=args.font_family,
+        allow_sample_data=args.sample_data,
+        return_meta=True,
+    )
     svg = result["svg"]
     vb = result["viewBox"]
     sizes = result["embed_sizes"]
@@ -822,11 +959,9 @@ def _cli():
     # 元数据 · 帮助模型决定 embed 尺寸
     if vb:
         vx, vy, vw, vh = vb
-        print(f"[viewBox] x={vx:.0f} y={vy:.0f} w={vw:.0f} h={vh:.0f} "
-              f"(aspect ratio {vw/vh:.2f}:1)", file=_sys.stderr)
+        print(f"[viewBox] x={vx:.0f} y={vy:.0f} w={vw:.0f} h={vh:.0f} (aspect ratio {vw / vh:.2f}:1)", file=_sys.stderr)
     if sizes:
-        print(f"[embed sizes · pick one · width:height must equal viewBox]:",
-              file=_sys.stderr)
+        print("[embed sizes · pick one · width:height must equal viewBox]:", file=_sys.stderr)
         for scale, (w, h) in sizes.items():
             print(f"  {scale}× : <embed width={w} height={h}>", file=_sys.stderr)
 

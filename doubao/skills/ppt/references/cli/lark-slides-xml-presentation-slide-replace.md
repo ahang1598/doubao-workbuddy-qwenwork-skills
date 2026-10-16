@@ -34,7 +34,7 @@ lark-cli slides xml_presentation.slide replace --params '<json_params>' --data '
 |------|------|------|------|
 | `xml_presentation_id` | string | 是 | 演示文稿唯一标识 |
 | `slide_id` | string | 是 | 页面唯一标识 |
-| `revision_id` | integer | 否 | 默认 `-1`（以最新版为基准）；传具体版本号做乐观锁 |
+| `revision_id` | integer | 否 | 基准版本号，默认 `-1` 表示基于最新版执行；可指定具体版本号 |
 | `tid` | string | 否 | 事务 ID，一般留空 |
 
 ### data JSON 结构

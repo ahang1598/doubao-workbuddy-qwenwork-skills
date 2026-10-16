@@ -29,7 +29,7 @@ lark-cli slides +delete-slide --presentation "$PID" --slide-id "$SID" --dry-run
 |------|------|------|
 | `--presentation` | 是 | `xml_presentation_id`、`/slides/` URL 或 `/wiki/` URL |
 | `--slide-id` | 是 | 要删除的页面 ID |
-| `--revision-id` | 否 | 演示文稿版本号，默认 `-1`（最新）；传具体版本号做乐观锁 |
+| `--revision-id` | 否 | 演示文稿版本号，默认 -1 表示最新版本。指定版本号不应被视为已确认的并发保护；写入前仍须回读目标页，发现变化时重新合并修改。 |
 | `--dry-run` | 否 | 打印将要发起的请求，不删除 |
 
 ## 成功输出

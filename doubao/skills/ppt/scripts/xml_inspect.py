@@ -62,8 +62,7 @@ def parse_document(input_path: Path) -> tuple[ET.Element, str, str, list[ET.Elem
     namespace = namespace_of(root.tag)
     if not namespace or not namespace.endswith(SML_NAMESPACE_SUFFIX):
         raise ValueError(
-            "根元素没有有效的 SML 2.0 namespace；必须从 XML 根元素读取 namespace，"
-            "不能自行猜测 http 或 https"
+            "根元素没有有效的 SML 2.0 namespace；必须从 XML 根元素读取 namespace，不能自行猜测 http 或 https"
         )
 
     root_name = local_name(root.tag)
@@ -166,8 +165,12 @@ def build_summary(
         warnings.append("页面文字预览有截断；请用 --mode content 读取完整页面内容，编辑对象前再读 raw XML")
     if any(slide["note_preview_truncated"] for slide in inspected):
         warnings.append("演讲者备注预览有截断；需要查看全文时请用 --mode raw，content 模式不包含演讲者备注")
-    if any(set(slide["tag_counts"]) - {"shape", "img", "icon", "line", "polyline", "table", "chart"} for slide in inspected):
-        warnings.append("计数只统计 <data> 直属对象；embed 或其它对象也可能承载图形，不能把 images/icons 为 0 当作没有图形")
+    if any(
+        set(slide["tag_counts"]) - {"shape", "img", "icon", "line", "polyline", "table", "chart"} for slide in inspected
+    ):
+        warnings.append(
+            "计数只统计 <data> 直属对象；embed 或其它对象也可能承载图形，不能把 images/icons 为 0 当作没有图形"
+        )
     if duplicate_ids:
         warnings.append(f"XML 中存在重复 id：{duplicate_ids}")
 
@@ -211,8 +214,7 @@ def parse_raw_document(input_path: Path) -> tuple[Any, str, str, list[Any]]:
     namespace = lxml_namespace_of(root.tag)
     if not namespace or not namespace.endswith(SML_NAMESPACE_SUFFIX):
         raise ValueError(
-            "根元素没有有效的 SML 2.0 namespace；必须从 XML 根元素读取 namespace，"
-            "不能自行猜测 http 或 https"
+            "根元素没有有效的 SML 2.0 namespace；必须从 XML 根元素读取 namespace，不能自行猜测 http 或 https"
         )
 
     root_name = LET.QName(root).localname
@@ -227,9 +229,7 @@ def parse_raw_document(input_path: Path) -> tuple[Any, str, str, list[Any]]:
     return root, root_name, namespace, slides
 
 
-def select_slides(
-    slides: list[Any], requested_ids: list[str]
-) -> list[tuple[int, str | None, Any]]:
+def select_slides(slides: list[Any], requested_ids: list[str]) -> list[tuple[int, str | None, Any]]:
     if not requested_ids:
         return [(index, slide.get("id"), slide) for index, slide in enumerate(slides, 1)]
     matches: dict[str, list[tuple[int, Any]]] = {slide_id: [] for slide_id in requested_ids}
@@ -238,20 +238,13 @@ def select_slides(
             matches[slide_id].append((index, slide))
 
     missing = [slide_id for slide_id in requested_ids if not matches[slide_id]]
-    ambiguous = {
-        slide_id: [index for index, _ in items]
-        for slide_id, items in matches.items()
-        if len(items) > 1
-    }
+    ambiguous = {slide_id: [index for index, _ in items] for slide_id, items in matches.items() if len(items) > 1}
     if missing:
         raise ValueError(f"没有找到以下 slide_id：{missing}")
     if ambiguous:
         raise ValueError(f"以下 slide_id 在 XML 中重复，无法唯一定位：{ambiguous}")
 
-    return [
-        (matches[slide_id][0][0], slide_id, matches[slide_id][0][1])
-        for slide_id in requested_ids
-    ]
+    return [(matches[slide_id][0][0], slide_id, matches[slide_id][0][1]) for slide_id in requested_ids]
 
 
 def build_raw_slides_lxml(input_path: Path, requested_ids: list[str]) -> dict[str, Any]:
@@ -311,6 +304,7 @@ def full_text(element: ET.Element) -> str:
     walk(element)
     return "\n".join(line.strip() for line in "".join(parts).splitlines() if line.strip())
 
+
 def explicit_colors(element: ET.Element) -> list[dict[str, str]]:
     """Expose source colors, without guessing their meaning or inherited styles."""
     colors = []
@@ -360,33 +354,70 @@ def block_content_lines(block: ET.Element, namespace: str) -> list[str]:
         rows = block.findall(f"./{{{namespace}}}tr")
         for row_number, row in enumerate(rows, 1):
             for cell_number, cell in enumerate(row.findall(f"./{{{namespace}}}td"), 1):
-                details = [f"{key}={quoted(value)}" for key, value in cell.attrib.items()
-                           if key == "id" or "span" in key.lower()]
+                details = [
+                    f"{key}={quoted(value)}"
+                    for key, value in cell.attrib.items()
+                    if key == "id" or "span" in key.lower()
+                ]
                 for color in explicit_colors(cell):
-                    details.extend(f"{color['tag']}.{key}={quoted(value)}"
-                                   for key, value in color.items() if key != "tag")
+                    details.extend(
+                        f"{color['tag']}.{key}={quoted(value)}" for key, value in color.items() if key != "tag"
+                    )
                 cell_label = f"r{row_number}c{cell_number}" + (" " + " ".join(details) if details else "")
                 lines.append(f"  {cell_label}: {quoted(full_text(cell))}")
-        if (not rows or any(not row.findall(f"./{{{namespace}}}td") for row in rows)
-                or any(local_name(child.tag) not in {"tr", "colgroup"} for child in block)
-                or any(local_name(child.tag) != "td" or namespace_of(child.tag) != namespace
-                       for row in rows for child in row)):
+        if (
+            not rows
+            or any(not row.findall(f"./{{{namespace}}}td") for row in rows)
+            or any(local_name(child.tag) not in {"tr", "colgroup"} for child in block)
+            or any(
+                local_name(child.tag) != "td" or namespace_of(child.tag) != namespace for row in rows for child in row
+            )
+        ):
             lines.append(f"  未完整展开表格，请读 raw XML；可读文字: {quoted(full_text(block))}")
     elif tag == "chart":
         datasets = block.findall(f"./{{{namespace}}}chartData")
         for dataset in datasets:
             lines.extend(data_lines(dataset))
-        context_tags = {"chartTitle", "chartSubTitle", "chartLegend", "chartTooltip", "chartPlot", "chartSeries", "chartLabels", "chartAxis", "chartLabel"}
+        context_tags = {
+            "chartTitle",
+            "chartSubTitle",
+            "chartLegend",
+            "chartTooltip",
+            "chartPlot",
+            "chartSeries",
+            "chartLabels",
+            "chartAxis",
+            "chartLabel",
+        }
         style_attrs = {"color", "width", "height", "topLeftX", "topLeftY", "opacity"}
         for node in block.iter():
             if local_name(node.tag) in context_tags:
-                attrs = " ".join(f"{key}={quoted(value)}" for key, value in node.attrib.items()
-                                 if key not in style_attrs and not key.lower().startswith("font"))
-                text = full_text(node) if local_name(node.tag) in {"chartTitle", "chartSubTitle", "chartLabel"} else (node.text or "").strip()
+                attrs = " ".join(
+                    f"{key}={quoted(value)}"
+                    for key, value in node.attrib.items()
+                    if key not in style_attrs and not key.lower().startswith("font")
+                )
+                text = (
+                    full_text(node)
+                    if local_name(node.tag) in {"chartTitle", "chartSubTitle", "chartLabel"}
+                    else (node.text or "").strip()
+                )
                 if attrs or text:
                     label = f"{local_name(node.tag)} {attrs}".rstrip()
                     lines.append(f"  {label}" + (f": {quoted(text)}" if text else ""))
-        if not datasets or any(local_name(child.tag) not in {"chartPlotArea", "chartData", "chartTitle", "chartSubTitle", "chartStyle", "chartLegend", "chartTooltip"} for child in block):
+        if not datasets or any(
+            local_name(child.tag)
+            not in {
+                "chartPlotArea",
+                "chartData",
+                "chartTitle",
+                "chartSubTitle",
+                "chartStyle",
+                "chartLegend",
+                "chartTooltip",
+            }
+            for child in block
+        ):
             lines.append(f"  未完整展开图表，请读 raw XML；可读文字: {quoted(full_text(block))}")
     else:
         # Embedded graphics can contain CSS/metadata; they are listed, not parsed as prose.
@@ -400,8 +431,10 @@ def block_content_lines(block: ET.Element, namespace: str) -> list[str]:
 def build_content(input_path: Path, requested_ids: list[str]) -> tuple[str, int, int]:
     _, _, namespace, slides = parse_document(input_path)
     selected = select_slides(slides, requested_ids)
-    lines = ["# content：页面文字/数据不截断，不含演讲者备注；图片及嵌入对象未解析，样式不完整，修改时仍须读 raw XML。",
-             "# 表格 r/c 表示 XML 行/格顺序，跨行跨列另标 span；字符串中的 \\n 表示原文换行。"]
+    lines = [
+        "# content：页面文字/数据不截断，不含演讲者备注；图片及嵌入对象未解析，样式不完整，修改时仍须读 raw XML。",
+        "# 表格 r/c 表示 XML 行/格顺序，跨行跨列另标 span；字符串中的 \\n 表示原文换行。",
+    ]
     for index, slide_id, slide in selected:
         lines.extend(["", f"## slide {index} id={quoted(slide_id or '')}"])
         data = slide.find(f"./{{{namespace}}}data")
@@ -415,8 +448,12 @@ def parse_args() -> argparse.Namespace:
         description="--mode 选择输出模式（默认 summary）；summary 读取全稿，content/raw 可选页，三种模式均可保存输出"
     )
     parser.add_argument("--input", required=True, type=Path, help="slides +xml-get 保存的 XML 文件")
-    parser.add_argument("--mode", choices=("summary", "content", "raw"), default="summary",
-                        help="summary：摘要 JSON；content：页面文字/数据，不含演讲者备注；raw：含完整 XML 的 JSON")
+    parser.add_argument(
+        "--mode",
+        choices=("summary", "content", "raw"),
+        default="summary",
+        help="summary：摘要 JSON；content：页面文字/数据，不含演讲者备注；raw：含完整 XML 的 JSON",
+    )
     parser.add_argument("--output", type=Path, help="保存当前模式的输出；不传时写到标准输出")
     parser.add_argument(
         "--slide-id",
@@ -433,7 +470,9 @@ def main() -> int:
     requested_ids = list(dict.fromkeys(args.slide_id))
     try:
         if args.mode == "summary" and requested_ids:
-            raise ValueError("summary 模式用于全稿摘要，不能与 --slide-id 同用；按页读取请用 --mode content 或 --mode raw")
+            raise ValueError(
+                "summary 模式用于全稿摘要，不能与 --slide-id 同用；按页读取请用 --mode content 或 --mode raw"
+            )
         if args.mode == "content":
             rendered, total, count = build_content(args.input, requested_ids)
         else:
@@ -448,8 +487,18 @@ def main() -> int:
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(rendered, encoding="utf-8")
-            print(json.dumps({"status": "ok", "mode": args.mode, "output": str(args.output),
-                              "presentation_slide_count": total, "output_slide_count": count}, ensure_ascii=False))
+            print(
+                json.dumps(
+                    {
+                        "status": "ok",
+                        "mode": args.mode,
+                        "output": str(args.output),
+                        "presentation_slide_count": total,
+                        "output_slide_count": count,
+                    },
+                    ensure_ascii=False,
+                )
+            )
         else:
             print(rendered, end="")
     except (ValueError, OSError) as error:

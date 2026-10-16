@@ -29,6 +29,14 @@ class IconParkToolTest(unittest.TestCase):
         self.assertTrue(results)
         self.assertEqual(results[0]["iconType"], "iconpark/Safe/protect.svg")
 
+    def test_search_icons_supports_multiple_query_values(self) -> None:
+        results = iconpark_tool.search_icons(
+            self.index_data,
+            {"query": ["security", "protect"], "limit": 3},
+        )
+        self.assertTrue(results)
+        self.assertEqual(results[0]["iconType"], "iconpark/Safe/protect.svg")
+
     def test_search_icons_supports_category_filter(self) -> None:
         results = iconpark_tool.search_icons(
             self.index_data,
@@ -131,6 +139,19 @@ class IconParkToolCLITest(unittest.TestCase):
         output = json.loads(result.stdout)
         self.assertTrue(output)
         self.assertTrue(any(entry["iconType"] == "iconpark/Charts/positive-dynamics.svg" for entry in output))
+
+    def test_cli_search_accepts_multiple_query_values(self) -> None:
+        result = self.run_tool("search", "--query", "security", "protect", "--limit", "3")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        output = json.loads(result.stdout)
+        self.assertEqual(output[0]["iconType"], "iconpark/Safe/protect.svg")
+
+        result = self.run_tool(
+            "search", "--query", "security", "--query", "protect", "--limit", "3"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        output = json.loads(result.stdout)
+        self.assertEqual(output[0]["iconType"], "iconpark/Safe/protect.svg")
 
     def test_cli_resolve_writes_json_to_stdout(self) -> None:
         result = self.run_tool("resolve", "--name", "chart-line")

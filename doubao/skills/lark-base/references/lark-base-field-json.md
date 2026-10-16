@@ -35,7 +35,7 @@
 | `select` | `type` `name` | `multiple` + `options` + 静态 `default_value`，或 `multiple` + `dynamic_options_source` |
 | `datetime` | `type` `name` | `style.format` `default_value` |
 | `created_at` / `updated_at` | `type` `name` | `style.format` |
-| `user` / `group_chat` | `type` `name` | `multiple`；仅 `user` 支持 `default_value` |
+| [`user` / `group_chat`](#36-user--group_chat) | `type` `name` | `multiple`；仅 `user` 支持 `default_value` |
 | `created_by` / `updated_by` | `type` `name` | 无 |
 | `link` | `type` `name` `link_table` | `bidirectional` `bidirectional_link_field_name` |
 | `formula` | `type` `name` `expression` | 无 |
@@ -117,6 +117,7 @@
 {
   "type": "number",
   "name": "工时",
+  "style": {"type": "plain", "precision": 2},
   "default_value": 8
 }
 ```
@@ -131,6 +132,7 @@
 - `precision` 取值 `0..4`，默认 `2`
 - `percentage` 默认 `false`
 - `thousands_separator` 默认 `false`
+- 必须按业务语义显式选择 `precision`，不要依赖默认两位小数。人数、件数、名次、完整年数等不可分割的离散量用 `0`；测量值、比例等连续量按用户要求或所需业务精度设置。
 
 ```json
 {
@@ -308,6 +310,8 @@
 
 ### 3.6 user / group_chat
 
+存储并引用飞书群对象（例如用于群成员操作）时，字段类型使用 `group_chat`；群名称等普通描述性文本使用 `text`。
+
 人员字段和群字段都支持 `multiple`。
 `user` 支持 `default_value`：人员 CellValue 数组，元素可用 `{ "id": "ou_xxx" }` 或 `{ "$slot": "current_user" }`；不要猜用户 ID。`group_chat` 不支持默认值。
 
@@ -351,7 +355,7 @@
 - `link` 字段的单元格表示“当前记录关联到的对侧表记录集合”
 - `bidirectional` 默认 `false`
 - `bidirectional=true` 时，会在被关联表自动创建一个反向关联字段。任一侧记录的关联关系发生变更时，另一侧对应记录会自动同步更新
-- `bidirectional_link_field_name` 仅在 `bidirectional=true` 时使用
+- `bidirectional_link_field_name` 仅在 `bidirectional=true` 时使用；用户没点名时不要与对侧表同名，否则公式里该名称会先按表名解析
 - 关联字段筛选：这个功能在 Base 前端支持，属于 UI-only 属性，OpenAPI 里不支持，CLI 不能读取、创建或更新；不要根据接口返回缺失判断未配置
 
 ```json

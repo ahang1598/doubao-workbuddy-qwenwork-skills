@@ -47,7 +47,10 @@ import sys
 import tempfile
 import time
 import urllib.request
+from collections import Counter
 from pathlib import Path
+from html import escape as html_escape
+from html.parser import HTMLParser
 from urllib.parse import unquote, urlparse
 
 # playwright 是可选依赖——lazy import 让 shot.py 在无 playwright 环境也能跑
@@ -71,19 +74,27 @@ INIT_SCRIPT = r"""
   const orig = proto.addEventListener;
   proto.addEventListener = function(type, listener, opts) {
     try {
-      if (type === 'click' && this && this.nodeType === 1) {
-        // 只标 Element；document/window 上的委托不标（否则每个按钮都会被误认为"有 handler"）
-        this.__shot_hasClickListener = true;
-        // 顺带把 listener 源码存下来。3b 的 javascript: 占位符收紧路径要用它证明
-        // "祖先 handler 是否真的路由到当前元素"——通过检查源码里是否引用了元素的
-        // class / id / data-* 值。listener 是箭头函数 / 普通函数时 toString 一般能拿到源码；
-        // native / bound / minify 后的短名会拿不到有效标识，那种情况下判定会 fallback 到
-        // 保守报（带 note 让人肉核对），不会静默漏抓。
-        try {
-          const src = typeof listener === 'function'
-            ? Function.prototype.toString.call(listener) : '';
-          if (src) (this.__shot_listenerSources = this.__shot_listenerSources || []).push(src);
-        } catch (e) {}
+      if (type === 'click' && this) {
+        // 先判 window/document/documentElement/body 这些全局委托目标——body/html 也是 Element
+        // （nodeType===1），如果按 Element 分支处理只会打 __shot_hasClickListener 标记，
+        // isDocDelegated 拿不到，deadButtons 会全部误报。
+        const isGlobalTarget = (this === window || this === document ||
+          (typeof document !== 'undefined' &&
+           (this === document.documentElement || this === document.body)));
+        if (isGlobalTarget) {
+          try {
+            const src = typeof listener === 'function'
+              ? Function.prototype.toString.call(listener) : '';
+            if (src) (window.__shot_docListeners = window.__shot_docListeners || []).push(src);
+          } catch (e) {}
+        } else if (this.nodeType === 1) {
+          this.__shot_hasClickListener = true;
+          try {
+            const src = typeof listener === 'function'
+              ? Function.prototype.toString.call(listener) : '';
+            if (src) (this.__shot_listenerSources = this.__shot_listenerSources || []).push(src);
+          } catch (e) {}
+        }
       }
     } catch (e) {}
     return orig.call(this, type, listener, opts);
@@ -157,8 +168,94 @@ READY_SCRIPT = r"""
 """
 
 
+# ---- v2 schema：规则元数据登记表
+# 每个 rule 一条元数据，用于：
+# 1) 把 shots.desktop.<rule> 等旧字段规范化成 findings[]
+# 2) 决定 severity 默认值（可被逐条 finding 覆盖）
+# 3) 生成 notRunChecks（引擎降级时哪些规则跑不了）
+# 加新 lint rule 时必须在这里登记，否则 v2 findings 里不会出现。
+RULE_CATALOG = {
+    # === 环境 / 网络 ===
+    "consoleErrors":                   {"severity": "error",   "kind": "console"},
+    "consoleWarnings":                 {"severity": "warning", "kind": "console"},
+    "resourceErrors":                  {"severity": "error",   "kind": "network"},
+    # === 布局 / 溢出 ===
+    "horizontalOverflow":              {"severity": "error",   "kind": "layout"},
+    "overlappingText":                 {"severity": "warning", "kind": "layout"},
+    "clippedText":                     {"severity": "warning", "kind": "layout"},
+    "misalignedBlocks":                {"severity": "warning", "kind": "layout"},
+    "unevenColumns":                   {"severity": "warning", "kind": "layout"},
+    "pseudoOverflow":                  {"severity": "warning", "kind": "layout"},
+    "orphanCardsWarning":               {"severity": "warning", "kind": "layout"},
+    "squeezedTableColumns":            {"severity": "error",   "kind": "layout"},
+    "fakeDisclosureBulletsWarning":    {"severity": "warning", "kind": "content"},
+    "edgeHuggingTextWarning":          {"severity": "warning", "kind": "layout"},
+    "fixedWidthElementsWarning":       {"severity": "warning", "kind": "layout"},
+    # === 时间轴 / 图表 ===
+    "timelineAlignmentIssues":         {"severity": "error",   "kind": "layout"},
+    "timelineBrokenAxis":              {"severity": "error",   "kind": "layout"},
+    "timelineDeadDotStyle":            {"severity": "warning", "kind": "content"},
+    "chartBadValues":                  {"severity": "warning", "kind": "content"},
+    "chartHtmlInCanvasText":           {"severity": "warning", "kind": "content"},
+    "responsiveChartIssues":           {"severity": "error",   "kind": "responsive"},
+    # === 图片 / 发布 ===
+    "duplicateImagesWarning":          {"severity": "info",    "kind": "content"},
+    "extremeAspectImagesWarning":      {"severity": "warning", "kind": "content"},
+    "stretchedImages":                 {"severity": "warning", "kind": "content"},
+    "localImageWarnings":              {"severity": "warning", "kind": "publish"},
+    "publishBrokenAssets":             {"severity": "error",   "kind": "publish"},
+    # === 引用 / 兼容 ===
+    "unsafeHrefRefsWarning":           {"severity": "warning", "kind": "compat"},
+    # === 排版 / 字体 ===
+    "slopFontsWarning":                {"severity": "warning", "kind": "typography"},
+    "emojiUsageWarning":               {"severity": "warning", "kind": "typography"},
+    "mobileFontIssues":                {"severity": "error",   "kind": "typography"},
+    "mobileFontIssuesWarning":         {"severity": "warning", "kind": "typography"},
+    "textContrastIssues":              {"severity": "warning", "kind": "accessibility"},
+    # === 元数据 ===
+    "faviconWarning":                  {"severity": "warning", "kind": "metadata"},
+    "viewportMetaWarning":             {"severity": "warning", "kind": "metadata"},
+    # === 动效 / 交互 ===
+    "invisibleAnimationsWarning":      {"severity": "warning", "kind": "animation"},
+    "touchTargetTooSmallWarning":      {"severity": "warning", "kind": "interaction"},
+    "deadButtons":                     {"severity": "error",   "kind": "interaction"},
+}
+
+# 暂停易误伤动效/题材设计的告警；保留检测与 hint，后续修正判据后移除此处对应项即可恢复。
+# 同时停止旧 shots 字段和 v2 findings 输出，避免模型仍据旧字段修改正常页面。
+_DISABLED_DOM_RULES = {
+    "overlappingText": "overlappingText",
+    "clippedText": "clippedText",
+    "extremeAspectImagesWarning": "extremeAspectImages",
+    "touchTargetTooSmallWarning": "touchTargetTooSmall",
+    # 与输入框兼容检查共用 mobileFontIssues 源数据，只在下方分桶处停用普通小字。
+    "mobileFontIssuesWarning": None,
+}
+RULE_CATALOG = {rid: meta for rid, meta in RULE_CATALOG.items() if rid not in _DISABLED_DOM_RULES}
+
+# 引擎降级时哪些 kind 的规则跑不了（依赖 DOM 结果）
+_KINDS_NEEDING_DOM = frozenset({
+    "layout", "typography", "interaction", "responsive", "content",
+    "accessibility", "compat", "animation", "publish",
+})
+# 错误码枚举
+ERROR_CODES = frozenset({
+    "parameter_error", "input_not_found", "navigation_error",
+    "browser_launch_error", "render_timeout", "report_script_error",
+    "tool_timeout", "no_browser", "unexpected",
+})
+
 REPORT_SCRIPT = r"""
 () => {
+  // 统一的 selector 生成器：报出的每条问题都要能被定位，否则消费方只能重跑脚本去找位置
+  const __sel = (el) => {
+    if (!el || !el.tagName) return null;
+    const tag = el.tagName.toLowerCase();
+    if (el.id) return '#' + el.id;
+    const cls = String(el.className || '').trim().split(/\s+/).filter(Boolean)[0];
+    return cls ? tag + '.' + cls : tag;
+  };
+
   const vw = window.innerWidth, vh = window.innerHeight;
   const fw = document.documentElement.scrollWidth;
   const fh = document.documentElement.scrollHeight;
@@ -435,29 +532,67 @@ REPORT_SCRIPT = r"""
     }
   }
 
-  // 规则 1：文字元素之间 rect 相交
-  // 过滤：父子/祖孙关系一定 contain，永远相交，噪声。交集面积 >= 16px² 才算。
+  // 规则 1：文字**行盒**相交（v2：用 Range.getClientRects 拿真实行盒，
+  // 不用元素 bounding rect 相交——避免祖先容器盒相交但字形没重叠的误报）
   const overlappingText = [];
   {
-    // 简单 O(N^2)。文本元素通常几十到几百个，够用。
-    // 优化：先按 top 排序，只跟"top 在自己 bottom 以上"的比。
-    textEls.sort((a, b) => a.top - b.top);
-    for (let i = 0; i < textEls.length && overlappingText.length < 15; i++) {
-      const a = textEls[i];
-      for (let j = i + 1; j < textEls.length; j++) {
-        const b = textEls[j];
-        if (b.top >= a.bottom) break; // 后面所有元素都在 a 下方了
-        // 过滤祖孙/包含关系
+    // 折叠 / 隐藏 / details closed 的文字不参与判定
+    const isFolded = (el) => {
+      let p = el;
+      while (p && p !== document.body && p.nodeType === 1) {
+        if (p.getAttribute && p.getAttribute('aria-hidden') === 'true') return true;
+        if (p.tagName === 'DETAILS' && !p.open) return true;
+        p = p.parentElement;
+      }
+      return false;
+    };
+    // 对每个含直接文本的元素，用 Range 抓每一行的行盒
+    const rows = [];  // {el, tag, text, top,left,right,bottom, w,h, lineHeight}
+    for (const t of textEls) {
+      if (isFolded(t.el)) continue;
+      const cs = getComputedStyle(t.el);
+      const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2 || 16;
+      for (const node of t.el.childNodes) {
+        if (node.nodeType !== 3) continue;
+        if (!node.nodeValue || !node.nodeValue.trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const cr = range.getClientRects();
+        for (let i = 0; i < cr.length; i++) {
+          const r = cr[i];
+          if (r.width < 4 || r.height < 4) continue;
+          rows.push({
+            el: t.el, tag: t.tag, text: t.text,
+            top: r.top + window.scrollY,
+            left: r.left + window.scrollX,
+            right: r.right + window.scrollX,
+            bottom: r.bottom + window.scrollY,
+            w: r.width, h: r.height, lineHeight: lh,
+          });
+        }
+        if (range.detach) range.detach();
+      }
+    }
+    rows.sort((a, b) => a.top - b.top);
+    for (let i = 0; i < rows.length && overlappingText.length < 15; i++) {
+      const a = rows[i];
+      for (let j = i + 1; j < rows.length; j++) {
+        const b = rows[j];
+        if (b.top >= a.bottom) break;
+        if (a.el === b.el) continue;
         if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
-        // 计算交集
         const ix = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
         const iy = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+        if (ix < 2 || iy < 2) continue;
         const inter = ix * iy;
-        if (inter < 16) continue;
-        // 相对占比：两者中较小的那个如果被吃掉一大半，更可能是真 bug
-        const minArea = Math.min(a.area, b.area);
-        const ratio = inter / minArea;
+        const minArea = Math.min(a.w * a.h, b.w * b.h);
+        const ratio = minArea > 0 ? inter / minArea : 0;
+        // 准入：交叠占较小行盒的 10%，或交叠高度 >= 0.5 * line-height
+        const minLh = Math.min(a.lineHeight, b.lineHeight);
+        if (ratio < 0.10 && iy < 0.5 * minLh) continue;
         overlappingText.push({
+          selector: __sel(a.el),
+          bSelector: __sel(b.el),
           a: { tag: a.tag, text: a.text, rect: [Math.round(a.left), Math.round(a.top), Math.round(a.w), Math.round(a.h)] },
           b: { tag: b.tag, text: b.text, rect: [Math.round(b.left), Math.round(b.top), Math.round(b.w), Math.round(b.h)] },
           intersectPx: Math.round(inter),
@@ -468,11 +603,8 @@ REPORT_SCRIPT = r"""
     }
   }
 
-  // 规则 2：文本被容器裁掉
-  // 独立扫描：任何 overflow:hidden|clip 的元素，只要它子孙里有可见文字且 scroll size > client size 就报。
-  // 不复用 textEls（因为卡片本身通常无直接文本，文字在子孙 <p>/<h*> 里）
-  // 忽略 text-overflow:ellipsis / -webkit-line-clamp：这两个是"故意截断"的标准 UI 模式
-  // 溢出 < 4px 忽略（浮点/亚像素抖动）
+  // 规则 2：文本被容器裁掉（v2：叶子 Text 节点的 Range 末行超出 container padding box 才报）
+  // 保留 ellipsis / line-clamp 过滤；只要 scrollWidth/Height 超但字形 Range 没越出，就不算真裁切
   const clippedText = [];
   {
     const all = document.querySelectorAll('body *');
@@ -487,28 +619,66 @@ REPORT_SCRIPT = r"""
       const clipsY = (oy === 'hidden' || oy === 'clip');
       if (!clipsX && !clipsY) continue;
       if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) continue;
-      // 故意的 ellipsis：单行 text-overflow:ellipsis，或多行 -webkit-line-clamp
+      // 故意的 ellipsis / -webkit-line-clamp
       const ellipsisSingle = (cs.textOverflow === 'ellipsis' && cs.whiteSpace && cs.whiteSpace.indexOf('nowrap') !== -1);
       const lineClampRaw = cs.getPropertyValue ? cs.getPropertyValue('-webkit-line-clamp') : '';
       const clampMulti = lineClampRaw && lineClampRaw !== 'none' && parseInt(lineClampRaw, 10) > 0;
       if (ellipsisSingle || clampMulti) continue;
-      const dx = el.scrollWidth - el.clientWidth;
-      const dy = el.scrollHeight - el.clientHeight;
-      const overX = clipsX && dx > 4;
-      const overY = clipsY && dy > 4;
-      if (!overX && !overY) continue;
-      // 子孙里得有可见文字才算"文本被裁"（否则可能只是纯图形/装饰容器裁了自己的 pseudo）
-      const txt = (el.textContent || '').trim();
-      if (txt.length === 0) continue;
       const r = el.getBoundingClientRect();
       if (r.width < 2 || r.height < 2) continue;
-      clippedText.push({
-        tag: tag.toLowerCase(),
-        text: txt.slice(0, 60),
-        rect: [Math.round(r.left + window.scrollX), Math.round(r.top + window.scrollY), Math.round(r.width), Math.round(r.height)],
-        clippedX: overX ? dx : 0,
-        clippedY: overY ? dy : 0,
-      });
+      // padding box：文字被裁的判据是超出 padding box 而非 border box
+      const padLeft = parseFloat(cs.paddingLeft) || 0;
+      const padRight = parseFloat(cs.paddingRight) || 0;
+      const padTop = parseFloat(cs.paddingTop) || 0;
+      const padBottom = parseFloat(cs.paddingBottom) || 0;
+      const padBox = {
+        left: r.left + padLeft, right: r.right - padRight,
+        top: r.top + padTop, bottom: r.bottom - padBottom,
+      };
+      // 遍历所有 Text 节点，用 Range 找越界的
+      let hit = null;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (!n.nodeValue || !n.nodeValue.trim()) continue;
+        // 排除隐藏祖先
+        let p = n.parentElement, hidden = false;
+        while (p && p !== el) {
+          const pcs = getComputedStyle(p);
+          if (pcs.display === 'none' || pcs.visibility === 'hidden' || +pcs.opacity === 0) { hidden = true; break; }
+          // aria-hidden 装饰层不算真被裁的正文
+          if (p.getAttribute && p.getAttribute('aria-hidden') === 'true') { hidden = true; break; }
+          p = p.parentElement;
+        }
+        if (hidden) continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        const rects = range.getClientRects();
+        if (range.detach) range.detach();
+        for (let i = 0; i < rects.length; i++) {
+          const tr = rects[i];
+          if (tr.width < 2 || tr.height < 2) continue;
+          const overRight = clipsX && tr.right > padBox.right + 1;
+          const overLeft = clipsX && tr.left < padBox.left - 1;
+          const overBottom = clipsY && tr.bottom > padBox.bottom + 1;
+          const overTop = clipsY && tr.top < padBox.top - 1;
+          if (!overRight && !overLeft && !overBottom && !overTop) continue;
+          const clipX = overRight ? Math.max(0, tr.right - padBox.right) :
+                        (overLeft ? Math.max(0, padBox.left - tr.left) : 0);
+          const clipY = overBottom ? Math.max(0, tr.bottom - padBox.bottom) :
+                        (overTop ? Math.max(0, padBox.top - tr.top) : 0);
+          hit = {
+            tag: tag.toLowerCase(),
+            text: (n.nodeValue || '').trim().slice(0, 60),
+            rect: [Math.round(r.left + window.scrollX), Math.round(r.top + window.scrollY), Math.round(r.width), Math.round(r.height)],
+            clippedX: Math.round(clipX),
+            clippedY: Math.round(clipY),
+          };
+          break;
+        }
+        if (hit) break;
+      }
+      if (hit) clippedText.push(hit);
     }
   }
 
@@ -667,6 +837,28 @@ REPORT_SCRIPT = r"""
       }
       return null;
     };
+    // v2：检查是否被 document/window 上的委托 listener 覆盖
+    // INIT_SCRIPT 把 document/window/documentElement/body 上的 click listener 源码收集到
+    // window.__shot_docListeners。这里用元素 tokens (class/id/data-*) 在源码里模糊匹配
+    // ——命中即认为被委托捕获，不再报 deadButtons。
+    const isDocDelegated = (el) => {
+      const srcs = (window.__shot_docListeners || []);
+      if (!srcs.length) return false;
+      const tokens = [];
+      const cls = (typeof el.className === 'string' ? el.className : '').trim().split(/\s+/);
+      for (const c of cls) if (c.length >= 3) tokens.push(c);
+      if (el.id && el.id.length >= 3) tokens.push(el.id);
+      for (const attr of el.attributes) {
+        if (attr.name.startsWith('data-')) {
+          if (attr.value && attr.value.length >= 2) tokens.push(attr.value);
+          tokens.push(attr.name);  // 属性名本身常出现在 querySelector('[data-page]')
+        }
+      }
+      // 无可判据的 tokens：不能证明委托覆盖到本元素——保守**不豁免**，仍报为 dead-button。
+      // （之前 return true 导致 analytics 类全局 click listener 存在时所有 <button>Save</button> 被静默豁免。）
+      if (!tokens.length) return false;
+      return srcs.some(s => tokens.some(t => s.indexOf(t) !== -1));
+    };
     // 判断祖先的某个 listener 源码"是否引用了本元素"——用作 javascript: 占位符的
     // 收紧兜底。识别依据：class（长度≥3，过滤 "on"/"in" 等超短通用词）、id、data-* 值。
     // 全都不匹配也不代表一定没委托（listener 被 minify 或用 e.target.tagName 就没痕迹），
@@ -714,6 +906,8 @@ REPORT_SCRIPT = r"""
       // 被 addEventListener('click', ...) 绑过（自身或祖先）—— 由 INIT_SCRIPT 打的标
       if (btn.__shot_hasClickListener) continue;
       if (nearestAncestorWithListener(btn)) continue;
+      // v2：document/window 上的委托 listener 通过 tokens 匹配识别到本按钮 → 视为已绑
+      if (isDocDelegated(btn)) continue;
       // form submit / reset：原生行为不需要 onclick
       const type = (btn.getAttribute('type') || '').toLowerCase();
       const inForm = !!btn.closest('form');
@@ -739,6 +933,7 @@ REPORT_SCRIPT = r"""
       const onclickNoop = isOnclickNoop(onclickRaw);
       if (a.onclick != null && !onclickNoop) continue;
       if (a.__shot_hasClickListener) continue;
+      if (isDocDelegated(a)) continue;
       if (!isVisible(a)) continue;
       if ((a.textContent || '').trim().length === 0) continue;
 
@@ -1987,9 +2182,9 @@ REPORT_SCRIPT = r"""
     }
   }
 
-  // 规则 8.6：等宽卡片组最后一行只剩 1 个（孤儿卡片）。判据 N % C == 1。
-  // 按 rect.top 聚类分行，不依赖 DOM 顺序；只看等宽栅格形态，瀑布流/自然宽度不判。
-  // 最后一个已跨满整行的是刻意处理，不报。
+  // 规则 8.6：等宽卡片组最后一行只剩 1 个（孤儿卡片）
+  // v2：≥3 sibling **共享 card signature**（border/background/shadow/padding/tag）
+  //      + **两行 y 分组** + 排除 tabs/chips/preset/toolbar/placeholder/demo/scroller
   const orphanCards = [];
   {
     const vis = (el) => {
@@ -1998,16 +2193,43 @@ REPORT_SCRIPT = r"""
       const r = el.getBoundingClientRect();
       return r.width >= 40 && r.height >= 20;
     };
+    // signature：卡片外观特征（border/背景/阴影/padding/标签）
+    const signature = (el) => {
+      const cs = getComputedStyle(el);
+      const hasBorder = (parseFloat(cs.borderTopWidth) || 0) > 0 || cs.borderRadius !== '0px';
+      const hasBg = cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent';
+      const hasShadow = cs.boxShadow && cs.boxShadow !== 'none';
+      const isArticle = el.tagName === 'ARTICLE' || (el.getAttribute && el.getAttribute('role') === 'article');
+      if (!(hasBorder || hasBg || hasShadow || isArticle)) return null;
+      return [
+        cs.borderRadius,
+        (cs.boxShadow || '').slice(0, 40),
+        cs.backgroundColor,
+        cs.padding,
+        cs.borderTopWidth + '/' + cs.borderTopColor,
+        el.tagName,
+      ].join('|');
+    };
     for (const box of document.querySelectorAll('div,ul,ol,section,main')) {
       if (orphanCards.length >= 6) break;
-      const d = getComputedStyle(box).display;
+      const bcs = getComputedStyle(box);
+      const d = bcs.display;
       if (d.indexOf('grid') < 0 && d.indexOf('flex') < 0) continue;
+      if (bcs.overflowX === 'auto' || bcs.overflowX === 'scroll') continue;  // 横滚容器不算
       const kids = [...box.children].filter(vis);
       if (kids.length < 3 || kids.length > 40) continue;
       const br = box.getBoundingClientRect();
       if (br.width < 200) continue;
+      // 语义排除：tabs / chips / preset / toolbar / placeholder / demo / button
+      const bcls = ((typeof box.className === 'string') ? box.className : '').toLowerCase();
+      if (/(tab|chip|preset|toolbar|placeholder|demo|button|control)/.test(bcls)) continue;
+      // 每个 kid 的 signature 必须存在且一致
+      const sigs = kids.map(signature);
+      if (sigs.some(s => !s)) continue;
+      const baseSig = sigs[0];
+      if (!sigs.every(s => s === baseSig)) continue;
+      // 等宽栅格判定
       const rects = kids.map(k => k.getBoundingClientRect());
-      // 等宽判定：宽度极差 ≤ 均值 12%，否则不是等宽栅格
       const ws = rects.map(r => r.width);
       const avg = ws.reduce((a, b) => a + b, 0) / ws.length;
       if (avg <= 0 || (Math.max(...ws) - Math.min(...ws)) / avg > 0.12) continue;
@@ -2019,8 +2241,7 @@ REPORT_SCRIPT = r"""
       }
       const rows = [...byTop.entries()].sort((a, b) => a[0] - b[0]).map(e => e[1]);
       if (rows.length < 2 || rows[rows.length - 1] !== 1 || rows[0] < 2) continue;
-      // 2 列出现孤儿 ⟺ N 为奇数 ⟺ 无解（换 1 列或 3 列都不更好），报了也改不动 —— 静默
-      if (rows[0] === 2) continue;
+      if (rows[0] === 2) continue;  // 2 列出现孤儿是 N 为奇的必然，无解不报
       if (rects[rects.length - 1].width > br.width * 0.7) continue;   // 已跨满整行
       const cls = (typeof box.className === 'string' ? box.className : '').trim();
       const rec = {
@@ -2081,51 +2302,59 @@ REPORT_SCRIPT = r"""
     }
   }
 
-  // 规则 11：写死宽度的元素（仅 mobile shot 启用）
-  // computed width 是绝对 px、宽度 > viewport、CSS 里显式设了 width（非 100% / auto / max-content 之类）——
-  //   这类元素在小屏必爆。抓 inline style 的 width、或者作者样式表里的绝对 px 宽度。
-  // 局限：读不到 CSS rule 具体值，只能从 inline style + computed 反推。
+  // 规则 11：写死宽度的元素（仅 mobile shot 启用）v2：
+  // 只报**导致 documentElement.scrollWidth > vw+1 的最外责任元素**——
+  // 若该元素被祖先 scroll container 包着不外露，或它本身不撑破 document，就不报。
   const fixedWidthElements = [];
   if (isMobile) {
-    const all = document.querySelectorAll('body *');
-    for (const el of all) {
-      if (fixedWidthElements.length >= 15) break;
-      // 跳过 SVG 内部元素：<rect> / <circle> / <path> / <text> 等在 SVG 命名空间里的 width 不参与页面 layout
-      if (el.namespaceURI && el.namespaceURI !== 'http://www.w3.org/1999/xhtml') continue;
-      const inlineWidth = (el.style && el.style.width) || '';
-      // 只关心 inline 显式写 px 或 computed width > viewport 且比父元素还宽
-      const cs = getComputedStyle(el);
-      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
-      const w = parseFloat(cs.width);
-      if (!w || w <= vw) continue;
-      // 排除 overflow 容器（swiper / marquee / scroller 故意宽于视口）—— 沿祖先链找
-      let anc = el.parentElement, inScroller = false;
-      while (anc && anc !== document.body) {
-        const acs = getComputedStyle(anc);
-        if (acs.overflowX === 'auto' || acs.overflowX === 'scroll' ||
-            acs.overflowX === 'hidden' || acs.overflowX === 'clip') {
-          inScroller = true; break;
+    // 前提：整页确实横向溢出了。document 未撑破就一条都不报。
+    if (document.documentElement.scrollWidth > vw + 1) {
+      const all = document.querySelectorAll('body *');
+      const rawCandidates = [];
+      for (const el of all) {
+        if (el.namespaceURI && el.namespaceURI !== 'http://www.w3.org/1999/xhtml') continue;
+        if (el === document.body || el === document.documentElement) continue;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+        const w = parseFloat(cs.width);
+        if (!w || w <= vw) continue;
+        // 沿祖先链找 scroll container；被 auto/scroll/hidden/clip 包住就不外露
+        let anc = el.parentElement, inScroller = false;
+        while (anc && anc !== document.body) {
+          const acs = getComputedStyle(anc);
+          if (acs.overflowX === 'auto' || acs.overflowX === 'scroll' ||
+              acs.overflowX === 'hidden' || acs.overflowX === 'clip') {
+            inScroller = true; break;
+          }
+          anc = anc.parentElement;
         }
-        anc = anc.parentElement;
+        if (inScroller) continue;
+        const r = el.getBoundingClientRect();
+        // 责任元素判据：右边超出 viewport 才计入
+        if (r.right <= vw + 1) continue;
+        if (r.width < 40) continue;
+        const inlineWidth = (el.style && el.style.width) || '';
+        const inlineIsPx = /\d+\s*px\s*$/i.test(inlineWidth);
+        const inlineIsPct = /%\s*$/.test(inlineWidth);
+        // 只在能证明"写死"时才报（inline px、或非百分比且非空 inline、或 computed 非响应式）
+        const suspicious = inlineIsPx || (!inlineIsPct && !inlineWidth);
+        if (!suspicious) continue;
+        rawCandidates.push({el, r, w, inlineWidth, cs});
       }
-      if (inScroller) continue;
-      // 排除 body / html
-      if (el === document.body || el === document.documentElement) continue;
-      const r = el.getBoundingClientRect();
-      if (r.width < 40) continue;
-      // 判断 css 是不是 px 写死（启发：inline style 里有 px，或 computed 值明显不响应）
-      const inlineIsPx = /\d+\s*px\s*$/i.test(inlineWidth);
-      const inlineIsPct = /%\s*$/.test(inlineWidth);
-      // computed value 是 px、且没有 inline % —— 视为可能写死
-      const suspicious = inlineIsPx || (!inlineIsPct && !inlineWidth);
-      if (!suspicious) continue;
-      fixedWidthElements.push({
-        tag: el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).split(/\s+/)[0] : ''),
-        text: (el.textContent || '').trim().slice(0, 40),
-        computedWidth: Math.round(w),
-        viewportWidth: vw,
-        inlineWidth: inlineWidth || null,
-      });
+      // 只留**最外层**责任元素：若某候选是另一候选的后代，丢弃后代
+      const roots = rawCandidates.filter(c1 =>
+        !rawCandidates.some(c2 => c2.el !== c1.el && c2.el.contains(c1.el))
+      );
+      for (const c of roots) {
+        if (fixedWidthElements.length >= 15) break;
+        fixedWidthElements.push({
+          tag: c.el.tagName.toLowerCase() + (c.el.className ? '.' + String(c.el.className).split(/\s+/)[0] : ''),
+          text: (c.el.textContent || '').trim().slice(0, 40),
+          computedWidth: Math.round(c.w),
+          viewportWidth: vw,
+          inlineWidth: c.inlineWidth || null,
+        });
+      }
     }
   }
 
@@ -2148,7 +2377,12 @@ REPORT_SCRIPT = r"""
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
       const fs = parseFloat(cs.fontSize);
-      if (!fs || fs >= 14) continue;
+      // 触发阈值 12px（不是设计目标 14px）：设计上正文应 >= 14px，但 12-13px 在
+      // 图例/caption/徽章/单位后缀上是常规做法。若在 <14px 就报，报出来的绝大多数
+      // 都要消费方自己判断"这是正文还是辅助文字"——线上实测 74~95% 的报出条目
+      // 落在 12-13.5px，即规则自己承认可接受的区间。把触发阈值压到验收阈值，
+      // 判断题就消失：11px 在手机上无歧义地读不了，不需要豁免条款。
+      if (!fs || fs >= 12) continue;
       const txt = (el.textContent || '').trim().slice(0, 40);
       if (seenSmallText.has(txt)) continue;
       seenSmallText.add(txt);
@@ -2354,10 +2588,9 @@ def _capture_with_clip(shoot, page_w, page_h, out_path: Path, fmt: str, *,
     每片是文档的哪一段」。clip 用 CSS 像素 + scale，**裁剪、降宽、编码在浏览器里
     一次完成**——不需要 Pillow，也就不存在「缺 Pillow 就退化成一张读不了的原图」。
 
-    `dsf` 是 `--scale`（设备像素倍率）。注意 CDP 的 `clip.scale` 会**覆盖**而不是叠加
-    context 的 deviceScaleFactor：实测 DSF=2 + clip.scale=1 输出的仍是 CSS 尺寸。
-    所以倍率必须自己算进去，否则 `--scale` 会变成 no-op。语义与改动前对齐——
-    先按设备倍率放大，超过 --max-width 再压回上限。
+    `dsf` 是 `--scale`（目标输出倍率）：先按设备倍率放大，超过 --max-width 再压回上限。
+    切片阈值与 clip 计划均按这个最终倍率计算；_cdp_shooter 再除以截图会话的
+    deviceScaleFactor，避免配置 emulation 后重复放大。
 
     返回 {"path": 主图, "slices": [...], "bytes": 主图字节数}；分片失败时额外带
     "sliceError"，但主图一定有效。主图本身截不出来（如超过 chrome 位图上限）时，
@@ -2478,7 +2711,7 @@ def _page_content_size(send, evaluate, viewport):
     )
 
 
-def _cdp_shooter(send, fmt: str, quality: int):
+def _cdp_shooter(send, fmt: str, quality: int, *, device_scale_factor: float = 1.0):
     """造一个 shoot(clip, dest)：走 CDP Page.captureScreenshot 直出。
 
     `send(method, params) -> result dict`——playwright 的 CDPSession 与本文件内的
@@ -2487,7 +2720,8 @@ def _cdp_shooter(send, fmt: str, quality: int):
     def shoot(clip, dest: Path):
         params = {
             "format": "jpeg" if fmt == "jpg" else "png",
-            "clip": clip,
+            # clip 的计划倍率已经包含 --scale；配置过 emulation 的会话还会乘 DSF。
+            "clip": {**clip, "scale": clip["scale"] / device_scale_factor},
             "captureBeyondViewport": True,
             "fromSurface": True,
         }
@@ -2502,28 +2736,31 @@ def _cdp_shooter(send, fmt: str, quality: int):
 
 def _apply_capture(rep: dict, cap: dict, slice_over_kb: int,
                    slice_over_height: int, slice_height: int) -> None:
-    """把截图结果装进单个视口的报告。两条引擎分支共用，别再各写一份。"""
-    rep["screenshot"] = str(cap["path"])
-    rep["screenshotBytes"] = cap["bytes"]
+    """把截图结果装进单个视口的报告。两条引擎分支共用，别再各写一份。
+
+    行为约定（v2）：**触发切片时不输出主图路径**——线上实测模型 Read 工具对图片有
+    单边 4000px 硬上限，超过就整张被过滤（`oversized image ... filtered`）。主图
+    路径存在时模型会习惯性 Read 撞墙，浪费一次工具调用还可能误诊为"截图工具坏了"
+    去走 PIL/System.Drawing 裁图弯路。切了片就只留 slices，逼模型直接消费分片。
+    """
     if cap["slices"]:
+        # 有分片：**不输出主图路径**，让模型直接吃 slices（每片 <= 4000px，能被 Read）
         rep["slices"] = [str(s) for s in cap["slices"]]
-        rep["sliceHint"] = (
-            f"主图过阈值（字节>{slice_over_kb}KB 或 高度>{slice_over_height}px），"
-            f"已按 {slice_height}px 切片。若主图 Read 失败，改读 slices 里各分片。"
-        )
+        rep["sliceHint"] = "按顺序 Read slices 里的各分片。"
+    else:
+        # 未切片：主图可 Read
+        rep["screenshot"] = str(cap["path"])
+        rep["screenshotBytes"] = cap["bytes"]
     if cap.get("sliceError"):
+        # 分片失败：退回主图（兜底，此时主图是唯一可用产物）
+        if "screenshot" not in rep:
+            rep["screenshot"] = str(cap["path"])
+            rep["screenshotBytes"] = cap["bytes"]
         rep["sliceError"] = cap["sliceError"]
-        rep["sliceErrorHint"] = (
-            "主图过阈值但分片补截失败，只有整张主图可用。主图若 Read 不动，"
-            "就只按 lint 字段改代码，别把没看过的截图当成看过了。"
-        )
+        rep["sliceErrorHint"] = "分片补截失败，只有整张主图。主图 Read 不动就按 lint 改代码。"
     if cap.get("mainError"):
         rep["screenshotMainError"] = cap["mainError"]
-        rep["screenshotMainErrorHint"] = (
-            "整页主图没截出来（多半是页面过长超过 chrome 位图上限），"
-            "已改为只提供分片。**按 slices 逐张 Read**；slices 也为空时这次没有可用截图，"
-            "只能按 lint 字段改代码。"
-        )
+        rep["screenshotMainErrorHint"] = "整页主图没截出来，按 slices 逐张 Read；slices 也空就只按 lint 改代码。"
     if cap.get("sizeDegraded"):
         rep["screenshotSizeDegraded"] = cap["sizeDegraded"]
 
@@ -2725,11 +2962,14 @@ def sample_text_contrast(page, cands, doc_size, threshold=1.6, limit=6, max_shot
 
 def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
              max_width, jpeg_quality, fmt, slice_over_kb, slice_over_height, slice_height, include,
-             eval_code=None, scale=1.0):
+             eval_code=None, scale=1.0, reduced_motion=True):
     w, h = viewport
     page.set_viewport_size({"width": w, "height": h})
+    # 默认开 reduced-motion：CSS 动画停在终态，截图才有确定性（否则同一页两次截图不一样）。
+    # 代价是页面里 @media (prefers-reduced-motion) 分支会生效——拍到的是静态态，不是主路径动效。
+    # 所以 mediaMode 必须在报告里显式声明，需要验动效时用 --motion normal。
     try:
-        page.emulate_media(reduced_motion="reduce")
+        page.emulate_media(reduced_motion="reduce" if reduced_motion else "no-preference")
     except TypeError:
         pass  # playwright < 1.25 不支持 reduced_motion
     try:
@@ -2790,6 +3030,13 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
         # 省掉「先截一张巨大 PNG 再用 Pillow 后处理」那一轮解码/重编码。
         cdp = page.context.new_cdp_session(page)
         try:
+            # Emulation 状态属于 CDP 会话，不会从 Playwright 的主会话继承。
+            # Chromium 136 全页截图会临时改动该状态；未同步时会偶发截成窄条，
+            # 并在截图后清掉原视口。先在真正执行截图的会话中配置相同的 metrics。
+            cdp.send("Emulation.setDeviceMetricsOverride", {
+                "width": w, "height": h,
+                "deviceScaleFactor": scale, "mobile": False,
+            })
             def _send(method, params=None):
                 return cdp.send(method, params or {})
             page_w, page_h, size_degraded = _page_content_size(
@@ -2798,7 +3045,8 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
                                       " document.documentElement.scrollHeight]"),
                 (w, h))
             cap = _capture_with_clip(
-                _cdp_shooter(_send, fmt, jpeg_quality), page_w, page_h, out_path, fmt,
+                _cdp_shooter(_send, fmt, jpeg_quality, device_scale_factor=scale),
+                page_w, page_h, out_path, fmt,
                 dsf=scale, max_width=max_width, slice_over_kb=slice_over_kb,
                 slice_over_height=slice_over_height, slice_height=slice_height)
             if size_degraded:
@@ -2806,6 +3054,11 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
         finally:
             try: cdp.detach()
             except Exception: pass
+            # detach 会撤销 emulation。主会话可能仍缓存着相同的 metrics，直接
+            # 设置原尺寸会被 Chromium 当成 no-op（DPR 留在 1）；先变动 1px，
+            # 再恢复，让主会话真正重发完整状态。失败路径也必须做同样的清理。
+            page.set_viewport_size({"width": w, "height": h + 1})
+            page.set_viewport_size({"width": w, "height": h})
         _apply_capture(report, cap, slice_over_kb, slice_over_height, slice_height)
         # chromium canvas 上限约 30000px，单张装不下就会被截断。
         # 但分片是一段段截的，每段都远小于上限——只要出了分片，内容其实是全的，
@@ -2859,6 +3112,7 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
     在 CDP 里通过 addScriptToEvaluateOnNewDocument 也能跑 INIT_SCRIPT + REPORT_SCRIPT,
     console/network 可以订阅 Runtime.consoleAPICalled / Network.responseReceived 拿到。
     """
+    dom = {key: value for key, value in dom.items() if key not in _DISABLED_DOM_RULES.values()}
     if "structure" in include:
         report["structure"] = dom.get("structure")
     # chartContainers 无论 lint/structure 开哪个都存下来，供跨视口对比
@@ -2940,22 +3194,12 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
             )
         dup_imgs = dom.get("duplicateImages") or []
         if dup_imgs:
+            # 保留历史字段名供旧消费者读取；仅陈述复用事实，不作为告警或修复任务。
             report["duplicateImagesWarning"] = dup_imgs
             report["duplicateImagesHint"] = (
-                "含义：同一张图片文件被用在多处（count 是次数，contentImageTotal 是页面内容图总数）。"
-                "需要多张不同图时复用一个文件是高频偷懒，典型是画廊、产品网格、多图平铺——"
-                "视觉上一眼就看出重复，可信度直接崩。"
-                " | **先看 distinctAlts（这几处 alt 文本的去重数）**，它比尺寸更能说明问题："
-                "≥2 表示不同的东西共用了同一张图（实测「招牌拿铁」和「焦糖玛奇朵」共用一张），"
-                "那就是要改的；=1 或 0 表示同一个东西在多处展示（列表页 + 详情区），通常正常。"
-                "再结合 sameRenderedSize：true 是平铺的同级卡片，false 更像主图 + 缩略图。"
-                "**distinctAlts ≥ 2 且 sameRenderedSize=true 时几乎可以确定是偷懒**，直接改。"
-                " | 修法：给每个位置配不同的图。生图时把 prompt 写出差异（不同角度、不同场景、不同主体），"
-                "别只改一两个词；素材确实凑不够时，减少展示数量，或改用不依赖图片的形式（图标 + 文字卡片），"
-                "**不要用重复的图占位**。"
-                " | 豁免：(1) 品牌 logo、作者头像、统一的占位符按设计就该一致；"
-                "(2) 轮播/对比场景刻意用同一张图做前后对照；"
-                "(3) 渲染尺寸 < 100×100 的图标、装饰小图本规则不检查——那些重复使用是正常做法。"
+                "info · 同一图片资源在多处使用；count 是次数，contentImageTotal 是内容图总数。"
+                "尺寸和 alt 差异仅供参考，不代表使用错误；总览、局部探索和详情可以复用同图。"
+                "本项不要求换图、减少展示数量或修改布局。"
             )
         overlapping = dom.get("overlappingText") or []
         if overlapping:
@@ -3227,8 +3471,11 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
                 "如果 IO 未触发、JS 报错、user gesture 未发生，用户永远看不到这些内容。"
                 "reason=opacity:0 / visibility:hidden / clip-path-inset。"
                 " | 修法：(a) 检查 IntersectionObserver / ScrollTrigger / GSAP 挂载是否正确；"
-                "(b) 给元素补 CSS transition 兜底，即使 JS 挂了也能自然过渡到可见态；"
-                "(c) 用 @media (prefers-reduced-motion) 分支保证 reduced-motion 用户直接看到静态终态。"
+                "(b) 给元素补 CSS transition 兜底，即使 JS 挂了也能自然过渡到可见态。"
+                " | 注意：本次截图默认开着 reduced-motion（见 input.mediaMode），"
+                "动画类元素拍到的是静态终态，这是预期的，不要据此判断动效坏了；"
+                "要核对动效本身重跑一次加 --motion normal。**不要为此另写 prefers-reduced-motion 分支**——"
+                "那只会让下次截图继续拍到静态态，问题看起来永远存在。"
                 " | 豁免：(1) 折叠/展开面板、模态框、抽屉——初态本就该隐藏，用户主动触发才显示；"
                 "(2) 依赖 hover/click 才展开的 tooltip/menu；"
                 "(3) 只在特定视口尺寸/断点下显示的元素；"
@@ -3393,17 +3640,23 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
             )
         m_font = dom.get("mobileFontIssues") or []
         if m_font:
-            report["mobileFontIssuesWarning"] = m_font
-            report["mobileFontIssuesHint"] = (
-                "warning · 含义（仅 mobile shot 触发）：两类问题合并——"
-                "(a) kind=small-body-text：正文字号 < 14px，手机上难读；"
-                "(b) kind=input-under-16px：<input> / <textarea> font-size < 16px，iOS Safari 聚焦时会自动缩放页面（那种一点输入框页面跳一下的贼恶心 UX）。"
-                " | 修法：正文 ≥ 14px（16px 更佳）；表单元素 ≥ 16px。可以在移动断点里针对性调大："
-                "`@media (max-width: 640px) { body { font-size: 16px; } input, textarea { font-size: 16px; } }`。"
-                " | 豁免：(1) 图例 / caption / footnote 类辅助文字，12–13px 可接受，但应控制在页面 5% 以内；"
-                "(2) 数据密集型表格数字（如财务表 12px 是行业惯例）——需要该单元格开 `tnum` 等宽数字避免飘忽；"
-                "(3) input 已设 `font-size: 16px` 但仍报出——可能是 inline style / 父级 rem 计算异常，检查实际 computed 值。"
-            )
+            # 分桶：input-under-16px（iOS 聚焦缩放 bug）= error；其余（small-body-text）= warning
+            m_font_err = [x for x in m_font if isinstance(x, dict) and x.get("kind") == "input-under-16px"]
+            m_font_warn = [x for x in m_font if not (isinstance(x, dict) and x.get("kind") == "input-under-16px")]
+            if m_font_err:
+                report["mobileFontIssues"] = m_font_err
+                report["mobileFontIssuesHint"] = (
+                    "error · <input> / <textarea> font-size < 16px：iOS Safari 聚焦时会自动缩放页面，"
+                    "严重影响移动端表单体验。 | 修法：`input, textarea { font-size: 16px; }`；"
+                    "或在移动端断点里针对性调大。 | 豁免：目标环境只在 Android WebView 或桌面时可豁免（罕见）。"
+                )
+            if m_font_warn and "mobileFontIssuesWarning" not in _DISABLED_DOM_RULES:
+                report["mobileFontIssuesWarning"] = m_font_warn
+                report["mobileFontIssuesHint"] = (
+                    "warning · 移动端文字 < 12px，手机上读不了。 | 修法：调到 >= 12px；"
+                    "承载正文 / 说明 / 状态的文字调到 >= 14px。 | "
+                    "本规则只在 < 12px 才报——12-13px 不会报，不需要判断它是正文还是辅助文字。"
+                )
 
 
 def _find_chromium_fallback():
@@ -4206,7 +4459,8 @@ def _run_playwright(url, args, name, outdir, result, include):
                     console_bucket, resource_bucket,
                     args.max_width, args.jpeg_quality, args.format,
                     args.slice_over_kb, args.slice_over_height, args.slice_height, include,
-                    eval_code=args._eval_code, scale=args.scale)
+                    eval_code=args._eval_code, scale=args.scale,
+                    reduced_motion=(args.motion == "reduce"))
             if args.only in ("mobile", "both"):
                 p_out = outdir / f"{name}_mobile.png"
                 result["shots"]["mobile"] = one_shot(
@@ -4214,7 +4468,8 @@ def _run_playwright(url, args, name, outdir, result, include):
                     console_bucket, resource_bucket,
                     args.max_width, args.jpeg_quality, args.format,
                     args.slice_over_kb, args.slice_over_height, args.slice_height, include,
-                    eval_code=args._eval_code, scale=args.scale)
+                    eval_code=args._eval_code, scale=args.scale,
+                    reduced_motion=(args.motion == "reduce"))
         finally:
             browser.close()
 
@@ -4264,7 +4519,13 @@ def _run_chrome_cli(url, args, name, outdir, result, include):
             if cap:
                 _apply_capture(rep, cap, args.slice_over_kb,
                                args.slice_over_height, args.slice_height)
-                rep["truncated"] = False  # chrome CLI 用固定 canvas，超出会截断——但没法检测
+                # truncated：只有 CDP 分支（走 --window-size 拿完整长图）能确定"没截断"；
+                # --screenshot 兜底（clipUnsupported）只截首屏，长页尾部一定缺——必须报 truncated=True
+                if cap.get("clipUnsupported"):
+                    rep["truncated"] = True
+                    rep["truncatedHint"] = "chrome CLI --screenshot 兜底：只截首屏，长页尾部未覆盖。"
+                else:
+                    rep["truncated"] = False
                 if cap.get("clipUnsupported"):
                     rep["screenshotHint"] = (
                         "CDP 挂了，走 --screenshot 兜底：只有视口一屏，不是完整长页，"
@@ -4300,6 +4561,400 @@ def _run_chrome_cli(url, args, name, outdir, result, include):
         result["shots"]["mobile"] = do_one(parse_size(args.mobile), "mobile")
 
 
+# ---- v2 schema 装配（追加到 result，不替换旧字段）
+def _selector_for(item):
+    """从 finding evidence 里尽量抽出一个可读的 selector"""
+    if not isinstance(item, dict):
+        return None
+    for k in ("selector", "sel", "cssSelector"):
+        v = item.get(k)
+        if v: return v
+    tag = item.get("tag") or ""
+    cls = item.get("cls") or item.get("className") or ""
+    _id = item.get("id") or ""
+    if _id: return f"#{_id}"
+    if tag and cls:
+        first_cls = str(cls).split()[0] if cls else ""
+        return f"{tag}.{first_cls}" if first_cls else tag
+    return tag or None
+
+
+def _extract_findings_from_shots(result):
+    """从 shots.{desktop,mobile}.<rule> 数组和顶层 rule 数组抽出 findings 列表。
+    顶层 severity 从 RULE_CATALOG 取默认；同 rule + viewport + selector 视为一条。"""
+    findings = []
+    seen_keys = set()
+
+    def _push(rule_id, viewport, item, idx):
+        meta = RULE_CATALOG.get(rule_id)
+        if not meta:
+            return
+        selector = _selector_for(item)
+        # dedupeKey 用 idx 保证每个 raw item 独立成 finding（有相同 selector 也不合并）
+        # 消费方需要按 rule + viewport dedupe 时自己做，这里保原始事件数
+        dedupe = f"{rule_id}|{viewport or 'top'}|{selector or ''}|{idx}"
+        if dedupe in seen_keys:
+            return
+        seen_keys.add(dedupe)
+        findings.append({
+            "ruleId": rule_id,
+            "severity": meta["severity"],
+            "kind": meta["kind"],
+            "viewport": viewport,
+            "selector": selector,
+            "evidence": item,
+            "dedupeKey": dedupe,
+        })
+
+    def _push_val(rule_id, viewport, val):
+        """把 rule 的 raw value（list 或 dict）转成 finding。
+        list：每个 item 一条 finding；dict：整个 dict 一条 finding（faviconWarning/viewportMetaWarning
+        这类"状态型规则"输出 dict，且只在触发时才写入 report）。"""
+        if isinstance(val, list):
+            for i, item in enumerate(val):
+                _push(rule_id, viewport, item, i)
+        elif isinstance(val, dict) and val:
+            _push(rule_id, viewport, val, 0)
+
+    shots = result.get("shots") or {}
+    for vp, sh in shots.items():
+        if not isinstance(sh, dict):
+            continue
+        for rule_id in RULE_CATALOG:
+            val = sh.get(rule_id)
+            if not val:
+                continue
+            _push_val(rule_id, vp, val)
+
+    for rule_id in RULE_CATALOG:
+        val = result.get(rule_id)
+        if not val:
+            continue
+        _push_val(rule_id, None, val)
+
+    return findings
+
+
+def _extract_screenshots(result):
+    """把 shots.{vp}.screenshot / .slices / .truncated 拉到 artifacts.screenshots[]。
+
+    切片触发时 shot.py 故意不写 screenshot 字段（防止模型 Read 大主图失败）——
+    此时 entry.path 缺失，只有 tiles，是符合预期的信号。"""
+    out = []
+    shots = result.get("shots") or {}
+    for vp, sh in shots.items():
+        if not isinstance(sh, dict):
+            continue
+        entry = {"viewport": vp}
+        if sh.get("screenshot"):
+            entry["path"] = sh["screenshot"]
+            entry["size"] = sh.get("screenshotBytes")
+        if sh.get("width"): entry["width"] = sh["width"]
+        if sh.get("height"): entry["height"] = sh["height"]
+        slices = sh.get("slices")
+        if slices:
+            entry["tiles"] = slices
+        # visualCoverage：完整就 complete=True；旧 truncated 布尔映射到 complete
+        truncated = sh.get("truncated")
+        if truncated is not None:
+            entry["visualCoverage"] = {
+                "complete": not truncated,
+                "reason": sh.get("truncatedHint") if truncated else None,
+            }
+        # 主图或分片存在其一才 push（都缺就是这个视口截图完全失败）
+        if entry.get("path") or entry.get("tiles"):
+            out.append(entry)
+    return out
+
+
+def _extract_engine(result):
+    return {
+        "name": "chrome_cli" if result.get("engineDegraded") else (result.get("engine") or "playwright"),
+        "degraded": bool(result.get("engineDegraded")),
+        "degradedReasons": [result.get("engineDegradedReason")] if result.get("engineDegradedReason") else [],
+    }
+
+
+def _extract_input_meta(args, url):
+    proto = url.split(":", 1)[0] if ":" in url else None
+    return {
+        "original": args.src,
+        "resolvedPath": str(Path(args.src).resolve()) if not args.src.startswith(("http", "file://")) else None,
+        "baseUrl": url,
+        "protocol": proto,
+        "cwd": str(Path.cwd()),
+        # 截图时的媒体模式。reduce 会让页面的 prefers-reduced-motion 分支生效，
+        # 动画类元素拍到的是静态终态——不声明的话消费方会误判动效坏了。
+        "mediaMode": {"reducedMotion": getattr(args, "motion", "reduce") == "reduce"},
+    }
+
+
+def _compute_summary(findings):
+    counts = {"blocker": 0, "error": 0, "warning": 0, "info": 0}
+    for f in findings:
+        sev = f.get("severity") or "info"
+        if sev in counts:
+            counts[sev] += 1
+    return counts
+
+
+def _has_capture_artifact(result):
+    """本次 run 是否实际产出了截图或分片。空 shots dict 或 shots 里啥都没写不算。"""
+    shots = result.get("shots") or {}
+    for sh in shots.values():
+        if not isinstance(sh, dict):
+            continue
+        if sh.get("screenshot") or sh.get("slices"):
+            return True
+    return False
+
+
+def _dom_available_for(sh):
+    """一个 viewport 的 DOM lint 是否真的跑过。
+    engineDegraded=True 未必 DOM 不可用（chrome CLI 的 CDP 分支能拿完整 DOM 报告）；
+    真正判据是"这个 viewport 的截图/lint 采集出了实质字段"。判据用几个 REPORT_SCRIPT 一定
+    会写的字段（不管 lint 是否触发都会给空数组/None）：consoleErrors / horizontalOverflow。
+    这两个都是 None 时说明 DOM 采集完全失败（chrome CLI --screenshot fallback 就是这种）。
+    """
+    if not isinstance(sh, dict):
+        return False
+    return sh.get("consoleErrors") is not None or sh.get("horizontalOverflow") is not None
+
+
+def _compute_status(result, findings):
+    if result.get("error"):
+        return "tool_error"
+    if any(f["severity"] in ("blocker", "error") for f in findings):
+        return "fail"
+    if any(f["severity"] == "warning" for f in findings):
+        return "warning"
+    # 关键：只有实际有截图产物且 DOM 采集成功才敢返 pass
+    if not _has_capture_artifact(result):
+        return "partial"
+    shots = result.get("shots") or {}
+    if not any(_dom_available_for(sh) for sh in shots.values()):
+        return "partial"
+    return "pass"
+
+
+def _compute_passed_and_notrun(result, include, findings):
+    """passedChecks: 通过的检查；notRunChecks: 因 include 未开或引擎降级未跑的检查"""
+    passed = []
+    not_run = []
+    triggered = {f["ruleId"] for f in findings}
+    shots = result.get("shots") or {}
+    want_screenshots = "screenshots" in include
+
+    # captureWritten：真的写了截图或 slices 才算
+    if _has_capture_artifact(result):
+        passed.append({"check": "captureWritten"})
+    elif want_screenshots:
+        not_run.append({"check": "captureWritten", "reason": "capture_failed"})
+
+    # visualCoverage：必须请求了截图 + 有 artifact + 所有 shot 都没 truncated 才算通过
+    if want_screenshots and _has_capture_artifact(result) and all(
+        (not isinstance(sh, dict)) or (not sh.get("truncated"))
+        for sh in shots.values()
+    ):
+        passed.append({"check": "visualCoverage"})
+    elif want_screenshots:
+        not_run.append({"check": "visualCoverage", "reason": "capture_incomplete_or_truncated"})
+
+    if "lint" not in include:
+        for rid in RULE_CATALOG:
+            not_run.append({"ruleId": rid, "reason": "lint_not_requested"})
+    else:
+        # 判断 DOM 是否真的在任何 viewport 里可用（chrome CLI --screenshot fallback 时 None）
+        any_dom_ok = any(_dom_available_for(sh) for sh in shots.values())
+        for rid, meta in RULE_CATALOG.items():
+            if rid in triggered:
+                continue
+            if (not any_dom_ok) and meta["kind"] in _KINDS_NEEDING_DOM:
+                not_run.append({"ruleId": rid, "reason": "dom_report_unavailable"})
+            elif (not any_dom_ok) and meta["kind"] in ("console", "network"):
+                not_run.append({"ruleId": rid, "reason": "dom_report_unavailable"})
+            else:
+                passed.append({"check": rid})
+    return passed, not_run
+
+
+def _build_prioritized_actions(findings, max_n=5):
+    """按 severity 排前 N 条修复 action；info 仅记录事实，不产生任务。"""
+    order = {"blocker": 0, "error": 1, "warning": 2, "info": 3}
+    ranked = sorted(findings, key=lambda f: order.get(f.get("severity"), 9))
+    out = []
+    seen_rules = set()
+    for f in ranked:
+        if f["severity"] == "info":
+            continue
+        rid = f["ruleId"]
+        if rid in seen_rules:
+            continue
+        seen_rules.add(rid)
+        out.append({
+            "ruleId": rid,
+            "severity": f["severity"],
+            "viewport": f.get("viewport"),
+            "selector": f.get("selector"),
+        })
+        if len(out) >= max_n:
+            break
+    return out
+
+
+def _build_v2_schema(result, args, url, include):
+    """追加 v2 顶层字段到 result（原 shots.desktop/mobile 结构保留）。"""
+    findings = _extract_findings_from_shots(result)
+    _passed, not_run = _compute_passed_and_notrun(result, include, findings)
+    result["schemaVersion"] = 2
+    result["status"] = _compute_status(result, findings)
+    result["engineInfo"] = _extract_engine(result)
+    result["input"] = _extract_input_meta(args, url)
+    result["artifacts"] = {"screenshots": _extract_screenshots(result)}
+    result["summary"] = _compute_summary(findings)
+    result["findings"] = findings
+    # passedChecks 不输出：它只是"哪些规则没触发"的逐条罗列，不含定位/证据/修法，
+    # 而报告会随对话历史重放进后续每一轮上下文，等于把无信息量的内容放大几十倍。
+    # notRunChecks 只在真的有规则没跑时才输出，空数组不写（避免恒空字段占位）。
+    if not_run:
+        result["notRunChecks"] = not_run
+    result["prioritizedActions"] = _build_prioritized_actions(findings)
+
+
+RULE_TARGET = {
+    # 每条规则的「改到什么程度算好」。摘要里直接给目标值，省掉模型反复试阈值、
+    # 也省掉为了看 hint 而重跑脚本。没列的规则走 report.json 里的 <rule>Hint。
+    "consoleErrors":               "0 条",
+    "resourceErrors":              "0 条（file:// 下的 /api/* 请求失败可豁免）",
+    "horizontalOverflow":          "documentElement.scrollWidth <= 视口宽 + 1",
+    "overlappingText":             "两个文本行盒不相交（手风琴折叠态/浮层/carousel 可豁免）",
+    "clippedText":                 "末行不超出容器 padding box（有 ellipsis / line-clamp 可豁免）",
+    "squeezedTableColumns":        "table-layout:fixed + 每列显式宽度，合计 100%",
+    "mobileFontIssues":            "<input> / <textarea> >= 16px（iOS 聚焦缩放）",
+    "mobileFontIssuesWarning":     ">= 12px（正文/说明/状态建议 >= 14px）",
+    "touchTargetTooSmallWarning":  "可点击热区 >= 44x44px（控件本身可以小，外层 label/wrapper 达标即可）",
+    "deadButtons":                 "每个可点元素有真 handler / href / 占位 toast",
+    "timelineAlignmentIssues":     "节点圆点与轴线中心 0px 误差",
+    "responsiveChartIssues":       "移动端图表容器宽度 >= 视口宽 65%",
+    "publishBrokenAssets":         "图片路径只写在 src 属性或 CSS url() 里",
+    "faviconWarning":              "内联一个 SVG favicon",
+    "viewportMetaWarning":         'width=device-width, initial-scale=1',
+    "extremeAspectImagesWarning":  "图片比例落在 3:4 ~ 21:9",
+}
+
+
+def _persist_report(result, outdir):
+    """把完整报告写到 <outdir>/report.json，并把路径挂回 result。
+
+    这是为了消掉一类纯浪费：stdout 上的完整 JSON 很长，消费方常用 tail/grep/head 截一段看，
+    截掉之后为了拿全量又重跑一次脚本——重新渲染、重新截图，页面一个字没改。
+    实测这类「页面没改仅为拿报告而重跑」占相邻 shot 对的 33~37%。
+    落盘之后需要细节就 Read 这个文件，不必重跑。
+    """
+    try:
+        outdir.mkdir(parents=True, exist_ok=True)
+        p = outdir / "report.json"
+        # 先把路径写进 result 再落盘，否则磁盘上那份自己不含 reportPath
+        result["reportPath"] = str(p.resolve())
+        p.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        return p
+    except Exception as e:                                        # noqa: BLE001
+        result.pop("reportPath", None)
+        result["reportPathError"] = str(e)[:200]
+        return None
+
+
+def _summary_lines(result):
+    """自给自足的短摘要：页面干净时看完这个就能收工，不必再 Read 完整报告。"""
+    summary = result.get("summary") or {}
+    lines = [
+        f"[shot.py] status={result.get('status') or 'unknown'}  "
+        f"blocker={summary.get('blocker', 0)} error={summary.get('error', 0)} "
+        f"warning={summary.get('warning', 0)}  elapsed={result.get('elapsedSec')}s"
+    ]
+    err = result.get("error")
+    if err:
+        lines.append(f"ERROR {err.get('code')}: {(err.get('message') or '')[:300]}")
+
+    if result.get("autoFixError"):
+        lines.append("auto-fix 未写入源码：" + result["autoFixError"])
+    if result.get("autoFixed"):
+        rules = ", ".join(f"{item['rule']} ×{item['count']}" for item in result["autoFixed"])
+        state = (result.get("autoFixVerification") or {}).get("status", "incomplete")
+        lines.append(f"auto-fix: {rules}；修后检查={state}；备份={result.get('autoFixBackup')}")
+
+    shots_out = (result.get("artifacts") or {}).get("screenshots") or []
+    for sh in shots_out:
+        vp = sh.get("viewport") or "?"
+        dim = ""
+        if sh.get("width") and sh.get("height"):
+            dim = f" {sh['width']}x{sh['height']}"
+        tiles = sh.get("tiles") or []
+        if tiles:
+            lines.append(f"  {vp:7}{dim}  切成 {len(tiles)} 片（主图过大未输出）：按顺序 Read")
+            for t in tiles:
+                lines.append(f"            {t}")
+        else:
+            lines.append(f"  {vp:7}{dim}  {sh.get('path') or '(截图失败)'}")
+        cov = sh.get("visualCoverage") or {}
+        if cov.get("complete") is False:
+            lines.append(f"            视觉未覆盖完整：{cov.get('reason') or '未知'}")
+    if not shots_out:
+        lines.append("  (无截图产物)")
+
+    findings = result.get("findings") or []
+    if findings:
+        order = {"blocker": 0, "error": 1, "warning": 2, "info": 3}
+        # 按 rule + viewport 聚合：同类问题一次修完，不要逐 occurrence 刷屏
+        groups = {}
+        for f in findings:
+            k = (f.get("ruleId"), f.get("viewport"))
+            g = groups.setdefault(k, {"sev": f.get("severity"), "sels": [], "n": 0})
+            g["n"] += 1
+            sel = f.get("selector")
+            if sel and sel not in g["sels"]:
+                g["sels"].append(sel)
+        lines.append(f"findings {len(findings)} 条，按规则聚合 {len(groups)} 组：")
+        for (rid, vp), g in sorted(groups.items(), key=lambda kv: order.get(kv[1]["sev"], 9)):
+            sels = ", ".join(g["sels"][:4]) or "(无 selector，见 report.json)"
+            if len(g["sels"]) > 4:
+                sels += f" …+{len(g['sels'])-4}"
+            tgt = RULE_TARGET.get(rid)
+            lines.append(f"  [{g['sev']}] {rid} @ {vp or 'top'} ×{g['n']}  {sels}")
+            if tgt:
+                lines.append(f"            目标：{tgt}")
+    else:
+        lines.append("findings 0 条")
+
+    nr = result.get("notRunChecks")
+    if nr:
+        lines.append(f"notRunChecks {len(nr)} 条（引擎降级或 include 未开）")
+    mm = ((result.get("input") or {}).get("mediaMode") or {})
+    if mm.get("reducedMotion"):
+        lines.append("mediaMode: reduced-motion=on —— 动画类元素拍到的是静态终态，属预期；"
+                     "要核对动效重跑加 --motion normal")
+    lines.append(f"reportPath: {result.get('reportPath') or '(写入失败，见 reportPathError)'}"
+                 "   ← 需要 evidence/hint 细节时 Read 这个文件，**不要重跑脚本**")
+    return lines
+
+
+def _emit_report(result, args, outdir):
+    """统一出口：完整报告落盘，stdout 给摘要。--format-report json 时 stdout 仍给完整 JSON。"""
+    _persist_report(result, outdir)
+    if getattr(args, "format_report", "summary") == "json":
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    else:
+        # 线上看板从 trace 解析这一行。格式定死：前缀不变，值是 {规则名: 命中数}，只列命中的规则；
+        # 放第一行是因为调用方常用 `| head` 截断 stdout。只在 lint 真正跑完时输出：
+        # 浏览器起不来或拿不到 DOM 时输出 {} 会被当成没有问题。
+        lint_ran = (not result.get("error")
+                    and any(_dom_available_for(sh) for sh in (result.get("shots") or {}).values()))
+        if "lint" in (result.get("include") or []) and lint_ran:
+            counts = Counter(f["ruleId"] for f in result.get("findings") or [])
+            print("[shot.py:lint] " + json.dumps(dict(sorted(counts.items())), separators=(",", ":")))
+        print("\n".join(_summary_lines(result)))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("src", help="本地 HTML 路径或 URL")
@@ -4308,6 +4963,14 @@ def main():
     ap.add_argument("--mobile", default="390x844")
     ap.add_argument("--only", choices=["desktop", "mobile", "both"], default="both")
     ap.add_argument("--scale", type=float, default=1.0, help="device scale factor（清晰度倍率）")
+    ap.add_argument("--motion", choices=["reduce", "normal"], default="reduce",
+                    help="动效模式。reduce（默认）让 CSS 动画停在终态，截图有确定性，"
+                         "但页面里 @media (prefers-reduced-motion) 分支会生效；"
+                         "要核对动画/过场/入场效果本身用 normal")
+    ap.add_argument("--format-report", dest="format_report",
+                    choices=["summary", "json"], default="summary",
+                    help="stdout 形态。summary（默认）打短摘要 + report.json 路径，"
+                         "完整报告始终落盘；json 则把完整报告也打到 stdout（老行为）")
     ap.add_argument("--exec-path", help="显式指定 chromium 可执行文件路径（覆盖 fallback 扫描）")
     ap.add_argument("--format", choices=["jpg", "png"], default="jpg",
                     help="截图格式，默认 jpg（体积小、模型读图不易崩）；无损需求用 png")
@@ -4317,9 +4980,16 @@ def main():
     ap.add_argument("--slice-over-kb", type=int, default=800,
                     help="主图字节超过此值（KB）时额外切片输出，默认 800；0 关闭该判定")
     ap.add_argument("--slice-over-height", type=int, default=4000,
-                    help="主图像素高度超过此值（px）时额外切片输出，默认 4000；0 关闭该判定。字节或高度任一超阈值即触发。")
+                    help="主图**像素高度**超过此值时额外切片输出，默认 4000。"
+                         "**这个数字必须 ≤ 模型 Read 工具的图片单边硬上限（当前实测 4000px）**——"
+                         "超过 4000px 的图会被 Read 直接过滤（`oversized image ... filtered`）。"
+                         "字节或高度任一超阈值即触发切片。"
+                         "**局限**：切片只沿 Y 轴。宽度维度不检查——依赖 --max-width（默认 1000）保证宽度不超 Read 上限；"
+                         "若手动传 `--max-width 0` 且原始页面宽 > 4000px，主图仍会被 Read 过滤，本脚本不做处置。")
     ap.add_argument("--slice-height", type=int, default=3200,
-                    help="切片时每片的像素高度，默认 3200")
+                    help="切片时每片的像素高度，默认 3200。"
+                         "**留 800px 余量给 device-scale-factor 放大**——scale=1.25 时 3200 * 1.25 = 4000，"
+                         "正好卡 Read 上限；再大会二次撞墙。")
     ap.add_argument("--include", default="screenshots,lint,structure",
                     help="逗号分隔要输出的模块：screenshots / lint / structure。默认全开")
     ap.add_argument("--eval", dest="eval_code", default=None,
@@ -4328,6 +4998,11 @@ def main():
                          "切 hash 视图、点按钮等），不用于任意 REPL 探测。仅 playwright 引擎支持。")
     ap.add_argument("--eval-file", dest="eval_file", default=None,
                     help="从文件读取 --eval 代码；与 --eval 二选一。")
+    # 默认只修三类静态属性：viewport、SVG fragment 兼容和缺少 src 的本地图片。
+    ap.add_argument("--auto-fix", dest="auto_fix", action="store_true", default=True,
+                    help="自动修复明确的 HTML 属性问题并复查一次（默认开）")
+    ap.add_argument("--no-auto-fix", dest="auto_fix", action="store_false",
+                    help="仅检查，不改源码")
     args = ap.parse_args()
 
     # --eval / --eval-file 二选一：读取要注入的 JS 代码
@@ -4392,7 +5067,8 @@ def main():
                                     f"playwright: {pw_err}\nchrome CLI: {cli_err}")[:1000],
                     }
                     result["elapsedSec"] = round(time.time() - t0, 2)
-                    print(json.dumps(result, ensure_ascii=False, indent=2))
+                    _build_v2_schema(result, args, url, include)
+                    _emit_report(result, args, outdir)
                     return 3
         else:
             try:
@@ -4402,13 +5078,15 @@ def main():
             except Exception as cli_err:
                 result["error"] = {"code": "no_browser", "message": str(cli_err)[:1000]}
                 result["elapsedSec"] = round(time.time() - t0, 2)
-                print(json.dumps(result, ensure_ascii=False, indent=2))
+                _build_v2_schema(result, args, url, include)
+                _emit_report(result, args, outdir)
                 return 3
     except Exception as e:
         # 兜底：任何未预期异常也走 JSON 通道，别裸抛 traceback
         result["error"] = {"code": "unexpected", "message": str(e)[:1000]}
         result["elapsedSec"] = round(time.time() - t0, 2)
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        _build_v2_schema(result, args, url, include)
+        _emit_report(result, args, outdir)
         return 3
 
     # 跨视口对比：图表容器在桌面正常、移动端被挤压 → 响应式失效
@@ -4418,16 +5096,259 @@ def main():
     # 图片路径是否写在发布链路收集得到的位置：要比对 HTML 源码原文，
     # 只有这里同时拿得到 args.src 和各视口的运行时结果
     _emit_publish_broken_assets(result, args.src)
-    # 清掉临时字段（DOM 报告里挂的 _chartContainers 只是给 python 侧对比用，
-    # 保留在输出里对读报告的人没意义，反而占地方）
+    # eval 可触发业务状态或副作用；不为这类检查改源码并重新播放用户操作。
+    if not args._eval_code and "lint" in include and _apply_auto_fixes(result, args):
+        _verify_auto_fixes(result, args, url, name, outdir, include)
     for sh in result.get("shots", {}).values():
         if isinstance(sh, dict):
             sh.pop("_chartContainers", None)
             sh.pop("_fileAssetRefs", None)
 
     result["elapsedSec"] = round(time.time() - t0, 2)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0
+    _build_v2_schema(result, args, url, include)
+    _emit_report(result, args, outdir)
+    return 3 if result.get("error") else 0
+
+
+# ---- auto-fix：只修明确的 HTML 属性，不决定字体、图标或布局
+class _SourceTags(HTMLParser):
+    """记录源码偏移，保留其余字节；脚本、样式、文本和模板内的示例不参与修复。"""
+    _RAW = {'script', 'style', 'textarea', 'title', 'xmp', 'iframe', 'noembed', 'noframes', 'plaintext'}
+    _INERT = {'template', 'noscript'}
+    _VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+             'link', 'meta', 'param', 'source', 'track', 'wbr'}
+
+    def __init__(self, text):
+        super().__init__(convert_charrefs=False)
+        self.text = text
+        self.lines = [0]
+        for m in re.finditer('\n', text):
+            self.lines.append(m.end())
+        self.stack = []
+        self.tags = []
+        self.feed(text)
+        self.close()
+
+    def handle_starttag(self, tag, attrs):
+        self._start(tag, attrs, False)
+
+    def handle_startendtag(self, tag, attrs):
+        # HTML 中 <script/> 等不会自闭合，只有外来内容（如 SVG）支持该语法。
+        self._start(tag, attrs, 'svg' in self.stack or tag == 'svg')
+
+    def _start(self, tag, attrs, closed):
+        raw = self.get_starttag_text()
+        line, column = self.getpos()
+        start = self.lines[line - 1] + column
+        if not any(t in self._RAW | self._INERT for t in self.stack):
+            self.tags.append({'tag': tag, 'attrs': attrs, 'raw': raw,
+                              'start': start, 'end': start + len(raw),
+                              'in_svg': 'svg' in self.stack})
+        if not closed and tag not in self._VOID:
+            self.stack.append(tag)
+            if tag in self._RAW:
+                self.set_cdata_mode(tag)
+
+    def handle_endtag(self, tag):
+        if tag in self.stack:
+            self.stack = self.stack[:len(self.stack) - 1 - self.stack[::-1].index(tag)]
+
+
+_SOURCE_ATTR_RE = re.compile(
+    r'''\s+([^\s/>=]+)(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?'''
+)
+
+
+def _source_attributes(node):
+    """解析整段属性的范围；重复或特殊语法留给模型，不能猜测目标位置。"""
+    raw = node['raw']
+    opening = re.match(r'<[^\s/>]+', raw)
+    if not opening:
+        return None
+    pos, spans = opening.end(), {}
+    names = []
+    while pos < len(raw):
+        if raw[pos:].strip() in ('>', '/>'):
+            break
+        m = _SOURCE_ATTR_RE.match(raw, pos)
+        if not m:
+            return None
+        name = m.group(1).lower()
+        if name in spans:
+            return None
+        spans[name] = (m.start(), m.end())
+        names.append(name)
+        pos = m.end()
+    if names != [name for name, _ in node['attrs']]:
+        return None
+    return {name: (value, spans[name]) for name, value in node['attrs']}
+
+
+def _set_source_attribute(raw, attrs, name, value):
+    attribute = f'{name}="{html_escape(value, quote=True)}"'
+    if name in attrs:
+        start, end = attrs[name][1]
+        return raw[:start] + ' ' + attribute + raw[end:]
+    end = len(raw) - (2 if raw.endswith('/>') else 1)
+    return raw[:end].rstrip() + ' ' + attribute + raw[end:]
+
+
+def _plan_auto_fixes(text, result, html_path):
+    """一次规划所有改动；只根据本次 findings 修改真实标签，不扫描代码字符串。"""
+    nodes = _SourceTags(text).tags
+    shots = [sh for sh in (result.get('shots') or {}).values() if isinstance(sh, dict)]
+    viewport_issue = any(sh.get('viewportMetaWarning') for sh in shots)
+    unsafe_targets = {(item.get('tag'), item.get('target')) for sh in shots
+                      for item in sh.get('unsafeHrefRefsWarning', []) if isinstance(item, dict)}
+    image_targets = {item['file'] for item in result.get('publishBrokenAssets', [])
+                     if item.get('reason') == 'non-src-attr:data-src' and item.get('onDisk')}
+    # <base> 会改变相对 URL 的解析；这类页面不在静态路径修复范围。
+    if any(n['tag'] == 'base' for n in nodes):
+        image_targets.clear()
+    edits, counts = [], {}
+
+    def add(start, end, replacement, rule):
+        edits.append((start, end, replacement))
+        counts[rule] = counts.get(rule, 0) + 1
+
+    viewports = [n for n in nodes if n['tag'] == 'meta' and
+                 any(k == 'name' and (v or '').lower() == 'viewport' for k, v in n['attrs'])]
+    if viewport_issue and not viewports:
+        head = next((n for n in nodes if n['tag'] == 'head'), None)
+        if head:
+            add(head['end'], head['end'],
+                '\n<meta name="viewport" content="width=device-width, initial-scale=1">',
+                'viewportMetaWarning')
+    for node in nodes:
+        attrs = _source_attributes(node)
+        if attrs is None:
+            continue
+        raw, new = node['raw'], node['raw']
+        rule = None
+        if viewport_issue and len(viewports) == 1 and node is viewports[0]:
+            content = attrs.get('content', ('', None))[0] or ''
+            parts = [p.strip() for p in content.split(',') if p.strip()]
+            # 保留安全区、键盘等选项，仅调整宽度和确实禁止缩放的设置。
+            options = []
+            for part in parts:
+                key, _, value = part.partition('=')
+                key, value = key.strip().lower(), value.strip().lower()
+                if key == 'width' or (key == 'user-scalable' and value in ('no', '0')):
+                    continue
+                if key == 'maximum-scale':
+                    try:
+                        if float(value) <= 1:
+                            continue
+                    except ValueError:
+                        pass
+                options.append(part)
+            if not any(p.split('=', 1)[0].strip().lower() == 'initial-scale' for p in options):
+                options.append('initial-scale=1')
+            content = ', '.join(['width=device-width', *options])
+            new = _set_source_attribute(raw, attrs, 'content', content)
+            rule = 'viewportMetaWarning'
+        elif node['in_svg'] and node['tag'] in ('use', 'textpath'):
+            target = attrs.get('href', ('', None))[0] or ''
+            if ((node['tag'], target) in unsafe_targets and target.startswith('#')
+                    and 'xlink:href' not in attrs):
+                new = _set_source_attribute(raw, attrs, 'xlink:href', target)
+                rule = 'unsafeHrefRefsWarning'
+        elif node['tag'] == 'img' and 'data-src' in attrs and 'src' not in attrs and 'srcset' not in attrs:
+            # Retain data-src for lazy-load handlers; never overwrite a chosen source/placeholder.
+            value = attrs['data-src'][0] or ''
+            if _looks_like_local_img(value):
+                path = unquote(value.split('?', 1)[0].split('#', 1)[0]).strip()
+                try:
+                    relative = (html_path.parent / path).resolve().relative_to(html_path.parent).as_posix()
+                except ValueError:
+                    continue
+                if relative in image_targets:
+                    new = _set_source_attribute(raw, attrs, 'src', value)
+                    rule = 'publishBrokenAssets'
+        if rule and new != raw:
+            add(node['start'], node['end'], new, rule)
+    for start, end, replacement in sorted(edits, reverse=True):
+        text = text[:start] + replacement + text[end:]
+    return text, [{'rule': rule, 'count': count} for rule, count in counts.items()]
+
+
+def _atomic_write(path, data):
+    """同目录临时文件 + replace；写入失败时不会把原 HTML 截断。"""
+    staged = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix='.' + path.name + '.',
+                                         suffix='.tmp', delete=False) as handle:
+            staged = Path(handle.name)
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        staged.chmod(path.stat().st_mode)
+        os.replace(staged, path)
+    finally:
+        if staged is not None and staged.exists():
+            staged.unlink()
+
+
+def _apply_auto_fixes(result, args):
+    """返回是否已修改；不删告警，调用方必须重跑一次检查。"""
+    if not getattr(args, 'auto_fix', False) or args.src.startswith(('http://', 'https://', 'file://')):
+        return False
+    backup = None
+    try:
+        path = Path(args.src).resolve()
+        if not path.is_file() or path.suffix.lower() not in ('.html', '.htm'):
+            return False
+        original = path.read_bytes()
+        text = original.decode('utf-8')  # 无法可靠解码就跳过，不替换坏字节后写回。
+        updated, fixed = _plan_auto_fixes(text, result, path)
+        if not fixed or updated == text:
+            return False
+        # 保存本次原始字节，后续运行不覆盖上次备份。
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=path.stem + '.autofix-backup-',
+                                         suffix=path.suffix, delete=False) as handle:
+            backup = Path(handle.name)
+            handle.write(original)
+        # 扫描期间文件被改动时不覆盖并发编辑。
+        if path.read_bytes() != original:
+            raise RuntimeError('HTML 在自动修复期间发生变化，已跳过写入')
+        _atomic_write(path, updated.encode('utf-8'))
+    except Exception as exc:
+        result['autoFixError'] = f'{type(exc).__name__}: {exc}'[:200]
+        return False
+    result['autoFixed'] = fixed
+    result['autoFixBackup'] = str(backup)
+    return True
+
+
+def _verify_auto_fixes(result, args, url, name, outdir, include):
+    """修后只复查一次；新截图/告警覆盖旧结果，不递归修复，也不重复执行用户 eval。"""
+    refreshed = {'src': args.src, 'url': url, 'outdir': str(outdir),
+                 'include': sorted(include), 'shots': {}}
+    verify_args = argparse.Namespace(**vars(args))
+    verify_args._eval_code = None
+    verify_dir = outdir / 'autofix-verified'
+    try:
+        verify_dir.mkdir(parents=True, exist_ok=True)
+        if result.get('engine') == 'playwright':
+            _run_playwright(url, verify_args, name, verify_dir, refreshed, include)
+        else:
+            _run_chrome_cli(url, verify_args, name, verify_dir, refreshed, include)
+        _emit_responsive_issues(refreshed)
+        _emit_publish_broken_assets(refreshed, args.src)
+    except Exception as exc:
+        refreshed['error'] = {'code': 'autofix_verification_failed', 'message': str(exc)[:300]}
+    result['shots'] = refreshed['shots']  # 失败时也不能把修改前截图当成修改后截图。
+    for key in ('responsiveChartIssues', 'responsiveChartIssuesHint', 'publishBrokenAssets', 'publishBrokenAssetsHint'):
+        result.pop(key, None)
+    result.update({k: v for k, v in refreshed.items() if k not in ('src', 'url', 'outdir', 'include')})
+    views = ['desktop', 'mobile'] if args.only == 'both' else [args.only]
+    verified = not refreshed.get('error') and all(
+        _dom_available_for(refreshed['shots'].get(view)) for view in views)
+    result['autoFixVerification'] = {'status': 'checked' if verified else 'incomplete', 'passes': 1}
+    if not verified:
+        result.setdefault('error', {'code': 'autofix_verification_failed',
+                                    'message': '源码已修复，但未完成修后 DOM 检查；不要把旧报告当作通过。'})
+    return verified
 
 
 # ---- 发布链路资源收集：源码位置扫描

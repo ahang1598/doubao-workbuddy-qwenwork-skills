@@ -20,7 +20,7 @@ metadata:
 
 - 用户要把**已有 Wiki 节点移出知识库，放到 Drive 文件夹或“我的空间”根目录**：切到 `lark-wiki`，使用 `lark-cli wiki +move-to-drive`；不要把 Wiki token 直接交给 `drive +move`。这是会改变文档归属和权限继承的写操作，执行前确认源节点与目标位置。
 - 用户要**复制文档 / 创建副本 到云盘或者文件夹**时：已提供可直接使用的 URL 或 token，按 [`references/lark-drive-copy.md`](references/lark-drive-copy.md) 使用 `lark-cli drive +copy`；仅提供标题时，先按 [`references/lark-drive-search.md`](references/lark-drive-search.md) 使用 `drive +search` 唯一定位源资源，再按 copy reference 复制。如果是要复制文档 / 创建副本到知识库，使用 `wiki +node-copy`（见 [`lark-wiki-node-copy.md`](../lark-wiki/references/lark-wiki-node-copy.md)）。
-- 用户要**识别飞书 / doubao 云空间 URL 的类型和 token**时，可以先按 URL 路径形态做轻量判断；当路径已明确指向 docx / sheet / bitable / slides / file / folder 等资源时，可直接提取对应 token/type。传入 wiki URL、需要识别标题或 canonical URL、URL/token 有歧义，或后续操作依赖底层真实资源时，再使用 `lark-cli drive +inspect --url '<url>'` 进行识别；具体用法、失败处理和边界见 [`references/lark-drive-inspect.md`](references/lark-drive-inspect.md)。
+- 用户要**识别飞书 / doubao 云空间 URL 的类型和 token**时，可以先按 URL 路径形态做轻量判断；当路径已明确指向 docx / sheet / bitable / slides / file / folder 等资源时，可直接提取对应 token/type。传入 wiki URL、需要识别标题或 canonical URL、URL/token 有歧义，或后续操作依赖底层真实资源时，再使用 `lark-cli drive +inspect --url '<url>'` 进行识别；具体用法、失败处理和边界见 [`references/lark-drive-inspect.md`](references/lark-drive-inspect.md)。若路径是 `/record/`（记录分享），不要用 `drive +inspect`，直接转 `lark-base`，用 `lark-cli base +url-resolve --url '<url>'` 解析。
 - 高风险写操作（删除、公开权限修改、owner 转移、版本删除/回滚、批量移动/覆盖/同步）必须同时满足三个条件才执行：目标已解析为该操作可直接使用的执行对象，执行细节已明确到可直接调用命令（例如删除的 file-token/type、公开权限修改的共享范围、owner 转移的目标 owner、版本删除/回滚的 version id、移动/覆盖/同步的目标位置和冲突策略），且用户在本轮明确确认执行这些具体目标和执行细节。用户只说“删除没用的文件”“开放/共享给大家”“改成开放”“覆盖/移动这些”只表示目标状态；先只读发现并列出候选、权限档位或执行方案，停止等待用户确认。
 - 用户要**检查 / 治理文档权限、公开范围、链接分享、外部访问、复制下载权限、密级标签、owner 转移**，或要”权限风险报告、收紧权限、申请查看 / 编辑权限、转移 / 批量转移 owner”，必须先阅读 [`references/lark-drive-workflow.md`](references/lark-drive-workflow.md)，再按其中 `Workflow Registry` 进入 [`permission_governance`](references/lark-drive-workflow-permission-governance.md) workflow。
 - 用户明确要**移除单个云文档协作者权限**时，使用 `lark-cli drive +member-remove`；先阅读 [`references/lark-drive-member-remove.md`](references/lark-drive-member-remove.md)。这是高风险写操作，真实执行必须确认准确的资源、成员 ID/type 和 wiki 权限范围，并显式传 `--yes`。
@@ -123,7 +123,7 @@ Shortcut 是对常用操作的高级封装（`lark-cli drive +<verb> [flags]`）
 | [`+create-folder`](references/lark-drive-create-folder.md) | 新建 Drive 文件夹，支持指定父文件夹。 |
 | [`+download`](references/lark-drive-download.md) | 下载 Drive 文件到本地。 |
 | [`+preview`](references/lark-drive-preview.md) | 查看或下载文件内容，或者查看文件可用预览格式并获取 PDF / HTML / 文本 / 图片等转换预览产物。 |
-| [`+fetch`](references/lark-drive-fetch.md) | 把 Drive 文件读取为 Markdown（wiki URL 自动解包）；在线文档读取走各实体 skill。 |
+| [`+fetch`](references/lark-drive-fetch.md) | 把 Drive 文件读取为 Markdown（wiki URL 自动解包）；在线文档读取走各实体 skill。调用该工具时注意保留引用。 |
 | [`+cover`](references/lark-drive-cover.md) | 查看或下载文件封面图规格。 |
 | [`+status`](references/lark-drive-status.md) | 比较本地目录与 Drive 文件夹差异；默认按 SHA-256 精确比较，`--quick` 使用修改时间近似比较。 |
 | [`+pull`](references/lark-drive-pull.md) | 从 Drive 拉取文件到本地目录，支持重复远端路径处理和增量模式。 |

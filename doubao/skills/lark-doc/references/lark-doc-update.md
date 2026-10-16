@@ -39,6 +39,19 @@ lark-cli docs +update --doc "xx" --command block_delete --start-block-id blkFirs
 
 除非用户明确要求完全重建，或原文已无保留价值，否则不要使用 `overwrite`；它可能丢失评论和暂不支持的资源。
 
+## 保留评论
+
+操作前先确认用户意图是否倾向保留评论；当没有明确要求不保留评论时，尽可能保留评论。
+
+需要保留评论时：
+
+1. `+fetch --detail with-ids` 取最新 `comment-refs` 与同次读取的 `reference_map`。
+2. `str_replace` **必须带样式替换**：如 `--content '<span comment-refs="c1">新文本</span>'` + `--reference-map`；纯文本替换会使精确引用被替换文本的评论丢失。
+3. `block_replace` 同理：替换 XML 沿用 `comment-refs` + `--reference-map`（块重建，评论迁移到新块）。
+4. 写后重新 fetch 验证评论未悬空。
+
+禁止编造引用、跨文档复用或引入被替换片段中未出现的评论。
+
 ## 生成 block 直达链接
 
 用户需要某个 block 的直达链接时，只定位 block，不执行文档写操作：

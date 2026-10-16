@@ -1,64 +1,65 @@
-"""charts/pyramid.py
-
-统一 API 的人口金字塔（左右对称水平柱）。
-
-data schema:
-    {
-      "categories":  [str, ...],     # N 个类别（例如年龄段）
-      "left":        [num, ...],     # 左侧值
-      "right":       [num, ...],     # 右侧值
-      "left_label":  str,            # 左侧组标（默认 "MALE"）
-      "right_label": str,            # 右侧组标（默认 "FEMALE"）
-      "left_series"?:  [(name, [values]), ...],   # stacked_flat 可选
-      "right_series"?: [(name, [values]), ...],   # stacked_flat 可选
-    }
-
-variants:
-  - default_flat
-  - filled_gradient
-  - stacked_flat        # 若 data 未提供 series，自动 60/40 拆分
-  - dot_flat            # Isotype 点阵
-  - outlined_burgundy   # 描边 + 淡填
-"""
+"""统一 API 的人口金字塔（左右对称水平柱）。"""
 
 from __future__ import annotations
+
 import math
 import re
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    validate_svg,
-    _rgba_with_alpha,
-    is_dark_palette,
-)
-
 
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
+    _dispatch_to_svg_lib,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgb_tuple,
     _rgba_with_alpha,
-    _xesc,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
+    _xesc,
+)
+from ._shared import (
+    tr,
+    auto_font_size,
+    is_dark_palette,
+    resolve_palette,
+    xesc,
 )
 
 VARIANTS = ("default_flat", "filled_gradient", "stacked_flat", "dot_flat", "outlined_burgundy")
 
 
-def _autosplit(values, ratio=0.6):
-    """把每格 value 拆成两个 series。"""
-    a = [int(round(v * ratio)) for v in values]
-    b = [v - x for v, x in zip(values, a)]
-    return a, b
+# Multi-mode whitelist: with_sex_ratio → horizontal bars of M/F ratio per bin.
+# Trigger: n_bins >= 5. Validator: both sides have >=1 non-zero bin.
+from . import _academic_rigor as rigor
+
+
+def _validate_sex_ratio(signals):
+    left_nonzero = int(signals.get("left_nonzero", 0))
+    right_nonzero = int(signals.get("right_nonzero", 0))
+    if left_nonzero < 1 or right_nonzero < 1:
+        return (False, "need >=1 non-zero bin per side")
+    return (True, "")
+
+
+_PYRAMID_MULTI_WHITELIST = {
+    "with_sex_ratio": (
+        "left_right_3to1",
+        lambda s: int(s.get("n_bins", 0)) >= 5,
+        lambda s: _validate_sex_ratio(s),
+    ),
+}
+
+
+def _series_input(values):
+    """Accept a numeric vector or a mapping of named, real component vectors."""
+    if not isinstance(values, dict):
+        return list(values), None
+    series = [(str(name), [float(v) for v in vector]) for name, vector in values.items()]
+    if not series:
+        raise ValueError("pyramid: component series cannot be empty")
+    n = len(series[0][1])
+    if any(len(vector) != n for _, vector in series):
+        raise ValueError("pyramid: component vectors must have equal lengths")
+    return [sum(vector[i] for _, vector in series) for i in range(n)], series
 
 
 def _normalize_data(data, variant):
@@ -70,21 +71,25 @@ def _normalize_data(data, variant):
     if len(left) != n or len(right) != n:
         raise ValueError(f"pyramid: length mismatch categories={n} left={len(left)} right={len(right)}")
     for v in left + right:
-        if v < 0:
-            raise ValueError(f"pyramid: negative value not allowed: {v}")
+        if not math.isfinite(float(v)) or v < 0:
+            raise ValueError(f"pyramid: values must be finite and nonnegative: {v}")
 
-    left_label = data.get("left_label", "MALE")
-    right_label = data.get("right_label", "FEMALE")
+    left_label = data.get("left_label", tr("MALE"))
+    right_label = data.get("right_label", tr("FEMALE"))
 
     left_series = data.get("left_series")
     right_series = data.get("right_series")
     if variant == "stacked_flat":
-        if not left_series:
-            a, b = _autosplit(left, 0.6)
-            left_series = [("Citizens", a), ("Migrants", b)]
-        if not right_series:
-            a, b = _autosplit(right, 0.6)
-            right_series = [("Citizens", a), ("Migrants", b)]
+        if not left_series or not right_series:
+            raise ValueError("pyramid: stacked_flat requires explicit left_series and right_series")
+        for label, components, totals in [("left", left_series, left), ("right", right_series, right)]:
+            for name, vector in components:
+                if len(vector) != n or any(not math.isfinite(float(v)) or v < 0 for v in vector):
+                    raise ValueError(f"pyramid: {label} component {name!r} needs {n} finite nonnegative values")
+            for i, total in enumerate(totals):
+                component_sum = sum(vector[i] for _, vector in components)
+                if not math.isclose(component_sum, total, rel_tol=1e-8, abs_tol=1e-10):
+                    raise ValueError(f"pyramid: {label} components do not sum to total for category {cats[i]!r}")
 
     return {
         "categories": cats,
@@ -103,16 +108,14 @@ def draw_pyramid(
     variant: str = "default_flat",
     palette: str = "archive_ink",
     width: float = 1000,
-    height: float = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    note: str = None,
+    height: float | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    note: str | None = None,
+    multi_mode: str = "auto",
 ) -> str:
-    """Render a pyramid SVG.
-
-    See module docstring for data schema.
-    """
+    """Render a pyramid SVG."""
     if variant not in VARIANTS:
         raise ValueError(f"pyramid: unknown variant {variant!r}. Available: {VARIANTS}")
 
@@ -135,7 +138,6 @@ def draw_pyramid(
     right_vals = d["right"]
     n = d["n"]
 
-    # -- layout --
     W = float(width)
     slot_target = 30 if n <= 12 else (24 if n <= 20 else 18)
     plot_h_min = n * slot_target
@@ -154,7 +156,34 @@ def draw_pyramid(
 
     ML = 90.0
     MR = 40.0
-    center_x = W / 2
+
+    _mm_mode = None
+    _mm_template = None
+    _sub_bbox = None
+    if rigor is not None:
+        left_nonzero = sum(1 for v in left_vals if v > 0)
+        right_nonzero = sum(1 for v in right_vals if v > 0)
+        _mm_signals = {
+            "n_bins": n,
+            "left_nonzero": left_nonzero,
+            "right_nonzero": right_nonzero,
+        }
+        _full_plot_bbox = rigor.bbox_from_edges(ML, W - MR, plot_top, plot_bot)
+        _mm_mode, _mm_template, _reason = rigor.resolve_multi_mode_v2(
+            multi_mode,
+            _PYRAMID_MULTI_WHITELIST,
+            _mm_signals,
+            _full_plot_bbox,
+        )
+        if _mm_mode is not None and _mm_template is not None:
+            _rects = rigor.allocate_main_sub(_full_plot_bbox, _mm_template)
+            _main_bb = _rects["main"]
+            _sub_bbox = _rects["sub"]
+            # Shrink the pyramid's effective right edge: use _main_bb.x1 as new W-MR. i.e., the main pyramid should fit
+            # within [ML, _main_bb.x1].
+            MR = W - _main_bb.x1
+
+    center_x = (ML + (W - MR)) / 2
     # 中央 category 列宽度：既要考虑数量，也要考虑最长 category 文本的像素宽度
     # 否则短 label ok 但 "Working (25-60)" 类会被柱条盖住
     fs_cat_probe = 13 if n <= 5 else (12 if n <= 10 else (11 if n <= 20 else 10))
@@ -164,7 +193,6 @@ def draw_pyramid(
     if n > 12:
         center_gap = max(60, min(center_gap, 120))
 
-    # 左右柱的绘制区间
     TOTAL_L_X = ML + 40  # 数值 anchored-end 位置
     TOTAL_R_X = W - MR - 40
     LABEL_PAD = 18
@@ -178,7 +206,6 @@ def draw_pyramid(
     scale = half_w / max_v * 0.94
     bar_h = row_h * (0.6 if n <= 15 else 0.7)
 
-    # 字号自适应
     fs_cat = auto_font_size(n, base=11)
     fs_val = auto_font_size(n, base=10)
     fs_axis_hdr = auto_font_size(n, base=12)
@@ -193,7 +220,6 @@ def draw_pyramid(
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H:.0f}">']
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H:.1f}" fill="{BG}"/>')
 
-    # header
     y = 46
     if title:
         parts.append(
@@ -218,7 +244,6 @@ def draw_pyramid(
             f'font-weight="600" fill="{MUT}" letter-spacing="0.15em">{xesc(figure_label)}</text>'
         )
 
-    # side headers
     parts.append(
         f'<text x="{(bar_left_inner + bar_left_outer) / 2:.1f}" y="{plot_top - 14:.1f}" '
         f'text-anchor="middle" font-family="{body_font}" font-size="{fs_axis_hdr}" '
@@ -242,7 +267,6 @@ def draw_pyramid(
                 f'stroke="{pal["ink2"]}" stroke-width="0.4" stroke-dasharray="1 3"/>'
             )
 
-    # variant dispatch
     if variant == "dot_flat":
         parts.extend(
             _render_dot(
@@ -356,7 +380,6 @@ def draw_pyramid(
             )
         )
 
-    # baselines
     parts.append(
         f'<line x1="{bar_left_outer - 6:.1f}" y1="{plot_bot:.1f}" '
         f'x2="{bar_left_inner:.1f}" y2="{plot_bot:.1f}" stroke="{INK}" stroke-width="0.6"/>'
@@ -376,16 +399,29 @@ def draw_pyramid(
     if variant == "stacked_flat" and d["left_series"]:
         _legend_stacked(parts, ML, H - 50, series, d, body_font, INK, label_col)
 
+    if _sub_bbox is not None and _mm_mode == "with_sex_ratio":
+        _render_sex_ratio_sub(
+            parts,
+            _sub_bbox,
+            cats,
+            left_vals,
+            right_vals,
+            plot_top,
+            row_h,
+            INK=INK,
+            MUT=MUT,
+            ACC=ACC,
+            body_font=body_font,
+            fs_cat=fs_cat,
+            fs_val=fs_val,
+            fs_axis_hdr=fs_axis_hdr,
+        )
+
     parts.append("</svg>")
     return "".join(parts)
 
 
-# ------------------------------------------------------------
-# variant renderers
-# ------------------------------------------------------------
-
-
-def _render_flat(
+def _render_paired_bars(
     d,
     plot_top,
     row_h,
@@ -394,9 +430,8 @@ def _render_flat(
     bar_right_inner,
     scale,
     center_x,
-    left_col,
-    right_col,
-    INK,
+    left_paint,
+    right_paint,
     MUT,
     TOTAL_L_X,
     TOTAL_R_X,
@@ -404,19 +439,20 @@ def _render_flat(
     fs_val,
     body_font,
     label_col,
+    prefix=(),
 ):
-    out = []
+    """Mirrored left/right bars per row; ``*_paint(i)`` returns the rect paint attributes."""
+    out = list(prefix)
     for i, cat in enumerate(d["categories"]):
         y_row = plot_top + i * row_h + (row_h - bar_h) / 2
         lv, rv = d["left"][i], d["right"][i]
         wL, wR = lv * scale, rv * scale
         out.append(
             f'<rect x="{bar_left_inner - wL:.1f}" y="{y_row:.1f}" width="{wL:.1f}" '
-            f'height="{bar_h:.1f}" fill="{left_col}"/>'
+            f'height="{bar_h:.1f}" {left_paint(i)}/>'
         )
         out.append(
-            f'<rect x="{bar_right_inner:.1f}" y="{y_row:.1f}" width="{wR:.1f}" '
-            f'height="{bar_h:.1f}" fill="{right_col}"/>'
+            f'<rect x="{bar_right_inner:.1f}" y="{y_row:.1f}" width="{wR:.1f}" height="{bar_h:.1f}" {right_paint(i)}/>'
         )
         _mid_and_values(
             out,
@@ -436,29 +472,30 @@ def _render_flat(
     return out
 
 
-def _render_gradient(
-    d,
-    plot_top,
-    row_h,
-    bar_h,
-    bar_left_inner,
-    bar_right_inner,
-    scale,
-    center_x,
-    left_col,
-    right_col,
-    INK,
-    MUT,
-    TOTAL_L_X,
-    TOTAL_R_X,
-    fs_cat,
-    fs_val,
-    body_font,
-    label_col,
+def _render_flat(
+    d, plot_top, row_h, bar_h, bar_left_inner, bar_right_inner, scale, center_x, left_col, right_col, INK, MUT, *rest
 ):
-    out = []
+    left_paint = f'fill="{left_col}"'
+    right_paint = f'fill="{right_col}"'
+    return _render_paired_bars(
+        d,
+        plot_top,
+        row_h,
+        bar_h,
+        bar_left_inner,
+        bar_right_inner,
+        scale,
+        center_x,
+        lambda i: left_paint,
+        lambda i: right_paint,
+        MUT,
+        *rest,
+    )
 
-    # defs once
+
+def _render_gradient(
+    d, plot_top, row_h, bar_h, bar_left_inner, bar_right_inner, scale, center_x, left_col, right_col, INK, MUT, *rest
+):
     def _grad_def(gid, col, x1, x2):
         top = _rgba_with_alpha(col, 1.0)
         bot = _rgba_with_alpha(col, 0.45)
@@ -476,36 +513,21 @@ def _render_gradient(
         defs.append(_grad_def(f"pyrL{i}", left_col, bar_left_inner - wL, bar_left_inner))
         defs.append(_grad_def(f"pyrR{i}", right_col, bar_right_inner + wR, bar_right_inner))
     defs.append("</defs>")
-    out.extend(defs)
-
-    for i, cat in enumerate(d["categories"]):
-        y_row = plot_top + i * row_h + (row_h - bar_h) / 2
-        lv, rv = d["left"][i], d["right"][i]
-        wL, wR = lv * scale, rv * scale
-        out.append(
-            f'<rect x="{bar_left_inner - wL:.1f}" y="{y_row:.1f}" width="{wL:.1f}" '
-            f'height="{bar_h:.1f}" fill="url(#pyrL{i})"/>'
-        )
-        out.append(
-            f'<rect x="{bar_right_inner:.1f}" y="{y_row:.1f}" width="{wR:.1f}" '
-            f'height="{bar_h:.1f}" fill="url(#pyrR{i})"/>'
-        )
-        _mid_and_values(
-            out,
-            cat,
-            lv,
-            rv,
-            center_x,
-            TOTAL_L_X,
-            TOTAL_R_X,
-            y_row + bar_h / 2 + 4,
-            fs_cat,
-            fs_val,
-            body_font,
-            label_col,
-            MUT,
-        )
-    return out
+    return _render_paired_bars(
+        d,
+        plot_top,
+        row_h,
+        bar_h,
+        bar_left_inner,
+        bar_right_inner,
+        scale,
+        center_x,
+        lambda i: f'fill="url(#pyrL{i})"',
+        lambda i: f'fill="url(#pyrR{i})"',
+        MUT,
+        *rest,
+        prefix=defs,
+    )
 
 
 def _render_outlined(
@@ -522,51 +544,25 @@ def _render_outlined(
     ACC,
     INK,
     MUT,
-    TOTAL_L_X,
-    TOTAL_R_X,
-    fs_cat,
-    fs_val,
-    body_font,
-    label_col,
+    *rest,
 ):
-    # 使用 accent 家族的深浅
-    LEFT_STROKE = _rgba_with_alpha(INK, 1.0)
-    LEFT_FILL = _rgba_with_alpha(INK, 0.15)
-    RIGHT_STROKE = ACC
-    RIGHT_FILL = _rgba_with_alpha(ACC, 0.2)
     STROKE_W = 1.4
-
-    out = []
-    for i, cat in enumerate(d["categories"]):
-        y_row = plot_top + i * row_h + (row_h - bar_h) / 2
-        lv, rv = d["left"][i], d["right"][i]
-        wL, wR = lv * scale, rv * scale
-        out.append(
-            f'<rect x="{bar_left_inner - wL:.1f}" y="{y_row:.1f}" width="{wL:.1f}" '
-            f'height="{bar_h:.1f}" fill="{LEFT_FILL}" stroke="{LEFT_STROKE}" '
-            f'stroke-width="{STROKE_W}"/>'
-        )
-        out.append(
-            f'<rect x="{bar_right_inner:.1f}" y="{y_row:.1f}" width="{wR:.1f}" '
-            f'height="{bar_h:.1f}" fill="{RIGHT_FILL}" stroke="{RIGHT_STROKE}" '
-            f'stroke-width="{STROKE_W}"/>'
-        )
-        _mid_and_values(
-            out,
-            cat,
-            lv,
-            rv,
-            center_x,
-            TOTAL_L_X,
-            TOTAL_R_X,
-            y_row + bar_h / 2 + 4,
-            fs_cat,
-            fs_val,
-            body_font,
-            label_col,
-            MUT,
-        )
-    return out
+    left_paint = f'fill="{_rgba_with_alpha(INK, 0.15)}" stroke="{_rgba_with_alpha(INK, 1.0)}" stroke-width="{STROKE_W}"'
+    right_paint = f'fill="{_rgba_with_alpha(ACC, 0.2)}" stroke="{ACC}" stroke-width="{STROKE_W}"'
+    return _render_paired_bars(
+        d,
+        plot_top,
+        row_h,
+        bar_h,
+        bar_left_inner,
+        bar_right_inner,
+        scale,
+        center_x,
+        lambda i: left_paint,
+        lambda i: right_paint,
+        MUT,
+        *rest,
+    )
 
 
 def _render_stacked(
@@ -602,7 +598,6 @@ def _render_stacked(
 
     for i, cat in enumerate(d["categories"]):
         y_row = plot_top + i * row_h + (row_h - bar_h) / 2
-        # left stack (grow leftward)
         x_cursor = bar_left_inner
         for si, (sname, vals) in enumerate(left_series):
             w = vals[i] * stacked_scale
@@ -611,7 +606,6 @@ def _render_stacked(
                 f'<rect x="{x_cursor - w:.1f}" y="{y_row:.1f}" width="{w:.1f}" height="{bar_h:.1f}" fill="{col}"/>'
             )
             x_cursor -= w
-        # right stack
         x_cursor = bar_right_inner
         for si, (sname, vals) in enumerate(right_series):
             w = vals[i] * stacked_scale
@@ -665,32 +659,28 @@ def _render_dot(
     # unit_per_dot 需要保证 max_v 对应的 dot 数 <= dots_per_row（不换行）
     # 这样即便一行画满也不会 wrap 溢出到下方 category 槽
     unit_per_dot = max(1, math.ceil(max_v / dots_per_row))
-    dot_gap_y = dot_r * 2.8
 
     for i, cat in enumerate(d["categories"]):
         y_mid = plot_top + i * row_h + row_h / 2
         lv, rv = left_vals[i], right_vals[i]
-        n_l = min(dots_per_row, int(round(lv / unit_per_dot)))
-        n_r = min(dots_per_row, int(round(rv / unit_per_dot)))
+        n_l = min(dots_per_row, round(lv / unit_per_dot))
+        n_r = min(dots_per_row, round(rv / unit_per_dot))
         # left dots (single row, aligned to inner edge)
         for k in range(n_l):
             col_i = k
             dx = bar_left_inner - 6 - (col_i + 1) * dot_gap_x
             dy = y_mid
             out.append(f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="{dot_r:.1f}" fill="{left_col}"/>')
-        # right dots
         for k in range(n_r):
             col_i = k
             dx = bar_right_inner + 6 + (col_i + 1) * dot_gap_x
             dy = y_mid
             out.append(f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="{dot_r:.1f}" fill="{right_col}"/>')
-        # center category
         out.append(
             f'<text x="{center_x:.1f}" y="{y_mid + 4:.1f}" text-anchor="middle" '
             f'font-family="{body_font}" font-size="{fs_cat}" font-weight="600" fill="{INK}">'
             f"{xesc(cat)}</text>"
         )
-        # values
         out.append(
             f'<text x="{bar_left_inner - half_w - 8:.1f}" y="{y_mid + 4:.1f}" '
             f'text-anchor="end" font-family="{body_font}" font-size="{fs_val}" '
@@ -710,11 +700,6 @@ def _render_dot(
         f'font-size="10" fill="{INK}">1 dot = {unit_per_dot:,}</text>'
     )
     return out
-
-
-# ------------------------------------------------------------
-# helpers
-# ------------------------------------------------------------
 
 
 def _mid_and_values(
@@ -758,7 +743,6 @@ def _nice_ticks(vmax, count=4):
     if vmax <= 0:
         return []
     step = vmax / count
-    # 归一
     exp = 10 ** math.floor(math.log10(step))
     frac = step / exp
     if frac < 1.5:
@@ -778,7 +762,6 @@ def _nice_ticks(vmax, count=4):
 
 
 def _luma(rgba_str):
-    import re
 
     m = re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
     if not m:
@@ -787,30 +770,148 @@ def _luma(rgba_str):
     return 0.299 * r + 0.587 * g + 0.114 * b
 
 
+# Multi-mode sub-panel renderer: M/F ratio horizontal bars per age bin.
+def _render_sex_ratio_sub(
+    parts,
+    sub_bbox,
+    cats,
+    left_vals,
+    right_vals,
+    plot_top,
+    row_h,
+    *,
+    INK,
+    MUT,
+    ACC,
+    body_font,
+    fs_cat,
+    fs_val,
+    fs_axis_hdr,
+):
+    """Horizontal bars: ratio = left/right per age bin (M/F if default labels)."""
+    sx0 = sub_bbox.x0
+    sx1 = sub_bbox.x1
+    sy0 = sub_bbox.y0
+
+    n = len(cats)
+
+    # Compute ratios; use left/right where right > 0, else None.
+    ratios = []
+    for L, R in zip(left_vals, right_vals):
+        if R > 0 and L >= 0:
+            ratios.append(L / R)
+        else:
+            ratios.append(None)
+    valid_r = [r for r in ratios if r is not None and math.isfinite(r)]
+    if not valid_r:
+        return
+    r_max = max(valid_r + [1.0])
+    r_min = 0.0
+    span = max(r_max - r_min, 0.5)
+    v_max = r_max + span * 0.08
+
+    _pad_left = 14.0
+    _pad_right = 20.0
+    _pad_top = 28.0
+    _pad_bot = 40.0
+    ax_x0 = sx0 + _pad_left
+    ax_x1 = sx1 - _pad_right
+    # Align rows with main pyramid rows (same row_h, same plot_top).
+    ax_y0 = plot_top
+    ax_y1 = plot_top + n * row_h
+
+    def X(v):
+        if v_max == r_min:
+            return (ax_x0 + ax_x1) * 0.5
+        return ax_x0 + (v - r_min) / (v_max - r_min) * (ax_x1 - ax_x0)
+
+    _sub_title_fs = max(10.0, fs_axis_hdr - 2)
+    parts.append(
+        f'<text x="{(ax_x0 + ax_x1) / 2:.1f}" y="{sy0 + _sub_title_fs + 2:.1f}" '
+        f'font-family="{body_font}" font-size="{_sub_title_fs:.1f}" fill="{MUT}" '
+        f'text-anchor="middle" font-style="italic">{_xesc(tr("M / F ratio"))}</text>'
+    )
+
+    # X=1 reference line.
+    x_ref = X(1.0)
+    parts.append(
+        f'<line x1="{x_ref:.1f}" y1="{ax_y0:.1f}" x2="{x_ref:.1f}" y2="{ax_y1:.1f}" '
+        f'stroke="{INK}" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.55"/>'
+    )
+    parts.append(
+        f'<text x="{x_ref:.1f}" y="{ax_y1 + 14:.1f}" font-family="{body_font}" '
+        f'font-size="{max(9.0, fs_val - 1):.1f}" fill="{MUT}" text-anchor="middle">1.0</text>'
+    )
+
+    # X=0 reference baseline (origin for bars).
+    x_zero = X(0.0)
+    parts.append(
+        f'<line x1="{x_zero:.1f}" y1="{ax_y0:.1f}" x2="{x_zero:.1f}" y2="{ax_y1:.1f}" '
+        f'stroke="{INK}" stroke-width="0.8"/>'
+    )
+
+    bar_h = row_h * 0.55
+    val_fs = max(9.0, fs_val - 1)
+    for i, r in enumerate(ratios):
+        if r is None or not math.isfinite(r):
+            continue
+        cy = ax_y0 + (i + 0.5) * row_h
+        bx = x_zero
+        bw = max(0.1, X(min(r, v_max)) - x_zero)
+        parts.append(
+            f'<rect x="{bx:.1f}" y="{cy - bar_h * 0.5:.1f}" '
+            f'width="{bw:.1f}" height="{bar_h:.1f}" '
+            f'fill="{ACC}" stroke="{INK}" stroke-width="0.6" opacity="0.78"/>'
+        )
+        lx = bx + bw + 4
+        anchor = "start"
+        if lx + 36 > ax_x1:
+            lx = bx + bw - 4
+            anchor = "end"
+        parts.append(
+            f'<text x="{lx:.1f}" y="{cy + val_fs * 0.33:.1f}" '
+            f'font-family="{body_font}" font-size="{val_fs:.1f}" fill="{INK}" '
+            f'text-anchor="{anchor}">{r:.2f}</text>'
+        )
+
+    # X-axis tick labels (0, 1, max).
+    tick_fs = max(9.0, fs_val - 1)
+    xtlabels = sorted({0.0, 1.0, round(r_max, 2)})
+    for v in xtlabels:
+        if v < r_min or v > v_max:
+            continue
+        tx = X(v)
+        parts.append(
+            f'<text x="{tx:.1f}" y="{ax_y1 + tick_fs + 16:.1f}" '
+            f'font-family="{body_font}" font-size="{tick_fs:.1f}" fill="{MUT}" '
+            f'text-anchor="middle">{v:.2g}</text>'
+        )
+
+
 def make_population_pyramid(
     categories,
     left_values,
     right_values,
     left_label: str = "MALE",
     right_label: str = "FEMALE",
-    width: float = None,
-    height: float = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    figure_note: str = None,
-    note: str = None,
+    width: float | None = None,
+    height: float | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    figure_note: str | None = None,
+    note: str | None = None,
     unit: str = "",
-    x_axis_label: str = None,
-    kpis: "list[tuple]" = None,
-    median_index: int = None,
-    median_label: str = None,
-    peak_index: int = None,
-    age_group_dividers: "list[tuple]" = None,
+    x_axis_label: str | None = None,
+    kpis: list[tuple] | None = None,
+    median_index: int | None = None,
+    median_label: str | None = None,
+    peak_index: int | None = None,
+    age_group_dividers: list[tuple] | None = None,
     show_legend: bool = True,
-    font_family: str = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
 ) -> str:
     """
     人口金字塔（Financial-print academic style）：
@@ -847,6 +948,15 @@ def make_population_pyramid(
       - 2 ≤ N ≤ 30
       - 数值必须 >= 0
     """
+    left_values, left_series = _series_input(left_values)
+    right_values, right_series = _series_input(right_values)
+    if left_series is not None or right_series is not None:
+        if left_series is None or right_series is None:
+            raise ValueError("pyramid: provide named component mappings on both sides")
+        if variant in (None, "", "classic"):
+            variant = "stacked_flat"
+        elif variant != "stacked_flat":
+            raise ValueError("pyramid: component mappings require the stacked_flat variant")
     if not _variant_is_classic("population_pyramid", variant):
         _data = {
             "categories": list(categories),
@@ -854,6 +964,8 @@ def make_population_pyramid(
             "right": list(right_values),
             "left_label": left_label,
             "right_label": right_label,
+            "left_series": left_series,
+            "right_series": right_series,
         }
         return _dispatch_to_svg_lib(
             "population_pyramid",
@@ -864,18 +976,14 @@ def make_population_pyramid(
             figure_label=figure_label,
             palette=palette,
             font_family=font_family,
+            width=width,
+            height=height,
+            note=note or figure_note,
         )
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"],
-        _pal["ink6"],
-        _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
-        _pal["accent"],
-    )
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.6))
     paper = _pal.get("bg", "rgba(250,248,242,1)")
@@ -902,7 +1010,6 @@ def make_population_pyramid(
             raise ValueError(f"population_pyramid: negative value not allowed: {v}")
     max_v = max(list(left_values) + list(right_values)) or 1
 
-    # ---- 画布布局 ----
     # width 自适应：让 plot_w = 数据实际 bar 长度 × 2 + axis_gap
     # 关键：nice_max 会凑整，bar 实际只占 axis 长度的 max_v/nice_max
     # 所以想让 bar 铺满 plot 区，就要按 nice_max 比例计算 plot_w
@@ -932,12 +1039,10 @@ def make_population_pyramid(
         height = MARGIN_T + _plot_h_needed + MARGIN_B
     W, H = float(width), float(height)
 
-    # ---- 字号自适应（viewBox + 数据规模双重）----
     _plot_h = H - MARGIN_T - MARGIN_B
     _slot_h_est = _plot_h / max(1, N)
     # slide 里 3 图并列 ≈ 400px，viewBox ~900 → 缩放 ~0.44x；字号需相应放大
     _fs_base = min(W, H) * 0.022
-    # 数据规模乘数：N 少时放大更多
     if N <= 4:
         _n_mult = 1.5
     elif N <= 8:
@@ -964,10 +1069,8 @@ def make_population_pyramid(
     fs_legend = round(max(12.0, _fs_base * 1.05 * _n_mult), 1)
 
     parts = []
-    # 页面背景
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H:.1f}" fill="{paper}"/>')
 
-    # ---- 标题区 ----
     if title:
         parts.append(
             f'<text x="{MARGIN_L:.1f}" y="52" font-family="{_head_font}" '
@@ -998,7 +1101,6 @@ def make_population_pyramid(
             f"{_xesc(figure_note)}</text>"
         )
 
-    # ---- KPI 卡片行 ----
     if kpis:
         kpi_y = 130.0
         # 动态 baseline：保证 header/big/sub 三行 bbox 不相交。
@@ -1041,7 +1143,6 @@ def make_population_pyramid(
                 f'font-size="{fs_kpi_sub}" fill="{c_muted}">{_xesc(sub)}</text>'
             )
 
-    # ---- 主图区 ----
     plot_top = MARGIN_T
     plot_bot = H - MARGIN_B
     plot_h = plot_bot - plot_top
@@ -1093,7 +1194,6 @@ def make_population_pyramid(
     # X 轴刻度对（对称 5 段）
     n_ticks = 5
     x_ticks = [axis_max * i / n_ticks for i in range(n_ticks + 1)]
-    # 竖直虚线（背景）
     for t in x_ticks:
         x_left = left_x1 - t * left_scale
         x_right = right_x0 + t * right_scale
@@ -1106,7 +1206,6 @@ def make_population_pyramid(
             f'stroke="{_INK4}" stroke-width="0.4" stroke-dasharray="1 3"/>'
         )
 
-    # 中轴 category 名（在中央柱条槽正中）
     for i, cat in enumerate(categories):
         y = plot_top + i * slot_h + slot_h / 2 + 3
         style = ' font-weight="700"' if (peak_index is not None and i == peak_index) else ""
@@ -1116,21 +1215,18 @@ def make_population_pyramid(
             f"{_xesc(cat)}</text>"
         )
 
-    # 数值格式化
     def _fmt(v):
         if isinstance(v, float) and abs(v) >= 1000:
-            return f"{int(round(v)):,}"
+            return f"{round(v):,}"
         if isinstance(v, float):
             return f"{v:.1f}"
         return f"{v:,}" if isinstance(v, int) and abs(v) >= 1000 else str(v)
 
-    # 柱条与数值
     for i in range(N):
         l = left_values[i]
         r = right_values[i]
         y = plot_top + i * slot_h + row_pad / 2
         is_peak = peak_index is not None and i == peak_index
-        # 左侧
         w_l = l * left_scale
         parts.append(
             f'<rect x="{left_x1 - w_l:.1f}" y="{y:.1f}" width="{w_l:.1f}" height="{bar_h:.1f}" '
@@ -1139,10 +1235,9 @@ def make_population_pyramid(
         parts.append(
             f'<text x="{left_x1 - w_l - 4:.1f}" y="{y + bar_h / 2 + 3:.1f}" '
             f'text-anchor="end" font-family="{_body_font}" font-size="{fs_val}" '
-            f'fill="{"#{}#".format(_INK)[1:-1] if False else (_INK if is_peak else c_muted)}">'
+            f'fill="{f"#{_INK}#"[1:-1] if False else (_INK if is_peak else c_muted)}">'
             f"{_fmt(l)}</text>"
         )
-        # 右侧
         w_r = r * right_scale
         parts.append(
             f'<rect x="{right_x0:.1f}" y="{y:.1f}" width="{w_r:.1f}" height="{bar_h:.1f}" '
@@ -1153,7 +1248,6 @@ def make_population_pyramid(
             f'font-family="{_body_font}" font-size="{fs_val}" '
             f'fill="{_INK if is_peak else c_muted}">{_fmt(r)}</text>'
         )
-        # peak cohort 空心圆
         if is_peak:
             parts.append(
                 f'<circle cx="{left_x1 - w_l:.1f}" cy="{y + bar_h / 2 - 1:.1f}" r="2" '
@@ -1164,7 +1258,6 @@ def make_population_pyramid(
                 f'fill="none" stroke="{_ACC}" stroke-width="0.9"/>'
             )
 
-    # median 虚线
     if median_index is not None:
         y_med = plot_top + (median_index + 0.5) * slot_h
         parts.append(
@@ -1180,7 +1273,6 @@ def make_population_pyramid(
             lab_w = max(60, len(median_label) * 6 + 12)
             lab_h = 14
             lab_y = y_med - slot_h * 0.55  # 上一格中
-            # 若上一 slot 越顶，向下放
             if lab_y - lab_h / 2 < plot_top + 4:
                 lab_y = y_med + slot_h * 0.55
             parts.append(
@@ -1194,7 +1286,6 @@ def make_population_pyramid(
                 f'font-weight="700" letter-spacing="0.6">{_xesc(median_label)}</text>'
             )
 
-    # age-group dividers
     if age_group_dividers:
         for tup in age_group_dividers:
             idx, above, below = tup[0], tup[1] if len(tup) > 1 else None, tup[2] if len(tup) > 2 else None
@@ -1217,7 +1308,6 @@ def make_population_pyramid(
                     f'letter-spacing="0.8" font-weight="600">{_xesc(below)}</text>'
                 )
 
-    # X 轴基线 + 刻度数值
     parts.append(
         f'<line x1="{left_x0:.1f}" y1="{plot_bot:.1f}" x2="{left_x1:.1f}" y2="{plot_bot:.1f}" '
         f'stroke="{_INK}" stroke-width="0.6"/>'
@@ -1246,7 +1336,6 @@ def make_population_pyramid(
             f'letter-spacing="1.4">{_xesc(x_axis_label)}</text>'
         )
 
-    # ---- 图例 ----
     if show_legend:
         lg_y = plot_bot + 54
         lg_x = MARGIN_L + 30
@@ -1273,7 +1362,7 @@ def make_population_pyramid(
             )
             parts.append(
                 f'<text x="{lg_x3 + 30:.1f}" y="{lg_y + 9:.1f}" font-family="{_body_font}" '
-                f'font-size="{fs_legend}" fill="{c_muted}">Median</text>'
+                f'font-size="{fs_legend}" fill="{c_muted}">{_xesc(tr("Median"))}</text>'
             )
         if peak_index is not None:
             lg_x4 = lg_x2 + 100 + (100 if (median_index is not None and median_label) else 0)
@@ -1283,10 +1372,9 @@ def make_population_pyramid(
             )
             parts.append(
                 f'<text x="{lg_x4 + 18:.1f}" y="{lg_y + 9:.1f}" font-family="{_body_font}" '
-                f'font-size="{fs_legend}" fill="{c_muted}">Peak cohort</text>'
+                f'font-size="{fs_legend}" fill="{c_muted}">{_xesc(tr("Peak cohort"))}</text>'
             )
 
-    # ---- 底部脚注 ----
     if note:
         foot_y = H - 20
         parts.append(
@@ -1296,7 +1384,7 @@ def make_population_pyramid(
         parts.append(
             f'<text x="{MARGIN_L:.1f}" y="{foot_y:.1f}" font-family="{_body_font}" '
             f'font-size="{fs_legend}" fill="{c_muted}">'
-            f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
+            f'<tspan font-weight="600">{_xesc(tr("Notes."))}</tspan> {_xesc(note)}</text>'
         )
 
     body = "".join(parts)
@@ -1304,6 +1392,4 @@ def make_population_pyramid(
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 13) Event Timeline 事件时间轴
-# ==============================================================

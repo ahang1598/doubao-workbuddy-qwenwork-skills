@@ -250,7 +250,11 @@ def public_icon(entry: dict[str, Any], score: int | None = None) -> dict[str, An
 
 
 def search_icons(index_data: dict[str, Any], options: dict[str, Any]) -> list[dict[str, Any]]:
-    query = str(options.get("query") or "")
+    raw_query = options.get("query")
+    if isinstance(raw_query, (list, tuple)):
+        query = " ".join(str(item) for item in raw_query)
+    else:
+        query = str(raw_query or "")
     if not normalize_whitespace(query):
         fail("query is required")
     limit = parse_limit(options.get("limit"))
@@ -309,6 +313,20 @@ def parse_cli_args(argv: list[str]) -> tuple[str | None, dict[str, Any]]:
         if not token.startswith("--"):
             fail(f"unexpected argument: {token}")
         key = token[2:]
+        if key == "query":
+            values: list[str] = []
+            while index + 1 < len(rest) and not rest[index + 1].startswith("--"):
+                values.append(rest[index + 1])
+                index += 1
+            if not values:
+                fail("query requires a value")
+            previous = options.get(key)
+            if previous is None:
+                options[key] = values
+            else:
+                options[key] = [*previous, *values]
+            index += 1
+            continue
         next_token = rest[index + 1] if index + 1 < len(rest) else None
         if next_token is None or next_token.startswith("--"):
             options[key] = True
@@ -322,7 +340,8 @@ def parse_cli_args(argv: list[str]) -> tuple[str | None, dict[str, Any]]:
 def print_usage() -> None:
     usage = [
         "Usage:",
-        "  python3 iconpark_tool.py search --query <text> [--category <Category>] [--limit 8]",
+        "  python3 iconpark_tool.py search --query <text> [<text> ...] [--category <Category>] [--limit 8]",
+        "  python3 iconpark_tool.py search --query <text> --query <text> [--category <Category>] [--limit 8]",
         "  python3 iconpark_tool.py resolve --name <name|iconType>",
         "  python3 iconpark_tool.py list-categories",
     ]

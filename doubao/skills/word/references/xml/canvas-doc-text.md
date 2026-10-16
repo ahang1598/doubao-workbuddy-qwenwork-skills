@@ -9,9 +9,9 @@
 | 涉及内容 | 补读章节 |
 |---|---|
 | 段落/标题属性，包括段前分页 | [段落](#段落)正文与属性表 |
-| 文字或字符格式 | [富文本](#富文本)正文与属性表、[局部文字与格式修改](#局部文字与格式修改) |
+| 文字、字符格式或普通超链接 | [富文本](#富文本)正文与属性表、[普通超链接](#普通超链接)、[局部文字与格式修改](#局部文字与格式修改) |
 | 下划线、字符边框、底纹 | 对应的[下划线类型](#下划线类型)、[字符边框线型](#字符边框线型)、[字符底纹图案](#字符底纹图案) |
-| 公式、段内换行、SYMBOL | 对应的[公式](#公式)、[段内换行](#段内换行)、[高级符号](#高级符号) |
+| 公式、段内换行、分栏符、SYMBOL | 对应的[公式](#公式)、[段内换行](#段内换行)、[分栏符](#分栏符)、[高级符号](#高级符号) |
 | 制表位、书签 | 对应的[制表位](#制表位)、[书签](#书签) |
 | 列表或列表内的标题 | [列表](#列表)（含预设与标记子节） |
 
@@ -72,7 +72,7 @@ Fetch 返回的行内标签按固定顺序嵌套，由外向内是：
 | 字号 | `font-size` | 非负十进制数且数值至少 0.5，必须带 `pt` 或 `px`，例如 `12pt`、`16px`；写入量化为 half-point，回读以规范化值为准 |
 | 字体与下划线颜色 | `text-color`、`underline-color` | 使用统一颜色文法 |
 | 高亮/纯色底色 | `background-color` | 使用统一颜色文法 |
-| 字符底纹 | `shading-fill`、`shading-foreground-color`、`shading-pattern` | 仅用于 `<span>`；`shading-pattern` 取值见下方枚举 |
+| 字符底纹 | `shading-fill`（背景色）、`shading-foreground-color`（图案颜色）、`shading-pattern`（图案类型） | 仅用于 `<span>`；`shading-pattern` 取值见下方枚举 |
 | 字符边框 | `border-style` + `border-color` + `border-width` | `border-style` 取 23 个线型之一，见下方枚举；宽度只接受 `pt` |
 | 字符缩放 | `character-scale` | 必须是带百分号的整数，范围 `1%`～`999%` |
 | 字符间距 | `character-spacing` | 必须带 `pt` 或 `px`，可为负数 |
@@ -82,6 +82,22 @@ Fetch 返回的行内标签按固定顺序嵌套，由外向内是：
 | 公式 | `<equation input_mode="latex" alignment="center" layout="inline">x^2</equation>` | 正文为公式源文本；三个属性均可省略 |
 
 主题字体属性引用文档现有主题，不创建或修改 theme 定义。常用规范值为 `majorEastAsia`、`majorBidi`、`majorAscii`、`majorHAnsi`、`minorEastAsia`、`minorBidi`、`minorAscii`、`minorHAnsi`；XML 接受非空引用字符串，已有值以 Fetch 为准。只改其他属性时保留原有 direct/theme 字体槽，不为统一字体无意删除主题绑定。
+
+### 普通超链接
+
+普通 Word 超链接使用行内 `<a>`，通过所属 carrier 的 `block_replace` 创建、更新或删除：
+
+```xml
+<p id="p1"><a href="https://example.com" tooltip="说明">网页</a></p>
+<p id="p2"><a href="../files/report.docx" target-kind="file">文件</a></p>
+<p id="p3"><a anchor="BookmarkName">文内位置</a></p>
+```
+
+- `href` 与 `anchor` 必须且只能提供一个；文件链接使用 `target-kind="file"`。
+- `tooltip`、`history` 可保留或更新；当前 converter 仅保证 anchor/history 保存重开，tooltip 只保证当前页面会话。
+- 删除普通链接时移除 `<a>` 外层并保留其文字与内部行内样式。链接不能嵌套，也不能覆盖 Field、批注或 inline object 的部分结构。
+- 文内 `anchor` 必须对应当前文档唯一、完整且大小写精确匹配的 bookmark；否则停止写入。
+- HYPERLINK Field 是独立、只读的 `<field type="hyperlink" editable="false">`，不得改写成 `<a>` 或编辑其定义。
 
 字符样式（Word character style）没有协议属性，Fetch 不输出字符样式引用，也不会把它继承的格式展开为上述直接格式属性。因此，XML 中缺少某个格式属性不代表文本的最终显示没有该格式，不能只凭 XML 验收继承样式的视觉效果。更新仍保留原有文本结构与所有已返回属性；未暴露的字符样式引用由宿主合并保留，跨越不同样式的替换区间只继承共有的可保留属性，须检查兼容性诊断。不要自行写 `style-id` 或把继承样式重建成直接格式。
 
@@ -175,6 +191,19 @@ Fetch 返回的行内标签按固定顺序嵌套，由外向内是：
 - 清理时**连换行两侧的空格和制表符一起删掉**。标签之间折行缩进因此是安全的，但不要在一段英文句子中间折行——`hello` 折行 `world` 会粘成 `helloworld`。
 - 段内换行不等于新段落。需要新段落时写两个 `<p>`。
 
+### 分栏符
+
+已有分栏布局中的 inline 分栏符使用空元素 `<column-break/>`：
+
+```xml
+<p id="p1">第一栏<column-break id="break-1"/>第二栏</p>
+```
+
+- 必须位于 `<p>`、标题或 `<li>` 的文本流中；根级标签非法。
+- 新建时省略 `id`；移动或删除时基于最新完整 carrier XML 保留或移除整个元素，不拆分该对象。
+- 分栏符只表达在当前多栏布局中换到下一栏，不等同于 `<layout-break type="next-column">`；后者仍未开放。
+- 更新使用所属 carrier 的 `block_replace`，不把分栏符 ID 当成独立 `--block-id`。
+
 ### 高级符号
 
 普通 Unicode 字符直接写在文本中。只有需要保留 Word `SYMBOL` 域身份时才使用空元素 `<symbol/>`：
@@ -215,11 +244,17 @@ Fetch 返回的行内标签按固定顺序嵌套，由外向内是：
 | `type` | 仅 `<p>`：`text`（默认）、`bullet`、`ordered` |
 | `align` | `left`、`center`、`right`、`justify`、`distribute`、`clear`；缺席保持原 direct 值，`clear` 删除 direct 值 |
 | `spacing-before` / `spacing-after` | 非负数值加 `pt`、`cm`、`mm` 或 `in`；`0pt` 是显式零，`clear` 删除 direct 值 |
+| `spacing-before-lines` / `spacing-after-lines` | 非负无单位十进制行数；量化为 1/100 行，`0` 可显式取消继承值，`clear` 只清该行单位槽 |
 | `spacing-before-auto` / `spacing-after-auto` | `true`、`false` 或 `clear`；缺席保持，`clear` 删除 direct 值 |
+| `contextual-spacing` | `true`、`false` 或 `clear`；控制同样式相邻段落是否忽略段前/段后间距 |
 | `line-indent` | 非负数值加 `ch`、`px` 或 `pt`，例如 `2ch`、`18pt`；负值会被丢弃 |
+| `right-indent` | 物理右缩进；值域同 `line-indent` |
+| `start-indent` / `end-indent` | Word 逻辑起点/终点缩进；非负 `ch`、`px` 或 `pt`，`clear` 删除对应逻辑槽 |
 | `first-line-indent` | 同上；与 `hanging-indent` 互斥，同写时按 `hanging-indent` 生效并返回 `ATTR_MUTUALLY_EXCLUSIVE` 警告，不是失败 |
 | `hanging-indent` | 同上；与 `first-line-indent` 互斥，同写时它胜出 |
 | `line-height` | 倍率裸数字，如 `1.15`；或 `exact 12pt`、`at-least 12pt`，后两种只接受 `pt` |
+| `shading-fill`（背景色） / `shading-pattern`（图案类型） / `shading-foreground-color`（图案颜色） | 段落底纹；颜色使用统一文法，`none` 清对应槽，pattern 使用字符底纹同一闭集 |
+| `border-top/right/bottom/left/between` | 段落单边边框 token：`none`，或 `style [width] [color]`；缺席保留，单边更新不覆盖其他边 |
 | `page-break-before` | `true` / `false`，段前分页 |
 | `keep-next` | `true` / `false`，与下段同页 |
 | `keep-lines` | `true` / `false`，段中不分页 |
@@ -227,7 +262,7 @@ Fetch 返回的行内标签按固定顺序嵌套，由外向内是：
 
 除 `type` 外，这些属性也可按 fetch 返回结构用于标题或表格单元格中的 `<p>`。不要用空格模拟缩进或居中。
 
-`line-indent` 只表达物理左缩进。若最新 Fetch 显示目标仍依赖 Word 的逻辑方向 `start/end` 缩进，不要用 `line-indent` 覆盖；当前更新会 fail closed，向入口输出 `local_unsupported`。
+`line-indent/right-indent` 表达物理左右缩进，`start-indent/end-indent` 表达 Word 逻辑方向；不要按当前 LTR/RTL 把逻辑值物化成物理值。逻辑与物理槽可以并存，修改时使用 Fetch 已返回的 canonical 属性并保留未触及槽位。设置 absolute 段距会清同侧 lines 并关闭 auto；设置 lines 会保留同侧 absolute fallback 并关闭 auto。
 
 ### 制表位
 

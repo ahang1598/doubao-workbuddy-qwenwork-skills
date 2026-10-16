@@ -54,10 +54,10 @@ from copy import copy
 from openpyxl.styles import Alignment, Font, PatternFill, Side
 
 # 新建表头示例；修改源文件时先继承原样式，不要整表套用。
-palette = {'header': '17365D', 'second': '5B9BD5', 'line': 'B8C7D9'}
+palette = {'title': '3370FF', 'subtitle': '133C9A', 'summary': 'E1EAFF', 'line': 'B8C7D9'}
 line = Side(style='thin', color=palette['line'])
 for cell in ws[header_row][min_col - 1:max_col]:
-        cell.fill = PatternFill('solid', fgColor=palette['second'])
+        cell.fill = PatternFill('solid', fgColor=palette['title'])
         cell.font = Font(name=cell.font.name, bold=True, color='FFFFFF', size=11)
         cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
         border = copy(cell.border)

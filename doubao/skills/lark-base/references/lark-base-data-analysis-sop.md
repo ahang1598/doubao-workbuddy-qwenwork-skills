@@ -5,22 +5,26 @@ Base 数据查询与分析任务的执行契约。覆盖记录读取、筛选、
 本文只管查询选路和正确性边界；具体操作前先读真实结构和现状，复杂 JSON 再跳到 reference：
 
 - `+data-query`: entry guide [lark-base-data-query-guide.md](lark-base-data-query-guide.md), full DSL SSOT [lark-base-data-query.md](lark-base-data-query.md)
+- 复杂只读 SQL 分析: Context -> SQL 契约见 [lark-base-analysis-sql.md](lark-base-analysis-sql.md)
 - 视图筛选: [lark-base-view-set-filter.md](lark-base-view-set-filter.md)
 - 记录读取: `+record-list` / `+record-search` / `+record-get`，先确认字段 ID、字段名、分页和投影范围
 
 ## 0. Hard Rules
 
+**数值精度例外**：普通数值聚合仍遵循本文云端优先规则；仅满足 [数值精度与本地复算](lark-base-analysis-sql.md#数值精度与本地复算) 的触发条件时，才读取同口径原始记录复算。“展示两位小数”本身不触发全量读取。该例外优先于云端聚合和 200 行选路规则，无需等待 null measure 或查询失败；读取须完整分页，不能用默认页或样本代替全量。
+
 - 全局问题不能用默认 `+record-list --limit N` 片面地回答。
 - `jq` / shell / 本地代码是在个人电脑或当前运行环境中处理已返回数据，只适合小范围结果；超过 200 行默认不推荐本地统计、排序或求极值，应改用 Base 云端查询服务的 filter/sort/aggregate。
 - “最高、最低、最新、最早、Top、Bottom、总数、全部、异常、最大、最小、最多、最少、优先级最高”等全局语义，必须在 Base 云端查询服务中完成筛选、排序或聚合。
-- 一次性原始记录查询优先用 `+record-list` / `+record-search` 的 filter/sort；聚合分析优先用 `+data-query`。
+- 一次性原始记录查询优先用 `+record-list` / `+record-search` 的 filter/sort；常见单表聚合优先用 `+data-query`；多表 JOIN、CTE、窗口计算等复杂只读分析可用 `+schema-context-get -> +data-sql-query`。
+- Context 或 SQL 返回 `truncated=true` 时，当前结果不完整，不能据此形成最终结论；按 [lark-base-analysis-sql.md](lark-base-analysis-sql.md) 缩小范围后重试。
 - `+record-search` 用于关键词检索字段的展示文本；金额、状态、日期、空值、关联等结构化条件继续用 `--filter-json` 表达。
 - 不要依赖已有视图，除非用户明确指定该视图，或你已读取并验证其 filter/sort/projection 符合当前问题。
 - 已有 Base 的分析默认只读；新建 Base、表、字段、视图、dashboard 或修改记录都需要用户明确要求。
 - 极值、字段存在或常见业务习惯只能触发复核，不能自行排除记录、改变分母或缩窄主指标。缩窄口径必须来自用户明确要求、用户指定且已核验的任务范围或 View、字段公式或已确认的业务定义。
 - 授权不足时保留原始口径为主结论，并把疑点和敏感性结果分开报告。
 - 交付输出必须使用用户可读的真实字段值；内部 ID、`record_id`、关联记录 ID、open_id、编码字段只可作为连接键或定位键，不能替代最终输出，除非用户明确要求输出这些键值。
-- 每次读取必须做最小投影，并包含后续解释、回查或写入需要的业务 key。
+- 每次读取必须做最小投影，并包含后续解释、回查或写入需要的业务 key。实体汇总、去重和排名须保留目标实体的唯一业务键；名称或名称加分类属性不能默认唯一。`+data-query` 分组维度和本地程序的分组键同样适用，不能把不同编号的同名实体合并；具体粒度与对账规则见 [SQL 分析 SOP](lark-base-analysis-sql.md)。
 - 分组、计数、求和、均值、TopN、占比、对比谁更多/更高等结构化结论，必须由 `+data-query` 或可复核的程序化聚合产生；不要在思考或回复里手工数行、手工累加，也不要从自然语言预览里估算。
 - 派生比率、单位值或加权均值在计算前先固定统计粒度、分子、分母和权重，并在输出中标明口径。`sum(分子) / sum(分母)` 表示总体加权结果，`avg(分子_i / 分母_i)` 表示统计单元等权平均。用户明确询问这类指标且存在多种合理权重，或开放式对比已在同一统计粒度下把可形成业务含义明确的比率/单位值的分子和分母都作为主要维度时，默认并列给出两种结果；用户表述、字段公式或已确认业务定义指定主口径时，将其作为主结果，另一口径仍具业务含义时再标为敏感性对照。不得省略按上述规则应并列或对照且会实质影响数值或结论的口径，也不得在最终输出中静默切换；只有数字字段存在但比率语义未确认时不自行派生。
 - 不要静默剔除疑似异常值或自行改变样本范围。默认结论使用全量符合条件的数据；如怀疑数据异常，只能额外给“剔除疑似异常”的对照口径，并说明剔除依据和两套结果差异。
@@ -66,6 +70,7 @@ Few-shot：用户说“定金收一部分的和一分没付的都还没付清”
 | 按条件找原始记录 | `+record-list --filter-json ...` | `filter-json` 与视图筛选结构一致，支持文本、数字、日期、选项、人员、群组、关联等值 |
 | 排序 / TopN 原始记录 | `+record-list --filter-json ... --sort-json ... --limit N` | 最高/最新用 `desc:true`，最低/最早用 `desc:false`；数组顺序表达优先级；最多 10 个排序条件 |
 | 聚合 / 分组 / 分组排序 | `+data-query` | 使用 filters/dimensions/measures/sort/limit |
+| 多表 JOIN / CTE / 窗口计算 / 复杂只读分析 | `+schema-context-get -> +data-sql-query` | SQL 只使用 Context 返回的真实表与字段；服务端报错后按 `error_msg` 修正，结果截断时缩小范围重试 |
 | 聚合后输出逐条记录 | `+data-query` 得到业务 key 或候选字段组合 -> `+record-list --filter-json` / `+record-get` 回查 | `+data-query` 维度行按字段组合去重且不返回 `record_id` |
 | 多表 / 多跳关联 | 以候选数最小的事实表为驱动表，沿业务 key 或 link `record_id` 逐跳回查 | 读出 link 单元格里的关联 `record_id` 后，到被关联表批量 `+record-get` 展示字段 |
 | 查询后写入 / 视图化 | 先用本 SOP 得到可复核的目标记录 id 集合 | 再进入记录写入或视图配置；高价值可复用查询可沉淀为持久视图 |
@@ -79,7 +84,7 @@ Few-shot：用户说“定金收一部分的和一分没付的都还没付清”
 1. `+field-list` 确认筛选字段、排序字段、展示字段、业务 key。
 2. 筛选只用 `--filter-json` 或 `--filter-json @file`。
 3. 排序用 `--sort-json`。
-4. `--field-id` 做最小投影，`--limit` 控制返回数量。
+4. `--field-id` 做最小投影，`--limit` 控制返回数量。读取仪表盘视图组件时，默认省略 `--field-id` 以继承视图可见字段及展示所需字段；显式投影会覆盖该默认选择，详见 [视图组件数据读取](lark-base-dashboard-view.md#读取视图组件数据)。
 
 Example: string/number 条件 + TopN：
 

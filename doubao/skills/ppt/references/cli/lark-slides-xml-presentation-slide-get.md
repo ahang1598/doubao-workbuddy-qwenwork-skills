@@ -84,7 +84,7 @@ lark-cli slides xml_presentation.slide get --params '{
 |------|------|------|
 | `data.slide.slide_id` | string | 页面唯一标识 |
 | `data.slide.content` | string | 页面完整 XML（`<slide>` 根节点，不含 xmlns）|
-| `data.revision_id` | integer | 此次读到的版本号，可用于后续 replace 的乐观锁 |
+| `data.revision_id` | integer | 此次读取对应的演示文稿版本号 |
 
 ## 常见错误
 

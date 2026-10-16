@@ -1,11 +1,13 @@
 # Canvas 自动目录：CLI 工作流
 
-本页执行 [`canvas-doc.md`](../workflows/canvas-doc.md#目录任务与提交收尾) 定义的独立目录阶段，处理用户要求的目录更新，或正文修改影响既有目录时所需的关联更新。
+本页定义独立目录阶段，处理用户要求的目录更新，或正文修改影响既有目录时所需的关联更新；它不改变 [`canvas-doc.md`](../workflows/canvas-doc.md#路由总表唯一判定入口) 已选定的正文引擎。
 
 - **执行时机**：`open_local` 在正文完成后执行；`open_ooxml` 在提交并确认同步后执行。
-- **命令**：优先使用 `table_of_contents_update`，必要时 Fetch `pdf` 获取并核对页码；PDF 不执行目录写入。
+- **命令**：优先使用 `table_of_contents`，必要时 Fetch `pdf` 获取并核对页码；PDF 不执行目录写入。
 - **文件状态**：打开态不调用 `catalogue.py` / `+word-post-process`；文件分支按 `docx-editing.md` 处理。
-- **参数来源**：完整参数及各 action 的能力边界统一见[领域命令](../cli/canvas-doc-update-domain.md#自动目录-table_of_contents_update)。
+- **参数来源**：完整参数及各 action 的能力边界统一见[领域命令](../cli/canvas-doc-update-domain.md)。
+
+打开态以 Canvas CLI 和宿主渲染结果为准：目录身份来自 `+local-fetch`，写入使用 `+local-update` 的目录领域命令，条目、分页和显示页码使用操作后的宿主页面证据。OOXML 候选、磁盘已保存版本和本地渲染不能代替当前 Canvas 的目录结果。`open_local` 完成正文与布局后进入本阶段；`open_ooxml` 提交并按既定门禁确认同步后进入；`close_file` 改由 [`canvas-doc-close.md`](../workflows/canvas-doc-close.md) 处理文件内目录。目录命令失败、warning 或终态未知时先走 recovery，PDF 只补充页面证据，不计为目录写入成功。
 
 **规划时先读，正文完成后执行**：一次规划目录位置、来源、配置和必要分页边界；先完成影响标题与分页的正文/布局修改，再提交所需目录 action，最后核对操作后的实际版面与页码。`insert` 或 `configure` 后不默认再追加 `update`，仅在下文验收确认需要且共享恢复预算允许时修正。
 
@@ -26,7 +28,7 @@
 
 ## 执行
 
-按用户目标选择 `insert`、`update`、`configure` 或 `remove`，通过 `docs +local-update` 提交对应 option。配置字段及完整性要求只查领域命令文档；不构造 TOC/PAGEREF 域、书签、占位条目或内部请求。
+按用户目标选择 `insert`、`update`、`configure` 或 `remove`，通过 `lark-cli docs +local-update` 提交对应 option。配置字段及完整性要求只查领域命令文档；不构造 TOC/PAGEREF 域、书签、占位条目或内部请求。
 
 多个目录串行操作，每次使用更新后的身份并完成结构回读；全部目录操作结束后，再统一核对受影响目录和来源标题的最终页码。后一个目录改变分页时，前一个目录的旧分页验收失效，需重新核对。
 

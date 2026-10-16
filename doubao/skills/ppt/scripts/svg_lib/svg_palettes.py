@@ -1,31 +1,24 @@
-"""
-Chart 配色体系集合。
+"""Chart 配色体系集合。"""
 
-每个 style 提供 3+ 套 palette，可通过 name（如 "editorial_cream"）传入任意 make_* 函数：
-    from gen_svg_charts import make_waterfall
-    make_waterfall(steps, palette="editorial_cream")   # 传名字
-    make_waterfall(steps, palette=PALETTES["editorial_cream"])  # 传 dict
-
-统一字段（所有 18 张图共用）：
-    ink       - 主墨色（文字/坐标轴/主柱/描边）
-    accent    - 强调色（高亮点、pos 柱、关键 slice、主 series 深色）
-    secondary - 次要色（对比色、rival 象限、neg 柱另一系、次 series 深色）
-    bg        - 图表背景（默认透明，仅当 palette 有 bg 时才渲染背景色块）
-    muted     - 中性灰（辅助文字、次刻度、图例文字）
-
-派生字段由 chart 内部自动计算：grid = ink@12%，connect = ink@40%，等等。
-"""
-
-# ============================================================
 # 学术研究（academic-research）：反常规高端；忌医院蓝/环保绿；
 # 钛灰/档案纸/象牙纸背景 + 深墨主色 + 一个克制强调色
-# ============================================================
 
 PALETTE_ARCHIVE_INK = {
     # "档案纸底 · 铅墨黑主色 · 赭石强调"（历史/人文/档案研究）
+    # Phase A upgrade (2026-10): 米底 → 纯白 journal/CNS 风；
+    # accent 由低饱和赭石 → 更亮 hero orange；新增 slate blue secondary
     "ink": "rgba(28,25,20,1)",  # 铅墨黑（略暖）
-    "accent": "rgba(163,88,50,1)",  # 赭石红（本色系原有主 accent）
-    "secondary": "rgba(94,80,62,1)",  # 深棕灰
+    "accent": "rgba(217,106,46,1)",  # hero orange（journal/CNS 风）
+    "secondary": "rgba(74,127,163,1)",  # slate blue（down-regulated / control）
+    "bg": "rgba(255,255,255,1)",  # 纯白（原米底见 archive_ink_cream）
+    "muted": "rgba(94,80,62,0.6)",
+}
+
+# Legacy cream-background variant（保留原米底行为，向后兼容）
+PALETTE_ARCHIVE_INK_CREAM = {
+    "ink": "rgba(28,25,20,1)",
+    "accent": "rgba(163,88,50,1)",  # 原赭石红
+    "secondary": "rgba(94,80,62,1)",  # 原深棕灰
     "bg": "rgba(241,233,218,1)",  # 档案纸 #F1E9DA
     "muted": "rgba(94,80,62,0.6)",
 }
@@ -58,18 +51,16 @@ PALETTE_NIGHTLAB = {
 }
 
 
-# ============================================================
 # 分析决策（strategy-and-analysis）：品牌主色 + 灰阶，一色主导
 # 勃艮第/深酒红/赭石/深靛/墨青
-# ============================================================
 
 PALETTE_BURGUNDY_ANALYST = {
-    # 头部咨询报告经典：勃艮第红 + 深墨 + 石灰
-    "ink": "rgba(30,25,28,1)",  # 深墨（略偏酒红）
+    # 酒红学术：勃艮第红 + 玫瑰棕 + 暖砂（与 academic-research.md 描述一致）
+    "ink": "rgba(30,25,28,1)",  # 炭黑正文 #1E191C
     "accent": "rgba(122,32,44,1)",  # 勃艮第 #7A202C
-    "secondary": "rgba(60,55,58,1)",  # 石墨
+    "secondary": "rgba(163,68,80,1)",  # 玫瑰棕 #A34450
     "bg": "rgba(255,255,255,1)",
-    "muted": "rgba(90,88,90,0.65)",
+    "muted": "rgba(212,165,154,0.7)",  # 暖砂 #D4A59A
 }
 
 PALETTE_INK_JADE = {
@@ -91,10 +82,8 @@ PALETTE_OCHRE_STONE = {
 }
 
 
-# ============================================================
 # 管理汇报（business-review）：品牌主色 + 灰阶；深稳克制；
 # 暖白/雾灰/深墨蓝/墨黑
-# ============================================================
 
 PALETTE_EXEC_NAVY = {
     # "行政深靛"（董事会 / 财务 / OKR）
@@ -124,10 +113,8 @@ PALETTE_MOCHA_KPI = {
 }
 
 
-# ============================================================
 # 商业提案（business-pitch）：大胆别致；戏剧性主角色
 # 酒红/深墨绿/锈橙/葡萄紫/古铜金
-# ============================================================
 
 PALETTE_MERLOT_PITCH = {
     # "酒红戏剧"（融资 / 招商 · 巨字 + 单色戏剧）
@@ -166,10 +153,8 @@ PALETTE_GRAPE_ECLECTIC = {
 }
 
 
-# ============================================================
 # 技术工程（technical-presentation）：主色 + 灰阶两级，最多三色
 # 宝石蓝/松绿/深靛/深底荧光绿
-# ============================================================
 
 PALETTE_SAPPHIRE_DEV = {
     # "宝石蓝"（架构评审 / 研发汇报 · 参考 style 表原色）
@@ -190,7 +175,6 @@ PALETTE_DEEP_INDIGO = {
 }
 
 PALETTE_TERMINAL_NEON = {
-    # "深底荧光绿"（Terminal / DevOps / Security）
     "ink": "rgba(240,242,239,1)",  # 象牙正文
     "accent": "rgba(212,233,44,1)",  # 荧光绿黄 #D4E92C
     "secondary": "rgba(122,139,44,1)",  # 橄榄绿
@@ -208,10 +192,8 @@ PALETTE_PINE_ENGINEERING = {
 }
 
 
-# ============================================================
 # 品牌 / 创意展示（brand-storytelling）：单主色（材料世界）+ 中性轴 + 至多 1 强调
 # 茶汤/木/石/陶/织物/金属/植物/土壤/机身漆面
-# ============================================================
 
 PALETTE_TEA_CEREMONY = {
     # "茶汤 + 陶土"（茶文化 / 生活方式 / 东方美学）
@@ -250,10 +232,8 @@ PALETTE_LINEN_PLUM = {
 }
 
 
-# ============================================================
 # 教育培训 / 知识科普（learning-and-training）：主色梯度 + 中性灰 + 单强调色
 # 亲和但不幼稚
-# ============================================================
 
 PALETTE_CLASSROOM_INDIGO = {
     # "学院靛蓝"（K12 / 大学课件 · 亲和不严肃）
@@ -283,12 +263,9 @@ PALETTE_CORAL_PATIENT = {
 }
 
 
-# ============================================================
 # 兜底（fallback）：莫兰迪 4 色
-# ============================================================
 
 PALETTE_MORANDI_WARM = {
-    # 暖调莫兰迪
     "ink": "rgba(58,52,48,1)",  # 深灰棕
     "accent": "rgba(178,120,102,1)",  # 陶土粉
     "secondary": "rgba(148,138,120,1)",  # 灰米
@@ -297,7 +274,6 @@ PALETTE_MORANDI_WARM = {
 }
 
 PALETTE_MORANDI_COOL = {
-    # 冷调莫兰迪
     "ink": "rgba(48,52,58,1)",
     "accent": "rgba(108,132,148,1)",  # 雾蓝
     "secondary": "rgba(138,144,142,1)",  # 石灰
@@ -306,7 +282,6 @@ PALETTE_MORANDI_COOL = {
 }
 
 PALETTE_MORANDI_MOSS = {
-    # 苔藓莫兰迪
     "ink": "rgba(45,50,42,1)",
     "accent": "rgba(130,142,108,1)",  # 苔绿
     "secondary": "rgba(158,148,124,1)",  # 灰卡其
@@ -315,69 +290,41 @@ PALETTE_MORANDI_MOSS = {
 }
 
 
-# ============================================================
-# 统一注册表
-# ============================================================
-
 PALETTES = {
-    # academic
     "archive_ink": PALETTE_ARCHIVE_INK,
+    "archive_ink_cream": PALETTE_ARCHIVE_INK_CREAM,
     "ivory_indigo": PALETTE_IVORY_INDIGO,
     "titanium_olive": PALETTE_TITANIUM_OLIVE,
     "nightlab": PALETTE_NIGHTLAB,
-    # strategy
     "burgundy_analyst": PALETTE_BURGUNDY_ANALYST,
     "ink_jade": PALETTE_INK_JADE,
     "ochre_stone": PALETTE_OCHRE_STONE,
-    # business-review
     "exec_navy": PALETTE_EXEC_NAVY,
     "sage_review": PALETTE_SAGE_REVIEW,
     "mocha_kpi": PALETTE_MOCHA_KPI,
-    # business-pitch
     "merlot_pitch": PALETTE_MERLOT_PITCH,
     "forest_luxe": PALETTE_FOREST_LUXE,
     "rust_terracotta": PALETTE_RUST_TERRACOTTA,
     "grape_eclectic": PALETTE_GRAPE_ECLECTIC,
-    # technical
     "sapphire_dev": PALETTE_SAPPHIRE_DEV,
     "deep_indigo": PALETTE_DEEP_INDIGO,
     "terminal_neon": PALETTE_TERMINAL_NEON,
     "pine_engineering": PALETTE_PINE_ENGINEERING,
-    # brand
     "tea_ceremony": PALETTE_TEA_CEREMONY,
     "stone_ink": PALETTE_STONE_INK,
     "candlelight": PALETTE_CANDLELIGHT,
     "linen_plum": PALETTE_LINEN_PLUM,
-    # learning
     "classroom_indigo": PALETTE_CLASSROOM_INDIGO,
     "meadow_science": PALETTE_MEADOW_SCIENCE,
     "coral_patient": PALETTE_CORAL_PATIENT,
-    # fallback / morandi
     "morandi_warm": PALETTE_MORANDI_WARM,
     "morandi_cool": PALETTE_MORANDI_COOL,
     "morandi_moss": PALETTE_MORANDI_MOSS,
 }
 
-# style → 推荐 palette 列表（供 style 文档引用）
-STYLE_PALETTES = {
-    "academic-research": ["archive_ink", "ivory_indigo", "titanium_olive", "nightlab"],
-    "strategy-and-analysis": ["burgundy_analyst", "ink_jade", "ochre_stone"],
-    "business-review": ["exec_navy", "sage_review", "mocha_kpi"],
-    "business-pitch": ["merlot_pitch", "forest_luxe", "rust_terracotta", "grape_eclectic"],
-    "technical-presentation": ["sapphire_dev", "deep_indigo", "terminal_neon", "pine_engineering"],
-    "brand-storytelling": ["tea_ceremony", "stone_ink", "candlelight", "linen_plum"],
-    "learning-and-training": ["classroom_indigo", "meadow_science", "coral_patient"],
-    "fallback": ["morandi_warm", "morandi_cool", "morandi_moss"],
-}
-
 
 def resolve_palette(p):
-    """把用户传入的 palette 参数（name str / dict / None）统一解析为 dict。
-
-    - None → None（chart 用默认硬编码色）
-    - str  → 从 PALETTES 查表；找不到 raise ValueError
-    - dict → 原样返回
-    """
+    """把用户传入的 palette 参数（name str / dict / None）统一解析为 dict。"""
     if p is None or isinstance(p, dict):
         return p
     if isinstance(p, str):
@@ -390,6 +337,25 @@ def resolve_palette(p):
 # ==== BEGIN AGENT-TUNED PALETTES (auto-generated) ====
 # 由 fan-out sub-agent 优化后写回，覆盖上方 PALETTE_XXX 的 name 映射。
 PALETTES["archive_ink"] = {
+    "ink": "rgba(28,25,20,1)",
+    "accent": "rgba(217,106,46,1)",
+    "secondary": "rgba(74,127,163,1)",
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(94,80,62,0.6)",
+    "series": [
+        "rgba(217,106,46,1)",
+        "rgba(74,127,163,1)",
+        "rgba(120,90,60,1)",
+        "rgba(74,68,90,1)",
+        "rgba(148,120,72,1)",
+        "rgba(102,58,48,1)",
+        "rgba(90,96,80,1)",
+        "rgba(178,148,102,1)",
+    ],
+}
+
+# Legacy cream-bg variant (previously default archive_ink). 保留供向后兼容/明示要求米底的调用。
+PALETTES["archive_ink_cream"] = {
     "ink": "rgba(28,25,20,1)",
     "accent": "rgba(163,88,50,1)",
     "secondary": "rgba(94,80,62,1)",
@@ -408,18 +374,18 @@ PALETTES["archive_ink"] = {
 }
 
 PALETTES["burgundy_analyst"] = {
-    "ink": "rgba(30,25,28,1)",
-    "accent": "rgba(122,32,44,1)",
-    "secondary": "rgba(60,55,58,1)",
+    # Academic burgundy: one wine family in depth (style doc: #7A202C / #A34450 / #D4A59A).
+    "ink": "rgba(30,25,28,1)",  # Charcoal text #1E191C
+    "accent": "rgba(122,32,44,1)",  # Burgundy #7A202C
+    "secondary": "rgba(163,68,80,1)",  # Rose Brown #A34450
     "bg": "rgba(255,255,255,1)",
-    "muted": "rgba(90,88,90,0.65)",
+    "muted": "rgba(212,165,154,0.7)",  # Warm Sand
     "series": [
-        "rgba(122,32,44,1)",
-        "rgba(60,55,58,1)",
-        "rgba(150,120,70,1)",
-        "rgba(70,95,100,1)",
-        "rgba(170,90,70,1)",
-        "rgba(110,105,95,1)",
+        "rgba(122,32,44,1)",  # Burgundy #7A202C
+        "rgba(163,68,80,1)",  # Rose Brown #A34450
+        "rgba(212,165,154,1)",  # Warm Sand #D4A59A
+        "rgba(150,120,70,1)",  # Brass, extra series only
+        "rgba(70,95,100,1)",  # Slate Teal, extra series only
     ],
 }
 
@@ -795,13 +761,13 @@ PALETTES["sapphire_dev"] = {
     "bg": "rgba(255,255,255,1)",
     "muted": "rgba(90,100,115,0.65)",
     "series": [
-        "rgba(0,28,84,1)",
+        # #001C54 is the title/ink color in the style table; data leads with the brand blues.
         "rgba(0,112,186,1)",
+        "rgba(0,48,135,1)",
         "rgba(56,146,213,1)",
         "rgba(120,182,225,1)",
         "rgba(71,85,105,1)",
         "rgba(148,163,184,1)",
-        "rgba(30,58,138,1)",
         "rgba(14,116,144,1)",
     ],
 }
@@ -880,14 +846,10 @@ PALETTES["titanium_olive"] = {
 
 # ==== END AGENT-TUNED PALETTES ====
 
-# ============================================================
 # BRIGHT VARIANTS（明亮版）· 28 个 *_bright palette
-# ============================================================
-#
 # 原则：保留 bg / ink / muted 不动，只把 accent 与 series 的
 # 饱和度和亮度往上推 10-20%。适合投屏、PPT 演示、需要视觉冲击
 # 的场景。稳重印刷体裁请继续用原版。
-#
 # 三种策略：
 # - 白底组（bg 近白）: 用中饱和度深亮色 accent，避免刺眼
 #   例：burgundy_analyst_bright / ink_jade_bright
@@ -895,7 +857,6 @@ PALETTES["titanium_olive"] = {
 #   例：classroom_indigo_bright / archive_ink_bright
 # - 深底组（深墨/深绿/深靛底）: 亮色在深底上跳，可上荧光
 #   例：merlot_pitch_bright / forest_luxe_bright
-#
 # 用法与原版一致：make_xxx(..., palette='sankey_bright') 或 直接
 # 传 dict。也可从 STYLE_PALETTES_BRIGHT 里按场景取。
 PALETTES["archive_ink_bright"] = {
@@ -1420,10 +1381,7 @@ STYLE_PALETTES_BRIGHT = {
 }
 
 
-# ============================================================
 # EXTENDED PALETTES · 从 9 张色系参考图提取 + 自补
-# ============================================================
-#
 # 命名对应关系（ref → palette）：
 # 20260831-002320.jpg  薄荷曼波 (Nature 童趣)  → mint_mambo
 # 20260831-002328.jpg  Nature 青绿 (科研)      → nature_teal
@@ -1434,13 +1392,11 @@ STYLE_PALETTES_BRIGHT = {
 # 20260831-002350.jpg  莓果紫红 (berry wine)   → berry_wine
 # 20260831-002354.jpg  生物医学 pink-blue      → biomed_diverging
 # 20260831-002358.jpg  深海麦霜 Origin          → deep_sea_navy
-#
 # 自补：
 # nordic_slate         北欧板岩 (冷灰+深靛)     · academic 备选
 # sunset_terracotta    日落陶土                · brand storytelling
 # forest_moss_v2       森林苔藓 + 铜金          · brand luxe
 # charcoal_neon        炭黑 + 荧光青            · tech pitch
-# ============================================================
 
 PALETTES["mint_mambo"] = {
     # 来自 20260831-002320.jpg：#3D9F3C 深草绿 · #9ED17B 浅草绿 · #367DB0 湖蓝 · #9DC7DD 淡蓝
@@ -1490,15 +1446,15 @@ PALETTES["sci_bluegreen"] = {
     "secondary": "rgba(81,157,120,1)",  # 森绿 secondary
     "bg": "rgba(252,252,250,1)",  # 象牙
     "muted": "rgba(105,120,140,0.6)",
-    "series": [
+    "series": [  # 前 4 色两两可分：靛蓝 · 森绿 · 深海蓝 · 草绿；#367DB0 与靛蓝相近，放最后
         "rgba(83,133,189,1)",
         "rgba(81,157,120,1)",
-        "rgba(54,125,176,1)",
+        "rgba(30,60,120,1)",
         "rgba(61,159,60,1)",
         "rgba(155,199,223,1)",
         "rgba(139,207,139,1)",
-        "rgba(30,60,120,1)",
         "rgba(28,90,60,1)",
+        "rgba(54,125,176,1)",
     ],
 }
 
@@ -1703,14 +1659,199 @@ PALETTES["charcoal_neon"] = {
 }
 
 
-# 更新 style → palette 推荐映射（追加，不覆盖）
-STYLE_PALETTES_EXTENDED = {
-    "academic-research": ["nature_teal", "sci_bluegreen", "rdbu_scholar", "nordic_slate", "jade_landscape"],
-    "strategy-and-analysis": ["nordic_slate", "rdbu_scholar", "nature_teal"],
-    "business-review": ["deep_sea_navy", "nordic_slate", "jade_landscape"],
-    "business-pitch": ["deep_sea_navy", "berry_wine", "forest_moss_v2", "sunset_terracotta"],
-    "technical-presentation": ["charcoal_neon", "sci_bluegreen", "nordic_slate"],
-    "brand-storytelling": ["sunset_terracotta", "forest_moss_v2", "berry_wine", "jade_landscape", "deep_sea_navy"],
-    "learning-and-training": ["mint_mambo", "pastel_dream", "jade_landscape"],
-    "fallback": ["pastel_dream", "nordic_slate"],
+# CNS Journal palettes (8 sets) — extracted from Nature/Science cover series Each uses: ink (primary text), accent
+# (hero/highlight), secondary (support), bg (background), muted (axis/annot neutral), series (categorical palette).
+
+PALETTES["nature_cover"] = {
+    # Icy cyan + terracotta from "Twisted Tale" cover (Nature cover inspiration).
+    "ink": "rgba(28,25,30,1)",
+    "accent": "rgba(200,111,74,1)",  # Terracotta
+    "secondary": "rgba(169,204,217,1)",  # Icy Cyan
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(110,119,175,0.6)",  # Dusty Mauve
+    "series": [
+        "rgba(169,204,217,1)",  # Icy Cyan #A9CCD9
+        "rgba(199,219,230,1)",  # Pale Blue
+        "rgba(142,128,172,1)",  # Lavender Violet
+        "rgba(110,119,175,1)",  # Dusty Mauve
+        "rgba(200,111,74,1)",  # Terracotta
+        "rgba(141,106,92,1)",  # Clay Brown
+    ],
+}
+
+PALETTES["nature_blastoids"] = {
+    # Deep carbon + nature yellow from "Body Image" / blastoid cover.
+    "ink": "rgba(10,10,12,1)",
+    "accent": "rgba(241,226,10,1)",  # Nature Yellow
+    "secondary": "rgba(120,108,171,1)",  # Lavender Lilac
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(74,76,84,0.7)",  # Graphite
+    "series": [
+        # Source example charts lead with violet/lilac/indigo; Carbon Black stays in ink.
+        "rgba(120,108,171,1)",  # Lavender Violet
+        "rgba(198,154,182,1)",  # Dusty Lilac
+        "rgba(45,48,97,1)",  # Deep Indigo
+        "rgba(143,166,166,1)",  # Moss Green
+        "rgba(241,226,10,1)",  # Nature Yellow
+        "rgba(74,76,84,1)",  # Graphite Gray
+    ],
+}
+
+PALETTES["nature_materials"] = {
+    # Deep navy + coral/orange from Nature Materials cover.
+    "ink": "rgba(14,26,43,1)",
+    "accent": "rgba(226,76,59,1)",  # Coral Red
+    "secondary": "rgba(74,111,165,1)",  # Steel Blue
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(74,111,165,0.6)",
+    "series": [
+        # Source roles: Steel Blue = primary, Misty Purple = secondary, Coral/Amber = accent;
+        # Deep Navy is titles/axes (ink) and Ice Blue is background, neither is a data color.
+        "rgba(74,111,165,1)",  # Steel Blue
+        "rgba(123,107,178,1)",  # Misty Purple
+        "rgba(226,76,59,1)",  # Coral Red
+        "rgba(240,138,26,1)",  # Amber Orange
+        "rgba(246,212,138,1)",  # Warm Cream
+    ],
+}
+
+PALETTES["nature_biomed"] = {
+    # Blue + warm cream + coral from Nature Biomedical Engineering.
+    "ink": "rgba(30,58,102,1)",
+    "accent": "rgba(231,107,107,1)",  # Coral Red
+    "secondary": "rgba(79,181,217,1)",  # Cool Blue
+    "bg": "rgba(247,248,251,1)",  # Near-White Neutral
+    "muted": "rgba(30,58,102,0.55)",
+    "series": [
+        "rgba(30,58,102,1)",  # Deep Slate Blue
+        "rgba(79,181,217,1)",  # Cool Blue
+        "rgba(184,165,227,1)",  # Soft Periwinkle
+        "rgba(231,107,107,1)",  # Coral Red
+        "rgba(242,214,166,1)",  # Warm Cream
+        "rgba(197,181,235,1)",  # Lavender
+    ],
+}
+
+PALETTES["science_cell_eng"] = {
+    # Plum + magenta + rosy pink from Science Cell Engineering issue.
+    "ink": "rgba(42,26,74,1)",  # Indigo Violet #2A1A4A
+    "accent": "rgba(240,106,153,1)",  # Rosy Pink
+    "secondary": "rgba(155,45,111,1)",  # Magenta Purple
+    "bg": "rgba(250,250,252,1)",  # Near-White Neutral
+    "muted": "rgba(42,26,74,0.55)",
+    "series": [
+        "rgba(91,16,97,1)",  # Deep Plum
+        "rgba(155,45,111,1)",  # Magenta Purple
+        "rgba(154,136,201,1)",  # Lavender
+        "rgba(217,205,234,1)",  # Pale Lilac
+        "rgba(240,106,153,1)",  # Rosy Pink
+        "rgba(255,194,214,1)",  # Soft Blush
+    ],
+}
+
+PALETTES["nature_cell_biology"] = {
+    # Deep purple + fuchsia + chartreuse from Nature Cell Biology cover.
+    "ink": "rgba(13,16,32,1)",  # Deep Navy
+    "accent": "rgba(226,61,138,1)",  # Fuchsia
+    "secondary": "rgba(122,46,131,1)",  # Magenta Purple
+    "bg": "rgba(246,244,241,1)",  # Soft Neutral
+    "muted": "rgba(110,138,106,0.7)",  # Sage Green
+    "series": [
+        # Source roles: Deep Violet = primary data, Magenta = secondary data;
+        # Deep Navy #0D1020 is background/axes only and stays in ink.
+        "rgba(59,30,90,1)",  # Deep Violet
+        "rgba(122,46,131,1)",  # Magenta Purple
+        "rgba(226,61,138,1)",  # Fuchsia
+        "rgba(255,104,134,1)",  # Coral Pink
+        "rgba(166,204,85,1)",  # Chartreuse Green
+        "rgba(110,138,106,1)",  # Sage Green
+    ],
+}
+
+PALETTES["nature_deep_secrets"] = {
+    # Ocean teal + bioluminescent gold from Nature "Deep Secrets".
+    "ink": "rgba(11,29,42,1)",  # Deep Ocean Blue
+    "accent": "rgba(242,184,72,1)",  # Bioluminescent Gold
+    "secondary": "rgba(91,169,166,1)",  # Marine Aqua
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(11,29,42,0.55)",
+    "series": [
+        # Source roles: Deep Ocean Blue = background/axes/text (ink); data starts at Sea Teal.
+        "rgba(31,111,122,1)",  # Sea Teal
+        "rgba(91,169,166,1)",  # Marine Aqua
+        "rgba(242,184,72,1)",  # Bioluminescent Gold
+        "rgba(167,213,201,1)",  # Seafoam Green
+        "rgba(247,233,198,1)",  # Pearl Beige
+    ],
+}
+
+PALETTES["advanced_materials"] = {
+    # Prussian blue + coral + lake blue + gold on white, as in Advanced Materials figures.
+    "ink": "rgba(20,33,61,1)",  # Deep Navy #14213D
+    "accent": "rgba(228,87,46,1)",  # Coral #E4572E
+    "secondary": "rgba(46,134,171,1)",  # Lake Blue #2E86AB
+    "bg": "rgba(255,255,255,1)",
+    "muted": "rgba(141,153,174,0.7)",  # Slate Gray
+    "series": [
+        "rgba(27,58,107,1)",  # Prussian Blue #1B3A6B
+        "rgba(228,87,46,1)",  # Coral #E4572E
+        "rgba(46,134,171,1)",  # Lake Blue #2E86AB
+        "rgba(243,167,18,1)",  # Gold #F3A712
+        "rgba(141,153,174,1)",  # Slate Gray #8D99AE (reference / control)
+        "rgba(167,196,222,1)",  # Pale Blue #A7C4DE
+    ],
+}
+
+PALETTES["acs_nano"] = {
+    # Deep teal + violet + magenta on cool white, as in ACS Nano / ACS Energy Letters figures.
+    "ink": "rgba(15,46,51,1)",  # Deep Teal Ink #0F2E33
+    "accent": "rgba(194,69,122,1)",  # Magenta #C2457A
+    "secondary": "rgba(43,163,163,1)",  # Teal #2BA3A3
+    "bg": "rgba(247,248,249,1)",  # Cool White #F7F8F9
+    "muted": "rgba(159,211,207,0.7)",  # Mint
+    "series": [
+        "rgba(11,110,121,1)",  # Deep Teal #0B6E79
+        "rgba(108,91,167,1)",  # Violet #6C5BA7
+        "rgba(43,163,163,1)",  # Teal #2BA3A3
+        "rgba(194,69,122,1)",  # Magenta #C2457A
+        "rgba(159,211,207,1)",  # Mint #9FD3CF
+        "rgba(185,174,216,1)",  # Lavender #B9AED8
+    ],
+}
+
+PALETTES["dusk_plum_rose"] = {
+    # 暮紫玫瑰: muted plum + dusty rose + sage, gentle tonal steps for biology / omics figures.
+    "ink": "rgba(58,44,68,1)",  # Deep Dusk Plum #3A2C44
+    "accent": "rgba(169,111,128,1)",  # Dusty Rose #A96F80
+    "secondary": "rgba(147,130,163,1)",  # Lavender Grey #9382A3
+    "bg": "rgba(251,250,252,1)",  # Near-White #FBFAFC
+    "muted": "rgba(101,86,117,0.55)",
+    "series": [
+        "rgba(101,86,117,1)",  # Dusk Plum #655675
+        "rgba(169,111,128,1)",  # Dusty Rose #A96F80
+        "rgba(167,182,161,1)",  # Sage #A7B6A1
+        "rgba(147,130,163,1)",  # Lavender Grey #9382A3
+        "rgba(207,156,170,1)",  # Rose Pink #CF9CAA
+        "rgba(192,179,205,1)",  # Pale Lilac #C0B3CD
+        "rgba(232,201,206,1)",  # Blush #E8C9CE
+        "rgba(228,220,235,1)",  # Mist Lilac #E4DCEB
+    ],
+}
+
+PALETTES["imeta_cobalt_gold"] = {
+    # iMeta 深海蓝 × 暖金: midnight + cobalt structure, warm gold only for "this work", cool light-grey ground.
+    # Gold text on light ground fails contrast; slide text uses dark gold #B8790A, shapes keep #F5A623.
+    "ink": "rgba(11,29,58,1)",  # Midnight Blue #0B1D3A
+    "accent": "rgba(245,166,35,1)",  # Warm Gold #F5A623
+    "secondary": "rgba(30,107,214,1)",  # Luminous Cobalt #1E6BD6
+    "bg": "rgba(245,247,250,1)",  # Cool Light Grey #F5F7FA
+    "muted": "rgba(62,74,92,0.65)",  # Body #3E4A5C
+    "series": [
+        "rgba(30,107,214,1)",  # Luminous Cobalt #1E6BD6 (baseline / control)
+        "rgba(245,166,35,1)",  # Warm Gold #F5A623 (this work)
+        "rgba(22,194,230,1)",  # Cyan Glow #16C2E6
+        "rgba(138,147,163,1)",  # Mid Grey #8A93A3
+        "rgba(122,201,67,1)",  # Vivid Lime #7AC943
+        "rgba(125,211,219,1)",  # Soft Aqua #7DD3DB
+    ],
 }

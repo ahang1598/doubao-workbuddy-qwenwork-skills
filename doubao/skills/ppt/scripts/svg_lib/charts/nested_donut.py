@@ -1,105 +1,38 @@
-"""svg_lib/charts/nested_donut.py
-
-Nested Donut · 5 variant 统一 API：
+"""Nested Donut · 5 variant 统一 API：
 - donut_flat: 双层 donut，内 domain 深色 / 外 sub 浅色（同色系）
-- donut_gradient: 内环用 radial gradient（中亮外深）
-- sunburst_flat: 三层放射：中心 ALL + 内 domain + 外 sub（无中空）
-- polar_area_outlined: 极坐标玫瑰图，每 sub 一个 wedge，半径 = value，outlined 皮肤
-- donut_layered: 双层 donut + drop shadow 效果
-
-data schema：
-  {
-    "segments": [(name, value, [(sub, sub_value), ...]), ...],
-    "total_label"?: str,
-    "total_value"?: number,   # 若不提供则用 sum(value)
-  }
-  - value: domain 全局占比（推荐 sum=100 或与 total_value 一致，函数会按总和归一）
-  - sub_value: sub 的全局占比（该 domain 所有 sub 加起来应 ≈ value；不强制）
 """
 
 from __future__ import annotations
-import math
-from typing import Dict, Optional
 
-from ._shared import (
-    resolve_palette,
-    xesc,
-    svg_open,
-    svg_close,
-    auto_font_size,
-    _rgba_with_alpha,
-    rgb_tuple,
-)
+import math
 
 from .._common import (
     _INK,
     _derive_series_colors,
-    _is_dark_palette,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
+    _pick_series_colors,
     _prepend_bg_if_dark,
     _render_title_block,
     _resolve_font,
     _resolve_palette,
-    _rgb_tuple,
     _rgba_with_alpha,
-    _xesc,
-    ridge_density_from_samples,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
-    _estimate_label_width_px,
+    _xesc,
+)
+from ._shared import (
+    tr,
+    auto_font_size,
+    resolve_palette,
+    rgb_tuple,
+    svg_close,
+    svg_open,
+    xesc,
 )
 
 
-def _fit_leader_label(text, max_width_px, fs, body_font, bold=True, fs_floor=9.0):
-    """Return (fitted_text, fitted_fs) so `_estimate_label_width_px` <= max_width_px.
-
-    Strategy:
-      1. If it already fits at `fs`, return as-is.
-      2. Try shrinking font-size down to `fs_floor` in 0.5 steps.
-      3. If still doesn't fit at `fs_floor`, truncate with a single-char ellipsis
-         suffix ("Prefix…") until the estimated width fits at `fs_floor`.
-         Preserve a trailing "X%"/"12" numeric tail if present so readers still
-         see the value.
-    Widths are computed with the same estimator used by the embed validator
-    (`_estimate_label_width_px`), matching the OOB check byte-for-byte.
-    """
-    if max_width_px <= 0 or not text:
-        return text, fs
-    if _estimate_label_width_px(text, fs, bold=bold, font_family=body_font) <= max_width_px:
-        return text, fs
-    # 1) shrink fs down to floor
-    cur_fs = fs
-    while cur_fs - 0.5 >= fs_floor:
-        cur_fs -= 0.5
-        if _estimate_label_width_px(text, cur_fs, bold=bold, font_family=body_font) <= max_width_px:
-            return text, cur_fs
-    cur_fs = fs_floor
-    if _estimate_label_width_px(text, cur_fs, bold=bold, font_family=body_font) <= max_width_px:
-        return text, cur_fs
-    # 2) truncate at fs_floor. Try to preserve the trailing " value" (last token) if any.
-    parts = text.rsplit(" ", 1)
-    if len(parts) == 2 and parts[1] and (parts[1][-1] in "%0123456789" or parts[1].replace(".", "").isdigit()):
-        head, tail = parts[0], " " + parts[1]
-    else:
-        head, tail = text, ""
-    # Iterative truncation with ellipsis suffix
-    ellipsis = "…"  # U+2026 HORIZONTAL ELLIPSIS
-    for keep in range(len(head), 0, -1):
-        candidate = head[:keep].rstrip() + ellipsis + tail
-        if _estimate_label_width_px(candidate, cur_fs, bold=bold, font_family=body_font) <= max_width_px:
-            return candidate, cur_fs
-    # 3) Last resort: single-char + ellipsis (drop tail)
-    if head:
-        candidate = head[0] + ellipsis
-        return candidate, cur_fs
-    return text, cur_fs
-
-
 def _abbrev_number(n):
-    """Abbreviate a numeric value to a compact 3-4 char label.
-
-    Examples: 1289456789 -> '1.29B'; 12345 -> '12.3K'; 999 -> '999'.
-    Falls back to str(n) for non-numeric input.
-    """
+    """Abbreviate a numeric value to a compact 3-4 char label."""
     try:
         v = float(n)
     except (TypeError, ValueError):
@@ -128,21 +61,12 @@ def _abbrev_number(n):
 
 
 def _fit_center_label(text, max_width_px, fs, body_font, bold=True, fs_floor=10.0):
-    """Fit a center total-value label into `max_width_px`.
-
-    Strategy:
-      1. If it fits at fs, return as-is.
-      2. If text is purely numeric and long (>=7 chars), try abbreviated form
-         (1289456789 -> '1.29B').
-      3. Shrink fs down to fs_floor in 1.0 steps.
-      4. As a last resort, use the abbreviated form at fs_floor.
-    """
+    """Fit a center total-value label into `max_width_px`."""
     if max_width_px <= 0 or not text:
         return text, fs
     s = str(text)
     if _estimate_label_width_px(s, fs, bold=bold, font_family=body_font) <= max_width_px:
         return s, fs
-    # Try abbrev first for numeric-looking strings
     stripped = s.lstrip("-").replace(".", "")
     is_numeric = stripped.isdigit()
     if is_numeric and len(s) >= 7:
@@ -150,7 +74,6 @@ def _fit_center_label(text, max_width_px, fs, body_font, bold=True, fs_floor=10.
         if _estimate_label_width_px(abbr, fs, bold=bold, font_family=body_font) <= max_width_px:
             return abbr, fs
         s = abbr  # keep shrinking on the abbreviated form
-    # Shrink fs down to floor
     cur_fs = fs
     while cur_fs - 1.0 >= fs_floor:
         cur_fs -= 1.0
@@ -166,16 +89,6 @@ VARIANTS = (
     "polar_area_outlined",
     "donut_layered",
 )
-
-
-def _series_colors(pal, n):
-    series = pal.get("series")
-    if series and len(series) >= n:
-        return list(series[:n])
-    if series:
-        return [series[i % len(series)] for i in range(n)]
-    acc, ink = pal["accent"], pal["ink"]
-    return [acc, pal["secondary"], ink, pal["muted"]] * ((n // 4) + 1)
 
 
 def _lighten(rgba_str, ratio=0.5):
@@ -194,9 +107,20 @@ def _polar(cx, cy, r, deg):
 
 def _arc_path(cx, cy, r_in, r_out, ang_from, ang_to):
     """扇形环 path（顺时针扫）"""
-    if ang_to - ang_from >= 360:
-        # 完整环
-        ang_to = ang_from + 359.99
+    if ang_to - ang_from >= 360 - 1e-9:
+        # Two half-arcs represent an exact full circle; one 360° SVG arc has
+        # coincident endpoints and disappears.
+        x1, y1 = _polar(cx, cy, r_out, ang_from)
+        x2, y2 = _polar(cx, cy, r_out, ang_from + 180)
+        outer = f"M {x1:.2f} {y1:.2f} A {r_out:.2f} {r_out:.2f} 0 1 1 {x2:.2f} {y2:.2f} A {r_out:.2f} {r_out:.2f} 0 1 1 {x1:.2f} {y1:.2f} Z"
+        if r_in <= 0.01:
+            return outer
+        x3, y3 = _polar(cx, cy, r_in, ang_from)
+        x4, y4 = _polar(cx, cy, r_in, ang_from + 180)
+        return (
+            outer
+            + f" M {x3:.2f} {y3:.2f} A {r_in:.2f} {r_in:.2f} 0 1 0 {x4:.2f} {y4:.2f} A {r_in:.2f} {r_in:.2f} 0 1 0 {x3:.2f} {y3:.2f} Z"
+        )
     large = 1 if (ang_to - ang_from) > 180 else 0
     x1, y1 = _polar(cx, cy, r_out, ang_from)
     x2, y2 = _polar(cx, cy, r_out, ang_to)
@@ -212,115 +136,143 @@ def _arc_path(cx, cy, r_in, r_out, ang_from, ang_to):
     )
 
 
+def _sector_ink(color):
+    r, g, b = rgb_tuple(color)
+    return "rgba(28,28,26,1)" if 0.299 * r + 0.587 * g + 0.114 * b > 165 else "rgba(255,255,255,1)"
+
+
+def _wrap_complete(text, width, fs, font):
+    """Wrap without eliding category names or numerical values."""
+    out = []
+    rest = str(text)
+    while rest:
+        end = len(rest)
+        while end > 1 and _estimate_label_width_px(rest[:end], fs, bold=True, font_family=font) > width:
+            end -= 1
+        if end < len(rest):
+            space = rest.rfind(" ", 0, end + 1)
+            if space > 0:
+                end = space
+        out.append(rest[:end].rstrip())
+        rest = rest[end:].lstrip()
+    return out or [""]
+
+
+def _sector_label_layout(name, value, cx, cy, r_in, r_out, start, end, fs, font):
+    """Fit all corners of a centered text block inside the actual annular sector."""
+    mid = (start + end) / 2
+    while fs >= 12:
+        names = _wrap_complete(name, max(95.0, (r_out - r_in) * 1.55), fs, font)
+        rows = [(line, fs) for line in names] + ([(value, max(11.0, fs * 0.82))] if value is not None else [])
+        height = sum(size * 1.25 for _, size in rows)
+        half_w = max(_estimate_label_width_px(line, size, bold=True, font_family=font) for line, size in rows) / 2 + 3
+        half_h = height / 2 + 3
+        for step in range(41):
+            r = r_in + (r_out - r_in) * (0.25 + step * 0.0125)
+            tx, ty = _polar(cx, cy, r, mid)
+            dx, dy = tx - cx, ty - cy
+            near = math.hypot(max(0, abs(dx) - half_w), max(0, abs(dy) - half_h))
+            if near < r_in + 3:
+                continue
+            corners = [(dx + sx * half_w, dy + sy * half_h) for sx in (-1, 1) for sy in (-1, 1)]
+            if any(math.hypot(x, y) > r_out - 3 for x, y in corners):
+                continue
+            if end - start < 359.99 and any(
+                (math.degrees(math.atan2(y, x)) + 90 - start) % 360 > end - start for x, y in corners
+            ):
+                continue
+            baseline = ty - height / 2
+            placed = []
+            for line, size in rows:
+                baseline += size
+                placed.append((tx, baseline, line, size))
+                baseline += size * 0.25
+            return placed
+        fs -= 0.5
+    return None
+
+
+def _complete_leaders(entries, cx, cy, radius, font, ink, fs=14.0, wrap=220):
+    """Place complete labels on exterior tracks, preserving real sector anchors."""
+    parts, bounds = [], [cx - radius, cy - radius, cx + radius, cy + radius]
+    for side in (-1, 1):
+        records = []
+        for label, start, end, anchor_r in entries:
+            mid = (start + end) / 2
+            if (1 if math.sin(math.radians(mid)) >= 0 else -1) != side:
+                continue
+            ax, ay = _polar(cx, cy, anchor_r, mid)
+            rx, ry = _polar(cx, cy, radius + 10, mid)
+            lines = _wrap_complete(label, wrap / 1.1, fs, font)
+            records.append([ry, ax, ay, rx, ry, lines])
+        records.sort(key=lambda rec: rec[0])
+        total_h = sum(len(rec[-1]) * fs * 1.4 + 10 for rec in records)
+        cursor = min(cy - radius, cy - total_h / 2)
+        label_x = cx + side * (radius + 46)
+        for desired, ax, ay, rx, ry, lines in records:
+            block_h = len(lines) * fs * 1.4
+            top = max(cursor, desired - block_h / 2)
+            center = top + block_h / 2
+            elbow = cx + side * (radius + 26)
+            end_x = label_x - side * 8
+            parts.append(
+                f'<polyline points="{ax:.1f},{ay:.1f} {rx:.1f},{ry:.1f} {elbow:.1f},{center:.1f} {end_x:.1f},{center:.1f}" '
+                f'fill="none" stroke="{_rgba_with_alpha(ink, 0.45)}" stroke-width="0.9"/>'
+            )
+            for i, line in enumerate(lines):
+                y = top + fs + i * fs * 1.4
+                parts.append(
+                    f'<text x="{label_x:.1f}" y="{y:.1f}" font-family="{font}" font-size="{fs}" '
+                    f'font-weight="600" fill="{ink}" text-anchor="{"start" if side > 0 else "end"}">{_xesc(line)}</text>'
+                )
+                tw = _estimate_label_width_px(line, fs, bold=True, font_family=font) * 1.1 + fs * 0.3
+                bounds[0] = min(bounds[0], label_x - (tw if side < 0 else 0))
+                bounds[2] = max(bounds[2], label_x + (tw if side > 0 else 0))
+            bounds[1] = min(bounds[1], top)
+            bounds[3] = max(bounds[3], top + block_h)
+            cursor = top + block_h + 10
+    return parts, bounds
+
+
 def _render_leader_labels(
-    cx, cy, R_ref, entries, ink, body_font, fs=10.0, min_span=1.5, viewbox_x=0.0, viewbox_w=None, margin=2.0
+    cx,
+    cy,
+    R_ref,
+    entries,
+    ink,
+    body_font,
+    fs=10.0,
+    min_span=1.5,
+    viewbox_x=0.0,
+    viewbox_w=None,
+    margin=2.0,
+    *,
+    bounds_out=None,
+    extra_entries=(),
 ):
-    """给 outer label 打外部 leader line（水平引线 + 两侧竖排 label）。
+    """Place all labels, including tiny sectors, on complete exterior tracks."""
+    # Preserve the private calling convention used by the existing variants.
+    from html import unescape
 
-    entries: list of (label_text, s_from, s_to) —— 已按扇形角度排好；跨越 span<min_span 会被丢弃。
-    返回 SVG 片段字符串 list（可直接加进 parts）。
-
-    布局：
-      - mid_ang < 180 -> 右侧 label
-      - mid_ang >= 180 -> 左侧 label
-      - 引线：anchor -> elbow_x -> label_x, 水平段共 y
-      - tidy pass 强制最小行距 fs*1.25 防止重叠
-
-    viewbox_x / viewbox_w: SVG viewBox 左边界 / 宽度，用来做单个 label 的
-      OOB 预防：估算 label 宽度，超出 (viewbox_x + viewbox_w - margin) 时先
-      缩字号，再截断加省略号。传 None 时跳过（向后兼容）。
-    """
-    fragments = []
-    anchor_r = R_ref + 6
-    line_h = fs * 1.25
-    right_group = []
-    left_group = []
-    for label_text, s_from, s_to in entries:
-        span = s_to - s_from
-        if span < min_span:
-            continue
-        mid_ang = (s_from + s_to) / 2
-        ax, ay = _polar(cx, cy, anchor_r, mid_ang)
-        rec = {"name": label_text, "ax": ax, "ay": ay, "y": ay}
-        if 0 <= mid_ang < 180:
-            right_group.append(rec)
-        else:
-            left_group.append(rec)
-
-    def _tidy(group, y_min, y_max):
-        if not group:
-            return
-        group.sort(key=lambda r: r["ay"])
-        for r in group:
-            r["y"] = max(y_min, min(y_max, r["ay"]))
-        for i in range(1, len(group)):
-            if group[i]["y"] < group[i - 1]["y"] + line_h:
-                group[i]["y"] = group[i - 1]["y"] + line_h
-        if group and group[-1]["y"] > y_max:
-            group[-1]["y"] = y_max
-            for i in range(len(group) - 2, -1, -1):
-                if group[i]["y"] > group[i + 1]["y"] - line_h:
-                    group[i]["y"] = group[i + 1]["y"] - line_h
-
-    y_min = cy - R_ref
-    y_max = cy + R_ref
-    _tidy(right_group, y_min, y_max)
-    _tidy(left_group, y_min, y_max)
-
-    right_elbow_x = cx + R_ref + 12
-    left_elbow_x = cx - R_ref - 12
-    right_label_x = cx + R_ref + 28
-    left_label_x = cx - R_ref - 28
-
-    def _emit(group, label_x, elbow_x, anchor_side):
-        text_anchor = "start" if anchor_side == "right" else "end"
-        for r in group:
-            ax = r["ax"]
-            ay = r["ay"]
-            ly = r["y"]
-            text_dx = 4 if anchor_side == "right" else -4
-            # per-label fit: shrink fs / truncate to avoid OOB right/left
-            label_text = r["name"]
-            label_fs = fs
-            if viewbox_w is not None:
-                if anchor_side == "right":
-                    avail = (viewbox_x + viewbox_w - margin) - (label_x + text_dx)
-                else:
-                    avail = (label_x + text_dx) - (viewbox_x + margin)
-                if avail > 0:
-                    label_text, label_fs = _fit_leader_label(
-                        label_text,
-                        avail,
-                        fs,
-                        body_font,
-                        bold=True,
-                        fs_floor=9.0,
-                    )
-            fragments.append(
-                f'<polyline points="{ax:.1f},{ay:.1f} {elbow_x:.1f},{ly:.1f} '
-                f'{label_x + text_dx:.1f},{ly:.1f}" '
-                f'fill="none" stroke="{_rgba_with_alpha(ink, 0.35)}" stroke-width="0.8"/>'
-            )
-            fragments.append(
-                f'<text font-family="{body_font}" x="{label_x:.1f}" y="{ly + label_fs * 0.35:.1f}" '
-                f'font-size="{label_fs}" fill="{_rgba_with_alpha(ink, 0.95)}" font-weight="600" '
-                f'text-anchor="{text_anchor}" dominant-baseline="alphabetic">{label_text}</text>'
-            )
-
-    _emit(right_group, right_label_x, right_elbow_x, "right")
-    _emit(left_group, left_label_x, left_elbow_x, "left")
+    leaders = [(unescape(entry[0]), entry[1], entry[2], entry[3] if len(entry) > 3 else R_ref) for entry in entries]
+    fragments, bounds = _complete_leaders(leaders + list(extra_entries), cx, cy, R_ref, body_font, ink, max(12.0, fs))
+    if bounds_out is not None:
+        bounds_out[0] = min(bounds_out[0], bounds[0])
+        bounds_out[1] = min(bounds_out[1], bounds[1])
+        bounds_out[2] = max(bounds_out[2], bounds[2])
+        bounds_out[3] = max(bounds_out[3], bounds[3])
     return fragments
 
 
 def draw_nested_donut(
-    data: Dict,
+    data: dict,
     variant: str = "donut_flat",
     palette="archive_ink",
     width: float = 720,
     height: float = 720,
-    title: Optional[str] = None,
-    subtitle: Optional[str] = None,
-    figure_label: Optional[str] = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
 ) -> str:
     if variant not in VARIANTS:
         raise ValueError(f"unknown variant {variant!r}. Available: {VARIANTS}")
@@ -328,24 +280,21 @@ def draw_nested_donut(
     segments = data.get("segments") or []
     if not segments:
         raise ValueError("nested_donut: at least one segment required")
-    total_label = data.get("total_label", "TOTAL")
+    total_label = data.get("total_label", tr("TOTAL"))
     total_value = data.get("total_value")
 
     pal = resolve_palette(palette)
-    ink, ink6 = pal["ink"], pal["ink6"]
+    ink, _ink6 = pal["ink"], pal["ink6"]
     bg = pal["bg"]
-    accent = pal["accent"]
-    series = _series_colors(pal, max(6, len(segments)))
+    series = _pick_series_colors(pal, max(6, len(segments)))
 
     body_font = "Inter, sans-serif"
     head_font = "Georgia, serif"
 
-    # 归一化 domain
     dom_total = sum(v for _, v, _ in segments) or 1.0
     if total_value is None:
         total_value = dom_total
 
-    # ---- leader-line 触发条件（与 make_nested_donut 保持一致）----
     # sub-slice 总数 > 8：径向 label 会挤压重叠；宽画布（w/h > 1.5）：右侧本来就有空间。
     _n_subs_total = sum(len(s[2]) for s in segments)
     _aspect = float(width) / float(height) if height else 1.0
@@ -360,7 +309,6 @@ def draw_nested_donut(
     parts = [svg_open(0, 0, width, height, bg=bg)]
     defs_parts = []
 
-    # title
     if figure_label:
         parts.append(
             f'<text x="{20}" y="24" font-family="{body_font}" font-size="10" '
@@ -382,7 +330,6 @@ def draw_nested_donut(
     # （不用 <filter>，validator 不支持 filter/feX）
     _use_layered_shadow = variant == "donut_layered"
 
-    # radial gradients for donut_gradient
     if variant == "donut_gradient":
         for i, col in enumerate(series[: len(segments)]):
             r, g, b = rgb_tuple(col)
@@ -410,13 +357,34 @@ def draw_nested_donut(
         R_inner = R * 0.72
         R_center = R * 0.30
 
+    leader_bounds = [0.0, 0.0, float(width), 0.0]
+    domain_layouts = []
+    external_domains = []
+    if variant != "polar_area_outlined":
+        r_in, r_out = (R_l1_in, R_l1_out) if variant == "sunburst_flat" else (R_center, R_inner)
+        angle = 0.0
+        for dom, value, subs in segments:
+            end = angle + value / dom_total * 360
+            suffix = None if variant == "sunburst_flat" else f"{value / dom_total * 100:.1f}%"
+            placed = _sector_label_layout(dom, suffix, cx, cy, r_in, r_out, angle, end, 14, body_font)
+            domain_layouts.append(placed)
+            if placed is None:
+                external_domains.append((str(dom) + (f" · {suffix}" if suffix else ""), angle, end, (r_in + r_out) / 2))
+            outer_band = R_l2_out - R_l1_out if variant == "sunburst_flat" else R_outer - R_inner
+            if any(
+                _estimate_label_width_px(f"{name} {val:g}", 12, bold=True, font_family=body_font) > outer_band - 10
+                for name, val in subs
+            ):
+                _needs_leader = True
+            if any(val / (sum(v for _, v in subs) or 1) * (end - angle) < 5 for _, val in subs):
+                _needs_leader = True
+            angle = end
+        _needs_leader = _needs_leader or bool(external_domains)
+
     filter_attr = ""  # 已改用 shadow_dup pattern（下方 translate 副本），不再走 SVG filter
 
-    # 主图元
     if variant == "sunburst_flat":
-        # 中心 ALL
         parts.append(f'<circle cx="{cx}" cy="{cy}" r="{R_center}" fill="{ink}"/>')
-        # 中心值（value 在上，label 在下）
         _fs_center_val = max(14, R_center * 0.42)
         parts.append(
             f'<text x="{cx}" y="{cy - 2:.1f}" text-anchor="middle" font-family="{body_font}" '
@@ -435,25 +403,16 @@ def draw_nested_donut(
             d_from = ang
             d_to = ang + dpct / dom_total * 360
             base = series[i % len(series)]
-            # 内层 domain
             parts.append(
                 f'<path d="{_arc_path(cx, cy, R_l1_in, R_l1_out, d_from, d_to)}" '
                 f'fill="{base}" stroke="{bg}" stroke-width="1.5"/>'
             )
-            mid = (d_from + d_to) / 2
-            span = d_to - d_from
-            # 中心 domain 文字：从 midpoint (0.5) 略向内收到 0.48，避免宽 domain name
-            # 的 bbox 触到 R_l1_out（视觉上被外环覆盖）。degenerate slice 跳过 label。
-            tr = R_l1_in + (R_l1_out - R_l1_in) * 0.48
-            tx, ty = _polar(cx, cy, tr, mid)
-            fs_dom = auto_font_size(len(segments), base=13, min_size=9, max_size=15) if span >= 20 else 10
-            if span >= 1.0:
-                parts.append(
-                    f'<text x="{tx:.1f}" y="{ty + 4:.1f}" text-anchor="middle" '
-                    f'font-family="{body_font}" font-size="{fs_dom}" font-weight="700" '
-                    f'fill="{bg}">{xesc(dom)}</text>'
-                )
-            # 外层 subs
+            if domain_layouts[i] is not None:
+                for tx, ty, label, label_fs in domain_layouts[i]:
+                    parts.append(
+                        f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" font-family="{body_font}" '
+                        f'font-size="{label_fs}" font-weight="700" fill="{_sector_ink(base)}">{xesc(label)}</text>'
+                    )
             sa = d_from
             sub_total = sum(sh for _, sh in subs) or 1.0
             for j, (sname, sval) in enumerate(subs):
@@ -465,11 +424,9 @@ def draw_nested_donut(
                     f'fill="{lc}" stroke="{bg}" stroke-width="1"/>'
                 )
                 if _needs_leader:
-                    # 收集，稍后统一走 leader-line 布局
                     _sunburst_leader_entries.append((xesc(sname), s_from, s_to))
                     sa = s_to
                     continue
-                # sub 标签
                 smid = (s_from + s_to) / 2
                 tr2 = (R_l1_out + R_l2_out) / 2
                 tx2, ty2 = _polar(cx, cy, tr2, smid)
@@ -482,7 +439,7 @@ def draw_nested_donut(
                 parts.append(
                     f'<text x="{tx2:.1f}" y="{ty2:.1f}" text-anchor="middle" '
                     f'font-family="{body_font}" font-size="{fs}" font-weight="600" '
-                    f'fill="{_rgba_with_alpha(ink, 0.85)}" dominant-baseline="middle" '
+                    f'fill="{_sector_ink(lc)}" dominant-baseline="middle" '
                     f'transform="rotate({rot:.1f} {tx2:.1f} {ty2:.1f})">{xesc(sname)}</text>'
                 )
                 sa = s_to
@@ -500,33 +457,35 @@ def draw_nested_donut(
                     fs=10.0,
                     viewbox_x=0.0,
                     viewbox_w=width,
+                    bounds_out=leader_bounds,
+                    extra_entries=external_domains,
                 )
             )
 
     elif variant == "polar_area_outlined":
-        # 展平 sub
         subs_flat = []
         for i, (dom, dpct, subs) in enumerate(segments):
             for j, (sname, sval) in enumerate(subs):
                 subs_flat.append((sname, sval, i))
         if not subs_flat:
-            # fallback: use domains directly
             subs_flat = [(d[0], d[1], i) for i, d in enumerate(segments)]
         n_wedges = len(subs_flat)
+        _needs_leader = _needs_leader or any(
+            _estimate_label_width_px(f"{name} {val:g}", 12, bold=True, font_family=body_font) > 90
+            for name, val, _ in subs_flat
+        )
         R_max = R - 30
         max_val = max(s[1] for s in subs_flat) or 1
         ang_step = 360.0 / n_wedges
-        # 参考圆
         for k in (0.25, 0.5, 0.75, 1.0):
             parts.append(
                 f'<circle cx="{cx}" cy="{cy}" r="{R_max * k:.1f}" fill="none" '
                 f'stroke="{_rgba_with_alpha(ink, 0.15)}" stroke-width="0.6" stroke-dasharray="3 3"/>'
             )
-        # 首先画所有 wedge
         for k, (sname, sval, di) in enumerate(subs_flat):
             a_from = k * ang_step
             a_to = a_from + ang_step * 0.9
-            r_out = R_max * sval / max_val
+            r_out = math.sqrt(4**2 + (R_max**2 - 4**2) * sval / max_val)
             col = series[di % len(series)]
             r, g, b = rgb_tuple(col)
             parts.append(
@@ -537,16 +496,15 @@ def draw_nested_donut(
         # 切向 = 文字基线垂直于半径（沿切线走），不会汇聚到圆心。
         # 当 wedge 特别多（>16）时对极小 wedge（sval/max_val < 0.15）省略 label 只留 legend。
         fs = auto_font_size(n_wedges, base=11, min_size=8, max_size=12)
-        skip_tiny = n_wedges > 16
         if _needs_leader:
             # 走 leader-line：两侧竖排 label，避免切向文字挤压
             _entries = []
             for k, (sname, sval, di) in enumerate(subs_flat):
                 a_from = k * ang_step
                 a_to = a_from + ang_step * 0.9
-                if skip_tiny and (sval / max_val) < 0.15:
-                    continue
-                _entries.append((f"{xesc(sname)} {sval:g}", a_from, a_to))
+                _entries.append(
+                    (f"{xesc(sname)} {sval:g}", a_from, a_to, math.sqrt(4**2 + (R_max**2 - 4**2) * sval / max_val))
+                )
             parts.extend(
                 _render_leader_labels(
                     cx,
@@ -558,16 +516,15 @@ def draw_nested_donut(
                     fs=float(fs),
                     viewbox_x=0.0,
                     viewbox_w=width,
+                    bounds_out=leader_bounds,
+                    extra_entries=external_domains,
                 )
             )
         else:
             for k, (sname, sval, di) in enumerate(subs_flat):
                 a_from = k * ang_step
                 a_to = a_from + ang_step * 0.9
-                r_out = R_max * sval / max_val
-                if skip_tiny and (sval / max_val) < 0.15:
-                    # 太小时省略标签
-                    continue
+                r_out = math.sqrt(4**2 + (R_max**2 - 4**2) * sval / max_val)
                 mid = (a_from + a_to) / 2
                 r_label = R_max + 18
                 tx, ty = _polar(cx, cy, r_label, mid)
@@ -592,17 +549,11 @@ def draw_nested_donut(
                     f'fill="{ink}" dominant-baseline="middle" '
                     f'transform="rotate({rot:.1f} {tx:.1f} {ty:.1f})">{xesc(sname)} · {sval:g}</text>'
                 )
-        # 中心 total_value + total_label（放在参考圆中心，不遮挡 wedge 因为 wedge 从 r=4 开始）
-        _fs_center_val = max(14, R_max * 0.12)
+        # Keep the total outside the radial data, whose sectors meet at the
+        # origin. Covering their centre also hides their quantitative area.
         parts.append(
-            f'<text x="{cx}" y="{cy - 2:.1f}" text-anchor="middle" font-family="{body_font}" '
-            f'font-size="{_fs_center_val:.0f}" font-weight="800" fill="{ink}">'
-            f"{total_value:g}</text>"
-        )
-        parts.append(
-            f'<text x="{cx}" y="{cy + _fs_center_val * 0.85:.1f}" text-anchor="middle" '
-            f'font-family="{body_font}" font-size="10" font-weight="700" '
-            f'fill="{pal["muted"]}" letter-spacing=".18em">{xesc(total_label)}</text>'
+            f'<text x="{width - 40:.1f}" y="82" text-anchor="end" font-family="{body_font}" '
+            f'font-size="14" font-weight="600" fill="{ink}">{xesc(total_label)} · {total_value:g}</text>'
         )
         # legend
         # 动态布局：估算每项宽度（swatch + text），必要时自动换行以适应画布宽度。
@@ -617,7 +568,6 @@ def draw_nested_donut(
         for i, (dom, _pct, _subs) in enumerate(segments):
             item_w = swatch_w + len(dom) * char_w + pad
             items.append((i, dom, item_w))
-        # 逐行装填
         rows = [[]]
         row_widths = [0.0]
         for it in items:
@@ -648,7 +598,6 @@ def draw_nested_donut(
                 x_cur += iw
 
     else:
-        # donut_flat / donut_gradient / donut_layered
         ang = 0.0
         outer_labels = []
         for i, (dom, dpct, subs) in enumerate(segments):
@@ -656,66 +605,18 @@ def draw_nested_donut(
             base = series[i % len(series)]
             inner_fill = f"url(#ndg_{i})" if variant == "donut_gradient" else base
             outer_fill = _lighten(base, 0.5)
-            # 内环 domain
             inner_d = _arc_path(cx, cy, R_center, R_inner, d_from, d_to)
             if _use_layered_shadow:
                 parts.append(
                     f'<path d="{inner_d}" transform="translate(3,5)" fill="{ink}" fill-opacity="0.25" stroke="none"/>'
                 )
             parts.append(f'<path d="{inner_d}" fill="{inner_fill}" stroke="{bg}" stroke-width="1.5"{filter_attr}/>')
-            mid_ang = (d_from + d_to) / 2
-            span = d_to - d_from
-            # Skip labels for degenerate / near-zero slices (avoid stacking labels at
-            # the same point → embed_svg_bbox_overlap, and unreadable anyway).
-            if span < 1.0:
-                # 外环 sub
-                sub_total = sum(sh for _, sh in subs) or 1.0
-                sub_ang = d_from
-                for j, (sname, sval) in enumerate(subs):
-                    s_from = sub_ang
-                    s_to = sub_ang + sval / sub_total * (d_to - d_from)
-                    outer_d = _arc_path(cx, cy, R_inner, R_outer, s_from, s_to)
-                    if _use_layered_shadow:
-                        parts.append(
-                            f'<path d="{outer_d}" transform="translate(3,5)" '
-                            f'fill="{ink}" fill-opacity="0.22" stroke="none"/>'
-                        )
+            if domain_layouts[i] is not None:
+                for tx, ty, label, label_fs in domain_layouts[i]:
                     parts.append(
-                        f'<path d="{outer_d}" fill="{outer_fill}" stroke="{bg}" stroke-width="1"{filter_attr}/>'
+                        f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" font-family="{body_font}" '
+                        f'font-size="{label_fs}" font-weight="700" fill="{_sector_ink(base)}">{xesc(label)}</text>'
                     )
-                    outer_labels.append((sname, sval, s_from, s_to, i))
-                    sub_ang = s_to
-                ang = d_to
-                continue
-            # Place the two-line label (domain_name + pct%) near the RADIAL MIDPOINT
-            # of the (now widened) inner ring band. Previous code used ratio 0.75 which
-            # pushed the label bbox close to R_inner → visually the outer ring appeared
-            # to cover the label's outer edge. With R_inner=0.72*R and ratio=0.55, the
-            # bbox sits centered in the band with clearance from BOTH the outer edge
-            # (R_inner) and the center-circle AABB (R_center).
-            text_r = R_center + (R_inner - R_center) * 0.55
-            tx, ty = _polar(cx, cy, text_r, mid_ang)
-            fs_dom = 14 if span >= 30 else (12 if span >= 15 else 9)
-            fs_pct = 12 if span >= 30 else (10 if span >= 15 else 8)
-            # Shift the label pair up by half its own vertical extent so it's
-            # geometrically CENTERED on (tx,ty). Two-line block has approx height
-            # fs_dom + 2 + fs_pct; center-of-block should map to ty.
-            _line_gap = 2.0
-            _block_h = fs_dom + _line_gap + fs_pct
-            _y_top = ty - _block_h * 0.5  # top of dom line (visual top)
-            _y_dom = _y_top + fs_dom * 0.85  # baseline of dom
-            _y_pct = _y_top + fs_dom + _line_gap + fs_pct * 0.85  # baseline of pct
-            parts.append(
-                f'<text x="{tx:.1f}" y="{_y_dom:.1f}" font-family="{body_font}" '
-                f'font-size="{fs_dom}" font-weight="700" fill="{bg}" '
-                f'text-anchor="middle">{xesc(dom)}</text>'
-            )
-            parts.append(
-                f'<text x="{tx:.1f}" y="{_y_pct:.1f}" font-family="{body_font}" '
-                f'font-size="{fs_pct}" font-weight="700" fill="{_rgba_with_alpha(bg, 0.9)}" '
-                f'text-anchor="middle">{dpct / dom_total * 100:.1f}%</text>'
-            )
-            # 外环 sub
             sub_total = sum(sh for _, sh in subs) or 1.0
             sub_ang = d_from
             for j, (sname, sval) in enumerate(subs):
@@ -746,6 +647,8 @@ def draw_nested_donut(
                     fs=10.0,
                     viewbox_x=0.0,
                     viewbox_w=width,
+                    bounds_out=leader_bounds,
+                    extra_entries=external_domains,
                 )
             )
         else:
@@ -772,12 +675,11 @@ def draw_nested_donut(
                 parts.append(
                     f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" '
                     f'font-family="{body_font}" font-size="{fs}" font-weight="600" '
-                    f'fill="{ink}" dominant-baseline="middle" '
+                    f'fill="{_sector_ink(_lighten(series[di % len(series)], 0.5))}" dominant-baseline="middle" '
                     f'transform="rotate({rot:.1f} {tx:.1f} {ty:.1f})">'
                     f"{xesc(sname)} {sval:g}</text>"
                 )
 
-        # 中心圆 + total
         parts.append(
             f'<circle cx="{cx}" cy="{cy}" r="{R_center}" fill="{bg}" '
             f'stroke="{_rgba_with_alpha(ink, 0.15)}" stroke-width="0.8"/>'
@@ -794,12 +696,10 @@ def draw_nested_donut(
             f'letter-spacing=".18em">{xesc(total_label)}</text>'
         )
 
-    # 组装 defs
     if defs_parts:
         defs_str = "<defs>" + "".join(defs_parts) + "</defs>"
         parts.insert(1, defs_str)
 
-    # ---- 收窄 viewBox 底部空白 ----
     # svg_open 初始用的是 (0, 0, width, height)，但 donut/sunburst 只用到 cy±R_outer
     # 附近的垂直范围；height 只是坐标参考系。medium/large 触发 leader 后 R 减小到
     # ~200，donut 底 = cy + R ≈ 570 → viewBox=720 底部 ~150px 空白。改按实际内容
@@ -813,16 +713,11 @@ def draw_nested_donut(
         _content_bot = height  # 不收窄
     else:
         _content_bot = cy + R_outer + _bg_pad
-    _new_vb_h = min(height, max(_content_bot, cy + 20))
-    if _new_vb_h < height:
-        # 只在能收窄时改写 parts[0]（svg_open 输出）以及 bg rect（如果有）。
-        _new_h_str = f"{_new_vb_h:.1f}"
-        # svg_open 生成：'<svg ... viewBox="0 0 width height">' 后可能跟 '<rect ... width="w" height="h" .../>'
-        # 直接替换 parts[0]。
-        _first = parts[0]
-        _first = _first.replace(f'viewBox="0 0 {width} {height}"', f'viewBox="0 0 {width} {_new_h_str}"')
-        _first = _first.replace(f'height="{height}"', f'height="{_new_h_str}"', 1)
-        parts[0] = _first
+    vb_x = min(0.0, leader_bounds[0] - 8)
+    vb_y = min(0.0, leader_bounds[1] - 8)
+    vb_right = max(float(width), leader_bounds[2] + 8)
+    vb_bottom = max(min(height, max(_content_bot, cy + 20)), leader_bounds[3] + 8)
+    parts[0] = svg_open(vb_x, vb_y, vb_right - vb_x, vb_bottom - vb_y, bg=bg)
 
     parts.append(svg_close())
     return "".join(parts)
@@ -834,13 +729,13 @@ def make_nested_donut(
     total_value=None,
     width: float = 720.0,
     height: float = 720.0,
-    domain_colors: dict = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    font_family: str = None,
-    palette: dict = None,
-    variant: str = None,
+    domain_colors: dict | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    font_family: str | None = None,
+    palette: dict | None = None,
+    variant: str | None = None,
 ) -> str:
     """
     双层甜甜圈（内环 = 一级分类 domain / 外环 = 二级子类 sub-intent）：
@@ -886,14 +781,7 @@ def make_nested_donut(
         if len(d) < 3:
             raise ValueError(f"nested_donut: data[{i}] must be (domain, pct, subs), got {d}")
 
-    # ---- palette ----
-    def _rgba_with_alpha(rgba_str, alpha):
-        import re as _re
-
-        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str)
-        if not m:
-            return f"rgba(28,28,26,{alpha})"
-        return f"rgba({int(float(m.group(1)))},{int(float(m.group(2)))},{int(float(m.group(3)))},{alpha})"
+    from ._shared import _rgba_with_alpha  # regex form (not _common's); shadows the module import here
 
     def _rgb_tuple(rgba_str):
         import re as _re
@@ -919,7 +807,6 @@ def make_nested_donut(
     # nested_donut 需要至少 8 个系列色（domain 轮转）
     _default_colors = _pal.get("domain_default_colors") or _derive_series_colors(_pal, max(8, len(data)))
 
-    # ---- 归一化 domain_colors + 派生外环色 ----
     dc = dict(domain_colors) if domain_colors else {}
     inner_colors = []
     outer_lighten = []
@@ -928,7 +815,6 @@ def make_nested_donut(
         inner_colors.append(base)
         outer_lighten.append(_lighten(base, 0.5))
 
-    # ---- 几何 ----
     # Wide aspect (w/h > 1.5): 缩小 donut 半径（用 height 主导），donut 靠左 30% 位置，
     # 留右侧较大宽度做外部 leader label；左侧也留够 label reserve，避免左半 wedge label 无处放。
     # Tall aspect / 方形: 居中；若 sub-slice 数 > 8 也要外部 label，此时收缩半径为标签让位
@@ -937,8 +823,6 @@ def make_nested_donut(
     _n_subs_total = sum(len(d[2]) for d in data)
     _needs_leader = (_n_subs_total > 8) or _wide
     _label_reserve = 90.0 if _needs_leader else 0.0
-    import math as _m
-
     if _wide:
         # R 由 height 主导（不用 min(w,h) —— 那样 wide embed 里 R 太小很浪费竖向空间）
         R_outer = height / 2 - 30
@@ -956,10 +840,7 @@ def make_nested_donut(
     # 骨架路径对齐：R_inner=0.72*R 拓宽内环 band 到 R*0.42，_text_r_default 用 0.55
     # 比例（略偏内的 midpoint），label bbox 中心留出对外环 (R_inner) 与中心圆 AABB
     # (R_center) 两侧 clearance。
-    R_inner = R_outer * 0.72  # 内环拓宽，为两行 label 让空间
-    R_center = R_outer * 0.30
 
-    # ---------- 字号自适应（viewBox + 数据规模双重）----------
     _n_dom_fs = len(data)
     _fs_base = min(float(width), float(height)) * 0.022
     if _n_dom_fs <= 4:
@@ -973,399 +854,171 @@ def make_nested_donut(
     # 外圈标签更小些（fs * 0.85），因为空间紧
     _fs_sub_mult = _fs_dom_mult * 0.85
     _fs_dom_wide = max(14.0, _fs_base * 1.2 * _fs_dom_mult)  # domain wide arcs
-    _fs_dom_mid = max(12.0, _fs_base * 1.0 * _fs_dom_mult)  # domain medium arcs
-    _fs_dom_narrow = max(10.0, _fs_base * 0.75 * _fs_dom_mult)  # domain narrow arcs
-    _fs_pct_wide = max(12.0, _fs_base * 1.0 * _fs_dom_mult)
-    _fs_pct_mid = max(10.0, _fs_base * 0.85 * _fs_dom_mult)
-    _fs_pct_narrow = max(9.0, _fs_base * 0.7 * _fs_dom_mult)
     _fs_sub_wide = max(13.0, _fs_base * 1.15 * _fs_sub_mult)
-    _fs_sub_mid = max(11.0, _fs_base * 0.95 * _fs_sub_mult)
-    _fs_sub_small = max(10.0, _fs_base * 0.8 * _fs_sub_mult)
-    _fs_sub_tiny = max(10.0, _fs_base * 0.7 * _fs_sub_mult)
     _fs_center_val = max(30.0, _fs_base * 2.6)
     _fs_center_lbl = max(12.0, _fs_base * 1.0)
 
-    def _polar(cx0, cy0, r, deg):
-        """SVG 角度：起点 -90°（12 点方向），顺时针"""
-        rad = _m.radians(deg - 90)
-        return (cx0 + r * _m.cos(rad), cy0 + r * _m.sin(rad))
+    for _fit_pass in range(10):
+        R_inner = R_outer * 0.72  # 内环拓宽，为两行 label 让空间
+        R_center = R_outer * 0.30
+        parts = []
+        defs_parts = []  # textPath 需要的隐藏 path 定义
 
-    def _arc_path(cx0, cy0, r_in, r_out, ang_from, ang_to):
-        """扇形环 path（顺时针扫）"""
-        large = 1 if (ang_to - ang_from) > 180 else 0
-        x1, y1 = _polar(cx0, cy0, r_out, ang_from)
-        x2, y2 = _polar(cx0, cy0, r_out, ang_to)
-        x3, y3 = _polar(cx0, cy0, r_in, ang_to)
-        x4, y4 = _polar(cx0, cy0, r_in, ang_from)
-        return (
-            f"M {x1:.2f} {y1:.2f} "
-            f"A {r_out:.2f} {r_out:.2f} 0 {large} 1 {x2:.2f} {y2:.2f} "
-            f"L {x3:.2f} {y3:.2f} "
-            f"A {r_in:.2f} {r_in:.2f} 0 {large} 0 {x4:.2f} {y4:.2f} Z"
-        )
-
-    parts = []
-    defs_parts = []  # textPath 需要的隐藏 path 定义
-
-    # ---- 内环 + 外环扇形 ----
-    ang = 0.0
-    _outer_labels = []  # 收集外环 label 数据，后统一绘制（避免 defs 与 fill 顺序问题）
-    for i, (dom, dpct, subs) in enumerate(data):
-        d_from, d_to = ang, ang + dpct * 3.6
-        # 内环 domain 扇形
-        parts.append(
-            f'<path d="{_arc_path(cx, cy, R_center, R_inner, d_from, d_to)}" '
-            f'fill="{inner_colors[i]}" stroke="rgba(255,255,255,1)" stroke-width="1.5"/>'
-        )
-        # 内环文字：两行居中
-        mid_ang = (d_from + d_to) / 2
-        # 内环 domain 宽度判定：太窄就缩字号
-        d_span = d_to - d_from
-        if d_span >= 30:
-            fs_domain = _fs_dom_wide
-            fs_pct = _fs_pct_wide
-        elif d_span >= 15:
-            fs_domain = _fs_dom_mid
-            fs_pct = _fs_pct_mid
-        else:
-            fs_domain = _fs_dom_narrow
-            fs_pct = _fs_pct_narrow
-        # 若名字触发两行拆分（&/空格 + 长），单行显示的是拆分后的更短片段；
-        # 这里预取两行内容以正确估算最长行的半宽。
-        _n_ascii = sum(1 for c in dom if ord(c) < 128)
-        _n_cjk = len(dom) - _n_ascii
-        _wt = _n_ascii + _n_cjk * 1.6
-        _two_line = _wt > 12 and (" & " in dom or " " in dom)
-        if _two_line:
-            _split_at = dom.rfind(" & ")
-            if _split_at < 0:
-                _mid = len(dom) // 2
-                _left = dom.rfind(" ", 0, _mid + 3)
-                _split_at = _left if _left > 0 else _mid
-                _line1, _line2 = dom[:_split_at].strip(), dom[_split_at:].strip()
+        ang = 0.0
+        external_domains = []
+        leader_bounds = [cx - R_outer, cy - R_outer, cx + R_outer, cy + R_outer]
+        _outer_labels = []  # 收集外环 label 数据，后统一绘制（避免 defs 与 fill 顺序问题）
+        for i, (dom, dpct, subs) in enumerate(data):
+            d_from, d_to = ang, ang + dpct * 3.6
+            parts.append(
+                f'<path d="{_arc_path(cx, cy, R_center, R_inner, d_from, d_to)}" '
+                f'fill="{inner_colors[i]}" stroke="rgba(255,255,255,1)" stroke-width="1.5"/>'
+            )
+            r, g, b = _rgb_tuple(inner_colors[i])
+            inner_ink = "rgba(28,28,26,1)" if 0.299 * r + 0.587 * g + 0.114 * b > 165 else "rgba(255,255,255,1)"
+            placed = _sector_label_layout(
+                dom, f"{dpct:.1f}%", cx, cy, R_center, R_inner, d_from, d_to, _fs_dom_wide, _body_font
+            )
+            if placed is None:
+                external_domains.append((f"{dom} · {dpct:.1f}%", d_from, d_to, (R_center + R_inner) / 2))
             else:
-                _line1, _line2 = dom[:_split_at].strip(), dom[_split_at + 3 :].strip()
-            _dom_widest = max(_line1, _line2, key=len)
-        else:
-            _line1, _line2 = dom, ""
-            _dom_widest = dom
-        # 迭代：如果按当前 fs_domain 找不到 text_r 让 label 既避开中心圆又不超 viewBox，
-        # 就缩 fs_domain（步长 1.0）；下限 max(9, fs_pct)。
-        _sn = abs(_m.sin(_m.radians(mid_ang)))
-        _cs = abs(_m.cos(_m.radians(mid_ang)))
-        # margin 需要能吸收 CJK 字宽估算误差（~5px 每几个字）+ baseline offset。
-        # 之前用 3 → text bbox 与中心圆 AABB 常剩 1-2 像素 overlap 触发 embed_svg_text_shape_overlap。
-        _margin = 8.0
-        # text_r 落在 R_center → R_inner band 上，用 0.55 比例（偏内一点）：与
-        # draw_nested_donut skeleton 一致，避免 label bbox 向外挤到 R_inner 边缘
-        # 被视觉上覆盖。之前用 midpoint (0.5) 在 R_inner=0.60*R 上还行，但迁到
-        # R_inner=0.72*R 后 midpoint 太靠内触中心圆；0.55 偏外一点点更稳。
-        _text_r_default = R_center + (R_inner - R_center) * 0.55
-        _vb_pad = 10.0  # 与 viewBox 生成用的 pad 保持一致
-        _vb_left = -_vb_pad + 2.0
-        _vb_right = width + _vb_pad - 2.0
-        _vb_top = -_vb_pad + 2.0  # title 上方还有 _title_h 空间，这里保守只用 pad
-        _vb_bot = height + _vb_pad - 2.0
-        _fs_dom_floor = 9.0
-        _fs_pct_ratio = fs_pct / max(1e-3, fs_domain)  # 保持 dom/pct 字号比例
-        # 若两行拆分下最宽行仍太宽，允许收窄为一行 + 省略（保留 dom 关键前缀）。
-        _dom_display = dom
-        _dom_display_line1, _dom_display_line2 = _line1, _line2
-        while True:
-            _dom_half_w = 0.5 * _estimate_label_width_px(_dom_widest, fs_domain, bold=True, font_family=_body_font)
-            _pct_half_w = 0.5 * _estimate_label_width_px(f"{dpct:.1f}%", fs_pct, bold=True, font_family=_body_font)
-            _hw_est = max(_dom_half_w, _pct_half_w)
-            # 垂直范围：ty 上方 = 最高一行到 ty 的距离 + 该行 fs*0.8；
-            #         ty 下方 = 最低一行到 ty 的距离 + 该行 fs*0.3。
-            if _two_line:
-                _up_dist = fs_domain * 0.6 + fs_domain * 0.8  # line1 baseline 上方
-                _down_dist = fs_domain * 0.55 + fs_pct + 2 + fs_pct * 0.3  # pct 行下方
-            else:
-                _up_dist = fs_domain * 0.8  # dom 行 baseline 之上
-                _down_dist = fs_pct + 2 + fs_pct * 0.3  # pct 行下方
-            _hh_est = max(_up_dist, _down_dist)
-            # 需要的最小 text_r：让 x 或 y 至少一边跳出中心圆 AABB
-            _cands = []
-            if _sn > 1e-3:
-                _cands.append((R_center + _hw_est + _margin) / _sn)
-            if _cs > 1e-3:
-                _cands.append((R_center + _hh_est + _margin) / _cs)
-            _text_r_min = min(_cands) if _cands else (R_center + max(_hw_est, _hh_est) + _margin)
-            # viewBox 上限：text_r 使得 tx±hw 和 ty±hh 都留在 viewBox 内。
-            _r_cap = R_inner - fs_pct * 0.3  # 环带内
-            # x 方向：cx + text_r*sin(a-90)*... 实际按 _polar，dx = r*cos(mid-90) = r*sin(mid)
-            # sin(mid) 的符号决定 tx 相对 cx 的方向。用绝对值 + 两侧 padding 求上限。
-            _dx_sign = _m.cos(_m.radians(mid_ang - 90))  # = sin(mid)
-            _dy_sign = _m.sin(_m.radians(mid_ang - 90))  # = -cos(mid)
-            if abs(_dx_sign) > 1e-3:
-                if _dx_sign > 0:
-                    _r_cap = min(_r_cap, (_vb_right - cx - _hw_est) / _dx_sign)
-                else:
-                    _r_cap = min(_r_cap, (cx - _vb_left - _hw_est) / (-_dx_sign))
-            if abs(_dy_sign) > 1e-3:
-                if _dy_sign > 0:
-                    _r_cap = min(_r_cap, (_vb_bot - cy - _hh_est) / _dy_sign)
-                else:
-                    _r_cap = min(_r_cap, (cy - _vb_top - _hh_est) / (-_dy_sign))
-            # 找 text_r：优先 default（annulus midpoint），若 default < min 就用 min，
-            # 若 min > cap 说明当前 fs 装不下 → 缩字号重试。
-            if _text_r_min <= max(_r_cap, _text_r_default):
-                text_r = min(max(_r_cap, _text_r_default), max(_text_r_default, _text_r_min))
-                break
-            if fs_domain - 1.0 < _fs_dom_floor:
-                # 已缩到下限；用 cap（保 viewBox 优先，允许中心圆轻微 overlap 也比 OOB 好）
-                text_r = max(_r_cap, R_center + _margin)
-                break
-            fs_domain -= 1.0
-            fs_pct = max(9.0, fs_domain * _fs_pct_ratio)
-        tx, ty = _polar(cx, cy, text_r, mid_ang)
-        # 渲染：两行拆分复用上面预算好的 _line1 / _line2，避免重复计算
-        if _two_line:
-            parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty - fs_domain * 0.6:.1f}" font-size="{fs_domain}" '
-                f'font-weight="700" fill="rgba(255,255,255,1)" text-anchor="middle">{_xesc(_line1)}</text>'
-            )
-            parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty + fs_domain * 0.55:.1f}" font-size="{fs_domain}" '
-                f'font-weight="700" fill="rgba(255,255,255,1)" text-anchor="middle">{_xesc(_line2)}</text>'
-            )
-            parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty + fs_domain * 0.55 + fs_pct + 2:.1f}" font-size="{fs_pct}" '
-                f'font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">{dpct:.1f}%</text>'
-            )
-        else:
-            parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty - 1:.1f}" font-size="{fs_domain}" '
-                f'font-weight="700" fill="rgba(255,255,255,1)" text-anchor="middle">{_xesc(dom)}</text>'
-            )
-            parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty + fs_pct + 2:.1f}" font-size="{fs_pct}" '
-                f'font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">{dpct:.1f}%</text>'
-            )
-
-        # 外环 sub-slices
-        sub_ang = d_from
-        for j, (sname, spct) in enumerate(subs):
-            s_from, s_to = sub_ang, sub_ang + spct * 3.6
-            parts.append(
-                f'<path d="{_arc_path(cx, cy, R_inner, R_outer, s_from, s_to)}" '
-                f'fill="{outer_lighten[i]}" stroke="rgba(255,255,255,1)" stroke-width="1"/>'
-            )
-            _outer_labels.append((sname, spct, s_from, s_to, i))
-            sub_ang = s_to
-        ang = d_to
-
-    # ---- 外环文字：radial（少量 sub）或 leader line + 两侧竖排（多 sub / wide aspect）----
-    # 触发外部 leader line 布局的条件：
-    #   1) 总 sub-slice 数 > 8 —— 沿弧径向 label 会挤压
-    #   2) wide aspect（w/h > 1.5）—— 右侧本来就有空间，顺手把 label 打到外面
-    # 这两个条件在几何段已算好 _needs_leader / _leader_side_mode
-    _use_leader = _needs_leader
-
-    if not _use_leader:
-        # 少量 sub-slice 且非 wide：走原径向 rotate 逻辑
-        for k, (sname, spct, s_from, s_to, dom_idx) in enumerate(_outer_labels):
-            span = s_to - s_from
-            mid_ang = (s_from + s_to) / 2
-            pct_str = f"{spct:.0f}%" if spct >= 1 else f"{spct:.1f}%"
-            label_text = f"{_xesc(sname)} {pct_str}"
-
-            if span >= 20:
-                fs = _fs_sub_wide
-            elif span >= 10:
-                fs = _fs_sub_mid
-            elif span >= 5:
-                fs = _fs_sub_small
-            else:
-                fs = _fs_sub_tiny
-
-            text_r = (R_inner + R_outer) / 2
-            tx, ty = _polar(cx, cy, text_r, mid_ang)
-
-            if 0 <= mid_ang < 180:
-                rot = mid_ang - 90
-            else:
-                rot = mid_ang + 90
-
-            parts.append(
-                f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty:.1f}" font-size="{fs}" fill="rgba(40,40,40,0.9)" '
-                f'font-weight="600" text-anchor="middle" dominant-baseline="middle" '
-                f'transform="rotate({rot:.1f} {tx:.1f} {ty:.1f})">{label_text}</text>'
-            )
-    else:
-        # ---- Leader-line 外部 label 布局 ----
-        anchor_r = R_outer + 6  # 引线起点：外圈边缘外一点
-        fs_leader = max(10.0, _fs_sub_small)
-        line_h = fs_leader * 1.25
-
-        # 按侧分组：mid_ang < 180 → 右侧 label；否则左侧
-        right_group = []
-        left_group = []
-        for k, (sname, spct, s_from, s_to, dom_idx) in enumerate(_outer_labels):
-            span = s_to - s_from
-            if span < 1.5:
-                continue  # 极小 slice 省略
-            mid_ang = (s_from + s_to) / 2
-            ax, ay = _polar(cx, cy, anchor_r, mid_ang)
-            pct_str = f"{spct:.0f}%" if spct >= 1 else f"{spct:.1f}%"
-            label_text = f"{_xesc(sname)} {pct_str}"
-            rec = {"name": label_text, "ax": ax, "ay": ay, "mid": mid_ang, "dom_idx": dom_idx, "y": ay}
-            if 0 <= mid_ang < 180:
-                right_group.append(rec)
-            else:
-                left_group.append(rec)
-
-        # tidy pass：按 y 排序后强制最小间距 line_h
-        def _tidy(group, y_min, y_max):
-            if not group:
-                return
-            group.sort(key=lambda r: r["ay"])
-            for r in group:
-                r["y"] = max(y_min, min(y_max, r["ay"]))
-            for i in range(1, len(group)):
-                if group[i]["y"] < group[i - 1]["y"] + line_h:
-                    group[i]["y"] = group[i - 1]["y"] + line_h
-            if group[-1]["y"] > y_max:
-                group[-1]["y"] = y_max
-                for i in range(len(group) - 2, -1, -1):
-                    if group[i]["y"] > group[i + 1]["y"] - line_h:
-                        group[i]["y"] = group[i + 1]["y"] - line_h
-
-        y_min = cy - R_outer
-        y_max = cy + R_outer
-        _tidy(right_group, y_min, y_max)
-        _tidy(left_group, y_min, y_max)
-
-        # 引线转角 x（水平段起点）
-        right_elbow_x = cx + R_outer + 12
-        left_elbow_x = cx - R_outer - 12
-        # label 文字锚点 x
-        right_label_x = cx + R_outer + 28
-        left_label_x = cx - R_outer - 28
-
-        def _emit(group, label_x, elbow_x, anchor_side):
-            text_anchor = "start" if anchor_side == "right" else "end"
-            # Leader label 之前硬编码 fill="rgba(40,40,40,0.95)"（深灰），在深底 palette 上
-            # 直接消失。改为跟 palette 挂钩：深底用 c_ink（palette 已为深底定义浅 ink），
-            # 浅底沿用原深灰以保持对比。
-            _leader_col = c_ink if _is_dark_palette(_pal) else "rgba(40,40,40,0.95)"
-            # viewBox 右边界 = width + pad (pad=10, viewbox 起于 -pad)。
-            # 每个 label 按可用宽度做 fit：先缩字号（floor 9），再截断加省略号，
-            # 保证 x+width 不超过 viewBox 右边（左侧同理，从 -pad 起）。
-            _vb_pad = 10.0
-            _vb_right = width + _vb_pad
-            _vb_left = -_vb_pad
-            _margin = 2.0
-            for r in group:
-                ax = r["ax"]
-                ay = r["ay"]
-                ly = r["y"]
-                text_dx = 4 if anchor_side == "right" else -4
-                # 计算该 label 的可用宽度并 fit
-                if anchor_side == "right":
-                    avail = (_vb_right - _margin) - (label_x + text_dx)
-                else:
-                    avail = (label_x + text_dx) - (_vb_left + _margin)
-                label_text = r["name"]
-                label_fs = fs_leader
-                if avail > 0:
-                    label_text, label_fs = _fit_leader_label(
-                        label_text,
-                        avail,
-                        fs_leader,
-                        _body_font,
-                        bold=True,
-                        fs_floor=9.0,
+                for tx, ty, label, label_fs in placed:
+                    parts.append(
+                        f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty:.1f}" font-size="{label_fs}" '
+                        f'font-weight="700" fill="{inner_ink}" text-anchor="middle">{_xesc(label)}</text>'
                     )
-                parts.append(
-                    f'<polyline points="{ax:.1f},{ay:.1f} {elbow_x:.1f},{ly:.1f} '
-                    f'{label_x + text_dx:.1f},{ly:.1f}" '
-                    f'fill="none" stroke="{_rgba_with_alpha(c_ink, 0.35)}" stroke-width="0.8"/>'
+
+            sub_ang = d_from
+            for j, (sname, spct) in enumerate(subs):
+                s_from, s_to = sub_ang, sub_ang + spct * 3.6
+                # Sibling sub-slices step through lighter tints of their domain color so they stay distinguishable.
+                tint = (
+                    outer_lighten[i] if len(subs) == 1 else _lighten(inner_colors[i], 0.28 + 0.44 * j / (len(subs) - 1))
                 )
                 parts.append(
-                    f'<text font-family="{_body_font}" x="{label_x:.1f}" y="{ly + label_fs * 0.35:.1f}" '
-                    f'font-size="{label_fs}" fill="{_leader_col}" font-weight="600" '
-                    f'text-anchor="{text_anchor}" dominant-baseline="alphabetic">{label_text}</text>'
+                    f'<path d="{_arc_path(cx, cy, R_inner, R_outer, s_from, s_to)}" '
+                    f'fill="{tint}" stroke="rgba(255,255,255,1)" stroke-width="1"/>'
+                )
+                _outer_labels.append((sname, spct, s_from, s_to, i))
+                sub_ang = s_to
+            ang = d_to
+
+        # A radial outer label needs room both along the annulus and across its
+        # wedge. If any label needs a rail, put all outer labels on shared tracks.
+        outer_layout = []
+        use_leaders = _needs_leader or bool(external_domains)
+        for sname, spct, start, end, dom_idx in _outer_labels:
+            value = f"{spct:g}%"
+            label = f"{sname} {value}"
+            fs = _fs_sub_wide
+            while (
+                fs > 12
+                and _estimate_label_width_px(label, fs, bold=True, font_family=_body_font) > R_outer - R_inner - 12
+            ):
+                fs -= 0.5
+            mid_r = (R_inner + R_outer) / 2
+            if (
+                _estimate_label_width_px(label, fs, bold=True, font_family=_body_font) > R_outer - R_inner - 12
+                or math.radians(end - start) * R_inner < fs * 1.5
+            ):
+                use_leaders = True
+            outer_layout.append((label, start, end, fs, mid_r))
+        if use_leaders:
+            entries = external_domains + [(label, start, end, R_outer) for label, start, end, _, _ in outer_layout]
+            fragments, leader_bounds = _complete_leaders(
+                entries, cx, cy, R_outer, _body_font, c_ink, wrap=220 if width >= 700 else max(60.0, width * 0.2)
+            )
+            parts.extend(fragments)
+        else:
+            for label, start, end, fs, text_r in outer_layout:
+                mid = (start + end) / 2
+                tx, ty = _polar(cx, cy, text_r, mid)
+                rot = mid - 90 if 0 <= mid < 180 else mid + 90
+                parts.append(
+                    f'<text font-family="{_body_font}" x="{tx:.1f}" y="{ty:.1f}" font-size="{fs}" '
+                    f'fill="rgba(40,40,40,0.95)" font-weight="600" text-anchor="middle" dominant-baseline="middle" '
+                    f'transform="rotate({rot:.1f} {tx:.1f} {ty:.1f})">{_xesc(label)}</text>'
                 )
 
-        _emit(right_group, right_label_x, right_elbow_x, "right")
-        _emit(left_group, left_label_x, left_elbow_x, "left")
+        # 之前中心圆硬编码 fill=白，深底 palette 上 c_ink 是浅色 → 浅色文字盖在白圆上直接消失。
+        # 改用 palette.bg 让"中心空心"和页面同色（视觉上真正"挖洞"），c_ink 文字在 bg 上一定对比。
+        _center_fill = _pal.get("bg") or "rgba(255,255,255,1)"
+        parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{R_center:.1f}" fill="{_center_fill}"/>')
+        if total_value is None:
+            total_value = round(sum(d[1] for d in data))
+        # Fit the total value inside the center circle: long numbers (e.g. 1289456789) would otherwise punch through the
+        # circle AABB and trip the OOB / text-shape overlap detector.
+        _center_avail_w = 2 * R_center * 0.9
+        _total_str = _xesc(total_value)
+        _total_str, _fs_center_val_fit = _fit_center_label(
+            _total_str,
+            _center_avail_w,
+            _fs_center_val,
+            _body_font,
+            bold=True,
+            fs_floor=max(12.0, _fs_center_val * 0.5),
+        )
+        parts.append(
+            f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy - 3:.1f}" font-size="{_fs_center_val_fit}" font-weight="800" '
+            f'fill="{c_ink}" text-anchor="middle">{_total_str}</text>'
+        )
+        # total_label 单独拟合：letter-spacing .2em 会额外加宽 ~ (len-1) * 0.2 * fs。
+        # _fit_center_label 与 _estimate_label_width_px 不认 letter-spacing，直接算出的宽度
+        # 比 validator 用的 _svg_text_width 小一大截 → 通过 fit 但过不了 lint。
+        # 修法：预先在 avail_w 里扣除 letter-spacing 的估算量，再调用 fit。
+        _letter_spacing_em = 0.2
+        _label_gaps = max(len(str(total_label)) - 1, 0)
+        # 估算：假设收敛后的 fs ≈ _fs_center_lbl，先扣一次；不精确没关系，fit 内还会再缩。
+        _ls_reserve = _label_gaps * _letter_spacing_em * _fs_center_lbl
+        _center_label_avail_w = max(1.0, 2 * R_center * 0.85 - _ls_reserve)
+        _label_str, _fs_center_lbl_fit = _fit_center_label(
+            _xesc(total_label),
+            _center_label_avail_w,
+            _fs_center_lbl,
+            _body_font,
+            bold=True,
+            fs_floor=11.0,
+        )
+        parts.append(
+            f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy + _fs_center_val_fit * 0.75:.1f}" font-size="{_fs_center_lbl_fit}" font-weight="700" '
+            f'fill="{c_ink}" fill-opacity="0.72" text-anchor="middle" letter-spacing=".2em">{_label_str}</text>'
+        )
 
-    # ---- 中心空心圆 + 总数 ----
-    # 之前中心圆硬编码 fill=白，深底 palette 上 c_ink 是浅色 → 浅色文字盖在白圆上直接消失。
-    # 改用 palette.bg 让"中心空心"和页面同色（视觉上真正"挖洞"），c_ink 文字在 bg 上一定对比。
-    _center_fill = _pal.get("bg") or "rgba(255,255,255,1)"
-    parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{R_center:.1f}" fill="{_center_fill}"/>')
-    if total_value is None:
-        total_value = int(round(sum(d[1] for d in data)))
-    # Fit the total value inside the center circle: long numbers (e.g. 1289456789)
-    # would otherwise punch through the circle AABB and trip the OOB / text-shape
-    # overlap detector. Use `_fit_center_label` for numeric-aware abbreviation
-    # (1289456789 -> "1.29B") + fs shrink to fs_floor.
-    # Available width: use the chord at ±fs*0.4 from cy (roughly the text's
-    # vertical extent), which is slightly less than 2*R_center. Take 90% of the
-    # inscribed diameter as a safety margin so the text stays clear of the ring.
-    _center_avail_w = 2 * R_center * 0.9
-    _total_str = _xesc(total_value)
-    _total_str, _fs_center_val_fit = _fit_center_label(
-        _total_str,
-        _center_avail_w,
-        _fs_center_val,
-        _body_font,
-        bold=True,
-        fs_floor=max(12.0, _fs_center_val * 0.5),
+        defs_str = f"<defs>{''.join(defs_parts)}</defs>" if defs_parts else ""
+        # 顶部标题栏（可选，向 y 负方向扩）
+        c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
+        _title_block, _title_h = _render_title_block(
+            x_left=0,
+            anchor_y=-6,
+            width=width,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            subtitle_font_size=11,
+            figure_font_size=11,
+            # 用 palette 解析的 c_ink（深底时是浅色），不是模块级 _INK（恒为深）
+            ink=c_ink,
+            muted=c_muted,
+            body_font=_body_font,
+            heading_font=_head_font,
+        )
+        body = defs_str + _title_block + "".join(parts)
+        pad = 10.0
+        vb_y = min(-pad - _title_h if _title_block else cy - R_outer - pad, leader_bounds[1] - pad)
+        # viewBox 底部按实际内容收敛：donut 只用到 cy±R_outer；height 参数只是给
+        # cx/cy/R_outer 的坐标基准，如果照原来的 vb_h=height+2*pad 会在 donut 下方
+        # 留出 height/2 - (cy + R_outer) + pad 的空白（medium 4 domain + leader 布局
+        # 下 R_outer=240，height=720，就是 ~130px 底部空白）。改用 cy + R_outer +
+        # 少量 margin 作为内容底界，收窄 viewBox。
+        _content_bot = max(cy + R_outer, leader_bounds[3]) + pad
+        vb_h = _content_bot - vb_y
+        _x0 = min(0.0, leader_bounds[0])
+        vb_x, vb_w = _x0 - pad, max(leader_bounds[2], _x0 + width) - _x0 + 2 * pad
+        _over = max(vb_w - width - 2 * pad, vb_h - height - 2 * pad)
+        if _over <= 1 or R_outer <= 40:
+            break
+        R_outer = max(40.0, R_outer - _over / 2 - 0.5)
+    _svg_result = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb_x:.1f} {vb_y:.1f} {vb_w:.1f} {vb_h:.1f}">{body}</svg>'
     )
-    parts.append(
-        f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy - 3:.1f}" font-size="{_fs_center_val_fit}" font-weight="800" '
-        f'fill="{c_ink}" text-anchor="middle">{_total_str}</text>'
-    )
-    # total_label 单独拟合：letter-spacing .2em 会额外加宽 ~ (len-1) * 0.2 * fs。
-    # _fit_center_label 与 _estimate_label_width_px 不认 letter-spacing，直接算出的宽度
-    # 比 validator 用的 _svg_text_width 小一大截 → 通过 fit 但过不了 lint。
-    # 修法：预先在 avail_w 里扣除 letter-spacing 的估算量，再调用 fit。
-    _letter_spacing_em = 0.2
-    _label_gaps = max(len(str(total_label)) - 1, 0)
-    # 估算：假设收敛后的 fs ≈ _fs_center_lbl，先扣一次；不精确没关系，fit 内还会再缩。
-    _ls_reserve = _label_gaps * _letter_spacing_em * _fs_center_lbl
-    _center_label_avail_w = max(1.0, 2 * R_center * 0.85 - _ls_reserve)
-    _label_str, _fs_center_lbl_fit = _fit_center_label(
-        _xesc(total_label),
-        _center_label_avail_w,
-        _fs_center_lbl,
-        _body_font,
-        bold=True,
-        fs_floor=8.0,
-    )
-    parts.append(
-        f'<text font-family="{_body_font}" x="{cx:.1f}" y="{cy + _fs_center_val_fit * 0.75:.1f}" font-size="{_fs_center_lbl_fit}" font-weight="700" '
-        f'fill="{c_muted}" text-anchor="middle" letter-spacing=".2em">{_label_str}</text>'
-    )
-
-    defs_str = f"<defs>{''.join(defs_parts)}</defs>" if defs_parts else ""
-    # 顶部标题栏（可选，向 y 负方向扩）
-    c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
-    _title_block, _title_h = _render_title_block(
-        x_left=0,
-        anchor_y=-6,
-        width=width,
-        title=title,
-        subtitle=subtitle,
-        figure_label=figure_label,
-        # 用 palette 解析的 c_ink（深底时是浅色），不是模块级 _INK（恒为深）
-        ink=c_ink,
-        muted=c_muted,
-        body_font=_body_font,
-        heading_font=_head_font,
-    )
-    body = defs_str + _title_block + "".join(parts)
-    pad = 10.0
-    vb_y = -pad - _title_h
-    # viewBox 底部按实际内容收敛：donut 只用到 cy±R_outer；height 参数只是给
-    # cx/cy/R_outer 的坐标基准，如果照原来的 vb_h=height+2*pad 会在 donut 下方
-    # 留出 height/2 - (cy + R_outer) + pad 的空白（medium 4 domain + leader 布局
-    # 下 R_outer=240，height=720，就是 ~130px 底部空白）。改用 cy + R_outer +
-    # 少量 margin 作为内容底界，收窄 viewBox。
-    _content_bot = cy + R_outer + pad
-    vb_h = _content_bot - vb_y
-    _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{-pad:.1f} {vb_y:.1f} {width + 2 * pad:.1f} {vb_h:.1f}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)

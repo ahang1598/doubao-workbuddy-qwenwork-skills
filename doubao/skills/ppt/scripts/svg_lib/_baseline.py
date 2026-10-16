@@ -1,11 +1,5 @@
-"""svg_lib/_baseline.py
-
-Baseline boxplot & violin generator, extracted from legacy
+"""Baseline boxplot & violin generator, extracted from legacy
 gen_svg_charts.py (v1) as a self-contained internal module.
-
-Consumers:
-  - svg_lib.charts.boxplot
-  - svg_lib.charts.violin
 """
 
 #!/usr/bin/env python3
@@ -65,10 +59,7 @@ embed 尺寸：SVG 内部 viewBox 由生成器决定（见 chart_help 里各图�
       想图占满整页 → embed 用大尺寸；想「左图右字」→ embed 用小尺寸（如 480×275、640×360）+ 旁边放 <shape type="text">。
 """
 import math
-import random
-import json
-import argparse
-from typing import List, Sequence
+from typing import Sequence
 
 # 默认配色（中性色，供 recolor 二次染色）
 _INK = "rgba(28,28,26,1.0)"
@@ -79,9 +70,7 @@ _INK1 = "rgba(28,28,26,0.12)"
 _ACC = "rgba(163,88,50,1.0)"
 
 
-# ============================================================
 # 统一 palette 支持（所有 18 张图共用）
-# ============================================================
 # palette 参数接受：
 #   - None: 用默认硬编码色（等价于 "archive_ink" 或未指定）
 #   - str:  从 svg_palettes.PALETTES 查表（如 "burgundy_analyst"）
@@ -103,10 +92,7 @@ def _rgba_with_alpha(rgba_str, alpha):
 
 
 def _resolve_palette(palette):
-    """把 palette 参数（None/str/dict）解析为核心配色 dict。
-
-    返回 dict 至少包含：ink, accent, secondary, bg, muted, ink6/4/2/1/12（派生）。
-    """
+    """把 palette 参数（None/str/dict）解析为核心配色 dict。"""
     if palette is None:
         pl = {}
     elif isinstance(palette, dict):
@@ -137,7 +123,6 @@ def _resolve_palette(palette):
         "secondary": secondary,
         "bg": bg,
         "muted": muted,
-        # 派生（沿用旧命名，方便老函数不改逻辑）
         "ink6": _rgba_with_alpha(ink, 0.6),
         "ink4": _rgba_with_alpha(ink, 0.4),
         "ink2": _rgba_with_alpha(ink, 0.2),
@@ -153,9 +138,7 @@ def _resolve_palette(palette):
 
 
 def _prepend_bg_if_dark(svg_str, pal):
-    """[已停用] chart SVG 保持透明，由 slide 层承接 palette.bg 作为整页背景。
-    保留函数签名为兼容之前的 18 处 return _prepend_bg_if_dark(...) 调用。
-    """
+    """[已停用] chart SVG 保持透明，由 slide 层承接 palette.bg 作为整页背景。保留函数签名为兼容之前的 18 处 return _prepend_bg_if_dark(...) 调用。"""
     return svg_str
 
 
@@ -185,18 +168,7 @@ def _hls_to_rgba(h, l, s, alpha=1.0):
 
 
 def _derive_series_colors(pal, n, saturation_hint=None, lightness_hint=None, mode="distinct"):
-    """基于 palette 的 accent/secondary/ink 派生 n 个系列色（同色系家族），
-    可指定 saturation_hint / lightness_hint 让派生色适应深底/浅底 palette。
-
-    优先级：
-    1) 若 palette 定义了 `series`（list of rgba），且长度 ≥ n，直接取前 n 个
-    2) 若定义了 `series` 但长度不够，循环补齐 + 用 accent 补 accent 位置
-    3) 否则：从 accent 出发按 mode 派生 n 个色
-       - mode="distinct"（默认）：黄金角 137.5° 大步 hue-shift，相邻互斥。
-         用于 donut / sankey / marimekko 等类别图。
-       - mode="gradient"：小步 hue-shift + 明度渐变，相邻色接近，
-         从冷端渐变到暖端。用于 ridge 等**相邻组有次序**的图。
-    """
+    """基于 palette 的 accent/secondary/ink 派生 n 个系列色（同色系家族），可指定 saturation_hint / lightness_hint 让派生色适应深底/浅底 palette。"""
     if not pal:
         pal = {}
     series = pal.get("series")
@@ -204,12 +176,10 @@ def _derive_series_colors(pal, n, saturation_hint=None, lightness_hint=None, mod
         return list(series[:n])
     if series and len(series) < n:
         base_list = list(series)
-        # 循环补齐
         while len(base_list) < n:
             base_list.append(series[len(base_list) % len(series)])
         return base_list
 
-    # 从 accent 出发做 hue-shift
     accent = pal.get("accent", _ACC)
     ar, ag, ab = _rgb_tuple(accent)
     ah, al, asat = _rgb_to_hls(ar, ag, ab)
@@ -258,11 +228,7 @@ def _xesc(s) -> str:
 
 
 def _resolve_font(font_family: str = None) -> tuple[str, str]:
-    """把 font_family 参数解析为 (body_font, heading_font) 二元组。
-
-    - None（默认）：保留原设计——body 用 Inter（正文/标签），heading 用 Georgia（大标题/大数字）
-    - str：body 与 heading 都用同一字体，全局统一
-    """
+    """把 font_family 参数解析为 (body_font, heading_font) 二元组。"""
     if font_family is None or font_family == "":
         return ("Inter, sans-serif", "Georgia, serif")
     return (font_family, font_family)
@@ -288,21 +254,7 @@ def make_boxplot(
     font_family: str = None,
     palette=None,
 ) -> str:
-    """
-    箱线图（Dandelion academic 风格）。
-
-    groups: [(name, [values...]), ...] N 组样本（每组建议 ≥ 5 个）
-    y_unit: Y 轴刻度后缀（"%" / "ms" / "$" 等）
-    highlight_group: 组名，该组箱体额外描边加粗
-    y_min / y_max: 显式 Y 轴范围；缺省用数据 min/max 外扩 10%
-    title/subtitle/figure_label: 顶部
-    y_title: Y 轴竖排标题
-    note/source: 底部脚注
-
-    show_legend: 顶部右侧图例（Q1-Q3/Median/Mean/Whisker/Outlier 4 项）
-    show_jitter: 抖动散点背景层
-    show_mean: 均值空心圆
-    """
+    """箱线图（Dandelion academic 风格）。"""
     if not groups:
         raise ValueError("boxplot: at least one group required")
     for i, g in enumerate(groups):
@@ -328,7 +280,6 @@ def make_boxplot(
     # 派生每组类别色（用 palette.series 或 accent 派生）
     series_colors = _derive_series_colors(_pal, len(groups), mode="distinct")
 
-    # 计算 stats
     def quantile(sxs, q):
         n = len(sxs)
         if n == 0:
@@ -369,7 +320,6 @@ def make_boxplot(
         )
         all_values.extend(xs)
 
-    # Y 范围
     d_min = min(all_values)
     d_max = max(all_values)
     span = d_max - d_min
@@ -390,7 +340,6 @@ def make_boxplot(
     if height is None:
         height = 620
     n_groups = len(groups)
-    # ---- 字号自适应（先算，因为下方 MARGIN_B 需要 fs_group 决定底部 3 行 label 高度）----
     from ._common import _dist_font_sizes
 
     _fs = _dist_font_sizes(width, height, n_groups)
@@ -476,7 +425,6 @@ def make_boxplot(
             f'fill="{c_muted}" letter-spacing=".04em">{_xesc(note_txt)}</text>'
         )
 
-    # Y 网格 + 刻度（nice-number）
     def _nice_step(span, target=6):
         raw = span / target
         mag = 10 ** math.floor(math.log10(max(raw, 1e-9)))
@@ -511,7 +459,6 @@ def make_boxplot(
             f"{_xesc(label)}</text>"
         )
 
-    # Y 轴 title
     if y_title:
         ytx = plot_x - 70
         yty = plot_y + plot_h / 2
@@ -521,7 +468,6 @@ def make_boxplot(
             f'fill="{_INK}" font-weight="500">{_xesc(y_title)}</text>'
         )
 
-    # 每个箱
     import random as _rand
 
     _rand_seed = _rand.Random(4)  # 稳定 jitter
@@ -530,7 +476,6 @@ def make_boxplot(
         x_left = cx - box_w / 2
         x_right = cx + box_w / 2
         col = series_colors[i]
-        # 半透明填色
         r, g, b = _rgb_tuple(col)
         col_fill = f"rgba({r},{g},{b},0.22)"
 
@@ -606,7 +551,6 @@ def make_boxplot(
             f'font-style="italic">Mdn {s["q2"]:.1f}</text>'
         )
 
-    # X 轴基线
     parts.append(
         f'<line x1="{plot_x}" y1="{plot_y + plot_h}" x2="{plot_x + plot_w}" y2="{plot_y + plot_h}" '
         f'stroke="{_INK}" stroke-width="1"/>'
@@ -673,7 +617,6 @@ def make_boxplot(
                 parts.append(f'<circle cx="{sx}" cy="{sy}" r="2.4" fill="none" stroke="{_INK}" stroke-width="1"/>')
             x_cur = x_sym - max(16.0, fs_legend * 1.0)
 
-    # 底部脚注
     if note or source:
         # 分割线与 note baseline 位置随 X 标签末行动态计算，避免 "Mdn X.XXs" 与 "Notes." 重叠
         foot_y = _foot_note_y
@@ -708,32 +651,27 @@ def make_boxplot(
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 7) Sankey 桑基流
-# ==============================================================
 
 
 def _fmt_axis(v, span):
-    """按数据 span 智能格式化数值：整数直接显示；否则按 span 大小选择合适小数位。
-    span >= 100 → 整数；span >= 10 → 1 位；span >= 1 → 2 位；否则 3 位。带千分位分隔符。
-    """
+    """按数据 span 智能格式化数值：整数直接显示；否则按 span 大小选择合适小数位。span >= 100 → 整数；span >= 10 → 1 位；span >= 1 → 2 位；否则 3 位。带千分位分隔符。"""
+    sep = "," if abs(v) >= 10000 else ""  # 年份等 4 位数不加千分位
     if abs(v - round(v)) < 1e-9:
         try:
-            return f"{int(round(v)):,}"
+            return f"{int(round(v)):{sep}}"
         except (OverflowError, ValueError):
             return str(int(round(v)))
     if span >= 100:
-        return f"{int(round(v)):,}"
+        return f"{int(round(v)):{sep}}"
     if span >= 10:
-        return f"{v:,.1f}"
+        return f"{v:{sep}.1f}"
     if span >= 1:
-        return f"{v:,.2f}"
-    return f"{v:,.3f}"
+        return f"{v:{sep}.2f}"
+    return f"{v:{sep}.3f}"
 
 
-# ==============================================================
 # 9) Funnel Classic 经典梯形漏斗
-# ==============================================================
 
 
 def make_violin(
@@ -760,27 +698,7 @@ def make_violin(
     font_family: str = None,
     palette=None,
 ) -> str:
-    """
-    小提琴分布图（Academic / Publication Style）：
-      - 米白纸底 + 稀疏虚线网格
-      - KDE 密度轮廓 + 内嵌 mini boxplot（Q1-Q3 + 中位数 + whiskers）
-      - 均值空心圆 + outlier 空心圆
-      - 顶部 Title / Subtitle / FIGURE caption
-      - 底部 legend（KDE / Q1-Q3 / mean / whiskers / outlier）+ Notes + Source
-      - X 轴组名 + n / 中位数副标签
-
-    参数：
-      groups: [(name, [values...]), ...] N 组；每组建议 20-500 数值
-      y_unit: Y 轴刻度后缀。若为 "%"，Y 轴 clamp 到 [0, 100]
-      highlight_group: 组名，用 accent 高亮
-      bandwidth: KDE 带宽；None 自动 Silverman
-      y_min/y_max: Y 轴范围
-      title / subtitle / figure_label / figure_note: 顶部标题
-      y_axis_label: Y 轴标题（垂直排布）
-      note / source: 底部脚注
-      per_group_n: [(n1,n2,...)]，若不传按数据长度自动
-      palette: 配色
-    """
+    """小提琴分布图（Academic / Publication Style）."""
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
     _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
@@ -826,16 +744,13 @@ def make_violin(
         v_max_a = y_max
     span = v_max_a - v_min_a
 
-    # 派生每组色（distinct 家族）
     series_cols = _derive_series_colors(_pal, N, mode="distinct")
 
-    # ---- 画布布局 ----
     # height 缺省 None：按内容自适应（宽 1200 时约 620px 高，比原 720 省 100px 底部留白）
     if height is None:
         height = 620.0
     W, H = float(width), float(height)
 
-    # ---- 字号自适应（先算：MARGIN_B 需要 fs_group 决定底部 3 行 label 高度）----
     # SVG 字号相对 viewBox。slide 400px embed 缩放后视觉字号会缩到 1/3，
     # 所以基准要拉到短边 2.4%（W=1200,H=620 → base ≈ 14.9pt），保证可读。
     from ._common import _dist_font_sizes
@@ -848,9 +763,7 @@ def make_violin(
     fs_yaxis = _fs["yaxis"]
     fs_group = _fs["group"]
     fs_group_n = _fs["group_n"]
-    fs_side_hdr = _fs["group_n"]
     fs_side_lg = _fs["legend"]
-    fs_ins_ttl = _fs["group_n"]
     fs_foot = _fs["foot"]
 
     MARGIN_L = 110.0
@@ -886,11 +799,8 @@ def make_violin(
         return plot_bot - (v - v_min_a) / span * plot_h
 
     parts = []
-    # 页面背景
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H:.1f}" fill="{paper}"/>')
 
-    # ---- 标题 ----
-    # 顶部标题 y 位置跟字号联动
     _y_title = 20 + fs_title
     _y_subtitle = _y_title + fs_title * 0.55 + fs_subtitle
     _y_line = _y_subtitle + 12
@@ -926,7 +836,6 @@ def make_violin(
             f"{_xesc(figure_note)}</text>"
         )
 
-    # ---- Y 轴网格 & 刻度 ----
     tick = v_min_a
     while tick <= v_max_a + 1e-6:
         y = yof(tick)
@@ -946,7 +855,6 @@ def make_violin(
         )
         tick += tick_step
 
-    # Y 轴标题（旋转）
     if y_axis_label:
         parts.append(
             f'<text x="{plot_l - 70:.1f}" y="{plot_top + plot_h / 2:.1f}" '
@@ -955,7 +863,6 @@ def make_violin(
             f'fill="{_INK}" font-weight="500">{_xesc(y_axis_label)}</text>'
         )
 
-    # ---- Gaussian KDE 工具 ----
     def gauss(u):
         return math.exp(-0.5 * u * u) / math.sqrt(2 * math.pi)
 
@@ -1030,7 +937,6 @@ def make_violin(
             )
         )
 
-    # ---- 每个 violin ----
     for i, s in enumerate(group_stats):
         cx = plot_l + (i + 0.5) * slot_w
         base_col = series_cols[i]
@@ -1050,7 +956,6 @@ def make_violin(
         d += "Z"
         parts.append(f'<path d="{d}" fill="{fill_c}" stroke="{stroke_c}" stroke-width="1.1"/>')
 
-        # 内嵌 boxplot
         if show_boxplot:
             y_hi = yof(s["hi"])
             y_lo = yof(s["lo"])
@@ -1079,7 +984,6 @@ def make_violin(
                 f'stroke="{stroke_c}" stroke-width="2" stroke-linecap="square"/>'
             )
 
-        # 均值
         if show_mean:
             y_mean = yof(s["mean"])
             parts.append(
@@ -1087,7 +991,6 @@ def make_violin(
             )
             parts.append(f'<circle cx="{cx:.1f}" cy="{y_mean:.1f}" r="0.9" fill="{_INK}"/>')
 
-        # outliers
         if show_outliers:
             import random as _rand
 
@@ -1124,13 +1027,11 @@ def make_violin(
             f'font-style="italic">Mdn {med_fmt}{y_unit}</text>'
         )
 
-    # X 轴基线
     parts.append(
         f'<line x1="{plot_l:.1f}" y1="{plot_bot:.1f}" x2="{plot_r:.1f}" y2="{plot_bot:.1f}" '
         f'stroke="{_INK}" stroke-width="1"/>'
     )
 
-    # ---- 图例 ----
     if show_legend:
         lg_y = 112
         lg_x = W - MARGIN_R
@@ -1197,7 +1098,6 @@ def make_violin(
                 sym_w = 12
             else:  # kde
                 sc = series_cols[0]
-                # 迷你 violin
                 pts_l, pts_r = [], []
                 for k in range(15):
                     t = k / 14.0
@@ -1216,7 +1116,6 @@ def make_violin(
                 sym_w = 16
             x_cur = sym_x - sym_w - max(16.0, fs_side_lg * 1.1)
 
-    # ---- 脚注 ----
     if note or source:
         # 分割线与 note baseline 位置随 X 标签末行动态计算，避免 "Mdn X.XXs" 与 "Notes." 重叠
         foot_y = _foot_note_y
@@ -1243,6 +1142,4 @@ def make_violin(
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 18) Nested Donut 双层甜甜圈（sunburst 2-level）
-# ==============================================================

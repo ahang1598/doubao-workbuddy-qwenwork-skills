@@ -7,8 +7,8 @@
 本文仅描述 `lark-cli` 的公开接口：
 
 - **返回格式**：样式读写均使用 `format=xml` 信封；查询结果位于结构化 `command_result`，不编码成 DocxXML。
-- **调用边界**：`document_id`、`format`、`read_option`、`export_option`、`command_params` 是宿主内部字段，不属于 CLI 参数。禁止据此拼装请求或直调私有接口。
-- **能力检查**：执行前运行 `docs +local-fetch --help` 或 `docs +local-update --help`；当前版本未显示的 scope、command 或 flag 视为未开放。
+- **调用边界**：只使用当前 CLI 帮助列出的参数，不拼装请求或调用私有接口。
+- **能力检查**：执行前运行 `lark-cli docs +local-fetch --help` 或 `lark-cli docs +local-update --help`；当前版本未显示的 scope、command 或 flag 视为未开放。
 
 ## 按目标读取
 
@@ -48,19 +48,19 @@ lark-cli docs +local-fetch --doc "<token>" \
 
 ## `style_update`：修改样式定义
 
-只允许样式 manifest 中的可读写 leaf；`changes` 非空，同一 property 不得重复。当前 CLI 要求显式提供 boolean `dry_run`；预检传 `dry_run=true`，提交传 `dry_run=false` 和对应 `plan_token`。先确认 `docs +local-update --help` 已显示 `style_update` 及样式 option 参数，再把以下对象作为该 option 的值传入：
+只允许修改下表列出的属性；`changes` 非空，同一 property 不得重复。预检传 `dry_run=true`，提交传 `dry_run=false` 和对应 `plan_token`。先确认 `lark-cli docs +local-update --help` 已显示 `style_update` 及样式 option 参数，再把以下对象作为该 option 的值传入：
 
 ### 当前可更新范围
 
-`property` 使用 `<scope>.<canonical-attr>`。当前共开放 59 个 R/W leaf：
+`property` 使用 `<scope>.<属性名>`，可写属性如下：
 
 | scope | 可写属性 |
 |---|---|
-| `paragraph` | `align`、`spacing-before`、`spacing-after`、`spacing-before-auto`、`spacing-after-auto`、`line-indent`、`first-line-indent`、`hanging-indent`、`line-height`、`page-break-before`、`keep-next`、`keep-lines`、`widow-control` |
-| `text` | `bold`、`italic`、`text-color`、`background-color`、`font-size`、`font-family-ascii`、`font-family-east-asia`、`font-family-h-ansi`、`font-family-cs`、`font-family-ascii-theme`、`font-family-east-asia-theme`、`font-family-h-ansi-theme`、`font-family-cs-theme`、`font-hint`、`shading-fill`、`shading-pattern`、`shading-foreground-color`、`character-scale`、`character-spacing` |
-| `table` | `align`、`border-top`、`border-right`、`border-bottom`、`border-left`、`border-inside-h`、`border-inside-v`、`cell-padding-top`、`cell-padding-right`、`cell-padding-bottom`、`cell-padding-left` |
-| `row` | `height`、`height-rule` |
-| `cell` | `background-color`、`vertical-align`、`border-top`、`border-right`、`border-bottom`、`border-left`、`border-inside-h`、`border-inside-v`、`border-tl2br`、`border-tr2bl`、`cell-padding-top`、`cell-padding-right`、`cell-padding-bottom`、`cell-padding-left` |
+| `paragraph` | `align`、`bidi`、`contextual-spacing`、`spacing-before`、`spacing-after`、`spacing-before-lines`、`spacing-after-lines`、`spacing-before-auto`、`spacing-after-auto`、`line-indent`、`right-indent`、`start-indent`、`end-indent`、`first-line-indent`、`hanging-indent`、`line-height`、`page-break-before`、`keep-next`、`keep-lines`、`widow-control`、`tabs`、`shading-fill`、`shading-pattern`、`shading-foreground-color`、`border-top`、`border-right`、`border-bottom`、`border-left`、`border-between` |
+| `text` | `bold`、`italic`、`underline`、`line-through`、`vertical-align`、`text-color`、`background-color`、`font-size`、`font-family-ascii`、`font-family-east-asia`、`font-family-h-ansi`、`font-family-cs`、`font-family-ascii-theme`、`font-family-east-asia-theme`、`font-family-h-ansi-theme`、`font-family-cs-theme`、`font-hint`、`shading-fill`、`shading-pattern`、`shading-foreground-color`、`character-scale`、`character-spacing` |
+| `table` | `width`、`align`、`shading-fill`、`shading-pattern`、`shading-foreground-color`、`indent`、`layout`、`cell-spacing`、`border-top`、`border-right`、`border-bottom`、`border-left`、`border-inside-h`、`border-inside-v`、`cell-padding-top`、`cell-padding-right`、`cell-padding-bottom`、`cell-padding-left` |
+| `row` | `height`、`height-rule`、`cant-split`、`repeat-header`、`align` |
+| `cell` | `width`、`no-wrap`、`background-color`、`vertical-align`、`border-top`、`border-right`、`border-bottom`、`border-left`、`border-inside-h`、`border-inside-v`、`border-tl2br`、`border-tr2bl`、`cell-padding-top`、`cell-padding-right`、`cell-padding-bottom`、`cell-padding-left` |
 
 style type 限制：
 
@@ -72,19 +72,22 @@ style type 限制：
 值域与成组规则：
 
 - `action=set` 必须带 `value`；`action=clear` 不带 `value`，只删除该 style 的 direct 声明并恢复继承。一个请求内 property 必须唯一。
-- paragraph/text boolean：`spacing-before-auto`、`spacing-after-auto`、`page-break-before`、`keep-next`、`keep-lines`、`widow-control`、`bold`、`italic`。
-- `paragraph.align=left|center|right|justify|distribute`；`table.align=left|center|right`；`cell.vertical-align=top|middle|bottom`。
-- paragraph spacing/indent、row height 使用非负 `<n>pt`；`text.character-spacing` 可使用负 `<n>pt`；`text.font-size` 必须是可量化为正 half-point 的 `<n>pt`。
+- boolean：paragraph 的 `bidi/contextual-spacing/spacing-*-auto/page-break-before/keep-next/keep-lines/widow-control`、text 的 `bold/italic`、row 的 `cant-split/repeat-header`、cell 的 `no-wrap`。
+- `paragraph.align=left|center|right|justify|distribute`；`table/row.align=left|center|right`；`cell.vertical-align=top|middle|bottom`。
+- paragraph 物理 spacing/indent、table `indent/cell-spacing`、row height 使用非负 `<n>pt`；`start/end-indent` 写入仅接受 pt，`spacing-before/after-lines` 使用非负无单位行数；`text.character-spacing` 可为负 pt；`text.font-size` 必须是可量化为正 half-point 的 pt。
 - `paragraph.line-height` 使用非负倍率字符串，或 `exact <n>pt` / `at-least <n>pt`。`first-line-indent` 与 `hanging-indent` 不得在同一请求同时出现。
+- `paragraph.tabs` 使用按 position 升序的非空数组，整体替换本样式自有 stop：`{position:"<n>pt",align:"left|center|right|decimal|bar|clear",leader?:"none|dot|hyphen|underscore|middleDot"}`；position 非负、量化后唯一，`align=clear` 不带 leader。清除自有集合用 change 的 `action=clear`。
 - `row.height` 与 `row.height-rule=auto|at-least|exact` 设置时必须成对出现；clear 任一项会同时清除两项，不能一项 set、另一项 clear。
+- `text.line-through=none|single|double`、`text.vertical-align=baseline|superscript|subscript`；`text.underline` 为 `none|single|double|thick|dotted|dottedHeavy|dash|dashedHeavy|dashLong|dashLongHeavy|dotDash|dashDotHeavy|dotDotDash|dashDotDotHeavy|wave|wavyHeavy|wavyDouble`，不接受有损的 `words`，也不修改只读的 underline color。
+- `table/cell.width` 接受正 `<n>pt`、`0..100%`、`auto|nil`；`table.layout=fixed|autofit`。
 - 四个 direct font family 必须为非空字符串；四个 theme font slot 只接受 `majorEastAsia|majorBidi|majorAscii|majorHAnsi|minorEastAsia|minorBidi|minorAscii|minorHAnsi`；`font-hint=default|eastAsia|cs`。
 - `text-color`、shading color 和 `cell.background-color` 使用不透明 `rgb(R,G,B)`；`text.background-color` 仅接受 Word 可保存的 16 色：`rgb(0,0,0)`、`rgb(0,0,255)`、`rgb(0,255,255)`、`rgb(0,255,0)`、`rgb(255,0,255)`、`rgb(255,0,0)`、`rgb(255,255,0)`、`rgb(255,255,255)`、`rgb(0,0,128)`、`rgb(0,128,128)`、`rgb(0,128,0)`、`rgb(128,0,128)`、`rgb(128,0,0)`、`rgb(128,128,0)`、`rgb(128,128,128)`、`rgb(192,192,192)`。
-- `text.shading-pattern` 只接受 `clear|solid|pct5|pct10|pct20|pct25|pct30|pct40|pct50|pct60|pct70|pct75|pct80|pct90|diagStripe|reverseDiagStripe|horzStripe|vertStripe|thinDiagStripe|thinReverseDiagStripe|thinHorzStripe|thinVertStripe`；`character-scale` 为 `1%..999%`。
+- paragraph/text/table 的 `shading-pattern` 接受 `nil|clear|solid`、`pct<n>`（0..100）及 `diagCross|diagStripe|reverseDiagStripe|horzCross|horzStripe|vertCross|vertStripe|thinDiagCross|thinDiagStripe|thinReverseDiagStripe|thinHorzCross|thinHorzStripe|thinVertStripe`；`character-scale` 为 `1%..999%`。
 - padding 使用 `auto` 或非负 `<n>pt`。border 使用 `none`，或 `style [<n>pt] [rgb(R,G,B)|auto]`，token 顺序不可交换；style 只接受 `single|thick|double|dotted|dashed|dotDash|dotDotDash|triple|thinThickSmallGap|thickThinSmallGap|thinThickThinSmallGap|thinThickMediumGap|thickThinMediumGap|thinThickThinMediumGap|thinThickLargeGap|thickThinLargeGap|thinThickThinLargeGap|wave|doubleWave|dashSmallGap|dashDotStroked|threeDEmboss|threeDEngrave|outset|inset`。
 
 明确不可更新：
 
-- `text.underline-color` 仅可读；underline/strike 开关、通用 `font-family`、run border、table width/background、paragraph border/shading、numbering、tabs、theme 定义均不在当前写入范围。
+- `text.underline-color` 仅可读；通用 `font-family`、run border、`table.background-color`、numbering、theme 定义不在当前写入范围。`text.underline` 与 `line-through` 按上面的枚举值设置。
 - `conditional_formats.*` 当前整体关闭；不能因 table style 支持五个普通 scope 就推断条件区域可写。
 - 不支持创建/删除 style，修改 style ID/type、`based_on/next/link`、behavior、default style map、computed 或 provenance。
 
@@ -108,9 +111,10 @@ style type 限制：
 
 ## `style_apply`：设置或清除段落样式绑定
 
-目标固定为单个 block；当前 CLI 要求显式提供 `target.kind="block"`、`style_type="paragraph"` 和 boolean `dry_run`；预检传 `true`，提交传 `false` 和预检返回的 `plan_token`。`set` 需要 `style_id` 和 `expected_target_effective_fingerprint`；`clear` 需要 `expected_fallback_effective_fingerprint`，且禁止携带 set 专属字段。两者都必须携带 `expected_block_style_fingerprint`。
+目标固定为单个 block；调用时显式传 `target.kind="block"`、`style_type="paragraph"` 和 `dry_run`，提交时设 `dry_run=false` 并带预检返回的 `plan_token`。`set` 需要 `style_id` 和 `expected_target_effective_fingerprint`；`clear` 需要 `expected_fallback_effective_fingerprint`，且禁止携带 set 专属字段。两者都必须携带 `expected_block_style_fingerprint`。
 
-- 目标仅限当前文档中可达的单个正文文本段落、Heading 或列表项；不支持批量 target、table/numbering style apply 或 character exact-range apply。
+- 目标限当前文档中可达的单个正文或 Header/Footer 文本段落、Heading、列表项；不支持批量 target、table/numbering style apply 或 character exact-range apply。修订模式只支持主 Story。
+- `style_usage` / `block_styles` 对 Header/Footer 返回 `story_id`。Header/Footer 普通写入的 target 必须携带该 `story_id`，正文 target 禁止携带；共享 story 的样式绑定会自然作用到所有 placements。
 - `set` 只能绑定已有、`origin=document` 的 paragraph style；`clear` 只删除显式 paragraph binding，并回退到 default paragraph style 或无样式。
 - 两种操作都保留文本、直接格式、paragraph mark 和 numbering。直接格式可能遮蔽样式变化，此时 dry-run 返回 `DIRECT_FORMATTING_OVERRIDES_STYLE` 和 `visible_change_expected=false`。
 - 非 no-op 操作遇到 character-style text range 的 effective projection 不完整时返回 `STYLE_RESOLUTION_INCOMPLETE`，不会带着不完整计算提交。
@@ -127,11 +131,13 @@ style type 限制：
 }
 ```
 
+Header/Footer 示例只改变 target：`{"kind":"block","block_id":"<block_id>","story_id":"<story_id_from_fetch>"}`。不得用当前激活页眉、任意 placement 或首个 block ID 代替。
+
 调用时使用 `lark-cli docs +local-update --doc "<token>" --revision-id "<revision_id_from_same_fetch>" --command style_apply --style-option @style-option.json`。
 
 帮助未显示 `--revision-id` 或样式 option 时停止。dry-run 的 binding、effective diff、fingerprints 和 plan token 位于 `data.command_result`。
 
-样式命令不带 XML `--content`。option 文件只包含上面列出的样式业务字段，不写 `document_id`、`format`、`revision_id`、`command` 或其他内部路由字段；必需的 revision ID 只能通过顶层 `--revision-id` 传入。
+样式命令不带 XML `--content`。option 文件只放样式业务字段；revision ID 仅通过顶层 `--revision-id` 传入。
 
 ## 提交与持久化边界（必须遵守）
 

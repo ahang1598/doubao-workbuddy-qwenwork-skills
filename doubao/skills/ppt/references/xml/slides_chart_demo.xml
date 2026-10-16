@@ -234,7 +234,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>01 / 08</p>
+          <p>01 / 11</p>
         </content>
       </shape>
     </data>
@@ -460,7 +460,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>02 / 08</p>
+          <p>02 / 11</p>
         </content>
       </shape>
     </data>
@@ -677,7 +677,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>03 / 08</p>
+          <p>03 / 11</p>
         </content>
       </shape>
     </data>
@@ -827,7 +827,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>04 / 08</p>
+          <p>04 / 11</p>
         </content>
       </shape>
     </data>
@@ -1051,7 +1051,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>05 / 08</p>
+          <p>05 / 11</p>
         </content>
       </shape>
     </data>
@@ -1267,7 +1267,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>06 / 08</p>
+          <p>06 / 11</p>
         </content>
       </shape>
     </data>
@@ -1423,7 +1423,7 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>07 / 08</p>
+          <p>07 / 11</p>
         </content>
       </shape>
     </data>
@@ -1643,7 +1643,483 @@
       </shape>
       <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
         <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
-          <p>08 / 08</p>
+          <p>08 / 11</p>
+        </content>
+      </shape>
+    </data>
+    <note>
+      <content/>
+    </note>
+  </slide>
+  <slide>
+    <style>
+      <fill>
+        <fillColor color="rgba(248, 249, 251, 1)"/>
+      </fill>
+    </style>
+    <data>
+      <shape width="960" height="72" topLeftX="0" topLeftY="0" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(15, 30, 58, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="8" height="72" topLeftX="0" topLeftY="0" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 129, 54, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="700" height="30" topLeftX="32" topLeftY="14" type="text">
+        <content textType="headline" fontSize="22" fontFamily="思源宋体" color="rgba(255, 255, 255, 1)" bold="true">
+          <p>气泡图 · Bubble Chart</p>
+        </content>
+      </shape>
+      <shape width="700" height="20" topLeftX="32" topLeftY="46" type="text">
+        <content textType="caption" fontSize="12" fontFamily="思源宋体" color="rgba(180, 192, 210, 1)">
+          <p>增速 &amp; 毛利率 &amp; 营收规模三维视图 · X / Y / SIZE</p>
+        </content>
+      </shape>
+      <shape width="160" height="22" topLeftX="770" topLeftY="26" type="text">
+        <content textType="caption" fontSize="11" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)" textAlign="right">
+          <p>SECTION 09 / BUBBLE</p>
+        </content>
+      </shape>
+      <shape width="576" height="400" topLeftX="32" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(255, 255, 255, 1)"/>
+        </fill>
+        <border color="rgba(226, 232, 240, 1)" width="1"/>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="576" height="32" topLeftX="32" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 244, 249, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="560" height="22" topLeftX="44" topLeftY="98" type="text">
+        <content fontSize="12" fontFamily="思源宋体" color="rgba(15, 30, 58, 1)" bold="true">
+          <p>产品线增长-盈利-规模矩阵</p>
+        </content>
+      </shape>
+      <chart width="556" height="350" topLeftX="42" topLeftY="132">
+        <chartPlotArea>
+          <chartPlot type="bubble">
+            <chartExtra>
+              <chartBubble/>
+            </chartExtra>
+          </chartPlot>
+          <chartAxes>
+            <chartAxis type="x" min="0">
+              <chartTitle fontSize="10" color="rgba(89, 89, 89, 1)">市场增速 %</chartTitle>
+              <chartGridLine color="rgb(226, 232, 240)"/>
+              <chartLabel fontSize="10"/>
+            </chartAxis>
+            <chartAxis type="y" position="left" min="0">
+              <chartTitle fontSize="10" color="rgba(89, 89, 89, 1)">毛利率 %</chartTitle>
+              <chartGridLine color="rgb(226, 232, 240)"/>
+              <chartLabel fontSize="10"/>
+            </chartAxis>
+          </chartAxes>
+        </chartPlotArea>
+        <chartLegend position="bottom" fontSize="11"/>
+        <chartData>
+          <dim1>
+            <chartField name="产品" valueType="string">手机,平板,笔电,穿戴,配件</chartField>
+          </dim1>
+          <dim2>
+            <chartField name="市场增速" valueType="number" role="x">12,8,5,28,18</chartField>
+            <chartField name="毛利率" valueType="number" role="y">32,28,22,45,52</chartField>
+            <chartField name="营收" valueType="number" role="size">296,120,90,68,42</chartField>
+            <chartField name="品类" valueType="string" role="group">硬件,硬件,硬件,新兴,新兴</chartField>
+          </dim2>
+        </chartData>
+        <chartTitle fontSize="12" color="rgba(15, 30, 58, 1)" bold="true">气泡大小 = 营收规模（亿美元）</chartTitle>
+        <chartStyle>
+          <chartBackground color="rgba(0, 0, 0, 0)"/>
+          <chartBorder color="rgb(222, 224, 227)" width="0"/>
+          <chartColorTheme>
+            <color value="rgb(13, 148, 136)"/>
+            <color value="rgb(234, 88, 12)"/>
+          </chartColorTheme>
+        </chartStyle>
+      </chart>
+      <shape width="304" height="400" topLeftX="624" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(15, 30, 58, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="304" height="4" topLeftX="624" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 129, 54, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="264" height="26" topLeftX="644" topLeftY="118" type="text">
+        <content textType="caption" fontSize="12" fontFamily="思源宋体" color="rgba(240, 129, 54, 1)" bold="true">
+          <p>KEY TAKEAWAY</p>
+        </content>
+      </shape>
+      <shape width="264" height="90" topLeftX="644" topLeftY="146" type="text">
+        <content textType="headline" fontSize="18" fontFamily="思源宋体" color="rgba(255, 255, 255, 1)" bold="true">
+          <p>穿戴与配件是高增长高毛利象限</p>
+        </content>
+      </shape>
+      <shape width="264" height="80" topLeftX="644" topLeftY="248" type="text">
+        <content fontSize="13" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)">
+          <p>穿戴增速 28%、毛利率 45%，配件毛利率 52%，两条新兴线兼具增长与盈利弹性。</p>
+        </content>
+      </shape>
+      <line startX="644" startY="352" endX="720.0065786626394" endY="352">
+        <border color="rgba(240, 129, 54, 1)"/>
+      </line>
+      <shape width="264" height="26" topLeftX="644" topLeftY="360" type="text">
+        <content textType="caption" fontSize="11" fontFamily="思源宋体" color="rgba(240, 129, 54, 1)" bold="true">
+          <p>WHAT TO WATCH</p>
+        </content>
+      </shape>
+      <shape width="264" height="90" topLeftX="644" topLeftY="386" type="text">
+        <content fontSize="12" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)">
+          <p>· 笔电增速 5% 处于低速区</p>
+          <p>· 手机规模大但毛利中等</p>
+          <p>· 资源向新兴线倾斜</p>
+        </content>
+      </shape>
+      <line startX="32" startY="506" endX="928.0005580355405" endY="506">
+        <border color="rgba(226, 232, 240, 1)" width="1"/>
+      </line>
+      <shape width="500" height="18" topLeftX="32" topLeftY="512" type="text">
+        <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)">
+          <p>Source: Consulting Insights Research · 数据仅用于示意</p>
+        </content>
+      </shape>
+      <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
+        <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
+          <p>09 / 11</p>
+        </content>
+      </shape>
+    </data>
+    <note>
+      <content/>
+    </note>
+  </slide>
+  <slide>
+    <style>
+      <fill>
+        <fillColor color="rgba(248, 249, 251, 1)"/>
+      </fill>
+    </style>
+    <data>
+      <shape width="960" height="72" topLeftX="0" topLeftY="0" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(15, 30, 58, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="8" height="72" topLeftX="0" topLeftY="0" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 129, 54, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="700" height="30" topLeftX="32" topLeftY="14" type="text">
+        <content textType="headline" fontSize="22" fontFamily="思源宋体" color="rgba(255, 255, 255, 1)" bold="true">
+          <p>瀑布图 · Waterfall Chart</p>
+        </content>
+      </shape>
+      <shape width="700" height="20" topLeftX="32" topLeftY="46" type="text">
+        <content textType="caption" fontSize="12" fontFamily="思源宋体" color="rgba(180, 192, 210, 1)">
+          <p>营收到净利润的逐项增减拆解 · INCREASE / DECREASE / TOTAL</p>
+        </content>
+      </shape>
+      <shape width="160" height="22" topLeftX="770" topLeftY="26" type="text">
+        <content textType="caption" fontSize="11" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)" textAlign="right">
+          <p>SECTION 10 / WATERFALL</p>
+        </content>
+      </shape>
+      <shape width="576" height="400" topLeftX="32" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(255, 255, 255, 1)"/>
+        </fill>
+        <border color="rgba(226, 232, 240, 1)" width="1"/>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="576" height="32" topLeftX="32" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 244, 249, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="560" height="22" topLeftX="44" topLeftY="98" type="text">
+        <content fontSize="12" fontFamily="思源宋体" color="rgba(15, 30, 58, 1)" bold="true">
+          <p>营收 → 净利润利润桥（亿美元）</p>
+        </content>
+      </shape>
+      <chart width="556" height="350" topLeftX="42" topLeftY="132">
+        <chartPlotArea>
+          <chartPlot type="waterfall">
+            <chartBars color="rgb(37, 99, 235)" borderWidth="0"/>
+            <chartExtra>
+              <chartWaterfall firstValueAsTotal="true">
+                <chartConnectorLine color="rgb(148, 163, 184)" width="1" style="dashed"/>
+                <chartNegativeStyle color="rgb(220, 38, 38)" opacity="0.9"/>
+                <chartTotalStyle color="rgb(71, 85, 105)" opacity="1"/>
+                <chartTitleText subtotal="净利润"/>
+                <chartSubtotals>
+                  <chartSubtotal index="4" mode="0" alias="净利润"/>
+                </chartSubtotals>
+              </chartWaterfall>
+            </chartExtra>
+            <chartLabels value="true" fontSize="9" color="rgba(255, 255, 255, 1)"/>
+          </chartPlot>
+          <chartAxes>
+            <chartAxis type="x">
+              <chartLabel fontSize="9"/>
+            </chartAxis>
+            <chartAxis type="y" position="left">
+              <chartGridLine color="rgb(226, 232, 240)"/>
+              <chartLabel fontSize="9"/>
+            </chartAxis>
+          </chartAxes>
+        </chartPlotArea>
+        <chartData>
+          <dim1>
+            <chartField name="项目" valueType="string">营收,成本,费用,税项</chartField>
+          </dim1>
+          <dim2>
+            <chartField name="金额" valueType="number">296,-168,-58,-18</chartField>
+          </dim2>
+        </chartData>
+        <chartTitle fontSize="12" color="rgba(15, 30, 58, 1)" bold="true">利润桥：营收扣减至净利润</chartTitle>
+        <chartStyle>
+          <chartBackground color="rgba(0, 0, 0, 0)"/>
+          <chartBorder color="rgb(222, 224, 227)" width="0"/>
+          <chartColorTheme>
+            <color value="rgb(28, 71, 120)"/>
+          </chartColorTheme>
+        </chartStyle>
+      </chart>
+      <shape width="304" height="400" topLeftX="624" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(15, 30, 58, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="304" height="4" topLeftX="624" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 129, 54, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="264" height="26" topLeftX="644" topLeftY="118" type="text">
+        <content textType="caption" fontSize="12" fontFamily="思源宋体" color="rgba(240, 129, 54, 1)" bold="true">
+          <p>KEY TAKEAWAY</p>
+        </content>
+      </shape>
+      <shape width="264" height="90" topLeftX="644" topLeftY="146" type="text">
+        <content textType="headline" fontSize="18" fontFamily="思源宋体" color="rgba(255, 255, 255, 1)" bold="true">
+          <p>净利率沉淀至 17.6%</p>
+        </content>
+      </shape>
+      <shape width="264" height="80" topLeftX="644" topLeftY="248" type="text">
+        <content fontSize="13" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)">
+          <p>296 亿营收依次扣减 168 亿成本、58 亿费用与 18 亿税项，最终沉淀净利润 52 亿。</p>
+        </content>
+      </shape>
+      <line startX="644" startY="352" endX="720.0065786626394" endY="352">
+        <border color="rgba(240, 129, 54, 1)"/>
+      </line>
+      <shape width="264" height="26" topLeftX="644" topLeftY="360" type="text">
+        <content textType="caption" fontSize="11" fontFamily="思源宋体" color="rgba(240, 129, 54, 1)" bold="true">
+          <p>WHAT TO WATCH</p>
+        </content>
+      </shape>
+      <shape width="264" height="90" topLeftX="644" topLeftY="386" type="text">
+        <content fontSize="12" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)">
+          <p>· 成本占营收 57% 偏高</p>
+          <p>· 费用率仍有优化空间</p>
+          <p>· 末列设为小计汇总柱</p>
+        </content>
+      </shape>
+      <line startX="32" startY="506" endX="928.0005580355405" endY="506">
+        <border color="rgba(226, 232, 240, 1)" width="1"/>
+      </line>
+      <shape width="500" height="18" topLeftX="32" topLeftY="512" type="text">
+        <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)">
+          <p>Source: Consulting Insights Research · 数据仅用于示意</p>
+        </content>
+      </shape>
+      <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
+        <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
+          <p>10 / 11</p>
+        </content>
+      </shape>
+    </data>
+    <note>
+      <content/>
+    </note>
+  </slide>
+  <slide>
+    <style>
+      <fill>
+        <fillColor color="rgba(248, 249, 251, 1)"/>
+      </fill>
+    </style>
+    <data>
+      <shape width="960" height="72" topLeftX="0" topLeftY="0" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(15, 30, 58, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="8" height="72" topLeftX="0" topLeftY="0" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 129, 54, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="700" height="30" topLeftX="32" topLeftY="14" type="text">
+        <content textType="headline" fontSize="22" fontFamily="思源宋体" color="rgba(255, 255, 255, 1)" bold="true">
+          <p>帕累托图 · Pareto Chart</p>
+        </content>
+      </shape>
+      <shape width="700" height="20" topLeftX="32" topLeftY="46" type="text">
+        <content textType="caption" fontSize="12" fontFamily="思源宋体" color="rgba(180, 192, 210, 1)">
+          <p>问题频次 &amp; 累计占比双轴视图 · BAR + CUMULATIVE %</p>
+        </content>
+      </shape>
+      <shape width="160" height="22" topLeftX="770" topLeftY="26" type="text">
+        <content textType="caption" fontSize="11" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)" textAlign="right">
+          <p>SECTION 11 / PARETO</p>
+        </content>
+      </shape>
+      <shape width="576" height="400" topLeftX="32" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(255, 255, 255, 1)"/>
+        </fill>
+        <border color="rgba(226, 232, 240, 1)" width="1"/>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="576" height="32" topLeftX="32" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 244, 249, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="560" height="22" topLeftX="44" topLeftY="98" type="text">
+        <content fontSize="12" fontFamily="思源宋体" color="rgba(15, 30, 58, 1)" bold="true">
+          <p>售后问题分布与累计占比</p>
+        </content>
+      </shape>
+      <chart width="556" height="350" topLeftX="42" topLeftY="132">
+        <chartPlotArea>
+          <chartPlot type="pareto">
+            <chartExtra>
+              <chartPareto aggregateType="sum"/>
+            </chartExtra>
+            <chartSeriesList>
+              <chartSeries index="1">
+                <chartBars>
+                  <fillGradient type="linear" x0="0" y0="0" x1="0" y1="1">
+                    <stops>
+                      <stop offset="0" color="rgb(28, 71, 120)" opacity="0.72"/>
+                      <stop offset="1" color="rgb(72, 118, 173)" opacity="0.48"/>
+                    </stops>
+                  </fillGradient>
+                </chartBars>
+              </chartSeries>
+              <chartSeries index="2">
+                <chartLine color="rgb(240, 129, 54)" width="3"/>
+                <chartPoints color="rgb(240, 129, 54)" shape="circle" size="6"/>
+              </chartSeries>
+            </chartSeriesList>
+          </chartPlot>
+          <chartAxes>
+            <chartAxis type="x">
+              <chartLabel fontSize="9" angle="-45"/>
+            </chartAxis>
+            <chartAxis type="y" position="left">
+              <chartGridLine color="rgb(226, 232, 240)"/>
+              <chartLabel fontSize="9"/>
+            </chartAxis>
+            <chartAxis type="y" position="right">
+              <chartLabel fontSize="9" format="0%"/>
+            </chartAxis>
+          </chartAxes>
+        </chartPlotArea>
+        <chartLegend position="bottom" fontSize="11"/>
+        <chartData>
+          <dim1>
+            <chartField name="问题类型" valueType="string">屏幕,电池,信号,系统,摄像,发热,其他</chartField>
+          </dim1>
+          <dim2>
+            <chartField name="频次" valueType="number">320,240,150,90,60,40,20</chartField>
+          </dim2>
+        </chartData>
+        <chartTitle fontSize="12" color="rgba(15, 30, 58, 1)" bold="true">频次柱（左轴） · 累计占比线（右轴）</chartTitle>
+        <chartStyle>
+          <chartBackground color="rgba(0, 0, 0, 0)"/>
+          <chartBorder color="rgb(222, 224, 227)" width="0"/>
+          <chartColorTheme>
+            <color value="rgb(28, 71, 120)"/>
+          </chartColorTheme>
+        </chartStyle>
+      </chart>
+      <shape width="304" height="400" topLeftX="624" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(15, 30, 58, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="304" height="4" topLeftX="624" topLeftY="92" presetHandlers="0" type="rect">
+        <fill>
+          <fillColor color="rgba(240, 129, 54, 1)"/>
+        </fill>
+        <content fontSize="16" fontFamily="思源宋体" color="rgba(31, 35, 41, 1)"/>
+      </shape>
+      <shape width="264" height="26" topLeftX="644" topLeftY="118" type="text">
+        <content textType="caption" fontSize="12" fontFamily="思源宋体" color="rgba(240, 129, 54, 1)" bold="true">
+          <p>KEY TAKEAWAY</p>
+        </content>
+      </shape>
+      <shape width="264" height="90" topLeftX="644" topLeftY="146" type="text">
+        <content textType="headline" fontSize="18" fontFamily="思源宋体" color="rgba(255, 255, 255, 1)" bold="true">
+          <p>屏幕+电池占问题量六成</p>
+        </content>
+      </shape>
+      <shape width="264" height="80" topLeftX="644" topLeftY="248" type="text">
+        <content fontSize="13" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)">
+          <p>前两类问题合计 560 次，占总量约 62%；叠加信号后累计突破 80%，符合二八法则。</p>
+        </content>
+      </shape>
+      <line startX="644" startY="352" endX="720.0065786626394" endY="352">
+        <border color="rgba(240, 129, 54, 1)"/>
+      </line>
+      <shape width="264" height="26" topLeftX="644" topLeftY="360" type="text">
+        <content textType="caption" fontSize="11" fontFamily="思源宋体" color="rgba(240, 129, 54, 1)" bold="true">
+          <p>WHAT TO WATCH</p>
+        </content>
+      </shape>
+      <shape width="264" height="90" topLeftX="644" topLeftY="386" type="text">
+        <content fontSize="12" fontFamily="思源宋体" color="rgba(220, 228, 240, 1)">
+          <p>· 优先攻坚屏幕与电池</p>
+          <p>· 长尾问题暂不投入</p>
+          <p>· 柱按频次自动降序</p>
+        </content>
+      </shape>
+      <line startX="32" startY="506" endX="928.0005580355405" endY="506">
+        <border color="rgba(226, 232, 240, 1)" width="1"/>
+      </line>
+      <shape width="500" height="18" topLeftX="32" topLeftY="512" type="text">
+        <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)">
+          <p>Source: Consulting Insights Research · 数据仅用于示意</p>
+        </content>
+      </shape>
+      <shape width="128" height="18" topLeftX="800" topLeftY="512" type="text">
+        <content textType="caption" fontSize="10" fontFamily="思源宋体" color="rgba(148, 163, 184, 1)" textAlign="right">
+          <p>11 / 11</p>
         </content>
       </shape>
     </data>

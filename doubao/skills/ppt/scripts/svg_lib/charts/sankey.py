@@ -1,59 +1,31 @@
-"""svg_lib/charts/sankey.py
-
-统一 API: draw_sankey(data, variant, palette, ...) -> str (SVG)
-
-Data schema:
-    通用 (default_ribbon_flat / alluvial_sinusoidal / multi_layer_flat / gradient_layered):
-        data = {
-            "layers": [[node_names], [node_names], ...],  # 至少 2 层
-            "inter_flows": [ [(src, dst, value), ...], ... ],  # len == len(layers) - 1
-        }
-    chord_circular 双向 schema:
-        data = {"nodes": [str], "flows": [(src, dst, value), ...]}
-
-    draw_sankey 自动分派：
-      - variant=chord_circular 且缺 flows：从 layers/inter_flows 扁平化
-      - variant≠chord_circular 且给了 nodes/flows：作为 2 层 sankey
-
-Variants:
-    - default_ribbon_flat   经典 bezier ribbon
-    - alluvial_sinusoidal   S 曲线 alluvial (仅 2 层)
-    - chord_circular        圆形 chord (双向)
-    - multi_layer_flat       多层 flat
-    - gradient_layered      带渐变 + 高光的 ribbon
-"""
+"""统一 API: draw_sankey(data, variant, palette, ...) -> str (SVG)"""
 
 from __future__ import annotations
+
 import math
 
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    viewbox_fs,
-    svg_open,
-    svg_close,
-    _rgba_with_alpha,
-    rgb_tuple,
-)
-
-
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
     _derive_series_colors,
+    _dispatch_to_svg_lib,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgb_tuple,
     _rgba_with_alpha,
-    _xesc,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
+    _xesc,
+)
+from .._typography import chart_font_sizes
+from ._shared import (
+    notes_source_footer,
+    tr,
+    resolve_palette,
+    rgb_tuple,
+    svg_close,
+    svg_open,
+    viewbox_fs,
+    xesc,
 )
 
 BODY_FONT = "Inter, sans-serif"
@@ -66,15 +38,15 @@ def draw_sankey(
     palette: str = "archive_ink",
     width: float = 900,
     height: float = 540,
-    title: str = None,
-    subtitle: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
 ) -> str:
     pal = resolve_palette(palette)
 
-    # Dispatch on variant + schema
     if variant == "chord_circular":
         nodes, flows = _normalize_chord(data)
-        body = _draw_chord_circular(nodes, flows, pal, width, height, title, subtitle)
+        height = _chord_canvas_height(nodes, flows, data.get("tracks"), pal, width, height, title, subtitle)
+        body = _draw_chord_circular(nodes, flows, pal, width, height, title, subtitle, tracks=data.get("tracks"))
     else:
         layers, inter_flows = _normalize_layered(data)
         if variant == "default_ribbon_flat":
@@ -105,7 +77,6 @@ def draw_sankey(
         # header is inside _draw_ribbon (as it needs its own layout)
         return svg_open(0, 0, float(width), float(height), bg=pal["bg"]) + body + svg_close()
 
-    # chord assembles its own header
     return svg_open(0, 0, float(width), float(height), bg=pal["bg"]) + body + svg_close()
 
 
@@ -118,7 +89,7 @@ def _normalize_layered(data):
             raise ValueError("draw_sankey: layers needs at least 2 groups")
         if len(inter) != len(layers) - 1:
             raise ValueError(f"draw_sankey: inter_flows must have {len(layers) - 1} entries")
-        return layers, inter
+        return _validate_layered(layers, inter)
     if "nodes" in data and "flows" in data:
         # collapse into 2 layers: src set + dst set
         nodes = data["nodes"]
@@ -137,14 +108,52 @@ def _normalize_layered(data):
             left = srcs
         if not right:
             right = dsts
-        return [left, right], [flows]
+        return _validate_layered([left, right], [flows])
     raise ValueError("draw_sankey: data must have layers+inter_flows or nodes+flows")
+
+
+def _validate_edges(flows, sources, targets):
+    result = []
+    for edge in flows:
+        if len(edge) != 3:
+            raise ValueError("sankey: every flow must be (source, target, value)")
+        source, target, value = edge
+        if source not in sources or target not in targets:
+            raise ValueError(f"sankey: unknown flow endpoint {source!r} -> {target!r}")
+        value = float(value)
+        if not math.isfinite(value) or value < 0:
+            raise ValueError("sankey: flow values must be finite and nonnegative")
+        result.append((source, target, value))
+    return result
+
+
+def _validate_layered(layers, inter_flows):
+    layers = [list(layer) for layer in layers]
+    if len(layers) < 2 or len(inter_flows) != len(layers) - 1:
+        raise ValueError("sankey: provide at least two layers and one flow list per adjacent layer")
+    for layer in layers:
+        if not layer or len(set(layer)) != len(layer):
+            raise ValueError("sankey: each layer must contain unique node names and cannot be empty")
+    flows = [_validate_edges(edges, set(layers[i]), set(layers[i + 1])) for i, edges in enumerate(inter_flows)]
+    for i in range(1, len(layers) - 1):
+        for node in layers[i]:
+            incoming = sum(value for _, target, value in flows[i - 1] if target == node)
+            outgoing = sum(value for source, _, value in flows[i] if source == node)
+            if not math.isclose(incoming, outgoing, rel_tol=1e-8, abs_tol=1e-10):
+                raise ValueError(
+                    f"sankey: layer {i} node {node!r} is not conserved "
+                    f"(incoming={incoming:g}, outgoing={outgoing:g}); include an explicit source or sink"
+                )
+    return layers, flows
 
 
 def _normalize_chord(data):
     """Return (nodes:list, flows:list of (src,dst,val))."""
     if "nodes" in data and "flows" in data:
-        return list(data["nodes"]), list(data["flows"])
+        nodes = list(data["nodes"])
+        if not nodes or len(set(nodes)) != len(nodes):
+            raise ValueError("chord: provide unique node names")
+        return nodes, _combine_chord_flows(data["flows"], nodes)
     if "layers" in data and "inter_flows" in data:
         # flatten all unique nodes and all flows
         nodes = []
@@ -158,13 +167,19 @@ def _normalize_chord(data):
         for step in data["inter_flows"]:
             for s, d, v in step:
                 flows.append((s, d, v))
-        return nodes, flows
+        return nodes, _combine_chord_flows(flows, nodes)
     raise ValueError("draw_sankey: data must have nodes+flows or layers+inter_flows")
 
 
-# ============================================================
+def _combine_chord_flows(flows, nodes):
+    """One quantitative ribbon per ordered pair, including repeated input rows."""
+    combined = {}
+    for source, target, value in _validate_edges(flows, set(nodes), set(nodes)):
+        combined.setdefault((source, target), []).append(value)
+    return [(source, target, math.fsum(values)) for (source, target), values in combined.items()]
+
+
 # ribbon (bezier / sinusoidal) with optional gradient
-# ============================================================
 def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier", gradient=False, flat_style=False):
     W = float(W)
     H = float(H)
@@ -175,14 +190,6 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
     n_layers = len(layers)
 
     # Dynamic margins driven by longest label in the outer columns.
-    # Round 1 raised MR from 130 to 200 for "PaidPremiumCustomers" (20 chars);
-    # Round 2 (multi_layer) exposed >30 char labels like "recommendation-
-    # personalization-svc" that also overflow the LEFT column and still exceed
-    # MR=200 on the right. Compute margin from actual label length instead of
-    # a static number so all 5 ribbon variants stay OOB=0 for realistic names.
-    # Formula: char_count * fs * 0.62 (advance) + 15 * fs * 0.55 (tspan/value
-    # slack — _draw_ribbon has no tspan today but the extra slack is harmless
-    # and matches make_sankey's label layout) + 20px breathing room.
     longest_left = max((len(str(n)) for n in layers[0]), default=0)
     longest_right = max((len(str(n)) for n in layers[-1]), default=0)
     fs_label = 14
@@ -214,21 +221,17 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
             for s, d, v in inter_flows[li]:
                 if s in out_total:
                     out_total[s] += v
-            for name in totals:
-                totals[name] = max(totals[name], out_total.get(name, 0))
+            for name, total in totals.items():
+                totals[name] = max(total, out_total.get(name, 0))
         node_totals.append(totals)
 
-    # scale so tallest column fits plot_h
     max_col = 0.0
     for li in range(n_layers):
         col_total = sum(node_totals[li].values())
         col_h = col_total  # scale later
-        if col_total > max_col:
-            max_col = col_total
-    # per-layer per-node y position
+        max_col = max(max_col, col_total)
     scale = (plot_h - NODE_GAP * (max(len(l) for l in layers) - 1)) / max(max_col, 1e-6)
 
-    # layout each layer
     layer_pos = []  # per layer: dict name -> (y_top, y_bot)
     for li in range(n_layers):
         col_names = layers[li]
@@ -243,8 +246,8 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
         layer_pos.append(pos)
 
     # per-node source & dest slot bookkeeping (for stacking flows within node)
-    src_slots = [dict() for _ in range(n_layers)]  # per node: dict name -> next_y for outflow
-    dst_slots = [dict() for _ in range(n_layers)]
+    src_slots = [{} for _ in range(n_layers)]  # per node: dict name -> next_y for outflow
+    dst_slots = [{} for _ in range(n_layers)]
     for li in range(n_layers):
         for name, (y0, y1) in layer_pos[li].items():
             src_slots[li][name] = y0
@@ -258,7 +261,6 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
     parts = []
     defs = []
 
-    # header
     if title:
         parts.append(
             f'<text x="{ML}" y="30" font-family="{HEAD_FONT}" font-size="20" '
@@ -276,7 +278,6 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
             f'stroke="{ink}" stroke-width="0.6" opacity="0.4"/>'
         )
 
-    # layer x positions
     if n_layers == 1:
         layer_x = [ML]
     else:
@@ -291,7 +292,6 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
                 f'stroke="{ink}" stroke-width="0.4" opacity="0.15"/>'
             )
 
-    # draw flows first
     grad_id = [0]
     for li in range(n_layers - 1):
         x_src = layer_x[li] + NODE_W
@@ -334,8 +334,7 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
             stroke = _rgba_with_alpha(col, 0.5)
             parts.append(f'<path d="{d_path}" fill="{fill}" stroke="{stroke}" stroke-width="0.4"></path>')
 
-    # draw nodes on top
-    max_col_total = max(sum(node_totals[li].values()) for li in range(n_layers))
+    max(sum(node_totals[li].values()) for li in range(n_layers))
     # 字号自适应：viewBox 尺寸 + 节点总数 n 双重驱动
     n_total_nodes = sum(len(l) for l in layers)
     fs = viewbox_fs(W, H, n_total_nodes, role_mult=1.05)
@@ -356,7 +355,6 @@ def _draw_ribbon(layers, inter_flows, pal, W, H, title, subtitle, curve="bezier"
                 )
             # label placement: leftmost on left, rightmost on right, else on right of node
             if li == 0:
-                # label left of node
                 parts.append(
                     f'<text x="{layer_x[li] - 6:.1f}" y="{(y0 + y1) / 2 + 4:.1f}" '
                     f'text-anchor="end" font-family="{BODY_FONT}" font-size="{fs}" '
@@ -419,10 +417,8 @@ def _sinusoidal_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot, n=32):
 
 
 def _stepped_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
-    """Orthogonal / stepped ribbon: horizontal from src, sharp vertical at midpoint, horizontal to dst.
-    Corners rounded via short beziers for a clean layered look, distinct from bezier."""
+    """Orthogonal / stepped ribbon: horizontal from src, sharp vertical at midpoint, horizontal to dst."""
     xm = (x1 + x2) / 2
-    # small radius for corner smoothing
     r = min(6.0, abs(x2 - x1) * 0.08)
     d = (
         f"M {x1:.1f} {y1_top:.1f} "
@@ -432,9 +428,7 @@ def _stepped_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
         f"L {xm:.1f} {y2_top - (r if y2_top > y1_top else -r):.1f} "
         f"Q {xm:.1f} {y2_top:.1f} {xm + r:.1f} {y2_top:.1f} "
         f"L {x2:.1f} {y2_top:.1f} "
-        # right vertical edge
         f"L {x2:.1f} {y2_bot:.1f} "
-        # bottom edge back
         f"L {xm + r:.1f} {y2_bot:.1f} "
         f"Q {xm:.1f} {y2_bot:.1f} {xm:.1f} {y2_bot - (r if y2_bot > y1_bot else -r):.1f} "
         f"L {xm:.1f} {y1_bot + (r if y2_bot > y1_bot else -r):.1f} "
@@ -445,35 +439,80 @@ def _stepped_ribbon(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
     return d
 
 
-# ============================================================
-# chord_circular
-# ============================================================
-def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
+def _chord_distribution(nodes, flows):
+    indices = {name: i for i, name in enumerate(nodes)}
+    indexed = [(indices[source], indices[target], float(value)) for source, target, value in flows]
+    maximum = max((value for _, _, value in indexed), default=0)
+    if maximum <= 0:
+        raise ValueError("chord total flow must be positive")
+    totals = [0.0] * len(nodes)
+    for source, target, value in indexed:
+        totals[source] += value / maximum
+        totals[target] += value / maximum
+    total_weight = math.fsum(totals)
+    gap = min(math.radians(3), math.tau / (4 * len(nodes)))
+    remaining = math.tau - gap * len(nodes)
+    angles, position = [], -math.pi / 2
+    for value in totals:
+        extent = remaining * value / total_weight
+        angles.append((position, position + extent))
+        position += extent + gap
+    return indexed, totals, angles, maximum
+
+
+def _flow_number(values):
+    try:
+        return f"{math.fsum(values):g}"
+    except OverflowError:
+        from decimal import Decimal
+
+        return f"{sum((Decimal(str(value)) for value in values), Decimal(0)):.6g}"
+
+
+def _chord_labels(nodes, flows):
+    return [
+        {
+            "name": str(node),
+            "annotation": "in+out "
+            + _flow_number(
+                [value for source, target, value in flows for endpoint in (source, target) if endpoint == node]
+            ),
+        }
+        for node in nodes
+    ]
+
+
+def _chord_canvas_height(nodes, flows, tracks, pal, width, height, title, subtitle):
+    """Measure the actual weighted-angle label rails before drawing any geometry."""
+    from ._chart_layout import wrap_lines
+    from ._polar import legend_rows, normalize_tracks, polar_layout
+
+    layout = polar_layout(width, height, pal, BODY_FONT)
+    rings = normalize_tracks(tracks or [], list(range(len(nodes))), layout.pal)
+    _, legend_height = legend_rows(layout, [], rings)
+    _, _, angles, _ = _chord_distribution(nodes, flows)
+    sides = {-1: 0.0, 1: 0.0}
+    for item, pair in zip(_chord_labels(nodes, flows), angles):
+        side = 1 if math.cos(sum(pair) / 2) >= 0 else -1
+        label = item["name"] + " · " + item["annotation"]
+        sides[side] += len(wrap_lines(label, 130, 11.5, layout.font)) * 11.5 * 1.35 + 5
+    header = (44 if title else 20) + (18 if subtitle else 0) + 12
+    return max(float(height), header + max(sides.values()) + legend_height + 72)
+
+
+def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None, tracks=None):
+    if tracks:
+        from ._polar import canonical_palette
+
+        pal = canonical_palette(pal)
     W = float(W)
     H = float(H)
     ink = pal["ink"]
     mut = pal["muted"]
-    bg = pal["bg"]
     series = pal.get("series") or [pal["accent"]]
     N = len(nodes)
-    node_idx = {n: i for i, n in enumerate(nodes)}
-    # normalize flows -> index-based
-    idx_flows = []
-    for s, d, v in flows:
-        if s not in node_idx or d not in node_idx:
-            continue
-        idx_flows.append((node_idx[s], node_idx[d], float(v)))
+    idx_flows, totals, node_angles, weight_scale = _chord_distribution(nodes, flows)
 
-    # totals
-    totals = [0.0] * N
-    for s, d, v in idx_flows:
-        totals[s] += v
-        totals[d] += v
-    grand = sum(totals)
-    if grand <= 0:
-        raise ValueError("draw_sankey chord_circular: total flow is zero")
-
-    # header/title padding at top
     ML = 60
     header_h = 20
     if title:
@@ -482,23 +521,21 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
         header_h += 18
     top_pad = header_h + 12 if (title or subtitle) else 20
 
+    from ._polar import legend_rows, normalize_tracks, polar_layout
+
+    track_layout = polar_layout(W, H, pal, BODY_FONT)
+    ring_tracks = normalize_tracks(tracks or [], list(range(N)), track_layout.pal)
+    track_legend, track_legend_height = legend_rows(track_layout, [], ring_tracks)
+
     # layout — shift circle down to leave room for title
     CX = W / 2
-    avail_h = H - top_pad - 20
+    avail_h = H - top_pad - 20 - (track_legend_height + 28 if ring_tracks else 0)
     CY = top_pad + avail_h / 2
-    R_OUTER = min(W - 80, avail_h) * 0.42
+    R_OUTER = min((W - 370) / 2, avail_h / 2 - 16) - len(ring_tracks) * 24 - 10
+    if R_OUTER < 50:
+        raise ValueError("chord labels and tracks need a larger canvas")
     R_INNER = R_OUTER - 14
     R_RIBBON = R_INNER - 4
-
-    GAP = math.radians(3)
-    total_gap = GAP * N
-    remaining = 2 * math.pi - total_gap
-    node_angles = []
-    cur = -math.pi / 2
-    for i in range(N):
-        span = remaining * (totals[i] / grand) if grand > 0 else 0
-        node_angles.append((cur, cur + span))
-        cur += span + GAP
 
     # slots per node: allocate arc segments per flow (out first, then in)
     slots = [[] for _ in range(N)]
@@ -510,11 +547,11 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
             continue
         acur = a0
         for other, v in outs:
-            span = (a1 - a0) * (v / totals[i])
+            span = (a1 - a0) * ((v / weight_scale) / totals[i])
             slots[i].append({"a0": acur, "a1": acur + span, "other": other, "value": v, "is_src": True})
             acur += span
         for other, v in ins:
-            span = (a1 - a0) * (v / totals[i])
+            span = (a1 - a0) * ((v / weight_scale) / totals[i])
             slots[i].append({"a0": acur, "a1": acur + span, "other": other, "value": v, "is_src": False})
             acur += span
 
@@ -536,7 +573,6 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
 
     parts = []
 
-    # header (title + subtitle + divider)
     if title:
         parts.append(
             f'<text x="{ML}" y="30" font-family="{HEAD_FONT}" font-size="20" '
@@ -554,7 +590,6 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
             f'stroke="{ink}" stroke-width="0.6" opacity="0.4"/>'
         )
 
-    # draw ribbons
     for s, d, v in idx_flows:
         s_slot = find_slot(s, d, True, v)
         d_slot = find_slot(d, s, False, v)
@@ -590,7 +625,6 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
             f"</path>"
         )
 
-    # outer arcs (bands)
     for i in range(N):
         a0, a1 = node_angles[i]
         if a1 - a0 < 1e-6:
@@ -610,36 +644,31 @@ def _draw_chord_circular(nodes, flows, pal, W, H, title=None, subtitle=None):
         )
         parts.append(f'<path d="{band}" fill="{col}" stroke="none"/>')
 
-        # label
-        a_mid = (a0 + a1) / 2
-        r_lbl = R_OUTER + 18
-        lx = CX + r_lbl * math.cos(a_mid)
-        ly = CY + r_lbl * math.sin(a_mid)
-        deg = math.degrees(a_mid) % 360
-        anchor = "start" if (deg < 90 or deg > 270) else "end"
-        fs = viewbox_fs(W, H, N, role_mult=1.05)
-        fs_val = viewbox_fs(W, H, N, role_mult=0.9)
-        parts.append(
-            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
-            f'dominant-baseline="middle" font-family="{BODY_FONT}" '
-            f'font-size="{fs}" font-weight="600" fill="{ink}">{xesc(nodes[i])}</text>'
-        )
-        parts.append(
-            f'<text x="{lx:.1f}" y="{ly + fs + 2:.1f}" text-anchor="{anchor}" '
-            f'dominant-baseline="middle" font-family="{BODY_FONT}" '
-            f'font-size="{fs_val}" fill="{mut}">{int(totals[i]):,}</text>'
-        )
+        # Track compositions place all labels on measured external rails.
+    from ._polar import PolarGeometry, render_labels, render_legend, render_tracks
 
-    # center label
+    geometry = PolarGeometry(CX, CY, 0, R_OUTER, N)
+    outer = (
+        render_tracks(track_layout, geometry, ring_tracks, R_OUTER + 8, 20, angles=node_angles)
+        if ring_tracks
+        else R_OUTER
+    )
+    geometry.angle = lambda i: sum(node_angles[i]) / 2
+    render_labels(
+        track_layout, geometry, _chord_labels(nodes, flows), outer, top_pad, top_pad + avail_h, rail_width=130
+    )
+    render_legend(track_layout, track_legend, H - track_legend_height - 16)
+    parts.extend(track_layout.parts)
+
     parts.append(
         f'<text x="{CX:.1f}" y="{CY - 4:.1f}" text-anchor="middle" '
         f'dominant-baseline="middle" font-family="{HEAD_FONT}" font-size="16" '
-        f'font-weight="600" fill="{ink}">{int(grand):,}</text>'
+        f'font-weight="600" fill="{ink}">{_flow_number([v for _, _, v in idx_flows])}</text>'
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{CY + 14:.1f}" text-anchor="middle" '
-        f'dominant-baseline="middle" font-family="{BODY_FONT}" font-size="9" '
-        f'fill="{mut}" letter-spacing=".18em">TOTAL FLOWS</text>'
+        f'dominant-baseline="middle" font-family="{BODY_FONT}" font-size="11" '
+        f'fill="{mut}" letter-spacing=".18em">{_xesc(tr("TOTAL FLOWS"))}</text>'
     )
 
     return "".join(parts)
@@ -649,21 +678,22 @@ def make_sankey(
     left_nodes=None,
     right_nodes=None,
     flows=None,
-    layers: list = None,
-    inter_flows: list = None,
-    layer_titles: list = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    note: str = None,
-    source: str = None,
+    layers: list | None = None,
+    inter_flows: list | None = None,
+    layer_titles: list | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    note: str | None = None,
+    source: str | None = None,
     node_gap: float = 18.0,
     node_width: float = 14.0,
     width: float = 1200.0,
     height: float = 760.0,
-    font_family: str = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
+    tracks: list | None = None,
 ) -> str:
     """
     桑基图 · dandelion academic 风格（支持任意层数）。
@@ -697,6 +727,10 @@ def make_sankey(
             if layers is not None and inter_flows is not None
             else {"layers": [left_nodes or [], right_nodes or []], "inter_flows": [flows or []]}
         )
+        if tracks is not None:
+            if variant != "chord_circular":
+                raise ValueError("tracks are supported for chord_circular")
+            _data["tracks"] = tracks
         return _dispatch_to_svg_lib(
             "sankey",
             variant,
@@ -706,11 +740,14 @@ def make_sankey(
             figure_label=figure_label,
             palette=palette,
             font_family=font_family,
+            width=width,
+            height=height,
         )
 
-    # ---------- API 归一化 ----------
+    if tracks is not None:
+        raise ValueError("tracks are supported for chord_circular")
+
     if layers is None:
-        # 老 API 模式
         if left_nodes is None or right_nodes is None or flows is None:
             raise ValueError("sankey: need either `layers` (multi-layer) or `left_nodes/right_nodes/flows` (2-layer)")
         layers = [list(left_nodes), list(right_nodes)]
@@ -721,22 +758,16 @@ def make_sankey(
         if len(inter_flows) != len(layers) - 1:
             raise ValueError(f"sankey: inter_flows must have {len(layers) - 1} groups, got {len(inter_flows)}")
 
+    layers, inter_flows = _validate_layered(layers, inter_flows)
     n_layers = len(layers)
     if n_layers < 2:
         raise ValueError(f"sankey: need at least 2 layers, got {n_layers}")
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"],
-        _pal["ink6"],
-        _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
-        _pal["accent"],
-    )
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
-    c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
+    _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
     c_bg = _pal.get("bg")
     PAPER = c_bg if c_bg else "rgba(250,248,242,1)"
 
@@ -765,25 +796,37 @@ def make_sankey(
             in_sum = 0.0
             out_sum = 0.0
             if li > 0:
-                # 入流
                 for src in layers[li - 1]:
                     in_sum += flow_dicts[li - 1].get(src, {}).get(name, 0)
             if li < n_layers - 1:
-                # 出流
                 out_sum = sum(flow_dicts[li].get(name, {}).values())
-            # 中间层用 max(in, out)（应该守恒，但取 max 兜底）
+            # Interior node flow has already passed the conservation check.
             if li == 0:
                 totals[name] = out_sum
             elif li == n_layers - 1:
                 totals[name] = in_sum
             else:
-                totals[name] = max(in_sum, out_sum)
+                totals[name] = in_sum
         layer_totals.append(totals)
 
-    # 全局 N（第一层 total）
     total_n = sum(layer_totals[0].values()) if layer_totals[0] else 0
 
-    # ---------- 派生每层节点色 ----------
+    # Keep the supplied decimal resolution; int(total) previously erased
+    # fractional amounts, while raw float sums can expose binary noise.
+    from decimal import Decimal, localcontext
+
+    amount_places = max(
+        (max(0, -Decimal(str(row[2])).as_tuple().exponent) for flow in inter_flows for row in flow), default=0
+    )
+
+    def _amount_label(value):
+        decimal = Decimal(str(value))
+        with localcontext() as context:
+            context.prec = max(28, decimal.adjusted() + amount_places + 8)
+            rounded = decimal.quantize(Decimal(1).scaleb(-amount_places))
+        label = format(rounded, ",f")
+        return label.rstrip("0").rstrip(".") if "." in label else label
+
     # 第一层用 palette.series（distinct）；后续层用中性灰阶（学术风）
     # 除非用户在 palette 里定义 sankey_layer_colors=[[...],...] 精确控制
     explicit_colors = _pal.get("sankey_layer_colors")
@@ -803,34 +846,20 @@ def make_sankey(
                 # 中间层：ink 60/70/80% alpha 灰阶
                 mid_cols = []
                 for k in range(n_nodes):
-                    # 从 ink 到 muted 灰调
                     t = 0.3 + 0.4 * (k / max(1, n_nodes - 1))
                     r, g, b = _rgb_tuple(_INK)
                     mid_cols.append(f"rgba({r},{g},{b},{t:.2f})")
                 layer_node_colors.append(mid_cols)
 
-    # ---------- 画布 & 布局 ----------
     # Dynamic outer margins based on **actual** label strings on the outer columns.
-    # Round 1 fixed the right side (MARGIN_R 130 -> 200) for ~20-char names but
-    # Round 2 multi_layer flow exposed >30 char names ("recommendation-
-    # personalization-svc") that still overflow, and the left side was never
-    # raised. Round 3 (this): value magnitude (e.g. 420,000) blew past the
-    # fixed `_val_chars=15` upper bound because the concatenated label
-    # `<name>  <total>  ·  <pct>%` is what the OOB linter measures (as a
-    # single text via itertext), so we now build the exact strings from the
-    # already-computed layer_totals and total_n, estimate width using the
-    # validator's own per-glyph model, and clamp margin above.
-    # The outer <text> also gets font-size=fs_node explicitly (below in the
-    # node-drawing loop) so validator width tracks real render.
-    _fs_name = 20  # matches fs_node upper bound below
-    _fs_val = 15  # matches fs_nval upper bound below
+    fonts = chart_font_sizes(width, height, max(map(len, layers)))
+    _fs_name = max(fonts["label"], width * 0.026)
+    _fs_val = max(fonts["group_n"], width * 0.024)
 
-    # Use the validator's own width model so what we reserve equals what the
-    # OOB linter measures. If import fails (e.g. running outside the patched
-    # skill), fall back to a conservative built-in estimate.
+    # Use the validator's own width model so what we reserve equals what the OOB linter measures.
     try:
         from embed_svg_validator import _svg_text_width as _val_text_width
-    except Exception:
+    except ImportError:
         _val_text_width = None
 
     def _est_str_w(s, fs, bold=False):
@@ -856,7 +885,7 @@ def make_sankey(
 
     def _label_str(name, total_val):
         pct = (total_val / total_n * 100) if total_n > 0 else 0
-        sub = f"{int(total_val):,}"
+        sub = _amount_label(total_val)
         if total_n > 0:
             sub += f"  ·  {pct:.1f}%"
         # actual concatenated text as the validator sees it (matches
@@ -864,16 +893,12 @@ def make_sankey(
         return f"{name}  {sub}"
 
     def _col_max_label_width(col_names, col_totals, fs_name, fs_val):
-        """Return max estimated **visual** width per label in this column.
-        Uses tspan-specific sizes: name at fs_name (bold), value at fs_val (regular).
-        This is what the human sees; the validator uses the outer-text size instead
-        (see _col_max_flat_width). We take max(visual, flat) for the margin.
-        """
+        """Return max estimated **visual** width per label in this column."""
         best = 0.0
         for nm in col_names:
             tv = col_totals.get(nm, 0)
             pct = (tv / total_n * 100) if total_n > 0 else 0
-            sub = f"{int(tv):,}"
+            sub = _amount_label(tv)
             if total_n > 0:
                 sub += f"  ·  {pct:.1f}%"
             w_name = _est_str_w(str(nm), fs_name, bold=True)
@@ -883,11 +908,7 @@ def make_sankey(
         return best
 
     def _col_max_flat_width(col_names, col_totals, flat_fs):
-        """Return the width the OOB linter will compute for the outer <text>.
-        Validator reads outer-text font-size (we set it to fs_node) and applies
-        it to the whole itertext-joined string with the outer font-weight
-        (unset -> not bold).
-        """
+        """Return the width the OOB linter will compute for the outer <text>."""
         best = 0.0
         for nm in col_names:
             tv = col_totals.get(nm, 0)
@@ -903,16 +924,14 @@ def make_sankey(
     _left_visual = _col_max_label_width(_left_names, _left_totals, _fs_name, _fs_val)
     _right_visual = _col_max_label_width(_right_names, _right_totals, _fs_name, _fs_val)
     # Validator sees the outer <text> font-size, which we now force to fs_node
-    # (its upper bound = _fs_name = 20). Use that for the flat estimate.
+    # (its upper bound is _fs_name). Use that for the flat estimate.
     _left_flat = _col_max_flat_width(_left_names, _left_totals, _fs_name)
     _right_flat = _col_max_flat_width(_right_names, _right_totals, _fs_name)
 
-    # Padding: covers the tx offset (lx +/- 8), rounding, and small safety
-    # margin. The label anchor sits at (lx +/- 8) so the effective reserved
-    # column width is MARGIN_[L|R] - 8, hence extra +12 to keep OOB ≥ 4px.
+    # Padding: covers the tx offset (lx +/- 8), rounding, and small safety margin.
     _label_pad = 24
-    MARGIN_L = int(math.ceil(max(200, max(_left_visual, _left_flat) + _label_pad)))
-    MARGIN_R = int(math.ceil(max(200, max(_right_visual, _right_flat) + _label_pad)))
+    MARGIN_L = math.ceil(max(200, max(_left_visual, _left_flat) + _label_pad))
+    MARGIN_R = math.ceil(max(200, max(_right_visual, _right_flat) + _label_pad))
     MARGIN_T = 165 if title else 80
     MARGIN_B = 100 if (note or source) else 60
 
@@ -922,29 +941,25 @@ def make_sankey(
     plot_left = MARGIN_L
     plot_right = width - MARGIN_R
 
-    # 层 x 位置：均匀分布
     if n_layers == 1:
         layer_xs = [plot_left]
     else:
         step = (plot_right - plot_left) / (n_layers - 1)
         layer_xs = [plot_left + i * step for i in range(n_layers)]
 
-    # ---------- 字号自适应基准 ----------
     # 密度指标：单列最多节点数 → 单节点平均高度
     # 基准：6 节点/列 · plot_h ≈ 495 · node_gap=18 → 节点高 ≈ 65px（此时 scale=1.0，节点名 14pt）
     _max_col_nodes = max(len(layers[li]) for li in range(n_layers))
     _est_node_h = max(20.0, (plot_h - node_gap * max(0, _max_col_nodes - 1)) / max(1, _max_col_nodes))
     _fs_scale = max(0.75, min(1.8, _est_node_h / 65.0))
-    # 上限保护
     fs_title = round(min(32.0, 26 * _fs_scale), 1)
     fs_subtitle = round(min(15.0, 12 * _fs_scale), 1)
     fs_figure = round(min(12.0, 10 * _fs_scale), 1)
-    fs_layer = round(min(13.0, 10 * _fs_scale), 1)  # 层标题
-    fs_node = round(min(20.0, 15 * _fs_scale), 1)  # 节点名（单行布局，可以更大）
-    fs_nval = round(min(15.0, 11 * _fs_scale), 1)  # 节点数值
+    fs_layer = round(max(_fs_val, min(13.0, 10 * _fs_scale)), 1)  # 层标题
+    fs_node = round(min(_fs_name, max(12.0, _est_node_h * 0.45)), 1)  # 节点名（单行布局，可以更大）
+    fs_nval = round(min(_fs_val, fs_node * 0.9), 1)  # 节点数值
     fs_foot = round(min(11.0, 9.5 * _fs_scale), 1)
 
-    # 每层节点垂直位置
     def layout_column(items, totals):
         total_flow = sum(totals[n] for n in items)
         if total_flow <= 0:
@@ -965,13 +980,11 @@ def make_sankey(
     max_col_total = max(sum(t.values()) for t in layer_totals)
     if max_col_total <= 0:
         max_col_total = 1
-    # 每层单独 layout（gap 数量不同）
     layer_positions = []
     scales = []
     for li in range(n_layers):
         totals = layer_totals[li]
         items = layers[li]
-        # 用全局 scale
         n_nodes = len(items)
         # 用相同 scale
         # scale = available_h / total_flow_of_max_layer
@@ -1053,13 +1066,12 @@ def make_sankey(
             f'fill="{c_muted}" font-weight="600" letter-spacing=".15em">{_xesc(figure_label)}</text>'
         )
         lbl_w = max(72, len(figure_label) * 8 + 20)
-        note_txt = f"{n_layers}-layer Sankey · N={int(total_n):,}" if total_n else f"{n_layers}-layer Sankey"
+        note_txt = f"{n_layers}-layer Sankey · N={_amount_label(total_n)}" if total_n else f"{n_layers}-layer Sankey"
         parts.append(
             f'<text x="{MARGIN_L + lbl_w}" y="{_y_figure:.1f}" font-family="{_body_font}" font-size="{fs_figure}" '
             f'fill="{c_muted}" letter-spacing=".04em">{_xesc(note_txt)}</text>'
         )
 
-    # 层标题（大写小字）
     if layer_titles:
         for li, lt in enumerate(layer_titles):
             if lt is None or lt == "":
@@ -1078,7 +1090,6 @@ def make_sankey(
                 f'fill="{_INK}" letter-spacing=".16em">{_xesc(str(lt).upper())}</text>'
             )
 
-    # ---------- 画流带 ----------
     def ribbon_path(x1, y1_top, y1_bot, x2, y2_top, y2_bot):
         xc = (x1 + x2) / 2
         return (
@@ -1109,12 +1120,30 @@ def make_sankey(
                 y1t, y1b = seg_from
                 y2t, y2b = seg_to
                 d_path = ribbon_path(x1, y1t, y1b, x2, y2t, y2b)
-                # 半透明填色 + 淡描边
                 fill_col = _rgba_with_alpha(col, 0.32)
                 stroke_col = _rgba_with_alpha(col, 0.55)
                 parts.append(f'<path d="{d_path}" fill="{fill_col}" stroke="{stroke_col}" stroke-width="0.4"></path>')
 
-    # ---------- 画节点 ----------
+    # Keep labels distinct when adjacent small flows are thinner than a line of text.
+    label_centers = []
+    min_separation = fs_node * 1.18
+    for li, names in enumerate(layers):
+        if len(names) * min_separation > plot_h:
+            raise ValueError("sankey: full node labels require a taller canvas")
+        centers = []
+        cursor = plot_top + fs_node / 2
+        for name in names:
+            y0, y1 = layer_positions[li][name]
+            center = max(cursor, min((y0 + y1) / 2, plot_bottom - fs_node / 2))
+            centers.append(center)
+            cursor = center + min_separation
+        overflow = max(0.0, centers[-1] - (plot_bottom - fs_node / 2))
+        for i in range(len(centers) - 1, -1, -1):
+            centers[i] -= overflow
+            if i:
+                overflow = max(0.0, centers[i - 1] + min_separation - centers[i])
+        label_centers.append(dict(zip(names, centers)))
+
     for li in range(n_layers):
         items = layers[li]
         for ni, name in enumerate(items):
@@ -1128,29 +1157,31 @@ def make_sankey(
             # 顶端 2px accent 条
             parts.append(f'<rect x="{lx:.1f}" y="{y0:.1f}" width="{node_width}" height="2" fill="{col}"/>')
 
-            # 标签位置
             total_val = layer_totals[li].get(name, 0)
             pct = (total_val / total_n * 100) if total_n > 0 else 0
-            yc = (y0 + y1) / 2
+            true_yc = (y0 + y1) / 2
+            yc = label_centers[li][name]
 
             if li == 0:
-                # 左列：标签左侧
                 tx = lx - 8
                 anchor = "end"
                 use_stroke = False
             elif li == n_layers - 1:
-                # 右列：标签右侧
                 tx = lx + node_width + 8
                 anchor = "start"
                 use_stroke = False
             else:
-                # 中间列：标签放右侧（压带子），加白描边
                 tx = lx + node_width + 6
                 anchor = "start"
                 use_stroke = True
 
-            # 数值文本
-            sub_txt = f"{int(total_val):,}"
+            if abs(yc - true_yc) > 0.1 and li in (0, n_layers - 1):
+                source_x = lx if li == 0 else lx + node_width
+                end_x = tx + 3 if li == 0 else tx - 3
+                parts.append(
+                    f'<path d="M{source_x:.1f},{true_yc:.1f} L{end_x:.1f},{yc:.1f}" fill="none" stroke="{c_muted}" stroke-width="1.2" data-role="node-label-leader"/>'
+                )
+            sub_txt = _amount_label(total_val)
             if total_n > 0:
                 sub_txt += f"  ·  {pct:.1f}%"
 
@@ -1166,26 +1197,9 @@ def make_sankey(
             # 时在 tspan 之间插入换行/缩进空白，导致 lint 用 itertext() 拿到长串后按外层
             # font-size 高估宽度触发 embed_svg_out_of_bounds。
             # 名字放靠近节点、数值往外偏移一个"名字宽度 + gap"或"数值宽度 + gap"的距离。
-            def _approx_w(s, fs, bold=False):
-                b = 1.05 if bold else 1.0
-                w = 0.0
-                for c in s:
-                    if c == " ":
-                        w += fs * 0.33 * b
-                    elif c == "%":
-                        w += fs * 0.85 * b
-                    elif c.isdigit():
-                        w += fs * 0.58 * b
-                    elif c.isupper():
-                        w += fs * 0.72 * b
-                    elif c.islower():
-                        w += fs * 0.55 * b
-                    else:
-                        w += fs * 0.50 * b
-                return w
-
-            name_w = _approx_w(str(name), fs_node, bold=True)
-            sub_w = _approx_w(sub_txt, fs_nval)
+            # Reuse the measured glyph widths used for the outer margins;
+            # the former ASCII approximation counted CJK characters at half width.
+            name_w = _est_str_w(str(name), fs_node, bold=True)
             gap = 6
             y_lbl = yc + fs_node * 0.35
             if anchor == "end":
@@ -1214,31 +1228,21 @@ def make_sankey(
                     f'fill="{c_muted}"{stroke_attr}>{_xesc(sub_txt)}</text>'
                 )
 
-    # 底部脚注
-    if note or source:
-        foot_y = height - 45
-        parts.append(
-            f'<line x1="{MARGIN_L}" y1="{foot_y - 14}" x2="{width - MARGIN_R}" y2="{foot_y - 14}" '
-            f'stroke="{_INK4}" stroke-width="0.5"/>'
+    parts.append(
+        notes_source_footer(
+            note,
+            source,
+            x=MARGIN_L,
+            x_right=width - MARGIN_R,
+            y=height - 45,
+            rule=_INK4,
+            font=_body_font,
+            fs=fs_foot,
+            color=c_muted,
+            figure_label=figure_label,
+            figure_fs=fs_foot,
         )
-        if note:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
-                f'font-size="{fs_foot}" fill="{c_muted}">'
-                f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
-            )
-        if source:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y + 14}" font-family="{_body_font}" '
-                f'font-size="{fs_foot}" fill="{c_muted}">'
-                f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>'
-            )
-        if figure_label:
-            parts.append(
-                f'<text x="{width - MARGIN_R}" y="{foot_y + 14}" text-anchor="end" '
-                f'font-family="{_body_font}" font-size="{fs_foot}" fill="{c_muted}" '
-                f'letter-spacing=".05em">{_xesc(figure_label)}</text>'
-            )
+    )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(width)} {int(height)}">{body}</svg>'

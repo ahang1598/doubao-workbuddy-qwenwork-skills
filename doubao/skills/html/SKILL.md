@@ -9,9 +9,11 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 
 ## 适用范围
 
-偏静态、给人看的东西：官网 / 落地页 / 营销页、可视化报告 / 数据看板 / 信息图 / 长图 / 研报、动画 / 3D 场景 / 网页小游戏、SVG / Canvas 页、高保真 UI 设计稿、可交互原型，以及单一用途轻工具（计算器、文本对比、随机分组）。
+以内容呈现和交互体验为主的单页产物：官网 / 落地页 / 营销页、可视化报告 / 数据看板 / 信息图 / 长图 / 研报、动画 / 3D 场景 / 网页小游戏、SVG / Canvas 页、高保真 UI 设计稿、可交互原型，以及单一用途轻工具（计算器、文本对比、随机分组）。
 
 要后端、数据库、账号登录、多人协作，或要把数据文件随产物一起交付的，超出本 skill 范围——如实告知，不假装实现。
+
+**灵动报告**：仅在用户明确要求生成或修改具有「灵动感」「灵动风格」的 HTML 内容（如报告、网页、看板、作品集等），或明确沿用已有灵动风格时触发，支持同义表达及当前任务的上下文延续，普通 HTML 需求与泛化美化要求不触发。触发灵动报告时与前端设计一起读 [灵动报告设计](references/interactive-report.md)，并遵循其中的设计指南。
 
 ## 关键步骤
 
@@ -33,19 +35,20 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
     - 图片、音视频等**由元素 `src` 或 CSS `url()` 加载**的素材，先下载到 `assets/`；生图搜图返回的 URL 会过期，不能直接写进 html，下载后按运行环境选引用方式：
       - **本地电脑**：用相对路径，如 `<img src="assets/hero.png">`，不写绝对路径。省掉上传这一步，交付更快。
       - **云电脑**：
-        - 每张图跑一次 `lark-cli drive +html-image-upload --file assets/hero.png`，取返回里 `data.url` 写进 `<img src>`。这个链接不会过期；而搜图、生图得到的 URL 会过期，不能直接放到 html中。
+        - 每张图跑一次 `lark-cli drive +html-image-upload --file assets/hero.png`，取返回里 `data.url` 写进 `<img src>`。这个链接不会过期；而搜图、生图得到的 URL 会过期，不能直接放到 html 中。
         - 此场景下**严禁使用 `FileBatchUpload` 工具**，必须使用 `lark-cli drive`，否则图片也会过期。
-    - **数据文件（JSON / CSV / TXT）不适用**：`file://` 页面里 `fetch` 和 `XMLHttpRequest` 都会被浏览器拒绝。优先从 URL 运行时取，取不到才固化进 JS。
+    - **数据文件（JSON / CSV / TXT）不适用**：`file://` 页面不能依赖 `fetch` 或 `XMLHttpRequest` 读取本地数据文件。固定数据内联进 JS；用户要求更新时，按数据源选择可访问的 URL 或文件选择入口。
     - **图片路径只能写在 `src` 属性或 CSS `url()` 里**：推荐 `<img src="assets/img1.jpg">`。发布链路只静态扫描这两个位置——写在 JS 代码里的任何形式（含 `const imgs = ['assets/a.jpg']` 这样的常量数组）、以及 `data-src` / `srcset` / `poster` 等其它属性，发布后都会裂图。
+
 - **分批写入**：一次写入过长的文件会让用户等待焦虑，最好一次 Write 10k token 内，简单向用户同步进度后，再继续分批写入。在首次写入时, 留下短小且独特的占位，例如 `<!-- something todo -->`，为后续 Edit 提供定位锚点。
 
-- **注意响应式适配，宽屏窄屏电脑手机都要能看**。
 
 - **交付与发布**：
   - 当用户没有明确的发布需求时：用 `present_files` 这类交付工具给用户交付 HTML，**`artifacts[].name` 写产物文件名，不要另起标题**（`销售仪表盘.html`，不是「销售数据看板」）。**同一个产物只交付一个 `.html` 文件**——按运行环境选定一种图片引用方式就够了，不要再额外附一份「以防万一」的备份版或压缩包，用户拿到两份不知道该打开哪个。交付说明如实写清：没实现的功能、用的是示例数据、做不了的能力。本地电脑下页面依赖同目录 `assets/` 时，要简单提醒用户转发时连目录一起发。
   
   - 当用户想要「发布」、「可访问的链接」、「给我链接」时：阅读 `references/lark-apps-publish.md`，将你的 html 文件发布成一个 doubao-html 网页，此时无需交付 html 文件，仅需使用 present_files 交付发布后的 doubao-html 链接。
   
+  - **发布接口确认成功后，直接交付返回的链接，禁止再访问该链接做检查**，避免检查环境缺少用户登录态而把登录页当成产物。
   - **最终给用户的回复不要过长**：最重要的产物是你最终生成的 html 产物，而不是给用户的最终回复，所以在交付了 html 产物后的最终回复不应该太长，**不能超过300字，也不能超过 8 行**，只需要简单介绍一下你生成的 html 产物即可
 
 - **修改、参考已发布的 doubao-html 网页**：
@@ -69,7 +72,11 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 python3 <SKILL_DIR>/scripts/shot.py <html_path>
 ```
 
-一次调用同时产出桌面（1440×900）与移动（390×844）两张 full-page 截图（默认 JPEG，宽度压到 1000px）。主图过 800KB 时脚本会自动切片输出（默认 3200px/片），报告里的 `slices` 字段列出分片路径、`sliceHint` 说明切片原因。同时把 JSON lint 报告打到 stdout，触发的每个规则都附带对应 `<field>Hint` 字段说明含义、修法与豁免情形——按 hint 处理即可。
+一次调用同时产出桌面（1440×900）与移动（390×844）两张 full-page 截图（默认 JPEG，宽度压到 1000px）。主图过 800KB 时脚本会自动切片输出（默认 3200px/片），摘要里会列出分片路径并说明按顺序读。
+
+`shot.py` 的 stdout 会输出短摘要：给 `status`、各 severity 计数、截图路径、按规则聚合的 finding，以及 `reportPath`。不要用 `tail` / `grep` / pipe 处理 stdout。完整报告每次都会写到 `_shots/report.json`。要看 evidence / hint 细节就 Read。
+
+HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题。发生修复时，脚本会先备份原文件，再复查并生成新的报告与截图；未解决的问题仍列在报告中。用 `--no-auto-fix` 可只检查；带 `--eval` / `--eval-file` 的交互检查不会自动修复。
 
 **跨视口对比**：脚本还会把桌面 / 移动的图表容器尺寸做匹配，若某个图表在桌面正常、在移动端却没占到视口宽度的 65%（典型：`width:X% + inline-block` 双栏没在媒体查询里堆叠成单栏），会以 `responsiveChartIssues` 报出。这类 case 桌面截图完全正常，只在移动端表现为「空图 / 一根线 / 坐标轴叠一起」，肉眼只看桌面截图看不出来。**触发时必须核对移动截图**。
 
@@ -80,8 +87,6 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 - 输出目录默认 <html 所在目录>/_shots/，不属于交付产物，严禁删除（e.g., 不要用 rm -f 等指令去删除目录或过程产物）。因为删除指令会触发权限确认、打断交付，增加用户等待。
 - 只想看一屏用 `--only desktop`。
 - 脚本内部已处理常见坑：`.rv / .fade / [data-aos]` 等滚动揭示元素强制显现（避免 `opacity:0` 截空白）、关掉 `scroll-behavior:smooth`、滚一遍触发 lazy 图片、`networkidle` 不可达时退回 `domcontentloaded`——**不需要另写截图脚本再走一遍**。
-
-**看报告的次序**：先看 lint 各字段（`consoleErrors` 优先，其他布局/交互字段规则报出来基本都是真的，触发时看对应 `<field>Hint` 处理），→ Read 截图做视觉核对。默认先 Read 主图；主图因太大被过滤或读失败，再按顺序 Read `slices` 里的分片；不要一上来就把主图和所有分片都读一遍。视觉有疑点、报告分辨不出细节（颜色、字体渲染）时，再针对性截一屏；先用报告定位到具体元素/错误、改代码，改完重跑 `shot.py`。
 
 
 ## 外部资源
@@ -94,11 +99,15 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 图片素材能显著提升产物美观度，不要默认用纯 CSS / SVG 撑起全部视觉。
 
-**载体选型**：图标、状态标记、导航符号、简单示意图、数据图表属于符号 / 信息型，用内联 SVG 或 CSS。人物、角色、动物、具体物体、产品情境、真实场景、hero 主视觉、章节题图、叙事插画属于具象 / 氛围型，**必须用真实图片**——除非用户明确要矢量插画，禁止用手写 SVG 或 CSS 几何图形代替依赖形象可信度的具象画面。「简单图表优先使用 Echart 来进行生成，而无需使用 SVG」只适用于数据可视化，不得扩展到人物、场景和插画。
+**载体选型**：图标、状态标记、导航符号、简单示意图、数据图表属于符号 / 信息型，用内联 SVG 或 CSS。人物、角色、动物、具体物体、产品情境、真实场景、写实主视觉、章节题图、叙事插画属于具象 / 氛围型，**必须用真实图片**——除非用户明确要矢量插画，禁止用手写 SVG 或 CSS 几何图形代替依赖形象可信度的具象画面。「简单图表优先使用 Echart 来进行生成，而无需使用 SVG」只适用于数据可视化，不得扩展到人物、场景和插画。
+
+解释部件、空间或过程的结构示意可用 SVG / Canvas；主体需要分层、展开或改变视角时，按要解释的关系选择载体。结构示意要有可辨认的细节与对应关系，不冒充真实照片或精确工程图。
 
 **来源按序**：① 用户提供和项目已有的素材，始终第一优先，不要擅自用生成图替换；② 图片生成能力，没有可用素材时的默认选择，prompt 写清风格、构图、配色，使产出与视觉方向一致；③ 外部检索，仅当要忠实呈现真实人物、产品、地点、Logo 等事实对象、生成会失真造假时才用。
 
 网络图片需要先下载到本地并**用读图能力实际看过**——内容对得上、清晰完整、无水印、不是防盗链占位图，确认通过才上传引用；看不了或不符的换图或改用生成。
+
+**抠图**：准备素材时，若需要去除图片底色，可用 `mediakit-cli image remove-image-background` 抠图（先运行该命令的 `--help` 和 `--schema` 查看用法），结果另存为透明 PNG 并检查效果，不佳则用原图。
 
 **来源偏好**：尽量使用用户提供的图片、项目已有的图片、以及搜索到的真实相关的图片，而不是工具生成的图片；假设这些图片不够时，你可以使用生图生成的图片进行补充
 
@@ -110,16 +119,14 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 **数据保真**：用户给了源数据时，每个数字和结论都要从源数据实际算出、可追溯，不目测、不凑整、不编造。
 
-**数据附件要获取下来并分析**，但**不要把数据转成** `const RAW_DATA = [...]` **固化进 JS**——那样用户换一份文件页面纹丝不动。数据能从 URL 取到就运行时取，确实取不到时才固化，并在交付说明里讲清。
+**数据附件要获取下来并分析**。
 
 **内容取舍**：不加与目标无关或没有依据的内容；内容不足以成页时合并、重构或要材料，不靠放大留白撑页。当有大量信息需要展示时，主要信息和次要信息需要重点鲜明，一个逻辑连贯的模块闭合在一屏内是更好的选择，必要时添加筛选与搜索能力。
 
 **硬性规格逐条对照**：页数、画幅、必含模块，交付前自查。
 
 **时间演进优先用时间轴**：涉及阶段、演进、里程碑、前后对比、路线图的内容，默认使用时间轴，而非项目符号列表或纯段落；每个节点承载：时间、事件名、一句话说明（可选）、（可选）关键指标或图标，让单个节点即可独立传达信息，注意时间轴节点与连线应该适当对齐。时间轴和附着在其上的图标（比如圆点或方块）的中心必须实现像素级对齐（0px误差）。并且额外注意时间轴的文字和轴线、文字和图标不要重叠。
-推荐用 **grid 三列（时间 / 轴 / 内容）** 的形式实现时间轴：圆点用真元素放中列、`justify-self:center` 交给布局引擎居中，轴线用 `calc()` 从列宽变量推出（横向时间轴同理，三列换三行、用 `align-self:center`），确保节点与轴线对齐，且无需手算坐标。
-
-**表格要显式给列宽**：多列表格加 `table-layout: fixed`，并给**每一列**都写宽度、加起来正好 100%（`<colgroup><col style="width:25%">` 或写在 `th` 上）。漏写一列，`auto` 布局就会把它压到一字宽、中文逐字折行，行高被撑到半屏高，同行其余列跟着变成大片空白。
+灵动报告已通过场景或其他视觉结构清楚交代先后关系时，沿用该表达，不重复添加时间轴。
 
 ## 图表及其交互设计方法
 
@@ -130,6 +137,8 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 ## 网页交互设计
 
 **禁止僵尸按钮**：视觉上像能点的元素——按钮、导航项、卡片入口——必须有真实的 click handler、跳转或占位反馈（如 toast 提示"演示中"）。禁止 `<button>` 无 `onclick`/`addEventListener`、`<a>` 无 `href`（或 `href="#"` / `href="javascript:void(0)"` / `href="javascript:;"` 却没实际 handler）、`<div class="nav-item">` 只挂 `cursor:pointer` 却什么都不绑——这些是原型页里最高频的 slop，要么给每个入口挂真实切页/toast，要么不做这个按钮，**宁愿不要按钮也不做僵尸按钮**
+
+- **注意响应式适配，宽屏窄屏电脑手机都要能看**。
 
 ## 视觉设计
 
@@ -145,7 +154,7 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 **避免 AI slop**：滥用渐变、圆角＋左边框强调容器、被用滥的字体（Inter、Roboto、Arial、Fraunces）。
 
-**做 hero / signature element / 复杂动效 / Canvas / WebGL / 进阶排印 / 材质纹理 / 地图 / 音频 / 音画同步 / 数学公式时先读 `references/design/visual-techniques.md`**——里面有动效工具链（IntersectionObserver / GSAP / Lottie / View Transitions / Scrollama / CSS scroll-timeline）、Canvas/WebGL 选型（three.js / p5.js / matter.js）、进阶排印（variable font / background-clip / SVG textPath / feTurbulence）、材质纹理层（grain / duotone / halftone）、地图（Leaflet / MapLibre / D3-geo / Deck.gl + 免费瓦片源）、Web Audio（Tone.js / 原生 AudioContext / sonification）、动画+声音协同（音频主时钟、三种协同模式、user gesture 门槛、mute 与 reduced-motion 双通道）、KaTeX 数学公式，以及每一层对应的 slop 红线（毛玻璃、glow border、粒子网背景、data-aos 全站铺、Leaflet 蓝大头针、Mercator 全球图、rainbow 色板、音频自动播放、音乐可视化跳舞背景等）。
+**做 hero / signature element / 复杂动效 / Canvas / WebGL / 进阶排印 / 材质纹理 / 地图 / 音频 / 音画同步 / 数学公式时先读 `references/design/visual-techniques.md`**——里面有动效工具链（IntersectionObserver / GSAP / Lottie / View Transitions / Scrollama / CSS scroll-timeline）、Canvas/WebGL 选型（three.js / p5.js / matter.js）、进阶排印（variable font / background-clip / SVG textPath / feTurbulence）、材质纹理层（grain / duotone / halftone）、地图（Leaflet / MapLibre / D3-geo / Deck.gl + 免费瓦片源）、Web Audio（Tone.js / 原生 AudioContext / sonification）、动画+声音协同（音频主时钟、三种协同模式、user gesture 门槛、mute 与 reduced-motion 双通道）、KaTeX 数学公式，以及每一层对应的 slop 红线（毛玻璃、glow border、遮挡内容的密集粒子、data-aos 全站铺、Leaflet 蓝大头针、Mercator 全球图、rainbow 色板、音频自动播放、音乐可视化跳舞背景等）。
 
 **设计 3D 场景读 `references/design/3d-design.md`**，掌握材质、阴影、光照、运镜的设计方法。
 
@@ -161,7 +170,8 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 
 | 文档 | 何时读 |
 | --- | --- |
-| [`lark-apps-publish.md`](references/lark-apps-publish.md) | 用户要「发布」「可访问的链接」，或给了 doubao-html 链接要基于它改 |
+| [`interactive-report.md`](references/interactive-report.md) | 灵动报告；确定题材表达、动态叙事与阅读体验 |
+| [`lark-apps-publish.md`](references/lark-apps-publish.md) | 用户要「发布」「可访问的链接」，或给了 doubao-html 链接要基于它改、发布出错 |
 | [`windows-compat.md`](references/windows-compat.md) | SystemPrompt 出现 `Computer OS: Windows`——**必须完整 Read**，否则大面积报错 |
 
 ### `references/design/`
@@ -179,3 +189,129 @@ python3 <SKILL_DIR>/scripts/shot.py <html_path>
 | [`atlas.md`](references/chart/atlas.md) | **做图表与图表交互的统一入口**：先定选型与信息组织，再按其中指引选读下面两份 |
 | [`reading-interactions.md`](references/chart/reading-interactions.md) | 常规读图、固定比较、总览查看某个对象的明细（由 atlas 分流，不单独作入口） |
 | [`experience-examples.md`](references/chart/experience-examples.md) | 从同一批记录筛群体做多维比较，或明确的教学实验（同上） |
+
+## 高频错误预防
+
+### 通用 · 适用所有任务
+
+#### 窄屏先设计，不要事后补丁
+
+- **第一行 CSS 就为 375px 写**，桌面扩展在 `@media (min-width: 768px)` 里追加。不要先写桌面 CSS，再补 max-width 媒体查询压回窄屏。
+- 多列 grid/flex 在 500px 断点**显式指定列数**（`grid-template-columns: repeat(N, 1fr)`，N 按内容密度自选）。**不用** `auto-fill` / `auto-fit`，它们在窄屏容易多算出一列把内容挤成一字宽。
+- Flex 子项加 `min-width: 0`，否则长英文单词撑出视口。
+- 流程图 / 时间轴在窄屏改成普通纵向文档流，不用 `position: absolute` 硬压。
+
+#### 移动端字体
+
+- **设计目标**：正文 / 说明 / 状态 / 可操作信息 ≥ 14px；`<input>` 和 `<textarea>` ≥ 16px。
+
+#### viewport meta 硬约束
+
+- `<meta name="viewport">` 必须有 `width=device-width, initial-scale=1`。
+- **禁止** `maximum-scale=1` 或 `user-scalable=no`
+
+#### 数据固化进 JS
+
+- **单文件交付默认把数据固化进 JS**（`const RAW_DATA = [...]`）
+- 大数据集（`RAW_DATA` >5MB或用户会频繁换数据）改用 `<input type="file">` + `FileReader`，让用户选文件。
+
+#### 表格列宽必须显式给
+
+- 多列表格加 `table-layout: fixed`，每一列写宽度加起来 100%（`<colgroup><col style="width:25%">` 或写在 `th` 上）。
+- 漏写一列，`auto` 布局会把它压到一字宽、中文逐字折行，行高被撑到半屏。
+
+#### 时间轴用 grid 三列
+
+- 三列（时间 / 轴 / 内容）：圆点放中列 `justify-self:center`，轴线用 `calc()` 从列宽变量推出——不要手算坐标。
+- 圆点中心和轴线中心 0px 对齐；文字和轴线不重叠。
+- 横向时间轴用 grid 三行 + `align-self:center`，同理。
+
+#### HTML / SVG 编码
+
+- **HTML 文本节点和属性值**里 `<`、`>`、`&` 必须转义（`&lt;` / `&gt;` / `&amp;`）。`<script>` / `<style>` 内容不转义（会破坏 JS/CSS 语法）；`<script>` 里如果需要写字符串 `</script>` 用 `<\/script>` 断开。
+- `<use href="#id" xlink:href="#id">` 同时写两个属性（`file://` 兼容）；SVG 引用禁止指向外部 URL。
+- 长字符串批量 Edit 前后核查 HTML 语法边界，别把容器提前闭合。
+
+#### shot.py 报告的正确读法
+
+stdout 会输出短摘要：给 `status`、各 severity 计数、截图路径、按规则聚合的 finding，以及 `reportPath`。
+不要用 `tail` / `grep` / pipe 处理 stdout。
+完整报告每次都会写到 `_shots/report.json`。要看 evidence / hint 细节就 Read。
+
+#### 验收的结束判据
+
+- 结束标准是：**影响功能、阅读、用户明确要求的问题已确认解决**。不要求 warning 清零。
+- 同类问题一次改完，不要一条一条改一条一条重跑。
+- 首次完整验收之后，只重查改动影响到的部分；只有改了全局布局、DOM 结构或外部依赖才重新完整验收。
+- 有 selector 就直接参考 selector 改，没 selector 的规则（consoleErrors / favicon / 字体这类文档级）看 `reportPath`。
+
+#### 改文件的顺序
+
+- 用 Bash / Python / 重定向写过文件之后，**下一次 Edit 前先 Read 一次**刷新文件状态。否则 Edit 会因文件状态过期被拒，你得把整个补丁重新写一遍。
+
+#### 交付资产
+
+- 一个 case 只交付一份 `.html`；present_files 的 `artifacts[].name` 写产物文件名（`销售仪表盘.html`），不另起标题。
+- 只做用户本轮明确要求的内容；未提供来源或不可验证的事实标为假设或不写。
+
+### dashboard · 数据看板 / 数据分析 / 仪表盘
+
+#### 数据：先搞清楚数据，再研究 UI
+
+- 用样本验证每个字段名、单位、类型、索引；不确定的字段不上页。
+- 为空、缺失、边界值先定明确显示态（"暂无数据"、"—"、"0%"），再写 UI。
+- 运行时算出的数值必须格式化再进 DOM：`toFixed(N)` 限位（避 `1/3` 变 `0.333333`）；大数用 `.toLocaleString()` 加千分位；涉及浮点等值比较用 `Math.round(x * 100) / 100` 收精度。
+
+#### 图表实体断言
+
+- 图表渲染失败的判据：摘要里没有 `consoleErrors`（ECharts 初始化失败会抛错）；截图上每个图表区域确实画出了内容而不是空白框。
+- canvas / SVG 元素数量与预期一致，缺就是渲染失败，不是"截图问题"。
+
+#### 图表空间预算
+
+- 标题 / 图例 / 轴标签 / 数据标注**不共用坐标空间**——先给每类元素预留独立矩形，再填内容。
+- 空间不足按顺序砍：隐藏次要数据标注 → 图例改 hover 悬浮 → 轴标签隔项 → 标题缩短。**禁止缩小字号硬塞**（会触发 `mobileFontIssuesWarning`）。
+- 移动端图表容器宽度应占视口 ≥ 65%，否则堆叠成单列——否则会出现"空图 / 一根线 / 坐标轴叠一起"。
+
+#### 多状态验收
+
+- 筛选、切 tab、看明细、重置这类联动，**挑一条最核心的**驱动一次确认联动生效（`--eval-file` 注入脚本 + 截图），不要每个状态都截一遍。
+- 剩余状态靠代码审查确认：同一套渲染函数、同一个数据源的状态，验一个就够。
+
+### interactive · 交互 / 游戏 / 工具应用
+
+#### 核心路径验一条
+
+- 交互 / 表单 / 游戏 / 多视图 / 路由类页面：**挑一条最核心的用户路径**驱动一次，确认主流程能走通（初始态 → 关键动作 → 结果态）。
+- 不要列 3-5 条路径逐条驱动，也不要每条路径都覆盖异常态。
+- 其余路径靠代码审查：共用同一个状态机/渲染函数的分支，验一条即可推及。
+
+#### 状态机 / 计算先 fixture 跑通再接 UI
+
+- 计算、状态、多窗口、路由、动画时序类逻辑：先用 **fixture / mock 数据**渲染，断言 DOM / 数值非空、状态变化正确，再接真实数据。
+- 不要一次拼完复杂内联 JS 就调视觉，保证基础的代码语法正确，代码中：`undefined`、错误闭合、越界索引会让整个图表 / 计分 / 日历空白。
+
+#### 触摸等价路径
+
+- 拖拽、悬停（hover-only 触发）、双击必须给触摸设备可完成的**点击等价路径**。
+- 可点击 / 可输入 / 可切换控件的**可点击热区**不小于 44×44px；控件本身可以小（如 checkbox 19×19），但外层可点击 `<label>` 或 wrapper 必须达标。
+
+#### 游戏 / 动画
+
+- 依赖时间的（计分、倒计时、AI 决策）用 fixture 跑通完整循环再接真实输入。
+- 音频类默认 mute + 用户 gesture 后启动，不要自动播放。
+- Canvas / WebGL / 3D 参考 `references/design/visual-techniques.md` 和 `references/design/3d-design.md`。
+
+### report · 长报告 / 信息图 / 长图 / 研报
+
+#### 打印 / 固定画布预算
+
+- 打印或固定尺寸作品（A4 / A1 / 海报）**在写内容前**先锁：viewport / DPR / 画布高度 / 字体行高 / 页脚 / 图例 / 标注安全区。
+- 首版同时写 print stylesheet，不要留到最后补。
+- 长表 `break-inside: avoid-page` 只对**短卡片**使用；整段长表或长 section 用它会产生大片空白。
+- 打印后只抽查：首页、一个跨页表格或长卡片、末页。不要每页都读。
+
+#### 装饰 vs 正文分层
+
+- 装饰性圆形 / 网格 / 出血背景放**独立绝对定位层**（`aria-hidden="true"`），**不要**给正文容器加 `overflow:hidden` 来裁装饰——会误伤正文触发 `clippedText`。
+- 页面渲染高度超过 16384px 会撞 Chromium 位图上限，末段分片会是白页。不是 shot.py bug——按章节重新组织内容，或明确接受"末段视觉不可见"。

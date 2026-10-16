@@ -1,53 +1,35 @@
-"""svg_lib/charts/quadrant.py
-
-2x2 quadrant / scatter chart with 5 variants:
-  dot_cross / bubble_L / label_box_quadrant_bg / emoji_icon_cross / ring_arrow
-
-Data schema
------------
-data = {
-    "items": [(name, x, y, size?), ...],   # size only used by `bubble_L`
-    "x_axis": (low, high),                 # x label endpoints, e.g. ("Value", "Premium")
-    "y_axis": (low, high),                 # y label endpoints
-    "highlight_name"?: str,                # if given, this item is drawn with accent color
-    "x_title"?: str,                       # optional axis title
-    "y_title"?: str,
-    "quadrant_labels"?: (TL, TR, BL, BR)?  # optional big quadrant labels (used by label_box_quadrant_bg)
-}
-
-Coordinates x, y expected in [0, 1] (like normalized market data) — anything outside
-still renders but clipped inside plot.
+"""2x2 quadrant / scatter chart with 5 variants:
+dot_cross / bubble_L / label_box_quadrant_bg / emoji_icon_cross / ring_arrow
 """
 
 from __future__ import annotations
-import math
-from ._shared import (
-    resolve_palette,
-    is_dark_palette,
-    xesc,
-    auto_font_size,
-    rgb_tuple,
-    _rgba_with_alpha,
-)
 
+import math
+from collections.abc import Sequence
 
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
     _derive_series_colors,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgb_tuple,
     _rgba_with_alpha,
+    _variant_is_classic,
     _xesc,
     auto_layout_labels,
-    _variant_is_classic,
-    _dispatch_to_svg_lib,
+)
+from .._typography import chart_font_sizes
+from ._shared import (
+    notes_source_footer,
+    tr,
+    auto_font_size,
+    is_dark_palette,
+    resolve_palette,
+    rgb_tuple,
+    xesc,
 )
 
 _VARIANTS = {
@@ -67,9 +49,9 @@ def draw_quadrant(
     palette: str = "archive_ink",
     width: float = 900,
     height: float = 620,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
 ) -> str:
     """Render 2x2 quadrant chart."""
     if variant not in _VARIANTS:
@@ -93,8 +75,6 @@ def draw_quadrant(
     muted = pal["muted"]
     ink6 = pal["ink6"]
     ink4 = pal["ink4"]
-    ink2 = pal["ink2"]
-    ink1 = pal["ink1"]
 
     dark = is_dark_palette(pal)
 
@@ -117,7 +97,6 @@ def draw_quadrant(
     plot_w = W - ML - MR
     plot_h = H - MT - MB
 
-    # Normalize items → compute px positions
     n = len(items)
     dot_r = max(6.0, min(14.0, 260.0 / max(6, n)))
     # bubble base radius scales down with n for bubble_L (25 items → ~12, 5 items → ~26)
@@ -137,7 +116,6 @@ def draw_quadrant(
     if ymax - ymin < 0.01:
         ymin -= 0.5
         ymax += 0.5
-    # pad
     xpad = (xmax - xmin) * 0.08
     ypad = (ymax - ymin) * 0.08
     xmin_p, xmax_p = xmin - xpad, xmax + xpad
@@ -165,7 +143,6 @@ def draw_quadrant(
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(W)} {int(H)}">']
     parts.append(f'<rect x="0" y="0" width="{W}" height="{H}" fill="{bg}"/>')
 
-    # ---- Title / subtitle / figure_label ----
     if title:
         parts.append(
             f'<text x="{ML:.1f}" y="{40:.1f}" font-family="Georgia, serif" '
@@ -187,7 +164,6 @@ def draw_quadrant(
             f"{xesc(figure_label)}</text>"
         )
 
-    # ---- Quadrant background tint (for label_box_quadrant_bg mostly) ----
     if variant == "label_box_quadrant_bg":
         acc_rgb = rgb_tuple(accent)
         sec_rgb = rgb_tuple(secondary)
@@ -211,11 +187,8 @@ def draw_quadrant(
             positions = [
                 # TL: right-aligned just left of mid-x, just below plot top
                 (mid_px - pad, plot_y + 20, "end"),
-                # TR: left-aligned just right of mid-x
                 (mid_px + pad, plot_y + 20, "start"),
-                # BL: right-aligned just above plot bottom
                 (mid_px - pad, plot_y + plot_h - 10, "end"),
-                # BR
                 (mid_px + pad, plot_y + plot_h - 10, "start"),
             ]
             for lab, (lx, ly, anch) in zip(quadrant_labels, positions):
@@ -225,7 +198,6 @@ def draw_quadrant(
                     f'fill="{ink4}" letter-spacing="0.16em">{xesc(str(lab).upper())}</text>'
                 )
 
-    # ---- Axes ----
     axis_stroke = ink6
     if variant == "bubble_L":
         # L-shaped axis: left + bottom only, others removed
@@ -245,19 +217,16 @@ def draw_quadrant(
             f'<line x1="{plot_x:.1f}" y1="{mid_py:.1f}" x2="{plot_x + plot_w:.1f}" y2="{mid_py:.1f}" '
             f'stroke="{ink}" stroke-width="1.1"/>'
         )
-        # right arrowhead
         arr_size = 6.0
         ax = plot_x + plot_w
         parts.append(
             f'<polygon points="{ax:.1f},{mid_py:.1f} {ax - arr_size:.1f},{mid_py - arr_size * 0.6:.1f} {ax - arr_size:.1f},{mid_py + arr_size * 0.6:.1f}" '
             f'fill="{ink}"/>'
         )
-        # vertical through mid
         parts.append(
             f'<line x1="{mid_px:.1f}" y1="{plot_y + plot_h:.1f}" x2="{mid_px:.1f}" y2="{plot_y:.1f}" '
             f'stroke="{ink}" stroke-width="1.1"/>'
         )
-        # top arrowhead (points up)
         ay = plot_y
         parts.append(
             f'<polygon points="{mid_px:.1f},{ay:.1f} {mid_px - arr_size * 0.6:.1f},{ay + arr_size:.1f} {mid_px + arr_size * 0.6:.1f},{ay + arr_size:.1f}" '
@@ -278,7 +247,6 @@ def draw_quadrant(
             f'stroke="{ink4}" stroke-width="0.9" stroke-dasharray="4 3"/>'
         )
 
-    # ---- Axis endpoint labels ----
     xlow, xhigh = x_axis
     ylow, yhigh = y_axis
     parts.append(
@@ -291,7 +259,6 @@ def draw_quadrant(
         f'font-family="Inter, sans-serif" font-size="11" fill="{muted}" letter-spacing="0.10em">'
         f"{xesc(str(xhigh).upper())} →</text>"
     )
-    # y axis rotated
     parts.append(
         f'<text x="{plot_x - 10:.1f}" y="{plot_y + plot_h - 4:.1f}" text-anchor="start" '
         f'font-family="Inter, sans-serif" font-size="11" fill="{muted}" letter-spacing="0.10em" '
@@ -305,7 +272,6 @@ def draw_quadrant(
         f"{xesc(str(yhigh).upper())} →</text>"
     )
 
-    # optional axis titles
     if x_title:
         parts.append(
             f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" text-anchor="middle" '
@@ -321,8 +287,6 @@ def draw_quadrant(
             f'transform="rotate(-90 {cxp:.1f} {cyp:.1f})">{xesc(y_title)}</text>'
         )
 
-    # ---- Data points ----
-    # decide bubble sizes for bubble_L
     sizes = None
     if variant == "bubble_L":
         sizes = [(it[3] if len(it) > 3 and it[3] is not None else 100) for it in items]
@@ -341,7 +305,6 @@ def draw_quadrant(
     acc_rgb = rgb_tuple(accent)
     sec_rgb = rgb_tuple(secondary)
 
-    # ---- Precompute per-item (px, py, r, name) so label placer can see neighbours ----
     names = [it[0] for it in items]
     coords = [(sx(it[1]), sy(it[2])) for it in items]
     if variant == "bubble_L":
@@ -382,9 +345,8 @@ def draw_quadrant(
     if variant in ("dot_cross", "bubble_L", "emoji_icon_cross", "ring_arrow"):
         points_for_place = [(coords[i][0], coords[i][1], radii[i]) for i in range(n)]
         keep_for_place = keep_label_idx if variant == "bubble_L" else (keep_label_idx if n > 12 else set(range(n)))
-        # Obstacle lines that must not slice through the label glyph band:
-        # the dashed median cross (only present on non-bubble_L variants) and the plot
-        # top/bottom borders (validator flags line_through_text for either).
+        # Obstacle lines that must not slice through the label glyph band: the dashed median cross (only present on
+        # non-bubble_L variants) and the plot top/bottom borders (validator flags line_through_text for either).
         _hline_ys = [plot_y, plot_y + plot_h]
         _vline_xs = [plot_x, plot_x + plot_w]
         if variant != "bubble_L":
@@ -428,53 +390,41 @@ def draw_quadrant(
             # Push pill away from the median cross so it lives entirely in its own quadrant.
             # Only shove when the dot is genuinely off-median; dots ON the median can straddle.
             eps = 1.0
-            # horizontal median (vertical shove)
             if abs(py - mid_py) > 3:
                 if py < mid_py:  # dot is above median → pill must stay above
                     if by + text_h > mid_py - eps:
                         by = mid_py - text_h - eps
                 else:  # dot is below median → pill stays below
-                    if by < mid_py + eps:
-                        by = mid_py + eps
-                # re-clamp to plot bounds
+                    by = max(by, mid_py + eps)
                 by = max(plot_y + 2, min(plot_y + plot_h - text_h - 2, by))
-            # vertical median (horizontal shove)
             if abs(px - mid_px) > 3:
                 if px < mid_px:
                     if bx + text_w > mid_px - eps:
                         bx = mid_px - text_w - eps
                 else:
-                    if bx < mid_px + eps:
-                        bx = mid_px + eps
+                    bx = max(bx, mid_px + eps)
                 bx = max(plot_x + 2, min(plot_x + plot_w - text_w - 2, bx))
-            # Dots that sit *on* the median (|py-mid_py| <= 3 or |px-mid_px| <= 3)
-            # need a definitive shove too — otherwise their pill straddles the
-            # dashed median line and the text inside gets sliced by
-            # embed_svg_line_through_text, AND overlaps the neighbour quadrant
-            # tint rect (embed_svg_text_shape_overlap). Pick the side that keeps
-            # the pill within its dominant quadrant based on data-space position.
-            if abs(py - mid_py) <= 3:
-                # pill fully above or below the horizontal median
-                if by + text_h > mid_py - eps and by < mid_py + eps:
-                    # currently straddles → shove based on where the pill fits
-                    up_room = (mid_py - eps) - (plot_y + 2)
-                    dn_room = (plot_y + plot_h - 2) - (mid_py + eps)
-                    if up_room >= text_h and (dn_room < text_h or up_room >= dn_room):
-                        by = mid_py - text_h - eps
-                    else:
-                        by = mid_py + eps
+            # Dots that sit *on* the median (|py-mid_py| <= 3 or |px-mid_px| <= 3) need a definitive shove too —
+            # otherwise their pill straddles the dashed median line and the text inside gets sliced by
+            # embed_svg_line_through_text, AND overlaps the neighbour quadrant tint rect (embed_svg_text_shape_overlap).
+            if abs(py - mid_py) <= 3 and by + text_h > mid_py - eps and by < mid_py + eps:
+                # Keep a straddling pill wholly on the side with sufficient room.
+                up_room = (mid_py - eps) - (plot_y + 2)
+                dn_room = (plot_y + plot_h - 2) - (mid_py + eps)
+                if up_room >= text_h and (dn_room < text_h or up_room >= dn_room):
+                    by = mid_py - text_h - eps
+                else:
+                    by = mid_py + eps
                     by = max(plot_y + 2, min(plot_y + plot_h - text_h - 2, by))
-            if abs(px - mid_px) <= 3:
-                if bx + text_w > mid_px - eps and bx < mid_px + eps:
-                    lf_room = (mid_px - eps) - (plot_x + 2)
-                    rt_room = (plot_x + plot_w - 2) - (mid_px + eps)
-                    if lf_room >= text_w and (rt_room < text_w or lf_room >= rt_room):
-                        bx = mid_px - text_w - eps
-                    else:
-                        bx = mid_px + eps
-                    bx = max(plot_x + 2, min(plot_x + plot_w - text_w - 2, bx))
+            if abs(px - mid_px) <= 3 and bx + text_w > mid_px - eps and bx < mid_px + eps:
+                lf_room = (mid_px - eps) - (plot_x + 2)
+                rt_room = (plot_x + plot_w - 2) - (mid_px + eps)
+                if lf_room >= text_w and (rt_room < text_w or lf_room >= rt_room):
+                    bx = mid_px - text_w - eps
+                else:
+                    bx = mid_px + eps
+                bx = max(plot_x + 2, min(plot_x + plot_w - text_w - 2, bx))
             bbox = (bx, by, text_w, text_h)
-            # collision with earlier placed pills?
             collides = any(_bbox_overlap(bbox, b, pad=1.0) for b in placed_pill_bboxes)
             # After shove, does the bbox still straddle a median line?
             straddles = False
@@ -483,11 +433,8 @@ def draw_quadrant(
             if by < mid_py - eps and by + text_h > mid_py + eps:
                 straddles = True
             show = True
-            if names[i] != highlight_name:
-                if collides:
-                    show = False
-                elif straddles and n > 6:
-                    show = False
+            if names[i] != highlight_name and (collides or straddles and n > 6):
+                show = False
             if show:
                 placed_pill_bboxes.append(bbox)
             pill_slots[i] = {"show": show, "bx": bx, "by": by, "w": text_w, "h": text_h, "fs": fs_pill}
@@ -576,7 +523,7 @@ def draw_quadrant(
             # straddle the horizontal median line at mid_py (dashed cross line strikes glyph).
             gpy = py
 
-            def _glyph_bounds(g):
+            def _glyph_bounds(g, fs=fs):
                 return (g + fs * 0.36 - fs * 1.1, g + fs * 0.36 + fs * 0.2)
 
             glyph_top, glyph_bot = _glyph_bounds(gpy)
@@ -638,13 +585,8 @@ def _emit_label_from_plan(parts, plan, name, ink, bg, fs):
 
 
 def _append_name_label(parts, px, py, r, name, ink, bg, fs, plot_x=None, plot_y=None, plot_w=None, plot_h=None):
-    """Place a name label near the point with a background halo.
-
-    Default position: above-right of point.
-    If plot bounds provided: flip to left/below when default would clip.
-    """
+    """Place a name label near the point with a background halo."""
     est_w = max(1, len(str(name))) * (fs * 0.62) + 6
-    # default above-right
     lx = px + r + 4
     ly = py - r - 4
     anchor = "start"
@@ -654,10 +596,9 @@ def _append_name_label(parts, px, py, r, name, ink, bg, fs, plot_x=None, plot_y=
         if lx + est_w > right_edge - 2:
             lx = px - r - 4
             anchor = "end"
-    if plot_y is not None and plot_h is not None:
-        # if label above would clip plot top → put below point
-        if ly - fs < plot_y + 2:
-            ly = py + r + fs + 2
+    if plot_y is not None and plot_h is not None and ly - fs < plot_y + 2:
+        # Put the label below its point when it would clip the plot top.
+        ly = py + r + fs + 2
     parts.append(
         f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
         f'font-family="Inter, sans-serif" font-size="{fs}" font-weight="600" '
@@ -667,11 +608,7 @@ def _append_name_label(parts, px, py, r, name, ink, bg, fs, plot_x=None, plot_y=
 
 
 def _text_bbox(lx, ly, anchor, name, fs):
-    """Return (bx, by, bw, bh) for a text label rendered at (lx, ly) with anchor.
-
-    Matches the validator's bbox estimator (ascii*0.7 + cjk*1.1) * fs and height=fs*1.3.
-    ly is the baseline; top is ly - fs*1.1.
-    """
+    """Return (bx, by, bw, bh) for a text label rendered at (lx, ly) with anchor."""
     s = str(name)
     n_ascii = sum(1 for c in s if ord(c) < 128)
     n_cjk = len(s) - n_ascii
@@ -700,8 +637,7 @@ def _center_inside_circle(cx, cy, ccx, ccy, cr):
 
 
 def _bbox_overlaps_circle(bbox, ccx, ccy, cr):
-    """Rect-vs-circle-bounding-box overlap. Matches validator behaviour which uses
-    axis-aligned bounding boxes for both text and shapes (see _svg_bbox_overlap)."""
+    """Rect-vs-circle-bounding-box overlap."""
     bx, by, bw, bh = bbox
     cbx = ccx - cr
     cby = ccy - cr
@@ -723,35 +659,7 @@ def _place_scatter_labels(
     hline_ys=None,
     vline_xs=None,
 ):
-    """Compute label positions for scatter points, avoiding other dots + text overlaps.
-
-    points: list of (px, py, r) — dot center + radius (including any halo margin)
-    names:  list of str
-    fs:     label font size
-    keep_all_idx: optional set of indices that must always be labeled (e.g. highlight)
-    median_x, median_y: optional px positions of the quadrant median cross. When given,
-        each label bbox must sit fully on the same side of the median as its own dot,
-        otherwise the label's center falls into a neighbour quadrant tint and the
-        validator flags text_shape_overlap against that tint rect.
-    point_data_xy: optional list of (data_x, data_y) — required alongside median_x/y so
-        we know which side of the median each dot belongs to.
-    hline_ys, vline_xs: optional obstacle horizontal / vertical line coordinates. When a
-        candidate label bbox's glyph band (15%-70% of height) crosses any of these lines
-        the validator flags ``embed_svg_line_through_text``; scoring penalises such
-        candidates so the placer prefers offsets that clear the dashed median cross and
-        plot borders.
-
-    Returns: list of dict per point:
-        {"show": bool, "lx": float, "ly": float, "anchor": "start"|"end"|"middle",
-         "bbox": (bx,by,bw,bh)}
-
-    Algorithm:
-      - Try 8 candidate positions per point (E, W, SE, SW, NE, NW, N, S)
-      - Prefer candidates that don't overlap ANY other dot's expanded circle
-      - Reject candidates whose bbox crosses the quadrant median (when given)
-      - Among ok candidates, prefer the one with lowest text-vs-text overlap
-      - If nothing works and n is large → hide label (unless keep_all_idx)
-    """
+    """Compute label positions for scatter points, avoiding other dots + text overlaps."""
     N = len(points)
     keep_all_idx = keep_all_idx or set()
     check_median = median_x is not None and median_y is not None and point_data_xy is not None
@@ -759,13 +667,10 @@ def _place_scatter_labels(
     vline_xs = vline_xs or []
 
     def candidates(px, py, r):
-        # (dx, dy, anchor) — dy is offset for baseline (positive = below dot center)
-        # r+4 gap keeps label clear of the dot circle. When neighbouring dots
-        # overlap this one (dense scatters), the "near ring" of 8 candidates all
-        # collide with the neighbour's circle. Emit a "far ring" too — pushed out
-        # by ~2r so the label clears the merged neighbour blob.
+        # (dx, dy, anchor) — dy is offset for baseline (positive = below dot center) r+4 gap keeps label clear of the
+        # dot circle.
         gap = 4
-        far = r + gap + int(round(r * 1.4)) + 2  # extra push for dense clusters
+        far = r + gap + round(r * 1.4) + 2  # extra push for dense clusters
         near = [
             (r + gap, -(r * 0.4), "start"),  # E (right of dot)
             (-(r + gap), -(r * 0.4), "end"),  # W (left of dot)
@@ -798,10 +703,9 @@ def _place_scatter_labels(
         if not check_median:
             return False
         bx, by, bw, bh = bbox
-        dx_data, dy_data = point_data_xy[i]
-        # Vertical median: bbox must stay on dot's side of median_x
-        # Only apply when the dot is meaningfully offset from the median line;
-        # dots that sit exactly on the median can be labelled on either side.
+        _dx_data, _dy_data = point_data_xy[i]
+        # Vertical median: bbox must stay on dot's side of median_x Only apply when the dot is meaningfully offset from
+        # the median line; dots that sit exactly on the median can be labelled on either side.
         px_own, py_own, _ = points[i]
         eps = 2.0
         if abs(px_own - median_x) > eps:
@@ -816,29 +720,8 @@ def _place_scatter_labels(
                 return True
         return False
 
-    def line_through(lx, ly, anchor, name):
-        """Return True if any obstacle line crosses the glyph band (15%-70% of bbox height)
-        as the embed validator's `embed_svg_line_through_text` rule does. That rule fires
-        whenever a horizontal line intersects a text box's vertical [15%, 70%] slice AND
-        spans at least half the text width horizontally — since our obstacle lines all
-        run full-plot-width or full-plot-height, the horizontal-span condition is
-        automatically satisfied and it's sufficient to check the band overlap here.
-
-        NOTE: the placer's ``_text_bbox`` uses a padded box (height=fs*1.3, top=ly-1.1*fs)
-        for text-vs-text collision scoring, but the validator uses a tighter box
-        (height=fs, top=ly-0.8*fs). Recompute the tight box here so we agree with
-        what the validator actually flags.
-        """
-        s = str(name)
-        n_ascii = sum(1 for c in s if ord(c) < 128)
-        n_cjk = len(s) - n_ascii
-        w = max(1, n_ascii * fs * 0.7 + n_cjk * fs * 1.1)
-        if anchor == "start":
-            bx = lx
-        elif anchor == "end":
-            bx = lx - w
-        else:
-            bx = lx - w / 2
+    def line_through(ly):
+        """Return True if any obstacle line crosses the glyph band (15%-70% of bbox height)"""
         by = ly - fs * 0.8
         band_top = by + fs * 0.15
         band_bot = by + fs * 0.7
@@ -866,7 +749,7 @@ def _place_scatter_labels(
             if not in_bounds(bbox):
                 continue
             median_cross = crosses_median(bbox, i)
-            line_hit = line_through(lx, ly, anchor, name)
+            line_hit = line_through(ly)
             # count dot overlaps (label center inside other dot is very bad)
             dot_overlap = 0
             center_inside = 0
@@ -880,7 +763,6 @@ def _place_scatter_labels(
                     dot_overlap += 1
                     if _center_inside_circle(bcx, bcy, opx, opy, orad + 2):
                         center_inside += 1
-            # count text-vs-text overlaps with already placed
             text_overlap = sum(1 for b in placed_boxes if _bbox_overlap(bbox, b, pad=1.0))
             # line_through weight sits between median_cross (1000) and center_inside
             # (100): a labelled dot near an axis or median line should flip to the
@@ -904,18 +786,10 @@ def _place_scatter_labels(
             if results[i]["show"]:
                 placed_boxes.append(bbox)
             continue
-        lx, ly, anchor, bbox, score, dot_ov, cent_in, txt_ov, med_cross = best
-        # decide show / hide
+        lx, ly, anchor, bbox, score, dot_ov, cent_in, _txt_ov, med_cross = best
         show = True
-        if i not in keep_all_idx:
-            # Hard fail: if placement is really bad (label center falls inside
-            # another dot, or crosses the quadrant median) the validator would
-            # flag text_shape_overlap regardless of N. Drop the label rather than
-            # keep a broken one.
-            if cent_in > 0 or med_cross:
-                show = False
-            elif N > 12 and dot_ov > 0 and N > 15:
-                show = False
+        if i not in keep_all_idx and (cent_in > 0 or med_cross or dot_ov > 0 and N > 15):
+            show = False
         results[i] = {"show": show, "lx": lx, "ly": ly, "anchor": anchor, "bbox": bbox}
         if show:
             placed_boxes.append(bbox)
@@ -925,30 +799,32 @@ def _place_scatter_labels(
 
 def make_quadrant_2x2(
     items: Sequence,
-    x_axis: Sequence[str] = None,
-    y_axis: Sequence[str] = None,
-    x_title: str = None,
-    y_title: str = None,
-    x_title_sub: str = None,
-    y_title_sub: str = None,
-    highlight_index: int = None,
-    quadrant_labels: Sequence[str] = None,
-    quadrant_subs: Sequence[str] = None,
-    x_range: Sequence[float] = None,
-    y_range: Sequence[float] = None,
-    x_median: float = None,
-    y_median: float = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    note: str = None,
-    source: str = None,
-    categories: dict = None,
-    category_labels: dict = None,
-    insights: list = None,
-    font_family: str = None,
+    x_axis: Sequence[str] | None = None,
+    y_axis: Sequence[str] | None = None,
+    x_title: str | None = None,
+    y_title: str | None = None,
+    x_title_sub: str | None = None,
+    y_title_sub: str | None = None,
+    highlight_index: int | None = None,
+    quadrant_labels: Sequence[str] | None = None,
+    quadrant_subs: Sequence[str] | None = None,
+    x_range: Sequence[float] | None = None,
+    y_range: Sequence[float] | None = None,
+    x_median: float | None = None,
+    y_median: float | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    note: str | None = None,
+    source: str | None = None,
+    categories: dict | None = None,
+    category_labels: dict | None = None,
+    insights: list | None = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
+    width: float | None = None,
+    height: float | None = None,
 ) -> str:
     """
     2×2 象限散点图（Dandelion FT/Bloomberg academic 风格）。
@@ -962,7 +838,7 @@ def make_quadrant_2x2(
 
     坐标系：
       - x_range/y_range: (min, max) 数据范围。缺省用 items 的 min/max 外扩 10%。
-      - x_median/y_median: 中位线位置，缺省用 (min+max)/2。
+      - x_median/y_median: 兼容参数名，控制参考分界位置；缺省用轴范围中点，不推断样本中位数。
       - x_title/y_title: 主轴标题；x_title_sub/y_title_sub 副标（斜体灰）
       - x_axis/y_axis: 简单模式（0-1 归一化）时的端点两级标签 ("低","高")
 
@@ -980,6 +856,8 @@ def make_quadrant_2x2(
     highlight_index: 高亮某点（额外描边）
 
     palette: 支持 palette str/dict；使用 accent 系派生 categories 色
+    width/height: 可选 viewBox 尺寸；传入 embed 框尺寸（如 880x400 / 420x380）时按该画布排版，
+                  字号按 1:1 缩放保持 ≥10pt。缺省 1050x820（有右侧面板时 1500x820）。
     """
     if not _variant_is_classic("quadrant_2x2", variant):
         _data = {
@@ -1008,19 +886,11 @@ def make_quadrant_2x2(
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"],
-        _pal["ink6"],
-        _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
-        _pal["accent"],
-    )
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_bg = _pal.get("bg")
     PAPER = c_bg if c_bg else "rgba(255,255,255,1)"
 
-    # ---------- 归一化 items ----------
     norm = []
     for it in items:
         if isinstance(it, dict):
@@ -1042,8 +912,7 @@ def make_quadrant_2x2(
             if isinstance(cat, bool):
                 cat = None  # 兼容老 highlight bool
         else:
-            raise ValueError(f"quadrant_2x2: item must be tuple/dict: {it}")
-        # size None → default
+            raise TypeError(f"quadrant_2x2: item must be tuple/dict: {it}")
         if size is None:
             size = 100
         norm.append({"name": str(name), "x": float(x), "y": float(y), "size": float(size), "cat": cat, "note": note_})
@@ -1054,7 +923,6 @@ def make_quadrant_2x2(
         x_range = (0, 1)
         y_range = (0, 1)
 
-    # 坐标范围
     if x_range is None:
         xs = [it["x"] for it in norm]
         pad = (max(xs) - min(xs)) * 0.1 if len(xs) > 1 else 1
@@ -1071,7 +939,6 @@ def make_quadrant_2x2(
     if y_median is None:
         y_median = (Y_MIN + Y_MAX) / 2
 
-    # ---------- 类别色 ----------
     used_cats = []
     seen = set()
     for it in norm:
@@ -1088,48 +955,85 @@ def make_quadrant_2x2(
     if category_labels is None:
         category_labels = {c: c.replace("_", " ").title() for c in used_cats}
 
-    # ---------- 画布 ----------
     # 如果有 categories / insights / 简单模式（无 categories 时省略右侧面板缩小画布）
     has_side = bool(used_cats) or bool(insights)
-    W = 1500 if has_side else 1050
-    H = 820
-    MARGIN_L = 120
-    MARGIN_R = 400 if has_side else 60
-    MARGIN_T = 155 if title else 80
-    MARGIN_B = 130 if (note or source) else 90
+    sized = width is not None or height is not None
+    W = float(width) if width is not None else (1500 if has_side else 1050)
+    H = float(height) if height is not None else 820
+    MARGIN_L = 40 if sized else 120
+    MARGIN_R = (min(400.0, max(220.0, W * 0.34)) if sized else 400) if has_side else (24 if sized else 60)
+    MARGIN_T = 155 if title else (24 if sized else 80)
+    MARGIN_B = 130 if (note or source) else (24 if sized else 90)
 
     plot_x = MARGIN_L
     plot_w = W - MARGIN_L - MARGIN_R
     plot_y = MARGIN_T
     plot_h = H - MARGIN_T - MARGIN_B
 
-    # ---------- 字号自适应基准 ----------
     # viewBox 尺寸 + 数据规模 (n = items 数) 双重自适应。
     # slide 里排 3 张 SVG 缩到 400px 宽时字也读得清。
-    _n_items_fs = len(norm)
-    _base_fs = min(W, H) * 0.02  # W=1050/1500,H=820 → 16.4
-    if _n_items_fs <= 4:
-        _fs_data = _base_fs * 1.4
-    elif _n_items_fs <= 8:
-        _fs_data = _base_fs * 1.0
-    elif _n_items_fs <= 15:
-        _fs_data = _base_fs * 0.8
-    else:
-        _fs_data = max(_base_fs * 0.6, 10)
+    _base_fs = min(W, H) * 0.02
 
     # 各类文字：主体（title/subtitle/figure_label）按 _base_fs 倍数；
-    # 数据点标签按 _fs_data；辅助文字（tick/median/corner）介于两者之间。
+    # 数据点、刻度和轴标题使用共享密度策略，辅助文字保留较小层级。
     _fs_title = round(min(34.0, max(20.0, _base_fs * 1.6)), 1)
     _fs_subtitle = round(min(16.0, max(10.0, _base_fs * 0.75)), 1)
     _fs_figure = round(min(13.0, max(9.0, _base_fs * 0.62)), 1)
-    _fs_tick = round(min(15.0, max(10.0, _base_fs * 0.7)), 1)
-    _fs_axis_title = round(min(18.0, max(11.0, _base_fs * 0.85)), 1)
-    _fs_corner = round(min(18.0, max(11.0, _base_fs * 0.85)), 1)
-    _fs_corner_sub = round(min(13.0, max(9.0, _base_fs * 0.65)), 1)
-    _fs_median = round(min(12.0, max(8.5, _base_fs * 0.6)), 1)
-    _fs_endpoint = round(min(13.0, max(9.0, _base_fs * 0.7)), 1)  # 简单模式端点
+    fonts = chart_font_sizes(W, H, len(norm))
+    _fs_tick = round(fonts["xtick"], 1)
+    _fs_axis_title = round(fonts["xaxis"], 1)
+    _fs_corner = round(max(18.0, W / 48), 1)
+    _fs_corner_sub = round(max(14.0, W / 50), 1)
+    _fs_median = round(max(14.0, W / 45), 1)
+    if sized:
+        _fs_corner = round(max(12.0, min(_fs_corner, W / 40, H / 24)), 1)
+        _fs_corner_sub = round(max(11.0, min(_fs_corner_sub, _fs_corner * 0.8)), 1)
+        _fs_median = round(max(12.0, min(_fs_median, _fs_tick)), 1)
+    _fs_endpoint = round(fonts["label"], 1)  # 简单模式端点
     _fs_side_hdr = round(min(13.0, max(9.0, _base_fs * 0.65)), 1)
     _fs_side_lbl = round(min(14.0, max(10.0, _base_fs * 0.75)), 1)
+    from ._chart_layout import wrap_lines
+
+    MARGIN_R = max(
+        MARGIN_R,
+        _estimate_label_width_px(f"y={y_median:g}", _fs_median, bold=True, font_family=_body_font) * 1.1
+        + _fs_median * 0.3
+        + 10,
+    )
+    plot_w = W - MARGIN_L - MARGIN_R
+    _corner_width = max(80.0, plot_w / 2 - 28)
+    _corner_lines = [
+        wrap_lines(str(label), _corner_width, _fs_corner * 1.05, _body_font)
+        for label in (quadrant_labels or tuple(tr(label) for label in ("PREMIUM", "LEADERS", "LAGGARDS", "VALUE")))
+    ]
+    _max_corner_lines = max(map(len, _corner_lines))
+    _corner_block = _max_corner_lines * _fs_corner * 1.35 + _fs_corner_sub * 1.35 + 16
+    _corner_offset = max(
+        (68 if x_title else 44) if not sized else 0,
+        _fs_tick * 1.4 + _fs_corner + 10 + (_fs_axis_title * 1.3 if x_title else 0),
+    )
+    if len(norm) > 8:
+        _corner_block -= _fs_corner_sub * 1.35 + 8
+    MARGIN_T = max(MARGIN_T, _corner_block + (_fs_corner + 14 if sized else 30))
+    MARGIN_B = max(MARGIN_B, _corner_block + _corner_offset + (60 if note or source else (8 if sized else 20)))
+    plot_y = MARGIN_T
+    plot_h = H - MARGIN_T - MARGIN_B
+
+    endpoint_width = max(
+        (
+            _estimate_label_width_px(str(value).upper(), _fs_endpoint, bold=True, font_family=_body_font)
+            for value in (y_axis or [])
+        ),
+        default=0,
+    )
+    numeric_width = max(
+        _estimate_label_width_px(f"{value:,.2f}", _fs_tick, font_family=_body_font) for value in (Y_MIN, Y_MAX)
+    )
+    axis_gutter = max(endpoint_width, numeric_width) + (1.4 * _fs_axis_title if y_title else 0) + 34
+    MARGIN_L = max(MARGIN_L, axis_gutter)
+    MARGIN_B = max(MARGIN_B, _fs_tick * 1.4 + _fs_axis_title * 1.4 + 35 + (35 if note or source else 0))
+    plot_x, plot_w = MARGIN_L, W - MARGIN_L - MARGIN_R
+    plot_h = H - MARGIN_T - MARGIN_B
 
     def x_of(v):
         return plot_x + (v - X_MIN) / max(1e-9, X_MAX - X_MIN) * plot_w
@@ -1151,11 +1055,9 @@ def make_quadrant_2x2(
 
     parts = []
 
-    # 深底 palette 加背景
     if c_bg:
         parts.append(f'<rect width="{W}" height="{H}" fill="{PAPER}"/>')
 
-    # ---------- 顶部标题 ----------
     if title:
         parts.append(
             f'<text x="{MARGIN_L}" y="52" '
@@ -1169,7 +1071,6 @@ def make_quadrant_2x2(
             f'font-family="{_body_font}" font-size="{_fs_subtitle}" fill="{c_muted}" '
             f'letter-spacing=".16em">{_xesc(subtitle)}</text>'
         )
-        # 分隔线（跨越到右侧面板）
         parts.append(f'<line x1="{MARGIN_L}" y1="92" x2="{W - 40}" y2="92" stroke="{_INK}" stroke-width="0.8"/>')
     if figure_label:
         parts.append(
@@ -1183,19 +1084,20 @@ def make_quadrant_2x2(
             f'fill="{c_muted}" letter-spacing=".04em">{_xesc(note_txt)}</text>'
         )
 
-    # ---------- 象限背景 tint ----------
     mx = x_of(x_median)
     my = y_of(y_median)
 
     if quadrant_labels is None:
-        # 默认四象限名（academic 版）
-        quadrant_labels = ("PREMIUM", "LEADERS", "LAGGARDS", "VALUE")
+        quadrant_labels = tuple(tr(label) for label in ("PREMIUM", "LEADERS", "LAGGARDS", "VALUE"))
     if quadrant_subs is None:
-        quadrant_subs = (
-            "Top score, lower value",
-            "High performance · high value",
-            "Underperform on both axes",
-            "Efficient, mid-tier score",
+        quadrant_subs = tuple(
+            tr(sub)
+            for sub in (
+                "Top score, lower value",
+                "High performance · high value",
+                "Underperform on both axes",
+                "Efficient, mid-tier score",
+            )
         )
 
     # 4 象限位置：左上 / 右上 / 左下 / 右下
@@ -1210,7 +1112,6 @@ def make_quadrant_2x2(
     tint_alphas = [0.08, 0.10, 0.06, 0.06]
     for i, (qx1, qy1, qx2, qy2) in enumerate(quad_regions):
         tint = tints[i]
-        # 转成低 alpha 版本
         r, g, b = _rgb_tuple(tint)
         parts.append(
             f'<rect x="{qx1:.1f}" y="{qy1:.1f}" '
@@ -1218,7 +1119,6 @@ def make_quadrant_2x2(
             f'fill="rgba({r},{g},{b},{tint_alphas[i]})"/>'
         )
 
-    # ---------- 象限角标签 ----------
     # 角标放到 plot 外沿（顶部/底部），而不是象限内部：内部角落经常与靠近轴端的
     # marker circle 撞。放到外沿时需要避开轴端点标签（← LOW / HIGH →，y=plot_y+plot_h+22）
     # 和 x_title（y=plot_y+plot_h+46）。
@@ -1230,30 +1130,32 @@ def make_quadrant_2x2(
         # 顶部两角：紧贴 plot 上沿；底部两角：放到 x_title 之下、page footer 之上。
         top_y = plot_y - 12
         # x_title 在 plot_y+plot_h+46；再下移 20 给它空间。
-        bot_y = plot_y + plot_h + (68 if x_title else 44)
+        bot_y = plot_y + plot_h + _corner_offset
         corner_positions = [
             (plot_x + 12, top_y, "start", quadrant_labels[0], quadrant_subs[0], tints[0], "above"),
             (plot_x + plot_w - 12, top_y, "end", quadrant_labels[1], quadrant_subs[1], tints[1], "above"),
             (plot_x + 12, bot_y, "start", quadrant_labels[2], quadrant_subs[2], tints[2], "below"),
             (plot_x + plot_w - 12, bot_y, "end", quadrant_labels[3], quadrant_subs[3], tints[3], "below"),
         ]
-        for cx, cy, anch, lab, sub, col, side in corner_positions:
-            parts.append(
-                f'<text x="{cx:.1f}" y="{cy:.1f}" text-anchor="{anch}" '
-                f'font-family="{_body_font}" font-size="{_fs_corner}" font-weight="700" '
-                f'fill="{col}" letter-spacing=".18em">{_xesc(lab)}</text>'
-            )
-            if sub and _show_corner_subs:
-                # 顶部的 sub 放在 lab 之上（更远离 plot），底部的 sub 放在 lab 之下。
-                # 保留足够 baseline 差，避免 lab (h≈14) 与 sub (h≈11) bbox 相交（需 ≥17）。
-                sub_dy = -18 if side == "above" else 18
+        for index, (cx, cy, anch, lab, sub, col, side) in enumerate(corner_positions):
+            lines = _corner_lines[index]
+            first_y = cy - (len(lines) - 1) * _fs_corner * 1.35 if side == "above" else cy
+            for line_index, line in enumerate(lines):
                 parts.append(
-                    f'<text x="{cx:.1f}" y="{cy + sub_dy:.1f}" text-anchor="{anch}" '
+                    f'<text x="{cx:.1f}" y="{first_y + line_index * _fs_corner * 1.35:.1f}" text-anchor="{anch}" '
+                    f'font-family="{_body_font}" font-size="{_fs_corner}" font-weight="700" '
+                    f'fill="{col}">{_xesc(line)}</text>'
+                )
+            if sub and _show_corner_subs:
+                sub_y = (
+                    first_y - _fs_corner * 1.35 - 8 if side == "above" else first_y + len(lines) * _fs_corner * 1.35 + 8
+                )
+                parts.append(
+                    f'<text x="{cx:.1f}" y="{sub_y:.1f}" text-anchor="{anch}" '
                     f'font-family="{_body_font}" font-size="{_fs_corner_sub}" font-style="italic" '
                     f'fill="{c_muted}">{_xesc(sub)}</text>'
                 )
 
-    # ---------- 网格 + 刻度 ----------
     # 自动选 tick：数据范围 span / 8 nice-number
     def _nice_ticks(vmin, vmax, target=8):
         span = vmax - vmin
@@ -1295,7 +1197,6 @@ def make_quadrant_2x2(
             f'stroke="{grid_stroke}" stroke-width="0.6"/>'
         )
 
-    # 中位线（双虚线，粗一些）
     parts.append(
         f'<line x1="{mx:.1f}" y1="{plot_y}" x2="{mx:.1f}" y2="{plot_y + plot_h}" '
         f'stroke="{c_muted}" stroke-width="1.2" stroke-dasharray="4 4"/>'
@@ -1305,19 +1206,18 @@ def make_quadrant_2x2(
         f'stroke="{c_muted}" stroke-width="1.2" stroke-dasharray="4 4"/>'
     )
 
-    # 中位线标注 "MEDIAN"
+    # Reference split positions are not sample medians.
     parts.append(
-        f'<text x="{mx:.1f}" y="{plot_y - 6}" text-anchor="middle" '
+        f'<text x="{mx:.1f}" y="{plot_y - _fs_corner * 1.35 - 10:.1f}" text-anchor="middle" '
         f'font-family="{_body_font}" font-size="{_fs_median}" fill="{c_muted}" '
-        f'letter-spacing=".14em">MEDIAN</text>'
+        f'data-role="reference-split" data-value="{x_median:g}">x={x_median:g}</text>'
     )
     parts.append(
         f'<text x="{plot_x + plot_w + 6}" y="{my + 3:.1f}" text-anchor="start" '
         f'font-family="{_body_font}" font-size="{_fs_median}" fill="{c_muted}" '
-        f'letter-spacing=".14em">MEDIAN</text>'
+        f'data-role="reference-split" data-value="{y_median:g}">y={y_median:g}</text>'
     )
 
-    # X/Y 轴边框
     parts.append(
         f'<line x1="{plot_x}" y1="{plot_y + plot_h}" x2="{plot_x + plot_w}" y2="{plot_y + plot_h}" '
         f'stroke="{_INK}" stroke-width="1"/>'
@@ -1326,10 +1226,9 @@ def make_quadrant_2x2(
         f'<line x1="{plot_x}" y1="{plot_y}" x2="{plot_x}" y2="{plot_y + plot_h}" stroke="{_INK}" stroke-width="1"/>'
     )
 
-    # 刻度标签
     def _fmt_tick(v):
         if abs(v) >= 100:
-            return f"{int(round(v)):,}"
+            return f"{round(v):,}"
         elif abs(v) >= 1:
             return f"{v:g}"
         else:
@@ -1342,7 +1241,7 @@ def make_quadrant_2x2(
         for xv in xticks:
             px = x_of(xv)
             parts.append(
-                f'<text x="{px:.1f}" y="{plot_y + plot_h + 18}" text-anchor="middle" '
+                f'<text x="{px:.1f}" y="{plot_y + plot_h + _fs_tick + 8}" text-anchor="middle" '
                 f'font-family="{_body_font}" font-size="{_fs_tick}" fill="{c_muted}">'
                 f"{_xesc(_fmt_tick(xv))}</text>"
             )
@@ -1354,7 +1253,6 @@ def make_quadrant_2x2(
                 f"{_xesc(_fmt_tick(yv))}</text>"
             )
 
-    # ---------- 轴标题 + 副标 ----------
     if x_title:
         tspan = (
             f' <tspan fill="{c_muted}" font-weight="400" font-style="italic">{_xesc(x_title_sub)}</tspan>'
@@ -1362,7 +1260,7 @@ def make_quadrant_2x2(
             else ""
         )
         parts.append(
-            f'<text x="{plot_x + plot_w / 2}" y="{plot_y + plot_h + 42}" text-anchor="middle" '
+            f'<text x="{plot_x + plot_w / 2}" y="{plot_y + plot_h + _fs_tick * 1.4 + _fs_axis_title + 18}" text-anchor="middle" '
             f'font-family="{_body_font}" font-size="{_fs_axis_title}" font-weight="600" '
             f'fill="{_INK}">{_xesc(x_title)}  →  {tspan}</text>'
         )
@@ -1372,7 +1270,7 @@ def make_quadrant_2x2(
             if y_title_sub
             else ""
         )
-        ytx = plot_x - 60
+        ytx = plot_x - max(endpoint_width, numeric_width) - _fs_axis_title - 22
         yty = plot_y + plot_h / 2
         parts.append(
             f'<text x="{ytx}" y="{yty}" transform="rotate(-90 {ytx} {yty})" '
@@ -1381,16 +1279,15 @@ def make_quadrant_2x2(
             f"{_xesc(y_title)}  →  {tspan}</text>"
         )
 
-    # ---------- 简单模式端点标签 ----------
     if simple_mode and (x_axis or y_axis):
         if x_axis and len(x_axis) >= 2:
             parts.append(
-                f'<text x="{plot_x + 8}" y="{plot_y + plot_h + 18}" '
+                f'<text x="{plot_x + 8}" y="{plot_y + plot_h + _fs_tick + 8}" '
                 f'font-family="{_body_font}" font-size="{_fs_endpoint}" font-weight="700" '
                 f'fill="{c_muted}" letter-spacing=".1em">{_xesc(str(x_axis[0]).upper())}</text>'
             )
             parts.append(
-                f'<text x="{plot_x + plot_w - 8}" y="{plot_y + plot_h + 18}" '
+                f'<text x="{plot_x + plot_w - 8}" y="{plot_y + plot_h + _fs_tick + 8}" '
                 f'text-anchor="end" font-family="{_body_font}" font-size="{_fs_endpoint}" '
                 f'font-weight="700" fill="{c_muted}" letter-spacing=".1em">{_xesc(str(x_axis[1]).upper())}</text>'
             )
@@ -1406,16 +1303,15 @@ def make_quadrant_2x2(
                 f'font-weight="700" fill="{c_muted}" letter-spacing=".1em">{_xesc(str(y_axis[1]).upper())}</text>'
             )
 
-    # ---------- 点 + 标签 ----------
-    # _fs_label 是数据点名字（跟 _fs_data 挂钩，n 大字小）；_fs_note 是小字备注
-    _fs_label = round(min(20.0, max(9.5, _fs_data * 0.9)), 1)
+    # _fs_label 是按可见密度计算的数据点名字字号；_fs_note 是小字备注
+    _fs_label = round(fonts["label"], 1)
     # items > 6 时会走"只画 keep_label_idx 的 label"分支，最多 ~5 张 label，
     # 剩下的字号可以放大到 4-item 档（1.4×）水平，保证 slide 里 <310px 窄 embed
     # 缩放后仍能读清。上限用 22 抑制过大画面。
     if len(norm) > 6:
         _fs_label = round(min(22.0, max(_fs_label, _base_fs * 1.35)), 1)
     _fs_note = round(min(14.0, max(8.0, _fs_label * 0.72)), 1)
-    _fs_label_hl = round(min(24.0, _fs_label * 1.15), 1)  # highlight 稍大
+    _fs_label_hl = round(_fs_label * 1.1, 1)  # highlight 稍大
     # 收集所有水平/垂直"障碍线"的 y/x 位置：包括 median 中线、grid 刻度线、plot 边框。
     # 这些线一旦穿过 label bbox 就会被 validator 判 line_through_text；
     # 而 median 中线两侧是不同象限，label 中心跨过就会触发 text_shape_overlap。
@@ -1440,7 +1336,6 @@ def make_quadrant_2x2(
         n_cjk = len(str(name)) - n_ascii
         text_w = n_ascii * fs * 0.7 + n_cjk * fs * 1.1
 
-        # ---- 纵向 dy：默认 dy=4；若 label bbox 会覆盖某条水平线，推到 dot 的另一侧 ----
         def _bbox_covers_hline(ty):
             top = ty - fs * 1.1
             bot = ty + fs * 0.2
@@ -1462,7 +1357,6 @@ def make_quadrant_2x2(
                 dy = dy_dn
             elif up_ok:
                 dy = dy_up
-        # ---- 横向 anchor + dx：默认按 median 左右分侧 ----
         anchor = "end" if it_x > x_median else "start"
         dx = (-r - 4) if it_x > x_median else (r + 4)
 
@@ -1481,13 +1375,11 @@ def make_quadrant_2x2(
             for vx in _v_line_xs:
                 # 只关心中线：validator 只把 median 与象限 rect 关联到 text_shape_overlap
                 # 但为了稳，覆盖 mx 和 plot 边界即可（grid 竖线 stroke 太细，不会触发）
-                if vx in (_mx, plot_x, plot_x + plot_w):
-                    if lx - 1 <= vx <= rx + 1:
-                        return True
+                if vx in (_mx, plot_x, plot_x + plot_w) and lx - 1 <= vx <= rx + 1:
+                    return True
             return False
 
         if _bbox_crosses_vline(anchor, dx):
-            # 翻到另一侧
             alt_anchor = "start" if anchor == "end" else "end"
             alt_dx = (r + 4) if anchor == "end" else (-r - 4)
             if not _bbox_crosses_vline(alt_anchor, alt_dx):
@@ -1565,7 +1457,6 @@ def make_quadrant_2x2(
                 if _idx_i not in _keep_label_idx and _smart_plans[_idx_i] is not None:
                     _smart_plans[_idx_i]["show"] = False
 
-    # 先算 label 初始位置，跑一次避让
     _label_data = []  # (i, px, py, r, col, init_tx, init_ty, anchor, name, note, show)
     for i, it in enumerate(norm):
         px = x_of(it["x"])
@@ -1596,20 +1487,16 @@ def make_quadrant_2x2(
     _lay_input = [(ld[5], ld[6], ld[8], ld[7], _fs_label, "y") for ld in _label_data]
     _lay_out = auto_layout_labels(_lay_input, min_gap=4.0, iterations=40)
 
-    for idx, (i, px, py, r, col, init_tx, init_ty, anch, name, note, show) in enumerate(_label_data):
-        # 光晕
+    for idx, (i, px, py, r, col, init_tx, init_ty, anch, name, point_note, show) in enumerate(_label_data):
         r_r, r_g, r_b = _rgb_tuple(col)
         parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r + 2:.1f}" fill="rgba({r_r},{r_g},{r_b},0.18)"/>')
-        # 主体
         parts.append(
             f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r:.1f}" '
             f'fill="{_rgba_with_alpha(col, 0.85)}" '
             f'stroke="{stroke_c}" stroke-width="1.2"/>'
         )
-        # 内白点
         parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="1.2" fill="{stroke_c}"/>')
 
-        # highlight 加环
         if highlight_index is not None and i == highlight_index:
             parts.append(
                 f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r + 4:.1f}" '
@@ -1620,7 +1507,6 @@ def make_quadrant_2x2(
         if not show:
             continue
 
-        # 避让后的位置
         tx, ty = _lay_out[idx]
         # 若避让把 label 推得远（y 位移 > 6px），补一条从点到 label 的浅引线
         if abs(ty - init_ty) > 6:
@@ -1647,27 +1533,26 @@ def make_quadrant_2x2(
             f'stroke-linejoin="round">{_xesc(name)}</text>'
         )
         # note 小字
-        if note:
+        if point_note:
             parts.append(
                 f'<text x="{tx:.1f}" y="{ty + _fs_label + 1:.1f}" text-anchor="{anch}" '
                 f'font-family="{_body_font}" font-size="{_fs_note}" fill="{c_muted}" '
                 f'font-style="italic" '
                 f'paint-order="stroke" stroke="{PAPER}" stroke-width="3">'
-                f"{_xesc(note)}</text>"
+                f"{_xesc(point_note)}</text>"
             )
 
-    # ---------- 右侧面板 ----------
     if has_side:
         side_x = W - MARGIN_R + 40
         side_y = MARGIN_T
-        side_w = 320
+        side_w = MARGIN_R - 80 if sized else 320
 
         # 类别图例
         if used_cats:
             parts.append(
                 f'<text x="{side_x}" y="{side_y}" font-family="{_body_font}" '
                 f'font-size="{_fs_side_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".15em">'
-                f"CATEGORY</text>"
+                f"{_xesc(tr('CATEGORY'))}</text>"
             )
             parts.append(
                 f'<line x1="{side_x}" y1="{side_y + 8}" x2="{side_x + side_w}" y2="{side_y + 8}" '
@@ -1699,7 +1584,6 @@ def make_quadrant_2x2(
         else:
             side_y_cursor = side_y
 
-        # POINT SIZE 图例（仅 bubble_mode）
         if bubble_mode and all_sizes:
             parts.append(
                 f'<text x="{side_x}" y="{side_y_cursor}" font-family="{_body_font}" '
@@ -1712,7 +1596,6 @@ def make_quadrant_2x2(
             )
             sample_x = side_x + 20
             sample_y = side_y_cursor + 34
-            # 三档 sample
             s_min = min(all_sizes)
             s_max = max(all_sizes)
             s_mid = (s_min * s_max) ** 0.5
@@ -1731,12 +1614,11 @@ def make_quadrant_2x2(
                 )
             side_y_cursor += 90
 
-        # KEY OBSERVATIONS
         if insights:
             parts.append(
                 f'<text x="{side_x}" y="{side_y_cursor}" font-family="{_body_font}" '
                 f'font-size="{_fs_side_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".15em">'
-                f"KEY OBSERVATIONS</text>"
+                f"{_xesc(tr('KEY OBSERVATIONS'))}</text>"
             )
             parts.append(
                 f'<line x1="{side_x}" y1="{side_y_cursor + 8}" x2="{side_x + side_w}" y2="{side_y_cursor + 8}" '
@@ -1766,7 +1648,6 @@ def make_quadrant_2x2(
                     f'<text x="{side_x + 14}" y="{iy + 18}" font-family="{_body_font}" '
                     f'font-size="{_fs_side_lbl}" font-weight="700" fill="{_INK}">{_xesc(ins_title)}</text>'
                 )
-                # body 分行
                 max_line_chars = 45
                 words = str(ins_body).split(" ")
                 lines = []
@@ -1786,37 +1667,25 @@ def make_quadrant_2x2(
                         f"{_xesc(ln)}</text>"
                     )
 
-    # ---------- 底部脚注 ----------
-    if note or source:
-        foot_y = H - 45
-        parts.append(
-            f'<line x1="{MARGIN_L}" y1="{foot_y - 14}" x2="{W - 40}" y2="{foot_y - 14}" '
-            f'stroke="{_INK4}" stroke-width="0.5"/>'
+    parts.append(
+        notes_source_footer(
+            note,
+            source,
+            x=MARGIN_L,
+            x_right=W - 40,
+            y=H - 45,
+            rule=_INK4,
+            font=_body_font,
+            fs=_fs_side_hdr,
+            color=c_muted,
+            figure_label=figure_label,
+            figure_fs=_fs_figure,
         )
-        if note:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
-                f'font-size="{_fs_side_hdr}" fill="{c_muted}">'
-                f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
-            )
-        if source:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y + 14}" font-family="{_body_font}" '
-                f'font-size="{_fs_side_hdr}" fill="{c_muted}">'
-                f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>'
-            )
-        if figure_label:
-            parts.append(
-                f'<text x="{W - 40}" y="{foot_y + 14}" text-anchor="end" '
-                f'font-family="{_body_font}" font-size="{_fs_figure}" fill="{c_muted}" '
-                f'letter-spacing=".05em">{_xesc(figure_label)}</text>'
-            )
+    )
 
     body = "".join(parts)
-    _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">{body}</svg>'
+    _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:g} {H:g}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 17) Violin 小提琴分布
-# ==============================================================

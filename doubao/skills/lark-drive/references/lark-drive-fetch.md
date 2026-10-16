@@ -53,6 +53,10 @@ lark-cli drive +fetch --token boxcnxxx --type file
 
 失败时信封为 `{ok:false, identity, error:{type, subtype, message, hint, log_id, …}}`；`error.hint` 给出恢复命令，末尾单独一行 `resource: {type,title,url,token,selector,source}`，与成功时的 `data.resource` 同形，可用 `jq -r .error.hint | sed -n 's/^resource: //p' | jq` 取出。
 
+## 引用要求
+
+凡在最终回复中使用、改写或总结工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。
+
 ## 内容读取的边界（拿不全时怎么办）
 
 - **完整内容交付**：默认读取返回 `data.content_file` 时，直接对 `path` 本地 read / search；`content_preview` 不能替代完整正文，也不要再次 fetch 同一资源。出现 `data.content_delivery_hint` 时按 hint 恢复，不要把可能截断的内联内容当作完整正文。

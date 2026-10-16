@@ -6,11 +6,13 @@ IconPark 图标通过 `<icon>` 写入 slides XML，`iconType` 必须来自本 sk
 
 ```bash
 python3 scripts/iconpark_tool.py search --query "增长趋势" --limit 8
+python3 scripts/iconpark_tool.py search --query "security" "protect" --limit 8
+python3 scripts/iconpark_tool.py search --query "security" --query "protect" --limit 8
 python3 scripts/iconpark_tool.py resolve --name chart-line
 python3 scripts/iconpark_tool.py list-categories
 ```
 
-`search` 返回 JSON 数组，每项包含 `iconType`、`category`、`name`、`tags`、`score`。直接把选中的 `iconType` 写入 XML，并为图标指定可见颜色：
+`search` 返回 JSON 数组，每项包含 `iconType`、`category`、`name`、`tags`、`score`。`--query` 支持在同一个参数后传多个值，也支持重复传入；多个值会合并参与检索。直接把选中的 `iconType` 写入 XML，并为图标指定可见颜色：
 
 ```xml
 <icon iconType="iconpark/Charts/chart-line.svg" topLeftX="80" topLeftY="120" width="32" height="32">

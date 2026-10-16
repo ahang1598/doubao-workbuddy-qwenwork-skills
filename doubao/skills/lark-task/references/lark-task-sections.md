@@ -12,7 +12,7 @@ This reference organizes Task `sections` workflows by Catalog method. It current
 ## Shared Rules
 
 1. Follow the main Skill's discovery flow: run `lark-cli task --help` and `lark-cli task sections --help`, confirm the method, and read its schema before executing a native command.
-2. Use `--as user` when querying the current user's personal "My Tasks". For other operations, confirm identity and permissions through the method's help/schema.
+2. Run section commands with `--as user`. Confirm required permissions through the method's help/schema.
 3. For queries that support pagination, use `--page-all --page-limit 0` when a complete listing is required. This avoids the default page limit. If the query is interrupted or partially fails, report that results are incomplete; do not conclude that a section or task does not exist.
 
 ## sections.list

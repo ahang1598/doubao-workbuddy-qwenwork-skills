@@ -1,65 +1,51 @@
-"""svg_lib/charts/waterfall.py
-
-统一 API:  draw_waterfall(data, variant, palette, ...) -> str (SVG)
-
-Data schema:
-    data = {
-        "steps": [(label, value, kind), ...]
-    }
-    kind ∈ {"total", "pos", "neg"}
-    value: number  —  对 stacked_gradient variant，value 可以是
-        list[(sub_label, sub_val)]（该 step 的子类别拆解，累加得该 step 的净值）
-
-Variants (5 共享同一份 data):
-    - default_flat        经典垂直瀑布，total 从零基线画，pos/neg 从 running 连接
-    - subtotal_bridge     检测 data 里中间 kind='total' 的步骤，作为「小计」（更醒目）
-    - cross_axis          支持累计值穿过 0 轴（自动检测正负 axis）
-    - horizontal          横向瀑布（bar y=category, x=cumulative）
-    - stacked_gradient    每个 pos/neg 步骤按子类别堆叠 + 渐变（读取 list value）
-                          若某 step 的 value 是 scalar，则自动拆成单段
-"""
+"""统一 API:  draw_waterfall(data, variant, palette, ...) -> str (SVG)"""
 
 from __future__ import annotations
 
 import math
 
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    viewbox_fs,
-    svg_open,
-    svg_close,
-    _rgba_with_alpha,
-    rgb_tuple,
-    is_dark_palette,
-)
-
-
 from .._common import (
     _ACC,
     _INK,
-    _INK2,
-    _INK6,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
     _prepend_bg_if_dark,
     _punchy_title_ink,
     _render_title_block,
     _resolve_font,
     _resolve_palette,
     _rgba_with_alpha,
+    _variant_is_classic,
     _wrap_with_auto_viewbox,
     _xesc,
-    _variant_is_classic,
-    _dispatch_to_svg_lib,
 )
+from . import _academic_rigor as rigor
+from ._shared import (
+    _header,
+    resolve_palette,
+    rgb_tuple,
+    svg_close,
+    svg_open,
+    viewbox_fs,
+    xesc,
+)
+
+# Multi-mode whitelist for waterfall.
+# with_contribution_pct : horizontal bars showing each step's % contribution to
+#                         total net change (left_right_3to1), n_steps >= 4.
+_WATERFALL_MULTI_WHITELIST = {
+    "with_contribution_pct": (
+        "left_right_3to1",
+        lambda s: s.get("n_steps", 0) >= 4,
+        lambda s: (
+            (s.get("n_steps", 0) >= 4 and s.get("total_change", 0.0) != 0.0),
+            "need n_steps>=4 with non-zero total change",
+        ),
+    ),
+}
 
 BODY_FONT = "Inter, sans-serif"
 HEAD_FONT = "Georgia, serif"
-
-
-# ---------------------------------------------------------------------------
-# entry
-# ---------------------------------------------------------------------------
 
 
 def draw_waterfall(
@@ -68,8 +54,8 @@ def draw_waterfall(
     palette: str = "archive_ink",
     width: float = 900,
     height: float = 540,
-    title: str = None,
-    subtitle: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
 ) -> str:
     steps = data.get("steps") or []
     if not steps or len(steps) < 2:
@@ -102,12 +88,7 @@ def draw_waterfall(
     ctx = _Ctx(steps=steps, pal=pal, W=float(width), H=float(height), title=title, subtitle=subtitle)
     body = body_fn(ctx)
 
-    return svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"]) + ctx.defs_svg() + _header(ctx) + body + svg_close()
-
-
-# ---------------------------------------------------------------------------
-# helpers
-# ---------------------------------------------------------------------------
+    return svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"]) + ctx.defs_svg() + _header(ctx, 60, 30) + body + svg_close()
 
 
 class _Ctx:
@@ -120,9 +101,12 @@ class _Ctx:
         self.subtitle = subtitle
         self.n = len(steps)
         # 字号自适应：viewBox 尺寸 × 数据规模 双重驱动
-        self.fs_label = viewbox_fs(W, H, self.n, role_mult=1.0)  # step 名字
-        self.fs_value = viewbox_fs(W, H, self.n, role_mult=1.05)  # 数值（数字要大点）
-        self.fs_tick = viewbox_fs(W, H, self.n, role_mult=0.85)  # Y 轴刻度
+        # Explicit floors (14 for value/label, 13 for tick) because the pure
+        # viewbox_fs result was coming out at ~13 px for the common 1400×800
+        # canvas with 7 steps, which read as unreadable in gallery previews.
+        self.fs_label = max(14.0, viewbox_fs(W, H, self.n, role_mult=1.1))  # step 名字
+        self.fs_value = max(15.0, viewbox_fs(W, H, self.n, role_mult=1.15))  # 数值（数字要大点）
+        self.fs_tick = max(14.0, viewbox_fs(W, H, self.n, role_mult=0.95))  # Y 轴刻度
         self.header_h = 50 if title else 20
         if subtitle:
             self.header_h += 18
@@ -138,30 +122,6 @@ class _Ctx:
         return "<defs>" + "".join(self._defs) + "</defs>" if self._defs else ""
 
 
-def _header(ctx: _Ctx) -> str:
-    ink = ctx.pal["ink"]
-    mut = ctx.pal["muted"]
-    parts = []
-    ML = 60
-    if ctx.title:
-        parts.append(
-            f'<text x="{ML}" y="30" font-family="{HEAD_FONT}" font-size="20" '
-            f'font-weight="600" fill="{ink}" letter-spacing=".03em">{xesc(ctx.title)}</text>'
-        )
-    if ctx.subtitle:
-        y = 48 if ctx.title else 30
-        parts.append(
-            f'<text x="{ML}" y="{y}" font-family="{BODY_FONT}" font-size="11" '
-            f'fill="{mut}" letter-spacing=".14em">{xesc(ctx.subtitle)}</text>'
-        )
-    if ctx.title:
-        parts.append(
-            f'<line x1="{ML}" y1="{ctx.header_h}" x2="{ctx.W - 30}" y2="{ctx.header_h}" '
-            f'stroke="{ink}" stroke-width="0.6" opacity="0.4"/>'
-        )
-    return "".join(parts)
-
-
 def _fmt(v):
     v = float(v)
     if abs(v) >= 10000:
@@ -172,11 +132,7 @@ def _fmt(v):
 
 
 def _step_net(value):
-    """规整化 step 的 value: 支持 scalar 或 list[(sub_label, sub_val)]。返回 (net, segments)。
-
-    segments: list[(sub_label, sub_val_abs)]（正数），供 stacked variant 使用；
-              对 scalar 输入，返回 [("", abs(net))]。
-    """
+    """规整化 step 的 value: 支持 scalar 或 list[(sub_label, sub_val)]。返回 (net, segments)。"""
     if isinstance(value, (list, tuple)) and value and isinstance(value[0], (list, tuple)):
         segments = [(str(s[0]), float(s[1])) for s in value]
         net = sum(v for _, v in segments)
@@ -186,13 +142,7 @@ def _step_net(value):
 
 
 def _compute_layout(steps):
-    """把 steps 展开成 [(label, kind, sv, ev, disp, segments)]。
-
-    - sv: start (running before)
-    - ev: end (running after)
-    - disp: signed magnitude for this step (for label)
-    - segments: [(sub_label, abs_val), ...]
-    """
+    """把 steps 展开成 [(label, kind, sv, ev, disp, segments)]。"""
     running = 0.0
     layout = []
     for label, val, kind in steps:
@@ -233,17 +183,7 @@ def _nice_ticks(v_min, v_max, target=5):
 
 
 def _colors(pal, kind):
-    """Return the fill color for a bar of a given kind.
-
-    Pos and neg MUST be visually distinct — the palette's `series[1]` can
-    coincide with `accent` (e.g. exec_navy has both at `rgba(180,120,45,1)`),
-    which would collapse pos/neg into one color. We therefore:
-      * prefer `ink6` (a mid-gray derived from ink) for pos, which is the
-        same feel the classic path uses (`c_pos_bar` = ink @ 0.6)
-      * fall back to a series color only if it differs materially from accent
-      * neg always returns `accent` (usually red/orange), and callers add a
-        stroke/hatch so the shape is doubly distinct.
-    """
+    """Return the fill color for a bar of a given kind."""
     ink = pal["ink"]
     acc = pal["accent"]
     if kind == "total":
@@ -264,13 +204,10 @@ def _colors(pal, kind):
             # Fall back to a neutral ink-tinted mid-gray (matches classic pos_bar look)
             cand = pal.get("ink6") or _rgba_with_alpha(ink, 0.6)
         return cand
-    # neg
     return acc
 
 
-# ---------------------------------------------------------------------------
 # 1) default_flat — vertical waterfall
-# ---------------------------------------------------------------------------
 
 
 def _est_text_width(s: str, fs: float) -> float:
@@ -292,20 +229,10 @@ def _emit_gridline_with_gaps(
     text_bboxes: list,
     extra_attrs: str = "",
 ) -> str:
-    """Emit a horizontal line as one or more <line> segments, skipping any
-    x-ranges where y falls inside a text bbox's 15%-70% band (same band the
-    validator uses to flag "line strikes through text").
-
-    Used both for full-width gridlines and for shorter connector lines
-    between waterfall bars. `extra_attrs` is appended verbatim to each
-    <line> element (e.g. opacity for connectors).
-
-    text_bboxes: list of (tx, ty, tw, th) tuples for value labels.
-    """
+    """Emit a horizontal line as one or more <line> segments, skipping any"""
     # Support callers that pass x0 > x1 (shouldn't normally happen for
     # horizontal lines, but be defensive).
     lo, hi = (x0, x1) if x0 <= x1 else (x1, x0)
-    # find bands covering y
     gaps = []
     for tx, ty, tw, th in text_bboxes:
         # validator band: [ty + th*0.15, ty + th*0.7]
@@ -324,7 +251,6 @@ def _emit_gridline_with_gaps(
             f'stroke="{stroke}" stroke-width="{stroke_width}" '
             f'stroke-dasharray="{dash}"{extra_attrs}/>'
         )
-    # merge overlapping gaps
     gaps.sort()
     merged = [gaps[0]]
     for gl, gr in gaps[1:]:
@@ -362,7 +288,6 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
     slot = (plot_right - plot_left) / n
     bar_w = min(60.0, slot * 0.62)
 
-    # y-range: include all runnings, plus zero
     all_v = [0.0]
     for _, _, sv, ev, _, _ in layout:
         all_v.extend([sv, ev])
@@ -380,7 +305,6 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
     mut = ctx.pal["muted"]
     grid_col = _rgba_with_alpha(ink, 0.12)
 
-    # -----------------------------------------------------------------
     # First pass: compute value-label bboxes so gridlines / connectors can
     # skip them. Geometry MUST match embed_svg_validator._collect_primitives
     # which reads text_y_attr from the <text> node and stores
@@ -392,7 +316,6 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
     # bbox ~0.2*fs too high, so gridlines sitting just above the text's
     # baseline slipped past our gap check while the validator still flagged
     # them (R11-brand '+40' case).
-    # -----------------------------------------------------------------
     value_bboxes: list = []  # list of (tx, ty, tw, th)
     for i, (label, kind, sv, ev, disp, _segs) in enumerate(layout):
         x_c = plot_left + i * slot + slot / 2
@@ -435,7 +358,6 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_tick}" fill="{mut}">{_fmt(t)}</text>'
         )
 
-    # optional emphasized zero line
     if zero_line and v_lo <= 0.0 <= v_hi:
         y0 = yof(0.0)
         parts.append(
@@ -444,7 +366,6 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
         )
 
     prev_end_x = None
-    prev_end_y = None
     for i, (label, kind, sv, ev, disp, _) in enumerate(layout):
         x_c = plot_left + i * slot + slot / 2
         x0 = x_c - bar_w / 2
@@ -455,14 +376,12 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
 
         # subtotal emphasis: use a bolder/darker fill and slightly wider
         if show_subtotal_emphasis and kind == "total" and 0 < i < n - 1:
-            # emphasize with an outline halo
             parts.append(
                 f'<rect x="{x0 - 3:.1f}" y="{yof(ev) - 3:.1f}" width="{bar_w + 6:.1f}" '
                 f'height="{yof(0.0) - yof(ev) + 6:.1f}" '
                 f'fill="none" stroke="{ctx.pal["accent"]}" stroke-width="1.4" '
                 f'stroke-dasharray="4 3"/>'
             )
-            # bar from zero
             y_zero = yof(0.0)
             parts.append(
                 f'<rect x="{x0:.1f}" y="{min(yof(ev), y_zero):.1f}" width="{bar_w:.1f}" '
@@ -477,10 +396,8 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
             )
         else:
             if kind == "neg":
-                # Neg bars: keep accent fill but add a darker outline + a light
-                # diagonal-hatch pattern so pos vs neg is unambiguous even when
-                # the palette's series[1] happens to equal accent. Pattern is
-                # drawn as inline <line> segments (no <pattern> defs needed).
+                # Neg bars: keep accent fill but add a darker outline + a light diagonal-hatch pattern so pos vs neg is
+                # unambiguous even when the palette's series[1] happens to equal accent.
                 parts.append(
                     f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" '
                     f'height="{h:.1f}" fill="{col}" stroke="{ink}" stroke-width="1.1"/>'
@@ -511,8 +428,6 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
             else:
                 parts.append(f'<rect x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" fill="{col}"/>')
 
-        # value label above/below bar
-        sign = "+" if disp > 0 else ("-" if disp < 0 else "")
         if kind == "total":
             label_y = yof(ev) - 6
             parts.append(
@@ -552,9 +467,8 @@ def _draw_vertical_common(ctx: _Ctx, layout, show_subtotal_emphasis=False, zero_
                 )
             )
         prev_end_x = x0 + bar_w
-        prev_end_y = yof(ev)
+        yof(ev)
 
-        # x-axis category label
         parts.append(
             f'<text x="{x_c:.1f}" y="{ctx.plot_bot + 18:.1f}" text-anchor="middle" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_label}" '
@@ -598,15 +512,11 @@ def _draw_subtotal_bridge(ctx: _Ctx) -> str:
                 last = tp
 
         if selected:
-            # Build new_steps by walking original steps and inserting Subtotal
-            # entries at each selected index. Because insertions shift indices,
-            # process selected in ascending order and use an offset.
+            # Build new_steps by walking original steps and inserting Subtotal entries at each selected index.
             new_steps = list(ctx.steps)
             offset = 0
             for insert_idx in selected:
-                # Running value = ev of the step immediately before this insert
-                # in the CURRENT (already-partly-mutated) layout. To keep this
-                # simple, recompute layout each iteration.
+                # To keep this simple, recompute layout each iteration.
                 cur_layout = _compute_layout(new_steps)
                 actual_idx = insert_idx + offset
                 if 0 < actual_idx < len(cur_layout):
@@ -622,9 +532,7 @@ def _draw_cross_axis(ctx: _Ctx) -> str:
     return _draw_vertical_common(ctx, layout, show_subtotal_emphasis=False, zero_line=True)
 
 
-# ---------------------------------------------------------------------------
 # 4) horizontal
-# ---------------------------------------------------------------------------
 
 
 def _draw_horizontal(ctx: _Ctx) -> str:
@@ -632,7 +540,6 @@ def _draw_horizontal(ctx: _Ctx) -> str:
     layout = _compute_layout(ctx.steps)
     n = len(layout)
 
-    # figure out y-range on x-axis
     all_v = [0.0]
     for _, _, sv, ev, _, _ in layout:
         all_v.extend([sv, ev])
@@ -648,7 +555,6 @@ def _draw_horizontal(ctx: _Ctx) -> str:
     plot_left = ML
     plot_right = ctx.W - MR
 
-    # row layout
     row_h_target = ctx.plot_h / n
     row_h = max(24.0, min(56.0, row_h_target))
     bar_h = min(row_h * 0.55, 26.0)
@@ -663,7 +569,6 @@ def _draw_horizontal(ctx: _Ctx) -> str:
     acc = ctx.pal["accent"]
     grid = _rgba_with_alpha(ink, 0.12)
 
-    # vertical gridlines / x ticks
     for t in ticks:
         x = xof(t)
         parts.append(
@@ -675,7 +580,6 @@ def _draw_horizontal(ctx: _Ctx) -> str:
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_tick}" fill="{mut}">{_fmt(t)}</text>'
         )
 
-    # zero line if in range
     if v_lo <= 0.0 <= v_hi:
         x0 = xof(0.0)
         parts.append(
@@ -688,7 +592,6 @@ def _draw_horizontal(ctx: _Ctx) -> str:
         y_top = cy - bar_h / 2
         col = _colors(ctx.pal, kind)
 
-        # category label
         parts.append(
             f'<text x="{plot_left - 10:.1f}" y="{cy + 4:.1f}" text-anchor="end" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_label}" '
@@ -743,9 +646,7 @@ def _draw_horizontal(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-# ---------------------------------------------------------------------------
 # 5) stacked_gradient — 每个 step 按子类别堆叠 + 渐变
-# ---------------------------------------------------------------------------
 
 
 def _draw_stacked_gradient(ctx: _Ctx) -> str:
@@ -806,16 +707,11 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
     ext = _extended_palette(max(len(seen_subs), len(series)))
     sub_color = {lb: ext[i % len(ext)] for i, lb in enumerate(seen_subs)}
 
-    # Fallback per-bar palette used when NO segments carry a sub_label (i.e. the
-    # input is a simple [(name, value, kind)] list — the harness's typical case).
-    # In that case we cycle through the extended series so each bar gets a
-    # visibly distinct hue instead of collapsing to a single color.
+    # Fallback per-bar palette used when NO segments carry a sub_label (i.e. the input is a simple [(name, value, kind)]
+    # list — the harness's typical case).
     _has_any_sub_label = bool(seen_subs)
     _bar_palette = _extended_palette(max(len(layout), len(series)))
 
-    # ---- Pre-compute value-label bboxes so gridlines / connectors can skip
-    # ---- them. Same geometry-match rationale as _draw_vertical_common:
-    # ---- validator stores bbox.y = attr_y - fs*0.8, not attr_y - fs.
     value_bboxes: list = []
     for i, (label, kind, sv, ev, disp, segments) in enumerate(layout):
         x_c = plot_left + i * slot + slot / 2
@@ -836,7 +732,6 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
         tx = x_c - tw / 2
         value_bboxes.append((tx, ty, tw, fs))
 
-    # y-axis (segmented gridlines around value labels)
     for t in ticks:
         y = yof(t)
         parts.append(
@@ -855,7 +750,6 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_tick}" fill="{mut}">{_fmt(t)}</text>'
         )
 
-    prev_end_x = None
     for i, (label, kind, sv, ev, disp, segments) in enumerate(layout):
         x_c = plot_left + i * slot + slot / 2
         x0 = x_c - bar_w / 2
@@ -866,10 +760,8 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
             y_bot = yof(0.0) if v >= 0 else yof(v)
             gid = f"wfsg_{grad_ct}"
             grad_ct += 1
-            # Base color: use ink for totals if any sub_labels exist (they are the
-            # visual anchor of a categorical stacked layout). If no sub_labels
-            # exist (simple scalar input), cycle through _bar_palette so each
-            # total bar can still be distinguished from pos/neg bars around it.
+            # Base color: use ink for totals if any sub_labels exist (they are the visual anchor of a categorical
+            # stacked layout).
             _total_base = ink if _has_any_sub_label else _bar_palette[i % len(_bar_palette)]
             r, g, b = rgb_tuple(_total_base)
             ctx.add_def(
@@ -889,7 +781,6 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                 f'fill="{ink}">{_fmt(v)}</text>'
             )
         else:
-            # stacked segments between sv and ev
             step_total = sum(v for _, v in segments) or 1e-9
             sign = 1 if kind == "pos" else -1
             base_v = sv
@@ -936,7 +827,6 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                     f'<rect x="{x0:.1f}" y="{y_seg_top:.1f}" width="{bar_w:.1f}" '
                     f'height="{seg_h:.1f}" fill="url(#{gid})"/>'
                 )
-                # small in-seg label if room
                 if seg_h > ctx.fs_tick * 2 and sub_lb:
                     parts.append(
                         f'<text x="{x_c:.1f}" y="{y_seg_top + seg_h / 2 + 3:.1f}" '
@@ -944,7 +834,6 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                         f'font-size="{ctx.fs_tick}" font-weight="600" '
                         f'fill="rgba(255,255,255,0.95)">{xesc(sub_lb)} {_fmt(sub_val)}</text>'
                     )
-            # total delta label
             if sign > 0:
                 parts.append(
                     f'<text x="{x_c:.1f}" y="{yof(ev) - 6:.1f}" text-anchor="middle" '
@@ -976,7 +865,6 @@ def _draw_stacked_gradient(ctx: _Ctx) -> str:
                 )
             )
 
-        # category label
         parts.append(
             f'<text x="{x_c:.1f}" y="{ctx.plot_bot + 18:.1f}" text-anchor="middle" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_label}" '
@@ -1005,12 +893,13 @@ def make_waterfall(
     width: float = 1000.0,
     height: float = 560.0,
     value_fmt: str = "auto",
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    font_family: str = None,
-    palette: dict = None,
-    variant: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    font_family: str | None = None,
+    palette: dict | None = None,
+    variant: str | None = None,
+    multi_mode: str = "auto",
 ) -> str:
     """
     从起点到终点的逐项加减（Lupi 编辑体扁平风）：
@@ -1049,19 +938,14 @@ def make_waterfall(
             figure_label=figure_label,
             palette=palette,
             font_family=font_family,
+            width=width,
+            height=height,
         )
 
     if not steps or len(steps) < 2:
         raise ValueError("waterfall: need at least 2 steps (start + end)")
 
-    # ---- 配色解析 ----
-    def _rgba_with_alpha(rgba_str, alpha):
-        import re as _re
-
-        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str)
-        if not m:
-            return f"rgba(28,28,26,{alpha})"
-        return f"rgba({int(float(m.group(1)))},{int(float(m.group(2)))},{int(float(m.group(3)))},{alpha})"
+    from ._shared import _rgba_with_alpha  # regex form (not _common's); shadows the module import here
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
@@ -1096,11 +980,12 @@ def make_waterfall(
             running -= abs(v)
             step_yvals.append((top, bot))
             all_v.extend([top, bot])
-    y_min_data = min(all_v + total_vals)
-    y_max_data = max(all_v + total_vals)
+    # Absolute totals encode length from zero; never silently truncate their baseline.
+    y_min_data = min([0.0] + all_v + total_vals)
+    y_max_data = max([0.0] + all_v + total_vals)
     data_span = y_max_data - y_min_data or max(abs(y_max_data), 1) * 0.1
-    y_min_raw = y_min_data - data_span * 0.15
-    y_max_raw = y_max_data + data_span * 0.18
+    y_min_raw = 0.0 if y_min_data >= 0 else y_min_data - data_span * 0.15
+    y_max_raw = 0.0 if y_max_data <= 0 else y_max_data + data_span * 0.18
     raw_span = y_max_raw - y_min_raw
     # "nice number" 刻度算法：magnitude 支持小数（floor 而非 int），系数从 {1, 2, 2.5, 5, 10} 中挑最接近的
     step = max(1e-12, raw_span / 5)
@@ -1114,10 +999,10 @@ def make_waterfall(
         tick_step = 10 * magnitude
     y_min = math.floor(y_min_raw / tick_step) * tick_step
     y_max = math.ceil(y_max_raw / tick_step) * tick_step
-    span = y_max - y_min or 1
+    y_max - y_min or 1
     for i, (top, bot) in enumerate(step_yvals):
         if bot is None:
-            step_yvals[i] = (top, y_min)
+            step_yvals[i] = (max(0.0, top), min(0.0, top))
 
     # 根据 tick_step 自动决定精度（数值标签 & Y 轴刻度共用一套精度，避免"0.850 vs 0.0"这种不一致）
     if tick_step >= 1:
@@ -1127,29 +1012,72 @@ def make_waterfall(
 
     def _fmt(v):
         if value_fmt == "auto":
-            av = abs(v)
-            all_int = all(abs(round(s[1]) - s[1]) < 1e-9 for s in steps)
-            if all_int:
-                return f"{int(round(v)):,}"
-            # 数值标签精度沿用 tick 精度，避免上下不一致
-            if _tick_decimals == 0:
-                return f"{int(round(v)):,}"
-            else:
-                return f"{v:,.{_tick_decimals}f}"
+            from ._chart_layout import number_label
+
+            return number_label(v)
         elif value_fmt == "int":
-            return f"{int(round(v)):,}"
+            return f"{round(v):,}"
         else:
             return format(v, value_fmt)
 
     def _fmt_tick(v):
         if _tick_decimals == 0:
-            return f"{int(round(v)):,}"
+            return f"{round(v):,}"
         return f"{v:,.{_tick_decimals}f}"
 
+    value_fs = max(16.0, width / 50)
+    delta_fs = max(14.0, width / 50)
+    tick_fs = max(15.0, width / 50)
+    category_fs = max(15.0, width / 50)
     axis_x0 = 90
     axis_x1 = width - 40
     top_y = 70
     bot_y = height - 60
+
+    # Compute per-step contribution (signed delta) and total change for signals.
+    _running_sig = 0.0
+    _init_total = None
+    _step_deltas = []  # list of (label, signed_delta, kind)
+    for _nm, _vv, _kd in steps:
+        if _kd == "total":
+            if _init_total is None:
+                _init_total = float(_vv)
+                _running_sig = float(_vv)
+                _step_deltas.append((str(_nm), 0.0, _kd))
+            else:
+                _delta = float(_vv) - _running_sig
+                _step_deltas.append((str(_nm), _delta, _kd))
+                _running_sig = float(_vv)
+        elif _kd == "pos":
+            _step_deltas.append((str(_nm), abs(float(_vv)), _kd))
+            _running_sig += abs(float(_vv))
+        else:
+            _step_deltas.append((str(_nm), -abs(float(_vv)), _kd))
+            _running_sig -= abs(float(_vv))
+    _final_total = _running_sig
+    _total_change = _final_total - (_init_total if _init_total is not None else 0.0)
+
+    _plot_bbox = rigor.bbox_from_edges(axis_x0, axis_x1, top_y, bot_y)
+    _mm_signals = {
+        "n_steps": len(steps),
+        "step_deltas": _step_deltas,
+        "total_change": _total_change,
+    }
+    _mm_mode, _mm_template, _mm_reason = rigor.resolve_multi_mode_v2(
+        multi_mode,
+        _WATERFALL_MULTI_WHITELIST,
+        _mm_signals,
+        _plot_bbox,
+    )
+    _sub_bbox = None
+    if _mm_mode is not None and _mm_template is not None:
+        _rects = rigor.allocate_main_sub(_plot_bbox, _mm_template)
+        _main_bb = _rects["main"]
+        _sub_bbox = _rects["sub"]
+        if _mm_template.startswith("left_right"):
+            axis_x1 = _main_bb.x1
+        else:
+            bot_y = _main_bb.y1
 
     def yof(v):
         return bot_y - (v - y_min) / (y_max - y_min) * (bot_y - top_y)
@@ -1159,8 +1087,6 @@ def make_waterfall(
     bar_w = min(110, slot * 0.6)
 
     parts = []
-    # ---- 预先计算所有 value label bbox，让 Y 网格 & 连接虚线都能在标签处开洞
-    # ---- （与 draw_waterfall variant path 用同一 helper 的做法一致）。
     # 几何 MUST match embed_svg_validator._collect_primitives：
     #   bbox.y = attr_y - fs * 0.8   (attr_y = <text> element's y attribute)
     #   bbox.h = fs
@@ -1180,16 +1106,16 @@ def make_waterfall(
             _y_bot = _y_top + 1.5
         if _kind == "total":
             _txt = _fmt(_v)
-            _fs = 16.0
-            _baseline_y = _y_top - 5
+            _fs = value_fs
+            _baseline_y = _y_bot + 19 if _v < 0 else _y_top - 5
         elif _kind == "pos":
             _txt = f"+{_fmt(abs(_v))}"
-            _fs = 14.0
+            _fs = delta_fs
             _baseline_y = _y_top - 4
         else:  # neg
             _txt = f"-{_fmt(abs(_v))}"
-            _fs = 12.0
-            _baseline_y = _y_bot + 11
+            _fs = delta_fs
+            _baseline_y = _y_bot + 19
         _tw = 0.0
         for _ch in _txt:
             _tw += _fs * (0.6 if ord(_ch) < 128 else 1.05)
@@ -1212,7 +1138,7 @@ def make_waterfall(
             )
         )
         parts.append(
-            f'<text font-family="{_body_font}" x="{axis_x0 - 4}" y="{y + 3:.1f}" font-size="12" fill="{c_muted}" text-anchor="end">{_fmt_tick(tick)}</text>'
+            f'<text font-family="{_body_font}" x="{axis_x0 - 4}" y="{y + 3:.1f}" font-size="{tick_fs:.1f}" fill="{c_muted}" text-anchor="end">{_fmt_tick(tick)}</text>'
         )
         tick += tick_step
 
@@ -1220,9 +1146,9 @@ def make_waterfall(
 
     # 类别标签旋转策略：只要有任何一个标签宽度超过 slot*0.9，就统一全部旋转（避免同图内一半旋转一半不旋转）
     def _label_text_w(nm):
-        n_ascii = sum(1 for c in nm if ord(c) < 128)
-        n_cjk = len(nm) - n_ascii
-        return n_ascii * 8 * 0.6 + n_cjk * 8 * 1.1
+        return (
+            _estimate_label_width_px(nm, category_fs, bold=True, font_family=_body_font) + len(nm) * category_fs * 0.04
+        )
 
     _rotate_labels = any(_label_text_w(s[0]) > slot * 0.9 for s in steps)
 
@@ -1239,15 +1165,15 @@ def make_waterfall(
             y_bot = y_top + 1.5
             h_bar = 1.5
         if kind == "total":
-            # 主墨实心，无描边无圆角
-            parts.append(f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" fill="{c_ink}"/>')
             parts.append(
-                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_top - 5:.1f}" font-size="16" font-weight="800" '
+                f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" fill="{c_ink}" data-role="waterfall-total" data-value="{v:g}" data-zero-y="{yof(0):.4f}"/>'
+            )
+            parts.append(
+                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{(y_bot + 19 if v < 0 else y_top - 5):.1f}" font-size="{value_fs:.1f}" font-weight="800" '
                 f'fill="{c_ink}" text-anchor="middle">{_fmt(v)}</text>'
             )
             running = v
         elif kind == "pos":
-            # 中灰实心；零增量退化成空心细框
             if _zero_bar:
                 parts.append(
                     f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" '
@@ -1258,12 +1184,11 @@ def make_waterfall(
                     f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" fill="{c_pos_bar}"/>'
                 )
             parts.append(
-                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_top - 4:.1f}" font-size="14" font-weight="700" '
+                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_top - 4:.1f}" font-size="{delta_fs:.1f}" font-weight="700" '
                 f'fill="{c_ink}" text-anchor="middle">+{_fmt(abs(v))}</text>'
             )
             running += abs(v)
         else:  # neg
-            # 白底 + accent 描边
             parts.append(
                 f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" height="{h_bar:.1f}" '
                 f'fill="none" stroke="{c_accent}" stroke-width="1.2"/>'
@@ -1292,7 +1217,7 @@ def make_waterfall(
                         )
                     k += spacing
             parts.append(
-                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_bot + 11:.1f}" font-size="12" font-weight="700" '
+                f'<text font-family="{_body_font}" x="{x + bar_w / 2:.1f}" y="{y_bot + 19:.1f}" font-size="{delta_fs:.1f}" font-weight="700" '
                 f'fill="{c_accent}" text-anchor="middle">-{_fmt(abs(v))}</text>'
             )
             running -= abs(v)
@@ -1314,17 +1239,17 @@ def make_waterfall(
             )
         # 底部类别名：全局统一是否旋转（避免同图内首末旋转、中间不旋转）
         cx_lab = x + bar_w / 2
-        y_lab = bot_y + 16
+        y_lab = bot_y + category_fs + 8
         name_esc = _xesc(name)
         if _rotate_labels:
             parts.append(
-                f'<text font-family="{_body_font}" x="{cx_lab:.1f}" y="{y_lab:.1f}" font-size="13" font-weight="700" '
+                f'<text font-family="{_body_font}" x="{cx_lab:.1f}" y="{y_lab:.1f}" font-size="{tick_fs:.1f}" font-weight="700" '
                 f'fill="{c_muted}" text-anchor="end" letter-spacing=".04em" '
                 f'transform="rotate(-30 {cx_lab:.1f} {y_lab:.1f})">{name_esc}</text>'
             )
         else:
             parts.append(
-                f'<text font-family="{_body_font}" x="{cx_lab:.1f}" y="{y_lab:.1f}" font-size="13" font-weight="700" '
+                f'<text font-family="{_body_font}" x="{cx_lab:.1f}" y="{y_lab:.1f}" font-size="{tick_fs:.1f}" font-weight="700" '
                 f'fill="{c_muted}" text-anchor="middle" letter-spacing=".04em">{name_esc}</text>'
             )
     # 顶部标题栏（可选）
@@ -1348,10 +1273,134 @@ def make_waterfall(
         body_font=_body_font,
         heading_font=_head_font,
     )
+
+    if _sub_bbox is not None and _mm_mode == "with_contribution_pct":
+        sx_left, sx_right, sy_top, sy_bot = rigor.bbox_to_edges(_sub_bbox)
+        # Leave room at top for caption so it doesn't collide with title.
+        sy_top = max(sy_top, top_y + 20)
+        sub_fs = 11.0
+        cap_fs = 12.0
+
+        # Shared step order: use the SAME slot layout as main so each sub row aligns vertically with its step's bar.
+        n = len(steps)
+        row_h = max(14.0, (sy_bot - sy_top) / n)
+        # Normalize by sum of absolute deltas across contributing steps.
+        _abs_sum = 0.0
+        _step_pcs = []
+        for i, (nm, delta, kd) in enumerate(_step_deltas):
+            if kd == "total":
+                _step_pcs.append((nm, 0.0, kd))  # endpoints add no contribution
+                continue
+            _abs_sum += abs(delta)
+            _step_pcs.append((nm, delta, kd))
+        _denom = max(1e-9, _abs_sum)
+        pcs = []
+        for nm, raw, kd in _step_pcs:
+            if kd == "total":
+                pcs.append((nm, 0.0, kd))
+            else:
+                pcs.append((nm, (raw / _denom) * 100.0, kd))
+
+        max_abs = max((abs(p) for _, p, _ in pcs), default=1.0)
+        if max_abs == 0:
+            max_abs = 1.0
+
+        # Measure the widest row-name label so we can reserve a left-side
+        # gutter — otherwise the name text overlaps the negative bars.
+        name_fs = sub_fs
+        max_name_w = 0.0
+        for nm, _, _ in pcs:
+            w = _estimate_label_width_px(str(nm), name_fs, font_family=_body_font)
+            max_name_w = max(max_name_w, w)
+        name_gutter_w = min((sx_right - sx_left) * 0.28, max_name_w + 10.0)
+        # Reserve a right-side gutter for the pct label so it never leaves
+        # the sub bbox. Assume max label is "±100.0%" (≈ 42 px at 11pt).
+        _pct_label_w = _estimate_label_width_px("+100.0%", sub_fs, font_family=_body_font) + 6.0
+        plot_x_left = sx_left + name_gutter_w
+        plot_x_right = sx_right - _pct_label_w
+        # Axis in middle at pct=0 across the usable plot region (not the full
+        # sub bbox).
+        sub_mid_x = (plot_x_left + plot_x_right) * 0.5
+        bar_half_w = (plot_x_right - plot_x_left) * 0.5
+
+        def _px_of(p):
+            # map pct ∈ [-max_abs, +max_abs] → [sub_mid_x - half_w, sub_mid_x + half_w]
+            return sub_mid_x + (p / max_abs) * bar_half_w
+
+        parts.append(
+            f'<text x="{sx_left:.1f}" y="{sy_top - 6:.1f}" '
+            f'font-size="{cap_fs:.1f}" fill="{c_ink}" font-weight="600">'
+            f"Contribution % of gross movement</text>"
+        )
+        # Axis line at 0.
+        parts.append(
+            f'<line x1="{sub_mid_x:.1f}" y1="{sy_top:.1f}" '
+            f'x2="{sub_mid_x:.1f}" y2="{sy_bot:.1f}" '
+            f'stroke="{c_ink}" stroke-width="1"/>'
+        )
+
+        for i, (nm, pct, kd) in enumerate(pcs):
+            row_cy = sy_top + (i + 0.5) * row_h
+            bar_h = max(6.0, row_h * 0.55)
+            if pct >= 0:
+                x0_b = sub_mid_x
+                x1_b = _px_of(pct)
+                col = c_pos_bar if kd != "total" else c_ink
+            else:
+                x0_b = _px_of(pct)
+                x1_b = sub_mid_x
+                col = c_accent
+            parts.append(
+                f'<rect x="{x0_b:.1f}" y="{row_cy - bar_h / 2:.1f}" '
+                f'width="{max(0.0, x1_b - x0_b):.1f}" height="{bar_h:.1f}" '
+                f'fill="{col}" opacity="0.85"/>'
+            )
+            # pct label: place OUTSIDE the bar when there's room in the
+            # gutter, INSIDE the bar when its end would collide with the row
+            # name gutter (negative bars) or the sub-bbox edge (positive).
+            if abs(pct) > 0.05:
+                lbl_text = f"{pct:+.1f}%"
+                lbl_fill = c_ink
+                if pct >= 0:
+                    # Positive: prefer x1_b + 4 (outside). If x1_b + label_w
+                    # would exceed sx_right, place inside bar instead.
+                    outside_x = x1_b + 4
+                    if outside_x + _pct_label_w > sx_right - 2:
+                        lbl_x = x1_b - 4
+                        anc = "end"
+                        lbl_fill = _pal.get("bg", c_ink) if False else c_ink
+                    else:
+                        lbl_x = outside_x
+                        anc = "start"
+                else:
+                    # Negative: prefer x0_b - 4 (outside, in gutter). If outside placement would overlap the row-name
+                    # label (which ends near plot_x_left - 6 - name_w), move INSIDE the bar.
+                    outside_x = x0_b - 4
+                    if outside_x - _pct_label_w < plot_x_left - 2:
+                        lbl_x = x0_b + 4
+                        anc = "start"
+                    else:
+                        lbl_x = outside_x
+                        anc = "end"
+                parts.append(
+                    f'<text x="{lbl_x:.1f}" y="{row_cy + sub_fs * 0.35:.1f}" '
+                    f'font-size="{sub_fs:.1f}" fill="{lbl_fill}" '
+                    f'text-anchor="{anc}" font-family="{_body_font}">'
+                    f"{lbl_text}</text>"
+                )
+            # row label pinned to the left-gutter column (sx_left..plot_x_left).
+            # text is anchored "end" at the gutter's right edge so names
+            # right-align against the bars.
+            name_x = plot_x_left - 6
+            parts.append(
+                f'<text x="{name_x:.1f}" y="{row_cy + sub_fs * 0.35:.1f}" '
+                f'font-size="{sub_fs:.1f}" fill="{c_muted}" '
+                f'text-anchor="end" font-family="{_body_font}">'
+                f"{_xesc(nm)}</text>"
+            )
+
     _svg_result = _wrap_with_auto_viewbox(_title_block + "".join(parts), extra_pad=12.0)
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 11) Gantt 甘特图
-# ==============================================================

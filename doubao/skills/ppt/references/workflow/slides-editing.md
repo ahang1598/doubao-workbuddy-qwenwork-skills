@@ -125,7 +125,7 @@ python3 scripts/xml_inspect.py --input "./source.xml" --slide-id "$SID" --mode r
 
 ### 1.4 建立基线并复核路由
 
-XML 内容与结构摘要用于定位页面，content 模式读取页面文字和数据，raw XML 确认对象结构，截图确认真实视觉。局部任务只截图目标页及必须联动的同页对象；全局任务覆盖封面、目录、章节页、内容页、数据页、结束页及异常页。
+XML 内容与结构摘要用于定位页面，content 模式读取页面文字和数据，raw XML 确认对象结构，截图确认真实视觉。本节截图用于修改前理解原稿：局部任务查看目标页及关联对象，全局任务查看各类页型及异常页；这不替代终稿验收。修改后所有视觉变化页必须截图，全局视觉修改检查全部页。
 
 ```bash
 # 单页传一个 --slide-id；多页重复该参数，单次最多 8 页
@@ -195,7 +195,7 @@ slide_id/当前页序｜当前问题｜修改动作｜必须保留｜素材/来�
 
 具象风格背景必须准备图片素材：涉及真实场景或实体时优先搜图；漫画、手绘、插画等非真实风格优先生图。生成背景按画布比例制作，不带文字，为标题和正文预留低细节区域，需考虑已有内容，不与已有元素发生重叠遮挡；按页面角色准备少量一致的变体，避免整稿机械重复。背景图保留完整背景，不去底色。
 
-普通配图流程固定为获取本地文件 → 去底色 → `+media-upload`，一步都不能省；禁止 http(s) 外链，`<img src>` 只能填 `file_token`。带底色的图使用去底色工具（运行 `mediakit-cli image remove-image-background --help` 与 `mediakit-cli image remove-image-background --schema` 获取命令的输入输出说明，注意该命令里的boolean 参数--need-crop-background 必须写成 --need-crop-background=true / --need-crop-background=false，--image-url 参数可以接受搜索到的图片URL；动漫卡通相关无论图片主体是什么，参数--scene均设置为product；未完成上述读取和检查前禁止直接调用）抠纯色底，黑白灰底必抠；抠完效果差则回退原图。**明确作为全画布背景使用的图片保留背景，不执行去底色。** 
+普通配图流程固定为获取本地文件 → 去底色 → `+media-upload`，一步都不能省；禁止 http(s) 外链，`<img src>` 只能填 `file_token`。带底色的图使用去底色工具（运行 `mediakit-cli image remove-image-background --help` 与 `mediakit-cli image remove-image-background --schema` 获取命令的输入输出说明，注意该命令里的boolean 参数--need-crop-background 必须写成 --need-crop-background=true / --need-crop-background=false，--image-url 参数可以接受搜索到的图片URL；logo徽标、动漫卡通图片使用 `--scene=general`，人像、真人、实物使用 `--scene=product`；未完成上述读取和检查前禁止直接调用）抠纯色底，黑白灰底必抠；抠完效果差则回退原图。**明确作为全画布背景使用的图片保留背景，不执行去底色。** 
 
 下载原稿图片：
 ```bash
@@ -266,7 +266,7 @@ lark-cli slides +replace-slide --presentation "$PRES" --slide-id "$SID" \
   --parts '[{"action":"block_replace","block_id":"bUn","replacement":"<shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>新标题</p></content></shape>"}]'
 ```
 
-CLI 会补 replacement 根 `id` 和缺失的 `<content/>`，不要手写。并发/多步编辑可从读取响应取 `revision_id` 传 `--revision-id`；XML 文件里没有它，默认 `-1` 基于最新版，传入超过当前版本的值会报 3350002。写入结果不明确时先回读再重试，见 [`error-handling.md`](error-handling.md)。
+CLI 会补 replacement 根 `id` 和缺失的 `<content/>`，不要手写。需要指定基准版本时，可从读取响应取 `revision_id` 传 `--revision-id`，但不能据此假定并发变更会被拒绝；XML 文件里没有它，默认 `-1` 基于最新版，传入超过当前版本的值会报 3350002。写入结果不明确时先回读再重试，见 [`error-handling.md`](error-handling.md)。
 
 给已有页加图时先读坐标；空间不足就在同一 `--parts` 中移动/缩小/重排邻居后插入。需要把背景或底纹放到前景块之后时，用 `insert_before_block_id` 插到页面第一个前景块之前；无法可靠控制层级时改走整页重建。附件提取图片/表格只按原比例缩放，`<img>` 的 `width:height` 对齐原图比例时只缩放、不裁剪；普通图框比例不同时默认中心裁剪，可用 `<crop>` 的 `anchor` 指定保留侧，但不能切主体。同一普通配图不跨页重复，Logo/统一装饰除外。
 

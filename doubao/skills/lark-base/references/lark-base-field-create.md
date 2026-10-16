@@ -12,6 +12,8 @@
 4. 读完 guide 后，再构造 `--json` 并创建字段。
 5. 如果是跨表 formula / lookup，再补查**目标表**的结构。
 
+需要从现有单值人员或创建人字段生成部门、直属上级、工号等通讯录信息列时，不用普通 `+field-create`，读取 [lark-base-contact-field-enrichment](lark-base-contact-field-enrichment.md)。
+
 ## 推荐命令
 
 ```bash

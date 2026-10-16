@@ -17,6 +17,7 @@ Step 5 每页写入前必跑：
 
 stdout：JSON envelope，含 summary + 三项子结果 + 占位符 diff 详情。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,27 +31,69 @@ from pathlib import Path
 
 # 占位符黑名单（命中就是 warn，且 message 带明确"疑似占位符"标签）
 PLACEHOLDER_BLACKLIST = [
-    "添加标题", "点击输入", "点击此处", "占位", "占位符",
-    "示例文本", "示例文字", "示例内容", "示例",
-    "Lorem ipsum", "Lorem", "Click to add", "Add title",
-    "Add subtitle", "Add text", "Placeholder", "Sample text",
-    "asdas", "想搞设计", "论文就是用来",
-    "亮亮图文", "淘宝",
+    "添加标题",
+    "点击输入",
+    "点击此处",
+    "占位",
+    "占位符",
+    "示例文本",
+    "示例文字",
+    "示例内容",
+    "示例",
+    "Lorem ipsum",
+    "Lorem",
+    "Click to add",
+    "Add title",
+    "Add subtitle",
+    "Add text",
+    "Placeholder",
+    "Sample text",
+    "asdas",
+    "想搞设计",
+    "论文就是用来",
+    "亮亮图文",
+    "淘宝",
     "副标题",
 ]
 
 # 模板骨架 label 白名单（命中就降级为 info、不报 warn；这些是模板设计的一部分保留合理）
 SKELETON_WHITELIST = {
     # 通用骨架 label
-    "目录", "章节", "内容", "标题", "副标题内容",
-    "页脚", "页眉", "关键词", "备注",
+    "目录",
+    "章节",
+    "内容",
+    "标题",
+    "副标题内容",
+    "页脚",
+    "页眉",
+    "关键词",
+    "备注",
     # 常见英文对照
-    "CONTENTS", "OUTLINE", "AGENDA", "CHAPTER", "SECTION",
-    "TITLE", "SUBTITLE", "OVERVIEW", "INTRODUCTION", "CONCLUSION",
-    "APPENDIX", "REFERENCE", "REFERENCES", "THANKS", "THANK YOU",
-    "BACKGROUND", "METHOD", "METHODS", "RESULTS", "DISCUSSION",
+    "CONTENTS",
+    "OUTLINE",
+    "AGENDA",
+    "CHAPTER",
+    "SECTION",
+    "TITLE",
+    "SUBTITLE",
+    "OVERVIEW",
+    "INTRODUCTION",
+    "CONCLUSION",
+    "APPENDIX",
+    "REFERENCE",
+    "REFERENCES",
+    "THANKS",
+    "THANK YOU",
+    "BACKGROUND",
+    "METHOD",
+    "METHODS",
+    "RESULTS",
+    "DISCUSSION",
     # 通用装饰词（长度 >=4 但没意义）
-    "SLIDE", "PAGE", "PART", "STEP",
+    "SLIDE",
+    "PAGE",
+    "PART",
+    "STEP",
 }
 
 # 中文常见极短装饰（<4 会被长度过滤掉，这里覆盖恰好 4 字的）
@@ -103,7 +146,10 @@ def _classify_common_text(t: str) -> tuple[str, str]:
     if t in SKELETON_WHITELIST or t.upper() in SKELETON_WHITELIST:
         return "info", "模板骨架 label，保留合理"
     # 其他 → warn
-    return "warn", "该文本在模板 source 和 authored 中都出现且未修改——可能是漏改的原文，也可能是模板设计要保留的部分，请 MainAgent 判断"
+    return (
+        "warn",
+        "该文本在模板 source 和 authored 中都出现且未修改——可能是漏改的原文，也可能是模板设计要保留的部分，请 MainAgent 判断",
+    )
 
 
 def check_placeholders(source_xml: Path, authored_xml: Path) -> dict:
@@ -234,14 +280,16 @@ def check_overflow_covers_below(authored_xml: Path, xml_lint_json: dict | None) 
             font_size = font_sizes[0] if font_sizes else 14.0
             # 估算行高（fontSize * 1.4）
             line_h = font_size * 1.4
+
             # 简易估算文本占的行数（按字符宽度 ~ 0.6 * fontSize，中文按 1 * fontSize）
             def _char_w(ch: str, fs: float) -> float:
-                if '一' <= ch <= '鿿':  # 中日韩汉字
+                if "一" <= ch <= "鿿":  # 中日韩汉字
                     return fs * 1.0
                 return fs * 0.55
+
             # 减去 padding
             avail_w = max(w - 14, 1)  # 左右各留 7 padding 估
-            avail_h = max(h - 8, 1)   # 上下各留 4 padding 估
+            avail_h = max(h - 8, 1)  # 上下各留 4 padding 估
             if text:
                 line_widths = 0.0
                 lines = 1
@@ -256,16 +304,22 @@ def check_overflow_covers_below(authored_xml: Path, xml_lint_json: dict | None) 
             else:
                 estimated_h = 0.0
 
-            page_shapes.append({
-                "id": sid,
-                "type": shp.get("type") or local(shp.tag),
-                "x": x, "y": y, "w": w, "h": h,
-                "x_end": x + w, "y_end": y + h,
-                "text": text[:80],
-                "font_size": font_size,
-                "estimated_h": estimated_h,
-                "overflow_bottom": max(0.0, estimated_h - h),  # 兜底估算
-            })
+            page_shapes.append(
+                {
+                    "id": sid,
+                    "type": shp.get("type") or local(shp.tag),
+                    "x": x,
+                    "y": y,
+                    "w": w,
+                    "h": h,
+                    "x_end": x + w,
+                    "y_end": y + h,
+                    "text": text[:80],
+                    "font_size": font_size,
+                    "estimated_h": estimated_h,
+                    "overflow_bottom": max(0.0, estimated_h - h),  # 兜底估算
+                }
+            )
 
         # 从 xml_lint 的 slide 结果里拿"确定溢出"的框（更精确）
         xml_lint_overflows: dict[str, float] = {}  # id -> bottom_over
@@ -313,27 +367,29 @@ def check_overflow_covers_below(authored_xml: Path, xml_lint_json: dict | None) 
                 ovl_h = ovl_bot - ovl_top
                 if ovl_h <= 2:
                     continue
-                issues.append({
-                    "severity": "fail",
-                    "code": "text_overflow_covers_below",
-                    "slide_number": slide_idx,
-                    "overflowing_shape": a["id"],
-                    "overflowing_shape_type": a["type"],
-                    "overflowing_text": a["text"],
-                    "covered_shape": b["id"],
-                    "covered_shape_type": b["type"],
-                    "covered_text": b["text"],
-                    "overflow_bottom_px": round(over, 1),
-                    "vertical_overlap_px": round(ovl_h, 1),
-                    "source": "xml_lint" if precise > 0 else "heuristic_estimate",
-                    "reason": (
-                        f"slide {slide_idx} 文本框 {a['id']}（type={a['type']}, 高 {a['h']:.0f}px）"
-                        f"估算需要 {a['h'] + over:.0f}px 才装得下'{a['text'][:30]}...'，"
-                        f"溢出约 {over:.0f}px 向下覆盖到 {b['id']}（type={b['type']}, "
-                        f"内容'{b['text'][:20]}...'）——两段文字会在渲染时挤成一团。"
-                        f"修复：加大 {a['id']} 的 height、缩短文本、或把 {b['id']} 往下挪至少 {ovl_h:.0f}px。"
-                    ),
-                })
+                issues.append(
+                    {
+                        "severity": "fail",
+                        "code": "text_overflow_covers_below",
+                        "slide_number": slide_idx,
+                        "overflowing_shape": a["id"],
+                        "overflowing_shape_type": a["type"],
+                        "overflowing_text": a["text"],
+                        "covered_shape": b["id"],
+                        "covered_shape_type": b["type"],
+                        "covered_text": b["text"],
+                        "overflow_bottom_px": round(over, 1),
+                        "vertical_overlap_px": round(ovl_h, 1),
+                        "source": "xml_lint" if precise > 0 else "heuristic_estimate",
+                        "reason": (
+                            f"slide {slide_idx} 文本框 {a['id']}（type={a['type']}, 高 {a['h']:.0f}px）"
+                            f"估算需要 {a['h'] + over:.0f}px 才装得下'{a['text'][:30]}...'，"
+                            f"溢出约 {over:.0f}px 向下覆盖到 {b['id']}（type={b['type']}, "
+                            f"内容'{b['text'][:20]}...'）——两段文字会在渲染时挤成一团。"
+                            f"修复：加大 {a['id']} 的 height、缩短文本、或把 {b['id']} 往下挪至少 {ovl_h:.0f}px。"
+                        ),
+                    }
+                )
 
     return {
         "checked": True,
@@ -425,7 +481,8 @@ def check_unexpected_wrapping(authored_xml: Path) -> dict:
             content = None
             for c in shp:
                 if local(c.tag) == "content":
-                    content = c; break
+                    content = c
+                    break
             if content is None:
                 continue
             wrap = content.get("wrap")
@@ -470,12 +527,14 @@ def check_unexpected_wrapping(authored_xml: Path) -> dict:
                         p_fs = float(content.get("fontSize") or 14)
                     except (TypeError, ValueError):
                         p_fs = 14.0
-                paragraphs.append({
-                    "text": p_text,
-                    "font_size": p_fs,
-                    "margin_left": p_margin_left,
-                    "indent": p_indent,
-                })
+                paragraphs.append(
+                    {
+                        "text": p_text,
+                        "font_size": p_fs,
+                        "margin_left": p_margin_left,
+                        "indent": p_indent,
+                    }
+                )
 
             if not paragraphs:
                 continue
@@ -484,7 +543,8 @@ def check_unexpected_wrapping(authored_xml: Path) -> dict:
             has_bullet = False
             for x in content.iter():
                 if local(x.tag) == "li":
-                    has_bullet = True; break
+                    has_bullet = True
+                    break
 
             # 对每段估算是否会换行
             for p_info in paragraphs:
@@ -505,6 +565,7 @@ def check_unexpected_wrapping(authored_xml: Path) -> dict:
 
                 # 估算实际需要的行数（math.ceil，line_w / avail_w 后向上取整）
                 import math
+
                 estimated_lines = max(1, math.ceil(line_w / avail_w))
 
                 if line_w <= avail_w:
@@ -521,27 +582,29 @@ def check_unexpected_wrapping(authored_xml: Path) -> dict:
                 else:
                     reason_short = f"文本估算需要 {estimated_lines} 行（模板设计意图可能是单行）"
 
-                issues.append({
-                    "severity": severity,
-                    "slide_number": slide_idx,
-                    "shape_id": sid,
-                    "text": text[:60],
-                    "font_size": fs,
-                    "shape_width": round(w, 1),
-                    "shape_height": round(h, 1),
-                    "avail_width": round(avail_w, 1),
-                    "estimated_line_width": round(line_w, 1),
-                    "estimated_lines": estimated_lines,
-                    "declared_line_capacity": declared_line_capacity,
-                    "has_bullet": has_bullet,
-                    "reason": (
-                        f"slide {slide_idx} shape {sid} '{text[:30]}': "
-                        f"估算行宽 {line_w:.0f}px > 可用宽 {avail_w:.0f}px（框宽 {w:.0f} - padding {pad_left+pad_right:.0f} "
-                        f"- marginLeft {margin_l:.0f} - indent {indent:.0f}"
-                        f"{' - bullet ' + f'{bullet_indent:.0f}' if has_bullet else ''}）。{reason_short}。"
-                        f"修法：加宽 shape width、缩短文本、去掉 bullet/indent，或明确设 wrap=\"false\" 让 xml_lint 严格拦截。"
-                    ),
-                })
+                issues.append(
+                    {
+                        "severity": severity,
+                        "slide_number": slide_idx,
+                        "shape_id": sid,
+                        "text": text[:60],
+                        "font_size": fs,
+                        "shape_width": round(w, 1),
+                        "shape_height": round(h, 1),
+                        "avail_width": round(avail_w, 1),
+                        "estimated_line_width": round(line_w, 1),
+                        "estimated_lines": estimated_lines,
+                        "declared_line_capacity": declared_line_capacity,
+                        "has_bullet": has_bullet,
+                        "reason": (
+                            f"slide {slide_idx} shape {sid} '{text[:30]}': "
+                            f"估算行宽 {line_w:.0f}px > 可用宽 {avail_w:.0f}px（框宽 {w:.0f} - padding {pad_left + pad_right:.0f} "
+                            f"- marginLeft {margin_l:.0f} - indent {indent:.0f}"
+                            f"{' - bullet ' + f'{bullet_indent:.0f}' if has_bullet else ''}）。{reason_short}。"
+                            f'修法：加宽 shape width、缩短文本、去掉 bullet/indent，或明确设 wrap="false" 让 xml_lint 严格拦截。'
+                        ),
+                    }
+                )
 
     return {
         "checked": True,
@@ -585,12 +648,12 @@ def _shape_text_length(shape_node, local_fn) -> int:
     return total
 
 
-
 # ---------- 模板拷贝过拟合检测（active_rebuild 页专用） ----------
 
-def check_template_copy_overfit(authored_path: Path, source_path: Path | None,
-                                 page_role: str | None,
-                                 threshold_ratio: float = 0.70) -> dict:
+
+def check_template_copy_overfit(
+    authored_path: Path, source_path: Path | None, page_role: str | None, threshold_ratio: float = 0.70
+) -> dict:
     """检测 authored 页是否照抄了 source 页的大部分 shape（模板生搬硬套）。
 
     只对 active_rebuild 页生效 —— fixed_template 页本来就是"保留版式只改文字"，
@@ -656,27 +719,31 @@ def check_template_copy_overfit(authored_path: Path, source_path: Path | None,
     shared_ids = authored_ids & source_ids
     shared_ratio = len(shared_ids) / authored_n
 
-    result.update({
-        "authored_shape_count": authored_n,
-        "source_shape_count": source_n,
-        "shared_id_count": len(shared_ids),
-        "shared_ratio": round(shared_ratio, 3),
-        "threshold": threshold_ratio,
-    })
+    result.update(
+        {
+            "authored_shape_count": authored_n,
+            "source_shape_count": source_n,
+            "shared_id_count": len(shared_ids),
+            "shared_ratio": round(shared_ratio, 3),
+            "threshold": threshold_ratio,
+        }
+    )
 
     if shared_ratio > threshold_ratio:
         result["fail_count"] = 1
         result["status"] = "blocked"
-        result["issues"].append({
-            "code": "template_copy_overfit",
-            "severity": "error",
-            "message": (
-                f"authored 页 {authored_n} 个 shape 中，{len(shared_ids)} 个（{shared_ratio*100:.1f}%）的 id 与 source 页相同，"
-                f"超过 {threshold_ratio*100:.0f}% 门槛。"
-                f"active_rebuild 页应该按 refine-examples 的 sub-type 范本从零建骨架，"
-                f"只保留跨页复用的 brand_assets（背景/页眉/页脚/装饰线），不要 cp source 保留内容占位符和装饰群。"
-            ),
-        })
+        result["issues"].append(
+            {
+                "code": "template_copy_overfit",
+                "severity": "error",
+                "message": (
+                    f"authored 页 {authored_n} 个 shape 中，{len(shared_ids)} 个（{shared_ratio * 100:.1f}%）的 id 与 source 页相同，"
+                    f"超过 {threshold_ratio * 100:.0f}% 门槛。"
+                    f"active_rebuild 页应该按 refine-examples 的 sub-type 范本从零建骨架，"
+                    f"只保留跨页复用的 brand_assets（背景/页眉/页脚/装饰线），不要 cp source 保留内容占位符和装饰群。"
+                ),
+            }
+        )
     else:
         result["status"] = "ok"
 
@@ -685,11 +752,11 @@ def check_template_copy_overfit(authored_path: Path, source_path: Path | None,
 
 # ---------- refine 触发规则（跟 template-editing-organizer.md 5.2 · active_rebuild 5 信号对齐） ----------
 REFINE_SIGNAL_RULES = [
-    ("visual_elements",           "≤",   12,   "装饰/图表偏少 · 大概率是纯文字空稿"),
-    ("long_paragraph_char_ratio", ">",   0.60, "单长段占据全页文字主导（页眉页脚 + 一大段典型模式）"),
-    ("total_elements",            "<",   20,   "元素太少 · 范本页型骨架至少 20 个 shape"),
-    ("total_text_chars",          "<",   30,   "漏填 / 内容太少（仅 <data> 里的文字 · 不含演讲者备注 <note>）"),
-    ("text_ratio",                ">",   0.80, "几乎全是文字块 · 装饰不足"),
+    ("visual_elements", "≤", 12, "装饰/图表偏少 · 大概率是纯文字空稿"),
+    ("long_paragraph_char_ratio", ">", 0.60, "单长段占据全页文字主导（页眉页脚 + 一大段典型模式）"),
+    ("total_elements", "<", 20, "元素太少 · 范本页型骨架至少 20 个 shape"),
+    ("total_text_chars", "<", 30, "漏填 / 内容太少（仅 <data> 里的文字 · 不含演讲者备注 <note>）"),
+    ("text_ratio", ">", 0.80, "几乎全是文字块 · 装饰不足"),
 ]
 
 
@@ -736,9 +803,12 @@ def _compute_refine_triggers(authored_counts: dict, page_role: str | None) -> di
     for name, op, threshold, note in REFINE_SIGNAL_RULES:
         v = signal_values[name]
         hit = False
-        if op == "≤":  hit = v <= threshold
-        elif op == "<":  hit = v < threshold
-        elif op == ">":  hit = v > threshold
+        if op == "≤":
+            hit = v <= threshold
+        elif op == "<":
+            hit = v < threshold
+        elif op == ">":
+            hit = v > threshold
         entry = {
             "signal": name,
             "value": v,
@@ -806,23 +876,22 @@ def _classify_slide_elements(slide_node, local_fn) -> dict:
     counts["total"] = counts["text"] + counts["visual_shape"] + counts["visual_other"]
     counts["text_char_lengths"] = text_char_lengths
     counts["max_font_size"] = max_font_size
-    counts["long_paragraph_count"] = sum(
-        1 for n in text_char_lengths if n >= LONG_PARAGRAPH_CHAR_THRESHOLD
-    )
-    counts["long_paragraph_chars"] = sum(
-        n for n in text_char_lengths if n >= LONG_PARAGRAPH_CHAR_THRESHOLD
-    )
+    counts["long_paragraph_count"] = sum(1 for n in text_char_lengths if n >= LONG_PARAGRAPH_CHAR_THRESHOLD)
+    counts["long_paragraph_chars"] = sum(n for n in text_char_lengths if n >= LONG_PARAGRAPH_CHAR_THRESHOLD)
     counts["total_text_chars"] = sum(text_char_lengths)
     return counts
 
 
-def check_sparsity(authored_xml: Path, source_xml: Path | None,
-                   page_role: str | None = None,
-                   min_total: int = 3,
-                   max_text_ratio: float = 0.90,
-                   min_density_ratio: float = 0.60,
-                   min_long_paragraphs_for_dominated: int = 1,
-                   max_long_paragraph_char_ratio: float = 0.70) -> dict:
+def check_sparsity(
+    authored_xml: Path,
+    source_xml: Path | None,
+    page_role: str | None = None,
+    min_total: int = 3,
+    max_text_ratio: float = 0.90,
+    min_density_ratio: float = 0.60,
+    min_long_paragraphs_for_dominated: int = 1,
+    max_long_paragraph_char_ratio: float = 0.70,
+) -> dict:
     """检测内容页是否过于稀疏或被长段落主导（"页眉页脚 + 几段纯文字"这种空稿）。
 
     4 个门槛（默认 active_rebuild 页 fail 触发 blocked；fixed_template 页降级为 info）：
@@ -878,24 +947,28 @@ def check_sparsity(authored_xml: Path, source_xml: Path | None,
     # 门槛 1: total >= min_total
     total = authored_counts["total"]
     if total < min_total:
-        result["issues"].append({
-            "code": "too_few_elements",
-            "severity": fail_severity,
-            "message": f"整页元素总数 {total} < {min_total}",
-            "hint": "参考规则 5.2.2「默认视觉化 · 纯段落是例外」—— 加 KPI 数字带 / 编号卡片 / 时间线 / 三线表 / SVG 图 / 图 + 文",
-        })
+        result["issues"].append(
+            {
+                "code": "too_few_elements",
+                "severity": fail_severity,
+                "message": f"整页元素总数 {total} < {min_total}",
+                "hint": "参考规则 5.2.2「默认视觉化 · 纯段落是例外」—— 加 KPI 数字带 / 编号卡片 / 时间线 / 三线表 / SVG 图 / 图 + 文",
+            }
+        )
 
     # 门槛 2: text_ratio <= max_text_ratio
     if total > 0:
         text_ratio = authored_counts["text"] / total
         result["authored"]["text_ratio"] = round(text_ratio, 3)
         if text_ratio > max_text_ratio:
-            result["issues"].append({
-                "code": "text_ratio_too_high",
-                "severity": fail_severity,
-                "message": f"文字类元素占比 {text_ratio:.0%} > {max_text_ratio:.0%}",
-                "hint": "把长段落拆成结构化视觉表达（KPI 数字 / 编号卡 / 三线表 / 时间线 / SVG 图）",
-            })
+            result["issues"].append(
+                {
+                    "code": "text_ratio_too_high",
+                    "severity": fail_severity,
+                    "message": f"文字类元素占比 {text_ratio:.0%} > {max_text_ratio:.0%}",
+                    "hint": "把长段落拆成结构化视觉表达（KPI 数字 / 编号卡 / 三线表 / 时间线 / SVG 图）",
+                }
+            )
 
     # 门槛 3: dominated_by_paragraphs —— 长段落数 + 长段落字符占比双重判定
     long_p_count = authored_counts["long_paragraph_count"]
@@ -904,15 +977,17 @@ def check_sparsity(authored_xml: Path, source_xml: Path | None,
     long_p_ratio = long_p_chars / total_chars if total_chars > 0 else 0
     result["authored"]["long_paragraph_char_ratio"] = round(long_p_ratio, 3)
     if long_p_count >= min_long_paragraphs_for_dominated and long_p_ratio > max_long_paragraph_char_ratio:
-        result["issues"].append({
-            "code": "dominated_by_paragraphs",
-            "severity": fail_severity,
-            "message": (
-                f"页面被大段文字主导：{long_p_count} 个长段落（≥{LONG_PARAGRAPH_CHAR_THRESHOLD} 字）"
-                f"占全页文字的 {long_p_ratio:.0%}（阈值 {max_long_paragraph_char_ratio:.0%}）"
-            ),
-            "hint": "把长段落拆成结构化视觉表达（KPI 数字 / 编号卡 / 三线表 / 时间线 / SVG 图 / 图 + 文）",
-        })
+        result["issues"].append(
+            {
+                "code": "dominated_by_paragraphs",
+                "severity": fail_severity,
+                "message": (
+                    f"页面被大段文字主导：{long_p_count} 个长段落（≥{LONG_PARAGRAPH_CHAR_THRESHOLD} 字）"
+                    f"占全页文字的 {long_p_ratio:.0%}（阈值 {max_long_paragraph_char_ratio:.0%}）"
+                ),
+                "hint": "把长段落拆成结构化视觉表达（KPI 数字 / 编号卡 / 三线表 / 时间线 / SVG 图 / 图 + 文）",
+            }
+        )
 
     # 门槛 4: density_ratio >= min_density_ratio（需要 source）
     if source_xml and source_xml.exists():
@@ -933,15 +1008,17 @@ def check_sparsity(authored_xml: Path, source_xml: Path | None,
                     ratio = total / source_counts["total"]
                     result["density_ratio"] = round(ratio, 3)
                     if ratio < min_density_ratio:
-                        result["issues"].append({
-                            "code": "density_below_source",
-                            "severity": fail_severity,
-                            "message": (
-                                f"新页元素数 {total} 只有源模板页 {source_counts['total']} 的 {ratio:.0%}"
-                                f"（低于 {min_density_ratio:.0%}）"
-                            ),
-                            "hint": "参考源模板页的元素密度补充结构性视觉；不用照搬示例文字，加 KPI 数字 / 编号卡 / 分栏 / 图表让画面填满",
-                        })
+                        result["issues"].append(
+                            {
+                                "code": "density_below_source",
+                                "severity": fail_severity,
+                                "message": (
+                                    f"新页元素数 {total} 只有源模板页 {source_counts['total']} 的 {ratio:.0%}"
+                                    f"（低于 {min_density_ratio:.0%}）"
+                                ),
+                                "hint": "参考源模板页的元素密度补充结构性视觉；不用照搬示例文字，加 KPI 数字 / 编号卡 / 分栏 / 图表让画面填满",
+                            }
+                        )
         except Exception as e:
             result["source_parse_error"] = str(e)
     else:
@@ -960,11 +1037,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="template-editing 分支专用的聚合 lint")
     ap.add_argument("--authored", required=True, help="MainAgent 写好的 authoring/slide-NN.xml")
     ap.add_argument("--source", help="对应的 source-slides/slide-NN.xml（用于占位符 diff）；不传则跳过 diff")
-    ap.add_argument("--skill-root", required=True,
-                    help="skill 根目录（找 xml_lint.py / color_contrast_check.py）")
+    ap.add_argument("--skill-root", required=True, help="skill 根目录（找 xml_lint.py / color_contrast_check.py）")
     ap.add_argument("--contrast-threshold", type=float, default=2.25)
-    ap.add_argument("--page-role", choices=["fixed_template", "active_rebuild"], default=None,
-                    help="页型策略，从 page-plan 该页的「页型策略」列取。传 fixed_template 时 sparsity_check 只报 info 不 block（cover/toc/chapter 天然元素少或纯文字）；不传时按 active_rebuild 严格判定")
+    ap.add_argument(
+        "--page-role",
+        choices=["fixed_template", "active_rebuild"],
+        default=None,
+        help="页型策略，从 page-plan 该页的「页型策略」列取。传 fixed_template 时 sparsity_check 只报 info 不 block（cover/toc/chapter 天然元素少或纯文字）；不传时按 active_rebuild 严格判定",
+    )
     args = ap.parse_args()
 
     authored_path = Path(args.authored).resolve()
@@ -990,8 +1070,7 @@ def main() -> int:
     # (2) 靠色
     contrast_res = _run_subscript(
         contrast_script,
-        ["--xml", str(authored_path), "--format", "json",
-         "--threshold", str(args.contrast_threshold)],
+        ["--xml", str(authored_path), "--format", "json", "--threshold", str(args.contrast_threshold)],
         timeout=60,
     )
     contrast_summary = (contrast_res.get("stdout_json") or {}).get("summary", {})
@@ -1009,21 +1088,17 @@ def main() -> int:
         placeholder_res = {"checked": False, "reason": "no --source passed, placeholder diff skipped"}
 
     # (4) 溢出压邻居（基于 xml_lint 报的 text_overflows_container 做二次分析）
-    overflow_covers_res = check_overflow_covers_below(
-        authored_path, xml_lint_res.get("stdout_json")
-    )
+    overflow_covers_res = check_overflow_covers_below(authored_path, xml_lint_res.get("stdout_json"))
 
     # (5) 意外换行（单行框被强制多行）
     wrapping_res = check_unexpected_wrapping(authored_path)
 
     # (6) 稀疏度检测（防"页眉页脚 + 几段纯文字"的空稿）
     source_path_for_sparsity = Path(args.source).resolve() if args.source else None
-    sparsity_res = check_sparsity(authored_path, source_path_for_sparsity,
-                                  page_role=args.page_role)
+    sparsity_res = check_sparsity(authored_path, source_path_for_sparsity, page_role=args.page_role)
 
     # (7) 模板拷贝过拟合检测（active_rebuild 页专用；防"authored 页 shape 90% 来自 source 页"）
-    overfit_res = check_template_copy_overfit(authored_path, source_path_for_sparsity,
-                                              page_role=args.page_role)
+    overfit_res = check_template_copy_overfit(authored_path, source_path_for_sparsity, page_role=args.page_role)
 
     # 聚合 status
     blocked = False
@@ -1054,7 +1129,7 @@ def main() -> int:
     if overfit_res.get("fail_count", 0) > 0:
         blocked = True
         reasons.append(
-            f"template_copy_overfit FAIL —— authored 页 {overfit_res['shared_ratio']*100:.0f}% 的 shape id 与 source 相同，"
+            f"template_copy_overfit FAIL —— authored 页 {overfit_res['shared_ratio'] * 100:.0f}% 的 shape id 与 source 相同，"
             f"意味着几乎照抄模板 shape。active_rebuild 页应该按 refine-examples 的 sub-type 范本从零建骨架，"
             "只保留跨页复用的 brand_assets（背景/页眉/页脚/装饰线）。请重新生成本页。"
         )
@@ -1088,7 +1163,9 @@ def main() -> int:
             "long_paragraph_char_ratio": (sparsity_res.get("authored") or {}).get("long_paragraph_char_ratio"),
             "total_text_chars": (sparsity_res.get("authored") or {}).get("total_text_chars"),
             "max_font_size": (sparsity_res.get("authored") or {}).get("max_font_size"),
-            "refine_triggers": _compute_refine_triggers(sparsity_res.get("authored") or {}, sparsity_res.get("page_role")),
+            "refine_triggers": _compute_refine_triggers(
+                sparsity_res.get("authored") or {}, sparsity_res.get("page_role")
+            ),
         },
         "checks": {
             "xml_lint": {

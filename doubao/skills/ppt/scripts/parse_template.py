@@ -47,6 +47,7 @@ capability_level:
   degraded  部分缺 · 走 fallback
   minimal   多依赖缺 · 仅产 assets + source-slides + 最简 index
 """
+
 from __future__ import annotations
 
 import argparse
@@ -72,10 +73,23 @@ ROLE_KEYWORDS = {
 }
 
 PLACEHOLDER_PATTERNS = [
-    r"添加标题", r"点击输入", r"点击此处", r"占位", r"示例文本", r"示例文字",
-    r"Lorem ipsum", r"Lorem", r"Click to add", r"Add title", r"Add subtitle",
-    r"Add text", r"Placeholder", r"Sample text",
-    r"论文就是用来", r"想搞设计", r"asdas",
+    r"添加标题",
+    r"点击输入",
+    r"点击此处",
+    r"占位",
+    r"示例文本",
+    r"示例文字",
+    r"Lorem ipsum",
+    r"Lorem",
+    r"Click to add",
+    r"Add title",
+    r"Add subtitle",
+    r"Add text",
+    r"Placeholder",
+    r"Sample text",
+    r"论文就是用来",
+    r"想搞设计",
+    r"asdas",
 ]
 
 
@@ -118,6 +132,7 @@ _OOXML_NS = {
 
 class _FallbackShape:
     """模拟 python-pptx Shape 对象的最小接口。"""
+
     __slots__ = ("shape_id", "shape_type", "left", "top", "width", "height", "_text")
 
     def __init__(self, shape_id, shape_type, left, top, width, height, text):
@@ -222,6 +237,7 @@ def _parse_pptx_fallback(pptx_path: Path) -> tuple[float, float, list[list[_Fall
 
         slides_shapes: list[list[_FallbackShape]] = []
         import xml.etree.ElementTree as ET
+
         for name in slide_names:
             try:
                 xml = z.read(name).decode("utf-8", errors="ignore")
@@ -245,7 +261,7 @@ def _parse_pptx_fallback(pptx_path: Path) -> tuple[float, float, list[list[_Fall
     # canvas 兜底:pptx presentation.xml 读取失败时用 16:9 默认(EMU)· 避免下游除零 / 阈值全 0
     if not canvas_w or not canvas_h:
         canvas_w = canvas_w or 12192000  # 13.333" · 16:9 标准
-        canvas_h = canvas_h or 6858000   # 7.5"
+        canvas_h = canvas_h or 6858000  # 7.5"
 
     return canvas_w, canvas_h, slides_shapes
 
@@ -268,8 +284,9 @@ def _classify_role(slide_num: int, total: int, texts: list[str]) -> str:
     return "content"
 
 
-def _extract_shell_shapes(slide, slide_num: int, master_shape_ids: set[int],
-                            canvas_w: float = 13.3333, canvas_h: float = 7.5) -> tuple[list[dict], list[dict]]:
+def _extract_shell_shapes(
+    slide, slide_num: int, master_shape_ids: set[int], canvas_w: float = 13.3333, canvas_h: float = 7.5
+) -> tuple[list[dict], list[dict]]:
     """区分壳层 shape(跨页复用/靠近边缘/装饰性)与内容 shape(可替换文本框)。
 
     简化启发式(用画布比例 · 不硬编码 4:3/16:9):
@@ -281,12 +298,12 @@ def _extract_shell_shapes(slide, slide_num: int, master_shape_ids: set[int],
     """
     # 从画布比例计算判据 · 兼容 16:9 / 4:3 / 竖版 / 自定义画布
     canvas_area = max(canvas_w * canvas_h, 1e-6)
-    edge_top_thresh = canvas_h * 0.053   # 原 0.4 / 7.5
+    edge_top_thresh = canvas_h * 0.053  # 原 0.4 / 7.5
     edge_bottom_thresh = canvas_h * 0.947  # 原 7.1 / 7.5
-    edge_left_thresh = canvas_w * 0.0375   # 原 0.5 / 13.333
-    edge_right_thresh = canvas_w * 0.96    # 原 12.8 / 13.333
-    small_logo_area = canvas_area * 0.01   # 原 1.0 / 100
-    large_group_area = canvas_area * 0.2   # 原 20.0 / 100
+    edge_left_thresh = canvas_w * 0.0375  # 原 0.5 / 13.333
+    edge_right_thresh = canvas_w * 0.96  # 原 12.8 / 13.333
+    small_logo_area = canvas_area * 0.01  # 原 1.0 / 100
+    large_group_area = canvas_area * 0.2  # 原 20.0 / 100
     small_shape_area = canvas_area * 0.03  # 原 3.0 / 100
 
     shell, content = [], []
@@ -297,7 +314,9 @@ def _extract_shell_shapes(slide, slide_num: int, master_shape_ids: set[int],
             try:
                 shape_type_name = shp.shape_type.name if shp.shape_type else "UNKNOWN"
             except AttributeError:
-                shape_type_name = str(shp.shape_type).replace("MSO_SHAPE_TYPE.", "").split()[0] if shp.shape_type else "UNKNOWN"
+                shape_type_name = (
+                    str(shp.shape_type).replace("MSO_SHAPE_TYPE.", "").split()[0] if shp.shape_type else "UNKNOWN"
+                )
         except Exception:
             shape_type_name = "UNKNOWN"
 
@@ -347,8 +366,9 @@ def _extract_shell_shapes(slide, slide_num: int, master_shape_ids: set[int],
     return shell, content
 
 
-def _extract_available_regions(shell_shapes: list[dict], content_shapes: list[dict],
-                                canvas_w: float, canvas_h: float) -> list[dict]:
+def _extract_available_regions(
+    shell_shapes: list[dict], content_shapes: list[dict], canvas_w: float, canvas_h: float
+) -> list[dict]:
     """粗略计算可用文字区：把画布划分成 4x3 网格，标记被壳层或内容压住的格子；剩下的相邻空白格子合并成矩形。"""
     cols, rows = 4, 3
     cw, ch = canvas_w / cols, canvas_h / rows
@@ -364,12 +384,14 @@ def _extract_available_regions(shell_shapes: list[dict], content_shapes: list[di
     for r in range(rows):
         for c in range(cols):
             if not occupied[r][c]:
-                regions.append({
-                    "left": round(c * cw, 2),
-                    "top": round(r * ch, 2),
-                    "width": round(cw, 2),
-                    "height": round(ch, 2),
-                })
+                regions.append(
+                    {
+                        "left": round(c * cw, 2),
+                        "top": round(r * ch, 2),
+                        "width": round(cw, 2),
+                        "height": round(ch, 2),
+                    }
+                )
     return regions
 
 
@@ -398,8 +420,7 @@ def _detect_placeholders(all_texts: list[str]) -> list[str]:
 
 def _extract_theme(pptx_path: Path) -> dict:
     """从 pptx 的 theme1.xml 提主色/辅色/字体（中英文各一）。"""
-    theme = {"colors": [], "major_font": None, "minor_font": None,
-             "major_font_ea": None, "minor_font_ea": None}
+    theme = {"colors": [], "major_font": None, "minor_font": None, "major_font_ea": None, "minor_font_ea": None}
     try:
         with zipfile.ZipFile(pptx_path) as z:
             for name in z.namelist():
@@ -434,9 +455,10 @@ def _pptx_to_pdf(pptx_path: Path, out_dir: Path) -> Path | None:
         return None
     try:
         subprocess.run(
-            [soffice, "--headless", "--convert-to", "pdf", "--outdir", str(out_dir),
-             str(pptx_path)],
-            check=True, capture_output=True, timeout=120,
+            [soffice, "--headless", "--convert-to", "pdf", "--outdir", str(out_dir), str(pptx_path)],
+            check=True,
+            capture_output=True,
+            timeout=120,
         )
     except Exception:
         return None
@@ -444,8 +466,7 @@ def _pptx_to_pdf(pptx_path: Path, out_dir: Path) -> Path | None:
     return pdf_path if pdf_path.exists() else None
 
 
-def _screenshot_batch(deck_id: str, slide_numbers: list[int], out_dir: Path,
-                      cwd: Path) -> list[Path]:
+def _screenshot_batch(deck_id: str, slide_numbers: list[int], out_dir: Path, cwd: Path) -> list[Path]:
     """一次 `+screenshot` 拉一批（≤10）页截图。返回按 slide_number 升序排列的本地图片路径列表。
 
     只走 --slide-number（Step 1 之后 deck 才刚导入完，还没有稳定的 slide_id 映射需要透出）。
@@ -460,14 +481,25 @@ def _screenshot_batch(deck_id: str, slide_numbers: list[int], out_dir: Path,
     except ValueError:
         # out_dir 不在 cwd 内 —— 不该发生（外层已经把 out_dir 建在 cwd 里）
         return []
-    cmd = ["lark-cli", "slides", "+screenshot",
-           "--presentation", deck_id,
-           "--output-dir", str(rel_out),
-           "--format", "json"]
+    cmd = [
+        "lark-cli",
+        "slides",
+        "+screenshot",
+        "--presentation",
+        deck_id,
+        "--output-dir",
+        str(rel_out),
+        "--format",
+        "json",
+    ]
     for n in slide_numbers:
         cmd += ["--slide-number", str(n)]
     rc, stdout, stderr, timed_out = _run_with_retry(
-        cmd, cwd=str(cwd), timeout=120, max_attempts=3, op_name=f"screenshot batch {slide_numbers[0]}-{slide_numbers[-1]}"
+        cmd,
+        cwd=str(cwd),
+        timeout=120,
+        max_attempts=3,
+        op_name=f"screenshot batch {slide_numbers[0]}-{slide_numbers[-1]}",
     )
     if rc != 0:
         return []
@@ -478,33 +510,42 @@ def _screenshot_batch(deck_id: str, slide_numbers: list[int], out_dir: Path,
         return []
     # 尽量宽松地扒路径
     candidates: list[str] = []
+
     def _walk(obj):
         if isinstance(obj, dict):
             for k, v in obj.items():
-                if k in ("path", "file_path", "local_path") and isinstance(v, str) and v.lower().endswith((".png", ".jpg", ".jpeg")):
+                if (
+                    k in ("path", "file_path", "local_path")
+                    and isinstance(v, str)
+                    and v.lower().endswith((".png", ".jpg", ".jpeg"))
+                ):
                     candidates.append(v)
                 else:
                     _walk(v)
         elif isinstance(obj, list):
             for v in obj:
                 _walk(v)
+
     _walk(payload)
     # 兜底：扫 out_dir 里新出现的图片文件（mtime 靠前 N 张）
     if len(candidates) < len(slide_numbers):
         recent = sorted(
-            [p for p in out_dir.glob("*.png")] + [p for p in out_dir.glob("*.jpg")] + [p for p in out_dir.glob("*.jpeg")],
-            key=lambda p: p.stat().st_mtime, reverse=True
-        )[:len(slide_numbers)]
+            [p for p in out_dir.glob("*.png")]
+            + [p for p in out_dir.glob("*.jpg")]
+            + [p for p in out_dir.glob("*.jpeg")],
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )[: len(slide_numbers)]
         # mtime 降序 -> 反转成升序（近似 slide_number 顺序，lark-cli 命名一般带页号）
         candidates = [str(p) for p in reversed(recent)]
     # 存在性过滤
     paths = [Path(p) for p in candidates if Path(p).exists()]
-    return paths[:len(slide_numbers)]
+    return paths[: len(slide_numbers)]
 
 
-def _render_overview_via_screenshot(deck_id: str, total_slides: int,
-                                    thumbs_dir: Path,
-                                    cwd: Path | None = None) -> tuple[bool, str]:
+def _render_overview_via_screenshot(
+    deck_id: str, total_slides: int, thumbs_dir: Path, cwd: Path | None = None
+) -> tuple[bool, str]:
     """并发拉 lark screenshot 分批（10 页/批） + PIL 缩率拼 5 列联图。
 
     返回 (ok, reason)。成功时产 thumbs/overview.jpg。
@@ -587,8 +628,7 @@ def _render_overview_via_screenshot(deck_id: str, total_slides: int,
                 w, h = im.size
                 scale = target_w / w
                 thumbs.append(im.convert("RGB").resize((target_w, int(h * scale)), Image.LANCZOS))
-        saved = _compose_overview_grid(thumbs, thumbs_dir, base_name="overview",
-                                        max_side=3800, quality=78)
+        saved = _compose_overview_grid(thumbs, thumbs_dir, base_name="overview", max_side=3800, quality=78)
         if not saved:
             return False, "compose_failed"
         return True, "ok_via_screenshot" if len(saved) == 1 else f"ok_via_screenshot_sharded_{len(saved)}"
@@ -608,13 +648,25 @@ def _export_deck_pdf_via_lark(deck_id: str, out_dir: Path) -> Path | None:
     file_name = f"overview-{deck_id[:12]}.pdf"
     try:
         proc = subprocess.run(
-            ["lark-cli", "drive", "+export",
-             "--token", deck_id, "--doc-type", "slides",
-             "--file-extension", "pdf",
-             "--output-dir", str(out_dir),
-             "--file-name", file_name,
-             "--overwrite"],
-            capture_output=True, timeout=180, text=True,
+            [
+                "lark-cli",
+                "drive",
+                "+export",
+                "--token",
+                deck_id,
+                "--doc-type",
+                "slides",
+                "--file-extension",
+                "pdf",
+                "--output-dir",
+                str(out_dir),
+                "--file-name",
+                file_name,
+                "--overwrite",
+            ],
+            capture_output=True,
+            timeout=180,
+            text=True,
         )
     except Exception:
         return None
@@ -628,9 +680,9 @@ def _export_deck_pdf_via_lark(deck_id: str, out_dir: Path) -> Path | None:
     return pdfs[0] if pdfs else None
 
 
-def _compose_overview_grid(tiles: list, out_dir: Path, base_name: str = "overview",
-                            max_side: int = 3800, gap: int = 6,
-                            quality: int = 78) -> list[str]:
+def _compose_overview_grid(
+    tiles: list, out_dir: Path, base_name: str = "overview", max_side: int = 3800, gap: int = 6, quality: int = 78
+) -> list[str]:
     """把一组 PIL Image tile 拼成 overview 联图 · 单张超 max_side 时自动分片。
 
     tile: 已经 resize 好的 PIL.Image 列表(全部同尺寸)
@@ -704,8 +756,7 @@ def _compose_overview_grid(tiles: list, out_dir: Path, base_name: str = "overvie
     return saved_paths
 
 
-def _render_overview(pptx_path: Path, thumbs_dir: Path,
-                     deck_id: str | None = None) -> tuple[bool, str]:
+def _render_overview(pptx_path: Path, thumbs_dir: Path, deck_id: str | None = None) -> tuple[bool, str]:
     """渲染全稿联图到 thumbs/overview.jpg。返回 (ok, reason_if_not)。
 
     主路径：soffice → pdf → pypdfium2 逐页渲染 → Pillow 拼 sqrt(N) 列网格 JPG。
@@ -750,8 +801,7 @@ def _render_overview(pptx_path: Path, thumbs_dir: Path,
         pdf.close()
         if not tiles:
             return False, "empty_pdf"
-        saved = _compose_overview_grid(tiles, thumbs_dir, base_name="overview",
-                                        max_side=3800, quality=60)
+        saved = _compose_overview_grid(tiles, thumbs_dir, base_name="overview", max_side=3800, quality=60)
         if not saved:
             return False, "compose_failed"
         return True, "ok" if len(saved) == 1 else f"ok_sharded_{len(saved)}"
@@ -781,11 +831,13 @@ def _extract_images(pptx_path: Path, assets_dir: Path) -> list[dict]:
                 out_name = name.split("/")[-1]
                 out_path = assets_dir / out_name
                 out_path.write_bytes(z.read(name))
-                manifest.append({
-                    "filename": out_name,
-                    "size_bytes": out_path.stat().st_size,
-                    "local_path": str(out_path.relative_to(assets_dir.parent)),
-                })
+                manifest.append(
+                    {
+                        "filename": out_name,
+                        "size_bytes": out_path.stat().st_size,
+                        "local_path": str(out_path.relative_to(assets_dir.parent)),
+                    }
+                )
     return manifest
 
 
@@ -793,33 +845,37 @@ def _detect_capabilities() -> tuple[dict, list[str]]:
     """探测 4 个 pip 包 + soffice 是否可用。返回 (capabilities, install_hints)。"""
     caps = {
         "python_pptx": False,
-        "pypdfium2":   False,
-        "pil":         False,
-        "lxml":        False,
-        "soffice":     bool(shutil.which("soffice") or shutil.which("libreoffice")),
+        "pypdfium2": False,
+        "pil": False,
+        "lxml": False,
+        "soffice": bool(shutil.which("soffice") or shutil.which("libreoffice")),
     }
     hints: list[str] = []
 
     try:
         from pptx import Presentation  # type: ignore  # noqa: F401
+
         caps["python_pptx"] = True
     except ImportError:
         hints.append("python-pptx 缺失——已用标准库降级 parser，manifest 字段精度略降")
 
     try:
         import pypdfium2  # type: ignore  # noqa: F401
+
         caps["pypdfium2"] = True
     except ImportError:
         hints.append("pypdfium2 缺失——联图渲染跳过或用 PDF 兜底")
 
     try:
         from PIL import Image  # type: ignore  # noqa: F401
+
         caps["pil"] = True
     except ImportError:
         hints.append("Pillow 缺失——联图无法拼接，改用 PDF 兜底")
 
     try:
         from lxml import etree  # type: ignore  # noqa: F401
+
         caps["lxml"] = True
     except ImportError:
         pass  # xml.etree fallback 已在 _fetch_and_split_slides 里
@@ -841,7 +897,10 @@ def _ensure_pip_deps(missing: list[str], per_pkg_timeout: int = 60) -> list[dict
         cmd = [sys.executable, "-m", "pip", "install", "--quiet", "--disable-pip-version-check", pkg]
         try:
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=per_pkg_timeout,
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=per_pkg_timeout,
             )
             if proc.returncode == 0:
                 report.append({"pkg": pkg, "ok": True, "reason": "installed"})
@@ -860,8 +919,7 @@ def _ensure_pip_deps(missing: list[str], per_pkg_timeout: int = 60) -> list[dict
     return report
 
 
-def _is_retryable_error(returncode: int | None, stderr: str, timed_out: bool,
-                        stdout: str = "") -> bool:
+def _is_retryable_error(returncode: int | None, stderr: str, timed_out: bool, stdout: str = "") -> bool:
     """判定一次 subprocess 失败是否值得重试。
 
     重试：timeout / 网络类关键词 / 5xx / 429
@@ -876,12 +934,23 @@ def _is_retryable_error(returncode: int | None, stderr: str, timed_out: bool,
 
     # 明确不重试的信号（fail-fast）
     non_retryable_signals = [
-        "unauthorized", "unauthenticated", "forbidden",
-        "invalid param", "bad request", "not found",
-        "no such file", "permission denied",
-        "401", "403", "404",
-        "400 ", "400:", "code\":400",
-        "invalid_grant", "invalid_token", "invalid_arg",
+        "unauthorized",
+        "unauthenticated",
+        "forbidden",
+        "invalid param",
+        "bad request",
+        "not found",
+        "no such file",
+        "permission denied",
+        "401",
+        "403",
+        "404",
+        "400 ",
+        "400:",
+        'code":400',
+        "invalid_grant",
+        "invalid_token",
+        "invalid_arg",
         # 注意:"token expired" 不放在这里 · lark-cli 的 temporary token 过期是常态,
         # subprocess 重启会自动 re-auth · 应该重试(见 retryable_signals)
     ]
@@ -891,17 +960,35 @@ def _is_retryable_error(returncode: int | None, stderr: str, timed_out: bool,
 
     # 明确要重试的信号
     retryable_signals = [
-        "timeout", "timed out",
-        "connection reset", "connection refused", "connection aborted",
-        "connection error", "network is unreachable", "network error",
-        "temporary failure", "eof", "broken pipe",
-        "5xx", "internal server error", "bad gateway", "service unavailable", "gateway timeout",
-        "500 ", "502 ", "503 ", "504 ",
-        "429", "rate limit", "too many requests",
+        "timeout",
+        "timed out",
+        "connection reset",
+        "connection refused",
+        "connection aborted",
+        "connection error",
+        "network is unreachable",
+        "network error",
+        "temporary failure",
+        "eof",
+        "broken pipe",
+        "5xx",
+        "internal server error",
+        "bad gateway",
+        "service unavailable",
+        "gateway timeout",
+        "500 ",
+        "502 ",
+        "503 ",
+        "504 ",
+        "429",
+        "rate limit",
+        "too many requests",
         # lark-cli 特有:临时 token 过期(subprocess 重启会自动重新 auth · 值得重试)
-        "temporary token expired", "token expired",
+        "temporary token expired",
+        "token expired",
         # lark-cli 特有:非标 JSON 响应(内部错误 · 值得重试)
-        "invalid_response", "invalid json response",
+        "invalid_response",
+        "invalid json response",
     ]
     for sig in retryable_signals:
         if sig in s:
@@ -935,10 +1022,16 @@ def _is_unknown_flag(stdout: str, stderr: str, flag: str) -> bool:
     return False
 
 
-def _run_with_retry(cmd: list[str], cwd: str | None, timeout: int,
-                    max_attempts: int = 3, backoff_base: float = 2.0,
-                    op_name: str = "", max_backoff: float = 30.0,
-                    total_deadline_sec: float | None = None) -> tuple[int | None, str, str, bool]:
+def _run_with_retry(
+    cmd: list[str],
+    cwd: str | None,
+    timeout: int,
+    max_attempts: int = 3,
+    backoff_base: float = 2.0,
+    op_name: str = "",
+    max_backoff: float = 30.0,
+    total_deadline_sec: float | None = None,
+) -> tuple[int | None, str, str, bool]:
     """联网 subprocess 包装。3 次尝试、指数退避 2s/4s（+jitter），只在可重试错误上重试。
 
     - max_backoff:单次退避上限(秒)· 默认 30s · 避免退到 128/256s 的死等
@@ -987,8 +1080,13 @@ def _run_with_retry(cmd: list[str], cwd: str | None, timeout: int,
         # rate_limit 时 jitter 加大到 100%(full jitter),避免多个并发调用同步撞在同一秒
         sleep_sec = min(max_backoff, backoff_base * (2 ** (attempt - 1)))
         s_lower = ((last_stderr or "") + "\n" + (last_stdout or "")).lower()
-        jitter_ratio = 1.0 if ("rate_limit" in s_lower or "rate limit" in s_lower
-                                or "too many requests" in s_lower or "429" in s_lower) else 0.25
+        jitter_ratio = (
+            1.0
+            if (
+                "rate_limit" in s_lower or "rate limit" in s_lower or "too many requests" in s_lower or "429" in s_lower
+            )
+            else 0.25
+        )
         sleep_sec += random.uniform(0, sleep_sec * jitter_ratio)
         # deadline 检查:若睡完就超时,少睡点(留点余地跑最后一次)
         if deadline is not None:
@@ -1003,8 +1101,9 @@ def _run_with_retry(cmd: list[str], cwd: str | None, timeout: int,
     return last_rc, last_stdout, last_stderr, last_timeout
 
 
-def _import_pptx_to_lark(pptx_path: Path, work: Path, deck_title: str | None = None,
-                          timeout: int = 300, max_attempts: int = 5) -> dict:
+def _import_pptx_to_lark(
+    pptx_path: Path, work: Path, deck_title: str | None = None, timeout: int = 300, max_attempts: int = 5
+) -> dict:
     """`lark-cli drive +import` 导入 pptx 到飞书，返回 {ok, xml_presentation_id, url, revision_id, error}.
 
     输入 pptx 必须已经复制到 work 目录内（--file 只接受相对路径）。
@@ -1020,9 +1119,13 @@ def _import_pptx_to_lark(pptx_path: Path, work: Path, deck_title: str | None = N
         rel_pptx = target.relative_to(work)
 
     cmd = [
-        "lark-cli", "drive", "+import",
-        "--file", f"./{rel_pptx}",
-        "--type", "slides",
+        "lark-cli",
+        "drive",
+        "+import",
+        "--file",
+        f"./{rel_pptx}",
+        "--type",
+        "slides",
         "--json",
     ]
     if deck_title:
@@ -1033,7 +1136,10 @@ def _import_pptx_to_lark(pptx_path: Path, work: Path, deck_title: str | None = N
     if stderr and "binary not found" in stderr:
         return {"ok": False, "error": "lark-cli binary not found in PATH"}
     if timed_out:
-        return {"ok": False, "error": stderr or f"lark-cli drive +import timeout after {timeout}s (all retries exhausted)"}
+        return {
+            "ok": False,
+            "error": stderr or f"lark-cli drive +import timeout after {timeout}s (all retries exhausted)",
+        }
     if rc != 0:
         return {"ok": False, "error": f"drive +import exit {rc}: {(stderr or '')[:500]}"}
 
@@ -1069,15 +1175,20 @@ def _import_pptx_to_lark(pptx_path: Path, work: Path, deck_title: str | None = N
 
     # 轮询 ticket 直到 ready · 递增间隔 2s → 5s → 10s · 上限 5 分钟
     import time as _time
+
     poll_intervals = [2, 3, 5, 5, 10, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30, 30, 30, 30, 30]
     elapsed = 0
     for wait_sec in poll_intervals:
         _time.sleep(wait_sec)
         elapsed += wait_sec
         poll_cmd = [
-            "lark-cli", "drive", "+task_result",
-            "--scenario", "import",
-            "--ticket", str(ticket),
+            "lark-cli",
+            "drive",
+            "+task_result",
+            "--scenario",
+            "import",
+            "--ticket",
+            str(ticket),
             "--json",
         ]
         prc, pstdout, pstderr, ptimeout = _run_with_retry(
@@ -1113,24 +1224,28 @@ def _import_pptx_to_lark(pptx_path: Path, work: Path, deck_title: str | None = N
     return {"ok": False, "error": f"import ticket={ticket} not ready after {elapsed}s polling · timeout"}
 
 
-def _fetch_single_slide_xml(xml_presentation_id: str, slide_number: int,
-                             work: Path, source_dir: Path,
-                             timeout: int, max_attempts: int) -> tuple[int, dict | None]:
+def _fetch_single_slide_xml(
+    xml_presentation_id: str, slide_number: int, work: Path, source_dir: Path, timeout: int, max_attempts: int
+) -> tuple[int, dict | None]:
     """单页拉一页 SXSD · 返回 (slide_number, {slide_id, path} 或 None)。
 
     走 --slide-number 单页拉,失败返回 None(不阻塞其他页)。
     """
     rel_output = f"source-slides/slide-{slide_number:02d}.xml"
     cmd = [
-        "lark-cli", "slides", "+xml-get",
-        "--presentation", xml_presentation_id,
-        "--slide-number", str(slide_number),
-        "--output", rel_output,
+        "lark-cli",
+        "slides",
+        "+xml-get",
+        "--presentation",
+        xml_presentation_id,
+        "--slide-number",
+        str(slide_number),
+        "--output",
+        rel_output,
         "--json",
     ]
     rc, _stdout, _stderr, _ = _run_with_retry(
-        cmd, cwd=str(work), timeout=timeout, max_attempts=max_attempts,
-        op_name=f"+xml-get slide {slide_number}"
+        cmd, cwd=str(work), timeout=timeout, max_attempts=max_attempts, op_name=f"+xml-get slide {slide_number}"
     )
     if rc != 0:
         return slide_number, None
@@ -1150,10 +1265,16 @@ def _fetch_single_slide_xml(xml_presentation_id: str, slide_number: int,
     }
 
 
-def _fetch_slides_per_page(xml_presentation_id: str, work: Path, source_dir: Path,
-                            total_slides: int, timeout: int, max_attempts: int,
-                            concurrency: int = 4,
-                            phase_deadline_sec: float | None = None) -> dict:
+def _fetch_slides_per_page(
+    xml_presentation_id: str,
+    work: Path,
+    source_dir: Path,
+    total_slides: int,
+    timeout: int,
+    max_attempts: int,
+    concurrency: int = 4,
+    phase_deadline_sec: float | None = None,
+) -> dict:
     """分页兜底:并发单页拉 SXSD。用在全稿 +xml-get 因服务端 timeout 失败后。
 
     concurrency 默认 4(读 API 限流比写宽松,飞书 read ~= 20 QPS)。
@@ -1172,8 +1293,7 @@ def _fetch_slides_per_page(xml_presentation_id: str, work: Path, source_dir: Pat
     pool = ThreadPoolExecutor(max_workers=concurrency)
     try:
         futures = {
-            pool.submit(_fetch_single_slide_xml, xml_presentation_id, n,
-                        work, source_dir, timeout, max_attempts): n
+            pool.submit(_fetch_single_slide_xml, xml_presentation_id, n, work, source_dir, timeout, max_attempts): n
             for n in range(1, total_slides + 1)
         }
         pending = set(futures.keys())
@@ -1203,11 +1323,13 @@ def _fetch_slides_per_page(xml_presentation_id: str, work: Path, source_dir: Pat
         if m is None:
             failed.append(n)
         else:
-            slides_meta.append({
-                "slide_num": n,
-                "slide_id": m["slide_id"],
-                "local_xml_path": m["local_xml_path"],
-            })
+            slides_meta.append(
+                {
+                    "slide_num": n,
+                    "slide_id": m["slide_id"],
+                    "local_xml_path": m["local_xml_path"],
+                }
+            )
 
     if failed:
         return {
@@ -1219,10 +1341,14 @@ def _fetch_slides_per_page(xml_presentation_id: str, work: Path, source_dir: Pat
     return {"ok": True, "slides": slides_meta}
 
 
-def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
-                             timeout: int = 300, max_attempts: int = 5,
-                             total_slides_hint: int | None = None,
-                             prefer_per_page_threshold: int = 30) -> dict:
+def _fetch_and_split_slides(
+    xml_presentation_id: str,
+    work: Path,
+    timeout: int = 300,
+    max_attempts: int = 5,
+    total_slides_hint: int | None = None,
+    prefer_per_page_threshold: int = 30,
+) -> dict:
     """`+xml-get` 拉全稿 SXSD → 拆成每页 XML 落到 source-slides/slide-NN.xml。
 
     路径选择:
@@ -1239,8 +1365,13 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
     # 大 deck 直接走单页并发(整包 API 服务端序列化慢 · 常 timeout)
     if total_slides_hint and total_slides_hint >= prefer_per_page_threshold:
         per_page_result = _fetch_slides_per_page(
-            xml_presentation_id, work, source_dir, total_slides_hint,
-            timeout=90, max_attempts=3, concurrency=4,
+            xml_presentation_id,
+            work,
+            source_dir,
+            total_slides_hint,
+            timeout=90,
+            max_attempts=3,
+            concurrency=4,
         )
         got_slides = per_page_result.get("slides", [])
         if per_page_result["ok"] or (got_slides and len(got_slides) >= total_slides_hint * 0.8):
@@ -1263,9 +1394,13 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
     # 小 deck / 未知页数 → 走整包一次拉
     rel_output = "source-slides/full.xml"
     cmd = [
-        "lark-cli", "slides", "+xml-get",
-        "--presentation", xml_presentation_id,
-        "--output", rel_output,
+        "lark-cli",
+        "slides",
+        "+xml-get",
+        "--presentation",
+        xml_presentation_id,
+        "--output",
+        rel_output,
         "--json",
     ]
     rc, _stdout, stderr, timed_out = _run_with_retry(
@@ -1277,8 +1412,13 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
     # 整包失败(小 deck 但服务端偶发)→ 兜底单页并发
     if (timed_out or rc != 0) and total_slides_hint and total_slides_hint > 0:
         per_page_result = _fetch_slides_per_page(
-            xml_presentation_id, work, source_dir, total_slides_hint,
-            timeout=90, max_attempts=3, concurrency=4,
+            xml_presentation_id,
+            work,
+            source_dir,
+            total_slides_hint,
+            timeout=90,
+            max_attempts=3,
+            concurrency=4,
         )
         got_slides = per_page_result.get("slides", [])
         if per_page_result["ok"] or (got_slides and len(got_slides) >= total_slides_hint * 0.8):
@@ -1291,7 +1431,7 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
                 "full_xml_error": f"server timeout on full fetch: {(_stdout or stderr or '')[:200]}",
                 "per_page_failed_pages": failed_pages,
             }
-        detail = (_stdout or stderr or '').strip()[:400]
+        detail = (_stdout or stderr or "").strip()[:400]
         return {
             "ok": False,
             "error": (
@@ -1305,7 +1445,7 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
     if timed_out:
         return {"ok": False, "error": stderr or f"lark-cli +xml-get timeout after {timeout}s (all retries exhausted)"}
     if rc != 0:
-        detail = (_stdout or stderr or '').strip()[:800]
+        detail = (_stdout or stderr or "").strip()[:800]
         return {"ok": False, "error": f"+xml-get exit {rc}: {detail}"}
 
     full_xml_path = source_dir / "full.xml"
@@ -1334,24 +1474,25 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
         except TypeError:
             # xml.etree
             import xml.etree.ElementTree as StdET
+
             xml_str = StdET.tostring(slide, encoding="unicode")
 
         # 补上根 xmlns 声明，让每页 XML 是可解析的独立 fragment
         if ns and f"xmlns=" not in xml_str[:200]:
-            xml_str = xml_str.replace(
-                f"<{{{ns}}}slide", f"<slide xmlns=\"{ns}\"", 1
-            )
+            xml_str = xml_str.replace(f"<{{{ns}}}slide", f'<slide xmlns="{ns}"', 1)
         # lxml 输出的 tag 会带 {ns} 前缀，需要清理成纯 slide 标签
         if ns:
             xml_str = xml_str.replace(f"{{{ns}}}", "")
 
         out_path = source_dir / f"slide-{i:02d}.xml"
         out_path.write_text(xml_str, encoding="utf-8")
-        slides_meta.append({
-            "slide_num": i,
-            "slide_id": slide_id,
-            "local_xml_path": str(out_path.relative_to(work)),
-        })
+        slides_meta.append(
+            {
+                "slide_num": i,
+                "slide_id": slide_id,
+                "local_xml_path": str(out_path.relative_to(work)),
+            }
+        )
 
     return {
         "ok": True,
@@ -1360,16 +1501,19 @@ def _fetch_and_split_slides(xml_presentation_id: str, work: Path,
     }
 
 
-def _delete_single_slide_no_retry(deck_id: str, sid: str, work: Path,
-                                    timeout: int = 15) -> tuple[str, bool, str]:
+def _delete_single_slide_no_retry(deck_id: str, sid: str, work: Path, timeout: int = 15) -> tuple[str, bool, str]:
     """删单页 · **单次尝试 · 不重试**。失败立即返回 · 交给上层批量收集。
 
     专门给"扫过一遍先删能删的 · 剩下的报告给上层重试"这种模式用。
     """
     cmd = [
-        "lark-cli", "slides", "+delete-slide",
-        "--presentation", deck_id,
-        "--slide-id", sid,
+        "lark-cli",
+        "slides",
+        "+delete-slide",
+        "--presentation",
+        deck_id,
+        "--slide-id",
+        sid,
         "--json",
     ]
     try:
@@ -1384,8 +1528,9 @@ def _delete_single_slide_no_retry(deck_id: str, sid: str, work: Path,
     return sid, False, f"exit {proc.returncode}: {detail}"
 
 
-def _purge_deck_to_one_page(deck_id: str, slide_ids: list[str], work: Path,
-                             phase_deadline_sec: float | None = None) -> dict:
+def _purge_deck_to_one_page(
+    deck_id: str, slide_ids: list[str], work: Path, phase_deadline_sec: float | None = None
+) -> dict:
     """删掉除第 1 页外的所有页 + 把第 1 页覆盖成空白 slide。
 
     一趟扫 · 单次尝试 · 无退避 · 失败即跳。失败页 slide_id 汇总到 failed_slide_ids · MainAgent 调 purge_deck.py 补删。
@@ -1405,6 +1550,7 @@ def _purge_deck_to_one_page(deck_id: str, slide_ids: list[str], work: Path,
         phase_deadline_sec = max(180.0, min(900.0, len(to_delete) * 2.0))
 
     import time as _time
+
     phase_deadline = _time.monotonic() + phase_deadline_sec
 
     # (1) 一趟扫 · 无退避 · 单次尝试 · 失败即跳
@@ -1434,17 +1580,25 @@ def _purge_deck_to_one_page(deck_id: str, slide_ids: list[str], work: Path,
     clear_error = None
     try:
         base_cmd = [
-            "lark-cli", "slides", "+update-slide",
-            "--presentation", deck_id,
-            "--slide-id", first_id,
-            "--content", "@.empty-slide.xml",
+            "lark-cli",
+            "slides",
+            "+update-slide",
+            "--presentation",
+            deck_id,
+            "--slide-id",
+            first_id,
+            "--content",
+            "@.empty-slide.xml",
             "--json",
         ]
         rc, _stdout, stderr = None, "", ""
         timed_out = False
         for extra_flags in (["--no-lint"], []):
             rc, _stdout, stderr, timed_out = _run_with_retry(
-                base_cmd + extra_flags, cwd=str(work), timeout=60, max_attempts=3,
+                base_cmd + extra_flags,
+                cwd=str(work),
+                timeout=60,
+                max_attempts=3,
                 op_name="+update-slide (clear first page)",
                 max_backoff=10.0,
                 total_deadline_sec=45.0,
@@ -1476,9 +1630,7 @@ def _purge_deck_to_one_page(deck_id: str, slide_ids: list[str], work: Path,
     if clear_error:
         result["clear_error"] = clear_error
     if failed_sids:
-        result["next_action_hint"] = (
-            f"{len(failed_sids)} 页未删 · MainAgent 应调 purge_deck.py --slide-ids <逗号分隔>"
-        )
+        result["next_action_hint"] = f"{len(failed_sids)} 页未删 · MainAgent 应调 purge_deck.py --slide-ids <逗号分隔>"
     return result
 
 
@@ -1558,7 +1710,7 @@ def _skel_load_source_slides(source_dir: Path) -> list[tuple[int, str, ET.Elemen
     """读所有 source-slides/slide-NN.xml, 返回 [(slide_num, sid, root_element), ...]"""
     slides = []
     for xml_path in sorted(source_dir.glob("slide-*.xml")):
-        m = re.search(r'slide-(\d+)', xml_path.name)
+        m = re.search(r"slide-(\d+)", xml_path.name)
         if not m:
             continue
         n = int(m.group(1))
@@ -1571,11 +1723,13 @@ def _skel_load_source_slides(source_dir: Path) -> list[tuple[int, str, ET.Elemen
     return slides
 
 
-def _skel_compute_brand_asset_signatures(slides: list[tuple[int, str, ET.Element]],
-                                          content_page_nums: set[int],
-                                          min_cross_page: int = 3,
-                                          min_size: int = 20,
-                                          max_per_page_dup: int = 3) -> set[tuple]:
+def _skel_compute_brand_asset_signatures(
+    slides: list[tuple[int, str, ET.Element]],
+    content_page_nums: set[int],
+    min_cross_page: int = 3,
+    min_size: int = 20,
+    max_per_page_dup: int = 3,
+) -> set[tuple]:
     """扫全部 content 页的 <data> 子元素, 统计每个 signature 出现在多少页。
 
     出现在 >= min_cross_page 个 content 页的 signature = brand_asset 候选。
@@ -1671,9 +1825,9 @@ def _skel_extract_for_page(root: ET.Element, brand_sigs: set[tuple]) -> str:
     return header + xml_str
 
 
-def _extract_content_skeletons(source_dir: Path, out_dir: Path,
-                                total_slides: int,
-                                min_cross_page: int = 3) -> dict[int, str]:
+def _extract_content_skeletons(
+    source_dir: Path, out_dir: Path, total_slides: int, min_cross_page: int = 3
+) -> dict[int, str]:
     """对 source-slides/ 里除首页/尾页(和第 2 页的 TOC)外的所有页, 产 content-skeleton 骨架。
 
     返回 {slide_num: 骨架文件相对 out_dir.parent.parent(即 work_dir) 的路径}。
@@ -1692,9 +1846,7 @@ def _extract_content_skeletons(source_dir: Path, out_dir: Path,
         if len(all_nums) >= 4:
             content_page_nums.discard(sorted(all_nums)[1])
 
-    brand_sigs = _skel_compute_brand_asset_signatures(
-        slides, content_page_nums, min_cross_page=min_cross_page
-    )
+    brand_sigs = _skel_compute_brand_asset_signatures(slides, content_page_nums, min_cross_page=min_cross_page)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     work_dir = out_dir.parent.parent  # manifest/content-skeletons/ -> WORK_DIR
@@ -1754,10 +1906,27 @@ def _extract_decorations(source_slides_dir: Path) -> dict:
 
     # 纯装饰形状类型白名单（含 SXSD 常见 preset 名）
     DECOR_TYPES = {
-        "rect", "round-rect", "ellipse", "line", "triangle",
-        "diamond", "pentagon", "hexagon", "octagon", "parallelogram",
-        "trapezoid", "custom", "arc", "chord", "pie", "cxnSp",
-        "right-triangle", "star-5", "star-4", "star-6", "arrow",
+        "rect",
+        "round-rect",
+        "ellipse",
+        "line",
+        "triangle",
+        "diamond",
+        "pentagon",
+        "hexagon",
+        "octagon",
+        "parallelogram",
+        "trapezoid",
+        "custom",
+        "arc",
+        "chord",
+        "pie",
+        "cxnSp",
+        "right-triangle",
+        "star-5",
+        "star-4",
+        "star-6",
+        "arrow",
     }
 
     for xml_path in sorted(source_slides_dir.glob("slide-*.xml")):
@@ -1835,13 +2004,15 @@ def _extract_decorations(source_slides_dir: Path) -> dict:
             fill_norm = re.sub(r"\s+", "", fill)
             sig = f"{shape_type}|fill={fill_norm}|w={int(bbox['w'])}|h={int(bbox['h'])}"
 
-            decorations.append({
-                "shape_id": shape_id,
-                "type": shape_type,
-                "bbox": bbox,
-                "fill": fill,
-                "signature": sig,
-            })
+            decorations.append(
+                {
+                    "shape_id": shape_id,
+                    "type": shape_type,
+                    "bbox": bbox,
+                    "fill": fill,
+                    "signature": sig,
+                }
+            )
             total += 1
 
         if decorations:
@@ -1856,20 +2027,35 @@ def _extract_decorations(source_slides_dir: Path) -> dict:
 
 # 占位符黑名单（与 template_lint_all.py 保持一致；此处 inline 一份避免脚本依赖）
 _TAXONOMY_PLACEHOLDER_BLACKLIST = [
-    "添加标题", "点击输入", "点击此处", "占位", "占位符",
-    "示例文本", "示例文字", "示例内容", "示例",
-    "Lorem ipsum", "Lorem", "Click to add", "Add title",
-    "Add subtitle", "Add text", "Placeholder", "Sample text",
-    "asdas", "想搞设计", "论文就是用来",
-    "亮亮图文", "淘宝",
+    "添加标题",
+    "点击输入",
+    "点击此处",
+    "占位",
+    "占位符",
+    "示例文本",
+    "示例文字",
+    "示例内容",
+    "示例",
+    "Lorem ipsum",
+    "Lorem",
+    "Click to add",
+    "Add title",
+    "Add subtitle",
+    "Add text",
+    "Placeholder",
+    "Sample text",
+    "asdas",
+    "想搞设计",
+    "论文就是用来",
+    "亮亮图文",
+    "淘宝",
     "副标题",
 ]
 
 
-def _extract_taxonomy_candidates(slides_manifest: list[dict],
-                                  source_slides_dir: Path,
-                                  decorations: dict,
-                                  canvas_w: float, canvas_h: float) -> dict:
+def _extract_taxonomy_candidates(
+    slides_manifest: list[dict], source_slides_dir: Path, decorations: dict, canvas_w: float, canvas_h: float
+) -> dict:
     """启发式识别模板 5 类资产的**初步候选**。MainAgent Step 2 在此基础上补充判断。
 
     5 类：
@@ -1958,29 +2144,33 @@ def _extract_taxonomy_candidates(slides_manifest: list[dict],
         bbox = info["bbox_sample"]
         area_ratio = (bbox["w"] * bbox["h"]) / sxsd_area if sxsd_area else 0
         if len(pages) >= 3 or (len(pages) >= 2 and area_ratio < 0.05):
-            brand_assets.append({
-                "type": "img",
-                "file_token": src,
-                "used_in_pages": sorted(pages),
-                "bbox": bbox,
-                "area_ratio": round(area_ratio, 3),
-                "confidence": "high" if len(pages) >= 3 else "medium",
-                "note": "多页复用图 → Logo/水印/页脚候选" if len(pages) >= 3 else "2 页复用的小图 → 可能是 Logo",
-            })
+            brand_assets.append(
+                {
+                    "type": "img",
+                    "file_token": src,
+                    "used_in_pages": sorted(pages),
+                    "bbox": bbox,
+                    "area_ratio": round(area_ratio, 3),
+                    "confidence": "high" if len(pages) >= 3 else "medium",
+                    "note": "多页复用图 → Logo/水印/页脚候选" if len(pages) >= 3 else "2 页复用的小图 → 可能是 Logo",
+                }
+            )
     for sig, pages in sig_pages.items():
         if len(pages) < 3:
             continue
         meta = sig_meta[sig]
-        brand_assets.append({
-            "type": "shape",
-            "shape_signature": sig,
-            "shape_type": meta["type"],
-            "fill": meta["fill"],
-            "bbox_sample": meta["bbox_sample"],
-            "used_in_pages": sorted(pages),
-            "confidence": "high" if len(pages) >= 5 else "medium",
-            "note": f"{len(pages)} 页出现同 signature → 品牌骨架 shape 候选（页眉/页脚条/角标）",
-        })
+        brand_assets.append(
+            {
+                "type": "shape",
+                "shape_signature": sig,
+                "shape_type": meta["type"],
+                "fill": meta["fill"],
+                "bbox_sample": meta["bbox_sample"],
+                "used_in_pages": sorted(pages),
+                "confidence": "high" if len(pages) >= 5 else "medium",
+                "note": f"{len(pages)} 页出现同 signature → 品牌骨架 shape 候选（页眉/页脚条/角标）",
+            }
+        )
 
     # === 2. visual_language：主色 + 字体 + 装饰形状分布 ===
     color_counter: Counter = Counter()
@@ -2015,16 +2205,10 @@ def _extract_taxonomy_candidates(slides_manifest: list[dict],
 
     visual_language = {
         "primary_colors": [c for c, _ in color_counter.most_common(6)],
-        "primary_colors_with_count": [
-            {"color": c, "count": n} for c, n in color_counter.most_common(6)
-        ],
+        "primary_colors_with_count": [{"color": c, "count": n} for c, n in color_counter.most_common(6)],
         "fonts": [{"name": f, "count": n} for f, n in font_counter.most_common(4)],
-        "shape_type_distribution": [
-            {"type": t, "count": n} for t, n in shape_type_counter.most_common(10)
-        ],
-        "decorative_shape_types": [
-            {"type": t, "count": n} for t, n in decor_type_counter.most_common(10)
-        ],
+        "shape_type_distribution": [{"type": t, "count": n} for t, n in shape_type_counter.most_common(10)],
+        "decorative_shape_types": [{"type": t, "count": n} for t, n in decor_type_counter.most_common(10)],
     }
 
     # === 3. layout_skeleton：按 role 汇总每类页面的骨架 hints ===
@@ -2049,14 +2233,16 @@ def _extract_taxonomy_candidates(slides_manifest: list[dict],
             w, h = s.get("width", 0), s.get("height", 0)
             top = s.get("top", 0)
             if w >= canvas_w * 0.6 and 0 < h < canvas_h * 0.2:
-                wide_bars.append({
-                    "id": s.get("id"),
-                    "type": s.get("type"),
-                    "bbox": {"x": s.get("left"), "y": top, "w": w, "h": h},
-                    "position_hint": "top" if top < canvas_h * 0.3 else (
-                        "bottom" if top > canvas_h * 0.7 else "middle"
-                    ),
-                })
+                wide_bars.append(
+                    {
+                        "id": s.get("id"),
+                        "type": s.get("type"),
+                        "bbox": {"x": s.get("left"), "y": top, "w": w, "h": h},
+                        "position_hint": "top"
+                        if top < canvas_h * 0.3
+                        else ("bottom" if top > canvas_h * 0.7 else "middle"),
+                    }
+                )
         layout_skeleton_by_role[role] = {
             "sample_slide_num": sample_num,
             "slides": sorted(nums),
@@ -2073,13 +2259,15 @@ def _extract_taxonomy_candidates(slides_manifest: list[dict],
         bbox = info["bbox_sample"]
         area_ratio = (bbox["w"] * bbox["h"]) / sxsd_area if sxsd_area else 0
         if area_ratio > 0.20 and len(pages) == 1:
-            placeholder_images_candidates.append({
-                "slide_num": pages[0],
-                "file_token": src,
-                "bbox": bbox,
-                "area_ratio": round(area_ratio, 3),
-                "note": "single-page use + 面积 > 20%，很可能是内容示意图（切题就换、不切题删）",
-            })
+            placeholder_images_candidates.append(
+                {
+                    "slide_num": pages[0],
+                    "file_token": src,
+                    "bbox": bbox,
+                    "area_ratio": round(area_ratio, 3),
+                    "note": "single-page use + 面积 > 20%，很可能是内容示意图（切题就换、不切题删）",
+                }
+            )
 
     # === 5. sample_texts：命中黑名单 + 长度 >= 4 ===
     sample_texts_hits: list[dict] = []
@@ -2096,11 +2284,13 @@ def _extract_taxonomy_candidates(slides_manifest: list[dict],
                     if key in seen_hits:
                         break
                     seen_hits.add(key)
-                    sample_texts_hits.append({
-                        "slide_num": slide_num,
-                        "text": text[:120],
-                        "matched_placeholder": kw,
-                    })
+                    sample_texts_hits.append(
+                        {
+                            "slide_num": slide_num,
+                            "text": text[:120],
+                            "matched_placeholder": kw,
+                        }
+                    )
                     break
 
     return {
@@ -2140,28 +2330,37 @@ def _extract_file_tokens_from_source_slides(source_slides_dir: Path) -> list[dic
             if slide_num not in tokens[src]:
                 tokens[src].append(slide_num)
 
-    return [
-        {"file_token": tok, "used_in_slide_num": pages, "source": "template"}
-        for tok, pages in tokens.items()
-    ]
+    return [{"file_token": tok, "used_in_slide_num": pages, "source": "template"} for tok, pages in tokens.items()]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pptx", required=True, help="Path to input .pptx")
     ap.add_argument("--work-dir", required=True, help="Output work dir (usually $WORK_DIR)")
-    ap.add_argument("--offline-only", action="store_true",
-                    help="Skip drive +import and slides +xml-get; only produce manifest/assets/overview")
-    ap.add_argument("--deck-title", default=None,
-                    help="Title of the imported deck on Lark (透传到 drive +import --name). "
-                         "省略时走本地 pptx 文件名默认。建议 MainAgent 用用户主题命名，避免 deck 全叫 'template'。")
-    ap.add_argument("--lark-timeout", type=int,
-                    default=int(os.environ.get("PARSE_TEMPLATE_LARK_TIMEOUT", "300")),
-                    help="lark-cli 每次调用的单次超时(秒)。默认 300s;可用 env PARSE_TEMPLATE_LARK_TIMEOUT 覆盖。"
-                         "大 deck(>100 页)服务端序列化慢建议调到 600s。")
-    ap.add_argument("--lark-max-attempts", type=int,
-                    default=int(os.environ.get("PARSE_TEMPLATE_LARK_MAX_ATTEMPTS", "5")),
-                    help="lark-cli 可重试错误的最大尝试次数。默认 5;可用 env PARSE_TEMPLATE_LARK_MAX_ATTEMPTS 覆盖。")
+    ap.add_argument(
+        "--offline-only",
+        action="store_true",
+        help="Skip drive +import and slides +xml-get; only produce manifest/assets/overview",
+    )
+    ap.add_argument(
+        "--deck-title",
+        default=None,
+        help="Title of the imported deck on Lark (透传到 drive +import --name). "
+        "省略时走本地 pptx 文件名默认。建议 MainAgent 用用户主题命名，避免 deck 全叫 'template'。",
+    )
+    ap.add_argument(
+        "--lark-timeout",
+        type=int,
+        default=int(os.environ.get("PARSE_TEMPLATE_LARK_TIMEOUT", "300")),
+        help="lark-cli 每次调用的单次超时(秒)。默认 300s;可用 env PARSE_TEMPLATE_LARK_TIMEOUT 覆盖。"
+        "大 deck(>100 页)服务端序列化慢建议调到 600s。",
+    )
+    ap.add_argument(
+        "--lark-max-attempts",
+        type=int,
+        default=int(os.environ.get("PARSE_TEMPLATE_LARK_MAX_ATTEMPTS", "5")),
+        help="lark-cli 可重试错误的最大尝试次数。默认 5;可用 env PARSE_TEMPLATE_LARK_MAX_ATTEMPTS 覆盖。",
+    )
     args = ap.parse_args()
 
     pptx_path = Path(args.pptx).resolve()
@@ -2182,12 +2381,16 @@ def main() -> int:
     # 先跑一次探测 → 若有缺失则调用 _ensure_pip_deps() 尝试补装（不指定 index-url · 依赖客户端内置 pip 源）
     # 每个包单独 timeout · 失败/超时静默,已有 fallback 会兜住
     capabilities, install_hints = _detect_capabilities()
-    missing_pip = [name for name, ok in [
-        ("python-pptx", capabilities["python_pptx"]),
-        ("pypdfium2",   capabilities["pypdfium2"]),
-        ("Pillow",      capabilities["pil"]),
-        ("lxml",        capabilities["lxml"]),
-    ] if not ok]
+    missing_pip = [
+        name
+        for name, ok in [
+            ("python-pptx", capabilities["python_pptx"]),
+            ("pypdfium2", capabilities["pypdfium2"]),
+            ("Pillow", capabilities["pil"]),
+            ("lxml", capabilities["lxml"]),
+        ]
+        if not ok
+    ]
 
     auto_install_report: list[dict] = []
     if missing_pip:
@@ -2196,7 +2399,9 @@ def main() -> int:
         capabilities, install_hints = _detect_capabilities()
 
     if not capabilities["soffice"]:
-        install_hints.append("soffice/libreoffice 缺失（macOS: `brew install libreoffice`；Ubuntu: `apt install libreoffice`；Win: 官网下载后加入 PATH）——本地联图无法生成；若 lark-cli + Pillow 可用会走 screenshot 云端联图兜底，仅 lark-cli 可用则走 drive +export pdf 兜底")
+        install_hints.append(
+            "soffice/libreoffice 缺失（macOS: `brew install libreoffice`；Ubuntu: `apt install libreoffice`；Win: 官网下载后加入 PATH）——本地联图无法生成；若 lark-cli + Pillow 可用会走 screenshot 云端联图兜底，仅 lark-cli 可用则走 drive +export pdf 兜底"
+        )
 
     # === 解析 pptx（主路径 python-pptx，fallback 标准库）===
     all_texts_flat: list[str] = []
@@ -2204,6 +2409,7 @@ def main() -> int:
 
     if capabilities["python_pptx"]:
         from pptx import Presentation  # type: ignore
+
         prs = Presentation(str(pptx_path))
         canvas_w = _emu_to_inch(prs.slide_width)
         canvas_h = _emu_to_inch(prs.slide_height)
@@ -2222,16 +2428,18 @@ def main() -> int:
             role = _classify_role(i, total, texts_this_page)
             shell, content = _extract_shell_shapes(slide, i, set(), canvas_w, canvas_h)
             regions = _extract_available_regions(shell, content, canvas_w, canvas_h)
-            slides_manifest.append({
-                "slide_num": i,
-                "role": role,
-                "shell_shapes": shell,
-                "content_shapes": content,
-                "available_regions": regions,
-                "images_used": [],  # 下面填
-                "slide_id": None,
-                "local_xml_path": None,
-            })
+            slides_manifest.append(
+                {
+                    "slide_num": i,
+                    "role": role,
+                    "shell_shapes": shell,
+                    "content_shapes": content,
+                    "available_regions": regions,
+                    "images_used": [],  # 下面填
+                    "slide_id": None,
+                    "local_xml_path": None,
+                }
+            )
     else:
         # 降级路径：标准库 zipfile + xml.etree
         canvas_w_emu, canvas_h_emu, slides_shapes = _parse_pptx_fallback(pptx_path)
@@ -2248,16 +2456,18 @@ def main() -> int:
             # 但 _shape_text 走 python-pptx API，需要传 _text 属性给它——已在 _FallbackShape 里
             shell, content = _extract_shell_shapes_fallback(shapes, i, canvas_w, canvas_h)
             regions = _extract_available_regions(shell, content, canvas_w, canvas_h)
-            slides_manifest.append({
-                "slide_num": i,
-                "role": role,
-                "shell_shapes": shell,
-                "content_shapes": content,
-                "available_regions": regions,
-                "images_used": [],
-                "slide_id": None,
-                "local_xml_path": None,
-            })
+            slides_manifest.append(
+                {
+                    "slide_num": i,
+                    "role": role,
+                    "shell_shapes": shell,
+                    "content_shapes": content,
+                    "available_regions": regions,
+                    "images_used": [],
+                    "slide_id": None,
+                    "local_xml_path": None,
+                }
+            )
 
     # 抽图片到 assets/（纯 zipfile，任何环境都能跑）
     assets_manifest = _extract_images(pptx_path, assets_dir)
@@ -2292,18 +2502,24 @@ def main() -> int:
     file_tokens: list[dict] = []  # 模板自带图 file_token 清单，offline 模式下为空列表
     if not args.offline_only:
         # (1) 导入模板到飞书（只读参考，用于拉 SXSD；id 只脚本内部用）
-        imp = _import_pptx_to_lark(pptx_path, work, deck_title=args.deck_title,
-                                    timeout=args.lark_timeout,
-                                    max_attempts=args.lark_max_attempts)
+        imp = _import_pptx_to_lark(
+            pptx_path, work, deck_title=args.deck_title, timeout=args.lark_timeout, max_attempts=args.lark_max_attempts
+        )
         if not imp["ok"]:
-            print(json.dumps({
-                "ok": False,
-                "phase": "drive_import",
-                "error": imp["error"],
-                "hint": "导入失败可加 --offline-only 只跑离线部分先看 manifest；确认 lark-cli 已装且能访问飞书后再重跑。",
-                "capabilities": capabilities,
-                "install_hints": install_hints,
-            }, ensure_ascii=False, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "phase": "drive_import",
+                        "error": imp["error"],
+                        "hint": "导入失败可加 --offline-only 只跑离线部分先看 manifest；确认 lark-cli 已装且能访问飞书后再重跑。",
+                        "capabilities": capabilities,
+                        "install_hints": install_hints,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
             shutil.rmtree(tmp_unpack, ignore_errors=True)
             return 4
 
@@ -2314,36 +2530,41 @@ def main() -> int:
         #   优先级: lark screenshot 分批并发 + PIL 拼图  →  lark drive +export pdf
         #   screenshot 路径视觉最准（和线上一致）；PDF 路径不依赖 PIL 也能出兜底文件
         if not overview_ok and overview_reason.startswith("soffice_missing"):
-            ss_ok, ss_reason = _render_overview_via_screenshot(
-                template_id_internal, total, thumbs_dir, cwd=work
-            )
+            ss_ok, ss_reason = _render_overview_via_screenshot(template_id_internal, total, thumbs_dir, cwd=work)
             if ss_ok:
                 overview_ok, overview_reason = True, ss_reason
             else:
                 # screenshot 兜底失败，落到 pdf 兜底（走 _render_overview + deck_id）
-                overview_ok, overview_reason = _render_overview(
-                    pptx_path, thumbs_dir, deck_id=template_id_internal
-                )
+                overview_ok, overview_reason = _render_overview(pptx_path, thumbs_dir, deck_id=template_id_internal)
                 if not overview_ok:
                     # 把 screenshot 的失败原因也记进去，便于排障
                     overview_reason = f"{overview_reason} ; screenshot_fallback: {ss_reason}"
 
         # (2) 拉全稿 SXSD 拆成每页
-        split = _fetch_and_split_slides(template_id_internal, work,
-                                         timeout=args.lark_timeout,
-                                         max_attempts=args.lark_max_attempts,
-                                         total_slides_hint=total)
+        split = _fetch_and_split_slides(
+            template_id_internal,
+            work,
+            timeout=args.lark_timeout,
+            max_attempts=args.lark_max_attempts,
+            total_slides_hint=total,
+        )
         if not split["ok"]:
-            print(json.dumps({
-                "ok": False,
-                "phase": "xml_get_split",
-                "error": split["error"],
-                # 仅在失败排障场景暴露 template id，方便人手动补拆
-                "template_id_for_manual_recovery": template_id_internal,
-                "hint": f"导入成功但拉 SXSD 失败，可手动跑：lark-cli slides +xml-get --presentation {template_id_internal} --output source-slides/full.xml",
-                "capabilities": capabilities,
-                "install_hints": install_hints,
-            }, ensure_ascii=False, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "phase": "xml_get_split",
+                        "error": split["error"],
+                        # 仅在失败排障场景暴露 template id，方便人手动补拆
+                        "template_id_for_manual_recovery": template_id_internal,
+                        "hint": f"导入成功但拉 SXSD 失败，可手动跑：lark-cli slides +xml-get --presentation {template_id_internal} --output source-slides/full.xml",
+                        "capabilities": capabilities,
+                        "install_hints": install_hints,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
             shutil.rmtree(tmp_unpack, ignore_errors=True)
             return 5
 
@@ -2365,8 +2586,12 @@ def main() -> int:
         extra_ids_recovered = 0
         for page_num in failed_page_nums:
             _n, meta = _fetch_single_slide_xml(
-                template_id_internal, int(page_num),
-                work, source_dir, timeout=60, max_attempts=5,
+                template_id_internal,
+                int(page_num),
+                work,
+                source_dir,
+                timeout=60,
+                max_attempts=5,
             )
             if meta and meta.get("slide_id"):
                 sid = meta["slide_id"]
@@ -2381,15 +2606,21 @@ def main() -> int:
 
         # 若所有 fetch 都失败拿不到 slide_id · 直接 hard fail 避免后续 KeyError
         if not all_slide_ids:
-            print(json.dumps({
-                "ok": False,
-                "phase": "purge_to_one_page",
-                "error": "no slide_id recovered from fetch · cannot purge",
-                "template_id_for_manual_recovery": template_id_internal,
-                "hint": "分页 fetch 全失败;手动跑 lark-cli slides +xml-get 拉一下 deck 看看状态",
-                "capabilities": capabilities,
-                "install_hints": install_hints,
-            }, ensure_ascii=False, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "phase": "purge_to_one_page",
+                        "error": "no slide_id recovered from fetch · cannot purge",
+                        "template_id_for_manual_recovery": template_id_internal,
+                        "hint": "分页 fetch 全失败;手动跑 lark-cli slides +xml-get 拉一下 deck 看看状态",
+                        "capabilities": capabilities,
+                        "install_hints": install_hints,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
             shutil.rmtree(tmp_unpack, ignore_errors=True)
             return 6
 
@@ -2408,9 +2639,7 @@ def main() -> int:
         # MainAgent 复用模板图必须**用同一个 deck**(deck-scope 绑定 · 跨 deck 会 relation mismatch)
         file_tokens = _extract_file_tokens_from_source_slides(work / "source-slides")
         assets_index_path = work / "assets_index.json"
-        assets_index_path.write_text(
-            json.dumps(file_tokens, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        assets_index_path.write_text(json.dumps(file_tokens, ensure_ascii=False, indent=2), encoding="utf-8")
 
         lark_info["deck"] = {
             "xml_presentation_id": template_id_internal,
@@ -2437,9 +2666,7 @@ def main() -> int:
     source_slides_dir = work / "source-slides"
     decorations = _extract_decorations(source_slides_dir)
     decorations_path = manifest_dir / "decorations.json"
-    decorations_path.write_text(
-        json.dumps(decorations, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    decorations_path.write_text(json.dumps(decorations, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # === 内容页骨架自动提取（防"cp source 生搬硬套"） ===
     # 对每个 content 页产 manifest/content-skeletons/slide-NN.content-skeleton.xml，
@@ -2450,7 +2677,9 @@ def main() -> int:
     if source_slides_dir.exists() and list(source_slides_dir.glob("slide-*.xml")):
         try:
             content_skeleton_paths = _extract_content_skeletons(
-                source_slides_dir, content_skeletons_dir, total,
+                source_slides_dir,
+                content_skeletons_dir,
+                total,
             )
         except Exception as e:
             # 骨架提取失败不阻塞主流程
@@ -2464,9 +2693,7 @@ def main() -> int:
         canvas_h=canvas_h,
     )
     taxonomy_path = manifest_dir / "taxonomy-candidates.json"
-    taxonomy_path.write_text(
-        json.dumps(taxonomy_candidates, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    taxonomy_path.write_text(json.dumps(taxonomy_candidates, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # === 拆分 manifest：template-index.json（轻量）+ slides/slide-NN.json（单页详情）===
     slides_dir = manifest_dir / "slides"
@@ -2476,22 +2703,24 @@ def main() -> int:
     index_slides = []
     for meta in slides_manifest:
         n = meta["slide_num"]
-        index_slides.append({
-            "slide_num": n,
-            "role": meta["role"],
-            "slide_id": meta.get("slide_id"),
-            "local_xml_path": meta.get("local_xml_path"),
-            # preview_text 从 100 字扩到 200 字，让 MainAgent 轻量看每页大致文字
-            "preview_text": (meta.get("preview_text") or "")[:200],
-            "images_used": meta.get("images_used", []),
-            "shape_count": {
-                "shell": len(meta.get("shell_shapes", [])),
-                "content": len(meta.get("content_shapes", [])),
-            },
-            # 内容页骨架（brand_assets only）· active_rebuild 页 Step 5.2 应 cp 这个而非 source
-            # 非 content 页（cover/toc/ending）该字段为 null
-            "content_skeleton_path": content_skeleton_paths.get(n),
-        })
+        index_slides.append(
+            {
+                "slide_num": n,
+                "role": meta["role"],
+                "slide_id": meta.get("slide_id"),
+                "local_xml_path": meta.get("local_xml_path"),
+                # preview_text 从 100 字扩到 200 字，让 MainAgent 轻量看每页大致文字
+                "preview_text": (meta.get("preview_text") or "")[:200],
+                "images_used": meta.get("images_used", []),
+                "shape_count": {
+                    "shell": len(meta.get("shell_shapes", [])),
+                    "content": len(meta.get("content_shapes", [])),
+                },
+                # 内容页骨架（brand_assets only）· active_rebuild 页 Step 5.2 应 cp 这个而非 source
+                # 非 content 页（cover/toc/ending）该字段为 null
+                "content_skeleton_path": content_skeleton_paths.get(n),
+            }
+        )
 
     # visual_language：主色 palette + 字体族（合并 theme.xml 声明 + SXSD 实际统计）
     # MainAgent Step 2 扫模板时直接从 template-index.json 顶层拿这些，写 XML 时字体族/主色照搬
@@ -2523,6 +2752,7 @@ def main() -> int:
             def _shard_num(p):
                 m = re.search(r"overview-?(\d+)?", p.stem)
                 return int(m.group(1)) if m and m.group(1) else 0
+
             jpg_shards = sorted(thumbs_dir.glob("overview*.jpg"), key=_shard_num)
             overview_paths = [f"thumbs/{p.name}" for p in jpg_shards]
 
@@ -2574,9 +2804,7 @@ def main() -> int:
             json.dumps(detail, ensure_ascii=False, indent=2), encoding="utf-8"
         )
 
-    (manifest_dir / "theme.json").write_text(
-        json.dumps(theme, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    (manifest_dir / "theme.json").write_text(json.dumps(theme, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # 清理临时解压目录 + 中间 pdf
     shutil.rmtree(tmp_unpack, ignore_errors=True)
@@ -2615,8 +2843,9 @@ def main() -> int:
     return 0
 
 
-def _extract_shell_shapes_fallback(shapes: list, slide_num: int,
-                                    canvas_w: float, canvas_h: float) -> tuple[list[dict], list[dict]]:
+def _extract_shell_shapes_fallback(
+    shapes: list, slide_num: int, canvas_w: float, canvas_h: float
+) -> tuple[list[dict], list[dict]]:
     """降级 shape 分类。输入是 _FallbackShape 列表;输出与 _extract_shell_shapes 兼容。"""
     canvas_area = max(canvas_w * canvas_h, 1e-6)
     edge_top_thresh = canvas_h * 0.053

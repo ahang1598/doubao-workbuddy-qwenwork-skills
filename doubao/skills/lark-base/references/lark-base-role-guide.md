@@ -2,6 +2,13 @@
 
 This guide is the entry point for Base advanced permissions and roles. Use it to choose commands and understand safety boundaries. For the permission JSON itself, use [role-config.md](role-config.md) as the SSOT.
 
+Use `lark-drive` for ordinary Base collaborators and document link-access settings. These requests alone do not require enabling advanced permissions or creating roles. Use the role commands below for advanced role configuration or custom-role membership, and `+advperm-share-*` for sharing authorization of system roles.
+
+Whether dashboard statistics follow the visitor's permissions is controlled by
+`is_adv_perm_enable`. Use [仪表盘跟随访问者权限统计开关](lark-base-dashboard-advperm.md)
+for that setting. `+advperm-enable/disable` controls advanced permissions for the containing Base, while
+`dashboard_rule_map` controls a role's access to dashboards.
+
 ## Command selection
 
 | Goal | Command | Notes |
@@ -14,6 +21,7 @@ This guide is the entry point for Base advanced permissions and roles. Use it to
 | Create a custom role | `+role-create` | Supports `custom_role` only. Read [role-config.md](role-config.md) before constructing `--json`. 表级 `perm` 之外还要判 `field_perm_mode`：query 把可编辑范围点名到具体字段时用 `specify` + `field_perms`（按下方“同层级降一级”落权），只给出整表表述时才用 `all_edit` / `all_read`。详见 [role-config.md](role-config.md) 的 field_perms 构造 SOP。 |
 | Update a role | `+role-update` | Omitted permission modules and tables are preserved; each submitted table rule is replaced as a whole. Read the current config first and submit complete rules for the changed tables. |
 | Delete a role | `+role-delete` | Custom roles only. System roles cannot be deleted. |
+| System Editor/Reader members | `drive +member-list/add/remove` | Follow the system-member workflow below. |
 
 ## Required order
 
@@ -21,18 +29,19 @@ At the start of a role workflow, before the first `+role-list`, `+role-get`, `+r
 
 1. 同一请求中新建业务 Base 或数据表时，先完成示例记录写入与回读：按用户指定数量写入；未指定且未要求空模板时写入 5–10 条，再用 `+record-list` 验证数量和关键字段；然后再进入 `+advperm-enable` 与角色配置。
 2. Run `lark-cli base +base-get --base-token <base_token>` and inspect `data.base.is_advanced`.
-3. If `is_advanced` is `false`, run `+advperm-enable` before the role command. If the user did not authorize enabling advanced permissions, stop and explain the required precondition.
+3. If `is_advanced` is `false`, report that state for a read-only query. Enable it only for an authorized advanced-permission configuration task before proceeding with role commands. A request to inspect settings or members does not authorize enabling advanced permissions. If a write request does not authorize enabling them, stop and explain that advanced permissions must be enabled first.
 4. Run the requested role commands only after `is_advanced` is `true` or `+advperm-enable` succeeds. Reuse that confirmed status for later role calls in the same workflow.
 
 Do not probe with `+advperm-get`: that command is not supported. Do not use an empty `+role-list` response to infer the advanced permission status; a disabled Base can also return an empty list.
 
 ## Safety boundaries
 
-- Role operations require advanced permissions to be enabled and the caller to be a Base admin.
+- Advanced-role configuration and custom-role member operations require advanced permissions to be enabled and the caller to be a Base admin. System-role collaborator operations use Drive sharing permissions.
 - `+role-create` creates custom roles only.
 - `+role-delete` is only for custom roles. System roles such as editor/reader can be configured within supported limits, but cannot be deleted.
 - `+role-update` preserves omitted permission modules (`base_rule_map`, `table_rule_map`, `dashboard_rule_map`, `docx_rule_map`) and merges `table_rule_map` by table, preserving omitted tables. Each submitted `table_rule_map.<table>` is replaced as a whole: copy the target table's complete `TableRule` from `+role-get`, edit the intended fields, and submit it without resending unchanged tables. For `edit` / `read_only`, include complete `view_rule`, `record_rule`, and `field_rule`; the backend does not require these nested rules for `manage` / `no_perm`, so do not invent them. Keep `role_name` and `role_type` equal to the current role.
 - `+advperm-disable` invalidates existing custom roles; confirm the target Base and user intent before passing `--yes`.
+- `+role-member-remove` is a high-risk write that requires `--yes`: it revokes the members' role access. Confirm the role and members first.
 
 ## 全角色安全验收
 
@@ -82,6 +91,82 @@ Do not probe with `+advperm-get`: that command is not supported. Do not use an e
 6. 全部约束通过后才能进入下一编号步骤；后续扩权、删角色或 `+advperm-disable` 不能替代或覆盖前一阶段验收。
 
 授权证据可以来自本会话的任意前序步骤；已经明确授予且未被后续约束收回的权限继续有效。
+
+## Members, sharing authorization and access requests
+
+These commands require the permission routes in the selected gateway and backend. Keep the host, environment, application and identity consistent across calls. Use read commands for inspection and diagnosis; `--dry-run` previews a request but does not verify deployment, permissions, or a completed write.
+
+Check the command result before reporting success. An HTTP 404, non-JSON response, or timeout does not establish the Base's permission state or a successful change. Report the failed call and what remains unverified; check the selected route, environment, identity, and error details before retrying. For a write with an uncertain outcome, read the current state before retrying to avoid repeating a change that may already have taken effect.
+
+### Custom-role members
+
+Use `+role-list` to obtain the requested role ID and confirm `role_type=custom_role` before calling the custom-role member commands. For system roles, follow the system-member workflow below; do not create a custom-role substitute. Member changes preserve the role's permission rules. Resolve user, department and chat open IDs in the same application and environment; use contact/chat search to find candidates, confirm the intended identity, then pass its ID. If the requested identity is missing or ambiguous, clarify it before granting access; use a different person, department, or chat only when authorized.
+
+`--user-id`, `--department-id` and `--chat-id` are repeatable and may be combined. Each request accepts 1–100 input members and deduplicates identical type/ID pairs. Use the user credential provided by the current environment; member management requires Base admin access.
+
+```bash
+lark-cli base +role-member-list --base-token <base_token> --role-id <role_id> --page-size 50 --as user
+lark-cli base +role-member-add --base-token <base_token> --role-id <role_id> --user-id <user_open_id> --department-id <department_open_id> --chat-id <chat_open_id> --as user
+lark-cli base +role-member-remove --base-token <base_token> --role-id <role_id> --chat-id <chat_open_id> --as user --yes
+```
+
+Results are decoded into `data`; inspect `items`, `has_more` and `page_token`. Pass the returned token via `--page-token` to read the next page. Stop if a cursor is missing or repeats while `has_more=true`.
+
+A write can partially succeed. When a successful HTTP response includes nonempty `failed_members`, the command returns `ok:false` on stdout and a nonzero exit code while preserving the per-member results. Check each failed member's `result_code`, list current members, and resolve the cause before retrying only the unresolved ones; other members may already be applied. A refusal without `failed_members` returns an ordinary error. After any member write, read back with `+role-member-list` to confirm the final membership; `+role-get` does not show members. A successful write with nothing to return decodes to an empty `data` object. Member removal does not revoke all Drive/CCM access; other roles or sharing may still grant access. Verify effective access with the affected user.
+
+### System Editor/Reader members
+
+System Editor/Reader membership comes from Drive/CCM sharing. Use `drive +member-list/add/remove` for these grants; `base +role-member-*` only manages custom-role members. Use the returned `role_type` when resolving an advanced role; a display name alone does not determine its type. A request that explicitly targets a sharing identity can use Drive directly, without an admin-only role preflight. Drive checks the caller's sharing permissions; do not require Base admin access or enable advanced permissions just to manage collaborators.
+
+| Requested system role | Drive grant |
+|------|------|
+| Editor | `--perm edit` |
+| Reader | `--perm view` |
+
+Read existing grants first and preserve unrelated access. Do not replace an existing `full_access` grant with edit/view unless the user explicitly requests that downgrade. Resolve the intended member, then use `--member-type openid` for users, `openchat` for chats, or `opendepartmentid` for departments. Department operations require user identity. Batch additions accept up to 10 IDs of the same type; removals take one member per call.
+
+For a standalone Base:
+
+```bash
+lark-cli drive +member-list --token <base_token> --type bitable --as user
+lark-cli drive +member-add --token <base_token> --type bitable --member-type openchat --member-id <chat_open_id> --perm view --as user --yes
+lark-cli drive +member-list --token <base_token> --type bitable --as user
+```
+
+For an explicitly requested removal, confirm the member's current grant, then remove it and read back:
+
+```bash
+lark-cli drive +member-remove --token <base_token> --type bitable --member-type openchat --member-id <chat_open_id> --as user --yes
+lark-cli drive +member-list --token <base_token> --type bitable --as user
+```
+
+For a Base in Wiki, use the Wiki node token with `--type wiki` and explicitly pass `--perm-type single_page` to list/add/remove when only that Base is in scope. The add/remove default `container` also affects child pages. Removing a Drive grant can remove the member's document access; it is not a role-only detach. Other grants, groups or inherited access may still apply.
+
+Readback verifies `data.items` by member ID, member type, permission and Wiki scope. A successful removal response alone does not prove the grant previously existed. The Drive list shows collaborator grants, not the exact effective system-role roster: custom-role matches and inherited/group access affect role membership, and sharing authorization can be disabled. Keep those grants distinct from the Web role list. Do not report an empty `+role-member-list` result as an empty system role, or a Drive write as proof of effective Base access. If exact Web membership or effective access is required, verify with the affected identity; otherwise state what remains unverified. Changing sharing authorization or custom-role memberships requires its own user intent.
+
+For command parameters and permission errors, see [Drive member list](../../lark-drive/references/lark-drive-member-list.md), [add](../../lark-drive/references/lark-drive-member-add.md), and [remove](../../lark-drive/references/lark-drive-member-remove.md).
+
+### Sharing authorization
+
+For a status query, use only `+advperm-share-get`. For an authorized change, read the current value, update it, then read it back. This setting controls whether sharing can authorize advanced-permission system roles; it does not disable advanced permissions or replace custom roles. The caller needs Base admin access and a Base with advanced permissions and system roles.
+
+```bash
+lark-cli base +advperm-share-get --base-token <base_token> --as user
+lark-cli base +advperm-share-update --base-token <base_token> --enable-share=false --as user
+lark-cli base +advperm-share-get --base-token <base_token> --as user
+```
+
+Set `--enable-share=true` to allow sharing authorization, or `--enable-share=false` to disallow it. Verify the stored value with a successful readback; a submitted request alone does not confirm the setting. Restore the original value after an explicitly authorized temporary test.
+
+### Request access
+
+Submit as the applicant; do not require an admin-only role read first or substitute an administrator's identity. This command accepts only user identity.
+
+```bash
+lark-cli base +advperm-apply --base-token <base_token> --message "Please grant access to review this Base" --as user
+```
+
+Success means the request was submitted. An administrator must handle it before access changes. On timeout, check whether the request or notification arrived before retrying.
 
 ## Common Fewshots
 

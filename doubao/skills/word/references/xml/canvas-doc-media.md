@@ -21,7 +21,7 @@
 
 | 属性 | 取值格式 | 说明 |
 |---|---|---|
-| `src` | 资源 token，必填 | 来自 `docs +media-upload` 返回的 `file_token`，或 Fetch 已有图片得到的资源 token |
+| `src` | 资源 token，必填 | 来自 `lark-cli docs +media-upload` 返回的 `file_token`，或 Fetch 已有图片得到的资源 token |
 | `id` / `name` | 字符串 | Record ID 和文件名 |
 | `mime` | `image/png`、`image/jpeg`、`image/gif`、`image/webp`、`image/bmp` | MIME 类型；JPEG 推荐写 `image/jpeg` |
 | `caption` | 字符串 | 图注；省略该属性表示保留原图注，写 `caption=""` 表示清空 |
@@ -53,7 +53,7 @@
 
 暂不支持 SVG、TIFF、WMF、EMF。
 
-协议可以读取和写入尺寸、旋转、翻转、浮动、环绕、定位和边框；浮动位置须遵循下方互斥和锚点规则。
+协议可以读取和写入尺寸、旋转、翻转、浮动、环绕、定位和边框。已有浮动图片通过 XML 更新其他属性时须保留原尺寸、旋转和翻转；修改这些物理属性及移动、层叠、重锚和原样复制使用 [`object`](../cli/canvas-doc-update-structured.md#浮动对象object_context--object)。新建和 inline 图片仍使用 XML。
 
 `alt-description` / `alt-title` 已支持读写，清除必须使用对应 `remove-*` 属性，不要复用 `clear` 或写一个笼统 `alt`。`href`、`action-type` 仍是协议里有、编辑器没实现的属性：写了不会失败，但值不会落到文档上，只返回一条 `ATTR_CAPABILITY_LIMITED`。图注请用 `caption`。
 
@@ -69,7 +69,7 @@
 
 ### 浮动与嵌入
 
-- `wrap`、`wrap-text`、`position-*`、`wrap-distance-*`、`behind-doc` 等属性属于 `layout="floating"` 的 sidecar。
+- `wrap`、`wrap-text`、`position-*`、`relative-height`、`wrap-distance-*`、`behind-doc` 等属性属于 `layout="floating"` 的声明式 sidecar；`position-*` 表达锚点相对位置，不替代 `object move/reanchor`，`relative-height` 表达显式数值层级，不替代语义层叠 action。
 - 显式写 `layout="inline"` 可切回嵌入式；省略 `layout` 表示保持当前模式。
 - 同一轴的 `align`、`offset`、`pct-offset` 只能出现一个；不能依赖属性顺序决定优先级。
 - `simple-pos-enabled="true"` 必须同时提供 `simple-pos-x/y`，并且不能再提供水平或垂直轴位置。

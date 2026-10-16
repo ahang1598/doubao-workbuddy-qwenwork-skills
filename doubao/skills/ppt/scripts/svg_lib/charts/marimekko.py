@@ -1,53 +1,33 @@
-"""svg_lib/charts/marimekko.py
-
-Marimekko 马赛克图 · 5 variant 统一 API：
+"""Marimekko 马赛克图 · 5 variant 统一 API：
 - default_flat: BCG 经典风，我方 (we_key) 用 accent，其它用灰阶
-- mekko_gradient: 每 sub 用 vertical linearGradient（顶亮底暗）
-- mekko_outlined: 淡填 + 深描边
-- shaded_residual: 各 sub 相对市场加权平均的偏差着色（正/负两向）
-- treemap_flat: 每 market 内 sub 按份额垂直堆叠（不区分 we_key，用 series 轮转）
-
-data schema：
-  {
-    "markets": [(name, market_share, [(sub, sub_share), ...]), ...],
-    "we_key": str?  # 可选，标记哪个 sub_name 视为"我方"，仅 default_flat 使用
-  }
-  - market_share: 市场规模份额（推荐 sum=100 表示百分比，函数按输入总和归一）
-  - sub_share: 该 market 内各 sub 的份额（推荐 sum=100 也按总和归一）
 """
 
 from __future__ import annotations
-from typing import Dict, Optional
+
 import uuid
-import warnings
-
-from ._shared import (
-    resolve_palette,
-    xesc,
-    svg_open,
-    svg_close,
-    auto_font_size,
-    _rgba_with_alpha,
-    rgb_tuple,
-    gradient_def,
-)
-
+from collections.abc import Sequence
 
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
+    _dispatch_to_svg_lib,
+    _ink_on_bg,
+    _pick_series_colors,
     _prepend_bg_if_dark,
     _render_title_block,
     _resolve_font,
     _resolve_palette,
     _rgba_with_alpha,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
-    _ink_on_bg,
+)
+from ._shared import (
+    auto_font_size,
+    gradient_def,
+    resolve_palette,
+    rgb_tuple,
+    svg_close,
+    svg_open,
+    tr,
+    xesc,
 )
 
 
@@ -58,14 +38,7 @@ def _luma(rgba_str):
 
 
 def _seg_text_color(fill_rgba, pal, min_contrast=60.0):
-    """根据段填色亮度自适应挑选段内文字颜色，保证与 fill 的 luma 差 >= min_contrast。
-
-    - 若 fill 已经"深"（luma < 128）→ 用浅色文字（palette 若已定义浅 ink 就用之，否则近白）
-    - 若 fill 已经"浅"（luma >= 128）→ 用深色文字（近黑或深 ink）
-
-    参考 _ink_on_bg：该函数只判断 palette.bg 与 palette.ink，无法处理每段不同 fill 的场景。
-    此处按 fill 逐段决定，避免深绿底 + palette ink（也是深绿）导致的低对比。
-    """
+    """根据段填色亮度自适应挑选段内文字颜色，保证与 fill 的 luma 差 >= min_contrast。"""
     fill_l = _luma(fill_rgba)
     ink = pal.get("ink", "rgba(28,28,26,1)")
     ink_l = _luma(ink)
@@ -99,24 +72,15 @@ VARIANTS = (
 )
 
 
-def _series_colors(pal, n):
-    series = pal.get("series")
-    if series:
-        return [series[i % len(series)] for i in range(n)]
-    # fallback
-    ink, acc = pal["ink"], pal["accent"]
-    return [acc, pal["secondary"], ink, pal["muted"]][:n] + [acc] * max(0, n - 4)
-
-
 def draw_marimekko(
-    data: Dict,
+    data: dict,
     variant: str = "default_flat",
     palette="archive_ink",
     width: float = 900,
     height: float = 540,
-    title: Optional[str] = None,
-    subtitle: Optional[str] = None,
-    figure_label: Optional[str] = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
 ) -> str:
     if variant not in VARIANTS:
         raise ValueError(f"unknown variant {variant!r}. Available: {VARIANTS}")
@@ -130,18 +94,15 @@ def draw_marimekko(
     ink, ink6, ink4, ink2 = pal["ink"], pal["ink6"], pal["ink4"], pal["ink2"]
     bg = pal["bg"]
     accent = pal["accent"]
-    series = _series_colors(pal, max(4, max(len(m[2]) for m in markets)))
+    series = _pick_series_colors(pal, max(4, max(len(m[2]) for m in markets)))
 
     body_font = "Inter, sans-serif"
     head_font = "Georgia, serif"
 
-    # 归一化 market_share
     total_mkt = sum(w for _, w, _ in markets) or 1.0
     if abs(total_mkt - 100) > 5 and total_mkt > 0:
-        # 归一化不 warn，只按比例分配
         pass
 
-    # layout
     ML = 80
     MR = 40
     # 顶部留足空间：figure label + title + subtitle + market header
@@ -158,7 +119,6 @@ def draw_marimekko(
     # 共用 palette 时因固定 gid 撞车导致 duplicate_element_id。参考 matrix_heat R6.5 修法。
     _uid_prefix = uuid.uuid4().hex[:6]
 
-    # title / subtitle
     if figure_label:
         parts.append(
             f'<text x="{ML}" y="24" font-family="{body_font}" font-size="10" '
@@ -177,7 +137,6 @@ def draw_marimekko(
             f'fill="{pal["muted"]}" letter-spacing=".08em">{xesc(subtitle)}</text>'
         )
 
-    # 收集 defs（gradient 需要）
     defs_parts = []
 
     # 每个 market 一列，宽度按 market_share
@@ -201,13 +160,10 @@ def draw_marimekko(
         for _, _mw, subs in markets:
             for sname, sh in subs:
                 r = sh - avg_sub.get(sname, sh)
-                if abs(r) > max_res:
-                    max_res = abs(r)
+                max_res = max(max_res, abs(r))
 
-    # 描边色（treemap / outlined）
-    stroke_col = _rgba_with_alpha(ink, 0.45)
+    _rgba_with_alpha(ink, 0.45)
 
-    # 主循环
     for mi, (mname, mw, subs) in enumerate(markets):
         col_w = plot_w * (mw / total_mkt)
         if col_w <= 0.5:
@@ -216,7 +172,7 @@ def draw_marimekko(
 
         # market 顶部标签
         # 每字符估宽 ≈ fs_hdr * 0.55 (Latin) / fs_hdr (CJK)；预留 4px 视觉 padding。
-        # 不允许 truncate → 逐步下调字号直到装得下，最后不行就 wrap 到 2 行 tspan。
+        # 不允许 truncate → 逐步下调字号直到装得下，最后不行就 wrap 到 2 行。
         def _est_hdr_w(s, fs):
             return sum((fs if ord(c) > 127 else fs * 0.55) for c in s)
 
@@ -227,9 +183,8 @@ def draw_marimekko(
             _fs_hdr_cur -= 0.5
         wrap_lines = None
         if _est_hdr_w(mname, _fs_hdr_cur) > avail_hdr_w and len(mname) >= 2:
-            # 单行仍装不下（floor 已到）→ 均分为两行 tspan
+            # 单行仍装不下（floor 已到）→ 均分为两行
             mid = len(mname) // 2
-            # 优先按空格/-/. 断行
             split_i = mid
             for i in range(max(1, mid - 3), min(len(mname), mid + 3)):
                 if mname[i] in " -._/":
@@ -253,14 +208,15 @@ def draw_marimekko(
             ):
                 _fs_wrap -= 0.5
             cx_mid = x_cursor + col_w / 2
-            parts.append(
-                f'<text x="{cx_mid:.1f}" y="{plot_y - 26:.1f}" text-anchor="middle" '
-                f'font-family="{body_font}" font-size="{_fs_wrap}" font-weight="700" '
-                f'fill="{ink}">'
-                f'<tspan x="{cx_mid:.1f}" dy="0">{xesc(wrap_lines[0])}</tspan>'
-                f'<tspan x="{cx_mid:.1f}" dy="{_fs_wrap * 1.05:.1f}">{xesc(wrap_lines[1])}</tspan>'
-                f"</text>"
-            )
+            # Preserve the previously serialized baseline and relative line step.
+            header_y = float(f"{plot_y - 26:.1f}")
+            line_step = float(f"{_fs_wrap * 1.05:.1f}")
+            for line_index, line in enumerate(wrap_lines):
+                parts.append(
+                    f'<text x="{cx_mid:.1f}" y="{header_y + line_index * line_step:.1f}" '
+                    f'text-anchor="middle" font-family="{body_font}" font-size="{_fs_wrap}" '
+                    f'font-weight="700" fill="{ink}">{xesc(line)}</text>'
+                )
         else:
             parts.append(
                 f'<text x="{x_cursor + col_w / 2:.1f}" y="{plot_y - 20:.1f}" text-anchor="middle" '
@@ -273,11 +229,9 @@ def draw_marimekko(
             f"{mw / total_mkt * 100:.0f}%</text>"
         )
 
-        # 归一化 sub 到 plot_h
         total_sh = sum(sh for _, sh in subs) or 1.0
         y_cursor = plot_y
 
-        # 灰阶轮转（default_flat 用）
         grays = [ink4, ink2, ink6, _rgba_with_alpha(ink, 0.32)]
         gi = 0
 
@@ -287,7 +241,6 @@ def draw_marimekko(
                 y_cursor += seg_h
                 continue
 
-            # 决定填色
             if variant == "default_flat":
                 if we_key is not None and sname == we_key:
                     fill = accent
@@ -328,7 +281,6 @@ def draw_marimekko(
                     r, g, b = rgb_tuple(accent)
                     fill = f"rgba({r},{g},{b},{0.20 + 0.60 * intensity:.3f})"
                 else:
-                    # cool blue
                     fill = f"rgba(90,110,150,{0.20 + 0.60 * intensity:.3f})"
                 # residual 变体半透明填色在 bg 上有效亮度接近 bg，用 _ink_on_bg 保底
                 text_col = _ink_on_bg(pal)
@@ -339,7 +291,6 @@ def draw_marimekko(
                 stroke = ""
 
             rect_stroke = f' stroke="{stroke}" stroke-width="1.2"' if stroke else ""
-            # 白色/背景色分隔线间距
             gap = 1.5 if variant in ("default_flat", "treemap_flat") else 0
             parts.append(
                 f'<rect x="{x_cursor:.1f}" y="{y_cursor:.1f}" '
@@ -347,7 +298,6 @@ def draw_marimekko(
                 f'fill="{fill}"{rect_stroke}/>'
             )
 
-            # 段内标签
             pct_str = f"{sh / total_sh * 100:.0f}%"
             label = f"{sname} {pct_str}"
             fs_label = auto_font_size(len(subs), base=11, min_size=8, max_size=13)
@@ -396,22 +346,20 @@ def draw_marimekko(
 
         x_cursor += col_w
 
-    # legend for shaded_residual
     if variant == "shaded_residual":
         ly = height - MB + 22
         r, g, b = rgb_tuple(accent)
         parts.append(f'<rect x="{ML}" y="{ly}" width="14" height="10" fill="rgba({r},{g},{b},0.75)"/>')
         parts.append(
             f'<text x="{ML + 20}" y="{ly + 9}" font-family="{body_font}" font-size="10" '
-            f'fill="{ink}">Positive residual</text>'
+            f'fill="{ink}">{xesc(tr("Positive residual"))}</text>'
         )
         parts.append(f'<rect x="{ML + 150}" y="{ly}" width="14" height="10" fill="rgba(90,110,150,0.75)"/>')
         parts.append(
             f'<text x="{ML + 170}" y="{ly + 9}" font-family="{body_font}" font-size="10" '
-            f'fill="{ink}">Negative residual</text>'
+            f'fill="{ink}">{xesc(tr("Negative residual"))}</text>'
         )
 
-    # we_key legend for default_flat
     if variant == "default_flat" and we_key is not None:
         ly = height - MB + 22
         parts.append(f'<rect x="{ML}" y="{ly}" width="14" height="10" fill="{accent}"/>')
@@ -420,7 +368,6 @@ def draw_marimekko(
             f'fill="{ink}">{xesc(we_key)} (our vendor)</text>'
         )
 
-    # 组装 defs
     if defs_parts:
         defs_str = "<defs>" + "".join(defs_parts) + "</defs>"
         parts.insert(1, defs_str)
@@ -434,13 +381,13 @@ def make_marimekko(
     width: float = 900.0,
     height: float = 540.0,
     we_key: str = "Us",
-    accent_rgb: Sequence[int] = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    font_family: str = None,
+    accent_rgb: Sequence[int] | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
 ) -> str:
     """
     双向占比：列宽 = 市场大小，列内高度 = 各竞品份额。管理咨询"业务组合矩阵"经典图种。
@@ -467,17 +414,9 @@ def make_marimekko(
             font_family=font_family,
         )
 
-    # ---- palette 支持（模块级 helper 注入）----
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"],
-        _pal["ink6"],
-        _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
-        _pal["accent"],
-    )
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     if not markets:
         raise ValueError("marimekko: at least one market required")
     if accent_rgb is not None:
@@ -500,7 +439,6 @@ def make_marimekko(
     cx = x_left
     # 灰阶轮转（跳过 we_key），保证多个非我方竞品用不同灰度区分
     _grays = [_INK4, _INK2, _INK6, _INK1]
-    # ---------- 字号自适应（viewBox + 数据规模双重）----------
     # slide 里 3 图并列 ≈ 400px，viewBox=900 → 缩放 ~0.44x；字号需相应放大
     _n_mk_fs = len(markets)
     _fs_base = min(float(width), float(height)) * 0.022
@@ -533,7 +471,7 @@ def make_marimekko(
             _fs_hdr -= 0.5
         _wrap_lines = None
         if _est_label_w(mname, _fs_hdr) > _avail_hdr_w and len(mname) >= 2:
-            # 单行仍装不下 → 强制 wrap 到 2 行 tspan，不截断
+            # 单行仍装不下 → 强制 wrap 到 2 行，不截断
             mid = len(mname) // 2
             split_i = mid
             for _i in range(max(1, mid - 3), min(len(mname), mid + 3)):
@@ -555,7 +493,6 @@ def make_marimekko(
                     > _avail_hdr_w
                 ):
                     _fs_hdr -= 0.5
-        # 同理处理占比数字
         _pct_txt = f"{mw:g}%"
         _fs_pct = fs_market_pct
         _fs_pct_floor = max(8.0, fs_market_pct * 0.6)
@@ -569,14 +506,15 @@ def make_marimekko(
         if _wrap_lines is not None:
             # 2 行文本：让第二行 baseline 落在原 header y，第一行往上偏移
             _line_h = _fs_hdr * 1.05
-            parts.append(
-                f'<text font-family="{_body_font}" x="{_cx_mid:.1f}" y="{_hdr_y - _line_h:.1f}" '
-                f'font-size="{_fs_hdr}" font-weight="700" fill="{_INK}" text-anchor="middle" '
-                f'letter-spacing=".04em">'
-                f'<tspan x="{_cx_mid:.1f}" dy="0">{_wrap_lines[0]}</tspan>'
-                f'<tspan x="{_cx_mid:.1f}" dy="{_line_h:.1f}">{_wrap_lines[1]}</tspan>'
-                f"</text>"
-            )
+            _first_line_y = float(f"{_hdr_y - _line_h:.1f}")
+            _line_step = float(f"{_line_h:.1f}")
+            for _line_index, _line in enumerate(_wrap_lines):
+                parts.append(
+                    f'<text font-family="{_body_font}" x="{_cx_mid:.1f}" '
+                    f'y="{_first_line_y + _line_index * _line_step:.1f}" '
+                    f'font-size="{_fs_hdr}" font-weight="700" fill="{_INK}" text-anchor="middle" '
+                    f'letter-spacing=".04em">{_line}</text>'
+                )
         else:
             parts.append(
                 f'<text font-family="{_body_font}" x="{_cx_mid:.1f}" y="{_hdr_y:.1f}" font-size="{_fs_hdr}" font-weight="700" fill="{_INK}" text-anchor="middle" letter-spacing=".08em">{mname}</text>'
@@ -611,13 +549,11 @@ def make_marimekko(
                     f'<text font-family="{_body_font}" x="{cx + col_w / 2:.1f}" y="{cy + seg_h / 2 + fs_seg * 0.35:.1f}" font-size="{fs_seg}" font-weight="700" fill="{text_color}" text-anchor="middle">{label}</text>'
                 )
             elif seg_h >= _min_seg_h and (col_w - 10) >= len(pct_str) * fs_seg_pct * 0.6:
-                # 窄列：只显示百分比
                 parts.append(
                     f'<text font-family="{_body_font}" x="{cx + col_w / 2:.1f}" y="{cy + seg_h / 2 + fs_seg_pct * 0.35:.1f}" font-size="{fs_seg_pct}" font-weight="700" fill="{text_color}" text-anchor="middle">{pct_str}</text>'
                 )
             cy += seg_h
         cx += col_w
-    # 顶部标题栏（可选，用负 y 空间）
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     _title_block, _title_h = _render_title_block(
         x_left=0,
@@ -640,6 +576,4 @@ def make_marimekko(
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 15) Matrix Heat 矩阵热力
-# ==============================================================

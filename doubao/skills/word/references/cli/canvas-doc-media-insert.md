@@ -6,8 +6,8 @@
 
 按目标选择处理方式：
 
-- **插入或替换资源**：已有有效图片 token 可直接复用；本地文件或网络 URL 须先用 `docs +media-upload` 取得 `data.file_token`，再通过 `docs +local-update` 写入。
-- **仅修改属性**：修改尺寸、裁剪、旋转、边框、浮动或环绕等属性时，保留原 `src`，跳过来源选择和上传。
+- **插入或替换资源**：已有有效图片 token 可直接复用；本地文件或网络 URL 须先用 `lark-cli docs +media-upload` 取得 `data.file_token`，再通过 `lark-cli docs +local-update` 写入。
+- **仅修改属性**：inline 图片，或浮动图片的裁剪、边框、环绕、锚点相对定位等声明式属性使用 XML，保留原 `src`。已有浮动图片的移动、缩放、旋转、翻转、层叠、重锚和原样复制使用 [`object`](canvas-doc-update-structured.md#浮动对象object_context--object)。
 
 ## 前置条件
 
@@ -20,7 +20,7 @@
 
 确认以下标识来自宿主上下文，不要自行猜测：
 
-- `<token>`：Canvas 上下文提供的当前本地 Word token；既传给 `docs +local-fetch` / `docs +local-update --doc`，也在上传新图片时传给 `docs +media-upload --parent-node`。不要另找 `obj_token`，也不要用文档路径或 block ID 顶替；
+- `<token>`：Canvas 上下文提供的当前本地 Word token；既传给 `lark-cli docs +local-fetch` / `lark-cli docs +local-update --doc`，也在上传新图片时传给 `lark-cli docs +media-upload --parent-node`。不要另找 `obj_token`，也不要用文档路径或 block ID 顶替；
 - `block_id`：插入锚点或待替换图片 block，来自最新一次 fetch。
 
 ## 来源选择（Agent 必读）
@@ -33,9 +33,9 @@
 | 图片来源 | 本地 Word 处理方式 | 禁止做法 |
 |---|---|---|
 | 当前本地 Word fetch 返回的图片 token，或本次上传已经返回的 `file_token` | 直接写入 `<img src="...">`，跳过上传 | 不要重复上传同一图片 |
-| 用户给出明确的本地图片路径 | 使用 `docs +media-upload --file <path>`，取得 `file_token` 后更新文档 | 不要把文件路径直接写入 `src` |
+| 用户给出明确的本地图片路径 | 使用 `lark-cli docs +media-upload --file <path>`，取得 `file_token` 后更新文档 | 不要把文件路径直接写入 `src` |
 | 用户给出 HTTP/HTTPS 图片 URL | 先下载为可访问的本地图片文件，再执行上传和更新 | 不要把 URL 写入 `src`，也不要改用在线文档的 `<img href>` |
-| 用户只说明“剪切板里的图”“刚复制的截图” | 告知当前 `docs +media-upload` 不支持剪切板，请用户提供可访问的本地图片文件 | 不要调用 `docs +media-insert --from-clipboard`，也不要猜测图片路径 |
+| 用户只说明“剪切板里的图”“刚复制的截图” | 告知当前 `lark-cli docs +media-upload` 不支持剪切板，请用户提供可访问的本地图片文件 | 不要调用 `lark-cli docs +media-insert --from-clipboard`，也不要猜测图片路径 |
 | 上下文没有唯一、明确的图片来源 | 只问一个澄清问题，确认使用已有 token、本地文件还是网络 URL | 不要扫描目录、猜测最近图片或任意选择文档内图片 |
 
 补充规则：
@@ -48,10 +48,10 @@
 ## 标准流程
 
 1. 按 [`canvas-doc-fetch.md`](canvas-doc-fetch.md#选择-detail) `--detail full` 读取最小完整目标范围，确认锚点或原图片 record ID；inline 图片从所属正文顶层容器读取，页眉页脚内的内容按 layout 读取，不把嵌套图片 ID 直接作为 range 锚点。
-> 当插入全新图片且用户未指定 `width`、`height` 时，再执行 `docs +local-fetch --scope layout --detail full`，根据当前页面尺寸和页边距设置不超出可用区域且保持原图比例的尺寸；不要直接使用原图尺寸或照抄示例值。
+> 当插入全新图片且用户未指定 `width`、`height` 时，再执行 `lark-cli docs +local-fetch --scope layout --detail full`，根据当前页面尺寸和页边距设置不超出可用区域且保持原图比例的尺寸；不要直接使用原图尺寸或照抄示例值。
 2. 插入或替换资源时按“来源选择”确定图片 token：已有有效 token 时直接复用；本地文件或已下载的 URL 图片继续执行上传。仅改属性时保留原 `src`，跳过第 3 步。
-3. 需要上传时，先使用同一个本地 Word `<token>` 作为 `--parent-node` 执行 `--dry-run`，确认请求的 `parent_type` 被映射为 `office_docx_file`；再执行 `docs +media-upload` 并保存返回的 `data.file_token`。未发生映射时停止，不尝试其他 token。
-4. 使用 `block_insert_after` 插入图片，或使用 `block_replace` 替换资源/更新属性。以最新完整 XML 为底稿，只改目标字段，回放全部非目标属性；具体命令目标以 [`canvas-doc-update.md`](canvas-doc-update.md#可寻址标签与可用命令) 为准。
+3. 需要上传时，先使用同一个本地 Word `<token>` 作为 `--parent-node` 执行 `--dry-run`，确认请求的 `parent_type` 被映射为 `office_docx_file`；再执行 `lark-cli docs +media-upload` 并保存返回的 `data.file_token`。未发生映射时停止，不尝试其他 token。
+4. 新建图片使用 `block_insert_after`；替换资源、inline 图片属性和浮动图片声明式属性使用 `block_replace`；已有浮动图片的物理操作使用 `object`。XML 以最新完整内容为底稿，只改目标字段，回放全部非目标属性。
 5. 重新 fetch 目标范围，确认 `<img src>`、尺寸和其他样式已经生效，并比较未修改属性。查看图片或保存原图时，完整读取[图片资源读取](canvas-doc-fetch.md#图片资源读取)，资源 token 均从 `<img src>` 提取。
 
 不要并行上传和更新：后一步依赖前一步返回的 `file_token`。
@@ -111,14 +111,14 @@ lark-cli docs +local-update --doc "<token>" \
 lark-cli docs +local-update --doc "<token>" \
   --command block_replace \
   --block-id "<image_block_id>" \
-  --content '<img src="file_xxx" width="800" height="600" rotation="90" flip-horizontal="false" flip-vertical="false" border-style="solid" border-width="1pt" border-color="#000000"/>'
+  --content '<img src="file_xxx" width="800" height="600" border-style="solid" border-width="1pt" border-color="#000000"/>'
 ```
 
 standalone 图片的 content 里带上从 fetch 读到的 `id` 属性，block ID 就会保留；省略 `id` 会新建 record，原 ID 立即失效。inline 图片的专用替换只更新原图片 record，content 必须恰好是单个 `<img>`，不改变原 ID、inline mark 或宿主段落。无论哪种情况，下一步修改前都要重新 fetch 确认写入结果；不得删除其他图片 block。
 
 ## 4. 更新现有图片属性
 
-不上传图片、不更换 `src`；以最新完整 `<img>` 为底稿，只修改目标属性。图片 record ID、content 形状和 inline/standalone 区别沿用上一节及通用 update 契约。
+不上传图片、不更换 `src`。inline 图片和浮动图片的声明式属性以最新完整 `<img>` 为底稿，只修改目标属性；已有浮动图片的物理操作改用 `object`。组合目标串行执行，每次写后重新 Fetch。
 
 ### 浮动定位与环绕
 
@@ -140,7 +140,7 @@ lark-cli docs +local-update --doc "<token>" \
 
 - 更新失败、结果未知或回读偏离时，统一遵循 [`canvas-doc-recovery.md`](../workflows/canvas-doc-recovery.md#失败处理) 的停止条件与共享修正预算，不另起重试流程。
 - `ATTR_CAPABILITY_LIMITED`（如图片 `href`、`action-type`）对应用户目标或基线保真要求时，按工作流能力预检处理，不得只忽略 warning 或反复换写法。图片替代文本使用已支持的 `alt-description` / `alt-title`，不要写笼统的 `alt`。
-- 上传失败：不要执行 `docs +local-update`。
+- 上传失败：不要执行 `lark-cli docs +local-update`。
 - 上传成功、文档更新失败：明确告诉用户图片已经上传但尚未写入文档，并保留返回的 `file_token` 供重试；当前没有稳定的素材自动删除契约，不要自行删除。
 - 文档更新结果为 `partial_success`：检查 `warnings`，再 fetch 验证；不要仅因已经取得 token 就宣称插入成功。
 - block ID 失效或内容冲突：重新 fetch 目标范围；资源替换沿用已上传的 `file_token`，仅改属性保留最新基线的原 `src`，重新规划更新；不要重复上传同一图片。
@@ -148,7 +148,7 @@ lark-cli docs +local-update --doc "<token>" \
 
 ## 明确禁止
 
-- 不使用 `docs +media-insert`；
+- 不使用 `lark-cli docs +media-insert`；
 - 不把普通文件路径或网络 URL 写入 `src`；
 - 图片资源必须通过 `src` 引用；不使用在线文档的附件类型、`align` 或 `file-view`；
 - 不把图片上传和文档更新并行执行；

@@ -1,10 +1,10 @@
 # 本地 Word XML：域、题注、脚注与尾注
 
-用于 `SEQ` / `REF` / `PAGEREF` / `NOTEREF` 域、独立题注、普通脚注与尾注。公共 XML、寻址和更新规则先读 [`canvas-doc-xml.md`](canvas-doc-xml.md) 与 [`../cli/canvas-doc-update.md`](../cli/canvas-doc-update.md)。
+用于 `SEQ` / `REF` / `PAGEREF` / `NOTEREF` 域、只读 HYPERLINK Field、独立题注、普通脚注与尾注。公共 XML、寻址和更新规则先读 [`canvas-doc-xml.md`](canvas-doc-xml.md) 与 [`../cli/canvas-doc-update.md`](../cli/canvas-doc-update.md)。
 
 > 使用前须完整读取本页；未见末行「全文完」时，调整 offset 继续读取至该标记。
 
-使用既有 `block_replace`、`block_insert_after`、`append` 与 layout 更新命令，不另设专用请求。
+Field 定义、题注、Note 使用既有 `block_replace`、`block_insert_after`、`append` 与 layout 更新命令；已有可安全求值 Field 的结果刷新使用 `field_update`。
 
 - **修改前**：必须用 `+local-fetch --detail full` 取得实际可写标签和 ID。
 - **新建前**：Field/题注读取 carrier 或正文锚点，按新建语法省略 ID 和 result；不要求已有同类对象。
@@ -45,12 +45,14 @@
 
 `decimal`、`upper-roman`、`lower-roman`、`upper-letter`、`lower-letter`、`number-in-dash`、`decimal-full-width`、`chinese-counting`、`chinese-counting-thousand`、`chinese-legal-simplified`、`ideograph-traditional`、`ideograph-zodiac`。
 
-- 子内容是 cached result 的只读 rich-text 投影。修改已有域时省略子内容表示保留；提交不同结果返回 `FIELD_RESULT_READONLY`。
+- 子内容是 cached result 的只读 rich-text 投影。修改已有域定义时省略子内容表示保留；提交不同结果返回 `FIELD_RESULT_READONLY`。
 - 未知 switch 或其他只读 Field 会由 Fetch 输出 `editable="false"`；该属性是 encode-only 断言，请求不得改为 `true`，也不能通过省略它把 Field 提升为可写。
 - 新建域必须无 `id`、无子内容。CLI 无法根据当前文档计算初值时整次失败，不留下半成品。
 - 定义变化时由宿主负责刷新结果，不在 XML 中写 `dirty`。
 - 含未知 switch、非法嵌套、不完整 S/P/E 或 owner-specific 约束的域只读保真或拒绝更新。
-- TOC-owned `PAGEREF` 必须继续使用 [`../cli/canvas-doc-update-domain.md`](../cli/canvas-doc-update-domain.md) 的 `table_of_contents_update`，不能用普通 `<field>` 绕过。
+- TOC-owned `PAGEREF` 必须继续使用 [`../cli/canvas-doc-update-domain.md`](../cli/canvas-doc-update-domain.md) 的 `table_of_contents`，不能用普通 `<field>` 绕过。
+- 已有 Field 的结果刷新使用 [`fields → field_update`](../cli/canvas-doc-update-structured.md)；只处理 Fetch 明确标记 `updatable` 的 identity，不修改定义或缓存结果。
+- HYPERLINK Field 保留独立 identity，以 `<field type="hyperlink" editable="false">` 只读投影；普通链接使用文本规范中的 `<a>`，两者不能互相转换。
 - `<page-number/>`、`<page-count/>` 和 `<symbol/>` 仍分别使用既有标签，不改写成 `<field>`。
 
 ## 独立题注
@@ -139,7 +141,7 @@
 
 ## 明确不支持
 
-- 修订、批注、日期时间域、任意原始 Field instruction 和未知 switch 写入；
+- 直接写入修订标记、日期时间域、任意原始 Field instruction 和未知 switch；
 - Field 超链接开关、TOC-owned `PAGEREF` 的通用 Field 写入；
 - inline/隐藏 label 题注、对象上方题注、Caption 全局设置；
 - 自定义 Note marker 与 separator/continuation separator story 写入。

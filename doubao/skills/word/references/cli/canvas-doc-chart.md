@@ -8,12 +8,12 @@
 - 完整读取 [`canvas-doc-chart.md`](../xml/canvas-doc-chart.md)，按其中的数据白名单和 XML 占位语法准备内容。
 - 创建与挂载、读取与替换必须串行；pending `data_id` 只能成功挂载一次，已有图表则沿用当前 Fetch 返回的 `data_id`，不得猜测或使用已失效的引用。
 
-## 命令
+## 统一命令
 
-| 指令 | 说明 | 必需参数 |
+| action | 说明 | `--chart-option` |
 |---|---|---|
-| `chart_data_create` | 预创建数据，返回一次性 pending `data_id`，不修改正文 | `--chart-option '{"data":{...}}'` |
-| `chart_data_replace` | 按版本完整替换数据，保留 chart record/位置 | `--chart-option '{"data_id":"...","expected_data_version":N,"data":{...}}'` |
+| `create` | 预创建数据，返回一次性 pending `data_id`，不修改正文 | `{"action":"create","data":{...}}` |
+| `replace` | 按版本完整替换数据，保留 chart record/位置 | `{"action":"replace","data_id":"...","expected_data_version":N,"data":{...}}` |
 
 - **参数**：图表数据指令不接受 `--revision-id`、`--block-id`、`--content`、`--pattern` 或 `--table-option`。
 - **数据格式**：`--chart-option` 接受单层 JSON 对象，`data` 也使用对象。JSON 文本须先解析为对象，不对整个对象二次编码。前端支持 JSON 文本型 `data`，但部分 CLI 构建只接受对象；统一使用对象即可兼容，无需切换 OOXML。
@@ -30,7 +30,7 @@ lark-cli docs +local-fetch --doc "<token>" \
   --scope chart_data --data-id "<data_id>"
 ```
 
-响应沿用 `docs +local-fetch` 信封，图表数据位于：
+响应沿用 `lark-cli docs +local-fetch` 信封，图表数据位于：
 
 ```json
 {
@@ -59,11 +59,11 @@ lark-cli docs +local-fetch --doc "<token>" \
 
 ```bash
 lark-cli docs +local-update --doc "<token>" \
-  --command chart_data_create \
-  --chart-option '{"data":{"chart_type":"column","chart_subtype":"clustered","categories":["Q1","Q2"],"series":[{"name":"收入","values":[120,200]}]}}'
+  --command chart_data \
+  --chart-option '{"action":"create","data":{"chart_type":"column","chart_subtype":"clustered","categories":["Q1","Q2"],"series":[{"name":"收入","values":[120,200]}]}}'
 ```
 
-`chart_data_create` 不接受 `revision_id`，也不接受 `--block-id`、`--content`、`--pattern`、`--table-option`。
+`chart_data` 不接受 `revision_id`，也不接受 `--block-id`、`--content`、`--pattern`、`--table-option`。
 成功回执的新数据引用位于 `data.command_result={data_id,data_version}`。
 
 2. 使用返回的 `data.command_result.data_id` 插入：
@@ -78,24 +78,25 @@ lark-cli docs +local-update --doc "<token>" \
 
 ## 替换数据
 
-替换前通过 `--scope chart_data` 取得当前 `data_id`、`data_version` 和完整数据；已有覆盖目标且未发生数据变化的读取可直接使用。此 scope 建立内部读取基线，但不返回文档 revision；数据替换使用 `expected_data_version` 校验图表版本，不能用图表数据代替位置、尺寸或正文更新所需的完整 XML 证据。以此准备完整目标态：
+替换前通过 `--scope chart_data` 取得当前 `data_id`、`data_version` 和完整数据；已有覆盖目标且未发生数据变化的读取可直接使用。此 scope 不返回文档 revision；数据替换使用 `expected_data_version` 校验图表版本，不能用图表数据代替位置、尺寸或正文更新所需的完整 XML 证据。以此准备完整目标态：
 
 ```bash
 lark-cli docs +local-update --doc "<token>" \
-  --command chart_data_replace \
-  --chart-option '{"data_id":"<data_id>","expected_data_version":3,"data":{...}}'
+  --command chart_data \
+  --chart-option '{"action":"replace","data_id":"<data_id>","expected_data_version":3,"data":{...}}'
 ```
 
-`chart_data_replace` 不接受 `--revision-id`。成功后使用响应 `data.command_result.data_id` 重新 Fetch，验证完整数据并取得最新 `data_version`；该回读可作为下一次数据替换的依据，Update 回执本身不能替代它。旧版本、共享或跨文档 ID 均失败；不支持 series/category/style patch。
+`chart_data/action=replace` 不接受 `--revision-id`。成功后使用响应 `data.command_result.data_id` 重新 Fetch，验证完整数据并取得最新 `data_version`；该回读可作为下一次数据替换的依据，Update 回执本身不能替代它。旧版本、共享或跨文档 ID 均失败；不支持 series/category/style patch。
 
 图表外观也属于 `data` 的完整目标态。当前 Word 已支持的主题色、背景/边框、默认文字、主副标题样式、
 坐标轴范围与网格线、雷达形状与逐系列填充、圆环孔径和扇区分离，都应在 Fetch 结果上修改对应
-canonical 字段后调用 `chart_data_replace`。不要把 `style_update` 用于图表 theme，也不要因字段属于外观设置
+canonical 字段后调用 `chart_data/action=replace`。不要把 `style_update` 用于图表 theme，也不要因字段属于外观设置
 就直接进入 OOXML。若当前客户端明确返回字段不允许或 `CHART_CAPABILITY_UNAVAILABLE`，保留错误和版本证据，
 不要自行改写所有图表或通过不透明私有 rule 绕过。
 
 ## 尺寸与删除
 
+- 修订模式仅支持主文档行内 Chart 的尺寸修改与删除；图表数据替换不生成可审阅修订，不能在修订模式下提交。
 - 尺寸：以 chart record id 执行 `block_replace`，保留 Fetch 返回的 `id` 和已有 `data-id`，只改 `width` / `height`。
 - 删除：以 chart record id 执行 `block_delete`。
 - 尺寸和布局约束见 [`canvas-doc-chart.md`](../xml/canvas-doc-chart.md#xml-占位)。

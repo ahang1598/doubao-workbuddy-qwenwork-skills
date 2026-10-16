@@ -1,4 +1,5 @@
 """Run directly; LINT_INSPECT_SCRIPT may select a draft script for validation."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -17,9 +18,16 @@ spec.loader.exec_module(lint)
 
 
 def issue(code="bbox_overlap", level="error", page=1):
-    return {"code": code, "level": level, "elements": ["a", "b"],
-            "target": {"slide_number": page}, "message": "完整消息", "hint": "检查位置",
-            "measurement": {"intersection_area": 12}, "future_field": {"keep": True}}
+    return {
+        "code": code,
+        "level": level,
+        "elements": ["a", "b"],
+        "target": {"slide_number": page},
+        "message": "完整消息",
+        "hint": "检查位置",
+        "measurement": {"intersection_area": 12},
+        "future_field": {"keep": True},
+    }
 
 
 def report(pages=None, document=None):
@@ -29,14 +37,26 @@ def report(pages=None, document=None):
     all_issues = list(document)
     for i, values in enumerate(pages, 1):
         all_issues.extend(values)
-        slides.append({"slide_number": i, "status": "blocked" if any(v["level"] == "error" for v in values) else "passed",
-                       **{key: [v for v in values if v["level"] == level] for key, level in lint.LEVELS.items()},
-                       "issues": list(reversed(values))})
-    return {"schema_version": "2.0", "tool": "xml_lint",
-            "summary": {"slide_count": len(slides), "status": "blocked" if any(v["level"] == "error" for v in all_issues) else "passed",
-                        **{level + "_count": sum(v["level"] == level for v in all_issues) for level in lint.LEVELS.values()}},
-            "document": {key: [v for v in document if v["level"] == level] for key, level in lint.LEVELS.items()},
-            "issues": list(document), "slides": slides}
+        slides.append(
+            {
+                "slide_number": i,
+                "status": "blocked" if any(v["level"] == "error" for v in values) else "passed",
+                **{key: [v for v in values if v["level"] == level] for key, level in lint.LEVELS.items()},
+                "issues": list(reversed(values)),
+            }
+        )
+    return {
+        "schema_version": "2.0",
+        "tool": "xml_lint",
+        "summary": {
+            "slide_count": len(slides),
+            "status": "blocked" if any(v["level"] == "error" for v in all_issues) else "passed",
+            **{level + "_count": sum(v["level"] == level for v in all_issues) for level in lint.LEVELS.values()},
+        },
+        "document": {key: [v for v in document if v["level"] == level] for key, level in lint.LEVELS.items()},
+        "issues": list(document),
+        "slides": slides,
+    }
 
 
 class LintInspectTests(unittest.TestCase):
@@ -46,10 +66,13 @@ class LintInspectTests(unittest.TestCase):
     def run_cli(self, directory, value, *flags):
         path = Path(directory) / "input.json"
         path.write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
-        return subprocess.run([sys.executable, "-B", str(SCRIPT), "--input", str(path), *flags], text=True, capture_output=True)
+        return subprocess.run(
+            [sys.executable, "-B", str(SCRIPT), "--input", str(path), *flags], text=True, capture_output=True
+        )
 
     def test_mirrors_not_double_counted_or_cross_page_merged(self):
-        duplicate = issue("duplicate_element_id"); duplicate["target"] = {}
+        duplicate = issue("duplicate_element_id")
+        duplicate["target"] = {}
         r = report([[issue(), issue(level="info")], [issue(page=2)]], [duplicate])
         i = lint.Inspector({"ok": True, "data": {"issues": r}})
         self.assertEqual(i.status, "parsed")
@@ -70,7 +93,8 @@ class LintInspectTests(unittest.TestCase):
         self.assertTrue(all(len(row["sources"]) == 3 for row in i.rows))
 
     def test_disagreeing_mirror_is_not_silently_discarded(self):
-        r = report(); r["slides"][0]["issues"].append(issue("new_rule"))
+        r = report()
+        r["slides"][0]["issues"].append(issue("new_rule"))
         i = lint.Inspector(r)
         self.assertEqual(i.status, "partial")
         self.assertEqual(len(i.rows), 2)
@@ -108,28 +132,39 @@ class LintInspectTests(unittest.TestCase):
         self.assertEqual(empty["inspection_status"], "findings_only")
 
     def test_missing_summary_counts_not_assumed_zero(self):
-        r = report([[]]); del r["summary"]["error_count"]
+        r = report([[]])
+        del r["summary"]["error_count"]
         i = lint.Inspector(r)
         self.assertEqual(i.status, "partial")
         self.assertEqual(lint.render(i, self.args())["lint_status"], "unknown")
 
     def test_malformed_container_retains_raw(self):
-        r = report(); r["document"] = "lint engine failed"
+        r = report()
+        r["document"] = "lint engine failed"
         i = lint.Inspector(r)
         self.assertEqual(i.status, "partial")
         self.assertTrue(any(v["issue"] == "lint engine failed" for v in i.rows))
 
     def test_malformed_metadata_and_status_return_diagnostics_not_traceback(self):
-        r = report();r["summary"]["status"] = ["passed"]
+        r = report()
+        r["summary"]["status"] = ["passed"]
         i = lint.Inspector({"ok": True, "data": {"slide_id": {"bad": True}, "slide_number": [1], "issues": r}})
         out = lint.render(i, self.args())
         self.assertEqual(out["inspection_status"], "partial")
         self.assertEqual(out["lint_status"], "unknown")
 
     def test_create_slide_findings_and_plain_text(self):
-        i = lint.Inspector({"ok": True, "data": {"slide_issues": [
-            {"slide_id": "p1", "slide_number": 1, "issues": json.dumps(report())},
-            {"slide_id": "p2", "slide_number": 2, "issues": "unsupported attributes dropped"}]}})
+        i = lint.Inspector(
+            {
+                "ok": True,
+                "data": {
+                    "slide_issues": [
+                        {"slide_id": "p1", "slide_number": 1, "issues": json.dumps(report())},
+                        {"slide_id": "p2", "slide_number": 2, "issues": "unsupported attributes dropped"},
+                    ]
+                },
+            }
+        )
         self.assertEqual(i.status, "partial")
         selected = lint.select_rows(i.rows, self.args("--details", "--slide-id", "p2"))
         self.assertEqual(selected[0]["issue"], "unsupported attributes dropped")
@@ -147,8 +182,9 @@ class LintInspectTests(unittest.TestCase):
         self.assertEqual(i.rows[0]["slide_id"], "p1")
 
     def test_passed_report_does_not_hide_additional_findings(self):
-        i = lint.Inspector({"ok": True, "data": {"issues": report([[]]), "slide_issues": [
-            {"slide_id": "p2", "issues": [issue()]}]}})
+        i = lint.Inspector(
+            {"ok": True, "data": {"issues": report([[]]), "slide_issues": [{"slide_id": "p2", "issues": [issue()]}]}}
+        )
         out = lint.render(i, self.args())
         self.assertEqual(out["inspection_status"], "findings_only")
         self.assertEqual(out["lint_status"], "unknown")
@@ -159,7 +195,9 @@ class LintInspectTests(unittest.TestCase):
         self.assertEqual(i.status, "partial")
 
     def test_single_page_number_and_wrapper_number_remain_separate(self):
-        i = lint.Inspector({"ok": True, "data": {"slide_id": "p5", "slide_number": 5, "scope": "slide", "issues": report()}})
+        i = lint.Inspector(
+            {"ok": True, "data": {"slide_id": "p5", "slide_number": 5, "scope": "slide", "issues": report()}}
+        )
         self.assertEqual(i.rows[0]["slide_number"], 1)
         self.assertEqual(i.metadata["slide_number"], 5)
         self.assertEqual(i.rows[0]["slide_id"], "p5")
@@ -176,7 +214,8 @@ class LintInspectTests(unittest.TestCase):
         self.assertEqual(lint.render(i, self.args("--details", "--slide-number", "1"))["selected_issue_total"], 0)
 
     def test_root_only_page_finding_updates_page_counts(self):
-        r = report([[]]);r["issues"] = [issue()]
+        r = report([[]])
+        r["issues"] = [issue()]
         r["summary"].update(error_count=1, status="blocked")
         i = lint.Inspector(r)
         self.assertEqual(i.pages[0]["parsed_counts"]["error"], 1)
@@ -191,7 +230,8 @@ class LintInspectTests(unittest.TestCase):
         self.assertFalse(exported["diagnostics_truncated"])
 
     def test_filters_keep_document_reminder_and_full_warning(self):
-        doc = issue("duplicate_element_id");doc["target"] = {}
+        doc = issue("duplicate_element_id")
+        doc["target"] = {}
         i = lint.Inspector(report([[issue(), issue("contrast", "warning")]], [doc]))
         out = lint.render(i, self.args("--details", "--slide-number", "1", "--level", "warning"))
         self.assertEqual(out["document_issue_total"], 1)
@@ -201,12 +241,14 @@ class LintInspectTests(unittest.TestCase):
     def test_pagination_no_omissions_or_duplicate_ids(self):
         values = [issue(f"rule_{n}") for n in range(27)]
         i = lint.Inspector(report([values]))
-        offset = 0; actual = []
+        offset = 0
+        actual = []
         while True:
             out = lint.render(i, self.args("--details", "--offset", str(offset), "--limit", "7", "--max-chars", "2000"))
             actual.extend(out["issues"])
             paging = out["pagination"]
-            if not paging["has_more"]: break
+            if not paging["has_more"]:
+                break
             self.assertGreater(paging["next_offset"], offset)
             offset = paging["next_offset"]
         self.assertEqual([v["issue"] for v in actual], values)
@@ -219,7 +261,8 @@ class LintInspectTests(unittest.TestCase):
         self.assertFalse(out["page_pagination"]["has_more"])
 
     def test_large_single_issue_not_truncated_can_be_exported(self):
-        large = issue();large["message"] = "文字" * 20000
+        large = issue()
+        large["message"] = "文字" * 20000
         value = report([[large]])
         out = lint.render(lint.Inspector(value), self.args("--details"))
         self.assertEqual(out["issues"], [])
@@ -249,8 +292,11 @@ class LintInspectTests(unittest.TestCase):
 
     def test_invalid_json_and_invalid_arguments(self):
         with tempfile.TemporaryDirectory() as d:
-            path = Path(d) / "invalid.json";path.write_text('{"ok":')
-            result = subprocess.run([sys.executable, "-B", str(SCRIPT), "--input", str(path)], capture_output=True, text=True)
+            path = Path(d) / "invalid.json"
+            path.write_text('{"ok":')
+            result = subprocess.run(
+                [sys.executable, "-B", str(SCRIPT), "--input", str(path)], capture_output=True, text=True
+            )
             self.assertEqual(result.returncode, 2)
             self.assertEqual(json.loads(result.stderr)["lint_status"], "unknown")
             result = self.run_cli(d, report(), "--limit", "0")

@@ -836,9 +836,7 @@ def _flatten_svg_arc(
         return -angle if ux * vy - uy * vx < 0 else angle
 
     theta1 = _vector_angle(1.0, 0.0, (x1p - cxp) / rx, (y1p - cyp) / ry)
-    dtheta = _vector_angle(
-        (x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry
-    )
+    dtheta = _vector_angle((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry)
     if sweep == 0 and dtheta > 0:
         dtheta -= 2 * math.pi
     elif sweep == 1 and dtheta < 0:
@@ -895,9 +893,7 @@ def _svg_arc_wedge_polygon(node: ET.Element, path: str) -> dict[str, Any] | None
             rotation = float(tokens[index + 3])
             large_arc, sweep = int(float(tokens[index + 4])), int(float(tokens[index + 5]))
             end_x, end_y = float(tokens[index + 6]), float(tokens[index + 7])
-            points.extend(
-                _flatten_svg_arc(cur_x, cur_y, rx, ry, rotation, large_arc, sweep, end_x, end_y)
-            )
+            points.extend(_flatten_svg_arc(cur_x, cur_y, rx, ry, rotation, large_arc, sweep, end_x, end_y))
             cur_x, cur_y = end_x, end_y
             index += 8
         elif command == "Z":
@@ -1270,19 +1266,14 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
                         _, _, viewbox_width, viewbox_height = viewbox
                         if (
                             container["width"] * container["height"]
-                            >= viewbox_width
-                            * viewbox_height
-                            * RECT_BACKDROP_VIEWBOX_COVERAGE_RATIO
+                            >= viewbox_width * viewbox_height * RECT_BACKDROP_VIEWBOX_COVERAGE_RATIO
                         ):
                             continue
                     # Thin rules and highlight strips may cross a label's center but do not frame it.
                     if (
-                        text["y"]
-                        < container["y"] - TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX
+                        text["y"] < container["y"] - TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX
                         or text["y"] + text["height"]
-                        > container["y"]
-                        + container["height"]
-                        + TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX
+                        > container["y"] + container["height"] + TEXT_CONTAINER_OVERFLOW_TOLERANCE_PX
                     ):
                         continue
                 if (
@@ -1336,15 +1327,12 @@ def detect_embedded_svg_overlaps(slide_root: ET.Element) -> list[dict[str, Any]]
             for wedge in wedges:
                 if _point_in_polygon(center_x, center_y, wedge["points"]):
                     if enclosing_wedge is None or (
-                        wedge["width"] * wedge["height"]
-                        < enclosing_wedge["width"] * enclosing_wedge["height"]
+                        wedge["width"] * wedge["height"] < enclosing_wedge["width"] * enclosing_wedge["height"]
                     ):
                         enclosing_wedge = wedge
             if enclosing_wedge is None:
                 continue
-            interval = _polygon_horizontal_interval(
-                enclosing_wedge["points"], center_y, center_x
-            )
+            interval = _polygon_horizontal_interval(enclosing_wedge["points"], center_y, center_x)
             if interval is None:
                 continue
             left, right = interval

@@ -78,7 +78,7 @@
 
 单张图表只是砖，叙事才是建筑。以下模式把图表编排成故事：
 
-- **Scrollytelling**：滚动驱动图表变化，每一屏聚焦一个论点。长文数据报道的标配。工具选型和编排原则（一屏一论点、主图 pin、数据切换 tween、末态可读）见 [visual-techniques.md](../design/visual-techniques.md) 滚动叙事段。
+- **Scrollytelling**：滚动驱动图表变化，每一屏聚焦一个论点。工具选型和编排原则（一屏一论点、主图 pin、数据切换 tween、末态可读）见 [visual-techniques.md](../design/visual-techniques.md) 滚动叙事段。
 - **Annotated chart**：在图上直接标"这里是转折点""这段数据缺失原因是 X"，而不是把注解丢到图下 caption。The Economist、FT 是范式。annotation 用一根短线 + 4–8 字标签。
 - **Reference band / event marker**：在时间序列上叠一层灰色 band 标"衰退期""疫情期""政策变化点"。历史/经济图表标配。
 - **Linked views（brush + zoom）**：多图共享 selection——一张图 brush 出时间段，其他图同步 filter。**数据探索型看板**必备，静态报告用不上。

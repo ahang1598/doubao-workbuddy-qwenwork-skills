@@ -6,7 +6,7 @@
 
 这个命令适合以下场景：
 
-1. 读取柱状图 / 条形图 / 折线图 / 饼图 / 环形图 / 面积图 / 组合图 / 散点图 / 漏斗图 / 雷达图 / 排行榜 / 词云 / 指标卡的**实际计算结果**；
+1. 读取柱状图 / 条形图 / 折线图 / 饼图 / 环形图 / 面积图 / 组合图 / 散点图 / 漏斗图 / 雷达图 / 排行榜 / 透视表 / 词云 / 指标卡的**实际计算结果**；
 2. 把图表结果交给 AI 做后续总结、趋势解释、同比/环比说明、异常点提取；
 3. 在**不读取原始记录**的前提下，直接消费图表层已经聚合好的结果；
 4. 验证某个图表当前展示的数据是否符合预期。
@@ -40,13 +40,14 @@
 - 雷达图
 - 排行榜
 
-### 特殊类型（2 种）
+### 特殊类型（3 种）
 
 - 词云
 - 指标卡（statistics）
+- 透视表（pivotTable）
 
 > [!CAUTION]
-> 文本组件虽然也属于 dashboard block，但它不产生可计算数据，因此不会返回本协议。
+> 文本组件虽然也属于 dashboard block，但它不产生可计算数据，因此不会返回本协议。视图组件通过 [视图组件数据读取](lark-base-dashboard-view.md#读取视图组件数据) 获取记录，也不使用本协议。
 
 ---
 
@@ -72,7 +73,9 @@ lark-cli base +dashboard-block-get-data \
   --block-id chtxxxxxxxx
 ```
 
-如果已有本次 create/update/get 返回的全部可信目标 ID，直接跳过 list；仅在缺少 ID、需要定位目标，或用户要求完整读取时，才通过 `+dashboard-block-list --page-size 100` 分页获取。收齐目标组件并跳过没有计算结果的文本组件后，在**一个 shell 工具调用**内串行执行。每条命令会依次输出一个完整 JSON envelope；不要把每个 block 拆成独立模型轮次。
+如果已有本次 create/update/get 返回的全部可信目标 ID，直接跳过 list；仅在缺少 ID、需要定位目标，或用户要求完整读取时，才通过 `+dashboard-block-list --page-size 100` 分页获取。收齐目标组件后按类型分流：图表使用本命令；`view` 按 [视图组件数据读取](lark-base-dashboard-view.md#读取视图组件数据) 获取记录；`text` 用 `+dashboard-block-get` 读取 `data_config.text`。完整读取不能省略视图或文本结果。
+
+下面循环只放入支持计算结果的图表 ID，在**一个 shell 工具调用**内串行执行。每条命令会依次输出一个完整 JSON envelope；不要把每个 block 拆成独立模型轮次。
 
 ```bash
 set -euo pipefail
@@ -135,6 +138,9 @@ CLI 成功输出使用标准 `{ok, identity, data}` 信封：
 | 二维图表 | `dimensions` / `measures` / `main_data` | 无 |
 | 词云 | `dimensions` / `measures` / `main_data` | 无 |
 | 指标卡 | `dimensions` / `measures` / `main_data` | `comparison_data` / `trend_data` |
+| 透视表 | `dimensions` / `measures` / `sort` / `result_structure` / `main_data` | 无 |
+
+透视表返回独立的二维聚合协议：`result_structure.rowAxis` 与 `columnAxis` 按顺序引用维度 alias，`sort` 引用同级维度/指标 alias，`main_data` 仅包含叶子格子（不混入行列小计）。透视表 alias 基于 Snapshot 的稳定 `field_key`，读取时仍应以 `dimensions` / `measures` 声明为准。
 
 ---
 

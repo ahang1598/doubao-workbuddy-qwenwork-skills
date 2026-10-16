@@ -29,6 +29,7 @@ lark-cli docs +ooxml-fetch --doc "<token>"
 
 1. 在任务子目录中将 `OOXML_DOCX` 二进制复制为只读 `SOURCE_DOCX`，核对大小和摘要；TARGET 始终是原 `OOXML_DOCX`。
 2. 按 [文件读取流程](../../SKILL.md#二读取-word) 用 `read.py` 按任务涉及维度读取 SOURCE；`python-docx` / `lxml` 只补齐脚本未覆盖的结构证据。
+   > **修订读取**：维度 0 输出修订后正文投影，保留插入/移入、排除删除/移出；仅需该投影时直接复用，不再手工解析 OOXML。逐条检查修订节点、属性或边界时才读维度 9；它不配对前后文本，且 `w:del` 与内部 `w:delText` 不重复计数。
 3. 沿用 [`canvas-doc-editing.md`](canvas-doc-editing.md#第-1-步--理解任务并读取定位) 的用户材料、写作指南和事实边界；同轮完整材料不重复提取。
 4. 若从 Local 切入，只带入剩余目标、已验收目标和恢复已知副作用所需的修改。缺少可靠证据时停止，不把当前降级状态当作原始 baseline。
 
@@ -36,7 +37,7 @@ SOURCE 只用于比较，不参与写路径。后续修复在 TARGET 上增量�
 
 ### 第 2 步 · 定位并规划修改
 
-定位来自真实结构，不凭历史摘录或页码直接修改。大文档先一次提取正文、对象、样式和编号索引，再按语义筛选；每个目标记录 story/part、唯一文字或身份、相邻结构、格式、命中数和必要关联项。
+定位来自真实结构，不凭历史摘录或页码直接修改。首次读取 SOURCE 后一次建立任务所需的正文、对象、样式和编号索引，规划、编辑和验收共用；SOURCE 未变化时不重复运行同一 `read.py` 维度或遍历相同 part，TARGET 变化后只更新受影响索引。每个目标记录 story/part、唯一文字或身份、相邻结构、格式、命中数和必要关联项。
 
 在上下文维护唯一 `edit_plan`，执行和验收都回填此表：
 
@@ -64,6 +65,26 @@ SOURCE 只用于比较，不参与写路径。后续修复在 TARGET 上增量�
 - 每组相关修改后回读目标区域；写入状态不明时先确认 TARGET，不继续追加修改。
 - 保存前至少检查：XML 可解析、package 关系目标存在、书签 start/end 唯一配对且顺序合法、`wp:docPr/@id` 在无符号 32 位范围 `0..4294967295` 内且全局唯一（已有 0 合法，新增 ID 可从 1 分配）、表格属性子元素满足 schema 顺序、修订/批注边界完整。命中任一失败即停止，不能把后续 audit 当作允许先提交半成品的补救步骤。
 
+#### 新增批注与修订
+
+- 使用本次 `+ooxml-fetch` 返回的 `current_user`，原生 `w:author` 写 `name`。新增批注的 `w:date` 写本次操作的本地墙钟时间，格式为 `YYYY-MM-DDTHH:mm:ssZ`，不得换算为 UTC；修订的 `w:date` 写本次操作的真实 UTC 时间。不得照抄样例或硬编码。导入时仅通过 `userId` 识别用户；首次缺少有效 `user_id` 时立即重新取回并替换候选，再次缺失时仅保留原生 `w:author`，不写身份映射。
+- 批注作者身份写入标准 `word/commentsPeople.xml`，不使用 `customXml`：
+```xml
+<w15:people xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml">
+  <w15:person w15:author="<current_user.name>"><w15:presenceInfo w15:providerId="<current_user.provider>" w15:userId="<current_user.user_id>"/></w15:person>
+</w15:people>
+```
+  已有同名 `person` 时更新并复用，否则新增；缺少该 part 时创建，并在 `document.xml.rels` 添加类型 `http://schemas.microsoft.com/office/2011/relationships/people` 的关系，在 `[Content_Types].xml` 添加 `/word/commentsPeople.xml`、类型 `application/vnd.openxmlformats-officedocument.wordprocessingml.people+xml` 的声明。不得把 relationship 或 Content Type 写成 `commentsPeople`。普通批注在 `word/comments.xml` 创建 `w:comment`，正文 `w:commentRangeStart`、`w:commentRangeEnd`、`w:commentReference` 的 `w:id` 必须与其一一对应。
+- 修订替换仅切分普通文字 run，不跨书签、域或已有修订；复制原 run 的完整 `w:rPr`。插入使用 `w:ins/w:r/w:t`，删除使用 `w:del/w:r/w:delText`；`w:id` 全文档唯一且作为 `nativeId`。`w:ins` 的 `nativeKind` 为 `textInsert`，`w:del` 为 `textDelete`。
+- 修订作者身份使用以下 `customXml`，`userId/userName/userProvider` 分别写 `user_id/name/provider`；`partUri` 写原生修订所在 part。替换修订的 `w:ins` 和 `w:del` 必须分别写一项，即使作者相同也不得省略或合并：
+```xml
+<tto:revisionAuthors xmlns:tto="http://schemas.bytedance.com/office/word/2026/revisionAuthor">
+  <tto:revisionAuthor partUri="word/document.xml" nativeKind="textInsert" nativeId="<w:ins 的 w:id>" userId="<current_user.user_id>" userName="<current_user.name>" userProvider="<current_user.provider>"/>
+  <tto:revisionAuthor partUri="word/document.xml" nativeKind="textDelete" nativeId="<w:del 的 w:id>" userId="<current_user.user_id>" userName="<current_user.name>" userProvider="<current_user.provider>"/>
+</tto:revisionAuthors>
+```
+- 按 `itemPropsN.xml` 的 `schemaRef` URI 定位并复用 `revisionAuthors` 部件；缺失时使用无冲突编号创建对应 `customXml` 部件并补齐 package 声明。必须在 `word/_rels/document.xml.rels` 中以类型 `http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml`、目标 `../customXml/itemN.xml` 建立关系，不得写入包根 `_rels/.rels`；`itemN.xml` 再通过 `customXml/_rels/itemN.xml.rels` 中类型为 `http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps` 的关系关联 `itemPropsN.xml`。
+
 ### 第 4 步 · 验收
 
 同一提交周期只对最新 TARGET 做一次完整 audit 和一次计划验收；候选再变化时重跑受影响证据。
@@ -78,6 +99,7 @@ scripts/audit.py audit TARGET_DOCX --source SOURCE_DOCX --edit-plan <workdir>/ed
 3. 按原 `edit_plan` 核对每项目标、位置、必要关联项和必须保留项。audit 不等于全量保真；未覆盖对象、样式继承、编号、字段、关系和用户要求须定向检查。
    - 对字数、数量、日期、冲突保留、禁增/禁删和术语格式等任务专属约束执行确定性断言，记录终稿实际值；不能用 audit 通过代替。
    - 对复选框、内容控件、超链接、批注、修订和域等交互对象，核对原生 OOXML 节点、关系、数量和状态；普通可见字符或样式相似不算完成。
+   - 有有效 `current_user.user_id` 时，核对本轮新增批注的 `commentsPeople.xml` 中 `author/providerId/userId`，以及每个修订 `(partUri,nativeKind,nativeId)` 对应的 `userId/userName/userProvider`；均须与本周期 `current_user` 一致，缺失、重复、孤立或 package 声明不完整时阻断提交。再次取回仍缺少 `user_id` 时，确认本轮新增对象未写身份映射。
 4. 动态域只核对结构、依赖和缓存状态；无法证明原生刷新时记录待刷新。目录阶段和宿主视觉验收在提交前标为待执行。
 5. 视觉验收沿用 [`canvas-doc-editing.md`](canvas-doc-editing.md#第-4-步--回读验收) 的触发条件；需要时在同步确认及目录完成后使用宿主 Fetch `pdf`，不在候选阶段用本地渲染替代最终页面证据。导出失败按 [宿主 PDF 失败出口](canvas-doc-recovery.md#4-宿主-pdf-失败) 处理，保留尚未完成的检查。
 
@@ -105,7 +127,7 @@ lark-cli docs +ooxml-update --doc "<token>" --file-path "<OOXML_DOCX>"
 1. 只在 `sync_validation.required=true` 时进入本节。提交前 XPath/书签/Canvas ID 不可复用；使用宿主 `+local-fetch` 的最小必要范围重新定位，正文读目标 `range/section + full`，只有无稳定锚点时先读 `outline`；布局读 `layout`，分页和视觉验收读 page/PDF。禁止为同步校验再次调用 `+ooxml-fetch` 取回整份文件。
 2. 按 `2s / 4s / 8s / 15s`、之后每 15 秒退避，总墙钟不超过 60 秒；到期保留“已受理、同步未确认”，不重发提交。
 3. 分别核对正文、布局、动态域和分页；旧内容仍可见或部分目标出现都不能证明整体同步。
-4. 同步证据齐全后执行目录，再做最终视觉验收。视觉修复需要新 OOXML 周期时，重新 fetch 并沿用原计划；同一问题修正一次仍复现且无新依据时停止。
+4. 同步证据齐全后执行计划内目录；仅当提交前已记录 `visual_validation.required=true` 时再做最终视觉验收，不因使用 OOXML 或完成同步而新增理由。视觉修复需要新 OOXML 周期时，重新 fetch 并沿用原计划；同一问题修正一次仍复现且无新依据时停止。
 
 从 `+ooxml-fetch` 到宿主应用 `+ooxml-update` 是整份覆盖窗口：期间不穿插正文 Local 写入或无关长耗时探索。候选是独立快照，不会随活动文档的用户或协同编辑更新；候选、SOURCE、audit 和自己的修改记录一致，都不能证明活动文档未变。当前接口没有原子版本冲突检查，宿主的覆盖提示发生在应用之后，不能把成功回执或空 warnings 当作并发保护。
 

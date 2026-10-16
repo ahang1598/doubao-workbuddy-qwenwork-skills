@@ -53,7 +53,7 @@
 - 无表级边框时，Fetch 会规范化输出六个 `border-*=none`；以返回结果为准保留即可。
 - `cell-padding` 及四向 `cell-padding-top/right/bottom/left` 只接受单值 `pt` 或 `auto`，不支持 CSS 多值简写。`<td>` 和 `<th>` 都支持。
 - 底色使用 `background-color`；除统一颜色文法外，表格底色还接受 `none` 清除。
-- 改单元格内容用 `<td>` / `<th>` ID + `block_replace`；增删行列、合并拆分和已支持的单元格属性用对应的 [`table_*`](../cli/canvas-doc-update-table.md) 命令。修改整表 width/align、行高或列宽等仅由完整 `<table>` 表达的属性时，以最新完整表格 XML 为底稿执行 `block_replace`，只改目标属性并保留全部 table/row/cell/column ID、文本和合并关系；写后重新 fetch。
+- 改单元格内容用 `<td>` / `<th>` ID + `block_replace`；增删行列、合并拆分和已支持的单元格/行/列属性用 [`table + action`](../cli/canvas-doc-update-table.md)。边界拖动、均分、行列重排和整表物理缩放使用 [`table_geometry`](../cli/canvas-doc-update-structured.md#表格几何table_geometry)；列宽声明、行高及其规则、表格对齐和 preferred width 基于最新完整 `<table>` 执行 `block_replace`。完整 XML 中的非目标几何属性仍须原样保留，写后重新 fetch。
 - 修改 `<table width>` 会同步 table、grid、column 和 source-cell 几何；不能只改 `<table width>` 后删掉或覆盖 Fetch 返回的 `<colgroup>`。
 - 表格既可作为正文顶层块，也可放在页眉页脚 story 或递归放在 `<td>/<th>` 内；不得放进列表项。嵌套表格拥有独立 topology，最大深度 8，单次转换总表数最多 1000；系统还会校验 story owner-chain、parent/cycle 和 record 上限，失败时不得拆散结构或跨 story 复用 ID 绕过。
 - 表格单元格内图片使用 `<td><p><img/></p></td>` 和既有图片资源流程，不存在表格专属图片语法。

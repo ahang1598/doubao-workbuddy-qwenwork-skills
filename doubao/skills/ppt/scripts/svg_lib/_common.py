@@ -1,61 +1,57 @@
-"""svg_lib/_common.py
-
-共享 helper：palette 解析、字体解析、rgb/hls 颜色数学、SVG 骨架 helper（bbox/viewbox）、
+"""共享 helper：palette 解析、字体解析、rgb/hls 颜色数学、SVG 骨架 helper（bbox/viewbox）、
 标题渲染、label 避让排布。所有 make_* 与 draw_* 都可以复用。
 """
 
 from __future__ import annotations
-import math
-import re
+
 import colorsys
-from typing import Sequence
+import math
+from collections.abc import Sequence
+
+from ._typography import chart_font_sizes
 
 __all__ = [
-    "_INK",
-    "_INK6",
-    "_INK4",
-    "_INK2",
-    "_INK1",
     "_ACC",
-    "_rgb_prefix",
-    "_rgba_with_alpha",
-    "_resolve_palette",
-    "_bg_rect_svg",
-    "_is_dark_bg",
-    "_is_dark_palette",
-    "_ink_on_bg",
-    "_punchy_title_ink",
-    "_prepend_bg_if_dark",
-    "_rgb_tuple",
-    "_rgb_to_hls",
-    "_hls_to_rgba",
-    "_lighten_rgba",
+    "_INK",
+    "_INK1",
+    "_INK2",
+    "_INK4",
+    "_INK6",
+    "_SVG_LIB_VARIANTS",
+    "_bbox_of_svg_body",
     "_darken_rgba",
     "_derive_series_colors",
-    "_xesc",
-    "_svg_open",
-    "_svg_close",
-    "_bbox_of_svg_body",
-    "_wrap_with_auto_viewbox",
-    "_resolve_font",
-    "_render_title_block",
-    "auto_layout_labels",
-    "ridge_density_from_samples",
-    "_fmt_num",
-    "_fmt_axis",
-    "_svg_close",
-    "auto_layout_labels",
-    "ridge_density_from_samples",
-    "_fmt_axis",
-    "_dist_font_sizes",
-    "_SVG_LIB_VARIANTS",
-    "_variant_is_classic",
     "_dispatch_to_svg_lib",
+    "_dist_font_sizes",
     "_estimate_label_width_px",
+    "_fmt_axis",
+    "_fmt_axis_ticks",
+    "_tick_decimals",
+    "_fmt_num",
+    "_hls_to_rgba",
+    "_ink_on_bg",
+    "_is_dark_bg",
+    "_is_dark_palette",
+    "_lighten_rgba",
+    "_pick_series_colors",
+    "_prepend_bg_if_dark",
+    "_punchy_title_ink",
+    "_render_title_block",
+    "_resolve_font",
+    "_resolve_palette",
+    "_legacy_inks",
+    "_rgb_prefix",
+    "_rgb_to_hls",
+    "_rgb_tuple",
+    "_rgba_with_alpha",
+    "_variant_is_classic",
+    "_wrap_with_auto_viewbox",
+    "_xesc",
+    "auto_layout_labels",
+    "ridge_density_from_samples",
 ]
 
 
-# ---- 默认色 ----
 _INK = "rgba(28,28,26,1.0)"
 _INK6 = "rgba(28,28,26,0.6)"
 _INK4 = "rgba(28,28,26,0.4)"
@@ -66,12 +62,8 @@ _ACC = "rgba(163,88,50,1.0)"
 
 def _rgb_prefix(rgba_str):
     """从 rgba(...) 提取 'rgba(r,g,b,' 前缀，方便与自定义 alpha 拼接。"""
-    import re as _re
-
-    m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
-    if not m:
-        return "rgba(28,28,26,"
-    return f"rgba({int(float(m.group(1)))},{int(float(m.group(2)))},{int(float(m.group(3)))},"
+    r, g, b = _rgb_tuple(rgba_str)
+    return f"rgba({r},{g},{b},"
 
 
 def _rgba_with_alpha(rgba_str, alpha):
@@ -80,24 +72,14 @@ def _rgba_with_alpha(rgba_str, alpha):
 
 
 def _resolve_palette(palette):
-    """把 palette 参数（None/str/dict）解析为核心配色 dict。
-
-    返回 dict 至少包含：ink, accent, secondary, bg, muted, ink6/4/2/1/12（派生）。
-    """
+    """把 palette 参数（None/str/dict）解析为核心配色 dict。"""
     if palette is None:
         pl = {}
     elif isinstance(palette, dict):
         pl = dict(palette)
     elif isinstance(palette, str):
-        try:
-            from svg_lib.svg_palettes import PALETTES
-        except ImportError:
-            import os, sys
+        from .svg_palettes import PALETTES
 
-            _svg_lib_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svg_lib")
-            if _svg_lib_dir not in sys.path:
-                sys.path.insert(0, _svg_lib_dir)
-            from svg_palettes import PALETTES
         if palette not in PALETTES:
             raise ValueError(f"palette '{palette}' not found. Available: {sorted(PALETTES.keys())}")
         pl = dict(PALETTES[palette])
@@ -116,7 +98,6 @@ def _resolve_palette(palette):
         "secondary": secondary,
         "bg": bg,
         "muted": muted,
-        # 派生（沿用旧命名，方便老函数不改逻辑）
         "ink6": _rgba_with_alpha(ink, 0.6),
         "ink4": _rgba_with_alpha(ink, 0.4),
         "ink2": _rgba_with_alpha(ink, 0.2),
@@ -130,17 +111,10 @@ def _resolve_palette(palette):
     # 参考 _ink_on_bg(pal_input, prefer_light=None)——但为了避免早期循环依赖，
     # 这里内联判断。
     if bg is not None:
-        import re as _re
-
-        _mbg = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", bg)
-        _mink = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", ink or "")
-        if _mbg and _mink:
-            _bl = 0.299 * float(_mbg.group(1)) + 0.587 * float(_mbg.group(2)) + 0.114 * float(_mbg.group(3))
-            _il = 0.299 * float(_mink.group(1)) + 0.587 * float(_mink.group(2)) + 0.114 * float(_mink.group(3))
-            if abs(_bl - _il) < 80:  # ink 与 bg 亮度过近 → 用硬编码对比色
-                out["ink_fg"] = "rgba(240,235,222,1)" if _bl < 128 else "rgba(28,28,26,1)"
-            else:
-                out["ink_fg"] = ink
+        _bl = sum(c * weight for c, weight in zip(_rgb_tuple(bg), (0.299, 0.587, 0.114)))
+        _il = sum(c * weight for c, weight in zip(_rgb_tuple(ink), (0.299, 0.587, 0.114)))
+        if abs(_bl - _il) < 80:
+            out["ink_fg"] = "rgba(240,235,222,1)" if _bl < 128 else "rgba(28,28,26,1)"
         else:
             out["ink_fg"] = ink
     else:
@@ -152,11 +126,9 @@ def _resolve_palette(palette):
     return out
 
 
-def _bg_rect_svg(pal, width, height):
-    """若 palette 定义了 bg，则返回一个全图背景 <rect>。"""
-    if not pal.get("bg"):
-        return ""
-    return f'<rect x="{-2}" y="{-2}" width="{width + 4}" height="{height + 4}" fill="{pal["bg"]}"/>'
+def _legacy_inks(pal):
+    """``(ink, ink6, ink4, ink2, ink1, accent)`` of a resolved palette, for the classic chart bodies."""
+    return pal["ink"], pal["ink6"], pal["ink4"], pal["ink2"], pal["ink1"], pal["accent"]
 
 
 def _is_dark_bg(pal):
@@ -164,55 +136,25 @@ def _is_dark_bg(pal):
     bg = pal.get("bg")
     if not bg:
         return False
-    import re as _re
-
-    m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", bg)
-    if not m:
-        return False
-    r, g, b = float(m.group(1)), float(m.group(2)), float(m.group(3))
+    r, g, b = _rgb_tuple(bg)
     luma = 0.299 * r + 0.587 * g + 0.114 * b  # 0-255
     return luma < 180
 
 
 def _is_dark_palette(pal):
-    """Palette bg 是否深色（luma < 128）。用于选择前景对比色。
-
-    与 `_is_dark_bg` 的区别：`_is_dark_bg` 阈值 180 用于判断"是否需要 chart 自绘背景块"；
-    这里 128 用于纯粹的深/浅判定（前景色决策）。深浅之间任何模糊值，
-    宁可当作浅色对待——因为浅色 chart 上再叠浅色文字只是低对比而不是隐形。
-    """
-    import re as _re
-
-    m = _re.match(
-        r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)",
-        pal.get("bg", "rgba(250,248,242,1)") or "rgba(250,248,242,1)",
-    )
-    if not m:
-        return False
-    r, g, b = float(m.group(1)), float(m.group(2)), float(m.group(3))
+    """Palette bg 是否深色（luma < 128）。用于选择前景对比色。"""
+    r, g, b = _rgb_tuple(pal.get("bg") or "rgba(255,255,255,1)")
     return (0.299 * r + 0.587 * g + 0.114 * b) < 128
 
 
 def _ink_on_bg(pal, prefer_light=None):
-    """返回一个"保证与 pal.bg 对比"的前景色。
-
-    - 深 bg：优先 pal.ink（大多数深 palette 已经把 ink 定义为浅色 → 直接用）；
-      若 pal.ink 与 bg 同为深色（少见 misconfig），fallback 到硬编码浅色。
-    - 浅 bg：同理。
-
-    调用者通常直接用 pal["ink"]；只有当调用点原来硬编码了模块级 _INK（暗色）
-    或 rgba(255,255,255,...) 之类的固定色，需要"跟 palette 挂钩"时才用本函数。
-    """
-    import re as _re
+    """返回一个"保证与 pal.bg 对比"的前景色。"""
 
     def _luma(rgba_str):
-        m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
-        if not m:
-            return 128.0
-        r, g, b = float(m.group(1)), float(m.group(2)), float(m.group(3))
+        r, g, b = _rgb_tuple(rgba_str)
         return 0.299 * r + 0.587 * g + 0.114 * b
 
-    bg = pal.get("bg", "rgba(250,248,242,1)") or "rgba(250,248,242,1)"
+    bg = pal.get("bg", "rgba(255,255,255,1)") or "rgba(255,255,255,1)"
     bg_l = _luma(bg)
     ink = pal.get("ink", _INK)
     ink_l = _luma(ink)
@@ -223,26 +165,12 @@ def _ink_on_bg(pal, prefer_light=None):
 
 
 def _prepend_bg_if_dark(svg_str, pal):
-    """[已停用] chart SVG 保持透明，由 slide 层承接 palette.bg 作为整页背景。
-    保留函数签名为兼容之前的 18 处 return _prepend_bg_if_dark(...) 调用。
-    """
+    """[已停用] chart SVG 保持透明，由 slide 层承接 palette.bg 作为整页背景。保留函数签名为兼容之前的 18 处 return _prepend_bg_if_dark(...) 调用。"""
     return svg_str
 
 
 def _punchy_title_ink(pal):
-    """返回 chart title 用的"高对比"前景色。
-
-    动机：多数深色 palette 的 ink 是"暖米色/象牙"（如 rgba(240,235,222,1) 之类），
-    做正文/次要标签没问题，但用作 chart 大标题（Georgia serif · 20pt · 700）时
-    对比不够 punchy——观感偏暗淡。Round 10 测试 8 个深底 palette 都反馈"title 偏暖
-    米色不够 punchy"。
-
-    策略：
-    - 浅底 palette：直接返回 pal["ink"]（原设计视觉不变，硬规则要求）
-    - 深底 palette：向白色靠 ratio，把暖米色拉成 crisp near-white。
-      具体 ratio 由 ink 与纯白的距离决定：ink 越暖/越偏离白，ratio 越大。
-      结果保持在 rgb 250+ 附近，视觉上是 crisp 白，但保留一丝 palette 暖调不至于冷硬。
-    """
+    """返回 chart title 用的"高对比"前景色。"""
     if not _is_dark_palette(pal):
         return pal.get("ink", _INK)
     ink = pal.get("ink", _INK)
@@ -257,9 +185,16 @@ def _punchy_title_ink(pal):
 
 
 def _rgb_tuple(rgba_str):
-    """从 rgba(r,g,b,a) 提取 (r,g,b) 整数元组。"""
+    """Read RGB channels from CSS rgb/rgba and short or full hexadecimal colors."""
     import re as _re
 
+    if isinstance(rgba_str, str) and rgba_str.strip().startswith("#"):
+        digits = rgba_str.strip()[1:]
+        if len(digits) in (3, 4):
+            digits = "".join(char * 2 for char in digits)
+        if len(digits) not in (6, 8):
+            raise ValueError(f"invalid hexadecimal color {rgba_str!r}")
+        return tuple(int(digits[i : i + 2], 16) for i in (0, 2, 4))
     m = _re.match(r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)", rgba_str or "")
     if not m:
         return (28, 28, 26)
@@ -268,14 +203,12 @@ def _rgb_tuple(rgba_str):
 
 def _rgb_to_hls(r, g, b):
     """RGB (0-255) → HLS (h in [0,1), l in [0,1], s in [0,1])。用于色相移动派生系列色。"""
-    import colorsys
 
     return colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
 
 
 def _hls_to_rgba(h, l, s, alpha=1.0):
     """HLS → rgba(...) 字符串。"""
-    import colorsys
 
     r, g, b = colorsys.hls_to_rgb(h % 1.0, max(0, min(1, l)), max(0, min(1, s)))
     return f"rgba({int(r * 255)},{int(g * 255)},{int(b * 255)},{alpha})"
@@ -299,32 +232,62 @@ def _darken_rgba(rgba_str, ratio=0.3):
     return f"rgba({r2},{g2},{b2},1)"
 
 
-def _derive_series_colors(pal, n, saturation_hint=None, lightness_hint=None, mode="distinct"):
-    """基于 palette 的 accent/secondary/ink 派生 n 个系列色（同色系家族），
-    可指定 saturation_hint / lightness_hint 让派生色适应深底/浅底 palette。
+def _lab(color):
+    """CIE L*a*b* (D65) of a CSS colour, for perceptual distance checks."""
 
-    优先级：
-    1) 若 palette 定义了 `series`（list of rgba），且长度 ≥ n，直接取前 n 个
-    2) 若定义了 `series` 但长度不够，循环补齐 + 用 accent 补 accent 位置
-    3) 否则：从 accent 出发按 mode 派生 n 个色
-       - mode="distinct"（默认）：黄金角 137.5° 大步 hue-shift，相邻互斥。
-         用于 donut / sankey / marimekko 等类别图。
-       - mode="gradient"：小步 hue-shift + 明度渐变，相邻色接近，
-         从冷端渐变到暖端。用于 ridge 等**相邻组有次序**的图。
-    """
+    def lin(u):
+        u /= 255
+        return ((u + 0.055) / 1.055) ** 2.4 if u > 0.04045 else u / 12.92
+
+    r, g, b = (lin(v) for v in _rgb_tuple(color))
+    x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047
+    y = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883
+    f = lambda t: t ** (1 / 3) if t > 0.008856 else 7.787 * t + 16 / 116
+    return 116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))
+
+
+def _delta_e(c1, c2):
+    """CIE76 colour difference."""
+    return math.dist(_lab(c1), _lab(c2))
+
+
+_MIN_SERIES_DELTA_E = 20.0  # burgundy (122,32,44) vs rose (163,68,80) is ~15: reads as one colour
+
+
+def _contrasting_order(series, n):
+    """Reorder a palette's series so each of the first ``n`` colours differs (ΔE >= 20) from those before it."""
+    remaining, chosen = list(series), []
+    while remaining and len(chosen) < n:
+        if not chosen:
+            chosen.append(remaining.pop(0))
+            continue
+        score = [min(_delta_e(c, k) for k in chosen) for c in remaining]
+        ok = [i for i, v in enumerate(score) if v >= _MIN_SERIES_DELTA_E]
+        i = ok[0] if ok else max(range(len(remaining)), key=score.__getitem__)
+        if score[i] < 12:
+            h, l, sat = _rgb_to_hls(*_rgb_tuple(chosen[-1]))
+            chosen.append(_hls_to_rgba(h + 0.5, 0.42 if l > 0.6 else max(l, 0.3), max(sat, 0.45), 1.0))
+            continue
+        chosen.append(remaining.pop(i))
+    return chosen + remaining
+
+
+def _derive_series_colors(pal, n, saturation_hint=None, lightness_hint=None, mode="distinct"):
+    """基于 palette 的 accent/secondary/ink 派生 n 个系列色（同色系家族），可指定 saturation_hint / lightness_hint 让派生色适应深底/浅底 palette。"""
     if not pal:
         pal = {}
     series = pal.get("series")
+    if series and mode == "distinct" and n >= 2:
+        series = _contrasting_order(list(series), n)
     if series and len(series) >= n:
         return list(series[:n])
     if series and len(series) < n:
         base_list = list(series)
-        # 循环补齐
         while len(base_list) < n:
             base_list.append(series[len(base_list) % len(series)])
         return base_list
 
-    # 从 accent 出发做 hue-shift
     accent = pal.get("accent", _ACC)
     ar, ag, ab = _rgb_tuple(accent)
     ah, al, asat = _rgb_to_hls(ar, ag, ab)
@@ -367,81 +330,52 @@ def _derive_series_colors(pal, n, saturation_hint=None, lightness_hint=None, mod
     return out
 
 
+def _pick_series_colors(pal, n: int, mode: str = "distinct") -> list:
+    """Prefer pal['series'] if it has >= n entries."""
+    if not pal:
+        pal = {}
+    if n <= 0:
+        return []
+    s = pal.get("series")
+    if s and len(s) >= n:
+        return list(s[:n])
+    return _derive_series_colors(pal, max(n, 4), mode=mode)[:n]
+
+
 def _xesc(s) -> str:
     """XML 转义所有用户传入的文本（含 & < > 会破坏 SVG）。安全用于 <text> 内容、属性值等。"""
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def _svg_open(vb_x=0, vb_y=0, vb_w=400, vb_h=300) -> str:
-    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb_x} {vb_y} {vb_w} {vb_h}">'
-
-
-def _svg_close() -> str:
-    return "</svg>"
-
-
-# ==============================================================
 # 基础设施：自动 viewBox + 标签碰撞避让
-# ==============================================================
 
 
 def _dist_font_sizes(vb_w: float, vb_h: float, n_items: int) -> dict:
-    """分布类图（boxplot / violin / ridge）的字号自适应。
-
-    动机：SVG 字号相对 viewBox。当 slide 里把 viewBox=1200 宽的图缩到 ~400px
-    宽时，viewBox 内 12pt 视觉上只剩 4pt——看不清。所以必须让字号：
-      (1) 相对 viewBox 宽度显著放大（body ≥ vb_w/60），保证 embed 后仍可读
-      (2) 按数据规模退让：少数据放大、多数据压小（但有底线 10pt）
-
-    经验值（viewBox W=1200）：
-      n ≤ 4:  body ≈ 22pt / title ≈ 30pt / group ≈ 23pt
-      n ≤ 8:  body ≈ 17pt / title ≈ 23pt / group ≈ 18pt
-      n ≤ 15: body ≈ 13pt / title ≈ 18pt / group ≈ 14pt
-      n > 15: body ≈ 10pt / title ≈ 14pt / group ≈ 11pt
-
-    对 viewBox W<1200 按 vb_w/60 线性收缩；ridge 的 H 通常远小于 W，用 W 作参考
-    比 min(W,H) 更符合 embed 缩放物理（embed 通常按宽度对齐 slide 布局）。
-
-    返回 dict：{title, subtitle, figure, ytick, yaxis, group, group_n, legend,
-    foot, label, body}——各字段是相对 viewBox 的字号（浮点，1 位小数）。
-    """
-    base = float(vb_w) / 60.0  # W=1200 → 20, W=900 → 15
-    if n_items <= 4:
-        mult = 1.1
-    elif n_items <= 8:
-        mult = 0.85
-    elif n_items <= 15:
-        mult = 0.66
-    else:
-        mult = 0.5
-    body = max(10.0, base * mult)  # 底线 10pt
-    return {
-        "title": round(body * 1.35, 1),  # 大标题
-        "subtitle": round(body * 0.9, 1),  # 副标题
-        "figure": round(body * 0.8, 1),  # figure_label / figure_note
-        "ytick": round(body * 0.9, 1),  # y 轴刻度
-        "yaxis": round(body * 0.95, 1),  # y 轴 label
-        "group": round(body * 1.05, 1),  # x 轴 组名主标签
-        # boxplot/violin/ridge 的 "n = X" 与 "Mdn X" 是 secondary label，
-        # 系数 0.95 + floor 11pt 保证 embed 到 slide 小窗口时仍可读
-        "group_n": round(max(11.0, body * 0.95), 1),
-        # legend 里 4-5 项水平并排、每项 15-20 字符——若 fs 跟 body 一起拉到 22pt
-        # 会把 lg_x 挤到左边，直接盖住标题或超出画布。所以给 legend 单独限一个较低上限。
-        "legend": round(min(15.0, body * 0.7), 1),
-        "foot": round(body * 0.8, 1),  # 底部脚注
-        "label": round(body * 1.0, 1),  # 通用文字标签（ridge 组名）
-        "body": round(body, 1),  # 兜底
-    }
+    """Shared density policy with the established scientific text hierarchy."""
+    sizes = chart_font_sizes(vb_w, vb_h, n_items)
+    # Existing wide, shallow scientific charts already reserve room for width-based fonts.
+    legacy_multiplier = 1.1 if n_items <= 4 else 0.95 if n_items <= 8 else 0.82 if n_items <= 15 else 0.72
+    body = max(14.0, sizes["body"], float(vb_w) / 60 * legacy_multiplier)
+    sizes.update(
+        title=max(22.0, body * 1.5),
+        subtitle=max(14.0, body * 0.95),
+        figure=max(13.0, body * 0.85),
+        body=body,
+        xtick=max(19.0, body),
+        ytick=max(19.0, body),
+        xaxis=max(19.0, body * 1.05),
+        yaxis=max(19.0, body * 1.05),
+        group=max(19.0, body * 1.1),
+        group_n=max(13.0, body),
+        legend=max(14.0, body * 0.95),
+        foot=max(13.0, body * 0.9),
+        label=max(14.0, body * 1.05),
+    )
+    return {role: round(size, 1) for role, size in sizes.items()}
 
 
-# ---- Per-glyph label width estimator ----
-# Mirrors embed_svg_validator._svg_text_width so make_*/draw_* can reserve exactly
-# the horizontal room the validator will later measure. Under-estimating margins
-# was what let R6 academic ridge labels ("CLAUDE 3.5 SONNET", "GEMINI 2.5 PRO")
-# overflow the viewBox by 40-113px even after the "0.62 * fs" heuristic.
-#
-# Coefficients are copied verbatim from embed_svg_validator so the two stay in
-# lock-step. If validator gets re-tuned, update both sides.
+# Mirrors embed_svg_validator._svg_text_width so make_*/draw_* can reserve exactly the horizontal room the validator
+# will later measure.
 _LABEL_WIDE_LETTER_RATIOS = {
     "m": 0.90,
     "w": 0.78,
@@ -527,19 +461,7 @@ def _label_font_category(font_family):
 
 
 def _estimate_label_width_px(text, font_size, letter_spacing_em=0.0, bold=False, font_family=None):
-    """Estimate rendered text width in px, matching embed_svg_validator._svg_text_width.
-
-    text:              the label string (already upper()-cased if the caller
-                       will render uppercase).
-    font_size:         SVG font-size in user units.
-    letter_spacing_em: e.g. 0.08 for `letter-spacing=".08em"`. 0 if none.
-    bold:              True for font-weight >= 600.
-    font_family:       used to pick the coefficient table.
-
-    Return value is a **conservative** estimate — validator uses the same
-    formula, so if the caller reserves at least this much room the label will
-    not be flagged as out-of-bounds.
-    """
+    """Estimate rendered text width in px, matching embed_svg_validator._svg_text_width."""
     if not text:
         return 0.0
     bold_mul = 1.05 if bold else 1.0
@@ -593,9 +515,7 @@ def _estimate_label_width_px(text, font_size, letter_spacing_em=0.0, bold=False,
 
 
 def _bbox_of_svg_body(body: str) -> tuple:
-    """扫描已经拼好的 SVG 内容（不含外层 <svg>），返回 (x_min, y_min, w, h) 真实包围盒。
-    考虑：line/rect/circle/ellipse 坐标、path d 里的坐标、<text> 按 font-size × 字符数 × text-anchor × rotation 估位置。
-    """
+    """扫描已经拼好的 SVG 内容（不含外层 <svg>），返回 (x_min, y_min, w, h) 真实包围盒。"""
     import re as _re
 
     xs, ys = [], []
@@ -603,7 +523,6 @@ def _bbox_of_svg_body(body: str) -> tuple:
         xs.append(float(m.group(1)))
     for m in _re.finditer(r'\b(?:y1|y2|cy)="([-\d.]+)"', body):
         ys.append(float(m.group(1)))
-    # rect 加宽高
     for m in _re.finditer(r"<rect\b([^>]*)/?>", body):
         a = m.group(1)
         xm = _re.search(r'\bx="([-\d.]+)"', a)
@@ -614,12 +533,10 @@ def _bbox_of_svg_body(body: str) -> tuple:
             x, y, w, h = float(xm.group(1)), float(ym.group(1)), float(wm.group(1)), float(hm.group(1))
             xs += [x, x + w]
             ys += [y, y + h]
-    # path d
     for m in _re.finditer(r'd="([^"]+)"', body):
         nums = list(map(float, _re.findall(r"-?\d+\.?\d*", m.group(1))))
         for i, v in enumerate(nums):
             (xs if i % 2 == 0 else ys).append(v)
-    # circle 加半径
     for m in _re.finditer(r'<circle\b[^>]*cx="([-\d.]+)"[^>]*cy="([-\d.]+)"[^>]*r="([-\d.]+)"', body):
         cx, cy, rr = float(m.group(1)), float(m.group(2)), float(m.group(3))
         xs += [cx - rr, cx + rr]
@@ -680,14 +597,13 @@ def _wrap_with_auto_viewbox(body: str, extra_pad: float = 8.0) -> str:
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">{body}</svg>'
 
 
-def _resolve_font(font_family: str = None) -> tuple[str, str]:
-    """把 font_family 参数解析为 (body_font, heading_font) 二元组。
-
-    - None（默认）：保留原设计——body 用 Inter（正文/标签），heading 用 Georgia（大标题/大数字）
-    - str：body 与 heading 都用同一字体，全局统一
-    """
+def _resolve_font(font_family: str | None = None) -> tuple[str, str]:
+    """把 font_family 参数解析为 (body_font, heading_font) 二元组。"""
     if font_family is None or font_family == "":
-        return ("Inter, sans-serif", "Georgia, serif")
+        return (
+            "Source Serif, Georgia, serif",
+            "Inter, Helvetica Neue, sans-serif",
+        )
     return (font_family, font_family)
 
 
@@ -695,29 +611,23 @@ def _render_title_block(
     x_left: float,
     anchor_y: float,
     width: float,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    ink: str = None,
-    muted: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    ink: str | None = None,
+    muted: str | None = None,
     title_font_size: float = 22,
     subtitle_font_size: float = 10,
     figure_font_size: float = 9,
     body_font: str = "Inter, sans-serif",
     heading_font: str = "Inter, sans-serif",
+    bg: str | None = None,
+    figure_label_halo: bool = True,
 ) -> tuple[str, float]:
-    """为"由 _wrap_with_auto_viewbox 自动算 viewBox 的图种"渲染顶部标题栏。
-
-    风格对齐 make_ridge：默认无衬线字体、title 22pt/700/.02em、subtitle 10pt/600/.16em、
-    figure_label 9pt/600/.15em；无分割线，简洁克制。
-
-    body_font / heading_font: 字体分工。title 用 heading_font；subtitle & figure_label 用 body_font。
-    默认都用无衬线（跟原 ridge 一样，无 font-family 时浏览器默认 sans）——外层函数会传入解析后的值。
-    """
+    """为"由 _wrap_with_auto_viewbox 自动算 viewBox 的图种"渲染顶部标题栏。"""
     ink = ink or _INK
     muted = muted or _rgba_with_alpha(ink, 0.6)
     parts_top: list[str] = []
-    # 自底向上排：先算总高度
     lines = []
     if subtitle:
         lines.append(("subtitle", subtitle_font_size))
@@ -741,7 +651,63 @@ def _render_title_block(
             y_cursor -= fs + gaps["figure"]
     top_y = y_cursor
 
+    # Keep ascender of the top-most line inside the viewBox. Previously the
+    # block grew upward without any clamp, so when `_dist_font_sizes` was lifted
+    # (body底线 10→14) the FIG. N label (figure_fs~22) at wide viewBox had its
+    # baseline sitting at y≈11; the ascender crosses y=0 and the glyph top
+    # overflows by 4-10px. Shift the whole block down just enough so the top
+    # glyph's bbox clears the viewBox top with a small 2px margin.
+    top_glyph_fs = lines[-1][1] if lines else 0.0
+    # The "top of glyph" relative to baseline is fs * ~0.95 for cap-height +
+    # some vertical padding — using 1.0 is conservative but safe.
+    top_glyph_above_baseline = top_glyph_fs * 1.0
+    top_glyph_top = y_figure if y_figure is not None else y_title if y_title is not None else y_subtitle
+    if top_glyph_top is not None and (top_glyph_top - top_glyph_above_baseline) < 2.0:
+        shift = 2.0 - (top_glyph_top - top_glyph_above_baseline)
+        if y_subtitle is not None:
+            y_subtitle += shift
+        if y_title is not None:
+            y_title += shift
+        if y_figure is not None:
+            y_figure += shift
+        top_y += shift
+
     if figure_label and y_figure is not None:
+        # Halo rect under figure_label so it stays readable even if a chart's top-side foreground (rotated col labels,
+        # dendrogram, upward spikes, top-of-plot n-labels, ...) extends into the title-block vertical range.
+        if figure_label_halo:
+            halo_bg = bg
+            if not halo_bg:
+                # infer from ink: _rgb_prefix returns 'rgba(r,g,b,'
+                import re as _re_h
+
+                m = _re_h.match(
+                    r"\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)",
+                    ink or "",
+                )
+                if m:
+                    r_, g_, b_ = (float(m.group(i)) for i in (1, 2, 3))
+                    lum = 0.299 * r_ + 0.587 * g_ + 0.114 * b_
+                    halo_bg = "rgba(250,248,242,1)" if lum < 128 else "rgba(28,28,26,1)"
+                else:
+                    halo_bg = "rgba(250,248,242,1)"
+            est_w = _estimate_label_width_px(
+                figure_label,
+                figure_font_size,
+                letter_spacing_em=0.15,
+                bold=True,
+                font_family=body_font,
+            )
+            halo_pad_x = 4
+            halo_pad_y = 2
+            rx = x_left - halo_pad_x
+            ry = y_figure - figure_font_size * 0.82 - halo_pad_y
+            rw = est_w + halo_pad_x * 2
+            rh = figure_font_size * 1.05 + halo_pad_y * 2
+            halo_fill = f"{_rgb_prefix(halo_bg)}0.9)"
+            parts_top.append(
+                f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" fill="{halo_fill}" rx="2"/>'
+            )
         parts_top.append(
             f'<text x="{x_left:.1f}" y="{y_figure:.1f}" '
             f'font-family="{body_font}" font-size="{figure_font_size}" font-weight="600" '
@@ -758,6 +724,7 @@ def _render_title_block(
         parts_top.append(
             f'<text x="{x_left:.1f}" y="{y_subtitle:.1f}" '
             f'font-family="{body_font}" font-size="{subtitle_font_size}" font-weight="600" '
+            f'font-style="italic" '
             f'fill="{muted}" letter-spacing=".16em">{_xesc(subtitle)}</text>'
         )
     total_h = anchor_y - top_y
@@ -765,12 +732,7 @@ def _render_title_block(
 
 
 def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> list:
-    """
-    通用标签避让：把 N 个标签的位置微调到互不重叠。
-    labels: [(x, y, text, anchor, fontsize, axis)] —— axis 是 "x"/"y" 表示允许移动的方向
-    返回 [(new_x, new_y), ...]
-    算法：贪心迭代——每轮找出所有重叠对，按较小重叠方向微推靠后的一方，直到无重叠或达到 iterations。
-    """
+    """通用标签避让：把 N 个标签的位置微调到互不重叠。"""
 
     def bbox(x, y, text, anchor, fs):
         n_ascii = sum(1 for c in text if ord(c) < 128)
@@ -830,23 +792,13 @@ def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> li
     return positions
 
 
-# ==============================================================
 # 1) Calendar Heat 日历热力（52 × 7 天）
-# ==============================================================
 
 
 def ridge_density_from_samples(
-    samples: Sequence[float], x_min: float, x_max: float, n: int = 60, bandwidth: float = None
+    samples: Sequence[float], x_min: float, x_max: float, n: int = 60, bandwidth: float | None = None
 ) -> list:
-    """把原始样本转成等距密度值，供 make_ridge 使用。
-
-    samples:   原始样本
-    x_min, x_max: X 轴范围（所有组共享），必须一致
-    n:         输出的密度点数（默认 60）
-    bandwidth: 高斯 KDE 带宽；缺省 Silverman 规则 = 1.06 * std * n^(-1/5)
-
-    返回长度为 n 的密度值列表（严格 >= 0）。
-    """
+    """把原始样本转成等距密度值，供 make_ridge 使用。"""
     if not samples:
         return [0.0] * n
     N = len(samples)
@@ -871,183 +823,97 @@ def ridge_density_from_samples(
     return result
 
 
-# ==============================================================
 # 5) Candlestick 蜡烛图（OHLC）
-# ==============================================================
 
 
 def _fmt_num(v):
     """给节点旁边的总量标签用：整数直接显示；小数保留 1 位。"""
     if abs(v - round(v)) < 1e-9:
-        return str(int(round(v)))
+        return str(round(v))
     return f"{v:.1f}"
 
 
-def _fmt_axis(v, span):
-    """按数据 span 智能格式化数值：整数直接显示；否则按 span 大小选择合适小数位。
-    span >= 100 → 整数；span >= 10 → 1 位；span >= 1 → 2 位；否则 3 位。带千分位分隔符。
-    """
-    if abs(v - round(v)) < 1e-9:
-        try:
-            return f"{int(round(v)):,}"
-        except (OverflowError, ValueError):
-            return str(int(round(v)))
+# Digit grouping rule (library-wide): numbers below 10 000 are never grouped, so calendar years (2000, 2020) and 4-digit
+# quantities read naturally; from 10 000 upward a thousands separator is used.
+_GROUP_DIGITS_FROM = 10_000
+
+
+def _group_digits(text, grouped):
+    """Insert thousands separators into a plain fixed-point string."""
+    if not grouped:
+        return text
+    sign = "-" if text.startswith("-") else ""
+    body = text[len(sign) :]
+    whole, dot, frac = body.partition(".")
+    if not whole.isdigit():
+        return text
+    return f"{sign}{int(whole):,}{dot}{frac}"
+
+
+def _fmt_axis(v, span, *, grouped=None):
+    """按数据 span 智能格式化单个数值：整数直接显示；否则按 span 大小选择合适小数位。"""
+    v, span = float(v), abs(float(span))
+    if not math.isfinite(v):
+        return str(v)
+    magnitude = abs(v)
+    if magnitude and (magnitude < 1e-3 or magnitude >= 1e6):
+        significant = 3
+        if span > 0:
+            significant = max(significant, math.floor(math.log10(magnitude)) - math.floor(math.log10(span)) + 3)
+        return f"{v:.{min(17, significant)}g}"
+    if grouped is None:
+        grouped = magnitude >= _GROUP_DIGITS_FROM
+    if v.is_integer():
+        return _group_digits(str(round(v)), grouped)
     if span >= 100:
-        return f"{int(round(v)):,}"
+        return _group_digits(str(round(v)), grouped)
     if span >= 10:
-        return f"{v:,.1f}"
+        return _group_digits(f"{v:.1f}", grouped)
     if span >= 1:
-        return f"{v:,.2f}"
-    return f"{v:,.3f}"
+        return _group_digits(f"{v:.2f}", grouped)
+    decimals = max(3, -math.floor(math.log10(span)) + 1) if span > 0 else 3
+    return _group_digits(f"{v:.{min(15, decimals)}f}".rstrip("0").rstrip("."), grouped)
 
 
-# ==============================================================
-# 9) Funnel Classic 经典梯形漏斗
-# ==============================================================
+def _tick_decimals(ticks, span=None):
+    """Smallest decimal count that writes every tick of a set exactly."""
+    values = [float(t) for t in ticks if math.isfinite(float(t))]
+    if not values:
+        return 0
+    if not span:
+        span = (max(values) - min(values)) or max(abs(v) for v in values) or 1.0
+    tol = abs(float(span)) * 1e-6
+    for decimals in range(16):
+        if all(abs(round(v, decimals) - v) <= tol for v in values):
+            return decimals
+    return 15
 
 
-def _svg_close() -> str:
-    return "</svg>"
-
-
-# ==============================================================
-# 基础设施：自动 viewBox + 标签碰撞避让
-# ==============================================================
-
-
-def auto_layout_labels(labels, min_gap: float = 4.0, iterations: int = 40) -> list:
-    """
-    通用标签避让：把 N 个标签的位置微调到互不重叠。
-    labels: [(x, y, text, anchor, fontsize, axis)] —— axis 是 "x"/"y" 表示允许移动的方向
-    返回 [(new_x, new_y), ...]
-    算法：贪心迭代——每轮找出所有重叠对，按较小重叠方向微推靠后的一方，直到无重叠或达到 iterations。
-    """
-
-    def bbox(x, y, text, anchor, fs):
-        n_ascii = sum(1 for c in text if ord(c) < 128)
-        n_cjk = len(text) - n_ascii
-        w = n_ascii * fs * 0.7 + n_cjk * fs * 1.1
-        h = fs * 1.3
-        if anchor == "start":
-            left = x
-        elif anchor == "end":
-            left = x - w
-        else:
-            left = x - w / 2
-        return left, y - fs * 1.1, w, h
-
-    positions = [(L[0], L[1]) for L in labels]
-    N = len(labels)
-    for _ in range(iterations):
-        moved = False
-        boxes = [bbox(positions[i][0], positions[i][1], labels[i][2], labels[i][3], labels[i][4]) for i in range(N)]
-        for i in range(N):
-            for j in range(i + 1, N):
-                bi, bj = boxes[i], boxes[j]
-                ox = min(bi[0] + bi[2], bj[0] + bj[2]) - max(bi[0], bj[0])
-                oy = min(bi[1] + bi[3], bj[1] + bj[3]) - max(bi[1], bj[1])
-                if ox <= 0 or oy <= 0:
-                    continue
-                axis_i = labels[i][5] if len(labels[i]) > 5 else "y"
-                axis_j = labels[j][5] if len(labels[j]) > 5 else "y"
-                if axis_i == "y" and axis_j == "y":
-                    dy = oy + min_gap
-                    if positions[i][1] < positions[j][1]:
-                        positions[j] = (positions[j][0], positions[j][1] + dy)
-                    else:
-                        positions[i] = (positions[i][0], positions[i][1] + dy)
-                elif axis_i == "x" and axis_j == "x":
-                    dx = ox + min_gap
-                    if positions[i][0] < positions[j][0]:
-                        positions[j] = (positions[j][0] + dx, positions[j][1])
-                    else:
-                        positions[i] = (positions[i][0] + dx, positions[i][1])
-                else:
-                    if ox < oy:
-                        dx = ox + min_gap
-                        if positions[i][0] < positions[j][0]:
-                            positions[j] = (positions[j][0] + dx, positions[j][1])
-                        else:
-                            positions[i] = (positions[i][0] + dx, positions[i][1])
-                    else:
-                        dy = oy + min_gap
-                        if positions[i][1] < positions[j][1]:
-                            positions[j] = (positions[j][0], positions[j][1] + dy)
-                        else:
-                            positions[i] = (positions[i][0], positions[i][1] + dy)
-                moved = True
-        if not moved:
-            break
-    return positions
-
-
-# ==============================================================
-# 1) Calendar Heat 日历热力（52 × 7 天）
-# ==============================================================
-
-
-def ridge_density_from_samples(
-    samples: Sequence[float], x_min: float, x_max: float, n: int = 60, bandwidth: float = None
-) -> list:
-    """把原始样本转成等距密度值，供 make_ridge 使用。
-
-    samples:   原始样本
-    x_min, x_max: X 轴范围（所有组共享），必须一致
-    n:         输出的密度点数（默认 60）
-    bandwidth: 高斯 KDE 带宽；缺省 Silverman 规则 = 1.06 * std * n^(-1/5)
-
-    返回长度为 n 的密度值列表（严格 >= 0）。
-    """
-    if not samples:
-        return [0.0] * n
-    N = len(samples)
-    mean = sum(samples) / N
-    var = sum((s - mean) ** 2 for s in samples) / max(1, N - 1)
-    std = math.sqrt(var) if var > 0 else max((x_max - x_min) * 0.01, 1e-6)
-    if bandwidth is None:
-        bandwidth = 1.06 * std * (N**-0.2)
-    bandwidth = max(bandwidth, (x_max - x_min) * 1e-4)
-    step = (x_max - x_min) / (n - 1) if n > 1 else (x_max - x_min)
-    inv_2h2 = 1.0 / (2.0 * bandwidth * bandwidth)
-    coeff = 1.0 / (bandwidth * math.sqrt(2 * math.pi))
-    result = []
-    for i in range(n):
-        x = x_min + i * step
-        density = 0.0
-        for s in samples:
-            d = x - s
-            density += math.exp(-d * d * inv_2h2)
-        density = density * coeff / N
-        result.append(density)
-    return result
-
-
-# ==============================================================
-# 5) Candlestick 蜡烛图（OHLC）
-# ==============================================================
-
-
-def _fmt_axis(v, span):
-    """按数据 span 智能格式化数值：整数直接显示；否则按 span 大小选择合适小数位。
-    span >= 100 → 整数；span >= 10 → 1 位；span >= 1 → 2 位；否则 3 位。带千分位分隔符。
-    """
-    if abs(v - round(v)) < 1e-9:
-        try:
-            return f"{int(round(v)):,}"
-        except (OverflowError, ValueError):
-            return str(int(round(v)))
-    if span >= 100:
-        return f"{int(round(v)):,}"
-    if span >= 10:
-        return f"{v:,.1f}"
-    if span >= 1:
-        return f"{v:,.2f}"
-    return f"{v:,.3f}"
-
-
-# ==============================================================
-# 9) Funnel Classic 经典梯形漏斗
-# ==============================================================
+def _fmt_axis_ticks(ticks, span=None):
+    """Format a whole tick set with ONE decimal count and ONE grouping rule."""
+    values = [float(t) for t in ticks]
+    finite_values = [v for v in values if math.isfinite(v)]
+    if not finite_values:
+        return [str(v) for v in values]
+    if not span:
+        span = (max(finite_values) - min(finite_values)) or max(abs(v) for v in finite_values) or 1.0
+    span = abs(float(span))
+    grouped = max(abs(v) for v in finite_values) >= _GROUP_DIGITS_FROM
+    if any(v and (abs(v) < 1e-3 or abs(v) >= 1e6) for v in finite_values):
+        return [_fmt_axis(v, span, grouped=grouped) for v in values]
+    decimals = _tick_decimals(finite_values, span)
+    labels = []
+    for v in values:
+        if not math.isfinite(v):
+            labels.append(str(v))
+            continue
+        text = f"{v:.{decimals}f}"
+        if text.startswith("-") and not text.strip("-0."):
+            text = text[1:]  # "-0.0" → "0.0"
+        labels.append(_group_digits(text, grouped))
+    if len(set(labels)) < len(set(values)):
+        return [_fmt_axis(v, span, grouped=grouped) for v in values]
+    return labels
 
 
 _SVG_LIB_VARIANTS = {
@@ -1058,7 +924,7 @@ _SVG_LIB_VARIANTS = {
     ),
     "violin": (
         "violin",
-        ["boxplot_inner_flat", "quartile_outlined", "points_inner_flat", "half_gradient", "kde_only"],
+        ["boxplot_inner_flat", "quartile_outlined", "points_inner_flat", "half_gradient", "kde_only", "overlay"],
         "boxplot_inner_flat",
     ),
     "ridge": (
@@ -1135,8 +1001,7 @@ _SVG_LIB_VARIANTS = {
 
 
 def _variant_is_classic(slug, variant):
-    """是否走 baseline make_<slug>()：variant is None, "", "classic"。
-    否则必须是 _SVG_LIB_VARIANTS[slug] 支持的骨架名，未支持则 raise。"""
+    """是否走 baseline make_<slug>()：variant is None, "", "classic"。否则必须是 _SVG_LIB_VARIANTS[slug] 支持的骨架名，未支持则 raise。"""
     if variant is None or variant == "" or variant == "classic":
         return True
     if slug not in _SVG_LIB_VARIANTS:
@@ -1165,33 +1030,19 @@ def _dispatch_to_svg_lib(
     height=None,
     **kwargs,
 ):
-    """调用 svg_lib.charts.<mod>.draw_<mod>(data, variant, palette, ...) 并返回 SVG 字符串。
-
-    slug: 原 skill 的 chart slug（例如 "boxplot"、"population_pyramid"）
-    variant: svg_lib 里的变体名，必须在 _SVG_LIB_VARIANTS[slug][1] 里
-    data: svg_lib 的 data dict（每个 chart 有自己的 schema，见 chart_help）
-    其余参数尽量沿用 make_* 的通用参数
-    """
+    """调用 svg_lib.charts.<mod>.draw_<mod>(data, variant, palette, ...) 并返回 SVG 字符串。"""
     import importlib
+    import inspect
 
     if slug not in _SVG_LIB_VARIANTS:
         raise ValueError(f"chart '{slug}' has no svg_lib variants")
     mod_name, supported, _def = _SVG_LIB_VARIANTS[slug]
     if variant not in supported:
         raise ValueError(f"chart '{slug}' variant '{variant}' not supported. Choose one of: {supported}")
-    # 动态 import svg_lib 模块
-    try:
-        mod = importlib.import_module(f"svg_lib.charts.{mod_name}")
-    except Exception:
-        # scripts/ 下能直接 import
-        import sys, os
-
-        _scripts_root = os.path.dirname(os.path.abspath(__file__))
-        if _scripts_root not in sys.path:
-            sys.path.insert(0, _scripts_root)
-        mod = importlib.import_module(f"svg_lib.charts.{mod_name}")
-
+    # Import errors inside a renderer must remain visible to the caller.
+    mod = importlib.import_module(f"{__package__ or 'svg_lib'}.charts.{mod_name}")
     draw_fn = getattr(mod, f"draw_{mod_name}")
+    draw_parameters = inspect.signature(draw_fn).parameters
 
     call_kwargs = {"data": data, "variant": variant}
     if palette is not None:
@@ -1207,25 +1058,27 @@ def _dispatch_to_svg_lib(
         call_kwargs["title"] = title
     if subtitle is not None:
         call_kwargs["subtitle"] = subtitle
-    if figure_label is not None:
-        # svg_lib 里少数 draw 接受 figure_label（如 boxplot）；其余忽略
-        try:
-            import inspect as _inspect
-
-            if "figure_label" in _inspect.signature(draw_fn).parameters:
-                call_kwargs["figure_label"] = figure_label
-        except Exception:
-            pass
+    if figure_label is not None and "figure_label" in draw_parameters:
+        call_kwargs["figure_label"] = figure_label
+    for key, value in kwargs.items():
+        if value is None:
+            continue
+        if key not in draw_parameters:
+            raise TypeError(f"{slug} variant {variant!r} does not support {key!r}")
+        call_kwargs[key] = value
+    if font_family and "font_family" in draw_parameters:
+        call_kwargs["font_family"] = font_family
     # font_family 处理（两步）：
     # 1. 显式替换 svg_lib 里常见的 Inter/Georgia 字体
     # 2. 兜底：直接在 <svg ...> 根元素上加 font-family="..."（SVG 子元素继承）
     #    不使用 <style>，因为 embed_svg_validator 把 <style> 列为 forbidden_elements。
     svg = draw_fn(**call_kwargs)
     if font_family:
-        svg = svg.replace('font-family="Inter, sans-serif"', f'font-family="{font_family}"')
-        svg = svg.replace("font-family='Inter, sans-serif'", f"font-family='{font_family}'")
-        svg = svg.replace('font-family="Georgia, serif"', f'font-family="{font_family}"')
-        svg = svg.replace("font-family='Georgia, serif'", f"font-family='{font_family}'")
+        escaped_font = _xesc(font_family)
+        svg = svg.replace('font-family="Inter, sans-serif"', f'font-family="{escaped_font}"')
+        svg = svg.replace("font-family='Inter, sans-serif'", f'font-family="{escaped_font}"')
+        svg = svg.replace('font-family="Georgia, serif"', f'font-family="{escaped_font}"')
+        svg = svg.replace("font-family='Georgia, serif'", f'font-family="{escaped_font}"')
         # 在 <svg ...> 根元素上注入 font-family 属性（若尚未存在）。
         # 双引号内可能包含内部单引号（例如 "PingFang SC, sans-serif"），需转义为 &quot;
         import re as _re

@@ -441,7 +441,11 @@
 
 ### chart
 
-图表语法必须阅读 [slides_chart_demo.xml](slides_chart_demo.xml)，直接照抄其中的柱状、条形、折线、面积、饼（环）、雷达、组合图。这些是原生 `<chart>` 支持的类型。
+支持的原生 `<chart>` 类型包括：`column`（柱状图）、`bar`（条形图）、`line`（折线图）、`area`（面积图）、`pie`（饼图 / 环形图）、`radar`（雷达图）、`combo`（组合图）、`bubble`（气泡图）、`waterfall`（瀑布图）和 `pareto`（帕累托图）。
+
+图表语法必须先调用 `scripts/slides_chart_tool.py get <id-or-keyword>` 获取对应类型的 XML 片段，再照抄工具输出中的语法。
+
+- 支持一次传入一个或多个 ID / 关键词（中文关键词也可）。批量示例（一次获取 5 类图表）：`python3 scripts/slides_chart_tool.py get column 折线图 pie 雷达图 area`。
 
 **子元素**
 
@@ -450,11 +454,12 @@
 
 **注意事项**
 
-- 需要使用到树状图时优先走 `scripts/gen_svg_relations.py`，支持范围以 `relation_help()` / CLI `--list` 的实时输出为准；用 atomized 输出得到可编辑 `<shape>` / `<line>` / `<shape type="custom">` / 文本框。只有不在支持清单内的简单树状结构，才手写 `<shape>`+`<line>` 组合模拟；节点旁配 `<shape type="text">` 标注文字（不要塞进小节点里），线条止于节点边缘。
+- 需要使用到树状图时优先走 `scripts/gen_svg_relations.py`，支持范围以 `relation_help()` / CLI `--list` 的实时输出为准；用 atomized 输出得到可编辑 `<shape>` / `<line>` / `<shape type="custom">` / 文本框。自定义机制、流程和实验设计使用手写 SVG，再调用 `atomize_svg_to_slide`，保留文字、节点和连线的编辑能力；节点旁配 `<shape type="text">` 标注文字（不要塞进小节点里），线条止于节点边缘。
 - 环形图不是独立类型：它就是 `<chartPlot type="pie">` 再给 `<chartSectors>` 设 `innerRadius`（如 `innerRadius="0.55"`）挖空中心得到的——**没有 `type="doughnut"` 或 `donut` 这种类型**，画环图照抄范例里「环形图 · Donut」那页即可。
 - 隐藏 `<chart>` 的图例只能通过不写或删除 `<chartLegend>` 实现，`<chartLegend>` 不支持 `position="none"`（`position` 只有 `top` / `bottom` / `left` / `right`）。
 - `<chartLabel>`（单数，放 `<chartAxis>` 内）是坐标轴刻度标签；`<chartLabels>`（复数，放 `<chartPlot>` 全局或 `<chartSeries>` 单系列内）是数据标签，在柱 / 点 / 扇区上直接显示数值（常用属性 `position` / `value` / `category` / `percentage` / `format`）。两者别写反。`category` / `value` / `percentage` 至少一项为 `true`（默认仅 `value`）；`format` 用 Excel 数字格式码，如 `0`、`0%`、`#,##0.00`；单位要写进 `format` 时，格式码里的字面文本用双引号包（如 `0"bp"`），但直接写进 XML 属性会和属性外层双引号冲突、破坏 XML，必须改用单引号包属性值 `format='0"bp"'`，或把内层引号转义成 `format="0&quot;bp&quot;"`。
 - `<chartLabels>` 的 `position` 按图表类型选：折线 / 散点用 `auto`（别用 `right`，会压线或出框）；柱状用 `top` 或 `inside`；饼 / 环用 `outside`。
+- 如果某些 chart 语法未生效，可能是图表美化机制覆盖了相关设置。
 - **标注图表上某个关键数据点 / 节点**（如折线的阶段性低点、反弹点），不要用 `<shape type="text">` 浮在绘图区上——文字盒会压到图表区，必触发 `bbox_overlap`。正确做法：优先在图表外的右侧 / 下方文字区用文字描述该节点，或给该系列开 `<chartLabels>` 只显示数值；确需就地标注时给 `<chart>` 预留上 / 下方专用标注带（缩小 chart 高度腾出空间），标注文字放在 chart 边界之外。
 - `<chartColorTheme>` 只接受纯色 `<color value="rgb(...)"/>` / `rgba(...)`，**不支持渐变**（`linear-gradient` 等只对 `<shape>` 的 `<fill>` 有效）。想要渐变视觉的柱 / 面，用 `<shape>`+`<fill linear-gradient>` 自绘，或接受纯色。
 - 详细用法见 [slides_xml_schema_definition.xml](slides_xml_schema_definition.xml)。
@@ -462,11 +467,7 @@
 
 ### embed
 
-> ⚠️ **反常识**：与 PPT/Keynote（只能导入位图）不同，本 skill 通过 `<embed>` **原生嵌入内联 `<svg xmlns=...>...</svg>` 字符串**——不用转位图、不用导出、不用上传附件；
-
-`<embed>` 是画专业 svg 图（2×2 象限、桑基、小提琴、日历/矩阵热力、山脊、K 线、箱线、经典漏斗、百人网格、瀑布、甘特、人口金字塔、马赛克）的正式通道；当用户要求生成美观、专业或高级的 PPT 时，请你选用这些高级图表
-
-> 树状图例外：`scripts/gen_svg_relations.py` 的支持范围以 `relation_help()` / CLI `--list` 的实时输出为准。在正式 Slides 页面中必须优先用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出可编辑 `<shape>` / `<line>` / `<shape type="custom">` / 文本框，且树状图区域不得残留 `<embed>`。不要把整块 `make_relation(...)` SVG 套进 `<embed>` 当作树状图主体，除非用户明确接受不可编辑插图。
+`<embed>` 在页面里内联一段 `<svg xmlns=...>...</svg>`（不用转位图、不用上传）。**图表、树状图、示意图不要手写 embed**：数据图用 `chart_slide(...)`，树状图用 `make_relation_atomized(..., strict_no_embed=True)`，示意图用 drawing 库 `d.to_slide(...)`，写法见 [`svg-writing-guide.md`](svg-writing-guide.md)；它们会把文字转成原生文本框、同色色块转成原生形状，只把线、渐变等留在局部 embed。只有确需手写一段 SVG 时才按本节写。
 
 **属性**
 
@@ -477,47 +478,33 @@
 
 **子元素**：必需一个 `<svg xmlns="http://www.w3.org/2000/svg">...</svg>` 根元素；`<reflection>` / `<shadow>` / `<softEdge>` 可选。
 
-**注意事项**
+**手写 SVG 的硬规则**
 
 - **`xmlns` 必写**：否则服务端不识别为 SVG 命名空间，内容被丢弃。
-- **`viewBox` 必给且要包住所有元素**：文字要按 font-size×字符数估算宽度、按 rotate 旋转四角算 bbox 后再决定 viewBox。手写 SVG 时 `from scripts.gen_svg_charts import _wrap_with_auto_viewbox, auto_layout_labels` 分别自动算 viewBox 和多标签避让；生成器输出已内置。
-- **换色走 `palette` 参数，不要用字符串替换**：所有 `make_*(...)` 函数（生成器）都接受 `palette=` 参数，值可以是 name 字符串（如 `'archive_ink'`, `'sapphire_dev_bright'`）也可以是 dict（含 `ink / accent / secondary / bg / muted`，可选 `series`）。想统一 chart 颜色到设计系统时**直接传 palette**，不要手工去 SVG 里 sed。可用 palette 名清单见 `scripts/svg_lib/svg_palettes.py` 里的 `PALETTES` 与 `STYLE_PALETTES` / `STYLE_PALETTES_BRIGHT`；场景对应哪些 palette 见 `style/<scene>.md`。个别 chart 还有专用参数：`make_funnel_classic(primary_rgb=(r,g,b))`、`make_marimekko(accent_rgb=(r,g,b))`、`make_candle(color_convention='cn'|'us')`。
+- **`viewBox` 必给且要包住所有元素**：文字按 font-size×字符数估算宽度、按 rotate 旋转四角算 bbox 后再决定 viewBox；可用 `from scripts.gen_svg_charts import _wrap_with_auto_viewbox, auto_layout_labels` 自动算 viewBox 和多标签避让；生成器输出已内置。
+- **viewBox W:H = embed width:height**（差异 <1%），在可用区里等比缩放：
+  ```python
+  vx, vy, vw, vh = current_viewbox
+  scale = min(available_width / vw, available_height / vh)
+  embed_width, embed_height = vw * scale, vh * scale
+  ```
+  缩放后检查实际字号：目标 14pt、缩放 0.8 时 SVG 里至少写 18；过小时调整画布或可用区域，只给 viewBox 加空白再缩回同一区域不会改善可读性。
+- **颜色写 `#RRGGBB`，半透明用 `fill-opacity` / `stroke-opacity` / `stop-opacity`**，不写 `rgb()` / `rgba()`：PowerPoint 会丢掉 SVG 内 `rgba()` 的透明度，浅色块变深色块。生成器（`make_*`、`make_relation`）的输出已自动转换；手写 SVG 自己按此写，或交付前用 `from scripts.svg_lib._color_compat import office_safe_svg` 转一次。本条只针对 `<svg>` 内部；slide XML 的 `fillColor` / `color` 仍按协议用 `rgba()`。
+- **底缘不越过 y=476**：960×540 画布页脚线在 y=486，`topLeftY + height ≤ 476`。
+- 图注放在图下方居中；数值标签保留有效精度与单位。
 
 **示例**
 
 ```xml
 <embed topLeftX="240" topLeftY="168" width="500" height="280">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 224">
-    <path d="M 40 180 Q 200 20 360 180" fill="none" stroke="rgba(28,28,26,1)" stroke-width="2"/>
-    <text x="200" y="200" text-anchor="middle" font-size="12" fill="rgba(28,28,26,1)">峰值 116</text>
+    <path d="M 40 180 Q 200 20 360 180" fill="none" stroke="#1C1C1A" stroke-width="2"/>
+    <text x="200" y="200" text-anchor="middle" font-size="12" fill="#1C1C1A">峰值 116</text>
   </svg>
 </embed>
 ```
 
-**查看范例**：数据型 SVG chart 动手前先跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到全部总览（场景/函数/调用示例/关键坑），或用 `chart_help('sankey')` 拿单张详情。需要使用到树状图时先跑 `python3 -c "from scripts.gen_svg_relations import relation_help; print(relation_help())"`，单张用 `relation_help('<slug>')`；正式 Slides 使用 atomized 输出，不套 `<embed>`。
-
-#### SVG 高级图硬性契约
-
-改写 `<embed>` 内的 SVG 图时必须遵守，否则会文字变形、拉伸、图形被压扁：
-
-1. **viewBox W:H = embed width:height**（差异 <1%）。反例：`viewBox="0 0 620 280"`（≈2.21:1）配 `<embed width="640" height="300">`（≈2.13:1）——文字被横向拉伸。
-2. **横向 N 项类图种 viewBox 宽高比不得超过 2:1**（K 线、箱线、Sankey 生成器原始输出常 ~3:1 会被压扁）。修法是给 viewBox 上下加对称 padding：
-   ```python
-   vx, vy, vw, vh = current_viewbox
-   new_vh = vw / 2.0
-   new_vy = vy - (new_vh - vh) / 2
-   ```
-   embed 同步 2:1（推荐 512×256）。SVG 内容坐标不用改。
-3. **数值标签禁用宽松格式化**：禁 `{:g}` / `str(float)` / `repr(float)` 直落 `<text>`（会输出 `16.0090`）；Y 轴按量级选整数步长（5-35 用 5、2200-3000 用 100），数据点固定 `f"{v:.1f}"` 或 `int(round(v))`。
-4. **优先复用生成器**：数据型 SVG chart 全部有对应 `make_*` 函数（见 `gen_svg_charts.py`），一律走生成器；`chart_help()` 拿总览、`chart_help('<slug>')` 拿单张详情。需要使用到树状图时走 `gen_svg_relations.py`，用 `relation_help()` / `relation_help('<slug>')` 看格式，正式 Slides 必须 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized`。
-
-**embed 底缘硬约束**：飞书 960×540 画布页脚线在 y=486，**embed 底缘（topLeftY + height）不得越过 y=476**（保留 10px 呼吸区）。带自身 footer 的图种（percent_grid、ridge 末排）尤其容易超线，建议 `embed_h = min(embed_h_theoretical, 476 - embed_y)` 兜底。
-
-**样式覆盖**：`make_*` 缺省视觉是 Lupi 编辑体（米白 `rgba(245,242,235,1)` + 赭石 accent `rgba(163,88,50,1)` + 思源宋体）。**进入具体设计系统时首选传 `palette=` 参数换色**（见上文"换色走 palette 参数"）：把该场景推荐的 palette 名直接传给 `make_*(...)`，函数会自动切换背景、ink 主色、accent、series 色板。字体统一走 `font_family=` 参数（全局字体）；深底/浅底选择跟 palette 走（如 `nightlab_bright` 是深靛底、`sapphire_dev_bright` 是白底）。左图右字版式、KEY TAKEAWAY 侧栏结构、embed 位置计算、SVG 内数据形态由 `make_*` 内部处理，不用手改。
-
-数据型 SVG chart 的调用示例、参数、坑、viewBox 尺寸都在 `chart_help('<slug>')` 里；SVG 内容和整页 embed 位置计算沿用 `chart_help` 输出的示例即可。树状图的调用示例和数据结构在 `relation_help('<slug>')` 里；其输出应按 atomized fragment 合并到 slide `<data>`。
-
-**图注居中**：svg 图表的边缘与视觉边缘不一定一致，所以图注所在位置尽量在 svg 图的下方居中位置
+**图表换色与字体**：传 `palette=`（name 字符串或 dict，清单见 `scripts/svg_lib/svg_palettes.py`，场景推荐见 `style/<scene>.md`）和 `font_family=`，不要对 SVG 做字符串替换。
 
 #### SVG 图页版式思路
 
@@ -525,7 +512,7 @@
 
 - **导航顶栏**：告诉读者这是第几章的第几页；一行小字全大写英文 + 章节编号，字号最小、颜色最浅，不抢戏。
 - **判断句主标 + 数据链副标**：主标必须是陈述句、给出判断（"5B 市场我们只需 0.024% 就够 Y1"），不写空洞短语（"市场分析"）；副标用 `→` 或 `·` 串起来的数据链，短且可核验（"TAM 5B → SAM 500M → SOM 50M → Y1 booked $1.2M"）。
-- **一张或多张 embed 图**：每张必配一个 `FIGURE N · 短标签` 小字 caption（Figure 编号 + 一个语义标签），紧贴图的下方或上方。
+- **一张或多张 embed 图**：每张必配一个 `图 N · 短标签` 小字 caption（中文 deck 用“图 N”，英文 deck 才用 `Figure N`），用原生文本写在图的下方或上方；不要再给图表传 `figure_label`，图表库默认不画 FIGURE 编号，避免图内英文 chrome 与页面 caption 重复。
 - **结论卡带 / 编号驱动力**：图下方的“图解释”。要么是 2-4 个等分并列的短结论卡（大数字 + 一句解读），要么是 `01/02/03` 编号项目符 + 加粗小标 + 一段解读；替代传统 bullet。
 - **来源行 + 页脚**：底部一条极细分隔线之上，左置来源和口径（"来源：欧睿 2024 · 财务口径..."），右置章节位置标（"Strategy · 竞争分析 · 01"）。
 
@@ -541,7 +528,7 @@
 - **每张 embed 图必配 caption**：孤立铺图 = 图仅装饰、不承载判断。
 - **每页必有来源行**：缺来源 = 数据可信度归零。
 - **主标必为陈述句**：不写"市场分析"，写"5B 市场我们只需 0.024%"。
-- **骨架统一**：一份 deck 里 chart 尽量只用一种 variant，保持视觉一致，每个 variant 的选择可以参考每个具体的 style 中的推荐，骨架变体全清单跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 查看。
+- **骨架统一**：一份 deck 里 chart 尽量只用一种 variant，保持视觉一致，每个 variant 的选择可以参考每个具体的 style 中的推荐，所选图的骨架变体在 `chart_help('<slug>')` 中按需查看。
 - **palette选择**：palette 与 slide 背景底色**保持相同或相近**，否则图看着像贴纸。每个 `make_*` 调用**统一传** `palette='xxx'`（下方示例已带），换 palette 就换一个字符串即可。
 - **字号 / 字体**：统一走 `font_family=` 参数，与 slide 正文字体一致。
 - **明亮版**：加 `_bright` 后缀（`archive_ink_bright` 等），accent 更饱和、更适合投屏演示；白底除外（`sapphire_dev_bright` 那种白底提亮会刺眼，不推荐）。

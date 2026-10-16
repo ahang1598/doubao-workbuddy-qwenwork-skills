@@ -21,7 +21,7 @@
 ```
 
 - 图表为 inline；纯图表段落可投影为顶层简写。
-- 新建省略 `id`，使用 `chart_data_create` 返回的 `data-id`；更新保留 Fetch 返回的 `id` 和 `data-id`。
+- 新建省略 `id`，使用 `chart_data/action=create` 返回的 `data-id`；更新保留 Fetch 返回的 `id` 和 `data-id`。
 - `width` / `height` 只接受 `16pt..1584pt`。
 - 图表固定为 inline，不支持浮动或 anchor，也不能含子节点。
 - 图表 JSON 不写进 XML。
@@ -110,7 +110,7 @@ radar 不接受 Cartesian `axes`。隐藏标签或网格线时，不要继续携
 - `fill_opacity/line_opacity` 只接受 `0|0.1|0.3|0.5|0.7|0.9|1`。`points` 长度必须与
   `values` 一致，未覆盖的位置写 `{}`；全空数组会规范化为缺席。
 
-这些字段已有 Word 编辑或渲染能力，应优先用 `chart_data_replace`，不要仅因主题色、雷达形状/填充、
+这些字段已有 Word 编辑或渲染能力，应优先用 `chart_data/action=replace`，不要仅因主题色、雷达形状/填充、
 逐系列/逐点样式、圆环孔径、扇区边框/分离/起始角、图表边框、默认文字或副标题样式直接回退
 OOXML。更新时必须以 Fetch 返回的完整 canonical 数据为底稿，只修改目标字段，避免覆盖其它已支持样式。
 

@@ -42,7 +42,7 @@ lark-cli slides +add-slide --presentation "$PID" --slide @page3.xml --dry-run
 | `--presentation` | 是 | `xml_presentation_id`、`/slides/` URL 或 `/wiki/` URL |
 | `--slide` | 是 | 一个完整的 `<slide>...</slide>` 文档；支持字面量、`@file`、stdin `-` |
 | `--before-slide-id` | 否 | 插到该 `slide_id` 之前；**不传就是追加到末尾** |
-| `--revision-id` | 否 | 演示文稿版本号，默认 `-1`（最新）；传具体版本号做乐观锁 |
+| `--revision-id` | 否 | 演示文稿版本号，默认 -1 表示最新版本。指定版本号不应被视为已确认的并发保护；写入前仍须回读目标页，发现变化时重新合并修改。 |
 | `--dry-run` | 否 | 打印将要发起的请求（含图片上传步骤），不写入 |
 | `--no-lint` | 否 | 跳过服务端版式校验（默认开启）；只能在当前页已被拦、完整报告已读完且符合[单页例外规则](../workflow/validation-xml.md)时单独使用，禁止多页共用或自动重试附加 |
 

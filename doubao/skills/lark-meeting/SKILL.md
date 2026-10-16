@@ -95,7 +95,7 @@ Calendar 日程 ──meeting_note────────────► Doc（
 
 ### 查询进行中的会议或关联录音的内容
 
-**注意**：如果会议在进行中且有关联录音，直接用 `lark-cli vc +meeting-events` 获取录音内容，不要使用其他方式。
+**注意**：如果会议在进行中，或用户当前处于会议侧边栏，直接用 `lark-cli vc +meeting-events` 获取会中内容，不要使用其他方式；会议有关联录音时同样用该命令获取录音内容。
 
 ```bash
 # 当前用户所在会议
@@ -111,13 +111,14 @@ lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
 
 同时有多场会议时，需要先选择要查询的会议；只有一场会议时，直接查询该场会议的会议事件。返回空不代表当前用户没有在开会，只能说明没有找到该接口可发现的进行中会议。
 
-当用户在会议中时，优先使用会中事件回答用户的问题。
+当用户在会议中或处于会议侧边栏时，优先使用会中事件回答用户的问题。
 
 ## 场景手册
 
 当任务目标与场景匹配时，阅读对应的场景手册，按流程执行任务。
 
 - [查询会议及其产物](scenes/query-meeting-and-artifacts.md)：按主题、时间、参会人或 `meeting_id` / `meeting_no` / `event_id` 定位历史会议；查询参会人、录像和会议关联的智能纪要或妙记；基于会议记录总结或复盘；查询会后群聊，或已有 `meeting_id`、未说明会议状态时只读查询当前绑定。
+- [查询当前用户录音列表](references/lark-recording-list.md)：没有会议标识、需要列出自己的录音或按时间筛选录音时，使用 `recording +list`；通过录音关联的产物标识继续读取妙记或纪要。
 - [查询妙记及其产物](scenes/query-minutes-and-artifacts.md)：已有妙记 URL / `minute_token`，或按标题、所有者、参与者搜索妙记；读取总结、待办、章节、关键词、逐字稿，下载原始音视频，或查询关联智能纪要。
 - [生成和修改妙记、管理妙记权限](scenes/create-and-edit-minutes.md)：将本地音视频生成妙记、逐字稿、总结、待办或章节；修改妙记标题、总结、待办、关键词或说话人；申请妙记权限，或查看、分配妙记协作者权限。
 - [查询智能纪要及关联产物](scenes/query-note-and-artifacts.md)：已有 `note_id`、智能纪要 Docx URL/token，或需要查询纪要正文、逐字稿、妙记和共享文档等关联产物。
@@ -131,6 +132,7 @@ lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
 | `vc +search` | 搜索历史会议 | [lark-vc-search](references/lark-vc-search.md) |
 | `vc +detail` | 查询会议信息、可选 Chat 绑定及关联的 Note、Minutes 标识 | [lark-vc-detail](references/lark-vc-detail.md) |
 | `vc meeting get` | 查询会议基础信息和参会人快照 | `lark-cli vc meeting get --help` |
+| `recording +list` | 分页查询当前用户录音及关联产物 | [lark-recording-list](references/lark-recording-list.md) |
 | `vc +recording` | 从会议定位录制及妙记 | [lark-vc-recording](references/lark-vc-recording.md) |
 | `vc +meeting-recording-start` | 开始当前会议录制 | [lark-vc-recording-control](references/lark-vc-recording-control.md) |
 | `vc +meeting-recording-stop` | 停止当前会议录制 | [lark-vc-recording-control](references/lark-vc-recording-control.md) |

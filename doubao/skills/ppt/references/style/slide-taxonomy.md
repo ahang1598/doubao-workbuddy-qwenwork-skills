@@ -108,9 +108,15 @@
 
 
 ## 图表选型通用规则
-- **大原则是：优先用原生图表、然后是 shape 组合，最后是 svg 图表**
-- **可以使用原生图表来表示的图表**： 原生 `<chart>`**：柱形 / 条形 / 折线 / 阶梯 / 面积 / 饼 / 雷达 / 组合。照抄范例 [`../xml/slides_chart_demo.xml`](../xml/slides_chart_demo.xml)；具体视觉规格（配色、去除默认装饰、数据标签、坐标轴）以所选场景文档为准。
-- **可以使用 shape 组合来生成的图表**：使用 shape 组合来进行支持，包括：气泡、瀑布、矩形树状、甘特、直方、子弹、金字塔、韦恩图这些，可以直接使用 shape 间的组合来实现图表展示
-- **用户要的是专业、好看、高端的 PPT 并且原生图表、shape组合对这种数据展示不够专业时**：走 svg 专业图表：**动手前先跑** `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿完整调用范式总览（也可 `chart_help(slug)` 拿单张详情；本场景偏好哪几张见对应场景文档「常用 SVG 图」。
-- **需要使用到树状图** → SVG 树状图：**动手前先跑** `python3 -c "from scripts.gen_svg_relations import relation_help; print(relation_help())"`；支持范围以当前 manifest 为准，不在文档中硬编码。正式 Slides 必须用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出可编辑元素，树状图主体不得用 `<embed>`。
-- **并列要点、单一数字、纯文字论证 → 不用图**：走所选场景文档的排版语言（大数字、极细线段、字号差、留白），不为了"有图"硬塞。
+- **大原则是：除非具体的 style 文档有提及优先级，否则优先用原生图表、然后是 shape 组合，最后是 svg 图表**
+
+### 四类工具的分工
+
+1. **原生 `<chart>`** — 柱 / 条 / 折线 / 阶梯 / 面积 / 饼 / 雷达 / 组合。必须先用 [`../../scripts/slides_chart_tool.py`](../../scripts/slides_chart_tool.py) 获取对应 XML 片段，再照抄工具输出;视觉规格以所选场景文档为准。**优点:数据和样式都是 Slides 对象可直接编辑。** 这是绝大多数商业/通用场景的默认。原生图表截图检查时，如果发现有一些问题存在的话，应该尝试进行优化，而不是简单的切换成 shape 或 svg 类型。
+
+2. **SVG 图表库** — `chart_help()` 提供简明条件与名称索引，`chart_help('<slug>')` 查签名；`chart_slide(slug, x=, y=, width=, height=, **kwargs)` 按框尺寸出图并返回半可编辑片段（文字原生、同色色块可整体换色）。适用于有数据支撑的专业表达；改内容要回去改 kwargs 重跑。普通趋势不能换成归因，均值 ± SEM 不能换成效应量 + CI。
+
+3. **SVG 关系库** — 树 / 层级 / 分类 / 鱼骨 / 流程 / 组织架构。`relation_help(...)` 看 slug;正式 Slides 必须用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出可编辑元素,**树状图主体不得用 `<embed>`**。
+
+4. **drawing 库 / 手写 SVG + atomize** — 原生 chart 做不到也不属于关系库的自定义示意图 / 概念图 / 装饰图形。规则见 [`../xml/svg-writing-guide.md`](../xml/svg-writing-guide.md)。
+

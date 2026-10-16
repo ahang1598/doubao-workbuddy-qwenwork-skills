@@ -1,4 +1,4 @@
-# docs +local-update：公共更新契约
+# lark-cli docs +local-update：公共更新契约
 
 先按下方导航完整读取公共契约，再读取本次命令及所涉对象的规则，不连带加载其他命令示例。
 
@@ -8,7 +8,7 @@
 
 **公共必读**：[前置条件](#前置条件)、[内容格式与输入](#内容格式与输入)、[参数](#参数)（含 revision 规则）、[通用指令速查](#通用指令速查)、[返回值与验证](#返回值与验证)的正文、[安全与能力边界](#安全与能力边界)。出现 warning / `partial_success` 时，继续操作前完整读取 [warnings 的格式](#warnings-的格式)并按恢复流程核验。
 
-**命令按需**：`str_replace` 读取其[完整小节](#str_replace唯一文本替换)；block 与表格操作加读[寻址表](#可寻址标签与可用命令)和 [ID 生命周期](#block-id-生命周期)，通用 block 操作再读[指令示例](#通用指令示例)中对应命令的完整小节。`append` 同时读取 `block_insert_after` 小节中的新增格式规则。领域命令直接进入下表专项，不读取无关 block 示例。
+**命令按需**：`str_replace` 读取其[完整小节](#str_replace纯文本替换)；block 与表格操作加读[寻址表](#可寻址标签与可用命令)和 [ID 生命周期](#block-id-生命周期)，通用 block 操作再读[指令示例](#通用指令示例)中对应命令的完整小节。`append` 同时读取 `block_insert_after` 小节中的新增格式规则。领域命令直接进入下表专项，不读取无关 block 示例。
 
 每节读至下一同级或更高级标题；“正文”读至首个子标题，子节按导航补齐。同轮已完整读取且仍可见的内容直接复用；搜索片段、截断内容或示例不能代替完整规则。
 
@@ -17,16 +17,19 @@
 | `str_replace` 纯文本替换 | 不要求 XML 规范 |
 | block 删除 | 本页[可寻址标签与可用命令](#可寻址标签与可用命令)；含书签的 carrier 还须读取 [`canvas-doc-text.md`](../xml/canvas-doc-text.md#书签) 的只读边界 |
 | XML 内容写入 | [`canvas-doc-xml.md`](../xml/canvas-doc-xml.md) + 其中命中的能力文件 |
+| 已有普通块级内容控件的 children | [`canvas-doc-content-control.md`](../xml/canvas-doc-content-control.md)；使用完整控件 `block_replace` |
 | 表格命令或单元格替换 | [`canvas-doc-update-table.md`](canvas-doc-update-table.md) |
 | 仅设置已有段落/标题的段前分页 | XML 公共规则 + [`canvas-doc-text.md` 的段落规则](../xml/canvas-doc-text.md#按需读取)；所涉内嵌结构按并集补读 |
 | 独立分页符、块内分页、分节和页面布局更新 | [`canvas-doc-update-layout.md`](canvas-doc-update-layout.md) |
 | Field、独立题注、脚注或尾注 | [`canvas-doc-field-note.md`](../xml/canvas-doc-field-note.md) |
 | Drawing、Shape、TextBox 或文字效果 | [`canvas-doc-drawing.md`](../xml/canvas-doc-drawing.md) |
 | 插入或替换图片资源 | [`canvas-doc-media-insert.md`](canvas-doc-media-insert.md) |
-| 只改图片属性/浮动布局 | [`canvas-doc-media-insert.md`](canvas-doc-media-insert.md#4-更新现有图片属性) + [`canvas-doc-media.md`](../xml/canvas-doc-media.md)；保留原 `src`，无需上传 |
+| inline 图片属性或浮动图片的声明式属性 | [`canvas-doc-media-insert.md`](canvas-doc-media-insert.md#4-更新现有图片属性) + [`canvas-doc-media.md`](../xml/canvas-doc-media.md)；保留原 `src`，无需上传 |
 | 图表读取、新建、数据替换、尺寸或删除 | [`canvas-doc-chart.md`](canvas-doc-chart.md)；纯数据更新不写 XML |
 | 样式目录、usage、block effective 样式或样式修改 | [`canvas-doc-style.md`](canvas-doc-style.md) |
 | 水印或自动目录 | [`canvas-doc-update-domain.md`](canvas-doc-update-domain.md)；它们是领域命令，不写 XML |
+| 批注、Field、表格几何、已有浮动 image/shape 的物理操作 | [`canvas-doc-update-structured.md`](canvas-doc-update-structured.md)；先结构化读取，再回填 identity、instance 与 fingerprint |
+| 修订模式写入、修订展示、待审内容或接受/拒绝修订 | [`canvas-doc-revisions.md`](canvas-doc-revisions.md)；先核对当前 CLI 能力 |
 
 命中文件明确提供按需读取导航时，完整读取其公共与命中章节；其他文件仍完整读取。不沿索引展开全部能力；组合 XML 或必须保真的内嵌结构取对应能力的并集。禁止用在线文档 reference 补充本地 Word 语法。
 
@@ -35,13 +38,12 @@
 执行任何写操作前：
 
 1. 确认已完整读取本次路由要求的公共契约、命令章节及对象规则；没有按需读取导航的文件须完整读取。
-2. 遵循已安装 `lark-shared` Skill 的权限、JSON 信封、文件输入和高风险确认规则。
-3. 确认 `--doc` 使用 Canvas 上下文提供的 `<token>`，不是普通 `.docx` 文件路径或根据 token 外形猜出的资源类型；图片上传也复用该 token 作为 `--parent-node`，具体门禁见媒体插入专项。
-4. 按 [`写前门禁`](../workflows/canvas-doc-editing.md#第-1-步--理解任务并读取定位) 区分既有 block、新增、纯文本及领域命令。正文编辑用 `full`，包括确认 `str_replace` 匹配区间的共同格式；layout 的 `with-ids` 也包含完整样式。既有 ID 必须来自最新响应且在 owner/story 内唯一；新增对象不要求预存 ID，领域身份按专项。替换时保留全部非目标内容和属性，同轮完整且未过期的响应可复用。
+2. 遵循已安装 `lark-shared` Skill 的权限、JSON 信封、文件输入和高风险确认规则。写入还必须通过宿主统一权限门禁：普通命令使用 `body_mutation`，`comment` 使用 `comment_mutation`；comments-only 仅允许后者。权限拒绝时停止，不通过其他命令或 OOXML 绕过。
+3. 确认 `--doc` 使用当前活动文档 Canvas 上下文提供的 `<token>`，不能用其他文档的 token。图片上传也复用该 token 作为 `--parent-node`，具体门禁见媒体插入专项。
+4. 按 [`写前门禁`](../workflows/canvas-doc-editing.md#第-1-步--理解任务并读取定位) 区分既有 block、新增、纯文本及领域命令。正文编辑用 `full`，包括确认 `str_replace` 实际搜索范围内的全部匹配；layout 的 `with-ids` 也包含完整样式。既有 ID 必须来自最新响应且在 owner/story 内唯一；新增对象不要求预存 ID，领域身份按专项。替换时保留全部非目标内容和属性，同轮完整且未过期的响应可复用。
 5. block 操作核对下方寻址表的 command/content 形状。`block_replace` 必须持有该类型完整可写快照，包含必需属性、block-specific defaults、非目标子节点和适用 owner/reference graph。仅有摘要、裁剪结果、`BLOCK_REF_INCOMPLETE`、`BLOCK_ID_FABRICATED` 或缺少 defaults 时先用正确 scope/detail 补齐，不试写；领域命令不套用本条根标签条件。
 6. 根据本次操作确认目标 block ID、表格 A1 坐标或页面范围仍然有效，且插入锚点仍位于预期容器、具有预期相邻关系；任何会改变结构、坐标或分页关系的前序写操作，以及协同变化、revision 冲突、目标移动/删除之后，都要重新 fetch 并重做第 4–6 项检查。读取警告按 [CLI 编辑流程的读取警告处理](../workflows/canvas-doc-editing.md#第-1-步--理解任务并读取定位)分类，不因警告本身原样重读。
-7. 确认当前 `docs +local-update --help` 明确暴露目标 command 及参数；未暴露时不要改用在线 `docs +update`、改写 argv、跳过校验或直调私有 API。
-8. 对覆盖整块、删除、大范围表格变更、分页或布局修改，确认目标范围已由用户指令或已有确认明确授权；只有范围仍有实质歧义时才询问。当前构建支持 `--dry-run` 时优先预览请求。
+7. 对覆盖整块、删除、大范围表格变更、分页或布局修改，确认目标范围已由用户指令或已有确认明确授权；只有范围仍有实质歧义时才询问。当前构建支持 `--dry-run` 时优先预览请求。
 
 ## 内容格式与输入
 
@@ -68,40 +70,45 @@ lark-cli docs +local-update --doc "<token>" \
 | `--revision-id` | 视指令 | 图表数据指令禁止；其余见下表 | 顶层 CLI flag；选择读取 checkpoint，不能写进业务 option JSON |
 | `--content` | 视指令 | 文本/块写入、插入行列 | 新内容；`str_replace` 传空字符串表示删除匹配文本；表格插入行列可省略 |
 | `--pattern` | 视指令 | `str_replace` | 要匹配的旧文本 |
-| `--block-id` | 视指令 | block 与表格指令 | 目标 block ID；表格指令必须传表格 block ID |
-| `--table-option` | 视指令 | 7 个 `table_*` 指令 | 单层 JSON object；支持内联、`@relative-file` 或 stdin，不要双重 JSON 编码 |
-| `--chart-option` | 视指令 | 2 个 `chart_data_*` 指令 | 单层 JSON object；支持内联、`@relative-file` 或 stdin |
-| `--watermark-option` | 视指令 | `watermark_update` | 单层 JSON object；完整字段见水印与目录专项文件 |
-| `--table-of-contents-option` | 视指令 | `table_of_contents_update` | 单层 JSON object；`config`、`source` 可包含嵌套业务字段 |
+| `--block-id` | 视指令 | `str_replace`、block 与表格指令 | `str_replace` 可选，用于限定搜索范围；其他指令按各自契约，`block_delete` 可传最多 1000 个逗号分隔 ID，表格指令必须传表格 block ID |
+| `--table-option` | 视指令 | `table`、`table_geometry` | 单层 JSON object；`action` 必填；支持内联、`@relative-file` 或 stdin |
+| `--chart-option` | 视指令 | `chart_data` | 单层 JSON object；`action=create|replace` 必填 |
+| `--watermark-option` | 视指令 | `watermark` | 单层 JSON object；完整字段见水印与目录专项文件 |
+| `--table-of-contents-option` | 视指令 | `table_of_contents` | 单层 JSON object；`config`、`source` 可包含嵌套业务字段 |
+| `--comment-option` | `comment` 必填 | `comment` | 单层 JSON object；字段见结构化领域专项 |
+| `--field-option` | `field_update` 必填 | `field_update` | 单层 JSON object；字段见结构化领域专项 |
+| `--object-option` | `object` 必填 | `object` | 单层 JSON object；字段见结构化领域专项 |
+| `--revision-option` | `revision` 必填 | `revision` | 单层 JSON object；字段见修订专项 |
 | `--style-option` | 视指令 | `style_*` | 单层 JSON object；JSON 中只放业务字段 |
 
 ### revision 规则
 
 | 指令 | 顶层 `--revision-id` |
 |---|---|
-| `style_update`、`style_apply`、`watermark_update`、`table_of_contents_update` | 必填，接受 `-1` 或非负安全整数；优先使用同一轮 Fetch 返回的具体 revision |
-| `chart_data_create`、`chart_data_replace` | 禁止传入；replace 使用 `expected_data_version` |
+| `style_update`、`style_apply`、`watermark`、`table_of_contents`、`comment`、`field_update`、`object`、`table_geometry` | 必填，接受 `-1` 或非负安全整数；优先使用同一轮 Fetch 返回的具体 revision |
+| `chart_data` | 禁止传入；`action=replace` 使用 `expected_data_version` |
+| `revision` | 禁止传入；接受/拒绝使用修订查询的 `state_fingerprint`，模式/追踪控制不需要它，见[修订专项](canvas-doc-revisions.md) |
 | 其余文本、block、表格指令 | 可选；省略或 `-1` 使用最新读取 checkpoint，没有 checkpoint 时才基于当前状态；显式非负值选择对应基线 |
 
-安全整数上限为 `9007199254740991`。`-1` 选择最新读取 checkpoint，无 checkpoint 时基于当前状态；专项命令接受 `-1` 不代表可省略该 flag，也不能省略 fingerprints、dry-run 或 plan token 等专项约束。为了明确绑定写前基线，优先传入本轮 Fetch 的具体 revision。revision 是冲突检测的读取基线，不是保证任意旧 ID 仍可写的整篇版本锁；过期基线或冲突应重新 Fetch。
+安全整数上限为 `9007199254740991`。`-1` 选择最新读取 checkpoint，无 checkpoint 时基于当前状态；专项命令接受 `-1` 不代表可省略该 flag，也不能省略 fingerprints、dry-run 或 plan token 等专项约束。为了明确绑定写前基线，优先传入本轮 Fetch 的具体 revision。revision 是冲突检测的读取基线，不是保证任意旧 ID 仍可写的整篇版本锁；过期基线或冲突应重新 Fetch。修订模式下连续写入及待审保护另见[修订专项](canvas-doc-revisions.md)。
 
-`+local-update` 不接受在线文档专属参数。不要改用 `docs +update` 补齐本地协议，也不要手工构造下游请求字段。
+`+local-update` 不接受在线文档专属参数。不要改用 `lark-cli docs +update` 补齐本地协议，也不要手工构造下游请求字段。
 
-`document_id`、`format`、`command_params`、`reference_map` 等宿主内部字段不是模型可直接传入的 CLI 参数；`revision_id` 也不得写进 option JSON。样式、水印与自动目录命令要求使用当前 `--help` 暴露的顶层 `--revision-id`。模型只根据当前 `--help` 组装命令行；帮助中没有的 flag、command 或 option 不得从后端协议字段推导。
+只使用本文及命中专项明确列出的 flag、command 和 option；不要自行拼装请求。`--revision-id` 是顶层参数，不写进业务 option JSON。CLI 返回未知 command/flag 或有其他版本漂移证据时，查看受影响命令的当前 `--help` 并按恢复流程处理。
 
 ## 通用指令速查
 
 | 指令 | 说明 | 必需参数 |
 |---|---|---|
-| `str_replace` | 查找唯一文本并进行纯文本替换；`--content ''` 可删除匹配文本 | `--pattern` `--content` |
-| `block_delete` | 删除指定 block | `--block-id` |
+| `str_replace` | 替换搜索范围内全部非重叠纯文本命中；可用 `--block-id` 限定范围；`--content ''` 删除命中 | `--pattern` `--content` |
+| `block_delete` | 原子删除一个或多个 block/inline object | `--block-id` |
 | `block_insert_after` | 在指定 block 后插入一个或多个 XML block | `--block-id` `--content` |
 | `block_replace` | 用 XML 整体替换目标 block | `--block-id` `--content` |
-| `append` | 在文档末尾追加 XML 内容 | `--content` |
+| `append` | 在尾随连续分节符前追加正文 XML | `--content` |
 
-另有 7 个表格指令、2 个图表数据指令、2 个样式指令，以及水印和自动目录领域指令，按需读取专项文件。样式 `style_update/style_apply` 必须先 dry-run 再携带 plan token 提交；提交成功以 `applied=true,new_revision_id` 为准，保存由宿主正常保存链路处理。
+通用命令见上表；领域命令包括 `table`、`table_geometry`、`chart_data`、`style_update`、`style_apply`、`watermark`、`table_of_contents`、`comment`、`field_update`、`revision`、`object`。细分动作放在对应 option 的 `action`；样式必须先 dry-run 再携带 plan token 提交。
 
-**指令选择速查**：同一文本块（段落、标题或列表项）内的一处唯一纯文本修改，新文字只需继承共同格式时用 `str_replace`。需要分别保留各 span 格式、合并同块多处修改，或调整格式/结构时，用最新完整 XML 执行一次 `block_replace`。完整 XML 无法表达必须保留的结构时，不得为减少调用而整块重写。
+**指令选择速查**：纯文本替换使用 `str_replace`，新文本仅继承命中范围的共有样式；只改一个 block 时传其最新 ID 限定范围。需要保留区间内不同样式时，使用 `block_replace`。完整 XML 无法表达必须保留的结构时，不得整块重写。
 
 ## 可寻址标签与可用命令
 
@@ -110,18 +117,20 @@ lark-cli docs +local-update --doc "<token>" \
 | 标签 | `block_replace` | `block_delete` | `block_insert_after` |
 |---|---|---|---|
 | `<p>`、`<h1>`～`<h9>`、`<li>`、`<img>`、`<chart>`、`<drawing>`、`<table>` | 支持 | 支持 | 支持 |
+| 已有普通 `<content-control>` | 支持 | 不支持 | 不支持 |
 | `<td>` / `<th>` | 支持 | 不支持 | 不支持 |
 | TextBox、Note、Header/Footer story 内已由 Fetch 返回且专项允许编辑的 block | 支持 | 支持 | 支持 |
 | `<layout-break/>` | 支持 | 支持 | 支持 |
 | `<layout>` | 支持 | 不支持 | 不支持 |
 
-- 单元格是表格结构的一部分，只能整格替换内容；增删单元格用 [`table_*`](canvas-doc-update-table.md) 命令。
+- 单元格是表格结构的一部分，只能整格替换内容；增删行列、合并拆分和属性更新使用 [`table + action`](canvas-doc-update-table.md)。
 - `<layout>` 是文档级单例，只能用作 `block_replace` 目标；删除它或在它之后插入内容都没有语义。
+- 普通块级 `<content-control>` 只能整体 `block_replace` 更新 children，且必须保留原 `id`；不支持创建、删除或属性编辑。目录与页码 gallery 控件不走通用 block 命令。
 - `<tr>` 和 `<col>` 没有独立 Record，不可直接操作。
 - `<bookmark-start>` / `<bookmark-end>`、`<tabs>` / `<tab>` 是宿主段落的一部分，不是独立 command target。删除含书签的 carrier 前，必须核对 [`canvas-doc-text.md`](../xml/canvas-doc-text.md#书签) 的跨 carrier 只读边界。
 - `<page-break/>` 是行内对象，即使回读时带 `id` 也不能作为 `--block-id` 直接删除、替换或后插入；要改它必须替换所属的 `<p>`、标题或 `<li>`。
 - `<equation>` 没有 `id` 属性且不是 block；新增、修改、删除或复制公式时，使用宿主 carrier 的 block ID 和完整 XML。
-- `<field>` 和 `<note-ref/>` 是宿主文本流的一部分，不是独立 command target；修改或删除时替换完整 carrier，并按 Field/Note 专项携带所需的 detached graph。新建题注也必须一次写入完整 `<p role="caption">`，不能先建普通段落再补角色。
+- `<field>` 和 `<note-ref/>` 是宿主文本流的一部分，不是 block command target；定义修改或删除须替换完整 carrier，并按 Field/Note 专项携带所需的 detached graph。既有安全 Field 的结果刷新仅在 CLI 明示 `field_update` 时走专用命令，不把缓存写进 XML。新建题注也必须一次写入完整 `<p role="caption">`，不能先建普通段落再补角色。
 - `<notes>` 是 detached collection，`<note>` / `<textbox>` 是 story owner，不是 command target；只操作其内部 Fetch 返回的 block ID。跨 body、note、textbox、header-footer story 使用 ID 会失败。
 - `<drawing>` 虽位于宿主文本流，但拥有专用 inline-object target：更新、删除或在其后插入 Drawing 时，`--block-id` 使用最新 Fetch 返回的 drawing ID；替换 content 必须是同 ID 的单根 `<drawing>`，后插 content 必须是省略 ID 的单根 `<drawing>`。shape/textbox ID 不能作为 Drawing 命令目标；TextBox story 内部 block 的精确更新是另一条 story target 路径。
 - standalone 图片按普通 block 处理；inline 图片使用图片 record ID 作为 `block_delete`、`block_insert_after`、`block_replace` 的专用目标，插入或替换内容必须是单个 `<img>`。具体约束见 [`canvas-doc-media.md`](../xml/canvas-doc-media.md)。
@@ -137,13 +146,13 @@ lark-cli docs +local-update --doc "<token>" \
 
 ## 通用指令示例
 
-### str_replace：唯一文本替换
+### str_replace：纯文本替换
 
-`str_replace` 只支持纯文本唯一匹配和替换：`pattern` 必须在搜索范围内恰好出现一次；`content` 中的标签形似文本会按字面写入，不能用于格式化或创建公式。找不到或出现多次时都会失败；可增加同一文本块内的前后文使其唯一。它不接受 `--block-id`，也不支持 `replace_all`；需要按 Block ID 精确修改、调整格式、结构或公式时用 `block_replace`。
+`str_replace` 要求纯文本 `pattern` 至少命中一次，并在一次事务中替换搜索范围内全部非重叠命中；同一 record 内命中相互重叠则整次拒绝。`content` 中形似标签的文本按字面写入。可选 `--block-id` 将搜索范围限定为该 block；省略时搜索全文。只想修改一处时，须确认 pattern 在实际搜索范围内唯一，否则改用目标 block 的完整 XML 执行 `block_replace`。
 
-搜索从正文顶层块沿实际引用遍历文本块，包括表格、引用到的 Note/TextBox，以及分节符引用的页眉页脚；仅挂在 root page 上且未被上述链路引用的页眉页脚不在范围内。它不按最近一次 Fetch 的选区缩小范围。编辑分离 story 时，优先用所属 story 内的 block ID 精确更新；页眉页脚仍通过 layout 读取。
+省略 `--block-id` 时，搜索从 root page 正文沿实际引用遍历文本 record，包括表格及正文可达的 Note/TextBox，不沿 page/section 的 Header/Footer 槽位引用；也不按最近一次 Fetch 的选区缩小范围。传入 `--block-id` 时仅搜索该 block。需修改页眉页脚时按 layout/story 精确定位。
 
-匹配可跨同一文本块内的多个 span/run，不能跨文本块。新文字只继承匹配区间共有且可继承的格式，不继承批注、修订、提及、Field 或行内对象身份；非空替换存在不能共同继承的 mark 时返回 `COMPAT_STYLE_LOST`，具体判读见下方 warnings 说明。空字符串删除匹配文本，保留范围外内容，不因被删除范围的格式差异产生此告警。命中行内对象，或只覆盖 Field run 的一部分会报参数错误；编辑 Field 时使用专项 XML 流程，避免把域退化为普通文本。
+匹配可跨同一文本块内的多个 span/run，不能跨文本块。范围外样式保留；新文本仅继承命中范围内严格共有且可安全继承的字符样式，存在无法继承的样式时返回 `COMPAT_STYLE_LOST`。需要保留区间内不同样式时，使用 `block_replace`。只改指定 block 的纯文本时优先传 `--block-id`，避免整块重写影响书签等非目标结构。空字符串删除匹配文本，保留范围外内容。命中行内对象，或只覆盖 Field run 的一部分会报参数错误；编辑 Field 时使用专项 XML 流程，避免把域退化为普通文本。
 
 ```bash
 # 普通文本替换
@@ -152,7 +161,13 @@ lark-cli docs +local-update --doc "<token>" \
   --pattern '旧版本预计周五发布' \
   --content '新版本预计下周一发布'
 
-# 删除匹配文本
+# 仅替换指定 block 内的匹配文本
+lark-cli docs +local-update --doc "<token>" \
+  --command str_replace --block-id "<最新目标 ID>" \
+  --pattern '旧版本预计周五发布' \
+  --content '新版本预计下周一发布'
+
+# 删除全文中的匹配文本
 lark-cli docs +local-update --doc "<token>" \
   --command str_replace \
   --pattern '废弃内容' --content ''
@@ -166,7 +181,7 @@ lark-cli docs +local-update --doc "<token>" \
   --block-id "<obsolete_block_id>"
 ```
 
-`block_delete` 只接受单个 Block ID，不支持数组或逗号分隔的批量删除。
+宿主 `block_delete.block_id` 接受单个 ID，或最多 1000 个非空、唯一的逗号分隔 ID；数组和 `block_ids` 字段不支持。批量删除先验证全部目标可达、互不包含，且不能同时选结构宿主与其 inline 对象；任何目标失败整批零写入。当前 CLI 帮助确认该参数可传逗号串时才使用批量形式；回执的 `updated_blocks_count=1` 表示命令成功，不是删除数量。
 
 ### block_insert_after：插入 block
 
@@ -203,6 +218,8 @@ lark-cli docs +local-update --doc "<token>" \
 ```
 
 实际编辑以最新完整 XML 为底稿保留原 ID。单元格、列表项、图片和布局目标各有 content 形状约束，必须读取对应能力文件。
+
+宿主另有 `block_replace.block_ids`，仅用于同一 story、同一父容器、连续文本块的跨 carrier 书签边界更新，不是通用批量替换；只有 CLI 帮助暴露对应参数时才按书签规则使用。
 
 ### append：文末追加
 
@@ -245,8 +262,8 @@ lark-cli docs +local-update --doc "<token>" \
 | `document.document_id` | 被修改的本地 Word 标识 |
 | `document.new_blocks` | 当前前端 Update 实现始终返回空数组，不提供新增 record ID；新增对象必须通过写前保存的稳定锚点重新 Fetch 定位 |
 | `result` | 成功信封里只会是 `success` 或 `partial_success`。**有 warning 不等于 `partial_success`**：降级的只有 `ATTR_*`、`COMPAT_*` 以及 `REPAIR_NODE_DEMOTED`、`REPAIR_ATTR_IGNORED`；其余 `REPAIR_*` 给出 warning 但仍是 `success`。`success` 和空 warnings 不证明原格式保留；还须对照写前基线回读验收。调用失败是 `ok == false` 加错误码 |
-| `updated_blocks_count` | 命令级状态值，不是实际受影响的 block/cell 数。普通文本、XML、表格及 `chart_data_replace` 成功时固定为 `1`；纯预创建、dry-run 或无实际 mutation 的专项命令可为 `0`。不能用它推断新增、删除或跳过了多少对象，必须回读确认 |
-| `command_result` | 图表、样式、水印和目录命令的结构化结果；包含 Chart Data 版本、样式 dry-run/commit 的 `applied/new_revision_id` 及领域命令回执 |
+| `updated_blocks_count` | `str_replace` 为受影响 textual record 数，不是命中次数；其他普通 block/table 成功时通常为 `1`，不表示目标数。预创建、dry-run 或 no-op 可为 `0`；必须回读确认实际目标 |
+| `command_result` | 结构化领域结果；包含 Chart Data 版本、样式 dry-run/commit、目录/水印、批注、Field、表格几何和对象操作回执；当返回安全整数 `new_revision_id` 时，可直接作为下一次写入基线，但普通文本和 block 命令不得假定存在该字段 |
 | `warnings` | 归一化、兼容性或能力限制诊断；是否造成实际损失须结合类型和回读判断，格式见下 |
 
 按以下顺序解析响应：
@@ -276,7 +293,7 @@ REPAIR_CHILD_WRAPPED: <td>
 | `COMPAT_*`（`BLOCK_DROPPED` / `REF_INCOMPLETE` / `RESOURCE_DROPPED`） | 内容、引用或资源未完整保留。保留写前基线，按工作流合并恢复非目标内容与目标修改；不要在已降级块上只修目标属性 |
 | `COMPAT_STYLE_LOST` | 样式继承或协议表达存在限制，也可能是纯文本中的标签形似文本提醒；不单凭 code 判定实际样式丢失。按下文和恢复流程核验后决定是否修正 |
 
-**`COMPAT_STYLE_LOST` 的判读边界**：文本替换路径会比较旧范围内可继承的 mark；存在不能共同继承的 mark 且替换内容非空时即可告警，并不先检查新 XML 是否已显式补齐相关格式。`str_replace` 继承共有且可继承的格式；`block_replace` 的协议行内格式仍须在新 XML 中显式携带，不能靠原 ID 或无 warning 推断继承。
+**`COMPAT_STYLE_LOST` 的判读边界**：`str_replace` 仅继承命中范围内严格共有且可安全继承的字符样式；存在无法继承的样式时返回该告警。`block_replace` 的协议行内格式仍须在新 XML 中显式携带，不能靠原 ID 或无 warning 推断继承。
 
 该 code 也可来自读取投影或其他对象的兼容性处理。泛化英文消息不暴露具体 mark 键，不能仅凭它猜测加粗、引号、字体或作者信息是原因，也不能断言无害。告警不证明最终显示已损坏，无告警也不证明保真；必须对照写前完整基线、计划变化与写后完整回读，必要视觉检查沿用编辑流程的触发条件。
 
@@ -288,7 +305,7 @@ REPAIR_CHILD_WRAPPED: <td>
 
 - 最小更新优先：不要为改一句话覆盖整篇；完整 XML 回放及冲突处理按工作流执行。
 - CLI 返回 `confirmation_required` 时按 `lark-shared` 展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
-- 未知 command、非法 `--table-option` 已知字段、派发失败或客户端不可达时，不直调 `LocalDocxUpdate` 私有 API。先由 [恢复流程](../workflows/canvas-doc-recovery.md#标准化运行结果) 产出标准结果，再交回 [统一路由](../workflows/canvas-doc.md#路由总表唯一判定入口)；可编辑路径只能来自 `+ooxml-fetch`，不能使用 Canvas `path`。
+- 未知 command、非法 `--table-option` 字段、派发失败或客户端不可达时，不绕过 CLI 调用私有接口。先由 [恢复流程](../workflows/canvas-doc-recovery.md#标准化运行结果) 产出标准结果，再交回 [统一路由](../workflows/canvas-doc.md#路由总表唯一判定入口)；可编辑路径只能来自 `+ooxml-fetch`，不能使用 Canvas `path`。
 - 不支持在线文档的 `overwrite`、`block_copy_insert_after`、`block_move_after`。其他能力限制统一见 [`canvas-doc-editing.md`](../workflows/canvas-doc-editing.md) 与 [`canvas-doc-xml.md` 明确不支持的标签与能力](../xml/canvas-doc-xml.md#明确不支持的标签与能力)。
 
 ===== 全文完 =====

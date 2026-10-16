@@ -14,7 +14,8 @@
 | 语法类别 | 标签与属性范围 | 语法文件 |
 |---|---|---|
 | 段落与标题 | `<p>`、`<h1>`～`<h9>`；对齐、缩进、间距、行距和段落分页属性 | [`canvas-doc-text.md`](canvas-doc-text.md) |
-| 富文本与基础行内对象 | `<span>`、粗体/斜体/下划线/删除线标签及别名、`<sup>` / `<sub>`、`<br/>`、`<symbol/>`、`<equation/>`；字体、字号、颜色、底纹、字符边框 | [`canvas-doc-text.md`](canvas-doc-text.md) |
+| 富文本与基础行内对象 | `<span>`、`<a>`、粗体/斜体/下划线/删除线标签及别名、`<sup>` / `<sub>`、`<br/>`、`<column-break/>`、`<symbol/>`、`<equation/>`；字体、字号、颜色、底纹、字符边框与普通超链接 | [`canvas-doc-text.md`](canvas-doc-text.md) |
+| 普通块级内容控件 | `<content-control>`；只更新现有控件 children | [`canvas-doc-content-control.md`](canvas-doc-content-control.md) |
 | 域、题注、脚注与尾注 | `<field>`、`<p role="caption">`、`<note-ref/>`、`<notes>` / `<note>`、`<note-settings/>`；Field identity、只读结果、detached collection 与设置 | [`canvas-doc-field-note.md`](canvas-doc-field-note.md) |
 | Drawing、Shape 与 TextBox | `<drawing>`、`<shape>`、`<textbox>`；布局、几何、填充、轮廓、WordArt 与文字效果 | [`canvas-doc-drawing.md`](canvas-doc-drawing.md) |
 | 列表、制表位与书签 | `<ul>` / `<ol>` / `<li>`、`<tabs>` / `<tab/>`、`<bookmark-start/>` / `<bookmark-end/>`；`list-style-type`、`list-preset`、`marker-*`、编号层级、制表位属性与边界配对 | [`canvas-doc-text.md`](canvas-doc-text.md) |
@@ -39,6 +40,7 @@
 - `<layout>` 是文档级单例；`<layout-break/>` 只能作为 root page 的直接子节点。
 - `<bookmark-start>` / `<bookmark-end>`、`<tabs>` / `<tab>` 属于宿主段落；书签的配对和跨 carrier 只读边界见 [`canvas-doc-text.md`](canvas-doc-text.md#书签)。
 - `<page-break/>` 是宿主 `<p>`、标题或 `<li>` 内的行内对象，即使带 `id` 也不是独立 block。
+- `<column-break/>` 与分页符一样是宿主文本流内对象，不是独立 block；只在已有分栏布局中使用。
 - `<equation>` 是宿主文本流中的行内特殊对象，没有 `id` 属性，也不是 block 或独立 Record；只能通过宿主 carrier 操作。
 - `<field>`、`<note-ref/>` 和 `<drawing>` 是宿主文本流内对象；Field identity、note owner identity 和 drawing record identity 的命令目标规则见各自专项文件。
 - `<notes>` 是 detached collection，可在 Fetch 和 Update 片段中跟在正文 roots 后；它不进入正文 roots，也不是独立命令目标。写入时按 Field/Note 专项携带匹配的引用和 owner。
@@ -51,7 +53,7 @@
 ## 必填属性
 
 - 插入图片时必须提供 `<img src="..."/>`。
-- 插入图表时必须提供 `chart_data_create` 返回的 `<chart data-id="..."/>`，以及合法的 `width` / `height`。
+- 插入图表时必须提供 `chart_data/action=create` 返回的 `<chart data-id="..."/>`，以及合法的 `width` / `height`。
 - 写入页面布局时必须提供 `<layout id="...">`。
 - 插入分节符时必须提供 `<layout-break type="..."/>`。
 - 新建独立题注必须包含且只包含一个无 `id`、无 result 的 `SEQ` Field。
@@ -104,16 +106,16 @@
 - `<checkbox>`、`<callout>`、`<grid>`、`<figure>`；`<column>` 仅允许作为 `<columns>` 的子节点，不可用于正文分栏；
 - `<whiteboard>`、`<sheet>`、`<task>`、`<chat_card>`、`<sub-page-list>`、`<html5-block>`、`<okr>`；
 - `<cite>`、`<bookmark>`（在线文档标签；本地书签使用 `<bookmark-start/>` / `<bookmark-end/>`）、`<button>`、`<time>`、`<source>`、URL preview；
-- `<a>`、`<wordart>`（WordArt 使用 `<shape word-art="true">`）、`<caption>`（题注使用 `<p role="caption">`）、`<title>`、`<layouts>`、`<docx>`；
+- `<wordart>`（WordArt 使用 `<shape word-art="true">`）、`<caption>`（题注使用 `<p role="caption">`）、`<title>`、`<layouts>`、`<docx>`；
 - `<latex>` 或其他未定义公式节点；公式只使用 `<equation/>`。
 
-当前不开放文档 theme 定义与 Shape theme ref 写入（文本的 `font-family-*-theme` 可引用已有主题字体，见[文本规范](canvas-doc-text.md#富文本)）、超链接创建或修改、任意原始 Field instruction、custom geometry、geometry/warp adjustment、group/canvas、VML TextPath 写入、inline/隐藏 label 题注、对象上方题注和 Caption 全局设置。各属性级只读边界见 Field/Note 与 Drawing 专项文件。
+当前不开放文档 theme 定义与 Shape theme ref 写入（文本的 `font-family-*-theme` 可引用已有主题字体，见[文本规范](canvas-doc-text.md#富文本)）、Shape hyperlink sidecar、HYPERLINK Field 定义编辑、任意原始 Field instruction、custom geometry、geometry/warp adjustment、group/canvas、VML TextPath 写入、inline/隐藏 label 题注、对象上方题注和 Caption 全局设置。各属性级只读边界见 Field/Note 与 Drawing 专项文件。
 
 整套封面模板的创建、插入或替换未开放，不要从“能识别封面”推导为可写；已导入封面中以普通 block 返回的内容仍可按其实际类型编辑。
 
 `<tfoot>` 和 `<layout-break type="next-column">` 在协议里已定义但尚未实现，写入返回 `BLOCK_NOT_IMPLEMENTED_TAG`；上面列出的标签是协议根本没有，块级写入返回 `BLOCK_UNSUPPORTED_TAG`。两类都不要写。
 
-**未支持标签的失败分级取决于它出现在哪里。** 出现在块级位置（正文顶层、单元格、列表容器）返回 `BLOCK_UNSUPPORTED_TAG`，整次失败；出现在**行内位置**（`<p>`、`<h1>`～`<h9>`、`<li>` 的文本流里）不会失败，标签被剥掉、子节点当纯文本写入，只返回一条 `ATTR_UNKNOWN_IGNORED`。所以在段落里写 `<a href="...">链接</a>` 的结果是接口返回成功、链接文字进了文档、超链接没有；自闭合的未知行内标签则整个消失。必须逐条读 `warnings`，不能只看 `ok`。
+**未支持标签的失败分级取决于它出现在哪里。** 出现在块级位置（正文顶层、单元格、列表容器）返回 `BLOCK_UNSUPPORTED_TAG`，整次失败；出现在**行内位置**（`<p>`、`<h1>`～`<h9>`、`<li>` 的文本流里）不会失败，标签被剥掉、子节点当纯文本写入，只返回一条 `ATTR_UNKNOWN_IGNORED`。所以在段落里写未开放的 `<cite>引用</cite>`，接口会返回成功并写入纯文本“引用”，但不保留 `<cite>`；自闭合的未知行内标签则整个消失。必须逐条读 `warnings`，不能只看 `ok`。
 
 艺术字、通用域等能力边界统一见 [`canvas-doc-editing.md`](../workflows/canvas-doc-editing.md) 与 [`canvas-doc.md` 的 CLI 能力门禁](../workflows/canvas-doc.md#第三层最少必要读取cli-能力与调用预算)。本规范未定义的 OOXML 节点创建不属于 XML 更新能力。
 

@@ -4,7 +4,7 @@
 
 > 使用前须完整读取本页；未见末行「全文完」时，调整 offset 继续读取至该标记。
 
-这些对象使用既有 block 命令，通过 DocxXML `--content` 提交，不另设专用请求。
+结构、内容、外观和声明式布局使用既有 block 命令提交；已有浮动 Shape 的物理操作使用 [`object`](../cli/canvas-doc-update-structured.md#浮动对象object_context--object)。修订模式支持主文档中符合条件的行内 Drawing 插入/删除，以及浮动对象层级和变换；锚定 Drawing 的插删替换不支持，见[修订专项](../cli/canvas-doc-revisions.md)。
 
 - **修改前**：必须用 `+local-fetch --detail full` 确认目标返回本文定义的可写标签。
 - **新建前**：读取 carrier 和相邻格式，按本文语法及[预设值表](canvas-doc-drawing-presets.md)构造；不要求文档已有 Drawing。
@@ -56,6 +56,7 @@ allow-overlap locked layout-in-cell
 - `wrap` 只取 `none|square|tight|through|top-bottom`，`wrap-text` 只取 `both-sides|left|right|largest`。
 - 浮动属性出现但 `layout` 缺席时会规范化为 `layout="floating"`。
 - `<textbox wrap>` 表示框内文字换行，与 `<drawing wrap>` 的对象外部正文环绕不是同一属性。
+- 已有浮动 Shape 通过 XML 更新其他属性时保留 `<drawing width/height>` 和 `<shape rotation/flip-*>`；修改这些物理属性使用 `object`。
 
 ## Shape 几何、填充与轮廓
 
@@ -137,8 +138,8 @@ VML TextPath 仅以 `source="vml"`、`word-art="true"`、`text-path="..."` 只�
 
 ## 更新与验收
 
-- Drawing 是行内对象，但 `block_replace`、`block_delete` 和 `block_insert_after` 对它有专用路径。更新时以最新 Fetch 返回的 drawing ID 作为 `--block-id`，`--content` 传同 ID 的单根 `<drawing>`；删除时直接以 drawing ID 执行 `block_delete`，无需替换宿主 carrier。
-- 在已有 Drawing 后复制或新建 Drawing 时，以锚点 drawing ID 执行 `block_insert_after`，并传单根 `<drawing>`；省略 Drawing、Shape、TextBox 及内部 block 的 record ID，由宿主重新分配。内嵌对象按各自专项处理。
+- Drawing 的结构、内容、外观和声明式布局更新使用 `block_replace`；删除使用 `block_delete`。已有浮动 Shape 的移动、缩放、旋转、翻转、层叠、重锚和原样复制使用 `object`。
+- 新建 Drawing，或基于 XML 创建一个可修改的新对象，使用 `block_insert_after` 并省略 Drawing、Shape、TextBox 及内部 block ID；已有浮动 Shape 的原样复制不走此路径。内嵌对象按各自专项处理。
 - shape/textbox ID 不能作为 Drawing 命令目标。修改 TextBox 正文时使用该 story 内最新 Fetch 返回的 block ID；跨 story 或已失效的 identity 会被拒绝。
 - 新建对象只使用本页白名单与 canonical constructor default；`preset` 可省略，普通无 TextBox Shape 默认 `rect`，含 TextBox 或 `word-art="true"` 时使用各自构造器默认；显式指定时必须来自[预设值表](canvas-doc-drawing-presets.md)。新建必填正尺寸；后插还需真实锚点，文末追加则可用 `append` 写入含 Drawing 的完整段落。
 - 写后回读完整 `<drawing>` 和必要的 TextBox story，核对对象 identity、布局、非目标 sidecar 和 run 级效果。保存重开保真须有实际保存重开证据，未完成时披露未验证，不得把 XML 回读当作该证明，也不得为验收自动关闭用户文件。
@@ -146,7 +147,7 @@ VML TextPath 仅以 `source="vml"`、`word-art="true"`、`text-path="..."` 只�
 ## 明确不支持
 
 - 文档 theme 定义与 Shape 的 theme ref 写入；文本引用现有主题字体的四个 `font-family-*-theme` 属性仍可用，见[文本规范](canvas-doc-text.md#富文本)；
-- Shape hyperlink sidecar、超链接创建或修改；
+- Shape hyperlink sidecar；普通文字超链接使用文本规范中的 `<a>`，HYPERLINK Field 仍只读；
 - custom geometry、geometry/warp adjustment、group/canvas；
 - Shape locks、`outline-compound`、miter limit、line align、sketch、custom dash；
 - gradient/pattern/blip fill、TextBox vertical flow/columns/linked story、完整 `normal` AutoFit 参数；

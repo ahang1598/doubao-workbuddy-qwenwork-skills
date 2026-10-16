@@ -30,6 +30,7 @@ Exit codes:
 
 stdout 一律输出结构化 JSON，供 agent 直接解析。message 字段是自然语言诊断，写给弱模型看。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -49,9 +50,7 @@ XML_GET_TIMEOUT_SEC = 60
 UPDATE_TIMEOUT_SEC = 120
 
 
-def _run(
-    argv: list[str], timeout: int, cwd: str | None = None
-) -> tuple[int, str, str]:
+def _run(argv: list[str], timeout: int, cwd: str | None = None) -> tuple[int, str, str]:
     """Run subprocess and return (returncode, stdout, stderr).
 
     cwd 用于绕开 `lark-cli slides +xml-get --output` 「只接受 cwd 内相对路径」的限制：
@@ -87,19 +86,22 @@ def _parse_cli_json(stdout: str) -> dict[str, Any] | None:
         return None
 
 
-def xml_get_slide(
-    presentation: str, sid: str, output_path: Path
-) -> tuple[bool, str]:
+def xml_get_slide(presentation: str, sid: str, output_path: Path) -> tuple[bool, str]:
     """Fetch a single slide's latest XML to output_path. Returns (ok, raw_stdout).
 
     `lark-cli slides +xml-get --output` 老版本只接受当前目录内的**相对路径**，绝对路径
     会被 CLI 直接拒。所以把子进程 cwd 设成 output_path.parent，`--output` 只传文件名。
     """
     argv = [
-        LARK_CLI, "slides", "+xml-get",
-        "--presentation", presentation,
-        "--slide-id", sid,
-        "--output", output_path.name,
+        LARK_CLI,
+        "slides",
+        "+xml-get",
+        "--presentation",
+        presentation,
+        "--slide-id",
+        sid,
+        "--output",
+        output_path.name,
         "--json",
     ]
     rc, out, err = _run(argv, XML_GET_TIMEOUT_SEC, cwd=str(output_path.parent))
@@ -113,9 +115,7 @@ def xml_get_slide(
     return True, out
 
 
-def update_slide_raw(
-    presentation: str, sid: str, content_path: Path
-) -> tuple[bool, dict[str, Any] | str]:
+def update_slide_raw(presentation: str, sid: str, content_path: Path) -> tuple[bool, dict[str, Any] | str]:
     """裸调 update-slide, 不带 --revision-id (默认 -1). 返回 (ok, envelope_or_raw).
 
     默认带 --no-lint：语义 diff 已经在本脚本 Step 2 做过基线校验，服务端 lint 只会
@@ -123,10 +123,15 @@ def update_slide_raw(
     首次遇到 `unknown flag "--no-lint"` 时自动去掉重试，保持老版本兼容。
     """
     base_argv = [
-        LARK_CLI, "slides", "+update-slide",
-        "--presentation", presentation,
-        "--slide-id", sid,
-        "--content", f"@{content_path}",
+        LARK_CLI,
+        "slides",
+        "+update-slide",
+        "--presentation",
+        presentation,
+        "--slide-id",
+        sid,
+        "--content",
+        f"@{content_path}",
     ]
     envelope: dict[str, Any] | None = None
     out = ""
@@ -143,9 +148,7 @@ def update_slide_raw(
     return False, envelope or (out + "\n" + err).strip()
 
 
-def _is_unknown_flag_error(
-    envelope: dict[str, Any] | None, raw_text: str, flag: str
-) -> bool:
+def _is_unknown_flag_error(envelope: dict[str, Any] | None, raw_text: str, flag: str) -> bool:
     """判断 CLI 是否因为不认识 `flag` 而报错（区分于服务端拒收）."""
     if envelope:
         err = envelope.get("error") or {}
@@ -238,12 +241,14 @@ def summarize_elements(xml_path: Path) -> dict[str, Any]:
             raw.append(entry)
             result["element_count"] += 1
             result["by_type"][kind] = result["by_type"].get(kind, 0) + 1
+
     # 稳定排序：按 y、然后 x、然后 kind、然后 text —— 提交顺序与服务端返回顺序可能不同
     def sort_key(e: dict[str, Any]) -> tuple:
         try:
             return (float(e["y"]), float(e["x"]), e["kind"], e["text"])
         except ValueError:
             return (0.0, 0.0, e["kind"], e["text"])
+
     result["elements"] = sorted(raw, key=sort_key)
     return result
 
@@ -262,21 +267,15 @@ def _normalize_number(v: str) -> str:
         return v
 
 
-def signatures_equal(
-    local_sig: dict[str, Any], server_sig: dict[str, Any]
-) -> tuple[bool, str]:
+def signatures_equal(local_sig: dict[str, Any], server_sig: dict[str, Any]) -> tuple[bool, str]:
     """两份签名语义等价 → (True, "")；不等 → (False, 简短原因描述).
 
     比较 id-independent 的元素序列。已按 (y, x, kind, text) 排序，可直接逐个对齐。
     """
     if local_sig["element_count"] != server_sig["element_count"]:
-        return False, (
-            f"元素数 {local_sig['element_count']} → {server_sig['element_count']}"
-        )
+        return False, (f"元素数 {local_sig['element_count']} → {server_sig['element_count']}")
     if local_sig["by_type"] != server_sig["by_type"]:
-        return False, (
-            f"元素类型分布变化: 本地={local_sig['by_type']} 服务端={server_sig['by_type']}"
-        )
+        return False, (f"元素类型分布变化: 本地={local_sig['by_type']} 服务端={server_sig['by_type']}")
     for i, (le, se) in enumerate(zip(local_sig["elements"], server_sig["elements"])):
         if le["kind"] != se["kind"]:
             return False, f"元素[{i}] 类型: {le['kind']} → {se['kind']}"
@@ -287,9 +286,7 @@ def signatures_equal(
                 f"{se['x']},{se['y']},{se['w']},{se['h']}"
             )
         if le["text"] != se["text"]:
-            return False, (
-                f'元素[{i}] ({le["kind"]}) 文本: "{le["text"][:30]}" → "{se["text"][:30]}"'
-            )
+            return False, (f'元素[{i}] ({le["kind"]}) 文本: "{le["text"][:30]}" → "{se["text"][:30]}"')
     return True, ""
 
 
@@ -299,6 +296,7 @@ def describe_changes(local_sig: dict[str, Any], server_sig: dict[str, Any]) -> s
     对已按 (y, x, kind, text) 排序的元素序列做**多重集差异**：以 (kind, x, y, w, h) 为对齐键
     找出"新增元素" / "删除元素"；对相同键的对，检查文本是否变化。
     """
+
     def key(e: dict[str, Any]) -> tuple:
         return (e["kind"], e["x"], e["y"], e["w"], e["h"])
 
@@ -329,8 +327,7 @@ def describe_changes(local_sig: dict[str, Any], server_sig: dict[str, Any]) -> s
     parts = []
     delta = server_sig["element_count"] - local_sig["element_count"]
     parts.append(
-        f"元素数 {local_sig['element_count']} → {server_sig['element_count']} "
-        f"({'+' if delta >= 0 else ''}{delta})"
+        f"元素数 {local_sig['element_count']} → {server_sig['element_count']} ({'+' if delta >= 0 else ''}{delta})"
     )
     if added:
         types = Counter(k[0] for k, _ in added)
@@ -360,9 +357,7 @@ def run_guarded(
     content: Path,
     local_cache: Path,
 ) -> dict[str, Any]:
-    server_snapshot = local_cache.parent / (
-        local_cache.stem + "._server_now" + local_cache.suffix
-    )
+    server_snapshot = local_cache.parent / (local_cache.stem + "._server_now" + local_cache.suffix)
 
     # ── Step 1: pull server latest for this slide ──
     ok, raw = xml_get_slide(presentation, sid, server_snapshot)
@@ -443,7 +438,7 @@ def run_guarded(
         code, err_hint = "", ""
         if isinstance(envelope_or_raw, dict):
             code = envelope_or_raw.get("code") or (envelope_or_raw.get("error", {}) or {}).get("code", "")
-            err_hint = (envelope_or_raw.get("msg") or (envelope_or_raw.get("error", {}) or {}).get("message", ""))
+            err_hint = envelope_or_raw.get("msg") or (envelope_or_raw.get("error", {}) or {}).get("message", "")
             raw_dump = json.dumps(envelope_or_raw, ensure_ascii=False)[:500]
         else:
             raw_dump = str(envelope_or_raw)[:500]

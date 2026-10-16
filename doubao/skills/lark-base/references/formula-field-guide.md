@@ -38,13 +38,13 @@ This is the foundation of formula logic. You must determine this before writing 
 | --------------------- | -------------------------------------------- | ---------------------- | -------------------------------------------- |
 | `[Field]`             | Value of this field in the current row       | Scalar (single value)  | `[Name]` → `"Alice"`                         |
 | `[TableName].[Field]` | All values of this field in the target table | List (multiple values) | `[Employees].[Name]` → `["Alice","Bob",...]` |
-| `[TableName]`         | The target table (entire table)              | Table reference        | Used as data range for FILTER/COUNTIF etc.   |
+| `[TableName]`         | The target table (entire table). **Table names take precedence over same-named fields**: a link field named after its table resolves as the whole table, so per-row aggregation through it silently becomes a table-wide aggregation | Table reference        | Used as data range for FILTER/COUNTIF etc.   |
 
 **Rules**:
 
 - Scalars can be used directly in operations: `[Price] * [Quantity]`
 - Lists cannot be used as scalars — they must be processed first: use `SUM()` for sum, `ARRAYJOIN(",")` for joining, `FIRST()`/`LAST()`/`NTH()` for single value extraction
-- Link field access `[LinkField].[TargetField]` returns a list (values of the target field for all linked records)
+- Link field access `[LinkField].[TargetField]` returns a list (values of the target field for all linked records); per-row aggregation over linked records goes through the link field (`COUNTA([LinkField])`, `[LinkField].[Field].SUM()`); if the link field shares the table's name, rename it or use `[Table].FILTER(CurrentValue.[BackLink] = [Key]).[Field].SUM()` / `.[Field].COUNTA()` — a table-level FILTER returns rows and must end with a field projection plus aggregate, never be wrapped bare in `COUNTA(...)`. `+field-get` only echoes the display expression, so verify by values: rows with different link counts must differ and unlinked rows must be 0
 - **LISTCOMBINE flattening rule**: When a FILTER's result column is itself a multi-value field (`select` with `multiple=true`, `link`, etc.), it produces a 2D array and **must** be flattened with `.LISTCOMBINE()`; for single-value fields (`number`, `text`, etc.) it can be omitted, but adding it is never wrong:
 
   ```

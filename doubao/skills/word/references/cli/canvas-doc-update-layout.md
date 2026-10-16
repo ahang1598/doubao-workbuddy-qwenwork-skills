@@ -4,7 +4,7 @@
 
 前置读取 [`canvas-doc-fetch.md`](canvas-doc-fetch.md)、[`canvas-doc-update.md`](canvas-doc-update.md) 和 [`canvas-doc-layout.md`](../xml/canvas-doc-layout.md)，其中的公共 XML 前置同样适用。
 
-这些场景不新增 command，而是使用通用 block 指令写入 XML。先用 `docs +local-fetch --scope layout --detail full` 获取当前节和布局，再读取插入点或布局目标 block。只读页面尺寸作为图片/表格尺寸参考时，不要求加载本页。水印不是 layout XML，按 [`canvas-doc-update-domain.md`](canvas-doc-update-domain.md) 使用领域命令。
+这些场景不新增 command，而是使用通用 block 指令写入 XML。先用 `lark-cli docs +local-fetch --scope layout --detail full` 获取当前节和布局，再读取插入点或布局目标 block。只读页面尺寸作为图片/表格尺寸参考时，不要求加载本页。水印不是 layout XML，按 [`canvas-doc-update-domain.md`](canvas-doc-update-domain.md) 使用领域命令。
 
 > **页首和页尾定位要求**：按“本页页首/页尾”插入时，必须先按 [`canvas-doc.md`](../workflows/canvas-doc.md#读取流程)读取目标页和实际存在的相邻页。存在相邻页时，只有边缘 block ID 未出现在相邻页，才能在该 block 前后插入；第一页页首与已确认末页的页尾沿用入口的文档起止证据，不请求不存在的邻页。同一 ID 出现在两页时必须查看 PDF、定位最新 `full` XML 中的块内边界并按下文拆分，消歧完成前禁止 update，不得降级为整个 block 前后插入。
 >
@@ -55,7 +55,7 @@ lark-cli docs +local-update --doc "<token>" \
 
 ## 更新页面布局、行网格、分栏、页眉、页脚和页码域
 
-先执行 `docs +local-fetch --scope layout --detail full` 获取 layout block ID，再用 `block_replace` 更新完整 `<layout>`。可更新页面属性、页眉、页脚和页码域（`<page-number/>` 表示当前页码域，`<page-count/>` 表示总页数域）；没有可写 ID 时不能更新。协议没有 `<layouts>` 包裹层。
+先执行 `lark-cli docs +local-fetch --scope layout --detail full` 获取 layout block ID，再用 `block_replace` 更新完整 `<layout>`。可更新页面属性、页眉、页脚和页码域（`<page-number/>` 表示当前页码域，`<page-count/>` 表示总页数域）；没有可写 ID 时不能更新。协议没有 `<layouts>` 包裹层。
 
 以 Fetch 返回的完整布局为底稿，只修改目标属性。所有非目标标量属性仍须保留；未修改的 header/footer placement 省略对应元素以保持原 story，不能把依赖片段外定义的自闭合共享引用单独写回，详见 [共享页眉页脚规则](../xml/canvas-doc-layout.md#页面布局行网格分栏页眉和页脚)。
 

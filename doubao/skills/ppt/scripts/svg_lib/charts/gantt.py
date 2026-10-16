@@ -1,58 +1,31 @@
-"""charts/gantt.py
-
-统一 API 的甘特图。
-
-data schema:
-    {
-      "tasks": [(name, start, end, stream?), ...],
-      # start/end 支持:
-      #   - ISO date string "YYYY-MM-DD"
-      #   - 数值（相对位置，任何单位）
-      #   - datetime.date 对象
-      "milestones"?: [(pos, label), ...],   # pos 与 tasks 的时间同类型
-      "today"?: pos,
-      "critical_indices"?: [int],
-      "progress_map"?: {name: 0..1 (or 0..100)},
-    }
-
-variants:
-  - default_flat
-  - progress_split     # 描边框 + 内部填充完成部分
-  - critical_path      # 关键任务用 accent 上色，slack 虚线连接
-  - gradient_bars      # 柱条渐变
-  - dot_range          # 起终点圆点 + 连线
-"""
+"""统一 API 的甘特图。"""
 
 from __future__ import annotations
+
 import datetime as _dt
 import math
-import random
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    viewbox_fs,
-    _rgba_with_alpha,
-    is_dark_palette,
-)
-
 
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
     _derive_series_colors,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgb_tuple,
     _rgba_with_alpha,
-    _xesc,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
+    _xesc,
+)
+from .._typography import chart_font_sizes
+from ._chart_layout import wrap_lines
+from ._shared import (
+    notes_source_footer,
+    tr,
+    is_dark_palette,
+    resolve_palette,
+    viewbox_fs,
+    xesc,
 )
 
 VARIANTS = ("default_flat", "progress_split", "critical_path", "gradient_bars", "dot_range")
@@ -67,7 +40,6 @@ def _to_num(v, project_start=None):
             return 0.0
         return float((v - project_start).days)
     if isinstance(v, str):
-        # ISO date
         try:
             d = _dt.date.fromisoformat(v)
             if project_start is None:
@@ -110,7 +82,7 @@ def _infer_bounds(tasks_norm, milestones, today):
     def _try_date(v):
         try:
             return _parse_date(v)
-        except Exception:
+        except (TypeError, ValueError):
             return None
 
     all_pts = []
@@ -125,9 +97,87 @@ def _infer_bounds(tasks_norm, milestones, today):
     dates = [_try_date(p) for p in all_pts]
     if all(d is not None for d in dates):
         return min(dates), max(dates), True
-    # numeric mode
+    if any(d is not None for d in dates):
+        raise ValueError("gantt: do not mix calendar dates and numeric positions")
     nums = [_to_num(p) for p in all_pts]
+    if not all(math.isfinite(v) for v in nums):
+        raise ValueError("gantt: task times must be finite")
     return min(nums), max(nums), False
+
+
+def _milestone_rows(milestones, x_fn, fs, font, width):
+    """Place milestone labels in stacked rows: [(mx, label_x, row, label)], row count."""
+    import itertools
+
+    items = sorted(((x_fn(m[0]), str(m[1])) for m in milestones), key=lambda t: t[0])
+    if not items:
+        return [], 0
+    halves = [_estimate_label_width_px(label, fs, bold=True, font_family=font) * 0.55 + 4 for _, label in items]
+
+    def span(mx, half, anchor):
+        # centre / box ends just right of the diamond / box starts just left of it
+        cx = mx if anchor == 0 else mx - half + 10 if anchor == 1 else mx + half - 10
+        cx = min(width - half - 4, max(half + 4, cx))
+        return cx, cx - half, cx + half
+
+    def layout(anchors):
+        placed, crossings = [], 0
+        for (mx, label), half, anchor in zip(items, halves, anchors):
+            cx, lo, hi = span(mx, half, anchor)
+            row = 0
+            while True:
+                overlap = any(r == row and not (hi + 8 < plo or lo - 8 > phi) for _, _, r, _, plo, phi in placed)
+                cuts_leader = any(r > row and lo - 3 <= pmx <= hi + 3 for pmx, _, r, _, _, _ in placed)
+                crossed = row and any(r < row and plo - 3 <= mx <= phi + 3 for _, _, r, _, plo, phi in placed)
+                if not overlap and not cuts_leader and not crossed:
+                    break
+                if row > len(items) + 1:  # nothing clean: accept the overlap-free spot, count it
+                    if not overlap:
+                        crossings += 1
+                        break
+                row += 1
+            placed.append((mx, cx, row, label, lo, hi))
+        rows = max(p[2] for p in placed) + 1
+        return (crossings, rows, sum(a != 0 for a in anchors)), placed
+
+    if len(items) <= 7:
+        best = min((layout(a) for a in itertools.product((0, 1, 2), repeat=len(items))), key=lambda t: t[0])
+    else:
+        anchors = []
+        for i in range(len(items)):
+            anchors.append(min((0, 1, 2), key=lambda a: layout(anchors + [a] + [0] * (len(items) - i - 1))[0]))
+        best = layout(anchors)
+    placed = best[1]
+    return [p[:4] for p in placed], max(p[2] for p in placed) + 1
+
+
+def _marker_color(pal, used):
+    """A saturated palette colour clearly different from every bar colour, so milestones / the today line"""
+    import colorsys
+    from .._common import _rgb_tuple
+
+    def rgb(c):
+        try:
+            return _rgb_tuple(c)
+        except (ValueError, TypeError):
+            return None
+
+    bars = [v for v in map(rgb, used) if v]
+
+    def usable(c):
+        v = rgb(c)
+        if not v or "," in str(c) and str(c).rstrip(")").split(",")[-1].strip() not in ("1", "1.0", "255"):
+            return False  # translucent greys read as gridlines
+        h, l, sat = colorsys.rgb_to_hls(*(x / 255 for x in v))
+        return sat > 0.35 and 0.2 < l < 0.7 and all(sum((a - b) ** 2 for a, b in zip(v, u)) ** 0.5 > 110 for u in bars)
+
+    for c in [pal.get("accent"), pal.get("secondary"), *(pal.get("series") or [])]:
+        if c and usable(c):
+            return c
+    base = rgb(pal.get("accent")) or (163, 88, 50)
+    h, l, sat = colorsys.rgb_to_hls(*(x / 255 for x in base))
+    r, g, b = colorsys.hls_to_rgb((h + 0.5) % 1, min(max(l, 0.35), 0.45), max(sat, 0.55))
+    return f"rgba({round(r * 255)},{round(g * 255)},{round(b * 255)},1)"
 
 
 def draw_gantt(
@@ -135,11 +185,12 @@ def draw_gantt(
     variant: str = "default_flat",
     palette: str = "archive_ink",
     width: float = 1100,
-    height: float = None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    note: str = None,
+    height: float | None = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    note: str | None = None,
+    font_family: str | None = None,
 ) -> str:
     if variant not in VARIANTS:
         raise ValueError(f"gantt: unknown variant {variant!r}. Available: {VARIANTS}")
@@ -154,19 +205,32 @@ def draw_gantt(
     critical = set(data.get("critical_indices") or [])
     progress_map = data.get("progress_map") or {}
 
-    # 自动补 progress_map（progress_split 需要）
+    # Progress is measured input, never a decorative random split.
     if variant == "progress_split" and not progress_map:
-        rng = random.Random(0x6A)
-        progress_map = {t["name"]: rng.randint(15, 90) / 100 for t in tasks}
+        progress_map = {t["name"]: t["progress"] for t in tasks if "progress" in t}
+    if variant == "progress_split" and any(t["name"] not in progress_map for t in tasks if not t["is_milestone"]):
+        raise ValueError("gantt: progress_split requires progress for every task")
 
     # 归一化 progress: 0..1
     def _prog(name):
-        v = progress_map.get(name, 0.6)
+        v = float(progress_map[name])
+        if not math.isfinite(v) or not 0 <= v <= 100:
+            raise ValueError("gantt: progress must be in [0,1] or [0,100]")
         if v > 1:
             v = v / 100
-        return max(0.0, min(1.0, v))
+        return v
 
-    lo, hi, use_dates = _infer_bounds(tasks, milestones, today)
+    lo, hi, use_dates = _infer_bounds(tasks, milestones, None)
+    convert = _parse_date if use_dates else _to_num
+    if any(convert(t["end"]) < convert(t["start"]) for t in tasks):
+        raise ValueError("gantt: task end must not precede start")
+    if data.get("domain") is not None:
+        lower, upper = (convert(v) for v in data["domain"])
+        if lower > lo or upper < hi or lower >= upper:
+            raise ValueError("gantt: domain must include every task and milestone")
+        lo, hi = lower, upper
+    if today is not None and not lo <= convert(today) <= hi:
+        today = None
 
     if use_dates:
         total_days = max(1, (hi - lo).days)
@@ -189,20 +253,24 @@ def draw_gantt(
     dark = is_dark_palette(pal)
     label_col = "rgba(240,232,214,1)" if dark else INK
 
-    # 分配 stream -> series color idx
     stream_names = []
     for t in tasks:
         s = t.get("stream")
-        if s and s not in stream_names:
+        if s is not None and s != "" and s not in stream_names:
             stream_names.append(s)
 
     def _task_color(t, i):
         s = t.get("stream")
-        if s and s in stream_names:
+        if s is not None and s != "" and s in stream_names:
             return series[stream_names.index(s) % len(series)]
         return series[i % len(series)]
 
     n = len(tasks)
+    if variant == "critical_path":
+        bar_colors = [ACC, pal["ink4"]]
+    else:
+        bar_colors = list(dict.fromkeys(_task_color(t, i) for i, t in enumerate(tasks)))
+    MARK = _marker_color(pal, bar_colors)
     W = float(width)
     if height is None:
         row_target = 40 if n <= 8 else (34 if n <= 15 else 28)
@@ -210,8 +278,8 @@ def draw_gantt(
     else:
         H = float(height)
 
-    ML = 90.0
-    MR = 60.0
+    ML = min(90.0, max(24.0, W * 0.06))
+    MR = min(60.0, max(20.0, W * 0.04))
     plot_left = ML + 200  # 左侧留给任务名
     plot_right = W - MR
     # 顶部预留：milestone label(24) + axis tick label(14) + gap + TODAY(14) 需要独立层级
@@ -223,42 +291,110 @@ def draw_gantt(
     # task name / owner 是每行的关键 secondary label，embed 宽 <450 时旧的
     # auto_font_size 会给出 9-11pt，缩到 embed 后不可读。改用 viewbox_fs 让字号
     # 随 viewBox 放大，同时锁 floor=11 保证 secondary 至少 11pt。
-    fs_task = max(11.0, viewbox_fs(W, H, n, role_mult=1.0, floor=11))
-    fs_owner = max(11.0, viewbox_fs(W, H, n, role_mult=0.85, floor=11))
-    fs_axis = 10
+    body_font, head_font = _resolve_font(font_family)
+    fs_cap = None
+    plot_top0 = plot_top
+    while True:
+        compact = fs_cap is not None
+        plot_top = 0.0 if compact else plot_top0
+        fs_task = max(11.0, viewbox_fs(W, H, n, role_mult=1.0, floor=11))
+        fs_owner = max(11.0, viewbox_fs(W, H, n, role_mult=0.85, floor=11))
+        fs_axis = viewbox_fs(W, H, n)
+        # Three-row regional plans are commonly placed in a ~490px column; an
+        # explicit height must not silently force tiny labels when room exists.
+        fs_owner = max(fs_owner, W / 45)
+        fs_task = max(fs_task, fs_owner * 1.1)
+        fs_axis = max(fs_axis, fs_owner)
+        if height is None:
+            # Automatic charts remain legible at a 600px column width. Preserve
+            # type and allocate more space, rather than shrinking dense task rows.
+            fs_owner = max(fs_owner, W / 50)
+            fs_task = max(fs_task, fs_owner * 1.1)
+            fs_axis = max(fs_axis, fs_owner)
 
-    body_font = "Inter, sans-serif"
-    head_font = "Georgia, serif"
+        if fs_cap is not None:
+            fs_owner = min(fs_owner, fs_cap)
+            fs_task = min(fs_task, fs_cap * 1.1)
+            fs_axis = min(fs_axis, fs_cap)
+        name_width = max(
+            _estimate_label_width_px(str(task["name"]), fs_task * 1.05, font_family=body_font) for task in tasks
+        )
+        plot_left = ML + min(W * 0.38, max(200.0, name_width + 32))
+        header_lines = []
+        header_top = 26.0
+        for value, size, bold, font in (
+            (title, max(24.0, fs_task * 1.3), True, head_font),
+            (subtitle, max(12.0, fs_owner), False, body_font),
+            (figure_label, max(10.0, fs_owner), True, body_font),
+        ):
+            if value:
+                for line in wrap_lines(value, W - ML - MR, size * (1.05 if bold else 1), font):
+                    header_lines.append((line, header_top + size * 0.84, size, bold, font))
+                    header_top += size * 1.3
+                header_top += 5
+        if compact:
+            plot_top = max(plot_top, fs_axis * 1.1 + 24)
+        fs_today = max(10.0, fs_owner * 0.85)
+        ms_rows, n_ms_rows = _milestone_rows(
+            milestones, lambda v: x_of(v, plot_left, plot_right), fs_owner, body_font, W
+        )
+        # tick labels | today label row | diamonds | stacked milestone label rows
+        annotation_band = (
+            fs_axis * 1.1
+            + 14
+            + (fs_today * 1.25 + 6 if today is not None else 0)
+            + (22 + n_ms_rows * fs_owner * 1.3 + 4 if milestones else 0)
+            + 8
+        )
+        if header_lines:
+            plot_top = max(plot_top, header_top + (annotation_band if milestones or today is not None else 38))
+        elif milestones or today is not None:
+            plot_top = max(plot_top, annotation_band)
+        note_lines = wrap_lines("Note. " + str(note), W - ML - MR, fs_owner, body_font) if note else []
+        has_legend = variant == "critical_path" and critical and data.get("show_legend", True)
+        footer_space = max(
+            40.0 if compact else 70.0,
+            24 + (fs_owner * 1.3 + 10 if has_legend else 0) + len(note_lines) * fs_owner * 1.3 + 12,
+        )
+        plot_bot = H - footer_space
+        row_h = (plot_bot - plot_top) / n
+        task_label_blocks = []
+        for task in tasks:
+            names = wrap_lines(str(task["name"]), plot_left - ML - 24, fs_task * 1.05, body_font)
+            streams = (
+                wrap_lines(str(task["stream"]), plot_left - ML - 24, fs_owner, body_font)
+                if task.get("stream") is not None and task.get("stream") != ""
+                else []
+            )
+            name_h = (len(names) - 1) * fs_task * 1.25 + fs_task * 1.1
+            stream_h = max(0, len(streams) - 1) * fs_owner * 1.25 + (fs_owner * 1.1 if streams else 0)
+            text_h = name_h + (4 + stream_h if streams else 0)
+            task_label_blocks.append((names, streams, name_h, text_h))
+        if height is None:
+            # Preserve the measured type size and grow the automatic canvas to fit
+            # complete names and stream labels. Explicit heights remain a constraint.
+            needed_row = max(block[3] for block in task_label_blocks) + 8
+            H = max(H, math.ceil(plot_top + footer_space + n * needed_row))
+            plot_bot = H - footer_space
+            plot_h = plot_bot - plot_top
+            row_h = plot_h / n
+
+        fits = all(block[3] <= row_h - 4 for block in task_label_blocks)
+        if height is None or fits or fs_owner <= 10:
+            break
+        # Explicit embed canvas: shrink type toward the 10px floor before giving up.
+        fs_cap = max(10.0, round(fs_owner * 0.92, 1))
 
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H:.0f}">']
     parts.append(f'<rect x="0" y="0" width="{W:.1f}" height="{H:.1f}" fill="{BG}"/>')
 
-    # header
-    y_pos = 46
-    if title:
+    # Measured header uses the same font sizes as its reserved space.
+    for line, baseline, size, bold, font in header_lines:
         parts.append(
-            f'<text x="{ML:.1f}" y="{y_pos}" font-family="{head_font}" font-size="24" '
-            f'font-weight="600" fill="{label_col}" letter-spacing="0.06em">{xesc(title)}</text>'
-        )
-        y_pos += 24
-    if subtitle:
-        parts.append(
-            f'<text x="{ML:.1f}" y="{y_pos}" font-family="{body_font}" font-size="12" '
-            f'fill="{MUT}" letter-spacing="0.15em">{xesc(subtitle)}</text>'
-        )
-        y_pos += 12
-    if title or subtitle:
-        parts.append(
-            f'<line x1="{ML:.1f}" y1="{y_pos + 6:.1f}" x2="{W - MR:.1f}" '
-            f'y2="{y_pos + 6:.1f}" stroke="{INK}" stroke-width="0.8"/>'
-        )
-    if figure_label:
-        parts.append(
-            f'<text x="{ML:.1f}" y="{y_pos + 24:.1f}" font-family="{body_font}" font-size="10" '
-            f'font-weight="600" fill="{MUT}" letter-spacing="0.15em">{xesc(figure_label)}</text>'
+            f'<text x="{ML:.1f}" y="{baseline:.1f}" font-family="{font}" font-size="{size:.1f}" '
+            f'font-weight="{600 if bold else 400}" fill="{label_col if bold else MUT}">{xesc(line)}</text>'
         )
 
-    # x-axis: ticks
     if use_dates:
         _draw_date_axis(
             parts,
@@ -275,22 +411,37 @@ def draw_gantt(
             hide_weekend=(variant == "dot_range"),
         )
     else:
-        _draw_numeric_axis(parts, lo, hi, plot_left, plot_right, plot_top, plot_bot, pal, body_font, fs_axis)
+        _draw_numeric_axis(
+            parts,
+            lo,
+            hi,
+            plot_left,
+            plot_right,
+            plot_top,
+            plot_bot,
+            pal,
+            body_font,
+            fs_axis,
+            unit=data.get("time_unit") or "",
+        )
 
-    # today line
+    tick_top = plot_top - 8 - fs_axis * 1.1
+    today_baseline = tick_top - 6
+    diamond_bot = tick_top - 6 - (fs_today * 1.25 + 6 if today is not None else 0)
     if today is not None:
         tx = x_of(today, plot_left, plot_right)
         parts.append(
-            f'<line x1="{tx:.1f}" y1="{plot_top - 12:.1f}" x2="{tx:.1f}" y2="{plot_bot + 6:.1f}" '
-            f'stroke="{ACC}" stroke-width="1.6" stroke-dasharray="4 3"/>'
+            f'<line x1="{tx:.1f}" y1="{plot_top:.1f}" x2="{tx:.1f}" y2="{plot_bot + 6:.1f}" '
+            f'stroke="{MARK}" stroke-width="1.6" stroke-dasharray="4 3" data-role="today-marker" data-color="{MARK}"/>'
         )
+        today_text = tr("TODAY")
+        today_half = _estimate_label_width_px(today_text, fs_today, bold=True, font_family=body_font) / 2 + 2
         parts.append(
-            f'<text x="{tx:.1f}" y="{plot_top - 32:.1f}" text-anchor="middle" '
-            f'font-family="{body_font}" font-size="10" font-weight="700" '
-            f'fill="{ACC}">TODAY</text>'
+            f'<text x="{min(W - today_half, max(today_half, tx)):.1f}" y="{today_baseline:.1f}" text-anchor="middle" '
+            f'font-family="{body_font}" font-size="{fs_today:.1f}" font-weight="700" '
+            f'fill="{MARK}">{_xesc(today_text)}</text>'
         )
 
-    # tasks
     for i, t in enumerate(tasks):
         y_row = plot_top + i * row_h
         y_bar_h = row_h * 0.55
@@ -301,31 +452,32 @@ def draw_gantt(
         xR = x_of(t["end"], plot_left, plot_right)
         w = max(2.0, xR - xL)
 
-        # task name label
-        name = t["name"]
-        # truncate long names
-        max_chars = int((plot_left - ML - 10) / (fs_task * 0.6))
-        display_name = name if len(name) <= max_chars else name[: max(3, max_chars - 1)] + "…"
-        parts.append(
-            f'<text x="{ML + 8:.1f}" y="{y_row + row_h / 2 + 4:.1f}" '
-            f'font-family="{body_font}" font-size="{fs_task}" font-weight="600" '
-            f'fill="{label_col}">{xesc(display_name)}</text>'
-        )
-        if t.get("stream") and row_h > 26:
+        # Measure the complete name and optional stream as one centered block.
+        # Fixed baselines only 11px apart overlapped once task fonts grew.
+        name = str(t["name"])
+        name_lines, stream_lines, name_height, label_height = task_label_blocks[i]
+        if label_height > row_h - 4:
+            raise ValueError(f"gantt: full label for {name!r} needs a taller canvas")
+        label_top = y_row + (row_h - label_height) / 2
+        for line_index, line in enumerate(name_lines):
             parts.append(
-                f'<text x="{ML + 8:.1f}" y="{y_row + row_h / 2 + 15:.1f}" '
-                f'font-family="{body_font}" font-size="{fs_owner}" fill="{MUT}">'
-                f"{xesc(str(t['stream']))}</text>"
+                f'<text x="{ML + 8:.1f}" y="{label_top + fs_task * 0.84 + line_index * fs_task * 1.25:.1f}" '
+                f'font-family="{body_font}" font-size="{fs_task}" font-weight="600" '
+                f'fill="{label_col}">{xesc(line)}</text>'
+            )
+        for line_index, line in enumerate(stream_lines):
+            parts.append(
+                f'<text x="{ML + 8:.1f}" y="{label_top + name_height + 4 + fs_owner * 0.84 + line_index * fs_owner * 1.25:.1f}" '
+                f'font-family="{body_font}" font-size="{fs_owner}" fill="{MUT}">{xesc(line)}</text>'
             )
 
-        # milestone diamond
         if t["is_milestone"]:
             cx = xL
             cy = y_row + row_h / 2
             parts.append(
                 f'<polygon points="{cx:.1f},{cy - 8:.1f} {cx + 8:.1f},{cy:.1f} '
                 f'{cx:.1f},{cy + 8:.1f} {cx - 8:.1f},{cy:.1f}" '
-                f'fill="{ACC}" stroke="{INK}" stroke-width="1.2"/>'
+                f'fill="{MARK}" stroke="{INK}" stroke-width="1.2"/>'
             )
             continue
 
@@ -337,36 +489,31 @@ def draw_gantt(
             parts.append(
                 f'<rect x="{xL:.1f}" y="{y_bar:.1f}" width="{w:.1f}" '
                 f'height="{y_bar_h:.1f}" fill="{_rgba_with_alpha(col, 0.18)}" '
-                f'stroke="{col}" stroke-width="1.3"/>'
+                f'stroke="{col}" stroke-width="1.3" data-role="task-progress" data-progress="{prog * 100:g}"/>'
             )
             if done_w > 0:
                 parts.append(
                     f'<rect x="{xL:.1f}" y="{y_bar:.1f}" width="{done_w:.1f}" height="{y_bar_h:.1f}" fill="{col}"/>'
                 )
-                if done_w > 26:
-                    parts.append(
-                        f'<text x="{xL + done_w - 4:.1f}" y="{y_bar + y_bar_h / 2 + 3:.1f}" '
-                        f'text-anchor="end" font-family="{body_font}" font-size="9" '
-                        f'font-weight="700" fill="{BG}">{int(prog * 100)}%</text>'
-                    )
+            progress_text = f"{prog * 100:g}%"
+            text_width = _estimate_label_width_px(progress_text, fs_owner, bold=True, font_family=body_font)
+            inside = done_w >= text_width + 12 and y_bar_h >= fs_owner + 6
+            text_x = xL + done_w - 5 if inside else min(xR + 8, W - text_width - 8)
+            text_color = (BG or "#FFFFFF") if inside else INK
+            parts.append(
+                f'<text x="{text_x:.1f}" y="{y_bar + y_bar_h / 2 + fs_owner * 0.3:.1f}" '
+                f'text-anchor="{"end" if inside else "start"}" font-family="{body_font}" font-size="{fs_owner:.1f}" '
+                f'font-weight="700" fill="{text_color}">{progress_text}</text>'
+            )
         elif variant == "critical_path":
             is_crit = i in critical
-            fill = ACC if is_crit else col
+            fill = ACC if is_crit else pal["ink4"]
             parts.append(f'<rect x="{xL:.1f}" y="{y_bar:.1f}" width="{w:.1f}" height="{y_bar_h:.1f}" fill="{fill}"/>')
-            if not is_crit and i < n - 1:
-                nxt = tasks[i + 1]
-                nxt_x = x_of(nxt["start"], plot_left, plot_right)
-                if nxt_x > xR:
-                    cy = y_row + row_h / 2
-                    parts.append(
-                        f'<line x1="{xR:.1f}" y1="{cy:.1f}" x2="{nxt_x:.1f}" y2="{cy:.1f}" '
-                        f'stroke="{pal["ink4"]}" stroke-width="0.8" stroke-dasharray="3 2"/>'
-                    )
             if is_crit:
                 parts.append(
-                    f'<text x="{xR + 6:.1f}" y="{y_bar + y_bar_h / 2 + 3:.1f}" '
-                    f'font-family="{body_font}" font-size="9" font-weight="700" '
-                    f'fill="{ACC}">CP</text>'
+                    f'<text x="{xR + 6:.1f}" y="{y_bar + y_bar_h / 2 + fs_owner * 0.3:.1f}" '
+                    f'font-family="{body_font}" font-size="{fs_owner:.1f}" font-weight="700" '
+                    f'fill="{ACC}">{_xesc(tr("CP"))}</text>'
                 )
         elif variant == "gradient_bars":
             gid = f"gantt_g_{i}"
@@ -389,94 +536,101 @@ def draw_gantt(
             )
             parts.append(f'<circle cx="{xL:.1f}" cy="{cy:.1f}" r="5.5" fill="{BG}" stroke="{col}" stroke-width="2"/>')
             parts.append(f'<circle cx="{xR:.1f}" cy="{cy:.1f}" r="5.5" fill="{col}" stroke="{col}" stroke-width="2"/>')
-            # date/pos labels
             slbl = _fmt_pos(t["start"], use_dates)
             elbl = _fmt_pos(t["end"], use_dates)
             parts.append(
-                f'<text x="{xL - 6:.1f}" y="{cy - 8:.1f}" text-anchor="end" '
-                f'font-family="{body_font}" font-size="8.5" fill="{MUT}">{xesc(slbl)}</text>'
+                f'<text x="{xL - 6:.1f}" y="{cy - 8 - fs_owner * 0.25:.1f}" text-anchor="end" '
+                f'font-family="{body_font}" font-size="{fs_owner:.1f}" fill="{MUT}">{xesc(slbl)}</text>'
             )
             parts.append(
-                f'<text x="{xR + 6:.1f}" y="{cy - 8:.1f}" text-anchor="start" '
-                f'font-family="{body_font}" font-size="8.5" fill="{MUT}">{xesc(elbl)}</text>'
+                f'<text x="{xR + 6:.1f}" y="{cy - 8 - fs_owner * 0.25:.1f}" text-anchor="start" '
+                f'font-family="{body_font}" font-size="{fs_owner:.1f}" fill="{MUT}">{xesc(elbl)}</text>'
             )
 
-    # user-provided milestones (outside of tasks)
-    # 把 milestone 抬高到轴上方独立层：label 在 plot_top-38, diamond 在 plot_top-32~-20
-    # 与 axis tick label (plot_top - 8) 分层，且与 TODAY (plot_top - 32) 保持一致但可能碰撞
-    for m in milestones:
-        pos, lbl = m[0], m[1]
-        mx = x_of(pos, plot_left, plot_right)
-        # 若和 today 位置太近，则把 milestone 再抬高 12px 以避免叠 TODAY 字
-        label_y = plot_top - 44
-        diamond_top = plot_top - 36
-        diamond_mid = plot_top - 28
-        diamond_bot = plot_top - 20
-        if today is not None:
-            try:
-                tx_check = x_of(today, plot_left, plot_right)
-                if abs(mx - tx_check) < 30:
-                    label_y = plot_top - 60
-                    diamond_top -= 16
-                    diamond_mid -= 16
-                    diamond_bot -= 16
-            except Exception:
-                pass
+    # user-provided milestones: diamonds in one row above the ticks / today label; labels stacked into
+    # non-overlapping rows (_milestone_rows), lifted labels get a thin leader down to their diamond.
+    diamond_top = diamond_bot - 14
+    for mx, label_x, row, lbl in ms_rows:
         parts.append(
-            f'<polygon points="{mx:.1f},{diamond_top:.1f} {mx + 6:.1f},{diamond_mid:.1f} '
-            f'{mx:.1f},{diamond_bot:.1f} {mx - 6:.1f},{diamond_mid:.1f}" '
-            f'fill="{ACC}" stroke="{BG}" stroke-width="1.2"/>'
+            f'<polygon points="{mx:.1f},{diamond_top:.1f} {mx + 6:.1f},{diamond_bot - 7:.1f} '
+            f'{mx:.1f},{diamond_bot:.1f} {mx - 6:.1f},{diamond_bot - 7:.1f}" '
+            f'fill="{MARK}" stroke="{BG}" stroke-width="1.2" data-role="milestone"/>'
         )
-        # 不再画 diamond→plot_top 的虚连接线：diamond_bot (plot_top-20) 到 plot_top 的线段
-        # 会穿过位于 plot_top-8 的 tick label（如 "6"、"8"）中央，视觉上像"红线切数字"。
-        # 菱形本身的下顶点已经指向 x 位置，无需额外连接线。
-        # 白色 halo 描边 + accent 前景，避免与轴 tick 数字视觉粘连
+        if row:
+            parts.append(
+                f'<line x1="{mx:.1f}" y1="{diamond_top - 6 - row * fs_owner * 1.3 + 3:.1f}" x2="{mx:.1f}" '
+                f'y2="{diamond_top - 1:.1f}" stroke="{MARK}" stroke-width="0.8"/>'
+            )
+    for mx, label_x, row, lbl in ms_rows:
         parts.append(
-            f'<text x="{mx:.1f}" y="{label_y:.1f}" text-anchor="middle" '
-            f'font-family="{body_font}" font-size="9.5" font-weight="700" '
+            f'<text x="{label_x:.1f}" y="{diamond_top - 6 - row * fs_owner * 1.3:.1f}" text-anchor="middle" '
+            f'font-family="{body_font}" font-size="{fs_owner}" font-weight="700" '
             f'stroke="{BG}" stroke-width="3" stroke-linejoin="round" paint-order="stroke" '
-            f'fill="{ACC}">{xesc(str(lbl))}</text>'
+            f'fill="{MARK}">{xesc(str(lbl))}</text>'
         )
 
-    # legend for critical_path
-    if variant == "critical_path" and critical:
-        lx = plot_right - 260
-        ly = H - 40
-        # Non-critical 用 series[1]，如仍等于 accent 则退回中性 ink4
-        non_crit_col = series[1] if len(series) > 1 else pal["ink4"]
-        if non_crit_col == ACC:
-            non_crit_col = pal["ink4"]
-        parts.append(f'<rect x="{lx:.1f}" y="{ly:.1f}" width="12" height="10" fill="{ACC}"/>')
+    footer_y = plot_bot + 24
+    if has_legend:
+        legend = [(tr("Critical path"), ACC), (tr("Non-critical"), pal["ink4"])]
+        symbol = fs_owner * 0.65
+        widths = [symbol + 10 + _estimate_label_width_px(label, fs_owner, font_family=body_font) for label, _ in legend]
+        lx = max(ML, plot_right - sum(widths) - 26)
+        for (label, color), item_width in zip(legend, widths):
+            parts.append(
+                f'<rect x="{lx:.1f}" y="{footer_y:.1f}" width="{symbol:.1f}" height="{symbol:.1f}" fill="{color}"/>'
+            )
+            parts.append(
+                f'<text x="{lx + symbol + 10:.1f}" y="{footer_y + fs_owner * 0.75:.1f}" font-family="{body_font}" '
+                f'font-size="{fs_owner:.1f}" fill="{label_col}">{label}</text>'
+            )
+            lx += item_width + 26
+        footer_y += fs_owner * 1.3 + 10
+    for line in note_lines:
         parts.append(
-            f'<text x="{lx + 18:.1f}" y="{ly + 9:.1f}" font-family="{body_font}" '
-            f'font-size="10" fill="{label_col}">Critical path</text>'
+            f'<text x="{ML:.1f}" y="{footer_y + fs_owner * 0.84:.1f}" font-family="{body_font}" '
+            f'font-size="{fs_owner:.1f}" fill="{MUT}">{xesc(line)}</text>'
         )
-        parts.append(f'<rect x="{lx + 130:.1f}" y="{ly:.1f}" width="12" height="10" fill="{non_crit_col}"/>')
-        parts.append(
-            f'<text x="{lx + 148:.1f}" y="{ly + 9:.1f}" font-family="{body_font}" '
-            f'font-size="10" fill="{label_col}">Non-critical + slack</text>'
-        )
-
-    # note
-    if note:
-        parts.append(
-            f'<text x="{ML:.1f}" y="{H - 20:.1f}" font-family="{body_font}" font-size="9.5" '
-            f'fill="{MUT}"><tspan font-weight="600">Note.</tspan> {xesc(note)}</text>'
-        )
+        footer_y += fs_owner * 1.3
 
     parts.append("</svg>")
     return "".join(parts)
-
-
-# ------------------------------------------------------------
-# axis helpers
-# ------------------------------------------------------------
 
 
 def _draw_date_axis(
     parts, lo, hi, plot_left, plot_right, plot_top, plot_bot, pal, body_font, fs, dark, hide_weekend=False
 ):
     total = max(1, (hi - lo).days)
+    if total > 180:
+        # Long programmes: month or year ticks labelled with the year, not a weekly grid of "%b %d".
+        months = 12 if total > 3 * 365 else 6 if total > 2 * 365 else 3 if total > 365 else 1
+        label_w = _estimate_label_width_px("2026-08", fs, font_family=body_font) + fs
+        while months < 12 and (plot_right - plot_left) / max(1, total / 30.4 / months) < label_w:
+            months = {1: 3, 3: 6, 6: 12}[months]
+        y, m = lo.year, lo.month
+        if lo.day != 1:
+            m += 1
+        while (m - 1) % months:
+            m += 1
+        y, m = y + (m - 1) // 12, (m - 1) % 12 + 1
+        span_years = max(1, round(total / 365 / max(1, (plot_right - plot_left) / label_w)))
+        while True:
+            d = _dt.date(y, m, 1)
+            if d > hi:
+                break
+            gx = plot_left + ((d - lo).days / total) * (plot_right - plot_left)
+            parts.append(
+                f'<line x1="{gx:.1f}" y1="{plot_top:.1f}" x2="{gx:.1f}" y2="{plot_bot:.1f}" '
+                f'stroke="{pal["ink1"]}" stroke-width="0.6"/>'
+            )
+            if months < 12 or (y - lo.year) % span_years == 0:
+                text = str(y) if months == 12 else f"{y}-{m:02d}"
+                parts.append(
+                    f'<text x="{gx:.1f}" y="{plot_top - 8:.1f}" text-anchor="middle" '
+                    f'font-family="{body_font}" font-size="{fs}" fill="{pal["muted"]}">{text}</text>'
+                )
+            m += months
+            y, m = y + (m - 1) // 12, (m - 1) % 12 + 1
+        return
     step = 1
     if total > 60:
         step = 7
@@ -491,11 +645,12 @@ def _draw_date_axis(
         while d <= hi:
             if d.weekday() >= 5:
                 gx = plot_left + ((d - lo).days / total) * (plot_right - plot_left)
-                gx2 = plot_left + ((d - lo).days + 1) / total * (plot_right - plot_left)
-                parts.append(
-                    f'<rect x="{gx:.1f}" y="{plot_top:.1f}" width="{max(0.1, gx2 - gx):.1f}" '
-                    f'height="{plot_bot - plot_top:.1f}" fill="{weekend_fill}"/>'
-                )
+                gx2 = min(plot_right, plot_left + ((d - lo).days + 1) / total * (plot_right - plot_left))
+                if gx2 > gx:
+                    parts.append(
+                        f'<rect x="{gx:.1f}" y="{plot_top:.1f}" width="{gx2 - gx:.1f}" '
+                        f'height="{plot_bot - plot_top:.1f}" fill="{weekend_fill}"/>'
+                    )
             d = d + _dt.timedelta(days=1)
 
     # 先算出会被标注的 tick 总数，决定 label decimation。
@@ -516,6 +671,9 @@ def _draw_date_axis(
         label_stride = 2
     else:
         label_stride = 1
+    date_width = _estimate_label_width_px("September 28", fs, font_family=body_font)
+    max_labels = max(1, int((plot_right - plot_left) / (date_width + fs)))
+    label_stride = max(label_stride, math.ceil(n_labels / max_labels))
     keep_labels = set(label_positions[::label_stride]) if label_stride > 1 else set(label_positions)
 
     d = lo
@@ -536,7 +694,7 @@ def _draw_date_axis(
         idx += 1
 
 
-def _draw_numeric_axis(parts, lo, hi, plot_left, plot_right, plot_top, plot_bot, pal, body_font, fs):
+def _draw_numeric_axis(parts, lo, hi, plot_left, plot_right, plot_top, plot_bot, pal, body_font, fs, unit=""):
     ticks = _nice_ticks_num(lo, hi, 6)
     span = hi - lo or 1
     for t in ticks:
@@ -548,7 +706,7 @@ def _draw_numeric_axis(parts, lo, hi, plot_left, plot_right, plot_top, plot_bot,
         parts.append(
             f'<text x="{gx:.1f}" y="{plot_top - 8:.1f}" text-anchor="middle" '
             f'font-family="{body_font}" font-size="{fs}" fill="{pal["muted"]}">'
-            f"{_num_fmt(t)}</text>"
+            f"{_num_fmt(t)}{(' ' + xesc(unit)) if unit and t == ticks[-1] else ''}</text>"
         )
 
 
@@ -567,7 +725,6 @@ def _nice_ticks_num(lo, hi, count):
         step = 5 * exp
     else:
         step = 10 * exp
-    # start
     start = math.ceil(lo / step) * step
     out = []
     v = start
@@ -581,7 +738,7 @@ def _num_fmt(v):
     if abs(v) >= 1000:
         return f"{v:,.0f}"
     if abs(v - round(v)) < 1e-9:
-        return f"{int(round(v))}"
+        return f"{round(v)}"
     return f"{v:g}"
 
 
@@ -595,24 +752,25 @@ def _fmt_pos(v, use_dates):
 
 def make_gantt(
     tasks,
-    weeks: int = None,
+    weeks: int | None = None,
     critical_index=None,
     milestones=None,
     project_start=None,
     project_end=None,
     today=None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    note: str = None,
-    source: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    note: str | None = None,
+    source: str | None = None,
     show_kpi: bool = True,
     show_legend: bool = True,
+    time_unit: str = "",
     width: float = 1620,
-    height: float = None,
-    font_family: str = None,
+    height: float | None = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
 ) -> str:
     """
     甘特图 · dandelion academic 风格。
@@ -627,29 +785,62 @@ def make_gantt(
        - name: 任务名（必需）
        - owner: 负责人（可选）
        - start / end: 日期字符串 "YYYY-MM-DD" 或 datetime.date（必需）
-       - progress: 0-100 完成度（可选，缺省 0）
-       - status: "done"/"on-track"/"at-risk"/"delayed"（可选，缺省 "on-track"）
+       - progress: 0-100 完成度（可选，缺省显示未报告）
+       - status: "done"/"on-track"/"at-risk"/"delayed"（可选，缺省显示未报告）
        - milestone: True/False（可选，milestone=True 时用菱形代替条）
-    B) **老格式（兼容）**：list of tuple `(name, start_week, end_week)`
+    B) **老格式（兼容）**：list of tuple `(name, start_week, end_week, stream?)`
+       + 可选第 4 项仅是工作流/分组标签（含数字 0/1），不是关键路径布尔值；关键路径只由 critical_index 指定
        + weeks=int 项目总周数
        + critical_index=int 关键路径任务索引（高亮）
        + milestones=[(week, label), ...]
 
     project_start / project_end: 项目起止日期（新格式时自动从 tasks 推断）
-    today: 今日日期，用于红色 TODAY 竖虚线；缺省用 datetime.date.today()
+    today: 今日日期，画 TODAY 竖虚线（tuple 格式用 palette accent 色，chart_slide 会提示实际颜色）；dict 格式缺省用 datetime.date.today()
 
     title/subtitle/figure_label/note/source: 学术风顶/底文字
     show_kpi: 顶部 4 张 KPI 卡片（OVERALL PROGRESS / COMPLETED / ON TRACK / AT RISK）
     show_legend: 底部图例条
+    time_unit: 数值时间轴的单位（"h"、"d"、"周"），标在最后一个刻度后；阶段 / 检测窗口 / 时程区间用 tuple
+       (名称, 起, 止, 分组) 即可，如 ("cTnI", 3, 240, "心肌损伤标志物")。
 
     palette 支持 stream_colors/status_colors 覆盖。
     """
     if not _variant_is_classic("gantt", variant):
+        tasks = list(tasks)
+        if not tasks:
+            raise ValueError("gantt: at least one task required")
+        norm = _normalize_tasks(tasks)
+        lower, upper, use_dates = _infer_bounds(norm, milestones, None)
         _data = {
-            "tasks": list(tasks),
+            "tasks": tasks,
             "milestones": milestones or [],
             "critical_indices": ([critical_index] if isinstance(critical_index, int) else list(critical_index or [])),
+            "today": today,
+            "show_legend": show_legend,
+            "time_unit": time_unit,
         }
+        if weeks is not None:
+            if use_dates:
+                raise ValueError("gantt: weeks requires numeric task positions")
+            _data["domain"] = (0, weeks)
+        if project_start is not None or project_end is not None:
+            if not use_dates:
+                raise ValueError("gantt: calendar bounds require calendar task dates")
+            _data["domain"] = (
+                lower if project_start is None else project_start,
+                upper if project_end is None else project_end,
+            )
+        # Public task progress is always percentage units. The internal draw
+        # adapter also accepts fractional maps, so convert explicitly once.
+        progress_map = {}
+        for t in norm:
+            if t.get("progress") is not None:
+                value = float(t["progress"])
+                if not math.isfinite(value) or not 0 <= value <= 100:
+                    raise ValueError("gantt: progress must be finite and in [0,100]")
+                progress_map[t["name"]] = value / 100
+        if progress_map:
+            _data["progress_map"] = progress_map
         return _dispatch_to_svg_lib(
             "gantt",
             variant,
@@ -659,6 +850,9 @@ def make_gantt(
             figure_label=figure_label,
             palette=palette,
             font_family=font_family,
+            width=width,
+            height=height,
+            note=" · ".join(str(v) for v in (note, source) if v) or None,
         )
 
     import datetime as _dt
@@ -666,18 +860,54 @@ def make_gantt(
     if not tasks:
         raise ValueError("gantt: at least one task required")
 
+    if milestones and all(
+        isinstance(t, dict) and not any(t.get(k) is not None for k in ("progress", "status", "owner")) for t in tasks
+    ):
+        # A plain dict timeline with milestones (trial programmes, regulatory history) is a timeline, not a
+        # status dashboard: draw it like the tuple form so milestones=, today= and multi-year axes are honoured.
+        tasks = [(t["name"], t["start"], t["end"], t.get("stream") or "") for t in tasks]
+    if isinstance(tasks[0], (list, tuple)):
+        if (project_start is not None or project_end is not None) and not all(
+            isinstance(t[1], (str, _dt.date)) for t in tasks
+        ):
+            raise ValueError("gantt: numeric weeks cannot be combined with calendar date bounds")
+        data = {
+            "tasks": list(tasks),
+            "milestones": milestones or [],
+            "today": today,
+            "critical_indices": [critical_index] if critical_index is not None else [],
+            "show_legend": show_legend,
+            "time_unit": time_unit,
+        }
+        if weeks is not None:
+            data["domain"] = (0, weeks)
+        if project_start is not None or project_end is not None:
+            lower, upper, _ = _infer_bounds(_normalize_tasks(tasks), milestones, None)
+            data["domain"] = (
+                lower if project_start is None else project_start,
+                upper if project_end is None else project_end,
+            )
+        return draw_gantt(
+            data,
+            variant="critical_path" if critical_index is not None else "default_flat",
+            palette=palette,
+            width=width,
+            height=height,
+            title=title,
+            subtitle=subtitle,
+            figure_label=figure_label,
+            note=" · ".join(str(v) for v in (note, source) if v) or None,
+            font_family=font_family,
+        )
+
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
+    _INK, _INK4, _ACC = (
         _pal["ink"],
-        _pal["ink6"],
         _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
         _pal["accent"],
     )
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
-    c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
     c_bg = _pal.get("bg")
     PAPER = c_bg if c_bg else "rgba(247,240,226,1)"
     PANEL = _pal.get("panel", _rgba_with_alpha(_INK, 0.04) if not c_bg else _rgba_with_alpha(_INK, 0.08))
@@ -690,93 +920,46 @@ def make_gantt(
         "delayed": _pal.get("gantt_delayed_color", "rgba(170,60,70,1)"),
     }
 
-    # ---------- 输入归一化 ----------
     def _to_date(v):
         if isinstance(v, _dt.date):
             return v
         if isinstance(v, str):
-            return _dt.datetime.strptime(v, "%Y-%m-%d").date()
+            return _dt.date.fromisoformat(v)
         raise ValueError(f"gantt: date must be str 'YYYY-MM-DD' or date, got {v!r}")
 
-    is_legacy = (
-        isinstance(tasks[0], (list, tuple))
-        and len(tasks[0]) >= 3
-        and isinstance(tasks[0][1], (int, float))
-        and isinstance(tasks[0][2], (int, float))
-    )
-
-    if is_legacy:
-        # 老 API：(name, start_week, end_week)
-        if weeks is None:
-            weeks = max(t[2] for t in tasks) + 1
-        # 用虚拟日期：Jan 1 起，每周 7 天
-        base = _dt.date(2025, 1, 6)  # Monday
-        norm_tasks = []
-        for i, t in enumerate(tasks):
-            name = str(t[0])
-            sw = int(t[1])
-            ew = int(t[2])
-            start_d = base + _dt.timedelta(weeks=sw)
-            end_d = base + _dt.timedelta(weeks=ew) - _dt.timedelta(days=1)
-            is_critical = critical_index is not None and i == critical_index
-            norm_tasks.append(
-                dict(
-                    stream="Tasks",
-                    name=name,
-                    owner=None,
-                    start=start_d,
-                    end=end_d,
-                    progress=100 if is_critical else 0,
-                    status="on-track",
-                    milestone=False,
-                    _highlight=is_critical,
-                )
-            )
-        # 里程碑作为独立任务
-        if milestones:
-            for m_ in milestones:
-                if len(m_) < 2:
-                    continue
-                wk, lbl = m_[0], m_[1]
-                ms_date = base + _dt.timedelta(weeks=wk)
-                norm_tasks.append(
-                    dict(
-                        stream="Milestones",
-                        name=str(lbl),
-                        owner=None,
-                        start=ms_date,
-                        end=ms_date,
-                        progress=0,
-                        status="on-track",
-                        milestone=True,
-                        _highlight=False,
-                    )
-                )
-        proj_start = base
-        proj_end = base + _dt.timedelta(weeks=weeks) - _dt.timedelta(days=1)
-    else:
-        norm_tasks = []
-        for t in tasks:
-            if not isinstance(t, dict):
-                raise ValueError(f"gantt: new API expects dict tasks, got {type(t)}")
-            norm_tasks.append(
-                dict(
-                    stream=t.get("stream", "Tasks"),
-                    name=str(t.get("name", "")),
-                    owner=t.get("owner"),
-                    start=_to_date(t["start"]),
-                    end=_to_date(t["end"]),
-                    progress=int(t.get("progress", 0)),
-                    status=t.get("status", "on-track"),
-                    milestone=bool(t.get("milestone", False)),
-                    _highlight=False,
-                )
-            )
-        proj_start = project_start and _to_date(project_start) or min(t["start"] for t in norm_tasks)
-        proj_end = project_end and _to_date(project_end) or max(t["end"] for t in norm_tasks)
+    norm_tasks = []
+    for t in tasks:
+        if not isinstance(t, dict):
+            raise TypeError(f"gantt: new API expects dict tasks, got {type(t)}")
+        progress = t.get("progress")
+        if progress is not None:
+            progress = float(progress)
+            if not math.isfinite(progress) or not 0 <= progress <= 100:
+                raise ValueError("gantt: progress must be finite and in [0,100]")
+        if t.get("status") is not None and t["status"] not in STATUS_COLORS:
+            raise ValueError("gantt: unknown reported status")
+        norm_tasks.append(
+            {
+                "stream": t.get("stream", "Tasks"),
+                "name": str(t.get("name", "")),
+                "owner": t.get("owner"),
+                "start": _to_date(t["start"]),
+                "end": _to_date(t["end"]),
+                "progress": progress,
+                "status": t.get("status"),
+                "milestone": bool(t.get("milestone", False)),
+                "_highlight": False,
+            }
+        )
+    proj_start = project_start and _to_date(project_start) or min(t["start"] for t in norm_tasks)
+    proj_end = project_end and _to_date(project_end) or max(t["end"] for t in norm_tasks)
+    if any(t["end"] < t["start"] for t in norm_tasks):
+        raise ValueError("gantt: task end must not precede start")
+    if proj_end < proj_start or any(t["start"] < proj_start or t["end"] > proj_end for t in norm_tasks):
+        raise ValueError("gantt: project bounds must include all tasks")
 
     if today is None:
-        today = _dt.date.today()
+        today = _dt.datetime.now().astimezone().date()
     else:
         today = _to_date(today) if not isinstance(today, _dt.date) else today
 
@@ -790,33 +973,30 @@ def make_gantt(
     if STREAM_COLORS is None:
         STREAM_COLORS = {name: stream_series[i] for i, name in enumerate(stream_names)}
     else:
-        # 补齐缺失的 stream
         for i, name in enumerate(stream_names):
             if name not in STREAM_COLORS:
                 STREAM_COLORS[name] = stream_series[i]
 
-    # ---------- 统计 ----------
     n_tasks = len(norm_tasks)
-    overall_progress = sum(t["progress"] for t in norm_tasks) / n_tasks if n_tasks else 0
+    reported_progress = [t["progress"] for t in norm_tasks if t["progress"] is not None]
+    overall_progress = sum(reported_progress) / len(reported_progress) if reported_progress else None
+    reported_status = sum(t["status"] is not None for t in norm_tasks)
     n_done = sum(1 for t in norm_tasks if t["status"] == "done")
     n_on_track = sum(1 for t in norm_tasks if t["status"] == "on-track")
     n_at_risk = sum(1 for t in norm_tasks if t["status"] == "at-risk")
-    n_delayed = sum(1 for t in norm_tasks if t["status"] == "delayed")
     total_days = (proj_end - proj_start).days + 1
     days_elapsed = max(0, min(total_days, (today - proj_start).days))
     schedule_pct = days_elapsed / total_days * 100
 
-    # ---------- 布局 ----------
     MARGIN_L = 90
     MARGIN_R = 90
-    MARGIN_T = 265 if show_kpi else 160
+    MARGIN_T = 320 if show_kpi else 215
     MARGIN_B = 130 if (note or source or show_legend) else 60
 
     LEFT_COL_W = 380
     RIGHT_COL_W = 140
     plot_x = MARGIN_L + LEFT_COL_W
 
-    # ---------- 字号 ----------
     # 双重自适应：viewBox 尺寸 + 数据规模（n = tasks 数）。
     # gantt 高度由 tasks 决定（下方 height 计算），所以 base_fs 只按宽度算一档基准；
     # 之后先按 tasks 数分档，再乘各类目倍数。
@@ -843,22 +1023,22 @@ def make_gantt(
     fs_head = round(min(14.0, max(10.0, _base_fs * 0.7)), 1)  # 表头
     fs_group = round(min(17.0, max(11.0, _fs_data * 0.95)), 1)  # group header
     fs_group_sub = round(min(14.0, max(10.0, _fs_data * 0.8)), 1)
-    fs_task = round(min(19.0, max(11.0, _fs_data * 1.05)), 1)  # 任务名
+    fonts = chart_font_sizes(width, height or 800, n_tasks)
+    fs_task = round(fonts["label"], 1)  # 任务名
     fs_task_sub = round(min(14.0, max(10.0, _fs_data * 0.8)), 1)  # 任务日期/owner
     fs_bar_txt = round(min(13.0, max(9.0, _fs_data * 0.7)), 1)
     fs_bar_lbl = round(min(14.0, max(10.0, _fs_data * 0.8)), 1)
     fs_status = round(min(14.0, max(10.0, _fs_data * 0.8)), 1)
     # milestone label 略小（base_fs * 0.85）
     fs_ms_lbl = round(min(15.0, max(10.0, _base_fs * 0.85)), 1)
-    fs_x_tick = round(min(13.0, max(9.0, _base_fs * 0.65)), 1)
+    fs_x_tick = round(fonts["xtick"], 1)
     fs_legend = round(min(14.0, max(10.0, _base_fs * 0.7)), 1)
     fs_foot = round(min(14.0, max(10.0, _base_fs * 0.7)), 1)
     plot_y = MARGIN_T
     plot_w = width - MARGIN_L - MARGIN_R - LEFT_COL_W - RIGHT_COL_W
-    ROW_H = 40
-    GROUP_HEADER_H = 32
+    ROW_H = max(40, fs_task * 1.4 + fs_task_sub * 1.4 + 14)
+    GROUP_HEADER_H = 48
 
-    # 计算每个 task 的 y offset
     prev_stream = None
     task_y_offset = []
     cur_y = 0
@@ -883,7 +1063,6 @@ def make_gantt(
     if c_bg:
         parts.append(f'<rect width="{width}" height="{height}" fill="{PAPER}"/>')
 
-    # 顶部标题
     if title:
         parts.append(
             f'<text x="{MARGIN_L}" y="52" '
@@ -909,21 +1088,35 @@ def make_gantt(
         parts.append(
             f'<text x="{MARGIN_L + lbl_w}" y="112" font-family="{_body_font}" font-size="{fs_figure}" '
             f'fill="{c_muted}" letter-spacing=".04em">'
-            f"{_xesc(f'Gantt · {n_tasks} tasks · {proj_start.isoformat()} → {proj_end.isoformat()}')}</text>"
+            f"{_xesc(tr('Gantt · {n} tasks · {start} → {end}', n=n_tasks, start=proj_start.isoformat(), end=proj_end.isoformat()))}</text>"
         )
 
-    # KPI 卡片
     if show_kpi:
         kpis = [
             (
-                "OVERALL PROGRESS",
-                f"{overall_progress:.0f}%",
-                f"schedule at {schedule_pct:.0f}% elapsed",
+                tr("REPORTED PROGRESS"),
+                f"{overall_progress:g}%" if overall_progress is not None else "—",
+                tr("{k}/{n} tasks reported", k=len(reported_progress), n=n_tasks),
                 STATUS_COLORS["on-track"],
             ),
-            ("COMPLETED", f"{n_done}", f"of {n_tasks} tasks", STATUS_COLORS["done"]),
-            ("ON TRACK", f"{n_on_track}", "tasks progressing to plan", STATUS_COLORS["on-track"]),
-            ("AT RISK", f"{n_at_risk}", "needs attention this week", STATUS_COLORS["at-risk"]),
+            (
+                tr("COMPLETED"),
+                str(n_done) if reported_status else "—",
+                tr("{k}/{n} statuses reported", k=reported_status, n=n_tasks),
+                STATUS_COLORS["done"],
+            ),
+            (
+                tr("ON TRACK"),
+                str(n_on_track) if reported_status else "—",
+                tr("{k}/{n} statuses reported", k=reported_status, n=n_tasks),
+                STATUS_COLORS["on-track"],
+            ),
+            (
+                tr("AT RISK"),
+                str(n_at_risk) if reported_status else "—",
+                tr("{k}/{n} statuses reported", k=reported_status, n=n_tasks),
+                STATUS_COLORS["at-risk"],
+            ),
         ]
         kpi_y = 130
         # 三行 baseline 布局：hdr → big → sub，间距按字号自适应确保 bbox 不相交
@@ -959,11 +1152,11 @@ def make_gantt(
                 f'<text x="{kx + 18:.1f}" y="{kpi_y + _sub_baseline:.1f}" font-family="{_body_font}" '
                 f'font-size="{fs_kpi_sub}" fill="{c_muted}">{_xesc(sub)}</text>'
             )
-            # 第一张卡片带进度条
-            if i == 0:
-                bx = kx + 150
+            if i == 0 and overall_progress is not None:
+                metric_width = _estimate_label_width_px(big, fs_kpi_big, bold=True, font_family=_head_font)
+                bx = kx + 18 + metric_width + 16
                 by = kpi_y + _big_baseline - fs_kpi_big * 0.3
-                bw = kpi_w - 170
+                bw = kx + kpi_w - 18 - bx
                 bh = 10
                 if bw > 30:
                     parts.append(
@@ -981,11 +1174,10 @@ def make_gantt(
                     )
                     parts.append(
                         f'<text x="{plan_x:.1f}" y="{by - 6}" text-anchor="middle" '
-                        f'font-family="{_body_font}" font-size="{fs_x_tick}" fill="{_INK}" '
-                        f'font-weight="600">PLAN</text>'
+                        f'font-family="{_body_font}" font-size="{fs_kpi_sub}" fill="{_INK}" '
+                        f'font-weight="600">{_xesc(tr("PLAN"))}</text>'
                     )
 
-    # 表头
     head_y = MARGIN_T - 12
     parts.append(
         f'<text x="{MARGIN_L}" y="{head_y}" font-family="{_body_font}" '
@@ -995,7 +1187,7 @@ def make_gantt(
     parts.append(
         f'<text x="{MARGIN_L + LEFT_COL_W - 10}" y="{head_y}" text-anchor="end" '
         f'font-family="{_body_font}" font-size="{fs_head}" fill="{c_muted}" '
-        f'font-weight="600" letter-spacing=".15em">OWNER</text>'
+        f'font-weight="600" letter-spacing=".15em">{_xesc(tr("OWNER"))}</text>'
     )
     parts.append(
         f'<text x="{width - MARGIN_R}" y="{head_y}" text-anchor="end" '
@@ -1007,7 +1199,6 @@ def make_gantt(
         f'stroke="{_INK}" stroke-width="0.6"/>'
     )
 
-    # 月份 header + 周刻度
     axis_y = plot_y - 40
     month_starts = []
     d0 = proj_start.replace(day=1)
@@ -1054,7 +1245,6 @@ def make_gantt(
                 f'stroke="{_INK4}" stroke-width="0.5"/>'
             )
 
-    # 周刻度
     d_iter = proj_start
     week_i = 0
     while d_iter <= proj_end:
@@ -1093,18 +1283,20 @@ def make_gantt(
             )
             parts.append(f'<rect x="{MARGIN_L}" y="{hy}" width="4" height="{GROUP_HEADER_H}" fill="{col}"/>')
             parts.append(
-                f'<text x="{MARGIN_L + 14}" y="{hy + GROUP_HEADER_H - 8}" '
+                f'<text x="{MARGIN_L + 14}" y="{hy + 18}" '
                 f'font-family="{_body_font}" font-size="{fs_group}" font-weight="700" '
                 f'fill="{col}" letter-spacing=".14em">{_xesc(t["stream"].upper())}</text>'
             )
-            # 组内统计
             gt = [x for x in norm_tasks if x["stream"] == t["stream"]]
             gdone = sum(1 for x in gt if x["status"] == "done")
-            gprog = sum(x["progress"] for x in gt) / len(gt) if gt else 0
+            gvalues = [x["progress"] for x in gt if x["progress"] is not None]
+            gknown = sum(x["status"] is not None for x in gt)
+            gprogress = f"{sum(gvalues) / len(gvalues):g}% reported avg" if gvalues else "progress —"
+            gstatus = f"{gdone}/{gknown} reported done" if gknown else "status —"
             parts.append(
-                f'<text x="{plot_x - 10}" y="{hy + GROUP_HEADER_H - 8}" text-anchor="end" '
+                f'<text x="{MARGIN_L + 14}" y="{hy + 38}" '
                 f'font-family="{_body_font}" font-size="{fs_group_sub}" fill="{c_muted}" '
-                f'letter-spacing=".05em">{gdone}/{len(gt)} done · {gprog:.0f}% avg</text>'
+                f">{gstatus} · {gprogress}</text>"
             )
 
         y = plot_y + task_y_offset[i]
@@ -1115,7 +1307,6 @@ def make_gantt(
 
     # 绘图区边框已合并到上方 PAPER 底色 rect；此处不再叠加以免 bbox 冲突。
 
-    # 任务名 + owner
     for i, t in enumerate(norm_tasks):
         y = plot_y + task_y_offset[i]
         ty = y + ROW_H / 2 + 4
@@ -1130,7 +1321,6 @@ def make_gantt(
                 f'font-style="italic">{_xesc(str(t["owner"]))}</text>'
             )
 
-    # 甘特条
     BAR_H = 22
     for i, t in enumerate(norm_tasks):
         y = plot_y + task_y_offset[i] + (ROW_H - BAR_H) / 2
@@ -1141,10 +1331,9 @@ def make_gantt(
         r, g, b = _rgb_tuple(col)
 
         if t["milestone"]:
-            cx = x1
+            cx = date_to_x(t["end"])
             cy = y + BAR_H / 2
             sz = 9
-            # 计划区间底条
             parts.append(
                 f'<rect x="{x0:.1f}" y="{y + BAR_H / 2 - 2:.1f}" width="{w:.1f}" height="4" '
                 f'rx="1.5" fill="rgba({r},{g},{b},0.35)"/>'
@@ -1163,28 +1352,25 @@ def make_gantt(
             # 与菱形留 4px padding
             _ms_x_end = cx - sz - 4
             if _ms_x_end - _ms_est_w >= plot_x + 2:
-                # 放左侧、右对齐、baseline 与行中线对齐
                 parts.append(
                     f'<text x="{_ms_x_end:.1f}" y="{cy + 3.5:.1f}" text-anchor="end" '
                     f'font-family="{_body_font}" font-size="{_ms_fs}" fill="{_INK}" '
                     f'font-weight="600">{_xesc(_ms_txt)}</text>'
                 )
             else:
-                # 空间不够（菱形贴左边），改放右侧、左对齐
                 parts.append(
                     f'<text x="{cx + sz + 4:.1f}" y="{cy + 3.5:.1f}" text-anchor="start" '
                     f'font-family="{_body_font}" font-size="{_ms_fs}" fill="{_INK}" '
                     f'font-weight="600">{_xesc(_ms_txt)}</text>'
                 )
         else:
-            # 计划底条
             parts.append(
                 f'<rect x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" height="{BAR_H}" '
                 f'rx="2.5" fill="rgba({r},{g},{b},0.22)" '
                 f'stroke="rgba({r},{g},{b},0.55)" stroke-width="0.6"/>'
             )
             # 进度条：略微内缩以避免与计划底条 bbox 完全重合（100% 完成时）。
-            pw = w * t["progress"] / 100
+            pw = w * (t["progress"] or 0) / 100
             if pw > 1:
                 # 内缩 0.5px 让两个 rect 的 bbox 不完全一致，同时视觉上不明显变化。
                 pw_draw = min(pw, w - 0.5) if t["progress"] >= 100 else pw
@@ -1193,48 +1379,41 @@ def make_gantt(
                     f'height="{BAR_H - 0.6}" '
                     f'rx="2.5" fill="rgba({r},{g},{b},0.9)"/>'
                 )
-            # 百分比
-            pct_txt = f"{t['progress']}%"
-            if t["progress"] >= 25 and pw > 34:
+            pct_txt = f"{t['progress']:g}%" if t["progress"] is not None else "—"
+            pct_width = _estimate_label_width_px(pct_txt, fs_bar_txt, bold=True, font_family=_body_font)
+            if pw > pct_width + 10:
                 parts.append(
                     f'<text x="{x0 + pw - 5:.1f}" y="{y + BAR_H / 2 + 3.5:.1f}" '
                     f'text-anchor="end" font-family="{_body_font}" '
                     f'font-size="{fs_bar_txt}" font-weight="700" fill="{PAPER}">{pct_txt}</text>'
                 )
-            elif t["progress"] > 0:
-                parts.append(
-                    f'<text x="{x0 + w + 4:.1f}" y="{y + BAR_H / 2 + 3.5:.1f}" '
-                    f'font-family="{_body_font}" font-size="{fs_bar_lbl}" '
-                    f'font-weight="600" fill="{c_muted}">{pct_txt}</text>'
-                )
 
-        # 状态 badge
-        sc = STATUS_COLORS.get(t["status"], STATUS_COLORS["on-track"])
+        sc = STATUS_COLORS.get(t["status"], _INK4)
+        pct_txt = f"{t['progress']:g}%" if t["progress"] is not None else "—"
         bx = width - MARGIN_R - RIGHT_COL_W + 10
         by = y + BAR_H / 2
         parts.append(f'<circle cx="{bx:.1f}" cy="{by:.1f}" r="4" fill="{sc}"/>')
         parts.append(
             f'<text x="{bx + 10:.1f}" y="{by + 3.5:.1f}" font-family="{_body_font}" '
-            f'font-size="{fs_status}" fill="{_INK}" font-weight="600">{_xesc(t["status"])}</text>'
+            f'font-size="{fs_status}" fill="{_INK}" font-weight="600">{_xesc(t["status"] or "—")}</text>'
         )
         parts.append(
             f'<text x="{width - MARGIN_R:.1f}" y="{by + 3.5:.1f}" text-anchor="end" '
             f'font-family="{_head_font}" font-size="{fs_ms_lbl}" fill="{_INK}" '
-            f'font-weight="700">{t["progress"]}%</text>'
+            f'font-weight="700">{pct_txt}</text>'
         )
 
-    # TODAY 竖线
     if proj_start <= today <= proj_end:
         today_x = date_to_x(today)
         red_col = STATUS_COLORS["delayed"]
         parts.append(
             f'<line x1="{today_x:.1f}" y1="{axis_y - 4}" '
             f'x2="{today_x:.1f}" y2="{plot_y + plot_h + 6}" '
-            f'stroke="{red_col}" stroke-width="1.4" stroke-dasharray="4 3"/>'
+            f'stroke="{red_col}" stroke-width="1.4" stroke-dasharray="4 3" data-role="today-marker" data-color="{red_col}"/>'
         )
-        # 顶部小旗
-        flag_w = 62
-        flag_h = 16
+        today_label = f"TODAY · {today.strftime('%b %d').upper()}"
+        flag_w = _estimate_label_width_px(today_label, fs_bar_lbl, bold=True, font_family=_body_font) + 20
+        flag_h = fs_bar_lbl * 1.4 + 8
         fx = today_x - flag_w / 2
         fy = axis_y - 4 - flag_h - 4
         parts.append(f'<rect x="{fx:.1f}" y="{fy:.1f}" width="{flag_w}" height="{flag_h}" rx="2" fill="{red_col}"/>')
@@ -1244,12 +1423,11 @@ def make_gantt(
             f'{today_x:.1f},{fy + flag_h + 5:.1f}" fill="{red_col}"/>'
         )
         parts.append(
-            f'<text x="{today_x:.1f}" y="{fy + 11:.1f}" text-anchor="middle" '
+            f'<text x="{today_x:.1f}" y="{fy + flag_h / 2 + fs_bar_lbl * 0.35:.1f}" text-anchor="middle" '
             f'font-family="{_body_font}" font-size="{fs_bar_lbl}" font-weight="700" '
-            f'fill="{PAPER}" letter-spacing=".1em">TODAY · {_xesc(today.strftime("%b %d").upper())}</text>'
+            f'fill="{PAPER}">{_xesc(today_label)}</text>'
         )
 
-    # 底部图例
     if show_legend:
         lg_y = plot_y + plot_h + 55
         parts.append(
@@ -1258,10 +1436,9 @@ def make_gantt(
         )
         parts.append(
             f'<text x="{MARGIN_L}" y="{lg_y - 5}" font-family="{_body_font}" '
-            f'font-size="{fs_legend}" fill="{c_muted}" font-weight="600" letter-spacing=".15em">LEGEND</text>'
+            f'font-size="{fs_legend}" fill="{c_muted}" font-weight="600" letter-spacing=".15em">{_xesc(tr("LEGEND"))}</text>'
         )
 
-        # 用第一个 stream 的色
         demo_col = stream_series[0] if stream_series else _ACC
         r_, g_, b_ = _rgb_tuple(demo_col)
         lx = MARGIN_L + 80
@@ -1272,7 +1449,7 @@ def make_gantt(
         )
         parts.append(
             f'<text x="{lx + 68}" y="{ly + 10}" font-family="{_body_font}" '
-            f'font-size="{fs_legend}" fill="{_INK}">Planned duration</text>'
+            f'font-size="{fs_legend}" fill="{_INK}">{_xesc(tr("Planned duration"))}</text>'
         )
 
         lx += 200
@@ -1283,10 +1460,9 @@ def make_gantt(
         parts.append(f'<rect x="{lx}" y="{ly}" width="42" height="12" rx="2" fill="{demo_col}"/>')
         parts.append(
             f'<text x="{lx + 68}" y="{ly + 10}" font-family="{_body_font}" '
-            f'font-size="{fs_legend}" fill="{_INK}">Actual progress</text>'
+            f'font-size="{fs_legend}" fill="{_INK}">{_xesc(tr("Actual progress"))}</text>'
         )
 
-        # milestone
         lx += 200
         cx_ = lx + 8
         cy_ = ly + 6
@@ -1295,10 +1471,9 @@ def make_gantt(
         parts.append(f'<polygon points="{pts_}" fill="{demo_col}" stroke="{PAPER}" stroke-width="1.2"/>')
         parts.append(
             f'<text x="{lx + 22}" y="{ly + 10}" font-family="{_body_font}" '
-            f'font-size="{fs_legend}" fill="{_INK}">Milestone</text>'
+            f'font-size="{fs_legend}" fill="{_INK}">{_xesc(tr("Milestone"))}</text>'
         )
 
-        # TODAY
         lx += 130
         parts.append(
             f'<line x1="{lx}" y1="{ly - 1}" x2="{lx}" y2="{ly + 13}" '
@@ -1306,10 +1481,9 @@ def make_gantt(
         )
         parts.append(
             f'<text x="{lx + 10}" y="{ly + 10}" font-family="{_body_font}" '
-            f'font-size="{fs_legend}" fill="{_INK}">Today marker</text>'
+            f'font-size="{fs_legend}" fill="{_INK}">{_xesc(tr("Today marker"))}</text>'
         )
 
-        # 状态 badges
         lx += 130
         for k, col in [
             ("done", STATUS_COLORS["done"]),
@@ -1324,37 +1498,25 @@ def make_gantt(
             )
             lx += 78
 
-    # 底部脚注
-    if note or source:
-        foot_y = height - 45
-        parts.append(
-            f'<line x1="{MARGIN_L}" y1="{foot_y - 14}" x2="{width - MARGIN_R}" y2="{foot_y - 14}" '
-            f'stroke="{_INK4}" stroke-width="0.5"/>'
+    parts.append(
+        notes_source_footer(
+            note,
+            source,
+            x=MARGIN_L,
+            x_right=width - MARGIN_R,
+            y=height - 45,
+            rule=_INK4,
+            font=_body_font,
+            fs=fs_foot,
+            color=c_muted,
+            figure_label=figure_label,
+            figure_fs=fs_figure,
         )
-        if note:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
-                f'font-size="{fs_foot}" fill="{c_muted}">'
-                f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
-            )
-        if source:
-            parts.append(
-                f'<text x="{MARGIN_L}" y="{foot_y + 14}" font-family="{_body_font}" '
-                f'font-size="{fs_foot}" fill="{c_muted}">'
-                f'<tspan font-weight="600">Source.</tspan> {_xesc(source)}</text>'
-            )
-        if figure_label:
-            parts.append(
-                f'<text x="{width - MARGIN_R}" y="{foot_y + 14}" text-anchor="end" '
-                f'font-family="{_body_font}" font-size="{fs_figure}" fill="{c_muted}" '
-                f'letter-spacing=".05em">{_xesc(figure_label)}</text>'
-            )
+    )
 
     body = "".join(parts)
     _svg_result = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {int(width)} {int(height)}">{body}</svg>'
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 12) Population Pyramid 人口金字塔
-# ==============================================================

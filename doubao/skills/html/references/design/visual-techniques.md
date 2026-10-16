@@ -4,7 +4,7 @@
 
 ## 动效
 
-一个页面最多 1–2 个动效锚点（如 hero 入场 + 一段 scroll-pin 叙事），其他地方保持静止或最多一次 200ms hover。不要给每个元素都套 fade-in-up。
+把动效集中在最值得观看的变化上，让其他内容留出阅读的余地。灵动报告的 hero 按 [报告设计](../interactive-report.md#让首屏先动起来) 中的作品集标准编排，元素动画、粒子和光影都可以营造氛围。可靠的实现也要有大胆的构图与节奏，复杂的结构展开与视角变化按内容选用。不把所有段落套成同一种淡入上滑，也不为静态任务强加动态场景。
 
 **选型**：
 
@@ -15,25 +15,29 @@
 - **Lottie**（`lottie-web`）：AE / Figma 导出的矢量动画。
 - **Web Animations API**（`element.animate()`）：JS 精确控制播放 / 暂停 / 反转时用。
 
-**编排**：入场 ≤ 600ms，缓动用 `cubic-bezier(0.22, 1, 0.36, 1)` 或 `expo.out`；stagger 步长 40–80ms，超 100ms 拖沓；`prefers-reduced-motion: reduce` 时禁用所有动效。
+**编排**：控件反馈要利落；承担解释的运动按观察所需的时间安排，让读者看清起点、变化与结果。先确定起止构图，再选择缓动；`cubic-bezier(0.22, 1, 0.36, 1)` 或 `expo.out` 可作为起点，需要匀速表达过程时用线性变化。需要反复观察的内容允许重播或由读者控制进度。hero 的氛围动画可以平滑循环，控制密度与运动范围，离屏后暂停；其余无信息增量的循环应停止。`prefers-reduced-motion: reduce` 时跳过非必要运动，直接给出信息完整的稳定状态。
 
 **slop 红线**：
 
 - 全站 `data-aos="fade-up"`
-- hero 里飘几个"粒子"点当装饰
+- 粒子或轨迹持续堆积成团，遮挡标题、正文或操作入口
 - 数字 counter 从 0 滚到目标（除非页面就在讲一次增长）
 - 弹跳（bounce）出现在企业 / 数据类内容
 - typewriter 打字机（除非主题是终端 / 写作 / AI）
 
 ## 滚动叙事
 
-滚动本身就是叙事节奏时用：长文数据报道、教学解释、按步骤揭开的推演。工具层：
+滚动本身就是叙事节奏时用：长文数据报道、教学解释、按步骤揭开的推演。灵动报告在适合的关键段落优先尝试让主视觉随进度连续变化，向前推进、向后恢复；只在进入视野时播放一次的动画适合作为辅助。工具层：
 
 - **Scrollama.js**（4KB）：段落进入 / 离开 viewport 触发 callback。不需要 scrub / pin 时首选。
 - **GSAP ScrollTrigger**：pin viewport、scrub 数值、复杂时间线用它。
 - **CSS `scroll-timeline` / `view-timeline`**（Chrome/Edge 115+）：纯 CSS scroll-driven。做 progressive enhancement，别当主动效。
 
-**编排**：一屏一个论点；主图区 pin 住，文字流从旁边过；数据切换用 300–500ms 插值，不硬切；末态可读——滚完停下的最后一屏能独立成立，不是动画中间帧。图表相关的 scrollytelling 更多编排细节见 [chart/atlas.md](../chart/atlas.md) 数据叙事模式段。
+**编排**：让段落推进当前可见的图像、结构或数据，并把注释交给正在解释的部分。需要持续参照时可以 pin 主图；也可以让画面随论述切换，布局由阅读关系决定。滚动、跳章与倒回从同一状态计算画面，避免依赖前一段动画是否播放完。窄屏重排后，当前图像、正文和操作反馈仍须可见，不要继续更新已滚出屏幕的封面。停止或完成滚动时，画面能独立读懂。图表相关的编排见 [chart/atlas.md](../chart/atlas.md) 数据叙事模式段。
+
+**实现**：将当前段落的滚动进度映射到 0–1，用它计算位移、缩放、透明度或遮罩；同一进度对应同一结构与过渡状态。尺寸变化后重新测量滚动范围，固定布局只覆盖选定的叙事区间，结束后释放。自动循环与滚动不要分别改同一元素的同一属性；需要叠加时分到不同图层或容器。
+
+**固定 Canvas 背景**：可以在前景正文后固定一张画布，用粒子或普通 Canvas 2D 动画贯穿选定章节。滚动映射到 `scene + progress`，一个 `requestAnimationFrame` 循环根据该状态和经过的时间统一绘制；滚动切换场景，时间推进局部运动。复用画布与对象，不在每次滚动时创建新循环或无限追加粒子；尺寸变化重算取景，跳章与倒回恢复对应状态。装饰层使用 `pointer-events: none`，注意前景底色和层叠关系，既让动画可见，也保持文字清晰；低动效时按当前章节绘制稳定画面。
 
 ## 可交互解释（explorable explanation）
 
@@ -55,7 +59,7 @@
 - **原生 Canvas 2D**：波纹、噪点、时钟这类 100 行内的场景。
 - **手写 shader / WebGL**：明确要做后处理效果时才走，否则用 three.js 现成的 postprocessing。
 
-**判断**：具象画面走图片，抽象 / 氛围 / 交互 hero 走 Canvas / WebGL；单页值得引，多页产物慎重；`<canvas>` 挂载失败或 `prefers-reduced-motion` 时必须有静态版兜底；**禁用粒子网背景**（线连点的 particles.js 效果）。
+**判断**：具象画面走图片，简单元素动画用 CSS / SVG，粒子或程序绘制按需用 Canvas；需要三维空间时再选 WebGL。`<canvas>` 挂载失败或 `prefers-reduced-motion` 时必须有静态版兜底。灵动报告的 hero 可以使用粒子或连线效果，节点、连线数量有上限并及时回收，避免形成覆盖文字的密集网。
 
 ## 进阶排印
 
@@ -194,8 +198,8 @@
 
 ## 无障碍与性能底线
 
-- `prefers-reduced-motion: reduce` 时禁用所有动效，配合音频时音频也停。
+- `prefers-reduced-motion: reduce` 时跳过非必要运动，保留信息完整的关键状态；配合音频时音频也停。
 - `:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }`，别把 outline 关掉不给替代。
 - 对比度：正文 ≥ 4.5:1，用 oklch 调 lightness 时手动核。
 - `will-change: transform` 只在真正需要时加，动画结束后移除。
-- three.js / p5.js 用动态 `import()` 懒加载，首屏别拉。
+- three.js / p5.js 按需加载；承担首屏动画的资源优先就绪，其余场景懒加载。

@@ -102,7 +102,7 @@ lark-cli slides +update-slide\
 
 ## 写入后验证
 
-写入结果按下方返回字段确认；写入成功后，回读整份演示文稿的最新 XML 与 lint 报告，另存完整响应并完成内容与版式验证：
+写入结果按下方返回字段确认；写入成功后，按修改范围回读最新 XML 与 lint 报告（明确且无跨页依赖的单页编辑加 `--slide-id`；多页、跨页依赖、增删／重排或全局任务回读全文），另存完整响应并完成内容与版式验证：
 
 ```bash
 lark-cli slides +xml-get\
@@ -110,7 +110,7 @@ lark-cli slides +xml-get\
   --json > readback-response.json 2> readback-error.json
 ```
 
-按当前已加载 `lark-slides/SKILL.md` 指向的 [validation-xml.md](../workflow/validation-xml.md) 完成验证：通过 `lint_inspect.py` 的 lint 检测报告摘要定位并分页读取响应中的文档级与页面级问题，目标页与原稿基线对比；核对总页数、目标页和关键元素（包括需要保留的 ID、文本、背景与备注）。读取 `ok: true` 不能代替 lint 通过，报告缺失不能当作无问题；发现新增/加重的真实问题或计划外差异时，先停止后续写入并重新基于最新版处理，修复后开启写入 lint 重提并回读复验。原稿基线只有单页时，不把其他页未出现在基线中视为问题新引入。
+按当前已加载 `ppt/SKILL.md` 指向的 [validation-xml.md](../workflow/validation-xml.md) 完成验证：通过 `lint_inspect.py` 的 lint 检测报告摘要定位并分页读取响应中的文档级与页面级问题，目标页与原稿基线对比；核对总页数、目标页和关键元素（包括需要保留的 ID、文本、背景与备注）。读取 `ok: true` 不能代替 lint 通过，报告缺失不能当作无问题；发现新增/加重的真实问题或计划外差异时，先停止后续写入并重新基于最新版处理，修复后开启写入 lint 重提并回读复验。原稿基线只有单页时，不把其他页未出现在基线中视为问题新引入。
 
 ## 成功输出
 

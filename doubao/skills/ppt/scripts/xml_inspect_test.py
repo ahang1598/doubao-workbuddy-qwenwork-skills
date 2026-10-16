@@ -23,15 +23,13 @@ class XmlInspectCliTest(unittest.TestCase):
 
     def write_slides(self, slides: str) -> None:
         self.input_path.write_text(
-            f'<presentation xmlns="{NAMESPACE}" width="960" height="540">'
-            f"{slides}</presentation>",
+            f'<presentation xmlns="{NAMESPACE}" width="960" height="540">{slides}</presentation>',
             encoding="utf-8",
         )
 
     def run_cli(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            [sys.executable, str(Path(xml_inspect.__file__).resolve()),
-             "--input", str(self.input_path), *args],
+            [sys.executable, str(Path(xml_inspect.__file__).resolve()), "--input", str(self.input_path), *args],
             capture_output=True,
             check=False,
             text=True,
@@ -52,8 +50,8 @@ class XmlInspectCliTest(unittest.TestCase):
         self.assertIn('## slide 1 id="p2"', output)
         self.assertIn('## slide 2 id="p1"', output)
         self.assertLess(output.index('id="p2"'), output.index('id="p1"'))
-        self.assertIn('Second', output)
-        self.assertIn('First', output)
+        self.assertIn("Second", output)
+        self.assertIn("First", output)
 
     def test_selection_follows_requested_order_and_deduplicates_arguments(self) -> None:
         self.write_slides(
@@ -81,8 +79,8 @@ class XmlInspectCliTest(unittest.TestCase):
 
     def test_content_mode_with_single_slide_root(self) -> None:
         self.input_path.write_text(
-            f'<slide xmlns="{NAMESPACE}" id="single"><data>'
-            '<shape id="body"><p>Only page</p></shape></data></slide>', encoding="utf-8"
+            f'<slide xmlns="{NAMESPACE}" id="single"><data><shape id="body"><p>Only page</p></shape></data></slide>',
+            encoding="utf-8",
         )
         output = self.content()
         completed = self.run_cli("--mode", "content", "--slide-id", "single")
@@ -94,8 +92,7 @@ class XmlInspectCliTest(unittest.TestCase):
         body = "正文" * 2000 + "正文最后指标40%"
         note = "演讲者备注" * 600 + "讲稿最后指标20%"
         self.write_slides(
-            f'<slide id="p1"><data><shape id="body"><p>{body}</p></shape></data>'
-            f'<note><p>{note}</p></note></slide>'
+            f'<slide id="p1"><data><shape id="body"><p>{body}</p></shape></data><note><p>{note}</p></note></slide>'
         )
         for args in ((), ("--slide-id", "p1")):
             output = self.content(*args)
@@ -110,9 +107,9 @@ class XmlInspectCliTest(unittest.TestCase):
     def test_mixed_text_and_line_breaks_keep_all_text_in_order(self) -> None:
         self.write_slides(
             '<slide id="p1"><data><shape id="mixed"><content>'
-            '前缀<p>Q1<br/>40% <span>营收</span></p>中间'
-            '<p>次段 &quot;引号&quot;</p>后缀'
-            '</content></shape></data></slide>'
+            "前缀<p>Q1<br/>40% <span>营收</span></p>中间"
+            "<p>次段 &quot;引号&quot;</p>后缀"
+            "</content></shape></data></slide>"
         )
         output = self.content()
         self.assertIn('[shape id="mixed"]', output)
@@ -121,7 +118,7 @@ class XmlInspectCliTest(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
         self.assertNotIn("Q140%", output)
         self.assertIn(r"Q1\n40%", output)
-        self.assertIn(r'\"引号\"', output)
+        self.assertIn(r"\"引号\"", output)
 
     def test_table_keeps_empty_cells_merges_and_explicit_colors(self) -> None:
         self.write_slides(
@@ -131,7 +128,7 @@ class XmlInspectCliTest(unittest.TestCase):
             '<content color="rgb(200,210,220)"><p>  A  B  </p></content></td>'
             '<td id="empty"><content><p/></content></td></tr>'
             '<tr><td id="cell2"><content><p>40%</p></content></td></tr>'
-            '</table></data></slide>'
+            "</table></data></slide>"
         )
         output = self.content()
         self.assertIn('[table id="table1"]', output)
@@ -149,13 +146,13 @@ class XmlInspectCliTest(unittest.TestCase):
     def test_chart_preserves_field_names_values_units_and_formats(self) -> None:
         self.write_slides(
             '<slide id="p1"><data><chart id="c1">'
-            '<chartTitle>季度营收</chartTitle><chartPlotArea>'
+            "<chartTitle>季度营收</chartTitle><chartPlotArea>"
             '<chartPlot type="column"><chartLabels format="0%"/></chartPlot>'
-            '</chartPlotArea><chartData><dim1>'
+            "</chartPlotArea><chartData><dim1>"
             '<chartField name="季度" valueType="string">Q1,Q2,Q3,Q4</chartField>'
             '</dim1><dim2><chartField name="营收" valueType="number" unit="万元">'
-            '52,48,55,68<chartParsedValues>52,48,55,68</chartParsedValues>'
-            '</chartField></dim2></chartData></chart></data></slide>'
+            "52,48,55,68<chartParsedValues>52,48,55,68</chartParsedValues>"
+            "</chartField></dim2></chartData></chart></data></slide>"
         )
         output = self.content()
         self.assertIn('[chart id="c1"]', output)
@@ -167,7 +164,7 @@ class XmlInspectCliTest(unittest.TestCase):
         self.write_slides(
             '<slide id="p1"><data>'
             '<embed id="svg1"><svg xmlns="http://www.w3.org/2000/svg">'
-            '<style>.hiddenCss{fill:red;}</style><defs><text>hidden legend</text></defs>'
+            "<style>.hiddenCss{fill:red;}</style><defs><text>hidden legend</text></defs>"
             '<path d="M0 0H48V48H0Z"/></svg></embed>'
             '<undefined id="unknown1" type="chart_refer_host_perm"/>'
             '<img id="image1"/><icon id="icon1"/><line id="line1"/>'
@@ -176,9 +173,15 @@ class XmlInspectCliTest(unittest.TestCase):
             '<customObject id="custom1"/></data></slide>'
         )
         output = self.content()
-        for tag, block_id in (("embed", "svg1"), ("undefined", "unknown1"), ("img", "image1"),
-                              ("icon", "icon1"), ("line", "line1"), ("shape", "decor"),
-                              ("customObject", "custom1")):
+        for tag, block_id in (
+            ("embed", "svg1"),
+            ("undefined", "unknown1"),
+            ("img", "image1"),
+            ("icon", "icon1"),
+            ("line", "line1"),
+            ("shape", "decor"),
+            ("customObject", "custom1"),
+        ):
             self.assertRegex(output, rf'\[{tag} id="{block_id}"(?:\s[^\]\n]*)?\]')
         self.assertIn('type="chart_refer_host_perm"', output)
         self.assertIn("raw", output.lower())
@@ -194,7 +197,7 @@ class XmlInspectCliTest(unittest.TestCase):
             '<chart id="c1"><data>图表数据20%</data></chart></data></slide>'
         )
         output = self.content()
-        for expected in ('[table id="t1"]', '[chart id="c1"]', '表格数据40%', '图表数据20%', 'raw XML'):
+        for expected in ('[table id="t1"]', '[chart id="c1"]', "表格数据40%", "图表数据20%", "raw XML"):
             self.assertIn(expected, output)
 
     def test_content_output_saves_text_and_reports_success_json(self) -> None:
@@ -210,8 +213,8 @@ class XmlInspectCliTest(unittest.TestCase):
 
     def test_summary_keeps_json_interface_and_marks_truncated_previews(self) -> None:
         self.write_slides(
-            '<slide id="p1"><data><shape id="b1"><p>' + "长文" * 300 + '</p></shape>'
-            '<embed id="svg1"/><undefined id="u1"/></data><note>' + "备注" * 300 + '</note></slide>'
+            '<slide id="p1"><data><shape id="b1"><p>' + "长文" * 300 + "</p></shape>"
+            '<embed id="svg1"/><undefined id="u1"/></data><note>' + "备注" * 300 + "</note></slide>"
             '<slide id="p2"><data><shape><p>短文</p></shape></data></slide>'
         )
         completed = self.run_cli()
@@ -231,17 +234,16 @@ class XmlInspectCliTest(unittest.TestCase):
 
     def test_speaker_note_preview_warning_points_to_raw_xml(self) -> None:
         self.write_slides(
-            '<slide id="p1"><data><shape><p>短文</p></shape></data><note>'
-            + "演讲者备注" * 300 + '</note></slide>'
+            '<slide id="p1"><data><shape><p>短文</p></shape></data><note>' + "演讲者备注" * 300 + "</note></slide>"
         )
         completed = self.run_cli()
         self.assertEqual(completed.returncode, 0, completed.stderr)
         result = json.loads(completed.stdout)
-        self.assertTrue(result['slides'][0]['note_preview_truncated'])
-        self.assertFalse(result['slides'][0]['text_preview_truncated'])
-        warning = next(w for w in result['summary']['warnings'] if '演讲者备注' in w)
-        self.assertIn('--mode raw', warning)
-        self.assertNotIn('--content', warning)
+        self.assertTrue(result["slides"][0]["note_preview_truncated"])
+        self.assertFalse(result["slides"][0]["text_preview_truncated"])
+        warning = next(w for w in result["summary"]["warnings"] if "演讲者备注" in w)
+        self.assertIn("--mode raw", warning)
+        self.assertNotIn("--content", warning)
 
     def test_all_modes_support_output_and_only_content_raw_support_selection(self) -> None:
         self.write_slides(
@@ -250,7 +252,7 @@ class XmlInspectCliTest(unittest.TestCase):
             '<slide id="p3"><data><shape><p>Excluded</p></shape><undefined id="u3"/></data></slide>'
         )
         for mode in ("summary", "content", "raw"):
-            for select in ((False,) if mode == "summary" else (False, True)):
+            for select in (False,) if mode == "summary" else (False, True):
                 for save in (False, True):
                     with self.subTest(mode=mode, select=select, save=save):
                         args = ["--mode", mode]
@@ -270,8 +272,10 @@ class XmlInspectCliTest(unittest.TestCase):
                             self.assertEqual(status["output_slide_count"], len(expected))
                             output = output_path.read_text(encoding="utf-8")
                         if mode == "content":
-                            actual = [(int(i), json.loads(sid)) for i, sid in
-                                      re.findall(r'^## slide (\d+) id=(.+)$', output, re.MULTILINE)]
+                            actual = [
+                                (int(i), json.loads(sid))
+                                for i, sid in re.findall(r"^## slide (\d+) id=(.+)$", output, re.MULTILINE)
+                            ]
                         else:
                             report = json.loads(output)
                             self.assertEqual(report["mode"], mode)

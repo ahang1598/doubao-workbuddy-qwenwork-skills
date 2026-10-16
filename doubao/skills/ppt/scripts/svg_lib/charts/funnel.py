@@ -1,61 +1,61 @@
-"""svg_lib/charts/funnel.py
-
-统一 API:  draw_funnel(data, variant, palette, ...) -> str (SVG)
-
-Data schema:
-    data = {
-        "stages": [(label, value), ...],       # 至少 2 层
-        "descriptions": [str, ...] | None,      # 可选，长度与 stages 一致
-    }
-
-Variants (5 共享同一份 data):
-    - default_flat                  经典对称梯形漏斗（top→bottom 递减）
-    - rectangle_flat                居中矩形条，宽度随值缩放
-    - bar_lollipop                  横向棒棒糖（水平线 + 端点圆盘，dashboard 极简气质）
-    - nested_arrow                  嵌套向下箭头（Russian doll，层层递进的叙事感）
-    - pyramid_flat                  倒漏斗（top narrow, bottom wide）
-"""
+"""统一 API:  draw_funnel(data, variant, palette, ...) -> str (SVG)"""
 
 from __future__ import annotations
 
 import math
 
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    svg_open,
-    svg_close,
-    _rgba_with_alpha,
-    rgb_tuple,
-    is_dark_palette,
-)
-
-
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
+    _dispatch_to_svg_lib,
+    _estimate_label_width_px,
+    _pick_series_colors,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgb_tuple,
     _rgba_with_alpha,
-    _xesc,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
+    _xesc,
+)
+from . import _academic_rigor as rigor
+from ._shared import (
+    _header,
+    tr,
+    auto_font_size,
+    resolve_palette,
+    rgb_tuple,
+    svg_close,
+    svg_open,
+    xesc,
 )
 
 BODY_FONT = "Inter, sans-serif"
 HEAD_FONT = "Georgia, serif"
 
 
-# ---------------------------------------------------------------------------
-# entry
-# ---------------------------------------------------------------------------
+# Multi-mode whitelist (applies to draw_funnel entrypoint).
+#   with_conversion_rate : horizontal bars in a right-side sub-panel showing
+#     adjacent-stage conversion rate (stages[i] / stages[i-1]) * 100%. First
+#     stage shows 100% (baseline). Shared Y = stage order (same row height).
+#     Template = left_right_3to1.
+#     Trigger: n_stages >= 3.
+#     Validator: all values positive (strict); needed for ratio arithmetic.
+def _validate_funnel_conversion(s):
+    vals = s.get("values") or []
+    if len(vals) < 3:
+        return (False, "need >= 3 stages")
+    if any(v <= 0 for v in vals):
+        return (False, "stage values must be positive")
+    return (True, "")
+
+
+_FUNNEL_MULTI_WHITELIST = {
+    "with_conversion_rate": (
+        "left_right_3to1",
+        lambda s: len(s.get("values") or []) >= 3,
+        lambda s: _validate_funnel_conversion(s),
+    ),
+}
 
 
 def draw_funnel(
@@ -64,8 +64,9 @@ def draw_funnel(
     palette: str = "archive_ink",
     width: float = 900,
     height: float = 540,
-    title: str = None,
-    subtitle: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    multi_mode: str = "auto",
 ) -> str:
     stages = data.get("stages") or []
     if not stages or len(stages) < 2:
@@ -83,12 +84,31 @@ def draw_funnel(
         raise ValueError("draw_funnel: descriptions must match stages length")
 
     pal = resolve_palette(palette)
+
+    _canvas_bbox = rigor.bbox_from_edges(0, float(width), 0, float(height))
+    _mm_signals = {"values": values, "n_stages": len(values)}
+    _mm_mode, _mm_template, _mm_reason = rigor.resolve_multi_mode_v2(
+        multi_mode,
+        _FUNNEL_MULTI_WHITELIST,
+        _mm_signals,
+        _canvas_bbox,
+    )
+
+    # If a sub-panel is active, shrink the main funnel's effective width by the sub-panel allocation so the two don't
+    # overlap. The sub-panel is drawn in the right 1/4 column.
+    main_w = float(width)
+    _sub_bbox = None
+    if _mm_mode is not None and _mm_template is not None:
+        _rects = rigor.allocate_main_sub(_canvas_bbox, _mm_template)
+        main_w = _rects["main"].x1 - _rects["main"].x0
+        _sub_bbox = _rects["sub"]
+
     ctx = _Ctx(
         labels=labels,
         values=values,
         descs=descs,
         pal=pal,
-        W=float(width),
+        W=main_w,
         H=float(height),
         title=title,
         subtitle=subtitle,
@@ -110,13 +130,70 @@ def draw_funnel(
             "bar_lollipop, nested_arrow, pyramid_flat"
         )
 
-    header = _header(ctx)
-    return svg_open(0, 0, ctx.W, ctx.H, bg=pal["bg"]) + ctx.defs_svg() + header + body + svg_close()
+    header = _header(ctx, 40, 40)
+
+    sub_svg = ""
+    full_W = float(width)
+    if _sub_bbox is not None and _mm_mode == "with_conversion_rate":
+        sub_svg = _draw_conversion_rate_sub(ctx, _sub_bbox, values, labels)
+
+    return svg_open(0, 0, full_W, ctx.H, bg=pal["bg"]) + ctx.defs_svg() + header + body + sub_svg + svg_close()
 
 
-# ---------------------------------------------------------------------------
-# helpers
-# ---------------------------------------------------------------------------
+def _draw_conversion_rate_sub(ctx: _Ctx, sub_bbox, values, labels) -> str:
+    """Horizontal bars per stage: adjacent-stage conversion rate (%)."""
+    sx0, sx1, _sy0, _sy1 = sub_bbox.x0, sub_bbox.x1, sub_bbox.y0, sub_bbox.y1
+    # Match row heights to the main funnel; use ctx.plot_top / plot_h for y mapping.
+    n = len(values)
+    row_h = ctx.plot_h / n  # include implicit gaps
+
+    ink = ctx.pal["ink"]
+    bar_fill = ctx.pal.get("accent", "rgba(163,88,50,1)")
+
+    parts = []
+    cap_fs = max(10.0, ctx.fs_label * 0.9)
+    parts.append(
+        f'<text x="{sx0 + 8:.1f}" y="{ctx.plot_top - 6:.1f}" '
+        f'font-family="{BODY_FONT}" font-size="{cap_fs}" font-weight="600" '
+        f'fill="{ink}">{_xesc(tr("Conversion"))}</text>'
+    )
+
+    # X extent for the sub-panel bars (reserve ~ 54px for the "100%" text).
+    bar_x0 = sx0 + 10
+    bar_x1 = sx1 - 54
+    bar_w_full = max(10.0, bar_x1 - bar_x0)
+
+    # Baseline axis (vertical line on left side of bars)
+    parts.append(
+        f'<line x1="{bar_x0:.1f}" y1="{ctx.plot_top:.1f}" '
+        f'x2="{bar_x0:.1f}" y2="{ctx.plot_top + ctx.plot_h:.1f}" '
+        f'stroke="{_rgba_with_alpha(ink, 0.35)}" stroke-width="0.8"/>'
+    )
+
+    bar_h = max(6.0, min(28.0, row_h * 0.55))
+    for i in range(n):
+        if i == 0:
+            conv = 1.0
+        else:
+            prev = values[i - 1] if values[i - 1] > 0 else 1e-9
+            conv = values[i] / prev
+        conv = max(0.0, min(1.0, conv))  # clamp (handles non-monotonic edge)
+        y_center = ctx.plot_top + (i + 0.5) * row_h
+        y_top = y_center - bar_h / 2
+        bw = bar_w_full * conv
+        parts.append(
+            f'<rect x="{bar_x0:.1f}" y="{y_top:.1f}" width="{bw:.2f}" '
+            f'height="{bar_h:.2f}" fill="{_rgba_with_alpha(bar_fill, 0.78)}" '
+            f'stroke="none"/>'
+        )
+        pct_str = f"{conv * 100:.1f}%"
+        parts.append(
+            f'<text x="{bar_x1 + 4:.1f}" y="{y_center + ctx.fs_value * 0.35:.1f}" '
+            f'font-family="{BODY_FONT}" font-size="{ctx.fs_value}" '
+            f'fill="{ink}" font-weight="600">{pct_str}</text>'
+        )
+
+    return "".join(parts)
 
 
 class _Ctx:
@@ -132,15 +209,12 @@ class _Ctx:
         self.title = title
         self.subtitle = subtitle
         self.n = len(labels)
-        # font sizing
         self.fs_label = auto_font_size(self.n, base=12, min_size=8, max_size=15)
         self.fs_value = max(9, self.fs_label - 1)
         self.fs_desc = max(8, self.fs_label - 3)
-        # header height
         self.header_h = 50 if title else 20
         if subtitle:
             self.header_h += 18
-        # plot region
         self.plot_top = self.header_h + 10
         self.plot_bot = self.H - 30
         self.plot_h = self.plot_bot - self.plot_top
@@ -155,7 +229,10 @@ class _Ctx:
         return "<defs>" + "".join(self._defs) + "</defs>"
 
     def series_color(self, i):
-        series = self.pal.get("series") or [self.pal["accent"]]
+        # Prefer palette-supplied ``series``; otherwise derive N distinct per-step colors so a funnel's stages don't
+        # collapse to the single accent hue when the palette omits ``series``.
+        n = max(1, int(self.n or 1))
+        series = _pick_series_colors(self.pal, n)
         return series[i % len(series)]
 
     def text_over(self, fill_col):
@@ -163,30 +240,6 @@ class _Ctx:
         r, g, b = rgb_tuple(fill_col)
         luma = 0.299 * r + 0.587 * g + 0.114 * b
         return self.pal["bg"] if luma < 128 else self.pal["ink"]
-
-
-def _header(ctx: _Ctx) -> str:
-    ink = ctx.pal["ink"]
-    mut = ctx.pal["muted"]
-    parts = []
-    ML = 40
-    if ctx.title:
-        parts.append(
-            f'<text x="{ML}" y="30" font-family="{HEAD_FONT}" font-size="20" '
-            f'font-weight="600" fill="{ink}" letter-spacing=".03em">{xesc(ctx.title)}</text>'
-        )
-    if ctx.subtitle:
-        y = 48 if ctx.title else 30
-        parts.append(
-            f'<text x="{ML}" y="{y}" font-family="{BODY_FONT}" font-size="11" '
-            f'fill="{mut}" letter-spacing=".14em">{xesc(ctx.subtitle)}</text>'
-        )
-    if ctx.title:
-        parts.append(
-            f'<line x1="{ML}" y1="{ctx.header_h}" x2="{ctx.W - ML}" y2="{ctx.header_h}" '
-            f'stroke="{ink}" stroke-width="0.6" opacity="0.4"/>'
-        )
-    return "".join(parts)
 
 
 def _fmt_value(v):
@@ -199,17 +252,7 @@ def _fmt_value(v):
 
 
 def _down_arrow_glyph(cx: float, cy: float, size: float, fill: str) -> str:
-    """SVG path for a down-pointing arrow glyph.
-
-    Substitute for the Unicode ↓ (U+2193) which renders as tofu when the host
-    font lacks the glyph (飞书 canvas 本地字体常缺). The glyph is drawn as a
-    solid triangle-headed arrow so it reads as a clear "descend" indicator.
-
-    Args:
-        cx, cy: glyph center (baseline-aligned to accompanying text center).
-        size: overall glyph height in SVG units.
-        fill: fill color string (e.g. 'rgba(0,0,0,0.75)').
-    """
+    """SVG path for a down-pointing arrow glyph."""
     h = float(size)
     w = h * 0.65
     shaft_w = h * 0.16
@@ -232,9 +275,7 @@ def _down_arrow_glyph(cx: float, cy: float, size: float, fill: str) -> str:
     return f'<path d="{d}" fill="{fill}"/>'
 
 
-# ---------------------------------------------------------------------------
 # variant 1: default_flat (对称梯形)
-# ---------------------------------------------------------------------------
 
 
 def _draw_default_flat(ctx: _Ctx) -> str:
@@ -298,7 +339,6 @@ def _draw_default_flat(ctx: _Ctx) -> str:
                 f'text-anchor="end" font-family="{BODY_FONT}" font-size="{ctx.fs_label}" '
                 f'font-weight="600" fill="{ink}">{xesc(ctx.labels[i])}</text>'
             )
-        # right-side value + optional description
         lx = cx + max_w / 2 + 24
         parts.append(
             f'<text x="{lx:.1f}" y="{y_top + row_h / 2 - 2:.1f}" font-family="{BODY_FONT}" '
@@ -318,9 +358,7 @@ def _draw_default_flat(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-# ---------------------------------------------------------------------------
 # variant 2: rectangle_flat
-# ---------------------------------------------------------------------------
 
 
 def _draw_rectangle_flat(ctx: _Ctx) -> str:
@@ -371,7 +409,6 @@ def _draw_rectangle_flat(ctx: _Ctx) -> str:
                 f'font-size="{ctx.fs_label}" font-weight="600" fill="{ink}">'
                 f"{xesc(ctx.labels[i])}</text>"
             )
-        # right-side value
         parts.append(
             f'<text x="{cx + max_w / 2 + 16:.1f}" y="{y + row_h / 2 + 3:.1f}" '
             f'font-family="{BODY_FONT}" font-size="{ctx.fs_value}" '
@@ -386,21 +423,11 @@ def _draw_rectangle_flat(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-# ---------------------------------------------------------------------------
 # variant 3: bar_lollipop  (水平线 + 端点圆盘，现代 dashboard 气质)
-# ---------------------------------------------------------------------------
 
 
 def _draw_bar_lollipop(ctx: _Ctx) -> str:
-    """Lollipop-style funnel.
-
-    Each stage is a horizontal thin bar anchored to a fixed baseline (left
-    axis), terminated by a solid filled disc. Disc radius is sqrt-scaled by
-    value so tiny stages stay visible without dominating the chart. A subtle
-    dotted guide line spans the full plot width per row, and a right-side
-    numeric column pairs value + % of top. Reads like a modern KPI dashboard
-    row list rather than a funnel silhouette.
-    """
+    """Lollipop-style funnel."""
     parts = []
     max_v = max(ctx.values)
     min_v = min(v for v in ctx.values if v > 0) if any(v > 0 for v in ctx.values) else 1.0
@@ -417,7 +444,6 @@ def _draw_bar_lollipop(ctx: _Ctx) -> str:
     plot_right = ctx.W - ML - right_col_w
     plot_w = plot_right - plot_left
 
-    # vertical layout
     row_gap = 4
     row_h = max(28.0, (ctx.plot_h - row_gap * (n - 1)) / n)
 
@@ -449,7 +475,6 @@ def _draw_bar_lollipop(ctx: _Ctx) -> str:
         avail = plot_w - r_max - 8
         return max(r_min + 4, avail * t)
 
-    # per-row rendering
     for i in range(n):
         v = ctx.values[i]
         col = ctx.series_color(i)
@@ -545,23 +570,11 @@ def _draw_bar_lollipop(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-# ---------------------------------------------------------------------------
 # variant 4: nested_arrow  (逐层嵌套的向下箭头，Russian doll 叙事感)
-# ---------------------------------------------------------------------------
 
 
 def _draw_nested_arrow(ctx: _Ctx) -> str:
-    """Nested down-arrow funnel.
-
-    Each stage is a broad downward-pointing pentagon-arrow drawn CENTERED
-    horizontally. Successive stages shrink both in width (sqrt-scaled by
-    value) and stack vertically inside the previous arrow's silhouette,
-    giving a Russian-doll layered feel that reads clearly as narrowing
-    progression. Numeric labels and stage names live inline on each arrow's
-    body plate; a right-side callout column carries value + % of top for
-    scannable reading. Deliberately not a trapezoid: the pointed tip makes
-    the "flow" direction visually explicit.
-    """
+    """Nested down-arrow funnel."""
     parts = []
     max_v = max(ctx.values)
     min_v = min(v for v in ctx.values if v > 0) if any(v > 0 for v in ctx.values) else 1.0
@@ -569,7 +582,7 @@ def _draw_nested_arrow(ctx: _Ctx) -> str:
 
     ink = ctx.pal["ink"]
     mut = ctx.pal["muted"]
-    bg = ctx.pal["bg"] or "rgba(255,255,255,1)"
+    ctx.pal["bg"] or "rgba(255,255,255,1)"
 
     # layout: center the arrows in a plot region, keep a right sidebar for values
     ML = 40
@@ -663,7 +676,6 @@ def _draw_nested_arrow(ctx: _Ctx) -> str:
         can_inline = w >= max(label_w_est, value_w_est) + 24
 
         if can_inline and can_stack:
-            # label above value, both centered
             parts.append(
                 f'<text x="{cx:.1f}" y="{body_cy - 2:.1f}" text-anchor="middle" '
                 f'font-family="{BODY_FONT}" font-size="{ctx.fs_label}" font-weight="700" '
@@ -743,18 +755,11 @@ def _draw_nested_arrow(ctx: _Ctx) -> str:
     return "".join(parts)
 
 
-# ---------------------------------------------------------------------------
 # variant 5: pyramid_flat (倒漏斗)
-# ---------------------------------------------------------------------------
 
 
 def _draw_pyramid_flat(ctx: _Ctx) -> str:
-    """Pyramid: TOP narrow, BOTTOM wide — a strict triangular shape.
-
-    Row-i width = (i+1)/n * max_w so silhouette forms a proper pyramid
-    regardless of value distribution. Value is encoded via label on the
-    right; the shape encodes the *rank/level* of each stage.
-    """
+    """Pyramid: TOP narrow, BOTTOM wide — a strict triangular shape."""
     parts = []
     # need extra left margin because narrow top rows push labels outside the pyramid
     ML = 140 if ctx.descs is None else 200
@@ -835,22 +840,22 @@ def make_funnel_classic(
     stages,
     stage_labels=None,
     stage_descriptions=None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    note: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    note: str | None = None,
     show_drop_off: bool = True,
     show_cumulative: bool = True,
     show_insights: bool = True,
     width: float = 1400,
-    height: float = None,
-    footer: str = None,  # 老 API 兼容
+    height: float | None = None,
+    footer: str | None = None,  # 老 API 兼容
     primary_rgb=None,  # 老 API 兼容（忽略，走 palette）
     max_half_w=None,  # 老 API 兼容（忽略，走自适应）
     min_half_w=None,  # 老 API 兼容
-    font_family: str = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
 ) -> str:
     """
     经典漏斗图（Dandelion academic 风格）。
@@ -894,14 +899,7 @@ def make_funnel_classic(
 
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = (
-        _pal["ink"],
-        _pal["ink6"],
-        _pal["ink4"],
-        _pal["ink2"],
-        _pal["ink1"],
-        _pal["accent"],
-    )
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_secondary = _pal.get("secondary", _rgba_with_alpha(_INK, 0.5))
     c_bg = _pal.get("bg")
@@ -932,7 +930,6 @@ def make_funnel_classic(
         if bg_luma < 100:
             # 深底：top 使用亮的 accent，bot 使用中间 palette 派生
             top_col_rgb = _rgb_tuple_local(_ACC)
-            # bot 保持 secondary
             bot_col_rgb = _rgb_tuple_local(c_secondary)
 
     def _lerp3(a, b, t):
@@ -944,15 +941,9 @@ def make_funnel_classic(
         rgb = _lerp3(top_col_rgb, bot_col_rgb, t)
         stage_colors.append(f"rgba({rgb[0]},{rgb[1]},{rgb[2]},1)")
 
-    # ---------- 布局 ----------
-    MARGIN_L = 90
-    MARGIN_R = 90
+    MARGIN_L = MARGIN_R = max(28.0, min(90.0, round(float(width) * 0.064)))
     MARGIN_T = 145 if title else 60
-    MARGIN_B = 100 if (note or show_insights) else 60
-
-    plot_x = MARGIN_L + 260  # 漏斗中心线左界（留给 DROP-OFF 面板）
-    plot_w_max = 500  # 顶层梯形最宽
-    funnel_cx = plot_x + plot_w_max / 2
+    height_given = height is not None
 
     row_h = 66
     row_gap = 4
@@ -981,7 +972,9 @@ def make_funnel_classic(
     def width_of(i):
         return plot_w_max * stages[i] / top_count
 
-    # ---------- 字号自适应（viewBox + 数据规模双重）----------
+    def _tw(text, fs, spacing=0.0):
+        return _estimate_label_width_px(str(text), fs, spacing, bold=True) * 1.1 + fs * 0.3
+
     # 关键：slide 里 3 图并列渲染宽度 ≈ 400px，viewBox=1400 → 缩放 ~0.29x
     # 字号需要相应放大，让最终视觉 >= 10px
     _n_stages_fs = len(stages)
@@ -1012,11 +1005,109 @@ def make_funnel_classic(
     _fs_narrow_lbl = max(12.0, _fs_body_stage * 0.9)
     _fs_narrow_val = max(15.0, _fs_body_stage * 1.15)
 
+    _card_w = (float(width) - MARGIN_L - MARGIN_R - 40) / 3
+    _insight_labels = (tr("OVERALL CONVERSION"), tr("BIGGEST DROP-OFF"), tr("STRONGEST STEP"))
+    while _fs_insight_hdr > 10 and max(_tw(t, _fs_insight_hdr, 0.15) for t in _insight_labels) > _card_w - 24:
+        _fs_insight_hdr -= 0.5
+    _wrap_hdr = max(_tw(t, _fs_insight_hdr, 0.15) for t in _insight_labels) > _card_w - 24
+
+    # Vertical: fit rows to a caller-supplied height.
+    _insight_h = max(
+        70.0,
+        20.0 + _fs_insight_hdr * 0.2 + _fs_insight_big + _fs_insight_sub + 8.0 + _fs_insight_sub * 0.2 + 10.0,
+    )
+    _insight_h += _fs_insight_hdr * 1.25 if _wrap_hdr else 0.0
+    if height_given:
+        _rows_room = float(height) - funnel_top - ((30 + _insight_h) if show_insights else 10) - (90 if note else 30)
+        row_h = min(66.0, _rows_room / n - row_gap)
+        if row_h < 18:
+            raise ValueError("funnel_classic needs a taller canvas for all stages")
+    _gap_val = max(20.0, _fs_value_stage * 1.25)
+    single_line = row_h < _gap_val + _fs_body_stage * 0.8 + _fs_value_stage * 0.2 + 6
+    _pitch = row_h + row_gap
+    if _fs_drop_big + _fs_drop_sub + 4 > _pitch:
+        _k = max(0.0, _pitch - 4) / (_fs_drop_big + _fs_drop_sub)
+        _fs_drop_big, _fs_drop_sub = max(12.0, _fs_drop_big * _k), max(10.0, _fs_drop_sub * _k)
+    if single_line and _fs_narrow_val * 0.8 + _fs_desc_stage * 1.4 + 3 > _pitch:
+        _fs_desc_stage = max(10.0, min(_fs_desc_stage, (_pitch - 3) / 2.2))
+        _fs_narrow_val = max(12.0, min(_fs_narrow_val, (_pitch - 3 - _fs_desc_stage * 1.4) / 0.8))
+        _fs_narrow_lbl = max(10.0, min(_fs_narrow_lbl, _fs_narrow_val * 0.8))
+
+    # Horizontal: DROP-OFF | funnel | narrow labels | cumulative bars + %.
+    avail = float(width) - MARGIN_L - MARGIN_R
+    drop_need = 0.0
+    if show_drop_off:
+        for i in range(n - 1):
+            lost = stages[i] - stages[i + 1]
+            if lost > 0:
+                drop_need = max(
+                    drop_need,
+                    _tw(f"−{lost / stages[i] * 100:.1f}%", _fs_drop_big),
+                    _tw(tr("{n} dropped", n=f"{lost:,}"), _fs_drop_sub),
+                )
+        drop_need += 14
+    drop_w = max(drop_need, min(260.0, avail * 0.214)) if show_drop_off else min(260.0, avail * 0.214)
+    plot_w_max = min(500.0, avail * 0.41)
+    plot_x = MARGIN_L + drop_w
+    funnel_cx = plot_x + plot_w_max / 2
+
+    def _inner_text_w(i):
+        if single_line:
+            return _tw(f"{stage_labels[i]} {stages[i]:,}", _fs_value_stage)
+        return max(_tw(stage_labels[i], _fs_body_stage), _tw(f"{stages[i]:,}", _fs_value_stage))
+
+    def _is_inner(i):
+        return width_of(i) >= max(plot_w_max * 0.4, _inner_text_w(i) + 12)
+
+    def _narrow_text(i):
+        desc = stage_descriptions[i] if stage_descriptions else None
+        return f"{stage_labels[i]} {stages[i]:,}" + (f" {desc}" if desc else "")
+
+    def _narrow_right(mode):
+        right = funnel_cx
+        for i in range(n):
+            if _is_inner(i):
+                continue
+            edge = funnel_cx + max(width_of(i), width_of(min(i + 1, n - 1))) / 2 + 2
+            desc = stage_descriptions[i] if stage_descriptions else None
+            if mode == "one":
+                tw = _tw(_narrow_text(i), _fs_narrow_val)
+            elif mode == "two":
+                tw = max(
+                    _tw(f"{stage_labels[i]} {stages[i]:,}", _fs_narrow_val), _tw(desc, _fs_desc_stage) if desc else 0.0
+                )
+            else:
+                tw = max(
+                    _tw(stage_labels[i], _fs_narrow_lbl),
+                    _tw(f"{stages[i]:,}", _fs_narrow_val),
+                    _tw(desc, _fs_desc_stage) if desc else 0.0,
+                )
+            right = max(right, edge + 22 + tw)
+        return right
+
+    right_x_end = float(width) - MARGIN_R
+    pct_w = max(60.0, _tw("100.0%", _fs_cum_pct) + 10)
+    pct_min = _tw("100.0%", _fs_cum_pct) + 8
+    while True:
+        narrow_mode = "one" if single_line else "three"
+        narrow_right = _narrow_right(narrow_mode)
+        if single_line and narrow_right + 16 > right_x_end - pct_w:
+            narrow_mode = "two"
+            narrow_right = _narrow_right("two")
+        if narrow_right + 16 <= right_x_end - pct_min or plot_w_max <= 60:
+            break
+        plot_w_max = max(60.0, plot_w_max - 10)
+        funnel_cx = plot_x + plot_w_max / 2
+    right_x_bar_end = right_x_end - pct_w
+    right_x_bar_start = max(funnel_cx + plot_w_max / 2 + min(240.0, avail * 0.197), narrow_right + 16)
+    show_cum_bars = right_x_bar_end - right_x_bar_start >= 60
+    if not show_cum_bars:
+        right_x_bar_end = right_x_end - _tw("100.0%", _fs_cum_pct) - 8
+
     parts = []
     if c_bg:
         parts.append(f'<rect width="{width}" height="{height}" fill="{PAPER}"/>')
 
-    # ---------- 顶部标题 ----------
     if title:
         parts.append(
             f'<text x="{MARGIN_L}" y="52" '
@@ -1045,29 +1136,33 @@ def make_funnel_classic(
             f"{_xesc(f'Funnel width proportional to user count · {n} stages')}</text>"
         )
 
-    # ---------- 列头 ----------
     if show_drop_off:
         parts.append(
             f'<text x="{MARGIN_L}" y="{plot_y - 12}" font-family="{_body_font}" '
-            f'font-size="{_fs_col_header}" font-weight="600" fill="{c_muted}" letter-spacing=".15em">DROP-OFF</text>'
+            f'font-size="{_fs_col_header}" font-weight="600" fill="{c_muted}" letter-spacing=".15em">{_xesc(tr("DROP-OFF"))}</text>'
         )
     parts.append(
         f'<text x="{funnel_cx:.1f}" y="{plot_y - 12}" text-anchor="middle" '
         f'font-family="{_body_font}" font-size="{_fs_col_header}" font-weight="600" fill="{c_muted}" '
-        f'letter-spacing=".15em">STAGE</text>'
+        f'letter-spacing=".15em">{_xesc(tr("STAGE"))}</text>'
     )
     if show_cumulative:
-        parts.append(
-            f'<text x="{width - MARGIN_R}" y="{plot_y - 12}" text-anchor="end" '
-            f'font-family="{_body_font}" font-size="{_fs_col_header}" font-weight="600" fill="{c_muted}" '
-            f'letter-spacing=".15em">CUMULATIVE CONVERSION</text>'
-        )
+        _stage_hdr_right = funnel_cx + _tw(tr("STAGE"), _fs_col_header, 0.15) / 2 + 16
+        _cum_lines = [tr("CUMULATIVE CONVERSION")]
+        if right_x_end - _tw(_cum_lines[0], _fs_col_header, 0.15) < _stage_hdr_right:
+            _cum_lines = [tr("CUMULATIVE"), tr("CONVERSION")]
+        for k, line in enumerate(_cum_lines):
+            hy = plot_y - 12 - (len(_cum_lines) - 1 - k) * _fs_col_header * 1.25
+            parts.append(
+                f'<text x="{right_x_end:.1f}" y="{hy:.1f}" text-anchor="end" '
+                f'font-family="{_body_font}" font-size="{_fs_col_header}" font-weight="600" fill="{c_muted}" '
+                f'letter-spacing=".15em">{_xesc(line)}</text>'
+            )
 
     # 涨/跌红 & 绿色（沿用金融印刷风固定色，独立于 palette 保证语义清晰）
     RED_COL = _pal.get("funnel_drop_color", "rgba(194,93,93,1)")
     GREEN_COL = _pal.get("funnel_strong_color", "rgba(60,105,148,1)")
 
-    # ---------- 漏斗梯形 ----------
     for i in range(n):
         name = stage_labels[i]
         count = stages[i]
@@ -1090,9 +1185,16 @@ def make_funnel_classic(
 
         mid_y = (yt + yb) / 2
 
-        # 判断放内还是外
-        if top_w >= 200:
-            # 内部标签：根据背景亮度选文字色
+        if _is_inner(i) and single_line:
+            cell_luma = 0.299 * r_ + 0.587 * g_ + 0.114 * b_
+            text_col = "rgba(255,255,255,0.98)" if cell_luma < 128 else "rgba(30,32,38,0.9)"
+            parts.append(
+                f'<text x="{funnel_cx:.1f}" y="{mid_y + _fs_value_stage * 0.35:.1f}" text-anchor="middle" '
+                f'font-size="{_fs_value_stage:.1f}" fill="{text_col}"><tspan font-family="{_body_font}" font-size="{_fs_body_stage}" '
+                f'font-weight="600">{_xesc(str(name))}</tspan><tspan dx="8" font-family="{_head_font}" '
+                f'font-size="{_fs_value_stage}" font-weight="700">{_xesc(f"{count:,}")}</tspan></text>'
+            )
+        elif _is_inner(i):
             cell_luma = 0.299 * r_ + 0.587 * g_ + 0.114 * b_
             if cell_luma < 128:
                 text_col = "rgba(255,255,255,0.98)"
@@ -1102,7 +1204,6 @@ def make_funnel_classic(
                 sub_col = "rgba(60,64,72,0.75)"
             # 字号自适应：随 viewBox / stage 数缩放；保证 slide 里也能看清
             # 上下 baseline 间距 = _fs_value_stage * 1.2（避免 embed_svg_validator bbox 撞）
-            _gap_val = max(20.0, _fs_value_stage * 1.25)
             # label baseline：先按对称居中算，再向下 clamp，保证 label 文本上边
             # （baseline - fs*0.8）不越过梯形顶边 yt（含 2.2px 顶部装饰 rect + 1px 安全间距）。
             _label_baseline_ideal = mid_y - _gap_val * 0.65
@@ -1134,15 +1235,41 @@ def make_funnel_classic(
                         f'font-style="italic">{_xesc(str(desc))}</text>'
                     )
         else:
-            # 窄层：标签在漏斗右侧
             edge_x = funnel_cx + max(top_w, bot_w) / 2 + 2
             lead_end = edge_x + 18
             parts.append(
                 f'<line x1="{edge_x:.1f}" y1="{mid_y:.1f}" x2="{lead_end:.1f}" y2="{mid_y:.1f}" '
                 f'stroke="{_INK4}" stroke-width="0.6"/>'
             )
-            # narrow layer 用相对小一档字号
             tx = lead_end + 4
+            if narrow_mode == "two":
+                _b1 = mid_y - ((_fs_desc_stage * 1.2) if desc else 0.0) / 2 + _fs_narrow_val * 0.35
+                parts.append(
+                    f'<text x="{tx:.1f}" y="{_b1:.1f}" font-family="{_body_font}" font-size="{_fs_narrow_val:.1f}" fill="{_INK}">'
+                    f'<tspan font-size="{_fs_narrow_lbl}" font-weight="600">{_xesc(str(name))}</tspan>'
+                    f'<tspan dx="6" font-family="{_head_font}" font-size="{_fs_narrow_val}" '
+                    f'font-weight="700">{_xesc(f"{count:,}")}</tspan></text>'
+                )
+                if desc:
+                    parts.append(
+                        f'<text x="{tx:.1f}" y="{_b1 + _fs_desc_stage * 1.2:.1f}" font-family="{_body_font}" '
+                        f'font-size="{_fs_desc_stage}" fill="{c_muted}" font-style="italic">{_xesc(str(desc))}</text>'
+                    )
+                continue
+            if single_line:
+                desc_span = (
+                    f'<tspan dx="6" font-size="{_fs_desc_stage}" fill="{c_muted}" '
+                    f'font-style="italic">{_xesc(str(desc))}</tspan>'
+                    if desc
+                    else ""
+                )
+                parts.append(
+                    f'<text x="{tx:.1f}" y="{mid_y + _fs_narrow_val * 0.35:.1f}" font-family="{_body_font}" '
+                    f'font-size="{_fs_narrow_val:.1f}" fill="{_INK}"><tspan font-size="{_fs_narrow_lbl}" font-weight="600">{_xesc(str(name))}</tspan>'
+                    f'<tspan dx="6" font-family="{_head_font}" font-size="{_fs_narrow_val}" '
+                    f'font-weight="700">{_xesc(f"{count:,}")}</tspan>{desc_span}</text>'
+                )
+                continue
             parts.append(
                 f'<text x="{tx:.1f}" y="{mid_y - _fs_narrow_val * 0.6:.1f}" '
                 f'font-family="{_body_font}" font-size="{_fs_narrow_lbl}" font-weight="600" '
@@ -1160,7 +1287,6 @@ def make_funnel_classic(
                     f'font-style="italic">{_xesc(str(desc))}</text>'
                 )
 
-    # ---------- 左侧 DROP-OFF 面板 ----------
     if show_drop_off:
         for i in range(n - 1):
             lost = stages[i] - stages[i + 1]
@@ -1181,9 +1307,8 @@ def make_funnel_classic(
             parts.append(
                 f'<text x="{label_x}" y="{y + _sub_baseline_offset:.1f}" text-anchor="end" '
                 f'font-family="{_body_font}" font-size="{_fs_drop_sub}" '
-                f'fill="{c_muted}">{_xesc(f"{lost:,} dropped")}</text>'
+                f'fill="{c_muted}">{_xesc(tr("{n} dropped", n=f"{lost:,}"))}</text>'
             )
-            # 引线
             x_from = label_x + 4
             x_arrow = funnel_cx - width_of(i) / 2 - 6
             if x_arrow > x_from:
@@ -1198,15 +1323,7 @@ def make_funnel_classic(
                     f'{x_arrow - 2:.1f},{y + 3:.1f}" fill="{red_solid}"/>'
                 )
 
-    # ---------- 右侧 CUMULATIVE 面板 ----------
     if show_cumulative:
-        right_x_bar_start = funnel_cx + plot_w_max / 2 + 240
-        right_x_end = width - MARGIN_R
-        right_x_bar_end = right_x_end - 60
-        # 若窄层标签占空间导致 bar_start < end - 100，兜底调整
-        if right_x_bar_end - right_x_bar_start < 60:
-            # 缩短 bar 面板
-            right_x_bar_start = funnel_cx + plot_w_max / 2 + 180
         bar_area_w = right_x_bar_end - right_x_bar_start
         for i in range(n):
             count = stages[i]
@@ -1214,15 +1331,21 @@ def make_funnel_classic(
             conv = count / top_count * 100
             bar_h = 10
             by = y_mid - bar_h / 2
+            if not show_cum_bars:
+                parts.append(
+                    f'<text x="{right_x_bar_end + 8:.1f}" y="{y_mid + 4:.1f}" text-anchor="start" '
+                    f'font-family="{_body_font}" font-size="{_fs_cum_pct}" font-weight="600" '
+                    f'fill="{_INK}">{conv:.1f}%</text>'
+                )
+                continue
             parts.append(
                 f'<rect x="{right_x_bar_start:.1f}" y="{by:.1f}" width="{bar_area_w:.1f}" '
                 f'height="{bar_h}" fill="{_rgba_with_alpha(_INK, 0.05)}" rx="2"/>'
             )
             fill_w = bar_area_w * count / top_count
             color = stage_colors[i]
-            # Inset the fill bar 1px vertically inside the track so bg/fill never share an
-            # identical bbox (validator flags exact-duplicate rects). Visually reads as a
-            # progress bar seated inside a lighter track.
+            # Inset the fill bar 1px vertically inside the track so bg/fill never share an identical bbox (validator
+            # flags exact-duplicate rects).
             parts.append(
                 f'<rect x="{right_x_bar_start:.1f}" y="{by + 1:.1f}" width="{fill_w:.1f}" '
                 f'height="{bar_h - 2}" fill="{_rgba_with_alpha(color, 0.9)}" rx="2"/>'
@@ -1233,7 +1356,6 @@ def make_funnel_classic(
                 f'fill="{_INK}">{conv:.1f}%</text>'
             )
 
-    # ---------- 底部洞察卡片 ----------
     if show_insights:
         insight_y = row_bot(n - 1) + 30
         insight_x = MARGIN_L
@@ -1247,14 +1369,14 @@ def make_funnel_classic(
         best_conv_i = min(range(n - 1), key=lambda i: drop_rates[i])
         best_conv_pct = (1 - drop_rates[best_conv_i]) * 100
         insights = [
-            ("OVERALL CONVERSION", f"{overall_conv:.2f}%", f"{stages[0]:,} → {stages[-1]:,}"),
+            (tr("OVERALL CONVERSION"), f"{overall_conv:.2f}%", f"{stages[0]:,} → {stages[-1]:,}"),
             (
-                "BIGGEST DROP-OFF",
+                tr("BIGGEST DROP-OFF"),
                 f"−{biggest_drop_pct:.0f}%",
                 f"{stage_labels[biggest_drop_i]} → {stage_labels[biggest_drop_i + 1]}",
             ),
             (
-                "STRONGEST STEP",
+                tr("STRONGEST STEP"),
                 f"{best_conv_pct:.0f}%",
                 f"{stage_labels[best_conv_i]} → {stage_labels[best_conv_i + 1]}",
             ),
@@ -1262,10 +1384,10 @@ def make_funnel_classic(
         # 动态 baseline：hdr → big → sub，间距按字号自适应确保 bbox 不相交（同 KPI 布局）。
         _pad_top = 20.0
         _gap_line = 4.0
-        _hdr_baseline = _pad_top
+        _hdr_baseline = _pad_top + (_fs_insight_hdr * 1.25 if _wrap_hdr else 0.0)
         _big_baseline = _hdr_baseline + _fs_insight_hdr * 0.2 + _fs_insight_big * 0.8 + _gap_line
         _sub_baseline = _big_baseline + _fs_insight_big * 0.2 + _fs_insight_sub * 0.8 + _gap_line
-        _insight_h = max(70.0, _sub_baseline + _fs_insight_sub * 0.2 + 10.0)
+        _insight_h = max(_insight_h, _sub_baseline + _fs_insight_sub * 0.2 + 10.0)
         for i, (label, big, sub) in enumerate(insights):
             ix = insight_x + i * (insight_w + insight_gap)
             parts.append(
@@ -1274,11 +1396,13 @@ def make_funnel_classic(
             )
             accent = RED_COL if i == 1 else GREEN_COL
             parts.append(f'<rect x="{ix:.1f}" y="{insight_y}" width="4" height="{_insight_h:.1f}" fill="{accent}"/>')
-            parts.append(
-                f'<text x="{ix + 16:.1f}" y="{insight_y + _hdr_baseline:.1f}" font-family="{_body_font}" '
-                f'font-size="{_fs_insight_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".15em">'
-                f"{_xesc(label)}</text>"
-            )
+            for k, hdr_line in enumerate(label.split(" ", 1) if _wrap_hdr else [label]):
+                hy = insight_y + _pad_top + k * _fs_insight_hdr * 1.25
+                parts.append(
+                    f'<text x="{ix + 16:.1f}" y="{hy:.1f}" font-family="{_body_font}" '
+                    f'font-size="{_fs_insight_hdr}" fill="{c_muted}" font-weight="600" letter-spacing=".15em">'
+                    f"{_xesc(hdr_line)}</text>"
+                )
             big_col = RED_COL if i == 1 else _INK
             parts.append(
                 f'<text x="{ix + 16:.1f}" y="{insight_y + _big_baseline:.1f}" font-family="{_head_font}" '
@@ -1289,7 +1413,6 @@ def make_funnel_classic(
                 f'font-size="{_fs_insight_sub}" fill="{c_muted}">{_xesc(sub)}</text>'
             )
 
-    # ---------- 底部脚注 ----------
     if note:
         foot_y = height - 32
         parts.append(
@@ -1299,7 +1422,7 @@ def make_funnel_classic(
         parts.append(
             f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
             f'font-size="{_fs_note}" fill="{c_muted}">'
-            f'<tspan font-weight="600">Notes.</tspan> {_xesc(note)}</text>'
+            f'<tspan font-weight="600">{_xesc(tr("Notes."))}</tspan> {_xesc(note)}</text>'
         )
         if figure_label:
             parts.append(
@@ -1313,6 +1436,4 @@ def make_funnel_classic(
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 9b) Percent Grid 百人网格 (Financial-print, 10×10 grid + breakdown band + KPIs)
-# ==============================================================

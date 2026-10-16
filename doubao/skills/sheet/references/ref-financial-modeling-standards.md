@@ -292,24 +292,24 @@ highlight_fill = PatternFill('solid', fgColor='FFF2CC')                    # 待
 
 | 用途 | openpyxl hex | 说明 |
 | --- | --- | --- |
-| 主表头 / 大标题行 / 一级分区标题 | `0F3B5D` | 深蓝底 + 白色加粗字 |
-| 二级表头 / 分组标题 | `3288B9` | 中蓝底 + 白色加粗字 |
-| 信息区 / 汇总行 / 三级标题（浅底） | `CFE3F1` | 浅蓝底 + 黑字 |
+| 主表头 / 大标题行 / 一级分区标题 | `006185` | 深蓝底 + 白色加粗字 |
+| 二级表头 / 分组标题 | `049FD7` | 中蓝底 + 白色加粗字 |
+| 信息区 / 汇总行 / 三级标题（浅底） | `D9F3FD` | 浅蓝底 + 黑字 |
 | 分隔线 | `D0D8E8` | 需细分隔线时用此色（结构仍以边框为主，见「边框」） |
 | 浅黄高亮 | `FFF2CC` | Sensitivity baseline 交点 / 需浅色标注的复核项——唯一允许的非蓝高亮 |
 
 硬性规则：
 
-- **大标题行必须有背景色**：sheet 顶部的报表总标题行用 `0F3B5D` 深蓝底 + 白色加粗，不能留白底。（常见错误：大标题没填背景，整张表"没有头"。）
-- **禁止用绿色 / 红色做背景色**：区分情景 / 版本（Bull / Base / Bear、乐观 / 中性 / 悲观）也**不要**用绿底 / 红底——太扎眼、不专业。统一用商务蓝，靠**文字标签**（如 "Bull Case" / "Bear Case"）区分；如确需层次区分，在 `0F3B5D` / `3288B9` / `CFE3F1` 三档里选深浅。绿 / 红仅作字体颜色编码（跨表 / 外链），不用于背景。
+- **大标题行必须有背景色**：sheet 顶部的报表总标题行用 `006185` 深蓝底 + 白色加粗，不能留白底。（常见错误：大标题没填背景，整张表"没有头"。）
+- **禁止用绿色 / 红色做背景色**：区分情景 / 版本（Bull / Base / Bear、乐观 / 中性 / 悲观）也**不要**用绿底 / 红底——太扎眼、不专业。统一用商务蓝，靠**文字标签**（如 "Bull Case" / "Bear Case"）区分；如确需层次区分，在 `006185` / `049FD7` / `D9F3FD` 三档里选深浅。绿 / 红仅作字体颜色编码（跨表 / 外链），不用于背景。
 - **普通数据行白底**：收入 / 费用 / 各类明细行不加任何填充。
 - 同层级分区标题用相同背景色 + 相同左右填充列范围；不同层级靠这三档蓝色深浅区分，不靠填充长短区分。
 
 ```python
 from openpyxl.styles import Alignment
-HEADER_BG = '0F3B5D'   # 主表头 / 大标题 / 一级分区
-SECOND_BG = '3288B9'   # 二级表头 / 分组标题
-LIGHT_BG  = 'CFE3F1'   # 信息区 / 汇总行 / 三级标题（浅底）
+HEADER_BG = '006185'   # 主表头 / 大标题 / 一级分区
+SECOND_BG = '049FD7'   # 二级表头 / 分组标题
+LIGHT_BG  = 'D9F3FD'   # 信息区 / 汇总行 / 三级标题（浅底）
 LINE_CLR  = 'D0D8E8'   # 分隔线
 BASELINE_BG = 'FFF2CC' # Sensitivity baseline（唯一非蓝高亮）
 
@@ -393,8 +393,8 @@ for col in 'DEFGHIJKLMN':                # 年份列：紧凑且统一
 分区标题行用于隔离 Key Assumptions、Core Calculation、Terminal Value、Sensitivity 等区块：
 
 - 同层级标题使用相同背景色和**相同的左右填充列范围**（如都从 B 列到 N 列）。
-- 不同层级也保持左右边界一致，只用背景色深浅区分层级（一级 `0F3B5D` 深蓝底白字加粗；二级 `3288B9` 中蓝；三级 `CFE3F1` 浅蓝黑字）。配色与 `section_header()` 见上方「背景色与配色」。
-- **大标题行必须填 `0F3B5D` 深蓝底 + 白色加粗，不能留白底。**
+- 不同层级也保持左右边界一致，只用背景色深浅区分层级（一级 `006185` 深蓝底白字加粗；二级 `049FD7` 中蓝；三级 `D9F3FD` 浅蓝黑字）。配色与 `section_header()` 见上方「背景色与配色」。
+- **大标题行必须填 `006185` 深蓝底 + 白色加粗，不能留白底。**
 
 父子层级通过缩进和加粗表达：父级/合计行加粗，子项正常字重并缩进（`Alignment(indent=1)`）。
 
@@ -446,7 +446,7 @@ Sensitivity 必须极简、对称、可读。
 5. 每个情景格都要按该组输入**全链路重算**，不要只在 baseline 结果上做线性扰动、也不要冻结 baseline 中间表后只改展示值。
 
 ```python
-HEADER_BG, BASELINE_BG = 'CFE3F1', 'FFF2CC'    # 轴表头用浅蓝 light_bg；baseline 浅黄
+HEADER_BG, BASELINE_BG = 'D9F3FD', 'FFF2CC'    # 轴表头用浅蓝 light_bg；baseline 浅黄
 thin_gray = Side(style='thin', color='BFBFBF')
 bd = Border(left=thin_gray, right=thin_gray, top=thin_gray, bottom=thin_gray)
 

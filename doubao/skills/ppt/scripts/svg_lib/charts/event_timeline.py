@@ -1,50 +1,28 @@
-"""svg_lib/charts/event_timeline.py
-
-统一 API: draw_event_timeline(data, variant, palette, ...) -> str (SVG)
-
-Data schema:
-    data = {
-        "events": [(date_str, title, subtitle?, category?), ...],  # 至少 2 events
-        "categories": {name: color} | None,   # 可选，主动指定 category 颜色
-    }
-
-Variants (5 共享 events):
-    - horizontal_alt_dot   横线时间轴，卡片上下交替
-    - stepped_dot           阶梯形时间轴（增长叙事）
-    - vertical_alt_dot     纵向时间轴，卡片左右交替
-    - horizontal_pin        横线 + pin 标记（水滴）
-    - circular_dot          圆形时间轴（PDCA 感）
-"""
+"""统一 API: draw_event_timeline(data, variant, palette, ...) -> str (SVG)"""
 
 from __future__ import annotations
+
 import math
 
-from ._shared import (
-    resolve_palette,
-    xesc,
-    auto_font_size,
-    viewbox_fs,
-    svg_open,
-    svg_close,
-    _rgba_with_alpha,
-)
-
-
 from .._common import (
-    _ACC,
-    _INK,
-    _INK1,
-    _INK2,
-    _INK4,
-    _INK6,
+    _legacy_inks,
     _derive_series_colors,
+    _dispatch_to_svg_lib,
     _prepend_bg_if_dark,
     _resolve_font,
     _resolve_palette,
     _rgba_with_alpha,
-    _xesc,
     _variant_is_classic,
-    _dispatch_to_svg_lib,
+    _xesc,
+)
+from ._shared import (
+    _header,
+    tr,
+    resolve_palette,
+    svg_close,
+    svg_open,
+    viewbox_fs,
+    xesc,
 )
 
 BODY_FONT = "Inter, sans-serif"
@@ -57,15 +35,14 @@ def draw_event_timeline(
     palette: str = "archive_ink",
     width: float = 900,
     height: float = 540,
-    title: str = None,
-    subtitle: str = None,
+    title: str | None = None,
+    subtitle: str | None = None,
 ) -> str:
     events = data.get("events") or []
     if len(events) < 2:
         raise ValueError("draw_event_timeline: need at least 2 events")
 
     # normalize: (date, title, subtitle, category)
-    #
     # Accepts several input shapes since make_event_timeline() forwards events
     # through _dispatch_to_svg_lib() without conversion:
     #   A) dict:  {"year", "month", "category"|"cat", "title", "desc"|"description"|"subtitle"}
@@ -91,12 +68,10 @@ def draw_event_timeline(
             s = str(e.get("subtitle", e.get("desc", e.get("description", ""))) or "")
             c = str(e.get("category", e.get("cat", "")) or "")
             return (d, t, s, c)
-        # tuple / list forms
         if not isinstance(e, (list, tuple)) or len(e) == 0:
             return ("", "", "", "")
-        # New-API tuple: (year:int, month:int, cat, title, desc)
-        # Distinguishing marker: len>=4, e[0] and e[1] are ints (or int-like) and e[1]
-        # is NOT the string "above"/"below".
+        # New-API tuple: (year:int, month:int, cat, title, desc) Distinguishing marker: len>=4, e[0] and e[1] are ints
+        # (or int-like) and e[1] is NOT the string "above"/"below".
         if len(e) >= 4 and not isinstance(e[1], str):
             try:
                 y_i = int(e[0])
@@ -110,14 +85,7 @@ def draw_event_timeline(
                 pass
         # Legacy-API tuple: (idx, side, title, sub, cat)
         if len(e) >= 4 and isinstance(e[1], str) and e[1] in ("above", "below"):
-            # idx here is typically a numeric axis position (float like 0.3) that
-            # has no semantic meaning as a "date" — historically we used to str()
-            # it and render it on the card, which produced misleading labels
-            # like "0.3 / 1.4 / 0.4" at the top of pin cards.  Prefer empty date
-            # so title/sub carry the visible content instead.  Callers that want
-            # a real date should either pass `years=[..]` to make_event_timeline
-            # (which now pre-normalises to (year, month, ...) before dispatch)
-            # or use the new-API tuple/dict form directly.
+            # Prefer empty date so title/sub carry the visible content instead.
             d = ""
             t = str(e[2]) if len(e) > 2 else ""
             s = str(e[3]) if len(e) > 3 and e[3] else ""
@@ -135,7 +103,6 @@ def draw_event_timeline(
     pal = resolve_palette(palette)
     user_cat_color = data.get("categories") or {}
 
-    # derive category -> color
     cat_color = {}
     used_cats = []
     for _, _, _, c in norm:
@@ -197,30 +164,6 @@ class _Ctx:
         return self.pal["accent"]
 
 
-def _header(ctx: _Ctx) -> str:
-    ink = ctx.pal["ink"]
-    mut = ctx.pal["muted"]
-    parts = []
-    ML = ctx.ML
-    if ctx.title:
-        parts.append(
-            f'<text x="{ML}" y="30" font-family="{HEAD_FONT}" font-size="20" '
-            f'font-weight="600" fill="{ink}" letter-spacing=".03em">{xesc(ctx.title)}</text>'
-        )
-    if ctx.subtitle:
-        y = 48 if ctx.title else 30
-        parts.append(
-            f'<text x="{ML}" y="{y}" font-family="{BODY_FONT}" font-size="11" '
-            f'fill="{mut}" letter-spacing=".14em">{xesc(ctx.subtitle)}</text>'
-        )
-    if ctx.title:
-        parts.append(
-            f'<line x1="{ML}" y1="{ctx.header_h}" x2="{ctx.W - ctx.MR}" y2="{ctx.header_h}" '
-            f'stroke="{ink}" stroke-width="0.6" opacity="0.4"/>'
-        )
-    return "".join(parts)
-
-
 def _draw_horizontal_alt(ctx: _Ctx, use_pin: bool = False) -> str:
     """Horizontal axis with cards alternating above/below."""
     parts = []
@@ -238,14 +181,10 @@ def _draw_horizontal_alt(ctx: _Ctx, use_pin: bool = False) -> str:
     x0 = ctx.ML
     x1 = ctx.W - ctx.MR
 
-    # main axis
     parts.append(f'<line x1="{x0}" y1="{axis_y:.1f}" x2="{x1}" y2="{axis_y:.1f}" stroke="{ink}" stroke-width="1.2"/>')
 
-    # Dense (large_scale) needs a wider min card so titles like "Company founded" (15
-    # chars) don't get mid-word split into "Company founde" + "d".  Neighbouring cards
-    # still don't collide because alternating above/below pushes them onto separate
-    # vertical bands — the only overlap that matters is same-side (i and i+2), spaced
-    # 2*(x1-x0)/n apart, which comfortably clears a 100px card even at n=22 / w=1400.
+    # Dense (large_scale) needs a wider min card so titles like "Company founded" (15 chars) don't get mid-word split
+    # into "Company founde" + "d".
     min_w = 100 if n > 15 else 80
     card_w = max(min_w, (x1 - x0) / max(1, n) * 0.9)
     # pin variant can afford a slightly wider ceiling because the droplet anchor
@@ -262,17 +201,8 @@ def _draw_horizontal_alt(ctx: _Ctx, use_pin: bool = False) -> str:
     # title-top = baseline-0.8*fs = 30-13.3 ≈ 16.7).  Bump the title baseline
     # by 4px and grow card_h so the sub text still clears.
     sparse = n <= 4
-    # Medium (5 ≤ n ≤ 10) with pin variant sits in a tight horizontal band —
-    # cards are ~90px wide and titles like "Design system v1"/"APAC expansion"
-    # don't fit at fs≥10.5 so the single-line fallback triggers 2-line wrap.
-    # Under card_h=50 the wrapped title-line-1 baseline (card_y+26) puts its
-    # bbox top at ~206.48 for card_y=190, which clips the date bbox bottom at
-    # 207.2 by ~0.7px — and title-line-2 baseline (card_y+40) collides with
-    # sub baseline (card_y+card_h-6 = card_y+44).  Both are intra-card, only
-    # surfacing when Feishu re-renders the SVG server-side (harness with the
-    # shorter test strings never wraps and stays clean).  Pre-detect whether
-    # any title will need wrap and grow the card + spread the baselines so
-    # date/title/title2/sub each occupy its own 12+px band.
+    # Medium (5 ≤ n ≤ 10) with pin variant sits in a tight horizontal band — cards are ~90px wide and titles like
+    # "Design system v1"/"APAC expansion" don't fit at fs≥10.5 so the single-line fallback triggers 2-line wrap.
     medium_pin = use_pin and 5 <= n <= 10 and not two_line_title and not sparse
     # scan the event set once to decide if we need the "roomy" layout
     _needs_wrap = False
@@ -311,9 +241,7 @@ def _draw_horizontal_alt(ctx: _Ctx, use_pin: bool = False) -> str:
         col = ctx.color_for(cat)
         above = i % 2 == 0
 
-        # anchor
         if use_pin:
-            # pin (droplet shape) pointing at axis
             if above:
                 pin_top = axis_y - 22
                 d = (
@@ -338,30 +266,24 @@ def _draw_horizontal_alt(ctx: _Ctx, use_pin: bool = False) -> str:
             )
             parts.append(f'<circle cx="{cx:.1f}" cy="{axis_y:.1f}" r="1.8" fill="{col}"/>')
 
-        # card position
         if above:
             card_y = axis_y - 40 - card_h
         else:
             card_y = axis_y + 40
         card_x = cx - card_w / 2
-        # clamp
         card_x = max(x0, min(x1 - card_w, card_x))
 
-        # lead line
         lead_y2 = card_y + card_h if above else card_y
         parts.append(
             f'<line x1="{cx:.1f}" y1="{axis_y - (12 if above else -12):.1f}" '
             f'x2="{cx:.1f}" y2="{lead_y2:.1f}" '
             f'stroke="{_rgba_with_alpha(col, 0.55)}" stroke-width="0.9"/>'
         )
-        # card
         parts.append(
             f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="{card_w:.1f}" height="{card_h}" '
             f'fill="{bg}" stroke="{_rgba_with_alpha(col, 0.85)}" stroke-width="0.9"/>'
         )
-        # accent bar (left edge)
         parts.append(f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="3" height="{card_h}" fill="{col}"/>')
-        # texts
         parts.append(
             f'<text x="{card_x + 8:.1f}" y="{card_y + 15:.1f}" font-family="{BODY_FONT}" '
             f'font-size="{ctx.fs_date}" fill="{col}" font-weight="700" '
@@ -440,7 +362,6 @@ def _draw_stepped(ctx: _Ctx) -> str:
     """Stepped rising timeline."""
     parts = []
     ink = ctx.pal["ink"]
-    mut = ctx.pal["muted"]
     bg = ctx.pal["bg"]
     accent = ctx.pal["accent"]
 
@@ -449,14 +370,11 @@ def _draw_stepped(ctx: _Ctx) -> str:
     plot_top = ctx.header_h + 40
     plot_bot = ctx.H - 40
     n = ctx.n
-    # Use rotated compact labels once the staircase gets steep enough that alternating
-    # above/below cards start colliding: at n ≥ 8 the vertical step per corner (~46px)
-    # becomes smaller than 2*(card_h + 10), so an "above" card of step k lands at
-    # roughly the same y as the "below" card of step k+1.  Rotated labels sidestep
-    # the collision entirely.
+    # Use rotated compact labels once the staircase gets steep enough that alternating above/below cards start
+    # colliding: at n ≥ 8 the vertical step per corner (~46px) becomes smaller than 2*(card_h + 10), so an "above" card
+    # of step k lands at roughly the same y as the "below" card of step k+1.
     dense = n >= 8
 
-    # step area path (rising staircase)
     step_area = [f"M {x0} {plot_bot:.1f}"]
     step_line = []
     ys = []
@@ -485,10 +403,8 @@ def _draw_stepped(ctx: _Ctx) -> str:
     parts.append(f'<line x1="{x0}" y1="{plot_bot}" x2="{x1}" y2="{plot_bot}" stroke="{ink}" stroke-width="0.8"/>')
 
     if dense:
-        # Dense mode (n > 12): drop cards entirely.  Instead show a rotated compact label
-        # "date · title" anchored at each step.  Each label rotates -45° so it reads up-and-
-        # to-the-right along the staircase, giving horizontal breathing room between
-        # neighbours.  A 2-way stagger (short vs long stem) breaks residual overlap.
+        # Dense mode (n > 12): drop cards entirely. Instead show a rotated compact label "date · title" anchored at each
+        # step.
         fs = max(9, ctx.fs_title - 1)
         for i, (date, title, sub, cat) in enumerate(ctx.events):
             cx = xs[i]
@@ -528,20 +444,17 @@ def _draw_stepped(ctx: _Ctx) -> str:
             cy = ys[i]
             col = ctx.color_for(cat)
             above = i % 2 == 0
-            # card position
             card_x = cx - card_w / 2
             card_x = max(x0, min(x1 - card_w, card_x))
             if above:
                 card_y = cy - 10 - card_h
             else:
                 card_y = cy + 10
-            # lead
             lead_y2 = card_y + card_h if above else card_y
             parts.append(
                 f'<line x1="{cx:.1f}" y1="{cy:.1f}" x2="{cx:.1f}" y2="{lead_y2:.1f}" '
                 f'stroke="{_rgba_with_alpha(col, 0.55)}" stroke-width="0.8"/>'
             )
-            # card
             parts.append(
                 f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="{card_w:.1f}" height="{card_h}" '
                 f'fill="{bg}" stroke="{_rgba_with_alpha(col, 0.85)}" stroke-width="0.9"/>'
@@ -560,7 +473,6 @@ def _draw_stepped(ctx: _Ctx) -> str:
                 f'<tspan dx="6">{xesc(title)}</tspan></text>'
             )
 
-    # anchors on step corners
     for i, (date, title, sub, cat) in enumerate(ctx.events):
         col = ctx.color_for(cat)
         cx = xs[i]
@@ -611,7 +523,6 @@ def _draw_vertical_alt(ctx: _Ctx) -> str:
         left = i % 2 == 0
         card_h = card_h_sub if sub else card_h_nosub
 
-        # anchor
         parts.append(f'<circle cx="{axis_x:.1f}" cy="{cy:.1f}" r="5" fill="{bg}" stroke="{col}" stroke-width="2"/>')
         parts.append(f'<circle cx="{axis_x:.1f}" cy="{cy:.1f}" r="2" fill="{col}"/>')
 
@@ -634,14 +545,12 @@ def _draw_vertical_alt(ctx: _Ctx) -> str:
 
         card_y = cy - card_h / 2
 
-        # lead
         lead_x1 = axis_x + 6 if not left else axis_x - 6
         lead_x2 = card_x if not left else card_x + card_w
         parts.append(
             f'<line x1="{lead_x1:.1f}" y1="{cy:.1f}" x2="{lead_x2:.1f}" y2="{cy:.1f}" '
             f'stroke="{_rgba_with_alpha(col, 0.55)}" stroke-width="0.8"/>'
         )
-        # card
         parts.append(
             f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="{card_w:.1f}" height="{card_h}" '
             f'fill="{bg}" stroke="{_rgba_with_alpha(col, 0.85)}" stroke-width="0.9"/>'
@@ -702,11 +611,10 @@ def _draw_circular(ctx: _Ctx) -> str:
         f'A {R:.1f} {R:.1f} 0 1 0 {cx0 - R:.1f} {cy0:.1f} Z" '
         f'fill="none" stroke="{ink}" stroke-width="1.2"/>'
     )
-    # center text
     parts.append(
         f'<text x="{cx0:.1f}" y="{cy0 - 4:.1f}" text-anchor="middle" '
         f'font-family="{BODY_FONT}" font-size="10" fill="{mut}" font-weight="600" '
-        f'letter-spacing=".18em">EVENTS</text>'
+        f'letter-spacing=".18em">{_xesc(tr("EVENTS"))}</text>'
     )
     parts.append(
         f'<text x="{cx0:.1f}" y="{cy0 + 18:.1f}" text-anchor="middle" '
@@ -714,9 +622,8 @@ def _draw_circular(ctx: _Ctx) -> str:
     )
 
     if dense:
-        # Dense mode (n > 12): drop rectangular cards; place a rotated tangent label
-        # radiating outward from each dot.  Text auto-flips so it always reads
-        # left-to-right regardless of angle.
+        # Dense mode (n > 12): drop rectangular cards; place a rotated tangent label radiating outward from each dot.
+        # Text auto-flips so it always reads left-to-right regardless of angle.
         fs = max(9, ctx.fs_title - 1)
         r_dot = R
         r_lbl = R + 14
@@ -766,10 +673,8 @@ def _draw_circular(ctx: _Ctx) -> str:
     # 2-line card when any event has a subtitle so we can show desc under title;
     # otherwise keep the original 40px card to preserve the sparse look.
     has_sub = any(bool(sub) for _, _, sub, _ in ctx.events)
-    # Sparse n≤4 boosts fs_title/date via data_scale_factor=1.4; the default
-    # date-at-13 / title-at-28 baseline gap of 15px is then insufficient
-    # (0.8*16.6 + 0.2*13.6 ≈ 16 > 15).  Grow the card + spread the baselines
-    # so date-bbox bottom clears title-bbox top by ≥2px.
+    # Sparse n≤4 boosts fs_title/date via data_scale_factor=1.4; the default date-at-13 / title-at-28 baseline gap of
+    # 15px is then insufficient (0.8*16.6 + 0.2*13.6 ≈ 16 > 15).
     sparse = ctx.n <= 4
     if sparse:
         card_h = 62 if has_sub else 46
@@ -779,13 +684,8 @@ def _draw_circular(ctx: _Ctx) -> str:
     title_dy = 34 if sparse else 28
     sub_dy = 51 if sparse else 45
 
-    # Middle-anchored cards (top / bottom of the ring, |cos_a| <= 0.35) are
-    # centred on `ly` and extend card_h/2 radially back toward the ring centre.
-    # With R_LABEL = R + 22 and card_h in {40, 54} the card's inward edge lands
-    # at R + 22 - card_h/2 = R - 5 (has_sub) or R + 2 (no-sub), which overlaps
-    # the anchor circle (radius 6) — and the date/sub text sitting near the
-    # card's top edge overhangs past the anchor.  Pull middle-anchored cards
-    # further out so R_LABEL_mid - card_h/2 >= anchor_r + margin.
+    # Middle-anchored cards (top / bottom of the ring, |cos_a| <= 0.35) are centred on `ly` and extend card_h/2 radially
+    # back toward the ring centre.
     ANCHOR_R = 6
     LABEL_GAP = 22  # side (start/end anchored) cards keep the tight offset
     LABEL_GAP_MID = card_h / 2 + ANCHOR_R + 8  # top/bottom cards clear the anchor
@@ -828,14 +728,12 @@ def _draw_circular(ctx: _Ctx) -> str:
 
         card_y = ly - card_h / 2
 
-        # clip within canvas
         card_x = max(4, min(ctx.W - card_w - 4, card_x))
 
         parts.append(
             f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="{card_w}" height="{card_h}" '
             f'fill="{bg}" stroke="{_rgba_with_alpha(col, 0.85)}" stroke-width="0.9"/>'
         )
-        # accent
         if anchor == "end":
             ax_x = card_x + card_w - 3
         else:
@@ -875,11 +773,7 @@ def _draw_circular(ctx: _Ctx) -> str:
 
 
 def _visual_width(s):
-    """CJK-aware visual width, in 'ASCII-char' units.
-
-    Latin/ASCII glyphs ≈ 1.0; CJK/full-width/emoji ≈ 1.7. Returns a float
-    so callers can compare against `avail_px / (fs * char_w_ratio)`.
-    """
+    """CJK-aware visual width, in 'ASCII-char' units."""
     if not s:
         return 0.0
     w = 0.0
@@ -891,13 +785,7 @@ def _visual_width(s):
 
 
 def _fit_font_size(s, avail_w, base_fs, min_fs=8.5, char_w_ratio=0.55):
-    """Return the largest fs ≤ base_fs at which `s` fits into `avail_w` px.
-
-    NEVER truncates the text — shrinks font-size instead.  Caller is expected
-    to pass the returned fs into the corresponding ``<text font-size=...>``.
-    Falls back to ``min_fs`` when even that is too tight (extreme overflow),
-    accepting minor overflow rather than clipping the string.
-    """
+    """Return the largest fs ≤ base_fs at which `s` fits into `avail_w` px."""
     if not s:
         return float(base_fs)
     vw = _visual_width(s)
@@ -908,17 +796,10 @@ def _fit_font_size(s, avail_w, base_fs, min_fs=8.5, char_w_ratio=0.55):
 
 
 def _wrap_two_lines_fit(s, avail_w, base_fs, min_fs=8.5, char_w_ratio=0.55):
-    """Wrap `s` onto up to 2 lines and pick the largest fs (≤ base_fs) that
-    lets both lines fit within `avail_w`.  Never truncates.
-
-    Returns (line1, line2, fs).  line2 is "" when the string fits on one line
-    at base_fs.  Prefers a space break near the ideal cut point for latin
-    strings; CJK strings without spaces cut on visual-width boundary.
-    """
+    """Wrap `s` onto up to 2 lines and pick the largest fs (≤ base_fs) that lets both lines fit within `avail_w`."""
     if not s:
         return "", "", float(base_fs)
     vw_total = _visual_width(s)
-    # fits on one line at base_fs?
     if vw_total * base_fs * char_w_ratio <= avail_w:
         return s, "", float(base_fs)
     # try 2-line wrap.  target ~= half the visual width on each line.
@@ -950,81 +831,29 @@ def _wrap_two_lines_fit(s, avail_w, base_fs, min_fs=8.5, char_w_ratio=0.55):
 
 
 def _clip(s, max_chars):
-    """DEPRECATED — kept only for internal callers that pre-normalise text.
-
-    Prefer :func:`_fit_font_size` / :func:`_wrap_two_lines_fit` which never
-    truncate.  This helper still exists because a few edge cases (e.g. dense
-    rotated labels on circular_dot) rely on returning the raw string when it
-    already fits within `max_chars`.
-    """
+    """DEPRECATED — kept only for internal callers that pre-normalise text."""
     if not s or len(s) <= max_chars:
         return s
     return s[: max(1, max_chars - 1)] + "…"
 
 
-def _wrap_two_lines(s: str, max_chars: int):
-    """Split `s` into at most 2 lines. Line 1 respects max_chars (prefer word break);
-    line 2 is remainder, clipped to max_chars with ellipsis if needed."""
-    if not s:
-        return "", ""
-    if len(s) <= max_chars:
-        return s, ""
-    # try to break on a space near max_chars (search left up to 4 chars)
-    break_at = max_chars
-    for j in range(max_chars, max(0, max_chars - 5), -1):
-        if j < len(s) and s[j] == " ":
-            break_at = j
-            break
-    line1 = s[:break_at].rstrip()
-    rest = s[break_at:].lstrip()
-    if len(rest) > max_chars:
-        rest = rest[: max(1, max_chars - 1)] + "…"
-    return line1, rest
-
-
 def make_event_timeline(
     events,
     year_range=None,
-    title: str = None,
-    subtitle: str = None,
-    figure_label: str = None,
-    figure_note: str = None,
-    categories: dict = None,
-    category_labels: dict = None,
-    era_bands: list = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    figure_label: str | None = None,
+    figure_note: str | None = None,
+    categories: dict | None = None,
+    category_labels: dict | None = None,
+    era_bands: list | None = None,
     # 兼容老 API：years=[..]（每格一年）+ events=[(idx, side, title, sub, cat)]
     years=None,
-    font_family: str = None,
+    font_family: str | None = None,
     palette=None,
-    variant: str = None,
+    variant: str | None = None,
 ) -> str:
-    """
-    事件时间轴（Dandelion academic 风格）：
-      - 顶部标题 + 副标 + FIGURE X caption
-      - 可选年代带（era_bands）横向背景阴影 + 顶部大写小标签
-      - 中央水平主轴 + 年份/季度刻度
-      - 事件卡片（175×60）内含 日期 · 标题 · 描述；左侧 3px accent 竖条
-      - 上下交替 + 3 stack levels 自动避让
-      - 底部 category 图例 + Notes 页脚
-
-    events 支持两种格式（**推荐新格式**）：
-    - **新格式**：list of dict，每项含 keys:
-          {"year": 2023, "month": 3, "category": "closed",
-           "title": "GPT-4", "desc": "Multimodal ..."}
-      或 tuple: (year, month, category, title, desc)
-    - **老格式**（兼容 make_event_timeline 老签名）：
-      years=[2018,2019,...] + events=[(idx, side, title, sub, cat_or_hi)]
-      此时不显示 era_bands，卡片按老规则简化排布。
-
-    year_range: (start_year, end_year) 主轴年份范围（含末年整年，即末年 1-12 月都可视）。
-                缺省从 events 里取 min-max。例：year_range=(2024, 2026) 表示轴覆盖 2024/1 到 2027/1。
-    title/subtitle/figure_label/figure_note: 顶部标题区文字（可选，学术风）
-    categories:      {cat_key: rgba_color}；不传时从 palette 派生
-    category_labels: {cat_key: display_label}；不传则用 cat_key.title()
-    era_bands:       [(start_year, end_year, label, sub), ...] 年代阴影带
-
-    palette:  见 svg_palettes.PALETTES
-    """
+    """事件时间轴（Dandelion academic 风格）."""
     if not _variant_is_classic("event_timeline", variant):
         # Convert legacy (idx, side, title, sub, cat) + years=[..] into new-shape
         # (year, month, cat, title, desc) tuples so svg_lib doesn't see the raw
@@ -1053,8 +882,7 @@ def make_event_timeline(
                     _events_conv.append(ev)
                     continue
                 year_i = int(idx_f)
-                if year_i < 0:
-                    year_i = 0
+                year_i = max(year_i, 0)
                 if year_i >= len(years):
                     year_i = len(years) - 1
                 try:
@@ -1062,7 +890,7 @@ def make_event_timeline(
                 except (TypeError, ValueError):
                     real_year = base_yr + year_i
                 frac = idx_f - int(idx_f)
-                real_month = max(1, min(12, int(round(frac * 12)) + 1))
+                real_month = max(1, min(12, round(frac * 12) + 1))
                 _events_conv.append((real_year, real_month, cat, str(title_), str(sub) if sub else ""))
             _events_for_dispatch = _events_conv
         else:
@@ -1082,16 +910,10 @@ def make_event_timeline(
         )
     _pal = _resolve_palette(palette)
     _body_font, _head_font = _resolve_font(font_family)
-    _INK = _pal["ink"]
-    _INK6 = _pal["ink6"]
-    _INK4 = _pal["ink4"]
-    _INK2 = _pal["ink2"]
-    _INK1 = _pal["ink1"]
-    _ACC = _pal["accent"]
+    _INK, _INK6, _INK4, _INK2, _INK1, _ACC = _legacy_inks(_pal)
     c_muted = _pal.get("muted", _rgba_with_alpha(_INK, 0.6))
     c_bg = _pal.get("bg")  # 若定义了 bg，slide 层会用它做整页底
 
-    # ---------- 数据归一化 ----------
     # 分两条路径：老 API（years + events(idx,side,...)）vs 新 API（events(year,month,...)）
     is_legacy = years is not None
     if is_legacy:
@@ -1112,11 +934,9 @@ def make_event_timeline(
             base_yr = int(years[0]) if isinstance(years[0], (int, float)) else 2020
             # 支持 idx 为浮点：取整年 + 月份
             year_i = int(idx)
-            month_i = int(round((idx - year_i) * 12)) + 1
             # 但 years 里的值就是真实年份（老 API 是这样）
             # 简化：假设 years 是 int 年份 → year = years[year_i]，month = 1 + 11*fraction
-            if year_i < 0:
-                year_i = 0
+            year_i = max(year_i, 0)
             if year_i >= len(years):
                 year_i = len(years) - 1
             try:
@@ -1124,7 +944,7 @@ def make_event_timeline(
             except (ValueError, TypeError):
                 real_year = base_yr + year_i
             frac = idx - int(idx)
-            real_month = max(1, min(12, int(round(frac * 12)) + 1))
+            real_month = max(1, min(12, round(frac * 12) + 1))
             norm_events.append((real_year, real_month, cat, str(title_), str(sub)))
             legacy_side_override[ev_i] = side
     else:
@@ -1147,7 +967,6 @@ def make_event_timeline(
     if not norm_events:
         raise ValueError("event_timeline: at least one event required")
 
-    # ---------- year range ----------
     if year_range is not None:
         yr_start, yr_end = int(year_range[0]), int(year_range[1])
     else:
@@ -1157,7 +976,6 @@ def make_event_timeline(
     if yr_end <= yr_start:
         yr_end = yr_start + 1
 
-    # ---------- 类别自动派生 ----------
     used_cats = []
     seen_set = set()
     for _, _, cat, _, _ in norm_events:
@@ -1173,7 +991,6 @@ def make_event_timeline(
     if category_labels is None:
         category_labels = {c: c.replace("_", " ").title() for c in used_cats}
 
-    # ---------- 画布 ----------
     W, H = 1500, 780
     MARGIN_L, MARGIN_R = 90, 90
     MARGIN_T = 145
@@ -1190,20 +1007,12 @@ def make_event_timeline(
         total = max(1, yr_end - yr_start + 1)
         return axis_x_left + val / total * axis_w
 
-    # ---------- 上下分配 + stack level ----------
     CARD_W = 210
     CARD_H = 76
     MIN_GAP_X = 60
-    # Extend stack from 3 → 5 levels: with dense events (n≥12) and 210px cards
-    # the classic 3-tier layout runs out of room and same-side neighbours overlap
-    # (their bboxes cross adjacent cards' accent bars, tripping
-    # embed_svg_text_shape_overlap on horizontal_alt_dot large @ n=14).  Extra
-    # levels give the interval-graph packing more slots to stagger into.
-    # Level y-step is 85px (> CARD_H=76), so cards on adjacent levels never
-    # overlap vertically even when their x-ranges do.  Previous offsets used a
-    # 65px step which left an 11px vertical bleed between level 0 and level 1,
-    # so a level-0 card's date text could poke into a level-1 card's rect and
-    # trip embed_svg_text_shape_overlap on the same-x-column stack.
+    # Extend stack from 3 → 5 levels: with dense events (n≥12) and 210px cards the classic 3-tier layout runs out of
+    # room and same-side neighbours overlap (their bboxes cross adjacent cards' accent bars, tripping
+    # embed_svg_text_shape_overlap on horizontal_alt_dot large @ n=14).
     CARD_STACK_LEVELS = 5
     level_y_offsets_above = [80, 165, 250, 335, 420]
     level_y_offsets_below = [80, 165, 250, 335, 420]
@@ -1239,7 +1048,6 @@ def make_event_timeline(
         else:
             below_events.append((i, x))
 
-    # 建立索引 → side 映射
     side_of = {i: s for i, s in event_side}
 
     # 每侧 stack level 分配（Interval graph coloring）
@@ -1272,7 +1080,6 @@ def make_event_timeline(
     assign_levels(above_sorted)
     assign_levels(below_sorted)
 
-    # ---------- 高度自适应 ----------
     # 根据实际使用的 stack level 数决定画布高度，避免"少事件时上下大片空白"
     max_lv_above = max((event_level[i] for i, _ in above_events), default=-1)
     max_lv_below = max((event_level[i] for i, _ in below_events), default=-1)
@@ -1283,10 +1090,8 @@ def make_event_timeline(
     axis_y = MARGIN_T + _extra_above
     H = int(axis_y + _extra_below + MARGIN_B)
 
-    # ---------- 生成 SVG ----------
     parts = []
 
-    # 顶部标题
     if title:
         parts.append(
             f'<text x="{MARGIN_L}" y="52" '
@@ -1300,10 +1105,8 @@ def make_event_timeline(
             f'font-family="{_body_font}" font-size="14" fill="{c_muted}" '
             f'letter-spacing=".16em">{_xesc(subtitle)}</text>'
         )
-    # 分隔线
     parts.append(f'<line x1="{MARGIN_L}" y1="92" x2="{W - MARGIN_R}" y2="92" stroke="{_INK}" stroke-width="0.8"/>')
 
-    # FIGURE caption
     if figure_label:
         parts.append(
             f'<text x="{MARGIN_L}" y="112" font-family="{_body_font}" font-size="12" '
@@ -1317,7 +1120,6 @@ def make_event_timeline(
             f'fill="{c_muted}" letter-spacing=".04em">{_xesc(note_txt)}</text>'
         )
 
-    # 年代带
     band_y_top = MARGIN_T + 20
     band_y_bot = MARGIN_T + 500
     if era_bands:
@@ -1343,7 +1145,6 @@ def make_event_timeline(
                     f'font-family="{_body_font}" font-size="10.5" '
                     f'fill="{c_muted}" font-style="italic">{_xesc(eb_sub)}</text>'
                 )
-        # 边界虚线
         for i, band in enumerate(era_bands[1:], start=1):
             xs_b = x_of(band[0], 1)
             parts.append(
@@ -1351,12 +1152,10 @@ def make_event_timeline(
                 f'stroke="{_INK4}" stroke-width="0.4" stroke-dasharray="2 4"/>'
             )
 
-    # 主轴
     parts.append(
         f'<line x1="{axis_x_left}" y1="{axis_y}" x2="{axis_x_right}" y2="{axis_y}" stroke="{_INK}" stroke-width="1.2"/>'
     )
 
-    # 年份大刻度
     for yr in range(yr_start, yr_end + 1):
         xv = x_of(yr, 1)
         parts.append(
@@ -1368,7 +1167,6 @@ def make_event_timeline(
             f'fill="{_INK}">{yr}</text>'
         )
 
-    # 月份小刻度
     for yr in range(yr_start, yr_end + 1):
         for mo in [4, 7, 10]:
             if yr == yr_end and mo > 1:
@@ -1379,7 +1177,6 @@ def make_event_timeline(
                 f'stroke="{c_muted}" stroke-width="0.6"/>'
             )
 
-    # 事件
     for i, (y, mo, cat, ev_title, ev_desc) in enumerate(norm_events):
         x = x_of(y, mo)
         side = side_of[i]
@@ -1419,7 +1216,6 @@ def make_event_timeline(
             f'stroke="{_rgba_with_alpha(col, 0.55)}" stroke-width="0.8"/>'
         )
 
-        # 卡片
         card_fill = halo
         parts.append(
             f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="{CARD_W}" height="{CARD_H}" '
@@ -1428,7 +1224,6 @@ def make_event_timeline(
         # 左侧 3px accent 条
         parts.append(f'<rect x="{card_x:.1f}" y="{card_y:.1f}" width="3" height="{CARD_H}" fill="{col}"/>')
 
-        # 日期
         date_str = f"{y}·{mo:02d}"
         parts.append(
             f'<text x="{card_x + 10:.1f}" y="{card_y + 13:.1f}" '
@@ -1488,7 +1283,6 @@ def make_event_timeline(
                         cut_idx = space_idx
                 line1 = s[:cut_idx].rstrip()
                 rest = s[cut_idx:].lstrip()
-                # 第二行也用截断
                 line2 = _truncate(rest, max_c)
                 return (line1, line2)
 
@@ -1503,15 +1297,13 @@ def make_event_timeline(
                     f'font-family="{_body_font}" font-size="11" fill="{c_muted}">{_xesc(line2)}</text>'
                 )
 
-    # 底部 category 图例
     if categories and used_cats:
         lg_y = H - 90
         lg_x = MARGIN_L
         parts.append(
             f'<text x="{lg_x}" y="{lg_y - 8}" font-family="{_body_font}" '
-            f'font-size="11" fill="{c_muted}" font-weight="600" letter-spacing=".15em">CATEGORY</text>'
+            f'font-size="11" fill="{c_muted}" font-weight="600" letter-spacing=".15em">{_xesc(tr("CATEGORY"))}</text>'
         )
-        # 均匀布局
         available_w = W - 2 * MARGIN_L
         gap = max(160, available_w / max(1, len(used_cats)))
         for i, key in enumerate(used_cats):
@@ -1527,7 +1319,6 @@ def make_event_timeline(
                 f'font-size="12" fill="{c_muted}">{_xesc(label)}</text>'
             )
 
-    # 页脚
     foot_y = H - 32
     parts.append(
         f'<line x1="{MARGIN_L}" y1="{foot_y - 14}" x2="{W - MARGIN_R}" y2="{foot_y - 14}" '
@@ -1540,7 +1331,7 @@ def make_event_timeline(
     parts.append(
         f'<text x="{MARGIN_L}" y="{foot_y}" font-family="{_body_font}" '
         f'font-size="9.5" fill="{c_muted}">'
-        f'<tspan font-weight="600">Notes.</tspan> {_xesc(default_note)}</text>'
+        f'<tspan font-weight="600">{_xesc(tr("Notes."))}</tspan> {_xesc(default_note)}</text>'
     )
     if figure_label:
         parts.append(
@@ -1554,6 +1345,4 @@ def make_event_timeline(
     return _prepend_bg_if_dark(_svg_result, _pal)
 
 
-# ==============================================================
 # 14) Marimekko 马赛克图
-# ==============================================================
