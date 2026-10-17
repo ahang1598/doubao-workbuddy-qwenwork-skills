@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "codex_app": {
+      "command": "cmd.exe",
+      "cwd": "C:/Users/15805/.codex/plugins/cache/openai-bundled/codex-app-tools/0.1.6",
+      "omit_tools_from": [
+        "deferred"
+      ],
+      "args": [
+        "/d",
+        "/s",
+        "/c",
+        "call",
+        "./scripts/launch_codex_app_tools_mcp.cmd",
+        "./server.mjs"
+      ],
+      "enabled": false,
+      "default_tools_approval_mode": "approve",
+      "tools": {
+        "automation_update": {
+          "approval_mode": "prompt"
+        },
+        "create_thread": {
+          "approval_mode": "prompt"
+        },
+        "send_message_to_thread": {
+          "approval_mode": "prompt"
+        },
+        "fork_thread": {
+          "approval_mode": "prompt"
+        },
+        "handoff_thread": {
+          "approval_mode": "prompt"
+        },
+        "move_thread_to_project": {
+          "approval_mode": "prompt"
+        }
+      },
+      "env_vars": [
+        "CODEX_APP_TOOLS_PIPE_PATH",
+        "CODEX_MCP_NODE_PATH",
+        "CODEX_BROWSER_USE_NODE_PATH",
+        "CODEX_ELECTRON_RESOURCES_PATH",
+        "CODEX_CLI_PATH",
+        "XDG_CACHE_HOME",
+        "HOME",
+        "USERPROFILE",
+        "LOCALAPPDATA",
+        "PATH"
+      ],
+      "startup_timeout_sec": 10,
+      "tool_timeout_sec": 3600,
+      "env": {
+        "CODEX_APP_TOOLS_DEFERRED": "0"
+      }
+    }
+  }
+}

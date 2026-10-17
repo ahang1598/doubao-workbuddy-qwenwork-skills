@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -lt 1 ]; then
+  printf '%s\n' 'Codex app tools could not start: missing MCP server path.' >&2
+  exit 64
+fi
+
+PATH="${PATH:-/usr/bin:/bin}:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH
+
+cache_root=${XDG_CACHE_HOME:-${HOME:-}/.cache}
+codex_resources=
+case "${CODEX_CLI_PATH:-}" in
+  */*) codex_resources=${CODEX_CLI_PATH%/*} ;;
+esac
+for candidate in \
+  "${CODEX_MCP_NODE_PATH:-}" \
+  "${CODEX_BROWSER_USE_NODE_PATH:-}" \
+  "${CODEX_ELECTRON_RESOURCES_PATH:-}/cua_node/bin/node" \
+  "$codex_resources/cua_node/bin/node" \
+  "$cache_root/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node"
+do
+  if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+    exec "$candidate" "$@"
+  fi
+done
+
+if node_path=$(command -v node 2>/dev/null); then
+  case "$node_path" in
+    /*) exec "$node_path" "$@" ;;
+  esac
+fi
+
+printf '%s\n' 'Codex app tools could not find a Node runtime. Reinstall or update Codex.' >&2
+exit 127
