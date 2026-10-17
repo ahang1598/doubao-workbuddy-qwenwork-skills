@@ -42,7 +42,17 @@ def split_ref(ref: str) -> Tuple[Optional[str], str]:
     if "!" not in text:
         return None, text.upper()
     sheet, addr = text.rsplit("!", 1)
-    return sheet.strip().strip("'"), addr.strip().upper()
+    sheet = sheet.strip()
+    if len(sheet) >= 2 and sheet.startswith("'") and sheet.endswith("'"):
+        sheet = sheet[1:-1].replace("''", "'")
+    return sheet, addr.strip().upper()
+
+
+def resolve_sheet(name: str, known: List[str]) -> Optional[str]:
+    if name in known:
+        return name
+    hits = [candidate for candidate in known if candidate.strip() == name.strip()]
+    return hits[0] if len(hits) == 1 else None
 
 
 def iter_range(addr: str) -> Optional[List[str]]:
@@ -230,7 +240,7 @@ def verify_checkpoints(items: List[dict],
             entry["actual"] = actual
         details.append(entry)
 
-    known = set(sheet_names)
+    known = list(dict.fromkeys(sheet_names))
     for item in items:
         if "sheets" in item:
             wanted = [str(s) for s in (item.get("sheets") or [])]
@@ -240,9 +250,12 @@ def verify_checkpoints(items: List[dict],
                 # 就会判本次通过，等于给出一个不含任何判据的通过。
                 add("invalid", ref, item, "sheets 是空的，没有要校验的子表；删掉这条或写上子表名")
                 continue
-            missing = [s for s in wanted if s not in known]
+            resolved_wanted = [resolve_sheet(s, known) for s in wanted]
+            missing = [s for s, resolved in zip(wanted, resolved_wanted) if resolved is None]
             if missing:
                 add("fail", ref, item, f"缺少子表：{'、'.join(missing)}", ", ".join(sheet_names))
+            elif len(set(resolved_wanted)) != len(resolved_wanted):
+                add("invalid", ref, item, "多个子表名指向同一张实际子表，请去重", ", ".join(sheet_names))
             else:
                 add("pass", ref, item, f"{len(wanted)} 张子表都在")
             continue
@@ -252,9 +265,11 @@ def verify_checkpoints(items: List[dict],
         if sheet is None:
             add("invalid", raw_ref, item, "引用要带子表名，写成 '子表名!B12'")
             continue
-        if sheet not in known:
+        resolved = resolve_sheet(sheet, known)
+        if resolved is None:
             add("fail", raw_ref, item, f"子表「{sheet}」不存在", ", ".join(sheet_names))
             continue
+        sheet = resolved
         coords = iter_range(addr)
         if not coords:
             add("invalid", raw_ref, item, f"范围解析不了或超过 {MAX_RANGE_CELLS} 格")

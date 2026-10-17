@@ -15,6 +15,8 @@ HTML 自检脚本：一次完成"加载 + 截图 + 结构/错误/溢出检查"�
   python3 shot.py index.html --outdir shots        # 换输出目录
   python3 shot.py index.html --desktop 1920x1080 --mobile 375x812
   python3 shot.py index.html --format png          # 保留无损
+  python3 shot.py index.html --motion normal --at '#sec-1,#sec-2@50%,#sec-1'
+      # 依次连续滚到这些位置，各截一张视口图（固定背景、滚动场景、倒回状态）
 
 引擎选择（自动）：
   - 首选 playwright（图质量高、DOM 报告完整）
@@ -104,7 +106,9 @@ INIT_SCRIPT = r"""
 
 
 PREP_SCRIPT = r"""
-() => {
+(reveal) => {
+  // --motion normal 要观察真实动效，不改写元素状态
+  if (!reveal) return 0;
   // 常见 scroll-reveal / 动画类，强制显现——避免 opacity:0 元素在截图里空白
   const sel = [
     '.rv','.reveal','.fade','.fade-in','.fade-up','.fade-down',
@@ -120,9 +124,59 @@ PREP_SCRIPT = r"""
     el.style.transition = 'none';
     el.style.animation = 'none';
   });
-  // 关掉 smooth scroll，让 scrollTo 立即生效
-  document.documentElement.style.scrollBehavior = 'auto';
   return els.length;
+}
+"""
+
+
+# 逐段滚动：两条浏览器分支共用。跳跃式滚动只让首尾屏进入视口，中段 IO 永远不触发。
+SCROLL_SCRIPT = r"""
+async () => {
+  // 必须在第一步滚动前关闭 smooth，否则连续 scrollTo 会互相打断，漏触发中段 IO。
+  // 覆盖页面的 !important 样式；只改滚动方式，不强制显现或冻结动画。
+  document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
+  const step = Math.max(300, Math.floor(window.innerHeight * 0.8));
+  const H = document.documentElement.scrollHeight;
+  for (let y = 0; y < H; y += step) {
+    window.scrollTo(0, y);
+    await new Promise(r => setTimeout(r, 30));
+  }
+  window.scrollTo(0, H);
+  await new Promise(r => setTimeout(r, 60));
+  window.scrollTo(0, 0);
+}
+"""
+
+
+# --at：解析一个位置并连续滚过去。spec 为像素（1200）、整页比例（40%）、
+# selector（#sec-2，滚到元素顶部）或 selector@比例（#sec-2@50%，元素在视口内滚过的进度）。
+# 分步滚动而不是直接跳：ScrollTrigger / IO / 按滚动插值的场景要看到连续的滚动过程。
+AT_SCRIPT = r"""
+async ([spec, waitMs]) => {
+  const vh = window.innerHeight;
+  const max = Math.max(0, document.documentElement.scrollHeight - vh);
+  let y = null, m;
+  if (/^\d+(\.\d+)?$/.test(spec)) y = parseFloat(spec);
+  else if ((m = spec.match(/^(\d+(?:\.\d+)?)%$/))) y = max * parseFloat(m[1]) / 100;
+  else {
+    const at = spec.lastIndexOf('@');
+    const sel = at > 0 ? spec.slice(0, at) : spec;
+    const frac = at > 0 ? parseFloat(spec.slice(at + 1)) / 100 : 0;
+    let el = null;
+    try { el = document.querySelector(sel); } catch (e) { return {error: 'selector 无效：' + sel}; }
+    if (!el) return {error: '找不到元素：' + sel};
+    const r = el.getBoundingClientRect();
+    y = r.top + window.scrollY + (isNaN(frac) ? 0 : frac) * Math.max(0, r.height - vh);
+  }
+  y = Math.round(Math.min(max, Math.max(0, y)));
+  const from = window.scrollY, step = Math.max(40, vh * 0.25) * Math.sign(y - from);
+  for (let cur = from; step && Math.abs(y - cur) > Math.abs(step); cur += step) {
+    window.scrollTo(0, cur);
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 16)));
+  }
+  window.scrollTo(0, y);
+  await new Promise(r => setTimeout(r, waitMs));
+  return {scrollY: Math.round(window.scrollY)};
 }
 """
 
@@ -207,7 +261,6 @@ RULE_CATALOG = {
     # === 引用 / 兼容 ===
     "unsafeHrefRefsWarning":           {"severity": "warning", "kind": "compat"},
     # === 排版 / 字体 ===
-    "slopFontsWarning":                {"severity": "warning", "kind": "typography"},
     "emojiUsageWarning":               {"severity": "warning", "kind": "typography"},
     "mobileFontIssues":                {"severity": "error",   "kind": "typography"},
     "mobileFontIssuesWarning":         {"severity": "warning", "kind": "typography"},
@@ -219,6 +272,8 @@ RULE_CATALOG = {
     "invisibleAnimationsWarning":      {"severity": "warning", "kind": "animation"},
     "touchTargetTooSmallWarning":      {"severity": "warning", "kind": "interaction"},
     "deadButtons":                     {"severity": "error",   "kind": "interaction"},
+    # === 脚本静态检查 ===
+    "unusedFunctionsWarning":          {"severity": "info",    "kind": "script"},
 }
 
 # 暂停易误伤动效/题材设计的告警；保留检测与 hint，后续修正判据后移除此处对应项即可恢复。
@@ -261,8 +316,9 @@ REPORT_SCRIPT = r"""
   const fh = document.documentElement.scrollHeight;
 
   // 视口横向溢出元素（bounding rect 超出 viewport 右边）
+  // 前提：整页确实能横向滚动。被 body / html 裁掉的装饰、fixed 层的出血不影响阅读，不报。
   const overflow = [];
-  const walker = document.querySelectorAll('body *');
+  const walker = fw > vw + 1 ? document.querySelectorAll('body *') : [];
   for (const el of walker) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
@@ -278,6 +334,7 @@ REPORT_SCRIPT = r"""
         p = p.parentElement;
       }
       if (inScroller) continue;
+      if (getComputedStyle(el).position === 'fixed') continue;
       overflow.push({
         tag: el.tagName.toLowerCase(),
         cls: (cls || '').toString().split(/\s+/).filter(Boolean).slice(0, 3).join(' '),
@@ -2032,31 +2089,6 @@ REPORT_SCRIPT = r"""
     }
   }
 
-  // 规则 7：slop 高发字体（Inter / Roboto / Arial / Fraunces / Playfair）
-  // 只报"实际参与渲染的字体"——computed fontFamily 的首选族，忽略 fallback 尾部。
-  const slopFonts = [];
-  {
-    const blocklist = ['inter', 'roboto', 'arial', 'fraunces', 'playfair'];
-    const seen = new Map(); // family -> {count, sampleText}
-    const els = document.querySelectorAll('body h1, body h2, body h3, body p, body li, body span, body div, body a, body button');
-    for (const el of els) {
-      if (!el.textContent || !el.textContent.trim()) continue;
-      const cs = getComputedStyle(el);
-      // fontFamily 是 "族1", "族2", fallback 形式，取首选并去引号
-      const first = (cs.fontFamily || '').split(',')[0].replace(/["']/g, '').trim().toLowerCase();
-      if (!first) continue;
-      const hit = blocklist.find(b => first === b || first.startsWith(b + ' '));
-      if (!hit) continue;
-      const rec = seen.get(hit) || { count: 0, sampleText: '' };
-      rec.count += 1;
-      if (!rec.sampleText) rec.sampleText = (el.textContent || '').trim().slice(0, 40);
-      seen.set(hit, rec);
-    }
-    for (const [family, rec] of seen) {
-      slopFonts.push({ family: family, elementCount: rec.count, sampleText: rec.sampleText });
-    }
-  }
-
   // 规则 8：emoji 出现
   // 匹配 Unicode Emoji_Presentation 平面的常见范围。ZWJ 序列、肤色调节符可能触发多次同一位置，去重。
   const emojiUsage = [];
@@ -2524,7 +2556,6 @@ REPORT_SCRIPT = r"""
     chartHtmlInCanvasText: chartHtmlInCanvasText,
     unsafeHrefRefs: unsafeHrefRefs,
     invisibleAnimations: invisibleAnimations,
-    slopFonts: slopFonts,
     emojiUsage: emojiUsage,
     fakeDisclosureBullets: fakeDisclosureBullets,
     orphanCards: orphanCards,
@@ -2962,7 +2993,7 @@ def sample_text_contrast(page, cands, doc_size, threshold=1.6, limit=6, max_shot
 
 def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
              max_width, jpeg_quality, fmt, slice_over_kb, slice_over_height, slice_height, include,
-             eval_code=None, scale=1.0, reduced_motion=True):
+             eval_code=None, scale=1.0, reduced_motion=True, at_specs=None, at_wait=800):
     w, h = viewport
     page.set_viewport_size({"width": w, "height": h})
     # 默认开 reduced-motion：CSS 动画停在终态，截图才有确定性（否则同一页两次截图不一样）。
@@ -2980,21 +3011,9 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
     # 逐段滚一遍再回顶：跳跃式滚动（0 → 底 → 0）只会让首尾屏进入视口，
     # 页面中段元素的 IntersectionObserver 从「不相交」直接到「不相交」，永远不触发，
     # 于是那些元素在截图和 lint 时还停在揭示前的 transform 上——量出来的位置是假的。
-    page.evaluate(
-        "async () => {"
-        "  const step = Math.max(300, Math.floor(window.innerHeight * 0.8));"
-        "  const H = document.documentElement.scrollHeight;"
-        "  for (let y = 0; y < H; y += step) {"
-        "    window.scrollTo(0, y);"
-        "    await new Promise(r => setTimeout(r, 30));"
-        "  }"
-        "  window.scrollTo(0, H);"
-        "  await new Promise(r => setTimeout(r, 60));"
-        "  window.scrollTo(0, 0);"
-        "}"
-    )
+    page.evaluate(SCROLL_SCRIPT)
     page.wait_for_timeout(400)
-    prepped = page.evaluate(PREP_SCRIPT)
+    prepped = page.evaluate(PREP_SCRIPT, reduced_motion)
     page.wait_for_timeout(200)
     # 渲染稳态探针：等 fonts / 图片 / 布局都稳；超时上限 3s，超了就照截，不阻塞交付
     try:
@@ -3069,10 +3088,10 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
         else:
             report["truncated"] = False
 
-    # DOM 报告：lint / structure 至少一个开启时才 evaluate
+    # DOM 仍取全页截图时的状态，避免 --at 的中间动效位置影响布局判断。
+    dom = None
     if "lint" in include or "structure" in include:
         dom = page.evaluate(REPORT_SCRIPT)
-        _apply_dom_report(report, dom, console_bucket, resource_bucket, include)
         # 靠色要在**渲染结果**上采样背景色（clip 截图），只有 playwright 分支持有 page
         # 对象能截图；CDP 分支拿不到，所以这条规则不放进共用的 _apply_dom_report。
         if "lint" in include:
@@ -3100,9 +3119,51 @@ def one_shot(page, viewport, url, out_path, console_bucket, resource_bucket,
                     " | 豁免：(1) 故意做的水印、暗纹、装饰性段落，截图上确认是设计意图；"
                     "(2) 正文本身是次要信息且用户明确要求低调处理。"
                 )
+    if at_specs:
+        report["at"] = _shoot_at(page, at_specs, at_wait, out_path, max_width, jpeg_quality, fmt)
+    # console/network 要等全部拍完再汇总：--at 的滚动、懒加载和截图也可能触发报错。
+    # buckets 在此之前保持完整，统一装配一次，保留原始事件与 DOM 字体失败记录。
+    if dom is not None:
+        _apply_dom_report(report, dom, console_bucket, resource_bucket, include)
     console_bucket.clear()
     resource_bucket.clear()
     return report
+
+
+def _shoot_at(page, specs, wait_ms, out_path, max_width, jpeg_quality, fmt):
+    """按顺序滚到各位置截视口图。全页长图里 fixed 层只出现在首屏，看不到各段的实际画面。"""
+    out = []
+    for i, spec in enumerate(specs, 1):
+        item = {"at": spec}
+        try:
+            pos = page.evaluate(AT_SCRIPT, [spec, wait_ms])
+        except Exception as e:
+            pos = {"error": str(e)[:200]}
+        if pos.get("error"):
+            item["error"] = pos["error"]
+            out.append(item)
+            continue
+        item["scrollY"] = pos["scrollY"]
+        ext = "jpg" if fmt == "jpg" else "png"
+        dest = out_path.with_name(f"{out_path.stem}_at{i}.{ext}")
+        try:
+            kw = {"type": "jpeg", "quality": jpeg_quality} if ext == "jpg" else {"type": "png"}
+            page.screenshot(path=str(dest), scale="css", **kw)
+            if max_width:
+                try:
+                    from PIL import Image
+                    with Image.open(dest) as im:
+                        if im.width > max_width:
+                            im = im.convert("RGB") if ext == "jpg" else im
+                            im.resize((max_width, round(im.height * max_width / im.width))).save(
+                                dest, **({"quality": jpeg_quality} if ext == "jpg" else {}))
+                except ImportError:
+                    pass
+            item["path"] = str(dest)
+        except Exception as e:
+            item["error"] = str(e)[:200]
+        out.append(item)
+    return out
 
 
 def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
@@ -3480,18 +3541,6 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
                 "(2) 依赖 hover/click 才展开的 tooltip/menu；"
                 "(3) 只在特定视口尺寸/断点下显示的元素；"
                 "(4) 类名匹配但语义是 \"揭示后可见\" 且 JS 稳定挂载可自验的——对着截图确认元素已现在最终态即可。"
-            )
-        slop_fonts = dom.get("slopFonts") or []
-        if slop_fonts:
-            report["slopFontsWarning"] = slop_fonts
-            report["slopFontsHint"] = (
-                "warning · 含义：页面使用了 skill 明确禁的 slop 高发字体（Inter / Roboto / Arial / Fraunces / Playfair）。"
-                "elementCount 是命中该字体的元素数（不含 fallback），sampleText 是首个样例文字。"
-                " | 修法：换成主题相关的字体族（衬线/无衬线/等宽视调性而定），走自托管镜像 miaoda.feishu.cn/fonts/css2。"
-                " | 豁免：(1) **用户品牌指定使用**——例如客户 CI 明确要求 Inter/Roboto，写在 brief 里可忽略；"
-                "(2) **系统字体 fallback 命中**——虽然本规则只取 fontFamily 首选族，但如果这个族本身写的是 \"Arial\"、可能只是保守 fallback；"
-                "如果同一元素明显还挂了自定义字体但 fallback 落到 Arial（例如自定义字体 404 了），修的其实是字体加载而非字体选型；"
-                "(3) 极简项目本就要 \"grotesque + 中性感\"，且用户未指定——罕见但存在，看截图和 design plan 确认后可豁免。"
             )
         emoji_use = dom.get("emojiUsage") or []
         if emoji_use:
@@ -3887,7 +3936,7 @@ _CHROME_QUIET_FLAGS = [
 
 def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
                      max_wait_sec: int = 30,
-                     want_report: bool = False,
+                     want_report: bool = False, reduced_motion: bool = True,
                      console_bucket=None, resource_bucket=None, shot_opts=None):
     """CLI 模式截图：优先 CDP full-page（真正的完整长图），失败退到 --screenshot 首屏。
 
@@ -3906,7 +3955,7 @@ def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
     cdp_err = None
     try:
         dom, cap = _cdp_capture(exec_path, url, viewport, out_path, max_wait_sec,
-                                want_report=want_report,
+                                want_report=want_report, reduced_motion=reduced_motion,
                                 console_bucket=console_bucket,
                                 resource_bucket=resource_bucket,
                                 shot_opts=shot_opts)
@@ -3970,7 +4019,7 @@ def _chrome_cli_shoot(exec_path: str, url: str, viewport, out_path: Path,
 
 # ---------- 最小 CDP (Chrome DevTools Protocol) 客户端 ----------
 def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: int,
-                 want_report: bool = False,
+                 want_report: bool = False, reduced_motion: bool = True,
                  console_bucket=None, resource_bucket=None, shot_opts=None):
     """启 chrome remote-debugging → 直连 websocket → Page.captureScreenshot 全页。
 
@@ -4024,6 +4073,8 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
                 ws.call("Network.enable")
                 # 在每个新文档 load 之前注入 INIT_SCRIPT（patch addEventListener 标 __shot_hasClickListener）
                 ws.call("Page.addScriptToEvaluateOnNewDocument", {"source": INIT_SCRIPT})
+            ws.call("Emulation.setEmulatedMedia", {"features": [
+                {"name": "prefers-reduced-motion", "value": "reduce" if reduced_motion else "no-preference"}]})
             ws.call("Page.navigate", {"url": url})
             # 等 load 事件；若网络卡就 wait_sec 后不再等
             deadline = time.time() + wait_sec
@@ -4039,13 +4090,12 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
                     break
             # 再等 1s 让 fonts / lazy 图片跑
             time.sleep(1.0)
-            # 触发 lazy 图片：滚到底再回顶
-            ws.call("Runtime.evaluate", {"expression": "window.scrollTo(0, document.body.scrollHeight)"})
+            # 逐段滚一遍再回顶，与 playwright 分支一致：中段的 IntersectionObserver 也要触发
+            ws.call("Runtime.evaluate", {"expression": f"({SCROLL_SCRIPT.strip()})()",
+                                         "awaitPromise": True}, timeout=30)
             time.sleep(0.4)
-            ws.call("Runtime.evaluate", {"expression": "window.scrollTo(0, 0)"})
-            time.sleep(0.2)
-            # 强制显现 scroll-reveal（CDP 也能注入 JS！这是相比 --screenshot 的大提升）
-            ws.call("Runtime.evaluate", {"expression": f"({PREP_SCRIPT.strip()})()"})
+            # reduce 模式强制显现 scroll-reveal；normal 模式不改元素状态
+            ws.call("Runtime.evaluate", {"expression": f"({PREP_SCRIPT.strip()})({'true' if reduced_motion else 'false'})"})
             time.sleep(0.3)
             # 渲染稳态：轮询 READY_SCRIPT 直到 true 或超 3s；超时不抛，照截
             ready_deadline = time.time() + 3.0
@@ -4115,6 +4165,18 @@ def _cdp_capture(exec_path: str, url: str, viewport, out_path: Path, wait_sec: i
         except Exception: pass
 
 
+def _exception_entry(det):
+    """CDP exceptionDetails → consoleErrors 条目。line / column 从 1 开始，内联脚本即 HTML 文件内位置。"""
+    exc = det.get("exception") or {}
+    desc = exc.get("description") or exc.get("value") or det.get("text") or ""
+    entry = {"type": "error", "text": str(desc).split("\n    at ")[0].strip()[:300],
+             "location": det.get("url", "")}
+    if isinstance(det.get("lineNumber"), int):
+        entry["line"] = det["lineNumber"] + 1
+        entry["column"] = (det.get("columnNumber") or 0) + 1
+    return entry
+
+
 def _cdp_dispatch_event(ev, console_bucket, resource_bucket, req_url_map, req_type_map):
     """把单个 CDP event 落到 console/network buckets 里。
 
@@ -4147,14 +4209,9 @@ def _cdp_dispatch_event(ev, console_bucket, resource_bucket, req_url_map, req_ty
         if console_bucket is not None:
             console_bucket.append({"type": typ, "text": text, "location": url_loc})
     elif method == "Runtime.exceptionThrown":
-        # 未捕获异常 —— playwright 侧走 pageerror，这里合并进 error
-        det = params.get("exceptionDetails") or {}
-        text = det.get("text") or ""
-        exc = det.get("exception") or {}
-        desc = exc.get("description") or exc.get("value") or ""
-        merged = (text + " " + str(desc)).strip()[:300]
+        # 未捕获异常：两条分支共用 _exception_entry，带行列号
         if console_bucket is not None:
-            console_bucket.append({"type": "error", "text": merged, "location": det.get("url", "")})
+            console_bucket.append(_exception_entry(params.get("exceptionDetails") or {}))
     elif method == "Log.entryAdded":
         entry = params.get("entry") or {}
         level = entry.get("level") or ""
@@ -4448,7 +4505,15 @@ def _run_playwright(url, args, name, outdir, result, include):
                     pass
 
             page.on("console", on_console)
-            page.on("pageerror", lambda e: console_bucket.append({"type": "error", "text": str(e)[:300], "location": ""}))
+            # pageerror 只给一句报错文字，模型拿不到位置只能二分代码；
+            # CDP 的 exceptionDetails 带 HTML 文件内的行列号。会话建不起来才退回 pageerror。
+            try:
+                err_cdp = page.context.new_cdp_session(page)
+                err_cdp.on("Runtime.exceptionThrown",
+                           lambda ev: console_bucket.append(_exception_entry(ev.get("exceptionDetails") or {})))
+                err_cdp.send("Runtime.enable")
+            except Exception:
+                page.on("pageerror", lambda e: console_bucket.append({"type": "error", "text": str(e)[:300], "location": ""}))
             page.on("response", on_response)
             page.on("requestfailed", on_requestfailed)
 
@@ -4460,7 +4525,8 @@ def _run_playwright(url, args, name, outdir, result, include):
                     args.max_width, args.jpeg_quality, args.format,
                     args.slice_over_kb, args.slice_over_height, args.slice_height, include,
                     eval_code=args._eval_code, scale=args.scale,
-                    reduced_motion=(args.motion == "reduce"))
+                    reduced_motion=(args.motion == "reduce"),
+                    at_specs=args._at_specs, at_wait=args.at_wait)
             if args.only in ("mobile", "both"):
                 p_out = outdir / f"{name}_mobile.png"
                 result["shots"]["mobile"] = one_shot(
@@ -4469,7 +4535,8 @@ def _run_playwright(url, args, name, outdir, result, include):
                     args.max_width, args.jpeg_quality, args.format,
                     args.slice_over_kb, args.slice_over_height, args.slice_height, include,
                     eval_code=args._eval_code, scale=args.scale,
-                    reduced_motion=(args.motion == "reduce"))
+                    reduced_motion=(args.motion == "reduce"),
+                    at_specs=args._at_specs, at_wait=args.at_wait)
         finally:
             browser.close()
 
@@ -4492,6 +4559,8 @@ def _run_chrome_cli(url, args, name, outdir, result, include):
     result["chromiumExec"] = exec_path
     if getattr(args, "_eval_code", None):
         result["evalIgnored"] = "chrome_cli 降级模式不支持 --eval 注入，本次已忽略；如需注入 JS，请装 playwright。"
+    if getattr(args, "_at_specs", None):
+        result["atIgnored"] = "chrome_cli 降级模式不支持 --at 视口截图，本次已忽略；如需按滚动位置截图，请装 playwright。"
 
     want_report = ("lint" in include) or ("structure" in include)
 
@@ -4511,7 +4580,7 @@ def _run_chrome_cli(url, args, name, outdir, result, include):
                              "slice_height": args.slice_height}
             dom, cap = _chrome_cli_shoot(
                 exec_path, url, viewport, raw_out,
-                want_report=want_report,
+                want_report=want_report, reduced_motion=(args.motion == "reduce"),
                 console_bucket=console_bucket,
                 resource_bucket=resource_bucket,
                 shot_opts=shot_opts,
@@ -4767,6 +4836,9 @@ def _compute_passed_and_notrun(result, include, findings):
         # 判断 DOM 是否真的在任何 viewport 里可用（chrome CLI --screenshot fallback 时 None）
         any_dom_ok = any(_dom_available_for(sh) for sh in shots.values())
         for rid, meta in RULE_CATALOG.items():
+            if rid == "unusedFunctionsWarning" and result.get("unusedFunctionsNotRun"):
+                not_run.append({"ruleId": rid, "reason": result["unusedFunctionsNotRun"]})
+                continue
             if rid in triggered:
                 continue
             if (not any_dom_ok) and meta["kind"] in _KINDS_NEEDING_DOM:
@@ -4834,6 +4906,7 @@ RULE_TARGET = {
     "mobileFontIssuesWarning":     ">= 12px（正文/说明/状态建议 >= 14px）",
     "touchTargetTooSmallWarning":  "可点击热区 >= 44x44px（控件本身可以小，外层 label/wrapper 达标即可）",
     "deadButtons":                 "每个可点元素有真 handler / href / 占位 toast",
+    "unusedFunctionsWarning":      "核对独立匿名函数是否遗漏末尾调用括号；预期初始化时才补 ()",
     "timelineAlignmentIssues":     "节点圆点与轴线中心 0px 误差",
     "responsiveChartIssues":       "移动端图表容器宽度 >= 视口宽 65%",
     "publishBrokenAssets":         "图片路径只写在 src 属性或 CSS url() 里",
@@ -4864,6 +4937,11 @@ def _persist_report(result, outdir):
         return None
 
 
+# 脚本没执行时会跟着出现的规则：报错本身、未绑定的按钮、没渲染出来的图表和内容
+_SYNTAX_KNOCK_ON = {"consoleErrors", "deadButtons", "chartBadValues", "responsiveChartIssues",
+                    "timelineBrokenAxis", "timelineAlignmentIssues", "unusedFunctionsWarning"}
+
+
 def _summary_lines(result):
     """自给自足的短摘要：页面干净时看完这个就能收工，不必再 Read 完整报告。"""
     summary = result.get("summary") or {}
@@ -4875,6 +4953,11 @@ def _summary_lines(result):
     err = result.get("error")
     if err:
         lines.append(f"ERROR {err.get('code')}: {(err.get('message') or '')[:300]}")
+    syntax = result.get("scriptSyntaxError")
+    if syntax:
+        lines.append(f"JS 语法错误 {syntax['loc']}：{syntax['message']}")
+        lines.append(f"            {syntax['loc']}: {syntax['source']}")
+        lines.append("            该段 <script> 没有执行；先修这里再重跑，标「连带」的 finding 可能随之消失")
 
     if result.get("autoFixError"):
         lines.append("auto-fix 未写入源码：" + result["autoFixError"])
@@ -4901,6 +4984,12 @@ def _summary_lines(result):
             lines.append(f"            视觉未覆盖完整：{cov.get('reason') or '未知'}")
     if not shots_out:
         lines.append("  (无截图产物)")
+    for vp, sh in (result.get("shots") or {}).items():
+        for i, a in enumerate((sh or {}).get("at") or [], 1):
+            where = f"scrollY={a['scrollY']}" if "scrollY" in a else ""
+            lines.append(f"  {vp:7} at{i} {a['at']}  {where}  {a.get('path') or '失败：' + a.get('error', '')}")
+    if result.get("atIgnored"):
+        lines.append(result["atIgnored"])
 
     findings = result.get("findings") or []
     if findings:
@@ -4911,16 +5000,25 @@ def _summary_lines(result):
             k = (f.get("ruleId"), f.get("viewport"))
             g = groups.setdefault(k, {"sev": f.get("severity"), "sels": [], "n": 0})
             g["n"] += 1
-            sel = f.get("selector")
+            sel = f.get("selector") or (f.get("evidence") or {}).get("loc")
             if sel and sel not in g["sels"]:
                 g["sels"].append(sel)
+            ev = f.get("evidence") or {}
+            src_line = ev.get("source")
+            if src_line:
+                g.setdefault("srcs", [])
+                if len(g["srcs"]) < 3 and (ev.get("loc"), src_line) not in g["srcs"]:
+                    g["srcs"].append((ev.get("loc"), src_line))
         lines.append(f"findings {len(findings)} 条，按规则聚合 {len(groups)} 组：")
         for (rid, vp), g in sorted(groups.items(), key=lambda kv: order.get(kv[1]["sev"], 9)):
             sels = ", ".join(g["sels"][:4]) or "(无 selector，见 report.json)"
             if len(g["sels"]) > 4:
                 sels += f" …+{len(g['sels'])-4}"
             tgt = RULE_TARGET.get(rid)
-            lines.append(f"  [{g['sev']}] {rid} @ {vp or 'top'} ×{g['n']}  {sels}")
+            knock_on = " （连带）" if syntax and rid in _SYNTAX_KNOCK_ON else ""
+            lines.append(f"  [{g['sev']}] {rid} @ {vp or 'top'} ×{g['n']}  {sels}{knock_on}")
+            for loc, src_line in g.get("srcs", []):
+                lines.append(f"            {loc}: {src_line}")
             if tgt:
                 lines.append(f"            目标：{tgt}")
     else:
@@ -4998,6 +5096,13 @@ def main():
                          "切 hash 视图、点按钮等），不用于任意 REPL 探测。仅 playwright 引擎支持。")
     ap.add_argument("--eval-file", dest="eval_file", default=None,
                     help="从文件读取 --eval 代码；与 --eval 二选一。")
+    ap.add_argument("--at", dest="at", default=None,
+                    help="逗号分隔的滚动位置，按顺序连续滚过去，各截一张视口图（<name>_<视口>_at<序号>）。"
+                         "位置写法：像素 1200 / 整页比例 40%% / selector #sec-2（滚到元素顶部）/ "
+                         "selector@比例 #sec-2@50%%（长段落滚过一半）。重复同一位置可看随时间的变化，"
+                         "倒序写可看倒回状态。在 --eval 之后执行，仅 playwright 引擎支持。")
+    ap.add_argument("--at-wait", dest="at_wait", type=int, default=800,
+                    help="--at 每个位置滚到后等待多少毫秒再截图，默认 800")
     # 默认只修三类静态属性：viewport、SVG fragment 兼容和缺少 src 的本地图片。
     ap.add_argument("--auto-fix", dest="auto_fix", action="store_true", default=True,
                     help="自动修复明确的 HTML 属性问题并复查一次（默认开）")
@@ -5016,6 +5121,7 @@ def main():
             _fail_json(2, f"读取 --eval-file 失败：{args.eval_file}\n{e}")
     elif args.eval_code:
         args._eval_code = args.eval_code
+    args._at_specs = [x.strip() for x in (args.at or "").split(",") if x.strip()]
 
     # 解析 include
     include = set()
@@ -5096,6 +5202,8 @@ def main():
     # 图片路径是否写在发布链路收集得到的位置：要比对 HTML 源码原文，
     # 只有这里同时拿得到 args.src 和各视口的运行时结果
     _emit_publish_broken_assets(result, args.src)
+    if "lint" in include:
+        _emit_script_diagnostics(result, args.src, url)
     # eval 可触发业务状态或副作用；不为这类检查改源码并重新播放用户操作。
     if not args._eval_code and "lint" in include and _apply_auto_fixes(result, args):
         _verify_auto_fixes(result, args, url, name, outdir, include)
@@ -5335,10 +5443,12 @@ def _verify_auto_fixes(result, args, url, name, outdir, include):
             _run_chrome_cli(url, verify_args, name, verify_dir, refreshed, include)
         _emit_responsive_issues(refreshed)
         _emit_publish_broken_assets(refreshed, args.src)
+        _emit_script_diagnostics(refreshed, args.src, url)
     except Exception as exc:
         refreshed['error'] = {'code': 'autofix_verification_failed', 'message': str(exc)[:300]}
     result['shots'] = refreshed['shots']  # 失败时也不能把修改前截图当成修改后截图。
-    for key in ('responsiveChartIssues', 'responsiveChartIssuesHint', 'publishBrokenAssets', 'publishBrokenAssetsHint'):
+    for key in ('responsiveChartIssues', 'responsiveChartIssuesHint', 'publishBrokenAssets', 'publishBrokenAssetsHint',
+                'unusedFunctionsWarning', 'unusedFunctionsHint', 'unusedFunctionsNotRun', 'scriptSyntaxError'):
         result.pop(key, None)
     result.update({k: v for k, v in refreshed.items() if k not in ('src', 'url', 'outdir', 'include')})
     views = ['desktop', 'mobile'] if args.only == 'both' else [args.only]
@@ -5454,6 +5564,145 @@ def _scan_source_ref_positions(text: str) -> dict:
     if cursor < len(text):
         scan_tags(text[cursor:])
     return pos
+
+
+# 浏览器也接受带多余属性的结束标签；必须停在第一个真实结束处，不能吞入下一段脚本。
+_SCRIPT_END_START_RE = re.compile(r'</script(?=[ \t\r\n\f/>])', re.IGNORECASE)
+_SCRIPT_CLOSE_RE = re.compile(r'''</script(?=[ \t\r\n\f/>])(?:[^>"']|"[^"]*"|'[^']*')*>''', re.IGNORECASE)
+
+
+def _inline_javascript(text):
+    """只取实际执行的内联 JS，跳过注释、模板、外部脚本和 JSON 数据块。"""
+    scripts = []
+    for tag in _SourceTags(text).tags:
+        # SVG 上下文的 CDATA / 自闭合语义与 HTML 不同；不能把原始标记当 JS。
+        # 保守跳过该上下文，运行时异常仍由浏览器采集。
+        if tag['tag'] != 'script' or tag['in_svg']:
+            continue
+        attrs = {}
+        for name, value in tag['attrs']:
+            attrs.setdefault(name, value)  # HTML 重复属性以第一项为准。
+        kind = (attrs.get('type') or '').strip().lower()
+        if 'type' not in attrs and attrs.get('language'):
+            language = attrs['language'].strip().lower()
+            if language not in ('javascript', 'ecmascript', 'jscript', 'livescript',
+                                'javascript1.0', 'javascript1.1', 'javascript1.2',
+                                'javascript1.3', 'javascript1.4', 'javascript1.5'):
+                continue
+        if 'src' in attrs or 'nomodule' in attrs or kind not in ('', 'module', 'text/javascript', 'application/javascript',
+                                         'text/ecmascript', 'application/ecmascript'):
+            continue
+        closing = _SCRIPT_END_START_RE.search(text, tag['end'])
+        # 无法可靠解释第一个结束标签时跳过，不借用后面 script 的结束位置。
+        end = _SCRIPT_CLOSE_RE.match(text, closing.start()) if closing else None
+        if end:
+            scripts.append({'code': text[tag['end']:end.start()],
+                            'base': tag['end'], 'end': end.start(),
+                            'sourceType': 'module' if kind == 'module' else 'script'})
+    return scripts
+
+
+def _codepoint_column(line, utf16_column):
+    """浏览器的 1-based UTF-16 列号 → Python 字符串的 1-based 码点列号。"""
+    remaining = max(0, utf16_column - 1)
+    for index, char in enumerate(line):
+        width = 2 if ord(char) > 0xffff else 1
+        if remaining < width:
+            return index + 1
+        remaining -= width
+    return len(line) + 1
+
+
+def _mark_token(line, col):
+    """用 ASCII [[...]] 标记出错 token，兼容 cp936 终端；超长行只留错误点附近。"""
+    i = max(0, min(col - 1, len(line)))
+    m = re.compile(r"[\w$]+").match(line, i)
+    j = m.end() if m else min(i + 1, len(line))
+    token = line[i:j]
+    a, b = max(0, i - 80), min(len(line), j + 80)
+    snippet = ("…" if a else "") + line[a:i] + "[[" + token + "]]" + line[j:b] + ("…" if b < len(line) else "")
+    return token, snippet.strip()
+
+
+def _emit_script_diagnostics(result: dict, src: str, url: str):
+    """consoleErrors 补上出错源码；查独立、未被消费的匿名函数表达式。
+
+    浏览器给的行列号是对的，但只给行号时模型常认定「这行看起来正常」转去二分排查，
+    把出错 token 直接标出来，比让模型自己去读那一行更不容易被忽略。
+    """
+    if src.startswith(("http://", "https://")):
+        return
+    try:
+        text = Path(src).resolve().read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return
+    lines = text.split("\n")
+    line_starts = [0] + [m.end() for m in re.finditer('\n', text)]
+    page_url = unquote(url.split("#")[0].split("?")[0])
+    browser_syntax_offsets = []
+
+    for sh in (result.get("shots") or {}).values():
+        if not isinstance(sh, dict):
+            continue
+        for e in sh.get("consoleErrors") or []:
+            ln = e.get("line")
+            if not isinstance(ln, int) or not 1 <= ln <= len(lines) or unquote(e.get("location") or "") != page_url:
+                continue
+            e["loc"] = f"L{ln}:{e.get('column', 1)}"
+            col = _codepoint_column(lines[ln - 1], e.get("column", 1))
+            e["token"], e["source"] = _mark_token(lines[ln - 1], col)
+            if re.match(r'^(?:Uncaught\s+)?SyntaxError\b', e.get('text') or ''):
+                browser_syntax_offsets.append(line_starts[ln - 1] + col - 1)
+
+    scripts = _inline_javascript(text)
+    if not scripts:
+        return
+    node = shutil.which('node')
+    if not node:
+        result['unusedFunctionsNotRun'] = 'node_unavailable'
+        return
+    try:
+        proc = subprocess.run([node, str(Path(__file__).with_name('check-unused-anonymous.cjs'))],
+                              input=json.dumps(scripts, ensure_ascii=False), encoding='utf-8',
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5, check=True)
+        parsed = json.loads(proc.stdout)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        result['unusedFunctionsNotRun'] = 'script_parser_unavailable'
+        return
+    if parsed.get('skippedScripts'):
+        result['unusedFunctionsNotRun'] = 'script_parse_failed'
+        # 静态解析失败不等于网页写错：提取器或解析器可能不支持浏览器接受的写法。
+        # 只有浏览器也在同一文件、同一 script 内报 SyntaxError，才作为根因提示修复；
+        # 其余仅标记静态检查未完成。仍不增加 finding，保持线上计数口径。
+        for skip in parsed['skippedScripts']:
+            if skip.get('offset') is None:
+                continue
+            script = scripts[skip['index']]
+            if not any(script['base'] <= pos <= script['end'] for pos in browser_syntax_offsets):
+                continue
+            pos = script['base'] + skip['offset']
+            ln = text.count('\n', 0, pos) + 1
+            col = pos - text.rfind('\n', 0, pos)
+            token, source = _mark_token(lines[ln - 1], col)
+            result['scriptSyntaxError'] = {'loc': f'L{ln}:{col}', 'line': ln, 'column': col,
+                                           'message': skip.get('message') or '', 'token': token, 'source': source}
+            break
+    hits = []
+    for hit in parsed['findings']:
+        pos = scripts[hit['index']]['base'] + hit['offset']
+        ln = text.count('\n', 0, pos) + 1
+        col = pos - text.rfind('\n', 0, pos)
+        token, source = _mark_token(lines[ln - 1], col)
+        hits.append({'kind': hit['kind'], 'line': ln, 'column': col,
+                     'loc': f'L{ln}:{col}', 'token': token, 'source': source})
+    if hits:
+        result["unusedFunctionsWarning"] = hits[:20]
+        result["unusedFunctionsHint"] = (
+            "含义：这里的匿名函数是独立语句，只创建后丢弃，函数体不会执行；可能遗漏末尾的调用括号。"
+            " | 核对：若原意是立即初始化，应写成 (() => { ... })()；若是废弃代码可删除。"
+            "本规则不自动补调用，需先确认代码用途。"
+            " | 范围：不报具名函数、赋值、返回值、回调参数和已调用的 IIFE，也不扫描字符串中的示例。"
+        )
 
 
 def _emit_publish_broken_assets(result: dict, src: str):

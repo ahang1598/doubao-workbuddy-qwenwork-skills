@@ -1,6 +1,6 @@
 ---
 name: doubao-visualization
-description: 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据，或用户明确要求图表、图解、标注、动态/交互演示时使用。优先用 ECharts、带renderer标签的确定性 HTML/SVG或原图叠加；不承接地图、附件交付、海报、头像、写实图片和艺术插画。
+description: 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据，或用户明确要求图表、图解、知识配图、标注、动态/交互演示时使用。优先用 ECharts、带renderer标签的确定性 HTML/SVG或原图叠加；解释性知识配图和原图参考重绘可用生成式知识配图；不承接地图、附件交付、海报、头像、写实图片和纯艺术插画。
 ---
 
 # 统一可视化
@@ -14,15 +14,17 @@ description: 当回答涉及趋势、占比、比较、流程、机制、因果�
 1. **图示是否明显优于文字？** 否，或用户明确只要文字 → `text_only`。
 2. **结论是否依赖用户原图的真实位置、数量、边界、路径或匹配？** 是 → `static_image_overlay`。
 3. **核心是否是精确数值的趋势、占比、排行、分布、相关性或多指标比较？** 是 → `echarts`。
-4. **核心是否是可准确枚举的流程、机制、架构、关系、时间线、状态或算法过程？** 是 → `html_svg`。
-5. 结构或事实不足以可靠绘制 → `text_only`。
+4. **核心是否需要解释性插画、视觉隐喻或明确允许的原图参考重绘？** 是，且不要求精确连线、逐字文字或交互 → `generated_illustration`；普通可枚举知识结构继续下一步。
+5. **核心是否是可准确枚举的流程、机制、架构、关系、时间线、状态或算法过程？** 是 → `html_svg`。
+6. 结构或事实不足以可靠绘制 → `text_only`。
 
 用户明确要求 ECharts/option 时直接选择 `echarts`。原图仅用于观察结构且用户要简化示意时，选择 `html_svg` 并标明“示意”，不得替代原图证据。
+可准确枚举的知识结构仍默认 HTML/SVG；强调解释性插画、视觉隐喻或参考重绘时选择生成式知识配图。事实不足时不得用生成图补造。
 
 ## 不使用
 
 - 简短事实、确认、普通改写、翻译、闲聊或纯文字已足够清楚。
-- 海报、头像、壁纸、写实图片、艺术插画或风格化创作。
+- 海报、头像、壁纸、写实图片、纯艺术插画或与知识讲解无关的风格化创作。
 - 地图、导航、地理轨迹、行政区划、经纬度点位或地图热力。
 - PDF、PPT、Word、Excel、图片文件等真实附件交付；使用对应文件能力。
 
@@ -31,14 +33,15 @@ description: 当回答涉及趋势、占比、比较、流程、机制、因果�
 - **静态默认**：交互必须揭示新的状态、因果、参数变化或证据，不能只做装饰动画或 hover 高亮。
 - **证据保真**：依赖原图事实时保持原图像素内容、对象位置和比例；示意图必须显式标明“示意”。
 - **数据可复核**：真实数字、年份、人物、事件和专业细节只来自用户材料或合法核验结果；示例数据必须明确标注。
-- **模式单一**：默认一个主模块。只有第二模块回答独立核心问题时才组合，最多两个。
+- **数据不可生图**：精确数值、比例、统计关系、坐标和可复核趋势由 ECharts 或确定性 HTML/SVG 承担，生成图只作解释性示意。
+- **模式单一**：默认一个主模块。只有第二模块回答独立核心问题时才组合，最多两个；生成式多图确需更多时按章节拆分。
 - **初始可读**：核心结论先用文字和初始静态状态表达，不依赖 hover、脚本或外部库。
 - **失败可降级**：复杂交互 → 静态 HTML/SVG → 结构化文字；任何失败都不能留下空白。
 - **地图禁用**：所有模式禁止地图和 ECharts `geo/map`。
 
 ## 按需加载
 
-确定主模式后，先完整读取一个主文件；只有出现右侧复杂特征时才追加专项文件。不要预读无关文件。
+确定主模式后，先完整读取一个主文件；再按表格加载该分支依赖或复杂特征的专项文件。不要预读无关文件。
 
 | 主模式 | 基础必读 | 出现以下特征时追加读取 |
 | --- | --- | --- |
@@ -46,9 +49,10 @@ description: 当回答涉及趋势、占比、比较、流程、机制、因果�
 | `static_image_overlay` | `references/mode-image-overlay.md` | 仅“单图 + 单 step + 总 coord 数 ≤2 + 无图例/避让”可只读主文件；总 coord 数 ≥3、steps ≥2、多图，或需要路径、多组配对、计数、图例、标签避让时 → 同时读取 `references/image-overlay-process-spec.md`、`references/image-overlay-authoring-spec.md` |
 | `html_svg` 静态 | `references/mode-html-svg.md` | 高密度排版、专用库或特殊视觉设计 → `references/renderer-trigger-design.md`；明确移动端复杂布局 → `references/renderer-output-mobile.md` |
 | `html_svg` 交互 | `references/mode-html-svg.md` | 脚本、动画、动态公式 → `references/renderer-stability-math.md`；拖拽、播放、几何约束、DOM/ECharts 联动 → `references/renderer-interaction-geometry.md` |
+| `generated_illustration` | `references/mode-generated-illustration.md` | 本分支必须再完整读取 `references/generated-prompt-rules.md`、`references/generated-style-guide.md`、`references/generated-tool-contracts.md`、`references/shared-quality.md` |
 | 组合输出 | 各主模式文件 | 再读 `references/composition.md` |
 
-`references/routing.md`、`references/shared-quality.md`、`references/tool-contracts.md` 是设计、审计和能力不确定时的参考，不是正常任务必读。`examples/`、`schemas/` 和 `scripts/` 只服务开发与回归。
+`references/routing.md`、`references/shared-quality.md`、`references/tool-contracts.md` 是设计、审计和能力不确定时的参考，除生成式分支上述依赖外，不是正常任务必读。`examples/`、`schemas/` 和 `scripts/` 只服务开发与回归。
 
 ## 最小内部计划
 
@@ -63,7 +67,7 @@ description: 当回答涉及趋势、占比、比较、流程、机制、因果�
 }
 ```
 
-- `mode`：`text_only`、`echarts`、`static_image_overlay`、`html_svg`。
+- `mode`：`text_only`、`echarts`、`static_image_overlay`、`html_svg`、`generated_illustration`。
 - `behavior`：仅 `html_svg` 使用 `static` 或 `interactive`，其他模式为 `not_applicable`。
 - `source`：`user_content`、`user_image`、`verified`、`example`、`insufficient`。
 - `secondary`：无组合时为 `null`，否则填写第二模式。
@@ -102,6 +106,10 @@ renderer 输出格式范例：
 
 先给结论，再输出 ` ```html type="renderer"`。静态结构不添加无意义脚本；交互必须有即时反馈并支持 click/tap，动画可暂停、可重置。
 
+### 生成式知识配图
+
+先形成正文与配图计划，再按当前工具 schema 生成；图片紧跟对应段落并标明“解释性图解”，不套 renderer。工具不可用或重试后仍失败时，保留文字；结构可准确表达时可改用静态 HTML/SVG。
+
 ## 统一交付检查
 
 - 发送前检查实际最终回复：每个 HTML renderer 块是否使用上述起始行和结束行？不符则先修正再发送，不能仅在内部计划中确认。
@@ -120,6 +128,7 @@ renderer 输出格式范例：
 - `references/echarts-web-pc-sunburst-reference.md`、`references/echarts-web-pc-gauge-reference.md`：仅 Web/PC 已选择对应图形时读取。
 - `references/mode-image-overlay.md`：简单原图标注的完整运行契约。
 - `references/mode-html-svg.md`：静态 HTML/SVG 和基础交互的完整运行契约。
+- `references/mode-generated-illustration.md`：生成式知识配图及原图参考重绘；Prompt、风格和工具规则按该分支读取门加载。
 - 其他 `references/`：只处理表格中列出的复杂特征。
 - `examples/routing-cases.md`：路由与加载回归案例。
 - `schemas/visualization-plan.schema.json`：最小内部计划 Schema。

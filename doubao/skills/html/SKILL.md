@@ -5,6 +5,8 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 
 # 单页 HTML 开发
 
+**必读顺序：读完本 SKILL.md 后，必须完整 Read [前端设计](references/design/frontend-design.md)；命中下述灵动 HTML 场景时，还必须完整 Read [灵动报告设计](references/interactive-report.md)。完成这些阅读后，才开始设计和写代码。**
+
 在工作区新建任务目录，写出**一个自包含的** HTML。
 
 ## 适用范围
@@ -13,7 +15,13 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 
 要后端、数据库、账号登录、多人协作，或要把数据文件随产物一起交付的，超出本 skill 范围——如实告知，不假装实现。
 
-**灵动报告**：仅在用户明确要求生成或修改具有「灵动感」「灵动风格」的 HTML 内容（如报告、网页、看板、作品集等），或明确沿用已有灵动风格时触发，支持同义表达及当前任务的上下文延续，普通 HTML 需求与泛化美化要求不触发。触发灵动报告时与前端设计一起读 [灵动报告设计](references/interactive-report.md)，并遵循其中的设计指南。
+**灵动 HTML**：现阶段在以下情况触发生成或修改能力：
+
+- 用户明确提出「灵动报告」「要灵动感」「使用灵动风格」等要求。
+- 内容适合围绕时间线、地理空间、故事线或演变过程串联展开，且动态呈现、交互探索能帮助理解核心内容，例如产品介绍、历史文化展示、深度调研报告等，不限定内容类型。
+- 教育教学讲解场景，适合通过交互操作、过程动画或即时反馈帮助用户理解概念、观察变化、探索因果或练习验证，优先采用与教学目标相关的交互形式。
+
+一般报告需求，以及仅要求「美观」「有设计感」等泛化表达，不单独构成触发条件；仅包含时间、地点，或仅涉及教育主题，也不自动触发。触发后，**写代码前必须与前端设计一起完整读取 [灵动报告设计](references/interactive-report.md)**，并遵循其中的设计指南。
 
 ## 关键步骤
 
@@ -40,7 +48,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
     - **数据文件（JSON / CSV / TXT）不适用**：`file://` 页面不能依赖 `fetch` 或 `XMLHttpRequest` 读取本地数据文件。固定数据内联进 JS；用户要求更新时，按数据源选择可访问的 URL 或文件选择入口。
     - **图片路径只能写在 `src` 属性或 CSS `url()` 里**：推荐 `<img src="assets/img1.jpg">`。发布链路只静态扫描这两个位置——写在 JS 代码里的任何形式（含 `const imgs = ['assets/a.jpg']` 这样的常量数组）、以及 `data-src` / `srcset` / `poster` 等其它属性，发布后都会裂图。
 
-- **分批写入**：一次写入过长的文件会让用户等待焦虑，最好一次 Write 10k token 内，简单向用户同步进度后，再继续分批写入。在首次写入时, 留下短小且独特的占位，例如 `<!-- something todo -->`，为后续 Edit 提供定位锚点。
+- **分批写入**：单次 Write 不超过 20k token。页面预计在 20k token 内时，一次写成完整可打开的 HTML，不留占位；超过时再分批，首次写入留短小且独特的占位，例如 `<!-- something todo -->`，为后续 Edit 提供定位锚点，批间简单向用户同步进度。
 
 
 - **交付与发布**：
@@ -59,7 +67,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 
 - **要有退路**：修订前先把当前版本复制到 `_backup/`（如 `_backup/index-v1.html`）。`_backup/` 不属于交付产物。
 - 本地文件丢了就如实告知并请用户重新提供，**禁止凭记忆重造**；回答关于产物的提问同理，读文件后答，读不到不编。
-- **小改动直接改**（改文案、调样式、换配色、修 bug）：不重读本文档和 reference，不重新推导视觉方向。
+- **小改动直接改**（改文案、调样式、换配色、修 bug）：同一任务已完整读过的本文档和 reference 不重读，不重新推导视觉方向；尚未读过的必读文档仍须先读。
 
 ## 页面自检
 
@@ -86,7 +94,7 @@ HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题�
 
 - 输出目录默认 <html 所在目录>/_shots/，不属于交付产物，严禁删除（e.g., 不要用 rm -f 等指令去删除目录或过程产物）。因为删除指令会触发权限确认、打断交付，增加用户等待。
 - 只想看一屏用 `--only desktop`。
-- 脚本内部已处理常见坑：`.rv / .fade / [data-aos]` 等滚动揭示元素强制显现（避免 `opacity:0` 截空白）、关掉 `scroll-behavior:smooth`、滚一遍触发 lazy 图片、`networkidle` 不可达时退回 `domcontentloaded`——**不需要另写截图脚本再走一遍**。
+- 脚本内部已处理常见坑：默认模式下 `.rv / .fade / [data-aos]` 等滚动揭示元素强制显现（避免 `opacity:0` 截空白，`--motion normal` 保留页面真实状态）、关掉 `scroll-behavior:smooth`、滚一遍触发 lazy 图片、`networkidle` 不可达时退回 `domcontentloaded`——**不需要另写截图脚本再走一遍**。
 
 
 ## 外部资源
@@ -170,7 +178,7 @@ HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题�
 
 | 文档 | 何时读 |
 | --- | --- |
-| [`interactive-report.md`](references/interactive-report.md) | 灵动报告；确定题材表达、动态叙事与阅读体验 |
+| [`interactive-report.md`](references/interactive-report.md) | 命中上述灵动 HTML 触发条件时必读；确定题材表达、动态叙事与教学交互 |
 | [`lark-apps-publish.md`](references/lark-apps-publish.md) | 用户要「发布」「可访问的链接」，或给了 doubao-html 链接要基于它改、发布出错 |
 | [`windows-compat.md`](references/windows-compat.md) | SystemPrompt 出现 `Computer OS: Windows`——**必须完整 Read**，否则大面积报错 |
 
@@ -178,7 +186,7 @@ HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题�
 
 | 文档 | 何时读 |
 | --- | --- |
-| [`frontend-design.md`](references/design/frontend-design.md) | **动手前必读**，确立视觉方向 |
+| [`frontend-design.md`](references/design/frontend-design.md) | **读完主 SKILL 后必须完整 Read，再开始设计和写代码**；同一任务已读后的小改动不重读 |
 | [`visual-techniques.md`](references/design/visual-techniques.md) | hero / signature element / 复杂动效 / Canvas / WebGL / 进阶排印 / 材质纹理 / 地图 / 音频 / 音画同步 / 数学公式 |
 | [`3d-design.md`](references/design/3d-design.md) | 设计 3D 场景（材质、阴影、光照、运镜） |
 
@@ -243,7 +251,7 @@ stdout 会输出短摘要：给 `status`、各 severity 计数、截图路径、
 - 结束标准是：**影响功能、阅读、用户明确要求的问题已确认解决**。不要求 warning 清零。
 - 同类问题一次改完，不要一条一条改一条一条重跑。
 - 首次完整验收之后，只重查改动影响到的部分；只有改了全局布局、DOM 结构或外部依赖才重新完整验收。
-- 有 selector 就直接参考 selector 改，没 selector 的规则（consoleErrors / favicon / 字体这类文档级）看 `reportPath`。
+- 有 selector 就直接参考 selector 改，没 selector 的规则（如 favicon 这类文档级）看 `reportPath`。
 
 #### 改文件的顺序
 

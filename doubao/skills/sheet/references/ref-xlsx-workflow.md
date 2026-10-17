@@ -273,7 +273,7 @@ python3 scripts/excel_formula_verify.py output.xlsx 60 --static-source-sheets "C
 
 **LibreOffice 不可用或重算未完成时**：脚本仍扫描已有缓存错误、静态值嫌疑与可判定不变量，返回 `formula_execution_verified: false` 并以退出码 4 结束（状态为 `inconclusive` / `skipped_no_libreoffice` / `skipped_no_workspace`）。这只表示拿到了部分只读诊断，不能证明公式可执行；交付时必须标明风险并要求在 Excel 中刷新（`Ctrl+Alt+F9`），不得写“公式已验证无错误”。装不上 LibreOffice 的宿主上，退出 4 是这条门禁的正常终态，重跑几次都不会变成 0。
 
-**图表按最终载体分流**：默认交付飞书表格时，不在本地 xlsx 创建图表；先导入，再按 Must-CLI 桥接用 `+chart-create` 建真实在线对象。只有用户明确只要本地 xlsx、或 Canvas 模式下 `lark-cli` 不可用时，才用 openpyxl 创建原生 chart，并在交付前重新打开文件确认 `ws._charts` 非空及数据引用、标题、图例、坐标轴符合用户要求。
+**图表按最终载体分流**：默认交付飞书表格时，不在本地 xlsx 创建图表；先导入，再按 Must-CLI 桥接用 `+chart-create` 建真实在线对象。用户明确只要本地 xlsx、Canvas 模式下 `lark-cli` 不可用、或必须保留飞书不支持的图表能力而交付完整 Excel 时，可用 openpyxl 创建原生 chart，并在交付前重新打开文件确认 `ws._charts` 非空及数据引用、标题、图例、坐标轴符合用户要求。
 
 ### excel_formula_verify.py 输出解读
 

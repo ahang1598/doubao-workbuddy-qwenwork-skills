@@ -526,6 +526,6 @@ Sensitivity 额外检查：
 
 - **本地 `.xlsx`（Python 引擎）**：用 openpyxl 实现颜色、数字格式、边框、列宽、网格线、勾稽校验（见上方各 Python 示例）；批量样式可用 `python3 scripts/excel_format_range.py`，公式诊断可用 `python3 scripts/excel_formula_verify.py`（含公式重算）。所有颜色用不带 `#` 的 6 位 hex（如 `'0000FF'`）。
 - **飞书表格**：写值/公式按 `references/lark-sheets-write-cells.md`；样式、合并、列宽行高、冻结的任意组合**一次** `references/lark-sheets-styles-put.md` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `references/lark-sheets-batch-update.md`；跨 sheet 公式按 `references/lark-sheets-formula-translation.md` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
-- 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后只做必要的链接/预览处理。
+- 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后先按 `references/lark-sheets-workbook.md` 检查 `data.extra` 并处理不支持元素，再做必要的链接/预览处理。
 
 ===== 全文完（共 531 行）=====

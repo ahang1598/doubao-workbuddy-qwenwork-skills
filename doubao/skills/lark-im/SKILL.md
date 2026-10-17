@@ -113,6 +113,7 @@ Shortcut 是对常用操作的高级封装（`lark-cli im +<verb> [flags]`）。
 | [`+chat-messages-list`](references/lark-im-chat-messages-list.md) | List messages in a chat or P2P conversation; user; accepts --chat-id or --user-id, resolves P2P chat_id, supports time range, --order asc/desc sorting, auto-pagination. When using this tool, be sure to preserve the citation sources. |
 | [`+chat-search`](references/lark-im-chat-search.md) | Search visible group chats by --query keyword and/or --member-ids; user; e.g. look up chat_id by group name; supports type filters, sorting, auto-pagination, and --exclude-muted (user identity only). When using this tool, be sure to preserve the citation sources. |
 | [`+chat-update`](references/lark-im-chat-update.md) | Update group chat name or description; user; updates a chat's name or description |
+| [`+messages-edit`](references/lark-im-messages-edit.md) | Edit a message the current user sent (text/post, including the attachment zone); user; PUT /open-apis/im/v1/messages/:message_id |
 | [`+message-read-users`](references/lark-im-message-read-status.md) | List users who read one message; user; identity-specific scopes; supports bounded auto-pagination |
 | [`+messages-mget`](references/lark-im-messages-mget.md) | Batch get messages by IDs; user; fetches up to 50 om_ message IDs, formats sender names, expands thread replies |
 | [`+shared-message-mget`](references/lark-im-shared-message-mget.md) | Pro 私有；读取 1～10 个 Copied Message 快照；默认补拉 thread / reaction，可用 `--no-*` 关闭；resource download 按需开启 |
@@ -240,6 +241,7 @@ lark-cli im <resource> <method> [flags] # 调用 API
 | `chat.moderation.update` | `im:chat:moderation:write_only` |
 | `chat.join_requests.list` | `im:chat.membership_application:read` |
 | `chat.join_requests.handle` | `im:chat.membership_application:write` |
+| `+messages-edit` | `im:message.send_as_user` and `im:message` |
 | `+messages-read-status` | user: `im:message:readonly` (recommended), `im:message`, or `im:message:get_as_user` |
 | `+message-read-users` | user: `im:message:readonly` (recommended), `im:message`, `im:message:basic`, or `im:message:get_as_user`; bot: `im:message:readonly` |
 | `message_links.query` | `im:message.message_link:read` |

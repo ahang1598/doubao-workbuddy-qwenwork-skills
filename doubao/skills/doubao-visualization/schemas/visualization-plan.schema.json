@@ -10,7 +10,8 @@
         "text_only",
         "echarts",
         "static_image_overlay",
-        "html_svg"
+        "html_svg",
+        "generated_illustration"
       ]
     },
     "behavior": {
@@ -31,7 +32,8 @@
         null,
         "echarts",
         "static_image_overlay",
-        "html_svg"
+        "html_svg",
+        "generated_illustration"
       ]
     }
   },
@@ -83,6 +85,14 @@
       "then": {
         "properties": {
           "secondary": {"const": null}
+        }
+      }
+    },
+    {
+      "not": {
+        "properties": {
+          "mode": {"const": "generated_illustration"},
+          "secondary": {"const": "generated_illustration"}
         }
       }
     }

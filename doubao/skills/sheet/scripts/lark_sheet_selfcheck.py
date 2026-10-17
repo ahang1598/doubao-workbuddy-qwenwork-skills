@@ -29,6 +29,7 @@ from lark_sheet_read_cli import (  # noqa: E402
 from _checkpoints import (  # noqa: E402
     checkpoint_skips,
     load_checkpoints,
+    resolve_sheet,
     verify_checkpoints,
 )
 
@@ -307,15 +308,35 @@ def read_cells(loc, sheet_id: str, rows: int, cols: int) -> dict[str, dict]:
     cells: dict[str, dict] = {}
     if rows < 1 or cols < 1:
         return cells
-    last_col, start = col_letter(cols), 1
+    last_col, start, page_rows = col_letter(cols), 1, PAGE_ROWS
     while start <= rows:
-        end = min(start + PAGE_ROWS - 1, rows)
-        before = len(cells)
+        end = min(start + page_rows - 1, rows)
         data = envelope_data(call(
             "+cells-get", sheet_id=sheet_id,
             flags={"range": f"A{start}:{last_col}{end}",
                    "include": "value,formula,style", "skip_hidden": False},
             timeout=180, **loc))
+        clipped = (
+            data.get("complete") is False
+            or any(
+                data.get(k) is True
+                for k in ("truncated", "has_more", "is_truncated")
+            )
+            or any(
+                isinstance(r, dict) and any(
+                    r.get(k) is True
+                    for k in ("truncated", "has_more", "is_truncated")
+                )
+                for r in data.get("ranges") or []
+            )
+        )
+        if clipped:
+            if page_rows > 1:
+                page_rows = max(1, page_rows // 2)
+                continue
+            raise LarkCliError(
+                f"sheet {sheet_id} 的第 {start} 行读取仍被截断；"
+                "当前 lark-cli 无法完整返回该行，请升级后重跑")
         for rng in data.get("ranges") or []:
             ridx = rng.get("row_indices") or list(range(start, end + 1))
             cidx = rng.get("col_indices") or [col_letter(i) for i in range(1, cols + 1)]
@@ -343,8 +364,6 @@ def read_cells(loc, sheet_id: str, rows: int, cols: int) -> dict[str, dict]:
                     if nf:
                         rec["nf"] = nf
                     cells[f"{cidx[j]}{ridx[i]}"] = rec
-        if start > 1 and len(cells) == before:
-            break   # 连续一页无非空格 → 数据到底了，不必把分配网格读完
         start = end + 1
     return cells
 
@@ -1199,8 +1218,13 @@ def load_baseline(path: str) -> dict[str, dict[str, Any]]:
     try:
         for name in wb_f.sheetnames:
             ws_f, ws_v = wb_f[name], wb_v[name]
+            # 部分 xlsx 的 worksheet dimension 错写成 A1；只读模式会据此只产出 A 列。
+            # 重置后让 openpyxl 按实际 XML 单元格重新计算范围。
+            if hasattr(ws_v, "reset_dimensions"):
+                ws_v.reset_dimensions()
             cells: dict[str, dict[str, Any]] = {}
-            truncated = ws_f.max_row > MAX_ROWS
+            row_truncated = ws_f.max_row > MAX_ROWS
+            cell_capped = False
             for row_f, row_v in zip(ws_f.iter_rows(max_row=MAX_ROWS),
                                     ws_v.iter_rows(max_row=MAX_ROWS)):
                 for cell_f, cell_v in zip(row_f, row_v):
@@ -1219,10 +1243,11 @@ def load_baseline(path: str) -> dict[str, dict[str, Any]]:
                         continue
                     cells[cell_f.coordinate] = rec
                     if len(cells) >= BASELINE_MAX_CELLS:
-                        truncated = True
+                        cell_capped = True
                         break
-                if truncated:
+                if cell_capped:
                     break
+            truncated = row_truncated or cell_capped
             merged = sorted(str(r) for r in getattr(ws_f, "merged_cells", []).ranges) \
                 if hasattr(getattr(ws_f, "merged_cells", None), "ranges") else []
             sheets[name] = {"cells": cells, "merged": merged, "truncated": truncated}
@@ -1359,6 +1384,22 @@ def parse_scope_range(rng: str) -> tuple[int, int, int, int] | None:
     return box if within_excel_bounds(box) else None
 
 
+def resolve_scope(scope: dict[str, Any], known: list[str]) -> dict[str, Any]:
+    """把 scope 的 sheet 名解析成真实名称；找不到或有歧义时拒绝猜测。"""
+    resolved: dict[str, Any] = {}
+    for name, entry in scope.items():
+        actual = resolve_sheet(name, known)
+        if actual is None:
+            raise ScopeError(f"--scope 里的子表「{name}」在源和产物中找不到唯一匹配")
+        if resolved.get(actual) == SCOPE_ALL:
+            continue
+        if entry == SCOPE_ALL:
+            resolved[actual] = SCOPE_ALL
+        else:
+            resolved.setdefault(actual, []).extend(entry)
+    return resolved
+
+
 def in_scope(scope: dict[str, Any], sheet_name: str, addr: str) -> bool:
     entry = scope.get(sheet_name)
     if entry is None:
@@ -1373,22 +1414,20 @@ def in_scope(scope: dict[str, Any], sheet_name: str, addr: str) -> bool:
 
 
 def pair_sheets(wb: dict, base: dict[str, dict[str, Any]]) -> tuple[list[tuple[str, dict, dict]], list[str]]:
-    """按 sheet 名配对源与产物，返回 (源名, 源表, 产物表)。
-
-    名字对不上且两边各剩一张时按顺序兜底配对——本轮给唯一一张表改了名是常见做法，
-    报成「产物缺表」会淹没真正的差异。剩多张对不上就不猜，报缺失让调用方自己说明。
-    """
+    """按 sheet 名配对源与产物；首尾空白不同且唯一时视为同名。"""
     produced = {s["name"]: s for s in wb["sheets"]}
-    pairs, missing = [], []
-    left_base = [n for n in base if n not in produced]
-    left_prod = [n for n in produced if n not in base]
+    pairs, used = [], set()
     for name, bsheet in base.items():
-        if name in produced:
-            pairs.append((name, bsheet, produced[name]))
-    if len(left_base) == 1 and len(left_prod) == 1:
-        pairs.append((left_base[0], base[left_base[0]], produced[left_prod[0]]))
-    else:
-        missing.extend(left_base)
+        match = resolve_sheet(name, [n for n in produced if n not in used])
+        if match is not None:
+            pairs.append((name, bsheet, produced[match]))
+            used.add(match)
+    matched_base = {pair[0] for pair in pairs}
+    missing = [name for name in base if name not in matched_base]
+    left_prod = [name for name in produced if name not in used]
+    if len(missing) == 1 and len(left_prod) == 1:
+        name = missing.pop()
+        pairs.append((name, base[name], produced[left_prod[0]]))
     return pairs, missing
 
 
@@ -1469,6 +1508,23 @@ def merge_baseline_sheets(base: dict, loaded: dict, path: str, conflicts: list) 
         target["truncated"] = target.get("truncated") or sheet.get("truncated")
 
 
+def structural_rows_in_scope(scope: dict[str, Any], names: tuple[str, ...], used_cols: int) -> bool:
+    """scope 明确允许整行或整块全宽改动时，逐坐标比较无法可靠处理行位移。"""
+    for name in names:
+        entry = scope.get(name)
+        if entry == SCOPE_ALL:
+            return True
+        if any(
+            c1 == 1 and (
+                c2 == MAX_EXCEL_COL
+                or r1 == 1 and r2 >= MAX_ROWS and c2 >= used_cols
+            )
+            for r1, c1, r2, c2 in entry or []
+        ):
+            return True
+    return False
+
+
 def diff_baseline(wb: dict, base: dict[str, dict[str, Any]],
                   scope: dict[str, Any]) -> tuple[list, list, list]:
     """比对源与产物，返回 (确定性错误, 结构特征, 提示)。
@@ -1481,6 +1537,9 @@ def diff_baseline(wb: dict, base: dict[str, dict[str, Any]],
     asserts: list = []
     facts: list = []
     notes: list[str] = []
+    if scoped:
+        known = list(dict.fromkeys(list(base) + [s["name"] for s in wb["sheets"]]))
+        scope = resolve_scope(scope, known)
     pairs, missing = pair_sheets(wb, base)
     if missing:
         asserts.append(("基线缺失 sheet", f"源工作簿的 {len(missing)} 张 sheet 在产物里找不到同名表",
@@ -1494,6 +1553,22 @@ def diff_baseline(wb: dict, base: dict[str, dict[str, Any]],
     for bname, bsheet, psheet in pairs:
         pcells = psheet["cells"]
         pname = psheet["name"]
+        if bsheet.get("truncated"):
+            wb.setdefault("scan_gaps", []).append(
+                f"{pname}：基线超过 {MAX_ROWS} 行或 {BASELINE_MAX_CELLS} 个非空格，"
+                "逐坐标基线对照已跳过，请人工核对未覆盖范围")
+            continue
+        b_rows = [split_ref(addr)[0] for addr in bsheet["cells"]]
+        p_rows = [split_ref(addr)[0] for addr in pcells]
+        used_cols = max([split_ref(addr)[1] for addr in bsheet["cells"]] +
+                        [split_ref(addr)[1] for addr in pcells] + [0])
+        if (max(b_rows, default=0) != max(p_rows, default=0)
+                and structural_rows_in_scope(scope, (bname, pname), used_cols)):
+            wb.setdefault("scan_gaps", []).append(
+                f"{pname}：源与产物有效末行不同，且 --scope 允许整行改动，"
+                "可能发生了物理插行 / 删行；逐坐标基线对照已跳过，"
+                "请按业务键或检查点核对结构变化")
+            continue
         for addr, brec in bsheet["cells"].items():
             prec = pcells.get(addr) or {}
             # 范围按两个名字都认一次：调用方在动手前写 --scope，用的多半是源表的
@@ -1541,11 +1616,6 @@ def diff_baseline(wb: dict, base: dict[str, dict[str, Any]],
         else:
             facts.append(("产物新增 sheet",
                           f"产物比源多出 {len(added_sheets)} 张 sheet", detail))
-    cut = [n for n, sh in base.items() if sh.get("truncated")]
-    if cut:
-        notes.append(f"基线只读了前 {MAX_ROWS} 行 / {BASELINE_MAX_CELLS} 格："
-                     + "、".join(cut[:MAX_LIST])
-                     + "——超出部分没有比对，别把「没报差异」当成那些行没被动过")
     label = "范围外" if scoped else "全表"
     if out_changed:
         head, rest = truncate(out_changed)
@@ -2028,6 +2098,13 @@ def main() -> int:
     findings: list = []
     unchecked: list[str] = []               # 数据读到了、检查没跑成
     notices: list[str] = []                 # 都做了、只是没全显示
+    if unread:
+        # 任一 sheet 未读到时，依赖完整 workbook 的检查点与基线对照都不能可靠定性。
+        # 规则仍可扫描已读到的 sheet，最终状态由 unread 降级为 CHECK_INCOMPLETE。
+        if args.checkpoints:
+            unchecked.append("有子表读取失败，本次跳过检查点判定")
+        if args.baseline:
+            unchecked.append("有子表读取失败，本次跳过基线对照")
 
     # 基线先读：规则跑之前挂到 wb 上，让规则也能拿源表当参照
     # （派生列规则据此跳过「源里本来就是静态值」的列）。读不到源文件不中断
@@ -2059,7 +2136,7 @@ def main() -> int:
     checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
     if checkpoint_error:
         unchecked.append(f"检查点没能加载：{checkpoint_error}")
-    elif checkpoints:
+    elif checkpoints and not unread:
         try:
             checkpoint_result = run_checkpoints(wb, checkpoints)
             findings.extend(checkpoint_findings(checkpoint_result))
@@ -2086,11 +2163,13 @@ def main() -> int:
         # 记进 unchecked 让退出码降级，checkpoint 等独立判据照跑。
         unchecked.append("基线自相冲突，本次跳过逐格对照——先确认哪份才是改前基准，"
                          "只传那一份再跑，这条才有唯一依据")
-    elif base:
+    elif base and not unread:
         try:
             b_asserts, b_facts, b_notes = diff_baseline(wb, base, scope_boxes)
             findings.extend(b_asserts + b_facts)
             baseline_notes.extend(b_notes)
+        except ScopeError as exc:
+            unchecked.append(f"基线范围无法匹配：{exc}——核对子表名，含首尾空格时用单引号包住")
         except Exception as exc:
             unchecked.append(f"基线对照执行失败：{str(exc)[:80]}")
     elif args.scope and not args.baseline:

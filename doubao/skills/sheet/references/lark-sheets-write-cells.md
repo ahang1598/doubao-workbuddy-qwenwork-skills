@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 645 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 649 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Write Cells
 
@@ -12,6 +12,8 @@
 ## 新增列 / 新增行的样式继承（防止视觉风格不一致）
 
 新增列 / 新增行时，先铺样式再写值，分两步——避免只传 `value` 期望默认样式与原表一致（飞书新单元格默认对齐通常是 `H:right, V:bottom`，与多数原表的 `H:center, V:middle` 不一致）。
+
+**新增辅助列表头必须对齐真实字段表头行**：先回读表头与合并范围，区分上方合并标题、多层表头和首条数据行；表头写在字段所在层，继承相邻表头的字体、对齐、底色与边框，公式从首条数据行开始，不把表头或合并标题纳入填充范围。
 
 **推荐做法（一步到位）**：用 `+range-copy --paste-type formats` 把相邻原列/原行的样式复制到目标区域，再写值。`--paste-type formats` 只复制样式不动值。目标区域尺寸由**源区域**推断，`--target-range` 只给目标左上角锚点单元格；要铺满整列，源区域就要覆盖整列（如 `C1:C100`）。命令要带完整定位（`--url`/`--spreadsheet-token` 与 `--sheet-id`/`--sheet-name` 各一）：
 
@@ -90,7 +92,7 @@ lark-cli sheets +range-copy --url "<表格URL>" --sheet-name "<真实表名>" \
 
 > 以下是用 `+cells-set`（及 `+cells-set-style`）做富写入时的常用模式与准则；选哪个 shortcut 见上方「使用场景」。
 
-`+cells-set` 为一块区域设置值 / 公式 / 批注 / 样式，也支持 `rich_text` 的 `type: "embed-image"` 嵌入单元格图片。**关键：`--cells` 恒为二维数组（行 × 格），单格也是 `[[{"value":…}]]`；裸 `--range A1`（或 `--start-cell`）是左上角**锚点**，落区由 `--cells` 自身的行列数决定；写成矩形（`A1:B2`）则是**边界**——数组比它小会收窄，比它大会被拒绝，而不是写到范围之外**。
+`+cells-set` 为一块区域设置值 / 公式 / 批注 / 样式，也支持 `rich_text` 的 `type: "embed-image"` 嵌入单元格图片。**关键：搭配 `--range` 时，`--cells` 用二维数组（行 × 格），单格也是 `[[{"value":…}]]`；裸 `--range A1`（或 `--start-cell`）是左上角**锚点**，落区由 `--cells` 自身的行列数决定；写成矩形（`A1:B2`）则是**边界**——数组比它小会收窄，比它大会被拒绝，而不是写到范围之外**。
 
 > **单元格图片 vs 浮动图片**：图若**属于某条记录、要随那行排序 / 筛选 / 增删**（凭证 / 证件照 / 每行配图，话里带「对应 / 每行 / 这列」等绑定词）→ **单元格图片**（本工具）：用 `+cells-set-image`（最短）或 `+cells-set` 的 `rich_text` + `type: "embed-image"`。只是自由摆放的装饰（logo / 水印 / 封面）→ 浮动图片，见 lark-sheets-float-image。别因「浮动图更好控制 / 更熟」默认选浮动图——它承载"对应某记录"的图会随增删行 / 排序错位。
 
@@ -120,6 +122,8 @@ JSON
 ```
 
 范围级统一样式不在 `--writes` 里做（cells 逐格 `cell_styles` 仅用于逐格差异化），写完接 `+styles-put`。
+
+已有输入逐项带 A1 坐标时，也接受 `--cells '[{"cell":"A2","value":"00123"},{"range":"C5","formula":"=SUM(C2:C4)"}]'`：只写明示位置，中间未指定的格子保留。此形态不要同时传 `--range`、`--start-cell`、`--copy-to-range` 或独立公式 flag；每项只给 `cell` / `range` 之一。单值和公式只能指向单格；矩形区间用项内 `cells` / `values` 数组。目标 sheet 取顶层选择器或项内限定坐标（如 `'明细表'!A2`）。沿用 `--writes` 的批量限制与失败后回读规则；在 `+batch-update` 中仍需拆成各自的 `range + cells` 子操作。
 
 💡 **写入公式前先按迁移规则改写**：如果公式来自 Excel 或包含数组场景，先读取并遵循 `references/lark-sheets-formula-translation.md` 的规则完成改写，再把最终公式写入 `formula` 字段。
 
@@ -188,6 +192,8 @@ JSON
 - **@人**：`{"type":"mention","mention_token":"<userId>","notify":false}`。**仅支持同租户用户，单次写入最多 50 人。** `notify` **默认 `true`**（会给被 @ 的人发通知），不想发务必显式传 `false`。
 - **@文档**：同样 `"type":"mention"`，`mention_token` 传文档 token（如 `shtXXX`）。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 `mention_type`（类型编号）等可选字段以 `--print-schema` 输出为准。
 
 > ⚠️ `rich_text` 一旦设置会**忽略**同一 cell 的 `value`；它与 `formula` / `multiple_values` 三者只能选其一作为内容字段（可叠加 `cell_styles` / `note` 等）。
@@ -200,8 +206,6 @@ JSON
 |---|---|---|
 | `--options '["a","b","c"]'` | 写在命令里的固定列表 | 选项集是常量、不需要事后维护 |
 | `--source-range ''\''Sheet1'\''!T1:T3'` | 已有单元格里的值 | 选项要跟数据动态同步；想维护一张「枚举值」列后多处引用 |
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 两个 flag **必须传一个、且只能传一个**——同时传或都不传，CLI 会立刻报错。`--source-range` 用 A1 + sheet 前缀写法（如 `'Sheet1'!T1:T3`，sheet 名按 A1 标准单引号包裹），可以指同 sheet 也可以指其它 sheet（如 `'Refs'!A1:A10`）。
 
@@ -334,7 +338,7 @@ _公共四件套 · 系统：`--dry-run`_
 | `--vertical-alignment` | string | optional | 垂直对齐（可选值：`top` / `middle` / `bottom`） |
 | `--word-wrap` | string | optional | 换行策略（可选值：`overflow` / `auto-wrap` / `word-clip`） |
 | `--number-format` | string | optional | 数字格式（例：文本 `@`、数字 `0.00`、货币 `$#,##0.00`、日期 `mm/dd/yyyy`） |
-| `--border-styles` | string + File + Stdin（复合 JSON） | optional | 边框配置 JSON：`{ top: {style,weight,color}, bottom: ..., left: ..., right: ... }`；4 方向结构相同。style = 线型（solid\|dashed\|dotted\|double\|none）；weight = 粗细（thin\|medium\|thick —— 字符串，不是像素数字）；color = 十六进制如 #000000。`{ all: {...} }` 一次设置四边。边框只有这一个 flag：不存在 --border-all / --border-top / --border-color |
+| `--border-styles` | string + File + Stdin（复合 JSON） | optional | 边框配置 JSON：`{ top: {style,weight,color}, bottom: ..., left: ..., right: ... }`；4 方向结构相同。style = 线型（solid\|dashed\|dotted\|double\|none）；weight = 粗细（thin\|medium\|thick —— 字符串，不是像素数字）；color = 十六进制如 #000000。`{ all: {...} }` 一次设置四边。用此 flag 选择边；--border-color / --border-weight 仅补充显式选择的边框属性 |
 
 ### `+cells-set-image`
 
@@ -596,6 +600,8 @@ payload = {"sheets": [df_to_sheet(df1, "销售"),
                       df_to_sheet(df3, "利润")]}
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 > **CSV-shaped 全文本数据**（不需要类型保真、含前导零的 id 也要保留）省掉 dtypes 即可，inline 一行写完，不必走 helper（注意保留 `date_format="iso"`，否则 datetime 列会被序列化成 epoch 毫秒数字，CLI 拒绝）：
 > ```python
 > payload = {"sheets": [{"name": "原始",
@@ -603,8 +609,6 @@ payload = {"sheets": [df_to_sheet(df1, "销售"),
 > ```
 > **别把 `to_json + json.loads` 换成 `df.to_dict(orient="split")`**：会留 `numpy.int64` 让 `json.dumps` 后续报 "not serializable"——这一步是清洗的关键。
 > **列名必须是字符串**：整数列名（如未指定表头时 pandas 默认的 0/1/2）会以 JSON 数字进入 `columns` 被 CLI 拒收；inline 写法要先 `df.columns = df.columns.map(str)`。`df_to_sheet` 已自动完成这一步。
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 不用 pandas 也行——typed 协议就是纯 JSON。手写场景：
 
@@ -642,4 +646,4 @@ lark-cli sheets +table-put --url "<表URL>" \
 - `DryRun`：输出目标 range + 推断尺寸 + 是否覆盖非空 cell 警告，零网络副作用。
 - `Execute`：写后必须按写入范围回读首、中、末及用户点名项；公式同时读取 formula，并按公式完成流程验证。
 
-===== 全文完（共 645 行）=====
+===== 全文完（共 649 行）=====

@@ -1,1 +1,1 @@
-#
+"""svg_lib.drawing_examples — introduce drawing_examples."""

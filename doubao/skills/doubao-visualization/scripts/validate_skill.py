@@ -11,12 +11,24 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "SKILL.md"
 
+PLAN_MODES = {
+    "text_only",
+    "echarts",
+    "static_image_overlay",
+    "html_svg",
+    "generated_illustration",
+}
+
 REQUIRED = [
     "references/routing.md",
     "references/shared-quality.md",
     "references/mode-echarts.md",
     "references/mode-image-overlay.md",
     "references/mode-html-svg.md",
+    "references/mode-generated-illustration.md",
+    "references/generated-prompt-rules.md",
+    "references/generated-style-guide.md",
+    "references/generated-tool-contracts.md",
     "references/composition.md",
     "references/tool-contracts.md",
     "references/renderer-trigger-design.md",
@@ -31,26 +43,14 @@ REQUIRED = [
     "references/image-overlay-process-spec.md",
     "references/image-overlay-authoring-spec.md",
     "examples/routing-cases.md",
+    "examples/generated-worked-example.md",
     "examples/image-overlay-gold-process.md",
     "examples/image-overlay-gold-reply.md",
     "schemas/visualization-plan.schema.json",
 ]
 
 FORBIDDEN_FILES = [
-    "references/mode-generated-illustration.md",
-    "references/generated-prompt-rules.md",
-    "references/generated-style-guide.md",
-    "references/generated-tool-contracts.md",
     "references/mode-interactive.md",
-]
-
-FORBIDDEN_TERMS = [
-    "generated" + "_illustration",
-    "image" + "_gen",
-    "generate" + "_image",
-    "生成式知识" + "配图",
-    "图片生成" + "工具",
-    "生图" + "工具",
 ]
 
 BASE_ROUTES = {
@@ -71,6 +71,14 @@ BASE_ROUTES = {
         "references/mode-html-svg.md",
         "references/renderer-stability-math.md",
         "references/renderer-interaction-geometry.md",
+    ],
+    "generated_illustration": [
+        "SKILL.md",
+        "references/mode-generated-illustration.md",
+        "references/generated-prompt-rules.md",
+        "references/generated-style-guide.md",
+        "references/generated-tool-contracts.md",
+        "references/shared-quality.md",
     ],
     "echarts_web_pc": [
         "SKILL.md",
@@ -97,6 +105,7 @@ BASE_ROUTE_BUDGETS = {
     "static_image_overlay_complex": 48_000,
     "html_svg_static": 20_000,
     "html_svg_interactive": 34_000,
+    "generated_illustration": 38_000,
     "echarts_web_pc": 40_000,
     "echarts_web_pc_sunburst": 52_000,
     "echarts_web_pc_gauge": 46_000,
@@ -113,7 +122,6 @@ def validate_plan(plan: dict) -> list[str]:
     behavior = plan.get("behavior")
     source = plan.get("source")
     secondary = plan.get("secondary")
-    modes = {"text_only", "echarts", "static_image_overlay", "html_svg"}
     sources = {
         "user_content",
         "user_image",
@@ -124,7 +132,7 @@ def validate_plan(plan: dict) -> list[str]:
 
     if set(plan) != {"mode", "behavior", "source", "secondary"}:
         errors.append("plan 必须且只能包含四个最小字段")
-    if mode not in modes:
+    if mode not in PLAN_MODES:
         errors.append("mode 非法")
     if behavior not in {"not_applicable", "static", "interactive"}:
         errors.append("behavior 非法")
@@ -138,7 +146,7 @@ def validate_plan(plan: dict) -> list[str]:
         errors.append("原图叠加必须使用 user_image")
     if source == "insufficient" and mode != "text_only":
         errors.append("素材不足时必须回退 text_only")
-    if secondary is not None and secondary not in modes - {"text_only"}:
+    if secondary is not None and secondary not in PLAN_MODES - {"text_only"}:
         errors.append("secondary 非法")
     if secondary == mode:
         errors.append("secondary 不得与 mode 重复")
@@ -206,16 +214,6 @@ def main() -> int:
     ]:
         if term not in text:
             errors.append(f"SKILL.md 缺少核心契约: {term}")
-
-    corpus = "\n".join(
-        path.read_text(encoding="utf-8")
-        for suffix in ("*.md", "*.yaml", "*.json", "*.py")
-        for path in ROOT.rglob(suffix)
-        if path.is_file()
-    )
-    for term in FORBIDDEN_TERMS:
-        if re.search(re.escape(term), corpus, re.I):
-            errors.append(f"仍包含禁用能力标记: {term}")
 
     for obsolete in [
         "required_files_loaded",
@@ -292,6 +290,12 @@ def main() -> int:
             errors.append("schema 未使用四字段最小计划")
         if "required_files" in schema.get("properties", {}):
             errors.append("schema 不应包含文件加载 bookkeeping")
+        if set(schema["properties"]["mode"]["enum"]) != PLAN_MODES:
+            errors.append("schema mode 与计划校验器不一致")
+        if set(schema["properties"]["secondary"]["enum"]) != (
+            PLAN_MODES - {"text_only"}
+        ) | {None}:
+            errors.append("schema secondary 与计划校验器不一致")
     except (json.JSONDecodeError, KeyError, TypeError) as exc:
         errors.append(f"schema JSON 无法解析或结构错误: {exc}")
 
@@ -314,10 +318,45 @@ def main() -> int:
             "source": "verified",
             "secondary": "echarts",
         },
+        {
+            "mode": "generated_illustration",
+            "behavior": "not_applicable",
+            "source": "verified",
+            "secondary": None,
+        },
+        {
+            "mode": "generated_illustration",
+            "behavior": "not_applicable",
+            "source": "user_image",
+            "secondary": "html_svg",
+        },
+        {
+            "mode": "echarts",
+            "behavior": "not_applicable",
+            "source": "user_content",
+            "secondary": "generated_illustration",
+        },
     ]
     for index, plan in enumerate(plan_cases):
         for message in validate_plan(plan):
             errors.append(f"plan case {index}: {message}")
+
+    generated_plan = {
+        "mode": "generated_illustration",
+        "behavior": "not_applicable",
+        "source": "verified",
+        "secondary": None,
+    }
+    invalid_plan_cases = [
+        {**generated_plan, "behavior": "interactive"},
+        {**generated_plan, "source": "insufficient"},
+        {**generated_plan, "secondary": "text_only"},
+        {**generated_plan, "secondary": "generated_illustration"},
+        {**generated_plan, "mode": "text_only", "secondary": "generated_illustration"},
+    ]
+    for index, plan in enumerate(invalid_plan_cases):
+        if not validate_plan(plan):
+            errors.append(f"invalid plan case {index}: 未拒绝非法计划")
 
     junk = [
         path

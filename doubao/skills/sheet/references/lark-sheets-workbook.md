@@ -117,7 +117,7 @@ _公共四件套 · 系统：`--dry-run`_
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `--title` | string | optional | 副本名称；省略时由服务端生成 |
-| `--index` | int | optional | 副本插入位置（0-based）；省略时附加到末尾 |
+| `--index` | int | optional | 副本最终位置（0-based）；省略时副本紧跟源表 |
 
 ### `+sheet-hide`
 
@@ -329,7 +329,7 @@ lark-cli sheets +workbook-create --title "经营看板" --sheets '{
   }'
 ```
 
-> ⚠️ **`+workbook-create` 是把内存里的数据写成新表；要把已有的本地 Excel/CSV 文件原样导入成新表，用 `+workbook-import`**（见下），不要先在本地读出文件再 `+workbook-create` 重灌。
+> ⚠️ **`+workbook-create` 是把内存里的数据写成新表；要把已有的本地 Excel/CSV 文件直接导入成新表，用 `+workbook-import`**（见下），不要先在本地读出文件再 `+workbook-create` 重灌；导入的兼容性按下文回执与回读结果判断。
 
 ### `+workbook-import`
 
@@ -345,11 +345,31 @@ lark-cli sheets +workbook-import --file ./report.csv --folder-token <FOLDER_TOKE
 
 - **不接受任何 spreadsheet / sheet 定位 flag**（它是新建，不操作已有表）：只有 `--file`（必填）/ `--folder-token` / `--name`。
 - **`--file` 只接受当前工作目录内的相对路径**：先 `cd` 到文件所在目录（或 workspace），再传 `./file.xlsx` / `data/file.xlsx`；传 `/home/.../file.xlsx`、`C:\...\file.xlsx` 这类绝对路径会被判定 `unsafe file path` 拒绝。
-- 导入成功后把新表链接通过宿主的产物交付工具交出去，并确认这次调用返回成功；只写进回复正文不算交付。工具是 `present_files`。
+- 导入后先完成下述兼容性检查和用户要求的全部操作，再通过宿主提供的产物交付工具交付最终链接或完整 Excel，并确认调用成功；只写进回复正文不算交付。工具是 `present_files`，调用后明确报出工具不存在时才退回正文给出链接或路径。
 - 本地表格文件 → 飞书电子表格一律用本命令，**不要**用 `drive +import` 导电子表格——它是 sheets 之外的通用导入、还需额外指定 `--type`，绕路且更易错。只有要把本地表格导入成**多维表格**（bitable）时，才改用 `lark-cli drive +import --type bitable`。
-- 返回 `token` / `url` / `ticket` / `ready` / `job_status`。只有 `ready=true` 且 `job_status=0` 才算导入完成；随后用新 URL 调 `+workbook-info`，有点名内容契约时再回读关键 sheet/range。`timed_out=true` 时按 `next_command` 续查，不能交付为成功。
-- **值与公式保真，版式不保真**：走一圈后值、公式、数字格式、合并区、冻结、下拉校验都原样保留；行高列宽、边框、主题色填充（`fgColor theme=N`）、以及**跟随工作簿默认字体的格**（源表默认字体是中文字体时，这类格会回落到系统默认）则会变，与本轮做了什么无关。要求保留原版式时，导入后按源文件的值用 `+rows-resize` / `+cols-resize` 回写尺寸（飞书用像素、Excel 行高用磅，换算约 `px ≈ pt × 4/3`），其余版式差异回写不了，在交付说明里写明。
+- 返回 `token` / `url` / `ticket` / `ready` / `job_status`，`data.extra` 会列出本次导入的不支持元素提示。只有 `ready=true` 且 `job_status=0` 才算导入完成，**不代表内容完整**；`timed_out=true` 时按 `next_command` 续查，不能交付为成功。随后用新 URL 调 `+workbook-info`，按用户要求回读关键 sheet/range 与对象。
+- **导入后必须检查 `data.extra`**：例如 `data.extra=["NotSupport:shape"]` 表示形状不受支持，本次导入有损。逐项结合源 Excel 判断对内容、计算、交互和版式要求的影响，不能因 `ok=true` 或单元格数据正确而忽略。`extra` 为空或缺失也不能替代回读检查。
+- **优先考虑兼容替代，采用后再重导**：创建 / 修改文件时优先采用飞书支持的实现；收到提示后，可参考下方示例选择能满足需求、改动成本合理的方案，不把替换作为交付前置条件。选择替代时，在不损失必需内容与功能、不越过允许改动范围的前提下修改 Excel 副本，重新验证后执行 `lark-cli sheets +workbook-import --file ./output.xlsx`；需要在线原生对象时再按对应 reference 重建，复查新回执与受影响内容，用最终新 URL 交付。不能删掉必需元素来清空提示，也不要原样重复导入期待提示消失。
+- **完整 Excel 是可接受的交付方案**：没有满足需求的方案、替代不适合本任务或需保留原元素时，可保留这些元素并在 Excel 中完成本轮全部操作，验证后交付该文件，无需反复尝试替换；也可同时交飞书表格，明确 Excel 是完整产物，并说明在线版缺失哪些元素及其影响。此分支允许只交 Excel 或双交，无需用户先拒绝在线表格或要求双交；在线版不能作为完整产物单独交付，也不能从有损在线版导出文件冒充完整 Excel。
+- **导入仍可能改变版式**：值、公式、数字格式、合并区、冻结、下拉校验需按源文件核对；行高列宽、边框、主题色填充（`fgColor theme=N`）、以及**跟随工作簿默认字体的格**（源表默认字体是中文字体时，这类格会回落到系统默认）也可能变化。选择在线交付且要求保留原版式时，按源文件的值用 `+rows-resize` / `+cols-resize` 回写尺寸（飞书用像素、Excel 行高用磅，换算约 `px ≈ pt × 4/3`）；无法修复或不适合调整时可保留完整 Excel，交付说明写明差异。
 - 轮询是命令自己做的：本命令与其它异步 shortcut 都内置轮询，返回时状态已是最新，`next_command` 直接重跑即可，不必也不要加 `sleep` 等待。
+
+#### 不支持元素的替代参考
+
+所有不支持元素采用同一原则：结合用户要求和源 Excel 判断影响，有能满足需求且改动合理的方案时尽量替代；无法满足需求或不适合替代时，接受完整 Excel 交付，不强制替换。导入不支持不等于飞书不能原生重建，元素类型也不能决定它是否只是装饰。
+
+下表仅给出部分示例，无类型优先级，也不是必做清单；采用某个方案时再读对应 reference 的参数与执行说明。
+
+| 不支持元素（示例） | 可考虑的方案 | 需核对的差异与限制 |
+| --- | --- | --- |
+| `shape` / `diagram` | 单元格文字与样式保留说明和关系；布局按 `references/lark-sheets-visual-standards.md` | 不按类型忽略内容；要求分别编辑原生节点、形状或连线时，文字 / 图片不等价 |
+| `text_rotation` / `fill_pattern` | 按 `references/lark-sheets-visual-standards.md` 调整换行、列宽或文字状态标签 | 要求固定旋转角度、图案纹理时不等价；黑白打印的区分不能只改成颜色 |
+| `sparkline` | 按 `references/lark-sheets-sparkline.md` 用 `+sparkline-create` 重建在线迷你图 | 核对数据引用、类型与更新行为，图片不能替代随数据更新的对象 |
+| `table` | 普通数据区加原生筛选与汇总公式，读 `references/lark-sheets-filter.md`、`references/lark-sheets-write-cells.md` | Excel 原生 Table 身份、结构化引用、自动扩展不能默认由普通区域保留 |
+| `pie3D_chart` 等不支持的图表、`trend_line` / `error_bar` | 先读 `references/lark-sheets-chart.md` 查同功能原生配置；仅在需求允许时改用可支持的图型 / 数据展示 | 指定三维、统计或误差表达时不能静默简化；没有等价实现则保留完整 Excel |
+| `custom_data_validation` | 辅助判断列与条件格式，示例见 `references/lark-sheets-conditional-format.md` | 可提示非法值，不阻止录入；按实际规则、范围和空值策略判断是否满足需求 |
+
+未列出的元素也按同一原则处理，可查相关原生能力或直接保留完整 Excel。无论采用替代还是保留原元素，都说明受影响元素、实际交付形态及差异；不能把仍缺失用户必需功能的在线版描述成完整成果。
 
 ### `+workbook-export`
 
@@ -403,9 +423,13 @@ standalone 路径在缺 `--source-index` / 只给 `--sheet-name` 时会自动发
 ### `+sheet-copy`
 
 ```bash
-# --title 省略时由服务端生成副本名
+# --title 省略时由服务端生成副本名；不传 --index 时副本紧跟源表
 lark-cli sheets +sheet-copy --url "..." --sheet-id "$SID" --title "副本"
+# 指定最终 0-based 位置；原有 3 个子表时，--index 3 放到末尾
+lark-cli sheets +sheet-copy --url "..." --sheet-id "$SID" --title "副本" --index 3
 ```
+
+显式 `--index` 需要表格读取权限：CLI 在复制前校验位置范围，复制后按需移动同一副本；移动后回读，回执 `index` 表示最终位置。移动或回读失败时副本可能已存在；按错误 hint 中的副本 ID 继续 `+sheet-move`，不要重新复制。`+batch-update` 内不支持带 `index` 的 `+sheet-copy`，请使用上面的独立调用；不带 `index` 的批量复制仍可用。
 
 > 💡 `+sheet-copy` 连**公式 / 合并 / 分组底色 / 列宽 / 条件格式**一起整表复制。"照一张现成子表批量造结构相同的新子表"（如参考模板给每份数据各建一张同构子表）时，先 `+sheet-copy` 复制模板再用 `+cells-*` 只改数据，比从零 `+sheet-create` + 重建公式 / 样式省一大截，也天然满足"公式 / 分组 / 颜色照搬"。要把本地文件 / 数据并入**已有工作簿**当子表时走它（或 `+sheet-create`），别用 `+workbook-import` / `+workbook-create`——那两条只会新建独立表。
 
@@ -437,4 +461,4 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
 - `Execute`：sheet create/rename/move/copy/hide/unhide/delete 后必须调用 `+workbook-info`，按稳定的 sheet_id 核对名称、顺序、可见性与数量；import 按上方 ready/job_status + workbook-info 闭环；需要本地文件的 export 按 output-path + 文件存在/可重开闭环。
 
-===== 全文完（共 440 行）=====
+===== 全文完（共 464 行）=====
