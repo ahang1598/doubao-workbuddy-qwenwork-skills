@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：635
-- 当前索引文件数：17632
-- 最近变更：[2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) - WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。
+- 当前索引条目数：634
+- 当前索引文件数：17602
+- 最近变更：[2026-10-17-180008](workbuddy/change-logs/2026-10-17-180008.md) - WorkBuddy 本次同步新增 0 个文件、修改 0 个文件、删除 30 个文件。 移除条目已归档：cb_teams_experts/ardot-design-generator。 受影响范围：cb_teams_experts/ardot-design-generator。
 
 ## 数据来源
 
@@ -345,7 +345,6 @@
 | a-share-analysis | `workbuddy/cb_teams_experts/plugins/a-share-analysis` | finance | 28 | A股投资分析技能集，覆盖宏观研究、市场结构、个股深度、行业比较、资金行为、风险管理等 21 个专业分析 skill 和 6 个编排 agent。 |
 | agent-sdk-dev | `workbuddy/cb_teams_experts/plugins/agent-sdk-dev` | 技术开发工具 | 5 | CodeBuddy Agent SDK 开发 |
 | ai-hedge-fund | `workbuddy/cb_teams_experts/plugins/ai-hedge-fund` | team expert | 23 | AI 对冲基金投资分析系统：19位投资大师并行分析 + 风险管理 + 投资组合决策的全流程投资分析。涵盖巴菲特、芒格、林奇、伯里、塔勒布、伍德、格雷厄姆等13位传奇投资哲学家 + 6位专业分析师，通过信号聚合投票输出 BUY/SELL/HOLD 建议。数据源使用 NeoData 金融数据服务。 |
-| ardot-design-generator | `workbuddy/cb_teams_experts/plugins/ardot-design-generator` | team expert | 30 | Ardot设计工具：在Ardot中生成高质量设计稿，移动端UI，网站页面，web应用，幻灯片等设计稿 |
 | codebuddy-chat-web | `workbuddy/cb_teams_experts/plugins/codebuddy-chat-web` | 技术开发工具 | 42 | Web 聊天应用 |
 | data | `workbuddy/cb_teams_experts/plugins/data` | 金融和商业分析 | 16 | 数据分析平台 |
 | deep-research | `workbuddy/cb_teams_experts/plugins/deep-research` | 金融和商业分析 | 6 | 深度研究框架 |
@@ -384,7 +383,7 @@
 | ctrip-wendao | `workbuddy/skills/ctrip-wendao` | skill | 4 | 当用户发起任意旅行相关问询时，包含但不限于：预订酒店、机票查询、火车票查询、景点推荐、寻找当地特色玩乐、目的地查询、行程规划、美食住宿攻略、签证、查询旅游攻略、获取旅行建议等场景，自动触发此技能。当用户需要操作携程时使用此skill。 |
 | deep-research | `workbuddy/skills/deep-research` | skill | 21 | Structured deep research workflow with human-in-the-loop control. Use /research to generate research outline, /research-deep for parallel web search across items, /research-report to compile markdown reports. Supports... |
 | humanizer | `workbuddy/skills/humanizer` | skill | 3 | Remove signs of AI-generated writing from text. Use when editing or reviewing text to make it sound more natural and human-written. Detects and fixes patterns including: inflated symbolism, promotional language, super... |
-| khazix-writer | `workbuddy/skills/khazix-writer` | skill | 4 | \|- |
+| khazix-writer | `workbuddy/skills/khazix-writer` | skill | 4 | 数字生命卡兹克（Khazix）的公众号长文写作skill。当用户需要撰写公众号文章、写稿子、续写文章、根据素材产出长文时使用。触发词包括但不限于：写文章、写稿子、帮我写、续写、扩写、公众号文章、长文、出稿、按我的风格写。即使用户只是说"帮我把这个写成文章"或"用我的风格写一下"，只要上下文涉及内容创作和公众号输出，都应该触发。也适用于用户丢过来一个PDF、brief、新闻链接、语音转文字或任何素材说"帮我写篇文章"的场景。不要用于... |
 | paper-quick-reader | `workbuddy/skills/paper-quick-reader` | skill | 31 | AI 论文速读 Skill：三档深度（裸读 / 引导 / 精读）+ 页码级 Provenance 防幻觉 + 多篇对比。 触发词：论文速读、读这篇论文、抓核心观点、论文对比、多篇对比、与我研究方向的关联、 第几页提到 X、这篇论文的数据集怎么构造的、论文精读、 paper summary、summarize this paper、compare these papers、literature skim、extract method... |
 | paper-reader | `workbuddy/skills/paper-reader` | skill | 1 | 基于论文文本的通用读论文助手。用户提供论文文本（文件路径或直接粘贴），解答各类读论文需求——总结、精读、内容问答、概念解释、批判性分析等，并将结果以 Markdown 写入当前工作目录。触发词：读论文、论文总结、精读这篇论文、帮我分析这篇论文、这篇论文讲了什么、论文问答、论文笔记。输入为纯文本/Markdown 论文内容；不做论文检索下载、不做扫描件 OCR、不做论文写作降重。 |
 | paper-rebuttal | `workbuddy/skills/paper-rebuttal` | skill | 4 | 以论文作者身份完成学术审稿 rebuttal 全流程。当用户提供审稿意见（reviewer comments / reviews / meta-review）和论文文件（PDF/LaTeX/DOCX/Markdown），需要分析审稿意见、判断是否需要修改论文、修改论文并撰写给审稿人的逐条回复（rebuttal / response letter / author response）时使用。触发词包括：rebuttal、审稿意见回复... |
@@ -703,6 +702,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-17-180008 | [2026-10-17-180008](workbuddy/change-logs/2026-10-17-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 0 个文件、删除 30 个文件。 移除条目已归档：cb_teams_experts/ardot-design-generator。 受影响范围：cb_teams_experts/ardot-design-generator。 |
 | 2026-10-13-180008 | [2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) | WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。 |
 | 2026-10-08-090557 | [2026-10-08-090557](workbuddy/change-logs/2026-10-08-090557.md) | WorkBuddy 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/wechat-article-pro。 |
 | 2026-09-28-180010 | [2026-09-28-180010](workbuddy/change-logs/2026-09-28-180010.md) | WorkBuddy 本次同步新增 35 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/expert-tax-advisory-practice, experts/senior-accessible-travel。 受影响范围：experts/expert-tax-advisory-practice, experts/senio... |
@@ -722,4 +722,3 @@
 | 2026-09-02-223755 | [2026-09-02-223755](workbuddy/change-logs/2026-09-02-223755.md) | WorkBuddy 本次同步新增 4306 个文件、修改 171 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/deeplink, connectors/marketplace/connectors/dramabuddy, connectors/marketplace/connectors/h... |
 | 2026-09-02-180002 | [2026-09-02-180002](workbuddy/change-logs/2026-09-02-180002.md) | WorkBuddy 本次同步新增 21 个文件、修改 27 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/shanlong-claw, connectors/marketplace/connectors/tencent-map-guide。 受影响范围：connectors/marketpla... |
 | 2026-09-01-180001 | [2026-09-01-180001](workbuddy/change-logs/2026-09-01-180001.md) | WorkBuddy 本次同步新增 58 个文件、修改 31 个文件、删除 24 个文件。 新增条目：connectors/marketplace/connectors/aimoderator, connectors/marketplace/connectors/today-watermark-camera, connectors/marketplace... |
-| 2026-08-31-180002 | [2026-08-31-180002](workbuddy/change-logs/2026-08-31-180002.md) | WorkBuddy 本次同步新增 26 个文件、修改 6 个文件、删除 10 个文件。 新增条目：connectors/marketplace/connectors/databuddy, connectors/marketplace/connectors/jinshouzhi。 移除条目已归档：connectors/marketplace/connec... |

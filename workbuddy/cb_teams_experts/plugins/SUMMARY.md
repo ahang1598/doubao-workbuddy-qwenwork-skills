@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/cb_teams_experts/plugins/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins`
-- 条目数：31
-- 文件数：1472
-- 最近同步：2026-10-13 18:00:08 +0800
+- 条目数：30
+- 文件数：1442
+- 最近同步：2026-10-17 18:00:08 +0800
 - 原始分析报告：[plugins_analysis_company_analysis.md](../plugins_analysis_company_analysis.md)
 
 ## 场景导航（按用途）
@@ -37,7 +37,6 @@
 - **sheetagent** — 由腾讯文档团队出品的电子表格智能助手，支持通过自然语言创建、查询与编辑 xlsx 表格
 
 ### 设计可视化
-- **ardot-design-generator** — Ardot设计工具：在Ardot中生成高质量设计稿，移动端UI，网站页面，web应用，幻灯片等设计稿
 - **design-to-code** — Figma 设计转代码
 
 ### 研究/调研
@@ -60,7 +59,6 @@
 - **webapp-testing** — Web 应用测试
 
 ### 通用工具/平台
-- **ardot-design-generator** — Ardot设计工具：在Ardot中生成高质量设计稿，移动端UI，网站页面，web应用，幻灯片等设计稿
 - **data** — 数据分析平台
 - **general-skills** — 通用技能集
 - **skill-creator** — 自定义技能创建
@@ -78,7 +76,6 @@
 | a-share-analysis | `workbuddy/cb_teams_experts/plugins/a-share-analysis` | 金融研究 | A股 投资分析 宏观研究 个股分析 市场结构 资金流向 风险管理 a-share-analysis | 28 | A股投资分析技能集，覆盖宏观研究、市场结构、个股深度、行业比较、资金行为、风险管理等 21 个专业分析 skill 和 6 个编排 agent。 |
 | agent-sdk-dev | `workbuddy/cb_teams_experts/plugins/agent-sdk-dev` | 代码开发 | CodeBuddy Agent SDK 开发 agent-sdk-dev | 5 | CodeBuddy Agent SDK 开发 |
 | ai-hedge-fund | `workbuddy/cb_teams_experts/plugins/ai-hedge-fund` | 金融研究 | ai-hedge-fund | 23 | AI 对冲基金投资分析系统：19位投资大师并行分析 + 风险管理 + 投资组合决策的全流程投资分析。涵盖巴菲特、芒格、林奇、伯里、塔勒布、伍德、格雷厄姆等13位传奇投资哲学家 + 6位专业分析师，通过信号聚合投票输出 BUY/SELL/HOLD 建议。数据源使用 NeoData 金融数据服务。 |
-| ardot-design-generator | `workbuddy/cb_teams_experts/plugins/ardot-design-generator` | 设计可视化 | ardot design slide ui web mobile app high-quality presentation mcp ardot-design-generator | 30 | Ardot设计工具：在Ardot中生成高质量设计稿，移动端UI，网站页面，web应用，幻灯片等设计稿 |
 | codebuddy-chat-web | `workbuddy/cb_teams_experts/plugins/codebuddy-chat-web` | 代码开发 | Web 聊天应用 codebuddy-chat-web | 42 | Web 聊天应用 |
 | data | `workbuddy/cb_teams_experts/plugins/data` | 通用工具/平台 | 数据分析平台 data | 16 | 数据分析平台 |
 | deep-research | `workbuddy/cb_teams_experts/plugins/deep-research` | 研究/调研 | 深度研究框架 deep-research | 6 | 深度研究框架 |
