@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="opera-gradient" x1="40" x2="216" y1="30" y2="226" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff1b2d"/>
+      <stop offset="1" stop-color="#b80018"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#opera-gradient)" fill-rule="evenodd" d="M128 8C62 8 16 59 16 128s46 120 112 120 112-51 112-120S194 8 128 8Zm0 45c31 0 49 31 49 75s-18 75-49 75-49-31-49-75 18-75 49-75Z"/>
+</svg>

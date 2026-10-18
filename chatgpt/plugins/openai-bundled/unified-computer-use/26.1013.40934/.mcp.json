@@ -1,0 +1,49 @@
+{
+  "mcpServers": {
+    "cua_repl": {
+      "command": "C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\78fb63cda1a9e2b2\\bin\\node.exe",
+      "args": [
+        "C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\78fb63cda1a9e2b2\\bin\\node_modules\\@oai\\cua-repl\\bin\\cua-repl.mjs"
+      ],
+      "enabled": true,
+      "enabled_tools": [
+        "js",
+        "js_reset",
+        "turn_ended"
+      ],
+      "omit_tools_from": [
+        "code_mode",
+        "deferred"
+      ],
+      "startup_timeout_sec": 120,
+      "tools": {
+        "js": {
+          "output_token_limit": 25000
+        }
+      },
+      "env_vars": [
+        "CODEX_WINDOWS_REGISTERED_CORE"
+      ],
+      "env": {
+        "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": "1000",
+        "NODE_REPL_NODE_MODULE_DIRS": "C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\78fb63cda1a9e2b2\\bin\\node_modules",
+        "NODE_REPL_NODE_PATH": "C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\78fb63cda1a9e2b2\\bin\\node.exe",
+        "NODE_REPL_TRUSTED_CODE_PATHS": "C:\\Users\\15805\\.codex;C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\78fb63cda1a9e2b2\\bin\\node_modules",
+        "CODEX_HOME": "C:\\Users\\15805\\.codex",
+        "BROWSER_USE_AVAILABLE_BACKENDS": "chrome,iab,mcpapps",
+        "BROWSER_USE_TINYSKY_ENABLED": "1",
+        "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": "Control the in-app browser in conjunction with the Browser Plugin.",
+        "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative.",
+        "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": "prod",
+        "BROWSER_USE_CODEX_APP_VERSION": "26.1013.40934",
+        "NODE_REPL_TRUSTED_SERVICES": "{\"browser\":\"@oai/browser-desktop/service\"}",
+        "SKY_CUA_NATIVE_PIPE": "1",
+        "SKY_CUA_NATIVE_PIPE_DIRECTORY": "\\\\.\\pipe\\codex-computer-use-d668a266-cd15-447c-9d65-e084787cbcf6",
+        "CODEX_CLI_PATH": "C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\bin\\896a0166b774037a\\codex.exe",
+        "NODE_REPL_UNTRUSTED_ENV_ALLOWLIST": "CODEX_WINDOWS_REGISTERED_CORE",
+        "CUA_REPL_NODE_REPL_PATH": "C:\\Users\\15805\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\78fb63cda1a9e2b2\\bin\\node_repl.exe",
+        "CUA_REPL_ENABLED_SURFACES": "browser"
+      }
+    }
+  }
+}

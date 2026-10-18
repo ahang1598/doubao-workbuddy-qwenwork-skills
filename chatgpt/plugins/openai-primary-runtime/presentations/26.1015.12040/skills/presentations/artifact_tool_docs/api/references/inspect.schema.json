@@ -1,0 +1,865 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "openai.presentation.inspection/v1"
+    },
+    "unit": {
+      "type": "string",
+      "const": "px"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^pr\\/[a-z0-9]+$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "presentation"
+    },
+    "slides": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Slide"
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "unit",
+    "id",
+    "kind",
+    "slides"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "Slide": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^sl\\/[a-z0-9]+$"
+        },
+        "kind": {
+          "type": "string",
+          "const": "slide"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "layout": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^ly\\/[a-z0-9]+$"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "title": {
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "backgroundColor": {
+          "$ref": "#/$defs/Color"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Element"
+          }
+        },
+        "notes": {
+          "$ref": "#/$defs/Notes"
+        },
+        "inheritedLayers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InheritedLayer"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "index",
+        "position",
+        "elements"
+      ],
+      "additionalProperties": false,
+      "id": "Slide"
+    },
+    "Position": {
+      "type": "object",
+      "properties": {
+        "left": {
+          "type": "number"
+        },
+        "top": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "left",
+        "top",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false,
+      "id": "Position"
+    },
+    "Color": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "rgb"
+            },
+            "value": {
+              "type": "string"
+            },
+            "transform": {
+              "type": "object",
+              "properties": {
+                "opacity": {
+                  "type": "number"
+                },
+                "lighten": {
+                  "type": "number"
+                },
+                "darken": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "theme"
+            },
+            "value": {
+              "type": "string",
+              "enum": [
+                "accent1",
+                "accent2",
+                "accent3",
+                "accent4",
+                "accent5",
+                "accent6",
+                "bg1",
+                "bg2",
+                "tx1",
+                "tx2",
+                "dk1",
+                "lt1",
+                "dk2",
+                "lt2",
+                "hlink",
+                "folHlink"
+              ]
+            },
+            "transform": {
+              "type": "object",
+              "properties": {
+                "opacity": {
+                  "type": "number"
+                },
+                "lighten": {
+                  "type": "number"
+                },
+                "darken": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "id": "Color"
+    },
+    "Element": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(sh|im|ch|tb|ea)\\/[a-z0-9]+$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "shape",
+            "textbox",
+            "image",
+            "chart",
+            "table",
+            "embeddedArtifact"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "order": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "slide",
+            "layout",
+            "master"
+          ]
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "horizontalFlip": {
+          "type": "boolean"
+        },
+        "verticalFlip": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "geometry": {
+          "type": "string"
+        },
+        "style": {
+          "$ref": "#/$defs/TextStyle"
+        },
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Paragraph"
+          }
+        },
+        "fillColor": {
+          "$ref": "#/$defs/Color"
+        },
+        "lineColor": {
+          "$ref": "#/$defs/Color"
+        },
+        "lineWidth": {
+          "type": "number"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "chartType": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cols": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "contentType": {
+          "type": "string"
+        },
+        "crop": {
+          "type": "object",
+          "properties": {
+            "left": {
+              "type": "number"
+            },
+            "top": {
+              "type": "number"
+            },
+            "right": {
+              "type": "number"
+            },
+            "bottom": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "left",
+            "top",
+            "right",
+            "bottom"
+          ],
+          "additionalProperties": false
+        },
+        "fit": {
+          "type": "string"
+        },
+        "mask": {
+          "type": "object",
+          "properties": {
+            "geometry": {
+              "type": "string"
+            },
+            "adjustmentList": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "formula": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "geometry"
+          ],
+          "additionalProperties": false
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "isPlaceholder": {
+          "type": "boolean"
+        },
+        "asset": {
+          "$ref": "#/$defs/Asset"
+        },
+        "fillImage": {
+          "$ref": "#/$defs/Asset"
+        },
+        "tableCell": {
+          "type": "object",
+          "properties": {
+            "tableId": {
+              "type": "string",
+              "pattern": "^(sh|im|ch|tb|ea)\\/[a-z0-9]+$"
+            },
+            "cellIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "row": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "column": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "overlap": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "tableId",
+            "cellIndex",
+            "row",
+            "column",
+            "overlap"
+          ],
+          "additionalProperties": false
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TableCell"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "additionalProperties": false,
+      "id": "Element"
+    },
+    "TextStyle": {
+      "type": "object",
+      "properties": {
+        "anchor": {
+          "type": "number"
+        },
+        "vertical": {
+          "type": "number"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "fontSize": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "family": {
+          "type": "number"
+        },
+        "scheme": {
+          "type": "string"
+        },
+        "typeface": {
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/Color"
+        },
+        "bold": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "alignment": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right",
+            "justify"
+          ]
+        },
+        "verticalAlignment": {
+          "type": "string",
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ]
+        },
+        "lineSpacing": {
+          "type": "number"
+        },
+        "textTransform": {
+          "type": "string",
+          "enum": [
+            "none",
+            "uppercase",
+            "smallCaps"
+          ]
+        },
+        "wrap": {
+          "type": "string",
+          "enum": [
+            "square",
+            "none"
+          ]
+        },
+        "autoFit": {
+          "type": "string",
+          "enum": [
+            "none",
+            "shrinkText",
+            "resizeShapeToFitText"
+          ]
+        },
+        "autoFitScale": {
+          "type": "number"
+        },
+        "autoFitLineSpaceReduction": {
+          "type": "number"
+        },
+        "insets": {
+          "type": "object",
+          "properties": {
+            "top": {
+              "type": "number"
+            },
+            "right": {
+              "type": "number"
+            },
+            "bottom": {
+              "type": "number"
+            },
+            "left": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "useParagraphSpacing": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "id": "TextStyle"
+    },
+    "Paragraph": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "text": {
+          "type": "string"
+        },
+        "bulletCharacter": {
+          "type": "string"
+        },
+        "marginLeft": {
+          "type": "number"
+        },
+        "indent": {
+          "type": "number"
+        },
+        "lineSpacingPercent": {
+          "type": "number"
+        },
+        "spaceBefore": {
+          "type": "number"
+        },
+        "spaceAfter": {
+          "type": "number"
+        },
+        "style": {
+          "$ref": "#/$defs/TextStyle"
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TextRun"
+          }
+        }
+      },
+      "required": [
+        "index",
+        "runs"
+      ],
+      "additionalProperties": false,
+      "id": "Paragraph"
+    },
+    "TextRun": {
+      "type": "object",
+      "properties": {
+        "anchor": {
+          "type": "number"
+        },
+        "vertical": {
+          "type": "number"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "fontSize": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "family": {
+          "type": "number"
+        },
+        "scheme": {
+          "type": "string"
+        },
+        "typeface": {
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/Color"
+        },
+        "bold": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "alignment": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right",
+            "justify"
+          ]
+        },
+        "verticalAlignment": {
+          "type": "string",
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ]
+        },
+        "lineSpacing": {
+          "type": "number"
+        },
+        "textTransform": {
+          "type": "string",
+          "enum": [
+            "none",
+            "uppercase",
+            "smallCaps"
+          ]
+        },
+        "wrap": {
+          "type": "string",
+          "enum": [
+            "square",
+            "none"
+          ]
+        },
+        "autoFit": {
+          "type": "string",
+          "enum": [
+            "none",
+            "shrinkText",
+            "resizeShapeToFitText"
+          ]
+        },
+        "autoFitScale": {
+          "type": "number"
+        },
+        "autoFitLineSpaceReduction": {
+          "type": "number"
+        },
+        "insets": {
+          "type": "object",
+          "properties": {
+            "top": {
+              "type": "number"
+            },
+            "right": {
+              "type": "number"
+            },
+            "bottom": {
+              "type": "number"
+            },
+            "left": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "useParagraphSpacing": {
+          "type": "boolean"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "index",
+        "text"
+      ],
+      "additionalProperties": false,
+      "id": "TextRun"
+    },
+    "Asset": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "byteLength": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "additionalProperties": false,
+      "id": "Asset"
+    },
+    "TableCell": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "rowSpan": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "colSpan": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "text": {
+          "type": "string"
+        },
+        "textDirection": {
+          "type": "string"
+        },
+        "fillColor": {
+          "$ref": "#/$defs/Color"
+        },
+        "style": {
+          "$ref": "#/$defs/TextStyle"
+        },
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Paragraph"
+          }
+        },
+        "ownedElementIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(sh|im|ch|tb|ea)\\/[a-z0-9]+$"
+          }
+        }
+      },
+      "required": [
+        "index",
+        "row",
+        "column"
+      ],
+      "additionalProperties": false,
+      "id": "TableCell"
+    },
+    "Notes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^nt\\/[a-z0-9]+$"
+        },
+        "kind": {
+          "type": "string",
+          "const": "notes"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "text"
+      ],
+      "additionalProperties": false,
+      "id": "Notes"
+    },
+    "InheritedLayer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^ly\\/[a-z0-9]+$"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "layout",
+            "master"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "parentLayoutId": {
+          "type": "string",
+          "pattern": "^ly\\/[a-z0-9]+$"
+        },
+        "backgroundColor": {
+          "$ref": "#/$defs/Color"
+        },
+        "backgroundImage": {
+          "$ref": "#/$defs/Asset"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Element"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "scope",
+        "elements"
+      ],
+      "additionalProperties": false,
+      "id": "InheritedLayer"
+    }
+  }
+}

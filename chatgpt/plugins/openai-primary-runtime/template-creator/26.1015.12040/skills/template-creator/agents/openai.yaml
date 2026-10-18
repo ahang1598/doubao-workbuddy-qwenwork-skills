@@ -1,0 +1,8 @@
+interface:
+  display_name: "Template Creator"
+  short_description: "Create or update personal reference-backed templates"
+  icon_small: "../../assets/composerIcon.svg"
+  icon_large: "../../assets/logo.svg"
+  default_prompt: "Use $template-creator to create a template from my documents, presentations, spreadsheets, Google Docs, Slides, or Sheets links, ImageGen or Product Design images, emails, Slack messages, and Site projects or update the artifact template skill I pass."
+policy:
+  allow_implicit_invocation: true

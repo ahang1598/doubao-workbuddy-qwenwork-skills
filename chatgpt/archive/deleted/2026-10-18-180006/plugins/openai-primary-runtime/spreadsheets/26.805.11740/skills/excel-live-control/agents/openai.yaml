@@ -1,0 +1,7 @@
+interface:
+  display_name: "Excel Live Control"
+  short_description: "Control an open Microsoft Excel workbook using Microsoft Excel desktop app live control"
+  icon_small: "../spreadsheets/assets/file-spreadsheet.png"
+  icon_large: "../spreadsheets/assets/file-spreadsheet.png"
+  brand_color: "#107C41"
+  default_prompt: "Use $excel-live-control to update and verify my open Microsoft Excel workbook."

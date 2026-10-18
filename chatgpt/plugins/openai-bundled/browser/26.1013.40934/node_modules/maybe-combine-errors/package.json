@@ -1,0 +1,33 @@
+{
+  "name": "maybe-combine-errors",
+  "version": "1.0.0",
+  "description": "Combine 0 or more errors into one",
+  "license": "MIT",
+  "author": "Vincent Weevers",
+  "scripts": {
+    "test": "standard && nyc node test"
+  },
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "nyc": "^15.1.0",
+    "standard": "^14.3.4",
+    "tape": "^5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vweevers/maybe-combine-errors.git"
+  },
+  "homepage": "https://github.com/vweevers/maybe-combine-errors",
+  "keywords": [
+    "combine",
+    "error",
+    "errors",
+    "exception"
+  ],
+  "engines": {
+    "node": ">=10"
+  }
+}

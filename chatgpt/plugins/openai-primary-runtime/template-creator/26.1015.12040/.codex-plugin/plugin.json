@@ -1,0 +1,54 @@
+{
+  "name": "template-creator",
+  "version": "26.1015.12040",
+  "description": "Create and update personal templates from files, Google Docs, Slides, and Sheets links, ImageGen or Product Design images, emails, Slack messages, and Site projects.",
+  "author": {
+    "name": "OpenAI",
+    "email": "support@openai.com",
+    "url": "https://openai.com/"
+  },
+  "homepage": "https://openai.com/",
+  "repository": "https://github.com/openai/openai",
+  "license": "Proprietary",
+  "keywords": [
+    "artifact",
+    "template",
+    "document",
+    "presentation",
+    "spreadsheet",
+    "google drive",
+    "google docs",
+    "google slides",
+    "google sheets",
+    "image",
+    "imagegen",
+    "product design",
+    "email",
+    "slack",
+    "sites"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Template Creator",
+    "shortDescription": "Create or update reusable templates from reference content",
+    "longDescription": "Use Template Creator to create reusable templates from documents, spreadsheets, presentations, Google Docs, Slides, and Sheets links, ImageGen or Product Design images, emails, Slack messages, and Site projects. Template Creator preserves the structure, voice, layout, and style of your reference so you can quickly create new versions whenever you need them.",
+    "developerName": "OpenAI",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://openai.com/",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Create a reusable template from a document, presentation, spreadsheet, Google Workspace link, or Site project",
+      "Turn this ImageGen or Product Design image into a reusable template",
+      "Save this email or Slack message as a reusable text template"
+    ],
+    "brandColor": "#10A37F",
+    "composerIcon": "./assets/composerIcon.svg",
+    "logo": "./assets/logo.svg",
+    "screenshots": []
+  }
+}
