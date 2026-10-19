@@ -2,7 +2,7 @@
 name: douyin-live-inspect
 metadata:
   display_name: 抖音直播实时质检与内容复盘
-  version: "1.0.6"
+  version: "1.0.8"
 description: 实时长时质检与复盘。支持抖音直播持续实时检测与视频批量质检，识别违规画面、敏感话术和内容风险；检测完成后生成质检报告，并围绕主播讲解内容、话术结构和互动表现进行复盘，给出可直接落地的内容与话术优化建议。
 ---
 
@@ -22,17 +22,17 @@ description: 实时长时质检与复盘。支持抖音直播持续实时检测�
 
 ## 每次使用的入口埋点
 
-每次实际业务请求，在类型判断、版本选择、登录及业务操作之前，从 Skill 根目录执行一次 `node scripts/skill-start.mjs`，无需传参。脚本优先读取持久化 Device ID，不存在时生成 UUID 并保存，然后尝试上报一次 `skill_start`；后续所有埋点沿用同一 `deviceId`，无需手动传递。
+每个新的真实业务请求通过 `inspect-entry` 进入，入口和业务脚本自动处理埋点，不单独调用 `skill-start.mjs` 或 `version-selected.mjs`。来源未明确时可省略 `--kind`，入口返回澄清指引，不探测账号。仅阅读文档不执行入口。开发测试及用户禁止遥测时关闭上报。
 
-直接使用 Lite、视频、查询、续办或来源待澄清也适用。同一请求内跳转子 Skill、授权续办和重试不重复执行；新业务请求重新执行，Device ID 持续复用。仅审阅、修改 Skill 或开发测试不触发真实业务埋点。用户禁止遥测时设置 `BYTEDLIVE_TELEMETRY_DISABLED=1`；关闭时不读取或生成 Device ID，离线、发送失败或存储失败不阻断业务。脚本结果只表示尝试状态，不代表服务端已收到。正式版调用规则见[正式版调用埋点](references/formal-telemetry.md)。
+入口返回目录和 `data.execution_env`。同一请求的登录、创建、查询、授权续办和重试，所有业务子进程都继承该环境；再次选择版本时也复用入口目录。不得把每次脚本调用当作新用户请求。示例：`INSPECT_USAGE_CONTEXT_DIR="<入口返回目录>" node scripts/login.mjs ...`；Lite 同样在原命令前设置此变量。它只是本地目录，不是新的上报指标，不替代 `task_id`。
+
+用户对已有任务发起新的查询或停止请求时，使用 `node scripts/inspect-entry.mjs --mode lite|formal --task-state existing --new-request --task-dir "<原目录>"`；批次使用 `--batch-dir`。随后继承返回环境执行原业务。该入口仅记录本次使用，不重新选版本、不创建替代任务。正式任务的目录是最初入口返回的目录，服务端身份仍沿原任务保存。宿主没有可靠的用户请求标识，独立调用脚本且不传环境时无法识别跨进程续办；不得按设备或时间窗口猜测。
 
 ## 版本确定埋点
 
-确定使用 Lite 或正式版后、进入对应业务流程前，从 Skill 根目录执行一次 `node scripts/version-selected.mjs --mode lite` 或 `node scripts/version-selected.mjs --mode formal`。覆盖用户回答版本选项、直接指定版本以及自动分流；`login`、`inspect_formal` 选项均映射为 `formal`，选择登录后在登录前记录，不等待授权成功。入口返回 `formal / select_project` 或 `lite / start_lite` 时也按对应版本记录。
+入口仅在实际确定 lite/formal 时记录版本；展示选项、等待回答、阻塞不记录选择。登录及新建脚本自动补充尚未记录的版本，同一请求的重试、授权续办和查询不重复选择。明确切换版本由代码记录变化。
 
-仅展示选项、等待作答、版本未确定或阻塞时不记录。同一请求在会话中保存最近已尝试记录的版本，授权续办、重试、子 Skill 跳转和批次内逐项检测不重复；实际回退或切换到另一版本时再记录一次。失败或超时也视为本次已尝试，不为补报重试。不新增持久偏好或去重文件。已有任务查询和普通续办不算新选择；明确切换版本仍适用。
-
-复用入口 Device ID 与安全身份字段，事件不代表检测已启动。开发测试不发送真实埋点；关闭遥测及失败降级沿用入口规则，最长等待 2.5 秒，不影响业务。
+明确选择 Lite 后，用 `inspect-entry --mode lite --task-state not_created` 进入；如果已进入过，追加原 `--task-dir`。入口返回 `data.task_id` 和目录，实际创建及后续命令复用同一目录和环境。单任务质检、复盘、失败事件以 `task_id` 关联，批量视频整个批次共用该标识，内部视频用 `child_task_id` 区分。重试不换目录、不生成替代任务。规则见[遥测运行约束](references/telemetry.md)。
 
 ## 确定检测类型
 
@@ -48,7 +48,7 @@ description: 实时长时质检与复盘。支持抖音直播持续实时检测�
    - 直播：`node scripts/inspect-entry.mjs --kind live --task-state not_created`
    - 视频：`node scripts/inspect-entry.mjs --kind video --task-state not_created`
      用户禁止 Lite 时追加 `--no-lite`；固定 online，需要时追加 `--profile <NAME>`。不要把多个参数合并成一个字符串，也不要前置独立账号探测、auth-status、Schema 检查、多文档预读或 doctor。
-3. 分流入口只负责业务检查，不再上报 `skill_start`。账号最多3秒，所有检查共享10秒预算，清理最多另1秒。正常宿主争取10–15秒展示选择或进入项目选择，这不表示已开始检测。保留 route/reason/next\_action/projects/interaction/timings。
+3. 分流入口自动尝试记录使用。首次入口就返回目录和执行环境；用户明确选择 Lite 后执行 `node scripts/inspect-entry.mjs --kind live|video --task-state not_created --mode lite --task-dir "<首次入口目录>"`，返回同一 `task_id` 和 `task_dir`；实际 start/start-video 复用该目录及执行环境，批次则作为 batch_dir 使用。入口仅预留标识，不开始采集。账号最多3秒，所有检查共享10秒预算，清理最多另1秒。正常宿主争取10–15秒展示选择或进入项目选择，这不表示已开始检测。保留 route/reason/next\_action/projects/interaction/timings。
 
 | 入口结果                                   | 下一步只读所需流程                                                                                  |
 | -------------------------------------- | ------------------------------------------------------------------------------------------ |

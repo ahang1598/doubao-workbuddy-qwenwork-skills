@@ -1,32 +1,28 @@
 ---
 name: internship-recruiting-tracker
-description: "Use this skill when the user asks for internship or campus recruiting tracking, JD matching, deadline reminders, application plans, resume-gap review, follow-up messages, or 实习校招提醒."
+description: "当用户请求实习或校园招聘跟踪、职位描述匹配、截止日期提醒、申请计划、简历差距审查、跟进消息或实习校招提醒时，使用本技能。"
 ---
 
 # 实习校招提醒
 
-## Overview
+## 概述
 把实习校招从零散刷信息变成“目标画像、岗位漏斗、截止提醒、简历面试迭代”的求职作战台。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
+## 适用场景
 - 用户要找实习、校招、暑研、管培、项目制岗位或建立投递跟踪表。
-- 用户要岗位优先级、JD 匹配、截止提醒、简历改写、面试准备、周报复盘、offer 决策。
+- 用户要岗位优先级、职位描述匹配、截止提醒、简历改写、面试准备、周报复盘、录用通知决策。
 - 用户有目标公司、岗位链接、简历经历、城市/签证/远程限制，需要形成求职漏斗。
-- 输入里出现“投递计划”“岗位匹配”“简历关键词”“OA/面试准备”“校招提醒”等触发词。
-
-## When Not to Use
+- 输入里出现“投递计划”“岗位匹配”“简历关键词”“在线测评/面试准备”“校招提醒”等触发词。
+## 不适用场景
 - 只要奖学金/科研项目申报材料，转 `competition-scholarship-application`。
 - 只要竞选演讲或面试自我介绍稿，转 `speech-campaign-intro-coach`。
 - 只要校园活动推广和大使招募运营，转 `campus-content-operator`。
 - 用户要求伪造经历、虚构指标、绕过平台规则、传播受保护面试题时，拒绝该部分。
-
 ## Routing Decision
 1. 先看最终交付是否围绕“岗位漏斗 + 简历/面试迭代”；是则用本 skill。
 2. 如果用户只要一段自我介绍或行为面试口播稿，转演讲 skill。

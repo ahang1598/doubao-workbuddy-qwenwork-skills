@@ -15,7 +15,7 @@ FILENAME = '.mediakit-credentials.json'
 
 def background_env():
     return {k: v for k, v in os.environ.items()
-            if k != 'INSPECT_TELEMETRY_METADATA_FILE' and k not in BACKGROUND_SECRET_KEYS and not k.startswith('BYTECLOUD_CLI_API_JWT_TOKEN')}
+            if k not in {'INSPECT_TELEMETRY_METADATA_FILE', 'INSPECT_TELEMETRY_FD'} and k not in BACKGROUND_SECRET_KEYS and not k.startswith('BYTECLOUD_CLI_API_JWT_TOKEN')}
 
 
 def read(workspace_root):

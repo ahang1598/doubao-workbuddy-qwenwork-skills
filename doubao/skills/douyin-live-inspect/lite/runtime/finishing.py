@@ -35,7 +35,7 @@ def freeze_media(store, conn, task, now):
             segment.setdefault('asr_diagnostic', {'category':'ASR_STOPPED'})
         if segment['frame_status'] not in {'success','disabled','not_required','not_scheduled'}:
             segment['frame_status']='unavailable'
-        if not any(str(u.get('text','')).strip() for u in segment.get('subtitles', [])) and segment['review_status'] != 'done':
+        if not any(str(u.get('text','')).strip() for u in segment.get('subtitles', [])) and segment['review_status'] not in {'done','skipped'}:
             segment.update(review_status='skipped', skip_reason='结束时无可用语音文字', skip_code='NO_SPEECH_EVIDENCE')
         elif segment['review_status'] == 'deferred':
             segment['review_status']='pending'
@@ -54,6 +54,7 @@ def advance(store, conn, now=None):
     signal = read_stop(store.root)
     if task.get('kind','live') == 'live' and signal and not task.get('stop_requested'):
         task.update(stop_requested=True,stop_requested_at=signal['requested_at'],bounded_finishing=True)
+        task.setdefault('stop_reason', signal['reason'])
         store._set_task(conn,task)
     if task.get('kind','live') == 'live' and task.get('freeze_on_end') and task.get('capture_status') in TERMINAL and not signal:
         signal_stop(store.root,origin='runtime',reason='source_ended',instruction=None)

@@ -105,7 +105,7 @@ function renderReport(report) {
     : "无有效内容";
   byId("data-title").textContent = `${media}数据`;
   byId("playback-title").textContent = `${media}回放`;
-  byId("conclusion").textContent = analysis.conclusion + (report.coverage?.gaps?.length ? ` ${report.coverage.message}` : "");
+  byId("conclusion").textContent = analysis.conclusion + (report.coverage?.gaps?.length ? ` ${report.coverage.message} ${[...new Set(report.coverage.gaps.map(g => g.reason).filter(Boolean))].join("；")}` : "");
   for (const [key, title] of [
     ["highlights", "表现亮点"],
     ["problems", "主要问题"],

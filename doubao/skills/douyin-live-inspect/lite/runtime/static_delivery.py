@@ -36,9 +36,12 @@ def atomic(path, content):
 
 class FrozenStore:
     """One SQLite read transaction supplies every projection of this export."""
-    def __init__(self, store):
+    def __init__(self, store, *, snapshot=None):
         self.root = store.root
-        if hasattr(store, 'read_snapshot'):
+        if snapshot is not None:
+            # Transaction callers already hold a consistent, possibly uncommitted view.
+            self.data, self.rows, self.state = copy.deepcopy(snapshot)
+        elif hasattr(store, 'read_snapshot'):
             self.data, self.rows, self.state = copy.deepcopy(store.read_snapshot())
         else:
             self.data, self.rows, self.state = copy.deepcopy((store.task(), store.segments(), store.status()))
@@ -242,7 +245,16 @@ def safe_export(store, **options):
         if (deadline is not None or draining_report) and 'frozen_store' not in options:
             import subprocess, sys
             script='import json,sys; from runtime.store import Store; from runtime.static_delivery import export; print(json.dumps(export(Store(sys.argv[1]),**json.loads(sys.argv[2]))))'
-            child=subprocess.run([sys.executable,'-c',script,str(store.root),json.dumps(options)],cwd=Path(__file__).resolve().parents[1],capture_output=True,text=True)
+            # HTML is optional: recover once, then deliver saved report content.
+            for attempt in range(2):
+                try:
+                    child=subprocess.run([sys.executable,'-c',script,str(store.root),json.dumps(options)],cwd=Path(__file__).resolve().parents[1],capture_output=True,text=True,timeout=30)
+                    break
+                except subprocess.TimeoutExpired:
+                    if attempt == 1:
+                        return {'artifact_status':'failed', 'artifacts':[],
+                                'fallback_reason':'HTML_EXPORT_TIMEOUT', 'fallback_action':'deliver-chat-report',
+                                'message':'HTML 导出限时恢复后仍未完成；跳过 HTML，直接交付已保存的完整 Chat 报告并继续另一份报告。'}
             if child.returncode:raise ValueError('report export failed')
             return json.loads(child.stdout)
         return export(store, **options)

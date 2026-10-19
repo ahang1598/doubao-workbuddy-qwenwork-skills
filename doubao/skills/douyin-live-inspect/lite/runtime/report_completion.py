@@ -2,30 +2,39 @@
 import time
 
 
+def has_active_review_child(connection, session_id):
+    from runtime.live_review import rows, ACTIVE
+    if not connection.execute("SELECT 1 FROM sqlite_master WHERE name='review_batches'").fetchone():
+        return False
+    return any(b.get('executor') == 'child' and b['status'] in ACTIVE
+               for b in rows(connection, session_id))
+
+
 def completion(store):
     task = store.task()
     from runtime.recap import recap_report
     recap = recap_report(store)
     version = recap.get('evidence_version')
     deliveries = task.get('report_deliveries', {})
-    complete = (recap.get('status') in {'ready', 'insufficient', 'blocked'} and version is not None
-                and all(deliveries.get(k, {}).get('evidence_version') == version
-                        and (deliveries.get(k, {}).get('outcome', 'ready') == 'ready' or recap.get('status') == 'blocked')
-                        for k in ('quality', 'recap')))
+    failed_recap = recap.get('status') == 'blocked' or recap.get('terminal_failure', False)
+    def delivered(kind):
+        receipt = deliveries.get(kind, {})
+        if version is None or receipt.get('evidence_version') != version:return False
+        if receipt.get('outcome', 'ready') == 'failed':
+            return failed_recap if kind == 'recap' else bool(store.status().get('report_blocked_reason'))
+        return bool(recap.get('available')) if kind == 'recap' else True
+    complete = all(delivered(k) for k in ('quality', 'recap'))
     if complete and task.get('review_dispatch_version') == 2 and not task.get('media_frozen'):
-        from runtime.live_review import initialize, rows, ACTIVE
-        with store.connection() as conn:
-            initialize(conn)
-            complete = not any(b.get('executor') == 'child' and b['status'] in ACTIVE
-                               for b in rows(conn, store.session_id))
-    pending = [kind for kind in ('quality', 'recap')
-               if version is None or deliveries.get(kind, {}).get('evidence_version') != version
-               or (kind == 'recap' and recap.get('status') != 'blocked'
-                   and (not recap.get('available') or deliveries.get(kind, {}).get('outcome', 'ready') != 'ready'))]
+        complete = not store._read_with_retry(lambda conn: has_active_review_child(conn, store.session_id))
+    pending = [kind for kind in ('quality', 'recap') if not delivered(kind)]
     action = ('status' if complete or not pending else 'report' if pending[0] == 'quality' else
-              'recap-report' if recap.get('status') in {'ready','insufficient','blocked'} else 'recap-input --begin')
-    return {'workflow_complete': complete, 'report_deliveries': deliveries,
-            'pending_reports': pending, 'completion_next_action': action,
+              'recap-report' if recap.get('available') or failed_recap else 'status')
+    # A host delivery failure must not gate independent report generation.
+    generation = ('recap-input --begin' if not complete and not recap.get('available')
+                  and not failed_recap and store.status().get('report_ready') else 'status')
+    return {'workflow_complete': complete, 'workflow_outcome': ('failed' if failed_recap else 'ready') if complete else 'pending', 'report_deliveries': deliveries,
+            'pending_reports': pending, 'completion_next_action': generation if generation != 'status' else action,
+            'generation_next_action': generation, 'delivery_next_action': action,
             'delivery_ack_contract': {'command': 'report-delivery-ack',
                 'task_dir': str(store.root),
                 'template': {'kind': 'quality', 'evidence_version': version, 'channel':'file', 'outcome':'ready'},
@@ -60,7 +69,8 @@ def acknowledge(store, value):
     if value.get('evidence_version') is None or value['evidence_version'] != report.get('evidence_version'):
         raise ValueError('report not ready or evidence version changed')
     available = status['report_ready'] if value['kind'] == 'quality' else report.get('available')
-    failed = bool(status.get('report_blocked_reason')) if value['kind'] == 'quality' else report['status'] in {'failed','blocked'}
+    from runtime.realtime_policy import current
+    failed = bool(status.get('report_blocked_reason')) if value['kind'] == 'quality' else (report['status'] == 'blocked' or report.get('terminal_failure', False) or (not current(store.task()) and report['status'] == 'failed'))
     if (outcome == 'ready' and not available) or (outcome == 'failed' and not failed):
         raise ValueError('report outcome not available')
     with store.connection(True) as conn:

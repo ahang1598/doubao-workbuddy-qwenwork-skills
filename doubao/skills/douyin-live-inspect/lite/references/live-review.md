@@ -1,6 +1,6 @@
 # Lite 直播判定
 
-新直播 review_protocol=lite_review_v2、inspection_policy=lite_live_realtime_v2 使用本流程；旧任务沿用保存的批次上限。处理策略见 [实时策略](../SKILL.md#实时策略)。
+当前直播使用本流程；策略适用范围及内部标识见 [实时策略](../SKILL.md#实时策略)。旧任务保留原提交协议和批次上限。
 
 ## 领取与判断
 
@@ -26,7 +26,7 @@
 
 保留外层 task_id、context_id 和返回的真实 segment_id。reviewed=true 表示本段判断已完成；rules 只保存命中项，每项包含 rule_id、status=hit、简短 reason 和引用本段 evidence_ids 的 events。未命中填空数组，运行时补齐其他规则与渠道。
 
-沿用返回的 input_path；宿主写文件工具要求先读取时，先完整读取已有模板，再序列化模型完成的判断、写入并执行 submit_command_argv。不要因写入被拒绝重新领取批次；工具拒绝写入不代表判定已提交。模型负责语义判断，脚本只负责序列化和提交。提交后直接处理 next，不再插入 status 或重复领取。JSON 出错按行列修复；repair_required 时只修改失败项，执行新的 retry_command_argv，成功项不重判。
+沿用返回的 input_path；宿主写文件工具要求先读取时，先完整读取已有模板，再序列化模型完成的判断、写入并执行 submit_command_argv。不要因写入被拒绝重新领取批次；工具拒绝写入不代表判定已提交。模型负责语义判断，脚本只负责序列化和提交。提交后按 next 的实际动作续办；有片段直接处理，空批次按 status 等待，不重复领取。JSON 出错按行列修复；repair_required 时只修改失败项，执行新的 retry_command_argv，成功项不重判。
 
 写入与提交分别核验：写入完成后确认原 input_path 是完整可解析的 JSON，且 task_id、context_id、片段与当前合同一致，再从当前加载的 Lite 根目录用启动任务时的同一 Python 3.10+ 环境执行 `python3 scripts/live_inspect.py`（Windows 用 `python`），后接返回的 submit_command_argv。宿主命令应设置工作目录为该 Lite 根目录；不要使用合同内供旧调用方兼容的 submit_argv 或 submit_shell_command 所带的解释器、脚本绝对路径。写文件工具暂不可用时，不立即改用长 heredoc；仅在 shell 已确认正常且原写入已结束时使用替代写入，随后重新核验文件。仅有文件存在、内容已填写或命令已受理，都不表示判定已保存。
 
@@ -36,9 +36,13 @@
 
 ## 结束与异常
 
-空闲时最多等3秒；积压收敛由运行时执行。用户停止时先 stop，随后按 next_action 提交当前批次或交付报告。运行时已结束的批次直接进入下一步，不补交或重采集。
+空批次时按 `next_action` 自动续办：返回 status 则每次最多等3秒后查询状态；返回 review-next 则用新的 request-id 领取；有片段和合同才直接提交；返回 report 才转报告阶段。顶层 continuation_instruction 与 next 内实际动作共同描述本次续办；旧回执说明与动作冲突时以实际 next_action 为准。不要反复重放同一空批次请求来等待新内容，旧 request-id 只恢复原回执。
 
-新任务在用户停止、确认下播或断流后，继续领取并判定全部已采集片段；尚无就绪片段时按 status.next_action 等待媒体处理或恢复原任务。队列排空后立即执行 report；用返回的 recap_input 和 submission_contract 连续完成复盘提交和双报告交付，不以“正在生成”结束当前执行。复盘失败自动修复重试，不以失败回执结束流程。
+用户未回复、阶段性进度已发出、直播运行较久均不构成停止条件；不新增“是否继续”的选择，不把继续判定交还给用户触发。直播仍在采集时持续循环，进度播报后继续执行。用户明确停止时先 stop，再按 next_action 在固定收尾预算内处理剩余片段；仅明确舍弃剩余检测才立即停止。运行时已结束的批次直接进入下一步，不补交或重采集。
+
+积压、批次无进展和结束收尾统一按[实时策略](../SKILL.md#实时策略)执行：未领取积压超过 3 分钟保留最近 2 分钟；已领取批次 120 秒无成功提交或收尾 120 秒到期后关闭剩余检测，进入部分报告。轮询和修复失败不刷新预算；保存的片段不重判。空批次仍按回执续办，不等用户。
+
+交付质检报告，并按 recap_input 和 submission_contract 完成复盘。复盘最多三次尝试，每次 120 秒；terminal_failure 时交付真实失败说明并确认 failed/chat，不重开检测、不无限重试。
 
 已明确保存的结果不重放；提交状态未知时用原 request-id 调用 review-state。EVIDENCE_CHANGED 时重新领取。真实会话中断后回原 task_dir 续办。
 
@@ -65,3 +69,5 @@
 接管命令输出丢失时查询接管自身的 request-id；status=recovered 或 superseded 时读取 recovery_receipt，按其 next_action 继续，不能执行旧 receipt 的命令。接管返回大结果时沿 result_file / result-page 读全。重复请求或重复接管旧 context 不再分配新代次。
 
 repair 的 retry_command_argv 保留原 --next、dispatcher、规则版本及批量限制；历史记录恢复不出选项时按 after_submit_action 补交后续领，不自行补参数。已停止、冻结或过期时按 status/report 收尾，不重开原积压。
+
+质检交付受阻不阻塞复盘生成；按[交付](delivery.md)中的生成与交付独立续办规则继续。

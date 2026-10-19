@@ -17,7 +17,9 @@ import uuid
 from datetime import datetime, timezone
 
 SCENE_WINDOW_MS = 30 * 1000
-WORKORDER_URL = 'https://console.volcengine.com/workorder/create?step=3&SubProductID=P00000078&sessionID=f3eb625d-af6c-11f1-b754-4a64e05716c9'
+FEISHU_GROUP_URL = 'https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=1b0qd90e-4e8e-49cd-b9f6-2466d97d791f'
+FEISHU_GROUP_MARKDOWN = f'[加入飞书群沟通开通]({FEISHU_GROUP_URL})'
+WORKORDER_URL = 'https://console.volcengine.com/workorder/create?step=3&SubProductID=P00000078&sessionID=f3eb625d-af6c-11f1-b754-4a64e05716c9&from=doubaoworkcli'
 WORKORDER_FORM = {
     'related_product': '视频服务 / 企业直播',
     'issue_category': '操作指导',
@@ -25,10 +27,20 @@ WORKORDER_FORM = {
 }
 
 
-WORKORDER_INSTRUCTIONS = '打开后请手动填写：① 相关产品选择“视频服务 / 企业直播”；② 问题分类选择“操作指导”；③ 问题描述填写“如何开通企业直播质检服务”。然后选择消息提醒接收方式，点击“提交工单”，等待处理结果；提交不代表已开通。'
+WORKORDER_INSTRUCTIONS = ('- **相关产品**：视频服务 / 企业直播\n'
+                         '- **问题分类**：操作指导\n'
+                         '- **问题描述**：如何开通企业直播质检服务\n\n'
+                         '选择消息提醒接收方式后，点击“提交工单”，等待处理结果。提交不代表已开通。')
 
 CAPABILITY_URL = 'https://docs.volcengine.com/docs/3019/2024033?lang=zh'
 CAPABILITY_MARKDOWN = f'[直播质检能力介绍]({CAPABILITY_URL})'
+
+OPENING_GUIDANCE = (f'如需使用正式版，可选择以下任一方式：\n\n'
+                    f'**方式一：飞书群沟通（更高效）**\n\n'
+                    f'{FEISHU_GROUP_MARKDOWN}，咨询企业直播质检服务开通事宜，沟通更高效。\n\n'
+                    f'**方式二：提交工单**\n\n'
+                    f'[提交开通工单]({WORKORDER_URL})，按以下内容填写：\n\n'
+                    f'{WORKORDER_INSTRUCTIONS}\n\n{CAPABILITY_MARKDOWN}')
 
 # A short read may be transient or indicate a truncated file. A bounded retry
 # is safe for reads and before the write body, not proof of normal WAL contention.
@@ -41,13 +53,16 @@ def upgrade_guidance(*, video=False):
     message = '本次 Lite 体验已结束，已采集内容将继续完成识别和判定，质检结果就绪后仍会正常交付。'
     if video: message = '视频采集已结束，已有内容将继续识别和判定，报告可独立交付。'
     return {'code':'EDITION_UPGRADE_AVAILABLE' if video else 'LITE_TRIAL_ENDED',
-            'message':f'{message} 如需使用正式版直播质检服务，请提交工单申请开通；{WORKORDER_INSTRUCTIONS} 也可查看 {CAPABILITY_MARKDOWN}。',
+            'message':f'{message}\n\n{OPENING_GUIDANCE}',
             'edition_comparison':{
                 'lite':['无需火山引擎账号即可体验核心直播质检'],
                 'official':['规则类型更丰富，可按账号和业务需求灵活配置','支持直播与视频质检','通过火山引擎账号统一管理项目、任务和报告','支持统一管理质检报告与直播内容复盘报告']},
             'edition_presentation':{'heading':'正式版能力升级','format':'value_first','avoid_comparison_table':True},
+            'feishu_group_url':FEISHU_GROUP_URL,
+            'feishu_group_markdown':FEISHU_GROUP_MARKDOWN,
+            'opening_guidance':OPENING_GUIDANCE,
             'link_text':'提交工单申请开通正式版',
-            'markdown':f'如需使用正式版直播质检服务（更丰富的规则配置、统一项目管理），可[提交工单申请开通正式版]({WORKORDER_URL})。\n\n{WORKORDER_INSTRUCTIONS}\n\n也可查看 {CAPABILITY_MARKDOWN}。',
+            'markdown':OPENING_GUIDANCE,
             'workorder_instructions':WORKORDER_INSTRUCTIONS,
             'capability_url':CAPABILITY_URL,
             'capability_markdown':CAPABILITY_MARKDOWN,
@@ -152,10 +167,9 @@ class Store:
         self.root = self.task_root = self.workspace_root = Path(task_dir).expanduser().resolve()
         self.path = self.root/'inspection.db'
         if not self.path.is_file(): raise ValueError('task does not exist')
-        with self.connection() as c:
-            row=c.execute('SELECT id,data FROM live_sessions').fetchone()
-            if not row:raise ValueError('task does not exist')
-            self.session_id=row['id']; self.task_id=json.loads(row['data'])['id']
+        row=self._read_with_retry(lambda c:c.execute('SELECT id,data FROM live_sessions').fetchone())
+        if not row:raise ValueError('task does not exist')
+        self.session_id=row['id']; self.task_id=json.loads(row['data'])['id']
 
     @classmethod
     def create(cls, task_dir, *, name, scenario, source, rules, kind="live", **config):
@@ -177,8 +191,10 @@ class Store:
         from runtime.platform_support import private_directory
         private_directory(root)
         path=root/'inspection.db'
+        from runtime.task_context import reserve
+        tid=reserve(root) or uuid.uuid4().hex
         fd=os.open(path,os.O_RDWR|os.O_CREAT|os.O_EXCL,0o600);os.close(fd)
-        sid=uuid.uuid4().hex;tid=uuid.uuid4().hex
+        sid=uuid.uuid4().hex
         task=dict(config,id=tid,task_id=tid,session_id=sid,kind=kind,name=name,scenario=scenario,
                   source=source,rules_snapshot=rules,created_at=now_iso(),capture_status='pending',
                   worker_status='pending',stop_requested=False,revision=1)
@@ -278,7 +294,13 @@ class Store:
     def _task(self,c):return json.loads(c.execute('SELECT data FROM live_sessions WHERE id=?',(self.session_id,)).fetchone()[0])
     def _set_task(self,c,data):
         from runtime.telemetry_rules import task_changing
-        task_changing(self,c,self._task(c),data)
+        before = self._task(c)
+        # Delivery generations are business state, including when telemetry is off.
+        if (data.get('kind') == 'video'
+                and before.get('worker_status') in {'done', 'failed', 'stopped'}
+                and data.get('worker_status') in {'preparing', 'pending', 'running'}):
+            data['video_report_run'] = before.get('video_report_run', 1) + 1
+        task_changing(self,c,before,data)
         data['revision']=data.get('revision',0)+1
         c.execute('UPDATE live_sessions SET data=? WHERE id=?',(encode(data),self.session_id))
     def task(self):
@@ -308,12 +330,14 @@ class Store:
             with self.connection(True) as c:return tick(self,c)
         state = task.get('finishing', {})
         if state.get('phase') == 'completed':return state
-        # The PCM consumer and worker poll this frequently. Healthy capture has
-        # no drain state to mutate; do not make it wait for an evidence writer.
+        # Media heartbeats should not wait for a writer while no budget is due.
         from runtime.stop_signal import read as read_stop
         if not state and not (read_stop(self.root) or task.get('stop_requested') or task.get('live_ended_at') or
                               task.get('capture_status') in {'ended','stopped','failed'}):
-            return {}
+            from runtime.realtime_policy import current, current_work
+            if not current(task):return {}
+            _, _, stalled, waiting = self._read_with_retry(lambda conn:current_work(self, conn, time.time()))
+            if not stalled and interval_ms(waiting) <= 180000:return {}
         # Re-read inside the write transaction; a concurrent stop must not be
         # overwritten by the read-only fast path's older task snapshot.
         with self.connection(True) as c:return advance(self,c)
@@ -726,6 +750,10 @@ class Store:
                     **({'next_action':'review-submit'} if any(r['status']=='error' for r in results) else {})}
         digest=hashlib.sha256(encode({k:v for k,v in payload.items() if k != '_source_context'}).encode()).hexdigest()
         with self.connection(True) as c:
+            from runtime.realtime_policy import current as realtime_current
+            from runtime.finishing import advance, closed
+            if realtime_current(self._task(c)) and closed(advance(self,c)):
+                return {'status':'inspection_finished','retryable':False,'next_action':'report'}
             if payload.get('_source_context'):
                 from runtime.live_review import check_context
                 check_context(c, self, payload['_source_context'])
@@ -830,6 +858,12 @@ class Store:
                     raise detail from error
             if not self._update_segment(c,s['id'],review_status='done',**({'speech_reviewed':True,'speech_review_completed_at':s.get('speech_review_completed_at',time.time())} if full(self._task(c)) else {}),review_result={**({'content_route':route} if route else {}),'rules':result,'decisions':result,'images_viewed':viewed,**({'summary':payload['summary']} if 'summary' in payload else {})},claim_token=None,lease_until=0,reviewed_at=now_iso(),judgment_elapsed_ms=max(0,round((time.time()-s['review_started_at'])*1000)) if s.get('review_started_at') else None):
                 return {'status':'inspection_finished','retryable':False,'next_action':'report'}
+            from runtime.realtime_policy import current as realtime_current
+            if realtime_current(self._task(c)) and payload.get('batch_id'):
+                from runtime.live_review import row, save
+                batch = row(c, self.session_id, payload['batch_id'])
+                batch['review_progress_at'] = time.time()
+                save(c, self.session_id, batch)
             c.execute('INSERT INTO submissions VALUES(?,?,?)',(digest,s['id'],digest))
         return {'status':'saved','segment_id':s['id']}
 

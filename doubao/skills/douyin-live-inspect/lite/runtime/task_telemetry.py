@@ -57,6 +57,8 @@ def owner():
 def new_record(kind, started_at=None, parent=None):
     record = {'telemetry_task_id': str(uuid.uuid4()), 'task_type': kind,
               'task_started_at': started_at or now(), 'run_index': 1, 'owner': owner()}
+    if kind != 'live_recap':
+        record['funnel_schema_version'] = 1
     if parent:
         record['parent_task_id'] = parent
     return record
@@ -67,6 +69,8 @@ def _event(record, key):
     record.setdefault('attempted', []).append(f"{record['run_index']}:{phase}")
     extra = {k: record[k] for k in ('telemetry_task_id', 'task_type', 'task_started_at',
              'run_index', 'parent_task_id', 'task_finished_at', 'task_result', 'task_elapsed_ms') if k in record}
+    if record.get('funnel_schema_version') == 1:
+        extra['funnel_schema_version'] = 1
     extra.update(record.get('dimensions', {}))
     extra.update(record['owner'])
     extra['lifecycle_event_id'] = str(uuid.uuid5(uuid.UUID(record['telemetry_task_id']), f"{record['run_index']}:{phase}"))
@@ -112,11 +116,12 @@ def start_store(store):
                 return
             parent = _PARENT.get()
             record = new_record('video_inspection' if task['kind'] == 'video' else 'live_inspection', task['created_at'], parent[1] if parent else None)
+            record['task_id'] = parent[2] if parent else task['task_id']
             if parent:
                 record['batch_directory'] = str(parent[0])  # local only; never emitted
             from runtime.telemetry_context import dimensions
-            record['dimensions'] = dimensions(task, batch=bool(parent))
             task['_telemetry'] = record
+            record['dimensions'] = dimensions(task, batch=bool(parent))
             payload = record_event(TASK.STARTED, record)
             c.execute('UPDATE live_sessions SET data=? WHERE id=?', (json.dumps(task, ensure_ascii=False), store.session_id))
         send([payload])

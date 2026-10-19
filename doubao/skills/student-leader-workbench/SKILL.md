@@ -1,32 +1,28 @@
 ---
 name: student-leader-workbench
-description: "Use this skill when the user asks for class, club, or student-union execution artifacts such as notices, event plans, rosters, minutes, task tables, follow-up, or 学生干部工作台."
+description: "当用户请求班级、社团或学生会的执行产物时，使用本技能；包括通知、活动方案、花名册、会议纪要、任务表、跟进安排或学生干部工作台。"
 ---
 
 # 学生干部工作台
 
-## Overview
+## 概述
 把学生干部高频事务从临场写作变成可复用的组织协作 SOP，尤其适合班级、团支部、社团、学生会等轻量组织。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
+## 适用场景
 - 用户要处理班级、团支部、社团、学生会的通知、活动策划、分工、排班、会议纪要、催办和复盘。
 - 用户给出群聊、名单、预算、志愿者时间、活动要求，需要整理成可执行台账。
 - 用户要可直接发群的公告、报名表字段、主持稿、会后纪要、待办清单或催办话术。
 - 输入里出现“班委/团支书/社团/学生会”“活动安排”“排班”“纪要”“通知”“谁负责”等触发词。
-
-## When Not to Use
+## 不适用场景
 - 只要公众号/小红书/社群增长运营，转 `campus-content-operator`。
-- 只要海报封面、视觉 brief 或尺寸清单，转 `campus-poster-cover-generator`。
+- 只要海报封面、视觉需求说明 或尺寸清单，转 `campus-poster-cover-generator`。
 - 只要校园办事流程、材料、办公室和咨询话术，转 `campus-service-navigator`。
 - 涉及法律、财务、学校官方审批结论时，只能列风险和待确认项，不给最终官方判断。
-
 ## Routing Decision
 1. 先看最终交付物是否是组织执行物：通知、策划、排班、纪要、催办、复盘属于本 skill。
 2. 如果用户同时要“活动执行 + 推文 + 海报”，本 skill 负责执行台账和通知，推文/海报分别交给对应 skill。

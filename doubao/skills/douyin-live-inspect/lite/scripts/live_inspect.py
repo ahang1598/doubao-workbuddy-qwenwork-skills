@@ -6,6 +6,8 @@ for stream in (sys.stdin, sys.stdout, sys.stderr):
     if hasattr(stream, 'reconfigure'): stream.reconfigure(encoding='utf-8')
 sys.dont_write_bytecode=True
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from runtime.telemetry_context import open_channel, close_channel
+open_channel()
 from runtime.cli import main
 if __name__=='__main__':
     from runtime.review_execution import COMMANDS, supervise
@@ -13,4 +15,7 @@ if __name__=='__main__':
         raise SystemExit(supervise(sys.argv[1:]))
     from runtime.telemetry import enter_bridge
     enter_bridge()
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    finally:
+        close_channel()

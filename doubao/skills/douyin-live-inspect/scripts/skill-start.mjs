@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 // 本文件负责每次真实业务请求的入口埋点：
 // 解析允许上报的身份字段，并通过共享发送器尽力发送一次 skill_start 事件。
+import {parseArgs} from 'node:util';
 import {createRequire} from 'node:module';
 const require = createRequire(import.meta.url);
 import {EVENTS, disabled, reportEvent} from '../runtime/telemetry-reporter.cjs';
 
 // 这是独立于账号探测和 Lite 初始化的入口事件。
-// 每次业务请求由 Skill 入口调用一次；deviceId 由共享发送器按统一逻辑自动补充。
+// 由业务入口脚本自动调用；deviceId 由共享发送器按统一逻辑自动补充。
 async function start() {
   const args = process.argv.slice(2);
   if (disabled()) return 'disabled';
-  // 兼容旧调用的 UUID；新入口无需参数，统一复用持久化 deviceId。
-  if (args.length && (args.length !== 2 || args[0] !== '--start-id' ||
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(args[1]))) return 'invalid_input';
+  const {values} = parseArgs({args, options:{'start-id':{type:'string'}, 'task-dir':{type:'string'}}});
+  if (values['start-id'] && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(values['start-id'])) return 'invalid_input';
+  const context = values['task-dir'] ? require('../runtime/lite-task-context.cjs').readContext(values['task-dir']) : undefined;
   const {resolveIdentity} = require('../lite/scripts/telemetry-identity.cjs');
   const identity = await resolveIdentity(process.env);
   // 身份令牌仅用于当前进程内解析允许字段，后续立即删除，避免误传给业务链路。
@@ -22,7 +23,7 @@ async function start() {
   }
   // 报告 Skill 启动事件
   await reportEvent(EVENTS.skill.START, {product:'douyin-live-inspect', record_type:'skill_lifecycle',
-    feature:'skill_start', ...identity}, {toolName:'byted-live-inspect'});
+    feature:'skill_start', ...(context ? {task_id:context.task_id} : {}), ...identity}, {toolName:'byted-live-inspect'});
   return 'attempted';
 }
 
@@ -35,5 +36,5 @@ function finish(status) {
 }
 const deadline = setTimeout(() => { finish('timeout'); process.exit(0); }, 2500);
 try { finish(await start()); }
-catch { finish('unavailable'); }
+catch (error) { finish(error.code?.startsWith('ERR_PARSE_ARGS') ? 'invalid_input' : 'unavailable'); }
 finally { clearTimeout(deadline); }

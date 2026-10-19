@@ -226,12 +226,15 @@ def attach(store, conn, batch, result, snapshot):
 
 def expand(store, payload):
     """Look up the exact immutable context, never the most recent assignment."""
-    with store.connection() as conn:
-        initialize(conn)
-        value = conn.execute(
+    def read_context(conn):
+        # Missing contexts are invalid input, not a reason to write during a read.
+        if not conn.execute("SELECT 1 FROM sqlite_master WHERE name='review_contexts'").fetchone():
+            return None
+        return conn.execute(
             'SELECT data FROM review_contexts WHERE id=? AND session_id=?',
             (payload.get('context_id'), store.session_id),
         ).fetchone()
+    value = store._read_with_retry(read_context)
     if not value:
         raise ValueError('stale or missing review context')
     context = json.loads(value[0])
@@ -239,8 +242,7 @@ def expand(store, payload):
     result['_source_context'] = result.pop('context_id', None)
     if store.task().get('review_dispatch_version') == 2:
         from runtime.live_review import row
-        with store.connection() as conn:
-            batch = row(conn, store.session_id, context['batch_id'])
+        batch = store._read_with_retry(lambda conn:row(conn, store.session_id, context['batch_id']))
         if batch and batch.get('executor') == 'child':
             if batch.get('host_task_id') != payload.get('host_task_id') or not batch.get('host_task_id'):
                 raise ValueError('host task binding mismatch')

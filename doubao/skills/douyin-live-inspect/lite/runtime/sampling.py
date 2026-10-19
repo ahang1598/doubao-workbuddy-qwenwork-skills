@@ -213,8 +213,7 @@ class WindowStore(Store):
         if not isinstance(summary, str) or not summary.strip() or len(summary)>200:
             raise ValueError('window summary requires 1..200 characters')
         self.finish_tick()
-        with self.connection() as conn:
-            row = next((r for r in self._segments(conn) if r['id']==payload.get('segment_id')), None)
+        row = next((r for r in self.segments() if r['id']==payload.get('segment_id')), None)
         if row and row['review_status']=='skipped':
             return {'status':'window_expired','window_id':row['window_id'], 'reason':row['skip_reason'],
                     'retryable':False,'next_action':'report' if self.task().get('finishing',{}).get('phase')=='completed' else 'review-next'}
@@ -240,7 +239,7 @@ class WindowStore(Store):
             'skipped_ranges':[{k:s[k] for k in ('window_id','start_ms','end_ms','window_status','skip_reason')}
                               for s in segments if s['review_status']=='skipped']}
         if live_backlog.enabled(task):
-            with self.connection() as conn:raw = Store._segments(self, conn)
+            raw = self._read_with_retry(lambda conn:Store._segments(self, conn))
             skipped = [r for r in raw if r.get('asr_gap_code') == live_backlog.BACKLOG]
             pending = [r['start_ms'] for r in raw if not r.get('asr_final') and r['asr_status'] not in {'success','no_audio'}]
             consumed = min(pending+[task.get('asr_consumed_ms',live_backlog.captured_end(task))])

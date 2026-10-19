@@ -33,6 +33,10 @@ def bind_result(store, conn, result):
     """Commit the request/result binding in the same transaction as allocation."""
     if not active(): return
     from runtime.report_delivery import bounded_output
+    task = store._task(conn)
+    if task.get('kind', 'live') == 'live' and task.get('review_protocol') == 'lite_review_v2':
+        from runtime.live_continuation import annotate
+        annotate(result)
     context = result.get('submission_contract', {}).get('template', {}).get('context_id')
     receipt = bounded_output(store, 'review-next', result)
     if context:
@@ -506,7 +510,8 @@ def worker(argv, request_id, compact):
         if isinstance(error, ReviewError):
             print(encode({'ok':False,'command':argv[0],'error':error.detail}),flush=True)
             return 1
-        code_name = ('REVIEW_STORAGE_UNAVAILABLE' if isinstance(error,sqlite3.Error) else
+        from runtime.diagnostics import is_memory_error
+        code_name = ('OUT_OF_MEMORY' if is_memory_error(error) else 'REVIEW_STORAGE_UNAVAILABLE' if isinstance(error,sqlite3.Error) else
                      'REVIEW_BINDING_INVALID' if isinstance(error,ValueError) else 'REVIEW_COMMAND_UNAVAILABLE')
         result, code = failure(argv[0], code_name, request_id), 1
         if argv[0] not in {'review-state','result-page'}:

@@ -14,7 +14,7 @@ _BATCH_OPERATION = ContextVar("telemetry_batch_operation", default=None)
 @contextmanager
 def batch_context(root, data):
     record = data.get('_telemetry') if events_api.enabled() else None
-    token = _PARENT.set((root, record['telemetry_task_id']) if record else None)
+    token = _PARENT.set((root, record['telemetry_task_id'], data['id']) if record else None)
     try:
         yield
     finally:
@@ -138,6 +138,13 @@ def _observe_batch(root, created, children):
                 result = 'completed' if all(r == 'completed' for r in results) else 'failed' if all(r == 'failed' for r in results) else 'partial'
             if result:
                 events.append(events_api.record_event(TASK.FINISHED, record, result))
+        try:
+            from runtime.telemetry_funnel import payload, batch_state
+            if record.get('funnel_schema_version') == 1:
+                funnel = payload(record, batch_state(root, data), dimensions(data, batch=True))
+                if funnel: events.append(funnel)
+        except Exception:
+            pass  # Projection failure must preserve existing lifecycle transitions.
         if events or children or previous_dimensions != record['dimensions']:
             atomic_json(root / 'batch.json', data)
     events_api.send(events)

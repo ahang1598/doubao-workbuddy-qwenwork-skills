@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import flow from '../runtime/workflow-telemetry.cjs';
 import { EVENTS, runCommand, observeResult } from '../runtime/telemetry.mjs';
 import { writeFile, mkdir, rename, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -49,6 +50,7 @@ try {
   try { input = JSON.parse(text.split(/\r?\n/, 1)[0]); }
   catch { throw Object.assign(new Error(), { code: 'INVALID_INPUT' }); }
   data = await watchTaskCompletion(input, { signal: controller.signal });
+  if(['timed_out','cancelled'].includes(data.status))await flow.problem('inspection',data.status==='timed_out'?'WATCH_TIMEOUT':'HOST_INTERRUPTED');
   if (data.status === 'completed') {
     // Task completion starts preparation; only the Agent can perform analysis.
     data.review_phase = 'preparing';

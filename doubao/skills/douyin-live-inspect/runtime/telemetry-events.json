@@ -97,6 +97,14 @@
     "operations.content/+video-task-get": "正式版视频：获取检测任务详情或状态。",
     "operations.content/+video-task-end": "正式版视频：调用结束检测任务接口；未确认的计划不计入使用。",
     "operations.content/+video-report-get": "正式版视频：获取质检报告。",
-    "operations.quality/+audit-list": "正式版直播：查询直播审核记录。"
+    "operations.quality/+audit-list": "正式版直播：查询直播审核记录。",
+    "funnel.SNAPSHOT": "Lite 新任务当前业务漏斗状态；按任务内 revision 去重取最新，不代表阅读。",
+    "workflow.SNAPSHOT": "同一次新质检请求的完整流程观察；成功、失败、内容不足、未知分列。"
+  },
+  "funnel": {
+    "SNAPSHOT": "funnel.snapshot"
+  },
+  "workflow": {
+    "SNAPSHOT": "workflow.snapshot"
   }
 }

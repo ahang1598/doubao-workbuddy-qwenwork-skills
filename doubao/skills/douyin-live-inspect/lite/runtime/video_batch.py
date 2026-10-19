@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 from types import SimpleNamespace
-import uuid
 
 from runtime.store import Store, atomic_json
 from runtime.delivery_notice import attach_notice
@@ -22,7 +21,7 @@ def public(root, data):
             entry.update(task_id=store.task_id, task_dir=str(path), progress=store.status(), recap={k:v for k,v in recap.items() if k in ('status','available','message')})
         entry['index'] = i + 1
         items.append(entry)
-    return {'batch_id': data['id'], 'stopped': data['stopped'], 'items': items}
+    return {'task_id':data['id'], 'batch_id': data['id'], 'stopped': data['stopped'], 'items': items}
 
 
 def dispatch(command, directory, value=None):
@@ -54,10 +53,11 @@ def _dispatch(command, directory, value=None):
             if not isinstance(item, dict) or set(item) - {'source', 'name', 'scenario'}: raise ValueError('invalid video item')
             if not isinstance(item.get('source'), str) or not Path(item['source']).is_absolute(): raise ValueError('local path required')
         # Reserve the batch directory; never overwrite an existing batch or task.
-        root.mkdir(mode=0o700, parents=True, exist_ok=False)
-        private_directory(root)
+        from runtime.task_context import reserve, FILE
+        task_id=reserve(root)
+        if task_id is None or any(p.name != FILE for p in root.iterdir()): raise ValueError('batch directory already in use')
         (root / 'tasks').mkdir(mode=0o700)
-        data = {'id': uuid.uuid4().hex, 'stopped': False, 'delivery_mode': mode, 'asr_policy':policy,
+        data = {'id': task_id, 'stopped': False, 'delivery_mode': mode, 'asr_policy':policy,
                 'image_inspection':image_inspection, 'videos': [{**item, 'status': 'queued'} for item in videos]}
         atomic_json(root / 'batch.json', data)
         return public(root, data)

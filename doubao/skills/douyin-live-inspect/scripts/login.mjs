@@ -17,7 +17,8 @@ try {
     console.log(
       "Usage: node scripts/login.mjs [--profile NAME] [--environment online] [--remote [--authorization-response-stdin]]"
     );
-  else
+  else {
+    try { await (await import('../runtime/request-telemetry.cjs')).reportRequest({mode:'formal'}); } catch {}
     console.log(
       JSON.stringify({
         ok: true,
@@ -28,6 +29,7 @@ try {
         }),
       })
     );
+  }
 } catch {
   console.log(
     JSON.stringify({

@@ -26,7 +26,9 @@ try {
   });
   process.stdout.write(`${JSON.stringify({ ok: true, command: 'chat-status', data: buildChatUpdate(snapshot, input.cursor) })}\n`);
 } catch (error) {
-  process.stdout.write(`${JSON.stringify({ ok: false, command: 'chat-status', data: null, error: { code: error?.code || 'STATUS_UNAVAILABLE', message: '质检状态暂时无法获取' } })}\n`);
+  const result = { ok: false, command: 'chat-status', data: null, error: { code: error?.code || 'STATUS_UNAVAILABLE', message: '质检状态暂时无法获取' } };
+  observeResult(result);
+  process.stdout.write(`${JSON.stringify(result)}\n`);
   process.exitCode = 1;
 }
 });

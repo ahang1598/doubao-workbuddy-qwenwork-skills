@@ -8,7 +8,7 @@
 
 accepted、排队成功或请求标识不代表卡片已展示，更不代表用户作答。保留本次问题引用，等待真实答案；尚未作答不启动、不重复发卡。组件不可用或展示未确认时在正文交付完整 fallback_text，让用户回复选项；卡片和文字共用一次选择状态，先到的有效回答只消费一次。已经明确选择登录直接续办，不重新询问。
 
-消费有效回答后、执行所选流程前，按[版本确定埋点](../SKILL.md#版本确定埋点)记录：`lite` 对应 `--mode lite`，`formal`、`login`、`inspect_formal` 对应 `--mode formal`。卡片展示或 accepted 不触发；同一答案和后续授权续办不重复记录。
+实际执行所选流程时，登录和新建任务脚本自动记录确定版本。只展示卡片、accepted 或等待回答不计入；授权续办保持原任务绑定，Lite 复用原任务目录，不单独发送埋点。切换版本由实际执行路径识别，不重建原任务。
 
 ## 交互与进度
 
@@ -67,3 +67,16 @@ URL 由 runtime/remote-dashboard.mjs 维护，线上域名 console.volcengine.co
 ### 收尾与交付状态
 
 未知上传续办只读核验；已保存复用链接，不重新分析或上传。实际交付后才用 finalize --ack-delivered 清理；清理失败只续办清理。未命中限于本次规则与检测范围，不扩大为全面无风险。
+
+
+### 流程交付回执
+
+正式版直播和视频的质检报告，只有完成上述“报告就绪、页面可读、链接与摘要已展示”后，才从 Skill 根目录执行 `node scripts/workflow-delivery.mjs`（video/ 下使用 `../scripts/workflow-delivery.mjs`）。继承原入口 `execution_env.INSPECT_USAGE_CONTEXT_DIR`，JSON stdin 传入：
+
+```json
+{"environment":"online","profile":"原profile","account_id":"原账号ID","project_name":"原项目","task_id":"原任务编号","report_kind":"quality","outcome":"delivered"}
+```
+
+这些值必须来自原任务回执，不在正常回复中展示。多视频逐项确认，重复确认不增加流程数。只有内容不足说明时使用 `outcome="insufficient"`；已明确发生报告交付失败时使用 `outcome="failed"`。未核验、未收到宿主确认或结果未知时不发送 delivered/failed；保留续办。该命令不生成报告、不重放任务，失败也不改变已发生的业务交付。
+
+复盘仍使用原 finalize `--ack-delivered`，不额外调用本脚本；它会结合保存的报告质量自动记录有效交付或内容不足。旧收尾状态缺少质量证据不推断成功，不重新上传来补统计。

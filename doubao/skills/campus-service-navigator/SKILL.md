@@ -1,32 +1,28 @@
 ---
 name: campus-service-navigator
-description: "Use this skill when the user asks for 校园办事指南 or campus procedure guidance, including process checklists, required materials, office contacts, timing reminders, or consultation scripts."
+description: "当用户请求校园办事指南或校园流程指导时，使用本技能；包括流程清单、所需材料、办事部门联系方式、时间提醒或咨询话术。"
 ---
 
 # 校园办事指南
 
-## Overview
+## 概述
 把学生办事从“到处问人”变成“先核验入口、再列材料、再给话术、最后提醒节点”的路径导航。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
+## 适用场景
 - 用户要办理校园卡、证明、请假、宿舍维修、图书馆、实验室、奖助贷、学院事务等校园服务。
 - 用户要知道去哪个办公室、准备什么材料、什么时候办、怎么发邮件/打电话咨询。
 - 用户提供学校通知、网页、截图、表单，需要提取流程、入口、材料、期限、联系人。
 - 输入里出现“怎么办”“找哪个部门”“材料清单”“流程”“补办”“申请”“咨询话术”等办事触发词。
-
-## When Not to Use
+## 不适用场景
 - 只要活动组织、通知排班、会议纪要，转 `student-leader-workbench`。
 - 只要奖学金/竞赛材料本身的申报叙事，转 `competition-scholarship-application`。
 - 只要校招岗位和实习投递，转 `internship-recruiting-tracker`。
 - 用户要求绕过门禁、借用证件、规避审批、伪造证明时，拒绝该部分并给合规路径。
-
 ## Routing Decision
 1. 先判断用户是在“办学校流程”还是“制作申请材料”；办流程用本 skill，写申报文本转申报 skill。
 2. 如果学校/校区缺失，只能输出通用路线和必须确认的问题，不得写成官方规则。

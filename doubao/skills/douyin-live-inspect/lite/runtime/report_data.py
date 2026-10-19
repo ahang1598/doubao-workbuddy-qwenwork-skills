@@ -327,5 +327,10 @@ def skip_reason(segment):
     if segment.get('policy_version')=='lite_sample_v1':
         from runtime.sampling import REASONS
         return REASONS.get(segment.get('skip_code'),'证据不足')
+    reasons = {'LIVE_BACKLOG_SKIPPED':'积压超过 3 分钟，保留最近 2 分钟',
+               'LIVE_REVIEW_TIMEOUT':'批次 120 秒无提交进展，结束剩余检测',
+               'LIVE_FINISH_SKIPPED':'收尾超过 120 秒，未完成检测',
+               'USER_DISCARD':'用户明确舍弃剩余检测', 'NO_SPEECH_EVIDENCE':'结束时无可用语音文字'}
+    if segment.get('skip_code') in reasons:return reasons[segment['skip_code']]
     if segment.get('skip_reason') == '用户主动停止，未完成检测':return segment['skip_reason']
     return 'ASR 重试耗尽，已跳过该段判别' if segment.get('skip_code')=='ASR_RETRY_EXHAUSTED' else '结束后未完成检测'

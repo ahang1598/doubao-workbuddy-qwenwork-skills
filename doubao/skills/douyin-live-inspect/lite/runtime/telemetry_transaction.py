@@ -24,7 +24,7 @@ class PendingEvents:
         c = self.connection
         c.execute('SAVEPOINT optional_telemetry')
         try:
-            for key in sorted(self.actions, key=lambda k: 3 if k == 'completion' else 0 if k == 'dimensions' else 1 if k == 'resume' else 2):
+            for key in sorted(self.actions, key=lambda k: 4 if k == 'funnel' else 3 if k == 'completion' else 0 if k == 'dimensions' else 1 if k == 'resume' else 2):
                 self.actions[key]()
         except Exception:
             c.execute('ROLLBACK TO optional_telemetry')

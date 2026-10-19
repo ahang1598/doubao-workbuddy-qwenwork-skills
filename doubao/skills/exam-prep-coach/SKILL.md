@@ -1,32 +1,28 @@
 ---
 name: exam-prep-coach
-description: "Use this skill when the user asks for CET, postgraduate, certificate, or course exam coaching, including 四六级, 考研, 考证, study plans, check-ins, review tasks, or practice logs."
+description: "当用户请求大学英语等级考试、考研、考证或课程考试辅导时，使用本技能；包括四六级备考、学习计划、打卡、复习任务或练习记录。"
 ---
 
 # 四六级/考研/考证备考督学
 
-## Overview
+## 概述
 把长期备考拆成可执行、可复盘、可调参的学习系统，适配四六级、考研、教资、法考、软考等周期性考试。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
+## 适用场景
 - 用户要制定四六级、考研、语言考试、资格证、专业考试的备考计划或每日任务。
 - 用户要分析模考、错题、薄弱模块、时间分配、阶段检测、学习复盘和动态调参。
 - 用户同时有多个考试、剩余天数有限、目标分缺失或基础不均衡，需要现实计划。
 - 输入里出现“备考日历”“督学”“错题复盘”“每日任务”“模考分析”“提分计划”等触发词。
-
-## When Not to Use
+## 不适用场景
 - 用户要求押题、泄题、回忆真题、代考、作弊方法或保证分数时，拒绝该部分。
-- 只要课程 PPT、论文汇报或学习展示，转 `course-presentation-builder`。
+- 只要课程演示文稿、论文汇报或学习展示，转 `course-presentation-builder`。
 - 只要校园办事、报名流程或证件材料，转 `campus-service-navigator`。
 - 只要竞赛/奖学金申报材料，转 `competition-scholarship-application`。
-
 ## Routing Decision
 1. 先判断核心交付是否是“学习计划 + 复盘调参”；是则用本 skill。
 2. 如果用户只问考试报名或证书领取流程，转校园办事 skill。

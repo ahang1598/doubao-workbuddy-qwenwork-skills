@@ -31,36 +31,36 @@ def attach_report_delivery(data, command):
         delivery.update(type='chat_report', message=((f'请交付{name}无法生成的实际原因，不编造报告。' if failed else f'请在当前对话交付完整{name}正文。') +
             ('报告页未交付，请说明实际导出或附件不可用原因。' if mode != 'chat' else '')))
         channel = 'chat'
-    delivery['message'] += ('仅限已检测内容，不展示缺口明细；实际交付后才确认对应回执。'
+    delivery['message'] += ('结论仅限已检测内容；说明已检测与舍弃数量、范围及原因，不把未检测当无风险；实际交付后才确认对应回执。'
         '质检报告先交付，再按后续动作完成复盘；不得在仅交付质检报告时结束执行；两份结果均实际交付前不得宣称完成。')
     if not failed:
         upgrade = data.get('upgrade') or upgrade_guidance()
         data['upgrade'] = upgrade
         delivery['message'] += ('\n\n按交付规则适用开通引导时，在同次对话完整展示以下内容，不得仅摘取链接；'
-            '填写步骤紧邻链接，支持小字则用小字，否则用普通文字。已确认开通或属于登录、网络、配置故障时改给对应恢复说明。\n\n'
+            '分为“方式一：飞书群沟通（更高效）”和“方式二：提交工单”两个独立段落；填写项用列表且仅归属方式二，能力介绍单独置于最后。工单填写步骤支持小字则用小字，否则用普通文字。已确认开通或属于登录、网络、配置故障时改给对应恢复说明。\n\n'
             + upgrade['markdown'])
     data['delivery'] = delivery
-    if command == 'report' and not failed and data.get('recap', {}).get('status') == 'failed':
+    if command == 'report' and not failed and data.get('recap', {}).get('status') == 'failed' and not data['recap'].get('terminal_failure'):
         delivery['message'] += '\n\n请在质检报告或附件后的对话正文展示以下提示（仍须立即继续生成复盘，不等待用户催促）：' + RECAP_REMINDER
     if data.get('delivery_ack_contract'):
         data['delivery_ack_contract']['template']['channel'] = channel
 
 
 def public_live_report(report):
-    """Keep diagnostic coverage in the task, outside user-facing live reports."""
+    """Keep coverage limitations alongside user-facing live reports."""
     import copy
     result=copy.deepcopy(report)
     result['display_scope']='checked_content'
-    for key in ('coverage','evidence_gaps','skipped_segment_count','asr_sources','sampling'):
+    for key in ('asr_sources','sampling'):
         result.pop(key,None)
     conclusion=result.get('conclusion')
     if isinstance(conclusion,dict):
         assessment=conclusion.get('assessment','undetermined')
-        result['conclusion']={'assessment':assessment,'summary':{
+        result['conclusion']={**conclusion,'assessment':assessment,'summary':{
             'hit':'已检测内容中发现规则命中。',
             'no_hit_in_checked_scope':'已检测内容中未发现规则命中。',
             'not_applicable':'已检测内容中未发现适用规则命中。'
-        }.get(assessment,'检测未完成，无法给出质检结论。')}
+        }.get(assessment,'检测未完成，无法给出质检结论。') + (' 存在未检测内容，详见覆盖范围与缺口。' if result.get('skipped_segment_count') else '')}
     for rule in result.get('rules',[]):
         rule['display_scope']='checked_content'
         for key in ('coverage_summary','counts','judgments'):rule.pop(key,None)
@@ -70,7 +70,8 @@ def public_live_report(report):
 
 
 def compact_coverage(summary):
-    return {k:v for k,v in summary.items() if k not in ('segments', 'issues')}
+    return {**{k:v for k,v in summary.items() if k not in ('segments', 'issues')},
+            'issue_reasons': sorted({i['reason'] for i in summary.get('issues', []) if i.get('reason')})}
 
 
 def paged_conclusion(conclusion, ids, include_unassigned=False):
@@ -164,21 +165,29 @@ def bounded_output(store, command, data, *, force=False, read_only=False):
     else:
         folder.mkdir(mode=0o700,exist_ok=True)
         if not path.exists():atomic_json(path,data)
-    summary={k:v for k,v in data.items() if k in ('status','workflow_complete','report_ready','delivery_required',
+    summary={k:v for k,v in data.items() if k in ('status','workflow_complete','workflow_outcome','terminal_failure','report_ready','delivery_required',
                                                'saved_count','error_count','duplicate_count')
              and isinstance(v,(bool,int,str)) and len(str(v))<=200}
     # Keep executable bindings visible while the complete evidence remains immutable.
     source = data.get('next') if isinstance(data.get('next'), dict) else data
     contract = source.get('submission_contract', {})
     summary.update({k:source[k] for k in ('task_id','batch_id','generation','executor','dispatch_contract','capability_check','rules_load_contract') if k in source})
-    if 'capability_check' in summary:
-        summary['capability_check']={k:v for k,v in summary['capability_check'].items() if k!='instruction'}
+    for name in ('capability_check', 'rules_load_contract'):
+        if name in summary:
+            # Detailed instructions stay in the full result; leave room for the
+            # continuation that tells an idle Agent how to make progress.
+            summary[name]={k:v for k,v in summary[name].items() if k!='instruction'}
     if contract:
         summary['submission_contract'] = {k:contract[k] for k in ('protocol','input_path','draft_state','submit_command_argv','submit_argv','state_argv','inspection_scope') if k in contract}
         summary['context_id'] = contract.get('template', {}).get('context_id')
     # Host delivery must remain actionable even when evidence moves to a file.
     summary.update({k:data[k] for k in ('delivery_mode','delivery','artifact_status','artifacts',
-        'snapshot_check','snapshot_events','snapshot_delivery','after_delivery_next_action') if k in data})
+        'snapshot_check','snapshot_events','snapshot_delivery','after_delivery_next_action',
+        'poll_after_seconds','continuation_path','continuation_instruction') if k in data})
+    if 'continuation_instruction' in summary:
+        # The immediate action is pagination; the saved result retains its own
+        # continuation. Do not tell the Agent to submit before reading evidence.
+        summary['continuation_instruction'] = '先读完整结果，再续办。'
     if data.get('delivery_required') and 'delivery_ack_contract' in data:
         summary['delivery_ack_contract'] = data['delivery_ack_contract']
     delivery_instruction = ('先按 Lite 入口执行 snapshot_check 的 status 检查并处理附件，再回到本响应。' if data.get('snapshot_check') else '')
@@ -189,7 +198,7 @@ def bounded_output(store, command, data, *, force=False, read_only=False):
         'total_chars':len(raw),'offset_unit':'unicode_code_points','result_file':str(path),
         'original_next_action':str(data.get('next_action',''))[:200],
         'read_argv':['result-page','--task-dir',str(store.root),'--result-id',result_id,'--offset','0'],
-        'instruction':delivery_instruction+'先完整读取 result_file 的证据与规则，再填写模板提交。不能读文件时仅沿 next_page_argv 拼接至 next_offset=null；offset 按字符，不能按 total_bytes 推算。'}}
+        'instruction':delivery_instruction+'Read result_file or follow read_argv/next_page_argv to next_offset=null; then follow its next_action.'}}
 
 
 def result_page(store, result_id, offset):

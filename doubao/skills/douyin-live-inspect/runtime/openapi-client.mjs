@@ -37,11 +37,17 @@ export async function requestOpenAPI(input, deps = {}) {
   if (input.environment && input.environment !== 'online') throw failure('INVALID_ENVIRONMENT', 'Only online is supported', { write_occurred: false });
   const signal = AbortSignal.any([deps.signal, commandSignal(), AbortSignal.timeout(deps.timeoutMs || 15000)].filter(Boolean));
   const readOnly = input.readOnly === true;
+  const abortCode = () => signal.reason?.name === 'TimeoutError' ? 'REQUEST_TIMEOUT' : 'ABORTED';
   for (let attempt = 0; attempt < 2; attempt++) {
-    if (signal.aborted) throw failure('ABORTED', 'OpenAPI request cancelled', { write_occurred: false });
+    if (signal.aborted) throw failure(abortCode(), 'OpenAPI request interrupted', { write_occurred: false });
     let credentials;
-    try { credentials = await (deps.resolveCredentials || resolveCredentials)({ ...input, forceRefresh: attempt > 0 }, { ...deps, forceRefresh: attempt > 0 }); }
-    catch (error) { if (error.code === 'TASK_BINDING_MISMATCH') throw error; throw failure('AUTH_REQUIRED', 'Authentication required', { write_occurred: false }); }
+    try { credentials = await (deps.resolveCredentials || resolveCredentials)({ ...input, forceRefresh: attempt > 0 }, { ...deps, forceRefresh: attempt > 0, signal }); }
+    catch (error) {
+      if (signal.aborted) throw failure(abortCode(), 'Credential request interrupted', {write_occurred:false});
+      if (['TASK_BINDING_MISMATCH', 'NETWORK_ERROR', 'AUTH_EXCHANGE_FAILED', 'ABORT_ERR', 'ABORTED'].includes(error?.code)) throw error;
+      const code = ['SETUP_PENDING', 'AUTH_REQUIRED'].includes(error?.code) ? 'AUTH_REQUIRED' : 'OPERATION_FAILED';
+      throw failure(code, 'Credentials unavailable', { write_occurred: false });
+    }
     if (input.account_id && credentials.account_id !== input.account_id) throw taskBindingError();
     if (input.profile && credentials.profile !== input.profile) throw taskBindingError();
     observeAccount(credentials.account_id);
@@ -58,7 +64,7 @@ export async function requestOpenAPI(input, deps = {}) {
       response = await (deps.fetch || deps.fetchImpl || globalThis.fetch)(url.href, { method: input.method, headers, body: body || undefined, redirect: 'error', signal });
       data = await payloadOf(response, deps.maxResponseBytes || 8 * 1024 * 1024, signal);
     } catch (error) {
-      const code = readOnly ? signal.aborted ? 'ABORTED' : error.code === 'RESPONSE_TOO_LARGE' ? 'RESPONSE_TOO_LARGE' : response ? 'INVALID_RESPONSE' : 'NETWORK_ERROR' : 'WRITE_RESULT_UNKNOWN';
+      const code = readOnly ? signal.aborted ? abortCode() : error.code === 'RESPONSE_TOO_LARGE' ? 'RESPONSE_TOO_LARGE' : response ? 'INVALID_RESPONSE' : 'NETWORK_ERROR' : 'WRITE_RESULT_UNKNOWN';
       throw failure(code, readOnly ? 'OpenAPI response unavailable' : 'Write result is unknown; inspect task state before retrying', { write_occurred: readOnly ? false : null });
     }
     const remote = data?.ResponseMetadata?.Error;

@@ -1,7 +1,7 @@
 "use strict";
 
 // 本文件负责 Lite 任务生命周期遥测：
-// 校验 started / resumed / finished 事件载荷，只允许白名单字段通过，并以 best effort 方式发送。
+// 校验生命周期与 funnel.snapshot 载荷，只允许白名单字段通过，并以 best effort 方式发送。
 
 
 const contract = require("./telemetry-contract.cjs");
@@ -35,7 +35,8 @@ function validIdentityUsername(name) {
 
 function validatePayload(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
-  if (!TASK_COMMANDS.has(value.command)) return undefined;
+  const funnel = value.command === EVENTS.funnel.SNAPSHOT;
+  if (!funnel && !TASK_COMMANDS.has(value.command)) return undefined;
   const input = value.extra;
   // 生命周期事件要求严格的结构化载荷，避免把任意业务对象直接发到遥测侧。
   if (!input || typeof input !== "object" || Array.isArray(input)) return undefined;
@@ -57,9 +58,19 @@ function validatePayload(value) {
   for (const key of COUNTS) {
     if (input[key] !== undefined && (!Number.isSafeInteger(input[key]) || input[key] < 0)) return undefined;
   }
+  if (funnel && (input.funnel_schema_version !== 1 || !Number.isSafeInteger(input.funnel_revision) || input.funnel_revision < 1 ||
+      !/^[0-9a-f]{32}$/i.test(input.task_id || '') || input.task_type === 'live_recap' ||
+      !['effective_result','quality_ready','workflow_success','quality_blocked'].every(k => [0,1].includes(input[k])) ||
+      !['quality_delivery','recap_delivery'].every(k => ['none','ready','failed'].includes(input[k])) ||
+      !['none','host'].includes(input.delivery_error) || !Number.isSafeInteger(input.funnel_run) || input.funnel_run < 1)) return undefined;
+  if (funnel && (input.funnel_run !== input.run_index ||
+      (input.quality_ready === 1 && input.effective_result !== 1) ||
+      (input.quality_delivery === 'ready' && input.quality_ready !== 1) ||
+      (input.workflow_success === 1 && (input.quality_delivery !== 'ready' ||
+        (input.task_type === 'live_inspection' && input.recap_delivery !== 'ready'))))) return undefined;
   const extra = {
     inspection_mode: "lite",
-    record_type: "task_lifecycle",
+    record_type: funnel ? "task_funnel" : "task_lifecycle",
     task_type: input.task_type,
     telemetry_task_id: input.telemetry_task_id,
     run_index: input.run_index,
@@ -75,6 +86,25 @@ function validatePayload(value) {
     if (input[key] !== undefined) extra[key] = input[key];
   }
   Object.assign(extra, contract.lifecycleMetadata(input.task_type, input));
+  if (input.funnel_schema_version === 1) extra.funnel_schema_version = 1;
+  if (funnel) {
+    const flow = require('../../runtime/workflow-telemetry.cjs');
+    if (['success','failed','insufficient','unknown'].includes(input.flow_result)) extra.flow_result=input.flow_result;
+    if (['none','entry','startup','inspection','quality','recap','delivery'].includes(input.failure_stage)) extra.failure_stage=input.failure_stage;
+    if(input.failure_reason!==undefined)extra.failure_reason=flow.reason(input.failure_reason);
+    if(['ready','insufficient','failed','blocked','missing','generating','stale','not_required'].includes(input.recap_status))extra.recap_status=input.recap_status;
+    for (const key of ['funnel_revision','funnel_run','effective_result','quality_ready','quality_delivery',
+      'recap_delivery','workflow_success','quality_blocked','delivery_error']) extra[key] = input[key];
+    for (const key of ['expected_children','observed_children']) {
+      if (input[key] !== undefined) {
+        if (!Number.isSafeInteger(input[key]) || input[key] < 0) return undefined;
+        extra[key] = input[key];
+      }
+    }
+  }
+  // Workflow attribution needs the immutable user ID, not optional display identity.
+  // Preserve normal legacy payloads; shed display fields only if a funnel would be lost.
+  if(funnel && !contract.fitExtra(extra)){delete extra.doubao_email;delete extra.doubao_username;}
   const fitted = contract.fitExtra(extra);
   return fitted ? { command: value.command, extra: fitted } : undefined;
 }

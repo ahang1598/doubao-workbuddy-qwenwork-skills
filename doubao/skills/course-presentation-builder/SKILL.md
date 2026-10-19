@@ -1,32 +1,28 @@
 ---
 name: course-presentation-builder
-description: "Use this skill when the user asks for course presentation or 课程汇报 PPT help from topics, notes, papers, or research, including outlines, slide copy, speaker notes, or defense Q&A."
+description: "当用户希望根据主题、笔记、论文或研究材料制作课程汇报演示文稿时，使用本技能；包括大纲、逐页文案、演讲者备注或答辩问答。"
 ---
 
 # 课程汇报 PPT
 
-## Overview
+## 概述
 把课程展示从“堆资料”升级成“有论点、有证据、有节奏、有答辩预案”的汇报生产线。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
-- 用户要做课程展示、seminar、读书报告、论文汇报、调研展示、小组汇报或课堂答辩。
-- 用户要把论文、报告、课堂笔记、调查数据压缩成 PPT 结构、逐页内容、讲稿、图表和 Q&A。
+## 适用场景
+- 用户要做课程展示、研讨课展示、读书报告、论文汇报、调研展示、小组汇报或课堂答辩。
+- 用户要把论文、报告、课堂笔记、调查数据压缩成 演示文稿结构、逐页内容、讲稿、图表和 问答。
 - 用户遇到材料堆砌、论点不清、时间超限、分工混乱、老师追问无法准备等问题。
-- 输入里出现“12 分钟汇报”“逐页讲稿”“PPT 大纲”“图表建议”“答辩问题”等触发词。
-
-## When Not to Use
+- 输入里出现“12 分钟汇报”“逐页讲稿”“演示文稿大纲”“图表建议”“答辩问题”等触发词。
+## 不适用场景
 - 只要海报、封面、横幅或视觉主图，转 `campus-poster-cover-generator`。
 - 只要竞选演讲、自我介绍或面试口播，转 `speech-campaign-intro-coach`。
 - 只要奖学金/竞赛申报材料，转 `competition-scholarship-application`。
-- 用户要求编造研究数据、引用不存在论文、隐瞒 AI 使用要求时，拒绝该部分并给合规替代。
-
+- 用户要求编造研究数据、引用不存在论文、隐瞒人工智能使用要求时，拒绝该部分并给合规替代。
 ## Routing Decision
 1. 先看最终交付物是否是课堂展示/汇报页和讲稿；是则用本 skill。
 2. 如果用户同时要“PPT + 海报”，本 skill 负责汇报结构和逐页讲稿，海报转视觉 skill。

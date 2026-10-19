@@ -9,12 +9,14 @@ const {_comments, ...EVENTS} = require('./telemetry-events.json');
 for (const group of Object.values(EVENTS)) Object.freeze(group);
 Object.freeze(EVENTS);
 const ALLOWED = new Set(Object.values(EVENTS).flatMap(Object.values));
-const disabled = (env = process.env) => ['1', 'true'].includes(String(env.BYTEDLIVE_TELEMETRY_DISABLED || '').trim().toLowerCase());
+const disabled = (env = process.env) => ['1', 'true'].includes(String(env.BYTEDLIVE_TELEMETRY_DISABLED || '').trim().toLowerCase()) ||
+  Boolean((env.NODE_TEST_CONTEXT || env.NODE_ENV === 'test') && env.BYTEDLIVE_TELEMETRY_TEST_CAPTURE !== '1');
 
 function createTelemetry({toolName, env = process.env, isolated = false}) {
   const version = require('../scripts/skill-version.cjs').readSkillVersion();
   // 统一把 Skill 标识写入环境，供上游 SDK 生成一致的调用上下文。
-  process.env.VE_SKILL_ID = `${toolName === 'byted-live-inspect-lite' ? toolName : 'byted-live-inspect'}/${version}`;
+  toolName = toolName.endsWith('-lite') ? 'douyin-live-inspect-lite' : 'douyin-live-inspect';
+  process.env.VE_SKILL_ID = `douyin-live-inspect/${version}`;
   const config = {toolName, toolVersion: version, disabled: disabled(env),
     region: String(env.BYTEDLIVE_TELEMETRY_REGION || '').trim().toLowerCase() === 'sg' ? 'sg' : 'cn'};
   const filename = require.resolve('../lite/scripts/vendor/tooling-telemetry.cjs');
@@ -31,13 +33,17 @@ function createTelemetry({toolName, env = process.env, isolated = false}) {
     }
   }
   try {
-    const {captureEvent} = require('./telemetry-observer.cjs');
     const reporter = telemetry.getReporter();
     telemetry.reporter = {report(event) {
+      // The SDK uses cli_* for script toolName/toolVersion as well.
+      let deviceId;
+      try { deviceId = JSON.parse(event.extra || '{}').deviceId; } catch {}
+      event = {...event, cli_name:toolName, skill_name:'douyin-live-inspect', skill_version:version,
+        ...(typeof deviceId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(deviceId) ? {device_id:deviceId} : {})};
       const delivery = reporter.report(event);
       // observer 只做本机观察，不参与真实上报结果，也不能阻塞主链路。
-      try { captureEvent(event, env); } catch { /* Local observation is optional. */ }
-      return delivery;
+      try { require('./telemetry-observer.cjs').captureEvent(event, env); } catch { /* Local observation is optional. */ }
+      return Promise.all([delivery, require('./workflow-telemetry.cjs').observeEvent(event, env).catch(() => {})]);
     }};
   } catch { /* An unavailable observer cannot affect the real reporter. */ }
   return telemetry;

@@ -23,12 +23,17 @@ def read_receipt(store):
     return json.loads(path.read_text()) if path.exists() else None
 
 
+def receipt_matches_run(receipt, frozen):
+    # Legacy receipts have no provable generation and must be exported again.
+    return bool(receipt and receipt.get('report_run') == frozen.task().get('video_report_run', 1))
+
+
 def delivered_report(store):
     """A batch may advance only after the current snapshot was actually delivered."""
     receipt=read_receipt(store)
     if not receipt or receipt['delivery_status']!='delivered':return None
     frozen=FrozenStore(store)
-    if receipt['fingerprint']!=snapshot_key(frozen,build_report(frozen)):return None
+    if not receipt_matches_run(receipt, frozen) or receipt['fingerprint']!=snapshot_key(frozen,build_report(frozen)):return None
     return receipt['result']
 
 
@@ -44,10 +49,12 @@ def video_report(store, *, allow_partial=False, mode=None, single_file=True):
         report=build_report(frozen)
         key=snapshot_key(frozen,report)
         receipt=read_receipt(store)
-        if (receipt and receipt['fingerprint']==key and receipt['result']['delivery_mode']==mode and receipt['result'].get('media_layout')==('embedded' if single_file else 'separate')
+        if (receipt_matches_run(receipt, frozen) and receipt['fingerprint']==key and receipt['result']['delivery_mode']==mode and receipt['result'].get('media_layout')==('embedded' if single_file else 'separate')
                 and all(a['type'] != 'bundle' and Path(a['path']).is_file() for a in receipt['result'].get('artifacts',[]))):
             result=receipt['result']
             result.update(delivery_status=receipt['delivery_status'],delivery_required=receipt['delivery_status']!='delivered')
+            from runtime.telemetry_funnel import observe_video_delivery
+            observe_video_delivery(store, receipt, frozen)
             return result
         upgrade=upgrade_guidance(video=True)
         summary=sanitize(chat_report(frozen,status,report))
@@ -71,11 +78,14 @@ def video_report(store, *, allow_partial=False, mode=None, single_file=True):
                                 'path':quality['path'],'artifact_type':'quality','version':quality['version'],
                                 'message':'直接交付独立 HTML 报告，已保存的视频内嵌，无需解压。旧附件为历史快照。'},
                     'next_action':'deliver-report'}
+        result['version'] = max(result['version'], (receipt or {}).get('result', {}).get('version', 0) + 1)
         result['after_delivery_next_action']='report-delivery-ack'
         result['delivery_ack']={'version':result['version'],'status':'delivered'}
         result['complete']=report['processing_complete'] and report['coverage_complete']
-        atomic_json(store.root/'.video-report-delivery.json',
-                    {'fingerprint':key,'delivery_status':'pending','result':result})
+        receipt = {'fingerprint':key,'report_run':frozen.task().get('video_report_run', 1),'delivery_status':'pending','result':result}
+        atomic_json(store.root/'.video-report-delivery.json', receipt)
+        from runtime.telemetry_funnel import observe_video_delivery
+        observe_video_delivery(store, receipt, frozen)
         return result
 
 
@@ -86,13 +96,15 @@ def acknowledge_report(store, value):
     with file_lock(store.root/'.video-report.lock'):
         receipt=read_receipt(store)
         frozen=FrozenStore(store)
-        if (not receipt or receipt['result']['version']!=value['version']
+        if (not receipt_matches_run(receipt, frozen) or receipt['result']['version']!=value['version']
                 or receipt['fingerprint']!=snapshot_key(frozen,build_report(frozen))):
             raise ReviewError('REPORT_VERSION_CHANGED','version','结果已更新，请读取并交付最新报告。',next_action='report --allow-partial')
         if any(not Path(a['path']).is_file() for a in receipt['result'].get('artifacts',[])):
             raise ReviewError('REPORT_ARTIFACT_MISSING','artifacts','报告文件缺失，请重新导出。',next_action='report --allow-partial')
         receipt['delivery_status']=value['status']
         atomic_json(store.root/'.video-report-delivery.json',receipt)
+        from runtime.telemetry_funnel import observe_video_delivery
+        observe_video_delivery(store, receipt, frozen)
         return {'status':value['status'],'delivery_status':value['status'],'version':value['version'],
                 'next_action':'report --allow-partial' if value['status']=='failed' else 'delivery-complete',
                 'artifacts':receipt['result'].get('artifacts',[])}

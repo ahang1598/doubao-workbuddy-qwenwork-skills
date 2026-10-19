@@ -1,32 +1,28 @@
 ---
 name: speech-campaign-intro-coach
-description: "Use this skill when the user asks for speeches, campaign intros, 新生自我介绍, 班委竞选, club interviews, defenses, project pitches, classroom talks, or mock Q&A coaching."
+description: "当用户请求演讲、竞选介绍、新生自我介绍、班委竞选、社团面试、答辩、项目推介、课堂发言或模拟问答辅导时，使用本技能。"
 ---
 
 # 演讲/竞选自我介绍
 
-## Overview
+## 概述
 把学生表达场景拆成“身份定位、经历证据、听众期待、结构节奏、问答预案”，让发言真诚、有记忆点、能落到行动。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
-- 用户要自我介绍、竞选演讲、社团面试回答、奖学金答辩开场、项目路演口播或尖锐 Q&A。
+## 适用场景
+- 用户要自我介绍、竞选演讲、社团面试回答、奖学金答辩开场、项目路演口播或尖锐 问答。
 - 用户要把真实经历整理成定位句、支撑点、行动承诺、口播稿、问答策略和表达训练。
 - 用户担心经历普通、失败经历不好讲、时长卡不住、被质疑、表达太书面。
 - 输入里出现“90 秒”“3 分钟”“竞选”“自我介绍”“尖锐问题”“口播”“肢体语音”等触发词。
-
-## When Not to Use
-- 需要完整课程 PPT 结构、逐页讲稿和图表，转 `course-presentation-builder`。
+## 不适用场景
+- 需要完整课程演示文稿 结构、逐页讲稿和图表，转 `course-presentation-builder`。
 - 需要奖学金/竞赛申报规则、材料清单和项目陈述，转 `competition-scholarship-application`。
 - 需要学生组织活动执行、通知、排班、纪要，转 `student-leader-workbench`。
 - 用户要求虚构经历、攻击对手、冒充身份、操纵投票或承诺不可控结果时，拒绝该部分。
-
 ## Routing Decision
 1. 先看最终交付是否是“人对人表达的口播稿或 Q&A”；是则用本 skill。
 2. 如果用户要整套申报材料，本 skill 只负责口播/答辩表达，材料主体转申报 skill。

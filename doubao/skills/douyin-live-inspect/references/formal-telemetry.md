@@ -1,19 +1,23 @@
-# 正式版调用埋点
+# 正式版遥测运行约束
 
-事件 Key 统一维护在 `runtime/telemetry-events.json`；脚本引用 `EVENTS.formal`，服务操作使用 `EVENTS.operations` 映射。通过 `runCommand` 包装业务，公共 SDK 入口负责发送。用法见 [统一埋点接口](telemetry.md)。本次精简只影响 Lite，正式版动作与统计口径保持原样。
+遵守 [公共遥测约束](telemetry.md)。正式版使用当前 Skill 内的线上 OpenAPI，自动记录实际操作；不安装或调用外部控播命令来补埋点。
 
-正式版由当前 Skill 内的 `runtime/operations.mjs` 直接调用线上 OpenAPI，并在每次实际操作边界记录一次 `cli_command_executed`。复盘、轮询等外层脚本把记录责任交给实际操作，避免同一次请求重复记录；不同轮询仍是不同调用。无需安装任何外部控播命令。
+- 依据原始业务回执和退出状态处理失败。登录缺失、权限不足、报告未就绪等业务拦截不表示执行成功；不要为改变统计结果重复写入。
+- 请求超时或写入结果未知时按业务恢复流程核对结果，不因遥测失败自动重试写入。
+- 调用成功不等于远端任务完成，继续按任务状态和报告流程执行，不手工补造远端生命周期事件。
+- 如果设置 `BYTEDLIVE_INSPECT_SCENARIO_CATEGORY`、`BYTEDLIVE_INSPECT_WORKFLOW_KIND`、`BYTEDLIVE_INSPECT_FEATURE`，只使用已核验的枚举；每次任务重新设置，不从任务名猜测，也不传请求正文、路径、媒体、规则原文或凭证。
 
-| 维度 | 字段 | 规则 |
-| --- | --- | --- |
-| 版本 | skill_version | 主 SKILL.md 的 metadata.version |
-| 版本类型 | extra.inspection_mode | formal |
-| 功能 | extra.feature | 创建为 live_inspection / video_inspection / video_batch；报告和截图为 quality_report；其他质检查询为 task_management；复盘准备请求为 live_recap |
-| 流程 | extra.workflow_kind | quality 为 live；视频为 video_single；显式批量视频为 video_batch |
-| 行业 | extra.scenario_category | ecommerce / finance / automotive / other / unknown |
 
-同时保留 product=douyin-live-inspect、schema_version=2、record_type=command。时间、调用标识、结果、宿主、设备标识和合法的操作者信息沿用上游 SDK 合同。账号只来自本次业务实际读取的独立账号凭证，多账号冲突时不归因；不读取其他产品的账号缓存。
+新请求由 `inspect-entry.mjs` 建立流程，创建、任务状态读取和服务端报告读取只观察已经返回的业务证据，不新增 API 调用。远端任务使用原环境、profile、账号、项目和任务编号组合绑定，绑定摘要仅保存在本次目录；不会按设备或时间猜关联。
 
-`BYTEDLIVE_INSPECT_SCENARIO_CATEGORY`、`BYTEDLIVE_INSPECT_WORKFLOW_KIND`、`BYTEDLIVE_INSPECT_FEATURE` 只传已核验枚举，不传请求正文、路径、媒体、规则原文或凭证。复盘准备的内部请求继承 live_recap。每次任务重新设置上下文，不根据项目名或任务 ID 猜测、不增加额外查询。
+正式版质检交付后按 [流程交付回执](doubao-delivery.md#流程交付回执) 确认；复盘由 finalize 的保存质量与 `--ack-delivered` 自动观察。degraded / 内容不足不计成功。未确认页面可读、仅生成链接、等待超时或宿主中断保持未知。批次创建前按 [视频流程](../video/SKILL.md#批量流程埋点) 声明预期项数。
 
-`BYTEDLIVE_TELEMETRY_DISABLED=1|true`、Schema、help、dry-run 和确认计划不计入使用。SDK 失败不阻断业务，不重放写入。调用成功不等于任务完成；正式版不凭空补发远端任务生命周期事件。
+报告生成与交付独立续办；自动恢复和有限重试沿用原流程、任务及证据版本，不新建统计分母。暂时无法交付保留待交付/未知，不伪造回执；重试耗尽保留原阶段与原因，内容不足仍不计成功。用户明确取消整个流程后不继续自动重试。
+
+非必要导出/线上保存受阻时保留已生成正文，按交付参考降级继续。跳过 HTML 或改用本地报告不等于线上保存成功；沿用原流程和任务，保留原错误及缺失回执，禁止为了统计成功跳过实际交付确认。
+
+`OUT_OF_MEMORY` 表示已观察到明确内存不足证据。说明失败阶段与原任务仍保存的结果，释放资源后沿原任务恢复，不盲目反复重启或把未知上传重复提交。不能仅凭 SIGKILL/137 推断内存不足；没有可核验证据时保持未知。遥测由运行时自动发送，不手工补造事件或上传原始错误、转储及业务正文。
+
+读取或确认其他报告不代表原失败阶段已经恢复；运行时保留未解决阶段的明确原因，实际恢复后再更新。不要通过重复读取或手工上报清除错误。
+
+复盘正文校验完成即由代码记录生成；上传保存与实际交付分别观察，不因生成或保存成功而提前确认交付。

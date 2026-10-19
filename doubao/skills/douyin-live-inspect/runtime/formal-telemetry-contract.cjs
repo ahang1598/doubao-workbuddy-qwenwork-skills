@@ -11,7 +11,25 @@ const ENUMS = {
   asr_policy: ['local_first', 'local_only'],
   asr_backend: ['local', 'mediakit', 'mixed', 'unknown'],
 };
-const ERRORS = new Set(['INVALID_INPUT', 'AUTH_REQUIRED', 'PERMISSION_DENIED', 'NETWORK_ERROR', 'WRITE_RESULT_UNKNOWN', 'UPLOAD_RESULT_UNKNOWN', 'TASK_BINDING_MISMATCH', 'ORIGINAL_TASK_CONTEXT_REQUIRED', 'TASK_FAILED', 'REPORT_NOT_READY', 'ASR_NOT_FOUND', 'RUNTIME_UNAVAILABLE', 'SETUP_PENDING', 'CANCELLED', 'ABORTED', 'OPERATION_FAILED', 'CREATE_FAILED', 'CREATE_UNCERTAIN', 'LOCAL_VIDEO_PATH_REQUIRED', 'VIDEO_SOURCE_UNAVAILABLE', 'VIDEO_SOURCE_CHANGED', 'VIDEO_INVALID', 'EVIDENCE_CHANGED', 'EVIDENCE_NOT_READY', 'SCENE_REQUIRED', 'RULES_INCOMPLETE', 'FRAMES_NOT_REVIEWED', 'ALREADY_REVIEWED', 'VIDEO_RECAP_NOT_SUPPORTED', 'RECAP_EVIDENCE_CHANGED', 'RECAP_ALREADY_SAVED']);
+const ERRORS = new Set(['INVALID_INPUT', 'AUTH_REQUIRED', 'PERMISSION_DENIED', 'NETWORK_ERROR', 'WRITE_RESULT_UNKNOWN', 'UPLOAD_RESULT_UNKNOWN', 'TASK_BINDING_MISMATCH', 'ORIGINAL_TASK_CONTEXT_REQUIRED', 'TASK_FAILED', 'REPORT_NOT_READY', 'ASR_NOT_FOUND', 'RUNTIME_UNAVAILABLE', 'SETUP_PENDING', 'CANCELLED', 'ABORTED', 'OUT_OF_MEMORY', 'OPERATION_FAILED', 'CREATE_FAILED', 'CREATE_UNCERTAIN', 'LOCAL_VIDEO_PATH_REQUIRED', 'VIDEO_SOURCE_UNAVAILABLE', 'VIDEO_SOURCE_CHANGED', 'VIDEO_INVALID', 'EVIDENCE_CHANGED', 'EVIDENCE_NOT_READY', 'SCENE_REQUIRED', 'RULES_INCOMPLETE', 'FRAMES_NOT_REVIEWED', 'ALREADY_REVIEWED', 'VIDEO_RECAP_NOT_SUPPORTED', 'RECAP_EVIDENCE_CHANGED', 'RECAP_ALREADY_SAVED']);
+
+// Remote codes stay closed: never forward arbitrary server messages or codes.
+const REMOTE_ERRORS = ['ReportNotFoundError', 'ReportNotFound', 'Throttling', 'ThrottlingException', 'TooManyRequests', 'AccessDenied', 'AccessDenyError', 'Forbidden', 'Unauthorized', 'InvalidParameter', 'InvalidParameterValue', 'ResourceNotFound', 'TaskNotFound', 'ExpiredToken', 'ExpiredTokenException', 'InvalidSecurityToken', 'InvalidToken', 'TokenExpired', 'STSExpired'];
+for (const code of [...REMOTE_ERRORS, 'OPENAPI_ERROR', 'INVALID_RESPONSE', 'RESPONSE_TOO_LARGE', 'REQUEST_TIMEOUT', 'AUTH_EXCHANGE_FAILED', 'INVALID_ENVIRONMENT', 'INVALID_CONFIRMATION', 'confirmation_required', 'ABORT_ERR']) ERRORS.add(code);
+const BUSINESS_REJECTIONS = new Set(['INVALID_INPUT', 'AUTH_REQUIRED', 'SETUP_PENDING', 'PERMISSION_DENIED', 'ORIGINAL_TASK_CONTEXT_REQUIRED', 'TASK_BINDING_MISMATCH', 'INVALID_ENVIRONMENT', 'INVALID_CONFIRMATION', 'confirmation_required', 'REPORT_NOT_READY', 'AccessDenied', 'AccessDenyError', 'Forbidden', 'Unauthorized', 'ReportNotFoundError', 'ReportNotFound', 'ResourceNotFound', 'TaskNotFound']);
+function errorMetadata(error = {}) {
+  error = error || {};
+  const raw = error.code || error.subtype;
+  const code = ['ENOMEM', 'ERR_WORKER_OUT_OF_MEMORY'].includes(raw) ? 'OUT_OF_MEMORY' : raw;
+  const error_code = ERRORS.has(code) ? code : 'OPERATION_FAILED';
+  const status = error.http_status ?? error.httpStatus;
+  const cancellationCode = ['CANCELLED', 'ABORTED', 'ABORT_ERR'].includes(code);
+  const fault = status >= 500 || error.write_occurred === null || error.write_occurred === true
+    || (ERRORS.has(code) && !BUSINESS_REJECTIONS.has(code) && !cancellationCode);
+  const cancelled = !fault && (error.name === 'AbortError' || cancellationCode);
+  const business = !fault && BUSINESS_REJECTIONS.has(code);
+  return {error_code, outcome: cancelled ? 'cancelled' : business ? 'business_rejected' : 'failure'};
+}
 
 function safeFields(value = {}) {
   const result = {};
@@ -46,7 +64,7 @@ function commandMetadata(name, mode, context = {}) {
 
 // Use parsed command names and closed enums only; never inspect request payloads.
 function inspectionMetadata(command, env = process.env) {
-  if (String(env.VE_SKILL_ID || "").split("/")[0] !== "byted-live-inspect") return undefined;
+  if (!["douyin-live-inspect", "byted-live-inspect"].includes(String(env.VE_SKILL_ID || "").split("/")[0])) return undefined;
   const parts = command.split(".");
   const quality = parts[1] === "quality";
   const video = parts[1] === "content" && /^(?:shortcut-video-|video-)/.test(parts[2] || "");
@@ -70,4 +88,4 @@ function inspectionMetadata(command, env = process.env) {
 }
 
 
-module.exports = { safeFields, scenarioCategory, commandMetadata, inspectionMetadata };
+module.exports = { errorMetadata, safeFields, scenarioCategory, commandMetadata, inspectionMetadata };

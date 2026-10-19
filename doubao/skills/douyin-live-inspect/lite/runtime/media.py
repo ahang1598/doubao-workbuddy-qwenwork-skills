@@ -151,6 +151,8 @@ def resolve_with_retry(store, cancel=None):
             if urlsplit(source).hostname not in {'live.douyin.com', 'www.douyin.com', 'v.douyin.com'}:
                 return {'status': 'ready', 'streamUrl': source}
             resolved = resolve_douyin(source)
+            store.update_task(live_source_status='not_live' if resolved['status']=='not_live' else 'live',
+                              source_error_code='none', source_end_reason='offline' if resolved['status']=='not_live' else 'unknown')
             return resolved
         except (SourceError, OSError, subprocess.SubprocessError) as error:
             if isinstance(error, SourceError) and not error.retryable:
@@ -442,9 +444,13 @@ def capture(task_dir, cancel=None, bridge=None):
         if task.get('capture_status') in ('ended', 'stopped'):
             return
         if stop_requested(store, cancel):
-            store.update_task(capture_status='stopped')
+            reason = ('duration_limit' if task.get('stop_reason')=='duration_limit' else
+                      'user_stop' if (task.get('stop_audit') or {}).get('reason')=='user_request' else 'unknown')
+            store.update_task(capture_status='stopped', live_source_status=task.get('live_source_status','unknown'),
+                              source_end_reason=reason, source_error_code=task.get('source_error_code','none'))
             return
-        store.update_task(capture_status='running')
+        store.update_task(capture_status='running', live_source_status='unknown',
+                          source_end_reason='unknown', source_error_code='none')
         acquiring = True
         if task.get('pipeline_version')==2:
             from runtime.realtime import recording_segments
@@ -494,22 +500,36 @@ def capture(task_dir, cancel=None, bridge=None):
                     store.log('capture_ended', 'Douyin resolver reports offline')
                     return
             if failures >= 3:
-                raise RuntimeError('Live source unavailable after bounded retries')
+                raise SourceError('STREAM_RETRY_EXHAUSTED')
             store.log('capture_reconnect', 'Live source interrupted; reconnecting')
             for _ in range(20):
                 if stop_requested(store, cancel):
                     break
                 time.sleep(.25)
-        store.update_task(capture_status='ended' if store.task().get('live_ended_at') else 'stopped')
+        current = store.task()
+        reason = ('duration_limit' if current.get('stop_reason')=='duration_limit' else
+                  'user_stop' if (current.get('stop_audit') or {}).get('reason')=='user_request' else current.get('source_end_reason','unknown'))
+        store.update_task(capture_status='ended' if current.get('live_ended_at') else 'stopped', source_end_reason=reason)
     except Exception as error:
         from runtime.diagnostics import failure_details, log_failure
         capture_error = error
         log_failure(error, stage='capture')
         try:
-            store.update_task(capture_status='stopped' if stop_requested(store, cancel) else 'failed',
-                              capture_error=error.code if isinstance(error, DouyinResolveError) else None,
+            stopped = stop_requested(store, cancel)
+            current = store.task()
+            if stopped:
+                reason = ('duration_limit' if current.get('stop_reason')=='duration_limit' else
+                          'user_stop' if (current.get('stop_audit') or {}).get('reason')=='user_request' else current.get('source_end_reason','unknown'))
+            else:
+                reason = ('stream_retry_exhausted' if isinstance(error, SourceError) and error.code=='STREAM_RETRY_EXHAUSTED' else
+                          'source_resolution_failed' if isinstance(error, DouyinResolveError) else 'capture_failed')
+            store.update_task(capture_status='stopped' if stopped else 'failed',
+                              source_end_reason=reason,
+                              live_source_status=current.get('live_source_status','unknown') if stopped else 'unknown',
+                              source_error_code=error.code if not stopped and isinstance(error, SourceError) else current.get('source_error_code','none'),
+                              capture_error=error.code if isinstance(error, SourceError) else None,
                               capture_diagnostic=failure_details(error))
-            reason = error.code if isinstance(error, DouyinResolveError) else type(error).__name__
+            reason = error.code if isinstance(error, SourceError) else type(error).__name__
             store.log('capture_failed', f'Media acquisition unavailable ({reason}); closed segments remain inspectable')
         except Exception as secondary:
             log_failure(secondary, stage='cleanup_capture_failure_state')

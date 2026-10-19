@@ -11,26 +11,39 @@ const { randomUUID } = require('node:crypto');
 // 仅接受符合 UUID v4 格式的持久化设备标识。
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-// 按显式配置、XDG 配置目录、用户主目录的顺序确定遥测配置目录。
-function telemetryConfigDir(env = process.env) {
-  return env.DOUYIN_LIVE_INSPECT_CONFIG_DIR || path.join(env.XDG_CONFIG_HOME || path.join(env.HOME || env.USERPROFILE || os.homedir(), '.config'), 'byted-live-inspect');
+// Both script tools share the Skill's device directory, independent of task/version.
+function telemetryConfigDir(env = process.env, platform = process.platform) {
+  if (env.DOUYIN_LIVE_INSPECT_CONFIG_DIR) return env.DOUYIN_LIVE_INSPECT_CONFIG_DIR;
+  const home = env.HOME || env.USERPROFILE || os.homedir();
+  const base = platform === 'darwin' ? path.join(home, 'Library', 'Application Support')
+    : platform === 'win32' ? env.LOCALAPPDATA || path.join(home, 'AppData', 'Local')
+    : env.XDG_CONFIG_HOME || path.join(home, '.config');
+  return path.join(base, 'douyin-live-inspect');
+}
+
+function cachedDeviceId(filename) {
+  try {
+    const value = fs.readFileSync(filename, 'utf8').trim();
+    if (UUID.test(value)) return value;
+  } catch { /* Missing or unreadable identity is optional. */ }
 }
 
 // 读取或首次生成设备 ID；遥测关闭或本地操作失败时不影响主流程。
-function resolveDeviceId(env = process.env) {
+function resolveDeviceId(env = process.env, platform = process.platform) {
   // 遥测被明确关闭时，不读取也不创建设备标识。
   if (['1', 'true'].includes(String(env.BYTEDLIVE_TELEMETRY_DISABLED || '').trim().toLowerCase())) return undefined;
-  const directory = telemetryConfigDir(env);
+  const directory = telemetryConfigDir(env, platform);
   const filename = path.join(directory, 'device-id');
   // Read the persistent cache before attempting any generation or filesystem write.
   // 优先复用有效缓存，避免每次运行都更换设备标识。
-  try {
-    const cached = fs.readFileSync(filename, 'utf8').trim();
-    // 只有缓存仍是合法 UUID v4 时才复用，损坏文件会被忽略。
-    if (UUID.test(cached)) return cached;
-  } catch { /* A first invocation may not have a cache yet. */ }
+  const cached = cachedDeviceId(filename);
+  if (cached) return cached;
+  // Explicit overrides stay isolated. Only migrate this product's historical ID.
+  const legacy = env.DOUYIN_LIVE_INSPECT_CONFIG_DIR ? undefined : cachedDeviceId(path.join(
+    env.XDG_CONFIG_HOME || path.join(env.HOME || env.USERPROFILE || os.homedir(), '.config'),
+    'byted-live-inspect', 'device-id'));
   // 持久化失败时仍返回本次生成的 ID，保证业务埋点有设备标识。
-  const generatedId = randomUUID();
+  const generatedId = legacy || randomUUID();
   let temporary;
   try {
     // 配置目录仅允许当前用户访问；文件权限也限制为当前用户读写。

@@ -251,7 +251,6 @@ function renderRules() {
 }
 
 function diagnosisSummary(report) {
-  if (report.display_scope === "checked_content") return `${report.conclusion.summary} 结论仅适用于已检测内容。`;
   const assessment = report.conclusion?.assessment || (report.rules.some(r => scopedAssessment(r) === "hit") ? "hit"
     : report.rules.some(r => scopedAssessment(r) === "no_hit_in_checked_scope") ? "no_hit_in_checked_scope"
     : report.rules.some(r => scopedAssessment(r) === "not_applicable") ? "not_applicable" : "undetermined");
@@ -266,6 +265,8 @@ function diagnosisSummary(report) {
   } else if (report.conclusion?.has_incomplete_results || report.conclusion?.coverage_complete === false || report.coverage?.gaps?.length || report.rules.some(r => ["insufficient", "pending", "skipped"].includes(r.result))) {
     text += " 存在检测缺口或待判定内容，旧报告未记录完整分类。";
   }
+  const reasons = [...new Set((report.conclusion?.coverage_summary?.issues || report.coverage?.gaps || []).map(g => g.reason).filter(Boolean))];
+  if (reasons.length) text += ` 未检测原因：${reasons.join("；")}。`;
   text += " 结论仅适用于已完成判定的范围。";
   if (report.inspection_scope === "speech_only") text += " 仅字幕检测，画面未检测。";
   if (report.sampling) text += ` ${report.conclusion.scope}；已完成 ${report.sampling.completed_windows} 个窗口，抽检 ${report.sampling.sampled_ms / 1000} 秒。`;

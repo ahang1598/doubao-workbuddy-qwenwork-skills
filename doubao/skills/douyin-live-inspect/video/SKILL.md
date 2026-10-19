@@ -7,11 +7,11 @@ description: 豆包工作视频质检子 Skill。接收一个或多个视频附�
 
 执行脚本前遵循 [父入口的 Skill 目录定位](../SKILL.md#skill-目录定位执行脚本前必读)：以实际加载的父级 `SKILL.md` 所在目录定位 Inspect 根目录，再进入其 `video/` 子目录执行本文及视频叶子文档中的命令。因此 `node ../scripts/report-link.mjs` 相对 `video/` 解析，不从 Inspect 根目录执行。不能根据技能名称或宿主工作区猜测目录；缺文件时按父入口的安装完整性规则处理。Markdown 文档链接始终相对所在文档解析，不改变命令工作目录。
 
-直接使用本 Skill 时，业务操作前先从主 Skill 根目录执行 `node scripts/skill-start.mjs`，遵循[每次使用的入口埋点](../SKILL.md#每次使用的入口埋点)。同一请求已执行过时不重复执行，授权续办和重试也不重复。
+业务脚本自动记录入口和实际版本，不额外执行埋点命令。Lite 入口返回任务标识和目录；实际创建、重试和续办复用原目录，脚本自动读取标识，普通续办不记新选择。
 
 本文件为正式版视频流程。新建视频先遵循 [父入口的版本选择](../SKILL.md#1-新建直播与视频账号入口分流)，不要因来源是附件或网络视频就跳过选择。用户选择 Lite 或正式版不可用时，按 [回退规则](../references/auth-recovery.md#正式版不可用时回退-lite) 转入 [Lite](../lite/SKILL.md) 本地视频入口：沿用可读本机文件或已物化附件；仅有网络链接时提示提供本地文件，不自动下载。已转 Lite 后不执行本文件的上传、正式任务创建与远端交付要求。
 
-新建视频确定正式版后、进入本流程前，从主 Skill 根目录执行 `node scripts/version-selected.mjs --mode formal`，遵循[版本确定埋点](../SKILL.md#版本确定埋点)；同请求已记录则不重复，多视频批次不逐项记录，已有任务普通续办不记录。
+
 
 仅在项目选择与交付阶段读取对应引用。本产品支持豆包工作中的一个或多个视频附件/HTTP(S) 视频链接；直播返回 [父入口](../SKILL.md)。不提供视频库、Vid、SourceTaskId、项目管理、人工审核或媒资管理入口。
 
@@ -51,6 +51,8 @@ description: 豆包工作视频质检子 Skill。接收一个或多个视频附�
 
 ### 批量流程埋点
 
-用户确认多个视频的批次计划后，该批次中每条正式版业务命令使用进程级环境变量 `INSPECT_TELEMETRY_WORKFLOW=video_batch node ../scripts/api.mjs ...`（报告入口同样设置）。仅本批次命令设置，不全局 export，不用于单视频任务或 dry-run / 确认计划。参数仍通过 stdin 传递；不把视频地址或任务名称写入环境变量。
+用户确认多个视频的批次计划后、首项创建前，沿用入口返回的批次目录执行 `node ../scripts/inspect-entry.mjs --kind video --mode formal --task-state not_created --batch-dir <原目录> --expected-tasks <确认的视频数>`（1–100）。这会更新同一流程的预期项数，不重建流程；首项创建后不改数量。所有项及交付确认均继承返回的 execution_env，不能给每项另建流程。
+
+该批次中每条正式版业务命令使用进程级环境变量 `INSPECT_TELEMETRY_WORKFLOW=video_batch node ../scripts/api.mjs ...`（报告入口同样设置）。仅本批次命令设置，不全局 export，不用于单视频任务或 dry-run / 确认计划。参数仍通过 stdin 传递；不把视频地址或任务名称写入环境变量。
 
 内部查询按需查 [视频接口索引](references/api-index.md)，精确业务参数通过对应操作的 --schema 核验。

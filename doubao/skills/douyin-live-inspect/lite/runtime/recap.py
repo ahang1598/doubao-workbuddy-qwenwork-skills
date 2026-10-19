@@ -152,6 +152,7 @@ def evidence_input(task, segments):
     data['quality_conclusion'] = quality
     data['rule_assessments'] = [{k:r[k] for k in ('id','name','assessment','counts','coverage_summary')} for r in rules]
     data['_has_captured_content'] = bool(original)
+    data['_has_reviewed_content'] = any(s.get('review_status') == 'done' and s.get('review_result') for s in original)
     data['_has_speech'] = (any(e['kind']=='speech' for e in evidence) if compact else
                            any(str(u.get('text','')).strip() for s in original for u in s.get('subtitles', [])))
     data['_legacy_versions'] = legacy
@@ -159,7 +160,11 @@ def evidence_input(task, segments):
 
 
 def state(task, current, now=None):
+    from runtime.realtime_policy import current as bounded
     finish=task.get('finishing',{})
+    if bounded(task) and finish.get('mode') == 'bounded' and finish.get('phase') == 'completed' and not current.get('_has_reviewed_content', True):
+        return {'status':'blocked','available':False,'needs_resume':False,'code':'NO_REVIEWED_CONTENT',
+                'evidence_version':current['evidence_version'],'message':'没有已完成的有效判定，无法生成质检和复盘报告。'}
     if task.get('media_frozen') and finish.get('phase') != 'draining' and not current.get('_has_speech'):
         return {'status':'blocked','available':False,'needs_resume':False,'code':'NO_USABLE_TRANSCRIPT',
                 'evidence_version':current['evidence_version'],'message':'未获得可用语音文字，无法生成复盘报告。'}
@@ -170,35 +175,56 @@ def state(task, current, now=None):
     saved = task.get('recap') or {}
     status = saved.get('status', 'missing')
     if saved and not _same_evidence(saved.get('evidence_version'), current): status = 'stale'
-    # The CLI exits while the host Agent analyzes. Elapsed time is not proof
-    # that the host stopped; only explicit failure may terminate generation.
-    delayed = status == 'generating' and (time.time() if now is None else now) - saved.get('updated_at', 0) > 300
+    attempts = saved.get('attempts', 1)
+    timed_out = status == 'generating' and (time.time() if now is None else now) >= saved.get('updated_at', 0) + 120
+    if bounded(task) and timed_out:status = 'failed'
+    terminal = bounded(task) and status == 'failed' and attempts >= 3
     return {'status': status, 'available': status in ('ready', 'insufficient'),
             'evidence_version': current['evidence_version'], 'updated_at': saved.get('updated_at'),
-            'needs_resume': False, 'message': '复盘处理时间较长，请查看原对话执行进度' if delayed else MESSAGES[status]}
+            'terminal_failure': terminal, 'attempts': attempts,
+            'needs_resume': False, 'message': ('复盘连续三次未完成，交付失败原因及已保存质检结果。' if terminal else MESSAGES[status])}
 
 
-def recap_input(store, begin=False):
+def expire_attempt(store):
+    """Persist an elapsed attempt once, so retries and lifecycle events agree."""
+    from runtime.realtime_policy import current
+    task = store.task()
+    saved = task.get('recap') or {}
+    if not (hasattr(store, 'connection') and current(task) and saved.get('status') == 'generating'
+            and time.time() >= saved.get('updated_at', 0) + 120):return
+    with snapshot(store, True) as (task, segments, conn):
+        saved = task.get('recap') or {}
+        source = evidence_input(task, segments)
+        if saved.get('status') == 'generating' and state(task, source)['status'] == 'failed':
+            saved.update(status='failed', failure_code='RECAP_TIMEOUT')
+            store._set_task(conn, task)
+
+
+def recap_input(store, begin=False, *, prepare=False):
     # Retry only transient storage failures; never guess evidence or replay bad content.
     for attempt in range(3):
         try:
-            return _recap_input(store, begin)
+            return _recap_input(store, begin, prepare=prepare)
         except (OSError, sqlite3.OperationalError):
             if attempt == 2:
                 raise
             time.sleep(0.1 * (2 ** attempt))
 
 
-def _recap_input(store, begin=False):
+def _recap_input(store, begin=False, *, prepare=False):
     finish=store.finish_tick() if hasattr(store,'finish_tick') else {}
-    with snapshot(store, begin) as (task, segments, c):
+    expire_attempt(store)
+    with snapshot(store, begin or prepare) as (task, segments, c):
         if task.get('kind') == 'video':
             raise ValueError('video recap not supported')
-        # Opt in only when beginning an unfinished frozen task; saved historical
-        # recaps retain their original evidence projection and version.
-        if begin and task.get('media_frozen') and (task.get('recap') or {}).get('status') not in {'ready','insufficient'}:
+        # Quality export freezes the evidence projection without starting a recap
+        # attempt. Slow export/host delivery must not consume the analysis budget.
+        # Saved historical recaps retain their original projection and version.
+        if (begin or prepare) and task.get('media_frozen') and (task.get('recap') or {}).get('status') not in {'ready','insufficient'}:
             from runtime.realtime_policy import enabled
-            if enabled(task) or finish.get('mode')=='bounded':task['recap_evidence_scope'] = 'reviewed_summary'
+            if (enabled(task) or finish.get('mode')=='bounded') and task.get('recap_evidence_scope') != 'reviewed_summary':
+                task['recap_evidence_scope'] = 'reviewed_summary'
+                store._set_task(c, task)
         data = evidence_input(task, segments)
         if begin:
             if not segments:
@@ -207,8 +233,10 @@ def _recap_input(store, begin=False):
                 raise ValueError('inspection not finished')
             current = state(task, data)
             if current['status']=='blocked':raise ValueError(current['message'])
-            if current['status'] not in ('ready', 'insufficient'):
-                task['recap'] = {'status': 'generating', 'evidence_version': data['evidence_version'], 'updated_at': time.time()}
+            if current['status'] not in ('ready', 'insufficient', 'generating') and not current.get('terminal_failure'):
+                previous = task.get('recap') or {}
+                attempts = previous.get('attempts', 1) if _same_evidence(previous.get('evidence_version'), data) else 0
+                task['recap'] = {'status': 'generating', 'evidence_version': data['evidence_version'], 'updated_at': time.time(), 'attempts': attempts + 1}
                 store._set_task(c, task)
         return {**{k: v for k, v in data.items() if not k.startswith('_')}, 'recap': state(task, data)}
 
@@ -240,7 +268,7 @@ def submission_contract(store, source):
                              if fast else
                              '字幕对应本次语音 evidence；仅分析本次提供的全部可用证据，抽检归纳仅限抽检窗口。') +
                             '必须执行 analysis_rules 中的独立复盘标准；合规结论只引用已完成的质检判定，不重新判定违规。'
-                            '画面仅使用已查看并可引用的证据。summary 只注明结论限于已检测内容，不展示缺口数量、时段、原因或覆盖率。'
+                            '画面仅使用已查看并可引用的证据。summary 注明结论限于已检测内容；依据返回的覆盖数据说明未检测数量、时段和原因，不猜测覆盖率。'
                             '使用下方 Lite 模板，不使用正式版字段、上传流程或成功状态；没有可读语音时不能编造话术高光。',
         'task_dir': task_dir,
         'input_file': path,
@@ -266,16 +294,41 @@ def submission_contract(store, source):
             'tags 最多两个；moment_detail 用摘要说明依据与可执行建议，不大段复制原文。',
             'ready 至少有一个内容段；基于返回的已检测内容生成，连续主题可以合并，结论有真实证据支持。',
             'insufficient 仅在内容不足以分析时使用，填写 conclusion 和 summary，其余五项保持空数组。'
-            'failed 仅记录本次尝试失败，不附 document 或原始错误；记录后自动重新读取合同并重试，不能作为完成交付。输入错误应修正后继续。',
+            'failed 仅记录本次尝试失败，不附 document 或原始错误；按回执重试；当前直播最多三次尝试，每次 120 秒，重复读取不重置计时。terminal_failure=true 时交付真实失败说明并确认 failed/chat 回执，不再重试；不得伪造成功报告。解析或校验错误也受本次预算约束；超时按错误回执进入下一次 begin，次数耗尽转 recap-report 交付失败，不反复修复旧输入。',
         ],
         'submit_argv': ['recap-submit', '--task-dir', task_dir, '--input-file', path],
         'verify_argv': ['recap-report', '--task-dir', task_dir],
         'execution': '从 lite 目录以 python3 scripts/live_inspect.py 加上述 argv 执行。先把实际分析结果写入 input_file，'
                      '再提交并核验。禁止裸跑 recap-submit、截断 JSON 或用后台等待/轮询代替分析提交。',
-        'recovery': '质检就绪立即生成复盘；120秒仅为目标，不是终止期限。输入或内容校验失败就在当前执行中自动修正并重新提交；证据版本变化时重新 recap-input --begin。'
-                    '证据读取失败自动重试 recap-input --begin，禁止猜测证据 ID；失败状态不能代替成功交付。已有同版本报告直接 recap-report。全部命令使用本 task_dir，链接只取本次 recap-report；'
+        'recovery': '质检先交付，再完成复盘。当前实时直播最多三次尝试、每次固定120秒；仅在本次预算内修复输入。terminal_failure 时交付真实失败说明并确认 failed/chat，不再重试。证据版本变化时重新 recap-input --begin。'
+                    '证据读取失败按 next_action 处理；重试耗尽则报告阻塞，禁止猜测证据 ID；失败状态不能代替成功交付。已有同版本报告直接 recap-report。全部命令使用本 task_dir，链接只取本次 recap-report；'
                     'available=true 后交付报告，不要求用户再次说继续。',
     }
+
+
+def submission_recovery(store, detail):
+    """Input failures must obey the same attempt budget as valid submissions."""
+    if store is None:return detail
+    from runtime.realtime_policy import current
+    try:
+        if not current(store.task()):return detail
+        # Parsing may fail before recap_submit runs, or cross the deadline while
+        # reading stdin. Persist expiry here, without starting another attempt.
+        report = recap_report(store)
+    except (OSError, sqlite3.OperationalError, ValueError):
+        return {**detail, 'next_action':'blocked', 'retryable':False, 'workflow_complete':False,
+                'message':'无法核验复盘预算，保留原任务并交付阻塞说明；恢复后核验状态，不重复提交或伪造完成。'}
+    result = {**detail, 'workflow_complete':False,
+              **{k:report[k] for k in ('attempts','terminal_failure') if k in report}}
+    if report.get('available') or report['status']=='blocked' or report.get('terminal_failure'):
+        result.update(next_action='recap-report', retryable=False,
+                      message='复盘已就绪或已达终态；执行 recap-report，实际交付对应结果并确认，不再修复或提交本次输入。')
+    elif report['status'] in {'missing','stale','failed'}:
+        result.update(next_action='recap-input --begin', retryable=True,
+                      message='当前复盘尝试未开始、已失效或已失败；执行 recap-input --begin 获取有效合同后继续，勿重交旧输入。')
+    else:
+        result['retryable'] = True
+    return result
 
 
 def submission_error(error):
@@ -365,12 +418,16 @@ def validate(payload, source):
 
 
 def recap_submit(store, payload):
+    expire_attempt(store)
     with snapshot(store, True) as (task, segments, c):
         if task.get('kind') == 'video':
             raise ValueError('video recap not supported')
         if not segments:
             raise NoCapturedContentError()
         source = evidence_input(task, segments)
+        from runtime.realtime_policy import current
+        if current(task) and state(task, source)['status'] == 'failed' and payload.get('status') != 'failed':
+            raise ValueError('begin recap before submitting')
         document = validate(payload, source)
         digest = hashlib.sha256(encode({'status': payload['status'], 'document': document}).encode()).hexdigest()
         previous = task.get('recap') or {}
@@ -378,9 +435,9 @@ def recap_submit(store, payload):
             return {**state(task, source), 'idempotent': True}
         if _same_evidence(previous.get('evidence_version'), source) and previous.get('status') in ('ready', 'insufficient'):
             raise ValueError('recap already saved for evidence version')
-        if previous.get('status') != 'generating' or not _same_evidence(previous.get('evidence_version'), source):
+        if state(task, source)['status'] != 'generating' or not _same_evidence(previous.get('evidence_version'), source):
             raise ValueError('begin recap before submitting')
-        task['recap'] = {'status': payload['status'], 'evidence_version': source['evidence_version'], 'updated_at': time.time(), 'digest': digest, 'document': document}
+        task['recap'] = {'attempts': previous.get('attempts', 1), 'status': payload['status'], 'evidence_version': source['evidence_version'], 'updated_at': time.time(), 'digest': digest, 'document': document}
         store._set_task(c, task)
         return state(task, source)
 
@@ -400,6 +457,7 @@ def _public_document(document):
 
 
 def recap_report(store, token=''):
+    expire_attempt(store)
     with snapshot(store) as (task, segments, _):
         if task.get('kind') == 'video':
             return {'status': 'unsupported', 'available': False, 'needs_resume': False,

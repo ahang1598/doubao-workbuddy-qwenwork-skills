@@ -81,8 +81,7 @@ class MediaJobs:
 
     def rows(self, conn=None):
         if conn is None:
-            with self.store.connection() as conn:
-                return self.rows(conn)
+            return self.store._read_with_retry(self.rows)
         return [dict(row) for row in conn.execute(
             'SELECT * FROM media_jobs WHERE session_id=? ORDER BY segment_id,id', (self.store.session_id,))]
 
@@ -104,11 +103,11 @@ class MediaJobs:
         observed_at = time.time() if now is None else now
         # Most v2 evidence is already produced by the stream. Empty polls must
         # not acquire the single SQLite writer lock on every worker iteration.
-        with self.store.connection() as conn:
-            due = conn.execute('''SELECT 1 FROM media_jobs WHERE session_id=? AND kind=?
+        # Retry only the read-only probe; never replay a claim transaction.
+        due = self.store._read_with_retry(lambda conn: conn.execute('''SELECT 1 FROM media_jobs WHERE session_id=? AND kind=?
                 AND ((status IN ('queued','retry_wait') AND next_run_at<=?)
                      OR (status='running' AND lease_until<=?)) LIMIT 1''',
-                (self.store.session_id, kind, observed_at, observed_at)).fetchone()
+                (self.store.session_id, kind, observed_at, observed_at)).fetchone())
         if not due:return None
         with self.store.connection(True) as conn:
             now = time.time() if now is None else now

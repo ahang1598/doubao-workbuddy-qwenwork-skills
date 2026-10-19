@@ -1,3 +1,4 @@
+import { observeOperation } from './formal-workflow.mjs';
 import { runCommand, isPreview } from './telemetry.mjs';
 import { requireOriginalTaskContext, assertTaskAccount, taskBindingError } from './task-binding.mjs';
 import { readFileSync } from 'node:fs';
@@ -99,9 +100,9 @@ function normalize(contract, input) {
   return { query, body, values };
 }
 function safeFailure(error) {
-  const messages = { SETUP_PENDING: 'Authentication required', AUTH_EXCHANGE_FAILED: 'Authentication refresh failed', ORIGINAL_TASK_CONTEXT_REQUIRED: 'Original task identity is required', TASK_BINDING_MISMATCH: 'Original task identity does not match', AUTH_REQUIRED: 'Authentication required', INVALID_CONFIRMATION: 'Confirmation is expired, consumed, or does not match this request', WRITE_RESULT_UNKNOWN: 'Write result is unknown; inspect task state before retrying', NETWORK_ERROR: 'OpenAPI request failed', OPENAPI_ERROR: 'OpenAPI request rejected', INVALID_RESPONSE: 'Invalid OpenAPI response', INVALID_ENVIRONMENT: 'Only online is supported' };
-  const remoteCodes = new Set(['ReportNotFoundError', 'ReportNotFound', 'Throttling', 'ThrottlingException', 'TooManyRequests', 'AccessDenied', 'AccessDenyError', 'Forbidden', 'Unauthorized', 'InvalidParameter', 'InvalidParameterValue', 'ResourceNotFound', 'TaskNotFound', 'ExpiredToken', 'ExpiredTokenException', 'InvalidSecurityToken', 'InvalidToken', 'TokenExpired', 'STSExpired', 'ABORTED', 'RESPONSE_TOO_LARGE']);
-  const code = remoteCodes.has(error.code) ? error.code : error.code === 'INVALID_INPUT' ? 'INVALID_INPUT' : Object.hasOwn(messages, error.code) ? error.code : 'OPERATION_FAILED';
+  const messages = { REQUEST_TIMEOUT: 'OpenAPI request timed out', SETUP_PENDING: 'Authentication required', AUTH_EXCHANGE_FAILED: 'Authentication refresh failed', ORIGINAL_TASK_CONTEXT_REQUIRED: 'Original task identity is required', TASK_BINDING_MISMATCH: 'Original task identity does not match', AUTH_REQUIRED: 'Authentication required', INVALID_CONFIRMATION: 'Confirmation is expired, consumed, or does not match this request', WRITE_RESULT_UNKNOWN: 'Write result is unknown; inspect task state before retrying', NETWORK_ERROR: 'OpenAPI request failed', OPENAPI_ERROR: 'OpenAPI request rejected', INVALID_RESPONSE: 'Invalid OpenAPI response', INVALID_ENVIRONMENT: 'Only online is supported' };
+  const remoteCodes = new Set(['ReportNotFoundError', 'ReportNotFound', 'Throttling', 'ThrottlingException', 'TooManyRequests', 'AccessDenied', 'AccessDenyError', 'Forbidden', 'Unauthorized', 'InvalidParameter', 'InvalidParameterValue', 'ResourceNotFound', 'TaskNotFound', 'ExpiredToken', 'ExpiredTokenException', 'InvalidSecurityToken', 'InvalidToken', 'TokenExpired', 'STSExpired', 'ABORTED', 'ABORT_ERR', 'RESPONSE_TOO_LARGE']);
+  const code = ['ENOMEM', 'ERR_WORKER_OUT_OF_MEMORY', 'OUT_OF_MEMORY'].includes(error.code) ? 'OUT_OF_MEMORY' : remoteCodes.has(error.code) ? error.code : error.code === 'INVALID_INPUT' ? 'INVALID_INPUT' : Object.hasOwn(messages, error.code) ? error.code : 'OPERATION_FAILED';
   return { ok: false, code: code === 'INVALID_INPUT' ? 2 : 1, error: { code, message: code === 'INVALID_INPUT' ? error.message : messages[code] || 'Operation failed', subtype: code, ...(typeof error.request_id === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(error.request_id) ? {request_id:error.request_id} : {}), write_occurred: error.write_occurred === null || code === 'WRITE_RESULT_UNKNOWN' ? null : false, ...(Number.isInteger(error.http_status ?? error.httpStatus) ? { http_status: error.http_status ?? error.httpStatus } : {}) } };
 }
 function redactPreview(value) {
@@ -111,7 +112,14 @@ function redactPreview(value) {
   return value;
 }
 export async function executeOperation(operation, input = {}, deps = {}) {
-  return runCommand(operation, () => performOperation(operation, input, deps), {
+  return runCommand(operation, async () => {
+    const result = await performOperation(operation, input, deps);
+    if(!isPreview(input, contracts[operation]?.requiresConfirmation)) {
+      const normalized=Object.fromEntries(Object.entries(input).map(([k,v])=>[key(k),v]));
+      await observeOperation(operation,{profile:normalized.profile,account_id:normalized.accountid,project_name:normalized.projectname,task_id:normalized.taskid},result,{env:deps.env||process.env});
+    }
+    return result;
+  }, {
     skip:isPreview(input, contracts[operation]?.requiresConfirmation), env:deps.env,
   });
 }

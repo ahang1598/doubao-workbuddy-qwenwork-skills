@@ -1,3 +1,4 @@
+import flow from './workflow-telemetry.cjs';
 import { requireOriginalTaskContext } from './task-binding.mjs';
 import {
   mkdir,
@@ -40,6 +41,12 @@ function matchesIdentity(actual, expected) {
       ([key, value]) => String(actual[key]) === String(value)
     )
   );
+}
+// The console review URL is deterministic for a saved report. The upload /
+// readback service may omit Result.URL, so backfill it here to keep the
+// fetch_report_link → ack_delivered state machine idempotent.
+function reviewConsoleUrl(identity) {
+  return `https://console.volcengine.com/livesaas/liveinspect/projectManagement/${encodeURIComponent(identity.project_name)}/taskManagement/report/view/${identity.task_id}?reportType=review`;
 }
 function uuid(id) {
   if (!/^[0-9a-f-]{36}$/i.test(id || "")) throw fail("INVALID_RENDER_CONTEXT");
@@ -251,11 +258,16 @@ export async function finalizeReview(input, dependencies = {}) {
           format: "json",
         });
         state.report_file = artifact.path;
+        state.report_quality = review.status === 'degraded' ? 'insufficient' : 'ready';
         const { report } = await readReviewFile(artifact.path, identity);
         state.report_hash = reportDigest(report);
         state.cleanup_id = contextId;
         state.phase = "rendered";
         await save();
+        // Generation is observed before optional online persistence; no delivery is implied.
+        try {
+          await flow.formal(identity,{recap:state.report_quality,...(state.report_quality==='insufficient'?{failure_stage:'recap',failure_reason:'CONTENT_INSUFFICIENT'}:{})},{env:dependencies.env||process.env});
+        } catch { /* An optional observer must not interrupt report persistence. */ }
       }
       const uploadInput = { ...identity, file_path: state.report_file };
       const attemptingUpload = state.phase === "rendered";
@@ -287,7 +299,7 @@ export async function finalizeReview(input, dependencies = {}) {
         }
         if (saved) {
           state.phase = "saved";
-          state.report_url = saved.report_url;
+          state.report_url = saved.report_url || reviewConsoleUrl(identity);
           state.verification = saved.verification;
           delete state.error;
         }
@@ -297,7 +309,7 @@ export async function finalizeReview(input, dependencies = {}) {
         const { http_status, api_code, request_id } = !attemptingUpload ? state.error || {} : {};
         const previousDetails = reportErrorDetails({ http_status, api_code, request_id });
         state.error = {
-          code: error.stage ? error.code : "FINALIZATION_FAILED",
+          code: ['ENOMEM', 'ERR_WORKER_OUT_OF_MEMORY', 'OUT_OF_MEMORY'].includes(error.code) ? 'OUT_OF_MEMORY' : error.stage ? error.code : "FINALIZATION_FAILED",
           ...previousDetails,
           ...reportErrorDetails(error),
         };
@@ -316,6 +328,23 @@ export async function finalizeReview(input, dependencies = {}) {
         await save();
       }
     }
+    // Only verified saved content and the existing explicit host acknowledgement count.
+    try {
+      if(state.phase==='saved') {
+        const quality=state.report_quality || 'none'; // Legacy state has no quality evidence.
+        await flow.formal(identity,{recap:quality,report_saved:true,...(quality==='insufficient'?{failure_stage:'recap',failure_reason:'CONTENT_INSUFFICIENT'}:{})},{env:dependencies.env||process.env});
+        if(state.delivered && quality==='ready')await flow.ack(identity,'recap','delivered',{env:dependencies.env||process.env});
+      } else if(state.error)await flow.problem(state.report_quality==='ready'?'delivery':'recap',state.error.code,false,{env:dependencies.env||process.env});
+    }catch{/* delivery business state remains authoritative */}
+    // Online persistence must not hide an already generated, validated report.
+    // Keep unknown writes on the verification route; a local copy is not an ack.
+    let localReportFile = null;
+    if (['rendered', 'unknown'].includes(state.phase) && state.report_file) {
+      try {
+        const { report } = await readReviewFile(state.report_file, identity);
+        if (reportDigest(report) === state.report_hash) localReportFile = state.report_file;
+      } catch { /* Missing or changed files cannot be offered as valid reports. */ }
+    }
     return {
       finalization_id: id,
       status: state.phase,
@@ -325,6 +354,12 @@ export async function finalizeReview(input, dependencies = {}) {
       cleanup_status: state.cleanup_status,
       artifact_cleanup_status: state.artifact_cleanup_status || "retained",
       delivered: state.delivered === true,
+      local_report_file: localReportFile,
+      delivery_fallback: localReportFile ? {
+        next_action: 'deliver_local_report',
+        reason: state.error?.code || 'REPORT_SAVE_PENDING',
+        message: '复盘正文已生成；先交付本地报告或完整 Chat 正文，并说明线上保存尚未确认。保留原任务继续核验，不重复上传，不确认线上交付成功。',
+      } : null,
       error: state.error,
       next_action:
         state.phase !== "saved"

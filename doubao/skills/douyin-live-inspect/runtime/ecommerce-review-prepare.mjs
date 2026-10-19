@@ -43,6 +43,12 @@ function reportPending(error) {
   );
 }
 
+function transientRead(error) {
+  if (error?.recoveryCode) return false;
+  return error?.httpStatus === 429 || (error?.httpStatus >= 500 && error?.httpStatus <= 599)
+    || /^(NETWORK_ERROR|REQUEST_TIMEOUT|ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET)$/.test(error?.code || error?.cause?.code || '');
+}
+
 export function runPreparationCli(args, options = {}) {
   return runService(args, options);
 }
@@ -93,6 +99,7 @@ function parseCliResult(result) {
     throw Object.assign(new Error(safeMessage(error.message)), {
       code: error.subtype || error.code || "GET_REPORT_FAILED",
       recoveryCode,
+      httpStatus: status,
     });
   }
   return payload;
@@ -163,6 +170,7 @@ export async function prepareEcommerceReview(
     ? AbortSignal.any([signal, timeout.signal])
     : timeout.signal;
   let timer = null;
+  let lastReadError;
   try {
     combined.throwIfAborted();
     const binding = await resolveTaskBinding(input, async (args) =>
@@ -239,6 +247,7 @@ export async function prepareEcommerceReview(
     if (waitForReportMs > 0)
       timer = setTimer(() => timeout.abort(), waitForReportMs);
     let report;
+    let transientRetries = 0;
     while (!report) {
       try {
         combined.throwIfAborted();
@@ -254,7 +263,11 @@ export async function prepareEcommerceReview(
           ])
         );
       } catch (error) {
-        if (!reportPending(error) || now() >= deadline) {
+        combined.throwIfAborted();
+        const transient = transientRead(error);
+        lastReadError = transient ? error : undefined;
+        if ((!transient && !reportPending(error)) || now() >= deadline || (transient && transientRetries >= 2)) {
+          if (transient) throw error;
           if (reportPending(error))
             throw Object.assign(
               new Error(
@@ -264,14 +277,17 @@ export async function prepareEcommerceReview(
             );
           throw error;
         }
+        if (transient) transientRetries++;
         await wait(
           Math.min(pollIntervalMs, Math.max(0, deadline - now())),
           combined
         );
-        if (now() >= deadline)
+        if (now() >= deadline) {
+          if (lastReadError) throw lastReadError;
           throw Object.assign(new Error("Quality report is still generating"), {
             code: "REPORT_NOT_READY",
           });
+        }
       }
     }
     combined.throwIfAborted();
@@ -329,10 +345,12 @@ export async function prepareEcommerceReview(
       throw Object.assign(new Error("Review preparation cancelled"), {
         code: "CANCELLED",
       });
-    if (timeout.signal.aborted)
+    if (timeout.signal.aborted) {
+      if (lastReadError) throw lastReadError;
       throw Object.assign(new Error("Quality report is still generating"), {
         code: "REPORT_NOT_READY",
       });
+    }
     throw error;
   } finally {
     if (timer !== null) clearTimer(timer);

@@ -152,7 +152,7 @@ def capture_sample_video(store, cancel, bridge):
                 if stop_requested(store,cancel):
                     store.update_task(capture_status='stopped')
                     return
-                with store.connection() as conn:rows=windows(conn,store.session_id)
+                rows=store._read_with_retry(lambda conn:windows(conn,store.session_id))
                 current=next((r for r in rows if r['index']==index),None)
                 if index in store.task().get('sampling_prepared_indices',[]) or (current and current['review_status'] in {'done','skipped'}):break
                 if not any(r['index']!=index and r['review_status']=='pending' and r.get('review_started_at') is None for r in rows):

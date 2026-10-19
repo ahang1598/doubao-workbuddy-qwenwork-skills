@@ -101,3 +101,16 @@ body {
 
 .video-rule-reasons { margin-top: 10px; line-height: 1.6; font-size: 12px; overflow-wrap: anywhere; }
 .video-rule-reasons p { margin: 8px 0; }
+
+.edition-guide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 24px; }
+.edition-guide > p { grid-column: 1 / -1; }
+.edition-guide p { margin: 0; }
+.edition-option { min-width: 0; margin: 0; }
+.edition-option + .edition-option { padding-left: 24px; border-left: 1px solid #e5e6eb; }
+.edition-option h2 { margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #1d2129; }
+.edition-option ul { margin: 8px 0; padding-left: 22px; }
+
+@media (max-width: 720px) {
+  .edition-guide { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .edition-option + .edition-option { padding: 12px 0 0; border-left: 0; border-top: 1px solid #e5e6eb; }
+}

@@ -3,6 +3,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import contract from './formal-telemetry-contract.cjs';
 import {fitExtra} from '../lite/scripts/telemetry-contract.cjs';
+import {reportRequest} from './request-telemetry.cjs';
 import identity from '../lite/scripts/telemetry-identity.cjs';
 
 import {EVENTS, disabled, createTelemetry, runEvent} from './telemetry-reporter.cjs';
@@ -25,6 +26,8 @@ export function addScenarioContext(value) { addCommandContext({scenario_category
 export function observeAccount(account) {
   const state = storage.getStore();
   if (!state) return;
+  // ponytail: 只拦截已知样例账号；其他人工测试用 BYTEDLIVE_TELEMETRY_DISABLED=1。
+  if (account === '123' || account === '123456') state.testAccount = true;
   if (typeof account !== 'string' || !/^\d{1,128}$/.test(account) || (state.account && state.account !== account)) state.accountConflict = true;
   else state.account = account;
 }
@@ -32,15 +35,20 @@ export function commandSignal() { return storage.getStore()?.controller?.signal;
 export function commandUserAgent() {
   try { return storage.getStore()?.telemetry?.getUserAgent(); } catch { return undefined; }
 }
-export function observeResult(value) {
+function observeError(error) {
   const state = storage.getStore();
-  if (state && value?.ok === false) {
-    state.failed = true;
-    const code = value.error?.code || value.error?.subtype || value.data?.error?.code;
-    // 某些业务错误会直接以错误码表达“已取消”，这里统一折叠成 cancelled 语义。
-    state.cancelled ||= ['CANCELLED','ABORTED','ABORT_ERR'].includes(code);
-    addCommandContext({error_code:code});
+  if (!state) return;
+  const metadata = contract.errorMetadata(error);
+  state.failed = true;
+  state.cancelled ||= metadata.outcome === 'cancelled';
+  // A later business guard must not hide a previously observed runtime fault.
+  if (state.outcome !== 'failure') {
+    state.outcome = metadata.outcome;
+    addCommandContext({error_code:metadata.error_code});
   }
+}
+export function observeResult(value) {
+  if (value?.ok === false) observeError(value.error || value.data?.error || {});
   return value;
 }
 
@@ -55,11 +63,15 @@ export async function runCommand(name, handler, {skip = false, env = process.env
   const parent = storage.getStore();
   // 内层调用直接复用外层上下文，避免同一条调用链被重复记成多次入口事件。
   if ((parent && (parent.name === name || !operations[name])) || skip || process.argv.includes('--help') || process.argv.includes('-h') || disabled() || (!operations[name] && !scripts.has(name))) return handler();
+  if (!parent && env.INSPECT_ENTRY_PROBE !== '1') {
+    const selection = [EVENTS.formal.DOUYIN_TASK_CREATE, 'quality/+task-create', 'content/+video-task-create'].includes(name) ? 'formal' : undefined;
+    try { await reportRequest({mode:'formal', select:!!selection, env}); } catch { /* Optional request metadata. */ }
+  }
   // workflow 包装器本身不抢占上报权，真正的 operation 才是最终事件所有者。
   if (parent && operations[name]) parent.serviceEvents = true;
   let telemetry;
   try {
-    telemetry = createTelemetry({toolName:operations[name] ? 'bytedlive-cli' : 'byted-live-inspect', isolated:Boolean(operations[name])});
+    telemetry = createTelemetry({toolName:'douyin-live-inspect', isolated:Boolean(operations[name])});
   // telemetry 初始化失败时直接退化为纯业务执行，不影响命令本身。
   } catch { return handler(); }
   const canonicalCommand = operations[name] || name;
@@ -73,7 +85,18 @@ export async function runCommand(name, handler, {skip = false, env = process.env
   // 即便 SDK reporter 不可用，也不能因此重放业务逻辑。
   try {
     const reporter = telemetry.getReporter();
-    telemetry.reporter = {report:event => state.serviceEvents ? undefined : reporter.report(event)};
+    telemetry.reporter = {report:event => {
+      if (state.serviceEvents || state.testAccount) return;
+      // Classify the emitted event, never clear process.exitCode or change the
+      // handler result. SDK exit-code checks must not turn a business guard
+      // back into a runtime failure.
+      if (state.outcome === 'failure') {
+        event = {...event, result:'failure', error_message:'Inspection command failed'};
+      } else if (!state.cancelled && state.outcome === 'business_rejected') {
+        event = {...event, result:'business_rejected', error_message:undefined};
+      }
+      return reporter.report(event);
+    }};
   } catch { /* Older SDK fixture without a reporter. */ }
   let signalReceived;
   const signals = process.platform === 'win32' ? ['SIGINT','SIGTERM'] : ['SIGINT','SIGTERM','SIGHUP'];
@@ -97,14 +120,15 @@ export async function runCommand(name, handler, {skip = false, env = process.env
   await storage.run(state, async () => {
     try {
       await runEvent(telemetry, canonicalCommand, async () => {
-        try { await Promise.race([execute(),cancelled]); } catch (error) { originalError = error; state.failed = true; state.cancelled ||= error?.name === 'AbortError'; addCommandContext({error_code:error?.code}); }
+        try { await Promise.race([execute(),cancelled]); } catch (error) { originalError = error; observeError(error); }
+        if (!state.failed && Number(process.exitCode) > 0) observeError({});
         try {
           const fitted = fitExtra(state.extra);
           if (fitted) telemetry.addExtra(fitted);
           // 仅在账号来源单一且可信时写入 accountId，避免多账号冲突导致错误归因。
           if (state.account && !state.accountConflict) telemetry.setAccountId(state.account);
         } catch { /* metadata must not alter execution */ }
-        if (state.failed || state.cancelled) { const safe = new Error('Inspection command failed'); if (state.cancelled) safe.name = 'AbortError'; throw safe; }
+        if (state.failed || state.cancelled) { const safe = new Error('Inspection command failed'); if (state.cancelled && state.outcome !== 'failure') safe.name = 'AbortError'; throw safe; }
       });
     } catch { /* SDK and sanitized business failures are handled independently. */ }
     // SDK 可能在调用前或调用后失败；这里只负责兜底拿回真实业务结果，绝不重复执行 handler。

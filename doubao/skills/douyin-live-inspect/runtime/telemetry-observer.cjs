@@ -165,4 +165,39 @@ async function startObserver({env = process.env, port = 0} = {}) {
   return {url: origin, stop};
 }
 
-module.exports = {captureEvent, startObserver};
+async function stopObserver({env = process.env} = {}) {
+  const locator = readLocator(env);
+  if (!locator) {
+    if (fs.existsSync(locatorPath(env))) throw new Error('观察标记无效，无法确认服务身份；请在原终端使用 Ctrl+C 关闭');
+    return false;
+  }
+  try { process.kill(locator.pid, 0); } catch (error) {
+    if (error.code !== 'ESRCH') throw error;
+    if (readLocator(env)?.session === locator.session) fs.unlinkSync(locatorPath(env));
+    return false;
+  }
+  // Older observers expose this snapshot too. Verify the session before signalling
+  // a PID from disk, so stale markers cannot stop an unrelated process.
+  const url = `http://127.0.0.1:${locator.port}/api/events`;
+  const response = await fetch(url, {signal: AbortSignal.timeout(2000)});
+  const snapshot = response.ok ? await response.json() : null;
+  if (snapshot?.session !== locator.session || readLocator(env)?.session !== locator.session) {
+    throw new Error('观察会话已变更，未关闭任何进程；请重新运行关闭命令');
+  }
+  process.kill(locator.pid, 'SIGTERM');
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    try {
+      const probe = await fetch(url, {signal: AbortSignal.timeout(500)});
+      await probe.body.cancel();
+    } catch (error) {
+      if (error.cause?.code !== 'ECONNREFUSED') continue;
+      if (readLocator(env)?.session === locator.session) fs.unlinkSync(locatorPath(env));
+      return true;
+    }
+  }
+  throw new Error('已请求关闭，但服务仍未退出；请检查原启动终端');
+}
+
+module.exports = {captureEvent, startObserver, stopObserver};

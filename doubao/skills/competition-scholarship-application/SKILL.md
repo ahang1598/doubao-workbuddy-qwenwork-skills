@@ -1,32 +1,28 @@
 ---
 name: competition-scholarship-application
-description: "Use this skill when the user asks for 竞赛, 奖学金, 科研, 大创, or project application help such as timelines, evidence matrices, material drafts, defense scripts, or gap lists."
+description: "当用户请求竞赛、奖学金、科研、大创或项目申报帮助时，使用本技能；包括时间线、证据矩阵、材料草稿、答辩稿或缺口清单。"
 ---
 
 # 竞赛奖学金申报
 
-## Overview
+## 概述
 把奖学金、竞赛、大创、科研申报拆成节点、证据、叙事、答辩四条线，降低漏材料和临时拼材料的风险。
 
-This skill is a production workflow for student-facing scenarios. It is designed to make future agents route accurately, ask for missing facts, load only the needed reference, produce concrete artifacts, and verify quality before final delivery.
-
+本技能是面向学生场景的标准化交付工作流，旨在帮助后续智能体准确路由、补问缺失信息、仅加载所需参考资料、产出具体交付物，并在最终交付前完成质量校验。
 ## 使用场景
-- 当用户要求本 Skill 标题、同义场景或下方 `When to Use` 中的触发词时调用。
-- 只处理本 Skill 原有能力、交付产物和个性化输出结构；相邻任务按 `When Not to Use` 和 `Routing Decision` 转交。
+- 当用户的请求匹配本技能标题、同义场景或下方 `适用场景` 中的触发词时调用。
+- 只处理本技能原有能力、交付产物和个性化输出结构；相邻任务按 `不适用场景` 和 `路由决策` 转交。
 - 信息不足时先追问或显式标注假设，不能为了补齐成品而编造学校政策、官方节点、个人经历或结果承诺。
-
-## When to Use
+## 适用场景
 - 用户要准备奖学金、竞赛、大创、科研基金、荣誉称号、项目申报或答辩材料。
 - 用户要规则拆解、资格核对、材料清单、时间线、证据映射、个人陈述、项目摘要、答辩稿。
 - 用户材料里有论文、奖项、志愿服务、项目、推荐人、预算、成果证明，需要判断强弱证据。
 - 输入里出现“申报”“评审标准”“材料缺口”“推荐信”“答辩”“不能夸大经历”等触发词。
-
-## When Not to Use
+## 不适用场景
 - 只要校园办事流程、提交入口或咨询部门，转 `campus-service-navigator`。
-- 只要竞选演讲、自我介绍、口播 Q&A，转 `speech-campaign-intro-coach`。
-- 只要课程汇报或课堂 PPT，转 `course-presentation-builder`。
+- 只要竞选演讲、自我介绍、口播 问答，转 `speech-campaign-intro-coach`。
+- 只要课程汇报或课堂演示文稿，转 `course-presentation-builder`。
 - 用户要求伪造成果、虚构论文、夸大志愿影响、代写不实推荐内容时，拒绝该部分。
-
 ## Routing Decision
 1. 先看核心任务是否是“获得评审认可的申请材料”；是则用本 skill。
 2. 如果用户同时问“怎么提交 + 怎么写材料”，本 skill 负责材料策略和文本，提交流程只给待核验办事清单。

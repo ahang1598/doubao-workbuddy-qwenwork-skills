@@ -67,6 +67,7 @@ export async function watchTaskCompletion(input, {
   const timer = setTimer(() => timeout.abort(), MAX_WATCH_MS);
   let lastStatus = null;
   let checks = 0;
+  let authRetried = false;
   const result = (status) => ({
     status, context, task_status: lastStatus, checks,
     elapsed_ms: Math.max(0, now() - startedAt),
@@ -97,6 +98,15 @@ export async function watchTaskCompletion(input, {
         if (lastStatus === 5) return result('task_failed');
       } catch (error) {
         if (combined.aborted) return result(interrupted());
+        // A single transient auth failure (e.g. an STS refresh hiccup) must not
+        // kill the watcher: retry once after a short backoff. A genuine login
+        // problem fails again and still exits with AUTH_REQUIRED for recovery.
+        if (error.code === 'AUTH_REQUIRED' && !authRetried) {
+          authRetried = true;
+          await wait(Math.min(REQUEST_TIMEOUT_MS, Math.max(0, deadline - now())), combined);
+          if (combined.aborted) return result(interrupted());
+          continue;
+        }
         if (!error.retryable) throw error;
       }
       await wait(Math.min(Math.max(0, POLL_INTERVAL_MS - (now() - checkStartedAt)), Math.max(0, deadline - now())), combined);

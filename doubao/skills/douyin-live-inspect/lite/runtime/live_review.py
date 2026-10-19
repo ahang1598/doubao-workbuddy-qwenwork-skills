@@ -83,6 +83,10 @@ def claim(store, known_rules_version=None, limit=2, dispatcher_id="main", *,
           conn=None, source_context=None, target_batch_id=None):
     # Fence continuation in the allocation transaction, including duplicate submissions.
     with store.connection(True) if conn is None else contextlib.nullcontext(conn) as transaction:
+        from runtime.realtime_policy import current
+        task = store._task(transaction)
+        if current(task) and task.get('finishing', {}).get('phase') == 'completed':
+            return _claim(store, transaction, known_rules_version, limit, dispatcher_id, target_batch_id)
         context = check_context(transaction, store, source_context) if source_context else None
         if context and context.get('continuation'):
             return context['continuation']

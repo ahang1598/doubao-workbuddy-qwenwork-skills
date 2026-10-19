@@ -5,10 +5,20 @@ import os
 import time
 import sqlite3
 import sys
+import errno
+
+
+def is_memory_error(error):
+    # Python 3.10 does not export SQLITE_NOMEM; SQLite's primary code is stable.
+    return (isinstance(error, MemoryError) or
+            isinstance(error, OSError) and error.errno == errno.ENOMEM or
+            isinstance(error, sqlite3.Error) and getattr(error, 'sqlite_errorcode', 0) & 255 == getattr(sqlite3, 'SQLITE_NOMEM', 7))
 
 
 def failure_details(error):
     result = {'category': type(error).__name__, 'frames': []}
+    if is_memory_error(error):
+        result['code'] = 'OUT_OF_MEMORY'
     if isinstance(error, sqlite3.Error):
         code = getattr(error, 'sqlite_errorcode', None)
         name = getattr(error, 'sqlite_errorname', None)
@@ -65,6 +75,8 @@ def failure_label(task):
         return ''
     for key in ('capture_diagnostic', 'failure_diagnostic', 'stream_diagnostic'):
         diagnostic = task.get(key) or {}
+        if diagnostic.get('code') == 'OUT_OF_MEMORY' or diagnostic.get('category') == 'MemoryError':
+            return '内存不足，任务处理失败'
         if type(diagnostic.get('sqlite_errorcode')) is int:
             return '本地存储异常，采集已停止'
     if capture_failed and (task.get('capture_error') in {
