@@ -1,7 +1,8 @@
 ---
 name: lark-doc
-description: 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive
+description: 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档
 metadata:
+  version: 1.0.43
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli docs --help;lark-cli mindnotes --help"
@@ -12,6 +13,8 @@ metadata:
 ## 权威经验
 
 在多轮对话的情况下，用户要求重新修改文档时，**必须重新阅读文档**，因为用户可能自己手动编辑过文件，此时文件的内容可能与上下文内容不一致，直接使用之前读取的内容会造成用户手动编辑的内容丢失。
+
+用户要求将前轮对话转换为飞书文档时，须保留可视化组件的原始格式与交互，echarts 块及 HTML 组件（含原图叠加和内嵌 SVG）均可通过 html5-block 承接，可编辑的 SVG 和 mermaid 都使用画板承接并优先保留其原格式。
 
 ## skill 边界
 

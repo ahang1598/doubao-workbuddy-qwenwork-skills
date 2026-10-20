@@ -99,7 +99,7 @@ HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题�
 
 ## 外部资源
 
-**JS 库统一走 jsDelivr**：`https://cdn.jsdelivr.net/npm/<包名>@<版本>/…`。故障时的备用镜像是 **cdnjs**（`https://cdnjs.cloudflare.com/ajax/libs/<lib>/<ver>/…`，Cloudflare 官方运营，同版本文件字节一致）。**禁止** bootcdn、staticfile、polyfill.io（均有供应链投毒历史），unpkg 不作首选。
+**JS 库统一走 jsDelivr**：`https://fastly.jsdelivr.net/npm/<包名>@<版本>/…`。故障时的备用镜像是 **cdnjs**（`https://cdnjs.cloudflare.com/ajax/libs/<lib>/<ver>/…`，Cloudflare 官方运营，同版本文件字节一致）。**禁止** bootcdn、staticfile、polyfill.io（均有供应链投毒历史），unpkg 不作首选。
 
 **字体走自托管镜像** `https://miaoda.feishu.cn/fonts/css2?family=…`：查询语法与 Google Fonts 的 `css2` 端点完全一致，返回的 `@font-face` 也指向自托管 CDN，两跳都不经过 Google。**不直连** `fonts.googleapis.com` **/** `fonts.gstatic.com`（部分地区不可达）。多字族就重复写多个 `family=`，例如 `<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">`。每个 `font-family` 都要带完整的系统字体 fallback 栈，字体加载失败时页面仍然成立。
 
