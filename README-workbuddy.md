@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：634
-- 当前索引文件数：17602
-- 最近变更：[2026-10-17-180008](workbuddy/change-logs/2026-10-17-180008.md) - WorkBuddy 本次同步新增 0 个文件、修改 0 个文件、删除 30 个文件。 移除条目已归档：cb_teams_experts/ardot-design-generator。 受影响范围：cb_teams_experts/ardot-design-generator。
+- 当前索引条目数：635
+- 当前索引文件数：17687
+- 最近变更：[2026-10-20-180008](workbuddy/change-logs/2026-10-20-180008.md) - WorkBuddy 本次同步新增 85 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/vibe-knowledge-film。 受影响范围：skills/vibe-knowledge-film。
 
 ## 数据来源
 
@@ -392,6 +392,7 @@
 | research-lineage-map | `workbuddy/skills/research-lineage-map` | skill | 4 | 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点... |
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | skill | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | skill | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
+| vibe-knowledge-film | `workbuddy/skills/vibe-knowledge-film` | skill | 85 | 抖音「Vibe知识大赏」式的无旁白知识短片：2–5 分钟、16:9、没有人声，观众读底部一行字幕，同时看屏上把这句话演出来。 核心是讲解设计：给每个概念找一个外行认得的形象，画得像它本身（不用点、线、圈代替），句子里说到什么屏上就是什么、动词真的发生； 提问、命名、结论不硬配图。全片由代码逐帧画出（Canvas + seek(t) + Playwright + ffmpeg）。 内含四条参考片的逐句拆解、六种画法、找形象的方法、分... |
 | wechat-article-pro | `workbuddy/skills/wechat-article-pro` | skill | 2 | 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签。亦支持基于用户给定的稿件或链接改写 |
 | wedding-handcard-creator | `workbuddy/skills/wedding-handcard-creator` | skill | 5 | 根据婚礼主持稿生成可直接打印的主持人手卡。输出 A5 竖版拼版（每张 A5 纸上下各一张小卡，对半裁开即得 12 张手卡），支持 HTML 和 PDF 两种格式，正面为台词+动作提示+页号，背面为红金囍字封面。适用于：用户要求制作婚礼主持手卡、把主持稿转成可打印卡片、生成司仪手卡/提词卡、设计婚礼手卡封面、输出 PDF，或已有主持稿需要配套现场手持卡片的场景。 |
 
@@ -702,6 +703,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-20-180008 | [2026-10-20-180008](workbuddy/change-logs/2026-10-20-180008.md) | WorkBuddy 本次同步新增 85 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/vibe-knowledge-film。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-10-17-180008 | [2026-10-17-180008](workbuddy/change-logs/2026-10-17-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 0 个文件、删除 30 个文件。 移除条目已归档：cb_teams_experts/ardot-design-generator。 受影响范围：cb_teams_experts/ardot-design-generator。 |
 | 2026-10-13-180008 | [2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) | WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。 |
 | 2026-10-08-090557 | [2026-10-08-090557](workbuddy/change-logs/2026-10-08-090557.md) | WorkBuddy 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/wechat-article-pro。 |
@@ -721,4 +723,3 @@
 | 2026-09-03-180002 | [2026-09-03-180002](workbuddy/change-logs/2026-09-03-180002.md) | WorkBuddy 本次同步新增 9 个文件、修改 16 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/dnb-global-data, connectors/marketplace/connectors/intco-ai-platform。 受影响范围：connectors/marketpl... |
 | 2026-09-02-223755 | [2026-09-02-223755](workbuddy/change-logs/2026-09-02-223755.md) | WorkBuddy 本次同步新增 4306 个文件、修改 171 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/deeplink, connectors/marketplace/connectors/dramabuddy, connectors/marketplace/connectors/h... |
 | 2026-09-02-180002 | [2026-09-02-180002](workbuddy/change-logs/2026-09-02-180002.md) | WorkBuddy 本次同步新增 21 个文件、修改 27 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/shanlong-claw, connectors/marketplace/connectors/tencent-map-guide。 受影响范围：connectors/marketpla... |
-| 2026-09-01-180001 | [2026-09-01-180001](workbuddy/change-logs/2026-09-01-180001.md) | WorkBuddy 本次同步新增 58 个文件、修改 31 个文件、删除 24 个文件。 新增条目：connectors/marketplace/connectors/aimoderator, connectors/marketplace/connectors/today-watermark-camera, connectors/marketplace... |

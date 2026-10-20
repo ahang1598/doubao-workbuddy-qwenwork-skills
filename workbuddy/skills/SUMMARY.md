@@ -6,9 +6,9 @@
 
 - 目录：`workbuddy/skills/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/skills`
-- 条目数：17
-- 文件数：160
-- 最近同步：2026-10-17 18:00:08 +0800
+- 条目数：18
+- 文件数：245
+- 最近同步：2026-10-20 18:00:08 +0800
 
 ## 场景导航（按用途）
 
@@ -20,6 +20,7 @@
 
 ### 设计可视化
 - **research-lineage-map** — 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点...
+- **vibe-knowledge-film** — 抖音「Vibe知识大赏」式的无旁白知识短片：2–5 分钟、16:9、没有人声，观众读底部一行字幕，同时看屏上把这句话演出来。 核心是讲解设计：给每个概念找一个外行认得的形象，画得像它本身（不用点、线、圈代替），句子里说到什么屏上就是什么、动词真的发生； 提问、命名、结论不硬配图。全片由代码逐帧画出（Canvas + seek(t) + Playwright + ffmpeg）。 内含四条参考片的逐句拆解、六种画法、找形象的方法、分...
 - **wedding-handcard-creator** — 根据婚礼主持稿生成可直接打印的主持人手卡。输出 A5 竖版拼版（每张 A5 纸上下各一张小卡，对半裁开即得 12 张手卡），支持 HTML 和 PDF 两种格式，正面为台词+动作提示+页号，背面为红金囍字封面。适用于：用户要求制作婚礼主持手卡、把主持稿转成可打印卡片、生成司仪手卡/提词卡、设计婚礼手卡封面、输出 PDF，或已有主持稿需要配套现场手持卡片的场景。
 
 ### 研究/调研
@@ -66,5 +67,6 @@
 | research-lineage-map | `workbuddy/skills/research-lineage-map` | 设计可视化 | research-lineage-map | 4 | 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点... |
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | 通用工具/平台 | skillhub-daily | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | 其他 | tencent-yuanbao-standard-search | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
+| vibe-knowledge-film | `workbuddy/skills/vibe-knowledge-film` | 设计可视化 | vibe-knowledge-film | 85 | 抖音「Vibe知识大赏」式的无旁白知识短片：2–5 分钟、16:9、没有人声，观众读底部一行字幕，同时看屏上把这句话演出来。 核心是讲解设计：给每个概念找一个外行认得的形象，画得像它本身（不用点、线、圈代替），句子里说到什么屏上就是什么、动词真的发生； 提问、命名、结论不硬配图。全片由代码逐帧画出（Canvas + seek(t) + Playwright + ffmpeg）。 内含四条参考片的逐句拆解、六种画法、找形象的方法、分... |
 | wechat-article-pro | `workbuddy/skills/wechat-article-pro` | 营销/内容运营 | wechat-article-pro | 2 | 微信公众号文章发布专业版。功能：1)联网搜索热点信息 2)AI生成微信公众号封面图 3)撰写3000-5000字深度文章 4)使用公众号AI配图功能自动生成并上传封面 5)参考刘润公众号风格写作 6)自动排版 7)不加话题标签。亦支持基于用户给定的稿件或链接改写 |
 | wedding-handcard-creator | `workbuddy/skills/wedding-handcard-creator` | 文档/表格/PPT | wedding-handcard-creator | 5 | 根据婚礼主持稿生成可直接打印的主持人手卡。输出 A5 竖版拼版（每张 A5 纸上下各一张小卡，对半裁开即得 12 张手卡），支持 HTML 和 PDF 两种格式，正面为台词+动作提示+页号，背面为红金囍字封面。适用于：用户要求制作婚礼主持手卡、把主持稿转成可打印卡片、生成司仪手卡/提词卡、设计婚礼手卡封面、输出 PDF，或已有主持稿需要配套现场手持卡片的场景。 |
