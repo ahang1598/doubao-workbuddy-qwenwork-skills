@@ -1,6 +1,6 @@
 # 共同图像质量与身份原则
 
-供 pure-image 与 ai-coding 的图像生成／编辑使用，不决定路线、不新增工具参数或交付步骤。生成和编辑的所有成功结果先按原双分支交付门禁闭环，再验收；问题版本也不能静默丢弃。
+供 pure-image 与 ai-coding 的图像生成／编辑使用，不决定路线、不新增工具参数或交付步骤。`image_gen`／`image_edit` 的所有成功结果先按 [交付门禁](../../workflow/image-generation-delivery-gate.md) 满足当前环境的 Workspace ID 规则并使用 `RichMediaCard` 直接逐项交付，再验收；问题版本也不能静默丢弃。
 
 ## 调用前
 

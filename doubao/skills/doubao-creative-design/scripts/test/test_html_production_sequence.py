@@ -47,7 +47,7 @@ class HtmlProductionSequenceTests(unittest.TestCase):
             "获取需求并路由",
             "创建 Brief",
             "按需澄清",
-            "读取品类 Ref、完成视觉草案并校验 CSS 能力",
+            "应用品类 Ref、完成视觉草案并校验 CSS 能力",
             "执行适用品类的 KV 展示确认并冻结最终 Brief",
             "按路线准备实现输入",
             "AI + Coding 生产并准出正式图片",
@@ -56,6 +56,36 @@ class HtmlProductionSequenceTests(unittest.TestCase):
             "修正与交付闭环",
         )
         positions = [self.sequence.index(term) for term in terms]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_ref_reading_does_not_depend_on_brief_creation(self) -> None:
+        for doc in (self.skill, self.ai, self.pure_image):
+            for obsolete in ("读取任何品类 Spec、Visual System 或 media ref 前",
+                             "不得读取品类 Ref", "不得等待品类 Ref 读完才创建",
+                             "在读取品类 Ref 前明确主题和商品"):
+                self.assertNotIn(obsolete, doc)
+        self.assertIn("完整读取已命中的任务策略 Ref", self.sequence)
+        self.assertIn("路由尚未确定时", self.skill)
+
+    def test_ecommerce_keeps_css_adoption_record_in_brief(self) -> None:
+        self.assertNotIn("Brief 只写自然语言关系，不写 ID", self.ecommerce_visual)
+        self.assertNotIn("不输出 ID、路径、类名或参数", self.ecommerce_visual)
+        self.assertIn("Brief 记录选中 ID、源路径与版本、范围和映射", self.ecommerce_visual)
+        self.assertIn("既有短采用记录", self.ecommerce_visual)
+
+    def test_logo_transparency_and_monochrome_have_separate_steps(self) -> None:
+        logo = (ROOT / "references/style/pure-image/scenarios/brand-logo-system.md").read_text(encoding="utf-8")
+        self.assertNotIn("所有单色、反白、透明底", logo)
+        self.assertNotIn("再进入品牌色和 Mockup", logo)
+        self.assertNotIn("Logo 仍先通过黑白结构验证", logo)
+        self.assertIn("透明通道和边缘", logo)
+        self.assertIn("已有合格透明资产直接复用", logo)
+        self.assertIn("不通过重新生图或 `image_edit` 模拟透明底", logo)
+        start = logo.index("### 默认交付依赖顺序")
+        end = logo.index("### 一致性与多样性", start)
+        production = logo[start:end]
+        steps = ("生成平面彩色主标", "生成黑色单色版", "生成白色反白版", "专门去底", "应用预览")
+        positions = [production.index(step) for step in steps]
         self.assertEqual(positions, sorted(positions))
 
     def test_kv_is_retained_before_asset_manifest(self) -> None:
@@ -115,9 +145,9 @@ class HtmlProductionSequenceTests(unittest.TestCase):
     def test_coding_text_stays_editable_html(self) -> None:
         for term in ("真实 HTML 文本节点", "可编辑", "text-shadow", "-webkit-text-stroke", "background-clip"):
             self.assertIn(term, self.html)
-        self.assertIn("禁止其他 `<style>`", self.html)
-        self.assertIn("data-web-fonts", self.fonts)
-        self.assertIn("禁止其他样式块与外部样式表", self.fonts)
+        self.assertIn("普通 `<style>`", self.html)
+        self.assertIn("Web 字体契约", self.fonts)
+        self.assertIn("可加载的外部样式表", self.fonts)
 
     def test_social_carousel_route_and_reference_boundaries(self) -> None:
         carousel_rows = [line for line in self.skill.splitlines()
@@ -144,7 +174,8 @@ class HtmlProductionSequenceTests(unittest.TestCase):
     def test_announcement_remains_ai_coding_exception(self) -> None:
         family = "通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图"
         self.assertIn(family, self.skill)
-        self.assertIn(f"{family}默认 ai-coding", self.ai)
+        self.assertIn("ai-coding（可编辑设计）", next(line for line in self.skill.splitlines() if line.startswith(f"| {family}")))
+        self.assertIn("底图已有不改变 ai-coding 路线", self.skill)
         self.assertIn("announcement-poster-visual-system.md", next(line for line in self.ai.splitlines() if line.startswith(f"| {family} |")))
         self.assertIn("传播型成果海报、销售喜报、成交捷报", self.skill)
         self.assertIn("以图表分析为主体的销售／赛事数据战报 | pure-coding", self.skill)
@@ -175,8 +206,8 @@ class HtmlProductionSequenceTests(unittest.TestCase):
         self.assertIn("## 各类型菜单的图文组合与配图手段", self.menu_visual)
         for term in (
             "一级主图",
-            "主图、分类／套餐图和条目图是可选职责",
-            "整页图文占比",
+            "主图、分类图与条目图按实际职责选用",
+            "不设统一面积比例或数量配额",
             "整盘／整杯去底图",
             "矩形摄影窗",
             "圆形／椭圆蒙版",

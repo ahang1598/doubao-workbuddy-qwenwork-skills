@@ -38,7 +38,7 @@
 执行任何写操作前：
 
 1. 确认已完整读取本次路由要求的公共契约、命令章节及对象规则；没有按需读取导航的文件须完整读取。
-2. 遵循已安装 `lark-shared` Skill 的权限、JSON 信封、文件输入和高风险确认规则。写入还必须通过宿主统一权限门禁：普通命令使用 `body_mutation`，`comment` 使用 `comment_mutation`；comments-only 仅允许后者。权限拒绝时停止，不通过其他命令或 OOXML 绕过。
+2. 遵循命令返回的 JSON 信封、文件输入和高风险确认规则。写入还必须通过宿主统一权限门禁：普通命令使用 `body_mutation`，`comment` 使用 `comment_mutation`；comments-only 仅允许后者。权限拒绝时停止，不通过其他命令或 OOXML 绕过。
 3. 确认 `--doc` 使用当前活动文档 Canvas 上下文提供的 `<token>`，不能用其他文档的 token。图片上传也复用该 token 作为 `--parent-node`，具体门禁见媒体插入专项。
 4. 按 [`写前门禁`](../workflows/canvas-doc-editing.md#第-1-步--理解任务并读取定位) 区分既有 block、新增、纯文本及领域命令。正文编辑用 `full`，包括确认 `str_replace` 实际搜索范围内的全部匹配；layout 的 `with-ids` 也包含完整样式。既有 ID 必须来自最新响应且在 owner/story 内唯一；新增对象不要求预存 ID，领域身份按专项。替换时保留全部非目标内容和属性，同轮完整且未过期的响应可复用。
 5. block 操作核对下方寻址表的 command/content 形状。`block_replace` 必须持有该类型完整可写快照，包含必需属性、block-specific defaults、非目标子节点和适用 owner/reference graph。仅有摘要、裁剪结果、`BLOCK_REF_INCOMPLETE`、`BLOCK_ID_FABRICATED` 或缺少 defaults 时先用正确 scope/detail 补齐，不试写；领域命令不套用本条根标签条件。
@@ -304,7 +304,7 @@ REPAIR_CHILD_WRAPPED: <td>
 ## 安全与能力边界
 
 - 最小更新优先：不要为改一句话覆盖整篇；完整 XML 回放及冲突处理按工作流执行。
-- CLI 返回 `confirmation_required` 时按 `lark-shared` 展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
+- CLI 返回 `confirmation_required` 时，展示 action、risk 和关键参数；用户确认后才能追加 `--yes`（仅当该命令实际支持）。
 - 未知 command、非法 `--table-option` 字段、派发失败或客户端不可达时，不绕过 CLI 调用私有接口。先由 [恢复流程](../workflows/canvas-doc-recovery.md#标准化运行结果) 产出标准结果，再交回 [统一路由](../workflows/canvas-doc.md#路由总表唯一判定入口)；可编辑路径只能来自 `+ooxml-fetch`，不能使用 Canvas `path`。
 - 不支持在线文档的 `overwrite`、`block_copy_insert_after`、`block_move_after`。其他能力限制统一见 [`canvas-doc-editing.md`](../workflows/canvas-doc-editing.md) 与 [`canvas-doc-xml.md` 明确不支持的标签与能力](../xml/canvas-doc-xml.md#明确不支持的标签与能力)。
 

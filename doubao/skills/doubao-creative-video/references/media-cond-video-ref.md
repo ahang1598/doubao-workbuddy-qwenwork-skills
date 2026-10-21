@@ -172,6 +172,10 @@
 - 用户修改数量、时长、规格、镜头结构、方向或素材范围后，旧确认失效，必须重新展示并确认。
 - 本文件旧版的“素材只问一次后自主补足”“只展示模型、时长、比例三项”“用普通文本收口确认”等规则均已废止，不得执行。
 
+## Workspace ID 传参
+
+`media_to_video` 与 `video_edit` 同样受主 `SKILL.md` 的视频工具 Workspace ID 规则约束。已有唯一有效 ID 时，每次调用都必须在实际工具契约支持的 Workspace ID 参数中显式传入；该 ID 不写进 `prompt`，也不放入 `input_image_ids`／`input_video_ids`／`input_audio_ids` 或 `output_video_id`。mainagent 随派发包传递原始 ID，subagent 逐次核对并传入。下方参数清单还须按此规则补充 Workspace ID；字段名以实际 schema 为准。Mobile 仅透传已有 ID，不创建或操作 Workspace；没有 ID 时按 Mobile 路由调用。ID 冲突、字段不支持、名称不明确或校验失败时，停止调用并回报 mainagent，不省略 ID 降级重试。
+
 ## 工具调用、逐项交付与硬停止
 
 - 用户明确确认后，先输出一句以"我将为你……"口吻写成的生成说明（一句话说清将生成/编辑什么样的视频，含时长、模型与核心内容），不写成"已生成"的完成式，不附分镜表或参数清单。随后在同一轮发出工具调用。

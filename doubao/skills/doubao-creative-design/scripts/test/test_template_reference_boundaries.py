@@ -76,7 +76,7 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
             self.assertTrue(set(entry["ref_keys"]).issubset(refs))
 
     def test_fixed_canvas_top_level_html_item_protocol(self):
-        for term in ("data-canvas-width", "data-canvas-height", "所有视觉 CSS 声明必须直接写在对应元素的 `style`", "禁止其他 `<style>`", "`FileBatchUpload`", "顶层 `<item type=\"HTML\">`", "禁止 `<frame type=\"HTML\">`"):
+        for term in ("data-canvas-width", "data-canvas-height", "固定 `px` 值", "可加载的外部样式表", "`FileBatchUpload`", "顶层 `<item type=\"HTML\">`", "禁止 `<frame type=\"HTML\">`"):
             self.assertIn(term, self.protocol)
         self.assertIn("`+update`／`+update-batch` 只允许修正顶层对象的 `brief`／`path`", self.protocol)
 

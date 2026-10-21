@@ -55,6 +55,24 @@ class Tests(unittest.TestCase):
   self.assertEqual(text['id'],'text.outline');self.assertIn('文字特效',text['implied_intents'])
   color=lib.search('配色','',None,8)['candidates'][0]
   self.assertEqual(color['id'],'palette.cream-pink');self.assertIn('配色',color['implied_intents'])
+ def test_broad_intents_offer_scene_and_type_without_implied_frames(self):
+  self.data['entries']=[
+   {'id':'layout.image-stage','name':'主图舞台','tags':['主图']},
+   {'id':'layout.staggered-title','name':'错位标题','tags':['标题']},
+   {'id':'layout.collage','name':'拼贴','tags':['拼贴']},
+   {'id':'shape.arch-window','name':'拱窗','tags':['拱窗']},
+   {'id':'layout.card-rail','name':'横向卡片列','tags':['卡片']},
+   {'id':'surface.light-paper','name':'纸纹','tags':['纸纹']},
+  ];self.save();lib=m.Library(self.root)
+  creative={e['id'] for e in lib.search('创意 排版',limit=20)['candidates']}
+  self.assertTrue({'layout.image-stage','layout.staggered-title','layout.collage'} <= creative)
+  self.assertNotIn('shape.arch-window',creative)
+  self.assertNotIn('layout.card-rail',creative)
+  background={e['id'] for e in lib.search('背景 氛围',limit=20)['candidates']}
+  self.assertTrue({'layout.image-stage','surface.light-paper'} <= background)
+  self.assertEqual(lib.search('拱窗',limit=8)['candidates'][0]['id'],'shape.arch-window')
+  self.assertEqual(lib.search('卡片',limit=8)['candidates'][0]['id'],'layout.card-rail')
+  self.assertTrue(all(e['id'].startswith('surface.') for e in lib.search('背景',kind='surface',limit=20)['candidates']))
  def test_section_boundary_and_fence(self):
   r=self.lib.get(['combination.one'],templates=True);s=r['sections'][0]['content'];self.assertIn('fake',s);self.assertNotIn('SECRET',s);self.assertNotIn('INTRO',s)
  def test_cycle_and_dedup(self):

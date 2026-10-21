@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：280
-- 当前索引文件数：4885
-- 最近变更：[2026-10-20-180008](doubao/change-logs/2026-10-20-180008.md) - Doubao 本次同步新增 0 个文件、修改 5 个文件、删除 13 个文件。 移除条目已归档：skills/student-discount-application。 受影响范围：skills/html, skills/lark-doc, skills/student-discount-application。
+- 当前索引文件数：4892
+- 最近变更：[2026-10-21-180007](doubao/change-logs/2026-10-21-180007.md) - Doubao 本次同步新增 9 个文件、修改 109 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-creative-video, skills/lark-calendar, skills/lark-mail,...
 
 ## 数据来源
 
@@ -100,9 +100,9 @@
 | doubao-contract-amendment | `doubao/skills/doubao-contract-amendment` | skill | 2 | 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。 |
 | doubao-contract-drafting | `doubao/skills/doubao-contract-drafting` | skill | 24 | 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。 |
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | skill | 4 | doubao-contract-reviewer 是面向大众用户的合同审查 Skill，适合在豆包/豆包 Turbo 中审查各类合同。用户上传合同或询问“帮我审合同、合同有没有问题、这份合同能不能签、合同风险、合同把关、legal review”时必须使用。本 Skill 强制输出比裸跑更有用的结构化审查：先判断我方立场，再按交易模块识别风险，区分“必改风险 / 可争取优化项 / 形式完善项”，并给出可直接替换或补充的修改文本。适... |
-| doubao-creative-design | `doubao/skills/doubao-creative-design` | skill | 273 | 当用户要求从零生成或设计商业、品牌、社交媒体及知识表达类创意图片，编辑、复刻或审查已有视觉成品，或进行系列延展、多比例适配、多资产视觉系统设计时使用。触发任务包括做图、出图、生成图片、设计海报、主视觉／KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP 角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图... |
-| doubao-creative-drama | `doubao/skills/doubao-creative-drama` | skill | 30 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
-| doubao-creative-video | `doubao/skills/doubao-creative-video` | skill | 26 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doubao-creative-drama；其他广告、品牌、企... |
+| doubao-creative-design | `doubao/skills/doubao-creative-design` | skill | 274 | 当用户要求从零生成或设计商业、品牌、社交媒体及知识表达类创意图片，编辑、复刻或审查已有视觉成品，或进行系列延展、多比例适配、多资产视觉系统设计时使用。触发任务包括做图、出图、生成图片、设计海报、主视觉／KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP 角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图... |
+| doubao-creative-drama | `doubao/skills/doubao-creative-drama` | skill | 32 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
+| doubao-creative-video | `doubao/skills/doubao-creative-video` | skill | 28 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doubao-creative-drama；其他广告、品牌、企... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | skill | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
 | doubao-cron-scheduler | `doubao/skills/doubao-cron-scheduler` | skill | 1 | 创建、查看、更新或删除定时任务，包括一次性提醒、周期任务、复杂日历规则、后台监控和多轮编辑。用于用户要求提醒、持续关注、按小时/日/周/月/年运行或管理已有任务。 |
 | doubao-cross-border-growth-content | `doubao/skills/doubao-cross-border-growth-content` | skill | 16 | Evidence-grounded cross-border ecommerce content operations for short-video and livestream scripts, UGC or creator briefs, multilingual captions, localized content angles, image/video briefs, content calendars, hook m... |
@@ -211,7 +211,7 @@
 | lark-doc | `doubao/skills/lark-doc` | skill | 25 | 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档 |
 | lark-drive | `doubao/skills/lark-drive` | skill | 63 | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入，也可通过 `drive +fetch` 把 Drive 文件读取为 Markdown（含知识库里映射为 wiki URL 的 Drive 文件）。用户需要整理云盘目录、处理云空间资源 URL/token、判断链... |
 | lark-im | `doubao/skills/lark-im` | skill | 61 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。 |
-| lark-mail | `doubao/skills/lark-mail` | skill | 35 | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks. |
+| lark-mail | `doubao/skills/lark-mail` | skill | 37 | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. Do not use for docs/sheets/calendar/auth setup/pure contact lookup/IM chat tasks. |
 | lark-markdown | `doubao/skills/lark-markdown` | skill | 6 | 飞书 Markdown：查看、创建、上传、编辑和比较飞书中的原生 Markdown 文件。当用户要操作飞书 Markdown 文件，或比较其远端版本及本地草稿时使用。纯本地 Markdown 文件操作不触发本 skill。不负责将 Markdown 导入为飞书在线文档，也不负责文件搜索、权限、评论、移动、删除等云空间管理操作。 |
 | lark-meeting | `doubao/skills/lark-meeting` | skill | 34 | 飞书视频会议：查询会议记录与会议产物(纪要/逐字稿/妙记)、妙记搜索/上传/下载/编辑、会议录制控制；查询进行中的会议、实时会议内容(发言/聊天/共享文档)问答(会上/会里)、发送会中聊天/表情、查询或创建会议绑定聊天，以及主持人结束会议、移出参会人、闭麦或请求开麦；基于 meeting_id、meeting_no、event_id、note_id、minute_token、vc-node-id 或妙记 URL 查询相关信息。预约... |
 | lark-okr | `doubao/skills/lark-okr` | skill | 26 | 飞书 OKR：管理目标与关键结果。查看和编辑 OKR 周期、目标、关键结果、对齐关系、量化指标和进展记录。当用户需要查看或创建 OKR、管理目标和关键结果、查看对齐关系时使用。不负责：待办任务管理（lark-task）、日程/会议安排（lark-calendar）、绩效评估 |
@@ -311,6 +311,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-21-180007 | [2026-10-21-180007](doubao/change-logs/2026-10-21-180007.md) | Doubao 本次同步新增 9 个文件、修改 109 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-creative-video, skills/lark-calendar, skills/lark-mail,... |
 | 2026-10-20-180008 | [2026-10-20-180008](doubao/change-logs/2026-10-20-180008.md) | Doubao 本次同步新增 0 个文件、修改 5 个文件、删除 13 个文件。 移除条目已归档：skills/student-discount-application。 受影响范围：skills/html, skills/lark-doc, skills/student-discount-application。 |
 | 2026-10-19-195418 | [2026-10-19-195418](doubao/change-logs/2026-10-19-195418.md) | Doubao 本次同步新增 8 个文件、修改 90 个文件、删除 0 个文件。 受影响范围：skills/campus-service-navigator, skills/competition-scholarship-application, skills/course-presentation-builder, skills/doubao-equi... |
 | 2026-10-17-180008 | [2026-10-17-180008](doubao/change-logs/2026-10-17-180008.md) | Doubao 本次同步新增 10 个文件、修改 30 个文件、删除 1 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/lark-drive, skills/lark-im, skills/ppt, skills/sheet。 |
@@ -330,4 +331,3 @@
 | 2026-09-10-180013 | [2026-09-10-180013](doubao/change-logs/2026-09-10-180013.md) | Doubao 本次同步新增 30 个文件、修改 45 个文件、删除 0 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/ppt, skills/sheet。 |
 | 2026-09-08-180002 | [2026-09-08-180002](doubao/change-logs/2026-09-08-180002.md) | Doubao 本次同步新增 9 个文件、修改 7 个文件、删除 11 个文件。 新增条目：skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/byted-mediakit-image, skills/doubao-app-builder, skills/doub... |
 | 2026-09-05-180002 | [2026-09-05-180002](doubao/change-logs/2026-09-05-180002.md) | Doubao 本次同步新增 34 个文件、修改 8 个文件、删除 3 个文件。 新增条目：skills/computer-use-automation。 移除条目已归档：skills/computer-use。 受影响范围：skills/computer-use, skills/computer-use-automation, skills/douba... |
-| 2026-09-04-180001 | [2026-09-04-180001](doubao/change-logs/2026-09-04-180001.md) | Doubao 本次同步新增 12 个文件、修改 55 个文件、删除 0 个文件。 受影响范围：skills/artifact-preview, skills/doubao-pc-optimizer, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-doc... |

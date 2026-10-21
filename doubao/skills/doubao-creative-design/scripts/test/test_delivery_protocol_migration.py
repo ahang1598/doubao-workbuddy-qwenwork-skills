@@ -98,7 +98,7 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
     def test_current_non_delivery_capabilities_are_not_rolled_back(self) -> None:
         combined = "\n".join((self.skill, self.html_validation, self.validation))
         for term in (
-            "data-web-fonts",
+            "Web 字体契约",
             "屏间过渡路由验收",
             "mix-blend-mode: multiply",
             "ART_TITLE_ALPHA_INVALID",

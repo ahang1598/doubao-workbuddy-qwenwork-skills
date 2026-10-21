@@ -48,9 +48,9 @@ async function check(name,html,expected,longPage=false,fontContract,options={}) 
 (async()=>{
   // Regression: a complete local fixture must not fail solely due to file-origin navigation events.
   await check('valid-local-source',source,null);
-  await check('mixed-text-in-safe-area',source.replace('<div data-canvas-bottom-safe-area','<p id="mixed" style="position:absolute;left:10px;top:600px;width:100px;height:20px;margin:0;font-size:16px;line-height:20px">Test<span></span></p><div data-canvas-bottom-safe-area'),'TEXT_IN_BOTTOM_SAFE_AREA');
-  await check('aria-hidden-text-in-safe-area',source.replace('<div data-canvas-bottom-safe-area','<p aria-hidden="true" style="position:absolute;left:10px;top:600px;width:100px;height:20px;margin:0;font-size:16px;line-height:20px">Test<span></span></p><div data-canvas-bottom-safe-area'),'TEXT_IN_BOTTOM_SAFE_AREA');
-  await check('nested-safe-area',source.replace('<div data-canvas-bottom-safe-area','<section><div data-canvas-bottom-safe-area').replace('height:72px;width:480px;"></div>','height:72px;width:480px;"></div></section>'),'HTML_BOTTOM_SAFE_AREA_MISSING');
+  await check('mixed-text-in-safe-area',source.replace('<div data-canvas-bottom-safe-area','<p id="mixed" style="position:absolute;left:10px;top:600px;width:100px;height:20px;margin:0;font-size:16px;line-height:20px">Test<span></span></p><div data-canvas-bottom-safe-area'),null);
+  await check('aria-hidden-text-in-safe-area',source.replace('<div data-canvas-bottom-safe-area','<p aria-hidden="true" style="position:absolute;left:10px;top:600px;width:100px;height:20px;margin:0;font-size:16px;line-height:20px">Test<span></span></p><div data-canvas-bottom-safe-area'),null);
+  await check('nested-safe-area',source.replace('<div data-canvas-bottom-safe-area','<section><div data-canvas-bottom-safe-area').replace('height:72px;width:480px;"></div>','height:72px;width:480px;"></div></section>'),null);
   await check('brief-size-mismatch',source,'BRIEF_CANVAS_MISMATCH',false,undefined,{expectedWidth:480,expectedHeight:641});
   const bound=await check('brief-size-match',source,null,false,undefined,{expectedWidth:480,expectedHeight:640});
   assert.equal(bound.source_sha256,require('node:crypto').createHash('sha256').update(source).digest('hex'));
@@ -62,23 +62,26 @@ async function check(name,html,expected,longPage=false,fontContract,options={}) 
   await check('clip-path-hidden-text',source.replace('id="headline" style="','id="headline" style="clip-path:inset(100%);'),'TEXT_CLIPPED');
   await check('clip-path-safe-text',source.replace('id="headline" style="','id="headline" style="clip-path:inset(0);'),null);
   await check('clip-path-transformed-text',source.replace('id="headline" style="','id="headline" style="transform:scale(.9);clip-path:inset(0);'),'TEXT_CLIP_UNVERIFIED');
-  await check('safe-area-image',source.replace('height:72px;width:480px;"></div>','height:72px;width:480px;"><img alt="content" src="'+source.match(/src="([^"]+)"/)[1]+'" style="width:40px;height:40px;"></div>'),'HTML_BOTTOM_SAFE_AREA_MISSING');
-  await check('image-overlaps-safe-area',source.replace('top:128px;','top:520px;').replace('height:160px;z-index:1;','height:100px;z-index:1;'),'HTML_BOTTOM_SAFE_AREA_MISSING');
+  await check('safe-area-image',source.replace('height:72px;width:480px;"></div>','height:72px;width:480px;"><img alt="content" src="'+source.match(/src="([^"]+)"/)[1]+'" style="width:40px;height:40px;"></div>'),null);
+  await check('image-overlaps-safe-area',source.replace('top:128px;','top:520px;').replace('height:160px;z-index:1;','height:100px;z-index:1;'),null);
 
   fs.writeFileSync(path.join(tmp,'local.svg'),'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><circle cx="80" cy="80" r="60" fill="red"/></svg>');
-  await check('missing-bottom-safe-area',source.replace('data-canvas-bottom-safe-area="72"','data-missing="72"'),'HTML_BOTTOM_SAFE_AREA_MISSING');
-  await check('hidden-bottom-safe-area',source.replace('height:72px;width:480px;','display:none;height:72px;width:480px;'),'HTML_BOTTOM_SAFE_AREA_MISSING');
-  await check('absolute-bottom-safe-area',source.replace('height:72px;width:480px;','position:absolute;bottom:0;height:72px;width:480px;'),'HTML_BOTTOM_SAFE_AREA_MISSING');
-  await check('content-after-bottom-safe-area',source.replace('</main>','<div>extra</div></main>'),'HTML_BOTTOM_SAFE_AREA_MISSING');
-  await check('undersized-bottom-safe-area',source.replace('data-canvas-bottom-safe-area="72"','data-canvas-bottom-safe-area="10"'),'HTML_BOTTOM_SAFE_AREA_MISSING');
+  await check('missing-bottom-safe-area',source.replace('data-canvas-bottom-safe-area="72"','data-missing="72"'),null);
+  await check('hidden-bottom-safe-area',source.replace('height:72px;width:480px;','display:none;height:72px;width:480px;'),null);
+  await check('absolute-bottom-safe-area',source.replace('height:72px;width:480px;','position:absolute;bottom:0;height:72px;width:480px;'),null);
+  await check('content-after-bottom-safe-area',source.replace('</main>','<div>extra</div></main>'),'TEXT_OUTSIDE_CANVAS');
+  await check('undersized-bottom-safe-area',source.replace('data-canvas-bottom-safe-area="72"','data-canvas-bottom-safe-area="10"'),null);
   await check('relative-local-image',source.replace(/src="[^"]+"/,'src="local.svg"'),null);
   await check('clipped-text',replace(source,'height:144px;margin:0','height:20px;overflow:hidden;margin:0'),'TEXT_CLIPPED');
   await check('broken-image',source.replace(/src="[^"]+"/,'src="missing-image.png"'),'IMAGE_NOT_LOADED');
   const legalWebFont='<style data-web-fonts>@font-face{font-family:"AuditUnused";src:url(data:font/woff2;base64,d09GMg==) format("woff2");font-weight:400;font-style:normal}</style>';
   await check('legal-web-font-style',replace(source,'</head>',legalWebFont+'</head>'),null);
-  await check('multiple-web-font-styles',replace(source,'</head>',legalWebFont+legalWebFont+'</head>'),'WEB_FONT_STYLE_BLOCK_INVALID');
-  await check('selector-in-web-font-style',replace(source,'</head>','<style data-web-fonts>body{color:red}</style></head>'),'WEB_FONT_STYLE_BLOCK_INVALID');
-  await check('noninline-styles',replace(source,'</head>','<style>p{color:red}</style></head>'),'STYLESHEET');
+  await check('multiple-web-font-styles',replace(source,'</head>',legalWebFont+legalWebFont+'</head>'),null);
+  await check('selector-in-web-font-style',replace(source,'</head>','<style data-web-fonts>body{color:red}</style></head>'),null);
+  await check('noninline-styles',replace(source,'</head>','<style>p{color:red}</style></head>'),null);
+  fs.writeFileSync(path.join(tmp,'styles.css'),'p{color:red}');
+  await check('external-styles',replace(source,'</head>','<link rel="stylesheet" href="styles.css"></head>'),null);
+  await check('text-without-id',source.replace('id="headline"','class="headline"'),null);
   await check('viewport-dimension',replace(source,'position:relative;width:480px','position:relative;width:90vw'),'CANVAS_SIZE');
   await check('hidden-text',replace(source,'id="headline" style="','id="headline" style="opacity:0;'),'HIDDEN_TEXT');
   await check('duplicate-element',replace(source,'id="footer"','id="headline"'),'DUPLICATE_DOM_ID');

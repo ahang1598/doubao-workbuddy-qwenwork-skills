@@ -17,8 +17,8 @@
 
 1. **冻结自然语言 Brief**：确认最终可见文案、内容顺序、参考继承范围、主焦点、图文关系和内容容量。
 2. **读取实现能力**：用 `query-css-library.py get <ID> --dependencies` 读取选中 CSS/SVG 正文和依赖，必要结构使用 `template`；未命中时按 Visual System 自行实现并记录原因。
-3. **组装完整 HTML**：准确文字进入真实 DOM，复杂自由路径使用内嵌 SVG，所有样式展开为元素行内 `style`。稳定 `id`／`data-layer-id` 直接写在需要定位和编辑的 DOM 上。
-4. **测量并锁定画布**：保留 `data-canvas-width` 及 `html`、`body`、唯一作品容器的既定宽度。在最终宽度、真实文字和字体就绪后，按 [DOM 测高](../html-dom-measurement.md) 测量语义内容自然高度与独立页尾安全区的合计高度，向上取整，仅将同一正整数同步到 `data-canvas-height` 和 `html`、`body`、唯一作品容器的 `height`，再以正式固定高度复测。用户已锁定高度时保留该高度，在锁定尺寸内重排并检查溢出，不以测量值擅自覆盖。
+3. **组装完整 HTML**：准确文字进入真实 DOM，复杂自由路径使用内嵌 SVG，样式遵循 HTML 协议；可编辑元素通过合适的选择器定位。
+4. **测量并锁定画布**：保留 `data-canvas-width` 及 `html`、`body`、唯一作品容器的既定宽度。在最终宽度、真实文字和字体就绪后，按 [DOM 测高](../html-dom-measurement.md) 测量语义内容自然高度与实际页尾留白的合计高度，向上取整，仅将同一正整数同步到 `data-canvas-height` 和 `html`、`body`、唯一作品容器的 `height`，再以正式固定高度复测。用户已锁定高度时保留该高度，在锁定尺寸内重排并检查溢出，不以测量值擅自覆盖。
 5. **检查与闭环**：按 [HTML 检查执行流程](../html-validation.md) 做源码和 `shot.py` 检查；连续长页给顶层区段设置唯一 `data-section-id`，由 shot.py 报告提供实际测量。随后完成预览图 CDN 上传与 Markdown 展示、HTML 上传、顶层 HTML Item 回读和 Workspace 画布卡片交付。
 6. **版本规则**：HTML 内容、样式、素材或尺寸变化时修改完整源、重新上传并 `+create` 新 HTML Item；`+update` 只可在协议允许时修正顶层 `brief`／`path`。
 

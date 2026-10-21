@@ -2,11 +2,13 @@
 
 > 状态：CLI 与服务端均已实现（`+ls` / `+tree` / `+get` / `+create` / `+create-batch` / `+update` / `+update-batch` 七个接口已上线，不再是 mock）。请求与响应结构以 Alice IDL 的 `ItemContent` / `FrameContent` 为准。
 
-本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构。共用的调用约定写在本文，各命令页只描述自己的差异。
+本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构，并包含素材资产读取命令。下文共用调用约定仅适用于 Canvas Workspace 命令，各命令页描述自己的差异。
+
+用户引用素材资产时，使用 `design-cli design-asset +get --asset-ids <资产ID>`；参数和返回结构见 [素材资产详情](design-asset-get.md)。该命令无需画布 ID，不支持 revision-id。
 
 ## 调用形状
 
-所有命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
+下述 Canvas Workspace 命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
 
 ```bash
 design-cli design-workspace +<command> [flags]

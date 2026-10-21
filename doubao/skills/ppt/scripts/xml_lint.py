@@ -4612,6 +4612,10 @@ RULE_METADATA: dict[str, dict[str, Any]] = {
         "name": "embedded_svg_visual_bounds_do_not_overlap",
         "comparison": "overlap_element_count < 2",
     },
+    "embed_svg_fallback_placeholder": {
+        "name": "embedded_svg_is_real_content_not_fallback_placeholder",
+        "comparison": "fallback_placeholder == false",
+    },
     "text_may_overflow_shape": {
         "name": "estimated_text_fits_declared_shape",
         "comparison": "estimated_height <= available_height",

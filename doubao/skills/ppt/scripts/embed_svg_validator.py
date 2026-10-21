@@ -90,6 +90,45 @@ def load_embed_svg_capabilities() -> dict[str, Any]:
     return EMBED_SVG_CAPABILITIES
 
 
+# The Slides renderer swaps a failed embed SVG for this fixed placeholder graphic. When a readback
+# returns it, the SVG the model wrote was invalid and never rendered, so the embed must be rewritten.
+_FALLBACK_PLACEHOLDER_SVG_MARKUP = (
+    '<svg width="120" height="120" viewBox="0 0 120 120" fill="none" '
+    'xmlns="http://www.w3.org/2000/svg">'
+    '<path d="M109.913 68.254v-7.701c4.306 2.726 5.607 5.932 5.607 9.168 0 1.388.007 2.525.014 3.57.012 1.856.022 3.421-.014 5.576-.401-2.406-1.556-7.633-5.607-10.614ZM10.33 42.75v7.681c-1.947 1.78-3.725 6.219-2.479 9.89-.29-.363-.558-.682-.808-.978C5.636 57.669 4.818 56.697 4 52.547c0-2.291.99-7.412 6.33-9.797Z" fill="#0C296E"/>'
+    '<path d="M10.33 23.174V93.59a4 4 0 0 0 4 4h38.975l8.61-20.393-11.634-19.334L61.915 31.61h-5.333a4 4 0 0 1-3.163-1.552l-7.226-9.333a4 4 0 0 0-3.163-1.551h-28.7a4 4 0 0 0-4 4Z" fill="#BBBFC4" fill-opacity=".45"/>'
+    '<path d="M109.912 93.59V35.61a4 4 0 0 0-4-4H73.093l-11.53 26.254L73.01 77.198 64.55 97.59h41.362a4 4 0 0 0 4-4Z" fill="#BBBFC4" fill-opacity=".45"/>'
+    '<path d="M5 64.511v-7.43c1.004 1.546 2.252 2.86 3.745 3.993 2.51 1.904 5.677 3.267 9.456 4.387v8.525C9.484 71.526 6.142 67.198 5 64.51Zm0-9.445a17.03 17.03 0 0 1-1-2.498V64.71c1.214 3.027 4.836 7.743 14.2 10.314.327.089.66.176 1 .26V64.71C12.19 62.727 7.494 60.067 5 55.066Z" fill="#0C296E"/>'
+    '<path d="M19.068 27.633a1.98 1.98 0 1 1 0 3.96 1.98 1.98 0 0 1 0-3.96Zm2.98 1.98a2.98 2.98 0 1 0-5.96 0 2.98 2.98 0 0 0 5.96 0Zm6.868-1.98a1.98 1.98 0 1 1 0 3.96 1.98 1.98 0 0 1 0-3.96Zm2.98 1.98a2.98 2.98 0 1 0-5.96 0 2.98 2.98 0 0 0 5.96 0ZM15.588 49.748a.5.5 0 0 1 .5-.5h20.899a.5.5 0 0 1 0 1h-20.9a.5.5 0 0 1-.5-.5Zm0 9.302a.5.5 0 0 1 .5-.5h20.899a.5.5 0 1 1 0 1h-20.9a.5.5 0 0 1-.5-.5Z" fill="#8F959E"/>'
+    '<path d="M95.314 104.058c10.449-.806 13.554-4.543 16.576-7.712v7.712c-1.843 2.771-8.201 5.994-16.576 6.666-8.374.673-18.03 0-34.045-.784v-6.663c12.691 0 23.597 1.587 34.045.781ZM80.542 89.192v-7.718c6.74.59 12.834 1.444 21.98 0 9.241-1.46 12.998-7.096 12.998-12.517v10.07c-.481 3.41-4.814 9.186-12.516 10.15-7.703.962-14.794.931-22.462.015Z" fill="#3370FF"/>'
+    '<path d="M5.4 93.674v-8.201c8.2 6.4 21.12 9.376 33.296 9.376v8.105c-14.094 0-27.696-3.679-33.297-9.28Z" fill="#00D6B9"/>'
+    '<path d="M98.031 44.633c9.941 0 18-8.06 18-18 0-9.941-8.059-18-18-18s-18 8.059-18 18c0 9.94 8.059 18 18 18Z" fill="#F80"/>'
+    '<path d="M97.213 18.451a.818.818 0 0 0-.819.818v9.819a.82.82 0 0 0 .819.818h1.636a.818.818 0 0 0 .818-.819V19.27a.818.818 0 0 0-.818-.818h-1.636Zm0 13.091a.818.818 0 0 0-.819.818v1.637c0 .452.367.818.819.818h1.636a.818.818 0 0 0 .818-.818V32.36a.818.818 0 0 0-.818-.818h-1.636Z" fill="#fff"/>'
+    "</svg>"
+)
+
+
+def _svg_path_signature(svg_root: ET.Element) -> tuple[str, ...]:
+    """Fingerprint an SVG by its sorted, whitespace-normalized <path> `d` outlines."""
+    d_values = [
+        re.sub(r"\s+", " ", node.attrib["d"].strip())
+        for node in svg_root.iter()
+        if xml_local_name(node.tag) == "path" and node.attrib.get("d")
+    ]
+    return tuple(sorted(d_values))
+
+
+def _load_fallback_placeholder_signature() -> tuple[str, ...]:
+    try:
+        return _svg_path_signature(ET.fromstring(_FALLBACK_PLACEHOLDER_SVG_MARKUP))
+    except ET.ParseError:
+        return ()
+
+
+# Precomputed once; an empty signature (parse failure) disables detection rather than misfiring.
+_FALLBACK_PLACEHOLDER_SIGNATURE = _load_fallback_placeholder_signature()
+
+
 def validate_embedded_svgs(
     slide_root: ET.Element,
 ) -> list[dict[str, Any]]:
@@ -200,6 +239,19 @@ def validate_embedded_svgs(
                     attr="viewBox",
                     actual=view_box,
                 )
+
+        if _FALLBACK_PLACEHOLDER_SIGNATURE and _svg_path_signature(svg_root) == _FALLBACK_PLACEHOLDER_SIGNATURE:
+            append_issue(
+                "error",
+                "embed_svg_fallback_placeholder",
+                svg_path,
+                f"embedded SVG {embed_id} is the Slides fallback placeholder graphic, not real content",
+                "This SVG failed to render and Slides substituted its default placeholder. The SVG you "
+                "wrote was invalid; regenerate the intended SVG content for this embed and write it again.",
+                embed_id=embed_id,
+                tag="svg",
+            )
+            continue
 
         ids: set[str] = set()
         references: list[tuple[str, str, str]] = []

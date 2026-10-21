@@ -51,7 +51,7 @@ VI 的完整 `.html` 是内部可编辑作品源、`FileBatchUpload` 载荷和 C
 
 VI 设计中有且仅有进入完整 HTML 生成／修改与 `shot.py` 自检阶段时，Main Agent 才允许并且必须调用 Subagent。除此以外全部工作必须由 Main Agent 亲自完成，包括需求澄清、Ref 读取、Brief 建立与更新、设计规划输出、Logo 候选生成、Logo 确认、首屏 `image_edit`、其他 VI 图像与视频素材生产、MediaKit 抠图、素材检查、版本选择、返修调度、Workspace、CLI 写入／回读、CDN 上传、`FileBatchUpload` 和所有用户交付。禁止把这些任务拆给 Subagent，也禁止以“并行提效”“素材生产”或“质量复核”为由扩大 Subagent 范围。
 
-Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始短链和处理信息，并按照 [交付门禁](../../../workflow/image-generation-delivery-gate.md) 完成对应 CLI 写入／回读与 `present_files` 交付；双通道闭环后才能选稿、修改、衍生、进入 HTML 组装或开始下一批。Logo 候选、首屏效果、透明 Logo 和全部 VI 应用资产均遵循本规则。
+Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始产物和处理信息。`image_gen`／`image_edit` 按 [交付门禁](../../../workflow/image-generation-delivery-gate.md) 执行当前环境的 Workspace ID 规则，结果返回后使用 `RichMediaCard` 直接逐项交付，不重复创建媒体 Item，也不在直交前插入媒体回读；直交后按公共门禁执行目录归档；其他处理工具按其适用门禁交付。完成交付后才能选稿、修改、衍生、进入 HTML 组装或开始下一批。Logo 候选、首屏效果和全部 VI 应用生成资产均遵循本规则。
 
 ### 完整 VI 手册 HTML 组装门禁
 
@@ -61,7 +61,7 @@ Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始短链和
 
 Main Agent 必须按以下编号顺序完成 HTML 输出与交付，不得省略、调换或合并步骤：
 
-1. **CDN＋Markdown 同尺寸预览**：Main Agent 接收 Subagent 使用 `shot.py` 自检后的完整预览图，确认其像素尺寸与 HTML 声明宽高一致；由 Main Agent 将预览图上传 CDN，亲自核验所得公网 HTTP(S) 链接可访问，再使用标准 Markdown 图片语法向用户展示。该预览是必需的用户可见输出，但不得调用 `present_files`、不得创建 IMAGE Item、不得写入 Workspace。
+1. **CDN＋Markdown 同尺寸预览**：Main Agent 接收 Subagent 使用 `shot.py` 自检后的完整预览图，确认其像素尺寸与 HTML 声明宽高一致；由 Main Agent 将预览图上传 CDN，亲自核验所得公网 HTTP(S) 链接可访问，再使用标准 Markdown 图片语法向用户展示。该预览是必需的用户可见输出，仅通过上述 CDN＋Markdown 展示，不得创建 IMAGE Item、不得写入 Workspace。
 2. **使用 `FileBatchUpload` 上传完整 HTML（仅默认 Canvas）**：Main Agent 使用 `FileBatchUpload` 上传唯一完整 `.html` 文件并取得工具返回的原始短链。Subagent 禁止执行上传。该上传只为 Canvas 持久化提供输入，不是用户文件交付；禁止在聊天、Markdown、附件、`present_files` 或最终交付清单中暴露 `.html` 文件。
 3. **`design-cli +create` 创建唯一顶层 HTML Item（仅默认 Canvas）**：Main Agent 使用第 2 步短链执行 `design-cli ... +create`，协议载荷中只能创建一个顶层 `<item type="HTML">`。`HTML` 是 Item 类型，`+HTML` 不是 CLI 命令；不得把 `design-cli create`、`+HTML` 或 `<frame type="HTML">` 当作替代语法。禁止 HTML Frame、Frame 成员 HTML、章节多 Item 或分页多 Item。
 4. **`design-cli +get` 回读（仅默认 Canvas）**：取得 Item ID 后执行 `design-cli ... +get`，核对 HTML 短链、类型、`path`、`brief` 与对象 ID；回读失败不得进入画布卡片交付。
