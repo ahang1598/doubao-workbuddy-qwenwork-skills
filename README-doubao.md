@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：282
-- 当前索引文件数：4914
-- 最近变更：[2026-10-28-141824](doubao/change-logs/2026-10-28-141824.md) - Doubao 本次同步新增 32 个文件、修改 272 个文件、删除 10 个文件。 新增条目：skills/browser-use, skills/general-computer-use。 受影响范围：skills/browser-record-replay, skills/browser-use, skills/byted-mediakit-au...
+- 当前索引条目数：283
+- 当前索引文件数：4916
+- 最近变更：[2026-10-28-180005](doubao/change-logs/2026-10-28-180005.md) - Doubao 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/record-operations-to-skill。 受影响范围：skills/record-operations-to-skill。
 
 ## 数据来源
 
@@ -255,6 +255,7 @@
 | quantitative-audit-recalculation | `doubao/skills/quantitative-audit-recalculation` | skill | 1 | 用于已有明确数据、公式或业务恒等式，需要重算合计、占比、排序、统计指标或边界条件并输出差异证据的场景。预测建模、领域判断或无公式依据的估算不使用。 |
 | quiz-generator | `doubao/skills/quiz-generator` | skill | 1 | 根据学习主题生成不同难度的测验题目，包括选择题、判断题与简答题，附带答案与解析。 |
 | read-local-attachments-first | `doubao/skills/read-local-attachments-first` | skill | 1 | Use when 用户要求基于本地附件开展写作、分析、核对、汇总或清洗，尤其提到“读取附件”“本地文件解析”“Excel清洗”“图片转表格”“解压核对清单”“多源材料整合”“解析失败补救”或“结构化提取”，并需要先检查文件类型、sheet、表头、目录或图片区域再形成可直接使用的依据。 |
+| record-operations-to-skill | `doubao/skills/record-operations-to-skill` | skill | 2 | 当用户要求录制电脑操作演示并生成个人 Skill，录制后要求继续处理，回答生成前的澄清问题，或修改由该录制生成的 Skill 时使用。 |
 | recruitment-ops-offer-analytics | `doubao/skills/recruitment-ops-offer-analytics` | skill | 18 | 管理招聘专属政策、候选pipeline当前态与卡点、Offer草案/审批/发送门禁、Offer接受率等实时招聘运营指标，以及Accepted交接；当用户需要招聘进度、录用条款组装、签约前保温或招聘运营指标时使用。不承担Accepted后的完整入职、全员薪酬、绩效、组织规划、全员政策或跨生命周期人才分析。 |
 | reference-curation | `doubao/skills/reference-curation` | skill | 14 | 整理参考文献，核验 DOI 与元数据，输出带证据、冲突、待核实标记的规范结果与引用草稿；支持 BibTeX/JSON/JSONL 书目整理，不做全文下载、会议纪要、论文代写、绕过受限数据库。 |
 | reference-prompt-iteration | `doubao/skills/reference-prompt-iteration` | skill | 1 | 用于已有参考图或参考视频，并需要根据多轮反馈迭代图像或视频提示词、分镜和关键帧计划的场景。不用于无参考素材的通用创作、音频生成或直接制作成片。 |
@@ -313,6 +314,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-28-180005 | [2026-10-28-180005](doubao/change-logs/2026-10-28-180005.md) | Doubao 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/record-operations-to-skill。 受影响范围：skills/record-operations-to-skill。 |
 | 2026-10-28-141824 | [2026-10-28-141824](doubao/change-logs/2026-10-28-141824.md) | Doubao 本次同步新增 32 个文件、修改 272 个文件、删除 10 个文件。 新增条目：skills/browser-use, skills/general-computer-use。 受影响范围：skills/browser-record-replay, skills/browser-use, skills/byted-mediakit-au... |
 | 2026-10-21-180007 | [2026-10-21-180007](doubao/change-logs/2026-10-21-180007.md) | Doubao 本次同步新增 9 个文件、修改 109 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-creative-video, skills/lark-calendar, skills/lark-mail,... |
 | 2026-10-20-180008 | [2026-10-20-180008](doubao/change-logs/2026-10-20-180008.md) | Doubao 本次同步新增 0 个文件、修改 5 个文件、删除 13 个文件。 移除条目已归档：skills/student-discount-application。 受影响范围：skills/html, skills/lark-doc, skills/student-discount-application。 |
@@ -332,4 +334,3 @@
 | 2026-09-13-180003 | [2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) | Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br... |
 | 2026-09-11-180008 | [2026-09-11-180008](doubao/change-logs/2026-09-11-180008.md) | Doubao 本次同步新增 11 个文件、修改 49 个文件、删除 39 个文件。 新增条目：skills/lark-workflow-meeting-summary。 移除条目已归档：skills/html。 受影响范围：skills/doubao-app-builder, skills/doubao-pc-optimizer, skills/dou... |
 | 2026-09-10-180013 | [2026-09-10-180013](doubao/change-logs/2026-09-10-180013.md) | Doubao 本次同步新增 30 个文件、修改 45 个文件、删除 0 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/ppt, skills/sheet。 |
-| 2026-09-08-180002 | [2026-09-08-180002](doubao/change-logs/2026-09-08-180002.md) | Doubao 本次同步新增 9 个文件、修改 7 个文件、删除 11 个文件。 新增条目：skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/byted-mediakit-image, skills/doubao-app-builder, skills/doub... |

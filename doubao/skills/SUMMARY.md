@@ -6,9 +6,9 @@
 
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
-- 条目数：282
-- 文件数：4914
-- 最近同步：2026-10-28 14:18:24 +0800
+- 条目数：283
+- 文件数：4916
+- 最近同步：2026-10-28 18:00:05 +0800
 
 ## 场景导航（按用途）
 
@@ -453,6 +453,7 @@
 - **local-life-service-product-edit** — 抖音生活服务商家商品信息编辑（改品）技能。当抖音生活服务的商家需要修改已上架商品或审核驳回商品的信息时使用。覆盖两种场景：①已上架商品信息修改；②审核驳回商品修改。两种场景修改完成后均需重新提交平台审核。商家带着具体修改诉求来，AI自动定位商品状态和目标字段，先读取真实页面字段能力再建立修改计划，改前改后各确认一次，写入后逐字段回读，提交审核单独确认。新建商品、下架/删除商品、订单处理、退款等非商品编辑需求不适用本技能。
 - **logistics-workbook-analysis** — 用于物流或供应链表格已由 sheet 读取后，需要库存对账、运费核算、KPI、合同执行或供应链台账分析的场景。非物流通用表格任务不使用。
 - **marketing-material-generator** — 基于飞书多维表格的电商营销素材自动化生成工具。当用户需要为商品生成全套营销素材、产品精修图、细节特写、详情页设计、场景图、动态视频，或提到"营销素材"、"商品图"、"精修"、"详情页"、"白底图"、"场景图"、"Cinemagraph"时使用。支持从飞书Base读取产品信息，自动完成5个环节的素材生成并回写到表格。
+- **record-operations-to-skill** — 当用户要求录制电脑操作演示并生成个人 Skill，录制后要求继续处理，回答生成前的澄清问题，或修改由该录制生成的 Skill 时使用。
 - **reference-prompt-iteration** — 用于已有参考图或参考视频，并需要根据多轮反馈迭代图像或视频提示词、分镜和关键帧计划的场景。不用于无参考素材的通用创作、音频生成或直接制作成片。
 - **sales-decision-analysis** — 用于已有销售数据或明确经营假设，需要核对销售口径、汇总复盘、目标拆解、达成率、渠道、客单价或销售投入产出的场景。纯表格操作、通用财务分析或无数据的组织决策不使用。
 - **scale-maker** — 面向已有明确构念与研究场景的实证研究量表查找与测量设计技能，支持判断测量方式、生成双语检索策略、核验原始量表与中文版本、比较候选工具，并规划问卷整合和信效度检验。适用于查找量表、选择测量工具及为既定变量设计问卷；研究问题尚未明确、纯质性研究或仅分析现成数据时不使用。
@@ -758,6 +759,7 @@
 | quantitative-audit-recalculation | `doubao/skills/quantitative-audit-recalculation` | 其他 | quantitative-audit-recalculation | 1 | 用于已有明确数据、公式或业务恒等式，需要重算合计、占比、排序、统计指标或边界条件并输出差异证据的场景。预测建模、领域判断或无公式依据的估算不使用。 |
 | quiz-generator | `doubao/skills/quiz-generator` | 其他 | quiz-generator | 1 | 根据学习主题生成不同难度的测验题目，包括选择题、判断题与简答题，附带答案与解析。 |
 | read-local-attachments-first | `doubao/skills/read-local-attachments-first` | 文档/表格/PPT | read-local-attachments-first | 1 | Use when 用户要求基于本地附件开展写作、分析、核对、汇总或清洗，尤其提到“读取附件”“本地文件解析”“Excel清洗”“图片转表格”“解压核对清单”“多源材料整合”“解析失败补救”或“结构化提取”，并需要先检查文件类型、sheet、表头、目录或图片区域再形成可直接使用的依据。 |
+| record-operations-to-skill | `doubao/skills/record-operations-to-skill` | 通用工具/平台 | record-operations-to-skill | 2 | 当用户要求录制电脑操作演示并生成个人 Skill，录制后要求继续处理，回答生成前的澄清问题，或修改由该录制生成的 Skill 时使用。 |
 | recruitment-ops-offer-analytics | `doubao/skills/recruitment-ops-offer-analytics` | 数据分析 | recruitment-ops-offer-analytics | 18 | 管理招聘专属政策、候选pipeline当前态与卡点、Offer草案/审批/发送门禁、Offer接受率等实时招聘运营指标，以及Accepted交接；当用户需要招聘进度、录用条款组装、签约前保温或招聘运营指标时使用。不承担Accepted后的完整入职、全员薪酬、绩效、组织规划、全员政策或跨生命周期人才分析。 |
 | reference-curation | `doubao/skills/reference-curation` | 文档/表格/PPT | reference-curation | 14 | 整理参考文献，核验 DOI 与元数据，输出带证据、冲突、待核实标记的规范结果与引用草稿；支持 BibTeX/JSON/JSONL 书目整理，不做全文下载、会议纪要、论文代写、绕过受限数据库。 |
 | reference-prompt-iteration | `doubao/skills/reference-prompt-iteration` | 通用工具/平台 | reference-prompt-iteration | 1 | 用于已有参考图或参考视频，并需要根据多轮反馈迭代图像或视频提示词、分镜和关键帧计划的场景。不用于无参考素材的通用创作、音频生成或直接制作成片。 |
