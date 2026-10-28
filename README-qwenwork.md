@@ -6,9 +6,9 @@
 
 - 平台目录：`qwenwork/`
 - 定时任务：`QwenworkSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：265
-- 当前索引文件数：4761
-- 最近变更：[2026-10-15-192505](qwenwork/change-logs/2026-10-15-192505.md) - QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/wecom-unified。
+- 当前索引条目数：271
+- 当前索引文件数：4875
+- 最近变更：[2026-10-28-180005](qwenwork/change-logs/2026-10-28-180005.md) - QwenWork 本次同步新增 115 个文件、修改 63 个文件、删除 1 个文件。 新增条目：skills/dingtalk-aicard, skills/dingtalk-tag, skills/environment-packages, skills/media-generation-ecommerce, skills/media-read,...
 
 ## 数据来源
 
@@ -89,26 +89,29 @@
 | 去 AI 味写作 | `qwenwork/skills/de-ai-writing-cn` | 内容写作 | 2 | 去模板化写作技能，用于降低 AI 味、提升中文表达自然度与专业感。 |
 | 深度决策研究报告 | `qwenwork/skills/deep-decision-research` | 金融投研 | 4 | 主动触发型技能；仅当用户显式选择或明确调用本技能时使用。用于让 QoderWork 围绕一个明确决策目标搜索、研究、整理材料，并按内置 HTML 报告规范生成一份可在浏览器打开的自包含决策辅助报告。 |
 | 大厂设计系统 | `qwenwork/skills/design-md` | 设计创意 | 72 | AI UI 设计系统助手。当用户需要生成特定品牌风格的 UI、选择设计系统、应用设计规范、让页面看起来像某个知名网站、或提到 DESIGN.md 时使用。支持 68 个品牌风格（内置离线模板），包括 Stripe、Vercel、Airbnb、Apple、Tesla、Notion、Linear 等。 |
-| dingtalk-aisearch | `qwenwork/skills/dingtalk-aisearch` | 沟通协作 | 4 | AI搜问：人员语义搜索、跨源内容定位与行为回溯。Use when 按姓名/工号/部门/职责/上下级找人，或在目标对象未知时按主题、语义、来源或行为发现相关内容。搜索结果用于候选定位；命中后需要读取、修改或验证原对象时切换到对象所属产品。完整手机号精确反查走 dingtalk-contact。命令前缀：dws aisearch。 |
-| dingtalk-aitable | `qwenwork/skills/dingtalk-aitable` | 沟通协作 | 44 | 钉钉 AI 表格（多维表）。Use when 用户说 AI表格/多维表/数据表/base/table/应用模式/App 页面/Widget/建表/查记录/写数据/字段/记录增删改查/记录评论/评论回复/SQL/PostgreSQL/SELECT/JOIN/跨表关联查询/筛选/排序/公式/模板搜索/批量导入CSV或JSON/导出/仪表盘/图表/上传附件到表格/按字段类型建表/数据源/创建数据源/更新数据源配置/触发数据源同步/按任务... |
+| dingtalk-aicard | `qwenwork/skills/dingtalk-aicard` | 沟通协作 | 32 | Create, edit, and validate DingTalk AI Card (A2UI) JSON files offline. Use for cards built from requirements or images, structural protocol errors, and named component or function contract lookup through native DWS co... |
+| dingtalk-aisearch | `qwenwork/skills/dingtalk-aisearch` | 沟通协作 | 4 | AI搜问：人员语义搜索、跨源主题检索与行为回溯。Use when 语义找人，或目标未知时按主题或行为发现内容。原生最近列表走所属产品；完整手机号精确反查走 dingtalk-contact。前缀：dws aisearch。 |
+| dingtalk-aitable | `qwenwork/skills/dingtalk-aitable` | 沟通协作 | 45 | 钉钉 AI 表格（多维表）业务操作。Use when 用户需要操作 AI 表格/多维表/Base/Table、应用模式/App 页面/Widget、建表、查写记录、字段、记录评论、评论回复、访问密钥（API Key）、SQL/PostgreSQL/SELECT/JOIN、筛选、排序、公式、模板、批量导入 CSV 或 JSON、导出、仪表盘、图表、上传附件、数据源配置与同步、按任务 ID 查询同步状态或审批数据同步。普通请求以完成明... |
 | dingtalk-calendar | `qwenwork/skills/dingtalk-calendar` | 沟通协作 | 8 | 钉钉日历与会议室。Use when 用户说 约会议/查日程/订会议室/查闲忙/加参会人/改期/取消会议/今天的日程/本周日程/共同空闲。不做视频会议发起/邀请入会/会中控制（走 dingtalk-misc）、AI 听记（走 dingtalk-minutes）、待办任务（走 dingtalk-todo）。命令前缀：dws calendar。 |
-| dingtalk-chat | `qwenwork/skills/dingtalk-chat` | 沟通协作 | 19 | 钉钉群聊与消息。Use when 收发/搜索消息、建群、群治理、Bot/Webhook、文件，或仅限 IM 的消息谓词筛选。跨源主题/行为轨迹走 dingtalk-aisearch；DING/班级群走 dingtalk-misc；邮件走 dingtalk-mail。 |
+| dingtalk-chat | `qwenwork/skills/dingtalk-chat` | 沟通协作 | 19 | 钉钉群聊与消息。Use when 收发/搜索消息、建群、群治理、Bot/Webhook、文件、AI/A2UI 卡片流式，或仅限 IM 的消息谓词筛选。跨源主题/行为轨迹走 dingtalk-aisearch；DING/班级群走 dingtalk-misc；邮件走 dingtalk-mail。 |
 | 聊天消息提取待办 | `qwenwork/skills/dingtalk-chat-to-todo` | 沟通协作 | 3 | 从钉钉群聊消息中识别与我相关的任务类内容，自动创建钉钉待办。 拉取全部消息作为上下文，重点识别 @我 和提到我名字的消息，结合前后文准确理解任务内容， 自动过滤即时性事务，只提取适合作为待办跟踪的任务。 Use when user mentions "群消息转待办", "聊天记录转任务", "把群里说的任务记下来", or asks to "提取群里的待办", "把@我的任务建起来", "聊天转待办". Distinct from... |
 | dingtalk-contact | `qwenwork/skills/dingtalk-contact` | 沟通协作 | 7 | 钉钉通讯录精确查询。Use when 已有 userId 后查详情、部门、职位或邮箱，按完整手机号反查用户，或查询自己、部门成员及角色。姓名模糊搜索、工号、职责、上下级走 dingtalk-aisearch，拿到 userId 后用本 skill 补详情。命令前缀：dws contact。 |
-| dingtalk-doc | `qwenwork/skills/dingtalk-doc` | 沟通协作 | 20 | 钉钉在线文字文档（adoc）内容：查找、创建、读取编辑、块、评论、媒体/附件、白板卡片容器、导入导出、版本、模板、权限、分享及 Markdown/JSONML。不做白板图形/原生 .md/电子表格（dingtalk-misc）、文档空间与钉盘存储（dingtalk-drive）、知识库组织（dingtalk-wiki）、AI 表格（dingtalk-aitable）。命令前缀：dws doc。 |
-| dingtalk-drive | `qwenwork/skills/dingtalk-drive` | 沟通协作 | 5 | 钉钉文件管理（存储层，覆盖钉盘与文档空间）。Use when 用户说 钉盘/文档空间/我的文档中的普通文件或文件夹、查找/上传/下载/复制/移动/重命名/删除/回收站/权限/评论/元信息，或本地与钉盘文件夹比较、拉取、推送、双向同步；也承接在线文档节点的存储管理。文档正文编辑与导出走 dingtalk-doc；明确的知识库空间及空间内节点组织走 dingtalk-wiki。命令前缀：dws drive。 |
+| dingtalk-doc | `qwenwork/skills/dingtalk-doc` | 沟通协作 | 20 | 钉钉在线文档（adoc）：查找、读写、块、评论、附件、导入导出、版本、模板、权限、分享、Markdown/JSONML；文档内白板卡片容器的插入、定位、删除。白板图形内容创建或修改走 dingtalk-misc。 |
+| dingtalk-drive | `qwenwork/skills/dingtalk-drive` | 沟通协作 | 5 | 钉钉文件管理（存储层，覆盖钉盘与文档空间）。Use when 用户说 钉盘/文档空间/我的文档中的普通文件或文件夹、查找/最近访问或编辑文档列表/上传/下载/复制/移动/重命名/删除/回收站/权限/评论/元信息，或本地与钉盘文件夹比较、拉取、推送、双向同步；也承接在线文档节点的存储管理。文档正文编辑与导出走 dingtalk-doc；明确的知识库空间及空间内节点组织走 dingtalk-wiki。命令前缀：dws drive。 |
 | 小红书学校舆情助手 | `qwenwork/skills/dingtalk-edu-xhs-keyword-spider` | 沟通协作 | 24 | 搜索小红书关键词相关笔记并生成可视化HTML舆情报告，主要用于获取学校在小红书上的舆情信息。当用户需要查学校小红书舆情、搜索小红书笔记、分析小红书趋势、学校口碑/关键词监控时使用。不要在需要搜索微博/抖音/知乎、创建教案、批改作业、管理课程表时触发。 |
-| dingtalk-event | `qwenwork/skills/dingtalk-event` | 沟通协作 | 10 | 钉钉个人 IM、OA 审批、VoIP 通话邀请、待办与互动卡片回调事件长连接监听。Use when 用户说监听消息/@我/某人/某群/全部消息、已读/撤回/reaction、群成员加入/群成员退出/群状态变化，监听审批任务创建/完成/转交、审批实例发起/抄送/终止/完成、VoIP 通话邀请、待办创建/更新/删除，或互动卡片回调。命令前缀：dws event。 |
+| dingtalk-event | `qwenwork/skills/dingtalk-event` | 沟通协作 | 11 | 钉钉个人 IM、OA 审批、VoIP 通话邀请、待办、互动卡片与好友事件长连接监听。Use when 用户说监听消息/@我/某人/某群/全部消息、已读/撤回/reaction、群成员加入/群成员退出，监听审批任务创建/完成/转交、审批实例发起/抄送/终止/完成、VoIP 通话邀请、待办创建/更新/删除、好友申请/好友添加成功，或互动卡片回调。命令前缀：dws event。 |
 | dingtalk-mail | `qwenwork/skills/dingtalk-mail` | 沟通协作 | 8 | 钉钉邮箱读写、搜索、回复与转发。Use when 用户说发邮件/查邮件/回邮件/转发邮件/未读邮件/邮件搜索/邮箱附件。一句话发邮件时先用 dingtalk-contact 解析并确认收件人，再由本 skill 发送；不做钉钉消息（走 dingtalk-chat）、紧急通知（走 dingtalk-misc）。命令前缀：dws mail。 |
 | dingtalk-minutes | `qwenwork/skills/dingtalk-minutes` | 沟通协作 | 12 | 钉钉 AI 听记。Use when 查询或修改听记摘要、完整逐字稿、关键词、标签、行动项、录音、上传、思维导图、发言人洞察、ASR 热词/识别词配置或分享权限。写文档走 dingtalk-doc；建待办走 dingtalk-todo；日程走 dingtalk-calendar。命令前缀：dws minutes。 |
-| dingtalk-misc | `qwenwork/skills/dingtalk-misc` | 沟通协作 | 130 | 长尾产品集合技能，覆盖低频钉钉产品：OA审批查询与处理/法务智能合同/考勤/直播/DING紧急消息/开放平台应用与MCP开发/Agoal目标管理/日志日报周报/电子表格/开放平台文档搜索与OpenAPI逃生舱/独立及文档内嵌白板/钉钉招聘/DWS技能市场安装/人事薪酬绩效/组织大脑Hrbrain/原生Markdown/原生HTML/PAT行为授权/多组织profile。Use when 用户提到上述任一产品，尤其是 Agoal/目... |
+| dingtalk-misc | `qwenwork/skills/dingtalk-misc` | 沟通协作 | 194 | 钉钉独立白板（白板文件）的创建、绘图、保存和修改；文档内嵌白板仅在已有承载文档 nodeId 和 partId 时提供图形内容读写（dws whiteboard）。两类目标相互独立，不互相推断或切换；文档内白板卡片容器不属于本 skill。长尾产品集合技能，覆盖低频钉钉产品：OA审批查询与处理/法务智能合同/电子签/考勤/直播/DING紧急消息/开放平台应用与MCP开发/Agoal目标管理/日志日报周报/电子表格/开放平台文档搜索... |
 | 聊天消息任务追踪-AI表格 | `qwenwork/skills/dingtalk-msg-task-tracker-aitable` | 沟通协作 | 2 | 汇总最近24小时(或指定窗口)钉钉里的双向任务流转,来源固定为5路:群里@我/我发出的单聊任务/别人发我的单聊任务/DING/待办。归类合并同一问题的跨轮讨论,跨天未闭环的问题更新原行不新建,生成日报摘要并推送Markdown卡片到钉钉。当用户说"看下今天钉钉里别人反馈给我的问题""汇总最近一天的反馈到表格""今天我派了什么任务给别人""收下24小时内的问题反馈""检索未完成任务+最新反馈"或类似需求时触发。 |
 | dingtalk-shared | `qwenwork/skills/dingtalk-shared` | 沟通协作 | 15 | 钉钉(DingTalk) MultiSkill 的轻量共享入口。Use when 用户泛称 DWS/钉钉操作但未明确产品、请求跨产品编排、需要 URL 类型预检或产品边界消歧。清晰的单产品操作优先使用对应 dingtalk-* 子 skill；本 skill 只提供全局执行契约和按需 reference 导航，不承载产品命令全集。 |
+| dingtalk-tag | `qwenwork/skills/dingtalk-tag` | 沟通协作 | 6 | 钉钉数字员工的自然语言创建、查询、修改、发布、删除、能力资源、执行状态、本地 Profile 落盘与 DSH 接入。Use when 用户说创建或管理数字员工、改人设/岗位/响应模式、发布或询问下线能力、查执行状态或 trace、管理数字员工 Skill/MCP、把已有数字员工转换为本地 Profile，或接入本地 DSH。命令前缀：dws dingtalk-tag。 |
 | dingtalk-todo | `qwenwork/skills/dingtalk-todo` | 沟通协作 | 9 | 钉钉待办 / TODO。Use when 用户说 创建待办/TODO/任务提醒/指派任务/标记完成/查待办/紧急待办/循环待办/批量建待办/逾期待办。不做日报周报（走 dingtalk-misc）、审批（走 dingtalk-misc）、日程（走 dingtalk-calendar）。命令前缀：dws todo。 |
 | dingtalk-wiki | `qwenwork/skills/dingtalk-wiki` | 沟通协作 | 6 | 钉钉知识库与空间管理。Use when 用户明确说 知识库/wiki/创建、查找或列出知识库/命名的团队知识空间/个人知识库/知识库成员/库内节点创建、列表、搜索、复制、移动、删除或知识库动态。仅说“文档空间/我的文档”不触发：普通存储管理与全局文件搜索走 dingtalk-drive；节点正文读写走 dingtalk-doc。命令前缀：dws wiki。 |
 | docx | `qwenwork/skills/docx` | 知识文档 | 61 | Comprehensive Word (.docx) skill: create, read, edit, and manipulate Word documents end-to-end. Covers turning Markdown or structured text into polished Word output, filling reusable templates ({{token}} or reference-... |
 | 抖音爆款口播文案 | `qwenwork/skills/douyin-viral-script` | 市场营销 | 3 | 根据话题或书籍生成钩子密集型的抖音爆款口播文案（约 600 字）。 掌握黄金 3 秒原则、钩子密集分布、情绪曲线调动、价值输出等抖音爆款逻辑。 当用户提到"帮我写个抖音文案"、"口播稿"、"爆款文案"、"短视频脚本"、 "抖音口播"、"写个能火的文案"时使用。 不用于长视频脚本、图文内容创作、广告投放文案或非抖音平台内容。 |
 | ECharts 图表生成 | `qwenwork/skills/echart` | 数据分析 | 1 | 生成数据可视化图表，支持词云、折线图、柱状图、饼图、面积图及混合图表。 输出自包含 HTML 文件（引入 ECharts CDN），用户点击即可查看高质量图表。 支持导出 PNG 图片。当用户提到"生成图表"、"画个图"、"数据可视化"、 "柱状图"、"折线图"、"饼图"、"词云"、"图表展示数据"时使用。 不用于非 ECharts 的图表库（如 D3、Chart.js），不用于纯数据分析（无图表需求）。 |
+| environment-packages | `qwenwork/skills/environment-packages` | 其他 | 1 | Routing guide for the built-in qwenwork_environment_package_fetch tool, which downloads a runtime dependency (node, python, uv, ffmpeg, or a custom name your organization published) from the enterprise environment pac... |
 | find-skills | `qwenwork/skills/find-skills` | 系统内置 | 4 | Do NOT invoke this skill as a routine first step. Do NOT invoke when any installed skill (see the available skills list) can handle the task, or when general capabilities (writing, coding, analysis, translation, web s... |
 | FLYAI-飞猪旅行 | `qwenwork/skills/flyai` | 效率工具 | 10 | Search flights, hotels, attractions, concerts, and travel deals with natural language. FlyAI connects to Fliggy MCP for real-time search and booking across hotels, flights, cruises, visas, car rentals, and event ticke... |
 | 十大命理综合 | `qwenwork/skills/fortune-master-pro` | 教育学习 | 17 | 全体系增强版智能命理师技能。支持八字/四柱、紫微斗数、塔罗、西方星盘、数字命理， 并新增道家玄学分流：奇门遁甲、六爻、梅花易数、风水与择时建议。 会先判断体系、问题和资料完整度，再输出完整、层次清晰、有真人老师感的解读。 Use when: 用户想做命理分析、占卜、关系合盘、流年运势、择时、风水建议， 或说"帮我看看命""综合分析一下"等综合类命理咨询。 Distinct from: cantian-bazi（纯排盘计算工具，不做... |
@@ -186,14 +189,16 @@
 | 视频号运营专家 | `qwenwork/skills/marketing-operations-wechat-channels` | 市场营销 | 25 | 微信视频号自动化技能集合。支持认证登录、视频发布。 **何时触发**（必须使用本技能）： - 用户提及"视频号/微信视频号/wechat channels"相关操作 - 用户要求发布视频到视频号、登录视频号 - 用户提供的链接包含 channels.weixin.qq.com 域名 - 用户询问"发视频号"、"上传视频号"等视频号运营场景 **禁止使用 browseruse**：微信视频号有反爬机制，browseruse 无法持久... |
 | 营销心理分析 | `qwenwork/skills/marketing-psychology` | 市场营销 | 1 | When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cognitive bias,' 'persuasion,' 'behavioral scie... |
 | media-generation | `qwenwork/skills/media-generation` | 设计创意 | 1 | Generate or edit images with automatic model selection or a supported model explicitly requested by the user, generate videos, or create music as asynchronous media artifacts. Use this skill when the user asks for tex... |
+| media-generation-ecommerce | `qwenwork/skills/media-generation-ecommerce` | 设计创意 | 7 | Generate or edit ecommerce images, generate videos from text, a first frame, first and last frames, or reference images, and create music as asynchronous media artifacts. Use for product images, scene and selling-poin... |
 | media-generation-premium | `qwenwork/skills/media-generation-premium` | 设计创意 | 1 | Generate or edit images and generate videos or music for the enterprise premium media experience. Image, video, and music requests use official automatic model selection or organization-configured models exposed by th... |
+| media-read | `qwenwork/skills/media-read` | 其他 | 1 | Extract objective text and detail from images, audio, and video. Use for OCR, transcription, summaries, charts, screenshots, receipts, scanned documents, recordings, and clips. |
 | 新闻总结 | `qwenwork/skills/news-summary` | 市场营销 | 3 | 根据用户指定的主题和时间范围，多源检索新闻动态，经时间核验、去重、分类后生成结构化钉钉云文档动态报告。 Use when user mentions "新闻总结", "动态报告", "行业资讯", "最新消息", or asks to "帮我整理最近的AI新闻", "总结这周的行业动态", "追踪某某领域的最新消息". Distinct from competitive-analysis (竞品横向对比而非新闻动态汇总) and... |
 | 通知函件写作 | `qwenwork/skills/official-document-writing` | 法律服务 | 12 | 官方公文写作技能。用于起草、改写、润色、校核、结构化或导出中文党政机关公文、事务文书、会议材料、汇报材料、通知通报、请示报告、函、纪要、方案、制度等正式文稿；尤其适用于需要按用户给定模板、单位口径、GB/T 9704-2012 基础格式或指定文种规范完成写作的场景。 |
 | 宜搭应用 | `qwenwork/skills/openyida-app` | 项目管理 | 67 | 用自然语言创建或修改宜搭业务应用和管理系统，支持表单、审批流程、自定义页面、看板、报表、连接器、权限、自动化和数据功能。用户要求搭建客户管理、项目管理、活动报名、工单、审批、台账、运营工作台等系统，或完善已有宜搭应用时使用；查询、分析已有宜搭应用、表单、字段、记录、流程任务、指标、通讯录、业务关系、血缘，或通过预览确认链路办理已发布业务 Action 时也使用。 |
 | 落地页生成器 | `qwenwork/skills/page-crafter` | 市场营销 | 1 | Professional high-end Landing Page generation tool. Creates visually stunning, Awwwards-level web pages with cinematic hero sections, modern animations. Trigger keywords: landing page, 落地页, web page, hero section, pro... |
 | 学术论文深度研究 | `qwenwork/skills/paper-deepresearch` | 教育学习 | 1 | 面向学术论文的**原文级调研（Deep Research）**能力模块。适用于：用户指定某篇论文要求"读透 + 追踪背景 + 扩展最新相关工作"，或用户给出某个学术 topic 要求系统性深度调研与写作综述。 |
 | pdf | `qwenwork/skills/pdf` | 知识文档 | 53 | Operates on PDF files: inspect/fill forms, merge/split, watermark, encrypt/decrypt, strip metadata, extract tables or images, compress, validate, render pages to images (so the agent can read scanned PDFs with vision)... |
-| plugin-creator | `qwenwork/skills/plugin-creator` | 系统内置 | 1 | Create, customize, or modify QwenWork / QwenWorkCN expert plugins. Use when the user wants to create a new plugin, customize an existing plugin, or edit a plugin's skills/commands. |
+| 专家套件创建 | `qwenwork/skills/plugin-creator` | 系统内置 | 1 | Create, customize, or modify QwenWork / QwenWorkCN expert plugins. Use when the user wants to create a new plugin, customize an existing plugin, or edit a plugin's skills/commands. |
 | pptx | `qwenwork/skills/pptx` | 知识文档 | 103 | Use this skill any time a PowerPoint .pptx or legacy .ppt file is involved as input, output, or both. This includes creating decks; reading or extracting slide content; editing presentations; combining or splitting sl... |
 | 产品定价策略 | `qwenwork/skills/pricing-strategy` | 市场营销 | 3 | When the user wants help with pricing decisions, packaging, or monetization strategy. Also use when the user mentions 'pricing,' 'pricing tiers,' 'freemium,' 'free trial,' 'packaging,' 'price increase,' 'value metric,... |
 | 产品营销定位 | `qwenwork/skills/product-marketing-context` | 市场营销 | 1 | When the user wants to create or update their product marketing context document. Also use when the user mentions 'product context,' 'marketing context,' 'set up context,' 'positioning,' 'who is my target audience,' '... |
@@ -221,6 +226,7 @@
 | 估值与投资策略分析 | `qwenwork/skills/valuation-investment-strategy` | 金融投研 | 1 | 将已完成基本面分析的A股标的转化为情景估值与投资计划，根据商业模式选择合适方法并给出假设与来源链接。 |
 | 服装门店-AI导购 | `qwenwork/skills/virtual-try-on` | 电商零售 | 26 | AI导购的技能。帮助用户创建和管理店铺试衣间，包括初始化店铺、获取二维码、装扮店铺、管理SKU/上传衣服、切换数据源、写穿搭笔记。 当用户提到"创建店铺"、"虚拟试衣"、"试衣间"、"上传衣服"、"写穿搭笔记"、"店铺管理"、"衣橱管理"、"店铺二维码"、"切换多维表"、"SKU数据源"、"处理表格"、"预处理Excel"、"商陆花"、"笑铺日记"、"导入多维表"时触发。 如果用户需要写笔记，需要你查阅 references/st... |
 | 图像创作 | `qwenwork/skills/visual-forge` | 设计创意 | 1 | Curated image generation assistant covering 17 styles across 4 categories: character figures, scenes, products, and style transforms. Supports styles including 手办/figure, portrait, chibi, diorama, city, landmark, movi... |
+| web-search | `qwenwork/skills/web-search` | 其他 | 1 | Search the web for current information and return structured titles, URLs, source text, dates, and ranks. Use for open-ended web research, recent events, articles, and fact lookup. |
 | wecom-unified | `qwenwork/skills/wecom-unified` | 沟通协作 | 98 | 企业微信 CLI 套件。仅当用户明确要求使用企业微信/企微，或给出 doc.weixin.qq.com、page.weixin.qq.com、drive.weixin.qq.com 链接时触发；不要因为泛化的找人、文档、表格、日程、会议、待办、邮件或发消息请求而触发。覆盖通讯录、文档、表格、日程、会议、待办、微盘、邮件、消息和媒体文件。 |
 | 工作周报 | `qwenwork/skills/weekly-work-report` | 沟通协作 | 1 | 触发词：「生成周报」「帮我写周报」「本周工作总结」「周报」「weekly report」。 基于钉钉生态的每周周报自动生成 Skill：从当周日程、任务、听记、云文档中提取工作内容， 使用 `knowledge` 兜底补全遗漏信息，最终直接生成结构化的钉钉在线文档周报。 |
 | 技术方案 | `qwenwork/skills/wukong-doc-technical-solution` | 设计创意 | 1 | 触发词：「技术方案」「系统设计」「架构方案」「技术选型」。 围绕业务目标与约束，输出架构设计、关键模块、技术选型、风险与实施计划的完整技术方案， 最终生成结构清晰的钉钉在线文档。 |
@@ -311,6 +317,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-28-180005 | [2026-10-28-180005](qwenwork/change-logs/2026-10-28-180005.md) | QwenWork 本次同步新增 115 个文件、修改 63 个文件、删除 1 个文件。 新增条目：skills/dingtalk-aicard, skills/dingtalk-tag, skills/environment-packages, skills/media-generation-ecommerce, skills/media-read,... |
 | 2026-10-15-192505 | [2026-10-15-192505](qwenwork/change-logs/2026-10-15-192505.md) | QwenWork 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/wecom-unified。 |
 | 2026-10-13-204349 | [2026-10-13-204349](qwenwork/change-logs/2026-10-13-204349.md) | QwenWork 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：connectors/market-metadata.json, connectors/mcp.json。 受影响范围：connectors/market-metadata.json, connectors/mcp.json。 |
 | 2026-10-13-203506 | [2026-10-13-203506](qwenwork/change-logs/2026-10-13-203506.md) | QwenWork 本次同步新增 477 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/computer-use-guidance-windows, skills/lark-approval, skills/lark-apps, skills/lark-attendance, skills/lark-base, skills/la... |

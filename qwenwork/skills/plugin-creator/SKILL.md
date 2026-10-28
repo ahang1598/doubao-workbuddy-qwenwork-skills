@@ -1,6 +1,7 @@
 ---
 name: plugin-creator
-version: 1.8.0
+name_zh: 专家套件创建
+version: 1.8.2
 description: Create, customize, or modify QwenWork / QwenWorkCN expert plugins. Use when the user wants to create a new plugin, customize an existing plugin, or edit a plugin's skills/commands.
 description_zh: 创建、定制或修改 QwenWork / QwenWorkCN 专家套件。当用户想要创建新套件、定制已有套件或编辑套件内的技能/指令时使用。
 ---
@@ -379,7 +380,7 @@ If the user doesn't want to add MCP or doesn't know the config URL, skip `.mcp.j
 
 ```
 {plugin-name}/
-├── .qoder-plugin/
+├── .qwenwork-plugin/
 │   └── plugin.json          # Plugin metadata (required)
 ├── .mcp.json                 # Guided-setup MCP declarations (optional)
 ├── CONNECTORS.md             # Human-readable setup guide (REQUIRED when external tools are mentioned)
@@ -394,7 +395,7 @@ If the user doesn't want to add MCP or doesn't know the config URL, skip `.mcp.j
 └── README.md                 # Usage documentation (optional but recommended)
 ```
 
-Compatibility: Always use `.qoder-plugin/` for new plugins. The system also reads `.claude-plugin/plugin.json` for third-party plugin imports, but prefer `.qoder-plugin/` when creating.
+Compatibility: For new QwenWork and QwenWorkCN plugins, create `.qwenwork-plugin/plugin.json`. Existing `.qoder-plugin/plugin.json` and `.claude-plugin/plugin.json` packages remain supported; preserve their original format when editing or customizing them. If multiple manifests exist, `.qwenwork-plugin` takes priority, followed by `.qoder-plugin` and `.claude-plugin`. Never merge manifests or fall back to another manifest when the selected one is invalid. Do not add a second manifest for compatibility.
 
 ---
 
@@ -693,7 +694,7 @@ User-created plugins are installed under the product-specific data directory. Do
 Preferred process:
 
 1. Create the complete plugin directory in a working location you can write to.
-2. Create `.qoder-plugin/plugin.json` with metadata.
+2. For a new QwenWork or QwenWorkCN plugin, create `.qwenwork-plugin/plugin.json` with metadata. Preserve the selected manifest path when editing an existing plugin.
 3. Create `skills/` and/or `commands/` directories with content.
 4. Optionally add `README.md`.
 5. Call `qwenwork.settings.plugins.install_from_path` with action `execute` and params `{ "sourcePath": "<plugin-directory>" }` to register and activate it. This API copies the plugin into the correct product-specific `plugins-custom/` directory.

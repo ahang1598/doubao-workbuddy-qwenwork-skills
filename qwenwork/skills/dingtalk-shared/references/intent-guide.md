@@ -103,7 +103,7 @@
 | "给机器人发单聊/给机器人发消息/跟机器人聊天" | 给机器人发单聊消息 | `chat bot find` → `chat message send --open-dingtalk-id` | `chat bot search` | 必须先用 find 拿 openDingTalkId（search 没有此字段），再用 send --open-dingtalk-id 发单聊 |
 | "我创建的机器人/我的机器人/我自己的机器人/查看我的机器人" | 搜索我创建的机器人 | `chat bot search` | `chat bot find` | search 仅返回当前用户自己创建的机器人（返回 robotCode + robotName，无 openDingTalkId）；find 返回全部可用机器人 |
 | "合并转发/批量转发/合并转发多条消息" | 合并转发多条消息 | `chat message combine-forward` | `chat message forward` | combine-forward 合并多条为一条转发；forward 转发单条消息 |
-| "把群里这条已有消息转成 Thread/升级成群内话题" | 消息升级为 Thread | `chat thread promote` | `chat thread send` | promote 转换已有普通群消息；send 发布一条全新的 Thread |
+| "把群里这条已有消息转成 Thread/升级成群内话题" | 消息升级为 Thread（已下线） | — | — | 当前无等价替代；仅当用户改为新建话题时才使用 `chat thread send` |
 | "转发话题/转发话题消息/话题转发到另一个群" | 转发 Thread | `chat thread forward` | `chat message forward` | thread forward 转发整条 Thread 并保留上下文；message forward 只转发普通单条消息 |
 | "发卡片消息/推送流式卡片" | 创建并推送流式卡片 | `chat message send-card` | `chat message send` | send-card 发流式卡片；send 发普通文本/Markdown 消息 |
 | "更新卡片/流式更新卡片" | 流式更新卡片内容 | `chat message update-card` | `chat message send-card` | update-card 更新已有卡片；send-card 创建新卡片 |
@@ -131,7 +131,8 @@
 | "按手机号线索找人" | 手机号语义搜人 | `aisearch person --dimension phone` | `contact user search` | 非精确手机号匹配走 aisearch 的 phone 维度 |
 | "搜一下智能化方案/最近 OKR 相关邮件/最近发版相关消息" | 搜企业知识内容 | `aisearch enterprise` | `doc search` / `mail search` / `chat message search` | 跨文档、消息、日程、听记、邮件等企业内容语义检索走 enterprise；具体 `queries/types/time-range` 抽槽见 `aisearch.md` |
 | "我发给某人的消息/邮件/文档/今天我干了什么" | 搜行为记录 | `aisearch behavior` | `chat` / `mail` / `doc` / `report` | 关注“谁对什么做过什么”，走 behavior；具体 `behavior-type/direction/chat-scope` 抽槽见 `aisearch.md` |
-| "查/提交 请假/加班/外出/出差/补卡 审批单" | 考勤业务审批单 | `attendance approve`（查询走 `attendance approve list`；提交走 `attendance approve templates --type leave\|overtime\|repair-check\|travel\|out`） | `oa approval list-pending` / `oa approval records` | 请假/加班/外出/出差/补卡 这 5 类属于考勤业务审批单，按业务类型查询；`oa approval` 是通用 OA 审批中心，覆盖范围不同 |
+| "查/提交 请假/加班/外出/补卡 审批单" | 考勤业务审批单 | `attendance approve`（查询走 `attendance approve list`；提交走 `attendance approve templates --type leave\|overtime\|repair-check\|out`） | `oa approval list-pending` / `oa approval records` | 请假/加班/外出/补卡 属于考勤业务审批单；`oa approval` 是通用 OA 审批中心，覆盖范围不同。差旅出差申请不属于本行：出差模版查询与提交出差单走 `travel`（下一行） |
+| "查询出差模版列表 / 查出差审批流程模版 / 提交出差单 / 提交出差审批" | 差旅出差单（AI差旅） | `travel`（模版查询走 `travel process list`；提交出差单、提交出差审批走 `travel process submit`） | `oa approval`；差旅出差申请也不要落回 `attendance` 考勤模板入口 | 出差单模版查询与提交是 AI差旅仅有的 2 项专属能力；`oa approval` 是通用 OA 审批中心，只能查/审/撤已存在的审批单，不能代做差旅出差单。例外：组织没有出差套件流程模版（`travel process list` 返回空）时，不能走 `travel` 提单，可考虑改用 `oa` 提交普通单据 |
 | "把这段文字翻译成英文/translate this" | 通用文本翻译 | `chat text translate` | `doc` / `aisearch` | 纯文本翻译，不是文档编辑或语义搜索 |
 | "帮我把这个文档翻译成日文" | 文档内容翻译 | 先 `doc get` 再 `chat text translate` | `chat text translate` 直接传文件 | translate 仅支持纯文本，需先提取文档内容 |
 
@@ -405,9 +406,9 @@ dws chat message send --conversation-id <openConversationId> --msg-type location
 ### 7.1 attendance approve vs oa approval — 考勤业务审批 vs 通用 OA 审批
 
 **用 `attendance approve` 的场景**（考勤业务审批单）：
-- "上周谁请假了 / 某人近期的加班记录 / 外出出差单 / 补卡审批单" — `attendance approve list --types overtime,leave,trip,patch`（`trip` 在查询接口 bizType=2 同时覆盖出差与外出，两者合并为同一类，查询不再细分；travel / business_trip / 出差 / 外出 亦映射到 2）
-- "查看考勤审批模板 / 帮我提交考勤审批" — `attendance approve templates --type leave|overtime|repair-check|travel|out`（外出=travel/TRAVEL，出差=out/trip/OUT）
-- 用户提到“请假单 / 加班单 / 出差单 / 补卡单 / 考勤审批”等考勤上下文
+- "上周谁请假了 / 某人近期的加班记录 / 已提交的出差外出审批单 / 补卡审批单" — `attendance approve list --types overtime,leave,trip,patch`（`trip` 在查询接口 bizType=2 同时覆盖出差与外出，两者合并为同一类，查询不再细分；travel / business_trip / 出差 / 外出 亦映射到 2）
+- "查看考勤审批模板 / 帮我提交考勤审批（请假/加班/补卡/外出）" — `attendance approve templates --type leave|overtime|repair-check|out`（外出=travel/TRAVEL；这是返回 submitUrl 的考勤跳转入口，差旅出差单的模版查询与提交不走这里，见下方「提交审批单的边界」）
+- 用户提到“请假单 / 加班单 / 外出单 / 补卡单 / 考勤审批”等考勤上下文；提到“出差单 / 出差审批”时优先按差旅走 `travel`，仅查询已提交出差记录时回到 `attendance approve list --types trip`
 
 **用 `oa approval` 的场景**（通用 OA 审批中心）：
 - "我的待审批 / 待办审批 / 已审批记录" — `oa approval list-pending`
@@ -416,11 +417,13 @@ dws chat message send --conversation-id <openConversationId> --msg-type location
 - 用户提到“报销 / 采购 / 用印 / 合同 等非考勤类审批”
 
 **判断关键**：
-- 审批主题明确是【请假 / 加班 / 外出 / 出差 / 补卡】这 5 类 → `attendance approve`
+- 审批主题明确是【请假 / 加班 / 外出 / 补卡】这 4 类 → `attendance approve`
+- 审批主题是【出差】：查询出差模版列表/出差流程列表、提交出差单/提交出差审批 → `travel`（AI差旅专属）；仅查询已提交的出差/外出审批记录 → `attendance approve list --types trip`；组织没有出差套件流程模版（`travel process list` 返回空）时不能走 `travel` 提单，可考虑改用 `oa` 提交普通单据
 - 不限于考勤业务、面向“我上下游的审批任务”表述 → `oa approval`
 
 **提交审批单的边界**：
 - 提交考勤审批单走 `attendance approve templates --type leave|overtime|repair-check|travel|out`（外出=travel，出差=out/trip），命令会返回审批表单的 submitUrl 跳转链接，由用户点击链接跳转到钉钉客户端的提交页面完成填写与提交。**展示链接时必须用 Markdown 可点击格式 `[表单名称](submitUrl)`，不要裸露 URL**。
+- 差旅出差单不走考勤模板入口：查询出差模版列表、查询出差流程模版用 `travel process list`；提交出差单、提交出差审批用 `travel process submit`（`travel`（AI差旅）的专属能力），不要用 `oa approval` 代做，也不要落回 `attendance` 考勤模板跳转。前提是组织有出差套件流程模版：`travel process list` 返回空时不能走 `travel` 提单，可考虑改用 `oa` 提交普通单据。
 - 提交诉求的辅助查询：可用假期余额走 `attendance vacation balance`、历史已提交记录走 `attendance approve list`。
 - 任何场景下都**不要误用 `oa approval` 代替** —— 该命令组只能查/审/撤已存在的审批单，考勤业务审批单走考勤自己的逻辑便于区分。
 
@@ -428,7 +431,7 @@ dws chat message send --conversation-id <openConversationId> --msg-type location
 
 | 用户动作 | 路由 | 原因 |
 |---|---|---|
-| 查询或创建合同台账、起草、审查、归档、管理合同项目/相对方/账款 | `dingtalk-misc` → `contract` | 法务智能合同正式产品面 |
+| 查询或创建合同台账、起草、归档、管理合同项目/相对方/账款 | `dingtalk-misc` → `contract` | 法务智能合同正式产品面 |
 | 查询、同意、拒绝、撤销或转交已有合同审批实例 | `dingtalk-misc` → `oa` | 动作对象是审批任务或实例，不是合同台账 |
 | 管理经营合约、目标、计分卡或 OKR | `dingtalk-misc` → `agoal` | “经营合约”属于目标管理 |
 | 搜索、上传或下载合同文件 | `dingtalk-drive` | 动作是通用文件存储与传输 |

@@ -1,6 +1,6 @@
 ---
 name: create-skill
-version: 1.2.0
+version: 1.2.1
 description: Guides users through creating effective Agent Skills for QwenWork. Use when the user wants to create, write, or author a new skill, or asks about skill structure, best practices, or SKILL.md format.
 description_zh: 引导用户为 QwenWork 创建有效的 Agent 技能。当用户想要创建、编写或制作新技能，或询问技能结构、最佳实践或 SKILL.md 格式时使用。
 ---
@@ -599,3 +599,10 @@ Before finalizing a skill, verify:
 - [ ] Required packages are documented
 - [ ] Error handling is explicit and helpful
 - [ ] No Windows-style paths
+
+
+## 显式新建任务的最终发布
+
+当用户明确要求新建技能、且当前任务提供 `qwenwork_skill_manage` 创建能力时，最终完整的 `SKILL.md` 必须使用该工具的 `action: "create"` 发布。此宿主发布入口统一适用于本地、虚拟机和 QXC 任务，技能会保存到宿主用户技能目录。发布前不要创建目标技能目录，也不要通过 Bash、Write 或复制现有技能的方式写入最终 `SKILL.md`；发布成功后再按需添加配套资源。
+
+此要求仅适用于明确的新建任务。技能格式咨询、修改既有技能、安装或导入不属于新建，不使用此发布入口。先收集缺失需求，多轮补充后再发布；工具失败不能宣称技能已创建，对话结束也不能作为创建成功的依据。

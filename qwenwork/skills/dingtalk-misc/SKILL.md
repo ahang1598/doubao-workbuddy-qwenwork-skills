@@ -1,6 +1,6 @@
 ---
 name: dingtalk-misc
-description: 长尾产品集合技能，覆盖低频钉钉产品：OA审批查询与处理/法务智能合同/考勤/直播/DING紧急消息/开放平台应用与MCP开发/Agoal目标管理/日志日报周报/电子表格/开放平台文档搜索与OpenAPI逃生舱/独立及文档内嵌白板/钉钉招聘/DWS技能市场安装/人事薪酬绩效/组织大脑Hrbrain/原生Markdown/原生HTML/PAT行为授权/多组织profile。Use when 用户提到上述任一产品，尤其是 Agoal/目标管理/战略解码/经营合约及字段配置/计分卡/OKR/目标规则与周期/个人目标/目标模板/周月报规则提交统计/按时/迟交/未提交/跟催，或查询/创建合同台账、批量导入合同、按听记起草合同、发起合同审查、归档合同、管理合同项目/相对方/账款，或查待审批/同意拒绝转交撤销审批/打卡/排班/日报周报内容填报/独立白板带内容创建/白板节点读写/单元格读写/招聘职位/JD/创建职位/搜索安装技能/开发者后台应用/企业内部应用/查应用状态或能否删除/应用管理成员及角色汇总/应用版本历史/企业内部应用机器人配置、消息模式或在线状态/本机机器人连接器/Stream连接/MCP服务或工具/发布或调试MCP/获取或调用已发布MCP/把OpenAPI、Swagger、Postman、curl或HTTP接口做成MCP或给Agent使用/未封装OpenAPI/llms.txt/dws api/人才池/员工档案/职业历程/绩效/薪酬/工资条/人力成本/原生.md文件/Markdown版本比较/本地草稿diff/Markdown评论/原生.html文件/新建HTML页面/PAT授权/切换组织/跨组织/profile 等相关操作。周报/月报内容填报属于 report；规则级按时、迟交、未提交统计与人员跟催属于 Agoal；带审批人、抄送人或审批流的日报、周报、简报提交属于 OA 审批。未来审批任务或实例变化的实时监听不属于本 skill，应使用 dingtalk-event。命中后由本 skill 的「产品索引表」定位具体子产品和命令前缀，再按对应子产品说明执行。
+description: 钉钉独立白板（白板文件）的创建、绘图、保存和修改；文档内嵌白板仅在已有承载文档 nodeId 和 partId 时提供图形内容读写（dws whiteboard）。两类目标相互独立，不互相推断或切换；文档内白板卡片容器不属于本 skill。长尾产品集合技能，覆盖低频钉钉产品：OA审批查询与处理/法务智能合同/电子签/考勤/直播/DING紧急消息/开放平台应用与MCP开发/Agoal目标管理/日志日报周报/电子表格/开放平台文档搜索与OpenAPI逃生舱/钉钉招聘/DWS技能市场安装/人事薪酬绩效/组织大脑Hrbrain/教育家校通讯录/家校应用/家校群/家庭群/高校通讯录/原生Markdown/原生HTML/PAT行为授权/多组织profile。Use when 用户提到上述任一产品，尤其是 Agoal/目标管理/战略解码/经营合约及字段配置/计分卡/OKR/目标规则与周期/个人目标/目标模板/周月报规则提交统计/按时/迟交/未提交/跟催，或查询/创建合同台账、批量导入合同、按听记起草合同、发起合同审查、归档合同、管理合同项目/相对方/账款，或查询电子签签署任务、创建电子签签署流、查询签署流详情，或查待审批/查询出差单流程模版/提交出差申请单/同意拒绝转交撤销审批/打卡/排班/日报周报内容填报/独立白板带内容创建/独立白板节点读写/已有 nodeId 和 partId 的文档内嵌白板图形内容读写/单元格读写/招聘职位/JD/创建职位/搜索安装技能/开发者后台应用/企业内部应用/查应用状态或能否删除/应用管理成员及角色汇总/应用版本历史/企业内部应用机器人配置、消息模式或在线状态/本机机器人连接器/Stream连接/MCP服务或工具/发布或调试MCP/获取或调用已发布MCP/把OpenAPI、Swagger、Postman、curl或HTTP接口做成MCP或给Agent使用/未封装OpenAPI/llms.txt/dws api/人才池/员工档案/职业历程/绩效/薪酬/工资条/人力成本/原生.md文件/Markdown版本比较/本地草稿diff/Markdown评论/原生.html文件/新建HTML页面/PAT授权/切换组织/跨组织/profile 等相关操作。周报/月报内容填报属于 report；规则级按时、迟交、未提交统计与人员跟催属于 Agoal；带审批人、抄送人或审批流的日报、周报、简报提交属于 OA 审批。未来审批任务或实例变化的实时监听不属于本 skill，应使用 dingtalk-event。命中后由本 skill 的「产品索引表」定位具体子产品和命令前缀，再按对应子产品说明执行。查询学校组织架构/班级学生名单/家长信息/班主任/任课教师/学段/家长查孩子在哪个班级/班级里的学生，或家校任务/成绩单/通知发布或确认/班级圈动态/学生打卡/奖状颁发/AI消息总结，或师生群/班级群会话查询/创建师生群/解散师生群/批量建群，或家庭群查询/创建家庭群/孩子列表/邀请家长/学生应用权限/小天地，或高校通讯录/院系/教职工/校友/毕业年级/校友会。教育产品族边界：家校通讯录（学校组织架构/班级/学生/家长/班主任/学段）属于 edu-contact；家校应用（家校任务/成绩单/通知/班级圈/打卡/奖状/AI消息）属于 edu-app；家校群（师生群/班级群会话/批量建群）属于 edu-group；家庭群（孩子管理/家长邀请/学生应用权限）属于 edu-familygroup；高校通讯录（院系/教职工/校友/毕业年级）属于 college-contact；企业同事/部门/花名册仍使用 dingtalk-contact。
 metadata:
   cli_version: ">=1.0.61"
   category: product
@@ -9,7 +9,7 @@ metadata:
       - dws
 install_source: connector
 connector_id: dws
-version: 1.0.62.3
+version: 1.0.65.1
 disabled: true
 ---
 
@@ -17,30 +17,41 @@ disabled: true
 
 ## 执行前路由
 
-本文件只负责产品路由。先由下表确定唯一产品：单一、清晰的 Attendance、Report、Sheet 或 Dev 任务直接读取对应 reference（内含该任务所需的最小执行契约）；其它产品先读取 [`dingtalk-shared`](../dingtalk-shared/SKILL.md)，再读取唯一产品 reference。仅在实际触发认证、profile、确认或错误恢复时补读一份精确 shared reference，不做冷启动预读。
+本文件只负责产品路由。先由下表确定唯一产品：单一、清晰的 Whiteboard、Attendance、Report、Sheet 或 Dev 任务直接读取对应 reference（内含该任务所需的最小执行契约）；其它产品先读取 [`dingtalk-shared`](../dingtalk-shared/SKILL.md)，再读取唯一产品 reference。仅在实际触发认证、profile、确认或错误恢复时补读一份精确 shared reference，不做冷启动预读。
 
 同一请求同时出现日报、周报或简报名称与审批人、抄送人、审批路径、审批单等审批意图时，审批意图优先，统一路由 OA 并读取 `oa.md`；本次任务不得执行 `dws report`。OA 中没有同名模板也不能降级提交 Report，只能交付 OA 搜索结果或请求消歧。只有用户明确要求提交钉钉日志，且没有审批流语义时，才路由 Report。
 
 Attendance 任务直接按产品索引读取一份最匹配的 `attendance*.md`，不要重复预读 `dingtalk-shared`。只有出现跨产品编排、profile/认证问题、未知全局错误或 Reference 明确指向 shared 时，才按需读取 shared 对应内容。
 
+用户明确要求创建或操作白板文件、独立白板时，直接读取 [whiteboard.md](references/whiteboard.md)，无需先读 Doc 或 shared 路由。课表、日历、流程图等是内容形态，不能据此把文档内嵌目标改成独立白板。文档内嵌白板的卡片容器操作走 `dingtalk-doc`；只有已有承载文档 `nodeId` 和 `partId` 的图形内容操作才读取 whiteboard reference。缺少任一身份时停止并补齐，禁止转成独立白板。
+
 ## 产品索引表
 
 | 触发关键词 | 一句话范围 | 命令前缀 | 详细参考 |
 |---|---|---|---|
-| OA / 审批 / 待处理审批 / 同意 / 拒绝 / 撤销 / 已发起审批 / 发起审批 / 审批附件 | OA 审批查询与处理；创建和附件按需加载专项说明 | `dws oa` | 先读核心 [oa.md](references/oa.md)；发起审批再读 [oa-create.md](references/oa-create.md)；附件操作再读 [oa-attachments.md](references/oa-attachments.md) |
+| OA / 审批 / 待处理审批 / 同意 / 拒绝 / 撤销 / 已发起审批 / 发起审批 / 审批附件 / 创建模板 / 更新模板 | OA 审批查询与处理；创建、附件和模板写入按需加载专项说明 | `dws oa` | 先读核心 [oa.md](references/oa.md)；发起审批再读 [oa-create.md](references/oa-create.md)；附件操作再读 [oa-attachments.md](references/oa-attachments.md)；创建/更新模板再读 [oa-template-write.md](references/oa-template-write.md) |
 | 法务 / 智能合同 / 合同台账 / 合同归档 / 合同项目 / 相对方 / 合同账款 | 智能合同台账、导入、起草、归档、项目、相对方与账款管理 | `dws contract` | [contract.md](references/contract.md) |
 | 考勤 / 打卡 / 班次 / 考勤组 / 排班 / 考勤报表 / 假期余额 | 考勤记录、规则与配置、排班、报表、假期 | `dws attendance` | 日常查询/规则/设置：[attendance.md](references/attendance.md)；排班导入或排班表导出：[attendance-schedule.md](references/attendance-schedule.md)；考勤 Excel/报表导出：[attendance-report.md](references/attendance-report.md)；假期/余额：[attendance-vacation.md](references/attendance-vacation.md) |
 | 直播 / 我的直播 / 直播列表 | 直播列表与直播记录查询 | `dws live` | [live.md](references/live.md) |
 | DING / 紧急通知 / 电话DING / 短信DING / 必达消息 | DING 紧急消息（应用内/短信/电话），个人DING | `dws ding` | [ding.md](references/ding.md) |
 | 开放平台应用 / 企业内部应用 / 应用状态或删除条件 / 应用管理成员 / 应用权限 / 应用版本或版本历史 / agentId / clientId / 应用机器人配置 / 机器人消息模式或在线状态 / 本机机器人连接器 / Stream连接 / 版本发布 / connect / MCP 服务开发 / MCP 工具发布 / MCP 凭证 / OpenAPI或Swagger或Postman或curl转MCP / 接口给Agent用 / 已发布MCP调用 | 开放平台企业内部应用，以及 MCP 服务、工具、鉴权、凭证、协作者和发布后动态调用 | `dws dev` / `dws dev mcp` / `dws mcp published` | 按下方「Dev 直达规则」读取一个 `references/dev/*.md`；意图不明时才读 [dev-index.md](references/dev/dev-index.md) |
+| DEAP 数字员工 / 数字员工 / 人设 / 群感知 / DSH 接入 | 兼容路由；完整自然语言编排只由独立 `dingtalk-tag` skill 维护 | `dws dingtalk-tag` | 切换 [`dingtalk-tag`](../dingtalk-tag/SKILL.md) |
 | 目标管理 / 战略解码 / 经营合约字段 / 计分卡 / OKR / 目标规则周期 / 个人目标 / 目标模板 / 周月报规则统计 / 按时迟交未提交 / 跟催 | Agoal 目标管理与经营目标跟进 | `dws agoal` | [agoal.md](references/agoal.md) |
-| 招聘 / 职位 / JD / 候选人 / 人才库 / 人才标签 / 流程标签 / 人才归档原因 / 简历渠道 | 钉钉招聘职位、候选人、人才库及其筛选选项 | `dws recruit` | [recruit.md](references/recruit.md) |
+| 招聘 / 职位 / JD / 候选人 / 人才库 / 人才标签 / 流程标签 / 人才归档原因 / 简历渠道 | 钉钉招聘职位、候选人、人才库及其筛选选项 | `dws recruit` | [recruit-private.md](references/recruit-private.md) |
+| 家校通讯录 / 学校组织架构 / 班级 / 学生名单 / 家长 / 班主任 / 任课教师 / 学段 | 教育家校通讯录：学校组织、班级、学生、家长、教师信息查询与管理 | `dws edu-contact` | [edu-contact.md](references/edu-contact.md) |
+| 家校应用 / 家校任务 / 成绩单 / 通知发布 / 通知确认 / 班级圈 / 学生打卡 / 奖状 / AI消息总结 | 教育家校应用：消息摘要、家校任务、成绩单、通知、班级圈、打卡、奖状 | `dws edu-app` | [edu-app.md](references/edu-app.md) |
+| 师生群 / 班级群 / 群会话 / 创建师生群 / 解散师生群 / 批量建群 | 教育家校群：师生群查询/创建/解散、班级群会话、批量操作 | `dws edu-group` | [edu-group.md](references/edu-group.md) |
+| 家庭群 / 孩子列表 / 我的孩子的群 / 邀请家长 / 添加孩子 / 学生应用权限 / 小天地 | 家庭群查询/创建、孩子管理、家长邀请、学生应用权限控制 | `dws edu-familygroup` | [edu-familygroup.md](references/edu-familygroup.md) |
+| 高校通讯录 / 高校 / 院系 / 校友 / 毕业年级 / 校友会 / 校友群 | 高校通讯录：院系部门、教职工、学生、校友、毕业年级管理 | `dws college-contact` | [college-contact.md](references/college-contact.md) |
 | 日报 / 周报 / 月报 / 写日志 / 收件箱日志 / 发件箱日志 | 日志（日报/周报/月报）查询与按模版提交 | `dws report`（别名 `dws log`） | [report.md](references/report.md) |
 | 电子表格 / 工作表 / 单元格读写 / 公式 / 超链接 / 浮动图片 | 电子表格创建/读写/公式/超链接/浮动图片/导出 | `dws sheet` | [sheet.md](references/sheet.md) |
 | 开放平台文档 / API文档 / 接口文档 / 接口报错 | 开放平台开发文档搜索 | `dws devdoc` | [devdoc.md](references/devdoc.md) |
 | 未封装 OpenAPI / llms.txt / dws api / Raw API / API 逃生舱 | 官方 llms.txt 分层发现，仅对企业内部应用 App Token 服务端 API 生成并确认 Raw 调用 | `dws api` | [openapi-explorer.md](references/openapi-explorer.md) |
-| 白板 / 独立白板 / 文档内嵌白板 / 画布 / OpenNodes / 白板节点 | 带内容创建、读取和更新独立或文档内嵌白板；没有 `partId` 时默认独立白板 | `dws whiteboard` | [whiteboard.md](references/whiteboard.md) |
+| 白板文件 / 独立白板 / 保存到白板 / 画布 / OpenNodes / 白板节点 / SVG 预渲染 | 独立白板的带内容创建、本地 SVG 预渲染、读取、写前 diff 预览和更新 | `dws whiteboard` | [whiteboard.md](references/whiteboard.md) |
+| 已有承载文档 nodeId 和 partId 的文档内嵌白板图形内容 | 只读写该 part 内的图形内容；卡片容器插入、定位、删除走 `dingtalk-doc`；身份缺失时停止，禁止改成独立白板 | `dws whiteboard --node ... --part-id ...` | [whiteboard.md](references/whiteboard.md) |
 | 合同审核 / AI 审合同 / 合同审查 / 新审核链 | law-ai 合同审核 prepare→upload→confirm→status→result；`dws contract review` 同名叶子为别名 | `dws contract-review` | [contract-review.md](references/contract-review.md) |
+| 电子签 / e-sign / 签署流 / 签署任务 / 发起签署 / 签署流详情 | 电子签签署任务查询、签署流创建与详情（仅显式调用 `dws esign`） | `dws esign` | [esign.md](references/esign.md) |
+| AI差旅 / 提交出差申请 / 提交出差单 / 创建出差审批 / 查询出差模版 / 查询出差单流程模版 | 钉钉AI差旅：企业出差单模版列表查询（`travel process list`）为出差申请选择模版；提交出差单、提交出差审批走 `travel process submit`（travel 专属能力，不要用 `oa` 审批代做；组织没有出差套件流程模版时不能走 travel 提单，可考虑改用 `oa` 提交普通单据） | `dws travel` | [travel.md](references/travel.md) |
 | 搜索技能 / 找技能 / 安装技能 / 技能市场 / 安装 DWS mono 或 multi skill | DWS 技能市场搜索、下载、安装与内置技能部署 | `dws skill` | [skill.md](references/skill.md) |
 | 薪酬 / 工资条 / 薪资主数据 / 人力成本 / 绩效数据源 / 人事绩效记录 | 人事数据源及指定员工薪酬、绩效只读查询 | `dws hrm` | [hrmregister.md](references/hrmregister.md) |
 | 人才池 / 储备干部池 / 员工档案 / 职业历程 / 组织大脑档案绩效 / 员工标签 / 组织大脑 / 人才搜索 | 组织大脑：人才池、员工档案专项模块与结构化人才搜索 | `dws hrbrain` | [hrbrain.md](references/hrbrain.md) |
@@ -53,7 +64,10 @@ Attendance 任务直接按产品索引读取一份最匹配的 `attendance*.md`�
 ## 说明
 
 - 人事数据源的薪酬、绩效记录查询使用 `hrm`；组织大脑档案中的绩效模块使用 `hrbrain`。先按用户指定的数据来源选择，不能把两个来源的记录混同；普通通讯录详情仍使用 `dingtalk-contact`。
+- 教育产品族边界：家校通讯录（学校组织架构/班级/学生/家长/班主任/学段）用 `edu-contact`；家校应用（家校任务/成绩单/通知/班级圈/打卡/奖状/AI消息）用 `edu-app`；家校群（师生群/班级群会话/批量建群）用 `edu-group`；家庭群（孩子管理/家长邀请/学生应用权限）用 `edu-familygroup`；高校通讯录（院系/教职工/校友/毕业年级）用 `college-contact`。企业同事/部门/花名册仍使用 `dingtalk-contact` skill，不要把家校场景路由到企业通讯录。
+- 教育产品族内部协作：`edu-contact` 的 `school class-list` 产出 `deptId`，供 `edu-group` 全部命令（`--dept-id`）和 `edu-app` 班级级查询使用；`edu-group` 的 `class-group conversation-id` 产出 `conversationId`（`--cid`），供 `edu-app` 消息类命令使用。群成员增删、已读回执、群设置属 IM 团队，教育命令只管群与班级的映射。
 
+- 命中数字员工时立即切换独立 [`dingtalk-tag`](../dingtalk-tag/SKILL.md)；本 skill 不保留重复参考文档。
 - 命中产品后必须读取其 `references/<product>.md`，不要只凭索引推测命令。Report 只读 [report.md](references/report.md)；Sheet 常见闭环只读 [sheet.md](references/sheet.md)，复杂任务按进入阶段顺序加载子 reference，每阶段最多一份、常规任务最多三份，禁止批量预读或重复读取。
 - **Agoal / Report 边界**：填写、提交或查询普通日报/周报/月报正文走 Report；规则级提交统计、按时/迟交/未提交人数、人员清单和跟催走 Agoal。出现“月报”不能单独判给 Report，必须结合“规则/统计/迟交/未提交/跟催”等业务词判断。
 - **考勤例外**：按索引表直接读取一份最匹配的 `attendance*.md`；不要先读 `attendance.md` 再读排班、报表或假期专项 Reference。只有一个任务确实跨两个独立考勤域时，才加载第二份。
@@ -66,7 +80,12 @@ Attendance 任务直接按产品索引读取一份最匹配的 `attendance*.md`�
 - **Dev 命令纪律**：默认使用可审计的 `dws dev ...` 原子路径，不为发现 shortcut 调用 `dws dev help`、子组 help 或 `dws devapp +...`。应用按名称定位只有 `dws dev app list --name`，没有 `dws dev app search`；现有应用的机器人名称、模式、状态用 `dws dev app robot get`，不走 `dws chat bot`；连接器是 `dws dev connect ...`，不在 `dws dev app` 下。已知 leaf 直接执行；只有当前参数确有不确定性时才读取一次该 leaf 的 compact Schema，Schema 不可用时才调用一次精确 leaf `--help`。不要用 group help 探路。
 - **Dev JSON 与分页**：所有命令带 `--format json`；`connect list/status` 还必须带它们自己的 `--json`，否则实际输出是表格。`app list`、`permission list`、`event list`、`version list` 只接受游标分页：读取返回的 `meta.pagination.endpoint_exhausted/next_token`，续页传 `--cursor <next_token>`；禁止猜 `--page`、`--page-num`，也不要从 `data` 中找旧版 `hasMore/nextCursor`。
 - **Dev 完成纪律**：执行前记下用户要求的每个交付项；按依赖顺序执行，删除/停用等清理放到最后。用户最初请求写操作只授权 dry-run，不是看过预检后的正式确认。必须先展示 dry-run 的准确对象、动作、业务参数和影响，再取得用户对该预览的明确确认；随后只把同一命令的 `--dry-run` 换成 `--yes`，目标或业务参数有任何变化都重新 dry-run、展示并确认。确认前不得发出非 dry-run 写调用；`--dry-run` 不是完成。写后只做一次必要回读。相同业务错误且参数、状态均未改变时不要重试；仅在新证据实际改变命令、参数或状态后重试一次。最终逐项回答，空列表也明确写“暂无”，不要用大段原始 JSON 挤掉其它结果。
-- **DevDoc 搜索预算**：开放平台文档任务对每个用户主题先用原短语精确搜索一次；某主题无结果时最多再用一个由结果证据支持的同义词，随后如实报告未命中。禁止用 10 轮以上近义词、help 或跨产品搜索碰运气。
-- OA 任务先读核心 [oa.md](references/oa.md)。只有进入真实提单阶段才增量读取 [oa-create.md](references/oa-create.md)，只有处理审批附件才增量读取 [oa-attachments.md](references/oa-attachments.md)；不要为普通查询预读创建、控件、节点和附件全集。要求未来审批任务或实例发生变化时实时通知，切换独立的 [`dingtalk-event`](../dingtalk-event/SKILL.md)。开放平台应用事件配置仍属于 DevApp，按 [dev/event.md](references/dev/event.md) 执行，不要与个人实时事件混淆。
+- **Devapp 跨域快路径**：创建/清理应用加机器人、网页、成员等能力，首读 `dev/recipes.md` 即可，不再预读 app 或各专题。缺参才补精确段落；新建失败不能借用其它应用。确认后的续轮直接执行已确认且未变化的命令，完成必要回读后，同轮继续下一项 dry-run 并询问该项确认，不另问“是否继续”。复用 ID、回执和已读 reference；目标/参数变化仍重新预检确认。明确 STREAM 要传 `--mode STREAM`，不建连接就不读 connect；明确不发布就不进入发布链。
+- **DevDoc 搜索预算**：明确的开发文档任务直接读 [devdoc.md](references/devdoc.md)，无需冷启动预读 shared 或 Devapp。每个主题先原短语搜索；无结果或全不相关时，普通查找至多一次有依据的改写，再报告未命中。指定查询词和页数时不擅自替换或缩减；有返回不等于找到相关资料，禁止连续近义词或跨产品搜索碰运气。
+- OA 任务先读核心 [oa.md](references/oa.md)。只有进入真实提单阶段才增量读取 [oa-create.md](references/oa-create.md)，只有处理审批附件才增量读取 [oa-attachments.md](references/oa-attachments.md)，只有创建或更新模板才增量读取 [oa-template-write.md](references/oa-template-write.md)；不要为普通查询预读创建、控件、节点、附件和模板写入全集。要求未来审批任务或实例发生变化时实时通知，切换独立的 [`dingtalk-event`](../dingtalk-event/SKILL.md)。开放平台应用事件配置仍属于 DevApp，按 [dev/event.md](references/dev/event.md) 执行，不要与个人实时事件混淆。
 - 原生 `.md` 与在线富文本 `adoc`、通用文件存储的边界见 [markdown.md](references/markdown.md)；原生 `.html`/`.htm` 文件读写见 [html.md](references/html.md)；跨组织 / profile 规则见 [profile.md](references/profile.md)。
 - PAT 行为授权不是开放平台应用权限；后者见 [dev/permission.md](references/dev/permission.md)。
+
+Agent 使用 OpenNodes 带内容创建白板时，必须先执行 `whiteboard render`，展示 SVG 和渲染提示后停止，等待用户明确确认当前版本才能创建；修改后重新渲染和确认。不得跳过预览直接创建，最初的创建请求及创建后回读不能替代预览确认。详见白板入口的创建流程；空白创建、直接套用模板和已有白板更新不由此规则扩展。
+
+Agent 更新已有白板内容（追加、修改、删除、清空）必须先执行 `whiteboard +diff`，展示差异和风险后停止，等待用户明确确认当前差异，再用同一 sourceDigest 执行 `+update`；diff 失败或有 blocker 时不得写入。不得换原子 update 绕过，render、dry-run 和写后回读不能替代 diff。详见白板入口的更新流程。更新只设一个用户确认点：先完成所需的 render 和必需的 +diff，再把视觉预览（如有）、差异与覆盖影响一起展示并一次确认；不要在 render 后先索要确认、获准后才补做 diff 再次询问。同一目标、revision、source 和模式已获确认后，直接提交；只有这些内容变化或出现未披露的实质风险才重新确认。

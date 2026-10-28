@@ -1,6 +1,6 @@
 ---
 name: media-generation-premium
-version: 1.1.1
+version: 1.2.0
 description: Generate or edit images and generate videos or music for the enterprise premium media experience. Image, video, and music requests use official automatic model selection or organization-configured models exposed by the current tools. Use this skill for image generation or editing, text-to-video, image-to-video, first-and-last-frame video, multi-reference-image video, music, songs, soundtracks, or background music after the application activates the enterprise premium media experience. This skill creates image/video/music files; it is not for text-to-speech.
 description_zh: 通过企业旗舰版媒体配置，为企业旗舰版媒体体验生成或编辑图片，并生成异步视频或音乐产物。图片、视频与音乐请求使用当前工具暴露的官方自动选模或组织配置模型。当应用已启用企业旗舰版媒体体验，且用户要求文生图、编辑图片、图片变体、文生视频、单图生视频、首尾帧生视频、多参考图生视频、音乐、歌曲、配乐或背景音乐时使用此技能。本技能生成图片、视频或音乐文件，不用于文字转语音。
 license: Proprietary
@@ -24,9 +24,16 @@ The application activates this Skill for the enterprise premium media experience
    - Video: `qwenwork_video_generate`
    - Music: `qwenwork_music_generate`
 2. Keep the returned `task_id`.
-3. Call `qwenwork_media_task` with `action: "wait"`, that `task_id`, and a friendly semantic `output_name`.
-4. When `wait` returns `success: true`, call `qwenwork_file_present_files` with every path in `files`.
-5. Only after `qwenwork_file_present_files` succeeds, tell the user the media artifact is ready.
+3. Classify the generated files before waiting:
+   - Use `artifact_purpose: "deliverable"` when the files directly satisfy the user's request.
+   - Use `artifact_purpose: "intermediate"` when the files are inputs to a later conversion, composition, edit, or other transformation. For example, an MP4 generated only to create a requested GIF is intermediate; an MP4 explicitly requested by the user is a deliverable.
+4. Call `qwenwork_media_task` with `action: "wait"`, that `task_id`, the chosen `artifact_purpose`, and a friendly semantic `output_name`.
+5. When `wait` returns `success: true`, follow `should_present`:
+   - If `should_present: true`, call `qwenwork_file_present_files` with every path in `files`.
+   - If `should_present: false`, use the files only as working inputs and continue producing the requested final artifacts.
+6. Only after the final deliverable files are presented successfully, tell the user the requested media artifacts are ready.
+
+For IM turns, follow the current runtime reminder: when dual delivery is enabled, `qwenwork_file_present_files` handles both local cards and IM sending. Read its separate local and channel outcomes. A local card does not prove IM delivery. Do not call `qwenwork_channel_send_media` again for files already sent. If delivery fails, retain the generated files and report the delivery failure; do not submit a new generation task. Pending or unconfirmed delivery is not confirmed success and must not trigger automatic resending.
 
 The submit tools are asynchronous. Never describe a submitted task as a completed artifact.
 
@@ -79,9 +86,9 @@ Waiting is local:
 
 - Switching conversations, stopping the Agent, or closing the application may interrupt `qwenwork_media_task action=wait`.
 - Interruption does not cancel the upstream task.
-- If the result says `resumable: true`, retain the `task_id`.
+- If the result says `resumable: true`, retain both the `task_id` and its `artifact_purpose`.
 - Do not resume automatically after a restart or conversation switch.
-- Resume only when the user asks to continue, by calling `qwenwork_media_task` again with the same `task_id`.
+- Resume only when the user asks to continue, by calling `qwenwork_media_task` again with the same `task_id` and the same `artifact_purpose`.
 
 If `wait` times out with `timed_out: true`, tell the user that the upstream task is still processing and can be resumed later. Do not submit a duplicate task unless the user asks to regenerate.
 
@@ -95,7 +102,7 @@ The current media-router contract has no active cancellation API. Do not claim t
 - Video: `.mp4`
 - Music: `.mp3`
 
-Always call `qwenwork_file_present_files` after a successful wait. This creates the clickable artifact card and lets the user preview or play the file using their existing artifact-preview preference.
+Call `qwenwork_file_present_files` after a successful wait only when the result says `should_present: true`. This creates the clickable artifact card and lets the user preview or play the final file using their existing artifact-preview preference. Do not present intermediate files; consume them as working inputs and present only the derived final deliverables.
 
 After the artifact card is presented, finish with a concise delivery summary:
 

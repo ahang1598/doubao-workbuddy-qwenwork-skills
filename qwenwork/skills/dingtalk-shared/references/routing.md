@@ -12,7 +12,9 @@
 | 群聊、消息、机器人、Webhook、群成员 | [`dingtalk-chat`](../../dingtalk-chat/SKILL.md) |
 | 实时监听未来 IM 消息、reaction、已读、撤回、群生命周期或 OA 审批变化 | [`dingtalk-event`](../../dingtalk-event/SKILL.md) |
 | 已有 userId 的用户详情、部门、角色、组织关系 | [`dingtalk-contact`](../../dingtalk-contact/SKILL.md) |
-| 文档正文读取、创建、更新、块编辑、媒体和导出 | [`dingtalk-doc`](../../dingtalk-doc/SKILL.md) |
+| 白板文件、独立白板、保存到白板、独立白板课表/流程图及内容修改 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`whiteboard.md`](../../dingtalk-misc/references/whiteboard.md)（`dws whiteboard`） |
+| 文档正文读取、创建、更新、块编辑、媒体、导出，以及文档内白板卡片容器的插入、定位、删除 | [`dingtalk-doc`](../../dingtalk-doc/SKILL.md) |
+| 已有承载文档 nodeId 和 partId 的文档内嵌白板图形内容读写 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`whiteboard.md`](../../dingtalk-misc/references/whiteboard.md)（`dws whiteboard --node ... --part-id ...`） |
 | 文件搜索、上传下载、复制移动、重命名、权限 | [`dingtalk-drive`](../../dingtalk-drive/SKILL.md) |
 | 邮件查询、搜索、读取和发送 | [`dingtalk-mail`](../../dingtalk-mail/SKILL.md) |
 | 听记列表、摘要、转写、关键字和标题 | [`dingtalk-minutes`](../../dingtalk-minutes/SKILL.md) |
@@ -20,12 +22,12 @@
 | 知识库/钉盘空间、空间节点和成员管理 | [`dingtalk-wiki`](../../dingtalk-wiki/SKILL.md) |
 | 姓名模糊找人、负责人、上下级、工号、手机号语义线索、企业知识和行为记录搜索 | [`dingtalk-aisearch`](../../dingtalk-aisearch/SKILL.md) |
 | 完整手机号精确反查，或已有 userId 后查人员详情、部门和角色 | [`dingtalk-contact`](../../dingtalk-contact/SKILL.md) |
-| 合同台账、起草、审查、归档、项目、相对方或账款管理 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`contract.md`](../../dingtalk-misc/references/contract.md) |
+| 合同台账、起草、归档、项目、相对方或账款管理 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`contract.md`](../../dingtalk-misc/references/contract.md) |
 | Markdown / `.md` 内容读取、创建、覆盖、局部修改或版本差异比较 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`markdown.md`](../../dingtalk-misc/references/markdown.md) |
 | 组织大脑、人才池、员工档案专项、职业历程、绩效、结构化人才搜索 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`hrbrain.md`](../../dingtalk-misc/references/hrbrain.md) |
 | PAT 行为授权、scope 授权、授权浏览器策略 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`pat.md`](../../dingtalk-misc/references/pat.md) |
 | 切换组织、跨组织、多组织、profile 管理 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`profile.md`](../../dingtalk-misc/references/profile.md) |
-| 审批查询与处理、考勤、会议、电子表格、日志、DING、直播、开放平台应用、技能市场安装等长尾产品 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) |
+| 审批查询与处理、考勤、会议、电子表格、日志、DING、直播、AI差旅、开放平台应用、技能市场安装等长尾产品 | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) |
 | 宜搭 / AI 应用创建脚本 / 财务辅助脚本（无稳定产品面） | [`dingtalk-misc`](../../dingtalk-misc/SKILL.md) → [`unsupported-scripts.md`](../../dingtalk-misc/references/unsupported-scripts.md)；默认说明未产品化，勿当正式 CLI |
 
 选择 `dingtalk-misc` 后，先读取其 `SKILL.md` 产品索引，再只读取命中产品的单个
@@ -39,6 +41,8 @@ reference，不要加载全部长尾产品文档。
 
 ## 高频边界
 
+- 白板文件/独立白板与文档内嵌白板是互不转换的目标。前者走 `whiteboard`（`dingtalk-misc`）；后者的卡片容器插入、定位、删除走 `doc whiteboard`，只有已知承载文档 `nodeId + partId` 后才用 `whiteboard` 读写 part 内图形内容。文档内嵌目标缺少 `partId` 时停止并补齐，禁止改成独立白板。
+
 - `aisearch person`：按姓名、职责、上下级、工号或手机号线索语义找人；`contact`：
   完整手机号精确反查，或拿到 userId 后查详情、部门和角色；`mail`：邮件内容与收发。
 - `drive`：对任何文件都成立的存储操作；`doc`：文档正文和块内容；`wiki`：空间与
@@ -49,12 +53,10 @@ reference，不要加载全部长尾产品文档。
 - `calendar`：日历事件、参会人和会议室；视频会议（conference）当前 CLI 不支持，请在钉钉客户端操作；
   `minutes`：会后听记内容。
 - `report`：钉钉日志系统中的日报/周报；`doc`：普通文档创作；`todo`：个人任务。
-- `contract`：合同台账、起草、审查、归档、项目、相对方和账款；合同审批实例处理走 `oa`，经营合约走 `agoal`，合同文件存储走 `drive`，花名册合同字段走 `contact`。按听记起草时先由 `minutes` 取得真实 `taskUuid`，再调用 `contract draft`。
+- `contract`：合同台账、起草、归档、项目、相对方和账款；合同审批实例处理走 `oa`，经营合约走 `agoal`，合同文件存储走 `drive`，花名册合同字段走 `contact`。按听记起草时先由 `minutes` 取得真实 `taskUuid`，再调用 `contract draft`。
 - `chat`：发送消息、读取历史消息和主动群操作；独立的 `event`：未来个人 IM/OA/Todo 事件长连接监听；
   `ding`：强提醒，位于 `dingtalk-misc`。
-- `hrbrain` / `markdown` / `pat` / `profile` 均位于 `dingtalk-misc`。
-- 请假、加班、外出、出差、补卡等考勤业务审批优先走 `attendance`；其他通用审批查询、同意、
-  拒绝、转交和撤销走 `oa`。两者均位于 `dingtalk-misc`；未来审批任务或实例变化的实时通知走
-  独立的 `dingtalk-event`。
+- `hrbrain` / `markdown` / `pat` / `profile` / `travel` 均位于 `dingtalk-misc`。
+- 请假、加班、外出、出差（仅限出差中工时相关）、补卡等考勤业务审批优先走 `attendance`；查询出差流程模版、提交出差单优先走 `travel`（组织无出差套件流程模版时 travel 不能提单，可考虑改用 `oa` 提交普通单据）; 其他通用审批查询、同意、拒绝、转交和撤销走 `oa`。三者均位于 `dingtalk-misc`；未来审批任务或实例变化的实时通知走独立的 `dingtalk-event`。
 
 边界仍无法判断时，只读取 [intent-guide.md](intent-guide.md) 的对应章节。只有产品、写入对象、账号组织或不可安全推导的必填参数存在实质歧义时才阻塞澄清；只读任务可安全默认的展示范围不在此处阻塞。

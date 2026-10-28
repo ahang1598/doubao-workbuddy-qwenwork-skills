@@ -11,8 +11,9 @@
 | 发起审批、预测流程、组装表单字段 | 继续读 [oa-create.md](oa-create.md)；按其中条件加载控件和节点 reference |
 | 流程效率指标、审批表单字段统计 | 继续读 [oa-analytics.md](oa-analytics.md)，仅管理员可用 |
 | 下载链接、下载/预览授权、上传审批附件 | 继续读 [oa-attachments.md](oa-attachments.md) |
+| 创建审批模板、更新审批模板、模板 JSON 文档模式 | 继续读 [oa-template-write.md](oa-template-write.md)；按其中索引加载控件和节点 reference |
 
-不要为普通查询预读创建、控件、节点或附件全文。
+不要为普通查询预读创建、控件、节点、附件或模板写入全文。
 
 ## 角色来源是对象身份的一部分
 
@@ -150,6 +151,7 @@ dws oa approval list-by-admin --process-code <processCode> --start "<ISO-8601>" 
 | 为当前用户授权下载 | `dws oa approval attachment authorize-download` | `fileInfos` 最多 10 项；不返回下载链接 |
 | 授权审批内预览 | `dws oa approval attachment authorize-preview` | `fileIds` 最多 20 项；不等于下载授权 |
 | 上传本地审批附件 | `dws oa approval attachment upload` | 返回附件元数据，供创建审批字段使用 |
+| 上传本地审批图片 | `dws oa approval image upload` | 返回 mediaIdV2，供组装 DDPhotoField 图片控件 value |
 
 附件实例也必须来自用户指定的角色来源。生成下载链接成功不能证明下载授权成功，反之亦然。
 
@@ -179,3 +181,7 @@ dws oa approval list-by-admin --process-code <processCode> --start "<ISO-8601>" 
 |---|---|---|
 | `dws oa +search-forms` | read | 按关键字模糊搜索当前用户可见的审批表单 |
 <!-- VISIBLE_SHORTCUTS_END -->
+
+### 创建和更新模板路由
+
+用户要创建或更新审批模板时，继续读取 [oa-template-write.md](oa-template-write.md)。不要凭本文件直接组装 `--schema-content` 或 `--process-config`。
