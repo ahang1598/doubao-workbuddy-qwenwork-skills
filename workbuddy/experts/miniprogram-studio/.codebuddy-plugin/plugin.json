@@ -1,0 +1,141 @@
+{
+  "name": "miniprogram-studio",
+  "version": "1.0.3",
+  "description": "Full-cycle WeChat mini-program team for profitable development: product, UI, frontend, backend/cloud and growth.",
+  "author": {
+    "name": "奇克",
+    "email": "qike@workbuddy.local"
+  },
+  "agents": [
+    "./agents/miniprogram-studio-team-lead.md",
+    "./agents/ui-designer.md",
+    "./agents/frontend-dev.md",
+    "./agents/backend-cloud-dev.md",
+    "./agents/growth-ops.md"
+  ],
+  "expertType": "team",
+  "agentName": "miniprogram-studio-team-lead",
+  "teamInfo": {
+    "leadAgent": "miniprogram-studio-team-lead",
+    "memberAgents": [
+      "ui-designer",
+      "frontend-dev",
+      "backend-cloud-dev",
+      "growth-ops"
+    ]
+  },
+  "displayName": {
+    "en": "WeChat Mini-Program Profit Studio",
+    "zh": "微信小程序盈利开发专家团"
+  },
+  "profession": {
+    "en": "WeChat Mini-Program Profit Studio",
+    "zh": "微信小程序盈利开发专家团"
+  },
+  "displayDescription": {
+    "en": "Full-cycle WeChat mini-program team covering product, UI, frontend, backend/cloud and growth — from paid gigs to your own profitable product.",
+    "zh": "覆盖产品策划、UI设计、前后端开发与运营增长的全链路微信小程序专家团，助你从接单练手到自有产品变现。"
+  },
+  "avatar": "avatars/team.png",
+  "categoryId": "13-TencentZone",
+  "defaultInitPrompt": {
+    "zh": "帮我拆解一个微信小程序外包需求并报价",
+    "en": "Help me scope a WeChat mini-program outsourcing requirement and quote it"
+  },
+  "plugin": "miniprogram-studio",
+  "tags": [
+    {
+      "en": "Mini-Program Dev",
+      "zh": "小程序开发"
+    },
+    {
+      "en": "Monetization",
+      "zh": "变现盈利"
+    },
+    {
+      "en": "Full-Cycle Delivery",
+      "zh": "全链路交付"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Help me scope a WeChat mini-program outsourcing requirement and quote it",
+      "zh": "帮我拆解一个微信小程序外包需求并报价"
+    },
+    {
+      "en": "Design a monetizable self-owned mini-program product plan",
+      "zh": "设计一个能变现的自有小程序产品方案"
+    },
+    {
+      "en": "Plan growth ops and monetization for my mini-program",
+      "zh": "给小程序做增长运营和变现规划"
+    }
+  ],
+  "members": [
+    {
+      "id": "miniprogram-studio-team-lead",
+      "profession": {
+        "en": "Mini-Program Monetization Operator",
+        "zh": "小程序变现操盘手"
+      },
+      "avatar": "avatars/miniprogram-studio-team-lead.png",
+      "role": "lead",
+      "name": {
+        "en": "Shang Jiancheng",
+        "zh": "商见成"
+      }
+    },
+    {
+      "id": "ui-designer",
+      "profession": {
+        "en": "UI Design Expert",
+        "zh": "UI 设计专家"
+      },
+      "avatar": "avatars/ui-designer.png",
+      "role": "member",
+      "name": {
+        "en": "Yan Ruhui",
+        "zh": "颜如绘"
+      }
+    },
+    {
+      "id": "frontend-dev",
+      "profession": {
+        "en": "Frontend Development Expert",
+        "zh": "前端开发专家"
+      },
+      "avatar": "avatars/frontend-dev.png",
+      "role": "member",
+      "name": {
+        "en": "Cheng Qianjin",
+        "zh": "程前锦"
+      }
+    },
+    {
+      "id": "backend-cloud-dev",
+      "profession": {
+        "en": "Backend & Cloud Development Expert",
+        "zh": "后端与云开发专家"
+      },
+      "avatar": "avatars/backend-cloud-dev.png",
+      "role": "member",
+      "name": {
+        "en": "Yun Qiwu",
+        "zh": "云栖梧"
+      }
+    },
+    {
+      "id": "growth-ops",
+      "profession": {
+        "en": "Growth & Operations Expert",
+        "zh": "运营增长专家"
+      },
+      "avatar": "avatars/growth-ops.png",
+      "role": "member",
+      "name": {
+        "en": "Zeng Zhiyi",
+        "zh": "增之翼"
+      }
+    }
+  ]
+}

@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：635
-- 当前索引文件数：17687
-- 最近变更：[2026-10-20-180008](workbuddy/change-logs/2026-10-20-180008.md) - WorkBuddy 本次同步新增 85 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/vibe-knowledge-film。 受影响范围：skills/vibe-knowledge-film。
+- 当前索引条目数：636
+- 当前索引文件数：17702
+- 最近变更：[2026-10-28-180005](workbuddy/change-logs/2026-10-28-180005.md) - WorkBuddy 本次同步新增 15 个文件、修改 2 个文件、删除 0 个文件。 新增条目：experts/miniprogram-studio。 受影响范围：experts/miniprogram-studio, skills/prompt-engineering-expert。
 
 ## 数据来源
 
@@ -86,6 +86,7 @@
 | 营销战役团队 | `workbuddy/experts/marketing-campaign-team` | 05-MarketingGrowth | 14 | 由营销总监领导的 4 人营销专家团队：内容创作者（博客/邮件/社媒/品牌声音）、活动策划师（战役策略/受众/渠道/预算）、SEO 专家（技术审计/内容优化/效果分析）和品牌分析师（竞品定位/品牌审核）。覆盖完整营销生命周期。 |
 | 营销增长专家团 | `workbuddy/experts/marketing-growth-team` | 05-MarketingGrowth | 85 | fCMO 级全栈营销增长团队：转化率优化、SEO 与内容策略、增长工程、数据归因分析与策略规划，全方位助力 SaaS 产品增长 |
 | 领券下单找我 | `workbuddy/experts/meituan-living-assistant` | 07-SalesCommerce | 18 | 帮您一键领取美团优惠券，搜索附近团购美食并下单，探索今日活动，覆盖餐饮饮品等生活服务，省钱省心。 |
+| 微信小程序盈利开发专家团 | `workbuddy/experts/miniprogram-studio` | 13-TencentZone | 14 | 覆盖产品策划、UI设计、前后端开发与运营增长的全链路微信小程序专家团，助你从接单练手到自有产品变现。 |
 | MVP开发专家团 | `workbuddy/experts/mvp-dev-expert-team` | 02-Engineering | 54 | 说出你的想法，8位专家从调研、设计、编码、测试到部署全流程协作，帮你快速开发MVP产品 |
 | 计算机等级考试专家团 | `workbuddy/experts/ncre-expert` | 02-Engineering | 15 | NCRE一至四级专家团，覆盖Office、编程、数据库与网络安全，分工协作，量身定制备考方案。 |
 | 一人公司专家团 | `workbuddy/experts/opc-team` | 12-IndustryConsultant | 53 | 基于由Easy创作的《一人企业方法论》，9位专家陪你走完从资源盘点、利基定位到MVP、转化、复盘的一人公司全流程共创 |
@@ -388,7 +389,7 @@
 | paper-reader | `workbuddy/skills/paper-reader` | skill | 1 | 基于论文文本的通用读论文助手。用户提供论文文本（文件路径或直接粘贴），解答各类读论文需求——总结、精读、内容问答、概念解释、批判性分析等，并将结果以 Markdown 写入当前工作目录。触发词：读论文、论文总结、精读这篇论文、帮我分析这篇论文、这篇论文讲了什么、论文问答、论文笔记。输入为纯文本/Markdown 论文内容；不做论文检索下载、不做扫描件 OCR、不做论文写作降重。 |
 | paper-rebuttal | `workbuddy/skills/paper-rebuttal` | skill | 4 | 以论文作者身份完成学术审稿 rebuttal 全流程。当用户提供审稿意见（reviewer comments / reviews / meta-review）和论文文件（PDF/LaTeX/DOCX/Markdown），需要分析审稿意见、判断是否需要修改论文、修改论文并撰写给审稿人的逐条回复（rebuttal / response letter / author response）时使用。触发词包括：rebuttal、审稿意见回复... |
 | paper-reviewer | `workbuddy/skills/paper-reviewer` | skill | 3 | 专业学术论文审稿 skill。以领域专家视角对学术论文（本地 PDF、arXiv ID/URL、粘贴文本）进行系统评审，自动识别论文学科与贡献类型并切换对应领域专家标准，输出顶会 OpenReview 风格（NeurIPS/ICLR/ICML）的标准 review 意见：Summary、Strengths、Weaknesses、Questions to Authors、Overall Score (1-10)、Confidence... |
-| prompt-engineering-expert | `workbuddy/skills/prompt-engineering-expert` | skill | 12 | Advanced expert in prompt engineering, custom instructions design, and prompt optimization for AI agents |
+| prompt-engineering-expert | `workbuddy/skills/prompt-engineering-expert` | skill | 13 | Advanced expert in prompt engineering, custom instructions design, and prompt optimization for AI agents |
 | research-lineage-map | `workbuddy/skills/research-lineage-map` | skill | 4 | 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点... |
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | skill | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | skill | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
@@ -703,6 +704,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-28-180005 | [2026-10-28-180005](workbuddy/change-logs/2026-10-28-180005.md) | WorkBuddy 本次同步新增 15 个文件、修改 2 个文件、删除 0 个文件。 新增条目：experts/miniprogram-studio。 受影响范围：experts/miniprogram-studio, skills/prompt-engineering-expert。 |
 | 2026-10-20-180008 | [2026-10-20-180008](workbuddy/change-logs/2026-10-20-180008.md) | WorkBuddy 本次同步新增 85 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/vibe-knowledge-film。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-10-17-180008 | [2026-10-17-180008](workbuddy/change-logs/2026-10-17-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 0 个文件、删除 30 个文件。 移除条目已归档：cb_teams_experts/ardot-design-generator。 受影响范围：cb_teams_experts/ardot-design-generator。 |
 | 2026-10-13-180008 | [2026-10-13-180008](workbuddy/change-logs/2026-10-13-180008.md) | WorkBuddy 本次同步新增 9 个文件、修改 1 个文件、删除 8 个文件。 受影响范围：cb_teams_experts/finance-data。 |
@@ -722,4 +724,3 @@
 | 2026-09-04-180001 | [2026-09-04-180001](workbuddy/change-logs/2026-09-04-180001.md) | WorkBuddy 本次同步新增 94 个文件、修改 19 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/laiye-adp, connectors/marketplace/connectors/magic-agent-token, connectors/marketplace/connect... |
 | 2026-09-03-180002 | [2026-09-03-180002](workbuddy/change-logs/2026-09-03-180002.md) | WorkBuddy 本次同步新增 9 个文件、修改 16 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/dnb-global-data, connectors/marketplace/connectors/intco-ai-platform。 受影响范围：connectors/marketpl... |
 | 2026-09-02-223755 | [2026-09-02-223755](workbuddy/change-logs/2026-09-02-223755.md) | WorkBuddy 本次同步新增 4306 个文件、修改 171 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/deeplink, connectors/marketplace/connectors/dramabuddy, connectors/marketplace/connectors/h... |
-| 2026-09-02-180002 | [2026-09-02-180002](workbuddy/change-logs/2026-09-02-180002.md) | WorkBuddy 本次同步新增 21 个文件、修改 27 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/shanlong-claw, connectors/marketplace/connectors/tencent-map-guide。 受影响范围：connectors/marketpla... |

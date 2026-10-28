@@ -7,8 +7,8 @@
 - 目录：`workbuddy/skills/`
 - 来源：`/mnt/c/Users/15805/.workbuddy/skills`
 - 条目数：18
-- 文件数：245
-- 最近同步：2026-10-20 18:00:08 +0800
+- 文件数：246
+- 最近同步：2026-10-28 18:00:05 +0800
 
 ## 场景导航（按用途）
 
@@ -63,7 +63,7 @@
 | paper-reader | `workbuddy/skills/paper-reader` | 研究/调研 | paper-reader | 1 | 基于论文文本的通用读论文助手。用户提供论文文本（文件路径或直接粘贴），解答各类读论文需求——总结、精读、内容问答、概念解释、批判性分析等，并将结果以 Markdown 写入当前工作目录。触发词：读论文、论文总结、精读这篇论文、帮我分析这篇论文、这篇论文讲了什么、论文问答、论文笔记。输入为纯文本/Markdown 论文内容；不做论文检索下载、不做扫描件 OCR、不做论文写作降重。 |
 | paper-rebuttal | `workbuddy/skills/paper-rebuttal` | 文档/表格/PPT | paper-rebuttal | 4 | 以论文作者身份完成学术审稿 rebuttal 全流程。当用户提供审稿意见（reviewer comments / reviews / meta-review）和论文文件（PDF/LaTeX/DOCX/Markdown），需要分析审稿意见、判断是否需要修改论文、修改论文并撰写给审稿人的逐条回复（rebuttal / response letter / author response）时使用。触发词包括：rebuttal、审稿意见回复... |
 | paper-reviewer | `workbuddy/skills/paper-reviewer` | 文档/表格/PPT | paper-reviewer | 3 | 专业学术论文审稿 skill。以领域专家视角对学术论文（本地 PDF、arXiv ID/URL、粘贴文本）进行系统评审，自动识别论文学科与贡献类型并切换对应领域专家标准，输出顶会 OpenReview 风格（NeurIPS/ICLR/ICML）的标准 review 意见：Summary、Strengths、Weaknesses、Questions to Authors、Overall Score (1-10)、Confidence... |
-| prompt-engineering-expert | `workbuddy/skills/prompt-engineering-expert` | 其他 | prompt-engineering-expert | 12 | Advanced expert in prompt engineering, custom instructions design, and prompt optimization for AI agents |
+| prompt-engineering-expert | `workbuddy/skills/prompt-engineering-expert` | 其他 | prompt-engineering-expert | 13 | Advanced expert in prompt engineering, custom instructions design, and prompt optimization for AI agents |
 | research-lineage-map | `workbuddy/skills/research-lineage-map` | 设计可视化 | research-lineage-map | 4 | 绘制研究领域或技术主题的谱系脉络与历史演进图，可视化思想的演化路径，展示早期工作中的技术难题如何被后续研究逐步解决。当用户想了解某个主题的发展轨迹、某个模型或技术的"家族树"（family tree）、某条研究线索在多年间的演进路线、技术迭代脉络、论文/模型谱系，或询问"X 是如何一步步发展来的""X 解决了前人的什么问题""梳理 X 的发展历史"时触发。产出为嵌入 Mermaid 图表的 Markdown 文件（演进图 + 节点... |
 | skillhub-daily | `workbuddy/skills/skillhub-daily` | 通用工具/平台 | skillhub-daily | 13 | 'SkillHub 每日推荐 - 扫描 skillhub.cn 全站 Top100 + 7 大分类各 Top20（共 240 个 Skill）， |
 | tencent-yuanbao-standard-search | `workbuddy/skills/tencent-yuanbao-standard-search` | 其他 | tencent-yuanbao-standard-search | 4 | Search the web using TencentCloud Web Search API (WSA). Prioritize using it when you need to retrieve network information. |
