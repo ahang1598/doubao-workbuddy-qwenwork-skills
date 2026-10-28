@@ -2,13 +2,10 @@
 
 ## 能力用途
 
-基于视觉大模型，对输入的单个视频 URL 进行通用视频内容分析，输出视频级别的结构化理解结果，适用于内容审核、视频检索、标签生成等场景。
-
+基于火山方舟视觉大模型，接收单个视频及自然语言指令，并结合视频时长、分析档位、场景和用户偏好自动选择抽帧、音频分析与模型链路，输出结构化理解结果；适用于内容审核、视频检索、标签生成、视频摘要和创作剪辑。
 ## 参数填写规则
 
-- `video_urls` 单次调用长度必须为 1；只传一个视频 URL。如需处理多个视频，应并发发起多次独立调用，不得一次传入视频列表。
 - 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
-
 ## Cloud
 
 ### 命令与生命周期
@@ -19,12 +16,13 @@
 
 ### 使用指南
 
-- 数组参数（`--prefer-endpoints`、`--prefer-models`）传多个值时用逗号分隔并整体加引号，例如 `--prefer-endpoints "url1,url2"`。
-- `--video-urls` 单次只传 1 个视频 URL；不要用逗号拼接多个视频，也不要重复传递该 flag 传入多个视频。
+
+- `{}` 和 `[{}]` 仅展示 JSON 容器形状。命令模板中的 `<参数名_json>` 必须替换为符合参数表、已补齐必填字段的合法 JSON；不得直接提交空容器或占位符。
+- 数组参数（`--prefer-endpoints`、`--prefer-models`）传多个值时用逗号分隔并整体加引号，例如 `--prefer-endpoints "url1,url2"`；`--video-urls` 最多只能传入 1 个视频。
 - 单个值中的文件名或 URL 不能包含逗号（`,`），否则会被 CLI 当成多个元素拆开。遇到这种情况时，先向用户澄清，请其提供不含逗号的文件名或对应 URL 后再调用。
 - 对象或对象数组参数（`--manual-option`）需传合法 JSON 字符串；字段名与层级必须与上表“枚举/范围/结构”及子字段说明一致。不要用逗号分隔或裸文本。
-- POSIX / bash：用单引号整体包裹，例如 `--manual-option '[{...}]'`。
-- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --manual-option "[{\"key\":\"value\"}]"`。禁止单引号 JSON、`$json` 变量和 `@file`。
+- POSIX / bash：用单引号整体包裹，例如 `--manual-option '{}'`。
+- Windows PowerShell：按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 把 JSON flag 放在 `--%` 之后，内部双引号写成 `\"`，例如 `--% --manual-option "{}"`。Windows 内联 JSON 禁止单引号 JSON 和 `$json` 变量；`@文件`、stdin `-`、`file://` 写法按共享入口 [JSON 参数传参](../../byted-mediakit-shared/SKILL.md) 执行。
 
 ### 调用示例
 
@@ -40,27 +38,37 @@ mediakit-cli video video-understand-router \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `callback_args` | `--callback-args` | string | 否 | - | - | 自定义回调参数；任务完成时会通过事件回调原样返回，用于关联业务；字段长度最大为 512 字节。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `callback_url` | `--callback-url` | string | 否 | - | - | 用于接收该任务结果回调的 URL 地址；提供后优先级高于全局回调地址；地址必须以 http:// 或 https:// 开头。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `client_token` | `--client-token` | string | 否 | - | - | 用户请求凭证，用于幂等控制；大小写敏感，长度不超过 64 个 ASCII 可打印字符。 默认不传。用户明确指定时原样使用；用户明确要求重试时，同一逻辑请求的重试链必须复用同一 token。已有 token 时必须复用原值；此前请求未带 token 时，可从本次重试开始创建一次并持续复用，但该 token 不对此前请求提供追溯幂等。业务参数变化视为新请求，不得复用旧 token。不得为每次尝试生成不同值。CLI/MCP runtime 不判断重试意图，也不自动生成 token。 |
+| `client_token` | `--client-token` | string | 否 | - | - | 用户请求凭证，用于幂等控制；大小写敏感，长度不超过 64 个 ASCII 可打印字符。 用于控制异步任务幂等；同步任务不支持幂等校验。异步任务首次提交时默认不传，服务端仍会对相同核心参数执行 24 小时默认幂等。用户明确指定 token 时原样使用。因网络超时、响应丢失等原因重试同一次提交时，原请求有 token 则复用原值，原请求未传则继续不传。任务已有结果后，用户要求“结果不对，重试”“重新跑一次”或“重新发起任务”时，必须生成并传递新的 token，避免返回原任务。新对话中用户要求“重新发起任务”时，若当前上下文具备完整任务参数，直接生成新 token 并提交；若参数不足，先向用户澄清，补齐后再使用新 token 发起，不得直接省略 token。新任务后续发生提交重试时复用该新 token。已有 task_id 且任务尚未完成时，只查询原任务，不得重新提交。CLI runtime 不判断用户意图，也不自动生成 token。 |
 | `level` | `--level` | string | 否 | "Economy" | 枚举: ["Economy","Balanced","Quality"] | level 是分析档位，决定任务的默认抽帧策略与模型选择，以在成本、速度和质量之间取得平衡；支持 Economy、Balanced、Quality，默认 Economy。Economy 是速度优先的经济档位，适合大批量、对结果详细程度要求较低的内容标注；Balanced 是速度与质量兼顾的均衡档位，适合常规内容审核与检索场景；Quality 是结果优先的质量档位，适合需要更精细语义理解的场景。 |
 | `manual_option` | `--manual-option` | object | 否 | - | - | manual_option 是手动模式相关参数；未传 manual_option 时表示完全使用 level 档位策略，不进行手动覆盖。 |
 | `manual_option.fps` | - | number | 否 | 1 | 最小值: 0.2；最大值: 5 | manual_option.fps 是抽帧帧率，设置后会按照指定帧率进行均匀抽帧；最小 0.2，最大 5.0，默认 1.0。 |
 | `manual_option.max_snapshot_number` | - | integer | 否 | 0 | 最大值: 1000 | manual_option.max_snapshot_number 是最大抽帧帧数，最小 0，最大 1000，默认 0；显式设置时会覆盖档位策略；设为 0 时由 level 档位决定截图数量。 |
 | `manual_option.need_audio` | - | boolean | 否 | false | - | manual_option.need_audio 表示是否开启或关闭音频分析，支持 true 和 false，默认 false。为 true 时开启音频分析，系统将选用支持音视频多模态的模型，并分析音频内容。为 false 时关闭音频分析，仅分析视频画面；即使 manual_option.need_audio 为 false 或未提供，如果 prompt 中包含“声音”、“音乐”等音频相关关键词，也可能自动触发音频分析。 |
-| `prefer_endpoints` | `--prefer-endpoints` | array<string> | 否 | - | 最少项数: 1；最多项数: 10 | prefer_endpoints 是优先使用的推理接入点 ID（Endpoint ID）列表，最多 10 个；系统将从 prefer_endpoints 指定的推理接入点中结合策略选择最终模型；prefer_endpoints 的优先级高于 prefer_models。 CLI 传参时可使用逗号分隔多个值，或重复传递该 flag；不要传 JSON 数组字符串。 |
-| `prefer_models` | `--prefer-models` | array<string> | 否 | - | 最少项数: 1；最多项数: 10 | prefer_models 是优先使用的模型 ID（Model ID）列表，最多 10 个；系统将从 prefer_models 指定的模型中结合策略选择最终模型。 CLI 传参时可使用逗号分隔多个值，或重复传递该 flag；不要传 JSON 数组字符串。 |
+| `prefer_endpoints` | `--prefer-endpoints` | array<string> | 否 | - | 最少项数: 1；最多项数: 10 | prefer_endpoints 是优先使用的推理接入点 ID（Endpoint ID）列表，最多 10 个；系统将从 prefer_endpoints 指定的推理接入点中结合策略选择最终模型；prefer_endpoints 的优先级高于 prefer_models。 指定使用的自定义推理点 |
+| `prefer_models` | `--prefer-models` | array<string> | 否 | - | 最少项数: 1；最多项数: 10 | prefer_models 是优先使用的模型 ID（Model ID）列表，最多 10 个；系统将从 prefer_models 指定的模型中结合策略选择最终模型。 指定使用的模型 |
 | `prompt` | `--prompt` | string | 是 | - | 最短长度: 1 | prompt 是用于指导大模型对视频内容进行分析的自然语言描述，最小长度为 1。 |
-| `queue_id` | `--queue-id` | string | 否 | - | - | 任务提交的目标队列 ID；不传时默认使用系统自动创建的队列 ID。可将不同业务或优先级的任务提交到不同队列，以按队列对应的项目进行分账。队列可创建和管理，系统会自动分配队列 ID。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
 | `scene` | `--scene` | string | 否 | - | 枚举: ["editing"] | scene 是分析场景，用于系统优化处理策略；指定 scene 后，系统会自动决策使用该场景的最佳策略；不传时表示通用场景。editing 表示创作剪辑场景，模型会侧重于理解并输出带有精确时间戳的详细分镜信息，适用于分镜理解、智能剪辑、二次 AIGC 创作等下游任务。 |
-| `video_urls` | `--video-urls` | array<string> | 是 | - | 最少项数: 1；最多项数: 1 | video_urls 是待处理的视频 URL；单次调用必须且只能传入 1 个视频。支持公网 HTTP/HTTPS URL、本地文件路径、火山引擎视频点播 vod:// 和火山引擎对象存储 tos:// 四种输入协议；支持 mp4、flv、ts、avi、mov、wmv、mkv 等主流视频格式。如需处理多个视频，应并发发起多次独立调用，不得一次传入视频列表。 CLI 传参时只传单个值；不要传 JSON 数组字符串。 |
+| `video_urls` | `--video-urls` | array<string> | 是 | - | 最少项数: 1；最多项数: 1 | video_urls 是待处理的视频 URL 列表，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；支持 mp4、flv、ts、avi、mov、wmv、mkv 等主流视频格式；单次任务最多支持传入 1 个视频文件。 video_urls 中单个视频时长不超过 2 小时。 |
 
-### 任务结果查询
+### 返回结果
 
-提交成功后会返回 `task_id`，再执行 `mediakit-cli shared query-task --task-id <task_id>` 查询。
+| 字段路径 | 类型 | 必含 | 模式 | 说明 |
+| --- | --- | --- | --- | --- |
+| `request_id` | string | 否 | Cloud | 请求标识；仅在后端返回时出现。 |
+| `task_id` | string | 是 | Cloud | 异步任务的唯一标识，用于查询任务状态并获取最终结果。 |
+| `task_type` | string | 否 | Cloud | 任务类型；仅在后端实际返回非空值时出现。 |
+| `contents` | array<string> | 否 | Cloud 终态 | contents 是视频内容分析结果列表。 contents 每一项对应 video_urls 中同索引视频的分析结果文本。 |
+| `duration` | number | 否 | Cloud 终态 | duration 表示输入视频总时长，单位为秒，为所有输入视频时长的总和。 |
+| `token_usage` | object | 否 | Cloud 终态 | token_usage 是大模型推理过程中的 Token 使用量统计。 |
+| `token_usage.input_tokens` | integer | 否 | Cloud 终态 | token_usage.input_tokens 是输入 Token 数量。 |
+| `token_usage.output_tokens` | integer | 否 | Cloud 终态 | token_usage.output_tokens 是输出 Token 数量。 |
+| `token_usage.total_tokens` | integer | 否 | Cloud 终态 | token_usage.total_tokens 是总 Token 数量。 |
 
-- 当前命令：`mediakit-cli video video-understand-router`
-- 推荐查询：`mediakit-cli shared query-task --task-id <task_id>`
+Cloud 调用成功后读取 `task_id`，再查询终态结果：
+
+```bash
+mediakit-cli shared query-task --task-id <task_id> --poll-complete
+```
 
 ### 机器合同
 

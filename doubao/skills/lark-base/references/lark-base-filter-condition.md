@@ -144,18 +144,23 @@ location 筛选只按 `full_address` 字符串匹配，不能直接按经纬度�
 ["截止时间", "==", "Today"]
 ```
 
-可用关键字：
-- `Today`
-- `Yesterday`
-- `Tomorrow`
+本节的 tuple DSL（View/Record/Form 显隐条件）与 `+data-query` / Dashboard 的对象式 filter 是不同协议，不能复制关键字、operator 或 value 形状互用。对象式 filter 另读对应 reference。
 
-日期边界筛选优先使用 `>` / `<` 搭配 `ExactDate(...)`。如果要表达闭区间，先把边界换算成相邻的开区间；不要假设所有日期场景都支持 `>=` / `<=`。
+当前基准使用的相对日期关键字仅有 `Today`、`Yesterday`、`Tomorrow`。不要发送 `CurrentWeek`、`CurrentMonth` 等周/月关键字；本环境会拒绝这些值。
+
+长期复用的本周、本月或今年筛选，使用动态 Formula 再筛选它的字符串或数字结果；只在用户授权修改表结构时新建/修改辅助字段。例如“是否本月”的表达式可为 `IF(AND(YEAR([日期])=YEAR(TODAY()),MONTH([日期])=MONTH(TODAY())),"是","否")`，写后回读字段和代表性结果，再提交：
+
+```json
+{"logic":"and","conditions":[["是否本月","==","是"]]}
+```
+
+若仅做一次性查询，可按当前时间计算准确的日期区间；固定历史日期边界使用 `ExactDate(...)`。不要把本次计算出的固定日期保存为会持续更新的视图。边界筛选优先用 `>` / `<`，不假设所有日期场景支持 `>=` / `<=`。
 
 ### `formula` / `lookup`
 
-- 筛选值类型由字段计算结果类型动态决定。
-- 拿不准时，先把 `value` 当作单个字符串填入做一次尝试。
-- 如果报错，再按错误提示把 `value` 改成对应类型。
+- 先读取字段定义和代表性计算结果，再选择单个字符串或数字作为筛选值，不先猜值试错。
+- 返回“是/否”的 Formula 传 `"是"`；返回 1/0 的 Formula 传 `1`。不要因字段名为“是否…”而传 `true`，也不要把文本计算结果套成 `["是"]`。
+- 多个文本结果用 `logic:"or"` 组合多个标量条件；不能用数组模拟 select。既有计算结果无法按支持类型过滤时，先说明限制；只有用户授权改变结构时才增加返回字符串/数字的辅助 Formula，不能修改无关字段兜底。
 
 字符串示例：
 
@@ -175,7 +180,7 @@ location 筛选只按 `full_address` 字符串匹配，不能直接按经纬度�
 - `user` / `group_chat` / `link` 不要写成单个标量。
 - `empty` / `non_empty` 不要硬塞无意义的 value。
 - 日期条件稳定写法用 `ExactDate(...)` 或 `Today` / `Yesterday` / `Tomorrow`。
-- `formula` / `lookup` 的 value 形状不固定；拿不准时先读当前配置或字段定义，或根据错误提示修正类型。
+- `formula` / `lookup` 筛选值与实际结果同类型，只传一个字符串或数字；多值匹配拆成多个条件。
 
 ## 5. 参考
 - [lookup-field-guide.md](lookup-field-guide.md)

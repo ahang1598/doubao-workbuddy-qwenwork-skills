@@ -75,7 +75,7 @@ lark-cli slides +replace-slide \
 
 ## 合法根元素速查
 
-`block_replace.replacement` 和 `block_insert.insertion` 必须以 SML 2.0 定义的合法元素为根。完整权威定义看 [`slides_xml_schema_definition.xml`](../xml/slides_xml_schema_definition.xml)；这里只列能作为**根**的类型 + 每种类型的最小可工作片段。
+`block_replace.replacement` 和 `block_insert.insertion` 必须以 SML 2.0 定义的合法元素为根。完整权威定义看 [`slides_xml_schema_index.md`](../xml/slides_xml_schema_index.md)；这里只列能作为**根**的类型 + 每种类型的最小可工作片段。
 
 | 元素 | 用途 | 关键点 |
 |---|---|---|

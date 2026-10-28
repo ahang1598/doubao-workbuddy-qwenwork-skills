@@ -9,6 +9,13 @@
 > - `+workflow-update` 是完整替换：从 `+workflow-get` 结果保留 `title`、`status`、`steps`，但请求体中的 `status` 不负责切换运行态；实际启停只使用 `+workflow-enable` / `+workflow-disable`，并以随后 get 的状态为准
 > - 仪表盘按钮绑定与查询：[仪表盘按钮绑定工作流](lark-base-dashboard-button-rule.md)。先读 `bound + target`，仅在 `target.type=workflow` 时按 `target.id` 获取定义；触发器使用 `buttonElement`。
 
+## 创建幂等与恢复
+
+- 成功返回中，`+workflow-list` 读取 `data.items`；`+workflow-get` 的 `data` 直接包含 `workflow_id/title/status/steps`，不再套 `workflow` 或 `workflows` 层。
+- 每个独立创建意图生成一次唯一 `client_token`（例如 UUID），与请求体一起保存。同一请求体、同一创建意图的重试复用原 token；不要照抄下方示例的占位值，也不要用每次换 token 消除重复提交拦截。
+- `recommit request`、超时或部分失败后，先用已返回的 workflow ID 做 `+workflow-get`；没有 ID 时用目标 Base 的 `+workflow-list` 查找，并回读核对定义。已创建则沿用该 ID，不重新 create；同名不能单独证明是同一请求。
+- 只有确认原创建未生效、且当前授权仍涵盖该创建时，才按实际命令契约恢复未完成请求。明确校验拒绝且确认未创建时，修正请求体后可生成并保存新请求 token；超时或重复提交本身不是这个确认。状态无法确认时保留“不确定/未完成”，不换 token 盲建。一般执行失败按 [常见恢复](../SKILL.md#常见恢复) 分流。
+
 ## 交付红线
 
 ### 先确定目标运行态
@@ -33,11 +40,35 @@
 
    a. 用户点名了具体的人或群且能唯一解析，就用那个对象。只有用户原词说“通知我 / 本人”时才允许当前操作用户；用 `lark-cli contact +get-user`（不传 `--user-id`）获取 `.data.user.open_id`。
 
-   b. 用户说的是职责称谓（负责人、审批人、某个岗位），用承载该职责的人员字段：触发记录用 `$.<trigger_step>.<person_field_id>`，`FindRecordAction + Loop` 用 `$.<loop_step>.item.<person_field_id>`。可以是普通人员字段，也可以按业务语义用创建人、修改人这类系统人员字段，该职责维护在别的表时用公式按条件引用到本表。自动化只能取到触发记录上的数据，不能顺着关联字段去别的表取值；本表没有合适字段就新建一个人员字段并绑定。
+   b. 用户说的是职责称谓（负责人、审批人、某个岗位），用承载该职责的人员字段：触发记录用 `$.<trigger_step>.<person_field_id>`，`FindRecordAction + Loop` 用 `$.<loop_step>.item.<person_field_id>`。可以是普通人员字段，也可以按业务语义用创建人、修改人这类系统人员字段，职责人维护在关联记录上时（如「处理人员」关联到成员表，人员字段在成员表）：记录触发器直接 ref `$.<trigger_step>.<关联字段id>.<目标表人员字段id>`；`FindRecordAction + Loop` 不支持顺着关联字段下钻，在循环体内先加一个 `FindRecordAction` 查目标表（条件：目标表主字段 `is` ref `$.<loop_step>.item.<关联字段id>`），再 ref `$.<该查找步骤>.firstfieldsRecord.<人员字段id>`。关联字段本身不能作为接收人；公式和查找引用字段做接收人能通过创建校验，但运行时不发送，不要用。本表和关联记录上都没有承载该职责的人员时，才新建人员字段并绑定。
+
+      ```json
+      // 记录触发：直接取关联记录上的人员字段（两个 ID 分别来自本表和关联表的 +field-list）
+      "receiver": [{ "value_type": "ref", "value": "$.step_trigger.fld处理人员.fld成员" }]
+      ```
+
+      ```json
+      // 查找记录 + 循环：Loop.children.links 的 loop_start 指向 step_find_member，先按关联值查成员表
+      {
+        "id": "step_find_member",
+        "type": "FindRecordAction",
+        "next": "step_notify",
+        "data": {
+          "table_name": "成员",
+          "field_names": ["姓名", "成员"],
+          "should_proceed_when_no_results": false,
+          "filter_info": { "conjunction": "and", "conditions": [
+            { "field_name": "姓名", "operator": "is",
+              "value": [{ "value_type": "ref", "value": "$.step_loop.item.fld处理人员" }] }
+          ]}
+        }
+      }
+      // step_notify："receiver": [{ "value_type": "ref", "value": "$.step_find_member.firstfieldsRecord.fld成员" }]
+      ```
 
    不在 workflow 配置里写死当前用户、Base 创建人、示例 ID 或任意账号代替职责人；`receiver` 必须 ref 承载该职责的人员字段。启用前回读 `receiver` 的引用路径和 `send_to_everyone`，确认不会扩大外发范围。人员字段的填值属于 mock 数据范畴，与接收人配置无关，按验收矩阵处理。
 2. **字段引用**：从 `+field-list` / `+field-get` 记录真实 field ID 和类型；Workflow ref、条件左值和消息内容使用服务端返回的可用路径。报 “path does not exist” 或 pathType 不兼容时，改为错误信息列出的兼容路径，不要换成展示字段名、当前用户或静态文本。
-3. **时间与状态**：临期、到期、超期、周期截止类条件必须落在真实日期字段、提前量或动态 Formula/Lookup 上；人工维护的状态枚举不能证明“快到期”。查找记录时把日期边界放进 `filter_info`，不要先查全部再靠消息文案解释范围。
+3. **时间与状态**：临期、到期、超期、周期截止类条件必须落在真实日期字段、提前量或动态 Formula/Lookup 上；人工维护的状态枚举不能证明“快到期”。查找记录时把日期边界放进 `filter_info`，不要先查全部再靠消息文案解释范围。提醒时点按原话：“到 / 到了 / 到期时 / 当天提醒”就在该日期当天触发（偏移 0）；原话说“提前 / 快到期 / 到期前”才设提前量。
 
 ### 不可跳过的完成谓词
 
@@ -61,7 +92,7 @@ Workflow 子任务必须同时满足以下两项，才能标记完成或进入�
 
 Workflow 的动作必须匹配用户要求的业务结果。若用户要求“改状态、生成/更新记录、同步结果”等需要改变 Base 数据或配置的结果，必须配置对应的写入/更新动作，并在写后回读确认目标字段、目标表或目标记录正确。不能只用通知/提醒代替用户的业务写入需求。
 
-用户要求“通知/提醒/指派”某业务角色或负责人时，不得以当前用户、配置者、Base 创建人或记录创建人代替业务接收人。用户明确指定具体人员时，通知该人员；用户明确指定承接角色的人员字段时，接收人绑定该动态字段。
+用户要求“通知/提醒/指派”某业务角色或负责人时，不得以当前用户、配置者、Base 创建人或记录创建人代替业务接收人。用户明确指定具体人员时，通知该人员；用户明确指定承接角色的人员字段时，接收人绑定该动态字段。用户要求给职责不同的几类人“各发 / 分别发”通知时，每类接收人用一个独立的消息动作，正文按该接收人要做的事来写；同一段文案只有对所有接收人都适用时才合并到一个动作。
 
 ---
 
@@ -73,7 +104,7 @@ Workflow 的动作必须匹配用户要求的业务结果。若用户要求“�
 
 ```json
 {
-  "client_token": "1704067200",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "新订单自动通知",
   "steps": [
     {
@@ -181,7 +212,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067201",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "新订单自动通知",
   "steps": [
     {
@@ -236,7 +267,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067202",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "每日待处理订单提醒",
   "steps": [
     {
@@ -330,7 +361,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067203",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "订单金额自动判断",
   "steps": [
     {
@@ -424,7 +455,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067204",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "按优先级分类处理订单",
   "steps": [
     {
@@ -575,7 +606,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067205",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "每日订单分级通知",
   "steps": [
     {
@@ -733,7 +764,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067206",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "线索一键同步到 CRM",
   "steps": [
     {
@@ -846,7 +877,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 
 ```json
 {
-  "client_token": "1704067206",
+  "client_token": "<本次独立创建生成并保存的唯一 token>",
   "title": "用户反馈自动分流",
   "steps": [
     {
@@ -977,7 +1008,7 @@ lark-cli base +workflow-get --as user --base-token <base_token> --workflow-id <w
 | 1 | `path "xxx" does not exist in the output path tree` | ref 引用路径错误或 stepId 不存在 | 检查 stepId 是否在 steps 数组中；使用 fieldId 而非字段名；确保路径以 `$.` 开头 |
 | 2 | `recordInfo.conditions must be non-empty` | `condition_list` 为空数组 `[]` | 改用 `null` 或省略该字段 |
 | 3 | `At least one of filter info and ref info is required` | SetRecordAction/FindRecordAction 缺少定位条件 | 必须提供 `filter_info` 或 `ref_info` 之一 |
-| 4 | `client token is empty` | 缺少 `client_token` | 每次请求传入唯一值（时间戳或随机字符串） |
+| 4 | `client token is empty` | 缺少 `client_token` | 每个独立创建意图生成一次唯一值；已有请求重试按 [创建幂等与恢复](#创建幂等与恢复) 处理 |
 | 5 | `valueType 'text' not allowed for fieldType '3'` | select 类型字段值格式错误 | 改用 `option` 类型 |
 | 6 | `Undefined Step Type` | 使用了不支持的 StepType | 使用 `AddRecordTrigger` 而非 `CreateRecordTrigger` |
 | 7 | `prompt references an unknown reference from step` | 引用的 stepId 不存在 | 确保引用的 step 在同一 workflow 的 steps 数组中 |

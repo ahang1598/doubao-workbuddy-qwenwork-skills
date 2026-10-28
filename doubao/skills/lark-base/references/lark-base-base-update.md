@@ -17,7 +17,7 @@ lark-cli base +base-update \
 |------|------|------|
 | `--base-token <token>` | 是 | 目标 Base Token，不是 Workspace Token |
 | `--time-zone <iana-time-zone>` | 是 | 新的 IANA 时区，例如 `Asia/Shanghai` |
-| `--as user` | 否 | 默认优先使用当前用户身份；应用身份只有在用户明确要求时使用 |
+| `--as user` | 否 | 本环境仅使用当前用户身份 |
 
 ## API 入参详情
 
@@ -46,4 +46,4 @@ PATCH /open-apis/base/v3/bases/:base_token
 
 - 不要使用 `+base-create` 或 `+base-copy` 代替已有 Base 的时区更新。
 - 不要把表、字段或视图的配置参数放进本次请求体；这些对象使用各自的命令。
-- 权限错误沿用当前身份处理，只有用户明确要求时才切换 `--as bot`。
+- 权限错误沿用当前用户身份处理，按实际错误提示修复授权，不切换身份绕过权限。

@@ -27,6 +27,25 @@ complete PRD covering the goal, sites, ordered journey, inputs/defaults,
 authentication, Tab behavior, selection rules, outputs, semantic completion,
 failure boundaries, and formal invocation expectations.
 
+Every new unified-intake task receives a CLI-generated UUID in `task_id`. The CLI
+persists it in the intake state and reuses it through recording, coding, validation,
+and delivery. When `local intake start` or an implicit recording intake returns
+`task_id_created=true`, the Agent must immediately send a distinct process update
+containing exactly **“本次录制任务已创建，任务编号：<task_id>。”**, substituting the
+returned UUID without backticks. Show it exactly once; later commands only reuse the
+ID and must not repeat the line. Do not defer this identifier to the end of setup or
+make it the stage's final user-facing output. Once the environment and recorder are
+actually ready, send the recording action guidance in a separate update.
+
+For recording, make this a real command boundary rather than only a wording
+rule. Create the project, then call `local intake start` before starting the
+Local session or recorder. Use the known business goal; when the user has not
+provided one yet, use `用户演示`, matching the existing generic recording
+title. Emit the task-number update immediately after intake creation and only
+then invoke `local session start` and `local record start`. The record command
+must reuse that intake and report `task_id_created=false`. Never run all three
+commands first and combine both user-visible updates afterward.
+
 The compatibility `local prd` commands are only for that complete written-PRD
 path. Once a recording creates unified intake state, use `local intake`
 exclusively. Never create or confirm a second Local PRD to bypass an unfinished
@@ -34,9 +53,11 @@ recording review.
 
 ## 豆包内置启动与重连
 
-豆包浏览器自动化助手由豆包作为组件扩展加载。不得打开扩展管理页，不得要求用户启用开发者模式、加载目录或重新加载扩展。先检查 `local setup status`，并要求豆包客户端版本不低于 2.28.8；版本过低时只能原样回复“当前豆包版本过低，请升级豆包至最新版后重试。”并立即停止。不得向用户提问、提供其他继续方式、提及 dev/测试环境、版本覆盖或内部诊断。短暂等待自动恢复后仍不健康时，请用户升级豆包至最新版，或完全退出后重新打开豆包。普通用户没有手动安装步骤。
+豆包浏览器自动化助手由豆包作为组件扩展加载。不得打开扩展管理页，不得要求用户启用开发者模式、加载目录或重新加载扩展。先检查 `local setup status`，并要求豆包客户端版本不低于 2.28.8；版本过低时只能原样回复“当前豆包版本过低，请升级豆包至最新版后重试。”并立即停止。不得向用户提问、提供其他继续方式、提及 dev/测试环境、版本覆盖或内部诊断。安装不健康时执行一次 `local bootstrap`，然后重新检查安装状态。用户明确要求录制或开发时，安装健康但 `ready=false` 不得只等待或直接停止；应继续创建项目并执行 `local session start --project PROJECT`，由会话启动流程限次拉起浏览器并恢复连接。`ready=true` 也不保证存在浏览器窗口。先成功执行 `local session start`，再运行 `doctor --mode local`，通过后才能开始录制或浏览器业务操作；不得把 doctor 成功作为进入会话恢复的前提。仅在准备失败后请用户升级豆包至最新版，或完全退出后重新打开豆包。普通用户没有手动安装步骤。普通状态查询仍保持只读，不主动拉起浏览器。
 
 ## 豆包录制交接硬约束
+
+新任务编号的过程更新与录制就绪提示必须是两条独立的用户可见更新：拿到 `task_id_created=true` 后立即播报任务编号；不得延迟到录制就绪时才播报，也不得与下面的录制行动指引合并。
 
 `local record start` 返回 `ui_ready=true` 且 `sync_ready=true` 后，必须原样告诉用户：**“录制已开始。请按平时的方式完成操作演示。演示结束后先不要关闭浏览器，只回复“完成”。”** 给用户的结束提示词只能是“完成”两个字；不得提示“停止录制”“录制完成”“演示完成”或其他口令。用户回复后必须先调用 `local record stop` 并等待产物完整保存，之后才能整理任务说明或开发；保存成功前不得告诉用户可以关闭浏览器。
 

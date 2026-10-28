@@ -1,6 +1,6 @@
 # base +view-set-filter
 
-> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+> **前置条件：** 先阅读 [主 Skill「使用边界」](../SKILL.md#使用边界)，遵循本环境的身份与权限约束。
 
 更新视图筛选配置。
 
@@ -81,8 +81,8 @@ Few-shot：
 - 标量类字段（`text` / `number` / `datetime` 等）的 value 用标量、别包成数组（各类型详见 value 写法一节）。
 - `user` / `group_chat` / `link` 不要写成单个标量。
 - `empty` / `non_empty` 不要硬塞无意义的 value。
-- 日期条件稳定写法用 `ExactDate(...)` 或相对时间关键字。支持的关键字共 11 个：`Today`、`Tomorrow`、`Yesterday`、`CurrentWeek`、`LastWeek`、`CurrentMonth`、`LastMonth`、`TheLastWeek`、`TheNextWeek`、`TheLastMonth`、`TheNextMonth`。范围会随时间推进时先在这 11 个里找能直接表达的，覆盖不到的（今年、近 N 天、超过 N 天）再建 `TODAY()` / `YEAR(TODAY())` 动态函数的辅助 Formula 让 View 筛选该字段，不要把运行当天换算成固定 `ExactDate` 边界保存。
-- `formula` / `lookup` 的 value 形状不固定；拿不准时先读当前 filter 或字段定义，或根据错误提示修正类型。
+- 日期值和动态周/月范围统一使用 [筛选协议](lark-base-filter-condition.md#datetime--created_at--updated_at)。当前基准只使用其中列明的三个相对日期关键字；本周、本月、今年等通过动态 Formula 返回字符串或数字后筛选，不猜其他日期关键字，不把运行当天换算成固定日期边界保存。
+- `formula` / `lookup` 按实际结果类型传单个字符串或数字；先读字段定义和代表性结果。不能照抄 checkbox 的 boolean 或 select 的数组写法，详见公共筛选协议。
 
 ### 持久视图的相对时间
 

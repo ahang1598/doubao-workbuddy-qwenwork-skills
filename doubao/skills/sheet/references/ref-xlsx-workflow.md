@@ -269,9 +269,17 @@ python3 scripts/excel_formula_verify.py output.xlsx 60
 python3 scripts/excel_formula_verify.py output.xlsx 60 --static-source-sheets "Comment History Snapshot,External Snapshot"
 ```
 
-依赖：需要安装 LibreOffice（`soffice` 命令可用）。脚本首次运行时会自动配置宏。重算在临时副本上进行，**原文件不被修改**——公式缓存值因此不会写回产物，交付时可提示用户在 Excel 中刷新（`Ctrl+Alt+F9`）；确需把缓存值写进原文件时才加 `--in-place`——它由 LibreOffice 存回，会顺带重置行高、列宽、数字格式、颜色、底纹等视觉设置，样式敏感的产物不要用。
+依赖：需要安装 LibreOffice（`soffice` 命令可用）。每次重算都用全新的临时 profile，用完即删，启动失败时自动换新 profile 重试一次。重算在临时副本上进行，**原文件不被修改**——公式缓存值因此不会写回产物，交付时可提示用户在 Excel 中刷新（`Ctrl+Alt+F9`）。**要读公式算出来的值时加 `--recalc-output ./recalced.xlsx`**，脚本把重算后的副本另存过去，JSON 的 `recalc_output` 非空时用 openpyxl `data_only=True` 读它；为空说明这次没算成，不要读。这份副本样式已被 LibreOffice 重置，只用于读值，不交付。确需把缓存值写进原文件时才加 `--in-place`——它由 LibreOffice 存回，会顺带重置行高、列宽、数字格式、颜色、底纹等视觉设置，样式敏感的产物不要用。
 
-**LibreOffice 不可用或重算未完成时**：脚本仍扫描已有缓存错误、静态值嫌疑与可判定不变量，返回 `formula_execution_verified: false` 并以退出码 4 结束（状态为 `inconclusive` / `skipped_no_libreoffice` / `skipped_no_workspace`）。这只表示拿到了部分只读诊断，不能证明公式可执行；交付时必须标明风险并要求在 Excel 中刷新（`Ctrl+Alt+F9`），不得写“公式已验证无错误”。装不上 LibreOffice 的宿主上，退出 4 是这条门禁的正常终态，重跑几次都不会变成 0。
+**LibreOffice 不可用或重算未完成时**：脚本仍扫描已有缓存错误、静态值嫌疑与可判定不变量，返回 `formula_execution_verified: false` 并以退出码 4 结束（状态为 `inconclusive` / `skipped_no_libreoffice` / `skipped_no_workspace`）。这只表示拿到了部分只读诊断，不能证明公式可执行；交付时必须标明风险并要求在 Excel 中刷新（`Ctrl+Alt+F9`），不得写“公式已验证无错误”。装不上 LibreOffice 的宿主上，退出 4 是这条门禁的正常终态，重跑几次都不会变成 0。`inconclusive` 时 `failure_kind` 说明原因：`lo_start_failed`（启动失败，已自动重试过）、`timeout`（soffice 挂住，加长超时等不出结果）、`macro_setup_failed`。这几种都不要重跑，也不要 `pkill -f soffice`——它会匹配并杀掉执行这条命令的 shell。
+
+**自己转换格式时用脚本，不直接写 `soffice --convert-to`**：裸命令会落到共享的默认 profile，一次中断就让之后的启动都失败。
+
+```bash
+python3 scripts/excel_lo_convert.py ./output.xlsx pdf --outdir ./preview
+```
+
+成功退出 0，stdout 的 JSON 给出产物路径；转换失败退出 3 并在 stderr 给出处置；没有 LibreOffice 时退出 4。
 
 **图表按最终载体分流**：默认交付飞书表格时，不在本地 xlsx 创建图表；先导入，再按 Must-CLI 桥接用 `+chart-create` 建真实在线对象。用户明确只要本地 xlsx、Canvas 模式下 `lark-cli` 不可用、或必须保留飞书不支持的图表能力而交付完整 Excel 时，可用 openpyxl 创建原生 chart，并在交付前重新打开文件确认 `ws._charts` 非空及数据引用、标题、图例、坐标轴符合用户要求。
 
@@ -596,4 +604,4 @@ def get_cell_validation(filepath: str, sheet_name: str, cell_address: str) -> di
 
 写入时若违反规则会出现 `Excel 已发现"file.xlsx"中的部分内容存在问题`。修改前先调用 `get_cell_validation` 拿到 `allowed_values`，再决定是直接使用合法值还是先 `ws.data_validations.dataValidation.remove(dv)` 移除规则。
 
-===== 全文完（共 599 行）=====
+===== 全文完（共 607 行）=====

@@ -125,7 +125,7 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 - `origin: system` 记录系统来源，仍须在目标渲染环境按精确 family name 验证；
 - CDN URL 和本地下载记录不能冒充目标端已就绪；资源核验后还须验证目标渲染环境的真实字体；
 - `roles` 只绑定文字职责、字体家族和真实字重，不绑定对象类型或实现协议；
-- 实际实现仍由已锁定的生产 workflow 负责，不以生成上述契约为统一前提。HTML 路线按 [HTML 协议](../html/coding-rendering.md) 将 Coding 文字实现为真实 DOM，在最终 HTML 对应元素的样式中应用所选 `font-family`、`font-weight` 与回退栈；HTML Item 内的 DOM 不套用 Canvas Item 字体字段白名单。HTML 远程字体按 [Web 字体契约](web-font-contract.md) 解析，不限定字体块名称、数量、位置或与普通样式分离，字体由 `shot.py`／目标渲染环境验证；
+- 实际实现仍由已锁定的生产 workflow 负责，不以生成上述契约为统一前提。HTML 路线按 [HTML 协议](../html/coding-rendering.md) 将 Coding 文字实现为真实 DOM，仅在最终 HTML 对应元素的行内 `style` 写入所选 `font-family`、`font-weight` 与回退栈；HTML Item 内的 DOM 不套用 Canvas Item 字体字段白名单。HTML 远程字体按 [Web 字体契约](web-font-contract.md) 解析，只允许 head 内唯一 `data-web-fonts` 声明块；其他视觉样式仍须行内，字体由 `shot.py`／目标渲染环境验证；
 - HTML 路线在 `shot.py` 预览时检查字体加载后的缺字、替换、换行、基线、伪粗体和裁切，核验结论写入既有 validation 输出，但不得把用于测量的 JavaScript 保留为作品尺寸或字体运行时依赖；
 - 其他格式仅在已选 workflow 确实要求契约时，由该 workflow 完成上述交换字段的映射；字体文档不提供切换格式的理由。
 
@@ -157,6 +157,6 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 5. 运行 `scripts/test/test_font_union.py`、CSS 查询和引用检查，核对组合 ID、旧候选保留、语言过滤、排除回退与平台表一致性；
 6. 真实下载、字体加载、缺字与目标尺寸的视觉适配在生产环境单独验证，静态测试不代替渲染。
 
-最终 HTML 的字体声明遵循 [Web 字体契约](web-font-contract.md)，可与普通样式合并或分开，也可使用可加载的外部样式表；字体最终以目标环境可用 face 与真实 DOM 验证为准，推荐结果不等于资源就绪。
+最终 HTML 仅允许 [Web 字体契约](web-font-contract.md) 定义的受控字体声明块，禁止其他样式块与外部样式表；字体最终以目标环境可用 face 与真实 DOM 验证为准，推荐结果不等于资源就绪。
 
 本地解析器的 `package_status=local_present` 仅表示本地资源存在；`invalid` 表示字体解析或结构核验失败，`blocked_by_license` 表示许可阻断。`contract_ready=true` 只代表本地许可、family 和字形覆盖检查通过，不证明目标环境加载成功，也不表示必须创建 `font-contract.json`；`target_environment_status=not_checked` 时仍须完成上述环境门禁。登记包内全部字体与预期路径合并核验，下载遇到不同内容的已有文件或晚到冲突会保留原文件并报错。

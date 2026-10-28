@@ -1,6 +1,6 @@
 # 视频阶段 Ref：生成、抽帧与连续性
 
-完整模式在项目级故事包、`current_episode` 详细剧本、资产、分镜和关键帧均已确认后读取本文件；轻量模式在规划页取得视频生成授权、内部完整分镜已经由已确认预览扩充完成时读取。本文件统一负责当前集视频输入、五段式 Prompt 编译、视频工具委派执行和可交付登记；完整模式另执行生成后的 FRM/接缝内部记录，成片拼接、混音和字幕交给 `delivery.md`。当前集达到目标前不得启动下一集工作。
+完整模式在项目级故事包、`current_episode` 详细剧本、资产和分镜均已确认后读取本文件；轻量模式在规划页取得视频生成授权、内部完整分镜已经由已确认预览扩充完成时读取。本文件统一负责当前集视频输入、五段式 Prompt 编译、视频工具委派执行和可交付登记；完整模式另执行生成后的 FRM/接缝内部记录，成片拼接、混音和字幕交给 `delivery.md`。当前集达到目标前不得启动下一集工作。
 
 ## 第一部分：视频生成与 Prompt 编译
 
@@ -8,7 +8,7 @@
 
 - 镜头数量、运镜阈值、时间轴和 planned seam：`storyboard.md`。
 - 每集唯一导演总控卡及表演、声音、色彩、风格合同：`storyboard.md`。
-- 人物、场景、道具、音色和风格的 approved 版本：`assets.md`；KF 的 approved 版本：`keyframes.md`。
+- 人物、场景、道具、音色和风格的 approved 版本：`assets.md`。
 - 批次路径、文件命名和 manifest schema：`manifests.md`。
 - 生成后 FRM、接缝窗口和内部连续性记录：本文件“第二部分：生成后抽帧与连续性”。
 - 失败重试和返回层级：`troubleshooting.md`；成片、字幕与 SRT：`delivery.md`。
@@ -19,16 +19,16 @@
 
 ## 当前工具链
 
-### 关键帧术语统一
+### 视频起点与连续性
 
-本文件中任何遗留的 `start KF`、`story KF` 或 `tail KF` 表述均不再作为执行要求。关键帧只指 `keyframes.md` 定义的集级剧情高光 KF：并非每个 SEG 都有，不承担首帧或尾帧职责。首段起点由分镜初始状态定义；非首段先读取 planned `SEAM`，`continuous` 必须由上一段真实 `tail FRM` 承接，`elliptical` 则按明确的新时空或新认知起点开始。当前 SEG 命中分镜已规划高光时才传入对应 KF。
+首段起点由分镜初始状态和 approved 资产定义；非首段先读取 planned `SEAM`，`continuous` 必须由上一段真实 `tail FRM` 承接，`elliptical` 则按明确的新时空或新认知起点开始。
 
 当前可执行能力：
 
 | 能力 | 当前用途 | 禁止误用 |
 |---|---|---|
 | `image_gen` | 无参考图时从纯中文描述生成新资产 | 不登记虚假参考图 |
-| `image_edit` | 有参考图时生成或修订资产、KF 或承接候选图 | 不把编辑图冒充原始 FRM |
+| `image_edit` | 有参考图时生成或修订资产、承接候选图 | 不把编辑图冒充原始 FRM |
 | `text_to_video` | 当前片段没有任何媒体输入时根据 Prompt 生成视频 | 有必须继承的图片、视频或音频时不得使用；非首段仅限 `elliptical` 且无必要媒体锚点 |
 | `image_to_video` | 只有图片输入时生成视频 | 不得携带视频或音频输入 |
 | `media_to_video` | 存在视频或音频输入时生成视频，可同时携带图片 | 至少需要真实视频或音频输入 |
@@ -44,38 +44,38 @@
 本文件中任何把“合并参数确认表、数量、逐段时长或本批次五列分镜表”归为本文件或 `interaction-ask-video-clarification-ref.md` 定义内容的旧句均废止；这些展示内容只以 `video-batch-confirmation.md` 为准。
 “视频片段批次生成确认”是本文件对“两张批次展示表 + 确认文件中的视频生成确认”的组合简称，不是确认文件中的章节名。
 
-1. 完整模式从 `project_data_card.json`、每集唯一导演总控卡、十五列详细分镜、视频片段执行表、片段衔接卡、连续性账本和已批准 `keyframe_manifest_ep_N.json` 编译 `SEGxxx` Prompt。轻量模式只从已确认规划、内部十五列详细分镜和真实可用的用户素材编译唯一视频 Prompt，不得伪造其他上游文件、资产或 KF 引用。
+1. 完整模式从 `project_data_card.json`、每集唯一导演总控卡、十五列详细分镜、视频片段执行表、片段衔接卡、连续性账本编译 `SEGxxx` Prompt。轻量模式只从已确认规划、内部十五列详细分镜和真实可用的用户素材编译唯一视频 Prompt，不得伪造其他上游文件或资产引用。
 2. 盘点本次实际媒体输入，按工具路由选择 `text_to_video`、`image_to_video`、`media_to_video` 或 `video_edit`。
 3. 为每个 SEG 独立编译一份完整五段式最终提交文本并保存为 `提示词_SEGxxx_vNN_ep_N.md`；同一长视频及同一剧集的各 SEG 必须继承剧情和因果、人物身份、声音系统及 `SEAM.required_invariants`。`continuous` 片段还继承上一段真实尾帧及连续状态；`elliptical` 片段只继承不变量和明确保留项，不复制已被允许改变的旧时空状态。结构化台词和镜头计划只有逐项进入该文件才算真正传给模型。
 4. 每份五段式 Prompt 完成后执行一次集中客观预检：五段顺序完整、每个分镜恰好出现一次、时间连续覆盖、输入标记与真实顺序一致、台词逐字一致、动作桥与切点字段齐全、尾态和禁区明确。发现问题最多集中修订一次，再做一次最终客观校验；除合规、授权、真实性、工具能力、缺失输入或客观校验失败等硬阻塞外，校验后直接进入确认与生成。
-5. 完整模式先按 `video-batch-confirmation.md` 展示两张表；轻量模式首次生成直接使用规划页已展示的完整参数与预览，返修或重生再使用单视频批次展示。两种模式都只按 `interaction-ask-video-clarification-ref.md` 调用标准视频生成确认，未取得当前 `generate` 时不得派发视频执行。
+5. 完整模式先按 `video-batch-confirmation.md` 展示两张表；轻量模式首次生成直接使用规划页已展示的完整参数与预览，返修或重生再使用单视频批次展示。两种模式都按 `interaction-ask-video-clarification-ref.md` 完成视频生成确认，未取得用户对当前方案的明确生成同意时不得派发视频执行。
 6. 主 Agent 为本次确认覆盖范围建立锁定执行包，写明最终 Prompt、请求快照、输入媒体、工具 schema、输出白名单和禁止行为，并按 `delegation.md` 委派 subagent 串行执行实际视频工具调用。
 7. subagent 只调用执行包指定的视频能力，保存可渲染结果到白名单路径，并返回真实输出路径、工具原始可渲染资源字段、URL 或短链及工具结果，同时标记“生成成功、待主 Agent 正式交付”；不得重写 Prompt、改变输入、追加片段、写画布、交付用户或再次确认。subagent 成功只表示生成完成，不表示用户已收到或 Canvas 已写入。
 8. 主 Agent 收回后保存并登记 SEG，更新 `video_manifest_ep_N.json`，确认文件存在且具备可渲染/可播放资源，并按字幕策略清理模型意外生成的字幕、随机文字、水印或平台 UI；不得因为其他内容、审美、口型、身份、连续性或接缝疑似问题延迟交付。用户要求的正式字幕不在片段阶段补齐，只在最终音轨锁定后的成片阶段生成。
-9. 完整模式每个 SEG 保存、登记并具备可渲染资源后，主 Agent 立即按 `SKILL.md` 的交付前置路由展示；由主 Agent 对原字幕路由确定的实际交付版本单项 `present_files`，成功并完成下一段必要的真实 FRM 承接后才能串行继续下一段；非 Mobile 不重复创建工具媒体 Item或做交付前回读，本轮已确认批次全部直交后按 [媒体直接交付与产后目录整理](media-delivery.md) 整理目录。轻量模式没有独立 SEG 交付门：字幕关闭时原始生成结果就是唯一最终视频并立即交付；字幕开启时原始无字幕结果只作为内部烧录源，不展示或额外创建画布交付对象，完成字幕烧录后只交付字幕版。
+9. 完整模式每个 SEG 保存、登记并具备可渲染资源后，主 Agent 立即按 `SKILL.md` 的交付前置路由展示；非 Mobile 完成 `present_files`、Canvas 写入和 CLI get 回读后才能继续下一段。轻量模式没有独立 SEG 交付门：字幕关闭时原始生成结果就是唯一最终视频并立即交付；字幕开启时原始无字幕结果只作为内部烧录源，不展示或上画布，完成字幕烧录后只交付字幕版。
 10. 完整模式每个 SEG 交付后只进入一次本文件第二部分，完成必要 FRM 抽取、内部片段记录、接缝窗口记录和 `continuity_ep_N.json` 更新；发现的问题只记录为后续用户主动修改时的返修线索，不阻断已交付视频，也不授权自动重生或编辑。轻量模式只有一个最终视频，不执行分段接缝与连续性文件流程。
 11. 下一片段按工具实际 schema 选择：
-   - 没有任何媒体输入时使用 `text_to_video`；只有图片输入时使用 `image_to_video`；存在视频或音频输入时使用 `media_to_video`。`continuous` 非首段必须真实传入上一段 tail FRM，因此不得走 `text_to_video`；`elliptical` 非首段按当前新起点的真实需要选择输入。完整模式再传角色身份图、场景图、必要道具/状态图及本段已规划高光 KF，并逐项记录顺序和职责。
-   - 先把图片职责分为 `required` 与 `optional`。只有 optional 图片可在超过工具上限时按“角色身份 > 上一段真实尾帧 > 核心道具/状态 > 场景 > 本段已规划高光 KF > 风格”排序裁剪；required 图片数量本身已超上限时禁止调用，必须返回分镜拆 SEG、减少同段主体或重新确认可用工具方案，不能删除必需职责。
-12. 完整模式本轮片段均已逐段直接交付，且非 Mobile 本轮目录整理完成后，若仍有未生成片段，为下一批重新展示两张表并按视频确认 Ref 取得新的 `generate`；全部片段完成后，`target_stage=final` 按 `control-contracts.md` 调用进入成片拼接确认，`target_stage=video` 则普通确认后结束。轻量模式按字幕策略完成并交付唯一最终视频后，直接进入成片普通确认。
+   - 没有任何媒体输入时使用 `text_to_video`；只有图片输入时使用 `image_to_video`；存在视频或音频输入时使用 `media_to_video`。`continuous` 非首段必须真实传入上一段 tail FRM，因此不得走 `text_to_video`；`elliptical` 非首段按当前新起点的真实需要选择输入。完整模式再传角色身份图、场景图、必要道具/状态图，并逐项记录顺序和职责。
+   - 先把图片职责分为 `required` 与 `optional`。只有 optional 图片可在超过工具上限时按“角色身份 > 上一段真实尾帧 > 核心道具/状态 > 场景 > 风格”排序裁剪；required 图片数量本身已超上限时禁止调用，必须返回分镜拆 SEG、减少同段主体或重新确认可用工具方案，不能删除必需职责。
+12. 完整模式本轮片段均已逐段交付并上画布后，若仍有未生成片段，为下一批重新展示两张表并按视频确认 Ref 取得新的 `generate`；全部片段完成后，`target_stage=final` 按 `control-contracts.md` 调用进入成片拼接确认，`target_stage=video` 则普通确认后结束。轻量模式按字幕策略完成并交付唯一最终视频后，直接进入成片普通确认。
 
 ## 批次合同
 
 每个待生成片段必须具备：
 
-- 完整模式必须具备当前 `episode_id`、`project_data_card.json` revision、`episode_manifest_ep_N.json`、`storyboard_ep_N.json`、`source_manifest.json` 中与本集相关的输入记录、`asset_usage_ep_N.json` 与 `keyframe_manifest_ep_N.json`。轻量模式只要求内部十五列详细分镜、当前确认记录和真实存在的用户素材。
+- 完整模式必须具备当前 `episode_id`、`project_data_card.json` revision、`episode_manifest_ep_N.json`、`storyboard_ep_N.json`、`source_manifest.json` 中与本集相关的输入记录、`asset_usage_ep_N.json`。轻量模式只要求内部十五列详细分镜、当前确认记录和真实存在的用户素材。
 - 完整模式当前片段命中的 `highlight_bindings`：逐字继承亮点对应的视觉兑现、表演兑现、声音兑现、余震镜头和编译说明；不得用通用“震撼、电影感、情绪拉满”替代。轻量模式直接从十五列分镜对应镜头提取可见触发、变化、反馈和结果。
 - `ep_2` 及以后各集的首个 SEG 必须读取 `00_制作控制/episode_seams.json` 中对应 `EPSEAMxxx`。`continuous` 跨集接缝必须绑定上一集真实尾帧及 SHA-256 并处于 `verified`；`elliptical` 跨集接缝不强制把尾帧作为视觉输入，但必须记录上一集结果、保留的不变量、允许变化、新起点和切换策略。只有整个项目的 `ep_1` 首段使用 `START`。
 - 稳定片段 ID `SEGxxx`、绝对时间范围和完整镜头 ID。
 - 已确认的十五列详细分镜，其中包含镜头职责、连续性和抽帧承接要求。
 - 完整模式必须具备已确认的 `导演总控卡_ep_N.md`、片段执行表和连续性账本，并使当前镜头可追溯到对应表演、声音、色彩、切镜与连续性合同；轻量模式不创建这些文件，直接使用十五列分镜中的对应列。
-- 完整模式必须使用已确认的角色、需要建立 SCN 的主要场景、已升级为 PROP 的关键/复现道具、风格和当前 SEG 已规划的高光 KF；所有出场角色必须解析到数据卡身份与当前状态，主要场景和复现道具必须解析到 approved SCN/PROP 版本。一次性物件只写入 Prompt，不要求建立 PROP。轻量模式只引用真实存在的用户素材，不要求补造独立资产或 KF。
+- 完整模式必须使用已确认的角色、需要建立 SCN 的主要场景、已升级为 PROP 的关键/复现道具和风格；所有出场角色必须解析到数据卡身份与当前状态，主要场景和复现道具必须解析到 approved SCN/PROP 版本。一次性物件只写入 Prompt，不要求建立 PROP。轻量模式只引用真实存在的用户素材，不要求补造独立资产。
 - 已确认的视频模型、片段时长和画幅参数。
 - 根据本次 `input_image_ids/input_video_ids/input_audio_ids` 选择的 `tool_mode`，且输入组合满足对应工具合同。
 - 当前片段已通过 `storyboard.md` 的状态变化、长镜例外、镜头密度和运镜门禁。
 - 所有计划人声已完成朗读估时并标注类型。出镜对白要求对应角色真实开口；旁白、画外音和内心独白要求画面人物不开口。字幕默认关闭，只有用户明确要求字幕时才在成片阶段处理；视频模型阶段始终禁止直接生成字幕；不能传音色媒体不等于允许静音。
 
-同一批次只能包含当前集接下来连续的 `1-2` 个 SEG，禁止超过 `2`。同一批次内必须串行执行：前一个 SEG 返回、保存、登记、直接交付成功并满足下一段原有真实 FRM 承接要求后，才能派发下一个 SEG；非 Mobile 不把工具媒体回读当成交付前置条件，本轮已确认批次全部直交后再整理目录。
+同一批次只能包含当前集接下来连续的 `1-2` 个 SEG，禁止超过 `2`。同一批次内必须串行执行：前一个 SEG 返回、保存、登记、交付并非 Mobile 上画布回读成功后，才能派发下一个 SEG。
 
 任一项缺失、版本未确认或能力与工具 schema 不符时停止生成，返回对应阶段修复。
 
@@ -91,13 +91,12 @@
 
 ## 入站连续性
 
-场景与画面一致性由五层控制：
+场景与画面一致性由四层控制：
 
 1. **项目数据卡**：SCN 锁定空间拓扑、固定陈设和基础光位，状态时间线记录合理变化。
 2. **共享场景参考**：每个主要 SCN 使用同一批准布局图，不在各集重新生成。
-3. **生成前 KF**：完整模式每集只使用分镜阶段规划并经确认的 `3-4` 张剧情高光 KF；并非每个 SEG 都有 KF，KF 不承担 `start|tail` 首尾帧职责。
-4. **生成后 FRM**：上一段生成后提取首帧、场景锚点帧和尾帧，以实际视频作为事实来源，并记录与 KF 的偏差。
-5. **下一段承接**：从实际 `tail FRM` 继续角色位置、姿势、朝向、动作相位、道具状态、构图、镜头角度和光位。
+3. **生成后 FRM**：上一段生成后提取首帧、场景锚点帧和尾帧，以实际视频作为事实来源。
+4. **下一段承接**：从实际 `tail FRM` 继续角色位置、姿势、朝向、动作相位、道具状态、构图、镜头角度和光位。
 
 ### 长视频逐段连续继承算法
 
@@ -106,7 +105,7 @@
 1. **读取五类来源**：读取项目数据卡与 approved 资产的稳定身份；上一段已保存视频；上一段 `start|scene|tail FRM` 及观察记录；当前 `SEAM` 的 `seam_mode|required_invariants|permitted_deltas|transition_anchor`；下一段分镜的首态、动作、台词、状态变化和 `reference_input_plan`。`continuous` 缺真实尾帧时停止编译；`elliptical` 不把尾帧设为必需输入，但接缝合同、新起点或必要状态资产缺失时仍返回上游补齐。
 2. **建立继承表**：逐项列出剧情因果与已发生动作、角色身份、服装/妆发/伤痕、屏幕位置/朝向/视线/姿势、产品与包装、道具归属/开合/接触、场景拓扑/固定陈设、主光方向/色温、摄影机轴线/运动、声音主体/音色/环境声/BGM，以及未决钩子。每项同时写“上游锁定值、上一段真实尾值、下一段计划值、允许变化、采用值”。
 3. **按优先级比较**：身份、授权、用户锁定项和 `required_invariants` 不能被真实生成偏差改写；上一段真实尾帧决定下一段可见起点；`permitted_deltas` 只允许计划内变化；下一段计划负责从真实起点推进到新状态。若真实尾值与计划值只存在可剪切的小偏差，采用真实尾值作为 0 秒基准并在动作过程中回到计划；若偏差改变身份、因果、道具归属、轴线或未允许状态，不伪写一致，记录冲突并返回分镜调整承接。不得自动重生上一段。
-4. **选择真实输入**：`continuous` 把上一段 tail FRM 作为 `previous_tail_as_start_frame`；`elliptical` 不强制传 tail FRM，按新起点选择角色身份/状态、SCN、PROP/状态、本段高光 KF 和必要风格图。按工具实际上传顺序重排 `reference_inputs[].order` 和 `<图片N>`；任何本段已声明 required 的输入无法传入时停止，不得用文字假装已继承。
+4. **选择真实输入**：`continuous` 把上一段 tail FRM 作为 `previous_tail_as_start_frame`；`elliptical` 不强制传 tail FRM，按新起点选择角色身份/状态、SCN、PROP/状态和必要风格图。按工具实际上传顺序重排 `reference_inputs[].order` 和 `<图片N>`；任何本段已声明 required 的输入无法传入时停止，不得用文字假装已继承。
 5. **写入五段 Prompt**：第一段写每个输入职责和 0 秒真实基准；第二段写稳定身份、当前状态、场景、光线和声音事实；第三段第一时间窗先写上一段尾态，再写“从该相位继续”的动作路径、反馈和新结果；第四段写当前 SEAM 的入点、段内切点和本段尾态；第五段复写整段不可漂移项与禁区。每一项继承事实只能有一个权威来源，不在不同段落写互相冲突的值。
 6. **写回执行记录**：在批次快照和 `video_manifest` 中保存采用的上一段版本、tail FRM、数据卡 revision、状态资产、`reference_inputs` 顺序和继承摘要；生成后再把本段真实 `start|scene|tail FRM` 写入 `continuity_ep_N.json`，供下一段重复同一算法。
 7. **检查闭环**：生成前逐项核对继承表中的每个采用值是否进入真实输入或五段 Prompt；生成后比较本段 start FRM 与上一段 tail FRM，并记录 `accepted|rework`。`rework` 只作为用户主动修改时的定位，不阻断即时交付，也不授权自动调用视频工具。
@@ -114,7 +113,7 @@
 
 尾帧参考规则：
 
-- `continuous` 非首段必须把上一段真实尾帧和分镜声明为必需的角色、场景、道具/状态图片放入视频工具的真实图片请求字段；`elliptical` 非首段只传新起点所需图片。本段命中已规划高光 KF 时再传对应 KF。缺任一分镜已声明必需的图片时停止调用。
+- `continuous` 非首段必须把上一段真实尾帧和分镜声明为必需的角色、场景、道具/状态图片放入视频工具的真实图片请求字段；`elliptical` 非首段只传新起点所需图片。缺任一分镜已声明必需的图片时停止调用。
 - 使用 `image_edit` 处理尾帧时，原始尾帧和编辑候选分开保存；只有视频工具真正接收该图片时才算“首帧参考输入”。
 - 单靠文字承接不能保证像素级一致，批次确认和内部记录必须明确该风险。
 
@@ -123,7 +122,7 @@
 | 场景或问题 | 当前路径 | 处理 |
 |---|---|---|
 | 无任何媒体输入 | `text_to_video` | 只传 Prompt 和生成参数；不得登记图片、视频或音频 ID；非首段仅限 `elliptical` 且无必要媒体锚点 |
-| 只有图片输入 | `image_to_video` | 传本段 KF、角色身份图及必要 SCN/PROP/STYLE；`continuous` 非首段补 tail FRM |
+| 只有图片输入 | `image_to_video` | 传角色身份图及必要 SCN/PROP/STYLE；`continuous` 非首段补 tail FRM |
 | 存在视频或音频输入 | `media_to_video` | 至少传一个真实视频或音频资源；可同时传图片 |
 | 修改已有视频 | `video_edit` | 传一个待编辑视频和明确编辑指令；保持原比例与时长 |
 
@@ -161,7 +160,6 @@
     {"asset_id": "CHR001", "role": "identity_reference", "passed_to_tool": true},
     {"asset_id": "SCN001", "role": "scene_layout", "passed_to_tool": true},
     {"asset_id": "PROP001", "role": "prop_structure", "passed_to_tool": true},
-    {"keyframe_id": "KF001", "role": "segment_highlight_reference", "passed_to_tool": true},
     {"frame_id": "FRM003", "role": "previous_tail_as_start_frame", "passed_to_tool": true}
   ],
   "reference_frame_mode": "actual_image_input",
@@ -169,17 +167,16 @@
   "reference_inputs": [
     {
       "order": 1,
-      "source_type": "frame|keyframe|asset",
+      "source_type": "frame|asset",
       "source_id": "FRM003",
       "file": "",
-      "role": "previous_tail_as_start_frame|previous_scene_anchor_reference|previous_character_state_reference|previous_prop_state_reference|segment_highlight_reference|identity_reference|character_state_reference|scene_layout|prop_structure|prop_state_reference|style_reference"
+      "role": "previous_tail_as_start_frame|previous_scene_anchor_reference|previous_character_state_reference|previous_prop_state_reference|identity_reference|character_state_reference|scene_layout|prop_structure|prop_state_reference|style_reference"
     }
   ],
   "audio_input_supported": false,
   "audio_inputs": [],
   "video_inputs": [],
   "voice_inputs": [],
-  "ordered_keyframe_control_supported": false,
   "native_audio_supported": true,
   "generation_route": {
     "decision": "new_segment|regenerate_segment|return_upstream",
@@ -202,11 +199,11 @@
 
 `incoming_episode_seam` 只在 `ep_2` 及以后各集的 `episode_segment_index: 1` 上必填，结构与 `episode_seams.json` 对应记录一致；它不替代集内 `incoming_seam`。后续集首段的集内 `incoming_seam` 仍写 `START/not_applicable`，跨集状态由 `incoming_episode_seam` 单独承载。
 
-当前 SEG 存在批准图片资产时，全部出场角色身份图和分镜声明为必需的场景、道具/状态图必须进入 `reference_basis` 并由视频工具真实接收；当前 SEG 命中已规划高光 KF 时再加入该 KF。不得把多张静态图无差别同时输入，避免模型退化为定格或幻灯片。`continuous` 非首段还必须加入上一段实际 `tail FRM`；`elliptical` 不强制加入。
+当前 SEG 存在批准图片资产时，全部出场角色身份图和分镜声明为必需的场景、道具/状态图必须进入 `reference_basis` 并由视频工具真实接收。不得把多张静态图无差别同时输入，避免模型退化为定格或幻灯片。`continuous` 非首段还必须加入上一段实际 `tail FRM`；`elliptical` 不强制加入。
 
-视频阶段继承图片是强制输入，不是 Prompt 文本引用：人物资产、人物状态、头部锚点、场景资产、场景状态、道具/道具状态、STYLE、关键帧、视频输入图、返修图和上一段 FRM，只要被当前 SEG 的出场角色、当前状态、所在场景、关键道具、已规划高光、返修目标、视频承接或风格合同命中，就必须作为真实图片输入传入 `image_to_video` 或 `media_to_video`。`reference_basis` 与 `reference_inputs` 必须逐项登记实际文件、职责和 `passed_to_tool: true`；只在 Prompt 中写资产 ID、只登记 source_id、只在执行包描述引用但工具请求未带图片，均视为未传入并阻断调用。图片输入超出工具上限时，必须先拆分 SEG、减少同段主体或返回可用工具方案；不得删除已命中的人物身份/状态图、头部锚点、SCN/场景状态、必需 PROP/状态图、KF、返修图或承接 FRM 后继续生成。
+视频阶段继承图片是强制输入，不是 Prompt 文本引用：人物资产、人物状态、头部锚点、场景资产、场景状态、道具/道具状态、STYLE、视频输入图、返修图和上一段 FRM，只要被当前 SEG 的出场角色、当前状态、所在场景、关键道具、返修目标、视频承接或风格合同命中，就必须作为真实图片输入传入 `image_to_video` 或 `media_to_video`。`reference_basis` 与 `reference_inputs` 必须逐项登记实际文件、职责和 `passed_to_tool: true`；只在 Prompt 中写资产 ID、只登记 source_id、只在执行包描述引用但工具请求未带图片，均视为未传入并阻断调用。图片输入超出工具上限时，必须先拆分 SEG、减少同段主体或返回可用工具方案；不得删除已命中的人物身份/状态图、头部锚点、SCN/场景状态、必需 PROP/状态图、返修图或承接 FRM 后继续生成。
 
-使用图片输入时，`reference_inputs` 按真实调用顺序逐张登记。每项必须有连续 `order`、稳定 `source_id`、项目内真实文件和唯一 `role`；至少覆盖分镜声明的必需参考、全部出场角色的 `identity_reference`、命中的 `character_state_reference`/`face_anchor_reference`、当前主要场景的 `scene_layout`/`scene_state_reference`、必需道具的 `prop_structure`/`prop_state_reference`，`continuous` 非首段再增加 `previous_tail_as_start_frame`。本段命中已规划高光 KF 时使用 `segment_highlight_reference`；返修或重生基于已生成/已返修的视频输入图时使用 `repair_reference` 或 `video_input_reference`。图片总数不得超过工具上限。
+使用图片输入时，`reference_inputs` 按真实调用顺序逐张登记。每项必须有连续 `order`、稳定 `source_id`、项目内真实文件和唯一 `role`；至少覆盖分镜声明的必需参考、全部出场角色的 `identity_reference`、命中的 `character_state_reference`/`face_anchor_reference`、当前主要场景的 `scene_layout`/`scene_state_reference`、必需道具的 `prop_structure`/`prop_state_reference`，`continuous` 非首段再增加 `previous_tail_as_start_frame`。返修或重生基于已生成/已返修的视频输入图时使用 `repair_reference` 或 `video_input_reference`。图片总数不得超过工具上限。
 
 ## 生成质量目标
 
@@ -291,14 +288,14 @@
 
 ## 动态执行硬门
 
-关键帧只定义若干静态状态，不会自动产生动作。实际 Prompt 必须描述状态之间如何变化：
+静态参考图不会自动产生动作。实际 Prompt 必须描述状态之间如何变化：
 
 - 每个 SEG 至少填写两个 `observable_state_changes`，例如“发现门锁异常”“对手后退失去主动权”；每项都必须逐字进入 `compiled_prompt_file`。
 - 每个镜头除摄影机运动外，还必须填写 `subject_action` 和 `state_change`。只写构图、站姿、表情或“保持一致”，没有动作过程与结果，视为静态镜头。
 - `subject_action` 至少包含动作主体、动作过程和可见结果；`state_change` 必须改变位置、姿势、道具状态、人物关系、信息、焦点或情绪中的至少一项。
 - 固定机位不等于静止画面。使用固定机位时，人物动作、道具变化、前后景活动、焦点变化或关系变化仍须持续发生。
 - 禁止用“人物静止”“保持画面不变”“全程定格”“仅轻微呼吸”填充剧情片段；确属剧情停顿时必须有明确时长和叙事理由，且不能覆盖整个 SEG。
-- 多张关键帧不能替代动作描述。Prompt 必须逐镜写出“起点 → 过程 → 反馈 → 结果”，并明确从一张状态过渡到下一状态的动作路径。
+- 参考图不能替代动作描述。Prompt 必须逐镜写出“起点 → 过程 → 反馈 → 结果”，并明确从一张状态过渡到下一状态的动作路径。
 
 ## 表演、声音与色彩编译硬门
 
@@ -363,7 +360,7 @@
 
 ## 生成后交付记录
 
-本阶段唯一执行入口是上文“执行顺序”第 4-9 步。本节只说明交接结果，不再次触发阻断式质检：交给用户确认前，当前 SEG 必须已经保存、登记、具备可渲染资源，并已由主 Agent 完成即时交付；非 Mobile 还必须按 `media-delivery.md` 完成本轮真实对象的产后目录整理；目录状态独立记录，不撤销单项交付成功。FRM、接缝和连续性记录可在交付后静默补齐，用于下一段承接或用户主动修改时定位。
+本阶段唯一执行入口是上文“执行顺序”第 4-9 步。本节只说明交接结果，不再次触发阻断式质检：交给用户确认前，当前 SEG 必须已经保存、登记、具备可渲染资源，并已由主 Agent 完成即时交付；非 Mobile 还必须已写入 Canvas 并回读成功。FRM、接缝和连续性记录可在交付后静默补齐，用于下一段承接或用户主动修改时定位。
 
 ## 存储与无歧义命名
 
@@ -381,7 +378,7 @@ python3 <skill-dir>/scripts/drama_lint.py --project-root "<项目目录>" --stag
 
 `--stage video` 是发起视频阶段确认前的结构检查，允许已完成上述客观条件的 SEG 保持 `candidate`；它不要求在用户确认前提前写成 `accepted`。结构问题只修复记录、路径、状态或缺失文件这类客观缺口；模型意外生成的字幕、随机文字、水印或平台 UI 按既定字幕策略执行非视频生成类清理并验证。其他内容、审美、口型、身份、连续性或接缝问题只做内部记录，不阻断已生成视频交付，不主动说明，也不触发重生。若某段从未预览、返修后未展示，或用户要求回看，再由主 Agent 按交付路由单独补展示对应片段。不得展示批次文件、工具名、路由、Prompt、内部字段、资源 ID、任务 ID、抽帧清单、内部路径或质检统计。
 
-展示完成后按 `control-contracts.md` 调用进入成片拼接确认；普通聊天不能替代。用户选择 `proceed_assembly` 后，把采用的 `candidate` SEG 原子更新为 `accepted`，并同步写入该集 video 确认记录和 `delivery_manifest.assembly_confirmation`。该确认不授权新视频生成或编辑；后续重生、返修或继续生成仍须重新展示完整参数，并按 `interaction-ask-video-clarification-ref.md` 取得新的 `generate`。若目标止于 video，则使用普通阶段确认后结束，不创建拼接确认。
+展示完成后按 `control-contracts.md` 完成进入成片拼接确认；普通聊天不能替代。用户通过本次确认明确同意按已展示方案拼接后，把采用的 `candidate` SEG 原子更新为 `accepted`，并同步写入该集 video 确认记录和 `delivery_manifest.assembly_confirmation`。该确认不授权新视频生成或编辑；后续重生、返修或继续生成仍须重新展示完整参数，并按 `interaction-ask-video-clarification-ref.md` 取得本次明确生成同意。若目标止于 video，则使用普通阶段确认后结束，不创建拼接确认。
 
 ---
 
@@ -389,9 +386,9 @@ python3 <skill-dir>/scripts/drama_lint.py --project-root "<项目目录>" --stag
 
 本部分只适用于完整模式的分段视频。轻量模式只有一个最终视频，不创建 FRM、接缝窗口或 `continuity_ep_1.json`，生成结果直接按字幕策略进入最终交付；第一部分步骤 10 的抽帧与连续性流程对轻量模式不适用。
 
-当一个 `SEGxxx` 已由 `text_to_video`、`image_to_video`、`media_to_video` 或 `video_edit` 生成、保存并交付后读取本文件。本文件是 FRM 和 observed SEAM 内部记录的唯一权威，负责从实际视频提取首帧、场景锚点帧和尾帧，为场景连续性、下一片段承接和用户主动修改时定位提供证据。KF 是生成前目标，FRM 是生成后事实；本部分不是阻断交付的最终质检门。
+当一个 `SEGxxx` 已由 `text_to_video`、`image_to_video`、`media_to_video` 或 `video_edit` 生成、保存并交付后读取本文件。本文件是 FRM 和 observed SEAM 内部记录的唯一权威，负责从实际视频提取首帧、场景锚点帧和尾帧，为场景连续性、下一片段承接和用户主动修改时定位提供证据。分镜定义生成前目标，FRM 记录生成后事实；本部分不是阻断交付的最终质检门。
 
-`KF 关键帧目标`负责生成前计划，`FRM` 只记录生成后的实际画面。
+分镜负责生成前计划，`FRM` 只记录生成后的实际画面。
 
 ### 权威引用
 
@@ -444,7 +441,7 @@ python3 <skill-dir>/scripts/drama_lint.py --project-root "<项目目录>" --stag
 
 下一片段生成前按 `video.md` 根据真实输入选择视频工具：
 
-- `continuous` 接缝在工具支持图片输入时，把上一片段已保存 tail FRM、全部出场角色身份图和分镜声明为必需的场景、道具/状态图作为实际图片输入；`elliptical` 接缝从新起点所需资产开始，不强制传上一段 tail FRM。本段命中已规划高光 KF 时再传对应 KF，并记录资源 ID、文件路径、顺序和职责。
+- `continuous` 接缝在工具支持图片输入时，把上一片段已保存 tail FRM、全部出场角色身份图和分镜声明为必需的场景、道具/状态图作为实际图片输入；`elliptical` 接缝从新起点所需资产开始，不强制传上一段 tail FRM。逐项记录资源 ID、文件路径、顺序和职责。
 - Prompt 中使用对应 `<图片N>` 标签，明确每张图采用什么、不采用什么；`continuous` 声明 0 秒承接上一段结尾，`elliptical` 声明通过已确认转场锚点进入新状态、只变化 `permitted_deltas`，两者都逐项保留 `required_invariants`。
 - 若需要只推进一拍，可用 `image_edit` 基于原始尾帧制作“下一段首帧候选”，但必须保留原始尾帧并记录编辑范围。
 - 若 `continuous` 接缝所选工具不支持所需图片输入，停止并说明能力缺口；返回分镜调整分段或由用户重新选择可接收图片的工具方案，不得静默改成文字降级。`elliptical` 接缝按实际输入正常路由。
@@ -476,15 +473,15 @@ episodes/ep_N/04_视频片段/质检/质检_接缝_SEAMxxx_SEGxxx_SEGyyy_vNN_ep_
 
 `episodes/ep_N/04_视频片段/continuity_ep_N.json` 是抽帧和集内 SEAM 的机器权威，结构读取 `manifests.md`。`episodes/ep_N/04_视频片段/抽帧/抽帧_连续性清单_ep_N.md` 至少包含：
 
-| 帧 ID | 来源片段 | 职责 | 对应 KF | 时间码 | 文件路径 | 场景结构 | 角色状态 | 道具状态 | 光位 | 动作相位 | KF 偏差 | 下一段用途 | 实际传图 | 版本 |
+| 帧 ID | 来源片段 | 职责 | 对应镜号 | 时间码 | 文件路径 | 场景结构 | 角色状态 | 道具状态 | 光位 | 动作相位 | 分镜偏差 | 下一段用途 | 实际传图 | 版本 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| FRM003 | SEG001 | tail | KF002 | 00:00:11.800 |  |  |  |  |  |  | accepted/rework | SEG002 承接 | yes/no | v01 |
+| FRM003 | SEG001 | tail | E01S01-SHOT008 | 00:00:11.800 |  |  |  |  |  |  | accepted/rework | SEG002 承接 | yes/no | v01 |
 
-每个 `start FRM` 对照分镜起始状态；`continuous` 非首段同时对照上一段真实 tail FRM，`elliptical` 非首段对照接缝声明的新起点和保留不变量。`scene/tail FRM` 在当前时间点存在已规划高光 KF 时可绑定该 KF，否则对照分镜状态和数据卡。偏差不等于失败；角色身份、道具因果、场景方向、动作相位或接缝职责变化时，只记录为用户主动修改时的返修定位，不阻断当前视频交付。
+每个 `start FRM` 对照分镜起始状态；`continuous` 非首段同时对照上一段真实 tail FRM，`elliptical` 非首段对照接缝声明的新起点和保留不变量。`scene/tail FRM` 对照分镜状态和数据卡。偏差不等于失败；角色身份、道具因果、场景方向、动作相位或接缝职责变化时，只记录为用户主动修改时的返修定位，不阻断当前视频交付。
 
 ### 相邻片段首尾并排记录
 
-生成并交付 `SEG002` 及之后每个片段后，`continuous` 接缝把上一段实际 `tail FRM` 与本段实际 `start FRM` 并排查看；`elliptical` 接缝检查上一段结果、新起点、保留不变量和允许变化。两者都与衔接卡、分镜起始状态和项目数据卡核对；本段起始时间点恰好对应已规划高光 KF 时再一并参考该 KF：
+生成并交付 `SEG002` 及之后每个片段后，`continuous` 接缝把上一段实际 `tail FRM` 与本段实际 `start FRM` 并排查看；`elliptical` 接缝检查上一段结果、新起点、保留不变量和允许变化。两者都与衔接卡、分镜起始状态和项目数据卡核对：
 
 | 检查维度 | 通过标准 |
 |---|---|
@@ -499,7 +496,7 @@ episodes/ep_N/04_视频片段/质检/质检_接缝_SEAMxxx_SEGxxx_SEGyyy_vNN_ep_
 
 ### 片段与接缝内部记录
 
-- **单片段内部记录**：每个 SEG 生成并交付后抽取 `start / scene（中间代表帧）/ tail`，记录角色面部与 CHR、当前状态与数据卡、道具与 PROP、场景与 SCN、KF 偏差、声音主体与固定 `voice_anchor`。发现问题只写入内部返修线索，不阻断交付。
+- **单片段内部记录**：每个 SEG 生成并交付后抽取 `start / scene（中间代表帧）/ tail`，记录角色面部与 CHR、当前状态与数据卡、道具与 PROP、场景与 SCN、声音主体与固定 `voice_anchor`。发现问题只写入内部返修线索，不阻断交付。
 - **全片衔接内部记录**：本集所有 SEG 生成并交付后，覆盖全部 `N-1` 个边界，逐一并排比较前段 tail FRM 与后段 start FRM。不得抽样跳过接缝；发现问题只记录责任片段，用户主动要求修改前不调用视频工具。
 - 最终成片只按 `delivery.md` 做基础可交付检查并立即交付。
 
@@ -538,11 +535,11 @@ episodes/ep_N/04_视频片段/质检/质检_接缝_SEAMxxx_SEGxxx_SEGyyy_vNN_ep_
   "first_audience_rejecting_defect": "",
   "repair_scope": "",
   "next_action": "deliver|record_for_user_requested_revision|not_applicable",
-  "target_stage": "planning|script|assets|storyboard|keyframes|video|final|not_applicable"
+  "target_stage": "planning|script|assets|storyboard|video|final|not_applicable"
 }
 ```
 
-内部记录文件还要记录画面可播放、计划/实际运镜家族统计、抽帧 ID、KF/FRM 偏差、原生人声时间范围、口型观察、字幕状态和 `defect_codes`。不使用简单总分掩盖问题；但任何重试、返修或重新调用视频工具都必须等待用户主动要求并重新按确认 ref 完成确认。
+内部记录文件还要记录画面可播放、计划/实际运镜家族统计、抽帧 ID、FRM 偏差、原生人声时间范围、口型观察、字幕状态和 `defect_codes`。不使用简单总分掩盖问题；但任何重试、返修或重新调用视频工具都必须等待用户主动要求并重新按确认 ref 完成确认。
 
 `实际传图` 只有在视频工具请求中确实存在对应图片输入时才能写 `yes`；纯文字继承必须写 `no`。
 

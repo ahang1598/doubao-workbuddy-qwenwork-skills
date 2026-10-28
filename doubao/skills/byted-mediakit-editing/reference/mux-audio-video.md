@@ -7,7 +7,6 @@
 ## 参数填写规则
 
 - 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
-
 ## Cloud
 
 ### 命令与生命周期
@@ -35,17 +34,13 @@ mediakit-cli editing mux-audio-video \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `audio_url` | `--audio-url` | string | 是 | - | - | 输入音频的 URL，支持公网 HTTP/HTTPS URL、本地文件路径、vod:// 和 tos:// 四种输入协议；支持 mp3、m4a、wav 等主流音频格式；建议单个音频输入文件大小不超过 10 GB。 |
-| `callback_args` | `--callback-args` | string | 否 | - | - | 自定义回调参数。任务完成时，您提供的内容会通过事件回调原样返回，便于关联业务；字段长度最大为 512 字节。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `callback_url` | `--callback-url` | string | 否 | - | - | 用于接收该任务结果回调的 URL 地址。提供此参数时，其优先级高于全局回调地址；地址必须以 http:// 或 https:// 开头。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `client_token` | `--client-token` | string | 否 | - | - | 用户请求凭证，用于幂等控制。大小写敏感，不超过 64 个 ASCII 码可打印字符。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
+| `audio_url` | `--audio-url` | string | 是 | - | - | 输入音频的 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；支持 mp3、m4a、wav 等主流音频格式；建议单个音频输入文件大小不超过 10 GB。 |
+| `client_token` | `--client-token` | string | 否 | - | - | 用户请求凭证，用于幂等控制；大小写敏感，长度不超过 64 个 ASCII 可打印字符。 用于控制异步任务幂等；同步任务不支持幂等校验。异步任务首次提交时默认不传，服务端仍会对相同核心参数执行 24 小时默认幂等。用户明确指定 token 时原样使用。因网络超时、响应丢失等原因重试同一次提交时，原请求有 token 则复用原值，原请求未传则继续不传。任务已有结果后，用户要求“结果不对，重试”“重新跑一次”或“重新发起任务”时，必须生成并传递新的 token，避免返回原任务。新对话中用户要求“重新发起任务”时，若当前上下文具备完整任务参数，直接生成新 token 并提交；若参数不足，先向用户澄清，补齐后再使用新 token 发起，不得直接省略 token。新任务后续发生提交重试时复用该新 token。已有 task_id 且任务尚未完成时，只查询原任务，不得重新提交。CLI runtime 不判断用户意图，也不自动生成 token。 |
 | `is_audio_reserve` | `--is-audio-reserve` | boolean | 否 | true | - | 可选，用于控制是否保留原视频中的原音轨；默认值为 true，即保留原音轨；为 true 时新音频将与原音频混音；为 false 时不保留原音轨，用新音频替换原有音频。 |
 | `is_video_audio_sync` | `--is-video-audio-sync` | boolean | 否 | false | - | 可选，默认值为 false，即不对齐；为 false 时合成视频的时长以较长的媒体流为准；为 true 时根据 sync_mode 和 sync_method 的配置进行对齐处理。 |
-| `media_output_destination` | `--media-output-destination` | string | 否 | - | - | 指定处理产物的目标存储位置。AI MediaKit 支持将处理产物存储至您的火山引擎视频点播（VOD）空间或对象存储（TOS）桶：存储至 VOD 时设为 vod://<您的空间名>；存储至 TOS 时设为 tos://<您的桶名>。设置后，任务结果中的 url 相关字段将返回 vod:// 或 tos:// 格式的资源地址，不再返回临时下载地址。首次使用前，需要按需授权 AI MediaKit 将文件写入您的 VOD 空间或 TOS 桶。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `queue_id` | `--queue-id` | string | 否 | - | - | 任务提交的目标队列 ID。如不传，默认使用系统自动创建的队列 ID。可将不同业务或优先级的任务提交到不同队列，以实现按队列对应的项目分账。队列可创建和管理，系统会自动为队列分配队列 ID。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `sync_method` | `--sync-method` | string | 否 | "trim" | - | 可选，仅在 is_video_audio_sync 为 true 时生效，用于指定时长对齐方式；默认值为 trim（裁剪）；为 trim 时将较长的媒体流从末尾裁剪，使其与较短的对齐；为 speed 时通过加速或减速使两个媒体流时长一致。 |
-| `sync_mode` | `--sync-mode` | string | 否 | "video" | - | 可选，仅在 is_video_audio_sync 为 true 时生效，作为音视频时长对齐基准；默认值为 video，以视频时长为准；为 audio 时以音频时长为准，如视频更长则裁剪视频，如视频更短则根据 sync_method 处理；为 video 时，如音频更长则裁剪音频，如音频更短则根据 sync_method 处理。 |
-| `video_url` | `--video-url` | string | 是 | - | - | 输入视频的 URL，支持公网 HTTP/HTTPS URL、本地文件路径、vod:// 和 tos:// 四种输入协议；支持 mp4、flv、ts、avi、mov、wmv、mkv 等主流视频格式；最高支持 4K (3840×2160) 分辨率；建议单个视频输入文件大小不超过 10 GB。 |
+| `sync_method` | `--sync-method` | string | 否 | "trim" | 枚举: ["trim","speed"] | 可选，仅在 is_video_audio_sync 为 true 时生效，用于指定时长对齐方式；默认值为 trim（裁剪）；为 trim 时将较长的媒体流从末尾裁剪，使其与较短的对齐；为 speed 时通过加速或减速使两个媒体流时长一致。 |
+| `sync_mode` | `--sync-mode` | string | 否 | "video" | 枚举: ["video","audio"] | 可选，仅在 is_video_audio_sync 为 true 时生效，作为音视频时长对齐基准；默认值为 video，以视频时长为准；为 audio 时以音频时长为准，如视频更长则裁剪视频，如视频更短则根据 sync_method 处理；为 video 时，如音频更长则裁剪音频，如音频更短则根据 sync_method 处理。 |
+| `video_url` | `--video-url` | string | 是 | - | - | 输入视频的 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议；支持 mp4、flv、ts、avi、mov、wmv、mkv 等主流视频格式；最高支持 4K (3840×2160) 分辨率；建议单个视频输入文件大小不超过 10 GB。 |
 
 ### 返回结果
 
@@ -54,9 +49,9 @@ mediakit-cli editing mux-audio-video \
 | `request_id` | string | 否 | Cloud | 请求标识；仅在后端返回时出现。 |
 | `task_id` | string | 是 | Cloud | 异步任务的唯一标识，用于查询任务状态并获取最终结果。 |
 | `task_type` | string | 否 | Cloud | 任务类型；仅在后端实际返回非空值时出现。 |
-| `result.duration` | number | 否 | Cloud 终态 | duration 表示输出视频的总时长，单位为秒。 |
-| `result.resolution` | string | 否 | Cloud 终态 | resolution 表示输出视频的分辨率。 |
-| `result.video_url` | string | 否 | Cloud 终态 | video_url 为合成后的视频文件下载地址，文件格式为 MP4；未设置 media_output_destination 时返回 HTTPS 临时下载链接，有效期为 24 小时；设置 media_output_destination 后返回存储地址，格式为 vod://<空间名>/<媒资ID> 或 tos://<桶名>/<对象Key>。 |
+| `duration` | number | 否 | Cloud 终态 | duration 表示输出视频的总时长，单位为秒。 |
+| `resolution` | string | 否 | Cloud 终态 | resolution 表示输出视频的分辨率。 |
+| `video_url` | string | 否 | Cloud 终态 | video_url 为合成后的视频文件下载地址，文件格式为 MP4；返回 HTTPS 临时下载链接，有效期为 24 小时； |
 
 Cloud 调用成功后读取 `task_id`，再查询终态结果：
 

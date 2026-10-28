@@ -144,4 +144,3 @@ lark-cli im --help
 lark-cli api PATCH /open-apis/im/v1/chats/oc_xxx/announcement \
   --data '{"revision":"0","requests":["<html>公告内容</html>"]}'
 ```
-

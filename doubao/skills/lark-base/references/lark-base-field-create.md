@@ -1,6 +1,6 @@
 # base +field-create
 
-> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+> **前置条件：** 先阅读 [主 Skill「使用边界」](../SKILL.md#使用边界)，遵循本环境的身份与权限约束。
 
 创建一个或多个字段；同一表的多个字段优先使用一次非空 JSON 数组。
 
@@ -25,12 +25,12 @@ lark-cli base +field-create \
 lark-cli base +field-create \
   --base-token <base_token> \
   --table-id <table_id> \
-  --json '{"name":"状态","type":"select","multiple":false,"default_value":["Todo"],"options":[{"name":"Todo","hue":"Blue","lightness":"Lighter"},{"name":"Done","hue":"Green","lightness":"Light"}]}'
+  --json '{"name":"状态","type":"select","multiple":false,"options":[{"name":"Todo","hue":"Blue","lightness":"Lighter"},{"name":"Done","hue":"Green","lightness":"Light"}]}'
 
 lark-cli base +field-create \
   --base-token <base_token> \
   --table-id <table_id> \
-  --json '{"name":"负责人","type":"user","multiple":false,"default_value":[{"$slot":"current_user"}],"description":"用于标记记录的直接负责人；协作约定可参考[团队字段约定](https://example.com/field-spec)"}'
+  --json '{"name":"负责人","type":"user","multiple":false,"description":"用于标记记录的直接负责人；协作约定可参考[团队字段约定](https://example.com/field-spec)"}'
 
 lark-cli base +field-create \
   --base-token <base_token> \
@@ -59,7 +59,7 @@ POST /open-apis/base/v3/bases/:base_token/tables/:table_id/fields
 - 每个字段对象最少包含：`name`、`type`；数组不能为空，且每个元素都必须是合法字段对象。
 - 数组按顺序创建字段，遇到首个失败即停止且不自动回滚；保留结果中的 `created` 项，按 `hint` 修正 `failed` 项后，与 `not_attempted` 项按依赖顺序重新提交，不要重复创建已成功字段。
 - 所有字段类型都支持可选 `description`；支持纯文本，也支持 Markdown 链接，如 `协作约定可参考[团队字段约定](https://example.com/field-spec)`。
-- 需要字段默认值时传 `default_value`，直接使用字段对应 CellValue；`datetime` / `user` 的动态填充用 `$slot`。完整规则见 [lark-base-field-json.md](lark-base-field-json.md)。
+- 用户要求默认值时传 `default_value`，直接使用字段对应 CellValue；`datetime` / `user` 的动态填充用 `$slot`。完整规则见 [lark-base-field-json.md](lark-base-field-json.md)。
 - `type` 不同，必填子字段不同：
   - `select`：`multiple` 控制是否多选，`options` 定义静态选项，`dynamic_options_source` 定义动态选项来源。静态与动态选项配置二选一，不能同时传。
   - `link`：必须有 `link_table`，可选 `bidirectional`、`bidirectional_link_field_name`。
@@ -74,7 +74,6 @@ POST /open-apis/base/v3/bases/:base_token/tables/:table_id/fields
   "name": "状态",
   "type": "select",
   "multiple": false,
-  "default_value": ["Todo"],
   "options": [
     { "name": "Todo", "hue": "Blue", "lightness": "Lighter" },
     { "name": "Done", "hue": "Green", "lightness": "Light" }

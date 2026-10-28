@@ -12,6 +12,7 @@
 - 不得使用 `2>&1` `<<` 等指令作为输出重定向
 - 不得使用 `head` `tail` `grep` `ls -la` `cat -n`等典型的与 `PowerShell` 不兼容的 `Bash` 指令
 - 不得使用 `python3` 作为 `Python` 执行的默认指令
+- 如果需要使用 `pip` 安装必要的模块时，必须使用 `python -m pip` 指令进行执行
 
 ## 执行与路径
 

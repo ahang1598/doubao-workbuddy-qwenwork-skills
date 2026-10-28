@@ -33,7 +33,7 @@ doubao-creative-video/
 3. `production-control.md`：完整生产流程和所有阶段控制。
 4. 三个通用创意文件：`creative-core.md` 管创意方向，`audiovisual-craft.md` 管视听工艺、构图、配色与文字排版库，`visual-motion-playbook.md` 管视觉发动机、效果和运动。
 5. 生成与分镜合同：`asset-generation.md` 统一按需人物/产品/音色资产、视觉关键帧、图片/视频 Prompt 和身份锁；`storyboard-contract.md` 统一完整分镜母版、映射和校验。
-6. 类型文件和 CLI 子目录：类型文件管不同视频类型的专属策略；`media-delivery.md` 管视频／图像直接交付与强制产后目录整理；`cli/` 管 Canvas Workspace 初始化、手工资产创建、对象读取和目录更新命令。
+6. 类型文件和 CLI 子目录：类型文件管不同视频类型的专属策略；`cli/` 管 Canvas Workspace 命令、画布目录、写入/回读和 `present_files` 画布卡片；图片／视频的 `RichMediaCard` 双分支交付见 `production-control.md`，音频和其他文件仍用 `present_files`。
 
 入口先选类型，确认规则管授权，流程文件管阶段，通用创意库确定表达与设计，资产生成和分镜合同落实为可生成产物。按生产控制的阶段矩阵读取，避免每阶段全量重读；CLI 子目录只在画布交付或命令调用时读取。
 
@@ -50,7 +50,7 @@ doubao-creative-video/
 7. 读 `visual-motion-playbook.md`，把核心表达转成视觉发动机，再补触发、运动、反馈和回收。
 8. 读 `storyboard-contract.md` 与 `asset-generation.md`，理解分镜唯一母版、按需人物/产品/音色资产、视觉关键帧数量、图片 PE、素材身份锁与视频五段式。
 9. 根据当前独立视频、平台版本或交付单元，只读一个类型文件；多视频项目逐条判断。
-10. 视频／图片交付先读 `references/media-delivery.md`；Workspace 初始化、手工资产创建和目录命令再读 `references/cli/README.md` 与对应命令页。
+10. 画布和文件交付规则读 `references/cli/README.md` 与对应命令页。
 
 日常查规则时，可以按问题反查：
 
@@ -63,7 +63,7 @@ doubao-creative-video/
 - 想知道“分镜格式、节拍和镜头映射、镜头密度与校验”：看 `storyboard-contract.md`。
 - 想知道“视觉效果怎么不普通、AI 效果语法怎么转译、开场/高光/反转/结尾/转场怎么同步”：看 `visual-motion-playbook.md`。
 - 想知道“某类视频该怎么写”：看对应类型文件。
-- 想知道“视频短链／图片结果如何直接 present_files、何时整理目录”：看 `references/media-delivery.md`；Workspace 初始化和目录命令看 `references/cli/README.md` 和对应命令页。
+- 想知道“画布目录、CLI 创建/回读、RichMediaCard 图片／视频交付和 present_files 画布卡片／其他文件交付怎么做”：看 `references/production-control.md`、`references/cli/README.md` 和对应命令页。
 
 ## 主链路怎么理解
 
@@ -267,8 +267,6 @@ videos/video_N/
 - `videos/video_N/05_视频片段/`
 - `videos/video_N/06_成片/`
 
-项目沙箱目录与画布目录分别维护：前者保存工作文件和采用记录；后者在非 Mobile 本轮已确认批次全部媒体直接交付后，通过 `+tree`／`+ls` → `+get` → 更新 `path` → 回读核验完成，详见 [媒体直接交付与产后目录整理](references/media-delivery.md)。不得为生成结果重复创建 VIDEO／IMAGE Item。
-
 理解目录时看职责，不要只看文件格式。产品图、人物图、品牌素材、场景图、音频、视频片段、抽帧和 Prompt 都有不同职责。
 
 ## 最容易混淆的点
@@ -289,17 +287,27 @@ videos/video_N/
 
 ## 修改后怎么检查
 
-修改后建议跑：
+以下示例均从 `doubao-creative-video` 的 Skill 根目录执行。Windows 先读 [`references/windows-compat.md`](references/windows-compat.md)，确认实际终端 Shell 与 Python 入口，每次终端调用只执行一条命令。
+
+macOS / Linux 修改后建议逐条跑（`rg` 须已安装）：
 
 ```bash
 python3 scripts/validate_storyboard.py --self-test
-rg -n "[[:blank:]]$" doubao-creative-video
+rg -n "[[:blank:]]$" .
 ```
 
 也可以扫结构词：
 
 ```bash
-rg -n "brand-publicity|business-video-strategy|tvc-video-strategy|阶段交付|逐阶段交付|类型路由|工具路由|高审查" doubao-creative-video
+rg -n "brand-publicity|business-video-strategy|tvc-video-strategy|阶段交付|逐阶段交付|类型路由|工具路由|高审查" .
 ```
 
 扫到不一定就是错，但要确认它不是结构迁移遗留。
+
+Windows 用已确认的解释器执行自检：
+
+```powershell
+python "./scripts/validate_storyboard.py" --self-test
+```
+
+`rg` 已安装时可逐条使用上述单行扫描命令；未安装时用 Python 的 `Path.rglob` 枚举 `.md` / `.py` 文件、显式按 UTF-8 读取并筛选，不把缺少 `rg` 当作 Skill 或业务错误。

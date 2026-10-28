@@ -10,7 +10,7 @@
 - `+field-update --json` 只接受单个字段对象。
 - 每个字段对象统一使用：`type` + `name` + 类型特有字段。
 - 所有字段类型都支持可选 `description`；支持纯文本，也支持 Markdown 链接。
-- 字段默认值使用 `default_value`，直接传对应 CellValue；支持范围只有 `text`、`number`、静态 `select`、`datetime`、`user`。清空默认值传 `null`；省略表示创建时不设置、更新时不修改。
+- 字段默认值使用 `default_value`，直接传对应 CellValue；支持范围只有 `text`、`number`、静态 `select`、`datetime`、`user`。清空默认值传 `null`；省略表示创建时不设置、更新时不修改。默认值只在用户要求时设置，新建表和在已有表上新增字段都一样：用户没要求就不设，默认值可能与已有记录的语义冲突，新表的示例数据按 mock 规则逐条填写。
 - 不要使用旧结构：`field_name`、`property`、`ui_type`、数字枚举 `type`。
 - `+field-update` 使用同样的字段 JSON 结构，但语义是 `PUT`；这是高风险写入操作，建议先 `+field-get` 再按目标状态全量提交，并带 `--yes`。
 - `type=formula` 或 `type=lookup` 创建/更新前，必须先读对应 guide。

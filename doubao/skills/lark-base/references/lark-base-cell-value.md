@@ -1,8 +1,8 @@
-# base CellValue 规范（lark-base-cell-value）
+# Record 写入 CellValue 规范
 
 > 适用命令：`lark-cli base +record-upsert`、`lark-cli base +record-batch-create`、`lark-cli base +record-batch-update`
 
-本文件定义 **shortcut 写记录** 时 `CellValue` 的推荐格式，目标是让 AI 一次写对。不同命令的外层 JSON 形状不同，但每个 cell 都以本文为 source of truth。
+本文件定义上述 Record 写入命令的 `CellValue` 推荐格式。
 
 ## 1. 顶层规则（必须遵守）
 
@@ -48,11 +48,11 @@ text 字段的 `style.type` 影响单元格检查逻辑：
 
 ### 2.3 select（单选/多选）
 
-`select` 字段用 `multiple` 区分单选和多选：`multiple=false` 时传选项名字符串，`multiple=true` 时传选项名数组。只支持写入字段中已有的选项；构造 CellValue 前先用 `+field-list` 或 `+field-search-options` 确认目标选项存在。
+`select` 的单选和多选统一推荐选项名数组；`multiple=false` 时最多一个选项，`multiple=true` 时可有多个。只写字段中已有的选项；构造 CellValue 前先用 `+field-list` 或 `+field-search-options` 确认，不自动新增或近似替换未知选项。
 
 ```json
 {
-    "单选": "Todo",
+    "单选": ["Todo"],
     "多选": ["后端", "高优"]
 }
 ```
@@ -148,7 +148,7 @@ text 字段的 `style.type` 影响单元格检查逻辑：
 ```json
 {
     "标题": "Created from shortcut",
-    "状态": "Todo",
+    "状态": ["Todo"],
     "标签": ["高优", "外部依赖"],
     "工时": 8,
     "截止时间": "2026-03-24 10:00:00",

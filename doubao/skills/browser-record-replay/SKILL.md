@@ -15,6 +15,26 @@ inspection activity into a first-person user update. This applies before and
 after recording, while preparing the task description, after confirmation,
 and during delivery.
 
+When a new task starts and the CLI returns `success=true`, `task_id_created=true`,
+and `task_id`, immediately send a distinct process update containing exactly:
+**“本次录制任务已创建，任务编号：<task_id>。”**
+Replace `<task_id>` with the returned UUID without backticks. Show this update exactly
+once for that task, never paraphrase it, and do not repeat it for later commands that
+reuse the same `task_id`. This identifier update is process metadata: send it as soon
+as the ID is known, do not defer it to the end of setup, and do not use it as the final
+user-facing output for the stage. After the environment and recorder are actually
+ready, send the recording action guidance as a separate update.
+
+For an explicit recording request, do not let `local record start` implicitly
+create the task. After project creation, first call `local intake start` with
+the known business goal, or `用户演示` when the user has not supplied one. As
+soon as that command returns the new `task_id`, emit the mandatory task-number
+update into the user-visible assistant stream. Do not invoke `local session
+start` or `local record start` until that text has already been emitted. Then
+start the session and recorder; `local record start` must reuse the intake and
+return `task_id_created=false`. This tool boundary is required so the two
+updates cannot collapse into one final reply.
+
 Immediately after recording stops, say only:
 **“演示已记录。我正在整理任务说明，现在不需要你操作。”**
 
@@ -37,6 +57,8 @@ evidence review, task-description confirmation, implementation, semantic
 validation, and delivery acceptance.
 
 ### Doubao recording handoff
+
+When a newly created task ID has been reported with the mandatory task-number process update, keep it separate from the recording handoff below. Never delay the task-number update until recording readiness, and never combine these two user-visible updates.
 
 After `local record start` reports both `ui_ready=true` and `sync_ready=true`,
 say exactly: **“录制已开始。请按平时的方式完成操作演示。演示结束后先不要关闭浏览器，只回复“完成”。”**
@@ -97,14 +119,23 @@ lifecycle emulation when a page needs foreground semantics; never use
    It atomically installs the current platform binary and embedded assets into
    the Doubao user-data stable Runtime and registers the Native Messaging Host.
    Never edit the manifest manually or point it at a session-scoped sandbox path.
-4. After bootstrap, wait briefly and retry status. `healthy=true` with
-   `ready=false` means the client-managed extension is still reconnecting. If it
-   remains unavailable, ask the user to update Doubao to the latest version or
-   fully quit and restart Doubao; do not ask them to
-   install, reload, or remove the extension. Then run `doctor --mode local` and
-   continue only after the real Relay, protocol, capability, and debugger probe succeeds.
-5. For an explicit recording request, create a project, start its Local
-   session, then start recording immediately. Recording is visible. After it
+4. After any required bootstrap, retry status and require `healthy=true`.
+   For an explicit recording or development request, `healthy=true` with
+   `ready=false` must not stop the task or lead to status-only waiting.
+   Continue with project creation and `local session start --project PROJECT`;
+   session start already performs bounded browser launch and readiness recovery.
+   Even `ready=true` proves only the connection and handshake, not an available
+   browser window. Run `doctor --mode local` only after session start succeeds,
+   before recording or browser business actions. Never require doctor to pass
+   before entering session start's recovery path. Only after preparation fails
+   should you ask the user to update Doubao to the latest version or fully quit
+   and restart Doubao; never ask them to install, reload, or remove the extension.
+   A plain status query remains read-only; do not start a browser for that query.
+5. For an explicit recording request, create a project, call `local intake
+   start`, emit the mandatory task-number process update, start its Local
+   session, then start recording immediately. Never batch intake creation with
+   session or recording startup before emitting the task-number update.
+   Recording is visible. After it
    stops, all exploration, development, validation, retries, and formal calls
    must stay in the background and must not activate the user's Tabs even
    briefly.
@@ -222,6 +253,7 @@ lifecycle emulation when a page needs foreground semantics; never use
 "$RPA_DEV" local bootstrap
 "$RPA_DEV" doctor --mode local
 "$RPA_DEV" local app create --dir /absolute/path/to/project --name example
+"$RPA_DEV" local intake start --project /absolute/path/to/project --goal "用户演示"
 "$RPA_DEV" local session start --project /absolute/path/to/project
 "$RPA_DEV" local record start --project /absolute/path/to/project --title "用户演示"
 "$RPA_DEV" local record stop --project /absolute/path/to/project
@@ -341,4 +373,4 @@ These replacements are presentation-only. Confirmation, evidence checks, impleme
 
 This exact Skill and CLI are shared by Doubao and DoubaoWork through ActionHub. Run from the current host's local task directory. The CLI resolves host identity from platform context, the owning Runtime, task directory, and caller ancestry; never choose based on which applications are installed or running. Only forward RPA_DEV_LOCAL_HOST_ID when supplied by trusted host execution metadata; never invent it to bypass a mismatch. If identity is missing or conflicting, stop and return the CLI guidance. Use the selected host's product name consistently in all messages, including upgrade and restart guidance. Doubao instructions above apply to the selected product; never switch products, data roots, or ports during recovery.
 
-<!-- skill_created_at: 2026-09-12T18:24:28+08:00 -->
+<!-- skill_created_at: 2026-10-20T23:09:58+08:00 -->

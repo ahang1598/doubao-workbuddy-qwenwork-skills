@@ -15,7 +15,7 @@
 随后按 system 环境立即补齐一个且仅一个分支：
 
 - **默认 Canvas**：完整读取 [CLI 策略](../cli/README.md)、[create 协议](../cli/create.md) 与 [HTML Item 协议](../items/HTML.md)。需要新建 Workspace 时同时读取 CLI 策略中的 Workspace 创建入口。默认 Canvas 必须具备 `FileBatchUpload`、`design-cli` 和 `present_files`。
-- **`Device platfrom: Mobile`**：完整读取 [Mobile 直接交付](mobile-app-direct-delivery.md)，不得再读取或执行默认 Canvas 的 Workspace／CLI／Item 创建分支。
+- **移动端交付**：完整读取 [Mobile 直接交付](mobile-app-direct-delivery.md)，不得再读取或执行默认 Canvas 的 Workspace／CLI／Item 创建分支。
 
 本路由与 [VI Spec](../style/coding/scenarios/vi-spec.md) 的最高优先级门禁共同生效。若公共 HTML 规则允许多个独立作品或分页多 Item，完整 VI 在本任务中仍视为一个作品，以 VI Spec 的“唯一完整 HTML＋唯一顶层 HTML Item”覆盖。
 

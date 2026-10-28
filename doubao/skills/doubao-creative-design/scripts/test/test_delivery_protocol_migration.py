@@ -69,7 +69,7 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
         for term in (
             "design-cli",
             "+get",
-            "present_files",
+            "RichMediaCard",
             "同步双分支",
             "候选",
             "未采用版本",
@@ -98,7 +98,7 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
     def test_current_non_delivery_capabilities_are_not_rolled_back(self) -> None:
         combined = "\n".join((self.skill, self.html_validation, self.validation))
         for term in (
-            "Web 字体契约",
+            "data-web-fonts",
             "屏间过渡路由验收",
             "mix-blend-mode: multiply",
             "ART_TITLE_ALPHA_INVALID",

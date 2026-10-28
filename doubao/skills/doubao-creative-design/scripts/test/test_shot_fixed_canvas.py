@@ -32,12 +32,12 @@ class FixedCanvasTests(unittest.TestCase):
         self.assertEqual(image.size, (480, 240))
         self.assertEqual(image.getpixel((200, 239)), (255, 255, 255))
 
-    def test_overflow_still_detected(self):
+    def test_overflow_and_missing_safety(self):
         code, report = self.render(content_height=300, safe=0)
         self.assertEqual(code, 1, report)
         codes = {x['code'] for x in report['issues']}
         self.assertIn('CONTENT_OVERFLOW', codes)
-        self.assertNotIn('BOTTOM_SAFE_AREA_INVALID', codes)
+        self.assertIn('BOTTOM_SAFE_AREA_INVALID', codes)
 
     def test_long_canvas_bottom_is_preserved(self):
         from PIL import Image

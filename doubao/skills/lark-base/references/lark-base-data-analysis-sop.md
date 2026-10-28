@@ -244,10 +244,39 @@ lark-cli base +view-set-sort \
 
 ## 3. Range & Pagination Contract
 
-- `+record-list` 默认页、固定 `--limit`、本地 `jq`、shell 管道、手工浏览输出，都只覆盖已读取范围；单页 `--limit` 最大为 200，写 500 会失败。
+- `+record-list` 默认页、固定 `--limit`、本地 `jq`、shell 管道和预览只覆盖已读取范围。JSON 矩阵的单页 limit 最大 200；NDJSON 默认及最大 10000，参数以精确命令帮助为准。
 - `has_more=true` 或返回行数等于 page size，都表示可能还有未读取数据；`+record-list --format json` 响应没有 page_token / next_page_token，翻页只用 `--offset`。
 - 对全局问题，只有 Base 云端查询服务已经通过 filter/sort/aggregate 收敛目标范围，或 `+data-query` 已在云端完成聚合、排序和限制时，才可以用有限返回形成结论。
-- 必须全量导出时，串行调用 `+record-list --format json --limit 200 --offset <n>`；每页用 `data.fields` 建列索引读取 `data.data` 行数组，`offset += len(data.data)`，直到 `data.has_more=false`。不要并发调用 `+record-list`。
+- 任务路径已允许全量 Record 导出时，按下节优先用 NDJSON；选择 JSON 矩阵时，串行调用 `+record-list --format json --limit 200 --offset <n>`，按下节的字段 ID / 唯一字段名映射读取 `data.data` 行数组，`offset += len(data.data)`，直到 `data.has_more=false`。两种格式都完整分页，不并发调用 `+record-list`。
+
+### Record 输出解析
+
+任务路径已允许 Record 读取时，程序化后处理优先使用 NDJSON；先按 [常见恢复](../SKILL.md#常见恢复) 确认命令执行成功，再按实际格式解析。
+
+```bash
+lark-cli base +record-list --base-token "$BASE_TOKEN" --table-id "$TABLE_ID" \
+  --field-id "工时(小时)" --format ndjson --output ./records.ndjson --as user > ./records-manifest.json &&
+python3 - <<'PY'
+import json
+from pathlib import Path
+manifest = json.loads(Path("records-manifest.json").read_text())
+assert manifest["format"] == "ndjson", manifest
+print(manifest["records_count"])  # 本页数量；全量统计仍须按下表处理 has_more
+PY
+```
+
+`&&` 只在 CLI 退出成功后启动解析；stderr 保持独立。直接解析保存的 JSON 原文，不用 Python 字典的打印结果或 grep 匹配字段数代替 JSON。已成功写入但后处理失败时，复用本次原始返回修复解析，不重新执行写命令。
+
+| 格式 | 记录与返回解析 | 续页 |
+|---|---|---|
+| NDJSON（默认） | 文件每行是含 `record_id` 的字段名到值对象；stdout 为顶层 manifest，检查 `format=ndjson`，直接读 `records_count/has_more/next_offset`，不套 `data` 或要求 `ok` | `has_more=true` 时用 `--offset <next_offset>`，保持同一查询范围并写入不同文件 |
+| `--format json`（未用 `--jq`） | 成功信封内 `data.data` 是行数组，按下方字段映射解析；不是 `data.records` 或 `row.fields` | 串行读取，`offset += len(data.data)`，直到 `data.has_more=false` |
+
+- NDJSON 不与 `--jq` 混用；`--jq` 只配 JSON，使用后按表达式结果解析。Record 读取不支持 markdown。
+- 不假设存在总数字段；完整分页后，NDJSON 累计 `records_count`，JSON 累计 `len(data.data)`。字段名完整加引号，筛选和排序分别用 `--filter-json`、`--sort-json`。
+- 数值运算先核对实际 JSON 类型；命令失败、解析失败或文件已存在时，不把旧文件或后处理失败当成空数据。
+
+凡使用 JSON 行数组生成答案或本地计算，先按返回的 `data.field_id_list` 建字段 ID 到列下标的映射；缺少字段 ID 时才按 `data.fields` 建映射并确认字段名唯一，再从 `data.data` 取值。不要凭列位置或单元格内容手工认列，也不要用 `data.records` 或 `row["字段名"]` 读取行数组；`--field-id` 可减少投影列数，但不是正确映射的前提。
 
 ## 4. Final Answer Check
 

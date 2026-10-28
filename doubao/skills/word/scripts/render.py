@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""WPS-channel DOCX rendering via lark-cli; PDF/PNG evidence, not visual approval.
+"""DOCX rendering via lark-cli; PDF/PNG evidence, not visual approval.
 
 render creates one isolated conversion run and all page PNGs.
 No HTTP client, compression, automatic retries, TOC update or document repair

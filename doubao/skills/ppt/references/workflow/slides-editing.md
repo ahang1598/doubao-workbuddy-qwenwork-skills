@@ -237,6 +237,7 @@ lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<f
 | **删除某个元素** | [`+update-slide`](../cli/lark-slides-update-slide.md) 整页覆盖 | 块级只有 `block_replace` / `block_insert`，**没有删除块的动作**；整页覆盖时没写进 `--content` 的元素即被删除 |
 | **跨页统一改某个属性**（整份换字体、换配色等全局改写） | [`+update-slide`](../cli/lark-slides-update-slide.md)（每页一次） | 没有字段级 patch，逐块 `block_replace` 代价高；把受影响的页逐页整页覆盖更省事 |
 | 多页版式重建、整页坐标重排 | [`+update-slide`](../cli/lark-slides-update-slide.md)（每页一次） | 原地整页覆盖，`slide_id` 和页序不变，不生成新链接 |
+| 添加或修改页面切换动画 | [`+update-slide`](../cli/lark-slides-update-slide.md)，保留原页其他内容，修改 `<animation>` 后整页写回 | 页面级配置；具体写法见 quick ref「[animation 页面切换](../xml/xml-schema-quick-ref.md#animation-页面切换)」 |
 | 追加新页 | [`+add-slide`](../cli/lark-slides-add-slide.md)，插到某页前加 `--before-slide-id` | 省略 `--before-slide-id` 就是追加到末尾 |
 | **删除整页** | [`+delete-slide`](../cli/lark-slides-delete-slide.md) | **不可逆**（可走 `+history-revert` 回滚），删前先确认这页确实不要了；一份 deck 至少得留一页 |
 

@@ -5,10 +5,117 @@ at runtime and applies an LD_PRELOAD shim if needed.
 """
 
 import os
+import signal
+import shutil
 import socket
 import subprocess
+import tempfile
+import time
 from pathlib import Path
 from typing import List
+
+
+# soffice 启动阶段的报错特征：命中即视为 profile / 启动失败，可换全新 profile 重试一次。
+LO_START_FAILURE_MARKERS = (
+    "User installation could not be completed",
+    "The application cannot be started",
+    "DeploymentException",
+)
+
+
+def profile_arg(profile_dir: Path) -> str:
+    """LibreOffice 的 UserInstallation 只接受 file URL。"""
+    return f"-env:UserInstallation={profile_dir.resolve().as_uri()}"
+
+
+def soffice_detail(stderr: str, stdout: str = "") -> str:
+    """合并 stderr 与 stdout 后去掉 Fontconfig 之类与失败无关的告警行，只留真正的报错。
+
+    不能只取非空的那一路：stderr 常常只有 Fontconfig 告警，真实报错却在 stdout。
+    """
+    text = "\n".join(t for t in (stderr, stdout) if t)
+    lines = [ln for ln in text.splitlines()
+             if ln.strip() and not ln.startswith("Fontconfig warning")]
+    return "\n".join(lines).strip()
+
+
+def run_managed_process(cmd: List[str], timeout: float, env: dict) -> subprocess.CompletedProcess:
+    """运行并回收整棵进程树，避免超时后残留 soffice.bin 继续写文件。"""
+    popen_kwargs = {
+        "stdout": subprocess.PIPE,
+        "stderr": subprocess.PIPE,
+        "text": True,
+        "env": env,
+    }
+    if os.name == "posix":
+        popen_kwargs["start_new_session"] = True
+    elif os.name == "nt":
+        popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+
+    process = subprocess.Popen(cmd, **popen_kwargs)
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        if os.name == "posix":
+            # macOS 上组内进程退出后，再对该组发信号会报 PermissionError 而非
+            # ProcessLookupError；两者都表示组已不存在，不能让清理阶段抛出。
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except (ProcessLookupError, PermissionError):
+                pass
+            deadline = time.monotonic() + 2
+            while time.monotonic() < deadline:
+                try:
+                    os.killpg(process.pid, 0)
+                except (ProcessLookupError, PermissionError):
+                    break
+                time.sleep(0.05)
+            # 组长退出不代表 soffice.bin 已退出；对仍存在的整个组补发 SIGKILL。
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
+                pass
+        elif os.name == "nt":
+            # terminate() 只杀 soffice.exe，taskkill /T 才能回收派生的 soffice.bin。
+            try:
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=False,
+                )
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                process.kill()
+        else:
+            process.kill()
+        try:
+            process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+        raise
+    return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr)
+
+
+def sweep_stale_profiles(prefix: str, max_age_seconds: float = 3600) -> None:
+    """清掉被强杀的进程遗留的临时 profile；只碰本用户、超过一小时的目录，失败不报。"""
+    now = time.time()
+    uid = os.getuid() if os.name == "posix" else None
+    try:
+        root = Path(tempfile.gettempdir())
+        entries = list(root.glob(f"{prefix}*"))
+    except OSError:
+        return
+    for path in entries:
+        try:
+            st = path.lstat()
+            owned = uid is None or st.st_uid == uid
+            if (path.is_dir() and not path.is_symlink() and owned
+                    and now - st.st_mtime > max_age_seconds):
+                shutil.rmtree(path, ignore_errors=True)
+        except OSError:
+            continue
 
 
 def get_soffice_env() -> dict:

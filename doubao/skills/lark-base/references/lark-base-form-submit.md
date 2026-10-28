@@ -1,6 +1,6 @@
 # base +form-submit
 
-> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+> **前置条件：** 先阅读 [主 Skill「使用边界」](../SKILL.md#使用边界)，遵循本环境的身份与权限约束。
 
 通过表单分享链接填写并提交多维表格表单。仅支持分享模式（share_token），支持填写普通字段值和上传本地文件作为附件。
 
@@ -54,13 +54,6 @@ lark-cli base +form-submit \
   }' \
   --yes
 
-# 使用应用身份（bot）
-lark-cli base +form-submit \
-  --share-token <share_token> \
-  --json '{"fields":{...}}' \
-  --as bot \
-  --yes
-
 # 预览 API 调用（不实际执行，dry-run 无需 --yes）
 lark-cli base +form-submit \
   --share-token <share_token> \
@@ -78,7 +71,7 @@ lark-cli base +form-submit \
 | `--timezone <IANA>` | 否 | 填写人所在时区，如 `Asia/Shanghai`。**只有当表单里的日期题设了「相对日期」范围（今天 / 本周 / 本月）时才需要**，它决定这些边界算在哪一天。详见下方「什么时候要传 --timezone」 |
 | `--yes` | 是 | 确认高风险写操作。本命令为 high-risk-write，不带 `--yes` 会返回 `confirmation_required` |
 | `--format` | 否 | 输出格式：json（默认）\| pretty \| table \| ndjson \| csv |
-| `--as` | 否 | 身份：user（默认）\| bot |
+| `--as` | 否 | 本环境仅支持 user |
 | `--dry-run` | 否 | 预览 API 调用，不执行 |
 
 ### --json 结构说明
@@ -87,7 +80,7 @@ lark-cli base +form-submit \
 
 #### fields（普通字段）
 
-`fields` 中的单元格值写法与 [`lark-base-cell-value.md`](lark-base-cell-value.md) 完全对齐，填写前应先阅读该文档了解各类型的构造规则：
+`fields` 按 `+form-detail` 的题目类型和下方示例构造。文本、数字、日期、布尔、人员、关联和地理位置的值写法可复用 [Record CellValue](lark-base-cell-value.md) 对应类型的说明；Form 单选用字符串 `"选项A"`，多选用字符串数组 `["选项A","选项B"]`。附件使用下方独立的 `attachments` 协议。
 
 ```json
 {
@@ -196,4 +189,4 @@ lark-cli base +form-submit \
 ## 参考
 
 - [lark-base](../SKILL.md) — 多维表格全部命令
-- [lark-shared](../../lark-shared/SKILL.md) — 认证和全局参数
+- [主 Skill「使用边界」](../SKILL.md#使用边界) — 本环境身份与权限约束

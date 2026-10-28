@@ -79,13 +79,19 @@ def iter_range(addr: str) -> Optional[List[str]]:
     ]
 
 
+def checkpoint_file_path(raw: Optional[str]) -> Optional[str]:
+    """提取 @文件参数的路径；内联 JSON 或未传参数时返回 None。"""
+    text = raw.strip() if raw is not None else ""
+    return text[1:].strip().strip("\"'") if text.startswith("@") else None
+
+
 def load_checkpoints(raw: Optional[str]) -> Tuple[List[dict], Optional[str]]:
     """`@路径` 从文件读，其余按内联 JSON 解析。返回 (条目列表, 错误说明)。"""
     if raw is None:
         return [], None
     text = raw.strip()
-    if text.startswith("@"):
-        path = text[1:].strip().strip("\"'")
+    path = checkpoint_file_path(raw)
+    if path is not None:
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 text = fh.read()

@@ -488,8 +488,9 @@ ws['E8'].font = black_bold
 
 ```python
 # ── 三张表勾稽验证（生成后必跑）──
-# 取值走副本：对产物本身跑 --in-place 会被 LibreOffice 重写，负数括号与年份列等宽都会被改坏
-#   cp model.xlsx .recalc.xlsx && python3 scripts/excel_formula_verify.py .recalc.xlsx --in-place
+# 取值走重算副本：--recalc-output 把重算后的副本另存出来，产物本身不被 LibreOffice 重写；
+# JSON 里 recalc_output 为空表示这次没算成，不要读
+#   python3 scripts/excel_formula_verify.py model.xlsx 60 --recalc-output .recalc.xlsx
 from openpyxl import load_workbook
 wb = load_workbook('.recalc.xlsx', data_only=True)      # 读重算后的副本，产物全程不动
 bs, cfs = wb['Balance Sheet'], wb['Cash Flow Statement']
@@ -528,4 +529,4 @@ Sensitivity 额外检查：
 - **飞书表格**：写值/公式按 `references/lark-sheets-write-cells.md`；样式、合并、列宽行高、冻结的任意组合**一次** `references/lark-sheets-styles-put.md` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `references/lark-sheets-batch-update.md`；跨 sheet 公式按 `references/lark-sheets-formula-translation.md` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
 - 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后先按 `references/lark-sheets-workbook.md` 检查 `data.extra` 并处理不支持元素，再做必要的链接/预览处理。
 
-===== 全文完（共 531 行）=====
+===== 全文完（共 532 行）=====

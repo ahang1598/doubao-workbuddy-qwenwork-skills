@@ -15,7 +15,7 @@ description: 创建、查看、更新或删除定时任务，包括一次性提�
 
 | 工具名 | 用途 | 关键参数 |
 |---|---|---|
-| `create_cron_job` | 创建定时任务 | `title`、`query`、`schedule`、`schedule_type`(cron/at/rrule)、`enable`、`deadline`(可选) |
+| `create_cron_job` | 创建定时任务 | `title`、`query`、`schedule`、`schedule_type`(cron/at/rrule)、`enable`、`runtime_type`、`deadline`(可选) |
 | `update_cron_job` | 更新已存在的定时任务 | `cron_job_id`、`patch`(可改 title/query/schedule/schedule_type/enable/deadline) |
 | `delete_cron_job` | 删除定时任务 | `cron_job_id` |
 | `get_cron_job` | 查询单个任务详情 | `cron_job_id` |
@@ -32,6 +32,10 @@ description: 创建、查看、更新或删除定时任务，包括一次性提�
   `query` 时，使用 `get_cron_job`。
 - `get_cron_job` 在任务详情后单独返回完整的原始 `query`。只更新时间、标题或启用状态时
   仍应省略 `patch.query`，由服务端保留原值。
+
+## 执行环境选择
+
+创建任务时必须传 `runtime_type`：默认使用 `1`（云端）；仅当用户明确指定本地电脑，或任务必须依赖本地电脑的文件、路径、应用、设备等资源时使用 `2`（本地）。不要因为当前对话处于本地模式而选择本地；云端可访问的网页、文档或可配置登录态不属于本地依赖。
 
 ## 锚定时间
 当下游动作需要绑定到\"现在\"这个绝对时间锚点，或当用户使用「现在、今天、明天、今晚、本周、本月、最近、N 天后、几分钟后」等相对时间表述时，必须先调用`get_current_time`拿到用户时区下的实时时间，再做后续决策——典型场景：
@@ -181,6 +185,7 @@ description: 创建、查看、更新或删除定时任务，包括一次性提�
 | `schedule_type` | 一次性任务用 `at`；简单周期任务用 `cron`；复杂日历周期、带次数或结束时间的周期任务用 `rrule` |
 | `schedule` | 必须匹配 `schedule_type` |
 | `enable` | 用户未要求暂停时必须为 `true` |
+| `runtime_type` | `1` 为云端，`2` 为本地；按“执行环境选择”判断 |
 | `deadline` | 按上方“deadline 使用规则”填写 |
 
 

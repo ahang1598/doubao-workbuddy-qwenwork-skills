@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import itertools
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -7559,6 +7560,397 @@ class MultiSlideReportTest(unittest.TestCase):
 
         codes = [issue["code"] for issue in xml_lint.lint_xml(xml)["issues"]]
         self.assertIn("duplicate_element_id", codes)
+
+
+class TransitionTestCase(SxsdSyntaxTestCase):
+    NS = 'xmlns="https://www.larkoffice.com/sml/2.0"'
+    SHAPE = (
+        '<shape id="a" type="text" topLeftX="80" topLeftY="80" width="700" height="60" '
+        'rotation="0"><content fontSize="20"><p>标题</p></content></shape>'
+    )
+
+    def deck(self, slide_body: str) -> str:
+        return f'<presentation {self.NS} width="960" height="540"><slide>{slide_body}</slide></presentation>'
+
+    def slide_with(self, animation: str) -> str:
+        return self.deck(f"<data>{self.SHAPE}</data>{animation}")
+
+    def transition(self, attributes: str) -> str:
+        return self.slide_with(f"<animation><transition {attributes}/></animation>")
+
+    def assert_clean(self, xml: str) -> None:
+        issues = self.validate(xml)
+        self.assertEqual(
+            [f"{issue['code']} {issue['message']}" for issue in issues],
+            [],
+        )
+
+
+class TransitionTest(TransitionTestCase):
+    """slide/animation/transition 的结构与单属性约束，全部由 schema 兜住。
+
+    20 种切换加 none 每种都要有合法用例：这张枚举表是模型写 transition 的唯一来源，
+    schema 里漏掉一个值的表现是「该切换写了就报错」，模型只会看到一条 lint 报错、
+    无从判断是自己写错还是 lint 写窄了，比漏报难查得多。
+    """
+
+    def test_schema_enum_matches_semantic_table(self) -> None:
+        """schema 的 TransitionEffectType 与语义表的 type 集合必须完全相等。
+
+        两边各自漏一个值的后果不同：schema 漏了是合法切换被误杀，语义表漏了是该切换
+        的参数完全不校验。互相钉住，谁先改都会在这里失败。
+        """
+        schema_root = ET.parse(xml_lint.SXSD_SCHEMA_PATH).getroot()
+        effect_type = next(
+            simple_type
+            for simple_type in schema_root.iter("{http://www.w3.org/2001/XMLSchema}simpleType")
+            if simple_type.attrib.get("name") == "TransitionEffectType"
+        )
+        schema_effects = [
+            enumeration.attrib["value"]
+            for enumeration in effect_type.iter("{http://www.w3.org/2001/XMLSchema}enumeration")
+        ]
+
+        self.assertEqual(len(schema_effects), 21)
+        self.assertEqual(sorted(schema_effects), sorted(xml_lint.TRANSITION_PARAM_RULES))
+
+    def test_every_transition_type_is_accepted(self) -> None:
+        """21 种 type 各一条合法用例，确认 schema 放行。"""
+        for effect in xml_lint.TRANSITION_PARAM_RULES:
+            with self.subTest(type=effect):
+                self.assert_clean(self.transition(f'type="{effect}"'))
+
+    def test_absent_and_empty_animation_are_legal(self) -> None:
+        """省略与空容器都表示「不覆盖页面切换」，是合法写法，不是漏写。"""
+        self.assert_clean(self.slide_with(""))
+        self.assert_clean(self.slide_with("<animation/>"))
+        self.assert_clean(self.slide_with("<animation>\n\n  </animation>"))
+
+    def test_animation_follows_note(self) -> None:
+        """animation 排在 style → data → note 之后。"""
+        self.assert_clean(
+            self.deck(
+                f"<style/><data>{self.SHAPE}</data><note><content><p>讲稿</p></content></note>"
+                '<animation><transition type="fade"/></animation>'
+            )
+        )
+
+    def test_duplicate_animation_is_rejected(self) -> None:
+        issues = self.validate(self.slide_with('<animation/><animation><transition type="fade"/></animation>'))
+
+        self.assert_issue(issues, "sxsd_too_many_children")
+
+    def test_duplicate_transition_is_rejected(self) -> None:
+        issues = self.validate(
+            self.slide_with('<animation><transition type="fade"/><transition type="push"/></animation>')
+        )
+
+        self.assert_issue(issues, "sxsd_too_many_children")
+
+    def test_nested_animation_container_is_rejected(self) -> None:
+        issues = self.validate(self.slide_with("<animation><animation/></animation>"))
+
+        self.assert_issue(issues, "sxsd_unexpected_child")
+
+    def test_timeline_is_not_supported(self) -> None:
+        """本期只做页面切换，不含元素动画的 timeline。"""
+        issues = self.validate(self.slide_with("<animation><timeline/></animation>"))
+
+        self.assert_issue(issues, "sxsd_unsupported_tag")
+
+    def test_unknown_animation_child_is_rejected(self) -> None:
+        issues = self.validate(self.slide_with("<animation><unknown/></animation>"))
+
+        self.assert_issue(issues, "sxsd_unsupported_tag")
+
+    def test_unknown_animation_attribute_is_rejected(self) -> None:
+        issues = self.validate(self.slide_with('<animation enabled="true"><transition type="fade"/></animation>'))
+
+        self.assert_issue(issues, "sxsd_unsupported_attr", attr="enabled")
+
+    def test_animation_before_data_is_rejected(self) -> None:
+        issues = self.validate(self.deck(f'<animation><transition type="fade"/></animation><data>{self.SHAPE}</data>'))
+
+        self.assert_issue(issues, "sxsd_invalid_child_order")
+
+    def test_transition_directly_under_slide_is_rejected(self) -> None:
+        """旧的 slide/transition 直挂路径不再接受，唯一位置是 slide/animation/transition。"""
+        issues = self.validate(self.slide_with('<transition type="fade"/>'))
+
+        self.assert_issue(issues, "sxsd_unexpected_child")
+
+    def test_mixed_transition_paths_are_rejected(self) -> None:
+        issues = self.validate(
+            self.slide_with('<transition type="fade"/><animation><transition type="push"/></animation>')
+        )
+
+        self.assert_issue(issues, "sxsd_unexpected_child")
+
+    def test_missing_type_is_rejected(self) -> None:
+        """空 transition 非法：type 必填，缺 type 不等于继承。"""
+        issues = self.validate(self.slide_with("<animation><transition/></animation>"))
+
+        self.assert_issue(issues, "sxsd_missing_required_attr", attr="type")
+
+    def test_empty_type_is_rejected(self) -> None:
+        issues = self.validate(self.transition('type=""'))
+
+        self.assert_issue(issues, "sxsd_invalid_enum", attr="type")
+
+    def test_unknown_type_is_rejected(self) -> None:
+        issues = self.validate(self.transition('type="fadey" durationMs="1000"'))
+
+        self.assert_issue(issues, "sxsd_invalid_enum", attr="type")
+
+    def test_unknown_transition_attribute_is_rejected(self) -> None:
+        issues = self.validate(self.transition('type="fade" unknown="true"'))
+
+        self.assert_issue(issues, "sxsd_unsupported_attr", attr="unknown")
+
+    def test_legacy_inherit_mode_is_rejected(self) -> None:
+        """协议不提供 inheritMode；继承由「不写 animation」表达。"""
+        for attributes in ('inheritMode="always" type="fade"', 'inheritMode="effect" type="fade"'):
+            with self.subTest(attributes=attributes):
+                issues = self.validate(self.transition(attributes))
+
+                self.assert_issue(issues, "sxsd_unsupported_attr", attr="inheritMode")
+
+    def test_legacy_inherit_mode_without_type_is_rejected(self) -> None:
+        for attributes in ('inheritMode="inherit"', 'inheritMode="none"'):
+            with self.subTest(attributes=attributes):
+                issues = self.validate(self.transition(attributes))
+
+                self.assert_issue(issues, "sxsd_unsupported_attr", attr="inheritMode")
+                self.assert_issue(issues, "sxsd_missing_required_attr", attr="type")
+
+    def test_transition_child_is_rejected(self) -> None:
+        issues = self.validate(
+            self.slide_with('<animation><transition type="fade"><unknown/></transition></animation>')
+        )
+
+        self.assert_issue(issues, "sxsd_unsupported_tag")
+
+    def test_duration_bounds(self) -> None:
+        for duration in ("0", "86399999"):
+            with self.subTest(durationMs=duration):
+                self.assert_clean(self.transition(f'type="fade" durationMs="{duration}"'))
+        for duration in ("-1", "86400000"):
+            with self.subTest(durationMs=duration):
+                issues = self.validate(self.transition(f'type="fade" durationMs="{duration}"'))
+
+                self.assert_issue(issues, "sxsd_value_out_of_range", attr="durationMs")
+
+
+class TransitionSemanticsTest(TransitionTestCase):
+    """type 与效果参数的匹配关系——schema 表达不了，是本次唯一的新检查代码。
+
+    direction 在 schema 里是 12 个取值的并集，每种切换只认其中一个子集，所以
+    <transition type="split" direction="horizontal"/> 能过 schema 却是错的。服务端遇到它，
+    改写路径整单拒绝（整页改动一起丢）、新建路径丢掉切换，所以必须在这里拦住。
+
+    表驱动的检查最容易漏行，因此 TRANSITION_PARAM_RULES 的每一行都要有「参数不适用」、
+    「取值越界」和「缺省值合法」三类用例——最后一类防的是把合法写法误杀，比漏报难查。
+    """
+
+    QUICK_REF_PATH = Path(__file__).resolve().parent.parent / "references" / "xml" / "xml-schema-quick-ref.md"
+
+    def parse_quick_ref_table(self) -> dict[str, dict[str, tuple[tuple[str, ...], str]]]:
+        text = self.QUICK_REF_PATH.read_text(encoding="utf-8")
+        section = text.split("## animation 页面切换", 1)[1].split("\n## ", 1)[0]
+        lines = section.splitlines()
+        header_index = next(index for index, line in enumerate(lines) if line.startswith("| 切换类型 |"))
+        table: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {}
+        for line in lines[header_index + 2 :]:
+            if not line.startswith("|"):
+                break
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            effects = re.findall(r"`([^`]+)`", cells[0])
+            params = re.findall(r"`([^`]+)`", cells[1])
+            values = tuple(re.findall(r"`([^`]+)`", cells[2]))
+            defaults = re.findall(r"`([^`]+)`", cells[3])
+            for effect in effects:
+                rules = table.setdefault(effect, {})
+                for param in params:
+                    rules[param] = (values, defaults[0])
+        return table
+
+    def test_quick_ref_table_matches_constant_table(self) -> None:
+        """quick-ref 教模型写的东西不能被自己的 lint 拒掉。
+
+        quick-ref 只列生成时选用的四种效果及 none，lint 保留全量类型以兼容已有文稿。
+        quick-ref 中每种效果的参数仍必须与 lint 一致。
+
+        这份脚本连同单测会被整体同步到 ccm-platform/lark_cli_lint 去跑服务端 lint，那边
+        只同步 scripts/ 与 references/xml/ 下运行期依赖的两个文件，不带 quick-ref，所以
+        文档不在时跳过而不是报错——断言留在持有该文档的上游仓库生效就够了。
+        """
+        if not self.QUICK_REF_PATH.exists():
+            self.skipTest(f"quick-ref not synced into this checkout: {self.QUICK_REF_PATH}")
+        quick_ref_table = self.parse_quick_ref_table()
+        self.assertEqual(set(quick_ref_table), {"fade", "cover", "pull", "push", "none"})
+        for effect, rules in quick_ref_table.items():
+            with self.subTest(type=effect):
+                self.assertEqual(rules, xml_lint.TRANSITION_PARAM_RULES[effect])
+
+    def test_default_value_combination_is_legal_for_every_row(self) -> None:
+        """每行的缺省值组合都要放行——表写窄了会把合法写法误杀。"""
+        for effect, rules in xml_lint.TRANSITION_PARAM_RULES.items():
+            attributes = " ".join(f'{param}="{default}"' for param, (_values, default) in rules.items())
+            with self.subTest(type=effect, attributes=attributes):
+                self.assert_clean(self.transition(f'type="{effect}" {attributes}'.strip()))
+
+    def test_every_allowed_value_is_legal(self) -> None:
+        """子集里的每个取值都要放行，而不只是缺省值。"""
+        for effect, rules in xml_lint.TRANSITION_PARAM_RULES.items():
+            for param, (values, _default) in rules.items():
+                for value in values:
+                    with self.subTest(type=effect, param=param, value=value):
+                        self.assert_clean(self.transition(f'type="{effect}" {param}="{value}"'))
+
+    def test_duration_is_accepted_by_every_type_but_none(self) -> None:
+        for effect in xml_lint.TRANSITION_PARAM_RULES:
+            with self.subTest(type=effect):
+                xml = self.transition(f'type="{effect}" durationMs="600"')
+                if effect == "none":
+                    issues = self.validate(xml)
+                    issue = self.assert_issue(issues, "transition_param_not_applicable", attr="durationMs")
+                    self.assertEqual(issue["level"], "error")
+                else:
+                    self.assert_clean(xml)
+
+    def test_inapplicable_param_is_reported_for_every_row(self) -> None:
+        """每种 type 都试一遍它不接受的参数。"""
+        for effect, rules in xml_lint.TRANSITION_PARAM_RULES.items():
+            for param in xml_lint.TRANSITION_EFFECT_PARAMS:
+                if param in rules:
+                    continue
+                value = "true" if param in xml_lint.TRANSITION_BOOLEAN_PARAMS else "horizontal"
+                if param == "style":
+                    value = "smoothly"
+                elif param == "morphMode":
+                    value = "by-object"
+                with self.subTest(type=effect, param=param):
+                    issues = self.validate(self.transition(f'type="{effect}" {param}="{value}"'))
+
+                    issue = self.assert_issue(issues, "transition_param_not_applicable", attr=param)
+                    self.assertEqual(issue["level"], "error")
+                    self.assertEqual(issue["transition_type"], effect)
+
+    def test_inapplicable_param_hint_lists_accepted_params(self) -> None:
+        issues = self.validate(self.transition('type="fade" direction="from-top"'))
+        issue = self.assert_issue(issues, "transition_param_not_applicable", attr="direction")
+
+        self.assertEqual(issue["allowed"], ["durationMs", "style"])
+        self.assertIn("durationMs, style", issue["hint"])
+
+    def test_none_rejects_every_effect_param(self) -> None:
+        """type="none" 是显式关闭，durationMs 和全部效果参数都不接受。"""
+        issue = self.assert_issue(
+            self.validate(self.transition('type="none" durationMs="0"')),
+            "transition_param_not_applicable",
+            attr="durationMs",
+        )
+        self.assertEqual(issue["allowed"], [])
+        self.assertIn("accepts no other attribute", issue["hint"])
+
+        self.assert_issue(
+            self.validate(self.transition('type="none" direction="from-top"')),
+            "transition_param_not_applicable",
+            attr="direction",
+        )
+
+    def test_random_rejects_every_effect_param(self) -> None:
+        for param, value in (("direction", "from-top"), ("style", "smoothly"), ("morphMode", "by-object")):
+            with self.subTest(param=param):
+                self.assert_issue(
+                    self.validate(self.transition(f'type="random" {param}="{value}"')),
+                    "transition_param_not_applicable",
+                    attr=param,
+                )
+
+    def test_random_still_accepts_duration(self) -> None:
+        self.assert_clean(self.transition('type="random" durationMs="600"'))
+
+    def test_out_of_subset_value_is_reported_for_every_row(self) -> None:
+        """取值落在 schema 的并集里、却不在该 type 的子集里——schema 放行，必须由这里抓。"""
+        for effect, rules in xml_lint.TRANSITION_PARAM_RULES.items():
+            for param, (values, _default) in rules.items():
+                outsiders = [value for value in xml_lint.transition_param_union(param) if value not in values]
+                if not outsiders:
+                    continue
+                with self.subTest(type=effect, param=param, value=outsiders[0]):
+                    issues = self.validate(self.transition(f'type="{effect}" {param}="{outsiders[0]}"'))
+
+                    issue = self.assert_issue(issues, "transition_param_value_not_applicable", attr=param)
+                    self.assertEqual(issue["level"], "error")
+                    self.assertEqual(issue["transition_type"], effect)
+                    self.assertEqual(issue["allowed"], list(values))
+
+    def test_out_of_subset_message_lists_allowed_values(self) -> None:
+        """报错必须列出该 type 实际允许的取值，模型才能一次改对。"""
+        issues = self.validate(self.transition('type="push" direction="from-top-left"'))
+        issue = self.assert_issue(issues, "transition_param_value_not_applicable", attr="direction")
+
+        self.assertIn("from-bottom, from-top, from-left, from-right", issue["message"])
+        self.assertIn("from-bottom, from-top, from-left, from-right", issue["hint"])
+
+    def test_gallery_rejects_vertical_directions(self) -> None:
+        issues = self.validate(self.transition('type="gallery" direction="from-top"'))
+
+        self.assert_issue(issues, "transition_param_value_not_applicable", attr="direction")
+
+    def test_split_direction_rejects_its_own_orientation_values(self) -> None:
+        """split 的 horizontal 属于 orientation，写进 direction 是最容易犯的错。"""
+        issues = self.validate(self.transition('type="split" direction="horizontal"'))
+
+        self.assert_issue(issues, "transition_param_value_not_applicable", attr="direction")
+        self.assert_clean(self.transition('type="split" orientation="horizontal" direction="out"'))
+
+    def test_boolean_literals_are_accepted_for_curl_flips(self) -> None:
+        """invX/invY 是 xs:boolean，1/0 与 true/false 等价，不能因为写了 1 就判错。"""
+        for value in ("true", "false", "1", "0"):
+            with self.subTest(invX=value):
+                self.assert_clean(self.transition(f'type="page-curl-single" invX="{value}"'))
+
+    def test_value_outside_schema_enum_is_left_to_the_schema_layer(self) -> None:
+        """取值连并集都不在时只报 sxsd_invalid_enum，不叠第二条。"""
+        issues = self.validate(self.transition('type="push" direction="sideways"'))
+
+        self.assert_issue(issues, "sxsd_invalid_enum", attr="direction")
+        self.assert_no_issue(issues, "transition_param_value_not_applicable")
+
+    def test_unknown_type_skips_semantic_check(self) -> None:
+        """type 不在枚举内时没有可比对的子集，只报 schema 的那一条。"""
+        issues = self.validate(self.transition('type="fadey" direction="from-top"'))
+
+        self.assert_issue(issues, "sxsd_invalid_enum", attr="type")
+        self.assert_no_issue(issues, "transition_param_not_applicable")
+        self.assert_no_issue(issues, "transition_param_value_not_applicable")
+
+    def test_semantic_check_reports_the_offending_slide(self) -> None:
+        """多页文档要指出是哪一页，否则模型无从定位。"""
+        clean = f"<slide><data>{self.SHAPE}</data></slide>"
+        broken = (
+            f"<slide><data>{self.SHAPE}</data>"
+            '<animation><transition type="gallery" direction="from-top"/></animation></slide>'
+        )
+        xml = f'<presentation {self.NS} width="960" height="540">{clean}{clean}{broken}</presentation>'
+
+        issue = self.assert_issue(
+            self.validate(xml),
+            "transition_param_value_not_applicable",
+            path="slide[3]/animation/transition",
+        )
+        self.assertEqual(issue["target"]["xml_path"], "slide[3]/animation/transition")
+
+    def test_bare_slide_fragment_is_checked(self) -> None:
+        """safe_update_slide 写的是单页片段，语义检查同样要生效。"""
+        xml = (
+            f"<slide {self.NS}><data>{self.SHAPE}</data>"
+            '<animation><transition type="split" direction="horizontal"/></animation></slide>'
+        )
+
+        self.assert_issue(self.validate(xml), "transition_param_value_not_applicable", attr="direction")
 
 
 if __name__ == "__main__":

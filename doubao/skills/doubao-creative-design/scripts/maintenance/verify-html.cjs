@@ -75,6 +75,14 @@ async function inspectPage(page, a) {
       if(css.transform!=='none'||!['1','normal'].includes(css.zoom)) err('CANVAS_TRANSFORM',label(e));
       if(['hidden','clip'].includes(css.overflowX)||['hidden','clip'].includes(css.overflowY)||css.clipPath!=='none'||css.clip!=='auto'||/\b(paint|strict|content)\b/.test(css.contain))err('CANVAS_ROOT_CLIPPING',label(e));
     }
+    const styleBlocks=[...document.querySelectorAll('style')];
+    const webFontBlocks=styleBlocks.filter(e=>e.hasAttribute('data-web-fonts'));
+    if(styleBlocks.some(e=>!e.hasAttribute('data-web-fonts'))||document.querySelector('link[rel~="stylesheet"]')) err('STYLESHEET','Use inline style only, except the single controlled data-web-fonts block');
+    if(webFontBlocks.length>1) err('WEB_FONT_STYLE_BLOCK_INVALID','Only one data-web-fonts block is allowed');
+    for(const block of webFontBlocks) {
+      const rules=[...(block.sheet?.cssRules||[])];
+      if(block.parentElement!==document.head||block.attributes.length!==1||!rules.length||rules.some(rule=>rule.type!==CSSRule.FONT_FACE_RULE)) err('WEB_FONT_STYLE_BLOCK_INVALID','data-web-fonts must be the only attribute, live in head, and contain only @font-face rules');
+    }
     for(const e of all) {
       const s=e.getAttribute('style')||'';
       if(/(?:backdrop-filter|filter|mix-blend-mode)/i.test(s)) {const cs=getComputedStyle(e);surfaces.push({element:label(e),filter:cs.filter,backdrop_filter:cs.backdropFilter,mix_blend_mode:cs.mixBlendMode,opacity:cs.opacity});}
@@ -104,7 +112,40 @@ async function inspectPage(page, a) {
       im.onload=()=>done(true);im.onerror=()=>done(false);im.src=url;
     })));
     const origin=root?.getBoundingClientRect();
+    let safeBounds=null;
     if(root) {
+      const safeNodes=[...root.querySelectorAll('[data-canvas-bottom-safe-area]')];
+      const failSafe=detail=>err('HTML_BOTTOM_SAFE_AREA_MISSING',detail);
+      if(safeNodes.length!==1) failSafe('Exactly one bottom safe area required');
+      else {
+        const safe=safeNodes[0],s=getComputedStyle(safe),r=safe.getBoundingClientRect();
+        safeBounds=r;
+        const declared=safe.getAttribute('data-canvas-bottom-safe-area');
+        const minimum=Math.max(24,Math.ceil(width*0.04));
+        const inlineHeight=Math.max(number(safe.style.height)||0,number(safe.style.minHeight)||0);
+        if(!/^[1-9]\d*$/.test(declared)||Number(declared)<minimum||inlineHeight<Number(declared)||r.height<Number(declared)-tol)
+          failSafe('Safe area must declare and occupy sufficient pixel height');
+        if(safe.parentElement!==root||['absolute','fixed'].includes(s.position)||s.float!=='none'||s.transform!=='none'||s.display==='none'||s.visibility!=='visible'||number(s.opacity)===0||safe.textContent.trim())
+          failSafe('Safe area must be an empty visible normal-flow child of the canvas');
+        if(!near(r.bottom,origin.bottom)||r.top<origin.top-tol||!near(r.width,width))failSafe('Safe area must fill the canvas bottom at full width');
+        for(const e of root.querySelectorAll('*')) {
+          if(e===safe)continue;
+          const css=getComputedStyle(e),b=e.getBoundingClientRect();
+          if(css.display==='none'||css.visibility==='hidden'||!b.width||!b.height)continue;
+          if(safe.compareDocumentPosition(e)&Node.DOCUMENT_POSITION_FOLLOWING)failSafe(`Rendered element follows safe area: ${label(e)}`);
+          if(e.closest('[aria-hidden="true"][data-design-role="decoration"]')&&!e.textContent.trim())continue;
+          const content=e.matches('img,svg,video,canvas,iframe,object,embed,input,textarea,select,button');
+          if(content) {
+            let visible={left:b.left,right:b.right,top:b.top,bottom:b.bottom};
+            for(let p=e.parentElement;p&&root.contains(p);p=p.parentElement) {
+              const ps=getComputedStyle(p),pr=p.getBoundingClientRect();
+              if(['hidden','clip','scroll','auto'].includes(ps.overflowX)){visible.left=Math.max(visible.left,pr.left);visible.right=Math.min(visible.right,pr.right);}
+              if(['hidden','clip','scroll','auto'].includes(ps.overflowY)){visible.top=Math.max(visible.top,pr.top);visible.bottom=Math.min(visible.bottom,pr.bottom);}
+            }
+            if(visible.right>visible.left&&visible.bottom>visible.top&&visible.bottom>r.top+tol&&visible.top<r.bottom-tol&&visible.right>r.left+tol&&visible.left<r.right-tol)failSafe(`Semantic content enters safe area: ${label(e)}`);
+          }
+        }
+      }
       for(const e of root.querySelectorAll('img,svg,section,article,div,[data-layer-id]')) {
         const r=e.getBoundingClientRect(),s=getComputedStyle(e);
         if(s.display==='none'||s.visibility==='hidden'||!r.width||!r.height)continue;
@@ -143,6 +184,9 @@ async function inspectPage(page, a) {
         const range=document.createRange();range.selectNodeContents(n);
         for(const r of range.getClientRects()) {
           if(r.width===0||r.height===0)continue;
+          if(safeBounds && r.bottom>safeBounds.top+tol && r.top<safeBounds.bottom-tol && r.right>safeBounds.left+tol && r.left<safeBounds.right-tol) {
+            err('TEXT_IN_BOTTOM_SAFE_AREA',{element:label(e),text:n.textContent.trim(),line_box:box(r),safe_box:box(safeBounds)});
+          }
           if(r.left<origin.left-tol||r.right>origin.right+tol||r.top<origin.top-tol||r.bottom>origin.bottom+tol)issue('TEXT_OUTSIDE_CANVAS',e);
           for(let p=e;p&&root.contains(p);p=p.parentElement) {
             const s=getComputedStyle(p),b=p.getBoundingClientRect();
@@ -200,7 +244,9 @@ async function inspectPage(page, a) {
         expectedY=actual.y+actual.height;
         sections.push({section_id:sectionId,box:actual});
       }
-      if(sectionNodes.length&&expectedY>height+tol)err('LONG_PAGE_SECTION_SUM',`${expectedY} > ${height}`);
+      const safe=root.querySelector('[data-canvas-bottom-safe-area]');
+      const contentHeight=safe?safe.getBoundingClientRect().top-origin.top:height;
+      if(sectionNodes.length&&!near(expectedY,contentHeight))err('LONG_PAGE_SECTION_SUM',`${expectedY} != ${contentHeight} (content before safe area)`);
       if(longPage&&sectionNodes.length) {
         const belongs=e=>sectionNodes.some(section=>section===e||section.contains(e));
         const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
@@ -213,7 +259,7 @@ async function inspectPage(page, a) {
         }
       }
     }
-    return {errors,warnings,canvas:{width,height,box:origin?box(origin):null},elements,sections,images,surfaces};
+    return {errors,warnings,bottom_safe_area:safeBounds?box(safeBounds):null,canvas:{width,height,box:origin?box(origin):null},elements,sections,images,surfaces};
   },{rootSelector:a.root,tol:a.tolerance,longPage:a.longPage,allowInteraction:a.allowInteraction,timeout:a.timeout});
 }
 

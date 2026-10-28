@@ -1,12 +1,10 @@
 # AI + Coding 再编辑
 
-> 先按主 SKILL 判断交付环境。system 明示 `Device platfrom: Mobile` 时遵循 [Mobile 直接交付](../mobile-app-direct-delivery.md)：Brief／素材记录留在本地，跳过本文全部 Workspace、Canvas CLI、Item 与卡片步骤，媒体逐项直接交付、HTML 预览走 CDN＋Markdown。其他环境执行本文默认 Canvas 分支。生产与编辑顺序不变。
+> 先按主 SKILL 判断交付环境。system 上下文明确标记为移动端交付时遵循 [Mobile 直接交付](../mobile-app-direct-delivery.md)：Brief／素材记录留在本地，跳过本文全部 Workspace、Canvas CLI、Item 与卡片步骤，媒体逐项直接交付、HTML 预览走 CDN＋Markdown。其他环境执行本文默认 Canvas 分支。生产与编辑顺序不变。
 
 用于已有顶层 HTML Item 的授权修改需要重新生成、编辑、抠图或替换图片资产，同时由 HTML/CSS 保持准确文字和可编辑结构的任务。
 
 ## 1. 建立编辑基线
-
-本次修改涉及换图、图片裁切／蒙版／混合、透明状态、落底背景或遮挡关系变化时，必须读取 [图片处理与采用版本](../image-asset-treatment.md)，只重查受影响使用位置及采用版本。已读且规则未变化时复用规范；纯改字且不影响图片关系时不触发，也不扩大编辑范围。
 
 先按 [HTML 画布编辑策略](../canvas-editing-strategy.md) 回读目标 HTML Item并取得完整源文件。用 DOM `id`／`data-layer-id`、资产 URL 与语义职责共同锁定唯一目标；选中图片只是目标线索，完整 HTML 才是回写基线。
 
@@ -23,19 +21,19 @@
 
 1. 仅摆放或裁切已有图时优先复用原资产；需要改场景、姿态、构图或身份相关内容时，按授权使用正确的图像编辑输入，不靠文字重绘核心商品、人物或 Logo。
 2. 独立叠加主体按用途判断是否需要抠图；完整矩形背景不做无意义抠图。独立艺术标题与新建流程统一按最终消费者选择接入方式：只用于已知、稳定的 HTML 背景时可保留纯色底并使用 CSS 混合模式；需要透明导出、跨背景复用、背景未知或严格保色时使用抠图透明 PNG。不得把艺术字接入方式机械套给独立主体。
-3. 每次 `image_gen`／`image_edit` 调用按 [交付门禁](../image-generation-delivery-gate.md) 透传 Workspace ID，成功后由主 Agent 使用 `RichMediaCard` 逐项直接交付，不重复创建或上传图片；其他媒体工具按各自协议交付。文字错误或身份漂移按原停止规则处理，未准出素材不得进入 HTML。
+3. 每个媒体工具结果执行既有写入／回读与 `RichMediaCard` 双通道门禁；文字错误或身份漂移按原停止规则处理，未准出素材不得进入 HTML。
 4. 在资产清单中记录源、输出、尺寸、裁切、Alpha、版本、Prompt、身份检查和所有 DOM 消费者。
 
 ### 艺术字接入与回贴门禁
 
-艺术字生成源图调用 `image_gen`／`image_edit` 时必须透传 Workspace ID，并由主 Agent 通过 `RichMediaCard` 直接交付。调用前按最终消费者选择 `blend` 或 `alpha-cutout`；若选择抠图，抠图结果按其产出工具的适用门禁交付。两条路径都逐字核对源文字，并检查字面、笔画粘连、裁边和默认显示尺寸可读性。
+艺术字生成源图必须执行 `design-cli` 写入／`+get` 回读与主 Agent `RichMediaCard` 交付。调用前按最终消费者选择 `blend` 或 `alpha-cutout`；若选择抠图，抠图结果作为新的媒体结果继续完成双通道闭环。两条路径都逐字核对源文字，并检查字面、笔画粘连、裁边和默认显示尺寸可读性。
 
-回贴时使用所选路径最终准出的 HTTP(S) 短链替换完整 HTML 中唯一目标艺术字图片节点，保留原 DOM `id`／`data-layer-id`、所属容器、层级、未授权样式及相邻内容；只按用户授权调整尺寸、位置或其他属性。`blend` 路线中深色字体节点使用纯白底＋`mix-blend-mode: multiply`，浅色字体节点使用纯黑底＋`mix-blend-mode: screen`，且混合模式不得设置在父容器、兄弟节点或整页根节点；`alpha-cutout` 路线使用真实透明 PNG，不附加混合模式。禁止 Base64、本地路径或预览地址。完成回贴后必须在完整画面实际背景上复查字色、融合／透明边缘、对比度和相邻图层。
+回贴时使用所选路径最终准出的 HTTP(S) 短链替换完整 HTML 中唯一目标艺术字图片节点，保留原 DOM `id`／`data-layer-id`、所属容器、层级、未授权样式及相邻内容；只按用户授权调整尺寸、位置或其他属性。`blend` 路线中深色字体节点使用纯白底＋行内 `mix-blend-mode: multiply`，浅色字体节点使用纯黑底＋行内 `mix-blend-mode: screen`，且混合模式不得设置在父容器、兄弟节点或整页根节点；`alpha-cutout` 路线使用真实透明 PNG，不附加混合模式。禁止 Base64、本地路径或预览地址。完成回贴后必须在完整画面实际背景上复查字色、融合／透明边缘、对比度和相邻图层。
 
 ## 4. 完整 HTML 新版本
 
 将准出素材和受影响 HTML 重新组装进完整 HTML，保留未授权 DOM、文字、素材、尺寸和关系。所有 CSS 展开到元素行内 `style`，SVG 资源在正式文档中内嵌；不得只替换截图、提交局部片段或将页面改成 Frame。
 
-按 [HTML 检查](../html-validation.md) 对完整文档执行源码、`shot.py`、视觉与参考对照检查；将同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示（截图仅按上述预览方式展示，不创建 IMAGE Item）。随后 `FileBatchUpload` 上传新 `.html`，`design-cli design-workspace +create` 创建新的顶层 HTML Item；创建 XML 的 `<source_ids>` 记录经 `+get` 核验的旧 HTML Item ID，再 `+get` 回读新对象，按 [画布资产语义目录工作流](../canvas-asset-organization.md#3-产物完成后的强制目录整理) 完成本轮对象归档与回读，最后将同一 Workspace ID 与刚回读的 HTML Item ID 拼成 `<workspace_id>?item_id=<item_id>` 单值交给 `present_files` 输出对应卡片。内容修改永远不使用 `+update`；旧、新 Item ID 与派生关系必须保留。
+按 [HTML 检查](../html-validation.md) 对完整文档执行源码、`shot.py`、视觉与参考对照检查；将同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示（截图不调用 present_files、不创建 IMAGE Item）。随后 `FileBatchUpload` 上传新 `.html`，`design-cli design-workspace +create` 创建新的顶层 HTML Item；创建 XML 的 `<source_ids>` 记录经 `+get` 核验的旧 HTML Item ID，再 `+get` 回读新对象，最后将同一 Workspace ID 与刚回读的 HTML Item ID 拼成 `<workspace_id>?item_id=<item_id>` 单值交给 `present_files` 输出对应卡片。内容修改永远不使用 `+update`；旧、新 Item ID 与派生关系必须保留。
 
 用户另需图片或视频时，从同版本 HTML 渲染／导出实际成品并按媒体门禁交付；原始 `.html` 不通过 `present_files` 直接交付，已经作为必交预览交付的截图不冒充用户另需的正式导出。

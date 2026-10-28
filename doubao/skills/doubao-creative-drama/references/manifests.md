@@ -16,8 +16,8 @@
 - 项目级故事包确认后把 `current_episode` 设为 `ep_1`，从该集详细剧本开始逐集生产。共享资产可以在首次实际需要的分集创建并进入 `asset_registry.json`；后续集先从共享登记和已完成分集资产中复用 approved 版本，只把新增或状态变化项写入本集资产。
 - 跨集稳定的角色基准图、主要场景参考图、核心道具、音色和全局风格 moodboard 只保存于 `shared/`，不复制到每集目录。
 - 完整模式中，`00_制作控制/project_data_card.json` 是角色、场景、道具和音色“不可变身份 + 可变状态时间线”的单一事实源。下游只填写片段增量，不得手工复述另一套基础设定；轻量模式不创建该文件。
-- 当集新增或变化的服装、伤痕、年龄、伪装和道具状态保存在对应 `episodes/ep_N/03_资产/`；分镜确认后生成的剧情关键帧仍集中保存在该目录下的 `关键帧/`，但阶段状态独立记录为 `keyframes`。
-- 生成前关键帧使用 `KFxxx`，直接绑定已确认的 SEG、SHOT 和职责；视频生成后的实际抽帧使用 `FRMxxx`，用于记录模型真实输出。KF 与 FRM 不得混用或互相覆盖。
+- 当集新增或变化的服装、伤痕、年龄、伪装和道具状态保存在对应 `episodes/ep_N/03_资产/`。
+- 视频生成后的实际抽帧使用 `FRMxxx`，用于记录模型真实输出和片段连续性。
 - Markdown 面向用户和人工审阅；JSON 面向工具执行、依赖追踪、版本恢复和结构校验。JSON 只引用 Markdown 路径与哈希，不复制完整剧本、分镜说明或质检长文。
 - 文件中的 `episode_id` 固定使用 `ep_1`、`ep_2`……；文件名最后一个业务后缀也使用 `_ep_N`，版本号放在它之前，例如 `角色_CHR001_林远_战损_v02_ep_2.png`。
 - 稳定 ID 在项目内唯一。集号表示使用范围，不重新编号同一个角色、场景、道具、音色、风格、镜头、片段或帧。
@@ -40,7 +40,6 @@
 │   │   ├── 合规证明_script.json
 │   │   ├── 合规证明_assets.json
 │   │   ├── 合规证明_storyboard.json
-│   │   ├── 合规证明_keyframes.json
 │   │   ├── 合规证明_video.json
 │   │   └── 合规证明_final.json
 │   ├── 输入素材/                    # 需要持久化的用户上传或外部下载文件
@@ -96,11 +95,7 @@
     │   │   │   └── 角色_CHRxxx_[名称]_[状态]_vNN_ep_1.[ext]
     │   │   ├── 道具状态/
     │   │   │   └── 道具_PROPxxx_[名称]_[状态]_[multiview|main|detail]_vNN_ep_1.[ext]
-    │   │   ├── 关键帧/
-    │   │   │   ├── 关键帧_KFxxx_SEGxxx_highlight-N_vNN_ep_1.[ext]
-    │   │   │   └── 关键帧_资产说明_ep_1.md
-    │   │   ├── asset_usage_ep_1.json
-    │   │   └── keyframe_manifest_ep_1.json
+    │   │   └── asset_usage_ep_1.json
     │   ├── 04_视频片段/
     │   │   ├── video_manifest_ep_1.json
     │   │   ├── continuity_ep_1.json
@@ -133,8 +128,7 @@
 
 `00_制作控制/校验报告/` 中需要逐集定位的报告也追加 `_ep_N`；项目级汇总报告不追加集号。
 `scripts/drama_lint.py` 在完整模式分镜阶段检查 `storyboard_ep_N.json`、`分镜_阅读稿_ep_N.md`、`导演总控卡_ep_N.md` 和 `分镜_完整分镜表_ep_N.md`，并客观确认完整分镜表存在十五列。视频片段执行表、连续性账本和资产需求清单仍按 `storyboard.md` 生成，并由主 Agent 人工复核；不能因为校验器尚未逐项检查而省略。轻量模式只检查 `分镜_完整分镜表_ep_1.md` 及其十五列结构，不创建或检查其余分镜配套文件。不得同时创建导演阐述、导演控制包或强风格系统卡形成第二套决策中心。
-剧情关键帧在分镜确认后命名为 `关键帧_KFxxx_SEGxxx_highlight-N_vNN_ep_N.[ext]`；`highlight-N` 是同一 SEG 内从 `1` 开始的高光序号。目录中的 `ep_1` 仅为实例。
-主要场景必须生成共享布局参考图，用于锁定空间拓扑、门窗朝向、固定陈设和基础光位；它不是逐镜剧情画面，不替代分镜场景合同。剧情关键帧在分镜确认后按 SEG 生成并进入 `关键帧/`，视频完成后另从真实画面提取 FRM，两者分别承担“生成前目标”和“生成后事实”。
+主要场景必须生成共享布局参考图，用于锁定空间拓扑、门窗朝向、固定陈设和基础光位；它不是逐镜剧情画面，不替代分镜场景合同。分镜确认后进入视频参数确认，视频完成后从真实画面提取 FRM，记录生成后事实并用于片段承接。
 
 ## 全局 JSON
 
@@ -181,7 +175,6 @@
     "script": "pending",
     "assets": "pending",
     "storyboard": "pending",
-    "keyframes": "pending",
     "video": "pending",
     "final": "pending"
   },
@@ -192,7 +185,6 @@
         "script": "pending",
         "assets": "pending",
         "storyboard": "pending",
-        "keyframes": "pending",
         "video": "pending",
         "final": "pending"
       }
@@ -204,7 +196,7 @@
 }
 ```
 
-状态只允许 `pending|in_progress|awaiting_confirmation|confirmed|merged|invalidated|blocked`。`merged` 只允许轻量模式中的 `script|assets|storyboard|keyframes|video`，表示这些阶段不建立独立产物包、用户交付和确认门；轻量模式仍必须保存十五列详细分镜并据此编译 Prompt，但不生成完整模式的其他创作配套文件。完整模式项目级故事包阶段使用 `current_stage: script` 与 `current_episode: null`；项目级确认后使用 `current_stage: script` 与 `current_episode: ep_1` 开始第 1 集详细剧本。轻量模式规划页取得 `generate` 后，立即把五个中间阶段写为 `merged`、把 `current_episode` 设为 `ep_1` 并进入 `final`。媒体或文档验证通过后才能递增 revision 并更新状态；文件存在、接口成功或聊天中声称完成都不能单独证明阶段完成。
+状态只允许 `pending|in_progress|awaiting_confirmation|confirmed|merged|invalidated|blocked`。`merged` 只允许轻量模式中的 `script|assets|storyboard|video`，表示这些阶段不建立独立产物包、用户交付和确认门；轻量模式仍必须保存十五列详细分镜并据此编译 Prompt，但不生成完整模式的其他创作配套文件。完整模式项目级故事包阶段使用 `current_stage: script` 与 `current_episode: null`；项目级确认后使用 `current_stage: script` 与 `current_episode: ep_1` 开始第 1 集详细剧本。轻量模式规划页取得 `generate` 后，立即把四个中间阶段写为 `merged`、把 `current_episode` 设为 `ep_1` 并进入 `final`。媒体或文档验证通过后才能递增 revision 并更新状态；文件存在、接口成功或聊天中声称完成都不能单独证明阶段完成。
 
 ### 用户确认记录.jsonl
 
@@ -216,8 +208,9 @@
 {"stage":"assets","episode_id":"ep_1","revision":2,"decision":"confirmed","confirmation_mode":"full|incremental","base_revision":1,"changed_artifacts":[],"impact_scope":[],"confirmation_purpose":"","interaction_ask_call_id":"","interaction_ask_result":"","user_message":"用户本轮明确回复原文","confirmed_at":"2026-09-08T12:10:00+08:00"}
 ```
 
-- `planning` 始终是项目级确认。`script` 有两种作用域：项目级故事包确认的 `episode_id` 留空；分集详细剧本确认必须填写当前 `episode_id`。`assets|storyboard|keyframes|video|final` 始终填写当前 `episode_id`。同名阶段在不同作用域或不同集的确认记录不能互相替代。
-- 完整模式且 `target_stage=video|final` 时，planning 写 `project_execution/proceed_project`。轻量模式直接执行标准视频生成确认，planning 写 `video_generation/generate`；同一次调用还登记为当前唯一视频的 `generation_confirmations`。所有视频确认结构只读取 `interaction-ask-video-clarification-ref.md`。
+- `planning` 始终是项目级确认。`script` 有两种作用域：项目级故事包确认的 `episode_id` 留空；分集详细剧本确认必须填写当前 `episode_id`。`assets|storyboard|video|final` 始终填写当前 `episode_id`。同名阶段在不同作用域或不同集的确认记录不能互相替代。
+- `interaction_ask_result` 是内部归一化授权记录，不是宿主工具原始返回字段。`proceed_project`、`generate`、`proceed_assembly` 分别记录明确的项目制作、视频生成和拼接同意；其他流程文件“取得这些值”的表述均指取得对应的用户授权后登记记录，不要求宿主返回同名值。必须保存本次真实调用关联、用户原文、时间和授权范围，不能用内部枚举、示例数据或历史记录代替本次授权。
+- 完整模式且 `target_stage=video|final` 时，planning 写 `project_execution/proceed_project`。轻量模式执行视频生成确认，取得明确同意后 planning 写 `video_generation/generate`；同一次调用还登记为当前唯一视频的 `generation_confirmations`。视频确认策略只读取 `interaction-ask-video-clarification-ref.md`，本文件仅维护内部记录。
 - 当目标继续到成片时，进入拼接的同一次 `interaction.ask` 还必须原子写入 `stage=video` 的确认记录：`confirmation_purpose: video_acceptance_and_final_assembly`、与 `assembly_confirmation` 相同的 `interaction_ask_call_id`、`interaction_ask_result: proceed_assembly`。当 `objective.target_stage=video` 时，video 阶段只做普通产物确认并停止，不创建虚假的拼接授权。
 - `user_message` 保存触发继续的用户原文；空值、系统生成文字或仅有内部检查结果无效。
 - `confirmed_at` 必须是带时区的 ISO-8601 时间。
@@ -231,7 +224,7 @@
 
 ```json
 {
-  "stage": "planning|script|assets|storyboard|keyframes|video|final",
+  "stage": "planning|script|assets|storyboard|video|final",
   "executor": "main_agent|main_agent_director",
   "delegated": false,
   "skill_read": ["SKILL.md"],
@@ -258,9 +251,9 @@
 }
 ```
 
-`planning|script|storyboard` 的 `delegated` 必须为 `false` 且 `delegations` 为空。`assets|keyframes` 只有在图片工具执行被外包时才记录委派；`video` 只要发生实际视频生成/编辑工具调用，`delegated` 必须为 `true` 并记录 `video_execution` 交接包；`final` 只要发生拼接、裁剪、混音、mux、字幕烧录等媒体变更工具调用，`delegated` 必须为 `true` 并记录 `final_media_execution` 交接包。每个交接包使用 Skill 内或项目内相对路径，保存逐文件输出白名单、实际输出、硬约束、验收标准、检查命令和禁止再委派声明；画布写入、用户交付、确认工具调用和阶段状态收口不得出现在 subagent 委派范围内。
+`planning|script|storyboard` 的 `delegated` 必须为 `false` 且 `delegations` 为空。`assets` 只有在图片工具执行被外包时才记录委派；`video` 只要发生实际视频生成/编辑工具调用，`delegated` 必须为 `true` 并记录 `video_execution` 交接包；`final` 只要发生拼接、裁剪、混音、mux、字幕烧录等媒体变更工具调用，`delegated` 必须为 `true` 并记录 `final_media_execution` 交接包。每个交接包使用 Skill 内或项目内相对路径，保存逐文件输出白名单、实际输出、硬约束、验收标准、检查命令和禁止再委派声明；画布写入、用户交付、确认工具调用和阶段状态收口不得出现在 subagent 委派范围内。
 当前 `drama_lint.py` 的输出就是本次结构检查结果，不回填到被检查的合规证明中，避免证明文件预先声明自身已通过。`declaration` 必须以 `本阶段严格遵循skill要求，未使用禁止的替代工具` 开头，后面允许追加本阶段真实说明。
-规划、剧本和分镜属于纯文件创作阶段，没有外部生成调用时 `tool_calls` 直接写空数组，不得虚构 `file_creation`。除规划外，`upstream_artifacts` 必须完整覆盖上一阶段当前确认产物，每项记录项目内绝对路径、确认 revision 和确认记录中的 SHA-256。资产、关键帧、视频和成片属于生成或媒体处理阶段，必须保存实际调用；每项引用 `操作日志.jsonl` 中同名、同阶段且状态为 `succeeded` 的 `operation_id`，工具名必须一致，证据文件必须列在该操作的 `outputs` 中、实际存在且 SHA-256 匹配。图片和视频输出还必须保存真实文件探测得到的 `observed_metadata`，并与日志 `output_metadata` 一致。
+规划、剧本和分镜属于纯文件创作阶段，没有外部生成调用时 `tool_calls` 直接写空数组，不得虚构 `file_creation`。除规划外，`upstream_artifacts` 必须完整覆盖上一阶段当前确认产物，每项记录项目内绝对路径、确认 revision 和确认记录中的 SHA-256。资产、视频和成片属于生成或媒体处理阶段，必须保存实际调用；每项引用 `操作日志.jsonl` 中同名、同阶段且状态为 `succeeded` 的 `operation_id`，工具名必须一致，证据文件必须列在该操作的 `outputs` 中、实际存在且 SHA-256 匹配。图片和视频输出还必须保存真实文件探测得到的 `observed_metadata`，并与日志 `output_metadata` 一致。
 
 ### 操作日志.jsonl
 
@@ -274,7 +267,7 @@
 
 ### 校验器效率模式
 
-- `--stage planning|script|assets|storyboard|keyframes|video|final|all` 选择阶段检查范围；`--stage all` 用于最终发布或专项审计。
+- `--stage planning|script|assets|storyboard|video|final|all` 选择阶段检查范围；`--stage all` 用于最终发布或专项审计。
 - `--changed-file <项目内文件>` 可重复传入，仅为旧调用兼容；当前实现仍执行所选 `--stage` 的完整检查，不做依赖图裁剪。
 - `--fix` 仅为旧调用兼容，当前不自动创建、补写或修改任何项目文件。
 - 项目初始化、新版本复制、引用更新和剧本合同同步当前均由主 Agent 按本文件规则完成，不得调用校验器未提供的参数。
@@ -592,7 +585,6 @@
     "script": "episodes/ep_1/01_剧本/script_contract_ep_1.json",
     "storyboard": "episodes/ep_1/02_分镜/storyboard_ep_1.json",
     "assets": "episodes/ep_1/03_资产/asset_usage_ep_1.json",
-    "keyframes": "episodes/ep_1/03_资产/keyframe_manifest_ep_1.json",
     "video": "episodes/ep_1/04_视频片段/video_manifest_ep_1.json",
     "continuity": "episodes/ep_1/04_视频片段/continuity_ep_1.json",
     "delivery": "episodes/ep_1/05_成片/delivery_manifest_ep_1.json"
@@ -600,7 +592,7 @@
 }
 ```
 
-轻量模式仍保留同一 `stage_manifests` 键集，但 `script|assets|keyframes|continuity` 写空字符串，`storyboard` 直接指向 `episodes/ep_1/02_分镜/分镜_完整分镜表_ep_1.md`，`video|delivery` 指向实际 manifest。不得为填充这些路径创建无用途的完整模式文件。
+轻量模式仍保留同一 `stage_manifests` 键集，但 `script|assets|continuity` 写空字符串，`storyboard` 直接指向 `episodes/ep_1/02_分镜/分镜_完整分镜表_ep_1.md`，`video|delivery` 指向实际 manifest。不得为填充这些路径创建无用途的完整模式文件。
 
 ### script_contract_ep_N.json
 
@@ -834,55 +826,6 @@
 }
 ```
 
-### keyframe_manifest_ep_N.json
-
-保存分镜确认后生成的剧情关键帧职责、文件与验收状态：
-
-```json
-{
-  "schema_version": "1.0",
-  "episode_id": "ep_1",
-  "revision": 1,
-  "project_data_card_revision": 1,
-  "script_contract": "episodes/ep_1/01_剧本/script_contract_ep_1.json",
-  "storyboard_manifest": "episodes/ep_1/02_分镜/storyboard_ep_1.json",
-  "project_data_card": "00_制作控制/project_data_card.json",
-  "keyframes": [
-    {
-      "keyframe_id": "KF001",
-      "segment_id": "SEG001",
-      "shot_id": "E01S01-SHOT001",
-      "role": "highlight",
-      "highlight_index": 1,
-      "data_card_revision": 1,
-      "asset_refs": ["CHR001_v01", "SCN001_v01", "PROP001_v01"],
-      "state_refs": ["CHR001:STATE001"],
-      "information_triggers": ["space_anchor"],
-      "narrative_state": "",
-      "character_state": {},
-      "prop_state": {},
-      "scene_and_light": {},
-      "camera_and_composition": {},
-      "continuity_from": "",
-      "prompt_path": "episodes/ep_1/03_资产/提示词/提示词_KF001_SEG001_highlight-1_v01_ep_1.md",
-      "prompt_sha256": "",
-      "file": "episodes/ep_1/03_资产/关键帧/关键帧_KF001_SEG001_highlight-1_v01_ep_1.png",
-      "tool": "image_edit",
-      "model": "",
-      "version": "v01",
-      "status": "draft|reviewed|approved|rejected|superseded",
-      "used_by_segments": ["SEG001"]
-    }
-  ]
-}
-```
-
-- `storyboard_manifest` 必须引用当前已确认分镜；`segment_id`、`shot_id` 和 `used_by_segments` 必须与分镜中的真实片段和镜头一致。
-- `role` 固定为 `highlight`，`highlight_index` 是同一 SEG 内从 `1` 开始的高光序号。关键帧只锁定剧情峰值，不承担生成式首帧或尾帧职责。
-- 同一视频片段采用的高光关键帧必须与 `storyboard_ep_N.json` 的高光需求一致；片段首尾连续性由真实 FRM、连续性账本和 `SEAMxxx` 负责。
-- `tool/model/version/status` 记录 `keyframes.md` 的实际生成结果；视频输入关系记录 `video.md` 的实际调用结果。
-- 视频生成后的 `FRMxxx` 抽帧不能回写覆盖 `KFxxx`；偏差通过内部记录保存，只有用户主动要求修改并重新确认后才返修分镜、关键帧或视频。
-
 ### video_manifest_ep_N.json
 
 作为本集视频生成结果的权威索引；`00_制作控制/批次/*.json` 继续保存单次请求快照：
@@ -919,7 +862,7 @@
         "model": "seedance 2.0 fast",
         "visual_and_continuity": "按已确认角色、场景与上一段承接关系生成",
         "audio_and_subtitles": "保留本段完整对白，不生成画面字幕",
-        "reference_materials": "当前角色、场景与高光关键帧",
+        "reference_materials": "当前角色、场景与必要道具/状态图",
         "tool_limits_and_cost": "本批 1 个视频；视频生成为高消耗生成"
       },
       "displayed_storyboard_rows": [
@@ -935,7 +878,7 @@
       "creative_direction": "按已确认分镜生成本段剧情",
       "cost_notice": "视频生成会消耗更多积分或额度",
       "membership_notice": "",
-      "final_parameters_text": "| 参数 | 本批次确认值 |\\n|---|---|\\n| 任务类型 | 图片生成视频 |\\n| 交付格式 | MP4 视频片段 |\\n| 数量 | 1 |\\n| 分段时长 | SEG001：12秒 |\\n| 总时长 | 12秒 |\\n| 画幅与分辨率 | 9:16，按当前模型实际分辨率 |\\n| 视频模型 | seedance 2.0 fast |\\n| 视觉与连续性 | 按已确认角色、场景与上一段承接关系生成 |\\n| 声音与字幕 | 保留本段完整对白，不生成画面字幕 |\\n| 参考素材 | 当前角色、场景与高光关键帧 |\\n| 工具限制与消耗 | 本批 1 个视频；视频生成为高消耗生成 |\\n\\n| 片段与时长 | 画面内容 | 主体动作 | 声音与完整台词 | 运镜与素材 |\\n|---|---|---|---|---|\\n| SEG001｜12秒 | 本段从起点到结果的可见剧情内容 | 主体动作、反馈与尾态 | 声音类型与完整台词 | 主要运镜、承接方式与真实输入素材 |",
+      "final_parameters_text": "| 参数 | 本批次确认值 |\\n|---|---|\\n| 任务类型 | 图片生成视频 |\\n| 交付格式 | MP4 视频片段 |\\n| 数量 | 1 |\\n| 分段时长 | SEG001：12秒 |\\n| 总时长 | 12秒 |\\n| 画幅与分辨率 | 9:16，按当前模型实际分辨率 |\\n| 视频模型 | seedance 2.0 fast |\\n| 视觉与连续性 | 按已确认角色、场景与上一段承接关系生成 |\\n| 声音与字幕 | 保留本段完整对白，不生成画面字幕 |\\n| 参考素材 | 当前角色、场景与必要道具/状态图 |\\n| 工具限制与消耗 | 本批 1 个视频；视频生成为高消耗生成 |\\n\\n| 片段与时长 | 画面内容 | 主体动作 | 声音与完整台词 | 运镜与素材 |\\n|---|---|---|---|---|\\n| SEG001｜12秒 | 本段从起点到结果的可见剧情内容 | 主体动作、反馈与尾态 | 声音类型与完整台词 | 主要运镜、承接方式与真实输入素材 |",
       "interaction_ask_call_id": "实际确认调用 ID",
       "interaction_ask_result": "generate",
       "user_message": "用户通过确认工具选择生成的原文",
@@ -1059,11 +1002,11 @@
       "frame_id": "FRM001",
       "segment_id": "SEG001",
       "role": "start|scene|tail",
-      "target_keyframe_id": "KF001",
+      "target_shot_id": "E01S01-SHOT001",
       "timecode": "",
       "file": "",
       "observed_state": {},
-      "keyframe_deviation": {
+      "storyboard_deviation": {
         "status": "accepted|rework",
         "differences": []
       }
@@ -1131,7 +1074,7 @@
 
 默认字幕关闭时，只保留无字幕母版对应的一项 `basic_qc_reports`，字幕相关路径留空，`outputs` 只能包含 `clean_master`。用户明确要求字幕时，无字幕母版作为内部烧录源保留，两种内部媒体各有一份基础可交付检查报告，并且必须存在 ASR 对齐报告；但 `outputs` 必须且只能包含 `subtitle_master`，不得把 `clean_master`、SRT、字幕 JSON 或检查报告作为额外交付物。
 
-- 完整模式的 `assembly_confirmation` 保存进入本集成片拼接前的独立确认；`segment_ids` 必须按顺序精确等于本次采用的 accepted SEG，`interaction_ask_result` 固定为 `proceed_assembly`。轻量模式只有一个最终视频，不执行拼接，`assembly_confirmation` 留空。
+- 完整模式的 `assembly_confirmation` 保存进入本集成片拼接前的独立确认；`segment_ids` 必须按顺序精确等于本次采用的 accepted SEG。只有用户通过本次确认明确同意拼接后，才将内部 `interaction_ask_result` 记录为 `proceed_assembly`，不检查宿主是否返回这个字面值。轻量模式只有一个最终视频，不执行拼接，`assembly_confirmation` 留空。
 - 最终交付校验时 `delivery_manifest_ep_N.json.status` 可以为 `deliverable|candidate`；`blocked` 不得交付。`candidate` 表示存在内部记录的内容风险，但只要客观可播放、可交付，就不得因最终内容质检缺失而扣住交付。该媒体状态不等于用户确认；用户确认仍记录在 `制作状态.json` 与 `用户确认记录.jsonl`。
 - `basic_qc_reports` 由主 Agent 根据真实 mediakit 探测终态与实际播放结果生成，分别绑定对应成片、输入文件哈希和媒体探测结果。
 - `asr_alignment_report` 由主代理依据 `delivery.md` 的顺序对齐规则生成，绑定当前分集 `script_contract`、`asr_source` 和实际带音轨媒体的路径、字节数与 SHA-256。

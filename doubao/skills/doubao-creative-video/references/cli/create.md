@@ -4,9 +4,9 @@
 
 一次创建单个对象。调用方不提供 ID，创建时自动生成。要一次创建多个用 [`+create-batch`](create-batch.md)。
 
-视频／图像生成与编辑工具结果不使用本命令重复创建 VIDEO／IMAGE Item；应按 [媒体直接交付与产后目录整理](../media-delivery.md) 透传 Workspace ID、直接交付并在产后仅更新真实对象的 `path`。以下创建协议只用于其他确需手工创建的资产／对象。
-
 ## 命令
+
+以下为 Bash 示例。Windows 必须先读 [`windows-compat.md`](../windows-compat.md)，用其中的 Python 模板将 `item.xml` 送入 stdin；CLI 参数仍为 `--input -`，不能改成文件路径或 `@文件`。
 
 ```bash
 design-cli design-workspace +create \
@@ -87,7 +87,7 @@ Frame 自己给 `<size>`，**成员给 `<transform>`，`x` / `y` 是相对 Frame
 </item>
 ```
 
-完整调用示例：先复制 [`example/create-HTML.xml`](../../example/create-HTML.xml)，将其中的 `<asset url>` 替换为 `FileBatchUpload` 返回的真实短链，再从 Skill 根目录执行：
+完整调用示例：先复制 [`example/create-HTML.xml`](../../example/create-HTML.xml)，将其中的 `<asset url>` 替换为 `FileBatchUpload` 返回的真实短链，再从 Skill 根目录执行。以下仅为 Bash 写法；Windows 使用兼容说明的 Python 模板，把 XML 文件名改为 `example/create-HTML.xml`，仍通过 stdin 提交：
 
 ```bash
 design-cli design-workspace +create \

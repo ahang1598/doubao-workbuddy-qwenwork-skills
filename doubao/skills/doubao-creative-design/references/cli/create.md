@@ -6,6 +6,8 @@
 
 ## 命令
 
+以下为 Bash 示例。Windows 必须先读 [`windows-compat.md`](../workflow/windows-compat.md)，用 Python 模板将 `item.xml` 送入 stdin；CLI 参数仍为 `--input -`，不能传文件路径或 `@文件`。
+
 ```bash
 design-cli design-workspace +create \
   --canvas-workspace-id <canvas_workspace_id> \
@@ -85,7 +87,7 @@ Frame 自己给 `<size>`，**成员给 `<transform>`，`x` / `y` 是相对 Frame
 </item>
 ```
 
-完整调用示例：先复制 [`example/create-HTML.xml`](../../example/create-HTML.xml)，将其中的 `<asset url>` 替换为 `FileBatchUpload` 返回的真实短链，再从 Skill 根目录执行：
+完整调用示例：先复制 [`example/create-HTML.xml`](../../example/create-HTML.xml)，将其中的 `<asset url>` 替换为 `FileBatchUpload` 返回的真实短链，再从 Skill 根目录执行。以下仅为 Bash 写法；Windows 使用兼容说明的 Python 模板，将文件名改为 `example/create-HTML.xml`，仍通过 stdin 提交：
 
 ```bash
 design-cli design-workspace +create \

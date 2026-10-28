@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
-STAGES = ("planning", "script", "assets", "storyboard", "keyframes", "video", "final")
+STAGES = ("planning", "script", "assets", "storyboard", "video", "final")
 
 
 def safe_write_json(path: Path, data: dict) -> None:

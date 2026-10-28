@@ -93,64 +93,6 @@ UNDERSTOOD_MC_NAMESPACES = {
     "http://schemas.microsoft.com/office/word/2016/wordml/cid",
     *STRICT_NAMESPACE_MAP.keys(),
 }
-# ISO/IEC 29500 schema sequences for the three table-property containers.
-# Only known w: children participate in the relative-order check. This keeps
-# extension elements and future/unknown WordprocessingML children from becoming
-# false positives while still detecting every inversion among modeled children.
-OOXML_PROPERTY_ORDER: dict[str, tuple[str, tuple[str, ...]]] = {
-    "tblPr": (
-        "E_OOXML_TBLPR_ORDER",
-        (
-            "tblStyle",
-            "tblpPr",
-            "tblOverlap",
-            "bidiVisual",
-            "tblStyleRowBandSize",
-            "tblStyleColBandSize",
-            "tblW",
-            "jc",
-            "tblCellSpacing",
-            "tblInd",
-            "tblBorders",
-            "shd",
-            "tblLayout",
-            "tblCellMar",
-            "tblLook",
-            "tblCaption",
-            "tblDescription",
-            "tblPrChange",
-        ),
-    ),
-    "tcPr": (
-        "E_OOXML_TCPR_ORDER",
-        (
-            "cnfStyle",
-            "tcW",
-            "gridSpan",
-            "hMerge",
-            "vMerge",
-            "tcBorders",
-            "shd",
-            "noWrap",
-            "tcMar",
-            "textDirection",
-            "tcFitText",
-            "vAlign",
-            "hideMark",
-            "headers",
-            "cellIns",
-            "cellDel",
-            "cellMerge",
-            "tcPrChange",
-        ),
-    ),
-}
-OOXML_PROPERTY_ORDER_REPAIR_HINT = (
-    "Rebuild the reported property container in OOXML schema order. Do not blindly "
-    "append property nodes; use a schema-aware API or insert each node before the "
-    "first later-ranked child, regenerate the DOCX, and rerun the complete audit."
-)
-
 FATAL_PACKAGE_CODES = {
     "E_DOCX_OPEN",
     "E_ZIP_CRC",
@@ -341,8 +283,6 @@ REPAIR_HINTS = {
     "E_OFFICE_DOCUMENT_RELATIONSHIP_INVALID": (
         "Keep exactly one package-level officeDocument relationship pointing to the main Word document part."
     ),
-    "E_OOXML_TBLPR_ORDER": OOXML_PROPERTY_ORDER_REPAIR_HINT,
-    "E_OOXML_TCPR_ORDER": OOXML_PROPERTY_ORDER_REPAIR_HINT,
     "E_OOXML_DOCPR_ID_DUPLICATE": (
         "Assign a different non-negative integer wp:docPr/@id to every DrawingML object "
         "across document.xml, headers, footers, footnotes, endnotes, and comments, then rerun audit."
@@ -1505,137 +1445,6 @@ def structural_hash(
         if parent is not None:
             parent.remove(rsids)
     return canonical_xml_hash(clone)
-
-
-def ooxml_property_order_findings(
-    part: str, root: etree._Element
-) -> list[dict[str, Any]]:
-    """Find schema-order inversions in table property containers.
-
-    The check compares only recognized WordprocessingML children. Extension
-    namespaces and unknown w: children are left untouched and do not affect the
-    result, avoiding claims about schema positions the auditor does not model.
-    """
-    findings: list[dict[str, Any]] = []
-    tree = root.getroottree()
-    table_indexes: dict[str, int] = {}
-    row_indexes: dict[str, int] = {}
-    cell_indexes: dict[str, int] = {}
-
-    for table_index, table in enumerate(root.xpath(".//w:tbl", namespaces=NS), 1):
-        table_path = tree.getpath(table)
-        table_indexes[table_path] = table_index
-        rows = []
-        for row in table.xpath(".//w:tr", namespaces=NS):
-            ancestors = row.xpath("ancestor::w:tbl[1]", namespaces=NS)
-            if ancestors and tree.getpath(ancestors[0]) == table_path:
-                rows.append(row)
-        for row_index, row in enumerate(rows, 1):
-            row_path = tree.getpath(row)
-            row_indexes[row_path] = row_index
-            cells = []
-            for cell in row.xpath(".//w:tc", namespaces=NS):
-                ancestors = cell.xpath("ancestor::w:tr[1]", namespaces=NS)
-                if ancestors and tree.getpath(ancestors[0]) == row_path:
-                    cells.append(cell)
-            for cell_index, cell in enumerate(cells, 1):
-                cell_indexes[tree.getpath(cell)] = cell_index
-
-    # w:trPr is intentionally excluded: CT_TrPrBase is an unbounded xsd:choice,
-    # so its base children have no required order (a valid
-    # <w:tblHeader/><w:cantSplit/> must not be flagged). Only the sequence-typed
-    # containers w:tblPr and w:tcPr carry an enforceable order.
-    containers = root.xpath(
-        ".//w:tblPr | .//w:tcPr", namespaces=NS
-    )
-    for container in containers:
-        container_name = etree.QName(container).localname
-        code, allowed_order = OOXML_PROPERTY_ORDER[container_name]
-        rank = {name: index for index, name in enumerate(allowed_order)}
-        actual_local = []
-        for child in container:
-            if not isinstance(child.tag, str):
-                continue
-            child_name = etree.QName(child)
-            if child_name.namespace == W and child_name.localname in rank:
-                actual_local.append(child_name.localname)
-
-        inversion: tuple[int, int] | None = None
-        for later_index in range(1, len(actual_local)):
-            later_rank = rank[actual_local[later_index]]
-            for earlier_index in range(later_index - 1, -1, -1):
-                if rank[actual_local[earlier_index]] > later_rank:
-                    inversion = (earlier_index, later_index)
-                    break
-            if inversion is not None:
-                break
-        if inversion is None:
-            continue
-
-        expected_local = sorted(actual_local, key=rank.__getitem__)
-        actual = ["w:%s" % name for name in actual_local]
-        expected = ["w:%s" % name for name in expected_local]
-        earlier_index, later_index = inversion
-        container_path = tree.getpath(container)
-        evidence: dict[str, Any] = {
-            "part": part,
-            "xpath": container_path,
-            "container": "w:%s" % container_name,
-            "actual": actual,
-            "expected": expected,
-            "first_inversion": {
-                "observed_earlier": "w:%s" % actual_local[earlier_index],
-                "out_of_order_node": "w:%s" % actual_local[later_index],
-                "observed_positions": [earlier_index + 1, later_index + 1],
-                "required_order": [
-                    "w:%s" % actual_local[later_index],
-                    "w:%s" % actual_local[earlier_index],
-                ],
-            },
-        }
-
-        table_ancestors = container.xpath("ancestor::w:tbl[1]", namespaces=NS)
-        row_ancestors = container.xpath("ancestor::w:tr[1]", namespaces=NS)
-        cell_ancestors = container.xpath("ancestor::w:tc[1]", namespaces=NS)
-        location_parts = []
-        if table_ancestors:
-            table_index = table_indexes.get(tree.getpath(table_ancestors[0]))
-            if table_index is not None:
-                evidence["table_index"] = table_index
-                location_parts.append("table%d" % table_index)
-        if row_ancestors:
-            row_index = row_indexes.get(tree.getpath(row_ancestors[0]))
-            if row_index is not None:
-                evidence["row_index"] = row_index
-                location_parts.append("row%d" % row_index)
-        if cell_ancestors:
-            cell_index = cell_indexes.get(tree.getpath(cell_ancestors[0]))
-            if cell_index is not None:
-                evidence["cell_index"] = cell_index
-                location_parts.append("cell%d" % cell_index)
-        if location_parts:
-            location = "%s#%s/%s" % (
-                part,
-                "/".join(location_parts),
-                container_name,
-            )
-        else:
-            location = "%s:%s" % (part, container_path)
-
-        findings.append(
-            issue(
-                "error",
-                code,
-                location,
-                "w:%s children are out of OOXML schema order" % container_name,
-                expected=expected,
-                actual=actual,
-                repair_hint=OOXML_PROPERTY_ORDER_REPAIR_HINT,
-                evidence=evidence,
-                blocking=True,
-            )
-        )
-    return findings
 
 
 def extract_tables(part: str, root: etree._Element) -> list[dict[str, Any]]:
@@ -2960,8 +2769,6 @@ def inspect_docx(path: Path) -> dict[str, Any]:
                 relationship_reference_findings(semantic_roots, relationships)
             )
             theme_fonts = extract_theme_fonts(semantic_roots, relationships)
-            for part, root in sorted(semantic_roots.items()):
-                findings.extend(ooxml_property_order_findings(part, root))
 
             paragraphs: list[dict[str, Any]] = []
             tables: list[dict[str, Any]] = []

@@ -13,12 +13,13 @@ description: 当用户要求从零生成或设计商业、品牌、社交媒体�
 
 初始路由至少同时判断以下维度，并据此建立本次 `required_refs` 清单：
 
-1. **交付环境**：默认 Canvas 或 system 明确标记的 `Device platfrom: Mobile`。
+1. **交付环境**：默认 Canvas，或 system 上下文明确标记的移动端交付环境、Windows 执行环境。
 2. **操作类型**：新建、整体重做、编辑已有图片、编辑已有 HTML、编辑已有 XML、选区编辑、批量／系列延展、审查或仅提供方案。
 3. **生产轨道**：`pure-image`、`ai-coding`（可编辑设计）或 `pure-coding`；已有源格式优先决定编辑输出格式。
 4. **品类**：Logo、VI、海报、社媒套图、详情页、连续长图、菜单、三折页、简历、信息图、思维导图、流程图、知识图谱、包装、品牌应用等实际命中品类。
 5. **媒介与平台**：画幅、目标平台、移动端、社媒渠道、印刷／屏幕、HTML 固定画布及长页预览等实际约束。
-6. **特殊能力与出口**：图像／视频生成、`image_edit` 身份锚点、HTML 组装、CLI 写入、CDN＋Markdown 预览、`present_files`、Subagent 或其他本任务明确要求。
+6. **特殊能力与出口**：图像／视频生成、`image_edit` 身份锚点、HTML 组装、CLI 写入、CDN＋Markdown 预览、`RichMediaCard` 媒体交付、`present_files` 画布卡片、Subagent 或其他本任务明确要求。
+7. **实际执行平台**：根据 `SystemPrompt` 或 `<system-reminder>` 的操作系统及实际执行设备判定；Windows 的初始 `required_refs` 必须包含 [`Windows 兼容性`](references/workflow/windows-compat.md)，读完主 SKILL 后完整读取，再执行 CLI、HTML 预览、字体／素材脚本和文件读写。主 Agent 与需要执行命令的 Subagent 均遵守，不等发生报错才读取。
 
 路由确定后，必须在首次实质动作前一次性完整读取所有已命中的任务策略 Ref：对应 creation／editing workflow、品类 Spec、Visual／System 或 pure-image scenario、适用平台／media ref、交付环境与交付门禁，以及本任务必需的 CLI、HTML、预览、字体、素材或验证契约。读取完成后才可执行；后续阶段可以回读，但不得把“后面再看”作为首次读取时机。
 
@@ -28,37 +29,35 @@ description: 当用户要求从零生成或设计商业、品牌、社交媒体�
 
 “禁止懒加载”针对会决定行为、内容、视觉、格式、工具和交付的任务策略 Ref；不要求提前通读未命中品类、未选平台、未采用候选，以及尚未选定的 CSS／SVG／模板实现正文。后者仍在设计决策形成后精确读取，但凡已被选中并将用于实现的正文与依赖，必须在写代码或组装产物前完整读取。每次执行应能明确回答：本任务属于什么类型、命中了哪些 Ref、这些 Ref 是否已经完整读完。
 
-HTML 需要远程字体时，先读 [Web 字体契约](references/rendering/web-font-contract.md)，通过 Resolver 输出白名单字体声明，允许与普通样式合并或分块；仅 html、body 和作品根容器的固定宽高必须行内声明，其余样式可使用普通样式块、选择器或外部样式表。字体选择不改变产物路由，自检仍只用 `scripts/runtime/shot.py`。
-
-用户引用素材资产时，读取 [素材资产详情命令](references/cli/design-asset-get.md)，使用上下文或服务返回的原始资产 ID 获取详情；`resource_url` 是云盘文件页，不能直接当作媒体下载地址。
-
-## 最高优先级：`image_gen`／`image_edit` 必须透传 Workspace ID
-
-调用 `image_gen`、`image_edit` 前，必须再次检查当前对话是否存在唯一、有效且指向当前目标的 Workspace ID。只要存在，就必须把该原始 ID 作为工具调用的 Workspace ID 参数显式传入；已绑定或新建 Workspace 时，传入值必须与 `active_workspace_id` 完全一致。此要求覆盖默认 Canvas 与 Mobile 环境，以及首次生成、编辑、重试、修正版、候选、变体及并行批次中的每一次独立调用；Mobile 中透传已有 ID 仅作为媒体工具调用上下文，不授权查询、复用、写入或创建 Workspace。
-
-不得省略该参数、传空值、把 ID 写进 Prompt／文件名／参考图字段代替参数，或使用其他任务、旧轮次及未经确认的 Workspace ID。调用前若发现多个冲突 ID，必须先向用户确认；工具参数不支持 Workspace ID、参数名无法依据当前工具契约确认，或传入后校验失败时，停止图像调用并返回实际错误，引导重新读取本 Skill 与对应工具契约后修正参数再重试，禁止无 Workspace ID 降级调用或原样重复失败请求。
+HTML 需要远程字体时，先读 [Web 字体契约](references/rendering/web-font-contract.md)，通过 Resolver 输出白名单字体声明；只允许 head 内唯一 `style data-web-fonts`，其余视觉样式仍须行内。字体选择不改变产物路由，自检仍只用 `scripts/runtime/shot.py`。
 
 ## 零、先确定交付环境
 
-在能力预检、Workspace 绑定、Brief 存储或任何生成／编辑前，检查 system 是否明确包含 `Device platfrom: Mobile`。命中时读取 [Mobile 直接交付](references/workflow/mobile-app-direct-delivery.md)，使用本地唯一 Brief 与适用的素材清单，禁止全部 Canvas CLI／Workspace 操作。媒体使用 `RichMediaCard` 逐项交付；HTML 只交付上传 CDN 后的同尺寸 Markdown 预览图，不上传 HTML 或创建 Item。不得从手机尺寸或作品用途推断该环境。
+在能力预检、Workspace 绑定、Brief 存储或任何生成／编辑前，检查 system 上下文是否明确标记为移动端交付。命中时读取 [Mobile 直接交付](references/workflow/mobile-app-direct-delivery.md)，使用本地唯一 Brief 与适用的素材清单，禁止全部 Canvas CLI／Workspace 操作。媒体逐项 `RichMediaCard`；HTML 只交付上传 CDN 后的同尺寸 Markdown 预览图，不上传 HTML 或创建 Item。不得从手机尺寸或作品用途推断该环境。
 
-没有该标记时采用下方默认 Canvas 规则。交付环境只改变存储和交付，不改变品类路线、Brief → 素材清单 → HTML 的生产顺序。下文所有 Workspace、画布目录、HTML Item 写入／回读与画布卡片要求均只适用于默认 Canvas 环境；`image_gen`／`image_edit` 已透传 Workspace ID 后由工具直接关联 Workspace，结果只需通过 `RichMediaCard` 逐项交付，不再执行媒体 Item CLI 写入／回读。HTML 专用预览截图在两种环境中都只走 CDN＋Markdown。
+没有移动端标记时采用下方默认 Canvas 规则。交付环境只改变存储和交付，不改变品类路线、Brief → 素材清单 → HTML 的生产顺序。下文所有 Workspace、画布目录、Item 写入／回读与画布卡片要求均只适用于默认 Canvas 环境；HTML 专用预览截图在两种环境中都只走 CDN＋Markdown，不走媒体双通道。
 
-## 最高优先级：图像结果直接交付
+## 跨平台执行适配
 
-本节对 `image_gen`／`image_edit` 的所有结果执行直接交付硬门禁，覆盖中间素材、候选、草稿、改稿和最终产物；其他图片／视频／处理工具按各自产出协议交付。执行细节读取 [交付门禁](references/workflow/image-generation-delivery-gate.md) 与 [CLI 策略](references/cli/README.md)。
+执行任何终端命令前确认实际设备、终端工具、Shell 与 Python 入口。非 macOS/Linux 主机从首次终端调用就使用宿主提供的对应 Shell 路线，不先试 Bash；不凭工具名猜测实际 Shell。诊断或数据处理逻辑写入任务专属 `.py` 文件，不把正则、字典或嵌套引号放进 `python -c`。用户要求的产物平台不等于实际执行设备；环境不明时先确认。命令写法、XML stdin、路径、UTF-8 和 Chromium 定位在非标准环境统一按平台兼容文档执行，正文 `python3` 示例使用已确认的 Python 3 入口。Windows 环境额外参考 [`windows-compat.md`](references/workflow/windows-compat.md)。
+
+Mobile 交付环境与实际执行操作系统分别判定；跨平台兼容说明不启用 Mobile 禁止的 Canvas 操作，不改变素材门禁、HTML 固定画布、唯一 `shot.py` 自检入口和交付协议。
+
+## 最高优先级：画布写入与文件交付双通道同步
+
+本节是所有图片／视频生成与编辑任务的硬门禁，覆盖中间素材、候选、草稿、改稿和最终产物。执行细节读取 [交付门禁](references/workflow/image-generation-delivery-gate.md) 与 [CLI 策略](references/cli/README.md)。
 
 ### 全局输出主体：所有产物由主 Agent 交付
 
 所有生成、编辑、衍生、渲染或导出的用户可见产物，无论由主 Agent、子 Agent、异步任务或外部工具实际生产，都必须汇回当前任务的 **主 Agent**，并由主 Agent 按本 Skill 规定的出口亲自完成交付。该约束覆盖 Workspace ID、图片、视频、候选图、草稿、改稿、中间素材、渲染／导出结果、HTML 同尺寸预览图和画布卡片；产物质量不佳也不改变交付主体。
 
-- 图片、视频等媒体产物（含候选、中间结果及正式渲染／导出成品）统一由主 Agent 使用 `RichMediaCard` 逐项交付；HTML 同尺寸预览图除外，继续走下条 CDN＋Markdown 专用出口。后续文件中的“媒体交付”“逐项交付”均指本出口，不重新指定工具。子 Agent／异步任务不得代为交付，也不得把自己的工具预览、路径、URL 或交付状态当成主 Agent 已交付。
-- HTML 同尺寸预览仍遵循 CDN＋Markdown 专用出口，但 CDN 结果的核验与最终 Markdown 图片展示必须由主 Agent 完成；默认 Canvas 的 `<workspace_id>?item_id=<item_id>` 画布卡片也必须由主 Agent 亲自调用 `present_files`。不得为满足本条改变 HTML 预览的 CDN＋Markdown 出口。
+- 图片、视频及其他规定使用 `RichMediaCard` 的产物，必须由主 Agent 直接取得对应工具结果并亲自调用 `RichMediaCard`；子 Agent／异步任务不得代为调用，也不得把自己的工具预览、路径、URL 或交付状态当成主 Agent 已交付。
+- HTML 同尺寸预览仍遵循 CDN＋Markdown 专用出口，但 CDN 结果的核验与最终 Markdown 图片展示必须由主 Agent 完成；默认 Canvas 的 `<workspace_id>?item_id=<item_id>` 画布卡片也必须由主 Agent 亲自调用 `present_files`。不得为满足本条把 HTML 预览改走媒体 `RichMediaCard`。
 - 子 Agent／异步任务只可生产、编辑、校验并把未改写的真实产物句柄、短链、文件或 ID 返回主 Agent。主 Agent 未完成对应出口前，不得把子任务的完成、CLI stdout、日志、Markdown、普通聊天文字或工具自带预览视为用户已收到。
 
 ### 0. 正式生产能力预检
 
-用户要求实际创作或编辑产物时，在写 Brief、调用媒体工具或编写 HTML 前，先按交付环境核对能力。默认 Canvas 环境需要 `design-cli`、`present_files` 与 `FileBatchUpload`；Mobile 按其专用预检，不要求 Canvas CLI。两种环境凡需交付上述媒体产物，还须核验宿主可用的 `RichMediaCard` 展示能力；接口及资源字段按实际运行环境契约使用，不根据组件名猜造调用或标签参数。仅交付 HTML 预览和画布卡片时不额外要求此能力。两种环境均按本次素材计划检查实际需要的图像生成、编辑和抠图能力；纯 Coding 不要求无关媒体工具。HTML 页面自检仅运行 `scripts/runtime/shot.py`，内部通过 Playwright 直接使用系统 chromium-1169，配合 Pillow 完成测量与截图；HTML 必须在 html 标签声明 data-canvas-width 和 data-canvas-height 正整数属性，预览图仍需 CDN 上传能力。只有脚本返回退出码 `3`、确认属于执行失败时，才允许跳过自检并记录“预览未验证”，按 [预览策略](references/workflow/html-preview.md) 继续可完成的交付；退出码 `1` 必须修正并重跑。不调用 artifact-preview／artifacts-preview Skill，也不另行操作浏览器自检。能力可以由已安装 CLI、原生工具或运行环境注入，但名称相似的普通文件展示、浏览器截图、Markdown 链接和上传命令不能冒充。
+用户要求实际创作或编辑产物时，在写 Brief、调用媒体工具或编写 HTML 前，先按交付环境核对能力。默认 Canvas 环境需要 `design-cli`、`present_files` 与 `FileBatchUpload`；Mobile 按其专用预检，不要求 Canvas CLI。两种环境凡需交付图片／视频，还须核验宿主实际支持的 `RichMediaCard` 展示能力；接口与资源字段以当前宿主契约为准，不根据组件名猜造调用或标签参数。仅交付 HTML 预览和画布卡片时不额外要求此能力。两种环境均按本次素材计划检查实际需要的图像生成、编辑和抠图能力；纯 Coding 不要求无关媒体工具。非标准执行环境选定 HTML 路线后、生产前先运行 `scripts/runtime/shot.py --check-runtime` 检查 Playwright、Pillow 与预装 Chromium；预检失败记录环境缺口，不临时切换浏览器。Windows 环境额外参考 [`windows-compat.md`](references/workflow/windows-compat.md)。HTML 页面正式自检仍仅运行 `scripts/runtime/shot.py <html_path>`，内部通过 Playwright 使用同一 Chromium，配合 Pillow 完成测量与截图；HTML 必须在 html 标签声明 data-canvas-width 和 data-canvas-height 正整数属性，预览图仍需 CDN 上传能力。只有脚本返回退出码 `3`、确认属于执行失败时，才允许跳过自检并记录“预览未验证”，按 [预览策略](references/workflow/html-preview.md) 继续可完成的交付；退出码 `1` 必须修正并重跑。不调用 artifact-preview／artifacts-preview Skill，也不另行操作浏览器自检。能力可以由已安装 CLI、原生工具或运行环境注入，但名称相似的普通文件展示、浏览器截图、Markdown 链接和上传命令不能冒充。
 
 任一必需能力缺失时，立即停止正式生产，返回 `RUNTIME_CAPABILITY_MISSING`，逐项列出缺失能力及其阻断阶段；不得创建 Workspace、生成媒体、写入画布、先做半套 HTML，或宣称可以完成交付闭环。只做方案、提示词、审查或 Skill 维护时不要求这些生产能力。后续发现环境新增了全部能力后，从本预检重新开始。
 
@@ -75,35 +74,42 @@ HTML 需要远程字体时，先读 [Web 字体契约](references/rendering/web-
 
 公共字段、各品类内容与视觉字段、未命中品类的通用字段统一参考 [任务 Brief](example/brief.md)；只完善当前任务对应条目，不复制整份字段目录。纯 Coding 由冻结 Brief 直接进入 HTML；AI + Coding 在正式图片调用前建立 [轻量素材清单](example/asset-manifest.md)。
 
-用户提出实际创作产物需求后，先按初始路由完整读取已命中的任务策略 Ref，再按 [画布资产语义目录工作流](references/workflow/canvas-asset-organization.md) 在 `active_workspace_id` 中定位本任务对应的设计 Brief。新任务在对应语义位置创建一份；连续轮次或已有任务读取并更新原 Brief，禁止另建同主题副本。路由确定后，先把当前对话上下文与待补项写入同一最小 Brief，再澄清内容阻塞项；后续每次取得澄清回复，都立即增量回写这份 Brief，再继续下一步。
+用户提出实际创作产物需求后，必须在读取任何品类 Spec、Visual System 或 media ref 前，按 [画布资产语义目录工作流](references/workflow/canvas-asset-organization.md) 在 `active_workspace_id` 中定位本任务对应的设计 Brief。新任务在对应语义位置创建一份；连续轮次或已有任务读取并更新原 Brief，禁止另建同主题副本。先把当前对话上下文与待补项写入同一最小 Brief，再进入通用澄清；后续每次取得澄清回复，都立即增量回写这份 Brief，再继续下一步。
 
 连续长页先在 [任务 Brief](example/brief.md#整体方案与逐单元内容) 记录相邻屏的叙事关系与交接，由对应品类 Visual 决定同一母图延展、结构化分隔或切屏；渐变、mask 与 blend 仅按 [HTML 组装的屏间过渡路由](references/workflow/html-assembly.md#屏间过渡路由基础方案优先) 处理背景层并经 [屏间过渡验收](references/workflow/html-validation.md#屏间过渡路由验收) 复核，两张独立完整主图不得直接像素融合。
 
-默认追求内容充实、主次清楚的设计。用户未要求极简或原文原样呈现时，按[内容创作与事实边界](references/style/shared/content-truth.md)主动扩展已有信息与文案，并结合细节图、图注、场景和阅读层次丰富表达，不把短输入直接等同于稀疏成品。先确定新增内容的价值，再分配版面；保留服务焦点和阅读的留白，不靠重复文案、缩小字号、放大装饰或虚构事实增加密度。用户锁定的文案、构图与载体约束优先。
+画面应以真实内容为主体，避免无职责的大块留白；优先调整内容编排、栏宽、模块尺寸和间距；保留服务阅读的留白，不以拉高空壳、放大装饰或虚构内容补空；排版合理美观。
 
-进入具体品类规划与生产前，设计 Brief 至少必须明确：
+进入品类 Ref 前，设计 Brief 至少必须明确：
 
 1. **主题**：本次设计实际表达的主题。
 2. **商品**：商品名称、类型及对应真实素材／身份来源；没有实体商品时明确记录“无实体商品／不适用”，并写明实际核心对象。
 
-主题或商品仍不明确时，先按 [澄清流程](references/workflow/clarification-strategy.md) 完成必要澄清，不得进入具体设计与生产；已确定品类的规则可在此前读取。Brief 始终使用自然语言描述内容和视觉方案，除短采用记录的 ID、源版本、范围和内容映射外，不输出坐标、色值表或 CSS 参数副本；这些实现值直接落入最终 HTML，AI 图片调用参数只进入素材清单。执行品类规划时，在已有 Brief 上追加内容结构、视觉意图和人类可读的验收重点；若此时缺少 Brief，先按当前上下文创建并填写已知信息，补齐主题和商品后再继续品类扩充。已经存在对应 Brief 时禁止重复创建。路由尚未确定时，按初始路由规则先澄清，再读取命中 Ref 并建立／复用 Brief；不提前加载互斥品类。只要用户要的是实际创作产物，无论请求发生在新开轮还是连续轮次，都必须经过本门禁；只要方案、提示词、脚本、分镜、建议或审查时不创建产物 Brief。
+主题或商品仍不明确时，先按 [澄清流程](references/workflow/clarification-strategy.md) 完成通用澄清，不得读取品类 Ref。Brief 始终使用自然语言描述内容和视觉方案，除短采用记录的 ID、源版本、范围和内容映射外，不输出坐标、色值表或 CSS 参数副本；这些实现值直接落入最终 HTML，AI 图片调用参数只进入素材清单。品类 Ref 原则上只在已有 Brief 上追加品类内容结构、视觉意图和人类可读的验收重点；若进入品类 Ref 时发现本任务确实没有 Brief，不得停止或空跑，必须立即按当前上下文在对应语义位置创建，先补齐主题、商品和其他已知信息，再继续品类扩充。已经存在对应 Brief 时禁止重复创建。主 `SKILL.md` 内的请求类型与生产轨道判断不属于品类 Ref，可以在本门禁前完成。只要用户要的是实际创作产物，无论请求发生在新开轮还是连续轮次，都必须经过本门禁；只要方案、提示词、脚本、分镜、建议或审查时不创建产物 Brief。
 
-### 3. `image_gen`／`image_edit` 结果直接交付
+### 3. 每个产物执行双通道闭环
 
-每次调用 `image_gen`／`image_edit` 时，若当前对话存在有效 Workspace ID，必须已经作为工具参数传入。工具成功返回后，由主 Agent 立即使用 `RichMediaCard` 将原始结果逐项交付给用户；每次只交付一个结果。确认该结果已交付给用户后，才视为媒体交付成功，不再为该结果执行 `design-cli +create`、交付前 `+get`、`FileBatchUpload`、下载、复制、重传或另建 IMAGE Item。所有本轮结果直交完成后，必须按目录策略使用 `+tree`／`+ls` 定位真实对象、`+get` 读取实际内容并仅更新 path；该产后回读不得延迟直交，也不得作为媒体准出或二次交付。
+每个生成／编辑结果就绪后，必须在同一调度点同步启动并等待以下两个分支：
 
-素材清单或 Brief 记录实际 Workspace ID、工具调用标识、原始结果句柄、用途和交付状态即可；产后整理再记录真实 Item ID 与最终 path。工具预览、缩略图、URL、Markdown 图片或文本路径均不能替代通过 `RichMediaCard` 完成的实际交付。此简化只适用于 `image_gen`／`image_edit` 结果；完整 HTML 的上传、顶层 HTML Item 写入／回读及卡片交付保持原流程。
+1. **画布分支**：使用工具返回的原始短链，通过 `design-cli` 写入 `active_workspace_id`，再用 `+get` 回读确认。新资产或内容修改后的新版本均用 `+create`；`+update` 仅修改协议允许的顶层 `brief`／`path`。
+2. **交付分支**：由主 Agent 将工具直接返回的该项产物单独交给 `RichMediaCard`；每次只交付一个产物。
+
+两个分支均成功后，该产物才算完成。不得先完成一个分支再启动另一个；工具预览、缩略图、URL、Markdown 图片或文本路径均不能替代 `RichMediaCard`。
+
+画布持久化是硬门禁：`RichMediaCard`、HTML 中的媒体引用和最终 HTML Item 都不能替代媒体结果自身的 `design-cli +create`／`+get`。主视觉确认后的正式生产同样覆盖候选、未采用版本、抠图源和中间素材；全部结果逐项闭环、固定并行批次汇合且素材清单回填前，不得开始 HTML 组装，也不得事后集中补写。
+
+媒体工具产出的 IMAGE／VIDEO 必须把原始短链逐字写入 `<asset url>`；不得为交付而下载、复制、重传或换链。只有未经过媒体工具且仅存在于本地的用户上传资产或渲染／导出产物，才可先上传取链。
 
 ### 4. 串行与并行
 
-- `serial`：当前产物通过 `RichMediaCard` 交付成功前，不得开始依赖它的下一个生成、编辑、选图或组装。
-- `parallel`：只并发预先锁定且互不依赖的固定批次；每个结果使用 `RichMediaCard` 逐项直接交付，整批交付状态汇合前不得选图、追加生成或继续下游步骤。同一锚点衍生 N 个变体时发起 N 次独立 `image_edit`，每次传入同一张已确认锚点，不用单次多结果调用代替。
+- `serial`：当前产物的两个分支汇合前，不得开始下一个生成或编辑。
+- `parallel`：只并发预先锁定且互不依赖的固定批次；每个结果各自建立双分支闭环，整批汇合前不得选图、追加生成或继续下游步骤。同一锚点衍生 N 个变体时发起 N 次独立 `image_edit`，每次传入同一张已确认锚点，不用单次多结果调用代替。Mobile 每项只汇合自身直接交付状态。
 
 ### 5. 质量与失败出口
 
-- 成功产出的内容即使效果不佳、文字错误或身份漂移，也必须先通过 `RichMediaCard` 直接交付；禁止静默丢弃或先修复再交付。
-- `image_gen`／`image_edit` 生成的产物必须通过 `RichMediaCard` 直接交付；AI 图片内文字不准确时，交付后只记录问题并等待用户提出修改要求，禁止过度反思或自主重生。Coding 的原生 DOM 文字仍须正常修正。
-- `RichMediaCard` 交付失败时，立即停止后续生成、编辑、选图及依赖步骤；不得把工具预览或 Workspace 中可能存在的对象视为已交付。
+- 成功产出的内容即使效果不佳、文字错误或身份漂移，也必须先完成双通道闭环；禁止静默丢弃或先修复再交付。
+- `image_gen`／`image_edit` 生成的产物必须直接通过 `RichMediaCard` 交付；AI 图片内文字不准确时，交付后只记录问题并等待用户提出修改要求，禁止过度反思或自主重生。Coding 的原生 DOM 文字仍须正常修正。
+- `RichMediaCard` 失败时，立即停止后续生成、编辑、选图及依赖步骤。任一分支失败都保留另一分支的真实状态，不得把未完成闭环的产物视为已交付。
 
 ## 一、场景路由策略
 
@@ -115,20 +121,20 @@ HTML 需要远程字体时，先读 [Web 字体契约](references/rendering/web-
 
 | 品类与意图 | 生产路线 | 输出角色 |
 |---|---|---|
-| 邀请函（含活动、婚礼、开业邀请）；非海报形式的通知／公告／喜报／捷报／成果战报／节庆贺图 | ai-coding（可编辑设计） | 高质量无字底图／主视觉素材＋HTML 原生文字排版 |
+| 通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图（含婚礼、活动、开业邀请） | ai-coding（可编辑设计） | 高质量无字底图／主视觉素材＋HTML 原生文字排版 |
 | 用户明确要求纯代码制作通知／邀请函，或简洁文字公告且无摄影／复杂材质需求 | pure-coding | 原生文字与必要的规则图形 |
-| 未要求可编辑的海报（含活动宣传、通知公告、喜报／成果、节庆主题海报）、未要求可编辑的单张社媒封面、单一 Logo、独立 IP 角色／表情／动作图片，以及独立摄影／插画／产品视觉 | pure-image | 按请求范围生成完整图片，不因角色图数量较多扩成系统手册 |
+| 海报（上述通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图除外）、未要求可编辑的单张社媒封面、单一 Logo、独立 IP 角色／表情／动作图片，以及独立摄影／插画／产品视觉 | pure-image | 按请求范围生成完整图片，不因角色图数量较多扩成系统手册 |
 | 社媒套图／轮播图（未要求可编辑） | pure-image | 先以同一轻量 Brief 规划整套页序、文案与共享视觉，再逐页生成包含封面在内的完整成品图片；读取现有 pure-image 平台 Ref 与 pure-image-sequence，不读取 Coding Spec／Visual |
 | 社媒套图／轮播图，用户要求可编辑设计或文字 | ai-coding（可编辑设计） | 同一 Spec／Visual Brief 统筹整套，封面与内页均以图片素材＋HTML 原生文字组装；仅指定局部可编辑时，该区域必须为原生文字，封面不例外 |
 | 详情页、连续长图、Logo 系统、VI／IP 视觉系统 | ai-coding（可编辑设计） | 按需生成视觉素材，由 HTML 组织可编辑文字与布局；VI 除完整 HTML 生成／修改与 `shot.py` 自检必须调用 Subagent 外，其余规划、Logo、首屏、素材、MediaKit、检查、上传、CLI 与交付均由 Main Agent 亲自完成。VI 禁止直接交付 `.html` 源文件：用户只收到 CDN＋Markdown 同尺寸预览，以及默认 Canvas 中由 `FileBatchUpload` 上传后经 `design-cli ... +create`／`+get` 闭环的唯一顶层 HTML Item 画布卡片；Mobile 仅预览。Logo 确认并告知规划后，第一项正式图像生产必须以该 Logo 为唯一输入直接调用 `image_edit` 生成符合 VI 首屏定义的完整首屏效果；Logo 作为独立层进入排版前必须用 MediaKit 去除图片背景并核验真实 Alpha，禁止混合模式代替；全板采用大图、大字、低空白策略。未指定载体时采用 1600px 宽的模块化长板，以约 16:9 横向视域组织章节 |
 | 用户明确要求全部由图像模型生成且不要 HTML 排版的通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图／长图／详情页／IP 系统 | pure-image | 完整位图；目标高度／宽度 > 16／9 时分段生成后拼接 |
 | 三折页、菜单、简历等结构化设计 | ai-coding（可编辑设计） | 按对应品类 Spec 规划素材与 HTML |
 | 要求可编辑的图文信息图、解释性图解 | ai-coding（可编辑设计） | 图片承载实物／场景／插画，HTML 承载准确数据、标签与关系 |
-| 明确要求文字或设计可编辑的海报／单张社媒封面；未命中专用品类、但明确要求可编辑的其他单页视觉 | ai-coding（可编辑设计） | 读取通用视觉兜底策略；图片承担复杂视觉，指定可编辑内容由 HTML 原生实现 |
+| 未命中专用品类、但明确要求文字或设计可编辑的单页视觉 | ai-coding（可编辑设计） | 读取通用视觉兜底策略；图片承担复杂视觉，指定可编辑内容由 HTML 原生实现 |
 | 数据看板、分析报告、可视化报表或以图表分析为主体的销售／赛事数据战报 | pure-coding | 使用真实数据生成可编辑 DOM／SVG 图表与说明 |
 | 未命中上述品类的确定性代码图形／功能表达 | pure-coding | 已有资产、DOM／SVG 与代码图形 |
 
-“生成一张”“导出 PNG”“用 AI 做”不等于明确要求纯生图；只有“全部用图像模型生成、不要 HTML 排版”等明确制作方式才覆盖主表列明的默认路线。海报默认 pure-image，用户明确要求文字或设计可编辑时进入 ai-coding；活动邀请函默认 ai-coding。按用户要求的产物判断，活动主题、日期、地点、报名信息或手绘等参考风格不把活动宣传海报变成邀请函，也不触发 Coding。需要筛选、比较、趋势或多图表分析的数据战报属于 pure-coding，不能只按“战报”二字判断。
+“生成一张”“导出 PNG”“用 AI 做”不等于明确要求纯生图；只有“全部用图像模型生成、不要 HTML 排版”等明确制作方式才覆盖主表列明的默认路线。传播型成果海报、销售喜报、成交捷报、赛事赛果、获奖／签约／晋升／录取喜报及演出／项目成果战报都属于公告海报家族并默认 ai-coding；需要筛选、比较、趋势或多图表分析的数据战报属于 pure-coding，不能只按“战报”二字判断。
 
 单一 Logo 或独立角色图片是视觉资产；Logo 系统组织主标、变体、组合与用法，IP 系统组织角色设定、身份规则、必要延展与应用，VI 则按需求整合品牌识别体系。系统是否成立取决于交付职责，不取决于图片数量；仅做角色或表情包不扩成手册。Logo 系统与 VI 保持 ai-coding，IP 系统默认 ai-coding、明确要求纯图时按主表执行。母版可新建或复用，不因此改变整套路线；独立 IP 系统不要求附带 Logo。可编辑说明与布局由 HTML 承担，角色位图不承诺内部图层可编辑。
 
@@ -142,38 +148,38 @@ HTML 需要远程字体时，先读 [Web 字体契约](references/rendering/web-
 
 用户要求可编辑设计或文字时，套图走 `ai-coding`，才读取 Coding 套图 Spec／Social Visual。封面与内页遵循正常素材生产、HTML 组装和 DOM／渲染检查；要求可编辑的文字必须由原生文本承载，不能以完整封面位图替代。仅指定局部可编辑时，该区域同样必须原生排字，非目标区域沿既有艺术标题准入与真实照片身份保留规则处理。已有 HTML 编辑保留原格式。两条路线均须完成全部页次、逐页与系列检查及原门禁要求的整套交付，不能以封面完成代替任务完成。
 
-HTML 创建／整体重做以 Spec 内容骨架和 Visual 方向假设参与选型，不预先定死分段、配色与构图；需求宽泛时可先查看少量候选摘要帮助形成方向，无需固定检索轮次。按 [组合参考筛选](assets/templates/css/README.md#brief-combination-match) 评估同品类、同作用范围的整页关系；简历风格查询按其 Visual 先召回适配布局并比较关联组合，其他品类优先比较 CSS 组合。先看整体信息层级、图文关系与视觉语言能否适配用户内容，再用原子补足或替换局部。用户锁定项和事实保持不变；模型自选的栏数、卡片形状或照片位置仍可随组合比较调整，不能先锁死再据此排除候选。最终 Brief 写适配后的可见关系及短 CSS 采用记录，不复制技术参数；确无适用组合时才转原子组装或自主实现，沿原流程推进。
+HTML 创建／整体重做在 Spec 形成内容骨架、Visual 提出可调整的方向草案后，按 [组合参考筛选](assets/templates/css/README.md#brief-combination-match) 评估同品类、同作用范围的整页关系；简历风格查询按其 Visual 先召回适配布局并比较关联组合，其他品类优先比较 CSS 组合。先看整体信息层级、图文关系与视觉语言能否适配用户内容，再用原子补足或替换局部。用户锁定项和事实保持不变；模型自选的栏数、卡片形状或照片位置仍可随组合比较调整，不能先锁死再据此排除候选。最终 Brief 写适配后的可见关系及短 CSS 采用记录，不复制技术参数；确无适用组合时才转原子组装或自主实现，沿原流程推进。
 
 1. **pure-image**：已选 pure-image 的任务读取 [纯生图创建](references/workflow/creation/pure-image.md)，按品类读取现有 pure-image Ref，以轻量 Brief 编译完整成品 Prompt；社媒套图默认进入本项，读取对应纯图平台 Ref 与 [页序、分段与拼接](references/workflow/pure-image-sequence.md)，先规划整套再逐页生成完整图片，不读取 Coding Spec／Visual。其他纯生图多张系列按需增加页序计划，纯图长页增加分段计划。必要输入齐备后直接生成，不进入可编辑设计的 KV 提案、素材清单或 HTML 组装。准确文案来自用户或授权来源；Prompt／模型 Ref 不得因文字密度、价格、日期或字体要求重新决定路线。套图明确要求可编辑设计或文字时由主路由选择 ai-coding；仍有互相冲突的制作或功能要求时，说明具体冲突并按澄清流程解决，不静默切换。
 2. **ai-coding（可编辑设计）**：读取 [可编辑设计创建](references/workflow/creation/ai-coding.md)。电商详情页／社媒长图的新建与整体重做由品类和操作类型触发强制 KV 门禁，执行：内容骨架、逐屏方案与完整候选 Brief → 风格选择 → [视觉 KV 生成、展示与确认](references/workflow/visual-kv-clarification.md)（生成要点见 [素材 Prompt 指南](references/style/coding/ai-coding/asset-prompt-guide.md#kv-visual-generation)）→ 完整 Brief → 轻量素材清单 → 素材生产 → HTML 组装；方向已锁定时生成 1 个 KV，仍须展示并等待用户明确批准当前版本。其他品类执行 Brief → 轻量素材清单 → 素材生产 → HTML 组装，不插入 KV。“直接开始”“其他你决定”以及普通参考图或已有素材都不构成确认依据，只能减少前置文字询问；当前版本的确认依据必须是展示后的用户明确批准，或按 KV 专项规范登记的等价既有确认设计。续做上述两类任务时，先核验确认依据与当前版本、范围相匹配；依据有效后继续，否则回展或更新 KV 并等待确认。本路线的新建／整体重做默认必须结合图像生成或图像编辑工具，禁止整份作品仅靠 Coding 完成。生成／编辑产物须承担主视觉、场景、插画、材质或其他明确视觉职责，并实际绑定到最终作品；只调用工具却弃用结果不算完成。核心身份衍生用 image_edit，新摄影／插画／场景／复杂材质用 image_generate，准确文字、数据与规则图形用 DOM／CSS／SVG。一般新建任务已有素材不免除计划中必要的图像生产；通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图已有合适底图且不需要其他新图时，允许原素材直接复用，不为凑调用生成无关图片。局部改字、间距等沿用原素材，不为满足调用次数重生无关图像。只有用户明确限制图像工具时才遵守该限制，不主动增加制作方式澄清；素材决策不改变品类路线。
 3. **pure-coding**：仅执行主表允许的代码任务及对应源编辑，读取 [纯 Coding 创建](references/workflow/creation/pure-coding.md)。已进入 ai-coding 的新建／整体重做不得因素材现成或代码可实现而改走 pure-coding；仅沿用素材的局部修改也不改变原路线。含实物摄影、设备展示、品牌应用场景或解释性插画的 VI／信息图，按 [对象与素材分工](references/workflow/creation/ai-coding.md#asset-responsibility) 处理；“可编辑”不要求把图像对象重画为代码。
 
-已按主路由进入 ai-coding 的通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图及可编辑海报，按 [底图与文字分工](references/style/coding/scenarios/announcement-poster-spec.md#announcement-hybrid) 制作：复用合适的真实底图或生成无字主视觉，标题、正文、姓名、日期、地点、结果数字、单位和行动信息默认全部原生排版；只有明确需要艺术字的主标题才按艺术标题准入另行处理。底图已有不改变 ai-coding 路线，也不为路线名称强行重新生图。
+通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图优先按 [底图与文字分工](references/style/coding/scenarios/announcement-poster-spec.md#announcement-hybrid) 制作：复用合适的真实底图或生成无字主视觉，标题、正文、姓名、日期、地点、结果数字、单位和行动信息默认全部原生排版；只有明确需要艺术字的主标题才按艺术标题准入另行处理。底图已有不改变 ai-coding 路线，也不为路线名称强行重新生图。
 
-HTML 路线在最终 Brief 冻结前，按 [组合参考筛选](assets/templates/css/README.md#brief-combination-match) 完成组合比较、适配判断和必要的原子补充；CSS 库已随 Skill 提供，不依赖用户另行上传或点名。冻结后按 [实现绑定](references/workflow/html-assembly.md#css-recipe-binding) 读取选中正文与依赖，展开真实 DOM、CSS 和内嵌 SVG，预览时核对实际效果；后续变化只复查受影响部分。
+HTML 路线在最终 Brief 冻结前，按 [组合参考筛选](assets/templates/css/README.md#brief-combination-match) 完成组合比较、适配判断和必要的原子补充；CSS 库已随 Skill 提供，不依赖用户另行上传或点名。冻结后按 [实现绑定](references/workflow/html-assembly.md#css-recipe-binding) 读取选中正文与依赖，展开真实 DOM、行内样式和内嵌 SVG，预览时核对实际效果；后续变化只复查受影响部分。
 
 新建可编辑设计的正式源为完整 HTML，按 [HTML 固定画布与交付协议](references/html/coding-rendering.md#html-fixed-canvas-delivery) 实现。既有 HTML 源编辑保持完整 HTML，不因上述新建品类规则压平或迁移；独立图片编辑沿图片路线。
 
 前置文字澄清只处理会改变品类、意图或结果的真实歧义；Style、字体、模型改写和验收文件不得重新裁定路线，也不替代适用品类的 KV 展示确认。
 
-各品类的素材设计按“方案确定画面职责 → 设计目标配图 → 判断参考图提供什么 → 选择编辑、生成、抠图或复用 → 按最终版面验收”推进，具体意图写入[每张图片的设计意图](example/brief.md#每张图片的设计意图)。原图不默认就是成品素材，处理便利不能降低设计目标；用户锁定原图、身份与事实边界以及各路线的生产和确认要求继续优先。可编辑长图的背景、首屏和跨段关系按 [素材分工与背景决策](references/workflow/creation/ai-coding.md#background-visual-responsibility) 形成可执行计划，再由 [HTML 组装](references/workflow/html-assembly.md#4-素材合成与实际测量) 绑定素材、共享场域与过渡。背景颜色不替代背景表现方式，逐屏说明不替代接缝实现；以实际合成结果核验。
+可编辑长图的背景、首屏和跨段关系按 [素材分工与背景决策](references/workflow/creation/ai-coding.md#background-visual-responsibility) 形成可执行计划，再由 [HTML 组装](references/workflow/html-assembly.md#4-素材合成与实际测量) 绑定素材、共享场域与过渡。背景颜色不替代背景表现方式，逐屏说明不替代接缝实现；以实际合成结果核验。
 
 #### HTML 路线唯一生产顺序
 
 所有纯 Coding 与 AI + Coding 新建任务必须按下列顺序执行。Workspace 绑定、用户锚点登记和历史资产回读是基础设施前置动作，不改变设计阶段的先后，也不授权提前生成素材。
 
-1. **获取需求并路由**：提取产物、用途、对象、受众、真实内容、参考、尺寸、可编辑范围和交付要求，判断唯一品类与生产轨道，并完整读取已命中的任务策略 Ref；路由不明时先按初始路由规则澄清。此时不生图、不选 CSS／SVG、不写 HTML。
-2. **创建 Brief**：新任务创建唯一 `brief.md`，连续任务更新原 Brief。先记录已知需求、事实来源、主题、商品／核心对象和待补项；不等待完整设计方案形成才建档，也不得另建视觉 Brief。
+1. **获取需求并路由**：提取产物、用途、对象、受众、真实内容、参考、尺寸、可编辑范围和交付要求，判断唯一品类与生产轨道。此时不生图、不选 CSS／SVG、不写 HTML。
+2. **创建 Brief**：新任务创建唯一 `brief.md`，连续任务更新原 Brief。先记录已知需求、事实来源、主题、商品／核心对象和待补项；不得等待品类 Ref 读完才创建，也不得另建视觉 Brief。
 3. **按需澄清**：只询问会改变产物、结构、事实、身份、成本或交付的阻塞项；可安全决定的视觉细节由 Agent 处理。回复立即写回当前任务的同一 Brief。
-4. **应用品类 Ref、完成视觉草案并校验 CSS 能力**：先按唯一品类 Spec 补齐内容、页面／章节职责、准确文案和硬约束；有设计参考时加入 11 维底稿、逐块绑定、七类机制与六步重建；再按对应 Visual System 一并确定风格、配色、构图、图文组合与字体方案。字体方案按品牌与设计气质明确标题、正文及涉及的其他文字角色所用字体和搭配理由，通过既有[字体推荐入口](references/rendering/font-recommendation-list.md)落实到可用字体资源后写入同一 Brief；不得仅因系统预装或模板默认而选用字体。Visual 草案形成后，先按 [组合参考筛选](assets/templates/css/README.md#brief-combination-match) 未知候选按品类 Visual 召回整页关系：简历风格查询用 `search --kind layout` 并比较关联组合，其他查询用 `search --kind combination`，已知或召回的候选用 `describe` 比较摘要，必要时用 `get <ID> --prose` 补读设计正文，比较可复用的整体关系并适配真实内容；再查询组合未覆盖或需要替换的局部原子，不把示例人物、配色或栏目数量当成必须照搬的条件，也不因库里存在某种效果新增无职责装饰。Brief 逐项说明需要哪些图片、每张图表现什么、与哪段文字如何组合，以及哪些 Coding 文字必须保持可编辑；写校验后的可见结果，并按 example/brief.md 保存选中 CSS ID、源路径与版本、范围和内容映射；不复制参数或查询过程。
+4. **读取品类 Ref、完成视觉草案并校验 CSS 能力**：先读唯一品类 Spec 补齐内容、页面／章节职责、准确文案和硬约束；有设计参考时加入 11 维底稿、逐块绑定、七类机制与六步重建；再读对应 Visual System 补齐风格、构图、图文组合、字体角色与效果意图。Visual 草案形成后，先按 [组合参考筛选](assets/templates/css/README.md#brief-combination-match) 未知候选按品类 Visual 召回整页关系：简历风格查询用 `search --kind layout` 并比较关联组合，其他查询用 `search --kind combination`，已知或召回的候选用 `describe` 比较摘要，必要时用 `get <ID> --prose` 补读设计正文，比较可复用的整体关系并适配真实内容；再查询组合未覆盖或需要替换的局部原子，不把示例人物、配色或栏目数量当成必须照搬的条件，也不因库里存在某种效果新增无职责装饰。Brief 逐项说明需要哪些图片、每张图表现什么、与哪段文字如何组合，以及哪些 Coding 文字必须保持可编辑；写校验后的可见结果，并按 example/brief.md 保存选中 CSS ID、源路径与版本、范围和内容映射；不复制参数或查询过程。
 5. **执行适用品类的 KV 展示确认并冻结最终 Brief**：AI + Coding 电商详情页、社媒长图的新建与整体重做由品类和操作类型触发，不以 Agent 判断方向是否存在分歧为条件。候选 Brief 完整描述 1–2 个可执行方向、准确文字、参考继承、KV 用途和验收标准后，生成并展示 KV；方向已锁定时生成 1 个 KV，仍须等待用户明确批准当前版本。用户选择、修改或混合方向后，把唯一采用方向写回同一 Brief；KV 发生变化时重新展示并等待当前版本获批，再冻结最终 Brief。确认依据及续做规则按本路线第 2 项执行。其他品类不生成候选 KV，直接确认内容结构、全部准确可见文案、决策优先级、视觉命题与注意力路径、逐单元相对构图、图文占比、图片层级与背景关系、字体角色、容器与表面、跨单元连续、载体适配、极端内容与降级、素材生产意图和人类可读验收标准已经闭合。
 6. **按路线准备实现输入**：pure-coding 不创建中间参数文件，直接复用冻结 Brief。ai-coding 按 [轻量素材清单](example/asset-manifest.md) 登记正式图片的用途、生产方式、参考输入、身份来源、Prompt、比例、尺寸、安全区、消费者与准出标准，并执行 `validate_asset_manifest.py`；不得记录 DOM 坐标、字号、颜色或 CSS 参数。
 7. **AI + Coding 生产并准出正式图片**：只生成素材清单中已登记的正式图片；普通可编辑文字、规则容器和简单图形不得转交生图。新生成与复用素材在使用前都按 [素材使用规范](references/style/coding/ai-coding/asset-prompt-guide.md#6-独立素材与图片编辑)判断是否需要抠图，完成必要处理并核验实际背景／透明状态后才准出；由 Agent 判断并记录，不增加逐图用户确认。每个结果准出后在原记录回填真实 URI、尺寸、Alpha 和版本，编写 HTML 前执行 `validate_asset_manifest.py --require-ready`；声明校验通过不替代实际素材核验。用户反馈若改变内容、主构图或视觉方向，先更新同一 Brief 并保留版本记录，再更新受影响素材记录。
-8. **编译完整 HTML**：按冻结 Brief 和就绪素材生成一个固定画布 HTML5 文档；参考驱动长图先在同一文档落实首屏与相邻代表内容屏，按 [参考继承验证](references/style/coding/ai-coding/reference-analysis.md#5-html-重建与验证) 渲染核验后再扩展其余章节，最终完整自检与交付要求不变。消费第 4 步已比较的 CSS／SVG 候选；选中实现及依赖在 Brief 冻结后使用 `query-css-library.py get <ID> --dependencies` 读取，必要结构用 `template` 精确提取。素材就绪后的组装阶段校核实现与真实素材、作用范围和消费者的绑定，把参数落实为真实 DOM、CSS 与内嵌 SVG；已有读取结果可复用，修改只回查受影响部分。Brief 标记为 Coding 的标题、正文、数字、标签、CTA 和注释必须是可编辑真实 DOM 文字；只有 Brief 明确准入的一体化图内文案或艺术标题可使用图片。HTML 是坐标、层级、字体、样式和资产消费位置的唯一实现事实源。
+8. **编译完整 HTML**：直接按冻结 Brief 和就绪素材生成一个固定画布 HTML5 文档。消费第 4 步已比较的 CSS／SVG 候选；选中实现及依赖在 Brief 冻结后使用 `query-css-library.py get <ID> --dependencies` 读取，必要结构用 `template` 精确提取。素材就绪后的组装阶段校核实现与真实素材、作用范围和消费者的绑定，把参数落实为真实 DOM、行内样式与内嵌 SVG；已有读取结果可复用，修改只回查受影响部分。Brief 标记为 Coding 的标题、正文、数字、标签、CTA 和注释必须是可编辑真实 DOM 文字；只有 Brief 明确准入的一体化图内文案或艺术标题可使用图片。HTML 是坐标、层级、字体、样式和资产消费位置的唯一实现事实源。
 9. **页面自检**：交付前仅运行 `python3 <SKILL_DIR>/scripts/runtime/shot.py <html_path>`；修改后重跑。先读 JSON 中的错误、hint 和自然高度，再看完整截图；主图读失败才看分片。简历、三折页及用户锁定尺寸的作品先在固定纸幅内预留安全区并分配主体空间，测高只用于诊断容量；仅未锁高长页参考实际测量回填四处高度。按 [内容容量与留白](references/style/coding/composition-layout.md#容器内容框间距与顶边) 分别核对整页、各栏／折面和容器内部，背景覆盖或页尾落底不代表内容分布合理。退出码 `1` 必须按实际问题修正并重跑；只有退出码 `3` 的执行失败可跳过并记录“预览未验证”。不调用其他预览 Skill 或 Browser Use，不伪造检查通过。
-10. **修正与交付闭环**：按实际 DOM 和截图修正完整 HTML；同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图仅走 CDN＋Markdown，不创建 IMAGE Item。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。失败返回 Brief、素材或 HTML 的最小责任阶段，不通过删改 Brief 目标迁就错误实现。
+10. **修正与交付闭环**：按实际 DOM 和截图修正完整 HTML；同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图不创建 IMAGE Item、不调用 `present_files`。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。失败返回 Brief、素材或 HTML 的最小责任阶段，不通过删改 Brief 目标迁就错误实现。
 
-跳过不适用项只能记录“不适用”并保持顺序，例如大多数品类第 5 步为“无需 KV”、pure-coding 第 6–7 步为“无需素材清单／无生图资产”；候选探索不得替代 Spec 内容判断与 Visual 设计推演，不得把 CSS 参数副本写入 Brief；选中 CSS ID 必须进入短采用记录，也不得先生成正式图片再补素材记录或边写 HTML 边补 Brief。KV 是唯一允许早于正式素材清单的图像生成例外，并且必须由已完成的候选 Brief 驱动。
+跳过不适用项只能记录“不适用”并保持顺序，例如大多数品类第 5 步为“无需 KV”、pure-coding 第 6–7 步为“无需素材清单／无生图资产”；不得在 Spec 内容骨架和 Visual 可见方向形成前查询模板来替代设计，不得把 CSS 参数副本写入 Brief；选中 CSS ID 必须进入短采用记录，也不得先生成正式图片再补素材记录或边写 HTML 边补 Brief。KV 是唯一允许早于正式素材清单的图像生成例外，并且必须由已完成的候选 Brief 驱动。
 
 所有连续滚动长图、详情长图、A+ 长图预览、信息长图和其他长页，须用有职责的影像、材质、光影、纹理、渐变或空间关系建立作品级背景系统；整页及连续背景组不得因素材缺失或实现方便退回无变化纯色加小图卡片。CSS 渐变与原生材质可以直接兑现背景职责，不强制生图。稳定纯色仅限有明确信息职责的局部信息区，并须说明增加纹理会削弱主体或版式；不得通过拆屏或拆容器把连续背景组伪装成多个局部例外。电商按当前 Spec／Visual 的背景职责与叙事关系核验，各品类均记录设计依据、范围和实际视觉证据。该规则不改变任何品类路由、CLI 或交付流程。
 
@@ -183,19 +189,19 @@ HTML 路线在最终 Brief 冻结前，按 [组合参考筛选](assets/templates
 
 - 提取受众、任务目标、核心信息、必备内容、品牌或审美约束、目标设备、交付形式与验收标准。
 - 对现有项目先检查技术栈、目录、组件、设计变量、依赖和未提交改动；扩展现有结构，不平行重建同类系统。
-- 阅读用户提供的全部参考，区分主参考与次参考：主参考决定整体视觉关系，次参考只提供局部母题，不能反向覆盖主参考。已选 ai-coding 路线且上传图承担模板、版式、风格或局部效果参考时，必须读取 [参考图解析与继承](references/style/coding/ai-coding/reference-analysis.md)，把清理后的 11 维底稿、逐块图文绑定、七类同源机制和六步目标重建写入同一自然语言 Brief。pure-image 在本路线内分析参考并用于完整图片生成，不因参考图进入 Coding 工作流。
+- 阅读用户提供的全部参考，区分主参考与次参考：主参考决定整体视觉关系，次参考只提供局部母题，不能反向覆盖主参考。只要上传图承担模板、版式、风格或局部效果参考，就必须读取 [参考图解析与继承](references/style/coding/ai-coding/reference-analysis.md)，把清理后的 11 维底稿、逐块图文绑定、七类同源机制和六步目标重建写入同一自然语言 Brief。
 - 此阶段只收集上下文，不承诺视觉方向，也不开始生图或 Coding。上下文齐备后才执行已选轨道；AI 原生视觉随后直接生成最终产物，仍不得插入视觉提案阶段。
 
 新建与生成存在两条不可跳过的交付门禁：
 
-1. **文件必须直接呈现**：图片、视频等成品与可视中间产物必须通过 `RichMediaCard` 直接交付给用户，不能只在文字中描述路径。`image_gen`／`image_edit` 已传入 Workspace ID 后，工具成功结果直接逐项交付，禁止重复执行媒体 CLI 写入／回读；串行模式在当前结果交付成功后再生成下一张，并行模式等待整批交付状态汇合。分图层 Coding + AI 生图的 HTML 是内部编译与 CLI 写入载荷，不是用户交付物：不得在对话中粘贴 HTML，不得把 `.html` 文件直接交给用户，也不得用 `present_files` 把 HTML 冒充为最终成品。
-2. **必须完成当前环境的 HTML 交付闭环**：按 [HTML 检查执行流程](references/workflow/html-validation.md) 取得严格同尺寸且完整的预览。同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图仅走 CDN＋Markdown，不创建 IMAGE Item。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。禁止 HTML Frame、按章节拆 Item 或直接交付原始 HTML。预览问题不阻断默认 Canvas 的 HTML 上传与写入，但当前环境的合格预览、CDN／Markdown 及所需卡片未完成时不得宣称完成。
+1. **文件必须直接呈现**：图片、视频等成品与可视中间产物必须通过 `RichMediaCard` 呈现，不能只在文字中描述路径。每张结果都同步启动“CLI 写入／回读”和“工具产物直接单项交付”两个并行分支；串行模式在该结果汇合后再生成下一张，并行模式等待整批汇合。分图层 Coding + AI 生图的 HTML 是内部编译与 CLI 写入载荷，不是用户交付物：不得在对话中粘贴 HTML，不得把 `.html` 文件直接交给用户，也不得用 `present_files` 或 `RichMediaCard` 把 HTML 冒充为最终成品。
+2. **必须完成当前环境的 HTML 交付闭环**：按 [HTML 检查执行流程](references/workflow/html-validation.md) 取得严格同尺寸且完整的预览。同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图不创建 IMAGE Item、不调用 `present_files`。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。禁止 HTML Frame、按章节拆 Item 或直接交付原始 HTML。预览问题不阻断默认 Canvas 的 HTML 上传与写入，但当前环境的合格预览、CDN／Markdown 及所需卡片未完成时不得宣称完成。
 
 分图层 Coding 必须先在候选 Brief 中明确本次主视觉及其可选方向。若场景触发视觉 KV，KV 视觉澄清画面应包含与当前产品、主题或核心内容直接相关的准确主标题，用于让用户确认主视觉与字形风格；不得生成随机英文、占位口号或未经授权的产品事实。确认结果写回并冻结最终 Brief，再执行 Brief → HTML。被确认的 KV 主标题只作为后续艺术字生成的字形、笔画、材质、边缘和色板参考，不得把压平 KV 文字直接当作独立标题层；社媒长图 Hero 可按品类规则整体复用满足正式槽位的 KV，不能假称其内部文字可拆。
 
 主视觉和风格确认后，先按生产单元分配文字：社媒长图按[一体化 Hero](references/style/coding/scenarios/social-long-image-spec.md#一体化-hero-与第-2-屏衔接)把主标题随首屏生成，小字倾向入图，可编辑要求优先；其余内容建立原生文字 DOM。下文仅规定独立艺术标题素材，不要求一体化 Hero 拆字。艺术字不是按标题级别批量生成：只允许用于**首屏／首图的主标题**，以及每个独立图片产物中被明确选为唯一最高视觉优先级的**最重要大标题**；同一图片默认最多一个艺术字主标题，没有明确第一标题时全部使用真实文本节点。章节标题、模块标题及其他一级标题即使语义层级为 H1，也不得因此自动生成为艺术字。简历和三折页的姓名及全部标题保持真实 DOM 文字，不进入独立字图生成／接入流程。其他品类命中准入的主标题按自己的准确源文字执行 [AI + Coding 艺术标题策略](references/workflow/creation/ai-coding.md#艺术标题改写策略)，并读取 [艺术标题 Prompt 与材质库](references/style/coding/ai-coding/art-title-prompt-library.md)；生成结果采用中粗、粗或特粗视觉重量，经均匀纯色底生成、逐字检查，并按最终消费者选择节点级混合模式或真实透明抠图后作为独立图片 DOM 层使用。除已明确分配到一体化 Hero 内的文案外，所有未命中独立艺术标题准入的标题与正文、参数、标签、图注和来源，统一从 [字体推荐入口](references/rendering/font-recommendation-list.md) 按语种、角色、形态和气质形成候选，以真实文案试排完成视觉判断；推荐清单不是封闭白名单，`select_fonts.py` 的结果只负责候选、缺口和诊断。候选进入正式 HTML 前，再按 [字体资源与执行契约](references/rendering/font-family-library.md) 核验实际 family、face、weight／style、许可、目标字形覆盖和 Web 加载并建立回退栈；用户锁定精确字体时，任一门禁失败都必须请求确认，不得静默替换。
 
-新建与已有 HTML 编辑中的独立艺术字统一按最终消费者分流：只用于已知、稳定的 HTML 背景时可保留纯色底并使用节点级混合模式，深色字体使用纯白底＋`mix-blend-mode: multiply`，浅色字体使用纯黑底＋`mix-blend-mode: screen`；需要透明导出、跨多个背景复用、背景未知或严格保持原字色时使用抠图透明 PNG。混合模式不得设在父容器或整页；两条路径都必须逐字、边缘、对比度、最终显示尺寸和完整画面验收。
+新建与已有 HTML 编辑中的独立艺术字统一按最终消费者分流：只用于已知、稳定的 HTML 背景时可保留纯色底并使用节点级混合模式，深色字体使用纯白底＋行内 `mix-blend-mode: multiply`，浅色字体使用纯黑底＋行内 `mix-blend-mode: screen`；需要透明导出、跨多个背景复用、背景未知或严格保持原字色时使用抠图透明 PNG。混合模式不得设在父容器或整页；两条路径都必须逐字、边缘、对比度、最终显示尺寸和完整画面验收。
 
 ### 2. 编辑已有画布内容
 
@@ -208,8 +214,6 @@ HTML 路线在最终 Brief 冻结前，按 [组合参考筛选](assets/templates
 用户提供模板、源设计或既有交付物并要求沿用、改版或复刻时，先读 [模板改写](references/workflow/template-rewrite.md)，再进入上述编辑流程。
 
 ### 3. 画布资产语义目录策略
-
-**产物完成后必须整理目录。** 默认 Canvas 中，本轮 `image_gen`／`image_edit` 全部成功结果先使用 `RichMediaCard` 逐项直接交付；HTML 作品已经写入并完成首次 `+get` 回读。随后读取 [画布资产语义目录工作流](references/workflow/canvas-asset-organization.md)，执行 `+tree`／`+ls` 取得真实候选 ID，对本轮新增对象分批调用 `design-cli design-workspace +get` 读取实际内容，再用 `+update`／`+update-batch` 修改顶层绝对 `path`，由 path 自动形成目录，最后再次回读核验。不得伪造 `mkdir`、不得为图像结果重复 `+create`、不得创建空 Item 充当目录，也不得让目录整理延迟或替代图片直交。含 HTML 的任务在最终 Item 卡片交付前完成本轮对象归档；纯生图任务在全部结果直交完成后归档。
 
 使用可多级嵌套的树状目录维护 Brief、图片、视频和最终交付物等画布资产，不得把目录固定为两层。所有写入 CLI 的顶层 Item／Frame `path` 必须是以 `/` 开头的画布绝对路径；Frame 成员不填 `path`。顶层先区分 `/user-anchors`、`/core-assets`、`/generated-assets` 与 `/deliverables`，再按任务、身份、用途、资产角色、变体或版本建立必要层级。目录属于 Agent 内部资产索引，用户不感知其存在；`path` 不得影响 `transform`、`z_index`、对象内容或 Frame 边界。
 
@@ -235,7 +239,7 @@ Generation Batch
 资产类型及其他 Metadata
 ```
 
-“用户上传的原始资产锚点”是条件证据：仅在用户确实上传且已登记为初始视觉锚点时参与判断；不存在时直接跳过。高优先级证据覆盖低优先级证据。用户上传视觉锚点、Logo 或产品图时，不得只在临时上下文中引用：必须先写入目录成为可回读的初始视觉锚点，再开始生成或编辑。一旦建立资产锚点或品牌锚点，它就是后续图片创作中该身份的唯一视觉锚点；跨轮次回读时必须优先恢复并继续使用，未经用户明确要求不得替换母版、另建竞争锚点、只凭文字重绘或偏移受保护的视觉身份。`image_gen`／`image_edit` 衍生结果由透传的 Workspace ID 直接关联画布，不得再以 `+create` 重复登记；素材记录只保存母版标识、工具调用、结果句柄与衍生关系。每次还要判断是否存在核心商品、品牌或 Logo；存在时建立唯一母版锚点。核心资产确认后，所有需要保持一致性的衍生图片默认使用该唯一锚点执行 `image_edit`，并记录可用的 `derived_from_core_asset_id` 或等价母版句柄；只有不承载该身份的独立素材才可使用 `image_gen`。详细触发条件与身份规则以对应 workflow 为准。
+“用户上传的原始资产锚点”是条件证据：仅在用户确实上传且已登记为初始视觉锚点时参与判断；不存在时直接跳过。高优先级证据覆盖低优先级证据。用户上传视觉锚点、Logo 或产品图时，不得只在临时上下文中引用：必须先写入目录成为可回读的初始视觉锚点，再开始生成或编辑。一旦建立资产锚点或品牌锚点，它就是后续图片创作中该身份的唯一视觉锚点；跨轮次回读时必须优先恢复并继续使用，未经用户明确要求不得替换母版、另建竞争锚点、只凭文字重绘或偏移受保护的视觉身份。衍生结果通过 `+create` 写入时，还必须在 `<source_ids>` 中填写经 `+get` 核验的锚点 Item／Frame ID，使画布同时保存真实血缘并把新版本落在来源右侧；没有来源时省略整个标签，禁止填空标签或猜测 ID。每次还要判断是否存在核心商品、品牌或 Logo；存在时建立 `/core-assets/<语义名>/master` 母版锚点。核心资产确认后，所有需要保持一致性的衍生图片默认使用该唯一锚点执行 `image_edit`，并记录 `derived_from_core_asset_id`；只有不承载该身份的独立素材才可使用 `image_generate`。详细的触发条件、brief、读写、回读、核心资产及 `OrganizeAgent` 规则全部以该 workflow 为准。
 
 ## 二、参考文档地图
 
@@ -246,7 +250,7 @@ Generation Batch
 | 文件 | 定义 |
 |---|---|
 | `references/workflow/clarification-strategy.md` | 判断哪些信息会阻塞生产，以及如何完成文本与视觉澄清。 |
-| `references/workflow/image-generation-delivery-gate.md` | 图像工具 Workspace ID 透传、结果直接交付、串并行汇合及失败处理；产后归档不重复写入图片。 |
+| `references/workflow/image-generation-delivery-gate.md` | 所有模式下 CLI／交付双通道同步、串并行汇合、坏图及部分失败状态的门禁。 |
 | `references/workflow/creation/pure-image.md` | 纯图片最终成品的创建流程。 |
 | `references/workflow/creation/pure-coding.md` | 不使用图像生成工具的创建流程。 |
 | `references/workflow/creation/ai-coding.md` | AI 生成中间素材、HTML/CSS 分层组装、首屏／单图最重要艺术主标题及其他字体库文字的创建流程。 |
@@ -267,9 +271,9 @@ Generation Batch
 
 品类 Spec 与对应 Visual 使用同一份任务 Brief，但职责不可互换：Spec 查找或创建 Brief，只确定事实、内容、载体／页面结构、职责、顺序和硬约束；Visual 找不到唯一 Brief，或事实、内容结构及必要硬约束尚未齐备时返回 Spec；仅视觉字段待补不触发返回，由 Visual 在原 Brief 中完善，不另建 Brief 或自行补写事实。Visual 仅在原 Brief 中补充或更新决策优先级、视觉命题、注意力路径、风格、艺术手法、字体、配色、相对构图、图文占比、背景／前景、图像层级、跨单元连续、载体适配、素材生产意图和可观察验收，保存后再进入素材、布局与最终 HTML。Spec 中出现的视觉 QA 只描述下游结果必须满足的约束，不授权 Spec 提前选择视觉方案。
 
-所有品类的 Visual 按公共 CSS 查询顺序，以可调整的方向假设比较能覆盖整体关系的组合；只对组合未覆盖或需要替换的局部，再按布局、字形、形状、表面、配色和作用对象拆解自然语言能力词并校验候选。需要补充或替换的容器原子先查具体结构词加 `--kind shape`，例如“文件夹 页签 袋口”“卷纸 卷边 长文承托”“档案页 折痕 分栏”“撕纸 胶带 衬纸”；只有 Brief 明确需要中性圆角、玻璃或塑料时才查询这些词。泛化“卡片／容器／面板”查询会优先列出结构型轮廓，不能以“高级卡片”直接采用圆角配方。品类 Visual 中的能力表只表达常用视觉机制，不维护库 ID、文件路径、参数或依赖；候选中的有效图文关系可改善模型草案，再校验可实现性与降级边界；不因库中现成而添加无内容职责的效果。最终 Brief 写经过校验的可见结果，真实实现引用统一进入后续最终 HTML。
+所有品类的 Visual 在方向草案形成后，先按公共 CSS 查询顺序比较能覆盖整体关系的组合；只对组合未覆盖或需要替换的局部，再按布局、字形、形状、表面、配色和作用对象拆解自然语言能力词并校验候选。需要补充或替换的容器原子先查具体结构词加 `--kind shape`，例如“文件夹 页签 袋口”“卷纸 卷边 长文承托”“档案页 折痕 分栏”“撕纸 胶带 衬纸”；只有 Brief 明确需要中性圆角、玻璃或塑料时才查询这些词。泛化“卡片／容器／面板”查询会优先列出结构型轮廓，不能以“高级卡片”直接采用圆角配方。品类 Visual 中的能力表只表达常用视觉机制，不维护库 ID、文件路径、参数或依赖；查询结果用于确认可实现性与降级边界。最终 Brief 写经过校验的可见结果，真实实现引用统一进入后续最终 HTML。
 
-所有品类进入 Visual 阶段后，还必须在原 Brief 每屏／页／卡面／折页面板／视图的对应条目内输出“容器与开放排版视觉决策”。根据内容关系与视觉表达判断是否需要边界；局部的纯底、无容器或低干扰要求只作用于对应区域，不能据此全局排除纹理、容器或辅助图形。无需容器时写“开放排版、无容器”及对齐、分隔、留白和图文组织方式。需要容器时按 [容器视觉语法](references/style/coding/composition-layout.md#容器视觉语法开放排版优先语义容器按需) 逐个说明承载内容、容器家族、主次与相对尺度、轮廓、结构部件、材质、边缘工艺、厚度／阴影、内部安全区及与图像和底图的关系。同页优先一个主家族和一到两个变体；普通白色圆角矩形只用于中性功能分组，不得铺满页面，也不得卡片嵌套。只用自然语言描述，不新增参数表或槽位契约；各品类 Visual 负责具体效果与验收，不能留到最终 HTML 阶段才决定。
+所有品类进入 Visual 阶段后，还必须在原 Brief 每屏／页／卡面／折页面板／视图的对应条目内输出“容器与开放排版视觉决策”。先判断内容是否需要边界；无需容器时写“开放排版、无容器”及对齐、分隔、留白和图文组织方式。需要容器时按 [容器视觉语法](references/style/coding/composition-layout.md#容器视觉语法开放排版优先语义容器按需) 逐个说明承载内容、容器家族、主次与相对尺度、轮廓、结构部件、材质、边缘工艺、厚度／阴影、内部安全区及与图像和底图的关系。同页优先一个主家族和一到两个变体；普通白色圆角矩形只用于中性功能分组，不得铺满页面，也不得卡片嵌套。只用自然语言描述，不新增参数表或槽位契约；各品类 Visual 负责具体效果与验收，不能留到最终 HTML 阶段才决定。
 
 社媒长图与可编辑套图直接使用中文内容／视觉 Brief，不额外输出品类机器计划、系列合同、布局枚举表或资产矩阵，也不将这些旧字段移入 HTML。视觉效果写成自然语言；规划 Brief 只记录颜色职责，公共 HTML 在实现阶段记录实际色值、尺寸、图层与素材引用。可编辑套图的 Coding 一致性与差异性配额仍是硬门禁，不能以自然语言规划或按内容试排为由取消。默认纯图套图使用轻量 Brief 与 pure-image-sequence 的共享系列规划，不读取 Coding Spec／Visual 或其配额。
 
@@ -277,7 +281,7 @@ Generation Batch
 
 生产和验收规范也是 Brief 输出，不是脱离 Brief 的第三套规则：品类 Spec 在同一 Brief 中写入“内容结构生产规范”和“内容结构验收规范”；对应 Visual 写入“视觉效果生产规范”和“视觉效果验收规范”。实现文件只消费两类已经准出的 Brief 字段，不重新决定内容结构或视觉方向。
 
-Visual 能力校验与 Brief 冻结后的执行绑定均先读取 [`assets/templates/ref-bindings.json`](assets/templates/ref-bindings.json) 将品类解析为稳定 `ref_key`，再用 [CSS catalog](assets/templates/css/catalog.json) 与 [SVG catalog](assets/svg/catalog.json) 限定候选范围；未知名称由 `query-css-library.py` 进行词面召回，已知候选先比较摘要。卡片容器、渐变、弥散、蒙版、纸纹、玻璃、文字效果等只有在 最终 HTML 绑定真实消费者、读取实现正文与依赖并展开为实际 CSS／SVG 代码后才算采用；默认关联、名称命中或 Visual 阶段通过可实现性校验都不构成实现。Brief 的短采用记录保存选中候选的 ID、源版本、范围与内容映射，不表示已完成实现采用；参数只在 HTML 维护。
+Visual 能力校验与 Brief 冻结后的执行绑定均先读取 [`assets/templates/ref-bindings.json`](assets/templates/ref-bindings.json) 将品类解析为稳定 `ref_key`，再用 [CSS catalog](assets/templates/css/catalog.json) 与 [SVG catalog](assets/svg/catalog.json) 限定候选范围；未知名称由 `query-css-library.py` 进行词面召回，已知候选先比较摘要。卡片容器、渐变、弥散、蒙版、纸纹、玻璃、文字效果等只有在 最终 HTML 绑定真实消费者、读取实现正文与依赖并展开为实际行内代码后才算采用；默认关联、名称命中或 Visual 阶段通过可实现性校验都不构成实现。Brief 的短采用记录保存选中候选的 ID、源版本、范围与内容映射，不表示已完成实现采用；参数只在 HTML 维护。
 
 | 文件 | 定义 |
 |---|---|
@@ -356,7 +360,7 @@ Visual 能力校验与 Brief 冻结后的执行绑定均先读取 [`assets/templ
 
 ### 可复用 CSS：分阶段查询与读取
 
-按品类 Visual 与[组合参考筛选](assets/templates/css/README.md#brief-combination-match)探索整页候选（简历可由适配布局进入关联组合），读取拟采用候选的设计正文，联动完善草案，再补局部原子；Brief 冻结后才读取选中实现、依赖与必要模板，素材就绪组装时校核绑定。以下为按需定位入口，不要求在视觉能力校验时通读实现；不要先跳过本库，再将其判断为“未提供配方”：
+Spec 内容骨架与 Visual 草案形成后，按品类 Visual 查询整页候选摘要（简历可由适配布局进入关联组合），必要时读取设计正文，再补局部原子；Brief 冻结后才读取选中实现、依赖与必要模板，素材就绪组装时校核绑定。以下为按需定位入口，不要求在视觉能力校验时通读实现；不要先跳过本库，再将其判断为“未提供配方”：
 
 - [组件布局与字体](assets/templates/css/layouts/layout-and-type.md)：留白、字级、行高、错位与两种内部密度；页面布局从分类入口读取；
 - [容器形状](assets/templates/css/shapes/containers.md)：结构、圆角、页签、文件夹轮廓与遮罩；
@@ -370,7 +374,7 @@ Visual 能力校验与 Brief 冻结后的执行绑定均先读取 [`assets/templ
 
 可复用 SVG 统一随包存于 [assets/svg](assets/svg)，分类正文与源模板只写 `asset:svg/文件名.svg` 短引用；不要默认读取 SVG 原文或输出编码长串。组装完成后运行 [内嵌脚本](scripts/runtime/inline-svg-assets.py)，具体用法见 [SVG 资源调用](assets/templates/css/README.md#svg-assets)。脚本根据自身位置找资源，无需固定本地路径；需要改变 SVG 内部几何时才按需读取对应文件。 可编辑弧形文字使用 [SVG 路径排字](assets/templates/css/layouts/layout-and-type.md#text.arc) 的生成与 DOM 插入步骤；普通纹理仍走 URL 内嵌。
 
-保留原固定画布、字体和交付协议；仅三个根节点的固定宽高必须行内声明，其余样式可沿用行内模板或使用普通样式块、选择器、伪元素和可加载的外部样式表；独立编辑对象保留真实节点，不保留未解析的 asset: 引用或索引运行时依赖。新组合按实际阅读尺寸检查长文案、字体、透明背景和遮罩边界。
+保留原固定画布、字体和交付协议；伪元素展开为实际节点，正式 HTML 只含行内样式与内嵌 SVG，不保留 asset: 引用、外部 CSS、资源文件或索引运行时依赖。新组合按实际阅读尺寸检查长文案、字体、透明背景和遮罩边界。
 
 ### CLI：画布读写
 
@@ -443,6 +447,6 @@ AI + Coding 在首次正式图像调用前建立轻量 `asset-manifest.json`，�
 
 创建、大改或编辑完成后执行 [交付校验](references/workflow/validation.md)。失败时读 [排障流程](references/workflow/troubleshooting.md)，回到最小失败单元修复，不盲目整页重建。
 
-分图层 Coding 只使用标准 HTML/CSS，并遵循 `references/html/coding-rendering.md`。复杂自由路径可内嵌 SVG；禁止使用自定义 Canvas 协议、JSX 或整图压平替代可编辑 DOM。每个完整详情页、长图或其他独立作品只生成一个固定画布 HTML5 文档；同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图仅走 CDN＋Markdown，不创建 IMAGE Item。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。禁止 HTML Frame，也禁止把内部章节拆成平台 Item。社媒长图 Hero 按品类规则成为整体图片层，其内部文案不假称独立可编辑；其余分层区域仅准入的唯一艺术主标题可以按最终消费者选择节点级混合模式或真实透明抠图，并通过对应背景效果、字形和边缘验收后作为图片层使用，其余标题与正文保持为可追溯、可编辑的真实文本 DOM。
+分图层 Coding 只使用标准 HTML/CSS，并遵循 `references/html/coding-rendering.md`。复杂自由路径可内嵌 SVG；禁止使用自定义 Canvas 协议、JSX 或整图压平替代可编辑 DOM。每个完整详情页、长图或其他独立作品只生成一个固定画布 HTML5 文档；同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图不创建 IMAGE Item、不调用 `present_files`。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。禁止 HTML Frame，也禁止把内部章节拆成平台 Item。社媒长图 Hero 按品类规则成为整体图片层，其内部文案不假称独立可编辑；其余分层区域仅准入的唯一艺术主标题可以按最终消费者选择节点级混合模式或真实透明抠图，并通过对应背景效果、字形和边缘验收后作为图片层使用，其余标题与正文保持为可追溯、可编辑的真实文本 DOM。
 
-交付时说明视觉主张、可编辑范围、素材替换方式、HTML 预览状态、Workspace 写入与回读结果，以及仍存在的已知限制。原始 `.html` 不通过 `present_files` 直接交付；同尺寸完整预览图必须经 CDN＋Markdown 展示；默认 Canvas 的 HTML Item 回读后必须将同一 Workspace ID 与刚回读的 HTML Item ID 拼成 `<workspace_id>?item_id=<item_id>` 单值交给 `present_files` 输出对应卡片。用户另需图片或视频时，只通过 `RichMediaCard` 交付实际渲染／导出成品。
+交付时说明视觉主张、可编辑范围、素材替换方式、HTML 预览状态、Workspace 写入与回读结果，以及仍存在的已知限制。原始 `.html` 不通过 `present_files` 直接交付；同尺寸完整预览图必须经 CDN＋Markdown 展示；默认 Canvas 的 HTML Item 回读后必须将同一 Workspace ID 与刚回读的 HTML Item ID 拼成 `<workspace_id>?item_id=<item_id>` 单值交给 `present_files` 输出对应卡片。用户另需图片或视频时，使用 `RichMediaCard` 逐项展示实际渲染／导出成品。

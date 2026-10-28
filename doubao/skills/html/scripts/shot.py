@@ -251,6 +251,7 @@ RULE_CATALOG = {
     "timelineDeadDotStyle":            {"severity": "warning", "kind": "content"},
     "chartBadValues":                  {"severity": "warning", "kind": "content"},
     "chartHtmlInCanvasText":           {"severity": "warning", "kind": "content"},
+    "rawValueText":                    {"severity": "error",   "kind": "content"},
     "responsiveChartIssues":           {"severity": "error",   "kind": "responsive"},
     # === 图片 / 发布 ===
     "duplicateImagesWarning":          {"severity": "info",    "kind": "content"},
@@ -265,6 +266,7 @@ RULE_CATALOG = {
     "mobileFontIssues":                {"severity": "error",   "kind": "typography"},
     "mobileFontIssuesWarning":         {"severity": "warning", "kind": "typography"},
     "textContrastIssues":              {"severity": "warning", "kind": "accessibility"},
+    "invisibleText":                   {"severity": "error",   "kind": "typography"},
     # === 元数据 ===
     "faviconWarning":                  {"severity": "warning", "kind": "metadata"},
     "viewportMetaWarning":             {"severity": "warning", "kind": "metadata"},
@@ -274,6 +276,7 @@ RULE_CATALOG = {
     "deadButtons":                     {"severity": "error",   "kind": "interaction"},
     # === 脚本静态检查 ===
     "unusedFunctionsWarning":          {"severity": "info",    "kind": "script"},
+    "markupIntegrity":                 {"severity": "error",   "kind": "script"},
 }
 
 # 暂停易误伤动效/题材设计的告警；保留检测与 hint，后续修正判据后移除此处对应项即可恢复。
@@ -2516,6 +2519,131 @@ REPORT_SCRIPT = r"""
     }
   }
 
+  // 两条文字规则共用保守的可检查范围：隐藏、裁切、动效中间态不能作为内容错误证据。
+  // 不依赖 checkVisibility（旧浏览器可能没有），并查祖先：opacity / display 不继承。
+  const textStyleCache = new Map();
+  const textStyle = el => {
+    if (!textStyleCache.has(el)) textStyleCache.set(el, getComputedStyle(el));
+    return textStyleCache.get(el);
+  };
+  const textAlpha = c => {
+    if (c === 'transparent') return 0;
+    const m = (c || '').match(/\/\s*([\d.]+%?)\s*\)$|rgba\([^)]*,\s*([\d.]+)\s*\)$/);
+    return m ? parseFloat(m[1] || m[2]) : 1; // 只区分零 / 非零，未知颜色保守视为可见
+  };
+  const inspectableText = (node, start = 0, end = node.length) => {
+    const el = node.parentElement;
+    if (!el || el.closest('svg,script,style,noscript,template,[aria-hidden="true"]')) return false;
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    let rects = [...range.getClientRects()].filter(r => r.width > 1 && r.height > 1)
+      .map(r => ({left: Math.max(0, r.left), right: Math.min(vw, r.right),
+                  top: Math.max(-scrollY, r.top), bottom: r.bottom}));
+    for (let a = el; a; a = a.parentElement) {
+      const cs = textStyle(a);
+      if (cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity === 0 ||
+          cs.contentVisibility === 'hidden') return false;
+      // 掩膜 / clip-path / legacy clip 常用于读屏文本、揭示动画；单帧无法断言其最终状态。
+      if ((cs.clipPath && cs.clipPath !== 'none') || (cs.clip && cs.clip !== 'auto') ||
+          (cs.maskImage && cs.maskImage !== 'none') || (cs.filter && cs.filter !== 'none')) return false;
+      try {
+        if (a.getAnimations ? a.getAnimations().length : cs.animationName !== 'none') return false;
+      } catch (e) { return false; }
+      const box = a.getBoundingClientRect();
+      // html/body 的滚动视口不裁掉长页的下半部；普通容器则只检查实际露出的文字。
+      if (a !== document.body && a !== document.documentElement) {
+        rects = rects.map(r => ({
+          left: cs.overflowX === 'visible' ? r.left : Math.max(r.left, box.left),
+          right: cs.overflowX === 'visible' ? r.right : Math.min(r.right, box.right),
+          top: cs.overflowY === 'visible' ? r.top : Math.max(r.top, box.top),
+          bottom: cs.overflowY === 'visible' ? r.bottom : Math.min(r.bottom, box.bottom),
+        }));
+      }
+    }
+    return rects.some(r => r.right - r.left > 1 && r.bottom - r.top > 1);
+  };
+  const textPaint = cs => textAlpha(cs.webkitTextFillColor || cs.color) > 0 ||
+    parseFloat(cs.webkitTextStrokeWidth) > 0 || (cs.textShadow && cs.textShadow !== 'none') ||
+    ((cs.webkitBackgroundClip || cs.backgroundClip || '').includes('text') &&
+      (cs.backgroundImage !== 'none' || textAlpha(cs.backgroundColor) > 0));
+  const compactText = s => s.replace(/\s+/g, '');
+  const replacementText = (el, txt) => ['::before', '::after'].some(pseudo => {
+    const ps = getComputedStyle(el, pseudo);
+    const content = ps.content || '';
+    // 只豁免绘制了同一段文字的伪元素；空装饰或一个图标不能代替丢失的标题。
+    const literal = content.match(/^(["'])(.*)\1$/s);
+    return literal && compactText(literal[2]) === txt && ps.display !== 'none' &&
+      ps.visibility === 'visible' && +ps.opacity > 0 && textPaint(ps);
+  });
+
+  // 规则 14：只报静态、占据实际文本行盒、没有已知替代绘制方式的透明文字。
+  const invisibleText = [];
+  {
+    const seen = new Set();
+    for (const el of document.querySelectorAll('body *')) {
+      if (invisibleText.length >= 8) break;
+      const nodes = [...el.childNodes].filter(n => n.nodeType === 3 && n.nodeValue.trim());
+      const txt = compactText(nodes.map(n => n.nodeValue).join(''));
+      if (txt.length < 2) continue;
+      const cs = textStyle(el);
+      // 只认完全透明：渐变字写错时填充色就是 transparent；低透明度的装饰水印字是刻意的
+      if (textPaint(cs)) continue;
+      if (parseFloat(cs.fontSize) < 14) continue;
+      if (!nodes.some(n => inspectableText(n))) continue;
+      // background-clip:text 不继承：透明字由自己或某个祖先的渐变透出才算可见
+      let painted = false;
+      for (let a = el; a; a = a.parentElement) {
+        const acs = textStyle(a);
+        const clip = acs.webkitBackgroundClip || acs.backgroundClip || '';
+        if (clip.indexOf('text') >= 0 &&
+            (acs.backgroundImage !== 'none' || textAlpha(acs.backgroundColor) > 0)) { painted = true; break; }
+        if (replacementText(a, txt) || (a === el && /url\(/.test(acs.backgroundImage))) { painted = true; break; }
+      }
+      if (painted) continue;
+      const sel = __sel(el);
+      if (seen.has(sel)) continue;
+      seen.add(sel);
+      invisibleText.push({ selector: sel, text: txt.slice(0, 30), fontSize: cs.fontSize,
+                           fill: cs.webkitTextFillColor || cs.color });
+    }
+  }
+
+  // 规则 15：完整值字段呈现 NaN / undefined / [object Object]，不是在正文里搜关键词。
+  // 小数位数不能证明格式错误（π / 科学数据可能需要高精度），不据此报警。
+  const rawValueText = [];
+  {
+    const TOKEN_RE = /NaN|undefined|\[object Object\]/;
+    // 只允许「值」或「标签：值」，以及常见数值单位；解释句、引用、标识符都不匹配。
+    const VALUE_RE = /^(?:[^:：\n]{1,40}[:：]\s*)?[¥￥$€£]?\s*(NaN|undefined|\[object Object\])(?:\s*(?:%|‰|元|万元|亿元|个|人|次|件|天|秒|ms|px|USD|CNY))?$/;
+    const SKIP = 'script,style,noscript,template,code,pre,kbd,samp,textarea,dfn,q,blockquote,[contenteditable]';
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    const seen = new Set();
+    let n;
+    while ((n = walker.nextNode()) && rawValueText.length < 6) {
+      const t = n.nodeValue || '';
+      const tokenMatch = t.match(TOKEN_RE);
+      if (!tokenMatch) continue;
+      const parent = n.parentElement;
+      if (!parent || parent.closest(SKIP)) continue;
+      const cs = textStyle(parent);
+      // 必须是异常值本身露出；只有前面的标签露出、值被容器裁掉时不报原始值错误。
+      if (!inspectableText(n, tokenMatch.index, tokenMatch.index + tokenMatch[0].length) || !textPaint(cs)) continue;
+      if (/mono/i.test(cs.fontFamily)) continue;                       // 等宽字体多是代码讲解
+      // inline span 不应把一句「undefined 表示未赋值」拆成错误值；读到最近的完整文本块。
+      let field = parent.closest('p,li,td,th,dd,dt,caption,figcaption') || parent;
+      while (field.parentElement && /^(inline(?:-.*)?|contents)$/.test(textStyle(field).display)) field = field.parentElement;
+      const value = (field.innerText || '').trim().replace(/\s+/g, ' ');
+      const m = value.match(VALUE_RE);
+      if (!m) continue;
+      const sel = __sel(field);
+      const token = m[1];
+      if (seen.has(sel + '|' + token)) continue;
+      seen.add(sel + '|' + token);
+      rawValueText.push({ selector: sel, token: token, text: value.slice(0, 80) });
+    }
+  }
+
   return {
     structure: {
       title: document.title,
@@ -2565,6 +2693,8 @@ REPORT_SCRIPT = r"""
     fixedWidthElements: fixedWidthElements,
     edgeHuggingText: edgeHuggingText,
     mobileFontIssues: mobileFontIssues,
+    invisibleText: invisibleText,
+    rawValueText: rawValueText,
     isMobileShot: isMobile,
   };
 }
@@ -3553,6 +3683,24 @@ def _apply_dom_report(report, dom, console_bucket, resource_bucket, include):
                 "(2) 主题本身就是关于 emoji 的（emoji 历史 / 表情包研究 / Unicode 演进）；"
                 "(3) 引用某条真实文本原文（如推文截图的文字版），emoji 是内容而非装饰——保留原文可接受，但仍应权衡；"
                 "(4) 装饰性 dingbat（如 U+2713 勾选符 ✓、U+2192 箭头 →、U+2605 星 ★）落入 U+2600–U+27BF 平面被误报的，如确认是符号非 emoji 可忽略。"
+            )
+        invisible = dom.get("invisibleText") or []
+        if invisible:
+            report["invisibleText"] = invisible
+            report["invisibleTextHint"] = (
+                "含义：静态文本有行盒但填充完全透明，未检出渐变裁字、描边、阴影或同文伪元素等绘制方式。"
+                " | 先核对截图与该元素的绘制代码；若文字由其他图层替代绘制，保留设计。"
+                "确认文字确实丢失后，再补齐渐变字的 background-image / background-clip:text，"
+                "或为普通文字恢复 color / -webkit-text-fill-color。"
+            )
+        raw_vals = dom.get("rawValueText") or []
+        if raw_vals:
+            report["rawValueText"] = raw_vals
+            report["rawValueTextHint"] = (
+                "含义：完整值字段呈现 NaN / undefined / [object Object]，疑似异常数据直接写入 DOM。"
+                " | 先确认这是业务数据而非教学示例或引用原文；属于后两者时保留。"
+                "确认是数据错误后再查运算、字段名或对象拼接，并处理空值。"
+                "小数精度不是本规则的判断依据，不要因此截断有效数值。"
             )
         fake_disc = dom.get("fakeDisclosureBullets") or []
         if fake_disc:
@@ -4913,6 +5061,9 @@ RULE_TARGET = {
     "faviconWarning":              "内联一个 SVG favicon",
     "viewportMetaWarning":         'width=device-width, initial-scale=1',
     "extremeAspectImagesWarning":  "图片比例落在 3:4 ~ 21:9",
+    "markupIntegrity":             "0 条：标签闭合与属性引号完整",
+    "invisibleText":               "核对命中文本的实际绘制方式，仅修正确实丢失的文字",
+    "rawValueText":                "核对命中值的语义，仅修正业务数据错误，保留教学与引用",
 }
 
 
@@ -5204,6 +5355,7 @@ def main():
     _emit_publish_broken_assets(result, args.src)
     if "lint" in include:
         _emit_script_diagnostics(result, args.src, url)
+        _emit_markup_integrity(result, args.src)
     # eval 可触发业务状态或副作用；不为这类检查改源码并重新播放用户操作。
     if not args._eval_code and "lint" in include and _apply_auto_fixes(result, args):
         _verify_auto_fixes(result, args, url, name, outdir, include)
@@ -5444,11 +5596,13 @@ def _verify_auto_fixes(result, args, url, name, outdir, include):
         _emit_responsive_issues(refreshed)
         _emit_publish_broken_assets(refreshed, args.src)
         _emit_script_diagnostics(refreshed, args.src, url)
+        _emit_markup_integrity(refreshed, args.src)
     except Exception as exc:
         refreshed['error'] = {'code': 'autofix_verification_failed', 'message': str(exc)[:300]}
     result['shots'] = refreshed['shots']  # 失败时也不能把修改前截图当成修改后截图。
     for key in ('responsiveChartIssues', 'responsiveChartIssuesHint', 'publishBrokenAssets', 'publishBrokenAssetsHint',
-                'unusedFunctionsWarning', 'unusedFunctionsHint', 'unusedFunctionsNotRun', 'scriptSyntaxError'):
+                'unusedFunctionsWarning', 'unusedFunctionsHint', 'unusedFunctionsNotRun', 'scriptSyntaxError',
+                'markupIntegrity', 'markupIntegrityHint'):
         result.pop(key, None)
     result.update({k: v for k, v in refreshed.items() if k not in ('src', 'url', 'outdir', 'include')})
     views = ['desktop', 'mobile'] if args.only == 'both' else [args.only]
@@ -5622,6 +5776,87 @@ def _mark_token(line, col):
     a, b = max(0, i - 80), min(len(line), j + 80)
     snippet = ("…" if a else "") + line[a:i] + "[[" + token + "]]" + line[j:b] + ("…" if b < len(line) else "")
     return token, snippet.strip()
+
+
+class _MarkupIntegrity(HTMLParser):
+    """只报浏览器会静默改写成另一棵 DOM 的三类标记错误；HTML 容错不报错，截图只见内容缺失或错位。"""
+    _RAW = {'script', 'style', 'textarea', 'title', 'xmp', 'iframe', 'noembed', 'noframes'}
+    _INERT = _SourceTags._INERT
+    _VOID = _SourceTags._VOID
+
+    def __init__(self, text):
+        super().__init__(convert_charrefs=False)
+        self.lines = text.split('\n')
+        self.stack = []
+        self.hits = []
+        self.raw_open = None
+        self.feed(text)
+        self.close()
+        if self.cdata_elem and self.raw_open:
+            tag, line, col = self.raw_open
+            self._hit('unclosedRawText', tag, line, col)
+
+    def _hit(self, kind, tag, line, col):
+        if len(self.hits) >= 10:
+            return
+        token, source = _mark_token(self.lines[line - 1], col + 2)
+        self.hits.append({'kind': kind, 'tag': tag, 'line': line, 'column': col + 1,
+                          'loc': f'L{line}:{col + 1}', 'source': source})
+
+    def _foreign(self):
+        for t in reversed(self.stack):
+            if t == 'foreignobject':
+                return False
+            if t in ('svg', 'math'):
+                return True
+        return False
+
+    def handle_starttag(self, tag, attrs):
+        self._start(tag, attrs, False)
+
+    def handle_startendtag(self, tag, attrs):
+        self._start(tag, attrs, True)
+
+    def _start(self, tag, attrs, selfclosing):
+        line, col = self.getpos()
+        if any(t in self._INERT for t in self.stack):
+            return
+        # 引号没配对或少写 >：浏览器把后面的标签吞成属性，属性名里会出现 < 或引号
+        if any(re.search(r'[<"\']', name) for name, _ in attrs):
+            self._hit('brokenAttribute', tag, line, col)
+        foreign = self._foreign() or tag in ('svg', 'math')
+        if selfclosing and not foreign and tag not in self._VOID:
+            # HTML 里 <div/> 的 / 被忽略，元素不闭合，后面的兄弟节点都成了它的子节点
+            self._hit('selfClosingNonVoid', tag, line, col)
+            selfclosing = False
+        if selfclosing or tag in self._VOID:
+            return
+        self.stack.append(tag)
+        if tag in self._RAW and not foreign:
+            self.raw_open = (tag, line, col)
+            self.set_cdata_mode(tag)
+
+    def handle_endtag(self, tag):
+        if tag in self.stack:
+            self.stack = self.stack[:len(self.stack) - 1 - self.stack[::-1].index(tag)]
+
+
+def _emit_markup_integrity(result: dict, src: str):
+    if src.startswith(("http://", "https://")):
+        return
+    try:
+        text = Path(src).resolve().read_text(encoding="utf-8", errors="replace")
+        hits = _MarkupIntegrity(text).hits
+    except Exception:
+        return
+    if hits:
+        result["markupIntegrity"] = hits
+        result["markupIntegrityHint"] = (
+            "含义：标记写错，浏览器不报错，而是改写成另一棵 DOM，后面的内容消失或嵌进错误的父元素。"
+            " | kind=unclosedRawText：<style> / <script> 等没有闭合，之后整页都被当成 CSS 或 JS 吞掉。"
+            " | kind=brokenAttribute：属性引号没配对或标签少写 >，下一个标签被吞成了属性。"
+            " | kind=selfClosingNonVoid：<div/> <span/> <script/> 这类非空元素不能自闭合，改成成对标签。"
+        )
 
 
 def _emit_script_diagnostics(result: dict, src: str, url: str):
@@ -5919,4 +6154,9 @@ def _fail_json(code: int, message: str):
 
 
 if __name__ == "__main__":
+    # Windows 本地 stdout 按 cp936 编码，hint 或回显源码里的 ✓ ❯ 等字符会抛 UnicodeEncodeError，
+    # 摘要整段丢失。只替换编不了的字符，不改 encoding：宿主按 cp936 解码，改成 UTF-8 会让中文乱码。
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            _stream.reconfigure(errors="replace")
     sys.exit(main())

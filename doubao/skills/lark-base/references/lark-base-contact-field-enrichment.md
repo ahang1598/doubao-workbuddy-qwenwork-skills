@@ -52,4 +52,8 @@ GET /open-apis/base/v3/bases/:base_token/tables/:table_id/contact_field_enrichme
 2. 按 `info_type` 白名单构造 `--json`；多个补全项可以放在同一个 `enrichments` 数组中。
 3. 创建返回当前完整快照；随后使用 `+contact-field-enrichment-list` 读取关系，确认 `source_field`、`info_type` 和生成字段。
 
+保留系统生成列的名称和字段定义，不为美化名称调用普通 `+field-update`。该命令使用全量 PUT；仅提交 `type` 和 `name` 不能证明补全关系会被保留。用户明确要求改名时，先确认受支持的操作能保留补全关系；无法确认时说明限制，不把生成列改成普通字段。
+
+交付前，在最后一次字段结构写入之后重新执行 `+contact-field-enrichment-list`，核对来源字段、补全类型、生成字段 ID 及 `error_message`，并用 `+record-list` 回读源人员和派生值。关系不存在或报错时不得宣称联动完成，也不要手填派生值来掩盖问题。关系正常但值为空时，区分已验证的配置与尚未验证的取值；只有查到源人员的真实通讯录信息才能解释为空的原因，不得仅凭空值断言其未设置组织信息。
+
 生成列在 enrichment 关系存在期间由系统维护且只读，不要通过 Record 或 CellValue 写入命令手动更新。若返回 `error_message`，表示该关系已停止更新，应先处理对应来源字段或权限问题。

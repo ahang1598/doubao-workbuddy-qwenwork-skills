@@ -1,5 +1,3 @@
-> ⚠️ **强制前置条件**：本文档共 321 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
-
 # Lark Sheet Read Data
 
 ## 列格式多样性预探（写公式 / 排序 / 筛选前必做）
@@ -228,8 +226,6 @@ lark-cli sheets +csv-get --spreadsheet-token shtXXX --sheet-name "销售明细" 
 lark-cli sheets +csv-get --spreadsheet-token shtXXX --sheet-name "销售明细"
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 输出契约（envelope.data）：
 
 - `csv` — 标准 CSV 主入口；`annotated_csv` — 含 `[row=N]` 前缀的同一份数据，仅 `--include-row-prefix` 时返回
@@ -318,4 +314,4 @@ subprocess.run(["lark-cli","sheets","+table-put","--url",URL,"--sheets","-"],
 - `DryRun` 输出请求模板：`--sheet-name` 在 dry-run 输出里生成为 `<resolve:销售明细>` 占位符，不实际解析。
 - `Execute` 阶段才进行 sheet-name → sheet-id 解析与 API 调用。
 
-===== 全文完（共 321 行）=====
+===== 全文完（共 317 行）=====

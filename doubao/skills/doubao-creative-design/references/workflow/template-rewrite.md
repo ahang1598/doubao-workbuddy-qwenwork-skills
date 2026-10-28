@@ -1,6 +1,6 @@
 # 模板／既有设计编辑规范
 
-> 先按主 SKILL 判断交付环境。system 明示 `Device platfrom: Mobile` 时遵循 [Mobile 直接交付](mobile-app-direct-delivery.md)：Brief／素材记录留在本地，跳过本文全部 Workspace、Canvas CLI、Item 与卡片步骤，媒体逐项直接交付、HTML 预览走 CDN＋Markdown。其他环境执行本文默认 Canvas 分支。生产与编辑顺序不变。
+> 先按主 SKILL 判断交付环境。system 上下文明确标记为移动端交付时遵循 [Mobile 直接交付](mobile-app-direct-delivery.md)：Brief／素材记录留在本地，跳过本文全部 Workspace、Canvas CLI、Item 与卡片步骤，媒体逐项直接交付、HTML 预览走 CDN＋Markdown。其他环境执行本文默认 Canvas 分支。生产与编辑顺序不变。
 
 本文件只负责模板编辑的**授权边界、源文件保护和流程分流**：判断什么能改、什么必须保留，以及采用局部编辑还是重建。最终图片或完整 HTML 源都是编辑底稿，不是普通风格参考。
 

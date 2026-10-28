@@ -20,4 +20,4 @@
 
 ## 图形 token
 
-需要复用时在 最终 HTML 中记录：`shape_role`、`implementation`（`dom | inline_svg | verified_image`）、尺寸、圆角／路径、填充、描边、透明度、状态变体、消费者和 z-order。token 是规划层约定；编译 HTML 时必须展开为真实元素及 CSS／内嵌 SVG，不能把 token 名当作未定义的运行时依赖。
+需要复用时在 最终 HTML 中记录：`shape_role`、`implementation`（`dom | inline_svg | verified_image`）、尺寸、圆角／路径、填充、描边、透明度、状态变体、消费者和 z-order。token 是规划层约定；编译 HTML 时必须展开为真实元素及行内样式／内嵌 SVG，不能把 token 名当作未定义的运行时依赖。

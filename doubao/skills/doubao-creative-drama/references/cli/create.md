@@ -4,8 +4,6 @@
 
 一次创建单个对象。调用方不提供 ID，创建时自动生成。要一次创建多个用 [`+create-batch`](create-batch.md)。
 
-视频／图像生成与编辑工具结果不使用本命令重复创建 VIDEO／IMAGE Item；应按 [媒体直接交付与产后目录整理](../media-delivery.md) 透传 Workspace ID、直接交付并在产后仅更新真实对象的 `path`。以下创建协议只用于其他确需手工创建的资产／对象。
-
 ## 命令
 
 ```bash

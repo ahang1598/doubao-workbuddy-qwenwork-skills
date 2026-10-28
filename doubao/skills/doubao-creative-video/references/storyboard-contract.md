@@ -101,6 +101,8 @@
 
 完整分镜创建或修改后，mainagent 静默执行：
 
+以下为 Bash 参数示意，`<占位符>` 和 `[可选参数]` 不可原样执行。脚本路径相对 Skill 根目录，分镜路径使用本次任务文件的实际位置。Windows 必须先读 [`windows-compat.md`](windows-compat.md)，使用已确认解释器与单行参数，不使用 Bash 的 `\` 续行；完整链路和短片直出均遵守。
+
 ```bash
 python3 scripts/validate_storyboard.py <完整分镜.md> \
   --expected-duration <秒数> \
@@ -110,6 +112,12 @@ python3 scripts/validate_storyboard.py <完整分镜.md> \
   --max-chars-per-second <按主 SKILL.md 选择 4 或 5> \
   --tail-duration <稳定尾帧实际时长；无静态尾帧传 0> \
   --max-tail-duration <普通短片使用 1.0；明确长尾帧时传已确认时长>
+```
+
+Windows 单行示例（在 Skill 根目录执行，路径与参数须按本条视频替换；从其他目录执行时传实际脚本路径）：
+
+```powershell
+python "./scripts/validate_storyboard.py" "./task/storyboard.md" --expected-duration 15 --min-shots 8 --require-opening-cut --max-chars-per-second 5 --tail-duration 0 --max-tail-duration 1
 ```
 
 脚本不判断“这是什么类型的视频”，只接收 mainagent 根据本文件已经确定的客观约束：常规 15 秒视频传 `--min-shots 8 --require-opening-cut`；General 简单动态任务按方案传实际镜头下限，不传 `--require-opening-cut`；照片动起来传 `--expected-duration 5`；真实一镜到底传 `--min-shots 1 --max-shots 1`，不传 `--require-opening-cut`。

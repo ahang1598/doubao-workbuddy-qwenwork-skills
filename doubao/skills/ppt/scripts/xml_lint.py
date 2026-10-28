@@ -557,7 +557,7 @@ def build_sxsd_tag_hint(tag_name: str, supported_tags: set[str]) -> str:
     close_matches = get_close_matches(tag_name, sorted(supported_tags), n=3, cutoff=0.72)
     if close_matches:
         return "Unsupported SXSD tag. Did you mean " + ", ".join(f"<{match}>" for match in close_matches) + "?"
-    return "Unsupported SXSD tag. Use only tags defined in slides_xml_schema_definition.xml."
+    return "Unsupported SXSD tag. Use only tags defined in slides_xml_schema_index.md."
 
 
 def suggest_sxsd_attrs(attr_name: str, allowed_attrs: set[str]) -> list[str]:
@@ -1048,6 +1048,216 @@ def validate_chart_value_semantics(root: ET.Element) -> list[dict[str, Any]]:
     for slide_number, slide_root in numbered_slides:
         visit(slide_root, [], f"slide[{slide_number}]", None, None)
 
+    return issues
+
+
+TRANSITION_AXIS_DIRECTIONS = ("horizontal", "vertical")
+TRANSITION_EDGE_DIRECTIONS = ("from-bottom", "from-top", "from-left", "from-right")
+TRANSITION_CORNER_DIRECTIONS = (
+    "from-top-left",
+    "from-top-right",
+    "from-bottom-left",
+    "from-bottom-right",
+)
+TRANSITION_STYLES = ("smoothly", "through-black")
+TRANSITION_MORPH_MODES = ("by-object", "by-word", "by-character")
+TRANSITION_BOOLEANS = ("true", "false")
+
+# Which effect parameters each page transition accepts, and the value subset it allows:
+# {type: {param: (allowed values, default)}}.
+#
+# The schema's TransitionDirectionType is the union of 12 values across every type, but each type
+# only uses one subset of it -- push takes 4 edges, wipe takes 8, gallery takes 2, and split's
+# direction is in/out (horizontal/vertical is its orientation). XSD cannot express "the allowed
+# values change with type", so it happily accepts <transition type="split" direction="horizontal"/>
+# and the server rejects it later: the rewrite path ("reject rewrite: invalid transition") throws
+# away the whole page edit, and the create path drops the transition and keeps a static page.
+# This table is what catches that before the model submits.
+#
+# references/xml/xml-schema-quick-ref.md's "animation 页面切换" table must stay row-for-row equal to
+# this one (xml_lint_test.py parses it and asserts), otherwise quick-ref teaches the model markup
+# that its own lint rejects.
+TRANSITION_PARAM_RULES: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
+    "fade": {"style": (TRANSITION_STYLES, "smoothly")},
+    "cut": {"style": (TRANSITION_STYLES, "smoothly")},
+    "push": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-bottom")},
+    "cover": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-bottom")},
+    "pull": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-bottom")},
+    "slides-flip": {"direction": (TRANSITION_AXIS_DIRECTIONS, "horizontal")},
+    "wipe": {"direction": (TRANSITION_EDGE_DIRECTIONS + TRANSITION_CORNER_DIRECTIONS, "from-right")},
+    "split": {
+        "orientation": (TRANSITION_AXIS_DIRECTIONS, "horizontal"),
+        "direction": (("in", "out"), "out"),
+    },
+    "blinds": {"direction": (TRANSITION_AXIS_DIRECTIONS, "horizontal")},
+    "checkerboard": {"direction": (TRANSITION_AXIS_DIRECTIONS, "horizontal")},
+    "cube": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-right")},
+    "box": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-top")},
+    "rotate": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-right")},
+    "orbit": {"direction": (TRANSITION_EDGE_DIRECTIONS, "from-right")},
+    "gallery": {"direction": (("from-left", "from-right"), "from-left")},
+    "page-curl-double": {
+        "invX": (TRANSITION_BOOLEANS, "false"),
+        "invY": (TRANSITION_BOOLEANS, "false"),
+    },
+    "page-curl-single": {
+        "invX": (TRANSITION_BOOLEANS, "false"),
+        "invY": (TRANSITION_BOOLEANS, "false"),
+    },
+    "peel-off": {
+        "invX": (TRANSITION_BOOLEANS, "false"),
+        "invY": (TRANSITION_BOOLEANS, "false"),
+    },
+    "morph": {"morphMode": (TRANSITION_MORPH_MODES, "by-object")},
+    "random": {},
+    "none": {},
+}
+
+# Effect parameters this table governs. durationMs is handled separately: every type but "none"
+# accepts it, and the schema already range-checks the value.
+TRANSITION_EFFECT_PARAMS = ("style", "direction", "orientation", "morphMode", "invX", "invY")
+TRANSITION_BOOLEAN_PARAMS = frozenset({"invX", "invY"})
+TRANSITION_BOOLEAN_LITERALS = {"1": "true", "0": "false"}
+
+
+def transition_param_union(param: str) -> tuple[str, ...]:
+    """Every value the schema's enum for `param` accepts, i.e. the union over all transition types.
+
+    A value outside this union already failed the schema layer (sxsd_invalid_enum), so the semantic
+    layer stays quiet about it rather than stacking a second issue on the same attribute.
+    """
+    values: list[str] = []
+    for rules in TRANSITION_PARAM_RULES.values():
+        rule = rules.get(param)
+        if rule is None:
+            continue
+        for value in rule[0]:
+            if value not in values:
+                values.append(value)
+    return tuple(values)
+
+
+def transition_accepted_params(effect: str) -> list[str]:
+    rules = TRANSITION_PARAM_RULES.get(effect, {})
+    accepted = [] if effect == "none" else ["durationMs"]
+    accepted.extend(rules)
+    return accepted
+
+
+def build_transition_accepts_hint(effect: str) -> str:
+    accepted = transition_accepted_params(effect)
+    if not accepted:
+        return (
+            f'<transition type="{effect}"> is the explicit off switch and accepts no other attribute. '
+            "Drop the transition node entirely to inherit instead."
+        )
+    return f'<transition type="{effect}"> accepts only: {", ".join(accepted)}.'
+
+
+def transition_param_issues(element: ET.Element, path: str) -> list[dict[str, Any]]:
+    effect = element.attrib.get("type")
+    rules = TRANSITION_PARAM_RULES.get(effect)
+    if effect is None or rules is None:
+        # Missing or unknown type: the schema layer already reported sxsd_missing_required_attr /
+        # sxsd_invalid_enum, and without a known type there is no subset to check against.
+        return []
+
+    issues: list[dict[str, Any]] = []
+    for raw_attr_name, raw_value in element.attrib.items():
+        param = xml_local_name(raw_attr_name)
+        if param == "type":
+            continue
+        # Every branch that falls through this chain lands on the not-applicable issue below.
+        if param == "durationMs":
+            if effect != "none":
+                continue
+        elif param not in TRANSITION_EFFECT_PARAMS:
+            # Unknown attribute: the schema layer already reported sxsd_unsupported_attr.
+            continue
+        elif param in rules:
+            allowed, _default = rules[param]
+            value = raw_value
+            if param in TRANSITION_BOOLEAN_PARAMS:
+                value = TRANSITION_BOOLEAN_LITERALS.get(value, value)
+            if value in allowed:
+                continue
+            if value not in transition_param_union(param):
+                continue
+            issues.append(
+                {
+                    "level": "error",
+                    "code": "transition_param_value_not_applicable",
+                    "tag": "transition",
+                    "attr": param,
+                    "path": path,
+                    "transition_type": effect,
+                    "allowed": list(allowed),
+                    "target": {"xml_path": path},
+                    "message": (
+                        f'transition type="{effect}" does not accept {param}="{raw_value}" at {path}; '
+                        f"allowed for this type: {', '.join(allowed)}"
+                    ),
+                    "hint": (
+                        f'<transition type="{effect}"> allows {param}: {", ".join(allowed)}. The schema enum '
+                        f"for {param} is the union across all transition types, so this value only applies to "
+                        "other types; the server rejects the whole page edit rather than fix it up."
+                    ),
+                }
+            )
+            continue
+
+        issues.append(
+            {
+                "level": "error",
+                "code": "transition_param_not_applicable",
+                "tag": "transition",
+                "attr": param,
+                "path": path,
+                "transition_type": effect,
+                "allowed": transition_accepted_params(effect),
+                "target": {"xml_path": path},
+                "message": (f'transition type="{effect}" does not accept the "{param}" parameter at {path}'),
+                "hint": build_transition_accepts_hint(effect),
+            }
+        )
+    return issues
+
+
+def validate_transition_semantics(root: ET.Element) -> list[dict[str, Any]]:
+    """Flag <transition> nodes whose parameters do not match their type.
+
+    The schema layer checks structure and single-attribute enums; it cannot check that a parameter
+    applies to the declared type, nor that its value falls inside that type's subset. Either mistake
+    makes the rewrite path reject the entire page edit ("reject rewrite: invalid transition") and the
+    create path drop the transition, so they are errors here -- same level as sxsd_invalid_enum.
+
+    Two codes:
+    - transition_param_not_applicable -- the type does not take this parameter at all
+      (type="random" direction="from-top", type="none" durationMs="0").
+    - transition_param_value_not_applicable -- the parameter applies but the value is outside the
+      type's subset of the schema enum (type="split" direction="horizontal").
+
+    Mirrors validate_chart_value_semantics' slide numbering so a fix agent can locate the node.
+    Only slide/animation/transition is inspected; the schema layer owns every other path.
+    """
+    root_name = xml_local_name(root.tag)
+    if root_name == "slide":
+        numbered_slides = [(1, root)]
+    elif root_name == "presentation":
+        numbered_slides = list(enumerate((child for child in root if xml_local_name(child.tag) == "slide"), start=1))
+    else:
+        return []
+
+    issues: list[dict[str, Any]] = []
+    for slide_number, slide_root in numbered_slides:
+        path = f"slide[{slide_number}]/animation/transition"
+        for animation in slide_root:
+            if xml_local_name(animation.tag) != "animation":
+                continue
+            for transition in animation:
+                if xml_local_name(transition.tag) != "transition":
+                    continue
+                issues.extend(transition_param_issues(transition, path))
     return issues
 
 
@@ -4648,6 +4858,14 @@ RULE_METADATA: dict[str, dict[str, Any]] = {
         "name": "chart_data_has_numeric_value_dimension",
         "comparison": "numeric_dimension_count >= 1",
     },
+    "transition_param_not_applicable": {
+        "name": "transition_parameter_applies_to_its_type",
+        "comparison": "inapplicable_parameter_count == 0",
+    },
+    "transition_param_value_not_applicable": {
+        "name": "transition_parameter_value_within_type_subset",
+        "comparison": "out_of_subset_value_count == 0",
+    },
 }
 
 
@@ -4913,6 +5131,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
     sxsd_issues = validate_sxsd_document(xml, root)
     iconpark_issues = validate_iconpark_icon_types(root)
     chart_dimension_issues = validate_chart_value_semantics(root)
+    transition_issues = validate_transition_semantics(root)
     top_level_issues = [
         normalize_issue(issue, None, {})
         for issue in [
@@ -4920,6 +5139,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
             *[issue for issue in sxsd_issues if not is_slide_scoped_sxsd_issue(issue, root_name)],
             *iconpark_issues,
             *chart_dimension_issues,
+            *transition_issues,
         ]
     ]
     if any(issue["level"] == "error" for issue in top_level_issues):

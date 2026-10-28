@@ -2,13 +2,17 @@
 
 > 状态：CLI 与服务端均已实现（`+ls` / `+tree` / `+get` / `+create` / `+create-batch` / `+update` / `+update-batch` 七个接口已上线，不再是 mock）。请求与响应结构以 Alice IDL 的 `ItemContent` / `FrameContent` 为准。
 
-本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构，并包含素材资产读取命令。下文共用调用约定仅适用于 Canvas Workspace 命令，各命令页描述自己的差异。
+本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构。共用的调用约定写在本文，各命令页只描述自己的差异。
 
-用户引用素材资产时，使用 `design-cli design-asset +get --asset-ids <资产ID>`；参数和返回结构见 [素材资产详情](design-asset-get.md)。该命令无需画布 ID，不支持 revision-id。
+## Windows 执行约束
+
+实际执行设备为 Windows 时，先完整读取 [`windows-compat.md`](../workflow/windows-compat.md)。使用当前环境的终端工具并确认实际 Shell，不要求存在 Bash 工具；各页的 Bash 续行与重定向示例仅用于 Bash。
+
+四个写命令的 `--input` **只接受 `-`**：Windows 按兼容说明用 Python 将 UTF-8 XML 送入 stdin，不使用 `< 文件`、Shell 管道或 `--input "@文件"`。画布逻辑 `--path` 保留 `/`；本地任务路径单独处理。Mobile 禁止 Canvas 的规则优先。
 
 ## 调用形状
 
-下述 Canvas Workspace 命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
+所有命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
 
 ```bash
 design-cli design-workspace +<command> [flags]
@@ -104,7 +108,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 一期服务端对所有非网络逻辑错误固定返回「请你仔细阅读 SKILL 再来调用」，`msg` 没有诊断价值。按退出码分支，不要匹配文案：
 
 - 退出码 `2` → 参数拼错了，对照本目录检查 flag 与取值
-- 退出码 `1` → 重读对应命令页与 XML 结构约定，核对后重试
+- 退出码 `1` → 保留 stdout、stderr 与真实退出码，重读对应命令页与 XML 结构约定；写入状态不明时先只读恢复确认，确认未成功且原因已修正后才重试
 
 ## XML 约定
 

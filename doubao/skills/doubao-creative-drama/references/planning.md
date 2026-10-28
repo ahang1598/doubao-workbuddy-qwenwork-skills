@@ -22,8 +22,8 @@
 - 采用什么呈现形态、题材、冲突和叙事机制。
 - 使用什么可执行视觉锚点，哪些风格机制明确排除。
 - 情绪如何起伏和兑现，但不套固定秒数、固定气爽比例或固定反转频率。
-- 交付什么内容形态、多少集、每集及总时长、什么画幅，分别使用什么生图模型、视频模型和视频生成确认轮次；完整模式必须包含每集 `3-4` 张剧情高光关键帧阶段；输出语言、视频语言和字幕语言静默写入内部合同，不作为参数确认项；字幕默认关闭及交付方式必须作为参数确认项告知用户，用户明确要求字幕时才在最终音轨锁定后的成片阶段生成并烧录字幕。
-- 多集项目是逐集成片交付还是用户明确要求的合集交付；未说明时默认逐集交付。完整模式必须明确写入“先锁全局故事圣经、全部分集推进总纲和最终结局，再按集执行详细剧本 -> 资产 -> 分镜 -> 关键帧 -> 视频 -> 成片确认”的生产顺序。
+- 交付什么内容形态、多少集、每集及总时长、什么画幅，分别使用什么生图模型、视频模型和视频生成确认轮次；输出语言、视频语言和字幕语言静默写入内部合同，不作为参数确认项；字幕默认关闭及交付方式必须作为参数确认项告知用户，用户明确要求字幕时才在最终音轨锁定后的成片阶段生成并烧录字幕。
+- 多集项目是逐集成片交付还是用户明确要求的合集交付；未说明时默认逐集交付。完整模式必须明确写入“先锁全局故事圣经、全部分集推进总纲和最终结局，再按集执行详细剧本 -> 资产 -> 分镜 -> 视频 -> 成片确认”的生产顺序。
 - 哪些事实、授权、平台政策和敏感内容仍需核实。
 - 后续六个生产阶段分别如何验收。
 
@@ -80,7 +80,7 @@
 11. **推导节奏波形**：不套固定时段模板。先列出不可移动的内容节点；判断每个节点的信息密度、动作强度和阅读时间；确定唯一主重拍；决定节点之间使用切镜还是镜内连续；先保证动作和核心证明，再分配剩余时长；最后用 `1-5` 强度序列检查是否过平或全程过强。可选波形包括“快起 -> 稳证 -> 快收”“逐级加速 -> 高光 -> 短停”“快慢交替 -> 汇聚”“连续推进 -> 节点变速”“结果前置 -> 倒推线索 -> 原因揭示”“稳态建立 -> 突然打断 -> 连续应对 -> 新稳定”“单点触发 -> 层层扩散 -> 整体响应 -> 回收”“两线交替 -> 节奏对齐 -> 汇合”“问题脉冲 -> 回答脉冲 -> 证据停留”“克制积累 -> 局部释放 -> 完整爆发 -> 余韵”“建立规则 -> 两次变奏 -> 打破规则 -> 新规则收束”“起点 -> 偏离 -> 回归 -> 无缝 Loop”。按项目因果选择或自定义，不把候选波形变成新模板。
 12. **规划规模与工具**：内部记录生图与视频的实际执行方式；面向用户只确认生图模型和视频模型名称，不展示工具名、路由或宿主能力。同步确认内容形态、集数、单集和总时长、画幅、片段上限、资产复杂度、最终交付形式和字幕交付方式；输出语言、视频语言和字幕语言静默写入内部合同，不在参数确认表中展示或询问。多集短剧默认逐集交付；只有用户明确要求合集时才规划合集版。用户未指定视频模型时固定使用 `seedance 2.0 fast`，所有 SEG 不超过 `15` 秒，不得自主切换；只有用户明确指定 `seedance 2.5` 时才能使用并按其能力规划最长 `30` 秒。
 13. **预判风险**：登记事实、授权、平台、敏感内容、长篇漂移和技术可拍性风险及缓解措施。集数超过 `10` 时，必须把剧情、人设、伏笔和资产漂移风险写入参数确认表，并说明先锁项目级故事圣经、全部分集推进总纲、人物弧、伏笔账本与结局，随后逐集生成详细剧本和完整制作；该提示属于参数确认表的一部分。
-14. **设计验收**：为规划、剧本、资产、分镜、关键帧、视频和成片分别写可验证检查项。
+14. **设计验收**：为规划、剧本、资产、分镜、视频和成片分别写可验证检查项。
 15. **编译强制参数确认表**：规划完成后先按下方固定结构生成待展示正文，但此时不得向用户发送；所有值必须预先填写，不向用户留空或要求用户填表，也不得增加“工具能力”“路由”“状态”“内部检查”等内容。
 16. **建立项目与分集索引**：所有模式按 `manifests.md` 创建 `project_manifest.json`、`source_manifest.json` 及全部 `episode_manifest_ep_N.json`；每个 `episode_manifest_ep_N.json` 必须使用顶层 `stage_manifests` 登记各阶段路径，不得使用旧名 `manifests`。完整模式另创建 `episode_seams.json`，并预登记 `project_data_card_path`、`project_script_manifest_path`、共享 `asset_registry_path` 和分集阶段路径；轻量模式将不适用的数据卡、剧本、资产与接缝索引留空，只登记内部完整分镜、视频执行与最终交付所需路径。单条短片、微电影和单部长视频也创建 `ep_1`。
 17. **落盘与内部检查**：将 `制作状态.json.phases.planning` 写为 `awaiting_confirmation`，运行 `drama_lint.py --stage planning`；默认不向用户输出“正在校验”、错误数、警告数或 `release_ready`。
@@ -88,7 +88,7 @@
 
 参数确认表是规划完成后的第一项对用户动作，但“完成”以步骤 17 的落盘和内部检查通过为准；步骤 15 只在内部编译正文，不构成展示或交付。
 
-状态提交规则：`制作状态.json` 是唯一状态源。完整模式 `video|final` 目标按 `control-contracts.md` 调用项目执行确认，完整模式其他目标使用普通规划确认；轻量模式在完整参数与五列预览展示后，直接按 `interaction-ask-video-clarification-ref.md` 调用标准视频生成确认，只有 `generate` 才同时完成规划确认并授权当前唯一视频。确认后，完整模式进入项目级 `script`；轻量模式将 `script|assets|storyboard|keyframes|video` 写为 `merged` 并进入 `ep_1.final`。非 Mobile 下，只有流程将进入 `assets|storyboard|keyframes|video|final` 并实际生成图片或视频时，才把 Workspace 初始化或复用作为确认成功后的第一项执行动作；纯规划或纯剧本目标不初始化。
+状态提交规则：`制作状态.json` 是唯一状态源。完整模式 `video|final` 目标按 `control-contracts.md` 调用项目执行确认，完整模式其他目标使用普通规划确认；轻量模式在完整参数与五列预览展示后，直接按 `interaction-ask-video-clarification-ref.md` 调用标准视频生成确认，只有 `generate` 才同时完成规划确认并授权当前唯一视频。确认后，完整模式进入项目级 `script`；轻量模式将 `script|assets|storyboard|video` 写为 `merged` 并进入 `ep_1.final`。非 Mobile 下，只有流程将进入 `assets|storyboard|video|final` 并实际生成图片或视频时，才把 Workspace 初始化或复用作为确认成功后的第一项执行动作；纯规划或纯剧本目标不初始化。
 
 ## 创意机制选择算法
 
@@ -129,13 +129,13 @@ rhythm_design: immutable_nodes[], node_loads[], primary_downbeat, transition_cho
 scale_plan: format_mode, episode_count, episode_durations_s, episode_duration_displays, total_duration_s, total_duration_display, duration_display_mode, aspect_ratio, segment_duration_policy, video_confirmation_policy
 model_plan: image, video
 delivery_settings: dialogue_language, asr_language_code, output_fps, intro_outro_policy, bgm_policy, subtitle_enabled, subtitle_policy, video_generation_subtitles, audio_policy, final_deliverables
-asset_forecast: estimated_character_count, estimated_scene_count, estimated_characters, estimated_scenes, estimated_story_props, global_style_moodboards, estimated_keyframes, voice_roles, known_state_versions, reference_budget_risks
+asset_forecast: estimated_character_count, estimated_scene_count, estimated_characters, estimated_scenes, estimated_story_props, global_style_moodboards, voice_roles, known_state_versions, reference_budget_risks
 risk_plan, verification_plan, handoff
 ```
 
 ### 字段要求
 
-- `objective` 明确做什么和不做什么，防止后续扩张范围。`workflow_mode` 默认为 `full`；只有用户要的是一条独立极短视频、不要求逐阶段审查，且总时长不超过当前已确认视频模型的轻量上限时，才能写 `lightweight`：默认或 `seedance 2.0` 系列模型为 `15` 秒以内；用户明确指定并确认 `seedance 2.5` 时为 `30` 秒以内。多个互不相关的视频必须拆为多个独立轻量任务，分别规划和确认。轻量流程为规划参数与最多 `8` 行预览 -> 视频生成确认 -> 内部十五列完整分镜 -> 单条成片；`script|assets|storyboard|keyframes|video` 均写 `merged`。轻量模式只生成与完整模式同列定义、同填写标准的十五列详细分镜来指导 Prompt，不创建导演总控卡、SEG 执行表、连续性账本、参考输入计划、关键帧计划、分镜 JSON、最小数据卡或其他创作配套文件；视频 manifest、Prompt、请求快照和工具记录仍按实际生成与追溯需要保存。内部完整分镜只能扩充确认预览，不能改写。轻量模式只交付字幕策略对应的唯一最终视频；字幕开启时原始无字幕视频及其他中间媒体仅内部保存。`target_stage` 必须对应用户实际要求的最终交付阶段。
+- `objective` 明确做什么和不做什么，防止后续扩张范围。`workflow_mode` 默认为 `full`；只有用户要的是一条独立极短视频、不要求逐阶段审查，且总时长不超过当前已确认视频模型的轻量上限时，才能写 `lightweight`：默认或 `seedance 2.0` 系列模型为 `15` 秒以内；用户明确指定并确认 `seedance 2.5` 时为 `30` 秒以内。多个互不相关的视频必须拆为多个独立轻量任务，分别规划和确认。轻量流程为规划参数与最多 `8` 行预览 -> 视频生成确认 -> 内部十五列完整分镜 -> 单条成片；`script|assets|storyboard|video` 均写 `merged`。轻量模式只生成与完整模式同列定义、同填写标准的十五列详细分镜来指导 Prompt，不创建导演总控卡、SEG 执行表、连续性账本、参考输入计划、分镜 JSON、最小数据卡或其他创作配套文件；视频 manifest、Prompt、请求快照和工具记录仍按实际生成与追溯需要保存。内部完整分镜只能扩充确认预览，不能改写。轻量模式只交付字幕策略对应的唯一最终视频；字幕开启时原始无字幕视频及其他中间媒体仅内部保存。`target_stage` 必须对应用户实际要求的最终交付阶段。
 - `source_lock` 保存用户原始要求和事实状态，不能把假设写进 `verified_facts`。
 - `creative_mechanism.selection_mode` 只能为 `divergent|user_locked`。`divergent` 时 `candidates` 必须恰好包含三个不同主机制候选；`user_locked` 时保留用户锁定的唯一主机制，并允许登记 `1-3` 个不改写故事核心的执行候选。每个候选带 `1-3` 个同源辅助机制；`primary` 只能选一个，`supporting` 只能保留与主机制同向且互不冲突的 `1-3` 项。筛选证据覆盖用户匹配、核心证明、连续性和生成稳定性。
 - `language_contract` 锁定本项目语言：`instruction_language` 为当前用户指令主语言，`output_language` 控制用户可见回复和文件正文，`video_language` 控制视频人声、视频 Prompt 自然语言和音色描述，`subtitle_language` 控制字幕文本；三者按用户指令主语言或显式语言要求静默写入，不在参数确认表中展示或询问。用户显式指定不同语言或保留原文台词时，只写入 `explicit_overrides`。参数确认表仍必须显示“字幕”项，告知默认不加字幕、片段交付前检查并擦除字幕残留、最终直接拼接无字幕成片；用户明确要求字幕或修改字幕策略时，在同一“字幕”项中展示对应设置。
@@ -147,7 +147,7 @@ risk_plan, verification_plan, handoff
 - `genre/subgenre/setting` 必须正交，`story_engine` 必须能持续制造选择与代价，`audience_promise` 必须在结局兑现。
 - `highlight_strategy.primary_story_engine_id` 可引用题材库 ID，也可使用 `CUSTOM-` 前缀登记自定义发动机。`project_signature` 必须说明本项目不可替换的讲法；`highlight_pillars` 每项都要有铺垫、兑现、题材职责、形态表达和独特性检验。
 - 极短单片可以只守住一个主要亮点；总时长超过 60 秒或多集项目至少规划两个不同维度的亮点支柱。`distribution_policy` 写清建立、变奏、升级和回收，`rejected_cliches` 明确本项目不采用的廉价捷径。
-- `style_contract` 必须是可观察机制，并作为唯一导演总控卡的视觉子系统继承到角色、场景、道具、关键帧和视频；不得另建第二张风格决策卡。至少填写媒介形态、构图骨架、光线方向、色彩关系、材质、镜头质感、字体/版式和明确剥离项。用户明确要求混合风格时，写清主风格、例外元素和可观察边界。`camera_tendency` 只是倾向，逐镜运镜仍由分镜阶段决定。
+- `style_contract` 必须是可观察机制，并作为唯一导演总控卡的视觉子系统继承到角色、场景、道具和视频；不得另建第二张风格决策卡。至少填写媒介形态、构图骨架、光线方向、色彩关系、材质、镜头质感、字体/版式和明确剥离项。用户明确要求混合风格时，写清主风格、例外元素和可观察边界。`camera_tendency` 只是倾向，逐镜运镜仍由分镜阶段决定。
 - `emotion_design.stages` 动态增减，不能按固定秒数或固定集数填充。`rhythm_design` 必须保存六步推导结果和 `1-5` 强度序列，不得直接套固定的 `0-3 / 3-7 / 7-11.5 / 11.5-14 / 14-15` 时段。`character_curves` 只覆盖承担主要情绪转折的角色；每次变化必须写出事件触发、前后状态、可见证据和关系后果，不能把 BGM、滤镜或抽象情绪词当成角色变化本身。
 - `scale_plan.format_mode` 区分单条短片、多集短剧、微电影和长视频。单条短片通常为 `15-60 秒`；多集短剧常规单集为 `1-3 分钟（60-180 秒）`，极短集机制或用户明确要求时支持 `15-60 秒`；微电影通常为 `5-10 分钟（300-600 秒）`。这些范围只用于推导，最终必须结合用户指令、剧本事件量、对白预算和自然切点写入准确秒数。
 - `episode_duration_displays` 与 `episode_durations_s` 逐项对应，`total_duration_display` 与 `total_duration_s` 对应。单条/单部作品对用户只显示总时长；多集项目必须显示集数、每集时长和总时长，两个逐集数组数量等于集数且总和等于 `total_duration_s`。单集时长使用自然时长格式；总时长使用下文规定的“精确秒数/分钟换算”格式。
@@ -155,9 +155,9 @@ risk_plan, verification_plan, handoff
 - 禁止代理因质量、时长、额度、重试或工具偏好自主切换视频模型。默认 `seedance 2.0 fast` 的每个 SEG 不得超过 `15` 秒；视频阶段 `media_to_video` 上传视频参考总时长不得超过 `14` 秒、音频合计不得超过 `15` 秒，且每次最多传 `3` 个视频参考和 `3` 个音频参考、单个视频/音频参考不得低于 `2` 秒。只有用户明确指定并确认 `seedance 2.5` 后，才允许使用该模型及最长 `30` 秒片段，此时上传视频参考总时长不得超过 `28` 秒、音频合计不得超过 `30` 秒。
 - 当前视频模型不可用时停在参数确认表并说明“当前模型暂不可用，需要重新选择模型”，不得自动用 `seedance 2.5` 或其他模型替代；只有用户明确选择新模型并重新确认完整参数后才能继续。
 - 参数确认表中出现 `seedance 2.5` 时，必须写成 `seedance 2.5（会员模型并且消耗最多的额度）`；出现 `seedream 5.0 pro` 时，必须写成 `seedream 5.0 pro（会员模型并且消耗最多的额度）`。任何会员模型都必须在调用前明确告知用户。
-- 完整模式的规划确认只建立项目级基线和执行授权，不授权生成视频。进入视频阶段后，任何生成、重生、返修或继续下一段都必须按 `video-batch-confirmation.md` 展示当前批次两张表并取得 `generate`；每批连续 `1-2` 个 SEG。确认后串行生成，每个片段返回后立即交付，单项直接交付成功并满足下一段原有真实 FRM 承接要求后才继续下一个；非 Mobile 本轮已确认批次全部直交后按 `media-delivery.md` 整理目录，片段全部交付后再按原目标做拼接或阶段确认。轻量模式首次生成例外地直接复用规划参数列表和最多 `8` 行预览作为唯一视频生成确认依据，不再展示批次两张表或进行第二次确认；轻量视频返修或重生仍按单视频批次重新展示并确认。
+- 完整模式的规划确认只建立项目级基线和执行授权，不授权生成视频。进入视频阶段后，任何生成、重生、返修或继续下一段都必须按 `video-batch-confirmation.md` 展示当前批次两张表并取得 `generate`；每批连续 `1-2` 个 SEG。确认后串行生成，每个片段返回后立即交付，非 Mobile 写入 Canvas 并回读成功后才继续下一个；片段全部交付后再做拼接确认。轻量模式首次生成例外地直接复用规划参数列表和最多 `8` 行预览作为唯一视频生成确认依据，不再展示批次两张表或进行第二次确认；轻量视频返修或重生仍按单视频批次重新展示并确认。
 - `delivery_settings` 锁定最终输出帧率、片头片尾、BGM、字幕开关、视频阶段禁用模型直出字幕、音频职责和最终交付形式。`dialogue_language` 必须与 `language_contract.video_language` 填写同一显示值；`asr_language_code` 单独保存宿主 ASR 或字幕对齐可用的语言码。`output_fps` 记录当前生成与交付链路支持的值；`intro_outro_policy`、`bgm_policy` 不适用时也要明确写“无”。每集最终只交付一个视频版本：默认写 `subtitle_enabled: false`、`subtitle_policy: disabled`、`final_deliverables: ["clean_master"]`；用户明确要求字幕时才写 `subtitle_enabled: true`，并写 `final_deliverables: ["subtitle_master"]`。逐段预览仍交付清理后的无字幕片段；最终音轨锁定后按 `delivery.md` 生成字幕、烧录字幕版并完成验收，无字幕母版只作为内部制作文件。
-- `asset_forecast` 只做成本和复杂度预判，不生成资产，也不定义稳定 ID。`estimated_characters` 与 `estimated_scenes` 必须覆盖预计出现的全部角色和场景数量，每项只写名称与一句大致描述；`estimated_story_props` 只预估会多次出现、跨场景出现、跨片段承接、状态会复现，或用户明确要求单独生成道具设定图的关键/复现/功能性道具；一次性证据物、一次性手持物、一次性特写物和普通环境装饰不列入道具资产预估。外貌、空间布局、状态版本、身份锚点和稳定编号统一在剧本阶段的 `project_data_card.json` 定义。必须估算主要场景共享布局参考与一张全局 moodboard。关键帧只按集级高光时刻估算：完整模式每集必须 `3-4` 张，不估算生成式首帧或尾帧。
+- `asset_forecast` 只做成本和复杂度预判，不生成资产，也不定义稳定 ID。`estimated_characters` 与 `estimated_scenes` 必须覆盖预计出现的全部角色和场景数量，每项只写名称与一句大致描述；`estimated_story_props` 只预估会多次出现、跨场景出现、跨片段承接、状态会复现，或用户明确要求单独生成道具设定图的关键/复现/功能性道具；一次性证据物、一次性手持物、一次性特写物和普通环境装饰不列入道具资产预估。外貌、空间布局、状态版本、身份锚点和稳定编号统一在剧本阶段的 `project_data_card.json` 定义。必须估算主要场景共享布局参考与一张全局 moodboard。
 - `risk_plan` 每个高风险项必须有缓解措施、待确认项或明确接受理由。
 - `verification_plan` 的每一项必须可观察、可读回或可播放验证。
 
@@ -244,9 +244,9 @@ state episode count, per-episode duration or duration range, total duration, asp
 
 ### 确认收尾语义
 
-收尾只固定语义，不固定句子。完整模式视频目标按 `control-contracts.md` 调用项目执行确认；轻量模式直接按 `interaction-ask-video-clarification-ref.md` 调用标准视频生成确认，只有 `generate` 才确认方案并授权当前唯一视频，不再等待第二次确认。其他目标使用普通聊天确认。
+收尾只固定语义，不固定句子。完整模式视频目标按 `control-contracts.md` 完成项目执行确认；轻量模式按 `interaction-ask-video-clarification-ref.md` 完成视频生成确认，只有取得用户对当前完整方案的明确生成同意才确认规划并授权当前唯一视频，不再等待第二次确认。其他目标使用普通聊天确认。
 
-首次确认前，用户修改任何一项时仍合并未修改项并重新输出完整开头、参数列表和分镜预览表/剧情节奏预览表，保证存在一个明确的全量基线。规划已有有效全量确认后，局部修改可以只展示变更参数、修改前后、修改日志、受影响集数或阶段及更新后的相关预览行；核心方向、因果链、人物弧、结局、模型、时长、画幅、集数、授权或目标交付终点变化，或实际推翻原方案时属于重大修改，仍须全量确认。完整模式视频目标必须取得 `proceed_project`；轻量模式必须取得 `generate`；其他目标必须收到普通聊天中的明确肯定后才能推进。
+首次确认前，用户修改任何一项时仍合并未修改项并重新输出完整开头、参数列表和分镜预览表/剧情节奏预览表，保证存在一个明确的全量基线。规划已有有效全量确认后，局部修改可以只展示变更参数、修改前后、修改日志、受影响集数或阶段及更新后的相关预览行；核心方向、因果链、人物弧、结局、模型、时长、画幅、集数、授权或目标交付终点变化，或实际推翻原方案时属于重大修改，仍须全量确认。完整模式视频目标必须取得本次项目制作授权；轻量模式必须取得本次视频生成授权；其他目标必须收到普通聊天中的明确肯定后才能推进。凡修改后即将实际生成或编辑视频，均须按统一视频确认策略重新展示完整参数并确认，不能用局部变更确认替代。
 
 ## 规划检查
 

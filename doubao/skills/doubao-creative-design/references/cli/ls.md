@@ -16,6 +16,12 @@ design-cli design-workspace +ls \
 
 ## 参数与请求
 
+Windows 先读 [`windows-compat.md`](../workflow/windows-compat.md)，不用上述 Bash 的 `\` 续行；替换真实 Workspace ID 后使用单行命令：
+
+```powershell
+design-cli design-workspace +ls --canvas-workspace-id "cws_10001" --path "/deliverables"
+```
+
 | CLI 参数 | 必填 | JSON 字段 |
 |---|---:|---|
 | `--canvas-workspace-id` | 是 | `canvas_workspace_id` |

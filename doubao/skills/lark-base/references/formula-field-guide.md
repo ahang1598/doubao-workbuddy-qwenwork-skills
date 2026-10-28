@@ -73,7 +73,7 @@ This is the foundation of formula logic. You must determine this before writing 
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Number + Float               | → Float                                                                                                     |
 | Date + Number                | → Date (adds/subtracts days). Use `+`/`-` for whole days, use `DURATION()` for hour/minute/second precision |
-| Date - Date                  | → Duration                                                                                                  |
+| Date - Date                  | → Duration, represented as elapsed days including fractional days; multiply by 24 to convert to hours                              |
 | Boolean compared with Number | Boolean auto-converts to number (TRUE=1, FALSE=0)                                                           |
 | `&` concatenation            | Both sides auto-convert to string                                                                           |
 
@@ -345,8 +345,8 @@ After the result column, it's recommended to flatten with `.LISTCOMBINE()` first
 | SECOND      | `SECOND(date)`                                  | Number      | Extract second                                                                                          |
 | WEEKDAY     | `WEEKDAY(date, [type])`                         | Number      | Day of week                                                                                             |
 | WEEKNUM     | `WEEKNUM(date, [type])`                         | Number      | Week number                                                                                             |
-| DAYS        | `DAYS(end_date, start_date)`                    | Number      | Days between two dates (end - start), includes decimals. **Note parameter order: end date comes first** |
-| DATEDIF     | `DATEDIF(start_date, end_date, [unit])`         | Number      | Whole days/months/years between dates. Unit: `"D"`(default)/`"M"`/`"Y"`. **Start must be before end**   |
+| DAYS        | `DAYS(end_date, start_date)`                    | Number      | Integer calendar-day difference (end date - start date), ignoring hours/minutes/seconds; can be negative. **End date comes first** |
+| DATEDIF     | `DATEDIF(start_date, end_date, unit)`         | Number      | Non-negative integer difference in days/months/years. Unit: `"D"`/`"M"`/`"Y"`. **Start date must not be after end date**   |
 | DURATION    | `DURATION(days, [hours], [minutes], [seconds])` | Duration    | Create a duration for date arithmetic                                                                   |
 | EDATE       | `EDATE(date, months)`                           | Date        | Date N months later                                                                                     |
 | EOMONTH     | `EOMONTH(date, [months])`                       | Date        | End of month N months later; months default 0                                                           |
@@ -408,8 +408,14 @@ After the result column, it's recommended to flatten with `.LISTCOMBINE()` first
 |                 | DAYS                                                         | DATEDIF                                   |
 | --------------- | ------------------------------------------------------------ | ----------------------------------------- |
 | Parameter order | `DAYS(end, start)` — end first                               | `DATEDIF(start, end, unit)` — start first |
-| Precision       | Includes decimals (hours/minutes/seconds as fractional days) | Integer only (whole days/months/years)    |
-| Negative values | Returns negative when start is after end                     | **Errors** when start is after end        |
+| Negative values | Returns negative when the start calendar date is after the end calendar date | Result is a non-negative integer; **errors** when start is after end |
+
+`DAYS` examples:
+
+```
+DAYS(TODATE("2026-10-13 12:00"), TODATE("2026-10-13 09:30")) = 0
+DAYS(TODATE("2026-10-14 00:30"), TODATE("2026-10-13 23:30")) = 1
+```
 
 ### SUM vs SUMIF
 
@@ -543,6 +549,13 @@ DATEDIF([StartDate], [EndDate], "D") & " days"
 DAYS([EndDate], [StartDate])
 ```
 
+Direct subtraction returns a Duration expressed in fractional days, preserving time components. For 09:30 to 12:00 on the same date, the difference is `2.5/24` days:
+
+```
+[EndDate] - [StartDate]
+ROUND(([EndDate] - [StartDate]) * 24, 2)  → 2.5 hours
+```
+
 ### Pattern 7: List element mapping
 
 ```
@@ -645,8 +658,8 @@ Reason: Concatenating a date with `&` won't error, but uses the default format. 
 ### Mistake 10: Reversed DAYS parameter order
 
 ```
-Wrong:   DAYS([StartDate], [EndDate])  → returns negative
-Correct: DAYS([EndDate], [StartDate])  → returns positive
+Wrong:   DAYS([StartDate], [EndDate])  → negative if EndDate is a later calendar date
+Correct: DAYS([EndDate], [StartDate])  → positive if EndDate is a later calendar date
 ```
 
 Reason: DAYS parameter order is end date first, start date second.

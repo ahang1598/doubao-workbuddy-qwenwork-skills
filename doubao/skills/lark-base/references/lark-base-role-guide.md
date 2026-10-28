@@ -21,7 +21,7 @@ for that setting. `+advperm-enable/disable` controls advanced permissions for th
 | Create a custom role | `+role-create` | Supports `custom_role` only. Read [role-config.md](role-config.md) before constructing `--json`. 表级 `perm` 之外还要判 `field_perm_mode`：query 把可编辑范围点名到具体字段时用 `specify` + `field_perms`（按下方“同层级降一级”落权），只给出整表表述时才用 `all_edit` / `all_read`。详见 [role-config.md](role-config.md) 的 field_perms 构造 SOP。 |
 | Update a role | `+role-update` | Omitted permission modules and tables are preserved; each submitted table rule is replaced as a whole. Read the current config first and submit complete rules for the changed tables. |
 | Delete a role | `+role-delete` | Custom roles only. System roles cannot be deleted. |
-| System Editor/Reader members | `drive +member-list/add/remove` | Follow the system-member workflow below. |
+| System Editor/Reader members | `lark-cli drive +member-list/add/remove` | Follow the system-member workflow below. |
 
 ## Required order
 
@@ -66,6 +66,7 @@ Do not probe with `+advperm-get`: that command is not supported. Do not use an e
 - 新建角色：仅该角色以 `no_perm` 为基线，按约束逐项开放。
 - 既有角色：未命中本轮约束的配置保持原状；只定向修改违反约束的能力。
 - 表级 `edit`、字段编辑、记录新增和记录删除是独立能力，不互相推导。
+- 表级权限只按约束里的动作定级：某角色对一张表只有“看 / 查看 / 各看各的 / 只能看自己的 / 不能改但可以看”这类读方向动作时，该表为 `read_only`，记录范围用 `record_rule` 收窄；不得按“要处理工单”“要跟进片区”等业务推测升为 `edit`。
 - 新建角色被允许填写/录入记录，同时仅点名部分字段可继续修改时：记录操作仅加入 `add`；新建记录所需业务字段设为 `create`，点名可修改字段设为 `edit`，系统字段与不可写派生字段保持 `read`；使用 `field_perm_mode=specify`，不得退化为 `all_edit`。
 - 权限字段必须映射到真实 `+field-list` 结果；无法可靠唯一映射时只处理已确认字段并澄清剩余项，不得放宽为 `all_edit`。
 - 角色的权限配置本身就是交付物。除非用户点名了具体的人或给出了用户 ID，只做角色的权限配置，不做成员分配。
@@ -86,7 +87,11 @@ Do not probe with `+advperm-get`: that command is not supported. Do not use an e
 1. `+role-list` 枚举全部系统角色和自定义角色。
 2. 对每个角色逐个执行 `+role-get`；解析到真实角色对象，不能停在 `data.data` 或字符串层。
 3. 对照权限约束账本逐行检查 `perm`、`record_operations`、`field_perm_mode`、相关 `field_perms`、`record_rule`、`copy` 和 `download`。
-4. 任一允许主体未获得目标能力、排除主体仍持有被禁止能力、新建角色的部分字段授权仍为 `all_edit`，该步骤都保持 `written`。
+4. 出现以下任一情况，该权限步骤不算完成：
+   - 允许主体未获得目标能力；
+   - 排除主体仍持有被禁止能力；
+   - 新建角色只被允许改部分字段，回读仍为 `all_edit`；
+   - 某表只被授予“看 / 查看”等读方向动作，回读 `perm` 不是 `read_only`。
 5. 只修复违反约束的角色和能力，再执行完整的 `+role-list` 与逐角色 `+role-get`；把 `+role-list` 返回的角色总数与按 `role_id` 去重后的 `+role-get` 成功数对齐，两者必须一致。
 6. 全部约束通过后才能进入下一编号步骤；后续扩权、删角色或 `+advperm-disable` 不能替代或覆盖前一阶段验收。
 
@@ -116,7 +121,7 @@ A write can partially succeed. When a successful HTTP response includes nonempty
 
 ### System Editor/Reader members
 
-System Editor/Reader membership comes from Drive/CCM sharing. Use `drive +member-list/add/remove` for these grants; `base +role-member-*` only manages custom-role members. Use the returned `role_type` when resolving an advanced role; a display name alone does not determine its type. A request that explicitly targets a sharing identity can use Drive directly, without an admin-only role preflight. Drive checks the caller's sharing permissions; do not require Base admin access or enable advanced permissions just to manage collaborators.
+System Editor/Reader membership comes from Drive/CCM sharing. Use `lark-cli drive +member-list/add/remove` for these grants; `base +role-member-*` only manages custom-role members. Use the returned `role_type` when resolving an advanced role; a display name alone does not determine its type. A request that explicitly targets a sharing identity can use Drive directly, without an admin-only role preflight. Drive checks the caller's sharing permissions; do not require Base admin access or enable advanced permissions just to manage collaborators.
 
 | Requested system role | Drive grant |
 |------|------|
@@ -167,6 +172,8 @@ lark-cli base +advperm-apply --base-token <base_token> --message "Please grant a
 ```
 
 Success means the request was submitted. An administrator must handle it before access changes. On timeout, check whether the request or notification arrived before retrying.
+
+Follow the exact role command's help for JSON input. Use inline JSON unless file/stdin input is explicitly supported; do not assume Record's `@file` support applies. If `@` is parsed as literal JSON and rejected, correct the input method before retrying.
 
 ## Common Fewshots
 

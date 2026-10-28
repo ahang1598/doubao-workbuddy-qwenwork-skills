@@ -29,7 +29,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 > 1. SystemPrompt 中的 `Computer OS` 字段：值为 `Windows` 或 `Mac` 判为本地电脑；值为其他判为云电脑。
 > 2. SystemPrompt 未包含 `Computer OS` 字段时：`<system-reminder>` 包裹的内容中出现 `Runtime: local_pc` 判为本地电脑，出现 `Runtime: cloud_vm` 判为云电脑。
 
-**建目录**：每个任务在工作区根目录下新建语义化目录（如 `sales-dashboard/`）；HTML 文件放在目录里，**文件名也要语义化**（如 `销售仪表盘.html`），**不要叫 `index.html`**。图片素材放进 `assets/`。迭代已有任务时进原目录改，不另起。
+**建目录**：每个任务在工作区根目录下新建语义化目录（如 `sales-dashboard/`）；HTML 文件放在目录里，**文件名也要语义化**（如 `销售仪表盘.html`），**不要叫 `index.html`**。图片素材放进 `assets/`。迭代已有任务时进原目录改，不另起。**本地电脑**使用运行环境指定的工作区，不要另用 `/tmp` 等系统临时目录。
 
 **平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`，**需要完整 Read `references/windows-compat.md`，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
 
@@ -52,7 +52,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
 
 
 - **交付与发布**：
-  - 当用户没有明确的发布需求时：用 `present_files` 这类交付工具给用户交付 HTML，**`artifacts[].name` 写产物文件名，不要另起标题**（`销售仪表盘.html`，不是「销售数据看板」）。**同一个产物只交付一个 `.html` 文件**——按运行环境选定一种图片引用方式就够了，不要再额外附一份「以防万一」的备份版或压缩包，用户拿到两份不知道该打开哪个。交付说明如实写清：没实现的功能、用的是示例数据、做不了的能力。本地电脑下页面依赖同目录 `assets/` 时，要简单提醒用户转发时连目录一起发。
+  - 当用户没有明确的发布需求时：用 `present_files` 这类交付工具给用户交付 HTML，**`artifacts[].name` 写产物文件名，不要另起标题**（`销售仪表盘.html`，不是「销售数据看板」）。**同一个产物只交付一个 `.html` 文件**——按运行环境选定一种图片引用方式就够了，不要再额外附一份「以防万一」的备份版或压缩包，用户拿到两份不知道该打开哪个。交付说明如实写清：没实现的功能、用的是示例数据、做不了的能力。**`present_files` 的 `artifacts` 只包含最终 HTML 文件，不单独交付 `assets/` 等依赖目录。依赖目录保留在本地原位置，需要转发时，仅在回复中提醒用户连同目录一起发送。**
   
   - 当用户想要「发布」、「可访问的链接」、「给我链接」时：阅读 `references/lark-apps-publish.md`，将你的 html 文件发布成一个 doubao-html 网页，此时无需交付 html 文件，仅需使用 present_files 交付发布后的 doubao-html 链接。
   
@@ -60,7 +60,7 @@ description: 专门设计、生成和修改可直接在浏览器中打开的 HTM
   - **最终给用户的回复不要过长**：最重要的产物是你最终生成的 html 产物，而不是给用户的最终回复，所以在交付了 html 产物后的最终回复不应该太长，**不能超过300字，也不能超过 8 行**，只需要简单介绍一下你生成的 html 产物即可
 
 - **修改、参考已发布的 doubao-html 网页**：
-  - 当用户给你提供了一个 doubao-html 链接（形如 `https://{xxx}.aiforce.cloud/app/app_{xxxxxxx}/`），并希望基于此修改或新建时，阅读 `references/lark-apps-publish.md`。先用 `lark-cli apps +get --app-id <id>` 看 `app_type`：`html` / `modern_html` 是单页 HTML，下载源码、修改、重新发布即可；其他类型使用 `doubao-app-builder` 技能。
+  - 当用户给你提供了一个 doubao-html 链接（形如 `https://{xxx}.doubao.link/app/app_{xxxxxxx}/`），并希望基于此修改或新建时，阅读 `references/lark-apps-publish.md`。先用 `lark-cli apps +get --app-id <id>` 看 `app_type`：`html` / `modern_html` 是单页 HTML，下载源码、修改、重新发布即可；其他类型使用 `doubao-app-builder` 技能。
   
 
 **改产物**：直接改任务目录里的原文件。
@@ -101,7 +101,7 @@ HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题�
 
 **JS 库统一走 jsDelivr**：`https://fastly.jsdelivr.net/npm/<包名>@<版本>/…`。故障时的备用镜像是 **cdnjs**（`https://cdnjs.cloudflare.com/ajax/libs/<lib>/<ver>/…`，Cloudflare 官方运营，同版本文件字节一致）。**禁止** bootcdn、staticfile、polyfill.io（均有供应链投毒历史），unpkg 不作首选。
 
-**字体走自托管镜像** `https://miaoda.feishu.cn/fonts/css2?family=…`：查询语法与 Google Fonts 的 `css2` 端点完全一致，返回的 `@font-face` 也指向自托管 CDN，两跳都不经过 Google。**不直连** `fonts.googleapis.com` **/** `fonts.gstatic.com`（部分地区不可达）。多字族就重复写多个 `family=`，例如 `<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">`。每个 `font-family` 都要带完整的系统字体 fallback 栈，字体加载失败时页面仍然成立。
+**使用 webfont 时先读 [字体加载](references/font-loading.md)**：字体走自托管镜像 `https://miaoda.feishu.cn/fonts/css2?family=…`，沿用 `css2` 查询语法；在 `<head>` 靠前加入 `preconnect`，按实际返回的 CSS 预加载首屏字体，缩短字体迟到引起的切换与重排。保留 `display=swap` 和完整系统字体 fallback 栈。**不直连** `fonts.googleapis.com` **/** `fonts.gstatic.com`（部分地区不可达）。
 
 ## 图像素材
 
@@ -179,6 +179,7 @@ HTML 文件自检默认**自动修复**脚本已支持、修法确定的问题�
 | 文档 | 何时读 |
 | --- | --- |
 | [`interactive-report.md`](references/interactive-report.md) | 命中上述灵动 HTML 触发条件时必读；确定题材表达、动态叙事与教学交互 |
+| [`font-loading.md`](references/font-loading.md) | 使用 webfont 时必读；首屏字体的 preconnect、preload 与回退策略 |
 | [`lark-apps-publish.md`](references/lark-apps-publish.md) | 用户要「发布」「可访问的链接」，或给了 doubao-html 链接要基于它改、发布出错 |
 | [`windows-compat.md`](references/windows-compat.md) | SystemPrompt 出现 `Computer OS: Windows`——**必须完整 Read**，否则大面积报错 |
 

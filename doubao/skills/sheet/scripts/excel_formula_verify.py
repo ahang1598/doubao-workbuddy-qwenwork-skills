@@ -20,14 +20,9 @@ import time
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
-_SHARED_SCRIPTS = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared-assets", "scripts")
-)
-if _SHARED_SCRIPTS not in sys.path:
-    sys.path.insert(0, _SHARED_SCRIPTS)
-
-from excel_lo_runtime import get_soffice_env
-from _checkpoints import (emit_checkpoint_hint, emit_checkpoint_skip_hint,
+from excel_lo_runtime import (LO_START_FAILURE_MARKERS, get_soffice_env, profile_arg,
+                              run_managed_process, soffice_detail, sweep_stale_profiles)
+from _checkpoints import (checkpoint_file_path, emit_checkpoint_hint, emit_checkpoint_skip_hint,
                           load_checkpoints, verify_checkpoints)
 
 try:
@@ -235,6 +230,16 @@ RECALC_UNVERIFIED_HINT = """\
 只读诊断（错误值扫描、前缀与形状、硬编码嫌疑）已经跑过，缺的只是执行验证。
 退出码 4 不是让你反复重跑，也不是让你换 Python 复算冒充验证：
 交付说明写明「公式未重算」并提示在 Excel 中刷新（Ctrl+Alt+F9），不得写「公式已验证无错误」。"""
+
+# 按 failure_kind 补一句处置。脚本已用全新 profile 自动重试过启动失败，调用方再
+# 杀进程、删 ~/.config/libreoffice 或加长超时都改变不了结果，只会多耗时间。
+RECALC_FAILURE_HINTS = {
+    "lo_start_failed": "[recalc] LibreOffice 启动失败，脚本已换全新 profile 重试一次。"
+                       "不要 pkill soffice、不要删 ~/.config/libreoffice、不要再重跑本脚本。",
+    "timeout": "[recalc] 重算超时：soffice 挂在等待上，加长超时或马上重跑等不出结果。"
+               "不要 pkill -f soffice（会匹配并杀掉执行这条命令的 shell）。",
+    "macro_setup_failed": "[recalc] 重算宏写不进临时 profile，多为临时目录不可写；不要再重跑本脚本。",
+}
 
 
 def _emit_hardcode_hint(hc: dict) -> bool:
@@ -1021,6 +1026,14 @@ def scan_errors_only(filename: str, static_source_sheets: Optional[Set[str]] = N
 PROFILE_MACRO_DIR = Path("user/basic/Standard")
 MACRO_FILENAME = "Module1.xba"
 
+# 未完成重算时写进 failure_kind，调用方据此选处置：启动失败已自动换新 profile 重试过一次，
+# 超时说明 soffice 挂在等待上——两者都不该再重跑或加长超时。
+FAILURE_START = "lo_start_failed"
+FAILURE_TIMEOUT = "timeout"
+FAILURE_MACRO = "macro_setup_failed"
+FAILURE_UNKNOWN = "recalc_failed"
+PROFILE_PREFIX = "excel-formula-profile-"
+
 RECALCULATE_MACRO = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
 <script:module xmlns:script="http://openoffice.org/2000/script" script:name="Module1" script:language="StarBasic">
@@ -1032,70 +1045,33 @@ RECALCULATE_MACRO = """<?xml version="1.0" encoding="UTF-8"?>
 </script:module>"""
 
 
-def _profile_arg(profile_dir: Path) -> str:
-    """LibreOffice 的 UserInstallation 只接受 file URL。"""
-    return f"-env:UserInstallation={profile_dir.resolve().as_uri()}"
+# 进程管理与 profile 参数放在 excel_lo_runtime，供本脚本与 excel_lo_convert 共用；
+# 这里保留模块级名字，调用点与测试打桩都不用改。
+_profile_arg = profile_arg
+_run_managed_process = run_managed_process
 
 
-def _run_managed_process(cmd: List[str], timeout: int, env: dict) -> subprocess.CompletedProcess:
-    """运行并回收整棵进程树，避免超时后残留 soffice.bin 继续写文件。"""
-    popen_kwargs = {
-        "stdout": subprocess.PIPE,
-        "stderr": subprocess.PIPE,
-        "text": True,
-        "env": env,
-    }
-    if os.name == "posix":
-        popen_kwargs["start_new_session"] = True
-    elif os.name == "nt":
-        popen_kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+def _profile_is_initialized(profile_dir: Path) -> bool:
+    """LibreOffice 自己完成初始化后，宏库登记文件里会列出 Module1。
 
-    process = subprocess.Popen(cmd, **popen_kwargs)
+    只有 Module1.xba、没有这份登记的目录是半成品：宏不会被加载，soffice 会在
+    无界面状态下一直等到超时。只看返回码判不出来，所以单独核对。
+    """
+    script_xlb = profile_dir / PROFILE_MACRO_DIR / "script.xlb"
     try:
-        stdout, stderr = process.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        if os.name == "posix":
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            deadline = time.monotonic() + 2
-            while time.monotonic() < deadline:
-                try:
-                    os.killpg(process.pid, 0)
-                except ProcessLookupError:
-                    break
-                time.sleep(0.05)
-            # 组长退出不代表 soffice.bin 已退出；对仍存在的整个组补发 SIGKILL。
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        elif os.name == "nt":
-            # terminate() 只杀 soffice.exe，taskkill /T 才能回收派生的 soffice.bin。
-            try:
-                subprocess.run(
-                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5,
-                    check=False,
-                )
-            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
-                process.kill()
-        else:
-            process.kill()
-        try:
-            process.wait(timeout=2)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
-        raise
-    return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr)
+        return 'library:name="Module1"' in script_xlb.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):  # 写到一半被杀的截断文件同样算半成品
+        return False
 
 
 def setup_libreoffice_macro(profile_dir: Path, timeout: int) -> Tuple[bool, str]:
     """初始化独立 profile 并安装重算宏；失败时返回可展示原因，不抛裸异常。"""
+    ok, reason, _kind = _setup_profile(profile_dir, timeout)
+    return ok, reason
+
+
+def _setup_profile(profile_dir: Path, timeout: int) -> Tuple[bool, str, str]:
+    """同 setup_libreoffice_macro，另返回 failure_kind：在出错分支直接定类，不靠事后匹配原因字符串。"""
     init_timeout = max(30, timeout)
     try:
         result = _run_managed_process(
@@ -1110,26 +1086,28 @@ def setup_libreoffice_macro(profile_dir: Path, timeout: int) -> Tuple[bool, str]
             env=get_soffice_env(),
         )
     except subprocess.TimeoutExpired:
-        return False, f"LibreOffice profile initialization timed out after {init_timeout}s"
+        return False, f"LibreOffice profile initialization timed out after {init_timeout}s", FAILURE_TIMEOUT
     except (FileNotFoundError, OSError) as exc:
-        return False, f"LibreOffice profile initialization failed: {exc}"
+        return False, f"LibreOffice profile initialization failed: {exc}", FAILURE_START
     except Exception as exc:
         # get_soffice_env() 可能因 shim 准备失败抛 RuntimeError/CalledProcessError；
-        # 这里同样要转成未验证状态，不能让 traceback 穿出。
-        return False, f"LibreOffice environment setup failed: {exc}"
+        # 这里同样要转成未验证状态，不能让 traceback 穿出。换 profile 也修不好环境，不重试。
+        return False, f"LibreOffice environment setup failed: {exc}", FAILURE_UNKNOWN
 
     if result.returncode != 0:
-        detail = (result.stderr or result.stdout or "unknown error").strip()
-        return False, f"LibreOffice profile initialization failed: {detail}"
+        detail = soffice_detail(result.stderr, result.stdout) or f"soffice exited {result.returncode}"
+        return False, f"LibreOffice profile initialization failed: {detail}", FAILURE_START
+    if not _profile_is_initialized(profile_dir):
+        # 不替 LibreOffice 补建目录：补出来的半成品会让后面的重算挂到超时。
+        return (False, "LibreOffice profile initialization incomplete: macro library was not registered",
+                FAILURE_START)
 
-    macro_dir = profile_dir / PROFILE_MACRO_DIR
-    macro_file = macro_dir / MACRO_FILENAME
+    macro_file = profile_dir / PROFILE_MACRO_DIR / MACRO_FILENAME
     try:
-        macro_dir.mkdir(parents=True, exist_ok=True)
         macro_file.write_text(RECALCULATE_MACRO, encoding="utf-8")
     except OSError as exc:
-        return False, f"LibreOffice macro installation failed: {exc}"
-    return True, ""
+        return False, f"LibreOffice macro installation failed: {exc}", FAILURE_MACRO
+    return True, "", ""
 
 
 def _safe_number(value):
@@ -1444,7 +1422,8 @@ def _unverified_result(reason: str, scan_path: Optional[Path] = None,
                        preflight: Optional[dict] = None,
                        static_source_sheets: Optional[Set[str]] = None,
                        recalculation_completed: bool = False,
-                       in_place: bool = False) -> dict:
+                       in_place: bool = False,
+                       failure_kind: str = FAILURE_UNKNOWN) -> dict:
     """从未被 LibreOffice 写过的路径/快照诊断，避免解析可能半写坏的 target。"""
     if preflight is not None:
         result = dict(preflight)
@@ -1468,6 +1447,8 @@ def _unverified_result(reason: str, scan_path: Optional[Path] = None,
     if not invalid_input:
         result["status"] = "inconclusive"
         result.pop("error", None)
+        result["failure_kind"] = failure_kind
+        result["failure_reason"] = reason
     result["formula_execution_verified"] = False
     result["recalculation_completed"] = recalculation_completed
     if in_place and recalculation_completed:
@@ -1478,16 +1459,29 @@ def _unverified_result(reason: str, scan_path: Optional[Path] = None,
     return result
 
 
+def _is_start_failure(detail: str) -> bool:
+    return any(marker in detail for marker in LO_START_FAILURE_MARKERS)
+
+
 def _recalc_with_profile(target: Path, profile_dir: Path, timeout: int,
                          safe_scan_path: Optional[Path], preflight: Optional[dict],
                          static_source_sheets: Optional[Set[str]], in_place: bool) -> dict:
     abs_path = str(target)
-    ready, reason = setup_libreoffice_macro(profile_dir, timeout)
-    if not ready:
+
+    def unverified(reason, kind, **kwargs):
+        """构造保留本轮重算上下文的未验证结果。"""
         return _unverified_result(
-            reason, scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets, in_place=in_place,
+            reason,
+            scan_path=safe_scan_path,
+            preflight=preflight,
+            static_source_sheets=static_source_sheets,
+            in_place=in_place,
+            failure_kind=kind,
+            **kwargs,
         )
+    ready, reason, kind = _setup_profile(profile_dir, timeout)
+    if not ready:
+        return unverified(reason, kind)
 
     cmd = [
         "soffice",
@@ -1503,36 +1497,26 @@ def _recalc_with_profile(target: Path, profile_dir: Path, timeout: int,
     try:
         process_result = _run_managed_process(cmd, timeout + 30, get_soffice_env())
     except subprocess.TimeoutExpired:
-        return _unverified_result(
-            f"LibreOffice recalculation timed out after {timeout + 30}s",
-            scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets, in_place=in_place,
-        )
+        return unverified(f"LibreOffice recalculation timed out after {timeout + 30}s", FAILURE_TIMEOUT)
     except (FileNotFoundError, OSError) as exc:
-        return _unverified_result(
-            f"LibreOffice recalculation failed: {exc}", scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets, in_place=in_place
-        )
-    except Exception as exc:
-        return _unverified_result(
-            f"LibreOffice environment setup failed: {exc}", scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets, in_place=in_place
-        )
+        return unverified(f"LibreOffice recalculation failed: {exc}", FAILURE_START)
+    except (RuntimeError, subprocess.SubprocessError, ValueError) as exc:
+        # shim 准备失败等环境问题，换 profile 修不好，不重试
+        return unverified(f"LibreOffice environment setup failed: {exc}", FAILURE_UNKNOWN)
 
     if process_result.returncode == 124:
-        return _unverified_result(
+        return unverified(
             f"LibreOffice recalculation timed out after {timeout}s; cached formula values are not authoritative",
-            scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets, in_place=in_place,
+            FAILURE_TIMEOUT,
         )
     if process_result.returncode != 0:
-        error_msg = (process_result.stderr or process_result.stdout or "Unknown error during recalculation").strip()
+        error_msg = (soffice_detail(process_result.stderr, process_result.stdout)
+                     or f"Unknown error during recalculation (exit {process_result.returncode})")
+        kind = FAILURE_START if _is_start_failure(error_msg) else FAILURE_UNKNOWN
         if "Module1" in error_msg and "RecalculateAndSave" in error_msg:
             error_msg = "LibreOffice macro not configured properly"
-        return _unverified_result(
-            error_msg, scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets, in_place=in_place,
-        )
+            kind = FAILURE_MACRO
+        return unverified(error_msg, kind)
 
     try:
         total_errors, error_details = _scan_formula_error_values(abs_path)
@@ -1574,42 +1558,24 @@ def _recalc_with_profile(target: Path, profile_dir: Path, timeout: int,
         return result
 
     except Exception as exc:
-        return _unverified_result(
+        return unverified(
             f"LibreOffice recalculation finished but result scanning failed: {exc}",
-            scan_path=safe_scan_path, preflight=preflight,
-            static_source_sheets=static_source_sheets,
-            recalculation_completed=True, in_place=in_place,
+            FAILURE_UNKNOWN, recalculation_completed=True,
         )
 
 
-def _recalc_target(target: Path, timeout: int, static_source_sheets: Optional[Set[str]] = None,
-                   in_place: bool = False, safe_scan_path: Optional[Path] = None):
-    """在 target 上重算；失败诊断只读取未被 LibreOffice 写过的安全快照。"""
-    preflight = None
-    if in_place:
-        # --in-place 会改原文件，必须在启动 LibreOffice 前留住只读诊断结果。
-        preflight = scan_errors_only(
-            str(target), static_source_sheets=static_source_sheets,
-            status="inconclusive", warning="formula recalculation has not started",
-        )
-        if preflight.get("status") == "invalid_input":
-            return preflight
-    elif safe_scan_path is None:
-        # 内部调用方未提供源文件时，先留快照，避免失败后读取可能半写坏的 target。
-        preflight = scan_errors_only(
-            str(target), static_source_sheets=static_source_sheets,
-            status="inconclusive", warning="formula recalculation has not started",
-        )
-        if preflight.get("status") == "invalid_input":
-            return preflight
-
+def _attempt_recalc(target: Path, timeout: int, safe_scan_path: Optional[Path],
+                    preflight: Optional[dict], static_source_sheets: Optional[Set[str]],
+                    in_place: bool) -> dict:
+    """用一个全新的独立 profile 跑一次；profile 用完即删，坏状态带不到下一次。"""
+    sweep_stale_profiles(PROFILE_PREFIX)
     try:
-        profile_dir = Path(tempfile.mkdtemp(prefix="excel-formula-profile-"))
+        profile_dir = Path(tempfile.mkdtemp(prefix=PROFILE_PREFIX))
     except OSError as exc:
         return _unverified_result(
             f"cannot create LibreOffice profile: {exc}", scan_path=safe_scan_path,
             preflight=preflight, static_source_sheets=static_source_sheets,
-            in_place=in_place,
+            in_place=in_place, failure_kind=FAILURE_START,
         )
 
     result = None
@@ -1635,13 +1601,88 @@ def _recalc_target(target: Path, timeout: int, static_source_sheets: Optional[Se
     return result
 
 
+def _recalc_target(target: Path, timeout: int, static_source_sheets: Optional[Set[str]] = None,
+                   in_place: bool = False, safe_scan_path: Optional[Path] = None):
+    """在 target 上重算；失败诊断只读取未被 LibreOffice 写过的安全快照。"""
+    preflight = None
+    if in_place:
+        # --in-place 会改原文件，必须在启动 LibreOffice 前留住只读诊断结果。
+        preflight = scan_errors_only(
+            str(target), static_source_sheets=static_source_sheets,
+            status="inconclusive", warning="formula recalculation has not started",
+        )
+        if preflight.get("status") == "invalid_input":
+            return preflight
+    elif safe_scan_path is None:
+        # 内部调用方未提供源文件时，先留快照，避免失败后读取可能半写坏的 target。
+        preflight = scan_errors_only(
+            str(target), static_source_sheets=static_source_sheets,
+            status="inconclusive", warning="formula recalculation has not started",
+        )
+        if preflight.get("status") == "invalid_input":
+            return preflight
+
+    result = _attempt_recalc(target, timeout, safe_scan_path, preflight, static_source_sheets, in_place)
+    if result.get("failure_kind") == FAILURE_START:
+        # 启动失败多是 profile 初始化被打断；换一个全新 profile 只重试这一次。
+        # 超时不重试：soffice 是挂在等待上，换目录或加时都等不出结果。
+        first_reason = result.get("failure_reason") or ""
+        if preflight is None:
+            # 首次失败已做过只读扫描，留作快照，重试失败时不必再扫一遍源文件。
+            preflight = {k: v for k, v in result.items() if k in _SNAPSHOT_KEYS}
+            preflight["warning"] = "formula recalculation was not completed"
+        result = _attempt_recalc(target, timeout, safe_scan_path, preflight, static_source_sheets, in_place)
+        result["recalc_retried"] = True
+        if result.get("formula_execution_verified") is not True:
+            _append_warning(result, f"已换新 profile 重试一次仍失败；首次失败原因：{first_reason}")
+    return result
+
+
+# scan_errors_only 产出的只读诊断字段，重试时整体复用。
+_SNAPSHOT_KEYS = ("status", "formula_execution_verified", "total_errors", "error_summary",
+                  "hardcode", "static_risks", "invariants")
+
+
+def _export_recalc_copy(target: Path, recalc_output: str, result: dict) -> None:
+    """重算完成后把带计算结果的副本留给调用方读值；失败只记 warning，不影响判定。"""
+    if result.get("recalculation_completed") is not True:
+        result["recalc_output"] = None
+        _append_warning(result, "重算未完成，未输出 --recalc-output 副本")
+        return
+    out = Path(recalc_output).absolute()
+    try:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(target, out)
+    except OSError as exc:
+        result["recalc_output"] = None
+        _append_warning(result, f"--recalc-output 写入失败：{exc}")
+        return
+    result["recalc_output"] = str(out)
+
+
+def _same_file(a: Path, b: Path) -> bool:
+    try:
+        return a.resolve() == b.resolve() or (a.exists() and b.exists() and os.path.samefile(a, b))
+    except OSError:
+        return False
+
+
 def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None,
-           in_place: bool = False):
+           in_place: bool = False, recalc_output: Optional[str] = None):
     if not Path(filename).exists():
         return {"error": f"File {filename} does not exist"}
 
+    if recalc_output:
+        # 先删掉上一轮留下的同名副本：这轮重算没做成时，调用方不该读到旧值。
+        stale = Path(recalc_output)
+        if not _same_file(stale, Path(filename)):
+            _quiet_unlink(stale)
+
     if not is_libreoffice_available():
-        return scan_errors_only(filename, static_source_sheets=static_source_sheets)
+        result = scan_errors_only(filename, static_source_sheets=static_source_sheets)
+        if recalc_output:
+            result["recalc_output"] = None
+        return result
 
     if in_place:
         return _recalc_target(
@@ -1655,6 +1696,8 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
             result = _recalc_target(
                 target, timeout, static_source_sheets, safe_scan_path=src
             )
+            if recalc_output:
+                _export_recalc_copy(target, recalc_output, result)
             if target.parent != src_dir:
                 # 退到系统临时目录后，工作簿里相对路径的跨文件引用解析不到，
                 # 重算会吐出 #REF!。调用方必须能分辨这种 #REF! 不可信。
@@ -1667,6 +1710,15 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
             return result
     except _WorkspaceError as exc:
         # 两个候选目录都建不出副本：退回只读扫描，仍然不碰原文件
+        if recalc_output:
+            result = scan_errors_only(
+                filename,
+                static_source_sheets=static_source_sheets,
+                status="skipped_no_workspace",
+                warning=f"无法创建副本（{exc}），公式未重算，仅扫描已有错误值",
+            )
+            result["recalc_output"] = None
+            return result
         return scan_errors_only(
             filename,
             static_source_sheets=static_source_sheets,
@@ -1720,7 +1772,34 @@ def main():
         action="store_true",
         help="在原文件上公式求值并保存。但注意：使用 excel_formula_verify.py --in-place 会出现预期之外的写入、例如行高、列宽、符号、数字格式、颜色、底纹等被 LibreOffice 重置。若不想改动原文件，请不要加 --in-place，脚本会在临时副本上重算。",
     )
+    ap.add_argument(
+        "--recalc-output",
+        metavar="OUT.xlsx",
+        help=("重算完成后把带计算结果的副本另存到这里，供读取公式计算值；原文件不动。"
+              "该副本由 LibreOffice 存回，样式会被重置，只用于读值，不作为交付物。"
+              "不能与 --in-place 同用，也不能覆盖输入文件、--baseline 或 --checkpoints 文件"),
+    )
     args = ap.parse_args()
+    if args.recalc_output and args.in_place:
+        print("[args] --recalc-output 与 --in-place 不能同用：要读计算值只加 --recalc-output，原文件保持不动。",
+              file=sys.stderr)
+        sys.exit(3)
+    if args.recalc_output and _same_file(Path(args.recalc_output), Path(args.excel_file)):
+        print("[args] --recalc-output 不能指向被校验的文件本身：副本由 LibreOffice 存回、样式会被重置，"
+              "换一个路径（如 ./.recalc.xlsx）。", file=sys.stderr)
+        sys.exit(3)
+    if args.recalc_output:
+        # recalc 会先清理同名旧副本；基准必须在这之前保护，包括软链接和硬链接别名。
+        for baseline in args.baseline or []:
+            if _same_file(Path(args.recalc_output), Path(baseline)):
+                print(f"[args] --recalc-output 不能覆盖 --baseline 改前基准：{baseline}；"
+                      "换一个独立的副本路径。", file=sys.stderr)
+                sys.exit(3)
+        checkpoint_path = checkpoint_file_path(args.checkpoints)
+        if checkpoint_path is not None and _same_file(Path(args.recalc_output), Path(checkpoint_path)):
+            print(f"[args] --recalc-output 不能覆盖 --checkpoints 检查点文件：{checkpoint_path}；"
+                  "换一个独立的副本路径。", file=sys.stderr)
+            sys.exit(3)
 
     # --scope 先验：范围写错就当场报错退出，绝不带着一个被悄悄放大成整表的
     # 边界继续跑——那样范围外的改写会被判成允许。
@@ -1732,7 +1811,7 @@ def main():
 
     static_source_sheets, static_source_sheet_list = _normalize_sheet_names(args.static_source_sheets)
     result = recalc(args.excel_file, args.timeout_seconds, static_source_sheets=static_source_sheets,
-                    in_place=args.in_place)
+                    in_place=args.in_place, recalc_output=args.recalc_output)
     checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
     if checkpoint_error:
         result["checkpoints"] = {"status": "invalid", "reason": checkpoint_error}
@@ -1784,6 +1863,9 @@ def main():
             status=result.get("status"),
             warning=result.get("warning") or "未给出原因"),
             file=sys.stderr)
+        kind_hint = RECALC_FAILURE_HINTS.get(result.get("failure_kind"))
+        if kind_hint:
+            print(kind_hint, file=sys.stderr)
 
     has_high = _emit_hardcode_hint(hc) if hc.get("status") == "suspected" else False
     cp = result.get("checkpoints") or {}

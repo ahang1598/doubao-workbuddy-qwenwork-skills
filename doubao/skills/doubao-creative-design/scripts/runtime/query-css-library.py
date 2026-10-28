@@ -187,11 +187,10 @@ class Library:
         intent_entries = {
             '图文关系': {
                 'layout.image-stage', 'layout.staggered-title', 'layout.collage',
-                'layout.annotated-figure', 'surface.image-fade',
+                'layout.annotated-figure', 'surface.image-fade', 'shape.paper-mount',
                 'combination.playful-product-editorial',
             },
             '背景氛围': {
-                'layout.image-stage',
                 'surface.diffuse-field', 'surface.woven-grid', 'surface.light-paper',
                 'surface.screen-grain', 'surface.dot-pattern', 'surface.soft-focus-mist',
                 'surface.image-fade',
@@ -207,8 +206,9 @@ class Library:
                 'surface.twisted-cord', 'surface.dot-pattern',
             },
             '有趣排版': {
-                'layout.image-stage', 'layout.collage', 'layout.route-flow',
-                'layout.staggered-title', 'layout.annotated-figure',
+                'layout.collage', 'layout.route-flow', 'layout.card-rail',
+                'layout.staggered-title', 'shape.speech-panel', 'shape.torn-paper',
+                'shape.paper-mount', 'shape.arch-window',
             },
             '文字特效': {
                 'text.paint', 'text.outline', 'text.arc', 'surface.type-relief',

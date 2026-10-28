@@ -23,17 +23,25 @@ python3 scripts/runtime/resolve_font.py "douyin-sans" \
 
 只支持目录中明确列出的 weight/style 实例；缺失实例明确报错，不合成、不静默替换。
 
+Windows 先读 [`windows-compat.md`](../workflow/windows-compat.md)，不用上述 Bash 的 `\` 续行；从 Skill 根目录使用已确认解释器执行单行命令，参数按实际文案替换：
+
+```powershell
+python -X utf8 "./scripts/runtime/resolve_font.py" "douyin-sans" --target html --weight 700 --style normal --text "让美好发生" --require-ready
+```
+
+Resolver JSON 与字体声明由 Python 显式按 UTF-8 捕获和保存，不用 Shell 重定向或管道。其他字体／CSS 库／素材脚本的 `python3` 示例同样替换解释器；XML 字体和 HTML Web 字体契约保持原样。
+
 只有 `package_status=cdn_ready` 且 `web_font_contract_entry` 非空时才能注入。Web 模式不会下载字体到模型本地，也不会返回 Canvas `font_contract_entry`。
 
 `coverage_status=not_checked` 表示没有下载字体二进制执行逐字 cmap 检查，不等于覆盖完整。选择与文案语种匹配的 `language_group`，保留 Resolver 返回的系统回退栈，并在`shot.py` 的截图中检查缺字、换行和布局。
 
 ## HTML 注入
 
-1. 将页面所需 face 的 `web_font_contract_entry.font_face_css` 写入普通样式块或可加载的样式表；可合并或分块，不限定专用标记、数量或与普通 CSS 分离。
-2. 仅 HTML 规范要求的三个根节点固定宽高必须行内声明；其他视觉 CSS 可使用行内样式、普通样式块、选择器或外部样式表。
+1. 将页面所需 face 的 `web_font_contract_entry.font_face_css` 合并到 `<head>` 内唯一的 `<style data-web-fonts>`；该块只能包含 `@font-face`，不能包含选择器、`@import`、媒体查询、动画或其他规则。
+2. 除这个受控字体声明块外，所有视觉 CSS 仍必须写在元素行内 `style`，不得增加外部样式表。
 3. 文字元素使用 `web_font_contract_entry.font_stack`，并写入解析所得的真实 `font-weight` 与 `font-style`；主 family 名不得改写。
-4. 同一页面使用多个 weight/style 时，每个真实 face 分别解析，可放在同一或不同样式块；避免相互冲突的声明。
-5. 字体加载失败时，返回的系统回退栈仅用于临时显示兜底；最终字体按 [字体回退规则](font-family-library.md#7-回退规则) 处理：用户锁定精确字体或关键字形时先请求确认，未锁定时在原约束内重选并核验后定稿。不得静默换成另一个远程字体，也不通过 CSS 合成不存在的粗体或斜体。
+4. 同一页面使用多个 weight/style 时，每个真实 face 分别解析，并合并到同一个字体声明块；相同声明只保留一次。
+5. 字体加载失败时允许落到返回的系统回退栈，不得静默换成另一个远程字体，也不通过 CSS 合成不存在的粗体或斜体。
 6. 不使用 manifest 之外的 URL，不把本地绝对路径、`file://` 或临时缓存路径写入 HTML。
 
 Resolver 输出示例：
@@ -61,7 +69,7 @@ Resolver 输出示例：
 
 ## 验证与前端边界
 
-- 字体 URL 仍须精确存在于 Web manifest，同域名下的猜测路径也不通过；不因普通样式块、外部样式表、字体块名称、数量或混合普通规则而报错。
+- `scripts/runtime/shot.py` 只允许一个 `data-web-fonts` 声明块，并检查其中每个 URL 都精确存在于 Web manifest；同域名下的猜测路径也不通过。
 - 自动检查 FontFace 加载状态不能证明每个文字节点实际使用了目标字体，也不能证明逐字覆盖完整；这些项目需要结合截图检查。
 - 预览和截图前等待 `document.fonts.ready`，再检查实际字体、缺字、替换、换行、基线、伪粗体和裁切；源码声明不能代替渲染证据。
 - 字体二进制由最终用户浏览器从 CDN 加载，不作为独立 CanvasWorkspace Asset 上传。前端需要允许该字体 CDN 的 CORS/CSP，并在首屏 ready、截图和导出前等待字体加载完成。

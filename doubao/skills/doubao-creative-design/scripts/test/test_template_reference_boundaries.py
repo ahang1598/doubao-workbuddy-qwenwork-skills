@@ -76,7 +76,7 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
             self.assertTrue(set(entry["ref_keys"]).issubset(refs))
 
     def test_fixed_canvas_top_level_html_item_protocol(self):
-        for term in ("data-canvas-width", "data-canvas-height", "固定 `px` 值", "可加载的外部样式表", "`FileBatchUpload`", "顶层 `<item type=\"HTML\">`", "禁止 `<frame type=\"HTML\">`"):
+        for term in ("data-canvas-width", "data-canvas-height", "所有视觉 CSS 声明必须直接写在对应元素的 `style`", "禁止其他 `<style>`", "`FileBatchUpload`", "顶层 `<item type=\"HTML\">`", "禁止 `<frame type=\"HTML\">`"):
             self.assertIn(term, self.protocol)
         self.assertIn("`+update`／`+update-batch` 只允许修正顶层对象的 `brief`／`path`", self.protocol)
 
@@ -176,12 +176,12 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
         image_gate = (ROOT / "references/workflow/image-generation-delivery-gate.md").read_text(encoding="utf-8")
         self.assertIn("默认 Canvas", self.asset_prompt_guide)
         self.assertIn("Mobile", self.asset_prompt_guide)
-        self.assertIn("present_files", self.asset_prompt_guide)
+        self.assertIn("RichMediaCard", self.asset_prompt_guide)
         self.assertIn("delivery_environment=mobile_direct", self.asset_prompt_guide)
         self.assertNotIn("只采用已完成画布回读、交付且检查通过的版本", self.asset_prompt_guide)
         self.assertIn("不为回读素材调用 Canvas CLI", mobile)
         self.assertIn("delivery_environment=mobile_direct", mobile)
-        self.assertIn("不包含 `Device platfrom: Mobile`", image_gate)
+        self.assertIn("未标记移动端交付", image_gate)
 
     def test_stable_solid_background_is_scoped_to_local_information_areas(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")

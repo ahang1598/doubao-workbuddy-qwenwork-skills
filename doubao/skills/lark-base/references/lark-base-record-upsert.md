@@ -1,6 +1,6 @@
 # base +record-upsert
 
-> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+> **前置条件：** 先阅读 [主 Skill「使用边界」](../SKILL.md#使用边界)，遵循本环境的身份与权限约束。
 
 创建记录，或在带 `--record-id` 时更新记录。
 
@@ -9,7 +9,7 @@
 ```bash
 # 创建记录
 lark-cli base +record-upsert --base-token <base_token> --table-id <table_id> \
-  --json '{"项目名称":"Apollo","状态":"进行中"}'
+  --json '{"项目名称":"Apollo","状态":["进行中"]}'
 
 # 更新记录
 lark-cli base +record-upsert --base-token <base_token> --table-id <table_id> --record-id <record_id> \

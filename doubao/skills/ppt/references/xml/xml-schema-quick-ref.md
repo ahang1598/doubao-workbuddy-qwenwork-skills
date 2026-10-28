@@ -1,6 +1,6 @@
 # XML Schema 快速参考
 
-本文是飞书 Slides XML 的元素与属性速查：从根元素结构到各类内容元素、颜色样式和完整范例都在其中，是 [slides_xml_schema_definition.xml](slides_xml_schema_definition.xml) 的精简版摘要。**本文与 XSD 不一致时，以本文为准（与 XSD 冲突处均经实测验证）**。
+本文是飞书 Slides XML 的元素与属性速查：从根元素结构到各类内容元素、颜色样式和完整范例都在其中，是  [slides_xml_schema_index.md](slides_xml_schema_index.md)  的精简版摘要。**本文与 schema_index 不一致时，以本文为准（与 schema_index 冲突处均经实测验证）**。
 
 **生成任何 XML 前务必完整读到末尾**——图表、表格、颜色渐变、完整示例等高频要点集中在文档后半段，中途截断极易漏读。全文结构如下：
 
@@ -112,6 +112,7 @@
 - `<style>?` - 页面样式，目前可放 `<fill>`
 - `<data>?` - 页面元素容器，可放 `shape`、`line`、`polyline`、`img`、`icon`、`table`、`chart`（`<undefined>` 仅在服务端导出时出现、代表不支持的类型，不要手写，写入会报 3350001）
 - `<note>?` - 演讲者备注，内部可放 `<content>`
+- `<animation>?` - 页面动画配置，目前只放一个可选的 `<transition>`，详见「animation 页面切换」
 
 **注意事项**
 
@@ -147,6 +148,8 @@
 - `<ul>`
 - `<ol>`
 
+`<ul>/<ol>` 及 `content`/`p` 的 `list`/`listStyle` 支持 **72 种列表样式**（多语言有序编号、多级循环、圆圈数字等）、`bulletChar` 自定义符号、`bulletColor` 符号颜色、`autoStartAt` 起始/重置编号。完整枚举与计数器示例 `grep -n -A30 '^## \`<ol>\`' references/xml/slides_xml_schema_index.md`。（`bulletSize` 虽在 schema 中列为属性，但实测对渲染无效，不要使用。）
+
 **注意事项**
 
 - 字号必须显式设置 `<content>` 的 `fontSize` 属性，不要依赖 `textType` 的默认字号兜底，这些兜底值明显偏大。本文档示例中的 `fontSize` 仅用于演示"必须显式声明"，不是推荐值，实际字号以选定设计系统为准。
@@ -154,6 +157,7 @@
 - 文字行间距必须设置 `<content>` 的 `lineSpacing="multiple:xx"` 或 `lineSpacing="fixed:xx"` 而不是 `lineSpacing="xx"`。
 - 字间距 `letterSpacing` 单位是 px：实用区间约 **`-0.5 ~ 2`**：标题想拉开质感设 `1~2`，正文一般 `0` 或轻微负值（如 `-0.5`）收紧即可；数值过大会把文字撑出容器、过小会导致字符重叠。
 - **短标签、单行指标、标题，要避免按文本框宽度自动折行，先把 `width` 留够（中英文、数字、符号不等宽，多留三四个字余量），再配 `wrap="false"`。**
+- 段落级精细排版分两处：`<content>` 级有 `paddingTop/Right/Bottom/Left`、`beforeLineSpacing`/`afterLineSpacing` 段前后间距、`backgroundColor` 文本底色、`anchorCenter`（`grep -n -A40 '^## \`<content>\`' references/xml/slides_xml_schema_index.md`，含默认值）；`<p>` 级有 `marginLeft`/`marginRight`、`indent` 首行缩进、`level` 层级（`grep -n -A40 '^## \`<p>\`' references/xml/slides_xml_schema_index.md`）。
 
 ### p 段落与内联标签
 
@@ -164,18 +168,20 @@
 可混排的内联标签：
 
 - `<br/>`
+- `<tab/>`
 - `<strong>`
 - `<em>`
 - `<u>`
 - `<span>`
 - `<del>`
 - `<a>`
-- `<shadow>`
-- `<outline>`
+- `<shadow>` / `<outline>`
+- `<field>`
 - `<formula>`
 
 **注意事项**
 
+- `<field>` 可插入动态文本字段（`slidenum` 页码、`datetime` 及 `datetime1-13` 日期时间格式，元素内容作为不支持时的降级文本），`<tab>` 配合 `content`/`p` 的 `tabStopPos` 制表位使用；完整枚举与示例 `grep -n -A20 '^## \`<field>\`' references/xml/slides_xml_schema_index.md`。
 - **内联样式只能挂在 `<span>` 上**：`<strong>`、`<em>`、`<u>`、`<del>` 不接受任何样式属性（给它们写 `color` / `fontSize` 等会触发 `sxsd_unsupported_attr`）。要给局部文字上色、改字号/字体，用 `<span>`——它支持 `color`、`backgroundColor`、`fontSize`、`fontFamily`、`bold`、`italic`、`underline`、`strikethrough`。例如把"加粗且变色"写成 `<span bold="true" color="rgba(37,99,235,1)">重点</span>`，不要写成 `<strong color="...">`。
 - **任何数学/物理/化学公式等表达式一律用 `<formula>`，禁止退化成纯文本或 Unicode 上下标**：只要表达式里出现上下标、根号、分式、积分、求和、极限、矩阵、希腊字母、向量箭头等符号（例如 `E=mc^2`、`x^2+y^2=r^2`、`∫f(x)dx`、`α_i`、`\sum_{i=1}^n`），需要写成 Latex 形式的字符 `<formula><latex><![CDATA[…]]></latex></formula>`，不允许写成 `E=mc^2`、`x²+y²=r²`、`∫f(x)dx` 这类纯文本或 Unicode 近似。LaTeX 源码放在 CDATA 里，无需再对反斜杠做 XML 转义。页面标题、副标题、导读句、正文段落、列表项、坐标/图例标签、里凡是出现公式表达式的，都要写成 `<formula>`。
 
@@ -208,7 +214,7 @@
 
 | 属性 | 必需 | 说明 |
 |------|------|------|
-| `type` | 是 | 形状类型：常用 `text`（文本框）/ `rect` / `round-rect` / `slides-full-round-rect` / `ellipse` / `triangle` / `diamond`，更多取值见 schema |
+| `type` | 是 | 形状类型：常用 `text`（文本框）/ `rect` / `round-rect` / `slides-full-round-rect` / `ellipse` / `triangle` / `diamond`；完整枚举 `grep -A40 '^## \`<shape>\`' references/xml/slides_xml_schema_index.md` |
 | `topLeftX` | 是 | 左上角 X 坐标 |
 | `topLeftY` | 是 | 左上角 Y 坐标 |
 | `width` | 是 | 宽度 |
@@ -228,6 +234,8 @@
 - `<shadow>`
 - `<content>`
 
+`<shadow>`（color/offset/angle/blur + 变形 + 9 方位对齐）和 `<reflection>`（alpha/offset/size）在此仅列元素名，完整属性与默认值 `grep -n -A25 '^## \`<shadow>\`' references/xml/slides_xml_schema_index.md`（reflection 同法）。
+
 **注意事项**
 
 - `<shape type="rect">` 只是形状不是容器，`<icon>`、`<img>`、`<shape type="text">` 和其他 `<shape>` 必须与它平级靠坐标叠放。
@@ -236,6 +244,7 @@
 - `rect` 和 `round-rect` 写了 `presetHandlers` 后行为完全一致，区别只在不写时的默认值：`rect` 是 `0`（直角），`round-rect` 是 `16`。
 - `<border>` 的 `width` 只能取正整数，不支持小数。
 - 估算文本框宽度时需要注意大部分字体里的中文、英文、数字不等宽。
+- 除常用 7 种，ShapeType 共 **191 种**（箭头 / 标注 / 流程图符号 / 数学符号等）；`type="custom"` + `path` 可画任意 SVG 路径形状；文本 `vert` 支持竖排 / 旋转共 6 种方向。均 `grep -n 'ShapeType\|type="custom"\|vert' references/xml/slides_xml_schema_index.md`。
 
 **示例**
 
@@ -340,6 +349,7 @@
 - **圆形头像必须 `width == height`**：`<crop type="ellipse">` 是在 `width`×`height` 外接矩形里画椭圆，宽高不等得到的是椭圆不是正圆。
 - `<crop>` 的 `presetHandlers` 与 `<shape>` 同义（px 半径，超出夹紧）；圆形头像加描边直接在 `<img>` 里写 `<border>`。
 - **人像图别用默认的居中裁剪**：`width:height` 和原图比例对不上时，居中裁剪会从上下（或左右）各裁掉一半多余部分，人物头顶最容易被切掉。竖构图人像放进横框时写 `<crop anchor="top"/>` 保住头部；最稳的做法仍是让 `width:height` 对齐原图比例，压根不触发裁剪。
+- 图像调整（`exposure`/`contrast`/`saturation`/`temperature` 曝光、对比度、饱和度、色温）、`<crop>` 的 `path` 自定义裁剪路径与四向 `offset` 精细裁剪（`anchor` 优先于 `offset`）未在此展开，`grep -n -A30 '^## \`<crop>\`' references/xml/slides_xml_schema_index.md` 及搜 `exposure`。
 
 **示例**
 
@@ -391,6 +401,8 @@
 - `<colgroup>` 直接子元素只有 `<col width="...">`，width 定义列宽，默认 110。
 - `<tr height="...">` 直接子元素只有 `<td>`，height 定义行高，默认 37。
 - `<td>` 直接子元素只有 `<fill>`（背景）、`<content>`（文字）和边框配置（一般不用），不能嵌套 `<shape>`、`<img>`、`<icon>`。
+
+单元格合并用 `td@colspan`/`rowspan`、`col@span`；单元格四边独立边框 `borderTop`/`borderRight`/`borderBottom`/`borderLeft`（相邻边框右下覆盖左上）。完整写法 `grep -n 'colspan\|rowspan\|borderTop' references/xml/slides_xml_schema_index.md`。
 
 **注意事项**
 
@@ -462,7 +474,7 @@
 - 如果某些 chart 语法未生效，可能是图表美化机制覆盖了相关设置。
 - **标注图表上某个关键数据点 / 节点**（如折线的阶段性低点、反弹点），不要用 `<shape type="text">` 浮在绘图区上——文字盒会压到图表区，必触发 `bbox_overlap`。正确做法：优先在图表外的右侧 / 下方文字区用文字描述该节点，或给该系列开 `<chartLabels>` 只显示数值；确需就地标注时给 `<chart>` 预留上 / 下方专用标注带（缩小 chart 高度腾出空间），标注文字放在 chart 边界之外。
 - `<chartColorTheme>` 只接受纯色 `<color value="rgb(...)"/>` / `rgba(...)`，**不支持渐变**（`linear-gradient` 等只对 `<shape>` 的 `<fill>` 有效）。想要渐变视觉的柱 / 面，用 `<shape>`+`<fill linear-gradient>` 自绘，或接受纯色。
-- 详细用法见 [slides_xml_schema_definition.xml](slides_xml_schema_definition.xml)。
+- 需要继续下钻图表元素、属性和约束时 grep `slides_xml_schema_index.md`（如 `grep -A40 '^## \`<chart>\`' references/xml/slides_xml_schema_index.md`）；原生图表完整片段仍以 `scripts/slides_chart_tool.py get <id-or-keyword>` 为准。
 
 
 ### embed
@@ -476,7 +488,7 @@
 | `topLeftX` / `topLeftY` / `width` / `height` | 是 | 坐标与显示尺寸；width:height **必须匹配** 内嵌 SVG viewBox 的 W:H，否则被服务端等比缩放 |
 | `rotation` / `flipX` / `flipY` / `alpha` | 否 | 与 shape 一致 |
 
-**子元素**：必需一个 `<svg xmlns="http://www.w3.org/2000/svg">...</svg>` 根元素；`<reflection>` / `<shadow>` / `<softEdge>` 可选。
+**子元素**：必需一个 `<svg xmlns="http://www.w3.org/2000/svg">...</svg>` 根元素；`<reflection>` / `<shadow>` 可选。
 
 **手写 SVG 的硬规则**
 
@@ -547,11 +559,13 @@
 </fill>
 ```
 
+除 `fillColor` 纯色/渐变，还支持 `<fillImg>` 图片填充（stretch 拉伸 / tile 平铺）、`<fillPattern>` **54 种图案**（含前景/背景色）；多种填充同时存在时优先级 pattern > img > color。完整写法 `grep -n -A20 '^## \`<fillPattern>\`' references/xml/slides_xml_schema_index.md`（fillImg 同法）。
+
 ### border
 
 **属性**
 
-- `dashArray` 可选 `solid`（默认）/ `dash` / `dot` / `long-dash` / `round-dot` 等，完整取值见 schema。
+- `dashArray` 可选 `solid`（默认）/ `dash` / `dot` / `long-dash` / `round-dot` 等；完整枚举 `grep -n dashArray references/xml/slides_xml_schema_index.md`。
 
 **示例**
 
@@ -609,6 +623,41 @@
 </note>
 ```
 
+## animation 页面切换
+
+生成页面时仅选用 `fade`、`cover`、`pull`、`push` 四种切换动画；`none` 用于显式关闭切换。
+
+`<animation>` 是 `<slide>` 的最后一个子元素（`style` → `data` → `note` → `animation`），内部最多放一个 `<transition>`。
+
+```xml
+<animation>
+  <transition type="fade" durationMs="600"/>
+</animation>
+```
+
+**`<transition>` 属性**
+
+| 属性 | 必需 | 说明 |
+|------|------|------|
+| `type` | 是 | `fade` / `cover` / `pull` / `push`，或 `none`（关闭切换） |
+| `durationMs` | 否 | 切换时长（毫秒），`0`–`86399999`，默认 `1000`；`type="none"` 时不能写 |
+
+效果参数（`style` / `direction`）按下表逐个 `type` 生效。**表里没列的参数对该 `type` 不适用，写了会被 `xml_lint` 判错。**
+
+| 切换类型 | 参数 | 取值 | 缺省 |
+|------|------|------|------|
+| `fade` | `style` | `smoothly` / `through-black` | `smoothly` |
+| `push`、`cover`、`pull` | `direction` | `from-bottom` / `from-top` / `from-left` / `from-right` | `from-bottom` |
+| `none` | — | — | — |
+
+`fade` 只接受 `style`，`push` / `cover` / `pull` 只接受 `direction`；例如 `<transition type="fade" direction="from-left"/>` 会被 `lint` 判错。
+
+**注意事项**
+
+- 不写 `<animation>`（或写一个空的 `<animation/>`）表示不覆盖页面切换，沿用继承结果，**不等于关闭切换**。
+- `type="none"` 才是显式关闭切换；它不接受 `durationMs`，也不接受任何效果参数。
+- 参数写错时两条路径的表现不同：**改写**（`+update-slide` / `+replace-slide`）**整单拒绝**，服务端报 `reject rewrite: invalid transition`，整页改动一起丢；**新建**则跳过这个切换、只留静态页面。两种都拿不到想要的结果，所以 `xml_lint` 报的 `transition_param_not_applicable` / `transition_param_value_not_applicable` 必须改掉，不能忽略。
+
 ## 完整示例
 
 ```xml
@@ -660,5 +709,15 @@
 
 ## 详细参考
 
-- [slides_xml_schema_definition.xml](slides_xml_schema_definition.xml)
+- 语法下钻：grep 扁平索引 [slides_xml_schema_index.md](slides_xml_schema_index.md)（已展开继承、内联枚举约束、内容模型、中文检索词）。该索引**自动生成，请勿手改**（改协议后跑 `python3 scripts/build_schema_index.py` 重新生成，CI 用 `--check` 校验同步），每个元素一节，节内结构固定为：
+
+  > **声明类型 → 出现场景（父节点）→ 中文检索词 → 高优先级约束 → 完整可用属性 → 子元素（内容模型） → 最小可用 XML**
+
+  其中「出现场景（父节点）」列出该元素可作为谁的子元素；「子元素（内容模型）」里 `选择其一[A | B]` 表示 A、B 任选其一、`按顺序[A，B]` 表示按序出现、`任意顺序各一次[…]` 表示各子元素无序出现、括号内 `（0..unbounded）` 等是重复次数。grep 时直接按节名定位：
+
+  ```bash
+  grep -n -A40 '^## `<shape>`' references/xml/slides_xml_schema_index.md   # 取某元素整节
+  grep -n '^### 完整可用属性' references/xml/slides_xml_schema_index.md     # 节名字典：高优先级约束 / 完整可用属性 / 子元素（内容模型） / 最小可用 XML
+  grep -n 'bent-connector\|viewBox' references/xml/slides_xml_schema_index.md  # 按枚举值/关键词搜
+  ```
 - [slides_chart_demo.xml](slides_chart_demo.xml)

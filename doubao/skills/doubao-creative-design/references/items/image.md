@@ -2,8 +2,6 @@
 
 图片 Item。内容分支为 `<asset>`。
 
-> `image_gen`／`image_edit` 结果按 [交付门禁](../workflow/image-generation-delivery-gate.md) 处理 Workspace ID 并使用 `RichMediaCard` 直接逐项交付，不使用本文件重复创建 IMAGE Item。本文件只用于用户上传、本地渲染／导出或其他确实需要显式创建 IMAGE Item 的非图像工具资产。
-
 ## 字段
 
 ```xml
@@ -21,7 +19,7 @@
 
 ## 短链从哪来
 
-CLI **不上传文件**。`image_gen`／`image_edit` 输出在调用时透传 Workspace ID，返回后通过 `RichMediaCard` 直接交付给用户，不得进入本文件的重复创建与回读流程；直交后允许按 [资产目录工作流](../workflow/canvas-asset-organization.md#3-产物完成后的强制目录整理) 回读已关联对象并更新 path，也不得为了交付另行下载、复制或重新上传。用户上传或其他仅有本地文件、且并非这两类工具输出的素材，才调用 `FileBatchUpload`：
+CLI **不上传文件**。图片生成／编辑工具的输出必须直接使用工具原始响应中的短链，并把工具返回的对应产物直接交给 `RichMediaCard`；不得为了交付另行下载、复制或重新上传。用户上传或其他仅有本地文件、且并非生成／编辑工具输出的素材，才调用 `FileBatchUpload`：
 
 ```json
 {"path_list": ["./assets/key-visual.png"]}
@@ -33,7 +31,7 @@ CLI **不上传文件**。`image_gen`／`image_edit` 输出在调用时透传 Wo
 {"path": "./assets/key-visual.png", "uri": "tos-cn-i-.../key-visual", "url": "https://cdn.example.com/s/x9Y8z7"}
 ```
 
-本地路径、`file://`、`data:` URI 都不接受。仅当本文件适用的资产确实需要创建 IMAGE Item 时，写入后用 `+get` 核对 URL；不得把 `image_gen`／`image_edit` 的交付侧产物另行转换成 IMAGE Item。
+本地路径、`file://`、`data:` URI 都不接受。生成／编辑工具没有返回有效短链时停止，不得用预览 URL、缓存路径、交付侧产物标识或二次上传 URL 代替；写入后用 `+get` 核对 URL 与工具原始短链逐字一致。
 
 ## 创建
 

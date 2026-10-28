@@ -1,6 +1,6 @@
 ---
 name: ppt
-version: 1.0.32
+version: 1.0.38
 description: 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。
 metadata:
   requires:
@@ -152,7 +152,7 @@ lark-cli slides +add-slide \
 2. **解析回读结果**：先用 `lint_inspect.py --input <完整响应 JSON>` 获取 lint 检测报告摘要，再按页和文档级范围用 `--details --limit 3 --max-chars 6000` 读问题正文（`issues[].issue`），按 `pagination.next_offset` 继续到 `has_more: false`，处理全部发现；不要把大报告整段打印或只读 lint 检测报告摘要；报告缺失不能视为通过。编辑/模板须读取目标页原稿详情并与同一实际页面比较：整稿第 4 页在单页报告中可能编号为 1，以请求/响应 slide ID 和同次 XML 页序关联，不能只比总数或同名 code。再用 `xml_inspect.py --input <纯 XML 文件> --mode summary` 输出 XML 内容与结构摘要，按实际顺序核对 `index、slide_id、text_preview` 与大纲及创建记录是否对应；该 XML 内容与结构摘要不包含服务端 lint。补页后重新核对，页数相同、写入成功或 lint 通过不能代替页序验收。自行解析时必须使用 XML 解析器，命名空间从根元素实际读取，不要硬编码或猜测。服务端会规整你提交的 XML（丢弃不认识的属性、补默认值），落地结果和你写的可能不是一回事，一律以回读到的为准。
 3. **逐页截图复核**：`slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 看真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 8 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
 4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+update-slide` 原地覆盖（见 [`cli/lark-slides-update-slide.md`](references/cli/lark-slides-update-slide.md)，多页就每页各跑一次），或 `+delete-slide` 删旧页（见 [`cli/lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)）+ `+add-slide` 建新页。改完重新回读、重新校验。
-5. **成稿交付**：用 present_files 工具把最终幻灯片链接明确交付给用户，并在回复里附上制作介绍；编辑已有幻灯片同样必须交付链接。交付链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），使用 `lark-cli drive +export --token "lark slides的file_token" --doc-type slides --file-extension pptx --output-dir "导出路径(使用CWD内相对路径)" ` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户；在线的幻灯片也需要调用 `present_files` 给到用户
+5. **成稿交付**：用 present_files 工具明确交付最终产物，并在回复里附上制作介绍；编辑已有幻灯片同样必须再次交付。本地已打开文件按 [`workflow/local-compat.md`](references/workflow/local-compat.md) 交付原始路径，不要求磁盘同步更新，也不得声称已代用户保存。在线幻灯片交付最终链接；新建稿的链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），使用 `lark-cli drive +export --token "lark slides的file_token" --doc-type slides --file-extension pptx --output-dir "导出路径(使用CWD内相对路径)" ` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户；在线的幻灯片也需要调用 `present_files` 给到用户
 6. 不要使用 `artifact-preview` 或 `verifier-hub` 验证最终 PPT 产物，统一按上述步骤执行。
 
 ## 三、参考文档地图
@@ -174,7 +174,7 @@ lark-cli slides +add-slide \
 | ------------------------------------------------------------------------------------- | -------------------- |
 | [`xml-schema-quick-ref.md`](references/xml/xml-schema-quick-ref.md)                   | 生成任何 XML 前必读，元素与属性速查 |
 | [`slides_chart_tool.py`](scripts/slides_chart_tool.py)                               | 画原生 `<chart>` 前按类型获取 XML 片段并照抄工具输出；禁止直接通读 demo |
-| [`slides_xml_schema_definition.xml`](references/xml/slides_xml_schema_definition.xml) | 唯一权威 XML 协议，需要精确定义时查 |
+| [`slides_xml_schema_index.md`](references/xml/slides_xml_schema_index.md) | 语法下钻权威来源：按元素摊平、已展开继承的可 grep 索引，含属性、枚举、约束、内容模型与最小 XML；精确定义 grep 本文件 |
 | [`iconpark.md`](references/xml/iconpark.md)                                           | IconPark 图标检索与用法     |
 | [`iconpark-index.json`](references/xml/iconpark-index.json)                             | 图标离线索引，供脚本检索，不用手读    |
 | [`svg-writing-guide.md`](references/xml/svg-writing-guide.md)                         | 图表库调用 + 手写 SVG 示意图（drawing 库、转换边界、atomize 与合页） |

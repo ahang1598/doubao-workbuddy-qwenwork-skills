@@ -15,6 +15,8 @@
 
 ## 命令
 
+以下为 Bash 示例。Windows 必须先读 [`windows-compat.md`](../windows-compat.md)，使用 Python 模板，命令名改为 `+update-batch`、XML 文件名改为 `batch.xml`；CLI 参数仍为 `--input -`，不能传文件路径或 `@文件`。
+
 ```bash
 design-cli design-workspace +update-batch \
   --canvas-workspace-id <canvas_workspace_id> \

@@ -5,10 +5,12 @@
 ## 1. 调用与参数
 
 ```bash
-# SQL 写进文件用 @file 传（免 shell 转义）；很短且不含单引号的可以直接 --sql '...'；--sql - 从 stdin 读
+# SQL 写进文件用 @file 传；只有不含单引号的短 SQL 才直接 --sql '...'；--sql - 从 stdin 读
 lark-cli base +data-sql-query --base-token <base_token> --language zh --sql @query.sql
 lark-cli base +data-sql-query --base-token <base_token> --language zh --sql 'SELECT "订单号", "金额" FROM "订单" LIMIT 10'
 ```
+
+SQL 含字符串字面量等单引号时，用允许目录下的 `@query.sql`，不要在 shell 单引号内用 `\'` 转义。CLI 执行结果确认成功后再解析，遵循 [常见恢复](../SKILL.md#常见恢复)。
 
 | 参数 | 含义 |
 | --- | --- |

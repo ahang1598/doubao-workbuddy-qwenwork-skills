@@ -4,9 +4,9 @@
 
 在一次请求中创建多个独立 Item，或多个含成员的 Frame，或两者混合。Frame 的成员属于同一个写入单元，不允许拆成几次不完整的创建。
 
-视频／图像生成与编辑工具结果不使用本命令重复创建 VIDEO／IMAGE Item；应按 [媒体直接交付与产后目录整理](../media-delivery.md) 透传 Workspace ID、直接交付并在产后仅更新真实对象的 `path`。以下创建协议只用于其他确需手工创建的资产／对象。
-
 ## 命令
+
+以下为 Bash 示例。Windows 必须先读 [`windows-compat.md`](../windows-compat.md)，使用 Python 模板，命令名改为 `+create-batch`、XML 文件名改为 `batch.xml`；CLI 参数仍为 `--input -`，不能传文件路径或 `@文件`。
 
 ```bash
 design-cli design-workspace +create-batch \

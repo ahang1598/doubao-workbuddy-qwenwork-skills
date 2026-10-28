@@ -6,8 +6,7 @@
 
 ## 参数填写规则
 
-- 提交一张公网可访问图片 URL，按 tool_version 选择标准版或专业版画质评估。 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
-
+- 提交一张图片（支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议），按 tool_version 选择标准版或专业版画质评估。 可选参数仅在用户明确指定，或可从用户意图准确确定时填写；不得伪造。不能准确确定时省略，确为正确完成任务所必需时先向用户澄清。
 ## Cloud
 
 ### 命令与生命周期
@@ -34,10 +33,9 @@ mediakit-cli image evaluate-image-quality \
 
 | 参数路径 | CLI flag | 类型 | 必填 | 默认值 | 枚举/范围/结构 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `image_url` | `--image-url` | string | 是 | - | - | image_url 是待评估的图像 URL，支持公网 HTTP/HTTPS URL、本地文件路径和火山引擎对象存储 tos:// 三种输入协议，支持 png、jpeg、webp 和 heic 图像格式，单张图片不得超过 10 MB，图像输入分辨率的长边不得超过 7680 px，短边不得超过 4320 px。 |
-| `queue_id` | `--queue-id` | string | 否 | - | - | 任务提交的目标队列 ID。如不传，默认使用系统自动创建的队列 ID。可将不同业务或优先级的任务提交到不同队列，以实现按队列对应的项目分账。队列可创建和管理，系统会自动为队列分配队列 ID。 仅在用户明确提供该值时传递；不得由 Agent 生成、推断或补写。 |
-| `standard_evaluate_items` | `--standard-evaluate-items` | array<string> | 否 | ["vqscore","noise","aesthetic","blur"] | 元素枚举: ["vqscore","advcolor","blockiness","noise","aesthetic","blur","cg","contrast","texture","brightness","overexposure","hue","saturation","green","cmartifacts"] | standard_evaluate_items 为非必填参数，仅当 tool_version 为 standard 时生效，用于指定需要返回的标准版评估维度。standard_evaluate_items 可选 15 个评估维度：vqscore（图片主观质量，值越高表示质量越好）、advcolor（图片整体色彩质量）、blockiness（块效应（马赛克）严重程度）、noise（图片噪声强度）、aesthetic（综合大众美学的质量评分）、blur（模糊度）、cg（是否为非自然场景，如游戏、录屏）、contrast（对比度）、texture（纹理丰富程度）、brightness（平均亮度）、overexposure（过曝光程度）、hue（色调均衡程度）、saturation（饱和度均衡程度）、green（偏绿或绿幕检测）、cmartifacts（压缩失真检测）。standard_evaluate_items 为空时默认返回 vqscore、noise、aesthetic、blur 四个维度。 CLI 传参时可使用逗号分隔多个值，或重复传递该 flag；不要传 JSON 数组字符串。 |
-| `tool_version` | `--tool-version` | string | 否 | "standard" | 枚举: ["standard","professional"] | tool_version 用于选择画质评估所用的模型版本，为非必填参数，支持 standard 和 professional，默认为 standard。standard 提供 15 种基础画质评估维度，可通过 standard_evaluate_items 灵活选择部分或全部维度，在成本和功能灵活性上达到较好的平衡。professional 基于大模型进行评估，直接返回一组固定的综合性评分，提供更优的综合评估效果，适用于对图像品质要求较高的场景，且不支持自定义评估维度。 |
+| `image_url` | `--image-url` | string | 是 | - | - | image_url 是待评估的图像 URL，支持本地文件路径和公网 HTTP/HTTPS URL 两种输入协议，仅支持 png、jpeg、webp和heic 格式，单张图片不得超过 10 MB，图像输入分辨率的长边不得超过 7680 px，短边不得超过 4320 px。 |
+| `standard_evaluate_items` | `--standard-evaluate-items` | array<string> | 否 | ["vqscore","noise","aesthetic","blur"] | 元素枚举: ["vqscore","advcolor","blockiness","noise","aesthetic","blur","cg","contrast","texture","brightness","overexposure","hue","saturation","green","cmartifacts"] | standard_evaluate_items 为非必填参数，仅当 tool_version 为 standard 时生效，用于指定需要返回的标准版评估维度。standard_evaluate_items 可选 15 个评估维度：vqscore（图片主观质量，值越高表示质量越好）、advcolor（图片整体色彩质量）、blockiness（块效应（马赛克）严重程度）、noise（图片噪声强度）、aesthetic（综合大众美学的质量评分）、blur（模糊度）、cg（是否为非自然场景，如游戏、录屏）、contrast（对比度）、texture（纹理丰富程度）、brightness（平均亮度）、overexposure（过曝光程度）、hue（色调均衡程度）、saturation（饱和度均衡程度）、green（偏绿或绿幕检测）、cmartifacts（压缩失真检测）。standard_evaluate_items 为空时默认返回 vqscore、noise、aesthetic、blur 四个维度。 |
+| `tool_version` | `--tool-version` | string | 否 | "standard" | 枚举: ["standard","professional"] | tool_version 用于选择画质评估所用的模型版本，为非必填参数，支持 standard 和 professional，默认为 standard。standard 提供 15 种基础画质评估维度，可通过 standard_evaluate_items 灵活选择部分或全部维度，在成本和功能灵活性上达到较好的平衡；不传 standard_evaluate_items 时默认返回 vqscore、noise、aesthetic、blur。professional 基于大模型进行评估，直接返回一组固定的综合性评分，提供更优的综合评估效果，适用于对图像品质要求较高的场景，且不支持自定义评估维度。 |
 
 ### 返回结果
 
@@ -47,7 +45,7 @@ mediakit-cli image evaluate-image-quality \
 | `aesthetic` | number | 否 | Cloud | standard 的 aesthetic 表示综合大众美学的质量评分，值越高表示更具美感，取值范围为 0 到 100。 |
 | `aesthetics` | number | 否 | Cloud | professional 的 aesthetics 表示美学评分，评分越高，图像越“好看”，构图、色彩、风格越协调，取值范围为 0 到 100，支持两位小数。 |
 | `artifacts` | number | 否 | Cloud | professional 的 artifacts 表示伪影评分，即图像是否存在压缩、AI 生成痕迹、畸变等；评分越高，伪影越少，图像越自然，取值范围为 0 到 100，支持两位小数。 |
-| `blockiness` | number | 否 | Cloud | standard 的 blockiness 表示图片的块效应严重程度，值越高图片块效应越强，[0, 50] 表示差，[50, 60] 表示中，[60, 100] 表示好，-1 表示检测图像为非常规图像（如游戏、特效图等）。 |
+| `blockiness` | number | 否 | Cloud | standard 的 blockiness 表示图片块效应相关的质量评分，值越高表示块效应越弱、画质越好；[0, 50] 表示差，[50, 60] 表示中，[60, 100] 表示好；-1 表示检测图像为非常规图像（如游戏、特效图等）。 |
 | `blur` | number | 否 | Cloud | standard 和 professional 的 blur 都表示模糊评分，即图像是否清晰；评分越高，图像越清晰和锐利，取值范围为 0 到 100，支持两位小数。 |
 | `brightness` | number | 否 | Cloud | standard 的 brightness 表示平均亮度，值越高表示越亮，取值范围为 0 到 255。 |
 | `cg` | number | 否 | Cloud | standard 的 cg 取值范围为 0 到 100，数值接近 0 表示自然场景，接近 100 表示非自然场景（游戏、录屏等）。 |
@@ -60,9 +58,11 @@ mediakit-cli image evaluate-image-quality \
 | `overexposure` | number | 否 | Cloud | standard 的 overexposure 表示过曝光面积大小程度，值越高越可能存在过曝光，取值范围为 0 到 100。 |
 | `saturation` | number | 否 | Cloud | standard 的 saturation 表示饱和度的均衡程度，值越高表示饱和度越均衡，取值范围为 0 到 100。 |
 | `texture` | number | 否 | Cloud | standard 的 texture 表示纹理的丰富程度，值越高表示纹理越丰富，取值范围为 0 到 255。 |
-| `tool_version` | string | 否 | Cloud | result.tool_version 在 standard 结果中固定为 standard，在 professional 结果中固定为 professional。 |
+| `tool_version` | string | 否 | Cloud | tool_version 在 standard 结果中固定为 standard，在 professional 结果中固定为 professional。 |
 | `vqscore` | number | 否 | Cloud | standard 的 vqscore 表示图片主观质量，值越高表示质量越好，取值范围为 0 到 100。 |
 
+| `usage` | object | 否 | Cloud | 可选顶层返回字段。仅对已开放该字段的账号，在 Cloud 同步调用成功，或 query_task 查询到 completed 终态，且服务实际产生并返回正向计费用量时透传；其他状态、异步提交及 Local 调用不返回。 |
+| `usage.normalized_usage` | number | 是 | Cloud | 归一化后的计费用量。由服务端按 BillingCount / 固定单位换算值 × list_price 计算，结果保留 6 位小数；客户端只校验并原样透传，不计算、推断或补齐。 |
 ### 机器合同
 
 以下命令只读取本模式的实时 help/schema，不发起业务调用：

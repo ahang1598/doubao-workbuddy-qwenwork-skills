@@ -149,6 +149,8 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/lint_inspect.py" --input ./page-03-error
 | `duplicate_element_id` | 同一个 ID 被多个元素使用；整份回读也可报告跨页重复 | error |
 | `iconpark_unsupported_icon_type` | 用了 IconPark 不支持的 `iconType` | error |
 | `icon_missing_fill_color` / `icon_transparent_fill_color` | `<icon>` 没有设置不透明的 `fillColor` | error |
+| `transition_param_not_applicable` | `<transition>` 写了该 `type` 根本不接受的参数（如 `type="random"` 带 `direction`、`type="none"` 带 `durationMs`）；改写路径会整单拒绝，整页改动一起丢 | error |
+| `transition_param_value_not_applicable` | `<transition>` 的参数适用，但取值不在该 `type` 的子集内（如 `type="split" direction="horizontal"`）；schema 的枚举是所有 `type` 的并集，拦不住 | error |
 | `shape_out_of_canvas` / `img_out_of_canvas` / `table_out_of_canvas` / `chart_out_of_canvas` | 文本框、矩形容器、图片、表格或图表超出校验使用的画布范围 | error |
 | `line_out_of_canvas` | 线条超出画布，结合报告中的 canvas 与 overflow 核对 | error |
 | `bbox_overlap` | 元素绘制区域重叠。覆盖五种情况：两段文字互压、填充形状盖住不属于它的文字、相邻卡片背景互叠、`<line>` 穿过字形、`autoFit="shape-auto-fit"` 文字长出原框压到下方元素 | error·误报高发 |
@@ -163,9 +165,9 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/lint_inspect.py" --input ./page-03-error
 | `image_may_cover_vertical_text` | 竖排文字疑似被 `<img>` 覆盖（竖排布局无法静态建模，需截图核对） | info |
 | `text_color_contrast` | XML 可解析背景下文字与背景区分度不足；按背景确定性和严重程度输出 error 或 warning | error / warning |
 
-`sxsd_*` 是 schema 校验，`hint` 只说哪里不合规、不给正确写法：改之前对照 [`slides_xml_schema_definition.xml`](../xml/slides_xml_schema_definition.xml) 里该标签的定义，issue 的 `expected` 有值时会直接列出该处允许的子元素或取值，`path`（如 `slide/data/shape/content/text`）只有标签名、不带序号，和上面带下标的 `xml_path` 不是一回事。
+`sxsd_*` 是 schema 校验，`hint` 只说哪里不合规、不给正确写法：改之前对照 [`slides_xml_schema_index.md`](../xml/slides_xml_schema_index.md) 里该标签的定义，issue 的 `expected` 有值时会直接列出该处允许的子元素或取值，`path`（如 `slide/data/shape/content/text`）只有标签名、不带序号，和上面带下标的 `xml_path` 不是一回事。
 
-`sxsd_unsupported_pattern` 是里面唯一的例外：它说的是校验器自己读不懂那条 XSD 正则，不是你的值有错，它的 `hint` 写给脚本维护者、照着改不动。对照 schema 里该类型的定义人工确认取值；确认无误后按下面的单页例外规则记录这一条能力缺口；仍须处理报告中的其他问题并完成例外核验，不能直接跳过整页所有问题。
+`sxsd_unsupported_pattern` 是里面唯一的例外：它说的是校验器自己读不懂那条格式正则，不是你的值有错，它的 `hint` 写给脚本维护者、照着改不动。grep 扁平索引里该类型的定义人工确认取值；确认无误后按下面的单页例外规则记录这一条能力缺口；仍须处理报告中的其他问题并完成例外核验，不能直接跳过整页所有问题。
 
 ### 影响排版的判定规则
 

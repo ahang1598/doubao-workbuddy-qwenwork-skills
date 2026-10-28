@@ -264,13 +264,15 @@
 {
   "table_name": "项目表",
   "field_name": "截止日期",
-  "offset": 1,
+  "offset": -1,
   "unit": "DAY",
   "hour": 9,
   "minute": 0,
   "condition_list": null
 }
 ```
+
+上例在截止日期前 1 天 9:00 触发；当天提醒 `offset` 填 0，日期之后 N 天才填正数 N。
 
 | 字段 | 必填 | 说明 |
 |------|------|------|

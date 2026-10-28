@@ -6,9 +6,9 @@
 
 - 目录：`doubao/skills/`
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
-- 条目数：280
-- 文件数：4892
-- 最近同步：2026-10-21 18:00:07 +0800
+- 条目数：282
+- 文件数：4914
+- 最近同步：2026-10-28 14:18:24 +0800
 
 ## 场景导航（按用途）
 
@@ -274,7 +274,7 @@
 - **lark-attendance** — 飞书考勤打卡：查询自己的考勤打卡记录
 - **lark-base** — 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用
 - **lark-calendar** — 飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。
-- **lark-contact** — 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。
+- **lark-contact** — 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent),也支持修改本人头像。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息,或要修改本人头像时使用。不支持修改他人资料。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 Op...
 - **lark-doc** — 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档
 - **lark-drive** — 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入，也可通过 `drive +fetch` 把 Drive 文件读取为 Markdown（含知识库里映射为 wiki URL 的 Drive 文件）。用户需要整理云盘目录、处理云空间资源 URL/token、判断链...
 - **lark-im** — 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。
@@ -394,6 +394,7 @@
 - **android-native-build-debug** — 用于 Android 原生或混合应用出现 Gradle、NDK、Manifest、WebView、ABI 构建错误或运行崩溃，且用户提供工程、日志或报错证据的场景。不用于刷机、解锁、绕过设备安全或缺少工程上下文的一般问答。
 - **app-builder-orchestration** — 用于网页应用构建任务中存在复杂附件、全量表格导入、既有 app_id、构建器偏差或失败续跑，且普通 doubao-app-builder 流程需要额外数据交接与验收控制的场景。
 - **browser-record-replay** — Develop, record, debug, and deliver reusable browser RPA Skills with the browser built into Doubao. Use for same-computer Local Direct workflows only.
+- **browser-use** — Control websites through the Aha Browser Use backend with `browser_use`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click, type...
 - **browser-use-automation** — Control websites through the Aha Browser Use backend with `computer_use_tool`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click...
 - **doubao-app-builder** — 统一处理应用级和工程级产品的设计、开发、编辑及产物问答（单页html和h5的开发和设计不要使用这个skill）。当用户明确点名「妙搭」时请使用本技能。适用于全栈应用，包括多页面或多文件工程、前端框架、后端服务、API、数据库、登录权限、业务逻辑、构建运行和发布部署。也支持基于 PRD、文档、截图或素材开发应用，以及对已有应用新增功能、调整页面、修复 Bug、分析源码、排查运行错误和查询运营或发布状态。
 - **doubao-coding-analyze-codebase** — 通过只读调查建立可核验的代码库心智模型，回答入口与调用链、数据流、状态变化、运行时装配、外部副作用和模块责任。用于仓库导览、流程追踪、影响分析、实现定位和架构理解。不用于根因诊断、代码审查、未来方案设计或性能优化。组合任务只闭合“现状如何”的部分。
@@ -413,9 +414,10 @@
 - **ai-news-collector** — AI 新闻聚合与热度排序工具。当用户询问 AI 领域最新动态时触发，如："今天有什么 AI 新闻？""总结一下这周的 AI 动态""最近有什么火的 AI 产品？""AI 圈最近在讨论什么？"。覆盖：新产品发布、研究论文、行业动态、融资新闻、开源项目更新、社区病毒传播现象、AI 工具/Agent 热门项目。输出中文摘要列表，按热度排序，附带原文链接。
 - **book-proposal** — 撰写面向出版代理人和编辑的非虚构图书提案，覆盖卖点钩子、作者平台、对标书目、营销计划与章节大纲。
 - **browser-record-replay** — Develop, record, debug, and deliver reusable browser RPA Skills with the browser built into Doubao. Use for same-computer Local Direct workflows only.
+- **browser-use** — Control websites through the Aha Browser Use backend with `browser_use`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click, type...
 - **browser-use-automation** — Control websites through the Aha Browser Use backend with `computer_use_tool`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click...
-- **byted-mediakit-audio** — 面向音频文件或视频中的音轨，处理语音边界定位、音频媒资信息探测、音频转码与码流封装适配、人声与背景声分离等目标。若对象和目标族已明确属于音频内容理解、音频转码、音频格式治理或音轨分离，但具体做法不确定，可先加载本 Skill 探索；若只说有音频而未说明业务目标，应先澄清。音频裁剪、拼接、调速、淡入淡出、混音、从视频抽取音轨或音视频合流等编辑合成诉求应路由到 editing；字幕生成、视频理解、视频增强等应路由到 video。
-- **byted-mediakit-editing** — 面向音频、视频或图片素材组成成片的编辑制作目标，适用于时间线裁剪与拼接、速度和音量调整、视频滤镜、运镜特效、转场、画面裁切旋转翻转、字幕压制、局部模糊、动图截取、淡入淡出、音视频提取与合流、音频混合以及多画面空间组合等操作。若用户要给视频添加滤镜、春日/晚霞/鲜亮/白皙/食物等滤镜效果，或对象和目标族已明确是对现有素材做剪辑、合成、混合或成片编排，但具体做法不确定，可先加载本 Skill 探索；若只给出媒体类型而未说明要剪、合、调...
+- **byted-mediakit-audio** — 面向音频文件或视频中的音轨，处理语音边界定位、音频媒资信息探测、音频转码与码流封装适配、人声与背景声分离等目标。若对象和目标族已明确属于音频内容理解、音频转码、音频格式治理或音轨分离，但具体做法不确定，可先加载本 Skill 探索。
+- **byted-mediakit-editing** — 面向音频、视频或图片素材组成成片的编辑制作目标，适用于时间线裁剪与拼接、速度和音量调整、视频滤镜、运镜特效、转场、画面裁切旋转翻转、字幕压制、动图截取、淡入淡出、音视频提取与合流、音频混合以及多画面空间组合等操作。若用户要给视频添加滤镜、春日/晚霞/鲜亮/白皙/食物等滤镜效果，或对象和目标族已明确是对现有素材做剪辑、合成、混合或成片编排，但具体做法不确定，可先加载本 Skill 探索。
 - **byted-mediakit-shared** — MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、滤镜、运镜、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video；仅说明媒体类型而未说明处理目标时先澄清。不承担具体能...
 - **clarify-then-script** — 用于口播、短视频或投流脚本请求中受众、卖点、平台、时长、合规要求或参考素材缺失，无法可靠开写的场景。不用于账号运营策略、完整视频制作或信息已经充分的简单改写。
 - **computer-use-automation** — Use this Windows Computer Use skill whenever the user wants to open, switch to, or operate a desktop app or local GUI and complete a task in it—even when they never mention "computer use" explicitly. Trigger on reques...
@@ -442,6 +444,7 @@
 - **doubao-wechat-writing** — 生成、润色、改写、策划和评估非商业微信公众号文章，并在用户明确要求时上传至微信公众号、保存草稿、发送预览或发表。写公众号稿、标题、排版、配图、文章评估，或要求上传、预览、发布到微信公众平台时使用。正式成品先以飞书在线文档交付。
 - **experiment-data-analysis** — 面向实验研究的定量数据分析工作流：先识别组间、基础被试内与标准混合设计，再完成变量映射、假设检查、操纵检验、方差分析、简单效应和中介结果报告；对嵌套、交叉随机效应及实验型潜变量模型仅提供方法选择与模板。适用于已有 CSV 或 SAV 数据且需要推断统计与可复核报告的实验分析，不用于纯问卷测量模型、通用结构方程模型、仅清洗或描述统计、质性研究、元分析或预测建模。
 - **gc-still-image-motion-director** — 分析静态图像，为图生视频设计贴合原图、克制不夸张的专属动态。适用于用户提供图片、截图、海报、拼贴、插画、版式图形、图片文件夹，咨询画面运动逻辑、固定元素、是否开启动态，或是编写图生视频模型提示词。同时处理动画中防止文字、纸张、版式、边框、图形漂移错位的需求。不可用于普通出图、修图、成品视频解析，仅当用户要从成品视频提取静态图动态提示词时例外。
+- **general-computer-use** — Operate macOS apps using the exact tool name general_computer_use, with persistent Python, accessibility observations and screenshots.
 - **global-ad-creative-advisor** — 出海广告公开情报探查（广告主视角，基于公开信息查询）。当用户需要为出海 App、游戏、电商或工具产品围绕产品×地区做同类型产品数据扫描、官方广告透明库付费素材查询与搜索词采集、内容平台近 7 天原生热点探查，或对公开素材/热点做结构化拆解与模式分析时使用。覆盖海外买量同类型产品调研、广告透明库查询、跑量素材模式、搜索词包、地区原生热点；只查公开信息，不产出广告创意、分镜文案与成片。
 - **lark-base** — 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用
 - **local-life-service-aigc-video** — 抖音生活服务商家专用AIGC宣传视频生成技能。当已确认是抖音生活服务商家，且需要结合经营数据（团购、评价、门店信息）生成到店推广视频时使用。包括探店视频、种草视频、团购推广视频、门店引流视频。通用视频/企业宣传片/产品广告/UGC视频走 doubao-creative-video，本技能不处理非生活服务商家的通用视频需求。
@@ -469,9 +472,9 @@
 - **apple-keynote-product-video** — Generate, adapt, or improve premium product-commercial video prompts with modern minimalist keynote aesthetics, product strategy, timed shot design, camera movement, material choreography, typography, lighting, sound...
 - **application-requirement-alignment** — Use when a user needs to prepare, rewrite, compress, verify, map, or judge eligibility for 申请书、申报材料、伦理申请、基金申请、资格条件、官方文件解读、栏目改写、名称合并, especially when source materials, official rules, form columns, applicant conditions...
 - **baidu-netdisk** — Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the...
-- **byted-mediakit-image** — 面向单张或批量图片的视觉处理、质量优化、内容理解与基础编辑目标，适用于图片尺寸缩放与体积治理、质量优先缩小体积、明确体积上限/质量值/格式转换的压缩、元信息探测、裁剪旋转翻转与圆角、颜色与锐化清晰度调整、负片、模糊与打码、水印、背景移除、文字识别、画质评估与智能裁剪等。若对象和目标族已明确属于图片优化、图片理解、图片隐私保护或图片基础编辑，但具体做法不确定，可先加载本 Skill 探索；若只说有图片而未说明业务目标，应先澄清。视频...
+- **byted-mediakit-image** — 面向单张或批量图片的视觉处理、质量优化、内容理解与基础编辑目标，适用于图片尺寸缩放与体积治理、质量优先缩小体积、明确体积上限/质量值/格式转换的压缩、元信息探测、裁剪旋转翻转与圆角、颜色与锐化清晰度调整、负片、模糊与打码、水印、背景移除、文字识别、画质评估与智能裁剪等。若对象和目标族已明确属于图片优化、图片理解、图片隐私保护或图片基础编辑，但具体做法不确定，可先加载本 Skill 探索。
 - **byted-mediakit-motion-graphics** — 为已有视频添加与内容和风格匹配的动效，包括花字、人物条、章节标题、背景介绍、产品标注和动态图解。适用于访谈、综艺、种草、产品展示和知识讲解等视频的重点强化与信息补充，自动选择出现时机和位置，合成完整视频。
-- **byted-mediakit-video** — 面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及人像或绿幕抠像等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索；若只说有视频而未说明业务目标，应先澄清。明确要裁剪、拼接、叠...
+- **byted-mediakit-video** — 面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及人像或绿幕抠像等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索。
 - **campus-service-navigator** — 当用户请求校园办事指南或校园流程指导时，使用本技能；包括流程清单、所需材料、办事部门联系方式、时间提醒或咨询话术。
 - **case-study-builder** — 基于客户访谈把成功合作转化为案例研究，按挑战-方案-成果结构组织叙事，用量化数据与客户引语增强可信度。
 - **clarify-map-then-analyze** — Use when 用户提出工业数据抽取、差异比对、重算排序、参数核验或技术文档结构化任务，且需要先澄清目标、做字段映射与数据源定位、完成口径确认，再重新计算排序、差异比对核验、批量抽取结构化并标注待确认参数。
@@ -539,14 +542,15 @@
 | baidu-netdisk | `doubao/skills/baidu-netdisk` | 其他 | baidu-netdisk | 1 | Use when the user invokes $baidu-netdisk, mentions Baidu Netdisk or the Baidu Netdisk MCP, or asks to browse, search, inspect, organize, upload, copy, move, rename, share, or check storage information for files in the... |
 | book-proposal | `doubao/skills/book-proposal` | 通用工具/平台 | book-proposal | 1 | 撰写面向出版代理人和编辑的非虚构图书提案，覆盖卖点钩子、作者平台、对标书目、营销计划与章节大纲。 |
 | browser-record-replay | `doubao/skills/browser-record-replay` | 代码开发 | browser-record-replay | 6 | Develop, record, debug, and deliver reusable browser RPA Skills with the browser built into Doubao. Use for same-computer Local Direct workflows only. |
+| browser-use | `doubao/skills/browser-use` | 代码开发 | browser-use | 11 | Control websites through the Aha Browser Use backend with `browser_use`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click, type... |
 | browser-use-automation | `doubao/skills/browser-use-automation` | 代码开发 | browser-use-automation | 11 | Control websites through the Aha Browser Use backend with `computer_use_tool`, `plane="bu"`, and `aha_browser_use`. Use whenever the user asks to open or navigate a web page, inspect visible content or UI state, click... |
 | build-club-recruitment-kit | `doubao/skills/build-club-recruitment-kit` | 设计可视化 | build-club-recruitment-kit | 16 | 为校园社团负责人按需制作招新流程、宣传文案、宣讲稿、选拔题、群公告、摊位话术或排班。适用于负责人策划或起草招新物料；不用于报名者备试、企业招聘、非招新运营、图片设计及实际发送或写入外部系统。 |
-| byted-mediakit-audio | `doubao/skills/byted-mediakit-audio` | 通用工具/平台 | byted-mediakit-audio | 6 | 面向音频文件或视频中的音轨，处理语音边界定位、音频媒资信息探测、音频转码与码流封装适配、人声与背景声分离等目标。若对象和目标族已明确属于音频内容理解、音频转码、音频格式治理或音轨分离，但具体做法不确定，可先加载本 Skill 探索；若只说有音频而未说明业务目标，应先澄清。音频裁剪、拼接、调速、淡入淡出、混音、从视频抽取音轨或音视频合流等编辑合成诉求应路由到 editing；字幕生成、视频理解、视频增强等应路由到 video。 |
-| byted-mediakit-editing | `doubao/skills/byted-mediakit-editing` | 通用工具/平台 | byted-mediakit-editing | 22 | 面向音频、视频或图片素材组成成片的编辑制作目标，适用于时间线裁剪与拼接、速度和音量调整、视频滤镜、运镜特效、转场、画面裁切旋转翻转、字幕压制、局部模糊、动图截取、淡入淡出、音视频提取与合流、音频混合以及多画面空间组合等操作。若用户要给视频添加滤镜、春日/晚霞/鲜亮/白皙/食物等滤镜效果，或对象和目标族已明确是对现有素材做剪辑、合成、混合或成片编排，但具体做法不确定，可先加载本 Skill 探索；若只给出媒体类型而未说明要剪、合、调... |
-| byted-mediakit-image | `doubao/skills/byted-mediakit-image` | 其他 | byted-mediakit-image | 24 | 面向单张或批量图片的视觉处理、质量优化、内容理解与基础编辑目标，适用于图片尺寸缩放与体积治理、质量优先缩小体积、明确体积上限/质量值/格式转换的压缩、元信息探测、裁剪旋转翻转与圆角、颜色与锐化清晰度调整、负片、模糊与打码、水印、背景移除、文字识别、画质评估与智能裁剪等。若对象和目标族已明确属于图片优化、图片理解、图片隐私保护或图片基础编辑，但具体做法不确定，可先加载本 Skill 探索；若只说有图片而未说明业务目标，应先澄清。视频... |
+| byted-mediakit-audio | `doubao/skills/byted-mediakit-audio` | 通用工具/平台 | byted-mediakit-audio | 6 | 面向音频文件或视频中的音轨，处理语音边界定位、音频媒资信息探测、音频转码与码流封装适配、人声与背景声分离等目标。若对象和目标族已明确属于音频内容理解、音频转码、音频格式治理或音轨分离，但具体做法不确定，可先加载本 Skill 探索。 |
+| byted-mediakit-editing | `doubao/skills/byted-mediakit-editing` | 通用工具/平台 | byted-mediakit-editing | 22 | 面向音频、视频或图片素材组成成片的编辑制作目标，适用于时间线裁剪与拼接、速度和音量调整、视频滤镜、运镜特效、转场、画面裁切旋转翻转、字幕压制、动图截取、淡入淡出、音视频提取与合流、音频混合以及多画面空间组合等操作。若用户要给视频添加滤镜、春日/晚霞/鲜亮/白皙/食物等滤镜效果，或对象和目标族已明确是对现有素材做剪辑、合成、混合或成片编排，但具体做法不确定，可先加载本 Skill 探索。 |
+| byted-mediakit-image | `doubao/skills/byted-mediakit-image` | 其他 | byted-mediakit-image | 24 | 面向单张或批量图片的视觉处理、质量优化、内容理解与基础编辑目标，适用于图片尺寸缩放与体积治理、质量优先缩小体积、明确体积上限/质量值/格式转换的压缩、元信息探测、裁剪旋转翻转与圆角、颜色与锐化清晰度调整、负片、模糊与打码、水印、背景移除、文字识别、画质评估与智能裁剪等。若对象和目标族已明确属于图片优化、图片理解、图片隐私保护或图片基础编辑，但具体做法不确定，可先加载本 Skill 探索。 |
 | byted-mediakit-motion-graphics | `doubao/skills/byted-mediakit-motion-graphics` | 其他 | byted-mediakit-motion-graphics | 25 | 为已有视频添加与内容和风格匹配的动效，包括花字、人物条、章节标题、背景介绍、产品标注和动态图解。适用于访谈、综艺、种草、产品展示和知识讲解等视频的重点强化与信息补充，自动选择出现时机和位置，合成完整视频。 |
 | byted-mediakit-shared | `doubao/skills/byted-mediakit-shared` | 通用工具/平台 | byted-mediakit-shared | 3 | MediaKit 是面向音视频与图像处理的专业工具集，覆盖音视频剪辑与合成、音频媒资探测与人声分离、视频理解与增强、图像增强与内容理解等工作流。用户明确提出叠加、字幕压制、滤镜、运镜、提取字幕、语音转字幕、裁剪、拼接、调速、混音、音视频处理、图片增强或擦除、视频分析或画质增强目标时，先加载本 Skill，再按对象和目标选择 audio、editing、image 或 video；仅说明媒体类型而未说明处理目标时先澄清。不承担具体能... |
-| byted-mediakit-video | `doubao/skills/byted-mediakit-video` | 其他 | byted-mediakit-video | 31 | 面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及人像或绿幕抠像等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索；若只说有视频而未说明业务目标，应先澄清。明确要裁剪、拼接、叠... |
+| byted-mediakit-video | `doubao/skills/byted-mediakit-video` | 其他 | byted-mediakit-video | 31 | 面向视频文件的智能处理、媒资理解、画质治理与画质检测、抽帧、隐私保护、字幕与水印处理、精彩片段与高光拆条分析生成、剧情结构化与剧本整理、场景与语义分段、画面文字识别、视频转码转封装及人像或绿幕抠像等目标。若对象和目标族已明确属于视频增强、视频分析理解、视频内容结构化、视频字幕识别或擦除、视频隐私脱敏、视频媒资探测或分发适配，但具体能力不确定，可先加载本 Skill 探索。 |
 | campus-club-advisor | `doubao/skills/campus-club-advisor` | 研究/调研 | campus-club-advisor | 11 | 当学生想探索适合自己的校园社团、核验指定学校的公开社团信息，或为已选社团准备报名与选拔时使用。根据兴趣、互动偏好、可投入时间、技能和目标给出可解释候选；不处理企业求职、升学选校、论文选题、心理测评、校园活动日程或社团负责人运营任务。 |
 | campus-document-writer-cn | `doubao/skills/campus-document-writer-cn` | 教育/考试 | campus-document-writer-cn | 27 | 当高校学生要依据真实信息起草或润色请假条、校园申请、通知邀请、活动总结、思想汇报和奖助材料时使用。仅查询政策流程与进度、仅执行发送提交，或制作课程内容、演示文稿及其他数字作品时不使用；要求虚构时仅拒绝编造并转为真实框架。 |
 | campus-service-navigator | `doubao/skills/campus-service-navigator` | 其他 | campus-service-navigator | 16 | 当用户请求校园办事指南或校园流程指导时，使用本技能；包括流程清单、所需材料、办事部门联系方式、时间提醒或咨询话术。 |
@@ -600,9 +604,9 @@
 | doubao-contract-amendment | `doubao/skills/doubao-contract-amendment` | 协作/办公 | doubao-contract-amendment | 2 | 用于在已签原协议基础上，依据用户提供的新情况起草补充协议、变更协议或终止协议。先重建主体、标的、资金、条件、时间和文件构成的整体法律状态，再在用户明确授权范围内成文。仅处理既有协议的派生修改；不用于全新合同起草、既有合同风险审查、一般法律咨询或纯 Word 排版与纯文件处理，纯文档编辑改用 lark-doc。 |
 | doubao-contract-drafting | `doubao/skills/doubao-contract-drafting` | 法务/合规 | doubao-contract-drafting | 24 | 直接起草中国大陆商业合同并生成无批注、无颜色、中文字体正确的可编辑 Word 文件。适用于采购、服务、营销、工程施工、软件许可、SaaS、委托开发、联合研发、知识产权、租赁、数据处理和保密等场景；读取题干及附件后完成交易信息拆解、风险识别、起草方标准条款与默认商业参数填充、合同生成与交付校验。涉及跨境交易、境外法域或境外争议解决安排时，需升级并要求复核。 |
 | doubao-contract-reviewer | `doubao/skills/doubao-contract-reviewer` | 法务/合规 | doubao-contract-reviewer | 4 | doubao-contract-reviewer 是面向大众用户的合同审查 Skill，适合在豆包/豆包 Turbo 中审查各类合同。用户上传合同或询问“帮我审合同、合同有没有问题、这份合同能不能签、合同风险、合同把关、legal review”时必须使用。本 Skill 强制输出比裸跑更有用的结构化审查：先判断我方立场，再按交易模块识别风险，区分“必改风险 / 可争取优化项 / 形式完善项”，并给出可直接替换或补充的修改文本。适... |
-| doubao-creative-design | `doubao/skills/doubao-creative-design` | 设计可视化 | doubao-creative-design | 274 | 当用户要求从零生成或设计商业、品牌、社交媒体及知识表达类创意图片，编辑、复刻或审查已有视觉成品，或进行系列延展、多比例适配、多资产视觉系统设计时使用。触发任务包括做图、出图、生成图片、设计海报、主视觉／KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP 角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图... |
-| doubao-creative-drama | `doubao/skills/doubao-creative-drama` | 投资银行/私募 | doubao-creative-drama | 32 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
-| doubao-creative-video | `doubao/skills/doubao-creative-video` | 营销/内容运营 | doubao-creative-video | 28 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doubao-creative-drama；其他广告、品牌、企... |
+| doubao-creative-design | `doubao/skills/doubao-creative-design` | 设计可视化 | doubao-creative-design | 273 | 当用户要求从零生成或设计商业、品牌、社交媒体及知识表达类创意图片，编辑、复刻或审查已有视觉成品，或进行系列延展、多比例适配、多资产视觉系统设计时使用。触发任务包括做图、出图、生成图片、设计海报、主视觉／KV、Banner、封面、社媒配图、社媒长图、电商主图、详情页、产品图、Logo、IP 角色、吉祥物、包装、品牌应用物料、活动物料、宣传册、落地页、知识科普海报、信息图、教学图、教材插图、课件配图、思维导图、知识图谱、流程图、数据图... |
+| doubao-creative-drama | `doubao/skills/doubao-creative-drama` | 投资银行/私募 | doubao-creative-drama | 31 | 完整制作短剧、微电影、剧情短片、动画短片、动态漫、剧情视频和长篇剧本。用户明确需要角色驱动、冲突因果、剧情弧线、角色与道具资产、分段视频、抽帧连续性和成片交付时调用。当用户提出短剧、动画短片、微电影、短片、电影、剧情视频、AI视频、影视化短片、动态漫、宣传片、预告片等影视剧制作需求，或包含"做个短剧"、"拍个微电影"、"弄个动画短片"、"做个长视频"、"宣传片"等表达时调用。只有宣传片、预告片或广告片被明确要求做成完整剧情链、角色... |
+| doubao-creative-video | `doubao/skills/doubao-creative-video` | 营销/内容运营 | doubao-creative-video | 27 | 当用户需要通用视频生成、视频创作、视频提示词规划或文生/图生视频时使用，包括创意视频、长视频规划、产品广告、商品广告、UGC 口播/带货/信息流视频、品牌 TVC、企业宣传片、商务视频、品牌形象片、产品功能介绍、带旁白视频，以及带参考素材的视频生成。只有用户明确提出短剧、微电影、剧情短片、影视短片、动画短片、动态漫、分集剧情、长篇剧本或等价剧情影视制作场景时，才应调用 doubao-creative-drama；其他广告、品牌、企... |
 | doubao-critical-reading-companion | `doubao/skills/doubao-critical-reading-companion` | 其他 | doubao-critical-reading-companion | 5 | 深度解读文章，把新闻、长评或宣传文案等非学术公共文本转成便于理解、可追溯的阅读地图；用于重建论证链、评价证据与推理、识别隐藏前提、补充替代解释、核查关键事实，并输出可追溯的阅读地图。适用于可信度判断、论证拆解、宣传分析、作者自检和行动决策。 |
 | doubao-cron-scheduler | `doubao/skills/doubao-cron-scheduler` | 通用工具/平台 | doubao-cron-scheduler | 1 | 创建、查看、更新或删除定时任务，包括一次性提醒、周期任务、复杂日历规则、后台监控和多轮编辑。用于用户要求提醒、持续关注、按小时/日/周/月/年运行或管理已有任务。 |
 | doubao-cross-border-growth-content | `doubao/skills/doubao-cross-border-growth-content` | 营销/内容运营 | doubao-cross-border-growth-content | 16 | Evidence-grounded cross-border ecommerce content operations for short-video and livestream scripts, UGC or creator briefs, multilingual captions, localized content angles, image/video briefs, content calendars, hook m... |
@@ -689,6 +693,7 @@
 | fund-etf-research | `doubao/skills/fund-etf-research` | 研究/调研 | fund-etf-research | 8 | 公募基金和ETF的产品发现、母基金/共同组合与份额去重、同类比较、单只尽调、持仓重合和风格穿透。当用户比较ETF/联接A-C-E份额、费率与跟踪质量、折溢价和流动性，或分析经理变化、规模、持仓重合与行业风格时使用。 |
 | gc-minimal-zine-poster-v0-1 | `doubao/skills/gc-minimal-zine-poster-v0-1` | 其他 | gc-minimal-zine-poster-v0-1 | 11 | Generate Minimal Zine Poster v0.1 poetic paper-poster prompts and the matching generated image. Use when the user gives a theme, sentence, object, mood, article idea, photo, or content brief and wants a quiet Japanese... |
 | gc-still-image-motion-director | `doubao/skills/gc-still-image-motion-director` | 设计可视化 | gc-still-image-motion-director | 39 | 分析静态图像，为图生视频设计贴合原图、克制不夸张的专属动态。适用于用户提供图片、截图、海报、拼贴、插画、版式图形、图片文件夹，咨询画面运动逻辑、固定元素、是否开启动态，或是编写图生视频模型提示词。同时处理动画中防止文字、纸张、版式、边框、图形漂移错位的需求。不可用于普通出图、修图、成品视频解析，仅当用户要从成品视频提取静态图动态提示词时例外。 |
+| general-computer-use | `doubao/skills/general-computer-use` | 通用工具/平台 | general-computer-use | 2 | Operate macOS apps using the exact tool name general_computer_use, with persistent Python, accessibility observations and screenshots. |
 | generate-premium-promo-kit | `doubao/skills/generate-premium-promo-kit` | 设计可视化 | generate-premium-promo-kit | 6 | 将商品文档、品牌规范、产品图片、Logo、节庆/周年庆/购物节等促销脑暴文档或飞书群聊自动转成带完整宣传语、Logo、优惠信息与CTA的高端时尚品牌静态宣传物料包。用户说“豆包帮我生成促销活动的全套物料”、要求先出Brief再生成活动KV、电商图、社交海报或邀请函时使用；支持读取企业上下文、按活动意图策划文案、固定调用Seedream 5.0 Pro生成视觉、叠加准确品牌与文字层、执行成品质检，并将Brief和全部宣传物料汇总到飞... |
 | gift-card-redemption | `doubao/skills/gift-card-redemption` | 其他 | gift-card-redemption | 3 | 查询豆包订阅礼品卡的可兑换状态和套餐，并在确认后完成兑换。适用于查询或兑换豆包订阅礼品卡，支持文本兑换码和上传的二维码图片。不处理购买、退款、订单、优惠券或非豆包礼品卡。 |
 | global-ad-creative-advisor | `doubao/skills/global-ad-creative-advisor` | 研究/调研 | global-ad-creative-advisor | 11 | 出海广告公开情报探查（广告主视角，基于公开信息查询）。当用户需要为出海 App、游戏、电商或工具产品围绕产品×地区做同类型产品数据扫描、官方广告透明库付费素材查询与搜索词采集、内容平台近 7 天原生热点探查，或对公开素材/热点做结构化拆解与模式分析时使用。覆盖海外买量同类型产品调研、广告透明库查询、跑量素材模式、搜索词包、地区原生热点；只查公开信息，不产出广告创意、分镜文案与成片。 |
@@ -696,7 +701,7 @@
 | grant-proposal-writer | `doubao/skills/grant-proposal-writer` | 设计可视化 | grant-proposal-writer | 1 | 撰写完整的资助申请书，涵盖需求陈述、项目设计、目标与指标、评估计划、团队介绍与预算。 |
 | help-documentation | `doubao/skills/help-documentation` | 其他 | help-documentation | 1 | 撰写产品帮助文档，包含快速上手、功能说明、常见问题与故障排除，面向终端用户。 |
 | hr-material-analysis-writing | `doubao/skills/hr-material-analysis-writing` | 其他 | hr-material-analysis-writing | 1 | Use when the user asks to process HR-related materials by drafting, rewriting, fact-checking, summarizing constraints, counting lists, comparing payroll/attendance data, generating formal documents, or iterating offic... |
-| html | `doubao/skills/html` | 设计可视化 | html | 16 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
+| html | `doubao/skills/html` | 设计可视化 | html | 17 | 专门设计、生成和修改可直接在浏览器中打开的 HTML 页面或已发布的 doubao-html 链接。交付物以独立 .html 文件为主，可包含内联或本地 CSS、JavaScript，支持页面布局、视觉样式、交互效果、响应式适配、组件设计和内容展示。适用于静态网页、单页展示、活动页、原型页、HTML 模板及页面片段。不处理前后端工程、应用框架、服务端接口、数据库、用户系统、构建部署或运营数据。 |
 | impact-report-builder | `doubao/skills/impact-report-builder` | 其他 | impact-report-builder | 1 | 为非营利组织生成年度影响力报告，包含成果数据、受益人群、故事案例、财务概览与未来展望。 |
 | industry-analysis | `doubao/skills/industry-analysis` | 金融研究 | industry-analysis | 12 | 回答中文行业基本面问题，适用于行业、价值链环节、产品市场或技术路线的定义、空间、周期、竞争、利润迁移、传导、比较、进入与产业投资机会分析；不用于股票交易阶段研判或单家公司独立估值。 |
 | inspect-excel-before-work | `doubao/skills/inspect-excel-before-work` | 其他 | inspect-excel-before-work | 1 | Use when 用户要求基于新版Excel或附件做分析、计算、填报、汇总、抽取、回填或导出，并出现“先看表头”“确认字段口径”“核对sheet结构”“样本抽查”“跨文件校验”“模板识别”“发现异常先确认”等信号，尤其适用于多sheet、多版本、多附件或模板变更。 |
@@ -705,9 +710,9 @@
 | keyword-configuration-analysis | `doubao/skills/keyword-configuration-analysis` | 文档/表格/PPT | keyword-configuration-analysis | 1 | Use when the user asks for keyword configuration, keyword screening, ad diagnosis, bidding suggestions, spreadsheet analysis, configuration updates, lexicon maintenance, Search Term optimization, negative keywords, or... |
 | lark-approval | `doubao/skills/lark-approval` | 协作/办公 | lark-approval | 20 | 飞书审批：查询和处理审批待办/已办/实例，搜索可发起审批定义、查看定义详情、发起原生审批实例，以及查询、创建、回复、编辑、删除审批评论。当用户要处理审批任务、查看审批实例、搜索或发起审批、操作审批评论时使用。审批待办不是飞书任务；非审批类待办走 lark-task。不负责创建审批定义；三方审批定义不走原生提单。 |
 | lark-attendance | `doubao/skills/lark-attendance` | 协作/办公 | lark-attendance | 1 | 飞书考勤打卡：查询自己的考勤打卡记录 |
-| lark-base | `doubao/skills/lark-base` | 数据分析 | lark-base | 50 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用 |
+| lark-base | `doubao/skills/lark-base` | 数据分析 | lark-base | 57 | 多维表格：可视化表格数据库与业务系统，可搭建台账/进度/项目/订单/客户/排班等业务场景，具备多表联动、多视图、表单问卷、仪表盘、自动化工作流、行列权限；遇到 /record/ 记录分享链接时使用 |
 | lark-calendar | `doubao/skills/lark-calendar` | 协作/办公 | lark-calendar | 15 | 飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。 |
-| lark-contact | `doubao/skills/lark-contact` | 协作/办公 | lark-contact | 4 | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息时使用。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。 |
+| lark-contact | `doubao/skills/lark-contact` | 协作/办公 | lark-contact | 5 | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent),也支持修改本人头像。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息,或要修改本人头像时使用。不支持修改他人资料。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 Op... |
 | lark-doc | `doubao/skills/lark-doc` | 文档/表格/PPT | lark-doc | 25 | 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档 |
 | lark-drive | `doubao/skills/lark-drive` | 协作/办公 | lark-drive | 63 | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入，也可通过 `drive +fetch` 把 Drive 文件读取为 Markdown（含知识库里映射为 wiki URL 的 Drive 文件）。用户需要整理云盘目录、处理云空间资源 URL/token、判断链... |
 | lark-im | `doubao/skills/lark-im` | 协作/办公 | lark-im | 61 | 飞书即时通讯：收发消息和管理群聊。发送和回复消息、搜索聊天记录、管理群聊成员、上传下载图片和文件、管理表情回复、发送应用内/短信/电话加急、发送交互卡片（Interactive Card）。当用户需要发消息、查看或搜索聊天记录、读取消息分享链接快照、下载聊天中的文件、查看群成员、搜索群、创建群聊或话题群、管理标记数据、管理 Feed 置顶（添加/移除/查询置顶会话）、管理标签数据、发送交互卡片时使用。 |
@@ -743,7 +748,7 @@
 | photo-abstract-editorial | `doubao/skills/photo-abstract-editorial` | 其他 | photo-abstract-editorial | 18 | Create a clean, vertical editorial artwork that preserves an uploaded photograph as the original image and pairs it with a restrained, photo-derived abstract memory panel and poetic English title. Use when asked to tr... |
 | pipeline-outbound-account-growth | `doubao/skills/pipeline-outbound-account-growth` | 营销/内容运营 | pipeline-outbound-account-growth | 15 | 对CRM锚定或用户给定的账户/线索集合完成公司研究与字段补全、账户信号、可解释优先级、拓客草稿、管道健康、确定性forecast及扩建保有，输出管道拓客与账户增长经营包。CRM和Sales Intelligence连接器只负责真值读取、字段来源、映射与受控动作，不作为业务Skill。 |
 | plan-course-registration-cn | `doubao/skills/plan-course-registration-cn` | 教育/考试 | plan-course-registration-cn | 18 | 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。 |
-| ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 308 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| ppt | `doubao/skills/ppt` | 协作/办公 | ppt | 312 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | ppt-framework-planning | `doubao/skills/ppt-framework-planning` | 文档/表格/PPT | ppt-framework-planning | 1 | Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要... |
 | presentation-change-control | `doubao/skills/presentation-change-control` | 协作/办公 | presentation-change-control | 4 | 用于已有 PPT 或飞书幻灯片需要局部新增、删除、重排、替换或样式继承，且必须保护页序、关键数字和交付质量的场景。新建整份演示或简单读取不使用。 |
 | private-domain-marketing-operations | `doubao/skills/private-domain-marketing-operations` | 设计可视化 | private-domain-marketing-operations | 4 | 基于用户授权和生命周期信号设计私域分层、内容触达、社群服务、转化培育、留存召回和实验复盘。 |
@@ -767,7 +772,7 @@
 | seedance-25 | `doubao/skills/seedance-25` | 其他 | seedance-25 | 2 | 使用 Seedance 2.5 生成视频。由本 Skill 拟定完整方案并通过 interaction.ask 完成澄清与执行确认，确认后调用 doubao-creative-video 组织提示词并生成。适用于用户指定 Seedance 2.5、需要用该模型制作视频，或显式调用本 Skill 的场景；固定模型，不切换。 |
 | seedance-real-selling-video | `doubao/skills/seedance-real-selling-video` | 营销/内容运营 | seedance-real-selling-video | 3 | Seedance 2.5 真人感出海 AI 带货视频技能，整合「去 AI 感」与「去广告感」双向优化。四大真实感支柱（混合光源、生活杂物、毛孔纹理、手机拍摄）+ 六条核心补丁语句 + 负面轰炸 + 三段锁定 + 结尾质量指令区块 + 15–25 秒带货四段式脚本。当用户需要：(1)做 AI 真人带货 / UGC 口播 / 种草视频，(2)让 AI 视频更真实更像手机实拍、降低 AI 味和广告感，(3)排查塑料皮肤、崩手多指、眼神闪... |
 | seedream-50 | `doubao/skills/seedream-50` | 设计可视化 | seedream-50 | 1 | 当用户明确要求使用“5.0”“5.0_flash”“5.0_flash”“Seedream 5.0_flash”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0_flash 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_flash" 调用实际图片工具。 |
-| sheet | `doubao/skills/sheet` | 文档/表格/PPT | sheet | 50 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
+| sheet | `doubao/skills/sheet` | 文档/表格/PPT | sheet | 49 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
 | siyu-calendar | `doubao/skills/siyu-calendar` | 设计可视化 | siyu-calendar | 8 | 仅用于餐饮行业品牌（含餐饮连锁与单店），独立生成餐饮私域月度营销日历。用户提供品牌资料、固定栏目、推品计划、新品、会员活动、节日或门店节点，要求策划长期栏目、规划社群/朋友圈/1V1月度内容、设计待确认活动，或在确认后展开每日内容配置时使用。适用于“品牌大日历”“月度运营日历”“私域内容排期”“固定栏目策划”等餐饮场景；非餐饮行业不得触发，不要求先执行品牌初步策略或专项活动 Skill。 |
 | siyu-lifecycle | `doubao/skills/siyu-lifecycle` | 营销/内容运营 | siyu-lifecycle | 8 | 仅用于餐饮行业品牌（含餐饮连锁与单店），讲清顾客全生命周期营销方法论，并生成“五类状态→7大触达场景”的可落地 HTML 方案。用户需要理解新客黄金期与老客复购期、梳理人群状态、触达场景、权益方向、企微1V1文案和触达闭环时使用。非餐饮行业不得触发；也不用于泛品牌诊断、品牌内容大日历、精细排期或运营复盘。 |
 | siyu-strategy | `doubao/skills/siyu-strategy` | 营销/内容运营 | siyu-strategy | 10 | 专门为餐饮品牌做轻量私域经营诊断与策略规划。适用于餐饮品牌不知道私域先做什么、会员或企微规模已有但经营效果不清、需要确定季度重点或90天行动方向时；通过固定六题的逐题开放交互诊断识别优先经营问题，每题均接受单选、多选或自然语言回答，并按 iCC Grow 私域增长五步法生成《餐饮私域诊断与策略》HTML 报告。不适用于非餐饮行业，也不用于直接制作月度内容日历、具体会员机制、专项活动方案或运营复盘。 |

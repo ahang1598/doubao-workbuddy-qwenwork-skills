@@ -1,6 +1,6 @@
 # Dashboard（仪表盘/数据看板）模块指引
 
-> **前置条件：** 先阅读 [`../lark-shared/SKILL.md`](../../lark-shared/SKILL.md) 了解认证、全局参数和安全规则。
+> **前置条件：** 先阅读 [主 Skill「使用边界」](../SKILL.md#使用边界)，遵循本环境的身份与权限约束。
 
 Dashboard 是 Base 中的数据可视化看板，可以把表格数据变成**组件**（图表、指标卡等）进行展示。
 
@@ -17,9 +17,6 @@ Dashboard 是 Base 中的数据可视化看板，可以把表格数据变成**�
 | 创建/删除/改名称 | `+dashboard-create/delete/update` | 本页下方「仪表盘管理」 |
 | 在仪表盘里添加组件 | `+dashboard-block-create` | 先定位 dashboard、表和字段，再读 [dashboard-block-data-config.md](dashboard-block-data-config.md) 构造 `data_config` |
 | 修改组件 | `+dashboard-block-update` | 先读 block 现状，再读 [dashboard-block-data-config.md](dashboard-block-data-config.md) 决定替换哪些顶层 key |
-| 创建/更新时指定组件精确位置大小 | `+dashboard-block-create/update --position` | 本页下方「精确布局 --position vs +dashboard-arrange」 |
-| 查看仪表盘有哪些组件 | `+dashboard-get` 或 `+dashboard-block-list` | 本页下方「查看仪表盘」 |
-| 读取图表计算结果 | `+dashboard-block-get-data` | 返回图表最终数据协议；需要 block 元数据先用 `+dashboard-block-get` |
 | 在仪表盘里展示数据明细、甘特图或画册 | `+dashboard-block-create --type view`；更新/获取用组件命令 | [视图组件](lark-base-dashboard-view.md)，筛选、分组、排序、可见字段四类配置直接放在 `data_config` |
 | 配置、替换或清除同源图表联动 | `+dashboard-block-update --linkage`；Get 回读 | [图表联动](lark-base-dashboard-linkage.md)，提交源组件的完整目标列表 |
 | 查询或设置仪表盘跟随访问者权限统计开关 | 按目标环境已发布的接口调用 | [仪表盘跟随访问者权限统计开关](lark-base-dashboard-advperm.md) |
@@ -27,7 +24,10 @@ Dashboard 是 Base 中的数据可视化看板，可以把表格数据变成**�
 | 读取、设置或清空整盘的预设过滤条件 | 按目标环境已发布的接口调用 | [仪表盘全局筛选](lark-base-dashboard-global-filter.md) |
 | 按钮组件绑定、解绑或查询工作流 | 专用 `button_rule` GET/PUT；完整定义复用 `+workflow-get` | [仪表盘按钮绑定工作流](lark-base-dashboard-button-rule.md) |
 | 读取视图组件的记录明细 | `+dashboard-block-get` 取得 `tableId / viewId`，再用 `+record-list --view-id` | [视图组件数据读取](lark-base-dashboard-view.md#读取视图组件数据)；继承视图配置并按需分页 |
-| 智能重排组件布局 | `+dashboard-arrange` | 用户明确要求重排，或本次会话新建仪表盘的收尾整理；无法指定 `x/y/w/h`、精确位置或尺寸 |
+| 新建组件时带上规划好的坐标 | `+dashboard-block-create --position` | 先读 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md) 规划坐标，再按本页下方「仪表盘布局工作流」操作 |
+| 查看仪表盘有哪些组件 | `+dashboard-get` 或 `+dashboard-block-list` | 本页下方「查看仪表盘」 |
+| 读取图表计算结果 | `+dashboard-block-get-data` | 返回图表最终数据协议；需要 block 元数据先用 `+dashboard-block-get` |
+| 布局收尾：提交全部组件坐标 / 重排 / 美化 | `+dashboard-layout`，**每次新建、挪动、改大小后最后一定调用；只删除组件时不调** | 涉及布局必须先读 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md)；命令用法见本页下方「仪表盘布局工作流」 |
 
 ## 交付健康门禁（写任务必做）
 
@@ -38,7 +38,7 @@ Dashboard 是 Base 中的数据可视化看板，可以把表格数据变成**�
 1. 已知全部可信交付组件 ID 且无需检查重复或冲突时直接读取，不执行全 Dashboard list。需要定位交付组件或用户要求检查重复/冲突时，才用 `+dashboard-block-list --page-size 100`；用静态 `--jq` 投影保留 `has_more`、`page_token` 和候选的 `block_id/name/type/data_config` 字段引用，并按返回的 `page_token` 读到 `has_more=false`。一个既有组件可唯一映射到用户明确要求的交付物时可原位修复；其他同名或同义冲突组件只报告，未经确认不改删。
 2. 对本次创建、明确要求修改或明确复用的每个交付组件用 `+dashboard-block-get` 读取服务端实际 `data_config`。视图组件的 Get 返回 `tableId / viewId / viewType` 引用，使用这组真实 ID 调用对应 `+view-get-*` 核对持久化配置，不能要求 Get 原样返回创建输入。逐项对照需求和真实表/字段，确认该组件适用的数据源、维度、指标、聚合、筛选与排序均被保留；不存在的引用、API 错误或服务端静默丢失关键配置均未通过。交互筛选器还需核对组件类型、绑定字段及用户要求的展示与选择模式；过滤条件保存成功或单次统计值正确，不能代替交互控件的验收。
 3. 对这些交付组件中的图表或指标卡用 `+dashboard-block-get-data` 验证实际计算结果，确认所需维度与 measure 存在且粒度正确。`view` 按 [视图组件数据读取](lark-base-dashboard-view.md#读取视图组件数据) 使用 `+record-list --view-id` 核对记录；其他专属组件按对应配置指南验收，不能套用图表结果协议。空数据只有在一次有界源表记录查询证明本应为空时才可接受；有匹配源数据却返回空维度、空/缺失 measure 或矛盾数值时进入定向修复。`text` 组件只需 get。
-4. 本轮新建且含组件的 Dashboard，用户未给可执行的精确布局约束时，组件全部创建完成后必须执行一次 `+dashboard-arrange`。随后用 `+dashboard-block-get` 回读全部交付组件的位置，按下方 12 列栅格规则检查坐标、尺寸合法且组件不重叠。用户未给可执行的精确布局约束时，还需检查中间无整行空白、无行内空档、非末行铺满、末行从左侧开始；不合格时按下方 `--position` 规则做一次定向修复并复验。用户给了可执行的精确布局约束时跳过 arrange，在上述坐标、尺寸和不重叠检查之外，核对用户指定的位置、尺寸和顺序，不用通用紧凑判据改写用户布局；若用户约束与基本布局规则冲突，应说明冲突并请用户澄清。既有 Dashboard 未经用户授权不得整盘重排。
+4. 任何改变组件集合或坐标的操作（新建 Dashboard、追加组件、移动或调整大小、重排）完成后，都按下方「仪表盘布局工作流」最后调一次 `+dashboard-layout` 收尾；只删除组件的情况除外，删完不调。以其 stdout 的 `layout` 核对最终坐标：组件互不重叠，用户指定的位置、尺寸和顺序均已落实；新建 Dashboard 时画布还应无空洞。
 5. 图表依赖本次新增或修改的 formula/lookup 时，用一次有界记录查询抽查有输入的样例行。整批终验后，对每类失败最多执行一次定向修复和一次复验；仍失败则报告具体未完成项。非目标既有组件未经用户确认不得更新或删除，删除操作还必须遵循高风险确认规则。
 
 ## 已有 Dashboard 的冲突检查
@@ -50,17 +50,66 @@ Dashboard 是 Base 中的数据可视化看板，可以把表格数据变成**�
 - 最终对本次交付的新 Dashboard 全部数据组件，或既有 Dashboard 中与目标指标相关的全部组件执行 `+dashboard-block-get`，并按组件类型选择图表结果、视图记录或专属配置的验收路径。同一指标出现矛盾范围、粒度或数值时验收失败。
 - 涉及统计结论时，按 [Base data analysis SOP](lark-base-data-analysis-sop.md) 对齐确定性查询、Dashboard 实际数据和最终回答。
 
-## 精确布局 --position vs +dashboard-arrange
+## 精确布局：48 列坐标
 
-create/update 可选 `--position`，用 12 列栅格坐标精确指定单个组件的落点与大小：`{"x","y","w","h"}`，`x`/`y` 为左上角坐标（>=0），`w` 为宽度（1..12，且 `x+w<=12`），`h` 为高度（>=1）。它与 `name`/`type`/`data_config` 平级挂在请求体顶层。
+全链路统一 **48 列栅格**，你不需要做任何坐标换算。`{"x","y","w","h"}`：`x`/`y` 为左上角坐标（>=0），`w` 为宽度（`1<=w<=48` 且 `x+w<=48`），`h` 为高度（>=1）。坐标一律按 48 列写，不做任何换算。
+
+CLI 写坐标时（包括不传坐标、由服务端自动装箱时）统一以 48 列与下游通信，读回时把服务端返回的像素坐标换算成 48 列，所以 `+dashboard-block-list` / `+dashboard-block-get` **读到的 `position` 和写出去的坐标始终是同一套栅格**，不需要也不应该自己做任何换算。服务端暂未返回像素坐标时，CLI 会按服务端的取整坐标折算，并在 stderr 说明精度有损（每个坐标可能与实际相差最多 2 格）。`+dashboard-block-create` / `+dashboard-block-update` 回包里的 `position` 同样已换算成 48 列，与你提交的坐标一致，不是服务端改了你的坐标。
+
+## 仪表盘布局工作流（唯一流程）
 
 > [!IMPORTANT]
-> - **四个 key 必须齐全且都是数字**：`position` 按整体提交、不做逐字段合并，所以只传 `{"x":6}` 表达的不是“只挪位置不改大小”，而是一个缺了三项的位置。本地会拒绝残缺对象（含显式 `null`）。
-> - 坐标**取值不做本地校验**：越界、负值或重叠坐标会原样发给服务端，由服务端自动重排。调用方仍应优先规划 12 列范围内且不重叠的坐标，避免自动重排改变预期落点。
-> - 不传 `--position`：create 由服务端自动装箱，update 保持当前布局不变。
-> - 只有用户明确给出 `x/y/w/h`、具体行列/顺序、每个组件宽高或可直接换算的尺寸比例时才用 `--position`。“调整布局”“美化”“撑满”“铺满”本身不算精确约束，没有组件级坐标或尺寸时优先用 `+dashboard-arrange` 整盘编排。
-> - **例外（arrange 兜底重试）**：本次新建仪表盘经 `+dashboard-arrange` 重排后布局仍不合格（组件重叠、中间整行为空、行内有空档、非末行右侧留白，或末行未从左起排）时，即使用户没有给出坐标，也应主动用 `--position` 按 12 列栅格自算坐标兜底：逐行左起、行内铺满（`x+w<=12`）、组件间不重叠；写后回读 `+dashboard-block-get` 的 `position` 按该判据自检，确实受平台限制无法满足时再如实报告。
-> - 未触及布局的既有组件无需仅为位置重复读取；本轮新建 Dashboard 或明确调整过布局时，必须用 `+dashboard-block-get` 回读最终位置。写命令成功只代表请求已受理，不能替代布局验收。
+> **只要本次操作涉及布局——新建组件、追加组件、调整位置或大小、重排、美化——在规划任何坐标、调用 `--position` 或 `+dashboard-layout` 之前，必须先完整读取 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md)，按其中的布局模式、排布原则、组件尺寸和硬约束规划全部组件坐标。未读该文件不要规划坐标。** 只删除组件不涉及布局，不需要读。
+
+仪表盘布局只有**一条流程**，不区分新建还是追加、整盘还是局部，五步都不能省：
+
+1. **读现有组件**：`+dashboard-block-list --page-size 100`（`has_more=true` 时按 `page_token` 读完）。读到的 `position` 已是 48 列坐标，直接照着规划；`+dashboard-get` 不返回坐标，不能拿来排版。本轮新建的仪表盘没有组件，跳过这一步。
+2. **完整读取 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md)**：布局模式、排布原则与骨架、组件尺寸、硬约束和自检清单都只在那份文件里，本页不重复。
+3. **先规划好全部组件的坐标**：为盘上**所有**组件（现有的 + 本轮要新建的）定好 `x/y/w/h`。按场景决定能动哪些组件（详见视觉规范开头的「适用范围」）：
+   - **新建看板且用户没提布局要求**（或用户要求整盘重排、美化）：按视觉规范整盘规划，并按其自检清单核对。
+   - **用户明确给了坐标、位置、顺序或同一行等要求**：按用户的来，给了顺序就按先行后列的阅读顺序排列；不强制分栏。
+   - **在已有看板上追加组件**：现有组件保持原坐标，不强制改成分栏；新组件放进现有空位或接在现有组件下方，只为让新组件所在的行铺满而调整同一行的组件。**最底下是表格时，新组件插在表格上方**，不要接在表格下面：优先并入表格上方的最后一行（收窄该行组件让它铺满），容不下时在表格上方单独占一行、表格整体下移。
+   - **定点修改（移动、调整大小、放进某个空位）**：只改目标组件，其他组件按读到的坐标原样提交。
+
+   「非目标组件未经确认不得更新」管的是 data_config、名称和删除；坐标能动哪些组件按上面的场景决定。
+4. **新建组件时带坐标**：按第 3 步的规划，用 `+dashboard-block-create --position '{"x":..,"y":..,"w":..,"h":..}'` 逐个串行创建。
+5. **最后一定调用 `+dashboard-layout`**，`--layout` 传**盘上全部组件**的坐标——包括没动的现有组件和第 4 步刚建的组件。
+
+`+dashboard-layout` 依次做：本地校验每项坐标的范围 → 读现状 → 校验 `--layout` 覆盖了盘上全部组件 → 只把坐标变了的组件一次批量写入（全都没变就不写）→ **每次都**调用服务端兜底整理 → 输出整盘最终坐标。
+
+**兜底整理会挪动组件**：无论这次写没写坐标，命令最后都会让服务端按前端布局规则整理一遍：填补盘上**所有**空洞（包括原本就有、你没动过的空洞），处理重叠和越界。为此它可能挪动或拉宽你没碰过的组件；它不替你决定盘面结构，也不会居中或对齐。应对方式：
+
+- 想让某些组件保持原位，就提交一个本身没有空洞、没有重叠的布局。定点移动一个组件后，它原来的位置会空出来，整理会把下方的组件上移补位；这是命令的固定行为，其他组件仍按原坐标提交，不要自己抢先去挪。
+- 提交后以 stdout 的 `layout` 为最终坐标；`tidied_block_ids` 非空时，stderr 会逐个说明哪个组件从哪移到了哪。不要为了撤销整理结果重复提交，整理每次都会再跑一遍。
+- 向用户汇报布局时按最终坐标说；整理挪动了用户要求保持不动的组件时，如实说明。
+
+```bash
+lark-cli base +dashboard-layout \
+  --base-token xxx \
+  --dashboard-id blk_xxx \
+  --layout '[{"block_id":"blk_a","x":0,"y":0,"w":16,"h":8},{"block_id":"blk_b","x":0,"y":8,"w":16,"h":8},{"block_id":"blk_c","x":16,"y":0,"w":32,"h":16}]'
+```
+
+> [!IMPORTANT]
+> - **`--layout` 必须覆盖盘上全部组件**：漏了组件、写了盘上没有的 `block_id`、同一个 `block_id` 出现两次，都会直接报错并列出具体 `block_id`，一格都不写。漏交时按报错把缺的组件按 `+dashboard-block-list` 读到的坐标补进去再提交。
+> - `--layout` 只接受坐标数组 `[{"block_id","x","y","w","h"}]`，四个坐标键齐全且为整数；支持 `@file` 和 `-`（stdin）。每项坐标在本地校验范围：`x>=0`、`y>=0`、`w>=1`、`h>=1` 且 `x+w<=48`，不满足就直接报错并列出该项，一格都不写。组件之间的空洞和重叠不在本地校验，提交前自己核对：任何场景都不能重叠；新建看板还要按视觉规范的自检清单核对无空洞。
+> - **即使每个组件都已用 `--position` 建好、看起来不需要再动，也要调这一步**：兜底整理只在这一步执行。整盘只有 1 个组件时同样如此。**唯一例外是只删除组件**：删完不调，见场景 3「删除组件」。
+> - **布局改动不要绕开 `+dashboard-layout`**：不要逐个组件用 `+dashboard-block-update --position`（包括加 `--no-validate`）写坐标来代替它；`+dashboard-layout` 收尾之后也不要再单独改坐标，需要挪动时改好全部坐标再调一次 `+dashboard-layout`。
+> - 兜底整理失败时命令会报错，但前面的批量写入已经生效，stderr 会写明哪些组件已写入；按提示用同一份 `--layout` 重新调用即可，坐标已一致的组件不会重复写入。
+> - `--position` 的四个 key 必须齐全且都是数字：`position` 按整体提交、不做逐字段合并，只传 `{"x":6}` 不是"只挪位置不改大小"，而是一个缺了三项的位置，本地会拒绝（含显式 `null`）。不传 `--position` 时 create 由服务端自动放置、update 保持当前布局；无论传没传，最后都用 `+dashboard-layout` 收尾。
+> - 布局本身就是你的活：用户说"调整布局""美化""撑满""铺满"时，按视觉规范自己规划每个组件的 `x/y/w/h`；不要因为用户没给坐标就放弃规划。
+> - 命令成功即视为写入成功，不需要为读回位置再调 `+dashboard-block-get` / `+dashboard-block-list`：`+dashboard-layout` 的 stdout 已给出最终坐标。
+
+`+dashboard-layout` 的 stdout：
+
+| 字段 | 含义 |
+|---|---|
+| `written_block_ids` | 实际写入的组件（坐标与现状不同的那些） |
+| `tidied_block_ids` | 被兜底整理挪动过的组件，可能包括你没改的；stderr 逐个说明从哪移到哪 |
+| `layout` | 兜底整理后整盘的最终坐标（48 列），以它为准 |
+| `grid_cols` | 坐标口径，恒为 48 |
+
+`+dashboard-block-create` 每次成功后、带 `--position` 的 `+dashboard-block-update` 成功后，stderr 会提示最后用 `+dashboard-layout` 提交全部组件坐标收尾；没有这条提示不代表可以省掉收尾。
 
 ## statistics 指标卡数值格式
 
@@ -76,7 +125,7 @@ create/update 可选 `--position`，用 12 列栅格坐标精确指定单个组�
 - 聚合方式：创建指标卡或分布图时优先把聚合写进 `data_config`，只有 Top N、字段取值探索、复杂筛选校验或 helper 汇总表场景才先用 `+data-query`。
 - Dry-run 边界：已按模板构造的简单指标卡、分布图、趋势图不需要逐个 `--dry-run` 后再真实创建；只有在调试 JSON、检查请求体、复杂自造 `data_config` 或处理 API validation 错误时才 dry-run。
 - 验证方式：创建响应只确认请求已受理，不代表运行时一定能算出正确数据；完成前按上方交付健康门禁验证本次目标组件的实际配置与计算结果，不把全量无关组件带入检查。
-- 布局方式：按上方交付健康门禁执行整理和回读验收。
+- 布局方式：**在创建第一个组件之前**，先完整读取 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md)，按它规划好全部组件的 `x/y/w/h`；创建每个组件时用 `--position` 带上规划好的坐标，全部建完后**一定**调用一次 `+dashboard-layout`，把全部组件的坐标交上去收尾。用户给了明确坐标就用用户的，没给就自己规划，不要跳过规划。
 - 交付形态：Base 场景中用户要求“图/图表/看板/直观看到/可视化”时，默认把图表沉淀为 Base Dashboard 组件；外部图片或文本统计只能作为补充，不能替代可持续更新的 Dashboard。
 
 示例：搭建一个销售数据分析仪表盘
@@ -90,8 +139,10 @@ lark-cli base +dashboard-create --base-token xxx --name "销售数据分析"
 lark-cli base +table-list --base-token xxx
 lark-cli base +field-list --base-token xxx --table-id <table_id>
 
-# 第 3 步：规划应该创建哪些组件（根据用户需求确定组件类型和数量）
-# 例如：总销售额（指标卡）、月度趋势（折线图）、负责人 Top N（排行榜）、满意度评分（NPS）
+# 第 3 步：规划组件 + 规划全部组件的坐标（两件事一起做完，不要建到一半再想布局）
+# 例如：总销售额（指标卡）、月度趋势（折线图）、品类占比（饼图）、渠道对比（柱状图）、负责人 Top 10（排行榜）
+# 先完整读 lark-base-dashboard-visual-standards.md，再按它定下每个组件的 x/y/w/h（48 列栅格）
+# 下面的坐标示例：左侧边栏区块放指标卡和排行榜，右侧主区块放趋势图和两张对比图
 
 # 第 4 步：顺序创建每个组件（必须串行执行，不能并发）
 # 重要：创建组件前，先确定 dashboard_id、组件 name/type 和真实表字段
@@ -103,7 +154,8 @@ lark-cli base +dashboard-block-create \
   --dashboard-id blk_xxx \
   --name "总销售额" \
   --type statistics \
-  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}]}'
+  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}]}' \
+  --position '{"x":0,"y":0,"w":12,"h":8}'
 
 # 第 2 个组件（等上一个完成后再执行）
 lark-cli base +dashboard-block-create \
@@ -111,9 +163,10 @@ lark-cli base +dashboard-block-create \
   --dashboard-id blk_xxx \
   --name "月度趋势" \
   --type line \
-  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"月份","mode":"integrated"}]}'
+  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"月份","mode":"integrated"}]}' \
+  --position '{"x":12,"y":0,"w":36,"h":16}'
 
-# 继续创建其他组件...
+# 继续创建其他组件（每个都带上第 3 步规划的 --position）：品类占比饼图 (12,16,18,16)、渠道对比柱状图 (30,16,18,16)
 
 # 排行榜组件：省略 limit_size 和 sort 时分别默认 10、value desc
 lark-cli base +dashboard-block-create \
@@ -121,31 +174,44 @@ lark-cli base +dashboard-block-create \
   --dashboard-id blk_xxx \
   --name "负责人销售额 Top 10" \
   --type ranking \
-  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"负责人"}]}'
+  --data-config '{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"负责人"}]}' \
+  --position '{"x":0,"y":8,"w":12,"h":24}'
 
-# 第 5 步：组件全部创建完成后，无用户精确布局约束时执行一次 arrange，再用 block-get 回读验收
-# 用户指定精确布局时跳过 arrange，按其约束回读验收
-lark-cli base +dashboard-arrange \
+# 第 5 步：组件全部创建完成后，一定调用 +dashboard-layout，--layout 传全部组件的坐标
+# （block_id 取第 4 步各次创建的返回值；坐标与第 3 步的规划一致）
+# 命令只写坐标变了的组件，stdout 的 layout 是最终坐标
+lark-cli base +dashboard-layout \
   --base-token xxx \
-  --dashboard-id blk_xxx
+  --dashboard-id blk_xxx \
+  --layout '[{"block_id":"<总销售额>","x":0,"y":0,"w":12,"h":8},{"block_id":"<负责人 Top 10>","x":0,"y":8,"w":12,"h":24},{"block_id":"<月度趋势>","x":12,"y":0,"w":36,"h":16},{"block_id":"<品类占比>","x":12,"y":16,"w":18,"h":16},{"block_id":"<渠道对比>","x":30,"y":16,"w":18,"h":16}]'
 ```
 
 ### 场景 2：在已有仪表盘上添加新组件
+
+与新建走同一条流程：先读现有组件，**完整读取 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md)**，按其中的规则为**盘上全部组件**规划坐标，新组件创建时带 `--position`，最后用 `+dashboard-layout` 提交**全部组件**的坐标。
+
+> [!IMPORTANT]
+> - 规划前必须用 `+dashboard-block-list` 读到现有组件占了哪些格子；`+dashboard-get` 不返回坐标。
+> - 追加不强制改成分栏：现有组件保持原坐标，新组件放进现有空位或接在现有组件下方，只为让新组件所在的行铺满而调整同一行的组件；用户指定了位置、顺序或同一行时按用户的来。
+> - **最底下是表格（`view` / `pivotTable`）时，新组件插在表格上方**，不要接在表格下面：优先并入表格上方的最后一行，按列基线收窄该行组件让它铺满；容不下时新组件在表格上方单独占一行（占用表格原来的 `y`，表格的 `y` 加上这一行的高度），这一行只有它一个组件时可以占满 `w=48`。
+> - 最后一步的 `--layout` 要带上**盘上每一个组件**，没动的现有组件按读到的坐标原样写进去；漏交会报错并列出缺的 `block_id`。
 
 ```bash
 # 第 1 步：列出仪表盘，定位到当前仪表盘
 lark-cli base +dashboard-list --base-token xxx
 # 获取目标 dashboard_id
 
-# 第 2 步：根据用户诉求规划组件类型和数据源
-# 建议先查看当前仪表盘已有组件，避免重复创建，或作为参考
-lark-cli base +dashboard-get --base-token xxx --dashboard-id blk_xxx
+# 第 2 步：读现有组件（必须用 block-list：+dashboard-get 不返回坐标）
+# 既用于避免重复创建，也用于确认现有组件占了哪些格子
+lark-cli base +dashboard-block-list --base-token xxx --dashboard-id blk_xxx --page-size 100
+# 例如读到：blk_a (0,0,24,16)、blk_b (24,0,24,16)、blk_c (0,16,24,16)——最后一行右侧空着
 
 # 第 3 步：获取数据源信息
 lark-cli base +table-list --base-token xxx
 lark-cli base +field-list --base-token xxx --table-id <table_id>
 
-# 第 4 步：顺序创建每个新组件（必须串行执行，不能并发）
+# 第 4 步：规划全部组件的坐标，再顺序创建每个新组件（必须串行执行，不能并发）
+# 例如新建一个柱状图补在 blk_c 右侧 (24,16,24,16)
 # 重要：先确定 dashboard_id、组件 name/type 和真实表字段
 # 再阅读 dashboard-block-data-config.md 了解 data_config 结构
 lark-cli base +dashboard-block-create \
@@ -153,10 +219,17 @@ lark-cli base +dashboard-block-create \
   --dashboard-id blk_xxx \
   --name "新组件名" \
   --type column \
-  --data-config '{...}'
+  --data-config '{...}' \
+  --position '{"x":24,"y":16,"w":24,"h":16}'
+
+# 第 5 步：一定调用 +dashboard-layout，--layout 传盘上全部组件的坐标（含没动的 blk_a/blk_b/blk_c）
+lark-cli base +dashboard-layout \
+  --base-token xxx \
+  --dashboard-id blk_xxx \
+  --layout '[{"block_id":"blk_a","x":0,"y":0,"w":24,"h":16},{"block_id":"blk_b","x":24,"y":0,"w":24,"h":16},{"block_id":"blk_c","x":0,"y":16,"w":24,"h":16},{"block_id":"<第 4 步新建的>","x":24,"y":16,"w":24,"h":16}]'
 ```
 
-### 场景 3：编辑已有组件
+### 场景 3：编辑或删除已有组件
 
 > [!IMPORTANT]
 > `+dashboard-block-update` **不能修改组件的 `type`**（图表类型），可以更新 `name`、`data_config`、`linkage` 和可选的 `position`。
@@ -186,8 +259,10 @@ lark-cli base +dashboard-block-update \
   --base-token xxx \
   --dashboard-id blk_xxx \
   --block-id chtxxxxxxxx \
-  --data-config '{...}' \
-  --position '{...}'   # 可选，只在需要调整布局时传
+  --data-config '{...}'
+# 改位置或大小属于布局改动（定点修改）：先完整读 lark-base-dashboard-visual-standards.md，只改目标组件的坐标，
+# 其他组件按 +dashboard-block-list 读到的坐标原样写进 --layout，用 +dashboard-layout 一次提交收尾；
+# 不要在这里逐个用 --position 改坐标来代替 +dashboard-layout
 
 # 排行榜只修改 Top N；不会覆盖分组、指标、筛选或排序
 lark-cli base +dashboard-block-update \
@@ -198,26 +273,45 @@ lark-cli base +dashboard-block-update \
 
 ```
 
+#### 删除组件
+
+```bash
+# 删除前先确认 block_id，删除是高风险写操作，需要 --yes
+lark-cli base +dashboard-block-list --base-token xxx --dashboard-id blk_xxx --page-size 100
+lark-cli base +dashboard-block-delete \
+  --base-token xxx \
+  --dashboard-id blk_xxx \
+  --block-id chtxxxxxxxx \
+  --yes
+```
+
+> [!IMPORTANT]
+> **删完不要调用 `+dashboard-layout`，也不要挪动其余组件。** 只删除组件不算布局改动。删除会在盘上留下空位，这是正常的——用户要的是删掉一个组件，不是重新排版，擅自重排会把他们其余组件的位置全部改掉。
+>
+> 只有用户明确说了"删掉 X 并把布局整理一下"，才按场景 4 重排。
+
 ### 场景 4：重排仪表盘布局
 
-当用户要求调整布局、重排、美化、撑满或铺满，但没有给出组件级坐标或尺寸时使用。定位仪表盘后调用一次 `+dashboard-arrange` 并回读验收；本轮新建仪表盘按上方交付健康门禁执行。
+当用户要求调整布局、重排、美化、撑满或铺满时使用。流程与新建、追加相同：读全部现有组件 → **完整读取 [仪表盘布局与视觉规范](lark-base-dashboard-visual-standards.md)**，按 query 和其中的规则为全部组件重新规划坐标（位置和宽高都可以改）→ 用 `+dashboard-layout` 一次提交全部组件的坐标。用户没给坐标不等于不用规划。
 
 > [!CAUTION]
-> - 排列结果是**服务端智能推荐**，不一定完全符合用户预期
-> - `+dashboard-arrange` 无法指定 `x/y/w/h`、精确位置或尺寸，排列逻辑是**自适应**的；只有用户明确给出可执行的组件级坐标、行列或尺寸约束时才改用 `--position`
-> - **本次新建仪表盘经 `+dashboard-arrange` 重排后布局仍不合格（重叠、空行、行内空档、非末行右留白或末行未左起）时，即使用户没给坐标，也应改用 `--position` 逐组件自算坐标兜底重试，写后回读 `position` 自检；判据见 [lark-base-solution-design.md](lark-base-solution-design.md) 的仪表盘布局条**
-> - **不建议**在已有仪表盘上自动调用，除非用户明确要求
-> - 用户只要求一般性重排、美化、撑满或铺满时，用 `+dashboard-arrange` 整盘编排
-> - 编排结果不理想时，可结合用户反馈再调整；不要为了凑效果去探测 raw `lark-cli api`、源码或未公开布局参数
+> - 先收齐现有组件的 `block_id` 与 `type`，再规划坐标；不要凭印象猜 `block_id`
+> - `--layout` 要带上盘上每一个组件；漏交、多交或重复都会报错并列出具体 `block_id`，一格都不写
+> - 提交前按视觉规范的自检清单核对：无空洞、无重叠、不越界
+> - 不要为了凑效果去探测 raw `lark-cli api`、源码或未公开布局参数
 
 ```bash
 # 第 1 步：列出仪表盘，定位到目标仪表盘
 lark-cli base +dashboard-list --base-token xxx
 
-# 第 2 步：执行智能重排
-lark-cli base +dashboard-arrange \
+# 第 2 步：收齐现有组件（分页读完）
+lark-cli base +dashboard-block-list --base-token xxx --dashboard-id blk_xxx --page-size 100
+
+# 第 3 步：为全部组件规划 48 列坐标后一次提交
+lark-cli base +dashboard-layout \
   --base-token xxx \
-  --dashboard-id blk_xxx
+  --dashboard-id blk_xxx \
+  --layout '[{"block_id":"blk_a","x":0,"y":0,"w":16,"h":8},{"block_id":"blk_b","x":0,"y":8,"w":16,"h":8},{"block_id":"blk_c","x":16,"y":0,"w":32,"h":16}]'
 ```
 
 ### 场景 5：读取仪表盘或组件现状
@@ -225,6 +319,7 @@ lark-cli base +dashboard-arrange \
 **选择查询方式：**
 - 想看仪表盘整体结构（含主题、所有组件名称和类型）→ 用 **方式 A**
 - 只想快速查看有哪些组件 → 用 **方式 B**
+- **要读组件的坐标（`x/y/w/h`）→ 只能用方式 B**
 - 想看某个组件的详细 data_config 配置 → 用 **方式 C**
 - 想看某个图表/指标卡实际算出来的数据 → 用 **方式 D**
 - 想看视图组件中的记录 → 用 **方式 C** 取得 `tableId / viewId`，按 [视图组件数据读取](lark-base-dashboard-view.md#读取视图组件数据) 调用 `+record-list --view-id`
@@ -241,11 +336,15 @@ lark-cli base +dashboard-list --base-token xxx
 
 # 第 2 步：根据用户诉求查看详情
 
-# 方式 A：查看仪表盘整体情况（包含所有组件列表）
+# 方式 A：查看仪表盘整体情况（主题 + 组件清单）
+# 注意：返回的组件清单只有 block_id / 名称 / 类型，不含坐标
 lark-cli base +dashboard-get --base-token xxx --dashboard-id blk_xxx
 
 # 方式 B：列出所有组件
-lark-cli base +dashboard-block-list --base-token xxx --dashboard-id blk_xxx
+lark-cli base +dashboard-block-list \
+  --base-token xxx \
+  --dashboard-id blk_xxx \
+  --page-size 100
 
 # 方式 C：查看某个组件的详细配置
 lark-cli base +dashboard-block-get --base-token xxx --dashboard-id blk_xxx --block-id chtxxxxxxxx
@@ -255,6 +354,10 @@ lark-cli base +dashboard-block-get-data --base-token xxx --block-id chtxxxxxxxx
 
 # 最后：把获取到的现状信息整理好告诉用户
 ```
+
+> [!IMPORTANT]
+> **组件坐标只能从方式 B（`+dashboard-block-list`）读。** `+dashboard-get` 只返回组件清单（`block_id`、名称、类型），**不含 `x/y/w/h`**。
+> 规划布局前必须走方式 B：拿 `+dashboard-get` 的结果去排版，等于不知道已有组件在哪，只能凭空猜位置，排出来必然与现有组件重叠。
 
 需要读取多个组件的数据时，已有全部可信 `block_id` 和类型就直接按 [lark-base-dashboard-block-get-data.md](lark-base-dashboard-block-get-data.md) 的多组件范式分流：图表读取计算结果，视图组件读取记录，文本组件读取 `data_config.text`；缺少 ID 或类型时才用方式 B 分页定位。同类读取可在一个 shell 工具调用内串行执行。
 
@@ -270,7 +373,7 @@ lark-cli base +dashboard-block-get-data --base-token xxx --block-id chtxxxxxxxx
 | 无 `group_by` 的单值关键指标 | statistics | 指标卡组件 |
 | 单维度 Top N 排名 | ranking | 排行榜组件，单分组、单指标 |
 | 满意度评分分布 | nps | NPS 图，单个 Rating 字段与可选分段 |
-| 富文本说明/标题/注释 | text | 文本组件（支持 Markdown） |
+| 用户明确要求放进看板的说明 / 标题 | text | 文本组件（支持 Markdown）；不主动添加 |
 
 详细组件类型和 data_config 完整规则：[dashboard-block-data-config.md](dashboard-block-data-config.md)
 
