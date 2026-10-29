@@ -32,7 +32,7 @@ PROFILES = {
         "query_stages": ["jurisdiction_and_tax_year", "official_limits", "official_benefit_rules", "professional_boundaries"],
     },
     "event-impact-analysis": {
-        "max_calls": 4,
+        "max_calls": None,
         "tool_order": ["general_search", "seed_finance_search"],
         "source_order": ["issuing_authority", "law_or_regulation", "implementing_authority", "industry_primary", "reputable_secondary"],
         "query_stages": ["event_identity_and_status", "scope_and_parameters", "impact_and_pre_event_market_baseline"],
@@ -214,8 +214,9 @@ def plan(payload):
         mode, reason = "optional", "Search can supplement but must not replace missing private inputs"
 
     max_calls = profile["max_calls"] if mode in {"required", "optional"} else 0
-    if mode == "optional":
+    if mode == "optional" and max_calls is not None:
         max_calls = min(3 if skill == "event-impact-analysis" else 2, max_calls)
+    event_analysis = skill == "event-impact-analysis"
     source_order = profile["source_order"]
     if skill == "event-impact-analysis":
         event_type = payload.get("event_type", "generic")
@@ -245,22 +246,27 @@ def plan(payload):
         "skill": skill,
         "as_of": payload.get("as_of"),
         "max_calls": max_calls,
-        "max_calls_is_hard_limit": True,
-        "repair_calls_reserved_min": 1 if max_calls else 0,
+        "max_calls_is_hard_limit": not event_analysis,
+        "repair_calls_reserved_min": 0 if event_analysis else (1 if max_calls else 0),
         "event_type": payload.get("event_type") if skill == "event-impact-analysis" else None,
         "source_order": source_order,
         "tool_order": profile["tool_order"],
-        "query_stages": profile["query_stages"][:max_calls],
+        "query_stages": [] if event_analysis else profile["query_stages"][:max_calls],
         "stage_contract": (
             {
-                "ordered": True,
-                "advance_requires_previous_stage_pass": True,
+                "ordered": False,
+                "advance_requires_previous_stage_pass": False,
                 "identity_status_failure_action": "stop_quantification_and_preserve_unknown",
             }
             if skill == "event-impact-analysis"
             else None
         ),
-        "requirements": [
+        "requirements": ([
+            "query only for facts needed by the current event question",
+            "verify policy status with the issuing authority when legal effect matters",
+            "use a comparable pre-event baseline when assessing whether markets already reacted",
+            "stop searching when the current judgment has enough support",
+        ] if event_analysis else [
             "script availability is not task execution; help/import does not count",
             "transport status and evidence status are separate",
             "Seed market fields may be supported but never establish event identity or legal status",
@@ -273,7 +279,7 @@ def plan(payload):
             "secondary sources may explain but cannot carry critical numbers",
             "unknown remains unknown when primary evidence is unavailable",
             "stop when the evidence contract is met; do not fill the call budget",
-        ],
+        ]),
         "signals": {
             key: payload.get(key)
             for key in [

@@ -31,26 +31,6 @@ def load(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def sections(text):
-    found = {}
-    current = None
-    for line in text.splitlines():
-        match = re.match(r"^##\s+(.+?)\s*$", line)
-        if match:
-            current = re.sub(r"^\[[^\]]+\]\s*", "", match.group(1)).strip()
-            found[current] = []
-        elif current is not None:
-            found[current].append(line)
-    return {name: "\n".join(body).strip() for name, body in found.items()}
-
-
-def find_section(parsed, aliases):
-    for alias in aliases:
-        if alias in parsed:
-            return alias, parsed[alias]
-    return None, ""
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("report")
@@ -75,17 +55,6 @@ def main():
     if not mode_config:
         errors.append(f"unsupported or missing mode: {mode}")
         mode_config = {}
-    parsed = sections(text)
-    for spec in mode_config.get("required_sections", []):
-        name, body = find_section(parsed, spec["aliases"])
-        if not name:
-            errors.append(f"missing section: {spec['aliases'][0]}")
-            continue
-        if len(re.sub(r"\s+", "", body)) < spec.get("min_chars", 20):
-            errors.append(f"section too thin: {name}")
-        if spec.get("fact_binding") and not FACT_RE.search(body):
-            errors.append(f"section has no fact binding: {name}")
-
     patterns = COMMON_BANNED + config.get("banned_patterns", [])
     for pattern in patterns:
         if re.search(pattern, text, re.I):
@@ -103,18 +72,8 @@ def main():
     }
     for ref in sorted(refs - known):
         errors.append(f"unknown fact binding: {ref}")
-    if not refs:
-        errors.append("report has no fact bindings")
-    if "来源" not in text and "Sources" not in text:
-        errors.append("source disclosure missing")
-    if (
-        "局限" not in text
-        and "限制" not in text
-        and "Limitations" not in text
-    ):
-        errors.append("limitations disclosure missing")
-    if "不构成" not in text and "does not constitute" not in text.lower():
-        errors.append("financial disclaimer missing")
+    if re.search(r"\[(?:一手|库|用户|推算|待核|阈值)·[^\]]+\]", text):
+        errors.append("internal source labels exposed in report")
 
     for item in warnings:
         print("WARNING:", item)

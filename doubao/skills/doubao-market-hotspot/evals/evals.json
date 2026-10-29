@@ -3,19 +3,11 @@
     "id": "event-impact-analysis-01",
     "type": "positive",
     "prompt": "分析一项出口管制政策对半导体设备公司和产业链的影响。",
-    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "expected": "围绕当前事件与用户问题作商业判断，重要事实有来源，不强制固定章节。",
     "assertions": [
       {
         "type": "route_to",
         "value": "event-impact-analysis"
-      },
-      {
-        "type": "must_include",
-        "value": "来源"
-      },
-      {
-        "type": "must_include",
-        "value": "局限"
       },
       {
         "type": "must_not_include",
@@ -23,14 +15,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       }
     ]
@@ -39,19 +23,11 @@
     "id": "event-impact-analysis-02",
     "type": "positive",
     "prompt": "油价突然上涨20%，对航空、化工和新能源公司的影响是什么？",
-    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "expected": "围绕当前事件与用户问题作商业判断，重要事实有来源，不强制固定章节。",
     "assertions": [
       {
         "type": "route_to",
         "value": "event-impact-analysis"
-      },
-      {
-        "type": "must_include",
-        "value": "来源"
-      },
-      {
-        "type": "must_include",
-        "value": "局限"
       },
       {
         "type": "must_not_include",
@@ -59,14 +35,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       }
     ]
@@ -75,19 +43,11 @@
     "id": "event-impact-analysis-03",
     "type": "positive",
     "prompt": "分析某公司并购交易的通过路径、失败情景和市场定价。",
-    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "expected": "围绕当前事件与用户问题作商业判断，重要事实有来源，不强制固定章节。",
     "assertions": [
       {
         "type": "route_to",
         "value": "event-impact-analysis"
-      },
-      {
-        "type": "must_include",
-        "value": "来源"
-      },
-      {
-        "type": "must_include",
-        "value": "局限"
       },
       {
         "type": "must_not_include",
@@ -95,14 +55,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       }
     ]
@@ -111,19 +63,11 @@
     "id": "event-impact-analysis-04",
     "type": "positive",
     "prompt": "某监管政策落地，对平台经济公司的盈利和估值有什么影响？",
-    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "expected": "围绕当前事件与用户问题作商业判断，重要事实有来源，不强制固定章节。",
     "assertions": [
       {
         "type": "route_to",
         "value": "event-impact-analysis"
-      },
-      {
-        "type": "must_include",
-        "value": "来源"
-      },
-      {
-        "type": "must_include",
-        "value": "局限"
       },
       {
         "type": "must_not_include",
@@ -131,14 +75,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       }
     ]
@@ -147,19 +83,11 @@
     "id": "event-impact-analysis-05",
     "type": "positive",
     "prompt": "分析一次供应链中断的一阶、二阶和三阶影响，并给监控指标。",
-    "expected": "应触发并按输入、来源、工作流、输出和质量门禁执行",
+    "expected": "围绕当前事件与用户问题作商业判断，重要事实有来源，不强制固定章节。",
     "assertions": [
       {
         "type": "route_to",
         "value": "event-impact-analysis"
-      },
-      {
-        "type": "must_include",
-        "value": "来源"
-      },
-      {
-        "type": "must_include",
-        "value": "局限"
       },
       {
         "type": "must_not_include",
@@ -167,14 +95,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       }
     ]
@@ -190,28 +110,12 @@
         "value": "event-impact-analysis"
       },
       {
-        "type": "must_ask",
-        "value": true
-      },
-      {
         "type": "must_not_include",
         "value": "伪造数据"
       },
       {
         "type": "no_unresolved_fact_binding",
         "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
-        "value": true
-      },
-      {
-        "type": "max_clarifying_questions",
-        "value": 3
       }
     ]
   },
@@ -226,28 +130,12 @@
         "value": "event-impact-analysis"
       },
       {
-        "type": "must_ask",
-        "value": true
-      },
-      {
         "type": "must_not_include",
         "value": "伪造数据"
       },
       {
         "type": "no_unresolved_fact_binding",
         "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
-        "value": true
-      },
-      {
-        "type": "max_clarifying_questions",
-        "value": 3
       }
     ]
   },
@@ -262,28 +150,12 @@
         "value": "event-impact-analysis"
       },
       {
-        "type": "must_ask",
-        "value": true
-      },
-      {
         "type": "must_not_include",
         "value": "伪造数据"
       },
       {
         "type": "no_unresolved_fact_binding",
         "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
-        "value": true
-      },
-      {
-        "type": "max_clarifying_questions",
-        "value": 3
       }
     ]
   },
@@ -299,14 +171,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       },
       {
@@ -327,14 +191,6 @@
       },
       {
         "type": "no_unresolved_fact_binding",
-        "value": true
-      },
-      {
-        "type": "numeric_claim_requires_inline_source",
-        "value": true
-      },
-      {
-        "type": "prioritize_first_party_sources",
         "value": true
       },
       {

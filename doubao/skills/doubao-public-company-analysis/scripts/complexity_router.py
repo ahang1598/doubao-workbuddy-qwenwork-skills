@@ -24,16 +24,13 @@ BRIEF_RE = re.compile(
 TIER_CONFIG = {
     "company-analysis": {
         "direct": {
-            "target_chars": 1400,
-            "slots": ["bottom_line", "minimum_evidence", "counterpoint", "limitations"],
+            "scope": "answer the specific question",
         },
         "brief": {
-            "target_chars": 2600,
-            "slots": ["bottom_line", "evidence_chain", "countercase", "verification_queue", "sources"],
+            "scope": "explain the relevant business and financial drivers",
         },
         "full": {
-            "target_chars": 5200,
-            "slots": ["executive_summary", "business", "competition", "financial_quality", "valuation_boundary", "countercase", "risks", "sources"],
+            "scope": "form a complete investment view around the user's decision",
         },
     },
     "investment-opportunity-screening": {

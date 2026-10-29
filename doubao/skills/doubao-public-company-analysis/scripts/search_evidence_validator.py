@@ -51,31 +51,26 @@ def validate(payload):
     warnings = []
     as_of = date_value(payload.get("as_of"))
     freeze = payload.get("freeze_point", {})
-    for field in ("latest_fy", "latest_reported_period", "checked_at"):
-        if not freeze.get(field):
-            errors.append(f"freeze_point.{field} missing")
-    if not freeze.get("ir_or_exchange_checked"):
-        errors.append("freeze_point IR/exchange probe not completed")
+    if freeze:
+        for field in ("latest_fy", "latest_reported_period", "checked_at"):
+            if not freeze.get(field):
+                errors.append(f"freeze_point.{field} missing")
+        if freeze.get("ir_or_exchange_checked") is False:
+            errors.append("freeze_point IR/exchange probe marked incomplete")
     if freeze.get("newer_filing_exists"):
         errors.append("latest_reported_period is stale at freeze point")
     slots = payload.get("evidence_slots", [])
-    if not 8 <= len(slots) <= 15:
-        errors.append("evidence_slots must contain 8-15 required items")
     for index, slot in enumerate(slots):
-        for field in ("id", "fact_needed", "allowed_source_types", "period", "affected_claim_ids", "status"):
+        for field in ("id", "fact_needed", "status"):
             if not slot.get(field):
                 errors.append(f"evidence_slots[{index}].{field} missing")
     if payload.get("contract_version") == "P2":
         by_kind = {
             slot.get("slot_kind"): slot for slot in slots if slot.get("slot_kind")
         }
-        required_core = set(P2_CORE_SLOTS)
-        if payload.get("company_cash_metric_used"):
-            required_core.add("company_cash_metric_definition")
-        for kind in sorted(required_core):
+        for kind in sorted(by_kind):
             slot = by_kind.get(kind)
-            if not slot:
-                errors.append(f"P2 core evidence slot missing: {kind}")
+            if kind not in P2_CORE_SLOTS and kind != "company_cash_metric_definition":
                 continue
             availability = slot.get("availability")
             status = slot.get("status")
@@ -94,14 +89,9 @@ def validate(payload):
         if payload.get("analysis_ready") is True and any(
             by_kind.get(kind, {}).get("availability") == "available"
             and by_kind.get(kind, {}).get("status") != "covered"
-            for kind in required_core
+            for kind in by_kind if kind in P2_CORE_SLOTS
         ):
             errors.append("analysis_ready set before available first-party core slots covered")
-        if payload.get("global_degraded") and all(
-            by_kind.get(kind, {}).get("status") == "covered"
-            for kind in P2_CORE_SLOTS
-        ):
-            errors.append("global degradation invalid when first-party core is covered")
     claims = payload.get("claims")
     if not isinstance(claims, list) or not claims:
         return {

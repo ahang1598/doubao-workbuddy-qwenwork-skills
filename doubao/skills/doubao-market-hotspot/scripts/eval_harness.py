@@ -259,10 +259,9 @@ def execute_assertion(assertion, text, metadata):
         passed = (
             route is not None
             and bool(REFUSAL.search(text))
-            and len(text) <= 800
             and not DOMAIN_HEADING.search(text)
         )
-        return passed, f"route={route!r}, chars={len(text)}, refusal={bool(REFUSAL.search(text))}"
+        return passed, f"route={route!r}, refusal={bool(REFUSAL.search(text))}"
     if kind == "max_clarifying_questions":
         count = question_count(text)
         return count <= value, f"clarifying questions: {count}, maximum: {value}"

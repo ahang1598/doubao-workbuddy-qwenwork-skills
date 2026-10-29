@@ -1,7 +1,7 @@
-# 交付复杂度路由
+# 按问题选择篇幅
 
-- `direct`：软目标 1400 中文字符；必需槽位：bottom_line、minimum_evidence、counterpoint、limitations
-- `brief`：软目标 2600 中文字符；必需槽位：bottom_line、evidence_chain、countercase、verification_queue、sources
-- `full`：软目标 5200 中文字符；必需槽位：executive_summary、business、competition、financial_quality、valuation_boundary、countercase、risks、sources
+- `direct`：回答一个自然问题，用最必要的事实支持判断。
+- `brief`：聚焦多步骤问题，展开会影响决定的商业、财务或估值因素。
+- `full`：用户明确要求完整研究时，覆盖相关方面并提供必要来源。
 
-字符数仅用于写作压缩，不是交付失败条件。只有 provider 的 incomplete、finish_reason=length/max_tokens 或结构截断触发安全上限失败。用户问题越短不代表可以省略直接结论；证据搜索复杂度不自动扩大最终输出。
+篇幅由问题、证据和读者理解需要决定，不设字符或 token 目标。搜索资料多不意味着正文必须变长；需要复核的细节放附录。输出被系统截断时补全。

@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：283
-- 当前索引文件数：4916
-- 最近变更：[2026-10-28-180005](doubao/change-logs/2026-10-28-180005.md) - Doubao 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/record-operations-to-skill。 受影响范围：skills/record-operations-to-skill。
+- 当前索引文件数：4819
+- 最近变更：[2026-10-29-180008](doubao/change-logs/2026-10-29-180008.md) - Doubao 本次同步新增 5 个文件、修改 125 个文件、删除 102 个文件。 受影响范围：skills/computer-use-automation, skills/doubao-enterprise-search, skills/doubao-market-hotspot, skills/doubao-private-company, sk...
 
 ## 数据来源
 
@@ -115,7 +115,7 @@
 | doubao-earnings-analysis | `doubao/skills/doubao-earnings-analysis` | skill | 23 | 上市公司财报/季报/年报/业绩的深度因果分析，覆盖A股、港股、美股和中概股。用于解读财报表现、亮点/风险、收入利润等指标变动、超预期或低于预期原因，以及针对毛利率、现金流、费用率等具体变量的归因问题。不用于纯股价、估值、评级、目标价、非财报新闻或未锚定具体公司报告期的宏观行业讨论。 |
 | doubao-ecommerce-compliance-tax-logistics | `doubao/skills/doubao-ecommerce-compliance-tax-logistics` | skill | 12 | Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod... |
 | doubao-ecommerce-proposal | `doubao/skills/doubao-ecommerce-proposal` | skill | 5 | 电商活动策划专家。用于生成、改写、优化完整电商活动策划方案，并默认交付一份已经本地落地、可用浏览器打开验证的 HTML 网页版方案。覆盖淘宝/天猫、抖音电商、京东、得物、拼多多、小红书、Amazon、TikTok Shop、Shopee、Lazada、eBay、Shopify/独立站等平台的节点大促、店铺活动、平台活动、直播间活动、品类活动、品牌日、上新、清仓、会员复购、内容种草到成交、站内外联动与跨境电商活动。若用户只要商品标题... |
-| doubao-enterprise-search | `doubao/skills/doubao-enterprise-search` | skill | 1 | 判断是否调用 `enterprise_agentic_search` 工具前，必须先完整读取 `doubao-enterprise-search` skill。适用场景包括：用户显式使用 /doubao-enterprise-search；问题明确或高度可能依赖企业内部资料、内部口径、内部系统、业务背景、历史讨论、协作记录、制度流程、员工权益、差旅报销，或内部产品、项目、客户、业务数据及非飞书通讯录 ID/UID/账号/标识；用户... |
+| doubao-enterprise-search | `doubao/skills/doubao-enterprise-search` | skill | 4 | 判断是否调用 `enterprise_agentic_search` 工具前，必须先完整读取 `doubao-enterprise-search` skill。适用场景包括：用户本轮输入包含 `[企业知识]` 或 `doubao-enterprise-search` 的 Skill 调用标记；问题明确或高度可能依赖企业内部资料、内部口径、内部系统、业务背景、历史讨论、协作记录、制度流程、员工权益、差旅报销，或内部产品、项目、客户、... |
 | doubao-equity-research | `doubao/skills/doubao-equity-research` | skill | 38 | 面向 A 股、港股、美股及其他上市证券的专业股票研究与飞书报告交付，覆盖基本面、财报前瞻与解读、盈利模型更新、市场预期、估值、股价与事件、催化剂与风险、同业比较、股票筛选、论点跟踪、组合风险、市场复盘及跨上市地相对价值。单家标的基本面请优先使用doubao-public-company-analysis；估值建模请调用 doubao‑finance‑model‑builder。 |
 | doubao-finance-model-builder | `doubao/skills/doubao-finance-model-builder` | skill | 116 | 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。 |
 | doubao-finance-sector | `doubao/skills/doubao-finance-sector` | skill | 14 | 分析股票市场板块的识别、异动归因、热度、阶段、内部结构、主线、产业传导、持续性与历史复盘；当问题需要有截止边界的行情证据链、可比计算、情景或可复现文件时使用。 |
@@ -126,7 +126,7 @@
 | doubao-industry-analysis | `doubao/skills/doubao-industry-analysis` | skill | 15 | 针对某一行业（半导体、新能源、医药、消费等）的中长期基本面与产业研究，覆盖行业定义与规模、产业链与竞争格局、政策与驱动力、景气周期、趋势研判与三情景、盈利质量与落地建议。先想清楚这篇报告要证明什么判断（判断主线），再用三级数据分级取证、按固定五大板块写透，最终交付一份可直接用于战略规划、投资决策与商业化落地的飞书深度报告。对于一句话能答的问题，不要凭训练记忆或随手搜索口头作答，一律走本 Skill 的结构化多源论证。不触发并转其他... |
 | doubao-journal-format | `doubao/skills/doubao-journal-format` | skill | 14 | 用于对学术论文类 Word/DOCX 文档进行期刊、学校、会议或课程要求的格式排版与修复。当用户需要把论文原稿套用.docx 模板或明确格式规则、或提到论文排版、期刊投稿格式、学位论文格式、会议论文模板、时使用；如果同一请求同时包含论文 Word 排版和任何非排版任务，必须先停止并询问用户选择“只做格式排版”还是“作为复合任务拆分处理”，在用户明确选择前不得执行排版。不用于论文写作、润色、降重、翻译、代写、文献检索、补引用、验证引... |
 | doubao-listing-localization | `doubao/skills/doubao-listing-localization` | skill | 10 | Cross-border ecommerce Listing and Product Optimization for Amazon, TEMU, Walmart Marketplace, TikTok Shop, Shopify, AliExpress, Etsy, Google Shopping, Shopee, Lazada, Ozon, and other marketplace or independent-store... |
-| doubao-market-hotspot | `doubao/skills/doubao-market-hotspot` | skill | 63 | 把宏观、政策、监管、供需、地缘、行业或公司事件转化为公司、行业与公开市场的因果影响分析，覆盖事件状态、基线、传导渠道、财务与估值影响、直接及高阶影响、priced-in判断、情景、监控与证伪。用于事件影响、政策冲击、跨资产传导和公司事件研究；不要用于无明确事件的公司基本面或普通新闻摘要。 |
+| doubao-market-hotspot | `doubao/skills/doubao-market-hotspot` | skill | 63 | 分析具体宏观、政策、监管、供需、地缘、行业或公司事件对企业、行业及公开市场的影响。适用于判断事件进展、主要传导路径、受影响对象、市场是否已反映事件及后续观察点；不用于没有明确事件的完整公司基本面研究或普通新闻摘要。 |
 | doubao-marketing-material-review | `doubao/skills/doubao-marketing-material-review` | skill | 1 | 营销素材审核。当用户上传待审核的广告宣传语、营销海报、社交媒体推广文案、直播话术等营销素材时，从虚假宣传、夸大宣传、绝对化用语、比较广告、引证数据真实准确性、价格违规、有奖营销、知识产权、风险行业违规宣传（如金融、医疗、三品一械、教育等特殊监管行业）、数据对外披露、不当承诺或表达等维度开展全面审查与风险扫描，对违规点归类、逐条分析判断并直接给出修改建议。当用户提到"营销素材审核""广告文案合规审查""宣传语合规""看看这段宣传/文... |
 | doubao-marketing-plan | `doubao/skills/doubao-marketing-plan` | skill | 5 | 首席营销策划官。用于生成、改写、优化并默认以飞书文档/Lark Doc 交付，以首席营销策划官的全域营销能力，把用户模糊的业务诉求转化为资深操盘手会交付的实战级方案。 |
 | doubao-medical-literature-interpretation | `doubao/skills/doubao-medical-literature-interpretation` | skill | 8 | 医学文献解读 Skill。用户上传或提供医学论文、指南等资料的片段、网页链接、DOI、aka 文件链接、PDF、表格或图片，并要求解读、总结、分析、问答或对比时使用；先阅读内容并判断是否属于医学文献。面向医学领域文献资料，对已给定的一篇或一组医学论文、指南的 PDF、网页、摘要、段落、表格或图片进行总结、问答、逐篇解读、横向比较及方法学评价。需主动检索或扩展文献时改用 doubao-medical-literature-searc... |
@@ -143,13 +143,13 @@
 | doubao-patent-drafting | `doubao/skills/doubao-patent-drafting` | skill | 7 | 用户要求基于技术交底书撰写或修改中国发明、实用新型专利申请文件，或者审查已有权利要求书时使用。典型触发包括“专利撰写”“专利申请”“技术交底书”“权利要求”“说明书”“实用新型”“发明专利”。专利检索、FTO/侵权分析、无效宣告、审查意见答复、商标或著作权是相邻业务：用户只提这些时不适用本流程；与撰写需求混在一起提出时，撰写照常进行，但最终回复必须对其中每一项其他诉求逐一说明处理情况——漏掉任何一项，这次交付就是不完整的。 |
 | doubao-pc-optimizer | `doubao/skills/doubao-pc-optimizer` | skill | 10 | 用户需要清理磁盘垃圾、释放空间、处理电脑卡顿或开机慢、优化 Windows/macOS 性能、提升游戏帧率、生成安全清理脚本，或提到 C 盘满、磁盘空间不足、掉帧、运行慢时使用。 |
 | doubao-personal-info-audit | `doubao/skills/doubao-personal-info-audit` | skill | 69 | 开展中国个人信息保护合规审计、审计触发判断、证据登记与证明力评价、事实和不确定性分析、数据分类、处理活动盘点、法律角色和处理情形识别、适用规则检索、上下位法与配套规范衔接、26模块107子项评价、风险与整改设计，并生成可追溯的Word审计报告和Excel底稿。用于个人信息保护法、网络数据安全、App/SDK、敏感个人信息、未成年人、人脸识别、自动化决策、AI、委托共享、数据出境、监管检查准备及整改复核任务。 |
-| doubao-private-company | `doubao/skills/doubao-private-company` | skill | 163 | 评估一级市场、私募股权或创业项目的初步投资价值，基于BP、Deck、财务和访谈资料输出Screening Report、投资逻辑、红旗、情景、尽调缺口和初步建议。用于项目初筛、是否进入下一轮尽调或是否安排首次会议。不要替代完整尽调、法律意见或正式IC审批。 |
+| doubao-private-company | `doubao/skills/doubao-private-company` | skill | 62 | 评估一级市场、私募股权或创业项目的初步投资价值，基于项目材料和相关公开资料形成商业判断、重大风险与下一步核实建议。适用于项目初筛、管理层会前准备及聚焦问题核查；不替代完整尽调或正式投资决策。 |
 | doubao-product-analysis | `doubao/skills/doubao-product-analysis` | skill | 7 | 围绕具体产品、产品想法或存量方案，产出用于产品进入、定位、竞争策略、上市路径、能力建设与路线图决策的证据型分析报告。适用于“值不值得做或发布”“进入哪个细分”“目标用户和市场是否成立”“竞品为何这样设计”“该借鉴、差异化或放弃什么”“核心能力与 Roadmap 怎么定”“如何调整已有产品”等请求，也适用于将用户研究、市场信息、竞品实测、内部资料和业务约束整合为决策建议。支持 0→1、存量产品调整、竞品专项与组合分析；默认交付为可独... |
 | doubao-product-content | `doubao/skills/doubao-product-content` | skill | 21 | 生成或优化电商商品标题、详情文案和商品页静态图片。 |
 | doubao-product-manager | `doubao/skills/doubao-product-manager` | skill | 15 | 将产品想法、用户反馈、研究数据、云文档、附件和已有方案转化为有依据的产品判断、策略、MVP、优先级、Roadmap、PRD、用户故事、验收标准或方案评审。任务涉及产品决策、需求取舍、存量产品修改、范围变更、上线复盘或产品文档交付时使用，即使用户没有说‘产品经理’；纯转写、翻译、校对、格式转换、资料摘要或已定方案的技术实现不由本 Skill 主导，除非仍需产品判断。用户提供链接、文件、截图、脑图、表格、评论或旧产物时，先读取真实内容。 |
 | doubao-product-qa | `doubao/skills/doubao-product-qa` | skill | 102 | 将 PRD、原型、网页、接口、代码、测试记录和多轮上下文转成可追踪的 QA 基线、风险用例、执行证据、Bug 与发布判断。适用于 Web/API/App/小程序测试、回归、热修复、测试方案、Bug 复核和 QA 收口。用户指定 Markdown、Office、豆包文档/表格/PPT 或飞书载体时严格服从；未指定时默认创建与内容匹配的豆包在线载体。纯开发实现、纯排版和无测试目标的数据分析不触发。 |
 | doubao-product-selection | `doubao/skills/doubao-product-selection` | skill | 1 | 电商选品与品类机会分析技能。根据商家的预算、目标平台、货源优势，按"市场需求×竞争度×利润空间×季节性×复购率"五维打分，输出3-5个候选品类及切入建议。适用于新手不知道卖什么、老商家想拓新品类、想判断某个品值不值得进货的场景。 |
-| doubao-public-company-analysis | `doubao/skills/doubao-public-company-analysis` | skill | 64 | 分析上市公司的商业模式、竞争优势、行业位置、财务质量、估值、风险与投资观点。用于用户要求公司基本面研究、公司深度分析、投资研究或提供公司名称/代码与关注点时。不要用于纯事件影响、批量选股、一级市场项目或个人财富规划。 |
+| doubao-public-company-analysis | `doubao/skills/doubao-public-company-analysis` | skill | 65 | 分析单一上市公司的商业模式、竞争地位、财务质量、估值与主要风险，形成有来源支撑的基本面判断。适用于公司速览、聚焦问题或完整公司研究；不用于批量选股、一级市场项目或个人财富规划。 |
 | doubao-questionnaire-designer | `doubao/skills/doubao-questionnaire-designer` | skill | 6 | 用户研究一站式助手,覆盖四大能力:①问卷设计(按调研目标产出可落地问卷,含试填优化,交付 Word/飞书文档);②访谈提纲(题量按诉求动态确定、含追问轮次/方向/触发条件的深访提纲);③开放题原声打标(五步工作流建立标签体系并批量标注);④定量问卷分析(仅需回收数据,自动识别题型、自动清洗、直接出关键发现/画像/详细发现/原声引用报告)。触发词:设计问卷、写问卷、满意度调研、NPS、访谈提纲、深访提纲、开放题打标、原声编码、VOC... |
 | doubao-record | `doubao/skills/doubao-record` | skill | 1 | 启动当前飞书会话的录音。当用户需要发起录音，或对录音进行中的内容询问的时候，可以使用此技能。用户如果选择了该技能但未做任何输入则默认用户意图为启动录音。 |
 | doubao-reference-audit | `doubao/skills/doubao-reference-audit` | skill | 3 | 用于用户提交论文、学位论文或参考文献清单后，系统审查参考文献真实性、题录准确性、文内—文后对应关系以及正文主张是否得到被引文献支持，并生成专业、清晰、可直接指导修改的论文引用审计报告与飞书文档。用户要求“论文审计”“参考文献检查”“引用核对”“引用是否支持观点”“检查错引、过度推断或二手转引”时使用。开放主题综述、普通论文精读、论文代写或仅做语言润色时不使用。 |
@@ -255,7 +255,7 @@
 | quantitative-audit-recalculation | `doubao/skills/quantitative-audit-recalculation` | skill | 1 | 用于已有明确数据、公式或业务恒等式，需要重算合计、占比、排序、统计指标或边界条件并输出差异证据的场景。预测建模、领域判断或无公式依据的估算不使用。 |
 | quiz-generator | `doubao/skills/quiz-generator` | skill | 1 | 根据学习主题生成不同难度的测验题目，包括选择题、判断题与简答题，附带答案与解析。 |
 | read-local-attachments-first | `doubao/skills/read-local-attachments-first` | skill | 1 | Use when 用户要求基于本地附件开展写作、分析、核对、汇总或清洗，尤其提到“读取附件”“本地文件解析”“Excel清洗”“图片转表格”“解压核对清单”“多源材料整合”“解析失败补救”或“结构化提取”，并需要先检查文件类型、sheet、表头、目录或图片区域再形成可直接使用的依据。 |
-| record-operations-to-skill | `doubao/skills/record-operations-to-skill` | skill | 2 | 当用户要求录制电脑操作演示并生成个人 Skill，录制后要求继续处理，回答生成前的澄清问题，或修改由该录制生成的 Skill 时使用。 |
+| record-operations-to-skill | `doubao/skills/record-operations-to-skill` | skill | 2 | 当用户要求录制电脑操作演示并生成个人 Skill，录制后要求继续处理，回答生成前的澄清问题，或修改由该录制生成的 Skill 时使用；创建后清楚说明适用场景和调用方式。 |
 | recruitment-ops-offer-analytics | `doubao/skills/recruitment-ops-offer-analytics` | skill | 18 | 管理招聘专属政策、候选pipeline当前态与卡点、Offer草案/审批/发送门禁、Offer接受率等实时招聘运营指标，以及Accepted交接；当用户需要招聘进度、录用条款组装、签约前保温或招聘运营指标时使用。不承担Accepted后的完整入职、全员薪酬、绩效、组织规划、全员政策或跨生命周期人才分析。 |
 | reference-curation | `doubao/skills/reference-curation` | skill | 14 | 整理参考文献，核验 DOI 与元数据，输出带证据、冲突、待核实标记的规范结果与引用草稿；支持 BibTeX/JSON/JSONL 书目整理，不做全文下载、会议纪要、论文代写、绕过受限数据库。 |
 | reference-prompt-iteration | `doubao/skills/reference-prompt-iteration` | skill | 1 | 用于已有参考图或参考视频，并需要根据多轮反馈迭代图像或视频提示词、分镜和关键帧计划的场景。不用于无参考素材的通用创作、音频生成或直接制作成片。 |
@@ -314,6 +314,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-29-180008 | [2026-10-29-180008](doubao/change-logs/2026-10-29-180008.md) | Doubao 本次同步新增 5 个文件、修改 125 个文件、删除 102 个文件。 受影响范围：skills/computer-use-automation, skills/doubao-enterprise-search, skills/doubao-market-hotspot, skills/doubao-private-company, sk... |
 | 2026-10-28-180005 | [2026-10-28-180005](doubao/change-logs/2026-10-28-180005.md) | Doubao 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/record-operations-to-skill。 受影响范围：skills/record-operations-to-skill。 |
 | 2026-10-28-141824 | [2026-10-28-141824](doubao/change-logs/2026-10-28-141824.md) | Doubao 本次同步新增 32 个文件、修改 272 个文件、删除 10 个文件。 新增条目：skills/browser-use, skills/general-computer-use。 受影响范围：skills/browser-record-replay, skills/browser-use, skills/byted-mediakit-au... |
 | 2026-10-21-180007 | [2026-10-21-180007](doubao/change-logs/2026-10-21-180007.md) | Doubao 本次同步新增 9 个文件、修改 109 个文件、删除 2 个文件。 受影响范围：skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-creative-video, skills/lark-calendar, skills/lark-mail,... |
@@ -333,4 +334,3 @@
 | 2026-09-14-180008 | [2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) | Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。 |
 | 2026-09-13-180003 | [2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) | Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br... |
 | 2026-09-11-180008 | [2026-09-11-180008](doubao/change-logs/2026-09-11-180008.md) | Doubao 本次同步新增 11 个文件、修改 49 个文件、删除 39 个文件。 新增条目：skills/lark-workflow-meeting-summary。 移除条目已归档：skills/html。 受影响范围：skills/doubao-app-builder, skills/doubao-pc-optimizer, skills/dou... |
-| 2026-09-10-180013 | [2026-09-10-180013](doubao/change-logs/2026-09-10-180013.md) | Doubao 本次同步新增 30 个文件、修改 45 个文件、删除 0 个文件。 受影响范围：skills/doubao-visualization, skills/html, skills/ppt, skills/sheet。 |

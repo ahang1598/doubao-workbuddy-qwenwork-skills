@@ -65,9 +65,8 @@ def test_no_routing_to_unshipped_skill():
 
 def test_out_of_scope_does_not_dead_end():
     text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-    assert "不得把回答收尾在这五个之外的 Skill 名上" in text
-    assert "无已上线 Skill 可承接" in text
-    # 旧的一刀切停止指令不得复活
+    assert "用户无需指定模式" in text
+    assert "缺资料时先回答能回答的部分" in text
     assert "不适用时只返回正确相邻任务和下一步输入，然后停止。" not in text
 
 

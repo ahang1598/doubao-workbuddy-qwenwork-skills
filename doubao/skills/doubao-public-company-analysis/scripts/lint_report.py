@@ -25,6 +25,7 @@ SENSITIVE = [
     r"\b1[3-9]\d{9}\b",
 ]
 FACT_RE = re.compile(r"\{fact:([A-Za-z0-9_.-]+)\}")
+AUDIT_TAG = re.compile(r"\[(?:一手|库|用户|推算|待核|阈值)·[^\]]+\]")
 INVALID_REFUSAL_RE = re.compile(
     r"(?:无法|不能|不足以)(?:完成|分析|判断|估值).{0,30}"
     r"(?:因此|所以)?(?:停止|不再|无法继续|仅列|只能列)",
@@ -92,17 +93,6 @@ def main():
     if not mode_config:
         errors.append(f"unsupported or missing mode: {mode}")
         mode_config = {}
-    parsed = sections(text)
-    for spec in mode_config.get("required_sections", []):
-        name, body = find_section(parsed, spec["aliases"])
-        if not name:
-            errors.append(f"missing section: {spec['aliases'][0]}")
-            continue
-        if len(re.sub(r"\s+", "", body)) < spec.get("min_chars", 20):
-            errors.append(f"section too thin: {name}")
-        if spec.get("fact_binding") and not FACT_RE.search(body):
-            errors.append(f"section has no fact binding: {name}")
-
     patterns = COMMON_BANNED + config.get("banned_patterns", [])
     for pattern in patterns:
         if re.search(pattern, text, re.I):
@@ -120,33 +110,15 @@ def main():
     }
     for ref in sorted(refs - known):
         errors.append(f"unknown fact binding: {ref}")
-    if not refs:
-        errors.append("report has no fact bindings")
-    if "来源" not in text and "Sources" not in text:
-        errors.append("source disclosure missing")
-    if (
-        "局限" not in text
-        and "限制" not in text
-        and "Limitations" not in text
-    ):
-        errors.append("limitations disclosure missing")
-    if "不构成" not in text and "does not constitute" not in text.lower():
-        errors.append("financial disclaimer missing")
+    main_text = re.split(r"^##\s+(?:附录|来源账|证据附录)", text, maxsplit=1, flags=re.M)[0]
+    if AUDIT_TAG.search(main_text):
+        errors.append("machine source tag exposed in main text")
     if INVALID_REFUSAL_RE.search(text):
         errors.append("invalid global refusal: use local capability/unknown instead")
     if FCF_PROXY_RE.search(text):
         errors.append("FCF uses operating-profit proxy instead of cash-flow statement")
     if RIGHTS_FIXED_DILUTION_RE.search(text):
         errors.append("variable rights/content cost treated as fixed-cost dilution")
-    content_lines = [
-        line.strip() for line in text.splitlines()
-        if line.strip() and not line.lstrip().startswith(("#", "|", "{fact:"))
-    ]
-    gap_lines = [line for line in content_lines if GAP_LINE_RE.search(line)]
-    if content_lines and len(gap_lines) / len(content_lines) > 0.6:
-        errors.append("output is primarily a gap checklist")
-    if not CONCLUSION_RE.search(text):
-        errors.append("direct conclusion missing")
 
     for item in warnings:
         print("WARNING:", item)

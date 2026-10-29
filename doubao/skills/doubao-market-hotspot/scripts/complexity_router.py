@@ -80,16 +80,13 @@ TIER_CONFIG = {
     },
     "event-impact-analysis": {
         "direct": {
-            "target_chars": 1400,
-            "slots": ["bottom_line", "causal_chain", "winners_losers_or_unknown", "conditions"],
+            "slots": ["answer", "main_reason", "key_condition"],
         },
         "brief": {
-            "target_chars": 2800,
-            "slots": ["event_status", "mechanisms", "impact_matrix", "financial_mapping", "countercase", "monitoring"],
+            "slots": ["answer", "material_transmission", "decision_changing_unknown"],
         },
         "full": {
-            "target_chars": 5400,
-            "slots": ["event_status", "mechanism_decomposition", "transmission", "impact_matrix", "financial_mapping", "priced_in_boundary", "scenarios", "countercase", "monitoring", "sources"],
+            "slots": ["answer", "relevant_event_analysis", "necessary_evidence_and_limits"],
         },
     },
 }

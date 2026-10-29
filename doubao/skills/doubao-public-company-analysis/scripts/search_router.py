@@ -8,11 +8,11 @@ from pathlib import Path
 
 PROFILES = {
     "company-analysis-seed-finance": {
-        "max_calls": 5,
+        "max_calls": None,
         "tool_order": ["seed_finance_search", "general_search"],
         "fallback_tool_order": ["general_search"],
-        "first_external_call": "claim_driven:highest_priority_evidence_slot",
-        "repair_calls_reserved_min": 1,
+        "first_external_call": "most_relevant_fact_for_current_question",
+        "repair_calls_reserved_min": 0,
         "source_order": ["regulator_filing", "company_ir", "official_transcript", "reputable_secondary"],
         "query_stages": [
             "identity_period_and_first_party_anchor",
@@ -211,35 +211,40 @@ def plan(payload):
         mode, reason = "optional", "Search can supplement but must not replace missing private inputs"
 
     max_calls = profile["max_calls"] if mode in {"required", "optional"} else 0
-    if mode == "optional":
+    if mode == "optional" and max_calls is not None:
         max_calls = min(2, max_calls)
+    public_company = skill == "company-analysis-seed-finance"
     return {
         "mode": mode,
         "reason": reason,
         "skill": skill,
         "as_of": payload.get("as_of"),
         "max_calls": max_calls,
-        "max_calls_is_hard_limit": True,
+        "max_calls_is_hard_limit": not public_company,
         "source_order": profile["source_order"],
         "tool_order": profile["tool_order"],
         "fallback_tool_order": profile.get("fallback_tool_order", []),
         "first_external_call": profile.get("first_external_call"),
         "repair_calls_reserved_min": profile.get("repair_calls_reserved_min", 0),
-        "query_stages": profile["query_stages"][:max_calls],
-        "query_required_dimensions": [
+        "query_stages": [] if public_company else profile["query_stages"][:max_calls],
+        "query_required_dimensions": [] if public_company else [
             "company_or_ticker",
             "market",
             "reporting_period",
             "metric_or_doc_type",
             "as_of",
         ],
-        "required_search_artifacts": [
+        "required_search_artifacts": [] if public_company else [
             "query_log",
             "evidence_atoms",
             "coverage_gaps",
             "claim_ledger",
         ],
-        "requirements": [
+        "requirements": ([
+            "query only facts needed for the current question",
+            "keep important figures traceable to their source and period",
+            "identify material source conflicts and stop when evidence is sufficient",
+        ] if public_company else [
             "freeze object, period, jurisdiction and deliverable before Search",
             "probe IR and exchange pages for the latest filing before analysis",
             "use seed_finance_search for eligible standardized finance fields and general_search for claims requiring primary specific evidence",
@@ -263,7 +268,7 @@ def plan(payload):
             "call tools using the host's actual schema; never invent parameters",
             "record query_log, evidence_atoms, coverage_gaps and claim ledger",
             "database values and internal estimates are not company disclosure",
-        ],
+        ]),
         "signals": {
             key: payload.get(key)
             for key in [

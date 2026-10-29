@@ -12,12 +12,10 @@ ALLOWED_ASSERTIONS = {
     "route_to",
     "route_not_to",
     "must_ask",
-    "must_refuse",
     "must_include",
     "must_not_include",
     "capability",
     "tool_exit",
-    "must_stop_after_route",
     "max_clarifying_questions",
     "no_unresolved_fact_binding",
     "numeric_claim_requires_inline_source",
@@ -26,7 +24,6 @@ ALLOWED_ASSERTIONS = {
 CASE_TYPES = {"positive", "edge", "negative", "adversarial"}
 TEXT_FIELDS = ("text", "response", "output")
 QUESTION = re.compile(r"[?？]|(?:请|需要|能否|是否).{0,18}(?:补充|确认|提供|说明)")
-REFUSAL = re.compile(r"不适用|不属于|不能|无法|拒绝|应使用|请改用|建议改用|超出")
 FACT_PLACEHOLDER = re.compile(
     r"\{fact:[^}]+\}|\[(?:TODO|TBD|待确认|待补充)[^\]]*\]|<fact[^>]*>",
     re.IGNORECASE,
@@ -42,7 +39,6 @@ INLINE_SOURCE = re.compile(
 ROUTE_LINE = re.compile(
     r"(?im)^\s*(?:selected[_ -]?skill|route|路由|技能)\s*[:：=]\s*[`\"']?([a-z0-9][\w.-]*)"
 )
-DOMAIN_HEADING = re.compile(r"(?m)^#{1,3}\s+(?:财务|估值|候选|情景|投资观点|分析)")
 FIRST_PARTY_WORDS = re.compile(
     r"官方|公司公告|公司年报|财报|监管|交易所|政府|招股书|SEC filing|annual report|investor relations",
     re.IGNORECASE,
@@ -118,8 +114,6 @@ def validate_cases(payload):
                 errors.append(f"{location} requires non-negative value/count")
             elif kind in {
                 "must_ask",
-                "must_refuse",
-                "must_stop_after_route",
                 "no_unresolved_fact_binding",
                 "numeric_claim_requires_inline_source",
                 "prioritize_first_party_sources",
@@ -250,19 +244,6 @@ def execute_assertion(assertion, text, metadata):
     if kind == "must_ask":
         passed = not bool(value) or bool(QUESTION.search(text))
         return passed, f"clarifying questions detected: {question_count(text)}"
-    if kind == "must_refuse":
-        passed = not bool(value) or bool(REFUSAL.search(text))
-        return passed, f"refusal language detected: {bool(REFUSAL.search(text))}"
-    if kind == "must_stop_after_route":
-        if not value:
-            return True, "assertion disabled"
-        passed = (
-            route is not None
-            and bool(REFUSAL.search(text))
-            and len(text) <= 800
-            and not DOMAIN_HEADING.search(text)
-        )
-        return passed, f"route={route!r}, chars={len(text)}, refusal={bool(REFUSAL.search(text))}"
     if kind == "max_clarifying_questions":
         count = question_count(text)
         return count <= value, f"clarifying questions: {count}, maximum: {value}"

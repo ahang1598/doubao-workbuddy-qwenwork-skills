@@ -1,51 +1,7 @@
-# 公司分析 facts.json
+# 可选的结构化事实记录
 
-## 顶层结构
+普通公司问答无需创建 `facts.json`。用户要求可复核清单、财务模型或需要反复计算时，可使用 `schemas/facts.example.json` 记录重要事实、假设与计算。
 
-```json
-{
-  "meta": {
-    "case_type": "company-analysis-seed-finance",
-    "as_of": "YYYY-MM-DD",
-    "market_or_jurisdiction": "",
-    "mode": ""
-  },
-  "claims": [],
-  "assumptions": [],
-  "data_gaps": [],
-  "payload": {
-    "business_model": null, "financial_periods": null, "valuation_inputs": null, "thesis": null, "risks": null
-  }
-}
-```
+记录应保留对应公司与指标、报告期、单位、币种、来源、是否为公司披露或外部估计，以及计算输入与公式。字段用于复核，不要求正文每个数字都有机器 Claim，也不把 `{fact:...}` 或其他内部标记交给读者。
 
-## Claim
-
-```json
-{
-  "claim_id": "unique-id",
-  "statement": "读者可理解的事实或判断",
-  "claim_type": "fact|estimate|inference|assumption|management_claim",
-  "period": "YYYY / YYYY-Qx / as-of date",
-  "value": null,
-  "unit": "",
-  "currency": "",
-  "source": "材料名称",
-  "source_date": "YYYY-MM-DD",
-  "url": "",
-  "confidence": "high|medium|low",
-  "calculation": "",
-  "input_claims": []
-}
-```
-
-## 硬规则
-
-- claim_id 唯一且只含字母、数字、点、下划线和短横线。
-- fact 和 management_claim 必须有来源与日期；无公开 URL 可留空，但来源名不可空。
-- estimate/inference/assumption 必须使用限制语。
-- value 存在时必须填写 unit；涉及金额时填写 currency。
-- calculation 存在时必须列 input_claims。
-- data_gaps 写明缺什么、影响哪个结论、如何补齐。
-
-完整机器示例见 `schemas/facts.example.json`，交付前运行 `validate_facts.py`。
+需要运行校验脚本时，按脚本接受的格式提供输入；普通问答只需在关键数字附近给可读的来源链接或脚注。

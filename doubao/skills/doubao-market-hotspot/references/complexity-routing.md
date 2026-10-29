@@ -1,7 +1,7 @@
-# 交付复杂度路由
+# 交付深度
 
-- `direct`：软目标 1400 中文字符；必需槽位：bottom_line、causal_chain、winners_losers_or_unknown、conditions
-- `brief`：软目标 2800 中文字符；必需槽位：event_status、mechanisms、impact_matrix、financial_mapping、countercase、monitoring
-- `full`：软目标 5400 中文字符；必需槽位：event_status、mechanism_decomposition、transmission、impact_matrix、financial_mapping、priced_in_boundary、scenarios、countercase、monitoring、sources
+- 简单问题：直接回答最可能的影响、原因和关键前提。
+- 聚焦分析：解释本题相关的事件状态、传导机制、受影响对象及主要未知。
+- 完整报告：用户明确要求时，展开有证据支撑的相关部分，并交付一份主 Markdown。
 
-字符数仅用于写作压缩，不是交付失败条件。只有 provider 的 incomplete、finish_reason=length/max_tokens 或结构截断触发安全上限失败。用户问题越短不代表可以省略直接结论；证据搜索复杂度不自动扩大最终输出。
+不设字符、token 或必填栏目目标。研究复杂度不会自动放大正文；输出被系统截断时应补全再交付。

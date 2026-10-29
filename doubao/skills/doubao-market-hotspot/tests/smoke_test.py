@@ -34,7 +34,7 @@ def main():
             title=spec["aliases"][0];content="这是有实质内容的测试段落，说明来源、假设、机制与局限。"
             if spec.get("fact_binding"):content+=" {fact:example_fact}"
             body+=["",f"## {title}","",content]
-        body+=["","本报告仅供研究参考，不构成投资建议。"]
+        body+=["","政策如果正式生效，相关公司的成本可能上升；具体幅度取决于适用范围。"]
         report=temp/"report.md";report.write_text("\n".join(body),encoding="utf-8")
         result=run(ROOT/"scripts/finalize_report.py",report,facts);assert result.returncode==0,result.stdout+result.stderr
         assert report.with_name("report-display.md").exists()

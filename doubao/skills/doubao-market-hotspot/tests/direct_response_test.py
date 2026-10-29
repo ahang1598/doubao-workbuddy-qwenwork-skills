@@ -13,6 +13,8 @@ def main():
         number=temp/"number.md";number.write_text("毛利率为35%，没有来源。",encoding="utf-8")
         assert run(number).returncode!=0
         route=temp/"route.md";route.write_text("当前请求不适用，请使用相邻任务。\n"+"扩写"*500,encoding="utf-8")
+        assert run(route,"--route-only").returncode==0
+        route.write_text("当前请求不适用。\n\n## 估值\n此处不应继续分析。",encoding="utf-8")
         assert run(route,"--route-only").returncode!=0
     print("PASS event-impact-analysis direct response");return 0
 if __name__=="__main__":raise SystemExit(main())

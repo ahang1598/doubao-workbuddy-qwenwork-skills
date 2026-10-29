@@ -9,6 +9,7 @@ from pathlib import Path
 INTERNAL_MARKERS = [
     re.compile(r"\{fact:[^}]+\}"),
     re.compile(r"\b(?:facts\.json|analysis-plan|source-plan)\b", re.I),
+    re.compile(r"\[(?:一手|库|用户|推算|待核|阈值)·[^\]]+\]"),
 ]
 TRADE_PATTERNS = [
     re.compile(r"建议(?:立即|马上)?(?:买入|卖出|加仓|减仓)"),
@@ -22,6 +23,7 @@ CRITICAL_NUMBER = re.compile(
     re.I,
 )
 URL = re.compile(r"https?://\S+")
+FOOTNOTE_REF = re.compile(r"\[\^([A-Za-z0-9_-]+)\]")
 LOW_QUALITY = re.compile(
     r"(?:xueqiu\.com|caifuhao\.eastmoney\.com|book118\.com|renrendoc\.com|"
     r"wenku\.baidu\.com|docin\.com|fanwen|csdn\.net|cofool\.com)",
@@ -81,26 +83,20 @@ def main():
             for match in CRITICAL_NUMBER.finditer(paragraph)
         }
         user_supplied = bool(paragraph_numbers & prompt_numbers)
-        if CRITICAL_NUMBER.search(paragraph) and not URL.search(nearby) and not user_supplied:
-            errors.append(f"paragraph {index}: critical number has no inline URL")
+        sourced_footnote = any(
+            re.search(r"^\[\^" + re.escape(ref) + r"\]:\s*.*https?://", text, re.M)
+            for ref in FOOTNOTE_REF.findall(paragraph)
+        )
+        if CRITICAL_NUMBER.search(paragraph) and not URL.search(nearby) and not sourced_footnote and not user_supplied:
+            errors.append(f"paragraph {index}: critical number has no nearby source link or sourced footnote")
         if CRITICAL_NUMBER.search(paragraph) and LOW_QUALITY.search(paragraph):
             warnings.append(f"paragraph {index}: critical number uses low-quality source")
     if args.route_only:
-        if len(text) > 800:
-            errors.append("route-only response exceeds 800 characters")
         if re.search(r"##\s+(?:财务|估值|候选|情景|投资观点)", text):
             errors.append("route-only response continued into domain analysis")
     else:
         if INVALID_REFUSAL.search(text):
             errors.append("invalid global refusal: use local capability/unknown")
-        content_lines = [line.strip() for line in text.splitlines() if line.strip()]
-        gap_lines = [line for line in content_lines if GAP_LINE.search(line)]
-        if content_lines and len(gap_lines) / len(content_lines) > 0.6:
-            errors.append("response is primarily a gap checklist")
-        if len(text) >= 300 and not ANSWER.search(text[:300]):
-            errors.append("direct conclusion missing from opening")
-    if "不构成" not in text and not args.route_only:
-        warnings.append("financial disclaimer missing")
 
     for warning in warnings:
         print("WARNING:", warning)

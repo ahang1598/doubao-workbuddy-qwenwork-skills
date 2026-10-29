@@ -9,6 +9,7 @@ from pathlib import Path
 INTERNAL_MARKERS = [
     re.compile(r"\{fact:[^}]+\}"),
     re.compile(r"\b(?:facts\.json|analysis-plan|source-plan)\b", re.I),
+    re.compile(r"\[(?:一手|库|用户|推算|待核|阈值)·[^\]]+\]"),
 ]
 TRADE_PATTERNS = [
     re.compile(r"建议(?:立即|马上)?(?:买入|卖出|加仓|减仓)"),
@@ -65,13 +66,8 @@ def main():
         if CRITICAL_NUMBER.search(paragraph) and LOW_QUALITY.search(paragraph):
             warnings.append(f"paragraph {index}: critical number uses low-quality source")
     if args.route_only:
-        if len(text) > 800:
-            errors.append("route-only response exceeds 800 characters")
         if re.search(r"##\s+(?:财务|估值|候选|情景|投资观点)", text):
             errors.append("route-only response continued into domain analysis")
-    if "不构成" not in text and not args.route_only:
-        warnings.append("financial disclaimer missing")
-
     for warning in warnings:
         print("WARNING:", warning)
     for error in errors:

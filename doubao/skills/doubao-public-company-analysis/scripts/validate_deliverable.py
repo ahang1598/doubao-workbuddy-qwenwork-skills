@@ -50,29 +50,18 @@ def recompute(calculation):
 
 
 def validate_report(report):
-    """Validate the structured P1 minimum-deliverable contract."""
+    """Check supplied structured facts without requiring an audit template."""
     failures = []
     identity = report.get("identity", {})
-    for key in ("company", "ticker", "exchange", "as_of", "latest_fy", "latest_reported_period"):
-        if not identity.get(key):
-            failures.append(f"identity.{key} missing")
-    if identity.get("freeze_point_checked") is not True:
-        failures.append("freeze-point/latest-filing probe not completed")
-
-    answer = report.get("answer", {})
-    if not answer.get("core_judgment"):
-        failures.append("direct core judgment missing")
-    capabilities = report.get("capabilities", {})
-    if not CAPABILITIES.issubset(capabilities):
-        failures.append("local capability gates incomplete")
+    if identity and not identity.get("company"):
+        failures.append("identity.company missing")
+    if identity.get("freeze_point_checked") is False:
+        failures.append("latest-filing check is marked incomplete")
 
     slots = report.get("evidence_slots", [])
-    if not 8 <= len(slots) <= 15:
-        failures.append("required evidence slots must contain 8-15 items")
     for index, slot in enumerate(slots):
-        for key in ("fact_needed", "allowed_source_types", "period", "affected_claim_ids", "status"):
-            if not slot.get(key):
-                failures.append(f"evidence_slots[{index}].{key} missing")
+        if not slot.get("fact_needed"):
+            failures.append(f"evidence_slots[{index}].fact_needed missing")
 
     claims = report.get("claims", [])
     sources = {source.get("id"): source for source in report.get("sources", [])}
@@ -102,20 +91,14 @@ def validate_report(report):
     required = set(company_type.get("required_metrics", []))
     covered = set(company_type.get("covered_metrics", []))
     blocked = set(company_type.get("blocked_metrics", []))
-    if not company_type.get("type") or not required:
-        failures.append("company-type route or required metrics missing")
-    if not required.issubset(covered | blocked):
+    if required and not required.issubset(covered | blocked):
         failures.append("company-type required metrics neither covered nor blocked")
 
     competition = report.get("competition", {})
-    if not competition.get("named_peers") and not competition.get("blocked_reason"):
-        failures.append("named peer or explicit peer blocker required")
     if competition.get("named_peers") and not competition.get("comparability_notes"):
         failures.append("peer comparability notes missing")
-    if not report.get("financial_quality", {}).get("bridge"):
-        failures.append("financial bridge missing")
-    if report.get("contract_version") == "P2":
-        cashflow = report.get("financial_quality", {}).get("cashflow_basis", {})
+    cashflow = report.get("financial_quality", {}).get("cashflow_basis", {})
+    if cashflow:
         if not cashflow.get("statement_cfo_claim_id"):
             failures.append("P2 FCF requires cash-flow-statement CFO claim")
         if not cashflow.get("cash_capex_claim_ids"):
@@ -137,7 +120,7 @@ def validate_report(report):
 
     valuation = report.get("valuation", {})
     mode = valuation.get("mode")
-    if mode not in {"full", "degraded", "blocked"}:
+    if valuation and mode not in {"full", "degraded", "blocked"}:
         failures.append("valuation.mode invalid")
     elif mode == "full":
         if not valuation.get("as_of") or not valuation.get("method") or not valuation.get("implied_assumptions"):
@@ -145,9 +128,9 @@ def validate_report(report):
     elif mode == "degraded":
         if not valuation.get("method") or not valuation.get("implied_assumptions") or not valuation.get("blocked_inputs"):
             failures.append("degraded valuation requires method, implied assumptions and blocked inputs")
-    elif not valuation.get("blocked_inputs"):
+    elif mode == "blocked" and not valuation.get("blocked_inputs"):
         failures.append("blocked valuation requires blocked_inputs")
-    if report.get("contract_version") == "P2":
+    if valuation:
         market_inputs = valuation.get("market_inputs", [])
         valuation_as_of = valuation.get("as_of")
         input_dates = {
@@ -167,24 +150,13 @@ def validate_report(report):
         elif len(input_dates) > 1 and not valuation.get("blocked_inputs"):
             failures.append("P2 degraded valuation with mixed dates must block precision")
 
-        company_type_name = company_type.get("type")
-        if company_type_name in {"content_platform", "brand_ip_licensing"}:
-            mechanism = company_type.get("content_rights_cost_mechanism", {})
-            if not mechanism.get("variable_components"):
-                failures.append("P2 content business lacks variable rights-cost mechanism")
-            if mechanism.get("assumes_fixed_cost_dilution") is True:
-                failures.append("P2 content rights cost cannot default to fixed-cost dilution")
+    mechanism = company_type.get("content_rights_cost_mechanism", {})
+    if mechanism.get("assumes_fixed_cost_dilution") is True:
+        failures.append("content rights cost cannot default to fixed-cost dilution")
 
-    bear = report.get("bear_case", {})
-    if not bear.get("strongest_counterargument"):
-        failures.append("strongest counterargument missing")
-    if len(bear.get("falsification_signals", [])) < 3:
-        failures.append("at least three observable falsification signals required")
     claim_ids = {claim.get("id") for claim in claims}
     for index, item in enumerate(report.get("unknowns", [])):
         affected = item.get("affected_claim_ids", [])
-        if not affected or not item.get("next_source"):
-            failures.append(f"unknowns[{index}] lacks local impact or next source")
         if any(claim_id not in claim_ids for claim_id in affected):
             failures.append(f"unknowns[{index}] references unknown claim")
     return failures
@@ -196,10 +168,6 @@ def validate(text, contract):
     length = len(text)
     if length < contract.get("min_chars", 0):
         failures.append(f"response too short: {length}")
-    if contract.get("target_chars") and length > contract["target_chars"]:
-        warnings.append(
-            f"response exceeds soft target: {length} > {contract['target_chars']}"
-        )
     if contract.get("max_chars") and length > contract["max_chars"]:
         failures.append(f"response exceeds hard length limit: {length}")
     if contract.get("response_status") == "incomplete":

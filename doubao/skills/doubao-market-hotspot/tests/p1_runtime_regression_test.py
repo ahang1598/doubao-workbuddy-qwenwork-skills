@@ -60,12 +60,9 @@ def test_event_type_search_plans():
     company_plan = plan(company)
     assert company_plan["event_type"] == "company"
     assert company_plan["source_order"][:2] == ["company_ir", "exchange_filing"]
-    assert company_plan["query_stages"] == [
-        "event_identity_and_status",
-        "scope_and_parameters",
-        "impact_and_pre_event_market_baseline",
-    ]
-    assert company_plan["stage_contract"]["advance_requires_previous_stage_pass"]
+    assert company_plan["query_stages"] == []
+    assert company_plan["max_calls_is_hard_limit"] is False
+    assert company_plan["stage_contract"]["advance_requires_previous_stage_pass"] is False
 
     rule = infer_signals(
         "event-impact-analysis",
@@ -82,7 +79,7 @@ def test_event_type_search_plans():
             "event_type": "generic",
         }
     )
-    assert len(optional_plan["query_stages"]) == 3
+    assert optional_plan["query_stages"] == []
 
 
 def test_claim_guard_and_market_baseline():
@@ -172,17 +169,8 @@ def test_evidence_validator_and_finalizer_fail_close():
         facts = ROOT / "schemas" / "facts.example.json"
         config = json.loads((ROOT / "config" / "runtime.json").read_text())
         data = json.loads(facts.read_text())
-        sections = config["modes"][data["meta"]["mode"]]["required_sections"]
-        body = ["# 通用事件分析"]
-        for spec in sections:
-            body += [
-                "",
-                f"## {spec['aliases'][0]}",
-                "",
-                "这是用于验证交付门禁的通用内容，包含机制、来源和局限。 "
-                "{fact:example_fact}",
-            ]
-        body += ["", "本报告仅供研究参考，不构成投资建议。"]
+        assert not config["modes"][data["meta"]["mode"]]["required_sections"]
+        body = ["# 通用事件分析", "", "事件影响取决于公司能否把新增成本转嫁给客户。"]
         report = temp / "report.md"
         report.write_text("\n".join(body), encoding="utf-8")
         quality = temp / "quality.json"
