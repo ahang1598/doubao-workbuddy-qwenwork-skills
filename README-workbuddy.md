@@ -8,7 +8,7 @@
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：636
 - 当前索引文件数：17702
-- 最近变更：[2026-10-28-180005](workbuddy/change-logs/2026-10-28-180005.md) - WorkBuddy 本次同步新增 15 个文件、修改 2 个文件、删除 0 个文件。 新增条目：experts/miniprogram-studio。 受影响范围：experts/miniprogram-studio, skills/prompt-engineering-expert。
+- 最近变更：[2026-10-29-180008](workbuddy/change-logs/2026-10-29-180008.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
 
 ## 数据来源
 
@@ -704,6 +704,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-29-180008 | [2026-10-29-180008](workbuddy/change-logs/2026-10-29-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-10-28-180005 | [2026-10-28-180005](workbuddy/change-logs/2026-10-28-180005.md) | WorkBuddy 本次同步新增 15 个文件、修改 2 个文件、删除 0 个文件。 新增条目：experts/miniprogram-studio。 受影响范围：experts/miniprogram-studio, skills/prompt-engineering-expert。 |
 | 2026-10-20-180008 | [2026-10-20-180008](workbuddy/change-logs/2026-10-20-180008.md) | WorkBuddy 本次同步新增 85 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/vibe-knowledge-film。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-10-17-180008 | [2026-10-17-180008](workbuddy/change-logs/2026-10-17-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 0 个文件、删除 30 个文件。 移除条目已归档：cb_teams_experts/ardot-design-generator。 受影响范围：cb_teams_experts/ardot-design-generator。 |
@@ -723,4 +724,3 @@
 | 2026-09-05-180002 | [2026-09-05-180002](workbuddy/change-logs/2026-09-05-180002.md) | WorkBuddy 本次同步新增 31 个文件、修改 13 个文件、删除 1 个文件。 新增条目：connectors/marketplace/connectors/aidd-saas, connectors/marketplace/connectors/futu-mcp, connectors/marketplace/connectors/tence... |
 | 2026-09-04-180001 | [2026-09-04-180001](workbuddy/change-logs/2026-09-04-180001.md) | WorkBuddy 本次同步新增 94 个文件、修改 19 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/laiye-adp, connectors/marketplace/connectors/magic-agent-token, connectors/marketplace/connect... |
 | 2026-09-03-180002 | [2026-09-03-180002](workbuddy/change-logs/2026-09-03-180002.md) | WorkBuddy 本次同步新增 9 个文件、修改 16 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/dnb-global-data, connectors/marketplace/connectors/intco-ai-platform。 受影响范围：connectors/marketpl... |
-| 2026-09-02-223755 | [2026-09-02-223755](workbuddy/change-logs/2026-09-02-223755.md) | WorkBuddy 本次同步新增 4306 个文件、修改 171 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/deeplink, connectors/marketplace/connectors/dramabuddy, connectors/marketplace/connectors/h... |
