@@ -8,7 +8,7 @@
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：283
 - 当前索引文件数：4819
-- 最近变更：[2026-10-29-180008](doubao/change-logs/2026-10-29-180008.md) - Doubao 本次同步新增 5 个文件、修改 125 个文件、删除 102 个文件。 受影响范围：skills/computer-use-automation, skills/doubao-enterprise-search, skills/doubao-market-hotspot, skills/doubao-private-company, sk...
+- 最近变更：[2026-10-30-180007](doubao/change-logs/2026-10-30-180007.md) - Doubao 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/lark-doc。
 
 ## 数据来源
 
@@ -314,6 +314,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-10-30-180007 | [2026-10-30-180007](doubao/change-logs/2026-10-30-180007.md) | Doubao 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/lark-doc。 |
 | 2026-10-29-180008 | [2026-10-29-180008](doubao/change-logs/2026-10-29-180008.md) | Doubao 本次同步新增 5 个文件、修改 125 个文件、删除 102 个文件。 受影响范围：skills/computer-use-automation, skills/doubao-enterprise-search, skills/doubao-market-hotspot, skills/doubao-private-company, sk... |
 | 2026-10-28-180005 | [2026-10-28-180005](doubao/change-logs/2026-10-28-180005.md) | Doubao 本次同步新增 2 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/record-operations-to-skill。 受影响范围：skills/record-operations-to-skill。 |
 | 2026-10-28-141824 | [2026-10-28-141824](doubao/change-logs/2026-10-28-141824.md) | Doubao 本次同步新增 32 个文件、修改 272 个文件、删除 10 个文件。 新增条目：skills/browser-use, skills/general-computer-use。 受影响范围：skills/browser-record-replay, skills/browser-use, skills/byted-mediakit-au... |
@@ -333,4 +334,3 @@
 | 2026-09-15-180006 | [2026-09-15-180006](doubao/change-logs/2026-09-15-180006.md) | Doubao 本次同步新增 0 个文件、修改 3 个文件、删除 2 个文件。 受影响范围：skills/word。 |
 | 2026-09-14-180008 | [2026-09-14-180008](doubao/change-logs/2026-09-14-180008.md) | Doubao 本次同步新增 40 个文件、修改 1 个文件、删除 61 个文件。 新增条目：skills/word。 受影响范围：skills/lark-doc, skills/word。 |
 | 2026-09-13-180003 | [2026-09-13-180003](doubao/change-logs/2026-09-13-180003.md) | Doubao 本次同步新增 118 个文件、修改 123 个文件、删除 6 个文件。 新增条目：skills/browser-record-replay, skills/html。 移除条目已归档：skills/lark-workflow-meeting-summary。 受影响范围：skills/artifact-preview, skills/br... |
-| 2026-09-11-180008 | [2026-09-11-180008](doubao/change-logs/2026-09-11-180008.md) | Doubao 本次同步新增 11 个文件、修改 49 个文件、删除 39 个文件。 新增条目：skills/lark-workflow-meeting-summary。 移除条目已归档：skills/html。 受影响范围：skills/doubao-app-builder, skills/doubao-pc-optimizer, skills/dou... |

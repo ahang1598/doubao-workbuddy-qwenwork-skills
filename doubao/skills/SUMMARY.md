@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/AppData/Local/Doubao/User Data/Default/.doubao/agent_mode/workspace/.skills`
 - 条目数：283
 - 文件数：4819
-- 最近同步：2026-10-29 18:00:08 +0800
+- 最近同步：2026-10-30 18:00:07 +0800
 
 ## 场景导航（按用途）
 
