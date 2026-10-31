@@ -1,137 +1,76 @@
 # facts.json 规格
 
-`facts.json` 的职责只有一个：给正文里的关键数字和关键判断提供可追溯来源。它不是研究数据库，不需要穷举公告里的每一个数字，只登记正文/表格/后续关注清单里**实际引用**的那些。
+事实表为摘要、正文、表格、图表和后续关注清单中的关键数字与判断提供可追溯来源。它不是研究数据库，只登记最终报告实际引用的事实。完整内容另写在结构化 report.json 中。
 
----
+## 基本结构
 
-## 结构
-
-```json
+~~~json
 {
   "meta": {
-    "company": "恒尚节能",
-    "code": "603137.SH",
+    "company": "示例公司",
+    "code": "000001.SZ",
     "market": "A股",
-    "announcement_type": "监管问询类",
-    "today": "2026-07-22",
-    "announcement_date": "2026-07-13"
+    "announcement_type": "业绩披露类",
+    "today": "2026-10-30",
+    "announcement_date": "2026-10-20"
   },
   "claims": [
     {
-      "claim_id": "np_2025",
-      "text": "标的公司金胜电子2025年净利润4187万元，同比增长189.5%。",
-      "source": "恒尚节能关于上海证券交易所问询函的回复公告（2026-07-13）",
-      "url": "http://paper.cnstock.com/html/2026-07/14/content_2243747.htm",
+      "claim_id": "revenue_q3",
+      "text": "2026Q3营业收入为120亿元。",
+      "value": 120,
+      "unit": "亿元",
+      "period": "2026Q3",
+      "source": "公司2026年三季报",
+      "url": "https://example.com/announcement",
       "usage_type": "hard_fact"
-    },
-    {
-      "claim_id": "media_view_bubble",
-      "text": "有市场评论认为本次问询函回复戳破了标的公司的半导体概念炒作泡沫。",
-      "source": "财经媒体报道（2026-07-16）",
-      "url": "https://example.com/media-report",
-      "usage_type": "market_view"
     }
   ]
 }
-```
+~~~
 
----
+## meta
 
-## 必填字段
+company、market、today 必填；code、announcement_type、announcement_date 应按实际任务填写，不知道的不能编造。market 使用 A股、港股、美股。today 和 announcement_date 使用 YYYY-MM-DD；公告日期不能晚于分析日期。
 
-### `meta`
+## claims
 
-只记录任务边界，不需要填满整套研究档案：
+每条 claim 只表达一个事实或判断。
 
-| 字段 | 含义 |
+| 字段 | 要求 |
 |---|---|
-| `company` | 公司名 |
-| `code` | 股票代码；未知可留空，但不要编 |
-| `market` | 固定取值之一：`A股` / `港股` / `美股` |
-| `announcement_type` | 对应 `references/markets-taxonomy.md` 或命中 playbook 的分类名，如"监管问询类""股权激励类" |
-| `today` | 当前分析日期，格式 `YYYY-MM-DD` |
-| `announcement_date` | 本次分析的公告发布/回复日期，格式 `YYYY-MM-DD` |
+| claim_id | 稳定短 ID，英文字母开头，只含英文字母、数字、下划线、点和连字符 |
+| text | 一句完整文字，写清数字、期间、口径和限制条件 |
+| source | 来源名称及日期 |
+| url | 有公开链接时填写；没有时可以省略，不能编链接 |
+| usage_type | 见下表 |
+| period | 有具体期间时填写，供正文口径核查 |
+| value / unit | 该 claim 用于图表数据点时必填，必须与 report.json 中对应点值和单位一致 |
+| calculation | usage_type 为 author_calculation 时必填，写出算式 |
 
-`announcement_date` 早于 `today` 很久只会提示复核，不阻断——分析历史公告时不要为了过门禁改日期。
-
-### `claims`
-
-每条 claim 只表达一个正文会引用的事实或判断。
-
-| 字段 | 含义 |
+| usage_type | 适用来源与正文语气 |
 |---|---|
-| `claim_id` | 正文 `{fact:claim_id}` 使用的稳定短 id；必须以英文字母开头，只能包含字母、数字、`_`、`.`、`-` |
-| `text` | 事实内容，用一句完整中文写清楚数字、期间、口径和限制条件 |
-| `source` | 来源名称和日期，如「公司关于问询函的回复公告（2026-07-13）」 |
-| `url` | 来源链接；确实没有公开链接时可省略 |
-| `usage_type` | 正文使用方式，决定语气边界（见下表） |
+| hard_fact | 公告、定期报告、交易所、官方数据库中的可核查数字；可写“披露”“显示” |
+| company_statement | 公司互动平台表态；显名标注互动平台 |
+| management_guidance | 管理层展望；写“管理层表示” |
+| broker_estimate | 券商估算；写“据券商估算” |
+| broker_forecast | 券商预测、一致预期；写“机构预计” |
+| market_view | 媒体、市场讨论；显名归因，不能作硬事实 |
+| author_calculation | 基于公开数据的计算；必须有 calculation |
+| author_inference | 作者推断；保留“可能”“待验证”等限制语 |
 
-如果是作者自行计算的数字，额外写 `calculation`：
+禁止把券商估算、媒体观点、投资者评论或作者推断登记为 hard_fact。投资者评论只能帮助发现需要核查的问题，不能作为事实来源。
 
-```json
-{
-  "claim_id": "np_qoq_calc",
-  "text": "按公司披露数据计算，标的公司净利润同比增长189.5%。",
-  "source": "恒尚节能关于问询函的回复公告（2026-07-13）",
-  "usage_type": "author_calculation",
-  "calculation": "(4187 / 1446 - 1) * 100 = 189.5%"
-}
-```
+## 与 report.json 的绑定
 
----
+report.json 的 summary、paragraph、callout、list item、table cell 和 chart point 通过 fact_ids 数组引用 claim_id。文字和数字必须先完整写给读者，再绑定事实；不使用旧版的行内 fact 标记，也不手写 [1] 之类的来源编号。
 
-## usage_type
+~~~json
+{"type":"paragraph","text":"2026年第三季度营业收入为120亿元。","fact_ids":["revenue_q3"]}
+~~~
 
-`usage_type` 是 claims 里最重要的字段。它告诉正文应该用多强的语气，也是 `scripts/lint_report.py` 做语气核查的依据。
-
-| usage_type | 适用来源 | 正文写法 |
-|---|---|---|
-| `hard_fact` | 公司公告、定期报告、交易所披露、官方数据库、互动平台回复中可核查的具体数字 | 可写「公司披露」「为」「显示」 |
-| `company_statement` | 公司互动平台回复中的表述性内容（非硬数字） | 写「公司在互动平台回复称」 |
-| `management_guidance` | 管理层展望、说明会表述 | 写「管理层表示」 |
-| `broker_estimate` | 券商估算、券商转引的测算 | 写「券商估算」「研报测算」「外部估算」 |
-| `broker_forecast` | 券商预测、一致预期 | 写「机构预计」「一致预期」 |
-| `market_view` | 媒体、投资者评论区（同花顺/东方财富/雪球等）线索 | 写「媒体报道」「投资者评论区讨论」，不能作为硬事实 |
-| `author_calculation` | 基于公开数据的计算 | 写「按公开数据计算」；必须提供 `calculation` |
-| `author_inference` | 由数据推出的解释性判断 | 写「可能指向」「更像是」，并给后续验证方式 |
-
-禁止把 `broker_estimate`、`market_view`、`author_inference` 写成公司已经披露的确定事实；`check_facts.py` 会阻断把 `hard_fact` 明显标给 broker/media/market 来源的情况。
-
----
-
-## 正文绑定
-
-正文、表格和后续关注项中的关键事实，在完整数字或判断后绑定 `{fact:claim_id}`：
-
-```markdown
-标的公司2025年净利润4187万元，同比增长189.5%。{fact:np_2025}
-```
-
-不要把 `{fact:...}` 当数值占位符：
-
-```markdown
-错误：净利润为 {fact:np_2025}
-正确：净利润为4187万元。{fact:np_2025}
-```
-
-同一句话用多个事实支撑时：
-
-```markdown
-标的公司业绩增长但估值短期抬升，两点叠加放大市场对交易合理性的质疑。{fact:np_2025,valuation_gap}
-```
-
----
+图表点值须至少绑定一条 value 和 unit 完全匹配的 claim。若图表单位为“亿元”，事实表也写“亿元”；确需从其他单位换算，应另外登记 author_calculation 和算式。
 
 ## 校验边界
 
-`check_facts.py` 只阻断这些问题：
-
-1. JSON 无法解析。
-2. `claims` 不是数组。
-3. `claim_id` 缺失、重复或格式错误。
-4. claim 缺少 `source` 或 `usage_type`。
-5. `hard_fact` 明显来自 broker/media/market 来源。
-6. `author_calculation` 缺少 `calculation`。
-7. `meta` 缺少必填字段，或日期格式/先后关系有明显问题。
-
-其他问题（url 缺失、期间口径提示等）只提示复核，不阻断写作。
+check_facts.py 检查 JSON 结构、meta、claim_id、source、usage_type、计算公式和明显的来源分级错误。完整报告门禁进一步检查未知 fact_ids、未绑定关键数字、图表点值与 claim.value/unit 不一致、期间和语气口径等。错误阻断 HTML 生成；警告仍需逐条复核。

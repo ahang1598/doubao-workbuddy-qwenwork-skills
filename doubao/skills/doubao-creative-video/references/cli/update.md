@@ -32,8 +32,6 @@ ID。Agent 自己准备执行的编辑、创建衍生版本、用途变化、关
 
 ## 命令
 
-以下为 Bash 示例。Windows 必须先读 [`windows-compat.md`](../windows-compat.md)，使用 Python 模板，命令名改为 `+update`，将 `item.xml` 送入 stdin；CLI 参数仍为 `--input -`，不能传文件路径或 `@文件`。
-
 ```bash
 design-cli design-workspace +update \
   --canvas-workspace-id <canvas_workspace_id> \

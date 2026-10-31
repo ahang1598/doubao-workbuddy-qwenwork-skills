@@ -9,7 +9,7 @@
 
 ## 1. 环境与产物分流
 
-- system 上下文明确标记为移动端交付时读取 [Mobile 直接交付](mobile-app-direct-delivery.md)：跳过本文所有 Workspace、Canvas CLI、Item、画布卡片和 HTML 上传要求；媒体逐项 `RichMediaCard`，HTML 预览上传 CDN 后以 Markdown 图片展示。只支持静态出口，交互需求须在冻结前按该文档处理。
+- system 上下文明确标记为移动端交付时读取 [Mobile 直接交付](mobile-app-direct-delivery.md)：跳过本文所有 Workspace、Canvas CLI、Item、画布卡片和 HTML 上传要求；媒体逐项 RichMediaCard，HTML 预览上传 CDN 后以 Markdown 图片展示。只支持静态出口，交互需求须在冻结前按该文档处理。
 - 纯图／视频：读取同一 Brief、真实工具结果、准确事实与身份来源，核对内容、尺寸、质量、身份、功能内容及媒体门禁，随后检查当前环境的交付状态；不要求 HTML、DOM、字体契约或 shot.py。纯图编辑核对目标范围与未授权变化。成功但有缺陷的结果仍先交付，是否可继续组装另行判定。
 - HTML：读取当前完整源、同版本素材、唯一 Brief 与用户验收要求，执行第 2、3 节和当前环境的交付检查。普通文字保持可编辑；品类明确准入的图内文案按已确认边界验收。禁止因没有模板 ID、CSS ID、坐标或参数而将自然语言 Brief 判失败。
 - 只有图片且要求重建 HTML 的任务使用对应创建流程；真实已有 HTML 才使用源编辑流程。验收依据实际输入与授权范围，不假造源结构。
@@ -38,11 +38,11 @@ HTML 最终视觉验收必须读取 [`shot.py` 预览与检查](html-preview.md)
 
 2. **写入画布并回读核对**：先确认生产前已从当前对话绑定唯一 `active_workspace_id`；对话无 ID 时，必须存在本轮 `+workspace-create` 响应，以及主 Agent 将响应中的原始 ID（`workspace_id`）原样作为 `present_files` 单值输入并成功交付 Workspace 画布卡片的记录，否则以 `WORKSPACE_CARD_NOT_PRESENTED` 阻断。该卡片成功前不得开始生产。不得在无 ID 时先调用 `+get-workspace`，不得为 ID 创建中间文件、添加包装、改用数组或拆分调用；自创建响应返回至卡片成功交付，只允许主 Agent 执行上述单值调用，不得混入其他用户可见文字、链接、路径、日志、CLI 输出、总结、其他产物或重复 ID 交付，否则以 `WORKSPACE_CARD_DELIVERY_NOT_EXCLUSIVE` 阻断。初始化卡片只使用原始 Workspace ID，不与后续 HTML Item 卡片的拼接值混用。每个图片／视频结果就绪后，必须在同一调度阶段同步启动 `design-cli` 写入／`+get` 回读与 `present_files` 直接交付工具产物两个分支，并在 join barrier 核对两边；两分支必须使用同一结果和同一 `active_workspace_id`，不得先完成一个再启动另一个。生成／编辑产物必须将工具原始短链逐字写入 `<asset url>`；新资产和内容修改版本均使用 `+create`；`+update` 仅修改顶层 brief／path。`present_files` 直接接收工具返回的对应产物，禁止为了交付另行下载、复制或上传，也禁止用交付侧数据替换 Canvas 短链。最终渲染图、导出图、候选图和中间图均不得跳过；只有并非生成／编辑工具输出且仅存在于本地的资产／渲染产物才可先通过 `FileBatchUpload` 取得短链。其他新生成 Workspace 对象用 `+create`／`+create-batch`，已有内容修改也创建新版本；仅顶层 brief／path 修改用 `+update`／`+update-batch`。保存返回 ID，再用 `+get` 逐项核对类型、层级、准确文字、真实资产引用与顶层 size／成员相对 transform；生成／编辑产物的回读 URL 必须与工具原始短链逐字一致。不得以静态解析、源代码阅读、文件呈现或仅有写入成功响应代替回读。
 
-3. **渲染与呈现文件**：逐项核对 [交付门禁](image-generation-delivery-gate.md) 记录。所有结果都必须记录同一 `sync_group_id` 下同步启动的 `persistence` 与 `delivery` 分支，以及 join barrier 的两侧结果；任一分支被延后到另一侧或整批另一类操作全部结束后才启动，以 `MEDIA_DELIVERY_NOT_SYNCHRONIZED` 阻断。一次 `RichMediaCard` 只能包含一张图片，且必须直接接收生成／编辑工具返回的对应产物；先下载、复制、重新上传，或仅展示工具 URL、预览、缩略图、Markdown 图片和普通文本路径时，以 `TOOL_ARTIFACT_NOT_PRESENTED_DIRECTLY` 阻断。Canvas URL 与工具原始短链不一致，或使用本地路径、缓存路径、交付侧产物标识、预览地址或重上传 URL 时，以 `CANVAS_ASSET_URL_NOT_TOOL_SHORTLINK` 阻断；缺少任一分支结果、写入 ID、短链、回读结果或来源／用途 brief 时以 `MEDIA_DELIVERY_BARRIER_INCOMPLETE` 阻断。效果不佳、错字、身份漂移或预计返工的成功输出也必须完成双通道闭环；静默过滤以 `IMAGE_RESULT_HIDDEN_BEFORE_REPAIR` 阻断。AI 图片内生成文字问题须标记 `delivered_with_text_issue` 并等待用户提出修改要求，自主反复检查、改 Prompt、编辑或重生同样判定为违反交付门禁；若它承担准确文字，下游组装保持暂停。CLI 失败但交付成功时记录“用户已收到但画布持久化失败”；CLI 成功但交付失败时保留 Item 并记录“已持久化但用户未收到”。任一侧失败后仍开始依赖步骤，以 `MEDIA_DELIVERY_FAILURE_IGNORED` 阻断。可编辑设计的最终渲染／导出成品仍只能基于已核验 Workspace。
+3. **渲染与呈现文件**：逐项核对 [交付门禁](image-generation-delivery-gate.md) 记录。所有结果都必须记录同一 `sync_group_id` 下同步启动的 `persistence` 与 `delivery` 分支，以及 join barrier 的两侧结果；任一分支被延后到另一侧或整批另一类操作全部结束后才启动，以 `MEDIA_DELIVERY_NOT_SYNCHRONIZED` 阻断。一次 RichMediaCard 只能包含一张图片，且必须直接接收生成／编辑工具返回的对应产物；先下载、复制、重新上传，或仅展示工具 URL、预览、缩略图、Markdown 图片和普通文本路径时，以 `TOOL_ARTIFACT_NOT_PRESENTED_DIRECTLY` 阻断。Canvas URL 与工具原始短链不一致，或使用本地路径、缓存路径、交付侧产物标识、预览地址或重上传 URL 时，以 `CANVAS_ASSET_URL_NOT_TOOL_SHORTLINK` 阻断；缺少任一分支结果、写入 ID、短链、回读结果或来源／用途 brief 时以 `MEDIA_DELIVERY_BARRIER_INCOMPLETE` 阻断。效果不佳、错字、身份漂移或预计返工的成功输出也必须完成双通道闭环；静默过滤以 `IMAGE_RESULT_HIDDEN_BEFORE_REPAIR` 阻断。AI 图片内生成文字问题须标记 `delivered_with_text_issue` 并等待用户提出修改要求，自主反复检查、改 Prompt、编辑或重生同样判定为违反交付门禁；若它承担准确文字，下游组装保持暂停。CLI 失败但交付成功时记录“用户已收到但画布持久化失败”；CLI 成功但交付失败时保留 Item 并记录“已持久化但用户未收到”。任一侧失败后仍开始依赖步骤，以 `MEDIA_DELIVERY_FAILURE_IGNORED` 阻断。可编辑设计的最终渲染／导出成品仍只能基于已核验 Workspace。
 
    **HTML Item 校验**：上述媒体门禁既不适用于原始 `.html`，也不适用于 `shot.py` 产出的 HTML 预览截图。可编辑设计的 `.html` 调用 `shot.py`，把像素宽高严格等于声明画布且内容完整的预览图用 `FileBatchUpload` 上传 CDN；核验返回的公网可访问 HTTP(S) 链接后，以该链接用标准 Markdown 图片语法展示。截图不得调用 `present_files`、创建 IMAGE Item 或写入画布。再另行经 `FileBatchUpload` 上传 HTML，以 HTML 文件短链创建并回读顶层 HTML Item；不得混用预览图 URL 与 HTML 源 URL。预览失败或不完整不阻断 HTML 上传和写入，但合格预览图尚未完成 CDN 上传及 Markdown 展示时不得完成。HTML Item 回读成功后，必须把同一 `active_workspace_id` 与该回读对象的 `item_id` 拼成 `<active_workspace_id>?item_id=<item_id>` 单值并原样传给 `present_files` 输出对应画布卡片；拆成两个参数、数组或两次调用，只传 Workspace ID，缺少任一 ID、两者不属于同一回读对象，或误用旧版本 Item ID，均以 `HTML_WORKSPACE_CARD_NOT_PRESENTED` 阻断。批量创建时每个 HTML Item 分别验证自己的拼接值卡片。完整 VI 只能创建一个顶层 HTML Item，分页或章节不得拆 Item；完整 VI 的 CDN、HTML 上传、CLI、回读与卡片交付必须由 Main Agent 执行，Subagent 只负责完整 HTML 生成／修改及 `shot.py` 自检。禁止创建 HTML Frame，也禁止通过聊天、Markdown、附件、压缩包或 `present_files` 直接交付原 `.html`。缺少 HTML 上传、HTML Item 写入或回读任一步，以 `HTML_ITEM_DELIVERY_INCOMPLETE` 阻断。
 
-**HTML 正式生产门禁**：主视觉确认后，正式生产中的任一图片／视频结果缺少真实画布 Item ID、`+get` 回读、原始短链一致性或逐项 `RichMediaCard` 交付，均以 `MEDIA_DELIVERY_BARRIER_INCOMPLETE` 阻断；媒体已嵌入 HTML 或最终 HTML Item 已创建，不能补偿媒体自身未闭环。任一结果或固定并行批次尚未汇合就开始 HTML 组装，以 `HTML_ASSEMBLY_BEFORE_MEDIA_BARRIER` 阻断。候选、未采用版本和 HTML 中间素材同样纳入检查；禁止先积攒素材再集中补写／补交付，或在 HTML 组装后补写媒体。
+**HTML 正式生产门禁**：主视觉确认后，正式生产中的任一图片／视频结果缺少真实画布 Item ID、`+get` 回读、原始短链一致性或逐项以 RichMediaCard 形式直交，均以 `MEDIA_DELIVERY_BARRIER_INCOMPLETE` 阻断；媒体已嵌入 HTML 或最终 HTML Item 已创建，不能补偿媒体自身未闭环。任一结果或固定并行批次尚未汇合就开始 HTML 组装，以 `HTML_ASSEMBLY_BEFORE_MEDIA_BARRIER` 阻断。候选、未采用版本和 HTML 中间素材同样纳入检查；禁止先积攒素材再集中补写／补交付，或在 HTML 组装后补写媒体。
 
 禁止通过 `present_files` 直接交付原 `.html`；完整 VI 还禁止通过聊天、Markdown、附件或压缩包直接交付 HTML 源文件。
 
@@ -54,6 +54,6 @@ HTML 最终视觉验收必须读取 [`shot.py` 预览与检查](html-preview.md)
 
 ## 6. 结果与失败出口
 
-在最终交付说明中简要记录写入 ID、`+get` 回读核对、渲染／导出及 `RichMediaCard` 呈现结果，保证每个交付文件可追溯至对应 Workspace 对象；任一阻断项失败，转入 `references/workflow/troubleshooting.md`，修复后重新验证。
+在最终交付说明中简要记录写入 ID、`+get` 回读核对、渲染／导出及 RichMediaCard 呈现结果，保证每个交付文件可追溯至对应 Workspace 对象；任一阻断项失败，转入 `references/workflow/troubleshooting.md`，修复后重新验证。
 
 Mobile 记录本地源版本、媒体直接交付、预览 CDN 与 Markdown 状态；不伪造 Workspace 字段。预览问题本身不阻断 HTML 上传、Item 创建与回读，源码硬门禁和适用媒体门禁仍可独立阻断持久化；退出码 `1` 或预览不合格时必须修正并重跑，不合格预览不得展示，也不得宣称完整完成。退出码 `3` 可记录“预览未验证”并继续未被独立规则阻断的可完成部分。若已授权的交互尚未在支持运行的目标端验证，保留未验证状态，不能用截图代替。

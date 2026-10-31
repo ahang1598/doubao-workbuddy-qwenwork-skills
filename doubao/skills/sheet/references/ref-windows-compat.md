@@ -5,15 +5,15 @@
 ## 硬规则
 1. **每次 PowerShell 调用只跑一条外部命令**：禁止 `&&` / `||` / heredoc / `$(...)` / `<<<`；组合逻辑走多次 PowerShell 调用或落成 `.py`。
 2. **lark-cli 路径只接受 CWD 内相对路径**：`--file` / `--output-path` / `--image ./xxx`，传 C盘路径比如 `C:\...` 这种绝对路径会被拒。开工第一步 `cd "<chat 目录>"`，之后一律 `./xxx`。
-3. **取值里带 `{` `[` `"` `,` 的 flag，一律禁止命令行内联**：无论 `'{...}'` 单引号还是 `"{\"...\":\"...\"}"` 双反斜杠，PowerShell 里两种都会拆散引号栈。只允许先 Write `params.json` / `payload.json`，再 `--border-styles "@./params.json"` / `--widths "@./payload.json"`（`@` 前必须加双引号）。判据是值的形状而不是 flag 的名字：`--cells` / `--sheets` / `--options` 这类同样适用。
-   拆散后有两种症状，见到任一种都不要去改 JSON 内容，直接落文件：报错里出现 `待` `å` `é` 这类字符（中文的 UTF-8 首字节被当成了 JSON 的开头），或 `positional arguments are not supported` 里出现 JSON 片段（引号栈拆开后的后半截成了位置参数）。
+3. **禁止内联 JSON（lark-cli 和 Python 脚本均适用）**：PowerShell 对引号和转义符的处理与 Bash 不同，内联 JSON 的引号可能被剥离、参数被拆散，导致 `invalid JSON` 或 `unrecognized arguments`。因此必须先用 Write 工具保存 UTF-8 JSON 文件，再通过已支持的文件参数传入，如 `--checkpoints "@./checkpoints.json"`、`--protection "@./protection.json"` 和 `--cond-format "@./cond-format.json"`（`@文件` 须加双引号）；相对路径以命令当前工作目录为基准，文件须写在对应位置，不要靠增加转义符重试。
 4. **不假设 Unix 工具存在**：PowerShell 不支持 `jq` / `wget` / `unzip` / `sed` / `awk` / `pdftotext` / `base64` / `file`/ `head` / `tail` / `grep` / `which` 这些在Unix中存在的命令。
 5. **同名指令的不同含义** ：PowerShell 中，同名指令的含义可能与 Unix 中不同。`curl` 是 `Invoke-WebRequest` 别名，`ls` / `dir` 是`Get-ChildItem` 的别名, 这些同名指令与Unix中的命令参数不同。
 6. **lark-cli失败情况判定**: lark-cli 的明确失败是通过让 exit code 非 0来确认的。stderr输出除了承担 错误提示以外 还会承担 进度展示/提示等作用。 在PowerShell中，任何 stderr 输出都会被包成 NativeCommandError 并让 exit code 变非 0，所以 NativeCommandError 并不一定代表了报错，需要去细看报错内容才能知道真实报错是什么。
-7. **`python -c "..."` 里禁止出现 `\"`、`'''` 内含 `"`、`"""` 或任何双引号相关的转义**：PowerShell 的双引号处理跟 bash 不同，会把 `\"` 拆开导致 Python 拿到不完整字符串（`SyntaxError: unterminated string literal`）。凡是脚本里要用双引号的场景，一律 Write 到 `.py` 文件后 `python xxx.py`。
+7. **`python -c "..."` 里禁止出现 `\"`、`'''` 内含 `"`、`"""` 或任何双引号相关的转义**：同样由于 PowerShell 对引号的处理不同，凡是脚本里要用双引号的场景，一律 Write 到 `.py` 文件后 `python xxx.py`。
 8. **不使用 PowerShell 自动变量作赋值目标**：`$PID / $HOME / $PWD / $args / $input / $error / $host / $true / $false / $null`，改用 `$PRES_ID / $SLIDE_ID / $FILE_TOKEN` 等前缀化命名。
 9. **文件读写走工具本身或 Python**：不要用 `>` / `Out-File` / `Get-Content ... | cli --xxx -`——PowerShell 5 默认非 UTF-8、加 BOM、走 stdin 时非 ASCII 字节会被重编码。让 lark-cli 用 `--output-path` / `--file` 、让 Python 用 `open(..., encoding='utf-8')`。
 10. **`python3` 调不通时改用 `python`**：Windows 上 `python3` 这个名字不一定存在，但部分沙箱会下发同名可执行文件，能直接调通。正文里以 `python3` 开头的脚本命令先按原样执行；报「找不到命令」一类错误时换成 `python` 重跑，路径与参数不变。
+11. **安装依赖使用 `python -m pip install <包名>`**：使用与运行脚本相同的 Python 解释器，不直接调用 `pip`。
 
 ## 禁用命令 → 兼容替代
 
@@ -22,7 +22,7 @@
 | 禁用 | 症状 | ✅ 替代 |
 |---|---|---|
 | `cmd1 && cmd2` | `The token '&&' is not a valid statement separator` | 拆成两次 PowerShell 调用；或 `python -c "import subprocess; subprocess.check_call([...]); subprocess.check_call([...])"` |
-| `<<'EOF' ... EOF` / `<<<` | PowerShell 无 heredoc / here-string | 先 Write 到文件（`.py` / `.json`）再引用 |
+| `<<'EOF' ... EOF` / `<<<` | PowerShell 不支持 Bash 的 heredoc 写法 | 先 Write 到文件（`.py` / `.json`）再引用 |
 | `"$(cmd)"` / `` `cmd` `` | PowerShell 的 `$(...)` 是表达式插值，非命令替换 | 让 Python 跑外部命令，shell 层只做一件事 |
 | `cmd 2>&1 \| Select-Object -Last 5` | native stderr 被 PowerShell 视为 error-record，`2>&1` 语义不同 | 直接跑命令；截断输出用 `python -c "print(''.join(open('out.txt').readlines()[-5:]))"` |
 | `mkdir -p dir` | PowerShell5 的 `mkdir` 不支持 `-p` | `python -c "import pathlib; pathlib.Path('dir').mkdir(parents=True, exist_ok=True)"` |

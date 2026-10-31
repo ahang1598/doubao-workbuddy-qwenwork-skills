@@ -94,6 +94,6 @@ python "./scripts/validate_storyboard.py" "./task/storyboard.md" --expected-dura
 ```
 
 - 从其他工作目录执行时，传实际 Skill 脚本路径与实际分镜路径；`<占位符>` 和 `[可选参数]` 是文档说明，不能原样执行。Python 编排校验时使用 `sys.executable`，必要时加 `-X utf8`，并显式按 UTF-8 捕获输出。
-- 分镜与 Prompt 用 `Path.write_text(..., encoding="utf-8")` 留档。渲染、媒体生成、上传、`RichMediaCard` 和 `present_files` 仍按原工具契约执行；不替换成终端文字输出。
+- 分镜与 Prompt 用 `Path.write_text(..., encoding="utf-8")` 留档。渲染、媒体生成、上传、RichMediaCard 和 `present_files` 仍按原工具契约执行；不替换成终端文字输出。
 
 ===== 全文完 =====

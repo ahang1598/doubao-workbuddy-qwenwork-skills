@@ -25,11 +25,11 @@ description: |
 3. 公司能否通过调价、控成本、换客户、换供应商、调整产能等方式消解这个变化？
 4. 接下来应该看哪些公开指标来验证判断？
 
-这个场景里，数据来源和数据准确性是分析可信度的前提。每个进入正文的数字都必须能追溯到清晰来源；每个关键判断都必须说明依据来自公司披露、具名机构、行业数据还是你的推断。不要用印象、常识或模糊来源补数字，也不要把未经验证的口径混在一起比较。来源不是文末装饰，而是读者判断这份分析是否可信的基础。写作前必须把关键数字和关键判断登记到事实表，并在源 markdown 中绑定到对应事实；最终交付文件会把这些内部绑定自动转换成普通文本来源标记 `[n]`，并在文末列出对应来源。`{fact:...}` 只是来源绑定，不是数值占位符；正文必须先写出完整数字或判断，再在其后绑定。
+这个场景里，数据来源和数据准确性是分析可信度的前提。每个进入正文的数字都必须能追溯到清晰来源；每个关键判断都必须说明依据来自公司披露、具名机构、行业数据还是你的推断。不要用印象、常识或模糊来源补数字，也不要把未经验证的口径混在一起比较。来源不是文末装饰，而是读者判断这份分析是否可信的基础。写作前必须把关键数字和关键判断登记到事实表，并在 HTML 源稿的可见文字中绑定到对应事实；最终交付文件会把这些内部绑定自动转换成可点击来源标记 `[n]`，并在文末列出对应来源。`{fact:...}` 只是来源绑定，不是数值占位符；正文必须先写出完整数字或判断，再在其后绑定。
 
-你的输出是给读者直接阅读的成品分析，不是研究日志、推理过程、工作流说明或文件交付清单。中间产物只服务于你自己，不得在最终回答中展示、概括、附带、上传或列为交付内容。
+完整分析的默认交付物是独立 HTML 页面；对话文本框只给简短结论、关键证据和页面链接，不粘贴报告全文。HTML 保留完整分析、表格、风险提示与可点击来源。中间产物只服务于你自己，不得在最终回答中展示、概括、附带、上传或列为交付内容。
 
-所有中间产物必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录。这个目录名是执行提醒：其中任何文件都不是文件交付物，包括 brief、facts、outline、source markdown、display markdown、日志和脚本输出。最终对话回复不得出现 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`、`DO_NOT_DELIVER__analysis-brief.md`、`DO_NOT_DELIVER__reader-outline.md`、`DO_NOT_DELIVER__company-brief.md`、`DO_NOT_DELIVER__writing-plan.md`、`DO_NOT_DELIVER__facts.json`、`DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`、`DO_NOT_DELIVER__NEEDS_FINALIZE__analysis-source.md`、`FINAL_REPLY_BODY.md` 等文件名或路径。
+所有中间产物必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录。这个目录名是执行提醒：其中任何文件都不是文件交付物，包括 brief、facts、outline、HTML 源稿、日志和脚本输出。最终 HTML 页面写入 `FINAL_REPORT_HTML/index.html`，作为唯一文件交付物或发布源。最终对话回复不得出现内部目录和内部文件名。
 
 压缩恢复规则：如果 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md` 存在，继续任何工作前必须先读取它，并按其中的「下一步必须执行」恢复流程。开始任务创建内部目录后，必须创建并持续更新这个文件；每进入新阶段、写完源稿、运行 finalize 前后，都要更新当前状态、禁止交付文件、下一步命令和最终正文来源。
 
@@ -42,10 +42,11 @@ description: |
 当前状态：____
 禁止交付：____
 下一步必须执行：____
-最终正文来源：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
+最终源稿：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html 或 analysis-source.html
+最终页面来源：FINAL_REPORT_HTML/index.html
 ```
 
-最终回复必须包含三部分：先输出固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」；再完整输出 display markdown 的正文内容；最后附上飞书文档。不得在回复中展示中间文件列表、文件下载说明或“已生成哪些文件”的交付清单，除非用户明确要求查看这些内容。
+最终回复必须简短：先输出固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」；再用 2-4 句话回答问题、说明最关键的证据及判断局限；最后附上 HTML 页面链接或 HTML 文件。不要在文本框粘贴报告全文。对话中的数字同样必须已通过事实表核验，不能只在 HTML 中有来源。若 HTML 发布能力可用，发布为飞书妙搭 HTML 页面并附链接；若不可用，附独立 HTML 文件并说明未发布，不要改回飞书云文档。
 
 语气像一个懂行的研究员在给读者解释：直接、克制、重因果、少口号。不写模板话，不展示「我做了哪些步骤」，不使用「机制一/现象描述/具体表现/结论：已证实」这类底稿句式。
 
@@ -156,12 +157,13 @@ description: |
 | 搜索取数与来源降级 | `references/data-sources.md` |
 | 填事实表 | `references/facts-template.md` |
 | 写成读者可读的正文 | `references/report-structure.md`、`references/analysis-moves.md` |
+| 研究完成、直接编写 HTML 前 | `references/html-style.md` 与 `assets/report-starter.html`，用于视觉外壳；组件写法可看 `assets/report-layout-preview.html` |
 | 推理卡住或解释停在表层 | `references/reasoning-framework.md` |
-| 校准输出质量 | 报告模式读 `references/exemplars/report-exemplar.md`；聚焦模式读 `references/exemplars/focused-exemplar.md`；避免旧问题读 `references/exemplars/anti-patterns.md` |
+| 写正文前校准输出质量 | 报告模式读 `references/exemplars/report-exemplar.md`；聚焦模式读 `references/exemplars/focused-exemplar.md`；有对应问题时读 `references/exemplars/anti-patterns.md` |
 
-最终交付分两步：(1)先运行 `python3 scripts/finalize_report.py <_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/源markdown文件> _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --display-output _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md` 生成面向读者的 display markdown；(2)再调用豆包 App 内置飞书文档/云文档能力，以 display markdown 全文创建飞书在线文档并附上该飞书文档。
+最终交付分三步：(1)研究、事实表和读者主线完成后读取 `references/html-style.md`，从 `assets/report-starter.html` 复制视觉外壳，按原有分析要求编写正文；`assets/report-layout-preview.html` 仅供查看可选组件，不规定章节；(2)运行 `python3 scripts/finalize_html_report.py <_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/HTML源稿> _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html`，复用原有事实核验与正文 lint，并把事实绑定转换为来源链接；(3)检查成品后，优先使用可用的飞书妙搭 HTML 发布能力发布 `FINAL_REPORT_HTML/index.html` 并附页面链接；没有发布能力时直接附 HTML 文件。不要调用飞书云文档创建能力替代 HTML。
 
-`scripts/make_display_markdown.py`、`scripts/normalize_report.py` 是 `finalize_report.py` 内部 helper，不作为交付入口；不要把这些脚本拆开运行来完成交付。`scripts/make_docx.py` 仅作为用户明确要求 Word/DOCX 导出时的可选工具，不是默认交付物。源稿中的 `{fact:...}` 绑定只用于源稿审计；display markdown 和飞书文档中会自动显示为普通文本 `[n]` 来源标记。源稿不要手写 `[n]` 或 `[^n]` 这类脚注角标，来源对应关系由 finalize 根据 facts 的 `claims[].source/url` 自动生成。
+默认交付只运行 `scripts/finalize_html_report.py`；旧的 Markdown 转换脚本保留供兼容旧稿，不作为新报告入口。`scripts/make_docx.py` 保留为用户明确要求 Word/DOCX 时的可选工具，不是默认交付物。HTML 源稿中的 `{fact:...}` 只用于来源绑定；最终页面显示可点击 `[n]` 来源标记及文末来源。源稿不要手写 `[n]` 或 `[^n]`。
 
 ---
 

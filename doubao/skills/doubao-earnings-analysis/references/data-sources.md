@@ -6,10 +6,11 @@
 
 | 工具 | 用途 | 适用场景 |
 |------|------|---------|
-| `seed_finance_search` | 从专业金融数据库搜索 | 财务数据、财报原文、券商研报、一致预期、公司公告 |
-| `general_search` | 通用网页搜索 | 行业动态、新闻事件、第三方数据、业绩说明会纪要、竞品信息 |
+| `seed_finance_lookup` | 查询专业金融数据库 | 财务数据、一致预期 |
+| `seed_finance_search` | 搜索金融资料 | 财报原文、券商研报、公司公告、机构观点 |
+| `general_search` | 通用网页搜索 | 其他信息的补充搜索 |
 
-优先用 `seed_finance_search` 获取财务数字和机构观点；用 `general_search` 补充经营性事实、行业背景和独立验证数据。两者可组合使用。
+财务数据和一致预期优先用 `seed_finance_lookup`；财报原文、券商研报、公司公告和机构观点优先用 `seed_finance_search`；其他信息可用 `general_search` 补充。
 
 ---
 

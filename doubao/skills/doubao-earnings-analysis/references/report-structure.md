@@ -3,7 +3,7 @@
 ## 目录
 
 - 原理与标题规则
-- 输出标题层级
+- HTML 章节组织
 - 必写内容与视情况写的内容
 - 引用规范与源稿事实绑定
 - 降级规则总表
@@ -19,29 +19,9 @@
 - 合格：`投入重置利润表：经调整 EBITA 降 84%、云收入加速至 38%，市场定价重心转向投入回报的兑现`
 - 违规：`豪赌 AI！利润主动清零换增长`（立场词）；`XX 公司 2026Q1 财报分析`（无信息量）
 
-## 输出标题层级
+## HTML 章节组织
 
-最终报告的 markdown 标题层级固定如下：
-
-```
-# [报告标题（事实性结论标题）]
-## 本季概览
-## 业绩摘要
-## 预期差拆解
-## 核心指标解读
-### 1. [维度 A]
-### 2. [维度 B]
-### ...
-## 管理层信号表
-## 机构观点汇总（视情况）
-## 后续关注清单
-## 数据来源
-### 风险提示与免责声明
-```
-
-- `#` = 报告标题（全文唯一）
-- `##` = 主体章节
-- `###` = 仅用于「核心指标解读」下的各论证维度（必须带阿拉伯数字序号：`### 1.`、`### 2.`…）以及文末「风险提示与免责声明」
+以 `assets/report-starter.html` 为视觉外壳编写 HTML 正文。下面原有的内容顺序与分析要求保持不变；`assets/report-layout-preview.html` 的示例章节不构成额外要求。可按论证需要增删页面组件，标题表达仍遵守本文件要求。
 
 ## 必写内容（每篇必有，顺序如下）
 
@@ -67,7 +47,7 @@
 
 主体章节。按 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md` 的筛选结果：展开的交叉检验各成一小节（写法见 analysis-moves.md 动作三）；一句话通过的检验项合并为一段「表现合理指标项」；如触发缺口测算，相关内容也放在本节。收入主拆分按命中原型量纲做，分解项复合增速 ≈ 收入增速（±5pct）。
 
-**格式要求：** 本节下的每个论证维度使用 `### + 阿拉伯数字序号` 作为小节标题（如 `### 1. 为什么需求超出市场估计`、`### 2. 毛利率为什么能连续六个季度提升`）。序号连续编排，帮助读者快速定位和跨节引用。
+**呈现要求：** 本节每个论证维度有独立小节，连续编号，帮助读者快速定位和跨节引用。标题仍须表达具体判断或问题。
 
 ### 6. 管理层信号表
 
@@ -90,7 +70,7 @@
 - 以上内容可能基于公开信息、历史数据或用户提供材料进行总结、归纳、推演与情景分析，但相关内容可能存在时效性不足、信息缺漏、事实误差、模型偏差或生成性错误。历史数据、历史业绩、回测结果及情景假设均不代表未来表现。
 - 用户应基于自身风险承受能力、投资目标、财务状况及适用法律法规独立作出判断，必要时咨询持牌专业机构或顾问。任何因依赖本 skill 输出而作出的决策及其后果，由用户自行承担。
 
-注：`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md` 是源文件，最终由 `finalize_report.py` 派生出 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md`；飞书在线文档应基于 display markdown 全文创建。最终对话输出先放固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」，再输出 display markdown 的正文全文 + 附上飞书文档；不得输出源文件名、display 文件名或任何 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 路径。
+注：基于 starter 编写的 HTML 源稿由 `finalize_html_report.py` 核验并补全来源链接；`FINAL_REPORT_HTML/index.html` 是完整正式报告。最终对话只放固定风险提示语、2-4 句话简答及 HTML 链接或附件，不粘贴报告全文。HTML 的视觉规范见 `references/html-style.md`；章节布局随分析内容调整。
 
 ## 视情况写的内容
 
@@ -116,7 +96,7 @@
 
 ### 引用方式：源稿绑定事实，finalize 自动生成来源标记
 
-源稿不要手写 `[1]`、`[^1]`、`[^2][^3]` 这类来源角标。源稿只写 `{fact:claim_id}` 绑定；`finalize_report.py` 生成 display markdown 时，会把绑定自动转换成普通文本 `[n]` 标记，并按同一编号在文末「数据来源」列出对应来源。
+HTML 源稿不要手写 `[1]`、`[^1]`、`[^2][^3]` 这类来源角标。只在可见正文中写 `{fact:claim_id}` 绑定；`finalize_html_report.py` 会把绑定转换成可点击 `[n]` 标记，并按同一编号列出对应来源。
 
 `{fact:claim_id}` 不是数值占位符，也不会把 claim 内容自动填回正文。正文必须先写出读者可见的完整数字或判断，再把 `{fact:...}` 放在该数字、表格行或句子之后。禁止写 `自由现金流为{fact:fcf_2026}`、`资本开支达{fact:capex_2026}` 或表格单元格只写 `{fact:capex_2026}`；正确写法是 `自由现金流由 2025 财年的净流入 738.70 亿元转为 2026 财年的净流出 X 亿元。{fact:fcf_2026,fcf_2025}`。
 
@@ -124,11 +104,11 @@
 
 ### 源稿事实绑定：`{fact:claim_id}`
 
-源 markdown 建议在支撑结论的关键数字、表格关键行和关键事实判断后绑定 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims`，用于生成来源标记，并让 lint 复核 `usage_type` 与正文语气是否匹配：
+HTML 源稿建议在支撑结论的关键数字、表格关键行和关键事实判断后绑定 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims`，用于生成来源标记，并让 lint 复核 `usage_type` 与正文语气是否匹配：
 
 `国外销售占比从 2024 年的 53.49% 降至 2025 年的 49.44%。{fact:overseas_share_2024,overseas_share_2025}`
 
-这些 `{fact:...}` 绑定只存在于源稿，`finalize_report.py` 生成 display markdown 时会自动转换成普通文本 `[n]` 来源标记。对话输出不得出现 `{fact:...}`，源稿不得手写 `[n]` 或 `[^n]` 这类角标。缺少绑定、来源语气疑似不匹配时，lint 输出警告，由模型复核后决定是否修改。若 `{fact:...}` 被放在“为/达/至/实现/录得”等谓语后直接充当数字，lint 会报错；这说明正文漏写了事实值，需要先补正文数字再绑定。
+这些 `{fact:...}` 绑定只存在于 HTML 源稿，`finalize_html_report.py` 会自动转换成可点击 `[n]` 来源标记。对话输出不得出现 `{fact:...}`，源稿不得手写 `[n]` 或 `[^n]` 这类角标。缺少绑定、来源语气疑似不匹配时，lint 输出警告，由模型复核后决定是否修改。若 `{fact:...}` 被放在“为/达/至/实现/录得”等谓语后直接充当数字，lint 会报错；这说明正文漏写了事实值，需要先补正文数字再绑定。
 
 ### 派生数字
 
@@ -141,19 +121,19 @@
 
 ### 文末来源表
 
-标题为「文中引用对应以下来源：」，每条格式为：`编号. [材料名称](链接)`。
+标题为「文中引用对应以下来源：」，每条包含编号、材料名称与可点击链接；来源绑定由交付脚本生成。在「未获取清单」前放置 `<!-- AUTO_SOURCES -->`，由脚本在此插入来源列表。
 
-- 公司公告、研报等有公开 PDF/网页链接的，写成 markdown 超链接（飞书文档应保留为可点击链接）。
+- 公司公告、研报等有公开 PDF/网页链接的，写成 HTML 可点击链接。
 - 媒体转引无直接链接的，写明媒体名+日期。
 - 专业数据库（Wind/Choice 等）无公开链接的，写平台名+日期。
 
 ### 未获取清单
 
-在来源表之后，格式为 `- **未获取清单**（按对分析的影响排序）：- …`。用读者语言写明缺什么、影响哪段分析。
+在来源表之后呈现「未获取清单」，按对分析的影响排序。用读者语言写明缺什么、影响哪段分析。
 
 ### 禁止出现的内部流程词
 
-`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`、facts.json、writing-plan、company-brief、analysis-brief、reader-outline、report-source、analysis-source、DO_NOT_DELIVER__、FINAL_REPLY_BODY、00_RESUME_HERE、复算、门禁、check_facts、lint_report、make_charts——这些是作者侧工具，不是读者应看到的内容。`lint_report.py` 会扫描并报错。
+`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`、facts.json、writing-plan、company-brief、analysis-brief、reader-outline、report-source、analysis-source、DO_NOT_DELIVER__、FINAL_REPLY_BODY、00_RESUME_HERE、复算、门禁、check_facts、lint_report、make_charts——这些是作者侧工具，不是读者应看到的内容。交付流程会对 HTML 可见文字运行原有 `lint_report.py` 检查。
 
 ## 降级规则总表
 

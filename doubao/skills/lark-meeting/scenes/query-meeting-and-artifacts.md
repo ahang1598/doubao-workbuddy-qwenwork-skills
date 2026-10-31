@@ -38,6 +38,7 @@ lark-cli vc +search --query <query> --start <start> --end <end> --format json
 
 - 至少提供关键词、时间范围、组织者、参与者或会议室中的一个条件；不要把“总结”“回顾”“所有会议”等动作词当作 `--query`。
 - “今天有哪些会议”需要合并两部分：`vc +search` 查询今天已结束的会议， lark-calendar 查询进行中或未开始的日程。
+- `vc +search`、`minutes +search` 查不到时，可以回到日程查：用 `calendar +search-event` 或 `+agenda` 定位日程，回查会议关联后再下结论，不必先向用户索要 ID。
 - 只有自然语言纪要标题、没有会议 ID、时间、参会人等会议线索时，改用 Drive/Doc 搜索纪要文档，不要把纪要标题当作会议关键词。
 - 根据 `has_more` 和 `page_token` 翻页。未明确要求全量时，累计结果超过 50 条后先确认是否继续；用户明确要求“全部、统计、排序”时直接获取全部结果。
 - 多个候选时展示主题、时间、组织者和 `meeting_id`，让用户选择；不要擅自选择最近的一场。

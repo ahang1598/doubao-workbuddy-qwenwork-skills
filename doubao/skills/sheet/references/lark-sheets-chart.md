@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 551 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 620 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Chart
 
@@ -28,13 +28,13 @@
 2. 多张独立图创建 → `+batch-chart-create`；
 3. 已有图的数据源 / 方向 / 系列变化 → `+chart-data-update`；
 4. 已有图的标题 / 轴 / 图例 / 标签 / 堆叠 / 平滑 / 整图配色变化 → `+chart-config-update`；
-5. 只有上述语义 shortcut 无法表达的单系列、单数据点或高级字段，才使用 `+chart-create` / `+chart-update` 的原始 `properties`。
+5. 只有上述语义 shortcut 无法表达的尺寸、单系列、单数据点或高级字段，才使用 `+chart-create` / `+chart-update` 的原始 `properties`。
 
-进入高级入口前先写明“哪个用户要求无法由哪个语义参数表达”。答不出来就退回语义 shortcut。不要因为语义调用失败一次就改走原始 snapshot；先根据明确错误修正参数。
+进入高级入口前先写明“哪个需求或视觉缺陷无法由哪个语义参数表达”。答不出来就退回语义 shortcut。不要因为语义调用失败一次就改走原始 snapshot；先根据明确错误修正参数。
 
 普通创建、数据源修正和常用配置更新不要构造原始 snapshot。
 
-典型工作流：先确认表头、精确数据范围和图表配置，运行 `python3 scripts/lark_chart_size_advisor.py` 取得建议尺寸，再将返回的 `data.create_flags.width` / `height` 原样传给 `+chart-create-basic`；创建时尽量在同次调用中带上已知标题/轴/标签内容要求，标签位置只有用户明确指定时才传。创建后用返回的完整 `snapshot` 检查范围、方向与系列，再按需用 `+chart-list` 验证。已有图表的数据范围或方向错误时用 `+chart-data-update`，常用配置修正用 `+chart-config-update`。只有用户要求单个系列、数据点或高级引擎字段时，才读取现有 snapshot 并调 `+chart-update --properties`。不要为了常用配置先输出整份 schema，也不要删除重建已经创建成功的图表。
+典型工作流：先确认表头、精确数据范围和图表配置，运行 `python3 scripts/lark_chart_size_advisor.py` 取得建议尺寸，再将返回的 `data.create_flags.width` / `height` 原样传给 `+chart-create-basic`；创建时尽量在同次调用中带上已知标题/轴/标签内容要求，标签位置只有用户明确指定时才传。创建后用返回的完整 `snapshot` 检查范围、方向与系列，再按需用 `+chart-list` 验证。已有图表的数据范围或方向错误时用 `+chart-data-update`，常用配置修正用 `+chart-config-update`。需要修改尺寸、逐系列标签、数据点或高级引擎字段且语义参数无法表达时，才按需读取现有 snapshot 并调 `+chart-update --properties`；只改尺寸无需携带 snapshot。不要为了常用配置先输出整份 schema，也不要删除重建已经创建成功的图表。
 
 **多图表工作流**：先完成所有辅助数据和表头，列出每张目标图的类型、精确数据范围、标题和落点；确认清单后，用一次 `+batch-chart-create` 批量创建。它的每个 operation 直接填写 `+chart-create-basic` flags，CLI 内部固定按 `+chart-create-basic` 执行，不要再套 `shortcut` / `input`。图表之间独立时允许部分成功：按返回的逐项结果定位失败图表，只重试失败项。批量 create 的逐项结果不返回完整 snapshot；批次后每个受影响的 sheet 各调用一次 `+chart-list`。已经成功创建的图表有数据源或配置差异时，用 `+batch-chart-update` 批量执行对应的语义更新，不要删除重建。
 
@@ -64,16 +64,6 @@
 
 **范围与系列前置校验（创建前必做）**：清单中同时记录每张图的表头范围、纳入维度、明确排除维度、数据方向和预期系列数。每张图只支持一个类别 / X 轴维度（`dim1`），不支持把多个字段作为多级横轴；当前每张图**最多 50 个数值系列**；按列组织时通常为“所选数值列数”，按行组织时通常为“所选数值行数”。创建时就用 `+chart-create-basic --dim1-index ... --dim2-indexes ...` 显式选择类别与不超过 50 个数值系列；如果业务要求展示超过 50 个系列，应先建立紧凑汇总表或 Top-N，而不是反复删除重建。创建前根据实际表头确认索引和边界，不凭字母猜范围；创建后范围、方向或系列数不符时，使用 `+chart-data-update` 修正，CLI 会读取当前快照、重建 `refs` / `dim1` / `dim2.series` 并只提交 data patch，不要删除后重建。
 
-**尺寸建议（创建前必做）**：确认 `--chart-type`、`--data-range`、数据方向、dim1/dim2、标题、图例和标签策略后，先运行尺寸建议器。有分离表头时同时传 `--header-range`。
-
-硬下限如下；建议器不可用时也不得低于此值：
-
-| 图表类型 | 最小宽度 × 高度（px） |
-|---|---:|
-| 柱形图、折线图、面积图及其它默认类型 | `640 × 400` |
-| 条形图、组合图 | `720 × 420` |
-| 饼图 | `720 × 440` |
-
 ```bash
 python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" \
   --worksheet-id "<reference_id>" \
@@ -90,7 +80,7 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
 
 **横向类别行配方**：当日期/月份等类别横向排列在一行、目标数值在另一行时，把“类别行 + 数值行”一起放进 `--data-range` 并传 `--data-direction row`，例如 `--data-range "'Sheet1'!A1:M1,'Sheet1'!A3:M3" --data-direction row`。此时类别行属于数据映射，**不要**传给 `--header-range`。`--header-range` 仅表示与纯数据分离的“维度/系列名称”：column 方向必须是一行，row 方向必须是一列。row 方向却传入多列表头，通常说明把类别行误当成了分离表头。
 
-**整图配色优先走语义参数**：统一主题或系列配色用 `--color-palette` / `--colors`，已有图用 `+chart-config-update`；`--color-palette` 按数据语义选预设（多类别用多彩 brand/rainbow/contrast，正负·涨跌用 diverging，单系列或有序量级用 mono-<色>）。优先继承原表主题，同一指标跨图保持同色，组合图用同色系柱形、高对比折线和中性辅助线。`--colors` 会循环复用，明确逐系列配色时颜色数须与系列数一致。颜色过多难以区分时优先 Top-N 或拆图；单系列/数据点配色才使用原始 snapshot。
+**新建图表默认使用 tool 主题色**：用户未指定配色时，省略 `--colors` / `--color-palette`，不为套用视觉规范而显式传色，默认色序见下方「色板」。用户明确指定配色或要求复刻原图时，先确认颜色，再用 `--colors` / `--color-palette`；已有图使用 `+chart-config-update`，未要求改色时保留原配色。`--color-palette` 用于用户需要的预设主题（brand/rainbow/contrast、正负用 diverging、单色用 mono-<色>），并非新建时的必填默认。`--colors` 会循环复用，明确逐系列配色时颜色数须与系列数一致。同一指标跨图保持同色；颜色过多难以区分时优先 Top-N 或拆图。单系列/数据点配色才使用原始 snapshot。
 
 ## 需求→图表类型映射（创建前必查）
 
@@ -111,7 +101,7 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
 
 **常见配置错误（必须注意）**：
 - **图表类型选择错误**：用户说"堆积柱形图 / 百分比堆积"时，用 `+chart-create-basic --stack normal|percent` 或 `+chart-config-update --stack normal|percent`；用户说"占比 / 比例"时，优先考虑饼图或百分比堆积图。注意 `column` 是纵向柱形图、`bar` 是横向条形图，"对比 / 各 XX" 类纵向柱默认用 `column`；面积图原生支持 `snapshot.plotArea.plot.type="area"`，别因速查表没列就判"不支持"。
-- **数据标签开关与避让**：普通基础图先按拟开启 `--data-labels value` 运行尺寸建议器，再用建议宽高创建；不要仅凭数据点或系列数预先传 `none`。若使用建议尺寸后标签仍重叠，先在高级更新中给全局 `plotArea.plot.labels` 保留所需内容并设置 `overlap: true` 尝试自动平移避让；它只控制全局标签避让，不控制显隐，也不支持逐系列设置。仍无法辨认时再依次改为稀疏标签、Top-N 或拆图；用户明确要求隐藏全部标签时才传 `none`。已有图用 `+chart-config-update --data-labels`，不要为普通标签开关构造原始 `labels` 对象；只有语义 shortcut 无法表达的避让等高级字段才走 `+chart-update`。高级配置中 `plotArea.plot.labels` 对象的存在性即开关：创建时关闭标签应省略该字段，更新时删除已有全局标签传 `labels: null`，不能用全部字段置为 `false` 代替。组合图各系列的标签要求不同时，禁止传全局 `--data-labels`，改用 `--series-data-labels` 按显式 `--dim2-indexes` 顺序逐项设置；已有图的高级调整仍须读取并完整回写系列数组。
+- **数据标签开关与避让**：折线图及组合图中的折线系列默认关闭整系列的逐点标签，仅用户明确要求时开启；末点、峰值、关键点等单点标签可按展示需要单独设置。创建折线图传 `--data-labels none`；组合图省略全局 `--data-labels`，用 `--series-data-labels` 按系列设置，折线项传 `none`，其他系列按需保留标签（如柱 + 折线传 `value,none`）。其他基础图先按拟开启 `--data-labels value` 运行尺寸建议器，再用建议宽高创建；不要仅凭数据点或系列数预先关闭这些标签。建议器与创建使用相同标签策略。仅对使用全局标签的图表，标签使用建议尺寸后仍重叠时，在高级更新中给全局 `plotArea.plot.labels` 保留所需内容并设置 `overlap: true` 尝试自动平移避让；它不控制显隐，也不支持逐系列设置。柱形显示、折线隐藏等逐系列标签策略的组合图须保持全局 `labels` 缺省，不得为避让新增全局 `labels`，仅写 `{overlap: true}` 也会开启默认标签；先调整图表尺寸，再回读并完整回写系列数组，仅调整需显示标签系列的 `labels.position`。仍无法辨认时再依次改为稀疏标签、Top-N 或拆图；折线图默认关闭整系列逐点标签或用户明确要求隐藏全部标签时传全局 `--data-labels none`。已有图用 `+chart-config-update --data-labels`，不要为普通标签开关构造原始 `labels` 对象；只有语义 shortcut 无法表达的避让等高级字段才走 `+chart-update`。高级配置中 `plotArea.plot.labels` 对象的存在性即开关：创建时关闭标签应省略该字段，更新时删除已有全局标签传 `labels: null`，不能用全部字段置为 `false` 代替。组合图各系列的标签要求不同时，禁止传全局 `--data-labels`，改用 `--series-data-labels` 按显式 `--dim2-indexes` 顺序逐项设置；已有图的高级调整仍须读取并完整回写系列数组。
 - **辅助线与单点标签**：基准线、目标线、阈值线、平均线或上下限用重复值列作为 `line` 系列。只标折线的线尾、峰值或关键点时，关闭全局及该系列的逐点标签，在该系列的 `points.point[]` 中设置目标点的 `labels`；需要突出标记时同时设置 `size`。不要叠加稀疏 `scatter` 系列，折线与散点混合会影响 Excel 导出。`series[].index` 与 `data.dim2.series[].index` 对齐，点的 `index` 从 1 开始、不含表头；按源数据行定位时传 `--aggregate-categories=false`。更新前回读并保留完整 `series` 数组及已有点配置。
 - **常量系列标签**：目标线、阈值线和上下限等重复常量系列默认不显示逐点标签；名称和值放在系列名、图例、标题或单点标签中。质量检查器提示“常量系列重复标签”时，移除该系列标签或改为单点标签。
 - **数据标签位置**：只有用户明确要求且已有标签时才传 `--data-label-position`；它只调整已有标签的位置，不会单独开启标签。需要同时显示标签时一并传 `--data-labels` 或 `--series-data-labels`，逐系列模式下统一作用于非 `none` 的系列；未明确位置时省略，让图表按类型自动选择。标签位置只控制摆放方式；仅显示末点或关键点用该点的 `labels`。普通非堆叠柱形图显示数据标签位置一般传 `outside`。
@@ -169,6 +159,78 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
 
 **标题与轴文案**：优先沿用用户明确指定的文案；未指定时，只根据已读取的表头生成简洁自然语言。图表标题概括对象、指标及必要的趋势/对比关系；副标题仅补充已确认的时间范围或统计口径，无必要则省略；X 轴写类别或时间维度，Y 轴写指标名，单位明确时可附单位。禁止把单元格引用、公式、内部 ID、占位符、未解析文字、乱码或空括号写入标题，也不得臆造时间、单位和业务口径。
 
+## 图表视觉规范
+整体视觉优先走用户命令的语义参数。若原始语义未定义，则优先选用于用户原附件一致的视觉模板，否则使用本文的视觉规范。
+### **1. 全局视觉规范**
+
+#### **1.1 字体**
+
+| 项目 | 要求 |
+|-|-|
+| 默认字体 | 思源宋体 |
+| 默认文字色 | `#1F2329` |
+| 主题 caption 样式 | `#9B9EA2`，字号 14 |
+| 图表标题 | 字号 12、粗体、`#0F1E3A` |
+| 饼图和环形图数据标签 | 字号 10 |
+| 工作表大标题 | 22–24 pt、半粗体 |
+| 工作表副标题 | 11–12 pt、常规字重 |
+| 示例图编号与名称 | `<chartCaption>` 未单独指定字号;若绑定主题 caption 则使用 14，否则采用 11–12 pt、半粗体 |
+
+#### **1.2 色板**
+
+##### **默认系列 / 分类色序**
+
+按以下顺序使用，与 tool 默认主题色一致：
+
+```text
+#1F97B9, #B3E0FE, #EDAD78, #F1DB9A, #4BC0AF, #96D3A2, #9689E8,
+#925BC1, #C788D0, #AFC1FD, #ABE4D8, #82DEEE, #64BBF0, #5E6FC9
+```
+
+柱状图、折线图、条形图、面积图、组合图和雷达图按系列顺序取色；饼图和环形图按类别 / 扇区顺序取色。这里列出默认色序供核对，无需将它复制到 `--colors`；只有用户明确指定配色或要求复刻原图时才覆盖。
+
+其他颜色：
+
+| 用途 | 色值与效果 |
+|-|-|
+| 坐标网格线 | `#E2E8F0` |
+| 图表边框备用色 | `#DEE0E3` |
+| 数据标签 | `#595959` |
+| 图表背景 | 白色 `#FFFFFF` |
+| 图表外框 | 宽度 `0`，即不显示 |
+
+#### **1.3 线条、填充与间距**
+
+- 普通折线宽度 2 px，组合图重点折线宽度 2.5 px。
+- 折线数据点直径 5–6 px。数据点较密时可以隐藏点标记。
+- 网格线宽度 1 px，使用实线。
+- 坐标轴线宽度 1 px，颜色不应深于正文文字色的 40%。
+- 图例、坐标轴标签和饼图标签未单独指定文字颜色时，继承默认文字色 `#1F2329`。
+- 柱形和条形不使用描边。
+- 面积图边界线宽度为 1.5–2 px。
+- 无填充雷达图只保留 2 px 轮廓线。
+- 饼图扇区分隔线为 1 px，颜色与图表背景一致。
+- 外置标签使用引导线，并避免标签相互遮挡。
+- 绘图区四周至少保留 12–16 px 内边距。
+
+#### **1.4 数据来源与交互**
+
+- 基础图表创建的 `--data-range` / `--header-range` 使用 `A1:C5` 格式；需要工作表前缀时使用 `'工作表名'!A1:C5`。
+- 第一行作为系列标题。
+- 第一列作为分类或维度。
+- 单元格数据变化后，图表自动刷新。
+### **2. 布局与尺寸**
+**尺寸建议（创建前必做）**：确认 `--chart-type`、`--data-range`、数据方向、dim1/dim2、标题、图例和标签策略后，先运行尺寸建议器。有分离表头时同时传 `--header-range`。
+
+硬下限如下；建议器不可用时也不得低于此值：
+
+| 图表类型 | 最小宽度 × 高度（px） |
+|---|---:|
+| 柱形图、折线图、面积图及其它默认类型 | `640 × 400` |
+| 条形图、组合图 | `720 × 420` |
+| 饼图 | `720 × 440` |
+- 同一工作表中的同级图表应保持相同宽高。
+
 ## 图表验证与交付验收
 
 完成本次所有图表创建或更新后，再逐图核对以下项；全部通过才算完成：
@@ -184,6 +246,8 @@ python3 scripts/lark_chart_thumbnail_decode.py \
   --output-dir "/tmp/lark-chart-preview-$CID" --expected-chart-id "$CID"
 ```
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 不适合 shell 管道时，可直接运行 `python3 scripts/lark_chart_thumbnail_decode.py --url "$URL" --sheet-id "$SID" --chart-id "$CID" --output-dir "./chart-preview"`。命令成功后读取 `read_required[].path` 中的图片；多图可一次读取，仅超时时再分批。
 
 4. **最终统一质检**：全部创建和更新完成后，对每个受影响子表运行 `python3 scripts/lark_chart_quality_check.py "<表格 URL 或 spreadsheet token>" --worksheet-id "<reference_id>"`。该脚本依赖当前 `lark-cli` 支持 `+chart-list --only-thumbnail`；发布时先升级 CLI 再发布 skill，遇到 unknown flag / unsupported flag 时升级 CLI 后重跑，不得跳过缩略图门禁。按 `next_action` 处理并读完 `data.thumbnail_fetch.read_required[].path`；`unavailable_chart_ids` 必须为空，仅图片读取超时时再分批。
@@ -193,10 +257,15 @@ python3 scripts/lark_chart_thumbnail_decode.py \
 模型读取缩略图后按三项标准验收：
 
 1. **数据准确**：图中的类别、系列、数值、数据标签和坐标轴口径与数据 / 公式回读结果一致。
-2. **展示完整**：题面要求的内容全部呈现，不存在重叠、遮挡或关键元素缺失；沿画布和绘图区四边检查所有可视元素是否完整，接触边界本身不构成失败，但出现非预期裁切、越出可视区，或标题、标签、图例等被截断时必须判定失败。数据点或元素锚点位于有效范围内不等于完整可见；放大检查密集区能否逐项辨认。若大部分点 / 气泡挤在单侧狭窄区域、另一侧长期空白，先判断 0 是否是有意义的基准；是则保留，否则收紧连续轴范围后重新验图。
+2. **展示完整**：题面要求的内容全部呈现，不存在文字重叠、遮挡或关键元素缺失；沿画布和绘图区四边检查所有可视元素是否完整，接触边界本身不构成失败，但出现非预期裁切、越出可视区，或标题、标签、图例等被截断时必须判定失败。数据点或元素锚点位于有效范围内不等于完整可见；放大检查密集区能否逐项辨认。若大部分点 / 气泡挤在单侧狭窄区域、另一侧长期空白，先判断 0 是否是有意义的基准；是则保留，否则收紧连续轴范围后重新验图。
 3. **样式合理**：图表类型与布局合理，配色美观且系列间颜色对比明显，关键信息易于辨认。
 
-三项必须同时通过。模型在分析中只要识别出任一可见重叠、截断、遮挡或无法逐项辨认，就必须明确判定视觉验收未通过，实际修图后重新运行最终 QC 并重读受影响图片；不得以“核心信息可读”“只是小问题”或自动检查通过为由保留缺陷。`lark_sheet_selfcheck.py` 的 `CHECK_OK` 不包含图表视觉结论，不能替代本门禁。
+视觉验收发现以下问题时，按对应方式修正：
+
+- **横轴标签保持水平**：标签倾斜时，先扩宽图表并按需增加高度，通过 `+chart-update --properties` 调整 `size.width` / `size.height`，再用 `+chart-config-update --x-axis-label-angle 0` 恢复水平；调整后的标签应水平摆放、显示完整且不互相重叠。
+- **折线整系列标签默认关闭**：折线图及组合图中的折线系列默认关闭整系列的逐点标签，仅用户明确要求时开启；末点、峰值、关键点等单点标签可按展示需要单独设置。验收时核对该策略；需关闭已有折线图的全局标签时用 `+chart-config-update --data-labels none`。已有系列级标签的折线图或组合图需调整标签时，先回读当前 snapshot，用 `+chart-update --properties` 完整回写 `snapshot.plotArea.plot.series` 数组，移除折线条目的 `labels`，保留按需设置的单点标签；若已有全局 `snapshot.plotArea.plot.labels`，先把需保留的标签内容转为对应系列的 `labels`，再用全局 `labels: null` 清除，避免折线继续继承全局标签。仅当用户明确要求隐藏全部数据标签时，同时清理对应折线的 `series[].points.point[].labels`，以及普通折线图的 `plot.points.point[].labels`；保留点索引、标记大小和其它样式。
+
+三项必须同时通过。模型在分析中只要识别出任一关键元素重叠、截断、遮挡或无法逐项辨认，就必须明确判定视觉验收未通过，实际修图后重新运行最终 QC 并重读受影响图片；不得以“核心信息可读”“只是小问题”或自动检查通过为由保留缺陷。`lark_sheet_selfcheck.py` 的 `CHECK_OK` 不包含图表视觉结论，不能替代本门禁。
 
 静态检查仍覆盖几何重叠、遮挡内容、越界、最小尺寸、数值源格式、全零 / 空系列和常量系列重复标签。采样未覆盖完整系列时列为不可验证，不能据此修改整个系列。退出码 `0` 也不代表数据语义与视觉判断已完成。
 
@@ -226,8 +295,6 @@ _公共四件套 · 系统：`--dry-run`_
 ### `+chart-create-basic`
 
 _公共四件套 · 系统：`--dry-run`_
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 | Flag | Type | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -259,12 +326,12 @@ _公共四件套 · 系统：`--dry-run`_
 | `--secondary-y-axis-title` | string | optional | 右 Y 轴标题 |
 | `--x-axis-label-angle` | int | optional | X 轴标签旋转角度（可选值：`-90` / `-45` / `0` / `45` / `90`） |
 | `--y-axis-label-angle` | int | optional | 左 Y 轴标签旋转角度（可选值：`-90` / `-45` / `0` / `45` / `90`） |
-| `--data-labels` | string | optional | 数据标签内容；普通基础图默认传 value，不要仅因数据点或系列较多而省略，仅用户明确要求隐藏全部标签时传 none；value、category、percentage 可按 value_category_percentage 顺序组成任意非空组合；series 显示系列名称（可选值：`none` / `value` / `category` / `percentage` / `value_category` / `value_percentage` / `category_percentage` / `value_category_percentage` / `series`） |
+| `--data-labels` | string | optional | 整系列逐点标签内容；折线图默认传 none，仅用户明确要求时开启整系列标签，末点或关键点标签可按需单独设置；组合图默认关闭折线系列标签，按 series-data-labels 逐项设置，不传全局 data-labels；其他基础图默认传 value，不要仅因点数或系列较多关闭；value、category、percentage 可按 value_category_percentage 顺序组成任意非空组合；series 显示系列名称（可选值：`none` / `value` / `category` / `percentage` / `value_category` / `value_percentage` / `category_percentage` / `value_category_percentage` / `series`） |
 | `--data-label-position` | string | optional | 普通非堆叠柱形图显示标签时一般传 outside；其它场景仅当用户明确指定时传入；只调整已有数据标签的位置，不会单独开启标签（可选值：`auto` / `top` / `bottom` / `left` / `right` / `center` / `inside` / `outside`） |
 | `--stack` | string | optional | 堆叠模式（可选值：`none` / `normal` / `percent`） |
 | `--stacked` | bool | optional | 兼容别名；等价于 --stack normal（隐藏 flag：不在 `--help` 列出，但可正常传入） |
 | `--smooth` | bool | optional | 是否使用平滑曲线；显式关闭使用 --smooth=false |
-| `--color-palette` | string | optional | 预设整图配色主题；与 --colors 互斥。多类别用多彩 brand(默认)/rainbow(系列多)/contrast(强对比)；正负·涨跌·盈亏用 diverging；柔和淡色用 muted；单系列或有序量级用 mono-<色>(mono-cyan 为天蓝、mono-gray 为中性灰)（可选值：`brand` / `rainbow` / `contrast` / `diverging` / `muted` / `mono-blue` / `mono-cyan` / `mono-green` / `mono-yellow` / `mono-orange` / `mono-red` / `mono-gray`） |
+| `--color-palette` | string | optional | 预设整图配色主题；与 --colors 互斥。用户未指定配色时省略两者：新建图使用 tool 默认色板，已有图保留配色。需要预设主题时，多类别可选 brand/rainbow/contrast，正负可选 diverging，柔和淡色可选 muted，单色可选 mono-<色>（可选值：`brand` / `rainbow` / `contrast` / `diverging` / `muted` / `mono-blue` / `mono-cyan` / `mono-green` / `mono-yellow` / `mono-orange` / `mono-red` / `mono-gray`） |
 | `--colors` | string_slice | optional | 自定义整图系列颜色，逗号分隔且至少 2 个十六进制色值；与 --color-palette 互斥 |
 | `--anchor-cell` | string | optional | 可选图表锚点单元格，如 F2；省略时放到数据范围右侧 |
 | `--width` | int | optional | 可选图表宽度；必须与 --height 同时传；饼图及长类别标签场景应适量加宽以避免截断 |
@@ -289,13 +356,13 @@ _公共四件套 · 系统：`--dry-run`_
 | `--x-axis-max` | float64 | optional | 连续数值 X 轴的显示范围上界；必须大于 --x-axis-min |
 | `--y-axis-min` | float64 | optional | 左 Y 轴的显示范围下界；默认省略，仅在用户明确要求固定范围时与 --y-axis-max 同时传；不得直接使用数据源单列最小值，且必须小于上界 |
 | `--y-axis-max` | float64 | optional | 左 Y 轴的显示范围上界；默认省略，仅在用户明确要求固定范围时与 --y-axis-min 同时传；须按图表实际绘制值计算，且必须大于下界 |
-| `--data-labels` | string | optional | 数据标签内容；value、category、percentage 可按 value_category_percentage 顺序组成任意非空组合；series 显示系列名称，none 隐藏标签（可选值：`none` / `value` / `category` / `percentage` / `value_category` / `value_percentage` / `category_percentage` / `value_category_percentage` / `series`） |
+| `--data-labels` | string | optional | 全局数据标签内容；value、category、percentage 可按 value_category_percentage 顺序组成任意非空组合；series 显示系列名称，none 隐藏标签。组合图各系列需要不同标签策略时不要使用此全局参数；先回读 snapshot，再通过 +chart-update --properties 配置系列标签（可选值：`none` / `value` / `category` / `percentage` / `value_category` / `value_percentage` / `category_percentage` / `value_category_percentage` / `series`） |
 | `--data-label-position` | string | optional | 仅当用户明确指定时传入；只调整已有数据标签的位置，不会单独开启标签；省略时按图表类型自动优化数据标签位置（可选值：`auto` / `top` / `bottom` / `left` / `right` / `center` / `inside` / `outside`） |
 | `--aggregate-categories` | bool | optional | 是否汇总相同类别；稀疏标点或需要保留逐行数据点时使用 --aggregate-categories=false，省略时保留当前设置 |
 | `--stack` | string | optional | 堆叠模式（可选值：`none` / `normal` / `percent`） |
 | `--stacked` | bool | optional | 兼容别名；等价于 --stack normal（隐藏 flag：不在 `--help` 列出，但可正常传入） |
 | `--smooth` | bool | optional | 是否使用平滑曲线；显式关闭使用 --smooth=false |
-| `--color-palette` | string | optional | 预设整图配色主题；与 --colors 互斥。多类别用多彩 brand(默认)/rainbow(系列多)/contrast(强对比)；正负·涨跌·盈亏用 diverging；柔和淡色用 muted；单系列或有序量级用 mono-<色>(mono-cyan 为天蓝、mono-gray 为中性灰)（可选值：`brand` / `rainbow` / `contrast` / `diverging` / `muted` / `mono-blue` / `mono-cyan` / `mono-green` / `mono-yellow` / `mono-orange` / `mono-red` / `mono-gray`） |
+| `--color-palette` | string | optional | 预设整图配色主题；与 --colors 互斥。用户未指定配色时省略两者：新建图使用 tool 默认色板，已有图保留配色。需要预设主题时，多类别可选 brand/rainbow/contrast，正负可选 diverging，柔和淡色可选 muted，单色可选 mono-<色>（可选值：`brand` / `rainbow` / `contrast` / `diverging` / `muted` / `mono-blue` / `mono-cyan` / `mono-green` / `mono-yellow` / `mono-orange` / `mono-red` / `mono-gray`） |
 | `--colors` | string_slice | optional | 自定义整图系列颜色，逗号分隔且至少 2 个十六进制色值；与 --color-palette 互斥 |
 
 ### `+chart-data-update`
@@ -484,7 +551,7 @@ lark-cli sheets +chart-data-update --url "..." --sheet-id "$SID" --chart-id "chr
 
 ```bash
 lark-cli sheets +chart-config-update --url "..." --sheet-id "$SID" --chart-id "chrXXX" \
-  --title "新标题" --x-axis-label-angle -45 --legend-position right
+  --title "新标题" --x-axis-label-angle 0 --legend-position right
 
 lark-cli sheets +chart-config-update --url "..." --sheet-id "$SID" --chart-id "chrXXX" \
   --data-labels value_percentage --stack percent --aggregate-categories=false
@@ -526,6 +593,8 @@ lark-cli sheets +chart-update --url "..." --sheet-id "$SID" --chart-id "chrXXX" 
 - raw 堆叠字段位于 `snapshot.plotArea.plot.extra.stack`；普通任务仍使用 `--stack normal|percent`。`plotArea.plot.labels` 对象的存在性就是开关，关闭标签时省略整个对象；普通任务使用 `--data-labels none`。
 - `axes[].label` 不接受 `format` / `number_format`。日期、百分比和数值格式应修改源单元格的 `cell_styles.number_format`。
 
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
+
 ### `+chart-delete`
 
 示例：
@@ -548,4 +617,4 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
 
 > `+chart-create` / `+chart-update` 是 write 级别，按需可用 `--dry-run` 预览，不要求 `--yes`。只有 `+chart-delete`（high-risk-write）必须 `--yes`。
 
-===== 全文完（共 551 行）=====
+===== 全文完（共 620 行）=====

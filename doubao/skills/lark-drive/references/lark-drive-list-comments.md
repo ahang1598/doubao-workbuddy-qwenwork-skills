@@ -62,14 +62,20 @@ lark-cli drive +list-comments --url "<DOCUMENT_URL>" --solved-status all
 
 ## 输出
 
+评论列表读取 `data.items`；分页依据 `data.has_more` 和 `data.page_token`。
+
 ```json
 {
-  "file_token": "docx_token",
-  "file_type": "docx",
-  "items": [],
-  "has_more": false,
-  "page_token": "",
-  "count": 0
+  "ok": true,
+  "identity": "user",
+  "data": {
+    "file_token": "docx_token",
+    "file_type": "docx",
+    "items": [],
+    "has_more": false,
+    "page_token": "",
+    "count": 0
+  }
 }
 ```
 

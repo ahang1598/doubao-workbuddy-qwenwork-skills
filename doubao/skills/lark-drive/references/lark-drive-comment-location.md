@@ -1,6 +1,6 @@
 # 文档评论定位字段
 
-当用户需要根据评论定位文档正文位置、对文档做 review、区分多处相同引用文本，或把评论落点映射到 `docs +fetch --detail with-ids` 的内容时，优先使用 `drive +list-comments --need-relation` 查询 docx 评论位置；已知评论 ID 时用 `drive +batch-query-comments --need-relation`。
+Docx 正文及评论的读取和定位优先使用 [`docs +fetch --detail with-ids`](../../lark-doc/references/lark-doc-fetch.md)；本页说明 Drive 评论的原始位置字段。
 
 ## 适用范围
 
@@ -132,8 +132,8 @@ lark-cli docs +fetch --doc '<doc_token_or_url>' --detail with-ids
 ## 定位流程
 
 1. 确认目标是 `file_type=docx`；只有 docx 文档支持通过 `need_relation` 查询评论位置。
-2. 用 `drive +list-comments --need-relation` 获取评论；已知评论 ID 且需要批量查询时，用 `drive +batch-query-comments --need-relation`。原生 `drive file.comments list/batch_query` 仅在需要 shortcut 未暴露的底层参数时兜底。
-3. 用 `docs +fetch --detail with-ids` 获取文档内容。
+2. 已有评论及位置结果满足需求时直接复用；否则用 `drive +list-comments --need-relation` 获取，已知评论 ID 时用 `drive +batch-query-comments --need-relation`。原生 `drive file.comments list/batch_query` 仅在需要 shortcut 未暴露的底层参数时兜底。
+3. 复用已有正文和 block id；缺少时用 `docs +fetch --detail with-ids` 获取。
 4. 对每条评论先看 `relation`：
    - 如果存在 `relation.relation`，解析这个 JSON 字符串。
    - 从解析结果里取 `positionInfo.blockID`。

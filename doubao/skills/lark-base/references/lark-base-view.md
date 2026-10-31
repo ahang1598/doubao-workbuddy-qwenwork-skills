@@ -1,3 +1,8 @@
-# View 参考入口
+# CLI 帮助兼容入口：lark-base-view
 
-视图类型、配置边界及验收见 [主 Skill「表单与视图细节」](../SKILL.md#表单与视图细节)，筛选 JSON 见 [视图筛选](lark-base-view-set-filter.md)。创建、改名及各配置命令使用各自的精确 `--help`。
+此文件保留 CLI 帮助使用的路径。执行前先按对应场景确定任务范围，再读取所需协议；具体规则由以下文档维护。
+
+- [View 场景与验收](../scenes/view.md)
+- [命令](view-commands.md)
+- [显示配置](view-display.md)
+- [筛选配置](view-filter.md)

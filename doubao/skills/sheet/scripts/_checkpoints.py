@@ -85,15 +85,15 @@ def checkpoint_file_path(raw: Optional[str]) -> Optional[str]:
     return text[1:].strip().strip("\"'") if text.startswith("@") else None
 
 
-def load_checkpoints(raw: Optional[str]) -> Tuple[List[dict], Optional[str]]:
-    """`@路径` 从文件读，其余按内联 JSON 解析。返回 (条目列表, 错误说明)。"""
+def load_checkpoints(raw: Optional[str], require_sheet: bool = True) -> Tuple[List[dict], Optional[str]]:
+    """`@路径` 从文件读，其余按内联 JSON 解析；CSV 可省略子表名前缀。"""
     if raw is None:
         return [], None
     text = raw.strip()
     path = checkpoint_file_path(raw)
     if path is not None:
         try:
-            with open(path, "r", encoding="utf-8") as fh:
+            with open(path, "r", encoding="utf-8-sig") as fh:
                 text = fh.read()
         except OSError as exc:
             return [], f"检查点文件读不到：{path}（{exc.strerror or exc}）"
@@ -106,7 +106,7 @@ def load_checkpoints(raw: Optional[str]) -> Tuple[List[dict], Optional[str]]:
     if not isinstance(data, list) or not data:
         return [], "检查点必须是非空数组，或含 checkpoints 数组的对象"
     for i, item in enumerate(data):
-        problem = _describe_item_problem(item, i + 1)
+        problem = _describe_item_problem(item, i + 1, require_sheet)
         if problem:
             return [], problem
     return data, None
@@ -122,7 +122,7 @@ TARGET_KEYS = ("cell", "range", "sheets")
 TRUTHY_ASSERTIONS = ("non_empty", "formula", "all_formula")
 
 
-def _describe_item_problem(item: Any, ordinal: int) -> Optional[str]:
+def _describe_item_problem(item: Any, ordinal: int, require_sheet: bool = True) -> Optional[str]:
     """契约本身写得不对时给出说明；没问题返回 None。"""
     if not isinstance(item, dict):
         return f"第 {ordinal} 条不是对象"
@@ -137,7 +137,24 @@ def _describe_item_problem(item: Any, ordinal: int) -> Optional[str]:
 
     if "sheets" in item:
         return _describe_sheets_problem(item["sheets"], ordinal)
-    return _describe_assertion_problem(item, ordinal)
+    return (_describe_reference_problem(item, ordinal, require_sheet)
+            or _describe_assertion_problem(item, ordinal))
+
+
+def _describe_reference_problem(item: dict, ordinal: int, require_sheet: bool) -> Optional[str]:
+    """只校验引用契约；子表是否存在、值是否匹配留到读取产物后判断。"""
+    ref = item.get("cell") if "cell" in item else item.get("range")
+    if not isinstance(ref, str) or not ref.strip():
+        return f"第 {ordinal} 条的引用要是非空字符串，写成 '子表名!B12'"
+    sheet, addr = split_ref(ref)
+    if (sheet is None and require_sheet) or (sheet is not None and not sheet.strip()):
+        return f"第 {ordinal} 条的引用要带非空子表名，写成 '子表名!B12'"
+    coords = iter_range(addr)
+    if not coords:
+        return f"第 {ordinal} 条的范围解析不了或超过 {MAX_RANGE_CELLS} 格"
+    if "expect" in item and len(coords) != 1:
+        return f"第 {ordinal} 条的期望值只能对单格写，范围请拆成多条"
+    return None
 
 
 def _describe_sheets_problem(sheets: Any, ordinal: int) -> Optional[str]:

@@ -16,9 +16,9 @@ description: 搜索并解读上市公司公告，覆盖 A股（沪深北）、�
 
 你的输出是给读者直接阅读的成品分析，不是研究日志、推理过程、工作流说明或文件交付清单。中间产物只服务于你自己，不得在最终回答中展示、概括、附带、上传或列为交付内容。
 
-**所有中间产物必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录**，这个目录名本身就是执行提醒：其中任何文件（事实表、源稿、图表、脚本输出）都不是交付物。目录创建后立刻创建并持续更新恢复入口文件 `00_RESUME_HERE__NEXT_STEP.md`；如果上下文压缩后继续任务，任何动作前必须先读取它，按里面记录的"下一步必须执行"续接，不要凭记忆重新开始。**单条深度解读模式必须严格按 `references/delivery-pipeline.md` 第二节定义的阶段顺序执行（检索取证 → 写事实表 → 写源稿 → finalize（门禁1 + 门禁2 + 生成 display markdown） → 创建飞书文档 → 对话输出），不得跳过、合并或压缩任何阶段，也不得在分析想清楚之后直接跳到写最终回复——跳步是这个 Skill 最容易失败的地方。**
+**所有中间产物必须写入 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/ 目录**，并持续更新恢复入口文件。单条深度解读按“检索取证 → 事实表 → 结构化 report.json → 内容与事实门禁 → HTML 报告和重点摘要”顺序执行，不先写完整 Markdown，也不由模型手写 HTML。细节见 references/delivery-pipeline.md。
 
-最终回复必须包含三部分，顺序不可变、不可省略：先输出固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」；再完整输出 display markdown 的正文内容；最后附上飞书文档。不得在回复中展示中间文件列表、文件下载说明或"已生成哪些文件"的交付清单，除非用户明确要求查看这些内容。完整流程见第七步和 `references/delivery-pipeline.md`。
+最终对话只输出固定风险提示语、2–5 条重要结论和 HTML 报告链接；完整报告只在 HTML 中。不得把完整正文粘贴到对话框。用户明确要求其它形式时再按其要求处理。
 
 ## 2. 成品标准（Quality Bar）
 
@@ -28,8 +28,8 @@ description: 搜索并解读上市公司公告，覆盖 A股（沪深北）、�
 4. **多视角解读**：深度解读不是复述公告原文，至少要覆盖——公告客观内容、对公司基本面/估值的影响、和此前市场预期/传闻的关系、**历史同类公告与关联公告的联动信号**（见 `references/linked-signals.md`）、潜在的反方或风险点、后续需要跟踪验证的信号。**"只搜到这一条公告就开始写"是不合格的**——历史同类公告和关联公告的联动检索是必做步骤，见第三步。
 5. **市场适配**：三个市场的公告制度术语、披露时限、投资者关注重点不同，解读时要用该市场的准确术语，不要用 A 股术语套港股/美股的公告（详见 `references/markets-taxonomy.md`）。
 6. **专业表达**：写作语气要像专业分析师内部纪要，不用新闻体空话，判断要跟着具体数字/机制/依据（详见 `references/writing-style.md`）。
-7. **呈现质量**：结构化数据默认用表格，趋势/对比类数据配图表，图表直接嵌入正文（不是纯文字堆砌）；最终回复固定按"风险提示语 → display markdown 正文 → 飞书文档"三段式交付（详见 `references/output-rendering.md`、`references/delivery-pipeline.md`）。
-8. **来源可溯源、可分级、机械可核查**：检索优先命中信源白名单（详见 `references/data-grading-and-citation.md` 第一节）；正文关键数字/判断必须先登记进事实表（`facts.json` 的 `claims`）才能引用，不是写完正文再补链接——单条深度解读结尾的"数据来源"清单（按出现顺序编号）由脚本按事实表填入源稿已写好的骨架，免责声明固定文字由模型手写，不是随手甩几个链接或手写角标（详见 `references/delivery-pipeline.md`）。
+7. **呈现质量**：完整内容写入结构化 report.json，表格和图表由固定 HTML 模板排版；对话只给重要总结和报告链接。详见 references/output-rendering.md。
+8. **来源可溯源、可分级、机械可核查**：摘要、正文、表格、图表中的关键数字和判断先登记 facts.json，再由 report.json 的 fact_ids 绑定。门禁核对来源等级、语气、引用和图表数值；HTML 自动生成来源清单与固定免责声明。
 
 ## 3. 执行流程（Workflow）
 
@@ -61,32 +61,28 @@ description: 搜索并解读上市公司公告，覆盖 A股（沪深北）、�
 
 ### 第五步：写事实表
 
-按 `references/facts-template.md` 把正文、表格、后续关注阈值里会引用的关键数字/判断登记进 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims`。写完即可进入源稿阶段——**不要单独跑 `scripts/check_facts.py`**（它是 finalize 的内部 helper，单独跑只会多一次脚本授权摩擦、不增加校验收益）。事实表的结构性校验（claim_id 格式、缺 source/usage_type、hard_fact 来源分级不一致等）由第七步 `finalize_report.py` 内部门禁 1 负责；若 finalize 在门禁 1 报错，回事实表改完再重跑 finalize，不能绕过。
+按 references/facts-template.md 建立 facts.json，覆盖报告摘要、正文、表格、图表和后续关注清单中实际使用的关键事实。图表数据点对应的 claim 必须写 value 和 unit。事实表先于报告内容完成，来源等级与计算公式不能省略。
 
-### 第六步：按模式写源稿（不是直接写最终稿）
+### 第六步：写结构化报告
 
-深度解读 vs 批量摘要的具体交付结构、篇幅，见 `references/output-formats.md`。写作语气按 `references/writing-style.md` 收敛，避免新闻体空话。源稿正文里关键数字/判断后面绑定 `{fact:claim_id}`（对应第五步事实表里的 `claim_id`），不手写引用编号；源稿写完时必须已经包含"数据来源/风险提示与免责声明"的固定骨架（模型手写，不是脚本生成；**不要**再写「未获取清单」），具体格式和示例见 `references/delivery-pipeline.md` 第四节、`references/data-grading-and-citation.md` 第六、七节。
+按 references/report-schema.md 写 report.json。单条深度解读必须覆盖公告基本信息、关键事实、重要性、历史对比、关联信号、股价阶段表现、多视角分析和后续关注；批量模式按覆盖范围、公告清单、重点提示与缺口组织。summary 只写 2–5 条最重要结论。每个重要数字和判断使用 fact_ids 绑定事实表，图表写数据点与事件，不制作待嵌入的大图片。专业表达继续遵守 references/writing-style.md。
 
-结构化数据用表格，趋势/占比/对比类数据配图表（图表统一用 `scripts/render_charts.py` 生成 PNG，不手绘/不用 ASCII 拼凑），**图表在写源稿之前生成，再直接用 Markdown 图片语法嵌入源稿**，保证最终展示给用户时不用额外操作就能看到关键图。具体规则见 `references/output-rendering.md`。
+### 第七步：门禁、HTML 与对话摘要
 
-### 第七步：finalize（门禁 2）+ 创建飞书文档 + 对话输出（唯一交付入口）
+事实表和 report.json 准备好后，只运行：
 
-源稿和事实表都准备好之后，只运行一条命令：
+~~~bash
+python3 scripts/finalize_report.py <report.json路径> <facts.json路径> --html-output <可交付的报告.html> --summary-output <内部SUMMARY.md路径>
+~~~
 
-```bash
-python3 scripts/finalize_report.py <源稿路径> <facts.json路径> --display-output <输出路径>
-```
-
-这一步会依次：规范化排版（含把英文直引号包裹的中文短语自动转成弯引号）→ 门禁 1（`scripts/check_facts.py`）→ 门禁 2（`scripts/lint_report.py`，硬门禁：语气三句式、无名锚、自有评级、无锚的超/低于预期、内部术语泄露、fact 引用合法性、券商/媒体/推断类表述是否保留限定语等，有 ERROR 就非零退出、不生成 display markdown）→ 把 `{fact:claim_id}` 重新编号成 `[n]` 并填入源稿已有的骨架，生成 display markdown。`scripts/normalize_report.py`、`scripts/check_facts.py`、`scripts/lint_report.py`、`scripts/make_display_markdown.py` 都是它的内部 helper，不要拆开单独跑；命令非零退出时回源稿/事实表改完问题重跑，不能跳过。
-
-命令成功后，用当前环境的飞书文档/云文档创建能力（或降级用 `lark-cli` + `lark-doc` 技能）把 display markdown 全文创建成在线文档。最终回复固定为三段：**固定风险提示语 → display markdown 正文全文 → 飞书文档链接**，不展示中间文件/生成过程。完整流程、facts.json 结构、错误排查见 `references/delivery-pipeline.md`。
+命令依次校验事实表、章节结构、事实绑定、表达边界、图表点值和事件市场口径；通过后直接生成自包含 HTML 与对话摘要。错误必须回输入修复后重跑，警告逐条复核。打开 HTML 检查全文、来源、图表和移动端布局。最终回复直接粘贴 SUMMARY.md；该文件只含短风险提示、重点结论和 HTML 链接。详见 references/delivery-pipeline.md。
 
 ## 4. 硬约束（Hard Constraints，两种模式共用）
 
 **取数与来源**
 
 1. **取数只有两条工具通道**（`general_search` + `seed_finance_search`），不得引入第三条隐藏数据源；两条通道都拿不到的数据如实标"数据缺口"，不得补造。
-2. **无来源数字不入正文**：正文里的关键证据数字和关键事实判断必须先登记进事实表（`facts.json` 的 `claims`）才能引用，写作顺序是"先建事实表、再写正文"，不是写完正文再补链接；`scripts/finalize_report.py` 的门禁 2（`lint_report.py`）会机械校验这一点——正文引用了事实表里没有的 `claim_id` 会直接报错、非零退出，不能靠手工检查代替，也不能删掉引用来"绕过"报错。
+2. **无来源数字不入正文**：关键证据数字和重要判断必须先进入 facts.json，report.json 中的相关块用 fact_ids 绑定；未知 fact_ids、未绑定关键数字及图表数值与事实表不符均阻断 HTML 生成。
 3. **二级/三级来源不得包装成公司披露的确定事实**：券商估算、媒体观点、平台自撰文章、作者推断只能显名归因转述，不能写成好像是公司自己披露的确定事实；分级规则见 `references/data-grading-and-citation.md` 第一节。
 4. **不臆断重要性**：公告是否"重大"要依据该市场官方分类/披露规则（如港股的比率测试、美股 8-K 的 33 类法定事项），不要凭标题感觉判断。
 5. **投资者评论区只作线索，不作事实**：同花顺/东方财富等平台的用户评论不得作为事实引用，只能用于定位解读切入点，具体用法见 `references/data-grading-and-citation.md` 第三节。
@@ -107,8 +103,8 @@ python3 scripts/finalize_report.py <源稿路径> <facts.json路径> --display-o
 
 **呈现与交付**
 
-14. **图表必须用脚本生成，且直接嵌入正文**：交付里的图表统一走 `scripts/render_charts.py` 生成，不得手绘或用文字/表情符号拼凑图形，每张图必须有标题、坐标轴单位、来源口径说明；图表要直接用 Markdown 图片语法嵌入源稿/正文，不能只存在于飞书文档这一份附加产物里。
-15. **文末溯源清单与免责声明不可省略**：单条深度解读源稿写完时必须已经包含 `references/data-grading-and-citation.md` 第六节格式的"数据来源"骨架和第七节的免责声明固定文字（**不要**再附「未获取清单」），`scripts/finalize_report.py` 只把编号列表填进这个骨架，不生成免责声明文字，模型不能等脚本"自动补全"；批量摘要至少手工附简版免责声明。
-16. **执行必须走阶段化流程，不得跳步**：单条深度解读必须先创建 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 目录和恢复入口文件，再按 `references/delivery-pipeline.md` 第二节的阶段顺序（检索 → 写事实表 → 写源稿 → finalize（门禁1+门禁2）→ 创建飞书文档 → 对话输出）执行；不允许分析想清楚后直接跳到写最终回复、绕开事实表和门禁。
-17. **最终回复固定三段式，不暴露内部实现细节**：固定风险提示语 → display markdown 正文全文 → 飞书文档链接，顺序不可变、不可省略；不得在回复中展示中间文件列表、"已生成哪些文件"之类的交付清单或生成过程播报，也不得在回复正文里出现 `facts.json`、`finalize_report`、`playbook`、`Tier 1/2/3`、工作目录名等内部文件/脚本/分类名，除非用户明确要求查看这些内容——`scripts/lint_report.py` 会机械拦截常见的内部术语泄露，但不能完全替代自查。完整契约见 `references/delivery-pipeline.md`。
-18. **飞书文档创建失败不能连带整体失败**：优先用当前环境内置的飞书文档创建能力，没有则降级用 `lark-cli` + `lark-doc` 技能；文档创建成功后，应以当前运行环境支持且用户可访问的方式提供在线 URL；创建失败时如实告知原因，固定风险提示语和 display markdown 正文依然要完整交付。
+14. **图表由核验数据直接生成**：先确定图表问题、数据、单位、市场、事件时间和来源；在 report.json 的 chart block 填入数值与事实绑定。HTML 模板绘制响应式 SVG，不先制作大 PNG 再嵌入。图题、坐标、图例、来源口径清晰可见，交付前检查桌面和移动端。
+15. **来源清单与免责声明不可省略**：HTML 模板根据 fact_ids 自动生成文末来源清单和固定长版免责声明；对话摘要自动加入固定短风险提示。数据缺口仍须在相关正文处标明。
+16. **执行必须走阶段化流程，不得跳步**：检索、事实表、完整 report.json、门禁、HTML 和对话摘要依次完成。不能绕过事实表或门禁，也不要求先写完整 Markdown。
+17. **最终回复只给摘要和 HTML**：固定短风险提示 → 2–5 条重要结论 → HTML 报告链接。不得粘贴完整报告、内部事实表、结构化正文或日志；内部术语不得进入读者可见内容。
+18. **HTML 报告是正式交付物**：生成失败时修复错误后重跑；无法生成时如实说明失败原因，不能以完整对话正文冒充 HTML 报告。

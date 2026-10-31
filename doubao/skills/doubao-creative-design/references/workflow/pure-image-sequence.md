@@ -36,7 +36,7 @@
 python3 scripts/runtime/stitch-images.py --output /absolute/new/long-page.png /absolute/segment-01.png /absolute/segment-02.png
 ```
 
-脚本需要 Pillow。环境缺少依赖时使用宿主已有图像合成工具，或说明具体阻塞；不伪造输出。拼接生成的新本地产物可以上传取得自己的短链，并作为独立 IMAGE 完成 CLI 写入／回读与单项 RichMediaCard；原始段图保持各自来源和版本。不能因段图已交付就跳过完整长图的最终交付。
+脚本需要 Pillow。环境缺少依赖时使用宿主已有图像合成工具，或说明具体阻塞；不伪造输出。拼接生成的新本地产物可以上传取得自己的短链，并作为独立 IMAGE 完成 CLI 写入／回读与以 RichMediaCard 形式单项直交；原始段图保持各自来源和版本。不能因段图已交付就跳过完整长图的最终交付。
 
 维护时可用 [路由案例](../../SKILL.md) 检查套图、纯图长页、Logo 系统与已有源编辑边界。
 

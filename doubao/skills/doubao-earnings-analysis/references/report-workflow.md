@@ -1,6 +1,6 @@
 # 报告模式工作流
 
-生成完整季度点评报告。定位是**解释性点评**，不是投资建议。交付物：对话中输出 report display 正文全文 + 附上飞书在线文档。最终对话不列中间产物清单。
+生成完整季度点评报告。定位是**解释性点评**，不是投资建议。交付物：文本框简短作答 + 独立 HTML 报告（优先发布为飞书妙搭 HTML 页面）。最终对话不粘贴报告全文。
 
 **内部产物目录：** 所有工作文件必须写入 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`。开始工作前先创建该目录；目录名就是约束：其中任何文件都不得在最终回复中展示、列出、上传、摘要或作为交付物。
 
@@ -15,7 +15,8 @@
 当前状态：____
 禁止交付：____
 下一步必须执行：____
-最终正文来源：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
+最终源稿：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html
+最终页面来源：FINAL_REPORT_HTML/index.html
 ```
 
 **执行纪律：必须严格按本文件定义的阶段顺序执行，不得跳过、合并或压缩任何阶段。每个阶段的产出是下一阶段的输入前提——跳步会导致分析深度不足。**
@@ -25,7 +26,7 @@
 - 报告边界与工作流总览
 - 阶段 0-2：初始化、公司研究、写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md`
 - 阶段 3-5：取数、写作决策、定向补查
-- 阶段 6-7：写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`、后处理、创建飞书文档与交付
+- 阶段 6-7：写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html`、HTML 核验与交付
 
 ---
 
@@ -49,8 +50,8 @@
 阶段 3  广撒网取数 → _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json（含 claims）→ 门禁 1
 阶段 4  写作决策 → _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md（含机制分析与当前深度）
 阶段 5  定向补查 → 更新 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json → 重跑门禁 1
-阶段 6  写 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md（含读者视角自查）
-阶段 7  后处理与交付（只运行 finalize_report.py）
+阶段 6  写 _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html（含读者视角自查）
+阶段 7  HTML 核验与交付（只运行 finalize_html_report.py）
 ```
 
 ---
@@ -62,9 +63,7 @@
 1. 声明今天日期，不使用训练记忆中的数据。
 2. 读 `market-profiles.md` 确定上市地档案（利润用语、币种、披露平台）。
 3. 读 `industry-playbooks.md` + 命中的 playbook。
-4. 读范例校准深度标准：
-   - `exemplars/report-exemplar.md`
-   - `exemplars/anti-patterns.md`
+4. 记录本次适用的市场口径和行业原型。范例留到写正文前再读。
 
 产出：除恢复入口文件状态更新外，无内容文件产出。执行者已加载所有配置，可以开始研究。
 
@@ -154,13 +153,15 @@
 
 ---
 
-### 阶段 6：写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`
+### 阶段 6：写 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html`
 
-读 `report-structure.md`（结构）、`analysis-moves.md`（动作写法）、`reasoning-framework.md`（推理标准）。
+读 `report-structure.md`（内容结构）、`analysis-moves.md`（动作写法）和 `exemplars/report-exemplar.md`（成品质量）；范例的 Markdown 排版不作为 HTML 模板。此时再读 `html-style.md`，复制 `assets/report-starter.html` 的视觉外壳为 HTML 源稿，按本工作流原有的内容要求编写正文。`assets/report-layout-preview.html` 仅供查看可选组件，不规定章节、顺序或组件数量。不要另起一套空白 CSS。遇到对应的旧问题时读 `exemplars/anti-patterns.md`；推理卡住时才读 `reasoning-framework.md`。
+
+组织数据呈现时，检查事实表中是否有多期趋势、业务结构或同口径横向对比；如果画图能让关键关系更快被看懂，按 `html-style.md` 用已核验的数据制作图表，并在图后解释它支持什么判断。图表是可选的表达方式，不增加分析章节要求。
 
 #### 写作核心原则
 
-`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md` 是给读者的成品源稿，不是中间产物的整理稿。`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md` 和 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md` 是你的研究笔记和写作决策，读者永远不会看到它们。源稿必须用读者语言从零叙述。
+`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html` 是给读者的成品源稿，不是中间产物的整理稿。`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md` 和 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md` 是你的研究笔记和写作决策，读者永远不会看到它们。源稿必须用读者语言从零叙述。
 
 1. **只写结论，不写过程。** brief 里列了三条可能解释、排除了两条——report 只保留经验证的解释作为论点。被排除的假设不出现，除非排除本身对读者理解有帮助（「不是 X 而是 Y」一句话带过）。
 2. **禁止照搬中间产物的句式。** 如果源稿某段话和 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md` / `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md` 长得一样，或者只是把「解释 A：」换成了段落首句，退回去重写。
@@ -169,14 +170,14 @@
 
 #### 事实绑定规则
 
-源稿应把支撑结论的正文数字、表格关键数字、后续关注阈值、关键事实判断绑定到 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims`：
+HTML 源稿应把支撑结论的正文数字、表格关键数字、后续关注阈值、关键事实判断绑定到 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` 的 `claims`：
 
-```markdown
-国外销售占比从 2024 年的 53.49% 降至 2025 年的 49.44%。{fact:overseas_share_2024,overseas_share_2025}
-有券商估算公司在该细分市场份额约 40%-45%，但公司年报未披露该口径。{fact:market_share_estimate}
+```html
+<p>国外销售占比从 2024 年的 53.49% 降至 2025 年的 49.44%。{fact:overseas_share_2024,overseas_share_2025}</p>
+<p>有券商估算公司在该细分市场份额约 40%-45%，但公司年报未披露该口径。{fact:market_share_estimate}</p>
 ```
 
-- `{fact:...}` 绑定标记只存在于源稿，`finalize_report.py` 会在 display markdown 中自动转换成普通文本 `[n]` 来源标记，并按同一编号重写文末「数据来源」。源稿不要手写 `[n]` 或 `[^n]`。
+- `{fact:...}` 绑定标记只存在于源稿，`finalize_html_report.py` 会转换成可点击 `[n]` 来源标记，并按同一编号生成「数据来源」。源稿不要手写 `[n]` 或 `[^n]`。
 - `{fact:...}` 只能引用 `claims[].claim_id`，不得引用 `other_facts.name` 或中文事实名。关键 `other_facts` 若要入正文，先补一条 `claims`；未知或非规范 fact 引用会导致 finalize 失败。
 - 无法绑定到 `claims` 的数字，先判断是不是关键证据：是则回到阶段 3 或阶段 5 补 facts；不是则可保留，并在 lint 警告中复核。
 - `usage_type=broker_estimate/broker_forecast/market_view/author_inference` 的 claim，正文必须用「券商估算/机构预计/市场讨论/可能指向」等限定语，不得写成确定事实。
@@ -193,69 +194,44 @@
 以**对财报分析感兴趣但不了解你内部工作流的读者**身份通读全文，逐项检查：
 
 1. **内部术语残留？** 搜索标签形态：深度0、深度1、深度2、深度3、深度4、当前深度、补到深度、机制候选、假设空间、结论分档、门禁、收入函数、brief。出现任何一个 = 必须改写。
-2. **照搬中间产物？** 把 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md` 与 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md` 对照，如果某段的句式、措辞、结构与 brief 高度雷同，用读者能理解的因果叙事重写。
+2. **照搬中间产物？** 把 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html` 与 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md` 对照，如果某段的句式、措辞、结构与 brief 高度雷同，用读者能理解的因果叙事重写。
 3. **像分析文章还是像填模板？** 如果某段读起来是「标签：内容」的格式，改为连贯叙述。
 4. **措辞强度与证据匹配？** 没有充分证据的结论不应使用确定性表述。
 5. **正文关键数字与 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json` / check_facts 输出一致？** 核心证据数字是否有 `{fact:claim_id}`；是否错误引用了 `other_facts.name`；`usage_type` 与正文语气是否匹配，例如券商估算、媒体报道、作者推断是否保留了限定语。若 lint 输出「来源/语气复核」并给出「建议改写」，除非能明确判断为误报，否则按建议改写或补充等价限制语。
 6. **展开的对质真过了门槛？没有删掉后不影响主线理解的段落？**
 7. **三个关注点都交代了裁决状态？**
 
-发现问题 → 修改 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`，改完再进入阶段 7。
+发现问题 → 修改 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html`，改完再进入阶段 7。
 
-写完源稿并完成自查后，必须更新 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md`：
+写完 HTML 源稿并完成自查后，必须更新 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/00_RESUME_HERE__NEXT_STEP.md`：
 
-```markdown
-当前状态：源稿已完成自查，但尚未生成最终正文。
-禁止交付：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md（含 {fact:...} 审计标记）
-下一步必须执行：python3 scripts/finalize_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --display-output _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
-最终正文来源：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
+```text
+当前状态：HTML 源稿已完成自查，但尚未生成最终页面。
+禁止交付：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html（含 {fact:...} 审计标记）
+下一步必须执行：运行 python3 scripts/finalize_html_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html
+最终源稿：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html
+最终页面来源：FINAL_REPORT_HTML/index.html
 ```
-
 ---
 
-### 阶段 7：后处理与交付
+### 阶段 7：HTML 核验与交付
 
-依次执行以下步骤，全部完成才算交付：
-
-**步骤 1：后处理并生成飞书文档源稿**
-
-只运行下面这一条命令。不要拆开运行 `make_display_markdown.py` 或 `normalize_report.py` 来完成交付；这些脚本是 `finalize_report.py` 的内部 helper。不要默认运行 `make_docx.py`，除非用户明确要求 Word/DOCX 导出。`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md` 是把内部 `{fact:...}` 绑定转换为 `[n]` 来源标记后的飞书文档源稿，不是交付物文件。
+1. 只运行下面这一个默认交付入口：它核验事实表，对 HTML 可见文字运行原有 lint，并把 `{fact:...}` 转为可点击来源标记。失败时修正源稿后重跑。不要默认导出 DOCX。
 
 ```bash
-python3 scripts/finalize_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --display-output _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
+python3 scripts/finalize_html_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.html _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --output FINAL_REPORT_HTML/index.html
 ```
 
-该命令会规范化 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`、重跑 `check_facts.py`、运行 lint 门禁 2，再生成无 `{fact:...}` 标记的 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md`。`finalize_report.py` 退出码必须为 0。若事实门禁或 lint 硬错误失败，脚本会中止，不生成新的 display markdown；事实绑定、期间和来源语气类提示通常是警告，需要在阶段 6 的读者视角自查中由模型复核是否修改。命令成功但仍有 warning 时，不得直接忽略：误报可放行；真实的期间、来源语气或建议改写问题必须修改后重跑 finalize。
+2. 打开 `FINAL_REPORT_HTML/index.html`，按 `html-style.md` 在桌面和手机宽度做读者视角检查：首屏有明确判断，正文与数据易读，文末来源链接和风险提示可见；不得出现 `{fact:...}`、`【...】` 占位符、空组件或内部文件名。实际采用的组件须包含有效内容，不为凑版式重复数字。若有图表，确认它们在独立 HTML 中可见。HTML 才是完整报告，不得用简短回答替代。
+3. 优先使用可用的飞书妙搭 HTML 发布能力发布 `FINAL_REPORT_HTML/index.html`，并取得可访问链接。若当前环境不支持 HTML 发布，直接附上该 HTML 文件并说明尚未发布。不要创建飞书云文档来替代 HTML。
+4. 最终文本框先放固定风险提示语，再用 2-4 句话概括主结论、1-2 个关键证据和最重要的判断局限，最后给 HTML 链接或附件。不要粘贴完整报告，也不要列中间产物。文本框中出现的数字也必须来自事实表并与 HTML 一致。
 
-finalize 成功后，必须更新恢复入口文件：
-
-```markdown
-当前状态：FINAL_REPLY_BODY.md 已生成，下一步是创建飞书文档并输出正文。
-禁止交付：所有 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/` 路径和文件名；尤其禁止输出 DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md。
-下一步必须执行：用 FINAL_REPLY_BODY.md 的全文创建飞书在线文档，然后在最终回复中先输出固定风险提示语，再粘贴 FINAL_REPLY_BODY.md 正文内容，最后附飞书文档。
-最终正文来源：_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
-```
-
-**步骤 2：调用内置能力创建飞书文档**
-
-调用内置飞书文档/云文档能力，以 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md` 的全文作为正文创建飞书在线文档。触发时明确表达：
-
-> 请使用飞书文档/云文档创建能力，将以下 markdown 内容创建为飞书在线文档，并附上创建好的飞书文档。
-
-飞书文档的内容质量标准与 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md` 完全一致——它是正式交付物，不是简化版。Display markdown 是飞书文档的创建源：把内部 `{fact:...}` 绑定转换成普通文本 `[n]` 来源标记，保留文末数据来源和未获取清单。
-
-**步骤 3：对话输出**
-
-最终对话回复必须先输出固定风险提示语「回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。」；再原样输出 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md` 的全文内容；最后附上飞书文档。可以输出报告正文和其中的核心结论，但不得输出中间文件名、路径或文件清单。
-
-**注意：这一步是「固定风险提示语 + 复制 display 正文 + 附上飞书文档」，不是「列出文件」。** 不得输出 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__company-brief.md`、`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__writing-plan.md`、`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json`、`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`、`_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md` 的文件名、路径或下载说明；不得输出 brief、writing-plan、facts、source markdown 的内容或摘要；但必须输出 display markdown 的正文内容本身。
-
-最终回复固定格式：
+最终回复示例：
 
 ```text
 回答基于AI 生成，仅用于信息参考与研究辅助，不构成任何投资建议。股市有风险，请结合自身风险承受能力决策。
 
-<display markdown 全文>
+[2-4 句话直接回答，含关键证据与局限。]
 
-飞书文档：<附上的飞书文档>
+完整分析（HTML）：<页面链接或 HTML 附件>
 ```

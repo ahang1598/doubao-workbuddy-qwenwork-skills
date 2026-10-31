@@ -20,6 +20,8 @@ import time
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
+from excel_conditional_format_verify import CONDITIONAL_FILL_ADVICE, check_file
+
 from excel_lo_runtime import (LO_START_FAILURE_MARKERS, get_soffice_env, profile_arg,
                               run_managed_process, soffice_detail, sweep_stale_profiles)
 from _checkpoints import (checkpoint_file_path, emit_checkpoint_hint, emit_checkpoint_skip_hint,
@@ -414,13 +416,19 @@ def _shape_hits(formula: str) -> List[str]:
 
 
 def scan_static_risks(filename: str, max_report: int = 10) -> dict:
-    """不依赖重算的公式事实：函数兼容前缀、数组形状、公式覆盖率。"""
+    """不依赖重算的公式及条件填充兼容性、数组形状、公式覆盖率。"""
+    # openpyxl 会告警并丢弃 x14；先检查原始 OOXML，不能把丢失的规则当作空规则。
+    conditional_report = check_file(filename)
+    if conditional_report["status"] == "error":
+        return {"status": "skipped", "blocking": True,
+                "reason": "conditional formatting was not verified: " + conditional_report["error"]}
     try:
         wb = load_workbook(filename, data_only=False)
     except Exception as exc:
         return {"status": "skipped", "reason": str(exc)}
 
     compat, shape = [], []
+    conditional_fill = [violation["actual"] for violation in conditional_report["violations"]]
     formula_cells = static_numeric_cells = 0
     try:
         for name in wb.sheetnames:
@@ -448,9 +456,10 @@ def scan_static_risks(filename: str, max_report: int = 10) -> dict:
 
     computed = formula_cells + static_numeric_cells
     return {
-        "status": "issues_found" if (compat or shape) else "clean",
+        "status": "issues_found" if (compat or shape or conditional_fill) else "clean",
         "compat": {"count": len(compat), "details": compat[:max_report]},
         "shape": {"count": len(shape), "details": shape[:max_report]},
+        "conditional_fill": {"count": len(conditional_fill), "details": conditional_fill[:max_report]},
         "coverage": {
             "formula_cells": formula_cells,
             "static_numeric_cells": static_numeric_cells,
@@ -460,7 +469,7 @@ def scan_static_risks(filename: str, max_report: int = 10) -> dict:
 
 
 STATIC_RISK_HINT = """\
-[static] 检出不必重算就能确定会算错的公式{extra}：
+[static] 检出不依赖重算的公式或格式问题{extra}：
 {lines}
 {advice}"""
 
@@ -478,10 +487,14 @@ SHAPE_ADVICE = (
 
 
 def _emit_static_risk_hint(sr: dict) -> bool:
-    """在 stderr 打印处置指引。返回是否检出确定性问题。"""
+    """在 stderr 打印处置指引，返回是否应阻断交付。"""
+    if sr.get("blocking"):
+        print(f"[static] 条件格式未完成验证：{sr.get('reason')}；需人工核对，不能声明通过。", file=sys.stderr)
+        return True
     compat = sr.get("compat") or {}
     shape = sr.get("shape") or {}
-    total = compat.get("count", 0) + shape.get("count", 0)
+    conditional_fill = sr.get("conditional_fill") or {}
+    total = compat.get("count", 0) + shape.get("count", 0) + conditional_fill.get("count", 0)
     if not total:
         return False
     lines = []
@@ -489,10 +502,17 @@ def _emit_static_risk_hint(sr: dict) -> bool:
         lines.append(f"  - {d['sheet']}!{d['cell']} 函数 {d['function']} 缺 _xlfn 前缀：{d['formula']}")
     for d in shape.get("details", []):
         lines.append(f"  - {d['sheet']}!{d['cell']} {d['problem']}：{d['formula']}")
+    for d in conditional_fill.get("details", []):
+        lines.append(f"  - {d['sheet']}!{d['range']} 条件格式 priority={d['priority']} "
+                     f"dxfId={d['dxf_id']}：实心填充只有 fgColor={d['fgColor']}，缺少 bgColor")
     shown = len(lines)
     extra = f"（仅列出前 {shown} 处，共 {total} 处）" if total > shown else ""
     advice = "\n".join(
-        part for part, hit in ((COMPAT_ADVICE, compat.get("count")), (SHAPE_ADVICE, shape.get("count"))) if hit
+        part for part, hit in (
+            (COMPAT_ADVICE, compat.get("count")),
+            (SHAPE_ADVICE, shape.get("count")),
+            (CONDITIONAL_FILL_ADVICE, conditional_fill.get("count")),
+        ) if hit
     )
     print(STATIC_RISK_HINT.format(extra=extra, lines="\n".join(lines), advice=advice), file=sys.stderr)
     return True
@@ -1730,7 +1750,7 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
 def main():
     ap = argparse.ArgumentParser(
         description=(
-            "Excel 交付门禁：重算并校验公式错误，静态扫描新函数前缀与数组形状，"
+            "Excel 交付门禁：重算并校验公式错误，静态扫描新函数前缀、数组形状与条件填充兼容性，"
             "扫描推导列/行的静态值硬编码嫌疑；传 --baseline 时另比对源工作簿。"
             "全部通过退出 0；确定性错误退出 3（必须修复后重跑）；"
             "重算未完成或仅命中诊断信号退出 4（按 stderr 提示处置，不反复重跑）。"
@@ -1907,7 +1927,8 @@ def main():
               "未读到的区域没有判据，不能据此认为原表没被改写；"
               "缩小表体或拆表后重跑才能覆盖尾部。", file=sys.stderr)
     sr = result.get("static_risks") or {}
-    has_static_risk = _emit_static_risk_hint(sr) if sr.get("status") == "issues_found" else False
+    has_static_risk = (_emit_static_risk_hint(sr)
+                       if sr.get("status") == "issues_found" or sr.get("blocking") else False)
     has_formula_errors = bool(result.get("total_errors")) or result.get("status") == "errors_found"
     has_unverified = (
         result.get("formula_execution_verified") is False

@@ -1,14 +1,14 @@
 # Design CLI 命令 Reference
 
+## 素材资产读取：`design-asset +get`
+
+用户引用素材资产 ID 时，读取 [素材资产读取协议](design-asset-get.md)，使用 `design-cli design-asset +get --asset-ids <真实资产ID>`。这是独立的素材读取命令，不需要画布 ID，不执行 Workspace 查询、创建或写入；资产 ID 不可当作 Workspace ID。返回的 `resource_url` 是云盘文件页，不是媒体下载地址。
+
+下文的命令总数、公共参数、Workspace 初始化与请求约定均针对 `design-workspace`；`design-asset +get` 以自己的命令页为准。
+
 > 状态：CLI 与服务端均已实现（`+ls` / `+tree` / `+get` / `+create` / `+create-batch` / `+update` / `+update-batch` 七个接口已上线，不再是 mock）。请求与响应结构以 Alice IDL 的 `ItemContent` / `FrameContent` 为准。
 
 本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构。共用的调用约定写在本文，各命令页只描述自己的差异。
-
-## Windows 执行约束
-
-实际执行设备为 Windows 时，执行本目录任何命令前必须完整读取 [`windows-compat.md`](../windows-compat.md)。使用当前环境提供的终端工具并确认实际 Shell，不要求存在 Bash 工具。各页标为 `bash` 的续行与输入重定向示例仅用于 Bash；PowerShell 使用单行命令或任务专属 Python 脚本。
-
-四个写命令的 `--input` **只接受 `-`**：Windows 按兼容说明用 Python 将 UTF-8 XML 送入 stdin，不使用 `< 文件`、Shell 管道或 `--input "@文件"`。画布 `--path` 仍使用 `/` 开头的逻辑路径；本地任务文件路径单独处理。Mobile 路由优先，不因此启用 Canvas。
 
 ## 调用形状
 
@@ -45,6 +45,14 @@ domain 名与 `+` 都不可省略。三层 `--help` 都可用：`design-cli --he
 若当前对话没有 Workspace ID，立即调用 `design-cli design-workspace +workspace-create --title "<title>"`；从响应 XML 读取唯一 ID，再由主 Agent 调用 `present_files(<workspace_id>)`，将原始 Workspace ID 作为唯一输入并交付新建画布卡片。不得先调用 `+get-workspace`，不得创建 `workspace-id.txt` 或其他中间文件，也不得附字段名、标题、版本、XML、JSON 或说明。画布卡片交付成功前不得生成／编辑媒体，也不得执行 Item／Frame 写命令。多个 ID 冲突且未指定当前目标时必须先确认，不得猜测。
 
 读取三个命令是渐进式披露：`+tree` 看骨架 → `+ls` 展开分支 → `+get` 读完整内容。不要用 `+get` 试探性地拉大量对象。
+
+### 视频／图像工具结果直接交付例外
+
+`text_to_video`、`image_to_video`、`media_to_video`、`video_edit` 及等价视频生成／编辑工具，以及 `image_gen`／`image_edit` 的成功结果，使用调用时透传的 Workspace ID 关联画布。mainagent 将原始视频短链或原始图片结果对象逐项以 RichMediaCard 形式直交；不再为同一结果调用 `+create`／`+create-batch`，不在交付前插入媒体 `+get`，也不通过下载、复制、`FileBatchUpload` 或重传另建 VIDEO／IMAGE Item。
+
+非 Mobile 本轮已确认批次全部直交后，必须按 [媒体直接交付与产后目录整理](../media-delivery.md#产后目录整理) 用 `+tree`／`+ls` 定位真实对象、分批 `+get` 读取实际内容、仅更新顶层绝对 `path`，再回读核验。目录由 path 自动形成，没有独立 `mkdir`；不得创建空 Item 充当目录。目录整理不改变单项媒体已经交付的状态。Mobile 禁止这些画布操作。
+
+本目录中的媒体创建与 `source_ids` 协议用于用户上传、本地剪辑／拼接／渲染／导出等确需手工入画布的非直接关联工具资产；不适用于重复登记上述生成／编辑结果。其他对象类型仍按各自协议处理。
 
 ## 内容模型
 
@@ -108,7 +116,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 一期服务端对所有非网络逻辑错误固定返回「请你仔细阅读 SKILL 再来调用」，`msg` 没有诊断价值。按退出码分支，不要匹配文案：
 
 - 退出码 `2` → 参数拼错了，对照本目录检查 flag 与取值
-- 退出码 `1` → 保留 stdout、stderr 与真实退出码，重读对应命令页与 XML 结构约定；写入状态不明时先只读恢复确认，确认未成功且原因已修正后才重试
+- 退出码 `1` → 重读对应命令页与 XML 结构约定，核对后重试
 
 ## XML 约定
 
@@ -151,7 +159,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 **Frame 成员不填 `path`** —— 它在目录中不可独立寻址。
 
-**`<source_ids>` 声明来源对象**，成员是 `<source_id>`，取值可以是 `item_id` 也可以是 `frame_id`：
+**仅对确需手工创建的对象，`<source_ids>` 声明来源对象**，成员是 `<source_id>`，取值可以是 `item_id` 也可以是 `frame_id`：
 
 ```xml
 <source_ids>
@@ -183,7 +191,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 ## 资产
 
-CLI **不上传文件**。`IMAGE` / `VIDEO` 的 `<asset url="…">` 只接受可持久访问的短链，已有工具原始短链或回读短链直接复用；仅有本地文件时按交付门禁取得持久短链，禁止重复上传已有短链。
+以下只用于确需手工入画布的资产；上述视频／图像工具结果禁止重复创建。CLI **不上传文件**。`IMAGE` / `VIDEO` 的 `<asset url="…">` 只接受可持久访问的短链，已有工具原始短链或回读短链直接复用；仅有本地文件时按交付门禁取得持久短链，禁止重复上传已有短链。
 
 CLI 只把 stdin 中的 XML 当作不透明字符串转发：不解析、不校验结构、不改写其中的任何引用。它只检查 stdin 非空。
 

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>【公司｜报告期｜核心判断】</title>
+  <style>
+    :root{--paper:#fff;--surface:#fff;--ink:#102a3e;--muted:#607481;--line:#d8e2e9;--blue:#1b628d;--blue-soft:#eef5f8}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.78 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:var(--blue);text-underline-offset:3px}a:hover{color:#0b4a70}.page{max-width:1120px;margin:auto;padding:0 24px 72px}
+    .topline{height:9px;background:#0c2b43}
+    .masthead{display:grid;grid-template-columns:minmax(0,1fr) 180px;column-gap:50px;padding:47px 0 31px;margin-bottom:25px;border-bottom:3px solid var(--blue)}.eyebrow{grid-column:1/-1;margin:0 0 16px;color:var(--blue);font-size:12px;font-weight:760;letter-spacing:.14em;text-transform:uppercase}
+    h1{grid-column:1;max-width:900px;margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;font-size:clamp(31px,4vw,44px);line-height:1.24;letter-spacing:-.035em;font-weight:780}
+    .dek{grid-column:1;max-width:72ch;margin:19px 0 0;color:var(--muted);font-size:17px;line-height:1.7}.meta{grid-column:2;grid-row:2/4;display:flex;flex-direction:column;gap:9px;align-self:start;margin-top:4px;padding-left:18px;border-left:2px solid var(--line);color:var(--muted);font-size:13px;line-height:1.6}
+    .thesis-panel{position:relative;overflow:hidden;border-left:5px solid var(--blue);background:var(--blue-soft);color:var(--ink);padding:23px 27px}
+    .thesis-panel:before{display:none}.panel-label{margin:0 0 8px;color:var(--blue);font-size:12px;font-weight:800;letter-spacing:.1em}
+    .thesis-panel h2{max-width:860px;margin:0 0 11px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;font-size:clamp(20px,2.4vw,28px);line-height:1.42;font-weight:750}.thesis-panel p:last-child{margin-bottom:0;color:var(--muted)}.thesis-panel .source-ref{color:var(--blue)}
+    .metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:20px 0 36px;border-bottom:1px solid var(--line);background:#f9fbfc}.metric-card{min-width:0;padding:22px 24px;border-right:1px solid var(--line)}.metric-card:last-child{border-right:0}
+    .metric-label{margin:0 0 7px;color:var(--muted);font-size:13px}.metric-value{display:block;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;font-size:clamp(23px,2.5vw,31px);line-height:1.25;font-weight:760;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.metric-context{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+    .report-section{margin-top:38px;padding-top:28px;border-top:1px solid var(--line)}.section-kicker{margin:0 0 8px;color:var(--blue);font-size:12px;font-weight:760;letter-spacing:.1em}.report-section h2{margin:0 0 15px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;font-size:clamp(21px,2.5vw,26px);line-height:1.4;font-weight:750}.prose{max-width:74ch}.prose p{margin:0 0 16px}.prose h3{font-size:19px;line-height:1.45;margin:27px 0 9px}
+    .data-panel{margin:23px 0;padding:20px;border:1px solid var(--line);border-top:3px solid var(--blue);background:var(--surface)}.data-panel h3{margin:0 0 4px;font-size:17px}.data-caption{margin:0 0 14px;color:var(--muted);font-size:13px}.table-scroll{overflow-x:auto;border:1px solid var(--line)}table{width:100%;min-width:560px;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}th,td{padding:11px 13px;text-align:left;vertical-align:top;border-bottom:1px solid #e8eeec}th{background:var(--blue-soft);color:#2d4658;font-weight:700}tbody tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:#f9fbfc}
+    .insight-note{max-width:74ch;margin:22px 0;padding:17px 20px;border-left:4px solid var(--blue);background:var(--blue-soft)}.insight-note strong{color:#164a6b}.insight-note p{margin:4px 0 0}
+    .watch-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 0;padding:0;list-style:none}.watch-list li{padding:17px 19px;border:1px solid var(--line);background:var(--surface)}.watch-list strong{display:block;margin-bottom:4px}
+    .report-sources,.risk-note{margin-top:38px;padding-top:23px;border-top:1px solid var(--line)}.report-sources h2,.risk-note h2{font-size:20px;margin:0 0 8px}.report-sources p,.report-sources li,.risk-note p{color:var(--muted);font-size:13px;line-height:1.75}.report-sources ol{padding-left:22px}.report-sources li{padding:3px 0;overflow-wrap:anywhere}.report-sources h3{font-size:15px;margin:18px 0 4px}.source-ref{margin-left:2px;font-size:11px;text-decoration:none;vertical-align:super;white-space:nowrap}.risk-note{margin-top:28px}
+    @media(max-width:700px){body{font-size:15px}.page{padding:0 16px 48px}.masthead{display:block;padding:36px 0 25px}.dek{font-size:15px}.meta{flex-direction:row;flex-wrap:wrap;gap:5px 15px;margin-top:20px}.thesis-panel{padding:23px 21px}.metric-grid,.watch-list{grid-template-columns:1fr}.metric-grid{margin-bottom:26px}.metric-card{padding:17px 19px;border-right:0;border-bottom:1px solid var(--line)}.metric-card:last-child{border-bottom:0}.watch-list{gap:10px}.report-section{margin-top:29px;padding-top:23px}.data-panel{padding:15px}}
+    @media print{body{background:#fff}.page{max-width:none;padding:0 12mm}.thesis-panel,.metric-card,.data-panel,.watch-list li{break-inside:avoid}a{color:inherit}}
+      .chart-panel{margin:24px 0;padding:20px;border:1px solid var(--line);border-top:3px solid var(--blue);background:var(--surface)}.chart-panel figcaption{margin:0 0 4px;font-size:17px;font-weight:700;line-height:1.45}.chart-subtitle,.chart-source{margin:4px 0;color:var(--muted);font-size:13px;line-height:1.6}.chart-panel svg{display:block;width:100%;height:auto;max-width:760px;margin:14px 0}.chart-panel svg text{font:13px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:var(--muted)}.chart-panel .chart-axis{stroke:#c7dbe6;stroke-width:1}.chart-panel .chart-bar{fill:var(--blue)}.chart-panel .chart-bar-secondary{fill:#89b1c8}
+    @media(max-width:700px){.chart-panel{padding:15px;overflow-x:auto}.chart-panel svg{min-width:700px}}
+  </style>
+</head>
+<body>
+  <div class="topline" aria-hidden="true"></div>
+  <div class="page">
+    <header class="masthead">
+      <p class="eyebrow">财报深度解读 / 【报告期】</p>
+      <h1>【公司 + 核心判断型标题】</h1>
+      <p class="dek">【用一两句读者语言交代问题、判断范围和最重要的变化】</p>
+      <div class="meta"><span>【公司名称与证券代码】</span><span>【报告期及发布日期】</span></div>
+    </header>
+    <main>
+      <!-- 正文从这里开始。章节标题、数量和顺序由原有分析工作流与实际论证决定。 -->
+      <!-- 可选呈现组件：thesis-panel（核心判断）、metric-grid/metric-card（关键数字）、report-section（论证章节）、data-panel（证据表格）、chart-panel（趋势或比较图）、insight-note（解释或局限）、watch-list（后续验证）。 -->
+      <!-- assets/report-layout-preview.html 只演示这些组件的标记和视觉效果；不要复制其中的章节、示例文字或组件数量。 -->
+      <!-- 在正文可见文字写出完整数字和判断后，按原有事实绑定规则添加来源。 -->
+
+      <!-- AUTO_SOURCES -->
+      <section class="risk-note" aria-labelledby="risk-title"><h2 id="risk-title">风险提示与免责声明</h2><p>【按对应工作流写风险提示。】</p></section>
+    </main>
+  </div>
+</body>
+</html>

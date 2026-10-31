@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "company": "示例公司",
+    "code": "000001.SZ",
+    "market": "A股",
+    "announcement_type": "业绩披露类",
+    "today": "2026-10-30",
+    "announcement_date": "2026-10-20"
+  },
+  "claims": [
+    {
+      "claim_id": "report_date",
+      "text": "示例公司于2026年10月20日披露三季报。",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "revenue_q1",
+      "text": "2026Q1收入100亿元。",
+      "value": 100,
+      "unit": "亿元",
+      "period": "2026Q1",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "revenue_q2",
+      "text": "2026Q2收入110亿元。",
+      "value": 110,
+      "unit": "亿元",
+      "period": "2026Q2",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "revenue_q3",
+      "text": "2026Q3收入120亿元。",
+      "value": 120,
+      "unit": "亿元",
+      "period": "2026Q3",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "profit_q3",
+      "text": "2026Q3净利润10亿元。",
+      "value": 10,
+      "unit": "亿元",
+      "period": "2026Q3",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "importance",
+      "text": "本次公告为季度报告。",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "linked",
+      "text": "已检索同期相关公告。",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "price",
+      "text": "公告后股价未见显著异动。",
+      "source": "示例公司2026年三季报（测试数据）",
+      "url": "https://example.com/announcement",
+      "usage_type": "hard_fact"
+    },
+    {
+      "claim_id": "risk",
+      "text": "后续需关注利润变化。",
+      "source": "基于示例报告的分析",
+      "usage_type": "author_inference"
+    }
+  ]
+}

@@ -1,16 +1,16 @@
-# 飞书文档交付流程
+# HTML 报告交付流程
 
-本文件定义默认交付方式。股票筛选 Skill 的默认成品应是读者可直接阅读的 display markdown，并用豆包 App 内置飞书文档/云文档能力创建飞书在线文档。display markdown 和飞书文档必须包含“数据来源”和“风险提示与免责声明”。
+本文件定义默认交付方式。正式股票筛选先组织一份结构化报告数据，再生成原生 HTML 报告。HTML 页面直接使用章节、筛选流程、指标、候选卡片、表格与 SVG 图表组件，不经过 Markdown 转换。HTML 报告包含“数据来源”和“风险提示与免责声明”。具体字段见 `references/html-report-schema.md`。
 
 ## 默认触发
 
-用户要求“帮我看下”“筛一下”“分析一下”“有哪些优质股”“核心标的”“龙头股”等股票筛选任务时，若没有明确说“只在对话中简短回答”“不要生成飞书文档”，均视为正式输出，必须创建飞书在线文档并在最终回复附上文档。
+用户要求“帮我看下”“筛一下”“分析一下”“有哪些优质股”“核心标的”“龙头股”等股票筛选任务时，若没有明确说“只在对话中简短回答”“不要生成HTML 报告”，均视为正式输出，必须生成 HTML 报告并在最终回复附上文件链接。
 
-若平台当前无法调用飞书文档/云文档能力，必须在最终回复中明确说明“当前未能创建飞书文档”，并仍交付完整 display markdown；不得假装已经创建文档。
+若 HTML 生成失败，先修复生成问题；仍无法生成时，在最终回复中说明原因并给出已有的研究结论与来源，不得声称已经生成报告。
 
 ## 交付物边界
 
-- 对用户可见：display markdown 正文、数据来源、风险提示与免责声明、飞书在线文档。
+- 对用户可见：简短结论和 HTML 报告文件；完整来源、风险提示与免责声明保留在报告中。
 - 对用户不可见：内部源稿、事实表、恢复入口、草稿、日志、脚本输出。
 - 最终回复不得展示内部文件名、路径、文件清单或工作流说明。
 
@@ -26,53 +26,38 @@ _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/
 
 ## 源稿与事实绑定
 
-完整报告应先写内部源 markdown，并将关键数字和关键判断绑定到事实表：
-
-```markdown
-公司相关业务收入为 12.3 亿元，同比增长 28%。{fact:related_revenue}
-```
+完整报告先在内部事实表核验关键数字和判断，再写 `report.json`。报告文字的来源标记为 `[n]`，并在 `sources` 数组中列出对应的来源、日期和用途。若使用已有 `{fact:...}` 审计材料，先完成审计和来源绑定，再转入 `report.json`；不要把审计标记留在成品中。
 
 规则：
 
-- `{fact:...}` 只用于源稿审计，不出现在 display markdown 和飞书文档中。
-- 源稿不要手写 `[n]`、`[^n]` 等脚注角标。
-- 正文必须先写完整数字或判断，再绑定 `{fact:claim_id}`；不要把 `{fact:...}` 当数值占位符。
-- `claims[].source/url` 决定 display markdown 中自动生成的 `[n]` 来源标记和文末来源列表。
-- 上述“不要手写 `[n]`”只适用于使用 finalize 的内部源稿；display markdown 和飞书文档必须显示 `[n]` 来源标记。若当前平台没有运行 finalize，直接生成 display markdown 时必须手动生成 `[n]` 标记和文末来源索引。
-- display markdown 和飞书文档正文不得出现裸 URL、链接数组、检索结果原始 JSON 或 `["https://..."]`；URL 只放在文末“数据来源”索引表。
+- 关键数字和判断先写完整内容，再加 `[n]` 来源标记；不要把来源标记当数值占位符。
+- `sources[].id` 与正文 `[n]` 对应；URL 只放在 `sources[].url`，不得进入正文或表格单元格。
+- 结构化报告数据是 HTML 的内容来源。仅在用户明确要求 Markdown 时，从同一份数据额外导出；不要先写 Markdown 再将它作为 HTML 正文输入。
+- 筛选流程使用 `flow` 组件；未经实际扫描验证的数量只能标为估计，不能作为精确漏斗人数。
 
 ## 默认后处理
 
-若 Skill 包或运行平台提供对应脚本，最终交付分两步：
-
-1. 运行唯一入口命令生成 display markdown：
+本包没有 `finalize_report.py`。形成 `report.json` 后运行：
 
 ```bash
-python3 scripts/finalize_report.py _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/DO_NOT_DELIVER__facts.json --display-output _INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/FINAL_REPLY_BODY.md
+python3 scripts/render_structured_report.py <报告数据.json> --output <报告.html>
 ```
 
-2. 调用豆包 App 内置飞书文档/云文档能力，以 `FINAL_REPLY_BODY.md` 的全文创建飞书在线文档，并在最终回复中附上该飞书文档。
-
-## 脚本边界
-
-- `scripts/finalize_report.py` 是默认后处理入口。
-- `scripts/make_display_markdown.py` 和 `scripts/normalize_report.py` 是 `finalize_report.py` 内部 helper，不作为交付入口。
-- `scripts/make_docx.py` 仅在用户明确要求 Word/DOCX 导出时使用，不是默认交付物。
-- 如果当前 Skill 包尚未内置 `scripts/`，不得声称已经运行 finalize；应先按平台已有后处理能力生成读者版正文，或补充脚本后再启用该命令。
+打开最终 HTML，复核正文、筛选流程、候选卡片、表格、图表、来源、移动端显示和标题层级。可视化不能落成 `<pre><code>` 字符画；页面不能重复 H1。`scripts/render_html_report.py` 仅保留给旧 Markdown 报告兼容使用，不是正式报告的默认生成器。
 
 ## 最终回复格式
 
 ```text
-<display markdown 全文>
+<简短结论与关键风险>
 
-飞书文档：<附上的飞书文档>
+HTML 报告：<可打开的报告文件链接>
 ```
 
 最终回复不得出现 `_INTERNAL_DO_NOT_DELIVER__READ_00_RESUME_FIRST/`、`DO_NOT_DELIVER__facts.json`、`DO_NOT_DELIVER__NEEDS_FINALIZE__report-source.md`、`FINAL_REPLY_BODY.md` 等内部文件名或路径。
 
 ## 固定免责声明
 
-display markdown 和飞书文档末尾必须包含以下章节，标题和三条内容保持一致：
+HTML 报告末尾必须包含以下章节，标题和三条内容保持一致：
 
 ```markdown
 ## 风险提示与免责声明

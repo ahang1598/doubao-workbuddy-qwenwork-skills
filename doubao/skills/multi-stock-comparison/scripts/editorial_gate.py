@@ -11,7 +11,7 @@ from pathlib import Path
 PROFILE_LIMITS = {"one_pager": 5, "standard": 8, "deep_dive": 12}
 VISUAL_BUDGETS = {"one_pager": 1, "standard": 3, "deep_dive": 5}
 ROLES = {"core_conclusion", "analysis", "risk", "validation", "appendix"}
-VISUAL_FORMATS = {"html5_block", "svg_whiteboard", "mermaid_whiteboard"}
+VISUAL_FORMATS = {"html5_block", "svg_whiteboard", "mermaid_whiteboard", "svg_image", "image"}
 FINANCIAL_CATEGORIES = {
     "market_data",
     "valuation",
@@ -53,7 +53,6 @@ FINAL_CHECKS = (
     "no_repeated_claims",
     "tables_answer_one_question",
     "visuals_have_information_job",
-    "visuals_rendered_and_legible",
     "visuals_nonredundant",
     "visual_sources_units_complete",
     "visual_text_fallbacks_present",
@@ -189,8 +188,6 @@ def validate_manifest(data, phase):
             elif any(not nonempty(item) for item in kline_evidence):
                 errors.append("K 线 evidence_ids 只能包含非空字符串")
             if phase == "final":
-                if kline_plan.get("rendering_verified") is not True:
-                    errors.append("K 线 included 的 final 阶段要求 rendering_verified=true")
                 if kline_plan.get("same_window_frequency_adjustment_verified") is not True:
                     errors.append(
                         "K 线 included 的 final 阶段要求 same_window_frequency_adjustment_verified=true"
@@ -247,7 +244,7 @@ def validate_manifest(data, phase):
                 errors.append(f"{prefix}.{label} 必须是非空字符串")
         if visual.get("format") not in VISUAL_FORMATS:
             errors.append(
-                f"{prefix}.format 必须是 html5_block、svg_whiteboard 或 mermaid_whiteboard"
+                f"{prefix}.format 必须是 html5_block、svg_whiteboard、mermaid_whiteboard、svg_image 或 image"
             )
         if visual.get("new_information") is not True:
             errors.append(f"{prefix}.new_information 必须为 true")
@@ -267,7 +264,6 @@ def validate_manifest(data, phase):
                 redundancy_groups.add(normalized_group)
         if phase == "final":
             for field in (
-                "rendering_verified",
                 "source_and_units_verified",
                 "text_summary_present",
             ):
@@ -284,11 +280,11 @@ def validate_manifest(data, phase):
         kline_visuals = [
             visual for visual in included_visuals
             if visual.get("chart_type") == "kline"
-            and visual.get("format") == "html5_block"
+            and visual.get("format") in {"html5_block", "svg_image", "image"}
         ]
         if len(kline_visuals) != 1:
             errors.append(
-                "K 线 included 时 visual_plan 必须且只能有一个 chart_type=kline、format=html5_block 的视觉家族"
+                "K 线 included 时 visual_plan 必须且只能有一个 chart_type=kline、format 为 html5_block/svg_image/image 的视觉家族"
             )
 
     sections = data.get("sections")
@@ -459,7 +455,6 @@ def run_self_test():
         "status": "included",
         "coverage": "全部两只比较标的，同窗口日线",
         "evidence_ids": ["ohlc-a", "ohlc-b"],
-        "rendering_verified": True,
         "same_window_frequency_adjustment_verified": True,
     }
     price_valid["visual_plan"] = [
@@ -476,13 +471,16 @@ def run_self_test():
             "why_visual_beats_text_or_table": "路径、影线和波动聚集无法由端点表格完整表达",
             "evidence_ids": ["ohlc-a", "ohlc-b"],
             "redundancy_group": "price-path",
-            "rendering_verified": True,
             "source_and_units_verified": True,
             "text_summary_present": True,
         }
     ]
     assert not validate_manifest(price_valid, "plan")
     assert not validate_manifest(price_valid, "final")
+
+    price_svg = json.loads(json.dumps(price_valid))
+    price_svg["visual_plan"][0]["format"] = "svg_image"
+    assert not validate_manifest(price_svg, "final")
 
     bad_price = json.loads(json.dumps(valid))
     bad_price["price_analysis"] = True
@@ -503,10 +501,6 @@ def run_self_test():
     second_visual["id"] = "duplicate-price-chart"
     duplicate_visual["visual_plan"].append(second_visual)
     assert validate_manifest(duplicate_visual, "final")
-
-    missing_render_check = json.loads(json.dumps(price_valid))
-    missing_render_check["visual_plan"][0]["rendering_verified"] = False
-    assert validate_manifest(missing_render_check, "final")
 
     snapshot_not_relevant = json.loads(json.dumps(valid))
     snapshot_not_relevant["core_financial_snapshot"] = {

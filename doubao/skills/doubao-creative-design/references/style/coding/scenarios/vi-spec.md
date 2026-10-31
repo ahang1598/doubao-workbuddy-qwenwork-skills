@@ -51,7 +51,7 @@ VI 的完整 `.html` 是内部可编辑作品源、`FileBatchUpload` 载荷和 C
 
 VI 设计中有且仅有进入完整 HTML 生成／修改与 `shot.py` 自检阶段时，Main Agent 才允许并且必须调用 Subagent。除此以外全部工作必须由 Main Agent 亲自完成，包括需求澄清、Ref 读取、Brief 建立与更新、设计规划输出、Logo 候选生成、Logo 确认、首屏 `image_edit`、其他 VI 图像与视频素材生产、MediaKit 抠图、素材检查、版本选择、返修调度、Workspace、CLI 写入／回读、CDN 上传、`FileBatchUpload` 和所有用户交付。禁止把这些任务拆给 Subagent，也禁止以“并行提效”“素材生产”或“质量复核”为由扩大 Subagent 范围。
 
-Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始短链和处理信息，并按照 [交付门禁](../../../workflow/image-generation-delivery-gate.md) 完成对应 CLI 写入／回读与 `RichMediaCard` 交付；双通道闭环后才能选稿、修改、衍生、进入 HTML 组装或开始下一批。Logo 候选、首屏效果、透明 Logo 和全部 VI 应用资产均遵循本规则。
+Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始短链和处理信息，并按照 [交付门禁](../../../workflow/image-generation-delivery-gate.md) 完成对应 CLI 写入／回读与 RichMediaCard 交付；双通道闭环后才能选稿、修改、衍生、进入 HTML 组装或开始下一批。Logo 候选、首屏效果、透明 Logo 和全部 VI 应用资产均遵循本规则。
 
 ### 完整 VI 手册 HTML 组装门禁
 

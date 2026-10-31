@@ -4,11 +4,11 @@
 
 本文件只适用于 system 上下文未标记移动端交付的默认 Canvas 交付环境。若已标记，禁止执行本文件的 Workspace 与双通道步骤，改读 [`mobile-app-direct-delivery.md`](mobile-app-direct-delivery.md)。
 
-本门禁适用于本 Skill 产生并通过 `RichMediaCard` 交付的所有图片和视频产物，包括生成／编辑工具输出、核心资产、KV、候选、草稿、改稿、中间素材、分批结果、Canvas 渲染图、导出图和最终成品。每个结果都必须同步执行 Canvas 持久化与用户交付两个分支，并在汇合点核对两边结果；串行或并行只决定多个生成任务之间是否并发，不改变双通道同步规则。
+本门禁适用于本 Skill 产生并通过 RichMediaCard 交付的所有图片和视频产物，包括生成／编辑工具输出、核心资产、KV、候选、草稿、改稿、中间素材、分批结果、Canvas 渲染图、导出图和最终成品。每个结果都必须同步执行 Canvas 持久化与用户交付两个分支，并在汇合点核对两边结果；串行或并行只决定多个生成任务之间是否并发，不改变双通道同步规则。
 
-图片／视频生成或编辑工具返回成功结果时，保留两类原始数据：供 Workspace 使用的 `source_asset_url`，以及供 `RichMediaCard` 直接接收的 `generated_artifact`。Workspace `<asset url>` 逐字使用工具原始短链；`RichMediaCard` 直接接收工具返回的对应产物。禁止为交付另行下载、复制或重新上传产物，也禁止把工具预览、Markdown 链接或普通文本 URL 当作已经完成 `RichMediaCard`。只有从未经过图片／视频生成或编辑工具、且产出工具确实只返回本地文件的渲染／导出结果，才可先通过 `FileBatchUpload` 取得 Workspace 短链；`RichMediaCard` 仍直接接收该产出工具返回的文件。
+图片／视频生成或编辑工具返回成功结果时，保留两类原始数据：供 Workspace 使用的 `source_asset_url`，以及供 RichMediaCard 直接接收的 `generated_artifact`。Workspace `<asset url>` 逐字使用工具原始短链；RichMediaCard 直接接收工具返回的对应产物。禁止为交付另行下载、复制或重新上传产物，也禁止把工具预览、Markdown 链接或普通文本 URL 当作已经完成 RichMediaCard。只有从未经过图片／视频生成或编辑工具、且产出工具确实只返回本地文件的渲染／导出结果，才可先通过 `FileBatchUpload` 取得 Workspace 短链；RichMediaCard 仍直接接收该产出工具返回的文件。
 
-`RichMediaCard` 指宿主实际支持的媒体展示能力，按当前接口契约使用真实结果句柄或原始资源地址，不猜造函数签名、标签或参数。普通短链文本不能替代卡片展示。Workspace／HTML Item 画布卡片继续使用 `present_files`，HTML 专用预览继续使用 CDN＋Markdown。媒体展示成功不免除 CLI 创建与回读。
+RichMediaCard 指宿主实际支持的媒体展示能力，按当前接口契约使用真实结果句柄或原始资源地址，不猜造函数签名、标签或参数。普通短链文本不能替代卡片展示。Workspace／HTML Item 画布卡片继续使用 `present_files`，HTML 专用预览继续使用 CDN＋Markdown。媒体展示成功不免除 CLI 创建与回读。
 
 ## 0. 对话级 Workspace 前置门禁
 
@@ -24,16 +24,16 @@
 
 取得 `active_workspace_id` 后记录 `execution_mode=serial | parallel`。默认使用串行；只有多个任务已经预先锁定、相互独立、彼此输出不作为下一项输入时，才使用并行。不得在执行中途为了抢时间，把存在依赖的串行步骤临时改成并行。
 
-**画布持久化是硬门禁**：默认 Canvas 环境中，图像／视频生成或编辑工具成功返回的每个结果，都必须使用原始短链通过 `design-cli` 创建独立画布对象并 `+get` 回读。它与 `RichMediaCard` 是同一结果的两个必需出口，二者互不替代；只完成用户交付、只嵌入 HTML、只创建最终 HTML Item，或计划整批结束后集中补写，都不算完成。缺少写入 ID、回读结果或原始短链一致性时，立即停止下一批及 HTML 组装。
+**画布持久化是硬门禁**：默认 Canvas 环境中，图像／视频生成或编辑工具成功返回的每个结果，都必须使用原始短链通过 `design-cli` 创建独立画布对象并 `+get` 回读。它与 RichMediaCard 是同一结果的两个必需出口，二者互不替代；只完成用户交付、只嵌入 HTML、只创建最终 HTML Item，或计划整批结束后集中补写，都不算完成。缺少写入 ID、回读结果或原始短链一致性时，立即停止下一批及 HTML 组装。
 
-- **每个结果的同步双分支**：结果可用后，在同一调度阶段启动 `persistence` 与 `delivery`。`persistence` 使用原始短链执行 `design-cli design-workspace +create` 和 `+get`；`delivery` 由主 Agent 使用 `RichMediaCard` 展示该项 `generated_artifact`。不得等待任一分支结束后才启动另一分支。
+- **每个结果的同步双分支**：结果可用后，在同一调度阶段启动 `persistence` 与 `delivery`。`persistence` 使用原始短链执行 `design-cli design-workspace +create` 和 `+get`；`delivery` 由主 Agent 通过 RichMediaCard 展示该项 `generated_artifact`。不得等待任一分支结束后才启动另一分支。
 - **串行生成**：一次只生成一个结果；该结果的两个分支都汇合后，才允许修复、选图、生成或编辑下一张。
 - **并行生成**：只允许并发预先锁定且互不依赖的固定批次；每个结果各自建立同步双分支，整批在 join barrier 等待全部分支，不得边执行边追加新任务。并行生成 N 个同源编辑版本时，必须发起 N 次独立 `image_edit`，不得用一次多结果调用代替。单参考变体每次只传入同一张已确认参考图；当前合成成品需独立身份母版的复合编辑，每次固定传入同一当前成品作为编辑目标、同一已确认母版作为身份参考，不用母版替代成品。所有版本属于同一预先锁定批次，输入版本、顺序与授权职责固定，不混入无关参考，也不把某个并行结果作为另一项输入；实际工具不能同时接受必要参考时，说明限制并停止依赖该能力的编辑。
 
 ### HTML 正式生产门禁
 
-主视觉确认后进入 HTML 正式生产时，全部图片／视频工具结果仍受本门禁约束，不因被标记为“HTML 素材”“中间素材”“候选”或“未采用版本”而豁免。每个结果返回后立即同步启动 `design-cli +create`／`+get` 与主 Agent 通过 `RichMediaCard` 展示该项 `generated_artifact`；画布分支必须取得真实对象 ID 并完成回读，不能用排队状态、待补写记录、HTML 内 URL 或最终 HTML Item 代替。串行结果先汇合再生成下一项，并行固定批次等全部结果完成各自双通道闭环后再开始下一批。只有本轮正式生产已返回的全部媒体结果均闭环、素材清单已回填且不存在待处理分支时，才允许进入 HTML 组装；禁止先组装再集中补写媒体。
-- **单项交付**：一次 `RichMediaCard` 只能包含 1 张图片；一次工具调用返回多张时，也必须按稳定返回顺序为每张建立独立交付调用和持久化分支。
+主视觉确认后进入 HTML 正式生产时，全部图片／视频工具结果仍受本门禁约束，不因被标记为“HTML 素材”“中间素材”“候选”或“未采用版本”而豁免。每个结果返回后立即同步启动 `design-cli +create`／`+get` 与主 Agent 通过 RichMediaCard 展示该项 `generated_artifact`；画布分支必须取得真实对象 ID 并完成回读，不能用排队状态、待补写记录、HTML 内 URL 或最终 HTML Item 代替。串行结果先汇合再生成下一项，并行固定批次等全部结果完成各自双通道闭环后再开始下一批。只有本轮正式生产已返回的全部媒体结果均闭环、素材清单已回填且不存在待处理分支时，才允许进入 HTML 组装；禁止先组装再集中补写媒体。
+- **单项交付**：一次 RichMediaCard 只能包含 1 张图片；一次工具调用返回多张时，也必须按稳定返回顺序为每张建立独立交付调用和持久化分支。
 
 交付和持久化队列汇合前，禁止让用户选图、确认方向，或继续抠图、扩图、合成、排版、视觉澄清、核心资产延展、HTML 组装和结果汇总。
 
@@ -65,7 +65,7 @@ AI 图片内出现错字、缺字、多字、伪文字、字形异常或可读�
 4. 写入稳定 path 与 brief。普通资产归入对应 Semantic Cluster；最终渲染图或导出图归入 `/deliverables/<任务语义>/exports`，brief 记录用途、版本以及可得的来源 Frame／Item ID。若结果来自画布既有 Item／Frame 的编辑、参考或衍生，在 `<source_ids>` 中填写通过 `+get` 确认的来源 ID；无来源则省略标签。不同结果需要分别贴近不同来源时不得塞入同一个 `+create-batch`。
 5. 保存写命令返回 ID，并立即用 `+get` 回读资产 URL、path、brief、类型与 transform；回读 URL 仍须与 `source_asset_url` 逐字一致。
 
-`delivery` 分支直接把工具返回的对应 `generated_artifact` 交给 `RichMediaCard`。不得先下载成本地文件，不得用短链、预览、缩略图、Markdown 图片、聊天内联图或普通文本路径替代 `RichMediaCard` 调用。
+`delivery` 分支直接把工具返回的对应 `generated_artifact` 以 RichMediaCard 形式直交。不得先下载成本地文件，不得用短链、预览、缩略图、Markdown 图片、聊天内联图或普通文本路径替代 RichMediaCard 调用。
 
 ## 3. 汇合、失败与坏图处理
 
@@ -81,7 +81,7 @@ join barrier 后按每个结果分别处理：
 
 ## 4. 成功判据与记录
 
-只有确认宿主 `RichMediaCard` 已成功展示该项真实产物，才将其记为 `delivery_status=delivered`。工具自己的预览、缩略图、CDN URL、Markdown 图片、聊天内联图或普通文本路径都不算交付。
+只有确认宿主 RichMediaCard 已成功展示该项真实产物，才将其记为 `delivery_status=delivered`。工具自己的预览、缩略图、CDN URL、Markdown 图片、聊天内联图或普通文本路径都不算交付。
 
 每个生成结果至少记录：
 
@@ -90,7 +90,7 @@ join barrier 后按每个结果分别处理：
 - 工具原始 `source_asset_url` 与 `generated_artifact` 标识；
 - 本结果使用的 `active_workspace_id` 及其来源 `conversation_context | workspace_create`；
 - Canvas 写入返回 ID、实际写入 URL、`+get` 回读结果；
-- 独立 `RichMediaCard` 调用结果，以及与持久化分支共同的 `sync_group_id` 和 join barrier 结果；
+- 独立 RichMediaCard 直交结果，以及与持久化分支共同的 `sync_group_id` 和 join barrier 结果；
 - `validation_status=passed | failed | delivered_with_text_issue`；失败时保留两侧证据并关联后续修复版本，AI 图片生成文字问题则记录可见问题并等待用户要求；
 - 若失败，失败发生在生成、短链取得、交付、写入还是回读阶段。
 

@@ -2,8 +2,8 @@
 """Internal helper: create a reader-facing markdown copy without internal markers.
 
 Use finalize_report.py for delivery. The source markdown keeps fact bindings
-for audit; this helper writes a separate display markdown for Feishu document
-creation by converting {fact:...} to plain [n] source markers when facts.json
+for audit; this helper writes an internal display markdown for HTML rendering
+by converting {fact:...} to plain [n] source markers when facts.json
 is available. It also tolerates legacy [^1] markers and converts legacy
 footnote definitions to a numbered source list.
 """

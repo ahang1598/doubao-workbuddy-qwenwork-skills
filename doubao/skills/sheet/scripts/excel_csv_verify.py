@@ -271,7 +271,7 @@ def main() -> int:
     ap.add_argument("--baseline", help="改前快照 CSV；编辑已有文件时给它")
     ap.add_argument("--delimiter", default=",", help="字段分隔符，默认逗号")
     ap.add_argument("--expect-rows", type=int, help="期望的数据行数（不含表头）")
-    ap.add_argument("--expect-headers", help="期望表头，JSON 数组，逐字比对")
+    ap.add_argument("--expect-headers", help='期望表头，内联 JSON 数组或 "@./headers.json"（UTF-8 文件），逐字比对')
     ap.add_argument("--checkpoints", help="检查点 JSON，协议同 excel_formula_verify.py")
     args = ap.parse_args()
 
@@ -284,7 +284,16 @@ def main() -> int:
     expect_headers = None
     if args.expect_headers:
         try:
-            expect_headers = json.loads(args.expect_headers)
+            text = args.expect_headers.strip()
+            if text.startswith("@"):
+                path = text[1:].strip().strip("\"'")
+                text = Path(path).read_text(encoding="utf-8-sig")
+            expect_headers = json.loads(text)
+        except (OSError, UnicodeError) as exc:
+            print(json.dumps({"status": "invalid_input",
+                              "error": f"--expect-headers 文件读取失败：{exc}"},
+                             ensure_ascii=False, indent=2))
+            return 3
         except ValueError as exc:
             print(json.dumps({"status": "invalid_input",
                               "error": f"--expect-headers 不是合法 JSON：{exc}"},
@@ -315,7 +324,7 @@ def main() -> int:
 
     checkpoint_error = None
     if args.checkpoints:
-        items, checkpoint_error = load_checkpoints(args.checkpoints)
+        items, checkpoint_error = load_checkpoints(args.checkpoints, require_sheet=False)
         if checkpoint_error:
             result["checkpoints"] = {"status": "invalid", "reason": checkpoint_error}
         else:

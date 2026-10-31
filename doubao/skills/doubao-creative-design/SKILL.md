@@ -18,7 +18,7 @@ description: 当用户要求从零生成或设计商业、品牌、社交媒体�
 3. **生产轨道**：`pure-image`、`ai-coding`（可编辑设计）或 `pure-coding`；已有源格式优先决定编辑输出格式。
 4. **品类**：Logo、VI、海报、社媒套图、详情页、连续长图、菜单、三折页、简历、信息图、思维导图、流程图、知识图谱、包装、品牌应用等实际命中品类。
 5. **媒介与平台**：画幅、目标平台、移动端、社媒渠道、印刷／屏幕、HTML 固定画布及长页预览等实际约束。
-6. **特殊能力与出口**：图像／视频生成、`image_edit` 身份锚点、HTML 组装、CLI 写入、CDN＋Markdown 预览、`RichMediaCard` 媒体交付、`present_files` 画布卡片、Subagent 或其他本任务明确要求。
+6. **特殊能力与出口**：图像／视频生成、`image_edit` 身份锚点、HTML 组装、CLI 写入、CDN＋Markdown 预览、RichMediaCard 媒体交付、`present_files` 画布卡片、Subagent 或其他本任务明确要求。
 7. **实际执行平台**：根据 `SystemPrompt` 或 `<system-reminder>` 的操作系统及实际执行设备判定；Windows 的初始 `required_refs` 必须包含 [`Windows 兼容性`](references/workflow/windows-compat.md)，读完主 SKILL 后完整读取，再执行 CLI、HTML 预览、字体／素材脚本和文件读写。主 Agent 与需要执行命令的 Subagent 均遵守，不等发生报错才读取。
 
 路由确定后，必须在首次实质动作前一次性完整读取所有已命中的任务策略 Ref：对应 creation／editing workflow、品类 Spec、Visual／System 或 pure-image scenario、适用平台／media ref、交付环境与交付门禁，以及本任务必需的 CLI、HTML、预览、字体、素材或验证契约。读取完成后才可执行；后续阶段可以回读，但不得把“后面再看”作为首次读取时机。
@@ -33,7 +33,7 @@ HTML 需要远程字体时，先读 [Web 字体契约](references/rendering/web-
 
 ## 零、先确定交付环境
 
-在能力预检、Workspace 绑定、Brief 存储或任何生成／编辑前，检查 system 上下文是否明确标记为移动端交付。命中时读取 [Mobile 直接交付](references/workflow/mobile-app-direct-delivery.md)，使用本地唯一 Brief 与适用的素材清单，禁止全部 Canvas CLI／Workspace 操作。媒体逐项 `RichMediaCard`；HTML 只交付上传 CDN 后的同尺寸 Markdown 预览图，不上传 HTML 或创建 Item。不得从手机尺寸或作品用途推断该环境。
+在能力预检、Workspace 绑定、Brief 存储或任何生成／编辑前，检查 system 上下文是否明确标记为移动端交付。命中时读取 [Mobile 直接交付](references/workflow/mobile-app-direct-delivery.md)，使用本地唯一 Brief 与适用的素材清单，禁止全部 Canvas CLI／Workspace 操作。媒体逐项以 RichMediaCard 形式直交；HTML 只交付上传 CDN 后的同尺寸 Markdown 预览图，不上传 HTML 或创建 Item。不得从手机尺寸或作品用途推断该环境。
 
 没有移动端标记时采用下方默认 Canvas 规则。交付环境只改变存储和交付，不改变品类路线、Brief → 素材清单 → HTML 的生产顺序。下文所有 Workspace、画布目录、Item 写入／回读与画布卡片要求均只适用于默认 Canvas 环境；HTML 专用预览截图在两种环境中都只走 CDN＋Markdown，不走媒体双通道。
 
@@ -51,13 +51,13 @@ Mobile 交付环境与实际执行操作系统分别判定；跨平台兼容说�
 
 所有生成、编辑、衍生、渲染或导出的用户可见产物，无论由主 Agent、子 Agent、异步任务或外部工具实际生产，都必须汇回当前任务的 **主 Agent**，并由主 Agent 按本 Skill 规定的出口亲自完成交付。该约束覆盖 Workspace ID、图片、视频、候选图、草稿、改稿、中间素材、渲染／导出结果、HTML 同尺寸预览图和画布卡片；产物质量不佳也不改变交付主体。
 
-- 图片、视频及其他规定使用 `RichMediaCard` 的产物，必须由主 Agent 直接取得对应工具结果并亲自调用 `RichMediaCard`；子 Agent／异步任务不得代为调用，也不得把自己的工具预览、路径、URL 或交付状态当成主 Agent 已交付。
-- HTML 同尺寸预览仍遵循 CDN＋Markdown 专用出口，但 CDN 结果的核验与最终 Markdown 图片展示必须由主 Agent 完成；默认 Canvas 的 `<workspace_id>?item_id=<item_id>` 画布卡片也必须由主 Agent 亲自调用 `present_files`。不得为满足本条把 HTML 预览改走媒体 `RichMediaCard`。
+- 图片、视频及其他规定使用 RichMediaCard 的产物，必须由主 Agent 直接取得对应工具结果并亲自以 RichMediaCard 形式直交；子 Agent／异步任务不得代为调用，也不得把自己的工具预览、路径、URL 或交付状态当成主 Agent 已交付。
+- HTML 同尺寸预览仍遵循 CDN＋Markdown 专用出口，但 CDN 结果的核验与最终 Markdown 图片展示必须由主 Agent 完成；默认 Canvas 的 `<workspace_id>?item_id=<item_id>` 画布卡片也必须由主 Agent 亲自调用 `present_files`。不得为满足本条把 HTML 预览改走媒体 RichMediaCard。
 - 子 Agent／异步任务只可生产、编辑、校验并把未改写的真实产物句柄、短链、文件或 ID 返回主 Agent。主 Agent 未完成对应出口前，不得把子任务的完成、CLI stdout、日志、Markdown、普通聊天文字或工具自带预览视为用户已收到。
 
 ### 0. 正式生产能力预检
 
-用户要求实际创作或编辑产物时，在写 Brief、调用媒体工具或编写 HTML 前，先按交付环境核对能力。默认 Canvas 环境需要 `design-cli`、`present_files` 与 `FileBatchUpload`；Mobile 按其专用预检，不要求 Canvas CLI。两种环境凡需交付图片／视频，还须核验宿主实际支持的 `RichMediaCard` 展示能力；接口与资源字段以当前宿主契约为准，不根据组件名猜造调用或标签参数。仅交付 HTML 预览和画布卡片时不额外要求此能力。两种环境均按本次素材计划检查实际需要的图像生成、编辑和抠图能力；纯 Coding 不要求无关媒体工具。非标准执行环境选定 HTML 路线后、生产前先运行 `scripts/runtime/shot.py --check-runtime` 检查 Playwright、Pillow 与预装 Chromium；预检失败记录环境缺口，不临时切换浏览器。Windows 环境额外参考 [`windows-compat.md`](references/workflow/windows-compat.md)。HTML 页面正式自检仍仅运行 `scripts/runtime/shot.py <html_path>`，内部通过 Playwright 使用同一 Chromium，配合 Pillow 完成测量与截图；HTML 必须在 html 标签声明 data-canvas-width 和 data-canvas-height 正整数属性，预览图仍需 CDN 上传能力。只有脚本返回退出码 `3`、确认属于执行失败时，才允许跳过自检并记录“预览未验证”，按 [预览策略](references/workflow/html-preview.md) 继续可完成的交付；退出码 `1` 必须修正并重跑。不调用 artifact-preview／artifacts-preview Skill，也不另行操作浏览器自检。能力可以由已安装 CLI、原生工具或运行环境注入，但名称相似的普通文件展示、浏览器截图、Markdown 链接和上传命令不能冒充。
+用户要求实际创作或编辑产物时，在写 Brief、调用媒体工具或编写 HTML 前，先按交付环境核对能力。默认 Canvas 环境需要 `design-cli`、`present_files` 与 `FileBatchUpload`；Mobile 按其专用预检，不要求 Canvas CLI。两种环境凡需交付图片／视频，还须核验宿主实际支持的 RichMediaCard 展示能力；接口与资源字段以当前宿主契约为准，不根据组件名猜造调用或标签参数。仅交付 HTML 预览和画布卡片时不额外要求此能力。两种环境均按本次素材计划检查实际需要的图像生成、编辑和抠图能力；纯 Coding 不要求无关媒体工具。非标准执行环境选定 HTML 路线后、生产前先运行 `scripts/runtime/shot.py --check-runtime` 检查 Playwright、Pillow 与预装 Chromium；预检失败记录环境缺口，不临时切换浏览器。Windows 环境额外参考 [`windows-compat.md`](references/workflow/windows-compat.md)。HTML 页面正式自检仍仅运行 `scripts/runtime/shot.py <html_path>`，内部通过 Playwright 使用同一 Chromium，配合 Pillow 完成测量与截图；HTML 必须在 html 标签声明 data-canvas-width 和 data-canvas-height 正整数属性，预览图仍需 CDN 上传能力。只有脚本返回退出码 `3`、确认属于执行失败时，才允许跳过自检并记录“预览未验证”，按 [预览策略](references/workflow/html-preview.md) 继续可完成的交付；退出码 `1` 必须修正并重跑。不调用 artifact-preview／artifacts-preview Skill，也不另行操作浏览器自检。能力可以由已安装 CLI、原生工具或运行环境注入，但名称相似的普通文件展示、浏览器截图、Markdown 链接和上传命令不能冒充。
 
 任一必需能力缺失时，立即停止正式生产，返回 `RUNTIME_CAPABILITY_MISSING`，逐项列出缺失能力及其阻断阶段；不得创建 Workspace、生成媒体、写入画布、先做半套 HTML，或宣称可以完成交付闭环。只做方案、提示词、审查或 Skill 维护时不要求这些生产能力。后续发现环境新增了全部能力后，从本预检重新开始。
 
@@ -92,11 +92,11 @@ Mobile 交付环境与实际执行操作系统分别判定；跨平台兼容说�
 每个生成／编辑结果就绪后，必须在同一调度点同步启动并等待以下两个分支：
 
 1. **画布分支**：使用工具返回的原始短链，通过 `design-cli` 写入 `active_workspace_id`，再用 `+get` 回读确认。新资产或内容修改后的新版本均用 `+create`；`+update` 仅修改协议允许的顶层 `brief`／`path`。
-2. **交付分支**：由主 Agent 将工具直接返回的该项产物单独交给 `RichMediaCard`；每次只交付一个产物。
+2. **交付分支**：由主 Agent 将工具直接返回的该项产物单独以 RichMediaCard 形式直交；每次只交付一个产物。
 
-两个分支均成功后，该产物才算完成。不得先完成一个分支再启动另一个；工具预览、缩略图、URL、Markdown 图片或文本路径均不能替代 `RichMediaCard`。
+两个分支均成功后，该产物才算完成。不得先完成一个分支再启动另一个；工具预览、缩略图、URL、Markdown 图片或文本路径均不能替代 RichMediaCard。
 
-画布持久化是硬门禁：`RichMediaCard`、HTML 中的媒体引用和最终 HTML Item 都不能替代媒体结果自身的 `design-cli +create`／`+get`。主视觉确认后的正式生产同样覆盖候选、未采用版本、抠图源和中间素材；全部结果逐项闭环、固定并行批次汇合且素材清单回填前，不得开始 HTML 组装，也不得事后集中补写。
+画布持久化是硬门禁：RichMediaCard、HTML 中的媒体引用和最终 HTML Item 都不能替代媒体结果自身的 `design-cli +create`／`+get`。主视觉确认后的正式生产同样覆盖候选、未采用版本、抠图源和中间素材；全部结果逐项闭环、固定并行批次汇合且素材清单回填前，不得开始 HTML 组装，也不得事后集中补写。
 
 媒体工具产出的 IMAGE／VIDEO 必须把原始短链逐字写入 `<asset url>`；不得为交付而下载、复制、重传或换链。只有未经过媒体工具且仅存在于本地的用户上传资产或渲染／导出产物，才可先上传取链。
 
@@ -108,8 +108,8 @@ Mobile 交付环境与实际执行操作系统分别判定；跨平台兼容说�
 ### 5. 质量与失败出口
 
 - 成功产出的内容即使效果不佳、文字错误或身份漂移，也必须先完成双通道闭环；禁止静默丢弃或先修复再交付。
-- `image_gen`／`image_edit` 生成的产物必须直接通过 `RichMediaCard` 交付；AI 图片内文字不准确时，交付后只记录问题并等待用户提出修改要求，禁止过度反思或自主重生。Coding 的原生 DOM 文字仍须正常修正。
-- `RichMediaCard` 失败时，立即停止后续生成、编辑、选图及依赖步骤。任一分支失败都保留另一分支的真实状态，不得把未完成闭环的产物视为已交付。
+- `image_gen`／`image_edit` 生成的产物必须直接通过 RichMediaCard 交付；AI 图片内文字不准确时，交付后只记录问题并等待用户提出修改要求，禁止过度反思或自主重生。Coding 的原生 DOM 文字仍须正常修正。
+- RichMediaCard 失败时，立即停止后续生成、编辑、选图及依赖步骤。任一分支失败都保留另一分支的真实状态，不得把未完成闭环的产物视为已交付。
 
 ## 一、场景路由策略
 
@@ -194,7 +194,7 @@ HTML 路线在最终 Brief 冻结前，按 [组合参考筛选](assets/templates
 
 新建与生成存在两条不可跳过的交付门禁：
 
-1. **文件必须直接呈现**：图片、视频等成品与可视中间产物必须通过 `RichMediaCard` 呈现，不能只在文字中描述路径。每张结果都同步启动“CLI 写入／回读”和“工具产物直接单项交付”两个并行分支；串行模式在该结果汇合后再生成下一张，并行模式等待整批汇合。分图层 Coding + AI 生图的 HTML 是内部编译与 CLI 写入载荷，不是用户交付物：不得在对话中粘贴 HTML，不得把 `.html` 文件直接交给用户，也不得用 `present_files` 或 `RichMediaCard` 把 HTML 冒充为最终成品。
+1. **文件必须直接呈现**：图片、视频等成品与可视中间产物必须通过 RichMediaCard 呈现，不能只在文字中描述路径。`image_gen`／`image_edit` 已传入 Workspace ID 后，工具成功结果直接逐项交付，禁止重复执行媒体 CLI 写入／回读；串行模式在当前结果交付成功后再生成下一张，并行模式等待整批交付状态汇合。分图层 Coding + AI 生图的 HTML 是内部编译与 CLI 写入载荷，不是用户交付物：不得在对话中粘贴 HTML，不得把 `.html` 文件直接交给用户，也不得用 `present_files` 把 HTML 冒充为最终成品。
 2. **必须完成当前环境的 HTML 交付闭环**：按 [HTML 检查执行流程](references/workflow/html-validation.md) 取得严格同尺寸且完整的预览。同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图不创建 IMAGE Item、不调用 `present_files`。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。禁止 HTML Frame、按章节拆 Item 或直接交付原始 HTML。预览问题不阻断默认 Canvas 的 HTML 上传与写入，但当前环境的合格预览、CDN／Markdown 及所需卡片未完成时不得宣称完成。
 
 分图层 Coding 必须先在候选 Brief 中明确本次主视觉及其可选方向。若场景触发视觉 KV，KV 视觉澄清画面应包含与当前产品、主题或核心内容直接相关的准确主标题，用于让用户确认主视觉与字形风格；不得生成随机英文、占位口号或未经授权的产品事实。确认结果写回并冻结最终 Brief，再执行 Brief → HTML。被确认的 KV 主标题只作为后续艺术字生成的字形、笔画、材质、边缘和色板参考，不得把压平 KV 文字直接当作独立标题层；社媒长图 Hero 可按品类规则整体复用满足正式槽位的 KV，不能假称其内部文字可拆。
@@ -449,4 +449,4 @@ AI + Coding 在首次正式图像调用前建立轻量 `asset-manifest.json`，�
 
 分图层 Coding 只使用标准 HTML/CSS，并遵循 `references/html/coding-rendering.md`。复杂自由路径可内嵌 SVG；禁止使用自定义 Canvas 协议、JSX 或整图压平替代可编辑 DOM。每个完整详情页、长图或其他独立作品只生成一个固定画布 HTML5 文档；同尺寸完整预览图上传 CDN、核验公网链接并以 Markdown 图片展示；预览截图不创建 IMAGE Item、不调用 `present_files`。默认 Canvas 环境再上传完整 HTML、创建顶层 HTML Item 并 `+get` 回读，将 `<workspace_id>?item_id=<item_id>` 作为单值传给 `present_files` 输出对应画布卡片；Mobile 环境到预览展示即止，不上传 HTML、不执行 CLI 或 Item／卡片步骤。禁止 HTML Frame，也禁止把内部章节拆成平台 Item。社媒长图 Hero 按品类规则成为整体图片层，其内部文案不假称独立可编辑；其余分层区域仅准入的唯一艺术主标题可以按最终消费者选择节点级混合模式或真实透明抠图，并通过对应背景效果、字形和边缘验收后作为图片层使用，其余标题与正文保持为可追溯、可编辑的真实文本 DOM。
 
-交付时说明视觉主张、可编辑范围、素材替换方式、HTML 预览状态、Workspace 写入与回读结果，以及仍存在的已知限制。原始 `.html` 不通过 `present_files` 直接交付；同尺寸完整预览图必须经 CDN＋Markdown 展示；默认 Canvas 的 HTML Item 回读后必须将同一 Workspace ID 与刚回读的 HTML Item ID 拼成 `<workspace_id>?item_id=<item_id>` 单值交给 `present_files` 输出对应卡片。用户另需图片或视频时，使用 `RichMediaCard` 逐项展示实际渲染／导出成品。
+交付时说明视觉主张、可编辑范围、素材替换方式、HTML 预览状态、Workspace 写入与回读结果，以及仍存在的已知限制。原始 `.html` 不通过 `present_files` 直接交付；同尺寸完整预览图必须经 CDN＋Markdown 展示；默认 Canvas 的 HTML Item 回读后必须将同一 Workspace ID 与刚回读的 HTML Item ID 拼成 `<workspace_id>?item_id=<item_id>` 单值交给 `present_files` 输出对应卡片。用户另需图片或视频时，使用 RichMediaCard 逐项展示实际渲染／导出成品。

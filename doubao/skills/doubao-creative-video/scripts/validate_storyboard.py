@@ -698,10 +698,6 @@ def self_test() -> int:
 
 
 def main() -> int:
-    # Windows 重定向和子进程捕获时也保持中文输出为 UTF-8。
-    for stream in (sys.stdout, sys.stderr):
-        if hasattr(stream, "reconfigure"):
-            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     parser = argparse.ArgumentParser(
         description="客观校验完整分镜 Markdown，不评价创意质量。"
     )
@@ -737,15 +733,8 @@ def main() -> int:
     if args.max_tail_duration <= 0:
         parser.error("--max-tail-duration 必须大于 0")
 
-    try:
-        # 同时兼容 UTF-8 无 BOM 与 Windows 编辑器保存的 UTF-8 BOM 文件。
-        storyboard_text = args.storyboard.read_text(encoding="utf-8-sig")
-    except (OSError, UnicodeError) as exc:
-        print(f"ERROR: 无法读取分镜文件 {args.storyboard}: {exc}", file=sys.stderr)
-        return 2
-
     errors = validate_storyboard(
-        storyboard_text,
+        args.storyboard.read_text(encoding="utf-8"),
         args.expected_duration,
         args.min_shots,
         args.max_chars_per_second,

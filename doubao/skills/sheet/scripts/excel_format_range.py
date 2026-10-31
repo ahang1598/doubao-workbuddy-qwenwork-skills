@@ -11,6 +11,7 @@
 import argparse
 import json
 from copy import copy
+from pathlib import Path
 
 try:
     from openpyxl.styles import Color, PatternFill, Protection, Side
@@ -33,6 +34,14 @@ except ModuleNotFoundError as _missing:  # 本机没装 openpyxl：报错现场�
     raise SystemExit(1) from _missing
 
 from _excel_utils import emit, emit_error, load_or_create_wb, parse_range, require_sheet
+
+
+def _load_json_arg(raw: str):
+    text = raw.strip()
+    if text.startswith("@"):
+        path = text[1:].strip().strip("\"'")
+        text = Path(path).read_text(encoding="utf-8-sig")
+    return json.loads(text)
 
 
 def _normalize_color(c: str) -> str:
@@ -86,9 +95,9 @@ def main():
     # 合并
     p.add_argument("--merge", action="store_true")
     # 保护
-    p.add_argument("--protection", help='JSON 串，如 \'{"locked":true,"hidden":false}\'')
+    p.add_argument("--protection", help='保护配置，内联 JSON 或 "@./protection.json"（UTF-8 文件）')
     # 条件格式
-    p.add_argument("--cond-format", help="条件格式 JSON 串")
+    p.add_argument("--cond-format", help='条件格式，内联 JSON 或 "@./cond-format.json"（UTF-8 文件）')
     args = p.parse_args()
 
     try:
@@ -128,7 +137,7 @@ def main():
     protect = None
     if args.protection:
         try:
-            protect = Protection(**json.loads(args.protection))
+            protect = Protection(**_load_json_arg(args.protection))
         except Exception as e:
             emit_error(f"Invalid --protection JSON: {e}")
 
@@ -201,7 +210,7 @@ def main():
 
     if args.cond_format:
         try:
-            spec = json.loads(args.cond_format)
+            spec = _load_json_arg(args.cond_format)
             rule = _build_conditional_rule(spec)
             ws.conditional_formatting.add(range_str, rule)
         except Exception as e:

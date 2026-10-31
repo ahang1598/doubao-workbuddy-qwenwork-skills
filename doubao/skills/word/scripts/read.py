@@ -5,10 +5,7 @@ import html
 import json
 import os
 import re
-import shutil
-import subprocess
 import sys
-import tempfile
 import zipfile
 from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
@@ -440,145 +437,6 @@ def safe_export_path(asset_dir, member_name):
 
 def part_xml(zf, name):
     return xml_bytes(parse_xml(zf.read(name)))
-
-
-def locate_soffice():
-    if os.environ.get("READ_PY_DISABLE_LIBREOFFICE"):
-        return None
-    choices = []
-
-    # An explicit path is useful for portable and non-standard installations.
-    for variable in ("READ_PY_LIBREOFFICE", "LIBREOFFICE_PATH", "SOFFICE_PATH"):
-        value = os.environ.get(variable)
-        if value:
-            choices.append(value)
-
-    commands = ("soffice.com", "soffice", "libreoffice") if sys.platform == "win32" else ("soffice", "libreoffice")
-    for command in commands:
-        found = shutil.which(command)
-        if found:
-            choices.append(found)
-
-    if sys.platform == "win32":
-        program_files = [
-            os.environ.get("ProgramFiles"),
-            os.environ.get("ProgramW6432"),
-            os.environ.get("ProgramFiles(x86)"),
-            os.environ.get("LOCALAPPDATA"),
-        ]
-        for root in program_files:
-            if root:
-                program = Path(root) / "LibreOffice" / "program"
-                choices.extend([program / "soffice.com", program / "soffice.exe"])
-        local_app_data = os.environ.get("LOCALAPPDATA")
-        if local_app_data:
-            program = Path(local_app_data) / "Programs" / "LibreOffice" / "program"
-            choices.extend([program / "soffice.com", program / "soffice.exe"])
-        choices.extend(
-            [
-                Path("C:/Program Files/LibreOffice/program/soffice.com"),
-                Path("C:/Program Files/LibreOffice/program/soffice.exe"),
-                Path("C:/Program Files (x86)/LibreOffice/program/soffice.com"),
-                Path("C:/Program Files (x86)/LibreOffice/program/soffice.exe"),
-            ]
-        )
-        try:
-            import winreg
-
-            for hive, key_name in (
-                (winreg.HKEY_CURRENT_USER, r"SOFTWARE\LibreOffice\UNO\InstallPath"),
-                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\LibreOffice\UNO\InstallPath"),
-                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\LibreOffice\UNO\InstallPath"),
-            ):
-                try:
-                    with winreg.OpenKey(hive, key_name) as key:
-                        install_path, _ = winreg.QueryValueEx(key, "")
-                        choices.extend(
-                            [
-                                Path(install_path) / "soffice.com",
-                                Path(install_path) / "soffice.exe",
-                            ]
-                        )
-                except (FileNotFoundError, OSError):
-                    continue
-        except ImportError:
-            pass
-    elif sys.platform == "darwin":
-        choices.extend(
-            [
-                Path("/Applications/LibreOffice.app/Contents/MacOS/soffice"),
-                Path.home() / "Applications/LibreOffice.app/Contents/MacOS/soffice",
-                Path("/opt/homebrew/bin/soffice"),
-                Path("/usr/local/bin/soffice"),
-                Path("/opt/local/bin/soffice"),
-            ]
-        )
-    else:
-        choices.extend(
-            [
-                Path("/usr/bin/soffice"),
-                Path("/usr/local/bin/soffice"),
-                Path("/snap/bin/libreoffice"),
-                Path("/var/lib/flatpak/exports/bin/org.libreoffice.LibreOffice"),
-            ]
-        )
-
-    seen = set()
-    for candidate in choices:
-        if not candidate:
-            continue
-        candidate = Path(candidate).expanduser()
-        key = os.path.normcase(os.path.abspath(candidate))
-        if key in seen:
-            continue
-        seen.add(key)
-        if libreoffice_candidate_ok(candidate):
-            return str(candidate)
-    return None
-
-
-def libreoffice_candidate_ok(path):
-    path = Path(path)
-    if not path.is_file():
-        return False
-    if os.name != "nt" and not os.access(path, os.X_OK):
-        return False
-    return True
-
-
-def convert_with_libreoffice(source, out_dir, target):
-    soffice = locate_soffice()
-    if soffice is None:
-        return None
-    profile = out_dir / "libreoffice-profile"
-    profile.mkdir(exist_ok=True)
-    try:
-        result = subprocess.run(
-            [
-                soffice,
-                f"-env:UserInstallation={profile.as_uri()}",
-                "--headless",
-                "--nologo",
-                "--nodefault",
-                "--nofirststartwizard",
-                "--nolockcheck",
-                "--convert-to",
-                target,
-                "--outdir",
-                str(out_dir),
-                str(source),
-            ],
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=120,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise RuntimeError(f"LibreOffice conversion failed: {exc}") from exc
-    output = out_dir / f"{source.stem}.{target.split(':', 1)[0]}"
-    if result.returncode == 0 and output.exists():
-        return output
-    raise RuntimeError(result.stderr.decode("utf-8", errors="ignore") or "LibreOffice conversion failed")
 
 
 def section_nodes(root):
@@ -1458,6 +1316,126 @@ def build_sections_data(docx_path, source_path):
         "sections": sections + ([] if strict else python_docx_sections(docx_path)),
         "source": str(source_path),
     }
+
+
+def markdown_text(node, nested_paragraphs):
+    parts = []
+    paragraph_seen = False
+
+    def visit(item, root=False):
+        nonlocal paragraph_seen
+        if item.tag in {wtag("del"), wtag("moveFrom")}:
+            return
+        if (
+            item.tag == wtag("tr")
+            and item.find("w:trPr/w:del", namespaces=NS) is not None
+        ):
+            return
+        if item.tag == wtag("p"):
+            if not root and not nested_paragraphs:
+                return
+            if paragraph_seen:
+                parts.append("\n")
+            paragraph_seen = True
+        else:
+            parts.append(text_node_value(item))
+        for child_node in item:
+            visit(child_node)
+
+    visit(node, True)
+    return "".join(parts)
+
+
+def markdown_blocks(container):
+    for item in container:
+        if item.tag in {wtag("del"), wtag("moveFrom")}:
+            continue
+        if item.tag in {wtag("p"), wtag("tbl")}:
+            yield item
+        else:
+            yield from markdown_blocks(item)
+
+
+def markdown_table_record(table):
+    rows = []
+    for row in children(table, "w:tr"):
+        row_pr = child(row, "w:trPr")
+        if child(row_pr, "w:del") is not None:
+            continue
+        grid_before = child(row_pr, "w:gridBefore")
+        grid_after = child(row_pr, "w:gridAfter")
+        rows.append(
+            {
+                "grid_before": attr(grid_before, W + "val"),
+                "grid_after": attr(grid_after, W + "val"),
+                "cells": [
+                    {
+                        "text": markdown_text(cell, True),
+                        "properties": {
+                            "grid_span": attr(
+                                child(child(cell, "w:tcPr"), "w:gridSpan"),
+                                W + "val",
+                            )
+                        },
+                    }
+                    for cell in children(row, "w:tc")
+                ],
+            }
+        )
+    return {
+        "record_type": "table",
+        "rows": rows,
+        "grid": children(table, "w:tblGrid/w:gridCol"),
+    }
+
+
+def markdown_content(root):
+    records = []
+
+    def append_blocks(container):
+        for item in markdown_blocks(container):
+            if item.tag == wtag("tbl"):
+                records.append(markdown_table_record(item))
+                continue
+            records.append(
+                {
+                    "record_type": "paragraph",
+                    "text": markdown_text(item, False),
+                    "style_id": attr(
+                        child(child(item, "w:pPr"), "w:pStyle"),
+                        W + "val",
+                    ),
+                }
+            )
+            for text_box in item.findall(".//w:txbxContent", namespaces=NS):
+                if text_box.xpath("ancestor::w:p[1]", namespaces=NS)[0] is item:
+                    append_blocks(text_box)
+
+    append_blocks(root.find("w:body", namespaces=NS))
+    return records
+
+
+def build_markdown_data(docx_path, source_path):
+    with zipfile.ZipFile(docx_path) as zf:
+        document_rels = {}
+        relationships_path = "word/_rels/document.xml.rels"
+        if relationships_path in zf.namelist():
+            document_rels = {
+                item["id"]: item
+                for item in rel_records(
+                    parse_xml(zf.read(relationships_path)),
+                    relationships_path,
+                )
+            }
+        root = parse_xml(zf.read("word/document.xml"))
+        configure_document_namespaces(root)
+        resolve_alternate_content(root)
+        materialize_alt_chunks(root, zf, document_rels)
+        return {
+            "content": markdown_content(root),
+            "styles": style_records(zf),
+            "source": str(source_path),
+        }
 
 
 def markdown_table(table):
@@ -2751,29 +2729,19 @@ def main():
         parser.error("--include-media-base64 is supported only for dimension 6")
     if not source.is_file():
         parser.error(f"file does not exist: {source}")
-    if source.suffix.lower() not in {".doc", ".docx"}:
-        parser.error("filename must be a .doc or .docx file")
+    if source.suffix.lower() != ".docx":
+        parser.error("filename must be a .docx file")
     if source.resolve() == output_path.resolve() or (
         output_path.exists() and source.samefile(output_path)
     ):
         parser.error("output path must differ from input file")
-    if source.suffix.lower() == ".doc":
-        with tempfile.TemporaryDirectory() as tmp_name:
-            docx_path = convert_with_libreoffice(source, Path(tmp_name), "docx")
-            if docx_path is None:
-                write_output_file(output_path, "当前环境中没有libreoffice\n")
-                return
-            data = (
-                build_sections_data(docx_path, source)
-                if args.dimension == 1
-                else build_data(docx_path, source, args.asset_dir, args.include_media_base64)
-            )
-    else:
-        data = (
-            build_sections_data(source, source)
-            if args.dimension == 1
-            else build_data(source, source, args.asset_dir, args.include_media_base64)
-        )
+    data = (
+        build_sections_data(source, source)
+        if args.dimension == 1
+        else build_markdown_data(source, source)
+        if args.dimension == 0
+        else build_data(source, source, args.asset_dir, args.include_media_base64)
+    )
 
     if args.dimension == 0:
         output = markdown_output(data)

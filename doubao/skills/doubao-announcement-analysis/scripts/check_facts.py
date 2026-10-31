@@ -142,7 +142,7 @@ def validate_meta(facts: dict[str, Any], reporter: Reporter) -> None:
 def validate_claims(facts: dict[str, Any], reporter: Reporter) -> None:
     claims = facts.get("claims")
     if claims is None:
-        reporter.warning("claims 缺失：lint_report 将无法做正文数字与事实表绑定提示")
+        reporter.warning("claims 缺失：结构化报告将无法绑定关键事实")
         return
     if not isinstance(claims, list):
         reporter.error("claims 必须是数组")

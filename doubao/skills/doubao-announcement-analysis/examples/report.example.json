@@ -1,0 +1,213 @@
+{
+  "mode": "single",
+  "title": "示例公司季度公告解读（测试）",
+  "summary": [
+    {
+      "text": "2026Q3收入为120亿元，净利润为10亿元。",
+      "fact_ids": [
+        "revenue_q3",
+        "profit_q3"
+      ]
+    },
+    {
+      "text": "后续应关注利润变化及其原因。",
+      "fact_ids": [
+        "risk"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "key": "announcement",
+      "title": "公告基本信息",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "公司于2026年10月20日披露三季报。",
+          "fact_ids": [
+            "report_date"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "key_facts",
+      "title": "关键事实",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "2026Q3营业收入120亿元，净利润10亿元。",
+          "fact_ids": [
+            "revenue_q3",
+            "profit_q3"
+          ]
+        },
+        {
+          "type": "chart",
+          "title": "2026年前三季度收入趋势",
+          "chart_type": "line",
+          "unit": "亿元",
+          "caption": "来源：示例公司定期报告；季度口径",
+          "market": "A股",
+          "x_labels": [
+            "2026Q1",
+            "2026Q2",
+            "2026Q3"
+          ],
+          "series": [
+            {
+              "name": "营业收入",
+              "values": [
+                {
+                  "value": 100,
+                  "fact_ids": [
+                    "revenue_q1"
+                  ]
+                },
+                {
+                  "value": 110,
+                  "fact_ids": [
+                    "revenue_q2"
+                  ]
+                },
+                {
+                  "value": 120,
+                  "fact_ids": [
+                    "revenue_q3"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "importance",
+      "title": "重要性判断",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "本次公告为季度报告，需结合历史数据判断变化。",
+          "fact_ids": [
+            "importance"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "history",
+      "title": "历史对比",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": [
+            "期间",
+            "收入"
+          ],
+          "rows": [
+            [
+              "2026Q1",
+              {
+                "text": "100亿元",
+                "fact_ids": [
+                  "revenue_q1"
+                ]
+              }
+            ],
+            [
+              "2026Q2",
+              {
+                "text": "110亿元",
+                "fact_ids": [
+                  "revenue_q2"
+                ]
+              }
+            ],
+            [
+              "2026Q3",
+              {
+                "text": "120亿元",
+                "fact_ids": [
+                  "revenue_q3"
+                ]
+              }
+            ]
+          ],
+          "caption": "来源：示例公司定期报告；单位：亿元"
+        }
+      ]
+    },
+    {
+      "key": "linked_signals",
+      "title": "关联信号",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "已检索同期相关公告，暂未发现明确联动信号。",
+          "fact_ids": [
+            "linked"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "price_reaction",
+      "title": "股价阶段表现",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "公告后股价未见显著异动。",
+          "fact_ids": [
+            "price"
+          ]
+        }
+      ],
+      "status": "normal"
+    },
+    {
+      "key": "perspectives",
+      "title": "多视角分析",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "angle": "fundamentals",
+          "text": "收入增长的同时，后续利润变化仍需继续验证。",
+          "fact_ids": [
+            "revenue_q3",
+            "risk"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "angle": "management",
+          "text": "当前资料不足以判断管理层对此变化的长期判断。",
+          "fact_ids": [
+            "importance"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "angle": "counter_case",
+          "text": "利润变化可能存在阶段性因素，后续应关注新的公开数据。",
+          "fact_ids": [
+            "risk"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "watchlist",
+      "title": "后续关注",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "后续应关注利润变化及其原因。",
+          "fact_ids": [
+            "risk"
+          ]
+        }
+      ]
+    }
+  ]
+}

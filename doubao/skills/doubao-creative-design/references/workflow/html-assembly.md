@@ -15,7 +15,7 @@
 - 唯一自然语言 Brief 已完成并冻结；
 - pure-coding 所需真实资产、字体和实现依赖已可用；
 - ai-coding 的 `asset-manifest.json` 已通过 `validate_asset_manifest.py --require-ready`；
-- 本轮正式生产返回的全部图片／视频结果（含候选、未采用版本、抠图源与中间素材）均已完成写入、`+get` 回读和逐项 `RichMediaCard` 交付；串行与并行门禁已汇合，不存在待补写或待交付分支；
+- 本轮正式生产返回的全部图片／视频结果（含候选、未采用版本、抠图源与中间素材）均已完成写入、`+get` 回读和逐项以 RichMediaCard 形式直交；串行与并行门禁已汇合，不存在待补写或待交付分支；
 - 所有 Coding 文字已在 Brief 中逐字确定并注明可编辑职责；
 - Visual 草案阶段选择的 CSS／SVG 候选仍适合最终内容与素材。
 

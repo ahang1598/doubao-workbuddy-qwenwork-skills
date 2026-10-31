@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Finalize a report source markdown for Feishu document delivery.
+"""Finalize a report source markdown into a reader-facing HTML report.
 
 This is the single command the workflow should run at delivery time:
   python3 scripts/finalize_report.py report.md [facts.json]
 
 It normalizes the source markdown in place, runs lint, and creates a
 reader-facing markdown copy where internal fact bindings are converted to
-plain [n] source markers. The display markdown is the source for the built-in
-Feishu document creation step. DOCX export is optional and only runs when
+plain [n] source markers, then renders a standalone HTML page. DOCX export is optional and only runs when
 --docx-output is provided.
 """
 
@@ -26,7 +25,7 @@ def run_step(args: list[str]) -> None:
     subprocess.run([sys.executable, *args], check=True)
 
 
-def validate_output_paths(markdown_path: Path, display_output: Path, docx_output: Path | None = None) -> None:
+def validate_output_paths(markdown_path: Path, display_output: Path, html_output: Path, docx_output: Path | None = None) -> None:
     if markdown_path.name.endswith("-display.md"):
         raise SystemExit(
             "[错误] 输入文件看起来是已清理的 display markdown。"
@@ -34,18 +33,21 @@ def validate_output_paths(markdown_path: Path, display_output: Path, docx_output
         )
     if display_output == markdown_path:
         raise SystemExit("[错误] display markdown 不能覆盖源 markdown，否则会丢失源稿审计标记。")
-    if docx_output is not None and (docx_output == markdown_path or docx_output == display_output):
-        raise SystemExit("[错误] DOCX 输出路径不能与源 markdown 或 display markdown 相同。")
+    if html_output in (markdown_path, display_output):
+        raise SystemExit("[错误] HTML 输出路径不能覆盖源 markdown 或 display markdown。")
+    if docx_output is not None and docx_output in (markdown_path, display_output, html_output):
+        raise SystemExit("[错误] DOCX 输出路径不能与源 markdown、display markdown 或 HTML 相同。")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Single delivery entry: normalize, lint, and generate display markdown for Feishu delivery."
+        description="Single delivery entry: normalize, lint, and generate a standalone HTML report."
     )
     parser.add_argument("markdown", help="Source markdown file")
     parser.add_argument("facts", nargs="?", default=None, help="Optional facts.json for lint checks")
     parser.add_argument("--docx-output", default=None, help="Optional DOCX export path; omitted by default")
     parser.add_argument("--display-output", default=None, help="Output display markdown path (default: <stem>-display.md)")
+    parser.add_argument("--html-output", required=True, help="Final standalone HTML report path")
     args = parser.parse_args()
 
     markdown_path = Path(args.markdown).resolve()
@@ -56,12 +58,13 @@ def main() -> int:
         if args.display_output
         else markdown_path.with_name(f"{markdown_path.stem}-display.md")
     )
+    html_output = Path(args.html_output).resolve()
 
     if not markdown_path.exists():
         raise SystemExit(f"[错误] 找不到 Markdown 文件: {markdown_path}")
     if facts_path is not None and not facts_path.exists():
         raise SystemExit(f"[错误] 找不到 facts.json: {facts_path}")
-    validate_output_paths(markdown_path, display_output, docx_output)
+    validate_output_paths(markdown_path, display_output, html_output, docx_output)
 
     run_step([str(SCRIPT_DIR / "normalize_report.py"), str(markdown_path)])
 
@@ -77,14 +80,16 @@ def main() -> int:
     if facts_path is not None:
         display_args.extend(["--facts", str(facts_path)])
     run_step(display_args)
+    run_step([str(SCRIPT_DIR / "make_html_report.py"), str(display_output), str(html_output)])
     if docx_output is not None:
-        # Optional export uses the same reader-facing copy as Feishu delivery,
+        # Optional export uses the same reader-facing copy as HTML delivery,
         # so generated [n] source markers stay visible.
         run_step([str(SCRIPT_DIR / "make_docx.py"), str(display_output), "-o", str(docx_output)])
 
     print("Finalized report:")
     print(f"- Source markdown: {markdown_path}")
     print(f"- Display markdown: {display_output}")
+    print(f"- HTML report: {html_output}")
     if docx_output is not None:
         print(f"- Optional DOCX export: {docx_output}")
     return 0

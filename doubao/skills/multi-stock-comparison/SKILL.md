@@ -1,22 +1,22 @@
 ---
 name: multi-stock-comparison
-description: 对两家及以上上市公司或股票进行横向研究，覆盖大盘与板块、外围市场、供应链、重要新闻与监管、商业模式、经营财务、成长、预期、估值、股价、组合以及 A/H 股与跨上市地相对价值。适用于公司比较、选股、财报或估值对比、股价与事件复盘、供应链或监管分析、组合适配、配对交易、H 股相对价值，以及需要飞书文档、高级金融图表或可复核多维报告的任务。
+description: 对两家及以上上市公司或股票进行横向研究，覆盖大盘与板块、外围市场、供应链、重要新闻与监管、商业模式、经营财务、成长、预期、估值、股价、组合以及 A/H 股与跨上市地相对价值。适用于公司比较、选股、财报或估值对比、股价与事件复盘、供应链或监管分析、组合适配、配对交易、H 股相对价值，以及需要 HTML 报告、高级金融图表或可复核多维报告的任务。
 ---
 
 # 多股票横向研究
 
 ## 第一步：设置 delivery_mode
 
-在检索、分析、起草或生成图表前，必须先读取 `references/lark-doc-delivery.md`，并把本次任务锁定为且仅为以下一种状态：
+在检索、分析、起草或生成图表前，必须先读取 `references/html-report-delivery.md`，并把本次任务锁定为且仅为以下一种状态：
 
 - `delivery_mode=TEXT`：仅当第 1 节的四项简单问题条件**全部满足**；
-- `delivery_mode=LARK_DOC`：任一简单条件不满足、无法确定，或用户要求飞书文档时。
+- `delivery_mode=HTML_REPORT`：任一简单条件不满足、无法确定，或用户要求 HTML 报告时。
 
-三家以上比较、两家公司多维比较、全面股票对比、竞品分析、投资二选一、财报比较、估值比较、**任何股价表现/涨跌/事件反应分析**、组合适配、配对交易、完整报告、可复核引用、可分享交付物，以及需要真实横向表/情景/图示/多章节导航的任务，直接设为 `LARK_DOC`。用户没有明确要求文档、query 很短、聊天界面支持 Markdown，均不是选择 `TEXT` 的理由。
+三家以上比较、两家公司多维比较、全面股票对比、竞品分析、投资二选一、财报比较、估值比较、**任何股价表现/涨跌/事件反应分析**、组合适配、配对交易、完整报告、可复核引用、可分享交付物，以及需要真实横向表/情景/图示/多章节导航的任务，直接设为 `HTML_REPORT`。用户没有明确要求文档、query 很短、聊天界面支持 Markdown，均不是选择 `TEXT` 的理由。
 
-模式一经设定，不得因为文档创建较慢、命令复杂、认证或权限问题从 `LARK_DOC` 降级为 `TEXT`；阻塞按未完成状态处理。`TEXT` 模式不得生成 HTML block、whiteboard、SVG/Mermaid/PlantUML、分栏、高亮块或富样式表格；一旦实际生成任一高级组件，立即把模式升级为 `LARK_DOC`，且不得回退。
+模式一经设定，不得因为文档创建较慢、命令复杂、认证或权限问题从 `HTML_REPORT` 降级为 `TEXT`；阻塞按未完成状态处理。`TEXT` 模式不得生成 HTML 图表组件、SVG 图示、SVG/Mermaid/PlantUML、分栏、高亮块或富样式表格；一旦实际生成任一高级组件，立即把模式升级为 `HTML_REPORT`，且不得回退。
 
-在工作记录中建立交付清单，并在开始时运行 `scripts/delivery_gate.py --phase plan`。`LARK_DOC` 模式在完整正文起草和高级组件生成前，先按线上最新版 `lark-doc` 完成认证检查并创建文档骨架；最终写入、拉取复核后运行 `scripts/delivery_gate.py --phase final`。未通过最终门禁不得把任务表述为完成。
+在工作记录中建立交付清单，并在开始时运行 `scripts/delivery_gate.py --phase plan`。`HTML_REPORT` 模式在完整正文起草和高级组件生成前，先规划报告骨架与输出路径；最终生成 HTML、确认文件完整后运行 `scripts/delivery_gate.py --phase final`。未通过最终门禁不得把任务表述为完成。
 
 ## 初始化与比较范围
 
@@ -30,11 +30,11 @@ description: 对两家及以上上市公司或股票进行横向研究，覆盖�
 
 ## 内容准入与写作质量
 
-所有 `LARK_DOC` 任务和超过三段的 `TEXT` 任务都必须读取 `references/writing-quality.md`。默认使用 `standard` 文档档位；只有用户明确要求深度研究，或核心判断确实需要更多相互独立的证据链时，才使用 `deep_dive` 并记录理由。文档存在不构成增加篇幅的理由。
+所有 `HTML_REPORT` 任务和超过三段的 `TEXT` 任务都必须读取 `references/writing-quality.md`。默认使用 `standard` 文档档位；只有用户明确要求深度研究，或核心判断确实需要更多相互独立的证据链时，才使用 `deep_dive` 并记录理由。文档存在不构成增加篇幅的理由。
 
-研究完成、正式起草前建立质量清单：先登记 `core_financial_snapshot`，再为每个拟保留章节说明它怎样改变用户判断、带来什么未重复的新信息、使用哪些可复核证据，以及读者看完应得到什么结论。任一项不能回答就删除该章节，不把低质量内容写入文档“供参考”。任何候选图表同时进入 `visual_plan`，逐图说明信息任务、为何优于文字/表格、证据、读者结论和去重组；按 `one_pager/standard/deep_dive` 默认最多保留 1/3/5 个视觉家族，超过时记录不可压缩理由。按 `references/script-usage.md` 运行 `scripts/editorial_gate.py --phase plan`；写入并拉取复核后完成压缩检查，再运行 `--phase final`。两个阶段未通过均不得结束任务。
+研究完成、正式起草前建立质量清单：先登记 `core_financial_snapshot`，再为每个拟保留章节说明它怎样改变用户判断、带来什么未重复的新信息、使用哪些可复核证据，以及读者看完应得到什么结论。任一项不能回答就删除该章节，不把低质量内容写入文档“供参考”。任何候选图表同时进入 `visual_plan`，逐图说明信息任务、为何优于文字/表格、证据、读者结论和去重组；按 `one_pager/standard/deep_dive` 默认最多保留 1/3/5 个视觉家族，超过时记录不可压缩理由。按 `references/script-usage.md` 运行 `scripts/editorial_gate.py --phase plan`；写入并确认生成文件完整后完成压缩检查，再运行 `--phase final`。两个阶段未通过均不得结束任务。
 
-只要选择 `capability-price-behavior.md`，质量清单必须设置 `price_analysis=true`，并默认设置 `kline_plan.status=included`。按 `advanced-lark-visuals.md` 原则上为全部决策相关标的生成同窗口、同频率、同复权定义的 K 线 HTML block；样本过大时按该文件保留焦点/决策相关子集，并用统一基期图表覆盖全样本。只有符合该文件明确列出的不适用条件时，才可设置 `not_applicable`，并记录标准原因代码和具体理由；不得以篇幅、制作成本或“已有收益表”为理由省略。
+只要选择 `capability-price-behavior.md`，质量清单必须设置 `price_analysis=true`，并默认设置 `kline_plan.status=included`。按 `advanced-html-visuals.md` 原则上为全部决策相关标的生成同窗口、同频率、同复权定义的 K 线图；样本过大时按该文件保留焦点/决策相关子集，并用统一基期图表覆盖全样本。只有符合该文件明确列出的不适用条件时，才可设置 `not_applicable`，并记录标准原因代码和具体理由；不得以篇幅、制作成本或“已有收益表”为理由省略。
 
 ## 选择能力
 
@@ -110,19 +110,18 @@ description: 对两家及以上上市公司或股票进行横向研究，覆盖�
 
 A/H 或其他跨上市地价差需要可复算时，按 `references/script-usage.md` 运行 `scripts/ah_premium.py`。脚本只计算同步折溢价、成本假设和执行条件筛查，不证明存在可执行套利。
 
-选择股价表现能力时必须读取 `references/advanced-lark-visuals.md` 并默认生成 K 线；任何能力准备生成图表、图解或高级视觉时也必须读取该文件，先在表格、HTML block、SVG/Mermaid whiteboard 与段落之间逐图选型。K 线不得用收盘价伪造 OHLC；多象限分析不得用未解释的综合分数制造伪精确；相同 `redundancy_group` 只能保留一个视觉家族。生成器和交付门禁的输入合同见 `references/script-usage.md`：
+选择股价表现能力时必须读取 `references/advanced-html-visuals.md` 并默认生成 K 线；任何能力准备生成图表、图解或高级视觉时也必须读取该文件，先在表格、HTML 图表组件、SVG/Mermaid 图示 与段落之间逐图选型。K 线不得用收盘价伪造 OHLC；多象限分析不得用未解释的综合分数制造伪精确；相同 `redundancy_group` 只能保留一个视觉家族。图形先按 `advanced-html-visuals.md` 写自然语言视觉说明，再选择适合的 HTML、SVG 或图片制作方式。交付门禁的输入合同见 `references/script-usage.md`：
 
-- 飞书高级图表（K 线/多序列/热力图 HTML，象限/瀑布/时间线 SVG）：`scripts/lark_visuals.py`
 - 交付模式计划/完成态校验：`scripts/delivery_gate.py`
 - 章节准入与最终压缩校验：`scripts/editorial_gate.py`
 - A/H 折溢价与执行条件筛查：`scripts/ah_premium.py`
 
 ## 交付
 
-严格执行任务开始时已经锁定的 `delivery_mode`，不要到写完正文后再判断载体。`TEXT` 只在四项简单条件全部满足时直接回答。`LARK_DOC` 必须把通过内容准入门禁的主要比较写入飞书文档，在聊天中只给一至三句最核心结论和文档链接；“优先”“建议”“有条件时”不等于完成这一要求。
+严格执行任务开始时已经锁定的 `delivery_mode`。`TEXT` 只在四项简单条件全部满足时直接回答。`HTML_REPORT` 必须把通过内容准入门禁的主要比较写成金融风格的自包含 HTML 报告，在聊天中只给一至三句最核心结论和 HTML 文件链接。
 
-创建或更新飞书文档前，必须读取当前线上环境中的最新版 `lark-doc` skill 及其对本次写入要求的引用文件，以确认命令、XML 和组件语法；未完成该步骤不得写入。不要依赖记忆、本文示例或随包快照替代在线读取。`LARK_DOC` 模式应在完整起草前先创建文档骨架，避免比较完成后再因交付步骤被遗漏。
+先用 Markdown 完成读者版正文。图像按视觉说明制作并确认数据准确；图表 HTML 用独立一行 `{{embed:相对路径.html}}` 插入；SVG/PNG 图可用 Markdown 图片语法插入。运行 `python3 scripts/render_html_report.py <读者版正文.md> --output <报告.html>`，然后核对生成文件包含预期正文、表格、引用和图表嵌入。修改后重新生成并核对。浏览器预览可按需进行，不作为交付条件。
 
-**最终交付硬门禁：**交付前先运行 `scripts/editorial_gate.py --phase final`，确认结论前置、核心财务金融快照已包含或有可审计的不相关理由、低质量内容已删除、无重复结论、无新闻堆砌；逐图确认信息任务、预算、去重、来源/单位、文字结论和实际渲染，再更新交付清单并运行 `scripts/delivery_gate.py --phase final`。`LARK_DOC` 只有在质量门禁通过、文档已创建、已有可访问链接且拉取复核成功时才会通过。任何 Markdown 无法保真表达的组件都要求 `LARK_DOC`。不得直接交付本地 `.html`、`.svg`、`.xml`、截图、原始代码或仅含其链接的聊天答案。完整规则见 `references/lark-doc-delivery.md`。
+**最终交付硬门禁：**交付前先运行 `scripts/editorial_gate.py --phase final`，确认结论前置、核心财务金融快照已包含或有可审计的不相关理由、低质量内容已删除、无重复结论、无新闻堆砌；逐图确认信息任务、预算、去重、来源/单位、文字结论和图表嵌入，再更新交付清单并运行 `scripts/delivery_gate.py --phase final`。`HTML_REPORT` 只有在质量门禁通过、HTML 文件已生成且完整性校验通过时才会通过。完整规则见 `references/html-report-delivery.md`。
 
 结论先回答“本质差异是什么、为什么重要”，再给决定结论的证据、不可比项、反例和验证点。不要擅自给目标价或买卖指令。完整投资研究最后一行使用：`公开资料仅供信息参考，不构成投资建议。`

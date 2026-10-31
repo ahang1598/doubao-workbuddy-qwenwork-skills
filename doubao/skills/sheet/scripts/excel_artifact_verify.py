@@ -2,7 +2,8 @@
 """Deterministic checks for exported xlsx artifacts.
 
 Default run takes just the xlsx path: it reopens the workbook, flags cached
-Excel error values and `_xlfn.` formulas that will not recalculate elsewhere.
+Excel error values, missing `_xlfn.` prefixes and foreground-only solid
+conditional fills that can render differently across Excel and previews.
 
 `--contract` is optional and hand-written; there is no generator for it. The
 file must be `{"status": "success", "contract": {"artifact": {"kind": "xlsx",
@@ -25,6 +26,7 @@ import sys as _sys
 # 执行、还是用 spec_from_file_location 加载本模块，兼容性判据都取得到。
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
 from excel_formula_verify import _compat_hits  # noqa: E402
+from excel_conditional_format_verify import check_file  # noqa: E402
 
 try:
     from openpyxl import load_workbook
@@ -298,6 +300,13 @@ def verify(path: str, contract: dict) -> dict:
     def add(kind: str, location: str, message: str, expected=None, actual=None):
         violations.append({"kind": kind, "location": location, "message": message, "expected": expected, "actual": actual})
 
+    conditional_report = check_file(path)
+    if conditional_report["status"] == "error":
+        return conditional_report
+    for violation in conditional_report["violations"]:
+        add(violation["kind"], violation["location"], violation["message"],
+            expected="solid conditional fill with bgColor", actual=violation["actual"])
+
     wb_formula = load_workbook(path, data_only=False)
     wb_values = load_workbook(path, data_only=True)
 
@@ -506,6 +515,8 @@ def main() -> int:
         print(json.dumps({"status": "error", "error_type": exc.__class__.__name__, "error": "artifact or contract is invalid"}, ensure_ascii=False))
         return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))
+    if result["status"] == "error":
+        return 2
     return 0 if result["status"] == "success" else 3
 
 

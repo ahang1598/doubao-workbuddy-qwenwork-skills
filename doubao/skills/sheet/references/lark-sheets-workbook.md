@@ -14,7 +14,7 @@
 
 | 操作需求 | 使用工具 | 说明 |
 |---------|---------|------|
-| 查看工作簿结构 | `+workbook-info` | 获取子表列表、名称、行列数、冻结位置等元数据。凡在最终回复中使用、改写或总结本工具返回的信息，须保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。 |
+| 查看工作簿结构 | `+workbook-info` | 获取子表列表、名称、行列数、冻结位置等元数据。已通过产物交付工具交付的表格，在回复中用产物名称指代，不再追加 URL 引用。引用其他来源表的信息时，保留工具结果 `citations` 字段中 `<url>...</url>` 内的原始 URL，并紧随对应表述以 `<RichMediaReference>["url"]</RichMediaReference>` 格式标注。 |
 | 获取当前 revision | `+revision-get` | 获取当前文档 revision（版本号），可作为 recover / undo / changeset 复核的版本锚点 |
 | 新建工作簿（可预填数据） | `+workbook-create` | 从内存数据建一张新表（`--values` / `--sheets` typed） |
 | 导入本地文件为新表 | `+workbook-import` | 把本地 `.xlsx` / `.xls` / `.csv` 导入为新的飞书电子表格 |
@@ -345,7 +345,7 @@ lark-cli sheets +workbook-import --file ./report.csv --folder-token <FOLDER_TOKE
 
 - **不接受任何 spreadsheet / sheet 定位 flag**（它是新建，不操作已有表）：只有 `--file`（必填）/ `--folder-token` / `--name`。
 - **`--file` 只接受当前工作目录内的相对路径**：先 `cd` 到文件所在目录（或 workspace），再传 `./file.xlsx` / `data/file.xlsx`；传 `/home/.../file.xlsx`、`C:\...\file.xlsx` 这类绝对路径会被判定 `unsafe file path` 拒绝。
-- 导入后先完成下述兼容性检查和用户要求的全部操作，再通过宿主提供的产物交付工具交付最终链接或完整 Excel，并确认调用成功；只写进回复正文不算交付。工具是 `present_files`，调用后明确报出工具不存在时才退回正文给出链接或路径。
+- 导入后先完成下述兼容性检查和用户要求的全部操作，再通过宿主提供的产物交付工具交付最终链接或完整 Excel，并确认调用成功；只写进回复正文不算交付。工具是 `present_files`；工具交付时，调用前后的回复文本均不输出产物 URL（含裸链接与 Markdown 超链接），用产物名称指代。宿主未提供该能力或调用明确报工具不存在时，在正文给出最终 URL / 路径。
 - 本地表格文件 → 飞书电子表格一律用本命令，**不要**用 `drive +import` 导电子表格——它是 sheets 之外的通用导入、还需额外指定 `--type`，绕路且更易错。只有要把本地表格导入成**多维表格**（bitable）时，才改用 `lark-cli drive +import --type bitable`。
 - 返回 `token` / `url` / `ticket` / `ready` / `job_status`，`data.extra` 会列出本次导入的不支持元素提示。只有 `ready=true` 且 `job_status=0` 才算导入完成，**不代表内容完整**；`timed_out=true` 时按 `next_command` 续查，不能交付为成功。随后用新 URL 调 `+workbook-info`，按用户要求回读关键 sheet/range 与对象。
 - **导入后必须检查 `data.extra`**：例如 `data.extra=["NotSupport:shape"]` 表示形状不受支持，本次导入有损。逐项结合源 Excel 判断对内容、计算、交互和版式要求的影响，不能因 `ok=true` 或单元格数据正确而忽略。`extra` 为空或缺失也不能替代回读检查。

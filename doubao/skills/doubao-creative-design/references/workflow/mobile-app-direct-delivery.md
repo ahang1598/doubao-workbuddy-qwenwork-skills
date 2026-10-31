@@ -12,11 +12,11 @@
 
 ## 能力预检
 
-媒体生成／编辑需真实媒体工具和宿主实际支持的 `RichMediaCard` 展示能力（接口与资源字段按宿主契约使用，不猜造调用参数）。HTML 路线还需随包 `scripts/runtime/shot.py`（内部依赖 Playwright／Chromium、Pillow） 及用于上传预览截图的 `FileBatchUpload`；不把它误当作 Canvas 写入依赖而省略。缺少当前路线所需能力时按主 SKILL 返回 `RUNTIME_CAPABILITY_MISSING`，不假造交付。
+媒体生成／编辑需真实媒体工具和宿主实际支持的 RichMediaCard 展示能力（接口与资源字段按宿主契约使用，不猜造调用参数）。HTML 路线还需随包 `scripts/runtime/shot.py`（内部依赖 Playwright／Chromium、Pillow） 及用于上传预览截图的 `FileBatchUpload`；不把它误当作 Canvas 写入依赖而省略。缺少当前路线所需能力时按主 SKILL 返回 `RUNTIME_CAPABILITY_MISSING`，不假造交付。
 
 ## 图片与视频
 
-每个成功结果立即分别调用 `RichMediaCard`。串行任务当前项交付成功后才继续；并行仅限事先锁定且无依赖的批次，全部交付完成才进入依赖步骤。同锚点的 N 个同源变体分别调用 N 次 `image_edit`，每次使用同一已确认锚点。效果不佳或有图内文字问题的成功结果也先交付并标明问题；图内错字按原规则等待用户提出修改要求。交付失败停止后续生成、选图和依赖操作，保留真实部分完成状态。
+每个成功结果立即分别以 RichMediaCard 形式直交。串行任务当前项交付成功后才继续；并行仅限事先锁定且无依赖的批次，全部交付完成才进入依赖步骤。同锚点的 N 个同源变体分别调用 N 次 `image_edit`，每次使用同一已确认锚点。效果不佳或有图内文字问题的成功结果也先交付并标明问题；图内错字按原规则等待用户提出修改要求。交付失败停止后续生成、选图和依赖操作，保留真实部分完成状态。
 
 ## HTML
 
@@ -30,6 +30,6 @@
 
 ## 完成条件
 
-媒体分别成功 `RichMediaCard`；每个 HTML 分别完成同尺寸完整预览、CDN 上传与 Markdown 图片展示，并通过自身内容和质量检查。记录 `delivery_environment=mobile_direct`、源版本、生成／编辑结果与交付状态，不伪造 Canvas 状态。预览失败时可保留本地源，但不得宣称 HTML 交付完成。
+媒体分别以 RichMediaCard 形式成功直交；每个 HTML 分别完成同尺寸完整预览、CDN 上传与 Markdown 图片展示，并通过自身内容和质量检查。记录 `delivery_environment=mobile_direct`、源版本、生成／编辑结果与交付状态，不伪造 Canvas 状态。预览失败时可保留本地源，但不得宣称 HTML 交付完成。
 
 页面自检仅使用 shot.py；执行失败可跳过检查，保留未验证状态。Mobile 若无可用预览，不声称可视交付完成；不转用其他截图工具或创建画布。

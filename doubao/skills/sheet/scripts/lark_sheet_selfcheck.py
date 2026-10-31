@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import codecs
+import contextvars
 import datetime
 import json
 import os
@@ -15,6 +16,12 @@ import sys
 import time
 from collections import Counter, defaultdict
 from typing import Any
+from zipfile import BadZipFile
+
+try:
+    import openpyxl
+except ImportError:  # 无基线时不要求安装 openpyxl。
+    openpyxl = None
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -167,6 +174,78 @@ RATE_LIMIT_HINT = ("frequency limit", "rate limit", "too many requests", "429", 
 TIMEOUT_HINT = ("timed out", "timeout", "i/o timeout", "context deadline")
 TIMEOUT_MAX_TRIES = 2
 SHEET_RETRY_WAIT = 5.0
+DEFAULT_MAX_SECONDS = None  # 默认不限整轮耗时；仅显式传 --max-seconds 时启用预算。
+DEFAULT_NETWORK_FAILURES = 3
+
+
+class CheckStopped(LarkCliError):
+    """整轮预算耗尽或网络熔断；不能作为普通瞬时错误重试。"""
+
+    partial_sheet = None
+
+
+class ExecutionBudget:
+    """管理整轮可选时间预算和连续远程故障熔断。"""
+    def __init__(self, seconds=DEFAULT_MAX_SECONDS, failures=DEFAULT_NETWORK_FAILURES):
+        self.deadline = time.monotonic() + seconds if seconds is not None else None
+        self.seconds = seconds
+        self.failure_limit = failures
+        self.consecutive_failures = 0
+        self.stop_reason = ""
+
+    def remaining(self):
+        """返回剩余秒数；未设置时限时返回无穷大。"""
+        return self.deadline - time.monotonic() if self.deadline is not None else float("inf")
+
+    def check_time(self):
+        """预算耗尽时停止检查。"""
+        # 本地检查在阶段/子表边界协作式停止；报告输出和清理不计入执行预算。
+        if self.remaining() <= 0:
+            self.stop("整轮自检时间预算已耗尽（{} 秒）".format(self.seconds))
+
+    def stop(self, reason):
+        """记录首次停止原因并抛出不可重试的异常。"""
+        if not self.stop_reason:
+            self.stop_reason = reason
+            print("[stderr] " + reason, file=sys.stderr, flush=True)
+        raise CheckStopped(self.stop_reason)
+
+    def check_remote(self):
+        """发起远程请求前检查熔断状态和时间预算。"""
+        if self.stop_reason:
+            raise CheckStopped(self.stop_reason)
+        self.check_time()
+
+    def failure(self, exc):
+        """累计连续瞬时故障，达到阈值时熔断。"""
+        if transient_reason(exc):
+            self.consecutive_failures += 1
+            if self.consecutive_failures >= self.failure_limit:
+                self.stop("连续 {} 次远程瞬时故障，网络熔断：{}".format(
+                    self.consecutive_failures, explain_cli_error(exc)))
+        else:
+            self.consecutive_failures = 0
+
+    def sleep(self, seconds):
+        """在剩余预算内等待，并在等待前后检查停止条件。"""
+        self.check_remote()
+        if seconds >= self.remaining():
+            self.stop("剩余自检时间预算不足以继续退避重试")
+        time.sleep(seconds)
+        self.check_remote()
+
+
+# 每次 main 调用独立计数；所有子表、公式检查和重试共用同一预算。
+ACTIVE_BUDGET = contextvars.ContextVar("selfcheck_budget", default=None)
+
+
+def retry_sleep(seconds):
+    """按当前自检预算执行重试等待。"""
+    budget = ACTIVE_BUDGET.get()
+    if budget is None:
+        time.sleep(seconds)
+    else:
+        budget.sleep(seconds)
 
 # lark-cli 在 ok:false 时返回结构化 error 对象，run_sheets 把整个 envelope
 # 序列化成异常消息抛出。所以这里能按 error.type / error.subtype 精确判断，
@@ -275,10 +354,23 @@ def call(shortcut: str, *, tries: int = 4, backoff: float = 2.0, **kw) -> dict[s
     """
     last: Exception | None = None
     for attempt in range(1, tries + 1):
+        budget = ACTIVE_BUDGET.get()
+        options = dict(kw)
+        if budget is not None:
+            budget.check_remote()
+            options["timeout"] = min(options.get("timeout", 60), budget.remaining())
         try:
-            return run_sheets(shortcut, **kw)
+            result = run_sheets(shortcut, **options)
+            if budget is not None:
+                budget.consecutive_failures = 0
+            return result
+        except CheckStopped:
+            raise
         except LarkCliError as exc:
             last = exc
+            if budget is not None:
+                budget.failure(exc)
+                budget.check_time()
             reason = transient_reason(exc)
             msg = str(exc).lower()
             # 超时类降低次数，避免总耗时失控（见 TIMEOUT_MAX_TRIES 注释）
@@ -289,7 +381,7 @@ def call(shortcut: str, *, tries: int = 4, backoff: float = 2.0, **kw) -> dict[s
             wait = backoff * attempt
             if any(t in msg for t in RATE_LIMIT_HINT):
                 wait = max(wait, 5.0 * attempt)
-            time.sleep(wait)
+            retry_sleep(wait)
     raise last  # pragma: no cover
 
 
@@ -311,11 +403,17 @@ def read_cells(loc, sheet_id: str, rows: int, cols: int) -> dict[str, dict]:
     last_col, start, page_rows = col_letter(cols), 1, PAGE_ROWS
     while start <= rows:
         end = min(start + page_rows - 1, rows)
-        data = envelope_data(call(
-            "+cells-get", sheet_id=sheet_id,
-            flags={"range": f"A{start}:{last_col}{end}",
-                   "include": "value,formula,style", "skip_hidden": False},
-            timeout=180, **loc))
+        try:
+            data = envelope_data(call(
+                "+cells-get", sheet_id=sheet_id,
+                flags={"range": f"A{start}:{last_col}{end}",
+                       "include": "value,formula,style", "skip_hidden": False},
+                timeout=180, **loc))
+        except CheckStopped as exc:
+            exc.partial_cells = cells
+            exc.read_range = f"A1:{last_col}{start - 1}" if start > 1 else "无"
+            exc.unread_range = f"A{start}:{last_col}{rows}"
+            raise
         clipped = (
             data.get("complete") is False
             or any(
@@ -377,7 +475,7 @@ def read_sheet(loc, sheet: dict) -> dict[str, Any]:
         notes.append(f"仅读取前 {MAX_ROWS} 行（实际 {rows} 行）")
         rows = MAX_ROWS
     info = envelope_data(call("+sheet-info", sheet_id=sid, timeout=120, **loc))
-    return {
+    result = {
         "id": sid,
         # 复用 lark_sheet_read_cli.sheet_title()：`title → sheet_name → name`。
         # 契约（references/lark-sheets-workbook.md）写明「优先取 title、缺失再回退
@@ -390,9 +488,16 @@ def read_sheet(loc, sheet: dict) -> dict[str, Any]:
         "rows": rows, "cols": cols,
         "merged": sorted(str(m.get("range")) for m in (info.get("merged_cells") or [])
                          if isinstance(m, dict) and m.get("range")),
-        "cells": read_cells(loc, sid, rows, cols),
         "notes": notes,
     }
+    try:
+        result["cells"] = read_cells(loc, sid, rows, cols)
+    except CheckStopped as exc:
+        result["cells"] = exc.partial_cells
+        result["read_range"] = exc.read_range
+        exc.partial_sheet = result
+        raise
+    return result
 
 
 def read_workbook(target: str) -> tuple[dict[str, Any], list[str]]:
@@ -406,36 +511,44 @@ def read_workbook(target: str) -> tuple[dict[str, Any], list[str]]:
     unread: list[str] = []
     wb = envelope_data(call("+workbook-info", timeout=120, **loc))
     sheets = []
-    for sh in extract_sheets(wb):
+    partial_sheets = []
+    all_sheets = list(extract_sheets(wb))
+    for index, sh in enumerate(all_sheets):
         name = sheet_title(sh) or "?"
         # read_sheet 内部包含多次 CLI 调用；分页中途遇到瞬时故障时，整张表重读一轮，
         # 避免把取数抖动误判成 sheet 内容问题。
-        for sheet_try in (1, 2):
-            try:
-                sheets.append(read_sheet(loc, sh))
-                if sheet_try > 1:
-                    print(f"[stderr] sheet「{name}」第 {sheet_try} 次尝试读取成功",
-                          file=sys.stderr)
-                break
-            except LarkCliError as exc:
-                reason = transient_reason(exc)
-                if reason and sheet_try == 1 and not is_timeout_error(exc):
-                    time.sleep(SHEET_RETRY_WAIT)
-                    continue
-                if reason:
+        try:
+            for sheet_try in (1, 2):
+                try:
+                    sheets.append(read_sheet(loc, sh))
+                    break
+                except CheckStopped:
+                    raise
+                except LarkCliError as exc:
+                    reason = transient_reason(exc)
+                    if reason and sheet_try == 1 and not is_timeout_error(exc):
+                        retry_sleep(SHEET_RETRY_WAIT)
+                        continue
                     unread.append(
-                        f"sheet「{name}」读取失败（{reason} —— 取数环节的瞬时故障，"
-                        f"已重试仍未成功）：{explain_cli_error(exc)}"
-                        "　→ 这不代表该 sheet 内容有错，但本工具没读到它，"
-                        "所有规则在这张表上都没生效。建议整体重跑一次本工具。")
-                else:
-                    unread.append(
-                        f"sheet「{name}」读取失败（非瞬时错误，重试无用）："
-                        f"{explain_cli_error(exc)}")
-                break
+                        f"sheet「{name}」整张表未完成读取：{explain_cli_error(exc)}"
+                        "；该子表未执行规则检查，请定向补查，勿直接全表重跑。")
+                    break
+        except CheckStopped as exc:
+            partial = exc.partial_sheet
+            if partial:
+                partial_sheets.append(partial)
+                unread.extend(f"{name}: {note}" for note in partial["notes"])
+                unread.append(f"sheet「{name}」已读 {exc.read_range}，"
+                              f"未读 {exc.unread_range}；该子表未执行规则检查：{exc}")
+            else:
+                unread.append(f"sheet「{name}」整张表未完成读取/检查：{exc}")
+            unread.extend(f"sheet「{sheet_title(rest)}」整张表尚未读取/检查（已停止后续请求）"
+                          for rest in all_sheets[index + 1:])
+            break
     for s in sheets:
         unread.extend(f"{s['name']}: {n}" for n in s["notes"])
-    return {"loc": loc, "revision": wb.get("revision"), "sheets": sheets}, unread
+    return {"loc": loc, "revision": wb.get("revision"), "sheets": sheets,
+            "partial_sheets": partial_sheets}, unread
 
 
 
@@ -583,7 +696,13 @@ def rule_formula_errors(wb: dict) -> list[tuple[str, str, list[str]]]:
     不是当下的已知误报源。
     """
     out = []
-    for s in wb["sheets"]:
+    for index, s in enumerate(wb["sheets"]):
+        budget = ACTIVE_BUDGET.get()
+        if budget is not None and budget.remaining() <= 0:
+            wb.setdefault("scan_gaps", []).extend(
+                f"{rest['name']}：公式错误检查未完成（时间预算耗尽）"
+                for rest in wb["sheets"][index:])
+            break
         bad = [(ref, rec) for ref, rec in sorted(s["cells"].items())
                if any(e in rec["v"] for e in ERROR_VALUES)
                and not is_ai_formula_cell(rec)]
@@ -622,8 +741,10 @@ def rule_formula_errors(wb: dict) -> list[tuple[str, str, list[str]]]:
                     extra.append((str(kind), ref))
                 # count 是全量，locations 受 max_locations 限制。
                 unlocated += max(0, int(info.get("count") or 0) - len(locs))
-        except LarkCliError:
-            pass
+        except LarkCliError as exc:
+            wb.setdefault("scan_gaps", []).append(
+                f"{s['name']}!A1:{col_letter(s['cols'])}{s['rows']}："
+                f"远程公式检查未完成（{explain_cli_error(exc)}）；本地错误值扫描仍保留")
 
         # 只在**拿得出坐标**时才断言。旧版判据是 `not bad and not total`，会放行
         # 「bad 空、total 非空」的组合并打出无坐标的 ✗。要么给得出坐标，要么不报。
@@ -673,6 +794,18 @@ def rule_formula_errors(wb: dict) -> list[tuple[str, str, list[str]]]:
 # 收紧阈值救不回来，直接删。
 
 
+def budgeted_sheets(wb, rule_name):
+    """在预算内逐表检查，并记录超时后未检查的子表与规则。"""
+    for index, sheet in enumerate(wb["sheets"]):
+        budget = ACTIVE_BUDGET.get()
+        if budget is not None and budget.remaining() <= 0:
+            wb.setdefault("scan_gaps", []).extend(
+                f"{rest['name']}：{rule_name} 未执行（时间预算耗尽）"
+                for rest in wb["sheets"][index:])
+            return
+        yield sheet
+
+
 def rule_number_text_mix(wb: dict) -> list[tuple[str, str, list[str]]]:
     """数值列里混着文本数字。
 
@@ -686,7 +819,7 @@ def rule_number_text_mix(wb: dict) -> list[tuple[str, str, list[str]]]:
     占位当成类型不一致。
     """
     out = []
-    for s in wb["sheets"]:
+    for s in budgeted_sheets(wb, "rule_number_text_mix"):
         skip = label_rows(s)
         for c, col in sorted(columns_of(s).items()):
             # 排除有公式的格：公式格的 value 是**求值结果**，真数字会以 JSON 数字
@@ -725,7 +858,7 @@ def rule_unit_in_numeric(wb: dict) -> list[tuple[str, str, list[str]]]:
     否则 "暂无" / "-" / "N/A" 这类合法缺失占位会被误报，它们不含数字。
     """
     out = []
-    for s in wb["sheets"]:
+    for s in budgeted_sheets(wb, "rule_unit_in_numeric"):
         skip = label_rows(s)
         for c, col in sorted(columns_of(s).items()):
             cells = data_cells(s, col, skip)
@@ -782,7 +915,7 @@ def rule_ragged_numbers(wb: dict) -> list[tuple[str, str, list[str]]]:
     number format 就能修掉，修法明确。
     """
     out = []
-    for s in wb["sheets"]:
+    for s in budgeted_sheets(wb, "rule_ragged_numbers"):
         skip = label_rows(s)
         for c, col in sorted(columns_of(s).items()):
             nums = [(r, rec) for r, rec in data_cells(s, col, skip)
@@ -818,7 +951,13 @@ def rule_ragged_numbers(wb: dict) -> list[tuple[str, str, list[str]]]:
 def rule_percent_scale(wb: dict) -> list[tuple[str, str, list[str]]]:
     """R5 百分比量纲。显示值已渲染，>1000% 基本只能是「存了百分数又套了 % 格式」。"""
     out = []
-    for s in wb["sheets"]:
+    for index, s in enumerate(wb["sheets"]):
+        budget = ACTIVE_BUDGET.get()
+        if budget is not None and budget.remaining() <= 0:
+            wb.setdefault("scan_gaps", []).extend(
+                f"{rest['name']}：百分比量纲检查未完成（时间预算耗尽）"
+                for rest in wb["sheets"][index:])
+            break
         bad = []
         for ref, rec in sorted(s["cells"].items()):
             if is_ai_formula_cell(rec):
@@ -845,7 +984,7 @@ def rule_repeated_blocks(wb: dict) -> list[tuple[str, str, list[str]]]:
     """
     out = []
     groups: dict[tuple, list[dict]] = defaultdict(list)
-    for s in wb["sheets"]:
+    for s in budgeted_sheets(wb, "rule_repeated_blocks"):
         cols = columns_of(s)
         header = tuple(sorted((c, rec["v"][:20]) for c, col in cols.items()
                               for r, rec in col.items() if r == min(col)))
@@ -1202,18 +1341,19 @@ def load_baseline(path: str) -> dict[str, dict[str, Any]]:
     不写缓存），公式格的值读出来是 None——这类格只比公式、不比值，否则会把
     「读不到」误报成「被改写」。
     """
-    try:
-        from openpyxl import load_workbook
-    except ImportError as exc:      # pragma: no cover - 环境缺依赖
-        raise RuntimeError(f"读取基线需要 openpyxl：{exc}") from exc
+    if openpyxl is None:
+        raise RuntimeError("读取基线需要 openpyxl：请先安装 openpyxl")
     if path.lower().endswith((".xls", ".csv")):
         raise RuntimeError(
             f"基线 {path} 不是 .xlsx：openpyxl 读不了 .xls / .csv。"
             "先把源文件另存或导入导出成 .xlsx 再传 --baseline。")
     # 公式簿走普通模式：read_only 的工作表不带 merged_cells，合并区就比不了。
     # 值簿只取值，用 read_only 省掉一半内存。
-    wb_f = load_workbook(path, data_only=False)
-    wb_v = load_workbook(path, data_only=True, read_only=True)
+    try:
+        wb_f = openpyxl.load_workbook(path, data_only=False)
+        wb_v = openpyxl.load_workbook(path, data_only=True, read_only=True)
+    except openpyxl.utils.exceptions.InvalidFileException as exc:
+        raise ValueError(str(exc)) from exc
     sheets: dict[str, dict[str, Any]] = {}
     try:
         for name in wb_f.sheetnames:
@@ -1227,6 +1367,8 @@ def load_baseline(path: str) -> dict[str, dict[str, Any]]:
             cell_capped = False
             for row_f, row_v in zip(ws_f.iter_rows(max_row=MAX_ROWS),
                                     ws_v.iter_rows(max_row=MAX_ROWS)):
+                if ACTIVE_BUDGET.get() is not None:
+                    ACTIVE_BUDGET.get().check_time()
                 for cell_f, cell_v in zip(row_f, row_v):
                     raw = cell_f.value
                     if raw is None:
@@ -1680,29 +1822,30 @@ CHECKLIST = """1. 汇总/合计/统计值/复杂业务计算 —— 必做，不
 6. 单位与口径：涉及单位换算（CM/MM、元/万元、秒/分钟）或特殊口径
    （是否含某类数据、是否排除某些行）的，逐行核对一次。"""
 
-CONFIRM_HOWTO = """做完上面 6 条，把**每条的结论**写进 --confirm 重跑一次本工具：
-示例：
-```bash
-  python3 lark_sheet_selfcheck.py <表格URL> --confirm '
+CONFIRM_HOWTO = """做完上面 6 条，先用 Write 工具将**每条的结论**写入 UTF-8 文件 ./confirm.txt，
+每条独占一行、编号齐全。文件内容示例：
+```text
   1=按「含税、剔除退货行」口径，python 独立复算 Summary 全部 12 项，与表内公式求值逐项一致
   2=允许改动 明细!G:I，--baseline 比对后范围外 0 处改写、0 处公式丢失；新增列落在 H 列右侧
   3=用户点名 5 个 sheet / 3 个指标项，逐项打勾，产物齐全
   4=3 个 sheet 共 240 行全部处理，抽查末尾第 238-240 行与中间第 120 行
   5=标红 12 处，逐条复查无漏标；另核 4 处相似行确认不该标
-  6=金额统一万元口径，与源表原口径换算逐行核对 36 行'
+  6=金额统一万元口径，与源表原口径换算逐行核对 36 行
 ```
 
 每条要写**具体做了什么、结果是什么**，不是「已完成」这类空洞词——工具会拒绝。
 某条确实不适用，写明理由即可，如 `5=不适用：本次无标注/高亮要求`。
-回执用单引号包裹（内部就不必转义引号）；写成一行、条目之间空格分隔同样可以。
 
-Windows（PowerShell）必须走文件，多行文本没法可靠地作为参数传：
-  先把上面 6 条写进 ./confirm.txt，再
+Bash 和 PowerShell 均通过文件传入回执，重跑本工具：
+```bash
+  python3 lark_sheet_selfcheck.py <表格URL> --confirm "@./confirm.txt"
+```
 ```powershell
   python lark_sheet_selfcheck.py <表格URL> --confirm "@./confirm.txt"
 ```
-  @ 一定要包在双引号里，裸 @ 会被 PowerShell 当成 splatting 操作符。
-结论里要写 'Sheet1'!C900 这类带单引号的坐标时，两个平台都建议走文件。"""
+  Windows 如需检查点，先用 Write 工具保存 UTF-8 JSON 文件，再追加 --checkpoints "@./checkpoints.json"，不要内联 JSON。
+  两个文件都须位于命令当前工作目录；不在该目录时，分别改用带引号的 @绝对路径（不是相对脚本目录）。
+  @ 一定要包在双引号里，裸 @ 会被 PowerShell 当成 splatting 操作符。"""
 
 
 # ── 自查清单的强制回执 ────────────────────────────────────────────
@@ -1796,8 +1939,7 @@ def read_confirm(raw: str | None) -> tuple[str | None, str | None]:
             data = fh.read()
     except OSError as exc:
         return "", (f"回执文件读不到：{path}（{exc.strerror or exc}）"
-                    "　→ 确认路径相对当前目录、文件已写入；"
-                    "也可以把 6 条结论直接作为 --confirm 的值传入")
+                    "　→ 确认路径相对当前目录、文件已写入，再通过文件路径重跑")
     text = decode_confirm(data)
     if text is None:
         return "", (f"回执文件的编码认不出来：{path}"
@@ -1896,6 +2038,16 @@ def render(wb: dict, findings: list, counts: list,
             f"⚠ 以上结论对应 revision {wb['revision']}。此后任何写入都会使它失效 —— "
             f"必须在最后一次写操作之后重跑本工具，再交付。"]
     out = list(head) + [""]
+    out.append(hr("本次覆盖范围"))
+    out.append("完整读回的子表：" + ("、".join(s["name"] for s in wb["sheets"]) or "无"))
+    for part in wb.get("partial_sheets", []):
+        out.append(f"部分读回：{part['name']}!{part['read_range']}（该子表未执行规则）")
+    out.append("对完整读回子表执行完成的规则：" +
+               ("、".join(wb.get("completed_rules", [])) or "无；见下方覆盖缺口"))
+    if wb.get("stop_reason"):
+        out.append("停止原因：" + wb["stop_reason"])
+        out.append("以下保留已完成检查的发现；未检查范围不代表通过。")
+    out.append("")
 
     asserts = [f for f in findings if f[0] in ASSERT_LABELS]
     facts = [f for f in findings if f[0] not in ASSERT_LABELS]
@@ -1942,7 +2094,7 @@ def render(wb: dict, findings: list, counts: list,
         out.append(hr("检查未完成"))
         out.extend(f"! {c}" for c in unchecked)
         out.append("  → 数据读到了，但这些检查没跑成 —— 对应的问题类型这次等于没查。"
-                   "重跑一次；仍失败就按自查清单人工核这几类。")
+                   "按下列缺口补查；网络故障须先恢复网络，勿立即重复整轮自检。")
         out.append("")
     if notices:
         out.append(hr("提示（不影响结论）"))
@@ -2002,7 +2154,7 @@ def render(wb: dict, findings: list, counts: list,
         # 逃生舱：读不全常常是工具能力上限（超大表分页上限、单条规则崩掉），不是调用方的失误。
         # 不给出口，这个门禁在大表任务上永远拿不到 CHECK_OK，调用方只能整条跳过自检。
         out.append(f"CHECK_INCOMPLETE：{blind_txt}，上面的结论不完整，"
-                   "不能据此认为产物没问题。先整体重跑一次；仍然读不全的，"
+                   "不能据此认为产物没问题。保留本次结果，按列出的范围和规则补查；仍然无法检查的，"
                    "按上面的自查清单人工核一遍没覆盖到的区域，"
                    "并在交付说明里写明「自检未覆盖范围 + 人工核对结论」，之后才可交付。" + tail)
     elif not confirmed:
@@ -2026,16 +2178,15 @@ def render(wb: dict, findings: list, counts: list,
     return "\n".join(out)
 
 
-
-def main() -> int:
+def _main() -> int:
     ap = argparse.ArgumentParser(description="交付前自检（不落盘；传 --baseline 后带改前基准）")
     ap.add_argument("target", help="表格 URL 或 spreadsheet token")
     ap.add_argument("--max-findings", type=int, default=MAX_FINDINGS,
                     help=f"高置信度发现的条数上限（默认 {MAX_FINDINGS}）")
     ap.add_argument("--confirm", default=None,
-                    help="自查清单回执：逐条写出 6 条的结论，形如 "
-                         "\"1=... 2=... 3=... 4=... 5=... 6=...\"。"
-                         "也可传 \"@./confirm.txt\" 从文件读（Windows 必须这样传）。"
+                    help="自查清单回执：将 6 条结论写入 UTF-8 文件，编号格式必须为 "
+                         "\"1=XX, 2=XX, ..., 6=XX\"（XX 为具体结论）；"
+                         "每条独占一行、编号齐全；Bash 和 PowerShell 均传 \"@./confirm.txt\"。"
                          "不带本参数不会得到可交付信号（退出码非零）。")
     ap.add_argument("--checkpoints", default=None, metavar="@FILE",
                     help="任务检查点 JSON（`@./checkpoints.json` 或内联）：把用户点名的"
@@ -2048,7 +2199,20 @@ def main() -> int:
                     help="本轮允许改动的范围，如 'Sheet1!G:I' / '汇总' / 'Sheet1!A2:C10'，"
                          "逗号分隔或重复本参数。与 --baseline 同用时，范围外的改写"
                          "判为确定性错误；不传则只列改动清单、不定性。")
+    ap.add_argument("--max-seconds", type=int, default=DEFAULT_MAX_SECONDS,
+                    help="可选的整轮执行预算秒数（默认不限）；显式指定后，请求超时和重试等待共享预算")
+    ap.add_argument("--max-network-failures", type=int, default=DEFAULT_NETWORK_FAILURES,
+                    help="连续远程瞬时故障熔断阈值（默认 3）；成功请求清零")
     args = ap.parse_args()
+    for flag, value in (("max_findings", args.max_findings),
+                        ("max_seconds", args.max_seconds),
+                        ("max_network_failures", args.max_network_failures)):
+        if value is not None and value <= 0:
+            ap.error("--" + flag.replace("_", "-") + " 必须为正整数")
+    if not args.target.strip():
+        ap.error("target 不能为空")
+    budget = ExecutionBudget(args.max_seconds, args.max_network_failures)
+    ACTIVE_BUDGET.set(budget)
 
     # --scope 先验：范围写错就当场报错退出，绝不带着一个被悄悄放大成整表的
     # 边界继续跑——那样范围外的改写会被判成允许。
@@ -2076,21 +2240,59 @@ def main() -> int:
                 "源表只在线上、本地没有文件时，下次动手前先 `+workbook-export` 导一份改前快照当基准；"
                 "本次拿不到快照、或本轮是从零新建的，在第 2 条里写明这一点即可。")
 
+    # 所有可离线验证的输入都在第一条远程请求之前完成校验。
+    input_problems = list(confirm_problems)
+    if args.scope and not args.baseline:
+        input_problems.append("--scope 必须同时提供 --baseline 改前基准")
+    try:
+        checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
+    except (OSError, ValueError) as exc:
+        checkpoints, checkpoint_error = [], str(exc)
+    if checkpoint_error:
+        input_problems.append("检查点没能加载：" + checkpoint_error)
+    # 形式错误先返回，避免继续加载可能很大的本地基线。
+    if input_problems:
+        return invalid_input(input_problems)
+    baseline_notes: list[str] = []
+    base: dict[str, dict[str, Any]] = {}
+    baseline_conflicts: list[dict] = []
+    for path in args.baseline or []:
+        try:
+            budget.check_time()
+            loaded = load_baseline(path)
+            budget.check_time()
+        except CheckStopped as exc:
+            input_problems.append(str(exc))
+            break
+        except (OSError, ValueError, KeyError, IndexError, TypeError,
+                RuntimeError, BadZipFile, SyntaxError) as exc:
+            # 源文件本身损坏时 openpyxl 抛的是 KeyError / IndexError 这类底层异常，
+            # 光把它打出来看不出下一步该干什么，所以连修法一起给。
+            input_problems.append(
+                f"基线 {os.path.basename(path)} 读取失败：{type(exc).__name__}: {str(exc)[:100]}"
+                "　→ openpyxl 打不开这个源文件时，先 `+workbook-import` 导入再 `+workbook-export` "
+                "换出一份干净的 .xlsx 当基线；仍不行就按自查清单第 2 条人工核原表保护")
+            continue
+        merge_baseline_sheets(base, loaded, path, baseline_conflicts)
+    if input_problems:
+        return invalid_input(input_problems)
+
     try:
         wb, unread = read_workbook(args.target)
     except LarkCliError as exc:
         # 注意 print 到 stdout：skill 文档教模型「只读 stdout」，
         # 若把这段落在 stderr，模型看不到「自检没跑成」，会当成「没问题」。
         reason = transient_reason(exc)
-        kind = (f"取数环节的瞬时故障（{reason}），已按退避重试仍未成功"
-                if reason else "非瞬时错误，重试无用")
-        nxt = ("请隔几秒整体重跑一次本工具；连续失败再按下面的清单人工核。"
-               if reason else
+        kind = (str(exc) if isinstance(exc, CheckStopped) else
+                (f"取数环节的瞬时故障（{reason}），已按退避重试仍未成功"
+                 if reason else "非瞬时错误，重试无用"))
+        nxt = ("请先确认网络恢复，再补查；不要立即重复整轮自检。"
+               if reason or isinstance(exc, CheckStopped) else
                "先确认表格 URL、权限和 sheet 名是否正确；确认无误再按下面的清单人工核。")
         print(f"交付前自检无法完成：{explain_cli_error(exc)}\n"
               f"原因分类：{kind}\n\n"
               f"{hr('交付前自查（工具不可用，请逐条自己核）')}\n{CHECKLIST}\n\n"
-              "CHECK_INCOMPLETE：读表失败，本次没有任何规则结论，"
+              "CHECK_INCOMPLETE：工作簿元信息未读到，全部子表及全部规则均未检查，本次没有任何规则结论，"
               f"不能据此认为产物没问题。{nxt}")
         print(f"[stderr] {exc}", file=sys.stderr)
         return 2
@@ -2106,25 +2308,6 @@ def main() -> int:
         if args.baseline:
             unchecked.append("有子表读取失败，本次跳过基线对照")
 
-    # 基线先读：规则跑之前挂到 wb 上，让规则也能拿源表当参照
-    # （派生列规则据此跳过「源里本来就是静态值」的列）。读不到源文件不中断
-    # 整次自检——它只是少了一档判据，但必须说出来，否则调用方会把
-    # 「没报差异」当成「原表没被动过」。
-    baseline_notes: list[str] = []
-    base: dict[str, dict[str, Any]] = {}
-    baseline_conflicts: list[dict] = []
-    for path in args.baseline or []:
-        try:
-            loaded = load_baseline(path)
-        except Exception as exc:
-            # 源文件本身损坏时 openpyxl 抛的是 KeyError / IndexError 这类底层异常，
-            # 光把它打出来看不出下一步该干什么，所以连修法一起给。
-            unchecked.append(
-                f"基线 {os.path.basename(path)} 读取失败：{type(exc).__name__}: {str(exc)[:100]}"
-                "　→ openpyxl 打不开这个源文件时，先 `+workbook-import` 导入再 `+workbook-export` "
-                "换出一份干净的 .xlsx 当基线；仍不行就按自查清单第 2 条人工核原表保护")
-            continue
-        merge_baseline_sheets(base, loaded, path, baseline_conflicts)
     if baseline_conflicts:
         # 基准本身不唯一，连「改前长什么样」都定不了，比逐格差异更靠前。
         findings.append(("基线自相冲突",
@@ -2133,11 +2316,9 @@ def main() -> int:
                           f"与 {os.path.basename(c['conflicting'])} 不一致"
                           for c in baseline_conflicts[:MAX_LIST]]
                          + ["先确认哪一份才是本轮的改前基准，只传那一份再跑"]))
-    checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
-    if checkpoint_error:
-        unchecked.append(f"检查点没能加载：{checkpoint_error}")
-    elif checkpoints and not unread:
+    if checkpoints and not unread:
         try:
+            budget.check_time()
             checkpoint_result = run_checkpoints(wb, checkpoints)
             findings.extend(checkpoint_findings(checkpoint_result))
             # 判不了的条目记进 unchecked：既不是通过也不是失败，退出码要降级，
@@ -2148,12 +2329,23 @@ def main() -> int:
             if checkpoint_result.get("status") == "skipped":
                 unchecked.append("检查点一条判据都没执行：确认契约里写了 "
                                  "expect / non_empty / formula / all_formula")
+            budget.check_time()
         except Exception as exc:
             unchecked.append(f"检查点判定执行失败：{str(exc)[:80]}")
 
-    for rule in HIGH_RULES:
+    wb["completed_rules"] = []
+    for index, rule in enumerate(HIGH_RULES):
         try:
+            budget.check_time()
+        except CheckStopped as exc:
+            unchecked.append("已读取子表尚未检查的规则：" +
+                             "、".join(r.__name__ for r in HIGH_RULES[index:]) + f"（{exc}）")
+            break
+        try:
+            previous_gaps = len(wb.get("scan_gaps", []))
             findings.extend(rule(wb))
+            if len(wb.get("scan_gaps", [])) == previous_gaps:
+                wb["completed_rules"].append(rule.__name__)
         except Exception as exc:            # 单条规则崩掉不该拖垮整次自检
             unchecked.append(f"规则 {rule.__name__} 执行失败：{str(exc)[:80]}")
 
@@ -2165,18 +2357,15 @@ def main() -> int:
                          "只传那一份再跑，这条才有唯一依据")
     elif base and not unread:
         try:
+            budget.check_time()
             b_asserts, b_facts, b_notes = diff_baseline(wb, base, scope_boxes)
             findings.extend(b_asserts + b_facts)
             baseline_notes.extend(b_notes)
+            budget.check_time()
         except ScopeError as exc:
             unchecked.append(f"基线范围无法匹配：{exc}——核对子表名，含首尾空格时用单引号包住")
         except Exception as exc:
             unchecked.append(f"基线对照执行失败：{str(exc)[:80]}")
-    elif args.scope and not args.baseline:
-        # 记进 unchecked 而不是 notes：原表保护这条没跑成，退出码要降级，
-        # 否则「只给了 scope」会和「比过且没差异」一样退 0。
-        unchecked.append("给了 --scope 但没给 --baseline，没有改前基准就比不出范围外的改写——"
-                         "把源文件路径一并传进来")
 
     findings.sort(key=lambda f: RULE_ORDER.get(f[0], 99))
     # 规则内部记下的「扫描被截断」——数据读到了，是检查没跑全。
@@ -2189,11 +2378,17 @@ def main() -> int:
         notices.append(f"另有 {rest} 类低优先发现未展示（--max-findings 可放宽）")
 
     # survey / render 也要兜底：确保失败仍向 stdout 给出可执行结论。
+    counts = []
     try:
+        budget.check_time()
         counts = survey(wb)
+        budget.check_time()
     except Exception as exc:
-        counts = []
         unchecked.append(f"低置信度普查（survey）执行失败：{str(exc)[:80]}")
+    # 即使最后一次请求成功但耗尽预算，也必须显式降级，不能输出通过信号。
+    if budget.stop_reason:
+        wb["stop_reason"] = budget.stop_reason
+        unchecked.append("本轮已停止后续远程请求：" + budget.stop_reason)
     try:
         print(render(wb, findings, counts, unread, unchecked, notices,
                      confirm_raw, confirm_items, confirm_problems, baseline_notes))
@@ -2214,6 +2409,22 @@ def main() -> int:
         return 4
     return 0
 
+
+def invalid_input(problems: list[str]) -> int:
+    """报告输入错误与未检查范围，返回参数校验失败状态。"""
+    print("交付前自检没开始：输入参数不合格\n" +
+          "\n".join("✗ " + p for p in problems) +
+          "\n\nCHECK_INCOMPLETE：未发起远程请求，全部子表和规则均未检查。修正参数后再运行。")
+    return 2
+
+
+def main() -> int:
+    """运行自检，并在退出时恢复调用方的预算上下文。"""
+    token = ACTIVE_BUDGET.set(None)
+    try:
+        return _main()
+    finally:
+        ACTIVE_BUDGET.reset(token)
 
 
 if __name__ == "__main__":

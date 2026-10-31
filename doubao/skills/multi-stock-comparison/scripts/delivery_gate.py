@@ -6,7 +6,6 @@ import json
 import sys
 import tempfile
 from pathlib import Path
-from urllib.parse import urlparse
 
 
 TEXT_CHECKS = (
@@ -15,7 +14,7 @@ TEXT_CHECKS = (
     "no_structured_comparison_or_navigation",
     "no_advanced_component_needed_or_generated",
 )
-DELIVERY_MODES = {"TEXT", "LARK_DOC"}
+DELIVERY_MODES = {"TEXT", "HTML_REPORT"}
 
 
 def emit(message):
@@ -29,21 +28,21 @@ def load_manifest(path):
     return data
 
 
-def valid_doc_url(value):
+def valid_html_path(value):
     if not isinstance(value, str) or not value.strip():
         return False
-    parsed = urlparse(value.strip())
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+    path = Path(value.strip()).expanduser()
+    if path.suffix.lower() != ".html" or not path.is_file():
         return False
-    parts = [part for part in parsed.path.split("/") if part]
-    return any(part in {"docx", "wiki"} for part in parts)
+    content = path.read_text(encoding="utf-8", errors="replace").lower()
+    return "<!doctype html>" in content and "</html>" in content
 
 
 def validate_manifest(data, phase):
     errors = []
     mode = data.get("delivery_mode")
     if mode not in DELIVERY_MODES:
-        errors.append("delivery_mode 必须是 TEXT 或 LARK_DOC")
+        errors.append("delivery_mode 必须是 TEXT 或 HTML_REPORT")
 
     reason = data.get("mode_reason")
     if not isinstance(reason, str) or not reason.strip():
@@ -83,95 +82,49 @@ def validate_manifest(data, phase):
                 if checks.get(name) is not True:
                     errors.append(f"TEXT 模式要求 text_checks.{name}=true")
         if components:
-            errors.append("TEXT 模式不得包含任何 advanced_components；必须升级为 LARK_DOC")
+            errors.append("TEXT 模式不得包含任何 advanced_components；必须升级为 HTML_REPORT")
         if visual_family_ids:
-            errors.append("TEXT 模式不得包含 visual_family_ids；必须升级为 LARK_DOC")
+            errors.append("TEXT 模式不得包含 visual_family_ids；必须升级为 HTML_REPORT")
 
-    if phase == "final" and mode == "LARK_DOC":
+    if phase == "final" and mode == "HTML_REPORT":
         if data.get("editorial_gate_passed") is not True:
-            errors.append("LARK_DOC 完成态要求 editorial_gate_passed=true")
-        if data.get("doc_created") is not True:
-            errors.append("LARK_DOC 完成态要求 doc_created=true")
-        if not valid_doc_url(data.get("doc_url")):
-            errors.append("LARK_DOC 完成态要求可访问的 /docx/ 或 /wiki/ URL")
-        if data.get("fetch_verified") is not True:
-            errors.append("LARK_DOC 完成态要求 fetch_verified=true")
-        if visual_family_ids and data.get("visuals_fetch_verified") is not True:
-            errors.append("包含图表的 LARK_DOC 完成态要求 visuals_fetch_verified=true")
+            errors.append("HTML_REPORT 完成态要求 editorial_gate_passed=true")
+        if data.get("html_created") is not True:
+            errors.append("HTML_REPORT 完成态要求 html_created=true")
+        if not valid_html_path(data.get("html_path")):
+            errors.append("HTML_REPORT 完成态要求实际存在且完整的 .html 文件")
+        if data.get("file_verified") is not True:
+            errors.append("HTML_REPORT 完成态要求 file_verified=true")
 
     return errors
 
 
 def run_self_test():
-    text_manifest = {
-        "delivery_mode": "TEXT",
-        "mode_reason": "单一事实问题",
-        "text_checks": {name: True for name in TEXT_CHECKS},
-        "advanced_components": [],
-        "visual_family_ids": [],
-        "doc_created": False,
-        "doc_url": "",
-        "fetch_verified": False,
-    }
-    lark_plan = {
-        "delivery_mode": "LARK_DOC",
-        "mode_reason": "需要多章节和情景表",
-        "text_checks": {},
-        "advanced_components": ["rich_table"],
-        "visual_family_ids": [],
-        "editorial_gate_passed": False,
-        "doc_created": False,
-        "doc_url": "",
-        "fetch_verified": False,
-    }
-    lark_final = dict(lark_plan)
-    lark_final.update(
-        editorial_gate_passed=True,
-        doc_created=True,
-        doc_url="https://example.feishu.cn/docx/test_token",
-        fetch_verified=True,
-    )
-
-    assert not validate_manifest(text_manifest, "plan")
-    assert not validate_manifest(text_manifest, "final")
-    assert not validate_manifest(lark_plan, "plan")
-    assert validate_manifest(lark_plan, "final")
-    assert not validate_manifest(lark_final, "final")
-
-    bad_text = dict(text_manifest)
-    bad_text["advanced_components"] = ["html_block"]
-    assert validate_manifest(bad_text, "plan")
-
-    visual_plan = dict(lark_plan)
-    visual_plan["advanced_components"] = ["timeseries_html5_block"]
-    visual_plan["visual_family_ids"] = ["market-relative-path"]
-    assert not validate_manifest(visual_plan, "plan")
-    visual_final = dict(visual_plan)
-    visual_final.update(
-        editorial_gate_passed=True,
-        doc_created=True,
-        doc_url="https://example.feishu.cn/docx/visual_token",
-        fetch_verified=True,
-        visuals_fetch_verified=True,
-    )
-    assert not validate_manifest(visual_final, "final")
-    visual_final["visuals_fetch_verified"] = False
-    assert validate_manifest(visual_final, "final")
-
-    bad_checks = dict(text_manifest)
-    bad_checks["text_checks"] = dict(text_manifest["text_checks"])
-    bad_checks["text_checks"]["single_decision_question"] = False
-    assert validate_manifest(bad_checks, "plan")
-
-    bad_url = dict(lark_final)
-    bad_url["doc_url"] = "https://example.feishu.cn/drive/folder"
-    assert validate_manifest(bad_url, "final")
-
     with tempfile.TemporaryDirectory() as temp_dir:
-        path = Path(temp_dir) / "manifest.json"
-        path.write_text(json.dumps(lark_final, ensure_ascii=False), encoding="utf-8")
-        assert not validate_manifest(load_manifest(path), "final")
-
+        html_file = Path(temp_dir) / "comparison.html"
+        html_file.write_text("<!doctype html><html><body>比较报告</body></html>", encoding="utf-8")
+        text_manifest = {
+            "delivery_mode": "TEXT", "mode_reason": "单一事实问题",
+            "text_checks": {name: True for name in TEXT_CHECKS},
+            "advanced_components": [], "visual_family_ids": [],
+        }
+        plan = {
+            "delivery_mode": "HTML_REPORT", "mode_reason": "多维比较",
+            "advanced_components": ["rich_table"], "visual_family_ids": [],
+        }
+        final = dict(plan)
+        final.update(editorial_gate_passed=True, html_created=True,
+                     html_path=str(html_file), file_verified=True)
+        assert not validate_manifest(text_manifest, "final")
+        assert not validate_manifest(plan, "plan")
+        assert validate_manifest(plan, "final")
+        assert not validate_manifest(final, "final")
+        bad = dict(final); bad["html_path"] = str(Path(temp_dir) / "missing.html")
+        assert validate_manifest(bad, "final")
+        visual = dict(final)
+        visual.update(advanced_components=["timeseries_html5_block"],
+                      visual_family_ids=["relative-path"])
+        assert not validate_manifest(visual, "final")
     print("SELF_TEST_PASS")
 
 

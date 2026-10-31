@@ -6,7 +6,7 @@
 
 - [delivery_mode 交付门禁](#delivery_mode-交付门禁)
 - [报告内容质量门禁](#报告内容质量门禁)
-- [飞书高级图表](#飞书高级图表)
+- [图表视觉说明与嵌入](#图表视觉说明与嵌入)
 - [A/H 折溢价与执行条件筛查](#ah-折溢价与执行条件筛查)
 - [证据账本审计](#证据账本审计)
 - [反向 DCF](#反向-dcf)
@@ -34,34 +34,33 @@ python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/delivery_gate.py" --phase fin
   },
   "advanced_components": [],
   "visual_family_ids": [],
-  "doc_created": false,
-  "doc_url": "",
-  "fetch_verified": false
+  "html_created": false,
+  "html_path": "",
+  "file_verified": false
 }
 ```
 
-`LARK_DOC` 的计划阶段可保留未完成字段；最终阶段必须把 `doc_created`、`fetch_verified` 设为 `true`，填入可访问的 `/docx/` 或 `/wiki/` 链接，并完整列出高级组件：
+`HTML_REPORT` 的计划阶段可保留未完成字段；最终阶段必须把 `html_created`、`file_verified` 设为 `true`，填入实际生成的 `.html` 文件路径，并完整列出高级组件：
 
 ```json
 {
-  "delivery_mode": "LARK_DOC",
+  "delivery_mode": "HTML_REPORT",
   "mode_reason": "需要横向富表格、胜负分栏与同业象限图",
   "text_checks": {},
   "advanced_components": ["rich_comparison_table", "quadrant_svg_whiteboard"],
   "visual_family_ids": ["peer-positioning"],
   "editorial_gate_passed": true,
-  "doc_created": true,
-  "doc_url": "https://example.feishu.cn/docx/REPLACE_WITH_REAL_TOKEN",
-  "fetch_verified": true,
-  "visuals_fetch_verified": true
+  "html_created": true,
+  "html_path": "/absolute/path/report.html",
+  "file_verified": true
 }
 ```
 
-`visual_family_ids` 必须与质量清单中 `include=true` 的图表 ID 一致；没有图表时使用空数组。存在图表时 `advanced_components` 不得为空，最终拉取文档并逐图复核后才能设置 `visuals_fetch_verified=true`。`LARK_DOC` 最终阶段还要求 `editorial_gate_passed=true`；该字段只能在 `editorial_gate.py --phase final` 实际通过后设置。交付脚本不创建文档，也不判断比较结论是否正确。只有输出 `DELIVERY_GATE_PASS` 才表示对应阶段通过；失败时不得结束任务或把 `LARK_DOC` 降级成聊天 Markdown。
+`visual_family_ids` 必须与质量清单中 `include=true` 的图表 ID 一致；没有图表时使用空数组。存在图表时 `advanced_components` 不得为空，最终核对图表已嵌入完整 HTML。`HTML_REPORT` 最终阶段还要求 `editorial_gate_passed=true`；该字段只能在 `editorial_gate.py --phase final` 实际通过后设置。交付门禁脚本不生成 HTML，也不判断比较结论是否正确。只有输出 `DELIVERY_GATE_PASS` 才表示对应阶段通过；失败时不得结束任务或把 `HTML_REPORT` 降级成聊天 Markdown。
 
 ## 报告内容质量门禁
 
-研究完成、正式起草前建立质量清单并运行计划门禁；文档写入并拉取复核、删除低质量和重复内容后，再运行最终门禁：
+研究完成、正式起草前建立质量清单并运行计划门禁；HTML 生成、核对文件完整性并删除低质量和重复内容后，再运行最终门禁：
 
 ```bash
 python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/editorial_gate.py" --phase plan editorial-manifest.json
@@ -130,7 +129,6 @@ python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/editorial_gate.py" --phase fi
     "no_repeated_claims": true,
     "tables_answer_one_question": true,
     "visuals_have_information_job": true,
-    "visuals_rendered_and_legible": true,
     "visuals_nonredundant": true,
     "visual_sources_units_complete": true,
     "visual_text_fallbacks_present": true,
@@ -176,15 +174,14 @@ python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/editorial_gate.py" --phase fi
   "why_visual_beats_text_or_table": "二维网格的梯度和边界比逐格叙述更易识别",
   "evidence_ids": ["dcf-grid-a", "dcf-grid-b"],
   "redundancy_group": "valuation-sensitivity",
-  "rendering_verified": true,
   "source_and_units_verified": true,
   "text_summary_present": true
 }
 ```
 
-`format` 只允许 `html5_block`、`svg_whiteboard` 或 `mermaid_whiteboard`。同一 `redundancy_group` 只能保留一个视觉家族；排除的候选图需要 `include=false` 和 `exclusion_reason`。最终三个验证字段必须为 `true`。超过档位默认图表预算时填写 `visual_budget_reason`，说明为什么每个额外视觉都不可由现有图或表替代。
+`format` 可用 `html5_block`、`svg_whiteboard`、`mermaid_whiteboard`、`svg_image` 或 `image`；字段描述最终视觉载体，不指定生成工具。同一 `redundancy_group` 只能保留一个视觉家族；排除的候选图需要 `include=false` 和 `exclusion_reason`。最终 `source_and_units_verified` 与 `text_summary_present` 必须为 `true`。超过档位默认图表预算时填写 `visual_budget_reason`，说明为什么每个额外视觉都不可由现有图或表替代。
 
-涉及价格路径、涨跌、相对强弱或事件反应时必须设置 `price_analysis=true`。默认 K 线计划如下；计划阶段可以暂未完成两个验证字段，最终阶段必须均为 `true`：
+涉及价格路径、涨跌、相对强弱或事件反应时必须设置 `price_analysis=true`。默认 K 线计划如下；最终阶段必须确认同窗口、频率和复权口径；K 线可以用数据驱动的 HTML、SVG 或图片呈现：
 
 ```json
 {
@@ -193,7 +190,6 @@ python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/editorial_gate.py" --phase fi
     "status": "included",
     "coverage": "A、B 两只决策相关标的；共同交易窗口日线，前复权",
     "evidence_ids": ["ohlc-a", "ohlc-b"],
-    "rendering_verified": true,
     "same_window_frequency_adjustment_verified": true
   },
   "visual_plan": [
@@ -210,7 +206,6 @@ python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/editorial_gate.py" --phase fi
       "why_visual_beats_text_or_table": "影线、跳空和波动聚集无法由端点表完整表达",
       "evidence_ids": ["ohlc-a", "ohlc-b"],
       "redundancy_group": "price-path",
-      "rendering_verified": true,
       "source_and_units_verified": true,
       "text_summary_present": true
     }
@@ -233,32 +228,15 @@ python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/editorial_gate.py" --phase fi
 
 允许的 `reason_code` 为 `missing_complete_ohlc`、`no_continuous_trading_series`、`universe_too_large_for_readable_kline`、`incompatible_windows_or_frequency`、`user_explicitly_declined`、`single_price_point_only` 和 `other_material_reason`。最后一项必须写清会使 K 线失真、误导或无法可靠生成的重大事实；篇幅、制作成本、已有收益表/折线图和审美偏好不能使用。
 
-## 飞书高级图表
+## 图表视觉说明与嵌入
 
-```bash
-python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/lark_visuals.py" kline company-a-kline.json --output company-a-price-path.html
-python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/lark_visuals.py" timeseries relative-performance.json --output relative-performance.html
-python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/lark_visuals.py" heatmap valuation-grid.json --output valuation-grid.html
-python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/lark_visuals.py" quadrant peer-quadrant.json --output peer-quadrant.svg
-python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/lark_visuals.py" waterfall margin-bridge.json --output margin-bridge.svg
-python3 "$MULTI_STOCK_COMPARISON_SKILL_DIR/scripts/lark_visuals.py" timeline event-timeline.json --output event-timeline.svg
-```
+按 `advanced-html-visuals.md` 写自然语言视觉说明，再选择合适方式制作 HTML、SVG 或图片。K 线须基于已核验的开、高、低、收盘价，按交易日排序；2–4 只决策相关标的成组排列并统一窗口、频率、时区、复权和尺寸。超过 4 只时，全样本使用统一基期表现图/表，并为焦点或决策相关子集生成 K 线、记录选择依据。只有收盘价时不要补造 OHLC。
 
-`kline` 输入包含 `title` 和按交易日严格升序的 `series`；每根 K 线必须有 `date/open/high/low/close`，可选 `volume`。顶层可选 `symbol`、`market`、`currency`、`adjustment`、`palette`（`cn` 或 `global`）、`events` 和 `source_note`。输出为无外部依赖的单文件 HTML，包含响应式 K 线、成交量、悬停明细和事件标记。生成器一次为一只证券生成一个 HTML；2–4 只决策相关标的分别运行并在飞书中成组装配，统一窗口、频率、时区、复权和尺寸。超过 4 只时，全样本使用统一基期表现图/表，并为焦点或决策相关子集生成 K 线、记录选择依据。只有收盘价时不要补造 OHLC。
+象限图需标明双轴名称、范围、分界线及各点位置；多序列图对齐日期；热力图保留精确数值与色阶图例，稀疏矩阵或少量情景改用表格；瀑布图仅在桥接项可复算且起终点一致时使用；时间线按日期排序，并用文字区分事件发生、发布、生效/执法和可交易时间，不只用颜色表示。
 
-`quadrant` 输入包含 `title`、`x_axis`、`y_axis` 和 `points`。两条轴均定义 `label/min/max/split`，可选 `low/high`；每个点包含 `label/x/y`，可选 `size/group`。顶层可选 `quadrants`、`subtitle`、`as_of` 和 `source_note`。输出为自包含 SVG，可按线上最新版 `lark-doc`/`lark-whiteboard` 流程导入画板。
+自定义供应链、传导链、风险网络等 SVG 可按 `advanced-html-visuals.md` 和写入时本包 `scripts/render_html_report.py` 的图片嵌入流程制作；不要为了避免做选择而把所有关系压成一个通用流程图。
 
-`timeseries` 输入包含 `title` 和 1–8 个 `series`；每个序列使用唯一 `name` 和 2–600 个共同日期的 `{date,value}`。可选 `normalize_to_100`、`unit`、`events`、`subtitle` 和 `source_note`。脚本拒绝日期未对齐的序列；输出为带悬停、事件标记和区间变化摘要的自包含 HTML。
-
-`heatmap` 输入包含 `title`、`rows`、`columns` 和对应的二维 `values`；空值使用 `null`。可选 `scale=sequential|diverging`、`center`、`value_format=number|percent|multiple`、`precision`、`unit` 和 `source_note`。输出为保留精确数值与色阶图例的自包含 HTML；稀疏矩阵或少量情景应改用表格。
-
-`waterfall` 输入包含 `title`、`start` 和 1–12 个 `{label,value}` 的 `changes`；可选 `start_label`、`end_label`、`unit`、`precision` 和 `source_note`。输出为自包含 SVG。只有桥接项可复算且起终点一致时使用。
-
-`timeline` 输入包含 `title` 和 2–14 个按日期升序的事件；每项使用 `date/label`，可选 `category/stage/effect/note`，其中 `effect` 为 `positive|negative|mixed|neutral`。输出为自包含 SVG。需要区分事件发生、发布、生效/执法和可交易时间时，应在输入标签和阶段中明确，不用颜色代替文本。
-
-自定义供应链、传导链、风险网络等 SVG 可按 `advanced-lark-visuals.md` 和写入时最新版 `lark-doc`/`lark-whiteboard` 流程制作；不要为了避免做选择而把所有关系压成一个通用流程图。
-
-`.html`、`.svg` 等生成文件只允许作为飞书文档写入的中间产物。一旦生成，`delivery_mode` 必须为 `LARK_DOC`，把它登记进 `visual_plan`，并完成文档创建/更新和拉取复核；不得直接发送文件、截图、源码、本地路径或下载链接。
+单独的图表 `.html`、`.svg` 是中间产物；完整 HTML 报告是交付物。图表进入 `visual_plan`，嵌入完整报告并核对文件。
 
 ## A/H 折溢价与执行条件筛查
 

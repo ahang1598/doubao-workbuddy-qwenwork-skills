@@ -9,7 +9,7 @@
 - 凡成片阶段会产出或修改媒体文件的拼接、裁剪、混音、mux、字幕烧录等媒体变更工具调用，必须委派给 subagent 执行；主 Agent 保留剪辑策略、字幕策略、基础可交付检查、交付和确认责任，不设置最终内容质检硬门。
 - 图片生成和修图可由主 Agent 执行；若委派，也只能让 subagent 按锁定 Prompt 与白名单路径执行图片工具，不得让 subagent 做创作决策。
 - subagent 不能改上游、换模型、改 Prompt、扩写分镜、再次委派、调用澄清/确认工具、写 Canvas/Workspace、调用交付工具或面向用户发问。
-- 完整模式资产和视频片段阶段的每个图片或视频产物生成后，主 Agent 必须按 `SKILL.md` 与 `cli/README.md` 完成用户交付；非 Mobile 必须完成 `present_files`、Canvas 写入和 CLI get 回读，且一产物一交付一上画布。视频执行 subagent 返回时必须包含工具原始可渲染资源字段、URL 或短链、保存路径和“生成成功、待主 Agent 正式交付”状态。轻量模式字幕关闭时交付原始生成视频；字幕开启时原始无字幕视频只作为内部烧录源。成片阶段的裁剪片、拼接中间件、字幕测试样片和内部母版只保存登记；主 Agent 只交付并写画布字幕策略对应的唯一最终视频版本。
+- 完整模式资产和视频片段阶段的每个图片或视频产物生成后，主 Agent 必须按 `SKILL.md` 与 `cli/README.md` 完成用户交付；非 Mobile 必须完成 RichMediaCard 直交、Canvas 写入和 CLI get 回读，且一产物一交付一上画布。视频执行 subagent 返回时必须包含工具原始可渲染资源字段、URL 或短链、保存路径和“生成成功、待主 Agent 正式交付”状态。轻量模式字幕关闭时交付原始生成视频；字幕开启时原始无字幕视频只作为内部烧录源。成片阶段的裁剪片、拼接中间件、字幕测试样片和内部母版只保存登记；主 Agent 只交付并写画布字幕策略对应的唯一最终视频版本。
 
 ## 图片／视频工具的 Workspace ID 交接
 
@@ -105,5 +105,5 @@ subagent 返回后，主 Agent 必须：
 2. 检查 subagent 未修改任何上游、Prompt、请求快照、确认记录、Workspace/Canvas 或用户交付记录。
 3. 检查串行结果持续使用同一已确认项目事实、资产版本、模型参数、字幕策略和输出命名；核对每次图片／视频调用实际透传的 Workspace ID 与交接包一致，Mobile 无 ID 时如实记录。
 4. 亲自完成可打开、可播放、必要媒体探测和阶段 lint；FRM/SEAM 或内容问题只作为内部记录，不阻断已生成视频或成片交付，也不授权自动重生。
-5. 按 `SKILL.md` 的交付路由立即向用户展示产物；非 Mobile 必须由主 Agent 使用当前最终交付版本完成 `present_files`、Canvas 写入和 CLI get 回读。未发生媒体处理时，当前最终交付版本就是 subagent 返回的原始可渲染资源。
+5. 按 `SKILL.md` 的交付路由立即向用户展示产物；非 Mobile 必须由主 Agent 使用当前最终交付版本完成 RichMediaCard 直交、Canvas 写入和 CLI get 回读。未发生媒体处理时，当前最终交付版本就是 subagent 返回的原始可渲染资源。
 6. 继续生成或调整视频时，主 Agent 直接按 `interaction-ask-video-clarification-ref.md` 重新展示完整参数并调用标准视频生成确认；进入成片拼接时按 `control-contracts.md` 调用阶段迁移确认。两者不得互相替代。
