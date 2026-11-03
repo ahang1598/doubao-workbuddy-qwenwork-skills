@@ -10,6 +10,10 @@
 
 本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构。共用的调用约定写在本文，各命令页只描述自己的差异。
 
+## 本 Skill 的媒体操作边界
+
+图片／视频直交和产后目录整理以 [`media-delivery.md`](../media-delivery.md) 为唯一权威。下列命令页是通用接口协议，不授权本 Skill 调用 `+create`／`+create-batch` 手工创建媒体 Item／Frame，或修改媒体内容、URL、尺寸与来源。媒体工具通过真实 Workspace ID 自动关联；处理后版本未关联时只记录归档未完成，不补建对象。主 Agent 在本轮 RichMediaCard 直交后，才用 `+tree`／`+ls`／`+get` 定位真实已有对象，并仅用 `+update`／`+update-batch` 更新 path、回读核验。归档读取和更新不作为媒体交付、串行生成或用户确认的前置条件。Mobile 显式字段判定和禁用范围以主 `SKILL.md` 与交付参考为准。
+
 ## Windows 执行约束
 
 实际执行设备为 Windows 时，执行本目录任何命令前必须完整读取 [`windows-compat.md`](../windows-compat.md)。使用当前环境提供的终端工具并确认实际 Shell，不要求存在 Bash 工具。各页标为 `bash` 的续行与输入重定向示例仅用于 Bash；PowerShell 使用单行命令或任务专属 Python 脚本。
@@ -134,7 +138,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 **`title` 与 `brief` 分工不同**：`title` 是端上展示给用户的短名（几个字），
 `brief` 只给你自己消费、用来判断要不要继续 `+get`。`+create` 时两个都要给，
-**不要填成一样的内容**；详见 [`../items/README.md`](../items/README.md)。
+**不要填成一样的内容**。
 
 **数组套一层容器**：`<items>` 装 `<item>`、`<points>` 装 `<point>`、`<stops>` 装 `<stop>`、
 `<contents>` 装 `<content>`。单个对象的根节点用单数，与容器成员同形。
@@ -171,7 +175,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 > 兼容性提示：引入本规则的上游提交注明，`<source_ids>`／`<source_id>` 依赖新版 `canvas_xml_define`，文档可能暂时领先于线上 SDK。实际调用若因标签未被当前运行时识别而失败，必须保留错误并停止依赖步骤，不得伪造成功、静默删除本应存在的来源关系或改用 `+update` 补写血缘。
 
-各类型的字段、取值与示例见 [`../items/README.md`](../items/README.md)。
+通用 XML 节点结构见上文；各类型字段、取值与支持范围以当前运行时实际 schema 为准。本 Skill 仅使用初始化、恢复和目录整理能力，不因本通用协议扩大媒体写入范围。
 
 ## 写命令的根节点与 ID
 

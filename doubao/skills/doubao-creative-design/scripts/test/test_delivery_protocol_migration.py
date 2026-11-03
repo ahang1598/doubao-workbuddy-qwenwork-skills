@@ -30,7 +30,6 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
         for name, content in (
             ("SKILL.md", self.skill),
             ("html-preview.md", self.preview),
-            ("html-validation.md", self.html_validation),
         ):
             with self.subTest(file=name):
                 self.assertIn(required, content)
@@ -45,10 +44,8 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
             self.assertNotIn(wording, combined)
 
     def test_preview_quality_and_persistence_are_separate_states(self) -> None:
-        for name, content in (
-            ("html-validation.md", self.html_validation),
-            ("validation.md", self.validation),
-        ):
+        self.assertIn("html-preview.md#交付与失败", self.html_validation)
+        for name, content in (("validation.md", self.validation),):
             with self.subTest(file=name):
                 self.assertIn("不合格截图不得展示", content)
                 self.assertIn("不阻断 HTML 上传", content)
@@ -64,20 +61,42 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
         self.assertIn("主 Agent", self.validation)
         self.assertIn("画布卡片", self.validation)
 
-    def test_media_results_keep_two_independent_delivery_channels(self) -> None:
-        combined = "\n".join((self.skill, self.delivery_gate, self.validation))
-        for term in (
-            "design-cli",
-            "+get",
-            "RichMediaCard",
-            "同步双分支",
-            "候选",
-            "未采用版本",
-            "中间素材",
-            "HTML_ASSEMBLY_BEFORE_MEDIA_BARRIER",
-        ):
-            with self.subTest(term=term):
-                self.assertIn(term, combined)
+    def test_media_direct_delivery_and_post_archive(self) -> None:
+        for name, content in (("SKILL.md", self.skill), ("delivery_gate", self.delivery_gate)):
+            with self.subTest(file=name):
+                self.assertIn('<RichMediaCard>{"refs":[', content)
+                self.assertIn("Workspace ID", content)
+                self.assertIn("产后", content)
+                self.assertIn("+get", content)
+                self.assertIn("+update", content)
+        self.assertIn("HTML_ASSEMBLY_BEFORE_MEDIA_BARRIER", self.validation)
+        self.assertIn("不作为组装前提", self.validation)
+        self.assertIn("工具返回失败", self.delivery_gate)
+        self.assertIn("Mobile", self.delivery_gate)
+
+    def test_no_legacy_media_gate_in_active_references(self) -> None:
+        paths = [ROOT / "SKILL.md", *sorted((ROOT / "references").rglob("*.md"))]
+        legacy = (
+            "双通道", "双分支", "sync_group_id",
+            "同步启动 CLI 写入", "同步完成持久化",
+            "完成 CLI 写入／回读和以 RichMediaCard",
+            "同步完成 RichMediaCard 单项直接交付及产后归档",
+            "MEDIA_DELIVERY_NOT_SYNCHRONIZED",
+        )
+        for path in paths:
+            content = path.read_text(encoding="utf-8")
+            for term in legacy:
+                with self.subTest(file=str(path.relative_to(ROOT)), term=term):
+                    self.assertNotIn(term, content, f"Legacy media gate: {path}:{term}")
+
+    def test_storage_exceptions_and_html_archive_order(self) -> None:
+        image = (ROOT / "references/items/image.md").read_text(encoding="utf-8")
+        archive = (ROOT / "references/workflow/canvas-asset-organization.md").read_text(encoding="utf-8")
+        self.assertIn("手工登记", image)
+        self.assertIn("平台已关联对象", image)
+        self.assertIn("用户上传", archive)
+        self.assertIn("HTML Item 回读成功并完成产后目录整理后", self.validation)
+        self.assertIn("不为不存在的结果", self.delivery_gate)
 
     def test_html_artifacts_keep_separate_delivery_channels(self) -> None:
         combined = "\n".join(
@@ -98,7 +117,7 @@ class DeliveryProtocolMigrationTests(unittest.TestCase):
     def test_current_non_delivery_capabilities_are_not_rolled_back(self) -> None:
         combined = "\n".join((self.skill, self.html_validation, self.validation))
         for term in (
-            "data-web-fonts",
+            "Web 字体契约",
             "屏间过渡路由验收",
             "mix-blend-mode: multiply",
             "ART_TITLE_ALPHA_INVALID",

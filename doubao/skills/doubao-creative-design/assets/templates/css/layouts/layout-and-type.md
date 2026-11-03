@@ -36,7 +36,7 @@
 
 ## 调整示例
 
-将 `--vl-padding:32px; --vl-body-leading:1.9; --vl-title-tracking:-.02em` 写到组件根节点即可改变内部密度与文字节奏。字体按 [字体协议](../../../../references/rendering/font-family-library.md) 选择真实可用字体。
+将 `--vl-padding:32px; --vl-body-leading:1.9; --vl-title-tracking:-.02em` 写到组件根节点即可改变内部密度与文字节奏。字体按 [Web 字体契约](../../../../references/rendering/web-font-contract.md) 选择真实可用字体。
 
 `--vl-content-offset` 只用于文件夹，普通圆角容器只用 padding。旋转与错位不改变布局占位，需检查变换后的轮廓和邻居。全页列数、主图比例、跨段动线写到目标布局或 HTML 实现，不由这些组件参数自动决定。
 

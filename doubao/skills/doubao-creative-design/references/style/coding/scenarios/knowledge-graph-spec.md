@@ -47,4 +47,4 @@
 
 ## 下一步路由
 
-保存后读取 [关系图统一 Visual：知识图谱](../systems/diagram-visual-system.md#知识图谱)，在同一 Brief 中追加布局、视觉编码、交互、降级与可观察验收。
+保存后应用 [关系图统一 Visual：知识图谱](../systems/diagram-visual-system.md#知识图谱)，在同一 Brief 中追加布局、视觉编码、交互、降级与可观察验收。

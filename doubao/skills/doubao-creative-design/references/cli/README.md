@@ -1,5 +1,7 @@
 # Design CLI 命令 Reference
 
+用户引用素材资产时，使用 `design-cli design-asset +get --asset-ids <资产ID>`；参数和返回结构见 [素材资产详情](design-asset-get.md)。该命令无需画布 ID，不支持 revision-id。
+
 > 状态：CLI 与服务端均已实现（`+ls` / `+tree` / `+get` / `+create` / `+create-batch` / `+update` / `+update-batch` 七个接口已上线，不再是 mock）。请求与响应结构以 Alice IDL 的 `ItemContent` / `FrameContent` 为准。
 
 本目录逐条记录九个 Canvas Workspace 命令的参数、请求体与返回结构。共用的调用约定写在本文，各命令页只描述自己的差异。
@@ -12,7 +14,7 @@
 
 ## 调用形状
 
-所有命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
+下列九个画布命令属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
 
 ```bash
 design-cli design-workspace +<command> [flags]
@@ -56,12 +58,12 @@ domain 名与 `+` 都不可省略。三层 `--help` 都可用：`design-cli --he
 
 所有写入请求的顶层 Item／Frame `path` 必须是以 `/` 开头的画布绝对路径，例如 `/deliverables/key-visuals`；Frame 成员不填 `path`。相对路径禁止写入。
 
-## 公共参数
+## 画布命令公共参数
 
 | 参数 | 适用命令 | 必填 | 说明 |
 |---|---|---:|---|
 | `--title` | `+workspace-create` | 是 | 新画布标题；空值或纯空白按缺失处理，退出码 `2` |
-| `--canvas-workspace-id` | 除 `+get-workspace` / `+workspace-create` 外全部 | 是 | 目标 Canvas Workspace；空值或纯空白按缺失处理 |
+| `--canvas-workspace-id` | 九个画布命令中除 `+get-workspace` / `+workspace-create` 外的七个 | 是 | 目标 Canvas Workspace；空值或纯空白按缺失处理 |
 | `--path` | `+ls`、`+tree` | 否 | 画布绝对目录路径，非空值必须以 `/` 开头；未传或为空时取默认根路径 `/` |
 | `--item-ids` | `+get` | 条件 | 逗号分隔或重复传入；与 `--frame-ids` 至少一项，合计最多 10 个 |
 | `--frame-ids` | `+get` | 条件 | 同上 |

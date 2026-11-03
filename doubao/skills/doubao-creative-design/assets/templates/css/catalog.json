@@ -6431,7 +6431,7 @@
     },
     "assets/templates/css/combinations/recipes.md#combination-font-binding": {
       "../../../../references/style/coding/ai-coding/font-selection.md#font-visual-selection": "reference",
-      "../../../../references/rendering/font-family-library.md": "reference"
+      "../../../../references/rendering/web-font-contract.md": "reference"
     },
     "assets/templates/css/combinations/recipes.md#combination.clear-light": {
       "#combination-font-binding": "required"
@@ -6913,7 +6913,7 @@
       "../shapes/notes-and-paper.md#shape.envelope-flaps": "required"
     },
     "assets/templates/css/layouts/layout-and-type.md#layouts.parameters": {
-      "../../../../references/rendering/font-family-library.md": "reference"
+      "../../../../references/rendering/web-font-contract.md": "reference"
     },
     "assets/templates/css/layouts/layout-and-type.md#layout.airy": {
       "../../../../references/style/coding/composition-layout.md": "reference"

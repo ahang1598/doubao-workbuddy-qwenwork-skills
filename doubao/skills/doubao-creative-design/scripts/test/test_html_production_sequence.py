@@ -47,7 +47,7 @@ class HtmlProductionSequenceTests(unittest.TestCase):
             "获取需求并路由",
             "创建 Brief",
             "按需澄清",
-            "读取品类 Ref、完成视觉草案并校验 CSS 能力",
+            "应用品类 Ref、完成视觉草案并校验 CSS 能力",
             "执行适用品类的 KV 展示确认并冻结最终 Brief",
             "按路线准备实现输入",
             "AI + Coding 生产并准出正式图片",
@@ -115,9 +115,9 @@ class HtmlProductionSequenceTests(unittest.TestCase):
     def test_coding_text_stays_editable_html(self) -> None:
         for term in ("真实 HTML 文本节点", "可编辑", "text-shadow", "-webkit-text-stroke", "background-clip"):
             self.assertIn(term, self.html)
-        self.assertIn("禁止其他 `<style>`", self.html)
-        self.assertIn("data-web-fonts", self.fonts)
-        self.assertIn("禁止其他样式块与外部样式表", self.fonts)
+        self.assertIn("普通 `<style>`", self.html)
+        self.assertIn("Web 字体契约", self.fonts)
+        self.assertIn("可与普通样式合并或分开", self.fonts)
 
     def test_social_carousel_route_and_reference_boundaries(self) -> None:
         carousel_rows = [line for line in self.skill.splitlines()
@@ -144,7 +144,9 @@ class HtmlProductionSequenceTests(unittest.TestCase):
     def test_announcement_remains_ai_coding_exception(self) -> None:
         family = "通知／公告／喜报／捷报／成果战报／邀请函／节庆贺图"
         self.assertIn(family, self.skill)
-        self.assertIn(f"{family}默认 ai-coding", self.ai)
+        route = next(line for line in self.skill.splitlines() if line.startswith(f"| {family}（"))
+        self.assertIn("| ai-coding（可编辑设计） |", route)
+        self.assertIn("先核对主 `SKILL.md` 已确定的父路线并保持至任务完成", self.ai)
         self.assertIn("announcement-poster-visual-system.md", next(line for line in self.ai.splitlines() if line.startswith(f"| {family} |")))
         self.assertIn("传播型成果海报、销售喜报、成交捷报", self.skill)
         self.assertIn("以图表分析为主体的销售／赛事数据战报 | pure-coding", self.skill)
@@ -175,8 +177,8 @@ class HtmlProductionSequenceTests(unittest.TestCase):
         self.assertIn("## 各类型菜单的图文组合与配图手段", self.menu_visual)
         for term in (
             "一级主图",
-            "主图、分类／套餐图和条目图是可选职责",
-            "整页图文占比",
+            "主图、分类图与条目图按实际职责选用",
+            "量化占比时注明分母",
             "整盘／整杯去底图",
             "矩形摄影窗",
             "圆形／椭圆蒙版",

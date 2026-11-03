@@ -21,4 +21,4 @@
 
 ## 扩充配方与字体入口
 
-需要对应品类的更多视觉选择时，从原 Visual System 进入三折页、简历与电商扩充配方；社媒和邀请函的新 CSS 入口已在原视觉文件内合并。字体统一从 [字体推荐入口](../rendering/font-recommendation-list.md) 开始：推荐清单是精选入口而非封闭白名单，确定性查询只负责候选、缺口和诊断，必须结合真实文案试排与视觉判断。正式 HTML 选定视觉候选后，再进入 [字体资源与执行契约](../rendering/font-family-library.md) 核验实际 family、face、weight／style、许可、目标字形覆盖和 Web 加载；pure-image 只借用视觉建议，不进入 HTML 资源门禁。最终可见效果写回同一 Brief，实际 CSS／SVG 参数只进入 HTML，不建立独立几何或样式规划文件。
+需要对应品类的更多视觉选择时，从原 Visual System 进入三折页、简历与电商扩充配方；社媒和邀请函的新 CSS 入口已在原视觉文件内合并。字体统一从 [字体推荐入口](../rendering/font-recommendation-list.md) 开始：推荐清单是精选入口而非封闭白名单，确定性查询只负责候选、缺口和诊断，必须结合真实文案试排与视觉判断。正式 HTML 选定视觉候选后，再进入 [Web 字体契约](../rendering/web-font-contract.md) 核验实际 family、face、weight／style、许可、目标字形覆盖和 Web 加载；pure-image 只借用视觉建议，不进入 HTML 资源门禁。最终可见效果写回同一 Brief，实际 CSS／SVG 参数只进入 HTML，不建立独立几何或样式规划文件。

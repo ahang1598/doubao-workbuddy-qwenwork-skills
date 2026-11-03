@@ -77,7 +77,7 @@
 - 图像边界应明确时才添加细描边、内高光或低层阴影；应融合时才添加局部渐变覆盖、共享底色或预处理边缘。简单背景纹理从 `composition-principles.md` 的 Coding 清单选择，真实自然材质继续使用 IMAGE。
 - 不为了“完整”同时启用大渐变、玻璃、霓虹、网格、拼贴和重投影。
 
-含可编辑文字时，另行执行 [font-family-library.md](../../rendering/font-family-library.md)。需要细化已选构图时，再按需读取 [composition-principles.md](../shared/composition-principles.md)。电商详情页不使用本兜底文件，其容器门禁与卡片系统已内置于对应场景 Ref。
+含可编辑文字时，另行执行 [web-font-contract.md](../../rendering/web-font-contract.md)。需要细化已选构图时，再按需读取 [composition-principles.md](../shared/composition-principles.md)。电商详情页不使用本兜底文件，其容器门禁与卡片系统已内置于对应场景 Ref。
 
 ## 元素与生产路由
 

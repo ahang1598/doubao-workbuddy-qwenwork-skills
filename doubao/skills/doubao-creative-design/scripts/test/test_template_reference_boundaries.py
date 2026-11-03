@@ -45,12 +45,15 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
             self.assertIn(term, self.analysis)
 
     def test_rebuild_order_and_natural_brief(self):
-        self.assertIn("默认换掉所有具体色相", self.analysis)
-        self.assertIn("不做“圆换圆、方换方”的换皮", self.analysis)
-        self.assertIn("至少重建三项", self.analysis)
+        self.assertIn("按继承范围保留参考配色", self.analysis)
+        self.assertIn("用户锁定色、真实资产固有色", self.analysis)
+        self.assertIn("替换不再适用的主视觉", self.analysis)
+        self.assertIn("保留仍适用的继承项", self.analysis)
+        self.assertIn("按继承范围保留或调整", self.analysis)
         self.assertIn("一个主亮点和一至两个辅助亮点", self.analysis)
         self.assertIn("不新建参考分析 JSON、参数表、机器合同或平行 Brief", self.analysis)
-        self.assertIn("阶段 6 才把实现参数直接写入 HTML", self.creation)
+        self.assertIn("进入阶段 6 后，在编写完整 HTML 时", self.creation)
+        self.assertIn("布局参数直接写入 HTML，不先建立参数计划", self.creation)
         self.assertIn("禁止因没有模板 ID", self.validation)
 
     def test_category_template_name_mapping_is_resolvable(self):
@@ -76,7 +79,7 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
             self.assertTrue(set(entry["ref_keys"]).issubset(refs))
 
     def test_fixed_canvas_top_level_html_item_protocol(self):
-        for term in ("data-canvas-width", "data-canvas-height", "所有视觉 CSS 声明必须直接写在对应元素的 `style`", "禁止其他 `<style>`", "`FileBatchUpload`", "顶层 `<item type=\"HTML\">`", "禁止 `<frame type=\"HTML\">`"):
+        for term in ("data-canvas-width", "data-canvas-height", "三个根节点的固定宽高须行内声明", "普通 `<style>`", "`FileBatchUpload`", "顶层 `<item type=\"HTML\">`", "禁止 `<frame type=\"HTML\">`"):
             self.assertIn(term, self.protocol)
         self.assertIn("`+update`／`+update-batch` 只允许修正顶层对象的 `brief`／`path`", self.protocol)
 
@@ -165,11 +168,20 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
         self.assertNotIn("连续内容组成员共享同一底面或背景组", visual)
 
     def test_css_candidate_record_is_distinct_from_implementation(self):
-        visual = (ROOT / "references/style/coding/systems/social-visual-system.md").read_text(encoding="utf-8")
+        brief = (ROOT / "example/brief.md").read_text(encoding="utf-8")
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("选中候选的 ID、源路径与版本仅写入短采用记录", visual)
-        self.assertIn("不表示已完成实现采用", skill)
-        self.assertNotIn("名称用于能力对应，不输出 ID、路径、类名或参数", visual)
+        self.assertIn('id="css-adoption-record"', brief)
+        self.assertIn("选定组合或原子后", brief)
+        self.assertIn("HTML 实现后按实际使用情况更新", brief)
+        for field in ("catalog ID", "源文件", "SHA-256", "内容映射"):
+            self.assertIn(field, brief)
+        # 检查同段中的记录字段与实现边界，不限定记录名称或修饰语。
+        records = [p for p in skill.split("\n\n")
+                   if "Brief" in p and "记录" in p and "内容映射" in p]
+        self.assertTrue(records, "主入口缺少 Brief 采用记录说明")
+        self.assertTrue(any(all(field in p for field in ("ID", "版本", "范围"))
+                            and re.search(r"不(?:表示|代表|等于)[^。；\n]*实现", p)
+                            for p in records), "采用记录须保留来源字段，并与实际实现区分")
 
     def test_asset_admission_follows_delivery_environment(self):
         mobile = (ROOT / "references/workflow/mobile-app-direct-delivery.md").read_text(encoding="utf-8")
@@ -181,7 +193,8 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
         self.assertNotIn("只采用已完成画布回读、交付且检查通过的版本", self.asset_prompt_guide)
         self.assertIn("不为回读素材调用 Canvas CLI", mobile)
         self.assertIn("delivery_environment=mobile_direct", mobile)
-        self.assertIn("未标记移动端交付", image_gate)
+        self.assertIn("默认 Canvas 环境", image_gate)
+        self.assertIn("Mobile 环境禁止 Workspace／Canvas CLI 操作", image_gate)
 
     def test_stable_solid_background_is_scoped_to_local_information_areas(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
@@ -276,12 +289,10 @@ class ReferenceBriefAndHtmlProtocolTests(unittest.TestCase):
             "表面",
             "配色与背景",
             "作用对象与边界",
-            "引用",
-            "依赖",
-            "参数",
-            "消费者",
-            "最终 HTML",
         )
+        shared = (ROOT / "assets/templates/css/README.md").read_text(encoding="utf-8")
+        for term in ("引用", "依赖", "参数", "消费者", "最终 HTML"):
+            self.assertIn(term, shared)
 
         for relative in visual_paths:
             text = (ROOT / relative).read_text(encoding="utf-8")

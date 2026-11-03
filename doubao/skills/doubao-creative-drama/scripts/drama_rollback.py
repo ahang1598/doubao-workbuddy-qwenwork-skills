@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Rollback doubao-creative-drama stage state.")
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--to-stage", required=True, choices=STAGES)
-    parser.add_argument("--episode", help="limit rollback to one ep_N; valid for assets through final")
+    parser.add_argument("--episode", help="limit rollback to one ep_N; valid for script through final")
     parser.add_argument("--cascade-later-episodes", action="store_true", help="explicitly invalidate already-started later episodes")
     parser.add_argument("--reason", default="")
     parser.add_argument("--dry-run", action="store_true")

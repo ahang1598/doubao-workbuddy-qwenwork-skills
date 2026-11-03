@@ -5,7 +5,7 @@
 <!-- query-role: deterministic-query-and-diagnostics -->
 <!-- row-quota: none -->
 <!-- html-font-gate: resolver-required -->
-<!-- locked-font-failure: user-confirmation-required -->
+<!-- font-failure-policy: web-font-contract.md#许可与回退 -->
 
 本文是字体视觉选型的统一入口。下方清单是经过编辑分类的精选候选，不是封闭白名单；表外的品牌指定字体或后续审核字体可以进入受控解析流程。条目数量不固定，表格行序仅保证生成稳定，不表示推荐优先级。
 
@@ -14,7 +14,7 @@
 1. 先服从用户锁定的语言、品牌字体、文字角色和关键字形要求。
 2. 未锁定精确字体时，按语言、角色、形态与气质取交集；需要主题或组合排序时调用 `scripts/runtime/select_fonts.py`。查询器只返回确定性候选、缺口和诊断，不替代真实文案试排与视觉判断，也不把表外字体直接判为不可用。
 3. 比较 2–3 个满足约束的候选。短缺时保留 `shortfall`，不得删除条件、切换语言或用不兼容字体凑数。
-4. 确认视觉候选后，再进入 [字体资源与执行](font-family-library.md)；正式 HTML 另遵循 [Web 字体契约](web-font-contract.md)。
+4. 确认候选后，HTML 直接执行 [Web 字体契约](web-font-contract.md)；需要本地字体文件的流程执行 [本地字体资源](font-family-library.md)。
 
 ## 角色与字重起点
 
@@ -36,9 +36,9 @@
 
 ## 正式 HTML 门禁与替代
 
-正式 HTML 写入前，必须通过 Resolver 核验实际 `family`、`face`、`weight`／`style`、许可、目标文案覆盖和 Web 加载链路，再在目标背景和版式中等待字体加载并检查实际渲染、换行、裁切与可读性。浏览器 fallback、FontFace 已加载或截图“看起来正常”都不能单独证明锁定字体已命中。
+按 [Web 字体契约](web-font-contract.md)通过 Resolver 获取可用字体声明并写入 HTML，再在目标环境检查实际加载、字形覆盖与排版。浏览器 fallback、FontFace 已加载或截图“看起来正常”都不能单独证明锁定字体已命中。
 
-资源便利性不得压过用户锁定约束。未锁定精确字体时，资源失败可以触发同语言、同角色、同关键形态与气质内的受约束重选，并记录差异；用户锁定精确字体或关键字形时，任一门禁失败都必须停止该字体定稿并请求用户确认替代或补充资源，不得静默换成中性字体、浏览器默认字体，也不得改变产物路线或把可编辑文字栅格化绕过问题。
+资源不可用时按 [许可与回退](web-font-contract.md#许可与回退)处理。
 
 `胡敬礼毛笔行书`、`HuJingLi-Mao` 与 `胡敬礼毛笔行书简.TTF` 保持禁用；候选、精确解析和回退链都不得绕过。`沐瑶软笔` 默认不推荐，只有明确同时命中“可爱＋毛笔／软笔”的短标题意图时才进入候选，并排在其他合格候选之后。
 

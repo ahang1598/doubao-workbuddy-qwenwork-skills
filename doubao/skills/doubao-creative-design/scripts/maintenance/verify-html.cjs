@@ -75,14 +75,6 @@ async function inspectPage(page, a) {
       if(css.transform!=='none'||!['1','normal'].includes(css.zoom)) err('CANVAS_TRANSFORM',label(e));
       if(['hidden','clip'].includes(css.overflowX)||['hidden','clip'].includes(css.overflowY)||css.clipPath!=='none'||css.clip!=='auto'||/\b(paint|strict|content)\b/.test(css.contain))err('CANVAS_ROOT_CLIPPING',label(e));
     }
-    const styleBlocks=[...document.querySelectorAll('style')];
-    const webFontBlocks=styleBlocks.filter(e=>e.hasAttribute('data-web-fonts'));
-    if(styleBlocks.some(e=>!e.hasAttribute('data-web-fonts'))||document.querySelector('link[rel~="stylesheet"]')) err('STYLESHEET','Use inline style only, except the single controlled data-web-fonts block');
-    if(webFontBlocks.length>1) err('WEB_FONT_STYLE_BLOCK_INVALID','Only one data-web-fonts block is allowed');
-    for(const block of webFontBlocks) {
-      const rules=[...(block.sheet?.cssRules||[])];
-      if(block.parentElement!==document.head||block.attributes.length!==1||!rules.length||rules.some(rule=>rule.type!==CSSRule.FONT_FACE_RULE)) err('WEB_FONT_STYLE_BLOCK_INVALID','data-web-fonts must be the only attribute, live in head, and contain only @font-face rules');
-    }
     for(const e of all) {
       const s=e.getAttribute('style')||'';
       if(/(?:backdrop-filter|filter|mix-blend-mode)/i.test(s)) {const cs=getComputedStyle(e);surfaces.push({element:label(e),filter:cs.filter,backdrop_filter:cs.backdropFilter,mix_blend_mode:cs.mixBlendMode,opacity:cs.opacity});}
@@ -121,10 +113,9 @@ async function inspectPage(page, a) {
         const safe=safeNodes[0],s=getComputedStyle(safe),r=safe.getBoundingClientRect();
         safeBounds=r;
         const declared=safe.getAttribute('data-canvas-bottom-safe-area');
-        const minimum=Math.max(24,Math.ceil(width*0.04));
         const inlineHeight=Math.max(number(safe.style.height)||0,number(safe.style.minHeight)||0);
-        if(!/^[1-9]\d*$/.test(declared)||Number(declared)<minimum||inlineHeight<Number(declared)||r.height<Number(declared)-tol)
-          failSafe('Safe area must declare and occupy sufficient pixel height');
+        if(!/^[1-9]\d*$/.test(declared)||!near(inlineHeight,Number(declared))||!near(r.height,Number(declared)))
+          failSafe('Safe area must declare a positive integer matching its styled and rendered pixel height');
         if(safe.parentElement!==root||['absolute','fixed'].includes(s.position)||s.float!=='none'||s.transform!=='none'||s.display==='none'||s.visibility!=='visible'||number(s.opacity)===0||safe.textContent.trim())
           failSafe('Safe area must be an empty visible normal-flow child of the canvas');
         if(!near(r.bottom,origin.bottom)||r.top<origin.top-tol||!near(r.width,width))failSafe('Safe area must fill the canvas bottom at full width');

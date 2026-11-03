@@ -1,7 +1,10 @@
 import json
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'runtime'))
 from resolve_font import load_web_manifest, select_web_family, select_web_face, build_web_font_contract
@@ -20,15 +23,38 @@ class WebFontTests(unittest.TestCase):
     def test_valid(self):
         self.assertEqual(validate(self.html(self.css)), [])
 
+    def test_equivalent_font_declaration_order_and_quotes(self):
+        head, body = self.css.split('{', 1)
+        declarations = [s.strip() for s in body.rsplit('}', 1)[0].split(';') if s.strip()]
+        reordered = head + '{' + ';'.join(reversed(declarations)) + ';}'
+        for css in [reordered, reordered.replace('"', "'")]:
+            with self.subTest(css=css):
+                self.assertEqual(validate(self.html(css)), [])
+
     def test_invalid(self):
-        for html in [self.html(self.css + 'body{color:red}'),
-                     self.html(self.css.replace('douyin-sans-bold.ttf', 'unknown.ttf')),
+        for html in [self.html(self.css.replace('douyin-sans-bold.ttf', 'unknown.ttf')),
                      self.html(self.css.replace('700', '400')),
+                     self.html(self.css.replace('https://', 'https:// '))]:
+            with self.subTest(html=html): self.assertTrue(validate(html))
+
+    def test_style_organization_is_optional(self):
+        for html in [self.html(self.css + 'body{color:red}'),
                      self.html(self.css + self.css),
                      self.html(self.css).replace('<head>', '<body>').replace('</head>', '</body>'),
                      self.html(self.css).replace('data-web-fonts', ''),
-                     self.html(self.css.replace('https://', 'https:// '))]:
-            with self.subTest(html=html): self.assertTrue(validate(html))
+                     self.html(self.css).replace('</head>', '<style>p{color:blue}</style></head>'),
+                     '<html><head><link rel="stylesheet" href="https://example.com/site.css"></head><body></body></html>',
+                     self.html(self.css).replace('</style>', '</style><style>' + self.css + '</style>')]:
+            with self.subTest(html=html): self.assertEqual(validate(html), [])
+
+    def test_unclosed_style_remains_invalid(self):
+        self.assertTrue(validate('<html><head><style>' + self.css))
+
+    def test_comments_are_not_font_rules(self):
+        self.assertEqual(validate(self.html('/* @font-face {src:url(old.woff)} */')), [])
+
+    def test_uppercase_font_rule_is_checked(self):
+        self.assertTrue(validate(self.html('@FONT-FACE {font-family:Unknown;src:local(Arial)}')))
 
     def test_missing_weight(self):
         with self.assertRaises(ValueError): select_web_face(self.family, 400, 'normal')

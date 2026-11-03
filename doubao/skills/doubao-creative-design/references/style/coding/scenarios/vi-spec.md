@@ -4,10 +4,6 @@
 
 本文件负责品牌事实、准确文案、获准母版、身份与授权边界、系统范围、应用对象、展示章节、来源和交付能力。Spec 不提前选择新视觉风格，不决定新配色、字体搭配或具体构图；用户已锁定的视觉规范作为既有约束记录。具体视觉语言由 [VI Visual](../systems/vi-visual-system.md) 在原章节、配图与应用条目中继续丰富，不另建视觉 Brief，也不另造内容来源。
 
-## HTML 交付规范路由入口
-
-命中 VI 后，必须在任务初始 Ref 路由阶段立即读取 [VI HTML 交付规范路由入口](../../../workflow/vi-html-delivery-route.md)，并一次性完整读取其中列出的公共 HTML Ref 及当前环境分支。禁止等到 HTML 组装、`shot.py` 或最终交付阶段才补读。该入口统一约束 Subagent 边界、禁止直接交付 HTML、CDN＋Markdown 预览、默认 Canvas 的 `FileBatchUpload`／唯一顶层 HTML Item／`+get`／画布卡片，以及 Mobile 仅预览分支。
-
 ## 最高优先级门禁：确认后的 Logo 唯一视觉锚点
 
 Logo 本体完成并被用户确认后，它必须成为整个 VI 的唯一视觉参考。凡后续需要图像工具生成或编辑的 VI 衍生资产，包括背景、角色、插画、产品氛围图、应用场景和 Mockup，都必须调用 `image_edit`，并且只传入这一个已确认 Logo 母版作为视觉参考。禁止改用 `image_gen` 从零生成，禁止同时传入第二张风格图、材质图、角色图、产品图、场景图、历史候选或上一张衍生结果作为参考，也禁止仅凭 Prompt、文字描述或 Logo URL 文本声称已经继承视觉锚点。
@@ -47,15 +43,15 @@ VI 首屏、系统章节、Identity Kit 与应用展示的整体排版，必须�
 
 ## 最高优先级门禁：禁止交付 HTML 源文件；仅 HTML 生成允许调用 Subagent
 
-VI 的完整 `.html` 是内部可编辑作品源、`FileBatchUpload` 载荷和 Canvas 顶层 HTML Item 的内容来源，**绝不是面向用户直接交付的文件**。禁止在最终答复中提供本地 `.html` 路径、Markdown 文件链接、下载附件、压缩包内 HTML、代码块、源码片段或任何让用户直接取得 HTML 源文件的出口；也禁止把 `.html` 直接传给 `present_files`。用户可见交付只有两类：同尺寸完整预览图的 CDN＋Markdown 展示，以及默认 Canvas 环境中唯一顶层 HTML Item 对应的画布卡片。
+VI 的完整 `.html` 是内部可编辑作品源、`FileBatchUpload` 载荷和 Canvas 顶层 HTML Item 的内容来源，**绝不是面向用户直接交付的文件**。禁止在最终答复中提供本地 `.html` 路径、Markdown 文件链接、下载附件、压缩包内 HTML、代码块、源码片段或任何让用户直接取得 HTML 源文件的出口；也禁止把 `.html` 直接传给 `present_files`。完整 HTML 手册的用户可见交付为同尺寸完整预览图的 CDN＋Markdown 展示，以及默认 Canvas 环境中唯一顶层 HTML Item 对应的画布卡片；生成／处理的媒体结果另按下述媒体交付规则逐项展示。
 
 VI 设计中有且仅有进入完整 HTML 生成／修改与 `shot.py` 自检阶段时，Main Agent 才允许并且必须调用 Subagent。除此以外全部工作必须由 Main Agent 亲自完成，包括需求澄清、Ref 读取、Brief 建立与更新、设计规划输出、Logo 候选生成、Logo 确认、首屏 `image_edit`、其他 VI 图像与视频素材生产、MediaKit 抠图、素材检查、版本选择、返修调度、Workspace、CLI 写入／回读、CDN 上传、`FileBatchUpload` 和所有用户交付。禁止把这些任务拆给 Subagent，也禁止以“并行提效”“素材生产”或“质量复核”为由扩大 Subagent 范围。
 
-Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始短链和处理信息，并按照 [交付门禁](../../../workflow/image-generation-delivery-gate.md) 完成对应 CLI 写入／回读与 RichMediaCard 交付；双通道闭环后才能选稿、修改、衍生、进入 HTML 组装或开始下一批。Logo 候选、首屏效果、透明 Logo 和全部 VI 应用资产均遵循本规则。
+Main Agent 亲自取得每个图像／视频／MediaKit 结果的原始短链和处理信息，并按照 [交付门禁](../../../workflow/image-generation-delivery-gate.md) 以 `<RichMediaCard>{"refs":["工具返回的真实资源引用"]}</RichMediaCard>` 逐项直接交付；当前结果或独立批次交付完成后，按原确认与准出规则选稿、修改、衍生或组装。默认 Canvas 的图像调用显式透传已绑定的 Workspace ID，结果使用平台已关联对象，产后按 [目录整理](../../../workflow/canvas-asset-organization.md#3-产物完成后的强制目录整理) 读取并更新 `path`；归档回读不作为选稿或组装前提。Logo 候选、首屏效果、透明 Logo 和全部 VI 应用资产均遵循本规则。
 
 ### 完整 VI 手册 HTML 组装门禁
 
-开始组装或修改完整 VI 手册 HTML 页面时，Main Agent 必须调用 Subagent 执行，不得由 Main Agent 绕过该交接直接编写 HTML。Subagent 的唯一职责是依据已确认 Logo、最终 VI 规划、已闭环素材和 [HTML 组装](../../../workflow/html-assembly.md) 完成整页 HTML，并按 [HTML 检查执行流程](../../../workflow/html-validation.md) 运行 `scripts/runtime/shot.py` 自检；为修复 HTML 或截图问题而继续修改同一 HTML 仍属于该阶段。Subagent 必须向 Main Agent 内部回传完整 HTML 文件、声明画布宽高、同尺寸本地预览结果、预览／校验状态、建议 `path`、完整 `brief` 与创建意图，然后停止；不得上传 CDN、调用 `FileBatchUpload`、操作 Workspace／CLI、调用 `present_files`、把 HTML 链接发给用户或直接完成任何用户交付。
+开始组装或修改完整 VI 手册 HTML 页面时，Main Agent 必须调用 Subagent 执行，不得由 Main Agent 绕过该交接直接编写 HTML。Subagent 的唯一职责是依据已确认 Logo、最终 VI 规划、已交付并通过准出检查的素材和 [HTML 组装](../../../workflow/html-assembly.md) 完成整页 HTML，并按 [HTML 检查执行流程](../../../workflow/html-validation.md) 运行 `scripts/runtime/shot.py` 自检；为修复 HTML 或截图问题而继续修改同一 HTML 仍属于该阶段。Subagent 必须向 Main Agent 内部回传完整 HTML 文件、声明画布宽高、同尺寸本地预览结果、预览／校验状态、建议 `path`、完整 `brief` 与创建意图，然后停止；不得上传 CDN、调用 `FileBatchUpload`、操作 Workspace／CLI、调用 `present_files`、把 HTML 链接发给用户或直接完成任何用户交付。
 
 整套 VI 无论采用连续长板、分页式章节、Brand Board 或多章手册，在 Canvas 中都视为一个完整作品：只生成并上传一个完整 HTML 文件，只创建一个顶层 HTML Item。分页仅能表现为该 HTML 内部的页面／章节容器，不得按页拆成多个 HTML 文件、多个 Item 或 Frame 成员。
 
@@ -64,12 +60,12 @@ Main Agent 必须按以下编号顺序完成 HTML 输出与交付，不得省略
 1. **CDN＋Markdown 同尺寸预览**：Main Agent 接收 Subagent 使用 `shot.py` 自检后的完整预览图，确认其像素尺寸与 HTML 声明宽高一致；由 Main Agent 将预览图上传 CDN，亲自核验所得公网 HTTP(S) 链接可访问，再使用标准 Markdown 图片语法向用户展示。该预览是必需的用户可见输出，但不得调用 `present_files`、不得创建 IMAGE Item、不得写入 Workspace。
 2. **使用 `FileBatchUpload` 上传完整 HTML（仅默认 Canvas）**：Main Agent 使用 `FileBatchUpload` 上传唯一完整 `.html` 文件并取得工具返回的原始短链。Subagent 禁止执行上传。该上传只为 Canvas 持久化提供输入，不是用户文件交付；禁止在聊天、Markdown、附件、`present_files` 或最终交付清单中暴露 `.html` 文件。
 3. **`design-cli +create` 创建唯一顶层 HTML Item（仅默认 Canvas）**：Main Agent 使用第 2 步短链执行 `design-cli ... +create`，协议载荷中只能创建一个顶层 `<item type="HTML">`。`HTML` 是 Item 类型，`+HTML` 不是 CLI 命令；不得把 `design-cli create`、`+HTML` 或 `<frame type="HTML">` 当作替代语法。禁止 HTML Frame、Frame 成员 HTML、章节多 Item 或分页多 Item。
-4. **`design-cli +get` 回读（仅默认 Canvas）**：取得 Item ID 后执行 `design-cli ... +get`，核对 HTML 短链、类型、`path`、`brief` 与对象 ID；回读失败不得进入画布卡片交付。
+4. **回读与产后归档（仅默认 Canvas）**：取得 Item ID 后执行 `design-cli ... +get`，核对 HTML 短链、类型、`path`、`brief` 与对象 ID，再按产后目录流程归档并核验。回读或归档失败不得进入画布卡片交付。
 5. **交付画布卡片（仅默认 Canvas）**：回读成功后，将 `"<workspace_id>?item_id=<item_id>"` 作为单值传给 `present_files`。
 
 移动端交付环境只执行第 1 步，完成 CDN＋Markdown 预览后立即停止；禁止执行第 2–5 步，包括 HTML 上传、Workspace、CLI、Item 和画布卡片，也禁止以“用户仍需源文件”为由提供 `.html`。预览失败时按 HTML 预览策略保留“视觉未验证”状态；默认 Canvas 可继续执行第 2–5 步，但不得伪造预览成功。缺少第 1 步，或默认 Canvas 缺少第 2–5 步任一闭环时，不得把完整 VI 手册标记为完成。
 
-使用自然语言，成品文案与规划说明分开；代码参数、模板 ID、工具字段、内部机器 Schema 和评分清单不进入 Brief。按用户范围组织内容，不强制凑齐全部系统、页数或物料品类。
+使用自然语言，成品文案与规划说明分开。按用户范围组织内容，不强制凑齐全部系统、页数或物料品类。
 
 本 VI 不建立、生成或交付独立辅助图形、Pattern、装饰性 Icon 或纹样系统。版面识别只使用确认后的 Logo／字标、品牌色、字体、获准 IP、产品、摄影、材料与真实内容；功能性界面图标仅在真实数字产品有操作需求时按通用可用性规则处理，不登记为品牌辅助图形。
 
@@ -306,8 +302,8 @@ IP 内容先确定名称、类别、品牌职责和母版，以可观察的行�
 ## 写回 Brief 的内容结构规范
 
 - **内容结构生产规范**：按本 Spec 把品牌事实、系统范围、Logo 准确文字／核心概念／形式职责／使用环境、唯一 Logo 视觉锚点及实际资产标识、各角色母版、身份约束、准确文案、应用清单、逐章职责、真实载体尺寸、母版—平稿—场景—展示关系、来源、授权和缺口写入同一 Brief。
-- **内容结构验收规范**：核对名称与字序、Logo 候选和正式家族边界、母版唯一性、系统范围、应用职责、IP 需求、素材来源、载体条件和交付能力边界；用户未提供 Logo 时，确认已生成并逐一交付多个真正不同的候选、已由用户明确选定唯一母版，且完整设计规划已作为用户可见内容告知；用户已提供 Logo 时，确认没有误触发候选生成。确认规划告知后的第一项正式 VI 图像生产必须是以确认 Logo 为唯一输入直接调用 `image_edit` 生成的首屏效果，并符合既有首屏结构、尺度、色场和章节衔接定义；仅在 HTML 中贴 Logo、使用无 Logo 背景或跳过首屏生成均不得准出。凡作为独立层进入 VI 排版的 Logo 必须是经核验的透明 PNG／SVG；原图带底时必须存在 MediaKit `remove-image-background` 处理记录、透明结果短链与浅色／深色／最终底色验边，不得用混合模式替代。全板还须确认主图、Logo、标题、关键数字与物料已经在可读性和安全区允许范围内尽可能放大，没有小主体漂浮在大空场或用微小字号换取留白。除完整 HTML 生成／修改与 `shot.py` 自检外，所有 VI 生产、处理、写入、上传和交付都必须有 Main Agent 亲自执行记录，不得出现 Subagent 介入；完整 VI 手册 HTML 则必须有 Subagent 组装与 `shot.py` 自检记录。之后严格留下 Main Agent 编号交付链记录：第 1 步同尺寸预览上传 CDN、核验公网链接并用 Markdown 展示；默认 Canvas 再依次完成第 2 步 `FileBatchUpload` 完整 HTML、第 3 步 `design-cli ... +create` 唯一顶层 `<item type="HTML">`、第 4 步 `design-cli ... +get` 回读、第 5 步 `present_files("<workspace_id>?item_id=<item_id>")` 画布卡片。Mobile 只允许第 1 步。凡规划图像衍生，确认生产方式为 `image_edit` 且唯一输入是已确认 Logo 母版，没有第二参考或无参考生成；同时确认没有用效果板冒充应用源稿、用位图冒充专业母版、用场景文字冒充原生可编辑文字，或编造商标状态、品牌与生产事实。
+- **内容结构验收规范**：核对名称与字序、Logo 候选和正式家族边界、母版唯一性、系统范围、应用职责、IP 需求、素材来源、载体条件和交付能力边界；用户未提供 Logo 时，确认已生成并逐一交付多个真正不同的候选、已由用户明确选定唯一母版，且完整设计规划已作为用户可见内容告知；用户已提供 Logo 时，确认没有误触发候选生成。确认规划告知后的第一项正式 VI 图像生产必须是以确认 Logo 为唯一输入直接调用 `image_edit` 生成的首屏效果，并符合既有首屏结构、尺度、色场和章节衔接定义；仅在 HTML 中贴 Logo、使用无 Logo 背景或跳过首屏生成均不得准出。凡作为独立层进入 VI 排版的 Logo 必须是经核验的透明 PNG／SVG；原图带底时必须存在 MediaKit `remove-image-background` 处理记录、透明结果短链与浅色／深色／最终底色验边，不得用混合模式替代。全板还须确认主图、Logo、标题、关键数字与物料已经在可读性和安全区允许范围内尽可能放大，没有小主体漂浮在大空场或用微小字号换取留白。除完整 HTML 生成／修改与 `shot.py` 自检外，所有 VI 生产、处理、写入、上传和交付都必须有 Main Agent 亲自执行记录，不得出现 Subagent 介入；完整 VI 手册 HTML 则必须有 Subagent 组装与 `shot.py` 自检记录。之后严格留下 Main Agent 编号交付链记录：第 1 步同尺寸预览上传 CDN、核验公网链接并用 Markdown 展示；默认 Canvas 再依次完成第 2 步 `FileBatchUpload` 完整 HTML、第 3 步 `design-cli ... +create` 唯一顶层 `<item type="HTML">`、第 4 步 `design-cli ... +get` 回读与产后归档、第 5 步 `present_files("<workspace_id>?item_id=<item_id>")` 画布卡片。Mobile 只允许第 1 步。凡规划图像衍生，确认生产方式为 `image_edit` 且唯一输入是已确认 Logo 母版，没有第二参考或无参考生成；同时确认没有用效果板冒充应用源稿、用位图冒充专业母版、用场景文字冒充原生可编辑文字，或编造商标状态、品牌与生产事实。
 
 ## 下一步
 
-保存后读取 [VI Visual](../systems/vi-visual-system.md)，在同一 Brief 中补齐决策优先级、语义锚点与视觉命题、注意力路径、身份规则、字体与色彩职责、逐页相对构图、图文占比、图片／背景系统、三种位置、系列与跨载体变化、适配、降级、素材生产意图和可观察验收。组合选择在最终 Brief 冻结前完成，代码参数与实现引用不进入 Brief；完整 Prompt 在冻结后的素材清单中编译。
+保存后应用 [VI Visual](../systems/vi-visual-system.md)，在同一 Brief 中补齐决策优先级、语义锚点与视觉命题、注意力路径、身份规则、字体与色彩职责、逐页相对构图、图文占比、图片／背景系统、三种位置、系列与跨载体变化、适配、降级、素材生产意图和可观察验收。组合选择在最终 Brief 冻结前完成；完整 Prompt 在冻结后的素材清单中编译。

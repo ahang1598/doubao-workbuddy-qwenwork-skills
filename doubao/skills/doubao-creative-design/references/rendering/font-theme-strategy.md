@@ -1,6 +1,6 @@
 # 场景与主题字体策略
 
-本文件负责共享的字形选择、文字角色与搭配判断。pure-image 可按需查询候选作为视觉参考，将形态与层级用于原 Prompt，并按原路线检查成图可读性，不承诺精确 family。实际使用字体资源排版时，才进入 `font-family-library.md` 与 `assets/fonts/catalogs/` 的资源执行，核验许可、下载、目标环境加载和真实文案字形覆盖。
+本文件负责共享的字形选择、文字角色与搭配判断。pure-image 可按需查询候选作为视觉参考，将形态与层级用于原 Prompt，并按原路线检查成图可读性，不承诺精确 family。实际排版时，HTML 执行 [Web 字体契约](web-font-contract.md)；本地字体文件按 [本地资源契约](font-family-library.md) 核验。
 
 字体选择发生在生产轨道与产物格式锁定之后。字体推荐、解析、缺字处理、许可判断和回退不得创建、切换或推断产物格式，也不得因为字体库、Resolver 或字体契约把已确定的 HTML、既有分层源或其他产物改成另一种协议。字体模块只返回协议无关的字体选择结果，由已锁定的生产 workflow 负责落地。
 
@@ -124,7 +124,7 @@ Zen Antique 当前仅进入日语标题候选；目录语种不能证明中文�
 3. 每个角色比较 2–3 个满足字形要求的候选，以设计适配为先。pure-image 将字形、重量与搭配意图写入原 Brief／Prompt，按原路线检查成图，不强制安装、字体试排、DOM 或独立 `font-contract`，也不因查询器的资源 `next_step` 改道。以下步骤仅用于实际字体排版，不能因容易加载改变已锁定字形。
 4. 用精确名称或 catalog ID 核对资源、许可与实际 face；仅对明确引用平台字体表的 Item 字段核对注册 family/normal/italic/字重。HTML DOM 按 HTML 协议验证目标环境，不因未列平台表而拒绝。本地安装不等于目标渲染器已注册，旧表记录也不等于本次已加载。
 5. CDN 可用时只使用 manifest 中已验证的完整 URL，并核对文件大小、MD5 与 Content-Type；按需用 Resolver 检查本地资源，再在目标环境验证实际 family/face 与本次真实文案覆盖，并完成试排。本地检查通过不能替代目标端加载证据。
-6. 完成许可、目标环境实际加载、真实 family/face、字重与文案覆盖核验后，由已锁定的生产 workflow 实现并渲染。HTML 的所选字体、角色对应、字重与回退栈等值仅落实在最终 HTML，核验结论写入既有 validation 输出；契约的适用条件与可选消费边界统一遵循 `font-family-library.md` 第 6 节，不把 Resolver 的 `font_contract_entry` 当作必交文件或新增行内 schema。其他格式仅在已选 workflow 确实要求时写入 `font-contract.json`，其中 `source=target_environment`、`availability=verified` 只能用于目标环境已确认的字体；不得在此步骤改变产物格式。
+6. 按目标格式核验许可、实际 family/face、字重与文案覆盖后，由原 workflow 实现并渲染。HTML 的声明与验收按 [Web 字体契约](web-font-contract.md)；其他格式仅在对应流程要求时按 [本地资源契约](font-family-library.md#6-协议无关字体契约) 提供字体契约。
 
 ## 8. 回退顺序
 

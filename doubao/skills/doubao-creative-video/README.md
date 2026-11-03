@@ -35,7 +35,7 @@ doubao-creative-video/
 5. 生成与分镜合同：`asset-generation.md` 统一按需人物/产品/音色资产、视觉关键帧、图片/视频 Prompt 和身份锁；`storyboard-contract.md` 统一完整分镜母版、映射和校验。
 6. 类型文件和 CLI 子目录：类型文件管不同视频类型的专属策略；`media-delivery.md` 管视频／图像直接交付与强制产后目录整理；`cli/` 管 Canvas Workspace 初始化、手工资产创建、对象读取和目录更新命令。
 
-入口先选类型，确认规则管授权，流程文件管阶段，通用创意库确定表达与设计，资产生成和分镜合同落实为可生成产物。按生产控制的阶段矩阵读取，避免每阶段全量重读；CLI 子目录只在画布交付或命令调用时读取。
+入口先选类型，确认规则管授权，流程文件管阶段，通用创意库确定表达与设计，资产生成和分镜合同落实为可生成产物。按生产控制的阶段矩阵读取，避免每阶段全量重读；CLI 子目录在非 Mobile 的画布交付或命令调用时读取；用户引用素材资产 ID 时读取 `references/cli/design-asset-get.md`，独立素材读取不需要 Workspace ID。Mobile 仅由系统显式字段 `Device platfrom: Mobile` 触发（冒号两侧空白不影响识别），只透传已有 Workspace ID，不执行任何画布相关命令／Workspace 操作，允许本地 Python 分镜校验及其必要的本地分镜文件读写。
 
 ## 推荐阅读顺序
 
@@ -50,7 +50,7 @@ doubao-creative-video/
 7. 读 `visual-motion-playbook.md`，把核心表达转成视觉发动机，再补触发、运动、反馈和回收。
 8. 读 `storyboard-contract.md` 与 `asset-generation.md`，理解分镜唯一母版、按需人物/产品/音色资产、视觉关键帧数量、图片 PE、素材身份锁与视频五段式。
 9. 根据当前独立视频、平台版本或交付单元，只读一个类型文件；多视频项目逐条判断。
-10. 视频／图片交付先读 `references/media-delivery.md`；Workspace 初始化、手工资产创建和目录命令再读 `references/cli/README.md` 与对应命令页。
+10. 四个视频工具的 Workspace ID 透传和显式 Mobile 字段先按主 `SKILL.md` 的最高优先级章节执行；视频／图片统一以 `<RichMediaCard>{"refs":[...]}</RichMediaCard>` 直交，先读 `references/media-delivery.md`；Workspace 初始化、手工资产创建和目录命令再读 `references/cli/README.md` 与对应命令页。
 
 日常查规则时，可以按问题反查：
 

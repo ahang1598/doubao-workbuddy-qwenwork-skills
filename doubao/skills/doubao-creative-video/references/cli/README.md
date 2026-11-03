@@ -1,8 +1,12 @@
 # Design CLI 命令 Reference
 
+## CLI 使用范围
+
+本协议供非 Mobile 在相应执行确认及权限范围内使用：保留画布初始化、素材资产读取、媒体直交后的目录整理，以及确需手工入画布的用户上传／本地处理资产操作。生成／编辑工具的成功图片和视频不重复创建媒体 Item，不在 RichMediaCard 直交前回读；本批全部直交后的目录读取、`path` 更新与回读核验仍须执行。Mobile 不执行本协议的 CLI 命令，允许本地 Python 分镜校验及必要的分镜文件读写。Workspace ID 的“非 Mobile 必传，Mobile 有则传、无则不补建”以主 `SKILL.md` 为准。
+
 ## 素材资产读取：`design-asset +get`
 
-用户引用素材资产 ID 时，读取 [素材资产读取协议](design-asset-get.md)，使用 `design-cli design-asset +get --asset-ids <真实资产ID>`。这是独立的素材读取命令，不需要画布 ID，不执行 Workspace 查询、创建或写入；资产 ID 不可当作 Workspace ID。返回的 `resource_url` 是云盘文件页，不是媒体下载地址。
+Mobile 按主 `SKILL.md` 禁止一切与画布有关的命令，允许本地 Python 分镜校验；本节素材读取仍只适用于非 Mobile；非 Mobile 用户引用素材资产 ID 时，读取 [素材资产读取协议](design-asset-get.md)，使用 `design-cli design-asset +get --asset-ids <真实资产ID>`。这是独立的素材读取命令，不需要画布 ID，不执行 Workspace 查询、创建或写入；资产 ID 不可当作 Workspace ID。返回的 `resource_url` 是云盘文件页，不是媒体下载地址。
 
 下文的命令总数、公共参数、Workspace 初始化与请求约定均针对 `design-workspace`；`design-asset +get` 以自己的命令页为准。
 
@@ -12,7 +16,7 @@
 
 ## 调用形状
 
-所有命令都属于 `design-workspace` 这个 domain，且命令名**带 `+` 前缀**：
+下文九个画布命令都属于 `design-workspace` 这个 domain（独立素材读取 `design-asset +get` 除外），且命令名**带 `+` 前缀**：
 
 ```bash
 design-cli design-workspace +<command> [flags]
@@ -38,17 +42,17 @@ domain 名与 `+` 都不可省略。三层 `--help` 都可用：`design-cli --he
 | `+update` | 修改顶层 Item／Frame 的 brief／path | [`update.md`](update.md) | `/creativity/canvas_workspace/cli/update` |
 | `+update-batch` | 批量修改顶层 brief／path | [`update-batch.md`](update-batch.md) | `/creativity/canvas_workspace/cli/update_batch` |
 
-**先从当前对话确定画布 ID**：当前对话已有唯一有效 `canvas_workspace_id` 时直接复用；没有时调用 `+workspace-create` 建一张并取得 ID。`+get-workspace` 只用于显式查询、恢复或排障，不代替“对话无 ID 时必须创建”的初始化规则。`+get-workspace` 与 `+workspace-create` 都不带 `--canvas-workspace-id`，其余七个命令消费它。`+workspace-create` 的名字不叫 `+create` 是因为后者已经是“建节点”。
+**仅非 Mobile 且完成相应执行确认后，从当前对话确定画布 ID**：当前对话已有唯一有效 `canvas_workspace_id` 时直接复用；没有时调用 `+workspace-create` 建一张并取得 ID。`+get-workspace` 只用于显式查询、恢复或排障，不代替“对话无 ID 时必须创建”的初始化规则。`+get-workspace` 与 `+workspace-create` 都不带 `--canvas-workspace-id`，其余七个命令消费它。`+workspace-create` 的名字不叫 `+create` 是因为后者已经是“建节点”。
 
 ### Workspace 初始化与画布卡片交付
 
-若当前对话没有 Workspace ID，立即调用 `design-cli design-workspace +workspace-create --title "<title>"`；从响应 XML 读取唯一 ID，再由主 Agent 调用 `present_files(<workspace_id>)`，将原始 Workspace ID 作为唯一输入并交付新建画布卡片。不得先调用 `+get-workspace`，不得创建 `workspace-id.txt` 或其他中间文件，也不得附字段名、标题、版本、XML、JSON 或说明。画布卡片交付成功前不得生成／编辑媒体，也不得执行 Item／Frame 写命令。多个 ID 冲突且未指定当前目标时必须先确认，不得猜测。
+仅非 Mobile 且完成相应执行确认后，若当前对话没有 Workspace ID，调用 `design-cli design-workspace +workspace-create --title "<title>"`；从响应 XML 读取唯一 ID，再由主 Agent 调用 `present_files(<workspace_id>)`，将原始 Workspace ID 作为唯一输入并交付新建画布卡片。不得先调用 `+get-workspace`，不得创建 `workspace-id.txt` 或其他中间文件，也不得附字段名、标题、版本、XML、JSON 或说明。画布卡片交付成功前不得生成／编辑媒体，也不得执行 Item／Frame 写命令。多个 ID 冲突且未指定当前目标时必须先确认，不得猜测。
 
 读取三个命令是渐进式披露：`+tree` 看骨架 → `+ls` 展开分支 → `+get` 读完整内容。不要用 `+get` 试探性地拉大量对象。
 
 ### 视频／图像工具结果直接交付例外
 
-`text_to_video`、`image_to_video`、`media_to_video`、`video_edit` 及等价视频生成／编辑工具，以及 `image_gen`／`image_edit` 的成功结果，使用调用时透传的 Workspace ID 关联画布。mainagent 将原始视频短链或原始图片结果对象逐项以 RichMediaCard 形式直交；不再为同一结果调用 `+create`／`+create-batch`，不在交付前插入媒体 `+get`，也不通过下载、复制、`FileBatchUpload` 或重传另建 VIDEO／IMAGE Item。
+非 Mobile 下，`text_to_video`、`image_to_video`、`media_to_video`、`video_edit` 及等价视频生成／编辑工具，以及 `image_gen`／`image_edit` 的成功结果，使用调用时透传的 Workspace ID 关联画布；Mobile 仅透传已有 ID，无 ID 时允许不传，不执行画布操作。mainagent 将原始视频短链或原始图片资源引用／句柄按 `../media-delivery.md` 填入 `refs`，使用 `<RichMediaCard>{"refs":[...]}</RichMediaCard>` 逐项直交；不再为同一结果调用 `+create`／`+create-batch`，不在交付前插入媒体 `+get`，也不通过下载、复制、`FileBatchUpload` 或重传另建 VIDEO／IMAGE Item。
 
 非 Mobile 本轮已确认批次全部直交后，必须按 [媒体直接交付与产后目录整理](../media-delivery.md#产后目录整理) 用 `+tree`／`+ls` 定位真实对象、分批 `+get` 读取实际内容、仅更新顶层绝对 `path`，再回读核验。目录由 path 自动形成，没有独立 `mkdir`；不得创建空 Item 充当目录。目录整理不改变单项媒体已经交付的状态。Mobile 禁止这些画布操作。
 
@@ -136,7 +140,7 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 **`title` 与 `brief` 分工不同**：`title` 是端上展示给用户的短名（几个字），
 `brief` 只给你自己消费、用来判断要不要继续 `+get`。`+create` 时两个都要给，
-**不要填成一样的内容**；详见 [`../items/README.md`](../items/README.md)。
+**不要填成一样的内容**。
 
 **数组套一层容器**：`<items>` 装 `<item>`、`<points>` 装 `<point>`、`<stops>` 装 `<stop>`、
 `<contents>` 装 `<content>`。单个对象的根节点用单数，与容器成员同形。
@@ -173,7 +177,6 @@ CLI 不改写 HTTP 返回，完整响应体原样输出。响应结构是 Alice 
 
 > 兼容性提示：引入本规则的上游提交注明，`<source_ids>`／`<source_id>` 依赖新版 `canvas_xml_define`，文档可能暂时领先于线上 SDK。实际调用若因标签未被当前运行时识别而失败，必须保留错误并停止依赖步骤，不得伪造成功、静默删除本应存在的来源关系或改用 `+update` 补写血缘。
 
-各类型的字段、取值与示例见 [`../items/README.md`](../items/README.md)。
 
 ## 写命令的根节点与 ID
 

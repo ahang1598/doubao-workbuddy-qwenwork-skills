@@ -16,7 +16,7 @@
 
 1. 有完整 HTML 源时，优先读取 DOM 结构与实际渲染。局部修改只建立受影响区域及相邻关系的视觉基线；不得为“分析完整”而重建全页。
 2. 只有最终图片且需要重建为可编辑 HTML，或任何任务需要从可见设计恢复布局／风格时，强制读取 [参考图解析与继承](../style/coding/ai-coding/reference-analysis.md)：先过滤水印、截图 UI、平台按钮、黑边、账号名和 AI 角标，再把 11 维底稿、逐块图文绑定、七类同源机制与六步重建方案写入同一份自然语言 Design Brief。模板授权边界作为其唯一权限来源。
-3. 只有出现以下任一触发条件时才重新处理受影响字体：新文案包含原字体无法提供的字形，新文案造成异常换行或版式失败，原字体资源在目标环境不可用，或用户明确要求换字体；未受影响的字体与文字区域保持原样。触发后先从 [字体推荐入口](../rendering/font-recommendation-list.md) 保留模板字形与角色约束，以真实新文案试排候选；`scripts/runtime/select_fonts.py` 只提供候选、缺口和诊断，不证明资源可用。目标仍为正式 HTML 时，再按 [字体资源与执行契约](../rendering/font-family-library.md) 核验实际 family、face、weight／style、许可、目标字形覆盖和 Web 加载，通过后写回完整 HTML 并用 `shot.py` 检查实际字形、换行、基线与溢出；用户锁定精确字体或关键字形而门禁失败时必须请求确认，不得静默替换。目标仍为 pure-image 时只借用视觉建议，不进入 HTML 字体资源门禁。
+3. 只有出现以下任一触发条件时才重新处理受影响字体：新文案包含原字体无法提供的字形，新文案造成异常换行或版式失败，原字体资源在目标环境不可用，或用户明确要求换字体；未受影响的字体与文字区域保持原样。触发后先从 [字体推荐入口](../rendering/font-recommendation-list.md) 保留模板字形与角色约束，以真实新文案试排候选；`scripts/runtime/select_fonts.py` 只提供候选、缺口和诊断，不证明资源可用。目标仍为正式 HTML 时，按 [Web 字体契约](../rendering/web-font-contract.md) 获取可用字体声明并写入 HTML，再用 `shot.py` 检查实际加载、字形与排版；目标仍为 pure-image 时只借用视觉建议，不进入 HTML 字体资源门禁。
 4. 有完整 HTML 源时按原生产类型转入 `editing/pure-coding.md` 或 `editing/ai-coding.md`，保留未授权区域；只有图片且要求重建可编辑 HTML 时，按主路由进入 `creation/pure-coding.md` 或 `creation/ai-coding.md`，把图片作为继承参考和授权边界，不假定存在可编辑源。只编辑位图时进入 `editing/pure-image.md`。HTML 读取 `references/html/coding-rendering.md` 与 `references/cli/README.md`；涉及品类职责或物理结构时读取对应 Spec。
 
 ## 3. 执行边界

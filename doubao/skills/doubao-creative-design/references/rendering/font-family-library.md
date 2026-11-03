@@ -1,10 +1,6 @@
-# 字体资源 Library 与执行契约
+# 本地字体资源与执行契约
 
-本文件只负责视觉候选确定后的字体资源来源、状态和执行边界。视觉选型统一从 [字体推荐入口](font-recommendation-list.md) 完成；推荐清单和查询结果不能证明资源可用。正式排版进入本文件后，必须由当前目标渲染环境的字体元数据和真实文案实测核验实际 family、face、weight／style、许可、字形覆盖与加载链路，记录方式遵循第 6 节。pure-image 只借用推荐入口中的字形、角色、气质、搭配与可读性建议，不进入本文件，不因此安装字体、创建 DOM 或独立字体契约，也不承诺图像模型精确采用某个 family。
-
-字体资源层与产物协议解耦：进入本文件前必须已经锁定生产轨道和产物格式。本文件只返回字体资源与可用性结论，不得创建、切换或推断 HTML、分层协议或其他交付格式。字体不可用时按本文件的失败处理执行：用户锁定精确字体或关键字形则请求确认，未锁定时才在原约束内重选；两种情况都不能通过改换产物协议解决。
-
-字体执行分成两个互不冒充的通道，并统一由 `scripts/runtime/resolve_font.py` 解析：Canvas／本地字体通道核验真实文件、许可、family 与字形覆盖；HTML Web 字体通道从白名单选择浏览器可加载的真实 face。HTML 已锁定时优先读取 [Web 字体契约](web-font-contract.md)，使用 `scripts/runtime/resolve_font.py --target html --weight <weight>` 从 `assets/fonts/web-font-manifest.json` 解析。下文的本地下载与注册流程不作为 HTML CDN 字体前置条件，Web CDN 可用也不等于本地字体已安装。
+本文用于 Canvas／本地字体文件的来源、许可、下载、注册与字形核验。先按 [字体推荐入口](font-recommendation-list.md) 选型；HTML 浏览器字体直接执行 [Web 字体契约](web-font-contract.md)，不进入本地下载流程。pure-image 只借用视觉建议。字体资源处理保持已选产物格式。
 
 ## 1. 职责分层
 
@@ -71,12 +67,12 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 
 ## 4. 强制选择顺序
 
-1. 进入本文件前，先在 [字体推荐入口](font-recommendation-list.md) 保留用户／参考约束并用真实文案完成视觉候选判断；`scripts/runtime/select_fonts.py` 只用于查询候选、缺口和诊断，不能作为资源准入结论。pure-image 在视觉建议处结束，不进入以下资源执行步骤。
-2. 按真实文案核验语种与字形覆盖；用户锁定精确字体或关键字形而覆盖失败时停止并请求确认，未锁定时才排除不覆盖的候选。
+1. 从 [字体推荐入口](font-recommendation-list.md) 保留用户／参考约束，以真实文案判断候选；查询结果不证明资源可用。
+2. 按真实文案选择适用语种，字形覆盖在目标环境渲染后核验；失败按[回退规则](#7-回退规则)处理。
 3. 先保持字形与阅读任务适配，再检查适用的平台约束、许可和资源；只有未锁定精确字体时，拒绝项才可传 `--exclude` 继续查找，不以资源方便压过用户或参考约束。
 4. 使用精确 catalog ID 核对资源及目标环境的 family、真实 face/字重。实际 Item 字段引用字体表时，读取 `references/items/fonts.md` 或当前平台的实际清单；本地安装不能绕过其注册门禁。HTML DOM 按 HTML 协议核验，不因未列该表而拒绝，也不以本地安装替代目标端加载证据。未经证实的别名、CN/SC/VF 或轻量变体不可合并成同一个可用实例。
-5. 若状态为 `cdn_available`，仅使用 manifest 中已验证的完整 URL 取得字体，并核对文件大小、MD5 与 Content-Type。
-6. 只有通过许可检查，且目标环境确认实际加载的 family/face、真实字重与文案覆盖，才允许由已锁定的 workflow 将字体写入实现源；所选值与核验结论按第 6 节记录，不以独立契约文件作为 HTML 的门禁。可编辑设计中的 Coding 文字均须通过此门禁并保持可编辑；独立艺术标题仅限 Brief 明确准入的首屏／首图主标题或每个独立图片唯一最重要大标题，普通 H1 不自动获得资格，品类限制仍优先。已准入的一体化 Hero 图内文案沿用原 workflow；这些可编辑设计限制不施加给 pure-image，字体门禁不得改变产物格式。
+5. 返回 `cdn_available` 时，使用下载 manifest 中已验证的 URL，核对大小、MD5 与 Content-Type。
+6. 许可与资源通过后写入实现源，在目标环境核验实际 family/face、字重、字形覆盖和排版；按第 6 节记录结果，可编辑文字保持原生。
 
 ## 5. 字体许可
 
@@ -88,7 +84,7 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 
 ## 6. 协议无关字体契约
 
-字体记录服从已锁定的产物协议。HTML 的字体选择值与实现参数只写入最终 HTML，核验结论写入既有 validation 输出，不默认创建或要求独立 `font-contract.json`，也不新增行内 schema。`html-validation` 的可选 `--font-contract` 可消费已有契约，但不构成创建要求；用户明确要求契约输出时可按要求提供，不取代最终 HTML 的权威性。其他格式仅在已选 workflow 确实要求时使用 `font-contract.json`；pure-image 的视觉参考不要求资源契约。以下 JSON 及其字段说明仅为需要契约的其他 workflow 提供条件性交换格式，记录经目标环境验证的字体事实和角色分配，不包含产物路由、对象类型或实现协议字段，不施加给 HTML：
+本地流程仅在当前 workflow 要求时提供 `font-contract.json`，记录目标环境已核验的字体事实与角色；不据此切换产物格式。以下示例供该流程交换数据，HTML 记录按 [Web 字体契约](web-font-contract.md) 维护。
 
 ```json
 {
@@ -125,8 +121,6 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 - `origin: system` 记录系统来源，仍须在目标渲染环境按精确 family name 验证；
 - CDN URL 和本地下载记录不能冒充目标端已就绪；资源核验后还须验证目标渲染环境的真实字体；
 - `roles` 只绑定文字职责、字体家族和真实字重，不绑定对象类型或实现协议；
-- 实际实现仍由已锁定的生产 workflow 负责，不以生成上述契约为统一前提。HTML 路线按 [HTML 协议](../html/coding-rendering.md) 将 Coding 文字实现为真实 DOM，仅在最终 HTML 对应元素的行内 `style` 写入所选 `font-family`、`font-weight` 与回退栈；HTML Item 内的 DOM 不套用 Canvas Item 字体字段白名单。HTML 远程字体按 [Web 字体契约](web-font-contract.md) 解析，只允许 head 内唯一 `data-web-fonts` 声明块；其他视觉样式仍须行内，字体由 `shot.py`／目标渲染环境验证；
-- HTML 路线在 `shot.py` 预览时检查字体加载后的缺字、替换、换行、基线、伪粗体和裁切，核验结论写入既有 validation 输出，但不得把用于测量的 JavaScript 保留为作品尺寸或字体运行时依赖；
 - 其他格式仅在已选 workflow 确实要求契约时，由该 workflow 完成上述交换字段的映射；字体文档不提供切换格式的理由。
 
 ## 本地字体资源核验
@@ -139,12 +133,11 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 
 ## 7. 回退规则
 
-- 用户锁定精确字体或关键字形时，任一资源门禁失败都必须停止该字体定稿并请求用户确认补充资源或采用明确替代，不得自动进入下列回退；
-- 未锁定精确字体时，标题字体不可用才可回到同语种、同角色、同关键形态与气质的下一个 `hero/sub` 候选；
-- 未锁定精确字体时，正文字体不可用才可在同语种和阅读职责内回退到中性黑体、正文衬线或圆体；
-- 回退先保留实际语种、字形与角色；简中思源黑体 VF 仅适用于中性黑体要求，不能代替宋体/书法/手写或韩文；
+- 用户指定的字体加载失败时，先尝试恢复；仍失败则使用可加载的回退字体，检查排版，并在交付时说明目标字体未生效及实际使用的字体。
+- 模型自选的字体不可用时，可自行更换为合适、可加载的字体，检查实际字体与排版后交付。标题保留语种、角色、关键形态与气质；正文保留语种和阅读职责。
+- 许可核验失败或用户另外锁定的关键字形无法满足时，先确认授权／替代方案。
 - 多语种必须按真实文案逐项检查，不通过中文或英文结果推断其他语种；
-- 实际字体排版不允许静默浏览器回退；可编辑设计不得因字体不可用把普通文字栅格化为 IMAGE。此禁令不限制已锁定 pure-image 的图内文字生产，其成图可读性仍按原路线检查。
+- 交付前核验实际字体、完整字形与排版；可编辑文字保持原生，pure-image 图内文字按原路线检查。
 
 ## 8. 维护
 
@@ -157,6 +150,5 @@ https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/
 5. 运行 `scripts/test/test_font_union.py`、CSS 查询和引用检查，核对组合 ID、旧候选保留、语言过滤、排除回退与平台表一致性；
 6. 真实下载、字体加载、缺字与目标尺寸的视觉适配在生产环境单独验证，静态测试不代替渲染。
 
-最终 HTML 仅允许 [Web 字体契约](web-font-contract.md) 定义的受控字体声明块，禁止其他样式块与外部样式表；字体最终以目标环境可用 face 与真实 DOM 验证为准，推荐结果不等于资源就绪。
 
 本地解析器的 `package_status=local_present` 仅表示本地资源存在；`invalid` 表示字体解析或结构核验失败，`blocked_by_license` 表示许可阻断。`contract_ready=true` 只代表本地许可、family 和字形覆盖检查通过，不证明目标环境加载成功，也不表示必须创建 `font-contract.json`；`target_environment_status=not_checked` 时仍须完成上述环境门禁。登记包内全部字体与预期路径合并核验，下载遇到不同内容的已有文件或晚到冲突会保留原文件并报错。

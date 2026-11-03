@@ -7,7 +7,7 @@
 1. 先从 [`../ref-bindings.json`](../ref-bindings.json) 的 `category_refs` 确定当前品类的稳定 `ref_key`，并读取该键指向的 Spec 与 Visual System。
 2. 用 `ref_key` 取得 CSS 候选：先应用 `css.entry_overrides`，未列出的条目继承 `css.default_ref_keys`。默认关联只代表可以进入候选集，不代表必须采用。
 3. 再从 [`../../svg/catalog.json`](../../svg/catalog.json) 读取 SVG 的稳定 ID、真实文件、CSS 消费者和适用品类。不得凭文件名猜资源职责。
-4. Brief 冻结后先读取选中实现及依赖，再在最终 HTML 记录实际采用的 CSS／SVG ID、作用对象、依赖、覆盖值与未采用原因，并展开为行内样式；素材就绪组装时校核实际绑定。Brief 保留设计说明与短采用记录，不复制实现参数。
+4. Brief 冻结后先读取选中实现及依赖，再在最终 HTML 记录实际采用的 CSS／SVG ID、作用对象、依赖、覆盖值与未采用原因，并展开为实际 CSS 样式；素材就绪组装时校核实际绑定。Brief 保留设计说明与短采用记录，不复制实现参数。
 5. 从 Skill 根目录运行 `python3 scripts/maintenance/check-template-ref-bindings.py`，校验品类键、CSS 条目、SVG 文件、消费者与覆盖完整性；需要把品类解析成带名称的候选清单时运行 `python3 scripts/maintenance/check-template-ref-bindings.py --ref-key <ref_key>`。
 
 | 想改什么 | 直接读取 | 文件内实际内容 |
@@ -167,7 +167,7 @@ Visual 先比较同品类、同作用范围的组合关系，再确定适配方�
 - catalog 的 documents.path 相对 Skill 根目录（SKILL.md 所在目录）；Markdown 链接相对当前文件。组合记录的 template 相对组合配方文件。
 - 各分类正文中的 CSS 代码块是原子实现源，HTML 模板是带资源短引用的组装源。更新原子后同步受影响模板，并检查样式、文字与遮罩。
 - 索引只维护名称、标签、文件与 anchor；默认值、参数说明、依赖和覆盖值都维护在对应正文。同结构的变体不复制 SVG。
-- 保留原品类路线、字体、固定画布与交付协议；正式 HTML 只保留实际节点、行内样式和内嵌 SVG，无本地路径或索引运行时依赖。
+- 保留原品类路线、字体、固定画布与交付协议；正式 HTML 只保留实际节点、CSS 样式和内嵌 SVG，无本地路径或索引运行时依赖。
 
 ## 按视觉分类直接读取
 
@@ -192,7 +192,7 @@ Visual 先比较同品类、同作用范围的组合关系，再确定适配方�
 --vl-texture-size: 256px;
 ```
 
-生成时读取选中原子的参数与代码，保留短引用；完成节点展开和样式行内化后，使用 [内嵌脚本](../../../scripts/runtime/inline-svg-assets.py) 输出正式 HTML。下例从 Skill 根目录执行，输入和输出改成实际任务路径：
+生成时读取选中原子的参数与代码，保留短引用；完成节点与样式实现后，使用 [内嵌脚本](../../../scripts/runtime/inline-svg-assets.py) 输出正式 HTML。下例从 Skill 根目录执行，输入和输出改成实际任务路径：
 
 ```bash
 python3 scripts/runtime/inline-svg-assets.py --input draft.html --output final.html
@@ -216,9 +216,9 @@ python3 scripts/runtime/inline-svg-assets.py --input draft.html --output final.h
 
 “复古高饱和拼贴”可先查 [对应组合](combinations/recipes.md#combination.retro-pop-collage)：高饱和指向明快或撞色配色，拼贴指向布局，复古还需纸面／字体与照片关系的证据；不只搜索“复古”颜色分类。命中只产生候选，按内容、画幅和素材选择后，直接读取被选原子的正文、共用层与依赖，不加载全库或 SVG 原文。
 
-沿现有 HTML 记录：全局容器和元素的行内样式保存 palette、实际色值、网格、实例角度、层级和允许遮挡区；对应 DOM 节点记录 shape／surface 引用、资源短引用与局部参数；字体走原字体协议。不新增 `container_layout`、`assembly_relations` 或其他平行 schema。仅记录“复古”“拼贴”等标签不足以实现。
+沿现有 HTML 记录：全局容器和元素的 CSS 样式保存 palette、实际色值、网格、实例角度、层级和允许遮挡区；对应 DOM 节点记录 shape／surface 引用、资源短引用与局部参数；字体走原字体协议。不新增 `container_layout`、`assembly_relations` 或其他平行 schema。仅记录“复古”“拼贴”等标签不足以实现。
 
-组装按所选引用展开 HTML 节点与行内样式，再内嵌所用 SVG，最后渲染核对。优先级保持：用户锁定项与参考约束 → 已确认的元素局部决策 → 全局参数 → 配方默认值。经组合适配评估后仍无适用候选时组合原子，并明确剩余素材／实现需求，不因目录里有某种效果就自动叠加。
+组装按所选引用展开 HTML 节点与 CSS 样式，再内嵌所用 SVG，最后渲染核对。优先级保持：用户锁定项与参考约束 → 已确认的元素局部决策 → 全局参数 → 配方默认值。经组合适配评估后仍无适用候选时组合原子，并明确剩余素材／实现需求，不因目录里有某种效果就自动叠加。
 
 文字质感先读 [填字、描边、路径排字](layouts/layout-and-type.md#text.paint)，再按需选 [文字挤出](surfaces/metal-and-relief.md#surface.type-relief)。通用渐变在 [配色参数](colors/palettes.md#color.gradient)，覆盖任意数量色标和逐色标透明度。参考效果的近似与素材边界见 [组合说明](combinations/recipes.md#补查后的覆盖边界)。
 

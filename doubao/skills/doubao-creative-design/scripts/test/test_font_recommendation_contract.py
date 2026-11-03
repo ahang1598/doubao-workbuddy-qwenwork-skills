@@ -18,6 +18,14 @@ GENERATOR = ROOT / "scripts/maintenance/generate-font-recommendation-list.py"
 
 
 class FontRecommendationContractTests(unittest.TestCase):
+    def test_html_font_render_check_follows_source_write(self) -> None:
+        for relative in ("SKILL.md", "references/workflow/template-rewrite.md",
+                         "references/workflow/creation/ai-coding.md"):
+            text = (ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(file=relative):
+                self.assertNotRegex(text, r"目标(?:文案)?字形覆盖和 Web 加载")
+                self.assertRegex(text, r"字体声明.{0,30}写入 HTML.{0,30}`shot.py`.{0,15}检查实际加载")
+
     def read_doc(self) -> str:
         self.assertTrue(DOC.exists(), "missing unified font recommendation entry")
         return DOC.read_text(encoding="utf-8")
@@ -33,10 +41,20 @@ class FontRecommendationContractTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, text)
 
-    def test_html_gate_and_locked_font_failure_are_explicit(self) -> None:
+    def test_html_gate_and_shared_font_failure_policy(self) -> None:
         text = self.read_doc()
         self.assertIn("<!-- html-font-gate: resolver-required -->", text)
-        self.assertIn("<!-- locked-font-failure: user-confirmation-required -->", text)
+        marker = re.search(r"<!--\s*font-failure-policy:\s*(\S+)\s*-->", text)
+        self.assertIsNotNone(marker, "缺少字体失败处理入口")
+        policy = marker.group(1)
+        path, separator, anchor = policy.partition("#")
+        self.assertEqual(path, "web-font-contract.md")
+        self.assertTrue(separator and anchor, "入口须定位到处理章节")
+        self.assertIn(policy, re.findall(r"\[[^\]]+\]\(([^)]+)\)", text))
+        target = DOC.parent / path
+        self.assertTrue(target.is_file())
+        headings = re.findall(r"^#{1,6}\s+(.+)$", target.read_text(encoding="utf-8"), re.M)
+        self.assertIn(anchor, [re.sub(r"\s+", "-", heading.lower()) for heading in headings])
         for term in ("family", "face", "weight", "许可", "覆盖", "Web"):
             with self.subTest(term=term):
                 self.assertIn(term, text)

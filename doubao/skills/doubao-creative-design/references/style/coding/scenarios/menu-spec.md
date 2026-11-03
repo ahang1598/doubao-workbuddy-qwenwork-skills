@@ -91,4 +91,4 @@
 
 ## 下一步
 
-保存后读取 [菜单 Visual](../systems/menu-visual-system.md)，在同一 Brief 中细化决策优先级、视觉命题、图文占比、图片层级、背景联动、排版、适配、降级、逐图生产意图和验收；完整 Prompt 在素材清单中编译。
+保存后应用 [菜单 Visual](../systems/menu-visual-system.md)，在同一 Brief 中细化决策优先级、视觉命题、图文占比、图片层级、背景联动、排版、适配、降级、逐图生产意图和验收；完整 Prompt 在素材清单中编译。

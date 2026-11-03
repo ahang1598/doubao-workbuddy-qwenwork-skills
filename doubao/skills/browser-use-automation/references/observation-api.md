@@ -83,7 +83,7 @@ def snapshot(
     view: Literal["outline", "interactive", "all"] = "outline",
     within: ElementTarget | str = "viewport",  # "full", "viewport", REF or CSS
     max_chars: int = 3200,  # clamped to 1000..4000
-) -> SnapshotResult: ...
+) -> str: ...
 
 
 def find(
@@ -103,7 +103,7 @@ Omitted arguments use the defaults in the signature; explicit values override th
 `within="viewport"` may also include horizontally offscreen input/selection controls.
 An observed control is not necessarily ready for interaction.
 
-Return shapes (duck types):
+Snapshot returns a `str`. Find return shapes (duck types):
 
 ```python
 class ObservationNode(Mapping[str, Any]):
@@ -115,7 +115,7 @@ class ObservationNode(Mapping[str, Any]):
     popup: bool
     children: tuple[ObservationNode, ...]
     children_refs: tuple[Ref, ...]
-    scope_index: int | None             # index into SnapshotResult.scope_refs
+    scope_index: int | None
     role: str
     name: str
     text: str
@@ -133,43 +133,6 @@ class QueryMatch(TypedDict):
     ref: Ref
     matchedTerms: list[str]
     matchedFields: list[str]
-
-
-class SnapshotResult(str):
-    observation: str
-    text: str
-    mode: Literal["full"]
-    changes: tuple[SnapshotChange, ...] # empty in normal mode
-    removed_refs: tuple[Ref, ...]        # empty in normal mode
-    full_text: str                     # current bounded full text, same as str(result)
-    data: Mapping[str, Any]             # raw result fields
-    document_generation: int
-    scope: str
-    root: ObservationNode | None
-    popup_root: ObservationNode | None
-    roots: tuple[ObservationNode, ...]
-    nodes: tuple[ObservationNode, ...]
-    by_ref: dict[str, ObservationNode]
-    refs: tuple[Ref, ...]               # all structured refs
-    shown_refs: tuple[Ref, ...]         # refs present in str(result)
-    scope_refs: tuple[Ref, ...]         # retained within roots, document ordered
-    scope_truncated: bool
-    url: str
-    title: str
-    view: str
-    viewport: dict
-    page_state: dict
-    popup: dict
-    stats: dict
-    may_be_incomplete: bool
-    def node(self, ref: Ref) -> ObservationNode | None: ...
-
-
-class SnapshotChange(TypedDict):
-    nodeId: str                        # look up the current node in result.by_ref
-    kind: Literal["added", "updated", "moved"]  # + / ~ / >; current node content
-    parent: str                        # empty for document root; "popup" for popup root
-    after: str                         # previous sibling; empty for first child
 
 
 class FindResult(list[Ref]):
@@ -193,7 +156,7 @@ class FindResult(list[Ref]):
     def node(self, ref: Ref) -> ObservationNode | None: ...
 ```
 
-`max_chars` limits the printable Snapshot/Find text, not the structured nodes.
+`max_chars` limits the returned Snapshot string and printable Find text, not `FindResult.nodes`.
 
 #### Changes after an action
 
@@ -206,7 +169,6 @@ print(after)
 ```
 
 - Snapshot always returns full observation text for the selected scope, within `max_chars`.
-  `result.full_text` is the same printable text; `nodes` and `by_ref` provide the structured observation.
 
 #### Snapshot example
 
@@ -230,7 +192,6 @@ Output notation:
 - `total_nodes` counts source nodes; `shown=A/B` means A of B text rows are displayed.
   `@more` marks omitted output, `node_more` omitted nodes, and `incomplete=true` a possibly incomplete observation.
 - Short roles (`doc`, `a`, `ul`, etc.) describe semantics, not guaranteed CSS tag names.
-  `ObservationNode.role` provides the full role.
 - `focused`, `expanded` / `collapsed`, `disabled`, `edit`, `checked`, `required` are states; `type` is the form subtype;
   `ph` is placeholder text; `->` is a link target; `ctx` is matching context.
 - `options=[*text=>value|!text=>value]+N`: `*` selected, `!` disabled, `*!` both, `+N` omitted choices.
@@ -259,28 +220,13 @@ n57 button "Place order and continue"
 `matches=N+` means more semantic matches exist than `limit` returned. When several candidates are
 plausible, refine the query or inspect their surrounding structure before acting on `.first`.
 
-#### Process structured results
+#### Process snapshot text
 
 ```python
-snapshot = bu.snapshot(max_chars=1000)
-buttons = [
-    {"ref": node.ref, "name": node.name, "parent": node.parent_ref}
-    for node in snapshot.nodes
-    if node.role == "button" and node.interaction.get("clickable")
-]
-print(buttons[:10])
-
 cards = bu.snapshot(within=bu.css("article", match="all"), view="all")
-print([
-    {"scope": node.scope_index, "ref": node.ref, "text": node.text}
-    for node in cards.nodes
-    if node.text
-][:20])
-
-# Reprint one structured subtree in the same compact format as Snapshot.
-node = cards.node(cards.refs[0])
-if node:
-    print(node.serialize())
+for line in cards.splitlines():
+    if "target phrase" in line.lower():
+        print(line)
 ```
 
 ### Text and element properties

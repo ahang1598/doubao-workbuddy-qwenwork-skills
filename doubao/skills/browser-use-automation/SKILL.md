@@ -138,7 +138,7 @@ In `display_message`, state the site, exact requested action, why user intervent
 
 ## Observation strategy
 
-Use `snapshot()` for interaction tasks; it returns page structure and actionable refs.
+Use `snapshot()` for interaction tasks; it returns a `str` describing page structure and actionable refs.
 Use `extract_content()` for articles, papers, documentation, and other reading tasks; it returns
 semantic content in document order without action noise. Pass one type or a short type list when
 only specific content matters. When the target region is known,
@@ -161,18 +161,17 @@ print(bu.snapshot(within="viewport", view="outline", max_chars=2000))
 print(bu.snapshot(within="viewport", view="interactive", max_chars=3000))
 # To read content with ref: get all content in viewport.
 all_snapshot = bu.snapshot(within="viewport", view="all", max_chars=4000)
-print(str(all_snapshot)[3000:4000])
+print(all_snapshot[3000:4000])
 
 # Known region: observe only one subtree by CSS or a fresh ref.
 # Use `within` to get the content out of the viewport.
 print(bu.snapshot(within="n42"))
 print(bu.snapshot(within=bu.css("main", match="first"), max_chars=3000))
 cards = bu.snapshot(within=bu.css("div.card", match="all"), view="all")
-# Serialize one node with its children in Snapshot line format.
-for node in cards.nodes:
-  card_str = node.serialize()
-  if "golf" in card_str:
-    print(card_str)
+# Filter the returned snapshot text.
+for line in cards.splitlines():
+  if "golf" in line.lower():
+    print(line)
 
 # Reading page: extract all "heading", "paragraph", "list", "link", "table" content to Markdown.
 article = bu.extract_content(max_chars=8000)
@@ -245,6 +244,33 @@ before choosing API parameters or processing structured results. It is the sourc
 the observation selection matrix, signatures, return shapes, truncation semantics, and ref/CSS
 conversion. The examples above cover the common interaction, reading, filtered extraction, and
 targeted structured-read workflows.
+
+## Page-provided WebMCP tools
+
+The first time a snapshot shows `@hint webmcp` on a given page, you **must first call `bu.webmcp_tools()`** to inspect the WebMCP tools; reuse that list on the same page, and call it again when the hint's tool count changes or the page navigates. Whenever a page-provided tool supports the current task, **prioritize it over other page-interaction methods**; they are usually more accurate and faster. Inspect the selected tool's full `inputSchema` before calling it.
+
+```python
+for tool in bu.webmcp_tools():
+    print(tool)
+
+# Example result:
+# {
+#   'name': 'focus_state',
+#   'description': 'Read page focus and editor state without changing either.',
+#   'inputSchema': {
+#     'type': 'object',
+#     'properties': {'echo': {'type': 'string'}},
+#     'required': ['echo']
+#   },
+#   'annotations': {'readOnly': True}
+# }
+```
+
+```python
+print(bu.webmcp_call("focus_state", {"echo": "check current focus"}))
+```
+
+Tool names and schemas are page-specific. Observe the page again when needed to verify results or continue interacting. Existing authorization rules also apply to WebMCP calls.
 
 ## Native node refs
 
@@ -346,7 +372,7 @@ Prefer use `wait_for_load()` and `wait_for_element()` to wait for page stability
 Avoid frequent `time.sleep()`.
 
 ```python
-bu.wait_for_load(timeout=15)
+bu.wait_for_load(timeout=5)
 bu.wait_for_element("#result", visible=True)
 ```
 

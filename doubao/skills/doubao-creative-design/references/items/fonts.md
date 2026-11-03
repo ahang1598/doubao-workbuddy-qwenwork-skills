@@ -1,8 +1,8 @@
 # 可用字体白名单
 
-当前清单登记 **70 个字体族**，白名单仅约束实际 Canvas Item 协议中明确引用本表的字体字段，例如 [TEXT](text.md) 的 `font_family` 和 `font_weight`，不泛指所有 XML 或 HTML。HTML Item 内的 DOM 文字遵循 [HTML 协议](../html/coding-rendering.md)，不能仅因 family 未列本表而拒绝；仍须遵守行内视觉样式及目标环境加载验证要求；远程字体唯一例外遵循 [Web 字体契约](../rendering/web-font-contract.md)。清单登记不等于本次目标环境已经加载并通过真实文案核验。
+当前清单登记 **70 个字体族**，白名单仅约束实际 Canvas Item 协议中明确引用本表的字体字段，例如 [TEXT](text.md) 的 `font_family` 和 `font_weight`，不泛指所有 XML 或 HTML。HTML Item 内的 DOM 文字遵循 [HTML 协议](../html/coding-rendering.md)，不能仅因 family 未列本表而拒绝；样式组织与目标环境加载验证遵循 HTML 协议；远程字体遵循 [Web 字体契约](../rendering/web-font-contract.md)。清单登记不等于本次目标环境已经加载并通过真实文案核验。
 
-推荐、协议登记与运行时可用性必须分开判断。视觉选型统一从 [字体推荐入口](../rendering/font-recommendation-list.md) 开始：清单是精选入口而非封闭白名单，`select_fonts.py` 只返回候选、缺口和诊断，最终选择仍须用真实文案试排。候选用于正式 HTML 时，再按 [资源契约](../rendering/font-family-library.md) 核验实际 family、face、weight／style、许可、目标字形覆盖和 Web 加载；用户锁定精确字体而门禁失败时，必须请求确认，不得静默替换。pure-image 只借用视觉建议，不进入 HTML 资源门禁。扩展视觉候选不会自动扩大本表；只有实际平台注册证据才能增加 Item 可填的 family 或字重。JSON 的 `platform_fonts` 是本表的查询镜像，更新时须一起核对。
+推荐、协议登记与运行时可用性必须分开判断。视觉选型统一从 [字体推荐入口](../rendering/font-recommendation-list.md) 开始：清单是精选入口而非封闭白名单，`select_fonts.py` 只返回候选、缺口和诊断，最终选择仍须用真实文案试排。候选用于正式 HTML 时，再按 [资源契约](../rendering/web-font-contract.md) 核验实际 family、face、weight／style、许可、目标字形覆盖和 Web 加载；pure-image 只借用视觉建议，不进入 HTML 资源门禁。扩展视觉候选不会自动扩大本表；只有实际平台注册证据才能增加 Item 可填的 family 或字重。JSON 的 `platform_fonts` 是本表的查询镜像，更新时须一起核对。
 
 ## 选择规则
 

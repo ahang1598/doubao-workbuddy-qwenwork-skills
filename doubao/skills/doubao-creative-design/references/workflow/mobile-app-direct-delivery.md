@@ -12,7 +12,7 @@
 
 ## 能力预检
 
-媒体生成／编辑需真实媒体工具和宿主实际支持的 RichMediaCard 展示能力（接口与资源字段按宿主契约使用，不猜造调用参数）。HTML 路线还需随包 `scripts/runtime/shot.py`（内部依赖 Playwright／Chromium、Pillow） 及用于上传预览截图的 `FileBatchUpload`；不把它误当作 Canvas 写入依赖而省略。缺少当前路线所需能力时按主 SKILL 返回 `RUNTIME_CAPABILITY_MISSING`，不假造交付。
+媒体生成／编辑需真实媒体工具和宿主实际支持的 RichMediaCard 展示能力；媒体统一输出 `<RichMediaCard>{"refs":["真实资源引用"]}</RichMediaCard>`，refs 使用工具返回的可核验资源引用。HTML 路线还需随包 `scripts/runtime/shot.py`（内部依赖 Playwright／Chromium、Pillow） 及用于上传预览截图的 `FileBatchUpload`；不把它误当作 Canvas 写入依赖而省略。缺少当前路线所需能力时按主 SKILL 返回 `RUNTIME_CAPABILITY_MISSING`，不假造交付。
 
 ## 图片与视频
 
@@ -22,7 +22,7 @@
 
 冻结 Brief 前检查是否要求点击跳转、提交、筛选或其他可运行交互。本环境只交付静态预览，不能完成这些运行目标；明确说明缺口，用户接受静态稿后在同一 Brief 更新目标再生产。未接受时保持该任务未完成，不以 PNG 冒充可运行作品。
 
-1. 完整 HTML 仍须满足固定画布、行内样式、准确文字和素材准出规则。
+1. 完整 HTML 仍须满足固定画布、HTML 样式、准确文字和素材准出规则。
 2. 运行 `scripts/runtime/shot.py`，取得与声明宽高完全一致、包含页尾安全区的完整 PNG；完成真实视觉验收。
 3. 用 `FileBatchUpload` 上传合格预览图到 CDN，核验返回的公网 HTTP(S) 链接，再逐项用 `![设计预览](https://cdn.example.com/preview.png)` 展示。图片 URL 逐字使用上传结果。
 4. HTML 专用预览截图不调用 `present_files`，不创建 IMAGE Item、不进入画布资产目录。工具临时预览、本地路径、普通链接不替代 CDN 图片展示。

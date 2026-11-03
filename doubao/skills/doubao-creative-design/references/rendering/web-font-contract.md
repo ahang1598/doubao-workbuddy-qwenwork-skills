@@ -1,6 +1,6 @@
 # HTML Web 字体契约
 
-本契约只在生产轨道已经锁定为 HTML 后使用。字体选择不得创建、切换或推断产物格式；既有 XML 多图层编辑仍使用本地／系统字体契约，不把 CDN URL 写入 XML。
+HTML 字体先从 [推荐入口](font-recommendation-list.md) 选择视觉候选，再按本文解析、注入和验证；本地安装、下载与注册按 [本地字体资源](font-family-library.md) 处理。字体选择保持已确定的产物格式，pure-image 只使用视觉建议。
 
 ## 为什么必须经过 Resolver
 
@@ -8,7 +8,7 @@
 
 ## 解析
 
-使用最终可见文案选择字体；传入精确字体 ID、展示名或 CSS family，并显式指定实际需要的字重和样式：
+使用最终可见文案，按实际需要的字体、字重和样式去重后解析；同任务中参数、资源和目标环境未变的成功结果可复用，失败只处理对应项。传入精确字体 ID、展示名或 CSS family：
 
 ```bash
 python3 scripts/runtime/resolve_font.py "douyin-sans" \
@@ -21,7 +21,7 @@ python3 scripts/runtime/resolve_font.py "douyin-sans" \
 
 `--require-ready` 或 `--check-cdn` 会执行 CDN 探测；未探测时返回 `cdn_listed_not_rechecked`，失败时返回 `cdn_check_failed` 并以非零状态退出。CDN 探测通过不代表浏览器 CORS/CSP 或逐字覆盖验证通过。
 
-只支持目录中明确列出的 weight/style 实例；缺失实例明确报错，不合成、不静默替换。
+只使用目录支持的真实 weight/style；推荐字重范围不代表该字体具备所有实例。实例缺失时按返回结果选用受支持的 face，或按下文回退规则处理，不合成粗体或斜体。
 
 Windows 先读 [`windows-compat.md`](../workflow/windows-compat.md)，不用上述 Bash 的 `\` 续行；从 Skill 根目录使用已确认解释器执行单行命令，参数按实际文案替换：
 
@@ -33,43 +33,28 @@ Resolver JSON 与字体声明由 Python 显式按 UTF-8 捕获和保存，不用
 
 只有 `package_status=cdn_ready` 且 `web_font_contract_entry` 非空时才能注入。Web 模式不会下载字体到模型本地，也不会返回 Canvas `font_contract_entry`。
 
-`coverage_status=not_checked` 表示没有下载字体二进制执行逐字 cmap 检查，不等于覆盖完整。选择与文案语种匹配的 `language_group`，保留 Resolver 返回的系统回退栈，并在`shot.py` 的截图中检查缺字、换行和布局。
+`coverage_status=not_checked` 表示未做本地二进制 cmap 检查。HTML 继续使用匹配语种的字体与返回的回退栈，在 `shot.py` 中检查实际加载、缺字和排版；仅明确需要离线处理或二进制核验时进入本地流程。
 
 ## HTML 注入
 
-1. 将页面所需 face 的 `web_font_contract_entry.font_face_css` 合并到 `<head>` 内唯一的 `<style data-web-fonts>`；该块只能包含 `@font-face`，不能包含选择器、`@import`、媒体查询、动画或其他规则。
-2. 除这个受控字体声明块外，所有视觉 CSS 仍必须写在元素行内 `style`，不得增加外部样式表。
+1. 将页面所需 face 的 `web_font_contract_entry.font_face_css` 写入普通样式块或可加载的样式表；可合并或分块，不限定专用标记、数量或与普通 CSS 分离。
+2. 仅 HTML 规范要求的三个根节点固定宽高必须行内声明；其他视觉 CSS 可使用行内样式、普通样式块、选择器或外部样式表。
 3. 文字元素使用 `web_font_contract_entry.font_stack`，并写入解析所得的真实 `font-weight` 与 `font-style`；主 family 名不得改写。
-4. 同一页面使用多个 weight/style 时，每个真实 face 分别解析，并合并到同一个字体声明块；相同声明只保留一次。
-5. 字体加载失败时允许落到返回的系统回退栈，不得静默换成另一个远程字体，也不通过 CSS 合成不存在的粗体或斜体。
+4. 同一页面使用多个 weight/style 时，每个真实 face 分别解析，可放在同一或不同样式块；避免相互冲突的声明。
+5. 加载失败按下文回退规则处理。
 6. 不使用 manifest 之外的 URL，不把本地绝对路径、`file://` 或临时缓存路径写入 HTML。
 
-Resolver 输出示例：
+## 许可与回退
 
-```json
-{
-  "target": "html",
-  "package_status": "cdn_ready",
-  "coverage_status": "not_checked",
-  "font_contract_entry": null,
-  "web_font_contract_entry": {
-    "font_family": "DouyinSans",
-    "font_weight": 700,
-    "font_style": "normal",
-    "source": {
-      "url": "https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/infinite-canvas/fonts/v1/douyin-sans/douyin-sans-bold.ttf",
-      "format": "truetype",
-      "crossorigin": "anonymous"
-    },
-    "font_face_css": "@font-face { ... }",
-    "font_stack": "\"DouyinSans\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
-  }
-}
-```
+- 核对字体元数据中的来源、许可及当前用途；目录或 CDN 可用不等于许可通过。非标许可、条款不清、禁止再分发或核验失败时先确认授权／替代方案；子集化、修改及再分发另核对相应许可。系统字体可记录来源，不复制进 Skill 或交付包。
+- 用户指定字体加载失败时，先按错误原因尝试恢复；仍失败则采用可加载的回退字体，检查排版，并在交付时说明目标字体未生效及实际字体。用户另外锁定必须保留的关键字形无法满足时，先确认替代方案。
+- 模型自选字体不可用时，自行选择适合语种、角色与设计气质的可加载字体，复查排版后交付。
+
+Brief 记录字体选择与搭配理由；具体声明写入 HTML，检查结论写入既有验收记录。HTML 无需本地安装、Canvas Item 字体注册或独立 `font-contract.json`；已有可选契约或用户明确要求时按需提供，不替代实际渲染。
 
 ## 验证与前端边界
 
-- `scripts/runtime/shot.py` 只允许一个 `data-web-fonts` 声明块，并检查其中每个 URL 都精确存在于 Web manifest；同域名下的猜测路径也不通过。
-- 自动检查 FontFace 加载状态不能证明每个文字节点实际使用了目标字体，也不能证明逐字覆盖完整；这些项目需要结合截图检查。
+- 字体 URL 仍须精确存在于 Web manifest，同域名下的猜测路径也不通过；不因普通样式块、外部样式表、字体块名称、数量或混合普通规则而报错。
+- CDN 探测、FontFace 加载或截图正常均不能单独证明目标字体命中与逐字覆盖；结合目标环境诊断、实际字形和截图判断，证据不足记未验证。多语种分别核对真实文案。
 - 预览和截图前等待 `document.fonts.ready`，再检查实际字体、缺字、替换、换行、基线、伪粗体和裁切；源码声明不能代替渲染证据。
 - 字体二进制由最终用户浏览器从 CDN 加载，不作为独立 CanvasWorkspace Asset 上传。前端需要允许该字体 CDN 的 CORS/CSP，并在首屏 ready、截图和导出前等待字体加载完成。

@@ -97,7 +97,7 @@ design-cli design-workspace +create \
 
 从响应保存服务端生成的 Item ID，随后使用 `design-cli design-workspace +get` 回读该对象；禁止把带返回 ID 的 `xml_data` 再次用于 `+create`。
 
-HTML Item 回读成功后，把本次使用的原始 `canvas_workspace_id` 与该回读对象的服务端 `item_id` 拼成 `<canvas_workspace_id>?item_id=<item_id>` 单值并原样传给 `present_files`，由该调用输出对应画布卡片。例如 Workspace ID 为 `workspaceid`、回读 Item ID 为 `xxx` 时，传入值必须是 `workspaceid?item_id=xxx`。问号两侧不得有空格，键名必须保持 `item_id`；不得拆成两个参数、数组或两次调用。两个 ID 必须指向同一 Workspace 中刚完成 `+get` 核验的 HTML Item；禁止只传 Workspace ID，也禁止传旧版本或其他对象的 Item ID。不得创建 Workspace ID 中间文件，也不得用普通聊天文字、Markdown 链接或 CLI stdout 代替画布卡片。HTML 自身的同尺寸预览图仍按 [HTML 固定画布与交付协议](../html/coding-rendering.md#html-验收与交付) 先上传 CDN，再使用返回的公网链接以标准 Markdown 图片语法展示；该截图不调用 `present_files`、不创建 IMAGE Item 且不写入画布。原始 `.html` 也不进入 `present_files`。
+HTML Item 回读成功并完成产后目录整理后，把本次使用的原始 `canvas_workspace_id` 与该回读对象的服务端 `item_id` 拼成 `<canvas_workspace_id>?item_id=<item_id>` 单值并原样传给 `present_files`，由该调用输出对应画布卡片。例如 Workspace ID 为 `workspaceid`、回读 Item ID 为 `xxx` 时，传入值必须是 `workspaceid?item_id=xxx`。问号两侧不得有空格，键名必须保持 `item_id`；不得拆成两个参数、数组或两次调用。两个 ID 必须指向同一 Workspace 中刚完成 `+get` 核验的 HTML Item；禁止只传 Workspace ID，也禁止传旧版本或其他对象的 Item ID。不得创建 Workspace ID 中间文件，也不得用普通聊天文字、Markdown 链接或 CLI stdout 代替画布卡片。HTML 自身的同尺寸预览图仍按 [HTML 固定画布与交付协议](../html/coding-rendering.md#html-验收与交付) 先上传 CDN，再使用返回的公网链接以标准 Markdown 图片语法展示；该截图不调用 `present_files`、不创建 IMAGE Item 且不写入画布。原始 `.html` 也不进入 `present_files`。
 
 多个单独看没有完整语义的 Item 才建 Frame。每个都能独立理解的内容应各自 create，或用 `+create-batch` 一次提交。
 

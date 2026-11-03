@@ -7,15 +7,15 @@
 ## 读取路由
 
 1. 读取当前失败点所属的 workflow、原始 Brief／最终 HTML、错误输出和当前源；先确定是创建、编辑、模板还是验证阶段失败。
-2. 图片／资产错误读取对应 `creation/` 或 `editing/` 路径；涉及低清、比例错配、非等比拉伸、`IMAGE_LOW_RESOLUTION`、`IMAGE_ASPECT_MISMATCH`、`ASSET_CONFLICT` 或 Prompt 失配时额外读取 `references/style/coding/ai-coding/asset-prompt-guide.md`；艺术标题出现廉价描边／辉光、材质混乱、立体厚度／光向不一致或透视损害字形时读取 `references/style/coding/ai-coding/art-title-prompt-library.md`，只修当前失败维度后重生。艺术字问题不按新建／编辑判断：先核对消费者和接入方式；混合路线检查纯白底＋`multiply`／纯黑底＋`screen` 是否成对及真实背景融合，抠图路线检查 Alpha、内部孔洞和深浅底色边。只有消费者条件改变时才切换路线，不用混合模式掩盖应透明复用的资产，也不为稳定单背景无条件增加抠图。文字挤贴、异常换行、尾字消失或 `TEXT_OVERFLOW` 读取 `references/style/shared/composition-principles.md` 并回查最终 HTML 内容框。字体故障先按证据定位：字形、气质、角色或搭配不合适，读取 [字体推荐入口](../rendering/font-recommendation-list.md) 并用真实文案重新判断视觉候选；family／face／weight、许可或字形覆盖无法解析，读取 [字体资源与执行契约](../rendering/font-family-library.md) 并运行 Resolver；浏览器未加载目标字体，读取 [Web 字体契约](../rendering/web-font-contract.md)；字体已加载但换行、基线、伪粗体或裁切异常，回查最终 HTML、`shot.py` 和构图内容框。查询脚本只能诊断候选，不能证明资源可用；用户锁定精确字体或关键字形时，任一资源门禁失败都必须请求确认。`TRUNCATED_HTML`、固定画布、行内样式或完整文档错误读取 `references/html/coding-rendering.md`，平台 XML 载荷错误读取 `references/cli/README.md` 与 `references/items/HTML.md`。
+2. 图片／资产错误读取对应 `creation/` 或 `editing/` 路径；涉及低清、比例错配、非等比拉伸、`IMAGE_LOW_RESOLUTION`、`IMAGE_ASPECT_MISMATCH`、`ASSET_CONFLICT` 或 Prompt 失配时额外读取 `references/style/coding/ai-coding/asset-prompt-guide.md`；艺术标题出现廉价描边／辉光、材质混乱、立体厚度／光向不一致或透视损害字形时读取 `references/style/coding/ai-coding/art-title-prompt-library.md`，只修当前失败维度后重生。艺术字问题不按新建／编辑判断：先核对消费者和接入方式；混合路线检查纯白底＋`multiply`／纯黑底＋`screen` 是否成对及真实背景融合，抠图路线检查 Alpha、内部孔洞和深浅底色边。只有消费者条件改变时才切换路线，不用混合模式掩盖应透明复用的资产，也不为稳定单背景无条件增加抠图。文字挤贴、异常换行、尾字消失或 `TEXT_OVERFLOW` 读取 `references/style/shared/composition-principles.md` 并回查最终 HTML 内容框。字体故障先按证据定位：字形、气质、角色或搭配不合适，读取 [字体推荐入口](../rendering/font-recommendation-list.md) 并用真实文案重新判断视觉候选；HTML 字体解析或浏览器加载失败，按 [Web 字体契约](../rendering/web-font-contract.md) 定位失败项；本地字体文件问题按 [本地资源契约](../rendering/font-family-library.md) 处理；字体已加载但换行、基线、伪粗体或裁切异常，回查最终 HTML、`shot.py` 和构图内容框。查询脚本只能诊断候选，不能证明资源可用；`TRUNCATED_HTML`、固定画布、HTML 样式或完整文档错误读取 `references/html/coding-rendering.md`，平台 XML 载荷错误读取 `references/cli/README.md` 与 `references/items/HTML.md`。
 3. 场景验证失败重读该场景 spec；回读核对或布局失败重读 `references/workflow/validation.md` 中相应检查项。
 
 1. 保存错误信息、当前源、生成资产和已知版本；不要覆盖用户源文件。
 2. 回读实际输出，确认哪些页面、图层、资产或字段已经成功写入。
 3. 先分类错误：事实／素材、Brief／最终 HTML、图片生成、字体、HTML 协议、画布写入、布局或场景验收。
 4. 只修复最小失败单元：局部元素用对应 `editing/` 流程；结构性错误才重建整屏；不要为一个标题错误重做整套产物。
-5. 常见回退：AI 资产漂移时使用已验证用户资产或重新生成单项素材；比例或分辨率失败时按目标比例和最低像素重生，已有真实素材则扩图或用 `object-fit`／`object-position` 做安全裁切，不以非等比 transform 拉伸；`ASSET_CONFLICT` 时核对真实身份，只有同一素材才共用一条 `asset_id` 记录，否则拆成不同素材记录；文字溢出时增高内容框、调整行宽或语义断行，不用根级裁切、删除尾字或全局缩字掩盖；`TRUNCATED_HTML` 必须重新取得完整源，不删除标记或手工补闭合；字体不可用或无法提供真实文案所需的全部字形时，用户未锁定精确字体才可在同语种、同角色、同关键形态与气质内重选候选，并在真实 DOM 与 `shot.py` 中重新验证；已锁定时停止并请求确认，不得仅靠字体名、浏览器回退或静默替代声明成功。
-6. 图片生成／编辑工具已经成功产出的结果即使未通过，也必须按交付门禁同步启动画布写入／回读与工具产物直接 RichMediaCard 两个分支并等待汇合；“未通过”不能作为隐藏原结果的理由。非文字问题按最小失败单元生成修正版。若问题来自 AI 图片内生成文字的准确性、字形或可读性，只标记 `delivered_with_text_issue` 并等待用户提出修改要求，禁止过度反思、自动改 Prompt、自动编辑或重生；准确文字资产在等待期间不得进入下游组装。用户明确要求修改后的新版本继续执行同一同步门禁；若缺少不可替代的真实资产或事实，回到澄清策略一次性询问。
+5. 常见回退：AI 资产漂移时使用已验证用户资产或重新生成单项素材；比例或分辨率失败时按目标比例和最低像素重生，已有真实素材则扩图或用 `object-fit`／`object-position` 做安全裁切，不以非等比 transform 拉伸；`ASSET_CONFLICT` 时核对真实身份，只有同一素材才共用一条 `asset_id` 记录，否则拆成不同素材记录；文字溢出时增高内容框、调整行宽或语义断行，不用根级裁切、删除尾字或全局缩字掩盖；`TRUNCATED_HTML` 必须重新取得完整源，不删除标记或手工补闭合；HTML 字体失败按 [Web 回退规则](../rendering/web-font-contract.md#许可与回退) 处理，本地字体按其资源契约处理。
+6. 图片生成／编辑工具已经成功产出的结果即使未通过，也必须按交付门禁逐项以 RichMediaCard 直接交付；“未通过”不能作为隐藏原结果的理由。非文字问题按最小失败单元生成修正版。若问题来自 AI 图片内生成文字的准确性、字形或可读性，只标记 `delivered_with_text_issue` 并等待用户提出修改要求，禁止过度反思、自动改 Prompt、自动编辑或重生；准确文字资产在等待期间不得进入下游组装。用户明确要求修改后的新版本继续执行同一直接交付门禁；若缺少不可替代的真实资产或事实，回到澄清策略一次性询问。
 ## CLI 写入失败：对账与停止条件
 
 失败时保留原命令、完整 stdout／stderr、退出码和 logid，再分类处理：

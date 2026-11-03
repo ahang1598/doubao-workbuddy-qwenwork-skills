@@ -2320,7 +2320,7 @@ def check_video_generation_confirmations(
             issues.append(issue("error", "video_confirmation_after_tool_call", f"SEG{segment_index:03d} 的视频生成参数确认时间必须早于视频工具调用时间。", path))
 
 
-def check_voice_audio_inputs(segment: dict[str, Any], audio_roles: set[str], path: Path, issues: list[dict[str, Any]]) -> None:
+def check_voice_audio_inputs(segment: dict[str, Any], audio_roles: set[str], path: Path, issues: list[dict[str, Any]], lightweight: bool = False) -> None:
     speech_lines = segment.get("speech_lines")
     if not isinstance(speech_lines, list) or not speech_lines:
         return
@@ -2328,6 +2328,12 @@ def check_voice_audio_inputs(segment: dict[str, Any], audio_roles: set[str], pat
     audio_input_supported = segment.get("audio_input_supported") is True
     has_voice_audio_reference = "voice_audio_reference" in audio_roles
     voice_inputs = segment.get("voice_inputs")
+
+    if lightweight:
+        for index, line in enumerate(speech_lines, start=1):
+            if isinstance(line, dict) and not str(line.get("voice_anchor") or "").strip():
+                issues.append(issue("error", "speech_line_voice_anchor_missing", f"{segment_label} 轻量模式 speech_lines 第 {index} 条必须填写已确认的文字声音描述。", path))
+        return
 
     if not audio_input_supported and not has_voice_audio_reference:
         if isinstance(voice_inputs, list) and voice_inputs:
@@ -2470,10 +2476,22 @@ def check_video(
             if storyboard_duration is not None and isinstance(segment.get("duration_s"), (int, float)):
                 if int(round(float(segment["duration_s"]))) != int(round(float(storyboard_duration))):
                     issues.append(issue("error", "video_segment_duration_mismatch", f"{segment_id} 时长必须与分镜片段时长一致。", path))
+            # Later SEG inputs can only be compiled after their real tail-frame dependency exists.
+            plan_only = (
+                not require_accepted
+                and segment.get("status") is None
+                and not segment.get("output_file")
+                and not segment.get("compiled_prompt_file")
+                and not any(segment.get(field) for field in ("reference_inputs", "video_inputs", "audio_inputs", "voice_inputs"))
+            )
+            if plan_only:
+                continue
             tool_mode = segment.get("tool_mode")
             image_orders, image_roles = ordered_inputs(root, segment.get("reference_inputs"), REFERENCE_ROLES, "reference", path, issues)
             video_orders, video_roles = ordered_inputs(root, segment.get("video_inputs"), VIDEO_INPUT_ROLES, "video", path, issues)
             audio_orders, audio_roles = ordered_inputs(root, segment.get("audio_inputs"), AUDIO_INPUT_ROLES, "audio", path, issues)
+            if lightweight and (segment.get("voice_inputs") or "voice_audio_reference" in audio_roles):
+                issues.append(issue("error", "lightweight_voice_asset_not_allowed", "轻量模式不使用独立 VOICE 音色资产；voice_inputs 应为空，音色参考音频不传入。", path))
             required_roles = segment.get("required_reference_roles")
             model_name = video_model_name(plan, data, segment)
             if tool_mode not in VIDEO_TOOL_MODES:
@@ -2485,7 +2503,7 @@ def check_video(
                     issues.append(issue("error", "text_to_video_input_invalid", "text_to_video 只能用于没有图片、视频、音频或 voice_inputs 的片段。", path))
             if tool_mode == "media_to_video":
                 check_media_input_durations(segment, model_name, path, issues)
-                check_voice_audio_inputs(segment, audio_roles, path, issues)
+                check_voice_audio_inputs(segment, audio_roles, path, issues, lightweight=lightweight)
                 check_video_state_refs(segment, image_roles, asset_index, path, issues)
                 if not video_orders and not audio_orders:
                     issues.append(issue("error", "media_to_video_media_missing", "media_to_video 必须至少登记一个真实视频或音频输入。", path))
@@ -2907,7 +2925,6 @@ def check_skill_package(root: Path, issues: list[dict[str, Any]]) -> None:
     markdown_paths = [
         path
         for path in sorted(root.glob("references/**/*.md"))
-        if "references/cli" not in path.as_posix()
     ] + [skill_path]
     for markdown_path in markdown_paths:
         try:
@@ -2971,7 +2988,12 @@ def main(argv: list[str] | None = None) -> int:
 
     state = load_json(project_root / "00_制作控制/制作状态.json", issues, required=False)
     active_episode = state.get("current_episode") if isinstance(state, dict) else None
-    stages_to_check = STAGES if args.stage == "all" else (args.stage,)
+    requested_target = target_stage(plan)
+    stages_to_check = (
+        STAGES[:STAGES.index(requested_target) + 1]
+        if args.stage == "all" and requested_target in STAGES
+        else STAGES if args.stage == "all" else (args.stage,)
+    )
     for stage in stages_to_check:
         episode_filter = active_episode if args.stage != "all" and stage in EPISODE_STAGES else None
         check_stage_artifacts(project_root, stage, issues, episode_filter, lightweight)
@@ -2979,20 +3001,20 @@ def main(argv: list[str] | None = None) -> int:
             check_episode_manifest_ids(project_root, stage, issues, episode_filter)
     episode_filter = active_episode if args.stage != "all" and args.stage in EPISODE_STAGES else None
     asset_index = blank_asset_index()
-    if args.stage in {"assets", "storyboard", "video", "final", "all"}:
+    if set(stages_to_check) & {"assets", "storyboard", "video", "final"}:
         asset_index = check_assets(project_root, issues, episode_filter)
-    if args.stage in {"storyboard", "video", "final", "all"}:
+    if set(stages_to_check) & {"storyboard", "video", "final"}:
         check_storyboards(project_root, expected_durations, plan, issues, episode_filter)
-    if args.stage in {"video", "final", "all"}:
+    if set(stages_to_check) & {"video", "final"}:
         check_video(
             project_root,
             asset_index,
             plan,
             issues,
             episode_filter,
-            require_accepted=args.stage in {"final", "all"} and not lightweight,
+            require_accepted="final" in stages_to_check and not lightweight,
         )
-    if args.stage in {"final", "all"}:
+    if "final" in stages_to_check:
         check_delivery(project_root, expected_durations, issues, episode_filter, lightweight)
 
     issues = dedupe_issues(issues)

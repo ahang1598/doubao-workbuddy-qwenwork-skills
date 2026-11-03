@@ -210,7 +210,7 @@
 
 - `planning` 始终是项目级确认。`script` 有两种作用域：项目级故事包确认的 `episode_id` 留空；分集详细剧本确认必须填写当前 `episode_id`。`assets|storyboard|video|final` 始终填写当前 `episode_id`。同名阶段在不同作用域或不同集的确认记录不能互相替代。
 - `interaction_ask_result` 是内部归一化授权记录，不是宿主工具原始返回字段。`proceed_project`、`generate`、`proceed_assembly` 分别记录明确的项目制作、视频生成和拼接同意；其他流程文件“取得这些值”的表述均指取得对应的用户授权后登记记录，不要求宿主返回同名值。必须保存本次真实调用关联、用户原文、时间和授权范围，不能用内部枚举、示例数据或历史记录代替本次授权。
-- 完整模式且 `target_stage=video|final` 时，planning 写 `project_execution/proceed_project`。轻量模式执行视频生成确认，取得明确同意后 planning 写 `video_generation/generate`；同一次调用还登记为当前唯一视频的 `generation_confirmations`。视频确认策略只读取 `interaction-ask-video-clarification-ref.md`，本文件仅维护内部记录。
+- 完整模式且 `target_stage=video|final` 时，planning 写 `project_execution/proceed_project`，关联真实 `interaction.ask`。其他完整模式目标使用普通规划确认，`confirmation_purpose`、`interaction_ask_call_id`、`interaction_ask_result` 留空，保存真实用户确认原文、revision 和带时区时间，不伪造工具调用。轻量模式执行视频生成确认，取得明确同意后 planning 写 `video_generation/generate`；同一次调用还登记为当前唯一视频的 `generation_confirmations`。视频确认策略只读取 `interaction-ask-video-clarification-ref.md`，本文件仅维护内部记录。
 - 当目标继续到成片时，进入拼接的同一次 `interaction.ask` 还必须原子写入 `stage=video` 的确认记录：`confirmation_purpose: video_acceptance_and_final_assembly`、与 `assembly_confirmation` 相同的 `interaction_ask_call_id`、`interaction_ask_result: proceed_assembly`。当 `objective.target_stage=video` 时，video 阶段只做普通产物确认并停止，不创建虚假的拼接授权。
 - `user_message` 保存触发继续的用户原文；空值、系统生成文字或仅有内部检查结果无效。
 - `confirmed_at` 必须是带时区的 ISO-8601 时间。
@@ -251,7 +251,7 @@
 }
 ```
 
-`planning|script|storyboard` 的 `delegated` 必须为 `false` 且 `delegations` 为空。`assets` 只有在图片工具执行被外包时才记录委派；`video` 只要发生实际视频生成/编辑工具调用，`delegated` 必须为 `true` 并记录 `video_execution` 交接包；`final` 只要发生拼接、裁剪、混音、mux、字幕烧录等媒体变更工具调用，`delegated` 必须为 `true` 并记录 `final_media_execution` 交接包。每个交接包使用 Skill 内或项目内相对路径，保存逐文件输出白名单、实际输出、硬约束、验收标准、检查命令和禁止再委派声明；画布写入、用户交付、确认工具调用和阶段状态收口不得出现在 subagent 委派范围内。
+`planning|script|storyboard` 的 `delegated` 必须为 `false` 且 `delegations` 为空。`assets` 只有在图片工具执行被外包时才记录委派；`video` 只要发生实际视频生成/编辑工具调用，`delegated` 必须为 `true` 并记录 `video_execution` 交接包；`final` 只要发生拼接、裁剪、混音、mux、字幕烧录等媒体变更工具调用，`delegated` 必须为 `true` 并记录 `final_media_execution` 交接包。每个交接包使用 Skill 内或项目内相对路径，保存逐文件输出白名单、实际输出、硬约束、验收标准、检查命令和禁止再委派声明；Workspace 初始化／产后目录整理、用户交付、确认工具调用和阶段状态收口不得出现在 subagent 委派范围内。
 当前 `drama_lint.py` 的输出就是本次结构检查结果，不回填到被检查的合规证明中，避免证明文件预先声明自身已通过。`declaration` 必须以 `本阶段严格遵循skill要求，未使用禁止的替代工具` 开头，后面允许追加本阶段真实说明。
 规划、剧本和分镜属于纯文件创作阶段，没有外部生成调用时 `tool_calls` 直接写空数组，不得虚构 `file_creation`。除规划外，`upstream_artifacts` 必须完整覆盖上一阶段当前确认产物，每项记录项目内绝对路径、确认 revision 和确认记录中的 SHA-256。资产、视频和成片属于生成或媒体处理阶段，必须保存实际调用；每项引用 `操作日志.jsonl` 中同名、同阶段且状态为 `succeeded` 的 `operation_id`，工具名必须一致，证据文件必须列在该操作的 `outputs` 中、实际存在且 SHA-256 匹配。图片和视频输出还必须保存真实文件探测得到的 `observed_metadata`，并与日志 `output_metadata` 一致。
 
@@ -828,7 +828,7 @@
 
 ### video_manifest_ep_N.json
 
-作为本集视频生成结果的权威索引；`00_制作控制/批次/*.json` 继续保存单次请求快照：
+作为本集视频生成结果的权威索引；`00_制作控制/批次/*.json` 保存每段委派前锁定的单次请求快照。尚待批内上一段真实尾帧的后续 SEG 只登记 ID、顺序、时长、分镜映射、台词与确认关系等计划字段，不预填真实媒体输入、`compiled_prompt_file`、输出或候选状态。依赖就绪后由主 Agent 补齐真实输入、Prompt、哈希和预检记录，再锁定该段请求并委派；未就绪的计划条目不能作为可执行请求。视频阶段校验允许这种未执行计划条目，进入 final 时仍要求采用片段完整并已 accepted：
 
 ```json
 {
@@ -951,15 +951,15 @@
 }
 ```
 
-完整模式填写 `project_data_card_revision` 和 `storyboard_manifest`。轻量模式不创建这两个上游文件，因此在视频 manifest 中将对应字段留空；它改为通过请求快照记录 `episodes/ep_1/02_分镜/分镜_完整分镜表_ep_1.md` 和实际使用的 Prompt 路径，以维持生成追溯。
+完整模式填写 `project_data_card_revision` 和 `storyboard_manifest`。轻量模式不创建这两个上游文件，因此在视频 manifest 中将对应字段留空；同时不建立独立 VOICE 音色资产，`voice_inputs` 留空，不传音色参考音频，人声使用确认方案中的文字声音描述原生生成；它改为通过请求快照记录 `episodes/ep_1/02_分镜/分镜_完整分镜表_ep_1.md` 和实际使用的 Prompt 路径，以维持生成追溯。
 
 `segments[].status` 的状态语义固定为：
 
 - `candidate`：片段已生成、保存、具备可渲染输出并完成即时交付，但尚未完成视频阶段用户确认；`drama_lint.py --stage video` 在发起确认前允许该状态。
 - `accepted`：用户已明确接受该片段。目标继续到成片时，只能在 `proceed_assembly` 确认成功后，与视频阶段确认记录和 `assembly_confirmation` 原子写入；`objective.target_stage=video` 时，在普通视频阶段确认成功后写入。
-- `rejected|blocked`：不得进入拼接或成片。`drama_lint.py --stage final|all` 要求本次采用的全部 SEG 均为 `accepted`。
+- `rejected|blocked`：不得进入拼接或成片。`drama_lint.py --stage final` 或目标为 final 的 `--stage all` 要求本次采用的全部 SEG 均为 `accepted`；目标止于 video 的 `--stage all` 不引入成片前置要求。
 
-`segments[].prompt_preflight` 记录每份五段式 Prompt 唯一的一轮集中预检与最终客观校验。`review_count` 和 `final_validation_count` 固定为 `1`，`revision_count` 只能为 `0|1`；`five_sections_in_order` 必须为 `true`，`shot_ids_compiled_once` 必须按分镜顺序恰好列出当前 SEG 的全部镜头且不重复，`result` 必须为 `passed` 后才能调用视频生成工具。SHOT ID 只保存在该映射中，不要求出现在最终自然语言 Prompt。该结构只证明客观合同完成，不代替导演对节奏、表演和审美的判断。
+`segments[].prompt_preflight` 仅适用于 `text_to_video|image_to_video|media_to_video`，记录每份五段式 Prompt 唯一的一轮集中预检与最终客观校验。`video_edit` 按编辑合同保存完整指令并填写 `edit_verification`，不要求本五段式预检。`review_count` 和 `final_validation_count` 固定为 `1`，`revision_count` 只能为 `0|1`；`five_sections_in_order` 必须为 `true`，`shot_ids_compiled_once` 必须按分镜顺序恰好列出当前 SEG 的全部镜头且不重复，`result` 必须为 `passed` 后才能调用视频生成工具。SHOT ID 只保存在该映射中，不要求出现在最终自然语言 Prompt。该结构只证明客观合同完成，不代替导演对节奏、表演和审美的判断。
 
 `generation_confirmations[]` 每项对应一次真实批次确认，必须满足：
 
@@ -967,7 +967,7 @@
 - `planned_video_count` 只能为 `1|2`，并等于确认范围内 SEG 数、`segment_durations` 项数、`displayed_parameter_table.quantity` 和 `displayed_storyboard_rows` 行数。
 - `segment_durations` 按 `episode_segment_index` 排序，每项 `segment_id` 与 `duration_s` 必须和同一 `video_manifest` 中对应 SEG 完全一致；`duration_s` 是本批次总时长，必须等于各项之和。
 - `displayed_parameter_table` 表示实际展示的一张两列表格，字段不得拆成逐 SEG 参数表；其中“数量”和“分段时长”必须按当前批次真实值渲染。
-- `displayed_storyboard_rows` 表示实际展示的一张五列表格；机器结构将第一列拆为 `segment_id + duration_s`，其余四列依次为 `visual_content`、`subject_action`、`audio`、`camera_and_materials`。每个 SEG 恰好一行，只能引用当前批次已确认分镜和真实素材。
+- `displayed_storyboard_rows` 表示实际展示的一张五列表格；机器结构将第一列拆为 `segment_id + duration_s`，其余四列依次为 `visual_content`、`subject_action`、`audio`、`camera_and_materials`。每个 SEG 恰好一行，只能引用当前批次已确认分镜和真实素材；批内第二段的计划尾帧承接须明确注明第一段生成后截取，不伪称已存在。按已确认职责取得尾帧并补齐第二段 Prompt/请求不使批次确认失效，每段在实际委派前锁定其真实输入、Prompt、请求与哈希。
 - `final_parameters_text` 保存用户实际看到的完整普通文本，必须包含一张两列参数表和一张五列分镜表，不得包含第三张表；两张表之后才允许调用 `interaction.ask`。
 
 轻量模式首次生成使用同一数组登记规划页的标准视频生成确认，并额外写 `confirmation_source: planning_preview`。范围固定为唯一视频；规划参数必须完整包含受保护确认 Ref 要求的任务类型、交付格式、数量、时长、比例与分辨率、视觉连续性、声音字幕、参考素材、模型限制与消耗。该记录的调用 ID、用户原文、时间和 `generate` 结果必须与 planning 确认一致。
@@ -1072,7 +1072,7 @@
 
 轻量模式的 `project_data_card_revision` 留空，`assembly_confirmation` 使用空对象；完整模式按实际数据卡 revision 和拼接确认填写。
 
-默认字幕关闭时，只保留无字幕母版对应的一项 `basic_qc_reports`，字幕相关路径留空，`outputs` 只能包含 `clean_master`。用户明确要求字幕时，无字幕母版作为内部烧录源保留，两种内部媒体各有一份基础可交付检查报告，并且必须存在 ASR 对齐报告；但 `outputs` 必须且只能包含 `subtitle_master`，不得把 `clean_master`、SRT、字幕 JSON 或检查报告作为额外交付物。
+默认字幕关闭时，只保留无字幕母版对应的一项 `basic_qc_reports`，字幕相关路径留空，`outputs` 只能包含 `clean_master`。用户明确要求字幕时，无字幕母版作为内部烧录源保留，两种内部媒体各有一份基础可交付检查报告，并且必须存在 ASR 对齐报告；但 `outputs` 必须且只能包含 `subtitle_master`，默认不把 `clean_master`、SRT、字幕 JSON 或检查报告作为额外交付物。用户明确索要字幕文件时，SRT 可通过宿主文件入口单独提供，但不加入最终视频 `outputs` 或 Canvas。
 
 - 完整模式的 `assembly_confirmation` 保存进入本集成片拼接前的独立确认；`segment_ids` 必须按顺序精确等于本次采用的 accepted SEG。只有用户通过本次确认明确同意拼接后，才将内部 `interaction_ask_result` 记录为 `proceed_assembly`，不检查宿主是否返回这个字面值。轻量模式只有一个最终视频，不执行拼接，`assembly_confirmation` 留空。
 - 最终交付校验时 `delivery_manifest_ep_N.json.status` 可以为 `deliverable|candidate`；`blocked` 不得交付。`candidate` 表示存在内部记录的内容风险，但只要客观可播放、可交付，就不得因最终内容质检缺失而扣住交付。该媒体状态不等于用户确认；用户确认仍记录在 `制作状态.json` 与 `用户确认记录.jsonl`。
