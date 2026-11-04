@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "1.0.65.1",
+  "version": "1.0.66.1",
   "layout": "multi",
   "skillNames": [
     "dingtalk-aicard",
@@ -21,6 +21,6 @@
     "dingtalk-wiki"
   ],
   "routingFallbackSkill": "dingtalk-shared",
-  "transactionId": "9607545d-af77-4665-bbfd-21a3e1bf0bc2",
-  "sourceIdentity": "ac53465c40964758c5db551e47b9b90c2b9581b4319acd339c8557f78bfa6e50"
+  "transactionId": "a2739280-07aa-4cb2-97fa-f15dcbeeef9f",
+  "sourceIdentity": "88fefb20b9ad180d5c332adbf8cee88c39a2e8718e98e74487c41cb956777a03"
 }

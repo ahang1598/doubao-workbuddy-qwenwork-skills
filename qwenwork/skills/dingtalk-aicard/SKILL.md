@@ -14,7 +14,7 @@ metadata:
   catalogId: https://dingtalk.com/card/a2ui/catalogs/public/catalog.json
 install_source: connector
 connector_id: dws
-version: 1.0.65.1
+version: 1.0.66.1
 disabled: true
 ---
 

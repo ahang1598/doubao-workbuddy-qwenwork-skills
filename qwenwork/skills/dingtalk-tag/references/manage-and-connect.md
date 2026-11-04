@@ -30,7 +30,9 @@ dws dingtalk-tag connect restart --agent-uuid <agentUuid> --format json
 
 连接使用数字员工 Profile 启动 Event Consumer，调用与 dev connect 共用的 Agent 协议，以员工身份按回复模式更新 A2UI 卡片，或引用回复最终文本。后台结果只有在 ready 后才返回运行成功；不支持的 Agent 或缺失的依赖必须明确报错。
 
-支持 `qoder/qoderwork/workbuddy/claudecode/codebuddy/codex/gemini/opencode/custom`；custom 使用 `--agent-cmd`，问题作为最后一个参数、stdout 作为答案。模型、工作目录、会话和权限参数沿用 dev connect，模型推理是否远端执行由 Agent 自身决定。
+支持 `qoder/qoderwork/workbuddy/claudecode/codebuddy/codex/gemini/opencode/pi/custom`；custom 使用 `--agent-cmd`，问题作为最后一个参数、stdout 作为答案。模型、工作目录、会话和权限参数沿用 dev connect，模型推理是否远端执行由 Agent 自身决定。
+
+Pi 使用 `--channel pi`，按员工与会话隔离记忆；`--ask` 或 `--yolo=false` 禁用工具。Pi 尚未适配公开进度接口，数字员工按既有回退路径发送最终文本；不提供 A2UI 工具进度。Pi 直接音频、视频输入会被明确拒绝。
 
 默认仅主管可用；`--allowed-users` 接收精确 userId 并在员工上下文解析，`--allowed-groups` 接收该上下文的群会话 ID，群消息仍需满足用户白名单。不要向用户索要其它内部人员标识。
 
@@ -50,7 +52,7 @@ dws dingtalk-tag manage create \
   --dry-run --format json
 ```
 
-create 只创建草稿并返回 `agentUuid`。名称、描述和主程序类型必填；必须显式传 `--type open_code|local_agent`，不可为空；部门可不传，由服务端补操作人的主任职部门。create 支持可选 --prompt；local_agent 创建时省略则由 DWS 自动保存默认人设，发布时不会再写入人设。open_code 省略时仅提醒发布前补齐，不阻断草稿创建。显式空字符串或纯空白无效。其他发布所需配置由服务端校验。创建成功后必须立即保存 `agentUuid`；后续失败只从 detail/save-draft/publish 恢复。
+create 只创建草稿并返回 `agentUuid`。名称、描述和主程序类型必填；必须显式传 `--type qwenwork|local_agent`，不可为空；部门可不传，由服务端补操作人的主任职部门。create 支持可选 --prompt；local_agent 创建时省略则由 DWS 自动保存默认人设，发布时不会再写入人设。qwenwork 省略时仅提醒发布前补齐，不阻断草稿创建。显式空字符串或纯空白无效。其他发布所需配置由服务端校验。创建成功后必须立即保存 `agentUuid`；后续失败只从 detail/save-draft/publish 恢复。
 
 ## 修改：按字段更新
 

@@ -9,11 +9,14 @@ metadata:
       - dws
 install_source: connector
 connector_id: dws
-version: 1.0.65.1
+version: 1.0.66.1
 disabled: true
 ---
 
 # 钉钉知识库 Skill
+
+
+脑图创建边界：`wiki node create --type amind` 只创建空白文件，不携带初始化主题内容。用户要求按已有内容或层级创建脑图时，转 [独立脑图](../dingtalk-misc/references/mind.md) 的 `dws mind create`；不向 wiki 命令猜传 source。
 
 <!-- DWS_RUNTIME_CONTRACT_START -->
 ## 最小 DWS 执行契约

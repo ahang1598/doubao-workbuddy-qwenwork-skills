@@ -5,9 +5,10 @@
 | 用户意图 | 标准命令路径 | 只读此文件 |
 |---|---|---|
 | 应用创建、列表、详情、状态、更新、停启、能否删除 | `dws dev app ...` | [`app.md`](./app.md) |
-| AppKey、AppSecret、clientId、agentId | `dws dev app credentials get` | [`credentials.md`](./credentials.md) |
+| AppKey、AppSecret、clientId、agentId 的查询或 clientSecret 轮换 | `dws dev app credentials get` / `dws dev app credentials reset` | [`credentials.md`](./credentials.md) |
 | 开放平台应用的管理成员、成员角色与角色汇总 | `dws dev app member ...` | [`member.md`](./member.md) |
 | 应用权限 | `dws dev app permission ...` | [`permission.md`](./permission.md) |
+| 开发者后台应用的可见人员范围（部门/角色/人员，查询或全量设置） | `dws dev app scope get` / `dws dev app scope set` | [`scope.md`](./scope.md) |
 | IP 白名单、回调或 SSO 地址 | `dws dev app security config` | [`security.md`](./security.md) |
 | H5、PC 主页与 OMP 地址 | `dws dev app webapp ...` | [`webapp.md`](./webapp.md) |
 | 机器人配置、启停、提交审核 | `dws dev app robot ...` | [`robot.md`](./robot.md) |

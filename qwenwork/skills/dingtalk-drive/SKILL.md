@@ -9,7 +9,7 @@ metadata:
       - dws
 install_source: connector
 connector_id: dws
-version: 1.0.65.1
+version: 1.0.66.1
 disabled: true
 ---
 

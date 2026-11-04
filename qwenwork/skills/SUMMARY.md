@@ -7,8 +7,8 @@
 - 目录：`qwenwork/skills/`
 - 来源：`/mnt/c/Users/15805/.qwenworkcn/skills`
 - 条目数：176
-- 文件数：3116
-- 最近同步：2026-10-28 18:00:05 +0800
+- 文件数：3119
+- 最近同步：2026-11-04 18:00:08 +0800
 
 ## 场景导航（按用途）
 
@@ -27,8 +27,8 @@
 - **小红书学校舆情助手** — 搜索小红书关键词相关笔记并生成可视化HTML舆情报告，主要用于获取学校在小红书上的舆情信息。当用户需要查学校小红书舆情、搜索小红书笔记、分析小红书趋势、学校口碑/关键词监控时使用。不要在需要搜索微博/抖音/知乎、创建教案、批改作业、管理课程表时触发。
 - **dingtalk-event** — 钉钉个人 IM、OA 审批、VoIP 通话邀请、待办、互动卡片与好友事件长连接监听。Use when 用户说监听消息/@我/某人/某群/全部消息、已读/撤回/reaction、群成员加入/群成员退出，监听审批任务创建/完成/转交、审批实例发起/抄送/终止/完成、VoIP 通话邀请、待办创建/更新/删除、好友申请/好友添加成功，或互动卡片回调。命令前缀：dws event。
 - **dingtalk-mail** — 钉钉邮箱读写、搜索、回复与转发。Use when 用户说发邮件/查邮件/回邮件/转发邮件/未读邮件/邮件搜索/邮箱附件。一句话发邮件时先用 dingtalk-contact 解析并确认收件人，再由本 skill 发送；不做钉钉消息（走 dingtalk-chat）、紧急通知（走 dingtalk-misc）。命令前缀：dws mail。
-- **dingtalk-minutes** — 钉钉 AI 听记。Use when 查询或修改听记摘要、完整逐字稿、关键词、标签、行动项、录音、上传、思维导图、发言人洞察、ASR 热词/识别词配置或分享权限。写文档走 dingtalk-doc；建待办走 dingtalk-todo；日程走 dingtalk-calendar。命令前缀：dws minutes。
-- **dingtalk-misc** — 钉钉独立白板（白板文件）的创建、绘图、保存和修改；文档内嵌白板仅在已有承载文档 nodeId 和 partId 时提供图形内容读写（dws whiteboard）。两类目标相互独立，不互相推断或切换；文档内白板卡片容器不属于本 skill。长尾产品集合技能，覆盖低频钉钉产品：OA审批查询与处理/法务智能合同/电子签/考勤/直播/DING紧急消息/开放平台应用与MCP开发/Agoal目标管理/日志日报周报/电子表格/开放平台文档搜索...
+- **dingtalk-minutes** — 钉钉 AI 听记。Use when 查询或修改听记摘要、完整逐字稿、关键词、标签、行动项、录音、上传、听记内置思维导图、发言人洞察、ASR 热词/识别词配置或分享权限。独立 .amind 脑图文件的创建和主题读写走 dingtalk-misc 的 mind reference；写文档走 dingtalk-doc；建待办走 dingtalk-todo；日程走 dingtalk-calendar。命令前缀：dws minutes。
+- **dingtalk-misc** — 钉钉独立脑图的带内容创建、主题查询与增删改（dws mind）；只创建空白脑图走 wiki，听记内置思维导图走 dingtalk-minutes。钉钉独立白板（白板文件）的创建、绘图、保存和修改；文档内嵌白板仅在已有承载文档 nodeId 和 partId 时提供图形内容读写（dws whiteboard）。两类目标相互独立，不互相推断或切换；文档内白板卡片容器不属于本 skill。长尾产品集合技能，覆盖低频钉钉产品：OA审批查询...
 - **聊天消息任务追踪-AI表格** — 汇总最近24小时(或指定窗口)钉钉里的双向任务流转,来源固定为5路:群里@我/我发出的单聊任务/别人发我的单聊任务/DING/待办。归类合并同一问题的跨轮讨论,跨天未闭环的问题更新原行不新建,生成日报摘要并推送Markdown卡片到钉钉。当用户说"看下今天钉钉里别人反馈给我的问题""汇总最近一天的反馈到表格""今天我派了什么任务给别人""收下24小时内的问题反馈""检索未完成任务+最新反馈"或类似需求时触发。
 - **dingtalk-shared** — 钉钉(DingTalk) MultiSkill 的轻量共享入口。Use when 用户泛称 DWS/钉钉操作但未明确产品、请求跨产品编排、需要 URL 类型预检或产品边界消歧。清晰的单产品操作优先使用对应 dingtalk-* 子 skill；本 skill 只提供全局执行契约和按需 reference 导航，不承载产品命令全集。
 - **dingtalk-tag** — 钉钉数字员工的自然语言创建、查询、修改、发布、删除、能力资源、执行状态、本地 Profile 落盘与 DSH 接入。Use when 用户说创建或管理数字员工、改人设/岗位/响应模式、发布或询问下线能力、查执行状态或 trace、管理数字员工 Skill/MCP、把已有数字员工转换为本地 Profile，或接入本地 DSH。命令前缀：dws dingtalk-tag。
@@ -269,8 +269,8 @@
 | 小红书学校舆情助手 | `qwenwork/skills/dingtalk-edu-xhs-keyword-spider` | 沟通协作 | dingtalk-edu-xhs-keyword-spider | 24 | 搜索小红书关键词相关笔记并生成可视化HTML舆情报告，主要用于获取学校在小红书上的舆情信息。当用户需要查学校小红书舆情、搜索小红书笔记、分析小红书趋势、学校口碑/关键词监控时使用。不要在需要搜索微博/抖音/知乎、创建教案、批改作业、管理课程表时触发。 |
 | dingtalk-event | `qwenwork/skills/dingtalk-event` | 沟通协作 | dingtalk-event | 11 | 钉钉个人 IM、OA 审批、VoIP 通话邀请、待办、互动卡片与好友事件长连接监听。Use when 用户说监听消息/@我/某人/某群/全部消息、已读/撤回/reaction、群成员加入/群成员退出，监听审批任务创建/完成/转交、审批实例发起/抄送/终止/完成、VoIP 通话邀请、待办创建/更新/删除、好友申请/好友添加成功，或互动卡片回调。命令前缀：dws event。 |
 | dingtalk-mail | `qwenwork/skills/dingtalk-mail` | 沟通协作 | dingtalk-mail | 8 | 钉钉邮箱读写、搜索、回复与转发。Use when 用户说发邮件/查邮件/回邮件/转发邮件/未读邮件/邮件搜索/邮箱附件。一句话发邮件时先用 dingtalk-contact 解析并确认收件人，再由本 skill 发送；不做钉钉消息（走 dingtalk-chat）、紧急通知（走 dingtalk-misc）。命令前缀：dws mail。 |
-| dingtalk-minutes | `qwenwork/skills/dingtalk-minutes` | 沟通协作 | dingtalk-minutes | 12 | 钉钉 AI 听记。Use when 查询或修改听记摘要、完整逐字稿、关键词、标签、行动项、录音、上传、思维导图、发言人洞察、ASR 热词/识别词配置或分享权限。写文档走 dingtalk-doc；建待办走 dingtalk-todo；日程走 dingtalk-calendar。命令前缀：dws minutes。 |
-| dingtalk-misc | `qwenwork/skills/dingtalk-misc` | 沟通协作 | dingtalk-misc | 194 | 钉钉独立白板（白板文件）的创建、绘图、保存和修改；文档内嵌白板仅在已有承载文档 nodeId 和 partId 时提供图形内容读写（dws whiteboard）。两类目标相互独立，不互相推断或切换；文档内白板卡片容器不属于本 skill。长尾产品集合技能，覆盖低频钉钉产品：OA审批查询与处理/法务智能合同/电子签/考勤/直播/DING紧急消息/开放平台应用与MCP开发/Agoal目标管理/日志日报周报/电子表格/开放平台文档搜索... |
+| dingtalk-minutes | `qwenwork/skills/dingtalk-minutes` | 沟通协作 | dingtalk-minutes | 12 | 钉钉 AI 听记。Use when 查询或修改听记摘要、完整逐字稿、关键词、标签、行动项、录音、上传、听记内置思维导图、发言人洞察、ASR 热词/识别词配置或分享权限。独立 .amind 脑图文件的创建和主题读写走 dingtalk-misc 的 mind reference；写文档走 dingtalk-doc；建待办走 dingtalk-todo；日程走 dingtalk-calendar。命令前缀：dws minutes。 |
+| dingtalk-misc | `qwenwork/skills/dingtalk-misc` | 沟通协作 | dingtalk-misc | 197 | 钉钉独立脑图的带内容创建、主题查询与增删改（dws mind）；只创建空白脑图走 wiki，听记内置思维导图走 dingtalk-minutes。钉钉独立白板（白板文件）的创建、绘图、保存和修改；文档内嵌白板仅在已有承载文档 nodeId 和 partId 时提供图形内容读写（dws whiteboard）。两类目标相互独立，不互相推断或切换；文档内白板卡片容器不属于本 skill。长尾产品集合技能，覆盖低频钉钉产品：OA审批查询... |
 | 聊天消息任务追踪-AI表格 | `qwenwork/skills/dingtalk-msg-task-tracker-aitable` | 沟通协作 | dingtalk-msg-task-tracker-aitable | 2 | 汇总最近24小时(或指定窗口)钉钉里的双向任务流转,来源固定为5路:群里@我/我发出的单聊任务/别人发我的单聊任务/DING/待办。归类合并同一问题的跨轮讨论,跨天未闭环的问题更新原行不新建,生成日报摘要并推送Markdown卡片到钉钉。当用户说"看下今天钉钉里别人反馈给我的问题""汇总最近一天的反馈到表格""今天我派了什么任务给别人""收下24小时内的问题反馈""检索未完成任务+最新反馈"或类似需求时触发。 |
 | dingtalk-shared | `qwenwork/skills/dingtalk-shared` | 沟通协作 | dingtalk-shared | 15 | 钉钉(DingTalk) MultiSkill 的轻量共享入口。Use when 用户泛称 DWS/钉钉操作但未明确产品、请求跨产品编排、需要 URL 类型预检或产品边界消歧。清晰的单产品操作优先使用对应 dingtalk-* 子 skill；本 skill 只提供全局执行契约和按需 reference 导航，不承载产品命令全集。 |
 | dingtalk-tag | `qwenwork/skills/dingtalk-tag` | 沟通协作 | dingtalk-tag | 6 | 钉钉数字员工的自然语言创建、查询、修改、发布、删除、能力资源、执行状态、本地 Profile 落盘与 DSH 接入。Use when 用户说创建或管理数字员工、改人设/岗位/响应模式、发布或询问下线能力、查执行状态或 trace、管理数字员工 Skill/MCP、把已有数字员工转换为本地 Profile，或接入本地 DSH。命令前缀：dws dingtalk-tag。 |
