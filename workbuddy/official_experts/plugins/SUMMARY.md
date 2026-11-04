@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/.workbuddy/plugins/marketplaces/codebuddy-plugins-official/plugins`
 - 条目数：57
 - 文件数：1276
-- 最近同步：2026-11-03 21:02:34 +0800
+- 最近同步：2026-11-04 18:00:08 +0800
 
 ## 场景导航（按用途）
 
