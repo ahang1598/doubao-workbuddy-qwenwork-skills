@@ -1,6 +1,6 @@
 # Windows 兼容性
 
-用于在 SystemPrompt 里出现 `Computer OS: Windows` 的会话，表明当前所在的设备是 Windows。Windows上需要使用 PowerShell 替换 Bash 工具调用，本 Skill 默认的 bash 示例（`jq --rawfile`、`--data "$(...)"`、`&&` 组合、`--output C:\...`、`ls -la`、`$PID` 等）会直接失败，故需要替换成其他命令来执行。macOS / Linux 不受本文件约束。
+用于运行环境判定为 Windows 本地电脑的会话（判定规则见主文档「运行环境」一节），表明当前所在的设备是 Windows。Windows上需要使用 PowerShell 替换 Bash 工具调用，本 Skill 默认的 bash 示例（`jq --rawfile`、`--data "$(...)"`、`&&` 组合、`--output C:\...`、`ls -la`、`$PID` 等）会直接失败，故需要替换成其他命令来执行。macOS / Linux 不受本文件约束。
 
 ## 硬规则
 1. **每次 PowerShell 调用只跑一条外部命令**：禁止 `&&` / `||` / heredoc / `$(...)` / `<<<`；组合逻辑走多次 PowerShell 调用或落成 `.py`。

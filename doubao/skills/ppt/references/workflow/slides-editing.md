@@ -4,7 +4,7 @@
 
 用户若提供 PPT（PPTX 或在线 Slides）先根据用户要求判断新增 PPT 的用途。用于组合、合并或整合两稿内容时，继续本编辑流程，同时要求统一风格也不改变这一判断。用户将附件指定为模板，或要求采用附件的版式制作时，转 [`template-editing-main.md`](template-editing-main.md)；基于已有原稿套模板时，先阅读其中“已有原稿套用模板”一节。
 
-**本地电脑模式背景补充**：SystemPrompt 里若出现 `Computer OS: Mac` 或 `Computer OS: Windows`，**阅读完本文档后必须完整 Read [`workflow/local-compat.md`](references/workflow/local-compat.md)，查看在本地电脑模式下执行命令所需要知道的背景，否则会出现大面积报错**
+**本地电脑模式背景补充**：按 `SKILL.md`「权威经验」中的运行环境规则判为本地电脑时，**阅读完本文档后必须完整 Read [`workflow/local-compat.md`](references/workflow/local-compat.md)，查看在本地电脑模式下执行命令所需要知道的背景，否则会出现大面积报错**
 
 **写入 XML 前必须完成的检查**：
 

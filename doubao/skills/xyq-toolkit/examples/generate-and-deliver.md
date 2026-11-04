@@ -1,11 +1,13 @@
 # 基础示例：生成一张图并交付
 
-用户请求：“用 seedream_5.0_pro 生成一张白底红色马克杯图片。”
+用户请求：“用 Seedream 5.0 Pro 生成一张白底红色马克杯图片。”
 
 先按 [入口](../SKILL.md) 完成安装检查与登录，读取 [生图命令](../commands/generate-image.md) 和 [异步交付流程](../workflows/async-delivery.md)。下列命令名替换为检查返回的 `cli_path`。
 
+先查询图片模型列表，确认其中包含用户指定的完整名称；以下名称仅为示例。
+
 ```bash
-pippit-tool-cli generate-image --prompt "用 seedream_5.0_pro 生成一张白底红色马克杯图片。" --model seedream_5.0_pro --generate-image-count 1
+pippit-tool-cli generate-image --prompt "用 Seedream 5.0 Pro 生成一张白底红色马克杯图片。" --model "Seedream 5.0 Pro" --generate-image-count 1
 ```
 
 此处模型与数量均来自用户请求，不添加比例或分辨率。保存实际返回的任务 ID 并展示任务链接，然后将下面的占位符替换为真实值：

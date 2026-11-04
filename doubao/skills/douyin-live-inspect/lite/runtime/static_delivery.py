@@ -1,6 +1,7 @@
 """Task-local static artifacts. No listeners, credentials, or host publishing APIs."""
 import base64
 import copy
+from contextlib import nullcontext
 import datetime
 import json
 import hashlib
@@ -21,7 +22,22 @@ from runtime.ui import ASSETS, build_report, build_snapshot, _evidence
 from runtime.recap import recap_report
 
 
-CLOUD_SNAPSHOT_INTERVAL_SECONDS = 120
+CLOUD_SNAPSHOT_INTERVAL_SECONDS = 300
+
+
+def snapshot_due(store):
+    """Cheap cadence check; no report projection or HTML work on each review."""
+    try:
+        saved=json.loads((store.root/'.html-events.json').read_text())
+        if not isinstance(saved,dict):return True
+        task=store.task()
+        ended=task.get('capture_status') in {'ended','stopped','failed'}
+        if ended:return 'capture_ended' not in saved.get('events',[])
+        from runtime.realtime_policy import cloud_limited
+        if cloud_limited(task):return False
+        return time.time()-float(saved.get('last_snapshot_at',0))>=CLOUD_SNAPSHOT_INTERVAL_SECONDS
+    except (OSError,ValueError,TypeError):
+        return True
 
 
 def atomic(path, content):
@@ -113,10 +129,45 @@ def attach_snapshot_delivery(data):
         'message':'请通过宿主附件能力交付此单文件 HTML，并在对话给出实际返回的预览或下载入口；不要发送云电脑绝对路径或 file URI。附件是生成时的快照，不会自动刷新。'}
 
 
-def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_monitor=True, allow_partial=False, frozen_store=None):
+def background_complete(task, status, recap):
+    """Artifact completion is independent of host delivery acknowledgements."""
+    sealed = task.get('finishing', {}).get('phase') == 'completed'
+    terminal = (task.get('capture_status') in {'ended', 'stopped', 'failed'}
+                and task.get('worker_status') in {'done', 'failed', 'stopped'})
+    if not (sealed or terminal): return False
+    if status.get('report_blocked_reason'): return True
+    return bool(status.get('report_ready') and (task.get('kind') == 'video'
+        or recap.get('available') or recap.get('terminal_failure')
+        or recap.get('status') in {'ready', 'insufficient', 'blocked'}))
+
+
+def projection_key(frozen):
+    """Ignore bookkeeping only; evidence, coverage and terminal changes invalidate."""
+    task = frozen.task()
+    for key in ('revision', 'worker_heartbeat', 'progress_health', 'report_checkpoint',
+                '_progress_diagnostic', '_report_diagnostic', 'review_dispatch'):
+        task.pop(key, None)
+    status = frozen.status()
+    # These projections are monitor-only; coverage uses full_live as a boolean.
+    status.pop('task', None)
+    if 'full_live' in status: status['full_live'] = True
+    status.get('finishing', {}).pop('remaining_seconds', None)
+    files = []
+    for raw in _evidence(frozen).values():
+        path = media_file(frozen, raw)
+        stat = path.stat() if path else None
+        files.append([raw, str(path) if path else None,
+                      [stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns] if stat else None])
+    templates = [(str(path.relative_to(ASSETS)), path.stat().st_mtime_ns, path.stat().st_size)
+                 for path in sorted(ASSETS.rglob('*')) if path.is_file()]
+    templates += [(name, Path(__file__).with_name(name).stat().st_mtime_ns)
+                  for name in ('static_delivery.py', 'ui.py', 'report_data.py', 'recap.py')]
+    return hashlib.sha256(script_json([task, frozen.segments(), status, files, templates]).encode()).hexdigest()
+
+
+def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_monitor=True, allow_partial=False, frozen_store=None, _locked=False):
     root = private_directory(store.root/'html')
-    with file_lock(store.root/'.html-export.lock',timeout=2):
-        task = store.task()
+    with nullcontext() if _locked else file_lock(store.root/'.html-export.lock',timeout=2):
         frozen = frozen_store or FrozenStore(store)
         task = frozen.task()
         if snapshot is None:
@@ -124,13 +175,24 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
             snapshot = effective_delivery_mode(task.get('delivery_mode', 'local_dashboard')) == 'html_snapshot'
         state_path = root/'manifest.json'
         previous = json.loads(state_path.read_text()) if state_path.exists() else {}
+        periodic = not refresh_monitor and not snapshot and not bundle and not single_file and task.get('kind', 'live') == 'live'
+        key = projection_key(frozen) if periodic else None
+        cached = previous.get('projection_cache', {}) if periodic else {}
+        reuse = bool(previous.get('artifact_status') == 'ready' and key
+                     and cached.get('key') == key and cached.get('report') is not None)
+        report = copy.deepcopy(cached['report']) if reuse else build_report(frozen)
+        review = recap_report(frozen)
+        monitor = build_snapshot(frozen, report=report, recap=review)
+        images = cached['images'] if reuse else {k:image_data(frozen, raw) for k, raw in _evidence(frozen).items() if k != 'playback'}
+        projection = {'key': key, 'report': copy.deepcopy(report), 'images': images} if periodic else {}
+        monitor_key = hashlib.sha256(script_json([key, {k:v for k,v in monitor.items() if k != 'refreshed_at'}, review]).encode()).hexdigest() if periodic else None
+        files_ready = (all(media_file(frozen, a.get('path')) is not None for a in previous.get('artifacts', []))
+                       and (root/'data.js').is_file() and (root/'monitor.html').is_file())
+        if periodic and reuse and files_ready and previous.get('monitor_input_key') == monitor_key:
+            return {k:previous[k] for k in ('evidence_version', 'media_layout', 'version', 'artifact_status', 'artifacts', 'complete')}
         counter = store.root/'.html-version'
         version = max(int(counter.read_text()) if counter.exists() else 0, previous.get('version', 0)) + 1
         atomic(counter, str(version))
-        report = build_report(frozen)
-        monitor = build_snapshot(frozen)
-        review = recap_report(frozen)
-        images = {key:image_data(frozen, raw) for key, raw in _evidence(frozen).items() if key != 'playback'}
         for item in report['evidence']:
             item['images'] = [images[key] for key in item['frame_ids'] if images.get(key)]
         for row in monitor['records']:
@@ -158,15 +220,22 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
         report['video']['url'] = media_url
         if 'video' in review: review['video']['url'] = media_url
         ready = frozen.status()['report_ready']
-        blocked = frozen.status().get('report_blocked_reason')
         deliverable = ready or (allow_partial and task.get('kind') == 'video')
         artifacts = []
         report_pages = {}
         report_fingerprints = {}
         embedded_video = None
+        report_key = hashlib.sha256(script_json([key, review]).encode()).hexdigest() if periodic else None
+        reuse_pages = periodic and reuse and files_ready and previous.get('report_input_key') == report_key
         for group, data in (('quality', report), ('review', review)):
             if not deliverable or (group == 'review' and (not ready or not (review['available'] or review['status'] == 'failed'))):
                 continue
+            if reuse_pages:
+                path = root/(group + '.html')
+                if path.is_file():
+                    report_pages[group] = None
+                    artifacts.append(artifact(path, group, version))
+                    continue
             # Keep the ZIP lightweight, with one shared relative video. Sanitize
             # report text before injecting trusted task-local media bytes.
             if group == 'quality' and task.get('kind') == 'video':
@@ -203,7 +272,7 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
         monitor['review_report_url'] = 'review.html' if 'review' in report_pages and review['available'] and not snapshot else ''
         monitor.update(task_id=task['id'], version=version,
             generated_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            frozen=snapshot, standalone=snapshot, complete=bool(blocked and task.get('worker_status') in {'done','failed','stopped'}) or ready and (task.get('kind') == 'video' or review['status'] in ('ready','insufficient')))
+            frozen=snapshot, standalone=snapshot, complete=background_complete(task, frozen.status(), review))
         monitor = sanitize(monitor)
         if task.get('kind') != 'video':
             filename = f'monitor-{version}.html' if snapshot else 'monitor.html'
@@ -233,12 +302,44 @@ def export(store, *, snapshot=None, bundle=False, single_file=False, refresh_mon
         if deliverable and playback and not single_file:
             artifacts.append(artifact(root/media_url, 'media', version))
         manifest = {'evidence_version':review.get('evidence_version'), 'media_layout':'embedded' if single_file else 'separate','version':version, 'artifact_status':'ready', 'artifacts':artifacts, 'complete':monitor['complete']}
-        atomic(state_path, script_json({**manifest, 'report_fingerprints': {**previous.get('report_fingerprints', {}), **report_fingerprints}}))
+        atomic(state_path, script_json({**manifest, 'projection_cache': projection, 'monitor_input_key': monitor_key, 'report_input_key': report_key, 'report_fingerprints': {**previous.get('report_fingerprints', {}), **report_fingerprints}}))
         return manifest
+
+
+def _failed_export(store, stamp, result, *, locked=False):
+    try:
+        root = private_directory(store.root/'html')
+        with nullcontext() if locked else file_lock(store.root/'.html-export.lock', timeout=2):
+            path = root/'manifest.json'
+            current = path.stat() if path.exists() else None
+            # A concurrent successful export must not be replaced by this failure.
+            if ((current is None) != (stamp is None) or current is not None and
+                    (current.st_ino, current.st_size, current.st_mtime_ns) !=
+                    (stamp.st_ino, stamp.st_size, stamp.st_mtime_ns)): return result
+            previous = json.loads(path.read_text()) if current else {}
+            atomic(path, script_json({**previous, 'artifact_status': 'failed', 'complete': False,
+                'export_failure': {'code': result.get('fallback_reason', 'HTML_EXPORT_FAILED'),
+                                   'retry_required': True}}))
+    except (OSError, ValueError, TypeError, TimeoutError):
+        pass  # A non-writable output directory cannot persist its own failure.
+    return result
 
 
 def safe_export(store, **options):
     try:
+        # Own the lock through subprocess completion and failure persistence.
+        with file_lock(store.root/'.html-export.lock', timeout=2):
+            return _safe_export_locked(store, **options)
+    except (OSError, TimeoutError):
+        return {'artifact_status':'failed', 'artifacts':[], 'message':'HTML 未能生成，请直接交付已保存的 Chat 结果。'}
+
+
+def _safe_export_locked(store, **options):
+    stamp = None
+    try:
+        path = store.root/'html/manifest.json'
+        stamp = path.stat() if path.exists() else None
+        options['_locked'] = True
         task=store.task()
         deadline=task.get('finishing',{}).get('recap_deadline_at' if task.get('recap',{}).get('status') in {'ready','insufficient','failed'} else 'quality_deadline_at')
         draining_report = task.get('finishing',{}).get('mode') == 'drain' and task.get('finishing',{}).get('phase') == 'completed'
@@ -246,25 +347,28 @@ def safe_export(store, **options):
             import subprocess, sys
             script='import json,sys; from runtime.store import Store; from runtime.static_delivery import export; print(json.dumps(export(Store(sys.argv[1]),**json.loads(sys.argv[2]))))'
             # HTML is optional: recover once, then deliver saved report content.
-            for attempt in range(2):
+            attempts = 1 if options.get('refresh_monitor') is False else 2
+            for attempt in range(attempts):
                 try:
                     child=subprocess.run([sys.executable,'-c',script,str(store.root),json.dumps(options)],cwd=Path(__file__).resolve().parents[1],capture_output=True,text=True,timeout=30)
                     break
                 except subprocess.TimeoutExpired:
-                    if attempt == 1:
-                        return {'artifact_status':'failed', 'artifacts':[],
+                    if attempt == attempts - 1:
+                        return _failed_export(store, stamp, {'artifact_status':'failed', 'artifacts':[],
                                 'fallback_reason':'HTML_EXPORT_TIMEOUT', 'fallback_action':'deliver-chat-report',
-                                'message':'HTML 导出限时恢复后仍未完成；跳过 HTML，直接交付已保存的完整 Chat 报告并继续另一份报告。'}
+                                'message':'HTML 导出限时恢复后仍未完成；跳过 HTML，直接交付已保存的完整 Chat 报告并继续另一份报告。'}, locked=True)
             if child.returncode:raise ValueError('report export failed')
             return json.loads(child.stdout)
         return export(store, **options)
     except (OSError, ValueError, TypeError, KeyError, TimeoutError, sqlite3.OperationalError):
-        return {'artifact_status':'failed', 'artifacts':[], 'message':'HTML 未能生成，请直接交付已保存的 Chat 结果。'}
+        return _failed_export(store, stamp, {'artifact_status':'failed', 'artifacts':[], 'message':'HTML 未能生成，请直接交付已保存的 Chat 结果。'}, locked=True)
 
 
 def tick(store):
     """Finishing continues even without a browser or active Agent."""
     try:
+        from runtime.progress_watch import observe
+        observe(store)
         store.finish_tick()
         from runtime.review_dispatch import observe_backlog
         observe_backlog(store)
@@ -334,10 +438,31 @@ def recover_stalled_worker(store, now=None, launch_worker=None):
 def watch(store):
     try:
         with file_lock(store.root/'.html-watch.lock', timeout=1):
+            final_failures = 0
             while True:
                 try:
                     result = tick(store)
                     task = store.task()
+                    if result.get('complete') and result.get('artifact_status') != 'failed': return
+                    if task.get('delivery_mode', 'local_dashboard') == 'local_dashboard':
+                        from runtime.realtime_policy import current
+                        final = False
+                        if result.get('artifact_status') == 'failed':
+                            frozen = FrozenStore(store)
+                            final = background_complete(frozen.task(), frozen.status(), recap_report(frozen))
+                            if final:
+                                final_failures += 1
+                                if final_failures >= 3: return
+                        if final or current(task):
+                            time.sleep(2)
+                            continue
+                    # A sealed failure is final even if a stuck media worker never
+                    # acknowledges exit. Keep delivery receipts independent.
+                    if task.get('finishing', {}).get('phase') == 'completed':
+                        status = store.status()
+                        if status.get('report_blocked_reason') or (
+                                task.get('delivery_mode', 'local_dashboard') != 'local_dashboard' and status['report_ready']):
+                            return
                     terminal = task.get('capture_status') in ('ended','stopped','failed') and task.get('worker_status') in ('done','failed','stopped')
                     deadline = None if task.get('finishing',{}).get('mode')=='drain' else task.get('finishing',{}).get('recap_deadline_at')
                     if deadline is not None and time.time() >= deadline: return
@@ -363,12 +488,13 @@ def _attach_artifacts(store, data, command):
     if 'artifacts' in data: return
     if mode == 'local_dashboard':
         if command in ('start','start-video','resume','report','recap-report','recap-submit'):
-            data.update(safe_export(store, single_file=command in ('report','recap-report')))
+            data.update(safe_export(store))
         return
     if store.task().get('kind') == 'video': return
+    if command not in {'start','resume'} and not snapshot_due(store):return
     # Event state is private bookkeeping, never included in an attachment.
     try:
-        with file_lock(store.root/'.html-events.lock'):
+        with file_lock(store.root/'.html-events.lock',timeout=0):
             state_file = store.root/'.html-events.json'
             saved = json.loads(state_file.read_text()) if state_file.exists() else {}
             # Older tasks stored only phase names. Export their current risks once.
@@ -401,7 +527,7 @@ def _attach_artifacts(store, data, command):
                 monitor = next(item for item in result['artifacts'] if item['type']=='monitor')
                 periodic = new == ['periodic_snapshot']
                 data['snapshot_delivery'] = {'type':'html_snapshot', 'path':monitor['path'],
-                    'message':('请通过宿主附件能力交付此 HTML 最新工作台快照，并在对话给出用户可点击的预览或下载入口；云电脑每2分钟交付一次新快照，旧附件保留历史状态。'
+                    'message':('请通过宿主附件能力交付此 HTML 最新工作台快照，并在对话给出用户可点击的预览或下载入口；运行中每5分钟合并交付新快照，旧附件保留历史状态。'
                                if periodic else
                                '请立即通过宿主附件能力交付此 HTML 工作台，并在对话给出用户可点击的预览或下载入口；不能只发送云电脑文件路径。旧附件保留原快照。')}
                 atomic(state_file, script_json({'events':list(dict.fromkeys(seen + [event for event in new if event not in {'risk_detected','periodic_snapshot','resumed'}])),

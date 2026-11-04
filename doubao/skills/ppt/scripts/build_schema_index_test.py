@@ -54,21 +54,28 @@ class BuildSchemaIndexTest(unittest.TestCase):
         # These are not in the XSD; grep of the raw XSD would never find them.
         self.assertIn("不得越出 viewBox", self.content)
 
-    def test_transition_index_exposes_only_supported_authoring_surface(self) -> None:
+    def test_transition_index_exposes_all_schema_effects_and_attributes(self) -> None:
         transition = self.content.split("## `<transition>`", 1)[1].split("\n## `<", 1)[0]
-        for value in ("fade", "cover", "pull", "push", "none"):
-            self.assertIn(value, transition)
-        for unsupported in (
-            "cut",
-            "slides-flip",
-            "wipe",
-            "orientation",
-            "morphMode",
-            "invX",
-            "invY",
-        ):
-            self.assertNotIn(unsupported, transition)
-        self.assertIn("生成页面可用属性", transition)
+        root = ET.parse(build_schema_index.DEFAULT_SCHEMA).getroot()
+        ns = {"xs": build_schema_index.XS_NS}
+        effects = {
+            node.get("value") for node in root.findall(
+                ".//xs:simpleType[@name='TransitionEffectType']//xs:enumeration", ns
+            )
+        }
+        type_row = next(line for line in transition.splitlines() if line.startswith("| `type` |"))
+        indexed_effects = {
+            value.strip() for value in type_row.split("枚举：", 1)[1].strip().rstrip("|").split(r"\|")
+        }
+        self.assertEqual(indexed_effects, effects)
+        element = next(item for item in self.index.elements if item.name == "transition")
+        attributes = {attr.name for attr in self.index.attributes(element.complex_type)}
+        indexed_attributes = {
+            line.split("|")[1].strip(" `")
+            for line in transition.splitlines() if line.startswith("| `")
+        }
+        self.assertEqual(indexed_attributes, attributes)
+        self.assertIn("完整可用属性", transition)
 
     def test_parent_elements_are_resolved(self) -> None:
         # `出现场景` gives the XSD lexical scope; `父元素` must give the real

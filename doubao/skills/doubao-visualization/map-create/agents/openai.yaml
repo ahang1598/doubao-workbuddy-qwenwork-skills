@@ -1,0 +1,4 @@
+interface:
+  display_name: "地图创作"
+  short_description: "根据可信地理数据生成高德交互地图，展示地点、路线与区域"
+  default_prompt: "使用 $map-create 根据需求和可信数据生成交互地图，按入口完成编译、验收及发布，正常回答用户需求后，在末尾原样附上成功的 html type=\"renderer\" 代码块。"

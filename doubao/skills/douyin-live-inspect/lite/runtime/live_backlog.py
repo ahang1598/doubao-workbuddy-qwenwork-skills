@@ -1,4 +1,5 @@
 """Lossy catch-up policy for live v2 sampling; durable gaps fence retries."""
+# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 import time
 
 MAX_BACKLOG_MS = 30000

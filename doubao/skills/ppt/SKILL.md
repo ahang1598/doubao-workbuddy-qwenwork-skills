@@ -1,6 +1,6 @@
 ---
 name: ppt
-version: 1.0.38
+version: 1.0.52
 description: 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。
 metadata:
   requires:
@@ -20,13 +20,14 @@ metadata:
 4. 牢记幻灯片 URL 和关键 ID（`xml_presentation_id`、`slide_id`、`revision_id`、`file_token`、`block_id`、`obj_token`）。
 5. 牢记每一页幻灯片的真实完成状态，不要混淆「已落本地 XML 文件」、「已写入飞书幻灯片」、「已通过写入 lint」、「已完成例外核验」、「已回读并完成 lint 与内容核对」；使用 `--no-lint` 后写入成功不等于通过 lint。编辑/模板任务在修改前保存原稿 XML 与回读 lint 基线，修改后另存回读结果用于比较，见 [`validation-xml.md`](references/workflow/validation-xml.md)。素材同理，区分「已取到本地」、「已去底色（或确认无需抠 / 已回退原图）」、「已上传拿到 `file_token`」。
 6. 牢记选定的设计系统，选定后视觉与版式应全程遵守，不能违背。
-7. **本地电脑模式背景补充**：SystemPrompt 里若出现 `Computer OS: Mac` 或 `Computer OS: Windows` （电脑端不一定就是本地电脑，也可能是云电脑），**在阅读完本 SKILL后，必须完整 Read [`workflow/local-compat.md`](references/workflow/local-compat.md)，查看在本地电脑模式下执行命令所需要知道的背景，否则会出现大面积报错**，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），在最后请使用 `lark-cli drive +export` 和 `present_files` 将文件重新导出来给到用户本地文件的路径。
-8. **Windows 平台差异**：SystemPrompt 里若出现 `Computer OS: Windows`（电脑端不一定是 windows），**在阅读完 local-compat.md 后，必须完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
+7. **本地电脑模式背景补充**：运行环境只看最后一个含 `Main project directory` 的 `<system-reminder>`（忽略更早 SR）：`Computer OS` 为 `Windows` / `macOS` 判为本地电脑；无 `Computer OS` 时，`Main project directory` 为 `/home/user/Doubao/...` 判为云电脑，`/Users/...`、`C:\...` 等判为本地电脑。判为本地电脑时，**在阅读完本 SKILL后，必须完整 Read [`workflow/local-compat.md`](references/workflow/local-compat.md)，查看在本地电脑模式下执行命令所需要知道的背景，否则会出现大面积报错**，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），在最后请使用 `lark-cli drive +export` 和 `present_files` 将文件重新导出来给到用户本地文件的路径。
+8. **Windows 平台差异**：按「本地电脑模式背景补充」中的规则判定当前环境为 Windows 时，**在阅读完 local-compat.md 后，必须完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
 9. 跨轮编辑后的交付（强制）：只要本轮对用户可见的幻灯片发生了实际写入或更新，验收完成后必须在本轮再次调用 present_files 交付最新版本。即使该幻灯片链接已在前序轮次交付、URL 没有变化，也不得复用前轮产物卡片或只提示用户刷新。
 10. **除了本 skill 下的其他文档的说明，默认不调用 organizer**：对于 PPT 的任务而言，除非本 skill 中的文档有说明需要调用 organizer，否则默认不使用 organizer 做多 agent 任务
 11. **【非常重要】用户提供了模版的情况下，绝对不允许批量生成/编辑xml文件**：一定要一个文件一个文件去写好、上传、通过lint；做批量生成/编辑的xml文件上传到页面中完全不可用的
 12. **除了 chart 库生成的 svg 以外的 svg 图必须走 atomize**：手画的概念图/示意图/流程图/装饰图必须读 svg-writing-guide.md，用 drawing 库（`scripts/svg_lib/svg_drawing.py`，常用接口已列在指南第四节）画图，`to_slide` 输出可编辑原生元素。chart 库（`gen_svg_charts.py`）的数据图用 `chart_slide(...)` 放入页面，得到半可编辑结果（文字原生、同色色块可整体换色）。这两类结果直接按页开启服务端 lint 写入；不要先跑本地 `xml_lint.py` 校准（它会对图内文字与色块误报），数据图不渲染 PNG 预览；手画示意图先 `d.check()` 自检，`d.review()` 有细节提示时再 `d.preview()` 看一次、精修一轮后写入（见 svg-writing-guide.md 第四节「审查有提示才预览精修」），不要为避开告警改用 PNG 图片或手画图替代；按数值画长短的条形/点（如 ORR、比例对比）也属于数据图，必须走 `chart_slide`，不能用 rect 拼
 13. **【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read ppt skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行 xml 相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read ppt 下的 SKILL.md 再继续，不得跳过。**
+14. **图文并茂与页型变化：** 高质量幻灯片应兼顾信息表达与阅读体验。根据内容选用高质量图片、截图、图表、流程图或结构示意图，让视觉素材帮助解释观点、展示证据，避免通篇堆文字或仅用图标装饰。不必为凑图片数量或满足“每页有图”而强行塞入无关图片；整套演示应有适当的页型变化，如大图页、图文分栏页、数据页、对比页、流程页和案例页；变化应体现在构图与信息层级，不能只换颜色或挪动卡片。保持字体、配色与视觉风格统一，避免连续多页机械套用同一布局。
 
 
 ## 一、场景路由
@@ -77,6 +78,16 @@ metadata:
 
 **记下每张图的原始宽高**，Step 7 写 `<img>` 时要用它做裁剪或缩放大小的参考。
 
+#### 图片质量要求
+
+选用图片前，查看实际候选图并核对文件像素尺寸；不能只凭搜索缩略图、工具调用成功或文件下载成功认定可用。搜图、生图及附件中拟选用的图片均按以下标准判断：
+
+- **分辨率**：横向全屏背景图宽度必须 **> 1600 px** 且高度 **> 800 px**，竖向背景图宽高门槛对调。按实际展示尺寸和裁剪后的有效区域检查清晰度，不能仅将低清图机械放大到门槛尺寸视为合格。
+- **视觉质量**：主体清晰，无明显压缩失真、水印、锯齿、生成畸形或粗糙拼贴；构图、光影、色彩和质感符合选定设计系统。即使像素达标，画面粗糙、审美不佳或风格不协调也不选用。
+- **内容匹配**：主体、场景和关键细节准确对应当前页要表达的内容，图片须有明确的表达作用，不能只因搜索关键词相关或需要填满版面就使用。
+- **版面适配**：图片比例、主体位置和留白适合目标版面，缩放或允许的裁剪后必要信息仍完整可读；背景图须提供适合放文字的低细节区域，保证文字对比度。
+
+
 
 ### Step 4 · 理一份轻量大纲
 
@@ -103,11 +114,11 @@ present_files 提交的链接会变成一张可点击的产物卡片，你需要
 
 ### Step 6 · 图片处理
 
-本次要用的图片统一在这一步落地成 `file_token`：**取到本地 → 图片去底色 → 上传**。图片裁剪在 Step 7 中用 `<img>` 的 `<crop>` 实现，不需要在本步处理。
+已选用的图片按本步落地成 `file_token`：**取到本地 → 图片去底色 → 上传**。逐页制作时补充的图片素材同样执行本步。图片裁剪在 Step 7 中用 `<img>` 的 `<crop>` 实现，不需要在本步处理。
 
 1. **取到本地**：禁止 http(s) 外链，飞书 slides 渲染端不会代理外链图，外链 `src` 在幻灯片里通常不显示；网图必须先 `curl -L` 下载到 CWD 内，生图/搜图工具的产物同样先落成 CWD 内的文件。从已有 Slides 复用图片时，从实时回读 XML 的 `<img src>` 获取 `file_token`，再用 `lark-cli api GET "/open-apis/drive/v1/medias/<file_token>/download" --output "<file>"` 下载到本地。
 2. **图片去底色**：带底色的图片盖在有色背景上会让整页设计垮掉。对 Step 3 收集到的图片素材，调用去底色工具前完运行 `mediakit-cli image remove-image-background --help` 与 `mediakit-cli image remove-image-background --schema` 获取命令的输入输出说明，注意该命令里的boolean 参数--need-crop-background 必须写成 --need-crop-background=true / --need-crop-background=false，--image-url 参数可以接受搜索到的图片URL，直接使用即可；未完成上述读取和检查前禁止直接调用，logo徽标、动漫卡通图片使用 `--scene=general`，人像、真人、实物使用 `--scene=product`。**黑白灰底色的图片必须抠**，渐变底和复杂背景直接跳过不要硬抠；命令成功后立即下载返回的 `image_url`，另存为新的 PNG（不覆盖原图、不可存 JPG）；无需去底色、跳过处理或抠图效果差时，使用原图作为最终素材；**抠完逐张检查，确认背景透明、主体边缘无残留色块、主体内部无误抠，如果抠后效果差回退使用原图**。
-3. **上传拿 `file_token`**：把本次要用的图片逐个 `+media-upload --file <图片路径> --presentation <id>` 上传，**拿到各自的 `file_token`**（见 [`cli/lark-slides-media-upload.md`](references/cli/lark-slides-media-upload.md)）。
+3. **上传拿 `file_token`**：只上传符合上述[图片质量要求](#图片质量要求)的最终选用图片；若处理改变了图片尺寸或画面，按处理后的实际图片核对并更新宽高记录。逐个 `+media-upload --file <图片路径> --presentation <id>` 上传，**拿到各自的 `file_token`**（见 [`cli/lark-slides-media-upload.md`](references/cli/lark-slides-media-upload.md)）。
 
 
 ### Step 7 · 逐页完成
@@ -118,14 +129,14 @@ present_files 提交的链接会变成一张可点击的产物卡片，你需要
 
 1. **落 XML**：核心结论定标题，选定的设计系统定版式与配色。带图页把 Step 6 拿到的 `file_token` 写进 `<img src>`。不用写 `<?xml ...?>` 声明，也不用包 `<presentation>`，只提交单个 `<slide>` 元素。元素上不要自己编 `id`，留空即可（ID 由服务端分配，自造 ID 容易撞车）。文本和属性值里的 `&`、`<`、`>` 必须转义为 `&amp;` / `&lt;` / `&gt;`。**全篇禁止使用 emoji（任何位置都不能出现）**，语义图标一律用检索到的 IconPark `<icon>`。
 2. **图片使用**：**图片可以裁剪或缩放大小来适配 PPT 的排版布局，不要溢出画布**；**附件中提取的图片/表格不允许做裁剪**，但可以缩放大小来适配你选择的 PPT 的排版布局；`<img>` 的 `width:height` 对齐原图比例就不会裁剪，只会缩放大小；对不上会自动裁剪，且默认从中心裁掉多余部分，可用 `<crop>` 的 `anchor` 指定保留哪一侧。**同一张图片不要在多页重复使用**，补充素材或重新排版，Logo、统一装饰除外。
-3. **素材兜底**：主视觉优先用真实素材，绝不留空白图框。缺图先用搜图工具或生图工具补这一页要用的图；补不到或不可用时，用生图工具生成替代的近似图或抽象图。仍不可用时，按内容类型兜底：数据图从 SVG 图表库选择，结构示意用手写 SVG 或 `<shape>`+`<line>` 等可编辑元素。数据类可视化缺真实数据时不要编造数字，确需图表占位时仍按数据含义选 SVG 入口，并标注「模拟数据，仅占位，待替换真实数据」。
+3. **素材补充与兜底**：制作过程中发现素材缺口，或已有素材无法满足当前页的内容表达、质量或版面需求时，允许继续联网搜索、搜图或生图补充素材；新增图片遵守上述图片质量要求，并按 Step 6 完成处理与上传。主视觉优先用真实素材，绝不留空白图框。缺图先用搜图工具或生图工具补这一页要用的图；补不到或不可用时，用生图工具生成替代的近似图或抽象图。仍不可用时，按内容类型兜底：数据图从 SVG 图表库选择，结构示意用手写 SVG 或 `<shape>`+`<line>` 等可编辑元素。数据类可视化缺真实数据时不要编造数字，确需图表占位时仍按数据含义选 SVG 入口，并标注「模拟数据，仅占位，待替换真实数据」。
 4. **演讲者备注**：需要在每页 `<slide>` 的 `<note>` 中提供 3–5 句可直接照读的讲稿。
 5. **写入幻灯片（两步创建·第二步）**：每页用 `slides +add-slide` 写入（见 [`cli/lark-slides-add-slide.md`](references/cli/lark-slides-add-slide.md) 与本步末尾的示例）。**页面里有 SVG 数据图或示意图（`chart_slide` / `d.to_slide` 的片段）时改用 `publish_slide`**，写法见 svg-writing-guide.md「合页与写入：publish_slide」一节：它负责合页、豁免图形转换误报并返回带坐标的改法；这类页不要自己拼 `<embed>` 塞 SVG，也不要把片段手动拼进 XML 再调 `+add-slide`。**某页被拦需要修改时，用同一页的修正版重新提交（不要先写后面的页）**；已写错位置时插到正确位置再删旧页。**默认追加到整份幻灯片的末尾；要插入到某页之前，必须传 `--before-slide-id <目标页的slide_id>`。** **记下返回的 `slide_id`**：它是这一页的唯一关联键，Step 8 截图和修复都按它定位。写入命令见本步末尾的示例。
 6. **处理校验结果**：返回 JSON 的外层 `ok` 表示调用是否成功；成功时 ID、版本及问题发现位于 `data`，失败时错误码与报告位于 `error`。成功且无问题发现时记录 ID/版本并继续；有问题时按下表处理。报告结构、长报告读取和例外条件见 [`validation-xml.md`](references/workflow/validation-xml.md)。
 
    | 响应 | 含义 | 处理 |
    |---|---|---|
-   | 开启 lint，成功且无 `data.issues` | 这一页通过校验并已落库 | 继续下一页，最终仍须回读与视觉验收 |
+   | 开启 lint，成功且无 `data.issues` | 这一页通过校验并已落库 | 继续下一页；按 Step 8 的封面、代表页和风险页清单检查，不逐页截图 |
    | 成功，带 `data.issues` | 已落库，但仍有问题发现或内容被服务端丢弃 | 对象/数组直接读，JSON 字符串解码后读，普通文本完整读；多页创建还要读 `data.slide_issues`。立即回读并截图；真实问题修复后开启 lint 重提，逐项核对无碍才继续 |
    | `ok: false`，`error.code: 4000153` | 校验拒绝，这一页**没有**写入 | 将 `error.message` 这个 JSON 字符串二次解析，**读完 `document` 和 `slides[]` 中各级问题正文**，`issues` 可能是镜像；不能只看 summary 或前几百字符，缺少 `data.issues` 不等于零问题；按 `message` / `hint` 修复后开启 lint 重提，新暴露的问题也必须继续处理 |
    | 当前页首次写入直接使用 `--no-lint`，仍被服务端 lint 阻断 | 首次提交保护生效，不能据此判断参数不支持 | 完整读取检测报告，按问题修复并恢复默认开启 lint 的提交方式；被拦一次不代表下一次可自动跳过，例外仍按 [`validation-xml.md`](references/workflow/validation-xml.md) 判断 |
@@ -150,9 +161,9 @@ lark-cli slides +add-slide \
 
 1. **回读全文及默认 lint 报告**：`slides +xml-get --presentation <xml_presentation_id> --output <CWD 内相对路径> --json`，必须使用 `--output` 保存纯 XML，并另存 stdout 完整响应与 stderr；版本和 `data.issues` 报告在响应 JSON 中，不在 XML 文件内。报告读取规则见 [`validation-xml.md`](references/workflow/validation-xml.md)。
 2. **解析回读结果**：先用 `lint_inspect.py --input <完整响应 JSON>` 获取 lint 检测报告摘要，再按页和文档级范围用 `--details --limit 3 --max-chars 6000` 读问题正文（`issues[].issue`），按 `pagination.next_offset` 继续到 `has_more: false`，处理全部发现；不要把大报告整段打印或只读 lint 检测报告摘要；报告缺失不能视为通过。编辑/模板须读取目标页原稿详情并与同一实际页面比较：整稿第 4 页在单页报告中可能编号为 1，以请求/响应 slide ID 和同次 XML 页序关联，不能只比总数或同名 code。再用 `xml_inspect.py --input <纯 XML 文件> --mode summary` 输出 XML 内容与结构摘要，按实际顺序核对 `index、slide_id、text_preview` 与大纲及创建记录是否对应；该 XML 内容与结构摘要不包含服务端 lint。补页后重新核对，页数相同、写入成功或 lint 通过不能代替页序验收。自行解析时必须使用 XML 解析器，命名空间从根元素实际读取，不要硬编码或猜测。服务端会规整你提交的 XML（丢弃不认识的属性、补默认值），落地结果和你写的可能不是一回事，一律以回读到的为准。
-3. **逐页截图复核**：`slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 看真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 8 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
+3. **截图复核（限定范围）**：**非必要不截图，按清单限定目检范围**：检查封面、每种首次出现的实质不同版式或图表类型的代表页，以及存在渲染风险的页面（如多图叠放、图文压叠、密集标签或复杂连线）；使用 `--no-lint` 提交或写入成功但带 `data.issues` 的页仍须完成必要复核。同一页命中多项只检查一次，仅换颜色、文案或数据不算新版式。普通内容页、简单表格、章节页和附录页在 lint 与内容核对通过且无上述风险时不截图；编辑任务只重新评估本轮变化影响的页，已检查且未变化的页不重复截图。需要截图时用 `slides +screenshot --presentation <xml_presentation_id> --slide-id <slide_id> --output-dir <CWD 内相对路径>` 看真实渲染（见 [`workflow/validation-visual.md`](references/workflow/validation-visual.md)）；`slide_id` 取自第 1 步的回读结果或 Step 7 的创建响应，多页重复传 `--slide-id`、一次最多 8 页。只有确实拿不到 `slide_id` 时才用 `--slide-number <页号>` 回退定位，定位后立刻换回 `slide_id`。
 4. **问题修复**：局部问题用 `+replace-slide`（见 [`cli/lark-slides-replace-slide.md`](references/cli/lark-slides-replace-slide.md)）做块级替换；整页要重做用 `+update-slide` 原地覆盖（见 [`cli/lark-slides-update-slide.md`](references/cli/lark-slides-update-slide.md)，多页就每页各跑一次），或 `+delete-slide` 删旧页（见 [`cli/lark-slides-delete-slide.md`](references/cli/lark-slides-delete-slide.md)）+ `+add-slide` 建新页。改完重新回读、重新校验。
-5. **成稿交付**：用 present_files 工具明确交付最终产物，并在回复里附上制作介绍；编辑已有幻灯片同样必须再次交付。本地已打开文件按 [`workflow/local-compat.md`](references/workflow/local-compat.md) 交付原始路径，不要求磁盘同步更新，也不得声称已代用户保存。在线幻灯片交付最终链接；新建稿的链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。SystemPrompt 里若出现 `Computer OS: Windows` 或 `Computer OS: Mac`，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），使用 `lark-cli drive +export --token "lark slides的file_token" --doc-type slides --file-extension pptx --output-dir "导出路径(使用CWD内相对路径)" ` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户；在线的幻灯片也需要调用 `present_files` 给到用户
+5. **成稿交付**：用 present_files 工具明确交付最终产物，并在回复里附上制作介绍；编辑已有幻灯片同样必须再次交付。本地已打开文件按 [`workflow/local-compat.md`](references/workflow/local-compat.md) 交付原始路径，不要求磁盘同步更新，也不得声称已代用户保存。在线幻灯片交付最终链接；新建稿的链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。按「权威经验」中的「本地电脑模式背景补充」规则判为本地电脑时，并且如果产物是在线幻灯片（非有本地路径和token的本地文件），使用 `lark-cli drive +export --token "lark slides的file_token" --doc-type slides --file-extension pptx --output-dir "导出路径(使用CWD内相对路径)" ` 先把 ppt 导出来，然后将导出的文件用本地路径调用 `present_files` 给到用户；在线的幻灯片也需要调用 `present_files` 给到用户
 6. 不要使用 `artifact-preview` 或 `verifier-hub` 验证最终 PPT 产物，统一按上述步骤执行。
 
 ## 三、参考文档地图

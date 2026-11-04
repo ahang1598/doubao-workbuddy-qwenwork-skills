@@ -49,6 +49,7 @@
 **注意事项**
 
 - 协议标准写法应使用 `<presentation xmlns="https://www.larkoffice.com/sml/2.0">`，始终带上命名空间。
+- 现有演示文稿的 `<presentation><title>` 与 `width`/`height` 不支持通过 Slides XML 修改，只能在创建时指定；若要修改演示文稿的文件级标题，直接使用 `lark-cli drive +update-title --url '<SLIDES_URL>' --type slides --title '<NEW_TITLE>'`，只有裸 token 时用 `--token <FILE_TOKEN> --type slides`。
 - 所有坐标和尺寸单位是 px，主体元素必须落在画布内。
 - `<slide>` 每份最多 100 页。
 - `+create` 不带 `--slides` 建出的是 **0 页空演示文稿**（是逐页添加前的合法中间态）。
@@ -625,8 +626,6 @@
 
 ## animation 页面切换
 
-生成页面时仅选用 `fade`、`cover`、`pull`、`push` 四种切换动画；`none` 用于显式关闭切换。
-
 `<animation>` 是 `<slide>` 的最后一个子元素（`style` → `data` → `note` → `animation`），内部最多放一个 `<transition>`。
 
 ```xml
@@ -639,18 +638,29 @@
 
 | 属性 | 必需 | 说明 |
 |------|------|------|
-| `type` | 是 | `fade` / `cover` / `pull` / `push`，或 `none`（关闭切换） |
+| `type` | 是 | 切换效果，20 种效果之一或 `none` |
 | `durationMs` | 否 | 切换时长（毫秒），`0`–`86399999`，默认 `1000`；`type="none"` 时不能写 |
 
-效果参数（`style` / `direction`）按下表逐个 `type` 生效。**表里没列的参数对该 `type` 不适用，写了会被 `xml_lint` 判错。**
+效果参数（`style` / `direction` / `orientation` / `morphMode` / `invX` / `invY`）按下表逐个 `type` 生效。**表里没列的参数对该 `type` 不适用，写了会被 `xml_lint` 判错。**
 
 | 切换类型 | 参数 | 取值 | 缺省 |
 |------|------|------|------|
-| `fade` | `style` | `smoothly` / `through-black` | `smoothly` |
+| `fade`、`cut` | `style` | `smoothly` / `through-black` | `smoothly` |
 | `push`、`cover`、`pull` | `direction` | `from-bottom` / `from-top` / `from-left` / `from-right` | `from-bottom` |
+| `slides-flip` | `direction` | `horizontal` / `vertical` | `horizontal` |
+| `wipe` | `direction` | `from-bottom` / `from-top` / `from-left` / `from-right` / `from-top-left` / `from-top-right` / `from-bottom-left` / `from-bottom-right` | `from-right` |
+| `split` | `orientation` | `horizontal` / `vertical` | `horizontal` |
+| `split` | `direction` | `in` / `out` | `out` |
+| `blinds`、`checkerboard` | `direction` | `horizontal` / `vertical` | `horizontal` |
+| `cube`、`rotate`、`orbit` | `direction` | `from-bottom` / `from-top` / `from-left` / `from-right` | `from-right` |
+| `box` | `direction` | `from-bottom` / `from-top` / `from-left` / `from-right` | `from-top` |
+| `gallery` | `direction` | `from-left` / `from-right` | `from-left` |
+| `page-curl-double`、`page-curl-single`、`peel-off` | `invX` / `invY` | `true` / `false` | `false` |
+| `morph` | `morphMode` | `by-object` / `by-word` / `by-character` | `by-object` |
+| `random` | — | — | — |
 | `none` | — | — | — |
 
-`fade` 只接受 `style`，`push` / `cover` / `pull` 只接受 `direction`；例如 `<transition type="fade" direction="from-left"/>` 会被 `lint` 判错。
+`direction` 在 schema 里是 12 个取值的并集，但每种切换只认上表中自己那一行：`<transition type="split" direction="horizontal"/>` 能过 schema，却是错的（`split` 的 `horizontal` 属于 `orientation`）。
 
 **注意事项**
 

@@ -6,11 +6,13 @@ import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "SKILL.md"
 
+# 地图委派给独立入口，不进入根计划或通用组合协议。
 PLAN_MODES = {
     "text_only",
     "echarts",
@@ -20,7 +22,14 @@ PLAN_MODES = {
 }
 
 REQUIRED = [
+    "agents/openai.yaml",
     "references/routing.md",
+    "map-create/SKILL.md",
+    "map-create/agents/openai.yaml",
+    "map-create/scripts/create-map.mjs",
+    "map-create/scripts/telemetry-task.mjs",
+    "map-create/assets/engine/engine.json.gz",
+    "map-create/vendor.lock.json",
     "references/shared-quality.md",
     "references/mode-echarts.md",
     "references/mode-image-overlay.md",
@@ -111,9 +120,75 @@ BASE_ROUTE_BUDGETS = {
     "echarts_web_pc_gauge": 46_000,
 }
 
+# 只记录委派入口的加载量；后续依赖由子入口决定，不套用普通模式预算。
+DELEGATED_ROUTES = {
+    "map-create": ["SKILL.md", "map-create/SKILL.md"],
+}
+
 
 def read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
+
+
+def validate_agent_metadata(skill_dir: Path, expected_name: str) -> list[str]:
+    errors: list[str] = []
+    skill_path = skill_dir / "SKILL.md"
+    agent_path = skill_dir / "agents/openai.yaml"
+    if not skill_path.is_file() or not agent_path.is_file():
+        return errors  # REQUIRED 已报告缺失文件。
+    skill_text = skill_path.read_text(encoding="utf-8")
+    frontmatter = re.match(r"^---\n(.*?)\n---\n", skill_text, re.S)
+    name = re.search(r"^name:\s*(.+)$", frontmatter.group(1), re.M) if frontmatter else None
+    if not name or name.group(1).strip().strip("\"'") != expected_name:
+        errors.append(f"{skill_path.relative_to(ROOT)} 的 name 应为 {expected_name}")
+    agent_text = agent_path.read_text(encoding="utf-8")
+    prompt = re.search(r"^\s*default_prompt:\s*(.+)$", agent_text, re.M)
+    invocations = re.findall(r"\$([a-z0-9-]+)", prompt.group(1)) if prompt else []
+    if invocations != [expected_name]:
+        errors.append(f"{agent_path.relative_to(ROOT)} 的 default_prompt 应调用 ${expected_name}")
+    return errors
+
+
+def validate_delegated_routes(text: str) -> tuple[dict[str, int], list[str]]:
+    errors: list[str] = []
+    entry_sizes: dict[str, int] = {}
+    section = re.search(r"^## 按需加载\s*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    rows = [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in (section.group(1).splitlines() if section else [])
+        if line.lstrip().startswith("|")
+    ]
+    for route, paths in DELEGATED_ROUTES.items():
+        entry = f"{route}/SKILL.md"
+        route_rows = [row for row in rows if row and f"`{route}`" in row[0]]
+        if len(route_rows) != 1 or len(route_rows[0]) < 2 or entry not in route_rows[0][1]:
+            errors.append(f"按需加载表应有唯一 {route} 分支，基础必读指向 {entry}")
+        if all((ROOT / path).is_file() for path in paths):
+            entry_sizes[route] = sum((ROOT / path).stat().st_size for path in paths)
+
+        skill_dir = ROOT / route
+        errors.extend(validate_agent_metadata(skill_dir, route))
+        markdown_files = [skill_dir / "SKILL.md", *skill_dir.glob("references/*.md")]
+        for markdown_file in markdown_files:
+            if not markdown_file.is_file():
+                continue
+            markdown = markdown_file.read_text(encoding="utf-8")
+            relative_source = markdown_file.relative_to(ROOT)
+            # Markdown 链接相对文档解析，含配对 JSON；外部链接不发起网络检查。
+            for reference in set(re.findall(r"\[[^\]\n]*\]\(([^)\s]+)\)", markdown)):
+                target = urlsplit(reference)
+                if target.scheme or target.netloc or not target.path:
+                    continue
+                if not (markdown_file.parent / unquote(target.path)).is_file():
+                    errors.append(f"{relative_source} 链接不存在: {reference}")
+            # 子包内的代码路径相对 SKILL_DIR；不把任务产物当作随包文件。
+            for reference in set(re.findall(
+                r"`((?:references|contracts|assets|themes)/[^`\n]+\.(?:md|json)(?:#[^`\n]+)?)`",
+                markdown,
+            )):
+                if not (skill_dir / reference.split("#", 1)[0]).is_file():
+                    errors.append(f"{relative_source} 引用不存在: {reference}")
+    return entry_sizes, errors
 
 
 def validate_plan(plan: dict) -> list[str]:
@@ -181,6 +256,10 @@ def main() -> int:
         if (ROOT / relative_path).exists():
             errors.append(f"仍包含禁用文件: {relative_path}")
 
+    errors.extend(validate_agent_metadata(ROOT, "doubao-visualization"))
+    delegated_entry_sizes, delegated_errors = validate_delegated_routes(text)
+    errors.extend(delegated_errors)
+
     markdown_files = [
         SKILL,
         *ROOT.glob("references/*.md"),
@@ -208,7 +287,7 @@ def main() -> int:
         "原图",
         "HTML/SVG",
         "静态默认",
-        "地图禁用",
+        "地图路由",
         "按需加载",
         "附件交付",
     ]:
@@ -348,6 +427,8 @@ def main() -> int:
         "secondary": None,
     }
     invalid_plan_cases = [
+        {**generated_plan, "mode": "map-create"},
+        {**generated_plan, "secondary": "map-create"},
         {**generated_plan, "behavior": "interactive"},
         {**generated_plan, "source": "insufficient"},
         {**generated_plan, "secondary": "text_only"},
@@ -373,6 +454,7 @@ def main() -> int:
         "skill": str(ROOT),
         "skill_lines": len(text.splitlines()),
         "route_bytes": route_sizes,
+        "delegated_entry_bytes": delegated_entry_sizes,
         "errors": errors,
         "warnings": warnings,
         "status": "PASS" if not errors else "FAIL",

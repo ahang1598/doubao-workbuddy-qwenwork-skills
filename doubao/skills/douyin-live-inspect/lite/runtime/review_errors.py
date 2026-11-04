@@ -1,6 +1,7 @@
 """Safe validation feedback shared by single and batch review submissions."""
 
 ERRORS = {
+    'review batch timed out': ('LIVE_BATCH_REVIEW_TIMEOUT', '本批次已超时，保留已保存结果，跳过未完成片段并领取下一批。', 'review-next'),
     'review context superseded': ('REVIEW_SUPERSEDED', '原合同已被接管；查询原 context 的恢复回执，不重交或续领。', 'review-state'),
     'segment skipped': ('SEGMENT_SKIPPED', '该段已跳过判别，请 review-next 继续下一段，不补交规则结果。', 'review-next'),
     'missing ASR cannot clear speech rule': ('ASR_EVIDENCE_MISSING', '缺少语音证据，不能提交 no_hit；请读取最新片段及恢复状态。', 'review-next'),

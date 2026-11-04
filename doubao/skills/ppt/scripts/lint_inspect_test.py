@@ -60,6 +60,26 @@ def report(pages=None, document=None):
 
 
 class LintInspectTests(unittest.TestCase):
+    def test_contrast_overlay_details_preserve_message_and_hint(self):
+        import xml_lint
+
+        xml = (
+            '<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540"><slide><data>'
+            '<shape type="text" topLeftX="40" topLeftY="40" width="200" height="40">'
+            '<content color="rgba(31,35,41,1)" fontSize="16"><p>BODY TEXT</p></content></shape>'
+            '<shape type="rect" topLeftX="40" topLeftY="40" width="200" height="40">'
+            '<fill><fillColor color="rgba(244,244,244,1)"/></fill></shape>'
+            '</data></slide></presentation>'
+        )
+        payload = xml_lint.lint_xml(xml)
+        expected = next(item for slide in payload["slides"] for item in slide["issues"]
+                        if item["code"] == "text_color_contrast")
+        inspector = lint.Inspector(payload)
+        actual = next(row["issue"] for row in inspector.rows if row["code"] == "text_color_contrast")
+        self.assertEqual(actual, expected)
+        self.assertIn("后绘制", actual["message"])
+        self.assertIn("stacking order", actual["hint"])
+
     def args(self, *flags):
         return lint.parse_args(["--input", "response.json", *flags])
 

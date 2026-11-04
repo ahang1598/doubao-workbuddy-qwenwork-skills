@@ -1,3 +1,4 @@
+// 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -5,7 +6,8 @@ import { setTimeout as delay } from 'node:timers/promises';
 const failure = code => Object.assign(new Error('PROBE_EXECUTION_FAILED'), { code });
 
 // One owner for deadlines and children: a returned routing decision must not leave
-// authentication, pagination or telemetry running behind the conversation.
+// authentication or pagination running behind the conversation. Independent
+// best-effort telemetry is outside this business deadline.
 export function createProbeSession({ budgetMs = 10_000 } = {}) {
   const started = performance.now();
   const controller = new AbortController();

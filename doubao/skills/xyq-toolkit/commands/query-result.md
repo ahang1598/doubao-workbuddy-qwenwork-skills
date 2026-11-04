@@ -24,6 +24,8 @@ stdout 是 JSON；命令可能将错误编码进 JSON 并以退出码 0 返回�
 | `error_message` | 非空即错误，不能因为 `completed=false` 而忽略 |
 | `thread_id` / `run_id` | 对应的查询任务 |
 | `images[]` / `videos[]` | 成功后获取的媒体，每项含 `download_url`、`output_path` |
+| `videos[].draft` | 服务端明确返回时才输出；`true` 为样片，`false` 为成片，未返回时省略 |
+| `videos[].draft_task_id` | 原始方舟样片任务 ID，用于样片转成片；有值时才输出 |
 
 成功示例（ID、URL 和文件名仅为示意）：
 
@@ -39,6 +41,14 @@ stdout 是 JSON；命令可能将错误编码进 JSON 并以退出码 0 返回�
 ```
 
 任务尚未完成时通常返回 `completed=false`、空错误、空媒体数组。命令不提供完整会话消息、用户反问或可区分的所有状态；不能仅凭这个响应断言具体进度、取消状态或等待用户输入。轮询停止条件见 [共用流程](../workflows/async-delivery.md)。
+
+## 样片结果
+
+样片仍按普通视频下载，使用 `output_path` 向用户展示预览。保存所选视频的 `videos[].draft_task_id`，与该视频的预览文件保持一一对应。仅保存下载链接无法继续生成成片，不要用 thread/run、资产 ID 或编辑器 draft_key 替换该字段。
+
+样片可预览但未返回 `draft_task_id` 时，不能继续转成片。报告该字段缺失并保留原任务的 thread/run ID，不猜 ID，也不重新生成样片。
+
+用户明确要求生成成片后，使用 `generate-video --model Seedance_2.5_draft --draft-task-id DRAFT_TASK_ID`；详见 [两阶段生成](generate-video.md#seedance-25-draft-两阶段)。CLI 不自动发起第二阶段。普通视频没有样片字段时保持原来的输出形态。
 
 ## 下载行为
 

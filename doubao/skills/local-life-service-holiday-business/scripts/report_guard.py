@@ -61,7 +61,7 @@ def display_schema(data: dict) -> None:
         'store':'name city district category_l1 category_l2 mode count names categories',
         'collection':'route route_label platform_p0 backend_p0 key_gaps account_check scope_check release_ready',
         'overview':'headline emphasis summary source_note season_note season_differences store_translation',
-        'holidays':'mid_autumn national_day',
+        'holidays':'festivals',
         'insights':'trends hotspots peers ads products',
     }
     for k, allowed in schemas.items(): keys(data.get(k,{}),allowed,k)
@@ -69,7 +69,9 @@ def display_schema(data: dict) -> None:
         if k in data.get('collection',{}): keys(data['collection'][k],'checked total checked_ids',k)
     if 'account_check' in data.get('collection',{}): keys(data['collection']['account_check'],'status merchant_name checked_at','account_check')
     if 'scope_check' in data.get('collection',{}): keys(data['collection']['scope_check'],'status mode store_count display_name store_names','scope_check')
-    for h in data['holidays'].values(): keys(h,'date scene start end','holiday')
+    festivals=data.get('holidays',{}).get('festivals') or []
+    if not festivals:raise ValueError('holidays.festivals 至少需要一个节日/节点')
+    for i,h in enumerate(festivals,1):keys(h,'name date scene start end','holiday')
     for s in data['overview'].get('season_differences',[]):keys(s,'title body','season_differences')
     keys(data['overview'].get('store_translation',{}),'label headline description highlight_action_ids','store_translation')
     lists={
@@ -193,7 +195,10 @@ def prepare_report(data: dict, context: dict, *, allow_incomplete: bool=False) -
     year=int(d['report']['year']); day=iso_date(d['report']['report_date']); window(d['report']['window'])
     if day.year!=year:raise ValueError('报告年份与报告日期不一致')
     if iso_date(d['report']['window']['end'])>=day:raise ValueError('经营窗口应截至报告日前一个完整自然日')
-    for h in d['holidays'].values():
+    festivals=d['holidays'].get('festivals') or []
+    if not festivals:raise ValueError('holidays.festivals 至少需要一个节日/节点')
+    for i,h in enumerate(festivals,1):
+        if not h.get('name'):raise ValueError(f'节日 {i} 缺少名称')
         start,end=iso_date(h.get('start')),iso_date(h.get('end'))
         if start.year!=year or end.year!=year or start>end:raise ValueError('节日日期范围或年份无效')
         h['date']=start.strftime('%m.%d')+'—'+end.strftime('%m.%d')
@@ -282,4 +287,7 @@ def output_path(requested: Path, data: dict, *, data_only: bool=False) -> Path:
     status=data['report']['status_label']
     if 'P0采集未完成' in status:suffix='-运行中预览'
     stem=re.sub(r'[\\/:*?"<>|\x00-\x1f]','_',data['store']['name'])[:80]
-    return requested.parent/f'{stem}-{data["report"]["year"]}中秋国庆经营方案{suffix}.html'
+    title=data['report'].get('title') or '节日经营方案'
+    if not title.endswith('经营方案'):title='节日经营方案'
+    title=re.sub(r'[\\/:*?"<>|\x00-\x1f]','_',title)
+    return requested.parent/f'{stem}-{data["report"]["year"]}{title}{suffix}.html'

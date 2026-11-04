@@ -100,7 +100,7 @@ def coverage(store):
         message += f"；已检测 {reviewed_ms/1000:g} 秒"
         if asr_skipped:message += f"；ASR 失败跳过 {asr_skipped} 个，共 {asr_skipped_ms/1000:g} 秒"
         if skipped>asr_skipped:
-            label='结束后未完成检测' if status.get('finishing',{}).get('phase')=='completed' else '未检测（积压或超时，详见明细）'
+            label='结束后未完成检测' if status.get('finishing',{}).get('phase')=='completed' else '未检测（证据不足、积压或超时，详见明细）'
             message += f"；{label} {skipped-asr_skipped} 个，共 {(skipped_ms-asr_skipped_ms)/1000:g} 秒"
     if pending:
         ready_label = ('可进入判定（含已终结缺口）' if evidence_gap_warning else
@@ -239,7 +239,7 @@ def build_report(store, token=''):
             'hit_event_count':len(evidence), 'hit_count_basis':'按规则与证据事件计数，同一时间可命中多条规则',
             'rule_conclusions': [{'rule_id': r['id'], 'rule_name': r['name'], 'reasons': rule_conclusions[r['id']]}
                                  for r in rules if r['id'] in rule_conclusions],
-            'conclusion': {**scoped_conclusion, **({'scope':'本次没有完成抽检，无法给出质检结论' if not inspection_status['sampling']['completed_windows'] else '本次抽检范围内未发现规则命中' if not any(r['status']==2 for r in rules) else '本次结论仅适用于已完成的抽检范围'} if 'sampling' in inspection_status else
+            'conclusion': {**scoped_conclusion, **({'scope':'本次没有完成抽检，无法给出质检结论' if not inspection_status['sampling']['completed_windows'] else '本次抽检范围内未发现规则命中' if not any(r['status']==2 for r in rules) else '本次结论仅适用于已完成的抽检范围'} if inspection_status.get('sampling',{}).get('policy')=='lite_sample_v1' else
                               {'scope':'仅字幕检测；画面未检测，画面风险不在结论范围内'} if speech_only else {}), 'captured_content_reviewed': captured_content_reviewed,
                            'progress': 'completed' if inspection_status['report_ready'] or (terminal and captured_content_reviewed) else 'running',
                            'rule_counts': rule_counts,
@@ -381,12 +381,14 @@ def _processing_progress(task, cov, status, issues):
     return {'state':state,'title':title,'message':f"已判定 {cov['reviewed']} 个片段，剩余 {pending} 个。{message}"}
 
 
-def build_snapshot(store, token=''):
+def build_snapshot(store, token='', *, report=None, recap=None):
+    from runtime.capture_diagnostics import public_summary
     store=_SnapshotView(store)
     status_data = store.status()
     finish = status_data.get('finishing', {})
-    task, segments, report = store.task(), store.segments(), build_report(store, token)
-    recap = recap_report(store, token)
+    task, segments = store.task(), store.segments()
+    if report is None: report = build_report(store, token)
+    if recap is None: recap = recap_report(store, token)
     capture = task.get('capture_status', 'pending')
     worker = task.get('worker_status', 'pending')
     stopping = bool(task.get('stop_requested')) and capture not in ('stopped', 'ended', 'failed')
@@ -397,7 +399,11 @@ def build_snapshot(store, token=''):
         issue['show_warning'] = not (issue['stage'] == 'asr' and issue['state'] == 'evidence_gap'
                                     and not cov['speech_gap_warning'])
     progress = _processing_progress(task, cov, status_data, issues)
-    if 'sampling' in status_data:
+    if status_data.get('sampling',{}).get('policy')=='lite_video_full_v1':
+        reviewed=status_data['sampling']
+        progress['message']=f"已判定 {reviewed['sampled_ms']/1000:g} 秒 / {task['source_duration_ms']/1000:g} 秒。"
+        progress['message']+=' 检测已结束，覆盖详情见报告。' if finish.get('phase')=='completed' else ' 继续按时间顺序检测至片尾。'
+    elif 'sampling' in status_data:
         sampled=status_data['sampling']
         progress['message']=f"已完成 {sampled['completed_windows']} 个抽检窗口，抽检 {sampled['sampled_ms']/1000:g} 秒；正在判定 {sampled['active_windows']} 个，待判 {sampled['pending_windows']} 个。其余范围及跳过原因见报告。"
         if finish.get('phase')=='draining':progress['message']+=' 收尾总预算 60 秒，到期交付已完成结果。'
@@ -467,7 +473,7 @@ def build_snapshot(store, token=''):
         issues=[]
         progress={'state':'failed' if blocked or recap['status']=='failed' else 'processing' if reviewing else 'ready' if recap['available'] else 'generating','title':message,
                   'message':message if blocked or reviewing else '基于已检测内容生成质检报告和复盘。'}
-    return {'ok': True, 'report_blocked_reason':status_data.get('report_blocked_reason'), 'finishing': finish, 'issues': issues, 'sampling': status_data.get('sampling'), 'full_live':status_data.get('full_live'), 'processing_progress': progress,
+    return {'ok': True, **({'capture_failure':public_summary(task)} if capture=='failed' else {}), 'report_blocked_reason':status_data.get('report_blocked_reason'), 'finishing': finish, 'issues': issues, 'sampling': status_data.get('sampling'), 'full_live':status_data.get('full_live'), 'processing_progress': progress,
             'task': {'id': task.get('id'), 'name': task.get('name', '直播内容质检'),
             'inspection_policy':task.get('inspection_policy'),'kind': task.get('kind','live'), 'source_duration_ms': task.get('source_duration_ms'),
             'processed_ms': task.get('capture_observed_ms',0),

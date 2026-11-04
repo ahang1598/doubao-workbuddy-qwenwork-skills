@@ -18,7 +18,7 @@ metadata:
 
 | Shortcut | 说明 |
 |----------|------|
-| `+agenda` | 查看日程安排（默认今天） |
+| `+agenda` | 查看日程安排（默认今天）。调用该工具时，注意保留引用。 |
 | [`+meeting`](references/lark-calendar-meeting.md) | 通过日程事件 ID 获取关联的视频会议信息（meeting_id、meeting_note），日程开过视频会议才会有meeting_id,**注意**: 视频会议链接获取走+get命令 |
 | [`+create`](references/lark-calendar-create.md) | 创建日程并邀请参会人（ISO 8601 时间） |
 | [`+update`](references/lark-calendar-update.md) | 更新既有日程字段，或独立增量添加/移除参会人和会议室；重复性日程/例外必须传 `--apply-to`（详见 [重复性日程操作规范](references/lark-calendar-recurring.md)） |
@@ -32,6 +32,8 @@ metadata:
 | [`+list-attendees`](references/lark-calendar-list-attendees.md) | 列出日程的参与人和会议室（支持按 `--type` 过滤：user / resource / chat / third_party） |
 | `+meeting-chat-create` | 为日程创建会议群（返回 `meeting_chat_id`）；要求日程在本人主日历、有 WRITER 权限、≥2 名参会人且参会人对访客可见。整条重复性序列共用一个会议群 |
 | `+meeting-chat-get` | 查询日程绑定的会议群（返回 `meeting_chat_id`）；未建群时返回 `found:false` 而非报错 |
+| `+subscribe` | 订阅指定日历，需提供 `--calendar-id` |
+| `+unsubscribe` | 取消订阅指定日历，需提供 `--calendar-id` |
 
 ### `+get` — 单日程详情
 
@@ -146,6 +148,8 @@ lark-cli calendar +freebusy --start 2026-03-11T09:00:00+08:00 --end 2026-03-11T1
 ## 术语映射
 
 用户日常说的"帮我约个日历""查一下今天的日历"，实际意图是针对**日程（Event）**的创建或查询，而非操作日历（Calendar）容器本身。自动将口语化的"日历"意图映射为"日程"操作。
+
+明确要求「订阅/退订/取消订阅日历」时，对象是日历容器（`calendar_id`），用 `+subscribe` / `+unsubscribe`，不要映射成日程操作。
 
 ## 意图路由
 

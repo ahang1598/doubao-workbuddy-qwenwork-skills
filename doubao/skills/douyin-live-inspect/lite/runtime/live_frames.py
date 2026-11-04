@@ -90,7 +90,9 @@ def cloud_frame(store,row,source,offset,target,cancel):
     if task.get('asr_policy')=='remote_first':
         # Leave time for one local extraction before a video window expires.
         if task.get('inspection_policy')=='lite_sample_v1':deadline=min(deadline,row.get('created_at',time.time())+110)
-        deadline=min(deadline,task.get('finishing',{}).get('media_deadline_at',task.get('finishing',{}).get('deadline_at',float('inf'))))
+        finish=task.get('finishing',{})
+        finish_deadline=finish.get('media_deadline_at',finish.get('deadline_at'))
+        if finish_deadline is not None:deadline=min(deadline,finish_deadline)
     if time.time()>=deadline:return False
     if not record.get('task_id'):
         record={'status':'unknown','started_at':time.time(),'deadline_at':deadline}

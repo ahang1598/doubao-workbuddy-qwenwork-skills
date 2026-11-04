@@ -1,5 +1,6 @@
 """Bounded input for Agent-authored recaps; never wait for a model on stdin."""
 import io
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -80,16 +81,25 @@ def read_submission(input_file=None):
                 os.close(fd)
     except (OSError, UnicodeError):
         raise RecapInputError('RECAP_INPUT_UNREADABLE', '无法读取复盘输入，请检查文件是否存在且可读。') from None
+    try:
+        return _parse_submission(raw)
+    except RecapInputError as error:
+        # Keep only a local digest for no-progress recovery, never the report text.
+        error.recap_fingerprint = hashlib.sha256(raw).hexdigest()
+        raise
+
+
+def _parse_submission(raw):
     if len(raw) > MAX_BYTES:
         raise RecapInputError('RECAP_INPUT_TOO_LARGE', '复盘输入不能超过 2 MiB。')
     if not raw.strip():
         raise RecapInputError('RECAP_INPUT_REQUIRED', '复盘输入为空。')
     try:
-        value = json.loads(raw.decode('utf-8'))
+        value = json.loads(raw.decode('utf-8-sig'))
     except json.JSONDecodeError as error:
         # The parser's reason contains no document text; never echo error.doc.
         raise RecapInputError("RECAP_INVALID_JSON",
-                              f"JSON 语法错误：{error.msg}（第 {error.lineno} 行，第 {error.colno} 列）。请按位置局部修复，保留已有内容。",
+                              f"JSON 语法错误：{error.msg}（第 {error.lineno} 行，第 {error.colno} 列）。请按位置局部修复，保留已有内容；用 json.dump/JSON.stringify 序列化，不要全局替换引号或重写全文。",
                               line=error.lineno, column=error.colno) from None
     except (UnicodeError, ValueError, RecursionError):
         raise RecapInputError('RECAP_INVALID_JSON', '请提供完整、有效的 UTF-8 JSON。') from None

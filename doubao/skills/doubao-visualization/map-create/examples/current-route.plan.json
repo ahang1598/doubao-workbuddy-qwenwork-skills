@@ -1,0 +1,42 @@
+{
+  "contractRevision": 3,
+  "planVersion": "1.0",
+  "mapSpecId": "route-example",
+  "dataSources": [],
+  "encodings": [],
+  "organization": {
+    "dimension": "itinerary",
+    "evidenceRefs": [
+      "request"
+    ],
+    "viewPurposes": {
+      "all": {
+        "reason": "展示完整线路，不拆日期",
+        "evidenceRefs": []
+      }
+    }
+  },
+  "views": {
+    "all": {
+      "layers": [],
+      "filters": [],
+      "metrics": [],
+      "componentNodes": [],
+      "ui": {
+        "layout": "map-with-sidebar",
+        "placement": "left",
+        "density": "comfortable",
+        "sections": [
+          {
+            "id": "summary",
+            "componentId": "semi.card",
+            "binding": {
+              "source": "view.summary"
+            },
+            "selectedBy": "model"
+          }
+        ]
+      }
+    }
+  }
+}

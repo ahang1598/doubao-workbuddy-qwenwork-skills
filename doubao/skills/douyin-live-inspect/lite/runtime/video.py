@@ -1,4 +1,4 @@
-"""Finite local files: media PTS, atomic chunks and immutable source identity."""
+"""本地有限视频文件：维护媒体时间戳、原子分片和不可变的源文件身份。"""
 import hashlib
 import math
 import os
@@ -13,8 +13,9 @@ from runtime.mediakit import config
 
 
 class VideoError(ValueError):
-    def __init__(self, code):
+    def __init__(self, code, diagnostic=None):
         self.code = code
+        self.diagnostic = diagnostic or {}
         super().__init__(code)
 
 
@@ -24,6 +25,7 @@ def signature(path):
 
 
 def fingerprint(path):
+    """读取文件摘要并检查前后身份，防止分析过程中源文件被替换。"""
     before = signature(path)
     digest = hashlib.sha256()
     with path.open('rb') as handle:
@@ -33,25 +35,36 @@ def fingerprint(path):
 
 
 def inspect_video(source, ffprobe_bin='ffprobe'):
+    """验证本地视频可读、可解码且包含视频流，并返回固定源指纹。"""
     import json
     if not isinstance(source, str) or not Path(source).is_absolute() or any(ord(c) < 32 for c in source):
         raise VideoError('LOCAL_VIDEO_PATH_REQUIRED')
     path = Path(source).resolve()
     if not path.is_file() or not os.access(path, os.R_OK): raise VideoError('VIDEO_SOURCE_UNAVAILABLE')
     identity = fingerprint(path)
+    from runtime.diagnostics import failure_details, capture_process_details
     try:
         result = subprocess.run([ffprobe_bin, '-v', 'error', '-protocol_whitelist', 'file,pipe',
             '-show_format', '-show_streams', '-of', 'json', str(path)], capture_output=True, timeout=30)
-        data = json.loads(result.stdout) if result.returncode == 0 else {}
+    except (OSError, subprocess.SubprocessError) as error:
+        stage = 'probe_timeout' if isinstance(error, subprocess.TimeoutExpired) else 'probe_launch'
+        raise VideoError('VIDEO_INVALID', {**failure_details(error), 'stage': stage}) from error
+    if result.returncode:
+        raise VideoError('VIDEO_INVALID', {**capture_process_details(result.stderr, result.returncode), 'stage': 'probe_exit'})
+    try:
+        data = json.loads(result.stdout)
         duration = float(data.get('format', {}).get('duration', 0))
-    except (ValueError, OSError, subprocess.SubprocessError): raise VideoError('VIDEO_INVALID') from None
-    if not math.isfinite(duration) or duration <= 0 or not any(s.get('codec_type') == 'video' for s in data.get('streams', [])):
-        raise VideoError('VIDEO_INVALID')
+        valid = math.isfinite(duration) and duration > 0 and any(s.get('codec_type') == 'video' for s in data.get('streams', []))
+    except (ValueError, TypeError, AttributeError) as error:
+        raise VideoError('VIDEO_INVALID', {**failure_details(error), 'stage': 'probe_parse'}) from error
+    if not valid:
+        raise VideoError('VIDEO_INVALID', {'stage': 'probe_validate', 'category': 'invalid_media'})
     if signature(path) != {k: identity[k] for k in signature(path)}: raise VideoError('VIDEO_SOURCE_CHANGED')
     return str(path), {'source_duration_ms': round(duration * 1000), 'source_fingerprint': identity,'source_has_audio':any(s.get('codec_type')=='audio' for s in data.get('streams',[]))}
 
 
 def capture_video(task_dir, cancel=None, bridge=None):
+    """按任务策略采集视频；断点续办只复用已确认存在的分片，不覆盖已有结果。"""
     from runtime.media import guarded_capture, stop_requested, probe
     store = Store(task_dir)
     task = store.task()
@@ -115,6 +128,7 @@ def capture_video(task_dir, cancel=None, bridge=None):
 
 
 def capture_stream_video(store,cancel,bridge):
+    """以流式方式继续采集视频，结束状态由采集进程和停止信号共同决定。"""
     from runtime.media import capture_session
     from runtime.realtime import recording_segments
     task=store.task()
@@ -136,7 +150,7 @@ def capture_stream_video(store,cancel,bridge):
 
 
 def capture_sample_video(store, cancel, bridge):
-    """Seek only selected windows; one pending/preparing candidate is the prefetch budget."""
+    """Capture policy windows with one pending/preparing candidate as the prefetch budget."""
     from runtime.media import capture_session, stop_requested
     from runtime.sampling import video_windows, windows
     task=store.task()
@@ -146,7 +160,7 @@ def capture_sample_video(store, cancel, bridge):
             raise VideoError('VIDEO_SOURCE_CHANGED')
         identity=signature(source)
         store.update_task(capture_start_ms=0,capture_end_ms=task['source_duration_ms'],capture_status='running')
-        for index,(start,end) in enumerate(video_windows(task['source_duration_ms'])):
+        for index,(start,end) in enumerate(video_windows(task['source_duration_ms'], task)):
             while True:
                 store.finish_tick()
                 if stop_requested(store,cancel):

@@ -1,10 +1,11 @@
-import { observeOperation } from './formal-workflow.mjs';
-import { runCommand, isPreview } from './telemetry.mjs';
+import telemetry from '../telemetry/main.mjs';
+import { isPreview } from '../telemetry/main.mjs';
 import { requireOriginalTaskContext, assertTaskAccount, taskBindingError } from './task-binding.mjs';
 import { readFileSync } from 'node:fs';
 import { requestOpenAPI, OPENAPI_ENDPOINT } from './openapi-client.mjs';
 import { createConfirmationStore } from './confirmation-store.mjs';
 import { getAuthStatus, resolveProfileBinding } from './auth.mjs';
+// 操作层只执行 operation-contracts.json 声明的参数和接口，统一校验、脱敏、错误和遥测。
 const contracts = JSON.parse(readFileSync(new URL('./operation-contracts.json', import.meta.url), 'utf8'));
 const key = value => value.replace(/[-_]/g, '').toLowerCase();
 const executionSchema = { profile: 'string', account_id: 'string', environment: { const: 'online' }, dry_run: 'boolean', plan: 'boolean', confirm_token: 'string', mutuallyExclusive: ['dry_run', 'plan', 'confirm_token'] };
@@ -112,15 +113,13 @@ function redactPreview(value) {
   return value;
 }
 export async function executeOperation(operation, input = {}, deps = {}) {
-  return runCommand(operation, async () => {
-    const result = await performOperation(operation, input, deps);
-    if(!isPreview(input, contracts[operation]?.requiresConfirmation)) {
-      const normalized=Object.fromEntries(Object.entries(input).map(([k,v])=>[key(k),v]));
-      await observeOperation(operation,{profile:normalized.profile,account_id:normalized.accountid,project_name:normalized.projectname,task_id:normalized.taskid},result,{env:deps.env||process.env});
-    }
-    return result;
-  }, {
+  // 先规范化业务参数，再固定远端绑定，避免请求过程中账号或环境发生漂移。
+  return telemetry.runCommand({operation, input,
     skip:isPreview(input, contracts[operation]?.requiresConfirmation), env:deps.env,
+  }, async current => {
+    const result = await performOperation(operation, input, deps);
+    await current.operationCompleted({operation,input,result,requiresConfirmation:contracts[operation]?.requiresConfirmation});
+    return result;
   });
 }
 async function performOperation(operation, input = {}, deps = {}) {

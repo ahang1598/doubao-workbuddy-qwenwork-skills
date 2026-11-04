@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 # Adapted from skills_live_inspect_lite/runtime/credentials.py; content-only migration.
 """Workspace-scoped mediakit credentials; host environments are import-only."""
 from runtime.platform_support import fcntl, nofollow_open, private_directory, private_file

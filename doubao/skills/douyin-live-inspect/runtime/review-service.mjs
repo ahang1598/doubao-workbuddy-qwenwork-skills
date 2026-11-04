@@ -1,5 +1,8 @@
+// 复盘服务把已保存的质检证据交给分析流程，并将复盘结果绑定回原任务。
+// 质检摘要不能替代完整证据；证据不足必须保留缺口，不能推断为无风险。
+
 import { requireOriginalTaskContext } from './task-binding.mjs';
-import { commandUserAgent, commandSignal } from './telemetry.mjs';
+import { commandUserAgent, commandSignal } from '../telemetry/main.mjs';
 import { open, rm } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { basename, extname, resolve } from 'node:path';

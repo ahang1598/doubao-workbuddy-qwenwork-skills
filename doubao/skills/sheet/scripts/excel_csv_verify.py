@@ -275,12 +275,6 @@ def main() -> int:
     ap.add_argument("--checkpoints", help="检查点 JSON，协议同 excel_formula_verify.py")
     args = ap.parse_args()
 
-    parsed = read_matrix(Path(args.csv_file), args.delimiter)
-    if parsed["status"] != "ok":
-        print(json.dumps(parsed, ensure_ascii=False, indent=2))
-        print(INVALID_INPUT_HINT.format(error=parsed["error"]), file=sys.stderr)
-        return 3
-
     expect_headers = None
     if args.expect_headers:
         try:
@@ -306,6 +300,23 @@ def main() -> int:
                              ensure_ascii=False, indent=2))
             return 3
 
+    try:
+        if len(args.delimiter) != 1 or args.delimiter in "\r\n\0":
+            raise ValueError("--delimiter 必须是一个非换行、非 NUL 字符")
+        items, checkpoint_error = load_checkpoints(args.checkpoints, require_sheet=False)
+        if checkpoint_error:
+            raise ValueError(checkpoint_error)
+    except (OSError, ValueError) as exc:
+        print(json.dumps({"status": "invalid_input", "error": str(exc)}, ensure_ascii=False))
+        print(f"[args] {exc}；尚未读取 CSV。", file=sys.stderr)
+        return 3
+
+    parsed = read_matrix(Path(args.csv_file), args.delimiter)
+    if parsed["status"] != "ok":
+        print(json.dumps(parsed, ensure_ascii=False, indent=2))
+        print(INVALID_INPUT_HINT.format(error=parsed["error"]), file=sys.stderr)
+        return 3
+
     rows = parsed["rows"]
     result: Dict[str, Any] = {
         "status": "success",
@@ -322,15 +333,10 @@ def main() -> int:
         else:
             result["baseline"] = compare_baseline(rows, base["rows"])
 
-    checkpoint_error = None
-    if args.checkpoints:
-        items, checkpoint_error = load_checkpoints(args.checkpoints, require_sheet=False)
-        if checkpoint_error:
-            result["checkpoints"] = {"status": "invalid", "reason": checkpoint_error}
-        else:
-            stem = Path(args.csv_file).stem
-            result["checkpoints"] = run_checkpoints(
-                rows, stem if "!" not in stem else "CSV", items)
+    if items:
+        stem = Path(args.csv_file).stem
+        result["checkpoints"] = run_checkpoints(
+            rows, stem if "!" not in stem else "CSV", items)
 
     structure = result["structure"]
     baseline = result.get("baseline") or {}

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 from __future__ import annotations
 
+import copy
 import itertools
 import json
 import re
@@ -16,9 +17,200 @@ from unittest import mock
 
 import sxsd_validator
 import xml_lint
+from color_contrast_check_test import formatted_title_xml, paint_alpha_xml, rowspan_table_xml, title_sampling_xml
+
+
+class ContrastSamplingIntegrationTest(unittest.TestCase):
+    def test_formatting_alpha_and_rowspan_agree_across_entrypoints(self) -> None:
+        fixtures = [formatted_title_xml(tag, x) for tag in ("a", "u", "del") for x in (180, 64)]
+        fixtures += [paint_alpha_xml(tag, position, alpha, 1)
+                     for tag in ("shape", "icon") for position in ("behind", "above") for alpha in (0, .5, 1)]
+        fixtures.append(rowspan_table_xml())
+        for index, xml in enumerate(fixtures):
+            with self.subTest(fixture=index):
+                self.assert_contrast_agrees(xml)
+
+    def assert_contrast_agrees(self, xml: str) -> dict:
+        checker = xml_lint.color_contrast_check
+        result = xml_lint.lint_xml(xml)
+        records, slides = checker.parse_xml_root(ET.fromstring(xml))
+        standalone = checker.check(records, slides, "", checker.DEFAULT_CONTRAST_GATE)[0]
+        issues = [issue for slide in result["slides"] for issue in slide["issues"]
+                  if issue["code"] == "text_color_contrast"]
+        failures = [item for item in standalone if item["verdict"] == "FAIL"]
+        self.assertEqual(len(issues), len(failures))
+        for issue, item in zip(issues, failures):
+            self.assertEqual(issue["level"], checker.lint_level(item))
+            self.assertEqual(issue["target"], {"slide_number": item["slide"], "xml_path": item["object_path"]})
+            self.assertEqual(issue["message"], checker.issue_message(item))
+        self.assertFalse(result.get("issues", []))
+        self.assertFalse(any(issue["code"].startswith("sxsd") for slide in result["slides"] for issue in slide["issues"]))
+        return result
+
+    def test_title_and_low_contrast_agree_across_entrypoints(self) -> None:
+        for x in (180, 140):
+            with self.subTest(x=x):
+                self.assert_contrast_agrees(title_sampling_xml(x))
+        self.assert_contrast_agrees(title_sampling_xml(foreground="rgba(210,210,210,1)"))
+
+    def test_real_occlusion_still_has_geometry_error(self) -> None:
+        for x, width, alpha in ((64, 30, 1), (110, 30, 1), (64, 200, 1), (64, 200, .75)):
+            with self.subTest(x=x, width=width, alpha=alpha):
+                result = self.assert_contrast_agrees(title_sampling_xml(x, width, panel_color=f"rgba(255,255,255,{alpha})"))
+                self.assertTrue(any(issue["code"] == "bbox_overlap" and "covers text" in issue["message"]
+                                    for issue in result["slides"][0]["errors"]))
+
+    def test_thin_occlusion_between_samples_is_still_checked_by_geometry(self) -> None:
+        result = self.assert_contrast_agrees(title_sampling_xml(85, 10))
+        issues = result["slides"][0]["issues"]
+        self.assertFalse(any(issue["code"] == "text_color_contrast" for issue in issues))
+        self.assertTrue(any(issue["code"] == "bbox_overlap" and "covers text" in issue["message"] for issue in issues))
+
+    def test_fallback_layouts_agree_across_entrypoints(self) -> None:
+        for old, new in (
+            ('目录', '目<span color="rgba(210,210,210,1)">录</span>'),
+            ('目录', '目<span fontSize="20">录</span>'),
+            ('目录', '目<br/>录'),
+            ('</p>', '</p><p>附录</p>'),
+            ('type="text"', 'type="text" rotation="15"'),
+            ('type="text"', 'type="text" vert="vert"'),
+            ('wrap="false"', 'wrap="false" autoFit="normal-auto-fit"'),
+            ('wrap="false"', 'wrap="true"'),
+        ):
+            with self.subTest(new=new):
+                xml = title_sampling_xml().replace(old, new)
+                if new == 'wrap="true"':
+                    xml = xml.replace('width="200"', 'width="40"')
+                self.assert_contrast_agrees(xml)
+
+    def test_theme_and_page_paths_are_preserved(self) -> None:
+        root = ET.fromstring(title_sampling_xml())
+        second = copy.deepcopy(root[0])
+        second.find('.//{https://www.larkoffice.com/sml/2.0}shape').set("topLeftX", "400")
+        root.append(second)
+        for span in root.iter():
+            if xml_lint.xml_local_name(span.tag) in {"span", "content"}:
+                span.attrib.pop("color", None)
+        # Theme default belongs to the full presentation, not any per-page parse.
+        theme = ET.fromstring('<theme xmlns="https://www.larkoffice.com/sml/2.0">'
+                              '<textStyles><body fontColor="rgba(210,210,210,1)"/></textStyles></theme>')
+        root.insert(0, theme)
+        xml = ET.tostring(root, encoding="unicode").replace("ns0:", "").replace("xmlns:ns0", "xmlns")
+        records, _ = xml_lint.color_contrast_check.parse_xml_root(root)
+        self.assertEqual([r["fg_color"] for r in records], ["rgba(210,210,210,1)"] * 2)
+        self.assertEqual([r["sample_bbox"][0] for r in records], [64, 400])
+        self.assert_contrast_agrees(xml)
+
+    def test_full_lint_reuses_geometry_and_standalone_extracts_once(self) -> None:
+        root = ET.fromstring(title_sampling_xml().replace('目录', '目<span>录</span>'))
+        with mock.patch.object(xml_lint, "extract_elements", wraps=xml_lint.extract_elements) as extract:
+            xml_lint.color_contrast_check.parse_xml_root(root)
+            self.assertEqual(extract.call_count, 1)
+        supplied = []
+        original = xml_lint.resolve_contrast_sample_bboxes
+
+        def capture(slide_root, slide_number, elements=None):
+            self.assertIsNotNone(elements)
+            supplied.append(elements)
+            return original(slide_root, slide_number, elements)
+
+        with mock.patch.object(xml_lint, "resolve_contrast_sample_bboxes", side_effect=capture), \
+                mock.patch.object(xml_lint, "lint_slide", wraps=xml_lint.lint_slide) as geometry:
+            result = xml_lint.lint_xml(title_sampling_xml())
+            self.assertEqual(len(result["slides"]), 1)
+            self.assertFalse(any(issue["code"] == "text_color_contrast"
+                                 for issue in result["slides"][0]["issues"]))
+            self.assertEqual(geometry.call_count, 1)
+        self.assertEqual(len(supplied), 1)
+        self.assertEqual(supplied[0][0]["xml_path"], "slide[1]/data/shape[1]")
+
+    def test_cli_json_target_levels_and_exit_codes(self) -> None:
+        scripts = Path(__file__).resolve().parent
+        fixtures = {
+            "adjacent": title_sampling_xml(),
+            "low_contrast": title_sampling_xml(foreground="rgba(210,210,210,1)"),
+            "occluded": title_sampling_xml(64, 200),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            for name, xml in fixtures.items():
+                with self.subTest(case=name):
+                    path = Path(directory) / f"{name}.xml"
+                    path.write_text(xml, encoding="utf-8")
+                    contrast = subprocess.run(
+                        [sys.executable, str(scripts / "color_contrast_check.py"), "--xml", str(path), "--format", "json"],
+                        capture_output=True, text=True, check=False,
+                    )
+                    lint = subprocess.run(
+                        [sys.executable, str(scripts / "xml_lint.py"), "--input", str(path)],
+                        capture_output=True, text=True, check=False,
+                    )
+                    self.assertEqual(contrast.stderr, "")
+                    self.assertEqual(lint.stderr, "")
+                    cjson, ljson = json.loads(contrast.stdout), json.loads(lint.stdout)
+                    self.assertEqual(contrast.returncode, int(cjson["summary"]["has_blocking_issues"]))
+                    self.assertEqual(lint.returncode, int(ljson["summary"]["error_count"] > 0))
+                    issues = [issue for slide in ljson["slides"] for issue in slide["issues"]
+                              if issue["code"] == "text_color_contrast"]
+                    self.assertEqual(len(issues), 0 if name == "adjacent" else 1)
+                    self.assertEqual(len(issues), len(cjson["issues"]))
+                    for cissue, lissue in zip(cjson["issues"], issues):
+                        self.assertEqual(cissue["level"], "error")
+                        self.assertEqual(cissue["level"], lissue["level"])
+                        self.assertEqual(cissue["message"], lissue["message"])
+                        self.assertEqual(cissue["xml_path"], lissue["target"]["xml_path"])
+                        self.assertEqual(cissue["slide_number"], lissue["target"]["slide_number"])
 
 
 class XmlTextOverlapLintGeometryTest(unittest.TestCase):
+    def test_contrast_table_span_matches_expanded_columns_in_full_report(self) -> None:
+        def contrast_issues(columns: str, panel_x: int) -> list[dict]:
+            cell = ('<td><fill><fillColor color="rgba(255,255,255,1)"/></fill>'
+                    '<content color="rgba(31,35,41,1)" fontSize="16"><p>CELL</p></content></td>')
+            xml = (
+                '<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">'
+                '<slide><data><table topLeftX="56" topLeftY="156" width="540" height="160">'
+                f'<colgroup>{columns}</colgroup>' + ('<tr height="32">' + cell * 3 + '</tr>') * 5
+                + f'</table><shape type="rect" topLeftX="{panel_x}" topLeftY="140" width="284" height="190">'
+                '<fill><fillColor color="rgba(244,244,244,1)"/></fill></shape></data></slide></presentation>'
+            )
+            result = xml_lint.lint_xml(xml)
+            return [issue for slide in result["slides"] for issue in slide["issues"]
+                    if issue["code"] == "text_color_contrast"]
+
+        expanded = '<col width="160"/><col width="190"/><col width="190"/>'
+        compressed = '<col width="160"/><col width="190" span="2"/>'
+        self.assertEqual(contrast_issues(compressed, 620), [])
+        self.assertEqual(contrast_issues(expanded, 620), [])
+        covered = contrast_issues(compressed, 410)
+        self.assertEqual(len(covered), 5)
+        self.assertTrue(all(issue["level"] == "error" for issue in covered))
+        self.assertEqual(covered, contrast_issues(expanded, 410))
+
+    def test_contrast_overlay_message_and_hint_agree_across_outputs(self) -> None:
+        xml = (
+            '<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">'
+            '<slide><data><shape type="text" topLeftX="40" topLeftY="40" width="200" height="40">'
+            '<content color="rgba(31,35,41,1)" fontSize="16"><p>BODY TEXT</p></content></shape>'
+            '<shape type="rect" topLeftX="40" topLeftY="40" width="200" height="40">'
+            '<fill><fillColor color="rgba(244,244,244,1)"/></fill></shape>'
+            '</data></slide></presentation>'
+        )
+        report = xml_lint.lint_xml(xml)
+        issues = [issue for slide in report["slides"] for issue in slide["issues"]
+                  if issue["code"] == "text_color_contrast"]
+        self.assertEqual(len(issues), 1)
+        issue = issues[0]
+        self.assertEqual(issue["level"], "error")
+        self.assertIn("后绘制", issue["message"])
+        self.assertIn("position", issue["hint"])
+        self.assertIn("stacking order", issue["hint"])
+        checker = xml_lint.color_contrast_check
+        results, _ = checker.check(*checker.parse_xml_root(ET.fromstring(xml)), "", checker.DEFAULT_CONTRAST_GATE)
+        compact = checker.production_result(results[0])
+        self.assertEqual(set(compact), {"slide_number", "slide_id", "xml_path", "level", "message"})
+        self.assertEqual(compact["message"], issue["message"])
+        self.assertEqual(compact["level"], issue["level"])
+
     def assertNoXmlTextOverlapLintErrors(self, result: dict, sample_name: str) -> None:
         issue_summaries = []
         for slide in result.get("slides", []):
@@ -825,9 +1017,9 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
                 <shape type="text" topLeftX="20" topLeftY="20" width="300" height="60">
                   <content><p marginRight="4"><span letterSpacing="1">Text</span></p></content>
                 </shape>
-                <line startX="20" startY="100" endX="300" endY="100" presetHandlers="0">
+                <polyline topLeftX="20" topLeftY="100" width="280" height="40" presetHandlers="0">
                   <border/>
-                </line>
+                </polyline>
               </data>
             </slide>
             """
@@ -839,6 +1031,17 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             [],
         )
         self.assertEqual(result["summary"]["error_count"], 0)
+
+    def test_lint_xml_rejects_polyline_control_points_on_line(self) -> None:
+        result = xml_lint.lint_xml(
+            '<slide xmlns="https://www.larkoffice.com/sml/2.0"><data>'
+            '<line startX="20" startY="100" endX="300" endY="100" presetHandlers="0">'
+            '<border/></line></data></slide>'
+        )
+        issues = result["slides"][0]["issues"]
+        self.assertEqual(result["summary"]["error_count"], 1)
+        self.assertEqual([(issue["code"], issue.get("tag"), issue.get("attr")) for issue in issues],
+                         [("sxsd_unsupported_attr", "line", "presetHandlers")])
 
     def test_lint_xml_keeps_unrelated_unsupported_and_missing_attrs(self) -> None:
         result = xml_lint.lint_xml(
@@ -1780,6 +1983,36 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertNotIn("no-wrap-label", wrap_ids)
         self.assertNotIn("comfortable", wrap_ids)
 
+    def test_lint_xml_skips_auto_fit_and_cjk_labels_that_do_not_actually_wrap(self) -> None:
+        # These mirror I9dd p6/p12. normal-auto-fit shrinks text to fit, and CJK-containing labels
+        # use the direct East-Asian width estimate; one embedded English word must not switch the
+        # whole label to the pure-Latin 85% risk band.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <shape id="shape-fit" type="text" topLeftX="40" topLeftY="40" width="164.6101519337019" height="24">
+                  <content fontSize="16" autoFit="shape-auto-fit"><p>abc123!!%图表遮挡</p></content>
+                </shape>
+                <shape id="normal-fit" type="text" topLeftX="40" topLeftY="100" width="104" height="33">
+                  <content textType="caption" fontSize="11" bold="true" textAlign="center" autoFit="normal-auto-fit">
+                    <p>Token 表示 (7168维)</p>
+                  </content>
+                </shape>
+                <shape id="mixed-cjk" type="text" topLeftX="40" topLeftY="160" width="58.5" height="12">
+                  <content textType="caption" fontSize="9"><p>每token激活</p></content>
+                </shape>
+              </data>
+            </slide>
+            """
+        )
+        overflow_ids = {
+            issue["elements"][0]
+            for issue in result["slides"][0]["issues"]
+            if issue["code"] == "text_may_overflow_shape"
+        }
+        self.assertEqual(overflow_ids, set())
+
     def test_lint_xml_skips_vertical_text_in_width_wrap_check(self) -> None:
         result = xml_lint.lint_xml(
             """
@@ -1902,6 +2135,73 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             issue for issue in result["slides"][0]["issues"] if issue["code"] == "text_may_overflow_shape"
         ]
         self.assertEqual(overflow_issues, [])
+
+    def test_lint_xml_detects_compact_rating_label_overflow_and_collision(self) -> None:
+        # Slides I9dd p34: the compact 23px rating value is visibly taller than
+        # its 24px box and touches the label above it. First-line layout metrics
+        # alone incorrectly treated the value as 23px tall and clipped the label
+        # glyph box to 12px, losing both defects.
+        result = xml_lint.lint_xml(
+            """
+            <slide xmlns="https://www.larkoffice.com/sml/2.0">
+              <data>
+                <shape id="rating-label" type="text" topLeftX="85" topLeftY="319" width="115" height="12">
+                  <content verticalAlign="top" textType="caption" fontSize="11" fontFamily="Arial" wrap="false">
+                    <p>RATING · 评级</p>
+                  </content>
+                </shape>
+                <shape id="rating-value" type="text" topLeftX="85" topLeftY="332" width="115" height="24">
+                  <content verticalAlign="top" textType="headline" fontSize="23" fontFamily="Georgia"
+                    bold="true" lineSpacing="multiple:0.885" wrap="false">
+                    <p>增持</p>
+                  </content>
+                </shape>
+              </data>
+            </slide>
+            """
+        )
+
+        issues = result["slides"][0]["issues"]
+        overflow = [
+            issue
+            for issue in issues
+            if issue["code"] == "text_may_overflow_shape" and issue["elements"] == ["rating-value"]
+        ]
+        collisions = [
+            issue
+            for issue in issues
+            if issue["code"] == "bbox_overlap" and set(issue["elements"]) == {"rating-label", "rating-value"}
+        ]
+        self.assertEqual(len(overflow), 1)
+        self.assertEqual(overflow[0]["overflow_axis"], "height")
+        self.assertGreater(overflow[0]["estimated_height"], overflow[0]["available_height"])
+        self.assertEqual(len(collisions), 1)
+
+    def test_compact_single_line_glyph_height_handles_cjk_and_latin_descenders(self) -> None:
+        def element(text: str) -> dict:
+            return xml_lint.extract_elements(
+                f"""
+                <slide xmlns="https://www.larkoffice.com/sml/2.0"><data>
+                  <shape type="text" topLeftX="0" topLeftY="0" width="120" height="24">
+                    <content fontSize="23" lineSpacing="multiple:0.885" wrap="false"><p>{text}</p></content>
+                  </shape>
+                </data></slide>
+                """
+            )[0]
+
+        cjk = element("增持")
+        descender = element("gypq")
+        caps = element("RATING")
+
+        self.assertAlmostEqual(
+            xml_lint.compact_single_line_glyph_height(cjk, xml_lint.estimate_text_block_height(cjk)),
+            27.6,
+        )
+        self.assertAlmostEqual(
+            xml_lint.compact_single_line_glyph_height(descender, xml_lint.estimate_text_block_height(descender)),
+            27.6,
+        )
+        self.assertIsNone(xml_lint.compact_single_line_glyph_height(caps, xml_lint.estimate_text_block_height(caps)))
 
     def test_lint_xml_allows_single_line_width_estimation_jitter(self) -> None:
         result = xml_lint.lint_xml(
@@ -2271,7 +2571,7 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
         self.assertEqual(result["summary"]["error_count"], 2)
         self.assertEqual(result["summary"]["warning_count"], 0)
 
-    def test_lint_xml_text_may_overflow_shape_downgrades_background_decoration_to_info(self) -> None:
+    def test_lint_xml_skips_background_decoration_self_overflow(self) -> None:
         result = xml_lint.lint_xml(
             """
             <slide xmlns="https://www.larkoffice.com/sml/2.0">
@@ -2291,16 +2591,14 @@ class XmlTextOverlapLintGeometryTest(unittest.TestCase):
             for issue in result["slides"][0]["issues"]
             if issue["code"] == "text_may_overflow_shape"
         }
-        self.assertEqual(issues["bg-deco"]["level"], "info")
-        # The faint 0.3-alpha numeral is also a contrast warning; this test is
-        # about the overflow level, so count only text_may_overflow_shape.
+        self.assertNotIn("bg-deco", issues)
+        # The faint 0.3-alpha numeral is also a contrast warning; the decorative text must not
+        # produce a self-overflow issue.
         self.assertEqual(
             [issue["code"] for issue in result["slides"][0]["warnings"]],
             ["text_color_contrast"],
         )
-        self.assertEqual(result["summary"]["info_count"], 1)
-        self.assertEqual(result["slides"][0]["infos"], [issues["bg-deco"]])
-        self.assertIn("background decoration", issues["bg-deco"]["message"])
+        self.assertEqual(result["summary"]["info_count"], 0)
 
     def test_lint_xml_reports_shape_alpha_ghost_text_out_of_canvas_but_allows_overlap(self) -> None:
         result = xml_lint.lint_xml(
@@ -7777,8 +8075,8 @@ class TransitionSemanticsTest(TransitionTestCase):
     def test_quick_ref_table_matches_constant_table(self) -> None:
         """quick-ref 教模型写的东西不能被自己的 lint 拒掉。
 
-        quick-ref 只列生成时选用的四种效果及 none，lint 保留全量类型以兼容已有文稿。
-        quick-ref 中每种效果的参数仍必须与 lint 一致。
+        两张表一旦分叉，模型照 quick-ref 写出来的切换会被 xml_lint 判错，而两边看起来
+        都「有道理」，靠人眼比对发现不了。
 
         这份脚本连同单测会被整体同步到 ccm-platform/lark_cli_lint 去跑服务端 lint，那边
         只同步 scripts/ 与 references/xml/ 下运行期依赖的两个文件，不带 quick-ref，所以
@@ -7786,11 +8084,7 @@ class TransitionSemanticsTest(TransitionTestCase):
         """
         if not self.QUICK_REF_PATH.exists():
             self.skipTest(f"quick-ref not synced into this checkout: {self.QUICK_REF_PATH}")
-        quick_ref_table = self.parse_quick_ref_table()
-        self.assertEqual(set(quick_ref_table), {"fade", "cover", "pull", "push", "none"})
-        for effect, rules in quick_ref_table.items():
-            with self.subTest(type=effect):
-                self.assertEqual(rules, xml_lint.TRANSITION_PARAM_RULES[effect])
+        self.assertEqual(self.parse_quick_ref_table(), xml_lint.TRANSITION_PARAM_RULES)
 
     def test_default_value_combination_is_legal_for_every_row(self) -> None:
         """每行的缺省值组合都要放行——表写窄了会把合法写法误杀。"""

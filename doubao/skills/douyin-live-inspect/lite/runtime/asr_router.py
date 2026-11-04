@@ -1,4 +1,4 @@
-"""Explicit per-task local-first policy, with durable per-segment backend selection."""
+"""显式的逐任务本地优先策略，并持久化每个片段的 ASR 后端选择。"""
 import os
 import shutil
 import subprocess
@@ -13,6 +13,7 @@ from runtime.local_asr import Processor as LocalProcessor, LocalASR, ASRError
 
 
 def cloud_available(store=None, *, capability="asr", probe_timeout=10):
+    """在使用云端媒体能力前做只读探测，不把探测失败伪装成本地成功。"""
     binary=shutil.which('mediakit-cli')
     if not binary: return {'ready':False,'code':'CLOUD_ASR_UNAVAILABLE'}
     if store is None:
@@ -42,6 +43,7 @@ def initialize_cloud(store):
 
 
 class Processor:
+    """按任务策略处理语音，并为每个片段记录可恢复的后端和失败原因。"""
     def __init__(self,store):
         self.local=LocalProcessor(store)
         self.local_lock=threading.Lock()
@@ -49,21 +51,35 @@ class Processor:
         self.local_workers=[self.local]
         self.local_available=[self.local]
         self.local_limit=10
+        self.local_unavailable = None
         self.ready_model=queue.Queue(maxsize=1)
         self.cache_stop=threading.Event()
         if store.task().get('pipeline_version')==2 and store.task().get('asr_primary_backend')=='mediakit':
             def check_cache():
                 from runtime.artifacts import prepare
+                from runtime.model_preparation import ACTIVE, record_backup, status
                 # Read-only cache probe in parallel with cloud work; recovery
                 # never waits for downloads or for this potentially slow check.
                 while not self.cache_stop.is_set():
-                    try:check=prepare(task=store.task(),install=False,model_only=True)
-                    except Exception:check={'ready':False}
+                    task=store.task()
+                    try:check=prepare(task=task,install=False,model_only=True)
+                    except Exception:check={'ready':False,'issues':[{'code':'MODEL_PREPARATION_FAILED'}]}
+                    if self.cache_stop.is_set():return
+                    if not check.get('ready') and task.get('model_preparation_id'):
+                        try:
+                            preparation=status(task['model_preparation_id'])
+                            check={**check,'waiting':preparation['status'] in ACTIVE}
+                            if preparation['status']=='failed':check['issues']=[{'code':preparation.get('code') or 'MODEL_PREPARATION_FAILED'}]
+                        except Exception:check={'ready':False,'issues':[{'code':'MODEL_PREPARATION_FAILED'}]}
+                    if self.cache_stop.is_set():return
+                    if not task.get('model_preparation_id') and task.get('local_backup_status')=='preparing' and not check.get('ready'):
+                        check={**check,'waiting':True}
                     if check.get('ready'):
                         if self.cache_stop.is_set():return
                         self.ready_model.put(check)
-                        if store.task().get('asr_policy')=='remote_first':store.update_task(local_backup_status='ready')
+                        record_backup(store,check,observed=task)
                         return
+                    record_backup(store,check,observed=task)
                     self.cache_stop.wait(2)
             threading.Thread(target=check_cache,daemon=True).start()
     def close(self):
@@ -79,10 +95,21 @@ class Processor:
                     self.local.bridge.initialize(cancel)
                 yield self.local
             return
+        task = store.task()
+        identity = (task.get('asr_fallback_runtime_root') or task.get('asr_runtime_root'),
+                    task.get('asr_fallback_runtime') or task.get('asr_runtime'))
         while True:
             with self.local_pool:
                 if cancel is not None and cancel.is_set():raise ASRError('ASR_CANCELLED')
-                if self.local_available:
+                if self.local_unavailable and self.local_unavailable[0] == identity:
+                    worker = next((w for w in self.local_available if w.bridge is not None), None)
+                    if worker is None:
+                        if any(w.bridge is not None for w in self.local_workers):
+                            self.local_pool.wait(.1)
+                            continue
+                        raise ASRError(self.local_unavailable[1])
+                    self.local_available.remove(worker)
+                elif self.local_available:
                     worker=self.local_available.pop()
                 elif len(self.local_workers)<self.local_limit:
                     worker=LocalProcessor(store)
@@ -105,8 +132,14 @@ class Processor:
                                 continue
                         self.local_pool.notify()
                     raise
-                except Exception:
+                except Exception as error:
                     worker.close()
+                    if isinstance(error, ASRError) and error.code in {'ASR_RUNTIME_UNAVAILABLE', 'ASR_RUNTIME_INCOMPATIBLE',
+                            'ASR_RUNTIME_NOT_FOUND', 'ASR_RUNTIME_INVALID',
+                            'ASR_DEPENDENCY_UNAVAILABLE', 'ASR_DEPENDENCY_INCOMPATIBLE'}:
+                        # A changed model identity or a resumed processor permits recovery.
+                        with self.local_pool:
+                            self.local_unavailable = (identity, error.code)
                     with self.local_pool:
                         self.local_available.append(worker)
                         self.local_pool.notify()
@@ -119,13 +152,16 @@ class Processor:
                 self.local_pool.notify()
 
     def bind_ready_fallback(self,store):
-        with self.local_lock:
+        # The caller owns the finite handoff budget; a busy local session cannot extend it.
+        if not self.local_lock.acquire(blocking=False):return False
+        try:
             task=store.task()
             if task.get('asr_primary_backend')!='mediakit' or task.get('asr_fallback_runtime'):
                 return True
             try:check=self.ready_model.get_nowait()
             except queue.Empty:check={'ready':False}
             return bool(check.get('ready')) and store.bind_fallback_model(check)
+        finally:self.local_lock.release()
     def local_backup(self,store,segment,cancel):
         started=time.monotonic()
         try:

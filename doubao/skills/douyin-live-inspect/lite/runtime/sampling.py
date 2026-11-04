@@ -1,10 +1,11 @@
-"""Versioned Lite inspection windows. Raw media rows never carry sampling decisions."""
+"""版本化 Lite 检测窗口：兼容历史抽检与全视频连续检测。"""
 import json
 import math
 import time
 from runtime.store import Store, ASR_DONE, FRAME_DONE, encode, interval_ms, uncovered_ranges
 
 POLICY = 'lite_sample_v1'
+VIDEO_FULL_POLICY = 'lite_video_full_v1'
 PARAMETERS = {'period_ms': 60000, 'window_ms': 20000, 'max_frames': 2,
               'pending_seconds': 120, 'review_seconds': 120, 'finish_seconds': 60,
               'video_max_windows': 10}
@@ -13,12 +14,15 @@ REASONS = {'backlog_skipped': '积压跳过', 'review_timeout': '判定超时',
 
 
 def enabled(task):
-    return task.get('inspection_policy') == POLICY
+    return task.get('inspection_policy') in {POLICY, VIDEO_FULL_POLICY}
 
 
-def video_windows(duration):
+def video_windows(duration, task=None):
     if type(duration) is not int or duration <= 0:
         raise ValueError('video duration must be positive milliseconds')
+    if task and task.get('inspection_policy') == VIDEO_FULL_POLICY:
+        step = int(task.get('segment_seconds', 30) * 1000)
+        return [(start, min(start + step, duration)) for start in range(0, duration, step)]
     count = min(10, math.ceil(duration / 60000))
     result = []
     for i in range(count):
@@ -47,6 +51,7 @@ def skip(row, reason, now):
 
 
 def tick(store, conn, now=None):
+    """推进一次抽检窗口，只创建策略允许的窗口，不把未计划内容当作已检测。"""
     now = time.time() if now is None else now
     task = store._task(conn)
     state = task.get('finishing', {})
@@ -56,6 +61,13 @@ def tick(store, conn, now=None):
                  '(session_id TEXT,idx INTEGER,data TEXT NOT NULL,PRIMARY KEY(session_id,idx))')
     raw = Store._segments(store, conn)
     rows = windows(conn, store.session_id)
+    if task.get('kind') == 'video':
+        from runtime.transaction import check_inspection_completion
+        from runtime.transaction import register
+        check_inspection_completion(store, conn)
+        register(conn.telemetry)
+    full_video = task.get('inspection_policy') == VIDEO_FULL_POLICY
+    parameters = task.get('sampling_parameters', PARAMETERS)
     by_index = {r['index']: r for r in rows}
     terminal = task.get('capture_status') in {'ended', 'stopped', 'failed'} or task.get('stop_requested') or task.get('live_ended_at')
     if terminal and not state:
@@ -65,7 +77,9 @@ def tick(store, conn, now=None):
             if value:
                 try:started=min(started,float(value) if isinstance(value,(int,float)) else datetime.fromisoformat(value.replace('Z','+00:00')).timestamp())
                 except (TypeError,ValueError):pass
-        state = {'phase': 'draining', 'started_at': started, 'deadline_at': started + 60, 'mode': 'sample'}
+        state = {'phase': 'draining', 'started_at': started,
+                 'deadline_at': None if full_video else started + parameters['finish_seconds'],
+                 'mode': 'full_video' if full_video else 'sample'}
         # Freeze the last candidate identity. Late ASR may enrich it, never add work.
         task['sampling_stop_ms'] = max([r['end_ms'] for r in raw] +
             [task.get('capture_active_span', {}).get('end_ms', 0),task.get('capture_observed_ms',0)])
@@ -85,7 +99,7 @@ def tick(store, conn, now=None):
     if terminal:
         media_end = min(media_end, task.get('sampling_stop_ms', media_end))
     if task.get('kind') == 'video':
-        plan = video_windows(task['source_duration_ms'])
+        plan = video_windows(task['source_duration_ms'], task)
     else:
         plan = [(a, a + 20000) for a in range(origin, media_end, 60000)]
     task['sampling_observed_ms']=media_end
@@ -97,7 +111,7 @@ def tick(store, conn, now=None):
         if row is None:
             row = {'id': 1000000000 + index, 'window_id': f'window-{index:06d}', 'index': index,
                    'start_ms': a, 'end_ms': b, 'created_at': now, 'review_status': 'pending',
-                   'window_status': 'preparing', 'evidence_revision': 1, 'policy_version': POLICY,
+                   'window_status': 'preparing', 'evidence_revision': 1, 'policy_version': task['inspection_policy'],
                    'media_file': sources[0]['media_file'] if sources else 'media', 'audio_file': None,
                    'asr_task_id': None, 'frames': [], 'subtitles': []}
             by_index[index] = row
@@ -141,11 +155,13 @@ def tick(store, conn, now=None):
         if row['review_status'] != 'pending':
             continue
         started = row.get('review_started_at')
+        if full_video:
+            continue  # Full video work survives waiting and review delays.
         if state and now >= state['deadline_at']:
             skip(row, 'finish_timeout', now)
-        elif started is not None and now - started >= 120:
+        elif started is not None and now - started >= parameters['review_seconds']:
             skip(row, 'review_timeout', now)
-        elif started is None and now - row['created_at'] >= 120:
+        elif started is None and now - row['created_at'] >= parameters['pending_seconds']:
             skip(row, 'backlog_skipped', now)
     pending = [r for r in rows if r['review_status']=='pending' and r.get('review_started_at') is None]
     if task.get('kind') != 'video':
@@ -153,9 +169,9 @@ def tick(store, conn, now=None):
             skip(row, 'backlog_skipped', now)
     for row in rows:
         save(conn, store.session_id, row)
-    if state and (now >= state['deadline_at'] or
+    if state and ((not full_video and now >= state['deadline_at']) or
                   (task.get('worker_status') in {'done','failed','stopped'} and all(r['review_status'] in {'done','skipped'} for r in rows))):
-        state.update(phase='completed', completed_at=now, reason='deadline' if now>=state['deadline_at'] else 'drained')
+        state.update(phase='completed', completed_at=now, reason='deadline' if not full_video and now>=state['deadline_at'] else 'drained')
     if state:
         task['finishing'] = state
     if task != store._task(conn):
@@ -163,8 +179,9 @@ def tick(store, conn, now=None):
     return state
 
 
-def report_store(store):
-    if not isinstance(store,Store) or isinstance(store, WindowStore) or not enabled(store.task()):
+def report_store(store, task=None):
+    """将窗口状态整理成报告读取视图，保留窗口、缺口和证据的对应关系。"""
+    if not isinstance(store,Store) or isinstance(store, WindowStore) or not enabled(task if task is not None else store.task()):
         return store
     result = object.__new__(WindowStore)
     result.__dict__.update(store.__dict__)
@@ -184,6 +201,9 @@ class WindowStore(Store):
         return [row for row in self._segments(conn) if row['id'] in wanted]
 
     def _write_segment(self, conn, sid, data):
+        if self._task(conn).get('kind') == 'video':
+            from runtime.transaction import segment_changing
+            segment_changing(self, conn, sid, self._segment(conn, sid), data)
         save(conn, self.session_id, data)
 
     def _update_segment(self, conn, sid, **fields):
@@ -202,6 +222,18 @@ class WindowStore(Store):
         rules=result.get('rules')
         if rules and not rules.get('cached'):
             result['rules']={**rules,'rules':[{k:v for k,v in r.items() if k not in {'source_section','source_sha256'} } for r in rules['rules']]}
+        row = result.get('segment')
+        task = self.task()
+        if row and task.get('kind') == 'video':
+            result['submission_contract'] = {
+                'template': {'task_id': self.task_id, 'segment_id': row['id'],
+                    'evidence_revision': row['evidence_revision'], 'summary': '', 'images_viewed': [],
+                    'rules': [{'rule_id': r['id'], 'status': None, 'reason': '', 'events': []}
+                              for r in task['rules_snapshot']['rules']]},
+                'instructions': '视频质检：填写本模板，逐条判定全部 rules；status 为 hit/no_hit/insufficient/not_applicable，reason 必填。'
+                    'hit 的 events 引用本窗口 evidence_ids，其余 events 留空。summary 为1至200字，images_viewed 只填实际查看的图片。'
+                    '不使用直播的 segments/context_id/reviewed 精简格式，未命中也不能省略规则；追加专项后重新领取最新模板。',
+            }
         return result
 
     def submit(self, payload):
@@ -224,13 +256,13 @@ class WindowStore(Store):
     def _status(self, task, segments):
         result = super()._status(task, segments)
         done = [s for s in segments if s['review_status']=='done']
-        result['task']['inspection_policy'] = POLICY
+        result['task']['inspection_policy'] = task['inspection_policy']
         result['task']['image_inspection'] = task.get('image_inspection',True)
         result['task']['inspection_scope'] = '字幕和画面' if task.get('image_inspection',True) else '仅ASR字幕，未检测画面'
         from runtime import live_backlog
         parameters = dict(task.get('sampling_parameters',PARAMETERS))
         if live_backlog.enabled(task):parameters.update(finish_seconds=live_backlog.FINISH_SECONDS, media_seconds=live_backlog.MEDIA_SECONDS)
-        result['sampling'] = {'policy': POLICY, 'parameters': parameters,
+        result['sampling'] = {'policy': task['inspection_policy'], 'parameters': parameters,
             'image_inspection':task.get('image_inspection',True),
             'sampled_ms': interval_ms(done), 'completed_windows':len(done), 'window_count':len(segments),
             'active_windows':sum(s['review_status']=='pending' and s.get('review_started_at') is not None for s in segments),
@@ -250,6 +282,8 @@ class WindowStore(Store):
 
 
 def planned_gaps(task, rows):
+    if task.get('inspection_policy') == VIDEO_FULL_POLICY:
+        return []
     end=task.get('source_duration_ms') or max([r['end_ms'] for r in rows]+[task.get('capture_end_ms') or 0,task.get('capture_observed_ms',0),task.get('sampling_observed_ms',0)])
     cursor=task.get('sampling_origin_ms',0) if task.get('kind')!='video' else 0
     result=[]

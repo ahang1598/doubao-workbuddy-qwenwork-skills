@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -49,6 +50,7 @@ NAVIGATION_TOKEN_RE = re.compile(r"\d{1,3}$")
 DISPLAY_PERCENT_RE = re.compile(r"\d{1,2}%$")
 CONNECTOR_LABEL_RE = re.compile(r"[a-z][a-z -]{1,31}$")
 UNRESOLVED_PATTERN = "__unresolved_pattern__"
+IMAGE_FILL = "__image_fill__"
 
 
 def local_name(elem: ET.Element | str) -> str:
@@ -121,7 +123,13 @@ def contrast(fg: tuple[int, int, int], bg: tuple[int, int, int]) -> float:
     return (max(first, second) + 0.05) / (min(first, second) + 0.05)
 
 
-def color_or_gradient(value: str | None, x_ratio: float) -> tuple[int, int, int, float] | None:
+def color_or_gradient(
+    value: str | None,
+    x_ratio: float,
+    local_point: tuple[float, float] | None = None,
+    size: tuple[float, float] | None = None,
+) -> tuple[int, int, int, float] | None:
+    """Use local geometry for supported linear gradients; otherwise preserve the supplied legacy ratio."""
     solid = parse_color(value)
     if solid:
         return solid
@@ -133,6 +141,23 @@ def color_or_gradient(value: str | None, x_ratio: float) -> tuple[int, int, int,
         return None
     if len(stops) == 1:
         return stops[0][0]
+    angle = re.match(r"^linear-gradient\(\s*(\d+(?:\.\d+)?)deg\s*,", value, re.I)
+    positions = [position for _, position in stops]
+    if (local_point is not None and size is not None and min(size) > 0 and angle
+            and all(position is not None and 0 <= position <= 1 for position in positions)
+            and all(left < right for left, right in zip(positions, positions[1:]))):
+        # CSS 0 degrees points upward. Project the box corners onto that direction.
+        degrees = float(angle.group(1)) % 360
+        if degrees % 90 == 0:
+            dx, dy = ((0, -1), (1, 0), (0, 1), (-1, 0))[int(degrees / 90)]
+        else:
+            radians = math.radians(degrees)
+            dx, dy = math.sin(radians), -math.cos(radians)
+        extent_x, extent_y = size[0] * dx, size[1] * dy
+        low = min(0.0, extent_x) + min(0.0, extent_y)
+        high = max(0.0, extent_x) + max(0.0, extent_y)
+        x_ratio = (local_point[0] * dx + local_point[1] * dy - low) / (high - low)
+        x_ratio = max(positions[0], min(positions[-1], x_ratio))
     position = max(0.0, min(1.0, x_ratio))
     resolved = [(color, index / (len(stops) - 1) if raw is None else raw) for index, (color, raw) in enumerate(stops)]
     left, right = resolved[0], resolved[-1]
@@ -154,6 +179,8 @@ def fill_color(elem: ET.Element) -> str | None:
         if local_name(child) != "fill":
             continue
         for nested in child:
+            if local_name(nested) == "fillImg":
+                return IMAGE_FILL if number(nested.get("alpha"), 1.0) > 0 else None
             if local_name(nested) == "fillColor":
                 return nested.get("color")
             if local_name(nested) == "fillPattern":
@@ -191,22 +218,119 @@ def element_bbox(elem: ET.Element) -> tuple[float, float, float, float]:
     )
 
 
-def table_cell_paints(node: ET.Element, order: int) -> Iterable[Paint]:
+def distribute_table_sizes(
+    sizes: list[tuple[int, float | None]], target: float | None, default: float
+) -> list[tuple[int, float]]:
+    """Match the renderer's size allocation while keeping repeated columns compact."""
+    filled = sum(count * size for count, size in sizes if size is not None)
+    missing = sum(count for count, size in sizes if size is None)
+    if target is None or (missing and target <= filled):
+        return [(count, default if size is None else size) for count, size in sizes]
+    if not sizes or (not missing and target <= filled):
+        return sizes
+
+    # Only missing entries share the remainder; with no missing entries all sizes grow by weight.
+    budget = target - filled if missing else target
+    remaining = missing or sum(count for count, _ in sizes)
+    assigned = 0.0
+    result = []
+    for count, size in sizes:
+        if missing and size is not None:
+            result.append((count, size))
+            continue
+        value = budget / missing if missing else size * target / filled
+        # JavaScript Math.round differs from Python round at .5; the last entry closes the sum.
+        rounded = max(1, math.floor(value + 0.5))
+        regular_count = count if count < remaining else count - 1
+        if regular_count:
+            result.append((regular_count, rounded))
+            assigned += regular_count * rounded
+        if count == remaining:
+            result.append((1, budget - assigned))
+        remaining -= count
+    return result
+
+
+def table_column_widths(node: ET.Element) -> list[tuple[int, float]]:
+    first_row = next((child for child in node if local_name(child) == "tr"), None)
+    if first_row is None:
+        return []
+    column_count = sum(int(number(cell.get("colspan"), 1)) for cell in first_row if local_name(cell) == "td")
+    widths = []
+    remaining = column_count
+    for col in node.iter():
+        if local_name(col) != "col" or remaining <= 0:
+            continue
+        span = number(col.get("span"), 1)
+        count = int(span) if math.isfinite(span) and span > 0 and float(span).is_integer() else 1
+        count = min(count, remaining)
+        width = number(col.get("width"))
+        widths.append((count, width if math.isfinite(width) and width > 0 else None))
+        remaining -= count
+    if remaining:
+        widths.append((remaining, None))
+    return distribute_table_sizes(widths, number(node.get("width")) if node.get("width") else None, 110)
+
+
+def table_cell_width(widths: list[tuple[int, float]], column: int, span: int, default: float) -> float:
+    """Sum intersections with column runs without allocating one entry per column."""
+    # Preserve the previous list-slice bounds, including out-of-range fallbacks.
+    total_columns = sum(count for count, _ in widths)
+    start, stop, _ = slice(column, column + span).indices(total_columns)
+    offset, width = 0, 0.0
+    for count, column_width in widths:
+        overlap = max(0, min(stop, offset + count) - max(start, offset))
+        if overlap:
+            width += overlap * column_width
+        offset += count
+        if offset >= stop:
+            break
+    return width or default
+
+
+def table_cell_bboxes(node: ET.Element) -> Iterable[tuple[ET.Element, tuple[float, float, float, float]]]:
+    """Place real cells around active rowspan intervals without expanding the grid."""
     x0, y0 = number(node.get("topLeftX")), number(node.get("topLeftY"))
-    widths = [
-        number(col.get("width"), number(node.get("width")) / 2) for col in node.iter() if local_name(col) == "col"
-    ] or [number(node.get("width"))]
-    row_y = y0
-    for row in (item for item in node if local_name(item) == "tr"):
-        row_h = number(row.get("height"), number(node.get("height")) / 2)
+    widths = table_column_widths(node)
+    rows = [item for item in node if local_name(item) == "tr"]
+    heights = [number(row.get("height")) for row in rows]
+    row_sizes = distribute_table_sizes(
+        [(1, height if math.isfinite(height) and height > 0 else None) for height in heights],
+        number(node.get("height")) if node.get("height") else None,
+        37,
+    )
+    row_offsets = [0.0]
+    for _, height in row_sizes:
+        row_offsets.append(row_offsets[-1] + height)
+    occupied: list[tuple[int, int, int]] = []
+    for row_index, row in enumerate(rows):
+        occupied = sorted((start, end, stop) for start, end, stop in occupied if stop > row_index)
+        remaining = iter(occupied)
+        blocked = next(remaining, None)
+        new_spans = []
         x, column = x0, 0
         for cell in (item for item in row if local_name(item) == "td"):
+            while blocked is not None and blocked[0] <= column:
+                if column < blocked[1]:
+                    x += table_cell_width(widths, column, blocked[1] - column, number(node.get("width")))
+                    column = blocked[1]
+                blocked = next(remaining, None)
             span = int(number(cell.get("colspan"), 1))
-            cell_w = sum(widths[column : column + span]) or number(node.get("width"))
-            yield Paint(x, row_y, cell_w, row_h, fill_color(cell), order)
+            cell_w = table_cell_width(widths, column, span, number(node.get("width")))
+            row_stop = min(len(rows), row_index + max(1, int(number(cell.get("rowspan"), 1))))
+            cell_h = row_offsets[row_stop] - row_offsets[row_index]
+            yield cell, (x, y0 + row_offsets[row_index], cell_w, cell_h)
+            if row_stop > row_index + 1:
+                new_spans.append((column, column + span, row_stop))
             x += cell_w
             column += span
-        row_y += row_h
+        occupied.extend(new_spans)
+
+
+def table_cell_paints(node: ET.Element, order: int) -> Iterable[Paint]:
+    gradient_geometry = has_untransformed_fill(node)
+    for cell, bbox in table_cell_bboxes(node):
+        yield Paint(*bbox, fill_color(cell), order, gradient_geometry=gradient_geometry)
 
 
 @dataclass
@@ -218,12 +342,57 @@ class Paint:
     color: str | None
     order: int
     kind: str = ""
+    alpha: float = 1.0
+    gradient_geometry: bool = True
+    shape: str = "rect"
+    segment: tuple[float, float, float, float, float, float] | None = None
 
     def covers(self, x: float, y: float) -> bool:
-        return self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height
+        if not (self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height):
+            return False
+        if self.segment is not None:
+            ax, ay, dx, dy, length_squared, half_width = self.segment
+            if length_squared == 0:
+                return False
+            px, py = x - ax, y - ay
+            projection = px * dx + py * dy
+            return (
+                0 <= projection <= length_squared
+                and (px * dy - py * dx) ** 2 <= half_width ** 2 * length_squared
+            )
+        if self.shape == "rect":
+            return True
+        if self.width <= 0 or self.height <= 0:
+            return False
+        u, v = (x - self.x) / self.width, (y - self.y) / self.height
+        if self.shape == "ellipse":
+            return (2 * u - 1) ** 2 + (2 * v - 1) ** 2 <= 1
+        if self.shape == "diamond":
+            return abs(2 * u - 1) + abs(2 * v - 1) <= 1
+        return abs(2 * u - 1) <= v  # Default triangle: tip at top centre, base at bottom.
 
-    def at(self, x: float) -> tuple[int, int, int, float] | None:
-        return color_or_gradient(self.color, 0.5 if not self.width else (x - self.x) / self.width)
+    def at(self, x: float, y: float | None = None) -> tuple[int, int, int, float] | None:
+        point = (x - self.x, y - self.y) if self.gradient_geometry and y is not None else None
+        color = color_or_gradient(
+            self.color,
+            0.5 if not self.width else (x - self.x) / self.width,
+            point,
+            (self.width, self.height),
+        )
+        if color:
+            return (*color[:3], color[3] * max(0.0, min(1.0, self.alpha)))
+        return None
+
+
+def has_untransformed_fill(node: ET.Element) -> bool:
+    return (
+        number(node.get("rotation")) == 0
+        and node.get("flipX", "false").lower() not in {"true", "1"}
+        and node.get("flipY", "false").lower() not in {"true", "1"}
+        and all(child.get("rotateWithShape", "true").lower() not in {"false", "0"}
+                for fill in node if local_name(fill) == "fill"
+                for child in fill if local_name(child) == "fillColor")
+    )
 
 
 def attrs(parent: dict[str, str], element: ET.Element) -> dict[str, str]:
@@ -250,10 +419,64 @@ def page_default(slide: ET.Element) -> str | None:
     return None
 
 
-def theme_default(root: ET.Element) -> str | None:
-    for element in root.iter():
-        if local_name(element) == "body" and element.get("fontColor"):
-            return element.get("fontColor")
+def theme_colors(root: ET.Element) -> dict[str, str]:
+    colors = {}
+    for theme in root:
+        if local_name(theme) != "theme":
+            continue
+        for styles in theme:
+            if local_name(styles) == "textStyles":
+                for style in styles:
+                    if (local_name(style) in {"title", "headline", "sub-headline", "body", "caption"}
+                            and style.get("fontColor")):
+                        colors[local_name(style)] = style.get("fontColor")
+    return colors
+
+
+def set_simple_paint_geometry(paint: Paint, node: ET.Element) -> None:
+    """Refine supported shapes only; retain existing bounds for all other paint."""
+    if paint.kind == "shape":
+        shape = node.get("type", "rect")
+        if not paint.gradient_geometry:
+            return
+        default_handler = "50000" if shape == "triangle" else "0"
+        if node.get("presetHandlers") not in {None, "", default_handler}:
+            return
+        if shape not in {"text", "rect", "triangle", "diamond", "ellipse"}:
+            return
+        paint.shape = "rect" if shape == "text" else shape
+    elif paint.kind == "line":
+        border = next((child for child in node if local_name(child) == "border"), None)
+        if border is None or any(border.get(key, default) != default for key, default in
+                                 (("dashArray", "solid"), ("lineCap", "butt"), ("compound", "single"))):
+            return
+        if any(local_name(child) in {"startArrow", "endArrow"} and child.get("type", "none") != "none"
+               for child in node):
+            return
+        ax, ay = number(node.get("startX")), number(node.get("startY"))
+        dx, dy = number(node.get("endX")) - ax, number(node.get("endY")) - ay
+        paint.segment = (ax, ay, dx, dy, dx * dx + dy * dy, max(1.0, number(border.get("width"), 1)) / 2)
+
+
+def unknown_region(node: ET.Element, paint: Paint, reason: str) -> tuple[tuple[float, float, float, float], str]:
+    # Bounds indicate uncertainty only, not a claim that every pixel is painted.
+    x, y, width, height = paint.x, paint.y, paint.width, paint.height
+    radians = math.radians(number(node.get("rotation")))
+    if radians:
+        rotated_width = abs(width * math.cos(radians)) + abs(height * math.sin(radians))
+        rotated_height = abs(width * math.sin(radians)) + abs(height * math.cos(radians))
+        x, y = x + (width - rotated_width) / 2, y + (height - rotated_height) / 2
+        width, height = rotated_width, rotated_height
+    return (x, y, width, height), reason
+
+
+def unknown_background_reason(record: dict, slide: dict) -> str | None:
+    if slide["page_bg"] == IMAGE_FILL:
+        return "page image fill excluded"
+    x, y, width, height = record.get("sample_bbox", record["bbox"])
+    for (rx, ry, rw, rh), reason in slide.get("unknown_regions", []):
+        if x < rx + rw and rx < x + width and y < ry + rh and ry < y + height:
+            return reason
     return None
 
 
@@ -269,6 +492,7 @@ def element_record(
     object_id: str | None = None,
     object_path: str | None = None,
     shape_alpha: float | None = None,
+    gradient_geometry: bool = True,
 ) -> dict:
     return {
         "slide": slide_num,
@@ -285,6 +509,7 @@ def element_record(
         "object_id": object_id,
         "object_path": object_path,
         "shape_alpha": shape_alpha,
+        "gradient_geometry": gradient_geometry,
     }
 
 
@@ -292,14 +517,16 @@ def parse_xml(xml_path: str) -> tuple[list[dict], dict[int, dict]]:
     return parse_xml_root(ET.parse(xml_path).getroot())
 
 
-def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
+def parse_xml_root(root: ET.Element, *, resolve_sample_bboxes: bool = True) -> tuple[list[dict], dict[int, dict]]:
     """Parse a presentation root for callers that already parsed the XML.
 
     ``xml_lint`` owns XML validation and deliberately passes its in-memory root
     here, so this companion entry point must stay available alongside the
-    file-based CLI helper above.
+    file-based CLI helper above. Set ``resolve_sample_bboxes=False`` when the
+    caller will attach sampling bounds from its existing per-page geometry.
     """
-    fallback_fg = theme_default(root) or "rgba(31, 35, 41, 1)"
+    colors = theme_colors(root)
+    fallback_fg = colors.get("body", "rgba(31, 35, 41, 1)")
     records: list[dict] = []
     slides: dict[int, dict] = {}
     slide_num = 0
@@ -311,8 +538,16 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
         data = next((child for child in slide if local_name(child) == "data"), None)
         if data is None:
             continue
+        sample_bboxes = {}
+        if resolve_sample_bboxes:
+            # Delayed import: xml_lint also imports this module for contrast checking.
+            from xml_lint import resolve_contrast_sample_bboxes
+
+            sample_bboxes = resolve_contrast_sample_bboxes(slide, slide_num)
+        page_record_start = len(records)
         paints: list[Paint] = []
         images: list[Paint] = []
+        unknown_regions = []
         paint_index: dict[int, int] = {}
         object_path: dict[int, str] = {}
         tag_counts: dict[str, int] = {}
@@ -322,7 +557,7 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
             tag_counts[tag] = tag_counts.get(tag, 0) + 1
             object_path[id(node)] = f"data/{tag}[{tag_counts[tag]}]"
             paint_index[id(node)] = order
-            if tag in {"shape", "img", "icon", "chart", "line", "polyline"}:
+            if tag in {"shape", "img", "icon", "chart", "line", "polyline", "embed"}:
                 x, y, width, height = element_bbox(node)
                 color = fill_color(node)
                 if tag in {"line", "polyline"}:
@@ -331,22 +566,44 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
                     color = next(
                         (child.get("color") for child in node.iter() if local_name(child) == "chartBackground"), None
                     )
-                paint = Paint(x, y, width, height, color, order, tag)
-                if tag != "img" and paint.color:
-                    paints.append(paint)
-                if tag == "img":
+                paint = Paint(
+                    x, y, width, height, color, order, tag, number(node.get("alpha"), 1.0),
+                    has_untransformed_fill(node),
+                )
+                if tag == "embed":
+                    if paint.alpha > 0:
+                        unknown_regions.append(unknown_region(node, paint, "SVG paint excluded"))
+                elif paint.color == IMAGE_FILL:
+                    if paint.alpha > 0:
+                        unknown_regions.append(unknown_region(node, paint, "image fill excluded"))
+                elif tag == "img":
                     images.append(paint)
+                elif paint.color:
+                    set_simple_paint_geometry(paint, node)
+                    paints.append(paint)
             elif tag == "table":
-                paints.extend(paint for paint in table_cell_paints(node, order) if paint.color)
+                for paint in table_cell_paints(node, order):
+                    if paint.color == IMAGE_FILL:
+                        unknown_regions.append(unknown_region(node, paint, "cell image fill excluded"))
+                    elif paint.color:
+                        paints.append(paint)
             order += 1
-        slides[slide_num] = {"id": slide_id, "page_bg": page_default(slide), "paints": paints, "images": images}
+        slides[slide_num] = {
+            "id": slide_id, "page_bg": page_default(slide), "paints": paints, "images": images,
+            "unknown_regions": unknown_regions,
+            "size": (number(root.get("width"), 960), number(root.get("height"), 540)),
+        }
         for node in data:
             tag = local_name(node)
             if tag == "shape":
                 content = next((child for child in node if local_name(child) == "content"), None)
                 if content is None:
                     continue
-                inherited = {"color": fallback_fg, "fontSize": "16"}
+                text_color = (
+                    colors.get(content.get("textType", "body"), fallback_fg)
+                    if node.get("type") == "text" else fallback_fg
+                )
+                inherited = {"color": text_color, "fontSize": "16"}
                 inherited = attrs(inherited, content)
                 bbox = (
                     number(node.get("topLeftX")),
@@ -372,48 +629,36 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
                                     shape_alpha=number(node.get("alpha"), 1.0)
                                     if node.get("alpha") is not None
                                     else None,
+                                    gradient_geometry=has_untransformed_fill(node),
                                 )
                             )
             elif tag == "table":
-                x, y = number(node.get("topLeftX")), number(node.get("topLeftY"))
-                widths = [
-                    number(col.get("width"), number(node.get("width")) / 2)
-                    for col in node.iter()
-                    if local_name(col) == "col"
-                ] or [number(node.get("width"))]
-                row_y, column = y, 0
-                for row in (item for item in node if local_name(item) == "tr"):
-                    row_h = number(row.get("height"), number(node.get("height")) / 2)
-                    for cell in (item for item in row if local_name(item) == "td"):
-                        span = int(number(cell.get("colspan"), 1))
-                        cell_w = sum(widths[column : column + span]) or number(node.get("width"))
-                        content = next((child for child in cell if local_name(child) == "content"), None)
-                        if content is not None:
-                            inherited = attrs(
-                                {"color": fallback_fg, "fontSize": "16", "backgroundColor": fill_color(cell) or ""},
-                                content,
-                            )
-                            for paragraph in content.iter():
-                                if local_name(paragraph) == "p":
-                                    for text, style in inline_runs(paragraph, inherited):
-                                        records.append(
-                                            element_record(
-                                                slide_num,
-                                                slide_id,
-                                                text,
-                                                style,
-                                                (x, row_y, cell_w, row_h),
-                                                paint_index[id(node)],
-                                                "table",
-                                                object_id=node.get("id"),
-                                                object_path=object_path[id(node)],
-                                            )
+                gradient_geometry = has_untransformed_fill(node)
+                for cell, bbox in table_cell_bboxes(node):
+                    content = next((child for child in cell if local_name(child) == "content"), None)
+                    if content is not None:
+                        inherited = attrs(
+                            {"color": fallback_fg, "fontSize": "16"},
+                            content,
+                        )
+                        for paragraph in content.iter():
+                            if local_name(paragraph) == "p":
+                                for text, style in inline_runs(paragraph, inherited):
+                                    records.append(
+                                        element_record(
+                                            slide_num,
+                                            slide_id,
+                                            text,
+                                            style,
+                                            bbox,
+                                            paint_index[id(node)],
+                                            "table",
+                                            shape_background=fill_color(cell),
+                                            gradient_geometry=gradient_geometry,
+                                            object_id=node.get("id"),
+                                            object_path=object_path[id(node)],
                                         )
-                        x += cell_w
-                        column += span
-                    x = number(node.get("topLeftX"))
-                    row_y += row_h
-                    column = 0
+                                    )
             elif tag == "chart":
                 chart_bg = next(
                     (child.get("color") for child in node.iter() if local_name(child) == "chartBackground"), None
@@ -443,33 +688,40 @@ def parse_xml_root(root: ET.Element) -> tuple[list[dict], dict[int, dict]]:
                                 chart_bbox,
                                 paint_index[id(node)],
                                 "chart",
+                                gradient_geometry=has_untransformed_fill(node),
                                 object_id=node.get("id"),
                                 object_path=object_path[id(node)],
                             )
                         )
+        for record in records[page_record_start:]:
+            sample_bbox = sample_bboxes.get(record["object_path"])
+            if sample_bbox is not None:
+                record["sample_bbox"] = sample_bbox
     return records, slides
 
 
 def background_at(
     record: dict, slide: dict, x: float, y: float
 ) -> tuple[tuple[int, int, int, float] | None, bool, list[tuple[int, int, int, float]], bool, bool]:
-    bg = color_or_gradient(slide["page_bg"], x / 960) or DEFAULT_BG
+    bg = color_or_gradient(slide["page_bg"], x / 960, (x, y), slide.get("size", (960, 540))) or DEFAULT_BG
     target_index = record["paint_index"]
     unresolved = False
     line_backed = False
     for paint in slide["paints"]:
         if paint.order < target_index and paint.covers(x, y):
-            line_backed |= paint.kind in {"line", "polyline"}
-            color = paint.at(x)
-            if color:
+            color = paint.at(x, y)
+            if color and color[3] > 0:
+                line_backed |= paint.kind in {"line", "polyline"}
                 bg = over(color, bg)
-            elif paint.color == UNRESOLVED_PATTERN:
+            elif paint.color == UNRESOLVED_PATTERN and paint.alpha > 0:
                 unresolved = True
     for is_shape_background, color_value in (
         (True, record.get("shape_background")),
         (False, record.get("text_background")),
     ):
-        color = color_or_gradient(color_value, 0.5)
+        bx, by, width, height = record["bbox"]
+        point = (x - bx, y - by) if record.get("gradient_geometry", True) else None
+        color = color_or_gradient(color_value, 0.5, point, (width, height))
         if color and is_shape_background:
             color = (*color[:3], color[3] * effective_shape_alpha(record))
         # ``rgba(..., 0)`` is not a background.  Compositing rather than
@@ -480,8 +732,8 @@ def background_at(
     overlays = []
     for paint in slide["paints"]:
         if paint.order > target_index and paint.covers(x, y):
-            color = paint.at(x)
-            if color:
+            color = paint.at(x, y)
+            if color and color[3] > 0:
                 overlays.append(color)
     return (None if unresolved else bg), has_image, overlays, unresolved, line_backed
 
@@ -634,21 +886,28 @@ def check(
             )
             continue
         slide = slides[record["slide"]]
+        skip_reason = unknown_background_reason(record, slide)
+        if skip_reason:
+            results.append({**record, "contrast": None, "verdict": "SKIP", "reason": skip_reason,
+                            "bg_source": "unresolved paint"})
+            continue
         fg = parse_color(record["fg_color"]) or DEFAULT_FG
         # ``alpha`` on a text shape attenuates its glyphs together with the
         # shape. Apply the same effective alpha used by ghost classification
         # before compositing the visible foreground against each background.
         fg = (*fg[:3], effective_text_alpha(record))
-        x, y, width, height = record["bbox"]
+        x, y, width, height = record.get("sample_bbox", record["bbox"])
         samples = [(x + width * col / 4, y + height * row / 2) for col in range(1, 4) for row in range(1, 2)]
         record = {**record, "sample_points": [{"x": point_x, "y": point_y} for point_x, point_y in samples]}
+        x, y, width, height = record["bbox"]
         # A paint covering exactly one of three samples can be a local chart
         # bar, badge, or neighbouring decoration in the text box's unused
         # space. Keep it for visual review. Coverage of two samples remains a
         # sufficiently broad, deterministic background to preserve blocking
         # detection for severe contrast failures.
         single_sample_paint_coverage = any(
-            sum(paint.covers(point_x, point_y) for point_x, point_y in samples) == 1
+            sum(paint.covers(point_x, point_y) and bool((color := paint.at(point_x, point_y)) and color[3] > 0)
+                for point_x, point_y in samples) == 1
             for paint in slide["paints"]
             if paint.order < record["paint_index"]
         )
@@ -665,7 +924,7 @@ def check(
                 foreground = over(fg, bg)
                 for overlay in overlays:
                     foreground, bg = over(overlay, foreground), over(overlay, bg)
-                observations.append((foreground, bg, point_x, point_y))
+                observations.append((foreground, bg, point_x, point_y, any(overlay[3] > 0 for overlay in overlays)))
         if image_backed:
             results.append(
                 {
@@ -683,12 +942,15 @@ def check(
             reason = "unsupported background pattern" if unsupported_background else "no resolvable background"
             results.append({**record, "contrast": None, "verdict": "SKIP", "reason": reason, "bg_source": source})
             continue
-        fg_final, bg_final, worst_x, worst_y = min(observations, key=lambda item: contrast(item[0][:3], item[1][:3]))
+        fg_final, bg_final, worst_x, worst_y, covered = min(
+            observations, key=lambda item: contrast(item[0][:3], item[1][:3])
+        )
         ratio = min(contrast_values)
         record.update(
             {
                 "effective_fg_color": color_css(fg_final),
                 "effective_bg_color": color_css(bg_final),
+                "worst_sample_covered": covered,
                 "worst_sample": {
                     "x": worst_x,
                     "y": worst_y,
@@ -698,22 +960,24 @@ def check(
             }
         )
 
-        def is_complex_color(value: str | None) -> bool:
-            color = parse_color(value)
-            return bool(value and "gradient" in value.lower()) or bool(color and color[3] < 1)
+        def is_complex_color(value: str | None, alpha: float = 1.0) -> bool:
+            color = color_or_gradient(value, 0.5)
+            return bool(color and color[3] * alpha > 0
+                        and ("gradient" in value.lower() or color[3] * alpha < 1))
 
         complex_background = (
             single_sample_paint_coverage
             or line_backed
-            or (record.get("shape_background") is not None and effective_shape_alpha(record) < 1.0)
+            or is_complex_color(record.get("shape_background"), effective_shape_alpha(record))
             or any(
                 is_complex_color(value)
-                for value in (slide["page_bg"], record.get("shape_background"), record.get("text_background"))
+                for value in (slide["page_bg"], record.get("text_background"))
             )
             or any(
-                (paint.color or "").lower().find("gradient") >= 0 or (parse_color(paint.color) or DEFAULT_BG)[3] < 1
+                ("gradient" in (paint.color or "").lower() or color[3] < 1)
                 for paint in slide["paints"]
                 if paint.covers(x + width / 2, y + height / 2)
+                and (color := paint.at(x + width / 2, y + height / 2)) is not None and color[3] > 0
             )
         )
         record["complex_background"] = complex_background
@@ -820,6 +1084,15 @@ def issue_message(item: dict) -> str:
             "动作：若仅作装饰，可结合页面截图确认后保留；若需要阅读，请提升文字或背景的区分度后复检。"
         )
     source = item["bg_source"]
+    if item.get("worst_sample_covered"):
+        point = item["worst_sample"]
+        original = color_css(parse_color(item.get("fg_color")) or DEFAULT_FG)
+        return (
+            f"对象：{item['text']}；问题：文字与背景对比度不足，可能影响可读性；"
+            f"依据：原始文字色为 {original}，采样点 ({point['x']:g}, {point['y']:g}) "
+            f"受到后绘制填充覆盖，合成后文字为 {item['effective_fg_color']}，"
+            f"背景为 {item['effective_bg_color']}；动作：检查元素位置和层级，调整遮挡或配色后复检。"
+        )
     if item.get("effective_fg_color") and item.get("effective_bg_color"):
         evidence = (
             f"文字为 {item['effective_fg_color']}，背景为 {item['effective_bg_color']}，"

@@ -1,0 +1,515 @@
+{
+  "ENUMS": {
+    "live_source_status": [
+      "live",
+      "not_live",
+      "unknown"
+    ],
+    "capture_status": [
+      "pending",
+      "running",
+      "ended",
+      "stopped",
+      "failed"
+    ],
+    "source_end_reason": [
+      "offline",
+      "stream_retry_exhausted",
+      "source_resolution_failed",
+      "capture_failed",
+      "user_stop",
+      "duration_limit",
+      "execution_limit",
+      "unknown"
+    ],
+    "source_error_code": [
+      "none",
+      "STREAM_RETRY_EXHAUSTED",
+      "DOUYIN_FETCH_FAILED",
+      "DOUYIN_PAGE_UNAVAILABLE",
+      "DOUYIN_FLV_UNAVAILABLE",
+      "DOUYIN_RESOLVER_UNAVAILABLE",
+      "INVALID_INPUT",
+      "XHS_FETCH_FAILED",
+      "XHS_PAGE_UNAVAILABLE",
+      "XHS_AUTH_REQUIRED",
+      "XHS_STREAM_UNAVAILABLE",
+      "XHS_LIVE_STATE_UNKNOWN",
+      "BROWSER_SOURCE_TIMEOUT", "BROWSER_SOURCE_TASK_CLOSED", "INVALID_BROWSER_SOURCE"
+    ],
+    "workflow_kind": [
+      "live",
+      "video_single",
+      "video_batch",
+      "unknown"
+    ],
+    "scenario_category": [
+      "ecommerce",
+      "finance",
+      "automotive",
+      "other",
+      "unknown"
+    ],
+    "delivery_mode": [
+      "chat",
+      "local_dashboard",
+      "html_snapshot"
+    ],
+    "asr_policy": [
+      "remote_first",
+      "local_first",
+      "local_only"
+    ]
+  },
+  "DIAGNOSTIC_ENUMS": {
+    "watchdog_stage": [
+      "first_media",
+      "first_transcript",
+      "first_review",
+      "media_processing",
+      "review_processing",
+      "complete",
+      "quality_export_pending",
+      "recap_export_pending",
+      "inspection_blocked",
+      "delivery_pending",
+      "recap_generating",
+      "recap_blocked",
+      "recap_pending"
+    ],
+    "blocking_reason": [
+      "first_media_stalled",
+      "first_transcript_stalled",
+      "first_review_stalled",
+      "media_processing_stalled",
+      "review_processing_stalled",
+      "worker_unresponsive",
+      "worker_lock_unavailable",
+      "worker_launch_failed",
+      "recovery_exhausted",
+      "quality_export_pending",
+      "recap_export_pending",
+      "inspection_blocked",
+      "delivery_pending",
+      "recap_generating",
+      "recap_blocked",
+      "recap_pending",
+      "none",
+      "asr_result_timeout",
+      "asr_failed",
+      "no_transcript",
+      "frames_timeout",
+      "review_not_dispatched",
+      "review_timeout",
+      "drain_total_timeout",
+      "worker_stopped",
+      "no_captured_content",
+      "no_speech",
+      "no_reviewed_content",
+      "incomplete_evidence",
+      "user_discard"
+    ],
+    "recovery_action": [
+      "await_host",
+      "restart_worker",
+      "resume_report",
+      "continue_processing",
+      "redispatch_review"
+    ],
+    "download_source": [
+      "cdn",
+      "gyan",
+      "github",
+      "custom"
+    ],
+    "network_failure_kind": [
+      "dns",
+      "tls",
+      "timeout",
+      "connection",
+      "unknown"
+    ],
+    "prepare_stage": [
+      "permissions",
+      "lock",
+      "cache",
+      "download",
+      "verify_extract",
+      "smoke",
+      "publish",
+      "cleanup",
+      "unknown"
+    ],
+    "recovery_outcome": [
+      "success",
+      "failed",
+      "pending"
+    ],
+    "recovery_code": [
+      "ASR_RUNTIME_UNAVAILABLE",
+      "ASR_DEPENDENCY_UNAVAILABLE",
+      "ASR_DEPENDENCY_INCOMPATIBLE",
+      "ASR_RUNTIME_NOT_FOUND",
+      "ASR_RUNTIME_INVALID",
+      "ASR_SMOKE_FAILED",
+      "ASR_PLATFORM_UNSUPPORTED",
+      "ASR_RUNTIME_INCOMPATIBLE",
+      "ASR_SINGLE_PASS_REQUIRED",
+      "ASR_INITIALIZE_TIMEOUT",
+      "ASR_INITIALIZE_FAILED",
+      "MODEL_PREPARATION_START_FAILED",
+      "MODEL_PREPARATION_FAILED",
+      "MODEL_PREPARATION_MISSING",
+      "MODEL_PREPARATION_INTERRUPTED",
+      "MODEL_PREPARATION_TIMEOUT",
+      "none",
+      "ASR_STARTUP_TIMEOUT",
+      "FFMPEG_PREPARATION_TIMEOUT",
+      "FFMPEG_PREPARATION_STALLED",
+      "FFMPEG_PREPARATION_FAILED",
+      "ARTIFACT_PERMISSION_DENIED",
+      "ARTIFACT_DISK_FULL",
+      "ARTIFACT_DISK_ERROR",
+      "ARTIFACT_NETWORK_ERROR",
+      "ARTIFACT_HTTP_ERROR",
+      "ARTIFACT_HASH_INVALID",
+      "ARTIFACT_SIZE_INVALID",
+      "ARTIFACT_RANGE_INVALID",
+      "ARTIFACT_ARCHIVE_INVALID",
+      "ARTIFACT_SMOKE_FAILED",
+      "ARTIFACT_FILE_INVALID",
+      "ARTIFACT_PATH_INVALID",
+      "ARTIFACT_MANIFEST_INVALID",
+      "ARTIFACT_NOT_CONFIGURED",
+      "ARTIFACT_REDIRECT_REJECTED",
+      "ARTIFACT_URL_INVALID"
+    ],
+    "failure_component": [
+      "startup_watch",
+      "runtime_watch",
+      "report_watch",
+      "windows_acl",
+      "ffmpeg",
+      "asr",
+      "finishing"
+    ],
+    "failure_reason": [
+      "progress_stalled",
+      "progress_recovered",
+      "recovery_exhausted",
+      "recovery_launch_failed",
+      "report_blocked",
+      "report_resumed",
+      "drain_completed",
+      "drain_blocked",
+      "acl_apply_failed",
+      "acl_verify_failed",
+      "acl_timeout",
+      "acl_unavailable",
+      "prepare_started",
+      "prepare_retry",
+      "prepare_completed",
+      "prepare_timeout",
+      "prepare_recovered",
+      "prepare_failed",
+      "not_configured",
+      "recap_submission_rejected"
+    ],
+    "startup_stage": [
+      "input_validation",
+      "dependency_prepare",
+      "task_create",
+      "credential_prepare",
+      "dashboard_prepare",
+      "worker_launch",
+      "watcher_launch",
+      "completed",
+      "unknown"
+    ],
+    "startup_outcome": [
+      "setup_pending",
+      "started",
+      "failed",
+      "unknown"
+    ],
+    "error_origin": [
+      "business",
+      "process_launch",
+      "signal",
+      "wrapper_fallback"
+    ],
+    "error_category": [
+      "invalid_input",
+      "permission",
+      "not_found",
+      "file_conflict",
+      "io",
+      "sqlite",
+      "timeout",
+      "import",
+      "runtime",
+      "other"
+    ],
+    "metadata_transport": [
+      "pipe"
+    ],
+    "metadata_init_status": [
+      "ready",
+      "timeout",
+      "helper_failed",
+      "io_error"
+    ],
+    "metadata_read_status": [
+      "valid",
+      "empty",
+      "unavailable",
+      "invalid",
+      "io_error"
+    ],
+    "child_signal": [
+      "SIGINT",
+      "SIGTERM",
+      "SIGHUP",
+      "SIGBREAK",
+      "SIGKILL",
+      "SIGABRT",
+      "SIGSEGV"
+    ],
+    "process_error_code": [
+      "ENOENT",
+      "EACCES",
+      "EPERM",
+      "ENOEXEC",
+      "EINVAL",
+      "ENOMEM",
+      "EAGAIN",
+      "UNKNOWN"
+    ],
+    "recap_input_code": [
+      "RECAP_INPUT_REQUIRED",
+      "RECAP_INPUT_UNREADABLE",
+      "RECAP_INPUT_INCOMPLETE",
+      "RECAP_INPUT_TOO_LARGE",
+      "RECAP_INVALID_JSON",
+      "RECAP_INVALID_PAYLOAD",
+      "RECAP_INVALID_CONTENT",
+      "RECAP_NOT_STARTED",
+      "RECAP_JSON_READY"
+    ]
+  },
+  "ERRORS": [
+    "INVALID_INPUT",
+    "PERMISSION_DENIED",
+    "TASK_BINDING_MISMATCH",
+    "OUT_OF_MEMORY",
+    "OPERATION_FAILED",
+    "ABORTED",
+    "RUNTIME_UNAVAILABLE",
+    "LOCAL_VIDEO_PATH_REQUIRED",
+    "VIDEO_SOURCE_UNAVAILABLE",
+    "VIDEO_SOURCE_CHANGED",
+    "VIDEO_INVALID",
+    "VIDEO_START_FAILED",
+    "SEGMENT_SKIPPED",
+    "ASR_EVIDENCE_MISSING",
+    "VIDEO_RECAP_NOT_SUPPORTED",
+    "RECAP_EVIDENCE_CHANGED",
+    "RECAP_ALREADY_SAVED",
+    "EVIDENCE_CHANGED",
+    "FRAMES_NOT_REVIEWED",
+    "RULES_INCOMPLETE",
+    "ALREADY_REVIEWED",
+    "EVIDENCE_NOT_READY",
+    "SCENE_REQUIRED",
+    "XHS_FETCH_FAILED",
+    "XHS_PAGE_UNAVAILABLE",
+    "XHS_AUTH_REQUIRED",
+    "XHS_STREAM_UNAVAILABLE",
+    "XHS_LIVE_STATE_UNKNOWN",
+    "BROWSER_SOURCE_TIMEOUT", "BROWSER_SOURCE_TASK_CLOSED", "INVALID_BROWSER_SOURCE"
+  ],
+  "ERROR_DETAILS": [
+    "ACL_STARTUP_NOT_FOUND",
+    "ACL_STARTUP_ACCESS_DENIED",
+    "ACL_STARTUP_FAILED",
+    "ACL_READ_FAILED",
+    "ACL_READ_ACCESS_DENIED",
+    "ACL_APPLY_FAILED",
+    "ACL_APPLY_ACCESS_DENIED",
+    "ACL_VERIFY_FAILED",
+    "ACL_VERIFY_ACCESS_DENIED",
+    "ACL_PROBE_NOT_FOUND",
+    "ACL_PROBE_ACCESS_DENIED",
+    "ACL_PROBE_FAILED",
+    "ACL_STARTUP_TIMEOUT",
+    "ACL_READ_TIMEOUT",
+    "ACL_APPLY_TIMEOUT",
+    "ACL_VERIFY_TIMEOUT",
+    "ARGUMENT_PARSE_ERROR",
+    "STOP_USER_INSTRUCTION_REQUIRED",
+    "INPUT_REQUIRED",
+    "INPUT_INCOMPLETE",
+    "INPUT_UNREADABLE",
+    "INPUT_TOO_LARGE",
+    "INVALID_JSON",
+    "INVALID_PAYLOAD",
+    "START_UNKNOWN_FIELD",
+    "START_SOURCE_REQUIRED",
+    "START_SOURCE_INVALID",
+    "START_IMAGE_INSPECTION_INVALID",
+    "START_ASR_POLICY_INVALID",
+    "START_DELIVERY_MODE_INVALID",
+    "START_SCENARIO_INVALID",
+    "START_MAX_DURATION_INVALID",
+    "START_SEGMENT_SECONDS_INVALID",
+    "START_FRAME_INTERVAL_INVALID",
+    "HOST_CONTEXT_INVALID",
+    "START_RULES_UNAVAILABLE",
+    "STOP_TASK_NOT_FOUND",
+    "STOP_CONFIRM_DISCARD_REQUIRED",
+    "STOP_ORDINARY_REQUIRES_DRAIN",
+    "STOP_LIVE_TASK_REQUIRED",
+    "STOP_STATE_PENDING"
+  ],
+  "ASR_ENUMS": {
+    "phase": [
+      "attempt",
+      "result",
+      "route",
+      "recovery"
+    ],
+    "outcome": [
+      "started",
+      "success",
+      "failed",
+      "selected"
+    ],
+    "category": [
+      "upload_address_failed",
+      "authentication_rejected",
+      "missing_task_id",
+      "rate_limited",
+      "request_timeout",
+      "network_error",
+      "service_unavailable",
+      "cli_failed",
+      "cli_unavailable",
+      "invalid_response",
+      "credentials_unavailable"
+    ],
+    "recovery_code": [
+      "none",
+      "ASR_RUNTIME_UNAVAILABLE",
+      "ASR_BACKUP_TIMEOUT",
+      "ASR_RECOVERY_INTERRUPTED",
+      "ASR_RETRY_EXHAUSTED",
+      "ASR_EMPTY_SPEECH",
+      "ASR_AUDIO_UNAVAILABLE",
+      "ASR_PROCESS_EXITED",
+      "ASR_INITIALIZE_FAILED",
+      "ASR_INITIALIZE_TIMEOUT",
+      "ASR_STOP_TIMEOUT",
+      "ASR_RUNTIME_INCOMPATIBLE",
+      "ASR_PROTOCOL_ERROR",
+      "ASR_AUDIO_DROPPED",
+      "ASR_TIMEOUT",
+      "ASR_CANCELLED",
+      "ASR_RECOVERY_FAILED"
+    ],
+    "reason": [
+      "credential_expired",
+      "authentication_rejected",
+      "rate_limited",
+      "service_unavailable",
+      "request_timeout",
+      "network_error",
+      "upload_response_missing",
+      "unknown"
+    ],
+    "failure_stage": [
+      "upload_address",
+      "submit"
+    ],
+    "submission_state": [
+      "not_submitted",
+      "unknown",
+      "submitted"
+    ],
+    "route_reason": [
+      "initial",
+      "cooldown",
+      "cooldown_probe",
+      "credential_blocked",
+      "probe_inflight",
+      "credential_rotated",
+      "unknown"
+    ],
+    "credential_change": [
+      "initial",
+      "unchanged",
+      "rotated",
+      "unknown"
+    ],
+    "backend": [
+      "mediakit",
+      "local"
+    ]
+  },
+  "STOP_ENUMS": {
+    "stop_scope": [
+      "request",
+      "immediate",
+      "progress",
+      "report",
+      "drain",
+      "failure"
+    ],
+    "stop_source": [
+      "user",
+      "agent",
+      "execution_limit",
+      "error_blocked",
+      "system",
+      "unknown"
+    ],
+    "stop_origin": [
+      "dashboard",
+      "agent",
+      "runtime",
+      "unknown"
+    ],
+    "stop_evidence": [
+      "dashboard_request",
+      "agent_claim",
+      "agent_action",
+      "runtime_state",
+      "signal_only",
+      "unknown"
+    ],
+    "stop_state": [
+      "requested",
+      "stopped",
+      "blocked",
+      "recovered"
+    ],
+    "stop_reason": [
+      "user_request",
+      "execution_limit",
+      "duration_limit",
+      "source_ended",
+      "unknown"
+    ]
+  },
+  "STOP_OPTIONAL_ENUMS": {
+    "stop_mode": [
+      "drain",
+      "immediate",
+      "unknown"
+    ],
+    "limit_source": [
+      "skill_command_budget",
+      "agent_reported",
+      "unknown"
+    ]
+  }
+}

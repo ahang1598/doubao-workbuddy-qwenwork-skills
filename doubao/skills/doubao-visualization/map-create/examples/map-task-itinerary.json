@@ -1,0 +1,24 @@
+{
+  "id": "hangzhou-route",
+  "title": "杭州游览路线",
+  "summary": "从灵隐寺到上天竺法喜讲寺，沿途游览杭州西湖西侧寺院。",
+  "tool": "map_mark",
+  "organization": "itinerary",
+  "views": "single",
+  "reason": "采用灵隐寺到上天竺法喜讲寺的访问顺序，在同一视图展示完整路线。",
+  "parameters": {
+    "map_data": {
+      "text": "地点均位于浙江省杭州市西湖区；只规划列出的地点。",
+      "scene": "travel_plan",
+      "plans": [
+        {
+          "name": "游览路线",
+          "points": [
+            { "name": "灵隐寺" },
+            { "name": "上天竺法喜讲寺", "via": "walking" }
+          ]
+        }
+      ]
+    }
+  }
+}

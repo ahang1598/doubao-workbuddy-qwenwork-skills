@@ -4,6 +4,8 @@
 Default run takes just the xlsx path: it reopens the workbook, flags cached
 Excel error values, missing `_xlfn.` prefixes and foreground-only solid
 conditional fills that can render differently across Excel and previews.
+Use --require-formulas/charts/pivots/format for explicit task requirements.
+A successful static scan does not verify calculation results or unstated needs.
 
 `--contract` is optional and hand-written; there is no generator for it. The
 file must be `{"status": "success", "contract": {"artifact": {"kind": "xlsx",
@@ -18,6 +20,7 @@ import argparse
 import json
 import math
 import zipfile
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 import sys as _sys
@@ -25,28 +28,27 @@ import sys as _sys
 # 同级脚本随 skill 一起分发。按自身位置补一次 sys.path，这样无论调用方是直接
 # 执行、还是用 spec_from_file_location 加载本模块，兼容性判据都取得到。
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
-from excel_formula_verify import _compat_hits  # noqa: E402
 from excel_conditional_format_verify import check_file  # noqa: E402
 
 try:
-    from openpyxl import load_workbook
+    from _xlsx_text import load_workbook
     from openpyxl.utils.cell import range_boundaries
-except ModuleNotFoundError as _missing:  # 本机没装 openpyxl：报错现场直接给出两条出路
+except ModuleNotFoundError as _missing:  # 缺少 Python 库时先安装，再重跑原操作
     import sys
 
     sys.stderr.write(
-        f"\n[excel_artifact_verify] 本机 Python 缺少 {_missing.name}，脚本无法在本地解析 Excel。\n"
-        "  装一次即可长期复用：python3 -m pip install --user openpyxl\n"
-        "  不装依赖也能做：把文件导入飞书在线表格，用飞书引擎读（服务端解析，无需本地库）——\n"
-        "     lark-cli sheets +workbook-import --file ./<文件名>.xlsx\n"
+        f"\n[excel_artifact_verify] 本机 Python 缺少 {_missing.name}，本脚本未执行，本地文件未修改。\n"
+        "  请在运行本脚本的同一 Python 环境安装：python3 -m pip install openpyxl\n"
+        "  安装成功后重跑原命令；安装失败再说明未完成，不能声明本次处理 / 校验已通过。\n"
     )
     raise SystemExit(1) from _missing
 
+from excel_formula_verify import (  # noqa: E402
+    EXCEL_ERROR_VALUES, _compat_hits, _formula_regions, _region_anchor, _regression_padding_regions,
+)
+
 # 经典 7 类 + 动态数组时代新增的错误值；缓存值就是这些字面量，漏一个就是漏报。
-ERROR_VALUES = {
-    "#VALUE!", "#DIV/0!", "#REF!", "#NAME?", "#NULL!", "#NUM!", "#N/A",
-    "#SPILL!", "#CALC!", "#FIELD!", "#BLOCKED!", "#CONNECT!", "#BUSY!", "#UNKNOWN!",
-}
+ERROR_VALUES = EXCEL_ERROR_VALUES
 
 
 def formula_text(value) -> str:
@@ -106,10 +108,12 @@ def iter_range(ws, cell_range: str):
     if not isinstance(cell_range, str):
         raise ValueError("range must be a string")
     min_col, min_row, max_col, max_row = range_boundaries(cell_range)
-    if min_row is None or max_row is None:
-        raise ValueError("range must include explicit row bounds")
+    if any(v is None for v in (min_col, min_row, max_col, max_row)):
+        raise ValueError("range must include explicit row and column bounds")
     if min_col > max_col or min_row > max_row:
         raise ValueError("range start must not come after its end")
+    if min_row < 1 or min_col < 1 or max_row > 1048576 or max_col > 16384:
+        raise ValueError("range is outside Excel bounds")
     for row in ws.iter_rows(min_row=min_row, max_row=max_row, min_col=min_col, max_col=max_col):
         yield from row
 
@@ -243,16 +247,19 @@ def missing_xlfn_prefix(formula: str) -> list:
 
 def _scan_sheet_formulas(ws, formula_ws, add) -> None:
     """逐格扫两件事：缓存值里的 Excel 错误，以及缺 `_xlfn.` 前缀的新函数。"""
-    for row in ws.iter_rows():
-        for cell in row:
-            _scan_one_cell(ws.title, cell, formula_ws[cell.coordinate].value, add)
+    padding = _regression_padding_regions(formula_ws)
+    for coord in sorted(set(ws._cells) | set(formula_ws._cells)):
+        cell, source = ws.cell(*coord), formula_ws.cell(*coord)
+        _scan_one_cell(ws.title, cell, source.value if source.data_type == "f" else None, add,
+                       expected_na=_region_anchor(padding, *coord) is not None)
 
 
-def _scan_one_cell(sheet: str, cell, raw_formula, add) -> None:
+def _scan_one_cell(sheet: str, cell, raw_formula, add, *, expected_na=False) -> None:
     formula = formula_text(raw_formula)
     is_formula_cell = bool(formula)
     if ((cell.data_type == "e" or is_formula_cell)
-            and isinstance(cell.value, str) and cell.value.upper() in ERROR_VALUES):
+            and isinstance(cell.value, str) and cell.value.upper() in ERROR_VALUES
+            and not (expected_na and cell.value.upper() == "#N/A")):
         add("formula_error", f"{sheet}!{cell.coordinate}",
             "cached formula value is an Excel error", actual=cell.value)
     if not is_formula_cell:
@@ -288,14 +295,20 @@ def get_contract_list(contract: dict, key: str, violations: list) -> list:
 
 def values_equal(actual, expected, tolerance=1e-9):
     if isinstance(actual, bool) or isinstance(expected, bool):
-        return actual == expected
+        return type(actual) is type(expected) and actual == expected
     if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
-        return abs(float(actual) - float(expected)) <= tolerance
+        try:
+            left, right = Decimal(str(actual)), Decimal(str(expected))
+            return (left.is_finite() and right.is_finite()
+                    and abs(left - right) <= Decimal(str(tolerance)))
+        except InvalidOperation:
+            return False
     return actual == expected
 
 
-def verify(path: str, contract: dict) -> dict:
+def verify(path: str, contract: dict, formula_ranges=None) -> dict:
     violations = []
+    checks_performed = 0
 
     def add(kind: str, location: str, message: str, expected=None, actual=None):
         violations.append({"kind": kind, "location": location, "message": message, "expected": expected, "actual": actual})
@@ -309,10 +322,33 @@ def verify(path: str, contract: dict) -> dict:
 
     wb_formula = load_workbook(path, data_only=False)
     wb_values = load_workbook(path, data_only=True)
+    regions_by_sheet = {ws.title: _formula_regions(ws) for ws in wb_formula.worksheets}
 
     # Scan cached values for deterministic Excel errors and formulas for xlfn.
     for ws in wb_values.worksheets:
         _scan_sheet_formulas(ws, wb_formula[ws.title], add)
+
+    for sheet, cell_range in formula_ranges or []:
+        checks_performed += 1
+        if sheet not in wb_formula.sheetnames:
+            add("missing_sheet", sheet, "required formula sheet missing")
+            continue
+        missing, count = [], 0
+        ws = wb_formula[sheet]
+        regions = regions_by_sheet[sheet]
+        try:
+            for cell in iter_range(ws, cell_range):
+                if cell.data_type != "f" and _region_anchor(regions, cell.row, cell.column) is None:
+                    count += 1
+                    if len(missing) < 30:
+                        missing.append(cell.coordinate)
+        except ValueError as exc:
+            add("invalid_range", f"{sheet}!{cell_range}", str(exc))
+            continue
+        if count:
+            add("formula_coverage", f"{sheet}!{cell_range}",
+                "declared range contains cells not driven by a formula or an array/data-table formula",
+                "formula-driven value in every declared cell", {"missing_count": count, "cells": missing})
 
     for req in get_contract_list(contract, "requirements", violations):
         if not isinstance(req, dict):
@@ -328,6 +364,8 @@ def verify(path: str, contract: dict) -> dict:
                 continue
             sheet = evidence.get("sheet")
             cell_range = evidence.get("range")
+            if sheet:
+                checks_performed += 1
             if sheet and sheet not in wb_formula.sheetnames:
                 add("missing_sheet", sheet, f"requirement {req.get('id')} evidence sheet missing")
             elif sheet and cell_range:
@@ -356,13 +394,19 @@ def verify(path: str, contract: dict) -> dict:
             if not sheet or not cell or "expected" not in sentinel:
                 add("invalid_contract", "formula_contracts.sentinels", "sheet/cell/expected are required")
                 continue
+            checks_performed += 1
             if sheet not in wb_formula.sheetnames:
                 add("missing_sheet", sheet, "formula sentinel sheet missing")
                 continue
             # 坐标来自手写契约。写错了要报 invalid_contract，不能让 openpyxl 的异常
             # 掀掉整次校验——那样契约写错会伪装成工具故障（status=error）。
             try:
-                formula = wb_formula[sheet][cell].value
+                formula_cell = wb_formula[sheet][cell]
+                formula = formula_cell.value if formula_cell.data_type == "f" else None
+                if formula is None:
+                    anchor = _region_anchor(regions_by_sheet[sheet], formula_cell.row, formula_cell.column)
+                    if anchor is not None:
+                        formula = wb_formula[sheet][anchor].value
                 actual = wb_values[sheet][cell].value
             except (ValueError, IndexError, AttributeError, TypeError) as exc:
                 add("invalid_contract", f"{sheet}!{cell}", f"cell is not a valid coordinate: {exc}",
@@ -402,6 +446,7 @@ def verify(path: str, contract: dict) -> dict:
             add("invalid_range", f"{sheet}!{cell_range}", str(exc))
             continue
         for old in rep.get("old_values", []):
+            checks_performed += 1
             hits = [c.coordinate for c in cells if c.value == old]
             if hits:
                 add("replacement_residual", f"{sheet}!{cell_range}", f"old value {old!r} still exists", expected=0, actual=hits[:20])
@@ -423,13 +468,21 @@ def verify(path: str, contract: dict) -> dict:
             continue
         ws = wb_values[sheet]
         end = end_row or ws.max_row
+        minimum = sem.get("min_length", 0)
+        if type(minimum) is not int or minimum < 0:
+            add("invalid_contract", "semantic_contracts.min_length", "must be a non-negative integer")
+            continue
+        checks_performed += 1
         for row in range(start_row, end + 1):
-            source = str(ws[f"{source_col}{row}"].value or "")
-            output = str(ws[f"{output_col}{row}"].value or "")
+            source_value = ws[f"{source_col}{row}"].value
+            output_value = ws[f"{output_col}{row}"].value
+            source = "" if source_value is None else str(source_value)
+            output = "" if output_value is None else str(output_value)
             if output and output not in source:
                 add("semantic_not_source_substring", f"{sheet}!{output_col}{row}", "output is not a continuous substring of source", actual=output)
-            if output and len(output) < sem.get("min_length", 2):
-                add("semantic_too_short", f"{sheet}!{output_col}{row}", "output is too short to be a reliable semantic fragment", actual=output)
+            if output and len(output) < minimum:
+                add("semantic_too_short", f"{sheet}!{output_col}{row}",
+                    "output is shorter than the explicitly required minimum", expected=minimum, actual=len(output))
 
     pivot_parts = 0
     try:
@@ -451,6 +504,7 @@ def verify(path: str, contract: dict) -> dict:
             continue
         ws = wb_formula[sheet]
         if obj.get("type") == "chart":
+            checks_performed += 1
             charts = ws._charts
             if len(charts) != obj.get("count"):
                 add("chart_count", sheet, "chart count mismatch", obj.get("count"), len(charts))
@@ -460,9 +514,11 @@ def verify(path: str, contract: dict) -> dict:
                 _verify_one_chart(chart, f"{sheet}#chart{i+1}", obj, expected_type,
                                   wb_values, add)
         elif obj.get("type") == "pivot":
+            checks_performed += 1
             in_memory = len(getattr(ws, "_pivots", []) or [])
             expected = obj.get("count", 1)
-            if in_memory < expected or pivot_parts < expected:
+            wrong_count = (in_memory != expected if obj.get("exact_count") else in_memory < expected)
+            if wrong_count or pivot_parts < expected:
                 add("pivot_count", sheet, "native pivot definition missing from exported workbook", expected, {"sheet_objects": in_memory, "package_parts": pivot_parts})
         else:
             add("invalid_contract", "object_contracts", "type must be 'chart' or 'pivot'", expected="chart|pivot", actual=obj.get("type"))
@@ -485,6 +541,7 @@ def verify(path: str, contract: dict) -> dict:
             add("invalid_range", f"{sheet}!{cell_range}", str(exc))
             continue
         if style.get("all_borders"):
+            checks_performed += 1
             missing = []
             for c in cells:
                 sides = (c.border.left, c.border.right, c.border.top, c.border.bottom)
@@ -494,29 +551,70 @@ def verify(path: str, contract: dict) -> dict:
                 add("border_missing", f"{sheet}!{cell_range}", "cells missing one or more border sides", expected=0, actual=missing[:30])
         fmt = style.get("number_format")
         if fmt:
+            checks_performed += 1
             bad = [c.coordinate for c in cells if c.number_format != fmt]
             if bad:
                 add("number_format", f"{sheet}!{cell_range}", "number format mismatch", fmt, bad[:30])
 
-    return {"status": "success" if not violations else "violations_found", "violations": violations, "summary": {"violations": len(violations), "sheets": len(wb_formula.sheetnames)}}
+    inventory = [{"sheet": ws.title,
+                  "formula_cells": sum(c.data_type == "f" for c in ws._cells.values()),
+                  "charts": len(ws._charts), "pivots": len(ws._pivots),
+                  "conditional_formats": len(ws.conditional_formatting),
+                  "freeze_panes": str(ws.freeze_panes) if ws.freeze_panes else None}
+                 for ws in wb_formula]
+    result = {"status": "success" if not violations else "violations_found",
+              "violations": violations, "inventory": inventory,
+              "declared_requirements_verified": bool(checks_performed and not violations),
+              "calculation_verified": False,
+              "summary": {"violations": len(violations), "sheets": len(wb_formula.sheetnames),
+                          "requirement_checks": checks_performed}}
+    wb_formula.close()
+    wb_values.close()
+    return result
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Verify deterministic properties of an exported xlsx artifact")
     ap.add_argument("xlsx")
     ap.add_argument("--contract")
+    ap.add_argument("--require-formulas", nargs=2, action="append", metavar=("SHEET", "RANGE"),
+                    help="要求每格由公式驱动（包括数组/数据表公式的结果格）；排除不适用行，可重复")
+    ap.add_argument("--require-charts", nargs=2, action="append", metavar=("SHEET", "COUNT"),
+                    help="要求指定子表中原生图表数量精确相等，可重复")
+    ap.add_argument("--require-pivots", nargs=2, action="append", metavar=("SHEET", "COUNT"),
+                    help="要求指定子表中原生透视表数量精确相等，可重复")
+    ap.add_argument("--require-format", nargs=3, action="append", metavar=("SHEET", "RANGE", "FORMAT"),
+                    help="核对指定区域数字格式原文，如0.0000，可重复")
     args = ap.parse_args()
     if not Path(args.xlsx).is_file():
         print(json.dumps({"status": "error", "error": "xlsx not found"}, ensure_ascii=False))
         return 2
     try:
-        result = verify(args.xlsx, load_contract(args.contract, args.xlsx))
+        contract = load_contract(args.contract, args.xlsx)
+        for kind, entries in (("chart", args.require_charts), ("pivot", args.require_pivots)):
+            for sheet, raw_count in entries or []:
+                count = int(raw_count)
+                if count < 0:
+                    raise ValueError("object count must be non-negative")
+                contract.setdefault("object_contracts", []).append(
+                    {"type": kind, "sheet": sheet, "count": count, "exact_count": True})
+        for sheet, cell_range, fmt in args.require_format or []:
+            if not fmt:
+                raise ValueError("number format must not be empty")
+            contract.setdefault("style_contracts", []).append(
+                {"sheet": sheet, "range": cell_range, "number_format": fmt})
+        result = verify(args.xlsx, contract, args.require_formulas)
     except (ValueError, KeyError, TypeError, OSError, zipfile.BadZipFile) as exc:
         print(json.dumps({"status": "error", "error_type": exc.__class__.__name__, "error": "artifact or contract is invalid"}, ensure_ascii=False))
+        print("检查未执行完整：{}。修正文件、子表名、带行列边界的范围或非负整数数量后重试。".format(exc), file=_sys.stderr)
         return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if result["status"] == "error":
         return 2
+    if result["status"] != "success":
+        print("按报告定位缺少的公式、原生对象或格式并修复；普通汇总区、图片和文本公式不能冒充对应对象。不能放宽原需求来让检查通过。", file=_sys.stderr)
+    else:
+        print("仅完成静态扫描及已声明要求；未声明的用户要求、业务口径与公式重算结果不在此成功结论内。", file=_sys.stderr)
     return 0 if result["status"] == "success" else 3
 
 

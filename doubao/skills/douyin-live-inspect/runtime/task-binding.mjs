@@ -1,4 +1,4 @@
-// Original task identity is input, never inferred from a mutable login profile.
+// 原始任务身份必须来自输入，不能从可变的登录 profile 推断或补齐。
 export function taskBindingError(code = 'TASK_BINDING_MISMATCH') {
   const message = code === 'ORIGINAL_TASK_CONTEXT_REQUIRED'
     ? 'Original task context is required; preserve the task and recover its identity'

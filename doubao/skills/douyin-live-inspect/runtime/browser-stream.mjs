@@ -1,3 +1,4 @@
+import { isXiaohongshuUrl, resolveXiaohongshuLive } from './xiaohongshu-live.mjs';
 import http from 'node:http';
 import https from 'node:https';
 import { lookup as dnsLookup } from 'node:dns/promises';
@@ -98,7 +99,9 @@ export async function probeBrowserStream(value, { lookup = dnsLookup, timeoutMs 
   finally { clearTimeout(timer); }
 }
 
-export async function resolveTaskSource(input, { resolveAnonymous = resolveDouyinLive, probe = probeBrowserStream, now = Date.now } = {}) {
+export async function resolveTaskSource(input, { resolveAnonymous = resolveDouyinLive, probe = probeBrowserStream, now = Date.now, resolveXhs = resolveXiaohongshuLive } = {}) {
+  if (['live_page_url', 'douyin_url', 'live_pull_url'].filter(key => input[key] !== undefined).length > 1) throw fail('INVALID_INPUT', '请只提供一个直播来源。');
+  const pageUrl = input.live_page_url ?? input.douyin_url;
   if (['activity_id', 'ActivityId', 'room_id', 'roomId'].some(key => input[key] !== undefined)) {
     throw fail('INVALID_INPUT', '暂不支持直播间 ID，请提供抖音直播页面链接或 FLV 流地址。');
   }
@@ -118,7 +121,11 @@ export async function resolveTaskSource(input, { resolveAnonymous = resolveDouyi
     catch { throw fail('FLV_STREAM_UNAVAILABLE', 'FLV 流地址暂时无法独立读取音视频，请提供有效流地址。本次未创建任务。'); }
     return { status: 'ready', streamUrl, sourceMethod: 'direct_flv', roomName: '', accountName: '' };
   }
-  try { return await resolveAnonymous(input.douyin_url); }
+  if (input.live_page_url !== undefined && isXiaohongshuUrl(pageUrl)) {
+    return resolveXhs(pageUrl, { browserSource: input.browser_source, probe, now });
+  }
+  input = { ...input, douyin_url: pageUrl };
+  try { return await resolveAnonymous(pageUrl); }
   catch (cause) {
     if (!FALLBACK_ERRORS.has(cause?.code) || !input.browser_source) throw cause;
   }

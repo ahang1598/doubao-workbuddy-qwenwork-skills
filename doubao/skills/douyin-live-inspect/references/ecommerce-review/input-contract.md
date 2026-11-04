@@ -43,7 +43,7 @@
 - `finding_count`：优先使用接口显式非负整数计数，否则与质检报告共用机审命中证据计数；不得使用 `ManualDetails` 的人审记录条数替代。机审命中但证据缺失、或状态未知时为 `null`，不能解读成 0；复盘汇总遇到缺失计数显示未知，不把部分计数当作总数。
 - `fd.ev.scope`：固定为 `asr_and_quality_report_only`，用于防止 Agent 扩展到未提供的数据。
 
-完整 ASR 展示和回放不属于 `ecommerce_review_skill/v1` 的分析输出。准备脚本把时间对齐 ASR 与 GetReport 的 `TaskResult.RecordURL/Vid` 单独保存为权限 `0600` 的临时渲染上下文，只向 Agent 返回 opaque `render_context_id`；渲染器内部读取后分别注入本地报告的“内容分析”时间线和播放器。完整 ASR 与媒体地址不得出现在 stdout、对话或日志中。
+完整 ASR 展示和回放不属于 `ecommerce_review_skill/v1` 的分析输出。组装报告时沿用准备脚本返回的 `render_context_id`，不要手工读取私有上下文或代填 ASR、媒体地址。完整 ASR 与媒体地址不得出现在 stdout、对话或日志中。
 
 ## 强制边界
 

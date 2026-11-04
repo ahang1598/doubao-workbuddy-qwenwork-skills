@@ -103,27 +103,11 @@ HIGH_PRIORITY_NOTES = {
     ),
 }
 
-# The XSD keeps the full transition vocabulary so existing documents can still
-# be read and linted. The generated index is the authoring surface, so expose
-# only the effects and attributes currently supported for new pages.
-INDEX_ATTRIBUTE_NAMES = {
-    "transition": frozenset({"type", "durationMs", "style", "direction"}),
-}
-INDEX_DOCUMENTATION_OVERRIDES = {
-    "transition": (
-        "页面切换节点。生成页面时仅使用 fade / cover / pull / push 四种效果；"
-        "none 用于显式关闭切换。"
-    ),
-}
+# Expose the full XSD vocabulary; retain runtime defaults that XSD does not encode.
 INDEX_ATTRIBUTE_CONSTRAINTS = {
     "transition": {
-        "type": "字符串；枚举：none | fade | cover | pull | push",
         "durationMs": "整数；限制：>= 0，<= 86399999；默认 1000 毫秒",
-        "style": "字符串；枚举：smoothly | through-black；仅 fade 使用",
-        "direction": (
-            "字符串；枚举：from-bottom | from-top | from-left | from-right；"
-            "仅 push / cover / pull 使用"
-        ),
+        "style": "字符串；枚举：smoothly | through-black；仅 fade / cut 使用",
     },
 }
 
@@ -619,14 +603,6 @@ def aliases_for_attribute(name: str) -> list[str]:
     return list(ATTRIBUTE_ALIASES.get(name, ()))
 
 
-def index_attributes(index: SchemaIndex, element: ElementInfo) -> list[AttributeInfo]:
-    attributes = index.attributes(element.complex_type)
-    allowed = INDEX_ATTRIBUTE_NAMES.get(element.name)
-    if allowed is None:
-        return attributes
-    return [attribute for attribute in attributes if attribute.name in allowed]
-
-
 def index_constraints(
     index: SchemaIndex, element: ElementInfo, attribute: AttributeInfo
 ) -> list[str]:
@@ -637,10 +613,8 @@ def index_constraints(
 
 
 def render_element(index: SchemaIndex, element: ElementInfo) -> str:
-    attributes = index_attributes(index, element)
-    doc = INDEX_DOCUMENTATION_OVERRIDES.get(element.name) or (
-        documentation(element.node) or documentation(element.complex_type)
-    )
+    attributes = index.attributes(element.complex_type)
+    doc = documentation(element.node) or documentation(element.complex_type)
     notes = list(HIGH_PRIORITY_NOTES.get(element.name, ()))
     if doc:
         notes.append(doc)
@@ -669,12 +643,7 @@ def render_element(index: SchemaIndex, element: ElementInfo) -> str:
     else:
         lines.append("- XSD 未声明额外语义约束；仍须遵守下表中的类型、必填项和默认值。")
 
-    attribute_heading = (
-        "### 生成页面可用属性"
-        if element.name in INDEX_ATTRIBUTE_NAMES
-        else "### 完整可用属性"
-    )
-    lines.extend(["", attribute_heading, ""])
+    lines.extend(["", "### 完整可用属性", ""])
     if attributes:
         lines.extend(
             [

@@ -154,11 +154,11 @@ def attach(store, conn, batch, result, snapshot):
 
     if store._task(conn).get('rules_mode') == 'dynamic':
         result['rules_load_contract'] = {
-            'command':'rules-load','argv':['rules-load','--task-dir',str(store.root),'--next'], 'task_id':store.task_id,
+            'command':'rules-load','argv':['rules-load','--task-dir',str(store.root),'--input-file',str(store.root/'rules-input.json'),'--next'], 'task_id':store.task_id,
             'loaded_bundles':store._task(conn).get('loaded_rule_bundles',[]),
             'bindings':[{'segment_id':s['id'],'evidence_revision':s['evidence_revision']} for s in result['segments']],
             'required_fields':['task_id','bundle','segment_id','evidence_revision','reason','evidence_ids','images_viewed'],
-            'instruction':'内容需要专项时追加 finance 或 ecommerce，引用本批 evidence_ids。通过 stdin 提交并携带 --next，直接使用返回的下一批合同。'}
+            'instruction':'内容需要专项时追加 finance 或 ecommerce，引用本批 evidence_ids。先把完整 JSON 写入 argv 指定的 --input-file 文件，再执行命令；不要空调用等待 stdin。携带 --next，直接使用返回的下一批合同。'}
 
     output_path = store.root / 'review-input' / (context_id + '.json')
     output_path.parent.mkdir(mode=0o700, exist_ok=True)

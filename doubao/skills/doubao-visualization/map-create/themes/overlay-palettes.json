@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "defaultByTone": {
+    "light": "categorical-on-light",
+    "dark": "categorical-on-dark"
+  },
+  "palettes": [
+    {
+      "id": "categorical-on-light",
+      "tones": ["light"],
+      "colors": [
+        "#1D4ED8",
+        "#047857",
+        "#C2410C",
+        "#6D28D9",
+        "#BE185D",
+        "#0F766E",
+        "#A16207",
+        "#334155"
+      ],
+      "label": { "textColor": "#172033", "backgroundColor": "#FFFFFF" },
+      "routeOutlineWidth": 4
+    },
+    {
+      "id": "categorical-on-dark",
+      "tones": ["dark"],
+      "colors": [
+        "#60A5FA",
+        "#34D399",
+        "#FB923C",
+        "#C084FC",
+        "#F472B6",
+        "#2DD4BF",
+        "#FACC15",
+        "#CBD5E1"
+      ],
+      "label": { "textColor": "#F8FAFC", "backgroundColor": "#111827" },
+      "routeOutlineWidth": 4
+    },
+    {
+      "id": "categorical-on-colorful",
+      "tones": ["light", "dark"],
+      "colors": [
+        "#003B8F",
+        "#005A36",
+        "#9A3412",
+        "#4C1D95",
+        "#9D174D",
+        "#134E4A",
+        "#713F12",
+        "#111827"
+      ],
+      "label": { "textColor": "#111827", "backgroundColor": "#FFFFFF" },
+      "routeOutlineWidth": 5
+    }
+  ]
+}

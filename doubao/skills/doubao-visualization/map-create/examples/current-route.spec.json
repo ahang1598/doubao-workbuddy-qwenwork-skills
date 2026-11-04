@@ -1,0 +1,138 @@
+{
+  "contractRevision": 3,
+  "specVersion": "2.0",
+  "id": "route-example",
+  "title": "完整线路",
+  "coordinateSystem": "GCJ-02",
+  "sources": [
+    {
+      "id": "user",
+      "provider": "user",
+      "title": "合成验收数据"
+    }
+  ],
+  "entities": {
+    "places": [
+      {
+        "id": "a",
+        "name": "地点 a",
+        "position": [
+          120,
+          30
+        ],
+        "sourceRefs": [
+          "user"
+        ]
+      },
+      {
+        "id": "b",
+        "name": "地点 b",
+        "position": [
+          120.01,
+          30
+        ],
+        "sourceRefs": [
+          "user"
+        ]
+      },
+      {
+        "id": "c",
+        "name": "地点 c",
+        "position": [
+          120.02,
+          30
+        ],
+        "sourceRefs": [
+          "user"
+        ]
+      }
+    ],
+    "routes": [
+      {
+        "id": "r",
+        "name": "路线示意",
+        "mode": "walking",
+        "memberIds": [
+          "m-a",
+          "m-b",
+          "m-c"
+        ],
+        "geometry": {
+          "status": "schematic",
+          "derivation": "endpoint-connection"
+        },
+        "sourceRefs": [
+          "user"
+        ]
+      }
+    ],
+    "regions": []
+  },
+  "groups": [
+    {
+      "id": "g",
+      "kind": "route",
+      "title": "完整线路",
+      "members": [
+        {
+          "id": "m-a",
+          "placeId": "a",
+          "role": "visit",
+          "order": 1,
+          "orderPurpose": "visit",
+          "orderEvidenceRef": "request"
+        },
+        {
+          "id": "m-b",
+          "placeId": "b",
+          "role": "visit",
+          "order": 2,
+          "orderPurpose": "visit",
+          "orderEvidenceRef": "request"
+        },
+        {
+          "id": "m-c",
+          "placeId": "c",
+          "role": "visit",
+          "order": 3,
+          "orderPurpose": "visit",
+          "orderEvidenceRef": "request"
+        }
+      ],
+      "routeIds": [
+        "r"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "id": "all",
+      "kind": "overview",
+      "groupIds": [
+        "g"
+      ]
+    }
+  ],
+  "task": {
+    "purpose": "route",
+    "primaryContent": [
+      {
+        "kind": "route",
+        "id": "r"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "request",
+        "origin": "user-request",
+        "reference": "request:1",
+        "supports": [
+          "visit-order"
+        ],
+        "objectIds": [
+          "route-example"
+        ]
+      }
+    ]
+  }
+}

@@ -17,7 +17,7 @@
 ## §A HTML 硬约束（渲染环境强制，违反则不渲染）
 
 - 用 ` ```html type="renderer" ` 代码块包裹；**禁** `<!DOCTYPE>`/`<head>`/`<body>`/`<TEXT>`。
-- 回复里**第一个** renderer 块外层：`<html style="margin:0;padding:0;">` + 非空的 HTML `<title>` + 一个 `<div style="background:transparent;">`；标题遵循 `SKILL.md` 的“HTML 网页标题”要求，同一回复后续块直接 `<div …>` 起手（不重复 `<html>` 和文档级 `<title>`）。
+- 回复里**第一个** renderer 块外层：`<html style="margin:0;padding:0;">` + `<meta charset="utf-8">` + 非空的 HTML `<title>` + 一个 `<div style="background:transparent;">`；标题遵循 `SKILL.md` 的“HTML 网页标题”要求，同一回复后续块直接 `<div …>` 起手（不重复 `<html>` 和文档级 `<title>`）。
 - 所有 CSS **内联** `style="…"`；`<style>` 标签只允许写伪元素（如 `::-webkit-slider-thumb`）。单条 style ≤ 250 字符。
 - **全局禁**：`box-shadow`、`height:100vh`/`min-height:100vh`、固定 `height`、外部 CSS 链接，以及**任何视口单位 `vh`/`vw`/`vmin`/`vmax` 和 `min()`/`max()`/`clamp()`**（端上无真实视口，`vh` 会时而被忽略、时而≈0 把图缩成极小）。图像舞台高度默认交给图片本身 `height:auto`；**所有 `<img>` 统一按"在 `max-width` 与 `max-height` 约束框内严格等比缩放、并尽量放大到可显示最大尺寸"的规则渲染**：使用 `width:auto;height:auto;max-width:100%;max-height:720px`（**固定 px，不用 vh**），要求图片始终保持原始宽高比、不得拉伸或压缩变形；在满足 `width<=100%` 且 `height<=max-height=720px` 的前提下，渲染结果需尽可能大，并使宽或高至少有一边触达对应上限。舞台用 `display:inline-block;max-width:100%` 收缩包住图，`#svp` 用 `text-align:center` 居中；这是纯静态 CSS，不用 JS 判方向。
 - 顶层 `width:100%`（按约 784px 宿主设计），外层 `background:transparent; border:none;`。
@@ -32,8 +32,8 @@
 process 的坐标是 0-999 相对值。把它们变成画面位置，**有且仅有这一处**换算，用"占舞台百分比"而非像素（天然抗缩放、无需图像宽高）。舞台固定两层：
 
 ```
-<div style="position:relative;width:100%;">            ← 舞台
-  <img … style="width:100%;height:auto;display:block;">
+<div style="position:relative;display:inline-block;max-width:100%;">  ← 舞台
+  <img … style="width:auto;height:auto;max-width:100%;max-height:720px;display:block;">
   <svg class="lines" viewBox="0 0 999 999" preserveAspectRatio="none"
        style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;"></svg>   ← 只画线/路径/框
   <div class="layer" style="position:absolute;inset:0;pointer-events:none;"></div>   ← 画所有圆点/胶囊/文字/符号
@@ -50,7 +50,7 @@ process 的坐标是 0-999 相对值。把它们变成画面位置，**有且仅
 换算口径：
 - div 标记：`left=(x/999*100)+'%'`，`top=(y/999*100)+'%'`。
 - SVG 线/框：直接把 0-999 当坐标写进属性（viewBox 自动换算），**不做 JS 数学、不碰像素、不碰图像宽高**。
-- **process 必须作为数据内嵌 + JS 解析驱动**：把整份 process 放进 `<script type="application/json" id="...">{…process…}</script>`，JS 里 `JSON.parse(el.textContent)`，**遍历 steps/coords 动态生成标记**。**禁止把坐标（无论 0-999、百分比还是像素）手敲进各个元素**——所有位置只能由代码从 process 算出来。
+- **process 是标记位置的唯一来源**：把整份 process 放进 `<script type="application/json" id="...">{…process…}</script>`。静态标记可在生成时遍历 steps/coords，按本节规则预渲染为 HTML/SVG；需要动态生成时再由 JS `JSON.parse(el.textContent)` 后遍历绘制。两种方式均从同一份 process 推导位置，禁止另写一套独立坐标；不为静态标注强加运行时 JS。
 
 ---
 
@@ -93,7 +93,7 @@ process 的坐标是 0-999 相对值。把它们变成画面位置，**有且仅
 
 - 标记**编号化**（图上只留小编号圆点），把 `label` 移到图**右侧或下方的图例列**（`<ol>`，每行：色点 + 编号 + label），用编号一一对应。
 - 标签可能互相压住时，用细引导线（leader）把胶囊拉到留白处；或降低非聚焦标记透明度。
-- 标记 ≥2 个时**必须**给图例（避免图上字幕堆叠）。
+- 标签拥挤、过长或需要解释多组对应关系时使用图例；标签能就近清楚对应时不强制图例，不以标记数量单独决定。
 - 版心稳、留白足；分隔用留白或 `1px solid #E5E7EB` 细线，不用阴影。
 
 **多图任务（process 里带 `images`/`img`）**：**每张图各一座独立舞台**（各自 `<img>`+SVG+`.layer`），按 `images` 顺序纵向排列，坐标 0-999 相对**各自那张图**；**禁止重复铺同一张图 / 输出空白舞台**——附件几张就几座舞台，绝不多也不少。跨图对应（同一物体 / 对比 / 配对）用 `match_pair`：两端 coord `img` 不同，画连线（若跨舞台连线难画，则两端用同色胶囊 + hover 联动高亮替代）。对应关系不明确时，只标主图、其余图不硬凑。
@@ -107,19 +107,19 @@ process 的坐标是 0-999 相对值。把它们变成画面位置，**有且仅
   - **图例行也要绑、且双向**：图例操作高亮对应标记，标记操作也高亮对应图例行。
   - 实现：标记 / 胶囊 / 图例 `pointer-events:auto`；同时绑定 `mouseenter/mouseleave` 与 `click`，按"同一证据 = 同一组"统一改透明度，**别依赖 CSS `:hover` 跨元素**。（Gold 示例中的 `bindHover`/`setActive` 仅展示桌面基础实现；实际交付需在其上补 click/tap。）
 - 启用交互时，标记加载即以 idle 半透明呈现；无论是否交互，核心结论必须已在正文和静态初始状态中表达。
-- 交互失败时至少保留前置文字答案和原图。由于标记由 JS 根据 process 动态生成，不得宣称脚本解析失败后标记仍一定存在；需要更强降级时，应预渲染静态标记而不是只依赖运行时生成。
+- 交互失败时至少保留前置文字答案和原图。仅由运行时 JS 生成的标记不能保证在脚本解析失败后仍存在；需保留标记时，按 §B 从同一份 process 预渲染静态标记，再叠加交互。
 
 ---
 
 ## §F 发送前自检（逐条过，全过才发）
 
 1. **零泄漏单趟 + 可视化在末尾**：回复第一字符是讲解实质内容，先把讲解与答案写完、**可视化放在回复最末尾**（让用户先读到结论）；正文收尾**可用一句自然的衔接**引出末图（面向内容，如"我把…都标在图上了，对照看更清楚"），但无"我来帮你…并把过程可视化展示出来 / 做可视化标记 / 让我先看图规划 / 下面是可视化 / 见下图"这类**机制式预告或点名**；无工具/文件/process/JSON/坐标/skill 痕迹，无"创建/校验/渲染/验证通过"旁白。
-2. **HTML 约束**：` ```html type="renderer" ` 包裹；无 DOCTYPE/head/body；CSS 内联；无 box-shadow / `height:100vh` / 固定 `height` / **视口单位 vh·vw 与 min()·max()·clamp()**（竖高图舞台可用固定 `max-height:720px` + `width:auto` 限高，见 §A）；首块 `<html>`+唯一、非空、与主题相符的 HTML `<title>`+透明 `<div>`；JS 为 IIFE+try/catch+判空、无 DOMContentLoaded、无外部库。
+2. **HTML 约束**：` ```html type="renderer" ` 包裹；无 DOCTYPE/head/body；CSS 内联；无 box-shadow / `height:100vh` / 固定 `height` / **视口单位 vh·vw 与 min()·max()·clamp()**（竖高图舞台可用固定 `max-height:720px` + `width:auto` 限高，见 §A）；首块 `<html>`+`<meta charset="utf-8">`+唯一、非空、与主题相符的 HTML `<title>`+透明 `<div>`；JS 为 IIFE+try/catch+判空、无 DOMContentLoaded、无外部库。
 3. **图片**：真实 https URL（含完整 TOS 参数），非本地/base64/裸 URI。
-4. **process 内嵌 + 真画出标记 + 无硬编码**：整份 process 以 `<script type="application/json">` 内嵌、**合法非空 JSON**、JS `JSON.parse` 后遍历生成标记，**图上确有标记画出**（只铺原图 / 空 svpdata / 解析失败 = 失败）；位置全由 0-999 经 §B 百分比/viewBox 算出，**没有任何手敲坐标**；SVG 描边带 `non-scaling-stroke`。
+4. **process 内嵌 + 真画出标记 + 单一坐标来源**：整份 process 以 `<script type="application/json">` 内嵌为合法非空 JSON；标记从同一份 steps/coords 预渲染，或由 JS 解析后动态生成，图上确有标记。位置全部按 §B 从 0-999 转换，不另写独立坐标；SVG 描边带 `non-scaling-stroke`。
 5. **无畸变（关键）**：`preserveAspectRatio="none"` 的 SVG 里**只有** line/polyline/path/rect；**没有任何** `<circle>`/`<ellipse>`/`<text>`；所有圆点 / 序号 / 字幕 / 符号都是 `.layer` 的 HTML div（圆是正圆、字不拉伸）。
 6. **类别正确 + 标记不丑**：按 process 每步 `type` 画，各按 §C 标准；点标记是**小圆点 + 旁置胶囊**，无"大圆饼塞数字"。
 7. **配色 + 对比**：≤2 色相、低饱和、无 raw 高饱和原色；线/路径与所穿过物体**不撞色**、任意底色上都看得清；标记不盖过原图。
 8. **交互按需且全覆盖**：简单标注保持静态；若启用交互，hover 与 click/tap 联动绑定到每一个标记和每一行图例，且图与图例双向联动；JS 失败时仍有前置文字答案和原图。
 9. **图上忠实**：每个标记真的压在它 `label` 所述、**图中真实存在**的物体上（找不到就不标，绝不凭空标空白 / 不存在的物体）；每条结论都有图上对应标记；近似/不确定在文字里诚实说明。
-10. **不拥挤 + 图数正确**：≥2 标记 → 有图例；密集时已编号化 + leader 线；版心干净；单图任务一张讲清；多图任务每张各一座舞台、按序排列、**不重复铺图 / 不留空白舞台**（舞台数 = 附件数）。
+10. **不拥挤 + 图数正确**：图例按标签拥挤程度和对应关系需要设置；密集时已编号化并按需添加 leader 线；版心干净；单图任务一张讲清；多图任务每张各一座舞台、按序排列、不重复铺图或留下空白舞台。

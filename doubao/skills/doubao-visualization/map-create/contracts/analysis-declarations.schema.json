@@ -1,0 +1,643 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://map-create.local/contracts/analysis-declarations.schema.json",
+  "title": "Current analysis declarations (validation only; not a public input)",
+  "description": "Shared normalized declarations for the current revision 3 contracts. This projection is not a MapSpec, Plan or Graph and cannot enable compilation or runtime support.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fieldDefinitions", "dataSources", "views"],
+  "properties": {
+    "fieldDefinitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/field"
+      }
+    },
+    "dataSources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dataSource"
+      }
+    },
+    "views": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/view"
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id"
+      },
+      "uniqueItems": true
+    },
+    "field": {
+      "allOf": [
+        {
+          "$ref": "canonical-map-spec.schema.json#/$defs/fieldDefinition"
+        },
+        {
+          "type": "object",
+          "required": ["id", "sourceRefs"]
+        }
+      ]
+    },
+    "dataSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "entityKind", "entityIds", "fieldIds", "rowIdentity"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "entityKind": {
+          "enum": ["place", "route", "region"]
+        },
+        "entityIds": {
+          "$ref": "#/$defs/ids"
+        },
+        "fieldIds": {
+          "$ref": "#/$defs/ids"
+        },
+        "rowIdentity": {
+          "const": "entity"
+        },
+        "missingValuePolicy": {
+          "enum": ["error", "skip"],
+          "description": "Omitted means error. Applies to the shared source population, not independently per layer."
+        }
+      }
+    },
+    "domain": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "range"],
+          "properties": {
+            "kind": {
+              "const": "fixed"
+            },
+            "range": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "population", "method"],
+          "properties": {
+            "kind": {
+              "const": "auto"
+            },
+            "population": {
+              "enum": ["all-source", "filtered"]
+            },
+            "method": {
+              "enum": ["extent", "quantile"]
+            },
+            "quantiles": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "if": {
+            "properties": {
+              "method": {
+                "const": "quantile"
+              }
+            }
+          },
+          "then": {
+            "required": ["quantiles"]
+          },
+          "else": {
+            "not": {
+              "required": ["quantiles"]
+            }
+          }
+        }
+      ]
+    },
+    "height": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "maxHeightMeters"],
+      "properties": {
+        "domain": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "range"],
+              "properties": {
+                "kind": {
+                  "const": "fixed"
+                },
+                "range": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  ],
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "population"],
+              "properties": {
+                "kind": {
+                  "const": "auto"
+                },
+                "population": {
+                  "enum": ["all-source", "filtered"]
+                }
+              }
+            }
+          ]
+        },
+        "maxHeightMeters": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "aggregation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op"],
+      "properties": {
+        "op": {
+          "enum": ["count", "sum", "average", "min", "max"]
+        },
+        "fieldId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "if": {
+        "properties": {
+          "op": {
+            "const": "count"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": ["fieldId"]
+        }
+      },
+      "else": {
+        "required": ["fieldId"]
+      }
+    },
+    "analysisInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "componentId",
+        "sourceId",
+        "continuous",
+        "hexbin"
+      ],
+      "properties": {
+        "kind": {
+          "const": "heatmap"
+        },
+        "componentId": {
+          "const": "heatmap"
+        },
+        "sourceId": {
+          "$ref": "#/$defs/id"
+        },
+        "modes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "continuous",
+              "hexbin",
+              "hexbin-3d"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "defaultMode": {
+          "enum": [
+            "continuous",
+            "hexbin",
+            "hexbin-3d"
+          ]
+        },
+        "continuous": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "measure",
+            "scalePopulation",
+            "presetId"
+          ],
+          "properties": {
+            "engine": {
+              "const": "maplibre-native"
+            },
+            "measure": {
+              "const": "relative-density"
+            },
+            "weightFieldId": {
+              "$ref": "#/$defs/id"
+            },
+            "scalePopulation": {
+              "enum": [
+                "all-source",
+                "filtered"
+              ]
+            },
+            "presetId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        "hexbin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "aggregation",
+            "grid",
+            "domain"
+          ],
+          "properties": {
+            "aggregation": {
+              "$ref": "#/$defs/aggregation"
+            },
+            "grid": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "projection",
+                "origin",
+                "cellEdgeProjectedMeters"
+              ],
+              "properties": {
+                "projection": {
+                  "const": "web-mercator-display"
+                },
+                "origin": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "cellEdgeProjectedMeters": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              }
+            },
+            "domain": {
+              "$ref": "#/$defs/domain"
+            },
+            "height": {
+              "$ref": "#/$defs/height"
+            }
+          }
+        },
+        "comparisonScopeId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "analysis": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/analysisInput"
+        },
+        {
+          "type": "object",
+          "required": [
+            "modes",
+            "defaultMode"
+          ],
+          "if": {
+            "properties": {
+              "modes": {
+                "type": "array",
+                "contains": {
+                  "const": "hexbin-3d"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hexbin": {
+                "type": "object",
+                "required": [
+                  "height"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "resolvedLayer": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/layer"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "analysis": {
+              "$ref": "#/$defs/analysis"
+            }
+          }
+        }
+      ]
+    },
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sourceId",
+        "elementIds",
+        "encodingId",
+        "initialVisible",
+        "required",
+        "interaction"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "sourceId": {
+          "$ref": "#/$defs/id"
+        },
+        "elementIds": {
+          "$ref": "#/$defs/ids"
+        },
+        "encodingId": {
+          "$ref": "#/$defs/id"
+        },
+        "analysis": {
+          "$ref": "#/$defs/analysisInput"
+        },
+        "initialVisible": {
+          "type": "boolean"
+        },
+        "highlightEntityIds": { "$ref": "#/$defs/ids" },
+        "required": {
+          "type": "boolean"
+        },
+        "interaction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hoverable", "selectable"],
+          "properties": {
+            "hoverable": {
+              "type": "boolean"
+            },
+            "selectable": {
+              "type": "boolean"
+            },
+            "queryId": {
+              "$ref": "#/$defs/id"
+            },
+            "queryRadiusPx": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      }
+    },
+    "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sourceId", "fieldId", "kind", "applyToLayerIds"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "sourceId": {
+          "$ref": "#/$defs/id"
+        },
+        "fieldId": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": ["enum", "number-range", "time-range", "text"]
+        },
+        "label": { "type": "string", "minLength": 1 },
+        "groupLabel": { "type": "string", "minLength": 1 },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value", "label"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "value": {
+                "anyOf": [
+                  { "type": "string" },
+                  { "type": "number" },
+                  { "type": "boolean" },
+                  { "type": "null" }
+                ]
+              }
+            }
+          }
+        },
+        "applyToLayerIds": {
+          "$ref": "#/$defs/ids",
+          "minItems": 1,
+          "type": "array"
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sourceId", "label", "op", "scope"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "sourceId": {
+          "$ref": "#/$defs/id"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "op": {
+          "enum": ["count", "distinct-count", "sum", "average", "min", "max"]
+        },
+        "fieldId": {
+          "$ref": "#/$defs/id"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "enum": ["all-source", "filtered"]
+        }
+      },
+      "if": {
+        "properties": {
+          "op": {
+            "const": "count"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": ["fieldId"]
+        }
+      },
+      "else": {
+        "required": ["fieldId"]
+      }
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layers", "filters", "metrics"],
+      "properties": {
+        "layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resolvedLayer"
+          }
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/filter"
+          }
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metric"
+          }
+        }
+      }
+    },
+    "fieldValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valueType", "value"],
+          "properties": {
+            "valueType": {
+              "const": "number"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valueType", "value"],
+          "properties": {
+            "valueType": {
+              "const": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valueType", "value"],
+          "properties": {
+            "valueType": {
+              "const": "boolean"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valueType", "value"],
+          "properties": {
+            "valueType": {
+              "const": "datetime"
+            },
+            "value": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -7,7 +7,8 @@ const os = require("os");
 const path = require("path");
 
 const REQUIRED_COMMANDS = [
-  "status", "login", "logout", "query-result",
+  "status", "login", "logout", "query-result", "upload-file",
+  "space list", "space use",
   "generate-image", "generate-video", "video-super-resolution",
   "erase-video-subtitle", "get-credit-balance", "model list", "model describe",
 ];
@@ -85,7 +86,13 @@ function ensureCLI({ canvas = false } = {}) {
     }
     for (const command of commands) {
       try {
-        run(cliPath, [...command, "--help"], `检查 ${command.join(" ")} 命令`, true);
+        const help = run(cliPath, [...command, "--help"], `检查 ${command.join(" ")} 命令`, true).toString();
+        // --team-id is inherited from the root; reuse an existing business help check.
+        if (command[0] === "generate-image" && !/(?:^|\s)--team-id(?:[=\s,]|$)/m.test(help)) {
+          const failure = new Error("CLI 缺少 --team-id 参数。");
+          failure.missingCommand = "generate-image --team-id";
+          throw failure;
+        }
       } catch (err) {
         if (Number.isInteger(err.exitStatus) && err.exitStatus !== 0) {
           err.missingCommand = command.join(" ");

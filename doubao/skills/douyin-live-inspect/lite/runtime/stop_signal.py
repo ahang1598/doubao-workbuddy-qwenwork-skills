@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块的检测、状态、遥测或交付边界；敏感输入和原始响应不进入日志。
 """Task-local stop intent, readable even while SQLite is unavailable."""
 import json
 import math
@@ -12,14 +13,14 @@ def read(root):
         with os.fdopen(nofollow_open(Path(root)/'stop-request.json', os.O_RDONLY)) as stream:
             if not private_file(os.fstat(stream.fileno())):return None
             value = json.load(stream)
-        return value if type(value.get('requested_at')) in (int,float) and math.isfinite(value['requested_at']) and value.get('reason') in {'user_request','source_ended'} else None
+        return value if type(value.get('requested_at')) in (int,float) and math.isfinite(value['requested_at']) and value.get('reason') in {'user_request','source_ended','execution_limit'} else None
     except (OSError, ValueError, TypeError, AttributeError):return None
 
 
 def request(root, *, origin, reason, instruction):
-    if origin not in {'agent','dashboard','runtime'} or reason not in {'user_request','source_ended'}:
+    if origin not in {'agent','dashboard','runtime'} or reason not in {'user_request','source_ended','execution_limit'}:
         raise ValueError('explicit stop intent required')
-    if origin == 'agent' and (not isinstance(instruction,str) or not instruction.strip()):
+    if origin == 'agent' and reason != 'execution_limit' and (not isinstance(instruction,str) or not instruction.strip()):
         raise ValueError('agent stop requires user instruction')
     root=Path(root).expanduser().resolve()
     if not (root/'inspection.db').is_file():raise ValueError('task does not exist')

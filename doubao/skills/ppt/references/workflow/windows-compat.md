@@ -1,6 +1,6 @@
 # Windows 兼容性
 
-用于在 SystemPrompt 里出现 `Computer OS: Windows` 的会话，表明当前所在的设备是 Windows。Windows 上 Bash 工具调用实际交给 **PowerShell** 来执行，本 Skill 默认的 bash 示例（`jq --rawfile`、`--data "$(...)"`、`&&` 组合、`--output C:\...`、`ls -la`、`$PID` 等）会直接失败，故需要替换成其他命令来执行。macOS / Linux 不受本文件约束。
+用于按 `SKILL.md`「权威经验」中的运行环境规则判定当前设备是 Windows 的会话。Windows 上 Bash 工具调用实际交给 **PowerShell** 来执行，本 Skill 默认的 bash 示例（`jq --rawfile`、`--data "$(...)"`、`&&` 组合、`--output C:\...`、`ls -la`、`$PID` 等）会直接失败，故需要替换成其他命令来执行。macOS / Linux 不受本文件约束。
 
 ## 硬规则
 
@@ -13,6 +13,7 @@
 7. **文件读写走工具本身或 Python**：不要用 `>` / `Out-File` / `Get-Content ... | cli --xxx -`——PowerShell 5 默认非 UTF-8、加 BOM、走 stdin 时非 ASCII 字节会被重编码。让 lark-cli 用 `--output`、让 Python 用 `open(..., encoding='utf-8')`。
 8. 在 Windows PowerShell 5.X 上，lark-cli 的任何 stderr 输出（进度、失败 JSON、提示）都会被包成 NativeCommandError 并让 exit code 变非 0，所以 NativeCommandError 并不一定代表了报错，需要去细看报错内容才能知道真实报错是什么
 9. **默认字体用微软雅黑**：除非用户提供了模版、用户指定了字体或用户的需求是对原有 ppt 进行编辑，否则 windows 场景下，默认设置 fontFamily="微软雅黑"
+10. **需要使用 `python -m pip` 来代替 `pip`**：Windows 环境中没有 `pip` 命令，安装依赖一律写 `python -m pip install <包名>`，不直接调用 `pip` / `pip3`。
 
 ## 禁用命令 → 兼容替代
 

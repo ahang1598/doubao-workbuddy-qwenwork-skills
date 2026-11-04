@@ -3693,16 +3693,20 @@
 
 ### 高优先级约束
 
-- 页面切换节点。生成页面时仅使用 fade / cover / pull / push 四种效果；none 用于显式关闭切换。
+- 页面切换节点, 只能出现在 slide/animation 下 属性: - type: 必填, 20 种切换效果之一或 none; none 表示关闭, 禁止携带 durationMs 及任何效果参数 - durationMs: 切换时长毫秒, 缺省 1000 - style: fade / cut 的样式 - direction: 方向类效果的方向, 取值子集随 type 变化 - orientation: split 的方向轴 - morphMode: morph 的粒度 - invX / invY: 卷曲类效果的翻转, 缺省 false 每种 type 只接受自己的参数, 写了不适用的参数或不在该 type 子集内的取值, 改写路径(update-slide / replace-slide)整单拒绝并报错, 新建路径跳过该切换 只留静态页面, 因此由 xml_lint 在提交前拦截
 
-### 生成页面可用属性
+### 完整可用属性
 
 | 属性 | 必需 | 默认/固定 | 类型 | 枚举、数值与格式约束 |
 |---|---|---|---|---|
-| `type` | 是 | - | `TransitionEffectType` | 字符串；枚举：none \| fade \| cover \| pull \| push |
+| `type` | 是 | - | `TransitionEffectType` | 页面切换类型, 20 种效果加关闭状态 none type="none" 表示显式关闭切换, 不是"未配置"；字符串；枚举：none \| fade \| cut \| push \| cover \| pull \| slides-flip \| wipe \| split \| blinds \| checkerboard \| cube \| box \| rotate \| orbit \| gallery \| page-curl-double \| page-curl-single \| peel-off \| morph \| random |
 | `durationMs` | 否 | - | `TransitionDurationType` | 整数；限制：>= 0，<= 86399999；默认 1000 毫秒 |
-| `style` | 否 | - | `TransitionStyleType` | 字符串；枚举：smoothly \| through-black；仅 fade 使用 |
-| `direction` | 否 | - | `TransitionDirectionType` | 字符串；枚举：from-bottom \| from-top \| from-left \| from-right；仅 push / cover / pull 使用 |
+| `style` | 否 | - | `TransitionStyleType` | 字符串；枚举：smoothly \| through-black；仅 fade / cut 使用 |
+| `direction` | 否 | - | `TransitionDirectionType` | 方向白名单, 是所有 type 取值的并集; 每种 type 只接受其中一个子集: - push / cover / pull / cube / box / rotate / orbit: from-bottom, from-top, from-left, from-right - wipe: 上述四向加 from-top-left, from-top-right, from-bottom-left, from-bottom-right - gallery: from-left, from-right - slides-flip / blinds / checkerboard: horizontal, vertical - split: in, out XSD 无法表达"取值随 type 变化", 子集由 xml_lint 的 validate_transition_semantics 逐 type 校验；字符串；枚举：from-bottom \| from-top \| from-left \| from-right \| from-top-left \| from-top-right \| from-bottom-left \| from-bottom-right \| horizontal \| vertical \| in \| out |
+| `orientation` | 否 | - | `TransitionOrientationType` | split 效果的方向轴, 默认 horizontal；字符串；枚举：horizontal \| vertical |
+| `morphMode` | 否 | - | `TransitionMorphModeType` | morph 效果的粒度模式, 默认 by-object；字符串；枚举：by-object \| by-word \| by-character |
+| `invX` | 否 | - | `boolean` | 布尔值：true / false / 1 / 0 |
+| `invY` | 否 | - | `boolean` | 布尔值：true / false / 1 / 0 |
 
 ### 子元素（内容模型）
 

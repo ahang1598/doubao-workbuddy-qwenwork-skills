@@ -7,8 +7,8 @@
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：283
-- 当前索引文件数：4876
-- 最近变更：[2026-11-03-210234](doubao/change-logs/2026-11-03-210234.md) - Doubao 本次同步新增 2 个文件、修改 127 个文件、删除 3 个文件。 受影响范围：skills/browser-use, skills/browser-use-automation, skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-crea...
+- 当前索引文件数：5001
+- 最近变更：[2026-11-04-180008](doubao/change-logs/2026-11-04-180008.md) - Doubao 本次同步新增 156 个文件、修改 262 个文件、删除 31 个文件。 受影响范围：skills/doubao-creative-video, skills/doubao-equity-research, skills/doubao-visualization, skills/douyin-live-inspect, skills/fu...
 
 ## 数据来源
 
@@ -116,7 +116,7 @@
 | doubao-ecommerce-compliance-tax-logistics | `doubao/skills/doubao-ecommerce-compliance-tax-logistics` | skill | 12 | Cross-border ecommerce compliance, tax, IP, customs, tariff, HS code, fulfillment, warehousing, China import, and clearance workflow for marketplace and independent-store sellers. Use when the user asks whether a prod... |
 | doubao-ecommerce-proposal | `doubao/skills/doubao-ecommerce-proposal` | skill | 5 | 电商活动策划专家。用于生成、改写、优化完整电商活动策划方案，并默认交付一份已经本地落地、可用浏览器打开验证的 HTML 网页版方案。覆盖淘宝/天猫、抖音电商、京东、得物、拼多多、小红书、Amazon、TikTok Shop、Shopee、Lazada、eBay、Shopify/独立站等平台的节点大促、店铺活动、平台活动、直播间活动、品类活动、品牌日、上新、清仓、会员复购、内容种草到成交、站内外联动与跨境电商活动。若用户只要商品标题... |
 | doubao-enterprise-search | `doubao/skills/doubao-enterprise-search` | skill | 4 | 判断是否调用 `enterprise_agentic_search` 工具前，必须先完整读取 `doubao-enterprise-search` skill。适用场景包括：用户本轮输入包含 `[企业知识]` 或 `doubao-enterprise-search` 的 Skill 调用标记；问题明确或高度可能依赖企业内部资料、内部口径、内部系统、业务背景、历史讨论、协作记录、制度流程、员工权益、差旅报销，或内部产品、项目、客户、... |
-| doubao-equity-research | `doubao/skills/doubao-equity-research` | skill | 38 | 面向 A 股、港股、美股及其他上市证券的专业股票研究与飞书报告交付，覆盖基本面、财报前瞻与解读、盈利模型更新、市场预期、估值、股价与事件、催化剂与风险、同业比较、股票筛选、论点跟踪、组合风险、市场复盘及跨上市地相对价值。单家标的基本面请优先使用doubao-public-company-analysis；估值建模请调用 doubao‑finance‑model‑builder。 |
+| doubao-equity-research | `doubao/skills/doubao-equity-research` | skill | 39 | 面向 A 股、港股、美股及其他上市证券的专业股票研究与HTML 报告交付，覆盖基本面、财报前瞻与解读、盈利模型更新、市场预期、估值、股价与事件、催化剂与风险、同业比较、股票筛选、论点跟踪、组合风险、市场复盘及跨上市地相对价值。单家标的基本面请优先使用doubao-public-company-analysis；估值建模请调用 doubao‑finance‑model‑builder。 |
 | doubao-finance-model-builder | `doubao/skills/doubao-finance-model-builder` | skill | 116 | 对 A 股、港股和美股上市公司执行中文、可审计且带机器阻断质量门的三表预测、DCF、LBO或可比公司估值。支持最新公告增量检索、除权除息和送转股等公司行动证据冻结、收入增速和多产品量价预测、三表勾稽、FCFF/WACC/终值、分层债务与回报、同行筛选和相对估值。用于财务预测、预算、目标价、杠杆回报或交易可比分析；不要用于自动下单、纯信用评级或并购法律意见。 |
 | doubao-finance-sector | `doubao/skills/doubao-finance-sector` | skill | 14 | 分析股票市场板块的识别、异动归因、热度、阶段、内部结构、主线、产业传导、持续性与历史复盘；当问题需要有截止边界的行情证据链、可比计算、情景或可复现文件时使用。 |
 | doubao-game-designer | `doubao/skills/doubao-game-designer` | skill | 74 | 把游戏创意、参考作品、现有方案、配置或试玩证据转化为玩法成立、规则闭合、数值可复算且能进入制作的 GDD、玩法方案与系统规格；需要验证关键玩法时，联合前端或开发能力交付可直接运行的 HTML 游戏 Demo。用于核心循环、战斗、成长、经济、关卡、引导、平衡、活动、版本设计、方案评审与修订，以及按需追加的立项、发行、商业和制作内容。 |
@@ -163,10 +163,10 @@
 | doubao-ultimate-guide | `doubao/skills/doubao-ultimate-guide` | skill | 64 | 统一攻略创作总控 Skill：根据用户需求路由到旅游攻略、健身攻略、美食烹饪教程、游戏攻略四个分支，默认先创建飞书/Lark 文档容器，再读取对应分支 Skill 生成内容并写入同一个文档。适用于旅行行程、训练健身、菜谱烹饪、游戏实战攻略等中文攻略类创作；不适用于泛资讯、商业分析、医疗诊断、金融投资、法律意见、纯文案包装、无明确攻略目标或不安全/违规请求。 |
 | doubao-video-extract | `doubao/skills/doubao-video-extract` | skill | 53 | 可提取、下载、解析、理解在线视频或本地视频文件。支持快手、B 站、AcFun、芒果 TV、梨视频、微博、X 平台、Facebook、Instagram、TikTok、Twitch、YouTube等视频平台、视频直链和本地视频。可提取内容包含视频的音频、字幕、逐字稿、文案、脚本、总结、时间轴。可理解的视频内容包含画面、人物、物体、动作、界面等视觉元素。 |
 | doubao-visual-creative | `doubao/skills/doubao-visual-creative` | skill | 29 | 输出品牌、时尚、空间、包装、文旅 IP、活动视觉等设计企划案，交付高视觉密度 PPT/飞书 Slides（也叫 lark-slide-pro）或飞书文档；也支持只要生图/只要提示词、以及文档载体；延续修改同样触发。不用于普通汇报 PPT、数据图表、视频、前端与纯格式转换。 |
-| doubao-visualization | `doubao/skills/doubao-visualization` | skill | 30 | 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据，或用户明确要求图表、图解、知识配图、标注、动态/交互演示时使用。优先用 ECharts、带renderer标签的确定性 HTML/SVG或原图叠加；解释性知识配图和原图参考重绘可用生成式知识配图；不承接地图、附件交付、海报、头像、写实图片和纯艺术插画。 |
+| doubao-visualization | `doubao/skills/doubao-visualization` | skill | 133 | 当回答涉及趋势、占比、比较、流程、机制、因果、架构、关系、时间线、状态机、算法步骤、参数变化、原图证据、地理空间关系，或用户明确要求图表、图解、知识配图、标注、地图、动态/交互演示时使用。优先用 ECharts、带renderer标签的确定性 HTML/SVG或原图叠加；解释性知识配图和原图参考重绘可用生成式知识配图；地图由包内 map-create 能力承接；不承接附件交付、海报、头像、写实图片和纯艺术插画。 |
 | doubao-wealth-planning | `doubao/skills/doubao-wealth-planning` | skill | 166 | 为个人或家庭构建目标导向的财富规划，覆盖现金流、应急资金、债务、保障、教育/养老等目标、资产配置、情景压力测试与行动清单。用于新规划、年度复盘或重大人生变化。必须先确认司法辖区和风险承受能力；不替代持牌投资、税务、保险或法律意见。 |
 | doubao-wechat-writing | `doubao/skills/doubao-wechat-writing` | skill | 12 | 生成、润色、改写、策划和评估非商业微信公众号文章，并在用户明确要求时上传至微信公众号、保存草稿、发送预览或发表。写公众号稿、标题、排版、配图、文章评估，或要求上传、预览、发布到微信公众平台时使用。正式成品先以飞书在线文档交付。 |
-| douyin-live-inspect | `doubao/skills/douyin-live-inspect` | skill | 221 | 实时长时质检与复盘。支持抖音直播持续实时检测与视频批量质检，识别违规画面、敏感话术和内容风险；检测完成后生成质检报告，并围绕主播讲解内容、话术结构和互动表现进行复盘，给出可直接落地的内容与话术优化建议。 |
+| douyin-live-inspect | `doubao/skills/douyin-live-inspect` | skill | 236 | 抖音、小红书直播实时质检与视频单项、批量质检，识别画面、话术及内容风险。支持按品牌或账号名查找直播间；交付质检报告，直播另提供内容复盘与优化建议。 |
 | douyin-live-qc | `doubao/skills/douyin-live-qc` | skill | 8 | 抖音直播间录屏抽查与主播话术质检。按账号名、品牌名或直播间链接定位在播直播间，分两阶段与用户确认——先确认抽查哪个直播间及录制时长（推荐2/3/5分钟），录制转写后先交付MP4和飞书妙记、再确认质检范围（画面/话术合规/SOP/售后价格等），最后按用户关心的方面做质检并输出飞书云文档报告。当用户要求抽查/巡检/质检直播间、录制直播、检查主播话术是否合规、查看某品牌矩阵号在播情况、排查绝对化用语或虚假宣传风险、生成直播质检报告时使用... |
 | draft-policy-from-rules | `doubao/skills/draft-policy-from-rules` | skill | 1 | Use when the user needs 制度修订、条款起草、规则整理成制度、上位依据对照、章节归类重组、制度优化建议、合并拆分边界判断或变化点汇总 from scattered rules, superior requirements, current制度文本, business plans,口头规则 or整改要求. |
 | earned-value-mgmt | `doubao/skills/earned-value-mgmt` | skill | 7 | When the user wants to track the financial progress of a large project. Also use when the user mentions "EVM," "Cost Performance Index (CPI)," "Schedule Performance Index (SPI)," "Estimated at Completion (EAC)," or "p... |
@@ -225,7 +225,7 @@
 | lark-workflow-standup-report | `doubao/skills/lark-workflow-standup-report` | skill | 1 | 日程待办摘要：编排 calendar +agenda 和 task +get-my-tasks，生成指定日期的日程与未完成任务摘要。适用于了解今天/明天/本周的安排。 |
 | local-life-service-aigc-video | `doubao/skills/local-life-service-aigc-video` | skill | 3 | 抖音生活服务商家专用AIGC宣传视频生成技能。当已确认是抖音生活服务商家，且需要结合经营数据（团购、评价、门店信息）生成到店推广视频时使用。包括探店视频、种草视频、团购推广视频、门店引流视频。通用视频/企业宣传片/产品广告/UGC视频走 doubao-creative-video，本技能不处理非生活服务商家的通用视频需求。 |
 | local-life-service-business-report | `doubao/skills/local-life-service-business-report` | skill | 3 | 抖音生活服务商家运营分析技能。根据商家抖音数据，生成报纸头版风格的HTML经营分析报告。触发场景：生成商家运营报告、商家经营体检、/local-life-service-business-report 等。不用于仅做商家对比（转 local-life-service-peer-comparison）或用户上传附件的离线数据分析（转通用数据分析）。 |
-| local-life-service-holiday-business | `doubao/skills/local-life-service-holiday-business` | skill | 20 | 为抖音生活服务商家制定中秋、国庆经营方案。通过已登录页面的 DOM 读取生意经与来客数据，完成双节消费机会、商品套餐、内容、同行与投流诊断，输出文字建议、结构化数据和只读 HTML；不执行改价、商品、投放、活动或视频变更。 |
+| local-life-service-holiday-business | `doubao/skills/local-life-service-holiday-business` | skill | 20 | 为抖音生活服务商家制定节日经营方案，覆盖各类法定节日、节点以及品牌周年庆等自定义节点。通过已登录页面的 DOM 读取生意经与来客数据，完成节日消费机会、商品套餐、内容、同行与投流诊断，输出文字建议、结构化数据和只读 HTML；不执行改价、商品、投放、活动或视频变更。 |
 | local-life-service-hot-find | `doubao/skills/local-life-service-hot-find` | skill | 5 | 抖音生活服务热点查找技能。为抖音生活服务商家生成一页 HTML 热点报告，直接推荐商家相关的热点选题、内容打法和可挂商品。触发场景：商家热点选题、同城热点推荐、内容机会选择、挂品建议。不用于宏观金融热点、社会热点追踪、品牌舆情监控（分别走通用热点/舆情类能力）。 |
 | local-life-service-merchant-onboarding | `doubao/skills/local-life-service-merchant-onboarding` | skill | 4 | 当商家需要在抖音生活服务认领已有门店并完成入驻时使用。支持单店、连锁门店和美食城三种经营类型的入驻引导，包括登录接管、门店认领、资质上传引导和审核提交确认。不适用于新建门店、账号注册或非入驻类商家操作。 |
 | local-life-service-peer-comparison | `doubao/skills/local-life-service-peer-comparison` | skill | 6 | 抖音生活服务商家对比分析报告技能。用于生成或更新对比数据的经营分析报告、行业对标解读、差距归因与行动计划；当用户要求做行业对比、流量对比、商品对比、经营差距分析或输出飞书文档版/网页版报告时使用。不用于全量经营体检（转 local-life-service-business-report）或用户上传附件的离线数据分析。 |
@@ -245,7 +245,7 @@
 | photo-abstract-editorial | `doubao/skills/photo-abstract-editorial` | skill | 18 | Create a clean, vertical editorial artwork that preserves an uploaded photograph as the original image and pairs it with a restrained, photo-derived abstract memory panel and poetic English title. Use when asked to tr... |
 | pipeline-outbound-account-growth | `doubao/skills/pipeline-outbound-account-growth` | skill | 15 | 对CRM锚定或用户给定的账户/线索集合完成公司研究与字段补全、账户信号、可解释优先级、拓客草稿、管道健康、确定性forecast及扩建保有，输出管道拓客与账户增长经营包。CRM和Sales Intelligence连接器只负责真值读取、字段来源、映射与受控动作，不作为业务Skill。 |
 | plan-course-registration-cn | `doubao/skills/plan-course-registration-cn` | skill | 18 | 帮助中国大陆高校学生比较本校具体课程或教学班并制定可复核的选课、换课与退补选方案。用于核对培养方案、先修条件、时间冲突、学分归属或操作风险；单独做成绩统计、教师评价、课堂笔记或院校职业规划时不使用。 |
-| ppt | `doubao/skills/ppt` | skill | 312 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
+| ppt | `doubao/skills/ppt` | skill | 313 | 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。 |
 | ppt-framework-planning | `doubao/skills/ppt-framework-planning` | skill | 1 | Use when the user needs to plan, review, restructure, or optimize a reporting PPT framework from meeting minutes, drafts, existing slides, 申报材料, 评分标准, 新增要求, or feedback; trigger keywords include “PPT框架”, “汇报逻辑”, “会议纪要... |
 | presentation-change-control | `doubao/skills/presentation-change-control` | skill | 4 | 用于已有 PPT 或飞书幻灯片需要局部新增、删除、重排、替换或样式继承，且必须保护页序、关键数字和交付质量的场景。新建整份演示或简单读取不使用。 |
 | private-domain-marketing-operations | `doubao/skills/private-domain-marketing-operations` | skill | 4 | 基于用户授权和生命周期信号设计私域分层、内容触达、社群服务、转化培育、留存召回和实验复盘。 |
@@ -265,12 +265,12 @@
 | sales-decision-analysis | `doubao/skills/sales-decision-analysis` | skill | 1 | 用于已有销售数据或明确经营假设，需要核对销售口径、汇总复盘、目标拆解、达成率、渠道、客单价或销售投入产出的场景。纯表格操作、通用财务分析或无数据的组织决策不使用。 |
 | scale-maker | `doubao/skills/scale-maker` | skill | 7 | 面向已有明确构念与研究场景的实证研究量表查找与测量设计技能，支持判断测量方式、生成双语检索策略、核验原始量表与中文版本、比较候选工具，并规划问卷整合和信效度检验。适用于查找量表、选择测量工具及为既定变量设计问卷；研究问题尚未明确、纯质性研究或仅分析现成数据时不使用。 |
 | scientific-visualization | `doubao/skills/scientific-visualization` | skill | 18 | Create and audit truthful, accessible, publication-ready scientific figures with Matplotlib, Seaborn, or Plotly. Use for figure design, multi-panel layouts, uncertainty and missing-data displays, color/contrast review... |
-| security-threat-review | `doubao/skills/security-threat-review` | skill | 6 | 对需求文档、技术设计文档、架构方案进行安全威胁评审（STR），基于 STRIDE 方法论识别威胁、评估风险、检查合规并输出可执行的整改建议。当用户上传或提供设计/需求/架构文档并要求安全评审、威胁建模、风险分析、STR 分析、安全审查时使用。不适用于代码级漏洞扫描、渗透测试执行、告警研判或通用安全知识问答。 |
+| security-threat-review | `doubao/skills/security-threat-review` | skill | 7 | 对需求文档、技术设计文档、架构方案进行安全威胁评审（STR），基于 STRIDE 方法论识别威胁、评估风险、检查合规并输出可执行的整改建议。当用户上传或提供设计/需求/架构文档并要求安全评审、威胁建模、风险分析、STR 分析、安全审查时使用。不适用于代码级漏洞扫描、渗透测试执行、告警研判或通用安全知识问答。 |
 | seed-audio | `doubao/skills/seed-audio` | skill | 3 | 用自然语言描述生成目标音频。把一段场景描述（人声对话、环境声、音效、背景音乐等复合音频）一次性生成成音频。当用户描述一个声音场景、要求生成/合成/制作一段音频或声音、给出形如"角色：台词"的对话脚本要转成音频、或要按参考音频的音色说话时使用。支持两种模式：纯文本描述生成（T2A）和带参考音频生成（A2A，在描述中引用参考音频指定角色音色）。如果用户的主要意图或目标产物是生成或编辑视频，应使用视频生成或编辑 skill，不得加载或使... |
 | seedance-25 | `doubao/skills/seedance-25` | skill | 2 | 使用 Seedance 2.5 生成视频。由本 Skill 拟定完整方案并通过 interaction.ask 完成澄清与执行确认，确认后调用 doubao-creative-video 组织提示词并生成。适用于用户指定 Seedance 2.5、需要用该模型制作视频，或显式调用本 Skill 的场景；固定模型，不切换。 |
 | seedance-real-selling-video | `doubao/skills/seedance-real-selling-video` | skill | 3 | Seedance 2.5 真人感出海 AI 带货视频技能，整合「去 AI 感」与「去广告感」双向优化。四大真实感支柱（混合光源、生活杂物、毛孔纹理、手机拍摄）+ 六条核心补丁语句 + 负面轰炸 + 三段锁定 + 结尾质量指令区块 + 15–25 秒带货四段式脚本。当用户需要：(1)做 AI 真人带货 / UGC 口播 / 种草视频，(2)让 AI 视频更真实更像手机实拍、降低 AI 味和广告感，(3)排查塑料皮肤、崩手多指、眼神闪... |
 | seedream-50 | `doubao/skills/seedream-50` | skill | 1 | 当用户明确要求使用“5.0”“5.0_flash”“5.0_flash”“Seedream 5.0_flash”生成、编辑、重绘或延展图片时，必须调用此 Skill；负责按照 5.0_flash 规则组装 Prompt，并将任务交接给 doubao-creative-design Skill，由其以 modelversion="seedream_5.0_flash" 调用实际图片工具。 |
-| sheet | `doubao/skills/sheet` | skill | 50 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
+| sheet | `doubao/skills/sheet` | skill | 52 | 表格全场景（本地Excel/CSV与飞书/doubao在线表格）：创建、读写、分析、计算、财务建模、语义处理、可视化与美化。若用户上传附件、提供表格链接/token，或要求任何表格操作，必须加载。 |
 | siyu-calendar | `doubao/skills/siyu-calendar` | skill | 8 | 仅用于餐饮行业品牌（含餐饮连锁与单店），独立生成餐饮私域月度营销日历。用户提供品牌资料、固定栏目、推品计划、新品、会员活动、节日或门店节点，要求策划长期栏目、规划社群/朋友圈/1V1月度内容、设计待确认活动，或在确认后展开每日内容配置时使用。适用于“品牌大日历”“月度运营日历”“私域内容排期”“固定栏目策划”等餐饮场景；非餐饮行业不得触发，不要求先执行品牌初步策略或专项活动 Skill。 |
 | siyu-lifecycle | `doubao/skills/siyu-lifecycle` | skill | 8 | 仅用于餐饮行业品牌（含餐饮连锁与单店），讲清顾客全生命周期营销方法论，并生成“五类状态→7大触达场景”的可落地 HTML 方案。用户需要理解新客黄金期与老客复购期、梳理人群状态、触达场景、权益方向、企微1V1文案和触达闭环时使用。非餐饮行业不得触发；也不用于泛品牌诊断、品牌内容大日历、精细排期或运营复盘。 |
 | siyu-strategy | `doubao/skills/siyu-strategy` | skill | 10 | 专门为餐饮品牌做轻量私域经营诊断与策略规划。适用于餐饮品牌不知道私域先做什么、会员或企微规模已有但经营效果不清、需要确定季度重点或90天行动方向时；通过固定六题的逐题开放交互诊断识别优先经营问题，每题均接受单选、多选或自然语言回答，并按 iCC Grow 私域增长五步法生成《餐饮私域诊断与策略》HTML 报告。不适用于非餐饮行业，也不用于直接制作月度内容日历、具体会员机制、专项活动方案或运营复盘。 |
@@ -308,12 +308,13 @@
 | word | `doubao/skills/word` | skill | 62 | Office Word 的阅读、新建、修改，以及通过图片生成Word。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作或有格式排版要求的写作使用此技能。 |
 | word-document-processing | `doubao/skills/word-document-processing` | skill | 3 | 用于本地 Word DOC、DOCX 或 WPS 文件需要读取、转换、OCR、版式敏感编辑或交付前结构复核，且通用 lark-doc 流程需要 Office Word 专项规则的场景。在线文档、纯内容写作或简单摘要不使用。 |
 | workflow-automation | `doubao/skills/workflow-automation` | skill | 1 | Workflow creation, execution, and template management. Automates complex multi-step processes with agent coordination. Use when: automating processes, creating reusable workflows, orchestrating multi-step tasks. Skip... |
-| xyq-toolkit | `doubao/skills/xyq-toolkit` | skill | 20 | 使用小云雀 pippit-tool-cli 生成或编辑图片、生成视频、超分和擦字幕，查询结果并交付媒体；操作小云雀个人 Canvas 画布、节点、布局、连线、角色/场景、生成提示词、3D 导演台与多轨草稿；查询积分及管理授权。用户提到小云雀、xyq 并需要这些操作时使用。 |
+| xyq-toolkit | `doubao/skills/xyq-toolkit` | skill | 22 | 使用小云雀 pippit-tool-cli 上传本地素材或通过 URL 导入素材，生成或编辑图片、生成视频、超分和擦字幕，查询结果并交付媒体；操作小云雀个人或团队 Canvas 画布、节点、布局、连线、角色/场景、生成提示词、3D 导演台与多轨草稿；查询积分及管理授权。用户提到小云雀、xyq 并需要这些操作时使用。 |
 
 ## 最近变更
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-04-180008 | [2026-11-04-180008](doubao/change-logs/2026-11-04-180008.md) | Doubao 本次同步新增 156 个文件、修改 262 个文件、删除 31 个文件。 受影响范围：skills/doubao-creative-video, skills/doubao-equity-research, skills/doubao-visualization, skills/douyin-live-inspect, skills/fu... |
 | 2026-11-03-210234 | [2026-11-03-210234](doubao/change-logs/2026-11-03-210234.md) | Doubao 本次同步新增 2 个文件、修改 127 个文件、删除 3 个文件。 受影响范围：skills/browser-use, skills/browser-use-automation, skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-crea... |
 | 2026-10-31-180008 | [2026-10-31-180008](doubao/change-logs/2026-10-31-180008.md) | Doubao 本次同步新增 114 个文件、修改 149 个文件、删除 56 个文件。 受影响范围：skills/doubao-announcement-analysis, skills/doubao-creative-design, skills/doubao-creative-drama, skills/doubao-creative-video,... |
 | 2026-10-30-180007 | [2026-10-30-180007](doubao/change-logs/2026-10-30-180007.md) | Doubao 本次同步新增 0 个文件、修改 2 个文件、删除 0 个文件。 受影响范围：skills/lark-doc。 |
@@ -333,4 +334,3 @@
 | 2026-09-20-180005 | [2026-09-20-180005](doubao/change-logs/2026-09-20-180005.md) | Doubao 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/doubao-cron-scheduler。 |
 | 2026-09-18-180007 | [2026-09-18-180007](doubao/change-logs/2026-09-18-180007.md) | Doubao 本次同步新增 55 个文件、修改 103 个文件、删除 13 个文件。 受影响范围：skills/doubao-creative-drama, skills/doubao-identity, skills/html, skills/lark-base, skills/lark-calendar, skills/lark-doc, skil... |
 | 2026-09-17-225008 | [2026-09-17-225008](doubao/change-logs/2026-09-17-225008.md) | Doubao 本次同步新增 40 个文件、修改 16 个文件、删除 0 个文件。 受影响范围：skills/doubao-identity, skills/doubao-newmedia-writing, skills/doubao-pdf, skills/doubao-visualization, skills/seed-audio。 |
-| 2026-09-15-180006 | [2026-09-15-180006](doubao/change-logs/2026-09-15-180006.md) | Doubao 本次同步新增 0 个文件、修改 3 个文件、删除 2 个文件。 受影响范围：skills/word。 |

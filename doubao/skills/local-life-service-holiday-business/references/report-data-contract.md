@@ -1,4 +1,4 @@
-# V6.0 报告数据契约
+# V6.1 报告数据契约
 
 `collection_result.json` 是任务内审计记录；`report_data.json` 是结构化报告草稿。两者先经同一校验器处理，再生成面向商家的 HTML 或妙搭展示数据。
 
@@ -50,7 +50,9 @@
 - 页面只在总览下方合并显示一句“……暂无数据，相关模块已隐藏。”
 - 不生成来源入口、来源弹窗、采集说明或“拿到了哪些数据”类文案。
 
-`report.title` 固定为“中秋国庆经营方案”。`actions` 保留 5—8 条互不重复的可执行建议，有真实亮点才使用“延续亮点”。任何动作不得包含改价、调价、涨价、降价、加深折扣或具体价格建议。价格带仅用于理解客群与商品结构。
+`holidays.festivals` 为本次经营方案覆盖的节日/节点数组，每项含 `name`（节日名称，如中秋、国庆、品牌周年庆）、`start`/`end`（YYYY-MM-DD）与 `scene`（主要消费场景）；支持 1—N 个节日/节点，日期以商家确认或当次上下文为准。动作的 `holiday` 字段用 `all` 表示通用动作，或用 `f1`/`f2`… 对应第 1、2 个节日/节点。
+
+`report.title` 默认为“节日经营方案”，可按当次节日命名为“{节日名}经营方案”（如“端午经营方案”“品牌周年庆经营方案”），必须以“经营方案”结尾。`actions` 保留 5—8 条互不重复的可执行建议，有真实亮点才使用“延续亮点”。任何动作不得包含改价、调价、涨价、降价、加深折扣或具体价格建议。价格带仅用于理解客群与商品结构。
 
 近 30 日消耗 0 只说明该窗口未见消耗。只有任务内存在全历史页面证据时才能写“从未投放”。滞销不等于下架或不可售。
 
@@ -61,4 +63,4 @@ python3 scripts/render_report.py report_data.json output.html --collection colle
 python3 scripts/render_report.py report_data.json validated_report.json --collection collection_result.json --data-only
 ```
 
-两种输出使用同一账号校验交接和逐指标校验。`--allow-incomplete` 只用于运行中预览。分享内容禁止 Cookie、Token、密码、私钥、groupid、门店 ID、后台参数和可执行文本。文件名统一为 `{\u8303围名}-{\u5e74份}\u4e2d\u79cb\u56fd\u5e86\u7ecf\u8425\u65b9\u6848.html`；运行中预览追加“-运行中预览”。
+两种输出使用同一账号校验交接和逐指标校验。`--allow-incomplete` 只用于运行中预览。分享内容禁止 Cookie、Token、密码、私钥、groupid、门店 ID、后台参数和可执行文本。文件名统一为 `{范围名}-{年份}{标题（默认节日经营方案）}.html`；运行中预览追加“-运行中预览”。

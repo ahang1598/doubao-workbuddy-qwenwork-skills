@@ -6,7 +6,251 @@
     "darwin-arm64": {},
     "darwin-x64": {},
     "linux-x64": {},
-    "win32-x64": {}
+    "win32-x64": {
+      "ffmpeg": {
+        "version": "8.1.2",
+        "url": "https://lf6-cdn-tos.douyinstatic.com/obj/livesaas/inspect-lite/ffmpeg/ffmpeg-8.1.2-essentials_build.zip",
+        "sha256": "db580001caa24ac104c8cb856cd113a87b0a443f7bdf47d8c12b1d740584a2ec",
+        "bytes": 109728040,
+        "unpacked_bytes": 318594126,
+        "max_files": 49,
+        "files": [
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/bin/ffmpeg.exe",
+            "bytes": 101897728,
+            "sha256": "1326dde4c84ff1f96fe6b8916c5bed29e163e9b5dccf995f6f3db069d143ec5e"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/bin/ffplay.exe",
+            "bytes": 103382528,
+            "sha256": "c5072709d93eee7b40891109e282486b5089e84ea7ce02010a48ff1b79e5b11a"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/bin/ffprobe.exe",
+            "bytes": 101692928,
+            "sha256": "b49ccc7c6547b141ad5a2f6ec69cc04323d7133d7704d70b331b904c63eecb07"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/bootstrap.min.css",
+            "bytes": 109483,
+            "sha256": "3cedecf2b8064b4a56ba47bda04544e1b21d71c83a12e7b5709e7c7976ead70e"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/community.html",
+            "bytes": 13505,
+            "sha256": "ed1a149ca1f5129e31b71f7bf6547a690bbefed1f94b24d3b6cf15b9b5e7cac6"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/default.css",
+            "bytes": 2494,
+            "sha256": "504c4a0980e6ec809da02ce16b73151622a2fdfb4409098c7ce96c1cac9b3735"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/developer.html",
+            "bytes": 63982,
+            "sha256": "cfa386b8ae27266d29c9c9e756fa6a3c7d24fa01548cf2189374936b2ef7da93"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/drawvg-reference.html",
+            "bytes": 147341,
+            "sha256": "e63e3aa79935d162c5e29e8feac866ae899ae0073f45595b3a029b42a897db90"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/faq.html",
+            "bytes": 65088,
+            "sha256": "12e4eaa685c874b975e9ad774aabd588871088a877f531ba2f7aa628b1670c45"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/fate.html",
+            "bytes": 18768,
+            "sha256": "603ae75dc972d486d4901c222ec881d6bb903058311dfcc9cda9f6471c50e3aa"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-all.html",
+            "bytes": 3059523,
+            "sha256": "b8ee9421f1a68d44e86faa65ca16a98000e26e66d87f5c78f0a41258948596bf"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-bitstream-filters.html",
+            "bytes": 61257,
+            "sha256": "fafe558bb6ac9a1f774186a40e5c90a0ec10913c967593dcd216f4b888ee7d71"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-codecs.html",
+            "bytes": 348854,
+            "sha256": "f6ba5a86a757f916f6be0a6b2b6779ac389c3dbfdeff96727b820d567b0b99b7"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-devices.html",
+            "bytes": 112837,
+            "sha256": "4cbeaf4948a0c267ea4de2f8bdaae49b169bd7d1a69202a4cf71fe79d9deb1a5"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-filters.html",
+            "bytes": 1694787,
+            "sha256": "169efaec100b513bd8389e548a44473332c397baab27b16ef9e62c0bbf9bc051"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-formats.html",
+            "bytes": 323409,
+            "sha256": "a91a21774294361e449231e0cd7ea624833a61ed7522bb24c9f02da6faed063b"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-protocols.html",
+            "bytes": 118922,
+            "sha256": "3e23da265ed7aa137d510c89347d62fd03ba608b43fadd6bc5919dd89a67ec34"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-resampler.html",
+            "bytes": 13818,
+            "sha256": "ef33b5c00313e980fd8bef875e48ad49534f8d4da3acd62c2cb121cf2f767986"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-scaler.html",
+            "bytes": 9342,
+            "sha256": "46a081e4d8ca2470b8c2c57f9fe7e5b27a8d906ae9c5cd2dc2411cc2aff21b03"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg-utils.html",
+            "bytes": 55775,
+            "sha256": "f0acb1ad146da71c65450b975f6e7e102eed03ee40eb9163e5d7b70df2e82146"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffmpeg.html",
+            "bytes": 216406,
+            "sha256": "a6b18f77cd9496f9c15a0e14b4068d6a913c4aef0880995c250a28092b082d6f"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffplay-all.html",
+            "bytes": 2370275,
+            "sha256": "3b8eb2559260098e40887b2172af5313d1d0e908b973176859509c999ed46f16"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffplay.html",
+            "bytes": 42145,
+            "sha256": "c94ff755a36c9028aeeaf93f853df75450c23962a7bea43b6ae0177684195c37"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffprobe-all.html",
+            "bytes": 2386712,
+            "sha256": "b663f6f27b3d422d8349ac090f15d15c06cba47bc612ef5f4fe44a43f27ea49e"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/ffprobe.html",
+            "bytes": 58506,
+            "sha256": "ca1dead6f3c6b93f6245ce6be3101ca2e176c69c768579a8d0d2383b57884763"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/general.html",
+            "bytes": 127488,
+            "sha256": "b98035bb3ef26d1343aabc28b5c9cce0df51c211cfd5067bfc6814a6b8f0b8a5"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/git-howto.html",
+            "bytes": 27737,
+            "sha256": "e44ed6484fa73f819c59494c68be232728319250bd86c6e32a760ddca620e108"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libavcodec.html",
+            "bytes": 3147,
+            "sha256": "faf8dd1ae157374e92a685970fa28f21e0df8a2dfb8c3ea99e58d6d956bee879"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libavdevice.html",
+            "bytes": 3026,
+            "sha256": "cea441629a753d099d8b1032f0814a87cfa113d830f8fcdebd047738cb5481ac"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libavfilter.html",
+            "bytes": 3092,
+            "sha256": "d02ec4ed1dddb7cb09f9c4e9f2bf38810b3050f6db5f839f398bd6561cab4322"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libavformat.html",
+            "bytes": 3122,
+            "sha256": "49f9fdced269207bfd3a6bcb63738b3f1dcf2b3c7641eba509fd46f37c5cebcc"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libavutil.html",
+            "bytes": 3621,
+            "sha256": "ba59342959874520f152b8df5eedde47295929a43e29646392e03c6fcdc2d8e9"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libswresample.html",
+            "bytes": 4005,
+            "sha256": "f66d2d2e5f29ba56f47d2855d5cd8f276bf207241d024a5a06d0564b96d52bf5"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/libswscale.html",
+            "bytes": 3621,
+            "sha256": "41859c7b95dd3d1089e2189c2dc81b1da920557e66ec181a1f8fe04dcc829118"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/mailing-list-faq.html",
+            "bytes": 31209,
+            "sha256": "e6a26273f248a5ca7f4354fc8b19e4d0bceeefc3c7aa492db58072fdc9e6a944"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/nut.html",
+            "bytes": 11231,
+            "sha256": "97706cef7a10c32fa781aca5242443868c003858c84b41629e7c04d77b2b0d0c"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/platform.html",
+            "bytes": 22177,
+            "sha256": "8d6c71e3d28c52cddd7de85fcdbbdd87d22a02fa9905a6b3169ff9767033fd6d"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/doc/style.min.css",
+            "bytes": 6523,
+            "sha256": "02496d7bdbd48d0f332dc94b62668906cbeabc3a8592253d5dfe2e5196522660"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/LICENSE",
+            "bytes": 35147,
+            "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/presets/libvpx-1080p.ffpreset",
+            "bytes": 227,
+            "sha256": "cf0dca9d029e0aa29c242e5a7ecfb202a55ae41c1acdf5e2e59bf281a0136251"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/presets/libvpx-1080p50_60.ffpreset",
+            "bytes": 227,
+            "sha256": "4d32bed9032caf8bf4ef8e4bcac427f482c6191396ef6b11f075a264da3a8def"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/presets/libvpx-360p.ffpreset",
+            "bytes": 219,
+            "sha256": "c2ccd70a941c9b7003e364d7cc0296e8f3dea78cc3a87ccdcaae7c39a1a05b79"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/presets/libvpx-720p.ffpreset",
+            "bytes": 227,
+            "sha256": "5bcac409c81ec0e11091801d5d1322b5ec6a9bb8617d7dda022acfea0d498d52"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/presets/libvpx-720p50_60.ffpreset",
+            "bytes": 227,
+            "sha256": "b08a5ae448cb3cccd23faa6f42c8dbf61ead1a8381fce65636aa01a4a142cb8e"
+          },
+          {
+            "path": "ffmpeg-8.1.2-essentials_build/README.txt",
+            "bytes": 41440,
+            "sha256": "9172433fb251059a58d2ff11ba8c6132e04819136ed96e809563911ff0d13816"
+          }
+        ],
+        "entrypoints": {
+          "ffmpeg": "ffmpeg-8.1.2-essentials_build/bin/ffmpeg.exe",
+          "ffprobe": "ffmpeg-8.1.2-essentials_build/bin/ffprobe.exe"
+        },
+        "executables": [
+          "ffmpeg-8.1.2-essentials_build/bin/ffmpeg.exe",
+          "ffmpeg-8.1.2-essentials_build/bin/ffprobe.exe"
+        ]
+      }
+    }
   },
   "shared": {
     "asr": {

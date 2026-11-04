@@ -9,6 +9,7 @@ import signal
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -130,8 +131,12 @@ def get_soffice_env() -> dict:
 
 
 def run_soffice(args: List[str], **kwargs) -> subprocess.CompletedProcess:
+    """通用函数与命令行入口都显式使用无头模式，不依赖调用方传参。"""
+    command_args = list(args)
+    if "--headless" not in command_args:
+        command_args.insert(0, "--headless")
     env = get_soffice_env()
-    return subprocess.run(["soffice"] + args, env=env, **kwargs)
+    return subprocess.run(["soffice"] + command_args, env=env, **kwargs)
 
 
 _SHIM_DIR = Path.home() / ".cache" / "sheet-skill-spec" / "lo-shim"
@@ -140,6 +145,9 @@ _SHIM_SRC = _SHIM_DIR / "lo_socket_shim.c"
 
 
 def _needs_shim() -> bool:
+    # LD_PRELOAD 与下方 gcc -ldl 补丁仅适用于 Linux，不给 Windows / macOS 引入编译依赖。
+    if not sys.platform.startswith("linux"):
+        return False
     try:
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s.close()
@@ -172,6 +180,10 @@ def _ensure_shim() -> Path:
             raise RuntimeError(f"Refusing untrusted LibreOffice shim: {_SHIM_SO}")
         return _SHIM_SO
 
+    gcc = shutil.which("gcc")
+    if gcc is None:
+        raise RuntimeError("Linux socket 兼容补丁需要 gcc，但当前环境未提供；补丁未准备完成，重算未执行。")
+
     # 源文件与临时 .so 都用 PID 唯一名：并发首次初始化时各进程独立编译，
     # finally 只清理自己的文件——共享固定名源文件会被先完成的进程删掉，
     # 让其它进程的 gcc 读不到源（12 并发实测 11 个 CalledProcessError）。
@@ -182,7 +194,7 @@ def _ensure_shim() -> Path:
     tmp_so = _SHIM_DIR / f"lo_socket_shim.{os.getpid()}.tmp.so"
     try:
         subprocess.run(
-            ["gcc", "-shared", "-fPIC", "-o", str(tmp_so), str(tmp_src), "-ldl"],
+            [gcc, "-shared", "-fPIC", "-o", str(tmp_so), str(tmp_src), "-ldl"],
             check=True,
             capture_output=True,
         )
@@ -300,6 +312,12 @@ int close(int fd) {
 
 
 if __name__ == "__main__":
-    import sys
-    result = run_soffice(sys.argv[1:])
+    try:
+        if shutil.which("soffice") is None:
+            raise RuntimeError("未找到可用的 soffice")
+        result = run_soffice(sys.argv[1:])
+    except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+        print(f"[excel_lo_runtime] 环境不可用，LibreOffice 调用未完成：{exc}\n"
+              "缺少 LibreOffice 时可降级；其他环境问题按具体错误处理，未完成不得当作验证通过。", file=sys.stderr)
+        sys.exit(4)
     sys.exit(result.returncode)

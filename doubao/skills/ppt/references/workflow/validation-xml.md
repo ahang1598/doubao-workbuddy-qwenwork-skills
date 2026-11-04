@@ -9,7 +9,7 @@
 1. 记录创建或编辑返回的 `xml_presentation_id`，以及已知的 `slide_id` / `revision_id`。`slide_id` 是页面唯一关联键；页码仅可作为展示信息。
 2. 用 `slides +xml-get --output <CWD 内相对路径>` 回读验收范围的 XML，并分别保存 stdout 完整响应和 stderr。XML 文件只含 XML；版本、读取范围和 `data.issues` 在响应 JSON 中。确认本次读取成功后，用 XML 解析器解析，并建立本次校验的 `slide_ids` 页清单；命名空间从根元素实际读取。明确且无跨页依赖的单页编辑可加 `--slide-id`；多页、跨页依赖、增删／重排、全局样式和新建／模板任务回读全文。增删页或重排后必须刷新完整页清单。
 3. 完整读取本次回读的 lint 报告，编辑/模板任务与原稿基线比较；同时核对实际页数、关键元素与主视觉、空白/破损页、跨页 `id` 撞车（具体检查点见下方各节）。`xml_inspect.py` 只读取纯 XML，其 `summary.warnings` 是本地结构提示，不能代替服务端报告。
-4. 按 [validation-visual.md](validation-visual.md) 核对真实渲染：新建和模板终稿检查全部页，已有稿编辑检查所有视觉变化页，全局视觉修改检查全部页；写入成功但带问题发现或使用 `--no-lint` 的页须在该次写入后立即带 lint 回读、截图并实际查看，完成核验后才能继续下一页。报告中的 `screenshot_review_required: false` 不免除这些截图要求。
+4. 按 [validation-visual.md](validation-visual.md) 核对真实渲染，**非必要不截图，按清单限定目检范围**：检查封面、每种首次出现的实质不同版式或图表类型的代表页，以及存在渲染风险的页面（如多图叠放、图文压叠、密集标签或复杂连线）；使用 `--no-lint` 提交或写入成功但带 `data.issues` 的页仍须完成必要复核。同一页命中多项只检查一次，仅换颜色、文案或数据不算新版式。普通内容页、简单表格、章节页和附录页在 lint 与内容核对通过且无上述风险时不截图；编辑任务只重新评估本轮变化影响的页，已检查且未变化的页不重复截图。使用 `--no-lint` 或写入成功但带问题发现的页须在该次写入后立即带 lint 回读、截图并实际查看，完成核验后才能继续下一页；编辑任务也按上述必要范围选择截图页。
 5. 发现问题的页用 `+replace-slide` 或对应写入操作修复后，开启写入 lint 重提，再带 lint 回读确认。创建过程部分失败时，先记录已创建的 `xml_presentation_id`，再回读确认哪些页已写入，不要假设失败的那一步没有副作用。
 6. 在最终回复中给出简短验证记录，说明做了哪些检查；只有确实截图核对过时才写"已做视觉确认"。
 
@@ -123,7 +123,7 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/lint_inspect.py" --input ./page-03-error
 - 脚本仅合并相同范围内、完整内容相同的镜像记录；同一列表的重复条目和不同页面的同名错误保留。分类列表与合并列表不一致时保留额外发现并提示，实际数量与 summary 不一致时不认定报告完整。
 - `element_ids` / `elements`、`target`、`related_objects`、`measurement` 等按实际返回保留；缺失字段不能按 0 处理，也不能因为没有 `hint` 或测量值而跳过问题。
 - 单页报告的内部页码不一定是整稿页码；脚本保留响应页码与报告页码，不自行猜测 slide ID。整份报告仍需结合同次 XML 的页序与 ID 对应。来源位置和 `issue_id` 用于定位当前输入中的问题，不是跨版本匹配键。
-- 报告缺失、JSON 截断或无法解析时，按上文检查是否有完整响应留存；没有留存时不能补齐原报告。回读失败可重新执行只读请求；结果不明的写入先回读确认状态，避免重复创建或更新。未知格式的原文可在详情中读取。正常写入成功、使用 `--no-lint` 后成功，均不能代替实际回读及必要截图核验。
+- 报告缺失、JSON 截断或无法解析时，按上文检查是否有完整响应留存；没有留存时不能补齐原报告。回读失败可重新执行只读请求；结果不明的写入先回读确认状态，避免重复创建或更新。未知格式的原文可在详情中读取。正常写入成功、使用 `--no-lint` 后成功，均不能代替实际回读；`--no-lint` 和带问题发现写入的页还须截图核验。
 
 **以每条发现的 `message` 和实际返回的 `hint` 为准动手改**；没有 `hint` 时结合对应 schema 或规则定位，不能忽略该问题。下面的表只用来快速认识 code 的含义和严重级，不重复 `hint` 的内容。
 
@@ -155,6 +155,7 @@ python3 "$LARK_SLIDES_SKILL_DIR/scripts/lint_inspect.py" --input ./page-03-error
 | `line_out_of_canvas` | 线条超出画布，结合报告中的 canvas 与 overflow 核对 | error |
 | `bbox_overlap` | 元素绘制区域重叠。覆盖五种情况：两段文字互压、填充形状盖住不属于它的文字、相邻卡片背景互叠、`<line>` 穿过字形、`autoFit="shape-auto-fit"` 文字长出原框压到下方元素 | error·误报高发 |
 | `image_covers_text` | `<img>` 压住文本框的估算字形区域 | error·误报高发 |
+| `line_image_overlap` | 原生 `<line>` 与 `<img>` 明显相交；不判断作者意图，需截图复核 | warning，不单独阻断 |
 | `table_covers_text` / `chart_covers_text` | 游离的文本框压在 `<table>` 网格或 `<chart>` 绘图区上，会与单元格文字、坐标轴标签、图例打架 | error·误报高发 |
 | `text_may_overflow_shape` | 文本超出自身文本框，`overflow_axis` 区分 `height`（行数撑破高度）和 `width`（单行太宽，会意外换行或被 `wrap="false"` 裁切） | error（背景装饰巨字降 info） |
 | `text_overflows_container` | 文本框越过了它所在的背景容器（卡片、色块、胶囊）边界，`overflow` 给出四个方向各溢出多少 px | error |

@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块的检测、状态、遥测或交付边界；敏感输入和原始响应不进入日志。
 """Explicit takeover using the existing batch generation and receipt ledger."""
 import json
 from pathlib import Path

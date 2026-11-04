@@ -57,7 +57,7 @@
   <header>
     <p class="eyebrow">INSPECTION SKILL / LOCAL OBSERVER</p>
     <div class="title"><h1>埋点观察台</h1><span id="connection" role="status" data-state="waiting">正在连接</span></div>
-    <p class="subtitle">实时查看本机埋点。正常上报照常进行，观察记录仅保存在内存中。</p>
+    <p class="subtitle">复盘重试仅在本机观察，最终结果才进入线上生命周期；记录仅保存在内存中。</p>
   </header>
   <main>
     <div class="toolbar">
@@ -69,7 +69,7 @@
       <section class="panel" aria-label="实时事件列表">
         <div class="panel-heading"><h2>实时事件</h2><span class="small">最新事件在前 · 点击查看详情</span></div>
         <div class="table-wrap">
-          <table><thead><tr><th scope="col">本机时间</th><th scope="col">事件</th><th scope="col">版本</th><th scope="col">业务结果</th></tr></thead><tbody id="events"></tbody></table>
+          <table><thead><tr><th scope="col">本机时间</th><th scope="col">事件</th><th scope="col">版本</th><th scope="col">本条结果</th><th scope="col">已重试次数</th><th scope="col">最近失败原因</th><th scope="col">任务最终状态</th></tr></thead><tbody id="events"></tbody></table>
           <div id="empty"><strong>等待下一条埋点</strong>现在正常使用 Skill，事件进入发送通道后会出现在这里。<br>服务开启前的事件不会补发；关闭遥测时不会捕获事件。</div>
         </div>
       </section>
@@ -80,7 +80,7 @@
         <pre id="detail" hidden></pre>
       </aside>
     </div>
-    <footer>“已捕获”仅表示事件进入 SDK 发送通道，不代表线上平台已接收或入库。业务结果与埋点投递结果不同。<br>仅观察相同本机用户、相同配置目录的运行实例；最多保留最近 1000 条，服务关闭后清空。</footer>
+    <footer>“仅本机”记录不发送到线上；“已捕获发送事件”仅表示事件进入 SDK 发送通道，不代表线上平台已接收或入库。业务结果与埋点投递结果不同。<br>仅观察相同本机用户、相同配置目录的运行实例；最多保留最近 1000 条，服务关闭后清空。</footer>
   </main>
 </body>
 </html>

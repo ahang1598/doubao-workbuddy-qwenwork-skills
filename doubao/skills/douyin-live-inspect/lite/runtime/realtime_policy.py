@@ -1,8 +1,12 @@
 """Keep ordinary live work in order; bound overload and end-of-session work."""
+# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 from datetime import datetime
 
 POLICY = 'lite_live_realtime_v1'
 LATEST_POLICY = 'lite_live_realtime_v2'
+CLOUD_CAPTURE_SECONDS = 600
+CLOUD_COMMAND_LIMIT = 40
+CLOUD_DRAIN_SECONDS = 180
 
 
 def enabled(task):
@@ -11,6 +15,27 @@ def enabled(task):
 
 def current(task):
     return task.get('kind', 'live') == 'live' and task.get('inspection_policy') == LATEST_POLICY
+
+
+def cloud_limited(task):
+    return current(task) and 'cloud_live_command_count' in task
+
+
+def protect_cloud(store):
+    """Budget foreground dispatches, not background heartbeats or report delivery."""
+    task = store.task()
+    if not cloud_limited(task) or task.get('capture_status') in {'ended','stopped','failed'}:
+        return
+    if store.should_stop():return
+    with store.connection(True) as conn:
+        task = store._task(conn)
+        if task.get('stop_requested'):return
+        count = min(CLOUD_COMMAND_LIMIT, task['cloud_live_command_count'] + 1)
+        task['cloud_live_command_count'] = count
+        store._set_task(conn, task)
+    # A durable stop signal precedes draining; the current submission can still land.
+    if count >= CLOUD_COMMAND_LIMIT:
+        store.request_stop(origin='agent', reason='execution_limit')
 
 
 def skip(store, conn, segment, code, now):
@@ -99,7 +124,7 @@ def current_work(store, conn, now):
     batches = [b for b in live_review.rows(conn, store.session_id) if b['status'] in live_review.ACTIVE] if initialized else []
     segments = store._segments(conn)
     by_id = {s['id']:s for s in segments}
-    stalled = False
+    stalled = []
     for batch in batches:
         progress = batch.get('review_progress_at', batch['created_at'])
         for sid in batch['targets']:
@@ -107,68 +132,66 @@ def current_work(store, conn, now):
             if value and 'review_progress_at' not in batch:
                 progress = max(progress, datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp())
         if any(by_id.get(int(sid), {}).get('review_status') not in {'done','skipped'} for sid in batch['targets']):
-            stalled |= now >= progress + 120
+            if now >= progress + 120:stalled.append(batch)
     occupied = {int(sid) for b in batches for sid in b['targets']}
     waiting = sorted((s for s in segments if s['review_status'] not in {'done','skipped'} and s['id'] not in occupied),
                      key=lambda s:(s['start_ms'], s['id']))
     return batches, segments, stalled, waiting
 
 
+def no_speech_evidence(task, segment):
+    from runtime.store import ASR_DONE
+    return (task.get('image_inspection') is False
+            and segment['review_status'] not in {'done', 'skipped'}
+            and segment['asr_status'] in ASR_DONE
+            and (segment.get('asr_final') or segment['asr_status'] in {'success', 'no_audio'})
+            and not any(str(u.get('text', '')).strip() for u in segment.get('subtitles', [])))
+
+
+def skip_empty(store, conn, task, batches, segments, now):
+    occupied = {int(sid) for batch in batches for sid in batch['targets']}
+    for segment in segments:
+        if segment['id'] not in occupied and no_speech_evidence(task, segment):
+            skip(store, conn, segment, 'NO_SPEECH_EVIDENCE', now)
+
+
 def advance_current(store, conn, task, now):
     """Bound unclaimed backlog and drain time without dropping saved judgments."""
     from runtime import finishing, live_review
-    from runtime.store import ASR_DONE, FRAME_DONE, interval_ms
+    from runtime.store import interval_ms
     state = task.get('finishing', {})
     if state.get('phase') == 'completed':return state
     live_review.initialize(conn)
     batches, segments, stalled, waiting = current_work(store, conn, now)
+    skip_empty(store, conn, task, batches, segments, now)
+    waiting = [s for s in waiting if s['review_status'] not in {'done', 'skipped'}]
     terminal = task.get('capture_status') in finishing.TERMINAL
-    ending = task.get('stop_requested') or terminal or state or stalled
-    if not ending:
-        if interval_ms(waiting) > 180000:
-            retained = 0
-            for index, segment in enumerate(reversed(waiting)):
-                # Keep a contiguous newest suffix, without splitting stored evidence.
-                retained += segment['end_ms'] - segment['start_ms']
-                if index and retained > 120000:
-                    skip(store, conn, segment, 'LIVE_BACKLOG_SKIPPED', now)
-        return state
-    if not state:
-        started = now
-        for value in (task.get('stop_requested_at'), task.get('live_ended_at')):
-            if value:
-                try:started = min(started, float(value) if isinstance(value, (float,int)) else datetime.fromisoformat(value.replace('Z','+00:00')).timestamp())
-                except (ValueError,TypeError):pass
-        state = {'phase':'draining', 'mode':'bounded', 'started_at':started}
-    state.setdefault('deadline_at', state['started_at'] + 120)
-    state['mode'] = 'bounded'
-    task['finishing'] = state
-    expired = now >= state['deadline_at'] or stalled or task.get('stop_immediately')
-    if expired:
-        code = 'USER_DISCARD' if task.get('stop_immediately') else 'LIVE_REVIEW_TIMEOUT' if stalled else 'LIVE_FINISH_SKIPPED'
-        # Fence writes before report generation; worker cleanup is not a report prerequisite.
-        for segment in segments:
-            if segment['review_status'] not in {'done','skipped'}:skip(store, conn, segment, code, now)
-        finishing.freeze_media(store, conn, task, now)
-        for batch in batches:
-            batch.update(status='expired', generation=batch['generation'] + 1)
-            live_review.save(conn, store.session_id, batch)
-        if task.get('stop_audit') and task.get('stop_immediately'):
-            task['stop_audit']['discarded_segments'] = sum(s.get('skip_code') == 'USER_DISCARD' for s in store._segments(conn))
-        state.update(phase='completed', completed_at=now, reason=code)
-    else:
-        if terminal and task.get('worker_status') in {'done','failed','stopped'}:
-            for segment in segments:
-                if segment['review_status'] in {'done','skipped'}:continue
-                if segment['asr_status'] not in ASR_DONE:
-                    segment.update(asr_status='failed', asr_final=True, asr_diagnostic={'category':'ASR_WORKER_STOPPED'})
-                if segment['frame_status'] not in FRAME_DONE:segment['frame_status']='unavailable'
-                store._write_segment(conn, segment['id'], segment)
-        segments = store._segments(conn)
-        state['waiting_for_asr'] = any(s['review_status'] not in {'done','skipped'} and s['asr_status'] not in ASR_DONE for s in segments)
-        state['waiting_for_frames'] = any(s['review_status'] not in {'done','skipped'} and s['frame_status'] == 'pending' for s in segments)
-        if terminal and task.get('worker_status') in {'done','failed','stopped'} and all(s['review_status'] in {'done','skipped'} for s in segments):
-            state.update(phase='completed', completed_at=now, reason='drained')
-    task['finishing'] = state
-    store._set_task(conn, task)
+    ending = task.get('stop_requested') or terminal or state
+    if ending:
+        if not state:
+            started = now
+            for value in (task.get('stop_requested_at'), task.get('live_ended_at')):
+                if value:
+                    try:started = min(started, float(value) if isinstance(value, (float,int)) else datetime.fromisoformat(value.replace('Z','+00:00')).timestamp())
+                    except (ValueError,TypeError):pass
+            state = {'phase':'draining', 'mode':'bounded', 'started_at':started}
+        from runtime.stop_drain import advance as drain
+        return drain(store, conn, task, state, batches, segments, stalled, now)
+    # A review lease is local to its batch, never a signal to stop capture.
+    by_id = {s['id']:s for s in segments}
+    for batch in stalled:
+        for sid in batch['targets']:
+            segment = by_id.get(int(sid))
+            if segment and segment['review_status'] not in {'done','skipped'}:
+                skip(store, conn, segment, 'LIVE_BATCH_REVIEW_TIMEOUT', now)
+        running = batch.get('executor') == 'child' and batch['status'] in {'dispatching','running','cancelling'}
+        batch.update(status='cancelling' if running else 'expired', generation=batch['generation'] + 1, expired_reason='LIVE_BATCH_REVIEW_TIMEOUT')
+        live_review.save(conn, store.session_id, batch)
+    if interval_ms(waiting) > 180000:
+        retained = 0
+        for index, segment in enumerate(reversed(waiting)):
+            # Keep a contiguous newest suffix, without splitting stored evidence.
+            retained += segment['end_ms'] - segment['start_ms']
+            if index and retained > 120000:
+                skip(store, conn, segment, 'LIVE_BACKLOG_SKIPPED', now)
     return state

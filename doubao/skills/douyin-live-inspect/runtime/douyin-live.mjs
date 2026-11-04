@@ -1,3 +1,6 @@
+// 直播来源解析和候选流选择：先校验官方页面，再从页面证据中选出可播放的 FLV。
+// 这里不负责报告分析，直播结束后的查询、复盘和交付由后续任务流程完成。
+
 import { BlockList, isIP } from 'node:net';
 
 export const DOUYIN_PAGE_MAX_BYTES = 2 * 1024 * 1024;

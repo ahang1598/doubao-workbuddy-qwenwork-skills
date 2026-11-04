@@ -89,14 +89,14 @@
 ## 输出约束
 
 - 用 ` ```html type="renderer" ` 代码块包裹；**禁** `<!DOCTYPE>`/`<head>`/`<body>`/`<TEXT>`。
-- 首块先写 `<html style="margin:0;padding:0;">`，紧接一个非空的 HTML `<title>`（如 `<title>二分查找过程演示</title>`），再写透明根 div；命名遵循 `SKILL.md` 的“HTML 网页标题”要求，同一文档只写一个，后续 renderer 片段不重复。
+- 首块先写 `<html style="margin:0;padding:0;">`，紧接 `<meta charset="utf-8">`，再写一个非空的 HTML `<title>`（如 `<title>二分查找过程演示</title>`），再写透明根 div；命名遵循 `SKILL.md` 的“HTML 网页标题”要求，同一文档只写一个，后续 renderer 片段不重复。
 - 不使用 DOCTYPE、head、body、TEXT；CSS 全部内联。
 - 根容器自然撑高；禁止 `100vh`、`height:100%` 和根固定大高度。
 - 容器使用 `width:100%;box-sizing:border-box`；多列必须弹性换行，长文字不得溢出。
 - 正文建议不低于 14px；仅用颜色区分时必须增加文字、形状、线型或图例。
 - 优先 HTML/SVG；Canvas 只用于 SVG 难以稳定表达的连续动态绘制。
 - 需要脚本时使用 IIFE、try/catch 和 DOM 判空，不监听 `DOMContentLoaded`。
-- 地图库和地图组件一律禁止。
+- 本分支禁止地图库和地图组件；需要地理底图时返回主入口转交 `map-create/SKILL.md`，不以自绘 SVG 地图替代。
 
 ## 内容校验
 

@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块的检测、状态、遥测或交付边界；敏感输入和原始响应不进入日志。
 """Nonblocking remote-first samples shared by live and video windows."""
 import subprocess
 from runtime import backend_routing, mediakit

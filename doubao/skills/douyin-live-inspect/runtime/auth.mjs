@@ -1,5 +1,7 @@
 import { taskBindingError } from './task-binding.mjs';
-import { observeAccount } from './telemetry.mjs';
+import { observeAccount } from '../telemetry/main.mjs';
+// 认证模块只负责读取和校验当前 Skill 的正式版账号态；令牌生命周期由 auth-store 统一处理。
+
 import {
   profileName,
   readStore,

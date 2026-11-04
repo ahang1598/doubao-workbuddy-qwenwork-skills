@@ -1,0 +1,15 @@
+{
+  "packages": {
+    "@shan-he/content-map-kit": "0.2.0"
+  },
+  "runtimeAssets": {
+    "contentMapKit": {
+      "url": "https://lf3-static.bytednsdoc.com/obj/eden-cn/ihswht/ljhwZthlaukjlkulzlp/doubao_work_visualization/20261026T134525Z-a4f826c5607aa11d43eea74e341fecbf.js",
+      "sha256": "935d158a481f361a056cdd9fdd4d5bde1637c2b50ebd8f9404f92402b3d04ad6"
+    }
+  },
+  "files": {
+    "assets/vendor/content-map-kit.catalog.json": "45effe58c4fb7612dc3a5d6bdb936c906c90a8156d0ccfceef55e58a812430b5"
+  },
+  "note": "地图与 Semi 的 public ID、模型选择能力及 guidance 来自 content-map-kit Catalog 2.0；浏览器 Runtime 由组件发布流程预发布，Skill 仅锁定不可变 CDN URL 与 SHA-256。"
+}

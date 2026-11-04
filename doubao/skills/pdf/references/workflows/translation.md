@@ -17,7 +17,7 @@ PDF 翻译工作流默认使用 `create_agent` 启动多 agent 链路；满足�
 2. **格式跟随**：粗体 / 斜体 / 颜色 / 字号跟着源 span 走。粗体信号双通道识别：`flags & 16` 或字体名含 `Bold` 任一为真都算 bold（只看 flags 会在 CJK 字体族无 Bold face 时大批漏判）。未真正被翻译的单元（品牌名、代码、URL）保留原字体，不切目标语言字体族。**跨 batch 一致性**：同一源 `(font, size, flags)` 元组在所有页 / 所有 batch 里映射到同一目标字体（通过共享 `font_mapping.json`），保证连续段落跨 batch 边界处不出现字体跳变——不同层级（正文 / 标题 / 副标题）用不同字体是合理的，但同层级同样式必须一致。
 3. **图片位置不变**：`page.get_images(full=True)` 采集原始 xref + `get_image_rects` 记录位置，全流程结束核对图片仍在同一位置。
 4. **高亮跟随译文**：`page.get_drawings()` 采集填色块；小色块（rect 面积 ≤ 覆盖文字面积 × 4）是字紧高亮，走两趟 redact 擦除源高亮后，在 `insert_htmlbox` 的 HTML 中用 inline `background-color` 流式重绘（高亮随文字走，不会错位）；**禁止用 `add_highlight_annot` 重绘字紧高亮**（annotation 层坐标独立，译文长度变化后必然错位）；大色块（rect 面积 > 覆盖文字面积 × 4）是容器 chip / 卡片，原位保留不重绘。
-5. **段落 / 目录结构不乱**：翻译单元 = 语义段落，正文软换行要跨行合并（否则中文断句会锁在英文换行点上），TOC / 列表条目不能跨条目合并（结束刹车：行末页码、dot leader、短句以句号结尾、不同缩进、行距过大任一命中就停止合并）。同行混合样式（粗体+常规、共享 baseline 的大小字号混排如首字放大 / 副标题字号切换等）合并成一个单元，样式差异用 inline 标记还原，一次性送入 htmlbox——不要按 span 拆成独立单元各自 insert，会在行中间留出空隙，且 CJK 译文自然宽 ≥ 源 span advance 时会外溢到相邻 span 位置形成撞字。
+5. **段落 / 目录结构不乱**：翻译单元 = 按语义而不是缩进来划分段落，正文软换行要跨行合并（否则中文断句会锁在英文换行点上），TOC / 列表条目不能跨条目合并（结束刹车：行末页码、dot leader、短句以句号结尾、不同缩进、行距过大任一命中就停止合并）。同行混合样式（粗体+常规、共享 baseline 的大小字号混排如首字放大 / 副标题字号切换等）合并成一个单元，样式差异用 inline 标记还原，一次性送入 htmlbox——不要按 span 拆成独立单元各自 insert，会在行中间留出空隙，且 CJK 译文自然宽 ≥ 源 span advance 时会外溢到相邻 span 位置形成撞字。
 
 ## 三个层级的 Agent
 
@@ -30,7 +30,12 @@ PDF 翻译工作流默认使用 `create_agent` 启动多 agent 链路；满足�
 
 ### OrganizerAgent
 
-- 每 5 页一 batch 并行启动 SubAgent；维护共享 `translations.json`（跨 batch 术语一致）和 `font_mapping.json`（源 `(font, size, flags)` → 统一目标字体，保证同一样式在所有 batch 落地一致，避免连续段落跨 batch 边界处字体跳变）
+- 检查布局分析结果，将排版元素相近的页面聚类为一个 batch。如果没有排版近似的聚类，则每5页一个batch并行启动 SubAgent。
+  - 页面内容连续，字体、字号、分栏、缩进等元素基本一致，可以使用同一套重建逻辑的页面，可以被认为是排版相近
+  - 如果某些页面存在大量复杂元素（如大量公式和文字混排、存在复杂装饰、背景等），可单独一个 batch。
+  - 例如：封面页一个batch、所有目录页合并到一个batch、前言放一个batch、每一章一个batch、每个附录一个batch。章节内如有章节标题、表格、公式、图片等视觉上明显不相似的页面，请把这样的单个页面单独放一个 batch
+  - 避免把不相似的页面放到一个batch内，可以把batch分的很细。甚至所有的batch内都只有一页也是可以的
+- 每个batch 并行启动 SubAgent；维护共享 `translations.json`（跨 batch 术语一致）和 `font_mapping.json`（源 `(font, size, flags)` → 统一目标字体，保证同一样式在所有 batch 落地一致，避免连续段落跨 batch 边界处字体跳变）
 - 每 batch 完成后抽样验证五项，不通过打回同一 SubAgent 修正一次（打回两次仍不过的 batch 记入已知限制清单）：
   - **高亮复现**：字紧高亮在译文位置有 annotation；容器 chip 原位保留
   - **格式保留**：粗体 span 数量译文页 ≥ 源页 × 0.7；样式一致的连续 span 使用同一目标字体（查 `font_mapping.json`）

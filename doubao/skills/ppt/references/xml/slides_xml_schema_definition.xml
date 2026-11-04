@@ -1064,8 +1064,6 @@
         <xs:annotation>
             <xs:documentation>
                 页面切换类型, 20 种效果加关闭状态 none
-                当前导出 PPTX 仅支持 fade / cover / pull / push, 其他效果导出时可能丢失。
-                生成页面时按 quick-ref 仅选用上述四种效果; 此处保留全量类型用于读取和校验已有文稿。
                 type="none" 表示显式关闭切换, 不是"未配置"
             </xs:documentation>
         </xs:annotation>

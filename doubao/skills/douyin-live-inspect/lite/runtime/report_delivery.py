@@ -1,13 +1,13 @@
-"""Keep Agent continuation readable without discarding report evidence."""
+"""保证 Agent 续办信息可读，同时不丢弃完整质检证据。"""
 import os
 import tempfile
-from runtime.store import encode, upgrade_guidance
+from runtime.store import encode
 
 RECAP_REMINDER = '如长时间未收到复盘报告，请回到原对话发送“生成复盘报告”。'
 
 
 def attach_report_delivery(data, command):
-    """Select the current report, never the workbench, for actual host delivery."""
+    """选择当前报告作为宿主交付物，不能用实时工作台替代报告。"""
     if not data.get('delivery_required') or not (data.get('status') in {'ready','failed','blocked'} or data.get('available')):
         return
     kind = 'quality' if command == 'report' else 'review'
@@ -21,11 +21,13 @@ def attach_report_delivery(data, command):
         delivery.update(type='report_url' if mode == 'local_dashboard' else 'html_snapshot',
                         path=item['path'], artifact_type=item['type'], version=item['version'])
         if mode == 'local_dashboard':
-            delivery.update(url=data.get('report_url'), message=f'请打开并交付本次{name} 独立 HTML 链接，已保存的视频内嵌。')
+            delivery.update(url=data.get('report_url'), message=f'请打开并交付本次{name} HTML 链接。')
         else:
-            delivery['message'] = (f'请通过宿主附件能力交付本次{name}的单文件 HTML。'
+            delivery['message'] = (f'请通过宿主附件能力交付本次{name}的 HTML。'
                 '在对话展示实际返回的预览或下载入口，不能只发云电脑路径或 file URI，不能用 monitor 工作台代替报告。'
                 '仅宿主附件能力不可用或交付失败时改为完整 Chat 报告，并说明报告页未交付、以 channel=chat 确认。')
+        if 'media' in artifacts:
+            delivery['message'] += '回放视频为独立 MP4；随 HTML 交付 media 附件并保留相对目录，下载后在本地打开。'
         channel = 'file'
     else:
         delivery.update(type='chat_report', message=((f'请交付{name}无法生成的实际原因，不编造报告。' if failed else f'请在当前对话交付完整{name}正文。') +
@@ -33,12 +35,6 @@ def attach_report_delivery(data, command):
         channel = 'chat'
     delivery['message'] += ('结论仅限已检测内容；说明已检测与舍弃数量、范围及原因，不把未检测当无风险；实际交付后才确认对应回执。'
         '质检报告先交付，再按后续动作完成复盘；不得在仅交付质检报告时结束执行；两份结果均实际交付前不得宣称完成。')
-    if not failed:
-        upgrade = data.get('upgrade') or upgrade_guidance()
-        data['upgrade'] = upgrade
-        delivery['message'] += ('\n\n按交付规则适用开通引导时，在同次对话完整展示以下内容，不得仅摘取链接；'
-            '分为“方式一：飞书群沟通（更高效）”和“方式二：提交工单”两个独立段落；填写项用列表且仅归属方式二，能力介绍单独置于最后。工单填写步骤支持小字则用小字，否则用普通文字。已确认开通或属于登录、网络、配置故障时改给对应恢复说明。\n\n'
-            + upgrade['markdown'])
     data['delivery'] = delivery
     if command == 'report' and not failed and data.get('recap', {}).get('status') == 'failed' and not data['recap'].get('terminal_failure'):
         delivery['message'] += '\n\n请在质检报告或附件后的对话正文展示以下提示（仍须立即继续生成复盘，不等待用户催促）：' + RECAP_REMINDER
@@ -47,7 +43,7 @@ def attach_report_delivery(data, command):
 
 
 def public_live_report(report):
-    """Keep coverage limitations alongside user-facing live reports."""
+    """向用户展示直播报告时保留覆盖范围限制，避免把未检测内容包装成无风险。"""
     import copy
     result=copy.deepcopy(report)
     result['display_scope']='checked_content'
@@ -150,7 +146,7 @@ MAX_OUTPUT_BYTES = 24 * 1024
 
 
 def bounded_output(store, command, data, *, force=False, read_only=False):
-    """Persist overflow by content hash; never truncate actual evidence or a contract."""
+    """超出输出上限时按内容哈希落盘，绝不截断证据或提交契约。"""
     import hashlib
     from runtime.store import atomic_json
     envelope={'ok':True,'command':command,'data':data}
@@ -182,8 +178,9 @@ def bounded_output(store, command, data, *, force=False, read_only=False):
         summary['context_id'] = contract.get('template', {}).get('context_id')
     # Host delivery must remain actionable even when evidence moves to a file.
     summary.update({k:data[k] for k in ('delivery_mode','delivery','artifact_status','artifacts',
-        'snapshot_check','snapshot_events','snapshot_delivery','after_delivery_next_action',
-        'poll_after_seconds','continuation_path','continuation_instruction') if k in data})
+        'source_end_reason','live_source_status','capture_status_text','source_refresh',
+        'capture_failure','diagnostic_delivery','snapshot_check','snapshot_events','snapshot_delivery','after_delivery_next_action',
+        'poll_after_seconds','wait_command_argv','continuation_path','continuation_instruction') if k in data})
     if 'continuation_instruction' in summary:
         # The immediate action is pagination; the saved result retains its own
         # continuation. Do not tell the Agent to submit before reading evidence.
@@ -192,6 +189,7 @@ def bounded_output(store, command, data, *, force=False, read_only=False):
         summary['delivery_ack_contract'] = data['delivery_ack_contract']
     delivery_instruction = ('先按 Lite 入口执行 snapshot_check 的 status 检查并处理附件，再回到本响应。' if data.get('snapshot_check') else '')
     if data.get('snapshot_delivery'):delivery_instruction += '先交付 snapshot_delivery 工作台附件。'
+    if data.get('diagnostic_delivery'):delivery_instruction += '按 diagnostic_delivery 交付采集失败诊断；这不是有效报告。'
     if data.get('delivery'):delivery_instruction += '报告按 delivery 交付；Chat 降级须完整读取正文。'
     return {'ok':True,'command':command,'data':{**summary,
         'next_action':'read-result-pages','result_id':result_id,'total_bytes':len(raw.encode('utf-8')),

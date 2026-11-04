@@ -1,3 +1,4 @@
+// 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
@@ -54,34 +55,9 @@ function reserveTask(directory) {
   return {task_id:value.task_id, task_dir:real};
 }
 
-async function claimTask(context, mode, {newRequest = false, select = true} = {}) {
-  const usageOnly = !context.task_id;
-  const filename = path.join(context.task_dir, usageOnly ? '.usage-context.json' : FILE), lock = filename + '.lock';
-  const deadline = Date.now() + 500;
-  let fd;
-  while (fd === undefined) {
-    try { fd = fs.openSync(lock, 'wx', 0o600); }
-    catch (error) {
-      if (error.code !== 'EEXIST' || Date.now() >= deadline) throw error;
-      await new Promise(resolve => setTimeout(resolve, 25));
-    }
-  }
-  try {
-    const state = readContext(context.task_dir, usageOnly) || {};
-    if (!usageOnly && state.task_id !== context.task_id) throw Error('task binding mismatch');
-    const events = [];
-    if (!state.started || newRequest) { events.push(['skill-start.mjs']); state.started = true; }
-    if (newRequest && !mode) delete state.mode;
-    if (mode && select) {
-      if (state.mode !== mode || newRequest) events.push(['version-selected.mjs', '--mode', mode]);
-      state.mode = mode;
-    }
-    const temporary = filename + '.' + randomUUID();
-    try {
-      fs.writeFileSync(temporary, JSON.stringify(state), {flag:'wx', mode:0o600});
-      fs.renameSync(temporary, filename);
-    } finally { try { fs.unlinkSync(temporary); } catch {} }
-    return events;
-  } finally { fs.closeSync(fd); fs.unlinkSync(lock); }
+async function claimTask(context, mode, options) {
+  const {claimTask: claim}=await import('../telemetry/main.mjs');
+  const events=await claim(context,mode,options);
+  return events.map(name=>name==='skill-start'?['skill-start.mjs']:['version-selected.mjs','--mode',mode]);
 }
 module.exports = {reserveTask, readContext, claimTask};

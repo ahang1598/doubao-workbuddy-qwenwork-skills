@@ -1,0 +1,820 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://map-create.local/contracts/canonical-map-spec.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractRevision",
+    "specVersion",
+    "id",
+    "title",
+    "coordinateSystem",
+    "sources",
+    "entities",
+    "groups",
+    "views",
+    "task"
+  ],
+  "properties": {
+    "contractRevision": {
+      "const": 3
+    },
+    "specVersion": {
+      "const": "2.0"
+    },
+    "id": {
+      "$ref": "#/$defs/id"
+    },
+    "title": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "coordinateSystem": {
+      "enum": ["GCJ-02", "WGS84"]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "entities": {
+      "type": "object",
+      "required": ["places", "routes", "regions"],
+      "additionalProperties": false,
+      "properties": {
+        "places": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/place"
+          }
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/route"
+          }
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/region"
+          }
+        }
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "title", "members", "routeIds"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "placeId", "role"],
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/id"
+                },
+                "placeId": {
+                  "$ref": "#/$defs/id"
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "roleLabel": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "order": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "time": {
+                  "type": "string"
+                },
+                "routeIds": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "uniqueItems": true
+                },
+                "properties": {
+                  "type": "object"
+                },
+                "orderPurpose": {
+                  "enum": ["visit", "display", "rank"]
+                },
+                "orderEvidenceRef": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "transfer": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["incomingRouteId", "outgoingRouteId"],
+                  "properties": {
+                    "incomingRouteId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "outgoingRouteId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "incomingSegmentIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "outgoingSegmentIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "required": ["order"]
+                  },
+                  "then": {
+                    "required": ["orderPurpose"]
+                  }
+                },
+                {
+                  "if": {
+                    "required": ["orderPurpose"],
+                    "properties": {
+                      "orderPurpose": {
+                        "const": "visit"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": ["order", "orderEvidenceRef"]
+                  }
+                }
+              ]
+            }
+          },
+          "routeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/id"
+            },
+            "uniqueItems": true
+          },
+          "routeOptional": {
+            "type": "boolean"
+          },
+          "routeOptionalReason": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "object"
+          },
+          "representative": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["placeId", "evidenceRef"],
+            "properties": {
+              "placeId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidenceRef": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "views": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/view"
+      }
+    },
+    "metadata": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "diagnostics": {"type": "object", "additionalProperties": false, "required": ["tool_calls"], "properties": {"tool_calls": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["tool_name", "entity_ids", "requests"], "properties": {"tool_name": {"enum": ["map_mark", "route_plan_v2"]}, "entity_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "requests": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["stage", "api_name", "logid"], "properties": {"stage": {"enum": ["submit", "result"]}, "api_name": {"type": "string", "minLength": 1}, "logid": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9_-]{1,256}$"}, "entity_id": {"type": "string", "minLength": 1}}}}}}}}},
+            "fieldDefinitions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/fieldDefinition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "fieldDefinitions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "sourceRefs"]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "evidence", "primaryContent"],
+      "properties": {
+        "travelScene": {
+          "enum": ["travel_plan", "travel_route"]
+        },
+        "overviewPreference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "origin", "reference"],
+          "properties": {
+            "mode": { "enum": ["content", "collection"] },
+            "origin": { "const": "user-request" },
+            "reference": { "type": "string", "pattern": "\\S" }
+          }
+        },
+        "purpose": {
+          "enum": [
+            "distribution",
+            "route",
+            "comparison",
+            "itinerary",
+            "thematic"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "origin", "reference", "supports", "objectIds"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "origin": {
+                "enum": ["user-request", "adopted-data", "source-fact"]
+              },
+              "reference": {
+                "type": "string",
+                "minLength": 1
+              },
+              "supports": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "schedule",
+                    "visit-order",
+                    "alternatives",
+                    "view-split",
+                    "representative-position"
+                  ]
+                }
+              },
+              "objectIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "minItems": 1
+              }
+            }
+          }
+        },
+        "primaryContent": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "id"],
+            "properties": {
+              "kind": {
+                "enum": ["place", "route", "region"]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fieldDefinition": {
+      "type": "object",
+      "required": ["entityType", "property", "valueType", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "entityType": {
+          "enum": ["place", "route", "region", "group"]
+        },
+        "property": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^.\\[\\]]+$",
+          "not": {
+            "enum": ["__proto__", "prototype", "constructor"]
+          }
+        },
+        "valueType": {
+          "enum": ["string", "number", "boolean", "datetime"]
+        },
+        "label": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "coordinate": {
+      "type": "array",
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        {
+          "type": "number",
+          "minimum": -85,
+          "maximum": 85
+        }
+      ],
+      "items": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "provider", "title"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "provider": {
+          "enum": ["user", "file", "web", "api", "connector", "demo"]
+        },
+        "title": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "retrievedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "place": {
+      "type": "object",
+      "required": ["id", "name", "position"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "position": {
+          "$ref": "#/$defs/coordinate"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "properties": {
+          "type": "object"
+        }
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "required": ["status", "derivation"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": ["LineString", "MultiLineString"]
+        },
+        "status": {
+          "enum": [
+            "resolved",
+            "supplied",
+            "simplified",
+            "schematic",
+            "unavailable"
+          ]
+        },
+        "derivation": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "coordinates": {
+          "type": "array"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "parts": {
+          "description": "可选的混合交通分段描述，与 MultiLineString.coordinates 按索引一一对应；坐标仅存一份。航空示意段使用 flight/schematic，地面段保留数据可信状态。省略时沿用整条路线的 mode/status，现有输入无需迁移。",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mode", "status"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": ["resolved", "supplied", "simplified", "schematic"]
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["coordinates"],
+            "properties": {
+              "type": {
+                "const": "MultiLineString"
+              }
+            }
+          },
+          "then": {
+            "required": ["type"],
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/line"
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "coordinates": {
+                "$ref": "#/$defs/line"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {
+              "status": {
+                "enum": ["resolved", "supplied", "simplified"]
+              }
+            }
+          },
+          "then": {
+            "required": ["type", "coordinates"]
+          }
+        },
+        {
+          "if": {
+            "required": ["parts"]
+          },
+          "then": {
+            "required": ["type", "coordinates"],
+            "properties": {
+              "type": {
+                "const": "MultiLineString"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "line": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "#/$defs/coordinate"
+      }
+    },
+    "ring": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "$ref": "#/$defs/coordinate"
+      }
+    },
+    "polygon": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/ring"
+      }
+    },
+    "route": {
+      "type": "object",
+      "required": ["id", "mode", "memberIds", "geometry"],
+      "additionalProperties": true,
+      "properties": {
+        "relation": {
+          "description": "线表达的业务关系。visit-order 为访问顺序，transport 为独立交通段，network 为网络连接，connection 为其他或未分类连接。缺省不从 mode 或数组位置推断交通角色；显式访问顺序优先。",
+          "enum": ["visit-order", "transport", "network", "connection"]
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "memberIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "properties": {
+          "type": "object"
+        },
+        "geographicFeature": {
+          "description": "地理专题类别：mountain 山脉、river 河流、boundary 专题分界；仅用于非交通地理线。",
+          "enum": ["mountain", "river", "boundary"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["geographicFeature"]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "none"
+              },
+              "relation": {
+                "const": "connection"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "memberIds": {
+                "type": "array",
+                "minItems": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    "region": {
+      "type": "object",
+      "required": ["id", "name", "geometry", "areaRole"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "geometry": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["type", "centerPlaceId", "radiusMeters"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "Circle" },
+                "centerPlaceId": { "$ref": "#/$defs/id" },
+                "radiusMeters": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "coordinates"],
+              "properties": {
+                "type": {
+                  "enum": ["Polygon", "MultiPolygon"]
+                },
+                "coordinates": {
+                  "type": "array",
+                  "minItems": 1
+                }
+              },
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "Polygon"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "coordinates": {
+                    "$ref": "#/$defs/polygon"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "coordinates": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/$defs/polygon"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "areaRole": {
+          "enum": ["boundary", "coverage", "corridor", "uncertainty"]
+        },
+        "inferred": {
+          "type": "boolean"
+        },
+        "relations": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "groupIds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/id"
+              },
+              "uniqueItems": true
+            },
+            "routeIds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/id"
+              },
+              "uniqueItems": true
+            },
+            "placeIds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/id"
+              },
+              "uniqueItems": true
+            },
+            "status": {
+              "enum": ["supplied", "resolved", "derived"]
+            }
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "labelPosition": {
+          "description": "区域自身名称的标注位置；提供时由编译器生成 label。",
+          "$ref": "#/$defs/coordinate"
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "object"
+        },
+        "groupId": {
+          "$ref": "#/$defs/id"
+        },
+        "groupIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "placeIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "routeIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "regionIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

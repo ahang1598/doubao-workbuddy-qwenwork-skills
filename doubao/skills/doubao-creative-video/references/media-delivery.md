@@ -4,7 +4,7 @@
 
 **CLI 边界：生成／编辑工具的成功图片和视频不重复创建媒体 Item，不在 RichMediaCard 直交前回读；非 Mobile 仍保留必要的画布初始化、素材读取、本批直交后的目录整理及确需手工入画布的资产操作。Mobile 禁止画布相关命令及 Workspace 操作，也不执行素材读取 CLI；允许本地 Python 分镜校验。**
 
-适用于 `text_to_video`、`image_to_video`、`media_to_video`、`video_edit` 及等价视频生成／编辑工具，以及 `image_gen`／`image_edit` 的所有成功输出。覆盖候选、草稿、改稿、中间素材、四宫格视觉关键帧、视频片段、变体和最终工具成品；画面质量不改变直接交付要求。
+适用于 `text_to_video`、`image_to_video`、`media_to_video`、`video_edit` 及等价视频生成／编辑工具，以及 `image_gen`／`image_edit` 的所有成功输出。覆盖候选、草稿、改稿、中间素材、视频片段、变体和最终工具成品；画面质量不改变直接交付要求。
 
 主 `SKILL.md` 的视频确认、工具路由、单轮数量上限、固定批次和异步 subagent 分工保持不变。mainagent 负责交付与全部画布 CLI，subagent 只执行已授权的视频生成／编辑并回传原始结果信息，不输出 RichMediaCard、不调用 `present_files`，不执行 CLI、不写入或整理画布。
 
@@ -69,7 +69,7 @@ ID 冲突、工具字段不支持、参数名无法确认或校验失败时，�
 4. **形成最小目录计划**：只整理本批产物及与其关系明确的锚点，保留既有项目沙箱与 `video_N`／`SEGxx` 映射。画布顶层路径使用绝对 path，可按项目语义组织为：
    - 用户输入参考：`/user-anchors/<project>/source`
    - 人物／产品／Logo 等身份母版：`/core-assets/<identity>/master`
-   - 生成图片与四宫格关键帧：`/generated-assets/<project>/<video_N>/keyframes/<version>`
+   - 按需人物/产品图片：`/generated-assets/<project>/<video_N>/assets/<version>`
    - 工具生成视频片段：`/generated-assets/<project>/<video_N>/segments/<SEGxx>/<version>`
    - 工具生成最终成片：`/deliverables/<project>/<video_N>/<version>`
 5. **仅更新 path**：使用 `+update`／`+update-batch` 修改真实顶层对象的绝对 `path`；目录由 path 自动形成，没有独立 `mkdir`。不修改准确 brief，不改内容、标题、资产 URL、尺寸、位置、来源或类型；Frame 成员不单独填 path。禁止空 Item 充当目录，禁止为生成结果重复创建或重传，禁止用 `source_ids` 补写／覆盖血缘。

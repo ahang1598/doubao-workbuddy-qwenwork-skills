@@ -315,9 +315,8 @@ function renderReport(report) {
   if (coveragePanel && report.report_kind === "video") {
     const cov = report.coverage || {};
     coveragePanel.hidden = false;
-    byId("coverage-title").textContent = report.conclusion.label || "部分检测结果";
     byId("coverage-summary").textContent = cov.message || "未完成有效检测";
-    byId("video-report-note").textContent = `${report.coverage_complete ? "" : "存在未检测或证据不足的内容，不能据此认定全片无其他风险。"} 报告版本 ${report.report_version || "—"}；此文件是生成时的历史快照。${report.hit_count_basis || ""} 下载媒体 ZIP 并解压后可播放视频。`;
+    byId("video-report-note").textContent = `${report.coverage_complete ? "" : "存在未检测或证据不足的内容，不能据此认定全片无其他风险。"} 报告版本 ${report.report_version || "—"}；此文件是生成时的历史快照。${report.hit_count_basis || ""} 下载报告后可用 Chrome 或 Edge 打开。`;
     byId("coverage-details").hidden = !(cov.gaps || []).length;
     byId("video-report-gaps").innerHTML = (cov.gaps || []).map(g => `<li>${escapeHtml(formatTime(g.start, true))}–${escapeHtml(formatTime(g.end, true))}：${escapeHtml(g.reason).replace(/，具体原因见规则判断依据$/, "")}</li>`).join("");
   }

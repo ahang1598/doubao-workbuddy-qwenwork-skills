@@ -1,0 +1,14 @@
+{
+  "id": "beijing-routes",
+  "title": "北京西站到天安门驾车方案",
+  "tool": "route_plan_v2",
+  "organization": "alternatives",
+  "views": "per-group",
+  "reason": "比较两地之间的驾车候选路线，每个候选单独查看。",
+  "selection": "all",
+  "parameters": {
+    "origin": { "type": "place", "value": { "text": "北京西站" } },
+    "destination": { "type": "place", "value": { "text": "天安门" } },
+    "modes": ["driving"]
+  }
+}

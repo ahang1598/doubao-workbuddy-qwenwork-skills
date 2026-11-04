@@ -142,11 +142,10 @@ def review_snapshot(snapshot, *, compact=False):
 
 def load_rules(scenario, custom_path=None):
     """Freeze rules authored in one Markdown file; retain additive custom JSON support."""
-    if not isinstance(scenario, str):
-        raise ValueError('scenario must be a string')
+    from runtime.input_errors import InputValidationError
+    if not isinstance(scenario, str) or scenario not in SCENARIOS | {'common'} | ALIASES.keys():
+        raise InputValidationError('START_SCENARIO_INVALID', 'scenario 必须是 common、电商、金融、汽车或对应英文 ecommerce、finance、automotive。')
     scenario = ALIASES.get(scenario, scenario)
-    if scenario not in SCENARIOS | {'common'}:
-        raise ValueError(f'Unknown scenario: {scenario}')
     principles, groups, source_hash = _read_builtin()
     active, seen = [], set()
     policies = {'common': {'requirements': principles}}

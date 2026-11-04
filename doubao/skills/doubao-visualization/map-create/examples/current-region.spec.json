@@ -1,0 +1,83 @@
+{
+  "contractRevision": 3,
+  "specVersion": "2.0",
+  "id": "region-example",
+  "title": "区域范围示意",
+  "coordinateSystem": "GCJ-02",
+  "sources": [
+    {
+      "id": "example",
+      "provider": "demo",
+      "title": "合成示例，仅展示协议写法，不代表实际区域"
+    }
+  ],
+  "entities": {
+    "places": [
+      {
+        "id": "reference",
+        "name": "参照点",
+        "position": [113.27, 23.13],
+        "sourceRefs": ["example"],
+        "properties": {
+          "description": "合成位置，用于演示区域与地点的关联。"
+        }
+      }
+    ],
+    "routes": [],
+    "regions": [
+      {
+        "id": "area",
+        "name": "范围示意",
+        "areaRole": "coverage",
+        "inferred": true,
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [113.25, 23.11],
+              [113.29, 23.11],
+              [113.29, 23.15],
+              [113.25, 23.15],
+              [113.25, 23.11]
+            ]
+          ]
+        },
+        "relations": {
+          "placeIds": ["reference"],
+          "status": "supplied"
+        },
+        "sourceRefs": ["example"],
+        "properties": {
+          "description": "合成范围示意，不代表真实行政边界。"
+        }
+      }
+    ]
+  },
+  "groups": [],
+  "views": [
+    {
+      "id": "all",
+      "kind": "overview",
+      "title": "区域与参照点",
+      "placeIds": ["reference"],
+      "regionIds": ["area"],
+      "summary": {
+        "description": "示例展示区域填充、边界和可点击参照点；真实任务需替换为有来源的几何。"
+      }
+    }
+  ],
+  "task": {
+    "purpose": "thematic",
+    "evidence": [],
+    "primaryContent": [
+      {
+        "kind": "region",
+        "id": "area"
+      },
+      {
+        "kind": "place",
+        "id": "reference"
+      }
+    ]
+  }
+}

@@ -87,6 +87,7 @@ def span_ms(rows):
 
 
 def summarize_coverage(rows, issues):
+    """汇总覆盖范围和缺口；没有证据的区间保持为未确定，不降级成无命中。"""
     categories = ('checked', 'evidence_insufficient', 'pending', 'unchecked')
     counts = {key: sum(row['category'] == key for row in rows) for key in categories}
     durations = {key: span_ms([r for r in rows if r['category'] == key]) for key in categories}
@@ -202,6 +203,7 @@ def report_coverage(rules, source_gaps=()):
 
 
 def report_conclusion(rules, summary, speech_only=False):
+    """生成规则结论，并把证据不足、未采集和语音-only 限制带入最终结果。"""
     counts = {key: sum(r['counts'].get(key, 0) for r in rules) for key in DECISION_RESULTS}
     result = assessment(counts)
     scope = '已检测字幕' if speech_only else '已检测范围'
@@ -277,6 +279,7 @@ def _rules(task):
 
 
 def video_coverage(task, segments, rules, coverage, status):
+    """为视频报告计算完整覆盖性，区分源文件范围与实际完成的分析范围。"""
     """Time coverage is a union of intervals, not a count of segments."""
     duration = task.get('source_duration_ms') or max([s['end_ms'] for s in segments] + [0])
     def merged(rows):
@@ -293,12 +296,15 @@ def video_coverage(task, segments, rules, coverage, status):
     deferred = [s for s in segments if s.get('review_status')=='deferred']
     coverage.update(deferred=len(deferred), reviewed_ms=reviewed_ms,
                     total_ms=duration, reviewed_ratio=reviewed_ms/duration if duration else 0)
-    gaps = [g for g in coverage['gaps'] if g['kind']!='capture']
-    cursor=0
-    for a,b in merged(segments):
-        if a>cursor:gaps.append({'start':cursor/1000,'end':a/1000,'kind':'capture','reason':'该时段未采集或判定','seekable':False})
-        cursor=b
-    if duration>cursor:gaps.append({'start':cursor/1000,'end':duration/1000,'kind':'capture','reason':'该时段未采集或判定','seekable':False})
+    from runtime.sampling import enabled as sampled
+    gaps = list(coverage['gaps'])
+    if not sampled(task) or task.get('inspection_policy') == 'lite_video_full_v1':
+        gaps = [g for g in gaps if g['kind']!='capture']
+        cursor=0
+        for a,b in merged(segments):
+            if a>cursor:gaps.append({'start':cursor/1000,'end':a/1000,'kind':'capture','reason':'该时段未采集或判定','seekable':False})
+            cursor=b
+        if duration>cursor:gaps.append({'start':cursor/1000,'end':duration/1000,'kind':'capture','reason':'该时段未采集或判定','seekable':False})
     reasons={'INPUT_REPAIR_EXHAUSTED':'判定输入修正达到上限，待续办','EVIDENCE_UNAVAILABLE':'证据不可用，待续办','REVIEW_BLOCKED':'判定受阻，待续办'}
     for s in segments:
         if s.get('review_status') not in {'done','skipped'}:
@@ -327,10 +333,24 @@ def skip_reason(segment):
     if segment.get('policy_version')=='lite_sample_v1':
         from runtime.sampling import REASONS
         return REASONS.get(segment.get('skip_code'),'证据不足')
+    # New drains persist the actual blocker. Keep historical records without
+    # this field readable, rather than retroactively inventing their cause.
+    if segment.get('skip_code') == 'LIVE_FINISH_SKIPPED' and segment.get('drain_blocking_reason'):
+        blockers = {
+            'asr_result_timeout':'等待语音转写结果超时，未完成检测',
+            'asr_failed':'语音转写失败，未完成检测',
+            'no_transcript':'未获得可用语音文字，未完成检测',
+            'frames_timeout':'等待画面处理结果超时，未完成检测',
+            'review_not_dispatched':'已有证据未获判定，恢复等待后仍未完成检测',
+            'review_timeout':'判定无进展，重试后仍未完成检测',
+            'worker_stopped':'媒体处理进程已停止，未完成检测',
+            'drain_total_timeout':'停止后的处理达到总时限，未完成检测',
+        }
+        return blockers.get(segment['drain_blocking_reason'], '停止后的处理未完成，具体原因未知')
     reasons = {'LIVE_BACKLOG_SKIPPED':'积压超过 3 分钟，保留最近 2 分钟',
                'LIVE_REVIEW_TIMEOUT':'批次 120 秒无提交进展，结束剩余检测',
                'LIVE_FINISH_SKIPPED':'收尾超过 120 秒，未完成检测',
-               'USER_DISCARD':'用户明确舍弃剩余检测', 'NO_SPEECH_EVIDENCE':'结束时无可用语音文字'}
+               'USER_DISCARD':'用户明确舍弃剩余检测', 'NO_SPEECH_EVIDENCE':'语音处理已结束，无可用字幕，未进行判定'}
     if segment.get('skip_code') in reasons:return reasons[segment['skip_code']]
     if segment.get('skip_reason') == '用户主动停止，未完成检测':return segment['skip_reason']
     return 'ASR 重试耗尽，已跳过该段判别' if segment.get('skip_code')=='ASR_RETRY_EXHAUSTED' else '结束后未完成检测'

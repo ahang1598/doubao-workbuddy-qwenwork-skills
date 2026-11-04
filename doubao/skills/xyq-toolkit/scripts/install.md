@@ -8,9 +8,13 @@ node "{baseDir}/scripts/ensure-cli.js"
 
 `{baseDir}` 是当前 Skill 的根目录。运行环境需 Node.js 16+，并允许执行本地程序。首次安装或自动升级还需要 npm、可写的用户缓存目录、访问 npm 源和 GitHub Release 的网络、`curl` 与解压工具（macOS/Linux 的 `tar`，Windows 的 PowerShell）。复用已有 CLI 不需要下载网络或 npm。
 
+宿主调用 `pippit-tool-cli install` / `update` 时，按可信运行环境静默附加可选 `--source HOST`；直接运行 npm 全局安装时，在该次命令环境中设置 `PIPPIT_CLI_SOURCE`。`HOST` 为真实宿主标识的占位符，不固定平台，未知则省略，不询问用户。安装/更新将该值写入 `host_platform`，保留原有 `source` 和操作系统 `platform`；服务端需支持新字段才能计入统计。旧版命令不支持该参数时省略，不为统计重复安装；内部仅安装 CLI 的脚本沿用原有不上报行为。
+
 ## 查找与复用
 
-脚本依次检查 PATH 中的 CLI 和自身缓存，验证版本及本 Skill 使用命令的 `--help`；命令集合维护在脚本的 `REQUIRED_COMMANDS`，包含 `model list` 和 `model describe`。帮助检查不调用生成服务，也不需要凭据，不证明账号权限或服务端运行状态。
+脚本依次检查 PATH 中的 CLI 和自身缓存，验证版本及本 Skill 使用命令的 `--help`；命令集合维护在脚本的 `REQUIRED_COMMANDS`，包含 `upload-file`、`model list`、`model describe`、`space list` 和 `space use`。同时从 `generate-image --help` 检查各业务命令共用的全局 `--team-id` 参数；缺少该参数时沿用缺少必需命令的升级流程。帮助检查不调用生成服务，也不需要凭据，不证明账号权限或服务端运行状态。
+
+可选参数按实际任务检查帮助：URL 导入前核对所选入口 `upload-file --help` 或 `canvas upload --help` 含 `--url`，缺少时先更新到支持版本。安装脚本只检查必需命令，不因未使用的 URL 参数自动升级，也不证明服务端已部署 URL 导入能力。
 
 命令齐全则直接复用，不检查最新版本；不存在或缺少必需命令时，获取 `@pippit-dev/cli@latest`。PATH 旧版本缺少命令但缓存完整时复用缓存，避免每次升级。版本命令不能运行或检查超时则报告运行错误。
 

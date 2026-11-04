@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN" data-capture-state="loading" data-map-height-policy="__MAP_CREATE_HEIGHT_MODE__" style="__MAP_CREATE_HEIGHT_STYLE__">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>
+{
+  const root = document.documentElement;
+  const policy = root.dataset.mapHeightPolicy;
+  const applyHeight = () => {
+    const usableViewport = window.innerHeight >= 720;
+    const mode = policy === 'auto' ? (usableViewport ? 'viewport' : 'fallback') : policy;
+    root.dataset.mapHeightMode = mode;
+    if (mode === 'fixed') return;
+    root.style.setProperty('--map-height', mode === 'viewport'
+      ? (CSS.supports('height', '100dvh') ? '100dvh' : '100vh')
+      : '720px');
+    root.style.height = 'var(--map-height)';
+  };
+  applyHeight();
+  if (policy === 'auto') {
+    window.addEventListener('resize', applyHeight);
+    window.addEventListener('pageshow', applyHeight);
+  }
+}
+</script>
+<link rel="icon" href="data:," />
+<title>__MAP_CREATE_TITLE__</title>
+<style>
+html,body{margin:0;width:100%;height:var(--map-height,720px)}
+#map-loading{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:#f6f7f9;color:#171a20;font:14px/1.6 system-ui,-apple-system,sans-serif;overflow:auto}
+#map-loading[hidden]{display:none}
+.map-loading-card{width:100%;max-width:360px;box-sizing:border-box;padding:28px;border:1px solid #e5e7eb;border-radius:20px;background:#fff;box-shadow:0 8px 32px #17203308;text-align:center;margin:auto}
+.map-loading-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 16px;border-radius:50%;background:#f1f3f6;color:#687182}
+.map-loading-icon svg{width:24px;height:24px;display:none}
+#map-loading[data-state="error"] .map-loading-icon svg{display:block}
+#map-loading[data-state="error"] .map-loading-spinner{display:none}
+.map-loading-spinner{width:22px;height:22px;box-sizing:border-box;border:2px solid #d5dbe5;border-top-color:#4b607d;border-radius:50%;animation:map-spin 1s linear infinite}
+#map-loading h2{margin:0 0 8px;font-size:18px;line-height:1.4;font-weight:600}
+#map-loading p{margin:0;color:#697180;overflow-wrap:anywhere}
+#map-loading button{margin-top:20px;min-height:44px;width:100%;padding:10px 18px;border:0;border-radius:10px;background:#202733;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+#map-loading button:hover{background:#354052}
+#map-loading button:disabled{opacity:.55;cursor:wait}
+#map-loading button:focus-visible,#map-loading summary:focus-visible{outline:3px solid #6486bf;outline-offset:3px}
+#map-loading details{margin-top:20px;padding-top:16px;border-top:1px solid #eceef2;text-align:left;color:#697180;font-size:12px}
+#map-loading summary{cursor:pointer;width:fit-content}
+#map-loading code{display:block;margin:10px 0 6px;overflow-wrap:anywhere;white-space:pre-wrap;color:#424b5b;font:12px/1.5 ui-monospace,monospace}
+@media(max-width:420px){#map-loading{padding:16px}.map-loading-card{padding:24px}}
+@keyframes map-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.map-loading-spinner{animation:none}}
+</style>
+</head>
+<body>
+<div id="map-loading" role="status" aria-busy="true" data-state="loading">
+<section class="map-loading-card" aria-labelledby="map-loading-title">
+<div class="map-loading-icon" aria-hidden="true"><span class="map-loading-spinner"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 7v6m0 4h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
+<h2 id="map-loading-title">正在加载地图</h2>
+<p id="map-loading-message">正在准备地图内容，请稍候。</p>
+<button id="map-loading-retry" type="button" hidden>重新加载</button>
+<details id="map-loading-details" hidden><summary>错误详情</summary><code id="map-loading-code"></code><p id="map-loading-detail"></p></details>
+</section>
+</div>
+<div id="map-app">
+<header><div><p class="eyebrow">MAP STUDIO</p><h1 id="title">__MAP_CREATE_TITLE__</h1></div><div id="status" role="status">地图准备中</div></header>
+<main>
+<div id="map-shell">
+<div id="map" aria-label="交互地图"></div>
+<aside id="content-map-ui" aria-label="地图信息"></aside>
+<div id="map-panels">
+<section id="map-legend" aria-label="地图图例"></section>
+<div id="heatmap-controls" aria-label="热力图模式与图例"></div>
+</div>
+<div id="map-controls" aria-label="地图视图控制"></div>
+<div id="map-edge-navigation"></div>
+<div id="map-transition" role="status" aria-live="polite" hidden><span aria-hidden="true"></span><strong>正在更新地图…</strong></div>
+<div id="map-hover" role="status" aria-live="polite" hidden></div>
+<div id="map-sources"><div id="sources">__MAP_CREATE_SOURCES__</div></div>
+</div>
+</main>
+</div>
+<script id="map-create-manifest" type="application/json">__MAP_CREATE_MANIFEST__</script>
+__MAP_CREATE_TELEMETRY__
+<script>
+window.mapCreateAMapConfig = __MAP_CREATE_AMAP_CONFIG__;
+window.mapCreateLoadAttempt = 1;
+const mapCreateInitialApp = document.getElementById('map-app').cloneNode(true);
+const mapCreateRetryButton = document.getElementById('map-loading-retry');
+let mapCreateRetrying = false;
+window.mapCreateBootstrapResource = window.mapCreateTelemetry?.resource('bootstrap');
+const mapCreateArmDeadline = () => {
+  const attempt = window.mapCreateLoadAttempt;
+  window.mapCreateBootstrapDeadline = setTimeout(function() {
+    if (attempt === window.mapCreateLoadAttempt && document.documentElement.dataset.captureState === 'loading')
+      void window.mapCreateFail('BOOTSTRAP_TIMEOUT', '地图加载超时，请重试', new Error('BOOTSTRAP_TIMEOUT'));
+  }, 60000);
+};
+window.mapCreateFail = async function(code, message, error) {
+  const root = document.documentElement;
+  if (root.dataset.captureError) return;
+  if (!window.mapCreateBootstrapStart) window.mapCreateBootstrapResource?.(error || new Error(code));
+  const attempt = window.mapCreateLoadAttempt;
+  root.dataset.captureError = code;
+  clearTimeout(window.mapCreateBootstrapDeadline);
+  window.mapCreateAbortLoading?.(code);
+  const mask = document.getElementById('map-loading');
+  mask.hidden = false;
+  mask.dataset.state = 'error';
+  mask.setAttribute('role', 'alert');
+  mask.setAttribute('aria-busy', 'false');
+  const invalid = /RESOURCE_(MANIFEST|URL)_INVALID|RESOURCE_RELEASE_MISMATCH|HASH_MISMATCH|DATA_INVALID|GRAPH_BINDING_INVALID|RUNTIME_(START|CONTRACT_CHECK)_MISSING|RUNTIME_PACKAGE_MISMATCH|RUNTIME_REVISION_UNSUPPORTED|(?:CONTRACT|CAPABILITY).*?(?:INVALID|MISMATCH|MISSING|UNSUPPORTED)/.test(code);
+  window.mapCreateTelemetry?.fail(code, !invalid, error);
+  document.getElementById('map-loading-title').textContent = invalid ? '这张地图暂时无法打开' : '地图暂时无法加载';
+  document.getElementById('map-loading-message').textContent = invalid
+    ? '请让助手重新生成这张地图。'
+    : code === 'MAP_SIZE_TIMEOUT'
+      ? '预览区域暂不可用，请展开预览后重试。'
+      : '请重试加载。若仍无法打开，可以将错误详情发给助手协助排查。';
+  document.getElementById('map-loading-code').textContent = `${code}\n阶段：${root.dataset.bootstrapPhase || 'bootstrap'}`;
+  document.getElementById('map-loading-detail').textContent = message;
+  document.getElementById('map-loading-details').hidden = false;
+  mapCreateRetryButton.hidden = invalid;
+  mapCreateRetryButton.disabled = true;
+  mapCreateRetryButton.textContent = '重新加载';
+  try {
+    window.mapCreateDispose?.();
+  } catch {
+    console.error('MAP_CLEANUP_FAILED');
+  }
+  if (attempt === window.mapCreateLoadAttempt) {
+    document.documentElement.dataset.captureState = 'error';
+    mapCreateRetryButton.disabled = false;
+  }
+};
+mapCreateRetryButton.onclick = async () => {
+  if (mapCreateRetrying || mapCreateRetryButton.hidden || mapCreateRetryButton.disabled) return;
+  mapCreateRetrying = true;
+  window.mapCreateTelemetry?.retry(document.documentElement.dataset.captureError);
+  document.documentElement.dataset.captureState = 'loading';
+  mapCreateRetryButton.disabled = true;
+  mapCreateRetryButton.textContent = '正在重试…';
+  const root = document.documentElement;
+  const mask = document.getElementById('map-loading');
+  mask.dataset.state = 'loading';
+  mask.setAttribute('role', 'status');
+  mask.setAttribute('aria-busy', 'true');
+  document.getElementById('map-loading-title').textContent = '正在重新加载地图';
+  document.getElementById('map-loading-message').textContent = '正在重新连接，请稍候。';
+  document.getElementById('map-loading-details').open = false;
+  clearTimeout(window.mapCreateBootstrapDeadline);
+  window.mapCreateAbortLoading?.('RETRY_REQUESTED');
+  await window.mapCreateBootstrapRun?.catch(() => {});
+  window.mapCreateLoadAttempt += 1;
+  window.mapCreateTelemetry?.begin(window.mapCreateLoadAttempt);
+  mapCreateRetryButton.disabled = true;
+  try {
+    window.mapCreateDispose?.();
+    window.mapCreateReleaseResources?.();
+    document.getElementById('map-app').replaceWith(mapCreateInitialApp.cloneNode(true));
+    window.mapCreateRuntime = undefined;
+    window.mapCreateStarted = undefined;
+    window.mapCreateState = undefined;
+    window.mapCreateDispose = undefined;
+    delete root.dataset.captureError;
+    delete root.dataset.mapSizeState;
+    document.documentElement.dataset.captureState = 'loading';
+    root.dataset.bootstrapPhase = 'bootstrap';
+    document.getElementById('map-loading-details').hidden = true;
+    mapCreateArmDeadline();
+    if (window.mapCreateBootstrapStart) {
+      window.mapCreateBootstrapRun = window.mapCreateBootstrapStart();
+    } else {
+      const previous = document.querySelector('script[onerror*="BOOTSTRAP_LOAD_FAILED"]');
+      window.mapCreateBootstrapResource = window.mapCreateTelemetry?.resource('bootstrap');
+      if (!previous) throw new Error('BOOTSTRAP_ENTRY_MISSING');
+      const next = document.createElement('script');
+      for (const attribute of previous.attributes) next.setAttribute(attribute.name, attribute.value);
+      previous.dataset.mapCreateCancelled = 'true';
+      previous.onerror = null;
+      previous.remove();
+      delete next.dataset.mapCreateCancelled;
+      document.body.append(next);
+    }
+  } catch (error) {
+    delete root.dataset.captureError;
+    await window.mapCreateFail('RETRY_FAILED', error.message, error);
+  } finally {
+    mapCreateRetrying = false;
+  }
+};
+mapCreateArmDeadline();
+</script>
+<script src="__MAP_CREATE_BOOTSTRAP_URL__" integrity="__MAP_CREATE_BOOTSTRAP_INTEGRITY__" crossorigin="anonymous" async onerror="void window.mapCreateFail('BOOTSTRAP_LOAD_FAILED', '地图启动资源加载失败', new Error('BOOTSTRAP_LOAD_FAILED'))"></script>
+</body>
+</html>

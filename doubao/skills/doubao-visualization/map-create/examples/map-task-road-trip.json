@@ -1,0 +1,31 @@
+{
+  "id": "xining-road-trip",
+  "title": "西宁出发两日自驾环线",
+  "tool": "map_mark",
+  "organization": "days",
+  "views": "per-group",
+  "reason": "按两天自驾行程组织，每天可独立查看攻略。",
+  "parameters": {
+    "map_data": {
+      "text": "青海省两日自驾：第一天从西宁站到青海湖二郎剑景区，第二天从黑马河镇经茶卡盐湖返回西宁站。",
+      "scene": "travel_route",
+      "plans": [
+        {
+          "name": "D1 西宁—青海湖",
+          "points": [
+            { "name": "西宁站" },
+            { "name": "青海湖二郎剑景区", "via": "driving" }
+          ]
+        },
+        {
+          "name": "D2 黑马河—茶卡—西宁",
+          "points": [
+            { "name": "黑马河镇" },
+            { "name": "茶卡盐湖", "via": "driving" },
+            { "name": "西宁站", "via": "driving" }
+          ]
+        }
+      ]
+    }
+  }
+}

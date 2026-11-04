@@ -389,6 +389,9 @@
 .dashboard .review-report-card:disabled:not([aria-busy='true']) .report-card-action {
   color: var(--text-muted);
 }
+.dashboard .review-report-card:disabled .report-card-action svg {
+  display: none;
+}
 .dashboard .report-card:not(:disabled):hover {
   border-color: var(--primary);
   box-shadow: var(--shadow-md);

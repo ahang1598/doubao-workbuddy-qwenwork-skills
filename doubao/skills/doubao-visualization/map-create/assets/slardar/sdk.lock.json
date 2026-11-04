@@ -1,0 +1,33 @@
+{
+  "sources": [
+    {
+      "name": "@slardar/node-api",
+      "version": "0.0.28",
+      "tarball": "https://bnpm.byted.org/@slardar/node-api/-/node-api-0.0.28.tgz",
+      "integrity": "sha512-fDkjT4y89yyUe1IYUEBj6D+BERQ2wTe6vMJEeWkSXT/bQnReftG/VGGr4I3EWCfU1a4sksKLMY5qK3ZrDnBSlw=="
+    },
+    {
+      "name": "node-machine-id",
+      "version": "1.1.12",
+      "tarball": "https://bnpm.byted.org/node-machine-id/-/node-machine-id-1.1.12.tgz",
+      "integrity": "sha512-QNABxbrPa3qEIfrE6GOJ7BYIuignnJw7iQ2YPbc3Nla1HzRJjXzZOiikfF8m7eAMfichLt3M4VgLOetqgDmgGQ=="
+    },
+    {
+      "name": "@slardar/web",
+      "version": "1.16.2",
+      "tarball": "https://bnpm.byted.org/@slardar/web/-/web-1.16.2.tgz",
+      "integrity": "sha512-TpPdnrSvl6QpFL/jWm2vdEN4nSEFrOqesqEypwSEgL9kUy3UD3V2bsFXJZD5ZOBeINUApOepeHMMpUREpjjqQQ=="
+    }
+  ],
+  "sha256": "b122cac21e7274fc17a24721dc1d7e8c7a9b39ceee548f5fd3d7736049fb997d",
+  "files": {
+    "node.cjs": "0cedd4f836e71b99a0cc8d0c2a3b27af9a4bd1b5a283f6139d99c917b57d07df",
+    "@slardar_node-api.package.json": "a8a45c9d8b8add939643dd9645f8d8b251dcba317d40b09471d6e3336eb9a009",
+    "machine.cjs": "fbc7e17e8465a0bcedf37f2beb9a24b907a9b801b9783f14968e937b7cd85bf2",
+    "machine.LICENSE": "e6466a9964b3281c7048b0f318f4d24113a8e01941fb5268da55741150c98851",
+    "node-machine-id.package.json": "0eb31154e0e180a6b088ab6db9862d891647fc5e9606482e0932d5f7f8b684b7",
+    "web.cjs": "d0bad95a0fa8df39ce60637fed5c74d71c8293f39a0346275fdb29cc444fb965",
+    "web.LICENSE": "3369af284e5c67a3de7a20e1a726f7de7a52b0193bbfe401aa9181c9428daa1a",
+    "@slardar_web.package.json": "71293c4c0636054c048e187140674be2bbd0325eb3549a5f1a29da6af1160c3b"
+  }
+}

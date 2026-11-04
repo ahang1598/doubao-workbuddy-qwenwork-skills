@@ -66,6 +66,7 @@ def environment():
 _launch_lock = threading.Lock()
 
 def ensure(task):
+    """确保任务所需资源已准备完成，状态写入可恢复文件而不是依赖当前进程内存。"""
     # Also serialize threads: OS file locks alone are not a portable thread mutex.
     with _launch_lock:
         return _ensure(task)
@@ -151,6 +152,7 @@ def wait(job_id, cancel=None):
 
 
 def inspect(task=None):
+    """只读检查本地模型和工具能力，返回可解释的准备状态。"""
     check = artifacts.prepare(task=task, install=False)
     check['model_preparation'] = {'status': 'ready' if check['ready'] else 'missing'}
     try:
@@ -197,6 +199,7 @@ def prepare_runtime():
 
 
 def before_capture(store, cancel):
+    """采集前执行有界准备，避免把模型下载或环境缺失拖进采集阶段。"""
     task = store.task()
     if not task.get('model_waiting'): return True
     store.update_task(worker_status='preparing', capture_status='pending')
@@ -217,7 +220,37 @@ def before_capture(store, cancel):
     return False
 
 
-def select_backend(store, cancel, *, budget=15):
+def record_backup(store, check, *, observed=None):
+    """Persist detached preparation outcomes even after cloud startup returns."""
+    from runtime.context import DIAGNOSTIC_ENUMS
+    state = 'ready' if check.get('ready') else 'preparing' if check.get('waiting') else 'unavailable'
+    code = (check.get('issues') or [{}])[0].get('code') if state == 'unavailable' else None
+    with store.connection(True) as conn:
+        task = store._task(conn)
+        if task.get('asr_policy') != 'remote_first':return
+        # Cache polling must not overwrite a newer preparation result.
+        if observed is not None and state != 'ready' and any(task.get(k) != observed.get(k) for k in
+                ('local_backup_status','local_setup_error','model_preparation_id')):return
+        if task.get('asr_fallback_runtime') or (task.get('local_backup_status') == 'ready' and state != 'ready'):return
+        if state == 'unavailable':code = code or task.get('local_setup_error') or 'ASR_RUNTIME_UNAVAILABLE'
+        # 准备失败只保留合同错误码，避免旧任务或异常文本进入状态与遥测。
+        if code is not None and (not isinstance(code,str) or code not in DIAGNOSTIC_ENUMS['recovery_code']):code = 'ASR_RUNTIME_UNAVAILABLE'
+        changed = (task.get('local_backup_status'), task.get('local_setup_error')) != (state, code)
+        task.update(local_backup_status=state, local_setup_error=code)
+        job_id = check.get('model_preparation', {}).get('id')
+        if not changed and (not job_id or task.get('model_preparation_id') == job_id):return
+        if job_id:task['model_preparation_id'] = job_id
+        store._set_task(conn, task)
+    if changed and state == 'unavailable':
+        try:
+            from runtime.bridge import runtime_failure
+            runtime_failure({'failure_component':'asr','failure_reason':'prepare_failed',
+                             'recovery_outcome':'failed','recovery_code':code or 'ASR_RUNTIME_UNAVAILABLE'}, task)
+        except Exception:pass
+
+
+def select_backend(store, cancel, *, budget=15, total_budget=90):
+    """在固定预算内选择本地优先或云端回退，并持久化最终后端决策。"""
     """Select once before capture; only missing-model download waits use budget.
 
     The detached resource job owns retries. Download completion ends the wait
@@ -229,24 +262,20 @@ def select_backend(store, cancel, *, budget=15):
     task=store.task()
     if task.get('asr_startup',{}).get('status')=='selected':
         return True,None
+    overall_deadline=time.monotonic()+total_budget
     deadline=None; wall_deadline=None; download_complete=False
     results=queue.Queue()
+    abandoned=threading.Event()
     def probe(kind,fn):
-        try:
-            value=fn()
-            if kind=='local' and task.get('asr_policy')=='remote_first':
-                preparation=value.get('model_preparation',{})
-                fields={'local_backup_status':'ready' if value.get('ready') else 'preparing' if value.get('waiting') else 'unavailable'}
-                if preparation.get('id'):fields['model_preparation_id']=preparation['id']
-                # Resource identity is frozen through the preparation owner,
-                # including when cloud selection has already returned.
-                with store.connection(True) as conn:
-                    current=store._task(conn)
-                    current.update(fields)
-                    store._set_task(conn,current)
-            results.put((kind,value))
-        except Exception:results.put((kind,{'ready':False,'issues':[{'code':'MODEL_PREPARATION_FAILED'}]}))
+        try:value=fn()
+        except Exception:value={'ready':False,'issues':[{'code':'MODEL_PREPARATION_FAILED'}]}
+        if abandoned.is_set():return
+        if kind=='local' and task.get('asr_policy')=='remote_first':
+            try:record_backup(store,value)
+            except Exception:value={'ready':False,'issues':[{'code':'MODEL_PREPARATION_FAILED'}]}
+        results.put((kind,value))
     def start_probe():
+        if task.get('asr_policy')=='remote_first':record_backup(store,{'waiting':True})
         threading.Thread(target=probe,args=('local',lambda:start_check(task)),daemon=True).start()
     start_probe()
     cloud={'ready':False}
@@ -256,6 +285,15 @@ def select_backend(store, cancel, *, budget=15):
     check=None; job_id=None; checking=True
     initializing=False; init_cancel=threading.Event(); pending_bridge=None
     phase=None
+    def report_failure(code):
+        # Reporting is optional, including import/queue failures after startup failed.
+        try:
+            from runtime.bridge import runtime_failure
+            safe_code=code  # Node validates the optional diagnostic boundary.
+            runtime_failure({'failure_component':'asr','failure_reason':'prepare_timeout' if code=='ASR_STARTUP_TIMEOUT' else 'prepare_failed',
+                'recovery_outcome':'failed','recovery_code':safe_code,
+                'recovery_elapsed_ms':max(0,round((time.monotonic()-overall_deadline+total_budget)*1000))},store.task())
+        except Exception:pass
     def preparing(stage):
         nonlocal phase
         if phase==stage:return
@@ -284,10 +322,20 @@ def select_backend(store, cancel, *, budget=15):
                 worker_status='pending',asr_startup={'status':'selected','stage':'selected','deadline_at':None,
                 'cache_hit':bool(check and not job_id and check.get('ready')),'backend':backend,'reason':reason})
             if job_id:current['model_preparation_id']=job_id
-            if backend=='mediakit':current.update(asr_runtime=None,local_setup_error=((check or {}).get('issues') or [{}])[0].get('code'))
+            if backend=='mediakit':
+                current['asr_runtime']=None
+                if task.get('asr_policy')!='remote_first':current['local_setup_error']=((check or {}).get('issues') or [{}])[0].get('code')
             store._set_task(conn,current)
         return True,bridge
     while not cancel.is_set() and not store.should_stop():
+        if time.monotonic()>=overall_deadline:
+            abandoned.set()
+            init_cancel.set()
+            if pending_bridge:threading.Thread(target=pending_bridge.close,daemon=True).start()
+            store.update_task(worker_status='setup_pending',setup_error='ASR_STARTUP_TIMEOUT',
+                asr_startup={'status':'failed','stage':phase or 'checking','code':'ASR_STARTUP_TIMEOUT'})
+            report_failure('ASR_STARTUP_TIMEOUT')
+            return False,None
         try:
             kind,value=results.get(timeout=.1)
             if kind=='cloud':cloud=value;cloud_done=True
@@ -334,7 +382,11 @@ def select_backend(store, cancel, *, budget=15):
         if cloud.get('ready') and (expired or failed):
             return choose('mediakit','model_unavailable_cloud' if failed else 'model_wait_timeout_cloud')
         if failed and cloud_done:
-            store.update_task(worker_status='setup_pending',setup_error=(check.get('issues') or [{}])[0].get('code'))
+            code=(check.get('issues') or [{}])[0].get('code') or 'ASR_RUNTIME_UNAVAILABLE'
+            abandoned.set()
+            store.update_task(worker_status='setup_pending',setup_error=code,
+                             asr_startup={'status':'failed','stage':phase or 'checking','code':code})
+            report_failure(code)
             return False,None
         if check and check.get('ready') and not initializing:
             store.bind_prepared_model(check)
@@ -350,7 +402,7 @@ def select_backend(store, cancel, *, budget=15):
                     if init_cancel.is_set():bridge.close()
             threading.Thread(target=initialize,daemon=True).start()
         store.update_task(worker_heartbeat=time.time())
-    init_cancel.set()
+    abandoned.set();init_cancel.set()
     if pending_bridge:threading.Thread(target=pending_bridge.close,daemon=True).start()
     store.update_task(worker_status='done',capture_status='stopped')
     return False,None

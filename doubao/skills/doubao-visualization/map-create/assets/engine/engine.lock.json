@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "package": {
+    "name": "@shan-he/map-create-engine",
+    "version": "0.1.0"
+  },
+  "artifact": "engine.json.gz",
+  "sha256": "abc4c99cb63a41be0801143b86eb87925331fe9ba301d9ff76129380f836bc45",
+  "bytes": 259714
+}

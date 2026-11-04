@@ -1,4 +1,4 @@
 interface:
-  display_name: "统一可视化"
-  short_description: "按精度和结构选择数据图表、HTML/SVG 图解、原图标注、交互演示或生成式知识配图"
-  default_prompt: "使用 $doubao-visualization 根据用户任务选择可视化；知识结构优先用静态 HTML/SVG，解释性配图或原图参考重绘可用生成式知识配图，只有操作或变化能增加理解时才启用交互。"
+  display_name: "统一可视化（含地图）"
+  short_description: "按任务选择图表、图解、原图标注、知识配图、交互演示或地图"
+  default_prompt: "使用 $doubao-visualization 根据任务选择合适的可视化：需要地理底图时使用地图分支，其他内容按数据精度、结构和原图证据选择表达方式。"

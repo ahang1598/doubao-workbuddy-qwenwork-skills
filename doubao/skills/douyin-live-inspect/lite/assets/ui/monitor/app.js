@@ -184,8 +184,19 @@ function renderReportAccess(snapshot) {
   reviewLink.setAttribute('aria-disabled', String(!reviewReady));
   reviewLink.disabled = !reviewReady;
   reviewLink.onclick = () => { if (reviewReady) window.open(snapshot.review_report_url, '_blank', 'noopener,noreferrer'); };
-  setText('review-report-action', reviewReady ? '查看复盘报告' : snapshot.recap?.message || '复盘尚未开始');
-  byId('review-report-spinner').hidden = reviewReady || snapshot.recap?.status !== 'generating' || snapshot.recap?.needs_resume === true;
+  const recap = snapshot.recap || {};
+  const recapCopy = {
+    missing: '复盘尚未开始',
+    generating: recap.needs_resume ? '复盘仍在处理中，可回到原对话查看进展。' : '正在生成复盘报告，请稍候。',
+    paused: '复盘尚未完成，可回到原对话继续。',
+    failed: recap.terminal_failure ? '本次复盘未能完成，可回到原对话查看原因。' : '复盘暂未生成，可回到原对话查看原因并重试。',
+    blocked: '暂时无法生成复盘，可回到原对话查看原因。',
+    stale: '内容已更新，可回到原对话更新复盘。',
+  };
+  setText('review-report-action', reviewReady ? '查看复盘报告'
+    : recap.recovery_blocked ? '复盘暂未完成，可回到原对话继续处理。'
+      : recapCopy[recap.status] || '复盘尚未完成，可回到原对话查看进展。');
+  byId('review-report-spinner').hidden = reviewReady || recap.status !== 'generating' || recap.needs_resume === true || recap.recovery_blocked === true;
   setText('review-report-status', byId('review-report-action').textContent);
   if (snapshot.standalone) {
     setText('generation-copy', '此页面为工作台快照；报告请查看当前对话中新交付的 HTML 附件。');
@@ -385,7 +396,7 @@ function mergeRecords(records) {
 
 function updateMonitorState(forceError = snapshotConnectionFailed) {
   const root = document.querySelector('.refresh-state');
-  root.classList.toggle('error', forceError || Number(latestTask?.status) === 5);
+  root.classList.toggle('error', Number(latestTask?.status) === 5);
   if (pollingComplete) {
     setText('monitor-state', latestTask?.status_text || '报告已生成');
     setText('refresh-frequency', '已停止自动更新');
@@ -396,8 +407,8 @@ function updateMonitorState(forceError = snapshotConnectionFailed) {
   const failed = Number(latestTask?.status) === 5;
   const noMedia = failedWithoutMedia({task: latestTask, coverage: latestCoverage});
   root.classList.toggle('stale', !forceError && !terminal && age !== null && age >= 15);
-  setText('monitor-state', forceError ? `${snapshotErrorMessage}${appliedVersion ? '，当前显示上次状态' : ''}` : failed ? latestTask.status_text || '检测失败' : terminal ? latestTask?.status_text || '监测已结束' : age !== null && age >= 15 ? '更新延迟' : '实时监测中');
-  setText('refresh-frequency', forceError ? window.__liveMonitor ? '正在重试更新' : '请重新获取工作台快照' : noMedia ? '未采集到内容' : terminal ? '报告状态自动更新' : age === null ? '正在连接' : age < 10 ? '刚刚更新' : `${age} 秒前更新`);
+  setText('monitor-state', forceError ? latestTask?.status_text || '结果暂未加载' : failed ? latestTask.status_text || '检测失败' : terminal ? latestTask?.status_text || '监测已结束' : age !== null && age >= 15 ? '更新延迟' : '实时监测中');
+  setText('refresh-frequency', forceError ? window.__liveMonitor ? '正在重试更新' : '可手动重新加载' : noMedia ? '未采集到内容' : terminal ? '报告状态自动更新' : age === null ? '正在连接' : age < 10 ? '刚刚更新' : `${age} 秒前更新`);
 }
 
 function render(snapshot, sequence = ++requestSequence) {
@@ -514,7 +525,9 @@ function validSnapshot(data) {
       || !fields(data.task) || !selected(data.coverage, ['reviewed','segments','skipped','message'])
       || (data.coverage.capture != null && !selected(data.coverage.capture, ['message']))
       || (data.finishing != null && (!object(data.finishing) || !Object.entries(data.finishing).every(([key, value]) =>
-        key === 'review_targets' ? Array.isArray(value) && value.every(id => Number.isSafeInteger(id) && id > 0) : scalar(value))))
+        key === 'review_targets' ? Array.isArray(value) && value.every(id => Number.isSafeInteger(id) && id > 0)
+        : key === 'blocking_counts' ? object(value) && Object.values(value).every(count => Number.isSafeInteger(count) && count >= 0)
+        : key === 'diagnostic' ? fields(value) : scalar(value))))
       || (data.recap != null && !selected(data.recap, ['status','message','needs_resume']))
       || (data.pipeline.capture != null && !fields(data.pipeline.capture))
       || !['generated_at','refreshed_at','quality_report_url','review_report_url','end_accepted_at'].every(key => scalar(data[key]))
@@ -537,15 +550,23 @@ function acceptSnapshot(data) {
 function setSnapshotError(message = '') {
   snapshotErrorMessage = message;
   snapshotConnectionFailed = Boolean(message);
-  byId('error').hidden = true;
+  byId('error').hidden = !message;
+  const generating = latestSnapshot?.complete !== true && (
+    latestSnapshot?.recap?.status === 'generating'
+    || (latestTask?.media_frozen && !latestSnapshot?.quality_report_url
+      && !latestSnapshot?.reports_terminal && !latestSnapshot?.report_blocked_reason));
+  if (message) setText('error-text', appliedVersion
+    ? generating ? '暂未获取到最新生成进度，已有检测结果仍可查看。'
+      : '暂未获取到最新结果，当前展示上次更新内容。'
+    : '暂时无法加载检测结果，请点击重新加载。');
   if (message && !appliedVersion) {
-    setText('status', '状态暂不可用');
+    setText('status', '结果暂未加载');
     byId('status').className = 'detail-status status-pending';
-    setText('page-context', '尚未读取到有效任务状态，暂无法显示检测结果。');
+    setText('page-context', '检测结果暂未加载，请重新加载。');
     for (const id of ['report-outcome', 'report-access', 'end-task-actions', 'audit-status-note']) byId(id).hidden = true;
     for (const id of ['risk-total', 'risk-rules', 'risk-latest', 'risk-top']) setText(id, '—');
-    setText('record-summary', '状态暂不可用');
-    setText('records', '状态暂不可用，请等待更新或重新获取工作台。');
+    setText('record-summary', '结果暂未加载');
+    setText('records', '检测结果暂未加载。');
   }
   updateMonitorState();
 }
@@ -560,14 +581,17 @@ function receiveSnapshot(data) {
   } catch {
     latestSnapshot = previous;
     latestTask = previous?.task || null;
+    if (previous) {
+      try { render(previous); } catch { /* Keep the last accepted snapshot for retry. */ }
+    }
     lastSuccessfulRefresh = refreshedAt;
     return setSnapshotError('工作台显示异常');
   }
   setSnapshotError();
 }
 
-function refresh() {
-  if (loadingData || pollingComplete || document.hidden) return;
+function refresh(manual = false) {
+  if (loadingData || (pollingComplete && !manual) || document.hidden) return;
   loadingData = true;
   window.__INSPECT_DATA__ = null;
   const script = document.createElement('script');
@@ -601,6 +625,12 @@ function refreshContinuously() {
     setText('page-context', '此页面为生成时的工作台快照，后续结果请查看对话中新交付的版本');
   }
 }
+
+function reloadResults() {
+  if (window.__liveMonitor) refresh(true);
+  else location.reload();
+}
+byId('reload-results').addEventListener('click', reloadResults);
 
 refreshContinuously();
 document.addEventListener('visibilitychange', () => {

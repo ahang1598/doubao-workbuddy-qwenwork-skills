@@ -9,7 +9,8 @@ import { resolveServiceBinding } from './service-binding.mjs';
 const AUTH_CODES = new Set(['ExpiredToken', 'InvalidAccessKeyId', 'InvalidAccessKey', 'InvalidSecretToken', 'MissingAuthenticationToken', 'AUTH_REQUIRED', 'SETUP_PENDING', 'AUTH_EXCHANGE_FAILED', 'ExpiredTokenException', 'InvalidSecurityToken', 'InvalidToken', 'TokenExpired', 'STSExpired']);
 const PROJECT_FIELDS = ['ProjectName', 'DisplayName', 'ProjectType', 'CreatedTime', 'ScenarioCount'];
 
-// Capability checks are local; account and business reads use only this Skill.
+// 能力检查在本地完成；账号和业务数据只允许通过本 Skill 自带的命令读取。
+// 这个边界避免误用宿主上的其他 CLI、缓存或历史任务。
 function serviceReader(env, session) {
   return async args => {
     session.check();
@@ -25,6 +26,7 @@ function serviceReader(env, session) {
 }
 
 function decision(route, reason, extra = {}) {
+  // 所有分流出口都使用同一数据结构，宿主可以稳定渲染选择、阻塞和下一步动作。
   return {
     ok: route !== 'blocked', command: 'check-inspection-service',
     data: {
@@ -40,6 +42,7 @@ const safeId = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,128}$/.
 const NETWORK_CODES = new Set(['NETWORK_ERROR', 'ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_CONNECT_TIMEOUT']);
 
 function failureInfo(payload, thrown) {
+  // 将命令、网络和远端 API 失败压缩成安全分类，不把原始响应或凭证带入结果。
   const error = payload?.error;
   let response = payload?.data?.response;
   // Old CLI versions embedded the transport JSON in this exact message prefix.
@@ -67,8 +70,8 @@ function failureInfo(payload, thrown) {
     ...(request_id ? { request_id } : {}) };
 }
 
-async function checkService(input, { read, sleep }) {
-  // Explicit precondition prevents a caller from replacing an existing/unknown task.
+async function checkService(input, { read, sleep, onAccount }) {
+  // 只接受尚未创建的新请求，防止探测入口替换已有任务或未知状态任务。
   if (!['live', 'video'].includes(input.kind) || input.environment !== 'online'
       || (input.profile !== undefined && (typeof input.profile !== 'string' || !input.profile.trim()))
       || input.task_state !== 'not_created'
@@ -106,7 +109,7 @@ async function checkService(input, { read, sleep }) {
     if (bindingFailure?.category === 'authentication') return authChoice({stage:'binding', ...bindingFailure, attempts:0});
     return decision('blocked', 'binding_unverified', { diagnostics: { stage: 'binding', ...(bindingFailure || { category: 'binding' }), attempts: 0 } });
   }
-  // One extra read per check, shared across authentication and all project pages.
+  // 一次探测共享认证和项目读取预算，避免每个项目页重复发起探测请求。
   let retried = false;
   let attempts = 0;
   async function query(args, stage) {
@@ -136,6 +139,9 @@ async function checkService(input, { read, sleep }) {
   const usable = authState?.status === 'authenticated'
     || (authState?.status === 'expired' && authState.refresh_available === true);
   if (auth.failed || !usable) return clarify('authentication_check_failed', auth.diagnostics);
+  if (authState.status === 'authenticated') {
+    try { await onAccount?.(authState.account_id); } catch { /* Optional telemetry. */ }
+  }
 
   try {
     const gates = await Promise.all([
@@ -157,6 +163,9 @@ async function checkService(input, { read, sleep }) {
     // 服务明确未开通时，才允许把新请求回退到 Lite；不能把其他错误混同成未开通。
     if (code === 'AccessDenyError') return fallback('formal_service_not_enabled', { ...context, diagnostics, formal_error: { code } });
     if (diagnostics.category === 'authentication') return authChoice(diagnostics);
+    if (!failed && payload.meta?.account_id) {
+      try { await onAccount?.(payload.meta.account_id); } catch { /* Optional telemetry. */ }
+    }
     if (failed) return clarify({ script_missing: 'cli_script_missing', cli_arguments: 'cli_arguments_invalid',
       response_invalid: 'project_response_invalid', network: 'project_network_failed', server: 'project_server_failed' }[diagnostics.category] || 'project_query_failed', diagnostics);
     const invalidResponse = () => clarify('project_response_invalid', { ...diagnostics, category: 'response_invalid' });
@@ -197,13 +206,14 @@ export function entryTimeout(input, stage, context = {}) {
 
 export async function checkInspectionService(input = {}, options = {}) {
   const session = options.session || createProbeSession();
-  const read = options.read || serviceReader(options.env || process.env, session);
+  const read = options.read || serviceReader({...(options.env || process.env), INSPECT_ENTRY_PROBE:'1'}, session);
   let result;
   try {
     result = await checkService(input, {
       read: args => session.measure(args.includes('configure') ? 'binding' : args.includes('auth') ? 'authentication'
         : args.includes('schema') || args.includes('--version') ? 'capability' : 'projects', () => read(args)),
       sleep: options.sleep || (ms => session.sleep(ms)),
+      onAccount: options.onAccount,
     });
     if (session.expired) result = entryTimeout(input, session.stage, result.data.profile ? { profile: result.data.profile, environment: 'online' } : {});
   } catch {

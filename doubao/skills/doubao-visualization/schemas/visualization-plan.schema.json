@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Doubao Visualization Minimal Plan",
+  "description": "仅用于非地图分支的最小内部计划；地图委派 map-create 并使用其任务输入，不填写本计划。",
   "type": "object",
   "additionalProperties": false,
   "required": ["mode", "behavior", "source", "secondary"],

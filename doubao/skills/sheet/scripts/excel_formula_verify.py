@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from decimal import Decimal
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
@@ -24,18 +25,19 @@ from excel_conditional_format_verify import CONDITIONAL_FILL_ADVICE, check_file
 
 from excel_lo_runtime import (LO_START_FAILURE_MARKERS, get_soffice_env, profile_arg,
                               run_managed_process, soffice_detail, sweep_stale_profiles)
-from _checkpoints import (checkpoint_file_path, emit_checkpoint_hint, emit_checkpoint_skip_hint,
-                          load_checkpoints, verify_checkpoints)
+from _checkpoints import (Unjudgeable, checkpoint_file_path, emit_checkpoint_hint,
+                          emit_checkpoint_skip_hint, load_checkpoints, verify_checkpoints)
 
 try:
-    from openpyxl import load_workbook
-    from openpyxl.utils.cell import range_boundaries
-except ModuleNotFoundError as _missing:  # 本机没装 openpyxl：报错现场直接给出两条出路
+    from _xlsx_text import load_workbook
+    from openpyxl.formula import Tokenizer
+    from openpyxl.formula.tokenizer import TokenizerError
+    from openpyxl.utils.cell import coordinate_to_tuple, get_column_letter, range_boundaries
+except ModuleNotFoundError as _missing:  # 缺少 Python 库时先安装，再重跑原操作
     sys.stderr.write(
-        f"\n[excel_formula_verify] 本机 Python 缺少 {_missing.name}，脚本无法在本地解析 Excel。\n"
-        "  装一次即可长期复用：python3 -m pip install --user openpyxl\n"
-        "  不装依赖也能做：把文件导入飞书在线表格，用飞书引擎读（服务端解析，无需本地库）——\n"
-        "     lark-cli sheets +workbook-import --file ./<文件名>.xlsx\n"
+        f"\n[excel_formula_verify] 本机 Python 缺少 {_missing.name}，本脚本未执行，本地文件未修改。\n"
+        "  请在运行本脚本的同一 Python 环境安装：python3 -m pip install openpyxl\n"
+        "  安装成功后重跑原命令；安装失败再说明未完成，不能声明本次处理 / 校验已通过。\n"
     )
     raise SystemExit(1) from _missing
 
@@ -231,7 +233,14 @@ RECALC_UNVERIFIED_HINT = """\
 [recalc] 公式未完成重算（status={status}）：{warning}
 只读诊断（错误值扫描、前缀与形状、硬编码嫌疑）已经跑过，缺的只是执行验证。
 退出码 4 不是让你反复重跑，也不是让你换 Python 复算冒充验证：
-交付说明写明「公式未重算」并提示在 Excel 中刷新（Ctrl+Alt+F9），不得写「公式已验证无错误」。"""
+交付说明写明已做的检查与「公式计算结果未验证」，可提示在 Excel 中打开后重新计算，
+不得写「公式已验证无错误」。"""
+
+NO_LIBREOFFICE_HINT = """\
+[recalc] 未检测到可用的 soffice，已自动跳过重算；默认不为本次校验安装 LibreOffice 或反复重跑。
+保留静态诊断、--baseline 和可判定的 --checkpoints；确定性错误仍须修复。
+已有 Canvas / 在线产物按当前引擎核验；仅交本地文件时可在无确定性错误后说明未验证部分并交付，
+不要仅为校验上传本地文件。用户明确要求的计算结果验收未完成时，必须标明缺项。"""
 
 # 按 failure_kind 补一句处置。脚本已用全新 profile 自动重试过启动失败，调用方再
 # 杀进程、删 ~/.config/libreoffice 或加长超时都改变不了结果，只会多耗时间。
@@ -242,6 +251,17 @@ RECALC_FAILURE_HINTS = {
                "不要 pkill -f soffice（会匹配并杀掉执行这条命令的 shell）。",
     "macro_setup_failed": "[recalc] 重算宏写不进临时 profile，多为临时目录不可写；不要再重跑本脚本。",
 }
+
+ENGINE_UNSUPPORTED_HINT = """\
+[recalc] {n} 个公式格用了本机 LibreOffice 不支持的函数（{funcs}），算出 #NAME? / #VALUE!，这些格未经验算：
+{lines}
+可能是本机引擎不支持，也可能是参数、区域或拼写写错：先核对这些格的公式，确有写错就改正后重跑；
+确认无误的不要为此改写、重跑本脚本或换引擎重算。交飞书表格：导入后用 `+cells-get` 回读这些格，与期望值核对；只交本地文件：交付说明写明这些公式用了 LibreOffice 不支持的函数、未经验算。"""
+
+ENGINE_AFFECTED_HINT = """\
+[recalc] 另有 {n} 个公式格算出 #NAME? / #VALUE!，可能是引用了上面那些格被带出来的，也可能是自身写错（如函数名拼错）：
+{lines}
+逐格核对公式拼写与引用：确有写错就改正后重跑；确认只是受上游影响，再按上面「未经验算」处理。"""
 
 
 def _emit_hardcode_hint(hc: dict) -> bool:
@@ -518,29 +538,280 @@ def _emit_static_risk_hint(sr: dict) -> bool:
     return True
 
 
-def run_checkpoints(filename: str, items: List[dict]) -> dict:
-    """按检查点回读产物：值取缓存值，公式取公式串。"""
+# 线上 LibreOffice 版本不一定认较新的函数，认不出就算成 #NAME?（外面套了 IFERROR 等时是 #VALUE!）。
+# 这类格没法在本机验算，但不能当成产物算错。只认名单里的函数（`_xlfn.` 前缀本身不算：STDEV.S、
+# CONCAT 等也带前缀，老版本早就支持）。不追引用链：工作簿里有这类格时，其余 #NAME? / #VALUE! 可能
+# 是被它带出来的，也可能是自身写错，一律列为「可能受影响」，交给调用方逐格核对，走降级档；
+# 工作簿里没有这类格时，所有错误值照常算公式错误。
+_ENGINE_UNSURE_FUNCTIONS = {
+    "XLOOKUP", "XMATCH", "LET", "LAMBDA", "SEQUENCE", "RANDARRAY", "FILTER", "SORT", "SORTBY",
+    "UNIQUE", "TEXTSPLIT", "TEXTBEFORE", "TEXTAFTER", "VSTACK", "HSTACK", "TOROW", "TOCOL",
+    "WRAPROWS", "WRAPCOLS", "TAKE", "DROP", "CHOOSECOLS", "CHOOSEROWS", "EXPAND",
+    "ARRAYTOTEXT", "VALUETOTEXT", "MAP", "REDUCE", "SCAN", "MAKEARRAY", "BYROW", "BYCOL",
+    "REGEXTEST", "REGEXEXTRACT", "REGEXREPLACE", "GROUPBY", "PIVOTBY", "PERCENTOF", "TRIMRANGE",
+}
+_ANY_CALL_RE = re.compile(r"(?:_xlfn\.)?(?:_xlws\.)?([A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)*)\s*\(", re.IGNORECASE)
+# 引擎不认新函数时可能出现的错误值；其余错误值（#DIV/0!、#REF!、#N/A…）照常判
+_ENGINE_ERRORS = {"#NAME?", "#VALUE!"}
+
+
+# 单引号只用于包表名 / 外部引用名；方括号只用于外部簿引用与结构化引用。两者里的
+# 「函数名(」都不是调用。先剔除双引号字符串，免得字符串里的撇号被当成表名起点。
+_QUOTED_SHEET_RE = re.compile(r"'(?:[^']|'')*'")
+_BRACKET_RE = re.compile(r"\[[^\]]*\]")
+
+
+def _engine_unsure_calls(formula: str) -> List[str]:
+    """公式里重算引擎可能不认的新函数（去掉 `_xlfn.` / `_xlws.` 前缀后在名单里的）。"""
+    text = _BRACKET_RE.sub("[]", _QUOTED_SHEET_RE.sub("''", _strip_string_literals(formula)))
+    return sorted({m.group(1).upper() for m in _ANY_CALL_RE.finditer(text)
+                   if m.group(1).upper() in _ENGINE_UNSURE_FUNCTIONS})
+
+
+NOT_RECALCULATED_REASON = (
+    "本次没有重算成，公式格没有本轮可信计算值，不能以历史缓存判定：交飞书表格就导入后用 +cells-get 回读该格与期望值核对；"
+    "只交本地文件就在交付说明列出这些未判的检查点，不为验证专门导入")
+ENGINE_UNSUPPORTED_REASON = (
+    "重算引擎不支持 {funcs}，算出 {error}，也可能是参数、区域或拼写写错：先核对公式，确认无误后"
+    "交飞书表格就导入后用 +cells-get 回读该格与期望值核对，只交本地文件就在交付说明写明这些公式用了 LibreOffice 不支持的函数、未经验算")
+ENGINE_AFFECTED_REASON = (
+    "算出 {error}，工作簿里有本机引擎不支持的函数，这格可能受其影响，也可能自身写错："
+    "先核对公式拼写与引用，确认无误再按未经验算处理")
+
+
+def _formula_regions(ws):
+    """数组 / Data Table 的结果格也由锚点公式驱动，不能当作普通静态输入。"""
+    boxes = []
+    for cell in getattr(ws, "_cells", {}).values():
+        if type(cell.value).__name__ in ("ArrayFormula", "DataTableFormula"):
+            try:
+                bounds = range_boundaries(cell.value.ref)
+                start_col, start_row, end_col, end_row = bounds
+                if (all(isinstance(v, int) for v in bounds)
+                        and 1 <= start_col <= end_col <= 16384 and 1 <= start_row <= end_row <= 1048576
+                        and (cell.row, cell.column) == (start_row, start_col)):
+                    boxes.append((bounds, cell.coordinate))
+            except (TypeError, ValueError):
+                continue
+    return boxes
+
+
+def _region_anchor(boxes, row, col):
+    return next((anchor for (c1, r1, c2, r2), anchor in boxes
+                 if c1 <= col <= c2 and r1 <= row <= r2), None)
+
+
+def _formula_value_records(formula_ws, value_ws):
+    """稀疏枚举已定义的公式结果，包括仅存缓存的数组 / Data Table 后继格。"""
+    regions = _formula_regions(formula_ws)
+    for coord in sorted(set(formula_ws._cells) | set(value_ws._cells)):
+        cell = formula_ws._cells.get(coord)
+        formula = _formula_text(cell.value) if cell is not None and cell.data_type == "f" else ""
+        if not formula:
+            anchor = _region_anchor(regions, *coord)
+            if anchor is not None:
+                formula = _formula_text(formula_ws[anchor].value)
+        if formula:
+            cached = value_ws._cells.get(coord)
+            yield coord, formula, cached.value if cached is not None else None
+
+
+def _static_range_shape(reference):
+    """Return rows/columns for a bounded A1 rectangle, without evaluating Excel.
+
+    Names, expressions, external/3-D references and array constants stay
+    unknown; their shape must not be guessed from the selected output range.
+    """
+    cell = r"\$?[A-Za-z]{1,3}\$?[1-9][0-9]{0,6}"
+    sheet = r"(?:'(?:[^'\[\]:]|'')+'|[^'!\s\[\]:,()+*/^&=<>%{}\"-]+)"
+    match = re.fullmatch(r"(?:" + sheet + r"!)?(" + cell + r"(?::" + cell + r")?)", reference)
+    if match is None:
+        return None
+    start_col, start_row, end_col, end_row = range_boundaries(match.group(1).upper())
+    if not (1 <= start_col <= end_col <= 16384 and 1 <= start_row <= end_row <= 1048576):
+        return None
+    return end_row - start_row + 1, end_col - start_col + 1
+
+
+def _regression_predictor_count(known_y, known_x):
+    """Infer LINEST/LOGEST width only from statically known compatible inputs."""
+    y_shape = _static_range_shape(known_y)
+    if y_shape is None:
+        return None
+    if not known_x:
+        return 1  # Omitted x uses a single sequence with the same shape as y.
+    x_shape = _static_range_shape(known_x)
+    if x_shape is None:
+        return None
+    if x_shape == y_shape:
+        return 1  # A single predictor may have any shape matching known_y.
+    if y_shape[1] == 1 and x_shape[0] == y_shape[0]:
+        return x_shape[1]
+    if y_shape[0] == 1 and x_shape[1] == y_shape[1]:
+        return x_shape[0]
+    return None
+
+
+def _regression_padding_regions(ws):
+    """Known #N/A slots in a directly stored five-row LINEST/LOGEST array.
+
+    stats must be explicitly TRUE; wrappers, dynamic flags and arbitrary #N/A
+    results are not exempt. Rows 3–5 define two statistics each, and const=FALSE
+    leaves the intercept standard error undefined only at the column derived
+    from the input dimensions. The selected CSE range may truncate that column.
+    Keep this shared by both verifiers so genuine errors remain visible.
+    """
+    boxes = []
+    for (start_col, start_row, end_col, end_row), anchor in _formula_regions(ws):
+        value = ws[anchor].value
+        if type(value).__name__ != "ArrayFormula" or end_row - start_row != 4 or end_col <= start_col:
+            continue
+        formula = _formula_text(value).strip()
+        try:
+            tokens = [token for token in Tokenizer(formula).items if token.type != "WHITE-SPACE"]
+        except TokenizerError:
+            continue
+        if not tokens or tokens[0].type != "FUNC" or tokens[0].value.upper() not in {"LINEST(", "LOGEST("}:
+            continue
+        args, depth, closed_at = [""], 1, None
+        for index, token in enumerate(tokens[1:], 1):
+            if token.subtype == "OPEN":
+                depth += 1
+            elif token.subtype == "CLOSE":
+                depth -= 1
+                if depth == 0:
+                    closed_at = index
+                    break
+            if token.type == "SEP" and token.subtype == "ARG" and depth == 1:
+                args.append("")
+            else:
+                args[-1] += token.value
+        if closed_at != len(tokens) - 1:
+            continue
+        if len(args) != 4 or args[3].strip().upper() not in {"TRUE", "TRUE()", "1"}:
+            continue
+        if end_col >= start_col + 2:
+            boxes.append(((start_col + 2, start_row + 2, end_col, end_row), anchor))
+        if args[2].strip().upper() in {"FALSE", "FALSE()", "0"}:
+            predictors = _regression_predictor_count(args[0], args[1])
+            if predictors is not None and start_col + predictors <= end_col:
+                intercept_col = start_col + predictors
+                boxes.append(((intercept_col, start_row + 1, intercept_col, start_row + 1), anchor))
+    return boxes
+
+
+def run_checkpoints(filename: str, items: List[dict], recalculated: Optional[str] = None,
+                    ref_unreliable: bool = False) -> dict:
+    """按检查点回读产物：公式串与非公式格取产物本身，公式格的值取计算值。
+
+    recalculated 是本次重算完成后的工作簿（临时副本，或 --in-place 后的原文件）：
+    给了就从它读公式格的计算值；没给或打不开时，公式值条目均判不了，
+    静态值与公式形态仍读取产物核验。
+    ref_unreliable：副本落在系统临时目录时，跨文件引用解析不到，#REF! 不可信。
+    """
     try:
-        wb_f = load_workbook(filename, data_only=False)
-        wb_v = load_workbook(filename, data_only=True)
+        wb_f = load_workbook(filename, data_only=False, raw_numbers=True)
     except Exception as exc:
         # 读不到产物 = 检查点这条门禁根本没跑成。与 baseline 的同类 I/O 失败
         # 同档处理：标 blocking 走确定性错误，不能按「降级」放行。
         return {"status": "skipped", "blocking": True,
                 "reason": f"cannot read workbook: {exc}"}
+    wb_v = None
+    computed = False
+    if recalculated:
+        try:
+            wb_v = load_workbook(recalculated, data_only=True, raw_numbers=True)
+            computed = True
+        except Exception:
+            wb_v = None
+    try:
+        if wb_v is None:
+            wb_v = load_workbook(filename, data_only=True)
+    except Exception as exc:
+        wb_f.close()
+        return {"status": "skipped", "blocking": True,
+                "reason": f"cannot read workbook: {exc}"}
+    book_flag = []   # 惰性计算：只有碰到 #NAME? / #VALUE! 才扫整本
+
+    def book_has_unsupported() -> bool:
+        """工作簿里有没有「本格直接用了名单函数、又算出引擎类错误值」的格。"""
+        if not book_flag:
+            found = False
+            for ws in wb_f.worksheets:
+                vws = wb_v[ws.title] if ws.title in wb_v.sheetnames else None
+                if vws is None or not hasattr(vws, "iter_rows") or not hasattr(ws, "iter_rows"):
+                    continue
+                for _coord, text, value in _formula_value_records(ws, vws):
+                    if (isinstance(value, str) and value.strip() in _ENGINE_ERRORS
+                            and _engine_unsure_calls(text)):
+                        found = True
+                        break
+                if found:
+                    break
+            book_flag.append(found)
+        return book_flag[0]
+
+    spill_anchors = {}   # 子表 → [(矩形, 锚点格址)]：特殊公式只在锚点存公式，其余格只存结果
+
+    def spill_anchor(ws, sheet: str, coord: str) -> Optional[str]:
+        if sheet not in spill_anchors:
+            spill_anchors[sheet] = _formula_regions(ws)
+        try:
+            r, c = coordinate_to_tuple(coord)
+        except (TypeError, ValueError):
+            return None
+        return _region_anchor(spill_anchors[sheet], r, c)
+
+    def cell_of(wb, sheet: str, coord: str):
+        # 图表子表（Chartsheet）没有单元格，按空格处理，不让检查点崩掉
+        ws = wb[sheet] if sheet in wb.sheetnames else None
+        return ws[coord] if ws is not None and hasattr(ws, "iter_rows") else None
+
+    def numeric_lookup(sheet: str, coord: str):
+        cell = cell_of(wb_f, sheet, coord)
+        formula = cell is not None and (cell.data_type == "f" or spill_anchor(wb_f[sheet], sheet, coord))
+        wb = wb_v if formula and computed else wb_f
+        return wb._stored_numbers.get(sheet, {}).get(coordinate_to_tuple(coord))
+
     try:
         def lookup(sheet: str, coord: str):
-            if sheet not in wb_f.sheetnames:
+            cell = cell_of(wb_f, sheet, coord)
+            if cell is None:
                 return None, ""
-            raw = wb_f[sheet][coord].value
-            formula = _formula_text(raw)
-            if formula:
-                value = wb_v[sheet][coord].value if sheet in wb_v.sheetnames else None
-            else:
-                value = raw
-            return value, formula
+            raw = cell.value
+            formula = _formula_text(raw) if cell.data_type == "f" else ""
+            if not formula:
+                anchor = spill_anchor(wb_f[sheet], sheet, coord)
+                if anchor is None:
+                    return raw, formula
+                # 溢出区的格算锚点的公式驱动；产物里的值可能是旧缓存，按公式格取计算值
+                anchor_cell = cell_of(wb_f, sheet, anchor)
+                formula = _formula_text(anchor_cell.value if anchor_cell is not None else None) or "="
+            vcell = cell_of(wb_v, sheet, coord)
+            value = vcell.value if vcell is not None else None
+            if not computed:
+                return Unjudgeable(NOT_RECALCULATED_REASON), formula
+            error = value.strip() if isinstance(value, str) else ""
+            if error in _ENGINE_ERRORS:
+                funcs = _engine_unsure_calls(formula)
+                if funcs:
+                    return Unjudgeable(ENGINE_UNSUPPORTED_REASON.format(
+                        funcs="、".join(funcs[:5]), error=error)), formula
+                if book_has_unsupported():
+                    return Unjudgeable(ENGINE_AFFECTED_REASON.format(error=error)), formula
+            if ref_unreliable and error == "#REF!":
+                return Unjudgeable(
+                    "副本落在系统临时目录，跨文件引用解析不到，算出的 #REF! 不可信：产物目录可写时放回去重跑；"
+                    "否则交飞书表格就导入后用 +cells-get 回读该格与期望值核对，只交本地文件就在交付说明列出这条未判"), formula
+            # 重算完成后仍为空，就是公式真的算出了空串，不是「还没算」
+            return ("" if value is None else value), formula
 
-        return verify_checkpoints(items, lookup, list(wb_f.sheetnames))
+        result = verify_checkpoints(items, lookup, list(wb_f.sheetnames),
+                                    rel_tol=1e-9 if computed else 0.0,
+                                    date_epoch=getattr(wb_f, "epoch", None),
+                                    formula_values_computed=computed, numeric_lookup=numeric_lookup)
+        result["value_source"] = "recalculated" if computed else "workbook_cache"
+        return result
     finally:
         wb_f.close()
         wb_v.close()
@@ -558,51 +829,235 @@ SCOPE_ALL = "ALL"
 
 
 def _norm_cell_value(value) -> str:
+    """保留类型与原字符；数值按十进制等值归一，不截断原包数值精度。"""
     if value is None:
         return ""
     if isinstance(value, bool):
-        return "TRUE" if value else "FALSE"
-    if isinstance(value, (int, float)):
-        return f"{float(value):.10g}"
-    return str(value).strip()
+        return "boolean:true" if value else "boolean:false"
+    if isinstance(value, (int, float, Decimal)):
+        number = Decimal(str(value))
+        if number == 0:
+            return "number:0"
+        text = format(number, "f")
+        if "." in text:
+            text = text.rstrip("0").rstrip(".")
+        return "number:" + text
+    return type(value).__name__ + ":" + json.dumps(str(value), ensure_ascii=False)
 
 
 def _norm_formula(text: str) -> str:
-    body = text[1:] if text.startswith("=") else text
-    body = re.sub(r"'([^']+)'(?=!)", r"\1", body)
-    return re.sub(r"\s+", "", body).upper()
+    # 空格可能是交集运算符或字符串/子表名的一部分；大小写也可能属于文本值。
+    # 基准用于报告原公式是否被改写，不猜测两段不同公式是否语义等价。
+    return text
+
+
+def _baseline_formula_signature(value) -> str:
+    """基准比较保留特殊公式身份，不能用缺失的公式正文代替对象结构。"""
+    kind = type(value).__name__
+    if kind == "DataTableFormula":
+        # What-if Data Table 没有 text；_formula_text 会返回 "="，归一化后
+        # 为空，导致原对象被当成空格。ca 只是重算标志，不是计算结构。
+        attrs = {key: getattr(value, key, None) for key in
+                 ("ref", "r1", "r2", "dt2D", "dtr", "del1", "del2")}
+    elif kind == "ArrayFormula":
+        attrs = {"ref": value.ref, "formula": _norm_formula(_formula_text(value))}
+    else:
+        return _norm_formula(_formula_text(value))
+    return kind + ":" + json.dumps(attrs, sort_keys=True, separators=(",", ":"))
+
+
+class _BaselineSheet(dict):
+    """值 / 公式格的稀疏快照，另存特殊公式覆盖和数值日期的解释信息。"""
+
+    def __init__(self):
+        super().__init__()
+        self.regions = {}
+        self.number_contexts = {}
+
+
+def _combined_number_context(before, after, coord):
+    # 合并源时保留各自纪元和日期解释，不能因先读到 General 格式就丢掉后续日期约束。
+    old_epochs, old_date = getattr(before, "number_contexts", {}).get(coord, (set(), False))
+    new_epochs, new_date = getattr(after, "number_contexts", {}).get(coord, (set(), False))
+    epochs = old_epochs or new_epochs
+    if old_epochs and new_epochs and old_epochs != new_epochs:
+        epochs = old_epochs | new_epochs
+    return epochs, old_date or new_date
+
+
+def _number_epoch_changed(before, after, coord):
+    epochs, calendar_date = _combined_number_context(before, after, coord)
+    return calendar_date and len(epochs) > 1
+
+
+def _baseline_value_label(cells, coord, value, epoch_changed):
+    label = value[:40]
+    if epoch_changed:
+        epochs, _calendar_date = cells.number_contexts[coord]
+        label += " (epoch={})".format(",".join(sorted(epochs)))
+    return label
+
+
+_FORMAT_LITERALS_RE = re.compile(r'"[^"]*"|\\.|_.|\*.')
+_FORMAT_CONDITION_RE = re.compile(r"\[(<=|>=|<>|=|<|>)([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[Ee][+-]?\d+)?)\]")
+
+
+def _format_condition_matches(condition, number):
+    operator, text = condition.groups()
+    limit = Decimal(text)
+    return {"<": number < limit, "<=": number <= limit, ">": number > limit,
+            ">=": number >= limit, "=": number == limit, "<>": number != limit}[operator]
+
+
+def _numeric_format_section(number_format, number):
+    # 去掉文字、转义、填充后再分节，分号文字不会改变正数/负数/零的路由。
+    sections = _FORMAT_LITERALS_RE.sub("", number_format).split(";")[:3]
+    conditions = [_FORMAT_CONDITION_RE.search(section) for section in sections]
+    if any(conditions):
+        for section, condition in zip(sections, conditions):
+            if condition is None or _format_condition_matches(condition, number):
+                return section.lower()
+        return ""
+    index = 2 if number == 0 and len(sections) > 2 else 1 if number < 0 and len(sections) > 1 else 0
+    return sections[index].lower()
+
+
+def _calendar_number_format(number_format, number):
+    section = _numeric_format_section(number_format, number)
+    section = re.sub(r"\[(?!(?:h+|m+|s+)\])[^]]*\]|am/pm|a/p", "", section)
+    tokens = re.findall(r"\[(?:h+|m+|s+)\]|y+|m+|d+|h+|s+", section)
+    if any(token[0] in "yd" for token in tokens):
+        return True
+    for index, token in enumerate(tokens):
+        previous = tokens[index - 1].strip("[]")[0] if index else ""
+        following = tokens[index + 1].strip("[]")[0] if index + 1 < len(tokens) else ""
+        if token[0] == "m" and (len(token) > 2 or (previous != "h" and following != "s")):
+            return True  # m/mm 紧随小时或位于秒前是分钟；mmm 及以上始终表示月份。
+    return False
+
+
+def _date_validation_bounds(ws):
+    return [(region.min_col or 1, region.min_row or 1,
+             region.max_col or MAX_EXCEL_COL, region.max_row or MAX_EXCEL_ROW)
+            for validation in ws.data_validations.dataValidation if validation.type == "date"
+            for region in validation.sqref.ranges]
+
+
+def _record_baseline_value(cells, cell, stored_numbers, epochs, date_bounds):
+    raw_value = stored_numbers.get((cell.row, cell.column), cell.value)
+    cells[cell.coordinate] = ("", _norm_cell_value(raw_value))
+    if isinstance(raw_value, Decimal):
+        # 数值精度与日期解释分开保存；格式本身不参与值比较。
+        calendar_date = _calendar_number_format(cell.number_format, raw_value) or any(
+            min_col <= cell.column <= max_col and min_row <= cell.row <= max_row
+            for min_col, min_row, max_col, max_row in date_bounds)
+        cells.number_contexts[cell.coordinate] = (epochs, calendar_date)
+
+
+def _snapshot_payload(cells, coord):
+    if coord in cells:
+        return cells[coord]
+    row, col = coordinate_to_tuple(coord)
+    for anchor, (bounds, signature) in getattr(cells, "regions", {}).items():
+        min_col, min_row, max_col, max_row = bounds
+        if min_col <= col <= max_col and min_row <= row <= max_row:
+            return "result({}):{}".format(anchor, signature), ""
+    return "", ""
+
+
+def _box_intersection(left, right):
+    min_col, min_row = max(left[0], right[0]), max(left[1], right[1])
+    max_col, max_row = min(left[2], right[2]), min(left[3], right[3])
+    return (min_col, min_row, max_col, max_row) if min_col <= max_col and min_row <= max_row else None
+
+
+def _outside_scope_point(sheet, bounds, scope):
+    """用矩形相减找一个未授权格，不实例化完整数组 / Data Table 结果区。"""
+    allowed = scope.get(sheet, [])
+    if allowed == SCOPE_ALL:
+        return None
+    remaining = [bounds]
+    for min_row, min_col, max_row, max_col in allowed:
+        following = []
+        for box in remaining:
+            overlap = _box_intersection(box, (min_col, min_row, max_col, max_row))
+            if overlap is None:
+                following.append(box)
+                continue
+            box_left, box_top, box_right, box_bottom = box
+            cut_left, cut_top, cut_right, cut_bottom = overlap
+            following.extend(piece for piece in (
+                (box_left, box_top, box_right, cut_top - 1), (box_left, cut_bottom + 1, box_right, box_bottom),
+                (box_left, cut_top, cut_left - 1, cut_bottom), (cut_right + 1, cut_top, box_right, cut_bottom))
+                if piece[0] <= piece[2] and piece[1] <= piece[3])
+        remaining = following
+        if not remaining:
+            return None
+    return "{}{}".format(get_column_letter(remaining[0][0]), remaining[0][1])
+
+
+def _region_scope_changes(sheet, before, after, scope, reported):
+    """授权锚点不等于授权整片结果；每个改变的覆盖矩形至多返回一个越界见证。"""
+    old, new = getattr(before, "regions", {}), getattr(after, "regions", {})
+    result = []
+    for anchor in sorted(set(old) | set(new)):
+        if old.get(anchor) == new.get(anchor) or not _in_scope(scope, sheet, anchor):
+            continue  # 未授权锚点本身已由逐格比较拦截。
+        for region in (old.get(anchor), new.get(anchor)):
+            if region is None:
+                continue
+            coord = _outside_scope_point(sheet, region[0], scope)
+            if coord is None or (sheet, coord) in reported:
+                continue
+            reported.add((sheet, coord))
+            result.append({"sheet": sheet, "cell": coord, "kind": "formula",
+                           "baseline": _snapshot_payload(before, coord)[0][:80],
+                           "produced": _snapshot_payload(after, coord)[0][:80], "in_scope": False})
+    return result
 
 
 def _read_workbook_cells(path: str) -> Tuple[dict, List[str]]:
-    """({sheet: {坐标: (公式串, 归一化值)}}, 读到上限被截断的 sheet 名)。
+    """({sheet: {坐标: (公式签名, 归一化值)}}, 读到上限被截断的 sheet 名)。
 
-    公式格的值取缓存值，没有就是空串。超过 BASELINE_MAX_CELLS 的 sheet 会停读，
+    公式格的值取缓存值，没有就是空串。每表超过 BASELINE_MAX_CELLS 个有值/公式格会停读，
     这时必须把 sheet 名带出去：源与产物在同一位置截断，尾部的改写两边都读不到，
     差异会归零，不带截断状态就会被判成 clean。
     """
-    wb_f = load_workbook(path, data_only=False)
+    wb_f = load_workbook(path, data_only=False, raw_numbers=True)
     wb_v = load_workbook(path, data_only=True)
+    epochs = frozenset([wb_f.epoch.date().isoformat()])
     sheets = {}
     truncated: List[str] = []
     try:
         for name in wb_f.sheetnames:
             ws_f = wb_f[name]
             ws_v = wb_v[name] if name in wb_v.sheetnames else None
-            cells = {}
+            stored_numbers = wb_f._stored_numbers.get(name, {})
+            date_bounds = _date_validation_bounds(ws_f)
+            cells = _BaselineSheet()
             seen = 0
-            for row in ws_f.iter_rows():
-                for cell in row:
-                    seen += 1
-                    if seen > BASELINE_MAX_CELLS:
-                        break
-                    formula = _formula_text(cell.value)
-                    if formula:
-                        cached = ws_v[cell.coordinate].value if ws_v is not None else None
-                        cells[cell.coordinate] = (_norm_formula(formula), _norm_cell_value(cached))
-                    elif cell.value is not None and str(cell.value).strip() != "":
-                        cells[cell.coordinate] = ("", _norm_cell_value(cell.value))
+            regions = _formula_regions(ws_f)
+            bounds_by_anchor = {anchor: bounds for bounds, anchor in regions}
+            # iter_rows会把稀疏表的空白包围矩形全部实例化，消耗预算并漏掉尾部。
+            # 基准只比较内容，因此遍历实际载入的格，不把纯样式空格算作内容。
+            for cell in ws_f._cells.values():
+                formula = _baseline_formula_signature(cell.value) if cell.data_type == "f" else ""
+                if not formula:
+                    anchor = _region_anchor(regions, cell.row, cell.column)
+                    if anchor is not None:
+                        continue  # 缓存节点可被省略；计算关系由锚点签名和覆盖矩形表达。
+                if not formula and (cell.value is None or cell.value == ""):
+                    continue
+                seen += 1
                 if seen > BASELINE_MAX_CELLS:
                     break
+                if formula:
+                    cached = ws_v[cell.coordinate].value if ws_v is not None else None
+                    cells[cell.coordinate] = (formula, _norm_cell_value(cached))
+                    if cell.coordinate in bounds_by_anchor:
+                        cells.regions[cell.coordinate] = (bounds_by_anchor[cell.coordinate], formula)
+                else:
+                    _record_baseline_value(cells, cell, stored_numbers, epochs, date_bounds)
             if seen > BASELINE_MAX_CELLS:
                 truncated.append(name)
             sheets[name] = cells
@@ -777,16 +1232,38 @@ def _merge_baselines(baseline_paths: List[str]):
         truncated += base_truncated
         sources.append(src_path)
         for sheet, cells in base.items():
-            target = merged.setdefault(sheet, {})
+            target = merged.setdefault(sheet, _BaselineSheet())
+            incoming_regions = getattr(cells, "regions", {})
+            # 同一源的缓存不属于独立输入；不同源的值与公式覆盖冲突则仍需阻断。
+            for anchor, (bounds, _signature) in incoming_regions.items():
+                for old_anchor, (old_bounds, _old_signature) in target.regions.items():
+                    overlap = _box_intersection(bounds, old_bounds)
+                    if overlap is not None and anchor != old_anchor:
+                        conflicts.append({"sheet": sheet,
+                                          "cell": "{}{}".format(get_column_letter(overlap[0]), overlap[1]),
+                                          "kept": origin[(sheet, old_anchor)], "conflicting": src_path})
+                for coord, payload in target.items():
+                    row, col = coordinate_to_tuple(coord)
+                    if (coord != anchor and bounds[0] <= col <= bounds[2] and bounds[1] <= row <= bounds[3]
+                            and (payload[0] or payload[1])):
+                        conflicts.append({"sheet": sheet, "cell": coord,
+                                          "kept": origin[(sheet, coord)], "conflicting": src_path})
             for coord, payload in cells.items():
-                if coord not in target:
+                previous = _snapshot_payload(target, coord)
+                if coord not in target and not previous[0]:
                     target[coord] = payload
                     origin[(sheet, coord)] = src_path
-                elif target[coord] != payload:
+                elif ((previous != payload and not (previous[0] and previous[0] == payload[0]))
+                      or _number_epoch_changed(target, cells, coord)):
                     conflicts.append({
                         "sheet": sheet, "cell": coord,
-                        "kept": origin[(sheet, coord)], "conflicting": src_path,
+                        "kept": origin.get((sheet, coord), sources[0]), "conflicting": src_path,
                     })
+                if coord in getattr(cells, "number_contexts", {}):
+                    target.number_contexts[coord] = _combined_number_context(target, cells, coord)
+            for anchor, region in incoming_regions.items():
+                target.regions.setdefault(anchor, region)
+                origin.setdefault((sheet, anchor), src_path)
     return merged, truncated, conflicts, sources
 
 
@@ -795,7 +1272,7 @@ def _collect_additions(sheet: str, out_cells: dict, base_cells: dict,
     """产物里有、源里没有的非空格。scope 内算允许新增，scope 外要定性。"""
     added = []
     for coord, (formula, value) in out_cells.items():
-        if coord in base_cells or not (formula or value):
+        if coord in base_cells or _snapshot_payload(base_cells, coord)[0] or not (formula or value):
             continue
         added.append({
             "sheet": sheet, "cell": coord, "kind": "added",
@@ -867,8 +1344,9 @@ def diff_baseline(output_path: str, baseline_paths: List[str], scope_items: List
             continue
         out_cells = produced[sheet]
         for coord, (formula, value) in cells.items():
-            out_formula, out_value = out_cells.get(coord, ("", ""))
+            out_formula, out_value = _snapshot_payload(out_cells, coord)
             in_scope = scoped and _in_scope(scope, sheet, coord)
+            epoch_changed = _number_epoch_changed(cells, out_cells, coord)
             if formula:
                 if not out_formula:
                     formula_lost.append({
@@ -880,11 +1358,19 @@ def diff_baseline(output_path: str, baseline_paths: List[str], scope_items: List
                         "sheet": sheet, "cell": coord, "kind": "formula",
                         "baseline": formula[:80], "produced": out_formula[:80], "in_scope": in_scope,
                     })
-            elif value and out_value != value:
+            elif value and (out_formula or out_value != value or epoch_changed):
                 changes.append({
-                    "sheet": sheet, "cell": coord, "kind": "value",
-                    "baseline": value[:40], "produced": out_value[:40], "in_scope": in_scope,
+                    "sheet": sheet, "cell": coord, "kind": "formula" if out_formula else "value",
+                    "baseline": _baseline_value_label(cells, coord, value, epoch_changed),
+                    "produced": _baseline_value_label(out_cells, coord, out_formula or out_value, epoch_changed),
+                    "in_scope": in_scope,
                 })
+
+    if scoped:
+        reported = {(item["sheet"], item["cell"]) for item in changes + formula_lost}
+        for sheet in set(base) | set(produced):
+            changes.extend(_region_scope_changes(sheet, base.get(sheet, {}), produced.get(sheet, {}),
+                                                 scope, reported))
 
     # 只比源里已有的格，会漏掉「范围外从空白变成有值」——scope 声明的是
     # 其余一格不动，新增同样是动。新增一律相对联合快照判定。
@@ -980,14 +1466,25 @@ def _emit_baseline_hint(bl: dict) -> bool:
     return True
 
 
-EXCEL_ERROR_VALUES = {"#VALUE!", "#DIV/0!", "#REF!", "#NAME?", "#NULL!", "#NUM!", "#N/A"}
+EXCEL_ERROR_VALUES = {
+    "#VALUE!", "#DIV/0!", "#REF!", "#NAME?", "#NULL!", "#NUM!", "#N/A",
+    "#SPILL!", "#CALC!", "#FIELD!", "#BLOCKED!", "#CONNECT!", "#BUSY!", "#UNKNOWN!",
+}
 
 
-def _scan_formula_error_values(filename: str) -> Tuple[int, dict]:
-    """只统计公式格重算后的精确错误值；备注文本里的错误码不算公式错误。"""
+def _scan_formula_error_values(filename: str, engine_aware: bool = False) -> Tuple[int, dict]:
+    """扫描公式及数组/数据表结果格；备注文本和已知统计填充位不算公式错误。
+
+    engine_aware：扫的是本机重算结果时为 True。本格用了名单函数、算出 #NAME? / #VALUE! 的格
+    记到 error_details["engine_unsupported"]（格址 → 函数名）；有这类格时，其余 #NAME? / #VALUE!
+    记到 error_details["engine_affected"]（格址列表）。两类都不计入错误总数。
+    扫产物自带缓存（Excel / 在线算出的值）时保持 False，这些错误值照常算错误。
+    """
     formula_wb = load_workbook(filename, data_only=False)
     value_wb = load_workbook(filename, data_only=True)
     error_details = {err: [] for err in EXCEL_ERROR_VALUES}
+    unsupported = {}
+    candidates = []   # (错误值, 格址)：工作簿里有不支持的函数时改记为可能受影响
     total_errors = 0
     try:
         for sheet_name in formula_wb.sheetnames:
@@ -995,24 +1492,41 @@ def _scan_formula_error_values(filename: str) -> Tuple[int, dict]:
                 continue
             formula_ws = formula_wb[sheet_name]
             value_ws = value_wb[sheet_name]
-            for row in formula_ws.iter_rows():
-                for formula_cell in row:
-                    if not _is_formula(formula_cell.value):
+            if not hasattr(formula_ws, "iter_rows") or not hasattr(value_ws, "iter_rows"):
+                continue
+            padding = _regression_padding_regions(formula_ws)
+            for coord, formula, value in _formula_value_records(formula_ws, value_ws):
+                if isinstance(value, str) and value.strip() in EXCEL_ERROR_VALUES:
+                    error = value.strip()
+                    if error == "#N/A" and _region_anchor(padding, *coord) is not None:
                         continue
-                    value = value_ws[formula_cell.coordinate].value
-                    if isinstance(value, str) and value.strip() in EXCEL_ERROR_VALUES:
-                        error = value.strip()
-                        error_details[error].append(f"{sheet_name}!{formula_cell.coordinate}")
-                        total_errors += 1
+                    loc = f"{sheet_name}!{get_column_letter(coord[1])}{coord[0]}"
+                    if engine_aware and error in _ENGINE_ERRORS:
+                        funcs = _engine_unsure_calls(formula)
+                        if funcs:
+                            unsupported[loc] = funcs
+                        else:
+                            candidates.append((error, loc))
+                        continue
+                    error_details[error].append(loc)
+                    total_errors += 1
     finally:
         formula_wb.close()
         value_wb.close()
+    if unsupported:
+        error_details["engine_unsupported"] = unsupported
+        if candidates:
+            error_details["engine_affected"] = [loc for _, loc in candidates]
+    else:
+        for error, loc in candidates:
+            error_details[error].append(loc)
+            total_errors += 1
     return total_errors, error_details
 
 
 def scan_errors_only(filename: str, static_source_sheets: Optional[Set[str]] = None,
                      status: str = "skipped_no_libreoffice",
-                     warning: str = "LibreOffice 未安装，公式未重算，仅扫描已有错误值") -> dict:
+                     warning: str = "未检测到可用的 soffice，已跳过重算，保留已有错误值与静态诊断") -> dict:
     """只扫描文件中已有的公式错误（不触发重算）。
 
     两种降级都走这里：LibreOffice 不可用，或副本建不出来。status / warning 由调用方
@@ -1539,7 +2053,7 @@ def _recalc_with_profile(target: Path, profile_dir: Path, timeout: int,
         return unverified(error_msg, kind)
 
     try:
-        total_errors, error_details = _scan_formula_error_values(abs_path)
+        total_errors, error_details = _scan_formula_error_values(abs_path, engine_aware=True)
 
         result = {
             "status": "success" if total_errors == 0 else "errors_found",
@@ -1550,12 +2064,24 @@ def _recalc_with_profile(target: Path, profile_dir: Path, timeout: int,
             "error_summary": {},
         }
 
+        engine_unsupported = error_details.pop("engine_unsupported", {})
+        engine_affected = error_details.pop("engine_affected", [])
         for err_type, locations in error_details.items():
             if locations:
                 result["error_summary"][err_type] = {
                     "count": len(locations),
                     "locations": locations[:20],
                 }
+        if engine_unsupported:
+            # 引擎不认新函数：不是产物算错，也没验算成，走降级档
+            funcs = sorted({f for fs in engine_unsupported.values() for f in fs})
+            result["engine_unsupported"] = {
+                "count": len(engine_unsupported),
+                "functions": funcs,
+                "locations": list(engine_unsupported)[:20],
+            }
+        if engine_affected:
+            result["engine_affected"] = {"count": len(engine_affected), "locations": engine_affected[:20]}
 
         wb_formulas = load_workbook(abs_path, data_only=False)
         try:
@@ -1687,27 +2213,72 @@ def _same_file(a: Path, b: Path) -> bool:
         return False
 
 
+def _attach_checkpoints(result: dict, filename: str, checkpoints: Optional[List[dict]],
+                        recalculated: Optional[Path], ref_unreliable: bool = False) -> None:
+    """跑检查点并挂到 result。重算完成才把 recalculated 交给它读公式计算值；
+    读取重算结果出意外则退回静态检查，公式值条目标为未验证。"""
+    if not checkpoints:
+        return
+    use = str(recalculated) if (recalculated is not None
+                                and result.get("recalculation_completed") is True) else None
+    try:
+        result["checkpoints"] = run_checkpoints(filename, checkpoints, recalculated=use,
+                                                ref_unreliable=ref_unreliable)
+        return
+    except Exception as exc:
+        first_error = exc
+    if use is not None:
+        try:
+            result["checkpoints"] = run_checkpoints(filename, checkpoints)
+            _append_warning(result, f"检查点读取重算结果失败，已退回静态检查，公式值未验证：{first_error}")
+            return
+        except Exception as exc:
+            first_error = exc
+    # 检查点本身跑不成：按「没有判据」处理，走确定性错误，不让整道门禁崩掉
+    result["checkpoints"] = {"status": "skipped", "blocking": True,
+                             "reason": f"检查点执行出错：{type(first_error).__name__}: {first_error}"}
+
+
+def recalc_output_problem(filename, in_place: bool, recalc_output: Optional[str]) -> Optional[str]:
+    """--recalc-output 的参数契约；不满足时返回给调用方的说明，CLI 与 recalc() 共用。"""
+    if not recalc_output:
+        return None
+    if in_place:
+        return "--recalc-output 与 --in-place 不能同用：要读计算值只加 --recalc-output，原文件保持不动。"
+    if _same_file(Path(recalc_output), Path(filename)):
+        return ("--recalc-output 不能指向被校验的文件本身：副本由 LibreOffice 存回、样式会被重置，"
+                "换一个路径（如 ./.recalc.xlsx）。")
+    return None
+
+
 def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None,
-           in_place: bool = False, recalc_output: Optional[str] = None):
+           in_place: bool = False, recalc_output: Optional[str] = None,
+           checkpoints: Optional[List[dict]] = None):
+    """重算并扫描。传了 checkpoints 时顺带判检查点：重算完成就按重算结果判公式格的值。"""
     if not Path(filename).exists():
         return {"error": f"File {filename} does not exist"}
+    problem = recalc_output_problem(filename, in_place, recalc_output)
+    if problem:
+        return {"error": problem}
 
     if recalc_output:
         # 先删掉上一轮留下的同名副本：这轮重算没做成时，调用方不该读到旧值。
-        stale = Path(recalc_output)
-        if not _same_file(stale, Path(filename)):
-            _quiet_unlink(stale)
+        _quiet_unlink(Path(recalc_output))
 
     if not is_libreoffice_available():
         result = scan_errors_only(filename, static_source_sheets=static_source_sheets)
         if recalc_output:
             result["recalc_output"] = None
+        _attach_checkpoints(result, filename, checkpoints, None)
         return result
 
     if in_place:
-        return _recalc_target(
+        result = _recalc_target(
             Path(filename).absolute(), timeout, static_source_sheets, in_place=True
         )
+        # --in-place 重算后计算值已写回原文件，读原文件本身就是读重算结果
+        _attach_checkpoints(result, filename, checkpoints, Path(filename).absolute())
+        return result
 
     src = Path(filename).absolute()
     src_dir = src.parent
@@ -1716,6 +2287,9 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
             result = _recalc_target(
                 target, timeout, static_source_sheets, safe_scan_path=src
             )
+            # 副本删除前判检查点：公式格的计算值只在这份副本里
+            _attach_checkpoints(result, filename, checkpoints, target,
+                                ref_unreliable=target.parent != src_dir)
             if recalc_output:
                 _export_recalc_copy(target, recalc_output, result)
             if target.parent != src_dir:
@@ -1738,13 +2312,16 @@ def recalc(filename, timeout=30, static_source_sheets: Optional[Set[str]] = None
                 warning=f"无法创建副本（{exc}），公式未重算，仅扫描已有错误值",
             )
             result["recalc_output"] = None
+            _attach_checkpoints(result, filename, checkpoints, None)
             return result
-        return scan_errors_only(
+        result = scan_errors_only(
             filename,
             static_source_sheets=static_source_sheets,
             status="skipped_no_workspace",
             warning=f"无法创建副本（{exc}），公式未重算，仅扫描已有错误值；需要重算可加 --in-place",
         )
+        _attach_checkpoints(result, filename, checkpoints, None)
+        return result
 
 
 def main():
@@ -1800,13 +2377,9 @@ def main():
               "不能与 --in-place 同用，也不能覆盖输入文件、--baseline 或 --checkpoints 文件"),
     )
     args = ap.parse_args()
-    if args.recalc_output and args.in_place:
-        print("[args] --recalc-output 与 --in-place 不能同用：要读计算值只加 --recalc-output，原文件保持不动。",
-              file=sys.stderr)
-        sys.exit(3)
-    if args.recalc_output and _same_file(Path(args.recalc_output), Path(args.excel_file)):
-        print("[args] --recalc-output 不能指向被校验的文件本身：副本由 LibreOffice 存回、样式会被重置，"
-              "换一个路径（如 ./.recalc.xlsx）。", file=sys.stderr)
+    problem = recalc_output_problem(args.excel_file, args.in_place, args.recalc_output)
+    if problem:
+        print(f"[args] {problem}", file=sys.stderr)
         sys.exit(3)
     if args.recalc_output:
         # recalc 会先清理同名旧副本；基准必须在这之前保护，包括软链接和硬链接别名。
@@ -1829,14 +2402,27 @@ def main():
         print(f"[scope] {exc}", file=sys.stderr)
         sys.exit(3)
 
+    try:
+        if args.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds 必须为正整数")
+        for baseline in args.baseline or []:
+            if not Path(baseline).is_file():
+                raise ValueError(f"--baseline 不是可读取的文件：{baseline}")
+        checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
+        if checkpoint_error:
+            raise ValueError(checkpoint_error)
+    except (OSError, ValueError) as exc:
+        print(json.dumps({"status": "invalid_input", "error": str(exc)}, ensure_ascii=False))
+        print(f"[args] {exc}；尚未执行重算或扫描。", file=sys.stderr)
+        sys.exit(3)
+
     static_source_sheets, static_source_sheet_list = _normalize_sheet_names(args.static_source_sheets)
     result = recalc(args.excel_file, args.timeout_seconds, static_source_sheets=static_source_sheets,
-                    in_place=args.in_place, recalc_output=args.recalc_output)
-    checkpoints, checkpoint_error = load_checkpoints(args.checkpoints)
-    if checkpoint_error:
-        result["checkpoints"] = {"status": "invalid", "reason": checkpoint_error}
-    elif checkpoints:
-        result["checkpoints"] = run_checkpoints(args.excel_file, checkpoints)
+                    in_place=args.in_place, recalc_output=args.recalc_output,
+                    checkpoints=checkpoints)
+    if checkpoints and "checkpoints" not in result:
+        # recalc 提前返回（如文件不存在）时没判检查点：照旧读产物本身判一遍
+        _attach_checkpoints(result, args.excel_file, checkpoints, None)
 
     if args.baseline:
         result["baseline"] = diff_baseline(args.excel_file, args.baseline, args.scope or [])
@@ -1853,7 +2439,7 @@ def main():
         # 参数写错不是「产物读不出来」：工作簿读开了、只读诊断也跑过了，走独立字段，
         # 别复用 error 通道把 INVALID_INPUT_HINT 的「一项都没跑」误扣到这里。
         result["param_error"] = f"Unknown --static-source-sheets: {', '.join(unknown_static_source_sheets)}"
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
 
     # 副本降级只在 JSON 里带字段容易被忽略；stderr 再喊一次，免得 #REF! 被误当真错误
     if result.get("recalc_copy_dir") or result.get("status") == "skipped_no_workspace":
@@ -1883,6 +2469,8 @@ def main():
             status=result.get("status"),
             warning=result.get("warning") or "未给出原因"),
             file=sys.stderr)
+        if result.get("status") == "skipped_no_libreoffice":
+            print(NO_LIBREOFFICE_HINT, file=sys.stderr)
         kind_hint = RECALC_FAILURE_HINTS.get(result.get("failure_kind"))
         if kind_hint:
             print(kind_hint, file=sys.stderr)
@@ -1926,6 +2514,17 @@ def main():
               f"{'、'.join(baseline_truncated[:6])}。"
               "未读到的区域没有判据，不能据此认为原表没被改写；"
               "缩小表体或拆表后重跑才能覆盖尾部。", file=sys.stderr)
+    eu = result.get("engine_unsupported") or {}
+    if eu.get("count"):
+        print(ENGINE_UNSUPPORTED_HINT.format(
+            n=eu["count"], funcs="、".join(eu.get("functions") or []),
+            lines="\n".join(f"  - {loc}" for loc in eu.get("locations") or [])),
+            file=sys.stderr)
+    ea = result.get("engine_affected") or {}
+    if ea.get("count"):
+        print(ENGINE_AFFECTED_HINT.format(
+            n=ea["count"], lines="\n".join(f"  - {loc}" for loc in ea.get("locations") or [])),
+            file=sys.stderr)
     sr = result.get("static_risks") or {}
     has_static_risk = (_emit_static_risk_hint(sr)
                        if sr.get("status") == "issues_found" or sr.get("blocking") else False)
@@ -1938,11 +2537,12 @@ def main():
     # 退出码分两档，因为这两类的处置相反，混成一个码就没法照着做：
     # 3 = 确定性错误（公式错误 / 缺前缀或形状错 / 检查点不符 / 源表被改写或丢失 /
     #     文件读不了或静态来源点名错误），必须修复后重跑；
-    # 4 = 重算未完成，或只命中诊断信号（高置信硬编码嫌疑）——按提示处置并在交付说明写明，
+    # 4 = 重算未完成，或只命中诊断信号（高置信硬编码嫌疑、引擎不认新函数）——按提示处置并在交付说明写明，
     #     不反复重跑；0 = 确定性判定全过且重算完成。
     blocking = (has_formula_errors or has_runtime_error or has_static_risk
                 or has_baseline_break or has_checkpoint_break)
     degraded = (has_unverified or has_high or has_checkpoint_skip
+                or bool(eu.get("count")) or bool(ea.get("count"))
                 or bool(baseline_truncated) or baseline_not_run)
     sys.exit(3 if blocking else (4 if degraded else 0))
 

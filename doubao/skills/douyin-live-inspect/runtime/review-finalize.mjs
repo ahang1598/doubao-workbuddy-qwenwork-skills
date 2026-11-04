@@ -1,4 +1,4 @@
-import flow from './workflow-telemetry.cjs';
+import telemetry from '../telemetry/main.mjs';
 import { requireOriginalTaskContext } from './task-binding.mjs';
 import {
   mkdir,
@@ -266,7 +266,7 @@ export async function finalizeReview(input, dependencies = {}) {
         await save();
         // Generation is observed before optional online persistence; no delivery is implied.
         try {
-          await flow.formal(identity,{recap:state.report_quality,...(state.report_quality==='insufficient'?{failure_stage:'recap',failure_reason:'CONTENT_INSUFFICIENT'}:{})},{env:dependencies.env||process.env});
+          await telemetry.withContext({env:dependencies.env||process.env},current=>current.reportGenerated({identity,kind:'recap',quality:state.report_quality}));
         } catch { /* An optional observer must not interrupt report persistence. */ }
       }
       const uploadInput = { ...identity, file_path: state.report_file };
@@ -332,9 +332,9 @@ export async function finalizeReview(input, dependencies = {}) {
     try {
       if(state.phase==='saved') {
         const quality=state.report_quality || 'none'; // Legacy state has no quality evidence.
-        await flow.formal(identity,{recap:quality,report_saved:true,...(quality==='insufficient'?{failure_stage:'recap',failure_reason:'CONTENT_INSUFFICIENT'}:{})},{env:dependencies.env||process.env});
-        if(state.delivered && quality==='ready')await flow.ack(identity,'recap','delivered',{env:dependencies.env||process.env});
-      } else if(state.error)await flow.problem(state.report_quality==='ready'?'delivery':'recap',state.error.code,false,{env:dependencies.env||process.env});
+        await telemetry.withContext({env:dependencies.env||process.env},current=>current.reportGenerated({identity,kind:'recap',quality,saved:true}));
+        if(state.delivered && quality==='ready')await telemetry.withContext({env:dependencies.env||process.env},current=>current.deliveryConfirmed({identity,kind:'recap',outcome:'delivered'}));
+      } else if(state.error)await telemetry.withContext({env:dependencies.env||process.env},current=>current.diagnostic({quality:state.report_quality,reportError:state.error.code}));
     }catch{/* delivery business state remains authoritative */}
     // Online persistence must not hide an already generated, validated report.
     // Keep unknown writes on the verification route; a local copy is not an ack.

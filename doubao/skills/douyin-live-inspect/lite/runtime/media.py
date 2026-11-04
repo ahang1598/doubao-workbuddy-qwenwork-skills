@@ -1,10 +1,11 @@
-# Adapted from skills_live_inspect_lite/runtime/media.py; content-only migration.
+# 从旧运行时迁移的媒体侧车，仅保留内容质检所需逻辑。
 """Local media sidecar. Only closed CSV-listed ffmpeg segments enter the Store.
 
 Run with ``python -m runtime.media TASK_DIR``. Store remains the owning runtime's
 contract; capture and preparation use separate Store instances per thread.
 """
 import concurrent.futures
+import contextlib
 from runtime.platform_support import fcntl, nofollow_open, private_directory, private_file
 from urllib.parse import urlsplit
 import csv
@@ -13,6 +14,7 @@ import os
 import re
 from pathlib import Path
 import signal
+import sqlite3
 import sys
 import subprocess
 import tempfile
@@ -116,21 +118,24 @@ class SourceError(RuntimeError):
 
 
 class DouyinResolveError(SourceError):
-    def __init__(self, code, retryable=False):
+    def __init__(self, code, retryable=False, diagnostic=None):
         # Only fixed codes cross into persistent logs; never CLI output or URLs.
         self.code = code if isinstance(code, str) and code in {
-            'INVALID_INPUT', 'DOUYIN_FETCH_FAILED', 'DOUYIN_PAGE_UNAVAILABLE',
+            'INVALID_INPUT', 'SOURCE_CANCELLED', 'DOUYIN_FETCH_FAILED', 'DOUYIN_PAGE_UNAVAILABLE',
             'DOUYIN_FLV_UNAVAILABLE', 'DOUYIN_RESOLVER_UNAVAILABLE',
         } else 'DOUYIN_RESOLVER_UNAVAILABLE'
         super().__init__(self.code, retryable)
+        from runtime.http_fetch import safe_failure
+        self.source_failure = safe_failure(diagnostic)
 
 
-def resolve_douyin(source):
+def resolve_douyin(source, *, cancel=None, timeout_ms=15000):
+    """解析抖音直播来源并返回可播放地址；解析失败不能回退到历史固定房间。"""
     match = re.search(r'https://(?:live|www|v)\.douyin\.com/[^\s<>"，。]+', str(source))
     try:
-        result = resolve_douyin_live(match[0] if match else source)
+        result = resolve_douyin_live(match[0] if match else source, cancel=cancel, timeout_ms=timeout_ms)
     except DouyinLiveError as error:
-        raise DouyinResolveError(error.code, error.retryable) from None
+        raise DouyinResolveError(error.code, error.retryable, error.source_failure) from None
     except (OSError, ValueError, TypeError):
         raise DouyinResolveError('DOUYIN_RESOLVER_UNAVAILABLE', True) from None
     if not isinstance(result, dict):
@@ -140,29 +145,92 @@ def resolve_douyin(source):
     return result
 
 
-def resolve_with_retry(store, cancel=None):
-    for attempt in range(3):
+class XiaohongshuResolveError(SourceError):
+    def __init__(self,error):
+        from runtime.xiaohongshu_live import ERRORS
+        super().__init__(error.code if error.code in ERRORS | {'INVALID_INPUT','SOURCE_CANCELLED'} else 'XHS_FETCH_FAILED', error.retryable)
+        self.source_failure=error.source_failure
+
+
+def resolve_xiaohongshu(store,cancel=None):
+    from runtime.xiaohongshu_live import resolve_live, XiaohongshuLiveError
+    from runtime.xiaohongshu_source import take_candidate
+    stopped=lambda:stop_requested(store,cancel)
+    deadline=None
+    last=None
+    attempts=0
+    try:
+        while not stopped() and attempts<6:
+            attempts+=1
+            browser=take_candidate(store)
+            try:
+                result=resolve_live(store.task()['source'],browser_source=browser,cancel=stopped,
+                                    timeout_ms=15000)
+                store.update_task(source_refresh_required=False,live_source_status='not_live' if result['status']=='not_live' else 'live',source_error_code='none',source_end_reason='offline' if result['status']=='not_live' else 'unknown')
+                return result
+            except XiaohongshuLiveError as error:
+                last=error
+                if error.code in {'INVALID_INPUT','SOURCE_CANCELLED'}:raise
+                if deadline is None:deadline=time.monotonic()+180
+                store.update_task(source_refresh_required=True,source_refresh_deadline=time.time()+max(0,deadline-time.monotonic()),source_error_code=error.code)
+            # The existing worker waits; resume only supplies a fresh candidate, never another worker.
+            while not stopped() and time.monotonic()<deadline and not (store.root/'.browser-source.json').exists():time.sleep(.2)
+            if time.monotonic()>=deadline and not (store.root/'.browser-source.json').exists():
+                if browser is not None:raise last
+                raise XiaohongshuLiveError('BROWSER_SOURCE_TIMEOUT')
+        if not stopped() and last is not None:raise last
+        raise XiaohongshuLiveError('SOURCE_CANCELLED')
+    except XiaohongshuLiveError as error:raise XiaohongshuResolveError(error) from None
+    finally:
+        store.update_task(source_refresh_required=False)
+        from runtime.platform_support import file_lock
+        with file_lock(store.root/'.browser-source.lock',timeout=1):
+            (store.root/'.browser-source.json').unlink(missing_ok=True)
+
+
+def resolve_with_retry(store, cancel=None, *, recovering=False):
+    # Recovery is owned by the existing capture worker, never by agent polling.
+    # Bound both attempts and wall time; each resolver uses at most two requests.
+    deadline=time.monotonic()+60 if recovering else None
+    limit=6 if recovering else 3
+    last_error=None
+    for attempt in range(limit):
         if stop_requested(store, cancel):
             raise SourceError('SOURCE_CANCELLED')
         if store.task().get('live_ended_at'):
-            return {'status': 'not_live'}
+            return {'status': 'ended'}
         try:
             source = store.task()['source']
+            if urlsplit(source).hostname in {'www.xiaohongshu.com','xhslink.com'}:
+                return resolve_xiaohongshu(store,cancel)
             if urlsplit(source).hostname not in {'live.douyin.com', 'www.douyin.com', 'v.douyin.com'}:
                 return {'status': 'ready', 'streamUrl': source}
-            resolved = resolve_douyin(source)
+            left=deadline-time.monotonic() if deadline is not None else 30
+            if left<=0:raise last_error or DouyinResolveError('DOUYIN_FETCH_FAILED',True)
+            resolved = resolve_douyin(source, cancel=lambda:stop_requested(store,cancel),
+                                      timeout_ms=min(5000 if recovering else 15000,left*500))
+            if stop_requested(store,cancel):raise SourceError('SOURCE_CANCELLED')
+            if deadline is not None and time.monotonic()>=deadline:
+                raise last_error or DouyinResolveError('DOUYIN_FETCH_FAILED',True)
             store.update_task(live_source_status='not_live' if resolved['status']=='not_live' else 'live',
                               source_error_code='none', source_end_reason='offline' if resolved['status']=='not_live' else 'unknown')
             return resolved
         except (SourceError, OSError, subprocess.SubprocessError) as error:
-            if isinstance(error, SourceError) and not error.retryable:
+            last_error=error
+            if stop_requested(store,cancel):raise SourceError('SOURCE_CANCELLED')
+            transient_page=(recovering and isinstance(error,DouyinResolveError)
+                            and error.code=='DOUYIN_PAGE_UNAVAILABLE'
+                            and not error.source_failure.get('http_status'))
+            if isinstance(error, XiaohongshuResolveError):raise
+            if isinstance(error, SourceError) and not error.retryable and not transient_page:
                 raise
             store.log('source_retry', getattr(error, 'code', type(error).__name__))
-            if attempt == 2:
+            if attempt == limit-1 or (deadline is not None and time.monotonic()>=deadline):
                 raise
-            for _ in range(4 * (attempt + 1)):
+            for _ in range(4 * (min(8,2**(attempt+1)) if recovering else attempt+1)):
                 if stop_requested(store, cancel):
                     raise SourceError('SOURCE_CANCELLED')
+                if deadline is not None and time.monotonic()>=deadline:raise last_error
                 time.sleep(.25)
 
 
@@ -188,6 +256,7 @@ def frame_schedule(task, segment):
 
 
 def extract_frames(store, segment, folder):
+    """按片段计划抽取画面证据，并将每一帧与原片段时间轴绑定。"""
     """Produce isolated artifacts; the queue owner publishes them after lease validation."""
     task = store.task()
     if task.get('image_inspection') is False:return ({'frames':[], 'frame_status':'disabled'},None,[])
@@ -226,6 +295,7 @@ def extract_frames(store, segment, folder):
 
 
 def extract_audio(store, segment, folder):
+    """抽取片段音频供 ASR 使用；成功后才把输出纳入任务状态。"""
     import wave
     task = store.task()
     if task.get('image_inspection') is False:return ({'frames':[], 'frame_status':'disabled'},None,[])
@@ -338,6 +408,25 @@ def recover_capture_tail(store, session):
     store.log('capture_tail_recovered', f'Recovered closed media segment {index}; duration {duration} ms')
 
 
+@contextlib.contextmanager
+def capture_errors(path):
+    """Optional stderr storage must not prevent a media process from running."""
+    from runtime.diagnostics import log_failure
+    handle=None
+    try:
+        handle=path.open('w+b')
+    except OSError as error:
+        log_failure(error,stage='capture_diagnostic_open')
+    try:
+        yield handle
+    finally:
+        if handle is not None:
+            # Scrub private output even if Windows temporarily prevents deletion.
+            for action in (lambda:handle.seek(0),lambda:handle.truncate(0),handle.close):
+                try:action()
+                except OSError as error:log_failure(error,stage='capture_diagnostic_close')
+
+
 def capture_session(store, source, base_ms, index, seek=0, cancel=None, bridge=None, duration_ms=None):
     task = store.task()
     folder = store.root / 'media'
@@ -372,68 +461,88 @@ def capture_session(store, source, base_ms, index, seek=0, cancel=None, bridge=N
         if stream.sampled:args+=['-progress',str(stream.progress)]
     # Private stderr is temporary and never reaches logs (it may contain signed URLs).
     error_path = folder / f'session-{index:06d}.stderr'
-    with error_path.open('w+b') as errors:
-        process = guarded_capture(args, errors,pcm=True) if stream else guarded_capture(args, errors)
-        if stream:stream.start(process)
-        interrupted = None
-        primary = None
-        try:
-            while process.poll() is None:
-                ingest_closed(store, session)
-                if (stream and stream.error) or stop_requested(store, cancel) or (task['kind'] == 'live' and store.task().get('live_ended_at')):
-                    if interrupted is None:
-                        stop_capture(process)
-                        interrupted = time.monotonic()
-                    elif time.monotonic() - interrupted > (5 if store.task().get('media_frozen') else 22) or live_backlog.remaining(store.task(),22)<=0:
-                        kill_tree(process)
-                time.sleep(.25)
-        except BaseException as error:
-            primary = error
-        finally:
-            from runtime.diagnostics import cleanup_actions, log_failure
+    from runtime.diagnostics import cleanup_actions, log_failure
+    from runtime.capture_diagnostics import record_attempt
+    primary, detail, is_404 = None, None, False
+    try:
+        with capture_errors(error_path) as errors:
+            target=errors if errors is not None else subprocess.DEVNULL
+            process = guarded_capture(args, target,pcm=True) if stream else guarded_capture(args, target)
+            interrupted = None
+            primary = None
+            try:
+                if stream:stream.start(process)
+                while process.poll() is None:
+                    ingest_closed(store, session)
+                    if (stream and stream.error) or stop_requested(store, cancel) or (task['kind'] == 'live' and store.task().get('live_ended_at')):
+                        if interrupted is None:
+                            stop_capture(process)
+                            interrupted = time.monotonic()
+                        elif time.monotonic() - interrupted > (5 if store.task().get('media_frozen') else 22) or live_backlog.remaining(store.task(),22)<=0:
+                            kill_tree(process)
+                    time.sleep(.25)
+            except BaseException as error:
+                primary = error
+            finally:
 
-            def stop_process():
-                if process.poll() is None:
-                    try:
-                        stop_capture(process)
-                    except BaseException as error:
-                        cleanup_actions([('cleanup_capture_kill', lambda: kill_tree(process)),
-                                         ('cleanup_capture_wait', process.wait)], error)
-                        raise
-                    try:
-                        process.wait(timeout=max(.001,live_backlog.remaining(store.task(),22)))
-                    except subprocess.TimeoutExpired:
-                        kill_tree(process)
-                        process.wait()
+                def stop_process():
+                    if process.poll() is None:
+                        try:
+                            stop_capture(process)
+                        except BaseException as error:
+                            cleanup_actions([('cleanup_capture_kill', lambda: kill_tree(process)),
+                                             ('cleanup_capture_wait', process.wait)], error)
+                            raise
+                        try:
+                            process.wait(timeout=max(.001,live_backlog.remaining(store.task(),22)))
+                        except subprocess.TimeoutExpired:
+                            kill_tree(process)
+                            process.wait()
 
-            actions = [('cleanup_capture_process', stop_process),
-                       ('cleanup_capture_stdin', process.stdin.close)]
-            if stream:
-                actions.extend([
-                    ('cleanup_capture_progress', lambda: store.update_task(capture_last_input_at=time.time())),
-                    ('cleanup_capture_stream', stream.join),
-                    ('cleanup_capture_stdout', process.stdout.close),
-                    ('cleanup_stream_diagnostic', lambda: store.update_task(
-                        stream_error=stream.error, stream_diagnostic=getattr(stream, 'diagnostic', None)) if stream.error else None)])
-            actions.extend([('cleanup_ingest', lambda: ingest_closed(store, session)),
-                            ('cleanup_capture_tail', lambda: recover_capture_tail(store, session))])
-            primary = cleanup_actions(actions, primary)
-            if primary is not None:
-                log_failure(primary, stage='capture_session')
-                cleanup_actions([('cleanup_capture_stderr', lambda: error_path.unlink(missing_ok=True))], primary)
-                raise primary
-        errors.seek(0, os.SEEK_END)
-        errors.seek(max(0, errors.tell() - 16384))
-        diagnostics=errors.read()
-        is_404 = b'404' in diagnostics
-        if stream and (b'matches no streams' in diagnostics or b'does not contain any stream' in diagnostics):
-            store.update_task(capture_audio_absent=True)
-    error_path.unlink(missing_ok=True)
-    store.log('capture_process_exit', f'Capture process exit code {process.returncode}; stop requested: {bool(stop_requested(store, cancel))}')
+                actions = [('cleanup_capture_process', stop_process),
+                           ('cleanup_capture_stdin', process.stdin.close)]
+                if stream:
+                    actions.extend([
+                        ('cleanup_capture_progress', lambda: store.update_task(capture_last_input_at=time.time())),
+                        ('cleanup_capture_stream', stream.join),
+                        ('cleanup_capture_stdout', process.stdout.close),
+                        ('cleanup_stream_diagnostic', lambda: store.update_task(
+                            stream_error=stream.error, stream_diagnostic=getattr(stream, 'diagnostic', None)) if stream.error else None)])
+                actions.extend([('cleanup_ingest', lambda: ingest_closed(store, session)),
+                                ('cleanup_capture_tail', lambda: recover_capture_tail(store, session))])
+                primary = cleanup_actions(actions, primary)
+            diagnostics=b''
+            if errors is not None:
+                try:
+                    errors.seek(0, os.SEEK_END)
+                    errors.seek(max(0, errors.tell() - 16384))
+                    diagnostics=errors.read()
+                except OSError as error:log_failure(error,stage='capture_diagnostic_read')
+            from runtime.diagnostics import capture_process_details
+            detail = capture_process_details(diagnostics, process.returncode)
+            is_404 = detail.get('http_status') == 404
+            if stream and (b'matches no streams' in diagnostics or b'does not contain any stream' in diagnostics):
+                store.update_task(capture_audio_absent=True)
+    except BaseException as error:
+        if primary is None:primary=error
+        else:log_failure(error,stage='cleanup_capture_diagnostic')
+    # Windows refuses deletion of open files. Close the handle before cleanup,
+    # retaining both the process evidence and the original failure if cleanup fails.
+    actions=[('cleanup_capture_stderr',lambda:error_path.unlink(missing_ok=True))]
+    if detail is not None:actions.insert(0,('capture_diagnostic_save',lambda:record_attempt(store,detail)))
+    for stage, action in actions:
+        try:action()
+        except Exception as error:log_failure(error,stage=stage)
+    if primary is not None:
+        log_failure(primary,stage='capture_session')
+        raise primary
+    try:store.log('capture_process_exit', f'Capture process exit code {process.returncode}')
+    except Exception as error:log_failure(error,stage='capture_diagnostic_log')
     return process.returncode, is_404
 
 
 def capture(task_dir, cancel=None, bridge=None):
+    """执行直播采集主循环，持续写入可恢复片段并响应停止信号。"""
     store = Store(task_dir, capture=True).for_session()
     acquiring, epoch = False, None
     capture_error = None
@@ -444,13 +553,16 @@ def capture(task_dir, cancel=None, bridge=None):
         if task.get('capture_status') in ('ended', 'stopped'):
             return
         if stop_requested(store, cancel):
-            reason = ('duration_limit' if task.get('stop_reason')=='duration_limit' else
+            reason = (task['stop_reason'] if task.get('stop_reason') in {'duration_limit','execution_limit'} else
                       'user_stop' if (task.get('stop_audit') or {}).get('reason')=='user_request' else 'unknown')
             store.update_task(capture_status='stopped', live_source_status=task.get('live_source_status','unknown'),
                               source_end_reason=reason, source_error_code=task.get('source_error_code','none'))
             return
         store.update_task(capture_status='running', live_source_status='unknown',
-                          source_end_reason='unknown', source_error_code='none')
+                          source_end_reason='unknown', source_error_code='none',
+                          capture_process_diagnostic=None, capture_process_attempts=[],
+                          capture_diagnostic=None, capture_error=None,
+                          capture_execution_platform=sys.platform if sys.platform in {'win32','darwin','linux'} else 'unknown')
         acquiring = True
         if task.get('pipeline_version')==2:
             from runtime.realtime import recording_segments
@@ -472,9 +584,9 @@ def capture(task_dir, cancel=None, bridge=None):
         while not stop_requested(store, cancel) and not store.task().get('live_ended_at'):
             if resolved is None:
                 resolved = resolve_with_retry(store, cancel)
-                if resolved['status'] == 'not_live':
+                if resolved['status'] in {'not_live','ended'}:
                     store.update_task(capture_status='ended')
-                    store.log('capture_ended', 'Douyin resolver reports offline')
+                    store.log('capture_ended', 'Live resolver reports offline' if resolved['status']=='not_live' else 'Capture end requested')
                     return
             before = len(recording_segments(store)) if task.get('pipeline_version')==2 else len(store.segments())
             # Offset includes downtime/reconnect gaps; never concatenate wall-clock gaps away.
@@ -494,10 +606,10 @@ def capture(task_dir, cancel=None, bridge=None):
             consecutive_404 = consecutive_404 + 1 if is_404 else 0
             failures = 0 if len(segments) > before else failures + 1
             if consecutive_404 >= 2 or not is_404:
-                resolved = resolve_with_retry(store, cancel)
-                if resolved['status'] == 'not_live':
+                resolved = resolve_with_retry(store, cancel, recovering=True)
+                if resolved['status'] in {'not_live','ended'}:
                     store.update_task(capture_status='ended')
-                    store.log('capture_ended', 'Douyin resolver reports offline')
+                    store.log('capture_ended', 'Live resolver reports offline' if resolved['status']=='not_live' else 'Capture end requested')
                     return
             if failures >= 3:
                 raise SourceError('STREAM_RETRY_EXHAUSTED')
@@ -507,7 +619,7 @@ def capture(task_dir, cancel=None, bridge=None):
                     break
                 time.sleep(.25)
         current = store.task()
-        reason = ('duration_limit' if current.get('stop_reason')=='duration_limit' else
+        reason = (current['stop_reason'] if current.get('stop_reason') in {'duration_limit','execution_limit'} else
                   'user_stop' if (current.get('stop_audit') or {}).get('reason')=='user_request' else current.get('source_end_reason','unknown'))
         store.update_task(capture_status='ended' if current.get('live_ended_at') else 'stopped', source_end_reason=reason)
     except Exception as error:
@@ -518,11 +630,11 @@ def capture(task_dir, cancel=None, bridge=None):
             stopped = stop_requested(store, cancel)
             current = store.task()
             if stopped:
-                reason = ('duration_limit' if current.get('stop_reason')=='duration_limit' else
+                reason = (current['stop_reason'] if current.get('stop_reason') in {'duration_limit','execution_limit'} else
                           'user_stop' if (current.get('stop_audit') or {}).get('reason')=='user_request' else current.get('source_end_reason','unknown'))
             else:
                 reason = ('stream_retry_exhausted' if isinstance(error, SourceError) and error.code=='STREAM_RETRY_EXHAUSTED' else
-                          'source_resolution_failed' if isinstance(error, DouyinResolveError) else 'capture_failed')
+                          'source_resolution_failed' if isinstance(error, (DouyinResolveError,XiaohongshuResolveError)) else 'capture_failed')
             store.update_task(capture_status='stopped' if stopped else 'failed',
                               source_end_reason=reason,
                               live_source_status=current.get('live_source_status','unknown') if stopped else 'unknown',
@@ -530,7 +642,8 @@ def capture(task_dir, cancel=None, bridge=None):
                               capture_error=error.code if isinstance(error, SourceError) else None,
                               capture_diagnostic=failure_details(error))
             reason = error.code if isinstance(error, SourceError) else type(error).__name__
-            store.log('capture_failed', f'Media acquisition unavailable ({reason}); closed segments remain inspectable')
+            store.log('capture_stopped' if stopped else 'capture_failed',
+                      f'Media acquisition ended ({reason}); closed segments remain inspectable')
         except Exception as secondary:
             log_failure(secondary, stage='cleanup_capture_failure_state')
             raise error
@@ -825,8 +938,11 @@ def worker_failure_fields(capture_status):
 
 
 def run_worker(task_dir, *, supervised=False):
+    """运行单任务 worker；异常只更新任务诊断，不能让未知提交结果被自动重放。"""
     """One OS-owned capture/ASR worker per task; process death releases the lock."""
     store = Store(task_dir, capture=True).for_session()
+    from runtime.realtime_policy import current
+    current_drain=current(store.task())
     fd = nofollow_open(store.root / '.worker.lock', os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
     cancel = threading.Event()
     with os.fdopen(fd, 'w') as lock:
@@ -847,6 +963,17 @@ def run_worker(task_dir, *, supervised=False):
                     stop_capture_children(force=elapsed>=4)
                     requested=True
                 if elapsed<29:continue
+                # Current drains keep processing saved evidence after capture
+                # stops. The old process watchdog must not cancel them at 29s.
+                from runtime.stop_drain import MAX_SECONDS
+                if current_drain and elapsed<MAX_SECONDS:
+                    try:
+                        from runtime.finishing import advance
+                        with store.connection(True,timeout=0) as conn:
+                            finished=advance(store,conn)
+                        if finished.get('phase')!='completed':continue
+                    except (OSError,sqlite3.Error):
+                        continue  # Storage stalls still have the absolute cap.
                 try:
                     cancel.set()
                     stop_media_children()
@@ -856,7 +983,13 @@ def run_worker(task_dir, *, supervised=False):
                         task.update(capture_status='stopped' if intent['reason']=='user_request' else task.get('capture_status','ended'),worker_status='stopped',processing_completed_at=now_iso())
                         store._set_task(conn,task)
                 finally:
-                    os._exit(0)
+                    # 媒体已停止、事务连接已关闭；硬退出不会执行 atexit，显式限时收口发送。
+                    try:
+                        from runtime.bridge import drain, _rpc_channel
+                        drain()
+                        _rpc_channel.close()
+                    finally:
+                        os._exit(0)
         if supervised and store.task().get('kind','live')=='live':threading.Thread(target=stop_watchdog,daemon=True).start()
         from runtime.sampling import enabled
         def sample_clock():
@@ -899,4 +1032,6 @@ def run_worker(task_dir, *, supervised=False):
 
 
 if __name__ == '__main__':
-    run_worker(Path(sys.argv[1]).resolve(), supervised=True)
+    from runtime.bridge import task_scope
+    root = Path(sys.argv[1]).resolve()
+    with task_scope(Store(root).task()):run_worker(root, supervised=True)

@@ -28,7 +28,10 @@ class PreparationError(RuntimeError):
         self.code, self.stage, self.retryable = code, stage, retryable
         super().__init__(code)
     def public(self):
-        return {'code':self.code, 'stage':self.stage, 'retryable':self.retryable}
+        result={'code':self.code, 'stage':self.stage, 'retryable':self.retryable}
+        if getattr(self,'network_failure_kind',None) in {'dns','tls','timeout','connection','unknown'}:result['network_failure_kind']=self.network_failure_kind
+        if type(getattr(self,'http_status',None)) is int and 400<=self.http_status<=599:result['http_status']=self.http_status
+        return result
 
 
 def platform_key():
@@ -140,26 +143,35 @@ class SafeRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def download(spec,path,progress=None):
+    if path.is_symlink(): raise PreparationError('ARTIFACT_PATH_INVALID','download')
     for attempt in range(3):
         try:
             deadline=time.monotonic()+600
-            with urllib.request.build_opener(SafeRedirect()).open(spec['url'],timeout=30) as response, path.open('wb') as out:
-                if response.status!=200: raise PreparationError('ARTIFACT_HTTP_ERROR','download')
+            request=urllib.request.Request(spec['url'],headers={'Accept-Encoding':'identity'})
+            if progress:progress(stage='download',bytes_received=0,bytes_total=spec['bytes'],attempt=attempt+1)
+            with urllib.request.build_opener(SafeRedirect()).open(request,timeout=30) as response:
+                if response.status!=200:raise PreparationError('ARTIFACT_HTTP_ERROR','download')
                 total=0
-                while True:
-                    chunk=response.read(1024*1024)
-                    if not chunk: break
-                    total+=len(chunk)
-                    if total>spec['bytes']: raise PreparationError('ARTIFACT_SIZE_INVALID','download')
-                    if time.monotonic()>deadline: raise TimeoutError()
-                    out.write(chunk)
-                    if progress: progress(stage='download',bytes_received=total,bytes_total=spec['bytes'],attempt=attempt+1)
+                with path.open('wb') as out:
+                    while True:
+                        chunk=response.read(1024*1024)
+                        if not chunk: break
+                        total+=len(chunk)
+                        if total>spec['bytes']: raise PreparationError('ARTIFACT_SIZE_INVALID','download')
+                        if time.monotonic()>deadline: raise TimeoutError()
+                        out.write(chunk)
+                        if progress: progress(stage='download',bytes_received=total,bytes_total=spec['bytes'],attempt=attempt+1)
+            if total<spec['bytes']:raise ConnectionError('incomplete download')
             if total!=spec['bytes'] or sha256(path)!=spec['sha256']:
                 raise PreparationError('ARTIFACT_HASH_INVALID','verify')
             return
+        except PreparationError:
+            path.unlink(missing_ok=True)
+            raise
         except urllib.error.HTTPError as e:
             retryable=e.code in (408,429,500,502,503,504)
             error=PreparationError('ARTIFACT_HTTP_ERROR','download',retryable)
+            error.http_status=e.code
         except (urllib.error.URLError,TimeoutError,ConnectionError):
             error=PreparationError('ARTIFACT_NETWORK_ERROR','download',True)
         except OSError:
@@ -212,20 +224,24 @@ def unpack(archive,root,spec):
     verify_files(root,spec)
 
 
-def ensure_artifact(component,key,spec,smoke,progress=None):
+def ensure_artifact(component,key,spec,smoke,progress=None, prefix='.prepare-', downloader=None):
     validate_spec(spec)
     root=destination(component,key,spec)
+    if progress:progress(stage='permissions')
     private_directory(cache_root())
     lockdir=private_directory(cache_root()/'.locks')
+    if progress:progress(stage='lock')
     with file_lock(lockdir/(component+'-'+key+'-'+spec['sha256']+'.lock')):
+        if progress:progress(stage='cache')
         if cache_valid(root,spec): return root,'cache'
         root.parent.mkdir(parents=True,exist_ok=True)
         required=spec['bytes']+spec['unpacked_bytes']+16*1024*1024
         if shutil.disk_usage(root.parent).free<required: raise PreparationError('ARTIFACT_DISK_FULL','download')
-        with tempfile.TemporaryDirectory(prefix='.prepare-',dir=root.parent) as tmp:
-            temp=Path(tmp); archive=temp/'archive.part'; stage=temp/'runtime';stage.mkdir()
+        with tempfile.TemporaryDirectory(prefix=prefix,dir=root.parent) as tmp:
+            temp=Path(tmp); archive=(root.parent/(root.name+'.part')) if component=='ffmpeg' else temp/'archive.part'; stage=temp/'runtime';stage.mkdir()
             if progress: progress(stage="download")
-            if progress: download(spec,archive,progress=progress)
+            if downloader:downloader(spec,archive,progress=progress)
+            elif progress: download(spec,archive,progress=progress)
             else: download(spec,archive)
             if progress: progress(stage="verify_extract", download_completed_at=time.time(),
                                   download_completed_monotonic=time.monotonic())
@@ -233,11 +249,14 @@ def ensure_artifact(component,key,spec,smoke,progress=None):
             except (tarfile.TarError,zipfile.BadZipFile,EOFError): raise PreparationError('ARTIFACT_ARCHIVE_INVALID','extract') from None
             if progress: progress(stage="smoke")
             smoke(stage,spec)
+            if progress: progress(stage='publish')
             (stage/'.ready.json').write_text(json.dumps({'version':spec['version'],'sha256':spec['sha256']}))
             if root.exists():
                 # Only this exact corrupted version is replaced; other versions remain untouched.
                 shutil.rmtree(root)
             stage.rename(root)
+            if progress: progress(stage='cleanup')
+            if component=='ffmpeg':archive.unlink(missing_ok=True)
     return root,'download'
 
 
@@ -272,6 +291,9 @@ def prepare(*, task=None, install=True, common_only=False, model_only=False, pro
         catalog = {} if 'artifact_specs' in task else load_catalog()
         specs = task['artifact_specs'] if 'artifact_specs' in task else {**catalog.get('shared', {}), **catalog.get('platforms', {}).get(key, {})}
         specs = {k: v for k, v in specs.items() if k != 'node'}
+        if 'artifact_specs' in task and 'ffmpeg' in specs:
+            from runtime.ffmpeg_install import migrated_spec
+            specs['ffmpeg']=migrated_spec(specs['ffmpeg'])
         result['artifact_specs']=specs
         if model_only: result['binaries']=task.get('runtime_binaries',{})
         for component,names in ([] if model_only else [('ffmpeg',['ffmpeg','ffprobe'])]):
@@ -282,7 +304,9 @@ def prepare(*, task=None, install=True, common_only=False, model_only=False, pro
                 validate_spec(spec)
                 def smoke(folder,spec):
                     if not all(binary_ok(folder/spec['entrypoints'][n],n) for n in names): raise PreparationError('ARTIFACT_SMOKE_FAILED',component)
-                if install: root,source=ensure_artifact(component,key,spec,smoke)
+                if install:
+                    from runtime.ffmpeg_install import ensure, console_progress
+                    root,source=ensure(key,spec,progress=console_progress)
                 else:
                     root=destination(component,key,spec);source='cache'
                     if not cache_valid(root,spec): raise PreparationError('ARTIFACT_CACHE_MISSING',component)
@@ -321,8 +345,20 @@ def prepare(*, task=None, install=True, common_only=False, model_only=False, pro
         result['ready']=checked['ready']
         if task.get('asr_runtime') and task['asr_runtime']!=result['runtime']:
             result['ready']=False;result['issues'].append({'code':'ASR_RUNTIME_INCOMPATIBLE','stage':'identity','retryable':False})
-    except PreparationError as e: result['issues'].append(e.public())
+    except PreparationError as e:
+        result['issues'].append(e.public())
+        if install and (common_only or e.stage == 'ffmpeg'):
+            from runtime.bridge import record_runtime_issue
+            record_runtime_issue('ffmpeg', 'prepare_timeout' if e.code in {'FFMPEG_PREPARATION_TIMEOUT','FFMPEG_PREPARATION_STALLED'} else
+                                 'not_configured' if e.code == 'ARTIFACT_NOT_CONFIGURED' else 'prepare_failed')
+            result.update(next_action='deliver-preparation-failure', retryable=e.retryable,
+                message='本次采集依赖准备未完成，交付失败说明；不循环安装或等待，不把未检测当作通过。修复环境后可显式重试。')
     except (OSError,ValueError,KeyError,TypeError,RuntimeError,subprocess.SubprocessError):
         result['issues'].append({'code':'RUNTIME_PREPARATION_FAILED','stage':'prepare','retryable':False})
+        if install and common_only:
+            from runtime.bridge import record_runtime_issue
+            record_runtime_issue('ffmpeg','prepare_failed')
+            result.update(next_action='deliver-preparation-failure',retryable=False,
+                message='本次依赖准备失败，请交付失败说明；不循环安装或等待。')
     if result['ready']: result['next_action']='start'
     return result

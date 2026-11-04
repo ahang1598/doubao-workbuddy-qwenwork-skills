@@ -22,14 +22,13 @@ try:
         FormulaRule,
         IconSetRule,
     )
-except ModuleNotFoundError as _missing:  # 本机没装 openpyxl：报错现场直接给出两条出路
+except ModuleNotFoundError as _missing:  # 缺少 Python 库时先安装，再重跑原操作
     import sys
 
     sys.stderr.write(
-        f"\n[excel_format_range] 本机 Python 缺少 {_missing.name}，脚本无法在本地读写 Excel。\n"
-        "  装一次即可长期复用：python3 -m pip install --user openpyxl\n"
-        "  不装依赖也能做：把文件导入飞书在线表格，用飞书引擎读（服务端解析，无需本地库）——\n"
-        "     lark-cli sheets +workbook-import --file ./<文件名>.xlsx\n"
+        f"\n[excel_format_range] 本机 Python 缺少 {_missing.name}，本脚本未执行，本地文件未修改。\n"
+        "  请在运行本脚本的同一 Python 环境安装：python3 -m pip install openpyxl\n"
+        "  安装成功后重跑原命令；安装失败再说明未完成，不能声明本次处理 / 校验已通过。\n"
     )
     raise SystemExit(1) from _missing
 
@@ -105,12 +104,6 @@ def main():
     except ValueError as e:
         emit_error(str(e))
 
-    wb = load_or_create_wb(args.filepath)
-    try:
-        ws = require_sheet(wb, args.sheet)
-    except ValueError as e:
-        emit_error(str(e))
-
     font_requested = any((args.bold, args.italic, args.underline, args.font_size, args.font_color, args.font_name))
 
     fill = None
@@ -140,6 +133,19 @@ def main():
             protect = Protection(**_load_json_arg(args.protection))
         except Exception as e:
             emit_error(f"Invalid --protection JSON: {e}")
+
+    rule = None
+    if args.cond_format:
+        try:
+            rule = _build_conditional_rule(_load_json_arg(args.cond_format))
+        except (OSError, ValueError, TypeError, KeyError, AttributeError) as e:
+            emit_error(f"Failed to apply conditional format: {e}")
+
+    wb = load_or_create_wb(args.filepath)
+    try:
+        ws = require_sheet(wb, args.sheet)
+    except ValueError as e:
+        emit_error(str(e))
 
     merge_requested = args.merge and (er > sr or ec > sc)
     merge_value = None
@@ -210,8 +216,6 @@ def main():
 
     if args.cond_format:
         try:
-            spec = _load_json_arg(args.cond_format)
-            rule = _build_conditional_rule(spec)
             ws.conditional_formatting.add(range_str, rule)
         except Exception as e:
             emit_error(f"Failed to apply conditional format: {e}")

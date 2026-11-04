@@ -1,4 +1,4 @@
-"""Drain live evidence by default; explicit cancellation fences writes atomically."""
+"""默认排空直播证据；显式取消时原子封住写入并明确未完成范围。"""
 import json
 import math
 import time
@@ -14,7 +14,7 @@ def enabled(task):
 
 
 def freeze_media(store, conn, task, now):
-    """Close media writes, retaining every saved caption for semantic review."""
+    """关闭媒体写入但保留已保存字幕，让后续语义复核仍能使用完整证据。"""
     if task.get('media_frozen') or task.get('finishing', {}).get('phase') == 'completed':return
     segments = store._segments(conn)
     start = task.get('capture_epoch')
@@ -48,13 +48,14 @@ def freeze_media(store, conn, task, now):
 
 
 def advance(store, conn, now=None):
+    """推进收尾状态机：依次处理停止信号、媒体冻结、ASR、画面和复核。"""
     now = time.time() if now is None else now
     task = store._task(conn)
     from runtime.stop_signal import read as read_stop, request as signal_stop
     signal = read_stop(store.root)
     if task.get('kind','live') == 'live' and signal and not task.get('stop_requested'):
         task.update(stop_requested=True,stop_requested_at=signal['requested_at'],bounded_finishing=True)
-        task.setdefault('stop_reason', signal['reason'])
+        if not task.get('stop_reason'):task['stop_reason']=signal['reason']
         store._set_task(conn,task)
     if task.get('kind','live') == 'live' and task.get('freeze_on_end') and task.get('capture_status') in TERMINAL and not signal:
         signal_stop(store.root,origin='runtime',reason='source_ended',instruction=None)
@@ -160,6 +161,7 @@ def advance(store, conn, now=None):
 
 
 def advance_live(store, conn, task, now):
+    """推进直播收尾：区分排空和立即停止，并明确标记未检测片段。"""
     state = task.get('finishing', {})
     # Never reopen a sealed historical report or reinterpret its old deadline.
     if state.get('phase') == 'completed':
@@ -200,24 +202,36 @@ def advance_live(store, conn, task, now):
 
 
 def message(task, finish, pending=0):
-    """User-facing live completion policy, shared by CLI status and stop."""
+    """生成 CLI 状态和停止命令共用的提示，明确已检测范围与后续动作。"""
+    if task.get('stop_reason')=='execution_limit':
+        return '当前会话执行额度即将耗尽，已请求停止新增采集；继续处理已采集内容并交付质检和复盘报告，不代表直播停播。'
+    if task.get('kind','live') == 'live' and task.get('capture_status') == 'failed' and task.get('source_end_reason') == 'source_resolution_failed':
+        action = ('已停止剩余检测，基于已完成结果生成质检报告和内容复盘'
+                  if finish.get('mode') == 'immediate' or finish.get('reason') == 'user_immediate'
+                  else '继续检测已采集内容并生成质检报告和内容复盘')
+        return '来源解析失败，采集中断，未确认直播停播；' + action + '，注明缺失范围。'
     if task.get('inspection_policy') in {'lite_live_realtime_v1','lite_live_realtime_v2'} or task.get('bounded_finishing'):
         return '已结束采集，正在完成当前检测并生成质检报告和内容复盘。'
     from runtime.live_backlog import enabled as catch_up, MEDIA_SECONDS, FINISH_SECONDS
     from runtime.full_live import enabled as full
     if catch_up(task):
         return f'直播优先检测最新内容，积压时会跳过旧音频。停止后媒体处理最多 {MEDIA_SECONDS} 秒，抽检结果最多 {FINISH_SECONDS} 秒封板；报告注明未检范围，随后生成复盘。'
+    if task.get('inspection_policy')=='lite_video_full_v1':
+        return '视频按时间顺序检测至片尾，采集结束后继续处理全部待判片段；报告明确已完成范围及失败缺口。'
     if task.get('inspection_policy')=='lite_sample_v1':
+        if task.get('kind') == 'video':
+            seconds = task.get('sampling_parameters', {}).get('finish_seconds', 60)
+            return f'视频采集结束后最多收尾 {seconds} 秒，继续识别和逐窗口判定；报告分别说明已判定、超时及计划未抽检范围。'
         return '采集结束后最多收尾 60 秒，随后交付已完成的抽检结果和未检范围。质检报告先交付，再基于有限窗口生成复盘；如原对话中断，请回原对话续办。'
     if finish.get('mode') == 'immediate' or finish.get('reason') == 'user_immediate':
         return '已停止剩余检测，正在基于已完成的结果生成质检报告和内容复盘。未检测的内容会在报告中明确标注，不纳入质检结论。'
     if not pending and task.get('worker_status') in {'done', 'failed', 'stopped'}:
         return '已采集内容的判定已结束，正在生成质检报告和内容复盘；如有证据不足，报告将注明具体范围。'
-    from runtime.diagnostics import failure_label
+    from runtime.diagnostics import failure_label, capture_status_text
     failure = failure_label(task)
     prefix = (failure if failure.startswith('本地存储异常') else
               '媒体处理失败，采集已停止' if task.get('worker_status') == 'failed' and task.get('capture_status') != 'failed' else
-              '直播已结束' if task.get('capture_status') == 'ended' else
+              capture_status_text(task) if task.get('capture_status') == 'ended' else
               '采集异常结束' if task.get('capture_status') == 'failed' else
               '已停止采集' if task.get('capture_status') == 'stopped' else '已收到结束请求，正在停止采集')
     return prefix + ('，正在补齐画面与语音证据' if finish.get('waiting_for_asr') or finish.get('waiting_for_frames') else '') + '，正在继续检测已采集的剩余内容。检测完成后，将生成质检报告和内容复盘。如需停止剩余检测，请在对话中说“立即停止”；报告将保留已完成的结果，并注明未检测范围。'

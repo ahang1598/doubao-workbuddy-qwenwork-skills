@@ -1,11 +1,11 @@
 """Local-computer recommendation, acknowledged only after user-visible delivery."""
 import os
 from pathlib import Path
+from runtime.input_errors import ConfigurationError, InputValidationError
 
-RECOMMENDATION = ('强烈推荐在豆包工作中选择「工作任务 · 本地电脑」使用 Lite：'
-    '本地电脑上的直播质检提供「直播实时质检工作台」，可实时查看检测进度和质检结果；'
-    '监控结束、报告生成后，还可查看质检报告与内容复盘报告。'
-    '本地电脑也便于访问视频素材和查看报告。当前任务会继续执行，无需为此切换环境。')
+RECOMMENDATION = ('建议优先切换到豆包工作「工作任务 · 本地电脑」体验 Lite，'
+    '可在直播实时质检工作台查看检测进度、质检结果及报告，也便于访问视频素材。'
+    '当前任务会继续执行，切换电脑不是本次报告交付的前提。')
 NOTICE_ID = 'local-computer-recommendation-v1'
 
 
@@ -15,7 +15,7 @@ def is_doubao_cloud(env=None):
     context = env.get('BYTEDLIVE_INSPECT_HOST')
     if context is not None:
         if context not in {'doubao_cloud', 'local', 'other', 'unknown'}:
-            raise ValueError('invalid inspection host context')
+            raise ConfigurationError('HOST_CONTEXT_INVALID', '宿主配置 BYTEDLIVE_INSPECT_HOST 无效；根据实际运行环境设置为 doubao_cloud、local、other 或 unknown。')
     # A local desktop can run commands in a sandbox; host evidence wins over
     # Agent-supplied context and generic container markers.
     if env.get('CUA_USE_ISOLATED_ENV') == '0':
@@ -48,8 +48,8 @@ def acknowledged(store):
 
 def effective_delivery_mode(mode):
     """Cloud attachments must be self-contained, even for older local tasks."""
-    if mode not in {'local_dashboard', 'html_snapshot', 'chat'}:
-        raise ValueError('unsupported delivery mode')
+    if not isinstance(mode, str) or mode not in {'local_dashboard', 'html_snapshot', 'chat'}:
+        raise InputValidationError('START_DELIVERY_MODE_INVALID', 'delivery_mode 必须是 local_dashboard、html_snapshot 或 chat。')
     return 'html_snapshot' if mode == 'local_dashboard' and is_doubao_cloud() else mode
 
 

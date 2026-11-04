@@ -102,7 +102,7 @@
 
 ### 4.5 移动端/手机布局
 
-- 仅当 system prompt 明确当前请求来自移动端/手机时应用本节的移动端/手机约束；PC 请求保持 PC 布局，不要套用移动端/手机尺寸和间距。
+- 当 system、用户要求或目标容器任一明确为手机/移动端时，应用本节约束，与 `mode-echarts.md` 一致；明确面向 PC 的图表保持 PC 布局，不套用手机尺寸和间距。
 - 移动端/手机 ECharts 通常渲染在约 351×351dp 的方形 Canvas 中。不要使用整机屏幕高度推算图表空间，也不要机械复用模板中的 `legend.top: 28`、`grid.top: 64` 等示例值。
 - title 字号 14-16，legend/axisLabel 字号 10-12。标题包含 `subtext` 时必须额外预留一行高度；长标题优先单行截断，不要挤压 legend。
 - legend 不要和 title、grid、xAxis、dataZoom 重叠；series 多时缩小 legend 或使用 `legend.type: 'scroll'`。未使用 scroll 的普通 legend 可能自然换成多行，必须按实际行数增加表头高度，不要把它当作单行。

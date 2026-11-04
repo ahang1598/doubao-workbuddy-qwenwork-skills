@@ -1,6 +1,6 @@
-# get-credit-balance：个人积分余额
+# get-credit-balance：当前空间积分余额
 
-用于查询当前 CLI 凭据所属用户的个人有效积分余额。无需用户 ID 或任务 ID，不创建生成任务、不轮询，也不需要消耗积分的确认。
+用于查询本次选择的个人或团队空间有效积分余额。默认沿用已保存的空间（通过 `space list` 查看），单次覆盖使用 `--team-id TEAM_ID`（`0` 为个人）。无需用户 ID 或任务 ID，不创建生成任务、不轮询，也不需要消耗积分的确认。
 
 ```bash
 pippit-tool-cli get-credit-balance

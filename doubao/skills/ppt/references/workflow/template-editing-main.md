@@ -4,7 +4,7 @@
 
 **核心原则**:**模板适配内容,不是内容适配模板**。模板只提供视觉资产(组件 + 色系 + 字体),核心目的是把用户信息表达清楚、表达漂亮。不要为"保留模板"强行让内容适配组件 · 更不能跳过模板适配报错。
 
-**本地电脑模式**：SystemPrompt 里若出现 `Computer OS: Mac` 或 `Computer OS: Windows`，读完本文档后必须完整 Read [`local-compat.md`](local-compat.md) 与（若 Windows）[`windows-compat.md`](windows-compat.md)。
+**本地电脑模式**：按 `SKILL.md`「权威经验」中的运行环境规则判为本地电脑时，读完本文档后必须完整 Read [`local-compat.md`](local-compat.md) 与（若 Windows）[`windows-compat.md`](windows-compat.md)。
 
 
 ## 一、Agent 协作与通信
@@ -361,7 +361,7 @@ Organizer 已通过 return 交出报告并自然退出，MainAgent 现在可以�
 1. **看 return 报告第 0 段告警**（若有）：`missing_pages`（Organizer 对比 page-plan 目标页数 vs deck 实际页数发现有页没写入 → 逐页照单补写）/ `no_new_pages_seen`（Organizer 全程没 poll 到新页 → 必须自己走完全稿 lint + 逐页截图 review）
 2. **修 return 报告第 3、4 段未修复 P0**：Organizer 已 return，MainAgent 可裸调 `+update-slide` / `+replace-slide` 修复。每个 P0 修完后 `+screenshot` + Read 确认修好了
 3. **合并 Step 6c 自己发现的 lint 问题**：如果 Step 6c 的全文 lint 有 error 但 return 里没提到（例如 Organizer 收尾窗口用光前没审到），一并修
-4. **二次交付**：`present_files` 再交付一次 `lark.deck.url`（**同一个 URL，但这是第二次卡片交付**），正文回复说明"打磨完成，最终稿如下"。若 SystemPrompt 里出现 `Computer OS: Mac`/`Windows`，先 `lark-cli drive +export --token <file_token> --doc-type slides --file-extension pptx --output-dir "$WORK_DIR"` 导出 pptx，再对本地路径调 `present_files` 一次
+4. **二次交付**：`present_files` 再交付一次 `lark.deck.url`（**同一个 URL，但这是第二次卡片交付**），正文回复说明"打磨完成，最终稿如下"。若按 `SKILL.md` 运行环境规则判为本地电脑，先 `lark-cli drive +export --token <file_token> --doc-type slides --file-extension pptx --output-dir "$WORK_DIR"` 导出 pptx，再对本地路径调 `present_files` 一次
 
 
 ## 四、Organizer 流程

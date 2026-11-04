@@ -1,4 +1,4 @@
-> ⚠️ **强制前置条件**：本文档共 620 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 618 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Chart
 
@@ -246,13 +246,11 @@ python3 scripts/lark_chart_thumbnail_decode.py \
   --output-dir "/tmp/lark-chart-preview-$CID" --expected-chart-id "$CID"
 ```
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 不适合 shell 管道时，可直接运行 `python3 scripts/lark_chart_thumbnail_decode.py --url "$URL" --sheet-id "$SID" --chart-id "$CID" --output-dir "./chart-preview"`。命令成功后读取 `read_required[].path` 中的图片；多图可一次读取，仅超时时再分批。
 
 4. **最终统一质检**：全部创建和更新完成后，对每个受影响子表运行 `python3 scripts/lark_chart_quality_check.py "<表格 URL 或 spreadsheet token>" --worksheet-id "<reference_id>"`。该脚本依赖当前 `lark-cli` 支持 `+chart-list --only-thumbnail`；发布时先升级 CLI 再发布 skill，遇到 unknown flag / unsupported flag 时升级 CLI 后重跑，不得跳过缩略图门禁。按 `next_action` 处理并读完 `data.thumbnail_fetch.read_required[].path`；`unavailable_chart_ids` 必须为空，仅图片读取超时时再分批。
 
-按 `next_action` 处理非成功结果，不要自行展开 base64 解析。交付时简短分别声明“数据验收 / 静态质检 / 视觉验收”通过或未通过，不要合并成含义不清的“质检通过”。任何修图后必须重新运行最终 QC，只认最终一轮结果。
+按 `next_action` 处理非成功结果，不要自行展开 base64 解析。出现 `stop_reason` 时不要立即重跑：不可重试的错误先修复权限或参数；临时错误可稍后重跑一次，或直接报告未完成范围与停止原因。交付时简短分别声明“数据验收 / 静态质检 / 视觉验收”通过或未通过，不要合并成含义不清的“质检通过”。任何修图后必须重新运行最终 QC，只认最终一轮结果。
 
 模型读取缩略图后按三项标准验收：
 
@@ -265,7 +263,7 @@ python3 scripts/lark_chart_thumbnail_decode.py \
 - **横轴标签保持水平**：标签倾斜时，先扩宽图表并按需增加高度，通过 `+chart-update --properties` 调整 `size.width` / `size.height`，再用 `+chart-config-update --x-axis-label-angle 0` 恢复水平；调整后的标签应水平摆放、显示完整且不互相重叠。
 - **折线整系列标签默认关闭**：折线图及组合图中的折线系列默认关闭整系列的逐点标签，仅用户明确要求时开启；末点、峰值、关键点等单点标签可按展示需要单独设置。验收时核对该策略；需关闭已有折线图的全局标签时用 `+chart-config-update --data-labels none`。已有系列级标签的折线图或组合图需调整标签时，先回读当前 snapshot，用 `+chart-update --properties` 完整回写 `snapshot.plotArea.plot.series` 数组，移除折线条目的 `labels`，保留按需设置的单点标签；若已有全局 `snapshot.plotArea.plot.labels`，先把需保留的标签内容转为对应系列的 `labels`，再用全局 `labels: null` 清除，避免折线继续继承全局标签。仅当用户明确要求隐藏全部数据标签时，同时清理对应折线的 `series[].points.point[].labels`，以及普通折线图的 `plot.points.point[].labels`；保留点索引、标记大小和其它样式。
 
-三项必须同时通过。模型在分析中只要识别出任一关键元素重叠、截断、遮挡或无法逐项辨认，就必须明确判定视觉验收未通过，实际修图后重新运行最终 QC 并重读受影响图片；不得以“核心信息可读”“只是小问题”或自动检查通过为由保留缺陷。`lark_sheet_selfcheck.py` 的 `CHECK_OK` 不包含图表视觉结论，不能替代本门禁。
+三项必须同时通过。模型在分析中只要识别出任一关键元素重叠、截断、遮挡或无法逐项辨认，就必须明确判定视觉验收未通过，实际修图后重新运行最终 QC 并重读受影响图片；不得以“核心信息可读”“只是小问题”或自动检查通过为由保留缺陷。`lark_sheet_selfcheck.py` 的 `CHECK_PASS` 不包含图表视觉结论，不能替代本门禁。
 
 静态检查仍覆盖几何重叠、遮挡内容、越界、最小尺寸、数值源格式、全零 / 空系列和常量系列重复标签。采样未覆盖完整系列时列为不可验证，不能据此修改整个系列。退出码 `0` 也不代表数据语义与视觉判断已完成。
 
@@ -291,6 +289,8 @@ _公共四件套 · 系统：`--dry-run`_
 | --- | --- | --- | --- |
 | `--chart-id` | string | optional | 指定单个图表 reference_id 过滤 |
 | `--only-thumbnail` | bool | optional | 仅返回图表渲染缩略图，不返回 snapshot 配置；图片字节位于 details.thumbnail.base64（不含 data: 前缀） |
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ### `+chart-create-basic`
 
@@ -593,8 +593,6 @@ lark-cli sheets +chart-update --url "..." --sheet-id "$SID" --chart-id "chrXXX" 
 - raw 堆叠字段位于 `snapshot.plotArea.plot.extra.stack`；普通任务仍使用 `--stack normal|percent`。`plotArea.plot.labels` 对象的存在性就是开关，关闭标签时省略整个对象；普通任务使用 `--data-labels none`。
 - `axes[].label` 不接受 `format` / `number_format`。日期、百分比和数值格式应修改源单元格的 `cell_styles.number_format`。
 
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
-
 ### `+chart-delete`
 
 示例：
@@ -617,4 +615,4 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
 
 > `+chart-create` / `+chart-update` 是 write 级别，按需可用 `--dry-run` 预览，不要求 `--yes`。只有 `+chart-delete`（high-risk-write）必须 `--yes`。
 
-===== 全文完（共 620 行）=====
+===== 全文完（共 618 行）=====

@@ -1,0 +1,43 @@
+{
+  "version": "2.0",
+  "source": {
+    "title": "用户指定的项目浅色与深色底图"
+  },
+  "profileGeneration": {
+    "type": "theme-token-assumptions",
+    "pixelCalibrationVerified": false
+  },
+  "defaultStyleId": "amap-custom-light",
+  "styles": [
+    {
+      "id": "amap-custom-light",
+      "name": "项目自定义浅色",
+      "mapStyle": "amap://styles/afaeaaeb2de4eae796caad75fc562503",
+      "source": "project-custom",
+      "profile": {
+        "tone": "light",
+        "saturation": "low",
+        "visualDensity": "medium",
+        "moods": ["brand", "clean", "natural"],
+        "dominantHues": ["neutral", "green", "blue"],
+        "referenceColors": ["#F5F8FC", "#E7EBF3", "#C9EFD9", "#A9D9F5"]
+      },
+      "defaultFeatures": ["bg", "road", "point", "building"]
+    },
+    {
+      "id": "amap-custom-dark",
+      "name": "项目自定义深色",
+      "mapStyle": "amap://styles/a03ca4ff14cc2f634055729d93a2f71a",
+      "source": "project-custom",
+      "profile": {
+        "tone": "dark",
+        "saturation": "low",
+        "visualDensity": "medium",
+        "moods": ["night", "dramatic"],
+        "dominantHues": ["neutral"],
+        "referenceColors": ["#171A1F", "#242932", "#343B46"]
+      },
+      "defaultFeatures": ["bg", "road", "point", "building"]
+    }
+  ]
+}

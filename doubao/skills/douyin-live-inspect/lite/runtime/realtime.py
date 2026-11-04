@@ -1,4 +1,5 @@
 """PCM journal -> utterance evidence. Recording chunks never gate local inference.
+# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 
 The pipe reader only persists audio. Model calls and cloud recovery are owned by
 separate threads, so a slow recognizer cannot apply backpressure to live capture.

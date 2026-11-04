@@ -32,6 +32,7 @@ def completion(store):
     # A host delivery failure must not gate independent report generation.
     generation = ('recap-input --begin' if not complete and not recap.get('available')
                   and not failed_recap and store.status().get('report_ready') else 'status')
+    if recap.get('recovery_blocked'): generation = 'blocked'
     return {'workflow_complete': complete, 'workflow_outcome': ('failed' if failed_recap else 'ready') if complete else 'pending', 'report_deliveries': deliveries,
             'pending_reports': pending, 'completion_next_action': generation if generation != 'status' else action,
             'generation_next_action': generation, 'delivery_next_action': action,
@@ -45,10 +46,21 @@ def exported(store,version,kinds):
     import json
     try:
         manifest=json.loads((store.root/'html/manifest.json').read_text())
+        if manifest.get('artifact_status', 'ready') != 'ready':return False
         found={a['type'] for a in manifest['artifacts'] if a.get('status')=='ready'
                and store.local_path(a['path']).is_file()}
         return manifest.get('evidence_version')==version and kinds <= found
     except (OSError,ValueError,KeyError,TypeError):return False
+
+
+def outcome_available(task, kind, outcome, status, recap):
+    """判断现有报告结果是否可交付；回执确认和遥测读取使用同一业务规则。"""
+    if kind == 'quality':
+        return bool(status['report_ready'] if outcome == 'ready' else status.get('report_blocked_reason'))
+    if outcome == 'ready':return bool(recap.get('available'))
+    from runtime.realtime_policy import current
+    return (recap['status'] == 'blocked' or recap.get('terminal_failure', False)
+            or (not current(task) and recap['status'] == 'failed'))
 
 
 def acknowledge(store, value):
@@ -68,10 +80,7 @@ def acknowledge(store, value):
     report = recap_report(store)
     if value.get('evidence_version') is None or value['evidence_version'] != report.get('evidence_version'):
         raise ValueError('report not ready or evidence version changed')
-    available = status['report_ready'] if value['kind'] == 'quality' else report.get('available')
-    from runtime.realtime_policy import current
-    failed = bool(status.get('report_blocked_reason')) if value['kind'] == 'quality' else (report['status'] == 'blocked' or report.get('terminal_failure', False) or (not current(store.task()) and report['status'] == 'failed'))
-    if (outcome == 'ready' and not available) or (outcome == 'failed' and not failed):
+    if not outcome_available(store.task(), value['kind'], outcome, status, report):
         raise ValueError('report outcome not available')
     with store.connection(True) as conn:
         task = store._task(conn)

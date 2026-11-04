@@ -64,7 +64,16 @@ python3 scripts/lark_profile_table.py --url "<表格URL>" --sheet-name "<子表�
 
 `lark_detect_subtables.py` / `lark_profile_table.py` 显式传小 `--max-chars` 控制体量，因此仍可能命中 `has_more`；命中时它们以错误退出并报告已读取的 `actual_range`，绝不基于半截数据给出候选范围或画像。遇到此错误，以 `actual_range` 为已完成窗口，缩小列数或从其末行之后继续读；跨窗口的候选范围、汇总行和写入落点必须再用 CLI 核对，不能把单个窗口结果当整表结论。
 
-脚本只读，不做任何写入。它们的输出用于降低 token 和定位错误；后续需要公式、样式、批注、精确原始值时，仍按本文件规则直接调用 `+cells-get` / `+table-get` / `+csv-get`。写入前如果使用了 `lark_profile_table.py`，至少读取并使用这些字段：`summary.header_row`、`summary.data_range`、`summary.data_row_segments`、`field_map`、`risk_warnings`、`visibility`、`write_hints.safe_append_col` 和 `special_rows`。仅当 `risk_warnings` 不含 `data_range_has_gaps` 时，才可把 `data_range` 当连续写入范围；有缺口时按 `data_row_segments` 分段读写。
+脚本只读，不做任何写入。它们的输出用于降低 token 和定位错误；后续需要公式、样式、批注、精确原始值时，仍按本文件规则直接调用 `+cells-get` / `+table-get` / `+csv-get`。写入前如果使用了 `lark_profile_table.py`，至少读取并使用这些字段：`summary.header_row`、`summary.data_range`、`summary.data_row_segments`、`field_map`、`risk_warnings`、`visibility`、`write_hints.safe_append_col` 和 `special_rows`。`data_range` 保留表头后至最后非空行，`data_rows` 是该候选范围内实际读到的行数；`special_rows` 只是关键词线索，确认语义后再排除真实汇总 / 签名行，不按关键词删记录。确认业务边界且 `risk_warnings` 不含 `data_range_has_gaps` 时，才可按连续范围写入；有缺口时按 `data_row_segments` 分段读写。
+
+**关联前检查键与返回值集合**：已确认范围和表头、且比较值在 CSV 中保真时，可同时画像并检查键关系：
+
+```bash
+python3 scripts/lark_profile_table.py --url "<表格URL>" --sheet-name "<子表名>" \
+  --range "A1:H200" --header-row 1 --key-cols A,C --value-cols F,G
+```
+
+`--header-row` 是工作表绝对行号，`0` 表示所读范围没有表头；键诊断必须显式给出，避免把首条记录误作表头。列参数是工作表列字母；`key_profile` 区分同键同值重复与同键不同返回值，样例保留整组字段对应和源行号，不自动取首项、去空格或转换类型；样例有展示上限，生成结果须使用完整来源。疑似汇总行不会自动排除，先按任务确定范围；仅窗口内唯一不代表全表唯一。长数字或格式化显示值仍按上文改用精确原值读取，并对全量键做同样分组核验。
 
 脚本关键 flag：
 
@@ -72,6 +81,7 @@ python3 scripts/lark_profile_table.py --url "<表格URL>" --sheet-name "<子表�
 | --- | --- | --- |
 | `--skip-hidden` | profile / detect，关闭（默认包含隐藏行列） | 只分析可见数据时开启；此时必须使用 profile 的 `data_row_segments`，不要把连续 `data_range` 直接用于写入。 |
 | `--max-chars` | inspect `8000`；profile / detect `25000` | 输出过大时缩小范围或降低值；profile / detect 若截断会报错并给 `actual_range`，按窗口继续。 |
+| `--header-row` / `--key-cols` / `--value-cols` | profile，默认不启用键诊断 | 显式表头（0为无表头）、联合键列及整组返回字段；返回字段可省略，此时只统计重复键。 |
 | `--header-scan-rows` | profile `20` | 表头前有多行标题、说明或空行时提高；过大时结合 `possible_multi_row_header` 补读确认，不要仅凭评分结果写入。 |
 | `--max-sheets` | inspect `3` | 未指定 sheet 时仅前 N 个 sheet 带 layout / preview，其余仍返回摘要并在 warnings 说明。 |
 | `--max-merge-components` | detect `2000` | 超限会跳过 gap 合并并告警；需缩小窗口或人工复核子表边界。 |
@@ -314,4 +324,4 @@ subprocess.run(["lark-cli","sheets","+table-put","--url",URL,"--sheets","-"],
 - `DryRun` 输出请求模板：`--sheet-name` 在 dry-run 输出里生成为 `<resolve:销售明细>` 占位符，不实际解析。
 - `Execute` 阶段才进行 sheet-name → sheet-id 解析与 API 调用。
 
-===== 全文完（共 317 行）=====
+===== 全文完（共 327 行）=====

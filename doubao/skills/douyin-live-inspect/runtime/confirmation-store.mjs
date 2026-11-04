@@ -1,3 +1,4 @@
+// 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 import { randomBytes, createHash } from 'node:crypto';
 import { mkdirSync, chmodSync, writeFileSync, readFileSync, renameSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';

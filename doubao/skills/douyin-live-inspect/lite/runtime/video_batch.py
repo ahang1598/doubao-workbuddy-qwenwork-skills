@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块的检测、状态、遥测或交付边界；敏感输入和原始响应不进入日志。
 """Agent-driven batch: each next call advances at most one isolated video task."""
 from runtime.platform_support import fcntl, nofollow_open, private_directory, private_file
 import json
@@ -12,7 +13,7 @@ from runtime.delivery_notice import attach_notice
 def public(root, data):
     items = []
     for i, item in enumerate(data['videos']):
-        entry = {k: item[k] for k in ('name', 'status', 'error') if k in item}
+        entry = {k: item[k] for k in ('name', 'status', 'error', 'diagnostic') if k in item}
         path = root / 'tasks' / f'{i+1:04d}'
         if (path / 'inspection.db').exists():
             store = Store(path)
@@ -25,7 +26,7 @@ def public(root, data):
 
 
 def dispatch(command, directory, value=None):
-    from runtime.task_telemetry import observe_batch, batch_operation
+    from runtime.transaction import observe_batch, batch_operation
     with batch_operation(directory):
         result = _dispatch(command, directory, value)
     if command == 'batch-create':
@@ -55,7 +56,10 @@ def _dispatch(command, directory, value=None):
         # Reserve the batch directory; never overwrite an existing batch or task.
         from runtime.task_context import reserve, FILE
         task_id=reserve(root)
-        if task_id is None or any(p.name != FILE for p in root.iterdir()): raise ValueError('batch directory already in use')
+        # The business entry reserves identity and workflow state before batch creation.
+        entry_files={FILE, FILE+'.lock', '.workflow-telemetry.json', '.workflow-telemetry.json.lock'}
+        if task_id is None or any(p.name not in entry_files or p.is_symlink() or not p.is_file()
+                                  for p in root.iterdir()): raise FileExistsError('batch directory already in use')
         (root / 'tasks').mkdir(mode=0o700)
         data = {'id': task_id, 'stopped': False, 'delivery_mode': mode, 'asr_policy':policy,
                 'image_inspection':image_inspection, 'videos': [{**item, 'status': 'queued'} for item in videos]}
@@ -66,7 +70,7 @@ def _dispatch(command, directory, value=None):
     with os.fdopen(fd, 'w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         data = json.loads((root / 'batch.json').read_text(encoding='utf-8'))
-        from runtime.task_telemetry import batch_changes
+        from runtime.transaction import batch_changes
         with batch_changes(data):
             if command == 'batch-stop':
                 data['stopped'] = True
@@ -77,18 +81,31 @@ def _dispatch(command, directory, value=None):
                         if (path / 'inspection.db').exists(): Store(path).request_stop()
                 return public(root, data)
             # Explicit child continuation never rewinds the batch. A newer
-            # delivered full snapshot can upgrade a prior partial item in place.
+            # delivered effective snapshot can upgrade an incomplete item in place.
             for i,item in enumerate(data['videos']):
                 path=root/'tasks'/f'{i+1:04d}'
-                if item['status']=='partial' and (path/'inspection.db').exists():
+                recoverable = item['status']=='partial' or (item['status']=='failed' and item.get('error')=='NO_REVIEWED_CONTENT')
+                if recoverable and (path/'inspection.db').exists():
                     from runtime.video_report import delivered_report
                     delivered=delivered_report(Store(path))
-                    if delivered and delivered.get('processing_complete') and delivered.get('coverage_complete'):
-                        item['status']='completed'
-                        atomic_json(root/'batch.json',data)
+                    if delivered and delivered['report']['conclusion'].get('effective_evidence'):
+                        status='completed' if delivered.get('processing_complete') and delivered.get('coverage_complete') else 'partial'
+                        if item['status'] != status:
+                            item['status']=status
+                            item.pop('error',None)
+                            atomic_json(root/'batch.json',data)
             if command == 'batch-status' or data['stopped']: return public(root, data)
             if command != 'batch-next': raise ValueError('unknown batch command')
+            retry_index = (value or {}).get('retry_index')
+            if retry_index is not None:
+                if type(retry_index) is not int or not 1 <= retry_index <= len(data['videos']):
+                    raise ValueError('invalid retry index')
+                selected = data['videos'][retry_index - 1]
+                if selected['status'] != 'failed':
+                    raise ValueError('retry requires a failed item')
+                selected['status'] = 'queued'
             for i, item in enumerate(data['videos']):
+                if retry_index is not None and i + 1 != retry_index: continue
                 if item['status'] in {'completed', 'partial', 'failed'}: continue
                 path = root / 'tasks' / f'{i+1:04d}'
                 if (path / 'inspection.db').exists():
@@ -97,7 +114,10 @@ def _dispatch(command, directory, value=None):
                     from runtime.video_report import delivered_report
                     delivered=delivered_report(store)
                     if delivered:
-                        item['status'] = 'completed' if delivered.get('processing_complete') and delivered.get('coverage_complete') else 'partial'
+                        if not delivered['report']['conclusion'].get('effective_evidence'):
+                            item.update(status='failed', error='NO_REVIEWED_CONTENT')
+                        else:
+                            item['status'] = 'completed' if delivered.get('processing_complete') and delivered.get('coverage_complete') else 'partial'
                         atomic_json(root / 'batch.json', data)
                         continue
                     if not status['segment_count'] and store.task()['worker_status'] in {'done', 'failed'}:
@@ -118,13 +138,14 @@ def _dispatch(command, directory, value=None):
                     store.update_task(notice_batch={'root':str(root),'id':data['id']})
                     delivery = attach_notice(store, video_delivery(resumed=True))
                     item['status'] = 'active'
+                    item.pop('error', None)
                     atomic_json(root / 'batch.json', data)
                     return {**public(root, data), 'current_index': i+1, 'task_dir': str(path),
                             'delivery_required': True, 'delivery': delivery, 'next_action': 'deliver-then-review'}
                 item['status'] = 'active'
                 atomic_json(root / 'batch.json', data)
                 try:
-                    from runtime.task_telemetry import batch_context
+                    from runtime.transaction import batch_context
                     with batch_context(root, data):
                         result = start(SimpleNamespace(task_dir=str(path)),
                             {k: v for k, v in {**item, 'delivery_mode': data['delivery_mode'], 'asr_policy':data.get('asr_policy','local_only'), 'image_inspection':data.get('image_inspection',True)}.items()
@@ -133,12 +154,22 @@ def _dispatch(command, directory, value=None):
                         item['status'] = 'queued'
                         atomic_json(root / 'batch.json', data)
                         return {**public(root, data), 'setup': result}
+                    item.pop('error', None)
+                    atomic_json(root / 'batch.json', data)
                     return {**public(root, data), 'current_index': i+1, 'current': result}
                 except (ValueError, OSError, RuntimeError) as error:
-                    # A partially created task remains resumable; never start a replacement.
-                    if (path / 'inspection.db').exists():
-                        return {**public(root, data), 'current_index': i+1, 'next_action': 'batch-next'}
-                    item.update(status='failed', error=getattr(error, 'code', 'VIDEO_START_FAILED'))
+                    from runtime.diagnostics import failure_details, is_memory_error
+                    from runtime.diagnostics import BUSINESS_ERRORS as ERRORS
+                    code = getattr(error, 'code', None)
+                    code = 'OUT_OF_MEMORY' if is_memory_error(error) else 'PERMISSION_DENIED' if isinstance(error, PermissionError) else code if code in ERRORS else 'VIDEO_START_FAILED'
+                    detail = failure_details(error)
+                    item.update(error=code, diagnostic={**detail,
+                                                       'index': i+1, 'stage': detail.get('stage', 'video_start')})
+                    # A partially created task remains resumable; persist its error too.
+                    resumable = (path / 'inspection.db').exists()
+                    if not resumable: item['status'] = 'failed'
                     atomic_json(root / 'batch.json', data)
+                    if resumable:
+                        return {**public(root, data), 'current_index': i+1, 'next_action': 'batch-next'}
                     return {**public(root, data), 'next_action': 'batch-next'}
             return {**public(root, data), 'status': 'completed' if all(item['status']=='completed' for item in data['videos']) else 'partial' if any(item['status'] in {'completed','partial'} for item in data['videos']) else 'failed'}

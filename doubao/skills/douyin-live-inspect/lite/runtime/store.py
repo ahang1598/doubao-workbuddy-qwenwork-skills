@@ -3,6 +3,7 @@
 Retains durable evidence, evidence revisions, without shared
 rooms, audience data or comment queues. Semantic decisions are supplied by Agent.
 """
+# Store 是 Lite 的持久化边界：任务、片段、复核批次和交付状态都必须先落库再对外报告。
 from __future__ import annotations
 import contextlib
 import hashlib
@@ -17,58 +18,10 @@ import uuid
 from datetime import datetime, timezone
 
 SCENE_WINDOW_MS = 30 * 1000
-FEISHU_GROUP_URL = 'https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=1b0qd90e-4e8e-49cd-b9f6-2466d97d791f'
-FEISHU_GROUP_MARKDOWN = f'[加入飞书群沟通开通]({FEISHU_GROUP_URL})'
-WORKORDER_URL = 'https://console.volcengine.com/workorder/create?step=3&SubProductID=P00000078&sessionID=f3eb625d-af6c-11f1-b754-4a64e05716c9&from=doubaoworkcli'
-WORKORDER_FORM = {
-    'related_product': '视频服务 / 企业直播',
-    'issue_category': '操作指导',
-    'problem_description': '如何开通企业直播质检服务',
-}
 
-
-WORKORDER_INSTRUCTIONS = ('- **相关产品**：视频服务 / 企业直播\n'
-                         '- **问题分类**：操作指导\n'
-                         '- **问题描述**：如何开通企业直播质检服务\n\n'
-                         '选择消息提醒接收方式后，点击“提交工单”，等待处理结果。提交不代表已开通。')
-
-CAPABILITY_URL = 'https://docs.volcengine.com/docs/3019/2024033?lang=zh'
-CAPABILITY_MARKDOWN = f'[直播质检能力介绍]({CAPABILITY_URL})'
-
-OPENING_GUIDANCE = (f'如需使用正式版，可选择以下任一方式：\n\n'
-                    f'**方式一：飞书群沟通（更高效）**\n\n'
-                    f'{FEISHU_GROUP_MARKDOWN}，咨询企业直播质检服务开通事宜，沟通更高效。\n\n'
-                    f'**方式二：提交工单**\n\n'
-                    f'[提交开通工单]({WORKORDER_URL})，按以下内容填写：\n\n'
-                    f'{WORKORDER_INSTRUCTIONS}\n\n{CAPABILITY_MARKDOWN}')
-
-# A short read may be transient or indicate a truncated file. A bounded retry
-# is safe for reads and before the write body, not proof of normal WAL contention.
 def _is_transient_read_error(error):
     return (isinstance(error, sqlite3.OperationalError)
             and getattr(error, 'sqlite_errorcode', None) == 522)
-
-
-def upgrade_guidance(*, video=False):
-    message = '本次 Lite 体验已结束，已采集内容将继续完成识别和判定，质检结果就绪后仍会正常交付。'
-    if video: message = '视频采集已结束，已有内容将继续识别和判定，报告可独立交付。'
-    return {'code':'EDITION_UPGRADE_AVAILABLE' if video else 'LITE_TRIAL_ENDED',
-            'message':f'{message}\n\n{OPENING_GUIDANCE}',
-            'edition_comparison':{
-                'lite':['无需火山引擎账号即可体验核心直播质检'],
-                'official':['规则类型更丰富，可按账号和业务需求灵活配置','支持直播与视频质检','通过火山引擎账号统一管理项目、任务和报告','支持统一管理质检报告与直播内容复盘报告']},
-            'edition_presentation':{'heading':'正式版能力升级','format':'value_first','avoid_comparison_table':True},
-            'feishu_group_url':FEISHU_GROUP_URL,
-            'feishu_group_markdown':FEISHU_GROUP_MARKDOWN,
-            'opening_guidance':OPENING_GUIDANCE,
-            'link_text':'提交工单申请开通正式版',
-            'markdown':OPENING_GUIDANCE,
-            'workorder_instructions':WORKORDER_INSTRUCTIONS,
-            'capability_url':CAPABILITY_URL,
-            'capability_markdown':CAPABILITY_MARKDOWN,
-            'workorder_url':WORKORDER_URL,
-            'workorder_form':WORKORDER_FORM.copy(),
-            'workorder_copy_text':'相关产品：视频服务 / 企业直播\n问题分类：操作指导\n问题描述：如何开通企业直播质检服务'}
 
 
 ASR_DONE = {'success', 'failed', 'timed_out', 'submission_unknown', 'no_audio'}
@@ -174,10 +127,16 @@ class Store:
     @classmethod
     def create(cls, task_dir, *, name, scenario, source, rules, kind="live", **config):
         if kind not in {'live','video'}:raise ValueError('unsupported task kind')
-        from runtime.sampling import POLICY, PARAMETERS
-        if config.get('inspection_policy')==POLICY:
+        from runtime.sampling import POLICY, PARAMETERS, VIDEO_FULL_POLICY
+        if config.get('inspection_policy') == POLICY:
             config['sampling_parameters']=dict(PARAMETERS)
+            if kind == 'video':
+                config['sampling_parameters'].update(pending_seconds=900, review_seconds=180, finish_seconds=900)
         if 'image_inspection' in config and type(config['image_inspection']) is not bool:raise ValueError('image_inspection must be boolean')
+        if config.get('inspection_policy') == VIDEO_FULL_POLICY:
+            config['sampling_parameters'] = {'period_ms': int(config.get('segment_seconds',30)*1000),
+                'window_ms': int(config.get('segment_seconds',30)*1000), 'max_frames':2,
+                'pending_seconds':None, 'review_seconds':None, 'finish_seconds':None}
         if config.get('image_inspection') is False and 'sampling_parameters' in config:config['sampling_parameters']['max_frames']=0
         duration=config.setdefault('max_duration_seconds',None)
         if duration is not None and (type(duration) is not int or duration <= 0):
@@ -205,7 +164,7 @@ class Store:
               UNIQUE(session_id,idx),UNIQUE(session_id,id));
             CREATE TABLE submissions(id TEXT PRIMARY KEY,segment_id INTEGER NOT NULL,digest TEXT NOT NULL);
             CREATE TABLE operation_logs(id INTEGER PRIMARY KEY,created_at TEXT,kind TEXT,message TEXT,segment_id INTEGER);''')
-            if task.get('inspection_policy')==POLICY:
+            if task.get('inspection_policy') in {POLICY, VIDEO_FULL_POLICY}:
                 c.execute('CREATE TABLE inspection_windows(session_id TEXT,idx INTEGER,data TEXT NOT NULL,PRIMARY KEY(session_id,idx))')
             c.execute('INSERT INTO live_sessions VALUES(?,?)',(sid,encode(task)))
             c.commit()
@@ -213,7 +172,7 @@ class Store:
         for folder in ('media','frames','audio'): (root/folder).mkdir(mode=0o700)
         from runtime.media_jobs import initialize
         initialize(obj)
-        from runtime.task_telemetry import start_store
+        from runtime.transaction import start_store
         start_store(obj)
         return obj
 
@@ -225,7 +184,7 @@ class Store:
             try: phase('database_write' if write else 'database_read')
             except OSError: pass
         from runtime.diagnostics import cleanup_actions, log_failure
-        from runtime.telemetry_transaction import Connection, PendingEvents
+        from runtime.transaction import Connection, PendingEvents
         events = []
         # Reconnect only before yielding. Never replay caller code or a commit.
         for attempt in range(1, 5):
@@ -247,7 +206,8 @@ class Store:
                     time.sleep(.02 * (2 ** (attempt - 1)))
                     continue
                 raise
-        pending = PendingEvents(self,c) if write else None
+        from runtime.transaction import enabled as telemetry_enabled
+        pending = PendingEvents(self,c) if write and telemetry_enabled() else None
         c.telemetry = pending
         stage = 'transaction_body'
         primary = None
@@ -255,7 +215,7 @@ class Store:
             yield c
             if write:
                 stage = 'transaction_commit'
-                events = pending.prepare()
+                events = pending.prepare() if pending is not None else []
                 c.commit()
                 if active():
                     try: phase('database_committed')
@@ -268,7 +228,7 @@ class Store:
         if primary is not None:
             raise primary
         if events:
-            from runtime.task_telemetry import send, notify_parent
+            from runtime.transaction import send, notify_parent
             try:
                 send(events)
             except Exception:pass
@@ -293,8 +253,9 @@ class Store:
         raise last
     def _task(self,c):return json.loads(c.execute('SELECT data FROM live_sessions WHERE id=?',(self.session_id,)).fetchone()[0])
     def _set_task(self,c,data):
-        from runtime.telemetry_rules import task_changing
+        from runtime.transaction import task_changing
         before = self._task(c)
+        if data == before: return
         # Delivery generations are business state, including when telemetry is off.
         if (data.get('kind') == 'video'
                 and before.get('worker_status') in {'done', 'failed', 'stopped'}
@@ -337,7 +298,8 @@ class Store:
             from runtime.realtime_policy import current, current_work
             if not current(task):return {}
             _, _, stalled, waiting = self._read_with_retry(lambda conn:current_work(self, conn, time.time()))
-            if not stalled and interval_ms(waiting) <= 180000:return {}
+            from runtime.realtime_policy import no_speech_evidence
+            if not stalled and interval_ms(waiting) <= 180000 and not any(no_speech_evidence(task, s) for s in waiting):return {}
         # Re-read inside the write transaction; a concurrent stop must not be
         # overwritten by the read-only fast path's older task snapshot.
         with self.connection(True) as c:return advance(self,c)
@@ -399,17 +361,22 @@ class Store:
 
     def request_stop(self, *, immediate=False, origin=None, reason=None, user_instruction=None, confirm_discard=False):
         from runtime.finishing import advance
+        execution_limit=reason=='execution_limit'
+        if execution_limit:
+            from runtime.realtime_policy import current
+            if origin!='agent' or immediate or not current(self.task()):
+                raise ValueError('execution limit requires current live drain')
         signal = None
-        if not immediate and reason == 'user_request':
+        if not immediate and reason in {'user_request','execution_limit'}:
             from runtime.stop_signal import request
             signal=request(self.root,origin=origin,reason=reason,instruction=user_instruction)
         with self.connection(True) as c:
             task=self._task(c)
             from runtime.review_contract import enabled as protocol_v2
             if protocol_v2(task):
-                if origin not in {'agent','dashboard'} or reason!='user_request':
+                if origin not in {'agent','dashboard'} or reason not in {'user_request','execution_limit'}:
                     raise ValueError('stop requires explicit user request')
-                if origin=='agent' and (not isinstance(user_instruction,str) or not user_instruction.strip()):
+                if origin=='agent' and not execution_limit and (not isinstance(user_instruction,str) or not user_instruction.strip()):
                     raise ValueError('agent stop requires user instruction')
                 if immediate and not confirm_discard:
                     raise ValueError('immediate stop requires user confirmation to discard remaining content')
@@ -421,15 +388,17 @@ class Store:
                 if not task.get('stop_requested') or (immediate and not task.get('stop_immediately')):
                     from runtime.report_data import public_text
                     task['stop_audit']={'origin':origin,'reason':reason,
-                                        'user_instruction':public_text(user_instruction) if origin=='agent' else None,
+                                        'user_instruction':public_text(user_instruction) if origin=='agent' and not execution_limit else None,
                                         'mode':'immediate' if immediate else 'drain',
                                         'discard_confirmed':bool(immediate and confirm_discard), 'discarded_segments':0, 'at':now_iso()}
             if immediate and task.get('kind','live')!='live':raise ValueError('immediate stop requires a live task')
             if task.get('finishing',{}).get('phase')=='completed':return
+            if execution_limit and not task.get('stop_requested'):
+                task['stop_reason']=signal['reason']
             task.update(stop_requested=True,stop_requested_at=task.get('stop_requested_at') or (signal['requested_at'] if signal else now_iso()))
             if immediate:task['stop_immediately']=True
             self._set_task(c,task)
-            if task.get('kind', 'live') == 'live' and not immediate and (reason == 'user_request' or task.get('freeze_on_end')):
+            if task.get('kind', 'live') == 'live' and not immediate and (reason in {'user_request','execution_limit'} or task.get('freeze_on_end')):
                 task['bounded_finishing']=True
                 self._set_task(c,task)
             advance(self,c)
@@ -497,7 +466,7 @@ class Store:
                 from runtime.finishing import IMMEDIATE_REASON
                 data.update(review_status='skipped',skip_reason=IMMEDIATE_REASON if finish.get('mode')=='immediate' else REASON,
                             skip_code='USER_DISCARD' if finish.get('mode')=='immediate' else 'FINISH_INCOMPLETE')
-            from runtime.telemetry_rules import segment_changing
+            from runtime.transaction import segment_changing
             segment_changing(self,c,None,None,data)
             sid=c.execute('INSERT INTO segments(session_id,idx,data) VALUES(?,?,?)',(self.session_id,index,encode(data))).lastrowid
             from runtime.media_jobs import enqueue
@@ -564,7 +533,7 @@ class Store:
         if self._task(c).get("kind", "live") == "live":advance(self,c)
         return True
     def _write_segment(self,c,sid,data):
-        from runtime.telemetry_rules import segment_changing
+        from runtime.transaction import segment_changing
         row=c.execute('SELECT data FROM segments WHERE id=? AND session_id=?',(sid,self.session_id)).fetchone()
         segment_changing(self,c,sid,json.loads(row[0]) if row else None,data)
         c.execute('UPDATE segments SET data=? WHERE id=?',(encode(data),sid))
@@ -742,12 +711,13 @@ class Store:
                 record_attempt(self,context_id=payload.get('context_id'),
                                error={k:failures[-1][k] for k in ('code','field') if k in failures[-1]},
                                count_error=False)
+            expired = bool(failures) and all(r.get('code') == 'LIVE_BATCH_REVIEW_TIMEOUT' for r in failures)
             return {'status':'batch_saved','results':results,
                     'saved_count':sum(r['status'] in {'saved','already_saved'} for r in results),
                     'error_count':sum(r['status']=='error' for r in results),
-                    'retry_segment_ids':[r['segment_id'] for r in results if r['status']=='error'],
-                    'repair_required':any(r['status']=='error' for r in results),
-                    **({'next_action':'review-submit'} if any(r['status']=='error' for r in results) else {})}
+                    'retry_segment_ids':[] if expired else [r['segment_id'] for r in results if r['status']=='error'],
+                    'repair_required':bool(failures) and not expired,
+                    **({'next_action':'review-next' if expired else 'review-submit'} if failures else {})}
         digest=hashlib.sha256(encode({k:v for k,v in payload.items() if k != '_source_context'}).encode()).hexdigest()
         with self.connection(True) as c:
             from runtime.realtime_policy import current as realtime_current
@@ -1084,6 +1054,10 @@ class Store:
         safe.update({k:task.get(k) for k in ('media_frozen','monitor_ended_at','monitored_duration_ms')})
         safe.update({k:task.get(k) for k in ('asr_policy','frames_policy','asr_primary_backend','asr_selection_reason','model_waiting','setup_error','local_backup_status')})
         safe.update({k:task[k] for k in ('failure_diagnostic','capture_diagnostic','stream_diagnostic') if task.get(k)})
+        from runtime.context import DIAGNOSTIC_ENUMS
+        code=task.get('local_setup_error')
+        # 依赖检查可能早于准备任务创建；没有准备 ID 也要展示安全原因。
+        safe['local_setup_error']=(code if isinstance(code,str) and code in DIAGNOSTIC_ENUMS['recovery_code'] else 'ASR_RUNTIME_UNAVAILABLE') if code else None
         preparation_id=task.get('asr_fallback_preparation_id') or task.get('model_preparation_id')
         if preparation_id:
             from runtime.model_preparation import status as preparation_status
@@ -1110,15 +1084,6 @@ class Store:
                    'attention_segments':asr_attention,'pending_segments':asr_pending},
         }
         from runtime.finishing import summary
-        upgrade=upgrade_guidance(video=task.get('kind')=='video') if task.get('stop_requested') or task['capture_status'] in {'ended','stopped','failed'} else None
-        if upgrade and task.get('kind','live')=='live' and (finish.get('mode')=='immediate' or finish.get('reason')=='user_immediate'):
-            upgrade['message']=upgrade['message'].replace('已采集内容将继续完成识别和判定', '已停止剩余检测，报告将注明未检测范围')
-        if upgrade and full_live.enabled(task):
-            upgrade['message']=upgrade['message'].replace('已采集内容将继续完成识别和判定','正在处理剩余内容，可随时要求停止排空；未检范围将在报告中保留')
-        if upgrade and finish and task.get('kind')=='video':
-            message = ('已采集内容最多进行30秒媒体收尾及30秒判定收尾，未完成部分将标注为未检测'
-                       if task.get('pipeline_version') == 2 else '已采集内容最多收尾30秒，未完成部分将标注为未检测')
-            upgrade['message']=upgrade['message'].replace('已采集内容将继续完成识别和判定', message)
         progress={'captured_ms':coverage['captured_ms'],
                   'recognized_ms':interval_ms([s for s in segments if s['asr_status'] in {'success','no_audio'}]+[u for s in segments if s.get('speech_gaps') for u in s['subtitles']]),
                   'reviewed_ms':interval_ms([s for s in segments if s['review_status']=='done' or (full_live.enabled(task) and s.get('speech_reviewed'))]),
@@ -1130,7 +1095,6 @@ class Store:
         return {**({'full_live':full_live.progress(task,segments)} if full_live.enabled(task) else {}),'progress':progress,'finishing':summary(finish,segments),'task':safe,'segment_count':len(segments),'review_deferred':sum(s['review_status']=='deferred' for s in segments),
                 'review_pending':unresolved,'media_pending':media_pending,
                 'review_ready_pending':max(0,unresolved-media_pending),
-                'upgrade':upgrade,
                 'report_ready':ready,'report_blocked_reason':'NO_CAPTURED_CONTENT' if not segments and (terminal or no_text) else ('NO_SPEECH' if segments and all(s.get('asr_status')=='no_audio' for s in segments) else 'NO_USABLE_TRANSCRIPT') if no_text else 'NO_REVIEWED_CONTENT' if no_review else 'NO_CAPTURED_CONTENT' if terminal and not segments else None,
                 'coverage':coverage,'pipeline':pipeline,
                 'evidence_pending':evidence_pending if task.get('review_scope_version')==1 else None,

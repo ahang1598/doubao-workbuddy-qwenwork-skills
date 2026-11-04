@@ -351,7 +351,10 @@ lark-cli sheets +workbook-import --file ./report.csv --folder-token <FOLDER_TOKE
 - **导入后必须检查 `data.extra`**：例如 `data.extra=["NotSupport:shape"]` 表示形状不受支持，本次导入有损。逐项结合源 Excel 判断对内容、计算、交互和版式要求的影响，不能因 `ok=true` 或单元格数据正确而忽略。`extra` 为空或缺失也不能替代回读检查。
 - **优先考虑兼容替代，采用后再重导**：创建 / 修改文件时优先采用飞书支持的实现；收到提示后，可参考下方示例选择能满足需求、改动成本合理的方案，不把替换作为交付前置条件。选择替代时，在不损失必需内容与功能、不越过允许改动范围的前提下修改 Excel 副本，重新验证后执行 `lark-cli sheets +workbook-import --file ./output.xlsx`；需要在线原生对象时再按对应 reference 重建，复查新回执与受影响内容，用最终新 URL 交付。不能删掉必需元素来清空提示，也不要原样重复导入期待提示消失。
 - **完整 Excel 是可接受的交付方案**：没有满足需求的方案、替代不适合本任务或需保留原元素时，可保留这些元素并在 Excel 中完成本轮全部操作，验证后交付该文件，无需反复尝试替换；也可同时交飞书表格，明确 Excel 是完整产物，并说明在线版缺失哪些元素及其影响。此分支允许只交 Excel 或双交，无需用户先拒绝在线表格或要求双交；在线版不能作为完整产物单独交付，也不能从有损在线版导出文件冒充完整 Excel。
+- **保真文件须承接本轮变更**：运行环境允许本地编辑且已选择完整Excel方案时，以包含此前已完成修改的可信完整版本为base，再应用本轮授权变更。仅有初始附件时，还须恢复需要保留的既有修改，不能把旧附件当完成品。区分原附件→导入与本轮改前→改后的差异；已存在的转换损失不能靠重刷全表样式掩盖，也不能把有损导出件当保真基准。仅改原布局内单元格的内容且布局 / 样式不变时，可用 `python3 scripts/excel_apply_edits.py --source ./baseline.xlsx --output ./complete.xlsx --changes ./edits.json --scope '明细!B2'`（JSON与限制见 `references/guide-execution-flow.md`）。
 - **导入仍可能改变版式**：值、公式、数字格式、合并区、冻结、下拉校验需按源文件核对；行高列宽、边框、主题色填充（`fgColor theme=N`）、以及**跟随工作簿默认字体的格**（源表默认字体是中文字体时，这类格会回落到系统默认）也可能变化。选择在线交付且要求保留原版式时，按源文件的值用 `+rows-resize` / `+cols-resize` 回写尺寸（飞书用像素、Excel 行高用磅，换算约 `px ≈ pt × 4/3`）；无法修复或不适合调整时可保留完整 Excel，交付说明写明差异。
+- **保真附件不替代明确的原位编辑**：用户要求更新原在线表时，可完成的变更仍按原URL执行；额外交付完整Excel不代表原在线表已经更新。原位部分无法完成时明确说明，不以新文件冒充。
+- **按变化阶段定位保真差异**：排查时区分源 Excel、导入后改前状态与本轮改后状态；小数字号被取整、尺寸或对象变化可能发生在转换阶段。“本轮没有刷样式”不能证明源格式未变。已确认导入或导出使用户要求保留的格式 / 功能发生变化时，同样按此分支处理，不以 `data.extra` 是否列出为条件；复用已取得的回读证据，不为此默认增加整表导出。
 - 轮询是命令自己做的：本命令与其它异步 shortcut 都内置轮询，返回时状态已是最新，`next_command` 直接重跑即可，不必也不要加 `sleep` 等待。
 
 #### 不支持元素的替代参考
@@ -461,4 +464,4 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
 - `Execute`：sheet create/rename/move/copy/hide/unhide/delete 后必须调用 `+workbook-info`，按稳定的 sheet_id 核对名称、顺序、可见性与数量；import 按上方 ready/job_status + workbook-info 闭环；需要本地文件的 export 按 output-path + 文件存在/可重开闭环。
 
-===== 全文完（共 464 行）=====
+===== 全文完（共 467 行）=====

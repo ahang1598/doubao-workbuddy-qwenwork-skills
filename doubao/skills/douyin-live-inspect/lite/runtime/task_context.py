@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块的检测、状态、遥测或交付边界；敏感输入和原始响应不进入日志。
 """Business task identity reserved before acquisition; independent of telemetry."""
 import json
 import os
@@ -8,6 +9,27 @@ import uuid
 
 FILE = '.task-context.json'
 ID = re.compile(r'[0-9a-f]{32}', re.I)
+
+
+class TaskBindingError(ValueError):
+    code = 'TASK_BINDING_MISMATCH'
+
+    def __init__(self, directory):
+        super().__init__('original entry task directory required')
+        self.task_dir = str(directory)
+
+
+def startup_directory(directory):
+    """An explicit entry owns the request even without the optional Node bridge."""
+    inherited = os.environ.get('INSPECT_USAGE_CONTEXT_DIR')
+    if not inherited:
+        return Path(directory).expanduser() if directory else None
+    root = Path(inherited).expanduser().resolve()
+    if not read(root):
+        raise TaskBindingError(root)
+    if directory and Path(directory).expanduser().resolve() != root:
+        raise TaskBindingError(root)
+    return root
 
 
 def read(directory):

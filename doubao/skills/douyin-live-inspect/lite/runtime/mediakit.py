@@ -27,36 +27,38 @@ class CommandFailure(RuntimeError):
     def __init__(self, exit_code, output='', *, category=None, not_submitted=False):
         # Only fixed categories leave the adapter; never persist raw CLI output.
         text = output.lower()
-        status = re.search(r'(?:http(?:/\d(?:\.\d)?)?\s+|["\']?(?:status_code|statuscode|status code)["\']?\s*[:=]\s*)([45]\d\d)\b', text)
+        status = re.search(r'(?:http(?:/\d(?:\.\d)?)?\s+|["\']?(?:http_status|status_code|statuscode|status code)["\']?\s*[:=]\s*)([45]\d\d)\b', text)
         http_status = int(status.group(1)) if status else None
+        upload_address=('申请上传地址响应缺少 result' in text or category=='upload_address_failed'
+                        or bool(re.search(r'"(?:stage|phase)"\s*:\s*"upload_address"',text)))
+        expired=any(v in text for v in ('token expired','token has expired','tokenexpired','expiredtoken','凭证已过期'))
         if category is not None:
-            pass
-        elif http_status in (401, 403) or any(value in text for value in ('token expired', 'invalid token', 'token has expired', 'unauthorized', 'invalidparameter.invalidapikey')):
-            category = 'authentication_rejected'
-        elif '申请上传地址响应缺少 result' in text:
-            category = 'upload_address_failed'
-        elif 'task_id' in text and any(value in text for value in ('缺少', 'missing')):
-            category = 'missing_task_id'
-        elif http_status in (401, 403):
-            category = 'authentication_rejected'
-        elif http_status == 429 or any(value in text for value in ('too many requests', 'rate limit', '限流')):
-            category = 'rate_limited'
-        elif any(value in text for value in ('etimedout', 'timed out', 'timeout', '超时')):
-            category = 'request_timeout'
-        elif any(value in text for value in ('econnreset', 'econnrefused', 'enotfound', 'eai_again', 'network unreachable', 'connection reset')):
-            category = 'network_error'
-        elif http_status is not None and http_status >= 500:
-            category = 'service_unavailable'
+            category=category if category in DIAGNOSTIC_CATEGORIES else 'cli_failed'
+        elif expired or http_status in (401,403) or any(v in text for v in ('invalid token','unauthorized','invalidparameter.invalidapikey')):
+            category='authentication_rejected'
+        elif http_status==429 or any(v in text for v in ('too many requests','too_many_requests','toomanyrequests','rate limit','限流')):
+            category='rate_limited'
+        elif (http_status is not None and http_status>=500) or any(v in text for v in ('service_unavailable','serviceunavailable')):
+            category='service_unavailable'
+        elif any(v in text for v in ('etimedout','timed out','timeout','超时')):
+            category='request_timeout'
+        elif any(v in text for v in ('econnreset','econnrefused','enotfound','eai_again','network unreachable','connection reset')):
+            category='network_error'
+        elif upload_address:
+            category='upload_address_failed'
+        elif 'task_id' in text and any(v in text for v in ('缺少','missing')):
+            category='missing_task_id'
         else:
-            category = 'cli_failed'
-        self.diagnostic = {'category': category, 'exit_code': exit_code}
-        # Upload-address acquisition precedes media upload and task creation. A
-        # missing result is therefore replay-safe; genuinely ambiguous submit
-        # failures remain fenced as submission_unknown.
-        if not_submitted or category == 'upload_address_failed':
-            self.diagnostic['submission_state'] = 'not_submitted'
-        if http_status is not None:
-            self.diagnostic['http_status'] = http_status
+            category='cli_failed'
+        reason=('credential_expired' if category=='authentication_rejected' and expired else
+                category if category in {'authentication_rejected','rate_limited','service_unavailable','request_timeout','network_error'} else
+                'upload_response_missing' if upload_address else 'unknown')
+        self.diagnostic={'category':category,'reason':reason,'exit_code':exit_code,
+                         'failure_stage':'upload_address' if upload_address else 'submit'}
+        # Phase and cause are independent: a 401/429/5xx at address acquisition
+        # is still known not to have created a remote recognition task.
+        if not_submitted or upload_address:self.diagnostic['submission_state']='not_submitted'
+        if http_status is not None:self.diagnostic['http_status']=http_status
         super().__init__(f'mediakit command failed (exit {exit_code}; {category})')
 
 
@@ -369,6 +371,19 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
             if not store.update_segment(segment['id'],asr_cloud_deadline_at=deadline):return
         deadline=min(deadline,task.get('finishing',{}).get('media_deadline_at',float('inf')))
     task_id = segment.get('asr_task_id')
+    def observe(phase,outcome,attempt,diagnostic=None):
+        try:
+            from runtime.bridge import emit,safe_failure
+            selection=segment.get('remote_asr_selection') or {}
+            change=selection.get('credential_change','unknown')
+            if selection.get('credential_version') and credential_version(env)!=selection['credential_version']:
+                change='rotated'
+            emit(task,phase=phase,outcome=outcome,segment_id=segment['id'],attempt=attempt,
+                 route_generation=selection.get('generation',0),backend='mediakit',
+                 route_reason=selection.get('route_reason','unknown'),
+                 credential_change=change,
+                 **safe_failure(diagnostic or {}))
+        except Exception:pass
     def update(**fields):
         return store.update_segment(segment['id'], _remote_asr=True,
                                     _defer_asr_failure=defer_failure, **fields)
@@ -397,17 +412,37 @@ def process_asr(store, segment, *, poll_seconds=3, clock=None, sleep=time.sleep,
                 if attempts>=limit:
                     raise CommandFailure(None,category='cli_unavailable',not_submitted=True)
                 attempts+=1
-                if not update(asr_submit_attempts=attempts):return
+                if not update(asr_submit_attempts=attempts,asr_status='submission_unknown',asr_diagnostic=None):return
                 try:
+                    observe('attempt','started',attempts)
                     result = invoke(binary, ['video', 'asr-subtitles', '--audio-url',
                                               str(store.root / segment['audio_file'])], env=env, store=store, timeout=max(.001,min(deadline-clock(),media_remaining(store.task(), 15 if v2 else 60))))
+                    remote_id=result.get('task_id')
+                    if isinstance(remote_id,bool) or not isinstance(remote_id,(str,int)) or not str(remote_id).strip():
+                        raise CommandFailure(0,category='missing_task_id')
+                    observe('result','success',attempts,{'submission_state':'submitted'})
                     break
                 except CommandFailure as failure:
-                    if failure.diagnostic.get('submission_state')!='not_submitted' or attempts>=limit:
+                    observe('result','failed',attempts,failure.diagnostic)
+                    if (failure.diagnostic.get('submission_state')!='not_submitted' or attempts>=limit
+                            or failure.diagnostic.get('category')=='authentication_rejected'):
                         raise
-                    if cancellation.is_set() or clock()>=deadline:return
-                    sleep((2,10)[attempts-1])
+                    # The failed call is known not to have created a remote
+                    # task. Persist that fact before waiting or being stopped.
+                    if not update(asr_status='pending',asr_remote_status='pending',asr_diagnostic={**failure.diagnostic,
+                            'stage':'submit','credential_source':'workspace'}):return
+                    delay=min((2,10)[attempts-1],max(0,deadline-clock()))
+                    # Small slices keep injected test clocks and real cancellation
+                    # responsive without extending the original segment deadline.
+                    while delay>0:
+                        if cancellation.is_set():return
+                        left=deadline-clock()
+                        if left<=0:raise failure
+                        step=min(.2,delay,left)
+                        sleep(step)
+                        delay-=step
                     if cancellation.is_set():return
+                    if clock()>=deadline:raise failure
             task_id = result.get('task_id')
             if isinstance(task_id, bool) or not isinstance(task_id, (str, int)) or not str(task_id).strip():
                 raise CommandFailure(0, category='missing_task_id')

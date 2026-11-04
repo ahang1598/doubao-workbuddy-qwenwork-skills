@@ -1,0 +1,3791 @@
+{
+  "catalogVersion": "2.0",
+  "package": {
+    "name": "@shan-he/content-map-kit",
+    "version": "0.2.0"
+  },
+  "runtimeContract": {
+    "manifestVersion": 1,
+    "package": {
+      "name": "@shan-he/content-map-kit",
+      "version": "0.2.0"
+    },
+    "graphVersions": [
+      "1.0"
+    ],
+    "contractRevisions": [
+      3
+    ],
+    "capabilities": [
+      "ui.theme-appearance@1",
+      "basemap.label-occupancy@1",
+      "component.selection-shape@1",
+      "collection-entry-navigation@1",
+      "ui.view-links@1",
+      "ui.metric-list@1",
+      "ui.section-evidence@1",
+      "ui.feature-details@1",
+      "ui.collapsible-details@1",
+      "ui.reading-panel@1",
+      "ui.map-overlays@1",
+      "ui.edge-navigation@1",
+      "ui.analysis-filter@1",
+      "ui.analysis-filter@2",
+      "ui.analysis-metrics@1",
+      "ui.visibility-veto@1",
+      "ui.controlled-visibility@1",
+      "heatmap.continuous@1",
+      "heatmap.hexbin@1",
+      "heatmap.hexbin-3d@1",
+      "heatmap.independent-weight@1",
+      "heatmap.native-recipe@1",
+      "heatmap.height-scale@1",
+      "heatmap.controlled-filter@1",
+      "heatmap.render-extent@1",
+      "heatmap.elevated-projection@1",
+      "heatmap.render-state@1",
+      "route.legend-symbol@1",
+      "route.optional-arrow@1",
+      "polygon.selection-border@1",
+      "polygon.label@1",
+      "circle.distance-area@1",
+      "polygon.focus-all@1",
+      "geographic-line@1",
+      "layout.reservations@1",
+      "layout.screen-geometry@1",
+      "layout.route-corridors@1",
+      "layout.continuation@1",
+      "layout.map-core-screen@1",
+      "layout.component-measurement@1"
+    ]
+  },
+  "shellThemes": {
+    "light": {
+      "tone": "light",
+      "canvas": "#F7F9FB",
+      "panel": "#FFFFFF",
+      "card": "#FFFFFF",
+      "subtle": "#F3F4F6",
+      "border": "#E5E7EB",
+      "text": "#171717",
+      "mutedText": "#52525B",
+      "quietText": "#71717A",
+      "neutralAccent": "#52525B"
+    },
+    "dark": {
+      "tone": "dark",
+      "canvas": "#171B22",
+      "panel": "#202630",
+      "card": "#252C36",
+      "subtle": "#303844",
+      "border": "#47515F",
+      "text": "#F8FAFC",
+      "mutedText": "#CBD5E1",
+      "quietText": "#94A3B8",
+      "neutralAccent": "#CBD5E1"
+    }
+  },
+  "uiComposition": {
+    "revision": 1,
+    "sources": {
+      "map.views": "semi.tabs",
+      "view.summary": "semi.card",
+      "view.metrics": "semi.descriptions",
+      "view.groups": "semi.list",
+      "view.stops": "semi.list",
+      "view.routes": "semi.list",
+      "view.entityRelations": "semi.tree",
+      "selected.properties": "semi.descriptions"
+    },
+    "orderedStops": "semi.timeline"
+  },
+  "layoutDefaults": {
+    "profileId": "map-core-screen-v1",
+    "budget": {
+      "maxLayoutTimeMs": 500,
+      "maxCandidatesPerElement": 2048,
+      "maxTotalCandidateChecks": 32000,
+      "maxOffsetRadiusPx": 80
+    }
+  },
+  "components": [
+    {
+      "type": "poi_marker",
+      "selection": {
+        "behavior": "poi-variant",
+        "parts": [
+          "icon",
+          "label"
+        ]
+      },
+      "name": "地点标记",
+      "description": "支持普通、选中和收起形态的地点标记",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "地理位置，格式为 [经度, 纬度]",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "地点名称，可选",
+          "required": false
+        },
+        "imageUrl": {
+          "type": "url",
+          "description": "图片地址，在组件预设的图片区域中显示",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示文字标签，由外部控制",
+          "required": false
+        },
+        "description": {
+          "type": "string",
+          "description": "地点名称下方的补充描述",
+          "required": false
+        }
+      },
+      "variants": [
+        "normal",
+        "selected",
+        "collapsed"
+      ],
+      "defaultVariant": "normal",
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "icon",
+        "label",
+        "description"
+      ],
+      "layoutCapabilities": {
+        "element": {
+          "position": "fixed",
+          "contributesAs": [
+            "marker"
+          ],
+          "avoids": [
+            "marker",
+            "label",
+            "card",
+            "route-line"
+          ],
+          "hideable": false,
+          "anchorAssociation": "self",
+          "notes": "图标、名称和描述组成固定展示对象，只按 normal → collapsed 降级。"
+        },
+        "parts": {
+          "icon": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "地点图标固定在业务坐标上。"
+          },
+          "label": {
+            "position": "fixed",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "visibilityProperty": "showLabel",
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "名称与描述通过形态整体收起。"
+          },
+          "description": {
+            "position": "fixed",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "visibilityProperty": "showLabel",
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "描述跟随名称显隐。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "collapse",
+            "fromVariant": "normal",
+            "property": "variant",
+            "value": "collapsed",
+            "hidesParts": [
+              "label",
+              "description"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "icon": 20,
+          "label": 30,
+          "description": 40
+        },
+        "partRetentionPriority": {
+          "icon": 90,
+          "label": 50,
+          "description": 10
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "point-marker",
+      "modelSelectable": true,
+      "roles": [
+        "independent-place"
+      ],
+      "kind": "map",
+      "usage": "src/components/poi-marker/USAGE.md",
+      "guidance": "# 独立地点标记\n\n碰撞时不偏移，只支持 normal → collapsed 降级；collapsed 仍保留，即使继续重叠也不隐藏实体。选中时保留完整展示，取消选中恢复基础布局。\n\n用于不依附于某条有序路线的地点，例如搜索结果、餐宿候选和周边设施。路线中的起点、终点和途经成员应使用路线成员组件，不能为了复用图标把独立点重复画成路线端点。\n\n## 选型与交互规则\n\nnormal 名称使用浅色背景、细边界、圆角和固定内边距；selected=true 保留专用大图标尺寸，仅名称反色，图标及其背景不随选中色变色，description 仍为次级信息；collapsed 不显示名称。取消选中恢复当前基础布局。反例：把地点清单序号当成访问顺序而换成编号点。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"poi_marker-normal\",\n  \"type\": \"poi_marker\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"云端花园\",\n  \"variant\": \"normal\",\n  \"description\": \"免费开放 · 适合散步\"\n}\n```\n"
+    },
+    {
+      "type": "origin",
+      "selection": {
+        "behavior": "label-inverse",
+        "parts": [
+          "label"
+        ]
+      },
+      "name": "起点",
+      "description": "路线起点及可选名称",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "地理位置，格式为 [经度, 纬度]",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "地点名称，可选",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示文字标签，由外部控制",
+          "required": false
+        }
+      },
+      "variants": [
+        "normal"
+      ],
+      "defaultVariant": "normal",
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "icon",
+        "anchor",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "icon": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "端点图标与锚点分别测量。"
+          },
+          "anchor": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "allowsOverlap": [
+              "route-line"
+            ],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "地理锚点固定并允许落在线路上。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "名称先独立偏移；无可用位置时可隐藏名称，保留编号、图标和地理锚点。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "icon": 20,
+          "anchor": 20,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "icon": 90,
+          "anchor": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "origin-marker",
+      "modelSelectable": true,
+      "roles": [
+        "route-origin"
+      ],
+      "kind": "map",
+      "usage": "src/components/origin/USAGE.md",
+      "guidance": "# 起点\n\n绿色圆形“起”徽标、白色描边与下尖角，独立绿色空心落点。普通名称白底绿字，选中只反选名称，不改变徽标与落点。\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先尝试名称候选位置，无可用位置且策略允许辅助隐藏时仅隐藏名称，编号、图标和锚点保留；锚点相近导致压盖允许存在。选中态不隐藏名称。名称不带自动连接线，业务坐标始终不变。缩放、移动及内容变化复用既有布局重算，从原始 Props 重新尝试名称展示；预算未完成不能作为隐藏依据。preserve-labels 保留名称并报告未解决重叠。\n\n用于需要强调导航起点语义的路线。普通有序游览路线可优先使用编号节点表达顺序，不必同时叠加起点图标。\n\n## 选型与交互规则\n\n选中只反色名称，起点图标、文字徽标、锚点不变。生成链路校验对应路线首成员；缺名称不临时改图标。编号表达与起点表达二选一，业务端点关系仍保留。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"origin-normal\",\n  \"type\": \"origin\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"云端花园\",\n  \"variant\": \"normal\"\n}\n```\n"
+    },
+    {
+      "type": "destination",
+      "selection": {
+        "behavior": "label-inverse",
+        "parts": [
+          "label"
+        ]
+      },
+      "name": "终点",
+      "description": "路线终点及可选名称",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "地理位置，格式为 [经度, 纬度]",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "地点名称，可选",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示文字标签，由外部控制",
+          "required": false
+        }
+      },
+      "variants": [
+        "normal"
+      ],
+      "defaultVariant": "normal",
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "icon",
+        "anchor",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "icon": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "端点图标与锚点分别测量。"
+          },
+          "anchor": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "allowsOverlap": [
+              "route-line"
+            ],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "地理锚点固定并允许落在线路上。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "名称先独立偏移；无可用位置时可隐藏名称，保留编号、图标和地理锚点。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "icon": 20,
+          "anchor": 20,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "icon": 90,
+          "anchor": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "destination-marker",
+      "modelSelectable": true,
+      "roles": [
+        "route-destination"
+      ],
+      "kind": "map",
+      "usage": "src/components/destination/USAGE.md",
+      "guidance": "# 终点\n\n红色圆形“终”徽标、白色描边与下尖角，独立红色空心落点。普通名称白底红字，选中只反选名称，不改变徽标与落点。\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先尝试名称候选位置，无可用位置且策略允许辅助隐藏时仅隐藏名称，编号、图标和锚点保留；锚点相近导致压盖允许存在。选中态不隐藏名称。名称不带自动连接线，业务坐标始终不变。缩放、移动及内容变化复用既有布局重算，从原始 Props 重新尝试名称展示；预算未完成不能作为隐藏依据。preserve-labels 保留名称并报告未解决重叠。\n\n用于需要强调导航终点语义的路线。普通有序游览路线可使用编号节点表达最终一站，避免重复绘制同一地点。\n\n## 选型与交互规则\n\n选中只反色名称，终点图标、文字徽标、锚点不变。生成链路校验对应路线末成员；不因它恰好是数组末项就认定终点。编号表达与终点表达不重复叠加。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"destination-normal\",\n  \"type\": \"destination\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"云端花园\",\n  \"variant\": \"normal\"\n}\n```\n"
+    },
+    {
+      "type": "common_waypoint",
+      "selection": {
+        "behavior": "label-inverse",
+        "parts": [
+          "label"
+        ]
+      },
+      "name": "通用途经点",
+      "description": "路线上的普通途经点",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "地理位置，格式为 [经度, 纬度]",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "地点名称，可选",
+          "required": false
+        },
+        "imageUrl": {
+          "type": "url",
+          "description": "图片地址，在组件预设的图片区域中显示",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示文字标签，由外部控制",
+          "required": false
+        }
+      },
+      "variants": [
+        "normal"
+      ],
+      "defaultVariant": "normal",
+      "styles": [
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "anchor",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "anchor": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "allowsOverlap": [
+              "route-line"
+            ],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "地理锚点固定并允许落在线路上。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "名称先独立偏移；无可用位置时可隐藏名称，保留编号、图标和地理锚点。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "anchor": 20,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "anchor": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "common-marker",
+      "modelSelectable": true,
+      "roles": [
+        "route-node"
+      ],
+      "kind": "map",
+      "usage": "src/components/common-waypoint/USAGE.md",
+      "guidance": "# 普通途经节点\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先尝试名称候选位置，无可用位置且策略允许辅助隐藏时仅隐藏名称，编号、图标和锚点保留；锚点相近导致压盖允许存在。选中态不隐藏名称。名称不带自动连接线，业务坐标始终不变。缩放、移动及内容变化复用既有布局重算，从原始 Props 重新尝试名称展示；预算未完成不能作为隐藏依据。preserve-labels 保留名称并报告未解决重叠。\n\n用于路线上的未编号途经点及网络连接节点。地理锚点保持在线路上，名称标签可以独立偏移或按组件能力隐藏，不能隐藏锚点。\n\n颜色由调用方传入，通常与所属路线保持一致。组件不负责判定点属于哪条路线。\n\n## 选型与交互规则\n\n选中只反色名称，圆点颜色、大小、坐标不变；名称为空时不改用圆点变色。生成链路需要路线业务节点关系；搭配交通起终点的中间节点使用本组件。共享节点在网络总览中使用普通节点，在单条路线详情中再按该 View 的起终点角色展示；多个路线共享不意味着地点脱离路线而改用 POI。无序独立地点默认使用 POI，不能把几何折点变成站点。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"common_waypoint-normal\",\n  \"type\": \"common_waypoint\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"云端花园\",\n  \"variant\": \"normal\"\n}\n```\n"
+    },
+    {
+      "type": "number_waypoint",
+      "selection": {
+        "behavior": "number-inverse",
+        "parts": [
+          "anchor",
+          "label"
+        ]
+      },
+      "name": "编号点",
+      "description": "按访问顺序显示整数编号的途经点",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "地理位置，格式为 [经度, 纬度]",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "地点名称，可选",
+          "required": false
+        },
+        "imageUrl": {
+          "type": "url",
+          "description": "图片地址，在组件预设的图片区域中显示",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示文字标签，由外部控制",
+          "required": false
+        },
+        "number": {
+          "type": "integer",
+          "description": "显示的整数编号",
+          "required": true
+        }
+      },
+      "variants": [
+        "normal"
+      ],
+      "defaultVariant": "normal",
+      "styles": [
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "anchor",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "anchor": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "allowsOverlap": [
+              "route-line"
+            ],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "地理锚点固定并允许落在线路上。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "名称先独立偏移；无可用位置时可隐藏名称，保留编号、图标和地理锚点。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "anchor": 20,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "anchor": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "numbered-marker",
+      "modelSelectable": true,
+      "roles": [
+        "ordered-member"
+      ],
+      "kind": "map",
+      "usage": "src/components/number-waypoint/USAGE.md",
+      "guidance": "# 编号节点\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先尝试名称候选位置，无可用位置且策略允许辅助隐藏时仅隐藏名称，编号、图标和锚点保留；锚点相近导致压盖允许存在。选中态不隐藏名称。名称不带自动连接线，业务坐标始终不变。缩放、移动及内容变化复用既有布局重算，从原始 Props 重新尝试名称展示；预算未完成不能作为隐藏依据。preserve-labels 保留名称并报告未解决重叠。\n\n用于有明确顺序的地点序列。编号表达访问先后关系，适合真实路线和示意路线。碰撞布局始终保留编号锚点，名称按组件能力降级。\n\n同一地点在不同分组中的编号来自 Group Member，不写回 Place。颜色继承所在分组或路线的 Color Token。\n\n## 选型与交互规则\n\n选中时编号底和名称使用系列强调色，文字使用对应对比色；编号值、尺寸与已有偏移不变。生成链路仅接受 orderPurpose=visit 且有访问顺序依据；display/rank 不能生成编号节点。有访问顺序的游览路线从第一站到最后一站统一使用编号节点，不再叠加起终点图标。清单序号和排名不是访问顺序；无访问顺序的交通路线采用起点＋普通途经点＋终点。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"number_waypoint-normal\",\n  \"type\": \"number_waypoint\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"云端花园\",\n  \"variant\": \"normal\",\n  \"number\": 3\n}\n```\n"
+    },
+    {
+      "type": "poi_cluster",
+      "name": "地点集合卡片",
+      "description": "展示调用方提供的地点集合，不执行空间聚合",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "地理位置，格式为 [经度, 纬度]",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "地点名称，可选",
+          "required": false
+        },
+        "items": {
+          "type": "string[]",
+          "description": "地点名称列表",
+          "required": false
+        }
+      },
+      "variants": [
+        "normal",
+        "bigger",
+        "small"
+      ],
+      "defaultVariant": "normal",
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "body",
+        "label",
+        "description"
+      ],
+      "layoutCapabilities": {
+        "element": {
+          "position": "offsettable",
+          "contributesAs": [
+            "card"
+          ],
+          "avoids": [
+            "marker",
+            "label",
+            "card",
+            "route-line"
+          ],
+          "offsetProperty": "offset",
+          "visibilityProperty": "visible",
+          "offsetReference": "geographic-anchor",
+          "hideable": false,
+          "anchorAssociation": "caller-managed",
+          "notes": "整张卡片偏移；失败后按 bigger、normal、small 降级并重新测量。"
+        },
+        "parts": {},
+        "reductions": [
+          {
+            "id": "bigger-to-normal",
+            "fromVariant": "bigger",
+            "property": "variant",
+            "value": "normal",
+            "hidesParts": [
+              "description"
+            ]
+          },
+          {
+            "id": "normal-to-small",
+            "fromVariant": "normal",
+            "property": "variant",
+            "value": "small",
+            "hidesParts": [
+              "description"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "body": 10,
+          "label": 30,
+          "description": 40
+        },
+        "partRetentionPriority": {
+          "body": 100,
+          "label": 50,
+          "description": 10
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "collection-card",
+      "modelSelectable": true,
+      "roles": [
+        "group-summary"
+      ],
+      "kind": "map",
+      "usage": "src/components/collection-card/USAGE.md",
+      "guidance": "# 集合卡片\n\n用于表达一个明确分组包含哪些地点，例如一天行程、一个候选方案、一个区域或主题分类。它不是点过多或标签碰撞时的自动替代品。\n\n组件提供 `bigger`、`normal`、`small` 三种形态。调用方负责根据视图容量选择初始形态；碰撞策略允许时，布局求解器可按 `bigger → normal → small` 降级。同一层级的并列卡片通常应保持一致。\n\n卡片位置由调用方传入，可以是成员位置或业务中心。标题、内容和颜色均由调用方提供，组件不推断分组与配色。\n\n“共 x 个地点”为次要文字，组件固定使用灰色，独立于地点名称的 textColor；标准浅色表面使用 #6B7280，深色表面使用 #9CA3AF。各尺寸形态共用此规则，不改变卡片尺寸及点击范围。\n\n交互分为“原地选择”和“进入分组详情”。仅当调用方明确声明目标 View 时，集合可作为详情入口；不因外观、标题、分组数量自动跳转。组件发出元素点击事件，宿主按已解析的 `view.entryActions[elementId]` 激活目标 View；关联侧栏使用同一映射，不能各自猜测目标。普通集合保持选择行为，比较聚焦、空间聚类不套用入口规则。\n\n进入详情应清除源 View 选择并适配目标视野；返回来源 View 时由宿主恢复入口、相机和侧栏阅读位置。Hover 仅预览，不改变 View。\n\n## 选型与交互规则\n\n没有地图 selected 形态。bigger/normal/small 是尺寸而非选中态；保留业务焦点和显式详情导航。总览不默认使用集合卡，有分组也不必拆 View。地图代表位置需要稳定地点 ID 和依据，不能无条件取第一个成员或平均坐标；跨区域路线仍需实际线表达。生成链路选择集合入口总览时，同 View 只绘制集合卡，不混合路线、成员点、区域或分析层；每张卡显式指向同分组详情 View，完整路线在详情中展示。内容总览则直接展示路线与业务节点，不加集合入口卡。侧栏摘要不受此地图互斥约束。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"poi_cluster-normal\",\n  \"type\": \"poi_cluster\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"候选地点\",\n  \"variant\": \"normal\",\n  \"items\": [\n    \"城市书店\",\n    \"艺术中心\",\n    \"街角咖啡\",\n    \"中心广场\"\n  ]\n}\n```\n"
+    },
+    {
+      "type": "arrow",
+      "name": "箭头线",
+      "description": "实线路线或连接线，可控制是否绘制方向箭头",
+      "geometryType": "LineString",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "path": {
+          "type": "coordinate[]",
+          "description": "按绘制顺序排列的经纬度数组",
+          "required": true
+        },
+        "width": {
+          "type": "number",
+          "description": "主线宽度，单位为 CSS 像素",
+          "required": false
+        },
+        "lod": {
+          "type": "array",
+          "description": "按 maxZoom 升序的预计算抽稀路径",
+          "required": false
+        },
+        "outlineWidth": {
+          "type": "number",
+          "description": "每侧浅色外缘的额外宽度",
+          "required": false
+        },
+        "label": {
+          "type": "route-label",
+          "description": "路线文字标签，可选",
+          "required": false
+        },
+        "showArrow": {
+          "type": "boolean",
+          "description": "是否绘制末端方向箭头，默认 true",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "body": {
+            "position": "fixed",
+            "contributesAs": [
+              "route-line"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "路线本体由地理几何决定。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "label.offset",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "label.visible",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "directional-pointer",
+            "notes": "只移动描述标签；路线本体保持不变。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "label.visible",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "label": 30,
+          "body": 10,
+          "arrow": 25
+        },
+        "partRetentionPriority": {
+          "label": 50,
+          "body": 100,
+          "arrow": 80
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "arrow",
+      "modelSelectable": true,
+      "roles": [
+        "route-body",
+        "directed-connection",
+        "schematic-connection"
+      ],
+      "kind": "map",
+      "usage": "src/components/arrow/USAGE.md",
+      "guidance": "# 箭头路线\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先偏移，完整搜索后仍冲突且宿主允许时只隐藏辅助标签；路线本体和方向符号保留。候选或时间预算耗尽不等同无空间，不提交半轮隐藏。\n\n用于实线路线或连接线，可以承载真实轨迹或示意连接。`showArrow` 默认为 `true`，设为 `false` 时只绘制完整实线及外缘，不绘制或预留箭头。原 `dash` 组件已移除，不支持虚线间隔属性；实线样式不代表几何已验证为真实轨迹。真实有序路线仍应使用编号节点表达停靠顺序，不依赖末端箭头代替全部顺序信息。\n\n缩放后以最后一段不同投影点决定方向：末段不少于 16px 显示完整箭头，8～16px 缩小，少于 8px 隐藏箭头头部并保留线路。线路折点不是业务途经点，不因此拆段。\n\n## 选型与交互规则\n\n仅在方向有依据时保留箭头；无方向连接使用 `showArrow: false`。箭头不能替代站点访问顺序；不添加虚构停靠点。实际事实坐标保持不变，端点内缩只影响视觉。没有实体 selected variant。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"arrow\",\n  \"type\": \"arrow\",\n  \"path\": [\n    [\n      115.86,\n      40.045\n    ],\n    [\n      115.95,\n      40.045\n    ],\n    [\n      116.04,\n      39.96\n    ],\n    [\n      116.14,\n      40.02\n    ]\n  ],\n  \"style\": {\n    \"color\": \"#AD83EB\"\n  },\n  \"label\": {\n    \"text\": \"沿途风景 · 2 km\",\n    \"offset\": {\n      \"x\": 24,\n      \"y\": -24\n    }\n  }\n}\n```\n"
+    },
+    {
+      "type": "route",
+      "name": "通用路线",
+      "description": "按外部路径绘制的真实或普通路线",
+      "geometryType": "LineString",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "path": {
+          "type": "coordinate[]",
+          "description": "按绘制顺序排列的经纬度数组",
+          "required": true
+        },
+        "width": {
+          "type": "number",
+          "description": "主线宽度，单位为 CSS 像素",
+          "required": false
+        },
+        "lod": {
+          "type": "array",
+          "description": "按 maxZoom 升序的预计算抽稀路径",
+          "required": false
+        },
+        "outlineWidth": {
+          "type": "number",
+          "description": "每侧浅色外缘的额外宽度",
+          "required": false
+        },
+        "label": {
+          "type": "route-label",
+          "description": "路线文字标签，可选",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "body": {
+            "position": "fixed",
+            "contributesAs": [
+              "route-line"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "路线本体由地理几何决定。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "label.offset",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "label.visible",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "directional-pointer",
+            "notes": "只移动描述标签；路线本体保持不变。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "label.visible",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "label": 30,
+          "body": 10
+        },
+        "partRetentionPriority": {
+          "label": 50,
+          "body": 100
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "route",
+      "modelSelectable": true,
+      "roles": [
+        "route-body"
+      ],
+      "kind": "map",
+      "usage": "src/components/route/USAGE.md",
+      "guidance": "# 普通路线\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先偏移，完整搜索后仍冲突且宿主允许时只隐藏辅助标签；路线本体和方向符号保留。候选或时间预算耗尽不等同无空间，不提交半轮隐藏。\n\n用于没有特殊交通图标或方向强调要求的通用折线。既可以承载真实轨迹，也可以承载明确标注为 schematic 的连接线；几何真实性由 MapSpec 表达。\n\n## 选型与交互规则\n\n几何真实与否取自源数据；缺真实轨迹应在 UI 标注示意，不能以折线外观冒充道路轨迹。可配明确起终点、业务途经点；不可自动把每个 path 顶点都画成地点。没有实体 selected variant，系列强调由宿主统一管理。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"route\",\n  \"type\": \"route\",\n  \"path\": [\n    [\n      115.86,\n      40.045\n    ],\n    [\n      115.95,\n      40.045\n    ],\n    [\n      116.04,\n      39.96\n    ],\n    [\n      116.14,\n      40.02\n    ]\n  ],\n  \"style\": {\n    \"color\": \"#2678FC\"\n  },\n  \"label\": {\n    \"text\": \"沿途风景 · 2 km\",\n    \"offset\": {\n      \"x\": 0,\n      \"y\": -24\n    }\n  }\n}\n```\n"
+    },
+    {
+      "type": "geographic_line",
+      "name": "地理专题线",
+      "description": "仅表达已明确分类的山脉、河流或专题分界；不得用于旅游、道路、交通或普通连接",
+      "geometryType": "LineString",
+      "selection": {
+        "behavior": "line-focus",
+        "parts": [
+          "body",
+          "label"
+        ]
+      },
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "path": {
+          "type": "coordinate[]",
+          "description": "按绘制顺序排列的经纬度数组",
+          "required": true
+        },
+        "width": {
+          "type": "number",
+          "description": "主线宽度，单位为 CSS 像素",
+          "required": false
+        },
+        "lod": {
+          "type": "array",
+          "description": "按 maxZoom 升序的预计算抽稀路径",
+          "required": false
+        },
+        "label": {
+          "type": "route-label",
+          "description": "路线文字标签，可选",
+          "required": false
+        },
+        "feature": {
+          "type": "mountain | river | boundary",
+          "description": "必填地理要素类别；不得从线条外观推断",
+          "required": true
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "body",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "body": {
+            "position": "fixed",
+            "contributesAs": [
+              "route-line"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "路线本体由地理几何决定。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "label.offset",
+            "maxOffsetPx": 32,
+            "visibilityProperty": "label.visible",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "名称在几何附近小幅避让；山脉名称可与自身山簇重叠，仍避让其他元素和保留区。不改变地理几何。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "label.visible",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "body": 10,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "body": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "geographic-line",
+      "modelSelectable": true,
+      "roles": [
+        "geographic-feature"
+      ],
+      "kind": "map",
+      "usage": "src/components/geographic-line/USAGE.md",
+      "guidance": "# 地理专题线\n\n仅用于明确的山脉、河流或专题分界线，必须填写 `feature: mountain | river | boundary`。不得用于旅游行程、驾车、步行、铁路、航班或普通连接；这些内容继续使用对应路线组件。不能仅因用户要求虚线就选择本组件。\n\n沿输入几何绘制；类别不证明几何真实性。山脉默认使用错落山簇，以主峰、侧峰、细脊亮面和分层坡面阴影表达走向，河流默认使用蓝色实线、浅色水道及细亮线，分界使用紫色长虚线；名称使用轻量文字，不使用交通图标、方向箭头或交通路线式粗描边。颜色与线宽可显式配置，由宿主统一管理，图例必须消费相同样式。山簇细节复用缓存矢量图，缩放过程中复用已有图形、结束后更新排布；避让使用整体范围。山簇符号按屏幕距离排列并限制数量，不表示真实高程、山峰位置或山体宽度；水道宽度仅为视觉符号，不表示真实河宽。文字沿用现有标签避让，坐标保持不变。\n\n默认显示轻量名称；山脉名称可与自身山簇重叠，仍避让其他元素和宿主保留区。宿主选中后显示浅底细边气泡与同色短线，其他元素淡化；同一 `seriesId` 的专题线段保持可见，适用于分段河流。线与标签共享身份，线条提供透明点击容差，地理几何及可见线宽不因命中范围扩大而改变；取消后恢复。\n\n## 可执行 props 示例\n\n以下为合成验收数据，不代表真实地理要素。\n\n```json\n{\"id\":\"geo-demo\",\"type\":\"geographic_line\",\"feature\":\"boundary\",\"path\":[[116,40],[117,40.5]],\"label\":{\"text\":\"示意分界\"}}\n```\n"
+    },
+    {
+      "type": "flight_line",
+      "name": "飞机线",
+      "description": "两点之间的贝塞尔飞机示意连接",
+      "geometryType": "LineString",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "path": {
+          "type": "[coordinate, coordinate]",
+          "description": "起点和终点",
+          "required": true
+        },
+        "width": {
+          "type": "number",
+          "description": "曲线主线宽度",
+          "required": false
+        },
+        "label": {
+          "type": "route-label",
+          "description": "路线标签",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "label",
+        "arrow"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "body": {
+            "position": "fixed",
+            "contributesAs": [
+              "route-line"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "路线本体由地理几何决定。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "label.offset",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "label.visible",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "directional-pointer",
+            "notes": "只移动描述标签；路线本体保持不变。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "label.visible",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "label": 30,
+          "arrow": 25,
+          "body": 10
+        },
+        "partRetentionPriority": {
+          "label": 50,
+          "arrow": 80,
+          "body": 100
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "flight-line",
+      "modelSelectable": true,
+      "roles": [
+        "route-body",
+        "transport-flight"
+      ],
+      "kind": "map",
+      "usage": "src/components/flight-line/USAGE.md",
+      "guidance": "# 飞机路线\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先偏移，完整搜索后仍冲突且宿主允许时只隐藏辅助标签；路线本体和方向符号保留。候选或时间预算耗尽不等同无空间，不提交半轮隐藏。\n\n用于航班或航空连接。飞机图标属于路线组件的一部分，必须继承路线 Color Token，不能使用固定蓝色。是否为示意连接仍由 geometry status 表达。\n\n## 选型与交互规则\n\n仅接受两个真实端点，并生成示意弧线；不是逐点航空航迹。真实航迹应使用能保留完整 path 的通用路线并保留 flight 业务语义。飞机图标与线路共色；碰撞读取已绘制曲线的采样线，不使用首尾直线替代。无实体 selected variant。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"flight_line\",\n  \"type\": \"flight_line\",\n  \"path\": [\n    [\n      115.86,\n      40.045\n    ],\n    [\n      116.14,\n      40.02\n    ]\n  ],\n  \"style\": {\n    \"color\": \"#4C8DFF\"\n  },\n  \"label\": {\n    \"text\": \"北京 → 上海\",\n    \"offset\": {\n      \"x\": 0,\n      \"y\": -22\n    }\n  }\n}\n```\n"
+    },
+    {
+      "type": "train_line",
+      "name": "火车线",
+      "description": "独立铁路交通段的有来源路径；不用于景点访问顺序或仅有端点的示意连接",
+      "geometryType": "LineString",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "path": {
+          "type": "coordinate[]",
+          "description": "按绘制顺序排列的经纬度数组",
+          "required": true
+        },
+        "width": {
+          "type": "number",
+          "description": "主线宽度，单位为 CSS 像素",
+          "required": false
+        },
+        "lod": {
+          "type": "array",
+          "description": "按 maxZoom 升序的预计算抽稀路径",
+          "required": false
+        },
+        "outlineWidth": {
+          "type": "number",
+          "description": "每侧浅色外缘的额外宽度",
+          "required": false
+        },
+        "label": {
+          "type": "route-label",
+          "description": "路线文字标签，可选",
+          "required": false
+        },
+        "railService": {
+          "type": "enum",
+          "description": "high_speed 或 train",
+          "required": true
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "body": {
+            "position": "fixed",
+            "contributesAs": [
+              "route-line"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "路线本体由地理几何决定。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "label.offset",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "label.visible",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "directional-pointer",
+            "notes": "只移动描述标签；路线本体保持不变。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "label.visible",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "label": 30,
+          "body": 10
+        },
+        "partRetentionPriority": {
+          "label": 50,
+          "body": 100
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "train-line",
+      "modelSelectable": true,
+      "roles": [
+        "route-body",
+        "transport-train"
+      ],
+      "kind": "map",
+      "usage": "src/components/train-line/USAGE.md",
+      "guidance": "# 火车路线\n\n连续彩色轨道底线叠加周期性白色矩形嵌块，图例复用同一绘制与测量。样式不改变下述真实铁路路径要求。\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先偏移，完整搜索后仍冲突且宿主允许时只隐藏辅助标签；路线本体和方向符号保留。候选或时间预算耗尽不等同无空间，不提交半轮隐藏。\n\n用于独立高铁和普通列车交通段的有来源路径。使用 `railService` 区分 `high_speed` 与 `train`。线路和交通图标继承同一 Color Token。仅有端点的交通示意、游览顺序和网络连接使用普通路线；交通方式本身不足以证明铁路轨迹。\n\n## 选型与交互规则\n\n必须明确 railService=high_speed 或 train；不得根据标题猜测。几何真实性单独声明，只有车站或业务衔接节点需要站点组件；折点不是站。无实体 selected variant。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"train_line\",\n  \"type\": \"train_line\",\n  \"railService\": \"high_speed\",\n  \"path\": [\n    [\n      115.86,\n      40.045\n    ],\n    [\n      115.95,\n      40.045\n    ],\n    [\n      116.04,\n      39.96\n    ],\n    [\n      116.14,\n      40.02\n    ]\n  ],\n  \"label\": {\n    \"text\": \"高铁 · 4 小时\"\n  }\n}\n```\n"
+    },
+    {
+      "type": "transfer_point",
+      "selection": {
+        "behavior": "label-inverse",
+        "parts": [
+          "label"
+        ]
+      },
+      "name": "交通中转点",
+      "description": "表示站点或跨交通方式换乘节点",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "中转点坐标",
+          "required": true
+        },
+        "modes": {
+          "type": "transport-mode[]",
+          "description": "关联交通方式，至少一项",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "description": "站点名称",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示名称",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color",
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "icon",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "icon": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "allowsOverlap": [
+              "route-line"
+            ],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "图标固定在业务坐标上。"
+          },
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "名称先偏移，无可用位置时可以隐藏；固定图标始终保留。"
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "icon": 20,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "icon": 90,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "transfer-point",
+      "modelSelectable": true,
+      "roles": [
+        "transport-transfer"
+      ],
+      "kind": "map",
+      "usage": "src/components/transfer-point/USAGE.md",
+      "guidance": "# 换乘点\n\n支持 flight、train、subway、bus；modes 描述真实前后交通方式，不从折线交叉推断换乘。\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先尝试名称候选位置，无可用位置且策略允许辅助隐藏时仅隐藏名称，编号、图标和锚点保留；锚点相近导致压盖允许存在。选中态不隐藏名称。名称不带自动连接线，业务坐标始终不变。缩放、移动及内容变化复用既有布局重算，从原始 Props 重新尝试名称展示；预算未完成不能作为隐藏依据。preserve-labels 保留名称并报告未解决重叠。\n\n只有地点同时连接前后两段交通 leg，并且业务上存在换乘、停留或需要分别展示的信息时使用。路线形状中的普通折点不生成换乘点。\n\n## 选型与交互规则\n\n选中与普通途经点一致，只反色名称。modes 来自前后明确衔接的线路，不能从两条线相交或几何折点推断换乘；缺少 leg 关系是生成链路错误。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"transfer_point\",\n  \"type\": \"transfer_point\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"label\": \"北京南站换乘\",\n  \"modes\": [\n    \"train\",\n    \"subway\"\n  ]\n}\n```\n"
+    },
+    {
+      "type": "polygon",
+      "name": "多边形",
+      "description": "支持孔洞、多个分离区域和边界样式的面",
+      "geometryType": "MultiPolygon",
+      "selection": {
+        "behavior": "region-focus",
+        "parts": [
+          "body"
+        ]
+      },
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "label": {
+          "type": "region-label",
+          "description": "区域自身名称及其标注位置",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示区域名称",
+          "required": false
+        },
+        "selectionFocus": {
+          "type": "all",
+          "description": "可选：选中该区域时弱化其他业务元素",
+          "required": false
+        },
+        "areaRole": {
+          "type": "area-role",
+          "description": "边界、覆盖、走廊或不确定范围的业务语义",
+          "required": false
+        },
+        "inferred": {
+          "type": "boolean",
+          "description": "是否为推导范围；推导结果必须在 UI 标注为示意",
+          "required": false
+        },
+        "polygons": {
+          "type": "polygon[]",
+          "description": "多边形、环和坐标数组",
+          "required": true
+        },
+        "lod": {
+          "type": "array",
+          "description": "按 maxZoom 升序的预计算抽稀面",
+          "required": false
+        },
+        "fillColor": {
+          "type": "color",
+          "description": "填充颜色",
+          "required": false
+        },
+        "fillOpacity": {
+          "type": "number",
+          "description": "填充透明度，范围 0～1",
+          "required": false
+        },
+        "borderWidth": {
+          "type": "number",
+          "description": "边界总宽度",
+          "required": false
+        },
+        "borderDash": {
+          "type": "number[]",
+          "description": "可选边界虚线间隔，单位为 CSS 像素",
+          "required": false
+        },
+        "borderTexture": {
+          "type": "texture",
+          "description": "可选边界图片地址",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color"
+      ],
+      "measurableParts": [
+        "body",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 24,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "只偏移区域名称；面几何保持不变。",
+            "allowsOverlap": [
+              "route-line"
+            ]
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "body": 10,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "body": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "polygon",
+      "modelSelectable": true,
+      "roles": [
+        "region-fill"
+      ],
+      "kind": "map",
+      "usage": "src/components/polygon/USAGE.md",
+      "guidance": "# 区域面\n\n用于绘制有事实或明确推导依据的行政区、园区、覆盖范围、走廊和不确定范围。保持洞和离散面，不把 MultiPolygon 合并为外包矩形。\n\n- 必须声明 `areaRole: boundary | coverage | corridor | uncertainty`，并保留几何来源。\n- 不得仅根据路线顶点自动闭合范围。推导面需要 `inferred: true`，并在 UI 标注“范围示意”。\n- 区域同时使用可感知填充与明确边界；默认是低饱和填充、0.18 透明度和 2px 实线边界。\n- `fillColor`、`fillOpacity`、`borderWidth`、`borderDash` 由 Compiler 与底图主题联合解析；边界样式不能和同屏路线完全相同。\n- 面位于路线、Marker、文字与地图控制之下；填充与边界均不进入标签碰撞，也不作为固定线障碍。\n\n## 选型与交互规则\n\n保留闭环、洞、多片区域和 areaRole；没有来源或声明推导方法，不能把路线首尾相连造一个面。与点线共存时低强调填充。支持受控 selected 状态：至少 2px 的灰色边框与每侧 0.75px 的白色外缘（显式更宽的边框保持宽度），保留分类填色、透明度和原始几何；取消选择恢复原边界。不作为固定碰撞障碍。是否允许点击由宿主 interaction 决定，不将背景覆盖范围自动变为可选实体。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"polygon\",\n  \"type\": \"polygon\",\n  \"borderWidth\": 6,\n  \"polygons\": [\n    [\n      [\n        [\n          115.88,\n          40.08\n        ],\n        [\n          116.1,\n          40.08\n        ],\n        [\n          116.14,\n          39.93\n        ],\n        [\n          115.88,\n          39.93\n        ],\n        [\n          115.88,\n          40.08\n        ]\n      ],\n      [\n        [\n          115.96,\n          40.025\n        ],\n        [\n          116.035,\n          40.025\n        ],\n        [\n          116.035,\n          39.97\n        ],\n        [\n          115.96,\n          39.97\n        ],\n        [\n          115.96,\n          40.025\n        ]\n      ]\n    ]\n  ],\n  \"areaRole\": \"coverage\"\n}\n```\n\n## 区域名称\n\n区域自身名称通过 `label` 显示。`label: {text, position}` 中的 position 为区域内有依据的标注位置；名称与面共享选择身份，参与现有标签避让，面几何不移动。可选 `selectionFocus: \"all\"` 在选中时弱化其他业务元素；省略保持原行为，清除选中恢复。\n"
+    },
+    {
+      "type": "circle",
+      "name": "距离圆形面",
+      "description": "以真实地点为圆心、米制半径定义的地表距离范围，不表示路网可达范围",
+      "geometryType": "Circle",
+      "selection": {
+        "behavior": "region-focus",
+        "parts": [
+          "body"
+        ]
+      },
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "label": {
+          "type": "region-label",
+          "description": "区域自身名称及其标注位置",
+          "required": false
+        },
+        "showLabel": {
+          "type": "boolean",
+          "description": "是否显示区域名称",
+          "required": false
+        },
+        "selectionFocus": {
+          "type": "all",
+          "description": "可选：选中该区域时弱化其他业务元素",
+          "required": false
+        },
+        "areaRole": {
+          "type": "area-role",
+          "description": "边界、覆盖、走廊或不确定范围的业务语义",
+          "required": false
+        },
+        "inferred": {
+          "type": "boolean",
+          "description": "是否为推导范围；推导结果必须在 UI 标注为示意",
+          "required": false
+        },
+        "fillColor": {
+          "type": "color",
+          "description": "填充颜色",
+          "required": false
+        },
+        "fillOpacity": {
+          "type": "number",
+          "description": "填充透明度，范围 0～1",
+          "required": false
+        },
+        "borderWidth": {
+          "type": "number",
+          "description": "边界总宽度",
+          "required": false
+        },
+        "borderDash": {
+          "type": "number[]",
+          "description": "可选边界虚线间隔，单位为 CSS 像素",
+          "required": false
+        },
+        "borderTexture": {
+          "type": "texture",
+          "description": "可选边界图片地址",
+          "required": false
+        },
+        "center": {
+          "type": "coordinate",
+          "description": "圆心经纬度，与底图坐标系一致",
+          "required": true
+        },
+        "radiusMeters": {
+          "type": "number",
+          "description": "有限且大于零的地表距离半径，单位米",
+          "required": true
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color"
+      ],
+      "measurableParts": [
+        "body",
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "partOffsets.label",
+            "maxOffsetPx": 24,
+            "visibilityProperty": "showLabel",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "只偏移区域名称；面几何保持不变。",
+            "allowsOverlap": [
+              "route-line"
+            ]
+          }
+        },
+        "reductions": [
+          {
+            "id": "hide-label",
+            "property": "showLabel",
+            "value": false,
+            "hidesParts": [
+              "label"
+            ]
+          }
+        ],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "body": 10,
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "body": 100,
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "circle",
+      "modelSelectable": true,
+      "roles": [
+        "region-fill"
+      ],
+      "kind": "map",
+      "usage": "src/components/circle/USAGE.md",
+      "guidance": "# 距离圆形面 circle\n\n使用真实中心坐标 `center: [经度, 纬度]` 与有限正数 `radiusMeters`，例如 3 公里传 3000。不接受像素半径，不要求模型生成圆周顶点。地表距离采用平均地球半径 6371008.8 米；绘制时离散圆周并按地图投影，屏幕上不保证正圆。\n\n适用于明确的“地点周边 N 公里”或有依据的圈选范围。不是步行/驾驶等时圈、行政区边界、实际服务覆盖承诺。没有半径时先确认范围，不按缩放或点密度编造半径。已有普通 Polygon/MultiPolygon 不自动迁移。\n\n名称、实线边界、填充和选中反馈复用区域面体系；`label.position` 缺省由上游使用圆心。面不参与点标签碰撞，名称参与碰撞。地图取景包含整个圆周，不只取圆心。支持 `selectionFocus: \"all\"`。\n\n当前不支持跨越 ±180° 或触及 ±85° 的距离圆；明确报错，不裁剪或伪造范围。\n\n## 可执行 props 示例\n\n```json\n{\"id\":\"range\",\"type\":\"circle\",\"center\":[120.15,30.25],\"radiusMeters\":3000,\"fillOpacity\":0.18,\"borderWidth\":2,\"label\":{\"text\":\"周边3公里\",\"position\":[120.15,30.25]}}\n```\n"
+    },
+    {
+      "type": "line_label",
+      "name": "路线标签",
+      "description": "可独立放置的小型文字气泡",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "标签地理位置",
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "description": "标签文字",
+          "required": true
+        },
+        "pointer": {
+          "type": "side",
+          "description": "小三角方向",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "textColor",
+        "backgroundColor",
+        "fontFamily",
+        "fontSize",
+        "lineHeight"
+      ],
+      "measurableParts": [
+        "label"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "label": {
+            "position": "offsettable",
+            "contributesAs": [
+              "label"
+            ],
+            "avoids": [
+              "marker",
+              "label",
+              "card",
+              "route-line"
+            ],
+            "offsetProperty": "offset",
+            "maxOffsetPx": 80,
+            "visibilityProperty": "visible",
+            "offsetReference": "geographic-anchor",
+            "hideable": true,
+            "anchorAssociation": "caller-managed",
+            "notes": "独立标签整体偏移。"
+          }
+        },
+        "reductions": [],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "label": 30
+        },
+        "partRetentionPriority": {
+          "label": 50
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "line-label",
+      "modelSelectable": false,
+      "roles": [
+        "route-label"
+      ],
+      "kind": "map",
+      "usage": "src/components/line-label/USAGE.md",
+      "guidance": "# 独立路线标签\n\n自动标签额外偏移上限为 80 CSS px（欧氏距离），由增强搜索 profile 和宿主预算共同约束。先偏移，完整搜索后仍冲突且宿主允许时只隐藏辅助标签；路线本体和方向符号保留。候选或时间预算耗尽不等同无空间，不提交半轮隐藏。\n\n用于在指定地理坐标显示一段独立文本。它不创建路线，也不推断路线中点；调用方必须给出位置和文本。\n\n标签可以整体偏移，指针方向由调用方明确指定。需要标签自动关联某条路线时，优先使用路线组件自身的 `label`。\n\n## 选型与交互规则\n\n这是低层辅助组件，不开放模型独立选型；Plan 应绑定主路线的名称，不能用它拼任意地点标记。无实体 selected variant。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"line_label\",\n  \"type\": \"line_label\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"text\": \"步行约 15 分钟\",\n  \"pointer\": \"left\"\n}\n```\n"
+    },
+    {
+      "type": "arrow_marker",
+      "name": "线尾箭头",
+      "description": "独立的方向箭头",
+      "geometryType": "Point",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "position": {
+          "type": "coordinate",
+          "description": "箭头地理位置",
+          "required": true
+        },
+        "angle": {
+          "type": "number",
+          "description": "顺时针旋转角度",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [
+        "color"
+      ],
+      "measurableParts": [
+        "arrow"
+      ],
+      "layoutCapabilities": {
+        "parts": {
+          "arrow": {
+            "position": "fixed",
+            "contributesAs": [
+              "marker"
+            ],
+            "avoids": [],
+            "hideable": false,
+            "anchorAssociation": "self",
+            "notes": "位置与角度由调用方提供。"
+          }
+        },
+        "reductions": [],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "arrow": 25
+        },
+        "partRetentionPriority": {
+          "arrow": 80
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "arrow-marker",
+      "modelSelectable": false,
+      "roles": [
+        "direction-marker"
+      ],
+      "kind": "map",
+      "usage": "src/components/arrow-marker/USAGE.md",
+      "guidance": "# 独立方向箭头\n\n用于在指定坐标和角度绘制单个方向标记。它不生成路线，也不会沿路线自动重复。\n\n适合调用方已经计算好位置与朝向的场景。路线末端箭头或飞机方向应使用对应路线组件内置的方向能力。\n\n## 选型与交互规则\n\n这是低层辅助组件，不开放模型独立选型；普通路线方向优先使用主组件已有能力。无实体 selected variant。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"arrow_marker\",\n  \"type\": \"arrow_marker\",\n  \"position\": [\n    116,\n    40\n  ],\n  \"angle\": -30\n}\n```\n"
+    },
+    {
+      "type": "heatmap",
+      "name": "热力分析",
+      "description": "同一份带权重点数据切换连续热力、二维蜂窝和三维蜂窝；蜂窝共用统计口径",
+      "geometryType": "PointSet",
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "points": {
+          "type": "analysis-point[]",
+          "description": "稳定标识、坐标、蜂窝 value、独立非负有限 weight 和来源；无 weight 为旧版 value 加权",
+          "required": true
+        },
+        "filter": {
+          "type": "heatmap-filter",
+          "description": "宿主受控筛选：pointIds 为 null 表示全量、[] 表示无匹配；points 保留完整源数据。scalePopulation 默认 all-source，显式 filtered 才按筛选结果重标定",
+          "required": false
+        },
+        "mode": {
+          "type": "heatmap-mode",
+          "description": "当前模式 continuous | hexbin | hexbin-3d",
+          "required": true
+        },
+        "modes": {
+          "type": "heatmap-mode[]",
+          "description": "允许切换的模式，顺序用于 Tab",
+          "required": true
+        },
+        "continuous": {
+          "type": "continuous-heatmap-options",
+          "description": "通过 presetId 引用 Catalog analysisPresets.continuous 中的版本化原生规则；绘制与图例同源，省略使用旧预设",
+          "required": true
+        },
+        "hexbin": {
+          "type": "hexbin-options",
+          "description": "蜂窝聚合、颜色、可选数值域和最大柱高（米）",
+          "required": true
+        },
+        "interaction": {
+          "type": "heatmap-interaction",
+          "description": "命中和选择策略",
+          "required": true
+        },
+        "selectedFeatureId": {
+          "type": "string",
+          "description": "当前模式下选中的源点或蜂窝",
+          "required": false
+        }
+      },
+      "variants": [],
+      "styles": [],
+      "measurableParts": [
+        "body"
+      ],
+      "layoutCapabilities": {
+        "parts": {},
+        "reductions": [],
+        "entityHide": "never"
+      },
+      "selection": {
+        "behavior": "none",
+        "parts": []
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "body": 10
+        },
+        "partRetentionPriority": {
+          "body": 100
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "heatmap",
+      "modelSelectable": true,
+      "roles": [
+        "analysis-density",
+        "analysis-continuous",
+        "analysis-aggregate"
+      ],
+      "kind": "map",
+      "usage": "src/components/heatmap/USAGE.md",
+      "guidance": "# heatmap\n\n一份点数据，Tab 切换连续热力、蜂窝 2D/3D；默认连续热力。\n\nCatalog `analysisDefaults.heatmap`（version 1）提供默认模式顺序、初始模式、透明度、蜂窝投影边长、柱高相对边长倍率、颜色与交互参数。Compiler 解析后显式传入 Props；组件不增加第二份业务默认状态。连续规则仍只取 `analysisPresets.continuous`，两者属于同一个 Catalog 身份。不支持或不完整的默认参数版本应在编译时拒绝；旧 Catalog 由宿主保留有标记的 revision 1 兼容路径，不宣称使用新声明。此元数据不表示 revision 2 已开放。\n\n- 用于真实点事件的密度分布，不用区域代表点冒充区域密度。\n- 点需有唯一 id、坐标和 sourceRef。`weight` 是连续热力的非负有限权重，等权密度显式传 1；`value` 是蜂窝统计值，可以与 weight 不同。零权重仍保留事件身份及蜂窝计数。\n- 兼容期缺少 `weight` 的旧输入仍按 `value` 加权，不能把旧输入误称为等权计数。新 Compiler 通过 `heatmap.independent-weight@1` 能力检查后显式填入 weight；不向旧资源发送新字段。\n- 连续模式显示相对密度，半径和色阶由组件处理，模型无需调参。\n- 明确绑定了权重字段时，`continuous.weighted: true` 将图例标为“加权相对密度”；不能把密度色阶标成单点数值（例如震级）。\n- 蜂窝支持 count / sum / average / max，2D/3D 共用统计结果；平均值或最大值不改变连续热力的权重语义。\n- 用 modes / mode 控制可选模式和当前模式。\n- 具备 `heatmap.render-state@1` 时，宿主通过内容层 `getAnalysisRenderState()` 等待当前绘制/原生数据源就绪后提交模式 UI，并对失败做有界回滚。prepared/ready 不能由 Tab 已切换或 Canvas 存在推断；ready 不是底图完整或三维可见性验收。普通选中/控件更新不应重启原生数据加载。\n\n## 蜂窝颜色与高度\n\n- `hexbin.domain` 只控制颜色，不控制柱高。未指定颜色域且格值全相同时使用单色和“统一值”图例；零值常量使用中性灰，负值常量使用最低色，正值常量使用中间色，避免全零地图看起来已有热度。显式颜色域保留比较含义，不因当前样本变成常量而重标定。\n- 3D 只支持非负的聚合格值，负格值会在组件预检时拒绝，包括声明了 3D 但当前处于其他模式的输入；可以使用 2D 表达负数统计，不能取绝对值或截零掩盖原值。源行含负值但聚合后非负不受此限制。\n- `hexbin.heightDomain: [0, H]`（H 必须正且有限）固定柱高比例，需能力 `heatmap.height-scale@1`。跨筛选/数据集比较时保持该值域和 `maxHeightMeters` 一致；省略时兼容旧行为，按当前输入的聚合最大值映射，不能声称全源尺度已锁定。\n- 蜂窝 3D 使用 Canvas 2D 在固定 45° 正交倾斜地图上绘制柱体，不依赖原生三维相机或 WebGL。柱高按格值 / 高度域上界等比例映射，初始最高柱适配视口（上限 180 CSS px），之后柱高随地图缩放同比变化；全零高度为零。高度仅为视觉编码，非海拔。\n- 颜色、柱高和图例共同消费组件内解析的不可变 scale；本阶段不等同于完整编译期 ResolvedEncoding 或三维柱顶/命中验收。\n- 蜂窝选中保留统计颜色和柱高，仅强调边界；三维柱顶和侧面支持命中，画布不拦截地图缩放、拖动。\n- 宿主消费 feature 事件，以 elementId + featureId 关联地图与 `ui.feature-details@1` 的通用详情槽。同一数据、格网和聚合方式的 2D/3D 切换可以保留格子选择；进入连续模式、换数据/格网/聚合、切换 View 或隐藏该层必须清除或重新验证。连续查询目前命中单个样本，不能把返回的 count 当作附近聚合总量。\n\n## 受控筛选与尺度参照\n\n- 全览消费 `heatmap.render-extent@1` 的 `getHeatmapRenderExtent(element)`：二维范围来自匹配格子的完整 polygon，额外保留选中描边；连续范围来自匹配样本加原生 Gaussian 核的最大 CSS 像素 footprint。不同缩放下用最大核范围避免 fit/半径变化循环，不乘 DPR。空匹配返回 null bounds 和零 footprint，不回退到完整源。\n- 三维范围同时提供每格 polygon 与共享 scale 算出的 heightMeters，供宿主适配器投影底面、柱顶和侧面。地理 bounds 仅涵盖底面；不能用它、固定 padding 或 SDK polygon 数量宣称柱顶不被裁切。宿主还需合并 UI 保留区并对实际绘制结果验收；调用本工具不触发 fit、不改源数据。\n- `getElevatedGeometry(elementIds?)` 返回 Canvas 柱底、柱顶、侧面及地图局部像素包络；宿主据此检查边缘和 UI 遮挡。无需 SDK 三维矩阵，用户手动移出视口不自动触发 fit。\n\n- `heatmap.controlled-filter@1` 是组件的受控 Props 能力，不代表 Compiler、筛选表单或跨图层指标已经接入。宿主保留完整 `points`，更新 `filter: { pointIds, scalePopulation }`；不复制完整数据到另一个筛选 Store，不把筛选后的数组当成新的完整源。\n- `pointIds: null` 不限制，`[]` 显示零匹配；重复或不存在的 ID 报错，不静默忽略。先校验完整源数据，不能靠筛选隐藏无效行。当前仍要求非空完整源，零匹配是合法状态。\n- 启用受控筛选后默认 `scalePopulation: 'all-source'`：连续权重上界、蜂窝自动颜色域及自动柱高域均来自完整源；图面、命中、格值、成员数只使用匹配数据。同一源、格网、聚合与显式域不变时，筛选/缩放/2D↔3D 不重置参照。\n- 全源自动颜色参照保留含零数值域，即使完整源格值均相同，也不压成常量单色；否则较小的筛选后格值无法比较。必须从首次展示就传 `filter: { pointIds: null }`，不能等筛选后才启用比较参照。未启用筛选的历史 Props 保留常量单色行为。\n- 显式 `scalePopulation: 'filtered'` 才使用匹配数据重标定，图例注明“当前筛选归一化”。显式 `hexbin.domain` / `heightDomain` 始终优先于自动尺度，图例分别标注固定值域。全源平均值可能小于筛选后的平均值：真实格值不修改，颜色裁剪到端点，柱高封顶并报告数量。\n- 宿主拥有筛选状态、重置入口、跨图层/指标一致性及选中详情更新责任；筛选变更须清除或按新成员重新校验选择，不能保留旧格统计。组件只派生匹配集合、分箱和尺度，不自行改变相机。改变完整源或格网会重新计算全源参照；跨独立数据集比较应显式提供同一颜色/高度域，连续热力仍是相对密度而非绝对事件数。\n\n## 原生连续预设与共享统计\n\n筛选表单使用 Runtime `setAnalysisFilters` 与 `onAnalysisFilterChange`：`ui.analysis-filter@1` 保持枚举兼容，`@2` 增加数值闭区间、带时区时间区间和字面文本条件；`ui.analysis-metrics@1` 展示宿主解析的指标和全源/当前匹配口径。它们是通用受控 UI，不是模型可任意选择的新 section。字段、可读选项和 source 归属由 Compiler 解析，宿主统一提交匹配身份、计数、指标并清理失效详情；Kit 不重复执行谓词或聚合。需检查实际 UI 能力与 `heatmap.controlled-filter@1`，不能把新表单配给旧资源。详细值类型与空值语义见 README。\n\n- `continuous.presetId` 选择 Catalog `analysisPresets.continuous` 中的版本化预设，绘制与图例读取同一来源。宿主需检查 `heatmap.native-recipe@1`；未知预设报错，不静默替换。\n- 默认使用经固定空间分布、低/中/高密度及多级缩放标定的 `density-balanced-v2`。`native-legacy-v1` 与 `density-balanced-v1` 仅供显式兼容/对照；任何预设仍是相对密度表达，不承诺任意输入都绝不饱和。\n- `radiusPx`、`blur`、`gradient`、`domain` 保留旧输入兼容形状；原生连续绘制由预设控制，不是任意参数调节接口。切换预设不是改变样本数、权重或蜂窝统计口径。连续色阶仍表示相对密度，不是可跨数据集直接比较的绝对次数。\n- 蜂窝测量、2D/3D 绘制和图例复用同一不可变 cell snapshot。数据内容、格网尺寸或聚合方法变化时重算；相机变化或模式切换不重新分箱。该缓存不代替宿主的筛选状态管理，也不代表三维柱顶投影和遮挡已验收。\n\n## 选型与交互规则\n\n示例为合成数据，不是区域密度事实。weight 与 value 独立；初始即传完整源 filter 保持比较尺度。缺失值由上游合同处理，不能填零掩盖；零值合法，负聚合值只用于二维。feature 选择强调边界，不能修改数值色阶或柱高，也不使用点组件 selected variant。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`。内容、字体和最终形态共同参与 `measureElement(props)`；不要由调用方固定猜测标签宽高。点击由宿主统一选择状态，组件不维护第二份 Store。\n\n```json\n{\n  \"id\": \"heatmap\",\n  \"type\": \"heatmap\",\n  \"points\": [\n    {\n      \"id\": \"analysis-1\",\n      \"position\": [\n        115.94,\n        40.02\n      ],\n      \"value\": 2,\n      \"sourceRef\": {\n        \"type\": \"place\",\n        \"id\": \"place-1\"\n      },\n      \"weight\": 1\n    },\n    {\n      \"id\": \"analysis-2\",\n      \"position\": [\n        116.02,\n        40\n      ],\n      \"value\": 6,\n      \"sourceRef\": {\n        \"type\": \"place\",\n        \"id\": \"place-2\"\n      },\n      \"weight\": 1\n    },\n    {\n      \"id\": \"analysis-3\",\n      \"position\": [\n        116.09,\n        39.97\n      ],\n      \"value\": 4,\n      \"sourceRef\": {\n        \"type\": \"place\",\n        \"id\": \"place-3\"\n      },\n      \"weight\": 1\n    }\n  ],\n  \"mode\": \"continuous\",\n  \"modes\": [\n    \"continuous\",\n    \"hexbin\",\n    \"hexbin-3d\"\n  ],\n  \"continuous\": {\n    \"radiusPx\": 34,\n    \"blur\": 0.8,\n    \"domain\": [\n      0,\n      6\n    ],\n    \"gradient\": [\n      {\n        \"offset\": 0,\n        \"color\": \"rgba(0,0,0,0)\"\n      },\n      {\n        \"offset\": 1,\n        \"color\": \"#aa1414\"\n      }\n    ]\n  },\n  \"hexbin\": {\n    \"aggregation\": {\n      \"method\": \"sum\",\n      \"cellSizeMeters\": 10000\n    },\n    \"colors\": [\n      \"#fef9c3\",\n      \"#fb923c\",\n      \"#dc2626\"\n    ],\n    \"maxHeightMeters\": 20000,\n    \"domain\": [\n      0,\n      10\n    ],\n    \"heightDomain\": [\n      0,\n      10\n    ]\n  },\n  \"interaction\": {\n    \"hoverable\": true,\n    \"selectable\": true,\n    \"queryRadiusPx\": 32\n  },\n  \"filter\": {\n    \"pointIds\": null,\n    \"scalePopulation\": \"all-source\"\n  }\n}\n```\n"
+    },
+    {
+      "type": "choropleth",
+      "name": "区域分级设色热力图",
+      "description": "按区域边界对统计指标分级着色，适用于各省 GDP、各区人口密度等区域指标比较",
+      "geometryType": "MultiPolygon",
+      "selection": {
+        "behavior": "region-focus",
+        "parts": [
+          "body"
+        ]
+      },
+      "props": {
+        "id": {
+          "type": "string",
+          "description": "组件实例的唯一标识，更新时保持不变",
+          "required": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否显示组件，默认 true",
+          "required": false
+        },
+        "opacity": {
+          "type": "number",
+          "description": "视觉透明度，范围 0～1，默认 1",
+          "required": false
+        },
+        "selected": {
+          "type": "boolean",
+          "description": "是否使用选中样式，由外部控制",
+          "required": false
+        },
+        "offset": {
+          "type": "pixel-point",
+          "description": "整个组件的视觉偏移，单位为 CSS 像素",
+          "required": false
+        },
+        "partOffsets": {
+          "type": "part-offsets",
+          "description": "组件内部可偏移部分相对地理锚点的偏移",
+          "required": false
+        },
+        "collisionPriority": {
+          "type": "number",
+          "description": "业务碰撞优先级，数值越大越先占位",
+          "required": false
+        },
+        "partCollisionPriorities": {
+          "type": "part-priorities",
+          "description": "部件级碰撞优先级，未设置时继承实体优先级",
+          "required": false
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "业务绘制层级，数值越大越靠上",
+          "required": false
+        },
+        "seriesId": {
+          "type": "string",
+          "description": "点线面、标签、图例和侧栏共享的稳定系列标识",
+          "required": false
+        },
+        "relatedSeriesIds": {
+          "type": "string[]",
+          "description": "与共享实体相关联的系列标识",
+          "required": false
+        },
+        "polygons": {
+          "type": "polygon[]",
+          "description": "区域边界，支持多部分及孔洞",
+          "required": true
+        },
+        "name": {
+          "type": "string",
+          "description": "区域名称",
+          "required": true
+        },
+        "value": {
+          "type": "number | null",
+          "description": "区域数值，null 表示暂无数据，零是有效值",
+          "required": true
+        },
+        "metric": {
+          "type": "string",
+          "description": "指标名称",
+          "required": true
+        },
+        "unit": {
+          "type": "string",
+          "description": "指标单位",
+          "required": true
+        },
+        "scaleId": {
+          "type": "string",
+          "description": "共享同一分级和图例的稳定标识",
+          "required": true
+        },
+        "scale": {
+          "type": "choropleth-scale",
+          "description": "全部区域数值；默认分位数5级，可设等距分级或自定义递增阈值",
+          "required": true
+        }
+      },
+      "variants": [],
+      "styles": [],
+      "measurableParts": [
+        "body"
+      ],
+      "layoutCapabilities": {
+        "parts": {},
+        "reductions": [],
+        "entityHide": "never"
+      },
+      "measurement": {
+        "export": "measureElement",
+        "units": "css-px",
+        "anchor": "local-top-left",
+        "contentDependent": true,
+        "missingParts": "omitted"
+      },
+      "events": [
+        "click"
+      ],
+      "stackingCapabilities": {
+        "partZIndex": {
+          "body": 10
+        },
+        "partRetentionPriority": {
+          "body": 100
+        }
+      },
+      "renderer": "amap-2d",
+      "id": "choropleth",
+      "modelSelectable": true,
+      "roles": [
+        "region-fill",
+        "analysis-regional"
+      ],
+      "kind": "map",
+      "usage": "src/components/choropleth/USAGE.md",
+      "guidance": "# 区域分级设色热力图\n\n用于省、市、区等区域汇总指标比较，如各省 GDP、各区人口密度；事件点的空间密度使用 `heatmap`。\n提供真实多边形、区域名称、数值、指标及单位，同一 `scaleId` 共用 `scale`。缺失值为 `null`，不得替换成零。\n代码默认按分位数分5级，合并重复阈值；支持 `equal-interval` 或1–8个严格递增 `thresholds`。区间上界包含，配色和图例统一生成。原始数值保留用于详情，分级不改变统计口径。\n\n## 选型与交互规则\n\n- 区域统计值用本组件；仅表达边界或覆盖范围时用 `polygon`，不要把任意分类颜色伪装成数值分级。\n- 宿主通过 `setSelected(id)` 统一选择状态；选中区域使用默认 2px 灰色边框和细白色外缘，不重复加粗，并加强填充透明度，同尺度其他区域弱化。取消后恢复，不修改数值、几何和原始样式。\n- 拖动手势交给地图；点击按真实多边形及孔洞命中。面和边界不参与标签碰撞。\n- 图例消费同一个 `scale`；零是有效值，缺失数据单独说明，不能按每个区域重新归一化。\n\n## 可执行 props 示例\n\n以下为合成验收数据，可传给 `contentLayer.setElements([props])`；区域名和指标来自业务数据，组件不推断统计事实。\n\n```json\n{\n  \"id\": \"region-a\",\n  \"type\": \"choropleth\",\n  \"name\": \"示例区域 A\",\n  \"metric\": \"数量\",\n  \"unit\": \"个\",\n  \"value\": 0,\n  \"scaleId\": \"region-count\",\n  \"scale\": { \"values\": [0, 10, 20, null], \"method\": \"quantile\", \"classes\": 5 },\n  \"polygons\": [[[[116, 40], [116.1, 40], [116.1, 40.1], [116, 40.1], [116, 40]]]],\n  \"areaRole\": \"boundary\"\n}\n```\n"
+    },
+    {
+      "id": "semi.tabs",
+      "kind": "ui",
+      "title": "标签页",
+      "implementation": "Semi.Tabs",
+      "modelSelectable": true,
+      "supportedSources": [
+        "map.views"
+      ],
+      "supportedActions": [
+        "activate-view"
+      ],
+      "usage": "src/semi/components/tabs/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.tabs\n\n用于在多个业务 View 之间切换。只绑定 `map.views`，并使用 `activate-view` 动作；不要把它用于普通内容分组。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"tabs-section\",\n  \"componentId\": \"semi.tabs\",\n  \"binding\": {\n    \"source\": \"map.views\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"activate-view\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"tabs-section\",\n  \"componentId\": \"semi.tabs\",\n  \"source\": \"map.views\",\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"items\": [\n    {\n      \"id\": \"overview\",\n      \"viewId\": \"overview\",\n      \"title\": \"总览\"\n    },\n    {\n      \"id\": \"detail\",\n      \"viewId\": \"detail\",\n      \"title\": \"详情\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"activate-view\",\n      \"payloadField\": \"viewId\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n\n只有确实需要切换的多个 View 才使用 Tabs；多个 group、路线或章节不自动创建 View。\n\nRuntime 使用按钮式导航，不再使用下划线导航。可选的已解析 item.navigationLabel 仅用于短标签，title 保留完整标题和可访问名称；模型不生成 CSS 或截断文字。溢出时保留横向滚动、左右按钮和键盘方向键/Home/End，选中项自动进入导航可见范围，不滚动宿主页。\n"
+    },
+    {
+      "id": "semi.card",
+      "kind": "ui",
+      "title": "卡片",
+      "implementation": "Semi.Card",
+      "modelSelectable": true,
+      "supportedSources": [
+        "view.summary",
+        "view.recommendations"
+      ],
+      "supportedActions": [
+        "select-element",
+        "clear-selection"
+      ],
+      "usage": "src/semi/components/card/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.card\n\n用于承载当前 View 的摘要或少量推荐内容。适合短文本和一个明确主题，不用于模拟复杂嵌套布局。\n\n概述使用默认中性柔和背景；Compiler 可由当前单一分组的方案色解析 `props.accent`，只浅染背景，不改变标题和正文颜色。不允许模型在 Plan props 中指定颜色或样式。超过六行的原文提供“展开全文／收起”，不改写、不丢弃说明。标题来自绑定内容，不硬编码旅游术语。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"card-section\",\n  \"componentId\": \"semi.card\",\n  \"binding\": {\n    \"source\": \"view.summary\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"select-element\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"card-section\",\n  \"componentId\": \"semi.card\",\n  \"source\": \"view.summary\",\n  \"props\": {\n    \"size\": \"small\",\n    \"title\": \"当前任务\",\n    \"description\": \"摘要来自业务数据\"\n  },\n  \"items\": [],\n  \"actions\": [\n    {\n      \"type\": \"select-element\",\n      \"payloadField\": \"elementId\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n"
+    },
+    {
+      "id": "semi.descriptions",
+      "kind": "ui",
+      "title": "描述列表",
+      "implementation": "Semi.Descriptions",
+      "modelSelectable": true,
+      "supportedSources": [
+        "view.metrics",
+        "selected.properties"
+      ],
+      "supportedActions": [
+        "clear-selection"
+      ],
+      "usage": "src/semi/components/descriptions/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.descriptions\n\n用于键值型指标或选中地图实体的属性。字段应已由 Compiler 解析，不在 Runtime 中读取任意对象路径。\n\n选中详情使用中性柔和背景，完整名称与正文自然换行；上下文、名称和正文独立留白。没有描述且没有其他属性时显示“暂无补充说明”。指标保留 value、完整 label 和 unit 的语义：单位不内部拆行，完整术语放在 label，不从自由文本猜测或拼接“府／管”等片段。\n\n选中详情可由宿主通过 `ui.collapsible-details@1` 开启可恢复折叠；收起只减少浮层占位，不清除选中项、统计口径或字段。空间不足策略、测量和相机由宿主负责，不在 section Props 中生成 CSS 或布局规则。默认未开启时保持既有展示。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"descriptions-section\",\n  \"componentId\": \"semi.descriptions\",\n  \"binding\": {\n    \"source\": \"selected.properties\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"clear-selection\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"descriptions-section\",\n  \"componentId\": \"semi.descriptions\",\n  \"source\": \"selected.properties\",\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"items\": [\n    {\n      \"id\": \"name\",\n      \"label\": \"名称\",\n      \"value\": \"示例地点\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"clear-selection\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n\n指标使用短值、明确单位和统一比较口径；较长解释放摘要，不硬塞进固定窄列。只读来源总数需标明不随筛选变化。\n"
+    },
+    {
+      "id": "semi.timeline",
+      "kind": "ui",
+      "title": "时间线",
+      "implementation": "Semi.Timeline",
+      "modelSelectable": true,
+      "supportedSources": [
+        "view.stops"
+      ],
+      "supportedActions": [
+        "select-element",
+        "clear-selection"
+      ],
+      "usage": "src/semi/components/timeline/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.timeline\n\n用于有明确先后顺序的站点。绑定 `view.stops` 时可使用 `select-element` 与地图 marker 联动。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"timeline-section\",\n  \"componentId\": \"semi.timeline\",\n  \"binding\": {\n    \"source\": \"view.stops\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"select-element\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"timeline-section\",\n  \"componentId\": \"semi.timeline\",\n  \"source\": \"view.stops\",\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"items\": [\n    {\n      \"id\": \"item\",\n      \"title\": \"示例\",\n      \"description\": \"可读说明\",\n      \"elementId\": \"detail:member:m\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"select-element\",\n      \"payloadField\": \"elementId\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n\n时间线必须有已声明访问顺序或时间事实；清单排序、排名、来源文章章节不能证明访问顺序，更不能自动分天。\n"
+    },
+    {
+      "id": "semi.list",
+      "kind": "ui",
+      "title": "列表",
+      "implementation": "Semi.List",
+      "modelSelectable": true,
+      "supportedSources": [
+        "view.groups",
+        "view.routes",
+        "view.stops",
+        "view.recommendations",
+        "view.entityRelations"
+      ],
+      "supportedActions": [
+        "activate-view",
+        "select-element",
+        "clear-selection"
+      ],
+      "usage": "src/semi/components/list/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.list\n\n列表无图片及图片占位。标题和描述各最多两行，超出省略，选中不改变截断规则；完整内容在选中详情阅读。缺少描述不补占位文案，也不预留描述高度。行使用统一最小点击高度和内边距，不强制等高。栏目标题由 Compiler 按明确语义解析，组件不猜测行业；“每日安排”仅用于按天组织的行程，普通数据采用地点、线路、区域或分组列表。\n\n平级区域使用 `view.entityRelations` 的列表呈现，不为没有父子关系的区域制造树。数值比较项由 Compiler 提供 `metric`、`metricValue`（有限数值或 null）、`unit`、`scaleId` 与 `scale`。列表支持名称搜索；仅同口径指标允许数值排序，缺失值始终排最后。分级色与地图复用同一分类实现，不能独立配色。\n\n`view.entityRelations` 条目存在 Compiler 解析的 `parentId` 时，列表使用缩进、连接线和父项背景表达层级。父项独立的“展开／收起子项”按钮只控制子项可见性，不改变地图选择；名称与“定位”仍执行 `select-element`。相同实体在不同父项下的关联实例分别保留。无 `parentId` 的条目保持平级，不按标题、数组相邻位置或地理接近关系推断包含关系。关系层级只表达输入的关联，不自动宣称地理包含。\n\n用于路线、分组、无时间顺序的地点（view.stops）或推荐项的线性浏览。只有条目携带 `elementId` 时才能启用 `select-element`。\n\n导航列表声明 `activate-view`，每项携带 Compiler 解析的 `viewId`，无需地图集合或 `elementId`。显示入口箭头，不使用开关式 `aria-pressed`。缺少目标的条目不猜测跳转；目标必须是 Graph 内存在的 View。普通实体列表使用 `select-element`，不能在同一 section 混用这两种动作。Hover 不激活 View，键盘 Enter/Space 与点击一致。\n\n地图集合仍通过 `entryActions[elementId]` 连接详情；Compiler 保证同一分组的侧栏入口与地图入口指向一致。组件不根据标题、序号或行业推断目标。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"list-section\",\n  \"componentId\": \"semi.list\",\n  \"binding\": {\n    \"source\": \"view.routes\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"select-element\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"list-section\",\n  \"componentId\": \"semi.list\",\n  \"source\": \"view.routes\",\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"items\": [\n    {\n      \"id\": \"item\",\n      \"title\": \"示例\",\n      \"description\": \"可读说明\",\n      \"elementId\": \"detail:member:m\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"select-element\",\n      \"payloadField\": \"elementId\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n"
+    },
+    {
+      "id": "semi.collapse",
+      "kind": "ui",
+      "title": "折叠面板",
+      "implementation": "Semi.Collapse",
+      "modelSelectable": true,
+      "supportedSources": [
+        "view.groups",
+        "view.routes"
+      ],
+      "supportedActions": [
+        "select-element",
+        "clear-selection"
+      ],
+      "usage": "src/semi/components/collapse/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.collapse\n\n用于内容较多、默认无需全部展开的路线或分组。不要用于隐藏用户决策所需的核心摘要。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"collapse-section\",\n  \"componentId\": \"semi.collapse\",\n  \"binding\": {\n    \"source\": \"view.groups\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"select-element\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"collapse-section\",\n  \"componentId\": \"semi.collapse\",\n  \"source\": \"view.groups\",\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"items\": [\n    {\n      \"id\": \"item\",\n      \"title\": \"示例\",\n      \"description\": \"可读说明\",\n      \"elementId\": \"detail:member:m\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"select-element\",\n      \"payloadField\": \"elementId\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n"
+    },
+    {
+      "id": "semi.tree",
+      "kind": "ui",
+      "title": "实体关系树",
+      "implementation": "Semi.Tree",
+      "modelSelectable": true,
+      "supportedSources": [
+        "view.entityRelations"
+      ],
+      "supportedActions": [
+        "select-element",
+        "toggle-visibility"
+      ],
+      "usage": "src/semi/components/tree/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "enum": [
+              "small",
+              "medium"
+            ]
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "guidance": "# semi.tree\n\n用于展示 Compiler 从 MapSpec 显式引用关系生成的最多三层实体关系索引，例如 `区域 → 路线 → 地点` 或 `分组 → 路线 → 地点`。\n\n- 模型只选择 `binding.source: view.entityRelations`，不能手写递归 children。\n- 行点击负责选择，展开箭头只控制层级；可见性使用独立动作。\n- 宿主校验显隐请求：支持 `ui.visibility-veto@1` 时，`onAction` 对 `toggle-visibility` 返回 `false` 会还原 Checkbox，不自行切换其他图层。宿主负责解释拒绝原因；其他动作不因此变成可撤销事务。\n- 使用 `ui.controlled-visibility@1` 时，关系树 Checkbox 消费宿主提交的有效显隐快照。地图侧 API、筛选与换 View 均须同步快照，不能用默认勾选代替真实状态；同一实体在多个节点出现时共享其状态，不推断父子级联。快照含当前 View 的全部对象以及是否允许切换，缺失项关闭并禁用。\n- 地图选中后展开祖先并滚动到关联节点；完整详情只在唯一详情卡展示。\n- 地点可以作为轻量引用出现在多条路线下，但共享同一个 `contentKey`。\n\n## Plan 与最终 section props 示例\n\nPlan 只声明合法数据源、受控选项与动作，以下 ID 为示例引用；业务文字与 elementId 由 Compiler 从真实绑定生成，不让模型填写最终 props。\n\n```json\n{\n  \"id\": \"tree-section\",\n  \"componentId\": \"semi.tree\",\n  \"binding\": {\n    \"source\": \"view.entityRelations\"\n  },\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"actions\": [\n    \"select-element\"\n  ],\n  \"selectedBy\": \"model\"\n}\n```\n\n传给 Runtime 的 `view.ui.sections` 条目形状：\n\n```json\n{\n  \"id\": \"tree-section\",\n  \"componentId\": \"semi.tree\",\n  \"source\": \"view.entityRelations\",\n  \"props\": {\n    \"size\": \"small\"\n  },\n  \"items\": [\n    {\n      \"id\": \"route:r\",\n      \"title\": \"路线\",\n      \"contentKey\": \"route:r\",\n      \"entityType\": \"route\",\n      \"entityId\": \"r\",\n      \"depth\": 0,\n      \"elementId\": \"detail:route:r\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"select-element\",\n      \"payloadField\": \"elementId\"\n    }\n  ],\n  \"empty\": false\n}\n```\n\n反例：添加任意 CSS、递归页面 children 或不存在的动作目标。集合卡与成员点互斥只约束地图，不约束这里的侧栏摘要。空绑定由 Runtime 显示合法空态，不伪造内容。\n"
+    },
+    {
+      "id": "semi.tag",
+      "kind": "ui",
+      "title": "标签",
+      "implementation": "Semi.Tag",
+      "modelSelectable": false,
+      "supportedSources": [],
+      "supportedActions": [],
+      "usage": "src/semi/components/tag/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "guidance": "# semi.tag\n\nRuntime 内部用于小面积分类和状态强调。第一阶段不作为独立 `ui.sections` 组件。\n\n## 内部 props 示例\n\n```json\n{\n  \"children\": \"示意\"\n}\n```\n\n这是 Runtime 内部 Semi 节点的 props，不是模型可选 section。反例：将 `semi.tag` 写进 Plan 或自建递归组件树；应选择 Catalog 已开放的 section，由 Runtime 按状态使用此辅助组件。\n"
+    },
+    {
+      "id": "semi.space",
+      "kind": "ui",
+      "title": "间距布局",
+      "implementation": "Semi.Space",
+      "modelSelectable": false,
+      "supportedSources": [],
+      "supportedActions": [],
+      "usage": "src/semi/components/space/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "guidance": "# semi.space\n\nRuntime 内部用于基础间距布局。第一阶段没有递归 UI Tree，因此不作为独立 `ui.sections` 组件。\n\n## 内部 props 示例\n\n```json\n{\n  \"spacing\": \"tight\"\n}\n```\n\n这是 Runtime 内部 Semi 节点的 props，不是模型可选 section。反例：将 `semi.space` 写进 Plan 或自建递归组件树；应选择 Catalog 已开放的 section，由 Runtime 按状态使用此辅助组件。\n"
+    },
+    {
+      "id": "semi.typography",
+      "kind": "ui",
+      "title": "文本",
+      "implementation": "Semi.Typography",
+      "modelSelectable": false,
+      "supportedSources": [],
+      "supportedActions": [],
+      "usage": "src/semi/components/typography/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "guidance": "# semi.typography\n\nRuntime 内部用于标题、正文和辅助文本。第一阶段不作为独立 `ui.sections` 组件。\n\n## 内部 props 示例\n\n```json\n{\n  \"children\": \"次级说明\"\n}\n```\n\n这是 Runtime 内部 Semi 节点的 props，不是模型可选 section。反例：将 `semi.typography` 写进 Plan 或自建递归组件树；应选择 Catalog 已开放的 section，由 Runtime 按状态使用此辅助组件。\n"
+    },
+    {
+      "id": "semi.empty",
+      "kind": "ui",
+      "title": "空状态",
+      "implementation": "Semi.Empty",
+      "modelSelectable": false,
+      "supportedSources": [],
+      "supportedActions": [],
+      "usage": "src/semi/components/empty/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "guidance": "# semi.empty\n\nRuntime 在合法 binding 解析为空时使用的统一空状态。模型不直接选择。\n\n## 内部 props 示例\n\n```json\n{\n  \"title\": \"暂无匹配数据\"\n}\n```\n\n这是 Runtime 内部 Semi 节点的 props，不是模型可选 section。反例：将 `semi.empty` 写进 Plan 或自建递归组件树；应选择 Catalog 已开放的 section，由 Runtime 按状态使用此辅助组件。\n"
+    },
+    {
+      "id": "semi.skeleton",
+      "kind": "ui",
+      "title": "骨架屏",
+      "implementation": "Semi.Skeleton",
+      "modelSelectable": false,
+      "supportedSources": [],
+      "supportedActions": [],
+      "usage": "src/semi/components/skeleton/USAGE.md",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "guidance": "# semi.skeleton\n\nRuntime 初始化时使用的骨架屏。模型不直接选择，也不用于掩盖加载失败。\n\n## 内部 props 示例\n\n```json\n{\n  \"loading\": true\n}\n```\n\n这是 Runtime 内部 Semi 节点的 props，不是模型可选 section。反例：将 `semi.skeleton` 写进 Plan 或自建递归组件树；应选择 Catalog 已开放的 section，由 Runtime 按状态使用此辅助组件。\n"
+    }
+  ],
+  "analysisPresets": {
+    "continuous": {
+      "defaultId": "density-balanced-v2",
+      "items": [
+        {
+          "id": "native-legacy-v1",
+          "intensity": 1,
+          "opacity": 0.85,
+          "radiusPx": 34,
+          "blur": 0.82,
+          "domain": [
+            0,
+            1
+          ],
+          "gradient": [
+            {
+              "offset": 0,
+              "color": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "offset": 0.1,
+              "color": "rgba(35, 74, 135, 0.55)"
+            },
+            {
+              "offset": 0.3,
+              "color": "rgb(48, 142, 178)"
+            },
+            {
+              "offset": 0.5,
+              "color": "rgb(120, 198, 121)"
+            },
+            {
+              "offset": 0.7,
+              "color": "rgb(254, 221, 87)"
+            },
+            {
+              "offset": 0.9,
+              "color": "rgb(244, 110, 50)"
+            },
+            {
+              "offset": 1,
+              "color": "rgb(170, 20, 20)"
+            }
+          ]
+        },
+        {
+          "id": "density-balanced-v1",
+          "intensity": 0.15,
+          "opacity": 0.85,
+          "radiusPx": 34,
+          "blur": 0.82,
+          "domain": [
+            0,
+            1
+          ],
+          "gradient": [
+            {
+              "offset": 0,
+              "color": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "offset": 0.1,
+              "color": "rgba(35, 74, 135, 0.55)"
+            },
+            {
+              "offset": 0.3,
+              "color": "rgb(48, 142, 178)"
+            },
+            {
+              "offset": 0.5,
+              "color": "rgb(120, 198, 121)"
+            },
+            {
+              "offset": 0.7,
+              "color": "rgb(254, 221, 87)"
+            },
+            {
+              "offset": 0.9,
+              "color": "rgb(244, 110, 50)"
+            },
+            {
+              "offset": 1,
+              "color": "rgb(170, 20, 20)"
+            }
+          ]
+        },
+        {
+          "id": "density-balanced-v2",
+          "intensity": 0.05,
+          "opacity": 0.85,
+          "radiusPx": 32,
+          "blur": 0.82,
+          "domain": [
+            0,
+            1
+          ],
+          "gradient": [
+            {
+              "offset": 0,
+              "color": "rgba(0, 0, 0, 0)"
+            },
+            {
+              "offset": 0.02,
+              "color": "rgba(35, 74, 135, 0.55)"
+            },
+            {
+              "offset": 0.08,
+              "color": "rgb(35, 74, 135)"
+            },
+            {
+              "offset": 0.25,
+              "color": "rgb(48, 142, 178)"
+            },
+            {
+              "offset": 0.45,
+              "color": "rgb(120, 198, 121)"
+            },
+            {
+              "offset": 0.65,
+              "color": "rgb(254, 221, 87)"
+            },
+            {
+              "offset": 0.82,
+              "color": "rgb(244, 110, 50)"
+            },
+            {
+              "offset": 1,
+              "color": "rgb(170, 20, 20)"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "analysisDefaults": {
+    "heatmap": {
+      "version": 1,
+      "modes": [
+        "continuous",
+        "hexbin",
+        "hexbin-3d"
+      ],
+      "mode": "continuous",
+      "opacity": 0.85,
+      "hexbin": {
+        "cellEdgeProjectedMeters": 20000,
+        "maxHeightCellFactor": 2,
+        "colors": [
+          "#3B82F6",
+          "#22D3EE",
+          "#FACC15",
+          "#F97316",
+          "#B91C1C"
+        ]
+      },
+      "interaction": {
+        "hoverable": true,
+        "selectable": true,
+        "queryRadiusPx": 32
+      }
+    }
+  },
+  "tools": [
+    {
+      "id": "heatmap-render-extent",
+      "entrypoint": ".",
+      "export": "getHeatmapRenderExtent"
+    },
+    {
+      "id": "measure",
+      "entrypoint": "."
+    },
+    {
+      "id": "collision",
+      "entrypoint": "./collision"
+    },
+    {
+      "id": "theme",
+      "entrypoint": "./theme"
+    },
+    {
+      "id": "runtime",
+      "entrypoint": "./runtime"
+    },
+    {
+      "id": "route-legend-symbol",
+      "entrypoint": ".",
+      "export": "getRouteLegendSymbol"
+    }
+  ]
+}

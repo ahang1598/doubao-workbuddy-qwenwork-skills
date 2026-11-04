@@ -1,3 +1,6 @@
+// 结束监听只确认任务终态并推动后续交付，不把“已启动”或“首批成功”当作完成。
+// 所有轮询结果都绑定原 task_id、profile 和 environment，避免串任务查询。
+
 import { setTimeout as sleep } from 'node:timers/promises';
 import { runOperationArgs } from './operations.mjs';
 import { resolveTaskBinding, requireOriginalTaskContext } from './task-binding.mjs';

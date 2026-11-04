@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 # Adapted from skills_live_inspect_lite/runtime/http_fetch.py; content-only migration.
 """Isolated stdlib HTTP worker; the parent enforces a hard process deadline.
 
@@ -5,6 +6,7 @@ stdin/stdout are bounded JSON envelopes. No credentials, URLs or server error
 text are emitted on failures. Redirects are returned for parent validation.
 """
 import base64
+import errno
 import json
 import math
 import ipaddress
@@ -13,13 +15,40 @@ import socket
 import ssl
 from urllib.parse import urlsplit
 import sys
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
 
 MAX_INPUT_BYTES = 65_536
 MAX_BODY_BYTES = 2 * 1024 * 1024
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_HEADER_BYTES = 8192
+
+
+def safe_failure(value):
+    """Allowlisted transport facts only; never server text, URLs or credentials."""
+    if not isinstance(value, dict):return {}
+    kind = value.get('kind')
+    if not isinstance(kind, str) or kind not in {
+            'dns_error', 'tls_error', 'network_timeout', 'connection_error',
+            'http_error', 'invalid_response', 'permission_denied', 'unknown'}:return {}
+    result = {'kind':kind}
+    status = value.get('http_status')
+    if kind == 'http_error' and type(status) is int and 400 <= status <= 599:
+        result['http_status'] = status
+    return result
+
+
+def failure_kind(error):
+    if isinstance(error, URLError):error = error.reason
+    if isinstance(error, ssl.SSLError):return 'tls_error'
+    if isinstance(error, socket.gaierror):return 'dns_error'
+    if isinstance(error, TimeoutError):return 'network_timeout'
+    if isinstance(error, PermissionError):return 'permission_denied'
+    if isinstance(error, ConnectionError) or (isinstance(error, OSError)
+            and error.errno in {errno.ENETDOWN, errno.ENETUNREACH, errno.EHOSTUNREACH}):
+        return 'connection_error'
+    if isinstance(error, (ValueError, KeyError, TypeError)):return 'invalid_response'
+    return 'unknown'
 
 
 class _NoRedirect(HTTPRedirectHandler):
@@ -95,8 +124,8 @@ def main():
         if len(raw) > MAX_INPUT_BYTES:
             raise ValueError('oversized worker request')
         result = fetch(json.loads(raw))
-    except Exception:
-        result = {'error': 'DOUYIN_FETCH_FAILED'}
+    except Exception as error:
+        result = {'error': 'DOUYIN_FETCH_FAILED', 'diagnostic': {'kind': failure_kind(error)}}
     sys.stdout.write(json.dumps(result, ensure_ascii=True, separators=(',', ':')))
 
 

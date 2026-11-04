@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块声明的检测、状态处理或交付边界；敏感输入和原始响应不进入日志。
 # Adapted from skills_live_inspect_lite/runtime/douyin_live.py; content-only migration.
 """Douyin live page resolution using only Python's standard library.
 
@@ -33,10 +34,12 @@ _BLOCKED = tuple(ipaddress.ip_network(n) for n in (
 
 
 class DouyinLiveError(Exception):
-    def __init__(self, message, code, retryable=False):
+    def __init__(self, message, code, retryable=False, diagnostic=None):
         super().__init__(message)
         self.code = code
         self.retryable = retryable
+        from runtime.http_fetch import safe_failure
+        self.source_failure = safe_failure(diagnostic)
 
 
 def _unavailable(retryable=False):
@@ -233,11 +236,50 @@ def _broadcast_status(config):
     return 'live' if str(raw) == '2' or str(ended) == '0' else 'unknown'
 
 
+def _pace_broadcast_status(html, web_rid):
+    """Read the target room's streamed page state, without executing scripts."""
+    if not web_rid:
+        return 'unknown'
+    chunks = []
+    for script in re.findall(r'<script\b[^>]*>(.*?)</script\s*>', html, re.I | re.S):
+        match = re.fullmatch(r'\s*self\.__pace_f\.push\((.*)\);?\s*', script, re.S)
+        if not match:
+            continue
+        try:
+            value = json.loads(match[1])
+        except (ValueError, RecursionError):
+            continue
+        if isinstance(value, list) and len(value) == 2 and value[0] == 1 and isinstance(value[1], str):
+            chunks.append(value[1])
+    statuses = set()
+    # Flight records may span multiple script chunks; only model records carry room state.
+    for line in ''.join(chunks).splitlines():
+        record_id, separator, body = line.partition(':')
+        if not separator or not re.fullmatch(r'[0-9a-f]+', record_id):
+            continue
+        try:
+            model = json.loads(body)
+        except (ValueError, RecursionError):
+            continue
+        if not isinstance(model, list) or len(model) != 4 or model[0] != '$':
+            continue
+        room = _get(model[3], 'state', 'roomStore', 'roomInfo')
+        if str(_get(room, 'web_rid')) != web_rid:
+            continue
+        status = _broadcast_status({'roomInfo': room})
+        if status != 'unknown':
+            statuses.add(status)
+    # Conflicting records do not prove the current broadcast has ended.
+    return next(iter(statuses)) if len(statuses) == 1 else 'unknown'
+
+
 def _now(value):
     return time.time() * 1000 if value is None else value() if callable(value) else value
 
 
-def parse_douyin_live_page(html, *, now=None):
+def parse_douyin_live_page(html, *, now=None, web_rid=None):
+    if _pace_broadcast_status(html, web_rid) == 'ended':
+        return dict(status='not_live')
     try:
         config = _config(html)
     except DouyinLiveError:
@@ -316,7 +358,7 @@ class _BufferedResponse(io.BytesIO):
         self.headers = headers
 
 
-def _transport(url, *, timeout, headers, maximum_bytes=DOUYIN_PAGE_MAX_BYTES):
+def _transport(url, *, timeout, headers, maximum_bytes=DOUYIN_PAGE_MAX_BYTES, cancel=None):
     """Resolve DNS, headers and body inside one killable Python process.
 
     subprocess.run kills and reaps its child on timeout. The worker bounds its
@@ -327,44 +369,71 @@ def _transport(url, *, timeout, headers, maximum_bytes=DOUYIN_PAGE_MAX_BYTES):
     if len(payload) > 65_536:
         raise _unavailable()
     try:
-        result = subprocess.run(
-            [sys.executable, '-I', str(Path(__file__).with_name('http_fetch.py').resolve())],
-            input=payload, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            timeout=timeout, check=False)
+        args=[sys.executable, '-I', str(Path(__file__).with_name('http_fetch.py').resolve())]
+        if cancel is None:
+            result = subprocess.run(args, input=payload, stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL, timeout=timeout, check=False)
+        else:
+            # The HTTP worker has no descendants. Reap it on stop, deadline and
+            # interruption, including while DNS or response reading is stalled.
+            deadline=time.monotonic()+timeout
+            with subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL) as process:
+                try:
+                    while True:
+                        if cancel():raise DouyinLiveError('Source cancelled', 'SOURCE_CANCELLED')
+                        left=deadline-time.monotonic()
+                        if left<=0:raise subprocess.TimeoutExpired(args,timeout)
+                        try:
+                            output,_=process.communicate(input=payload,timeout=min(.2,left))
+                            result=subprocess.CompletedProcess(args,process.returncode,output)
+                            break
+                        except subprocess.TimeoutExpired:
+                            payload=None
+                finally:
+                    if process.poll() is None:process.kill()
+                    process.communicate()
         if result.returncode != 0 or len(result.stdout) > 3 * 1024 * 1024:
             raise ValueError('invalid HTTP worker response')
         envelope = json.loads(result.stdout)
         if envelope.get('error') == 'DOUYIN_PAGE_UNAVAILABLE':
             raise _unavailable()
         if envelope.get('error'):
-            raise ValueError('HTTP worker failed')
+            raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True,
+                                  envelope.get('diagnostic'))
         body = base64.b64decode(envelope['body'], validate=True)
         if len(body) > min(maximum_bytes, DOUYIN_PAGE_MAX_BYTES):
             raise _unavailable()
         return _BufferedResponse(body, envelope['status'], envelope['headers'])
     except DouyinLiveError:
         raise
-    except Exception:
-        raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True) from None
+    except Exception as error:
+        from runtime.http_fetch import failure_kind
+        kind = 'network_timeout' if isinstance(error, subprocess.TimeoutExpired) else failure_kind(error)
+        raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True,
+                              {'kind':kind}) from None
 
 
-def _fetch(url, transport, timeout_ms, maximum_bytes, *, redirect=False):
+def _fetch(url, transport, timeout_ms, maximum_bytes, *, redirect=False, cancel=None):
     response = None
     started = time.monotonic()
     try:
         options = {'maximum_bytes': maximum_bytes} if transport is _transport else {}
+        if transport is _transport and cancel is not None:options['cancel']=cancel
         request_headers = {
             'accept': 'text/html,application/xhtml+xml', 'accept-language': 'zh-CN,zh;q=0.9',
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36'}
         response = transport(url, timeout=timeout_ms / 1000, **options, headers=request_headers)
         status = response.status
         headers = {key.lower(): value for key, value in response.headers.items()}
-        if status >= 500:
-            raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True)
-        if redirect:
+        if status == 429 or status >= 500:
+            raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True,
+                                  {'kind':'http_error', 'http_status':status})
+        if redirect and status < 400:
             return status, headers.get('location', '')
         if not 200 <= status < 300:
-            raise _unavailable()
+            raise DouyinLiveError('Douyin live page is unavailable', 'DOUYIN_PAGE_UNAVAILABLE', False,
+                                  {'kind':'http_error', 'http_status':status})
         content_type = headers.get('content-type', '').lower()
         if 'text/html' not in content_type and 'application/xhtml+xml' not in content_type:
             raise _unavailable()
@@ -396,17 +465,20 @@ def _fetch(url, transport, timeout_ms, maximum_bytes, *, redirect=False):
     except DouyinLiveError:
         raise
     except Exception as cause:
-        raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True) from cause
+        from runtime.http_fetch import failure_kind
+        raise DouyinLiveError('Douyin live page fetch failed', 'DOUYIN_FETCH_FAILED', True,
+                              {'kind':failure_kind(cause)}) from None
     finally:
         if response is not None:
             response.close()
 
 
-def resolve_douyin_live(value, *, transport=None, now=None, timeout_ms=DOUYIN_PAGE_TIMEOUT_MS, maximum_bytes=DOUYIN_PAGE_MAX_BYTES):
+def resolve_douyin_live(value, *, transport=None, now=None, timeout_ms=DOUYIN_PAGE_TIMEOUT_MS, maximum_bytes=DOUYIN_PAGE_MAX_BYTES, cancel=None):
     page_url = validate_douyin_live_url(value)
     transport = transport or _transport
     def fetch(url, **kwargs):
-        return _fetch(url, transport, timeout_ms, maximum_bytes, **kwargs)
+        if cancel is not None and cancel():raise DouyinLiveError('Source cancelled','SOURCE_CANCELLED')
+        return _fetch(url, transport, timeout_ms, maximum_bytes, cancel=cancel, **kwargs)
     if urlsplit(page_url).hostname == 'v.douyin.com':
         status, location = fetch(page_url, redirect=True)
         try:
@@ -420,7 +492,7 @@ def resolve_douyin_live(value, *, transport=None, now=None, timeout_ms=DOUYIN_PA
         return parse_douyin_reflow_page(fetch(urlunsplit(landing._replace(fragment=''))), now=_now(now))
     html = fetch(page_url)
     try:
-        return parse_douyin_live_page(html, now=_now(now))
+        return parse_douyin_live_page(html, now=_now(now), web_rid=urlsplit(page_url).path[1:])
     except DouyinLiveError as cause:
         if cause.code != 'DOUYIN_FLV_UNAVAILABLE':
             raise

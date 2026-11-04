@@ -166,6 +166,8 @@ LINE_TEXT_GRAZE_MIN_PX = 2.0
 LINE_TEXT_GRAZE_FONT_RATIO = 0.12
 # A line whose effective stroke alpha is below this is not visibly rendered, so it cannot occlude text.
 LINE_MIN_VISIBLE_ALPHA = 0.08
+LINE_IMAGE_INTERSECTION_INSET_PX = 2.0
+LINE_IMAGE_MIN_INTERSECTION_PX = 2.0
 # A <line> cutting through a visible filled/outlined shape (a card, pill, ellipse node) is the same
 # legibility defect as crossing text: the stroke slices the shape's body (slides I9dd p28/p29/p30 --
 # divider rules dipping into a stat band, flywheel arrows piercing their circle nodes, column rules
@@ -1609,6 +1611,136 @@ def extract_elements(slide_xml: str) -> list[dict[str, Any]]:
     return elements
 
 
+def resolve_contrast_sample_bboxes(
+    slide_root: ET.Element,
+    slide_number: int,
+    elements: list[dict[str, Any]] | None = None,
+) -> dict[str, tuple[float, float, float, float]]:
+    """Resolve only text layouts that the existing glyph estimator represents faithfully.
+
+    Keys retain the XML shape ordinal, including shapes without usable geometry.
+    Full lint supplies its geometry objects; standalone contrast extracts once per page.
+    This helper deliberately does not parse contrast records or run contrast checks.
+    """
+    if elements is None:
+        slide_xml = serialize_slide_for_layout(slide_root)
+        elements = extract_elements(slide_xml)
+        attach_source_xml_paths(elements, build_source_xml_paths(slide_xml, slide_number))
+    by_path = {element.get("xml_path"): element for element in elements}
+    data = next((child for child in slide_root if xml_local_name(child.tag) == "data"), None)
+    if data is None:
+        return {}
+    bounds = {}
+    shape_number = 0
+    for shape in data:
+        if xml_local_name(shape.tag) != "shape":
+            continue
+        shape_number += 1
+        path = f"data/shape[{shape_number}]"
+        element = by_path.get(f"slide[{slide_number}]/{path}")
+        if element is None or element["type"] != "text":
+            continue
+        if element["rotation"] != 0 or element["vert"] != "horz" or element["italic"]:
+            continue
+        if element.get("autoFit") not in {None, "no-auto-fit"}:
+            continue
+        content = next((child for child in shape if xml_local_name(child.tag) == "content"), None)
+        if content is None or len(content) != 1 or xml_local_name(content[0].tag) != "p":
+            continue
+        # These content attributes are the layout supported by extract_elements.
+        # Unknown layout controls (lists, baseline, anchorCenter, etc.) stay on the old path.
+        content_attrs = {
+            "textType", "fontSize", "fontFamily", "color", "bold", "italic", "wrap", "autoFit",
+            "textAlign", "verticalAlign", "paddingLeft", "paddingRight", "paddingTop", "paddingBottom",
+            "lineSpacing", "beforeLineSpacing", "afterLineSpacing", "letterSpacing",
+            "underline", "strikethrough",
+        }
+        if set(content.attrib) - content_attrs:
+            continue
+        paragraph = content[0]
+        raw_text = "".join(paragraph.itertext())
+        if (not raw_text or raw_text != raw_text.strip() or any(c in raw_text for c in "\n\r\t")
+                or "  " in raw_text or raw_text != element["text_raw"]):
+            continue
+        if (content.text or "").strip() or (paragraph.tail or "").strip():
+            continue
+        runs: list[dict[str, str]] = []
+        supported = True
+        inline_attrs = {"fontSize", "fontFamily", "color", "bold", "italic", "backgroundColor",
+                        "underline", "strikethrough"}
+        paragraph_layout = {"textAlign", "lineSpacing", "beforeLineSpacing", "afterLineSpacing", "letterSpacing"}
+
+        def visit(node: ET.Element, inherited: dict[str, str]) -> None:
+            nonlocal supported
+            tag = xml_local_name(node.tag)
+            allowed = inline_attrs | paragraph_layout if node is paragraph else inline_attrs
+            if tag == "a":
+                allowed = allowed | {"href"}
+            if tag not in {"p", "span", "strong", "b", "u", "del", "a"} or set(node.attrib) - allowed:
+                supported = False
+                return
+            # The visual bbox uses content alignment and conservative spacing, so
+            # differing paragraph layout overrides cannot safely narrow sampling.
+            if any(key in node.attrib and node.get(key) != content.get(key) for key in paragraph_layout):
+                supported = False
+                return
+            style = dict(inherited)
+            if tag in {"strong", "b"}:
+                style["bold"] = "true"
+            style.update(node.attrib)
+            if node.text and node.text.strip():
+                runs.append(style)
+            for child in node:
+                visit(child, style)
+                if child.tail and child.tail.strip():
+                    runs.append(style)
+
+        visit(paragraph, dict(content.attrib))
+        if not supported or not runs:
+            continue
+        # Identical adjacent runs share one measurable line; keep their diagnostic records separate.
+        # Compare effective styles, excluding link destinations which do not affect text geometry.
+        styles = [{key: value for key, value in run.items() if key != "href"} for run in runs]
+        if any(style != styles[0] for style in styles[1:]):
+            continue
+        style = runs[0]
+        try:
+            font_size = float(style.get("fontSize", "16"))
+        except ValueError:
+            continue
+        bold = style.get("bold", "").lower() in {"true", "1", "bold"}
+        if (font_size != element["fontSize"] or font_size <= 0
+                or style.get("fontFamily", "") != element["fontFamily"]
+                or bold != element["bold"] or style.get("italic", "").lower() in {"true", "1"}):
+            continue
+        # Empty styled spans can still enlarge extract_text_paragraphs' maximum
+        # font size; they must not change the geometry of the single visible run.
+        if any(paragraph["fontSize"] != font_size for paragraph in element["paragraphs"]):
+            continue
+        values = [element[key] for key in ("x", "y", "width", "height", "fontSize",
+                  "paddingLeft", "paddingRight", "paddingTop", "paddingBottom")]
+        if (not all(math.isfinite(value) for value in values)
+                or element["width"] <= 0 or element["height"] <= 0):
+            continue
+        if len(runs) > 1:
+            # The generic XML stripper inserts spaces between tags. Measure the unchanged XML text
+            # locally, without changing shared geometry objects or the reported run text.
+            element = {
+                **element, "text": raw_text,
+                "paragraphs": [{**element["paragraphs"][0], "text": raw_text}],
+            }
+        block = estimate_text_block_height(element)
+        if block is None or block["line_count"] != 1 or estimate_text_line_count(element) != 1:
+            continue
+        bbox = estimate_text_visual_bbox(element)
+        if bbox is None:
+            continue
+        sample_bbox = tuple(bbox[key] for key in ("x", "y", "width", "height"))
+        if all(math.isfinite(value) for value in sample_bbox) and sample_bbox[2] > 0 and sample_bbox[3] > 0:
+            bounds[path] = sample_bbox
+    return bounds
+
+
 def intersects(left: dict[str, Any], right: dict[str, Any]) -> bool:
     return (
         left["x"] < right["x"] + right["width"]
@@ -2470,6 +2602,42 @@ def text_height_overflow_tolerance() -> int | float:
     return TEXT_HEIGHT_OVERFLOW_TOLERANCE_PX
 
 
+TEXT_GLYPH_ASCENT_RATIO = 0.8
+TEXT_GLYPH_DESCENT_RATIO = 0.2
+TEXT_TIGHT_LINE_GLYPH_BOX_RATIO = 1.2
+TEXT_DESCENDER_CHARS = frozenset("gjpqy" + ",;()[]{}")
+
+
+def text_has_full_height_glyphs(text: str) -> bool:
+    """Return whether text needs the descent band below its baseline.
+
+    This mirrors the glyph classification used by embed_svg_validator: CJK
+    glyphs occupy a full em-square, while Latin descenders need the same lower
+    band. Capital-only and numeric labels do not receive that extra extent.
+    """
+    return any(character in TEXT_DESCENDER_CHARS or is_cjk_char(character) for character in text)
+
+
+def compact_single_line_glyph_height(element: dict[str, Any], block: dict[str, Any]) -> int | float | None:
+    """Return the paint extent of a tightly spaced, one-line text run.
+
+    A renderer keeps the font's full glyph line box for CJK or descender
+    glyphs even when authored lineSpacing compresses the baseline distance.
+    Restrict this to a box shorter than the normal 1.2em line box so ordinary
+    text frames continue to use their authored layout height.
+    """
+    if block["line_count"] != 1 or not block["line_heights"]:
+        return None
+    if not text_has_full_height_glyphs(element["text"]):
+        return None
+    font_size = resolve_font_size(element)
+    if block["line_heights"][0] >= font_size or element["height"] >= font_size * 1.1:
+        return None
+    glyph_ink_height = font_size * (TEXT_GLYPH_ASCENT_RATIO + TEXT_GLYPH_DESCENT_RATIO)
+    glyph_line_box_height = glyph_ink_height * TEXT_TIGHT_LINE_GLYPH_BOX_RATIO
+    return max(block["estimated_height"], glyph_line_box_height)
+
+
 def has_explicit_height_auto_fit(element: dict[str, Any]) -> bool:
     return element.get("autoFit") in {"normal-auto-fit", "shape-auto-fit"}
 
@@ -2796,29 +2964,24 @@ def detect_text_may_overflow_shapes(elements: list[dict[str, Any]]) -> list[dict
         if block is None:
             continue
         line_count = block["line_count"]
-        estimated_height = block["estimated_height"]
+        estimated_height = compact_single_line_glyph_height(element, block) or block["estimated_height"]
         line_heights = block["line_heights"]
         available_height = max(element["height"] - element["paddingTop"] - element["paddingBottom"], 0)
         overflow = estimated_height - available_height
         if overflow <= text_height_overflow_tolerance():
             continue
 
-        is_background = is_background_decorative_text(element, elements)
-        # Any real vertical overflow past the sub-pixel tolerance is an error, matching the
-        # width-axis check (detect_text_may_wrap_shapes reports errors unconditionally). The old
-        # <=10px "warning" band under-reported genuine half-line overflows (e.g. fixed:20 x3 lines
-        # in a 50px box); the 0.5px tolerance above already absorbs rotated-bbox rounding noise.
-        if is_background:
-            level = "info"
-        else:
-            level = "error"
+        if is_background_decorative_text(element, elements):
+            # Oversized, faint text behind foreground content is intentional decoration. It still
+            # participates in canvas-boundary checks, but its own content box is not a user-facing
+            # overflow defect.
+            continue
 
         # A short single-line label ("60%+") only overflows vertically because it was too wide to fit
         # one line and got passively wrapped. wrap defaults to true, so "set wrap=true" is a no-op and
         # raising height just leaves the ugly wrap in place -- the fix is to widen the box or shrink the
-        # font. Report this as a width defect (not height) so the hint is actionable. Background
-        # decoration keeps the height path, which already downgrades it to info.
-        passive_wrap = None if is_background else short_line_passive_wrap_width(element, block)
+        # font. Report this as a width defect (not height) so the hint is actionable.
+        passive_wrap = short_line_passive_wrap_width(element, block)
         if passive_wrap is not None:
             visual_width = passive_wrap["estimated_width"]
             available_width = passive_wrap["available_width"]
@@ -2852,11 +3015,9 @@ def detect_text_may_overflow_shapes(elements: list[dict[str, Any]]) -> list[dict
             f"(estimated {estimated_height:g}px, available {available_height:g}px); "
             'consider setting content wrap="true" autoFit="normal-auto-fit"'
         )
-        if is_background:
-            message += " (likely background decoration: large font, low alpha, underneath other text)"
         issues.append(
             {
-                "level": level,
+                "level": "error",
                 "code": "text_may_overflow_shape",
                 "elements": [element_ref(element)],
                 "overflow_axis": "height",
@@ -2905,20 +3066,19 @@ def detect_wrap_false_width_overflow(element: dict[str, Any], elements: list[dic
     if visual_width <= effective_width:
         return None
 
+    # Large low-alpha text behind foreground content is intentional decoration. Do not emit an
+    # own-box overflow on either axis; detect_elements_out_of_canvas still reports it when needed.
+    if is_background_decorative_text(element, elements):
+        return None
+
     ratio = visual_width / available_width
-    # Large low-alpha text sitting behind other content is intentional background decoration; the
-    # height-axis check downgrades it to info via is_background_decorative_text, and the width axis
-    # mirrors that so a decorative ghost number is not reported as an error on either axis.
-    is_background = is_background_decorative_text(element, elements)
     message = (
         f"text shape {element_label(element)} may overflow its own content box "
         f"(estimated line {visual_width:g}px, available {available_width:g}px); "
         'the run has wrap="false" and cannot reflow, so widen the shape or shorten the text'
     )
-    if is_background:
-        message += " (likely background decoration: large font, low alpha, underneath other text)"
     return {
-        "level": "info" if is_background else "error",
+        "level": "error",
         # Shares the text_may_overflow_shape code with the vertical/wrap checks: to the user this is
         # one concept ("text may overflow its box"). overflow_axis distinguishes them for tooling.
         "code": "text_may_overflow_shape",
@@ -2942,9 +3102,10 @@ def detect_text_may_wrap_shapes(
     """Flag single-line text runs whose width is likely to wrap inside their own box.
 
     Complements detect_text_may_overflow_shapes, which only measures the vertical axis.
-    A run can fit vertically (or carry autoFit) yet still wrap because the box is too
-    narrow -- the exact false-negative these slides hit. Width estimation is independent
-    of autoFit (shape-auto-fit only grows height, not width), so this check ignores it.
+    A run can fit vertically yet still wrap because the box is too narrow -- the exact
+    false-negative these slides hit. normal-auto-fit shrinks text to fit its box;
+    shape-auto-fit still needs the conservative risk band because its grown height
+    can conceal a single-line measurement underestimate.
     already_flagged_refs are elements the vertical check already reported, identified by the same
     element_ref locator the issues carry; we skip them so a single wrapping shape is not
     double-reported under the shared text_may_overflow_shape code.
@@ -2961,6 +3122,10 @@ def detect_text_may_wrap_shapes(
         # detect_text_may_overflow_shapes. Guard before the wrap="false" branch too, otherwise a
         # vertical run with wrap="false" would be measured on the wrong axis and falsely flagged.
         if is_vertical_text(element):
+            continue
+        # normal-auto-fit shrinks the text to fit its bounds, including runs marked wrap="false".
+        # Reporting the pre-fit glyph estimate as a width overflow is therefore a false positive.
+        if element.get("autoFit") == "normal-auto-fit":
             continue
         if element.get("wrap") in {"false", "0"}:
             # wrap="false" text cannot reflow, so any hard line wider than the box overflows/clips
@@ -3020,10 +3185,12 @@ def detect_text_may_wrap_shapes(
             if block is None or block["line_count"] < 2:
                 continue
         else:
-            # Latin/labeled runs ("Docs 99%", "Slides 87%") are where the width estimator under-reports,
-            # so flag them from the aggressive risk band. Pure CJK breaks per glyph and is estimated
-            # accurately, so it only wraps once it genuinely exceeds the box.
-            if re.search(r"[A-Za-z]", raw_line):
+            # Pure Latin metric labels ("Docs 99%", "Slides 87%") are where the width estimator
+            # under-reports, so flag them from the aggressive risk band. CJK-containing labels break
+            # per glyph and use the East-Asian glyph model, so only flag them once they genuinely
+            # exceed the box; an embedded word such as "token" must not switch the whole label to the
+            # Latin heuristic.
+            if re.search(r"[A-Za-z]", raw_line) and not any(is_cjk_char(character) for character in raw_line):
                 threshold = available_width * TEXT_WIDTH_WRAP_RISK_RATIO
             else:
                 threshold = effective_width
@@ -3169,13 +3336,16 @@ def compute_text_visual_bbox(element: dict[str, Any]) -> dict[str, int | float] 
     # which is the right conservative bias for the overflow detector but undercounts the rendered extent of
     # a vertically-centred multi-line block: the top line still carries half-leading above it, so a
     # centred block sits ~one leading taller than the tight baseline stack. Add that leading back for
-    # multi-line runs, and take the larger of the block estimate and the old flat 1.2x baseline so a
-    # single-line box never shrinks below the previous ink height.
+    # multi-line runs, and take the larger of the block estimate and the old
+    # flat 1.2x baseline so a single-line box never shrinks below the previous
+    # ink height.
     block = estimate_text_block_height(element, conservative=True)
     flat_height = line_count * font_size * 1.2
+    compact_glyph_height = None
     if block:
         raw_height = block["estimated_height"]
         line_heights = block["line_heights"]
+        compact_glyph_height = compact_single_line_glyph_height(element, block)
         if block["line_count"] > 1 and line_heights:
             leading_to_add = block.get("first_line_leading")
             if leading_to_add is None:
@@ -3188,7 +3358,8 @@ def compute_text_visual_bbox(element: dict[str, Any]) -> dict[str, int | float] 
     # estimated block height even when it exceeds the authored box. Clamping to content_height here
     # would hide a grown title colliding with whatever sits below it (slides p9). Every other autoFit
     # mode keeps the authored box, so the estimate stays clamped.
-    if element.get("autoFit") == "shape-auto-fit":
+    compact_glyph_overflow = max((compact_glyph_height or 0) - content_height, 0) if compact_glyph_height else 0
+    if element.get("autoFit") == "shape-auto-fit" or compact_glyph_overflow > 0:
         visual_height = raw_height
     else:
         visual_height = min(content_height, raw_height)
@@ -3202,6 +3373,10 @@ def compute_text_visual_bbox(element: dict[str, Any]) -> dict[str, int | float] 
         y += (content_height - visual_height) / 2
     elif element.get("verticalAlign") == "bottom":
         y += content_height - visual_height
+    elif compact_glyph_overflow > 0:
+        # The compact line's full glyph box straddles its baseline. Surface its
+        # upper overhang too, otherwise a 1px label gap hides a visible clash.
+        y -= compact_glyph_overflow / 2
     return rotate_bbox_around_element_center({"x": x, "y": y, "width": visual_width, "height": visual_height}, element)
 
 
@@ -4150,6 +4325,73 @@ def detect_line_shape_crossings(
     return issues
 
 
+def line_image_intersection_length(line: dict[str, Any], image: dict[str, Any]) -> float:
+    """Return the substantive length of a native line segment inside an image footprint."""
+    inset = LINE_IMAGE_INTERSECTION_INSET_PX
+    if image["width"] <= inset * 2 or image["height"] <= inset * 2:
+        return 0
+    inset_image = {
+        **image,
+        "x": image["x"] + inset,
+        "y": image["y"] + inset,
+        "width": image["width"] - inset * 2,
+        "height": image["height"] - inset * 2,
+    }
+    intersection = line_shape_interior_chord(line, inset_image)
+    intersection_length = intersection[0] if intersection is not None else 0
+    return intersection_length if intersection_length > LINE_IMAGE_MIN_INTERSECTION_PX else 0
+
+
+def detect_line_image_overlaps(
+    slide_xml: str,
+    elements: list[dict[str, Any]],
+    source_paths: dict[str, list[str]],
+    slide_width: int | float = 960,
+    slide_height: int | float = 540,
+) -> list[dict[str, Any]]:
+    """Warn when a native <line> has a substantive geometric intersection with an <img>."""
+    if "<line" not in slide_xml or "<img" not in slide_xml:
+        return []
+
+    lines = extract_line_elements(slide_xml)
+    attach_source_xml_paths(lines, source_paths)
+    images = [
+        element
+        for element in elements
+        if element["kind"] == "img"
+        and is_visually_rendered(element)
+        and not is_full_canvas_background_image(element, slide_width, slide_height)
+    ]
+    if not lines or not images:
+        return []
+
+    issues: list[dict[str, Any]] = []
+    for line in lines:
+        if not is_visually_rendered(line):
+            continue
+        for image in images:
+            intersection_length = line_image_intersection_length(line, image)
+            if intersection_length <= 0:
+                continue
+            issues.append(
+                {
+                    "level": "warning",
+                    "code": "line_image_overlap",
+                    "elements": [element_ref(line), element_ref(image)],
+                    "measurement": {
+                        "intersection_length": round(intersection_length, 3),
+                        "tolerance": LINE_IMAGE_MIN_INTERSECTION_PX,
+                    },
+                    "message": f"line {element_label(line)} intersects image {element_label(image)}",
+                    "hint": (
+                        "Review the rendered slide screenshot to confirm whether the intersection "
+                        "is intentional or accidental."
+                    ),
+                }
+            )
+    return issues
+
+
 def lint_slide(
     slide_xml: str, slide_number: int, slide_width: int | float = 960, slide_height: int | float = 540
 ) -> dict[str, Any]:
@@ -4166,7 +4408,8 @@ def lint_slide_elements(
     slide_width: int | float,
     slide_height: int | float,
 ) -> dict[str, Any]:
-    attach_source_xml_paths(elements, build_source_xml_paths(slide_xml, slide_number))
+    source_paths = build_source_xml_paths(slide_xml, slide_number)
+    attach_source_xml_paths(elements, source_paths)
     height_overflow_issues = detect_text_may_overflow_shapes(elements)
     # An error-level height overflow suppresses the width-wrap error for the same element (one run,
     # one "text overflows its box" defect). Only error-level counts: info-level background decoration
@@ -4192,6 +4435,7 @@ def lint_slide_elements(
         *detect_auto_fit_growth_collisions(elements),
         *detect_line_text_crossings(slide_xml, elements, slide_number),
         *detect_line_shape_crossings(slide_xml, elements, slide_number, slide_width, slide_height),
+        *detect_line_image_overlaps(slide_xml, elements, source_paths, slide_width, slide_height),
     ]
 
     # Every element's glyph geometry is needed by both sides of every pair below, so computing it
@@ -4838,6 +5082,10 @@ RULE_METADATA: dict[str, dict[str, Any]] = {
         "name": "image_does_not_cover_text",
         "comparison": "intersection_area == 0",
     },
+    "line_image_overlap": {
+        "name": "line_does_not_substantially_intersect_image",
+        "comparison": "intersection_length <= tolerance",
+    },
     "image_may_cover_vertical_text": {
         "name": "image_vertical_text_occlusion_requires_review",
         "comparison": "intersection_area == 0",
@@ -5152,31 +5400,10 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
 
     presentation = parse_presentation(root)
     slide_roots = presentation["slide_roots"]
-    contrast_by_slide: dict[int, list[dict[str, Any]]] = {}
-    contrast_records, contrast_slides = color_contrast_check.parse_xml_root(root)
-    contrast_results, _ = color_contrast_check.check(
-        contrast_records,
-        contrast_slides,
-        "",
-        color_contrast_check.DEFAULT_CONTRAST_GATE,
-    )
-    for contrast_issue in contrast_results:
-        if contrast_issue["verdict"] != "FAIL":
-            continue
-        contrast_by_slide.setdefault(contrast_issue["slide"], []).append(
-            {
-                "level": color_contrast_check.lint_level(contrast_issue),
-                "code": "text_color_contrast",
-                "elements": [contrast_issue.get("object_id") or contrast_issue["object_path"]],
-                "target": {
-                    "slide_number": contrast_issue["slide"],
-                    "xml_path": contrast_issue["object_path"],
-                },
-                "message": color_contrast_check.issue_message(contrast_issue),
-                "hint": "Adjust the text or its XML-resolvable background, then rerun xml_lint.",
-                "schema_version": "2.0",
-            }
-        )
+    contrast_records, contrast_slides = color_contrast_check.parse_xml_root(root, resolve_sample_bboxes=False)
+    records_by_slide: dict[int, list[dict[str, Any]]] = {}
+    for record in contrast_records:
+        records_by_slide.setdefault(record["slide"], []).append(record)
     slides: list[dict[str, Any]] = []
     presentation_id_elements: list[dict[str, Any]] = []
     presentation_elements_by_ref: dict[str, dict[str, Any]] = {}
@@ -5208,6 +5435,39 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
             presentation["width"],
             presentation["height"],
         )
+        sample_bboxes = resolve_contrast_sample_bboxes(slide_root, slide_number, geometry["elements"])
+        page_records = records_by_slide.get(slide_number, [])
+        for record in page_records:
+            sample_bbox = sample_bboxes.get(record["object_path"])
+            if sample_bbox is not None:
+                record["sample_bbox"] = sample_bbox
+        contrast_results, _ = color_contrast_check.check(
+            page_records, contrast_slides, "", color_contrast_check.DEFAULT_CONTRAST_GATE
+        )
+        contrast_issues: list[dict[str, Any]] = []
+        for contrast_issue in contrast_results:
+            if contrast_issue["verdict"] != "FAIL":
+                continue
+            contrast_issues.append(
+                {
+                    "level": color_contrast_check.lint_level(contrast_issue),
+                    "code": "text_color_contrast",
+                    "elements": [contrast_issue.get("object_id") or contrast_issue["object_path"]],
+                    "target": {
+                        "slide_number": contrast_issue["slide"],
+                        "xml_path": contrast_issue["object_path"],
+                    },
+                    "message": color_contrast_check.issue_message(contrast_issue),
+                    "hint": (
+                        "Check element positions and stacking order at the reported sample; adjust the covering fill "
+                        "or colors, then rerun xml_lint."
+                        if contrast_issue.get("worst_sample_covered")
+                        and not color_contrast_check.is_ghost_decorative_text(contrast_issue)
+                        else "Adjust the text or its XML-resolvable background, then rerun xml_lint."
+                    ),
+                    "schema_version": "2.0",
+                }
+            )
         embed_elements = [element for element in geometry["elements"] if element["kind"] == "embed"]
         embed_svg_issues = bind_embed_svg_issue_elements(
             [
@@ -5262,7 +5522,7 @@ def lint_xml(xml: str, source_path: str | None = None) -> dict[str, Any]:
         ]
         issues = [
             *slide_sxsd_issues,
-            *contrast_by_slide.get(slide_number, []),
+            *contrast_issues,
             *[normalize_issue(issue, slide_number, elements_by_ref) for issue in raw_issues],
         ]
         errors = [issue for issue in issues if issue["level"] == "error"]

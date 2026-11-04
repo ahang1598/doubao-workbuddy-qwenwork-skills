@@ -10,12 +10,11 @@ from typing import Optional, Tuple
 try:
     from openpyxl import Workbook, load_workbook
     from openpyxl.utils import column_index_from_string
-except ModuleNotFoundError as _missing:  # 本机没装 openpyxl：报错现场直接给出两条出路
+except ModuleNotFoundError as _missing:  # 缺少 Python 库时先安装，再重跑原操作
     sys.stderr.write(
-        f"\n[excel_utils] 本机 Python 缺少 {_missing.name}，脚本无法在本地读写 Excel。\n"
-        "  装一次即可长期复用：python3 -m pip install --user openpyxl\n"
-        "  不装依赖也能做：把文件导入飞书在线表格，用飞书引擎读（服务端解析，无需本地库）——\n"
-        "     lark-cli sheets +workbook-import --file ./<文件名>.xlsx\n"
+        f"\n[excel_utils] 本机 Python 缺少 {_missing.name}，本脚本未执行，本地文件未修改。\n"
+        "  请在运行本脚本的同一 Python 环境安装：python3 -m pip install openpyxl\n"
+        "  安装成功后重跑原命令；安装失败再说明未完成，不能声明本次处理 / 校验已通过。\n"
     )
     raise SystemExit(1) from _missing
 

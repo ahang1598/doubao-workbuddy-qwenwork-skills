@@ -1,4 +1,4 @@
-"""Transactional review assignments with serial compatibility and observed host dispatch."""
+"""事务化复核分配：兼容串行模式，并记录宿主实际派发状态。"""
 import contextlib
 import json
 import time
@@ -70,6 +70,8 @@ def check_context(conn, store, context_id):
     batch = row(conn, store.session_id, context['batch_id'])
     if context.get('recovery'):
         raise ValueError('review context superseded')
+    if batch and batch.get('expired_reason') == 'LIVE_BATCH_REVIEW_TIMEOUT':
+        raise ValueError('review batch timed out')
     if not batch or batch['generation'] != context['generation'] or batch.get('context_id') != context_id:
         if (context['rules_version'] != store._task(conn)['rules_snapshot']['version'] or
                 any((store._segment(conn, int(sid)) or {}).get('evidence_revision') != revision
@@ -81,6 +83,7 @@ def check_context(conn, store, context_id):
 
 def claim(store, known_rules_version=None, limit=2, dispatcher_id="main", *,
           conn=None, source_context=None, target_batch_id=None):
+    """领取待复核片段并生成批次快照，续办依赖批次身份而不是内存队列。"""
     # Fence continuation in the allocation transaction, including duplicate submissions.
     with store.connection(True) if conn is None else contextlib.nullcontext(conn) as transaction:
         from runtime.realtime_policy import current
@@ -219,6 +222,10 @@ def _claim(store, conn, known_rules_version, limit, dispatcher_id, target_batch_
             if batch.get('status') == 'retry'
             and any(int(segment_id) in waiting_ids for segment_id in batch['targets'])
         ), None)
+        from runtime.realtime_policy import cloud_limited
+        # Loading specialist rules must not add unseen segments to the cloud batch.
+        if retry and cloud_limited(task) and retry['rules_version'] != snapshot['version']:
+            waiting = [segment for segment in waiting if str(segment['id']) in retry['targets']]
         chosen = waiting[:min(20 if task.get('inspection_policy') == 'lite_live_realtime_v2' else 2 if executor == 'child' else 4, max(1, limit))]
         if task.get('inspection_policy') == 'lite_live_realtime_v1':
             chosen = [s for i, s in enumerate(chosen) if sum(x['end_ms']-x['start_ms'] for x in chosen[:i+1]) <= 120000]
@@ -343,6 +350,7 @@ def _claim(store, conn, known_rules_version, limit, dispatcher_id, target_batch_
 
 
 def bind(conn, store, payload, segment):
+    """把模型结果绑定到片段和批次，报告只消费已提交的持久化结果。"""
     initialize(conn)
     batch = row(conn, store.session_id, payload.get('batch_id'))
     if not batch or batch['generation'] != payload.get('generation') or batch['status'] not in ACTIVE:

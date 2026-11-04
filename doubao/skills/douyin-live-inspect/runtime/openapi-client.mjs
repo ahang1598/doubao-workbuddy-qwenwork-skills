@@ -1,7 +1,10 @@
+// OpenAPI 客户端是正式版唯一的远端调用边界：统一环境、身份、超时和错误归一化。
+// 上层流程只消费结构化结果，不能自行拼接 URL、读取凭证或解释原始响应。
+
 import { taskBindingError } from './task-binding.mjs';
 import { signVolcRequest } from './upload-signer.mjs';
 import { resolveCredentials } from './auth.mjs';
-import { commandUserAgent, commandSignal, observeAccount } from './telemetry.mjs';
+import { commandUserAgent, commandSignal, observeAccount } from '../telemetry/main.mjs';
 export const OPENAPI_ENDPOINT = 'https://livesaas.volcengineapi.com/';
 const AUTH_ERRORS = new Set(['ExpiredToken', 'ExpiredTokenException', 'InvalidSecurityToken', 'InvalidToken', 'TokenExpired', 'STSExpired']);
 const SAFE_CODES = new Set(['ReportNotFoundError', 'ReportNotFound', 'Throttling', 'ThrottlingException', 'TooManyRequests', 'AccessDenied', 'AccessDenyError', 'Forbidden', 'Unauthorized', 'InvalidParameter', 'InvalidParameterValue', 'ResourceNotFound', 'TaskNotFound', ...AUTH_ERRORS]);

@@ -1,4 +1,4 @@
-"""Bounded one-shot review commands. SQLite, not an output pipe, proves a commit."""
+"""有界的一次性复核命令：SQLite 提交记录才是完成凭证，不以输出管道作为成功依据。"""
 import argparse
 import contextlib
 import hashlib
@@ -30,7 +30,7 @@ def source_input(path):
 
 
 def bind_result(store, conn, result):
-    """Commit the request/result binding in the same transaction as allocation."""
+    """在分配工作的同一事务中绑定请求和结果，保证续办时不会丢失上下文。"""
     if not active(): return
     from runtime.report_delivery import bounded_output
     task = store._task(conn)
@@ -51,7 +51,7 @@ def bind_result(store, conn, result):
 
 
 def bind_request(conn, session_id, **fields):
-    # This is a receipt ledger, not a second work queue. Batch state stays authoritative.
+    # 这里是回执台账，不是第二个工作队列；批次状态始终是唯一权威来源。
     conn.execute('CREATE TABLE IF NOT EXISTS review_requests '
                  '(id TEXT PRIMARY KEY, session_id TEXT NOT NULL, data TEXT NOT NULL)')
     request_id = _current[1]['request_id']
@@ -66,7 +66,7 @@ def bind_request(conn, session_id, **fields):
 
 
 def bind_input(root, input_path):
-    """Bind a known draft before reading it; damaged bytes cannot change its batch."""
+    """在读取草稿前绑定已知批次，损坏或替换的输入不能改变其任务归属。"""
     with contextlib.closing(sqlite3.connect(root/'inspection.db', timeout=.5)) as conn:
         if not conn.execute("SELECT 1 FROM sqlite_master WHERE name='review_batches'").fetchone(): return
         # ponytail: task-local scan; index draft paths if long-running tasks outgrow the command budget.
@@ -141,7 +141,7 @@ def contract_options(context):
 
 
 def phase(name, **fields):
-    """Only fixed stages and binding IDs; never persist exception text or argv."""
+    """只持久化固定阶段和绑定 ID，不保存异常原文、命令参数或敏感输入。"""
     if _current is None:
         return
     path, record = _current
@@ -382,13 +382,18 @@ def child(argv, request_id, compact):
     if not input_path and compact and args.command == 'review-submit':
         return failure(args.command, 'INPUT_FILE_REQUIRED', request_id), 1
     argv_digest = hashlib.sha256(encode(argv).encode()).hexdigest()
+    from runtime.bridge import task_scope
+    scope = contextlib.ExitStack()
     try:
         with file_lock(path.with_suffix('.lock'), timeout=0):
             old = read_record(root, request_id)
-            if old is None:
+            if old is None or args.command == 'review-recover':
                 with contextlib.closing(sqlite3.connect((root/'inspection.db').as_uri()+'?mode=ro', uri=True, timeout=.2)) as conn:
-                    session = conn.execute('SELECT id FROM live_sessions').fetchone()[0]
-                    old = request_binding(conn, session, request_id) or None
+                    session, raw_task = conn.execute('SELECT id,data FROM live_sessions').fetchone()
+                    task = json.loads(raw_task)
+                    if old is None:old = request_binding(conn, session, request_id) or None
+                # 快速写入命令也登记生命周期；只沿用已跟踪任务的 owner，不创建新任务或命令事件。
+                scope.enter_context(task_scope(task))
             if old and old['argv_digest'] != argv_digest:
                 return failure(args.command, 'REQUEST_CONFLICT', request_id), 1
             if not old:
@@ -420,8 +425,7 @@ def child(argv, request_id, compact):
                     return failure(args.command, 'REQUEST_RECONCILE_REQUIRED', request_id), 1
                 return old['response'], old.get('exit_code', 0)
             phase('input_read', fingerprint=fingerprint)
-            with contextlib.closing(sqlite3.connect((root/'inspection.db').as_uri()+'?mode=ro',uri=True,timeout=.2)) as conn:
-                record['task_id'] = json.loads(conn.execute('SELECT data FROM live_sessions').fetchone()[0])['id']
+            record['task_id'] = task['id']
             call_argv = list(argv)
             if args.request_id:
                 index = call_argv.index('--request-id') if '--request-id' in call_argv else None
@@ -487,6 +491,8 @@ def child(argv, request_id, compact):
         return failure(args.command, 'REQUEST_CONFLICT' if old and old['argv_digest'] != argv_digest else 'REQUEST_RUNNING', request_id), 1
     finally:
         _current = None
+        # 请求锁及业务连接已释放，再收口发送并撤销临时上下文。
+        scope.close()
 
 
 def worker(argv, request_id, compact):
@@ -514,6 +520,10 @@ def worker(argv, request_id, compact):
         code_name = ('OUT_OF_MEMORY' if is_memory_error(error) else 'REVIEW_STORAGE_UNAVAILABLE' if isinstance(error,sqlite3.Error) else
                      'REVIEW_BINDING_INVALID' if isinstance(error,ValueError) else 'REVIEW_COMMAND_UNAVAILABLE')
         result, code = failure(argv[0], code_name, request_id), 1
+        from runtime.platform_support import PrivateDirectoryError
+        if isinstance(error,PrivateDirectoryError):
+            result['error'].update(failure_component='windows_acl',failure_reason=error.reason)
+            if error.error_detail:result['error']['error_detail']=error.error_detail
         if argv[0] not in {'review-state','result-page'}:
             try:
                 root = Path(arguments(argv).task_dir).expanduser().resolve()
@@ -545,11 +555,11 @@ def supervise(argv):
     request_id = args.request_id or uuid.uuid4().hex
     print(encode({'event':'review_execution','command':command,'request_id':request_id,
                   'stage':'supervisor_started','time':time.time()}), file=sys.stderr, flush=True)
-    budget = 3 if command in {'review-state', 'result-page'} else 10
+    budget = 3 if command in {'review-state', 'result-page'} else (20 if os.name == 'nt' else 10)
     script = ('import sys; from runtime.review_execution import worker; '
               'sys.exit(worker(sys.argv[3:],sys.argv[1],sys.argv[2]=="1"))')
     env = dict(os.environ)
-    # No optional Node bridge or network work on this latency-critical path.
+    # 不启动命令桥接；写入子进程从已跟踪任务恢复 owner，事务提交后沿用异步发送。
     env.pop('BYTEDLIVE_LITE_TELEMETRY_IDENTITY', None)
     try:
         process = subprocess.Popen([sys.executable, '-c', script, request_id,
@@ -576,9 +586,18 @@ def supervise(argv):
         kill_tree(process)
         process.communicate(timeout=2)
         raise
+    detail=result.get('error',{})
+    if detail.get('failure_component'):
+        from runtime.bridge import record_runtime_issue
+        record_runtime_issue(detail['failure_component'],detail.get('failure_reason'))
+        from runtime.bridge import publish_metadata
+        publish_metadata(error_detail=detail.get('error_detail'))
     if command not in {'review-state', 'result-page'} and not result.get('ok'):
         result['error']['state_argv'] = ['review-state','--task-dir',args.task_dir,'--request-id',request_id]
     print(encode({'event':'review_execution','command':command,'request_id':request_id,
                   'stage':'output_ready','time':time.time(),'exit_code':process.poll()}), file=sys.stderr, flush=True)
     print(encode(result), flush=True)
+    if detail.get('failure_component'):
+        from runtime.bridge import report_runtime_failure
+        report_runtime_failure(detail)
     return 0 if result.get('ok') else 1

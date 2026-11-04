@@ -1,0 +1,17 @@
+{
+  "automatic": {
+    "stop.observed": true,
+    "runtime.failure": [
+      "finishing",
+      "startup_watch",
+      "report_watch"
+    ]
+  },
+  "explicit": {
+    "stop.observed": true,
+    "runtime.failure": true,
+    "asr.diagnostic": [
+      "recovery"
+    ]
+  }
+}

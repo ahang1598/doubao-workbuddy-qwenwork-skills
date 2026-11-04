@@ -36,17 +36,17 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
   "core_financial_data_reason": "单一估值口径解释，不涉及具体证券分析",
   "price_analysis": false,
   "kline_status": "not_price_analysis",
-  "doc_created": false,
-  "doc_url": "",
-  "fetch_verified": false
+  "html_created": false,
+  "html_path": "",
+  "file_verified": false
 }
 ```
 
-`LARK_DOC` 的计划阶段可先保留未完成字段；最终阶段必须把 `doc_created`、`fetch_verified` 设为 `true`，填入可访问的 `/docx/` 或 `/wiki/` 链接，并完整列出已生成的高级组件。`fetch_verified=true` 只表示最后一次写入后的文档已重新拉取并复核；若随后又修改文档，必须重新拉取后才能恢复为 `true`。
+`HTML_REPORT` 的计划阶段可先保留未完成字段；最终阶段必须把 `html_created`、`file_verified` 设为 `true`，填入实际生成的 `.html` 文件路径，并完整列出已生成的高级组件。`file_verified=true` 只表示最后一次生成后的 HTML 已在浏览器复核；若随后又修改报告，必须重新生成并复核后才能恢复为 `true`。
 
 ```json
 {
-  "delivery_mode": "LARK_DOC",
+  "delivery_mode": "HTML_REPORT",
   "mode_reason": "需要同业比较表、情景估值与多象限图",
   "text_checks": {},
   "advanced_components": ["rich_table", "quadrant_html_block"],
@@ -78,9 +78,9 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
   ],
   "price_analysis": false,
   "kline_status": "not_price_analysis",
-  "doc_created": true,
-  "doc_url": "https://example.feishu.cn/docx/REPLACE_WITH_REAL_TOKEN",
-  "fetch_verified": true,
+  "html_created": true,
+  "html_path": "/absolute/path/report.html",
+  "file_verified": true,
   "quality_checks": {
     "conclusion_first": true,
     "every_section_changes_decision": true,
@@ -100,15 +100,15 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
     "rendering_verified": true
   },
   "html_block_checks": {
-    "embedded_in_lark_document": true,
-    "source_file_not_delivered": true
+    "embedded_in_html_report": true,
+    "chart_source_embedded": true
   }
 }
 ```
 
-`data_consistency_verified=true` 只能在最终交付前完成跨产物数据对账后设置，且适用于 `TEXT` 和 `LARK_DOC`。核对聊天摘要、正文、表格、图表、附录和其他交付物中的对象、期间、币种、单位、口径与数值；冲突时先采用更权威来源，权威性相当时采用截至信息截止日更新的数据，并从上游修正所有相关产物。
+`data_consistency_verified=true` 只能在最终交付前完成跨产物数据对账后设置，且适用于 `TEXT` 和 `HTML_REPORT`。核对聊天摘要、正文、表格、图表、附录和其他交付物中的对象、期间、币种、单位、口径与数值；冲突时先采用更权威来源，权威性相当时采用截至信息截止日更新的数据，并从上游修正所有相关产物。
 
-十项 `quality_checks` 只有在按 `writing-quality.md` 拉取文档并完成独立结构审阅、口径复核和删稿后才能设为 `true`。`logic_chain_explicit` 表示结论可沿经营/事件、盈利、预期和估值传导追踪；`reader_navigation_clear` 表示核心结论、章节标题和下钻顺序清楚；`accounting_bases_unambiguous` 表示相似口径已清楚标注、可比且与估值分母一致。`required_structure_preserved` 表示 `actual_sections` 已覆盖全部 `required_sections`，控篇幅时没有删掉承担独立分析功能的章节。覆盖矩阵检查过但证据质量不足的内容应从正文删除，不能靠免责声明或“仅供参考”保留。
+十项 `quality_checks` 只有在按 `writing-quality.md` 打开 HTML 并完成独立结构审阅、口径复核和删稿后才能设为 `true`。`logic_chain_explicit` 表示结论可沿经营/事件、盈利、预期和估值传导追踪；`reader_navigation_clear` 表示核心结论、章节标题和下钻顺序清楚；`accounting_bases_unambiguous` 表示相似口径已清楚标注、可比且与估值分母一致。`required_structure_preserved` 表示 `actual_sections` 已覆盖全部 `required_sections`，控篇幅时没有删掉承担独立分析功能的章节。覆盖矩阵检查过但证据质量不足的内容应从正文删除，不能靠免责声明或“仅供参考”保留。
 
 所有任务都必须声明核心金融与财务数据状态：
 
@@ -117,32 +117,32 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
 - 只有按 `core-financial-snapshot.md` 确信这些数据不会改变答案时，才使用 `not_relevant` 并填写具体 `core_financial_data_reason`；
 - 完成态不得停留在 `planned`。数据难找、篇幅有限或结构复杂不是 `not_relevant` 的理由。
 
-所有 `LARK_DOC` 在计划态都要用 `required_sections` 锁定 2–12 个必需章节；完成态用 `actual_sections` 记录拉取后实际存在的结构。任一必需章节缺失时，最终门禁失败。控制长度应压缩节内内容或移走审计细节，不能静默简化结构。
+所有 `HTML_REPORT` 在计划态都要用 `required_sections` 锁定 2–12 个必需章节；完成态用 `actual_sections` 记录打开后实际存在的结构。任一必需章节缺失时，最终门禁失败。控制长度应压缩节内内容或移走审计细节，不能静默简化结构。
 
-`advanced_components` 中只要存在 HTML block 视觉，就必须：
+`advanced_components` 中只要存在 HTML 图表组件视觉，就必须：
 
 - 在计划态用 `visual_purposes` 为每个视觉写一个唯一、非空的决策问题；
 - 在完成态确认 `visual_checks.unique_decision_question`、`source_units_labeled`、`no_duplicate_encoding` 和 `rendering_verified` 全部为 `true`。
 
-两个图回答相同问题、缺少单位/来源、与表格重复或未实际检查飞书渲染时，最终门禁不得通过。
+两个图回答相同问题、缺少单位/来源、与表格重复或未实际检查 HTML 渲染时，最终门禁不得通过。
 
 `advanced_components` 中只要存在名称含 `html_block` 的组件，完成态还必须提供：
 
 ```json
 {
   "html_block_checks": {
-    "embedded_in_lark_document": true,
-    "source_file_not_delivered": true
+    "embedded_in_html_report": true,
+    "chart_source_embedded": true
   }
 }
 ```
 
-只有 HTML 已作为 block 实际写入目标飞书文档、拉取后确认该 block 存在且渲染正常，并且没有把 `.html` 文件、附件、源码或本地链接交付给用户时，才能把两项设为 `true`。
+只有图表 HTML 已嵌入最终报告、打开后确认存在且渲染正常时，才能把两项设为 `true`。
 
 每次任务还必须设置 `price_analysis` 和 `kline_status`：
 
 - 非实质性股价分析：`price_analysis=false`、`kline_status=not_price_analysis`；
-- 实质性单股股价分析且生成 K 线：`price_analysis=true`、`kline_status=included`，`advanced_components` 必须包含 `kline_html_block`，且 `delivery_mode` 必须为 `LARK_DOC`；
+- 实质性单股股价分析且生成 K 线：`price_analysis=true`、`kline_status=included`，`advanced_components` 必须包含 `kline_html_block`，且 `delivery_mode` 必须为 `HTML_REPORT`；
 - K 线不适用：`price_analysis=true`、`kline_status=not_applicable`，并将 `kline_exception` 设为 `user_declined_visual`、`single_point_question`、`reliable_ohlc_unavailable`、`multi_asset_comparison`、`corporate_action_or_data_break` 或 `price_path_not_relevant` 之一。
 
 “耗时”“文档复杂”或“聊天输出更方便”不是允许的例外。若只有收盘价且趋势仍有价值，运行 `lark_visuals.py price` 生成股价 HTML，`advanced_components` 列出 `price_chart_html_block`，并把 `kline_exception` 记录为 `reliable_ohlc_unavailable`。
@@ -160,7 +160,7 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/delivery_gate.py" --phase final deli
 
 股价图和 K 线只允许 `script`。不得使用其他值，不得手写 HTML。脚本未覆盖所需交互或数据结构时，改用表格、段落或省略该图。
 
-脚本只验证交付状态，不创建文档，也不能代替人工判断研究结论是否正确。`DELIVERY_GATE_PASS` 才表示对应阶段通过；失败时不得结束任务或把 `LARK_DOC` 降级成聊天 Markdown。
+脚本只验证交付状态，不生成 HTML，也不能代替人工判断研究结论是否正确。`DELIVERY_GATE_PASS` 才表示对应阶段通过；失败时不得结束任务或把 `HTML_REPORT` 降级成聊天 Markdown。
 
 ## 市场与股价分析
 
@@ -200,7 +200,7 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/equity_screen.py" screen.json --outp
 
 输入包含 `as_of`、`candidates`、`filters`、`factors`，可选 `group_by`、`missing_policy` 和 `top_n`。流程为硬过滤、分位数缩尾、z-score、方向与权重、排名。权重非负，方向使用 `high` 或 `low`。
 
-## 飞书高级图表
+## HTML 金融图表
 
 ```bash
 python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/lark_visuals.py" price price.json --output price-chart.html
@@ -223,15 +223,15 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/lark_charts.py" flow flow.json --out
 
 `waterfall` 输入包含 `title` 和 3–14 个 `items`。首项 `kind=start`、末项 `kind=end`、中间项 `kind=change`；每项含 `label/value`，且终点必须等于起点加全部变化。输出为自包含、响应式瀑布 HTML，不平衡的桥接会被拒绝。
 
-`heatmap` 输入包含 `title`、2–16 个 `x_labels`、2–16 个 `y_labels` 和等尺寸的有限数值矩阵 `values`。可选 `scale`（`diverging`/`sequential`）、`center`、`decimals`、`baseline.x/y`、`unit` 和来源元数据。输出为无外部依赖的 HTML block，保留每格数值、悬停明细和基准格。
+`heatmap` 输入包含 `title`、2–16 个 `x_labels`、2–16 个 `y_labels` 和等尺寸的有限数值矩阵 `values`。可选 `scale`（`diverging`/`sequential`）、`center`、`decimals`、`baseline.x/y`、`unit` 和来源元数据。输出为无外部依赖的 HTML 图表组件，保留每格数值、悬停明细和基准格。
 
 `timeline` 输入包含 `title` 和按日期升序的 2–10 个 `events`；每项含 `date/label`，可选 `category/note`。输出为自包含、响应式时间线 HTML。只放会改变判断或验证结论的节点，不把完整日历可视化。
 
 `flow` 输入包含按阅读顺序排列的 2–10 个 `nodes` 和 1–14 个 `edges`。每个节点包含唯一 `id`、`title`，可选 `note` 与 `tone`（`neutral`/`positive`/`negative`/`warning`）；每条边包含 `from/to`，可选 `label`，且只能指向后续节点。输出为自包含传导链 HTML。只表达已由证据支持的关系，不把相关性写成因果。
 
-生成文件后按 `advanced-lark-visuals.md` 解释图形、检查口径，并立即按线上最新版 `lark-doc` 流程把 `.html` 作为 HTML block 的输入载荷写入目标飞书文档。每个视觉在交付清单写一个唯一、非空的 `visual_purposes`；相同问题不得用多个图重复回答。最终 HTML block 的写入语法与责任边界以写入时线上最新版 `lark-doc` skill 为准。
+生成图表后按 `advanced-html-visuals.md` 解释图形、检查口径，在读者版 Markdown 用 `{{embed:相对路径.html}}` 引用，并运行 `scripts/render_html_report.py` 合成完整报告。每个视觉在交付清单写一个唯一、非空的 `visual_purposes`；相同问题不得用多个图重复回答。
 
-所有生成的 HTML 文件只允许作为飞书 HTML block 写入的中间载荷。生成文件本身、附件、源码、本地路径或下载链接均不是交付物。必须完成飞书文档创建/更新、组件实际写入和拉取复核，再向用户返回核心结论与飞书文档链接；写入失败时不得改为发送本地文件、截图或源码。
+所有生成的 HTML 文件只允许作为 HTML 图表组件写入的中间载荷。生成文件本身、附件、源码、本地路径或下载链接均不是交付物。必须完成 HTML 报告创建/更新、组件实际写入和浏览器复核，再向用户返回核心结论与HTML 报告链接；写入失败时不得改为发送本地文件、截图或源码。
 
 ## 会计口径调节桥
 
@@ -263,9 +263,9 @@ python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/cross_listing_spread.py" cross-listi
 ```bash
 python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.md facts.json --check-only
 python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.md facts.json --output display.md
-python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.xml facts.json --format lark-xml --output display.xml
+python3 "$EQUITY_RESEARCH_SKILL_DIR/scripts/report_pipeline.py" source.md facts.json --output display.md
 ```
 
-该脚本检查事实表结构、claim ID、日期、占位符和引用是否存在，然后把 `{fact:...}` 转换为读者引用并生成数据来源章节。默认输入输出为 Markdown；`--format lark-xml` 接受飞书文档 XML 片段，要求以 `<title>` 开始，并以包含规定免责声明的 `<p>` 结束，生成 XML 格式的数据来源章节。它不判断报告观点是否正确，也不强制固定栏目名称。
+该脚本检查事实表结构、claim ID、日期、占位符和引用是否存在，然后把 `{fact:...}` 转换为读者引用并生成数据来源章节。默认输入输出为 Markdown；`--format lark-xml` 接受HTML 报告 XML 片段，要求以 `<title>` 开始，并以包含规定免责声明的 `<p>` 结束，生成 XML 格式的数据来源章节。它不判断报告观点是否正确，也不强制固定栏目名称。
 
-`display.xml` 只解决事实引用与来源编排，不代替飞书文档设计。最终写入前仍须读取线上最新版 `lark-doc` skill，并按 `lark-doc-delivery.md` 选择高亮块、分栏、表格和 HTML block 等组件。
+默认使用 Markdown 生成读者版来源章节，再运行 `scripts/render_html_report.py`。旧 XML 模式保留为可选的中间处理能力，不用于默认 HTML 交付。

@@ -1,9 +1,10 @@
-"""Versioned full-audio live policy. Never applied to videos or legacy sessions."""
+"""版本化的全量音频直播策略：只作用于直播，不作用于视频或旧任务。"""
 import time
 POLICY = 'lite_live_full_asr_v1'
 INTERVAL_MS = 120000
 
 def enabled(task):
+    """判断任务是否进入全量音频管线；策略名是兼容边界，不能按默认值猜测。"""
     return task.get('kind','live') == 'live' and task.get('inspection_policy') in {POLICY, 'lite_live_realtime_v1', 'lite_live_realtime_v2'}
 
 def speech_only_scope(task):
@@ -17,6 +18,7 @@ def speech_can_clear(task, segment):
             (speech_only_scope(task) and any(str(u.get('text', '')).strip() for u in segment.get('subtitles', []))))
 
 def requires_frames(snapshot):
+    """根据规则声明决定是否采样画面，语音-only 任务不会创建无意义的画面工作。"""
     needed=False
     for rule in snapshot['rules']:
         modalities=rule.get('modalities')
@@ -32,6 +34,7 @@ def sample_times(task,start,end):
     return list(range(first,end,INTERVAL_MS))
 
 def initialize_segment(task,data):
+    """为新片段计算画面采样计划，并初始化语音/画面状态。"""
     data['full_live']=True
     required=requires_frames(task['rules_snapshot'])
     times=sample_times(task,data['start_ms'],data['end_ms'])
@@ -45,7 +48,7 @@ def ready(task,segment):
     return segment['asr_status'] in ASR_DONE and (enabled(task) or segment['frame_status'] in FRAME_DONE)
 
 def advance(store,conn,task,now):
-    # Full audio keeps all collected evidence until reviewed or explicitly cancelled.
+    # 全量音频策略保留全部已采集证据，直到完成复核或用户明确取消。
     from runtime.finishing import advance_live
     return advance_live(store, conn, task, now)
 

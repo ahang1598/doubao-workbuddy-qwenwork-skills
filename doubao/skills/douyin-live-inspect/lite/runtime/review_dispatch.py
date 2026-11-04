@@ -1,3 +1,4 @@
+# 核心实现模块：负责本模块的检测、状态、遥测或交付边界；敏感输入和原始响应不进入日志。
 """Host-observed dispatch lifecycle. Unknown launches retain their evidence slots."""
 import time
 

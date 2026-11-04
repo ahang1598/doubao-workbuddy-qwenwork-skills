@@ -1,0 +1,85 @@
+{
+  "contractRevision": 3,
+  "planVersion": "1.0",
+  "mapSpecId": "region-example",
+  "dataSources": [],
+  "encodings": [],
+  "organization": {
+    "dimension": "thematic",
+    "evidenceRefs": [],
+    "viewPurposes": {
+      "all": {
+        "reason": "同屏阅读一个区域及其参照点，无需分组或拆分视图。",
+        "evidenceRefs": []
+      }
+    }
+  },
+  "views": {
+    "all": {
+      "componentNodes": [
+        {
+          "id": "area-fill",
+          "componentId": "polygon",
+          "binding": {
+            "source": "regions",
+            "regionIds": ["area"]
+          }
+        },
+        {
+          "id": "reference-point",
+          "componentId": "point-marker",
+          "binding": {
+            "source": "places",
+            "placeIds": ["reference"]
+          },
+          "presentation": {
+            "showLabel": true
+          },
+          "actions": [
+            {
+              "type": "select-element",
+              "target": "self"
+            }
+          ]
+        }
+      ],
+      "layers": [],
+      "filters": [],
+      "metrics": [],
+      "ui": {
+        "layout": "map-with-sidebar",
+        "placement": "left",
+        "density": "comfortable",
+        "sections": [
+          {
+            "id": "summary",
+            "componentId": "semi.card",
+            "binding": {
+              "source": "view.summary"
+            },
+            "actions": [],
+            "selectedBy": "model"
+          },
+          {
+            "id": "places",
+            "componentId": "semi.tree",
+            "binding": {
+              "source": "view.entityRelations"
+            },
+            "actions": ["select-element"],
+            "selectedBy": "model"
+          },
+          {
+            "id": "details",
+            "componentId": "semi.descriptions",
+            "binding": {
+              "source": "selected.properties"
+            },
+            "actions": ["clear-selection"],
+            "selectedBy": "model"
+          }
+        ]
+      }
+    }
+  }
+}
