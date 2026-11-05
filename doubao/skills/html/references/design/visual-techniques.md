@@ -200,6 +200,6 @@
 
 - `prefers-reduced-motion: reduce` 时跳过非必要运动，保留信息完整的关键状态；配合音频时音频也停。
 - `:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }`，别把 outline 关掉不给替代。
-- 对比度：正文 ≥ 4.5:1，用 oklch 调 lightness 时手动核。
+- 对比度：正文 ≥ 4.5:1，用 oklch 调 lightness 时保持该阈值。
 - `will-change: transform` 只在真正需要时加，动画结束后移除。
 - three.js / p5.js 按需加载；承担首屏动画的资源优先就绪，其余场景懒加载。

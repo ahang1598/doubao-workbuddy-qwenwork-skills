@@ -75,7 +75,7 @@ class LineImageOverlapTest(unittest.TestCase):
 
         self.assertEqual(len(findings), 1)
         self.assertEqual(findings[0]["level"], "warning")
-        self.assertIn("screenshot", findings[0]["hint"])
+        self.assertNotIn("screenshot", findings[0]["hint"])
         self.assertGreater(findings[0]["measurement"]["intersection_length"], 0)
         self.assertEqual(report["summary"]["status"], "needs_screenshot_review")
         self.assertTrue(report["summary"]["release_ready"])

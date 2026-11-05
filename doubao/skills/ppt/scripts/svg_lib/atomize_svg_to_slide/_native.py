@@ -267,6 +267,7 @@ def native_bullets(
     line_spacing=1.3,
     para_gap=6,
     text_align="left",
+    diagnostics=False,
 ) -> str:
     """Bullet list as ONE native text shape: ``<ul><li><p>`` per item, bold "术语：" lead-ins, wrap on.
 
@@ -276,6 +277,7 @@ def native_bullets(
     (still with bold leads). ``$...$`` containing LaTeX (\\ ^ _ { }) becomes an inline ``<formula>``.
     ``box`` is (x, y, width) or (x, y, width, height); the height is estimated with the lint's own
     text estimator and only ever grows the given height. ``para_gap`` is the px gap after each item.
+    Set ``diagnostics=True`` to request advice when the supplied height is too small.
     """
     x, y, w, h = _box3(box)
     size = _number(font_size, "font_size", minimum=1, maximum=4000)
@@ -324,7 +326,7 @@ def native_bullets(
     )
     rough = sum(1 + len(p) * float(size) // max(w, 1) for p in paras) * float(size) * line_spacing
     need = _fit_height(content, w, rough)
-    if h is not None and need > h + 1:
+    if diagnostics and h is not None and need > h + 1:
         import warnings
 
         warnings.warn(
@@ -451,6 +453,7 @@ def native_table(
     zebra=None,
     align=None,
     best=None,
+    diagnostics=False,
 ) -> str:
     """Academic three-line table (top rule, header rule, bottom rule) as one native ``<table>``.
 
@@ -463,6 +466,7 @@ def native_table(
     (x, y, width, height). ``col_widths`` are pixel widths (omit for an even split); ``align`` is one
     'left'/'center'/'right' per column (defaults: first column left, others center). Row heights are
     sized from ``font_size`` and the longest wrapped cell so text fits. ``zebra`` tints alternate rows.
+    Set ``diagnostics=True`` to request advice when the supplied height is too small.
     """
     from xml.sax.saxutils import escape
 
@@ -490,7 +494,7 @@ def native_table(
         heights.append(max(size * 2.0, n * size * 1.45 + 10))
     scale = h / sum(heights) if sum(heights) < h else 1.0
     heights = [hh * scale for hh in heights]
-    if sum(heights) > h + 1:
+    if diagnostics and sum(heights) > h + 1:
         import warnings
 
         warnings.warn(

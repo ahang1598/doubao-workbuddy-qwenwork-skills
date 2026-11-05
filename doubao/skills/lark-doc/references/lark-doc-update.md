@@ -34,8 +34,6 @@ lark-cli docs +update --doc "xx" --command block_delete --start-block-id blkFirs
 2. **Diagnose（诊断问题）**：判断用户目标、当前结构、语气、重复、断流、事实口径和需要保留的资源；识别哪些 block 必须原样保留。
 3. **Patch Plan（制定局部计划）**：把修改拆成最小安全操作：简单行内文本替换用 `str_replace`，但它不支持资源替换；单个 block 用一个 `--block-id`，同一直接父节点下的连续 block 用 `--start-block-id`/`--end-block-id`。连续范围适用于 `block_replace` 和 `block_delete`。整段/整块重写用 `block_replace`；增补章节用 `block_insert_after`；删冗余用 `block_delete`；调整顺序用 `block_move_after`。
 4. **Patch（精确修改）**：按 block / section 执行局部命令。替换内容必须符合目标父容器的结构；例如替换列表项范围时使用 `<li>...</li>`。保护 `<cite>`、`<img>`、`<source>`、`<whiteboard>`、`<sheet>`、`<bitable>`、`<synced_reference>` 等 token 化内容，不要改成纯文本或占位符。同一 block 的多处修改合并成一次 `block_replace`。
-5. **Verify（fetch 验证）**：每轮写操作后按影响范围重新 fetch，检查用户要求、结构、语气、事实、资源块和 block ID 是否符合预期；不满足就基于最新 fetch 结果继续 Diagnose / Patch，不要沿用上一轮 block ID。
-   - 用户给出字数要求时，再执行 `docs +script --command parse --doc "<文档 URL 或 token>" --format json` 统计线上全文，以最终 `data.profile.word_count` 验收；局部 XML 的统计值不能代替最终全文字数。详细见 [`docs +script`](lark-doc-script.md)
 
 除非用户明确要求完全重建，或原文已无保留价值，否则不要使用 `overwrite`；它可能丢失评论和暂不支持的资源。
 
@@ -48,7 +46,6 @@ lark-cli docs +update --doc "xx" --command block_delete --start-block-id blkFirs
 1. `+fetch --detail with-ids` 取最新 `comment-refs` 与同次读取的 `reference_map`。
 2. `str_replace` **必须带样式替换**：如 `--content '<span comment-refs="c1">新文本</span>'` + `--reference-map`；纯文本替换会使精确引用被替换文本的评论丢失。
 3. `block_replace` 同理：替换 XML 沿用 `comment-refs` + `--reference-map`（块重建，评论迁移到新块）。
-4. 写后重新 fetch 验证评论未悬空。
 
 禁止编造引用、跨文档复用或引入被替换片段中未出现的评论。
 

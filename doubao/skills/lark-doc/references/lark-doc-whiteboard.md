@@ -5,7 +5,7 @@
 | Skill             | 核心职责                                                      | 约束                              |
 |-------------------|-----------------------------------------------------------|---------------------------------|
 | `lark-doc`        | 识别画板机会、使用 Mermaid/SVG 创建图表、调度 SubAgent、插入简单图表或复杂空白画板 | 简单图可由主 Agent 直接写入；复杂图再隔离到 SubAgent |
-| `lark-whiteboard` | 查询/导出已有画板；复杂图表生成（Mermaid/DSL/SVG 路由、场景选型、渲染验证）；写入已有/空白画板  | 仅特别复杂的图表或已有画板更新时由独立 SubAgent 读取 |
+| `lark-whiteboard` | 查询/导出已有画板；复杂图表生成（Mermaid/DSL/SVG 路由、场景选型）；写入已有/空白画板  | 仅特别复杂的图表或已有画板更新时由独立 SubAgent 读取 |
 
 ## 画板适用规则
 
@@ -114,19 +114,6 @@ Sub Agent 需要携带以下的最小上下文，以及后续的 [SVG 设计 Wor
 - `<pattern>` / `<clipPath>` / `<mask>` / 非阴影用途的 `<filter>` (blur / hue-rotate / 复合合成 / `flood-color=url(...)` / 多个 `<feDropShadow>` 等) → 画板不支持，**请避免使用，否则会导致画板渲染问题**
 - 渐变边界：`gradientUnits="userSpaceOnUse"` / `spreadMethod="reflect|repeat"` / stops 少于 2 个 / 复杂 `gradientTransform` 会变成不可编辑图片, 视觉正确但失去可编辑性, 若无必要请沿用默认 `objectBoundingBox`
 
-###### 3.插入后审查
-
-插入画板后，可以从返回值使用 lark-cli 指令，将画板内容导出为 png
-图片。若是对设计不满意，可以修改后，删除原来的画板再重新插入，或是调用 [
-`../../lark-whiteboard/SKILL.md`](../../lark-whiteboard/SKILL.md) 编辑。
-
-```bash
-lark-cli whiteboard +export \
-  --whiteboard-token "wbcnxxxxxxxx" \
-  --output-type preview \
-  --output ./preview.png
-```
-
 ### 步骤 3B：编辑已有画板 — 启动 lark-whiteboard SubAgent
 
 复杂图和已有画板更新必须启动 SubAgent。主 Agent 只传最小上下文，不直接执行 `lark-whiteboard` 的渲染和写入流程。
@@ -136,17 +123,11 @@ lark-cli whiteboard +export \
 - board_token
 - 图表目标、推荐画板类型、受众
 - 与图表直接相关的源段落或数据
-- 要求读取 [`../../lark-whiteboard/SKILL.md`](../../lark-whiteboard/SKILL.md)，按其完整流程写入该 board_token
+- 要求读取 [`../../lark-whiteboard/SKILL.md`](../../lark-whiteboard/SKILL.md)，按其格式和写入说明将图表写入该 board_token
 
 多个画板互不依赖时，可并行启动多个 SubAgent；每个 SubAgent 只负责一个画板或一个 SVG 插入点，不要互相复用上下文。
 
-### 步骤 4：完成校验
-
-- Mermaid: 确认插入的是 `<whiteboard type="mermaid">`，且内容 mermaid 语法完整
-- SVG: 确认插入的是 `<whiteboard type="svg">`，且内容是完整 `<svg ...>...</svg>`
-- 不保留空白占位画板；复杂路径只有空白画板而无内容视为任务未完成
-
----
+复杂路径使用空白画板作为插入点时，须将图表写入该画板后再交付。
 
 ---
 

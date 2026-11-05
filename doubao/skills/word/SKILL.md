@@ -2,7 +2,7 @@
 name: word
 description: Office Word 的阅读、新建、修改，以及通过图片生成Word。不处理 飞书/豆包在线文档、PDF文件。党政公文、正式文书、商务与项目合同、专利司法等专业领域文书写作或有格式排版要求的写作使用此技能。
 metadata:
-  version: v52
+  version: v52-full-fast
   requires:
     bins: ["python"]
 ---
@@ -237,10 +237,9 @@ metadata:
 | `local-docx-editing.md` | 本地代码模式场景下的 DOCX 修改；合并了 `docx-editing.md` 全流程与本地路径锁定、读取重试及交付回复约束 |
 | `canvas-doc.md` | 本地Canvas模式场景，目标通过 `<token>` 使用 CLI 时读取；由此入口按需加载 Canvas 编辑、恢复、OOXML 及 CLI/XML 参考 |
 | `canvas-doc-editing.md` | 读取 `canvas-doc.md` 之后，判定需要通过 Local CLI 命令对文档进行新增、修改、删除或格式调整的编辑流程 |
-| `canvas-doc-ooxml.md` | 读取 `canvas-doc.md` 之后，判定需要通过 OOXML 取回、编辑并提交的方式完成文档修改，含结构审计与提交后校验 |
+| `canvas-doc-ooxml.md` | 读取 `canvas-doc.md` 之后，判定需要通过 OOXML 取回、编辑并提交的方式完成文档修改 |
 | `canvas-doc-recovery.md` | 读取 `canvas-doc.md` 之后，Canvas 操作出现失败、警告或写入状态不明时，确认已写入内容、分类处理异常并决定是否继续 |
 | `canvas-doc-close.md` | 读取 `canvas-doc.md` 之后，Canvas 操作出现文件状态关闭时的操作逻辑 |
-|`audit.md`| Word 格式与结构自动审计，发现存在的问题或提供统计信息 |
 |`citations.md`| 脚注、尾注和文献交叉引用的统一操作与验收 |
 |`windows-compat.md`| 用户运行平台为 Windows 时必须读取 |
 | `image-to-word.md` | 将一张或多张图片中的内容转换为 Word |
@@ -284,7 +283,6 @@ metadata:
 
 | 文档 | 说明 |
 |---|---|
-| `audit.py` | `audit.md`需要用到的执行脚本 |
 | `docx_citations.py` | `citations.md`需要用到的执行脚本 |
 | `doc2docx.py` | 将旧版 `.doc` 转换为供后续读取或编辑的 `.docx` |
 | `read.py` | 执行 word 读取需要使用的脚本 |

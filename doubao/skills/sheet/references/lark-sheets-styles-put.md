@@ -20,7 +20,6 @@
 - 加边框用 `border` 简写：`{"style":"solid","color":"#DDDDDD"}` 应用到四边；只有分侧不同样式才用 `border_styles` 完整形态。
 - `freeze` 用 `{rows:N, cols:N}` 冻结前 N 行 / 列，0 或省略表示该维度不冻结；freeze 是整份状态覆盖，全 0（如 `{"rows":0}`）= 两轴全部解冻，与 `+dim-freeze --rows 0 --cols 0` 等价（仅 `+workbook-create` 建新表时全 0 无意义、会被校验拒绝）。
 
-**回读校验**：整份规格执行成功后按编辑准则抽样回读受影响区域（`+cells-get --include style` 或 `+sheet-info` 看合并 / 行高列宽 / 冻结），确认关键样式实际生效。
 
 ## Shortcuts
 
@@ -90,6 +89,5 @@ JSON
 
 - `Validate`：`--styles` 必须是合法 JSON、`styles` 非空数组；每项 `name` 必填、至少给 `cell_merges` / `cell_styles` / `row_sizes` / `col_sizes` / `freeze` 之一；`cell_styles` 每项至少一个样式字段；展开后受子操作数（100）与总格数预算约束，超限报错给拆分建议。
 - `DryRun`：输出展开后每个子操作的请求模板，不发起调用。
-- `Execute`：整份规格合成一次批量请求按序执行；fail-fast。报错会列出失败的子操作及原因，但其中的 `operations[N]` 是 CLI 展开后的内部下标（含 `cell_styles` 合并），不对应 `--styles` 里的项，也不能直接按下标续发——报错会明说这一点并让你先回读再补发。
 
-===== 全文完（共 95 行）=====
+===== 全文完（共 93 行）=====

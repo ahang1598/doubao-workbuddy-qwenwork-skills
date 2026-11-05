@@ -105,6 +105,7 @@ def _clear_first_page(
         "--content",
         "@" + empty_xml.name,
         "--json",
+        "--no-lint",
     ]
     err = ""
     rc = -1

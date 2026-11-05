@@ -34,11 +34,6 @@ def make_field_dict(field, field_id):
         if "/Off" in states:
             field_dict["unchecked_value"] = "/Off"
         elif len(states) >= 2:
-            print(
-                f"WARNING: Unexpected state values for checkbox `{field_id}`. "
-                "Its checked and unchecked values may not be correct; if you're "
-                "trying to check it, visually verify the results."
-            )
             field_dict["unchecked_value"] = states[1]
     elif ft == "/Ch":
         field_dict["type"] = "choice"

@@ -6,8 +6,8 @@
 
 ```
 MainAgent            读 pdf-to-word-main.md，负责对用户交互
-  └── OrganizerAgent 读 pdf-to-word-organizer.md，负责管理分配任务给 SubAgent，检查并合并结果
-        └── SubAgent 读 pdf-to-word-sub.md，负责DOCX重建、审计与修复
+  └── OrganizerAgent 读 pdf-to-word-organizer.md，负责管理分配任务给 SubAgent 并合并结果
+        └── SubAgent 读 pdf-to-word-sub.md，负责DOCX重建
 ```
 
 每一层的启动都通过 `create_agent`。上游把必要输入传给下游（路径、页码范围、用户交付要求），**不要**把上游读过的文档内容复述给下游——下游会自己去读它那一份。

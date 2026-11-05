@@ -28,16 +28,16 @@ lark-cli apps +deploy --file-path ./index.html --app-id app_xxx   # 复发到同
 - stderr 回显 `publishing to app <app_id> (from --app-id|has_html_app_created|+create)`，据此确认发到了哪个应用。`app_id` 不是本会话拿到的（来自历史/他人）时先与用户确认——发布会覆盖该应用线上内容。
 
 ### 输出契约
-- **判断成败看返回 JSON 的 `ok` 字段，不要看 exit code。** 参数校验失败时返回 `{"ok": false, "error": {...}}`，而包裹命令的工具层仍可能显示 `Exit code 0`。`error.hint` 一般给出了正确改法，优先照做并转述。
+- **判断成败看返回 JSON 的 `ok` 字段，不要看 exit code。** 参数校验失败时返回 `{"ok": false, "error": {...}}`，而包裹命令的工具层仍可能显示 `Exit code 0`。返回失败时，向用户转述 `error` 和 `error.hint`。
 - 发布单受理后命令**立即返回、不原地等待**：发布中返回 `data.release_id` + `data.poll_hint`，同步完成则直接返回 `data.online_url`。
 - 用 `+release-get --app-id <app_id> --release-id <release_id>` 轮询到 `status=finished` 再读 `online_url`（间隔 ≥3s，整体约 5 分钟上限；超时未完成就停下、报当前 status 和 release_id）。
-- 流水线失败 = 发布失败（`ok:false`，message 含各 step 的 `error_logs` 摘要）；产物已上传，修复后重新 `+deploy` 即可。
+- 流水线失败 = 发布失败（`ok:false`，message 含各 step 的 `error_logs` 摘要）。
 - **发布成功后直接交付**：发布接口确认完成并返回 `online_url` 后，直接交付该链接，**禁止再用 `curl`、浏览器或自写脚本访问链接检查可用性或渲染效果**。检查环境可能没有用户登录态，打开的是登录页；不要据此判断发布失败，或在交付名称、说明中添加“手机登录豆包后打开”等提示。
 
 ### 会拦截的两件事
 
-- **凭证扫描**：按文件名扫 `.env` / 私钥 / `credentials` 等，命中即拒绝。默认动作是**把这些文件移出发布范围**，不要习惯性加 `--allow-sensitive`（那会跳过整道扫描，而产物是公网可访问链接）。
-- **体积**：单个 `.html` ≤ 20 MiB、打包前原始总量 ≤ 200 MiB、打包后 zip ≤ 50 MiB。超限只能收窄产物范围，没有放开参数。
+- **凭证扫描**：按文件名扫 `.env` / 私钥 / `credentials` 等，命中即拒绝。不要习惯性加 `--allow-sensitive`（那会跳过整道扫描，而产物是公网可访问链接）。
+- **体积**：单个 `.html` ≤ 20 MiB、打包前原始总量 ≤ 200 MiB、打包后 zip ≤ 50 MiB。没有放开参数。
 
 ---
 

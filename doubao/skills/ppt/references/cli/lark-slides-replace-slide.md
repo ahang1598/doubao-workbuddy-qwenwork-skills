@@ -13,30 +13,30 @@
 
 ```bash
 # block_insert：在页末追加一个新元素
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation slidesXXXXXXXXXXXXXXXXXXXXXX \
   --slide-id pfG \
   --parts '[{"action":"block_insert","insertion":"<shape type=\"rect\" topLeftX=\"500\" topLeftY=\"100\" width=\"200\" height=\"100\"/>"}]'
 
 # block_replace：已知某块 id，整块替换（replacement 根 id 自动注入为 bUn）
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation slidesXXXXXXXXXXXXXXXXXXXXXX \
   --slide-id pfG \
   --parts '[{"action":"block_replace","block_id":"bUn","replacement":"<shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>新标题</p></content></shape>"}]'
 
 # 大 --parts 走文件或 stdin（auto-gen 命令不支持 @file，但 shortcut 支持）
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation $PID --slide-id $SID --parts @parts.json
-cat parts.json | lark-cli slides +replace-slide \
+cat parts.json | lark-cli slides +replace-slide --no-lint \
   --presentation $PID --slide-id $SID --parts -
 
 # wiki URL 直接传（CLI 自动 get_node → 拿真实 xml_presentation_id）
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation "https://xxx.feishu.cn/wiki/wikcnXXXXXX" --slide-id pfG \
   --parts '[{"action":"block_insert","insertion":"<shape type=\"rect\" width=\"100\" height=\"100\"/>"}]'
 
 # 预览（不实际调用）
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation $PID --slide-id $SID --parts "$PARTS" --dry-run
 ```
 
@@ -49,7 +49,7 @@ lark-cli slides +replace-slide \
 | `--parts` | 是 | JSON 数组（`[{...}, ...]`），单次最多 200 条。支持 `@<file>` 和 `-`（stdin）读取 |
 | `--revision-id` | 否 | 基础版本号；默认 `-1` 表示基于最新版执行；传具体版本号时，服务端以该版本为 base 执行；**传不存在的版本号（超过当前 revision）返回 3350002** |
 | `--tid` | 否 | 并发事务 ID；多人协作长事务才用，单次单人调用留空 |
-| `--no-lint` | 否 | 跳过服务端版式校验（默认开启，校验 parts 拼装后的整页）；只能在当前页已被拦、完整报告已读完且符合[单页例外规则](../workflow/validation-xml.md)时单独使用，禁止多页共用或自动重试附加 |
+| `--no-lint` | 否 | 请求跳过服务端版式校验；本 Skill 写入页面时默认传入。服务端仍可能拒绝，实际结果以 `ok` 为准 |
 
 ## parts 元素结构
 
@@ -161,7 +161,7 @@ lark-cli slides +replace-slide \
 | `revision_id` | 写入成功后的新版本号 |
 | `failed_part_index` | 有部分失败时存在，指向第几条 part 失败 |
 | `failed_reason` | 失败原因文字描述 |
-| `issues` | 与 `failed_reason` 相对：parts 已全部生效，服务端只是仍有发现，不影响本次调用的成功状态。内容是未达阻断级的版式校验发现；校验主体是**拼装后的整页**，因此可能报出页面上原有的元素。按实际类型读取：对象/数组直接读，JSON 字符串解码后读，普通文本原样读；完整读取全部发现，立即回读并截图核验，真实问题须修复 |
+| `issues` | 与 `failed_reason` 相对：parts 已全部生效，服务端仍有发现；不改变本次成功状态，本流程不主动展开 lint 报告 |
 
 整批作为原子事务：任一 part 失败则整批不生效，服务端通过 `failed_part_index` / `failed_reason` 告诉你是哪条；按此定位修正后重发。
 
@@ -178,7 +178,7 @@ TOKEN=$(lark-cli slides +media-upload \
   --file ./pic.png --presentation "$PID" --jq '.data.file_token')
 
 # 2) block_insert 到页末
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation "$PID" --slide-id "$SID" \
   --parts "$(jq -n --arg token "$TOKEN" \
     '[{action:"block_insert",insertion:("<img src=\""+$token+"\" topLeftX=\"500\" topLeftY=\"100\" width=\"200\" height=\"150\"/>")}]')"
@@ -191,7 +191,7 @@ lark-cli slides +replace-slide \
 lark-cli slides +xml-get --presentation "$PID" --slide-id "$SID" --json
 
 # block_replace 换掉整个标题块（id 自动注入）
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation "$PID" --slide-id "$SID" \
   --parts '[{"action":"block_replace","block_id":"bUn","replacement":"<shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>新标题</p></content></shape>"}]'
 ```
@@ -201,7 +201,7 @@ lark-cli slides +replace-slide \
 `block_replace` 和 `block_insert` 可以在同一个 `--parts` 里混用，整批原子执行。
 
 ```bash
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation "$PID" --slide-id "$SID" \
   --parts '[
     {"action":"block_replace","block_id":"bab","replacement":"<shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>新标题</p></content></shape>"},
@@ -217,25 +217,16 @@ REV=$(lark-cli slides +xml-get --presentation "$PID" --slide-id "$SID" --json \
   | jq '.data.revision_id')
 
 # 写时传 --revision-id；传不存在的版本号（超过当前 revision）返回 3350002
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation "$PID" --slide-id "$SID" --revision-id "$REV" \
   --parts "$PARTS"
 ```
 
 ### 返回字段与处理
 
-返回 JSON 的外层 `ok` 表示调用是否成功，`identity` 表示调用身份；成功时业务字段位于 `data`，失败时错误信息位于 `error`。按以下字段判断结果并处理 lint 发现。
+本 Skill 写入默认传 `--no-lint`。`ok: true` 时记录 `data` 中的页面 ID、版本并继续；成功附带的 `issues` / `slide_issues` 不触发报告阅读、修复或复检。空壳创建成功仅说明文稿已创建。
 
-| 当次响应 | 读取与处理 |
-|---|---|
-| `ok: true`，未附问题发现 | 从 `data` 记录 ID、版本等业务字段，继续流程 |
-| `ok: true`，有 `data.issues` | 页面已写入；对象/数组直接读，JSON 字符串先解码，普通文本完整读。逐条处理发现，按验证流程回读与截图；不能因成功而忽略 |
-| `ok: false`，`error.code: 4000153` | 被拒页面未写入；对 `error.message` 的完整 JSON 字符串解码，读完报告后修复并开启 lint 重提 |
-| 其他失败或返回不完整 | 读完整 `error` 或诊断，按实际原因处理；不能只读 `data` 并把缺失字段默认成零问题 |
-
-返回的是 lint 报告对象时，先看 `summary` 中的 `error_count`、`warning_count`、`info_count` 和 `status`，再读 `document.errors/warnings/infos` 和 `slides[].errors/warnings/infos` 的全部问题；`slides[].issues` 可能是分级列表的镜像，不能重复计数；合并列表中的额外发现也须读取，根 `issues` 不能当作全页列表。逐条读 `code`、`message`、实际存在的 `hint` 及定位/测量字段；`element_ids` 可能为空，需继续看 `elements`、`target.xml_path` 或 schema 的 `path`。单页报告内部 `slide_number: 1` 不一定是整稿第 1 页，关联本次请求/响应的 `slide_id`。
-
-字符串长度不是问题数，`summary` 或前几百字符也不是完整问题正文。报告过大或工具输出截断时，先检查是否已有该次完整响应文件；有文件时可用 `lint_inspect.py` 分页读取，只有截断文本时无法恢复遗漏内容，不能据此认定问题已全部处理。使用 `--no-lint` 后的成功不代表校验通过；异常、长报告和单页例外规则见 [validation-xml.md](../workflow/validation-xml.md)。
+`ok: false` 时保留失败状态并按 [error-handling.md](../workflow/error-handling.md) 处理。`4000153` 表示服务端仍拒绝提交，即使传了 `--no-lint` 也不能标记已写入；不自动重试或进入 lint 清零循环。返回不完整或状态不明时先只读确认，避免重复创建。
 
 ## 常见错误
 
@@ -243,7 +234,7 @@ lark-cli slides +replace-slide \
 |------|------|------|
 | 3350001 + hint "block_id not found" | `parts[i].block_id` 在当前页不存在 | 重新 `+xml-get --slide-id` 拿最新 XML，按里面的 short ID 再填 |
 | 3350002 not found | `--revision-id` 传了不存在的版本号（超过当前 revision） | 用 `-1` 或用 `+xml-get --slide-id` 拿到的有效 `revision_id` |
-| 4000153 `xml lint blocked` | 服务端版式校验拒绝了本次提交，整批 parts 都没生效 | 按 [validation-xml.md](../workflow/validation-xml.md) 解析并读完 `error.message` 的完整报告，修复后开启 lint 重提；报告针对拼装后的整页，须检查与既有元素的相互影响 |
+| 4000153 `xml lint blocked` | 服务端版式校验拒绝了本次提交，整批 parts 都没生效 | 保留未写入状态，按 [error-handling.md](../workflow/error-handling.md) 处理；不自动进入 lint 修复循环 |
 | `--parts[i] action "str_replace" is not supported` | CLI 不暴露 `str_replace` | 把替换需求改写成 `block_replace` / `block_insert` |
 | `--parts contains N items, exceeds maximum of 200` | 一次提交 parts 太多 | 拆多次调用 |
 | `--parts[i] (block_replace) requires non-empty block_id` / `replacement` | 字段缺失 | 按 parts 元素结构补齐 |

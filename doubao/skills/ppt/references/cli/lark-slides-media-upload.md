@@ -68,7 +68,7 @@ cat > page-01.xml <<XML
   <img src="$TOKEN" topLeftX="100" topLeftY="100" width="320" height="180"/>
 </data></slide>
 XML
-lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
+lark-cli slides +add-slide --no-lint --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
 ### 新建带图幻灯片
@@ -90,7 +90,7 @@ TOKEN=$(lark-cli slides +media-upload \
   --file ./pic.png --presentation $PRES_ID --jq '.data.file_token')
 
 # 2) block_insert 到页末（或用 insert_before_block_id 指定插入位置）
-lark-cli slides +replace-slide \
+lark-cli slides +replace-slide --no-lint \
   --presentation "$PRES_ID" --slide-id "$SID" \
   --parts "$(jq -n --arg token "$TOKEN" \
     '[{action:"block_insert",insertion:("<img src=\""+$token+"\" topLeftX=\"500\" topLeftY=\"100\" width=\"200\" height=\"150\"/>")}]')"

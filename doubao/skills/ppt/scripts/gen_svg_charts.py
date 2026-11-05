@@ -642,7 +642,7 @@ _DATA_REQUIREMENTS.update(
         "points=[{x, y, y_err}] 画误差棒，models=[{name, x, y, lo, hi}] 画模型线与 1σ 带，"
         "bands=[{start, end, label}] 画分子吸收带/谱窗。",
         "potential_energy_surface": "两种写法：① 单条曲线 curve + states（反应物/TS/产物，可标 activation_energies）；② 自由能图 pathways=[{name, energies, ts}] + steps=[各步名称]，多个催化剂/晶面/路径共用一条反应坐标并排对比（如 Cu(100) vs 晶界 Cu 的 C–C 偶联能垒），每条路径的最大正向能垒自动标注 ΔG‡，也可用 barriers 指定。能量用 DFT/文献报告值，energy_unit 写 eV 或 kJ/mol。能垒对比优先用 ②，不要拆成分组柱状图。",
-        "forest": "每行已有点估计及其 CI，并明确单位/效应量/无效线；ci_level=95 表示95%，混合水平逐行给出，未提供时不假定95%；均值 ± SEM 不能变为 effect size + CI。log_x 默认自动（比值、无效线 1、跨 >10× 用对数轴），可显式 True/False；value_domain 可固定范围；single 模式可换行长标签，仍须按实际嵌入尺寸检查。favours=(左, 右)：HR/OR 左=治疗更优，d/SMD/MD（midline_value=0）右=干预更优；heterogeneity=dict(I2=, tau2=, Q=, p=) 标在合并行下。",
+        "forest": "每行已有点估计及其 CI，并明确单位/效应量/无效线；ci_level=95 表示95%，混合水平逐行给出，未提供时不假定95%；均值 ± SEM 不能变为 effect size + CI。log_x 默认自动（比值、无效线 1、跨 >10× 用对数轴），可显式 True/False；value_domain 可固定范围；single 模式支持长标签换行。favours=(左, 右)：HR/OR 左=治疗更优，d/SMD/MD（midline_value=0）右=干预更优；heterogeneity=dict(I2=, tau2=, Q=, p=) 标在合并行下。",
         "scatter": "曲线/散点用实际 x/y；末端自动标注可用 end_labels=False 关闭；x 是冲击后期数（IRF、局部投影）改用 coef_plot(series=, band=True)；参数量–精度权衡加 frontier=True。",
         "bubble": "x/y/size 均为已报告值；frontier=True 连帕累托前沿，尺寸图例自动放进空白角。",
         "line_band": "需要真实 x/y 与已提供或有依据计算的区间，标明 SD/SEM/CI；无不确定性的普通趋势使用 scatter 的曲线输入。",
@@ -732,7 +732,7 @@ def chart_help(name=None, full=False):
             "",
             f"On a slide: frag = chart_slide({name!r}, x, y, w, h, **kwargs) → publish_slide(page_xml, frag, ...). "
             "make_* returns one SVG string (not a tuple); do not call make_* to preview or search sizes — "
-            "chart_slide fits any box (a 'fitted … at N% scale' warning is success; use chart_fit for the box).",
+            "chart_slide fits the requested box. Set diagnostics=True when chart advice is requested.",
             "",
         ]
 
@@ -812,7 +812,7 @@ def chart_help(name=None, full=False):
         "自动生成的轴名/图例/注释随传入文字的语言：任一参数含中文即输出中文（HR、CI、SD、P 等缩写保留），可用 lang='zh'/'en' 指定；你传入的文字原样保留。",
         "放进幻灯片用 chart_slide(slug, x=, y=, width=, height=, **kwargs)：按目标框尺寸出图，返回半可编辑片段"
         "（文字原生可改字号/内容，同色柱块/扇区为可整体换色的原生形状，其余留在局部 SVG）；用 compose_slide(page_xml, fragment) 合页。",
-        "在幻灯片实际显示尺寸检查标签、单位、注释和图例；不足时减少面板或调整图内布局，不能删关键内容。",
+        "按页面显示尺寸安排标签、单位、注释和图例，保留关键内容。",
         "关系库支持的结构用可编辑输出；自定义机制/流程/实验设计用 drawing 库画后 to_slide。",
         "",
         "## 全部入口（名称索引；详情仍在同一 chart_help 入口）",
@@ -1746,10 +1746,10 @@ def _bar_upgrade(kwargs):
 
 
 def chart_slide(
-    slug, x=None, y=None, width=None, height=None, *, box=None, editable=True, preview=None, upgrade=True, **kwargs
+    slug, x=None, y=None, width=None, height=None, *, box=None, editable=True, preview=None, upgrade=True, diagnostics=False, **kwargs
 ):
     # Charts whose data is named x/y (e.g. spectrum) must pass box=(x, y, w, h).
-    """Render chart ``slug`` for a slide box and return an SML fragment for compose_slide."""
+    """Render an SML chart fragment. Set diagnostics=True to request chart advice."""
     import inspect
     import re
     import warnings
@@ -1786,7 +1786,7 @@ def chart_slide(
             f"chart_slide({slug!r}, x, y, width, height, **data) needs the slide box (or box=(x, y, w, h)); "
             "the chart's own options (title=, categories=…) go after it as keywords"
         )
-    if slug == "grouped_bar":
+    if diagnostics and slug == "grouped_bar":
         mixed = _mixed_endpoints([str(c) for c in kwargs.get("categories") or []])
         if mixed:
             warnings.warn(
@@ -1796,20 +1796,21 @@ def chart_slide(
             )
     upgraded = False
     if slug == "forest":
-        measures = _effect_measures(
-            [kwargs.get("x_title"), kwargs.get("xlabel")]
-            + [r.get("label") for r in kwargs.get("rows") or [] if isinstance(r, dict)]
-        )
-        if len(measures) >= 2:
-            warnings.warn(
-                f"chart_slide('forest'): 混用效应量 {'/'.join(measures)}——不同效应量不能共用一条轴，"
-                "按效应量拆成多张 forest",
-                stacklevel=2,
+        if diagnostics:
+            measures = _effect_measures(
+                [kwargs.get("x_title"), kwargs.get("xlabel")]
+                + [r.get("label") for r in kwargs.get("rows") or [] if isinstance(r, dict)]
             )
+            if len(measures) >= 2:
+                warnings.warn(
+                    f"chart_slide('forest'): 混用效应量 {'/'.join(measures)}——不同效应量不能共用一条轴，"
+                    "按效应量拆成多张 forest",
+                    stacklevel=2,
+                )
         kwargs, log_note = _forest_axis_advice(kwargs)
-        if log_note:
+        if diagnostics and log_note:
             warnings.warn(log_note, stacklevel=2)
-        if kwargs.get("favours") and kwargs.get("midline_value", 1.0) == 0:
+        if diagnostics and kwargs.get("favours") and kwargs.get("midline_value", 1.0) == 0:
             warnings.warn(
                 f"chart_slide('forest'): midline_value=0（差值类效应量 d/SMD/MD），favours="
                 f"{tuple(kwargs['favours'])!r} 按 (左, 右) 显示——差值类效应量右侧通常=干预更优"
@@ -1821,21 +1822,22 @@ def chart_slide(
         upgraded = better is not None
         if better is not None:
             new_slug, new_kwargs, reason = better
-            if new_slug == "grouped_bar":
-                warnings.warn(f"chart_slide('grouped_bar'): {reason}; {_ENRICH['grouped_bar']}", stacklevel=2)
-            else:
-                warnings.warn(
-                    f"chart_slide('grouped_bar') → drew {new_slug!r} instead: {reason}. To enrich it, "
-                    f"{_ENRICH[new_slug]}; to write it directly: chart_slide({new_slug!r}, x, y, w, h, "
-                    + ", ".join(
-                        f"{k}=…"
-                        for k in new_kwargs
-                        if k
-                        in ("rows", "points", "series_labels", "x_title", "reference", "x_transform", "reference_lines")
+            if diagnostics:
+                if new_slug == "grouped_bar":
+                    warnings.warn(f"chart_slide('grouped_bar'): {reason}; {_ENRICH['grouped_bar']}", stacklevel=2)
+                else:
+                    warnings.warn(
+                        f"chart_slide('grouped_bar') → drew {new_slug!r} instead: {reason}. To enrich it, "
+                        f"{_ENRICH[new_slug]}; to write it directly: chart_slide({new_slug!r}, x, y, w, h, "
+                        + ", ".join(
+                            f"{k}=…"
+                            for k in new_kwargs
+                            if k
+                            in ("rows", "points", "series_labels", "x_title", "reference", "x_transform", "reference_lines")
+                        )
+                        + ")",
+                        stacklevel=2,
                     )
-                    + ")",
-                    stacklevel=2,
-                )
             slug, kwargs = new_slug, new_kwargs
     if (
         slug == "grouped_bar"
@@ -1868,7 +1870,7 @@ def chart_slide(
     scale = min(width / vw, height / vh)
     w, h = vw * scale, vh * scale
     left, top = x + (width - w) / 2, y + (height - h) / 2
-    if scale < 0.999:
+    if diagnostics and scale < 0.999:
         import warnings
 
         rows = ", ".join(f"{int(k * 100)}%: {vw * k:.0f}x{vh * k:.0f}" for k in (1, 0.8, 0.7, 0.6))
@@ -1888,30 +1890,31 @@ def chart_slide(
 
         warnings.warn(
             f"chart_slide({slug!r}): editable=False is ignored — slide charts are always semi-editable "
-            "(native text, recolorable blocks); publish_slide already waives conversion overlaps",
+            "(native text, recolorable blocks); publish_slide requests --no-lint by default",
             stacklevel=2,
         )
         editable = True
-    marks = len(re.findall(r'data-role="(?:before|after|bar|point|estimate|marker)"', svg))
-    rows = kwargs.get("rows") if isinstance(kwargs.get("rows"), list) else None
-    if (rows is not None and len(rows) < 3) or (rows is None and 0 < marks < 3):
-        import warnings
+    if diagnostics:
+        marks = len(re.findall(r'data-role="(?:before|after|bar|point|estimate|marker)"', svg))
+        rows = kwargs.get("rows") if isinstance(kwargs.get("rows"), list) else None
+        if (rows is not None and len(rows) < 3) or (rows is None and 0 < marks < 3):
+            import warnings
 
-        warnings.warn(
-            f"chart_slide({slug!r}): only {len(rows) if rows is not None else marks} data row(s) — a chart "
-            "this thin carries little evidence; show the numbers as large native figures in the text, or add "
-            "comparable rows (other studies, conditions, years) from the literature",
-            stacklevel=2,
-        )
-    _warn_wide_bar_range(slug, svg, kwargs)
-    _warn_narrow_bar_range(slug, svg, kwargs)
-    _warn_forest_without_ci(slug, svg, kwargs)
-    _warn_threshold_p(slug, kwargs)
-    _warn_category_quantity(slug, kwargs)
-    _warn_marker_colors(slug, svg)
-    advice = None if upgraded else _paper_mark_advice(slug, kwargs, svg)
-    if advice:
-        warnings.warn(advice, stacklevel=2)
+            warnings.warn(
+                f"chart_slide({slug!r}): only {len(rows) if rows is not None else marks} data row(s) — a chart "
+                "this thin carries little evidence; show the numbers as large native figures in the text, or add "
+                "comparable rows (other studies, conditions, years) from the literature",
+                stacklevel=2,
+            )
+        _warn_wide_bar_range(slug, svg, kwargs)
+        _warn_narrow_bar_range(slug, svg, kwargs)
+        _warn_forest_without_ci(slug, svg, kwargs)
+        _warn_threshold_p(slug, kwargs)
+        _warn_category_quantity(slug, kwargs)
+        _warn_marker_colors(slug, svg)
+        advice = None if upgraded else _paper_mark_advice(slug, kwargs, svg)
+        if advice:
+            warnings.warn(advice, stacklevel=2)
     if preview:
         _render_png(svg, preview, int(w * 2))
     if editable:

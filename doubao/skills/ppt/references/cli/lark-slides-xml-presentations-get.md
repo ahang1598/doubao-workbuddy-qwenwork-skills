@@ -2,13 +2,13 @@
 
 ## 用途
 
-读取飞书幻灯片演示文稿或指定单页的 XML；默认同时取得服务端 lint 报告，用于原稿基线与写入后复核。
+读取飞书幻灯片演示文稿或指定单页的 XML；用于理解原稿、定位编辑对象和核对实际内容；响应可能附带服务端 lint 报告，本流程不主动处理。
 
 ## Shortcut
 
 文件保存在当前工作目录 `<CWD>` 下，命令中的 `./readback.xml` 即 `<CWD>/readback.xml`；`<CWD>` 不是要创建的目录名或直接传入 CLI 的参数。示例文件名按任务/页面区分，避免覆盖已有文件。
 
-使用 `slides +xml-get` shortcut，把纯 XML 保存到本地文件，并另存完整 stdout 响应和 stderr，避免长报告被终端截断。get 默认返回 lint 检测报告。
+使用 `slides +xml-get` shortcut，把纯 XML 保存到本地文件，并另存完整 stdout 响应和 stderr，保留页面标识和版本。get 默认可能附带 lint 报告，无须另外读取。
 
 ```bash
 lark-cli slides +xml-get \
@@ -18,7 +18,7 @@ lark-cli slides +xml-get \
   2> ./readback-error.json
 ```
 
-先检查本次命令是否成功及完整响应的 `ok`，再用当前 Skill 下的 `scripts/lint_inspect.py --input ./readback-response.json` 读取 lint 检测报告摘要，按 `--details` 分页读完相关问题，避免大报告被截断。完整参数和状态说明见 [validation-xml.md](../workflow/validation-xml.md)。原稿基线使用独立文件名保存，不被之后的 `readback` 覆盖；具体见 [validation-xml.md](../workflow/validation-xml.md)。
+确认本次命令成功和响应的 `ok` 后读取 XML，记录页面标识与版本。原稿内容使用独立文件名保存，后续回读另存；不建立 lint 基线或调用 `lint_inspect.py`。
 
 > [!IMPORTANT]
 > 拿到 XML 后必须先用 XML 解析器解析。**命名空间（`xmlns`）要从根元素实际读取，不要硬编码或猜测，否则匹配不到元素。**
@@ -36,7 +36,7 @@ lark-cli slides +xml-get \
 | `--remove-attr-id` | flag | 否 | 仅全文读取可用；移除 XML id 属性后读取，不适合后续精确块编辑 |
 | `--json` | flag | 否 | `--format json` 的简写，json 为默认输出格式 |
 
-`--slide-id` 和 `--slide-number` 都是单值参数；重复 `--slide-id` 不能读取多页，可能只取最后一个值。多页需逐页调用并保存各自响应，或一次读取全文后用 `xml_inspect.py --input ./readback.xml --mode raw --slide-id "<sid-1>" "<sid-2>"` 本地提取。后者返回的 raw XML 不包含服务端 lint，报告仍从整份读取响应中按页面对应。
+`--slide-id` 和 `--slide-number` 都是单值参数；重复 `--slide-id` 不能读取多页，可能只取最后一个值。多页需逐页调用并保存各自响应，或一次读取全文后用 `xml_inspect.py --input ./readback.xml --mode raw --slide-id "<sid-1>" "<sid-2>"` 本地提取。后者返回 JSON，单页 XML 在 `.slides[].raw_xml`。
 
 > [!IMPORTANT]
 > `--output` 必须是**当前工作目录（CWD）内的相对路径**（如 `./readback.xml`）。传绝对路径或上级路径（如 `/tmp/x.xml`、`/dev/null`、`../up.xml`）会被拒绝，报 `--output must be a relative path within the current directory`。本流程沿用当前工作目录，以文件名区分任务和读取批次。
@@ -69,26 +69,11 @@ lark-cli slides +xml-get \
 
 按 `--slide-number` 读取时还会返回 `data.slide_number`；按 ID 读取时不要依赖该字段。`size` 是保存内容的字节数，返回的 `path` 可以是绝对路径，但传入 `--output` 仍须用相对路径。`revision_id` 从响应读取，不从 XML 推断。
 
-上述四种 JSON 返回模式默认附带报告，报告均位于 **`data.issues`**，不写入 XML 文件，也不嵌在 `xml_presentation` 或 `slide` 对象里。报告结构为：
-
-```text
-data.issues                         对象，直接读取，不用 fromjson
-├── schema_version / tool
-├── summary                         slide_count、各级数量、status 等
-├── document                        errors / warnings / infos
-├── issues                          可能仅镜像文档级问题，不能当作全稿列表
-└── slides[]                        slide_number、status、element_count
-    ├── errors / warnings / infos   分级问题列表
-    └── issues                      同一批问题的合并列表，勿重复计数
-```
-
-问题的 `element_ids` / `elements`、`target`、`related_objects`、`measurement` 等按实际存在的字段读取；不能要求每条问题都有全部定位和测量字段。报告可含 `file`、`slide_size` 等辅助字段，但它们不能替代外层的 presentation ID、版本和读取范围。
-
-`ok: true` 仅表示读取成功；即使报告 `summary.status` 为 `blocked`，XML 仍可正常保存。报告缺失不等于零问题，不能只读 summary；完整读取和前后比较规则见 [validation-xml.md](../workflow/validation-xml.md)。单页报告通过请求/响应的 slide ID 关联页面，不假定报告内部页码就是整稿页码；整份报告与同次 XML 页序对应。
+JSON 响应可能在 `data.issues` 中附带服务端 lint 报告；本流程不展开、不分页、不比较该报告。`ok: true` 表示读取成功，页面内容与标识按上述路径获取。
 
 ### 直接输出 XML 到管道
 
-此模式不返回 lint 报告，不用于建立 lint 基线或完成验收：
+此模式直接输出 XML，不返回报告；仅凭这一输出形式不能认定服务端关闭了 lint 计算：
 
 ```bash
 lark-cli slides +xml-get \
@@ -182,7 +167,7 @@ lark-cli slides xml_presentations get --params '<json_params>'
 1. lark-slides 工作流默认使用 `slides +xml-get`；只有必须直接调底层 API 时，才使用
 2. 直接调用底层 API 前，使用 `lark-cli schema slides.xml_presentations.get` 查看最新的参数结构
 3. 返回的 XML 在 `data.xml_presentation.content` 字段中
-4. 优先使用默认返回 lint 的 `+xml-get`；必须走原生 API 时，先以最新 schema 确认是否支持及如何传递 lint 参数，不猜测字段名。需要过滤信息时，先保留完整响应，再用 `jq` 提取，避免丢失报告
+4. 需要过滤信息时保留页面 ID、版本与 XML；不为获取 lint 报告追加请求。
 5. 不要在普通工作流中把完整 XML 打到终端；用 `slides +xml-get --output` 保存文件
 6. 必须先用 XML 解析器解析回读结果；命名空间（`xmlns`）从根元素实际读取，不要硬编码否则匹配不到元素
 

@@ -23,7 +23,6 @@ from scripts.svg_lib import svg_drawing as sd
 from scripts.svg_lib.atomize_svg_to_slide import native_bullets, native_table, page_frame
 from scripts.svg_lib.atomize_svg_to_slide._compose import compose_slide
 from scripts.svg_lib.atomize_svg_to_slide._publish import (
-    _HAND_DIAGRAM_NOTE,
     _children,
     _describe,
     _prepare,
@@ -164,7 +163,7 @@ def test_lattice_integer_shorthand_and_instance_help():  # trace: 'int' object i
 def _drawn(kwargs):
     with w.catch_warnings(record=True) as caught:
         w.simplefilter("always")
-        frag = chart_slide("grouped_bar", 40, 110, 560, 330, **kwargs)
+        frag = chart_slide("grouped_bar", 40, 110, 560, 330, diagnostics=True, **kwargs)
     return frag, " ".join(str(c.message) for c in caught)
 
 
@@ -425,10 +424,11 @@ def test_check_is_quiet_on_templates_and_every_documented_example(tmp_path, monk
     assert ran >= 40
 
 
-def test_to_slide_marks_mostly_plain_review_as_must_fix(capsys):
-    _icon_mechanism().to_slide(x=40, y=96, width=880, summary=False)
-    out = capsys.readouterr().err
-    assert "[drawing 细节审查·需修改]" in out and "写入前先把主体换成部件或带结构的 svg_at" in out
+def test_mostly_plain_review_is_available_on_request(capsys):
+    d = _icon_mechanism()
+    d.to_slide(x=40, y=96, width=880)
+    assert capsys.readouterr() == ("", "")
+    assert any(note["kind"] == "mostly_plain" for note in d.review())
 
 
 # --- publish_slide: an unwrapped native text box measured as one line ---------------------------------------
@@ -463,7 +463,7 @@ def test_publish_names_unwrapped_text_not_the_chart():
 def _advice(slug, **kwargs):
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        frag = chart_slide(slug, 40, 110, 700, 330, **kwargs)
+        frag = chart_slide(slug, 40, 110, 700, 330, diagnostics=True, **kwargs)
     return frag, [str(c.message) for c in caught if "scale (vector" not in str(c.message)]
 
 
@@ -497,6 +497,29 @@ def test_missing_paper_marks_are_named(slug, kwargs, needle):
     assert len(hits) == 1 and len(hits[0]) <= 110, msgs
     if needle == "n/events/p":
         assert "is_overall" not in hits[0]
+
+
+def test_chart_slide_skips_optional_advice_and_preview(monkeypatch):
+    from unittest.mock import Mock
+
+    checks = {}
+    for name in (
+        "_mixed_endpoints", "_warn_wide_bar_range", "_warn_narrow_bar_range",
+        "_warn_forest_without_ci", "_warn_threshold_p", "_warn_category_quantity",
+        "_warn_marker_colors", "_paper_mark_advice", "_render_png",
+    ):
+        checks[name] = Mock(side_effect=AssertionError(f"unexpected {name}"))
+        monkeypatch.setattr(g, name, checks[name])
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        fragment = chart_slide(
+            "grouped_bar", 40, 110, 560, 330, upgrade=False,
+            categories=["A", "B", "C"], series=[{"name": "x", "values": [1, 2, 3]}],
+        )
+    assert "<shape" in fragment
+    assert not caught
+    for check in checks.values():
+        check.assert_not_called()
 
 
 def test_paper_mark_advice_quiet_when_marks_present():
@@ -575,17 +598,45 @@ def test_check_uses_emitted_text_extent_and_text_inside_parts():  # trace: check
     assert ("line_through_text", ["ab", "host"]) in [(p["kind"], p["keys"]) for p in d.check()]
 
 
-def test_to_slide_prints_check_problems_on_stderr(capsys):
+@pytest.mark.parametrize("summary", [None, False])
+def test_to_slide_skips_optional_checks_and_summary(capsys, monkeypatch, summary):
+    from unittest.mock import Mock
+    import scripts.svg_lib.drawing_lib._summary as summary_module
+
     d = Drawing(1200, 600)
     up = d.box_at((530, 100), "上游", stroke="#333")
     down = d.box_at((530, 500), "下游", stroke="#333")
     d.box_at((600, 300), "中间标签文字", font_size=12, key="mid")
     d.arrow(up, down, key="l")
-    d.to_slide(x=0, y=0, width=400, summary=False)
-    captured = capsys.readouterr()
-    out = captured.err
-    assert "[drawing check]" not in captured.out  # stdout stays parseable for the caller's own prints
-    assert "[drawing check] 1 处问题" in out and "line_through_text l/mid" in out
+    check = Mock(side_effect=AssertionError("unexpected check"))
+    review = Mock(side_effect=AssertionError("unexpected review"))
+    layout_summary = Mock(side_effect=AssertionError("unexpected summary"))
+    monkeypatch.setattr(d, "check", check)
+    monkeypatch.setattr(d, "review", review)
+    monkeypatch.setattr(summary_module, "layout_summary", layout_summary)
+
+    assert "<shape" in d.to_slide(x=0, y=0, width=400, summary=summary)
+    assert capsys.readouterr() == ("", "")
+    check.assert_not_called()
+    review.assert_not_called()
+    layout_summary.assert_not_called()
+
+
+def test_to_slide_prints_only_requested_summary(capsys, monkeypatch):
+    from unittest.mock import Mock
+
+    d = Drawing(400, 300)
+    check = Mock(side_effect=AssertionError("unexpected check"))
+    review = Mock(side_effect=AssertionError("unexpected review"))
+    summary = Mock(return_value="requested layout summary")
+    monkeypatch.setattr(d, "check", check)
+    monkeypatch.setattr(d, "review", review)
+    monkeypatch.setattr(d, "summary", summary)
+    d.to_slide(x=0, y=0, width=400, summary=True)
+    assert capsys.readouterr() == ("requested layout summary\n", "")
+    summary.assert_called_once_with(width=400)
+    check.assert_not_called()
+    review.assert_not_called()
 
 
 # --- publish_slide: pasted fragments, hand-pieced diagrams, the real screenshot path ------------------------
@@ -608,7 +659,7 @@ def test_pasted_fragments_and_hand_pieced_diagrams():
         "作为 publish_slide 的第 2 个参数传入，不要拼进 page_xml"
     ]
     assert proper["summary"] == []
-    assert publish_slide(_native_page(8, True))["summary"] == [_HAND_DIAGRAM_NOTE]
+    assert publish_slide(_native_page(8, True))["summary"] == []
     assert publish_slide(_native_page(8, False))["summary"] == []  # cards + plain dividers: an ordinary layout
     assert publish_slide(_native_page(4, True))["summary"] == []
 
@@ -637,45 +688,71 @@ def test_screenshot_path_is_the_file_actually_saved(tmp_path):
     assert _saved_path({"output": str(out / "sid-1.jpg")}, str(tmp_path), rel, "sid-1") == str(out / "sid-1.jpg")
 
 
-def test_waived_findings_force_write_and_screenshot(tmp_path, monkeypatch):
-    note = '<shape type="text" id="note" topLeftX="60" topLeftY="40" width="200" height="30"><content><p>注</p></content></shape>'
-    page = f"<slide><data>{_TITLE}{note}</data></slide>"
-    report = {
-        "slides": [
-            {
-                "errors": [
-                    {"code": "bbox_overlap", "elements": ["slide[1]/data/shape[1]", "slide[1]/data/shape[2]"]},
-                    {"code": "text_color_contrast", "elements": ["slide[1]/data/shape[2]"]},
-                ]
-            }
-        ]
+def test_publish_requests_no_lint_once_and_skips_success_findings(tmp_path, monkeypatch):
+    from unittest.mock import Mock
+
+    response = {
+        "ok": True,
+        "data": {"slide_id": "s1", "issues": {"slides": [{"warnings": [{"code": "sparse_slide_content"}]}]}},
     }
-    calls = []
+    run = Mock(return_value=response)
+    capture = Mock(return_value="shot.jpg")
+    monkeypatch.setattr(pub, "_run", run)
+    monkeypatch.setattr(pub, "_screenshot", capture)
+    written = pub.publish_slide(
+        f"<slide><data>{_TITLE}</data></slide>", presentation="d", page=1,
+        cwd=str(tmp_path), screenshot=True, waive=["legacy-key"],
+    )
+    assert written["ok"] and written["slide_id"] == "s1" and written["no_lint"]
+    assert written["errors"] == [] and written["waived"] == [] and written["ignored"] == 0
+    assert written["screenshot"] == "" and written["preview"] == ""
+    assert written["summary"] == []
+    run.assert_called_once()
+    assert "--no-lint" in run.call_args.args[0]
+    capture.assert_not_called()
+    assert json.loads((tmp_path / ".lark-slides/pages-d.json").read_text()) == {"p01": "s1"}
 
-    def fake_run(args, cwd):
-        calls.append(args)
-        if args[1] == "+screenshot":
-            return {"ok": True, "data": {}}
-        if "--no-lint" in args:
-            return {"ok": True, "data": {"slide_id": "s1"}}
-        return {"ok": False, "error": {"message": json.dumps(report)}}
 
-    monkeypatch.setattr(pub, "_run", fake_run)
-    monkeypatch.setattr(pub, "_screenshot", lambda *a, **k: "shot.jpg")
-    blocked = pub.publish_slide(page, presentation="d", cwd=str(tmp_path))
-    keys = [e["key"] for e in blocked["errors"]]
-    assert not blocked["ok"] and keys[1] == "text_color_contrast:note" and "waive=" in blocked["summary"][-1]
+@pytest.mark.parametrize("code,message", [
+    (4000153, json.dumps({"slides": [{"errors": [{"code": "bbox_overlap"}]}]})),
+    (403, "permission denied"),
+    ("invalid_arg", 'unknown flag "--no-lint"'),
+])
+def test_publish_returns_rejection_without_retry_or_registration(tmp_path, monkeypatch, code, message):
+    from unittest.mock import Mock
 
-    partial = pub.publish_slide(page, presentation="d", cwd=str(tmp_path), waive=keys[:1])
-    assert not partial["ok"] and [e["key"] for e in partial["errors"]] == keys[1:]
+    run = Mock(return_value={"ok": False, "error": {"code": code, "message": message}})
+    capture = Mock()
+    monkeypatch.setattr(pub, "_run", run)
+    monkeypatch.setattr(pub, "_screenshot", capture)
+    rejected = pub.publish_slide(
+        f"<slide><data>{_TITLE}</data></slide>", presentation="d", page=1, cwd=str(tmp_path),
+    )
+    assert not rejected["ok"] and rejected["no_lint"] and rejected["slide_id"] == ""
+    assert rejected["errors"][0]["cli_code"] == code
+    assert rejected["errors"][0]["message"] == message
+    assert rejected["preview"] == "" and rejected["screenshot"] == ""
+    run.assert_called_once()
+    assert "--no-lint" in run.call_args.args[0]
+    capture.assert_not_called()
+    assert not (tmp_path / ".lark-slides/pages-d.json").exists()
 
-    forced = pub.publish_slide(page, presentation="d", cwd=str(tmp_path), waive=keys)
-    assert forced["ok"] and forced["no_lint"] and forced["waived"] == keys
-    assert forced["screenshot"] == "shot.jpg" and "必须 Read" in forced["summary"][0]
-    assert sum("--no-lint" in c for c in calls) == 1
-    assert "lint_inspect.py" in forced["summary"][1] and "不要回头再改" in forced["summary"][1]
-    assert any("text_color_contrast" in line for line in forced["summary"][2:])
-    assert not (tmp_path / ".lark-slides/waived-d.json").exists()
+
+def test_publish_blocked_candidate_preview_is_still_available(tmp_path, monkeypatch):
+    from unittest.mock import Mock
+
+    run = Mock(return_value={"ok": False, "error": {"code": "4000153", "message": "blocked"}})
+    capture = Mock(return_value="candidate.jpg")
+    monkeypatch.setattr(pub, "_run", run)
+    monkeypatch.setattr(pub, "_screenshot", capture)
+    rejected = pub.publish_slide(
+        f"<slide><data>{_TITLE}</data></slide>", presentation="d", cwd=str(tmp_path), screenshot=True,
+    )
+    assert not rejected["ok"] and rejected["preview"] == "candidate.jpg"
+    assert rejected["screenshot"] == "" and rejected["errors"][0]["code"] == "write_blocked"
+    run.assert_called_once()
+    capture.assert_called_once()
+    assert capture.call_args.args[0][0] == "--content"
 
 
 # --- 2026-10-12 decks: page_frame / native_bullets replace each deck's home-made deck_parts helpers ---------

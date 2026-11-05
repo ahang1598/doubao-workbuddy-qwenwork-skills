@@ -181,7 +181,7 @@ _SLUG_TO_META: Dict[str, Tuple[str, str, str, str, str, str, str]] = {m[0]: m fo
 
 # Keep this note generic so future curve-based tree presets do not need a separate registry.
 _CURVE_LINT_NOTE = (
-    "部分树状图可能使用曲线/自定义 path；若 lint 报元素重叠，不一定是真实渲染错误，先做截图检查确认后再调整。"
+    "显式请求诊断时，曲线/自定义 path 的边界框重叠需结合 XML 几何与设计意图判断。"
 )
 
 _SCHEMA_ORDER = ["tree"]

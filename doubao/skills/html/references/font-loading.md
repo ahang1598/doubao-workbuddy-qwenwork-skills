@@ -38,5 +38,3 @@
 每个 `font-family` 保留完整的系统 fallback，正文设明确行高；标签、按钮、表格保留换行和尺寸余量，不按加载前的字宽锁死布局。图片等非文字区域另设宽高，避免把其他重排误判为字体问题。
 
 默认保留 `display=swap`，不以 `font-display:block`、隐藏 body、等待 `document.fonts.ready` 后才展示页面来掩盖抖动；字体失败时正文也必须可读。只有用户明确接受慢网下本次访问一直使用系统字体时才用 `optional`，不能同时承诺各平台使用同一 webfont。
-
-静态检查 preload 的 URL、格式、CORS 和实际使用范围；按主 skill 跑 `shot.py` 核对最终排版。最终截图正常不等于首屏没有切换，不因此承诺 CLS 为零。

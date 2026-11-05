@@ -2,7 +2,7 @@
 name: lark-doc
 description: 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档
 metadata:
-  version: 1.0.45
+  version: 1.0.47
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli docs --help;lark-cli mindnotes --help"

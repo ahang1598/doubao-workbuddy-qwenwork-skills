@@ -3,8 +3,8 @@
 数据图、示意图都先读本文。配色、密度与修饰由所选 `style/` 文档决定；本文给出可直接照写的调用方式，常用接口都列在下面，不需要先查 help。
 
 **SVG 页不慢的三条规矩**（线上 1 小时的 deck 里，SVG 页平均比纯原生页慢 3–5 倍，多出来的时间几乎都花在这三处）：
-1. **不读库源码、不自己试 API**：数据图只用 `chart_slide`（想看图加 `preview=`，不调 `make_*`）；示意图接口查第四节的表或 `drawing_help("名字")`。报错信息里的 `fix`/提示就是改法，按它改一次即可，不要 grep 源码、写 debug 脚本二分排查。
-2. **按 `publish_slide` 返回的 `summary`/`fix` 改**（第六节）：not found 是 ID 写错，`text_color_contrast` 是线压字；不要因为写入失败改走手动 `+add-slide`。
+1. **不读库源码、不自己试 API**：数据图只用 `chart_slide`（用户明确要求预览时加 `preview=`，不调 `make_*`）；示意图接口查第四节的表或 `drawing_help("名字")`。报错信息里的 `fix`/提示就是改法，按它改一次即可，不要 grep 源码、写 debug 脚本二分排查。
+2. **确认 `publish_slide` 的写入结果**（第六节）：成功后继续；失败按实际错误处理，不改走手动 `+add-slide` 重复写入。
 3. **改动用 Edit**：不要为改几行整份 Write 重写 build 脚本。
 
 ## 一、先分流
@@ -16,7 +16,7 @@
 | 机制图、示意图、结构图、自定义流程、实验设计 | drawing 库 `Drawing` → `to_slide(...)` | 全部原生 |
 | 简单文字、方框流程、表格 | 原生元素 | — |
 
-不为使用复杂图种编造数据。**凡是有数值的图（频率、比例、生存率、HR、计数…）一律走图表库**：不要用 drawing 的 `rect_at` / `box_at` 或 shape 拼条形图、进度条、点图，也不要把图表渲染成 PNG/`<img>` 来规避 lint 或字体问题；`chart_slide` 已把文字映射为思源黑体，导出 pptx 字体一致。drawing 只画没有数值坐标的机制、结构与流程。**自检**：页面上只要出现“标签 + 按数值长短的条/点”，就应换成 `chart_slide('grouped_bar' / 'dumbbell' / 'forest', ...)`。
+不为使用复杂图种编造数据。**凡是有数值的图（频率、比例、生存率、HR、计数…）一律走图表库**：不要用 drawing 的 `rect_at` / `box_at` 或 shape 拼条形图、进度条、点图，也不要把图表渲染成 PNG/`<img>` 来规避 lint 或字体问题；`chart_slide` 已把文字映射为思源黑体，导出 pptx 字体一致。drawing 只画没有数值坐标的机制、结构与流程。**图表选型**：页面内容涉及“标签 + 按数值长短的条/点”，就应换成 `chart_slide('grouped_bar' / 'dumbbell' / 'forest', ...)`。
 
 ## 二、图表库：一行放进幻灯片
 
@@ -42,10 +42,10 @@ fragment = chart_slide(
     x_title="缓解率 (%)",
     rows=[{"label": "试验 A", "before": 32, "after": 48, "after_lo": 44, "after_hi": 53, "p": "<0.001", "n": 412}, ...],
 )
-r = publish_slide(page_xml, fragment, presentation=deck_id)  # 合页 + 写入 + 截图，见第六节
+r = publish_slide(page_xml, fragment, presentation=deck_id)  # 合页 + 写入，见第六节
 ```
 
-- **数据图只走 `chart_slide`，不要自己调 `make_*`**（`make_*` 返回一个 SVG 字符串，不是元组）：图表是矢量的，`chart_slide(x, y, w, h)` 会按需放大画布再等比缩进你给的框，文字仍是原生；warning 里的 `already fitted … at N% scale (… nothing to fix)` 就是成功，并列出 100%/80%/70%/60% 各需多大的框——缩放 ≥70% 直接用，低于 70% 加大框或减少注释。想看一眼图加 `preview="p05.png"`，排版前想知道框够不够用 `chart_fit(slug, w, h, **同样的参数)`。不要循环调 `make_*` 试尺寸、不要删数据、不要把图表转成 PNG；`make_*` 报 "needs about WxH" / "canvas is too small" 是画布尺寸，改用 `chart_slide` 即可。
+- **数据图只走 `chart_slide`，不要自己调 `make_*`**（`make_*` 返回一个 SVG 字符串，不是元组）：图表是矢量的，`chart_slide(x, y, w, h)` 会按需放大画布再等比缩进你给的框，文字仍是原生；warning 里的 `already fitted … at N% scale (… nothing to fix)` 就是成功，并列出 100%/80%/70%/60% 各需多大的框——缩放 ≥70% 直接用，低于 70% 加大框或减少注释。用户明确要求预览时加 `preview="p05.png"`，用户明确要求测量图表所需空间时用 `chart_fit(slug, w, h, **同样的参数)`。不要循环调 `make_*` 试尺寸、不要删数据、不要把图表转成 PNG；`make_*` 报 "needs about WxH" / "canvas is too small" 是画布尺寸，改用 `chart_slide` 即可。
 - 曲线（电压–容量、能垒、浓度–时间）也走图表库：`chart_slide('scatter', ..., points=[{"name": "P2 首圈充电", "points": pts, "curve": pts, "marker": "none"}], x_title=..., y_title=..., fit=None, show_ci=False)`；`pts` 为 `[{"x":..,"y":..}]`。前后/两组对比用 `dumbbell`（`rows=[{"label":..,"before":..,"after":..}]`）。
 - `chart_slide` 按目标框尺寸出图（字号在框内 ≥10pt），保持 viewBox 比例居中放置；返回的片段里文字是原生文本框，同色柱/扇区/色块合并成一个原生形状（选中即可整体换色），线、点、渐变等留在局部 SVG。图表总是半可编辑，不提供整图 `<embed>` 选项。
 - **一页里图表 + 文字栏 + 示意图**：页标题、正文、要点栏写在 `page_xml`（原生文本），图表和示意图各自是片段、各占一个框，一起交给 `publish_slide(page_xml, chart_frag, d.to_slide(...))`。不要把 `make_*` 的 SVG 塞进 `Drawing`（`svg_at` 会直接报错），也不要用 `d.text_at` 写整栏正文。
@@ -74,7 +74,7 @@ r = publish_slide(page_xml, fragment, presentation=deck_id)  # 合页 + 写入 +
 5. **画到能看懂**：对象按第四节「精细度原则」画出辨识特征，优先 `parts` 部件，库里没有用 `svg_at`。方框（`box_at`）只用于信号节点和结论标签。同类对象同色同形，强调色只给关键步骤。
 6. **标注贴着对象写**：名称、功能直接写在对象旁边（`callout` / `place_label` 带引线），不要用 ①②③ 编号再到底部图例里解释——读者得来回对照才能看懂。
 7. **箭头直接用 `d.arrow`（或手写 SVG 里的 `<marker>`）**：转换时会把箭头头、抑制横杠展开成等价形状，虚线、弯曲、半透明都支持；不要为了“规避 marker”改用 `d.line` + 手绘三角形，那样端点不会贴在轮廓上、也不随对象移动。
-8. **接触是允许的**：受体立在膜上、细胞贴着血管、色块与色块叠放，`publish_slide` 会自动豁免这些图形重叠（第六节）。不要为了躲 lint 把细节删掉、把对象拉远或改成抽象符号。
+8. **接触是允许的**：受体立在膜上、细胞贴着血管、色块与色块叠放，`publish_slide` 默认请求跳过 lint（第六节）。不要为了躲 lint 把细节删掉、把对象拉远或改成抽象符号。
 
 ## 四、drawing 库（像 svgwrite 一样直接画）
 
@@ -130,15 +130,13 @@ r = publish_slide(page_xml, d.to_slide(x=30, y=90, width=900), presentation=deck
 | `place_label(key, label(text, font_size=…), target)` / `label_connector(key, link_key, label(...))` | 自动选不遮挡的位置；全部画完后调用 `d.relayout_labels()` |
 | `row` / `column` / `grid` / `ring` / `bipartite_order` / `spread_ports` / `tree_layout` | 排布：行列网格、环形循环、两列配对减交叉、一边多线错开、树 |
 | `d.to_slide(x=, y=, width=)` | 写 SVG + 映射 + 拆成原生元素，返回片段（字符串）交给 `publish_slide`；片段不要自己字符串拼进 page_xml |
-| `d.check()` / `d.review()` / `d.summary()` / `d.preview(path)` | `check()` 返回问题 **list**（空列表即通过，不是元组）；`review()` 返回细节审查 list（空 = 主体已有细节）；`summary()` 返回文字摘要；`preview()` 渲染一张 PNG（review 有提示时才用，见下文） |
+| `d.check()` / `d.review()` / `d.summary()` / `d.preview(path)` | `check()` 返回问题 **list**（空列表即通过，不是元组）；`review()` 返回细节审查 list（空 = 主体已有细节）；`summary()` 返回文字摘要；`preview()` 渲染一张 PNG。这些检查、摘要与预览接口仅在用户明确要求时调用，默认制作流程不调用 |
 
 **约定**：`chart_slide` / `to_slide` 返回片段字符串，`chart_fit` / `publish_slide` 返回 dict。位置由参数名决定、全库一致：`at=` / `center=` 是**中心点**，`insert=` 按 svgwrite 含义（矩形左上角、文字基线起点），任何方法都可以用这两种写法（左对齐文字也可写 `anchor="start"`）；`path_at`、`membrane`、`ribbon`、`repeat_along_path` 直接用画布坐标。样式参数就是 SVG 属性的下划线写法：`fill`、`stroke`、`stroke_width`、`opacity`、`font_weight`。
 
 **手写 SVG 节点与精修**：创建时就能用自己写的 SVG——`svg_at(at, svg, size=)` 或 `place(部件, at=, svg=)`；已建好的节点也可 `node.replace_svg(svg, ports={...})` 换外形，或 `node.svg_source()` 读出现有外形改完再 `replace_svg(src, fit="own")`。连线、标签、挂载的受体都跟着新外形走；精修写在脚本里，重跑不会丢。
 
-**看不见画面时读排版摘要**：连线实际端点与长度、自适应框尺寸、自动标签位置和画布→页面缩放都是计算出来的；`d.summary(width=页面宽)` 按页面实际尺寸列出每个对象的位置尺寸、每条连线的实际长度与线宽、页面字号，`to_slide` 发现线过细、字过小、连线过短、对象过挤或留白过大时会自动打印提示，按提示改画布或参数即可，无需截图。
-
-**审查有提示才预览精修**：画完先调 `d.check()`（`to_slide` 也会自动检查并给出警告），它报告文字互压、连线穿过非端点文字、斜线外接框压字、超出画布，以及文字半压在色块外接框上（服务端 lint 按外接框判定），按 hint 改掉；图形之间的叠放不用管。再看 `d.review()`（`to_slide` 自动打印「细节审查」）：它只看结构，点名连线最多、面积最大的主体里只画成方框/单个图形/纯文字的节点、手画的膜和字符箭头。**review 为空就直接写入，不用预览**；有提示时先判断节点是不是实体（是就换部件或 `svg_at` 外形，只是步骤标签就保留），再 `d.preview("pNN.png")` 看一次、精修一轮后写入，不做第二次预览。不要自己用 qlmanage/rsvg 渲染，不要跑本地 `xml_lint.py` 校准，数据图不做预览。整页截图统一放到 Step 8。
+**制作与写入**：按内容关系安排对象、连线、标签和留白，计算画布到页面的缩放比例，让文字、线宽及关键结构在目标尺寸下清晰可读。使用 `d.to_slide(...)` 生成片段后交给 `publish_slide` 写入，并确认调用结果。默认制作流程不调用 `d.check()`、`d.review()`、`d.summary()` 或 `d.preview()`，也不根据质量提示另起检查、预览或精修流程。用户明确要求检查或预览时，再调用对应接口。
 
 **通用部件**（可选零件，不是边界——贴合就用，不贴合就用 `path_at` / `svg_at` 自己画，不要为了套部件改变内容）：
 
@@ -181,7 +179,7 @@ if __name__ == "__main__":  # 被 import 时不写页
 **精细度原则**：
 1. 要么不画，要画就做到教科书插图的辨识度——细胞要有双层膜、核膜核仁和细胞器，抗体要分重链/轻链，器件要分层标注等等；一条线、一个圆就代表一个机制属于不合格。画不出辨识特征的对象改用文字框或图片，不要用椭圆、方块当占位。
 2. 先用部件或 `svg_at` 搭出整体，再对研究主体精修：`replace_svg` 换更贴切的外形、`drawing_help("finish")` 补膜层/明暗/纹理、`callout` 标出关键结构；预制部件只是起点，主体对象的细节要比配角多一层。
-3. 关系要画成真实的空间关系：结合/接触就让两者贴合，吸附/负载就把客体放进孔道或表面，分子按真实键角等等；盾牌、叉号、问号这类简单符号不能代替机制本身。主体之间都要有箭头、接触或包含关系，`d.review()` 会点名孤立的主体。
+3. 关系要画成真实的空间关系：结合/接触就让两者贴合，吸附/负载就把客体放进孔道或表面，分子按真实键角等等；盾牌、叉号、问号这类简单符号不能代替机制本身。主体之间都要有箭头、接触或包含关系。
 
 **结构细节配方**（让示意图有形态，不只是方框）：
 
@@ -227,19 +225,11 @@ r = publish_slide(page_xml, *fragments, presentation=deck_id, page=3)  # 第 3 �
 r = publish_slide(page_xml, *fragments, presentation=deck_id, slide_id=sid)  # 修改后整页覆盖原页，不会重复加页
 ```
 
-- `page_xml` 是本页手写部分（标题、正文、来源等原生元素）；`fragments` 是 `chart_slide` / `d.to_slide` / `atomize_svg_to_slide` 的返回值。函数先合页，再开启服务端 lint 写入；写入前会按 lint 同款估算加高放不下的文字框、把 `<border width>` 取整（`r["warnings"]` 列出会越界的框）。
-- **只有含图的页才用 `publish_slide`**：每张图页一个 `build_pNN.py`，传 `page=N` 让重跑同一脚本原地更新、补写的页自动插到正确位置；不画图的页照常手写 XML 用 `+add-slide`，不要为它写 Python。
-- 若 lint 只报**图表/示意图转换内部的形状重叠**（受体贴膜、扇区外接框、细胞贴血管等几何误报），它会自动改用 `--no-lint` 重新写入，`r["no_lint"]=True`、`r["ignored"]` 为豁免条数；**不要自己手动加 `--no-lint`**。
-- 文字压文字、手写元素的问题、其他规则（对比度、越界、溢出等）会写入失败：先读 `r["summary"]`（按问题类型和来源分组的一行一条），再按需看 `r["errors"]` 的明细——每条含 `objects`（文字内容、`xml_box` 页面坐标 [x,y,w,h]、字号、`source`：`page_xml` 表示手写元素，`fragment[k]` 表示第 k 个传入的片段）、`measurement`（重叠宽高）、`fragments`（该片段在页面上的外框）和 `fix`（具体改法）。手写元素按坐标改；`fragment[k]` 的问题改对应 `chart_slide` / `to_slide` 的参数或框，不要去挪生成的单个元素。改完用同一调用（带 `slide_id=` 时为覆盖）重试。
-- **确认是误报就豁免，不要反复改**：每条 `errors` 都带 `key`。看 `r["preview"]` 确认某条是误报（视觉上没有真遮挡/截断/低对比），或同一条已按 `fix` 改过一次仍报时，同一调用加 `waive=["<key>", ...]`（只填确认误报的那几条），函数会跳过 lint 强行写入并自动截图（`r["waived"]` 列出被跳过的条目），Read `r["screenshot"]` 核对即可。仍有未豁免的条目时照常被拦。服务端不记豁免，这些条目在 Step 8 回读后用 `lint_inspect.py` 查看时还会原样出现，不要回头再改。
-- 返回 `r["ok"]`、`r["slide_id"]`、`r["page_xml"]`、`r["screenshot"]`（写入后的页面截图，限流自动重试）、`r["preview"]`（失败时按 XML 渲染的预览图，便于看清哪里压了）。截图只在需要时 Read，不必每页都看。
-- **常见报错直接按 `fix` 改，不要另做排查**：
-  - `upload_failed` + not found：presentation / slide_id 写错了（常见是 DECK 常量手敲错一个字母），不是缓存、TTY 或网络问题。
-  - `text_color_contrast` 出现在 `fragment[k]` 上：几乎都是连线或色块（含斜线的外接框）压在标签上，`covered_by` 会列出是哪条；把线改成 `route="orthogonal"` 或挪开标签，不要改文字颜色。`d.check()` 的 `line_box_over_text` 就是提前报这个。其余情况看 `contrast`（文字、字色、实际底色与下方图层、复算比值）：改一次深字/浅底，仍报或复算已达标就 waive，不要追查 lint 怎么算的。
-- **修改用 Edit 改局部**：被拦后按 `fix` 改一两行再跑同一脚本，不要整份 Write 重写 build 脚本——一次重写 4–8k token，要 60–130 秒。复杂示意图先写主体跑通，再分几次 Edit 补细节。
-- **写入一律直接传 `presentation=`**，不要合页后再自己调 `+add-slide`，也不要因为一次写入失败就改走手动 `compose_slide` + `+add-slide`——那样自动豁免、报错定位都不会生效，会多出几十条图内重叠报错。只有整份一次性 `+create --slides` 时才用不传 `presentation` 的纯合页（可加 `save_as=`）。
+- `page_xml` 是本页手写部分；`fragments` 是 `chart_slide` / `d.to_slide` / `atomize_svg_to_slide` 的返回值。函数合页、适配文本框后，首次提交就请求 `--no-lint`。
+- **只有含图的页才用 `publish_slide`**：每张图页一个 `build_pNN.py`，传 `page=N` 使重跑原地更新、补页插到对应位置；不画图的页直接用 `+add-slide --no-lint`。
+- **成功后继续**：记录 `r["slide_id"]`。不主动分类 lint、逐条豁免或根据报告反复修复；`waive` 参数为兼容保留，不影响写入。
+- **失败仍是失败**：`r["ok"]=False` 时保留 `errors` 和简短 `summary`，按 [error-handling.md](../workflow/error-handling.md) 处理。服务端仍可能拒绝已携带 `--no-lint` 的请求；函数不自动重试。
+- 用户明确要求查看失败候选 XML 时，可显式传 `screenshot=True` 取得预览，路径在 `r["preview"]`；成功后不生成页面截图。
+- 参数与返回字段保持兼容。`no_lint=True` 表示请求跳过，不证明服务端实际关闭了检查；`ignored` 为 0、`waived` 为空列表、`screenshot` 为空字符串。
+- 修改图页时在同一脚本中 Edit 局部后重跑；直接传 `presentation=` 由函数写入，不另调 CLI 重复提交。
 - 手写 SVG：先 `set_mapping(svg_w=, svg_h=, slide_x0=, slide_y0=, slide_w=, slide_h=)`，再把 `atomize_svg_to_slide(svg_path)` 作为 fragment 传入。标题、结论与来源用原生元素，图内不重复页面已有文字。
-
-## 七、lint
-
-以服务端 lint 为准，本地 `xml_lint.py` 可能落后，它对部件之间报的 `bbox_overlap` 不作为阻塞依据。收到 `4000153` 先完整读报告，修复真实的重叠、越界、溢出。`--no-lint` 只按 [`validation-xml.md`](../workflow/validation-xml.md#修复与单页例外) 的单页例外使用。可编辑 SVG 常见误报：透明外框被当成实心、有意的接触与叠放（受体嵌在膜上、文字压在柱上）、沿边线的浮点误差、字宽估算偏差。确认是误报时保留原几何，不为清零告警把部件拉开或删字。

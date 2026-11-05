@@ -12,7 +12,7 @@
 4. 使用 `+history-revert` 发起回滚。接口会立即返回 `task_id`，回滚任务在服务端异步执行。
 5. 如果返回 `status: running`，保存 `task_id`，按照返回的 `poll_after_ms` 等待后调用 `+history-revert-status`。任务创建成功后，不得因为状态查询失败而重新发起回滚。
 6. 状态变为 `done`、`partial_failed` 或 `failed` 后停止轮询；达到整体轮询上限时也停止轮询，并向用户返回 `task_id` 和当前状态。
-7. 回滚完成后，用 `slides +xml-get` 或 `slides xml_presentations get` 读取演示文稿确认内容。
+7. 回滚完成后记录任务终态及目标版本。用户明确要求查看恢复后的内容或任务状态不明时，再用 `slides +xml-get` 或 `slides xml_presentations get` 读取相关内容。
 
 ## 按 revision_id 或时间点回滚
 
@@ -68,7 +68,7 @@ lark-cli slides +history-revert-status --presentation "<slides_url_or_token>" --
 4. 状态查询返回 `running` 时继续轮询；返回 `done`、`partial_failed` 或 `failed` 时停止。
 5. 除非用户另有要求，默认最多轮询 5 分钟。达到上限后停止轮询，向用户说明任务仍在运行并返回 `task_id`，不得将其描述为回滚失败。
 6. 状态查询出现临时错误时，按相同间隔最多连续重试 3 次；只重试 `+history-revert-status`，不得重新调用 `+history-revert`。
-7. `done` 后读取当前演示文稿内容进行验证。
+7. `done` 后记录任务完成和目标版本。
 8. `partial_failed` 或 `failed` 时展示 `failed_block_tokens`；除非用户明确确认，不得自动再次发起回滚。
 
 ## 返回值要点
@@ -116,9 +116,9 @@ lark-cli slides +history-revert-status --presentation "<slides_url_or_token>" --
 
 `status` 可能是 `running`、`done`、`partial_failed`、`failed`。当状态是 `partial_failed` 或 `failed` 时，优先检查 `failed_block_tokens`。
 
-## 回滚后验证
+## 按需读取回滚内容
 
-回滚成功后必须读取一次当前内容确认：
+用户明确要求查看恢复后的内容或任务状态不明时，可读取相关内容：
 
 ```bash
 lark-cli slides +xml-get --presentation "<slides_url_or_token>" --output ./presentation.xml

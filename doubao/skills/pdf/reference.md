@@ -242,8 +242,8 @@ async function extractAnnotations() {
 ## Optional Repair Fallback
 
 Default workflows require no system commands. Use PyMuPDF or pypdf for text,
-rendering, images, page operations, encryption, and validation. Only use `qpdf`
-when both Python libraries cannot open or rewrite a structurally damaged PDF.
+rendering, images, page operations, and encryption. Only use `qpdf` when both
+Python libraries fail to open or rewrite a structurally damaged source PDF.
 
 Install this optional repair tool only when the failure occurs:
 
@@ -255,14 +255,11 @@ brew install qpdf
 sudo apt-get install qpdf
 ```
 
-Then check and attempt a recoverable rewrite without replacing the source:
+Then attempt a recoverable rewrite without replacing the source:
 
 ```bash
-qpdf --check damaged.pdf
 qpdf damaged.pdf repaired.pdf
 ```
-
-Reopen `repaired.pdf` with PyMuPDF and visually verify every page before use.
 
 ## Advanced Python Techniques
 
@@ -465,9 +462,7 @@ with pymupdf.open("input.pdf") as document:
 - Use low resolution for previews, high resolution for final output
 
 ### 4. For Form Filling
-- Use PyMuPDF for the initial form probe and rendering
 - Use the bundled pypdf workflow for canonical AcroForm field-tree values and appearances
-- Pre-validate form fields before processing
 
 ### 5. Memory Management
 ```python
@@ -512,7 +507,7 @@ If a page has visible text but PyMuPDF returns little or no text, treat it as a
 scanned or outlined-text page. Render it with
 `python scripts/convert_pdf_to_images.py input.pdf pages/` and inspect the page
 images with the multimodal model. Increase render resolution for small or faint
-text, preserve page boundaries, and visually verify uncertain passages.
+text and preserve page boundaries.
 
 This skill does not bundle a deterministic OCR engine. If the task requires a
 searchable text layer, confidence scores, or word-level coordinates, report

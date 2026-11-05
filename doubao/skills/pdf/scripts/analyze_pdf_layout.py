@@ -30,7 +30,7 @@ schema_version 1.4 adds:
 1.3 -> 1.4 向后兼容。
 schema_version 1.5 adds:
 - `pages[].paragraph_groups[]`: 相邻 text block 的保守合并结果，供 Word 侧避免「每行一段」误拆
-- `pages[].special_chars[]`: 该页出现的非 CJK/非 ASCII 符号字符集合，供审计做集合差
+- `pages[].special_chars[]`: 该页出现的非 CJK/非 ASCII 符号字符集合，供公式和特殊排版重建
 1.4 -> 1.5 向后兼容。
 schema_version 1.6：启发式收紧（15 case 实测反噪音）
 - `_extract_text_lines_and_columns`：x_start histogram + 每列 line 阈值 + y 重叠检查，取代 x_center gap

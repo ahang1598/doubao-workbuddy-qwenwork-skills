@@ -794,6 +794,8 @@ class PublishCliResponseTest(unittest.TestCase):
         self.assertIn("+update-slide", calls[2])
         self.assertEqual(calls[3][calls[3].index("--before-slide-id") + 1], third["slide_id"])
         self.assertTrue(second["ok"])
+        self.assertEqual(len(calls), 4)
+        self.assertTrue(all("--no-lint" in call for call in calls))
         xml, _ = _prepare(
             '<slide xmlns="https://www.larkoffice.com/sml/2.0"><data><shape type="text" topLeftX="0" '
             'topLeftY="0" width="200" height="30"><content><p>Smith & Jones &amp; Co &#169;</p></content>'

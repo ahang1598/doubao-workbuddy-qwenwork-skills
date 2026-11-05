@@ -14,13 +14,13 @@
 lark-cli slides +create --title "项目汇报"
 
 # 创建幻灯片 + 添加 slide 页面
-lark-cli slides +create --title "项目汇报" --slides '[
+lark-cli slides +create --no-lint --title "项目汇报" --slides '[
   "<slide xmlns=\"https://www.larkoffice.com/sml/2.0\"><data><shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>封面</p></content></shape></data></slide>",
   "<slide xmlns=\"https://www.larkoffice.com/sml/2.0\"><data><shape type=\"text\" topLeftX=\"80\" topLeftY=\"80\" width=\"800\" height=\"120\"><content textType=\"title\"><p>第二页</p></content></shape></data></slide>"
 ]'
 
 # 预览（不执行）
-lark-cli slides +create --title "项目汇报" --slides '[...]' --dry-run
+lark-cli slides +create --no-lint --title "项目汇报" --slides '[...]' --dry-run
 ```
 
 ## 返回值
@@ -34,7 +34,7 @@ lark-cli slides +create --title "项目汇报" --slides '[...]' --dry-run
 - **`slide_ids`**（string[]，可选）：仅传 `--slides` 时返回，成功添加的页面 ID 列表
 - **`slides_added`**（integer，可选）：仅传 `--slides` 时返回，成功添加的页面数量
 - **`images_uploaded`**（integer，可选）：仅 `--slides` 中含 `@<本地路径>` 占位符时返回，已上传的去重后图片数量
-- **`slide_issues`**（数组，可选）：带页面创建时才可能返回，逐项对应一个**已写入成功的页面**（标明页序和 `slide_id`），内容是服务端对该页的发现，不影响本次调用的成功状态。两种来源：页面 XML 里有服务端不支持的标签/属性被丢弃（**页面内容与提交的不一致**），或未达阻断级的版式校验发现。按实际类型读取：对象/数组直接读，JSON 字符串解码后读，普通文本原样读；完整读取每页全部发现，立即回读并截图核验，真实问题须修复
+- **`slide_issues`**（数组，可选）：带页面创建时可能附带的页面发现，不改变成功状态；本流程不主动展开其 lint 报告。
 
 > [!IMPORTANT]
 > 不传 `--slide` / `--slides` 时，`slides +create` 只创建一个**不含任何页面（0 页）**的空演示文稿——不会自带任何默认页或空白页（回读时 `<presentation>` 里没有 `<slide>`）。创建后需要使用 `slides +add-slide` 逐页添加 slide 内容。
@@ -50,9 +50,9 @@ lark-cli slides +create --title "项目汇报" --slides '[...]' --dry-run
 | `--title` | 否 | 演示文稿标题（不传则默认 "Untitled"） |
 | `--slide` | 否 | 一页 `<slide>` XML，或 `@路径`；可重复，最多 10 次，出现顺序即页序 |
 | `--slides` | 否 | 页面 XML 的 JSON 字符串数组，最多 10 个；支持 `@文件` 和 `-`（stdin） |
-| `--no-lint` | 否 | 跳过服务端版式校验（默认开启）；只能在当前页已被拦、完整报告已读完且符合[单页例外规则](../workflow/validation-xml.md)时单独使用，禁止多页共用或自动重试附加 |
+| `--no-lint` | 否 | 请求跳过服务端版式校验；本 Skill 写入页面时默认传入。服务端仍可能拒绝，实际结果以 `ok` 为准 |
 
-`--slide` 与 `--slides` 二选一，同时传会报错。按本 Skill 不得用 `+create --no-lint` 重建或批量绕过失败页；需要例外时回到已创建文档，用 `+add-slide` 单独处理。超过 10 页：先用 `+create` 建空白幻灯片，再用 [`+add-slide`](lark-slides-add-slide.md) 逐页添加。
+`--slide` 与 `--slides` 二选一，同时传会报错。本 Skill 仍采用建空壳后逐页 `+add-slide --no-lint` 的方式；部分页面失败时沿用已创建的文稿，不重建整份。
 
 ## `--slides` 参数格式
 
@@ -70,7 +70,7 @@ JSON string 数组，每个元素是一页 slide 的完整 XML。CLI 内部负�
 `<img>` 元素的 `src` 属性如果以 `@` 开头，CLI 会把它当作本地文件路径，自动上传到当前演示文稿，并把占位符替换为返回的 `file_token`。
 
 ```bash
-lark-cli slides +create --title "图测试" --slides '[
+lark-cli slides +create --no-lint --title "图测试" --slides '[
   "<slide xmlns=\"https://www.larkoffice.com/sml/2.0\"><data><img src=\"@./assets/chart.png\" topLeftX=\"100\" topLeftY=\"100\" width=\"320\" height=\"180\"/></data></slide>"
 ]'
 ```
@@ -102,7 +102,7 @@ cat > page-01.xml <<XML
   <img src="$TOKEN" topLeftX="100" topLeftY="100" width="200" height="200"/>
 </data></slide>
 XML
-lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
+lark-cli slides +add-slide --no-lint --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
 ## 创建后续步骤
@@ -114,30 +114,21 @@ lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
 PRES_ID=$(lark-cli slides +create --title "项目汇报" --jq '.data.xml_presentation_id')
 
 # 第 2 步：添加页面（使用返回的 xml_presentation_id）
-lark-cli slides +add-slide --presentation "$PRES_ID" --slide @page-01.xml
+lark-cli slides +add-slide --no-lint --presentation "$PRES_ID" --slide @page-01.xml
 ```
 
 ### 返回字段与处理
 
-返回 JSON 的外层 `ok` 表示调用是否成功，`identity` 表示调用身份；成功时业务字段位于 `data`，失败时错误信息位于 `error`。按以下字段判断结果并处理 lint 发现。
+本 Skill 写入默认传 `--no-lint`。`ok: true` 时记录 `data` 中的页面 ID、版本并继续；成功附带的 `issues` / `slide_issues` 不触发报告阅读、修复或复检。空壳创建成功仅说明文稿已创建。
 
-| 当次响应 | 读取与处理 |
-|---|---|
-| `ok: true`，未附问题发现 | 从 `data` 记录 ID、版本等业务字段，继续流程；空壳创建成功只说明文稿已创建 |
-| `ok: true`，有 `data.slide_issues` | 带页面创建时，逐项读取页标识和其中的 `issues`：对象/数组直接读，JSON 字符串解码后读，普通文本完整读。逐条处理发现，并按验证流程回读与截图 |
-| `ok: false`，`error.code: 4000153` | 被拒页面未写入；对 `error.message` 的完整 JSON 字符串解码，读完报告后修复并开启 lint 重提。多页创建之前已成功的页仍可能保留 |
-| 其他失败或返回不完整 | 读完整 `error` 或诊断，按实际原因处理；不能只读 `data` 并把缺失字段默认成零问题 |
-
-返回的是 lint 报告对象时，先看 `summary` 中的 `error_count`、`warning_count`、`info_count` 和 `status`，再读 `document.errors/warnings/infos` 和 `slides[].errors/warnings/infos` 的全部问题；`slides[].issues` 可能是分级列表的镜像，不能重复计数；合并列表中的额外发现也须读取，根 `issues` 不能当作全页列表。逐条读 `code`、`message`、实际存在的 `hint` 及定位/测量字段；`element_ids` 可能为空，需继续看 `elements`、`target.xml_path` 或 schema 的 `path`。单页报告内部 `slide_number: 1` 不一定是整稿第 1 页；按创建响应中各项的页面标识及创建顺序对应，缺少标识时先确认页面，不能猜测。
-
-字符串长度不是问题数，`summary` 或前几百字符也不是完整问题正文。报告过大或工具输出截断时，先检查是否已有该次完整响应文件；有文件时可用 `lint_inspect.py` 分页读取，只有截断文本时无法恢复遗漏内容，不能据此认定问题已全部处理。使用 `--no-lint` 后的成功不代表校验通过；异常、长报告和单页例外规则见 [validation-xml.md](../workflow/validation-xml.md)。
+`ok: false` 时保留失败状态并按 [error-handling.md](../workflow/error-handling.md) 处理。`4000153` 表示服务端仍拒绝提交，即使传了 `--no-lint` 也不能标记已写入；不自动重试或进入 lint 清零循环。返回不完整或状态不明时先只读确认，避免重复创建。
 
 ## 常见错误
 
 | 错误码 | 含义 | 解决方案 |
 |--------|------|----------|
 | 400 | 参数错误 | 检查参数格式是否正确 |
-| 4000153 `xml lint blocked` | 服务端版式校验拒绝了该页；演示文稿及其之前的页面已写入成功 | 按 [validation-xml.md](../workflow/validation-xml.md) 解析并读完 `error.message` 的完整报告，修复后开启 lint 重提；先回读确认已创建页面，用 `+add-slide` 从被拒页续接，不重建整份演示文稿 |
+| 4000153 `xml lint blocked` | 服务端版式校验拒绝了该页；演示文稿及其之前的页面已写入成功 | 保留未写入状态，按 [error-handling.md](../workflow/error-handling.md) 处理；不自动进入 lint 修复循环 |
 | 403 | 权限不足 | 检查是否拥有 `slides:presentation:create` 和 `slides:presentation:write_only` scope |
 
 ## 相关命令

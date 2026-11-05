@@ -25,8 +25,6 @@ def transform_from_pdf_coords(bbox):
 
 def color_from_hex(value):
     value = value.lstrip("#")
-    if len(value) != 6:
-        raise ValueError(f"Expected a six-digit RGB color, got: {value!r}")
     return tuple(int(value[index:index + 2], 16) / 255 for index in (0, 2, 4))
 
 

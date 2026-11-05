@@ -424,7 +424,7 @@ def block_content_lines(block: ET.Element, namespace: str) -> list[str]:
         if tag not in {"embed", "img", "icon"} and (text := full_text(block)):
             lines[0] += " " + quoted(text)
         if tag not in {"shape", "line", "polyline"}:
-            lines[0] += " (未展开对象，请读 raw XML/截图)"
+            lines[0] += " (未展开对象，请读 raw XML；理解原稿时可查看截图)"
     return lines
 
 

@@ -44,6 +44,8 @@ lark-cli docs +script --command init-draft \
 
 ## `parse`
 
+用户明确要求解析、统计或诊断时使用。
+
 ### 参数
 
 | 参数 | 必填 | 用法 |
@@ -63,8 +65,8 @@ lark-cli docs +script --command parse --content "@./document.xml" --presentation
 - 决策格式同 `init-draft`：缺失的约束不检查，显式填写但非法的值报错，合法且完整的约束参与检查。`passed` 只表示本次启用的检查通过，不代表未声明的要求已满足。
 - 使用 `--content "@./<init-draft 返回的 data.draft_path>"` 时自动加载保存的决策；显式 `--presentation-decision` 优先。
 - `--doc` 需要 `docx:document:readonly`；`--content` 不调用 OpenAPI。
-- 返回 `data.assessment.status`、`data.profile` 和按需出现的 `data.diagnostics[]`；profile 包含 `word_count`、`char_count`、`block_count` 和 `blocks[]`。顶层 `ok` 只表示命令是否成功执行。画像、决策或资源预检未通过时，命令仍以 `ok:true` 和退出码 0 返回，但 `assessment.status` 为 `failed`；每条 diagnostic 提供 `severity`、稳定 `code`、`msg`、可选 `expected` / `actual` 和 `suggested`。同一原因失败的远程图片合并为一条 diagnostic，并在 `image_indices[]` 中列出图片序号，避免重复提示。修复后重新解析，直到 `assessment.status` 为 `passed`。
-- `parse` 不是 XML/SDK schema validator。成功且无 warning 也不保证服务端接受；写入前仍须按 XML 规则复查。
+- 返回 `data.assessment.status`、`data.profile` 和按需出现的 `data.diagnostics[]`；profile 包含 `word_count`、`char_count`、`block_count` 和 `blocks[]`。顶层 `ok` 只表示命令是否成功执行。画像、决策或资源预检未通过时，命令仍以 `ok:true` 和退出码 0 返回，但 `assessment.status` 为 `failed`；每条 diagnostic 提供 `severity`、稳定 `code`、`msg`、可选 `expected` / `actual` 和 `suggested`。同一原因失败的远程图片合并为一条 diagnostic，并在 `image_indices[]` 中列出图片序号，避免重复提示。
+- `parse` 不是 XML/SDK schema validator。服务端是否接受以写入命令的响应为准。
 
 ## 所有脚本通用参数
 

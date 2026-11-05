@@ -3762,8 +3762,8 @@ def build_whiteboard_external_overlap_issue(
         ),
         "hint": (
             "Treat this as a static whiteboard container-bbox risk, not final visual proof. "
-            "After moving or accepting the overlap, use screenshot QA or equivalent rendered visual inspection as "
-            "the final authority because XML readback does not include whiteboard SVG/Mermaid internals."
+            "XML readback does not include whiteboard SVG/Mermaid internals, so this check cannot "
+            "determine whether the visible content overlaps."
         ),
         "overlaps": overlap_details,
     }
@@ -4384,8 +4384,8 @@ def detect_line_image_overlaps(
                     },
                     "message": f"line {element_label(line)} intersects image {element_label(image)}",
                     "hint": (
-                        "Review the rendered slide screenshot to confirm whether the intersection "
-                        "is intentional or accidental."
+                        "Compare the line and image geometry with the intended layout; "
+                        "move the line if the intersection is accidental."
                     ),
                 }
             )
@@ -5274,7 +5274,7 @@ def normalize_issue(
         )
         normalized.setdefault(
             "hint",
-            "Review the rendered screenshot; add or enlarge meaningful content if the whitespace is not intentional.",
+            "Add or enlarge meaningful content if the whitespace is not intentional.",
         )
     elif normalized["code"] == "sparse_slide_content":
         ratio = normalized["measurement"]["content_coverage_ratio"]
@@ -5285,7 +5285,7 @@ def normalize_issue(
         )
         normalized.setdefault(
             "hint",
-            "Review the rendered screenshot to decide whether the page is intentionally sparse.",
+            "Consider whether the page is intentionally sparse.",
         )
     else:
         normalized.setdefault("message", normalized["code"].replace("_", " "))

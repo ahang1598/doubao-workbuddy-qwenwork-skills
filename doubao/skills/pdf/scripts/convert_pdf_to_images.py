@@ -1,4 +1,4 @@
-"""Render PDF pages to size-limited PNG images for visual review."""
+"""Render PDF pages to size-limited PNG images for visual analysis."""
 
 import argparse
 import os

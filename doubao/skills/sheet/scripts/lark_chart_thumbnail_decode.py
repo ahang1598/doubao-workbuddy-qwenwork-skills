@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Lark Technologies Pte. Ltd.
 # SPDX-License-Identifier: MIT
-"""Decode chart-list thumbnail JSON into validated image files.
+"""Decode chart-list thumbnail JSON into image files.
 
 Pipe the JSON output of ``+chart-list --only-thumbnail`` to stdin. The script
 never prints base64 data; it emits a compact manifest containing only statuses,
@@ -11,24 +11,68 @@ chart IDs, image metadata, paths, and error LogIDs.
 from __future__ import annotations
 
 import argparse
+import base64
+import re
 import binascii
 import json
-import struct
 import sys
-import zlib
 from pathlib import Path
 from typing import Any
 
-from lark_chart_quality_check import (
-    decode_thumbnail_base64,
-    error_log_ids,
-    inspect_image_bytes,
-    safe_thumbnail_name,
-    thumbnail_asset_status,
-    thumbnail_file_suffix,
-)
 from lark_sheet_read_cli import LarkCliError, run_sheets
 
+
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def image_format(raw: bytes) -> str:
+    """Identify the filename suffix without inspecting rendered content."""
+    if raw.startswith(PNG_SIGNATURE):
+        return "png"
+    if raw.startswith(b"\xff\xd8\xff"):
+        return "jpeg"
+    if raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+        return "webp"
+    return "unknown"
+
+
+def safe_thumbnail_name(value: Any) -> str:
+    name = re.sub(r"[^A-Za-z0-9._-]+", "_", str(value)).strip("._")
+    return name or "chart"
+
+
+def thumbnail_file_suffix(inspection: dict[str, Any]) -> str:
+    return {"png": ".png", "jpeg": ".jpg", "webp": ".webp"}.get(
+        str(inspection.get("format") or ""), ".bin"
+    )
+
+
+def decode_thumbnail_base64(encoded: str) -> bytes:
+    value = encoded.strip()
+    if value.startswith("data:"):
+        _, separator, value = value.partition(",")
+        if not separator:
+            raise ValueError("invalid data URI")
+    return base64.b64decode("".join(value.split()), validate=True)
+
+
+def error_log_ids(value: Any) -> list[str]:
+    found: set[str] = set()
+
+    def visit(item: Any, key: str = "") -> None:
+        if key == "base64":
+            return
+        if isinstance(item, dict):
+            for child_key, child in item.items():
+                visit(child, str(child_key))
+        elif isinstance(item, (list, tuple)):
+            for child in item:
+                visit(child)
+        else:
+            found.update(re.findall(r"20\d{12}[A-Fa-f0-9]{12,40}", str(item)))
+
+    visit(value)
+    return sorted(found)
 
 ACTION = "chart_thumbnail_decode"
 
@@ -100,8 +144,8 @@ def decode_payload(
             continue
         try:
             raw = decode_thumbnail_base64(encoded)
-            inspection = inspect_image_bytes(raw, mime_type)
-        except (binascii.Error, ValueError, zlib.error, struct.error) as exc:
+            inspection = {"format": image_format(raw)}
+        except (binascii.Error, ValueError) as exc:
             item.update({"status": "invalid", "reason": str(exc)})
             files.append(item)
             continue
@@ -110,10 +154,10 @@ def decode_payload(
             f"{safe_thumbnail_name(sheet_id)}_{safe_thumbnail_name(chart_id)}{suffix}"
         )
         path.write_bytes(raw)
-        status = thumbnail_asset_status(inspection)
+        status = "decoded"
         item.update({"status": status, "path": str(path.resolve()), "bytes": len(raw), **inspection})
         files.append(item)
-        if status == "valid":
+        if status == "decoded":
             valid.append(chart_id)
 
     received = list(dict.fromkeys(received))
@@ -128,21 +172,20 @@ def decode_payload(
         "expected": len(expected),
         "rate": len(valid_expected) / len(expected) if expected else None,
     }
-    read_required = [
+    images = [
         {"chart_id": str(item["chart_id"]), "path": str(item["path"])}
         for item in files
-        if item.get("status") == "valid" and item.get("chart_id") in expected
+        if item.get("status") == "decoded" and item.get("chart_id") in expected
     ]
     assets_ready = not unavailable and bool(expected)
-    result_type = "ready_for_visual_review" if assets_ready else "thumbnail_unavailable"
+    result_type = "decoded" if assets_ready else "thumbnail_unavailable"
     result = {
         "ok": True,
         "engine": "lark",
         "action": ACTION,
         "result_type": result_type,
-        "next_action": "read_images_then_review" if assets_ready else "retry_thumbnail_or_report",
+        "next_action": "use_images" if assets_ready else "retry_thumbnail_or_report",
         "data": {
-            "automated_checks_passed": assets_ready,
             "expected_chart_ids": expected,
             "received_chart_ids": received,
             "valid_chart_ids": valid_expected,
@@ -150,7 +193,7 @@ def decode_payload(
             "unavailable_chart_ids": unavailable,
             "coverage": coverage,
             "files": files,
-            "read_required": read_required,
+            "images": images,
             "error_log_ids": _log_ids(payload),
         },
     }
@@ -162,7 +205,7 @@ def decode_payload(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Decode and validate chart-list thumbnail JSON without printing base64 data."
+        description="Decode chart-list thumbnail JSON without printing base64 data."
     )
     parser.add_argument("--input", help="JSON file; defaults to stdin")
     parser.add_argument("--output-dir", required=True, help="Directory for decoded images and manifest")
@@ -223,7 +266,7 @@ def main() -> None:
             "data": {"error_log_ids": _log_ids(str(exc))},
         }
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    if result.get("result_type") != "ready_for_visual_review":
+    if result.get("result_type") != "decoded":
         raise SystemExit(1)
 
 

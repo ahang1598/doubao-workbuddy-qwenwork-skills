@@ -47,7 +47,7 @@
 | 任务类型 | 必用规则 | 不要做 |
 | --- | --- | --- |
 | **财务数据整理 / 汇总 / 标准化**（含"把某公司财务数据整理成 Excel"） | 科目分类、颜色编码、数字格式、单位与来源、年份横向布局、小计/合计边框 | 不需要 Sensitivity；不强行拆多 sheet |
-| 三表整理 / 标准化 | 上一行全部 + 三表结构、勾稽验证 | 不需要 Sensitivity |
+| 三表整理 / 标准化 | 上一行全部 + 三表结构 | 不需要 Sensitivity |
 | DCF / LBO / 估值模型 | 假设/计算/输出分层，多 sheet 拆分，横向年份，假设单独落地，公式引用假设，Sensitivity 按需独立 | 不要把假设硬编码进公式 |
 | Comps / Precedent | 科目口径、颜色编码、数字格式、单位、分区和小计样式 | 通常不需要三表勾稽，不强制拆多 sheet |
 | 预算 / Variance Analysis | 颜色编码、数字格式、横向期间、差异列公式、汇总边框 | 不需要 Terminal Value / WACC |
@@ -102,7 +102,7 @@ Revenue
 
 Balance Sheet 必须有 `Total Assets`、`Total Liabilities`、`Total Equity`、`Total Liabilities & Equity` 和 `Check: Total Assets - Total L&E = 0`。
 
-Cash Flow Statement 必须有 CFO、CFI、CFF、Net Change in Cash、Beginning Cash、Ending Cash，并校验 Ending Cash = BS Cash。
+Cash Flow Statement 必须有 CFO、CFI、CFF、Net Change in Cash、Beginning Cash、Ending Cash；三表关联关系为 Ending Cash = BS Cash。
 
 DCF 标准骨架：
 
@@ -179,20 +179,20 @@ Tax Rate                  25.0%     25.0%     25.0%
 
 可被用户修改的假设必须集中放在 Assumptions 区或 sheet，用蓝色字体标识，并由公式引用。禁止把 Growth、Margin、WACC、Tax Rate、CapEx %、Terminal Growth、倍数等硬编码在公式里。
 
-只有三类单元格可直接写静态值：
+用户明确要求固定结果时写值；其余情况下，仅以下三类单元格可直接写静态值：
 
 1. 历史真实数据。
 2. 蓝色输入假设。
 3. 外部来源的静态取数，且必须标注来源。
 
 > **公式优先是财务建模的基础纪律：用 Python 算好数值再写进单元格，交付的是改输入不重算的死表。**
-> 凡是由其他单元格推导出来的数（增长率、占比、同比、各种推算的中间量和结果、GPU 数量/算力换算等），**必须写成引用其他单元格的 Excel 公式**，而不是在 Python 里算出数值再写进单元格。
+> 用户未要求固定结果时，由其他单元格推导出来的数（增长率、占比、同比、各种推算的中间量和结果、GPU 数量/算力换算等）**必须写成引用其他单元格的 Excel 公式**，而不是在 Python 里算出数值再写进单元格。
 >
 > **不要用下面这些理由给硬编码开脱：**
-> - "我先用 Python 算准了（还跑了校验脚本）再写入，结果是对的。" —— 结果对≠合规。硬编码的表**没有动态计算能力**：用户改一个假设，全表不会联动更新，等于交付了一张"死表"。Python 脚本可以用来验证，但**最终落到单元格里的必须是公式**。
+> - "我先用 Python 算准了再写入，结果是对的。" —— 硬编码的表没有动态计算能力；需要保留联动时，Python 可用于推导，最终落格仍应是公式。
 > - "这是推算任务，逻辑在 Python 里更好写。" —— 推算逻辑可以在 Python 里推导，但把它**翻译成单元格公式**写进表里；关键输入做成蓝色假设格，让用户能改、能联动重算。
 >
-> 唯一可直接写静态值的就是本节列的三类：历史真实数据、蓝色输入假设、标注来源的外部静态取数。除此之外**一律写公式**。
+> 默认静态值范围为本节列的三类：历史真实数据、蓝色输入假设、标注来源的外部静态取数。用户明确要求固定结果时写值；其余派生结果写公式。
 
 ```python
 # ❌ 错误：假设值硬编码进公式 / 在 Python 里算好写死
@@ -225,18 +225,17 @@ for col in ['E', 'F', 'G', 'H', 'I']:
     ws[f'{col}20'] = f'={col}18*(1-$B$9)'   # E18=EBIT, $B$9=Tax Rate
 ```
 
-写完横向公式后，必须用 `load_workbook(..., data_only=False)` 回读 2-3 个相邻年份列的公式字符串，确认年份引用跟随列移动、被锁定的假设保持不变；再按 `references/guide-execution-flow.md` §7 的校验说明运行 `excel_formula_verify.py`。新写公式尚无缓存时，`data_only=True` 读到的是 `None`；仅在可用引擎完成重算后读副本计算值，本地缺少引擎时按 `references/ref-local-compat.md` 降级。
+新写公式尚无缓存时，`data_only=True` 读到的是 `None`；需取计算值时，使用可用引擎完成重算后的副本，本地缺少引擎时按 `references/ref-local-compat.md` 处理。
 
 ### 先立结构、时点与口径三类不变量，再写公式
 
 模型算错常常不在公式语法，而在结构缺一行、时点错一期、口径混用。按任务涉及的结构、时点与口径落实下列规则：
 
-- **两侧必须相等的结构，表内要有校验行**：来源与用途、资产与负债权益、期初到期末的滚动，各写一行 `= 左侧合计 - 右侧合计` 的公式并显示在表内。闭合只证明两侧相等，不能证明费用、税基或时点正确；先从原始输入逐项核组成，再核闭合，不用最终总额倒挤差额。
+- **结构关系按组成项计算**：来源与用途、资产与负债权益、期初到期末滚动按原始输入和对应公式构建，不用最终总额倒挤差额。
 - **先画时间轴，再写第一期**：交割日 / 起始日、首个完整期间、退出或结束日各自落格。交割落在期末时当期不计息、不摊还、不分配，首期从下一期起算；默认「当年即整期」会让利息、偿还与回报整链错一期。
 - **资格与豁免判定先于费率档**：涉及减免、优惠、起征点、分档累进时，先用一张小表判定是否适用（条件、阈值、判定结论、依据各一列），判定为不适用就不再套档。费用重分类或金额调整后，资格分子 / 分母、扣除限额与应税金额须引用调整后的对应明细，不能继续使用调整前缓存。先套费率再补判定，多算的金额会一路传导到最终结果。
 - **同名指标的多个口径分列**：含税与不含税、全口径与剔除某类、期间累计与全年预计，各自单独取数并标注用途，不复用同一个总额当所有分母。同一事实存在多个口径时并列展示并注明期间与状态，不静默二选一。
-- **跨期模拟核对状态切换**：价格口径、现金流符号及生效时点保持可追溯；资产、持仓或计量规则切换时，分别核对切换前、当期与下一期，不能把不同口径的直接相减当作期间变动。
-- **首期、末期与最终结果逐项核对**：每条滚动链的首末期、以及税后利润 / 回报倍数 / 内部收益率 / 净现值这类最终结果，各取一个可手算的数作为独立期望值。本地文件写进门禁的 `--checkpoints`（格址 + 期望值 + 容差，写法见 `references/guide-execution-flow.md`）由工具逐条判；在线表格回读公式求值结果，与期望值逐项对账。只复算、不与产物实际值比较，等于没核。
+- **跨期模拟按状态切换计算**：价格口径、现金流符号及生效时点保持可追溯；资产、持仓或计量规则切换时，分别按切换前、当期与下一期的口径计算，不能把不同口径的直接相减当作期间变动。
 
 ### 说明注释
 
@@ -263,7 +262,7 @@ openpyxl 的颜色参数用不带 `#` 的 6 位 hex（如 `Font(color='0000FF')`
 
 | 颜色 | openpyxl hex | 含义 |
 | --- | --- | --- |
-| 蓝色字体 | `0000FF` | **直接键入数值的输入格（即假设/驱动项，用户可手动修改）**，如增长率、WACC、税率、单卡成本——这类格子本就该写值不写公式（属「只有三类单元格可直接写静态值」中的第 2 类） |
+| 蓝色字体 | `0000FF` | **直接键入数值的输入格（即假设/驱动项，用户可手动修改）**，如增长率、WACC、税率、单卡成本——这类格子本就该写值不写公式（属默认静态值范围中的第 2 类） |
 | 黑色字体 | `000000` | 本 sheet 公式或普通文本 |
 | 绿色字体 | `008000` | 同工作簿跨 sheet 引用；公式中只要出现跨 sheet 引用就用绿色 |
 | 红色字体 | `FF0000` | 外部文件/外部系统链接，慎用 |
@@ -461,77 +460,16 @@ ws['E8'].fill = PatternFill('solid', fgColor=BASELINE_BG)   # baseline 交点
 ws['E8'].font = black_bold
 ```
 
-## 交付前检查
+## 模型联动关系
 
-涉及计算结果的勾稽与敏感性验收须使用本轮真实计算值。本地电脑缺少 LibreOffice 且无可用替代引擎时，按 `references/ref-local-compat.md` 保留静态检查并说明计算结果未验证；用户明确要求的验收记为未完成，不以空缓存或历史缓存代替本轮结果。
-
-任何财务输出（含"数据整理表"和"推算结果表"）必须检查：
-
-- 已按任务类型选择规则，未过度套用复杂模型结构，也未因"简单"而完全不套规范。
-- 每个 sheet 已关闭默认网格线（`showGridLines = False`）。
-- 年份横向排布，历史/预测后缀清楚，如 A / E / B。
-- 假设单独落地，蓝色字体，公式引用假设而非硬编码；计算用公式而非 Python 算好写死。
-- 横向公式 `$` 锁定已回读验证。
-- 蓝/黑/绿/红/灰色编码正确。
-- 单位、币种、来源和口径已标注。
-- 数字格式统一，负数括号，零值为 `-`，年份无千分位。
-- 百分比/比率统一口径：内部值用 ratio（如 0.0813），显示用百分比格式；若读回显示值超过 100% 且业务不可能超过 100%，优先怀疑二次乘 100 或格式叠加。
-- 年份列等宽紧凑，标签列较宽。
-- 普通数据行无装饰边框，无竖线。
-- 小计/关键小计/最终合计的边框和加粗层级正确。
-- 大标题行有深蓝底色，无灰色背景，无绿/红背景，普通数据行白底。
-- **公式零错误（一次诊断）**：生成 `.xlsx` 后运行 `python3 scripts/excel_formula_verify.py <产物> 60`（基于已有文件编辑时另加 `--baseline <源文件.xlsx> --scope '<允许改动的范围>'`）。退出码、基准、检查点与重算副本的用法统一按 `references/guide-execution-flow.md` §7；财务口径仍须用下方勾稽与独立预期核验。
-- **公式覆盖自查**：重点看关键输出区、Debt roll-forward、三表勾稽、MOIC/IRR 等 task-specific 区域是否由公式驱动；历史真实数据、蓝色输入假设、标注来源的外部取数可以是静态值。
-
-三表模型额外检查：
-
-- BS 每期 `Total Assets = Total Liabilities + Total Equity`。
-- CFS Ending Cash 每期等于 BS Cash。
-- Retained Earnings 与 Net Income / Dividends 口径一致。
-
-```python
-# ── 三张表勾稽验证（取得本轮计算值后执行）──
-# 表内已有校验行（= 左侧合计 - 右侧合计）时，每期的校验格各写一条 cell 检查点，放进同一个 --checkpoints 数组：
-# [{"cell": "BS!C40", "expect": 0, "tolerance": 0.01}, {"cell": "BS!D40", "expect": 0, "tolerance": 0.01}, ...]，
-# 门禁按重算结果判。下面的逐期跨格比对适合没有校验行的关系：--recalc-output 另存重算副本，产物本身不被
-# LibreOffice 重写；JSON 里 recalc_output 为空表示这次没算成，不要读
-#   python3 scripts/excel_formula_verify.py model.xlsx 60 --recalc-output .recalc.xlsx
-from openpyxl import load_workbook
-wb = load_workbook('.recalc.xlsx', data_only=True)      # 读重算后的副本，产物全程不动
-bs, cfs = wb['Balance Sheet'], wb['Cash Flow Statement']
-for col in year_cols:
-    ta  = bs[f'{col}{ta_row}'].value
-    tle = bs[f'{col}{tle_row}'].value
-    ec  = cfs[f'{col}{ec_row}'].value
-    bc  = bs [f'{col}{cash_row}'].value
-    assert None not in (ta, tle, ec, bc), f"{col} 读不到计算值：副本没重算，先跑上面那条命令"
-    assert abs(ta - tle) < 0.01, f"BS 不平衡（{col}）: TA={ta}, TL&E={tle}"
-    assert abs(ec - bc) < 0.01, f"Cash 不匹配（{col}）: CFS={ec}, BS={bc}"
-wb.close(); import os; os.remove('.recalc.xlsx')        # 别把副本混进交付目录
-print("三张表勾稽验证全部通过")
-```
-
-多 sheet 模型额外检查：
-
-- Assumptions 只放输入和说明，不写计算公式。
-- Calc 引用 Assumptions，Output 引用 Calc，数据流单向。
-- Sensitivity 独立 sheet 或独立区块。
-
-Sensitivity 额外检查：
-
-- 无色阶、无数据条、无斑马纹。
-- 仅 baseline 交点高亮。
-- 双轴范围围绕 baseline 对称。
-- 每个情景格都能追溯到对应输入组合下的完整重算；baseline 交点必须与主输出表一致。
-
-金融模型若用户或附件给了抽检值 / 目标值 / covenant / breakeven，建议把它们做成交付前诊断：Debt roll-forward、Exit Net Debt、MOIC/IRR、税务调增合计、关键百分比哨兵等任一不符时，在交付说明中列出。
+三表按各期资产 = 负债 + 权益、CFS Ending Cash = BS Cash 关联；Retained Earnings 按 Net Income / Dividends 的口径滚动。多 sheet 模型保持 Assumptions → Calc → Output 的单向数据流。Sensitivity 的情景格引用对应输入组合下的完整计算，baseline 交点与主输出使用同一组输入和计算口径。
 
 ## 落地提示（按引擎）
 
 本规范的逻辑与视觉要求与引擎无关；具体写值/公式/样式时按产物载体选实现方式：
 
-- **本地 `.xlsx`（Python 引擎）**：用 openpyxl 实现颜色、数字格式、边框、列宽、网格线、勾稽校验（见上方各 Python 示例）；批量样式可用 `python3 scripts/excel_format_range.py`，公式诊断可用 `python3 scripts/excel_formula_verify.py`（含公式重算）。所有颜色用不带 `#` 的 6 位 hex（如 `'0000FF'`）。
-- **飞书表格**：写值/公式按 `references/lark-sheets-write-cells.md`；样式、合并、列宽行高、冻结的任意组合**一次** `references/lark-sheets-styles-put.md` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `references/lark-sheets-batch-update.md`；跨 sheet 公式按 `references/lark-sheets-formula-translation.md` 重写并校验；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
-- 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实，导入后先按 `references/lark-sheets-workbook.md` 检查 `data.extra` 并处理不支持元素，再做必要的链接/预览处理。
+- **本地 `.xlsx`（Python 引擎）**：用 openpyxl 实现颜色、数字格式、边框、列宽、网格线（见上方各 Python 示例）；批量样式可用 `python3 scripts/excel_format_range.py`。所有颜色用不带 `#` 的 6 位 hex（如 `'0000FF'`）。
+- **飞书表格**：写值/公式按 `references/lark-sheets-write-cells.md`；样式、合并、列宽行高、冻结的任意组合**一次** `references/lark-sheets-styles-put.md` 交付，不要拆成写值后多轮刷样式；同一个写操作打多个区域用该命令自身的复数形态（`--ranges` / map 入参），只有跨类型、有顺序依赖的操作链才用 `references/lark-sheets-batch-update.md`；跨 sheet 公式按 `references/lark-sheets-formula-translation.md` 重写；颜色用带 `#` 的 RGB hex（如 `#0000FF`）。
+- 若先用 Python 生成 `.xlsx` 再导入飞书：在 `.xlsx` 阶段就把本规范全部落实；导入后按 `references/lark-sheets-workbook.md` 读取 `data.extra` 并处理不支持元素，成功后按交付规则交付。用户明确要求预览时，再按其范围提供预览。
 
-===== 全文完（共 537 行）=====
+===== 全文完（共 475 行）=====

@@ -1,13 +1,15 @@
 **CRITICAL: You MUST complete these steps in order. Do not skip ahead to writing code.**
 
-The bundled probe, rendering, structure-extraction, and annotation scripts use PyMuPDF. The fillable-field extraction and update scripts intentionally retain pypdf because they inspect the canonical AcroForm field tree, parent/kid relationships, export states, and appearance behavior.
+The bundled rendering, structure-extraction, and annotation scripts use PyMuPDF. The fillable-field extraction and update scripts intentionally retain pypdf because they inspect the canonical AcroForm field tree, parent/kid relationships, export states, and appearance behavior.
 
-If you need to fill out a PDF form, first check to see if the PDF has fillable form fields. Run this script from this file's directory:
- `python scripts/check_fillable_fields.py <file.pdf>`, and depending on the result go to either the "Fillable fields" or "Non-fillable fields" and follow those instructions.
+If you need to fill out a PDF form, run
+`python scripts/extract_form_field_info.py <input.pdf> <field_info.json>`.
+Use the "Fillable fields" path when the output contains fields; otherwise use
+the "Non-fillable fields" path.
 
 # Fillable fields
 If the PDF has fillable form fields:
-- Run this script from this file's directory: `python scripts/extract_form_field_info.py <input.pdf> <field_info.json>`. It will create a valid JSON file whose fields follow this conceptual schema:
+- Use the generated `field_info.json`, whose fields follow this conceptual schema:
 ```text
 [
   {
@@ -75,7 +77,7 @@ Then analyze the images to determine the purpose of each form field (make sure t
 Each `field_id` and `page` must match `field_info.json`. For checkboxes, use the extracted `checked_value` or `unchecked_value`; for radio groups, use one of the extracted `radio_options[].value` values.
 - Run the `fill_fillable_fields.py` script from this file's directory to create a filled-in PDF:
 `python scripts/fill_fillable_fields.py <input pdf> <field_values.json> <output pdf>`
-This script will verify that the field IDs and values you provide are valid; if it prints error messages, correct the appropriate fields and try again.
+The script writes the supplied field values directly.
 
 # Non-fillable fields
 If the PDF doesn't have fillable form fields, you'll add text annotations. First try to extract coordinates from the PDF structure (more accurate), then fall back to visual estimation if needed.
@@ -91,7 +93,9 @@ This creates a JSON file containing:
 - **checkboxes**: Small square rectangles that are checkboxes (with center coordinates)
 - **row_boundaries**: Row top/bottom positions calculated from horizontal lines
 
-**Check the results**: If `form_structure.json` has meaningful labels (text elements that correspond to form fields), use **Approach A: Structure-Based Coordinates**. If the PDF is scanned/image-based and has few or no labels, use **Approach B: Visual Estimation**.
+If `form_structure.json` has meaningful labels that correspond to form fields,
+use **Approach A: Structure-Based Coordinates**. If the PDF is scanned or
+image-based and has few or no labels, use **Approach B: Visual Estimation**.
 
 ---
 
@@ -110,16 +114,7 @@ Read form_structure.json and identify:
 
 **Coordinate system**: PyMuPDF (MuPDF) page coordinates, where the origin is at the top-left and y increases downward. In the JSON, `top` stores `y0` (the upper edge) and `bottom` stores `y1` (the lower edge), so `top < bottom` for a valid box.
 
-### A.2: Check for Missing Elements
-
-The structure extraction may not detect all form elements. Common cases:
-- **Circular checkboxes**: Only square rectangles are detected as checkboxes
-- **Complex graphics**: Decorative elements or non-standard form controls
-- **Faded or light-colored elements**: May not be extracted
-
-If you see form fields in the PDF images that aren't in form_structure.json, you'll need to use **visual analysis** for those specific fields (see "Hybrid Approach" below).
-
-### A.3: Create fields.json with PyMuPDF Page Coordinates
+### A.2: Create fields.json with PyMuPDF Page Coordinates
 
 For each field, calculate entry coordinates from the extracted structure:
 
@@ -161,13 +156,6 @@ Create fields.json using `pdf_width` and `pdf_height` (these keys signal PyMuPDF
 ```
 
 **Important**: Use `pdf_width`/`pdf_height` and the PyMuPDF coordinates directly from form_structure.json. Despite the key names, these are not raw bottom-left-origin PDF coordinates.
-
-### A.4: Validate Bounding Boxes
-
-Before filling, check your bounding boxes for errors:
-`python scripts/check_bounding_boxes.py fields.json`
-
-This checks for intersecting bounding boxes and entry boxes that are too small for the font size. Fix any reported errors before filling.
 
 ---
 
@@ -245,58 +233,9 @@ Create fields.json using `image_width` and `image_height` (signals image coordin
 
 **Important**: Use `image_width`/`image_height` and the refined pixel coordinates from the zoom analysis.
 
-### B.5: Validate Bounding Boxes
-
-Before filling, check your bounding boxes for errors:
-`python scripts/check_bounding_boxes.py fields.json`
-
-This checks for intersecting bounding boxes and entry boxes that are too small for the font size. Fix any reported errors before filling.
-
 ---
 
-## Hybrid Approach: Structure + Visual
-
-Use this when structure extraction works for most fields but misses some elements (e.g., circular checkboxes, unusual form controls).
-
-1. **Use Approach A** for fields that were detected in form_structure.json
-2. **Convert PDF to images** for visual analysis of missing fields
-3. **Use zoom refinement** (from Approach B) for the missing fields
-4. **Combine coordinates**: For fields from structure extraction, use `pdf_width`/`pdf_height`. For visually-estimated fields, convert image coordinates to PyMuPDF page coordinates. Both systems use a top-left origin and downward-positive y, so only scaling is required:
-   - mupdf_x = image_x * (pdf_width / image_width)
-   - mupdf_y = image_y * (pdf_height / image_height)
-5. **Use a single coordinate system** in fields.json - convert all fields to PyMuPDF page coordinates and use `pdf_width`/`pdf_height`
-
----
-
-## Step 2: Validate Before Filling
-
-**Always validate bounding boxes before filling:**
-`python scripts/check_bounding_boxes.py fields.json`
-
-This checks for:
-- Intersecting bounding boxes (which would cause overlapping text)
-- Entry boxes that are too small for the specified font size
-
-Fix any reported errors in fields.json before proceeding.
-
-For image-coordinate fields, create a visual overlay before filling:
-`python scripts/create_validation_image.py <page_number> fields.json <rendered_page.png> <validation_output.png>`
-
-The input image dimensions must match the `image_width` and `image_height` in
-`fields.json`. Entry boxes are red and label boxes are blue. Inspect the overlay
-and correct any misplaced boxes before continuing.
-
-## Step 3: Fill the Form
+## Step 2: Fill the Form
 
 The fill script auto-detects the coordinate system and handles conversion:
 `python scripts/fill_pdf_form_with_annotations.py <input.pdf> fields.json <output.pdf>`
-
-## Step 4: Verify Output
-
-Convert the filled PDF to images and verify text placement:
-`python scripts/convert_pdf_to_images.py <output.pdf> <verify_images/>`
-
-If text is mispositioned:
-- **Approach A**: Check that you're using PyMuPDF page coordinates from form_structure.json with `pdf_width`/`pdf_height`
-- **Approach B**: Check that image dimensions match and coordinates are accurate pixels
-- **Hybrid**: Ensure coordinate conversions are correct for visually-estimated fields

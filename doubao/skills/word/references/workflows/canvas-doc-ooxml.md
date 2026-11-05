@@ -85,27 +85,7 @@ SOURCE 只用于比较，不参与写路径。后续修复在 TARGET 上增量�
 ```
 - 按 `itemPropsN.xml` 的 `schemaRef` URI 定位并复用 `revisionAuthors` 部件；缺失时使用无冲突编号创建对应 `customXml` 部件并补齐 package 声明。必须在 `word/_rels/document.xml.rels` 中以类型 `http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml`、目标 `../customXml/itemN.xml` 建立关系，不得写入包根 `_rels/.rels`；`itemN.xml` 再通过 `customXml/_rels/itemN.xml.rels` 中类型为 `http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps` 的关系关联 `itemPropsN.xml`。
 
-### 第 4 步 · 验收
-
-同一提交周期只对最新 TARGET 做一次完整 audit 和一次计划验收；候选再变化时重跑受影响证据。
-
-1. 完整读取 [`audit.md`](audit.md)，执行：
-
-```bash
-scripts/audit.py audit TARGET_DOCX --source SOURCE_DOCX --edit-plan <workdir>/edit_plan.json
-```
-
-2. `INVALID` 或 source comparison 未执行时阻断提交。`FAILED` 只处理 out-of-plan：确属写前计划的必要差异才补入精确 code/location 后重跑；否则修复 TARGET 或停止。不得修改 SOURCE 或事后扩大计划。
-3. 按原 `edit_plan` 核对每项目标、位置、必要关联项和必须保留项。audit 不等于全量保真；未覆盖对象、样式继承、编号、字段、关系和用户要求须定向检查。
-   - 对字数、数量、日期、冲突保留、禁增/禁删和术语格式等任务专属约束执行确定性断言，记录终稿实际值；不能用 audit 通过代替。
-   - 对复选框、内容控件、超链接、批注、修订和域等交互对象，核对原生 OOXML 节点、关系、数量和状态；普通可见字符或样式相似不算完成。
-   - 有有效 `current_user.user_id` 时，核对本轮新增批注的 `commentsPeople.xml` 中 `author/providerId/userId`，以及每个修订 `(partUri,nativeKind,nativeId)` 对应的 `userId/userName/userProvider`；均须与本周期 `current_user` 一致，缺失、重复、孤立或 package 声明不完整时阻断提交。再次取回仍缺少 `user_id` 时，确认本轮新增对象未写身份映射。
-4. 动态域只核对结构、依赖和缓存状态；无法证明原生刷新时记录待刷新。目录阶段和宿主视觉验收在提交前标为待执行。
-5. 视觉验收沿用 [`canvas-doc-editing.md`](canvas-doc-editing.md#第-4-步--回读验收) 的触发条件；需要时在同步确认及目录完成后使用宿主 Fetch `pdf`，不在候选阶段用本地渲染替代最终页面证据。导出失败按 [宿主 PDF 失败出口](canvas-doc-recovery.md#4-宿主-pdf-失败) 处理，保留尚未完成的检查。
-
-没有实际证据的项目不得标记通过；提交前必检项通过后才能进入下一步。
-
-### 第 5 步 · 提交与校验
+### 第 4 步 · 提交
 
 ```bash
 lark-cli docs +ooxml-update --doc "<token>" --file-path "<OOXML_DOCX>"
@@ -121,17 +101,6 @@ lark-cli docs +ooxml-update --doc "<token>" --file-path "<OOXML_DOCX>"
 4. `visual_validation`：提交前已按 [`canvas-doc-editing.md`](canvas-doc-editing.md#第-4-步--回读验收) 明确判定必须检查宿主最终页面。
 
 “确认修改生效”、“受理不等于同步”、“为了保险”、“出清稿”或已在 TARGET 上完成的内容/结构验收都不是触发条件。不得在提交成功后临时补造理由。`sync_validation.required=false` 时，在成功回执和 warnings 核对后立即交付，不再 Fetch、不轮询，也不声称已确认同步。
-
-#### 同步校验
-
-1. 只在 `sync_validation.required=true` 时进入本节。提交前 XPath/书签/Canvas ID 不可复用；使用宿主 `+local-fetch` 的最小必要范围重新定位，正文读目标 `range/section + full`，只有无稳定锚点时先读 `outline`；布局读 `layout`，分页和视觉验收读 page/PDF。禁止为同步校验再次调用 `+ooxml-fetch` 取回整份文件。
-2. 按 `2s / 4s / 8s / 15s`、之后每 15 秒退避，总墙钟不超过 60 秒；到期保留“已受理、同步未确认”，不重发提交。
-3. 分别核对正文、布局、动态域和分页；旧内容仍可见或部分目标出现都不能证明整体同步。
-4. 同步证据齐全后执行计划内目录；仅当提交前已记录 `visual_validation.required=true` 时再做最终视觉验收，不因使用 OOXML 或完成同步而新增理由。视觉修复需要新 OOXML 周期时，重新 fetch 并沿用原计划；同一问题修正一次仍复现且无新依据时停止。
-
-从 `+ooxml-fetch` 到宿主应用 `+ooxml-update` 是整份覆盖窗口：期间不穿插正文 Local 写入或无关长耗时探索。候选是独立快照，不会随活动文档的用户或协同编辑更新；候选、SOURCE、audit 和自己的修改记录一致，都不能证明活动文档未变。当前接口没有原子版本冲突检查，宿主的覆盖提示发生在应用之后，不能把成功回执或空 warnings 当作并发保护。
-
-提交前检查本周期是否已知有用户编辑、协同变化或其他写入；一旦已知，旧候选立即失效，结束当前周期，不提交它。后续需要继续时从最新活动文档重新取回，并按原用户目标重新定位、比较和规划，不把旧候选或旧 XML 整份覆盖到新快照。同一目标因并发变化最多重建一次周期，再次漂移即停止，不通过反复取回扩大覆盖窗口。候选自身出现无法解释的差异也停止，但单独记录为候选异常，不能据此推断活动文档的协同状态。上述约束只能降低覆盖风险；任务明确要求与同时编辑原子隔离时，当前接口无法保证，停止并说明限制。
 
 交付遵循 [`canvas-doc.md`](canvas-doc.md#交付披露)。
 

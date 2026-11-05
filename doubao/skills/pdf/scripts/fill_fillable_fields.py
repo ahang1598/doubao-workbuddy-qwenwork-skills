@@ -1,16 +1,13 @@
 """Fill canonical AcroForm values with pypdf.
 
 PyMuPDF remains the primary library elsewhere in this skill; this script keeps
-pypdf for field-tree validation and appearance-sensitive AcroForm updates.
+pypdf for appearance-sensitive AcroForm updates.
 """
 
 import argparse
 import json
-import sys
 
 from pypdf import PdfReader, PdfWriter
-
-from extract_form_field_info import get_field_info
 
 
 def fill_pdf_fields(input_pdf_path: str, fields_json_path: str, output_pdf_path: str):
@@ -27,26 +24,6 @@ def fill_pdf_fields(input_pdf_path: str, fields_json_path: str, output_pdf_path:
 
     reader = PdfReader(input_pdf_path)
 
-    has_error = False
-    field_info = get_field_info(reader)
-    fields_by_ids = {f["field_id"]: f for f in field_info}
-    for field in fields:
-        existing_field = fields_by_ids.get(field["field_id"])
-        if not existing_field:
-            has_error = True
-            print(f"ERROR: `{field['field_id']}` is not a valid field ID")
-        elif field["page"] != existing_field["page"]:
-            has_error = True
-            print(f"ERROR: Incorrect page number for `{field['field_id']}` (got {field['page']}, expected {existing_field['page']})")
-        else:
-            if "value" in field:
-                err = validation_error_for_field_value(existing_field, field["value"])
-                if err:
-                    print(err)
-                    has_error = True
-    if has_error:
-        sys.exit(1)
-
     writer = PdfWriter(clone_from=reader)
     for page, field_values in fields_by_page.items():
         writer.update_page_form_field_values(writer.pages[page - 1], field_values, auto_regenerate=False)
@@ -55,33 +32,6 @@ def fill_pdf_fields(input_pdf_path: str, fields_json_path: str, output_pdf_path:
 
     with open(output_pdf_path, "wb") as f:
         writer.write(f)
-
-
-def validation_error_for_field_value(field_info, field_value):
-    field_type = field_info["type"]
-    field_id = field_info["field_id"]
-    if field_type == "checkbox":
-        valid_values = [
-            value
-            for value in (
-                field_info.get("checked_value"),
-                field_info.get("unchecked_value"),
-            )
-            if value is not None
-        ]
-        if not valid_values:
-            return f'ERROR: No valid state values were found for checkbox field "{field_id}"'
-        if field_value not in valid_values:
-            return f'ERROR: Invalid value "{field_value}" for checkbox field "{field_id}". Valid values are: {valid_values}'
-    elif field_type == "radio_group":
-        option_values = [opt["value"] for opt in field_info["radio_options"]]
-        if field_value not in option_values:
-            return f'ERROR: Invalid value "{field_value}" for radio group field "{field_id}". Valid values are: {option_values}'
-    elif field_type == "choice":
-        choice_values = [opt["value"] for opt in field_info["choice_options"]]
-        if field_value not in choice_values:
-            return f'ERROR: Invalid value "{field_value}" for choice field "{field_id}". Valid values are: {choice_values}'
-    return None
 
 
 def monkeypatch_pypdf_method():

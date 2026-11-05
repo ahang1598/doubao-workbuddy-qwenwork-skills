@@ -318,6 +318,6 @@ if __name__ == "__main__":
         result = run_soffice(sys.argv[1:])
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         print(f"[excel_lo_runtime] 环境不可用，LibreOffice 调用未完成：{exc}\n"
-              "缺少 LibreOffice 时可降级；其他环境问题按具体错误处理，未完成不得当作验证通过。", file=sys.stderr)
+              "缺少 LibreOffice 时可降级；其他环境问题按具体错误处理，不得声称本次调用已完成。", file=sys.stderr)
         sys.exit(4)
     sys.exit(result.returncode)

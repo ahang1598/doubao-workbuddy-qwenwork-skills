@@ -86,7 +86,7 @@ _HELP_TOPICS = {
         "d.to_slide(x=, y=, width=) 一步得到可编辑片段，交给 publish_slide 写入页面。",
         "publish_slide(page_xml, d.to_slide(...), chart_slide(...), presentation=deck_id)：page_xml 是带 "
         'xmlns="https://www.larkoffice.com/sml/2.0" 的单页 <slide>（标题、正文等原生元素），片段可传多个；'
-        "它合页并开启服务端 lint 写入，转换内部的形状重叠自动豁免，只返回需修的问题。",
+        "它合页后带 --no-lint 写入，并返回接口调用结果。",
     ),
     "math": (
         "坐标与函数曲线",

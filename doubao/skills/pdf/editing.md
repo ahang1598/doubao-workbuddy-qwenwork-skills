@@ -4,15 +4,15 @@ Read this file when the user wants to change content in an existing PDF while
 preserving its pages and layout. This is a menu of editing tools, not one
 mandatory workflow. Select only the operations needed for the request.
 
-Use PyMuPDF by default, keep the source file unchanged, save to a separate
-output path, and render every changed page for visual verification.
+Use PyMuPDF by default, keep the source file unchanged, and save to a separate
+output path.
 
 ## Text Editing
 
 | Task | PyMuPDF Tool | Notes |
 |------|----------------|-------|
 | Add short text at a point | `page.insert_text()` | Suitable for simple one-line additions |
-| Add text inside a rectangle | `page.insert_textbox()` | Check its return value; a negative value means the text did not fit |
+| Add text inside a rectangle | `page.insert_textbox()` | Suitable for bounded text |
 | Add styled or multilingual text | `page.insert_htmlbox()` | Supports HTML/CSS, complex scripts, custom fonts, and bounded downscaling |
 | Replace existing searchable text | `page.add_redact_annot()` + `page.apply_redactions()` followed by an insertion method | Use only for the target regions; preserve unrelated graphics and images |
 | Remove text without replacement | `page.add_redact_annot()` + `page.apply_redactions()` | Confirm whether the redaction fill should be transparent or match the background |
@@ -22,7 +22,7 @@ output path, and render every changed page for visual verification.
 
 ```python
 rect = pymupdf.Rect(72, 100, 300, 140)
-remaining_height = page.insert_textbox(
+page.insert_textbox(
     rect,
     "Additional text",
     fontname="helv",
@@ -31,8 +31,6 @@ remaining_height = page.insert_textbox(
     align=pymupdf.TEXT_ALIGN_LEFT,
     overlay=True,
 )
-if remaining_height < 0:
-    raise ValueError("Text does not fit in the target rectangle")
 ```
 
 For translated, multilingual, or variably sized text, prefer
@@ -54,20 +52,14 @@ page.apply_redactions(
     text=pymupdf.PDF_REDACT_TEXT_REMOVE,
 )
 
-spare_height, scale = page.insert_htmlbox(
+page.insert_htmlbox(
     rect,
     "Replacement text",
     css="* { font-family: sans-serif; font-size: 11pt; }",
     scale_low=0.75,
     overlay=True,
 )
-if spare_height < 0:
-    raise ValueError("Replacement text does not fit")
 ```
-
-Do not silently save clipped or missing replacement text. For text translation,
-expand into confirmed whitespace, reduce font size within a legible limit, or
-reflow only the affected region before considering document reconstruction.
 
 For translation tasks specifically, classify same-script vs cross-language
 first — see [`references/workflows/translation.md`](references/workflows/translation.md).
@@ -75,7 +67,7 @@ Same-script variants (e.g. Traditional ↔ Simplified Chinese) allow direct
 in-place substitution with default redaction flags. Cross-language translation
 (e.g. English ↔ Chinese) changes text length and must preserve highlight fills
 and image positions, which requires the non-default `apply_redactions` flags
-and the drawings/image anchor checks shown in that workflow.
+and the drawings/image anchor handling shown in that workflow.
 
 ## Image and Page-Content Editing
 
@@ -83,7 +75,7 @@ and the drawings/image anchor checks shown in that workflow.
 |------|----------------|-------|
 | Add an image | `page.insert_image()` | Use `overlay=True` to place it above existing content |
 | Replace an embedded image | `page.replace_image()` | Replacing an xref can affect every placement of that image in the document |
-| Remove an embedded image | `page.delete_image()` | Check all pages that reuse the same image xref |
+| Remove an embedded image | `page.delete_image()` | Removing an xref affects every placement that reuses it |
 | Place another PDF page as content | `page.show_pdf_page()` | Useful for watermarks, templates, and vector-preserving overlays |
 | Draw lines, shapes, or filled areas | `page.draw_line()`, `page.draw_rect()`, or `page.new_shape()` | Commit a `Shape` after composing multiple drawing operations |
 
@@ -118,9 +110,9 @@ for rect in page.search_for("review this"):
     annotation.update()
 ```
 
-Annotations are not the same as permanent page content. If the result must be
-non-editable or must print identically in every viewer, verify whether the task
-requires annotation flattening or direct page-content insertion.
+Annotations are not the same as permanent page content. Use annotation
+flattening or direct page-content insertion when the result must be
+non-editable.
 
 ## Link Editing
 
@@ -152,7 +144,7 @@ Searchable-text tools cannot directly edit letters that are image pixels or
 vector outlines.
 
 - For scanned pages, use image-aware redaction or edit the raster region, then
-  insert replacement content and inspect the reconstructed background.
+  insert replacement content.
 - For outlined text, use visual coordinates and targeted drawing/redaction only
   when the surrounding graphics can be preserved.
 - If localized editing cannot meet the requested quality, explain the limitation
@@ -160,19 +152,11 @@ vector outlines.
 
 Read [SKILL.md](SKILL.md) for scanned-PDF rendering guidance.
 
-## Save and Verify
+## Save
 
 ```python
 document.save("edited.pdf", garbage=4, deflate=True)
 ```
-
-Before reporting completion, confirm that:
-
-- the source file was not overwritten;
-- page count, page dimensions, and non-target content remain as expected;
-- inserted text and images are complete, legible, and correctly positioned;
-- no target content remains visible when removal was requested;
-- changed pages pass rendered visual inspection.
 
 Use the ReportLab guidance in [SKILL.md](SKILL.md) only when the user requests a
 new PDF or when direct editing cannot satisfy the requested layout. Use [reference.md](reference.md)

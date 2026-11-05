@@ -1,15 +1,12 @@
 # Lark Sheet Batch Update
 
-## 写入边界 + 回读校验
+## 写入边界
 
-`+batch-update` 把多次写入打包成单次请求，但每个子操作仍应按编辑类任务的范围和回读建议处理：
+`+batch-update` 把多次写入打包成单次请求，但每个子操作仍应按编辑类任务的范围要求处理：
 
 1. **目标 range 应落在用户授权范围内**：除用户明示要修改的区域外，子操作避免扩张到无关单元格 / 列 / Sheet。规划 range 时先确认每个子操作的边界。
-2. **批次完成后按子操作验证**：普通值 / 普通公式写入或清除→`+cells-get`/`+csv-get`；AI 区域→`references/lark-sheets-ai-formula-monitoring.md`，不套本条值与公式回读；对象 CRUD→对应 `+*-list`；sheet CRUD→`+workbook-info`；尺寸/隐藏/冻结/分组/合并→`+sheet-info`；网格线显隐这类没有回读接口的状态按子操作返回确认即可。至少覆盖首、中、末和用户点名项，不能只做统一 cells 抽样。
-3. **预期条数前置断言**（无需 AI 真值的 AI 区域按首检核对覆盖，不回读出值计数）：涉及"批量填充 N 行"或"对 M 个区域分别写入"时，建议先把 N、M 硬编码进代码，回读后比较实际与预期；不一致就优先再发一轮 `+batch-update` 补齐，补不齐则在交付说明里列出缺口。
-4. **三条工具硬约束**：`--yes` 必带（high-risk-write，不带退出码 10）；单次 ≤100 条 operations，超出按批拆分；`+cells-batch-set-style` / `+cells-batch-clear` 等批量类 shortcut 不可嵌入 operations（它们本身就是批量原子操作，直接顶层调用）。
+2. **三条工具硬约束**：`--yes` 必带（high-risk-write，不带退出码 10）；单次 ≤100 条 operations，超出按批拆分；`+cells-batch-set-style` / `+cells-batch-clear` 等批量类 shortcut 不可嵌入 operations（它们本身就是批量原子操作，直接顶层调用）。
 
-若子操作写入、复制或导入了普通公式，回读之外必须对本次普通公式范围逐段执行 `+formula-verify --exit-on-error`；`partial` 拆分续扫，全部分段 `status='success'` 后才完成。AI 公式用 `+formula-verify --ai-only`，按 `references/lark-sheets-ai-formula-monitoring.md` 分流，不套普通公式的回读与 success 收敛。`+batch-update` 的写入成功不代表公式已算完或结果正确。
 
 ## 使用场景
 
@@ -32,7 +29,6 @@
 **公式相关批处理的完成流程**：
 - 写前：先读 `references/lark-sheets-formula-translation.md`，把公式改写成飞书可执行语义。
 - 写时：用 `+batch-update` 一次性完成插行/写公式/复制模板等成套动作。
-- 写后：普通公式回读关键公式，并对本次普通公式范围逐段运行 `+formula-verify --exit-on-error`，全部 success 后完成；AI 公式用 `+formula-verify --ai-only`，按 `references/lark-sheets-ai-formula-monitoring.md` 分流。
 
 **`+dropdown-update` 的选项模式（`--options` / `--source-range` 二选一）+ 配色规则**（更新会重写完整验证规则；需要保留已有配色时先回读并透传 `--colors`）见 [`references/lark-sheets-write-cells.md`](lark-sheets-write-cells.md) 的「Dropdown 选项 + 配色」节，本文不重复。`+dropdown-delete` 不涉及这些 flag。
 
@@ -192,7 +188,7 @@ lark-cli sheets +batch-update --url "https://example.feishu.cn/sheets/shtXXX" --
 > ]
 > ```
 
-> **多图表组合**：先完成全部辅助数据，再把每张图的输入放进 `+batch-chart-create`；每项同时记录精确表头范围、数据方向和预期系列数。批次完成后，每个受影响的 sheet 各调用一次 `+chart-list`。已有图表的批量修正改用 `+batch-chart-update`。
+> **多图表组合**：先完成全部辅助数据，再把每张图的输入放进 `+batch-chart-create`；每项同时记录精确表头范围、数据方向和预期系列数。已有图表的批量修正改用 `+batch-chart-update`。
 >
 > ```json
 > [
@@ -222,6 +218,5 @@ lark-cli sheets +cells-batch-clear --url "..." \
 
 - `Validate`：`+batch-update` 的 `--operations` 必须合法 JSON，且为非空数组；逐个子操作 `shortcut` / `input` 字段必填校验，input 键必须在该 shortcut 的 flag 词汇表内（未知键报错并提示最近似键与完整键契约）；**校验错误聚合上报**——所有子操作的首错一次性返回，全部修完再重发一次即可；**禁止嵌套 `+batch-update`**。`+cells-batch-clear` 的 `--ranges` 必须 JSON 数组、每项带 sheet 前缀，`high-risk-write` 强制 `--yes` 或 `--dry-run`（`--scope` 默认 `content`）。
 - `DryRun`：按顺序输出每个子操作的目标 API + 请求 body 模板，不发起调用。
-- `Execute`：按声明顺序串行执行；默认 fail-fast。回包的 `N succeeded` 只表示执行过、不表示已落盘（纯单元格 / 结构批次整批丢弃，对象子操作自身也可能丢失）；失败后按子操作类型回读现状，只补发确实没生效的部分，不按失败下标往后重发；成功时也完成上述分流验证。
 
-===== 全文完（共 227 行）=====
+===== 全文完（共 222 行）=====

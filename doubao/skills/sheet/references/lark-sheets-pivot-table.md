@@ -2,7 +2,7 @@
 
 ## 要求透视表时交付真实对象
 
-用户要求真实透视表时，在线表用 `+pivot-create` 创建、`+pivot-list` 核对对象；不能用普通公式区域或命名为“透视”的sheet代替。本地准备源数据并导入后，仍须完成所需透视对象。仅要求分组统计时按输出布局和更新需求选择透视或公式汇总，不一律强制新增对象。
+用户要求真实透视表时，在线表用 `+pivot-create` 创建；不能用普通公式区域或命名为“透视”的sheet代替。本地准备源数据并导入后，仍须完成所需透视对象。仅要求分组统计时按输出布局和更新需求选择透视或公式汇总，不一律强制新增对象。
 
 ## 使用场景
 
@@ -13,7 +13,7 @@
 | 查看已有透视表 | `+pivot-list` | 获取透视表的结构、数据源和配置 |
 | 创建/更新/删除透视表 | `+pivot-{create|update|delete}` | 对透视表执行写入操作 |
 
-典型工作流：先读取现有透视表了解配置 → 执行创建/更新/删除 → **必须再次读取验证结果**。
+典型工作流：先读取现有透视表了解配置 → 执行创建/更新/删除。
 
 ## 行/值字段映射（创建前必做）
 
@@ -37,7 +37,7 @@
 - **`--properties` 还原生支持**：计算字段 `calculated_fields[].summarize_by ∈ {sum, custom}`、重复行标签 `repeat_row_labels: true`——别因速查表没列就判"不支持"绕路
 - **参数长度限制**：如果透视表配置 JSON 过长（数据源范围跨越大量行列），可能导致工具调用失败。此时应先确认数据范围的精确边界，避免传入过大的 range
 - **落点不能覆盖任何已有数据（不只是 `--source` 范围）**：透视表创建后会向右下**展开**，展开区域哪怕只盖到一个已有单元格（即便已避开源数据），也会报「目标位置不能与数据源重叠」并产生 `#REF!`。创建前无法精确预知展开尺寸，故**强烈优先默认策略**（不传 `--target-sheet-id/-name` 与 `--target-position`/`--range`，后端自动新建空白子表），零覆盖风险；非要落到已有子表，必须挑一片足够大的纯空白区
-- **创建后轮询并校验**：调用 `+pivot-list --sheet-id/--sheet-name <落点表> --pivot-table-id <id>`。`Loading` / `ServiceCalcLoading` 是瞬态，继续轮询到 `info.loaded=true` 且 `error_state=None`；`Cover` / `Shrink` 等终态错误再删除重建。随后用 `info.content_range/page_range` 回读展开区，确认非空、尺寸、总计位置和用户点名的指标。
+- **创建 / 更新后等待就绪**：调用 `+pivot-list --sheet-id/--sheet-name <落点表> --pivot-table-id <id>`。`Loading` / `ServiceCalcLoading` 是瞬态，继续轮询到 `info.loaded=true` 且 `error_state=None`；`Cover` / `Shrink` 等终态错误再删除重建。后续操作需要结果时，用 `info.content_range/page_range` 读取展开区。
 
 ## Shortcuts
 
@@ -125,7 +125,7 @@ lark-cli sheets +pivot-list --url "..." --sheet-id "$SID"
 
 > **返回值含 `info`（展开后的占用区域与状态）**：每个透视表对象除 `position` / `snapshot` 外，还返回 `info`，标明它在 sheet 上的平铺区域与状态——`info.page_range`（筛选/分页区 A1）、`info.content_range`（主体数据区 A1）、`info.span_range`（空表合并区 A1）、`info.error_state`（错误状态，如 `None`/`Cover`/`Shrink`/`Loading`）、`info.is_empty` / `info.is_hidden`、`info.row`/`info.col`（锚点）等。
 > **用途 1（判断改值还是改配置）**：当用户描述某个单元格要改动时，先 `+pivot-list` 拿到 `info`，判断该单元格是否落在 `page_range` / `content_range` 内——**落在区域内 = 属于透视表，应走 `+pivot-update` 改配置**（透视表单元格不能直接 `+cells-set` 改值）；**落在区域外 = 普通单元格，正常 `+cells-set` 改值**。
-> **用途 2（创建后校验覆盖）**：建完后轮询 `info.loaded/error_state`；`Loading` / `ServiceCalcLoading` 继续等待，`Cover` / `Shrink` 等终态错误才表示冲突。成功后用 `content_range/page_range` 核对真实占用区域与原数据边界。
+> **用途 2（等待异步操作完成）**：创建 / 更新后轮询 `info.loaded/error_state`；`Loading` / `ServiceCalcLoading` 继续等待，`Cover` / `Shrink` 等终态错误才表示冲突。成功后用 `content_range/page_range` 读取所需结果。
 
 ### `+pivot-create`
 
@@ -175,9 +175,9 @@ lark-cli sheets +pivot-delete --url "..." --sheet-id "$SHEET_ID" --pivot-table-i
 
 ### Validate / DryRun / Execute 约束
 
-- `Validate`：`--url` / `--spreadsheet-token` XOR 必填；update/delete/list 的 `--sheet-id` / `--sheet-name` XOR 必填；create 的 target selector 至多一个、可都省略；`--source` 与合法 `--properties` 必填；delete 强制 `--yes` 或 `--dry-run`。schema 校验类型与枚举，但允许创建空壳配置，业务完整性须靠创建后 list/data 验证。
+- `Validate`：`--url` / `--spreadsheet-token` XOR 必填；update/delete/list 的 `--sheet-id` / `--sheet-name` XOR 必填；create 的 target selector 至多一个、可都省略；`--source` 与合法 `--properties` 必填；delete 强制 `--yes` 或 `--dry-run`。schema 校验类型与枚举，但允许创建空壳配置，创建参数需包含所需分组与聚合字段。
 - `DryRun`：输出将发送的 pivot 请求模板和本地 placement_warning；不联网、不预估实际展开尺寸。
-- `Execute`：写后不自动回读；create/update 后必须按落点 sheet + pivot id 轮询 `+pivot-list` 到 loaded，核 error_state/content_range 与数据；delete 后 list 确认目标不存在。
+- `Execute`：create/update 后按落点 sheet + pivot id 轮询 `+pivot-list` 到 `info.loaded=true` 且 `error_state=None`；`Loading` / `ServiceCalcLoading` 继续等待，终态错误按上方规则处理。
 
 > ⚠️ pivot 输出包含总计 / 小计行；后续 chart 引用 pivot 时，`snapshot.data.refs` 必须排除这些行（见 `references/lark-sheets-chart.md` 的「⚠️ chart 数据源引用 pivot 时必须排除总计行」段）。
 

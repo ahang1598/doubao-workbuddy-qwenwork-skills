@@ -15,7 +15,7 @@ except ModuleNotFoundError as _missing:  # 缺少 Python 库时先安装，再�
     sys.stderr.write(
         f"\n[excel_preview_rows] 本机 Python 缺少 {_missing.name}，本脚本未执行，本地文件未修改。\n"
         "  请在运行本脚本的同一 Python 环境安装：python3 -m pip install openpyxl\n"
-        "  安装成功后重跑原命令；安装失败再说明未完成，不能声明本次处理 / 校验已通过。\n"
+        "  安装成功后重跑原命令；安装失败则说明本次数据预览未执行。\n"
     )
     raise SystemExit(1) from _missing
 

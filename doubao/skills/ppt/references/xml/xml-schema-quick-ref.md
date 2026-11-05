@@ -501,7 +501,7 @@
   scale = min(available_width / vw, available_height / vh)
   embed_width, embed_height = vw * scale, vh * scale
   ```
-  缩放后检查实际字号：目标 14pt、缩放 0.8 时 SVG 里至少写 18；过小时调整画布或可用区域，只给 viewBox 加空白再缩回同一区域不会改善可读性。
+  按缩放比例设置源字号：目标 14pt、缩放 0.8 时 SVG 里至少写 18；需要更大字号时调整画布或可用区域，只给 viewBox 加空白再缩回同一区域不会改善可读性。
 - **颜色写 `#RRGGBB`，半透明用 `fill-opacity` / `stroke-opacity` / `stop-opacity`**，不写 `rgb()` / `rgba()`：PowerPoint 会丢掉 SVG 内 `rgba()` 的透明度，浅色块变深色块。生成器（`make_*`、`make_relation`）的输出已自动转换；手写 SVG 自己按此写，或交付前用 `from scripts.svg_lib._color_compat import office_safe_svg` 转一次。本条只针对 `<svg>` 内部；slide XML 的 `fillColor` / `color` 仍按协议用 `rgba()`。
 - **底缘不越过 y=476**：960×540 画布页脚线在 y=486，`topLeftY + height ≤ 476`。
 - 图注放在图下方居中；数值标签保留有效精度与单位。
@@ -641,7 +641,7 @@
 | `type` | 是 | 切换效果，20 种效果之一或 `none` |
 | `durationMs` | 否 | 切换时长（毫秒），`0`–`86399999`，默认 `1000`；`type="none"` 时不能写 |
 
-效果参数（`style` / `direction` / `orientation` / `morphMode` / `invX` / `invY`）按下表逐个 `type` 生效。**表里没列的参数对该 `type` 不适用，写了会被 `xml_lint` 判错。**
+效果参数（`style` / `direction` / `orientation` / `morphMode` / `invX` / `invY`）按下表逐个 `type` 生效。**表里没列的参数对该 `type` 不适用，不要为该类型填写这些参数。**
 
 | 切换类型 | 参数 | 取值 | 缺省 |
 |------|------|------|------|
@@ -666,7 +666,7 @@
 
 - 不写 `<animation>`（或写一个空的 `<animation/>`）表示不覆盖页面切换，沿用继承结果，**不等于关闭切换**。
 - `type="none"` 才是显式关闭切换；它不接受 `durationMs`，也不接受任何效果参数。
-- 参数写错时两条路径的表现不同：**改写**（`+update-slide` / `+replace-slide`）**整单拒绝**，服务端报 `reject rewrite: invalid transition`，整页改动一起丢；**新建**则跳过这个切换、只留静态页面。两种都拿不到想要的结果，所以 `xml_lint` 报的 `transition_param_not_applicable` / `transition_param_value_not_applicable` 必须改掉，不能忽略。
+- 参数写错时两条路径的表现不同：**改写**（`+update-slide` / `+replace-slide`）**整单拒绝**，服务端报 `reject rewrite: invalid transition`，整页改动一起丢；**新建**则跳过这个切换、只留静态页面。按上表填写该类型实际支持的参数；`--no-lint` 不会改变接口对非法切换参数的处理。
 
 ## 完整示例
 

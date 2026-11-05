@@ -108,4 +108,4 @@ lark-cli docs +media-insert --doc doxcnXXX --from-clipboard --width 800 --height
 
 ## 参考
 
-- [lark-doc-fetch](lark-doc-fetch.md) — 获取文档内容（可用于确认插入后的结果、以及提取媒体 token）
+- [lark-doc-fetch](lark-doc-fetch.md) — 获取文档内容并提取媒体 token

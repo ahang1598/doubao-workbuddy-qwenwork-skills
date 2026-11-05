@@ -52,7 +52,7 @@ lark-cli slides +delete-slide --presentation "$PID" --slide-id "$SID" --dry-run
 
 `./readback.xml` 表示当前工作目录 `<CWD>` 下的文件；实际文件名按任务/读取批次区分，避免覆盖已有文件。
 
-删错页的代价高于多跑一次回读 —— 不确定就先回读 + `+screenshot` 看一眼再删。
+删错页的代价高于多跑一次回读 —— 不确定就先回读确认目标页；涉及用户原稿时，可结合原稿的 `+screenshot` 查看结果定位。
 
 ## 删错了怎么办
 

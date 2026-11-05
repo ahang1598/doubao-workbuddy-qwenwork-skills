@@ -2,7 +2,7 @@
 
 ## 真对象硬约束
 
-当用户要求"迷你图 / 趋势线 / 单元格内图表"时，**必须**通过 `+sparkline-{create|update|delete}` 创建真实的迷你图对象。**禁止**用文本字符（如 `▁▂▃▅▇`）拼接在单元格里、或用 `SPARKLINE()` 公式函数（已禁用）代替。判断标准：交付后 `+sparkline-list` 必须能返回该对象。
+当用户要求"迷你图 / 趋势线 / 单元格内图表"时，**必须**通过 `+sparkline-{create|update|delete}` 创建真实的迷你图对象。**禁止**用文本字符（如 `▁▂▃▅▇`）拼接在单元格里、或用 `SPARKLINE()` 公式函数（已禁用）代替。
 
 ## 使用场景
 
@@ -13,13 +13,12 @@
 | 查看已有迷你图 | `+sparkline-list` | 获取迷你图的类型、数据源和样式配置 |
 | 创建/更新/删除迷你图 | `+sparkline-{create|update|delete}` | 对迷你图执行写入操作 |
 
-典型工作流：先读取现有迷你图了解配置 → 执行创建/更新/删除 → **必须再次读取验证结果**。
+典型工作流：先读取现有迷你图了解配置 → 执行创建/更新/删除。
 
 **常见配置错误（必须注意）**：
 - **数据源范围要精确**：迷你图的数据源范围必须与实际数据行列精确对应，范围偏移会导致图形展示错误
 - **不要与 SPARKLINE() 公式混淆**：飞书表格的 `SPARKLINE()` 公式函数已被禁用，迷你图只能通过 `+sparkline-{create|update|delete}` 的对象方式创建
 - **胜负 / count 迷你图原生支持**：`config.type="win_loss"`——别因速查表没列就判"不支持"绕路
-- **创建后必须验证**：调用 `+sparkline-list` 确认迷你图配置正确
 
 ## Shortcuts
 
@@ -147,6 +146,5 @@ lark-cli sheets +sparkline-delete --url "..." --sheet-id "$SID" --group-id "grpA
   - `--properties`（仅 `+sparkline-create` / `+sparkline-update`）顶层只接 `config`（同组共享样式）和 `sparklines`（迷你图项数组）；`+sparkline-create` 要求每个 `sparklines[i]` 含 `position` 与 `source`（或 `source_range`，二选一）。
   - `+sparkline-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：写操作输出"将要 POST/PATCH/DELETE 的 sparkline group 请求模板"。
-- `Execute`：create/update 后必须调用 `+sparkline-list --group-id <id>` 核对 config、项目数量、source 与 position；delete 后 list 确认目标组不存在。
 
-===== 全文完（共 152 行）=====
+===== 全文完（共 150 行）=====

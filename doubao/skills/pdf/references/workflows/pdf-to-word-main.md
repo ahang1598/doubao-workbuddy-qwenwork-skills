@@ -34,12 +34,6 @@ MainAgent（你）
 | 10 - 300 页 | 具体的小时数（按每小时 30 页估算） |
 | ≥ 300 页 | 12 小时以上 |
 
-### 3. 修复 DOCX 并交付
+### 3. 交付
 
-收到 OrganizerAgent 交付的 DOCX 后，执行修复脚本处理兼容性问题：
-
-```bash
-python scripts/repair_docx.py input.docx --output repaired.docx
-```
-
-将修复后的 DOCX 文件和交付说明一并交付给用户。
+收到 OrganizerAgent 交付的 DOCX 后，直接将该文件和交付说明一并交付给用户。

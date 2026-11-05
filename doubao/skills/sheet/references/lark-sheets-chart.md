@@ -1,10 +1,10 @@
-> ⚠️ **强制前置条件**：本文档共 618 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
+> ⚠️ **强制前置条件**：本文档共 587 行，指令与约束分散在各处。必须读到末行「全文完」再执行任何其它操作——即使已找到当前所需的指令也不得提前停止；未见该标记前不得调用 Bash、`--help` 或任何其它工具，被截断就调整 `offset` 续读。本技能所有文档末行均有该标记。
 
 # Lark Sheet Chart
 
 ## 真对象硬约束
 
-当用户要求"画个图 / 数据可视化 / 趋势图 / 对比图 / 占比图"且产物交飞书表格时，**必须**通过图表创建命令创建真实的图表对象。**禁止**用本地脚本调 matplotlib / seaborn 生成图片再插入到表格代替——静态图片无法随源数据更新，且失去交互能力。判断标准：最终对象必须能被 `+chart-list` 返回；基础单图可先用创建调用返回的完整 `snapshot` 验证，批量创建必须按受影响的 sheet 回读列表。必须保留飞书不支持的图表能力时，按 `references/lark-sheets-workbook.md` 的兼容性分支交付完整 Excel，在文件中保留真实图表对象。
+当用户要求"画个图 / 数据可视化 / 趋势图 / 对比图 / 占比图"且产物交飞书表格时，**必须**通过图表创建命令创建真实的图表对象。**禁止**用本地脚本调 matplotlib / seaborn 生成图片再插入到表格代替——静态图片无法随源数据更新，且失去交互能力。必须保留飞书不支持的图表能力时，按 `references/lark-sheets-workbook.md` 的兼容性分支交付完整 Excel，在文件中保留真实图表对象。
 
 ## 使用场景
 
@@ -34,21 +34,15 @@
 
 普通创建、数据源修正和常用配置更新不要构造原始 snapshot。
 
-典型工作流：先确认表头、精确数据范围和图表配置，运行 `python3 scripts/lark_chart_size_advisor.py` 取得建议尺寸，再将返回的 `data.create_flags.width` / `height` 原样传给 `+chart-create-basic`；创建时尽量在同次调用中带上已知标题/轴/标签内容要求，标签位置只有用户明确指定时才传。创建后用返回的完整 `snapshot` 检查范围、方向与系列，再按需用 `+chart-list` 验证。已有图表的数据范围或方向错误时用 `+chart-data-update`，常用配置修正用 `+chart-config-update`。需要修改尺寸、逐系列标签、数据点或高级引擎字段且语义参数无法表达时，才按需读取现有 snapshot 并调 `+chart-update --properties`；只改尺寸无需携带 snapshot。不要为了常用配置先输出整份 schema，也不要删除重建已经创建成功的图表。
+典型工作流：先确认表头、精确数据范围和图表配置，运行 `python3 scripts/lark_chart_size_advisor.py` 取得建议尺寸，再将返回的 `data.create_flags.width` / `height` 原样传给 `+chart-create-basic`；创建时尽量在同次调用中带上已知标题/轴/标签内容要求，标签位置只有用户明确指定时才传。已有图表的数据范围或方向错误时用 `+chart-data-update`，常用配置修正用 `+chart-config-update`。需要修改尺寸、逐系列标签、数据点或高级引擎字段且语义参数无法表达时，才按需读取现有 snapshot 并调 `+chart-update --properties`；只改尺寸无需携带 snapshot。不要为了常用配置先输出整份 schema，也不要删除重建已经创建成功的图表。
 
-**多图表工作流**：先完成所有辅助数据和表头，列出每张目标图的类型、精确数据范围、标题和落点；确认清单后，用一次 `+batch-chart-create` 批量创建。它的每个 operation 直接填写 `+chart-create-basic` flags，CLI 内部固定按 `+chart-create-basic` 执行，不要再套 `shortcut` / `input`。图表之间独立时允许部分成功：按返回的逐项结果定位失败图表，只重试失败项。批量 create 的逐项结果不返回完整 snapshot；批次后每个受影响的 sheet 各调用一次 `+chart-list`。已经成功创建的图表有数据源或配置差异时，用 `+batch-chart-update` 批量执行对应的语义更新，不要删除重建。
+**多图表工作流**：先完成所有辅助数据和表头，列出每张目标图的类型、精确数据范围、标题和落点；确认清单后，用一次 `+batch-chart-create` 批量创建。它的每个 operation 直接填写 `+chart-create-basic` flags，CLI 内部固定按 `+chart-create-basic` 执行，不要再套 `shortcut` / `input`。图表之间独立时允许部分成功：按返回的逐项结果定位失败图表，只重试失败项。批量 create 的逐项结果不返回完整 snapshot；已经成功创建的图表有数据源或配置差异时，用 `+batch-chart-update` 批量执行对应的语义更新，不要删除重建。
 
-**图表错误处理工作流（必须按顺序）**：
-1. **基础单图走快路径**：sheet、范围、类型和落点都明确时，直接调用 `+chart-create-basic`，并检查返回的完整 `snapshot`；不要为了预览而固定多做一次 `--dry-run`。
-2. **以下情况创建前必须 `--dry-run`**：批量创建、多范围或跨子表数据源、包含“每个 / 分别 / 逐一”等数量词、落点不确定，或确实需要原始高级配置。检查数量、sheet、范围、类型和落点；输出中的 `tool_name` / `operation` / `basic_chart` / `properties` 是 CLI 翻译后的内部 MCP body，**只能读，不能复制回 operations**。
-3. 批量执行后同时检查 `succeeded`、`failed` 和逐项 `results[index]`；命令退出成功或顶层 `ok=true` 不代表每张图都成功。单图则检查返回的 `snapshot`。
-4. 有失败时保留成功图表，按原始 `index` 重新生成只包含失败项的新 operations。禁止复用原始整批 payload，否则会重复创建已经成功的图表。
-5. 批量成功后每个受影响 sheet 只调用一次 `+chart-list`，核对总数、标题、范围、方向与系列；基础单图的返回 `snapshot` 完整且符合预期时不再重复 list，只有响应不完整、后续又更新或结果存疑时再 list。
-6. 快照不符合预期时原地修复：数据源、方向、维度/系列、分离表头用 `+chart-data-update`；标题、轴、图例、标签、堆叠、平滑、配色用 `+chart-config-update`；只有高级字段才用 `+chart-update --properties` 的最小局部 patch。不要删除重建。
+**图表执行失败处理**：批量执行时读取 `succeeded`、`failed` 和逐项 `results[index]`；顶层 `ok=true` 不表示每项都成功。有失败时保留成功图表，按原始 `index` 生成只包含失败项的新 operations，避免重复创建。已成功图表的修改继续使用对应更新命令。
 
 **失败归因与恢复**：
 - 参数校验失败：只根据 stderr 指出的未知 flag、缺失字段或 operations 结构修正一次；不要把 `--dry-run` 展示的内部 body 复制回命令。
-- 批量部分失败：保留成功项，只重试 `failed` 对应的原始 index；重试前断言新 operations 数量等于失败数。
+- 批量部分失败：保留成功项，只重试 `failed` 对应的原始 index；按失败项生成新的 operations。
 - 执行成功但结果不符：以返回 snapshot / `+chart-list` 为准，在原图上走语义更新；不要因标题、范围或配色不对就删除重建。
 - 返回空输出或无法确认：检查退出码和 stderr，并做一次对象回读；仍无法确认时如实报告，禁止声称已完成。
 - 同一种修正再次失败：停止改猜 schema、MCP body 或完整 snapshot。若语义 shortcut 能表达就回到语义入口；否则保留原对象并报告明确错误。
@@ -57,10 +51,9 @@
 1. 先用 `+float-image-list` 读取待替换浮动图片的 ID、位置、尺寸和数量，并确认每张图片与目标真图表的对应关系；不得把 logo、说明图或无法确认对应关系的图片当成待替换图表。
 2. 用户要求“配色 / 样式与原图一致”时，必须先使用可用的图像理解能力视觉检查原图，确认图表类型、标题、系列配色、图例、标签、堆叠方式、位置和尺寸；`+float-image-list` 只用于获取对象信息，不能代替视觉检查。对无法确认的样式不得凭空猜测。
 3. 优先用 `+chart-create-basic` / `+batch-chart-create` 的语义参数复刻已确认的类型、标题、配色、图例、标签和堆叠方式，并尽量按原图位置与尺寸落图。普通整图配色使用 `--colors` / `--color-palette`；只有原图明确包含语义 shortcut 无法表达的单系列或单数据点样式时，才使用原始 `properties`。
-4. 建好真图表后，必须先用创建返回的完整 `snapshot` 或 `+chart-list` 确认图表数量、标题、数据源、系列和位置正确，再按 [Lark Sheet Float Image](./lark-sheets-float-image.md) 的高风险删除流程用 `+float-image-delete` 删除与其一一对应的原浮动图片。
-5. 删除后再调用一次 `+float-image-list`，确认被替换图片已消失，其它图片未受影响。
+4. 真图表创建成功后，按 [Lark Sheet Float Image](./lark-sheets-float-image.md) 的高风险删除流程用 `+float-image-delete` 删除与其一一对应的原浮动图片。
 
-**数量词必须展开**：用户说“每个 / 每天 / 分别 / 逐一 / 各一张图”时，先从数据中数出实体数 `N`，把这 `N` 张图逐项写进清单，再加上其它汇总图得到目标总数 `M`；一个包含全部实体的多系列图不能替代这 `N` 张独立图。批次前断言 operations 中恰有 `M` 个图表创建，批次后 `+chart-list` 断言图表总数、逐图标题与实体集合一致。**图表类型和维度也要逐图断言**：用户点名的图表类型（折线 / 柱状 / 堆积 / 饼）、横轴取哪一列、按哪一列分组，动手前写成清单，画完逐项核回来——多张单维度图不能替代一张按维度分组的图，反之亦然。
+**数量词必须展开**：用户说“每个 / 每天 / 分别 / 逐一 / 各一张图”时，先从数据中数出实体数 `N`，把这 `N` 张图逐项写进清单，再加上其它汇总图得到目标总数 `M`；一个包含全部实体的多系列图不能替代这 `N` 张独立图。在 operations 中为这 `M` 张图分别构造创建参数。**逐图确定类型和维度**：用户点名的图表类型（折线 / 柱状 / 堆积 / 饼）、横轴取哪一列、按哪一列分组，动手前写成清单——多张单维度图不能替代一张按维度分组的图，反之亦然。
 
 **范围与系列前置校验（创建前必做）**：清单中同时记录每张图的表头范围、纳入维度、明确排除维度、数据方向和预期系列数。每张图只支持一个类别 / X 轴维度（`dim1`），不支持把多个字段作为多级横轴；当前每张图**最多 50 个数值系列**；按列组织时通常为“所选数值列数”，按行组织时通常为“所选数值行数”。创建时就用 `+chart-create-basic --dim1-index ... --dim2-indexes ...` 显式选择类别与不超过 50 个数值系列；如果业务要求展示超过 50 个系列，应先建立紧凑汇总表或 Top-N，而不是反复删除重建。创建前根据实际表头确认索引和边界，不凭字母猜范围；创建后范围、方向或系列数不符时，使用 `+chart-data-update` 修正，CLI 会读取当前快照、重建 `refs` / `dim1` / `dim2.series` 并只提交 data patch，不要删除后重建。
 
@@ -72,11 +65,11 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
   --data-labels value --legend-position bottom --title "销售额对比"
 ```
 
-运行建议器时，参数必须与后续创建保持一致：创建命令显式设置 `--aggregate-categories` 时传入同一值，组合图同步传入 `--series-types`、`--series-y-axes` 和 `--series-data-labels`；创建命令不传全局或逐系列标签时，建议器按无标签估算。将返回的 `data.create_flags.width` / `height` 原样用于创建命令（包括 `--dry-run`），不要凭经验改小；`data.minimum_size` 仅表示兜底下限。若 `data.size_alone_is_insufficient=true`，先按 `data.layout_advice` 调整图表结构或标签策略，再用新配置重新计算尺寸。建议器只负责创建前预估，图表创建后仍须运行质量检查器。
+运行建议器时，参数必须与后续创建保持一致：创建命令显式设置 `--aggregate-categories` 时传入同一值，组合图同步传入 `--series-types`、`--series-y-axes` 和 `--series-data-labels`；创建命令不传全局或逐系列标签时，建议器按无标签估算。将返回的 `data.create_flags.width` / `height` 原样用于创建命令（包括 `--dry-run`），不要凭经验改小；`data.minimum_size` 仅表示兜底下限。若 `data.size_alone_is_insufficient=true`，先按 `data.layout_advice` 调整图表结构或标签策略，再用新配置重新计算尺寸。
 
 **类别汇总**：新建普通引用数据图表默认不汇总同名类别，按源数据行保留数据点；只有需要按类别求和、平均或计数时，才传 `--aggregate-categories=true`。高级 `+chart-create --properties` 对应 `snapshot.data.dim1.serie.aggregate`，省略时同样默认 `false`，指定 `aggregateType` 不会自动开启汇总。更新已有图表时省略该开关保留原设置。气泡图和排列图使用各自汇总配置。类别汇总与空值显示方式独立，关闭汇总不会覆盖已有的空值展示设置。
 
-**坐标轴语义与范围**：所有带坐标轴的图表都要在清单中记录每条轴对应的字段语义、类别轴 / 连续轴类型、单位以及主副轴归属，不能只核对轴标题。Y 轴显示范围默认交给图表引擎；用户未明确要求固定范围时，不传 `--y-axis-min` / `--y-axis-max`，需要固定范围时必须同时传上下界，重点只处理确有必要收紧的连续数值 X 轴。堆积图的峰值来自同一类别内系列累加，组合图还要按左右轴分别计算；不得直接把数据源单列的最小值 / 最大值当成 Y 轴边界。瀑布图的显示范围取决于逐项累计后的全部中间值、小计和总计，不得主动传 `--y-axis-min` / `--y-axis-max`；只有用户明确指定固定范围时才能例外，且必须覆盖所有累计节点。其它图表只有在用户明确要求或视觉验收证明自动范围不可读时，才按图表类型的实际绘制值计算并设置 Y 轴范围。多图对比时，先判断“范围 / 尺度一致”指绝对边界相同，还是跨度和刻度可比；对比同一指标时保持值轴口径一致，不同单位或量级的指标不强行共用边界。
+**坐标轴语义与范围**：所有带坐标轴的图表都要在清单中记录每条轴对应的字段语义、类别轴 / 连续轴类型、单位以及主副轴归属，不能只核对轴标题。Y 轴显示范围默认交给图表引擎；用户未明确要求固定范围时，不传 `--y-axis-min` / `--y-axis-max`，需要固定范围时必须同时传上下界，重点只处理确有必要收紧的连续数值 X 轴。堆积图的峰值来自同一类别内系列累加，组合图还要按左右轴分别计算；不得直接把数据源单列的最小值 / 最大值当成 Y 轴边界。瀑布图的显示范围取决于逐项累计后的全部中间值、小计和总计，不得主动传 `--y-axis-min` / `--y-axis-max`；只有用户明确指定固定范围时才能例外，且必须覆盖所有累计节点。其它图表只有在用户明确要求或自动范围不可读时，才按图表类型的实际绘制值计算并设置 Y 轴范围。多图对比时，先判断“范围 / 尺度一致”指绝对边界相同，还是跨度和刻度可比；对比同一指标时保持值轴口径一致，不同单位或量级的指标不强行共用边界。
 
 **横向类别行配方**：当日期/月份等类别横向排列在一行、目标数值在另一行时，把“类别行 + 数值行”一起放进 `--data-range` 并传 `--data-direction row`，例如 `--data-range "'Sheet1'!A1:M1,'Sheet1'!A3:M3" --data-direction row`。此时类别行属于数据映射，**不要**传给 `--header-range`。`--header-range` 仅表示与纯数据分离的“维度/系列名称”：column 方向必须是一行，row 方向必须是一列。row 方向却传入多列表头，通常说明把类别行误当成了分离表头。
 
@@ -103,7 +96,7 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
 - **图表类型选择错误**：用户说"堆积柱形图 / 百分比堆积"时，用 `+chart-create-basic --stack normal|percent` 或 `+chart-config-update --stack normal|percent`；用户说"占比 / 比例"时，优先考虑饼图或百分比堆积图。注意 `column` 是纵向柱形图、`bar` 是横向条形图，"对比 / 各 XX" 类纵向柱默认用 `column`；面积图原生支持 `snapshot.plotArea.plot.type="area"`，别因速查表没列就判"不支持"。
 - **数据标签开关与避让**：折线图及组合图中的折线系列默认关闭整系列的逐点标签，仅用户明确要求时开启；末点、峰值、关键点等单点标签可按展示需要单独设置。创建折线图传 `--data-labels none`；组合图省略全局 `--data-labels`，用 `--series-data-labels` 按系列设置，折线项传 `none`，其他系列按需保留标签（如柱 + 折线传 `value,none`）。其他基础图先按拟开启 `--data-labels value` 运行尺寸建议器，再用建议宽高创建；不要仅凭数据点或系列数预先关闭这些标签。建议器与创建使用相同标签策略。仅对使用全局标签的图表，标签使用建议尺寸后仍重叠时，在高级更新中给全局 `plotArea.plot.labels` 保留所需内容并设置 `overlap: true` 尝试自动平移避让；它不控制显隐，也不支持逐系列设置。柱形显示、折线隐藏等逐系列标签策略的组合图须保持全局 `labels` 缺省，不得为避让新增全局 `labels`，仅写 `{overlap: true}` 也会开启默认标签；先调整图表尺寸，再回读并完整回写系列数组，仅调整需显示标签系列的 `labels.position`。仍无法辨认时再依次改为稀疏标签、Top-N 或拆图；折线图默认关闭整系列逐点标签或用户明确要求隐藏全部标签时传全局 `--data-labels none`。已有图用 `+chart-config-update --data-labels`，不要为普通标签开关构造原始 `labels` 对象；只有语义 shortcut 无法表达的避让等高级字段才走 `+chart-update`。高级配置中 `plotArea.plot.labels` 对象的存在性即开关：创建时关闭标签应省略该字段，更新时删除已有全局标签传 `labels: null`，不能用全部字段置为 `false` 代替。组合图各系列的标签要求不同时，禁止传全局 `--data-labels`，改用 `--series-data-labels` 按显式 `--dim2-indexes` 顺序逐项设置；已有图的高级调整仍须读取并完整回写系列数组。
 - **辅助线与单点标签**：基准线、目标线、阈值线、平均线或上下限用重复值列作为 `line` 系列。只标折线的线尾、峰值或关键点时，关闭全局及该系列的逐点标签，在该系列的 `points.point[]` 中设置目标点的 `labels`；需要突出标记时同时设置 `size`。不要叠加稀疏 `scatter` 系列，折线与散点混合会影响 Excel 导出。`series[].index` 与 `data.dim2.series[].index` 对齐，点的 `index` 从 1 开始、不含表头；按源数据行定位时传 `--aggregate-categories=false`。更新前回读并保留完整 `series` 数组及已有点配置。
-- **常量系列标签**：目标线、阈值线和上下限等重复常量系列默认不显示逐点标签；名称和值放在系列名、图例、标题或单点标签中。质量检查器提示“常量系列重复标签”时，移除该系列标签或改为单点标签。
+- **常量系列标签**：目标线、阈值线和上下限等重复常量系列默认不显示逐点标签；名称和值放在系列名、图例、标题或单点标签中。存在常量系列重复标签时，移除该系列标签或改为单点标签。
 - **数据标签位置**：只有用户明确要求且已有标签时才传 `--data-label-position`；它只调整已有标签的位置，不会单独开启标签。需要同时显示标签时一并传 `--data-labels` 或 `--series-data-labels`，逐系列模式下统一作用于非 `none` 的系列；未明确位置时省略，让图表按类型自动选择。标签位置只控制摆放方式；仅显示末点或关键点用该点的 `labels`。普通非堆叠柱形图显示数据标签位置一般传 `outside`。
 - **数据源范围与系列名来源要对齐**：
   - 默认让 `--data-range` 包含真正的表头行 / 列；表头上方的合并大标题必须跳过。
@@ -114,7 +107,6 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
 - **轴口径错误**：用户要"占比 / 比例"时，用饼图或 `--stack percent`，并核对数据源与标签确实表达百分比，不要交付仍以原始计数为纵轴的图。
 - **组合图系列被压扁**：创建前比较各系列的单位和典型值 / 峰值量级；单位不同、相差约一个数量级以上，或折线贴近 X 轴时，不得把所有系列都放左轴。用 `--series-y-axes` 将会被压扁的系列（常见为百分比、比率或小量级折线）放到右轴，并用左右轴标题明确各自单位；`--series-types` / `--series-y-axes` 必须与 `--dim2-indexes` 逐项对齐。
 - **饼图标签截断**：饼图默认传 `--legend-position bottom`，并使用比普通单图更宽的画布；创建时同时传 `--width` / `--height`。宽度主要为左右两侧最长标签留白，不因类别数量线性增加；类别过多时改用 Top-N 或条形图，不能靠无限加宽或截断标签交付。
-- **对象语义验证**：基础单图先核对返回的完整 `snapshot`；批量创建、响应不完整、后续又更新或结果存疑时，再按受影响的 sheet 调一次 `+chart-list`。这里只核对数量、数据源、方向、系列和配置，不能代替交付前的布局检查。
 
 > **⚠️ 硬性规则：当用户通过列标题名称（而非列索引）指定横轴/纵轴系列时，必须先读取表格首行（表头）来确定列名与列索引的对应关系，再设置普通图表的 `--dim1-index` / `--dim2-indexes` 或气泡图的角色索引。**
 > 例如用户说"横轴为车型系列，纵轴为 Q1-Q4 的销量"，不能猜测列索引；先用 `+cells-get` 读取数据源范围的表头，再将确认后的 1-based 索引传给 `+chart-create-basic`。
@@ -231,41 +223,21 @@ python3 scripts/lark_chart_size_advisor.py "<表格 URL 或 spreadsheet token>" 
 | 饼图 | `720 × 440` |
 - 同一工作表中的同级图表应保持相同宽高。
 
-## 图表验证与交付验收
+## 按需查看图表预览
 
-完成本次所有图表创建或更新后，再逐图核对以下项；全部通过才算完成：
-
-1. **数量**：图表数 = 用户明确要求的数量（"每个 / 分别 / 逐一"等数量词已逐项展开为独立图，不用一张多系列图代替）。
-2. **数据语义与展示项**：先回读并核对数据、公式、聚合、数据范围、系列映射和坐标轴语义，再核对标题、副标题、图例和标签要求；缩略图只能证明渲染结果，不能证明业务计算正确。密集标签按“建议尺寸 → 稀疏标签 → Top-N / 拆图”处理，辅助系列不得用全点重复标签模拟单点或末点。
-3. **迭代期轻量单点验图**：调整单张图时可直接用 `+chart-list --chart-id ... --only-thumbnail`，但将完整 JSON 通过 stdin 交给配套解码器，不要临时编写 JSON/base64 解析：
+用户明确要求查看图表预览，或需定位已知具体视觉异常时，将 `+chart-list --only-thumbnail` 的响应传给解码器，或直接运行：
 
 ```bash
-lark-cli sheets +chart-list --url "$URL" --sheet-id "$SID" \
-  --chart-id "$CID" --only-thumbnail |
-python3 scripts/lark_chart_thumbnail_decode.py \
-  --output-dir "/tmp/lark-chart-preview-$CID" --expected-chart-id "$CID"
+python3 scripts/lark_chart_thumbnail_decode.py --url "$URL" --sheet-id "$SID" \
+  --chart-id "$CID" --output-dir "./chart-preview"
 ```
 
-不适合 shell 管道时，可直接运行 `python3 scripts/lark_chart_thumbnail_decode.py --url "$URL" --sheet-id "$SID" --chart-id "$CID" --output-dir "./chart-preview"`。命令成功后读取 `read_required[].path` 中的图片；多图可一次读取，仅超时时再分批。
+返回 `data.images[].path` 为可读取的图片路径，文件清单保存在 `data.manifest_path`。
 
-4. **最终统一质检**：全部创建和更新完成后，对每个受影响子表运行 `python3 scripts/lark_chart_quality_check.py "<表格 URL 或 spreadsheet token>" --worksheet-id "<reference_id>"`。该脚本依赖当前 `lark-cli` 支持 `+chart-list --only-thumbnail`；发布时先升级 CLI 再发布 skill，遇到 unknown flag / unsupported flag 时升级 CLI 后重跑，不得跳过缩略图门禁。按 `next_action` 处理并读完 `data.thumbnail_fetch.read_required[].path`；`unavailable_chart_ids` 必须为空，仅图片读取超时时再分批。
-
-按 `next_action` 处理非成功结果，不要自行展开 base64 解析。出现 `stop_reason` 时不要立即重跑：不可重试的错误先修复权限或参数；临时错误可稍后重跑一次，或直接报告未完成范围与停止原因。交付时简短分别声明“数据验收 / 静态质检 / 视觉验收”通过或未通过，不要合并成含义不清的“质检通过”。任何修图后必须重新运行最终 QC，只认最终一轮结果。
-
-模型读取缩略图后按三项标准验收：
-
-1. **数据准确**：图中的类别、系列、数值、数据标签和坐标轴口径与数据 / 公式回读结果一致。
-2. **展示完整**：题面要求的内容全部呈现，不存在文字重叠、遮挡或关键元素缺失；沿画布和绘图区四边检查所有可视元素是否完整，接触边界本身不构成失败，但出现非预期裁切、越出可视区，或标题、标签、图例等被截断时必须判定失败。数据点或元素锚点位于有效范围内不等于完整可见；放大检查密集区能否逐项辨认。若大部分点 / 气泡挤在单侧狭窄区域、另一侧长期空白，先判断 0 是否是有意义的基准；是则保留，否则收紧连续轴范围后重新验图。
-3. **样式合理**：图表类型与布局合理，配色美观且系列间颜色对比明显，关键信息易于辨认。
-
-视觉验收发现以下问题时，按对应方式修正：
+## 标签调整
 
 - **横轴标签保持水平**：标签倾斜时，先扩宽图表并按需增加高度，通过 `+chart-update --properties` 调整 `size.width` / `size.height`，再用 `+chart-config-update --x-axis-label-angle 0` 恢复水平；调整后的标签应水平摆放、显示完整且不互相重叠。
-- **折线整系列标签默认关闭**：折线图及组合图中的折线系列默认关闭整系列的逐点标签，仅用户明确要求时开启；末点、峰值、关键点等单点标签可按展示需要单独设置。验收时核对该策略；需关闭已有折线图的全局标签时用 `+chart-config-update --data-labels none`。已有系列级标签的折线图或组合图需调整标签时，先回读当前 snapshot，用 `+chart-update --properties` 完整回写 `snapshot.plotArea.plot.series` 数组，移除折线条目的 `labels`，保留按需设置的单点标签；若已有全局 `snapshot.plotArea.plot.labels`，先把需保留的标签内容转为对应系列的 `labels`，再用全局 `labels: null` 清除，避免折线继续继承全局标签。仅当用户明确要求隐藏全部数据标签时，同时清理对应折线的 `series[].points.point[].labels`，以及普通折线图的 `plot.points.point[].labels`；保留点索引、标记大小和其它样式。
-
-三项必须同时通过。模型在分析中只要识别出任一关键元素重叠、截断、遮挡或无法逐项辨认，就必须明确判定视觉验收未通过，实际修图后重新运行最终 QC 并重读受影响图片；不得以“核心信息可读”“只是小问题”或自动检查通过为由保留缺陷。`lark_sheet_selfcheck.py` 的 `CHECK_PASS` 不包含图表视觉结论，不能替代本门禁。
-
-静态检查仍覆盖几何重叠、遮挡内容、越界、最小尺寸、数值源格式、全零 / 空系列和常量系列重复标签。采样未覆盖完整系列时列为不可验证，不能据此修改整个系列。退出码 `0` 也不代表数据语义与视觉判断已完成。
+- **折线整系列标签默认关闭**：折线图及组合图中的折线系列默认关闭整系列的逐点标签，仅用户明确要求时开启；末点、峰值、关键点等单点标签可按展示需要单独设置。需关闭已有折线图的全局标签时用 `+chart-config-update --data-labels none`。已有系列级标签的折线图或组合图需调整标签时，先回读当前 snapshot，用 `+chart-update --properties` 完整回写 `snapshot.plotArea.plot.series` 数组，移除折线条目的 `labels`，保留按需设置的单点标签；若已有全局 `snapshot.plotArea.plot.labels`，先把需保留的标签内容转为对应系列的 `labels`，再用全局 `labels: null` 清除，避免折线继续继承全局标签。仅当用户明确要求隐藏全部数据标签时，同时清理对应折线的 `series[].points.point[].labels`，以及普通折线图的 `plot.points.point[].labels`；保留点索引、标记大小和其它样式。
 
 ## Shortcuts
 
@@ -289,8 +261,6 @@ _公共四件套 · 系统：`--dry-run`_
 | --- | --- | --- | --- |
 | `--chart-id` | string | optional | 指定单个图表 reference_id 过滤 |
 | `--only-thumbnail` | bool | optional | 仅返回图表渲染缩略图，不返回 snapshot 配置；图片字节位于 details.thumbnail.base64（不含 data: 前缀） |
-
-> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ### `+chart-create-basic`
 
@@ -336,6 +306,8 @@ _公共四件套 · 系统：`--dry-run`_
 | `--anchor-cell` | string | optional | 可选图表锚点单元格，如 F2；省略时放到数据范围右侧 |
 | `--width` | int | optional | 可选图表宽度；必须与 --height 同时传；饼图及长类别标签场景应适量加宽以避免截断 |
 | `--height` | int | optional | 可选图表高度；必须与 --width 同时传 |
+
+> ⏬ 未完——继续调整 offset 续读，直到末行「全文完」标记。
 
 ### `+chart-config-update`
 
@@ -429,11 +401,11 @@ _创建/更新的图表属性_
 
 ### `+chart-list`
 
-输出契约：默认返回按工作表分组的图表列表，每个图表含 `chart_id` / `position` / `details.snapshot` 等；传 `--only-thumbnail` 时返回渲染缩略图。迭代中可按 `chart_id` 直接调用并将响应交给 `scripts/lark_chart_thumbnail_decode.py`，不要临时编写 base64 解析；最终交付仍使用上方统一 QC。
+输出契约：默认返回按工作表分组的图表列表，每个图表含 `chart_id` / `position` / `details.snapshot` 等；传 `--only-thumbnail` 时返回渲染缩略图。
 
 ### `+chart-create-basic`
 
-默认使用第 1 个维度作为类别/X 轴，其余维度作为数值系列；普通图表可用 1-based 的 `--dim1-index` 和逗号分隔的 `--dim2-indexes` 精确选择。组合图默认首个数值系列为左轴柱、其余为右轴折线；创建前仍要比较各系列单位和量级，避免折线或小量级系列因共用左轴而贴近 X 轴。需要其它组合时，用 `--series-types`、`--series-y-axes` 和 `--series-data-labels` 按 `--dim2-indexes` 的顺序逐项指定系列类型、左右轴与标签；这些参数的数量必须与最终数值系列数一致，逐系列标签与全局 `--data-labels` 互斥。横轴数字默认按等间距文本类别处理；只有数字之间的真实间距需要影响图形位置时，才传 `--x-axis-numbers-as values` 使用连续数轴。气泡图改用 `--key-index`、`--x-index`、`--y-index` 和可选的 `--group-index` / `--size-index`，其中 x/y 必须同时提供，key 默认 1；角色索引不能与 dim1/dim2 索引混用。旧气泡图的 dim1/dim2 位置调用仍兼容。饼图和排列图只允许一个数值系列；组合图至少需要两个数值系列；所有图表最多选择 50 个数值系列。饼图默认将图例放在底部，并根据类别标签长度适量增加 `--width`（同时传 `--height`）。默认让 `--data-range` 包含真实表头；只有“维度/系列名称”与纯数据分离时，才让 `--data-range` 只传纯数据，并用 `--header-range` 传对应的一行（column）或一列（row）表头。类别维度与数值维度不连续时，范围参数可传逗号分隔的多范围，也支持来自多个子表；沿数据点轴对齐的跨子表范围会保留独立引用，同一子表内错行、错列或重叠时合并为最小包围矩形，跨子表范围无法对齐时会报错。单独调用成功后返回完整 `snapshot`，可直接检查创建结果并继续修改。参数名使用 `--anchor-cell` 和 `--data-labels`。兼容调用中，`--type` / `--range` 会分别按 `--chart-type` / `--data-range` 处理，`--x-axis` / `--y-axis` 会按轴标题处理；新调用仍优先使用规范参数名。
+默认使用第 1 个维度作为类别/X 轴，其余维度作为数值系列；普通图表可用 1-based 的 `--dim1-index` 和逗号分隔的 `--dim2-indexes` 精确选择。组合图默认首个数值系列为左轴柱、其余为右轴折线；创建前仍要比较各系列单位和量级，避免折线或小量级系列因共用左轴而贴近 X 轴。需要其它组合时，用 `--series-types`、`--series-y-axes` 和 `--series-data-labels` 按 `--dim2-indexes` 的顺序逐项指定系列类型、左右轴与标签；这些参数的数量必须与最终数值系列数一致，逐系列标签与全局 `--data-labels` 互斥。横轴数字默认按等间距文本类别处理；只有数字之间的真实间距需要影响图形位置时，才传 `--x-axis-numbers-as values` 使用连续数轴。气泡图改用 `--key-index`、`--x-index`、`--y-index` 和可选的 `--group-index` / `--size-index`，其中 x/y 必须同时提供，key 默认 1；角色索引不能与 dim1/dim2 索引混用。旧气泡图的 dim1/dim2 位置调用仍兼容。饼图和排列图只允许一个数值系列；组合图至少需要两个数值系列；所有图表最多选择 50 个数值系列。饼图默认将图例放在底部，并根据类别标签长度适量增加 `--width`（同时传 `--height`）。默认让 `--data-range` 包含真实表头；只有“维度/系列名称”与纯数据分离时，才让 `--data-range` 只传纯数据，并用 `--header-range` 传对应的一行（column）或一列（row）表头。类别维度与数值维度不连续时，范围参数可传逗号分隔的多范围，也支持来自多个子表；沿数据点轴对齐的跨子表范围会保留独立引用，同一子表内错行、错列或重叠时合并为最小包围矩形，跨子表范围无法对齐时会报错。单独调用成功后返回完整 `snapshot`，可继续按需要修改。参数名使用 `--anchor-cell` 和 `--data-labels`。兼容调用中，`--type` / `--range` 会分别按 `--chart-type` / `--data-range` 处理，`--x-axis` / `--y-axis` 会按轴标题处理；新调用仍优先使用规范参数名。
 
 **连续数值 X 轴的可读性**：散点图使用 `--x-axis-numbers-as values`，气泡图的 x 角色天然是连续数轴；未指定范围时都可能自动包含 0。数据集中在远离 0 的窄区间时，先根据业务语义判断 0 基准是否必须保留；不必保留时，散点图创建时可用 `--x-axis-min` / `--x-axis-max`，气泡图创建后用 `+chart-config-update` 收紧范围，不要改成 `text` 掩盖问题。两个边界可单独设置；同时设置时 min 必须小于 max。
 
@@ -517,7 +489,6 @@ lark-cli sheets +chart-create-basic --url "..." --sheet-name "Sheet1" \
 
 ```bash
 lark-cli sheets +batch-chart-create --url "..." --operations @ops.json
-lark-cli sheets +chart-list --url "..." --sheet-name "Sheet1"
 ```
 
 为了兼容旧调用，CLI 仍能读取历史 `{shortcut:"+chart-create-basic",input:{...}}` 结构，但新任务直接填写上面的扁平 `+chart-create-basic` flags。
@@ -572,7 +543,6 @@ lark-cli sheets +chart-config-update --url "..." --sheet-id "$SID" --chart-id "c
 - `refs` / `axes` / `series` 等数组整体替换。只改数组中的一项时，先从 `+chart-list` 读取当前完整数组，修改后只回写该数组；
 - `snapshot.data.isStaticData` 不能通过 update 改变；需要切换静态 / 非静态数据时删除后重建；
 - 只调整尺寸时直接传 `size`，不需要传 `snapshot`；
-- 执行前用 `--dry-run` 检查目标 sheet、chart_id 和最小 patch，执行后用 `+chart-list --chart-id <id>` 核对实际 snapshot。
 
 ```bash
 # 只调整尺寸；无需携带 snapshot
@@ -611,8 +581,7 @@ lark-cli sheets +chart-delete --url "https://example.feishu.cn/sheets/shtXXX" --
 
 - `Validate`：XOR 公共四件套；`+chart-data-update` 要求 `--chart-id` 和 `--data-range`，并校验 `--dim1-index` / `--dim2-indexes` 是正整数索引；`+chart-create` / `+chart-update` 的 `--properties` 必须能解析为合法 JSON；`+chart-delete`（high-risk-write）校验 `--yes` 或 `--dry-run` 至少一个。
 - `DryRun`：`+chart-data-update` / `+chart-create` / `+chart-update` 输出"将要 POST 的 body 模板"；`+chart-delete` 输出"将要删除的 chart_id 及隶属 sheet"，零网络副作用。
-- `Execute`：`+chart-create-basic` 成功后返回完整 `snapshot`，可直接验证；批量创建、响应不完整、后续更新或结果存疑时，再按受影响 sheet 调用一次 `+chart-list` 比对结果。
 
 > `+chart-create` / `+chart-update` 是 write 级别，按需可用 `--dry-run` 预览，不要求 `--yes`。只有 `+chart-delete`（high-risk-write）必须 `--yes`。
 
-===== 全文完（共 618 行）=====
+===== 全文完（共 587 行）=====

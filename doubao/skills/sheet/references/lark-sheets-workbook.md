@@ -29,10 +29,9 @@
 - 若 `+workbook-info` 返回包含 `warning_message`，说明部分 `sheet_id` 已失效（被删除/改名或输入错误），应停止复用这些 id，重新不带 `sheet_ids` 全量获取结构后再继续操作
 
 **常见配置错误（必须注意）**：
-- **获取结构是第一步**：任何表格操作前必须先调用 `+workbook-info`，不要跳过直接操作。返回的行列数、子表列表是后续所有操作的基础
+- **按操作定位子表**：需要读取 / 编辑已有子表内容或修改 sheet 结构时，用 `+workbook-info` 获取所需的子表与范围信息。纯文件导入使用本地路径和导入回执，无需通过子表结构定位。
 - **sheet_id 不要写错**：从 `+workbook-info` 返回值中精确获取 `sheet_id`，不要手动拼写或从 URL 中猜测
 - **未点名网格目标**：默认候选仅 `resource_type=sheet && is_hidden=false` 的可见普通网格；唯一候选才自动选，多候选按用户给的表名/表头/内容匹配，仍不唯一则询问。禁止按 `index` 或猜 `Sheet1`；用户显式点名 hidden sheet 可操作，bitable / `#UNSUPPORTED_TYPE` 改走对应产品 API。
-- **xlsx 验收触发边界**：普通在线交付不导出。只有用户明确要求本地 xlsx / 下载 / 打印时，才在 `--output-path` 导出后验收；本地 Excel 输入则直接验证导入前已有的本地文件，导入在线后不再导出回验。允许触发时对**实际落盘的 xlsx 路径**运行 `python3 scripts/excel_artifact_verify.py <导出得到的文件路径>`（`--output-path` 指向目录时按服务端文件名落盘，用导出结果里的真实路径，不要写死 `./report.xlsx`）——它重开工作簿、扫缓存错误值与 `_xlfn.` 兼容性问题；`violations_found` 时未完成，`status: error` 表示文件没打开，先查路径与文件本身。
 
 ## Shortcuts
 
@@ -253,7 +252,7 @@ lark-cli sheets +workbook-create --title "交易" --sheets '{
   ]}'
 ```
 
-`--sheets` 协议与 `+table-put` 完全同构（字段含义见 lark-sheets-write-cells 的 `+table-put`，大 payload 走 stdin / `@file`）。关键差异：**新建工作簿的默认子表会被复用为第一个子表**（重命名后承载数据），不会残留空 `Sheet1`；其余子表按需新建。它把 `+table-put` 单独做不到的"建表 + typed 写入"合到一条命令，是「pandas 算完直接落地一张带真日期的新表」的首选。回读校验用 `+table-get`（与 `--sheets` 同构、可 round-trip）。
+`--sheets` 协议与 `+table-put` 完全同构（字段含义见 lark-sheets-write-cells 的 `+table-put`，大 payload 走 stdin / `@file`）。关键差异：**新建工作簿的默认子表会被复用为第一个子表**（重命名后承载数据），不会残留空 `Sheet1`；其余子表按需新建。它把 `+table-put` 单独做不到的"建表 + typed 写入"合到一条命令，是「pandas 算完直接落地一张带真日期的新表」的首选。读取 typed 数据可用 `+table-get`（与 `--sheets` 同构）。
 
 > 💡 pandas DataFrame 走 `--sheets` 时直接 `from lark_sheets_df import df_to_sheet`（[`scripts/lark_sheets_df.py`](../scripts/lark_sheets_df.py)，与 `+table-put` 共用同一份 helper），多子表场景 helper 优势更明显：
 > ```python
@@ -329,7 +328,7 @@ lark-cli sheets +workbook-create --title "经营看板" --sheets '{
   }'
 ```
 
-> ⚠️ **`+workbook-create` 是把内存里的数据写成新表；要把已有的本地 Excel/CSV 文件直接导入成新表，用 `+workbook-import`**（见下），不要先在本地读出文件再 `+workbook-create` 重灌；导入的兼容性按下文回执与回读结果判断。
+> ⚠️ **`+workbook-create` 是把内存里的数据写成新表；要把已有的本地 Excel/CSV 文件直接导入成新表，用 `+workbook-import`**（见下），不要先在本地读出文件再 `+workbook-create` 重灌；导入的兼容性按下文回执处理。
 
 ### `+workbook-import`
 
@@ -345,14 +344,15 @@ lark-cli sheets +workbook-import --file ./report.csv --folder-token <FOLDER_TOKE
 
 - **不接受任何 spreadsheet / sheet 定位 flag**（它是新建，不操作已有表）：只有 `--file`（必填）/ `--folder-token` / `--name`。
 - **`--file` 只接受当前工作目录内的相对路径**：先 `cd` 到文件所在目录（或 workspace），再传 `./file.xlsx` / `data/file.xlsx`；传 `/home/.../file.xlsx`、`C:\...\file.xlsx` 这类绝对路径会被判定 `unsafe file path` 拒绝。
-- 导入后先完成下述兼容性检查和用户要求的全部操作，再通过宿主提供的产物交付工具交付最终链接或完整 Excel，并确认调用成功；只写进回复正文不算交付。工具是 `present_files`；工具交付时，调用前后的回复文本均不输出产物 URL（含裸链接与 Markdown 超链接），用产物名称指代。宿主未提供该能力或调用明确报工具不存在时，在正文给出最终 URL / 路径。
+- **纯文件导入的完成路径**：按要求复制 / 改文件名 → 用文件路径执行导入 → 等待回执 `ready=true`、`job_status=0` 并处理 `data.extra` → 交付返回的 URL。后续无表内操作时，不追加 `+workbook-info`、全表 `+csv-get` 或本地逐格比对。用户明确要求比对，或已有回执 / 读数显示具体异常时，才针对相关内容读取；说明仅限实际执行与回执可支持的结论。
+- 导入后读取本次回执，按下述规则处理已报告的兼容性提示；完成用户要求的全部操作后，通过宿主提供的产物交付工具交付最终链接或完整 Excel，并确认调用成功；只写进回复正文不算交付。工具是 `present_files`；工具交付时，调用前后的回复文本均不输出产物 URL（含裸链接与 Markdown 超链接），用产物名称指代。宿主未提供该能力或调用明确报工具不存在时，在正文给出最终 URL / 路径。
 - 本地表格文件 → 飞书电子表格一律用本命令，**不要**用 `drive +import` 导电子表格——它是 sheets 之外的通用导入、还需额外指定 `--type`，绕路且更易错。只有要把本地表格导入成**多维表格**（bitable）时，才改用 `lark-cli drive +import --type bitable`。
-- 返回 `token` / `url` / `ticket` / `ready` / `job_status`，`data.extra` 会列出本次导入的不支持元素提示。只有 `ready=true` 且 `job_status=0` 才算导入完成，**不代表内容完整**；`timed_out=true` 时按 `next_command` 续查，不能交付为成功。随后用新 URL 调 `+workbook-info`，按用户要求回读关键 sheet/range 与对象。
-- **导入后必须检查 `data.extra`**：例如 `data.extra=["NotSupport:shape"]` 表示形状不受支持，本次导入有损。逐项结合源 Excel 判断对内容、计算、交互和版式要求的影响，不能因 `ok=true` 或单元格数据正确而忽略。`extra` 为空或缺失也不能替代回读检查。
-- **优先考虑兼容替代，采用后再重导**：创建 / 修改文件时优先采用飞书支持的实现；收到提示后，可参考下方示例选择能满足需求、改动成本合理的方案，不把替换作为交付前置条件。选择替代时，在不损失必需内容与功能、不越过允许改动范围的前提下修改 Excel 副本，重新验证后执行 `lark-cli sheets +workbook-import --file ./output.xlsx`；需要在线原生对象时再按对应 reference 重建，复查新回执与受影响内容，用最终新 URL 交付。不能删掉必需元素来清空提示，也不要原样重复导入期待提示消失。
-- **完整 Excel 是可接受的交付方案**：没有满足需求的方案、替代不适合本任务或需保留原元素时，可保留这些元素并在 Excel 中完成本轮全部操作，验证后交付该文件，无需反复尝试替换；也可同时交飞书表格，明确 Excel 是完整产物，并说明在线版缺失哪些元素及其影响。此分支允许只交 Excel 或双交，无需用户先拒绝在线表格或要求双交；在线版不能作为完整产物单独交付，也不能从有损在线版导出文件冒充完整 Excel。
+- 返回 `token` / `url` / `ticket` / `ready` / `job_status`，`data.extra` 会列出本次导入的不支持元素提示。只有 `ready=true` 且 `job_status=0` 才算导入完成；兼容性提示按下述 `data.extra` 分支处理；`timed_out=true` 时按 `next_command` 续查，不能交付为成功。
+- **按导入回执处理兼容性**：读取本次回执中的 `data.extra`；例如 `data.extra=["NotSupport:shape"]` 表示形状不受支持，本次导入有损。逐项结合源 Excel 判断对内容、计算、交互和版式要求的影响，不能因 `ok=true` 或单元格数据正确而忽略。
+- **优先考虑兼容替代，采用后再重导**：创建 / 修改文件时优先采用飞书支持的实现；收到提示后，可参考下方示例选择能满足需求、改动成本合理的方案，不把替换作为交付前置条件。选择替代时，在不损失必需内容与功能、不越过允许改动范围的前提下修改 Excel 副本，执行 `lark-cli sheets +workbook-import --file ./output.xlsx`；需要在线原生对象时再按对应 reference 重建，读取新回执，用最终新 URL 交付。不能删掉必需元素来清空提示，也不要原样重复导入期待提示消失。
+- **完整 Excel 是可接受的交付方案**：没有满足需求的方案、替代不适合本任务或需保留原元素时，可保留这些元素并在 Excel 中完成本轮全部操作，交付该文件，无需反复尝试替换；也可同时交飞书表格，明确 Excel 是完整产物，并说明在线版缺失哪些元素及其影响。此分支允许只交 Excel 或双交，无需用户先拒绝在线表格或要求双交；在线版不能作为完整产物单独交付，也不能从有损在线版导出文件冒充完整 Excel。
 - **保真文件须承接本轮变更**：运行环境允许本地编辑且已选择完整Excel方案时，以包含此前已完成修改的可信完整版本为base，再应用本轮授权变更。仅有初始附件时，还须恢复需要保留的既有修改，不能把旧附件当完成品。区分原附件→导入与本轮改前→改后的差异；已存在的转换损失不能靠重刷全表样式掩盖，也不能把有损导出件当保真基准。仅改原布局内单元格的内容且布局 / 样式不变时，可用 `python3 scripts/excel_apply_edits.py --source ./baseline.xlsx --output ./complete.xlsx --changes ./edits.json --scope '明细!B2'`（JSON与限制见 `references/guide-execution-flow.md`）。
-- **导入仍可能改变版式**：值、公式、数字格式、合并区、冻结、下拉校验需按源文件核对；行高列宽、边框、主题色填充（`fgColor theme=N`）、以及**跟随工作簿默认字体的格**（源表默认字体是中文字体时，这类格会回落到系统默认）也可能变化。选择在线交付且要求保留原版式时，按源文件的值用 `+rows-resize` / `+cols-resize` 回写尺寸（飞书用像素、Excel 行高用磅，换算约 `px ≈ pt × 4/3`）；无法修复或不适合调整时可保留完整 Excel，交付说明写明差异。
+- **导入仍可能改变版式**：值、公式、数字格式、合并区、冻结、下拉规则、行高列宽、边框、主题色填充（`fgColor theme=N`）、以及**跟随工作簿默认字体的格**（源表默认字体是中文字体时，这类格会回落到系统默认）也可能变化。选择在线交付且要求保留原版式时，按源文件的值用 `+rows-resize` / `+cols-resize` 回写尺寸（飞书用像素、Excel 行高用磅，换算约 `px ≈ pt × 4/3`）；无法修复或不适合调整时可保留完整 Excel，交付说明写明差异。
 - **保真附件不替代明确的原位编辑**：用户要求更新原在线表时，可完成的变更仍按原URL执行；额外交付完整Excel不代表原在线表已经更新。原位部分无法完成时明确说明，不以新文件冒充。
 - **按变化阶段定位保真差异**：排查时区分源 Excel、导入后改前状态与本轮改后状态；小数字号被取整、尺寸或对象变化可能发生在转换阶段。“本轮没有刷样式”不能证明源格式未变。已确认导入或导出使用户要求保留的格式 / 功能发生变化时，同样按此分支处理，不以 `data.extra` 是否列出为条件；复用已取得的回读证据，不为此默认增加整表导出。
 - 轮询是命令自己做的：本命令与其它异步 shortcut 都内置轮询，返回时状态已是最新，`next_command` 直接重跑即可，不必也不要加 `sleep` 等待。
@@ -392,7 +392,7 @@ lark-cli sheets +workbook-export --url "..." --output-path ./downloads/
 lark-cli sheets +workbook-export --url "..." --file-extension csv --sheet-id "$SID" --output-path ./sheet.csv
 ```
 
-> ⚠️ **默认不下载**：省略 `--output-path` 时只创建并轮询导出任务。普通在线交付不得为了内部验证主动导出；只有用户明确要求本地 xlsx / 下载 / 打印时才给 `--output-path` 并验收。验收用 `python3 scripts/excel_artifact_verify.py <导出得到的文件路径>`（`--output-path` 传目录时按服务端文件名落盘，取导出结果的真实路径，勿写死 `./report.xlsx`）。
+> **默认不下载**：省略 `--output-path` 时只创建并轮询导出任务；用户需要本地 xlsx / 下载 / 打印时才给 `--output-path`，产物路径使用导出回执中的真实路径。
 >
 > **与 `drive +export --doc-type sheet` 的关系**：本 wrapper 是它的特化封装，固定 `--doc-type sheet`，并把 drive 的 `--output-dir` / `--file-name` / `--overwrite` 三 flag 折叠成单一 `--output-path` 简化常见用例。代价是默认值不同：`drive +export` 默认下载到当前目录、本 wrapper 默认不下载。需要细控目录/文件名/是否覆盖的，回退到 `drive +export --doc-type sheet`。
 
@@ -462,6 +462,5 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 
 - `Validate`：XOR 公共四件套；`+sheet-create` 校验 `--title` 非空、`--row-count` ≤ 50000、`--col-count` ≤ 200；`+sheet-delete` 必须 `--yes` 或 `--dry-run`；`+workbook-create` 的 `--sheets` 与 `--values` **互斥**，给了 `--sheets` 则按 typed 协议校验 payload（其余约束同 `+table-put`）。
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
-- `Execute`：sheet create/rename/move/copy/hide/unhide/delete 后必须调用 `+workbook-info`，按稳定的 sheet_id 核对名称、顺序、可见性与数量；import 按上方 ready/job_status + workbook-info 闭环；需要本地文件的 export 按 output-path + 文件存在/可重开闭环。
 
-===== 全文完（共 467 行）=====
+===== 全文完（共 466 行）=====

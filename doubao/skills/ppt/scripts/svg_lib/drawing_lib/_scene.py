@@ -1159,7 +1159,7 @@ class Drawing(SvgwriteAliases):
         returns="Path（PNG）",
         semantics=(
             "width 为输出像素宽；依次尝试 rsvg-convert、cairosvg、qlmanage，都没有时抛错。",
-            "每张示意图最多预览一次：排版问题优先看 d.check() / d.summary()，不要反复渲染迭代。",
+            "需要预览图时显式调用此方法。",
         ),
         example='d.preview("p05_preview.png")',
         rank=3,
@@ -1641,7 +1641,7 @@ class Drawing(SvgwriteAliases):
 
     @_drawing_api(
         "export",
-        purpose="导出前自检：文字互压、连线/手写线穿过非端点文字、超出画布、端点落在不可见辅助点、箭头尖压在别的对象边线上。",
+        purpose="按需检查文字互压、连线/手写线穿过非端点文字、超出画布、端点落在不可见辅助点、箭头尖压在别的对象边线上。",
         returns="list[dict]（kind/keys/hint；空列表表示通过）",
         semantics=(
             "只检查这些真实问题；箭头端点贴着节点、受体嵌在膜上等有意接触不算问题。",
@@ -1658,7 +1658,7 @@ class Drawing(SvgwriteAliases):
 
     @_drawing_api(
         "export",
-        purpose="细节审查：找出图里的主体节点（连线最多/面积最大）中只画成方框、矩形或纯文字的，提示是否需要精修。",
+        purpose="按需审查细节：找出图里的主体节点（连线最多/面积最大）中只画成方框、矩形或纯文字的，提示是否需要精修。",
         returns="list[dict]（kind/keys/hint；空列表表示主体已有细节）",
         semantics=(
             "只看结构与几何复杂度，不靠词表：主体 = 连线多或面积大的节点；方框/单个图形/纯文字/图标级 svg_at（几个图元，重复图元算一种）算“简单”，部件与有结构的 svg_at 算“有细节”；另提示孤立主体与隔空相连的受体-配体。",
@@ -1680,7 +1680,7 @@ class Drawing(SvgwriteAliases):
         semantics=(
             "width 为放到页面上的宽度（与 to_slide 的 width 一致），所有数值换算为页面 px（文字为 pt）。",
             "连线端点、路由长度、自适应框尺寸、自动标签位置都是计算结果，用它确认排版而不必截图。",
-            "to_slide(..., summary=True) 会直接打印本摘要；默认只在有提示时打印提示行。",
+            "to_slide(..., summary=True) 会按需打印本摘要。",
         ),
         example="print(d.summary(width=418))",
         rank=1,
@@ -1698,7 +1698,7 @@ class Drawing(SvgwriteAliases):
         semantics=(
             "x/y/width 为页面上的落点和宽度（px），高度按画布比例；返回值直接传 publish_slide(page_xml, fragment, presentation=deck_id)。",
             "path 省略时写到临时文件；需要保留 SVG 时传 path。",
-            "summary=True 打印完整文字版排版摘要（页面尺寸下的位置、连线长度、线宽、字号）；默认只在发现过细/过小/过短/过挤时打印提示，summary=False 关闭。",
+            "summary=True 按需计算并打印完整文字版排版摘要（页面尺寸下的位置、连线长度、线宽、字号）。",
         ),
         example="r = publish_slide(page_xml, d.to_slide(x=40, y=96, width=880), presentation=deck_id)",
         rank=1,
@@ -1708,35 +1708,8 @@ class Drawing(SvgwriteAliases):
         from ..atomize_svg_to_slide import atomize_svg_to_slide
         from ..atomize_svg_to_slide._config import _CFG
 
-        problems = self.check(width=width)
-        import sys
-
-        if problems:
-            # stderr: callers parse their own stdout (json/eval); diagnostics must not corrupt it
-            print(_format_problems(problems), file=sys.stderr)
-        notes = self.review()
-        if notes:
-            if any(n["kind"] == "mostly_plain" for n in notes):
-                print(
-                    "[drawing 细节审查·需修改] "
-                    + "；".join(n["hint"] for n in notes)
-                    + " → 写入前先把主体换成部件或带结构的 svg_at，再 d.preview() 看一次",
-                    file=sys.stderr,
-                )
-            else:
-                print(
-                    "[drawing 细节审查] "
-                    + "；".join(n["hint"] for n in notes)
-                    + " → 有提示时先 d.preview() 看一次再精修；没有提示就不用预览",
-                    file=sys.stderr,
-                )
-        from ._summary import layout_summary
-
-        text, warns = layout_summary(self, width=width)
-        if summary:
-            print(text)
-        elif warns and summary is None:
-            print(_format_layout_hints(warns, width), file=sys.stderr)
+        if summary is True:
+            print(self.summary(width=width))
         keys = ("svg_w", "svg_h", "slide_x0", "slide_y0", "slide_w", "slide_h")
         saved = {k: _CFG[k] for k in keys}
         height = width * self.height / self.width

@@ -56,6 +56,4 @@ def build():
 
 if __name__ == "__main__":
     d = build()
-    print(d.check(), d.review())
-    d.preview("membrane_transport.png")
-    # 写入：publish_slide(page_xml, d.to_slide(x=40, y=90, width=880), presentation=DECK, page=N, screenshot=False)
+    d.write("membrane_transport.svg")

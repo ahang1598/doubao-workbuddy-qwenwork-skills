@@ -6,16 +6,8 @@ from PIL import Image
 
 
 def crop_image(input_path, output_path, box):
-    """Validate and crop a left-top-right-bottom pixel box."""
-    left, top, right, bottom = box
-    if left < 0 or top < 0 or right <= left or bottom <= top:
-        raise ValueError(f"Invalid crop box: {box}")
-
+    """Crop a left-top-right-bottom pixel box."""
     with Image.open(input_path) as image:
-        if right > image.width or bottom > image.height:
-            raise ValueError(
-                f"Crop box {box} exceeds image size {(image.width, image.height)}"
-            )
         image.crop(box).save(output_path)
 
     print(f"Saved crop to {output_path}")

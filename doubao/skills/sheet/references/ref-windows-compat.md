@@ -5,7 +5,7 @@
 ## 硬规则
 1. **每次 PowerShell 调用只跑一条外部命令**：禁止 `&&` / `||` / heredoc / `$(...)` / `<<<`；组合逻辑走多次 PowerShell 调用或落成 `.py`。
 2. **lark-cli 路径只接受 CWD 内相对路径**：`--file` / `--output-path` / `--image ./xxx`，传 C盘路径比如 `C:\...` 这种绝对路径会被拒。开工第一步 `cd "<chat 目录>"`，之后一律 `./xxx`。
-3. **禁止内联 JSON（lark-cli 和 Python 脚本均适用）**：PowerShell 对引号和转义符的处理与 Bash 不同，内联 JSON 的引号可能被剥离、参数被拆散，导致 `invalid JSON` 或 `unrecognized arguments`。因此必须先用 Write 工具保存 UTF-8 JSON 文件，再通过已支持的文件参数传入，如 `--checkpoints "@./checkpoints.json"`、`--protection "@./protection.json"` 和 `--cond-format "@./cond-format.json"`（`@文件` 须加双引号）；相对路径以命令当前工作目录为基准，文件须写在对应位置，不要靠增加转义符重试。
+3. **禁止内联 JSON（lark-cli 和 Python 脚本均适用）**：PowerShell 对引号和转义符的处理与 Bash 不同，内联 JSON 的引号可能被剥离、参数被拆散，导致 `invalid JSON` 或 `unrecognized arguments`。因此必须先用 Write 工具保存 UTF-8 JSON 文件，再通过已支持的文件参数传入，如 `--protection "@./protection.json"` 和 `--cond-format "@./cond-format.json"`（`@文件` 须加双引号）；相对路径以命令当前工作目录为基准，文件须写在对应位置，不要靠增加转义符重试。
 4. **不假设 Unix 工具存在**：PowerShell 不支持 `jq` / `wget` / `unzip` / `sed` / `awk` / `pdftotext` / `base64` / `file`/ `head` / `tail` / `grep` / `which` 这些在Unix中存在的命令。
 5. **同名指令的不同含义** ：PowerShell 中，同名指令的含义可能与 Unix 中不同。`curl` 是 `Invoke-WebRequest` 别名，`ls` / `dir` 是`Get-ChildItem` 的别名, 这些同名指令与Unix中的命令参数不同。
 6. **lark-cli失败情况判定**: lark-cli 的明确失败是通过让 exit code 非 0来确认的。stderr输出除了承担 错误提示以外 还会承担 进度展示/提示等作用。 在PowerShell中，任何 stderr 输出都会被包成 NativeCommandError 并让 exit code 变非 0，所以 NativeCommandError 并不一定代表了报错，需要去细看报错内容才能知道真实报错是什么。

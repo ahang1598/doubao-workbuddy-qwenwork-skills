@@ -636,12 +636,6 @@ def _lift_pasted_fragments(page_xml):
 _DIAGRAM_SHAPES = {"rect", "round-rect", "ellipse", "custom", "diamond", "triangle", "slides-full-round-rect"}
 
 
-_WAIVE_HINT = (
-    "这些问题若看过 preview/截图确认是误报（或同一条已改过一次仍报），不要再反复挪坐标：同一调用加 "
-    "waive=[{keys}]（只填确认误报的那几条）强行写入，函数会自动截图，Read 截图核对即可。"
-)
-
-
 def _hand_diagram(kids):
     """Native page_xml that pieces a diagram together: many plain shapes plus several arrow-ended lines."""
     shapes = sum(1 for el in kids if el.tag.split("}")[-1] == "shape" and el.get("type") in _DIAGRAM_SHAPES)
@@ -677,19 +671,20 @@ def publish_slide(
       ``ok``          – page written (or composed, when no presentation is given)
       ``slide_id``    – written page id (``slide_id`` when updating)
       ``page_xml``    – the composed page XML
-      ``screenshot``  – path of a screenshot of the written page ("" when skipped or blocked)
+      ``screenshot``  – retained for compatibility; always ""
       ``preview``     – when blocked, a render of the XML for inspection ("" if unavailable)
-      ``errors``      – lint findings the author must fix (empty when written)
-      ``ignored``     – number of conversion-overlap findings that were waived
-      ``no_lint``     – True when the page was re-sent without lint after waiving findings
-      ``waived``      – keys of findings force-written because the author passed them in ``waive``
+      ``errors``      – write failures (empty when written)
+      ``ignored``     – retained for compatibility; always 0
+      ``no_lint``     – True when the write requested --no-lint; not proof the server skipped checks
+      ``waived``      – retained for compatibility; always []
     ``slide_id`` replaces that page in place (+update-slide); otherwise a page is added
     (before ``before_slide_id`` when given). ``page=`` (e.g. 3 or "p03") makes re-running a page script
     idempotent: the first write records page→slide_id in .lark-slides/pages-<deck>.json, later calls with
     the same ``page`` update that slide in place, and a new page is inserted before the next higher
     recorded page so the deck order follows page numbers. ``save_as`` also writes the XML to that path.
-    ``waive`` lists ``errors[i]["key"]`` values judged to be false positives: when every remaining finding is
-    waived the page is written without lint and always screenshotted for a visual check.
+    ``screenshot=True`` enables the candidate XML preview only when writing is blocked.
+    Writes request ``--no-lint`` on the first attempt. A rejected write is returned as a failure,
+    without automatic retries or a lint repair loop. ``waive`` is accepted for compatibility and ignored.
     """
     notes = []
     page_xml, pasted = _lift_pasted_fragments(_with_sml_namespace(page_xml))
@@ -697,8 +692,6 @@ def publish_slide(
         notes.append(f"page_xml 里拼进了 {len(pasted)} 个生成片段，已按片段处理；下次{_PASTED_HINT}")
         fragments = (*pasted, *fragments)
     page_xml, fit_warnings = _prepare(page_xml)
-    if not fragments and _hand_diagram(_children(page_xml)):
-        notes.append(_HAND_DIAGRAM_NOTE)
     cleaned, dropped = [], 0
     for frag in fragments:
         frag, n = _drop_degenerate(frag)
@@ -793,6 +786,12 @@ def _upload(result, xml, generated, origins, presentation, slide_id, before_slid
         def failure(res):
             err = res.get("error") or {}
             msg = str(err.get("message", err))[:1500]
+            if str(err.get("code")) == "4000153":
+                result["summary"] = [
+                    "服务端仍拒绝本页写入（4000153）；已请求 --no-lint，但跳过未生效。"
+                    "本页未写入，不自动重试或进入 lint 修复循环。"
+                ]
+                return [{"code": "write_blocked", "cli_code": err.get("code"), "message": msg}]
             if str(err.get("code")) == "3350002" or re.search(r"not[ _]?found|不存在", msg, re.I):
                 target = f"slide_id {slide_id!r}" if slide_id else f"presentation {presentation!r}"
                 fix = (
@@ -800,65 +799,26 @@ def _upload(result, xml, generated, origins, presentation, slide_id, before_slid
                     "xml_presentation_id 原文（复制，不要手敲）；更新页时核对 slide_id 或删掉 .lark-slides/pages-*.json 里的旧记录。"
                 )
             else:
-                fix = "不是排版问题：按 message 修正 XML 结构/参数后用同一调用重试，不要加 --no-lint，也不要绕过 publish_slide 直接 +add-slide。"
+                fix = "按 message 处理 XML 结构、参数或接口错误；写入状态不明时先只读确认，避免重复写入。"
             item = {"code": "upload_failed", "cli_code": err.get("code"), "message": msg, "fix": fix}
             result["summary"] = [f"upload_failed（cli {err.get('code')}）：{msg[:200]} → {fix}"]
             return [item]
 
-        res, described = send(False), []
+        result["no_lint"] = True
+        res = send(True)
         if not res.get("ok"):
-            try:
-                report = json.loads(res["error"]["message"])
-                errors = [e for s in report.get("slides", []) for e in s.get("errors", [])]
-                errors += list((report.get("document") or {}).get("errors", []))
-            except (KeyError, TypeError, ValueError):
-                result.update(ok=False, errors=failure(res))
-                return result
-            ignorable, report_errs = _classify(xml, generated, errors)
-            result["ignored"] = len(ignorable)
-            described = [_describe(xml, e, generated, origins) for e in report_errs]
-            left = [d for d in described if d["key"] not in waive]
-            if left:
-                real = [d for d in left if "不是误报" in (d.get("fix") or "")]
-                maybe = [d for d in left if d not in real]
-                result.update(
-                    ok=False,
-                    errors=left,
-                    summary=_summarize(left)
-                    + ([_WAIVE_HINT.format(keys=", ".join(repr(d["key"]) for d in maybe))] if maybe else []),
+            result.update(ok=False, errors=failure(res))
+            if screenshot and str((res.get("error") or {}).get("code")) == "4000153":
+                result["preview"] = _screenshot(
+                    ["--content", f"@{rel}"], cwd, out_dir, f"preview-{int(time.time() * 1000)}"
                 )
-                if screenshot:
-                    result["preview"] = _screenshot(
-                        ["--content", f"@{rel}"], cwd, out_dir, f"preview-{int(time.time() * 1000)}"
-                    )
-                return result
-            res = send(True)
-            result["no_lint"] = True
-            if described:
-                screenshot = True
-                result["waived"] = [d["key"] for d in described]
-                waived_lines = [f"  - p{page or ''} {d['code']}：{d.get('message') or ''}"[:160] for d in described]
-                result["summary"] = [
-                    f"已按 waive 跳过 {len(described)} 条 lint 强行写入：必须 Read 返回的 screenshot 确认这些位置"
-                    "没有真遮挡/截断/低对比；确有问题就修好后不带 waive 重提。",
-                    "注意：服务端不会记住这次豁免。Step 8 回读（+xml-get）后用 lint_inspect.py 查看报告时，下面这些"
-                    "条目还会原样出现在报告里（同一页、同一 code、同样的对象文字）——它们是这里已经截图确认过的误报，"
-                    "不要回头再改这一页，也不要因此判定该页未通过；在验证记录里注明“已 waive 并截图确认”即可：",
-                    *waived_lines,
-                ]
-            if not res.get("ok"):
-                result.update(ok=False, errors=failure(res))
-                return result
+            return result
         sid = (res.get("data") or {}).get("slide_id") or slide_id or ""
         result["slide_id"] = sid
         if page_key and sid:
             registry[page_key] = sid
             registry_path.parent.mkdir(parents=True, exist_ok=True)
             registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=1), encoding="utf-8")
-        if screenshot and sid:
-            result["screenshot"] = _screenshot(
-                ["--presentation", presentation, "--slide-id", sid], cwd, out_dir, f"{sid}-{int(time.time())}"
-            )
         return result
     finally:
         os.unlink(tmp)

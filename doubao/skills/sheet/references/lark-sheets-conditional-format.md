@@ -12,8 +12,6 @@
 
 需要联动的标色不能只刷静态颜色，例如过期提醒应随日期变化。用户要求一次性的固定标记时，不据此增加联动规则。
 
-**判断标准**：交付后 `+cond-format-list` 必须能返回该规则，否则条件格式未生效。
-
 **大数据量首选**：当数据量 > 1000 行时，条件格式是首选——它由飞书自身渲染，比"本地脚本逐行计算 + `+cells-set` 写静态背景色"更高效、更稳（颜色还能随源数据自动联动）。
 
 ## 使用场景
@@ -22,17 +20,15 @@
 
 | 操作需求 | 使用工具 | 说明 |
 |---------|---------|------|
-| 查看已有条件格式规则 | `+cond-format-list` | 获取规则类型、范围和样式配置；用于确认规则对象已存在 |
+| 查看已有条件格式规则 | `+cond-format-list` | 获取规则类型、范围、样式配置与 rule_id，供后续更新或删除使用 |
 | 创建/更新/删除条件格式规则 | `+cond-format-create` / `+cond-format-update` / `+cond-format-delete` | 对条件格式规则执行写入操作 |
-| 验证条件格式计算结果 | `+cond-format-result-get` | 读取命中后的 `cell_styles`，确认条件格式是否真的作用到哨兵单元格 |
+| 用户要求查看 / 核验条件格式计算结果 | `+cond-format-result-get` | 读取条件格式计算后的 `cell_styles` |
 | 常规读数时临时带上条件格式 | `+cells-get --include conditional_format` | 与 `+cond-format-result-get` 等价地合并条件格式样式，但仍归属普通单元格读取入口 |
 
-典型工作流：先读取现有条件格式了解配置 → 执行创建/更新/删除 → **必须先用 `+cond-format-list` 验证规则对象，再用 `+cond-format-result-get` 抽查计算结果**。
+典型工作流：先读取现有条件格式了解配置 → 执行创建/更新/删除。
 
 **常见配置错误（必须注意）**：
-- **创建后必须两段验证**：条件格式创建后先调用 `+cond-format-list` 验证规则对象（rule_type / ranges / style / attrs）是否存在且配置正确；再调用 `+cond-format-result-get --range "<哨兵范围>"` 读取命中后的 `cell_styles`，验证条件格式是否真的按计算结果作用到单元格。如果任一阶段不符合预期，应立即修复并重试
-- **验证要覆盖哨兵格**：不要只确认规则对象存在；还要按用户规则抽查 2-3 个应命中 / 不应命中的单元格/行（含边界行、空值、重复值、非图例状态），用 `+cond-format-result-get` 读取 `cell_styles.background_color` / `font_color` / `font_weight` 等结果，确认公式、范围、颜色语义能解释这些哨兵。若规则存在但哨兵样式/命中逻辑不对，继续修正
-- **范围与触发粒度一致**：逐格条件用相对引用，整行条件锁定判定列；确认比较的是用户指定指标。逐格规则的样本需包含相邻格只有一格命中的情况，避免整行连带着色
+- **范围与触发粒度一致**：逐格条件用相对引用，整行条件锁定判定列；确认比较的是用户指定指标。逐格规则只引用当前格，避免将逐格条件写成整行着色
 - **`style.back_color` vs `style.fore_color` 的中文语义**：用户中文语境下的"**标红/染色/标记**"指**单元格背景色**，用 `back_color`；"**文字红/字体红/把字变红**"才用 `fore_color`。默认无说明时选 `back_color`。用户说"**标红**"用标准红 `back_color: "#FF0000"`；说"**高亮/突出**"才用浅色底（如 `#FFE6E6`）配合可选的 `fore_color` 加深字体——把"标红"做成浅粉会被认为没按要求标色
 - **日期比较先区分有效日期、空值与异常文本**：确认日期为数值型后，可用 `=AND(ISNUMBER(E1),E1<TODAY())` 判断早于今天，包含当天时按用户要求改为 `<=`。文本日期先按明确格式解析；无效日期另列为异常，不把它当成未过期或自动纠正成别的日期，也不把空白当作 0 标红。
 - **公式条件注意引用方式**：自定义公式条件中的单元格引用需要根据实际场景选择相对/绝对引用（如 `=E1<=TODAY()` 而非 `=$E$1<=TODAY()`，后者只比较一个格）
@@ -74,7 +70,7 @@ Step 2: 基于辅助列值做条件格式（用 cellIs 或引用辅助列的 exp
 
 `expression` 单独使用的场景是：用户**没有**明确要求辅助列、只要"标红符合条件的行"时。
 
-⚠️ **创建条件格式前必须读数据行确认列对应**：仅读首行表头（`+csv-get range="A1:Z1"`）不够——如果表头语义含糊（比如"时间"、"日期"这种多列同义词），formula 里引用的列字母可能张冠李戴。必须再读 3-5 行**数据样本**（如 `range="A2:Z6"`）确认：①列名对应的实际值；②字段含义匹配用户描述；③数据类型是日期/数字/文本。特别是比较类条件格式（`=$A2>$B2` 这种），列字母选错整条规则就废了。
+**按字段语义设置条件引用**：用已读取的表头、字段值与类型信息确定列对应。表头含义不明或类型信息不足时，再读取相关数据；不凭列名猜日期、数值或文本含义。
 
 ## 辅助判断列与动态高亮示例
 
@@ -91,29 +87,34 @@ lark-cli sheets +range-copy --url "<表格URL>" --sheet-name "<真实表名>" \
 lark-cli sheets +cells-set --url "<表格URL>" --sheet-name "<真实表名>" \
   --range "G2" --cells '[[{"value":"输入校验"}]]'
 
-# 先验证种子公式，再用同一模板扩展；IFERROR 把输入错误归为非法
-lark-cli sheets +cells-set --url "<表格URL>" --sheet-name "<真实表名>" \
-  --range "G3" --cells '[[{"formula":"=IFERROR(IF(C3=\"\",\"\",IF(AND(ISNUMBER(C3),C3>=0,C3<=B3),\"合法\",\"非法\")),\"非法\")"}]]'
-lark-cli sheets +formula-verify --url "<表格URL>" --sheet-name "<真实表名>" \
-  --range "G3" --exit-on-error
+# 写入辅助列公式并按相对引用扩展；IFERROR 按本例规则将输入错误归为非法
 lark-cli sheets +cells-set --url "<表格URL>" --sheet-name "<真实表名>" \
   --range "G3" --cells '[[{"formula":"=IFERROR(IF(C3=\"\",\"\",IF(AND(ISNUMBER(C3),C3>=0,C3<=B3),\"合法\",\"非法\")),\"非法\")"}]]' \
   --copy-to-range "G3:G12"
-lark-cli sheets +formula-verify --url "<表格URL>" --sheet-name "<真实表名>" \
-  --range "G3:G12" --exit-on-error
 
 # 锁辅助列、让行号随数据行变化，范围不含表头
 lark-cli sheets +cond-format-create --url "<表格URL>" --sheet-name "<真实表名>" \
   --rule-type expression --ranges '["A3:G12"]' \
   --properties '{"attrs":[{"formula":["=$G3=\"非法\""]}],"style":{"back_color":"#FF0000"}}'
+```
+
+写入后按回执处理 `formula_errors` 和失败项，修复仅作用于已确认受影响的范围；成功后继续用户要求的后续操作或交付。
+
+采用该方案时，在交付说明中写明实际判断规则和使用限制，例如「提示非法值，不会阻止录入」，并列出与原实现的差异。
+
+### 仅按用户明确要求核验该方案
+
+按用户要求选择诊断范围与项目，以下命令用于公式及条件格式结果核验：
+
+```bash
+lark-cli sheets +formula-verify --url "<表格URL>" --sheet-name "<真实表名>" \
+  --range "G3:G12" --exit-on-error
 lark-cli sheets +cond-format-list --url "<表格URL>" --sheet-name "<真实表名>"
 lark-cli sheets +cond-format-result-get --url "<表格URL>" --sheet-name "<真实表名>" \
   --range "A3:G12"
 ```
 
-公式诊断覆盖整个辅助列，`partial` 分段续查；诊断通过还要用哨兵核对业务结果：合法值、非法值、上下界、按规则允许的空值，以及涉及唯一性时的重复记录。核对辅助列与条件格式结果一致，排除既有规则 / 静态底色造成的假命中；在独立测试副本中修改输入，确认提示和颜色随之更新，不为测试改写用户原始记录。
-
-采用该方案时，在交付说明中写明实际判断规则和使用限制，例如「提示非法值，不会阻止录入」，并列出与原实现的差异。
+按实际规则比对合法值、非法值、上下界和允许的空值；涉及唯一性时包含重复记录。用户要求测试动态联动时，在独立测试副本中修改输入并观察提示与颜色，不为测试改写用户原始记录。公式诊断返回 `partial` 时说明未覆盖范围，按所需诊断范围拆分继续。
 
 ## Shortcuts
 
@@ -213,18 +214,11 @@ lark-cli sheets +cond-format-create --url "..." --sheet-id "$SID" \
 lark-cli sheets +cond-format-create --url "..." --sheet-id "$SID" \
   --rule-type dataBar --ranges '["B2:B100"]' \
   --properties @rule.json
-
-# 创建后先确认规则对象存在
-lark-cli sheets +cond-format-list --url "..." --sheet-id "$SID"
-
-# 再抽查条件格式计算结果：读取哨兵单元格的命中样式
-lark-cli sheets +cond-format-result-get --url "..." --sheet-id "$SID" \
-  --range "B2:B10"
 ```
 
 ### `+cond-format-result-get`
 
-用于读取条件格式**计算后的样式结果**，不是读取规则对象。创建 / 更新条件格式后必须用它抽查哨兵单元格。
+用于读取条件格式**计算后的样式结果**，不是读取规则对象。用户需要查看计算样式时使用。
 
 CLI 会对白名单字段做输出裁剪：顶层只保留警告、分页和返回单元格计数；每个 range 只保留请求/实际范围、真实行列坐标、截断标记和二维 `cells`；每个 cell 只保留 `cell_styles`，不返回 `value` / `formula` / `note` / `data_validation` / `border_styles` 等其它单元格数据。`cell_styles` 是底层开启条件格式计算后得到的最终合并样式，不包含 `rule_id` 或独立的命中标记。
 
@@ -254,6 +248,5 @@ lark-cli sheets +cond-format-delete --url "..." --sheet-id "$SID" --rule-id "$RU
 
 - `Validate`：XOR 公共四件套；`--rule-type` / `--ranges` 必填；`--properties` 必须能解析为合法 JSON；按 `--rule-type` 检查必填子字段（`cellIs` 需 `attrs.operator` + `attrs.value`、`expression` 需 `attrs.formula`、`colorScale` 需 `min/mid/max` 配色等）；`+cond-format-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：写操作输出"将要 POST/PATCH/DELETE 的 conditional_format 请求模板"。
-- `Execute`：写后不自动回读；create/update 后必须调用 `+cond-format-list --rule-id <id>` 比对规则 / 范围 / 样式，并用 `+cond-format-result-get --range <2–3 个哨兵格>` 核对实际生效的单元格样式；delete 后 list 确认目标 id 不存在。
 
-===== 全文完（共 259 行）=====
+===== 全文完（共 252 行）=====

@@ -8,8 +8,8 @@ Clears workbook formula caches and requests recalculation after content edits.
 from __future__ import annotations
 
 import argparse
-from bisect import bisect_right
 import hashlib
+from bisect import bisect_right
 import json
 import math
 import os
@@ -19,7 +19,7 @@ import tempfile
 import warnings
 import zipfile
 import posixpath
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from pathlib import Path
 from xml.etree import ElementTree
 from xml.parsers import expat
@@ -28,14 +28,10 @@ from xml.sax.saxutils import escape
 from openpyxl import load_workbook
 from openpyxl.cell.cell import MergedCell
 from openpyxl.utils.cell import coordinate_to_tuple, range_boundaries
-from _xlsx_text import decode_xstring
 
-from excel_formula_verify import (
-    _in_scope, _norm_cell_value, _baseline_formula_signature, parse_scope,
-)
+from _edit_scope import _in_scope, parse_scope
 
 MAX_EDITS = 200000
-MAX_VERIFY_CELLS = 200000
 XSTRING_LITERAL_PREFIX_RE = re.compile(r"_(?=x[0-9A-Fa-f]{4})")
 XML_INVALID_CHAR_RE = re.compile(r"[^\x09\x0a\x0d\x20-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]")
 UNSUPPORTED_PARTS = (
@@ -87,26 +83,6 @@ def read_source(path):
         wb.close()
         raise ValueError("读取源文件产生兼容性警告，拒绝有损保存：" + str(caught[0].message))
     return wb
-
-
-def format_state(wb):
-    """保存前后核对实际格式、布局和支持的对象数量，不只检查返回码。"""
-    styles = tuple(str(getattr(wb, attr)) for attr in
-                   ("_fonts", "_fills", "_borders", "_alignments", "_number_formats", "_protections"))
-    sheets = []
-    for ws in wb:
-        cells = {c.coordinate: tuple(c._style) for c in ws._cells.values()
-                 if c.has_style}
-        sheets.append((ws.title, ws.sheet_state, cells,
-                       tuple(sorted(str(r) for r in ws.merged_cells.ranges)),
-                       str(ws.freeze_panes), repr(ws.auto_filter),
-                       tuple((k, repr(v)) for k, v in ws.row_dimensions.items()),
-                       tuple((k, repr(v)) for k, v in ws.column_dimensions.items()),
-                       repr(ws.sheet_format), repr(ws.sheet_properties),
-                       repr(ws.page_setup), repr(ws.page_margins), repr(ws.print_options),
-                       len(ws._charts), len(ws._images), repr(ws.data_validations),
-                       tuple(ws.tables), len(ws.conditional_formatting)))
-    return styles, sheets
 
 
 def special_formula_ranges(wb):
@@ -493,42 +469,7 @@ def _sheet_parts(package):
     return parts
 
 
-def verify_value_edits(package, edits):
-    """直接核对包内数值和文本，避免日期量化及读库的 Xstring 解码差异。"""
-    grouped = {}
-    for sheet, address, mode, value in edits:
-        if mode == "value" and type(value) in (int, float, str):
-            grouped.setdefault(sheet, {})[address] = value
-    if not grouped:
-        return
-    parts = _sheet_parts(package)
-    for sheet, expected in grouped.items():
-        root = ElementTree.fromstring(package.read(parts[sheet]))
-        ns = root.tag.rpartition('}')[0] + '}' if root.tag.startswith('{') else ''
-        cells = {cell.get('r'): cell for cell in root.findall(
-            ns + 'sheetData/' + ns + 'row/' + ns + 'c') if cell.get('r') in expected}
-        for address, value in expected.items():
-            cell = cells.get(address)
-            if isinstance(value, str):
-                texts = cell.findall(ns + 'is/' + ns + 't') if cell is not None else []
-                # 只解码一遍，_x005F_x000D_ 表示字面 _x000D_，不能递归变成 CR。
-                actual = (decode_xstring(texts[0].text or "")
-                          if len(texts) == 1 else None)
-                if (cell is None or cell.get('t') != 'inlineStr' or cell.find(ns + 'f') is not None
-                        or actual != value):
-                    raise ValueError("写后文本/类型未保真：{}!{}".format(sheet, address))
-                continue
-            values = cell.findall(ns + 'v') if cell is not None else []
-            try:
-                actual = Decimal(values[0].text) if len(values) == 1 and values[0].text else None
-            except InvalidOperation:
-                actual = None
-            if (cell is None or cell.get('t', 'n') != 'n' or cell.find(ns + 'f') is not None
-                    or actual is None or not actual.is_finite() or actual != Decimal(str(value))):
-                raise ValueError("写后数值/类型未保真：{}!{}".format(sheet, address))
-
-
-def write_package(source, temporary, edits, recalc_required):
+def write_package(source, temporary, edits, recalc_required, style_count):
     """读库验证源文件后，对原布局内目标cell做包内补丁，不重存整本书。"""
     with zipfile.ZipFile(source) as src:
         parts = _sheet_parts(src)
@@ -536,7 +477,7 @@ def write_package(source, temporary, edits, recalc_required):
         for edit in edits:
             grouped.setdefault(parts[edit[0]], []).append(edit)
         # 只继承无冲突的行/列默认样式，不猜交叉默认样式的优先级。
-        default_styles, inherited_styles = {}, {}
+        default_styles = {}
         for part, changes in grouped.items():
             raw = src.read(part)
             spans, grid = _cell_spans(raw, include_grid=True)
@@ -556,10 +497,11 @@ def write_package(source, temporary, edits, recalc_required):
                     raise ValueError("未定义目标格的行/列默认样式冲突，需明确样式后编辑：" + address)
                 if styles:
                     style = styles.pop()
+                    if style < 0 or style >= style_count:
+                        raise ValueError("目标格的行/列默认样式索引无效")
                     default_styles[part][address] = style
-                    inherited_styles[sheet_name,address] = style
         sheet_names = {part: name for name, part in parts.items()}
-        changed_parts, cleared = set(), set()
+        cleared = set()
         with zipfile.ZipFile(temporary, 'w') as dst:
             dst.comment = src.comment
             for info in src.infolist():
@@ -571,38 +513,8 @@ def write_package(source, temporary, edits, recalc_required):
                     cleared.update((sheet_names[info.filename], addr) for addr in addresses)
                 elif recalc_required and info.filename == "xl/workbook.xml":
                     patched = _request_recalculation(patched)
-                if patched != raw:
-                    changed_parts.add(info.filename)
                 dst.writestr(info, patched)
-        return changed_parts, cleared, inherited_styles
-
-
-def verify_protected_cells(before, after, edits, cleared_caches):
-    allowed = {(s,c) for s,c,_m,_v in edits}
-    checked = changes = 0
-    def value(cell):
-        if cell is None or cell.value is None:
-            return "", ""
-        return ((_baseline_formula_signature(cell.value), "") if cell.data_type == 'f'
-                else ("", _norm_cell_value(cell.value)))
-    for ws in before:
-        produced = after[ws.title]
-        for key in set(ws._cells) | set(produced._cells):
-            checked += 1
-            if checked > MAX_VERIFY_CELLS:
-                raise ValueError("非空/已定义单元格超过检查上限，未完整比较")
-            old, new = ws._cells.get(key), produced._cells.get(key)
-            if value(old) != value(new):
-                coord = (old if old is not None else new).coordinate
-                if (ws.title, coord) not in allowed:
-                    if ((ws.title, coord) in cleared_caches and old.data_type != "f"
-                            and (new is None or new.value is None)):
-                        continue  # 已确认的数组 / Data Table 结果缓存，非用户输入。
-                    raise ValueError("范围外内容变化：{}!{}".format(ws.title,coord))
-                changes += 1
-    return {"status":"differences_found" if changes else "clean", "blocking":False,
-            "checked_cells":checked, "changed_cells":changes, "truncated_sheets":[],
-            "method":"sparse_defined_cells"}
+        return cleared
 
 
 def apply_edits(source, output, items, scope_items):
@@ -622,54 +534,16 @@ def apply_edits(source, output, items, scope_items):
         os.close(fd)
         recalc_required = (any(c.data_type == "f" for ws in wb for c in ws._cells.values())
                            or any(mode == "formula" for _s, _a, mode, _v in edits))
-        changed_parts, cleared_caches, inherited_styles = write_package(source, temporary, edits, recalc_required)
-        for (sheet, address), style in inherited_styles.items():
-            if style < 0 or style >= len(wb._cell_styles):
-                raise ValueError("目标格的行/列默认样式索引无效")
-            wb[sheet][address]._style = wb._cell_styles[style]
-        original_format = format_state(wb)
-        with zipfile.ZipFile(source) as original, zipfile.ZipFile(temporary) as produced:
-            if original.namelist() != produced.namelist():
-                raise ValueError("文件成员集合或顺序变化")
-            untouched = [name for name in original.namelist() if name not in changed_parts]
-            if any(original.read(name) != produced.read(name) for name in untouched):
-                raise ValueError("目标内容、公式缓存与重算标志之外的包成员变化")
-            verify_value_edits(produced, edits)
-        check = read_source(temporary)
-        try:
-            if format_state(check) != original_format:
-                raise ValueError("保存后格式、布局或对象数量变化，未生成交付文件")
-            for sheet, address, mode, value in edits:
-                cell = check[sheet][address]
-                if mode == "formula":
-                    same = cell.data_type == "f" and cell.value == value
-                elif type(value) in (int, float):
-                    # 原始数值已逐格核对；日期/时间/时长解析会量化到毫秒，不能反算后比原值。
-                    same = cell.data_type in ("n", "d")
-                elif isinstance(value, str):
-                    # 原始文本已按 OOXML 解码核对；openpyxl 的不同读法不一致，
-                    # rich_text=True 还会全局删除 x005F_，不能据此改写正确文件。
-                    same = cell.data_type == "s"
-                else:
-                    actual = cell.value
-                    same = cell.data_type != "f" and (
-                        _norm_cell_value(actual) == _norm_cell_value(value)
-                        or value == "" and cell.value is None)
-                if not same:
-                    raise ValueError("写后值/类型未保真：{}!{}；长编号应作为文本值写入".format(sheet, address))
-            baseline = verify_protected_cells(wb, check, edits, cleared_caches)
-        finally:
-            check.close()
+        cleared_caches = write_package(source, temporary, edits, recalc_required, len(wb._cell_styles))
         if hashlib.sha256(source.read_bytes()).hexdigest() != source_hash:
             raise ValueError("执行期间源文件发生变化，未生成交付文件")
         # 同目录硬链接原子发布且不覆盖已存在的文件；源文件始终只读。
         os.link(temporary, output)
         return {"status": "applied", "output": str(output), "edits": len(edits),
-                "source_sha256": source_hash, "format_preserved": True,
-                "unchanged_package_members": len(untouched),
+                "source_sha256": source_hash,
                 "cleared_formula_cache_cells": len(cleared_caches),
                 "recalculation_required": recalc_required,
-                "baseline": baseline, "formula_execution_verified": False}
+                "formula_execution_verified": False}
     finally:
         wb.close()
         if temporary and os.path.exists(temporary):
@@ -684,7 +558,7 @@ def main():
                '{"sheet":"明细","cell":"D2","formula":"=B2*C2"}]。'
                'value保留JSON类型；formula才写公式。目标必须在原布局范围内；可补稀疏空格，'
                '未定义格继承无冲突的行/列默认样式。传统批注原样保留，控件VML不支持。'
-               'output必须为新文件；编辑后清除全簿公式缓存并标记需重算，成功不代表计算结果已验证。')
+               'output必须为新文件；编辑后清除全簿公式旧缓存并标记需重算，本脚本不计算公式值。')
     parser.add_argument("--source", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--changes", required=True, help="JSON数组文件路径（不加@）；每项sheet/cell加value或formula")
@@ -698,7 +572,7 @@ def main():
         print("未生成交付文件，源文件未修改。按错误修正坐标/类型；兼容性或结构变更任务改用对应引擎，不重建源表或忽略警告。", file=sys.stderr)
         return 3
     print(json.dumps(result, ensure_ascii=False))
-    print("已按源格式生成新文件；公式旧缓存已清除，未执行重算，后续按所选模式核对计算结果与交付。", file=sys.stderr)
+    print("已按源格式生成新文件；公式旧缓存已清除，未执行重算，按所选环境的保存和交付规则处理。", file=sys.stderr)
     return 0
 
 

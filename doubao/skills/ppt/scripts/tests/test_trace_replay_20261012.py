@@ -2,6 +2,7 @@
 
 import re
 import warnings
+from scripts.svg_lib.atomize_svg_to_slide import native_bullets
 
 import pytest
 
@@ -82,7 +83,7 @@ def test_p_values_threshold_strings_and_float_warning():
     rows = [{"label": n, "before": 1, "after": 2, "p": 0.05} for n in "ABC"]
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        chart_slide("dumbbell", 40, 100, 600, 300, rows=rows)
+        chart_slide("dumbbell", 40, 100, 600, 300, rows=rows, diagnostics=True)
     assert any("p='<0.05'" in str(w.message) for w in caught)
 
 
@@ -155,7 +156,7 @@ def test_gantt_leaders_cross_no_label_and_markers_differ_from_bars(extra):
 def test_gantt_reports_today_marker_colour():
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        chart_slide("gantt", 40, 100, 880, 380, tasks=TRIALS, milestones=MILESTONES, today="2025-10-12")
+        chart_slide("gantt", 40, 100, 880, 380, tasks=TRIALS, milestones=MILESTONES, today="2025-10-12", diagnostics=True)
     assert any("今天线 =" in str(w.message) for w in caught)
 
 
@@ -186,7 +187,7 @@ def test_scatter_projection_unnamed_curves_category_lines_and_reference_band():
     assert len(xs) == 2 and xs["NbTi"] == xs["Nb3Sn"]
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        chart_slide("scatter", 40, 100, 600, 360, points=series)
+        chart_slide("scatter", 40, 100, 600, 360, points=series, diagnostics=True)
     assert any("物理量用数值 x" in str(w.message) for w in caught)
     svg = make_scatter(
         [{"x": 1000, "y": 70}, {"x": 1500, "y": 85}],
@@ -268,10 +269,26 @@ def test_native_table_warns_when_rows_overflow_the_box():
     rows = [["方法", "说明"]] + [[f"方法{i}", "较长的说明文字，需要换行显示" * 2] for i in range(8)]
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        xml = native_table(rows, (40, 100, 400, 120))
+        xml = native_table(rows, (40, 100, 400, 120), diagnostics=True)
     assert any("box height" in str(c.message) for c in caught)
     assert float(re.search(r'<table[^>]*height="([\d.]+)"', xml).group(1)) > 120
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         native_table([["a", "b"], ["1", "2"]], (40, 100, 400, 200))
     assert not any("box height" in str(c.message) for c in caught)
+
+
+@pytest.mark.parametrize("helper,args", [
+    (native_table, ([["方法", "说明"]] + [[str(i), "说明文字" * 5] for i in range(8)], (40, 100, 400, 120))),
+    (native_bullets, (["说明文字" * 10] * 4, (40, 100, 400, 20))),
+])
+def test_native_layout_helpers_only_report_requested_diagnostics(helper, args):
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        default_xml = helper(*args)
+    assert not caught
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        diagnosed_xml = helper(*args, diagnostics=True)
+    assert caught
+    assert diagnosed_xml == default_xml

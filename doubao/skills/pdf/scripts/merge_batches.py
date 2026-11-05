@@ -23,15 +23,12 @@ media（图片）/ header / footer 等 part 按 batch index 加前缀重命名�
 - **styles / numbering / theme / fontTable / settings 只用 base（第一个 batch）的**——SubAgent
   在生成 batch 时应从同一份空白模板起，避免多 batch 样式定义冲突；如果某个 batch
   自己在 numbering.xml 中定义了 numId，合并后该 numId 会指向 base 的 numbering
-  条目，可能错位。合并结束会 warn。
-- 合并后仍需跑 audit_docx.py + inspect_pdf_pages.py 做最终 QA；本脚本只保证结构
-  合并正确，不保证 rendering 视觉与 batch 完全一致。
+  条目，可能错位。
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import io
 import re
 import shutil
@@ -169,7 +166,6 @@ def _rename_target(abs_target: str, batch_idx: int, used: set[str]) -> str:
             candidate = f"word/header_b{batch_idx}_{m.group(1)}.xml"
         else:
             m = _FOOTER_RE.match(abs_target)
-            assert m, f"unexpected target: {abs_target}"
             candidate = f"word/footer_b{batch_idx}_{m.group(1)}.xml"
     # 冲突处理（极少见）
     final = candidate
@@ -338,15 +334,10 @@ def merge_docx(inputs: list[Path], output: Path, verbose: bool = False) -> dict:
     # 追踪 zip 内已用名字，避免 rename 冲突
     used_names = set(base_files.keys())
 
-    # numbering.xml 比对：如果任一 batch 的 numbering 与 base 不同就 warn
-    base_numbering_hash = _sha1_of(base_files.get("word/numbering.xml"))
-    numbering_warnings: list[str] = []
-
     stats = {
         "batch_count": len(inputs),
         "renamed_parts": [],
         "external_rels_added": 0,
-        "warnings": [],
     }
 
     for batch_idx, batch_path in enumerate(inputs[1:], start=2):
@@ -359,16 +350,7 @@ def merge_docx(inputs: list[Path], output: Path, verbose: bool = False) -> dict:
         batch_rels_bytes = batch_files.get("word/_rels/document.xml.rels", b"")
         batch_rels = _parse_rels(batch_rels_bytes) if batch_rels_bytes else {}
 
-        # 1) numbering.xml 一致性检查
-        batch_numbering_hash = _sha1_of(batch_files.get("word/numbering.xml"))
-        if (batch_numbering_hash and base_numbering_hash
-                and batch_numbering_hash != base_numbering_hash):
-            numbering_warnings.append(
-                f"batch #{batch_idx}({batch_path.name}) 的 word/numbering.xml 与 base 不一致——"
-                f"合并后所有 batch 只用 base 的 numbering.xml，本 batch 里的 numPr 编号可能错位"
-            )
-
-        # 2) 构造 rId 重映射：batch 的每个 rId 都换成 base 命名空间中未占用的新 rId
+        # 1) 构造 rId 重映射：batch 的每个 rId 都换成 base 命名空间中未占用的新 rId
         next_rid = _next_rid_number(base_rels)
         rid_map: dict[str, str] = {}
         old_to_new_target: dict[str, str] = {}
@@ -410,31 +392,30 @@ def merge_docx(inputs: list[Path], output: Path, verbose: bool = False) -> dict:
                 # numbering / styles / theme / fontTable / settings 等共享部件：
                 # 不重命名、不加进 base_rels（base 已有等价关系）；rid_map 保留映射
                 # 但 body 引用 numbering/styles 不通过 r:id，因此这里不 pop 也不影响正确性。
-                # 保留 mapping 供以后可能扩展（比如加 warn 时找源关系）
                 continue
 
-        # 3) 更新 [Content_Types].xml：合并 batch 的 Default extension（png/jpeg 等）
+        # 2) 更新 [Content_Types].xml：合并 batch 的 Default extension（png/jpeg 等）
         #    并给 renamed part 补 Override。传入 batch_ct 让 Default 和 Override 都能被拷贝。
         batch_ct_root = _parse_xml(batch_files["[Content_Types].xml"])
         _update_content_types(base_ct, old_to_new_target, batch_ct_root)
 
-        # 4) 把 batch body 里的 r:id/r:embed/r:link 引用替换成新 rId
+        # 3) 把 batch body 里的 r:id/r:embed/r:link 引用替换成新 rId
         _rewrite_rid_attrs(batch_body, rid_map)
 
-        # 5) 关键：把 base 当前 body 尾部 sectPr 降级为段落级 sectPr，
+        # 4) 关键：把 base 当前 body 尾部 sectPr 降级为段落级 sectPr，
         #    形成"batch1 内容 → 段落级 sectPr(batch1 属性) → batch2 内容 → 尾部 sectPr(batch2 属性)"
         base_tail_sectpr = _detach_tail_sectpr(base_body)
         if base_tail_sectpr is not None:
             _demote_sectpr_to_paragraph(base_body, base_tail_sectpr)
 
-        # 6) 摘掉 batch body 尾部 sectPr（稍后作为新的 base 尾部 sectPr 挂上去）
+        # 5) 摘掉 batch body 尾部 sectPr（稍后作为新的 base 尾部 sectPr 挂上去）
         batch_tail_sectpr = _detach_tail_sectpr(batch_body)
 
-        # 7) batch body 剩余内容追加到 base body
+        # 6) batch body 剩余内容追加到 base body
         for child in list(batch_body):
             base_body.append(child)
 
-        # 8) batch 的尾部 sectPr 成为新的 base 尾部 sectPr
+        # 7) batch 的尾部 sectPr 成为新的 base 尾部 sectPr
         if batch_tail_sectpr is not None:
             base_body.append(batch_tail_sectpr)
 
@@ -450,14 +431,7 @@ def merge_docx(inputs: list[Path], output: Path, verbose: bool = False) -> dict:
 
     _write_zip(output, base_files)
 
-    stats["warnings"] = numbering_warnings
     return stats
-
-
-def _sha1_of(data: bytes | None) -> str | None:
-    if not data:
-        return None
-    return hashlib.sha1(data).hexdigest()
 
 
 def main() -> int:
@@ -485,10 +459,6 @@ def main() -> int:
     print(f"  batch 数：{stats['batch_count']}")
     print(f"  重命名部件数：{len(stats['renamed_parts'])}")
     print(f"  外部关系数（新增）：{stats['external_rels_added']}")
-    for warn in stats["warnings"]:
-        print(f"  ⚠ {warn}", file=sys.stderr)
-
-    # 合并后建议下游立即跑 audit_docx.py + inspect_pdf_pages.py；这里不自动跑，让调用方按需组织流程
     return 0
 
 

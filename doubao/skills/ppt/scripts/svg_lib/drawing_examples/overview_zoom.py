@@ -53,6 +53,4 @@ def build():
 
 if __name__ == "__main__":
     d = build()
-    print(d.check())
-    d.preview("overview_zoom.png")
-    # 写入：publish_slide(page_xml, d.to_slide(x=40, y=96, width=880), presentation=DECK, page=N, screenshot=False)
+    d.write("overview_zoom.svg")

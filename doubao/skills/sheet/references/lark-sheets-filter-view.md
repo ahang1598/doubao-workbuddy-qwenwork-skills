@@ -15,7 +15,7 @@
 | 查看已有筛选视图 | `+filter-view-list` | 获取 sheet 上所有视图（视图名、范围、规则） |
 | 创建 / 更新 / 删除筛选视图 | `+filter-view-{create|update|delete}` | create / update / delete 三个独立 shortcut |
 
-典型工作流：先读取现有视图了解配置 → 执行创建 / 更新 / 删除 → **必须再次读取验证结果**。
+典型工作流：先读取现有视图了解配置 → 执行创建 / 更新 / 删除。
 
 **常见配置错误（必须注意）**：
 - **视图范围必须覆盖表头行**：视图的 range 必须从表头行开始（如 `A1:F100`），不能只包含数据行
@@ -136,6 +136,5 @@ lark-cli sheets +filter-view-create --url "..." --sheet-id "$SID" \
 
 - `Validate`：XOR 公共四件套；`+filter-view-create` 校验 `--range` 起始行为表头（第一行）；`+filter-view-update` 必须先 `+filter-view-list` 确认 view 存在，`--properties` 必传（整组覆盖式）；`+filter-view-delete` 强制 `--yes` 或 `--dry-run`。
 - `DryRun`：输出"将要 POST/PATCH/DELETE 的 view 请求模板"，零网络副作用；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符。
-- `Execute`：写后不自动回读；create/update 后必须调用 `+filter-view-list --view-id <id>` 比对 range + rules；delete 后 list 确认目标 view 不存在。`notEquals` / `notEqual` 类条件例外——它们在创建后会被原样回显一段时间，回读通过不代表真的存住了；改写成要保留的值集合或 `doesNotContain` 后再回读验证。
 
-===== 全文完（共 141 行）=====
+===== 全文完（共 140 行）=====
