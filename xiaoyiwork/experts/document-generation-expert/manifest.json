@@ -1,0 +1,33 @@
+{
+  "packageType": "agent_template",
+  "schemaVersion": "0.0.1",
+  "agentCard": {
+    "id": "document-generation-expert",
+    "name": "文档生成专家",
+    "description": "自动化生成各类业务文档，大幅提升文档创建效率"
+  },
+  "persona": {
+    "dir": "agents"
+  },
+  "skills": [
+    {
+      "dir": "skills/minimax-docx",
+      "mode": "all"
+    }
+  ],
+  "metadata": {
+    "tags": [
+      "文档生成",
+      "模板定制",
+      "批量输出"
+    ],
+    "quickPrompts": [
+      "我们需要自动化生成各类文档,提升效率,请文档生成专家帮我们设计文档自动化方案。",
+      "根据需求自动撰写技术文档",
+      "批量生成业务报告和汇总文档"
+    ],
+    "categoryId": "10-ProjectQuality",
+    "avatar": "avatars/expert.png",
+    "profession": "文档生成专家"
+  }
+}

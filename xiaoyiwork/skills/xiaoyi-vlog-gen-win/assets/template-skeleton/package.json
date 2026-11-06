@@ -1,0 +1,30 @@
+{
+  "name": "vlog-template",
+  "version": "1.1.0",
+  "description": "Xiaoyi Vlog Template (Remotion best practices)",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@remotion/cli": "4.0.453",
+    "@remotion/media": "4.0.453",
+    "@remotion/motion-blur": "4.0.453",
+    "@remotion/paths": "4.0.453",
+    "@remotion/shapes": "4.0.453",
+    "@remotion/transitions": "4.0.453",
+    "@remotion/zod-types": "4.0.453",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.453",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.0"
+  },
+  "private": true
+}

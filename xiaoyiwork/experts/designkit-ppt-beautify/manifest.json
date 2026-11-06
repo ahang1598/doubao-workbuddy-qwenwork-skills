@@ -1,0 +1,33 @@
+{
+  "packageType": "agent_template",
+  "schemaVersion": "0.0.1",
+  "agentCard": {
+    "id": "designkit-ppt-beautify",
+    "name": "PPT视觉美化师",
+    "description": "基于现有PPT、PDF或页面图片重构视觉层级与版式，在保留内容的同时统一风格并提升专业质感。"
+  },
+  "persona": {
+    "dir": "agents"
+  },
+  "skills": [
+    {
+      "dir": "skills/ppt-beautify",
+      "mode": "all"
+    }
+  ],
+  "metadata": {
+    "tags": [
+      "PPT美化",
+      "视觉排版",
+      "设计室"
+    ],
+    "quickPrompts": [
+      "帮我把这份PPT美化成简约高级风格。",
+      "把这些页面图片统一成专业商务PPT风格。",
+      "保留全部内容，重点优化排版和配色体系。"
+    ],
+    "categoryId": "06-ContentCreative",
+    "avatar": "avatars/expert.png",
+    "profession": "PPT视觉美化师"
+  }
+}

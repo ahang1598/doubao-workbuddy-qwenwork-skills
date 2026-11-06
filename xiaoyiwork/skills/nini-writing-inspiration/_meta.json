@@ -1,0 +1,17 @@
+{
+  "owner": "niracler",
+  "slug": "nini-writing-inspiration",
+  "displayName": "Writing Inspiration",
+  "latest": {
+    "version": "0.1.2",
+    "publishedAt": 1772767028874,
+    "commit": "https://github.com/openclaw/skills/commit/7e9d31be2eb35b6776313927e74d6963e002d10c"
+  },
+  "history": [
+    {
+      "version": "0.1.0",
+      "publishedAt": 1772699658860,
+      "commit": "https://github.com/openclaw/skills/commit/7f9ff1a22c071570c3979228df0d38c4327bf8aa"
+    }
+  ]
+}

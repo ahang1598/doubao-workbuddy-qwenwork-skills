@@ -1,0 +1,114 @@
+{
+ "form": {
+ "fields": [
+ {
+ "file_types": [
+ "ppt",
+ "image",
+ "pdf"
+ ],
+ "hint": "支持 PDF、PPT、图片等",
+ "key": "ref_files",
+ "label": "参考文件",
+ "maxCount": 10,
+ "required": true,
+ "type": "file_upload"
+ },
+ {
+ "key": "language",
+ "label": "语言",
+ "options": [
+ {
+ "key": "auto",
+ "label": "自动匹配"
+ },
+ {
+ "key": "chinese",
+ "label": "中文"
+ },
+ {
+ "key": "english",
+ "label": "英文"
+ },
+ {
+ "key": "japanese",
+ "label": "日语"
+ },
+ {
+ "key": "korean",
+ "label": "韩语"
+ },
+ {
+ "key": "portuguese_brazil",
+ "label": "葡萄牙语（巴西）"
+ },
+ {
+ "key": "spanish_mexico",
+ "label": "西班牙语（墨西哥）"
+ },
+ {
+ "key": "russian",
+ "label": "俄语"
+ }
+ ],
+ "required": false,
+ "type": "select"
+ },
+ {
+ "key": "style",
+ "label": "视觉风格",
+ "options": [
+ {
+ "key": "auto",
+ "label": "自动匹配"
+ },
+ {
+ "key": "minimal_luxe",
+ "label": "简约高级"
+ },
+ {
+ "key": "business_professional",
+ "label": "商务专业"
+ },
+ {
+ "key": "creative_layout",
+ "label": "创意版式"
+ },
+ {
+ "key": "digital_trendy",
+ "label": "网感潮流"
+ },
+ {
+ "key": "party_civic",
+ "label": "党建思政"
+ },
+ {
+ "key": "grand_luxury",
+ "label": "奢华大气"
+ },
+ {
+ "key": "chinese_style",
+ "label": "中国风"
+ }
+ ],
+ "required": false,
+ "type": "radio_tags"
+ },
+ {
+ "key": "extra",
+ "label": "补充要求",
+ "maxLength": 10000,
+ "placeholder": "色调、字体、版式、重点内容等补充说明",
+ "type": "textarea"
+ }
+ ],
+ "prompt": "[PPT美化]美化这份PPT。\n参考文件：{ref_files}\n语言：{language}\n视觉风格：{style}\n补充要求：{extra}"
+ },
+ "schema_version": 1,
+ "skill": {
+ "category": "办公设计",
+ "description": "一键美化，让PPT更好看",
+ "id": "ppt-beautify",
+ "title": "PPT美化"
+ }
+}

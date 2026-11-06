@@ -1,0 +1,24 @@
+{
+  "name": "image-search",
+  "version": "1.0.0",
+  "description": "图片搜索技能",
+  "main": "scripts/index.js",
+  "bin": {
+    "image-search": "scripts/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "image",
+    "search"
+  ],
+  "author": "OpenClaw Skill Creator",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.6"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

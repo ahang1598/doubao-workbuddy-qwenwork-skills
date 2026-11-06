@@ -1,0 +1,25 @@
+  {
+	    "extraInfo": {
+	        "context": {
+
+	            "clarifyType": "",
+	            "clientContext": {},
+	            "deviceInfo": {
+	                "deviceType": "phone"
+	            },
+	            "userInfo": {
+	                "uid": ""
+	            },
+	            "warmUp": false
+	        },
+	        "session": {
+	            "dialogId": 0,
+	            "dialogPageId": "",
+	            "interactionId": 41,
+	            "originRequestType": "text",
+	            "sessionId": "xxxxxx"
+	        }
+	    },
+	    "query": "总结摘要!!!"
+  }
+

@@ -1,0 +1,31 @@
+{
+    "description": "家人角色 → [手机设备名, Mac地址]映射，用于presence-members查询。请将家人角色名和对应的设备填入当前homeid下对应的devices位置中。支持单人持有多个设备的情况。",
+    "example": [
+        {
+            "homeid": "example_homeid_01",
+            "devices": {
+                "爸爸": [
+                    {
+                        "HUAWEI Mate 80 Pro Max": "example_mac_111"
+                    }
+                ],
+                "妈妈": [
+                    {
+                        "HUAWEI Pura X Max": "example_mac_222"
+                    }
+                ],
+                "女儿": [
+                    {
+                        "HUAWEI Pura 90 Pro Max": "example_mac_333"
+                    }
+                ],
+                "儿子": [
+                    {
+                        "HUAWEI Mate XTs": "example_mac_444"
+                    }
+                ]
+            }
+        }
+    ],
+    "memberDeviceMap": []
+}

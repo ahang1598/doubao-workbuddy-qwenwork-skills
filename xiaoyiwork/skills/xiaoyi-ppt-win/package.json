@@ -1,0 +1,12 @@
+{
+  "name": "xiaoyi-ppt-win-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pptxgenjs": "^4.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
+    "sharp": "^0.34.3"
+  }
+}

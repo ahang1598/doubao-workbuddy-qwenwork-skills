@@ -1,0 +1,253 @@
+{
+  "marketplaces": [],
+  "installed_plugins": [
+    {
+      "name": "aigc-marker-win",
+      "marketplace": "builtin",
+      "version": "1.2.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "find-skills-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "imap-smtp-email-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "markitdown-win",
+      "marketplace": "builtin",
+      "version": "1.0.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "minimax-music-gen-win",
+      "marketplace": "builtin",
+      "version": "1.0.4",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "seedance-video-gen-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "seedream-image-gen-win",
+      "marketplace": "builtin",
+      "version": "1.0.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "skill-creator-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-deep-research-win",
+      "marketplace": "builtin",
+      "version": "1.0.4",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-doc-convert-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-docx-win",
+      "marketplace": "builtin",
+      "version": "1.0.2",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-HarmonyOSSmartHome-skill-win",
+      "marketplace": "builtin",
+      "version": "1.0.9",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-health-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-image-search-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-image-understanding-win",
+      "marketplace": "builtin",
+      "version": "1.0.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-pdf-win",
+      "marketplace": "builtin",
+      "version": "1.0.4",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-ppt-win",
+      "marketplace": "builtin",
+      "version": "1.0.3",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-report-win",
+      "marketplace": "builtin",
+      "version": "1.0.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-self-evolution-win",
+      "marketplace": "builtin",
+      "version": "1.0.2",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-vlog-gen-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-web-search-win",
+      "marketplace": "builtin",
+      "version": "1.0.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "xiaoyi-xlsx-win",
+      "marketplace": "builtin",
+      "version": "1.0.1",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "expert-manager-win",
+      "marketplace": "builtin",
+      "version": "1.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "cloud-drive-win",
+      "marketplace": "builtin",
+      "version": "1.3.0.103",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    },
+    {
+      "name": "dock-workbench-win",
+      "marketplace": "builtin",
+      "version": "1.0.0.0",
+      "commit": "",
+      "source": "builtin",
+      "installed_at": "2026-11-06T03:25:09.415Z"
+    }
+  ],
+  "local_skills": [
+    {
+      "name": "xiaoyi-health-cli-index",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "arxiv-search",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "read-arxiv-paper",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "paper-daily",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "global-biblio-base",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "aihot",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "aminer-data-search",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "writing-inspiration",
+      "origin": "local",
+      "source": "local"
+    },
+    {
+      "name": "article-writer",
+      "origin": "local",
+      "source": "local"
+    }
+  ],
+  "skill_configs": {}
+}

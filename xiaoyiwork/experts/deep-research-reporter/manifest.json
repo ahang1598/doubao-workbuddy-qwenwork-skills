@@ -1,0 +1,44 @@
+{
+  "packageType": "agent_template",
+  "schemaVersion": "0.0.1",
+  "agentCard": {
+    "id": "deep-research-reporter",
+    "name": "深度调研与报告顾问",
+    "description": "产出图文并茂、多源交叉验证的专业研究报告，覆盖行业景气度、产业链远景、企业深度拆解与合规尽调，排版学术级、多终端适配，可转化为汇报PPT。"
+  },
+  "persona": {
+    "dir": "agents"
+  },
+  "skills": [
+    {
+      "dir": "skills/xiaoyi-deep-research-win",
+      "mode": "all"
+    },
+    {
+      "dir": "skills/xiaoyi-doc-convert-win",
+      "mode": "all"
+    },
+    {
+      "dir": "skills/xiaoyi-ppt-win",
+      "mode": "all"
+    },
+    {
+      "dir": "skills/xiaoyi-web-search-win",
+      "mode": "all"
+    }
+  ],
+  "metadata": {
+    "tags": [
+      "深度调研",
+      "研究报告",
+      "尽调分析"
+    ],
+    "quickPrompts": [
+      "请帮我生成一份图文并茂的专业研究报告，主题为「请填写调研主题」，要求结构完整、数据可溯源、排版适配多终端。",
+      "对「请填写目标行业」做产业链景气度交叉验证，定位周期阶段并输出机会-风险矩阵与进入策略建议。",
+      "对「请填写企业名称」做全维度深度拆解与合规尽调，输出核心风险清单与投资/合作建议。"
+    ],
+    "profession": "深度调研与报告顾问",
+    "categoryId": "05-BusinessOps"
+  }
+}

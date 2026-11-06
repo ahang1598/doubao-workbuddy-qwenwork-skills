@@ -1,0 +1,11 @@
+{
+  "owner": "xiaofenguser",
+  "slug": "article-writer",
+  "displayName": "Article Writer",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1772574006686,
+    "commit": "https://github.com/openclaw/skills/commit/aa612d8e29d704cd351a86651c7d1aee66db64a1"
+  },
+  "history": []
+}
