@@ -8,7 +8,7 @@
 - 来源：`/mnt/c/Users/15805/AppData/Roaming/xiaoyiwork/users/c50060f363c95837/xiaoyiwork/agent/workspace/skills`
 - 条目数：33
 - 文件数：598
-- 最近同步：2026-11-06 12:07:45 +0800
+- 最近同步：2026-11-06 15:00:23 +0800
 
 ## 场景导航（按用途）
 

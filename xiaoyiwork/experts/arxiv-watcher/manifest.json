@@ -1,0 +1,28 @@
+{
+  "packageType": "agent_template",
+  "schemaVersion": "0.0.1",
+  "agentCard": {
+    "id": "arxiv-watcher",
+    "name": "arXiv论文追踪专家",
+    "description": "检索ArXiv最新论文，按关键词、作者、学科精准搜索，提炼摘要并归档研究日志，持续追踪前沿动态。"
+  },
+  "persona": {
+    "dir": "agents"
+  },
+  "skills": [],
+  "metadata": {
+    "tags": [
+      "论文检索",
+      "研究追踪",
+      "文献摘要"
+    ],
+    "quickPrompts": [
+      "帮我搜索最新的LLM推理论文",
+      "总结今天arXiv上关于AI Agent的论文",
+      "解读论文 2512.08769 的核心内容"
+    ],
+    "categoryId": "04-DataAI",
+    "avatar": "avatars/expert.png",
+    "profession": "arXiv论文追踪专家"
+  }
+}

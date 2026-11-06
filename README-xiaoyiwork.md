@@ -6,9 +6,9 @@
 
 - 平台目录：`xiaoyiwork/`
 - 定时任务：`XiaoyiworkSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：36
-- 当前索引文件数：822
-- 最近变更：[2026-11-06-120745](xiaoyiwork/change-logs/2026-11-06-120745.md) - XiaoyiWork 本次同步新增 823 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/deep-research-reporter, experts/designkit-ppt-beautify, experts/document-generation-expert, skills/aigc-marker-win, ski...
+- 当前索引条目数：37
+- 当前索引文件数：825
+- 最近变更：[2026-11-06-150023](xiaoyiwork/change-logs/2026-11-06-150023.md) - XiaoyiWork 本次同步新增 3 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/arxiv-watcher。 受影响范围：experts/arxiv-watcher。
 
 ## 数据来源
 
@@ -66,6 +66,7 @@
 
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
+| arXiv论文追踪专家 | `xiaoyiwork/experts/arxiv-watcher` | expert | 3 | 检索ArXiv最新论文，按关键词、作者、学科精准搜索，提炼摘要并归档研究日志，持续追踪前沿动态。 |
 | 深度调研与报告顾问 | `xiaoyiwork/experts/deep-research-reporter` | expert | 140 | 产出图文并茂、多源交叉验证的专业研究报告，覆盖行业景气度、产业链远景、企业深度拆解与合规尽调，排版学术级、多终端适配，可转化为汇报PPT。 |
 | PPT视觉美化师 | `xiaoyiwork/experts/designkit-ppt-beautify` | expert | 5 | 基于现有PPT、PDF或页面图片重构视觉层级与版式，在保留内容的同时统一风格并提升专业质感。 |
 | 文档生成专家 | `xiaoyiwork/experts/document-generation-expert` | expert | 79 | 自动化生成各类业务文档，大幅提升文档创建效率 |
@@ -74,4 +75,5 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-06-150023 | [2026-11-06-150023](xiaoyiwork/change-logs/2026-11-06-150023.md) | XiaoyiWork 本次同步新增 3 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/arxiv-watcher。 受影响范围：experts/arxiv-watcher。 |
 | 2026-11-06-120745 | [2026-11-06-120745](xiaoyiwork/change-logs/2026-11-06-120745.md) | XiaoyiWork 本次同步新增 823 个文件、修改 0 个文件、删除 0 个文件。 新增条目：experts/deep-research-reporter, experts/designkit-ppt-beautify, experts/document-generation-expert, skills/aigc-marker-win, ski... |
