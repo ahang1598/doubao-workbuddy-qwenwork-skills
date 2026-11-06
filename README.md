@@ -1,6 +1,6 @@
 # AI Skills & Experts Archive
 
-归档本机各 AI 工具（Doubao、WorkBuddy、QwenWork、ChatGPT）的 skills、experts 及插件市场内容，通过定时任务每日自动同步、提交并推送。
+归档本机各 AI 工具（Doubao、WorkBuddy、QwenWork、ChatGPT、XiaoyiWork）的 skills、experts 及插件市场内容，通过定时任务每日自动同步、提交并推送。
 
 ## 目录结构
 
@@ -10,6 +10,7 @@
 ├── workbuddy/       # WorkBuddy（skills / experts / connectors）
 ├── qwenwork/        # QwenWork（skills / experts / connectors）
 ├── chatgpt/         # ChatGPT Codex（system skills / plugins）
+├── xiaoyiwork/      # 小艺工作台（skills / experts）
 ├── scripts/         # 同步脚本与计划任务注册
 └── README-*.md      # 各平台索引（自动生成）
 ```
@@ -28,6 +29,7 @@
 | WorkBuddy | `workbuddy/` | [README-workbuddy.md](README-workbuddy.md) |
 | QwenWork | `qwenwork/` | [README-qwenwork.md](README-qwenwork.md) |
 | ChatGPT | `chatgpt/` | [README-chatgpt.md](README-chatgpt.md) |
+| XiaoyiWork | `xiaoyiwork/` | [README-xiaoyiwork.md](README-xiaoyiwork.md) |
 
 ## 最近同步（2026-10-15 19:25）
 
@@ -53,7 +55,7 @@
 手动同步单个平台：
 
 ```bash
-python3 scripts/sync_platform.py --platform <doubao|workbuddy|qwenwork|chatgpt>
+python3 scripts/sync_platform.py --platform <doubao|workbuddy|qwenwork|chatgpt|xiaoyiwork>
 ```
 
 常用选项：

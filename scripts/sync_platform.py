@@ -435,6 +435,35 @@ PLATFORMS: dict[str, PlatformSpec] = {
             ),
         ),
     ),
+    "xiaoyiwork": PlatformSpec(
+        name="xiaoyiwork",
+        title="XiaoyiWork",
+        root="xiaoyiwork",
+        readme="README-xiaoyiwork.md",
+        task_name="XiaoyiworkSkillsDailySync",
+        sources=(
+            SourceSpec(
+                name="skills",
+                title="Skills",
+                source=Path(
+                    "/mnt/c/Users/15805/AppData/Roaming/xiaoyiwork/users/"
+                    "c50060f363c95837/xiaoyiwork/agent/workspace/skills"
+                ),
+                target="skills",
+                item_kind="skill",
+            ),
+            SourceSpec(
+                name="experts",
+                title="Experts",
+                source=Path(
+                    "/mnt/c/Users/15805/AppData/Roaming/xiaoyiwork/users/"
+                    "c50060f363c95837/xiaoyiwork/agent/workspace/experts_cache"
+                ),
+                target="experts",
+                item_kind="expert",
+            ),
+        ),
+    ),
 }
 
 
@@ -725,6 +754,19 @@ def metadata_for_item(item_dir: Path, fallback_name: str) -> tuple[str, str, str
                 name, description, data.get("keywords") or data.get("tags")
             )
             return str(name), one_line(str(description)), str(category), keywords
+
+    # XiaoyiWork expert packages keep metadata in a manifest.json whose
+    # ``agentCard`` block carries the display name/description.
+    agent_manifest = item_dir / "manifest.json"
+    if agent_manifest.exists():
+        data = load_json(agent_manifest)
+        card = data.get("agentCard")
+        if data.get("packageType") == "agent_template" and isinstance(card, dict):
+            name = card.get("name") or card.get("id") or fallback_name
+            description = card.get("description") or read_readme_summary(item_dir) or ""
+            tags = (data.get("metadata") or {}).get("tags")
+            keywords = extract_keywords(str(name), str(description), tags)
+            return str(name), one_line(str(description)), "", keywords
 
     # Connectors and bundled plugin layouts keep their SKILL.md one level
     # deeper (e.g. <connector>/skills/SKILL.md), so probe both locations.
@@ -1379,7 +1421,7 @@ def write_root_readme(repo_root: Path) -> bool:
         path,
         """# AI Skills & Experts Archive
 
-归档本机各 AI 工具（Doubao、WorkBuddy、QwenWork、ChatGPT）的 skills、experts 及插件市场内容，通过定时任务每日自动同步、提交并推送。
+归档本机各 AI 工具（Doubao、WorkBuddy、QwenWork、ChatGPT、XiaoyiWork）的 skills、experts 及插件市场内容，通过定时任务每日自动同步、提交并推送。
 
 ## 目录结构
 
@@ -1389,6 +1431,7 @@ def write_root_readme(repo_root: Path) -> bool:
 ├── workbuddy/       # WorkBuddy（skills / experts / connectors）
 ├── qwenwork/        # QwenWork（skills / experts / connectors）
 ├── chatgpt/         # ChatGPT Codex（system skills / plugins）
+├── xiaoyiwork/      # 小艺工作台（skills / experts）
 ├── scripts/         # 同步脚本与计划任务注册
 └── README-*.md      # 各平台索引（自动生成）
 ```
@@ -1407,6 +1450,7 @@ def write_root_readme(repo_root: Path) -> bool:
 | WorkBuddy | `workbuddy/` | [README-workbuddy.md](README-workbuddy.md) |
 | QwenWork | `qwenwork/` | [README-qwenwork.md](README-qwenwork.md) |
 | ChatGPT | `chatgpt/` | [README-chatgpt.md](README-chatgpt.md) |
+| XiaoyiWork | `xiaoyiwork/` | [README-xiaoyiwork.md](README-xiaoyiwork.md) |
 
 ## 最近同步
 

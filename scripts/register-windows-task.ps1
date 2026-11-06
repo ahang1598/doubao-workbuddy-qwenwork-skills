@@ -53,3 +53,4 @@ Register-PlatformTask -TaskName "DoubaoSkillsDailySync" -Platform "doubao" -LogN
 Register-PlatformTask -TaskName "WorkbuddySkillsDailySync" -Platform "workbuddy" -LogName "workbuddy-sync.log"
 Register-PlatformTask -TaskName "QwenworkSkillsDailySync" -Platform "qwenwork" -LogName "qwenwork-sync.log"
 Register-PlatformTask -TaskName "ChatgptSkillsDailySync" -Platform "chatgpt" -LogName "chatgpt-sync.log"
+Register-PlatformTask -TaskName "XiaoyiworkSkillsDailySync" -Platform "xiaoyiwork" -LogName "xiaoyiwork-sync.log"
