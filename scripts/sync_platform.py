@@ -520,6 +520,16 @@ def protected_summary_rel(source: SourceSpec) -> str:
     return rel_join(source.summary_dir or source.target, SUMMARY_FILENAME)
 
 
+# Runtime/dependency directories that must never be archived. ``node_modules``
+# is reproducible from the committed package.json / package-lock.json and may
+# contain Windows phantom reparse entries that break file copies.
+EXCLUDED_DIR_NAMES = frozenset({"node_modules"})
+
+
+def has_excluded_part(path: Path, root: Path) -> bool:
+    return EXCLUDED_DIR_NAMES.intersection(path.relative_to(root).parts) != frozenset()
+
+
 def list_source_files(source: SourceSpec) -> dict[str, Path]:
     if not source.source.exists():
         raise FileNotFoundError(f"source does not exist: {source.source}")
@@ -532,6 +542,8 @@ def list_source_files(source: SourceSpec) -> dict[str, Path]:
     generated_rel = SUMMARY_FILENAME  # the SUMMARY.md that would sit at the source root
     files: dict[str, Path] = {}
     for path in source.source.rglob("*"):
+        if has_excluded_part(path, source.source):
+            continue
         if path.is_file():
             rel = path.relative_to(source.source).as_posix()
             if not source.source_is_file and rel == generated_rel:
@@ -555,6 +567,8 @@ def list_target_files(platform_root: Path, source: SourceSpec) -> dict[str, Path
     protected = protected_summary_rel(source)
     files: dict[str, Path] = {}
     for path in target.rglob("*"):
+        if has_excluded_part(path, platform_root):
+            continue
         if path.is_file():
             rel = path.relative_to(platform_root).as_posix()
             if rel == protected:
