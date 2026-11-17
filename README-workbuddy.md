@@ -8,7 +8,7 @@
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：647
 - 当前索引文件数：17921
-- 最近变更：[2026-11-17-141159](workbuddy/change-logs/2026-11-17-141159.md) - WorkBuddy 本次同步新增 219 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/academic-expert, experts/arxiv-watcher, experts/literature-research, experts/literature-research-expert, experts/literat...
+- 最近变更：[2026-11-17-180001](workbuddy/change-logs/2026-11-17-180001.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
 
 ## 数据来源
 
@@ -715,6 +715,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-17-180001 | [2026-11-17-180001](workbuddy/change-logs/2026-11-17-180001.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-17-141159 | [2026-11-17-141159](workbuddy/change-logs/2026-11-17-141159.md) | WorkBuddy 本次同步新增 219 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/academic-expert, experts/arxiv-watcher, experts/literature-research, experts/literature-research-expert, experts/literat... |
 | 2026-11-05-180009 | [2026-11-05-180009](workbuddy/change-logs/2026-11-05-180009.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-04-180008 | [2026-11-04-180008](workbuddy/change-logs/2026-11-04-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
@@ -734,4 +735,3 @@
 | 2026-09-22-180002 | [2026-09-22-180002](workbuddy/change-logs/2026-09-22-180002.md) | WorkBuddy 本次同步新增 679 个文件、修改 62 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/aholo-lux3d, connectors/marketplace/connectors/meituan-for-business, connectors/marketplace/c... |
 | 2026-09-21-180001 | [2026-09-21-180001](workbuddy/change-logs/2026-09-21-180001.md) | WorkBuddy 本次同步新增 20 个文件、修改 42 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/3chat-customer-growth, connectors/marketplace/connectors/charge-order-query, connectors/market... |
 | 2026-09-20-180005 | [2026-09-20-180005](workbuddy/change-logs/2026-09-20-180005.md) | WorkBuddy 本次同步新增 22 个文件、修改 19 个文件、删除 63 个文件。 新增条目：connectors/marketplace/connectors/gt-generate-sql-data, connectors/marketplace/connectors/kuka-service, connectors/marketplace/... |
-| 2026-09-19-180006 | [2026-09-19-180006](workbuddy/change-logs/2026-09-19-180006.md) | WorkBuddy 本次同步新增 292 个文件、修改 242 个文件、删除 158 个文件。 新增条目：connectors/marketplace/connectors/candao-age, connectors/marketplace/connectors/dami-external-mcp, connectors/marketplace/co... |
