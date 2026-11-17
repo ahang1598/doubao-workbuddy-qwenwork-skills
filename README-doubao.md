@@ -6,9 +6,9 @@
 
 - 平台目录：`doubao/`
 - 定时任务：`DoubaoSkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：272
-- 当前索引文件数：4644
-- 最近变更：[2026-11-17-141159](doubao/change-logs/2026-11-17-141159.md) - Doubao 本次同步新增 345 个文件、修改 246 个文件、删除 469 个文件。 新增条目：skills/lark-meeting-realtime, skills/seedream-55。 移除条目已归档：skills/browser-record-replay, skills/byted-mediakit-audio, skills/byt...
+- 当前索引条目数：273
+- 当前索引文件数：4645
+- 最近变更：[2026-11-17-180001](doubao/change-logs/2026-11-17-180001.md) - Doubao 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/doubao-map-moa。 受影响范围：skills/doubao-map-moa。
 
 ## 数据来源
 
@@ -119,6 +119,7 @@
 | doubao-industry-analysis | `doubao/skills/doubao-industry-analysis` | skill | 15 | 针对某一行业（半导体、新能源、医药、消费等）的中长期基本面与产业研究，覆盖行业定义与规模、产业链与竞争格局、政策与驱动力、景气周期、趋势研判与三情景、盈利质量与落地建议。先想清楚这篇报告要证明什么判断（判断主线），再用三级数据分级取证、按固定五大板块写透，最终交付一份可直接用于战略规划、投资决策与商业化落地的飞书深度报告。对于一句话能答的问题，不要凭训练记忆或随手搜索口头作答，一律走本 Skill 的结构化多源论证。不触发并转其他... |
 | doubao-journal-format | `doubao/skills/doubao-journal-format` | skill | 14 | 用于对学术论文类 Word/DOCX 文档进行期刊、学校、会议或课程要求的格式排版与修复。当用户需要把论文原稿套用.docx 模板或明确格式规则、或提到论文排版、期刊投稿格式、学位论文格式、会议论文模板、时使用；如果同一请求同时包含论文 Word 排版和任何非排版任务，必须先停止并询问用户选择“只做格式排版”还是“作为复合任务拆分处理”，在用户明确选择前不得执行排版。不用于论文写作、润色、降重、翻译、代写、文献检索、补引用、验证引... |
 | doubao-listing-localization | `doubao/skills/doubao-listing-localization` | skill | 10 | Cross-border ecommerce Listing and Product Optimization for Amazon, TEMU, Walmart Marketplace, TikTok Shop, Shopify, AliExpress, Etsy, Google Shopping, Shopee, Lazada, Ozon, and other marketplace or independent-store... |
+| doubao-map-moa | `doubao/skills/doubao-map-moa` | skill | 1 | 当用户查询地点地址、自己所在位置或街道、附近地点、两地距离或耗时、怎么走、公交地铁线路，或要求导航、地图展示时使用。交易类与非交易类地点的纯位置查询均适用；包括“从 A 到 B”“多久到”“哪个更近”“导航去这里”等短句、比较和上下文承接，起终点省略时先读取再定位或追问。消费推荐、消费事实咨询和整体旅行编排由 doubao-trade-locallife 主导，不用于路线费用、打车耗时与费用或接驾 ETA。 |
 | doubao-market-hotspot | `doubao/skills/doubao-market-hotspot` | skill | 63 | 分析具体宏观、政策、监管、供需、地缘、行业或公司事件对企业、行业及公开市场的影响。适用于判断事件进展、主要传导路径、受影响对象、市场是否已反映事件及后续观察点；不用于没有明确事件的完整公司基本面研究或普通新闻摘要。 |
 | doubao-marketing-material-review | `doubao/skills/doubao-marketing-material-review` | skill | 1 | 营销素材审核。当用户上传待审核的广告宣传语、营销海报、社交媒体推广文案、直播话术等营销素材时，从虚假宣传、夸大宣传、绝对化用语、比较广告、引证数据真实准确性、价格违规、有奖营销、知识产权、风险行业违规宣传（如金融、医疗、三品一械、教育等特殊监管行业）、数据对外披露、不当承诺或表达等维度开展全面审查与风险扫描，对违规点归类、逐条分析判断并直接给出修改建议。当用户提到"营销素材审核""广告文案合规审查""宣传语合规""看看这段宣传/文... |
 | doubao-marketing-plan | `doubao/skills/doubao-marketing-plan` | skill | 5 | 首席营销策划官。用于生成、改写、优化并默认以飞书文档/Lark Doc 交付，以首席营销策划官的全域营销能力，把用户模糊的业务诉求转化为资深操盘手会交付的实战级方案。 |
@@ -303,6 +304,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-17-180001 | [2026-11-17-180001](doubao/change-logs/2026-11-17-180001.md) | Doubao 本次同步新增 1 个文件、修改 0 个文件、删除 0 个文件。 新增条目：skills/doubao-map-moa。 受影响范围：skills/doubao-map-moa。 |
 | 2026-11-17-141159 | [2026-11-17-141159](doubao/change-logs/2026-11-17-141159.md) | Doubao 本次同步新增 345 个文件、修改 246 个文件、删除 469 个文件。 新增条目：skills/lark-meeting-realtime, skills/seedream-55。 移除条目已归档：skills/browser-record-replay, skills/byted-mediakit-audio, skills/byt... |
 | 2026-11-05-180009 | [2026-11-05-180009](doubao/change-logs/2026-11-05-180009.md) | Doubao 本次同步新增 2 个文件、修改 140 个文件、删除 235 个文件。 移除条目已归档：skills/artifact-preview, skills/doubao-visualization, skills/verifier-hub。 受影响范围：skills/artifact-preview, skills/doubao-record... |
 | 2026-11-04-180008 | [2026-11-04-180008](doubao/change-logs/2026-11-04-180008.md) | Doubao 本次同步新增 156 个文件、修改 262 个文件、删除 31 个文件。 受影响范围：skills/doubao-creative-video, skills/doubao-equity-research, skills/doubao-visualization, skills/douyin-live-inspect, skills/fu... |
@@ -322,4 +324,3 @@
 | 2026-10-08-180007 | [2026-10-08-180007](doubao/change-logs/2026-10-08-180007.md) | Doubao 本次同步新增 7 个文件、修改 76 个文件、删除 7 个文件。 受影响范围：skills/html, skills/lark-approval, skills/lark-base, skills/lark-calendar, skills/lark-drive, skills/lark-im, skills/lark-mail, ski... |
 | 2026-10-08-090557 | [2026-10-08-090557](doubao/change-logs/2026-10-08-090557.md) | Doubao 本次同步新增 5 个文件、修改 11 个文件、删除 0 个文件。 受影响范围：skills/lark-doc, skills/pdf。 |
 | 2026-09-25-180002 | [2026-09-25-180002](doubao/change-logs/2026-09-25-180002.md) | Doubao 本次同步新增 185 个文件、修改 101 个文件、删除 56 个文件。 新增条目：skills/pdf。 移除条目已归档：skills/doubao-pdf。 受影响范围：skills/browser-use-automation, skills/doubao-answer-with-medical-evidence, skills/d... |
-| 2026-09-20-180005 | [2026-09-20-180005](doubao/change-logs/2026-09-20-180005.md) | Doubao 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/doubao-cron-scheduler。 |
