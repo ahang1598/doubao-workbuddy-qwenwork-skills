@@ -7,7 +7,7 @@
 
 ## 职责与阅读依赖
 
-维护通过分享链接读取详情、构造内容和提交表单的协议。提交授权、真实答案准备和验收范围按 [Form Scene](../scenes/form.md#填写与提交)，复用已确认目标。
+维护通过分享链接读取详情、构造内容和提交表单的协议。提交授权、真实答案准备和核验范围按 [Form Scene](../scenes/form.md#填写与提交)，复用已确认目标。
 
 ## 操作导航
 
@@ -16,7 +16,9 @@
 | 定位表单 | 从分享链接[提取 `share_token`](#提取分享标识share_token) |
 | 读取题目、必填、显隐、附件所需 Base token | `+form-detail` |
 | 构造普通值、附件、时区 | `fields`、`attachments`、`--timezone` |
+| 识别签字题、提交签名图片 | [签字题](#签字题) |
 | 提交或预览 | `+form-submit`、`--dry-run` |
+| `800004014`、超时或网络错误后判断是否已提交 | [结果不确定时的查询与重试](#结果不确定时的查询与重试) |
 
 ## 填写前置与分享标识
 
@@ -52,13 +54,17 @@ lark-cli base +form-detail --share-token "<share_token>" --format pretty
 | `base_token` | 有附件时传给 `+form-submit --base-token` |
 | `questions[].id` | 题目标识，通常对应字段 ID |
 | `questions[].title` | 按真实返回作为提交字段名/题目名 |
-| `questions[].type` | 按[普通字段值](#普通字段值fields)构造 |
+| `questions[].type` | 按[普通字段值](#普通字段值fields)构造；`formula` / `lookup` 是只读计算题，不提交值 |
 | `questions[].required` | 判断必填 |
 | `questions[].filter` | 判断可见性；不提交隐藏题 |
 
 类型动态配置包括 `select.options` / `select.multiple`、`number.style`、`datetime.style.format`、`user.multiple`；详情还可能含 `link.link_table`、`formula.expression`、`lookup.from/select/where/aggregate` 等元数据。
 
 出现元数据不代表该类型可创建为题目或可手动提交，按下文写入边界处理。
+
+**识别只读计算题**：`type` 为 `formula`（带 `expression`）或 `lookup`（带 `from` / `select` / `where`）的题目由系统计算，填写人不作答；`+form-questions-list` 返回的题目同样按此识别。
+
+**签字题无法从 `+form-detail` 识别**：签字题在这里显示为普通 `attachment`（不带 `style`），与附件题无法区分。需要判断某道附件题是否为签字题时，用 `+form-questions-list` 读取，签字题回显 `{"type":"attachment","style":{"type":"signature"}}`；没有管理权限读不到题目列表时，按题目标题和用户说明判断，并向用户索取签名图片。
 
 ### 填写时的显示条件（filter）
 
@@ -78,12 +84,15 @@ lark-cli base +form-detail --share-token "<share_token>" --format pretty
 
 - 仅提交当前分享表单真实存在、可见、可填写的题目。文本、数字、日期、人员、地理位置复用 [Record CellValue](record-cell-values.md)；Form 单选传字符串，多选传字符串数组。
 - 创建/复用题目仅按[题目支持类型](form-questions.md#创建请求与支持类型)，不得从值示例反推创建能力。公式、Lookup、系统字段不手动填写。
-- 自动编号、公式、创建/修改人、创建/修改时间由系统填入。
+- 公式、查找引用题放进 `fields` 时，网页端提交会静默忽略，CLI 链路会拒绝整次提交，报 `unsupported field type: <类型码>, field name: <题名>`（参数校验类错误，不落库）；遇到时从 `fields` 中去掉这些题目再提交，不要换写法尝试赋值。
+- 实际为 Phone 样式的题目按 Phone 规则提交：值必须是至少含一位数字的字符串，可含数字、`+`、`-`、空格和圆括号；失败时保留用户原值，不改写号码或改型重试。普通 `text` 电话字段按普通文本提交。
+- 超链接题的值是完整的 URL 字符串，不是对象；非法 URL 会被拒绝。
+- 自动编号、公式、查找引用、创建/修改人、创建/修改时间等系统字段或计算题由系统填入，无需也不能手动传入。
 - 旧表单或其他入口创建的特殊题型，先按当前详情和服务端能力核实可填写性，再传对应 CellValue。本地 dry-run 或普通记录支持该类型，不证明表单提交支持。
 - 不支持的关联收集走[输入与业务关联](../scenes/form.md#输入与业务关联)。
 
 ```json
-{"文本字段":"内容","电话字段":"13800000000","网址文本题":"https://example.com","数字字段":12.5,
+{"文本字段":"内容","电话字段":"13800000000","超链接题":"https://example.com","数字字段":12.5,
  "单选字段":"选项A","多选字段":["选项A","选项B"],"时间字段":"2026-04-27 14:30:00",
  "人员字段":[{"id":"ou_7094d131420c8749632145f08fbf114a"}],
  "地理位置字段":{"lng":116.397428,"lat":39.90923}}
@@ -102,6 +111,20 @@ lark-cli base +form-detail --share-token "<share_token>" --format pretty
 CLI 依次执行：校验全部文件存在、大小 ≤2GB 且为常规文件；以并发上限 5 上传到 Base Drive Media，并对跨字段重复路径去重；取得 `file_token` 后合并进最终提交。JSON 含 `attachments` 时必须传详情返回的 `--base-token`。
 
 区别于 [Record 附件协议](record-attachments.md)：Record 用独立命令 `+record-upload-attachment`；`+form-submit` 只接收 `attachments` 中的本地路径并自动完成校验、上传、取 Token、合并写入。
+
+### 签字题
+
+签字题（`attachment` + `style.type=signature`）和附件题一样放在 `attachments` 里，值为本地 **PNG** 图片路径数组，CLI 同样先上传、再合并提交（需要 `--base-token`）：
+
+```json
+{"attachments":{"本人签字":["./signature.png"]}}
+```
+
+- 识别签字题见 [详情返回与读取重点](#详情返回与读取重点)：`+form-detail` 里签字题显示为普通 `attachment`，要用 `+form-questions-list` 确认 `"style":{"type":"signature"}`。
+- 只接受 PNG 文件。其他格式或超过张数上限会被服务端拒绝（不落库），但报错可能不直接说明原因；提交前先核对文件格式与张数，被拒时从格式和张数排查，不换写法反复重试。
+- 只能使用用户提供的签名图片。用户没有提供时向用户索取；不得自行生成、绘制、合成或伪造签名图片，也不得拿其他图片代替。
+- 签字题必填时不传会被拒绝；用户拿不出签名图片时如实报告无法提交，不绕过。
+- 这是表单提交口径；记录写入时签字单元格只读，见 [签字附件限制](record-attachments.md#签字附件限制)。
 
 ### 相对日期与填写人时区（--timezone）
 
@@ -142,9 +165,20 @@ lark-cli base +form-submit \
 lark-cli base +form-submit --share-token "<share_token>" --json '{"fields":{"状态":"已确认","金额":5}}' --dry-run
 ```
 
+### 结果不确定时的查询与重试
+
+返回 `800004014`、超时或网络类错误时，提交结果不确定：服务端可能已经落库（带附件提交时服务端处理更久，调用方可能先超时报错而记录已写入）。不要直接重提：
+
+1. 先按本次填写的测试标记或能唯一定位该次提交的字段值，用 `+record-search` / `+record-list` 查询表单底表。
+2. 已经落库：沿用该记录并在答复中说明，不重复提交。
+3. 第一次没读到：间隔几秒再查询一次（带附件时服务端可能仍在落库）；两次都确认没有落库才重试一次，仍失败按实际错误报告。
+4. 当前身份读不到底表、无法确定是否已提交时，报告结果未知，不自动重复提交。
+
+参数校验类错误（如 `800004006`、`800004025`）表示未落库，按报错修正后再提交。
+
 ### 提交返回结构
 
-成功结果仅表示平台接受本次提交。`can_submit_again`（bool）只表示当前身份能否再次填写，不作为记录回读证据；业务验收按 [Scene](../scenes/form.md#按操作回读与验收)。
+返回 `can_submit_again`（bool），表示当前身份能否再次填写；提交响应记录平台已接受本次提交。用户明确要求核验底表记录时按 [Scene 按需读取](../scenes/form.md#按需读取范围)，结果未知时按上节恢复。
 
 ```json
 {"ok":true,"data":{"can_submit_again":true}}

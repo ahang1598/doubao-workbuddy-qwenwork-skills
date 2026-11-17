@@ -10,10 +10,11 @@
 """
 import argparse
 import json
-from copy import copy
+from copy import copy, deepcopy
 from pathlib import Path
 
 try:
+    from openpyxl.cell.rich_text import CellRichText, TextBlock
     from openpyxl.styles import Color, PatternFill, Protection, Side
     from openpyxl.formatting.rule import (
         CellIsRule,
@@ -148,18 +149,18 @@ def main():
         emit_error(str(e))
 
     merge_requested = args.merge and (er > sr or ec > sc)
-    merge_value = None
+    merge_source = None
     if merge_requested:
         non_empty = [
-            ws.cell(row=r, column=c).value
+            ws.cell(row=r, column=c)
             for r in range(sr, er + 1)
             for c in range(sc, ec + 1)
             if ws.cell(row=r, column=c).value not in (None, "")
         ]
-        distinct = {(type(value).__name__, repr(value)) for value in non_empty}
+        distinct = {(type(cell.value).__name__, repr(cell.value)) for cell in non_empty}
         if len(distinct) > 1:
             emit_error("Refusing to merge: target range contains different non-empty values")
-        merge_value = non_empty[0] if non_empty else None
+        merge_source = non_empty[0] if non_empty else None
 
     for r in range(sr, er + 1):
         for c in range(sc, ec + 1):
@@ -179,6 +180,25 @@ def main():
                 if args.font_color:
                     font.color = Color(rgb=_normalize_color(args.font_color))
                 cell.font = font
+                if isinstance(cell.value, CellRichText):
+                    # Shared-string cells may reference the same rich-text object.
+                    rich_text = deepcopy(cell.value)
+                    for run in rich_text:
+                        if not isinstance(run, TextBlock):
+                            continue
+                        if args.bold:
+                            run.font.b = font.b
+                        if args.italic:
+                            run.font.i = font.i
+                        if args.underline:
+                            run.font.u = font.u
+                        if args.font_size:
+                            run.font.sz = font.sz
+                        if args.font_name:
+                            run.font.rFont = font.name
+                        if args.font_color:
+                            run.font.color = copy(font.color)
+                    cell.value = rich_text
             if fill is not None:
                 cell.fill = fill
             if border_side is not None:
@@ -206,8 +226,8 @@ def main():
 
     if merge_requested:
         anchor = ws.cell(row=sr, column=sc)
-        if anchor.value in (None, "") and merge_value is not None:
-            anchor.value = merge_value
+        if anchor.value in (None, "") and merge_source is not None:
+            anchor.value = merge_source.value
         for r in range(sr, er + 1):
             for c in range(sc, ec + 1):
                 if (r, c) != (sr, sc):

@@ -27,9 +27,11 @@
 | 字段 | 类型与规则 |
 |---|---|
 | `table_name` | 数据表名称，如 `订单表`；不是 `table_id` |
-| `series` | `[{"field_name":"金额","rollup":"SUM"}]`；指标/Y 轴；与 `count_all` 二选一；`rollup`：`SUM` / `MAX` / `MIN` / `AVERAGE` |
+| `series` | `[{"field_name":"金额","rollup":"SUM"}]`；指标，柱状图纵轴／条形图横轴；与 `count_all` 二选一；`rollup`：`SUM` / `MAX` / `MIN` / `AVERAGE` |
 | `count_all` | boolean；COUNTA 记录数；与 `series` 二选一；只写顶层 `true`，不存在 `rollup:"COUNT"` |
-| `group_by` | `[{"field_name":"状态","mode":"integrated","sort":{...}}]`；X 轴；每项必须是对象 |
+| `group_by` | `[{"field_name":"状态","mode":"integrated","sort":{...}}]`；第一项为类别，第二项为分组聚合产生的系列；每项必须是对象 |
+| `sort` | 顶层指标值排序对象，普通图表与排行榜共用，见[公共排序](dashboard-sort.md) |
+| `limit_size` | 可选 1–500；null 清除截取，省略保留 |
 | `filter` | `{"conjunction":"and","conditions":[{"field_name","operator","value"}]}`；不是 record-list 的 `logic` 形态；值规则见 [条件协议](dashboard-filter-conditions.md) |
 
 ### 字段所属表边界
@@ -47,7 +49,9 @@
 
 #### sort 排序
 
-`sort.type` 取 `group`（按横轴值）、`value`（按纵轴值）或 `view`（按数据源记录顺序）；`sort.order` 取 `asc` / `desc`。传 `sort` 时明确方向。`value` 必须传 `order`；`group` / `view` 缺失时 CLI 补 `order:"asc"`。
+字段排序只写 `group_by[i].sort`，type 为 `group`（字段值）或 `view`（记录顺序）；指标值排序只写顶层 `sort`。方向显式写 `asc` / `desc`，完整配置见[公共排序](dashboard-sort.md)。
+
+类别字段用 `group_by[0].sort`，分组聚合的 Product 字段用 `group_by[1].sort`；两者独立。例子、轴方向、当前基础能力边界和测试矩阵统一见 [排序意图与验收](dashboard-sort.md)。
 
 ### 筛选字段与操作符
 
@@ -58,7 +62,7 @@
 
 ### 时间粒度与范围辅助字段
 
-- 月粒度无法稳定保留时，以已创建的 `TEXT([日期字段], "YYYY-MM")` 文本公式字段作 `group_by`，按 `group` 升序；表达式见 [Formula 表达式](field-formula-expression.md)。
+- 原始日期分组不等于月度分组，不使用未经协议或回读验证的日期粒度参数。月粒度无法稳定保留时，以已创建并回读验证的 `TEXT([日期字段], "YYYY-MM")` 文本公式字段作 `group_by`，按 `group` 升序；它随业务日期计算，不手填当前年月。表达式见 [Formula 表达式](field-formula-expression.md)，写后独立 Get 核实际分组绑定该字段及所需聚合。
 - 年度 datetime 筛选无法稳定表达时，聚合动态 helper measure `IF(YEAR([日期字段]) = YEAR(TODAY()), [指标字段], "")`；当年返回指标，非当年为空。不得持久化当前四位年份常量或用未经验证的 Formula filter 代替年度范围。
 - 周度／每周先建 `WEEKNUM([日期])` 周次字段并分组；“本周”仅为附加筛选，不产生周维度。
 
@@ -69,7 +73,7 @@
 ```json
 {"table_name":"订单表","count_all":true,"number_format":{"formatName":"digital","precision":0}}
 {"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"number_format":{"formatName":"cyn_rounded","precision":2}}
-{"table_name":"订单表","count_all":true,"group_by":[{"field_name":"渠道","mode":"integrated","sort":{"type":"value","order":"desc"}}],"filter":{"conjunction":"and","conditions":[{"field_name":"状态","operator":"is","value":"已完成"}]}}
+{"table_name":"订单表","count_all":true,"group_by":[{"field_name":"渠道","mode":"integrated"}],"sort":{"type":"value","by":{"type":"count"},"order":"desc"},"filter":{"conjunction":"and","conditions":[{"field_name":"状态","operator":"is","value":"已完成"}]}}
 ```
 
 ## 更新语义
@@ -101,19 +105,19 @@
 
 ### ranking 排行榜专属契约
 
-公开字段仅 `table_name`、`series` / `count_all`、`group_by`、`filter`、`limit_size`。
+公开字段为 `table_name`、`series` / `count_all`、`group_by`、`filter`、顶层 `sort`、`limit_size`。
 
 | 键 | 规则 |
 |---|---|
-| `group_by` | 必填且长度严格为 1；`mode` 仅 `integrated` / `enumerated`；排序只写 `[0].sort`，`type` 仅 `value`，`order` 为 `asc` / `desc`；create 缺排序时默认指标值降序 |
+| `group_by` | 必填且长度严格为 1；`mode` 仅 `integrated` / `enumerated`；分组不写指标排序；顶层 `sort.type:value`、`order:asc/desc`；create 缺排序时 CLI 生成顶层 `sort:{type:"value",order:"desc"}` |
 | `series` / `count_all:true` | 二选一；`series` 长度严格为 1，`rollup` 仅 `SUM` / `MAX` / `MIN` / `AVERAGE` |
 | `limit_size` | Top N；整数 `1..500`；create 缺省为 `10` |
-| 禁止 | 顶层 `sort`、公开 `ranking` 对象、头像开关 |
+| 禁止 | 公开 `ranking` 对象、头像开关 |
 
-更新为顶层 patch：单传 `limit_size`、`group_by`、`series` / `count_all:true`、`filter` 仅替换该项。换表须同传新 `table_name`、`group_by` 和 `series` 或 `count_all:true`；未传 `filter` / `limit_size` 则保留。
+更新为顶层 patch：单传 `sort`、`limit_size`、`group_by`、`series` / `count_all:true`、`filter` 仅替换该项；sort 对象整体替换，`sort:null` 清除指标排序和截取，`limit_size:null` 只清除截取。换表须同传新 `table_name`、`group_by` 和 `series` 或 `count_all:true`；未传 `filter` / `sort` / `limit_size` 则保留。
 
 ```json
-{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"负责人","mode":"integrated","sort":{"type":"value","order":"desc"}}],"limit_size":10}
+{"table_name":"订单表","series":[{"field_name":"金额","rollup":"SUM"}],"group_by":[{"field_name":"负责人","mode":"integrated"}],"sort":{"type":"value","by":{"type":"field","field_name":"金额","rollup":"SUM"},"order":"desc"},"limit_size":10}
 ```
 
 ### nps 评分图专属契约
@@ -151,7 +155,7 @@ CLI 仅做轻量 JSON 校验；服务端按字段元数据校验字段类型、�
 | Update | 顶层局部更新；传入的三组各自整体替换；换 `table_name` 必须显式传三组 |
 | `view_name` / `filter` | 互斥；传 `null` 清除对应数据源约束 |
 
-Update 保留项时传 Get 返回的 `field_key`、`field_name`、当前 `group_type` 或 `rollup`；替换字段、分组或聚合时省略原 `field_key`，由服务端生成。读取结果按 [图表结果协议](dashboard-chart-result.md) 的二维聚合结构验收。
+Update 保留项时传 Get 返回的 `field_key`、`field_name`、当前 `group_type` 或 `rollup`；替换字段、分组或聚合时省略原 `field_key`，由服务端生成。只有用户要求读取或解释图表、后续决策依赖实际结果或结果异常时，才按 [图表结果协议](dashboard-chart-result.md) 读取二维聚合结构。
 
 ## 约束与本地校验
 
@@ -164,7 +168,9 @@ Update 保留项时传 Get 返回的 `field_key`、`field_name`、当前 `group_
 | `text` | `text` | 禁止 `series`、`count_all`、`group_by`、`filter` |
 | `button` | 不要求 `table_name`、`series`、`count_all` | 专属字段由服务端校验 |
 
-CLI 规范化：`series[].rollup` 转大写（`sum` → `SUM`）；`group_by[].sort.type/order` 转小写；`group` / `view` 缺 `order` 补 `asc`，`value` 不补。`--no-validate` 时不规范化，原样透传。
+公共 `sort`／`limit_size` 的组件范围见[公共排序](dashboard-sort.md)；statistics、slicer、漏斗、词云等不使用该协议。切片器方向使用自身 `order`。创建时非空 `limit_size` 须搭配指标 `sort`；`multi_source` 必须与合法的 `data_sources` 一起配置。
+
+CLI 规范化：`series[].rollup` 转大写（`sum` → `SUM`）；`group_by[].sort.type/order` 转小写；`group` / `view` 缺 `order` 补 `asc`，顶层指标排序必须明确方向。`--no-validate` 时不规范化，原样透传。
 
 本地校验（`--no-validate` 可跳过）：
 
@@ -180,13 +186,15 @@ CLI 规范化：`series[].rollup` 转大写（`sum` → `SUM`）；`group_by[].s
 |---|---|
 | 柱／条形／散点 | `series` + 一个 `integrated group_by`，表达 Y 指标、X 维度 |
 | 饼／环形／词云 | `count_all:true` + 一个分类/文本 `group_by` |
-| 折线／面积（月趋势） | `series` + 时间 `group_by` + `sort:{"type":"group","order":"asc"}` |
+| 折线／面积（月趋势） | `series` + 时间 `group_by`，在 `group_by[0].sort` 写 `{"type":"group","order":"asc"}` |
 | 组合／雷达 | 多项 `series` + 一个 `group_by` |
 | 限定范围排名 | 用 `value desc`；渠道、状态、时间范围写入本组件 `filter`；另建筛选视图不作用于组件 |
 | 各维度比率 | 先建 `IF([状态]="<达标值>",1,0)` 公式字段，以 `AVERAGE` 按维度聚合；计数是记录数，不是比率 |
-| 按周汇总 | `count_all:true` + 周次 `group_by` + `sort:{"type":"group","order":"asc"}` |
+| 按周汇总 | `count_all:true` + 周次 `group_by`，在 `group_by[0].sort` 写 `{"type":"group","order":"asc"}` |
 
 ### 宽表多指标横向对比（多个数值字段本身就是要比较的对象）
+
+多个数值字段直接写成多个 `series` 且不设 `group_by` 时，看板显示 Invalid data，先建汇总表。
 
 已确定用汇总表时，分别聚合待比较的数值字段，写入两列汇总表，每个原字段一行，再按“对象”列分组建图：
 
@@ -220,5 +228,5 @@ CLI 规范化：`series[].rollup` 转大写（`sum` → `SUM`）；`group_by[].s
 | 缺 `table_name`；本地报缺必填 | 传表名，不传表 ID |
 | `series[].rollup` 枚举非法 | 用 `SUM` / `MAX` / `MIN` / `AVERAGE`；输入不区分大小写，CLI 转大写；计数用 `count_all:true` |
 | `group_by` 超 2 个或字段名空 | 保留前 2 个或补 `field_name` |
-| 排序枚举非法 | `sort.type` 仅 `group` / `value` / `view`；`order` 仅 `asc` / `desc` |
+| 排序枚举非法 | 字段排序 type 只写 group/view，指标排序使用顶层 sort；order 仅 asc/desc |
 | `filter` 形态非法 | `conjunction` 用 `and` / `or`；按 [操作符规则](dashboard-filter-conditions.md#filter-格式规则) 选 `operator`；除 `isEmpty` / `isNotEmpty` 外传 `value` |

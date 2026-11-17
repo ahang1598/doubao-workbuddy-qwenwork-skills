@@ -22,10 +22,12 @@ Agent 在运行时理解输入、生成文本或结构化结果，按需调用�
 | `model.name` | 模型 pack ID，如 `doubao_chat_model`；从现有工作流或服务端配置确认，不能凭显示名编造 |
 | `model.temperature` / `model.max_token` | 数字 / 正整数；范围和上限随服务端当前模型配置 |
 | `model.timeout` | 正整数，单位毫秒，不要填秒数 |
+| `model.thinking_mode` | 可选：本地只接受 `auto`（自动／智能匹配）、`quick`（高效执行／即刻执行）、`deep`（探索分析／深入思考）；各模型支持范围由服务端校验 |
 | `max_iterations` | 正整数；上限由服务端决定 |
 | `enable_streaming_reply` | 布尔，是否流式回复；不替代下游记录或消息动作 |
 
-- 不支持 `thinking_mode`：不要填，并告诉用户暂不支持。
+省略时使用模型默认模式；不要传空字符串或 `null`。不支持所选模式时按错误提示修正或报告限制，不自动替换。
+
 - 新建可运行的 Agent 时显式填写已确认的 `model.name`，不要假定服务端自动选模型。
 
 ## 输出配置
@@ -75,6 +77,10 @@ json 模式必填 `json_output`，form 模式必填非空 `form_output`；不要
 - `LarkMessageAction` 发飞书消息；`LarkEmailAction` 发飞书邮件（见[节点参数](workflow-actions.md#发送邮件larkemailaction)）
 - `HTTPClientAction` HTTP 请求；`GenerateAiTextAction` AI 生成文本（注意 `Ai` 大小写）；`AIAnalysisAction` AI 分析
 - `APIHubAction` 仅限[已支持的 9 个二方动作](workflow-apihub.md)
+
+需要主动查询已有记录时，配置[查找记录](workflow-actions.md#查找记录findrecordaction)及有效定位；整表分析可将[分析数据](workflow-actions.md#分析数据aianalysisaction)挂为 Agent 工具，或在上游分析后将结果传给 Agent，并显式指定分析表。
+
+`add_base_record`／`update_base_record` 用于新增／更新记录，不能替代记录查询；工具名称和描述不能替代实际读取能力配置。用户明确要求 Agent 时，保留 Agent 根节点。
 
 - 参数必须符合节点协议；不能留空或伪造“AI 自动填写”标记让 Agent 补齐。
 - 不要把 Agent 最终输出引用回它自己的工具；要用邮件发送最终结果时，把邮件作为 Agent 之后的普通节点。

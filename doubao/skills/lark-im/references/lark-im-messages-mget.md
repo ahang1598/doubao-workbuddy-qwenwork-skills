@@ -114,6 +114,10 @@ lark-cli im +messages-mget --message-ids "om_aaa,om_bbb"
 3. **Images are rendered as placeholders:** image messages appear as placeholders such as `![Image](img_xxx)`. Use `+messages-resources-download` when you need the binary resource.
 4. **Batching is more efficient:** fetching multiple IDs in one request is better than calling the API repeatedly.
 
+## Citation Requirements
+
+Whenever the final response uses, paraphrases, or summarizes information returned by a tool, preserve the original URL from the tool result’s `citations` field (inside `<url>...</url>`) and cite it immediately after the corresponding statement using `<RichMediaReference>["url"]</RichMediaReference>`.
+
 ## References
 
 - [lark-im](../SKILL.md) - all IM commands

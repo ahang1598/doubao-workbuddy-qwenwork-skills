@@ -1,0 +1,10 @@
+/* 特效-文字轮廓
+可见证据：浅灰字腔与单圈深灰外缘。
+复现顺序：深色轮廓 → 浅色字腔；保留填充，与透明镂空区分。
+参数为 proposed 复现建议，原软件和精确参数未知。em 以目标字号为参照，正 x 向右、正 y 向下。
+建议范围：线宽 .015–.06em；过粗会堵塞小字字腔。
+保留真实文字；描边和镂空的伪元素仅作装饰。换字同步 data-text，换底色同步 --fx-surface；为阴影和光晕预留外部净空。
+*/
+.特效_文字轮廓{display:inline-block;--fx-face:#ddd;--fx-line:#555;--fx-width:.035em;
+color:var(--fx-face);-webkit-text-stroke:var(--fx-width) var(--fx-line);paint-order:stroke fill;
+}

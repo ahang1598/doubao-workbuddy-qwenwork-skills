@@ -1,6 +1,6 @@
 ---
 name: doubao-product-content
-description: 生成或优化电商商品标题、详情文案和商品页静态图片。
+description: 面向电商商家、品牌和店铺运营者，生成或优化用于商品经营的标题、详情文案和商品页静态图片。
 ---
 
 # 豆包电商商品内容

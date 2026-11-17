@@ -18,6 +18,7 @@ metadata:
 
 ## 快速决策
 
+- 妙搭 `/app/app_xxx` 的资源权限或密级操作：先按 [`apps +get`](../lark-apps/references/lark-apps-get.md) 查询 `meta_token` / `meta_doc_type`，再传给本域 shortcut 的 `--token` / `--type`（`apps` 或 `miaoda_apps`）。不要直接传应用 URL 或 app_id，也不要猜测类型；字段缺失则停止。
 - 用户要把**已有 Wiki 节点移出知识库，放到 Drive 文件夹或“我的空间”根目录**：切到 `lark-wiki`，使用 `lark-cli wiki +move-to-drive`；不要把 Wiki token 直接交给 `drive +move`。这是会改变文档归属和权限继承的写操作，执行前确认源节点与目标位置。
 - 用户要**复制文档 / 创建副本 到云盘或者文件夹**时：已提供可直接使用的 URL 或 token，按 [`references/lark-drive-copy.md`](references/lark-drive-copy.md) 使用 `lark-cli drive +copy`；仅提供标题时，先按 [`references/lark-drive-search.md`](references/lark-drive-search.md) 使用 `drive +search` 唯一定位源资源，再按 copy reference 复制。如果是要复制文档 / 创建副本到知识库，使用 `wiki +node-copy`（见 [`lark-wiki-node-copy.md`](../lark-wiki/references/lark-wiki-node-copy.md)）。
 - 用户要**识别飞书 / doubao 云空间 URL 的类型和 token**时，可以先按 URL 路径形态做轻量判断；当路径已明确指向 docx / sheet / bitable / slides / file / folder 等资源时，可直接提取对应 token/type。传入 wiki URL、需要识别标题或 canonical URL、URL/token 有歧义，或后续操作依赖底层真实资源时，再使用 `lark-cli drive +inspect --url '<url>'` 进行识别；具体用法、失败处理和边界见 [`references/lark-drive-inspect.md`](references/lark-drive-inspect.md)。若路径是 `/record/`（记录分享），不要用 `drive +inspect`，直接转 `lark-base`，用 `lark-cli base +url-resolve --url '<url>'` 解析。
@@ -27,7 +28,7 @@ metadata:
 - 用户要为指定飞书文档**设置 / 修改密级标签（secure label）**，或查询当前用户可用的密级标签，直接读取 [`references/lark-drive-secure-label.md`](references/lark-drive-secure-label.md)；这是 Drive 文件治理能力。
 - 用户要**检查 / 治理文档权限、公开范围、链接分享、外部访问、复制下载权限、密级标签、owner 转移**，或要“权限风险报告、收紧权限、申请查看 / 编辑权限、转移 / 批量转移 owner”，必须先阅读 [`references/lark-drive-workflow.md`](references/lark-drive-workflow.md)，再按其中 `Workflow Registry` 进入 [`permission_governance`](references/lark-drive-workflow-permission-governance.md) workflow。
 - 用户要**查询文件、文件夹或云文档自身的公开访问、分享、协作者管理、安全与评论权限设置**，优先使用 `lark-cli drive +permission-get-setting`；它只读取目标自身设置，不递归审计文件夹子文档权限。裸 token 必须显式传 `--type`。
-- 用户要**按特定主题、关键词或内容线索跨容器查找资料，并统一收集到 Drive 文件夹或 Wiki 节点**，必须先阅读 [`references/lark-drive-workflow.md`](references/lark-drive-workflow.md)，再按其中 `Workflow Registry` 进入 [`topic_move_collector`](references/lark-drive-workflow-topic-move-collector.md) workflow。该 workflow 负责搜索召回、内容验证、相关性分类、移动计划、写前确认和结果验证；禁止直接从 `drive +search` 或 `drive +move` 开始。
+- 用户要**按特定主题、关键词或内容线索跨容器查找资料，并统一收集到 Drive 文件夹或 Wiki 节点**，必须先阅读 [`references/lark-drive-workflow.md`](references/lark-drive-workflow.md)，再按其中 `Workflow Registry` 进入 [`topic_move_collector`](references/lark-drive-workflow-topic-move-collector.md) workflow。该 workflow 负责搜索召回、相关性分类、移动计划、写前确认和结果汇总；禁止直接从 `drive +search` 或 `drive +move` 开始。
 - 用户要**整理云盘 / 文件夹 / 文档库 / 知识库 / 个人文档库**，或要“盘点目录结构、找出未归档/临时/重复/空目录、生成整理方案”，必须先阅读 [`references/lark-drive-workflow.md`](references/lark-drive-workflow.md)，再按其中 `Workflow Registry` 进入 [`knowledge_organize`](references/lark-drive-workflow-knowledge-organize.md) workflow。默认只生成方案；创建目录、移动资源、申请权限都必须单独确认。
 - 按主题跨范围查找并集中归档，进入 `topic_move_collector`；对已知文件夹、文档库或知识库做目录盘点和结构重组，进入 `knowledge_organize`；只移动一个已明确资源时仍使用原子移动命令。
 - 用户要**搜文档 / Wiki / 电子表格 / 多维表格 / 云空间（云盘/云存储）对象**，优先使用 `lark-cli drive +search`；按标题定位和处理重复候选时遵循 [`references/lark-drive-search.md`](references/lark-drive-search.md)。自然语言里"最近我编辑过的"、"我创建的"（→ `--created-by-me`，原始创建者语义）、"我负责/owner 的"（→ `--mine`，owner 语义）、"最近一周我打开过的 xxx"、"某人 owner 的 docx" 等直接映射到扁平 flag，避免手写嵌套 JSON。

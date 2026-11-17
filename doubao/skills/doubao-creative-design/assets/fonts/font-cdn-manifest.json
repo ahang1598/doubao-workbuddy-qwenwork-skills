@@ -37,5 +37,12 @@
       "content_type": "application/font-sfnt",
       "verified": true
     }
-  ]
+  ],
+  "cdn_migration": {
+    "date": "2026-11-04",
+    "host": "lf-flow-web-cdn.doubao.com",
+    "authorization": "user_requested",
+    "network_status": "not_checked",
+    "note": "Object paths and registered face metadata retained. Historical verified flags are not a new-host network or CORS check."
+  }
 }

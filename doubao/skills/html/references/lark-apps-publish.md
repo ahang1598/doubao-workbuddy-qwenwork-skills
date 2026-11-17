@@ -7,6 +7,7 @@
 - **app_id**：`app_` 开头，doubao-html 网页唯一标识（服务端把 html 应用的 `app_type` 归一为 `modern_html`）。
 - **meta_token**：创意应用分享链接 `/page/<token>` 的最后一段。
 - 所有 `--file-path` / `--dir` / `--output` 路径**只接受相对当前目录的相对路径**，传绝对路径会被拒——先 `cd` 到产物目录。
+- **`cd` 和 `lark-cli` 必须写在同一条命令里**（`cd <产物目录> && lark-cli apps …`）。每次执行命令的工作目录不保证沿用上一次，分两次执行时相对路径可能按另一个目录解析。
 
 ---
 
@@ -15,29 +16,32 @@
 `+deploy` 既能首发建应用，也能复发布更新已有应用。
 
 ```bash
-lark-cli apps +deploy --file-path ./index.html                    # 首发，自动建应用
-lark-cli apps +deploy --file-path ./index.html --app-id app_xxx   # 复发到同一应用
+cd <产物目录> && lark-cli apps +deploy --file-path ./<file_name>.html                    # 首发，自动建应用
+cd <产物目录> && lark-cli apps +deploy --file-path ./<file_name>.html --app-id app_xxx   # 复发到同一应用
 ```
+
+- 只使用本文列出的参数。`+deploy` 没有 `--yes`，加了会报 `unknown flag`。
 
 - **单文件（`--file-path`）是本 skill 的唯一主路径。** 该文件即入口，产物里恒为 `index.html`。**会自动爬取页面引用的本地依赖**（`<img src|srcset>`、`<link rel>`、`<script src>`、CSS 的 `url()` / `@import` 等），一并打包——页面引用了同目录 `assets/` 的素材也能正常渲染。
 
 ### app_id 怎么定
 
-- **复发布带上一次返回的 `--app-id` 是常态主路径**，跳过幂等查询直接更新同一应用。**首次返回的 app_id 必须记住并复用。**
+- **更新已有应用时，默认带上上次返回的 `--app-id`**，无需做幂等查询，直接更新同一应用。**首次返回的 app_id 必须记住并复用。**
 - 不带 `--app-id` 时，入口文件的绝对路径是幂等标识——同一路径复发落回同一应用；改名 / 搬目录 / 换 cwd 会**新建**一个应用。
 - stderr 回显 `publishing to app <app_id> (from --app-id|has_html_app_created|+create)`，据此确认发到了哪个应用。`app_id` 不是本会话拿到的（来自历史/他人）时先与用户确认——发布会覆盖该应用线上内容。
 
 ### 输出契约
-- **判断成败看返回 JSON 的 `ok` 字段，不要看 exit code。** 参数校验失败时返回 `{"ok": false, "error": {...}}`，而包裹命令的工具层仍可能显示 `Exit code 0`。返回失败时，向用户转述 `error` 和 `error.hint`。
+- **判断成败看返回 JSON 的 `ok` 字段，不要看 exit code。** 参数校验失败时返回 `{"ok": false, "error": {...}}`，而包裹命令的工具层仍可能显示 `Exit code 0`。`error.hint` 一般给出了正确改法，优先照做并转述。
 - 发布单受理后命令**立即返回、不原地等待**：发布中返回 `data.release_id` + `data.poll_hint`，同步完成则直接返回 `data.online_url`。
 - 用 `+release-get --app-id <app_id> --release-id <release_id>` 轮询到 `status=finished` 再读 `online_url`（间隔 ≥3s，整体约 5 分钟上限；超时未完成就停下、报当前 status 和 release_id）。
-- 流水线失败 = 发布失败（`ok:false`，message 含各 step 的 `error_logs` 摘要）。
-- **发布成功后直接交付**：发布接口确认完成并返回 `online_url` 后，直接交付该链接，**禁止再用 `curl`、浏览器或自写脚本访问链接检查可用性或渲染效果**。检查环境可能没有用户登录态，打开的是登录页；不要据此判断发布失败，或在交付名称、说明中添加“手机登录豆包后打开”等提示。
+- 流水线失败 = 发布失败（`ok:false`，message 含各 step 的 `error_logs` 摘要）；产物已上传，修复后重新 `+deploy` 即可。
+- **只通过 `present_files` 交付 `online_url`，禁止在回复正文中输出链接**：调用 `present_files` 后客户端会直接渲染网页卡片，**最终回复正文中禁止再贴出 `online_url`（`doubao.link` / `feishu.link`）或 `aka.doubaocdn.com` 等临时 CDN 地址**。`present_files` 回执中的 CDN 地址是临时文件下载地址，不是发布链接，不作为预览、分享或下载入口再次交付。
+- **发布成功后直接交付**：发布接口确认完成并返回 `online_url` 后，直接通过 `present_files` 交付，**禁止再用 `curl`、浏览器或自写脚本访问链接检查可用性或渲染效果**。检查环境可能没有用户登录态，打开的是登录页；不要据此判断发布失败，或在交付名称、说明中添加“手机登录豆包后打开”等提示。
 
 ### 会拦截的两件事
 
-- **凭证扫描**：按文件名扫 `.env` / 私钥 / `credentials` 等，命中即拒绝。不要习惯性加 `--allow-sensitive`（那会跳过整道扫描，而产物是公网可访问链接）。
-- **体积**：单个 `.html` ≤ 20 MiB、打包前原始总量 ≤ 200 MiB、打包后 zip ≤ 50 MiB。没有放开参数。
+- **凭证扫描**：按文件名扫 `.env` / 私钥 / `credentials` 等，命中即拒绝。默认动作是**把这些文件移出发布范围**，不要习惯性加 `--allow-sensitive`（那会跳过整道扫描，而产物是公网可访问链接）。
+- **体积**：单个 `.html` ≤ 20 MiB、打包前原始总量 ≤ 200 MiB、打包后 zip ≤ 50 MiB。超限只能收窄产物范围，没有放开参数。
 
 ---
 

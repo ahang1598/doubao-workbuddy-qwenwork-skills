@@ -57,7 +57,7 @@ lark-cli base +record-batch-update --base-token "<base_token>" --table-id "<tabl
 lark-cli base +record-batch-update --base-token "<base_token>" --table-id "<table_id>" --json @batch-update.json
 ```
 
-成功响应只含可选 `ignored_fields`；无忽略字段时 `data` 是空对象，不返回记录列表。请求不预检 record ID 是否存在；用请求目标 ID 回读，不得等待响应提供 ID，也不得以空 `data` 判定目标存在。命令不转换字段/行映射，原样发送；超限会被接口拒绝。`ignored_fields` 边界与含义见 [CellValue](record-cell-values.md#只读字段与附件边界)。
+响应只含可选 `ignored_fields`；无忽略字段时 `data` 是空对象，不返回记录列表。出现忽略字段、结果未知、后续需要实际记录值或用户明确要求核验时，才按请求目标 ID 读取。命令不转换字段/行映射，原样发送；超限会被接口拒绝。`ignored_fields` 边界与含义见 [CellValue](record-cell-values.md#只读字段与附件边界)。
 
 ## 删除记录：+record-delete
 

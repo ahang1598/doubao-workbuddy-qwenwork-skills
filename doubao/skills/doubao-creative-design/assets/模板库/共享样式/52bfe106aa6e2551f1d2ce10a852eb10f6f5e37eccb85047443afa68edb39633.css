@@ -1,0 +1,10 @@
+/* 特效-文字背景
+可见证据：实心字配紧贴文字的圆角浅灰底板。
+复现顺序：圆角底板 → 实心字；底板随文字尺寸增长。
+参数为 proposed 复现建议，原软件和精确参数未知。em 以目标字号为参照，正 x 向右、正 y 向下。
+建议范围：横向内距 .08–.25em，圆角 .10–.35em。
+保留真实文字；描边和镂空的伪元素仅作装饰。换字同步 data-text，换底色同步 --fx-surface；为阴影和光晕预留外部净空。
+*/
+.特效_文字背景{display:inline-block;--fx-ink:#555;--fx-panel:#ddd;--fx-radius:.22em;--fx-pad-y:.045em;--fx-pad-x:.16em;
+color:var(--fx-ink);background:var(--fx-panel);border-radius:var(--fx-radius);padding:var(--fx-pad-y) var(--fx-pad-x);box-decoration-break:clone;-webkit-box-decoration-break:clone;
+}

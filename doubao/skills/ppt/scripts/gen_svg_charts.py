@@ -43,7 +43,6 @@ from svg_lib.charts.km_survival import make_km_survival
 from svg_lib.charts.line_band import make_line_band
 from svg_lib.charts.marimekko import make_marimekko
 from svg_lib.charts.matrix_heat import make_matrix_heat
-from svg_lib.charts.nested_donut import make_nested_donut
 from svg_lib.charts.network import make_network
 from svg_lib.charts.nyquist_bode import make_nyquist_bode
 from svg_lib.charts.pairs import make_pairs
@@ -130,7 +129,6 @@ __all__ = [
     "make_line_band",
     "make_marimekko",
     "make_matrix_heat",
-    "make_nested_donut",
     "make_network",
     "make_nyquist_bode",
     "make_pairs",
@@ -239,7 +237,6 @@ _CHART_DESCRIPTIONS = {
         "矩阵热图",
         "Rectangular numeric or mixed-column matrices; -1 is data, None/NaN is missing; masks, annotations and independent upper/lower scales.",
     ],
-    "nested_donut": ["嵌套占比环", "父子类别占比与多层环；数值必须来自真实组成，非通用径向数轴。"],
     "network": [
         "科研网络图",
         "Nodes and edges with force, radial, bipartite or supplied layouts; quantitative encodings and tracks.",
@@ -612,7 +609,7 @@ _CHART_SELECTION = (
     ("变化贡献", "waterfall", "需要起终值与可加的增减项；时间趋势、独立消融结果不能直接当归因。"),
     (
         "组成 / 流转",
-        "marimekko / nested_donut / sankey / funnel_classic",
+        "marimekko / sankey / funnel_classic",
         "已报告的组成比例或各阶段数量即可；流入流出须守恒，损耗显式给出。",
     ),
     (
@@ -894,7 +891,7 @@ _BY_QUESTION = (
     (
         "通用",
         "构成与流转（占比、阶段转化、来源去向、增减归因）",
-        "nested_donut / marimekko / sankey / waterfall",
+        "marimekko / sankey / waterfall",
         "已报告的组成比例、各阶段数量或增减项。",
     ),
     (

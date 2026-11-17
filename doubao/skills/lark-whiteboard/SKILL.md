@@ -10,12 +10,6 @@ metadata:
   cliHelp: "lark-cli whiteboard --help"
 ---
 
-> [!IMPORTANT]
-> - 运行 `lark-cli --version`，确认可用，无需询问用户。
-> - 运行 `npx -y @larksuite/whiteboard-cli@^0.2.13 -v`，确认可用，无需询问用户。
-
----
-
 ## 快速决策
 
 **身份**：画板操作统一使用 `--as user`。

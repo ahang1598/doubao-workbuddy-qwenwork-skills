@@ -1,0 +1,20 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>特效-球面玻璃近似</title><meta name="standalone-template" content="1"><style data-standalone-base>html,body{margin:0;padding:0}</style><style data-compiled-dependencies>.vl-glass {
+  --vl-shadow: 0;
+  --vl-alpha: .24;
+  --vl-blur: 18px;
+  --vl-grain: .18;
+  --vl-edge: .95;
+  --vl-highlight: .40;
+  --vl-texture-size: 176px;
+  --vl-texture: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PGZpbHRlciBpZD0ibiIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9Ii42OCIgbnVtT2N0YXZlcz0iMSIgc2VlZD0iMTciIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJzYXR1cmF0ZSIgdmFsdWVzPSIwIi8+PGZlQ29tcG9uZW50VHJhbnNmZXI+PGZlRnVuY1IgdHlwZT0ibGluZWFyIiBzbG9wZT0iNCIgaW50ZXJjZXB0PSItMS41Ii8+PGZlRnVuY0cgdHlwZT0ibGluZWFyIiBzbG9wZT0iNCIgaW50ZXJjZXB0PSItMS41Ii8+PGZlRnVuY0IgdHlwZT0ibGluZWFyIiBzbG9wZT0iNCIgaW50ZXJjZXB0PSItMS41Ii8+PC9mZUNvbXBvbmVudFRyYW5zZmVyPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMjU2djI1NkgweiIgZmlsdGVyPSJ1cmwoI24pIi8+PC9zdmc+");
+}
+
+.vl-badge { display:inline-grid; place-items:center; box-sizing:border-box; padding:var(--vl-badge-pad-y,5px) var(--vl-badge-pad-x,14px); border:var(--vl-badge-border,1px) solid var(--vl-edge-color,currentColor); border-radius:var(--vl-badge-radius,999px); background:var(--vl-label-bg,#c79a53); color:var(--vl-label-ink,#fff); line-height:1.2; }
+.vl-badge--circle { width:var(--vl-badge-size,44px); aspect-ratio:1; padding:0; flex:none; text-align:center; }
+
+.vl-badge.vl-sphere { position:relative; isolation:isolate; padding:0; border:0; background:transparent; }
+.vl-sphere__shell { position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none; border:var(--vl-sphere-rim-width,1px) solid color-mix(in srgb,var(--vl-sphere-rim,#cefaff) 75%,transparent); backdrop-filter:blur(var(--vl-sphere-blur,1px)); background:radial-gradient(ellipse 85% 60% at var(--vl-sphere-shine-x,30%) var(--vl-sphere-shine-y,8%),color-mix(in srgb,var(--vl-sphere-rim,#cefaff) calc(var(--vl-sphere-shine,.85) * 100%),transparent) 0%,transparent 62%),radial-gradient(ellipse 80% 65% at 70% 95%,color-mix(in srgb,var(--vl-sphere-tint,#1679c4) 72%,transparent) 0%,transparent 72%),radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--vl-sphere-tint,#1679c4) calc(var(--vl-sphere-alpha,.5) * 100%),transparent) 0%,color-mix(in srgb,var(--vl-sphere-dark,#052b65) calc(var(--vl-sphere-alpha,.5) * 100%),transparent) 85%); box-shadow:inset -5px -7px 14px color-mix(in srgb,var(--vl-sphere-dark,#052b65) 60%,transparent),inset 3px 4px 7px color-mix(in srgb,var(--vl-sphere-rim,#cefaff) 35%,transparent),0 0 5px color-mix(in srgb,var(--vl-sphere-tint,#1679c4) 45%,transparent); }
+.vl-sphere__shine { position:absolute; z-index:1; inset:5% 13% 57% 13%; border-radius:50%; border-top:calc(var(--vl-sphere-rim-width,1px) * 1.5) solid var(--vl-sphere-rim,#cefaff); opacity:var(--vl-sphere-shine,.85); pointer-events:none; }
+.vl-sphere__content { position:relative; z-index:2; margin:var(--vl-sphere-content-inset,12%); text-align:center; }
+</style></head><body><div class="vl-badge vl-badge--circle vl-sphere" style="--vl-badge-size:128px;--vl-label-ink:#8bdeff"><span class="vl-sphere__shell" aria-hidden="true"></span><span class="vl-sphere__shine" aria-hidden="true"></span><div class="vl-sphere__content">圆形<br>主题</div></div>
+</body></html>

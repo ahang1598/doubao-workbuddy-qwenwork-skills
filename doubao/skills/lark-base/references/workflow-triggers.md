@@ -2,7 +2,7 @@
 
 ## 目录
 
-记录触发器对比 · 记录触发条件 · 新增记录 · 记录满足条件 · 字段修改 · 定时触发 · 日期提醒 · 按钮触发 · 接收消息
+记录触发器对比 · 记录触发条件 · 新增记录 · 记录满足条件 · 字段修改 · 定时触发 · 日期提醒 · 按钮触发 · 外部 Webhook · 接收消息
 
 ## 记录触发器对比
 
@@ -163,11 +163,40 @@ data（独立 JSON 值）：
 | table_name | 仅 button_type=buttonField 时填绑定表名 |
 | condition_list | 仅 buttonField 可用；只有用户明确要求筛当前记录时才填，规则见“记录触发条件”；否则省略 |
 
+表格按钮字段配置与 Workflow 绑定见 [按钮字段配置](field-button-binding.md#按钮字段-json)。
+
 ```json
 {"button_type":"buttonField","table_name":"订单表"}
 ```
 
 buttonField 与 buttonElement 输出能力不同，见 [ButtonTrigger 输出说明](workflow-outputs.md#buttontrigger按钮触发器)。
+
+## 外部 Webhook（WebhookTrigger）
+
+需要限制来源时，将示例 IP `203.0.113.10` 替换为调用方真实公网出口 IPv4；不限制来源时省略 `ip_allow_list`，不要直接使用示例 IP。
+
+```json
+{
+  "ip_allow_list": ["203.0.113.10"],
+  "enable_bearer_check": true,
+  "output_json": "{\"order_id\":\"string\",\"amount\":0}"
+}
+```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `ip_allow_list` | 否 | 公网 IPv4 白名单，最多 10 项；不限制来源 IP 时省略该字段，不传空数组 |
+| `enable_bearer_check` | 否 | 是否要求 `Authorization: Bearer <token>`，默认 `false` |
+| `output_json` | 否 | 请求体输出结构的 JSON 字符串；配置后可通过 `$.<step_id>.body.<field>` 引用字段 |
+| `reset_bearer_token` | 否 | 仅 `+workflow-update` 可用；设为 `true` 时必须同时设置 `enable_bearer_check=true`，成功后原子轮换 Bearer Token |
+
+`WebhookTrigger` 接收外部 HTTP POST 请求。具备 Base 管理权限时，创建、查询、更新响应会在触发器 `data` 中返回 `webhook_url`；开启 Bearer 校验时还返回 `bearer_token`，关闭时为 `null`。这两个字段只读，构造创建或更新请求时须移除；`+workflow-list` 不返回它们。
+
+- 普通 `+workflow-update` 保留当前 URL 和 Bearer Token；需要轮换时设置 `reset_bearer_token:true` 并保持 `enable_bearer_check:true`。更新失败时旧 Token 保持有效。
+- 关闭 Bearer 校验后再次开启会生成新 Token；后续调用须使用新 Token。
+- URL 和 Token 只交给用户指定的调用方安全使用；报告和日志中遮蔽这些值，不回填进 Workflow JSON。
+
+完整流程见 [Webhook 示例](workflow-examples.md#外部-webhook-触发通知)，请求体字段引用见 [Webhook 输出](workflow-outputs.md#webhooktrigger外部请求)。
 
 ## 接收消息（LarkMessageTrigger）
 

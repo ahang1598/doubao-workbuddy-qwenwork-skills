@@ -5,4 +5,4 @@
 - [字段任务导航、前置与选型](../scenes/field.md#任务导航)
 - [字段 JSON 结构与转换行为](field-config.md)
 - [字段执行与迁移](../scenes/field.md#执行与迁移)
-- [字段回读验收](../scenes/field.md#回读验收)
+- [字段按需核验](../scenes/field.md#按需核验)

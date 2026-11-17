@@ -1,0 +1,34 @@
+
+.vl-performance-longpage{width: var(--vl-page-width,658px); max-width: 100%; margin: 0px auto;}
+.vl-performance-longpage *{box-sizing: border-box;}
+.vl-performance-longpage img{display: block; width: 100%; height: auto;}
+.vl-performance-longpage figure, .vl-performance-longpage h1, .vl-performance-longpage h2, .vl-performance-longpage h3, .vl-performance-longpage p{margin: 0px;}
+.vl-performance-longpage .copy{padding: var(--vl-copy-block,67px) var(--vl-copy-inset,38px); text-align: center;}
+.vl-performance-longpage .copy p{margin-top: 15px;}
+.vl-performance-longpage .mesh{padding: 5px 0px 112px;}
+.vl-performance-longpage .mesh .copy{text-align: right; padding: 0px 40px 53px;}
+.vl-performance-longpage .mesh figure{width: var(--vl-detail-window-width,88.15%);}
+.vl-performance-longpage .weight .copy{padding: 50px 35px 62px;}
+.vl-performance-longpage .detail-title{padding: 0px; text-align: center;}
+.vl-performance-longpage .info{padding: 65px 30px 80px;}
+.vl-performance-longpage .info > h2, .vl-performance-longpage .sizes > h2, .vl-performance-longpage .color-title{text-align: center; margin-bottom: 40px;}
+.vl-performance-longpage .panel{padding: 60px 44px;}
+.vl-performance-longpage dl{display: grid; grid-template-columns: 1fr 1fr; gap: 16px 25px; margin: 0px;}
+.vl-performance-longpage dl div{display: grid; grid-template-columns: minmax(0px, 0.35fr) minmax(0px, 1fr); gap: 8px; align-items: baseline;}
+.vl-performance-longpage dt{flex-shrink: 0;}
+.vl-performance-longpage dd{margin: 0px;}
+.vl-performance-longpage .info-block{margin-top: 30px; padding-top: 30px;}
+.vl-performance-longpage .info-block p{margin-top: 15px;}
+.vl-performance-longpage .uses{display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px;}
+.vl-performance-longpage .sizes{padding: 65px 30px 35px;}
+.vl-performance-longpage .note{margin: 0px 30px 45px;}
+.vl-performance-longpage .steps{display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 12px;}
+.vl-performance-longpage .steps p{margin-top: 10px;}
+.vl-performance-longpage .color-title{margin: 0px; padding: 65px 20px 75px;}
+.vl-performance-longpage .color h3{padding: 40px 46px 30px;}
+.vl-performance-longpage .pair{display: grid; grid-template-columns: 1fr 1fr; gap: 6px;}
+.vl-performance-longpage .uses span{display: flex; align-items: center; gap: 8px;}
+.vl-performance-longpage .uses img{width: 42px; height: auto;}
+.vl-performance-longpage h1, .vl-performance-longpage h2, .vl-performance-longpage h3, .vl-performance-longpage p, .vl-performance-longpage dt, .vl-performance-longpage dd, .vl-performance-longpage li{overflow-wrap: anywhere; min-width: 0px;}
+.vl-performance-longpage{container-type:inline-size;container-name:vl-performance-longpage;}
+@container vl-performance-longpage (max-width:480px){.vl-performance-longpage .panel{padding:32px 24px}.vl-performance-longpage dl{grid-template-columns:1fr}.vl-performance-longpage dl div{grid-template-columns:68px minmax(0,1fr)}.vl-performance-longpage .uses{grid-template-columns:1fr}.vl-performance-longpage .steps{grid-template-columns:1fr}.vl-performance-longpage .steps figure{display:grid;grid-template-columns:100px minmax(0,1fr);gap:18px;align-items:center}}

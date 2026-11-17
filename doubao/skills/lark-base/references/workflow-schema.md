@@ -64,6 +64,7 @@ links 为 ChildLink[]，无子关系时为 []。每条边从当前节点指向 t
 | `SetRecordTrigger` | 指定字段发生修改 |
 | `ChangeRecordTrigger` | 新增记录，或条件字段修改后满足条件 |
 | `TimerTrigger` / `ReminderTrigger` / `ButtonTrigger` | 定时 / 日期提醒 / 按钮点击 |
+| `WebhookTrigger` | 外部 HTTP POST 请求触发，见[参数与凭证](workflow-triggers.md#外部-webhookwebhooktrigger) |
 | `LarkMessageTrigger` | 接收飞书消息 |
 
 Trigger 不得设置 `children`，用 `next` 串联后继。构造或核验记录触发器时，完整读 [记录触发器对比](workflow-triggers.md#记录触发器对比)，确认事件范围、监听字段及修改前后的条件。
@@ -75,6 +76,7 @@ Trigger 不得设置 `children`，用 `next` 串联后继。构造或核验记�
 | `AddRecordAction` / `SetRecordAction` / `FindRecordAction` | 新增 / 更新 / 查找记录 |
 | `HTTPClientAction` / `Delay` | HTTP 请求 / 延迟 |
 | `LarkMessageAction` / `LarkEmailAction` | 发送飞书消息 / 邮件；邮件见[节点参数](workflow-actions.md#发送邮件larkemailaction) |
+| `AppScreenshotAction` | 应用页面截图，见[参数与图片引用](workflow-actions.md#应用截图appscreenshotaction) |
 | `GenerateAiTextAction` / `AIAnalysisAction` | AI 生成文本 / AI 分析 |
 | `APIHubAction` | 当前仅支持飞书任务、日程、群组的 9 个动作，只用 [APIHub 清单](workflow-apihub.md) 所列组件、参数和输出 |
 | `AIAgentAction` | AI Agent 根节点，见 [AI Agent](workflow-ai-agent.md) |

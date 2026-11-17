@@ -1,0 +1,10 @@
+/* 特效-文字下拉式
+可见证据：实心文字，下方有柔和下落投影。
+复现顺序：柔影 → 实心字；区别于对称发光。
+参数为 proposed 复现建议，原软件和精确参数未知。em 以目标字号为参照，正 x 向右、正 y 向下。
+建议范围：偏移 0–.22em；模糊 .06–.25em。
+保留真实文字；描边和镂空的伪元素仅作装饰。换字同步 data-text，换底色同步 --fx-surface；为阴影和光晕预留外部净空。
+*/
+.特效_文字下拉式{display:inline-block;--fx-ink:#555;--fx-shadow:#aaa;--fx-x:0em;--fx-y:.12em;--fx-blur:.15em;
+color:var(--fx-ink);text-shadow:var(--fx-x) var(--fx-y) var(--fx-blur) var(--fx-shadow);
+}

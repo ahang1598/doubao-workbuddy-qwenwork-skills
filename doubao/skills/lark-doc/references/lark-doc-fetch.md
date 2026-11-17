@@ -93,7 +93,7 @@ lark-cli docs +fetch --doc Z1Fj...tnAc --scope section --start-block-id blkTitle
         },
         "comments": {
           "c1": {
-            "data": "<comment comment-id=\"xx\" block-id=\"xx\"><quote>引用内容</quote><msg>评论内容</msg></comment>"
+            "data": "<comment comment-id=\"xx\" block-id=\"xx\" bbox=\"0.315 0.745 0.385 0.810\"><quote>引用内容</quote><msg>评论内容</msg></comment>"
           }
         }
       },
@@ -104,6 +104,7 @@ lark-cli docs +fetch --doc Z1Fj...tnAc --scope section --start-block-id blkTitle
 ```
 - `content` 的格式由 `--doc-format` 决定。`reference_map` 是结构化 sidecar，一级键表示引用组：普通资源组通常以 `block_type` 命名，二级键 `ref` 对应正文中的临时引用，其值由真实属性组成；保留组 `comments` 使用 `<ref>.data` 保存评论。XML、Markdown 和 IM Markdown 在存在可见评论时都会返回该组；Markdown 正文没有与评论 key 对应的内联引用，这是有意的协议设计。没有提取数据时，`reference_map` 可能为空。`data.tips` 与 `data.document` 同级，统一提供安全回放、依赖降级和评论提示；返回评论时会提醒结合正文读取，评论截断时会提示补查。`content` 和 `reference_map` 属于同一份响应，应保留完整 JSON 响应；`im-markdown` 仅用于获取内容后在 `lark-im` 场景下使用。设置 `--scope` 时会被 `<fragment>` 包裹，详见下文“局部读取的输出结构”。
 - 同时读取 `content` 和 `reference_map.comments`（含回复），并关注 `data.tips`。
+- 图片评论的 `bbox` 为归一化坐标（0～1），顺序为 `x_min y_min x_max y_max`。x 乘原图宽、y 乘原图高定位选区，结合其中的文字和视觉元素确定评论指向的具体内容。
 - 出现评论或回复缺失或截断提示，或用户明确要求获取全部评论时，按需使用 [`lark-drive`](../../lark-drive/SKILL.md) 补查。
 - 凡在最终回复中需要引用本文档信息时，须保留 citations 字段，提取 url 进行回复。
 

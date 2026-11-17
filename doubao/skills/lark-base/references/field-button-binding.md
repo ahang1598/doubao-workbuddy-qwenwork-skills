@@ -1,7 +1,5 @@
 # 表格按钮工作流绑定 Reference
 
-<a id="3-各类型写法"></a>
-
 <a id="313-button"></a>
 
 ## 按钮字段 JSON

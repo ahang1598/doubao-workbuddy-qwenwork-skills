@@ -2,8 +2,9 @@
 
 此文件保留 CLI 帮助使用的路径。执行前先按对应场景确定任务范围，再读取所需协议；具体规则由以下文档维护。
 
-- [Dashboard 场景与验收](../scenes/dashboard.md)
+- [Dashboard 场景流程](../scenes/dashboard.md)
 - [普通图表配置](dashboard-chart-config.md)
+- [排序意图、版本边界与验收](dashboard-sort.md)
 - [多数据源配置](dashboard-multi-source.md)
 - [自定义样式](dashboard-style.md)
 - [筛选条件](dashboard-filter-conditions.md)

@@ -16,7 +16,7 @@
 
 ## 创建、更新与删除
 
-创建或追加组件后按 [统一布局流程](../scenes/dashboard.md#统一布局流程) 收尾；命令返回不能替代指标、结果和最终坐标验收。
+创建或追加组件后按 [统一布局流程](../scenes/dashboard.md#统一布局流程) 收尾。后续决策依赖图表结果或结果异常时读取计算结果。
 
 - 创建用 `+dashboard-block-create --base-token --dashboard-id`，必填 `--name`、`--type`。取 ID 加 `--jq '.data.block.block_id'`，不要把 `2>&1` 的输出交给 JSON 解析。本月等范围在 `data_config.filter` 里对日期字段写 `{"field_name":"<日期字段>","operator":"is","value":["CurrentMonth"]}`。配置用 `--data-config` 提交，必填字段按类型协议；位置可选，见 [坐标输入](dashboard-layout.md#组件坐标---position)。
 - 更新用 `+dashboard-block-update`，定位参数再加 `--block-id`；可改 `--name`、`--data-config`、`--linkage`、`--position`。外层 `type` 不可改；倒计时内部模式切换按 [倒计时更新协议](dashboard-countdown.md#更新语义)。

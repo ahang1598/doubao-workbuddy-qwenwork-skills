@@ -30,7 +30,7 @@
 
 **常见配置错误（必须注意）**：
 - **按操作定位子表**：需要读取 / 编辑已有子表内容或修改 sheet 结构时，用 `+workbook-info` 获取所需的子表与范围信息。纯文件导入使用本地路径和导入回执，无需通过子表结构定位。
-- **sheet_id 不要写错**：从 `+workbook-info` 返回值中精确获取 `sheet_id`，不要手动拼写或从 URL 中猜测
+- **定位信息使用真实来源**：URL / token 取自用户输入或本次工具回执，`sheet_id` 从 `+workbook-info` 精确获取；文档示例地址、占位 token 和猜测值不能用于真实调用。
 - **未点名网格目标**：默认候选仅 `resource_type=sheet && is_hidden=false` 的可见普通网格；唯一候选才自动选，多候选按用户给的表名/表头/内容匹配，仍不唯一则询问。禁止按 `index` 或猜 `Sheet1`；用户显式点名 hidden sheet 可操作，bitable / `#UNSUPPORTED_TYPE` 改走对应产品 API。
 
 ## Shortcuts
@@ -344,10 +344,13 @@ lark-cli sheets +workbook-import --file ./report.csv --folder-token <FOLDER_TOKE
 
 - **不接受任何 spreadsheet / sheet 定位 flag**（它是新建，不操作已有表）：只有 `--file`（必填）/ `--folder-token` / `--name`。
 - **`--file` 只接受当前工作目录内的相对路径**：先 `cd` 到文件所在目录（或 workspace），再传 `./file.xlsx` / `data/file.xlsx`；传 `/home/.../file.xlsx`、`C:\...\file.xlsx` 这类绝对路径会被判定 `unsafe file path` 拒绝。
+- **多硬链接拒绝按实际错误恢复**：仅当回执明确为 `file has multiple hard links` 时，保留源文件，用当前环境的文件复制工具在工作目录创建一个新的普通副本（不创建符号链接 / 硬链接），再对该副本执行 `+workbook-import`；不修改 CLI 路径保护，也不在未报错时预先复制。复制失败先处理错误，不将旧副本当作本轮产物。
 - **纯文件导入的完成路径**：按要求复制 / 改文件名 → 用文件路径执行导入 → 等待回执 `ready=true`、`job_status=0` 并处理 `data.extra` → 交付返回的 URL。后续无表内操作时，不追加 `+workbook-info`、全表 `+csv-get` 或本地逐格比对。用户明确要求比对，或已有回执 / 读数显示具体异常时，才针对相关内容读取；说明仅限实际执行与回执可支持的结论。
+- **输出缺失时恢复原请求，不重导**：进程退出 0 但没有完整 JSON / URL，只表示回执未取得，不能断言导入失败或完成。先读取本次宿主任务输出、已有 stdout / stderr 文件；有 `ticket` / `next_command` 时续查原任务。仍缺定位信息时，通过 `lark-drive` 的只读搜索按本次标题、创建时间与目标目录查找，确认真实产物后继续；无法确认则说明导入状态未核实，保留完整本地文件。不要改用示例地址查表、重复导入或改用 `+workbook-create` 新建来找回 URL。
 - 导入后读取本次回执，按下述规则处理已报告的兼容性提示；完成用户要求的全部操作后，通过宿主提供的产物交付工具交付最终链接或完整 Excel，并确认调用成功；只写进回复正文不算交付。工具是 `present_files`；工具交付时，调用前后的回复文本均不输出产物 URL（含裸链接与 Markdown 超链接），用产物名称指代。宿主未提供该能力或调用明确报工具不存在时，在正文给出最终 URL / 路径。
 - 本地表格文件 → 飞书电子表格一律用本命令，**不要**用 `drive +import` 导电子表格——它是 sheets 之外的通用导入、还需额外指定 `--type`，绕路且更易错。只有要把本地表格导入成**多维表格**（bitable）时，才改用 `lark-cli drive +import --type bitable`。
 - 返回 `token` / `url` / `ticket` / `ready` / `job_status`，`data.extra` 会列出本次导入的不支持元素提示。只有 `ready=true` 且 `job_status=0` 才算导入完成；兼容性提示按下述 `data.extra` 分支处理；`timed_out=true` 时按 `next_command` 续查，不能交付为成功。
+- **导入完成后按回执继续**：`ready=true`、`job_status=0` 且 `data.extra` 已处理后，完成剩余用户操作并交付；用户未要求核验、后续操作无需表结构且无已知异常时，不另调 `+workbook-info` 或导出回读来证明成功。后续确需子表定位时从该命令返回的 `sheets[].sheet_name` / `sheet_id` 取值，不猜 `title` 字段。
 - **按导入回执处理兼容性**：读取本次回执中的 `data.extra`；例如 `data.extra=["NotSupport:shape"]` 表示形状不受支持，本次导入有损。逐项结合源 Excel 判断对内容、计算、交互和版式要求的影响，不能因 `ok=true` 或单元格数据正确而忽略。
 - **优先考虑兼容替代，采用后再重导**：创建 / 修改文件时优先采用飞书支持的实现；收到提示后，可参考下方示例选择能满足需求、改动成本合理的方案，不把替换作为交付前置条件。选择替代时，在不损失必需内容与功能、不越过允许改动范围的前提下修改 Excel 副本，执行 `lark-cli sheets +workbook-import --file ./output.xlsx`；需要在线原生对象时再按对应 reference 重建，读取新回执，用最终新 URL 交付。不能删掉必需元素来清空提示，也不要原样重复导入期待提示消失。
 - **完整 Excel 是可接受的交付方案**：没有满足需求的方案、替代不适合本任务或需保留原元素时，可保留这些元素并在 Excel 中完成本轮全部操作，交付该文件，无需反复尝试替换；也可同时交飞书表格，明确 Excel 是完整产物，并说明在线版缺失哪些元素及其影响。此分支允许只交 Excel 或双交，无需用户先拒绝在线表格或要求双交；在线版不能作为完整产物单独交付，也不能从有损在线版导出文件冒充完整 Excel。
@@ -463,4 +466,4 @@ lark-cli sheets +sheet-hide-gridline --url "..." --sheet-id "$SID"
 - `Validate`：XOR 公共四件套；`+sheet-create` 校验 `--title` 非空、`--row-count` ≤ 50000、`--col-count` ≤ 200；`+sheet-delete` 必须 `--yes` 或 `--dry-run`；`+workbook-create` 的 `--sheets` 与 `--values` **互斥**，给了 `--sheets` 则按 typed 协议校验 payload（其余约束同 `+table-put`）。
 - `DryRun`：`+sheet-*` 写操作输出"将要 PATCH 的 sheet metadata"；`--sheet-name` 在 dry-run 输出里生成为 `<resolve:Sheet1>` 占位符，不实际解析为 sheet-id。
 
-===== 全文完（共 466 行）=====
+===== 全文完（共 469 行）=====

@@ -1,0 +1,246 @@
+{
+  "version": 1,
+  "description": "Canvas protocol keyword-to-source mapping for engineering handoff",
+  "entries": [
+    {
+      "keyword": "local-fetch",
+      "function": "读取 Canvas 正文、范围、页面及结构化信息",
+      "file": "canvas-doc-fetch.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "local-update",
+      "function": "所有 Local 写入共用的 token、revision、成功信封、warnings 与冲突契约",
+      "file": "cli/local-update.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "revisions",
+      "function": "读取和处理待审修订，管理文档模式、修订追踪与展示状态",
+      "file": "cli/revisions.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "str_replace",
+      "function": "替换搜索范围内全部非重叠纯文本命中；可用单 block ID 限定范围，继承命中范围的共有样式",
+      "file": "cli/str_replace.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "block_replace",
+      "function": "替换已有可寻址 block，并确认 content 形状与 ID 保留规则",
+      "file": "cli/block_replace.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "block_insert_after",
+      "function": "在真实锚点后插入合法 block",
+      "file": "cli/block_insert_after.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "block_delete",
+      "function": "原子删除一个或多个可寻址 block/inline object",
+      "file": "cli/block_delete.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "append",
+      "function": "在尾随连续分节符之前追加合法正文 block",
+      "file": "cli/append.md",
+      "depends_on": ["local-update", "block_insert_after"]
+    },
+    {
+      "keyword": "table",
+      "function": "表格行列增删、合并拆分及单元格/行/列属性操作，含完整单元格 XML 替换",
+      "file": "cli/table.md",
+      "depends_on": ["local-update", "xml:table"]
+    },
+    {
+      "keyword": "table_geometry",
+      "function": "修改表格尺寸与排列，包括均分行列、拖动边界、移动行列和调整整表宽高",
+      "file": "cli/table_geometry.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "object",
+      "function": "已有浮动 image/shape 的移动、缩放、旋转、翻转、层叠、重锚和复制",
+      "file": "cli/object.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "comment",
+      "function": "批注读取、创建、回复、更新和删除",
+      "file": "cli/comment.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "field_update",
+      "function": "Field 读取与结果刷新",
+      "file": "cli/field_update.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "watermark",
+      "function": "文字或图片水印读取与更新",
+      "file": "cli/watermark.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "table_of_contents",
+      "function": "自动目录插入、刷新、配置和删除",
+      "file": "cli/table_of_contents.md",
+      "depends_on": ["local-update"]
+    },
+    {
+      "keyword": "chart_data",
+      "function": "图表创建、数据读取与替换",
+      "file": "cli/chart_data.md",
+      "depends_on": ["local-update", "xml:chart"]
+    },
+    {
+      "keyword": "style_catalog",
+      "function": "样式 identity、linked 关系、定义、继承和 builtin 来源查询",
+      "file": "cli/style_catalog.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "style_usage",
+      "function": "样式引用点与继承影响查询",
+      "file": "cli/style_usage.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "block_styles",
+      "function": "block 与精确字符范围的绑定、effective 属性和 guard 查询",
+      "file": "cli/block_styles.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "style_update",
+      "function": "修改样式定义；包含 dry-run、plan token 与提交契约",
+      "file": "cli/style_update.md",
+      "depends_on": ["local-update", "style_usage"]
+    },
+    {
+      "keyword": "style_apply",
+      "function": "设置或清除段落、标题、列表项及单块字符范围的样式绑定",
+      "file": "cli/style_apply.md",
+      "depends_on": ["local-update", "block_styles"]
+    },
+    {
+      "keyword": "media-update",
+      "function": "图片插入、替换与属性更新流程",
+      "file": "cli/media-update.md",
+      "depends_on": ["local-update", "xml:common", "xml:img"]
+    },
+    {
+      "keyword": "media-upload",
+      "function": "上传本地或网络图片并取得可写资源 token",
+      "file": "cli/media-upload.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "media-preview",
+      "function": "预览 Canvas 图片资源",
+      "file": "cli/media-preview.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "media-download",
+      "function": "下载 Canvas 图片资源",
+      "file": "cli/media-download.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "ooxml",
+      "function": "从当前打开的 Word 取回可编辑 `.docx` 候选，并提交修改后的候选",
+      "file": "cli/ooxml.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "xml:common",
+      "function": "XML 公共身份、片段与只读容器、必填属性、颜色与单位、严格校验、转义及明确不支持能力",
+      "file": "xml/common.md",
+      "depends_on": []
+    },
+    {
+      "keyword": "xml:p",
+      "function": "段落结构、段落属性、分页、制表位、书签和合法 children",
+      "file": "xml/p.md",
+      "depends_on": ["xml:common", "xml:span"]
+    },
+    {
+      "keyword": "xml:h1",
+      "function": "`<h1>`～`<h9>` 的通用标题规则；段落属性另查 `xml:p`",
+      "file": "xml/h1.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:span",
+      "function": "行内文字与字符格式、超链接、公式、换行和符号",
+      "file": "xml/span.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:ol",
+      "function": "有序/无序列表、连续新树跨层编号模板与嵌套规则",
+      "file": "xml/ol.md",
+      "depends_on": ["xml:common", "xml:p", "xml:span"]
+    },
+    {
+      "keyword": "xml:table",
+      "function": "表格、列组、行、单元格、合并、尺寸和属性结构",
+      "file": "xml/table.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:img",
+      "function": "inline/standalone 图片、尺寸、裁剪、边框、浮动与环绕声明",
+      "file": "xml/img.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:chart",
+      "function": "图表占位、类型、数据引用与展示属性",
+      "file": "xml/chart.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:layout",
+      "function": "首页布局、纸张、页边距、分栏、行网格、页眉页脚和页码域",
+      "file": "xml/layout.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:layout-break",
+      "function": "后续分节、分页边界及分节布局",
+      "file": "xml/layout-break.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:field",
+      "function": "域、DATE/TIME 与主 Story REF/NOTEREF 普通新建、题注和只读缓存",
+      "file": "xml/field.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:note",
+      "function": "脚注/尾注、引用、detached notes 与设置",
+      "file": "xml/note.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:drawing",
+      "function": "Drawing、Shape、TextBox、文字效果与声明式布局",
+      "file": "xml/drawing.md",
+      "depends_on": ["xml:common"]
+    },
+    {
+      "keyword": "xml:content-control",
+      "function": "普通块级内容控件及 children 更新边界",
+      "file": "xml/content-control.md",
+      "depends_on": ["xml:common"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+/* 特效-文字渐变投影
+可见证据：右下方多份清晰重影逐层变浅。
+复现顺序：最远浅影 → 中影 → 近影 → 实心字；渐变发生在投影，不是字腔填充。
+参数为 proposed 复现建议，原软件和精确参数未知。em 以目标字号为参照，正 x 向右、正 y 向下。
+建议范围：每级偏移 .035–.10em；默认三层，预留至少三倍偏移。
+保留真实文字；描边和镂空的伪元素仅作装饰。换字同步 data-text，换底色同步 --fx-surface；为阴影和光晕预留外部净空。
+*/
+.特效_文字渐变投影{display:inline-block;--fx-ink:#555;--fx-step:.075em;--fx-near:#888;--fx-mid:#bbb;--fx-far:#ddd;
+color:var(--fx-ink);text-shadow:var(--fx-step) var(--fx-step) 0 var(--fx-near),calc(var(--fx-step)*2) calc(var(--fx-step)*2) 0 var(--fx-mid),calc(var(--fx-step)*3) calc(var(--fx-step)*3) 0 var(--fx-far);
+}

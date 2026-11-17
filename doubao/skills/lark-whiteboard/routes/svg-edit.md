@@ -51,19 +51,6 @@ lark-cli whiteboard +export \
 - **连线协调**：连接器端点绑定已丢失，若移动了形状，必须手动同步调整视觉上连接到该形状的 connector path 端点坐标，否则连线会"断开"
 - **内部引用完整性**：不要随意删改 `<defs>` 中被 `url(#id)` 引用的元素（`<marker>`/`<linearGradient>` 等）或修改其 `id`，否则引用方会失效
 
-### 3. 渲染审查
-
-```bash
-# 渲染 PNG 预览
-npx -y @larksuite/whiteboard-cli@^0.2.13 -i <dir>/edited.svg -o <dir>/edited.png -f svg
-
-# 几何检查（text-overflow / node-overlap）
-npx -y @larksuite/whiteboard-cli@^0.2.13 -i <dir>/edited.svg -f svg --check
-```
-
-结合 PNG 视觉效果和 `--check` 报告进行调整，有问题则修改 SVG 后重新渲染（最多 2 轮）。
-- SVG 本地渲染预览时，画板中的图片因 session 原因无法正常显示，属于预期内的行为。
-
 ### 4. 写回画板
 
 `--overwrite` 会清空原画板内容，确认后再执行

@@ -24,4 +24,4 @@ lark-cli base +dashboard-share-update \
 
 ## 返回与核对
 
-读取和更新均返回服务端分享数据，`show_source` 位于 `settings` 中；按实际返回解释状态，不把提交值当作回读值。`enabled=true` 表示分享已开启，分享 URL 使用服务端实际返回，不从普通 Base 地址推导。CLI 不开放 `enable_auto_analysis` 设置，并会从返回中移除该字段。
+读取和更新均返回服务端分享数据，`show_source` 位于 `settings` 中；按实际返回解释状态，不把提交值当作服务端结果。`enabled=true` 表示分享已开启，分享 URL 使用服务端实际返回，不从普通 Base 地址推导。CLI 不开放 `enable_auto_analysis` 设置，并会从返回中移除该字段。

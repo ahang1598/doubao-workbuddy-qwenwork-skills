@@ -1,0 +1,57 @@
+# `design-cli design-workspace +get-workspace`
+
+查当前会话上挂的画布。复用 Alice IDL 的 `GetCanvasWorkspace`（按会话查）。
+
+## 用途
+
+回答一个问题：**这个会话上有没有画布**。
+
+- **有** → 返回 `canvas_workspace_id` 与 `version`，用于显式恢复或核对目标 Workspace
+- **没有** → 返回 `exists=false`
+
+本命令只用于显式查询、恢复和排障，不是创作任务的默认初始化入口。执行创作 Skill 时先读取当前对话：已有唯一有效 Workspace ID 就直接使用；对话没有 ID 就按 Skill 规则调用 [`+workspace-create`](workspace-create.md)，不要先用本命令查询。
+
+创建超时且未取得 ID 时，先核验当前部署支持此查询及会话绑定，再用于恢复。查到 ID 后核对本任务归属；查不到或无法确认时停止重建并报告，不据此假定创建幂等。
+
+## 命令
+
+```bash
+design-cli design-workspace +get-workspace
+```
+
+零参数。会话 ID 由 CLI 从环境变量读取（沙箱注入）：优先 `MCP_VM_CONVERSATION_ID`，未设或纯空白时回退 `SESSION_ID`。不能用命令行指定。
+
+## 请求
+
+```text
+POST /creativity/canvas_workspace/cli/get_workspace
+Content-Type: application/json
+```
+
+```json
+{"conversation_id":"7788"}
+```
+
+## 输出
+
+**会话上有画布：**
+
+```json
+{"code":0,"msg":"ok","xml_data":"<canvas_workspace><exists>true</exists><canvas_workspace_id>cws_10001</canvas_workspace_id><version>1</version></canvas_workspace>"}
+```
+
+**会话上还没有画布：**
+
+```json
+{"code":0,"msg":"ok","xml_data":"<canvas_workspace><exists>false</exists></canvas_workspace>"}
+```
+
+⚠️ **「没有画布」是正常答案，不是错误** —— `code` 仍是 `0`，退出码仍是 `0`。**按 `<exists>` 分支，不要按退出码判断有没有画布**。查不到时不返回 `canvas_workspace_id` 与 `version` 两格，不要把空串当成画布 ID 往下调。
+
+真正的错误（参数错、内部错）照旧 `code != 0` + 退出码 `1`。
+
+## 恢复流程
+
+确认当前部署和会话后调用 `+get-workspace`，按 `<exists>` 分支处理；仅使用能确认属于本任务的真实 ID。正常初始化及创建超时处理见 [workspace-create.md](workspace-create.md)，不循环查询、创建。
+
+退出码与错误处理见 [`README.md`](README.md)。

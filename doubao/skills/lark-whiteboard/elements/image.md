@@ -35,18 +35,7 @@
 
 **严禁使用随机占位图服务**：某些图库仅提供随机占位图，URL 中的关键词参数不会影响返回的图片内容，下载的图片与主题完全无关。
 
-### 2. 校验图片
-
-```bash
-ls -l *.jpg   # 确认每张文件大小不同；若大小相同则内容可能重复，需重新下载
-```
-
-**图片内容审查（必须执行）**：
-- 下载完成后，确认文件是真实图片而非 HTML 错误页：若某张图片大小 < 1KB，很可能是下载失败返回了 HTML 错误页，需重新下载
-- **图片内容正确性只能在渲染后验证**：生成 DSL 并本地渲染 PNG 后，必须查看渲染结果，确认每张图片内容与主题相关（如宠物主题的图片确实是宠物，而非建筑/风景等不相关内容）
-- 若发现图片内容与主题不符，必须用更精确的关键词重新下载并重新上传
-
-### 3. 上传到目标画板
+### 2. 上传到目标画板
 
 **必须**使用 `docs +media-upload --parent-type whiteboard` 上传：
 
@@ -63,7 +52,7 @@ lark-cli docs +media-upload --file ./photo2.jpg --parent-type whiteboard --paren
 lark-cli docs +media-upload --file ./photo3.jpg --parent-type whiteboard --parent-node <whiteboard_token>  # → <media_token_3>
 ```
 
-### 4. 在 DSL 中引用
+### 3. 在 DSL 中引用
 
 ```json
 { "type": "image", "id": "img-1", "width": 240, "height": 160, "image": { "src": "<media_token_1>" } }

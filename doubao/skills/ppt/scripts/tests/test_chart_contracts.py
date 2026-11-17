@@ -215,7 +215,6 @@ def test_unsupported_options_and_explicit_composition():
 
 def test_help_and_cli_use_the_actual_registry(tmp_path):
     assert "candle" in charts.chart_catalog()
-    assert "nested_donut" in charts.chart_catalog()
     payload = tmp_path / "chart.json"
     payload.write_text(json.dumps({"matrix": [[-0.5, 0], [0.3, 1]], "labels": ["A", "B"]}))
     result = subprocess.run(

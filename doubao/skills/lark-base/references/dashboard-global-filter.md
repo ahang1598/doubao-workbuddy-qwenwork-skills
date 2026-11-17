@@ -6,7 +6,7 @@ global_filters 保存在 Dashboard 容器上。路径里的 dashboard_id 是容�
 
 ## 接口条件与请求约定
 
-目标环境须已部署路由，且当前身份可调用。优先用 CLI 已发布的类型化命令，用 lark-cli base --help 和命令 --help 确认入口；元数据未收录时用 lark-cli api。不猜 +dashboard-* 命令，不给 +dashboard-update 加未声明参数。
+目标环境须已部署路由，且当前身份可调用。优先用 CLI 已发布的类型化命令；版本不确定或返回未知命令时再查 help，元数据未收录时用 `lark-cli api`。不猜 +dashboard-* 命令，不给 +dashboard-update 加未声明参数。
 GET 和 PATCH 共用 /global_filter 路径，JSON 字段名是复数 global_filters。请求体直接提交 JSON 对象，不包装成 Payload 字符串，不带网关注入的用户、租户、应用信息。
 
 ## 读取配置

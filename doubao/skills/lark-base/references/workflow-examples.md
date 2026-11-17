@@ -13,6 +13,8 @@
 | 多路分支、延时 | [多路分支（SwitchBranch）](#多路分支switchbranch) |
 | 定时、查找、循环内分支、消息、AI 文本 | [组合场景](#组合场景定时查找循环分支消息) |
 | 按钮、HTTP、新增记录 | [按钮触发 + 调用外部接口 + 写入同步日志](#按钮触发--调用外部接口--写入同步日志) |
+| 外部 HTTP 请求触发 | [外部 Webhook 触发通知](#外部-webhook-触发通知) |
+| 查找记录后汇总成一条消息 | [多记录消息与正文示例](workflow-message-email.md#一条消息展示多条记录) |
 | AI 分类 | [AI 分类（用户反馈自动分流）](#ai-分类用户反馈自动分流) |
 | AI Agent 联网整理 | [workflow-ai-agent.md](workflow-ai-agent.md#示例联网整理输入写入结果表) |
 | APIHub 创建任务 | [workflow-apihub.md](workflow-apihub.md#完整示例新增记录时创建任务) |
@@ -87,7 +89,7 @@
 ```
 
 - `f.filter_info` 引用源表业务键；`u.ref_info` 必须引用查到的目标记录，不得写成源表触发步骤。`should_proceed_when_no_results: true` 只为让零结果也进入数量判断；两个分支各自结束，异常分支不修改目标表。
-- 分别用唯一、无匹配、重复编号核验：唯一时只改对应目标；零／多条时只记源异常；其他记录保持原值。分开报告定义保存与实际执行；真实触发按 Scene 实测授权。
+- 唯一、无匹配、重复编号三种分支的定义必须完整；仅在用户明确要求 E2E 实测并授权真实副作用时准备样例并触发。分开报告定义保存与实际执行。
 - 此例只实现日期回写。若还要求累计字段或状态联动，按真实累计值和业务状态配置计算／动作，覆盖部分完成和全部完成；不得因日期更新成功就声称其他联动已实现。
 
 ## 多路分支（SwitchBranch）
@@ -199,3 +201,15 @@
 ```
 
 `classes` 按顺序对应 `label` 为 `branch_1`、`branch_2` 的 case；`desc` 与分类名一致，`to` 指向已定义的下游 step；`label: "default"` 是默认分支。
+
+## 外部 Webhook 触发通知
+
+请求体示例为 `{"event":"string"}`。先解析真实接收人并替换示例 ID；默认创建为 disabled，启停按 Scene 中目标运行态执行。
+
+需要限制来源时，将示例 IP `203.0.113.10` 替换为调用方真实公网出口 IPv4；不限制来源时省略 `ip_allow_list`，不要直接使用示例 IP。
+
+```json
+{"client_token":"unique-create-request-id","title":"外部事件触发","steps":[{"id":"trigger_webhook","type":"WebhookTrigger","title":"接收外部事件","next":"action_1","data":{"ip_allow_list":["203.0.113.10"],"enable_bearer_check":true,"output_json":"{\"event\":\"string\"}"}},{"id":"action_1","type":"LarkMessageAction","title":"发送通知","next":null,"data":{"receiver":[{"value_type":"user","value":{"id":"ou_owner"}}],"send_to_everyone":false,"title":[{"value_type":"text","value":"外部事件通知"}],"content":[{"value_type":"ref","value":"$.trigger_webhook.body.event"}],"btn_list":[]}}]}
+```
+
+凭证读取、更新与轮换规则见 [Webhook 触发器](workflow-triggers.md#外部-webhookwebhooktrigger)。

@@ -12,12 +12,12 @@ Windows 上 Bash 工具调用实际交给 **PowerShell** 执行，你会遇到�
 - **Unix 工具不可靠**：`jq` / `sed` / `awk` / `unzip` / `head` / `grep` 根本不存在；`curl` /
   `wget` / `ls` / `cat` / `sort` 则是 PowerShell 命令的别名，同名但参数和语义都不同。
 
-因此在 Windows 上：**Bash 工具里的命令写得尽可能简单，复杂逻辑一律下沉到 Python 脚本**，用标准库
+因此在 Windows 上：**Bash 工具里的命令写得尽可能简单，复杂逻辑一律写进 Python 脚本**，用标准库
 替代 Unix 工具（`urllib` 换 curl、`zipfile` 换 unzip、`json` 换 jq、`re` 换 sed）。管道和重定向
 不要经过 PowerShell，让 Python 直接读写文件，并且每次都显式带编码：`open(..., encoding='utf-8')`。
 命令失败时**不要尝试继续改写 PowerShell 写法**。
 
-## 怎么下沉
+## 什么时候用 `python -c`，什么时候写脚本
 
 - **Python 代码简单小于三行、且代码中只需要使用单引号** → 直接 `python -c "<code>"`，省一次工具调用。
 - **代码需要双引号，或含 `$` / 反引号，代码量多** → Write 一个 `xxx.py`，再 `python xxx.py`。这几个字符会被

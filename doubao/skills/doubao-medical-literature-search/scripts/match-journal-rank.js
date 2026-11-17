@@ -10,15 +10,16 @@ const stopWords = new Set([
 ]);
 
 const usage = `用法：
-  node scripts/match-journal-rank.js --journal "N Engl J Med"
-  node scripts/match-journal-rank.js --json '["NEJM", "中华内科杂志"]'
   node scripts/match-journal-rank.js --csv literature-log.csv --in-place
   node scripts/match-journal-rank.js --csv literature-log.csv --output ranked.csv
+  node scripts/match-journal-rank.js --journal "N Engl J Med"
+  node scripts/match-journal-rank.js --json '["NEJM", "中华内科杂志"]'
   node scripts/match-journal-rank.js --self-test
 
 使用内置的 2025 中科院分区/北大核心索引匹配期刊名称。
-CSV 模式默认读取 journal_or_institution，并写入 journal_rank_2025。
-非期刊记录将被跳过；仅接受高置信度的模糊匹配。`;
+CSV 模式读取 journal_or_institution，添加或更新 journal_rank_2025，
+并返回包含原始题录、URL 和匹配状态的逐行 results；仅接受高置信度的模糊匹配。
+也可使用 --journal 或 --json 直接查询期刊名称。`;
 
 function normalize(value) {
   return String(value ?? "")
@@ -120,28 +121,41 @@ function parseCsvRows(input) {
   let row = [];
   let cell = "";
   let quoted = false;
-  for (let index = 0; index < input.length; index += 1) {
-    const char = input[index];
-    const next = input[index + 1];
+  let rowStarted = false;
+  let newline;
+  for (let position = 0; position < input.length; position += 1) {
+    const char = input[position];
+    const next = input[position + 1];
     if (char === '"') {
+      rowStarted = true;
       if (quoted && next === '"') {
         cell += '"';
-        index += 1;
+        position += 1;
       } else quoted = !quoted;
     } else if (char === "," && !quoted) {
+      rowStarted = true;
       row.push(cell);
       cell = "";
     } else if ((char === "\n" || char === "\r") && !quoted) {
-      if (char === "\r" && next === "\n") index += 1;
+      const separator = char === "\r" && next === "\n" ? "\r\n" : char;
+      newline ??= separator;
+      if (separator === "\r\n") position += 1;
       row.push(cell);
-      if (row.some((value) => value !== "")) rows.push(row);
+      rows.push(row);
       row = [];
       cell = "";
-    } else cell += char;
+      rowStarted = false;
+    } else {
+      rowStarted = true;
+      cell += char;
+    }
   }
-  row.push(cell);
-  if (row.some((value) => value !== "")) rows.push(row);
-  return rows;
+  if (quoted) throw new Error("CSV 中存在未闭合的引号。");
+  if (rowStarted) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return { rows, newline: newline ?? "\r\n", trailingNewline: !rowStarted && rows.length > 0 };
 }
 
 function escapeCsv(value) {
@@ -149,20 +163,21 @@ function escapeCsv(value) {
   return /[",\r\n]/u.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-function serializeCsv(rows, withBom) {
-  const body = `${rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n")}\r\n`;
-  return `${withBom ? "\uFEFF" : ""}${body}`;
+function serializeCsv(rows, withBom, newline, trailingNewline) {
+  const body = rows.map((row) => row.map(escapeCsv).join(",")).join(newline);
+  return `${withBom ? "\uFEFF" : ""}${body}${trailingNewline ? newline : ""}`;
 }
 
 function parseArgs(argv) {
   const options = { journals: [], column: "journal_or_institution", fuzzy: true };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === "--journal") options.journals.push(argv[++index]);
-    else if (arg === "--json") options.json = argv[++index];
-    else if (arg === "--csv") options.csv = argv[++index];
-    else if (arg === "--column") options.column = argv[++index];
-    else if (arg === "--output") options.output = argv[++index];
+    if (["--journal", "--json", "--csv", "--column", "--output"].includes(arg)) {
+      const value = argv[++index];
+      if (value === undefined || value.startsWith("--")) throw new Error(`参数 ${arg} 缺少值。`);
+      if (arg === "--journal") options.journals.push(value);
+      else options[arg.slice(2)] = value;
+    }
     else if (arg === "--in-place") options.inPlace = true;
     else if (arg === "--no-fuzzy") options.fuzzy = false;
     else if (arg === "--self-test") options.selfTest = true;
@@ -270,48 +285,71 @@ function isNonJournalPublication(publicationType) {
 }
 
 function enrichCsv(filePath, options) {
-  const input = fs.readFileSync(filePath, "utf8");
-  const withBom = input.charCodeAt(0) === 0xFEFF;
-  const rows = parseCsvRows(input.replace(/^\uFEFF/u, ""));
-  if (!rows.length) throw new Error("CSV 为空。");
-
-  const headers = rows[0].map((header) => header.trim());
-  let sourceIndex = headers.indexOf(options.column);
-  if (sourceIndex < 0 && options.column === "journal_or_institution") {
-    sourceIndex = headers.indexOf("journal_or_source");
-  }
-  if (sourceIndex < 0) throw new Error(`CSV 缺少来源列：${options.column}`);
-  const publicationTypeIndex = headers.indexOf("publication_type");
-
-  let rankIndex = headers.indexOf("journal_rank_2025");
-  if (rankIndex < 0) {
-    headers.push("journal_rank_2025");
-    rankIndex = headers.length - 1;
-  }
-  rows[0] = headers;
-
-  const counts = {};
-  for (const row of rows.slice(1)) {
-    while (row.length < headers.length) row.push("");
-    const source = row[sourceIndex];
-    const nonJournal = publicationTypeIndex >= 0 && isNonJournalPublication(row[publicationTypeIndex]);
-    const result = nonJournal
-      ? { status: "not_applicable", journalRank2025: "" }
-      : matchJournal(source, options.fuzzy);
-    row[rankIndex] = result.journalRank2025;
-    counts[result.status] = (counts[result.status] ?? 0) + 1;
-  }
-
+  if (options.inPlace && options.output) throw new Error("CSV 模式请选择 --in-place 或 --output <path> 之一。");
   const destination = options.inPlace ? filePath : options.output;
   if (!destination) throw new Error("CSV 模式必须使用 --in-place 或 --output <path>。");
-  const serialized = serializeCsv(rows, withBom);
-  if (options.inPlace) {
-    const tempPath = `${filePath}.journal-rank.tmp`;
-    fs.writeFileSync(tempPath, serialized, "utf8");
-    fs.renameSync(tempPath, filePath);
+
+  const input = fs.readFileSync(filePath, "utf8");
+  const withBom = input.charCodeAt(0) === 0xFEFF;
+  const parsed = parseCsvRows(input.replace(/^\uFEFF/u, ""));
+  const { rows } = parsed;
+  if (!rows.length) throw new Error("CSV 为空。");
+
+  const headers = rows[0];
+  const fieldNames = headers.map((header) => header.trim());
+  let sourceIndex = fieldNames.indexOf(options.column);
+  if (sourceIndex < 0 && options.column === "journal_or_institution") sourceIndex = fieldNames.indexOf("journal_or_source");
+  if (sourceIndex < 0) throw new Error(`CSV 缺少来源列：${options.column}`);
+  const citationIndex = fieldNames.indexOf("citation_number");
+  const urlIndex = fieldNames.indexOf("url");
+  const publicationTypeIndex = fieldNames.indexOf("publication_type");
+  let rankIndex = fieldNames.indexOf("journal_rank_2025");
+  if (rankIndex < 0) {
+    rankIndex = headers.length;
+    headers.push("journal_rank_2025");
+  }
+
+  const counts = {};
+  const results = [];
+  const cache = new Map();
+  for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
+    const row = rows[rowIndex];
+    const source = row[sourceIndex] ?? "";
+    const nonJournal = publicationTypeIndex >= 0 && isNonJournalPublication(row[publicationTypeIndex]);
+    let result;
+    if (nonJournal) result = { status: "not_applicable", matchedJournal: null, journalRank2025: "", confidence: 0 };
+    else {
+      if (!cache.has(source)) cache.set(source, matchJournal(source, options.fuzzy));
+      result = cache.get(source);
+    }
+    while (row.length <= rankIndex) row.push("");
+    row[rankIndex] = result.journalRank2025;
+    counts[result.status] = (counts[result.status] ?? 0) + 1;
+    results.push({
+      row: rowIndex + 1,
+      citation_number: citationIndex >= 0 ? row[citationIndex] ?? "" : "",
+      journal_or_institution: source,
+      url: urlIndex >= 0 ? row[urlIndex] ?? "" : "",
+      journal_rank_2025: result.journalRank2025,
+      status: result.status,
+      matchedJournal: result.matchedJournal,
+      confidence: result.confidence,
+      ...(result.candidates ? { candidates: result.candidates } : {}),
+    });
+  }
+
+  const serialized = serializeCsv(rows, withBom, parsed.newline, parsed.trailingNewline);
+  if (options.inPlace || path.resolve(destination) === path.resolve(filePath)) {
+    const tempPath = `${filePath}.journal-rank-${process.pid}.tmp`;
+    try {
+      fs.writeFileSync(tempPath, serialized, "utf8");
+      fs.renameSync(tempPath, filePath);
+    } finally {
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    }
   } else fs.writeFileSync(destination, serialized, "utf8");
 
-  return { file: destination, records: rows.length - 1, counts, rankingYear: index.meta.rankingYear };
+  return { file: destination, records: results.length, counts, rankingYear: index.meta.rankingYear, results };
 }
 
 function runSelfTest() {

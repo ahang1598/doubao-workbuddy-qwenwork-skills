@@ -1,0 +1,291 @@
+{
+  "source": "trap-detection.md",
+  "description": "陷阱检测 47 项中去重后的 16 条独有规则(⚙RL-X 已在 risk-library 执行,此处跳过)。LLM 在 Step 3 §4.8 陷阱检测时用。",
+  "_usage": "仅执行 active=true 的 16 条;其余 31 条标注 skip_reason=已覆盖规则,作为审计记录保留。",
+  "_fields": {
+    "id": "陷阱编号(F/L/S-XX)",
+    "name": "简短标题",
+    "triggers_when": "触发前提",
+    "direction": "self/other/always/both",
+    "how_to_detect": "检测方法要点",
+    "level": "优先级",
+    "active": "true=需执行,false=已由 risk-library 覆盖"
+  },
+  "active_rules": [
+    {
+      "id": "F-01",
+      "name": "二选一互斥条款未选择",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "搜索 \"/\"、\"或\"、\"二选一\"",
+      "level": "P1",
+      "notes": "典型:仲裁/诉讼未删除一项",
+      "active": true
+    },
+    {
+      "id": "F-05",
+      "name": "多余/遗漏符号",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "检查括号配对、重复标点(如\"((\")",
+      "level": "P2",
+      "active": true
+    },
+    {
+      "id": "F-10",
+      "name": "标点符号混用",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "中文文本出现英文逗号/句号等",
+      "level": "P2",
+      "active": true
+    },
+    {
+      "id": "L-10",
+      "name": "条件逻辑矛盾",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "检查条件链自洽性(循环依赖)",
+      "level": "P1",
+      "active": true
+    },
+    {
+      "id": "L-11",
+      "name": "定义与使用不一致",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "术语定义 vs 实际使用对齐(定义\"产品\"为X但用于指Y)",
+      "level": "P1",
+      "active": true
+    },
+    {
+      "id": "L-12",
+      "name": "权利义务不对应",
+      "triggers_when": "我方有权利但对方无配合义务",
+      "direction": "self",
+      "how_to_detect": "甲方有验收权但乙方无配合义务",
+      "level": "P1",
+      "notes": "对方有权利但我方无配合义务→对我方有利→不触发",
+      "active": true
+    },
+    {
+      "id": "S-02",
+      "name": "违约金畸高",
+      "triggers_when": "我方违约金>30%",
+      "direction": "self",
+      "level": "P1",
+      "notes": "对方违约金高→我方获更多赔偿→不触发",
+      "active": true
+    },
+    {
+      "id": "S-17",
+      "name": "解除权方向审查",
+      "triggers_when": "对方有随时解除权(无正当理由/通知期/补偿);双方均有合理解除权且需通知期≥30天→不触发",
+      "direction": "other",
+      "level": "P1",
+      "active": true
+    },
+    {
+      "id": "S-18",
+      "name": "付款主体错误",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "付款主体一致性",
+      "level": "P0",
+      "script": "verify_payment_flow.py",
+      "active": true
+    },
+    {
+      "id": "S-19",
+      "name": "费用计算逻辑错误",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "验证费用计算公式",
+      "level": "P0",
+      "active": true
+    },
+    {
+      "id": "S-20",
+      "name": "缺少关键商业信息",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "数量/单价/交付时间缺失",
+      "level": "P0",
+      "active": true
+    },
+    {
+      "id": "S-21",
+      "name": "无限制连带担保",
+      "triggers_when": "我方提供连带担保",
+      "direction": "self",
+      "level": "P0",
+      "active": true
+    },
+    {
+      "id": "S-22",
+      "name": "我方赔偿无上限",
+      "triggers_when": "我方赔偿无上限",
+      "direction": "self",
+      "level": "P0",
+      "notes": "对方赔偿无上限→有利→不触发",
+      "active": true
+    },
+    {
+      "id": "S-23",
+      "name": "不可抗力范围审查",
+      "triggers_when": "我方的不可抗力免责范围过窄",
+      "direction": "self",
+      "level": "P2",
+      "active": true
+    },
+    {
+      "id": "S-24",
+      "name": "管辖权对我方不利",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "管辖法院/仲裁地",
+      "level": "P1",
+      "active": true
+    },
+    {
+      "id": "S-25",
+      "name": "竞业禁止方向审查",
+      "triggers_when": "我方受竞业限制",
+      "direction": "self",
+      "level": "P1",
+      "active": true
+    }
+  ],
+  "skipped_rules": [
+    {
+      "id": "F-02",
+      "reason": "⚙RL-2 覆盖"
+    },
+    {
+      "id": "F-03",
+      "reason": "⚙RL-2 覆盖"
+    },
+    {
+      "id": "F-04",
+      "reason": "⚙RL-3 覆盖"
+    },
+    {
+      "id": "F-06",
+      "reason": "⚙RL-4 覆盖"
+    },
+    {
+      "id": "F-07",
+      "reason": "⚙RL-5 + verify_cross_references.py 覆盖"
+    },
+    {
+      "id": "F-08",
+      "reason": "⚙RL-1 覆盖"
+    },
+    {
+      "id": "F-09",
+      "reason": "⚙RL-1 覆盖"
+    },
+    {
+      "id": "L-01",
+      "reason": "⚙RL-6 覆盖"
+    },
+    {
+      "id": "L-02",
+      "reason": "⚙RL-7 覆盖"
+    },
+    {
+      "id": "L-03",
+      "reason": "⚙RL-8a + verify_amounts.py 覆盖"
+    },
+    {
+      "id": "L-04",
+      "reason": "⚙RL-8b/8c/8d + verify_amounts.py 覆盖"
+    },
+    {
+      "id": "L-05",
+      "reason": "⚙RL-10 覆盖"
+    },
+    {
+      "id": "L-06",
+      "reason": "⚙RL-12 覆盖"
+    },
+    {
+      "id": "L-07",
+      "reason": "⚙RL-12 覆盖"
+    },
+    {
+      "id": "L-08",
+      "reason": "⚙RL-11 覆盖"
+    },
+    {
+      "id": "L-09",
+      "reason": "⚙RL-5 + verify_cross_references.py 覆盖"
+    },
+    {
+      "id": "S-01",
+      "reason": "⚙RL-35 覆盖"
+    },
+    {
+      "id": "S-03",
+      "reason": "⚙RL-38/39 覆盖"
+    },
+    {
+      "id": "S-04",
+      "reason": "⚙RL-18 覆盖"
+    },
+    {
+      "id": "S-05",
+      "reason": "⚙RL-19 覆盖"
+    },
+    {
+      "id": "S-06",
+      "reason": "⚙RL-19 覆盖"
+    },
+    {
+      "id": "S-07",
+      "reason": "⚙RL-32 覆盖"
+    },
+    {
+      "id": "S-08",
+      "reason": "⚙RL-32 覆盖"
+    },
+    {
+      "id": "S-09",
+      "reason": "⚙RL-31 覆盖"
+    },
+    {
+      "id": "S-10",
+      "reason": "⚙RL-29 覆盖"
+    },
+    {
+      "id": "S-11",
+      "reason": "⚙RL-34 覆盖"
+    },
+    {
+      "id": "S-12",
+      "reason": "⚙RL-28 覆盖"
+    },
+    {
+      "id": "S-13",
+      "reason": "⚙RL-25 覆盖"
+    },
+    {
+      "id": "S-14",
+      "reason": "⚙RL-40 覆盖"
+    },
+    {
+      "id": "S-15",
+      "reason": "⚙RL-39 覆盖"
+    },
+    {
+      "id": "S-16",
+      "reason": "⚙RL-36 覆盖"
+    }
+  ],
+  "statistics": {
+    "active_count": 16,
+    "skipped_count": 31,
+    "total": 47,
+    "_note": "原 trap-detection.md 统计为 18,实际独有规则 16(F-01/05/10 + L-10/11/12 + S-02/17/18/19/20/21/22/23/24/25),已核查"
+  }
+}

@@ -2,7 +2,7 @@
 
 ## 对象与入口
 
-本期只支持同一 Base、同一仪表盘中数据源相同的组件联动。使用前检查 +dashboard-block-update --help 是否有 --linkage；没有时须升级到已发布的支持版本，Skill 更新不能替代 binary 更新。
+本期只支持同一 Base、同一仪表盘中数据源相同的组件联动。当前配套版本直接使用 `--linkage`；版本不确定或返回 unknown flag 时再检查 `+dashboard-block-update --help`。Skill 更新不能替代 binary 更新。
 
 ## 配置位置
 

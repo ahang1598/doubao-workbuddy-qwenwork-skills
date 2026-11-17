@@ -10,7 +10,6 @@
 
 - 图片 3-6 张，每张配标题（必需）+ 简短描述（可选，15字内）
 - **每张图必须是不同的真实图片**（不同 media token），下载时用不同关键词/URL
-- 下载后用 `ls -l` 比较文件大小确保每张图不重复
 - 文字仅作辅助说明，图片是信息主体
 
 ## Layout 选型
@@ -113,14 +112,7 @@
 
 注意：connector 必须放在**顶层 nodes 数组**，不能嵌套在 frame.children 内。connector 的属性须包裹在 `connector` 字段中。
 
-## 图片准备检查清单
+## 图片输入约束
 
-生成 DSL 前确认：
-
-- [ ] 所有 image 节点的 `image.src` 都是通过 `docs +media-upload --parent-type whiteboard` 上传的 media token（非 URL、非 Drive file token）
-- [ ] 所有图片已上传到目标画板（`--parent-node` 设为目标画板 token）
-- [ ] 每个 media token 不同（对应不同的真实图片）
-- [ ] 所有图片尺寸一致（同一画板内统一 width×height）
-- [ ] 图片宽高比合理（推荐 3:2，即 240×160）
-- [ ] 渲染 PNG 后查看图片内容，确认每张图片与主题相关
-- [ ] 未使用随机占位图服务（关键词参数不影响返回内容的图库）
+- image 节点的 `image.src` 使用通过 `docs +media-upload --parent-type whiteboard` 上传的 media token（非 URL、非 Drive file token）；上传时将 `--parent-node` 设为目标画板 token。
+- 不使用随机占位图服务（关键词参数不影响返回内容的图库）。

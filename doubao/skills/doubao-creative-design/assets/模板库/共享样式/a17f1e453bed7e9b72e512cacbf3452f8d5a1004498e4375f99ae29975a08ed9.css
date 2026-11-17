@@ -1,0 +1,8 @@
+/* 文字像素：等宽硬边字、深色主体与青/洋红通道偏移。适配真正像素字体时效果最佳。
+   关闭抗锯齿并非跨浏览器强保证；导出前应在目标渲染器复检。 */
+.特效_文字像素{
+  --tx-pixel-face:#3d3d3d;--tx-pixel-a:#e5e5e5;--tx-pixel-b:#777;--tx-pixel-step:.075em;
+  display:inline-block;color:var(--tx-pixel-face);font-family:"Courier New",monospace;font-weight:900;letter-spacing:.02em;
+  -webkit-font-smoothing:none;text-rendering:geometricPrecision;
+  text-shadow:calc(0em - var(--tx-pixel-step)) 0 0 var(--tx-pixel-a),var(--tx-pixel-step) 0 0 var(--tx-pixel-b),0 var(--tx-pixel-step) 0 #fff;
+}

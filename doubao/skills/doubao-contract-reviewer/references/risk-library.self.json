@@ -1,0 +1,361 @@
+{
+  "version": "",
+  "source": "risk-library.index.json",
+  "direction_pack": "self",
+  "description": "direction-filtered rule pack for direction='self'. LLM 在 Step 0 识别持方后加载本文件,无需再读 risk-library.index.json。",
+  "_fields": {
+    "id": "规则编号(RL-XX)",
+    "category": "一级分类",
+    "name": "简短标题",
+    "triggers_when": "触发前提(自然语言,LLM 解读)",
+    "direction": "self/other/always,用于方向化过滤",
+    "how_to_detect": "检测方法要点",
+    "level": "优先级 P0/P1/P2(三级制)",
+    "script": "若由脚本自动执行则填对应脚本名,否则 null",
+    "notes": "额外说明(法定默认兜底、方向化触发条件等)"
+  },
+  "_pack_rules": "always + self + both",
+  "rules_count": 39,
+  "rules": [
+    {
+      "id": "RL-1",
+      "category": "形式审查",
+      "name": "合同内容空置",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "搜索 ____/【】/[xxx]/{xxx}/TODO 占位符",
+      "level": "P2"
+    },
+    {
+      "id": "RL-2",
+      "category": "形式审查",
+      "name": "序号错误",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "条款序号连续性+唯一性",
+      "level": "P2"
+    },
+    {
+      "id": "RL-3",
+      "category": "形式审查",
+      "name": "错别字",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "对照 appendices.md 附录C",
+      "level": "P2"
+    },
+    {
+      "id": "RL-4",
+      "category": "援引准确性",
+      "name": "援引法规不准确",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "提取法律法规引用,对照附录B 验证有效性",
+      "level": "P1"
+    },
+    {
+      "id": "RL-5",
+      "category": "援引准确性",
+      "name": "援引条款不准确",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "提取\"依据第X条\"\"详见第X条\",验证被引条款存在性+内容相关性",
+      "level": "P1",
+      "script": "verify_cross_references.py"
+    },
+    {
+      "id": "RL-6",
+      "category": "逻辑一致性",
+      "name": "主体名称不一致",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "比对首部/正文/落款/附件主体名称",
+      "level": "P1"
+    },
+    {
+      "id": "RL-7",
+      "category": "逻辑一致性",
+      "name": "期限描述不一致",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "提取所有期限表述交叉验证",
+      "level": "P0",
+      "script": "verify_dates.py"
+    },
+    {
+      "id": "RL-8a",
+      "category": "逻辑一致性",
+      "name": "金额大小写不一致",
+      "triggers_when": "始终",
+      "direction": "always",
+      "level": "P0",
+      "script": "verify_amounts.py"
+    },
+    {
+      "id": "RL-8b",
+      "category": "逻辑一致性",
+      "name": "分期金额合计≠总额",
+      "triggers_when": "存在分期付款",
+      "direction": "always",
+      "level": "P0",
+      "script": "verify_amounts.py"
+    },
+    {
+      "id": "RL-8c",
+      "category": "逻辑一致性",
+      "name": "分期百分比合计≠100%",
+      "triggers_when": "存在百分比约定",
+      "direction": "always",
+      "level": "P0",
+      "script": "verify_amounts.py"
+    },
+    {
+      "id": "RL-8d",
+      "category": "逻辑一致性",
+      "name": "单期金额与百分比不一致",
+      "triggers_when": "同时存在金额和百分比",
+      "direction": "always",
+      "level": "P0",
+      "script": "verify_amounts.py"
+    },
+    {
+      "id": "RL-9",
+      "category": "逻辑一致性",
+      "name": "同一事项表述矛盾",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "不同条款描述同一事项的表述差异",
+      "level": "P1"
+    },
+    {
+      "id": "RL-10",
+      "category": "逻辑一致性",
+      "name": "逻辑不相关条款",
+      "triggers_when": "与合同中任何一个交易标的均无关联;综合性/混合合同中涉及多标的不轻易判定",
+      "direction": "always",
+      "level": "P2"
+    },
+    {
+      "id": "RL-11",
+      "category": "逻辑一致性",
+      "name": "履行时间顺序混乱",
+      "triggers_when": "始终",
+      "direction": "always",
+      "level": "P0"
+    },
+    {
+      "id": "RL-12",
+      "category": "逻辑一致性",
+      "name": "附件不一致",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "正文提及附件是否存在+内容一致",
+      "level": "P1"
+    },
+    {
+      "id": "RL-13",
+      "category": "条款完备性",
+      "name": "主体信息不完备",
+      "triggers_when": "缺少一方或双方全称;仅缺联系方式/地址不触发",
+      "direction": "always",
+      "level": "P2"
+    },
+    {
+      "id": "RL-14",
+      "category": "条款完备性",
+      "name": "标的不明确",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "标的描述模糊或不同型号未分别说明",
+      "level": "P0"
+    },
+    {
+      "id": "RL-15",
+      "category": "条款完备性",
+      "name": "履行条件不完备",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "缺金额/支付条件/支付方式/交付安排",
+      "level": "P0"
+    },
+    {
+      "id": "RL-17",
+      "category": "条款完备性",
+      "name": "合同期限缺失",
+      "triggers_when": "始终",
+      "direction": "always",
+      "level": "P1"
+    },
+    {
+      "id": "RL-18",
+      "category": "条款完备性",
+      "name": "保密条款缺失",
+      "triggers_when": "无保密条款",
+      "direction": "always",
+      "level": "P2",
+      "notes": "无保密条款时提示补充;一般商务合同有法定默认兜底,属规范性建议。涉技术秘密/源代码/用户个人信息/核心商业数据等敏感场景时,在批注中提示业务方重点关注,但等级固定 P2。"
+    },
+    {
+      "id": "RL-19",
+      "category": "条款完备性",
+      "name": "争议解决不完备",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "缺争议解决条款或同时约定仲裁和诉讼",
+      "level": "P2"
+    },
+    {
+      "id": "RL-20",
+      "category": "条款完备性",
+      "name": "特定交易类型缺失条款",
+      "triggers_when": "结合 Step 1 交易场景推理",
+      "direction": "always",
+      "level": "P2"
+    },
+    {
+      "id": "RL-21",
+      "category": "核心商业要素",
+      "name": "核心交易要素缺失",
+      "triggers_when": "始终",
+      "direction": "always",
+      "how_to_detect": "对照 Step 1 清单一检查必备商业要素",
+      "level": "P0"
+    },
+    {
+      "id": "RL-22",
+      "category": "核心商业要素",
+      "name": "核心要素描述不充分",
+      "triggers_when": "正式合同;框架协议/意向书/备忘录允许概括性描述不触发",
+      "direction": "always",
+      "level": "P1"
+    },
+    {
+      "id": "RL-23",
+      "category": "合同时效",
+      "name": "有效期缺失",
+      "triggers_when": "始终",
+      "direction": "always",
+      "level": "P1"
+    },
+    {
+      "id": "RL-24",
+      "category": "合同时效",
+      "name": "时效计算不一致",
+      "triggers_when": "同一时效既约定时长又约定起止日期但不匹配",
+      "direction": "always",
+      "level": "P1",
+      "script": "verify_dates.py"
+    },
+    {
+      "id": "RL-25",
+      "category": "合同时效",
+      "name": "生效条件不当",
+      "triggers_when": "合同金额较大或涉及重大权利义务变更;小额服务合同/框架协议附件签字生效不触发",
+      "direction": "always",
+      "level": "P2"
+    },
+    {
+      "id": "RL-27",
+      "category": "合同时效",
+      "name": "合同已过期/倒签风险",
+      "triggers_when": "始终",
+      "direction": "always",
+      "level": "P1",
+      "script": "verify_dates.py"
+    },
+    {
+      "id": "RL-28",
+      "category": "合同时效",
+      "name": "自动续约无限制",
+      "triggers_when": "无限次续约+无通知退出机制同时满足;仅\"续约超1年\"或\"超1次\"但有合理退出机制→P2批注",
+      "direction": "always",
+      "level": "P0"
+    },
+    {
+      "id": "RL-29",
+      "category": "价款支付",
+      "name": "无开票义务",
+      "triggers_when": "我方是付款方",
+      "direction": "self",
+      "level": "P2",
+      "notes": "我方是收款方→开票是我方义务→不触发"
+    },
+    {
+      "id": "RL-30",
+      "category": "价款支付",
+      "name": "账期过长",
+      "triggers_when": "我方是收款方且账期不合理长",
+      "direction": "self",
+      "level": "P2",
+      "notes": "我方是付款方→账期长对我方有利→不触发"
+    },
+    {
+      "id": "RL-31",
+      "category": "价款支付",
+      "name": "预付款比例过高(>30%)",
+      "triggers_when": "我方是付款方需预付",
+      "direction": "self",
+      "level": "P1",
+      "notes": "对方向我方预付>30%→我方提前收款→有利→不触发"
+    },
+    {
+      "id": "RL-32",
+      "category": "价款支付",
+      "name": "定金比例过高(>20%)",
+      "triggers_when": "我方是支付定金方",
+      "direction": "self",
+      "level": "P0",
+      "notes": "订金/定金混用→P2始终触发"
+    },
+    {
+      "id": "RL-33",
+      "category": "价款支付",
+      "name": "先款后票风险",
+      "triggers_when": "我方是付款方",
+      "direction": "self",
+      "level": "P2"
+    },
+    {
+      "id": "RL-34",
+      "category": "交付验收",
+      "name": "验收豁免质量责任",
+      "triggers_when": "我方是采购方/需求方",
+      "direction": "self",
+      "level": "P1"
+    },
+    {
+      "id": "RL-35",
+      "category": "违约责任",
+      "name": "我方违约责任过高/不对等",
+      "triggers_when": "我方责任过重",
+      "direction": "self",
+      "level": "P1",
+      "notes": "对方责任重于我方→有利条款→不触发"
+    },
+    {
+      "id": "RL-36",
+      "category": "违约责任",
+      "name": "间接损失方向审查",
+      "triggers_when": "我方违约赔偿含间接损失→P1限缩;对方违约赔偿被限制为仅直接损失→P1删除该限制",
+      "direction": "both",
+      "level": "P1"
+    },
+    {
+      "id": "RL-38",
+      "category": "知识产权",
+      "name": "知识产权条款缺失",
+      "triggers_when": "定制开发/内容创作/技术合作/软件授权;纯标品采购且无定制化/开发条款→不触发",
+      "direction": "always",
+      "level": "P1",
+      "notes": "合同标题为\"采购\"但含定制开发条款仍触发"
+    },
+    {
+      "id": "RL-39",
+      "category": "知识产权",
+      "name": "合作IP归属不利",
+      "triggers_when": "合作开发类合同",
+      "direction": "always",
+      "level": "P0"
+    }
+  ]
+}

@@ -16,7 +16,7 @@
 
 - 标量直接运算；列表先用 `SUM()`、`ARRAYJOIN(",")`、`FIRST()`／`LAST()`／`NTH()` 处理。
 - `[LinkField].[TargetField]` 返回关联值列表；逐行聚合用 `COUNTA([LinkField])`、`[LinkField].[Field].SUM()`。与表同名时改名，或用 `[Table].FILTER(CurrentValue.[BackLink] = [Key]).[Field].SUM()`／`.[Field].COUNTA()`。
-- 表级 `FILTER` 返回记录行；末尾投影字段再聚合，不能将未投影结果包在 `COUNTA(...)` 中。回读见[字段回读契约](field-commands.md#计算字段回读)。
+- 表级 `FILTER` 返回记录行；末尾投影字段再聚合，不能将未投影结果包在 `COUNTA(...)` 中。需要核验实际值时见[计算字段按需读取](field-commands.md#计算字段按需读取)。
 - `FILTER` 结果列为多值字段（`multiple=true` 的 `select`、`link`）时产生二维数组，必须 `.LISTCOMBINE()`；单值列（`number`、`text`）可省略，添加也不报错：
 
 ```text
@@ -63,7 +63,7 @@
 区分三层证据：`+field-get` 字段及结果类型、表达式形状及元素类型、Record JSON 物理类型。NDJSON 可将 Formula、Lookup、日期导出为字符串；`physical_type=string|null` 或日期文本只说明导出格式，不能证明公式内 Lookup 是文本标量。
 
 - 按 [Scene 输出目标](../scenes/field-formula-lookup.md#输出与聚合目标)确认唯一匹配或指定聚合。取首项前证明唯一性或顺序；无匹配时按业务处理空值。
-- 先得到标量再转换类型。禁止 `TEXT([日期], "YYYY-MM-DD") <= [日期Lookup]` 或用 `FIRST()` 任取多个日期。函数见[日期与列表函数](field-formula-functions.md#日期函数)；保存后核值。
+- 先得到标量再转换类型。禁止 `TEXT([日期], "YYYY-MM-DD") <= [日期Lookup]` 或用 `FIRST()` 任取多个日期。函数见[日期与列表函数](field-formula-functions.md#日期函数)；用户明确要求核验或结果异常时再核实际值。
 
 <a id="typed-blank-branches-in-conditional-formulas"></a>
 
@@ -78,7 +78,7 @@ IF([Condition], [NumericExpression], VALUE(""))
 
 - `""`（或 `" "`）是已确认写法：数字与空值并存、两个分支都是文本时都可用。
 - 需要保持数值结果类型时，`VALUE("")` 是候选写法；类型兼容性与空值结果以实际值为准，定义被接受不等于有效。
-- `BLANK()`、`NULL`、`NaN()` 不在支持的函数清单中，不用来构造空值。验收及缺少代表数据的处理见 [Scene 回读验收](../scenes/field-formula-lookup.md#回读验收)。
+- `BLANK()`、`NULL`、`NaN()` 不在支持的函数清单中，不用来构造空值。按需核验及缺少代表数据的处理见 [Scene 按需核验](../scenes/field-formula-lookup.md#按需核验)。
 
 #### 空分支异常的定向修正
 
@@ -139,8 +139,6 @@ IF([Condition], [NumericExpression], VALUE(""))
 - 关联列表可能为空；取单值用 `SUM`／`MAX`、`ARRAYJOIN` 或 `FIRST`／`LAST`／`NTH`。
 - 跨表查询不在 `FILTER` 内嵌套 `FILTER`，优先用关联字段链式访问。
 
-<a id="section-7-hard-constraints"></a>
-
 ## 硬性约束
 
 1. `FILTER`／`SUMIF`／`COUNTIF`／`MAP` 不得出现在彼此的条件或映射参数内。禁用 `[Table1].FILTER(CurrentValue.[Col] = [Table2].FILTER(...).[Col])`、`[Table].MAP([Table2].MAP(...))`；链式 `[Table].FILTER(cond1).[Col].FILTER(cond2)` 不算嵌套。
@@ -149,8 +147,6 @@ IF([Condition], [NumericExpression], VALUE(""))
 4. 字符串用双引号 `"`；不支持单引号。
 5. 不用 `LOOKUP`；统一改写为 `FILTER`。
 6. 请求体必须含 `"type": "formula"`。
-
-<a id="section-11-common-formula-patterns"></a>
 
 ## 常见公式模式
 

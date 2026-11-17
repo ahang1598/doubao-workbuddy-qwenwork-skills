@@ -298,6 +298,9 @@ def normalize_payload(payload: dict[str, Any]) -> dict[str, Any]:
         if not original_title:
             raise ValueError(f"items[{index - 1}].original_title is required")
         journal_name = " ".join(str(raw.get("journal_name") or "").split())
+        journal_rank_2025 = " ".join(
+            str(raw.get("journal_rank_2025") or "").split()
+        )
         preprint_platform = " ".join(
             str(raw.get("preprint_platform") or "").split()
         )
@@ -312,6 +315,8 @@ def normalize_payload(payload: dict[str, Any]) -> dict[str, Any]:
         )
         if journal_name:
             source_text = f"期刊：{journal_name}"
+            if journal_rank_2025:
+                source_text += f"｜期刊级别：{journal_rank_2025}（2025）"
         elif preprint_platform:
             source_text = f"平台：{preprint_platform}"
         elif source_name:
@@ -383,9 +388,25 @@ def normalize_payload(payload: dict[str, Any]) -> dict[str, Any]:
         normalized_summaries = ["本期未提供可视化条目，具体状态见正文。"]
 
     empty_label = " ".join(str(payload.get("empty_label") or "本期暂无纳入条目").split())
+    requested_date_range = " ".join(
+        str(payload.get("requested_date_range") or "").split()
+    )
+    included_date_range = " ".join(
+        str(payload.get("included_date_range") or "").split()
+    )
+    if payload.get("window_expanded") and requested_date_range and included_date_range:
+        window_label = (
+            f"原始窗口：{requested_date_range} ｜ 实际纳入：{included_date_range}"
+        )
+    elif included_date_range:
+        window_label = f"本期纳入：{included_date_range}"
+    else:
+        window_label = ""
+
     return {
         "topic": " ".join(str(payload.get("topic") or "医学主题").split()),
         "period": " ".join(str(payload.get("period") or "本期").split()),
+        "window_label": window_label,
         "summary": normalized_summaries[:4],
         "items": items,
         "empty_label": empty_label,
@@ -432,32 +453,7 @@ def render(payload: dict[str, Any]) -> str:
         card_line_counts[category["key"]] = lines
     cards_h = max(226, 112 + max(card_line_counts.values(), default=1) * 31)
 
-    matrix_heading_y = cards_y + cards_h + 66
-    matrix_y = matrix_heading_y + 40
-    matrix_header_h = 56
-    col_gap = 24
-    col_w = (inner_w - col_gap) / 2
-    item_cells: list[dict[str, Any]] = []
-    for item in items:
-        title_lines = wrap_text(item["original_title"], 43)
-        detail = " ｜ ".join(
-            value for value in (item["source_text"], item["source_date"]) if value
-        )
-        detail_lines = wrap_text(detail, 46)
-        cell_h = max(108, 32 + len(title_lines) * 27 + len(detail_lines) * 24)
-        item_cells.append(
-            {
-                **item,
-                "title_lines": title_lines,
-                "detail_lines": detail_lines,
-                "height": cell_h,
-            }
-        )
-    row_heights: list[int] = []
-    for start in range(0, len(item_cells), 2):
-        row_heights.append(max(cell["height"] for cell in item_cells[start : start + 2]))
-    matrix_body_h = sum(row_heights) if row_heights else 90
-    footer_y = matrix_y + matrix_header_h + matrix_body_h + 62
+    footer_y = cards_y + cards_h + 62
     canvas_height = int(footer_y + 104)
 
     parts.append(
@@ -486,6 +482,17 @@ def render(payload: dict[str, Any]) -> str:
             weight=700,
         )
     )
+    if data["window_label"]:
+        parts.append(
+            text_node(
+                inner_x + 58,
+                header_y + 42,
+                [data["window_label"]],
+                size=17,
+                color="#6B7280",
+                weight=500,
+            )
+        )
     parts.append(
         text_node(
             inner_x + inner_w,
@@ -555,92 +562,11 @@ def render(payload: dict[str, Any]) -> str:
             parts.append(text_node(x + 46, item_y, lines, size=18, color="#26313F", line_height=31))
             item_y += len(lines) * 31
 
-    parts.append(text_node(inner_x, matrix_heading_y, ["本期全部条目"], size=22, color="#111827", weight=700))
-    parts.append(
-        text_node(
-            inner_x + inner_w,
-            matrix_heading_y,
-            ["逐条索引 · 编号对应正文"],
-            size=16,
-            color="#6B7280",
-            weight=500,
-            anchor="end",
-        )
-    )
-    parts.append(
-        f'<rect x="{inner_x}" y="{matrix_y}" width="{inner_w}" height="{matrix_header_h + matrix_body_h}" '
-        'fill="#FFFFFF" stroke="#D8DEE7" stroke-width="2"/>'
-    )
-    parts.append(
-        f'<rect x="{inner_x}" y="{matrix_y}" width="{inner_w}" height="{matrix_header_h}" fill="#F3F5F7"/>'
-    )
-    parts.append(text_node(inner_x + 24, matrix_y + 34, ["编号、原文标题与来源"], size=18, color="#374151", weight=700))
-
-    current_y = matrix_y + matrix_header_h
-    if not item_cells:
-        parts.append(text_node(inner_x + 24, current_y + 54, [data["empty_label"]], size=19, color="#6B7280"))
-    for row_index, row_h in enumerate(row_heights):
-        if row_index % 2 == 1:
-            parts.append(
-                f'<rect x="{inner_x}" y="{current_y}" width="{inner_w}" height="{row_h}" fill="#FAFBFC"/>'
-            )
-        if row_index > 0:
-            parts.append(
-                f'<line x1="{inner_x}" y1="{current_y}" x2="{inner_x + inner_w}" y2="{current_y}" '
-                'stroke="#E5E9EF" stroke-width="1"/>'
-            )
-        for col_index, cell in enumerate(item_cells[row_index * 2 : row_index * 2 + 2]):
-            x = inner_x + col_index * (col_w + col_gap)
-            palette = next(category for category in CATEGORIES if category["key"] == cell["category"])
-            parts.append(
-                f'<rect x="{x + 20:.0f}" y="{current_y + 20:.0f}" width="132" height="30" '
-                f'rx="15" fill="{palette["header"]}"/>'
-            )
-            parts.append(
-                text_node(
-                    x + 86,
-                    current_y + 41,
-                    [f'【{cell["display_id"]}】'],
-                    size=16,
-                    color=palette["accent"],
-                    weight=700,
-                    anchor="middle",
-                )
-            )
-            parts.append(
-                text_node(
-                    x + 166,
-                    current_y + 42,
-                    cell["title_lines"],
-                    size=18,
-                    color="#1F2937",
-                    weight=600,
-                    line_height=27,
-                )
-            )
-            detail_y = current_y + 42 + len(cell["title_lines"]) * 27
-            parts.append(
-                text_node(
-                    x + 166,
-                    detail_y,
-                    cell["detail_lines"],
-                    size=16,
-                    color="#6B7280",
-                    line_height=24,
-                )
-            )
-        current_y += row_h
-
-    parts.append(
-        f'<line x1="{inner_x + col_w + col_gap / 2:.0f}" y1="{matrix_y + matrix_header_h}" '
-        f'x2="{inner_x + col_w + col_gap / 2:.0f}" y2="{matrix_y + matrix_header_h + matrix_body_h}" '
-        'stroke="#E5E9EF" stroke-width="1"/>'
-    )
     parts.append(
         text_node(
             inner_x,
             footer_y,
-            ["编号与正文条目一一对应 · 证据成熟度与原始来源请见正文"],
+            ["分类编号与正文条目对应 · 原文标题、期刊/来源和证据细节请见正文"],
             size=16,
             color="#8A94A3",
         )
@@ -667,7 +593,6 @@ def render_feishu_demo_document(payload: dict[str, Any], svg: str) -> str:
     )
     return (
         f"<title>{esc(data['topic'])}｜总览画板视觉回归</title>\n"
-        "<h1>本周总结</h1>\n"
         '<callout emoji="💡" background-color="light-blue" border-color="blue">\n'
         f"<ul>{summary_items}</ul>\n"
         "</callout>\n"

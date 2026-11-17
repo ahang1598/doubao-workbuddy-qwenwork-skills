@@ -67,7 +67,7 @@ lark-cli vc meeting get --meeting-id "<meeting_id>" --format json
 
 成功后读取 `data.meeting.chat_id`；查询失败按实际错误处理，字段缺失、为空或为 `"0"` 则说明未取得绑定，不自动创建。只要群聊 ID 时到此结束，不继续读取纪要、录制或消息。复用 `vc +detail` 的已有批量结果时，按 [详情参考](../references/lark-vc-detail.md#聊天绑定结果) 解析对应项。
 
-会后或会议状态未知时，仍按详情权限查询当前绑定，不先查在会状态。用户明确要为进行中的会议创建/复用聊天时，转 [会中互动](live-meeting-interact.md#获取或创建会议群聊)。
+会后或会议状态未知时，仍按详情权限查询当前绑定，不先查在会状态。用户明确要为进行中的会议创建/复用聊天时，沿用已有标识，转 [lark-meeting-realtime](../../lark-meeting-realtime/SKILL.md) 的 [会中互动](../../lark-meeting-realtime/scenes/live-meeting-interact.md#获取或创建会议群聊)。
 
 需要群消息时，携带 `chat_id` 及用户要求的范围或内容，转 [IM 消息读取](../../lark-im/references/lark-im-chat-messages-list.md) 或 [IM 消息发送](../../lark-im/references/lark-im-messages-send.md)。已有 `chat_id` 可直接转 IM。返回绑定不保证群有效或消息访问权限，IM 拒绝访问时按实际错误处理，不通过创建替代群兜底。
 

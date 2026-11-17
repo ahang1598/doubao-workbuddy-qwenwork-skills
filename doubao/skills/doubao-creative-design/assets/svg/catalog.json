@@ -1,7 +1,6 @@
 {
   "version": 2,
   "path_base": "skill-root",
-  "ref_bindings": "assets/templates/ref-bindings.json",
   "usage": "按当前 ref_key 与目标效果筛选；只有 最终 HTML 已绑定消费者时才读取或内嵌对应 SVG。",
   "entries": [
     {

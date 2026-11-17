@@ -30,8 +30,6 @@ IFS([Value] = 1, "low", [Value] = 2, "medium", [Value] = 3, "high", TRUE(), "")
 
 数值与空值混合时遵守[条件公式的空分支](field-formula-expression.md#typed-blank-branches-in-conditional-formulas)的类型约束。
 
-<a id="82-numeric-functions"></a>
-
 ## 数值函数
 
 |签名→返回类型|事实|
@@ -88,8 +86,6 @@ IFS([Value] = 1, "low", [Value] = 2, "medium", [Value] = 3, "high", TRUE(), "")
 |`EDATE(date, months)`/`EOMONTH(date, [months])`→日期|指定月数后的日期/月末；后者 `months` 默认 0。|
 |`WORKDAY(start_date, days, [holidays])`→日期|指定工作日数后的日期；跳过周末、节假日。|
 |`NETWORKDAYS(start_date, end_date, [holidays])`→数字|两日期间工作日数，包含边界。|
-
-<a id="85-list-functions"></a>
 
 ## 列表函数
 

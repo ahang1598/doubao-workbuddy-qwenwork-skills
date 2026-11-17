@@ -9,12 +9,12 @@
 `+workflow-update` 是完整替换：以 `+workflow-get` 结果为基线，保留 `title`、`status`、`steps`，复制 `steps` 的全部嵌套内容，只改本次目标路径；不得只按常用字段重拼。
 保留步骤 ID、`next`、分支连线、消息和动作内部配置、按钮文本和跳转目标；不回传响应外层元数据。节点附加要求见 [AI Agent](workflow-ai-agent.md)、[APIHub](workflow-apihub.md)。
 
-请求体里的 `status` 不切换运行态；启停只用 `+workflow-enable`／`+workflow-disable`，随后用 get 验收。写后按步骤 ID 比较：目标值符合要求、其余配置不变；平台返回顺序和只读元数据变化不算业务变更。
-额外差异无法解释时按[配置不符与停用恢复](../scenes/workflow.md#配置不符与停用恢复)处理，不启用。运行态单独验收；临时停用后的 `status` 无须等于最初启用态。
+请求体里的 `status` 不切换运行态；启停只用 `+workflow-enable`／`+workflow-disable`。响应缺少状态、结果未知或用户明确要求核验时再 get。更新前读取完整定义以保留未修改步骤；平台返回顺序和只读元数据变化不算业务变更。
+额外差异无法解释时按[配置不符与停用恢复](../scenes/workflow.md#配置不符与停用恢复)处理，不启用。运行态单独判断；临时停用后的 `status` 无须等于最初启用态。
 
 ## 写入预检
 
-`+workflow-create`／`+workflow-update` 提交前加 `--dry-run` 预览并做本地校验；dry-run 不调用服务端，不能证明资源存在、接收人有效、定义已保存或执行成功。
+正式 `+workflow-create`／`+workflow-update` 已执行本地校验，正常请求直接提交。仅在用户要求预览、复杂完整替换需要调试或正式请求失败时使用 `--dry-run`；它不调用服务端。`--no-validate` 可跳过本地配置校验，但非法 JSON、非对象顶层、必填命令参数仍检查，服务端校验不受影响。
 
 ## 创建并启用示例
 
@@ -24,11 +24,9 @@
 lark-cli base +workflow-create --as user --base-token "<base_token>" --json @workflow.json
 lark-cli base +workflow-get --as user --base-token "<base_token>" --workflow-id "<wkf_id>"
 lark-cli base +workflow-enable --as user --base-token "<base_token>" --workflow-id "<wkf_id>"
-lark-cli base +workflow-list --as user --base-token "<base_token>" --status enabled
-lark-cli base +workflow-get --as user --base-token "<base_token>" --workflow-id "<wkf_id>"
 ```
 
-get 预检时流程仍为 disabled、无触发副作用；预检和用户前提都满足才 enable；最后用 list 确认 enabled，用 get 核对定义。
+get 预检时流程仍为 disabled、无触发副作用；预检和用户前提都满足才 enable。响应缺少状态、结果未知或用户明确要求核验时按 ID 读取。
 
 ## 最小请求体
 

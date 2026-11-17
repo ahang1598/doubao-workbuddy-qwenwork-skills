@@ -39,10 +39,10 @@ lark-cli vc +detail --meeting-ids <meeting_id1>,<meeting_id2>
 ## 相关场景
 - [查询会议及其产物](../scenes/query-meeting-and-artifacts.md)
 
-本命令只读。缺少 `chat_id` 时不自动创建、绑定或入群；只有明确需要创建或复用 Chat 时，才调用 [`vc +meeting-chat`](lark-vc-meeting-chat.md)。
+本命令只读。缺少 `chat_id` 时不自动创建、绑定或入群；只有明确需要创建或复用 Chat 时，才转入 [lark-meeting-realtime](../../lark-meeting-realtime/SKILL.md) 的 [`vc +meeting-chat`](../../lark-meeting-realtime/references/lark-vc-meeting-chat.md)。
 
 ## 聊天绑定结果
 
 JSON 结果位于 `data.meetings[]`，按 `meeting_id` 选择对应项后读取可选 `chat_id`，不要取批量结果第一项或读取顶层 `data.chat_id`。条目有 `error` 时报告该会议查询失败；无 `error` 但没有 `chat_id` 表示未取得绑定，不是创建授权。`hint` 可能仅描述纪要或录制不可用，不影响已经返回的聊天绑定。
 
-会中和会后均沿用详情查询的原有可见性。已有结果可直接复用；单独查询绑定使用 `vc meeting get`，避免本命令的录制查询及权限要求，见 [会议查询场景](../scenes/query-meeting-and-artifacts.md#获取会议群聊)；会中创建见 [会中互动场景](../scenes/live-meeting-interact.md#获取或创建会议群聊)。
+会中和会后均沿用详情查询的原有可见性。已有结果可直接复用；单独查询绑定使用 `vc meeting get`，避免本命令的录制查询及权限要求，见 [会议查询场景](../scenes/query-meeting-and-artifacts.md#获取会议群聊)；会中创建见 [会中互动场景](../../lark-meeting-realtime/scenes/live-meeting-interact.md#获取或创建会议群聊)。

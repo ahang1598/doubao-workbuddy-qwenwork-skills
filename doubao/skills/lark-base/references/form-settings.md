@@ -1,10 +1,12 @@
 # 表单展示、提交与运行配置
 
 ## 职责与阅读依赖
-维护表单展示、提交限制、通知、结果页、跳转和抽奖配置。配置目标、授权与验收按 [Form Scene](../scenes/form.md#展示与运行目标)，复用已确定的目标。
+维护表单展示、提交限制、通知、结果页、跳转和抽奖配置。配置目标、授权与完成条件按 [Form Scene](../scenes/form.md#展示与运行目标)，复用已确定的目标。
 
 ### 提交、通知、提交后动作与抽奖的共同前置
 从对应 Get 取得现值、版本号和只读信息；已有且仍有效的结果可复用。按对应章节传更新参数并保留未改内容。
+
+用户要求个人次数或提交总量限制时，先用 `+form-submission-settings-get` 取得现值和版本，按下方协议更新。响应缺失、结果未知或用户明确要求时再读取。命令不可用、调用拒绝或结果未知时，沿用 [通用调用与恢复](shared-cli-invocation.md#通用恢复)。
 
 ## 填写页展示（+form-display-settings-get / +form-display-settings-update）
 用 `+form-display-settings-get` 读取分页方式；用 `+form-display-settings-update` 在所有题目同页连续排列与一页一题间切换。
@@ -31,7 +33,7 @@ lark-cli base +form-display-settings-update \
 
 不做版本校验时省略 `--revision`，只传 `--display-mode one_question_per_page`（或 `traditional`）。
 
-### 展示配置请求、返回与回读
+### 展示配置请求与返回
 GET 与 PATCH 的 `data` 同形；带版本的请求也使用此结构：
 
 ```json
@@ -44,7 +46,7 @@ GET 与 PATCH 的 `data` 同形；带版本的请求也使用此结构：
 {"display_mode":"traditional"}
 ```
 
-`display_mode` 是字符串；不得在回复、日志或文档透出 SDK 内部数字枚举。写后独立 Get，读取已保存模式和新 `revision`。
+`display_mode` 是字符串；不得在回复、日志或文档透出 SDK 内部数字枚举。使用更新响应中的已保存模式和新 `revision`；响应缺失或用户明确要求时再 Get。
 
 ### 展示配置错误与重试
 | 情况 | 表现 | 处理 |
@@ -66,10 +68,12 @@ GET 与 PATCH 的 `data` 同形；带版本的请求也使用此结构：
 | `allow_modify_submission` | 允许或禁止修改已提交记录 |
 | `ai_voice_input` | 允许或禁止语音输入 |
 
+题目的日期输入范围约束答案值，`submission_period` 约束表单填写窗口，两者不能互代。
+
 关闭限制时只传该组启停参数，不得携带已停用组的时间、次数或周期。
 
 ### 填写有效期与 Base 时区
-`submission_period.timezone` 必须等于 Get 返回的 Base 时区，不得替换。空值表示 Base 未设时区：按 [Base 时区流程](../scenes/base.md#更新-base-时区)定目标，执行 `+base-update --time-zone <IANA 时区>`；重读后用相同时区开启有效期。
+`submission_period.timezone` 必须等于已取得的 Base 时区，不得替换。空值表示 Base 未设时区：按 [Base 时区流程](../scenes/base.md#更新-base-时区)定目标，执行 `+base-update --time-zone <IANA 时区>`；使用更新响应中的时区，缺失时再读取。
 时间格式与参数见 [Base 时区协议](base-commands.md#更新-base-时区)。
 
 ## 通知配置（+form-notifications-get / +form-notifications-update）

@@ -1,0 +1,12 @@
+/* 特效-文字镂空
+可见证据：粗边框内有细的留白线，字腔透明。
+复现顺序：深色宽描边 → 背景色细线分隔；保留透明字腔，不将背景伪装为填充。
+参数为 proposed 复现建议，原软件和精确参数未知。em 以目标字号为参照，正 x 向右、正 y 向下。
+建议范围：外缘 .055–.10em，分隔 .018–.04em；分隔色随承载面变更；复杂图片底优先改用对应遮罩。
+保留真实文字；描边和镂空的伪元素仅作装饰。换字同步 data-text，换底色同步 --fx-surface；为阴影和光晕预留外部净空。
+*/
+.特效_文字镂空{display:inline-block;--fx-line:#555;--fx-surface:#fff;--fx-outer:.085em;--fx-gap:.028em;
+position:relative;color:transparent;-webkit-text-stroke:var(--fx-outer) var(--fx-line);
+}
+.特效_文字镂空::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none;user-select:none;white-space:inherit;overflow-wrap:inherit;color:transparent;-webkit-text-stroke:var(--fx-gap) var(--fx-surface);
+}

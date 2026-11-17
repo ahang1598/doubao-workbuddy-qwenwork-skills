@@ -39,7 +39,7 @@ lark-cli drive +member-add --token "<base_token>" --type bitable --member-type o
 lark-cli drive +member-remove --token "<base_token>" --type bitable --member-type openchat --member-id "<chat_open_id>" --as user --yes
 ```
 
-增删后用 `drive +member-list` 回读。
+部分成功、结果未知、需要确认权限隔离或用户明确要求时，再用 `drive +member-list` 读取。
 
 ### Wiki 内 Base 的范围
 
@@ -47,4 +47,4 @@ lark-cli drive +member-remove --token "<base_token>" --type bitable --member-typ
 
 移除 Drive 授权可能撤销文档访问，不只解除角色；其他授权、群组或继承权限仍可能生效。
 
-参数和错误处理见 [Drive 成员列表](../../lark-drive/references/lark-drive-member-list.md)、[添加成员](../../lark-drive/references/lark-drive-member-add.md)、[移除成员](../../lark-drive/references/lark-drive-member-remove.md)。
+参数和错误处理以 lark-drive Skill 中 `drive +member-list`／`+member-add`／`+member-remove` 的说明为准。

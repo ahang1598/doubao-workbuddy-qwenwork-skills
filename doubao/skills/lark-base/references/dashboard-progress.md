@@ -83,7 +83,7 @@ lark-cli base +dashboard-block-create \
 {"viewModel":{"rules":{"formatInfo":{"formatName":"percentage_rounded","precision":1,"percentPrecision":1}}}}
 ```
 
-独立 `+dashboard-block-get` 回读 `data_config.viewModel.rules.formatInfo`，分别核对格式、数值精度与进度百分比精度，并核对 current／target 的来源与单位。保留返回 JSON 作为配置证据；需要实际显示效果时另验页面，配置成功不等于渲染已验证。日期模式不写这些数值格式字段。
+响应缺少 `data_config.viewModel.rules.formatInfo`、结果未知或用户明确要求核验时再 `+dashboard-block-get`。日期模式不写这些数值格式字段。
 
 ## 局部更新
 
@@ -113,7 +113,7 @@ lark-cli base +dashboard-block-create \
 
 ## 获取与返回结构
 
-用 +dashboard-block-get 读 data.block.data_config.progress；创建和更新的响应也返回回读结果。清空后省略 filter；相对日期不展开为固定日期；隐藏查询和固定值不返回。默认日期格式和筛选值可能被归一化，不一定与输入相同。这里只读配置，不算进度百分比。
+用 +dashboard-block-get 读 data.block.data_config.progress；创建和更新的响应也返回当前配置。清空后省略 filter；相对日期不展开为固定日期；隐藏查询和固定值不返回。默认日期格式和筛选值可能被归一化，不一定与输入相同。这里只读配置，不算进度百分比。
 
 ## 输入文件与校验选项
 

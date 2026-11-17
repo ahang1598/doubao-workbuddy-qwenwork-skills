@@ -1,7 +1,7 @@
 ---
 name: lark-calendar
 version: 1.0.0
-description: "飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。"
+description: "飞书日历：管理日历日程和会议室。查看/搜索日程、创建/更新/回复日程、管理参会人、查询忙闲和推荐时段、预定会议室。当用户需要查看日程安排、创建/修改会议、查询/预定会议室时使用。不负责：查询过去的视频会议记录（走 lark-meeting）、待办任务（走 lark-task）。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -25,7 +25,7 @@ metadata:
 | `+delete` | 删除日程；重复性日程/例外必须传 `--apply-to`（详见 [重复性日程操作规范](references/lark-calendar-recurring.md)） |
 | `+freebusy` | 查询主日历的忙闲/RSVP状态/空闲时间段。(**如需预约/推荐时间段**走 `+suggestion`——它综合工作时间、忙碌区间和休息时间推荐。) |
 | [`+room-find`](references/lark-calendar-room-find.md) | 针对一个或多个**明确的**时间块查找可用会议室（无明确时间时禁止直接调用，需先走 +suggestion） |
-| [`+rsvp`](references/lark-calendar-rsvp.md) | 回复日程（接受/拒绝/待定） |
+| [`+rsvp`](references/lark-calendar-rsvp.md) | 回复日程（接受/拒绝/待定）；按用户意图选择 `single`（仅此次）或 `all`（全部）；没有「此次及后续」范围，该意图也使用 `all` |
 | [`+join-event`](references/lark-calendar-join-event.md) | 凭分享 token 加入日程（分享链接/二维码/分享卡片/RSVP 卡片） |
 | [`+suggestion`](references/lark-calendar-suggestion.md) | 根据非明确时间或一段时间范围，推荐多个可用时间块方案 |
 | [`+transfer`](references/lark-calendar-transfer.md) | 把日程组织者转让给另一个用户或机器人；不可逆，需 `--yes` |
@@ -118,10 +118,11 @@ lark-cli calendar +freebusy --start 2026-03-11T09:00:00+08:00 --end 2026-03-11T1
 用法提示：
 - **`+freebusy` 只适用于查询忙碌/空闲时间段这一事实**。如果目标是"给会议**推荐**一个合适的时间段"（单人或多人），必须优先使用 [`+suggestion`](references/lark-calendar-suggestion.md)——它会综合**工作时间段、忙碌时间段、休息时间段**来推荐，`+freebusy` 只回答"哪些区间空着"，不判断该区间是否适合排会。
 - **多人公共空闲**：只想拿"哪些区间共同没被占"→ `--type common_free [--min-duration <dur>]`；想拿"推荐的会议时间段"→ 走 `+suggestion`。
+- **请假说明**：`+freebusy` 与 `+suggestion` 的 `data.timeoff_events` 列出当前用户可见的请假块（`user_id` / `start_time` / `end_time` / `summary` / `event_id`）。不要把合并后的 `busy` 区间整体当作请假，也不要根据其他日程标题自行推断请假。
 
 ## 前置条件路由
 
-> **先判断是否重复性日程**：若操作对象是重复性日程，必须先读 [重复性日程操作规范](references/lark-calendar-recurring.md)，并在用户未明确范围时先确认「仅此次/全部/此次及后续」（不要默认仅此次），再按下表进入具体操作流程。
+> **更新/删除先判断是否重复性日程**：若操作对象是重复性日程，必须先读 [重复性日程操作规范](references/lark-calendar-recurring.md)，并在用户未明确范围时先确认「仅此次/全部/此次及后续」（不要默认仅此次），再按下表进入具体操作流程。
 
 | 场景 | 前置要求 |
 |------|----------|
@@ -138,6 +139,7 @@ lark-cli calendar +freebusy --start 2026-03-11T09:00:00+08:00 --end 2026-03-11T1
 - **日程实例（Instance）**：重复性日程展开后的具体时间实例。「仅此次」操作时使用具体实例的 `event_id`；「全部」或「此次及后续」操作时需对原重复性日程操作（使用原日程 `event_id`），并按需处理例外。
 - **重复性日程例外（Exception）**：对重复性日程某次实例做过「仅此次」编辑后产生的独立日程（拥有独立 `event_id`）。删除/更新「全部」时必须同时处理例外，否则例外会残留。
 - **全天日程（All-day Event）**：只按日期占用、没有具体起止时刻的日程，结束日期是包含在日程时间内的。
+- **请假日程的历史忙闲行为**：`data.timeoff_events` 返回的可见请假块以 `summary` 描述实际请假范围（如「休假中（上午） / 0.5-Days Time off」），但日程起止时间及忙闲块可能仍覆盖整天，忙闲计算与时间推荐也按该占用范围处理。这是已知历史行为，遇到 `summary` 与时间范围不一致时无需视为异常。
 - **时间块 vs 时间范围**：时间块是具体确定的连续时间段（如 `14:00~15:00`），时间范围是泛指（如"今天下午"）。`+room-find` 必须基于确定时间块，不能基于模糊范围。
 - **会议室（Room）**："room"不是"房间"，是"会议室"。会议室是日程的一种参与人（resource attendee），不能脱离日程单独预定。面向用户的动作文案统一表述为"预订/预定会议室"，严禁缩写为"订房/订房间/订个房"等口语说法。
 - **日程会议 ID（Meeting ID）**：日程的历史视频会议 ID，在日程上开过视频会议才会有。
@@ -167,6 +169,7 @@ lark-cli calendar +freebusy --start 2026-03-11T09:00:00+08:00 --end 2026-03-11T1
 | 预约/改约日程、调整时间、添加/更换会议室、查会议室 | 先判断新建 vs 编辑，再进入 [schedule-meeting 工作流](references/lark-calendar-schedule-meeting.md) |
 | 仅编辑日程字段（标题/描述）或增删参会人（不涉及时间和会议室） | 先定位 `event_id`，再读 [+update](references/lark-calendar-update.md) 执行变更 |
 | 编辑/删除重复性日程（「改这个重复日程」「删掉后面的」「全部取消」等） | 先读 [重复性日程操作规范](references/lark-calendar-recurring.md)；`+update` / `+delete` 均通过 `--apply-to=single|all|this-and-following` 指定范围 |
+| 回复日程（「接受/拒绝/待定」「整个重复日程全部回复」等） | 读 [+rsvp](references/lark-calendar-rsvp.md)；范围不确定时直接使用 `--apply-to=all`，无需确认；「仅此次」→ `single`，「全部」→ `all`；因 RSVP 没有「此次及后续」范围，该意图也使用 `all` |
 | 转让日程组织者（「把这个日程交给 XX」「组织者改成 XX」「这个会转给我」） | 读 [+transfer](references/lark-calendar-transfer.md)；`--to-user-id` 传接收用户或机器人的 open_id |
 
 ## 任务类型分流

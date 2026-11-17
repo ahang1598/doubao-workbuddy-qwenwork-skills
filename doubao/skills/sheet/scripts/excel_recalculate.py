@@ -229,9 +229,16 @@ def main():
     args = parser.parse_args()
     result = recalculate(args.file, args.output, args.timeout)
     print(json.dumps(result, ensure_ascii=False))
+    if result["status"] == "skipped_no_libreoffice":
+        print("本机缺少 LibreOffice，本次公式重算未执行，源文件未修改。\n"
+              "缺少 LibreOffice 只限制本地重算与格式转换，保存、导入和交付仍按原契约执行。\n"
+              "后续步骤依赖计算值时，先用已有可用引擎取得可靠结果，否则说明该部分未完成；"
+              "不把未重算的缓存值当作新结果，也不得声称已完成重算。\n"
+              "不反复重跑，不因缺少引擎改用 HTML / 图片替代表格交付。", file=sys.stderr)
+        return 4
     if result["status"] != "recalculated":
         print("重算未完成，源文件未修改。按返回原因处理；没有可用引擎时说明无法取得计算值。", file=sys.stderr)
-        return 4 if result["status"] == "skipped_no_libreoffice" else 3
+        return 3
     return 0
 
 

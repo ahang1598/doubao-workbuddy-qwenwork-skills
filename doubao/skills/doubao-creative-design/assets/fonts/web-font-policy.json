@@ -1,0 +1,8 @@
+{
+  "allowed_sources": [
+    {
+      "hostname": "lf-flow-web-cdn.doubao.com",
+      "path_prefix": "/obj/flow-doubao/doubao/infinite-canvas/fonts/v1/"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 ## 目录
 
 - 新增记录（AddRecordAction）、更新记录（SetRecordAction）、查找记录（FindRecordAction）
+- 应用截图（AppScreenshotAction）
 - 发送消息（LarkMessageAction）、发送邮件（LarkEmailAction）、HTTP 请求（HTTPClientAction）
 - 延迟（Delay）、生成文本（GenerateAiTextAction）、分析数据（AIAnalysisAction）
 
@@ -24,7 +25,9 @@
 
 必填：`table_name`（目标数据表名）；`field_values`（RecordFieldValue[]）。
 
-可选：`max_set_record_num`（最大更新数，默认 100，范围 1-15000）；互斥的 `filter_info`（RecordFilterInfo）或 `ref_info`（RefInfo，引用前置步骤记录）。
+可选参数：`max_set_record_num`（最大更新数，默认 100，范围 1-15000）。
+
+必填定位：`filter_info`（RecordFilterInfo）与 `ref_info`（RefInfo，引用前置步骤记录）二选一，不得同时缺失或同时非空。
 
 按目标选一个完整 `data`。替换真实表名、字段和选项。按条件更新：
 
@@ -48,7 +51,9 @@
 
 必填：`table_name`（目标数据表名）；`field_names`（检索字段名列表，至少一个）。
 
-可选：`should_proceed_when_no_results`（无结果时是否继续后续步骤，默认 `true`）；互斥的 `filter_info`（RecordFilterInfo）或 `ref_info`（RefInfo）。
+可选参数：`should_proceed_when_no_results`（无结果时是否继续后续步骤，默认 `true`）。
+
+必填定位：`filter_info`（RecordFilterInfo）与 `ref_info`（RefInfo）二选一，不得同时缺失或同时非空；省略定位不表示读取全表。
 
 `ref_info.step_id` 必须来自目标表的有效前序记录步骤，不会沿关联字段自动跳表。跨表时，用 `filter_info` 按真实关联值或稳定业务键定位目标，并按业务要求检查 `recordNum`；取得目标表记录后，后续更新才能引用该查找步骤。
 
@@ -62,16 +67,37 @@
 
 输出：[节点输出](workflow-outputs.md#findrecordaction查找记录)。
 
+## 应用截图（AppScreenshotAction）
+
+必填 `app_name`（当前 Base 所在 Workspace 内可访问应用的准确名称）、`page_name`（该应用中可访问页面的准确名称）。名称来自用户或已有 `+workflow-get` 配置；目标不明确时先确认，查找失败核对名称、Workspace 和权限。
+
+```json
+{"app_name":"销售应用","page_name":"订单看板"}
+```
+
+图片输出见 [应用截图输出](workflow-outputs.md#appscreenshotaction应用截图)；消息与邮件的使用限制见 [图片与智能总结引用](workflow-message-email.md#图片与智能总结引用)。
+
 ## 发送消息（LarkMessageAction）
 
-必填：`receiver`（ValueInfo[]）；`send_to_everyone`（是否发给所有人，须与 `receiver` 分别核对，不得只检查指定对象）；`content`（TextRefItem[]）；`btn_list`（ButtonConfig[]，不需要时传 `[]`）。可选：`title`（TextRefItem[]）。
+### 参数与约束
 
-`ButtonConfig`：`text`（string 按钮文字）；`btn_action`（string：`addRecord` / `setRecord` / `openLink`）；`link`（ValueInfo[]，用于 `openLink`）；`table_name`（string，用于 `addRecord`）；`record_values`（RecordFieldValue[]，用于 `addRecord` / `setRecord`）。
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `receiver` | 是 | ValueInfo[] |
+| `send_to_everyone` | 是 | 是否发送给所有人；须与 `receiver` 分别核对，不能只检查指定接收对象而漏看此开关 |
+| `title` | 否 | TextRefItem[] 消息标题 |
+| `content` | 普通正文时必填 | 有序 text/ref 数组 |
+| `attachments` | 否 | 附件引用数组，见 [附件](workflow-message-email.md#附件) |
+| `btn_list` | 是 | 按钮列表，不需要时为空数组 |
+
+`ButtonConfig`：`text`（string 按钮文字）；`btn_action`（string：`addRecord` / `setRecord` / `openLink`）；`link`（ValueInfo[]，用于 `openLink`）；`table_name`（string，`addRecord` 必填，先查询真实表名）；`record_values`（RecordFieldValue[]，用于 `addRecord` / `setRecord`）。
+
+富文本、图片与智能总结引用、多记录展示、标题背景色及按钮扩展（样式、触发 Workflow、修改前序记录、防重复点击、互斥）见 [消息与邮件](workflow-message-email.md)。新建需要这些能力，或更新前 GET 中已有 `rich_text_content`、图片／多记录引用、`title_template_color`、按钮扩展字段时，先读对应章节并保留原配置。
 
 ### 接收人约束
 
 - 人员、群常量使用 [ValueInfo](workflow-values.md#基础值valueinfo) 的真实身份标识。查人员运行 `lark-cli contact +search-user`；查当前用户运行 `lark-cli contact +get-user`，不传 `--user-id`，读取 `.data.user.open_id`。
-- 动态人员接收人引用普通或系统人员字段；各执行路径见[人员字段引用](workflow-outputs.md#人员字段引用)。关联字段不能作为接收人，须取关联记录的人员字段。
+- 动态人员接收人须引用普通或系统人员字段，不得改用常量；各执行路径见[人员字段引用](workflow-outputs.md#人员字段引用)。关联字段不能作为接收人，须取关联记录的人员字段。
 - 不得用公式或查找引用字段作接收人：它们可能通过创建校验，但运行时不发送。
 - `receiver` 报 path 不存在时，按 `+field-list` 的字段 ID 修正 `ref` 路径。本轮新建的触发表没有该职责的人员字段时，先加 `{"type":"user"}` 字段并填值，不得改成当前用户的 open_id。
 
@@ -88,13 +114,30 @@
 
 ## 发送邮件（LarkEmailAction）
 
-发送飞书邮件；与 `LarkMessageAction` 同属普通 Action，可通过 `next` 串联工作流主链，也可作 AI Agent 工具。发件人由服务端按工作流创建者初始化，无切换发件人的 CLI 参数。
 
-data：`to` 为收件人数组，邮箱为 `{"value_type":"text","value":"name@example.com"}`，也支持已解析的 user/group 或合法 ref；`cc` / `bcc` 为抄送/密送，格式同 `to`；`subject` / `content` 为主题/纯文本正文，使用 text/ref 数组。
+发送飞书邮件，与 `LarkMessageAction` 同属普通 Action，可通过 `next` 串联到工作流主链，也可作为 AI Agent 工具。发件人由服务端按工作流创建者初始化，不提供切换发件人的 CLI 参数。
 
-`attachments` 为附件值数组，使用已确认的附件值或上游附件引用，不得填本地文件路径；`show_source` 为是否展示来源的布尔值。
+| data 字段 | 说明 |
+|---|---|
+| `to` | 收件人数组；邮箱使用 `{"value_type":"text","value":"name@example.com"}`；也支持已解析的 user/group 或合法 ref |
+| `cc` / `bcc` | 抄送 / 密送，格式同 `to` |
+| `subject` | 主题，text/ref 数组 |
+| `content` | 普通正文，有序 text/ref 数组 |
+| `attachments` | 附件引用数组，每项均为 `ref`；见 [附件](workflow-message-email.md#附件) |
+| `show_source` | **必填 boolean**，是否展示来源；必须显式传 `true` 或 `false`，不能省略或传字符串 |
 
-收件范围、附件类型、邮箱授权和额度由服务端校验。Agent 工具挂载和调用见[普通 Action 工具](workflow-ai-agent.md#普通-action-工具)。
+创建邮件节点时，用户未要求展示来源可显式使用 `show_source:false`；更新时保留完整 GET 中原有布尔值，除非用户要求修改。`--dry-run` 通过不代表服务端接受缺失的必填字段。最小邮件 `data` 示例（收件人须替换为实际解析结果）：
+
+```json
+{
+  "to": [{"value_type": "text", "value": "name@example.com"}],
+  "subject": [{"value_type": "text", "value": "业务通知"}],
+  "content": [{"value_type": "text", "value": "请查看本次通知。"}],
+  "show_source": false
+}
+```
+
+先解析实际收件人并完整配置主题和所选正文模式。富文本、图片与智能总结及附件见 [消息与邮件](workflow-message-email.md)；更新 GET 已含相关配置时先读对应章节并保留。收件范围、附件类型、邮箱授权和额度由服务端校验。作为 Agent 工具时，挂载和调用说明见 [普通 Action 工具](workflow-ai-agent.md#普通-action-工具)。
 
 ## HTTP 请求（HTTPClientAction）
 

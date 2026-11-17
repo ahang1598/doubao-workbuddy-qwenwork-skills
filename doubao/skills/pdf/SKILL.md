@@ -1,6 +1,8 @@
 ---
 name: pdf
 description: 用于处理所有 PDF 相关任务，包括读取、创建、编辑、转换、内容提取、页面处理、表单填写、扫描件解析、PDF转化word文件和PDF转化飞书云文档。用户提供、提及或要求生成 PDF 时使用。
+metadata:
+  version: v18
 ---
 
 # PDF Processing Guide
@@ -11,7 +13,6 @@ This guide covers essential PDF processing operations using bundled Python libra
 
 
 ## Rules
-- **Deliver generated files directly without validation or repair passes. Do not reopen outputs, render generated pages, compare source and output, run page-by-page review, invoke `qpdf --check`, or rewrite DOCX files through LibreOffice.** Even if the user specifies a word count, page count, or other special requirements, skip verification and deliver the result directly.
 - For editing scenarios (such as document translation or editing), prioritize modifying the original PDF copy.
 - Prefer PyMuPDF for existing-PDF operations. Use pypdf only for canonical AcroForm handling, encryption/repair edge cases, or operations PyMuPDF cannot perform reliably; use pdfplumber only as a table/edge-case fallback.
 - Use the bundled Python libraries and scripts for all default workflows. Do not invoke a system CLI when PyMuPDF, pypdf, pdfplumber, reportlab, or Pillow can perform the operation.

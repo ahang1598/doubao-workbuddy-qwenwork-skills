@@ -33,35 +33,38 @@ def _escape_md(value: str) -> str:
 
 
 def preview_rows(path: str, sheet: Optional[str], rows: int) -> dict:
-    workbook = load_workbook(path, read_only=True, data_only=True)
-    worksheet = workbook[sheet] if sheet else workbook.active
+    workbook = load_workbook(path, read_only=True, data_only=True, keep_links=False)
+    try:
+        worksheet = workbook[sheet] if sheet else workbook.active
 
-    preview: List[List[str]] = []
-    max_cols = 0
-    for row in worksheet.iter_rows(min_row=1, max_row=rows, values_only=True):
-        values = [_stringify(cell) for cell in row]
-        max_cols = max(max_cols, len(values))
-        preview.append(values)
+        preview: List[List[str]] = []
+        max_cols = 0
+        for row in worksheet.iter_rows(min_row=1, max_row=rows, values_only=True):
+            values = [_stringify(cell) for cell in row]
+            max_cols = max(max_cols, len(values))
+            preview.append(values)
 
-    column_letters = [get_column_letter(i + 1) for i in range(max_cols)]
-    non_empty_columns = []
-    for col_index in range(max_cols):
-        if any(r[col_index] if col_index < len(r) else "" for r in preview):
-            non_empty_columns.append(get_column_letter(col_index + 1))
+        column_letters = [get_column_letter(i + 1) for i in range(max_cols)]
+        non_empty_columns = []
+        for col_index in range(max_cols):
+            if any(r[col_index] if col_index < len(r) else "" for r in preview):
+                non_empty_columns.append(get_column_letter(col_index + 1))
 
-    return {
-        "sheet": worksheet.title,
-        "rows": [
-            {
-                "row_index": i + 1,
-                "values": r + [""] * (max_cols - len(r)),
-            }
-            for i, r in enumerate(preview)
-        ],
-        "max_columns": max_cols,
-        "column_letters": column_letters,
-        "non_empty_columns": non_empty_columns,
-    }
+        return {
+            "sheet": worksheet.title,
+            "rows": [
+                {
+                    "row_index": i + 1,
+                    "values": r + [""] * (max_cols - len(r)),
+                }
+                for i, r in enumerate(preview)
+            ],
+            "max_columns": max_cols,
+            "column_letters": column_letters,
+            "non_empty_columns": non_empty_columns,
+        }
+    finally:
+        workbook.close()
 
 
 def to_markdown(data: dict) -> str:

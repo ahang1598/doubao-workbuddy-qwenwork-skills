@@ -6,12 +6,11 @@
 
 ## 查询与修改
 
-以下示例展示读取、修改和回读的命令：
+现有状态影响决策或需要恢复原值时先读取，再修改；结果未知或用户明确要求核验时再读：
 
 ```bash
 lark-cli base +advperm-share-get --base-token "<base_token>" --as user
 lark-cli base +advperm-share-update --base-token "<base_token>" --enable-share=false --as user
-lark-cli base +advperm-share-get --base-token "<base_token>" --as user
 ```
 
 `--enable-share=true` 表示允许分享授权，`--enable-share=false` 表示禁止分享授权。

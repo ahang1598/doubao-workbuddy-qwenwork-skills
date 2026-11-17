@@ -25,14 +25,15 @@ lark-cli base +field-list \
 - 遇到空页、offset 未增长或第二次出现同一 offset，停止、报告读取不完整且不重复请求；穷尽分页前不得判定字段不存在。
 - 上述投影仅含身份和类型。查配置或选项时读取完整字段详情；`+field-list` 最多返回 50 个选项，完整值域用 `+field-search-options`。
 
-### 计算字段回读
+### 计算字段按需读取
 
 `+field-get` 返回字段定义；公式表达式是展示表达式，不含逐条记录的计算结果。用 `+record-list` 读取 Formula / Lookup 实际值；筛选、投影、限制和分页见[记录读取契约](record-read.md)。
-定义与实际值分别用于 [Formula / Lookup Scene 验收](../scenes/field-formula-lookup.md#回读验收)；定义不得替代计算结果。
+定义与实际值分别用于 [Formula / Lookup 按需核验](../scenes/field-formula-lookup.md#按需核验)；定义不得替代计算结果。
 
 ## 删除字段与主字段限制
 
 `+field-delete` 删除底层字段及已有值。主字段不可删除，服务端返回 `800080207`；不得反复删除主字段来修正初始 schema。
+主字段的允许类型与样式见[主字段类型约束](field-config.md#主字段类型)；修改类型或样式前核对目标定义，转换仍须遵守 [Field 决策](../scenes/field.md#字段类型变更规则)。
 表单题目移除不等于底层字段删除；参数和保留语义见[删除题目协议](form-questions.md#删除题目form-questions-delete)，授权范围见 [Form Scene](../scenes/form.md#移除题目与底层字段保护)。
 
 ## 计算字段阅读确认
@@ -85,8 +86,6 @@ lark-cli base +field-create --base-token "<base_token>" --table-id "<table_id>" 
 ### 返回重点
 
 - 单对象成功返回 `field`、`created:true`；数组成功返回 `fields`、`total`、`created:true`。
-- `field_get_recommended:false` 且 `next_step:"done"` 表示简单字段创建；`field_get_recommended:true` 或 `next_step:"field_get"` 表示回读，`verification_hint` 给出核验提示。
-- `field_get_recommended:false` 仅表示命令不要求额外 `+field-get`，不得替代[结构验收](../scenes/field.md#结构验收矩阵)。
 
 <a id="base-field-update"></a>
 
@@ -112,6 +111,7 @@ lark-cli base +field-create --base-token "<base_token>" --table-id "<table_id>" 
 ### JSON 值规范
 
 - 顶层必须直接传对象。`PUT` 是全量配置更新，不得只传片段；至少显式含 `name`、`type` 并补齐该类型关键配置。
+- 更新主字段的类型或样式时，目标定义必须符合[主字段类型约束](field-config.md#主字段类型)；整列为空或接受数据损失不能放宽支持范围。
 - 所有类型均可传纯文本或 Markdown 链接 `description`。要求默认值时传对应 CellValue `default_value`；传 `null` 清空，省略表示不修改。完整规则见 [field-config.md](field-config.md)。
 - `select` 选项形状、来源限制和存量值影响见[选项协议](field-options.md)；`link` 类型与方向限制见[关联字段](field-config.md#link-字段)；`auto_number` 规则和既有编号重算见[自动编号](field-config.md#auto_number-字段)。
 - 更新签字字段（`attachment` + `style.type:"signature"`）时必须写回 `style`；漏传会按 `plain` 转成普通附件并丢失签字配置。
@@ -126,7 +126,7 @@ lark-cli base +field-update --base-token "<base_token>" --table-id "<table_id>" 
 
 ### 返回重点
 
-- 返回 `field`、`updated:true`。它仅表示请求成功，不表示字段结构、已有记录值或下游能力已验证。命令不知道更新前类型，因此成功响应会要求执行 `+field-get`。
+- 返回 `field`、`updated:true`，保存该字段供后续步骤使用。类型转换结果不明确、结果异常或用户明确要求核验时执行 `+field-get`。
 - API 判定没有任何变更（no-op）时，命令如实返回该错误。响应类型不匹配或 no-op 按[更新结果异常](#更新结果异常)处理。
 
 ## 批量创建部分成功

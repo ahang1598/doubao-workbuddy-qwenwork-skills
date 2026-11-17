@@ -1,0 +1,103 @@
+#resume-03{position:relative;isolation:isolate;width:800px;height:1128px;margin-top:0px;margin-right:auto;margin-bottom:0px;margin-left:auto;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;font-weight:400;font-size:11.5px;line-height:1.18;font-synthesis-weight:none;font-synthesis-style:none;font-synthesis-small-caps:none;-webkit-font-smoothing:antialiased;min-height:1128px;display:grid;grid-template-columns:337px 302px;column-gap:45px;padding:103px 66px 40px 50px;align-items:start;}
+#resume-03, #resume-03 *{box-sizing:border-box;font-synthesis-weight:none;font-synthesis-style:none;font-synthesis-small-caps:none;}
+#resume-03 h1, #resume-03 h2, #resume-03 h3, #resume-03 p, #resume-03 ul{margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;}
+#resume-03 ul{padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;list-style-position:initial;list-style-type:none;}
+#resume-03 .paper-grain{position:absolute;top:0px;right:0px;bottom:0px;left:0px;width:100%;height:100%;z-index:-2;pointer-events:none;}
+#resume-03 .green-band{position:absolute;left:-50px;top:0px;width:800px;height:386px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;z-index:-1;}
+#resume-03 .serif, #resume-03 h1, #resume-03 h2, #resume-03 h3{font-weight:700;}
+#resume-03 h2{font-size:32px;line-height:36px;letter-spacing:-0.8px;}
+#resume-03 h3{font-size:18px;line-height:21px;letter-spacing:-0.25px;}
+#resume-03 .star{display:block;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;clip-path:polygon(50% 0px, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0px 50%, 35% 35%);}
+#resume-03 .topbar{position:absolute;left:20px;right:19px;top:21px;display:flex;align-items:center;justify-content:space-between;min-height:22px;}
+#resume-03 .brand{display:flex;row-gap:8px;column-gap:8px;align-items:center;font-weight:700;font-size:18px;line-height:22px;letter-spacing:-0.6px;}
+#resume-03 .brand .star{width:19px;height:22px;}
+#resume-03 .nav{display:flex;align-items:center;row-gap:33px;column-gap:33px;font-size:10px;line-height:16px;}
+#resume-03 .nav .active{font-weight:700;}
+#resume-03 .nav .touch{padding-top:3px;padding-right:13px;padding-bottom:3px;padding-left:13px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:30px;border-top-right-radius:30px;border-bottom-right-radius:30px;border-bottom-left-radius:30px;font-weight:700;font-size:8px;line-height:14px;margin-left:-4px;}
+#resume-03 .intro{position:relative;top:auto;left:auto;width:293px;z-index:3;margin-left:44px;}
+#resume-03 h1{font-size:64px;line-height:70px;letter-spacing:-2px;}
+#resume-03 h1 span{display:block;white-space-collapse:collapse;text-wrap-mode:nowrap;}
+#resume-03 .intro-copy{margin-top:12px;width:252px;font-size:11.5px;line-height:13.5px;letter-spacing:0.02px;}
+#resume-03 .contact-pill{display:flex;align-items:center;row-gap:27px;column-gap:27px;width:244px;min-height:34px;padding-top:7px;padding-right:17px;padding-bottom:7px;padding-left:17px;margin-top:25px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:28px;border-top-right-radius:28px;border-bottom-right-radius:28px;border-bottom-left-radius:28px;font-size:11.5px;line-height:18px;}
+#resume-03 .search{width:12px;height:12px;border-top-style:solid;border-top-width:1.6px;border-right-style:solid;border-right-width:1.6px;border-bottom-style:solid;border-bottom-width:1.6px;border-left-style:solid;border-left-width:1.6px;border-top-left-radius:50%;border-top-right-radius:50%;border-bottom-right-radius:50%;border-bottom-left-radius:50%;position:relative;flex-grow:0;flex-shrink:0;flex-basis:auto;}
+#resume-03 .search::after{content:"";position:absolute;width:6px;height:1.6px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;transform:rotate(47deg);right:-4px;bottom:-2px;}
+#resume-03 .portrait-window{position:absolute;left:37px;top:65px;width:221px;height:192px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;z-index:1;}
+#resume-03 .portrait-disc{position:absolute;left:63px;top:89px;width:140px;height:140px;border-top-left-radius:50%;border-top-right-radius:50%;border-bottom-right-radius:50%;border-bottom-left-radius:50%;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;z-index:2;}
+#resume-03 .ref-asset[data-asset-slot="portrait"]{position:absolute;left:68px;top:-10.6px;width:141px;height:267.6px;z-index:3;background-repeat:no-repeat;background-size:100% 100%;clip-path:polygon(0px 0px, 100% 0px, 100% 100%, 0px 100%, 0px 66.5%, 50.6% 66.5%, 50.6% 59.1%, 49.5% 56.3%, 46.5% 53.9%, 42% 52.4%, 36.8% 51.8%, 0px 51.8%);}
+#resume-03 .identity-chip{position:absolute;display:flex;align-items:center;justify-content:center;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:40px;border-top-right-radius:40px;border-bottom-right-radius:40px;border-bottom-left-radius:40px;font-size:11.5px;line-height:16px;z-index:5;}
+#resume-03 .birth{left:-13px;top:128px;width:152px;height:39px;border-top-left-radius:999px;border-top-right-radius:999px;border-bottom-right-radius:999px;border-bottom-left-radius:999px;z-index:7;}
+#resume-03 .birth sup{font-size:7px;position:relative;top:-2px;margin-right:3px;}
+#resume-03 .nationality{left:175px;top:200px;width:116px;height:39px;}
+#resume-03 .contact-card{position:relative;left:auto;top:auto;width:221px;min-height:109px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;padding-top:4px;padding-right:18px;padding-bottom:10px;padding-left:43px;z-index:6;margin-left:37px;margin-top:257px;}
+#resume-03 .contact-card h2{font-size:31px;line-height:36px;letter-spacing:-0.6px;margin-bottom:4px;}
+#resume-03 .contact-list{display:grid;row-gap:3px;column-gap:3px;font-size:11px;line-height:15px;}
+#resume-03 .contact-list li{display:grid;grid-template-columns:11px minmax(0px, 1fr);row-gap:6px;column-gap:6px;align-items:center;}
+#resume-03 .contact-list svg{width:10px;height:11px;}
+#resume-03 .outline-motif{position:absolute;left:438px;top:380px;z-index:0;-webkit-text-stroke-width:0.55px;font-weight:400;font-size:72px;line-height:66px;letter-spacing:-4.5px;pointer-events:none;}
+#resume-03 .outline-motif span{display:block;}
+#resume-03 .education{position:relative;left:auto;top:auto;width:293px;z-index:2;margin-left:44px;padding-top:28px;}
+#resume-03 .education h2{margin-bottom:20px;}
+#resume-03 .timeline{position:relative;}
+#resume-03 .timeline::before{content:"";position:absolute;left:-15px;top:10px;bottom:10px;width:1px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-03 .timeline-row{position:relative;display:grid;grid-template-columns:90px minmax(0px, 1fr);row-gap:10px;column-gap:10px;min-height:47px;}
+#resume-03 .timeline-row > .star{position:absolute;width:17px;height:19px;left:-23px;top:1px;}
+#resume-03 .year{font-weight:700;font-size:18px;line-height:21px;letter-spacing:-0.3px;white-space-collapse:collapse;text-wrap-mode:nowrap;}
+#resume-03 .item-title{font-size:12px;line-height:14px;font-weight:700;letter-spacing:0.03px;}
+#resume-03 .item-detail{font-size:10.7px;line-height:12px;font-weight:400;}
+#resume-03 .education .item-title{font-weight:400;font-size:12.5px;line-height:15px;}
+#resume-03 .technical{position:relative;left:auto;top:auto;width:302px;z-index:3;padding-top:142px;}
+#resume-03 .technical > h2{margin-bottom:8px;}
+#resume-03 .skill-columns{display:grid;grid-template-columns:minmax(0px, 1.15fr) minmax(0px, 1fr);row-gap:24px;column-gap:24px;}
+#resume-03 .technical h3{font-size:18px;line-height:24px;margin-bottom:10px;}
+#resume-03 .software-grid{display:grid;grid-template-columns:repeat(4, 24px);grid-auto-rows:24px;row-gap:5px;column-gap:5px;}
+#resume-03 .software-grid span{display:flex;align-items:center;justify-content:center;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:4px;border-bottom-left-radius:4px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;font-size:12px;font-weight:700;line-height:1;}
+#resume-03 .software-grid .figma{padding-top:5px;padding-right:7px;padding-bottom:5px;padding-left:7px;}
+#resume-03 .figma svg{display:block;width:10px;height:16px;}
+#resume-03 .coding p{font-size:10.5px;line-height:14px;margin-bottom:1px;}
+#resume-03 .code-grid{display:grid;grid-template-columns:minmax(0px, 1fr) minmax(0px, 1fr);row-gap:1px;column-gap:9px;font-size:10.5px;line-height:13px;}
+#resume-03 .skill-tags{display:flex;flex-wrap:wrap;row-gap:8px;column-gap:6px;margin-top:28px;width:280px;}
+#resume-03 .skill-tags::before{content:"";flex-basis:100%;height:0px;order:1;margin-top:-8px;}
+#resume-03 .skill-tags span:nth-child(n+3){order:2;}
+#resume-03 .skill-tags span{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:30px;border-top-right-radius:30px;border-bottom-right-radius:30px;border-bottom-left-radius:30px;padding-top:6px;padding-right:17px;padding-bottom:6px;padding-left:17px;font-size:10px;line-height:15px;white-space-collapse:collapse;text-wrap-mode:wrap;overflow-wrap:anywhere;max-width:100%;}
+#resume-03 .skill-tags span:nth-child(3){padding-left:19px;padding-right:19px;}
+#resume-03 .experience{position:relative;left:auto;top:auto;width:337px;min-height:298px;padding-top:15px;padding-right:20px;padding-bottom:22px;padding-left:44px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;z-index:4;margin-top:24px;}
+#resume-03 .experience h2{margin-bottom:12px;}
+#resume-03 .experience .timeline-row{grid-template-columns:47px minmax(0px, 1fr);row-gap:9px;column-gap:9px;min-height:48px;}
+#resume-03 .experience .timeline-row > .star{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-03 .experience .timeline::before{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-03 .experience .item-title{font-size:12px;line-height:14px;}
+#resume-03 .experience .item-detail{font-size:10.5px;line-height:11.5px;}
+#resume-03 .personality{display:flex;flex-wrap:wrap;row-gap:7px;column-gap:6px;margin-top:2px;width:254px;}
+#resume-03 .personality span{border-top-left-radius:30px;border-top-right-radius:30px;border-bottom-right-radius:30px;border-bottom-left-radius:30px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;padding-top:6px;padding-right:16px;padding-bottom:6px;padding-left:16px;font-size:10px;line-height:15px;white-space-collapse:collapse;text-wrap-mode:nowrap;}
+#resume-03 .personality span:nth-child(2){padding-left:19px;padding-right:19px;}
+#resume-03 .language{position:relative;left:auto;top:auto;width:298px;z-index:2;margin-top:40px;}
+#resume-03 .language h2{margin-bottom:16px;}
+#resume-03 .language-grid{display:grid;grid-template-columns:minmax(0px, 0.85fr) minmax(0px, 0.98fr) minmax(0px, 1.25fr);row-gap:13px;column-gap:13px;}
+#resume-03 .language-grid h3{font-size:17px;line-height:21px;letter-spacing:-0.5px;}
+#resume-03 .language-grid p{font-size:10.8px;line-height:15px;margin-top:2px;}
+#resume-03 .activities{position:relative;left:auto;top:auto;width:293px;z-index:2;margin-left:44px;margin-top:24px;}
+#resume-03 .activities h2{margin-bottom:10px;}
+#resume-03 .activities .timeline-row{grid-template-columns:47px minmax(0px, 1fr);row-gap:9px;column-gap:9px;min-height:44px;}
+#resume-03 .activities .timeline::before{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;bottom:24px;}
+#resume-03 .activities .item-detail{font-size:11px;line-height:13px;}
+#resume-03 .hobbies{position:relative;left:auto;top:auto;width:302px;z-index:2;margin-top:42px;}
+#resume-03 .hobbies h2{margin-bottom:13px;white-space-collapse:collapse;text-wrap-mode:nowrap;letter-spacing:-1px;}
+#resume-03 .hobby-grid{display:grid;grid-template-columns:repeat(4, minmax(0px, 1fr));row-gap:9px;column-gap:9px;}
+#resume-03 .hobby{text-align:center;font-size:10.5px;line-height:13px;}
+#resume-03 .hobby svg{display:block;width:39px;height:39px;margin-top:0px;margin-right:auto;margin-bottom:1px;margin-left:auto;}
+#resume-03 .hobby p{white-space-collapse:collapse;text-wrap-mode:nowrap;}
+body{margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-03{color:var(--resume-ink,#222);background-color:var(--resume-paper,#fafafa);font-family:Arial,"PingFang SC",sans-serif;}
+#resume-03 .green-band{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .portrait-window{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .portrait-disc{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .contact-card{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .experience{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .contact-pill{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .identity-chip{background-color:var(--resume-surface,#e5e6e7);}
+#resume-03 .brand .star{visibility:hidden;}
+#resume-03 .timeline-row>.star{visibility:hidden;}
+#resume-03 .search{visibility:hidden;}
+#resume-03 .profile-stage{grid-column:1 / -1;display:grid;grid-template-columns:337px 302px;column-gap:45px;min-height:318px;position:relative;padding-bottom:28px;}
+#resume-03 .portrait-stage{position:relative;min-height:290px;}
+#resume-03 .content-left{position:relative;}

@@ -40,7 +40,7 @@ lark-cli base +dashboard-get --as user \
   --base-token '<base_token>' --dashboard-id '<dashboard_id>'
 ```
 
-写入后独立 Get，核对返回的主题配置与所选 canonical 值一致（字段路径以实际返回为准）；不凭创建成功、标题或组件颜色宣称主题已生效。
+响应缺少主题字段、结果未知或用户明确要求核验时再 Get。
 
 ## 调用参数与创建示例
 

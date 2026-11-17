@@ -46,7 +46,7 @@
 
 **先自报身份**：按训练来源，你属于哪一家？`Claude` / `Gemini` / `GPT` / `GLM` / `Doubao 或 Seed` / `Other`。身份决定 SVG / DSL 分流（不同家族对这两种表达语言的能力不均衡），不要跳过这一步。
 
-**然后按当前产物类型 / 图表类型 × 身份选路径**，读对应文件按其完整 workflow 执行（含读 scene 指南、生成内容、渲染审查、交付）：
+**然后按当前产物类型 / 图表类型 × 身份选路径**，读对应文件按其完整 workflow 执行（含读 scene 指南、生成内容、格式转换、交付）：
 
 当前产物路由按上到下匹配, 命中即停:
 
@@ -58,10 +58,7 @@
 | 其他图表               | `Claude` / `Gemini` / `GPT` / `GLM` / `Doubao` / `Seed`  | [`../routes/svg.md`](../routes/svg.md)         |
 | 其他图表               | `Other`                             | [`../routes/dsl.md`](../routes/dsl.md)         |
 
-> **⚠️ SVG 路径失败回退**：走 `routes/svg.md` 时，碰到以下情况之一 → **丢弃当前 SVG，改读 `routes/dsl.md` 从零重画，不要逐行修补**：
-> - 渲染命令直接报错（语法级崩溃，不是 `--check` 的 warn/error）
-> - 两轮改写仍无法消除 `--check` 的 `text-overflow` error
-> - 目测 PNG 视觉严重错乱（文字大面积溢出、元素重叠压住关键信息、布局整体崩溃）
+> **⚠️ SVG 路径失败回退**：走 `routes/svg.md` 时，若格式转换命令直接报错（语法级崩溃）→ **丢弃当前 SVG，改读 `routes/dsl.md` 从零重画，不要逐行修补**。
 >
 > SVG 源码修补常常引入新 bug，换 DSL 从零重画往往更稳。这是 SVG 路径自由发挥的硬兜底，不要侵入 `routes/svg.md` 的创作流程。
 
@@ -76,7 +73,6 @@ diagram.svg           ← SVG 源码（SVG 路径）
 diagram.mmd           ← Mermaid 源码（Mermaid 路径）
 diagram.json          ← DSL 源文件（DSL 路径） / OpenAPI JSON（SVG 路径从 diagram.svg 导出）
 diagram.gen.cjs       ← 坐标计算脚本（仅 DSL 脚本构建方式）
-diagram.png           ← 渲染结果
 ```
 
 ### 写入画板

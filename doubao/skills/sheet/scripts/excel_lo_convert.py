@@ -381,7 +381,13 @@ HINTS = {
     "timeout": "转换超时；不要加长超时反复重跑，也不要 pkill -f soffice（会杀掉执行这条命令的 shell）。",
     "convert_failed": "确认输入文件能被打开、目标格式写法正确（如 pdf / png / xlsx / csv）后再试。",
     "invalid_input": "检查输入路径、--outdir 与 --sheet（子表名要与工作簿里的完全一致）。",
-    "skipped_no_libreoffice": "本机没有 LibreOffice，转换不可用。",
+    "skipped_no_libreoffice": ("本机缺少 LibreOffice，本次格式转换未执行，不反复重跑。\n"
+                               "若只是自行增加的可选预览，跳过该分支，不安装引擎，"
+                               "不另建 HTML 镜像或浏览器截图链路；已知具体异常仍按受影响范围处理。\n"
+                               "缺少 LibreOffice 只限制本地重算与格式转换，保存、导入和交付仍按原契约执行。\n"
+                               "用户要求的目标格式或预览未生成时，使用已有可用工具完成，"
+                               "否则说明该项未完成；后续步骤依赖转换或重算结果时，不得把未执行当成功。"
+                               "不因缺少引擎改用 HTML / 图片替代表格交付。"),
 }
 
 

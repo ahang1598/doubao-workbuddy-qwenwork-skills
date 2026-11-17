@@ -51,7 +51,7 @@ lark-cli base +dashboard-block-update \
   --data-config '{"viewModel":{"chartKind":1069828,"rules":{"series":{"all":{"interpolate":"monotone"}}}}}'
 ```
 
-更新前 Get 确认当前大类；更新后独立 Get 核对 `data_config.viewModel.chartKind` 及已保存规则。`--dry-run` 不写入；退出码为 0 不能代替字段回读与渲染确认。
+更新前 Get 确认当前大类；响应缺少 `data_config.viewModel.chartKind`、结果未知或用户明确要求时再 Get。
 
 ## 创建与更新规则
 
@@ -59,7 +59,7 @@ lark-cli base +dashboard-block-update \
 
 - 指标卡旧 `number_format` 与原生 `viewModel.rules.statistics.formatInfo` 不能混用。
 - 公共范围为主题、绘图区、图例、标签、系列、坐标轴及组件专用样式子集；不支持 Tooltip、Annotation。
-- Get 只回读已保存的公开样式覆盖，省略默认 seed 和内部状态，不是主题合成后的完整有效样式。
+- Get 只返回已保存的公开样式覆盖，省略默认 seed 和内部状态，不是主题合成后的完整有效样式。
 - `+dashboard-block-get` 对单源和多源组件都可返回 `series_descriptors`（含单源组合图按分组选项拆分的系列），无需额外参数，不要为此先改成多源，也不按数据源数量推断能否查询。每项的 Web 稳定系列 `key` 和可配置的 `storage_paths` 是定向修改的依据。以本次响应为准：字段缺失、为空或不含目标系列，不代表目标不存在或修改成功。查询只读；数据源、指标或分组变化后重新 Get，不沿用旧 key。
 
 ## 可复制模板
@@ -87,7 +87,7 @@ lark-cli base +dashboard-block-update --as user \
   --data-config '{"viewModel":{"rules":{"plotArea":{"backgroundOpacity":0.9,"backgroundBlur":0.2}}}}'
 ```
 
-更新后独立 Get，核对 `data_config.viewModel.rules.plotArea.backgroundOpacity` 为 `0.9`、`backgroundBlur` 为 `0.2`；有 Web 验证条件时再确认界面显示 90% 与 20%。仅收到更新成功或回读到 `20`，都不能报告“模糊度 20% 已生效”；未验证渲染时说明仅完成配置回读。
+响应缺少 `data_config.viewModel.rules.plotArea`、结果未知或用户明确要求时再 Get。
 
 ### 图例与数值标签
 
@@ -115,7 +115,7 @@ lark-cli base +dashboard-block-update \
 
 不要使用单层 `rules.legend.visible`、`legend.show/isShow/enabled`、顶层 `showLegend/showDataLabel` 或 `series[].label`。缺省字段、`legend:{}` 或 `legend:null` 都不等于关闭：空对象不清空，`null` 清除覆盖后也不能断言已隐藏。
 
-执行后独立 Get 核对这两个完整路径及布尔值；字段缺失时不能凭“多系列默认显示图例”宣称已显式开启。已知路径被拒绝或提交值未体现在回读中时，先核对组件适用类型和具体错误，报告未验证项，不循环枚举字段名或靠 `--no-validate` 试探。以上补丁不改指标、维度、组合图形态或系列配色；其他图表的专用标签用各自规则，不套用 XY 标签节点。
+响应缺少目标路径及布尔值、结果未知或用户明确要求时再 Get。已知路径被拒绝时，核对组件适用类型和具体错误，不循环枚举字段名或靠 `--no-validate` 试探。以上补丁不改指标、维度、组合图形态或系列配色；其他图表的专用标签用各自规则，不套用 XY 标签节点。
 
 ### 组件字体颜色与字号
 
@@ -160,7 +160,7 @@ C／S 只是普通字体面板入口，不代表所有文字自动继承；整�
 
 Web 的整体字体操作还会更新已保存的逐系列 `dataLabel` 覆盖，否则已有单系列颜色／字号可能盖住全系列设置。先 Get 查看公开的 `series.rules`，用 `series_descriptors` 的身份和可写路径定位，只给已覆盖该属性的 `dataLabel.color` 或 `dataLabel.fontSize` 同步目标值；不生成不存在的系列覆盖，不改 `spec.fill/stroke/size`。无法公开定位的目标报告未验证，不猜 key。
 
-`theme.override.legends.discreteLegend.labelStyle` 或组件专用文字覆盖也要对照回读检查；若覆盖了本次要改的颜色／字号，只改相同文字属性，保留背景、透明度、字重和显隐，不用整节点 `null` 清掉无关样式。
+`theme.override.legends.discreteLegend.labelStyle` 或组件专用文字覆盖也要在写前读取结果中检查；若覆盖了本次要改的颜色／字号，只改相同文字属性，保留背景、透明度、字重和显隐，不用整节点 `null` 清掉无关样式。
 
 ##### XY 示例：深灰色、14px，不动标题和折线颜色
 
@@ -196,11 +196,11 @@ NPS 只改文字颜色，不提交不存在的字号字段：
 {"viewModel":{"rules":{"nps":{"font":{"color":"#FF0000"}}}}}
 ```
 
-##### 执行与验收
+##### 执行与结果边界
 
 更新时只提交适用的纯样式补丁，省略数据源、指标、维度、图表子形态、标题和未要求的样式。
 
-独立 Get 核对本次写入的全部属性，并确认图形配色、标题及显隐未变。面板值、逐位置渲染规则和 Web 实际显示是不同证据：`theme.fontColor` 或 S 回读成功不等于整组件生效，接口成功也不能证明未开放的字号已支持。没有 Web 渲染证据时说明“配置已回读，渲染待验”，不宣称视觉验收通过。目标属性缺失或被拒绝时停止并报告，不用加标题样式、改图形颜色或盲猜字段代替。
+目标属性被拒绝或响应不明确时停止并报告，不用加标题样式、改图形颜色或盲猜字段代替。
 
 ### 其他样式
 
@@ -236,18 +236,16 @@ lark-cli base +dashboard-block-update --as user \
   --base-token '<BASE_TOKEN>' --dashboard-id '<DASHBOARD_ID>' --block-id '<BLOCK_ID>' \
   --data-config '{"overrideViewModel":{"cartesian":{"combo":{"detail":{"<GET返回的销售额key>":"column","<GET返回的预算额key>":"line"}}}}}'
 
-lark-cli base +dashboard-block-get --as user \
-  --base-token '<BASE_TOKEN>' --dashboard-id '<DASHBOARD_ID>' --block-id '<BLOCK_ID>'
 ```
 
-两项都显式配置，不依赖 `baseType` 推断销售额为柱；只要求改一个系列时只提交那个 key，保留其他覆盖和默认形态。回读核对每个目标 `combo.detail.<key>` 的字符串值；计算数值正确或 Update 成功不等于形态已验证。已知路径被拒绝、目标 key 未返回或回读不一致时报告具体阻塞，不枚举对象／数字等写法试探，不创建辅助表或切换数据源绕过。
+两项都显式配置，不依赖 `baseType` 推断销售额为柱；只要求改一个系列时只提交那个 key，保留其他覆盖和默认形态。响应缺少目标 `combo.detail.<key>`、结果未知或用户明确要求时再 Get。已知路径被拒绝或目标 key 未返回时报告具体阻塞，不枚举对象／数字等写法试探，不创建辅助表或切换数据源绕过。
 
 例如“订单阶段为横轴，按产品线分组，基础版折线、专业版柱、企业版折线”，保留原单源组件，依次：
 
 1. 确认横轴为订单阶段、系列分组为产品线；需要改数据配置时先完成该更新，“分组请求成功”不等于组合图分组映射正确。
 2. 重新 Get，从 `series_descriptors` 逐一定位基础版、专业版、企业版；不得用旧分组的 key 或按来源拆分的系列冒充分组选项。
 3. 按各项返回的可写路径分别设置 `line/column/line`，不改其他系列、数据源、名称和布局。
-4. 独立 Get 核对横轴、组合图分组字段／选项及三个系列的形态；仅有 `baseType:line`、更新成功或计算结果有三组数值，不能证明逐选项形态已完成。
+4. 响应缺少横轴、组合图分组字段／选项或三个系列形态，结果未知或用户明确要求时再独立 Get。
 
 `source_id`、字段 ID、选项 ID 和显示名称都不能直接当系列 key，不得据此拼接 `dmk-*`，也不用数组下标。`series_descriptors` 缺失、为空、目标身份不明确或缺少所需可写路径时，停止定向写入，保留组件并报告具体缺失项；不靠 `--no-validate`、删图重建、复制源表、增加辅助字段、单源改多源或统一默认形态绕过。默认形态和全系列样式仍可设置，但不能据此声称指定系列已分别设置成功。
 

@@ -23,12 +23,7 @@ Step 2: 生成完整 DSL（含颜色）
     2. 将脚本保存为 diagram.gen.cjs（必须 .cjs 后缀，脚本用 require() 写，.js 在 ESM 项目下会崩），执行 node diagram.gen.cjs 产出 diagram.json
     3. 用产出的 diagram.json 进入 Step 3
 
-Step 3: 渲染 & 审查 → 交付
-  - 渲染前自查（见下方检查清单）
-  - 渲染 PNG（仅用于预览验证，不是最终产物）：npx -y @larksuite/whiteboard-cli@^0.2.13 -i diagram.json -o diagram.png
-  - 检查：信息完整？布局合理？配色协调？文字无截断？连线无交叉？
-  - 有问题 → 按症状表修复 → 重新渲染（最多 2 轮）
-  - 2 轮后仍有严重问题 → 考虑走 Mermaid 路径兜底
+Step 3: 写入画板 & 交付
   - 写入画板：用 whiteboard-cli 将 diagram.json 转换为 OpenAPI 格式并 pipe 给 +update：
       npx -y @larksuite/whiteboard-cli@^0.2.13 -i diagram.json --to openapi --format json \
         | lark-cli whiteboard +update --whiteboard-token <board_token> \
@@ -80,15 +75,6 @@ Step 3: 渲染 & 审查 → 交付
 |---|---|
 | @用户提及 | [`../scenes/mention.md`](../scenes/mention.md) |
 | 图片 / 配图 | [`../scenes/photo-showcase.md`](../scenes/photo-showcase.md) |
-
-## 渲染前自查
-
-- [ ] 不同分组用了不同颜色？同组节点样式完全一致？
-- [ ] 外层浅色背景、内层白色节点？
-- [ ] 所有节点有边框（borderWidth=2）？文字在背景上清晰可读？
-- [ ] 连线用灰色（#BBBFC4），不用彩色？
-- [ ] frame 都写了 layout 属性？gap 和 padding 都显式设置了？
-- [ ] 含文字节点 height 用 fit-content？connector 在顶层 nodes 数组？
 
 ## 症状→修复表
 

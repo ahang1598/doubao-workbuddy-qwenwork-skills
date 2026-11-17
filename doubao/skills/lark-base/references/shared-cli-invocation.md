@@ -1,6 +1,6 @@
 # Base 命令调用与恢复约定
 
-本页维护命令确认、输入输出与技术错误处理；授权、完成态、同因恢复预算见[主入口](../SKILL.md)，目标决策与业务验收见对应 Scene。
+本页维护命令确认、输入输出与技术错误处理；授权、完成态、同因恢复预算见[主入口](../SKILL.md)，目标决策与业务完成条件见对应 Scene。
 ## 命令确认
 
 命令或参数不确定时，读取精确子命令 `--help`，确认 Usage 指向该命令；父级帮助退出 0 不证明子命令存在。复用本环境已确认且仍有效的参数信息，不反复探测。
@@ -9,7 +9,7 @@
 ## 参数与输出
 
 Base、表、字段、选项、ID 必须来自本次任务的可信返回；未确认目标时先按 [Base Token 与 ID 解析](../SKILL.md#base-定位与读取)定位。
-裸字符串 flag（如 `--description`）传真实换行：`$'第一行\n第二行'`；`'...'`、`"..."` 中的 `\n` 会原样落库。JSON 参数（如 `--json`、`--questions`）必须传 `\n` 转义，传真实换行会解析失败。写后回读；出现字面 `\n` 即失败并重写。
+裸字符串 flag（如 `--description`）传真实换行：`$'第一行\n第二行'`；`'...'`、`"..."` 中的 `\n` 会原样落库。JSON 参数（如 `--json`、`--questions`）必须传 `\n` 转义，传真实换行会解析失败。提交前按参数类型构造；出现字面 `\n` 的实际证据时再修正。
 ### 响应解析
 
 分别保留 stdout、stderr、退出码，不用 2>&1 混入 JSON。普通 JSON 响应先确认退出成功且 ok=true；--jq 等投影结果按表达式解析，不要求原信封。Record NDJSON 按[读取协议](record-read.md#解析返回与完整分页)检查 manifest 与完整分页。
@@ -38,7 +38,7 @@ Base、表、字段、选项、ID 必须来自本次任务的可信返回；未�
 
 ### 命令写法速查
 
-只替换以下成功写法中的 ID 和值；表外命令先查精确子命令 --help。+record-batch-create、+view-create 均以 lark-cli base 开头，带 --base-token "$BASE_TOKEN" --table-id "$TABLE_ID" 与 --as user。
+只替换以下成功写法中的 ID 和值；语法或版本不确定、调用返回未知命令或 flag 时再查精确子命令 `--help`。+record-batch-create、+view-create 均以 lark-cli base 开头，带 --base-token "$BASE_TOKEN" --table-id "$TABLE_ID" 与 --as user。
 
 | 命令 | 写法、限制与判定 |
 |---|---|
@@ -52,16 +52,16 @@ Base、表、字段、选项、ID 必须来自本次任务的可信返回；未�
 | batch-create not_found | 触发：字段名不存在、单选／多选选项不存在、人员 ID 不存在、table_id 不存在；不触发：关联记录 ID 错误、数字写成字符串、日期只到天。 |
 | +record-batch-update | --json '{"update_records":{"recxxx":{"状态":["完成"]}}}' |
 | +table-create / +base-create --fields | 每项 {"name","type"}，可选 style/options/link_table；无 property/formatter/default_value/date；双向关联必带 bidirectional_link_field_name；select 的 options 每项写 {"name":"选项"}，写成字符串数组会被拒。+table-create 必带 --name 和非空 --fields；--table-name 只属 +base-create。模板见[字段 JSON 模板](table-commands.md#字段-json-模板)。 |
-| +field-create | 只有 --json，一律传数组 '[{...}]'，单字段也包数组；无 --name/--type。formula、lookup 必带 --i-have-read-guide；formula 用 expression 且不收 style；lookup 必带 where。金额、价格的 number 字段带 currency 样式，电话的 text 字段带 phone 样式，见[字段选型](../scenes/field.md)；formula 带 style 报 Unrecognized key(s) in object: 'style'。返回结构与取 ID 见上方返回键速查。示例见[创建字段](field-commands.md#调用示例)。 |
+| +field-create | 只有 --json，一律传数组 '[{...}]'，单字段也包数组；无 --name/--type。formula、lookup 必带 --i-have-read-guide；formula 用 expression 且不收 style；lookup 必带 where。类型与样式按[字段选型](../scenes/field.md)，表单题按 Form Scene；formula 带 style 报 Unrecognized key(s) in object: 'style'。返回结构与取 ID 见上方返回键速查。示例见[创建字段](field-commands.md#调用示例)。 |
 | +field-update | --field-id --yes --json；JSON 是完整字段定义（覆盖写），必带 name 和 type，只传 style、options 或 multiple 会报 Invalid discriminator value；无 --name。 |
 | +view-create | --json `'{"name":"<视图名>","type":"kanban"}'`；type=grid/kanban/gallery/calendar/gantt；无 --name/--type，键不是 view_name/view_type。 |
 | +view-set-sort/-group/-visible-fields/-timebar | --table-id --view-id 加 --json，依次为 {"sort_config":[{"field":"金额","desc":true}]}、{"group_config":[{"field":"状态","desc":false}]}、{"visible_fields":["标题","状态"]}。 |
 | +view-set-filter | --json '{"logic":"and","conditions":[["状态","intersects",["进行中"]]]}'，不包 filter_config 外层。条件写法见[视图筛选](view-filter.md)。 |
 | timebar JSON | {"start_time":"开始日期","end_time":"结束日期","title":"标题"}；三项必填，起止只能是日期字段或创建时间。 |
-| +form-create | --table-id --name `"<表单名>"`，无 --json；创建前 +view-list 查同名 form。 |
+| +form-create | --table-id --name `"<表单名>"`，无 --json；创建前 +view-list 查同名 form。建好后先配完这一份再建别的对象：+form-questions-list 取得完整题目 → +form-questions-update 把有效提交缺不得的输入设必填（备注、补充说明选填）→ +view-set-visible-fields --view-id <form_id> --json '{"visible_fields":["fldC","fldA","fldB"]}' 按填写顺序提交全部题目（平台默认题序不能沿用，整表备注、补充说明放最后）；多份表单逐份执行，细则见 [Form 开工必读](../scenes/form.md#开工必读)。 |
 | +form-share-update | 必带 --table-id --form-id。每次只带一个设置项，分条依次调用 --enabled=true、--access-scope tenant（invite/tenant/anyone）、--require-login=true；布尔用等号；无 --shared/--json。见[分享设置示例](form-share.md#分享设置示例)。 |
-| +form-questions-* | 均必带 --table-id --form-id；新表单含全部可用字段。更新：+form-questions-update --questions '[{"id":"fldX","title":"...","required":true}]'，无 --question-id。 |
-| 删除表单题 | +form-questions-delete --question-ids '["fldX"]' --keep-field --yes，≤10 个。公式／查找／自动编号字段不能新加为题目；`+form-questions-list` 已列出的照常按 id 删除。 |
+| +form-questions-* | 均必带 --table-id --form-id；新表单含全部可用字段。更新：+form-questions-update --questions '[{"id":"fldX","title":"...","required":true}]'，无 --question-id；全量覆盖不是 patch，省略的 description、visible_rule 会被清空，先 +form-questions-list 读完整配置并带回要保留的属性，见[全量覆盖与更新基线](form-questions.md#全量覆盖与更新基线)；它不改题序，题序用 +view-set-visible-fields --view-id <form_id>。 |
+| 删除表单题 | +form-questions-delete --question-ids '["fldX"]' --keep-field --yes，≤10 个；`+form-questions-list` 已列出的题目按 id 删除。新加或复用题目的支持范围以[题目协议](form-questions.md#创建请求与支持类型)为准。 |
 | +dashboard-create | --base-token --name，可选 --theme-style；取 ID：--jq '.data.dashboard.dashboard_id'。同名再建报 API error [1]；创建报错或取到 null 时先 +dashboard-list 查是否已建，不重建。 |
 | +dashboard-block-create | 必带 --dashboard-id。先按[Dashboard 开工必读](../scenes/dashboard.md#开工必读)写范围、粒度、指标、排序；调用 --name --type --data-config '{...}' --position '{"x":<x>,"y":<y>,"w":<w>,"h":<h>}'（坐标按视觉规范的组件清单和尺寸表定）--jq '.data.block.block_id'。 |
 | dashboard create 配置 | 表名放 data_config.table_name；无 --table-id/--json。data_config 形态见[常用形态示例](dashboard-chart-config.md#常用形态示例)。 |

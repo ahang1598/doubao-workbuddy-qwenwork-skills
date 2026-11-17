@@ -1,6 +1,6 @@
 # 数据表生命周期命令
 
-本页维护数据表的查询、创建、重命名、删除和复制命令、输入与返回结构，以及异步复制的恢复方式。任务选择、建表决策和业务验收见 [Table Scene](../scenes/table.md)；从本页进入时也须完成其适用前置与验收。
+本页维护数据表的查询、创建、重命名、删除和复制命令、输入与返回结构，以及异步复制的恢复方式。任务选择、建表决策和业务完成条件见 [Table Scene](../scenes/table.md)；从本页进入时也须完成其适用前置。
 
 ## 管理数据表
 
@@ -20,11 +20,13 @@
 
 ## 创建时的初始字段
 
-字段数组先按 [Field 决策](../scenes/field.md#字段决策) 选型；含派生结果时进入 [Formula / Lookup](../scenes/field-formula-lookup.md#计算决策)，批量创建不改变字段验收入口。
+字段数组先按 [Field 决策](../scenes/field.md#字段决策) 选型；含派生结果时进入 [Formula / Lookup](../scenes/field-formula-lookup.md#计算决策)，批量创建不跳过字段选型和依赖处理。
 
-`+table-create` 的 `--fields` 是必填的非空字段 JSON 数组，元素复用 [字段创建协议](field-commands.md#创建字段field-create) 和 [字段定义 JSON 契约](field-config.md) 的对象结构；第一个元素成为主字段。当前 CLI 会拒绝省略、空白、空数组或非对象元素；`--fields` 不接受单个字段对象，也不额外套 `fields` 外层对象。
+`+table-create` 的 `--fields` 是必填的非空字段 JSON 数组，元素复用 [字段创建协议](field-commands.md#创建字段field-create) 和 [字段定义 JSON 契约](field-config.md) 的对象结构；第一个元素成为主字段，类型与样式必须符合[主字段类型约束](field-config.md#主字段类型)。当前 CLI 会拒绝省略、空白、空数组或非对象元素；`--fields` 不接受单个字段对象，也不额外套 `fields` 外层对象。
 
 通过允许默认 schema 的 Base 创建路径，平台可能生成带 `文本`、`单选`、`日期`、`附件` 占位字段的初始表；不能依赖默认结构代替目标 schema，也不能在 `+table-create` 中传空字段获取默认表。主字段的删除限制见 [字段删除协议](field-commands.md#删除字段与主字段限制)，业务主字段选择见 [Table 建表决策](../scenes/table.md#记录粒度与初始结构)。
+
+需要公式主字段时，初始 `--fields` 先放文本主字段；建表并准备依赖后，按 [Field 转换规则](../scenes/field.md#字段类型变更规则)用 `+field-update` 将该主字段改为 `formula`，遵守阅读确认、完整定义与存量保护。普通公式、查找字段建表后用 `+field-create` 新增，不会替换主字段。
 
 若 [Form Scene](../scenes/form.md#专用收集表与业务表) 已确定使用仅承接表单结果的新表，可采用下列初始字段；是否需要创建人字段由 Scene 的身份决策确定：
 
@@ -41,7 +43,7 @@
 
 ## 字段 JSON 模板
 
-`+table-create --fields` 与 `+base-create --fields` 同格式。下面覆盖常用类型，照抄后只换名称、选项和关联表：
+`+table-create --fields` 与 `+base-create --fields` 同格式。先按 [Field 决策](../scenes/field.md#字段决策) 选型，再从下列协议形状取所需项：
 
 ```bash
 lark-cli base +table-create --base-token "<base_token>" --name "<表名>" --as user --fields '[
@@ -49,10 +51,11 @@ lark-cli base +table-create --base-token "<base_token>" --name "<表名>" --as u
   {"name":"状态","type":"select","options":[{"name":"待处理","hue":"Orange"},{"name":"进行中","hue":"Blue"},{"name":"已完成","hue":"Green"}]},
   {"name":"标签","type":"select","multiple":true,"options":[{"name":"A"},{"name":"B"}]},
   {"name":"数量","type":"number","style":{"type":"plain","precision":0,"thousands_separator":true}},
-  {"name":"金额","type":"number","style":{"type":"currency","precision":2,"currency_code":"CNY"}},
+  {"name":"金额","type":"number","style":{"type":"plain","precision":2,"thousands_separator":true}},
   {"name":"评分","type":"number","style":{"type":"rating","max":5}},
   {"name":"截止日期","type":"datetime","style":{"format":"yyyy/MM/dd"}},
-  {"name":"联系电话","type":"text","style":{"type":"phone"}},
+  {"name":"预约时间","type":"datetime","style":{"format":"yyyy/MM/dd HH:mm"}},
+  {"name":"联系电话","type":"text"},
   {"name":"链接","type":"text","style":{"type":"url"}},
   {"name":"负责人","type":"user"},
   {"name":"编号","type":"auto_number","style":{"rules":[{"type":"text","text":"NO-"},{"type":"incremental_number","length":4}]}},
@@ -61,9 +64,9 @@ lark-cli base +table-create --base-token "<base_token>" --name "<表名>" --as u
 ]'
 ```
 
-- `style.type`：number 只有 `plain/currency/rating/progress`；text 只有 `plain/phone/url/email`。`hue` 只有 Red/Orange/Yellow/Lime/Green/Turquoise/Wathet/Blue/Carmine/Purple/Gray。
+- `style.type`：number 只有 `plain/currency/rating/progress`；text 只有 `plain/phone/url/email/barcode`。默认用普通 number/text；只有用户明确点名专用样式时才配置。首项作为主字段时还须符合[主字段类型约束](field-config.md#主字段类型)，不能使用评分样式。`hue` 只有 Red/Orange/Yellow/Lime/Green/Turquoise/Wathet/Blue/Carmine/Purple/Gray。
 - 关联字段用 `link_table`（表名或 table_id），不是 `table_id`；字段名写 `关联<表名>`，不与任何表同名。`bidirectional: true` 时必带 `bidirectional_link_field_name: "关联<本表名>"`，否则对端反向字段以本表表名命名，公式会把它当整张表。
-- 不支持 `property`、`formatter`、`field_name`+数字 type、`default_value`、`date`；`multiple` 只用于 `select`／`user`（其他类型带了报 `Unrecognized key 'multiple'`）；`link` 必带 `link_table`（缺了报 `invalid_request: Required.`）；`select` 可不带 `options`（空选项表）。公式、查找字段建表后用 `+field-create` 加。
+- 不支持 `property`、`formatter`、`field_name`+数字 type、`default_value`、`date`；`multiple` 只用于 `select`／`user`（其他类型带了报 `Unrecognized key 'multiple'`）；`link` 必带 `link_table`（缺了报 `invalid_request: Required.`）；`select` 可不带 `options`（空选项表）。公式、查找字段按上文分步配置。
 - 返回：`+table-create` 取 `data.table.id`，`+base-create` 取 `data.base.base_token`。
 
 ## 复制数据表
@@ -80,7 +83,7 @@ lark-cli base +table-create --base-token "<base_token>" --name "<表名>" --as u
 ## 复制状态与恢复
 
 - `+table-copy` 和 `+table-copy-status` 返回 `data.table.id`、`data.state` 和 `data.completed`；异步任务另有 `data.task_id`，未完成时可能附带 `next_action`、`next_command`，等待超时另有 `timed_out`。
-- `state` 为 `init` / `process` 时任务尚未完成；`state=success` 且 `completed=true` 才表示复制任务完成，之后仍须执行 Scene 的内容对账。命令退出成功或副本 ID 已生成不能替代完成状态。
+- `state` 为 `init` / `process` 时任务尚未完成；`state=success` 且 `completed=true` 才表示复制任务完成。用户明确要求复制完整性核验、服务端提示部分成功或结果异常时再读取副本内容；异步完成状态仍必须等待。
 - `+table-copy-status --base-token <base_token> --task-id <task_id>` 每次查询一次。任务 ID 原样取自提交返回，不自行构造；沿用提交时的身份。未完成时按返回提示在等待预算内续查，预算耗尽报告当前状态，不无限轮询。
 - 等待超时或状态查询失败时，任务可能仍在运行；保留输出中的任务信息，恢复查询而不重新复制。提交阶段网络异常且未取得任务信息时，结果未知，先核对目标表是否已生成，不能自动重提。
 
@@ -95,5 +98,5 @@ lark-cli base +table-create --base-token "<base_token>" --name "<表名>" --as u
 ## 创建与维护恢复
 
 - 创建结果未知时先读取现状，结合写前对象、真实返回和目标结构识别本次产物；不能仅凭同名认领表，也不能未确认失败就再次创建。确认已创建则复用其 ID，缺少证据时报告结果未知。
-- 带 `--view` 创建时，表已成功但后续视图创建失败，命令仍会报错。回读已生成的表与视图，只补失败步骤，不重跑整次创建。
+- 带 `--view` 创建时，表已成功但后续视图创建失败，命令仍会报错。读取已生成的表与视图，只补失败步骤，不重跑整次创建。
 - 重命名或删除响应丢失时，按写前保存的原表 ID 读取现状，再决定是否仍需执行；不能因旧名称查不到就认定删除成功。读取失败与目标不存在分别处理，身份或权限问题沿用主入口。

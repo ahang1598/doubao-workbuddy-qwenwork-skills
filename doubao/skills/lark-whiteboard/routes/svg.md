@@ -27,17 +27,13 @@
 - 连线使用正交折线替代斜直线(`<polyline>` 带水平/垂直折点)视觉效果更好
 - 可自由使用 `translate`, `rotate`, `scale`但请尽量避免使用 `skewX` / `skewY` / `matrix(...)` 发生空间级扭曲
 
-### 3. 渲染审查
+### 3. 转换为画板节点
 
 ```
 建目录   ./diagrams/YYYY-MM-DDTHHMMSS/         (例：./diagrams/2026-04-15T143022/)
 写文件   <dir>/diagram.svg
-渲染     npx -y @larksuite/whiteboard-cli@^0.2.13 -i <dir>/diagram.svg -o <dir>/diagram.png -f svg
-检查     npx -y @larksuite/whiteboard-cli@^0.2.13 -i <dir>/diagram.svg -f svg --check
 导出     npx -y @larksuite/whiteboard-cli@^0.2.13 -i <dir>/diagram.svg -f svg --to openapi --format json > <dir>/diagram.json
 ```
-
-`npx -y @larksuite/whiteboard-cli@^0.2.13 --check` 检测 `text-overflow` 和 `node-overlap`, 并结合视觉效果(查看 PNG)进行调整
 
 ## 画板怎么处理 SVG
 

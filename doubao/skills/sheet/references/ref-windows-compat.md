@@ -8,7 +8,7 @@
 3. **禁止内联 JSON（lark-cli 和 Python 脚本均适用）**：PowerShell 对引号和转义符的处理与 Bash 不同，内联 JSON 的引号可能被剥离、参数被拆散，导致 `invalid JSON` 或 `unrecognized arguments`。因此必须先用 Write 工具保存 UTF-8 JSON 文件，再通过已支持的文件参数传入，如 `--protection "@./protection.json"` 和 `--cond-format "@./cond-format.json"`（`@文件` 须加双引号）；相对路径以命令当前工作目录为基准，文件须写在对应位置，不要靠增加转义符重试。
 4. **不假设 Unix 工具存在**：PowerShell 不支持 `jq` / `wget` / `unzip` / `sed` / `awk` / `pdftotext` / `base64` / `file`/ `head` / `tail` / `grep` / `which` 这些在Unix中存在的命令。
 5. **同名指令的不同含义** ：PowerShell 中，同名指令的含义可能与 Unix 中不同。`curl` 是 `Invoke-WebRequest` 别名，`ls` / `dir` 是`Get-ChildItem` 的别名, 这些同名指令与Unix中的命令参数不同。
-6. **lark-cli失败情况判定**: lark-cli 的明确失败是通过让 exit code 非 0来确认的。stderr输出除了承担 错误提示以外 还会承担 进度展示/提示等作用。 在PowerShell中，任何 stderr 输出都会被包成 NativeCommandError 并让 exit code 变非 0，所以 NativeCommandError 并不一定代表了报错，需要去细看报错内容才能知道真实报错是什么。
+6. **按进程退出码与业务回执判断结果**：stderr 同时承载错误、进度和警告，PowerShell 的 `NativeCommandError` 不单独证明 CLI 业务失败。需要准确结果时，分别保留进程退出码、stdout 和 stderr，不合流解析；退出 0 但 stdout / URL 缺失属于回执未取得，先读取原任务输出或已有文件，按 `references/lark-sheets-workbook.md` 恢复原导入，不为拿输出连续编写探测脚本或重新创建表格。
 7. **`python -c "..."` 里禁止出现 `\"`、`'''` 内含 `"`、`"""` 或任何双引号相关的转义**：同样由于 PowerShell 对引号的处理不同，凡是脚本里要用双引号的场景，一律 Write 到 `.py` 文件后 `python xxx.py`。
 8. **不使用 PowerShell 自动变量作赋值目标**：`$PID / $HOME / $PWD / $args / $input / $error / $host / $true / $false / $null`，改用 `$PRES_ID / $SLIDE_ID / $FILE_TOKEN` 等前缀化命名。
 9. **文件读写走工具本身或 Python**：不要用 `>` / `Out-File` / `Get-Content ... | cli --xxx -`——PowerShell 5 默认非 UTF-8、加 BOM、走 stdin 时非 ASCII 字节会被重编码。让 lark-cli 用 `--output-path` / `--file` 、让 Python 用 `open(..., encoding='utf-8')`。

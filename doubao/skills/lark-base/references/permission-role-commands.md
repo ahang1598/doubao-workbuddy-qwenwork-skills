@@ -54,8 +54,7 @@ lark-cli base +role-create --base-token "<base_token>" --as user \
 "table_rule_map":{"订单表":{"perm":"edit","view_rule":{"allow_edit":true,"visibility":{"all_visible":true}},
 "record_rule":{"record_operations":["add","delete"],"other_record_all_read":true},"field_rule":{"field_perm_mode":"all_edit"}},
 "客户表":{"perm":"read_only","view_rule":{"allow_edit":false,"visibility":{"all_visible":true}},
-"record_rule":{"record_operations":[],"other_record_all_read":true},"field_rule":{"field_perm_mode":"all_read"}}}}'
-lark-cli base +role-get --base-token "<base_token>" --role-id "<role_id>" --as user --jq '.data.data | fromjson'
+  "record_rule":{"record_operations":[],"other_record_all_read":true},"field_rule":{"field_perm_mode":"all_read"}}}}'
 lark-cli base +role-update --base-token "<base_token>" --role-id "<role_id>" --as user --yes \
   --json '{"role_name":"负责人","role_type":"custom_role","table_rule_map":{"客户表":{"perm":"no_perm"}}}'
 # 仅用户点名具体人员时添加；当前用户是 Base Owner，不能加入自定义角色（返回 MsgCannotSpread）

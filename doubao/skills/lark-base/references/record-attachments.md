@@ -6,7 +6,7 @@
 
 ## 签字附件限制
 
-写入或上传前用 `+field-get` 核对样式：`style.type=signature` 的签字附件单元格只读，不能上传或写入；限制见 [附件字段配置](field-config.md#attachment-字段)。
+写入或上传前用 `+field-get` 核对样式：`style.type=signature` 的签字附件单元格只读，不能上传或写入；限制见 [附件字段配置](field-config.md#attachment-字段)。这是记录写入口径；表单提交可通过 `+form-submit` 的 `attachments` 上传用户提供的 PNG 签名，见 [签字题提交](form-fill.md#签字题)。
 
 ## 追加附件
 

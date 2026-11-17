@@ -2,7 +2,7 @@
 
 涉及脚注、尾注、`[1]` 参考文献或编号交叉引用时读取本页。使用统一工具 `docx_citations.py`，由模型选择来源和正文锚点，工具维护 Word 原生结构。禁止以普通上标数字、页尾段落或格式不一致的手工括号模拟。
 
-读取已有结构时先运行 `inspect`，核对原生引用、定义、书签和域，不要只提取正文文本。新建时先按下节选择结构，再按主工作流选定的创建方式生成正文和稳定锚点，使用统一工具写入；终稿按本页验收要求校验。
+读取已有结构时使用 `inspect` 获取原生引用、定义、书签和域，不要只提取正文文本。新建时先按下节选择结构，再按主工作流选定的创建方式生成正文和稳定锚点，使用统一工具写入后直接交付。
 
 ## 选择结构
 
@@ -19,7 +19,7 @@
 | 同一文献多次引用 | 多个 REF 指向同一书签 | 重复 `cite` |
 | 文献增删、重排后的显示编号 | 保留 REF，仅重算受支持的缓存 | `refresh` |
 
-原生 note 的 `number_format` 不接受 `[%1]`，自定义标记不参与自动编号递增；工具尚未支持原生 note 的方括号样式。若原生组件是约束，应据此核对能否满足格式要求；不能将静态自定义标记当作可自动更新的编号。
+原生 note 的 `number_format` 不接受 `[%1]`，自定义标记不参与自动编号递增；工具尚未支持原生 note 的方括号样式。不能将静态自定义标记当作可自动更新的编号。
 
 ## 统一调用与事务
 
@@ -28,19 +28,16 @@ $PYTHON_BIN 为所在系统上可执行的 `python` 指令，如mac linux使用 
 
 ```bash
 $PYTHON_BIN scripts/docx_citations.py inspect INPUT.docx
-$PYTHON_BIN scripts/docx_citations.py validate INPUT.docx
-$PYTHON_BIN scripts/docx_citations.py apply TARGET.docx --spec operations.json --dry-run
 $PYTHON_BIN scripts/docx_citations.py apply TARGET.docx --spec operations.json --in-place
 ```
 
-`inspect` 返回 note 定义、正文引用、编号配置、复杂内容，以及 `cross_references` 的书签、域指令、缓存和应显示编号。`validate` 发现断开的引用、冲突或过期缓存时返回非零。只检查某类结构时可在这两个只读命令后加 `--scope notes` 或 `--scope references`；默认 `all`。专项检查不等于完整 OOXML 或版面验收。
+`inspect` 返回 note 定义、正文引用、编号配置、复杂内容，以及 `cross_references` 的书签、域指令、缓存和应显示编号。只读取某类结构时可加 `--scope notes` 或 `--scope references`；默认 `all`。
 
-所有写操作放在同一份 `{"version":1,"operations":[...]}` 中，可以混合 note 与文献引用操作。`apply` 按操作范围校验，全部操作成功后才原子发布；失败不写入目标。仅处理文献引用时不改写或强制套用旧 note 部件的兼容限制。
+所有写操作放在同一份 `{"version":1,"operations":[...]}` 中，可以混合 note 与文献引用操作。`apply` 全部操作成功后才原子发布；失败不写入目标。仅处理文献引用时不改写或强制套用旧 note 部件的兼容限制。
 
 - 原稿先保留只读 baseline；始终操作当前工作流锁定的 `TARGET_DOCX`。
 - 已生成正文或已复制出目标时使用 `--in-place`，保留本轮修改；不要再从旧 baseline 生成同名输出。
 - 尚未创建目标时可用 `--out NEW.docx`。已有输出默认拒绝覆盖，只有明确需要覆盖时才使用 `--force`。
-- `--dry-run` 执行完整操作与校验，不生成输出文件。
 
 ## 脚注与尾注
 
@@ -92,16 +89,12 @@ $PYTHON_BIN scripts/docx_citations.py apply TARGET.docx --spec operations.json -
 - `refresh`：`{"version":1,"operations":[{"op":"refresh"}]}`，根据当前列表顺序更新全部受支持 REF 的显示缓存，保留原生域与书签。
 - 编辑文献时保留书签和列表绑定；删除被引用条目前先处理全部正文依赖。工具拒绝断开的引用，不静默删除或转为纯文本。
 - 当前支持正文直接段落、显式单级 `decimal + [%1]` 列表、单段书签，以及 `REF bookmark \n \h` / `REF bookmark \r \h`。
-- 不支持通过样式继承的列表、多级编号、嵌套/跨段 REF、富内容域结果、跨文档引用或 `[1–3]` / `[1,2]` 合并引用。其他 REF 指令只报告 warning，保持原样，不算验收通过。
+- 不支持通过样式继承的列表、多级编号、嵌套/跨段 REF、富内容域结果、跨文档引用或 `[1–3]` / `[1,2]` 合并引用。其他 REF 指令只报告 warning，保持原样。
 
-## 锚点与验收
+## 锚点
 
 `add` 和 `cite` 共用精确正文锚点：`anchor.text` 必须是真实原文，`position` 为 `before / after`（默认 after），`occurrence` 为可选的 1-based 匹配序号。多处普通匹配必须消歧；字段显示结果（含跨段和嵌套字段）、超链接、修订、内容控件或复杂 run 内部拒绝写入。不得临时添加 marker 或退化为段末插入。
 
-终稿包含引用与注释时重新运行 `inspect` 与 `validate`，核对引用、定义、书签、域缓存、编号配置及复杂内容警告。写入后核对计划内引用位置、内容及编号，确认计划外 note、正文、样式和关系保持。文献增删/重排后核对同一书签仍指向同一文献、重复引用编号一致；过期缓存先 refresh。
-
-按当前创建/编辑工作流的渲染条件与预算检查整个 `[1]` 的格式、上下标、缩进、换行和分页。无本地渲染条件时披露视觉未验证。脚注/尾注结构检查不能代替显示编号及页面布局验证。
-
-工具的 refresh 不是 Microsoft Word 实机更新域的证明。用户后续在 Word 中编辑文献后仍需“全选 → 更新域”或逐个更新相关域。LibreOffice 渲染验证与 Word/WPS 编号刷新、点击跳转、跨页行为分别报告；不能仅设置 dirty/updateFields 就声称已刷新。
+用户后续在 Word 中编辑文献后仍需“全选 → 更新域”或逐个更新相关域。
 
 原理参考：[Microsoft REF](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oi29500/7088a8ce-e784-49d4-94b8-cba6ef8fce78)、[自定义 note 标记](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.footnoteendnotereferencetype.custommarkfollows)、[更新域](https://support.microsoft.com/en-us/word/update-fields)。

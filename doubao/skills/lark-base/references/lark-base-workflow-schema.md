@@ -2,7 +2,7 @@
 
 此文件保留 CLI 帮助使用的路径。执行前先按对应场景确定任务范围，再读取所需协议；具体规则由以下文档维护。
 
-- [Workflow 场景与验收](../scenes/workflow.md)
+- [Workflow 场景流程](../scenes/workflow.md)
 - [JSON 骨架](workflow-schema.md)
 - [完整工作流示例与构造说明](workflow-examples.md)
 - [触发器](workflow-triggers.md)

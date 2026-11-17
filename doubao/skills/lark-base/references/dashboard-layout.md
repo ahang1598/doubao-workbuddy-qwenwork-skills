@@ -2,7 +2,7 @@
 
 ## 适用范围与布局前置
 
-写 `--layout` 前先读完 [视觉规范](dashboard-visual-standards.md)，按它选骨架、取 `w/h`、自检硬约束。
+写 `--layout` 前先用 Read 完整读 [视觉规范](dashboard-visual-standards.md)（传 `limit: 600`），按它选骨架、取 `w/h`、自检硬约束。
 
 ## 精确布局：48 列坐标
 
@@ -28,7 +28,7 @@ CLI 写入和读回都按 48 列：list、get 读到的和 create、update 回�
 
 stderr 出现“服务端没有返回 standard_position”时，只表示读回坐标由 12 列取整值换算，每个坐标可能差 2 格以内；写入仍按 48 列生效。已有看板追加或调整时，新组件尺寸按 [组件尺寸](dashboard-visual-standards.md#组件尺寸) 取值，不按读回的 `w/h` 成倍推算。
 
-兜底整理每次都执行，会填补盘上所有空洞（包括原本就有的），处理重叠和越界；它可能挪动或拉宽你没改的组件，但不决定盘面结构，也不居中或对齐。
+兜底整理每次都执行，会填补盘上所有空洞（包括原本就有的），处理重叠和越界；它可能挪动或拉宽你没改的组件，但不决定盘面结构，也不居中或对齐。非空 `tidied_block_ids` 本身不是失败；始终以最终 `layout` 判断布局结果，不得仅为撤销整理结果重复提交。
 
 ## 返回结构
 
@@ -38,7 +38,7 @@ stderr 出现“服务端没有返回 standard_position”时，只表示读回�
 |---|---|
 | `written_block_ids` | 实际写入的组件（坐标与现状不同） |
 | `tidied_block_ids` | 被兜底整理挪动的组件，可能包括没改的；stderr 逐个说明从哪移到哪 |
-| `layout` | 整理后整盘最终坐标（48 列），是验收对象 |
+| `layout` | 整理后整盘最终坐标（48 列），是布局结果依据 |
 | `grid_cols` | 坐标口径，恒为 48 |
 
 以下属于写入异常：任一组件 `x+w>48`；尺寸或 `y` 成倍放大；两组件坐标相同；原本并排变成整宽堆叠；新建看板有空洞。修正坐标重提一次仍异常时标 `blocked`。
@@ -60,3 +60,4 @@ lark-cli base +dashboard-layout --base-token xxx --dashboard-id blk_xxx \
 
 - 漏交组件时，按报错把缺少组件的真实原坐标补进完整数组。多交、重复 ID、坐标越界等本地校验失败时一格未写，修正后再提交。
 - 批量写入成功、整理失败时，用同一份 `--layout` 重新调用，已一致的组件不会重复写入；不要重建组件，也不要当作零写入。
+- 当前 CLI 没有 `+dashboard-layout`（unknown subcommand）或找不到 `lark-cli` 属于环境异常：停下说明，布局项标 `blocked`，不用 `+dashboard-arrange` 或逐个 `--position` 代替。

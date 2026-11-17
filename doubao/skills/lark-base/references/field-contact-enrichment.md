@@ -1,10 +1,6 @@
 # 通讯录补全关系 Reference
 
-<a id="职责与前置条件"></a>
-
 ## 能力与来源限制
-
-<a id="调用与边界"></a>
 
 **通讯录字段补全**
 
@@ -30,8 +26,6 @@
 ]}
 ```
 
-<a id="推荐命令"></a>
-
 ## 创建与查询命令
 
 命令：+contact-field-enrichment-list / +contact-field-enrichment-create。
@@ -48,8 +42,6 @@ lark-cli base +contact-field-enrichment-list \
   --table-id "<table_id>" \
   --as user
 ```
-
-<a id="api-入参详情"></a>
 
 ## 接口
 

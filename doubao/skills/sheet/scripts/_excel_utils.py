@@ -45,6 +45,9 @@ def parse_range(start: str, end: Optional[str] = None) -> Tuple[int, int, int, i
 def load_or_create_wb(filepath: str) -> Workbook:
     """打开已有文件；不存在时新建空白工作簿但不自动保存。"""
     try:
+        if str(filepath).lower().endswith(".xlsx"):
+            from excel_load_workbook import load_workbook as load_editable_workbook
+            return load_editable_workbook(filepath)
         return load_workbook(filepath)
     except FileNotFoundError:
         return Workbook()

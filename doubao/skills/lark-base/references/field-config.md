@@ -2,7 +2,7 @@
 
 ## 目录
 
-适用范围；通用 JSON 规则；创建与更新语义；字段类型转换；字段类型速查；各类型配置；暂不支持字段；易错点。
+适用范围；通用 JSON 规则；创建与更新语义；字段类型转换；字段类型速查；各类型配置；字段支持与限制（主字段类型、暂不支持字段）；易错点。
 
 ## 适用范围
 
@@ -164,7 +164,7 @@ JSON 顶层形状、批量执行、完整更新、确认参数见[创建协议](
 
 `{"type":"attachment","name":"确认签字","style":{"type":"signature"}}`
 
-签字单元格只读：写入、替换、清空均无效，签名只能由用户在飞书客户端完成。不得放入记录写入或调用 `+record-upload-attachment` / `+record-remove-attachment`。
+签字单元格只读：写入、替换、清空均无效，签名只能由用户在飞书客户端完成，或经表单提交（`+form-submit` 的 `attachments` 上传用户提供的 PNG 签名，见 [签字题提交](form-fill.md#签字题)）。不得放入记录写入或调用 `+record-upload-attachment` / `+record-remove-attachment`。
 这些操作返回成功，但字段进入 `ignored_fields`，`reason` 为 `SIGNATURE_READONLY`，不得视为写入成功。上传先传媒体再被追加接口忽略，媒体不自动回滚。读取、下载同普通附件。
 
 ### `location` 字段
@@ -175,7 +175,28 @@ JSON 顶层形状、批量执行、完整更新、确认参数见[创建协议](
 
 `{"type":"checkbox","name":"完成"}`
 
-## 暂不支持字段
+## 字段支持与限制
+
+### 主字段类型
+
+主字段即索引列。新建表的 `--fields` 首项，以及已有主字段转换后的目标定义，只允许下表中的类型与样式；不能仅按顶层 `type` 判断。
+
+| 展示类型 | 字段定义 |
+|---|---|
+| 文本、超链接、条码、电话号码、Email | `type:"text"`；`style.type` 分别为 `plain`、`url`、`barcode`、`phone`、`email`，省略样式默认为 `plain` |
+| 日期 | `type:"datetime"` |
+| 单选、多选 | `type:"select"`；`multiple` 分别为 `false`、`true` |
+| 数字、进度、货币 | `type:"number"`；`style.type` 分别为 `plain`、`progress`、`currency`，省略样式默认为 `plain` |
+| 人员 | `type:"user"`；单／多人按业务选型 |
+| 公式 | `type:"formula"`；必带 `expression`，不带 `style` |
+| 自动编号 | `type:"auto_number"` |
+| 地理位置 | `type:"location"` |
+
+评分（`number` + `style.type:"rating"`）、附件、复选框、关联、查找引用、群聊、按钮和系统时间／人员字段不在主字段支持范围。业务需要这些字段时保留原类型作为普通字段，另选符合记录语义的主字段；用户明确指定了不支持的主字段时，说明限制并确认替代方案，不擅自降为文本。
+
+字段配置见[各类型配置](#各类型配置)，初始字段传参见[初始字段协议](table-commands.md#创建时的初始字段)。
+
+### 暂不支持字段
 
 Object（对象字段）、Stage（流程字段）暂不受 CLI 支持；显示为 `not_support` 并受保护：不得修改、读取内容。
 

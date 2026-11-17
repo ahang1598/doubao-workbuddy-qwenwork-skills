@@ -1,0 +1,65 @@
+
+.vl-lookbook-longpage{width: var(--vl-page-width,658px); max-width: 100%; margin: auto;}
+.vl-lookbook-longpage, .vl-lookbook-longpage *{box-sizing: border-box;}
+.vl-lookbook-longpage img{display: block; width: 100%; height: auto;}
+.vl-lookbook-longpage h1, .vl-lookbook-longpage h2, .vl-lookbook-longpage p, .vl-lookbook-longpage figure{margin: 0px;}
+.vl-lookbook-longpage p{overflow-wrap: anywhere;}
+.vl-lookbook-longpage .story{margin: 0px 0px var(--vl-chapter-gap,43px);}
+.vl-lookbook-longpage .ochre{text-align: right;}
+.vl-lookbook-longpage .pair{display: grid; grid-template-columns: var(--vl-pair-ratio,253fr 360fr); gap: var(--vl-window-gap,19px); margin: 0px 26px 43px 0px; align-items: start;}
+.vl-lookbook-longpage .full{margin: 0px 26px 0px 39px;}
+.vl-lookbook-longpage .product{display: grid; grid-template-columns: 253fr 367fr; align-items: start; gap: 0px; padding: 37px 0px 70px 39px;}
+.vl-lookbook-longpage .product p{padding-top: 18px; position: relative; z-index: 1;}
+.vl-lookbook-longpage .product img{align-self: end; margin-top: 0px;}
+.vl-lookbook-longpage .product.reverse{grid-template-columns: 365fr 267fr; padding: 55px 26px 109px 0px;}
+.vl-lookbook-longpage .product.reverse p{text-align: right;}
+.vl-lookbook-longpage .release{text-align: center; padding: 20px 39px 85px;}
+.vl-lookbook-longpage .closing{margin: 0px 0px 115px;}
+.vl-lookbook-longpage .release h2{display: inline-block; padding: 8px 25px;}
+.vl-lookbook-longpage .release > p{margin-top: 20px;}
+.vl-lookbook-longpage .stores{list-style-type: none; padding: 0px; margin: 85px auto 25px; max-width: 460px; display: grid; gap: 27px;}
+.vl-lookbook-longpage .stores li{position: relative; display: grid; grid-template-columns: 32px minmax(0px, 1fr) 100px; align-items: center; gap: 12px; padding: 12px 10px 12px 25px; text-align: left; min-height: 102px;}
+.vl-lookbook-longpage .stores img{width: 100%; height: auto;}
+.vl-lookbook-longpage .community{text-align: center; padding: 15px 39px 60px;}
+.vl-lookbook-longpage .community figure{width: 420px; max-width: 100%; margin: 85px auto;}
+.vl-lookbook-longpage .community .interaction{margin-bottom: 60px;}
+.vl-lookbook-longpage .community strong{padding-bottom: 5px;}
+.vl-lookbook-longpage .terms{text-align: left;}
+.vl-lookbook-longpage .explore{padding: 25px 0px 55px;}
+.vl-lookbook-longpage .explore h2{text-align: center; margin-bottom: 95px;}
+.vl-lookbook-longpage .rail{display: flex; gap: 44px; overflow-x: auto; padding: 0px 69px 24px;}
+.vl-lookbook-longpage .recommend{flex: 0 0 min(465px,100%); overflow: clip;}
+.vl-lookbook-longpage .recommend p{padding: 8px 22px;}
+.vl-lookbook-longpage .recommend.peek{flex-basis: 96px;}
+.vl-lookbook-longpage .recommend.peek img{width: 96px;}
+.vl-lookbook-longpage .footer{padding: 10px 50px 26px;}
+.vl-lookbook-longpage .channels{display: grid; grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 40px 15px; text-align: center;}
+.vl-lookbook-longpage a{text-decoration-line: none;}
+.vl-lookbook-longpage .channel b{display: block; width: max-content; max-width: 100%; margin: 0px auto 16px; padding: 8px 12px;}
+.vl-lookbook-longpage .channel span{display: block;}
+.vl-lookbook-longpage .apps{display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 75px 0px 65px;}
+.vl-lookbook-longpage .app{padding: 14px;}
+.vl-lookbook-longpage .app small{display: block;}
+.vl-lookbook-longpage .search{display: flex; gap: 14px; align-items: center; padding: 5px 12px; margin: 0px auto 95px; max-width: 420px;}
+.vl-lookbook-longpage input{width: 100%; min-width: 0px;}
+.vl-lookbook-longpage .account{max-width: 420px; margin: 0px auto; padding: 27px 30px;}
+.vl-lookbook-longpage .account small{display: block; margin-top: 28px; padding-top: 12px;}
+.vl-lookbook-longpage .end{text-align: right; margin-top: 95px;}
+.vl-lookbook-longpage .slogan{width: 446px; max-width: 100%; margin: 0px auto;}
+.vl-lookbook-longpage .channel{min-width: 0px;}
+.vl-lookbook-longpage .stores li > span{overflow-wrap: anywhere;}
+.vl-lookbook-longpage .search > span{white-space: nowrap; flex: 0 0 auto;}
+.vl-lookbook-longpage .rail{position: relative;}
+.vl-lookbook-longpage .rail::before{position: absolute; left: 18px; top: 65px;}
+.vl-lookbook-longpage .explore::after{display: block; height: 9px; margin-top: 24px;}
+.vl-lookbook-longpage .app{display: grid; grid-template-columns: 40px minmax(0px, 1fr) 12px; gap: 8px; align-items: center;}
+.vl-lookbook-longpage .app-icon{display: grid; place-items: center; width: 40px; height: 40px;}
+.vl-lookbook-longpage .app small{grid-column: 2;}
+.vl-lookbook-longpage .app .app-copy{min-width: 0px;}
+.vl-lookbook-longpage .channel b{padding: 0px; width: 54px;}
+.vl-lookbook-longpage .channel b img{width: 54px; height: 54px; object-fit: contain;}
+.vl-lookbook-longpage .account-head{display: grid; grid-template-columns: 64px minmax(0px, 1fr) 12px; gap: 12px; align-items: center;}
+.vl-lookbook-longpage .account-head > img{width: 64px; height: 64px;}
+.vl-lookbook-longpage h1, .vl-lookbook-longpage h2, .vl-lookbook-longpage h3, .vl-lookbook-longpage p, .vl-lookbook-longpage dt, .vl-lookbook-longpage dd, .vl-lookbook-longpage li{overflow-wrap: anywhere; min-width: 0px;}
+.vl-lookbook-longpage{container-type:inline-size;container-name:vl-lookbook-longpage;}
+@container vl-lookbook-longpage (max-width:480px){.vl-lookbook-longpage .apps{grid-template-columns:1fr}.vl-lookbook-longpage .channels{grid-template-columns:repeat(2,minmax(0,1fr))}.vl-lookbook-longpage .footer{padding-inline:26px}.vl-lookbook-longpage .stores li{grid-template-columns:28px minmax(0,1fr) 72px;padding-inline:16px}.vl-lookbook-longpage .account{padding-inline:20px}}

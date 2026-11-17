@@ -4,7 +4,8 @@
 
 - 检索顺序
 - 查询构造
-- 结构化 URL 常规补充
+- PubMed MCP 优先与结构化入口常规补充
+- 临床试验注册专线
 - 按需预印本
 - 医学资讯
 - 日期、回源与去重
@@ -14,25 +15,38 @@
 每期按三阶段执行：
 
 1. **General Search + Scholar Search 并行优先**：先发现最近正式发表的研究；General 同时负责中文和国际医学资讯、指南监管与机构动态。
-2. **结构化 URL 常规补充**：General/Scholar 首批完成后，无论数量是否已足，都尽量并行调用 PubMed、Europe PMC MED、Crossref 的参数化 URL，补充高质量正式论文与结构化元数据。
+2. **PubMed MCP 优先与结构化入口常规补充**：General/Scholar 首批完成后，无论数量是否已足，都运行 PubMed、Europe PMC MED、Crossref 补充通道。PubMed 优先使用检索前确认可调用的 `pubmed-medical-literature` MCP；未检测到可调用 MCP 时使用参数化 PubMed URL。Europe PMC 与 Crossref 继续使用参数化 URL。用户明确关注最新临床试验、注册、招募、状态或结果发布时，同批增加 ClinicalTrials.gov 专线。
 3. **预印本按需补充**：只有正式发表研究仍不充足时才检索预印本。预印本不是每期必跑，也不是判断检索完成的必要来源线。
 
 来源范围偏好只用于查询加权、补充和排序，不是白名单、硬准入或逐站完成清单。三类结构化入口均尽量尝试，但单个入口失败不阻塞完成。合并后按相关性、研究设计质量、来源可信度、证据成熟度和时效性统一择优。窗口内只有少量达到质量底线的研究时，有多少呈现多少；没有合格论文时宁可少写或不写。已有约 5–6 篇较强候选时提高纳入门槛，剔除边缘相关、低信息量或来源较弱的条目。不把篇数作为硬完成门，也不为凑数保留垃圾文献。
 
+每期在执行任何检索前，只查看一次当前会话明确暴露的已加载 Skill、MCP 与可用工具清单。不要用 Bash、`find`、`rg` 或类似方法扫描用户本地/隐藏 Skill 目录，也不要试装连接器或猜测工具名。只有明确存在 `pubmed-medical-literature` 且其 PubMed MCP 工具可调用时，才把本轮 PubMed 通道标记为 MCP 可用。只有 Skill 名但没有可调用 MCP 时，按不可用处理并直接使用 PubMed URL fallback；不要声称连接器已经激活。
+
+该检查只决定 PubMed 一条通道的执行方式，不改变总顺序，也不取代 General、Scholar、Europe PMC、Crossref 或按需启用的 ClinicalTrials.gov。PubMed MCP 成功返回后不重复拼接 PubMed URL；若已明确可用的 MCP 单次调用失败，可回退一次 PubMed URL 继续，但不循环重试，也不把临时调用错误等同于“未激活”。
+
 论文选择遵循“宁缺勿滥”。明确命中预警名单、疑似掠夺性/劫持期刊、期刊身份或同行评议机制不透明、来源信誉明显不足的候选不进入报告。开放获取（OA）只是获取模式，不等同于低质量：不得仅凭 OA 标签排除正规期刊，也不得把“可付费发表”当作质量证明。无法判断期刊质量且研究设计与来源支持又偏弱时，宁可不纳入。
 
-检索过程中把候选保留在当前上下文，完成全部可用通道、筛选和去重后，只写一次最终 `report-data.json`。不要生成 `batch-general-01.json`、`evidence-ledger.json` 或其他逐批快照；不要把完整 JSON 再包成带反斜杠的字符串。
+检索过程中把候选保留在当前上下文，完成全部可用通道、筛选和去重后写入一次 `report-data.json`，随后只允许期刊分区脚本原地富化一次。不要生成第二份报告数据、`batch-general-01.json`、`evidence-ledger.json` 或其他逐批快照；不要把完整 JSON 再包成带反斜杠的字符串。
+
+### 关键或重大研究模式
+
+用户要求“关键研究、重大研究、重磅研究、里程碑更新”时，不按普通进展报告的自适应数量补位：
+
+- 优先多中心随机研究、大型前瞻性队列、改变指南或监管状态的研究、高质量系统综述/Meta、重要验证研究，以及权威期刊正式发表且结果信息完整的研究；
+- 排除边缘相关、小样本低信息量、仅题录、会议标题空壳、方法学明显薄弱、预警/疑似掠夺性或来源身份不清的论文；
+- 期刊分区是权威性辅助信号，不替代对研究设计、对象、终点、效应与局限的判断；命中较高分区不自动等于重大研究，未命中本地索引也不自动等于低质量；
+- 严格窗口及必要扩展窗口内仍没有合格研究时，保留空结果并向用户解释：“当前核心期刊未检索到符合条件的有效更新。”不要降级塞入低质量论文。
 
 ### 用户主动检索的一周窗口不足
 
 仅在**非定时任务触发**且用户明确要求“一周/近 7 天”时使用：
 
-1. 先按用户窗口完成 General、Scholar、结构化 URL 与必要的预印本检索，不因首批结果少而过早放宽日期；
+1. 先按用户窗口完成 General、Scholar、PubMed MCP/URL 条件通道、Europe PMC/Crossref 与必要的预印本检索，不因首批结果少而过早放宽日期；
 2. 若严格窗口内仍缺少足够有效、权威的信息，主动扩大到近 30 天；领域更新很慢且仍不足时，可视情况扩大到近 90 天；
 3. 扩大窗口是为了补充近期背景，不改变用户原始问题。筛选质量标准不因扩大窗口而降低，也不为凑数纳入低质量内容；
-4. 在报告开头和聊天摘要中用一句话说明，例如：“近 7 天仅检出 2 条可核验进展，为提高参考价值，另补充近 30 天内 4 条高质量进展。”正文或画板用清晰标签区分“近 7 天新增”和“扩大窗口补充”。
+4. 在 `report-data.json` 顶层记录 `requested_date_range`、`included_date_range`、`window_expanded=true` 与 `window_note`；在报告开头、总览画板和聊天摘要明确显示原始窗口与实际纳入跨度，例如：“原始窗口 2026-07-24 至 2026-07-31 仅检出 2 条可核验进展；实际补充范围扩展至 2026-07-01，共纳入 4 条高质量进展。”正文或画板清晰区分“原始窗口新增”和“扩大窗口补充”。
 
-定时任务以 `last_success_at-overlap` 后的真实增量为准，不套用本规则，也不把旧内容重复包装为本期更新。
+定时任务按已确认订阅周期使用本次运行日前一个完整周期的真实时间范围：每周一次取近 1 周，每两周一次取近 2 周，每月一次取近 1 个日历月；运行时计算精确起止日期供检索接口与报告使用，但用户可见任务说明只写相对范围。定时任务不套用首期的 30 天或 90 天扩展规则，也不把旧内容重复包装为本期更新。
 
 ## 查询构造
 
@@ -69,11 +83,13 @@ General Search 命中医学媒体、大学/医院新闻稿、学会会议报道�
 
 这一反查属于检索阶段的定向补充，不要求逐篇 `web.fetch` 全文。一个报道指向多篇论文时，只纳入能明确匹配题名、作者、DOI/PMID 或试验标识的论文。
 
-## 结构化 URL 常规补充
+## PubMed MCP 优先与结构化入口常规补充
 
-第一阶段完成后，尽量并行尝试以下三个入口；不是只有“结果不足”才调用：
+第一阶段完成后，尽量并行尝试 PubMed、Europe PMC MED、Crossref 三个论文入口；不是只有“结果不足”才调用。PubMed 入口使用检索前已经确定的条件路线，其他两路继续使用参数化 URL。
 
 ### PubMed 与 Europe PMC MED
+
+若 `pubmed-medical-literature` 及其 PubMed MCP 在本轮开始时已确认可调用，PubMed 通道优先按该 Skill 的说明使用 MCP，并沿用相同日期窗口与概念簇；MCP 成功后不要重复请求下面的 PubMed URL。若本轮没有可调用 MCP，则直接使用下面的 PubMed 参数化 URL，不阻塞报告、不要求用户先安装。Europe PMC URL 两种情况下都照常执行。
 
 ```text
 https://pubmed.ncbi.nlm.nih.gov/?term={pubmed_query}+AND+("{start}"[Date+-+Publication]:"{end}"[Date+-+Publication])&sort=date
@@ -91,19 +107,58 @@ https://api.crossref.org/works?query.bibliographic={crossref_cluster}&filter=typ
 
 先查宽主题；仅对合并结果仍存在的重点缺口补概念簇。请求同时包含 `container-title` 和 `abstract`；返回非空 `abstract` 时保存为 `support_excerpt` 并标记 `support_level=abstract`。
 
-PubMed、Europe PMC MED、Crossref 尽量一次并行尝试。任一端点不可用、返回 0 条或解析失败时直接跳过；不要为补齐“三路成功”循环重试。只有关键概念明显缺口时，才在可用端点缩短概念簇扩展一次。端点返回的大 `total-results` 只说明匹配总量，不要求读取全部结果；按当前窗口、相关性和可见页筛选。
+PubMed 条件通道、Europe PMC MED、Crossref 尽量在同一补充阶段执行。任一入口不可用、返回 0 条或解析失败时直接跳过；不要为补齐“三路成功”循环重试。只有关键概念明显缺口时，才在可用入口缩短概念簇扩展一次。入口返回的大 `total-results` 只说明匹配总量，不要求读取全部结果；按当前窗口、相关性和可见页筛选。
 
-PubMed、Europe PMC、Crossref 是数据库或检索来源，不是期刊。把明确返回的 `journalTitle`、`fullJournalName`、`container-title` 写入 `journal_name`，把检索入口写入 `record_source`；没有刊名时保持为空并显示“来源：PubMed/Europe PMC/Crossref”，不得写“期刊：PubMed/Europe PMC”，也不能写“期刊：Crossref”。
+PubMed、PubMed Central/PMC、Europe PMC、Crossref 是数据库、全文库或检索来源，不是期刊。无论 PubMed 结果来自 MCP 还是参数化 URL，`record_source` 都写 `PubMed`，不能把 `pubmed-medical-literature` 或 MCP 名称写成期刊。把真实期刊写入 `journal_name`。期刊字段按以下顺序批量补全，不逐篇回读：
+
+1. Europe PMC `resultType=core` 的 `journalInfo.journal.title`，其次 `journalTitle`；
+2. PubMed ESummary 的 `fulljournalname`，其次 `source` 期刊缩写；
+3. Crossref 的 `container-title`；
+4. 只有 PMCID 时，把最终候选的 PMCID/PMID 合并进一次 Europe PMC `resultType=core` 精确查询，而不是逐篇打开 PMC 页面。
+
+可批量使用：
+
+```text
+https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={comma_separated_pmids}&retmode=json
+
+https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=({pmid_or_pmcid_list})&format=json&pageSize=100&resultType=core
+```
+
+只要结构化元数据返回真实刊名，用户可见报告必须显示该期刊，不得写“来源：PubMed Central”。确实未取得真实刊名时保持 `journal_name` 为空，显示“收录平台：PubMed Central”或实际 `record_source`；不得写“期刊：PubMed/Europe PMC/PubMed Central/Crossref”，也不能猜测刊名。
+
+## 临床试验注册专线
+
+仅在用户明确关注“最新临床试验、试验注册、招募、NCT、试验状态、试验结果发布”等意图时启用。它与三路论文补充同批执行，不等待论文不足后才调用。使用 ClinicalTrials.gov API v2：
+
+```text
+# 窗口内首次发布的干预性试验
+https://clinicaltrials.gov/api/v2/studies?query.cond={topic}&query.term=AREA[StudyType]INTERVENTIONAL%20AND%20AREA[StudyFirstPostDate]RANGE[{start_mm/dd/yyyy},%20{end_mm/dd/yyyy}]&format=json&countTotal=true&pageSize=100&sort=StudyFirstPostDate:desc
+
+# 窗口内首次发布结果的干预性试验
+https://clinicaltrials.gov/api/v2/studies?query.cond={topic}&query.term=AREA[StudyType]INTERVENTIONAL%20AND%20AREA[HasResults]Y%20AND%20AREA[ResultsFirstPostDate]RANGE[{start_mm/dd/yyyy},%20{end_mm/dd/yyyy}]&format=json&countTotal=true&pageSize=100&sort=ResultsFirstPostDate:desc
+
+# 窗口内发生注册记录更新的干预性试验
+https://clinicaltrials.gov/api/v2/studies?query.cond={topic}&query.term=AREA[StudyType]INTERVENTIONAL%20AND%20AREA[LastUpdatePostDate]RANGE[{start_mm/dd/yyyy},%20{end_mm/dd/yyyy}]&format=json&countTotal=true&pageSize=100&sort=LastUpdatePostDate:desc
+```
+
+有明确干预物时可追加 `query.intr={drug_or_intervention}`。按 NCT 号合并三类结果，优先级通常为“首次发布结果 > 新注册 > 普通记录更新”：
+
+- `StudyFirstPostDate` 对应 `trial_delta_type=new_registration`；
+- `ResultsFirstPostDate` 对应 `trial_delta_type=results_first_posted`；
+- `LastUpdatePostDate` 对应 `trial_delta_type=record_update`。
+
+条目 `source_url` 固定指向 `https://clinicaltrials.gov/study/{NCTId}`，并记录 NCT 号、状态、可得分期、申办方、入组规模和与用户重点直接相关的主要终点。ClinicalTrials.gov 是注册平台，不是期刊；注册结果发布也不等同于同行评议论文。`LastUpdatePostDate` 只能表述为“试验记录更新”：没有跨期字段差异或记录文本支持时，不写具体状态变化，不写“公布结果”，也不据此推断疗效。仅联系人、地点或其他低价值行政更新不必进入报告。
 
 ## 期刊质量与可选指标
 
-对入选论文尽量补充期刊质量信息，但不把补齐指标变成完成门：
+本 Skill 内置 2025 年中科院 1–4 区与北大核心索引；直接调用包内 `scripts/match-journal-rank.js` 做确定性本地匹配，不重新打开 Excel，也不联网逐篇查询分区。脚本从自身所在 Skill 包及邻近层级自动发现索引；不要复制脚本或索引到报告工作目录，不创建 `assets` 目录，不推导 `__dirname`、检查软链接或搬运文件。只有环境明确给出另一索引时才可选传 `--index <path>`。索引不可用时脚本返回 `journal_rank_index_unavailable`，此时直接省略分区继续成文，不排查路径或阻塞报告。
 
-- 影响因子只能写明确可核对的 Journal Impact Factor，并附年份，如 `journal_impact_factor=12.3`、`journal_metric_year=2025`、`journal_metric_source=JCR/期刊官方页`；
-- 分区必须写明体系和年份，如 `journal_quartile=JCR Q1（2025）` 或 `中科院医学 2 区（2025）`；不同体系不能混写；
-- CiteScore、SJR 等只能按本名展示，不能冒充影响因子；
-- 搜索结果未明确给出、来源不可信或口径不清时全部省略，不根据期刊印象、过往年份或模型记忆猜测；
-- 先按期刊名去重后做少量批量/定向查询，不为每篇论文重复查一次，也不因缺少指标排除本来质量明确的论文。
+- 初筛重大研究时，可把去重后的真实期刊名批量传给 `node scripts/match-journal-rank.js --json '["NEJM","中华内科杂志"]'`，把返回分区作为来源权威性的辅助信号；
+- 最终 `report-data.json` 写完后运行 `node scripts/match-journal-rank.js --report-json report-data.json --in-place`，脚本读取 `report_items[].journal_name`，仅对 exact/alias/高置信 fuzzy 命中写入 `journal_rank_2025`；
+- 指南、共识、监管、资讯、预印本和没有真实 `journal_name` 的条目跳过；未命中或匹配歧义时留空，不显示占位符；
+- 用户可见报告将非空 `journal_rank_2025` 展示为“期刊级别：中科院 X 区/北大核心（2025）”；它与研究设计质量是两个独立维度；
+- 影响因子只能写明确可核对的 Journal Impact Factor，并附年份和来源；JCR 分区必须写清体系与年份。CiteScore、SJR 等只能按本名展示，不能冒充影响因子；
+- 搜索结果未明确给出、来源不可信或口径不清的其他指标全部省略，不根据期刊印象、过往年份或模型记忆猜测，也不因缺少指标排除本来质量明确的论文。
 
 ## 按需预印本
 
@@ -173,6 +228,6 @@ site:{监管机构官方域名} {产品通用名} {批准/授权/警示/召回}
 - 非官方页面声称获批、授权或发布安全动作，但没有官方页面或稳定编号支持时，标为“官方状态待核验”；
 - 底层日期无法确认时写“底层动作原日期：未核验”，不猜日期、动作等级或医学结论。
 
-同批结果优先以 DOI、PMID、NCT、指南版本、监管编号或 canonical URL 合并明显重复项；没有稳定 ID 时参考来源链接、标准化题名、年份和第一作者。定时运行可结合 `seen_source_keys` 与上一期报告尽量减少重复，但历史状态缺失不阻塞；预印本正式发表、指南修订、试验状态变化、勘误、撤稿或安全警示可作为真实增量再次呈现。
+同批结果优先以 DOI、PMID、NCT、指南版本、监管编号或 canonical URL 合并明显重复项；没有稳定 ID 时参考来源链接、标准化题名、年份和第一作者。定时运行不单独维护跨期去重清单，只在筛选和写作时避免重复明显的历史旧内容。预印本正式发表、指南修订、试验状态变化、勘误、撤稿或安全警示属于本期新内容，可再次呈现并说明较历史版本发生的变化。
 
 只要 General/Scholar 或结构化补充至少有一条可用检索路径，并已对主问题做合理扩展，即可根据结果说明“无更新”；不要求固定来源全部有结果。所有主要入口都不可用时写“本期检索未完整，暂不能判断是否无更新”，并保留旧 `last_success_at`。

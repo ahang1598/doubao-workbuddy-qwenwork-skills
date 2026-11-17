@@ -60,5 +60,5 @@ CLI 原样保留补丁里的省略字段、空对象、null、0、false，由后
 
 ## 获取与写入响应
 
-+dashboard-block-get 的 data.block.data_config 返回当前模式完整配置：fixed 含 type、targetTime；field 含 type、aggregateType、additionalDatasources。创建和更新也回读完整 block，分别附带 data.created:true、data.updated:true。
-回读会归一化默认 mode、排序或筛选值，不一定与请求相同；清空后省略 filter。隐藏固定时间、占位数据源、units/title/animation 等未开放展示配置不属于公开 data_config。
++dashboard-block-get 的 data.block.data_config 返回当前模式完整配置：fixed 含 type、targetTime；field 含 type、aggregateType、additionalDatasources。创建和更新也返回完整 block，分别附带 data.created:true、data.updated:true。
+返回值会归一化默认 mode、排序或筛选值，不一定与请求相同；清空后省略 filter。隐藏固定时间、占位数据源、units/title/animation 等未开放展示配置不属于公开 data_config。

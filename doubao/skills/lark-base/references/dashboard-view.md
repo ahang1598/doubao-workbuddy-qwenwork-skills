@@ -62,11 +62,11 @@ lark-cli base +dashboard-block-update --base-token BASE_TOKEN --dashboard-id DAS
 - 修改受支持的嵌套配置须提交完整子对象；换表/展示类型须提交目标类型支持的完整配置。
 - 只提交待改的可写字段，不回传 GET 结果。旧 `timebar/card` 只核对，不带回，也不传 `null` 清除。
 
-## 返回结构与配置回读
+## 返回结构与配置读取
 
 创建、更新响应在 `data.block` 返回。GET 的 `data.block.data_config` 返回 `tableId / viewId / viewType` 等引用；不得假定原样返回 `table_name / view_type / filter / sort_by` 等输入。
 
-用引用 ID 对应的 `+view-get-filter/sort/group/visible-fields/timebar/card` 回读持久化业务配置。
+响应缺少最终配置、后续操作依赖服务端现状、结果未知或用户明确要求核验时，按引用 ID 读取对应的 `+view-get-filter/sort/group/visible-fields/timebar/card`。
 
 ## 读取视图组件数据
 

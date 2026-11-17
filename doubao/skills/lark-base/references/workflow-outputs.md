@@ -32,6 +32,15 @@ $.{stepId}.{pathId}.{childPathId}.{grandChildPathId}
 
 下文逐节点列出输出契约。`Delay`、`LarkMessageAction`、`IfElseBranch`、`SwitchBranch` 无输出；`TimerTrigger`、`GenerateAiTextAction`、`AIAnalysisAction`、`AIClassificationBranch` 输出是静态的。涉及 AI Agent 或 APIHub 时，按[AI Agent 输出与引用](workflow-ai-agent.md#输出与引用)、[APIHub 输出引用](workflow-apihub.md#输出引用)执行。
 
+## 仪表盘引用
+
+| 内容 | ref 的 `value` |
+|---|---|
+| 仪表盘截图 | `$.dashboard.image` |
+| 仪表盘智能总结 | `$.dashboard.aiAnalysis` |
+
+名称配置、正文支持范围与触发器限制见 [图片与智能总结引用](workflow-message-email.md#图片与智能总结引用)。
+
 ## 触发器节点输出
 
 ### 记录触发器（AddRecordTrigger / ChangeRecordTrigger / SetRecordTrigger / ReminderTrigger）
@@ -59,6 +68,10 @@ $.{stepId}.{pathId}.{childPathId}.{grandChildPathId}
 
 `buttonElement` 只有 `time`、`user`、`buttonName`。
 
+### WebhookTrigger（外部请求）
+
+配置 `output_json` 后，使用 `$.<step_id>.body.<field>` 引用请求体字段。URL 与 Bearer Token 为管理凭证，不是业务输出引用；配置与轮换见 [Webhook 触发器](workflow-triggers.md#外部-webhookwebhooktrigger)。
+
 ### TimerTrigger（定时触发器）
 
 `scheduleTime`：定时触发时间。
@@ -76,11 +89,15 @@ $.{stepId}.{pathId}.{childPathId}.{grandChildPathId}
 
 ## 操作节点输出
 
+### AppScreenshotAction（应用截图）
+
+`Image` 是图片类型输出，使用 `$.<step_id>.Image`。节点输入见 [应用截图](workflow-actions.md#应用截图appscreenshotaction)；正文、附件支持范围与触发器限制见 [图片与智能总结引用](workflow-message-email.md#图片与智能总结引用)。
+
 ### FindRecordAction（查找记录）
 
 | pathId | 说明 |
 |---|---|
-| `fieldRecords` | 全部找到的记录；可供 Loop 遍历 |
+| `fieldRecords` | 全部找到的记录，可供 Loop 遍历或消息正文汇总；见[多记录消息](workflow-message-email.md#一条消息展示多条记录) |
 | `firstfieldsRecord` | 第一条匹配记录 |
 | `firstfieldsRecord.{fieldId}` | 首条记录字段值；可下钻属性 |
 | `firstfieldsRecord.recordId` | 记录 ID 数组 |
@@ -179,7 +196,7 @@ $.{stepId}.{pathId}.{childPathId}.{grandChildPathId}
 
 `c` 用 IfElseBranch 判断 `$.f.recordNum is number 1`；`if_true` 才进消息节点，`receiver` 为 `[{"value_type":"ref","value":"$.f.firstfieldsRecord.fld负责人"}]`；`if_false` 进歧义处理、不发送。
 
-完整图须有数量判断、两个独立分支、消息节点。检查已有或已授权样例的同名不同 ID、空关联、多关联、空人员字段；分别验收保存的动态路径和实测接收结果。
+完整图须有数量判断、两个独立分支、消息节点。提交前处理同名不同 ID、空关联、多关联、空人员字段；实测接收结果只在用户明确要求并授权真实外发时验证。
 
 ## 字段属性下钻
 

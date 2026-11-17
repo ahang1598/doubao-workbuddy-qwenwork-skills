@@ -1,7 +1,7 @@
 ---
 name: lark-contact
 version: 1.0.0
-description: "飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent),也支持修改本人头像。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息,或要修改本人头像时使用。不支持修改他人资料。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。"
+description: "飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent),也支持修改本人的签名、头像、飞书名片背景图/封面。当用户提到一个名字要下一步发消息 / 排日程,或拿到 open_id 想查具体信息,或要修改本人签名、头像或名片背景时使用。不支持修改他人资料。不负责部门树遍历、按部门列员工、组织架构图,这类需求走原生 OpenAPI。"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -18,8 +18,10 @@ metadata:
 | 按关键词搜索当前用户可见的机器人 / 智能体 | [`+search-bot`](references/lark-contact-search-bot.md) |
 | 已知 open_id 取他人资料 | `+search-user --user-ids <id>` 或 [`+get-user --user-id <id>`](references/lark-contact-get-user.md) |
 | 查看自己 | `+get-user` 或 `+search-user --user-ids me` |
-| 修改本人头像 | [`+update-self`](references/lark-contact-update-self.md) |
+| 修改本人的个签 / 头像 / 名片背景图 | [`+update-self`](references/lark-contact-update-self.md) |
 | 查同事的个人状态 / 签名 | `user_profiles batch_query` |
+
+修改本人签名、头像或名片背景图走 `+update-self` 的 Directory 普通员工流程。`user_profiles batch_query` 只用于查询,不要根据旧 Contact 更新接口的字段限制判定无法修改签名。
 
 已知 open_id 只是想发消息 / 排日程,不必经过 contact —— 直接 [`lark-im`](../lark-im/SKILL.md) / [`lark-calendar`](../lark-calendar/SKILL.md)。
 

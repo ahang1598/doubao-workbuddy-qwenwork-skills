@@ -1,0 +1,10 @@
+.vl-light-field { position:relative; isolation:isolate; }
+.vl-light-field__glow { position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit; opacity:var(--vl-glow-opacity,.22); background:radial-gradient(ellipse var(--vl-glow-width,75%) var(--vl-glow-height,55%) at var(--vl-glow-x,25%) var(--vl-glow-y,20%),var(--vl-glow-color,var(--vl-accent,#e7a4bd)) var(--vl-glow-core,0%),transparent 100%); }
+
+.vl-texture-field { position:relative; isolation:isolate; background:var(--vl-tint,transparent); color:var(--vl-ink,#302a20); }
+.vl-texture-field__texture { position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit; background-image:var(--vl-texture,none); background-size:var(--vl-texture-size-x,var(--vl-texture-size,256px)) var(--vl-texture-size-y,var(--vl-texture-size,256px)); background-position:var(--vl-texture-x,0px) var(--vl-texture-y,0px); opacity:var(--vl-grain,.12); mix-blend-mode:var(--vl-texture-blend,multiply); }
+
+.vl-neon-edge { outline:var(--vl-neon-width,1px) solid var(--vl-neon-color,var(--vl-accent,#00d8df)); outline-offset:0; box-shadow:0 0 var(--vl-neon-blur,16px) color-mix(in srgb,var(--vl-neon-color,var(--vl-accent,#00d8df)) calc(var(--vl-neon-alpha,.65) * 100%),transparent),inset 0 0 var(--vl-neon-inset,4px) color-mix(in srgb,var(--vl-neon-color,var(--vl-accent,#00d8df)) calc(var(--vl-neon-alpha,.65) * 100%),transparent); }
+.vl-neon-type { text-shadow:0 0 var(--vl-neon-blur,16px) color-mix(in srgb,var(--vl-neon-color,var(--vl-accent,#00d8df)) calc(var(--vl-neon-alpha,.65) * 100%),transparent); }
+
+.ct-scan{position:relative;isolation:isolate;}.ct-scan__layer{position:absolute;inset:0;z-index:0;pointer-events:none;user-select:none;border-radius:inherit;opacity:var(--ct-scan-enabled,1);background:repeating-linear-gradient(to bottom,var(--ct-scan-color,rgba(196,232,246,.08)) 0,var(--ct-scan-color,rgba(196,232,246,.08)) clamp(.5px,var(--ct-scan-line,1px),1px),transparent clamp(.5px,var(--ct-scan-line,1px),1px),transparent clamp(2px,var(--ct-scan-period,3px),4px));}.ct-scan__content{position:relative;z-index:1;min-width:0;}

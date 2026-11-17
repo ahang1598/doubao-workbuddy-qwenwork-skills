@@ -2,7 +2,7 @@
 name: lark-doc
 description: 飞书/豆包在线文档（`/docx`、`/wiki`）的阅读、新建和修改以及操作思维笔记，使用此技能。不处理 Office Word(.docx)、PDF文件；创建文档副本走 drive；`/page/<token>` 为妙搭应用，非飞书云文档
 metadata:
-  version: 1.0.47
+  version: 1.0.48
   requires:
     bins: ["lark-cli"]
   cliHelp: "lark-cli docs --help;lark-cli mindnotes --help"
@@ -23,7 +23,7 @@ metadata:
 - 典型应该使用本 skill 的情况：
   - 明确要求交付的是飞书/豆包在线文档
   - 明确给定的是飞书/豆包在线文档要求基于此编辑
-  - 读取在线云文档，或结合正文分析评论
+  - 读取在线云文档及其评论
 
 - 典型不应该使用本 skill 的情况：
   - 应路由到 [`word`](../word/SKILL.md) Skill：
@@ -33,7 +33,7 @@ metadata:
     - 用户提供一份 Word 文件要求基于此进行修改编辑
   - 应路由到 [`lark-drive`](../lark-drive/SKILL.md):
     - 要求把一个飞书/豆包在线文档导出为 Word 文件
-    - 添加、分页查看、回复评论或增删 reaction
+    - 添加、分页查看、回复评论或增删 reaction；读取文档评论先用 `docs +fetch`，仅当返回的评论信息无法满足需求时再用 `lark-drive` 补查。
     - 给定一个 Word 文件要求上传为在线文档
     - 找文档、导入导出、云空间文件上传 / 下载 / 权限管理
     - 复制文档、创建副本或另存为副本时，按其指引使用 `drive +copy`

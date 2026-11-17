@@ -1,6 +1,6 @@
 ---
 name: ppt
-version: 1.0.65
+version: 1.0.80
 description: 飞书幻灯片：创建和编辑幻灯片。创建演示文稿、读取幻灯片内容、管理幻灯片页面（创建、删除、读取、局部替换）。当用户需要创建或编辑幻灯片、读取或修改单个页面时使用。
 metadata:
   requires:
@@ -24,7 +24,7 @@ metadata:
 8. **Windows 平台差异**：按「本地电脑模式背景补充」中的规则判定当前环境为 Windows 时，**在阅读完 local-compat.md 后，必须完整 Read [`workflow/windows-compat.md`](references/workflow/windows-compat.md)，查看在 windows 平台上执行命令所必须要注意的问题，否则会出现大面积报错**。
 9. 跨轮编辑后的交付（强制）：只要本轮对用户可见的幻灯片发生了实际写入或更新，写入成功后必须在本轮再次调用 present_files 交付最新版本。即使该幻灯片链接已在前序轮次交付、URL 没有变化，也不得复用前轮产物卡片或只提示用户刷新。
 10. **Organizer 仅用于用户明确要求的审查或优化任务**：默认新建、编辑和模板制作在写入成功后直接交付。
-11. **【非常重要】用户提供了模版的情况下，绝对不允许批量生成/编辑xml文件**：一定要一个文件一个文件去写好、上传并确认写入成功；做批量生成/编辑的xml文件上传到页面中完全不可用的
+11. **模板专属规则**：模板任务的解析、读取频次、逐页制作、发布和复核，按 [workflow.md](references/template/workflow.md) 执行。
 12. **除了 chart 库生成的 svg 以外的 svg 图必须走 atomize**：手画的概念图/示意图/流程图/装饰图必须读 svg-writing-guide.md，用 drawing 库（`scripts/svg_lib/svg_drawing.py`，常用接口已列在指南第四节）画图，`to_slide` 输出可编辑原生元素。chart 库（`gen_svg_charts.py`）的数据图用 `chart_slide(...)` 放入页面，得到半可编辑结果（文字原生、同色色块可整体换色）。这两类结果直接按页用 `publish_slide()` 写入（默认请求跳过 lint）；图形按设计要求生成后直接转换并写入，默认不调用 `d.check()`、`d.review()` 或 `d.preview()`；按数值画长短的条形/点（如 ORR、比例对比）也属于数据图，必须走 `chart_slide`，不能用 rect 拼
 13. **【非常重要】MUST RELOAD SKILL：对于 PPT 的任务而言，无论之前是否读过 SKILL.md 文档，当用户提出了新的指令时，你的第一个工具调用必须是重新 Read ppt skill 下的 SKILL.md 文档，在此之前禁止使用任何其他工具或执行 xml 相关指令；若用户新上传了附件需要下载或解析，解析完附件后也必须立即重新 Read ppt 下的 SKILL.md 再继续，不得跳过。**
 14. **图文并茂与页型变化：** 高质量幻灯片应兼顾信息表达与阅读体验。根据内容选用高质量图片、截图、图表、流程图或结构示意图，让视觉素材帮助解释观点、展示证据，避免通篇堆文字或仅用图标装饰。不必为凑图片数量或满足“每页有图”而强行塞入无关图片；整套演示应有适当的页型变化，如大图页、图文分栏页、数据页、对比页、流程页和案例页；变化应体现在构图与信息层级，不能只换颜色或挪动卡片。保持字体、配色与视觉风格统一，避免连续多页机械套用同一布局。
@@ -36,9 +36,9 @@ metadata:
 
 | 任务                                           | 对应分支（必读）                                                                                          |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **新建幻灯片**（从零、参考风格，或把图片/PDF 1:1 复刻）           | [`SKILL.md`](SKILL.md) 中「二、新建幻灯片」Step 1 → Step 8                                                  |
+| **新建幻灯片**（从零、附件作事实材料，或把图片/PDF 同内容 1:1 复刻）           | [`SKILL.md`](SKILL.md) 中「二、新建幻灯片」Step 1 → Step 8                                                  |
 | **编辑已有幻灯片**（修改已有的 PPTX 或 Slides，或多轮对话里改前轮产物） | [`workflow/slides-editing.md`](references/workflow/slides-editing.md)                             |
-| **只要用户给了模板**（给了 PPTX 或 Slides，照它的版式做）        | [`workflow/template-editing-main.md`](references/workflow/template-editing-main.md)               |
+| **提供视觉规范制作新内容**（PPTX/Slides 模板、空母版、VI、PDF/图片风格参考；含已有 PPT 换模板）        | [`template/workflow.md`](references/template/workflow.md)               |
 | **读取分析已有幻灯片**                                | [`cli/lark-slides-xml-presentations-get.md`](references/cli/lark-slides-xml-presentations-get.md) |
 
 ## 二、新建幻灯片
@@ -56,7 +56,7 @@ metadata:
 
 设计系统决定整份 deck 的视觉，也决定了下一步要收集哪些素材。
 
-- 先排除两类不走本步的任务：用户给的是**模板**（PPTX 或飞书 Slides） → 不走本步，走「用户给了模板」场景，见 [`workflow/template-editing-main.md`](references/workflow/template-editing-main.md)；**复刻任务（把图片/PDF 1:1 还原成幻灯片）** → 不做场景选择，改为分析原图：估算每个元素的位置、字号、配色、间距，尽量 1:1 复刻原稿的版式与视觉。
+- 先排除两类不走本步的任务：用户给的是**模板、空版式、VI 或新内容的视觉参考** → 走 [`template/workflow.md`](references/template/workflow.md)；**复刻任务（把图片/PDF 1:1 还原成幻灯片）** → 不做场景选择，改为分析原图：估算每个元素的位置、字号、配色、间距，尽量 1:1 复刻原稿的版式与视觉。
 - 读 [`style/slide-taxonomy.md`](references/style/slide-taxonomy.md) 判定场景，七类里选一个主场景 → 读对应场景文档作为本 deck 的设计系统。
 - 不匹配任何场景 → 回退到兜底 [`style/fallback.md`](references/style/fallback.md)。
 - 用户已给品牌/配色/字体/参考风格 → 以用户为准。
@@ -100,9 +100,6 @@ metadata:
 
 动手落 XML 之前，先把语法读到位、把承接页面的空幻灯片建好。
 
-|   |   |   |
-| - | - | - |
-
 1. **读语法**：生成任何 XML 前必读 [`xml/xml-schema-quick-ref.md`](references/xml/xml-schema-quick-ref.md)，篇幅较长，务必完整读完；图表按选定设计系统调用 SVG 图表库，用户明确要求原生图表或需编辑已有原生 `<chart>` 时，必须先用 `python3 scripts/slides_chart_tool.py get <id-or-keyword>` 获取对应 XML 片段，再照抄工具输出；用 svg 专业图表前跑 `python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 一次拿到完整的调用范式总览，**不要接 `| head` / `| tail` 截断，末尾的全部入口索引也要看到**（也可 `chart_help('sankey')` 拿单张详情）；需要使用到树状图时先跑 `python3 -c "from scripts.gen_svg_relations import relation_help; print(relation_help())"`（也可 `relation_help('<slug>')` 拿单张详情），支持范围以当前 manifest 为准；正式 Slides 必须用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出多个独立元素，不得用 `<embed>` 作树状图主体；**手写 SVG 前必读 [`xml/svg-writing-guide.md`](references/xml/svg-writing-guide.md)** 了解规则；用图标先用 `python3 scripts/iconpark_tool.py search --query "<关键词>"` 检索（见 [`xml/iconpark.md`](references/xml/iconpark.md)）；选择、修改字体必读 [`xml/fonts.md`](references/xml/fonts.md)，不要凭记忆填写 `fontFamily`。
 2. **建空白幻灯片（两步创建·第一步）**：先 `slides +create --title <幻灯片标题>`（不带 `--slides`）建一份空白幻灯片（见 [`cli/lark-slides-create.md`](references/cli/lark-slides-create.md)），**必须从工具返回结果中拿到并记下 `xml_presentation_id` 和 `url`**。Step 6 上传图片、Step 7 写入要用 `xml_presentation_id`，Step 5 通知、Step 8 交付要用幻灯片链接 `url`，缺失时先检查完整响应，并用已有 ID／链接只读确认创建状态，按 [`error-handling.md`](references/workflow/error-handling.md) 恢复；仅确认未创建成功后才重试创建，状态不明不得直接重建。
 3. **开工通知**：用 present_files 工具把上一步拿到的 `url` 发给用户，并在回复里附上简短说明。这个链接和 Step 8 交付用的是同一个地址，但两次都必须发，不能省掉任何一次：这里是开工通知，Step 8 才是成稿交付。
@@ -145,7 +142,7 @@ lark-cli slides +add-slide --no-lint \
 
 ### Step 8 · 交付
 
-**成稿交付**：用 present_files 工具明确交付最终产物，并在回复里附上制作介绍；编辑已有幻灯片同样必须再次交付。本地已打开文件按 [`workflow/local-compat.md`](references/workflow/local-compat.md) 交付原始路径，不要求磁盘同步更新，也不得声称已代用户保存。在线幻灯片交付最终链接；新建稿的链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。
+**成稿交付**：用 present_files 工具明确交付最终产物，并在回复里附上制作介绍，但是禁止在最终回复中直接给出产物的链接；编辑已有幻灯片同样必须再次交付。本地已打开文件按 [`workflow/local-compat.md`](references/workflow/local-compat.md) 交付原始路径，不要求磁盘同步更新，也不得声称已代用户保存。在线幻灯片交付最终链接；新建稿的链接**用 `+create` 返回的 `url` 字段**（Step 5 已记下）。
 
 ## 三、参考文档地图
 
@@ -198,8 +195,7 @@ lark-cli slides +add-slide --no-lint \
 | 文档                                                                 | 何时读                                                               |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | [`slides-editing.md`](references/workflow/slides-editing.md)       | 在原稿上改的完整流程：理解原稿 → 定位改哪里 → 按需备素材 → 修改并确认写入 → 交付 |
-| [`template-editing-main.md`](references/workflow/template-editing-main.md) | 拿模板做一份新 deck（PPTX/飞书 Slides）：理解模板 → 制定 page-plan → 建空白 deck → 逐页生成并确认写入 → 交付 |
-| [`template-editing-organizer.md`](references/workflow/template-editing-organizer.md) | 仅用户明确要求审查或优化时读取并派发；默认制作流程不启动 |
+| [模板制作流程](references/template/workflow.md) | L1–L9 唯一制作入口：解析资产 → 内容与版式配方 → 逐页发布 → 完整稿复核与交付 |
 | [`error-handling.md`](references/workflow/error-handling.md)       | XML 语法/接口/错误码排障与失败处理                  |
 | [`validation-xml.md`](references/workflow/validation-xml.md) | 写入响应确认、失败状态处理及按需读取原稿 |
 | [`windows-compat.md`](references/workflow/windows-compat.md) | windows 本地电脑操作报错兼容说明                                                 |
@@ -216,8 +212,8 @@ lark-cli slides +add-slide --no-lint \
 | [`gen_svg_charts.py`](scripts/gen_svg_charts.py) | SVG 图表生成：先写下每页数据图要回答的研究问题，按 `chart_help()` 的学科表选专业入口（文献已报告的汇总值即可作图）；类别柱状只用于没有更贴切问题的单值概览。`chart_slide(slug, x=, y=, width=, height=, **kwargs)` 返回半可编辑页面片段（`make_<slug>` 只返回 SVG）。**主入口**：`python3 -c "from scripts.gen_svg_charts import chart_help; print(chart_help())"` 获取数据条件与名称短索引；`chart_help('<slug>')` 按需获取签名、示例、变体和组合条件 |
 | [`svg_lib/svg_drawing.py`](scripts/svg_lib/svg_drawing.py) | 手写示意图的几何与排布助手：轮廓端口、连线避障、行/列/网格/环形排布、两列配对、端口分配、按文字定尺寸的节点框与自动标签。**主入口**：`python3 -c "from scripts.svg_lib.svg_drawing import drawing_help; print(drawing_help())"`，用法见 svg-writing-guide.md 第四节 |
 | [`gen_svg_relations.py`](scripts/gen_svg_relations.py) | SVG 树状图生成：支持范围以当前 manifest 为准，运行 `relation_help()` / `relation_help('<slug>')` 或 CLI `--list` 查看。正式 Slides 必须用 `make_relation_atomized(..., strict_no_embed=True)` 或 CLI `--atomized` 输出拆分的独立元素；**主入口**：`python3 -c "from scripts.gen_svg_relations import relation_help; print(relation_help())"` |
-| [`safe_update_slide.py`](scripts/safe_update_slide.py) | 目标页级 CAS 保护的 `+update-slide` 包装：语义级 diff（元素签名：元素数/id 集合/几何/文本前 60 字），一致才允许写入，不一致 abort 并把服务端最新版覆盖本地。**仅 Organizer 流式检查+refine 模式使用**（见 template-editing-organizer.md）；MainAgent 主流程走裸 `+update-slide` 即可 |
-| [`parse_template.py`](scripts/parse_template.py) | template-editing 分支 Step 1 用：离线解析 PPTX 产出 `template-manifest.json`（每页 role / 壳层 shape / 可用区 bbox / 占位文本清单 / 缩略图路径）+ `theme.json`（配色 + 字体）+ 抽全部图片到 `assets/` + 渲染每页缩略图到 `thumbs/`。用法：`python3 scripts/parse_template.py --pptx <path> --work-dir <WORK_DIR>` |
+| [`safe_update_slide.py`](scripts/safe_update_slide.py) | 目标页级 CAS 保护的 `+update-slide` 包装：语义级 diff（元素签名：元素数/id 集合/几何/文本前 60 字），一致才允许写入，不一致 abort 并把服务端最新版覆盖本地。**仅 Organizer 流式检查+refine 模式使用**；MainAgent 主流程走裸 `+update-slide` 即可 |
+| [`parse_template.py`](scripts/template/parse_template.py) | template-editing 分支 Step 1 用：离线解析 PPTX 产出 `template-manifest.json`（每页 role / 壳层 shape / 可用区 bbox / 占位文本清单 / 缩略图路径）+ `theme.json`（配色 + 字体）+ 抽全部图片到 `assets/` + 渲染每页缩略图到 `thumbs/`。用法：`python3 scripts/template/parse_template.py --pptx <path> --work-dir <WORK_DIR>` |
 
 
 

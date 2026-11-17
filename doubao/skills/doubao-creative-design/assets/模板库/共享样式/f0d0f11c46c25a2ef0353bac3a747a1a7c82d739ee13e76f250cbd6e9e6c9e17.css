@@ -1,0 +1,10 @@
+/* 特效-文字霓虹
+可见证据：浅色字腔、纤细灰边与外围柔光。
+复现顺序：外围柔光 → 纤细边缘 → 浅色字腔；是浅底柔光版本，与已有深底霓虹灯分别保留。
+参数为 proposed 复现建议，原软件和精确参数未知。em 以目标字号为参照，正 x 向右、正 y 向下。
+建议范围：光晕 .08–.24em；字边 .008–.025em。
+保留真实文字；描边和镂空的伪元素仅作装饰。换字同步 data-text，换底色同步 --fx-surface；为阴影和光晕预留外部净空。
+*/
+.特效_文字霓虹{display:inline-block;--fx-face:#fff;--fx-line:#aaa;--fx-glow:#aaa;--fx-blur:.17em;
+color:var(--fx-face);-webkit-text-stroke:.012em var(--fx-line);text-shadow:0 0 .07em var(--fx-glow),0 0 var(--fx-blur) var(--fx-glow),0 0 calc(var(--fx-blur)*1.7) #ccc;
+}

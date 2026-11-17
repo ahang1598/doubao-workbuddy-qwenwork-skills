@@ -47,7 +47,7 @@
 - value 用 `ExactDate(2026-01-01)`、`ExactDate(2026-01-01 11:30)` 或相对日期；当前基准仅 `Today`、`Yesterday`、`Tomorrow`。
 - 不得发送 `CurrentWeek`、`CurrentMonth` 等周/月关键字；本环境拒绝。
 - tuple DSL（View/Record/Form 显隐）与 `+data-query`/Dashboard 对象式 filter 不得互用关键字、operator、value 形状。
-- 长期复用本周、本月/今年筛选：用动态 Formula 筛其字符串/数字结果；仅经用户授权时新建/修改辅助字段。写后回读字段和代表性结果，再提交。
+- 长期复用本周、本月/今年筛选：用动态 Formula 筛其字符串/数字结果；仅经用户授权时新建/修改辅助字段。结果异常、后续决策依赖实际值或用户明确要求时再读取字段和代表性结果。
 
 例如“是否本月”字段的表达式为 `IF(AND(YEAR([日期])=YEAR(TODAY()),MONTH([日期])=MONTH(TODAY())),"是","否")`，筛选写 `{"logic":"and","conditions":[["是否本月","==","是"]]}`。
 

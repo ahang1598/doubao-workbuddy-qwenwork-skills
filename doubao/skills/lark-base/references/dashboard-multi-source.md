@@ -7,7 +7,7 @@
 
 同一 Base 内支持 `column/line/bar/scatter/combo/area/pie/ring/funnel/wordCloud/statistics/ranking/radar/slicer`。传 `data_sources`（至少 2 个不重复的数据表，无额外数量上限）即启用多源，不可混用顶层单源字段，也不需要提交内部 `enableMultiDataSource`。
 
-配套 CLI 在多源创建和更新时均将来源内 `series[].rollup` 转为大写，更新不补创建默认值；本地拒绝相同 Base 写法与表名的重复来源、切片器来源携带 `series/count_all` 和范围外的 `backgroundOpacity`。省略 Base 与显式 Base 的同表判定、字段存在性、权限和跨源兼容性仍由服务端核对；本地校验通过不能替代服务端或页面验收。
+配套 CLI 在多源创建和更新时均将来源内 `series[].rollup` 转为大写，更新不补创建默认值；本地拒绝相同 Base 写法与表名的重复来源、切片器来源携带 `series/count_all` 和范围外的 `backgroundOpacity`。省略 Base 与显式 Base 的同表判定、字段存在性、权限和跨源兼容性仍由服务端核对；本地校验通过不能证明服务端支持或实际显示效果。
 
 ## 字段结构
 
@@ -29,21 +29,23 @@
 
 `multi_source.series_split` 默认 false（汇总），通常无需传；true 按来源拆分系列。它不是多数据源开关。
 
+汇总前确认各来源指标同义、单位一致且业务事实不重叠，明细与其周期汇总等同一事实只计一次。
+
 ## 各组件的多源能力
 
 | 组件 | 来源与组件级配置 |
 |---|---|
 | `column/line/bar/scatter/combo/area/pie/ring/funnel/wordCloud` | 每源记录数或唯一指标、分组和筛选；`multi_source.series_split` 控制汇总／拆系列 |
 | `statistics` | 每源记录数或唯一指标；不允许分组或排序；格式用 `multi_source.number_format` 或原生格式，不能混用 |
-| `ranking` | 每源恰好一个分组；`multi_source.limit_size` 为 1–500；排序只支持 `value` |
+| `ranking` | 每源恰好一个分组；顶层 `limit_size` 为 1–500；顶层 sort.type:value 并指定来源 |
 | `radar` | 每源必须一个分组，使用按记录聚合 |
 | `slicer` | 每源恰好一个分组，禁止 `series/count_all`；展示和选择模式放在 `multi_source`，不放顶层 |
 
-统一排序用 `multi_source.sort={type:group|value,order:asc|desc}`；不提供时各来源分组排序须一致。更新时 `alias:null` 清除别名，不通过改数组顺序改变身份。多源切片器的 `multi_source.displayMode/selectMode/order` 分别为 `dropdown|tiled`、`single|multiple`、`asc|desc`，创建缺省为 `tiled/multiple/asc`；其他组件不接受这三项。
+指标值排序只用顶层 `sort`，通过 `by.type:source` 引用最新 Get 返回的来源 ID，见[公共排序](dashboard-sort.md)；字段排序仍写各来源的 group_by[i].sort。更新时 `alias:null` 清除别名，不通过改数组顺序改变身份。多源切片器的 `multi_source.displayMode/selectMode/order` 分别为 `dropdown|tiled`、`single|multiple`、`asc|desc`，创建缺省为 `tiled/multiple/asc`；其他组件不接受这三项。
 
 ## 创建与更新规则
 
-Get 返回每源的 `source_id/base_token/table_name` 和生效配置。后续优先使用返回的 `source_id`，也可用唯一 `table_name`；两者同时提供必须定位同一来源。来源身份不按数组下标推测。
+Get 返回每源的 `source_id/base_token/table_name` 和生效配置。后续优先使用返回的 `source_id`，也可用唯一 `table_name`；两者同时提供必须定位同一来源。来源身份是不透明 ID，不按数组下标构造 `src_2`，不假定一定为连续数字。旧配置升级后的身份以最新 Get／更新响应为准。
 
 单源转多源使用 `+dashboard-block-update`，向同一组件提交至少两个来源的完整 `data_sources`，沿用创建时的字段和默认值。先 Get 读取原配置，需要保留原统计口径时，将原表的指标、分组和筛选显式放入对应来源；不要将原扁平字段与 `data_sources` 混传。转换保留组件 ID、名称、布局和未修改的样式，不需要删除或重建。只传 `multi_source` 不能开启多源。
 
@@ -54,7 +56,7 @@ Get 返回每源的 `source_id/base_token/table_name` 和生效配置。后续�
 - `filter` 对象替换全部条件；`filter:null` 清空；省略保留。表与字段须属于对应来源，各来源仍须符合指标、rollup 和维度一致性约束。
 - `multi_source` 按字段更新，不替换来源数组；仅传 `{"multi_source":{"series_split":true}}`、排行榜的 `limit_size` 或切片器选择模式均不改其他来源。指标卡 `number_format` 按子字段合并。
 - 切片器展示更新保留联动目标和已选条件；显式更新来源配置或改变单／多选模式会清空已选条件。
-- 旧快照自定义来源 ID 可能在更新后归一为 `src_N`；继续操作时使用最新响应身份。
+- 旧快照自定义来源 ID 可能在升级或更新后归一化；继续操作时使用最新响应身份，不自行推算或沿用缓存中的旧 ID。
 
 ## 可复制模板
 
@@ -83,7 +85,7 @@ lark-cli base +dashboard-block-update \
 
 ## 使用限制与错误处理
 
-来源配置或回读失败时，按错误消息中的来源身份定位数据表，检查表名、字段和访问权限。错误未明确来源时，不推断某张表异常。
+来源配置或读取失败时，按错误消息中的来源身份定位数据表，检查表名、字段和访问权限。错误未明确来源时，不推断某张表异常。
 
 `+dashboard-block-get-data` 读取计算结果，不提供独立的每源计算状态、结果归属或下钻接口。多源配置不支持跨 Base、组件复制、来源增删／重排，以及跨组件大类切换。同大类内的堆积、平滑等子形态使用 [同大类子形态切换](dashboard-style.md#同大类子形态切换) 的 `viewModel.chartKind`，不修改来源配置。
 

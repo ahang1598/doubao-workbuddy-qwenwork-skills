@@ -19,7 +19,7 @@ lark-cli base +base-create --name "项目管理" --table-name "任务" --fields 
 |参数|规则|
 |---|---|
 |`--name`|必填；Base 名|
-|`--table-name`／`--fields`|分别指定初始表名和字段 JSON 数组；字段对象复用 [字段创建协议](field-commands.md#创建字段field-create)与[字段定义](field-config.md)；数组应非空，首项成为主字段|
+|`--table-name`／`--fields`|分别指定初始表名和字段 JSON 数组；字段对象复用 [字段创建协议](field-commands.md#创建字段field-create)与[字段定义](field-config.md)；数组应非空，首项成为主字段，须符合[主字段类型约束](field-config.md#主字段类型)；公式主字段按[初始字段协议](table-commands.md#创建时的初始字段)分步配置|
 |`--folder-token`|可选；云空间文件夹 token，非 Base 内 `--parent-id`|
 |`--time-zone`|可选；创建时区|
 
@@ -59,7 +59,7 @@ lark-cli base +base-update --base-token "<base_token>" \
 |证据|含义／限制|
 |---|---|
 |更新响应|`base.revision`、`base.time_zone`、`updated: true` 表示服务端接受新版本、时区|
-|写后 `+base-get`|返回 backend Base；有 `base.time_zone` 时独立核对；CLI 不补缺失，缺失不证明写失败|
+|按需读取 `+base-get`|更新响应缺少后续所需字段、结果未知或用户明确要求核验时，读取 backend Base；CLI 不补缺失，缺失不证明写失败|
 |已有表单|以 `+form-submission-settings-get` 读取；字段位置与空值含义见 [提交设置协议](form-settings.md#提交设置form-submission-settings-get--form-submission-settings-update)|
 
 缺失的读取字段不能用请求参数或写响应补填。
@@ -82,4 +82,4 @@ lark-cli base +base-update --base-token "<base_token>" \
 |`+base-copy` 超时／丢响应|结果未知，非成功退出不证明副本不存在；有新 token 时以 `+base-get` 读取|
 |时区更新丢响应|按“响应”一节读现值；允许同值不等于能从字段缺失判原请求失败|
 
-目标识别、部分完成和重复对象见 [Scene 恢复](../scenes/base.md#创建结果未知与重复对象)；时区按 [Base 验收](../scenes/base.md#按操作核对证据)核对。
+目标识别、部分完成和重复对象见 [Scene 恢复](../scenes/base.md#创建结果未知与重复对象)；时区完成条件见 [Base 操作结果](../scenes/base.md#按操作完成)。

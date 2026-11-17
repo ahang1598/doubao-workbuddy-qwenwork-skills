@@ -13,7 +13,7 @@
 
 ## 分享设置（+form-share-get / +form-share-update）
 
-get 读取，update 修改。题目、显隐顺序、布局、二维码分别走 `+form-questions-*`、`+view-set-visible-fields`（见[可见题目与排序](form-questions.md#可见题目与排序)）、`+form-display-settings-*`、`+form-share-qrcode-*`。分享链接从 get 返回读取，不得拼 URL。
+get 读取，update 修改。题目、显隐顺序、布局、二维码分别走 `+form-questions-*`、`+view-set-visible-fields`（见[可见题目与排序](form-questions.md#可见题目与排序)）、`+form-display-settings-*`、`+form-share-qrcode-*`。分享链接从命令响应读取，不得拼 URL。
 
 ### 分享设置参数
 
@@ -37,7 +37,7 @@ get 读取，update 修改。题目、显隐顺序、布局、二维码分别走
 
 ### 分享设置示例
 
-update 一次只改一项；多项分多条，之间无需重读，最后 get 回读。
+update 一次只改一项；多项分多条，之间无需重读。只有需要取得响应未返回的分享链接、结果未知或用户明确要求核验时再 get。
 
 ```bash
 lark-cli base +form-share-get --base-token "<base_token>" --table-id "<table_id>" --form-id "<form_id>"
@@ -53,7 +53,7 @@ update 是 PATCH：只发送显式字段，其他字段不变。`enabled`、`acc
 {"settings":{"require_login":false}}
 ```
 
-get 回显分享状态、访问范围、settings 和分享链接。交付填写入口时，回读验收 `enabled=true`、`share_url` 非空、范围和 settings 符合目标；这只证明已保存，不证明真实提交已测。父级 `base --help` 未列命令时，用 `+form-share-get --help`、`+form-share-update --help` 核对，不得据父级帮助判定不存在。
+get 回显分享状态、访问范围、settings 和分享链接。更新响应不含交付所需的 `share_url`、结果未知或用户明确要求核验时再 get。父级 `base --help` 未列命令时，用 `+form-share-get --help`、`+form-share-update --help` 核对，不得据父级帮助判定不存在。
 
 ### 分享设置错误与重试
 

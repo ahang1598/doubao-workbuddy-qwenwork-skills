@@ -1,0 +1,107 @@
+*{box-sizing:border-box;}
+html, body{margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;}
+body{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10{position:relative;width:800px;min-height:1130px;margin-top:0px;margin-right:auto;margin-bottom:0px;margin-left:auto;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;font-weight:400;font-synthesis-weight:none;font-synthesis-style:none;font-synthesis-small-caps:none;print-color-adjust:exact;height:1130px;}
+#resume-10 *{font-synthesis-weight:none;font-synthesis-style:none;font-synthesis-small-caps:none;}
+#resume-10 h1, #resume-10 h2, #resume-10 h3, #resume-10 p{margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;}
+#resume-10 .hero{position:relative;min-height:476px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;display:grid;grid-template-columns:minmax(0px, 283px) minmax(0px, 343px);row-gap:18px;column-gap:18px;padding-top:76px;padding-right:77px;padding-bottom:56px;padding-left:79px;align-items:start;}
+#resume-10 .photo-card{position:relative;width:283px;height:343px;padding-top:19px;padding-right:13px;padding-bottom:0px;padding-left:13px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .ref-asset{width:257px;height:259px;background-position-x:center;background-position-y:center;background-size:cover;background-repeat:no-repeat;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .photo-name{position:absolute;right:24px;top:261px;z-index:4;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:22px;border-top-right-radius:22px;border-bottom-right-radius:22px;border-bottom-left-radius:22px;padding-top:4px;padding-right:13px;padding-bottom:5px;padding-left:13px;font-size:23px;line-height:1;font-weight:700;letter-spacing:-0.6px;}
+#resume-10 .photo-tags{margin-top:5px;display:flex;flex-wrap:wrap;row-gap:3px;column-gap:7px;width:145px;}
+#resume-10 .tag{padding-top:1px;padding-right:7px;padding-bottom:2px;padding-left:7px;border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px;font-size:10px;line-height:1.06;white-space-collapse:collapse;text-wrap-mode:nowrap;}
+#resume-10 .tag.orange{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .tag.pink{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .tag.green{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .hashes{position:absolute;bottom:8px;right:13px;display:flex;row-gap:10px;column-gap:10px;font-size:10px;line-height:1.05;font-weight:700;}
+#resume-10 .corner-flower{position:absolute;z-index:5;pointer-events:none;}
+#resume-10 .flower-blue{width:42px;height:42px;left:1px;top:10px;transform:rotate(-12deg);}
+#resume-10 .flower-pink{width:40px;height:40px;right:0px;top:5px;transform:rotate(11deg);}
+#resume-10 .flower-orange{width:60px;height:60px;left:-24px;top:183px;}
+#resume-10 .hero-copy{min-width:0px;position:relative;padding-top:0px;}
+#resume-10 .identity{height:auto;position:relative;min-height:220px;display:flex;flex-direction:column;row-gap:16px;padding-bottom:20px;}
+#resume-10 .name{position:relative;top:auto;left:auto;font-weight:400;font-size:109px;line-height:0.93;letter-spacing:-3px;width:100%;overflow-wrap:anywhere;}
+#resume-10 .name span{display:block;width:max-content;max-width:100%;padding-bottom:0.25em;margin-bottom:-0.25em;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:text;}
+#resume-10 .name .surname{font-size:96px;margin-top:-5px;margin-left:40px;}
+#resume-10 .profession{position:relative;right:auto;top:auto;width:133px;font-size:14px;line-height:1.15;left:auto;align-self:flex-end;}
+#resume-10 .birth{margin-bottom:1px;}
+#resume-10 .job-line{width:max-content;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;padding-top:2px;padding-right:7px;padding-bottom:2px;padding-left:7px;font-size:16px;font-weight:700;line-height:1.14;}
+#resume-10 .job-line.first{display:flex;align-items:center;row-gap:7px;column-gap:7px;}
+#resume-10 .job-line.second{margin-top:4px;margin-right:0px;margin-bottom:0px;margin-left:47px;padding-top:2px;padding-right:9px;padding-bottom:2px;padding-left:9px;}
+#resume-10 .play{width:0px;height:0px;border-top-width:6px;border-top-style:solid;border-bottom-width:6px;border-bottom-style:solid;border-left-width:12px;border-left-style:solid;}
+#resume-10 .intro{font-size:13.4px;line-height:1.14;text-align:justify;letter-spacing:0px;}
+#resume-10 .intro strong{font-weight:700;font-style:italic;}
+#resume-10 .paper{position:relative;min-height:654px;padding-top:36px;padding-right:77px;padding-bottom:58px;padding-left:75px;isolation:isolate;}
+#resume-10 .paper-noise{position:absolute;top:0px;right:0px;bottom:0px;left:0px;width:100%;height:100%;z-index:-1;pointer-events:none;}
+#resume-10 .columns{display:grid;grid-template-columns:minmax(0px, 373px) minmax(0px, 239px);row-gap:36px;column-gap:36px;align-items:start;}
+#resume-10 h2{font-size:26px;line-height:1.08;font-weight:700;letter-spacing:-0.55px;margin-top:0px;margin-right:0px;margin-bottom:7px;margin-left:0px;}
+#resume-10 .education{margin-bottom:17px;}
+#resume-10 .detail-grid{display:grid;grid-template-columns:minmax(0px, 96px) minmax(0px, 1fr);column-gap:9px;}
+#resume-10 .date, #resume-10 .entry-name{font-size:12.7px;line-height:1.16;letter-spacing:-0.15px;}
+#resume-10 .school-note{font-size:9px;font-style:italic;line-height:1.05;}
+#resume-10 .school-note.inline{display:inline;}
+#resume-10 .experience{margin-bottom:13px;}
+#resume-10 .experience h2{margin-bottom:7px;}
+#resume-10 .entry{margin-bottom:5px;}
+#resume-10 .entry:last-child{margin-bottom:0px;}
+#resume-10 .entry-name{margin-bottom:2px;}
+#resume-10 .bullets{list-style-position:initial;list-style-type:none;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;}
+#resume-10 .bullets li{position:relative;padding-left:10px;font-size:8.9px;line-height:1.22;letter-spacing:-0.1px;margin-bottom:1px;}
+#resume-10 .bullets li::before{content:"";position:absolute;left:0px;top:3px;width:6px;height:6px;border-top-left-radius:50%;border-top-right-radius:50%;border-bottom-right-radius:50%;border-bottom-left-radius:50%;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .contact{margin-bottom:18px;}
+#resume-10 .contact h2{margin-bottom:8px;}
+#resume-10 .contact-line{display:grid;grid-template-columns:minmax(0px, 28px) minmax(0px, 1fr);row-gap:9px;column-gap:9px;align-items:center;margin-bottom:4px;min-height:27px;font-size:12.7px;line-height:1.1;}
+#resume-10 .contact-icon{display:grid;align-items:center;justify-items:center;width:28px;height:27px;border-top-left-radius:3px;border-top-right-radius:3px;border-bottom-right-radius:3px;border-bottom-left-radius:3px;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .contact-icon svg{width:23px;height:23px;display:block;}
+#resume-10 .at{font-size:25px;line-height:1;font-weight:400;}
+#resume-10 .contact-text{overflow-wrap:anywhere;}
+#resume-10 .software-list{display:flex;row-gap:5px;column-gap:5px;flex-wrap:wrap;margin-top:7px;}
+#resume-10 .software-list span{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:3px;border-top-right-radius:3px;border-bottom-right-radius:3px;border-bottom-left-radius:3px;min-height:30px;padding-top:7px;padding-right:9px;padding-bottom:6px;padding-left:9px;font-size:14px;font-weight:700;line-height:1.1;}
+#resume-10 .hard{margin-bottom:12px;}
+#resume-10 .right-column h2{margin-bottom:5px;}
+#resume-10 .right-column .bullets li{font-size:8.75px;line-height:1.16;margin-bottom:2px;}
+#resume-10 .soft{margin-bottom:10px;}
+#resume-10 .technical h2{margin-bottom:0px;}
+#resume-10 .skill-board{position:relative;width:250px;height:177px;margin-left:-10px;margin-top:0px;}
+#resume-10 .selection{position:absolute;left:10px;right:0px;top:10px;height:132px;border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;border-top-style:dashed;border-right-style:dashed;border-bottom-style:dashed;border-left-style:dashed;z-index:0;}
+#resume-10 .selection i{position:absolute;width:4px;height:4px;border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;border-top-style:solid;border-right-style:solid;border-bottom-style:solid;border-left-style:solid;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10 .selection i:nth-child(1){left:-2px;top:-2px;}
+#resume-10 .selection i:nth-child(2){right:-2px;top:-2px;}
+#resume-10 .selection i:nth-child(3){right:-2px;bottom:-2px;}
+#resume-10 .selection i:nth-child(4){left:-2px;bottom:-2px;}
+#resume-10 .sticker{position:absolute;display:grid;align-items:center;justify-items:center;transform:rotate(var(--rot,0deg));z-index:var(--z,1);}
+#resume-10 .sticker > svg{position:absolute;width:100%;height:100%;top:0px;right:0px;bottom:0px;left:0px;overflow-x:visible;overflow-y:visible;}
+#resume-10 .sticker .sticker-label{position:relative;text-align:center;font-size:9.5px;line-height:1.03;letter-spacing:-0.1px;padding-top:4px;padding-right:4px;padding-bottom:4px;padding-left:4px;}
+#resume-10 .sticker.posm{left:-4px;top:14px;width:88px;height:84px;--rot:-16deg;--z:3;}
+#resume-10 .sticker.red{left:65px;top:0px;width:116px;height:72px;--rot:8deg;--z:2;}
+#resume-10 .sticker.long{left:169px;top:1px;width:88px;height:85px;--rot:-22deg;--z:3;}
+#resume-10 .sticker.long .sticker-label{font-size:8.5px;white-space-collapse:collapse;text-wrap-mode:nowrap;}
+#resume-10 .sticker.pack{left:67px;top:49px;width:86px;height:74px;--rot:15deg;--z:4;}
+#resume-10 .sticker.pack .sticker-label{font-size:9px;}
+#resume-10 .sticker.mascot{left:122px;top:62px;width:83px;height:61px;--rot:-7deg;--z:5;}
+#resume-10 .sticker.mascot .sticker-label{font-size:9px;}
+#resume-10 .sticker.deep{left:16px;top:91px;width:93px;height:69px;--rot:-10deg;--z:6;}
+#resume-10 .sticker.brand{left:109px;top:98px;width:67px;height:64px;--rot:4deg;--z:6;}
+#resume-10 .sticker.brand .sticker-label{font-size:8.4px;}
+#resume-10 .sticker.illustration{left:179px;top:73px;width:79px;height:75px;--rot:13deg;--z:7;}
+#resume-10 .sticker.illustration .sticker-label{font-size:9px;}
+#resume-10 .hobbies{margin-top:1px;margin-bottom:12px;}
+#resume-10 .hobby-grid{display:grid;grid-template-columns:repeat(3, minmax(0px, 1fr));row-gap:6px;column-gap:3px;margin-top:7px;}
+#resume-10 .hobby-grid span{display:grid;align-items:center;justify-items:center;background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:4px;border-bottom-left-radius:4px;padding-top:6px;padding-right:2px;padding-bottom:6px;padding-left:2px;min-height:28px;font-size:12.5px;line-height:1.05;}
+#resume-10 .links h2{margin-bottom:5px;}
+#resume-10 .links .bullets li{font-size:8.3px;line-height:1.17;letter-spacing:-0.1px;overflow-wrap:anywhere;}
+#resume-10 .defs{position:absolute;width:0px;height:0px;pointer-events:none;}
+@media print {body{background-position-x:initial;background-position-y:initial;background-size:initial;background-repeat:initial;background-attachment:initial;background-origin:initial;background-clip:initial;}
+#resume-10{margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;}}
+#resume-10[data-language="zh"] .name{font-weight:600;font-size:71px;letter-spacing:2px;}
+#resume-10[data-language="zh"] .name .surname{font-size:64px;}
+#resume-10[data-language="zh"] h2{font-weight:600;}
+#resume-10{color:var(--resume-ink,#222);background-color:var(--resume-paper,#fafafa);font-family:Arial,"PingFang SC",sans-serif;}
+#resume-10 .hero{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .photo-card{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .ref-asset{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .photo-name{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .job-line{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .software-list span{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .hobby-grid span{background-color:var(--resume-surface,#e5e6e7);}
+#resume-10 .selection i{visibility:hidden;}

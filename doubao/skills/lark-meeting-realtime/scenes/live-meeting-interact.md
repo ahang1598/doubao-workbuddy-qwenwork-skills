@@ -1,0 +1,176 @@
+# 读取会中事件、会中互动与主持管理
+
+围绕一场正在进行的会议执行只读查询或用户明确授权的会中写操作。已结束会议和会后产物携带已有标识、用户目标和必要查询结果转入 [lark-meeting](../../lark-meeting/SKILL.md)。
+
+各节是按目标选择的分支，不是依次执行的步骤。已有 `meeting_id` 时跳过会议发现；用户要会议绑定群时直接进入 [获取或创建会议群聊](#获取或创建会议群聊)，不要先拉取事件。“会里刚才发了什么”指会中聊天事件，“会议绑定群里发了什么”指 IM 消息；上下文无法区分时先确认消息位置。
+
+## 发现进行中的会议
+
+没有 `meeting_id` 时：
+
+```bash
+# 当前登录用户正在参加的会议
+lark-cli vc +meeting-list-active --format json
+```
+
+- 返回多个会议时，展示标题、会议号和 `meeting_id` 让用户选择，不按“最近”擅选。
+- 用户只给 9 位会议号时，在活跃会议结果中按 `meeting_no` 匹配；匹配失败时说明当前登录用户没有发现该会议号对应的进行中会议。
+
+会议号匹配见 [`lark-vc-meeting-list-active`](../references/lark-vc-meeting-list-active.md)。
+
+## 读取最新会中事件
+
+```bash
+lark-cli vc +meeting-events --meeting-id <meeting_id> --page-all --format pretty
+```
+
+- 默认使用 `--page-all` 获取当前完整事件流，并保留返回的 `page_token` 供下次增量查询。
+- 回答“现在、刚刚、最新”或当前会议总结前，重新查询事件；只有用户明确要求基于历史快照时才复用旧结果。
+- 默认用 pretty 理解时间线；需要精确结构化字段、文档上下文或转发到 IM 时使用 JSON。
+- pretty 时间线中的 `[hh:mm:ss]` 表示距会议开始的相对时间，如 `[00:01:32]` 表示会议开始后 1 分 32 秒；向用户引用时说明这一含义。
+- 不要用会中事件代替已结束会议的参会人快照或会后复盘。
+
+事件类型、分页、会后产物替代路径和错误码见 [`lark-vc-meeting-events`](../references/lark-vc-meeting-events.md)。
+
+## 读取共享内容和文档上下文
+
+按事件中的 `share_id`、`share_doc`、`comment_id`、`element_token` 和 `block_id` 精确关联：
+
+- 读取评论时只查询当前 `comment_id`，不要扫描整篇文档评论。
+- 多个共享文档按用户问题选择相关文档；不要用“最近一次共享”替代当前 item 的 `share_id`。
+- 只有用户明确要求预览且事件提供受支持的 `element_type` 与 token 时才下载，并显式选择输出路径。
+- 关联或读取失败时标记 partial，保留原始标识和 raw payload；不要自动下载或猜测文档类型兜底。
+
+精确事件 schema 和后续命令见 [`lark-vc-meeting-events`](../references/lark-vc-meeting-events.md) 的文档上下文部分。
+
+## 读取当前会议画面
+
+**用户每次明确要求查看屏幕、投屏或当前会议画面时，必须重新执行一次 `vc +meeting-screenshot`；即使此前截图失败（包括灰度不可用），也不能跳过本次尝试。** 本次仍失败时，按本次实际错误说明无法读取画面，不凭旧截图或历史失败推断当前屏幕内容。
+
+用户未明确要求查看画面时，仅当问题必须读取当前会议合成画面中的视觉信息，且结构化内容不足以回答时截图。适用任务包括识别投屏中实际显示的网页地址、界面状态或报错，理解图表、幻灯片等依赖版式或图像的信息，以及查看摄像头画面。
+
+用户未明确要求查看画面且事件、字幕、聊天或可直接读取的共享文档已经足够回答时，不要截图；会议内容查询、总结或共享文档定位也不以截图兜底，不要仅因为会议正在进行就读取画面。
+
+需要读取时执行：
+
+```bash
+lark-cli vc +meeting-screenshot --meeting-id <meeting_id>
+```
+
+会议 ID、输出文件和失败处理见 [`lark-vc-meeting-screenshot`](../references/lark-vc-meeting-screenshot.md)。
+
+## 获取或创建会议群聊
+
+使用已确定的 `meeting_id`；已有 `chat_id` 且只需消息操作时直接执行本节末尾的 IM 步骤。根据用户意图选择查询或创建，不把两者默认串行执行。
+
+**查询已有绑定，或需要先找到群再读写消息：**
+
+已有详情结果时直接复用其中的绑定，批量结果按 [详情参考](../../lark-meeting/references/lark-vc-detail.md#聊天绑定结果) 解析对应项；否则只查询会议基础信息：
+
+```bash
+lark-cli vc meeting get --meeting-id "<meeting_id>" --format json
+```
+
+成功后读取 `data.meeting.chat_id`；查询失败按实际错误处理，字段缺失、为空或为 `"0"` 则说明未取得绑定并停止，不自动创建。
+
+**用户明确要求创建或复用：**
+
+会议正在进行且当前用户在会时执行；详情可读不能证明在会。服务端决定新建或复用，无需先查绑定，也不额外创建普通 IM 群。
+
+```bash
+lark-cli vc +meeting-chat --meeting-id <meeting_id> --format json
+```
+
+成功读取 `data.chat_id`。不在会中或会议已结束时说明创建条件不满足。参数、权限及失败恢复按需读取 [创建参考](../references/lark-vc-meeting-chat.md)。
+
+只要聊天 ID 时返回后停止。只有用户要求消息操作时，才携带 `chat_id`、消息范围或待发送内容，进入 [IM 消息读取](../../lark-im/references/lark-im-chat-messages-list.md) 或 [IM 消息发送](../../lark-im/references/lark-im-messages-send.md)。返回 ID 可能是复用的私聊，不保证正式入群或 IM 访问权限；IM 拒绝访问时报告实际错误，不重新建群。
+
+## 发送会中文本或表情
+
+只有用户明确要求发送并确认目标会议与内容时执行：
+
+```bash
+lark-cli vc +meeting-message-send --meeting-id <meeting_id> --msg-type text --text <message>
+```
+
+- 不要为了发送自动执行额外操作，也不要先查会议详情再发送。
+- reaction 使用 Reference 中大小写敏感的完整 emoji key；不要编造 key。
+- 发送失败时停止并报告，不重复发送，避免重复可见副作用。
+- 用户要发送绑定群消息且尚无 `chat_id` 时，先进入 [本场景的群聊步骤](#获取或创建会议群聊)；已有 `chat_id` 时转 IM，不要把会中消息命令当作群消息能力。
+
+文本、reaction 和权限规则见 [`lark-vc-meeting-message-send`](../references/lark-vc-meeting-message-send.md)。
+
+## 查询或操作会中倒计时
+
+用户要求查看当前倒计时时，执行只读查询：
+
+```bash
+lark-cli vc +meeting-countdown --meeting-id <meeting_id> --action get --format pretty
+```
+
+查询不携带时长、提醒点或结束音频参数；返回时间为毫秒，提醒偏移为秒。按服务端最近动作解释结果，不自行推算额外状态。
+
+只有用户明确要求设置、延长、提前结束或关闭倒计时时执行：
+
+```bash
+lark-cli vc +meeting-countdown --meeting-id <meeting_id> --action set --duration <minutes>
+```
+
+- 上述四种动作是会中可见的写操作；执行前确认目标会议和动作。
+- 用户只给 9 位会议号时，先执行 `+meeting-list-active` 并按 `meeting_no` 匹配。
+- `set` 和 `prolong` 需要 `--duration`；提前结束或关闭时不要携带时长、提醒点或结束音频参数。
+
+动作、提醒点和权限规则见 [`lark-vc-meeting-countdown`](../references/lark-vc-meeting-countdown.md)。
+
+## 管理参会人麦克风
+
+只有用户明确要求操作指定参会人，且目标会议与目标用户已经确认时执行：
+
+```bash
+lark-cli vc +meeting-participant-mute --meeting-id <meeting_id> --target-user-id <user_id>
+
+lark-cli vc +meeting-participant-unmute --meeting-id <meeting_id> --target-user-id <user_id>
+```
+
+- 默认按 `open_id` 解释目标用户；输入 `union_id` 或 `user_id` 时显式传 `--user-id-type`。只传用户 ID，不传设备 ID；服务端负责处理该用户的设备。
+- 闭麦成功可以报告操作完成。请求开麦成功必须报告“请求已发送”，不表示目标参会人已经开麦；若要确认最终状态，需要后续状态证据。
+- 详细参数、请求路径和输出语义见 [会中闭麦与请求开麦](../references/lark-vc-meeting-participant-audio.md)。
+
+## 转移会议主持人
+
+只有用户明确要求转移主持人，且目标会议与接任者已经确认时，使用 `lark-cli vc +meeting-transfer-host`：
+
+```bash
+lark-cli vc +meeting-transfer-host --meeting-id <meeting_id> \
+  --participant '<open_id>=<user_type>' --yes
+```
+
+- 需要 `vc:meeting`；当前用户必须是目标会议的主持人，未确认前不要补 `--yes`。
+- `user_type` 必须来自 `vc meeting get` 的参会人快照，不根据昵称猜测。
+- 只有成功响应中的 `host_user` 与接任者一致才算转移成功；失败响应也可能包含当前 `host_user`，不代表转移成功。
+- 详细参数和结果判断见 [转移会议主持人](../references/lark-vc-meeting-transfer-host.md)。
+
+## 结束整场会议或移出参会人
+
+只有用户明确要求主持管理动作，且目标会议与目标参会人已经确认时执行：
+
+```bash
+# 用户已明确确认目标会议后结束整场会议
+lark-cli vc +meeting-end --meeting-id <meeting_id> --yes
+
+# 移出参会人：默认用 open_id，user_type 必须来自 meeting get 快照
+lark-cli vc +meeting-participant-kickout --meeting-id <meeting_id> \
+  --participant '<open_id>=<user_type>' --yes
+```
+
+- `vc +meeting-end` 结束所有参会人的整场会议，需要 `vc:meeting` 权限；当前用户必须是目标会议有权限结束会议的主持人。
+- `vc +meeting-participant-kickout` 移出一至十个指定参会人。不要在未确认前直接补 `--yes`。
+- 结束会议或移出参会人前，先用 `vc meeting get --params '{"meeting_id":"<meeting_id>","with_participants":true}'` 核对会议与参会人快照。
+- `--participant '<id>=<user_type>'` 每次调用接受 1 到 10 个重复 flag；ID 默认按 open_id 解释，可用 `--user-id-type union_id|user_id` 切换，且首尾不能有空白。不要根据昵称或设备信息猜 `user_type`，也不要把多个目标塞进 CSV/JSON。
+- 结束会议见 [`lark-vc-meeting-end`](../references/lark-vc-meeting-end.md)；移出参会人见 [`lark-vc-meeting-participant-kickout`](../references/lark-vc-meeting-participant-kickout.md)。
+
+## 处理未发现会议或权限错误
+
+- 未发现活跃会议时，可以转入 [lark-meeting](../../lark-meeting/SKILL.md) 查询当天最近结束的会议；仍无结果再询问时间、主题或会议号，不自行扩大时间范围。
+- 调用活跃会议或事件查询遇到 scope 缺失时，按 CLI hint 申请对应权限（如 `vc:meeting.meetingevent:read`）；不要反复登录重试。
+- 权限确认无误后仍失败时，保留 CLI 返回的错误码和 `log_id`，按服务端权限异常排查。
