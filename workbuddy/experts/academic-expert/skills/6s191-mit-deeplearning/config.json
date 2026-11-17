@@ -1,0 +1,15 @@
+{
+  "name": "6s191-mit-deeplearning",
+  "displayName": "深度学习课程 笔记卡片",
+  "encoding_fallback": [
+    "utf-8",
+    "gbk",
+    "gb18030"
+  ],
+  "features": [
+    "cli",
+    "selftest",
+    "dry-run",
+    "error-handling"
+  ]
+}

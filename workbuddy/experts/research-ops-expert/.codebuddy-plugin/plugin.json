@@ -1,0 +1,66 @@
+{
+ "name": "research-ops-expert",
+ "version": "1.1.0",
+ "plugin": "research-ops-expert",
+ "description": "Academic Research Ops Expert for end-to-end tasks with multiple built-in skills.",
+ "author": {
+  "name": "user_2fd890c9",
+  "email": ""
+ },
+ "agents": [
+  "./agents/research-ops-expert.md"
+ ],
+ "skills": [
+  "./skills/academic-research-skills",
+  "./skills/ambitious-sphinx",
+  "./skills/graphify"
+ ],
+ "expertType": "agent",
+ "agentName": "research-ops-expert",
+ "avatar": "avatars/expert.png",
+ "displayName": {
+  "en": "Academic Research Ops Expert",
+  "zh": "学术研究 资料检索 综述整理"
+ },
+ "profession": {
+  "en": "Academic Research Ops Expert",
+  "zh": "学术研究 资料检索 综述整理"
+ },
+ "displayDescription": {
+  "en": "Handles Academic Research Ops Expert tasks end-to-end with built-in skills.",
+  "zh": "端到端完成学术研究 资料检索 综述整理任务，内置3项专业能力，覆盖资料检索、文献综述与研究成果整理全流程。"
+ },
+ "categoryId": "04-DataAI",
+ "tags": [
+  {
+   "en": "Productivity",
+   "zh": "效率工具"
+  },
+  {
+   "en": "Academic Research Ops Expert",
+   "zh": "学术研究 资料检索 综述整理"
+  },
+  {
+   "en": "DataAI",
+   "zh": "DataAI"
+  }
+ ],
+ "quickPrompts": [
+  {
+   "zh": "帮我完成一项学术研究 资料检索 综述整理任务",
+   "en": "Help me with a Academic Research Ops Expert task"
+  },
+  {
+   "zh": "学术研究 资料检索 综述整理的常见问题怎么处理？",
+   "en": "How to handle common Academic Research Ops Expert issues"
+  },
+  {
+   "zh": "把这个需求交给学术研究 资料检索 综述整理，直接给出可执行结果",
+   "en": "Give this requirement to the Academic Research Ops Expert and produce the deliverable"
+  }
+ ],
+ "defaultInitPrompt": {
+  "zh": "帮我完成一项学术研究 资料检索 综述整理任务",
+  "en": "Help me with a Academic Research Ops Expert task"
+ }
+}

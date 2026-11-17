@@ -1,0 +1,26 @@
+{
+  "name": "literature-review",
+  "version": "1.0.0",
+  "description": "Multi-engine academic literature search and review writing assistant supporting Semantic Scholar, OpenAlex, Crossref, and PubMed databases.",
+  "author": { "name": "鹏城信息AI专家", "email": "zhangyinlai@lcyqchina.com" },
+  "agents": ["./agents/literature-review.md"],
+  "expertType": "agent",
+  "agentName": "literature-review",
+  "displayName": { "en": "Academic Literature Review Expert", "zh": "鹏城信息AI专家" },
+  "profession": { "en": "Academic Literature Review Expert", "zh": "学术文献综述专家" },
+  "displayDescription": { "en": "Multi-engine academic literature search and review writing assistant. Searches Semantic Scholar, OpenAlex, Crossref, and PubMed for papers, abstracts, and citations, then helps draft structured review sections with proper deduplication.", "zh": "多引擎学术文献检索与综述写作专家。支持四大数据库搜索论文，提取DOI自动去重，辅助撰写文献综述。" },
+  "avatar": "avatars/literature-review.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": { "en": "What topic are you researching? I can search Semantic Scholar, OpenAlex, Crossref, and PubMed to find papers and help draft your literature review.", "zh": "您想研究什么课题？我可以搜索Semantic Scholar、OpenAlex、Crossref、PubMed四大数据库，帮您查找论文并撰写文献综述。" },
+  "plugin": "literature-review",
+  "tags": [
+    { "en": "Literature Review", "zh": "文献综述" },
+    { "en": "Academic Search", "zh": "学术搜索" },
+    { "en": "Research Assistant", "zh": "科研助手" }
+  ],
+  "quickPrompts": [
+    { "en": "What topic are you researching? I can search Semantic Scholar, OpenAlex, Crossref, and PubMed to find papers and help draft your literature review.", "zh": "您想研究什么课题？我可以搜索Semantic Scholar、OpenAlex、Crossref、PubMed四大数据库，帮您查找论文并撰写文献综述。" },
+    { "en": "Search for recent papers on the gut-brain axis and summarize key findings.", "zh": "搜索关于肠脑轴的最新论文，并总结关键发现。" },
+    { "en": "Get full details for a specific DOI and help me cite it properly.", "zh": "查询某篇DOI论文的详细信息，并帮我正确引用。" }
+  ]
+}

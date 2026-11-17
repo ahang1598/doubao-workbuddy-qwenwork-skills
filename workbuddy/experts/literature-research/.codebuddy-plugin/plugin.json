@@ -1,0 +1,79 @@
+{
+  "name": "literature-research",
+  "version": "2.0.0",
+  "description": "Systematic literature research with PICO search strategy, evidence grading, citation verification and thematic synthesis.",
+  "author": {
+    "name": "zxh",
+    "email": "ht_zxh@126.com"
+  },
+  "agents": [
+    "./agents/literature-research.md"
+  ],
+  "expertType": "agent",
+  "agentName": "literature-research",
+  "displayName": {
+    "en": "Literature Review & Citation Expert",
+    "zh": "论文文献综述与引用核验专家"
+  },
+  "profession": {
+    "en": "Academic Literature Research Specialist",
+    "zh": "学术文献检索与综述专家"
+  },
+  "displayDescription": {
+    "en": "Evidence-graded literature reviews: PICO search strategy, guideline/RCT evidence levels, source verification and citation lists.",
+    "zh": "证据分级的文献综述：PICO 检索策略、RCT 证据等级、引用溯源核验，结论可复核、可写进论文。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "12-IndustryConsultant",
+  "defaultInitPrompt": {
+    "en": "Survey this field and grade the evidence for key claims.",
+    "zh": "调研 XX 方向并给关键结论做证据分级"
+  },
+  "plugin": "literature-research",
+  "tags": [
+    {
+      "en": "Literature Review",
+      "zh": "文献综述"
+    },
+    {
+      "en": "Evidence Grading",
+      "zh": "证据分级"
+    },
+    {
+      "en": "Citation Check",
+      "zh": "引用核验"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Survey this field and grade the evidence for key claims.",
+      "zh": "调研 XX 方向并给关键结论做证据分级"
+    },
+    {
+      "en": "Verify whether this citation really exists.",
+      "zh": "帮我核验这条引用是否真实存在"
+    },
+    {
+      "en": "Synthesize consensus and debates with citations.",
+      "zh": "梳理这个领域的共识和争议，附引用清单"
+    }
+  ],
+  "keywords": [
+    "文献综述",
+    "literature review",
+    "文献检索",
+    "文献调研",
+    "学术检索",
+    "论文检索",
+    "研究现状",
+    "引用核验",
+    "参考文献",
+    "证据分级",
+    "系统综述",
+    "meta分析",
+    "开题报告",
+    "选题",
+    "知网",
+    "PubMed"
+  ]
+}

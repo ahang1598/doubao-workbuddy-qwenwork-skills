@@ -1,0 +1,442 @@
+{
+  "title": "反馈形式与学习迁移研究准备 演示",
+  "topic": "反馈形式与成人学习迁移",
+  "scope": "仅整理本包四条合成资料记录，三条用于演示综合，一条题录待定；非真实文献综述。",
+  "review_type": "narrative",
+  "version": "1.0",
+  "search_log": "没有执行真实数据库检索；本示例只使用随包提供的原创合成资料A至D。",
+  "assumptions": [
+    "真实研究对象、数据访问、招募人数、工期及预算均待确认。",
+    "研究方案建议仅用于展示结构，不能替代真实证据和机构审查。"
+  ],
+  "papers": [
+    {
+      "id": "P1",
+      "title": "合成资料A 解释型反馈与迁移任务",
+      "authors": [
+        "合成资料编写者"
+      ],
+      "year": null,
+      "venue": "原创测试材料，非真实出版物",
+      "doi": null,
+      "url": null,
+      "study_id": "A",
+      "verification": "synthetic",
+      "verification_note": "本包原创合成示例，不存在外部题录核验或真实研究。",
+      "access": "fulltext",
+      "screening": "include",
+      "screening_reason": "用于演示干预设计、客观结局与推断边界。",
+      "question": "不同反馈条件下如何测量新任务中的策略使用？",
+      "source": "随源包提供的 templates/demo-sources.md；A节",
+      "design": "合成班级分配对照结构",
+      "population": "设定为成人培训班",
+      "sample": "未设定班级数和学员数",
+      "measures": "新情境任务表现；量表和信度未给出",
+      "analysis": "拟考虑班级内相关，具体模型未设定",
+      "findings": "仅为演示设定“解释型反馈方向较好”，无效应量或区间",
+      "limitations": "没有真实数据；设计与测量信息不完整",
+      "evidence": {
+        "design": "A1",
+        "population": "A1",
+        "sample": "A2",
+        "measures": "A2",
+        "analysis": "A3",
+        "findings": "A3",
+        "limitations": "A4"
+      }
+    },
+    {
+      "id": "P2",
+      "title": "合成资料B 主观反馈清晰度与自报迁移",
+      "authors": [
+        "合成资料编写者"
+      ],
+      "year": null,
+      "venue": "原创测试材料，非真实出版物",
+      "doi": null,
+      "url": null,
+      "study_id": "B",
+      "verification": "synthetic",
+      "verification_note": "本包原创合成示例，不存在外部题录核验或真实研究。",
+      "access": "abstract",
+      "screening": "include",
+      "screening_reason": "用于演示摘要限制、自报结局及不同方向证据。",
+      "question": "自报反馈清晰度与自报迁移是否相关？",
+      "source": "随源包提供的 templates/demo-sources.md；B节",
+      "design": "合成横断面问卷",
+      "population": "自愿参与的成人学员",
+      "sample": "便利样本，数量未设定",
+      "measures": "主观清晰度与自报迁移，量表未给出",
+      "analysis": "待全文核实；摘要没有完整分析说明",
+      "findings": "演示设定为“未表现出明确关联”，无系数或区间",
+      "limitations": "只有合成摘要；不能确认混杂控制、缺失处理或工具效度",
+      "evidence": {
+        "design": "B1",
+        "population": "B1",
+        "sample": "B1",
+        "measures": "B1-B2",
+        "analysis": "B2-B3",
+        "findings": "B2",
+        "limitations": "B3"
+      }
+    },
+    {
+      "id": "P3",
+      "title": "合成资料C 学员如何使用反馈线索",
+      "authors": [
+        "合成资料编写者"
+      ],
+      "year": null,
+      "venue": "原创测试材料，非真实出版物",
+      "doi": null,
+      "url": null,
+      "study_id": "C",
+      "verification": "synthetic",
+      "verification_note": "本包原创合成示例，不存在外部题录核验或真实研究。",
+      "access": "fulltext",
+      "screening": "include",
+      "screening_reason": "用于演示解释性资料与定量结果的边界。",
+      "question": "不同经历的学习者如何理解反馈并尝试使用？",
+      "source": "随源包提供的 templates/demo-sources.md；C节",
+      "design": "合成半结构化访谈构想",
+      "population": "不同学习经历的成人学员",
+      "sample": "目的性选样设想，无真实人数",
+      "measures": "访谈资料；没有实际录音或逐字稿",
+      "analysis": "主题式分析构想，具体取向和程序待明确",
+      "findings": "为测试预设“具体例子易理解”和“时间不足难尝试”两个主题",
+      "limitations": "预设主题不是研究发现；不能证明机制或普遍性",
+      "evidence": {
+        "design": "C1",
+        "population": "C1",
+        "sample": "C1-C2",
+        "measures": "C2",
+        "analysis": "C1-C3",
+        "findings": "C2",
+        "limitations": "C3"
+      }
+    },
+    {
+      "id": "P4",
+      "title": "合成题录D 反馈与成人学习的关系",
+      "authors": [
+        "合成资料编写者"
+      ],
+      "year": null,
+      "venue": "原创测试材料，非真实出版物",
+      "doi": null,
+      "url": null,
+      "study_id": "D",
+      "verification": "synthetic",
+      "verification_note": "本包原创合成示例，不存在外部题录核验或真实研究。",
+      "access": "bibliographic",
+      "screening": "pending",
+      "screening_reason": "只有演示题录，等待摘要或全文，不用于当前综述论断。",
+      "question": "未取得可读材料，问题待核实",
+      "source": "随源包提供的 templates/demo-sources.md；D节",
+      "design": "待全文核实",
+      "population": "待全文核实",
+      "sample": "待全文核实",
+      "measures": "待全文核实",
+      "analysis": "待全文核实",
+      "findings": "待全文核实",
+      "limitations": "待全文核实",
+      "evidence": {
+        "design": "D1；未提供可读材料",
+        "population": "D1；未提供可读材料",
+        "sample": "D1；未提供可读材料",
+        "measures": "D1；未提供可读材料",
+        "analysis": "D1；未提供可读材料",
+        "findings": "D1；未提供可读材料",
+        "limitations": "D1；未提供可读材料"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "id": "M1",
+      "name": "班级随机比较设计",
+      "fit": "在足够班级和执行条件下，研究反馈形式对预先定义迁移结局的影响。",
+      "requirements": "需要多个可分配班级、稳定干预、合适对照与预先定义结局。",
+      "strengths": "在满足分配和执行前提时更有条件评价干预差异。",
+      "limitations": "班级内相关、班级数量、组间干扰和失访均影响推断。",
+      "feasibility": "当前班级及权限未确认，样本参数缺失，暂不能作为已可启动方案。",
+      "recommendation": "保留为后续效果研究路径，先确认资源和样本测算条件。",
+      "paper_ids": [
+        "P1"
+      ]
+    },
+    {
+      "id": "M2",
+      "name": "任务试做加访谈的可行性研究",
+      "fit": "先回答任务流程能否执行，以及学员如何理解和使用反馈线索。",
+      "requirements": "获取有限真实任务资料并在同意基础上访谈，明确两类资料的整合问题。",
+      "strengths": "发现流程、测量和理解障碍，为后续设计提供具体修订依据。",
+      "limitations": "没有合适效果对照，不能据前后变化证明反馈形式的因果效应。",
+      "feasibility": "在招募、资料访问与审批落实后有条件实施，人数和时间尚待确认。",
+      "recommendation": "当前优先完善此方案，解释目标限定为可行性与情境理解。",
+      "paper_ids": [
+        "P2",
+        "P3"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "kind": "synthesis",
+      "text": "本组合成资料覆盖任务表现、自报迁移和访谈主题，不能将这些不同指标直接合并为同一效果。",
+      "certainty": "仅为演示材料的结构比较，不构成真实学术结论。",
+      "limitations": "样本、工具和数值均未形成真实证据。",
+      "evidence": [
+        {
+          "paper_id": "P1",
+          "location": "A2-A3",
+          "relation": "supports"
+        },
+        {
+          "paper_id": "P2",
+          "location": "B1-B2",
+          "relation": "supports"
+        },
+        {
+          "paper_id": "P3",
+          "location": "C1-C2",
+          "relation": "qualifies"
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "kind": "empirical",
+      "text": "合成资料A设置了按班级分配的对照结构，但没有提供效应量、区间或真实观测。",
+      "certainty": "可核对合成原文的描述，不能外推为实际研究结果。",
+      "limitations": "无法据此评价效果大小或样本是否足够。",
+      "evidence": [
+        {
+          "paper_id": "P1",
+          "location": "A1-A4",
+          "relation": "supports"
+        }
+      ]
+    },
+    {
+      "id": "C3",
+      "kind": "synthesis",
+      "text": "演示资料A与B的方向描述不一致，同时设计、结局和访问层级不同，目前不能判定何者证明反馈更有效。",
+      "certainty": "结构性差异明确，效果比较不成立。",
+      "limitations": "B仅为合成摘要；未明确关联不能解释成没有效果。",
+      "evidence": [
+        {
+          "paper_id": "P1",
+          "location": "A2-A3",
+          "relation": "supports"
+        },
+        {
+          "paper_id": "P2",
+          "location": "B2-B3",
+          "relation": "qualifies"
+        }
+      ]
+    },
+    {
+      "id": "C4",
+      "kind": "proposal",
+      "text": "在真实证据、班级资源和样本参数未确认前，先开展任务流程与理解障碍的可行性研究，再决定效果研究设计。",
+      "certainty": "研究者的条件性方案建议，尚未实施。",
+      "limitations": "必须取得真实文献与相应权限，不能把示例当作立项证据。",
+      "evidence": []
+    }
+  ],
+  "review_sections": [
+    {
+      "title": "材料范围与指标区别",
+      "text": "本综述是合成材料演示。A关注新任务表现，B只有自报清晰度与迁移的摘要描述，C讨论理解反馈的访谈构想。这三类资料回答的问题不同，不宜直接汇总为一个效果估计。[P1][P2][P3]",
+      "claim_ids": [
+        "C1"
+      ]
+    },
+    {
+      "title": "方向差异与方法局限",
+      "text": "A的演示方向描述较好，但没有真实观测或效应区间。B的合成摘要未设定明确关联，这既不证明没有效果，也不能反驳A的假设结构。两者的设计、指标和信息完整度不同，应先补齐真实资料。[P1][P2]",
+      "claim_ids": [
+        "C2",
+        "C3"
+      ]
+    },
+    {
+      "title": "下一步研究准备",
+      "text": "当前不能据合成记录宣称真实领域存在研究空白。可以先取得真实文献与资源条件，再用任务试做和访谈明确流程与理解障碍。是否进一步开展班级随机比较，应由具体问题、资源和样本参数决定。",
+      "claim_ids": [
+        "C4"
+      ]
+    }
+  ],
+  "research_questions": [
+    {
+      "id": "R1",
+      "text": "在拟定成人培训情境中，反馈任务流程能否按计划执行，主要执行障碍是什么？",
+      "inference": "描述性可行性判断，不作因果效果结论。",
+      "method_ids": [
+        "M2"
+      ]
+    },
+    {
+      "id": "R2",
+      "text": "学员如何理解反馈线索，哪些情境条件影响他们在新任务中尝试使用？",
+      "inference": "基于实际访谈和任务资料的情境解释，不能按比例推广到总体。",
+      "method_ids": [
+        "M2"
+      ]
+    }
+  ],
+  "plan_sections": [
+    {
+      "key": "background",
+      "title": "背景与依据",
+      "text": "当前仅有合成材料用于演示流程，不足以支持真实研究立项结论。先检索并核验真实文献，确认研究问题是否已有充分证据。演示提示任务表现、自报体验和访谈解释应分开处理。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C1",
+        "C3",
+        "C4"
+      ]
+    },
+    {
+      "key": "design",
+      "title": "研究设计",
+      "text": "优先考虑M2的可行性路径：先试做任务并记录流程，再围绕实际观察进行访谈，最后用联合对照表解释流程障碍与体验。没有效果对照，因此不评价因果效应；M1仅作资源充足后的候选。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C4"
+      ]
+    },
+    {
+      "key": "sampling",
+      "title": "对象与抽样",
+      "text": "成人培训场景和招募路径尚待业务方确认。拟按不同学习经历与任务完成情况目的性选样，记录邀请与拒绝原因。人数未设定，依据实际信息需求、异质性和研究取向决定充分性；若转为效果研究，另行取得效应、方差、班级结构和失访参数测算。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": []
+    },
+    {
+      "key": "measurement",
+      "title": "资料获取与操作定义",
+      "text": "R1记录任务完成、耗时及卡点等流程资料，具体记录规则先试用，不能将完成率解释为迁移效果。R2访谈询问学员对具体反馈片段的理解和尝试经过，围绕实际任务片段追问。工具、评分依据及许可需核实，未在本示例中宣称量表已验证。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C1"
+      ]
+    },
+    {
+      "key": "analysis",
+      "title": "分析计划",
+      "text": "R1描述流程完成情况和障碍，不进行缺乏依据的效果显著性检验。R2使用与研究问题匹配的主题分析取向，记录分析步骤、研究者反思与反例。通过逐案例联合表比较任务观察和访谈解释，保留不一致。缺失资料记录原因，不把未提供计为零。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C3",
+        "C4"
+      ]
+    },
+    {
+      "key": "ethics",
+      "title": "伦理与数据管理",
+      "text": "启动前核验适用机构要求并完成必要审批，当前没有审批或已招募参与者。向参与者说明自愿参加及退出方式，不影响培训考核。最小化记录身份信息，使用编码、限制访问，并由机构确认保存期限与删除规则。外部分享只使用获准的去标识结果。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": []
+    },
+    {
+      "key": "feasibility",
+      "title": "可行性与启动条件",
+      "text": "确认培训场景、负责人、可访问数据、招募渠道、工具和审批时间后才启动。当前资源未获承诺。如无法取得任务资料，改为更窄的访谈问题，并撤去任务执行相关结论。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C4"
+      ]
+    },
+    {
+      "key": "timeline",
+      "title": "里程碑与分工",
+      "text": "阶段一由负责人确认问题、真实文献和访问权限。阶段二由研究团队试用工具并修订。阶段三在许可后收集任务与访谈资料。阶段四分析与整合，阶段五复核并形成报告。具体日期和预算待资源确认，各阶段以明确产物及启动条件衔接。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": []
+    },
+    {
+      "key": "risks",
+      "title": "风险与备选方案",
+      "text": "主要风险为样本自选、社会赞许、任务观察改变行为、分析预设和权限不足。保留反例，分开记录观察与解释，说明研究者角色；无法回答的问题留作后续研究，不以增添无依据数字掩盖缺口。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C2",
+        "C4"
+      ]
+    },
+    {
+      "key": "deliverables",
+      "title": "预期产物与解释范围",
+      "text": "交付真实文献矩阵、可行性流程记录、访谈分析说明、问题与证据对照及修订后的效果研究建议。当前交付仅为设计草稿，不能报告实际效果、伦理获批、统计显著或确定的发表前景。",
+      "question_ids": [
+        "R1",
+        "R2"
+      ],
+      "method_ids": [
+        "M2"
+      ],
+      "claim_ids": [
+        "C4"
+      ]
+    }
+  ]
+}

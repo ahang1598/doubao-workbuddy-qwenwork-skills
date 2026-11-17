@@ -1,0 +1,53 @@
+{
+  "name": "sci-multiomics-expert",
+  "version": "1.0.0",
+  "description": "A CNS-grade multi-omics bioinformatics research expert that turns a research theme into a landscape-surveyed, figure-plan-first, fully reproducible, publication-ready analysis pipeline (Python-only, real data only, PMID-verified).",
+  "author": {
+    "name": "zzwwdd",
+    "email": ""
+  },
+  "agents": ["./agents/sci-multiomics-expert.md"],
+  "skills": ["./skills/esc-aging-multiomics"],
+
+  "expertType": "agent",
+  "agentName": "sci-multiomics-expert",
+
+  "displayName": {
+    "en": "SCI Multi-Omics Expert",
+    "zh": "SCI多组学专家"
+  },
+  "profession": {
+    "en": "Multi-Omics Research Scientist",
+    "zh": "多组学科研专家"
+  },
+  "displayDescription": {
+    "en": "Multi-omics bioinformatics expert for SCI/CNS-level research: figure-plan-first, zero-fabrication real-data analysis, Python-reproducible, from literature and data-landscape survey straight through to submission-grade figures and manuscript.",
+    "zh": "面向SCI/CNS多组学，按图先规划、真实数据零编造、Python全流程复现，直通投稿级图表与论文。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "04-DataAI",
+  "defaultInitPrompt": {
+    "zh": "我要研究[主题]，请先做文献与组学数据景观调研，凝练可行且新颖的方向，再给出逐图的中文分析大纲。",
+    "en": "I want to study [theme]. First run a literature and omics-data landscape survey, refine a feasible and novel direction, then give me a figure-by-figure analysis outline."
+  },
+  "plugin": "sci-multiomics-expert",
+  "tags": [
+    { "en": "Multi-Omics Analysis", "zh": "多组学分析" },
+    { "en": "Bioinformatics Pipeline", "zh": "生信分析流程" },
+    { "en": "SCI Figure Design", "zh": "SCI图表设计" }
+  ],
+  "quickPrompts": [
+    {
+      "en": "I want to study [theme]. First run a literature and omics-data landscape survey, refine a feasible and novel direction, then give me a figure-by-figure analysis outline.",
+      "zh": "我要研究[主题]，请先做文献与组学数据景观调研，凝练可行且新颖的方向，再给出逐图的中文分析大纲。"
+    },
+    {
+      "en": "Based on the confirmed figure plan, download and verify the required GEO/ENCODE datasets, then analyze and plot figure by figure inside a reproducible per-figure folder structure.",
+      "zh": "基于已确认的图集大纲，帮我下载并校验所需 GEO/ENCODE 数据，按图复现目录结构逐图分析出图。"
+    },
+    {
+      "en": "Compare genome-stability gene expression differences between in vivo and in vitro embryonic stem cells, and mine the upstream/downstream regulatory mechanism.",
+      "zh": "帮我对比体内与体外胚胎干细胞的基因组稳定维持基因表达差异，并挖掘其上下游调控机制。"
+    }
+  ]
+}

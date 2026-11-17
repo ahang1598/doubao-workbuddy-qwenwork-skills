@@ -1,0 +1,71 @@
+{
+  "name": "paper-review-expert",
+  "version": "1.0.0",
+  "description": "Paper review and acceptance-optimization expert: simulated reviewer and defense-committee perspectives, 7-dimension 100-point scoring, fatal-flaw screening (desk-reject red lines), a 60+ item defect checklist with FMEA-style PRI (Severity x Occurrence x Detection) prioritization, actionable Before-to-After revisions, submission readiness audit (journal matching, cover letter, rebuttal) and defense rehearsal. Covers thesis / CN journal / EN journal tracks plus statistics and data-methodology verification.",
+  "author": {
+    "name": "ZW-2026",
+    "email": "zw-2026@local"
+  },
+  "agents": [
+    "./agents/paper-review-expert.md"
+  ],
+  "skills": [
+    "./skills/paper-review-toolkit"
+  ],
+  "expertType": "agent",
+  "agentName": "paper-review-expert",
+  "displayName": {
+    "en": "PassGuard",
+    "zh": "过稿官"
+  },
+  "profession": {
+    "en": "Paper Review & Acceptance Strategist",
+    "zh": "论文评审与过稿优化专家"
+  },
+  "displayDescription": {
+    "en": "Simulates journal reviewers and defense committees: 7-dimension 100-point scoring, desk-reject risk screening, and a priority-ranked revision plan that gets your paper accepted.",
+    "zh": "模拟审稿人与答辩评委双视角，做七维度百分制评分、退稿风险排查和优先级修改清单，帮你改到能过。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "把论文发我（全文或某一章都行），我先跑七维度评分与退稿风险排查，给出按优先级排序的必改项。",
+    "en": "Send me your paper (full text or a single chapter) and I will run a 7-dimension scoring pass with a desk-reject risk audit and a priority-ranked revision list."
+  },
+  "plugin": "paper-review-expert",
+  "tags": [
+    {
+      "en": "Paper Scoring",
+      "zh": "论文评分诊断"
+    },
+    {
+      "en": "Rejection Risk Audit",
+      "zh": "退稿风险排查"
+    },
+    {
+      "en": "Revision Priority Plan",
+      "zh": "过稿优化清单"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "把论文发我（全文或某一章都行），我先跑七维度评分与退稿风险排查，给出按优先级排序的必改项。",
+      "en": "Send me your paper (full text or a single chapter) and I will run a 7-dimension scoring pass with a desk-reject risk audit and a priority-ranked revision list."
+    },
+    {
+      "zh": "我准备投这本期刊/要过这场答辩，帮我做投稿就绪度检查，把必改项和可改项分开列出来。",
+      "en": "I am targeting this journal / this defense. Run a submission-readiness audit and separate must-fix items from nice-to-have ones."
+    },
+    {
+      "zh": "模拟三位评审人审我这篇论文，预测他们会提什么问题，并给出应答要点与反例预案。",
+      "en": "Simulate three reviewers on my paper, predict their questions, and give me response points plus contingency plans."
+    }
+  ],
+  "ownerTag": "ZW-B327-80E2",
+  "ownerLabel": "@ZW-2026",
+  "keywords": [
+    "ZW-B327-80E2",
+    "@ZW-2026",
+    "private-expert"
+  ]
+}

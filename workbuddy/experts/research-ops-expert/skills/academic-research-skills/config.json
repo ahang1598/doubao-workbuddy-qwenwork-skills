@@ -1,0 +1,15 @@
+{
+  "name": "academic-research-skills",
+  "displayName": "学术研究 文献梳理 论文大纲",
+  "encoding_fallback": [
+    "utf-8",
+    "gbk",
+    "gb18030"
+  ],
+  "features": [
+    "cli",
+    "selftest",
+    "dry-run",
+    "error-handling"
+  ]
+}

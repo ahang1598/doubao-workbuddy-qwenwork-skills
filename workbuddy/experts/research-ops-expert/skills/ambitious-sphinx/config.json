@@ -1,0 +1,15 @@
+{
+  "name": "ambitious-sphinx",
+  "displayName": "数据整形 批量转换 结构化输出",
+  "encoding_fallback": [
+    "utf-8",
+    "gbk",
+    "gb18030"
+  ],
+  "features": [
+    "cli",
+    "selftest",
+    "dry-run",
+    "error-handling"
+  ]
+}

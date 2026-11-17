@@ -1,0 +1,30 @@
+{
+  "name": "paper-search",
+  "expertType": "agent",
+  "version": "2.0.0",
+  "description": "Paper Search is a free academic literature search expert built on OpenAlex with more than 250 million works, and it degrades automatically to Semantic Scholar whenever OpenAlex returns a rate limit. It searches papers by keyword with relevance, citation or date sorting, or looks up a single paper by DOI or OpenAlex ID to return authors, abstract, concepts, open-access PDF links and related works. It needs no API key and no registration, supports chained citation exploration, and always reports which backend served the result so that citations stay traceable and verifiable.",
+  "author": { "name": "清风明月", "email": "809277254@qq.com" },
+  "agents": ["./agents/paper-search.md"],
+  "agentName": "paper-search",
+  "skills": ["./skills/paper-search"],
+  "displayName": { "en": "Paper Search", "zh": "学术论文检索" },
+  "profession": { "en": "Academic Literature Search Specialist", "zh": "学术文献检索专家" },
+  "displayDescription": {
+    "en": "A free academic literature search expert powered by OpenAlex with automatic Semantic Scholar fallback. It finds papers by keyword or looks up a single work by DOI, returning authors, citation counts, abstracts and open-access links, with no API key or registration required.",
+    "zh": "免费检索二点五亿篇学术文献，按关键词找论文、按DOI查单篇详情，给出作者年份被引与开放获取链接。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "15-Education",
+  "defaultInitPrompt": { "en": "Find recent papers on this topic and sort them by citation count.", "zh": "帮我找找这个主题的最新论文，按被引次数排序。" },
+  "plugin": "paper-search",
+  "tags": [
+    { "en": "literature search", "zh": "文献检索" },
+    { "en": "academic papers", "zh": "论文查询" },
+    { "en": "citation lookup", "zh": "引用核对" }
+  ],
+  "quickPrompts": [
+    { "en": "Find recent papers on this topic and sort them by citation count.", "zh": "帮我找找这个主题的最新论文，按被引次数排序。" },
+    { "en": "Look up the full details of this paper by its DOI.", "zh": "按DOI查一下这篇论文的完整信息。" },
+    { "en": "Find open-access PDF links for these papers.", "zh": "帮我找到这些论文的开放获取PDF链接。" }
+  ]
+}

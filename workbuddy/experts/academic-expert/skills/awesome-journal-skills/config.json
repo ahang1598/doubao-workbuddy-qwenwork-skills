@@ -1,0 +1,15 @@
+{
+  "name": "awesome-journal-skills",
+  "displayName": "期刊投稿 格式速查 学术规范",
+  "encoding_fallback": [
+    "utf-8",
+    "gbk",
+    "gb18030"
+  ],
+  "features": [
+    "cli",
+    "selftest",
+    "dry-run",
+    "error-handling"
+  ]
+}

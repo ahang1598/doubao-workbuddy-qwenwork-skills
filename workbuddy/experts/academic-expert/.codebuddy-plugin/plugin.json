@@ -1,0 +1,61 @@
+{
+  "name": "academic-expert",
+  "version": "1.0.0",
+  "description": "Expert in academic workflows: journal submission, deep learning course notes, learning roadmaps and term explanation.",
+  "author": {
+    "name": "user_2fd890c9",
+    "email": ""
+  },
+  "agents": [
+    "./agents/academic-expert.md"
+  ],
+  "expertType": "agent",
+  "agentName": "academic-expert",
+  "displayName": {
+    "en": "Scholar",
+    "zh": "学究"
+  },
+  "profession": {
+    "en": "Academic Research Expert",
+    "zh": "学术研究专家"
+  },
+  "displayDescription": {
+    "en": "Expert in academic workflows: journal submission, deep learning course notes, learning roadmaps and term explanation.",
+    "zh": "学术研究专家，擅长期刊投稿指导、课程笔记整理、学习路径规划与专业术语解读，覆盖科研学习全流程"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "09-OperationsHR",
+  "defaultInitPrompt": {
+    "en": "Guide me through submitting to an academic journal",
+    "zh": "指导我完成学术期刊投稿"
+  },
+  "plugin": "academic-expert",
+  "tags": [
+    {
+      "en": "Journal",
+      "zh": "期刊投稿"
+    },
+    {
+      "en": "Learning",
+      "zh": "学习规划"
+    },
+    {
+      "en": "Terminology",
+      "zh": "术语解读"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Guide me through submitting to an academic journal",
+      "zh": "指导我完成学术期刊投稿"
+    },
+    {
+      "en": "Summarize the MIT 6.S191 deep learning course",
+      "zh": "总结 MIT 6.S191 深度学习课程要点"
+    },
+    {
+      "en": "Explain this technical term simply",
+      "zh": "用通俗语言解释这个专业术语"
+    }
+  ]
+}

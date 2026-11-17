@@ -6,9 +6,9 @@
 
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
-- 当前索引条目数：636
-- 当前索引文件数：17702
-- 最近变更：[2026-11-05-180009](workbuddy/change-logs/2026-11-05-180009.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
+- 当前索引条目数：647
+- 当前索引文件数：17921
+- 最近变更：[2026-11-17-141159](workbuddy/change-logs/2026-11-17-141159.md) - WorkBuddy 本次同步新增 219 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/academic-expert, experts/arxiv-watcher, experts/literature-research, experts/literature-research-expert, experts/literat...
 
 ## 数据来源
 
@@ -39,12 +39,14 @@
 | Name | Directory | Category | Files | Description |
 | --- | --- | --- | ---: | --- |
 | A股研究团队 | `workbuddy/experts/a-share-analysis` | 08-FinanceInvestment | 38 | 8位研究专家支持多步骤工作流编排，覆盖宏观策略、盘面解读、个股深度、估值定价、产业链映射、资金追踪、风险诊断 |
+| 学究 | `workbuddy/experts/academic-expert` | 09-OperationsHR | 36 | 学术研究专家，擅长期刊投稿指导、课程笔记整理、学习路径规划与专业术语解读，覆盖科研学习全流程 |
 | AI CMO | `workbuddy/experts/ai-cmo` | 06-ContentCreative | 16 | 3 位专家接力协作，跑通账号定位、选题脚本、涨粉变现全链路，含数据复盘与反哺选题的闭环。 |
 | 内容创作专家团 | `workbuddy/experts/ai-content-creator-team` | 06-ContentCreative | 25 | AI驱动的多模态内容生产团队，从创意策划到成品交付全覆盖，涵盖品牌定位、情绪板、广告方向、文案创作、视频生成、图片设计、精修合成和素材改编。 |
 | 智数分析专家团 | `workbuddy/experts/ai-data-copilot` | 04-DataAI | 22 | 6人AI数据分析团队，擅长自然语言转SQL、Python建模、RAG知识问答、仪表盘可视化与报告生成 |
 | AI大模型专家团 | `workbuddy/experts/ai-expert-studio` | 06-ContentCreative | 36 | 一个人搞不定的创意全案？5 人专家团从策划到成片成稿，一站式交付，省心省力不踩坑。 |
 | AICoding 架构专家团 | `workbuddy/experts/aicoding-architecture-expert-team` | 02-Engineering | 289 | 面向复杂系统架构设计，协同完成资料摄入、调研、业务、系统、部署、安全与用户故事全流程交付。 |
 | 组小学 | `workbuddy/experts/antibody-structure-opt-team` | 04-DataAI | 15 | 专注抗体药物设计与结构优选，协同IgGM、Protenix或Boltz完成候选生成、结构预测与排序。 |
+| 鹏城信息AI专家 | `workbuddy/experts/arxiv-watcher` | 04-DataAI | 6 | 检索ArXiv最新论文，按关键词、作者、学科精准搜索，提炼摘要并归档研究日志，持续追踪前沿动态。 |
 | 财报研析团 | `workbuddy/experts/bank-retail-analyst` | 08-FinanceInvestment | 147 | 六成员财报分析专家团：自动下载年报、提取零售数据，做同业对标与战略治理穿透分析，一键交付三份专业报告。 |
 | 法大大·睿契提供的破产业务专家 | `workbuddy/experts/bankruptcy-business-expert` | 11-SecurityCompliance | 407 | 【法大大·睿契】面向破产管理人和破产律师，覆盖清算、重整与和解全流程的债权审查、资产追收、分配方案与重整计划编制。 |
 | 相信光么 | `workbuddy/experts/believe-in-light` | 08-FinanceInvestment | 26 | 光模块产业链信号监控专家团。主理人 + 6位成员Agent 三端采集信号，因果验证+权重校准，三层嵌套输出景气度评级。 |
@@ -83,6 +85,9 @@
 | 求职陪跑团 | `workbuddy/experts/job-companion-team` | 12-IndustryConsultant | 21 | 5 角色陪跑型专家团，7 阶段接力覆盖自我盘点、目标定位、简历打磨、面试陪练、谈薪决策与入职复盘全流程。 |
 | KET备考专家团 | `workbuddy/experts/ket-prep-team` | 12-IndustryConsultant | 16 | 剑桥认证考官领衔，为小学生提供KET全流程备考：学情测评、词汇语法地基、听说读写专项提分、考前冲刺模考，助力Merit（优秀）/Distinction（卓越）达标。 |
 | LinkFox | `workbuddy/experts/linkfox-expert-team-amazon-product-selection` | 07-SalesCommerce | 771 | 26位亚马逊选品专家协同，覆盖市场扫描、关键词、VOC、货源、利润、库存、竞品监控与侵权风险。 |
+| 论文文献综述与引用核验专家 | `workbuddy/experts/literature-research` | 12-IndustryConsultant | 5 | 证据分级的文献综述：PICO 检索策略、RCT 证据等级、引用溯源核验，结论可复核、可写进论文。 |
+| 文献整理与研究设计专家 | `workbuddy/experts/literature-research-expert` | 15-Education | 18 | 面向科研人员与研究生整理论文、比较研究方法、完善研究计划，交付可追溯的文献矩阵、综述草稿与研究方案 |
+| 鹏城信息AI专家 | `workbuddy/experts/literature-review` | 04-DataAI | 5 | 多引擎学术文献检索与综述写作专家。支持四大数据库搜索论文，提取DOI自动去重，辅助撰写文献综述。 |
 | 营销战役团队 | `workbuddy/experts/marketing-campaign-team` | 05-MarketingGrowth | 14 | 由营销总监领导的 4 人营销专家团队：内容创作者（博客/邮件/社媒/品牌声音）、活动策划师（战役策略/受众/渠道/预算）、SEO 专家（技术审计/内容优化/效果分析）和品牌分析师（竞品定位/品牌审核）。覆盖完整营销生命周期。 |
 | 营销增长专家团 | `workbuddy/experts/marketing-growth-team` | 05-MarketingGrowth | 85 | fCMO 级全栈营销增长团队：转化率优化、SEO 与内容策略、增长工程、数据归因分析与策略规划，全方位助力 SaaS 产品增长 |
 | 领券下单找我 | `workbuddy/experts/meituan-living-assistant` | 07-SalesCommerce | 18 | 帮您一键领取美团优惠券，搜索附近团购美食并下单，探索今日活动，覆盖餐饮饮品等生活服务，省钱省心。 |
@@ -93,15 +98,20 @@
 | 专业文档生成团队 | `workbuddy/experts/openspec-doc-team` | 10-ProjectQuality | 11 | 4 位专业角色分 6 阶段协作完成企业级长文档生成：需求分析 → 知识检索 → 内容生成 → 质量审核（循环）→ 整合汇编 → 交付输出。适用于施工图设计说明、技术方案、招投标文件、维修手册、API/系统文档等场景。 |
 | 研报复现因子挖掘回测审计 | `workbuddy/experts/pandaai-ai-quant-research-team` | 08-FinanceInvestment | 147 | 五位独立专家完成研报复现、因子设计、PandaAI大赛实跑、过拟合审计与绩效报告，缺少真实证据即阻断。 |
 | 热点题材与资金联合研判 | `workbuddy/experts/pandaai-hot-theme-team` | 08-FinanceInvestment | 62 | 五位专家联合复盘市场、题材热度和资金变化，筛选核心候选并通过风险闸门，输出可追溯的统一会诊结论。 |
+| 过稿官 | `workbuddy/experts/paper-review-expert` | 06-ContentCreative | 16 | 模拟审稿人与答辩评委双视角，做七维度百分制评分、退稿风险排查和优先级修改清单，帮你改到能过。 |
+| 学术论文检索 | `workbuddy/experts/paper-search` | 15-Education | 8 | 免费检索二点五亿篇学术文献，按关键词找论文、按DOI查单篇详情，给出作者年份被引与开放获取链接。 |
 | 万方数据 | `workbuddy/experts/paper-topic-selection` | 12-IndustryConsultant | 26 | 帮你做论文选题：检索文献、推荐方向、评估新颖性、生成标题、出领域报告。说学科方向即可。 |
 | 踏歌行专利智多星专家团 | `workbuddy/experts/patent-expert-team` | 12-IndustryConsultant | 317 | 13位专利专家，从文献检索、交底书、权要优化到附图、合规、答审与打包，产出CNIPA合规申报包。 |
 | 产品战略团队 | `workbuddy/experts/product-strategy-team` | 01-ProductDesign | 16 | 由产品总监领导的 5 人产品专家团队：需求分析师（PRD/功能规格书）、用户研究员（调研综合分析）、竞品分析师（竞争情报）、数据分析师（指标追踪）和路线图规划师（路线图管理/迭代规划）。覆盖从构思到上线的完整产品生命周期。 |
 | 袋鼠帝宣传片创作团队 | `workbuddy/experts/promo-creator-team` | 06-ContentCreative | 20 | 6位专业角色分6阶段协作完成产品宣传片全流程制作：创意简报、逐镜头分镜、素材生产、HyperFrames剪辑合成、BGM设计与交付，从产品URL到可发布的60-90秒宣传片MP4 |
+| 青橙小博士·文献综述科研助手 | `workbuddy/experts/qingcheng-research-literature` | 15-Education | 45 | 青橙科教旗下科研文献综述专家。多库并行高效检索、自动化文献筛选、主题综合与专业报告输出，帮你系统解决学术研究中的信息过载问题，支撑综述写作与研究立项。 |
 | 闪造造 | `workbuddy/experts/rapid-prototyping-engineer` | 02-Engineering | 82 | 以极快速度将创意转化为可工作的原型，让团队快速验证想法 |
 | 小红书增长专家团 | `workbuddy/experts/redfox-xiaohongshu-ops-team` | 06-ContentCreative | 118 | 一支专注小红书增长的多角色团队：从爆款灵感到笔记创作、账号诊断、素材下载，覆盖运营全链路。 |
+| 学术研究 资料检索 综述整理 | `workbuddy/experts/research-ops-expert` | 04-DataAI | 20 | 端到端完成学术研究 资料检索 综述整理任务，内置3项专业能力，覆盖资料检索、文献综述与研究成果整理全流程。 |
 | Rightly 合规辅助专业版 | `workbuddy/experts/rightly-compliance-assistant-pro` | 11-SecurityCompliance | 44 | 隐私合规专家团，解读政策与通报条目，分析违规详情，结合专业版 Rightly 数据输出整改方案。 |
 | 资本市场路演研究团 | `workbuddy/experts/roadshow-research-team` | 08-FinanceInvestment | 32 | 多专家协作标的研报：多源解析、行业对比、财报三表（上市+未上市）、路演研报、股价关联，模板出报告。 |
 | 销售作战团队 | `workbuddy/experts/sales-battle-team` | 07-SalesCommerce | 14 | 由销售总监领导的 4 人销售专家团队：客户研究员（公司/潜客情报）、外联策略师（邮件起草/电话准备）、竞争情报分析师（赢单/丢单分析/Battle Card）和销售预测分析师（Pipeline 评审/预测）。覆盖从研究到成交的完整销售周期。 |
+| SCI多组学专家 | `workbuddy/experts/sci-multiomics-expert` | 04-DataAI | 15 | 面向SCI/CNS多组学，按图先规划、真实数据零编造、Python全流程复现，直通投稿级图表与论文。 |
 | 银发旅游与无障碍服务团 | `workbuddy/experts/senior-accessible-travel` | 12-IndustryConsultant | 12 | 面向银发客群与行动不便人群，设计适老化行程、无障碍通行环境、随队医疗与安全保障方案。 |
 | 吴八哥 | `workbuddy/experts/senior-developer` | 02-Engineering | 118 | 10年以上全栈经验，精通多种语言和框架，是团队的技术中坚 |
 | SEO 内容营销团队 | `workbuddy/experts/seo-content-team` | 05-MarketingGrowth | 21 | 7位专业角色分5阶段协作：关键词研究、SEO长文创作、技术优化、内容编辑、链接策略、转化率分析，全流程自动化产出高质量SEO内容 |
@@ -112,6 +122,7 @@
 | software-company | `workbuddy/experts/software-company` | team | 7 | Software Development Team - Optimized multi-agent SOP workflow for fast software delivery |
 | 腾讯自选股股票投研专家团 | `workbuddy/experts/stock-partner-team` | 08-FinanceInvestment | 39 | 六位投研专家团，兼擅产业策略、信号捕捉、估值定价、逆向布局、基本面与短线，基于实时行情多视角研判。 |
 | 财税合规专家团 | `workbuddy/experts/tax-compliance-team` | 11-SecurityCompliance | 19 | 覆盖票据处理、记账核算、报表编制、税务申报、合规审计五大环节的企业财税合规全链路管理专家团 |
+| 论小舟 | `workbuddy/experts/thesis-writing-mentor` | 06-ContentCreative | 45 | 基于可核验材料辅助论文结构、学术润色、期刊匹配与审稿回复，以证据状态和提交就绪度控制质量。 |
 | 跳跃视界 | `workbuddy/experts/tiaoyue-screenplay-team` | 06-ContentCreative | 23 | 依托麦芽生态与跳跃视界AI工具打造的短剧全链路创作专家团。对话内一站式完成题材策划、剧本生成、角色场景资产生成到分镜生成预览，完整覆盖短剧创作全流程。 |
 | 腾讯公益今日待办专家团 | `workbuddy/experts/today-todo-assistant` | 09-OperationsHR | 79 | 专家团模式协助机构处理今日待办，涵盖留言运营、证件备案更新与票据处理，智能分派任务一站式完成。 |
 | 交易分析团队 | `workbuddy/experts/trading-agent` | 08-FinanceInvestment | 17 | 13位专业角色分5阶段协作完成投资分析：技术面、基本面、新闻面、情绪面数据采集 → 多空辩论 → 交易决策 → 三方风险评估 → 最终报告，输出 BUY/SELL/HOLD 建议及完整操作方案 |
@@ -704,6 +715,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-17-141159 | [2026-11-17-141159](workbuddy/change-logs/2026-11-17-141159.md) | WorkBuddy 本次同步新增 219 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/academic-expert, experts/arxiv-watcher, experts/literature-research, experts/literature-research-expert, experts/literat... |
 | 2026-11-05-180009 | [2026-11-05-180009](workbuddy/change-logs/2026-11-05-180009.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-04-180008 | [2026-11-04-180008](workbuddy/change-logs/2026-11-04-180008.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-03-210234 | [2026-11-03-210234](workbuddy/change-logs/2026-11-03-210234.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
@@ -723,4 +735,3 @@
 | 2026-09-21-180001 | [2026-09-21-180001](workbuddy/change-logs/2026-09-21-180001.md) | WorkBuddy 本次同步新增 20 个文件、修改 42 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/3chat-customer-growth, connectors/marketplace/connectors/charge-order-query, connectors/market... |
 | 2026-09-20-180005 | [2026-09-20-180005](workbuddy/change-logs/2026-09-20-180005.md) | WorkBuddy 本次同步新增 22 个文件、修改 19 个文件、删除 63 个文件。 新增条目：connectors/marketplace/connectors/gt-generate-sql-data, connectors/marketplace/connectors/kuka-service, connectors/marketplace/... |
 | 2026-09-19-180006 | [2026-09-19-180006](workbuddy/change-logs/2026-09-19-180006.md) | WorkBuddy 本次同步新增 292 个文件、修改 242 个文件、删除 158 个文件。 新增条目：connectors/marketplace/connectors/candao-age, connectors/marketplace/connectors/dami-external-mcp, connectors/marketplace/co... |
-| 2026-09-16-180007 | [2026-09-16-180007](workbuddy/change-logs/2026-09-16-180007.md) | WorkBuddy 本次同步新增 413 个文件、修改 70 个文件、删除 36 个文件。 新增条目：connectors/marketplace/connectors/51shebao-hr-tools, connectors/marketplace/connectors/connector-workshop, connectors/marketpl... |

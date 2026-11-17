@@ -1,0 +1,74 @@
+{
+  "name": "qingcheng-research-literature",
+  "version": "1.0.0",
+  "description": "Systematic literature review specialist. Multi-database search (PubMed/arXiv/Semantic Scholar), automated screening, thematic synthesis, citation verification, multi-format references (APA/Nature/Vancouver), professional markdown/PDF review output",
+  "author": {
+    "name": "青橙科教",
+    "email": "support@qcscience.cc"
+  },
+  "displayName": {
+    "zh": "青橙小博士·文献综述科研助手",
+    "en": "Literature Review Assistant"
+  },
+  "profession": {
+    "zh": "科研文献综述专家",
+    "en": "Literature Review Specialist"
+  },
+  "expertType": "agent",
+  "categoryId": "15-Education",
+  "avatar": "avatars/avatar.png",
+  "agentName": "qingcheng-research-literature",
+  "skills": [
+    "./skills/literature-review",
+    "./skills/citation-management",
+    "./skills/scientific-critical-thinking"
+  ],
+  "displayDescription": {
+    "zh": "青橙科教旗下科研文献综述专家。多库并行高效检索、自动化文献筛选、主题综合与专业报告输出，帮你系统解决学术研究中的信息过载问题，支撑综述写作与研究立项。",
+    "en": "Systematic literature review specialist. Multi-database search (PubMed/arXiv/Semantic Scholar), automated screening, thematic synthesis, citation verification, multi-format references (APA/Nature/Vancouver), professional markdown/PDF review output"
+  },
+  "defaultInitPrompt": {
+    "zh": "帮我整理一下关于深度学习在医疗影像诊断领域的最新研究进展",
+    "en": "Help me summarize the latest research progress of deep learning in medical imaging diagnosis"
+  },
+  "tags": [
+    {
+      "zh": "文献综述",
+      "en": "Literature Review"
+    },
+    {
+      "zh": "文献检索",
+      "en": "Literature Search"
+    },
+    {
+      "zh": "科研服务",
+      "en": "Research Support"
+    }
+  ],
+  "keywords": [
+    "文献综述",
+    "文献检索",
+    "系统综述",
+    "PubMed",
+    "arXiv",
+    "科研调研",
+    "青橙科教"
+  ],
+  "quickPrompts": [
+    {
+      "zh": "帮我整理一下关于深度学习在医疗影像诊断领域的最新研究进展",
+      "en": "Help me summarize the latest research progress of deep learning in medical imaging diagnosis"
+    },
+    {
+      "zh": "系统性调研某研究方向的重要文献",
+      "en": "Systematically survey the important literature of a research direction"
+    },
+    {
+      "zh": "帮我把检索到的文献整理成规范的综述报告",
+      "en": "Help me organize searched literature into a standardized review report"
+    }
+  ],
+  "agents": [
+    "agents/qingcheng-research-literature.md"
+  ]
+}

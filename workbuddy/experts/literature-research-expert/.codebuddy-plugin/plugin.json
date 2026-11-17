@@ -1,0 +1,68 @@
+{
+  "name": "literature-research-expert",
+  "version": "1.0.0",
+  "description": "Organizes research literature, compares methods, and develops evidence-linked review drafts and feasible research plans.",
+  "author": {
+    "name": "WorkBuddy Expert Publisher",
+    "email": "publisher@example.com"
+  },
+  "agents": [
+    "./agents/literature-research-expert.md"
+  ],
+  "skills": [
+    "./skills/literature-evidence",
+    "./skills/research-methods",
+    "./skills/review-synthesis",
+    "./skills/research-plan",
+    "./skills/research-delivery"
+  ],
+  "expertType": "agent",
+  "agentName": "literature-research-expert",
+  "displayName": {
+    "zh": "文献整理与研究设计专家",
+    "en": "Literature and Research Design Expert"
+  },
+  "profession": {
+    "zh": "文献整理与研究设计专家",
+    "en": "Literature Synthesis and Research Design Specialist"
+  },
+  "displayDescription": {
+    "zh": "面向科研人员与研究生整理论文、比较研究方法、完善研究计划，交付可追溯的文献矩阵、综述草稿与研究方案",
+    "en": "Helps researchers and graduate students organize papers, compare methods, and produce traceable literature matrices, review drafts, and research plans."
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "15-Education",
+  "defaultInitPrompt": {
+    "zh": "请整理这些论文，生成文献矩阵，比较研究方法，并写一份有出处的综述草稿。",
+    "en": "Organize these papers into a literature matrix, compare their methods, and draft a source-linked review."
+  },
+  "plugin": "literature-research-expert",
+  "tags": [
+    {
+      "zh": "文献整理",
+      "en": "Literature Organization"
+    },
+    {
+      "zh": "方法比较",
+      "en": "Method Comparison"
+    },
+    {
+      "zh": "研究设计",
+      "en": "Research Design"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "请整理这些论文，生成文献矩阵，比较研究方法，并写一份有出处的综述草稿。",
+      "en": "Organize these papers into a literature matrix, compare their methods, and draft a source-linked review."
+    },
+    {
+      "zh": "我想研究反馈方式对学习迁移的影响，请帮我比较可选方法并完善研究方案。",
+      "en": "I want to study how feedback formats affect learning transfer. Compare suitable methods and improve my research plan."
+    },
+    {
+      "zh": "检查这份研究计划的问题、样本、测量和分析是否一致，指出缺口并给出修订稿。",
+      "en": "Check whether this research plan aligns its questions, sample, measures, and analysis; identify gaps and revise it."
+    }
+  ]
+}

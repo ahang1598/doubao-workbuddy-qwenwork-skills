@@ -1,0 +1,15 @@
+{
+  "name": "graphify",
+  "displayName": "代码库知识图谱构建与问答分析",
+  "encoding_fallback": [
+    "utf-8",
+    "gbk",
+    "gb18030"
+  ],
+  "features": [
+    "cli",
+    "selftest",
+    "dry-run",
+    "error-handling"
+  ]
+}
