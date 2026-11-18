@@ -3,7 +3,7 @@ name: ctrip-wendao
 description: 当用户发起任意旅行相关问询时，包含但不限于：预订酒店、机票查询、火车票查询、景点推荐、寻找当地特色玩乐、目的地查询、行程规划、美食住宿攻略、签证、查询旅游攻略、获取旅行建议等场景，自动触发此技能。当用户需要操作携程时使用此skill。
 description_zh: "携程智能旅行助手，支持酒店机票预订、行程规划与旅游攻略"
 description_en: "Ctrip travel assistant for hotel/flight booking, itinerary planning & travel guides"
-version: 1.0.0
+version: 1.0.2
 homepage: https://www.ctrip.com/wendao/openclaw
 metadata:
   clawdbot:
@@ -46,26 +46,32 @@ visibility: "public"
 2. **强制使用 Node.js 执行**：因为目标运行环境必定安装了 Node.js，所以请优先使用 Node.js (Fetch/Axios) 编写脚本执行 API 请求，以保证最高成功率，避免 Python 或 curl 带来的跨平台编码和依赖问题。
 3. **只提取 `result` 字段**：API 会返回大段 JSON（包含 `events`, `messages`, `state`），这些都是内部执行日志。你向用户展示的内容**只允许**从 `result` 字段提取。
 
+## Workbuddy 连接器
+
+本文中的“连接器”均指 Workbuddy 连接器列表中的以下连接器：
+
+- **source**：`wendao-partner-workbuddy-connector`
+- **中文名称**：`携程问道`
+- **ID**：`oc_03ce7ff927f2d185`
+- **用途**：在执行问道查询前获取 Token，并将 Token 临时注入本次 Node.js 进程的 `WENDAO_API_KEY`。
+
 ## Setup
 
-1. **获取 token（API key）** — 打开 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw)，按页面指引申请并复制你的 **API token**（仅保存在本人可信环境，勿截图含完整密钥发到公开渠道）。
-2. **提供 token（二选一）**
-   - **`process.env.WENDAO_API_KEY`（推荐）**：由平台在 skill 运行环境中配置该环境变量；脚本与请求中通过 `process.env.WENDAO_API_KEY` 读取，不操作任何配置文件。
-   - **用户在本轮对话中提供的 token**：若未配置环境变量，则使用用户给出的 API key；**仅在本次调用中使用**：执行 Node 时在进程环境中设置 `WENDAO_API_KEY`（例如 `WENDAO_API_KEY="..." node scripts/wendao_query.js "..."`），不持久化、不回显完整密钥。**若 `WENDAO_API_KEY` 已设置，优先使用该环境变量。**
+1. **优先从连接器获取 Token** — 执行携程问道请求前，先从“携程问道”连接器获取 Token。不要要求用户在对话中提供 Token，也不要读取或写入用户的持久化配置文件。
+2. **注入并清理 Token** — 保持 `scripts/wendao_query.js` 不变。获取成功后，通过执行器的进程级环境变量能力，仅向本次 Node.js 子进程注入 `WENDAO_API_KEY`；不要把实际 Token 拼入可见命令，也不要写入 `.env`、shell profile 或其他持久化配置。脚本结束后，在 `finally` 或等价的清理流程中删除此次注入的 `WENDAO_API_KEY`；正常结束、报错和超时都必须清理。
 3. **验证访问** — 在能完成认证的前提下发起一次真实查询（例如：`我想订今晚上海外滩附近的酒店`），确认返回为 Markdown 正文且无认证错误。
 
-### 未配置 `process.env.WENDAO_API_KEY` 时
+### 连接器未返回 Token 时
 
-若运行环境中**尚未**设置 `WENDAO_API_KEY`（即 `process.env.WENDAO_API_KEY` 为空），请先**指引用户完成配置**，再执行 `node scripts/wendao_query.js` 或等价请求；不要假定密钥已自动存在。
+若无法从连接器获取 Token，停止调用，不要尝试从其他来源获取，也不要让用户在对话中粘贴 Token。请明确提示用户：
 
-1. **取得 token**：在 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw) 按指引申请并复制 API token。
-2. **设置环境变量 `WENDAO_API_KEY`**（变量名须完全一致）：
-   - **macOS / Linux（当前终端会话）**：`export WENDAO_API_KEY='你的 token'`，在同一终端会话内再执行 `node …`。
-   - **Windows CMD**：先执行 `set WENDAO_API_KEY=你的token`，再在同一窗口执行 `node …`。
-   - **Windows PowerShell**：`$env:WENDAO_API_KEY="你的token"`，再执行 `node …`。
-   - **长期生效（本机）**：将 `export WENDAO_API_KEY=...` 写入 `~/.zshrc` 或 `~/.bash_profile`，或在系统「环境变量」中添加用户级变量；**勿**把密钥写入仓库或公开配置。
-   - **OpenClaw / 托管环境**：在平台为技能配置的环境变量中填写 `WENDAO_API_KEY`，确保运行时 `process.env.WENDAO_API_KEY` 可用。
-3. **仅单次临时使用**：若用户只在对话里提供 key、且不便改系统环境，可指导其在本条命令前内联设置，例如 `WENDAO_API_KEY="..." node scripts/wendao_query.js "用户原话"`（仍通过环境变量传入进程，不落盘）。
+> 未能从连接器获取携程问道 Token。请前往“连接器”导航页面，搜索“携程问道”，根据页面指引维护 Token；完成后再重试。
+
+若携程问道接口返回 401、403，或明确提示 Token 缺失、无效、过期，也按连接器未返回 Token 处理，并提示用户按上述指引维护 Token。
+
+若**下游文档接口**在响应状态、`error`、`result`、`messages` 或其他返回内容中提示 Token 已过期，不要将该内容作为正常查询结果展示，也不要继续重试。请明确提示用户：
+
+> 携程问道 Token 已过期。请前往“连接器”导航页面，搜索“携程问道”，根据页面指引维护 Token；完成后再重试。
 
 ## Security & trust (before production use)
 
@@ -86,10 +92,12 @@ visibility: "public"
 
 ## 使用方法
 
-**执行前，先确定 token（按优先级）：**
+**执行前，先确定 Token：**
 
-1. 若 `process.env.WENDAO_API_KEY` 已设置，使用该值作为请求体里的 `inputs.token`。
-2. 若未设置：先按上文 **「未配置 `process.env.WENDAO_API_KEY` 时」** 指引用户配置 `WENDAO_API_KEY`，或使用用户在本轮对话中提供的 token，在本次执行的命令环境里设置 `WENDAO_API_KEY` 后再跑脚本（仅用于本次调用，不持久化）。
+1. 优先从“携程问道”连接器获取 Token。
+2. 若连接器未返回 Token，停止执行，并按上文 **「连接器未返回 Token 时」** 的固定提示指引用户维护 Token。不得回退到用户在对话中提供的 Token 或其他来源。
+3. 获取成功后，通过执行器的进程级环境变量能力，将 Token 临时注入本次 Node.js 子进程的 `WENDAO_API_KEY`。不要把实际 Token 拼入可见命令，不要持久化、记录或回显。
+4. 执行结束后，无论成功、失败或超时，都在 `finally` 或等价的清理流程中立即删除此次注入的 `WENDAO_API_KEY`。
 
 ### 强烈建议的执行方式（写文件执行法）
 
@@ -97,14 +105,14 @@ visibility: "public"
 
 1. **优先**：直接使用本技能目录下的 `scripts/wendao_query.js`（已支持从命令行传入用户问话），执行：`node scripts/wendao_query.js "<用户原话>"`。
 2. **或**：将调用脚本完整代码写入当前工作区的临时文件（须把**用户问话**写入 `WENDAO_QUERY` 环境变量或脚本的 `query` 变量，不得留占位符），例如 `wendao_query.js`。
-3. 使用终端工具执行 `node …`（带参数或环境变量如上）。
-4. 获取并总结结果后，若创建的是临时副本文件可删除；仓库内的 `scripts/wendao_query.js` 勿删。
+3. 使用终端工具执行 `node …`。Token 必须按上文要求通过本次 Node.js 子进程的 `WENDAO_API_KEY` 注入。
+4. 脚本执行结束后立即清理此次注入的 `WENDAO_API_KEY`，再获取并总结结果。若创建的是临时副本文件可删除；仓库内的 `scripts/wendao_query.js` 勿删。
 
 ### 参数说明
 
 | 参数 | 必填 | 说明 |
 |------|:----:|------|
-| `token` | 是 | API 认证令牌，取值优先级：`process.env.WENDAO_API_KEY` > 用户在对话中提供（通过本次命令中的 `WENDAO_API_KEY` 传入） |
+| `token` | 是 | 从“携程问道”连接器获取，临时注入本次 Node.js 进程的 `WENDAO_API_KEY`，执行结束后立即清理 |
 | `query` | 是 | 用户的自然语言查询 |
 | `timeout` | 否 | 默认 30 秒，建议设置以避免长时间等待 |
 
@@ -132,3 +140,4 @@ API 返回结构如下：
   ],
   "error": null
 }
+```

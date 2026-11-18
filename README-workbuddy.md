@@ -7,8 +7,8 @@
 - 平台目录：`workbuddy/`
 - 定时任务：`WorkbuddySkillsDailySync`，每天 18:00 运行
 - 当前索引条目数：647
-- 当前索引文件数：17921
-- 最近变更：[2026-11-17-180001](workbuddy/change-logs/2026-11-17-180001.md) - WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。
+- 当前索引文件数：17922
+- 最近变更：[2026-11-18-180008](workbuddy/change-logs/2026-11-18-180008.md) - WorkBuddy 本次同步新增 1 个文件、修改 3 个文件、删除 0 个文件。 受影响范围：skills/ctrip-wendao, skills/vibe-knowledge-film。
 
 ## 数据来源
 
@@ -392,7 +392,7 @@
 | aihot | `workbuddy/skills/aihot__skillhub` | skill | 3 | AI HOT (aihot.virxact.com) 中文 AI 资讯查询 Skill。当用户想知道"今天 AI 圈有什么"、"AI 日报"、"AI HOT"、"AI 资讯"、"AI 热点"、"最近 AI"、"OpenAI/Anthropic/Google 最近发布了什么"、"AI hot today"、"AI news today"、"看一下 AI 行业动态"、"今天有什么大模型发布"、"昨天 AI 圈"、"看下精选条目"、"A... |
 | arxiv-reader | `workbuddy/skills/arxiv-reader` | skill | 42 | 利用python，指定某个arxiv_id/url， 基于 LLM Agent 对这篇arxiv论文进行分类与深度阅读，直接print打印阅读笔记 |
 | arxiv-watcher | `workbuddy/skills/arxiv-watcher` | skill | 4 | Search and summarize papers from ArXiv. Use when the user asks for the latest research, specific topics on ArXiv, or a daily summary of AI papers. |
-| ctrip-wendao | `workbuddy/skills/ctrip-wendao` | skill | 4 | 当用户发起任意旅行相关问询时，包含但不限于：预订酒店、机票查询、火车票查询、景点推荐、寻找当地特色玩乐、目的地查询、行程规划、美食住宿攻略、签证、查询旅游攻略、获取旅行建议等场景，自动触发此技能。当用户需要操作携程时使用此skill。 |
+| ctrip-wendao | `workbuddy/skills/ctrip-wendao` | skill | 5 | 当用户发起任意旅行相关问询时，包含但不限于：预订酒店、机票查询、火车票查询、景点推荐、寻找当地特色玩乐、目的地查询、行程规划、美食住宿攻略、签证、查询旅游攻略、获取旅行建议等场景，自动触发此技能。当用户需要操作携程时使用此skill。 |
 | deep-research | `workbuddy/skills/deep-research` | skill | 21 | Structured deep research workflow with human-in-the-loop control. Use /research to generate research outline, /research-deep for parallel web search across items, /research-report to compile markdown reports. Supports... |
 | humanizer | `workbuddy/skills/humanizer` | skill | 3 | Remove signs of AI-generated writing from text. Use when editing or reviewing text to make it sound more natural and human-written. Detects and fixes patterns including: inflated symbolism, promotional language, super... |
 | khazix-writer | `workbuddy/skills/khazix-writer` | skill | 4 | 数字生命卡兹克（Khazix）的公众号长文写作skill。当用户需要撰写公众号文章、写稿子、续写文章、根据素材产出长文时使用。触发词包括但不限于：写文章、写稿子、帮我写、续写、扩写、公众号文章、长文、出稿、按我的风格写。即使用户只是说"帮我把这个写成文章"或"用我的风格写一下"，只要上下文涉及内容创作和公众号输出，都应该触发。也适用于用户丢过来一个PDF、brief、新闻链接、语音转文字或任何素材说"帮我写篇文章"的场景。不要用于... |
@@ -715,6 +715,7 @@
 
 | Date | Change Log | Summary |
 | --- | --- | --- |
+| 2026-11-18-180008 | [2026-11-18-180008](workbuddy/change-logs/2026-11-18-180008.md) | WorkBuddy 本次同步新增 1 个文件、修改 3 个文件、删除 0 个文件。 受影响范围：skills/ctrip-wendao, skills/vibe-knowledge-film。 |
 | 2026-11-17-180001 | [2026-11-17-180001](workbuddy/change-logs/2026-11-17-180001.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
 | 2026-11-17-141159 | [2026-11-17-141159](workbuddy/change-logs/2026-11-17-141159.md) | WorkBuddy 本次同步新增 219 个文件、修改 1 个文件、删除 0 个文件。 新增条目：experts/academic-expert, experts/arxiv-watcher, experts/literature-research, experts/literature-research-expert, experts/literat... |
 | 2026-11-05-180009 | [2026-11-05-180009](workbuddy/change-logs/2026-11-05-180009.md) | WorkBuddy 本次同步新增 0 个文件、修改 1 个文件、删除 0 个文件。 受影响范围：skills/vibe-knowledge-film。 |
@@ -734,4 +735,3 @@
 | 2026-09-23-180002 | [2026-09-23-180002](workbuddy/change-logs/2026-09-23-180002.md) | WorkBuddy 本次同步新增 540 个文件、修改 9 个文件、删除 196 个文件。 新增条目：connectors/marketplace/connectors/beatapi-beatdesign, connectors/marketplace/connectors/cloudhub, connectors/marketplace/conne... |
 | 2026-09-22-180002 | [2026-09-22-180002](workbuddy/change-logs/2026-09-22-180002.md) | WorkBuddy 本次同步新增 679 个文件、修改 62 个文件、删除 2 个文件。 新增条目：connectors/marketplace/connectors/aholo-lux3d, connectors/marketplace/connectors/meituan-for-business, connectors/marketplace/c... |
 | 2026-09-21-180001 | [2026-09-21-180001](workbuddy/change-logs/2026-09-21-180001.md) | WorkBuddy 本次同步新增 20 个文件、修改 42 个文件、删除 0 个文件。 新增条目：connectors/marketplace/connectors/3chat-customer-growth, connectors/marketplace/connectors/charge-order-query, connectors/market... |
-| 2026-09-20-180005 | [2026-09-20-180005](workbuddy/change-logs/2026-09-20-180005.md) | WorkBuddy 本次同步新增 22 个文件、修改 19 个文件、删除 63 个文件。 新增条目：connectors/marketplace/connectors/gt-generate-sql-data, connectors/marketplace/connectors/kuka-service, connectors/marketplace/... |
